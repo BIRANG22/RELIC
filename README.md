@@ -45,13 +45,18 @@ Assets/
 
 프로그래밍:
 Assets/_Project/Core
+
 Assets/_Project/Combat
+
 Assets/_Project/Run
+
 Assets/_Project/UI/Common
 
 아트:
 Assets/Art
+
 Assets/_Project/Character 프리팹의 Visual 계층
+
 Animator / Mesh / Material
 
 기획:
