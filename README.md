@@ -16,6 +16,7 @@ Version Control: Git + GitHub
 
 폴더 구조 개요
 ⚠️ 각 역할은 자기 담당 폴더만 수정하는 것을 원칙으로 합니다.
+
 Assets/
 
 ├─ _Project/
