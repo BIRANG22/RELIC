@@ -21,6 +21,8 @@ public class PlayerUnit : MonoBehaviour
             selectionRing.SetActive(false);
     }
 
+    public void OnFootstep()
+    {}
     public void SetSelected(bool value)
     {
         if (selectionRing != null)

@@ -1,5 +1,6 @@
 ﻿// Copyright Elliot Bentine, 2018-
 #if UNITY_EDITOR
+#pragma warning disable CS0618
 using ProPixelizer.Tools.Migration;
 using System;
 using UnityEditor;
@@ -196,4 +197,5 @@ namespace ProPixelizer
         }
     }
 }
+#pragma warning restore CS0618
 #endif

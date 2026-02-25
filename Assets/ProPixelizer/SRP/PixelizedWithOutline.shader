@@ -18,6 +18,9 @@ Shader "ProPixelizer/SRP/PixelizedWithOutline"
 
     Properties
     {
+		_FakePointLightPos("Fake Point Light Position", Vector) = (0,0,0,0)
+		_FakePointLightRadius("Fake Point Light Radius", Float) = 5
+		[HDR]_FakePointLightColor("Fake Point Light Color", Color) = (1,1,1,1)
 		_LightingRamp("LightingRamp", 2D) = "white" {}
 		_PaletteLUT("PaletteLUT", 2D) = "white" {}
 		[MainTex][NoScaleOffset]_Albedo("Albedo", 2D) = "white" {}
@@ -105,6 +108,9 @@ Shader "ProPixelizer/SRP/PixelizedWithOutline"
 			float4 _EmissionColor;
 			float _DiffuseVertexColorWeight;
 			float _EmissiveVertexColorWeight;
+			float4 _FakePointLightPos;
+			float _FakePointLightRadius;
+			float4 _FakePointLightColor;
 			CBUFFER_END
 			
 			// Object and Global properties
@@ -126,6 +132,6 @@ Shader "ProPixelizer/SRP/PixelizedWithOutline"
 			ENDHLSL
 		}
      }
-	CustomEditor "ProPixelizer.PixelizedWithOutlineShaderGUI"
+	//CustomEditor "ProPixelizer.PixelizedWithOutlineShaderGUI"
 	FallBack "ProPixelizer/Hidden/ProPixelizerBase"
 }

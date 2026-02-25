@@ -45,13 +45,13 @@ namespace ProPixelizer
             int variantLimit = EditorPrefs.GetInt("UnityEditor.ShaderGraph.VariantLimit", 128);
             if (variantLimit < 256)
             {
-                Debug.LogWarning(string.Format(
-                    "The ShaderGraph Variant Limit is currently set to a value of {0}. " +
-                    "The ProPixelizer appearance shader will not compile unless this variant " +
-                    "is raised, and your shaders will appear pink. Please increase this limit, " +
-                    "e.g. to 256, by changing Preferences > ShaderGraph > Shader Variant Limit. " +
-                    "Afterwards, reimport the ProPixelizer folder.",
-                    variantLimit));
+                //Debug.LogWarning(string.Format(
+                //    "The ShaderGraph Variant Limit is currently set to a value of {0}. " +
+                //    "The ProPixelizer appearance shader will not compile unless this variant " +
+                //    "is raised, and your shaders will appear pink. Please increase this limit, " +
+                //    "e.g. to 256, by changing Preferences > ShaderGraph > Shader Variant Limit. " +
+                //    "Afterwards, reimport the ProPixelizer folder.",
+                //    variantLimit));
                 generatedWarning = true;
             }
 
@@ -60,13 +60,13 @@ namespace ProPixelizer
             {
                 if (asset.msaaSampleCount > 1)
                 {
-                    Debug.LogWarning(string.Format("MSAA is enabled in the active render pipeline asset, this is incompatible with ProPixelizer."));
+                    //Debug.LogWarning(string.Format("MSAA is enabled in the active render pipeline asset, this is incompatible with ProPixelizer."));
                     generatedWarning = true;
                 }
             }
 
-            if (generatedWarning)
-                Debug.LogWarning("Warnings have been emitted during the ProPixelizer verification step. You can disable them by unticking 'Generate Warnings' in the render feature.");
+            //if (generatedWarning)
+            //    Debug.LogWarning("Warnings have been emitted during the ProPixelizer verification step. You can disable them by unticking 'Generate Warnings' in the render feature.");
 #endif
         }
     }
