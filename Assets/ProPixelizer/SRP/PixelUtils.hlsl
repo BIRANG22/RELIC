@@ -1,4 +1,5 @@
 ﻿// Copyright Elliot Bentine, 2018-
+#pragma warning disable CS0618
 #ifndef PIXELUTILS_INCLUDED
 #define PIXELUTILS_INCLUDED
 #define ROUNDING_PREC 0.49
@@ -101,3 +102,4 @@ inline void PixelClipAlpha_float(float4x4 unity_MatrixVP, float3 objectCentreWS,
 }
 
 #endif
+#pragma warning restore CS0618

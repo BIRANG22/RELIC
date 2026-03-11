@@ -1,4 +1,5 @@
 ﻿// Copyright Elliot Bentine, 2018-
+#pragma warning disable CS0618
 using System;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -247,3 +248,4 @@ namespace ProPixelizer
         }
     }
 }
+#pragma warning restore CS0618
