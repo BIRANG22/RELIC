@@ -12,8 +12,23 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: roof001
+    second: {fileID: 2100000, guid: 7dc63a7f4692af042a8d7f242debe6fe, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: stone001
     second: {fileID: 2100000, guid: 62463f72656d729409fd1aa0a4732f49, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: stone003
+    second: {fileID: 2100000, guid: ee486c6661dfada4f9832e82192ceb46, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: stone004
+    second: {fileID: 2100000, guid: bf2f9819eef8c524fb42674743cad6da, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule

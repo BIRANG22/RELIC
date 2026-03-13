@@ -7,6 +7,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: door002
+    second: {fileID: 2100000, guid: 217a309641f78bb4db289e785d391d11, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: gate
     second: {fileID: 2100000, guid: 217a309641f78bb4db289e785d391d11, type: 2}
   - first:
@@ -14,6 +19,11 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: stone001
     second: {fileID: 2100000, guid: 62463f72656d729409fd1aa0a4732f49, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: stone004
+    second: {fileID: 2100000, guid: bf2f9819eef8c524fb42674743cad6da, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
