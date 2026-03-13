@@ -17,6 +17,16 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: stone003
+    second: {fileID: 2100000, guid: ee486c6661dfada4f9832e82192ceb46, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: stone004
+    second: {fileID: 2100000, guid: bf2f9819eef8c524fb42674743cad6da, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: wall001
     second: {fileID: 2100000, guid: 27fbbcb075aa76546a642f07f03c4996, type: 2}
   - first:
@@ -24,6 +34,11 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: wall002
     second: {fileID: 2100000, guid: a13e334bc03a55146949cebee5e787ff, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: window
+    second: {fileID: 2100000, guid: 0a0fc93a82c5f834692f834175fa0965, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

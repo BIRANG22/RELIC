@@ -7,6 +7,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: door001
+    second: {fileID: 2100000, guid: af69c0699aea19a45ae6cccd8cd203e6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: door002
     second: {fileID: 2100000, guid: 217a309641f78bb4db289e785d391d11, type: 2}
   - first:
@@ -22,6 +27,16 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: roof001
+    second: {fileID: 2100000, guid: 7dc63a7f4692af042a8d7f242debe6fe, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: stone001
+    second: {fileID: 2100000, guid: 62463f72656d729409fd1aa0a4732f49, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: stone002
     second: {fileID: 2100000, guid: ff9d04d7464154540b80e6ec0f568386, type: 2}
   - first:
@@ -32,8 +47,18 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: wall001
+    second: {fileID: 2100000, guid: 27fbbcb075aa76546a642f07f03c4996, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: wall002
     second: {fileID: 2100000, guid: a13e334bc03a55146949cebee5e787ff, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: window
+    second: {fileID: 2100000, guid: 0a0fc93a82c5f834692f834175fa0965, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
