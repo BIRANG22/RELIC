@@ -19,4 +19,12 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
         DontDestroyOnLoad(gameObject);
         IsDuplicateInstance = false;
     }
+
+    protected virtual void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+    }
 }
