@@ -4,8 +4,10 @@ public enum GameStateType
 {
     None = 0,
     Bootstrap = 1,
-    Lobby = 2,
-    CharacterSelect = 3,
-    BattleSelect = 4,
-    Battle = 5,
+    Title = 2,
+    Lobby = 3,
+    Option = 4,
+    CharacterSelect = 5,
+    BattleSelect = 6,
+    Battle = 7,
 }

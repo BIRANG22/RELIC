@@ -6,8 +6,19 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Project/Scenes/SampleScene.unity
+    path: Assets/Project/Scenes/YDM/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Project/Scenes/YDM/Bootstrap.unity
+    guid: ef74e2dc631a13640b37b83b66059a75
+  - enabled: 1
+    path: Assets/Project/Scenes/YDM/Title.unity
+    guid: 6d916c03c5463334f8e8fd149d7f5b12
+  - enabled: 1
+    path: Assets/Project/Scenes/YDM/Lobby.unity
+    guid: 13354c149dc5f134f8938d95f51b97b5
   m_configObjects:
+    com.unity.addressableassets: {fileID: 11400000, guid: dbb53f834c210354da0a21775f5c57ba, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+    com.unity.localization.settings: {fileID: 11400000, guid: 0bfe21fe3ce523c4ab4cc735a4225683, type: 2}
   m_UseUCBPForAssetBundles: 0

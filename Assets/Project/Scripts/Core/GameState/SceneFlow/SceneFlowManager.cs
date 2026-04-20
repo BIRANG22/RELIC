@@ -17,7 +17,7 @@ public class SceneFlowManager : Singleton<SceneFlowManager>
             return;
     }
 
-    public async Task LoadSceneAsync(string sceneName)
+    public void LoadScene(string sceneName)
     {
         if (isLoading)
         {
@@ -40,6 +40,35 @@ public class SceneFlowManager : Singleton<SceneFlowManager>
         isLoading = true;
 
         Debug.Log($"[SceneFlowManager] Loading scene: {sceneName}");
+        SceneManager.LoadScene(sceneName);
+
+        isLoading = false;
+        Debug.Log($"[SceneFlowManager] Loaded scene: {sceneName}");
+    }
+
+    public async Task LoadSceneAsync(string sceneName)
+    {
+        if (isLoading)
+        {
+            Debug.LogWarning($"[SceneFlowManager] Already loading scene. Ignored: {sceneName}");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(sceneName))
+        {
+            Debug.LogError("[SceneFlowManager] sceneName is null or empty.");
+            return;
+        }
+
+        if (CurrentScene == sceneName)
+        {
+            Debug.Log($"[SceneFlowManager] Scene already loaded: {sceneName}");
+            return;
+        }
+
+        isLoading = true;
+
+        Debug.Log($"[SceneFlowManager] Loading scene async: {sceneName}");
 
         AsyncOperation loadOperation = SceneManager.LoadSceneAsync(sceneName);
         loadOperation.allowSceneActivation = true;
@@ -49,7 +78,7 @@ public class SceneFlowManager : Singleton<SceneFlowManager>
             await Task.Yield();
         }
 
-        Debug.Log($"[SceneFlowManager] Loaded scene: {sceneName}");
+        Debug.Log($"[SceneFlowManager] Loaded scene async: {sceneName}");
 
         isLoading = false;
     }
