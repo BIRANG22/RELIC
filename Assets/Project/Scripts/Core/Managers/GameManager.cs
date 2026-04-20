@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using UnityEngine;
 
 public class GameManager : Singleton<GameManager>
@@ -13,7 +12,7 @@ public class GameManager : Singleton<GameManager>
         Debug.Log("GameManager Initialized");
     }
 
-    protected override async void Awake()
+    protected override void Awake()
     {
         base.Awake();
 
@@ -35,21 +34,16 @@ public class GameManager : Singleton<GameManager>
         StateMachine = new GameStateMachine(Context);
 
         RegisterStates();
-
-        await StartGame();
     }
 
     private void RegisterStates()
     {
         StateMachine.RegisterState(new BootstrapState(sceneFlowManager));
+        StateMachine.RegisterState(new TitleState(sceneFlowManager));
         StateMachine.RegisterState(new LobbyState(sceneFlowManager));
+        StateMachine.RegisterState(new OptionState(sceneFlowManager));
         StateMachine.RegisterState(new CharacterSelectState(sceneFlowManager));
         StateMachine.RegisterState(new BattleSelectState(sceneFlowManager));
         StateMachine.RegisterState(new BattleState(sceneFlowManager));
-    }
-
-    private async Task StartGame()
-    {
-        await StateMachine.ChangeState(GameStateType.Bootstrap);
     }
 }

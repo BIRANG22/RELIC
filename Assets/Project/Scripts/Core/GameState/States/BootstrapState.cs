@@ -21,7 +21,7 @@ public class BootstrapState : BaseGameState
         // - 글로벌 시스템 초기화
         // 등을 추가하면 됨.
 
-        await GameManager.Instance.StateMachine.ChangeState(GameStateType.Lobby);
+        //await GameManager.Instance.StateMachine.ChangeState(GameStateType.Lobby);
     }
 
     public override Task Exit()
