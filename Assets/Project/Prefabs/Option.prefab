@@ -3918,7 +3918,7 @@ GameObject:
   - component: {fileID: 1073301777204764102}
   - component: {fileID: 5715319704606006926}
   - component: {fileID: 2703324747987300626}
-  - component: {fileID: 6697213745157234132}
+  - component: {fileID: 1409085860366290927}
   m_Layer: 5
   m_Name: Cancel
   m_TagString: Untagged
@@ -4028,9 +4028,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 6697213745157234132}
-        m_TargetAssemblyTypeName: OptionCancelButton, Assembly-CSharp
-        m_MethodName: OnClickCancel
+      - m_Target: {fileID: 1409085860366290927}
+        m_TargetAssemblyTypeName: OptionCloseButton, Assembly-CSharp
+        m_MethodName: CloseOption
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -4040,7 +4040,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &6697213745157234132
+--- !u!114 &1409085860366290927
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4049,9 +4049,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 7109587474499477330}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 44321d823f374e24aa2f8e769bffa243, type: 3}
+  m_Script: {fileID: 11500000, guid: cc654f14c97dd3b4a8bb2b95680051b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playClickSound: 1
 --- !u!1 &7396985696605463124
 GameObject:
   m_ObjectHideFlags: 0
