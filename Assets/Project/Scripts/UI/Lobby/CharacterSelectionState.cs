@@ -21,6 +21,7 @@ public class CharacterSelectionState : MonoBehaviour
     public void SelectCharacter(CharacterType characterType)
     {
         CurrentCharacter = characterType;
+        //Debug.LogWarning(CurrentCharacter);
     }
 
     public void OpenPanel(GameObject panel)

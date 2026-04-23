@@ -4,6 +4,9 @@ public class CharacterSelectButton : MonoBehaviour
 {
     [SerializeField] private CharacterType characterType;
     [SerializeField] private bool playClickSound = true;
+    [SerializeField] private GameObject targetPanel;
+
+    private static GameObject currentActivePanel;
 
     public void Execute()
     {
@@ -17,5 +20,19 @@ public class CharacterSelectButton : MonoBehaviour
         }
 
         CharacterSelectionState.Instance.SelectCharacter(characterType);
+
+        if (targetPanel == null)
+        {
+            Debug.LogWarning($"[CharacterSelectButton] Target panel is not assigned on {gameObject.name}.");
+            return;
+        }
+
+        if (currentActivePanel != null && currentActivePanel != targetPanel)
+        {
+            currentActivePanel.SetActive(false);
+        }
+
+        targetPanel.SetActive(true);
+        currentActivePanel = targetPanel;
     }
 }
