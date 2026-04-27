@@ -14,37 +14,13 @@ namespace Relic.Gameplay.Data
     /// </summary>
     public class MapData
     {
-        /// <summary>
-        /// MapId: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string MapId;
-        /// <summary>
-        /// MapName: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string MapName;
-        /// <summary>
-        /// RoomType: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string RoomType;
-        /// <summary>
-        /// Chapter: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string Chapter;
-        /// <summary>
-        /// StageMap: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string StageMap;
-        /// <summary>
-        /// RoomGrade: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string RoomGrade;
-        /// <summary>
-        /// SpawnWeight: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public int SpawnWeight;
-        /// <summary>
-        /// AllowRepeat: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public bool AllowRepeat;
     }
 }

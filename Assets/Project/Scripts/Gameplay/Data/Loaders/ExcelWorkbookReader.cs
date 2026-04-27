@@ -92,17 +92,27 @@ namespace Relic.Gameplay.Data
             XNamespace ns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
 
             var rowNodes = doc.Descendants(ns + "row").ToList();
-            if (rowNodes.Count == 0)
+
+            // 최소 2행은 있어야 함
+            // 0번 행 = 한글 설명
+            // 1번 행 = 영어 필드명
+            if (rowNodes.Count < 2)
                 return rows;
 
-            var headers = ReadCellValues(rowNodes[0], sharedStrings);
-            for (var i = 1; i < rowNodes.Count; i++)
+            var headerRowIndex = 1;
+            var dataStartRowIndex = 2;
+
+            var headers = ReadCellValues(rowNodes[headerRowIndex], sharedStrings);
+
+            for (var i = dataStartRowIndex; i < rowNodes.Count; i++)
             {
                 var values = ReadCellValues(rowNodes[i], sharedStrings);
                 var row = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
                 for (var h = 0; h < headers.Count; h++)
                 {
                     var key = headers[h]?.Trim();
+
                     if (string.IsNullOrWhiteSpace(key))
                         continue;
 

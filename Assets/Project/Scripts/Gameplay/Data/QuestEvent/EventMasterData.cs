@@ -14,37 +14,13 @@ namespace Relic.Gameplay.Data
     /// </summary>
     public class EventMasterData
     {
-        /// <summary>
-        /// EventId: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string EventId;
-        /// <summary>
-        /// EventName: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string EventName;
-        /// <summary>
-        /// EventCategory: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string EventCategory;
-        /// <summary>
-        /// DetailType: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string DetailType;
-        /// <summary>
-        /// Title: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string Title;
-        /// <summary>
-        /// Description: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string Description;
-        /// <summary>
-        /// SpawnCondition: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string SpawnCondition;
-        /// <summary>
-        /// ResultRewardRef: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string ResultRewardRef;
     }
 }

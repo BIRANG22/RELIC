@@ -14,25 +14,10 @@ namespace Relic.Gameplay.Data
     /// </summary>
     public class SkillEffectData
     {
-        /// <summary>
-        /// EffectId: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string EffectId;
-        /// <summary>
-        /// Coefficient: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public float Coefficient;
-        /// <summary>
-        /// Multiplier: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public float Multiplier = 1f;
-        /// <summary>
-        /// Count: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public int Count = 1;
-        /// <summary>
-        /// Turn: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public int Turn = 0;
     }
 }

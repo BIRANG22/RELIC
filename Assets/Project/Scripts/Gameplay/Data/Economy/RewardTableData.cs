@@ -14,33 +14,12 @@ namespace Relic.Gameplay.Data
     /// </summary>
     public class RewardTableData
     {
-        /// <summary>
-        /// TableId: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string TableId;
-        /// <summary>
-        /// TableName: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string TableName;
-        /// <summary>
-        /// UseTarget: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string UseTarget;
-        /// <summary>
-        /// MinRewardTypeCount: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public int MinRewardTypeCount;
-        /// <summary>
-        /// MaxRewardTypeCount: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public int MaxRewardTypeCount;
-        /// <summary>
-        /// AllowDuplicate: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public bool AllowDuplicate;
-        /// <summary>
-        /// GuaranteedRewardCount: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public int GuaranteedRewardCount;
     }
 }

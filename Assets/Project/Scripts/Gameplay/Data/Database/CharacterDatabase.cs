@@ -8,9 +8,7 @@ using System.Collections.Generic;
 /// </summary>
 namespace Relic.Gameplay.Data
 {
-    /// <summary>
-    /// CharacterDatabase의 책임을 담당하는 클래스입니다. 파일 상단 주석의 연결/설정 지침을 참고하세요.
-    /// </summary>
+    
     public class CharacterDatabase
     {
         private readonly LookupDatabase<CharacterMasterData> db = new();

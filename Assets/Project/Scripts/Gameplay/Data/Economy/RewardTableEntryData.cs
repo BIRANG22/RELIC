@@ -14,45 +14,15 @@ namespace Relic.Gameplay.Data
     /// </summary>
     public class RewardTableEntryData
     {
-        /// <summary>
-        /// EntryId: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string EntryId;
-        /// <summary>
-        /// TableId: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string TableId;
-        /// <summary>
-        /// RewardType: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string RewardType;
-        /// <summary>
-        /// RewardId: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string RewardId;
-        /// <summary>
-        /// Probability: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public float Probability;
-        /// <summary>
-        /// MinQuantity: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public int MinQuantity;
-        /// <summary>
-        /// MaxQuantity: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public int MaxQuantity;
-        /// <summary>
-        /// IsGuaranteedDrop: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public bool IsGuaranteedDrop;
-        /// <summary>
-        /// IsNoDuplicate: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public bool IsNoDuplicate;
-        /// <summary>
-        /// HasCondition: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public bool HasCondition;
     }
 }

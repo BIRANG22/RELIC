@@ -12,11 +12,10 @@ namespace Relic.Gameplay.Data
     /// <summary>
     /// DataBootstrap의 책임을 담당하는 클래스입니다. 파일 상단 주석의 연결/설정 지침을 참고하세요.
     /// </summary>
-    public class DataBootstrap : MonoBehaviour
+    public class DataBootstrap
     {
-        [Header("Resources/Data 안의 엑셀(TextAsset)")]
-        [SerializeField] private TextAsset excelWorkbook;
-        [SerializeField] private string resourcesWorkbookPath = "Data/GameData";
+        private TextAsset excelWorkbook;
+        private string resourcesWorkbookPath = "Data/GameData";
 
         public CharacterDatabase CharacterDatabase { get; } = new();
         public MonsterDatabase MonsterDatabase { get; } = new();
@@ -38,11 +37,12 @@ namespace Relic.Gameplay.Data
 
             if (excelWorkbook == null)
             {
-                Debug.LogError("[DataBootstrap] excelWorkbook이 비어 있습니다. inspector 할당 또는 Resources/Data 경로 파일명을 확인하세요.");
+                Debug.LogError("[DataBootstrap] excelWorkbook이 비어 있습니다. Resources/Data/GameData.bytes 경로를 확인하세요.");
                 return;
             }
 
             Dictionary<string, List<Dictionary<string, string>>> workbook;
+
             try
             {
                 workbook = ExcelWorkbookReader.Read(excelWorkbook.bytes);
@@ -53,23 +53,51 @@ namespace Relic.Gameplay.Data
                 return;
             }
 
-            CharacterDatabase.Initialize(CharacterCsvLoader.Load(workbook));
-            MonsterDatabase.Initialize(MonsterCsvLoader.Load(workbook));
+            Debug.Log($"[DataBootstrap] Excel Loaded: {excelWorkbook.name}");
+            Debug.Log($"[DataBootstrap] Sheet Count: {workbook.Count}");
 
-            SkillDatabase.Initialize(
-                SkillCsvLoader.LoadPassive(workbook),
-                SkillCsvLoader.LoadUnique(workbook),
-                SkillCsvLoader.LoadCommon(workbook),
-                SkillCsvLoader.LoadEssence(workbook));
+            foreach (var sheet in workbook)
+                Debug.Log($"[DataBootstrap] Sheet Found: {sheet.Key}, Row Count: {sheet.Value.Count}");
 
-            FragmentDatabase.Initialize(FragmentCsvLoader.Load(workbook));
-            StatusEffectDatabase.Initialize(StatusEffectCsvLoader.Load(workbook));
-            RangeDatabase.Initialize(SkillCsvLoader.LoadRange(workbook));
-            AssetDatabase.Initialize(AssetCsvLoader.Load(workbook));
-            QuestDatabase.Initialize(QuestCsvLoader.Load(workbook));
-            EventDatabase.Initialize(EventCsvLoader.LoadMaster(workbook), EventCsvLoader.LoadChoices(workbook));
-            RewardTableDatabase.Initialize(RewardTableCsvLoader.LoadTables(workbook), RewardTableCsvLoader.LoadEntries(workbook));
-            MapDatabase.Initialize(MapCsvLoader.Load(workbook));
+            var characters = CharacterCsvLoader.Load(workbook);
+            var monsters = MonsterCsvLoader.Load(workbook);
+            var skills = SkillCsvLoader.LoadSkills(workbook);
+            var fragments = FragmentCsvLoader.Load(workbook);
+            var statusEffects = StatusEffectCsvLoader.Load(workbook);
+            var ranges = SkillCsvLoader.LoadRanges(workbook);
+            var assets = AssetCsvLoader.Load(workbook);
+            var quests = QuestCsvLoader.Load(workbook);
+            var events = EventCsvLoader.LoadMaster(workbook);
+            var eventChoices = EventCsvLoader.LoadChoices(workbook);
+            var rewardTables = RewardTableCsvLoader.LoadTables(workbook);
+            var rewardEntries = RewardTableCsvLoader.LoadEntries(workbook);
+            var maps = MapCsvLoader.Load(workbook);
+
+            CharacterDatabase.Initialize(characters);
+            MonsterDatabase.Initialize(monsters);
+            SkillDatabase.Initialize(skills);
+            FragmentDatabase.Initialize(fragments);
+            StatusEffectDatabase.Initialize(statusEffects);
+            RangeDatabase.Initialize(ranges);
+            AssetDatabase.Initialize(assets);
+            QuestDatabase.Initialize(quests);
+            EventDatabase.Initialize(events, eventChoices);
+            RewardTableDatabase.Initialize(rewardTables, rewardEntries);
+            MapDatabase.Initialize(maps);
+
+            Debug.Log($"[DataBootstrap] Character Loaded: {characters.Count}");
+            Debug.Log($"[DataBootstrap] Monster Loaded: {monsters.Count}");
+            Debug.Log($"[DataBootstrap] Skill Loaded: {skills.Count}");
+            Debug.Log($"[DataBootstrap] Fragment Loaded: {fragments.Count}");
+            Debug.Log($"[DataBootstrap] StatusEffect Loaded: {statusEffects.Count}");
+            Debug.Log($"[DataBootstrap] Range Loaded: {ranges.Count}");
+            Debug.Log($"[DataBootstrap] Asset Loaded: {assets.Count}");
+            Debug.Log($"[DataBootstrap] Quest Loaded: {quests.Count}");
+            Debug.Log($"[DataBootstrap] Event Loaded: {events.Count}");
+            Debug.Log($"[DataBootstrap] EventChoice Loaded: {eventChoices.Count}");
+            Debug.Log($"[DataBootstrap] RewardTable Loaded: {rewardTables.Count}");
+            Debug.Log($"[DataBootstrap] RewardEntry Loaded: {rewardEntries.Count}");
+            Debug.Log($"[DataBootstrap] Map Loaded: {maps.Count}");
 
             Debug.Log("[DataBootstrap] Workbook load complete.");
         }

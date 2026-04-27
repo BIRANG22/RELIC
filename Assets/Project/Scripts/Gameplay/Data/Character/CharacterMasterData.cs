@@ -14,45 +14,15 @@ namespace Relic.Gameplay.Data
     /// </summary>
     public class CharacterMasterData
     {
-        /// <summary>
-        /// CharacterId: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string CharacterId;
-        /// <summary>
-        /// Name: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string Name;
-        /// <summary>
-        /// MaxHealth: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public int MaxHealth;
-        /// <summary>
-        /// MaxStamina: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public int MaxStamina;
-        /// <summary>
-        /// ResourceType: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string ResourceType;
-        /// <summary>
-        /// MaxResource: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public int MaxResource;
-        /// <summary>
-        /// MoveValue: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public int MoveValue;
-        /// <summary>
-        /// MoveLevel: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public int MoveLevel;
-        /// <summary>
-        /// IsDefaultProvided: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public bool IsDefaultProvided;
-        /// <summary>
-        /// UnlockCondition: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string UnlockCondition;
         public CharacterSkillLoadout DefaultSkillLoadout = new();
     }

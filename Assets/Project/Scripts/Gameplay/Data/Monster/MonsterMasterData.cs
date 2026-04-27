@@ -14,29 +14,11 @@ namespace Relic.Gameplay.Data
     /// </summary>
     public class MonsterMasterData
     {
-        /// <summary>
-        /// MonsterId: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string MonsterId;
-        /// <summary>
-        /// Name: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string Name;
-        /// <summary>
-        /// Grade: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string Grade;
-        /// <summary>
-        /// Health: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public int Health;
-        /// <summary>
-        /// DropTableId: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string DropTableId;
-        /// <summary>
-        /// PatternId: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string PatternId;
     }
 }

@@ -14,37 +14,13 @@ namespace Relic.Gameplay.Data
     /// </summary>
     public class AssetData
     {
-        /// <summary>
-        /// AssetId: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string AssetId;
-        /// <summary>
-        /// Name: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string Name;
-        /// <summary>
-        /// Category: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string Category;
-        /// <summary>
-        /// Source: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string Source;
-        /// <summary>
-        /// MaxAmount: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public int MaxAmount;
-        /// <summary>
-        /// UseInShop: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public bool UseInShop;
-        /// <summary>
-        /// UseInQuest: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public bool UseInQuest;
-        /// <summary>
-        /// UseInLobby: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public bool UseInLobby;
     }
 }

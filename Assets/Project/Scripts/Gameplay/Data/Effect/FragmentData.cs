@@ -15,26 +15,13 @@ namespace Relic.Gameplay.Data
     /// </summary>
     public class FragmentData
     {
-        /// <summary>
-        /// FragmentId: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string FragmentId;
-        /// <summary>
-        /// Name: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string Name;
-        /// <summary>
-        /// Type: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string Type;
-        /// <summary>
-        /// EquipConditionType: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string EquipConditionType;
-        /// <summary>
-        /// EquipConditionValue: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string EquipConditionValue;
+
+        public List<string> EffectIds = new();
         public List<SkillEffectData> Effects = new();
     }
 }

@@ -14,61 +14,19 @@ namespace Relic.Gameplay.Data
     /// </summary>
     public class EventChoiceData
     {
-        /// <summary>
-        /// EventId: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string EventId;
-        /// <summary>
-        /// ChoiceOrder: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public int ChoiceOrder;
-        /// <summary>
-        /// ChoiceText: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string ChoiceText;
-        /// <summary>
-        /// ChoiceType: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string ChoiceType;
-        /// <summary>
-        /// SelectCondition: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string SelectCondition;
-        /// <summary>
-        /// CostType: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string CostType;
-        /// <summary>
-        /// CostTarget: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string CostTarget;
-        /// <summary>
-        /// CostValue: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public int CostValue;
-        /// <summary>
-        /// ResultType: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string ResultType;
-        /// <summary>
-        /// ResultTarget: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string ResultTarget;
-        /// <summary>
-        /// ResultValue: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public int ResultValue;
-        /// <summary>
-        /// SuccessRate: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public float SuccessRate;
-        /// <summary>
-        /// FailResult: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string FailResult;
-        /// <summary>
-        /// NextEventId: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string NextEventId;
     }
 }

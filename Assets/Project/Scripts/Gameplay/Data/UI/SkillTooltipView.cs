@@ -19,12 +19,21 @@ namespace Relic.Gameplay.Data
         [SerializeField] private TMP_Text effectText;
         [SerializeField] private TMP_Text rangeText;
 
-        public void Bind(CommonSkillData skill, SkillRangeData range)
+        public void Bind(SkillMasterData skill, SkillRangeData range)
         {
-            titleText.text = skill?.Name ?? string.Empty;
-            costText.text = $"{skill?.CostResource} {skill?.CostValue}";
-            effectText.text = skill == null ? string.Empty : $"Effects: {skill.Effects.Count}";
-            rangeText.text = range?.RangeCategory ?? string.Empty;
+            if (skill == null)
+            {
+                titleText.text = string.Empty;
+                costText.text = string.Empty;
+                effectText.text = string.Empty;
+                rangeText.text = string.Empty;
+                return;
+            }
+
+            titleText.text = skill.Name;
+            costText.text = $"Cost: {skill.Cost}";
+            effectText.text = $"Power: {skill.Power} / Effects: {skill.Effects.Count}";
+            rangeText.text = range?.RangeCategory ?? "None";
         }
     }
 }

@@ -15,54 +15,17 @@ namespace Relic.Gameplay.Data
     /// </summary>
     public class StatusEffectMasterData
     {
-        /// <summary>
-        /// StatusEffectId: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string StatusEffectId;
-        /// <summary>
-        /// Name: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string Name;
-        /// <summary>
-        /// Category: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string Category;
-        /// <summary>
-        /// ProcessType: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string ProcessType;
-        /// <summary>
-        /// TargetType: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string TargetType;
-        /// <summary>
-        /// IsStackable: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public bool IsStackable;
-        /// <summary>
-        /// MaxStackCount: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public int MaxStackCount;
-        /// <summary>
-        /// TriggerTiming: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string TriggerTiming;
-        /// <summary>
-        /// ValueType: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string ValueType;
-        /// <summary>
-        /// IgnoreArmor: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
-        public bool IgnoreArmor;
-        /// <summary>
-        /// IsDispellable: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
-        public bool IsDispellable;
-        /// <summary>
-        /// DispelCategory: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string DispelCategory;
+        public List<string> EffectIds = new();
         public List<SkillEffectData> Effects = new();
     }
 }

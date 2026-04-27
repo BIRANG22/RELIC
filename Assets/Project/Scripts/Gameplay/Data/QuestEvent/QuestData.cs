@@ -14,37 +14,13 @@ namespace Relic.Gameplay.Data
     /// </summary>
     public class QuestData
     {
-        /// <summary>
-        /// QuestId: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string QuestId;
-        /// <summary>
-        /// Name: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string Name;
-        /// <summary>
-        /// Description: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string Description;
-        /// <summary>
-        /// ObjectiveType: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string ObjectiveType;
-        /// <summary>
-        /// ObjectiveTarget: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string ObjectiveTarget;
-        /// <summary>
-        /// ObjectiveValue: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public int ObjectiveValue;
-        /// <summary>
-        /// RewardType: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public string RewardType;
-        /// <summary>
-        /// RewardValue: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
-        /// </summary>
         public int RewardValue;
     }
 }

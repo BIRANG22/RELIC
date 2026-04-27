@@ -24,7 +24,7 @@ namespace Relic.Gameplay.Data
 
         public List<SkillEffectData> ResolveCommonSkill(string skillId, out SkillRangeData range)
         {
-            var data = skillDatabase.GetCommon(skillId);
+            var data = skillDatabase.Get(skillId);
             range = data == null ? null : rangeDatabase.Get(data.RangeId);
             return data?.Effects ?? new List<SkillEffectData>();
         }
