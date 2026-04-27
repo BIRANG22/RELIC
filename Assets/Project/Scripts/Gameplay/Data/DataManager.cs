@@ -1,36 +1,24 @@
-using System.Collections.Generic;
 using UnityEngine;
+using Relic.Gameplay.Data;
 
 public class DataManager : Singleton<DataManager>
 {
-    //private Dictionary<int, CardData> cardTable = new();
+    private DataBootstrap dataBootstrap = new();
+
+    public CharacterDatabase CharacterDatabase => dataBootstrap.CharacterDatabase;
+
+    protected override void Awake()
+    {
+        base.Awake();
+
+        if (IsDuplicateInstance)
+            return;
+    }
 
     public void Initialize()
     {
-        LoadHardCodedData();
+        dataBootstrap.LoadAllData();
+
+        Debug.Log("[DataManager] Initialize Complete");
     }
-
-    private void LoadHardCodedData()
-    {
-        //cardTable[1] = new CardData
-        //{
-        //    Id = 1,
-        //    Name = "Slash",
-        //    SPCost = 2,
-        //    Damage = 10
-        //};
-
-        //cardTable[2] = new CardData
-        //{
-        //    Id = 2,
-        //    Name = "FireBall",
-        //    SPCost = 3,
-        //    Damage = 15
-        //};
-    }
-
-    //public CardData GetCard(int id)
-    //{
-    //    return cardTable.TryGetValue(id, out var data) ? data : null;
-    //}
 }

@@ -183,7 +183,7 @@ public class SkillEquipUIController : MonoBehaviour
 
     public void HideAllCharacterHighlights()
     {
-        CharacterSelectButtonUI[] characters = FindObjectsOfType<CharacterSelectButtonUI>(true);
+        CharacterSelectButtonUI[] characters = FindObjectsByType<CharacterSelectButtonUI>(FindObjectsInactive.Include, FindObjectsSortMode.None);
 
         foreach (CharacterSelectButtonUI character in characters)
         {
