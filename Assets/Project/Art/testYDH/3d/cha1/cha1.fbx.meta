@@ -7,38 +7,23 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: belt
-    second: {fileID: 2100000, guid: b9a9871a00f0865439ed04a1357aab95, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
       name: body
-    second: {fileID: 2100000, guid: 4dec3bdd74115584bbcb6deec03dfddf, type: 2}
+    second: {fileID: 2100000, guid: b9b532702fa3b1341a7e70a43a3c01d8, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: clothes_top
-    second: {fileID: 2100000, guid: ed7b34f6053112445bfdeea8ea6a9096, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: clothes_under
-    second: {fileID: 2100000, guid: 6ac63afa80b453a49a6989e116572c77, type: 2}
+      name: clothes
+    second: {fileID: 2100000, guid: 9748993416c5f9b4e8990156b7d54433, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: face
-    second: {fileID: 2100000, guid: 700764c67961184489b5ad1839bacef2, type: 2}
+    second: {fileID: 2100000, guid: 348312ac131de65469bbf1fbd06bcaf7, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: hair
-    second: {fileID: 2100000, guid: fceac10367657a1488ee9bd50db02351, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: tale_horn
-    second: {fileID: 2100000, guid: ceead95de568476438bec71d161feb5f, type: 2}
+    second: {fileID: 2100000, guid: a1901192ad8a039478fef617f530cb34, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
