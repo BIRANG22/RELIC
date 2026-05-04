@@ -3,6 +3,7 @@ namespace Relic.Gameplay.Data
     [System.Serializable]
     public class SkillRuntimeData
     {
+        public string CharacterId;
         public string SkillId;
 
         public int Level = 1;

@@ -6,20 +6,25 @@ namespace Relic.Gameplay.Data
     {
         private readonly Dictionary<string, SkillRuntimeData> map = new();
 
+        private string MakeKey(string characterId, string skillId)
+        {
+            return $"{characterId}:{skillId}";
+        }
+
         public void AddOrUpdate(SkillRuntimeData data)
         {
-            map[data.SkillId] = data;
+            map[MakeKey(data.CharacterId, data.SkillId)] = data;
         }
 
-        public SkillRuntimeData Get(string skillId)
+        public bool TryGet(string characterId, string skillId, out SkillRuntimeData data)
         {
-            map.TryGetValue(skillId, out var data);
+            return map.TryGetValue(MakeKey(characterId, skillId), out data);
+        }
+
+        public SkillRuntimeData Get(string characterId, string skillId)
+        {
+            map.TryGetValue(MakeKey(characterId, skillId), out var data);
             return data;
-        }
-
-        public bool TryGet(string skillId, out SkillRuntimeData data)
-        {
-            return map.TryGetValue(skillId, out data);
         }
 
         public IReadOnlyDictionary<string, SkillRuntimeData> GetAll()
