@@ -5,7 +5,9 @@ public class CharacterSelectionState : MonoBehaviour
     public static CharacterSelectionState Instance { get; private set; }
 
     public CharacterType CurrentCharacter { get; private set; } = CharacterType.None;
-    public GameObject CurrentOpenedPanel { get; private set; }
+    public string CurrentCharacterId { get; private set; }
+    public int CurrentPartySlotIndex { get; private set; } = -1;
+    public int CurrentSkillSlotIndex { get; private set; } = -1;
 
     private void Awake()
     {
@@ -18,33 +20,23 @@ public class CharacterSelectionState : MonoBehaviour
         Instance = this;
     }
 
-    public void SelectCharacter(CharacterType characterType)
+    public void SelectPartySlot(int slotIndex)
+    {
+        CurrentPartySlotIndex = slotIndex;
+        Debug.Log($"[CharacterSelectionState] Selected Party Slot: {slotIndex}");
+    }
+
+    public void SelectCharacter(CharacterType characterType, string characterId)
     {
         CurrentCharacter = characterType;
-        //Debug.LogWarning(CurrentCharacter);
+        CurrentCharacterId = characterId;
+
+        Debug.Log($"[CharacterSelectionState] Selected Character: {CurrentCharacter} / {CurrentCharacterId}");
     }
 
-    public void OpenPanel(GameObject panel)
+    public void SelectSkillSlot(int slotIndex)
     {
-        if (CurrentOpenedPanel != null && CurrentOpenedPanel != panel)
-        {
-            CurrentOpenedPanel.SetActive(false);
-        }
-
-        CurrentOpenedPanel = panel;
-
-        if (CurrentOpenedPanel != null && !CurrentOpenedPanel.activeSelf)
-        {
-            CurrentOpenedPanel.SetActive(true);
-        }
-    }
-
-    public void CloseCurrentPanel()
-    {
-        if (CurrentOpenedPanel != null)
-        {
-            CurrentOpenedPanel.SetActive(false);
-            CurrentOpenedPanel = null;
-        }
+        CurrentSkillSlotIndex = slotIndex;
+        Debug.Log($"[CharacterSelectionState] Selected Skill Slot: {slotIndex}");
     }
 }

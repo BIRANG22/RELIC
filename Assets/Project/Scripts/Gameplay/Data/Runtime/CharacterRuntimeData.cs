@@ -13,8 +13,9 @@ namespace Relic.Gameplay.Data
         public int CurrentHealth;
         public int CurrentStamina;
         public int CurrentResource;
+        public int CurrentMoveLevel;
 
-        public List<string> EquippedSkillIds = new();
+        public string[] EquippedSkillIds = new string[4];
         public List<string> EquippedItemIds = new();
 
         public bool IsUnlocked;

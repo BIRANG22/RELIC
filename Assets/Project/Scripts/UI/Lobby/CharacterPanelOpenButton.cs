@@ -13,7 +13,7 @@ public class CharacterPanelEntry
 public class CharacterPanelOpenButton : MonoBehaviour
 {
     [Header("Character Panels")]
-    [SerializeField] private List<CharacterPanelEntry> characterPanels = new List<CharacterPanelEntry>();
+    [SerializeField] private List<CharacterPanelEntry> characterPanels = new();
 
     [Header("Effect")]
     [SerializeField] private UIPanelEffect effect = UIPanelEffect.None;
@@ -23,7 +23,9 @@ public class CharacterPanelOpenButton : MonoBehaviour
     [Header("Option")]
     [SerializeField] private bool playClickSound = true;
 
-    private bool isPlayingEffect = false;
+    private static GameObject currentDetailPanel;
+
+    private bool isPlayingEffect;
     private GameObject pendingTargetPanel;
 
     public void Execute()
@@ -31,7 +33,7 @@ public class CharacterPanelOpenButton : MonoBehaviour
         if (isPlayingEffect)
             return;
 
-        if (playClickSound)
+        if (playClickSound && AudioManager.Instance != null)
             AudioManager.Instance.PlaySfx(SfxType.Click);
 
         if (CharacterSelectionState.Instance == null)
@@ -56,31 +58,18 @@ public class CharacterPanelOpenButton : MonoBehaviour
             return;
         }
 
-        switch (effect)
-        {
-            case UIPanelEffect.None:
-                OpenTargetPanel();
-                break;
-
-            case UIPanelEffect.Fade:
-                if (fadeImage == null)
-                {
-                    Debug.LogWarning("[CharacterPanelOpenButton] Fade image is missing.");
-                    OpenTargetPanel();
-                    return;
-                }
-
-                StartCoroutine(FadeRoutine());
-                break;
-        }
+        if (effect == UIPanelEffect.Fade && fadeImage != null)
+            StartCoroutine(FadeRoutine());
+        else
+            OpenTargetPanel();
     }
 
     private GameObject GetPanelByCharacter(CharacterType characterType)
     {
-        for (int i = 0; i < characterPanels.Count; i++)
+        foreach (var entry in characterPanels)
         {
-            if (characterPanels[i].characterType == characterType)
-                return characterPanels[i].targetPanel;
+            if (entry.characterType == characterType)
+                return entry.targetPanel;
         }
 
         return null;
@@ -88,7 +77,16 @@ public class CharacterPanelOpenButton : MonoBehaviour
 
     private void OpenTargetPanel()
     {
-        CharacterSelectionState.Instance.OpenPanel(pendingTargetPanel);
+        if (pendingTargetPanel == null)
+            return;
+
+        if (currentDetailPanel != null && currentDetailPanel != pendingTargetPanel)
+            currentDetailPanel.SetActive(false);
+
+        pendingTargetPanel.SetActive(true);
+        currentDetailPanel = pendingTargetPanel;
+
+        Debug.Log($"[CharacterPanelOpenButton] Open: {pendingTargetPanel.name}");
     }
 
     private IEnumerator FadeRoutine()
@@ -126,8 +124,6 @@ public class CharacterPanelOpenButton : MonoBehaviour
         fadeImage.color = color;
 
         if (Mathf.Approximately(to, 0f))
-        {
             fadeImage.gameObject.SetActive(false);
-        }
     }
 }

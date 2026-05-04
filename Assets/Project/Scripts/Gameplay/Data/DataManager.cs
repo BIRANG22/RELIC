@@ -7,6 +7,10 @@ public class DataManager : Singleton<DataManager>
 
     public CharacterDatabase CharacterDatabase => dataBootstrap.CharacterDatabase;
 
+    public CharacterRuntimeStore CharacterRuntimeStore { get; private set; } = new();
+    public PartyRuntimeStore PartyRuntimeStore { get; private set; } = new();
+    public SkillRuntimeStore SkillRuntimeStore { get; private set; } = new();
+    public SkillEquipService SkillEquipService { get; private set; }
     protected override void Awake()
     {
         base.Awake();
@@ -18,6 +22,8 @@ public class DataManager : Singleton<DataManager>
     public void Initialize()
     {
         dataBootstrap.LoadAllData();
+
+        SkillEquipService = new SkillEquipService(CharacterRuntimeStore);
 
         Debug.Log("[DataManager] Initialize Complete");
     }
