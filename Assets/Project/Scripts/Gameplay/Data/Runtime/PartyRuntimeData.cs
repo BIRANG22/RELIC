@@ -5,6 +5,13 @@ namespace Relic.Gameplay.Data
     [System.Serializable]
     public class PartyRuntimeData
     {
-        public List<string> CharacterIds = new(3);
+        public List<PartySlotRuntimeData> Slots = new(3);
+    }
+
+    [System.Serializable]
+    public class PartySlotRuntimeData
+    {
+        public string CharacterId;
+        public int GridIndex = -1;
     }
 }

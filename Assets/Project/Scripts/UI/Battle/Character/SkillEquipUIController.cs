@@ -1,3 +1,4 @@
+using Relic.Gameplay.Data;
 using UnityEngine;
 
 public class SkillEquipUIController : MonoBehaviour
@@ -42,7 +43,11 @@ public class SkillEquipUIController : MonoBehaviour
         if (slot == null)
             return;
 
+        if (currentSlot != null)
+            currentSlot.SetSelected(false);
+
         currentSlot = slot;
+        currentSlot.SetSelected(true);
 
         CloseCurrentSkillList();
         HideAllCharacterHighlights();
@@ -111,7 +116,7 @@ public class SkillEquipUIController : MonoBehaviour
         Debug.Log("현재 캐릭터 선택: " + character.name);
     }
 
-    public void SelectSkill(SkillSelectButtonUI skillButton)
+    public void SelectSkill(SkillMasterData skillData)
     {
         if (currentSlot == null)
         {
@@ -125,13 +130,13 @@ public class SkillEquipUIController : MonoBehaviour
             return;
         }
 
-        if (skillButton == null)
+        if (skillData == null)
         {
-            Debug.LogWarning("선택된 스킬 버튼이 없습니다.");
+            Debug.LogWarning("선택된 스킬 데이터가 없습니다.");
             return;
         }
 
-        bool added = currentSlot.AddSkill(skillButton.skillIcon);
+        bool added = currentSlot.AddSkill(skillData.Icon);
 
         if (!added)
         {
@@ -139,37 +144,7 @@ public class SkillEquipUIController : MonoBehaviour
             return;
         }
 
-        Debug.Log($"슬롯 [{currentSlot.name}] 에 스킬 [{skillButton.skillName}] 장착");
-
-        if (currentSlot.IsFull)
-        {
-            Debug.Log($"슬롯 [{currentSlot.name}] 이 가득 찼습니다.");
-
-            CloseCurrentSkillList();
-            HideAllCharacterHighlights();
-
-            currentSlot = null;
-            currentCharacter = null;
-
-            if (defaultCharacterHighlightObject != null)
-                defaultCharacterHighlightObject.SetActive(false);
-        }
-        else
-        {
-            HideAllCharacterHighlights();
-            currentCharacter.ShowHighlight(true);
-
-            if (currentCharacter.skillListObject != null)
-            {
-                if (currentOpenSkillList != currentCharacter.skillListObject)
-                {
-                    CloseCurrentSkillList();
-                    currentOpenSkillList = currentCharacter.skillListObject;
-                }
-
-                currentOpenSkillList.SetActive(true);
-            }
-        }
+        Debug.Log($"슬롯 [{currentSlot.name}] 에 스킬 [{skillData.Name}] 장착");
     }
 
     public void CloseCurrentSkillList()
@@ -193,6 +168,9 @@ public class SkillEquipUIController : MonoBehaviour
 
     public void ResetSelectionState()
     {
+        if (currentSlot != null)
+            currentSlot.SetSelected(false);
+
         currentSlot = null;
         currentCharacter = null;
 

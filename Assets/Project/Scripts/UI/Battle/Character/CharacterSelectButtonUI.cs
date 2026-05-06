@@ -11,6 +11,10 @@ public class CharacterSelectButtonUI : MonoBehaviour
         SkillEquipUIController.Instance.SelectCharacter(this);
     }
 
+    private void OnMouseDown()
+    {
+        OnClickCharacter();
+    }
     public void ShowHighlight(bool value)
     {
         if (highlightObject != null)

@@ -16,5 +16,10 @@ namespace Relic.Gameplay.Data
         public void Initialize(IEnumerable<CharacterMasterData> list) => db.Initialize(list, x => x.CharacterId);
         public CharacterMasterData Get(string id) => db.Get(id);
         public bool TryGet(string id, out CharacterMasterData value) => db.TryGet(id, out value);
+
+        public IReadOnlyDictionary<string, CharacterMasterData> GetAll()
+        {
+            return db.GetAll();
+        }
     }
 }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Relic.Gameplay.Data
 {
@@ -23,13 +24,14 @@ namespace Relic.Gameplay.Data
         public int Power;
         public string RangeId;
 
-        // 효과
         public List<string> EffectIds = new();
         public List<SkillEffectData> Effects = new();
 
-        // 타입별 선택 필드
         public string PassiveTrigger;
         public string UniqueOwnerId;
         public int EssenceGrade;
+
+        [System.NonSerialized]
+        public Sprite Icon;
     }
 }

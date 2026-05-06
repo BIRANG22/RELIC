@@ -30,5 +30,9 @@ namespace Relic.Gameplay.Data
         public bool TryGet(string id, out T value) => map.TryGetValue(id, out value);
         public T Get(string id) => map.TryGetValue(id, out var v) ? v : default;
         public IReadOnlyDictionary<string,T> AsReadOnly() => map;
+        public IReadOnlyDictionary<string, T> GetAll()
+        {
+            return map;
+        }
     }
 }

@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class SkillSlotUI : MonoBehaviour
+public class SkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [Header("Skill Icons (Max 3)")]
     [SerializeField] private Image[] skillIconImages;
@@ -10,14 +11,38 @@ public class SkillSlotUI : MonoBehaviour
     [Header("Slot Setting")]
     [SerializeField] private int maxSkillCount = 3;
 
+    [Header("Selection UI")]
+    [SerializeField] private GameObject selectObject;
+
     private readonly List<Sprite> equippedSkillIcons = new List<Sprite>();
     private CharacterSelectButtonUI ownerCharacter;
+
+    private bool isHover;
+    private bool isSelected;
 
     public int SkillCount => equippedSkillIcons.Count;
     public bool IsFull => equippedSkillIcons.Count >= maxSkillCount;
     public IReadOnlyList<Sprite> EquippedSkillIcons => equippedSkillIcons;
     public CharacterSelectButtonUI OwnerCharacter => ownerCharacter;
     public bool HasOwnerCharacter => ownerCharacter != null;
+
+    private void Awake()
+    {
+        SetSelected(false);
+        RefreshUI();
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        isHover = true;
+        RefreshSelectObject();
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        isHover = false;
+        RefreshSelectObject();
+    }
 
     public void OnClickSlot()
     {
@@ -28,6 +53,20 @@ public class SkillSlotUI : MonoBehaviour
         }
 
         SkillEquipUIController.Instance.SelectSlot(this);
+    }
+
+    public void SetSelected(bool value)
+    {
+        isSelected = value;
+        RefreshSelectObject();
+    }
+
+    private void RefreshSelectObject()
+    {
+        if (selectObject == null)
+            return;
+
+        selectObject.SetActive(isHover || isSelected);
     }
 
     public void SetOwnerCharacter(CharacterSelectButtonUI character)
@@ -88,11 +127,6 @@ public class SkillSlotUI : MonoBehaviour
         RefreshUI();
     }
 
-    private void Awake()
-    {
-        RefreshUI();
-    }
-
     private void RefreshUI()
     {
         if (skillIconImages == null || skillIconImages.Length == 0)
@@ -108,6 +142,8 @@ public class SkillSlotUI : MonoBehaviour
 
             skillIconImages[i].sprite = null;
             skillIconImages[i].enabled = false;
+            skillIconImages[i].raycastTarget = false;
+            skillIconImages[i].gameObject.SetActive(false);
         }
 
         for (int i = 0; i < equippedSkillIcons.Count && i < skillIconImages.Length; i++)
@@ -115,6 +151,7 @@ public class SkillSlotUI : MonoBehaviour
             if (skillIconImages[i] == null)
                 continue;
 
+            skillIconImages[i].gameObject.SetActive(true);
             skillIconImages[i].sprite = equippedSkillIcons[i];
             skillIconImages[i].enabled = true;
         }
@@ -134,14 +171,14 @@ public class SkillSlotUI : MonoBehaviour
         }
         else if (count == 2)
         {
-            SetIconTransform(0, new Vector2(-16f, 12f), new Vector2(48f, 48f));
-            SetIconTransform(1, new Vector2(16f, -12f), new Vector2(48f, 48f));
+            SetIconTransform(0, new Vector2(-12f, 8f), new Vector2(40f, 40f));
+            SetIconTransform(1, new Vector2(12f, -8f), new Vector2(40f, 40f));
         }
         else if (count >= 3)
         {
-            SetIconTransform(0, new Vector2(0f, 18f), new Vector2(40f, 40f));
-            SetIconTransform(1, new Vector2(-18f, -10f), new Vector2(40f, 40f));
-            SetIconTransform(2, new Vector2(18f, -10f), new Vector2(40f, 40f));
+            SetIconTransform(0, new Vector2(0f, 14f), new Vector2(34f, 34f));
+            SetIconTransform(1, new Vector2(-14f, -10f), new Vector2(34f, 34f));
+            SetIconTransform(2, new Vector2(14f, -10f), new Vector2(34f, 34f));
         }
     }
 

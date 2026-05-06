@@ -1,22 +1,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
-/// <summary>
-/// [Loaders] 스크립트. 역할/설정/변수 용도를 코드 주석으로 확인할 수 있도록 정리했습니다.
-/// Unity 연결: MonoBehaviour 스크립트는 Scene/GameObject에 컴포넌트로 부착 후 Inspector 필드를 설정하세요.
-/// 데이터 클래스는 엑셀 시트 컬럼과 필드명을 맞춰 DataBootstrap 로딩 파이프라인에서 자동 매핑됩니다.
-/// </summary>
 namespace Relic.Gameplay.Data
 {
-    /// <summary>
-    /// DataBootstrap의 책임을 담당하는 클래스입니다. 파일 상단 주석의 연결/설정 지침을 참고하세요.
-    /// </summary>
     public class DataBootstrap
     {
         private TextAsset excelWorkbook;
         private string resourcesWorkbookPath = "Data/GameData";
 
+        private CharacterPrefabDatabase characterPrefabDatabase;
+        private SkillIconDatabase skillIconDatabase;
         public CharacterDatabase CharacterDatabase { get; } = new();
         public MonsterDatabase MonsterDatabase { get; } = new();
         public SkillDatabase SkillDatabase { get; } = new();
@@ -29,7 +22,14 @@ namespace Relic.Gameplay.Data
         public RewardTableDatabase RewardTableDatabase { get; } = new();
         public MapDatabase MapDatabase { get; } = new();
 
-        [ContextMenu("LoadAllData")]
+        public void SetCharacterPrefabDatabase(CharacterPrefabDatabase db)
+        {
+            characterPrefabDatabase = db;
+        }
+        public void SetSkillIconDatabase(SkillIconDatabase db)
+        {
+            skillIconDatabase = db;
+        }
         public void LoadAllData()
         {
             if (excelWorkbook == null && !string.IsNullOrWhiteSpace(resourcesWorkbookPath))
@@ -53,12 +53,6 @@ namespace Relic.Gameplay.Data
                 return;
             }
 
-            Debug.Log($"[DataBootstrap] Excel Loaded: {excelWorkbook.name}");
-            Debug.Log($"[DataBootstrap] Sheet Count: {workbook.Count}");
-
-            foreach (var sheet in workbook)
-                Debug.Log($"[DataBootstrap] Sheet Found: {sheet.Key}, Row Count: {sheet.Value.Count}");
-
             var characters = CharacterCsvLoader.Load(workbook);
             var monsters = MonsterCsvLoader.Load(workbook);
             var skills = SkillCsvLoader.LoadSkills(workbook);
@@ -73,6 +67,9 @@ namespace Relic.Gameplay.Data
             var rewardEntries = RewardTableCsvLoader.LoadEntries(workbook);
             var maps = MapCsvLoader.Load(workbook);
 
+            InjectCharacterPrefabs(characters);
+            InjectSkillIcons(skills);
+
             CharacterDatabase.Initialize(characters);
             MonsterDatabase.Initialize(monsters);
             SkillDatabase.Initialize(skills);
@@ -86,20 +83,53 @@ namespace Relic.Gameplay.Data
             MapDatabase.Initialize(maps);
 
             Debug.Log($"[DataBootstrap] Character Loaded: {characters.Count}");
-            Debug.Log($"[DataBootstrap] Monster Loaded: {monsters.Count}");
-            Debug.Log($"[DataBootstrap] Skill Loaded: {skills.Count}");
-            Debug.Log($"[DataBootstrap] Fragment Loaded: {fragments.Count}");
-            Debug.Log($"[DataBootstrap] StatusEffect Loaded: {statusEffects.Count}");
-            Debug.Log($"[DataBootstrap] Range Loaded: {ranges.Count}");
-            Debug.Log($"[DataBootstrap] Asset Loaded: {assets.Count}");
-            Debug.Log($"[DataBootstrap] Quest Loaded: {quests.Count}");
-            Debug.Log($"[DataBootstrap] Event Loaded: {events.Count}");
-            Debug.Log($"[DataBootstrap] EventChoice Loaded: {eventChoices.Count}");
-            Debug.Log($"[DataBootstrap] RewardTable Loaded: {rewardTables.Count}");
-            Debug.Log($"[DataBootstrap] RewardEntry Loaded: {rewardEntries.Count}");
-            Debug.Log($"[DataBootstrap] Map Loaded: {maps.Count}");
-
             Debug.Log("[DataBootstrap] Workbook load complete.");
+        }
+
+        private void InjectCharacterPrefabs(List<CharacterMasterData> characters)
+        {
+            if (characterPrefabDatabase == null)
+            {
+                Debug.LogWarning("[DataBootstrap] CharacterPrefabDatabase가 연결되지 않았습니다.");
+                return;
+            }
+
+            characterPrefabDatabase.Initialize();
+
+            foreach (var character in characters)
+            {
+                if (characterPrefabDatabase.TryGetPrefab(character.CharacterId, out GameObject prefab))
+                {
+                    character.BattlePrefab = prefab;
+                }
+                else
+                {
+                    Debug.LogWarning($"[DataBootstrap] BattlePrefab 없음: {character.CharacterId}");
+                }
+            }
+        }
+
+        private void InjectSkillIcons(List<SkillMasterData> skills)
+        {
+            if (skillIconDatabase == null)
+            {
+                Debug.LogWarning("[DataBootstrap] SkillIconDatabase가 연결되지 않았습니다.");
+                return;
+            }
+
+            skillIconDatabase.Initialize();
+
+            foreach (var skill in skills)
+            {
+                if (skillIconDatabase.TryGetIcon(skill.SkillId, out Sprite icon))
+                {
+                    skill.Icon = icon;
+                }
+                else
+                {
+                    Debug.LogWarning($"[DataBootstrap] SkillIcon 없음: {skill.SkillId}");
+                }
+            }
         }
     }
 }
