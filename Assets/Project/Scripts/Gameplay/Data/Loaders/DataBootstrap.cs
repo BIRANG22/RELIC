@@ -10,6 +10,7 @@ namespace Relic.Gameplay.Data
 
         private CharacterPrefabDatabase characterPrefabDatabase;
         private SkillIconDatabase skillIconDatabase;
+        private MonsterPrefabDatabase monsterPrefabDatabase;
         public CharacterDatabase CharacterDatabase { get; } = new();
         public MonsterDatabase MonsterDatabase { get; } = new();
         public SkillDatabase SkillDatabase { get; } = new();
@@ -29,6 +30,10 @@ namespace Relic.Gameplay.Data
         public void SetSkillIconDatabase(SkillIconDatabase db)
         {
             skillIconDatabase = db;
+        }
+        public void SetMonsterPrefabDatabase(MonsterPrefabDatabase db)
+        {
+            monsterPrefabDatabase = db;
         }
         public void LoadAllData()
         {
@@ -69,6 +74,7 @@ namespace Relic.Gameplay.Data
 
             InjectCharacterPrefabs(characters);
             InjectSkillIcons(skills);
+            InjectMonsterPrefabs(monsters);
 
             CharacterDatabase.Initialize(characters);
             MonsterDatabase.Initialize(monsters);
@@ -128,6 +134,29 @@ namespace Relic.Gameplay.Data
                 else
                 {
                     Debug.LogWarning($"[DataBootstrap] SkillIcon 없음: {skill.SkillId}");
+                }
+            }
+        }
+
+        private void InjectMonsterPrefabs(List<MonsterMasterData> monsters)
+        {
+            if (monsterPrefabDatabase == null)
+            {
+                Debug.LogWarning("[DataBootstrap] MonsterPrefabDatabase가 연결되지 않았습니다.");
+                return;
+            }
+
+            monsterPrefabDatabase.Initialize();
+
+            foreach (var monster in monsters)
+            {
+                if (monsterPrefabDatabase.TryGetPrefab(monster.MonsterId, out GameObject prefab))
+                {
+                    monster.BattlePrefab = prefab;
+                }
+                else
+                {
+                    Debug.LogWarning($"[DataBootstrap] MonsterPrefab 없음: {monster.MonsterId}");
                 }
             }
         }

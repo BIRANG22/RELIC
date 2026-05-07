@@ -6,6 +6,7 @@ public class DataManager : Singleton<DataManager>
     [Header("Asset Databases")]
     [SerializeField] private CharacterPrefabDatabase characterPrefabDatabase;
     [SerializeField] private SkillIconDatabase skillIconDatabase;
+    [SerializeField] private MonsterPrefabDatabase monsterPrefabDatabase;
 
     private DataBootstrap dataBootstrap = new();
 
@@ -28,6 +29,7 @@ public class DataManager : Singleton<DataManager>
     {
         dataBootstrap.SetCharacterPrefabDatabase(characterPrefabDatabase);
         dataBootstrap.SetSkillIconDatabase(skillIconDatabase);
+        dataBootstrap.SetMonsterPrefabDatabase(monsterPrefabDatabase);
         dataBootstrap.LoadAllData();
 
         SkillEquipService = new SkillEquipService(CharacterRuntimeStore);

@@ -19,5 +19,8 @@ public class CharacterSelectButtonUI : MonoBehaviour
     {
         if (highlightObject != null)
             highlightObject.SetActive(value);
+
+        if (skillListObject != null)
+            skillListObject.SetActive(true);
     }
 }
