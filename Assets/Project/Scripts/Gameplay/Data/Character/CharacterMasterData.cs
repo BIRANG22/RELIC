@@ -29,5 +29,8 @@ namespace Relic.Gameplay.Data
 
         [NonSerialized]
         public GameObject BattlePrefab;
+
+        [System.NonSerialized]
+        public Sprite Icon;
     }
 }

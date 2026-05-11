@@ -963,8 +963,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetPanel: {fileID: 1869399403}
-  action: 1
+  panelToOpen: {fileID: 0}
+  panelToClose: {fileID: 0}
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
   playClickSound: 1
 --- !u!114 &452751788
 MonoBehaviour:
@@ -2810,8 +2813,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetPanel: {fileID: 1869399403}
-  action: 0
+  panelToOpen: {fileID: 1869399403}
+  panelToClose: {fileID: 0}
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
   playClickSound: 1
 --- !u!1 &2037266018
 GameObject:

@@ -11,11 +11,22 @@ namespace Relic.Gameplay.Data
         Essence
     }
 
+    public enum ActionType
+    {
+        Attack,
+        Defense,
+        Buff,
+        Debuff,
+        Heal,
+        Move
+    }
+
     [System.Serializable]
     public class SkillMasterData
     {
         public string SkillId;
         public SkillType SkillType;
+        public ActionType ActionType;
         public string Name;
         public string Description;
 

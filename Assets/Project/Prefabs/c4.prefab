@@ -729,6 +729,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 562e36eb5ca1c424285dbe709c88429f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  characterId: CHAR_003
   highlightObject: {fileID: 0}
   skillListObject: {fileID: 3930788979252215723}
 --- !u!61 &2353432504109848137

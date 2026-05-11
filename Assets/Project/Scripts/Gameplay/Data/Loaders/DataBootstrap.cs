@@ -11,6 +11,7 @@ namespace Relic.Gameplay.Data
         private CharacterPrefabDatabase characterPrefabDatabase;
         private SkillIconDatabase skillIconDatabase;
         private MonsterPrefabDatabase monsterPrefabDatabase;
+        private CharacterIconDatabase characterIconDatabase;
         public CharacterDatabase CharacterDatabase { get; } = new();
         public MonsterDatabase MonsterDatabase { get; } = new();
         public SkillDatabase SkillDatabase { get; } = new();
@@ -34,6 +35,10 @@ namespace Relic.Gameplay.Data
         public void SetMonsterPrefabDatabase(MonsterPrefabDatabase db)
         {
             monsterPrefabDatabase = db;
+        }
+        public void SetCharacterIconDatabase(CharacterIconDatabase db)
+        {
+            characterIconDatabase = db;
         }
         public void LoadAllData()
         {
@@ -73,6 +78,7 @@ namespace Relic.Gameplay.Data
             var maps = MapCsvLoader.Load(workbook);
 
             InjectCharacterPrefabs(characters);
+            InjectCharacterIcons(characters);
             InjectSkillIcons(skills);
             InjectMonsterPrefabs(monsters);
 
@@ -157,6 +163,29 @@ namespace Relic.Gameplay.Data
                 else
                 {
                     Debug.LogWarning($"[DataBootstrap] MonsterPrefab 없음: {monster.MonsterId}");
+                }
+            }
+        }
+
+        private void InjectCharacterIcons(List<CharacterMasterData> characters)
+        {
+            if (characterIconDatabase == null)
+            {
+                Debug.LogWarning("[DataBootstrap] CharacterIconDatabase가 연결되지 않았습니다.");
+                return;
+            }
+
+            characterIconDatabase.Initialize();
+
+            foreach (var character in characters)
+            {
+                if (characterIconDatabase.TryGetIcon(character.CharacterId, out Sprite icon))
+                {
+                    character.Icon = icon;
+                }
+                else
+                {
+                    Debug.LogWarning($"[DataBootstrap] CharacterIcon 없음: {character.CharacterId}");
                 }
             }
         }

@@ -832,7 +832,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ced7b1b9e702ef46a2d72898bf8ff1f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  firstState: 7
+  firstState: 2
   defaultLanguageCode: ko
 --- !u!4 &971541963
 Transform:
@@ -1107,6 +1107,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterPrefabDatabase: {fileID: 11400000, guid: ac387f80eed220a499605aa01e734ef5, type: 2}
   skillIconDatabase: {fileID: 11400000, guid: 89e95184eaa1afa4e989ee194c8a2264, type: 2}
+  monsterPrefabDatabase: {fileID: 11400000, guid: 196f24977f0b6714db3466914f8baf08, type: 2}
+  actionTypeIconDatabase: {fileID: 11400000, guid: 8b82ef4954faebd44a690524528fe93c, type: 2}
+  characterIconDatabase: {fileID: 11400000, guid: 53ece5b87675ada49a6c51b9e9b05787, type: 2}
 --- !u!1 &1726247874
 GameObject:
   m_ObjectHideFlags: 0
@@ -1353,7 +1356,9 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: 2ceb8de8e44284e4589b05543b1ba435, type: 3}
   - type: 0
     clip: {fileID: 0}
-  sfxList: []
+  sfxList:
+  - type: 0
+    clip: {fileID: 8300000, guid: 5750574a7dc9e75418730c16557bdf21, type: 3}
 --- !u!82 &1960083566
 AudioSource:
   m_ObjectHideFlags: 0
@@ -1617,6 +1622,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1759562942508308288, guid: 5aad83c3fc5b5c94d98d5d03cf875d86, type: 3}
+      propertyPath: characterId
+      value: CHAR_001
+      objectReference: {fileID: 0}
     - target: {fileID: 5488110302819332171, guid: 5aad83c3fc5b5c94d98d5d03cf875d86, type: 3}
       propertyPath: m_Camera
       value: 

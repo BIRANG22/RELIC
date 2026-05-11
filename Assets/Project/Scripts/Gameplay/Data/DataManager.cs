@@ -7,11 +7,14 @@ public class DataManager : Singleton<DataManager>
     [SerializeField] private CharacterPrefabDatabase characterPrefabDatabase;
     [SerializeField] private SkillIconDatabase skillIconDatabase;
     [SerializeField] private MonsterPrefabDatabase monsterPrefabDatabase;
+    [SerializeField] private ActionTypeIconDatabase actionTypeIconDatabase;
+    [SerializeField] private CharacterIconDatabase characterIconDatabase;
 
     private DataBootstrap dataBootstrap = new();
 
     public CharacterDatabase CharacterDatabase => dataBootstrap.CharacterDatabase;
     public SkillDatabase SkillDatabase => dataBootstrap.SkillDatabase;
+    public ActionTypeIconDatabase ActionTypeIconDatabase => actionTypeIconDatabase;
     public CharacterRuntimeStore CharacterRuntimeStore { get; private set; } = new();
     public PartyRuntimeStore PartyRuntimeStore { get; private set; } = new();
     public SkillRuntimeStore SkillRuntimeStore { get; private set; } = new();
@@ -30,6 +33,7 @@ public class DataManager : Singleton<DataManager>
         dataBootstrap.SetCharacterPrefabDatabase(characterPrefabDatabase);
         dataBootstrap.SetSkillIconDatabase(skillIconDatabase);
         dataBootstrap.SetMonsterPrefabDatabase(monsterPrefabDatabase);
+        dataBootstrap.SetCharacterIconDatabase(characterIconDatabase);
         dataBootstrap.LoadAllData();
 
         SkillEquipService = new SkillEquipService(CharacterRuntimeStore);

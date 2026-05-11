@@ -2,13 +2,6 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
-public enum UIPanelAction
-{
-    Open,
-    Close,
-    Toggle
-}
-
 public enum UIPanelEffect
 {
     None,
@@ -18,8 +11,8 @@ public enum UIPanelEffect
 public class UIPanelButton : MonoBehaviour
 {
     [Header("Panel")]
-    [SerializeField] private GameObject targetPanel;
-    [SerializeField] private UIPanelAction action = UIPanelAction.Open;
+    [SerializeField] private GameObject panelToOpen;
+    [SerializeField] private GameObject panelToClose;
 
     [Header("Effect")]
     [SerializeField] private UIPanelEffect effect = UIPanelEffect.None;
@@ -39,23 +32,17 @@ public class UIPanelButton : MonoBehaviour
         if (playClickSound)
             AudioManager.Instance.PlaySfx(SfxType.Click);
 
-        if (targetPanel == null)
-        {
-            Debug.LogWarning("[UIPanelButton] Target Panel is not assigned.");
-            return;
-        }
-
         switch (effect)
         {
             case UIPanelEffect.None:
-                ExecutePanelAction();
+                ExecutePanelTransition();
                 break;
 
             case UIPanelEffect.Fade:
                 if (fadeImage == null)
                 {
                     Debug.LogWarning("[UIPanelButton] Fade effect selected but Fade Image is not assigned.");
-                    ExecutePanelAction();
+                    ExecutePanelTransition();
                     return;
                 }
 
@@ -64,22 +51,13 @@ public class UIPanelButton : MonoBehaviour
         }
     }
 
-    private void ExecutePanelAction()
+    private void ExecutePanelTransition()
     {
-        switch (action)
-        {
-            case UIPanelAction.Open:
-                targetPanel.SetActive(true);
-                break;
+        if (panelToClose != null)
+            panelToClose.SetActive(false);
 
-            case UIPanelAction.Close:
-                targetPanel.SetActive(false);
-                break;
-
-            case UIPanelAction.Toggle:
-                targetPanel.SetActive(!targetPanel.activeSelf);
-                break;
-        }
+        if (panelToOpen != null)
+            panelToOpen.SetActive(true);
     }
 
     private IEnumerator FadeRoutine()
@@ -88,7 +66,7 @@ public class UIPanelButton : MonoBehaviour
 
         yield return Fade(0f, 1f);
 
-        ExecutePanelAction();
+        ExecutePanelTransition();
 
         yield return Fade(1f, 0f);
 
@@ -117,8 +95,6 @@ public class UIPanelButton : MonoBehaviour
         fadeImage.color = color;
 
         if (Mathf.Approximately(to, 0f))
-        {
             fadeImage.gameObject.SetActive(false);
-        }
     }
 }

@@ -5,6 +5,10 @@ public class SkillEquipUIController : MonoBehaviour
 {
     public static SkillEquipUIController Instance;
 
+    [Header("Timeline")]
+    [SerializeField] private SkillSlotUI[] skillSlots;
+    [SerializeField] private TimelineSlotUI[] playerTimelineSlots;
+
     [Header("Selection")]
     public SkillSlotUI currentSlot;
     public CharacterSelectButtonUI currentCharacter;
@@ -144,6 +148,8 @@ public class SkillEquipUIController : MonoBehaviour
             return;
         }
 
+        UpdatePlayerTimeline(skillData);
+
         Debug.Log($"슬롯 [{currentSlot.name}] 에 스킬 [{skillData.Name}] 장착");
     }
 
@@ -179,5 +185,55 @@ public class SkillEquipUIController : MonoBehaviour
 
         if (defaultCharacterHighlightObject != null)
             defaultCharacterHighlightObject.SetActive(false);
+    }
+
+    private int GetSlotIndex(SkillSlotUI slot)
+    {
+        if (slot == null || skillSlots == null)
+            return -1;
+
+        for (int i = 0; i < skillSlots.Length; i++)
+        {
+            if (skillSlots[i] == slot)
+                return i;
+        }
+
+        return -1;
+    }
+
+    private void UpdatePlayerTimeline(SkillMasterData skillData)
+    {
+        int slotIndex = GetSlotIndex(currentSlot);
+
+        if (slotIndex < 0)
+        {
+            Debug.LogWarning("현재 슬롯 인덱스를 찾을 수 없습니다.");
+            return;
+        }
+
+        if (playerTimelineSlots == null || slotIndex >= playerTimelineSlots.Length)
+        {
+            Debug.LogWarning($"PlayerTimelineSlot 연결 안 됨: index={slotIndex}");
+            return;
+        }
+
+        if (DataManager.Instance.ActionTypeIconDatabase == null)
+        {
+            Debug.LogWarning("ActionTypeIconDatabase가 없습니다.");
+            return;
+        }
+
+        string actionType = skillData.ActionType.ToString();
+
+        if (!DataManager.Instance.ActionTypeIconDatabase.TryGetIcon(actionType, out Sprite actionTypeIcon))
+        {
+            Debug.LogWarning($"ActionType 아이콘 없음: {actionType}");
+            return;
+        }
+
+        Sprite characterIcon = currentCharacter.CharacterIcon;
+
+        playerTimelineSlots[slotIndex].SetOwnerIcon(characterIcon);
+        playerTimelineSlots[slotIndex].AddActionTypeIcon(actionTypeIcon);
     }
 }

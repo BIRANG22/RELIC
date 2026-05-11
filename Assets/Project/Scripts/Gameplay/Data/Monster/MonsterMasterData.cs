@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 
 /// <summary>
@@ -20,5 +21,8 @@ namespace Relic.Gameplay.Data
         public int Health;
         public string DropTableId;
         public string PatternId;
+
+        [NonSerialized]
+        public GameObject BattlePrefab;
     }
 }
