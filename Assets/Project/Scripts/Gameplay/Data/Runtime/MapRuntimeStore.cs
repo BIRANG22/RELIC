@@ -34,7 +34,7 @@ namespace Relic.Gameplay.Data
         {
             Debug.Log(
                 $"[MapRuntime]\n" +
-                $"Theme: {data.SelectedThemeId}\n" +
+                $"Theme: {data.SelectedChapterId}\n" +
                 $"Stage: {data.CurrentStage}\n" +
                 $"MapId: {data.CurrentMapId}\n" +
                 $"Scene: {data.CurrentSceneName}\n" +

@@ -1109,7 +1109,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &141350007
 RectTransform:
   m_ObjectHideFlags: 0
@@ -16910,6 +16910,7 @@ GameObject:
   - component: {fileID: 2048089407}
   - component: {fileID: 2048089406}
   - component: {fileID: 2048089405}
+  - component: {fileID: 2048089408}
   m_Layer: 5
   m_Name: Stage1
   m_TagString: Untagged
@@ -16980,7 +16981,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2048089406}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2048089408}
+        m_TargetAssemblyTypeName: MapChapterSelectButton, Assembly-CSharp
+        m_MethodName: OnClickSelectChapter
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &2048089406
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17019,6 +17032,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2048089403}
   m_CullTransparentMesh: 1
+--- !u!114 &2048089408
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2048089403}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6044d83bd66145143a0739a91f8d29ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  chapterId: Chapter1
+  startStage: 'Stage_01 '
 --- !u!1 &2064996457
 GameObject:
   m_ObjectHideFlags: 0

@@ -5,9 +5,9 @@ namespace Relic.Gameplay.Data
     [System.Serializable]
     public class MapRuntimeData
     {
-        public string SelectedThemeId;
+        public string SelectedChapterId;
 
-        public int CurrentStage;
+        public string CurrentStage;
         public string CurrentMapId;
         public string CurrentSceneName;
 

@@ -11,12 +11,36 @@ public class BattleState : BaseGameState
     {
         Debug.Log("[BattleState] Enter");
 
-        if (!context.PendingBattle.isInitialized)
+        var mapRuntime = DataManager.Instance.MapRuntimeStore.Get();
+
+        if (mapRuntime == null || !mapRuntime.IsRunInitialized)
         {
-            Debug.LogWarning("[BattleState] PendingBattle is not initialized.");
+            Debug.LogError("[BattleState] MapRuntime is not initialized.");
+            return;
         }
 
-        await sceneFlow.LoadSceneAsync(SceneName.Battle);
+        if (string.IsNullOrEmpty(mapRuntime.CurrentSceneName))
+        {
+            var mapData = DataManager.Instance.MapDatabase.GetFirstMap(
+                mapRuntime.SelectedChapterId,
+                mapRuntime.CurrentStage
+            );
+
+            if (mapData == null)
+            {
+                Debug.LogError(
+                    $"[BattleState] No start map found. Chapter: {mapRuntime.SelectedChapterId}, Stage: {mapRuntime.CurrentStage}"
+                );
+                return;
+            }
+
+            mapRuntime.CurrentMapId = mapData.MapId;
+            mapRuntime.CurrentSceneName = mapData.MapName.Trim();
+
+            DataManager.Instance.MapRuntimeStore.Set(mapRuntime);
+        }
+
+        await sceneFlow.LoadSceneAsync(mapRuntime.CurrentSceneName);
     }
 
     public override Task Exit()
