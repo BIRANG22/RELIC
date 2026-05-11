@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c2b9f66df7762d47bf43cd404fd8e70, type: 3}
+  m_Name: CharacterPrefabDB
+  m_EditorClassIdentifier: 
+  entries:
+  - CharacterId: CHAR_001
+    BattlePrefab: {fileID: 9080962443232077410, guid: 5aad83c3fc5b5c94d98d5d03cf875d86, type: 3}
+  - CharacterId: CHAR_002
+    BattlePrefab: {fileID: 8905939084896559404, guid: edb87de4abb950048868e26919d3c16b, type: 3}
+  - CharacterId: CHAR_003
+    BattlePrefab: {fileID: 5462925784346637053, guid: 09b0bd415c1d15b40b2ee7c69b15a5a9, type: 3}

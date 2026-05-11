@@ -3,14 +3,25 @@ using Relic.Gameplay.Data;
 
 public class DataManager : Singleton<DataManager>
 {
+    [Header("Asset Databases")]
+    [SerializeField] private CharacterPrefabDatabase characterPrefabDatabase;
+    [SerializeField] private SkillIconDatabase skillIconDatabase;
+    [SerializeField] private MonsterPrefabDatabase monsterPrefabDatabase;
+    [SerializeField] private ActionTypeIconDatabase actionTypeIconDatabase;
+    [SerializeField] private CharacterIconDatabase characterIconDatabase;
+
     private DataBootstrap dataBootstrap = new();
 
     public CharacterDatabase CharacterDatabase => dataBootstrap.CharacterDatabase;
-
+    public SkillDatabase SkillDatabase => dataBootstrap.SkillDatabase;
+    public ActionTypeIconDatabase ActionTypeIconDatabase => actionTypeIconDatabase;
+    public MapDatabase MapDatabase => dataBootstrap.MapDatabase;
     public CharacterRuntimeStore CharacterRuntimeStore { get; private set; } = new();
     public PartyRuntimeStore PartyRuntimeStore { get; private set; } = new();
     public SkillRuntimeStore SkillRuntimeStore { get; private set; } = new();
     public SkillEquipService SkillEquipService { get; private set; }
+    public MapRuntimeStore MapRuntimeStore { get; private set; } = new();
+
     protected override void Awake()
     {
         base.Awake();
@@ -21,6 +32,10 @@ public class DataManager : Singleton<DataManager>
 
     public void Initialize()
     {
+        dataBootstrap.SetCharacterPrefabDatabase(characterPrefabDatabase);
+        dataBootstrap.SetSkillIconDatabase(skillIconDatabase);
+        dataBootstrap.SetMonsterPrefabDatabase(monsterPrefabDatabase);
+        dataBootstrap.SetCharacterIconDatabase(characterIconDatabase);
         dataBootstrap.LoadAllData();
 
         SkillEquipService = new SkillEquipService(CharacterRuntimeStore);

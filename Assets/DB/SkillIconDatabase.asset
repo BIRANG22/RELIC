@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ccae73b4f0ae1a4793febddae6f2ef2, type: 3}
+  m_Name: SkillIconDatabase
+  m_EditorClassIdentifier: 
+  entries:
+  - SkillId: SKILL_P001
+    Icon: {fileID: 21300000, guid: dc59e3c60d12b6749a11ac21ae04362e, type: 3}
+  - SkillId: SKILL_U001
+    Icon: {fileID: 21300000, guid: 904d0c847a203ff49ab342105952f5f2, type: 3}
+  - SkillId: SKILL_C001
+    Icon: {fileID: 21300000, guid: 4d5e6b4ea7c2d4a42949ae2979e4e54d, type: 3}
+  - SkillId: SKILL_E001
+    Icon: {fileID: 21300000, guid: dc59e3c60d12b6749a11ac21ae04362e, type: 3}

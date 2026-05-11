@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 
 /// <summary>
@@ -25,5 +26,11 @@ namespace Relic.Gameplay.Data
         public bool IsDefaultProvided;
         public string UnlockCondition;
         public CharacterSkillLoadout DefaultSkillLoadout = new();
+
+        [NonSerialized]
+        public GameObject BattlePrefab;
+
+        [System.NonSerialized]
+        public Sprite Icon;
     }
 }

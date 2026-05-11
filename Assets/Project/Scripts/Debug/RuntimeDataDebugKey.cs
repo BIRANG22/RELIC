@@ -42,10 +42,14 @@ public class RuntimeDataDebugKey : Singleton<RuntimeDataDebugKey>
 
         Debug.Log("[PartyRuntime]");
 
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
         {
             string characterId = partyStore.GetCharacterId(i);
-            Debug.Log($"Slot {i}: {(string.IsNullOrWhiteSpace(characterId) ? "Empty" : characterId)}");
+            int gridIndex = partyStore.GetGridIndex(i);
+
+            Debug.Log(
+                $"Slot {i}: {(string.IsNullOrWhiteSpace(characterId) ? "Empty" : characterId)} / Grid: {gridIndex}"
+            );
         }
     }
 
