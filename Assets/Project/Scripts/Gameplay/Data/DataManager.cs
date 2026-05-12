@@ -15,6 +15,8 @@ public class DataManager : Singleton<DataManager>
     public CharacterDatabase CharacterDatabase => dataBootstrap.CharacterDatabase;
     public SkillDatabase SkillDatabase => dataBootstrap.SkillDatabase;
     public ActionTypeIconDatabase ActionTypeIconDatabase => actionTypeIconDatabase;
+    public BattleMapDatabase BattleMapDatabase => dataBootstrap.BattleMapDatabase;
+    public MonsterDatabase MonsterDatabase => dataBootstrap.MonsterDatabase;
     public MapDatabase MapDatabase => dataBootstrap.MapDatabase;
     public CharacterRuntimeStore CharacterRuntimeStore { get; private set; } = new();
     public PartyRuntimeStore PartyRuntimeStore { get; private set; } = new();
