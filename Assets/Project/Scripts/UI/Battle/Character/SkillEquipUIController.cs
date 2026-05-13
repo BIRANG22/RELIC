@@ -223,11 +223,11 @@ public class SkillEquipUIController : MonoBehaviour
             return;
         }
 
-        string actionType = skillData.ActionType.ToString();
+        string actionType = skillData.TimelineNotation.ToString();
 
         if (!DataManager.Instance.ActionTypeIconDatabase.TryGetIcon(actionType, out Sprite actionTypeIcon))
         {
-            Debug.LogWarning($"ActionType 아이콘 없음: {actionType}");
+            Debug.LogWarning($"TimelineNotation 아이콘 없음: {actionType}");
             return;
         }
 

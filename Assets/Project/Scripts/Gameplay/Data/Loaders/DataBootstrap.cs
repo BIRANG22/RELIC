@@ -15,8 +15,8 @@ namespace Relic.Gameplay.Data
         public CharacterDatabase CharacterDatabase { get; } = new();
         public MonsterDatabase MonsterDatabase { get; } = new();
         public SkillDatabase SkillDatabase { get; } = new();
+        public EffectDatabase EffectDatabase { get; } = new();
         public FragmentDatabase FragmentDatabase { get; } = new();
-        public StatusEffectDatabase StatusEffectDatabase { get; } = new();
         public RangeDatabase RangeDatabase { get; } = new();
         public AssetDatabase AssetDatabase { get; } = new();
         public QuestDatabase QuestDatabase { get; } = new();
@@ -67,8 +67,8 @@ namespace Relic.Gameplay.Data
             var characters = CharacterCsvLoader.Load(workbook);
             var monsters = MonsterCsvLoader.Load(workbook);
             var skills = SkillCsvLoader.LoadSkills(workbook);
+            var effects = EffectCsvLoader.Load(workbook);
             var fragments = FragmentCsvLoader.Load(workbook);
-            var statusEffects = StatusEffectCsvLoader.Load(workbook);
             var ranges = SkillCsvLoader.LoadRanges(workbook);
             var assets = AssetCsvLoader.Load(workbook);
             var quests = QuestCsvLoader.Load(workbook);
@@ -87,8 +87,8 @@ namespace Relic.Gameplay.Data
             CharacterDatabase.Initialize(characters);
             MonsterDatabase.Initialize(monsters);
             SkillDatabase.Initialize(skills);
+            EffectDatabase.Initialize(effects);
             FragmentDatabase.Initialize(fragments);
-            StatusEffectDatabase.Initialize(statusEffects);
             RangeDatabase.Initialize(ranges);
             AssetDatabase.Initialize(assets);
             QuestDatabase.Initialize(quests);
