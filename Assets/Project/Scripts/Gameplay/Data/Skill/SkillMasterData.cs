@@ -5,10 +5,9 @@ namespace Relic.Gameplay.Data
 {
     public enum SkillType
     {
-        Passive,
-        Unique,
-        Common,
-        Essence
+        Power,
+        Attack,
+        Skill
     }
 
     public enum ActionType
@@ -21,14 +20,37 @@ namespace Relic.Gameplay.Data
         Move
     }
 
+    public enum Category
+    {
+        Move,
+        Passive,
+        Unique,
+        Ability,
+        Essenece
+    }
+
+    public enum ReferenceResource
+    {
+        MovePoint,
+        UniqueResource,
+        Stamina,
+        Health
+    }
+
     [System.Serializable]
     public class SkillMasterData
     {
         public string SkillId;
-        public SkillType SkillType;
-        public ActionType ActionType;
         public string Name;
+        public Category Category;
+        public ReferenceResource ReferenceResource;
+        public string Target;
+        public SkillType SkillType;
+        public string Value_Formula;
+        public ActionType ActionType;
         public string Description;
+
+        public int Consumption;
 
         public float CoolTime;
         public int Cost;
