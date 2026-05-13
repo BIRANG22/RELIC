@@ -1,6 +1,5 @@
 using System;
 
-
 namespace Relic.Gameplay.Data
 {
     [Serializable]
@@ -9,6 +8,10 @@ namespace Relic.Gameplay.Data
         public string MapId;
         public string MapName;
         public string RoomType;
+
+        public string BattleMapId;
+        public string EventId;
+
         public string Chapter;
         public string StageMap;
         public string RoomGrade;

@@ -23,6 +23,7 @@ namespace Relic.Gameplay.Data
         public EventDatabase EventDatabase { get; } = new();
         public RewardTableDatabase RewardTableDatabase { get; } = new();
         public MapDatabase MapDatabase { get; } = new();
+        public BattleMapDatabase BattleMapDatabase { get; } = new();
 
         public void SetCharacterPrefabDatabase(CharacterPrefabDatabase db)
         {
@@ -76,6 +77,7 @@ namespace Relic.Gameplay.Data
             var rewardTables = RewardTableCsvLoader.LoadTables(workbook);
             var rewardEntries = RewardTableCsvLoader.LoadEntries(workbook);
             var maps = MapCsvLoader.Load(workbook);
+            var battleMapDataList = BattleMapCsvLoader.Load(workbook);
 
             InjectCharacterPrefabs(characters);
             InjectCharacterIcons(characters);
@@ -93,6 +95,7 @@ namespace Relic.Gameplay.Data
             EventDatabase.Initialize(events, eventChoices);
             RewardTableDatabase.Initialize(rewardTables, rewardEntries);
             MapDatabase.Initialize(maps);
+            BattleMapDatabase.Initialize(battleMapDataList);
 
             Debug.Log($"[DataBootstrap] Character Loaded: {characters.Count}");
             Debug.Log("[DataBootstrap] Workbook load complete.");
