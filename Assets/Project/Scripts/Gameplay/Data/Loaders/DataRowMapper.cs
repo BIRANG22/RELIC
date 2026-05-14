@@ -52,16 +52,13 @@ namespace Relic.Gameplay.Data
 
         private static bool TryGetValue(Dictionary<string, string> row, string key, out string value)
         {
-            if (row.TryGetValue(key, out value))
-                return true;
+            var normalized = NormalizeKey(key);
 
-            var normalized = key.Replace("_", string.Empty);
             foreach (var pair in row)
             {
-                var candidate = pair.Key.Replace("_", string.Empty).Replace(" ", string.Empty);
-                if (string.Equals(candidate, normalized, StringComparison.OrdinalIgnoreCase))
+                if (NormalizeKey(pair.Key) == normalized)
                 {
-                    value = pair.Value;
+                    value = pair.Value?.Trim();
                     return true;
                 }
             }
@@ -70,6 +67,18 @@ namespace Relic.Gameplay.Data
             return false;
         }
 
+        private static string NormalizeKey(string s)
+        {
+            if (string.IsNullOrEmpty(s))
+                return string.Empty;
+
+            return s
+                .Replace("\uFEFF", "")
+                .Replace("_", "")
+                .Replace(" ", "")
+                .Trim()
+                .ToLowerInvariant();
+        }
         private static object ConvertValue(Type type, string raw)
         {
             if (type == typeof(string))

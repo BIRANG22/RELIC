@@ -100,6 +100,11 @@ namespace Relic.Gameplay.Data
 
         public bool SetSlot(int slotIndex, string characterId, int gridIndex)
         {
+            Debug.LogWarning(
+                $"[PartyRuntimeStore] SetSlot called. slot={slotIndex}, id={characterId}, grid={gridIndex}"
+            );
+            Debug.LogWarning(UnityEngine.StackTraceUtility.ExtractStackTrace());
+
             if (!SetCharacter(slotIndex, characterId))
                 return false;
 

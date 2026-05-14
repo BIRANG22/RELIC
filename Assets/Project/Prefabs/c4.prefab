@@ -265,7 +265,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56368bba1044fce40bd3bb0c75931d48, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  testSkillId: SKILL_P001
+  testSkillId: S_Move_1
   iconImage: {fileID: 8881938825282865905}
 --- !u!1 &3597982360708258861
 GameObject:
@@ -612,7 +612,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56368bba1044fce40bd3bb0c75931d48, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  testSkillId: SKILL_P001
+  testSkillId: S_Move_1
   iconImage: {fileID: 7352505598218805135}
 --- !u!1 &5462925784346637053
 GameObject:
@@ -730,7 +730,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 562e36eb5ca1c424285dbe709c88429f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  characterId: CHAR_003
+  characterId: Char_03
   highlightObject: {fileID: 0}
   skillListObject: {fileID: 3930788979252215723}
 --- !u!61 &2353432504109848137
@@ -908,7 +908,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56368bba1044fce40bd3bb0c75931d48, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  testSkillId: SKILL_P001
+  testSkillId: S_Move_1
   iconImage: {fileID: 8391452340417562179}
 --- !u!1 &7161416826994233092
 GameObject:
@@ -1215,7 +1215,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56368bba1044fce40bd3bb0c75931d48, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  testSkillId: SKILL_P001
+  testSkillId: S_Move_1
   iconImage: {fileID: 8674667124904313338}
 --- !u!1 &9139300142066748542
 GameObject:
@@ -1332,5 +1332,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56368bba1044fce40bd3bb0c75931d48, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  testSkillId: SKILL_P001
+  testSkillId: S_Move_1
   iconImage: {fileID: 8073083490141206925}

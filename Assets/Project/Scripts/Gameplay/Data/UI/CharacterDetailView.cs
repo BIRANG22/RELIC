@@ -22,7 +22,6 @@ namespace Relic.Gameplay.Data
         {
             healthText.text = $"HP {master.MaxHealth}";
             resourceText.text = $"{master.ResourceType} {master.MaxResource}";
-            moveLevelText.text = $"Move Lv.{master.MoveLevel}";
         }
     }
 }

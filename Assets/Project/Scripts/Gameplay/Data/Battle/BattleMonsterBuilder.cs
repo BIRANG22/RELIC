@@ -17,7 +17,7 @@ namespace Relic.Gameplay.Data
             {
                 MonsterId = master.MonsterId,
                 Name = master.Name,
-                CurrentHealth = state.CurrentHealth > 0 ? state.CurrentHealth : master.Health,
+                CurrentHealth = state.CurrentHealth > 0 ? state.CurrentHealth : master.MaxHp,
                 Pattern = pattern
             };
         }

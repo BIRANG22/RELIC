@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: CharacterIconDatabase
   m_EditorClassIdentifier: 
   entries:
-  - CharacterId: CHAR_001
+  - CharacterId: Char_01
     Icon: {fileID: 21300000, guid: 5104f5c5b5baa73479657503a70587b7, type: 3}
-  - CharacterId: CHAR_002
+  - CharacterId: Char_02
     Icon: {fileID: 21300000, guid: 2d0def2338b6b9c469219a1f407bd7bd, type: 3}
-  - CharacterId: CHAR_003
+  - CharacterId: Char_03
     Icon: {fileID: 21300000, guid: a7fc66d790fa7e9478d1b13f3d171cdf, type: 3}

@@ -5,7 +5,7 @@ using Relic.Gameplay.Data;
 public class SkillSelectButtonUI : MonoBehaviour
 {
     [Header("Test")]
-    [SerializeField] private string testSkillId = "SKILL_P001";
+    [SerializeField] private string testSkillId = "S_Move_1";
 
     [Header("UI")]
     [SerializeField] private Image iconImage;

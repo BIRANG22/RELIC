@@ -15,25 +15,16 @@ namespace Relic.Gameplay.Data
     public class SkillTooltipView : MonoBehaviour
     {
         [SerializeField] private TMP_Text titleText;
-        [SerializeField] private TMP_Text costText;
-        [SerializeField] private TMP_Text effectText;
-        [SerializeField] private TMP_Text rangeText;
 
         public void Bind(SkillMasterData skill, SkillRangeData range)
         {
             if (skill == null)
             {
                 titleText.text = string.Empty;
-                costText.text = string.Empty;
-                effectText.text = string.Empty;
-                rangeText.text = string.Empty;
                 return;
             }
 
             titleText.text = skill.Name;
-            costText.text = $"Cost: {skill.Cost}";
-            effectText.text = $"Power: {skill.Power} / Effects: {skill.Effects.Count}";
-            rangeText.text = range?.RangeCategory ?? "None";
         }
     }
 }

@@ -19,10 +19,10 @@ namespace Relic.Gameplay.Data
         public string Name;
         public int MaxHealth;
         public int MaxStamina;
-        public string ResourceType;
+        public int StaminaRecovery;
         public int MaxResource;
+        public string ResourceType;
         public int MoveValue;
-        public int MoveLevel;
         public bool IsDefaultProvided;
         public string UnlockCondition;
         public CharacterSkillLoadout DefaultSkillLoadout = new();
