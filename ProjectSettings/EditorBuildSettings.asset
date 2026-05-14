@@ -18,7 +18,7 @@ EditorBuildSettings:
     path: Assets/Project/Scenes/YDM/Lobby.unity
     guid: 13354c149dc5f134f8938d95f51b97b5
   - enabled: 1
-    path: Assets/Project/Scenes/YDM/ForestEntrance.unity
+    path: Assets/Project/Scenes/YDM/Common_Battle1.unity
     guid: b90fe3f655162cd4881a8a5fc0a1acd6
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: dbb53f834c210354da0a21775f5c57ba, type: 2}

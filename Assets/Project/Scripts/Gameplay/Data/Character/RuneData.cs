@@ -4,23 +4,27 @@ using System.Collections.Generic;
 namespace Relic.Gameplay.Data
 {
     [Serializable]
-    public class FragmentData
+    public class RuneData
     {
-        public string FragmentId;
+        public string RuneId;
         public string Name;
 
-        public string Type;
-        public string EquipConditionType;
-        public string EquipConditionValue;
+        public string TargetCharacterId;
+        public string TargetSkillId;
 
-        // 엑셀 원본 (세미콜론)
         public string EffectIds;
         public string ValueCalcTypes;
         public string ValueRate;
         public string CountCalcTypes;
         public string CountRate;
 
-        // 런타임용
+        public ResourceCostData ResourceCost;
+
+        public int EnhancementLevel;
+
+        public RangeType RangeType;
+        public string RangeId;
+
         public List<SkillEffectEntry> EffectEntries = new();
     }
 }

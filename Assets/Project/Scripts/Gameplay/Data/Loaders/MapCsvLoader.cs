@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-
+using UnityEngine;
 
 /// <summary>
 /// [Loaders] 스크립트. 역할/설정/변수 용도를 코드 주석으로 확인할 수 있도록 정리했습니다.
@@ -16,6 +16,7 @@ namespace Relic.Gameplay.Data
         public static List<MapData> Load(Dictionary<string, List<Dictionary<string, string>>> workbook)
         {
             var rows = ExcelSheetSelector.GetSheet(workbook, "MapData", "Map");
+
             return DataRowMapper.MapList<MapData>(rows);
         }
     }

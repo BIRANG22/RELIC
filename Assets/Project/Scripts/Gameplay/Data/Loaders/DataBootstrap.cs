@@ -24,6 +24,9 @@ namespace Relic.Gameplay.Data
         public RewardTableDatabase RewardTableDatabase { get; } = new();
         public MapDatabase MapDatabase { get; } = new();
         public BattleMapDatabase BattleMapDatabase { get; } = new();
+        public SkillEnhanceDatabase SkillEnhanceDatabase { get; } = new();
+        public MonsterSkillDatabase MonsterSkillDatabase { get; } = new();
+        public RuneDatabase RuneDatabase { get; } = new();
 
         public void SetCharacterPrefabDatabase(CharacterPrefabDatabase db)
         {
@@ -69,7 +72,7 @@ namespace Relic.Gameplay.Data
             var skills = SkillCsvLoader.LoadSkills(workbook);
             var effects = EffectCsvLoader.Load(workbook);
             var fragments = FragmentCsvLoader.Load(workbook);
-            var ranges = SkillCsvLoader.LoadRanges(workbook);
+            var ranges = RangeCsvLoader.Load(workbook);
             var assets = AssetCsvLoader.Load(workbook);
             var quests = QuestCsvLoader.Load(workbook);
             var events = EventCsvLoader.LoadMaster(workbook);
@@ -78,6 +81,9 @@ namespace Relic.Gameplay.Data
             var rewardEntries = RewardTableCsvLoader.LoadEntries(workbook);
             var maps = MapCsvLoader.Load(workbook);
             var battleMapDataList = BattleMapCsvLoader.Load(workbook);
+            var skillEnhances = SkillEnhanceCsvLoader.Load(workbook);
+            var monsterSkills = MonsterSkillCsvLoader.Load(workbook);
+            var runes = RuneCsvLoader.Load(workbook);
 
             InjectCharacterPrefabs(characters);
             InjectCharacterIcons(characters);
@@ -85,11 +91,50 @@ namespace Relic.Gameplay.Data
             InjectMonsterPrefabs(monsters);
 
             CharacterDatabase.Initialize(characters);
+            Debug.Log($"[Before Init] characters count = {characters.Count}");
+
+            foreach (var c in characters)
+            {
+                Debug.Log($"[Before Init] id='{c.CharacterId}' name='{c.Name}'");
+            }
             MonsterDatabase.Initialize(monsters);
-            SkillDatabase.Initialize(skills);
             EffectDatabase.Initialize(effects);
+
+            //파싱
+            foreach (var skill in skills)
+            {
+                skill.EffectEntries = SkillEffectParser.Parse(skill, EffectDatabase);
+            }
+            foreach (var range in ranges)
+            {
+                RangeParser.Parse(range);
+            }
+            foreach (var fragment in fragments)
+            {
+                fragment.EffectEntries = SkillEffectParser.Parse(fragment, EffectDatabase);
+            }
+            foreach (var enhance in skillEnhances)
+            {
+                enhance.EffectEntries = SkillEffectParser.Parse(enhance, EffectDatabase);
+            }
+
+            foreach (var monsterSkill in monsterSkills)
+            {
+                monsterSkill.EffectEntries = SkillEffectParser.Parse(monsterSkill, EffectDatabase);
+            }
+
+            foreach (var rune in runes)
+            {
+                rune.EffectEntries = SkillEffectParser.Parse(rune, EffectDatabase);
+            }
+
+            // DB 초기화
+            SkillDatabase.Initialize(skills);
             FragmentDatabase.Initialize(fragments);
             RangeDatabase.Initialize(ranges);
+            SkillEnhanceDatabase.Initialize(skillEnhances);
+            MonsterSkillDatabase.Initialize(monsterSkills);
+            RuneDatabase.Initialize(runes);
             AssetDatabase.Initialize(assets);
             QuestDatabase.Initialize(quests);
             EventDatabase.Initialize(events, eventChoices);

@@ -10,10 +10,10 @@ namespace Relic.Gameplay.Data
         public string NameSuffix;
         public string MonsterId;
 
-        public int Cell1;
-        public int Cell2;
-        public int Cell3;
-        public int Cell4;
+        public int OccupiedCell1;
+        public int OccupiedCell2;
+        public int OccupiedCell3;
+        public int OccupiedCell4;
 
         public string Description;
 
@@ -21,10 +21,10 @@ namespace Relic.Gameplay.Data
         {
             List<int> cells = new();
 
-            if (Cell1 > 0) cells.Add(Cell1);
-            if (Cell2 > 0) cells.Add(Cell2);
-            if (Cell3 > 0) cells.Add(Cell3);
-            if (Cell4 > 0) cells.Add(Cell4);
+            if (OccupiedCell1 > 0) cells.Add(OccupiedCell1);
+            if (OccupiedCell2 > 0) cells.Add(OccupiedCell2);
+            if (OccupiedCell3 > 0) cells.Add(OccupiedCell3);
+            if (OccupiedCell4 > 0) cells.Add(OccupiedCell4);
 
             return cells;
         }

@@ -17,23 +17,44 @@ namespace Relic.Gameplay.Data
             db.Initialize(maps, x => x.MapId);
 
             Debug.Log($"[MapDatabase] Loaded Map Count: {maps.Count}");
-
-            foreach (var map in maps)
-            {
-                Debug.Log($"[MapDatabase] {map.MapId} / {map.MapName} / {map.Chapter} / {map.StageMap}");
-            }
         }
 
         public MapData Get(string id) => db.Get(id);
 
         public bool TryGet(string id, out MapData value) => db.TryGet(id, out value);
 
-        public MapData GetFirstMap(string chapterId, string stageMap)
+        public MapData GetStartMap(string chapterId, string stage)
         {
             return maps.FirstOrDefault(map =>
-                map.Chapter.Trim() == chapterId.Trim() &&
-                map.StageMap.Trim() == stageMap.Trim()
+                Same(map.Chapter, chapterId) &&
+                Same(map.Stage, stage) &&
+                map.FixedPosition == FixedPosition.Front
             );
+        }
+
+        public MapData GetFinalMap(string chapterId, string stage)
+        {
+            return maps.FirstOrDefault(map =>
+                Same(map.Chapter, chapterId) &&
+                Same(map.Stage, stage) &&
+                map.FixedPosition == FixedPosition.Final
+            );
+        }
+
+        public MapData GetPenultimateMap(string chapterId, string stage)
+        {
+            return maps.FirstOrDefault(map =>
+                Same(map.Chapter, chapterId) &&
+                Same(map.Stage, stage) &&
+                map.FixedPosition == FixedPosition.Penultimate
+            );
+        }
+
+        private static bool Same(string a, string b)
+        {
+            return !string.IsNullOrWhiteSpace(a)
+                && !string.IsNullOrWhiteSpace(b)
+                && a.Trim() == b.Trim();
         }
     }
 }

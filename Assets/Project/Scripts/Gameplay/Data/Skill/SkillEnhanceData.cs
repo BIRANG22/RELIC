@@ -4,23 +4,27 @@ using System.Collections.Generic;
 namespace Relic.Gameplay.Data
 {
     [Serializable]
-    public class FragmentData
+    public class SkillEnhanceData
     {
-        public string FragmentId;
         public string Name;
+        public int EnhancementLevel;
+        public string NameSuffix;
 
-        public string Type;
-        public string EquipConditionType;
-        public string EquipConditionValue;
+        public TargetType Target;
+        public SkillType SkillType;
 
-        // 엑셀 원본 (세미콜론)
         public string EffectIds;
         public string ValueCalcTypes;
         public string ValueRate;
         public string CountCalcTypes;
         public string CountRate;
 
-        // 런타임용
+        public ResourceCostData ResourceCost;
+
+        public int GridMove;
+        public RangeType RangeType;
+        public string RangeId;
+
         public List<SkillEffectEntry> EffectEntries = new();
     }
 }

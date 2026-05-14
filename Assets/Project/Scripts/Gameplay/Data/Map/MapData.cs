@@ -2,20 +2,28 @@ using System;
 
 namespace Relic.Gameplay.Data
 {
+    public enum FixedPosition
+    {
+        None,
+        Front,
+        Final,
+        Penultimate
+    }
+
     [Serializable]
     public class MapData
     {
         public string MapId;
-        public string MapName;
-        public string RoomType;
+        public string Name;
+        public string Type;
 
         public string BattleMapId;
         public string EventId;
 
         public string Chapter;
-        public string StageMap;
-        public string RoomGrade;
+        public string Stage;
+
         public int SpawnWeight;
-        public bool AllowRepeat;
+        public FixedPosition FixedPosition;
     }
 }

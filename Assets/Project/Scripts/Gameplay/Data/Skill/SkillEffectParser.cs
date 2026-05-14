@@ -4,20 +4,128 @@ using Relic.Gameplay.Data;
 
 public static class SkillEffectParser
 {
+    // Skill용
     public static List<SkillEffectEntry> Parse(
         SkillMasterData skill,
         EffectDatabase effectDatabase)
     {
+        if (skill == null)
+            return new List<SkillEffectEntry>();
+
+        return ParseInternal(
+            skill.EffectIds,
+            skill.ValueCalcTypes,
+            skill.ValueRate,
+            skill.CountCalcTypes,
+            skill.CountRate,
+            effectDatabase
+        );
+    }
+
+    // Fragment용
+    public static List<SkillEffectEntry> Parse(
+        FragmentData fragment,
+        EffectDatabase effectDatabase)
+    {
+        if (fragment == null)
+            return new List<SkillEffectEntry>();
+
+        return ParseInternal(
+            fragment.EffectIds,
+            fragment.ValueCalcTypes,
+            fragment.ValueRate,
+            fragment.CountCalcTypes,
+            fragment.CountRate,
+            effectDatabase
+        );
+    }
+
+    // 강화 스킬
+    public static List<SkillEffectEntry> Parse(
+    SkillEnhanceData data,
+    EffectDatabase effectDatabase)
+    {
+        if (data == null)
+            return new List<SkillEffectEntry>();
+
+        return ParseInternal(
+            data.EffectIds,
+            data.ValueCalcTypes,
+            data.ValueRate,
+            data.CountCalcTypes,
+            data.CountRate,
+            effectDatabase
+        );
+    }
+
+    // 몬스터 스킬
+    public static List<SkillEffectEntry> Parse(
+        MonsterSkillData data,
+        EffectDatabase effectDatabase)
+    {
+        if (data == null)
+            return new List<SkillEffectEntry>();
+
+        return ParseInternal(
+            data.EffectIds,
+            data.ValueCalcTypes,
+            data.ValueRate,
+            data.CountCalcTypes,
+            data.CountRate,
+            effectDatabase
+        );
+    }
+
+
+    // 룬
+    public static List<SkillEffectEntry> Parse(
+        RuneData data,
+        EffectDatabase effectDatabase)
+    {
+        if (data == null)
+            return new List<SkillEffectEntry>();
+
+        return ParseInternal(
+            data.EffectIds,
+            data.ValueCalcTypes,
+            data.ValueRate,
+            data.CountCalcTypes,
+            data.CountRate,
+            effectDatabase
+        );
+    }
+
+    // 공통 로직
+    private static List<SkillEffectEntry> ParseInternal(
+        string effectIdsStr,
+        string valueTypesStr,
+        string valuesStr,
+        string countTypesStr,
+        string countsStr,
+        EffectDatabase effectDatabase)
+    {
         List<SkillEffectEntry> result = new();
 
-        if (skill == null || string.IsNullOrEmpty(skill.EffectIds))
+        if (string.IsNullOrEmpty(effectIdsStr))
             return result;
 
-        string[] effectIds = Split(skill.EffectIds);
-        string[] valueTypes = Split(skill.ValueCalcTypes);
-        string[] values = Split(skill.ValueRate);
-        string[] countTypes = Split(skill.CountCalcTypes);
-        string[] counts = Split(skill.CountRate);
+        string[] effectIds = Split(effectIdsStr);
+        string[] valueTypes = Split(valueTypesStr);
+        string[] values = Split(valuesStr);
+        string[] countTypes = Split(countTypesStr);
+        string[] counts = Split(countsStr);
+
+        // 길이 검증
+        if (effectIds.Length != valueTypes.Length ||
+            effectIds.Length != values.Length ||
+            effectIds.Length != countTypes.Length ||
+            effectIds.Length != counts.Length)
+        {
+            UnityEngine.Debug.LogError(
+                $"[SkillEffectParser] 길이 불일치\n" +
+                $"EffectIds:{effectIds.Length}, ValueTypes:{valueTypes.Length}, Values:{values.Length}, CountTypes:{countTypes.Length}, Counts:{counts.Length}"
+            );
+        }
 
         for (int i = 0; i < effectIds.Length; i++)
         {

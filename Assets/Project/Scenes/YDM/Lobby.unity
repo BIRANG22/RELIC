@@ -966,7 +966,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: SKILL_U001
+  skillId: S_Move_1
   skillIcon: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
   targetSlotImage: {fileID: 1571410989}
   skillListPanel: {fileID: 155632087}
@@ -4644,7 +4644,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: 'SKILL_P001 '
+  skillId: S_Move_1
   skillIcon: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
   targetSlotImage: {fileID: 83855158}
   skillListPanel: {fileID: 1764859137}
@@ -5448,7 +5448,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: SKILL_U001
+  skillId: S_Move_1
   skillIcon: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
   targetSlotImage: {fileID: 1485882911}
   skillListPanel: {fileID: 1703943971}
@@ -5540,7 +5540,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: 'SKILL_P001 '
+  skillId: S_Move_1
   skillIcon: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
   targetSlotImage: {fileID: 1296862052}
   skillListPanel: {fileID: 633366733}
@@ -5632,7 +5632,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: 'SKILL_P001 '
+  skillId: S_Move_1
   skillIcon: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
   targetSlotImage: {fileID: 1485882911}
   skillListPanel: {fileID: 1703943971}
@@ -5966,7 +5966,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: SKILL_U001
+  skillId: S_Move_1
   skillIcon: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
   targetSlotImage: {fileID: 1963774509}
   skillListPanel: {fileID: 568390165}
@@ -6338,7 +6338,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: SKILL_U001
+  skillId: S_Move_1
   skillIcon: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
   targetSlotImage: {fileID: 2109125127}
   skillListPanel: {fileID: 925429131}
@@ -6430,7 +6430,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: SKILL_U001
+  skillId: S_Move_1
   skillIcon: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
   targetSlotImage: {fileID: 83855158}
   skillListPanel: {fileID: 1764859137}
@@ -6701,7 +6701,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: 'SKILL_P001 '
+  skillId: S_Move_1
   skillIcon: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
   targetSlotImage: {fileID: 1140480800}
   skillListPanel: {fileID: 814380096}
@@ -7118,7 +7118,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: 'SKILL_P001 '
+  skillId: S_Move_1
   skillIcon: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
   targetSlotImage: {fileID: 637856696}
   skillListPanel: {fileID: 1584571240}
@@ -7363,7 +7363,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: SKILL_U001
+  skillId: S_Move_1
   skillIcon: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
   targetSlotImage: {fileID: 1296862052}
   skillListPanel: {fileID: 633366733}
@@ -7790,7 +7790,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: SKILL_U001
+  skillId: S_Move_1
   skillIcon: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
   targetSlotImage: {fileID: 278883991}
   skillListPanel: {fileID: 1534495613}
@@ -8105,7 +8105,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: 'SKILL_P001 '
+  skillId: S_Move_1
   skillIcon: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
   targetSlotImage: {fileID: 2109125127}
   skillListPanel: {fileID: 925429131}
@@ -8198,7 +8198,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: 'SKILL_P001 '
+  skillId: S_Move_1
   skillIcon: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
   targetSlotImage: {fileID: 278883991}
   skillListPanel: {fileID: 1534495613}
@@ -8532,7 +8532,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: 'SKILL_P001 '
+  skillId: S_Move_1
   skillIcon: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
   targetSlotImage: {fileID: 1571410989}
   skillListPanel: {fileID: 155632087}
@@ -8624,7 +8624,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: 'SKILL_P001 '
+  skillId: S_Move_1
   skillIcon: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
   targetSlotImage: {fileID: 441047369}
   skillListPanel: {fileID: 815401581}
@@ -8717,7 +8717,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: 'SKILL_P001 '
+  skillId: S_Move_1
   skillIcon: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
   targetSlotImage: {fileID: 1963774509}
   skillListPanel: {fileID: 568390165}
@@ -9149,7 +9149,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: SKILL_U001
+  skillId: S_Move_1
   skillIcon: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
   targetSlotImage: {fileID: 1140480800}
   skillListPanel: {fileID: 814380096}
@@ -9974,7 +9974,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: SKILL_U001
+  skillId: S_Move_1
   skillIcon: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
   targetSlotImage: {fileID: 126391920}
   skillListPanel: {fileID: 1848435136}
@@ -10390,7 +10390,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: SKILL_U001
+  skillId: S_Move_1
   skillIcon: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
   targetSlotImage: {fileID: 637856696}
   skillListPanel: {fileID: 1584571240}
@@ -11222,7 +11222,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: SKILL_U001
+  skillId: S_Move_1
   skillIcon: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
   targetSlotImage: {fileID: 441047369}
   skillListPanel: {fileID: 815401581}
@@ -12347,7 +12347,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: SKILL_U001
+  skillId: S_Move_1
   skillIcon: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
   targetSlotImage: {fileID: 991976098}
   skillListPanel: {fileID: 2111778035}
@@ -12642,7 +12642,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: 'SKILL_P001 '
+  skillId: S_Move_1
   skillIcon: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
   targetSlotImage: {fileID: 991976098}
   skillListPanel: {fileID: 2111778035}
@@ -15083,7 +15083,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: 'SKILL_P001 '
+  skillId: S_Move_1
   skillIcon: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
   targetSlotImage: {fileID: 126391920}
   skillListPanel: {fileID: 1848435136}
@@ -17045,7 +17045,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   chapterId: Chapter1
-  startStage: 'Stage_01 '
+  startStage: Stage1
 --- !u!1 &2064996457
 GameObject:
   m_ObjectHideFlags: 0
