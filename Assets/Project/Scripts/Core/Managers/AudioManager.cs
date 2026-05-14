@@ -59,7 +59,6 @@ public class AudioManager : Singleton<AudioManager>
 
     public void Initialize()
     {
-        Debug.Log("AudioManager Initialized");
         ApplyVolumes();
     }
 

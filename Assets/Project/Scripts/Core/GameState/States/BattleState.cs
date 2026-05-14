@@ -21,7 +21,7 @@ public class BattleState : BaseGameState
 
         if (string.IsNullOrEmpty(mapRuntime.CurrentSceneName))
         {
-            var mapData = DataManager.Instance.MapDatabase.GetFirstMap(
+            var mapData = DataManager.Instance.MapDatabase.GetStartMap(
                 mapRuntime.SelectedChapterId,
                 mapRuntime.CurrentStage
             );
@@ -35,7 +35,7 @@ public class BattleState : BaseGameState
             }
 
             mapRuntime.CurrentMapId = mapData.MapId;
-            mapRuntime.CurrentSceneName = mapData.MapName.Trim();
+            mapRuntime.CurrentSceneName = mapData.Name.Trim();
 
             DataManager.Instance.MapRuntimeStore.Set(mapRuntime);
         }

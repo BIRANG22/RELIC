@@ -5,6 +5,7 @@ public class BattleSceneLoader : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private BattleUnitSpawner unitSpawner;
+    [SerializeField] private BattleMonsterSpawner monsterSpawner;
     [SerializeField] private GameObject loadingPanel;
 
     [Header("Debug")]
@@ -65,6 +66,7 @@ public class BattleSceneLoader : MonoBehaviour
         Debug.Log("[BattleSceneLoader] Spawn start");
 
         unitSpawner.SpawnFromRuntimeData();
+        SpawnMonstersFromBattleMap();
 
         Debug.Log("[BattleSceneLoader] Spawn end");
 
@@ -84,6 +86,40 @@ public class BattleSceneLoader : MonoBehaviour
         for (int i = 0; i < party.MaxPartyCountValue; i++)
         {
             Debug.Log($"Slot {i}: {party.GetCharacterId(i)} / Grid {party.GetGridIndex(i)}");
+        }
+    }
+
+    private void SpawnMonstersFromBattleMap()
+    {
+        var mapRuntime = DataManager.Instance.MapRuntimeStore.Get();
+
+        if (mapRuntime == null || string.IsNullOrWhiteSpace(mapRuntime.CurrentMapId))
+        {
+            Debug.LogError("[BattleSceneLoader] CurrentMapId가 없습니다.");
+            return;
+        }
+
+        var mapData = DataManager.Instance.MapDatabase.Get(mapRuntime.CurrentMapId);
+
+        if (mapData == null || string.IsNullOrWhiteSpace(mapData.BattleMapId))
+        {
+            Debug.LogError($"[BattleSceneLoader] BattleMapId가 없습니다. MapId: {mapRuntime.CurrentMapId}");
+            return;
+        }
+
+        var spawns = DataManager.Instance.BattleMapDatabase.GetSpawns(mapData.BattleMapId);
+
+        Debug.Log($"[BattleSceneLoader] CurrentMapId: {mapRuntime.CurrentMapId}");
+        Debug.Log($"[BattleSceneLoader] BattleMapId: {mapData.BattleMapId}");
+
+        foreach (var spawn in spawns)
+        {
+            Debug.Log($"Spawn Monster: {spawn.MonsterId}, Cells: {string.Join(", ", spawn.GetOccupiedCells())}");
+        }
+
+        foreach (var spawnData in spawns)
+        {
+            monsterSpawner.Spawn(spawnData);
         }
     }
 

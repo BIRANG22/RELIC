@@ -6,7 +6,6 @@ public class InputManager : Singleton<InputManager>
 
     public void Initialize()
     {
-        Debug.Log("InputManager Initialized");
     }
     private void Update()
     {

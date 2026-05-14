@@ -265,7 +265,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56368bba1044fce40bd3bb0c75931d48, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  testSkillId: SKILL_P001
+  testSkillId: S_Move_1
   iconImage: {fileID: 8881938825282865905}
 --- !u!1 &3597982360708258861
 GameObject:
@@ -612,7 +612,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56368bba1044fce40bd3bb0c75931d48, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  testSkillId: SKILL_P001
+  testSkillId: S_Move_1
   iconImage: {fileID: 7352505598218805135}
 --- !u!1 &5462925784346637053
 GameObject:
@@ -627,6 +627,7 @@ GameObject:
   - component: {fileID: 7577979475912102750}
   - component: {fileID: 7410664346549972503}
   - component: {fileID: 2353432504109848137}
+  - component: {fileID: 7429583999769823215}
   m_Layer: 0
   m_Name: c4
   m_TagString: Untagged
@@ -691,8 +692,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -1581724453
+  m_SortingLayer: 1
   m_SortingOrder: 2
   m_Sprite: {fileID: 21300000, guid: 6b884f43f253c5244bac798af0078f49, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -729,7 +730,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 562e36eb5ca1c424285dbe709c88429f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  characterId: CHAR_003
+  characterId: Char_03
   highlightObject: {fileID: 0}
   skillListObject: {fileID: 3930788979252215723}
 --- !u!61 &2353432504109848137
@@ -769,7 +770,7 @@ BoxCollider2D:
   m_Offset: {x: 1.707, y: 5.675}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.2, y: 0}
+    pivot: {x: 0.5, y: 0}
     oldSize: {x: 5.69, y: 11.35}
     newSize: {x: 5.69, y: 11.35}
     adaptiveTilingThreshold: 0.5
@@ -778,6 +779,20 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 5.69, y: 11.35}
   m_EdgeRadius: 0
+--- !u!114 &7429583999769823215
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5462925784346637053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33c392ea8bf721f4f9b83ea336edc598, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sortingOrderOffset: 0
+  yMultiplier: 100
 --- !u!1 &6457306175435103410
 GameObject:
   m_ObjectHideFlags: 0
@@ -893,7 +908,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56368bba1044fce40bd3bb0c75931d48, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  testSkillId: SKILL_P001
+  testSkillId: S_Move_1
   iconImage: {fileID: 8391452340417562179}
 --- !u!1 &7161416826994233092
 GameObject:
@@ -1200,7 +1215,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56368bba1044fce40bd3bb0c75931d48, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  testSkillId: SKILL_P001
+  testSkillId: S_Move_1
   iconImage: {fileID: 8674667124904313338}
 --- !u!1 &9139300142066748542
 GameObject:
@@ -1317,5 +1332,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56368bba1044fce40bd3bb0c75931d48, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  testSkillId: SKILL_P001
+  testSkillId: S_Move_1
   iconImage: {fileID: 8073083490141206925}

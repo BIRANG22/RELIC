@@ -35,8 +35,8 @@ public class GridQuadWarpController : MonoBehaviour
             if (i >= transform.childCount)
                 break;
 
-            int x = i % width;
-            int y = i / width;
+            int x = i / height;
+            int y = height - 1 - (i % height);
 
             Transform cell = transform.GetChild(i);
 

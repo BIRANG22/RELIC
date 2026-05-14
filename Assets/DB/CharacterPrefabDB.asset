@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: CharacterPrefabDB
   m_EditorClassIdentifier: 
   entries:
-  - CharacterId: CHAR_001
+  - CharacterId: Char_01
     BattlePrefab: {fileID: 9080962443232077410, guid: 5aad83c3fc5b5c94d98d5d03cf875d86, type: 3}
-  - CharacterId: CHAR_002
+  - CharacterId: Char_02
     BattlePrefab: {fileID: 8905939084896559404, guid: edb87de4abb950048868e26919d3c16b, type: 3}
-  - CharacterId: CHAR_003
+  - CharacterId: Char_03
     BattlePrefab: {fileID: 5462925784346637053, guid: 09b0bd415c1d15b40b2ee7c69b15a5a9, type: 3}

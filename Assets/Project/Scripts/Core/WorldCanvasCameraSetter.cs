@@ -43,6 +43,5 @@ public class WorldCanvasCameraSetter : MonoBehaviour
         }
 
         canvas.worldCamera = cam;
-        Debug.Log("Canvas Event Camera ¼³Á¤µÊ: " + cam.name);
     }
 }

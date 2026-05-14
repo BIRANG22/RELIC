@@ -13,11 +13,5 @@ MonoBehaviour:
   m_Name: SkillIconDatabase
   m_EditorClassIdentifier: 
   entries:
-  - SkillId: SKILL_P001
-    Icon: {fileID: 21300000, guid: dc59e3c60d12b6749a11ac21ae04362e, type: 3}
-  - SkillId: SKILL_U001
-    Icon: {fileID: 21300000, guid: 904d0c847a203ff49ab342105952f5f2, type: 3}
-  - SkillId: SKILL_C001
-    Icon: {fileID: 21300000, guid: 4d5e6b4ea7c2d4a42949ae2979e4e54d, type: 3}
-  - SkillId: SKILL_E001
-    Icon: {fileID: 21300000, guid: dc59e3c60d12b6749a11ac21ae04362e, type: 3}
+  - SkillId: 'S_Move_1 '
+    Icon: {fileID: 21300000, guid: 9a82af2b4b8a6d8458256be92abd9b53, type: 3}

@@ -14,14 +14,21 @@ public class DataManager : Singleton<DataManager>
 
     public CharacterDatabase CharacterDatabase => dataBootstrap.CharacterDatabase;
     public SkillDatabase SkillDatabase => dataBootstrap.SkillDatabase;
+    public RangeDatabase RangeDatabase => dataBootstrap.RangeDatabase;
+    public EffectDatabase EffectDatabase => dataBootstrap.EffectDatabase;
     public ActionTypeIconDatabase ActionTypeIconDatabase => actionTypeIconDatabase;
+    public BattleMapDatabase BattleMapDatabase => dataBootstrap.BattleMapDatabase;
+    public MonsterDatabase MonsterDatabase => dataBootstrap.MonsterDatabase;
     public MapDatabase MapDatabase => dataBootstrap.MapDatabase;
+    public SkillEnhanceDatabase SkillEnhanceDatabase => dataBootstrap.SkillEnhanceDatabase;
+    public MonsterSkillDatabase MonsterSkillDatabase => dataBootstrap.MonsterSkillDatabase;
+    public RuneDatabase RuneDatabase => dataBootstrap.RuneDatabase;
     public CharacterRuntimeStore CharacterRuntimeStore { get; private set; } = new();
     public PartyRuntimeStore PartyRuntimeStore { get; private set; } = new();
     public SkillRuntimeStore SkillRuntimeStore { get; private set; } = new();
     public SkillEquipService SkillEquipService { get; private set; }
     public MapRuntimeStore MapRuntimeStore { get; private set; } = new();
-
+    
     protected override void Awake()
     {
         base.Awake();

@@ -71,7 +71,6 @@ public class CharacterSelectButton : MonoBehaviour
                 CurrentHealth = master.MaxHealth,
                 CurrentStamina = master.MaxStamina,
                 CurrentResource = master.MaxResource,
-                CurrentMoveLevel = master.MoveLevel,
                 IsUnlocked = master.IsDefaultProvided
             };
 

@@ -42,14 +42,12 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
-  - name: 1
-    uniqueID: 2033747249
+
+  - name: Unit
+    uniqueID: 2713242843
     locked: 0
-  - name: 2
-    uniqueID: 411586125
-    locked: 0
-  - name: 3
-    uniqueID: 1653842989
+  - name: UI
+    uniqueID: 430934497
     locked: 0
   m_RenderingLayers:
   - Default
