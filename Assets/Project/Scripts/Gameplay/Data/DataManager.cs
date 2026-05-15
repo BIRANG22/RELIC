@@ -13,7 +13,9 @@ public class DataManager : Singleton<DataManager>
     private DataBootstrap dataBootstrap = new();
 
     public CharacterDatabase CharacterDatabase => dataBootstrap.CharacterDatabase;
+    public CharacterIconDatabase CharacterIconDatabase => characterIconDatabase;
     public SkillDatabase SkillDatabase => dataBootstrap.SkillDatabase;
+    public SkillIconDatabase SkillIconDatabase => skillIconDatabase;
     public RangeDatabase RangeDatabase => dataBootstrap.RangeDatabase;
     public EffectDatabase EffectDatabase => dataBootstrap.EffectDatabase;
     public ActionTypeIconDatabase ActionTypeIconDatabase => actionTypeIconDatabase;

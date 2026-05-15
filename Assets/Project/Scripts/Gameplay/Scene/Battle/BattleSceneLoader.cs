@@ -7,6 +7,7 @@ public class BattleSceneLoader : MonoBehaviour
     [SerializeField] private BattleUnitSpawner unitSpawner;
     [SerializeField] private BattleMonsterSpawner monsterSpawner;
     [SerializeField] private GameObject loadingPanel;
+    [SerializeField] private BattlePlacementController placementController;
 
     [Header("Debug")]
     [SerializeField] private bool createDebugDataIfEmpty = true;
@@ -65,7 +66,15 @@ public class BattleSceneLoader : MonoBehaviour
 
         Debug.Log("[BattleSceneLoader] Spawn start");
 
-        unitSpawner.SpawnFromRuntimeData();
+        if (placementController != null && placementController.NeedsPlacement())
+        {
+            placementController.BeginPlacement();
+        }
+        else
+        {
+            unitSpawner.SpawnFromRuntimeData();
+        }
+
         SpawnMonstersFromBattleMap();
 
         Debug.Log("[BattleSceneLoader] Spawn end");

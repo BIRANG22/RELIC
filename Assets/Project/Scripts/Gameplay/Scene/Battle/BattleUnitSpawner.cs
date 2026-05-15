@@ -116,4 +116,71 @@ public class BattleUnitSpawner : MonoBehaviour
         Debug.LogWarning($"[BattleUnitSpawner] {grid.name} 안에 {spawnPointName} 오브젝트가 없습니다. Grid 위치를 대신 사용합니다.");
         return null;
     }
+
+    public void SpawnSingleFromRuntimeData(int slotIndex)
+    {
+        var dm = DataManager.Instance;
+        var partyStore = dm.PartyRuntimeStore;
+
+        string characterId = partyStore.GetCharacterId(slotIndex);
+        int gridIndex = partyStore.GetGridIndex(slotIndex);
+
+        if (string.IsNullOrWhiteSpace(characterId))
+            return;
+
+        if (gridIndex < 0 || gridIndex >= playerGridCount)
+        {
+            Debug.LogWarning($"[BattleUnitSpawner] Invalid grid index. Slot: {slotIndex}, Grid: {gridIndex}");
+            return;
+        }
+
+        if (!dm.CharacterRuntimeStore.TryGet(characterId, out CharacterRuntimeData runtimeData))
+        {
+            Debug.LogWarning($"[BattleUnitSpawner] CharacterRuntimeData 없음: {characterId}");
+            return;
+        }
+
+        CharacterMasterData characterData = dm.CharacterDatabase.Get(characterId);
+
+        if (characterData == null)
+        {
+            Debug.LogWarning($"[BattleUnitSpawner] CharacterData 없음: {characterId}");
+            return;
+        }
+
+        if (characterData.BattlePrefab == null)
+        {
+            Debug.LogWarning($"[BattleUnitSpawner] BattlePrefab 없음: {characterId}");
+            return;
+        }
+
+        Transform spawnGrid = FindGridByIndex(gridIndex);
+
+        if (spawnGrid == null)
+        {
+            Debug.LogWarning($"[BattleUnitSpawner] Grid 오브젝트 없음: Grid_{gridIndex:00}");
+            return;
+        }
+
+        Transform spawnPoint = FindSpawnPoint(spawnGrid);
+
+        Vector3 spawnPosition = spawnPoint != null
+            ? spawnPoint.position
+            : spawnGrid.position;
+
+        spawnPosition.z += unitSpawnZOffset;
+
+        GameObject unit = Instantiate(
+            characterData.BattlePrefab,
+            spawnPosition,
+            Quaternion.identity
+        );
+
+        BattleCharacter battleCharacter = unit.GetComponent<BattleCharacter>();
+
+        if (battleCharacter != null)
+            battleCharacter.Initialize(runtimeData);
+
+        Debug.Log($"[BattleUnitSpawner] Spawn Single Slot {slotIndex}: {characterId} -> Grid_{gridIndex:00}");
+    }
 }
