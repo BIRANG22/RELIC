@@ -7,7 +7,6 @@ namespace Relic.Gameplay.Data
     public class BattleMapData
     {
         public string BattleMapId;
-        public string NameSuffix;
         public string MonsterId;
 
         public int OccupiedCell1;

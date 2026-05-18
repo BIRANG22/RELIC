@@ -119,8 +119,12 @@ namespace Relic.Gameplay.Data
                     row[key] = h < values.Count ? values[h] : string.Empty;
                 }
 
-                if (row.Count > 0)
+                bool isEmptyRow = row.Values.All(v => string.IsNullOrWhiteSpace(v));
+
+                if (!isEmptyRow)
+                {
                     rows.Add(row);
+                }
             }
 
             return rows;

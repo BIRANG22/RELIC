@@ -890,6 +890,7 @@ GameObject:
   - component: {fileID: 120007050}
   - component: {fileID: 120007049}
   - component: {fileID: 120007048}
+  - component: {fileID: 120007051}
   m_Layer: 5
   m_Name: SkillIcon_2
   m_TagString: Untagged
@@ -936,7 +937,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -966,10 +967,110 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: S_Move_1
-  skillIcon: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
+  skillId: S_Passive_04
+  buttonImage: {fileID: 120007048}
   targetSlotImage: {fileID: 1571410989}
   skillListPanel: {fileID: 155632087}
+--- !u!114 &120007051
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 120007046}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 120007048}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 120007050}
+        m_TargetAssemblyTypeName: SkillSelectButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!1 &126366151
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 126366152}
+  - component: {fileID: 126366153}
+  m_Layer: 0
+  m_Name: CharacterSelectionState
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &126366152
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 126366151}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 960, y: 521.4935, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &126366153
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 126366151}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88c417a012f9aab46b098d536b90fa48, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &126391919
 GameObject:
   m_ObjectHideFlags: 0
@@ -1403,7 +1504,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: -77.5}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &163712317
@@ -3115,7 +3216,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   characterType: 2
-  characterId: CHAR_002
+  characterId: Char_02
   playClickSound: 0
 --- !u!114 &399627023
 MonoBehaviour:
@@ -4568,6 +4669,7 @@ GameObject:
   - component: {fileID: 576655723}
   - component: {fileID: 576655722}
   - component: {fileID: 576655721}
+  - component: {fileID: 576655724}
   m_Layer: 5
   m_Name: SkillIcon_1
   m_TagString: Untagged
@@ -4614,7 +4716,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -4644,10 +4746,66 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: S_Move_1
-  skillIcon: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
+  skillId: S_Unique_03
+  buttonImage: {fileID: 576655721}
   targetSlotImage: {fileID: 83855158}
   skillListPanel: {fileID: 1764859137}
+--- !u!114 &576655724
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 576655719}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 576655721}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 576655723}
+        m_TargetAssemblyTypeName: SkillSelectButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &576683309
 GameObject:
   m_ObjectHideFlags: 0
@@ -4860,7 +5018,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -6.5051575, y: -103.3}
+  m_AnchoredPosition: {x: -6.5051575, y: -76.8}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &635365484
@@ -5372,6 +5530,7 @@ GameObject:
   - component: {fileID: 681845304}
   - component: {fileID: 681845303}
   - component: {fileID: 681845302}
+  - component: {fileID: 681845305}
   m_Layer: 5
   m_Name: SkillIcon_2
   m_TagString: Untagged
@@ -5418,7 +5577,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -5448,10 +5607,66 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: S_Move_1
-  skillIcon: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
+  skillId: S_Ability_08
+  buttonImage: {fileID: 681845302}
   targetSlotImage: {fileID: 1485882911}
   skillListPanel: {fileID: 1703943971}
+--- !u!114 &681845305
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 681845300}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 681845302}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 681845304}
+        m_TargetAssemblyTypeName: SkillSelectButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &683732206
 GameObject:
   m_ObjectHideFlags: 0
@@ -5464,6 +5679,7 @@ GameObject:
   - component: {fileID: 683732210}
   - component: {fileID: 683732209}
   - component: {fileID: 683732208}
+  - component: {fileID: 683732211}
   m_Layer: 5
   m_Name: SkillIcon_1
   m_TagString: Untagged
@@ -5510,7 +5726,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -5540,10 +5756,66 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: S_Move_1
-  skillIcon: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
+  skillId: S_Ability_05
+  buttonImage: {fileID: 683732208}
   targetSlotImage: {fileID: 1296862052}
   skillListPanel: {fileID: 633366733}
+--- !u!114 &683732211
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 683732206}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 683732208}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 683732210}
+        m_TargetAssemblyTypeName: SkillSelectButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &695915360
 GameObject:
   m_ObjectHideFlags: 0
@@ -5556,6 +5828,7 @@ GameObject:
   - component: {fileID: 695915364}
   - component: {fileID: 695915363}
   - component: {fileID: 695915362}
+  - component: {fileID: 695915365}
   m_Layer: 5
   m_Name: SkillIcon_1
   m_TagString: Untagged
@@ -5602,7 +5875,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -5632,10 +5905,66 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: S_Move_1
-  skillIcon: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
+  skillId: S_Ability_07
+  buttonImage: {fileID: 695915362}
   targetSlotImage: {fileID: 1485882911}
   skillListPanel: {fileID: 1703943971}
+--- !u!114 &695915365
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 695915360}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 695915362}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 695915364}
+        m_TargetAssemblyTypeName: SkillSelectButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &699707755
 GameObject:
   m_ObjectHideFlags: 0
@@ -5936,7 +6265,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -5966,8 +6295,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: S_Move_1
-  skillIcon: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
+  skillId: S_Ability_04
+  buttonImage: {fileID: 713385907}
   targetSlotImage: {fileID: 1963774509}
   skillListPanel: {fileID: 568390165}
 --- !u!114 &713385910
@@ -6262,6 +6591,7 @@ GameObject:
   - component: {fileID: 732784317}
   - component: {fileID: 732784316}
   - component: {fileID: 732784315}
+  - component: {fileID: 732784318}
   m_Layer: 5
   m_Name: SkillIcon_2
   m_TagString: Untagged
@@ -6308,7 +6638,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -6338,10 +6668,66 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: S_Move_1
-  skillIcon: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
+  skillId: S_Passive_06
+  buttonImage: {fileID: 732784315}
   targetSlotImage: {fileID: 2109125127}
   skillListPanel: {fileID: 925429131}
+--- !u!114 &732784318
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 732784313}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 732784315}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 732784317}
+        m_TargetAssemblyTypeName: SkillSelectButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &737655097
 GameObject:
   m_ObjectHideFlags: 0
@@ -6354,6 +6740,7 @@ GameObject:
   - component: {fileID: 737655101}
   - component: {fileID: 737655100}
   - component: {fileID: 737655099}
+  - component: {fileID: 737655102}
   m_Layer: 5
   m_Name: SkillIcon_2
   m_TagString: Untagged
@@ -6400,7 +6787,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -6430,10 +6817,66 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: S_Move_1
-  skillIcon: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
+  skillId: S_Unique_04
+  buttonImage: {fileID: 737655099}
   targetSlotImage: {fileID: 83855158}
   skillListPanel: {fileID: 1764859137}
+--- !u!114 &737655102
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 737655097}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 737655099}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 737655101}
+        m_TargetAssemblyTypeName: SkillSelectButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &743592672
 GameObject:
   m_ObjectHideFlags: 0
@@ -6671,7 +7114,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -6701,8 +7144,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: S_Move_1
-  skillIcon: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
+  skillId: S_Unique_01
+  buttonImage: {fileID: 750263680}
   targetSlotImage: {fileID: 1140480800}
   skillListPanel: {fileID: 814380096}
 --- !u!114 &750263683
@@ -7042,6 +7485,7 @@ GameObject:
   - component: {fileID: 791620698}
   - component: {fileID: 791620697}
   - component: {fileID: 791620696}
+  - component: {fileID: 791620699}
   m_Layer: 5
   m_Name: SkillIcon_1
   m_TagString: Untagged
@@ -7088,7 +7532,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -7118,10 +7562,66 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: S_Move_1
-  skillIcon: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
+  skillId: S_Unique_05
+  buttonImage: {fileID: 791620696}
   targetSlotImage: {fileID: 637856696}
   skillListPanel: {fileID: 1584571240}
+--- !u!114 &791620699
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 791620694}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 791620696}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 791620698}
+        m_TargetAssemblyTypeName: SkillSelectButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &800567459
 GameObject:
   m_ObjectHideFlags: 0
@@ -7230,7 +7730,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -9.757721, y: -154.6}
+  m_AnchoredPosition: {x: -9.757721, y: -77.1}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &828054279
@@ -7287,6 +7787,7 @@ GameObject:
   - component: {fileID: 844279710}
   - component: {fileID: 844279709}
   - component: {fileID: 844279708}
+  - component: {fileID: 844279711}
   m_Layer: 5
   m_Name: SkillIcon_2
   m_TagString: Untagged
@@ -7333,7 +7834,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -7363,10 +7864,66 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: S_Move_1
-  skillIcon: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
+  skillId: S_Ability_06
+  buttonImage: {fileID: 844279708}
   targetSlotImage: {fileID: 1296862052}
   skillListPanel: {fileID: 633366733}
+--- !u!114 &844279711
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 844279706}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 844279708}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 844279710}
+        m_TargetAssemblyTypeName: SkillSelectButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &852199508
 GameObject:
   m_ObjectHideFlags: 0
@@ -7760,7 +8317,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -7790,8 +8347,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: S_Move_1
-  skillIcon: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
+  skillId: S_Ability_02
+  buttonImage: {fileID: 861379316}
   targetSlotImage: {fileID: 278883991}
   skillListPanel: {fileID: 1534495613}
 --- !u!114 &861379319
@@ -8029,6 +8586,7 @@ GameObject:
   - component: {fileID: 907294527}
   - component: {fileID: 907294526}
   - component: {fileID: 907294525}
+  - component: {fileID: 907294528}
   m_Layer: 5
   m_Name: SkillIcon_1
   m_TagString: Untagged
@@ -8075,7 +8633,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -8105,10 +8663,66 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: S_Move_1
-  skillIcon: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
+  skillId: S_Passive_05
+  buttonImage: {fileID: 907294525}
   targetSlotImage: {fileID: 2109125127}
   skillListPanel: {fileID: 925429131}
+--- !u!114 &907294528
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 907294523}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 907294525}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 907294527}
+        m_TargetAssemblyTypeName: SkillSelectButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &919164618
 GameObject:
   m_ObjectHideFlags: 0
@@ -8168,7 +8782,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -8198,8 +8812,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: S_Move_1
-  skillIcon: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
+  skillId: S_Ability_01
+  buttonImage: {fileID: 919164620}
   targetSlotImage: {fileID: 278883991}
   skillListPanel: {fileID: 1534495613}
 --- !u!114 &919164623
@@ -8441,7 +9055,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: -77.2}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &940937997
@@ -8456,6 +9070,7 @@ GameObject:
   - component: {fileID: 940938001}
   - component: {fileID: 940938000}
   - component: {fileID: 940937999}
+  - component: {fileID: 940938002}
   m_Layer: 5
   m_Name: SkillIcon_1
   m_TagString: Untagged
@@ -8502,7 +9117,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -8532,10 +9147,66 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: S_Move_1
-  skillIcon: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
+  skillId: S_Passive_03
+  buttonImage: {fileID: 940937999}
   targetSlotImage: {fileID: 1571410989}
   skillListPanel: {fileID: 155632087}
+--- !u!114 &940938002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 940937997}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 940937999}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 940938001}
+        m_TargetAssemblyTypeName: SkillSelectButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &957296243
 GameObject:
   m_ObjectHideFlags: 0
@@ -8548,6 +9219,7 @@ GameObject:
   - component: {fileID: 957296247}
   - component: {fileID: 957296246}
   - component: {fileID: 957296245}
+  - component: {fileID: 957296248}
   m_Layer: 5
   m_Name: SkillIcon_1
   m_TagString: Untagged
@@ -8594,7 +9266,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -8624,10 +9296,66 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: S_Move_1
-  skillIcon: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
+  skillId: S_Ability_11
+  buttonImage: {fileID: 957296245}
   targetSlotImage: {fileID: 441047369}
   skillListPanel: {fileID: 815401581}
+--- !u!114 &957296248
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 957296243}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 957296245}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 957296247}
+        m_TargetAssemblyTypeName: SkillSelectButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &979579143
 GameObject:
   m_ObjectHideFlags: 0
@@ -8687,7 +9415,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -8717,8 +9445,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: S_Move_1
-  skillIcon: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
+  skillId: S_Ability_03
+  buttonImage: {fileID: 979579145}
   targetSlotImage: {fileID: 1963774509}
   skillListPanel: {fileID: 568390165}
 --- !u!114 &979579148
@@ -9119,7 +9847,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -9149,8 +9877,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: S_Move_1
-  skillIcon: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
+  skillId: S_Unique_02
+  buttonImage: {fileID: 1064908094}
   targetSlotImage: {fileID: 1140480800}
   skillListPanel: {fileID: 814380096}
 --- !u!114 &1064908097
@@ -9898,6 +10626,7 @@ GameObject:
   - component: {fileID: 1194611792}
   - component: {fileID: 1194611791}
   - component: {fileID: 1194611790}
+  - component: {fileID: 1194611793}
   m_Layer: 5
   m_Name: SkillIcon_2
   m_TagString: Untagged
@@ -9944,7 +10673,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -9974,10 +10703,66 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: S_Move_1
-  skillIcon: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
+  skillId: S_Ability_10
+  buttonImage: {fileID: 1194611790}
   targetSlotImage: {fileID: 126391920}
   skillListPanel: {fileID: 1848435136}
+--- !u!114 &1194611793
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1194611788}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 1194611790}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1194611792}
+        m_TargetAssemblyTypeName: SkillSelectButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1196482721
 GameObject:
   m_ObjectHideFlags: 0
@@ -10314,6 +11099,7 @@ GameObject:
   - component: {fileID: 1218939547}
   - component: {fileID: 1218939546}
   - component: {fileID: 1218939545}
+  - component: {fileID: 1218939548}
   m_Layer: 5
   m_Name: SkillIcon_2
   m_TagString: Untagged
@@ -10360,7 +11146,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -10390,10 +11176,66 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: S_Move_1
-  skillIcon: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
+  skillId: S_Unique_06
+  buttonImage: {fileID: 1218939545}
   targetSlotImage: {fileID: 637856696}
   skillListPanel: {fileID: 1584571240}
+--- !u!114 &1218939548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1218939543}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 1218939545}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1218939547}
+        m_TargetAssemblyTypeName: SkillSelectButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1226502820
 GameObject:
   m_ObjectHideFlags: 0
@@ -10523,7 +11365,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1282194459}
-  - component: {fileID: 1282194458}
   m_Layer: 0
   m_Name: Panel_PartySetting
   m_TagString: Untagged
@@ -10531,18 +11372,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!114 &1282194458
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1282194457}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 88c417a012f9aab46b098d536b90fa48, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &1282194459
 Transform:
   m_ObjectHideFlags: 0
@@ -11146,6 +11975,7 @@ GameObject:
   - component: {fileID: 1389245065}
   - component: {fileID: 1389245064}
   - component: {fileID: 1389245063}
+  - component: {fileID: 1389245066}
   m_Layer: 5
   m_Name: SkillIcon_2
   m_TagString: Untagged
@@ -11192,7 +12022,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -11222,10 +12052,66 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: S_Move_1
-  skillIcon: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
+  skillId: S_Ability_12
+  buttonImage: {fileID: 1389245063}
   targetSlotImage: {fileID: 441047369}
   skillListPanel: {fileID: 815401581}
+--- !u!114 &1389245066
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1389245061}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 1389245063}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1389245065}
+        m_TargetAssemblyTypeName: SkillSelectButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1398178373
 GameObject:
   m_ObjectHideFlags: 0
@@ -12317,7 +13203,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -12347,8 +13233,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: S_Move_1
-  skillIcon: {fileID: 21300000, guid: 92f7e01ae1374674792894f8d7dbeceb, type: 3}
+  skillId: S_Passive_02
+  buttonImage: {fileID: 1470103235}
   targetSlotImage: {fileID: 991976098}
   skillListPanel: {fileID: 2111778035}
 --- !u!114 &1470103238
@@ -12612,7 +13498,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -12642,8 +13528,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: S_Move_1
-  skillIcon: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
+  skillId: S_Passive_01
+  buttonImage: {fileID: 1483407859}
   targetSlotImage: {fileID: 991976098}
   skillListPanel: {fileID: 2111778035}
 --- !u!114 &1483407862
@@ -13408,7 +14294,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   characterType: 3
-  characterId: CHAR_003
+  characterId: Char_03
   playClickSound: 0
 --- !u!114 &1559652445
 MonoBehaviour:
@@ -13764,7 +14650,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -4.065735, y: -50.2}
+  m_AnchoredPosition: {x: -4.065735, y: -77.1}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1585451470
@@ -14723,7 +15609,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -9.757721, y: -154.6}
+  m_AnchoredPosition: {x: -9.757721, y: -77.3}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1726461485
@@ -15007,6 +15893,7 @@ GameObject:
   - component: {fileID: 1738616213}
   - component: {fileID: 1738616212}
   - component: {fileID: 1738616211}
+  - component: {fileID: 1738616214}
   m_Layer: 5
   m_Name: SkillIcon_1
   m_TagString: Untagged
@@ -15053,7 +15940,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -15083,10 +15970,66 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a0cc64123280240a101acdc7d86d71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillId: S_Move_1
-  skillIcon: {fileID: 21300000, guid: 764c28fdb41546543bc08ae12441c5cb, type: 3}
+  skillId: S_Ability_09
+  buttonImage: {fileID: 1738616211}
   targetSlotImage: {fileID: 126391920}
   skillListPanel: {fileID: 1848435136}
+--- !u!114 &1738616214
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1738616209}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 1738616211}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1738616213}
+        m_TargetAssemblyTypeName: SkillSelectButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1764859137
 GameObject:
   m_ObjectHideFlags: 0
@@ -15121,7 +16064,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -4.065735, y: -50.2}
+  m_AnchoredPosition: {x: -4.065735, y: -77.7}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1792446126
@@ -15177,7 +16120,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   characterType: 1
-  characterId: CHAR_001
+  characterId: Char_01
   playClickSound: 0
 --- !u!114 &1792446129
 MonoBehaviour:
@@ -15682,7 +16625,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -6.5051575, y: -103.3}
+  m_AnchoredPosition: {x: -6.5051575, y: -76.7}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1858550141
@@ -15875,10 +16818,10 @@ MonoBehaviour:
     targetPanel: {fileID: 1493287605}
   - characterType: 2
     panelType: 0
-    targetPanel: {fileID: 0}
+    targetPanel: {fileID: 604506138}
   - characterType: 3
     panelType: 0
-    targetPanel: {fileID: 0}
+    targetPanel: {fileID: 1058961155}
   - characterType: 4
     panelType: 0
     targetPanel: {fileID: 494410328}
@@ -17898,3 +18841,4 @@ SceneRoots:
   - {fileID: 706180003}
   - {fileID: 1418535311}
   - {fileID: 2100462781}
+  - {fileID: 126366152}

@@ -4,12 +4,66 @@ using Relic.Gameplay.Data;
 
 public class SkillSelectButton : MonoBehaviour
 {
+    [Header("Skill")]
     [SerializeField] private string skillId;
 
     [Header("UI")]
-    [SerializeField] private Sprite skillIcon;
+    [SerializeField] private Image buttonImage;
     [SerializeField] private Image targetSlotImage;
     [SerializeField] private GameObject skillListPanel;
+
+    private Sprite cachedIcon;
+
+    private SkillIconDatabase DB => DataManager.Instance.SkillIconDatabase;
+
+    private void Awake()
+    {
+        if (buttonImage == null)
+            buttonImage = GetComponent<Image>();
+
+        RefreshButtonIcon();
+    }
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (buttonImage == null)
+            buttonImage = GetComponent<Image>();
+
+        RefreshButtonIcon();
+    }
+#endif
+
+    private void RefreshButtonIcon()
+    {
+        if (!Application.isPlaying)
+            return;
+
+        if (DataManager.Instance == null)
+            return;
+
+        var db = DataManager.Instance.SkillIconDatabase;
+
+        if (db == null || string.IsNullOrWhiteSpace(skillId))
+            return;
+
+        if (!db.TryGetIcon(skillId, out var icon))
+        {
+            Debug.LogWarning($"[SkillSelectButton] Icon not found: {skillId}");
+            return;
+        }
+
+        cachedIcon = icon;
+
+        if (buttonImage == null)
+            buttonImage = GetComponent<Image>();
+
+        if (buttonImage != null)
+        {
+            buttonImage.sprite = icon;
+            buttonImage.enabled = true;
+        }
+    }
 
     public void Execute()
     {
@@ -38,7 +92,7 @@ public class SkillSelectButton : MonoBehaviour
 
         if (targetSlotImage == null)
         {
-            Debug.LogWarning($"[SkillSelectButton] Invalid slot index: {slotIndex}");
+            Debug.LogWarning("[SkillSelectButton] Target slot image missing");
             return;
         }
 
@@ -56,18 +110,22 @@ public class SkillSelectButton : MonoBehaviour
             return;
         }
 
+        if (cachedIcon == null)
+        {
+            if (!DB.TryGetIcon(skillId, out cachedIcon))
+            {
+                Debug.LogWarning($"[SkillSelectButton] Icon not found: {skillId}");
+                return;
+            }
+        }
+
         character.EquippedSkillIds[slotIndex] = skillId;
 
-        if (targetSlotImage != null)
-        {
-            targetSlotImage.sprite = skillIcon;
-            targetSlotImage.enabled = skillIcon != null;
-        }
+        targetSlotImage.sprite = cachedIcon;
+        targetSlotImage.enabled = true;
 
         if (skillListPanel != null)
-        {
             skillListPanel.SetActive(false);
-        }
 
         Debug.Log($"[SkillEquip] {characterId} Slot {slotIndex} = {skillId}");
     }

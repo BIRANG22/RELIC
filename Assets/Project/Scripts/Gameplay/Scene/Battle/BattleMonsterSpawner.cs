@@ -1,4 +1,5 @@
 using Relic.Gameplay.Data;
+using Relic.Gameplay.Monster;
 using UnityEngine;
 
 public class BattleMonsterSpawner : MonoBehaviour
@@ -64,9 +65,25 @@ public class BattleMonsterSpawner : MonoBehaviour
             Quaternion.identity
         );
 
-        monster.name = string.IsNullOrWhiteSpace(spawnData.NameSuffix)
-            ? monsterData.Name
-            : $"{monsterData.Name}_{spawnData.NameSuffix}";
+        string runtimeId = MonsterRuntimeIdGenerator.Create();
+
+        MonsterRuntimeData runtimeData =
+            new MonsterRuntimeData(runtimeId, monsterData);
+
+        MonsterUnit monsterUnit = monster.GetComponent<MonsterUnit>();
+
+        if (monsterUnit == null)
+        {
+            Debug.LogError(
+                $"[BattleMonsterSpawner] MonsterUnit ¾øÀ½: {monster.name}"
+            );
+
+            Destroy(monster);
+            return;
+        }
+
+        monsterUnit.Initialize(runtimeData);
+
 
         Debug.Log(
             $"[BattleMonsterSpawner] Spawn Monster: {spawnData.MonsterId} -> Grid_{mainCell:00} / Cells: {string.Join(", ", cells)}"

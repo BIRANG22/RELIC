@@ -20,11 +20,7 @@ namespace Relic.Gameplay.Data
                 if (string.IsNullOrWhiteSpace(entry.SkillId) || entry.Icon == null)
                     continue;
 
-                var key = entry.SkillId.Trim();
-
-                map[key] = entry.Icon;
-
-                Debug.Log($"[SkillIconDatabase] ADD key='{key}'");
+                map[entry.SkillId] = entry.Icon;
             }
         }
 
@@ -33,11 +29,7 @@ namespace Relic.Gameplay.Data
             if (map == null)
                 Initialize();
 
-            var key = skillId?.Trim();
-
-            Debug.Log($"[SkillIconDatabase] TRY key='{key}'");
-
-            return map.TryGetValue(key, out icon);
+            return map.TryGetValue(skillId, out icon);
         }
     }
 
