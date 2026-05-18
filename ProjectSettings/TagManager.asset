@@ -15,7 +15,7 @@ TagManager:
   - WorldUI3D
   - ground
   - cha
-  - 
+  - 1
   - 
   - 
   - 
@@ -42,18 +42,14 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
-  - name: Unit
-    uniqueID: 2713242843
+  - name: New Layer 1
+    uniqueID: 3953243251
     locked: 0
-  - name: UI
-    uniqueID: 430934497
+  - name: New Layer 2
+    uniqueID: 2187390285
+    locked: 0
+  - name: New Layer 3
+    uniqueID: 735699439
     locked: 0
   m_RenderingLayers:
   - Default
-  - Light Layer 1
-  - Light Layer 2
-  - Light Layer 3
-  - Light Layer 4
-  - Light Layer 5
-  - Light Layer 6
-  - Light Layer 7
