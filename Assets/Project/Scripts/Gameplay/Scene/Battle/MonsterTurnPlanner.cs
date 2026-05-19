@@ -1,5 +1,6 @@
-using System.Collections.Generic;
+using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Relic.Gameplay.Battle
@@ -30,9 +31,12 @@ namespace Relic.Gameplay.Battle
                 if (string.IsNullOrWhiteSpace(skillId))
                     continue;
 
+                SkillMasterData skillData = DataManager.Instance.SkillDatabase.Get(skillId);
+
                 timelineManager.AddMonsterAction(
                     monster,
                     skillId,
+                    skillData.TimelineNotation,
                     i
                 );
             }

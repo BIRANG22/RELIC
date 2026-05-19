@@ -11,7 +11,7 @@ namespace Relic.Gameplay.Data
         Skill
     }
 
-    public enum ActionType
+    public enum TimelineActionType
     {
         None,
         Attack,
@@ -109,7 +109,7 @@ namespace Relic.Gameplay.Data
         public int GridMove;
         public RangeType RangeType;
         public string RangeId;
-        public ActionType TimelineNotation;
+        public TimelineActionType TimelineNotation;
 
         // 런타임 사용용
         public List<SkillEffectEntry> EffectEntries = new();

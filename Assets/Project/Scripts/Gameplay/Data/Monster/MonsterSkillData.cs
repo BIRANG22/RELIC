@@ -21,7 +21,7 @@ namespace Relic.Gameplay.Data
         public RangeType RangeType;
         public string RangeId;
 
-        public ActionType TimelineNotation;
+        public TimelineActionType TimelineNotation;
 
         public List<SkillEffectEntry> EffectEntries = new();
     }
