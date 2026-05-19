@@ -267,6 +267,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   testSkillId: S_Move_1
   iconImage: {fileID: 8881938825282865905}
+  playerActionPlanner: {fileID: 0}
+  useEquipUI: 0
+  useBattleTimeline: 1
 --- !u!1 &3597982360708258861
 GameObject:
   m_ObjectHideFlags: 0
@@ -614,6 +617,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   testSkillId: S_Move_1
   iconImage: {fileID: 7352505598218805135}
+  playerActionPlanner: {fileID: 0}
+  useEquipUI: 0
+  useBattleTimeline: 1
 --- !u!1 &5462925784346637053
 GameObject:
   m_ObjectHideFlags: 0
@@ -692,8 +698,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: -1581724453
-  m_SortingLayer: 1
+  m_SortingLayerID: 1597553239
+  m_SortingLayer: 4
   m_SortingOrder: 2
   m_Sprite: {fileID: 21300000, guid: 6b884f43f253c5244bac798af0078f49, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -910,6 +916,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   testSkillId: S_Move_1
   iconImage: {fileID: 8391452340417562179}
+  playerActionPlanner: {fileID: 0}
+  useEquipUI: 0
+  useBattleTimeline: 1
 --- !u!1 &7161416826994233092
 GameObject:
   m_ObjectHideFlags: 0
@@ -1217,6 +1226,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   testSkillId: S_Move_1
   iconImage: {fileID: 8674667124904313338}
+  playerActionPlanner: {fileID: 0}
+  useEquipUI: 0
+  useBattleTimeline: 1
 --- !u!1 &9139300142066748542
 GameObject:
   m_ObjectHideFlags: 0
@@ -1334,3 +1346,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   testSkillId: S_Move_1
   iconImage: {fileID: 8073083490141206925}
+  playerActionPlanner: {fileID: 0}
+  useEquipUI: 0
+  useBattleTimeline: 1

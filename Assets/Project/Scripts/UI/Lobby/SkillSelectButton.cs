@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using Relic.Gameplay.Data;
-
+//로비 스킬 장착 스크립트
 public class SkillSelectButton : MonoBehaviour
 {
     [Header("Skill")]

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
 using UnityEngine;
 
@@ -18,6 +19,7 @@ namespace Relic.Gameplay.Battle
         public void AddMonsterAction(
             MonsterUnit monster,
             string skillId,
+            TimelineActionType actionType,
             int order)
         {
             if (monster == null || monster.RuntimeData == null)
@@ -29,21 +31,21 @@ namespace Relic.Gameplay.Battle
                 ActorType = BattleActorType.Monster,
                 ActorRuntimeId = monster.RuntimeData.RuntimeId,
                 SkillId = skillId,
-                ActionType = BattleActionType.Skill,
+                ActionType = actionType,
                 Order = order
             };
 
-            queue.AddAction(action);
+            AddAction(action);
 
             Debug.Log(
-                $"[Timeline] Monster Action Add: {monster.RuntimeData.Name} / {skillId}"
+                $"[Timeline] Monster Action Add: {monster.RuntimeData.Name} / {skillId} / {actionType}"
             );
         }
 
         public void AddPlayerAction(
             string playerRuntimeId,
             string skillId,
-            BattleActionType actionType,
+            TimelineActionType actionType,
             int order)
         {
             TimelineActionData action = new TimelineActionData
@@ -56,10 +58,22 @@ namespace Relic.Gameplay.Battle
                 Order = order
             };
 
+            AddAction(action);
+
+            Debug.Log(
+                $"[Timeline] Player Action Add: {playerRuntimeId} / {skillId} / {actionType}"
+            );
+        }
+
+        public void AddAction(TimelineActionData action)
+        {
+            if (action == null)
+                return;
+
             queue.AddAction(action);
 
             Debug.Log(
-                $"[Timeline] Player Action Add: {playerRuntimeId} / {skillId}"
+                $"[Timeline] Action Add: {action.ActorType} / {action.ActorRuntimeId} / {action.SkillId} / {action.ActionType}"
             );
         }
 
