@@ -136,7 +136,7 @@ Material:
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
-    - _Gradation_Power: 2.71
+    - _Gradation_Power: -12.1
     - _Metallic: 0
     - _Noise_Power: 2
     - _Normal_Power: 0
@@ -161,7 +161,7 @@ Material:
     - _ZWriteControl: 0
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _Bottom_Color: {r: 0.14716971, g: 0.07080806, b: 0.123735555, a: 0}
+    - _Bottom_Color: {r: 0, g: 0, b: 0, a: 0}
     - _Color: {r: 0.645283, g: 0, b: 0.41865462, a: 1}
     - _Color_1: {r: 0.19999999, g: 0.025283013, b: 0.18763989, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
