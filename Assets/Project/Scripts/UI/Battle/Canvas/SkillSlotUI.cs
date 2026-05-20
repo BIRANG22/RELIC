@@ -15,6 +15,10 @@ public class SkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     [Header("Selection UI")]
     [SerializeField] private GameObject selectObject;
 
+    [Header("Selection State")]
+    [SerializeField] private Image slotImage;
+    [SerializeField] private Button slotButton;
+
     private readonly List<Sprite> equippedSkillIcons = new List<Sprite>();
     private CharacterSelectButtonUI ownerCharacter;
 
@@ -56,10 +60,15 @@ public class SkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public void OnClickSkillIcon(int iconIndex)
     {
+        Debug.Log($"[SkillSlotUI] 스킬 아이콘 클릭됨 Slot:{name}, Index:{iconIndex}");
+
         PlayerActionPlanner planner = Object.FindFirstObjectByType<PlayerActionPlanner>();
 
         if (planner == null)
+        {
+            Debug.LogWarning("[SkillSlotUI] PlayerActionPlanner를 찾지 못함");
             return;
+        }
 
         planner.RemovePlannedSkill(this, iconIndex);
     }
@@ -67,7 +76,15 @@ public class SkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     public void SetSelected(bool value)
     {
         isSelected = value;
+
+        if (slotImage != null)
+            slotImage.raycastTarget = !isSelected;
+
+        if (slotButton != null)
+            slotButton.interactable = !isSelected;
+
         RefreshSelectObject();
+        RefreshSkillIconRaycast();
     }
 
     private void RefreshSelectObject()
@@ -76,6 +93,24 @@ public class SkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             return;
 
         selectObject.SetActive(isHover || isSelected);
+    }
+
+    private void RefreshSkillIconRaycast()
+    {
+        for (int i = 0; i < skillIconImages.Length; i++)
+        {
+            if (skillIconImages[i] == null)
+                continue;
+
+            bool hasSkill = i < equippedSkillIcons.Count;
+            bool canClickIcon = isSelected && hasSkill;
+
+            skillIconImages[i].raycastTarget = canClickIcon;
+
+            Button iconButton = skillIconImages[i].GetComponent<Button>();
+            if (iconButton != null)
+                iconButton.interactable = canClickIcon;
+        }
     }
 
     public void SetOwnerCharacter(CharacterSelectButtonUI character)
@@ -151,7 +186,6 @@ public class SkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
             skillIconImages[i].sprite = null;
             skillIconImages[i].enabled = false;
-            skillIconImages[i].raycastTarget = false;
             skillIconImages[i].gameObject.SetActive(false);
         }
 
@@ -166,6 +200,7 @@ public class SkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         }
 
         UpdateIconLayout();
+        RefreshSkillIconRaycast();
     }
 
     private void UpdateIconLayout()

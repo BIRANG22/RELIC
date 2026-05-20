@@ -18,7 +18,7 @@ namespace Relic.Gameplay.Data
         public string CountCalcTypes;
         public string CountRate;
 
-        public ResourceCostData ResourceCost;
+        public int Consumption;
 
         public int EnhancementLevel;
 

@@ -1,17 +1,29 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 public class SkillResourcePreviewUI : MonoBehaviour
 {
-    [Header("Resource Fill")]
-    [SerializeField] private Image previewFill;
+    [Header("Preview Fill")]
+    [SerializeField] private Transform previewFill;
+
+    private Vector3 defaultScale;
+
+    private void Awake()
+    {
+        if (previewFill != null)
+            defaultScale = previewFill.localScale;
+    }
 
     public void SetPreview(float normalizedValue)
     {
         if (previewFill == null)
             return;
 
-        previewFill.fillAmount = Mathf.Clamp01(normalizedValue);
+        normalizedValue = Mathf.Clamp01(normalizedValue);
+
+        Vector3 scale = defaultScale;
+        scale.x *= normalizedValue;
+
+        previewFill.localScale = scale;
     }
 
     public void SetPreviewByValue(int currentValue, int maxValue)
@@ -22,6 +34,9 @@ public class SkillResourcePreviewUI : MonoBehaviour
             return;
         }
 
-        SetPreview((float)Mathf.Clamp(currentValue, 0, maxValue) / maxValue);
+        float normalized =
+            (float)Mathf.Clamp(currentValue, 0, maxValue) / maxValue;
+
+        SetPreview(normalized);
     }
 }

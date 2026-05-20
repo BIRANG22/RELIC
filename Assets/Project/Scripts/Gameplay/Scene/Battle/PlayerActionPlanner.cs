@@ -20,6 +20,7 @@ namespace Relic.Gameplay.Battle
         private SkillSlotUI currentSlot;
         private CharacterSelectButtonUI currentCharacter;
         private SkillMasterData currentSkillData;
+        private ReferenceResource currentPreviewResourceType = ReferenceResource.Stamina;
 
         private sealed class PlannedSkillEntry
         {
@@ -67,17 +68,27 @@ namespace Relic.Gameplay.Battle
                 return;
             }
 
-            int reservedCost = GetReservedCost(currentSlot, currentCharacter.CharacterId, skillData.ReferenceResource);
+            int reservedCost = GetReservedCostByCharacter(currentCharacter.CharacterId, skillData.ReferenceResource);
             int currentResource = SkillCostCalculator.GetCurrentResource(actorRuntimeData, skillData.ReferenceResource);
             int availableResource = currentResource - reservedCost;
-
+            
             if (!CanPaySkillCostWithAvailable(skillData, availableResource, out int previewCost))
             {
-                Debug.Log($"[PlayerActionPlanner] 자원이 부족하여 스킬을 등록할 수 없습니다. Skill:{skillData.SkillId}");
+                Debug.Log(
+                    $"[CostCheck] " +
+                    $"Skill:{skillData.SkillId}, " +
+                    $"Resource:{skillData.ReferenceResource}, " +
+                    $"CostType:{skillData.ResourceCostType}, " +
+                    $"CostValue:{skillData.ResourceCostValue}, " +
+                    $"Current:{currentResource}, " +
+                    $"Reserved:{reservedCost}, " +
+                    $"Available:{availableResource}"
+                );
                 return;
             }
 
             currentSkillData = skillData;
+            currentPreviewResourceType = skillData.ReferenceResource;
             currentSelection.SkillId = skillData.SkillId;
             currentSelection.ActionType = skillData.TimelineNotation;
 
@@ -92,8 +103,6 @@ namespace Relic.Gameplay.Battle
 
             if (skillData.Target == TargetType.Self)
             {
-                // 문제점: 기존 코드는 Self 스킬에서 미확정 상태가 길어질 때 비용 프리뷰가 갱신되지 않아 UI와 실제 등록 상태가 어긋났습니다.
-                // 수정 이유: Self 스킬도 즉시 등록 단계로 진입하도록 보정해 프리뷰 수치가 항상 슬롯 상태와 동기화되게 했습니다.
                 ConfirmAction(previewCost);
             }
         }
@@ -128,8 +137,6 @@ namespace Relic.Gameplay.Battle
             plannedList.RemoveAt(iconIndex);
             slot.RemoveSkillAt(iconIndex);
 
-            // 문제점: 기존 구조는 타임라인에서 특정 슬롯 아이콘에 대응하는 액션 삭제 API가 없어, 슬롯 UI와 타임라인 데이터가 분리될 위험이 있었습니다.
-            // 수정 이유: ActionId 기준 제거를 추가해 아이콘 제거 시 타임라인도 동일하게 제거되도록 일치시켰습니다.
             if (timelineManager != null)
             {
                 timelineManager.RemoveAction(x => x.ActionId == removedEntry.ActionId);
@@ -181,7 +188,7 @@ namespace Relic.Gameplay.Battle
                     return;
                 }
 
-                int reservedCost = GetReservedCost(currentSlot, currentCharacter.CharacterId, currentSkillData.ReferenceResource);
+                int reservedCost = GetReservedCostByCharacter(currentCharacter.CharacterId, currentSkillData.ReferenceResource);
                 int currentResource = SkillCostCalculator.GetCurrentResource(actorRuntimeData, currentSkillData.ReferenceResource);
                 int availableResource = currentResource - reservedCost;
 
@@ -262,6 +269,40 @@ namespace Relic.Gameplay.Battle
             return sum;
         }
 
+        private int GetReservedCostByCharacter(string actorCharacterId, ReferenceResource resourceType)
+        {
+            int sum = 0;
+
+            foreach (var pair in plannedSkillsBySlot)
+            {
+                SkillSlotUI slot = pair.Key;
+                List<PlannedSkillEntry> plannedList = pair.Value;
+
+                if (slot == null)
+                    continue;
+
+                if (!slot.HasOwnerCharacter || slot.OwnerCharacter.CharacterId != actorCharacterId)
+                    continue;
+
+                foreach (PlannedSkillEntry entry in plannedList)
+                {
+                    if (string.IsNullOrWhiteSpace(entry.SkillId))
+                        continue;
+
+                    SkillMasterData skillData = DataManager.Instance?.SkillDatabase?.Get(entry.SkillId);
+                    if (skillData == null)
+                        continue;
+
+                    if (skillData.ReferenceResource != resourceType)
+                        continue;
+
+                    sum += entry.PreviewCost;
+                }
+            }
+
+            return sum;
+        }
+
         private bool TryGetActorRuntimeData(string characterId, out CharacterRuntimeData runtimeData)
         {
             runtimeData = null;
@@ -276,24 +317,30 @@ namespace Relic.Gameplay.Battle
             return dm.CharacterRuntimeStore.TryGet(characterId, out runtimeData);
         }
 
-        private static bool CanPaySkillCostWithAvailable(SkillMasterData skillData, int availableResource, out int previewCost)
+        private static bool CanPaySkillCostWithAvailable(
+            SkillMasterData skillData,
+            int availableResource,
+            out int previewCost)
         {
             previewCost = 0;
 
-            if (skillData == null || skillData.ResourceCost == null)
+            if (skillData == null)
                 return false;
 
-            switch (skillData.ResourceCost.ResourceCostType)
+            switch (skillData.ResourceCostType)
             {
                 case ResourceCostType.None:
                     previewCost = 0;
                     return true;
+
                 case ResourceCostType.Fixed:
-                    previewCost = skillData.ResourceCost.ResourceCostValue;
+                    previewCost = skillData.ResourceCostValue;
                     return availableResource >= previewCost;
+
                 case ResourceCostType.AllCurrent:
                     previewCost = availableResource;
-                    return availableResource >= skillData.ResourceCost.ResourceCostValue;
+                    return availableResource >= skillData.ResourceCostValue;
+
                 default:
                     return false;
             }
@@ -309,8 +356,6 @@ namespace Relic.Gameplay.Battle
                 return;
             }
 
-            // 문제점: 기존 구현은 Inspector 수동 연결을 전제로 해 동적 스폰 프리팹에서 연결이 끊겼습니다.
-            // 수정 이유: 캐릭터 선택 시점에 해당 캐릭터 오브젝트 트리에서 자동 탐색해 동적 생성 구조를 지원합니다.
             resourcePreviewUI = character.GetComponentInChildren<SkillResourcePreviewUI>(true);
 
             if (resourcePreviewUI == null && character.BattleCharacter != null)
@@ -343,13 +388,11 @@ namespace Relic.Gameplay.Battle
                 return;
             }
 
-            ReferenceResource previewResourceType = currentSkillData != null
-                ? currentSkillData.ReferenceResource
-                : ReferenceResource.UniqueResource;
+            ReferenceResource previewResourceType = currentPreviewResourceType;
 
             int currentValue = GetCurrentResourceByType(runtimeData, previewResourceType);
             int maxValue = GetMaxResourceByType(masterData, previewResourceType);
-            int reserved = GetReservedCost(currentSlot, currentCharacter.CharacterId, previewResourceType);
+            int reserved = GetReservedCostByCharacter(currentCharacter.CharacterId, previewResourceType);
             int remain = Mathf.Max(0, currentValue - reserved);
 
             resourcePreviewUI.SetPreviewByValue(remain, maxValue);

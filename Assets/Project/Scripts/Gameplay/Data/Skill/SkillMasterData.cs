@@ -76,13 +76,6 @@ namespace Relic.Gameplay.Data
     }
 
     [System.Serializable]
-    public class ResourceCostData
-    {
-        public ResourceCostType ResourceCostType;
-        public int ResourceCostValue;
-    }
-
-    [System.Serializable]
     public class SkillMasterData
     {
         public string SkillId;
@@ -104,7 +97,8 @@ namespace Relic.Gameplay.Data
         public int PassiveMinResource;
 
         // 자원 소모
-        public ResourceCostData ResourceCost;
+        public ResourceCostType ResourceCostType;
+        public int ResourceCostValue;
 
         public int GridMove;
         public RangeType RangeType;
