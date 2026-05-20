@@ -54,16 +54,6 @@ public class SkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             planner.SelectSlot(this);
     }
 
-    public void OnClickSkillIcon(int iconIndex)
-    {
-        PlayerActionPlanner planner = Object.FindFirstObjectByType<PlayerActionPlanner>();
-
-        if (planner == null)
-            return;
-
-        planner.RemovePlannedSkill(this, iconIndex);
-    }
-
     public void SetSelected(bool value)
     {
         isSelected = value;
@@ -98,13 +88,13 @@ public class SkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     {
         if (icon == null)
         {
-            Debug.LogWarning($"{name}: ì¶”ê°€í•  ìŠ¤í‚¬ ì•„ì´ì½˜ì´ ì—†ìŠµë‹ˆë‹¤.");
+            Debug.LogWarning($"{name}: Ãß°¡ÇÒ ½ºÅ³ ¾ÆÀÌÄÜÀÌ ¾ø½À´Ï´Ù.");
             return false;
         }
 
         if (IsFull)
         {
-            Debug.Log($"{name}: ì´ë¯¸ ìŠ¤í‚¬ì´ ê°€ë“ ì°¼ìŠµë‹ˆë‹¤.");
+            Debug.Log($"{name}: ÀÌ¹Ì ½ºÅ³ÀÌ °¡µæ Ã¡½À´Ï´Ù.");
             return false;
         }
 
@@ -124,7 +114,7 @@ public class SkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     {
         if (index < 0 || index >= equippedSkillIcons.Count)
         {
-            Debug.LogWarning($"{name}: RemoveSkillAt ì¸ë±ìŠ¤ê°€ ë²”ìœ„ë¥¼ ë²—ì–´ë‚¬ìŠµë‹ˆë‹¤.");
+            Debug.LogWarning($"{name}: RemoveSkillAt ÀÎµ¦½º°¡ ¹üÀ§¸¦ ¹ş¾î³µ½À´Ï´Ù.");
             return;
         }
 
@@ -140,7 +130,7 @@ public class SkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     {
         if (skillIconImages == null || skillIconImages.Length == 0)
         {
-            Debug.LogWarning($"{name}: skillIconImagesê°€ ì—°ê²°ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
+            Debug.LogWarning($"{name}: skillIconImages°¡ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù.");
             return;
         }
 

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 using Relic.Gameplay.Data;
 
@@ -13,23 +12,13 @@ namespace Relic.Gameplay.Battle
         [SerializeField] private BattleTimelineUI timelineUI;
         [SerializeField] private SkillSlotUI[] skillSlots;
 
-        [Header("Resource Preview UI")]
-        [SerializeField] private SkillResourcePreviewUI resourcePreviewUI;
-
         private readonly PlayerActionSelectionData currentSelection = new();
-        private readonly Dictionary<SkillSlotUI, List<PlannedSkillEntry>> plannedSkillsBySlot = new();
+
+        private int playerActionOrder = 100;
 
         private SkillSlotUI currentSlot;
         private CharacterSelectButtonUI currentCharacter;
         private SkillMasterData currentSkillData;
-
-        private sealed class PlannedSkillEntry
-        {
-            public string ActionId;
-            public string SkillId;
-            public int PreviewCost;
-        }
-
         public void SelectPlayer(CharacterSelectButtonUI character)
         {
             if (character == null)
@@ -40,9 +29,7 @@ namespace Relic.Gameplay.Battle
             currentSelection.Clear();
             currentSelection.PlayerRuntimeId = character.CharacterId;
 
-            RefreshResourcePreview();
-
-            Debug.Log($"[PlayerActionPlanner] Player 선택: {character.CharacterId}");
+            Debug.Log($"[PlayerActionPlanner] Player ����: {character.CharacterId}");
         }
 
         public void SelectSkill(SkillMasterData skillData)
@@ -52,49 +39,35 @@ namespace Relic.Gameplay.Battle
 
             if (currentSlot == null)
             {
-                Debug.LogWarning("[PlayerActionPlanner] 선택된 슬롯이 없습니다.");
+                Debug.LogWarning("[PlayerActionPlanner] ������ ���õ��� �ʾҽ��ϴ�.");
                 return;
             }
 
             if (currentCharacter == null)
             {
-                Debug.LogWarning("[PlayerActionPlanner] 캐릭터가 선택되지 않았습니다.");
-                return;
-            }
-
-            if (!TryGetActorRuntimeData(currentCharacter.CharacterId, out CharacterRuntimeData actorRuntimeData))
-            {
-                Debug.LogWarning($"[PlayerActionPlanner] CharacterRuntimeData 조회 실패: {currentCharacter.CharacterId}");
-                return;
-            }
-
-            int reservedCost = GetReservedCost(currentSlot, currentCharacter.CharacterId, skillData.ReferenceResource);
-            int currentResource = SkillCostCalculator.GetCurrentResource(actorRuntimeData, skillData.ReferenceResource);
-            int availableResource = currentResource - reservedCost;
-
-            if (!CanPaySkillCostWithAvailable(skillData, availableResource, out int previewCost))
-            {
-                Debug.Log($"[PlayerActionPlanner] 자원이 부족하여 스킬을 등록할 수 없습니다. Skill:{skillData.SkillId}");
+                Debug.LogWarning("[PlayerActionPlanner] ĳ���Ͱ� ���õ��� �ʾҽ��ϴ�.");
                 return;
             }
 
             currentSkillData = skillData;
+
             currentSelection.SkillId = skillData.SkillId;
             currentSelection.ActionType = skillData.TimelineNotation;
 
-            Debug.Log($"[PlayerActionPlanner] Skill 선택: {skillData.SkillId} / Target:{skillData.Target}");
+            Debug.Log(
+                $"[PlayerActionPlanner] Skill ����: {skillData.SkillId} / Target:{skillData.Target}"
+            );
 
-            if (skillData.Target == TargetType.PlayerParty || skillData.Target == TargetType.EnemyParty)
+            if (skillData.Target == TargetType.PlayerParty ||
+                skillData.Target == TargetType.EnemyParty)
             {
-                ConfirmAction(previewCost);
+                ConfirmAction();
                 return;
             }
 
             if (skillData.Target == TargetType.Self)
             {
-                // 문제점: 기존 코드는 Self 스킬에서 미확정 상태가 길어질 때 비용 프리뷰가 갱신되지 않아 UI와 실제 등록 상태가 어긋났습니다.
-                // 수정 이유: Self 스킬도 즉시 등록 단계로 진입하도록 보정해 프리뷰 수치가 항상 슬롯 상태와 동기화되게 했습니다.
-                ConfirmAction(previewCost);
+                Debug.Log("[PlayerActionPlanner] Self ��ų�Դϴ�. ����/ĭ ������ ��ٸ��ϴ�.");
             }
         }
 
@@ -109,39 +82,7 @@ namespace Relic.Gameplay.Battle
             currentSlot = slot;
             currentSlot.SetSelected(true);
 
-            RefreshResourcePreview();
-            Debug.Log($"[PlayerActionPlanner] 슬롯 선택: {slot.name}");
-        }
-
-        public void RemovePlannedSkill(SkillSlotUI slot, int iconIndex)
-        {
-            if (slot == null)
-                return;
-
-            if (!plannedSkillsBySlot.TryGetValue(slot, out List<PlannedSkillEntry> plannedList))
-                return;
-
-            if (iconIndex < 0 || iconIndex >= plannedList.Count)
-                return;
-
-            PlannedSkillEntry removedEntry = plannedList[iconIndex];
-            plannedList.RemoveAt(iconIndex);
-            slot.RemoveSkillAt(iconIndex);
-
-            // 문제점: 기존 구조는 타임라인에서 특정 슬롯 아이콘에 대응하는 액션 삭제 API가 없어, 슬롯 UI와 타임라인 데이터가 분리될 위험이 있었습니다.
-            // 수정 이유: ActionId 기준 제거를 추가해 아이콘 제거 시 타임라인도 동일하게 제거되도록 일치시켰습니다.
-            if (timelineManager != null)
-            {
-                timelineManager.RemoveAction(x => x.ActionId == removedEntry.ActionId);
-            }
-
-            if (plannedList.Count == 0)
-            {
-                plannedSkillsBySlot.Remove(slot);
-            }
-
-            RefreshTimelineUI();
-            RefreshResourcePreview();
+            Debug.Log($"[PlayerActionPlanner] ���� ����: {slot.name}");
         }
 
         public void SelectTargetUnit(string targetRuntimeId)
@@ -156,40 +97,33 @@ namespace Relic.Gameplay.Battle
             ConfirmAction();
         }
 
-        private void ConfirmAction(int precomputedPreviewCost = -1)
+        private void ConfirmAction()
         {
-            if (currentSlot == null || currentCharacter == null || currentSkillData == null)
+            if (currentSlot == null)
+                return;
+
+            if (currentCharacter == null)
+                return;
+
+            if (currentSkillData == null)
                 return;
 
             int slotIndex = GetCurrentSlotIndex();
+
             if (slotIndex < 0)
+            {
+                Debug.LogWarning("[PlayerActionPlanner] ���� ���� �ε����� ã�� ���߽��ϴ�.");
                 return;
+            }
 
             bool added = currentSlot.AddSkill(currentSkillData.Icon);
+
             if (!added)
                 return;
 
             if (!currentSlot.HasOwnerCharacter)
-                currentSlot.SetOwnerCharacter(currentCharacter);
-
-            int previewCost = precomputedPreviewCost;
-            if (previewCost < 0)
             {
-                if (!TryGetActorRuntimeData(currentCharacter.CharacterId, out CharacterRuntimeData actorRuntimeData))
-                {
-                    currentSlot.RemoveSkillAt(currentSlot.SkillCount - 1);
-                    return;
-                }
-
-                int reservedCost = GetReservedCost(currentSlot, currentCharacter.CharacterId, currentSkillData.ReferenceResource);
-                int currentResource = SkillCostCalculator.GetCurrentResource(actorRuntimeData, currentSkillData.ReferenceResource);
-                int availableResource = currentResource - reservedCost;
-
-                if (!CanPaySkillCostWithAvailable(currentSkillData, availableResource, out previewCost))
-                {
-                    currentSlot.RemoveSkillAt(currentSlot.SkillCount - 1);
-                    return;
-                }
+                currentSlot.SetOwnerCharacter(currentCharacter);
             }
 
             TimelineActionData action = new TimelineActionData
@@ -201,133 +135,25 @@ namespace Relic.Gameplay.Battle
                 ActionType = currentSelection.ActionType,
                 TargetRuntimeId = currentSelection.TargetRuntimeId,
                 TargetGridIndex = currentSelection.TargetGridIndex,
+
                 SlotIndex = slotIndex,
+
                 Order = slotIndex
             };
 
             timelineManager.AddAction(action);
-            AddPlannedEntry(currentSlot, action.ActionId, currentSkillData.SkillId, previewCost);
 
-            RefreshTimelineUI();
-            RefreshResourcePreview();
+            if (timelineUI != null)
+            {
+                timelineUI.Refresh(timelineManager.GetActions());
+            }
+
+            Debug.Log(
+                $"[PlayerActionPlanner] Action Ȯ��: {action.ActorRuntimeId} / {action.SkillId} / Slot:{slotIndex}"
+            );
 
             currentSelection.ClearActionOnly();
             currentSkillData = null;
-        }
-
-        private void AddPlannedEntry(SkillSlotUI slot, string actionId, string skillId, int previewCost)
-        {
-            if (!plannedSkillsBySlot.TryGetValue(slot, out List<PlannedSkillEntry> plannedList))
-            {
-                plannedList = new List<PlannedSkillEntry>();
-                plannedSkillsBySlot[slot] = plannedList;
-            }
-
-            plannedList.Add(new PlannedSkillEntry
-            {
-                ActionId = actionId,
-                SkillId = skillId,
-                PreviewCost = previewCost
-            });
-        }
-
-        private int GetReservedCost(SkillSlotUI slot, string actorCharacterId, ReferenceResource resourceType)
-        {
-            if (slot == null)
-                return 0;
-
-            if (!plannedSkillsBySlot.TryGetValue(slot, out List<PlannedSkillEntry> plannedList))
-                return 0;
-
-            int sum = 0;
-
-            foreach (PlannedSkillEntry entry in plannedList)
-            {
-                if (string.IsNullOrWhiteSpace(entry.SkillId))
-                    continue;
-
-                SkillMasterData skillData = DataManager.Instance?.SkillDatabase?.Get(entry.SkillId);
-                if (skillData == null)
-                    continue;
-
-                if (skillData.ReferenceResource != resourceType)
-                    continue;
-
-                if (!slot.HasOwnerCharacter || slot.OwnerCharacter.CharacterId != actorCharacterId)
-                    continue;
-
-                sum += entry.PreviewCost;
-            }
-
-            return sum;
-        }
-
-        private bool TryGetActorRuntimeData(string characterId, out CharacterRuntimeData runtimeData)
-        {
-            runtimeData = null;
-
-            if (string.IsNullOrWhiteSpace(characterId))
-                return false;
-
-            var dm = DataManager.Instance;
-            if (dm == null || dm.CharacterRuntimeStore == null)
-                return false;
-
-            return dm.CharacterRuntimeStore.TryGet(characterId, out runtimeData);
-        }
-
-        private static bool CanPaySkillCostWithAvailable(SkillMasterData skillData, int availableResource, out int previewCost)
-        {
-            previewCost = 0;
-
-            if (skillData == null || skillData.ResourceCost == null)
-                return false;
-
-            switch (skillData.ResourceCost.ResourceCostType)
-            {
-                case ResourceCostType.None:
-                    previewCost = 0;
-                    return true;
-                case ResourceCostType.Fixed:
-                    previewCost = skillData.ResourceCost.ResourceCostValue;
-                    return availableResource >= previewCost;
-                case ResourceCostType.AllCurrent:
-                    previewCost = availableResource;
-                    return availableResource >= skillData.ResourceCost.ResourceCostValue;
-                default:
-                    return false;
-            }
-        }
-
-        private void RefreshResourcePreview()
-        {
-            if (resourcePreviewUI == null)
-                return;
-
-            if (currentSlot == null || currentCharacter == null)
-            {
-                resourcePreviewUI.SetPreview(0f);
-                return;
-            }
-
-            if (!TryGetActorRuntimeData(currentCharacter.CharacterId, out CharacterRuntimeData runtimeData))
-            {
-                resourcePreviewUI.SetPreview(0f);
-                return;
-            }
-
-            int currentResource = runtimeData.CurrentResource;
-            int reserved = GetReservedCost(currentSlot, currentCharacter.CharacterId, ReferenceResource.UniqueResource);
-            int remain = Mathf.Max(0, currentResource - reserved);
-
-            float fill = currentResource <= 0 ? 0f : (float)remain / currentResource;
-            resourcePreviewUI.SetPreview(fill);
-        }
-
-        private void RefreshTimelineUI()
-        {
-            if (timelineUI != null && timelineManager != null)
-                timelineUI.Refresh(timelineManager.GetActions());
         }
 
         private int GetCurrentSlotIndex()
