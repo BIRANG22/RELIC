@@ -24,6 +24,20 @@ namespace Relic.Gameplay.Battle
             Sort();
         }
 
+        public bool RemoveAction(Predicate<TimelineActionData> match)
+        {
+            if (match == null)
+                return false;
+
+            int removed = actions.RemoveAll(match);
+
+            if (removed <= 0)
+                return false;
+
+            Sort();
+            return true;
+        }
+
         public void Clear()
         {
             actions.Clear();
