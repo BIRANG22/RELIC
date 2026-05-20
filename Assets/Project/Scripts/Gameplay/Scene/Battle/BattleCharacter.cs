@@ -1,32 +1,60 @@
-using UnityEngine;
+using System.Collections.Generic;
 using Relic.Gameplay.Data;
+using UnityEngine;
 
 public class BattleCharacter : MonoBehaviour
 {
-    public string CharacterId { get; private set; }
     public CharacterRuntimeData RuntimeData { get; private set; }
+
+    private readonly List<SkillMasterData> equippedSkills = new();
+    public IReadOnlyList<SkillMasterData> EquippedSkills => equippedSkills;
+
+    [Header("Skill Buttons Only Skill1~Skill4, Do Not Include Move")]
+    [SerializeField] private SkillSelectButtonUI[] skillButtons;
+
+    public string CharacterId => RuntimeData != null ? RuntimeData.CharacterId : null;
 
     public void Initialize(CharacterRuntimeData runtimeData)
     {
         RuntimeData = runtimeData;
-        CharacterId = runtimeData.CharacterId;
 
-        Debug.Log($"[BattleCharacter] Init: {CharacterId}");
+        equippedSkills.Clear();
 
-        SetupSkills(runtimeData.EquippedSkillIds);
+        foreach (string skillId in runtimeData.EquippedSkillIds)
+        {
+            SkillMasterData skillData = DataManager.Instance.SkillDatabase.Get(skillId);
+
+            if (skillData != null)
+                equippedSkills.Add(skillData);
+            else
+                Debug.LogWarning($"[BattleCharacter] SkillData ¾øÀ½: {skillId}");
+        }
+
+        ApplySkillsToButtons();
+
+        Debug.Log($"[BattleCharacter] Init: {CharacterId} / Skills:{equippedSkills.Count}");
     }
 
-    private void SetupSkills(string[] skillIds)
+    private void ApplySkillsToButtons()
     {
-        if (skillIds == null)
+        if (skillButtons == null)
             return;
 
-        foreach (string skillId in skillIds)
+        for (int i = 0; i < skillButtons.Length; i++)
         {
-            if (string.IsNullOrWhiteSpace(skillId))
+            if (skillButtons[i] == null)
                 continue;
 
-            Debug.Log($"[BattleCharacter] Equipped Skill: {skillId}");
+            if (i < equippedSkills.Count)
+            {
+                skillButtons[i].gameObject.SetActive(true);
+                skillButtons[i].SetSkill(equippedSkills[i]);
+            }
+            else
+            {
+                skillButtons[i].ClearSkill();
+                skillButtons[i].gameObject.SetActive(false);
+            }
         }
     }
 }

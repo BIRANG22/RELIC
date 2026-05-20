@@ -10,38 +10,53 @@ namespace Relic.Gameplay.Battle
 
         [Header("Timeline UI")]
         [SerializeField] private BattleTimelineUI timelineUI;
+        [SerializeField] private SkillSlotUI[] skillSlots;
 
         private readonly PlayerActionSelectionData currentSelection = new();
 
         private int playerActionOrder = 100;
 
-        public void SelectPlayer(string playerRuntimeId)
+        private SkillSlotUI currentSlot;
+        private CharacterSelectButtonUI currentCharacter;
+        private SkillMasterData currentSkillData;
+        public void SelectPlayer(CharacterSelectButtonUI character)
         {
-            currentSelection.Clear();
-            currentSelection.PlayerRuntimeId = playerRuntimeId;
+            if (character == null)
+                return;
 
-            Debug.Log($"[PlayerActionPlanner] Player 선택: {playerRuntimeId}");
+            currentCharacter = character;
+
+            currentSelection.Clear();
+            currentSelection.PlayerRuntimeId = character.CharacterId;
+
+            Debug.Log($"[PlayerActionPlanner] Player 선택: {character.CharacterId}");
         }
 
         public void SelectSkill(SkillMasterData skillData)
         {
             if (skillData == null)
+                return;
+
+            if (currentSlot == null)
             {
-                Debug.LogWarning("[PlayerActionPlanner] skillData가 null입니다.");
+                Debug.LogWarning("[PlayerActionPlanner] 슬롯이 선택되지 않았습니다.");
                 return;
             }
 
-            if (!currentSelection.HasPlayer)
+            if (currentCharacter == null)
             {
-                Debug.LogWarning("[PlayerActionPlanner] 플레이어가 선택되지 않았습니다.");
+                Debug.LogWarning("[PlayerActionPlanner] 캐릭터가 선택되지 않았습니다.");
                 return;
             }
+
+            currentSkillData = skillData;
 
             currentSelection.SkillId = skillData.SkillId;
-
             currentSelection.ActionType = skillData.TimelineNotation;
 
-            Debug.Log($"[PlayerActionPlanner] Skill 선택: {skillData.SkillId}");
+            Debug.Log(
+                $"[PlayerActionPlanner] Skill 선택: {skillData.SkillId} / Target:{skillData.Target}"
+            );
 
             if (skillData.Target == TargetType.PlayerParty ||
                 skillData.Target == TargetType.EnemyParty)
@@ -53,8 +68,21 @@ namespace Relic.Gameplay.Battle
             if (skillData.Target == TargetType.Self)
             {
                 Debug.Log("[PlayerActionPlanner] Self 스킬입니다. 방향/칸 선택을 기다립니다.");
-                return;
             }
+        }
+
+        public void SelectSlot(SkillSlotUI slot)
+        {
+            if (slot == null)
+                return;
+
+            if (currentSlot != null)
+                currentSlot.SetSelected(false);
+
+            currentSlot = slot;
+            currentSlot.SetSelected(true);
+
+            Debug.Log($"[PlayerActionPlanner] 슬롯 선택: {slot.name}");
         }
 
         public void SelectTargetUnit(string targetRuntimeId)
@@ -71,16 +99,31 @@ namespace Relic.Gameplay.Battle
 
         private void ConfirmAction()
         {
-            if (!currentSelection.HasPlayer)
+            if (currentSlot == null)
+                return;
+
+            if (currentCharacter == null)
+                return;
+
+            if (currentSkillData == null)
+                return;
+
+            int slotIndex = GetCurrentSlotIndex();
+
+            if (slotIndex < 0)
             {
-                Debug.LogWarning("[PlayerActionPlanner] 플레이어가 없습니다.");
+                Debug.LogWarning("[PlayerActionPlanner] 현재 슬롯 인덱스를 찾지 못했습니다.");
                 return;
             }
 
-            if (!currentSelection.HasSkill)
-            {
-                Debug.LogWarning("[PlayerActionPlanner] 스킬이 선택되지 않았습니다.");
+            bool added = currentSlot.AddSkill(currentSkillData.Icon);
+
+            if (!added)
                 return;
+
+            if (!currentSlot.HasOwnerCharacter)
+            {
+                currentSlot.SetOwnerCharacter(currentCharacter);
             }
 
             TimelineActionData action = new TimelineActionData
@@ -92,19 +135,39 @@ namespace Relic.Gameplay.Battle
                 ActionType = currentSelection.ActionType,
                 TargetRuntimeId = currentSelection.TargetRuntimeId,
                 TargetGridIndex = currentSelection.TargetGridIndex,
-                Order = playerActionOrder++
+
+                SlotIndex = slotIndex,
+
+                Order = slotIndex
             };
 
             timelineManager.AddAction(action);
 
             if (timelineUI != null)
+            {
                 timelineUI.Refresh(timelineManager.GetActions());
+            }
 
             Debug.Log(
-                $"[PlayerActionPlanner] Action 확정: {action.ActorRuntimeId} / {action.SkillId}"
+                $"[PlayerActionPlanner] Action 확정: {action.ActorRuntimeId} / {action.SkillId} / Slot:{slotIndex}"
             );
 
-            currentSelection.Clear();
+            currentSelection.ClearActionOnly();
+            currentSkillData = null;
+        }
+
+        private int GetCurrentSlotIndex()
+        {
+            if (currentSlot == null || skillSlots == null)
+                return -1;
+
+            for (int i = 0; i < skillSlots.Length; i++)
+            {
+                if (skillSlots[i] == currentSlot)
+                    return i;
+            }
+
+            return -1;
         }
     }
 }

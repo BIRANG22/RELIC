@@ -25,5 +25,13 @@ namespace Relic.Gameplay.Battle
             TargetRuntimeId = null;
             TargetGridIndex = -1;
         }
+
+        public void ClearActionOnly()
+        {
+            SkillId = null;
+            ActionType = TimelineActionType.None;
+            TargetRuntimeId = null;
+            TargetGridIndex = -1;
+        }
     }
 }

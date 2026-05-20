@@ -1,3 +1,4 @@
+using Relic.Gameplay.Battle;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -46,13 +47,11 @@ public class SkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public void OnClickSlot()
     {
-        if (SkillEquipUIController.Instance == null)
-        {
-            Debug.LogError("SkillEquipUIController.Instance 가 없습니다.");
-            return;
-        }
+        PlayerActionPlanner planner =
+            Object.FindFirstObjectByType<PlayerActionPlanner>();
 
-        SkillEquipUIController.Instance.SelectSlot(this);
+        if (planner != null)
+            planner.SelectSlot(this);
     }
 
     public void SetSelected(bool value)
