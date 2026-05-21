@@ -13,19 +13,18 @@ public class BattleGridClickHandler : MonoBehaviour
 #if UNITY_EDITOR
     private void OnValidate()
     {
-        string objectName = gameObject.name;
-
-        string numberPart = objectName.Replace("Grid_", "");
+        string numberPart = gameObject.name.Replace("Grid_", "");
 
         if (int.TryParse(numberPart, out int index))
-        {
             gridIndex = index;
-        }
     }
 #endif
 
     private void OnMouseDown()
     {
+        if (!isPlacementMode && !isSkillTargetMode)
+            return;
+
         OnClickGrid();
     }
 
@@ -49,16 +48,18 @@ public class BattleGridClickHandler : MonoBehaviour
     {
         if (isPlacementMode)
         {
-            placementController.SelectGrid(gridIndex);
+            if (placementController != null)
+                placementController.SelectGrid(gridIndex);
+
             return;
         }
 
         if (isSkillTargetMode)
         {
-            actionPlanner.SelectTargetGrid(gridIndex);
+            if (actionPlanner != null)
+                actionPlanner.SelectTargetGrid(gridIndex);
+
             return;
         }
-
-        Debug.Log($"[BattleGridClickHandler] 클릭 모드 없음 Grid:{gridIndex}");
     }
 }

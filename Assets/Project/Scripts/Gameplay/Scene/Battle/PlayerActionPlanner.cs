@@ -18,7 +18,8 @@ namespace Relic.Gameplay.Battle
         [SerializeField] private string gridNamePrefix = "Grid_";
         [SerializeField] private Color rangePreviewColor = new(0.3f, 0.8f, 1f, 0.7f);
 
-        
+        private DirectionSelectUI directionSelectUI;
+
         private readonly PlayerActionSelectionData currentSelection = new();
         private readonly Dictionary<SkillSlotUI, List<PlannedSkillEntry>> plannedSkillsBySlot = new();
         private readonly HashSet<int> currentValidTargetGridIndexes = new();
@@ -46,6 +47,8 @@ namespace Relic.Gameplay.Battle
             currentSelection.PlayerRuntimeId = character.CharacterId;
 
             ResolveResourcePreviewUI(character);
+            ResolveDirectionSelectUI(character);
+
             RefreshResourcePreview();
             ClearRangePreview();
 
@@ -56,6 +59,8 @@ namespace Relic.Gameplay.Battle
         {
             if (skillData == null)
                 return;
+
+            ClearPendingTargetSelection();
 
             if (currentSlot == null)
             {
@@ -112,18 +117,42 @@ namespace Relic.Gameplay.Battle
                     if (TryGetValidatedRangeData(skillData, out SkillRangeData gridRangeData))
                     {
                         ShowGridRangePreview(gridRangeData);
+                        SetGridSkillTargetMode(true);
                     }
                     return;
 
                 case RangeType.Direction:
-                    // 방향 선택 UI 만들기 전까지는 대기
-                    Debug.LogWarning($"[PlayerActionPlanner] Direction 범위 스킬입니다. 방향 선택 입력을 먼저 구현/연결하세요. Skill:{skillData.SkillId}");
+                    if (TryGetValidatedRangeData(skillData, out SkillRangeData directionRangeData))
+                    {
+                        ShowGridRangePreview(directionRangeData);
+
+                        if (directionSelectUI != null)
+                            if (TryGetCurrentCharacterGridIndex(out int originGridIndex))
+                                directionSelectUI.Show(originGridIndex);
+                    }
                     return;
 
                 default:
                     Debug.LogWarning($"[PlayerActionPlanner] 알 수 없는 RangeType: {skillData.RangeType}, Skill:{skillData.SkillId}");
                     return;
             }
+        }
+
+        public void SelectTargetDirection(SkillDirection direction)
+        {
+            if (currentSkillData == null)
+                return;
+
+            if (currentSkillData.RangeType != RangeType.Direction)
+                return;
+
+            currentSelection.Direction = direction;
+
+            if (directionSelectUI != null)
+                directionSelectUI.Hide();
+
+            ClearRangePreview();
+            ConfirmAction();
         }
 
         public void SelectSlot(SkillSlotUI slot)
@@ -249,6 +278,7 @@ namespace Relic.Gameplay.Battle
                 ActionType = currentSelection.ActionType,
                 TargetRuntimeId = currentSelection.TargetRuntimeId,
                 TargetGridIndex = currentSelection.TargetGridIndex,
+                Direction = currentSelection.Direction,
                 SlotIndex = slotIndex,
                 Order = slotIndex
             };
@@ -380,8 +410,6 @@ namespace Relic.Gameplay.Battle
             ClearRangePreview();
             currentValidTargetGridIndexes.Clear();
 
-            SetGridSkillTargetMode(true);
-
             if (rangeData == null || currentCharacter == null)
                 return;
 
@@ -496,6 +524,14 @@ namespace Relic.Gameplay.Battle
             }
         }
 
+        private void ClearPendingTargetSelection()
+        {
+            ClearRangePreview();
+
+            if (directionSelectUI != null)
+                directionSelectUI.Hide();
+        }
+
         private void TintGridByIndex(int gridIndex, Color color)
         {
             if (playerGridRoot == null)
@@ -584,6 +620,28 @@ namespace Relic.Gameplay.Battle
 
             if (resourcePreviewUI == null)
                 Debug.LogWarning($"[PlayerActionPlanner] SkillResourcePreviewUI 자동 연결 실패: {character.name}");
+        }
+
+        private void ResolveDirectionSelectUI(CharacterSelectButtonUI character)
+        {
+            directionSelectUI = null;
+
+            if (character == null)
+                return;
+
+            directionSelectUI = character.GetComponentInChildren<DirectionSelectUI>(true);
+
+            if (directionSelectUI == null && character.BattleCharacter != null)
+                directionSelectUI = character.BattleCharacter.GetComponentInChildren<DirectionSelectUI>(true);
+
+            if (directionSelectUI == null)
+            {
+                Debug.LogWarning($"[PlayerActionPlanner] DirectionSelectUI 자동 연결 실패: {character.name}");
+                return;
+            }
+
+            directionSelectUI.Bind(this);
+            directionSelectUI.Hide();
         }
 
         private void RefreshResourcePreview()

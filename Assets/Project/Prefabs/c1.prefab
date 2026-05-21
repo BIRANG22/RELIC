@@ -536,6 +536,7 @@ GameObject:
   - component: {fileID: 6897502107735721626}
   - component: {fileID: 1118941906081861806}
   - component: {fileID: 3252588052007288049}
+  - component: {fileID: 7891622785421068317}
   m_Layer: 5
   m_Name: ForwardButton
   m_TagString: Untagged
@@ -559,7 +560,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 100, y: 0}
+  m_AnchoredPosition: {x: 100, y: 12.3}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6897502107735721626
@@ -643,7 +644,35 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1118941906081861806}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 730388371376763529}
+        m_TargetAssemblyTypeName: DirectionSelectUI, Assembly-CSharp
+        m_MethodName: SelectForward
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &7891622785421068317
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1321978113519968912}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77f1072c444e56b4aa8d576923acd296, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  topSkewX: 0
+  bottomSkewX: 0
+  topScaleX: 1
+  bottomScaleX: 1
 --- !u!1 &2013931464652119990
 GameObject:
   m_ObjectHideFlags: 0
@@ -962,6 +991,7 @@ GameObject:
   - component: {fileID: 3240039912992082588}
   - component: {fileID: 8834244639820754285}
   - component: {fileID: 3818569098526071732}
+  - component: {fileID: 3940612567906622534}
   m_Layer: 5
   m_Name: RightButton
   m_TagString: Untagged
@@ -1069,7 +1099,35 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 8834244639820754285}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 730388371376763529}
+        m_TargetAssemblyTypeName: DirectionSelectUI, Assembly-CSharp
+        m_MethodName: SelectRight
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &3940612567906622534
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3832282123595056662}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77f1072c444e56b4aa8d576923acd296, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  topSkewX: 0
+  bottomSkewX: 0
+  topScaleX: 1
+  bottomScaleX: 1
 --- !u!1 &3945279514927444919
 GameObject:
   m_ObjectHideFlags: 0
@@ -1083,7 +1141,9 @@ GameObject:
   - component: {fileID: 6683334221428360153}
   - component: {fileID: 8412516942284789801}
   - component: {fileID: 7141372003466881980}
-  - component: {fileID: 4486744638306212082}
+  - component: {fileID: 730388371376763529}
+  - component: {fileID: 8703265442771933993}
+  - component: {fileID: 1479152059232212040}
   m_Layer: 5
   m_Name: DirectionUICanvas
   m_TagString: Untagged
@@ -1135,7 +1195,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 3
   m_TargetDisplay: 0
 --- !u!114 &6683334221428360153
 MonoBehaviour:
@@ -1189,7 +1249,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efd7d9560f92972438b60878504c348a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &4486744638306212082
+--- !u!114 &730388371376763529
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1198,17 +1258,49 @@ MonoBehaviour:
   m_GameObject: {fileID: 3945279514927444919}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cd10c7593af8b5f408409609a0a71b46, type: 3}
+  m_Script: {fileID: 11500000, guid: 50a86ae17d8e6234495d0020d2c5886c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  forwardButton: {fileID: 1321978113519968912}
+  backwardButton: {fileID: 4485582652525505602}
+  leftButton: {fileID: 5164658706386182403}
+  rightButton: {fileID: 3832282123595056662}
+  perspectiveController: {fileID: 1479152059232212040}
+--- !u!114 &8703265442771933993
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3945279514927444919}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 852828c63ea961e46a60153ae2836bbd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dots: []
+  activeColor: {r: 1, g: 1, b: 1, a: 1}
+  inactiveColor: {r: 0, g: 0, b: 0, a: 1}
+--- !u!114 &1479152059232212040
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3945279514927444919}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82e4a565c69f7a7438847c73568415e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   gridWidth: 7
-  forwardArrow: {fileID: 6868327009883673734}
-  backwardArrow: {fileID: 3882841995506592927}
-  leftArrow: {fileID: 806402120051492076}
-  rightArrow: {fileID: 3073419916508300801}
-  verticalDistance: 80
-  horizontalDistance: 80
-  maxPerspectiveXOffset: 45
+  forward: {fileID: 7891622785421068317}
+  backward: {fileID: 3821712158285184286}
+  left: {fileID: 7225332651166499702}
+  right: {fileID: 3940612567906622534}
+  maxSkew: 4
+  nearScale: 1.15
+  farScale: 0.85
 --- !u!1 &4084762047727162935
 GameObject:
   m_ObjectHideFlags: 0
@@ -1376,6 +1468,7 @@ GameObject:
   - component: {fileID: 4913641798437710358}
   - component: {fileID: 4442716282595882644}
   - component: {fileID: 7463371363346778824}
+  - component: {fileID: 3821712158285184286}
   m_Layer: 5
   m_Name: BackwardButton
   m_TagString: Untagged
@@ -1399,7 +1492,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 180}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -100, y: 0}
+  m_AnchoredPosition: {x: -100, y: 12.300001}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4913641798437710358
@@ -1483,7 +1576,35 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 4442716282595882644}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 730388371376763529}
+        m_TargetAssemblyTypeName: DirectionSelectUI, Assembly-CSharp
+        m_MethodName: SelectBackward
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &3821712158285184286
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4485582652525505602}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77f1072c444e56b4aa8d576923acd296, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  topSkewX: 0
+  bottomSkewX: 0
+  topScaleX: 1
+  bottomScaleX: 1
 --- !u!1 &4558012256365566042
 GameObject:
   m_ObjectHideFlags: 0
@@ -1778,6 +1899,7 @@ GameObject:
   - component: {fileID: 335532409771375517}
   - component: {fileID: 7197472670554556982}
   - component: {fileID: 6086556928662852359}
+  - component: {fileID: 7225332651166499702}
   m_Layer: 5
   m_Name: LeftButton
   m_TagString: Untagged
@@ -1885,7 +2007,35 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 7197472670554556982}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 730388371376763529}
+        m_TargetAssemblyTypeName: DirectionSelectUI, Assembly-CSharp
+        m_MethodName: SelectLeft
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &7225332651166499702
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5164658706386182403}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77f1072c444e56b4aa8d576923acd296, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  topSkewX: 0
+  bottomSkewX: 0
+  topScaleX: 1
+  bottomScaleX: 1
 --- !u!1 &5201303509365184427
 GameObject:
   m_ObjectHideFlags: 0
