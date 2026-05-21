@@ -13,6 +13,11 @@ namespace Relic.Gameplay.Battle
         [SerializeField] private BattleTimelineUI timelineUI;
         [SerializeField] private SkillSlotUI[] skillSlots;
 
+        [Header("Range Preview")]
+        [SerializeField] private Transform playerGridRoot;
+        [SerializeField] private string gridNamePrefix = "Grid_";
+        [SerializeField] private Color rangePreviewColor = new(0.3f, 0.8f, 1f, 0.7f);
+
         
         private readonly PlayerActionSelectionData currentSelection = new();
         private readonly Dictionary<SkillSlotUI, List<PlannedSkillEntry>> plannedSkillsBySlot = new();
@@ -41,6 +46,7 @@ namespace Relic.Gameplay.Battle
 
             ResolveResourcePreviewUI(character);
             RefreshResourcePreview();
+            ClearRangePreview();
 
             Debug.Log($"[PlayerActionPlanner] Player 선택: {character.CharacterId}");
         }
@@ -93,17 +99,36 @@ namespace Relic.Gameplay.Battle
             currentSelection.ActionType = skillData.TimelineNotation;
 
             RefreshResourcePreview();
-            Debug.Log($"[PlayerActionPlanner] Skill 선택: {skillData.SkillId} / Target:{skillData.Target}");
+            Debug.Log($"[PlayerActionPlanner] Skill 선택: {skillData.SkillId} / Target:{skillData.Target} / RangeType:{skillData.RangeType} / RangeId:{skillData.RangeId}");
 
-            if (skillData.Target == TargetType.PlayerParty || skillData.Target == TargetType.EnemyParty)
+            // 기존에는 TargetType으로 즉시 확정 여부를 판단했지만,
+            // 이제는 SkillMasterData.RangeType + RangeId(SkillRangeData)로 타게팅 흐름을 분기합니다.
+            // TargetType은 "적용 대상 진영/자기 자신" 의미로만 유지합니다.
+            switch (skillData.RangeType)
             {
-                ConfirmAction(previewCost);
-                return;
-            }
+                case RangeType.None:
+                    // 범위 선택이 필요 없는 스킬은 즉시 확정.
+                    ConfirmAction(previewCost);
+                    return;
 
-            if (skillData.Target == TargetType.Self)
-            {
-                ConfirmAction(previewCost);
+                case RangeType.Grid:
+                    // 그리드 선택형: SelectTargetGrid(...) 호출 대기.
+                    if (TryGetValidatedRangeData(skillData, out SkillRangeData gridRangeData))
+                    {
+                        ShowGridRangePreview(gridRangeData);
+                    }
+                    return;
+
+                case RangeType.Direction:
+                    // 방향 선택형: 현재 Planner에는 방향 선택 입력 API가 없음.
+                    // TODO: 방향 선택 UI/입력이 연결되면 SelectTargetDirection(...) 같은 진입점 추가 필요.
+                    TryGetValidatedRangeData(skillData, out _);
+                    Debug.LogWarning($"[PlayerActionPlanner] Direction 범위 스킬입니다. 방향 선택 입력을 먼저 구현/연결하세요. Skill:{skillData.SkillId}");
+                    return;
+
+                default:
+                    Debug.LogWarning($"[PlayerActionPlanner] 알 수 없는 RangeType: {skillData.RangeType}, Skill:{skillData.SkillId}");
+                    return;
             }
         }
 
@@ -119,6 +144,7 @@ namespace Relic.Gameplay.Battle
             currentSlot.SetSelected(true);
 
             RefreshResourcePreview();
+            ClearRangePreview();
             Debug.Log($"[PlayerActionPlanner] 슬롯 선택: {slot.name}");
         }
 
@@ -154,12 +180,14 @@ namespace Relic.Gameplay.Battle
         public void SelectTargetUnit(string targetRuntimeId)
         {
             currentSelection.TargetRuntimeId = targetRuntimeId;
+            ClearRangePreview();
             ConfirmAction();
         }
 
         public void SelectTargetGrid(int gridIndex)
         {
             currentSelection.TargetGridIndex = gridIndex;
+            ClearRangePreview();
             ConfirmAction();
         }
 
@@ -220,6 +248,7 @@ namespace Relic.Gameplay.Battle
 
             currentSelection.ClearActionOnly();
             currentSkillData = null;
+            ClearRangePreview();
         }
 
         private void AddPlannedEntry(SkillSlotUI slot, string actionId, string skillId, int previewCost)
@@ -301,6 +330,157 @@ namespace Relic.Gameplay.Battle
             }
 
             return sum;
+        }
+
+        private bool TryGetValidatedRangeData(SkillMasterData skillData, out SkillRangeData rangeData)
+        {
+            rangeData = null;
+
+            if (skillData == null)
+                return false;
+
+            if (string.IsNullOrWhiteSpace(skillData.RangeId))
+            {
+                Debug.LogWarning($"[PlayerActionPlanner] RangeType({skillData.RangeType}) 스킬인데 RangeId가 비어 있습니다. Skill:{skillData.SkillId}");
+                return false;
+            }
+
+            rangeData = DataManager.Instance?.RangeDatabase?.Get(skillData.RangeId);
+            if (rangeData == null)
+            {
+                Debug.LogWarning($"[PlayerActionPlanner] RangeDatabase에서 RangeId 조회 실패: {skillData.RangeId}, Skill:{skillData.SkillId}");
+                return false;
+            }
+
+            if (rangeData.Positions == null || rangeData.Positions.Count == 0)
+            {
+                Debug.LogWarning($"[PlayerActionPlanner] Range 데이터 파싱 결과가 비어 있습니다. RangeId:{skillData.RangeId}, Skill:{skillData.SkillId}");
+                return false;
+            }
+
+            return true;
+        }
+
+        private void ShowGridRangePreview(SkillRangeData rangeData)
+        {
+            ClearRangePreview();
+
+            if (rangeData == null || currentCharacter == null)
+                return;
+
+            if (!TryGetCurrentCharacterGridIndex(out int originGridIndex))
+            {
+                Debug.LogWarning($"[PlayerActionPlanner] 현재 캐릭터의 그리드 인덱스를 찾지 못해 범위 프리뷰를 표시할 수 없습니다. Character:{currentCharacter.CharacterId}");
+                return;
+            }
+
+            if (!TryGetGridCoord(originGridIndex, out int originX, out int originY))
+                return;
+
+            if (rangeData.IncludeSelf)
+                TintGridByIndex(originGridIndex, rangePreviewColor);
+
+            foreach (var offset in rangeData.Positions)
+            {
+                int x = originX + offset.x;
+                int y = originY + offset.y;
+
+                if (!TryGetGridIndex(x, y, out int index))
+                    continue;
+
+                TintGridByIndex(index, rangePreviewColor);
+            }
+        }
+
+        private bool TryGetCurrentCharacterGridIndex(out int gridIndex)
+        {
+            gridIndex = -1;
+
+            string characterId = currentCharacter?.CharacterId;
+            if (string.IsNullOrWhiteSpace(characterId))
+                return false;
+
+            var slots = DataManager.Instance?.PartyRuntimeStore?.Slots;
+            if (slots == null)
+                return false;
+
+            for (int i = 0; i < slots.Count; i++)
+            {
+                if (slots[i].CharacterId != characterId)
+                    continue;
+
+                gridIndex = slots[i].GridIndex;
+                return gridIndex >= 0;
+            }
+
+            return false;
+        }
+
+        private bool TryGetGridCoord(int index, out int x, out int y)
+        {
+            const int width = 5;
+            const int height = 3;
+            x = index % width;
+            y = index / width;
+            return index >= 0 && x >= 0 && x < width && y >= 0 && y < height;
+        }
+
+        private bool TryGetGridIndex(int x, int y, out int index)
+        {
+            const int width = 5;
+            const int height = 3;
+            index = -1;
+
+            if (x < 0 || x >= width || y < 0 || y >= height)
+                return false;
+
+            index = y * width + x;
+            return true;
+        }
+
+        private void ClearRangePreview()
+        {
+            if (playerGridRoot == null)
+                return;
+
+            foreach (Transform t in playerGridRoot.GetComponentsInChildren<Transform>(true))
+            {
+                if (!t.name.StartsWith(gridNamePrefix))
+                    continue;
+
+                if (!t.TryGetComponent<Renderer>(out var renderer))
+                    continue;
+
+                renderer.SetPropertyBlock(null);
+            }
+        }
+
+        private void TintGridByIndex(int gridIndex, Color color)
+        {
+            if (playerGridRoot == null)
+                return;
+
+            string gridName = $"{gridNamePrefix}{gridIndex:00}";
+            Transform grid = playerGridRoot.Find(gridName);
+            if (grid == null)
+            {
+                foreach (Transform t in playerGridRoot.GetComponentsInChildren<Transform>(true))
+                {
+                    if (t.name == gridName)
+                    {
+                        grid = t;
+                        break;
+                    }
+                }
+            }
+
+            if (grid == null || !grid.TryGetComponent<Renderer>(out var renderer))
+                return;
+
+            MaterialPropertyBlock block = new();
+            renderer.GetPropertyBlock(block);
+            block.SetColor("_BaseColor", color);
+            renderer.SetPropertyBlock(block);
         }
 
         private bool TryGetActorRuntimeData(string characterId, out CharacterRuntimeData runtimeData)
