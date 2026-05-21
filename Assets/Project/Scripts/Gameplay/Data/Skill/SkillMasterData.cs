@@ -42,7 +42,7 @@ namespace Relic.Gameplay.Data
     public enum RangeType
     {
         None,
-        Grid,
+        Selection,
         Direction
     }
 

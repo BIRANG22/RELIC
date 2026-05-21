@@ -21,6 +21,7 @@ namespace Relic.Gameplay.Battle
         
         private readonly PlayerActionSelectionData currentSelection = new();
         private readonly Dictionary<SkillSlotUI, List<PlannedSkillEntry>> plannedSkillsBySlot = new();
+        private readonly HashSet<int> currentValidTargetGridIndexes = new();
 
         private SkillSlotUI currentSlot;
         private CharacterSelectButtonUI currentCharacter;
@@ -101,18 +102,13 @@ namespace Relic.Gameplay.Battle
             RefreshResourcePreview();
             Debug.Log($"[PlayerActionPlanner] Skill 선택: {skillData.SkillId} / Target:{skillData.Target} / RangeType:{skillData.RangeType} / RangeId:{skillData.RangeId}");
 
-            // 기존에는 TargetType으로 즉시 확정 여부를 판단했지만,
-            // 이제는 SkillMasterData.RangeType + RangeId(SkillRangeData)로 타게팅 흐름을 분기합니다.
-            // TargetType은 "적용 대상 진영/자기 자신" 의미로만 유지합니다.
             switch (skillData.RangeType)
             {
                 case RangeType.None:
-                    // 범위 선택이 필요 없는 스킬은 즉시 확정.
                     ConfirmAction(previewCost);
                     return;
 
-                case RangeType.Grid:
-                    // 그리드 선택형: SelectTargetGrid(...) 호출 대기.
+                case RangeType.Selection:
                     if (TryGetValidatedRangeData(skillData, out SkillRangeData gridRangeData))
                     {
                         ShowGridRangePreview(gridRangeData);
@@ -120,9 +116,7 @@ namespace Relic.Gameplay.Battle
                     return;
 
                 case RangeType.Direction:
-                    // 방향 선택형: 현재 Planner에는 방향 선택 입력 API가 없음.
-                    // TODO: 방향 선택 UI/입력이 연결되면 SelectTargetDirection(...) 같은 진입점 추가 필요.
-                    TryGetValidatedRangeData(skillData, out _);
+                    // 방향 선택 UI 만들기 전까지는 대기
                     Debug.LogWarning($"[PlayerActionPlanner] Direction 범위 스킬입니다. 방향 선택 입력을 먼저 구현/연결하세요. Skill:{skillData.SkillId}");
                     return;
 
@@ -186,7 +180,26 @@ namespace Relic.Gameplay.Battle
 
         public void SelectTargetGrid(int gridIndex)
         {
+            if (currentSkillData == null)
+            {
+                Debug.LogWarning("[PlayerActionPlanner] 선택 중인 스킬이 없습니다.");
+                return;
+            }
+
+            if (currentSkillData.RangeType != RangeType.Selection)
+            {
+                Debug.LogWarning($"[PlayerActionPlanner] 현재 스킬은 그리드 선택형이 아닙니다. Skill:{currentSkillData.SkillId}");
+                return;
+            }
+
+            if (!currentValidTargetGridIndexes.Contains(gridIndex))
+            {
+                Debug.LogWarning($"[PlayerActionPlanner] 선택한 그리드가 스킬 범위 밖입니다. Grid:{gridIndex}");
+                return;
+            }
+
             currentSelection.TargetGridIndex = gridIndex;
+
             ClearRangePreview();
             ConfirmAction();
         }
@@ -352,7 +365,8 @@ namespace Relic.Gameplay.Battle
                 return false;
             }
 
-            if (rangeData.Positions == null || rangeData.Positions.Count == 0)
+            if (!rangeData.IncludeSelf &&
+            (rangeData.Positions == null || rangeData.Positions.Count == 0))
             {
                 Debug.LogWarning($"[PlayerActionPlanner] Range 데이터 파싱 결과가 비어 있습니다. RangeId:{skillData.RangeId}, Skill:{skillData.SkillId}");
                 return false;
@@ -364,13 +378,16 @@ namespace Relic.Gameplay.Battle
         private void ShowGridRangePreview(SkillRangeData rangeData)
         {
             ClearRangePreview();
+            currentValidTargetGridIndexes.Clear();
+
+            SetGridSkillTargetMode(true);
 
             if (rangeData == null || currentCharacter == null)
                 return;
 
             if (!TryGetCurrentCharacterGridIndex(out int originGridIndex))
             {
-                Debug.LogWarning($"[PlayerActionPlanner] 현재 캐릭터의 그리드 인덱스를 찾지 못해 범위 프리뷰를 표시할 수 없습니다. Character:{currentCharacter.CharacterId}");
+                Debug.LogWarning($"[PlayerActionPlanner] 현재 캐릭터 그리드 인덱스 조회 실패: {currentCharacter.CharacterId}");
                 return;
             }
 
@@ -378,7 +395,10 @@ namespace Relic.Gameplay.Battle
                 return;
 
             if (rangeData.IncludeSelf)
+            {
+                currentValidTargetGridIndexes.Add(originGridIndex);
                 TintGridByIndex(originGridIndex, rangePreviewColor);
+            }
 
             foreach (var offset in rangeData.Positions)
             {
@@ -388,6 +408,7 @@ namespace Relic.Gameplay.Battle
                 if (!TryGetGridIndex(x, y, out int index))
                     continue;
 
+                currentValidTargetGridIndexes.Add(index);
                 TintGridByIndex(index, rangePreviewColor);
             }
         }
@@ -438,8 +459,28 @@ namespace Relic.Gameplay.Battle
             return true;
         }
 
+        private void SetGridSkillTargetMode(bool value)
+        {
+            if (playerGridRoot == null)
+                return;
+
+            BattleGridClickHandler[] handlers =
+                playerGridRoot.GetComponentsInChildren<BattleGridClickHandler>(true);
+
+            foreach (BattleGridClickHandler handler in handlers)
+            {
+                if (handler == null)
+                    continue;
+
+                handler.SetSkillTargetMode(value);
+            }
+        }
+
         private void ClearRangePreview()
         {
+            currentValidTargetGridIndexes.Clear();
+            SetGridSkillTargetMode(false);
+
             if (playerGridRoot == null)
                 return;
 

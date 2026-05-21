@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Relic.Gameplay.Data
 {
@@ -10,10 +11,8 @@ namespace Relic.Gameplay.Data
         public string Name;
         public bool IncludeSelf;
 
-        // 엑셀에서 Range1~Range30 문자열로 받아옴
         public List<string> RangeRaw = new();
 
-        // 런타임용 (파싱된 좌표)
-        public List<(int x, int y)> Positions = new();
+        public List<Vector2Int> Positions = new();
     }
 }
