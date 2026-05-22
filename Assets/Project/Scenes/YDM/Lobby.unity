@@ -971,6 +971,7 @@ MonoBehaviour:
   buttonImage: {fileID: 120007048}
   targetSlotImage: {fileID: 1571410989}
   skillListPanel: {fileID: 155632087}
+  targetSlotType: 1
 --- !u!114 &120007051
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4750,6 +4751,7 @@ MonoBehaviour:
   buttonImage: {fileID: 576655721}
   targetSlotImage: {fileID: 83855158}
   skillListPanel: {fileID: 1764859137}
+  targetSlotType: 5
 --- !u!114 &576655724
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5611,6 +5613,7 @@ MonoBehaviour:
   buttonImage: {fileID: 681845302}
   targetSlotImage: {fileID: 1485882911}
   skillListPanel: {fileID: 1703943971}
+  targetSlotType: 3
 --- !u!114 &681845305
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5760,6 +5763,7 @@ MonoBehaviour:
   buttonImage: {fileID: 683732208}
   targetSlotImage: {fileID: 1296862052}
   skillListPanel: {fileID: 633366733}
+  targetSlotType: 2
 --- !u!114 &683732211
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5909,6 +5913,7 @@ MonoBehaviour:
   buttonImage: {fileID: 695915362}
   targetSlotImage: {fileID: 1485882911}
   skillListPanel: {fileID: 1703943971}
+  targetSlotType: 3
 --- !u!114 &695915365
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6299,6 +6304,7 @@ MonoBehaviour:
   buttonImage: {fileID: 713385907}
   targetSlotImage: {fileID: 1963774509}
   skillListPanel: {fileID: 568390165}
+  targetSlotType: 3
 --- !u!114 &713385910
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6672,6 +6678,7 @@ MonoBehaviour:
   buttonImage: {fileID: 732784315}
   targetSlotImage: {fileID: 2109125127}
   skillListPanel: {fileID: 925429131}
+  targetSlotType: 1
 --- !u!114 &732784318
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6821,6 +6828,7 @@ MonoBehaviour:
   buttonImage: {fileID: 737655099}
   targetSlotImage: {fileID: 83855158}
   skillListPanel: {fileID: 1764859137}
+  targetSlotType: 5
 --- !u!114 &737655102
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7148,6 +7156,7 @@ MonoBehaviour:
   buttonImage: {fileID: 750263680}
   targetSlotImage: {fileID: 1140480800}
   skillListPanel: {fileID: 814380096}
+  targetSlotType: 5
 --- !u!114 &750263683
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7566,6 +7575,7 @@ MonoBehaviour:
   buttonImage: {fileID: 791620696}
   targetSlotImage: {fileID: 637856696}
   skillListPanel: {fileID: 1584571240}
+  targetSlotType: 5
 --- !u!114 &791620699
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7868,6 +7878,7 @@ MonoBehaviour:
   buttonImage: {fileID: 844279708}
   targetSlotImage: {fileID: 1296862052}
   skillListPanel: {fileID: 633366733}
+  targetSlotType: 2
 --- !u!114 &844279711
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8351,6 +8362,7 @@ MonoBehaviour:
   buttonImage: {fileID: 861379316}
   targetSlotImage: {fileID: 278883991}
   skillListPanel: {fileID: 1534495613}
+  targetSlotType: 2
 --- !u!114 &861379319
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8667,6 +8679,7 @@ MonoBehaviour:
   buttonImage: {fileID: 907294525}
   targetSlotImage: {fileID: 2109125127}
   skillListPanel: {fileID: 925429131}
+  targetSlotType: 1
 --- !u!114 &907294528
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8816,6 +8829,7 @@ MonoBehaviour:
   buttonImage: {fileID: 919164620}
   targetSlotImage: {fileID: 278883991}
   skillListPanel: {fileID: 1534495613}
+  targetSlotType: 2
 --- !u!114 &919164623
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9151,6 +9165,7 @@ MonoBehaviour:
   buttonImage: {fileID: 940937999}
   targetSlotImage: {fileID: 1571410989}
   skillListPanel: {fileID: 155632087}
+  targetSlotType: 1
 --- !u!114 &940938002
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9300,6 +9315,7 @@ MonoBehaviour:
   buttonImage: {fileID: 957296245}
   targetSlotImage: {fileID: 441047369}
   skillListPanel: {fileID: 815401581}
+  targetSlotType: 3
 --- !u!114 &957296248
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9449,6 +9465,7 @@ MonoBehaviour:
   buttonImage: {fileID: 979579145}
   targetSlotImage: {fileID: 1963774509}
   skillListPanel: {fileID: 568390165}
+  targetSlotType: 3
 --- !u!114 &979579148
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9881,6 +9898,7 @@ MonoBehaviour:
   buttonImage: {fileID: 1064908094}
   targetSlotImage: {fileID: 1140480800}
   skillListPanel: {fileID: 814380096}
+  targetSlotType: 5
 --- !u!114 &1064908097
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10707,6 +10725,7 @@ MonoBehaviour:
   buttonImage: {fileID: 1194611790}
   targetSlotImage: {fileID: 126391920}
   skillListPanel: {fileID: 1848435136}
+  targetSlotType: 2
 --- !u!114 &1194611793
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11180,6 +11199,7 @@ MonoBehaviour:
   buttonImage: {fileID: 1218939545}
   targetSlotImage: {fileID: 637856696}
   skillListPanel: {fileID: 1584571240}
+  targetSlotType: 5
 --- !u!114 &1218939548
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12056,6 +12076,7 @@ MonoBehaviour:
   buttonImage: {fileID: 1389245063}
   targetSlotImage: {fileID: 441047369}
   skillListPanel: {fileID: 815401581}
+  targetSlotType: 3
 --- !u!114 &1389245066
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13237,6 +13258,7 @@ MonoBehaviour:
   buttonImage: {fileID: 1470103235}
   targetSlotImage: {fileID: 991976098}
   skillListPanel: {fileID: 2111778035}
+  targetSlotType: 1
 --- !u!114 &1470103238
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13532,6 +13554,7 @@ MonoBehaviour:
   buttonImage: {fileID: 1483407859}
   targetSlotImage: {fileID: 991976098}
   skillListPanel: {fileID: 2111778035}
+  targetSlotType: 1
 --- !u!114 &1483407862
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15974,6 +15997,7 @@ MonoBehaviour:
   buttonImage: {fileID: 1738616211}
   targetSlotImage: {fileID: 126391920}
   skillListPanel: {fileID: 1848435136}
+  targetSlotType: 2
 --- !u!114 &1738616214
 MonoBehaviour:
   m_ObjectHideFlags: 0

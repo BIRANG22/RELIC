@@ -18,21 +18,9 @@ public class BattleCharacter : MonoBehaviour
     {
         RuntimeData = runtimeData;
 
-        equippedSkills.Clear();
-
-        foreach (string skillId in runtimeData.EquippedSkillIds)
-        {
-            SkillMasterData skillData = DataManager.Instance.SkillDatabase.Get(skillId);
-
-            if (skillData != null)
-                equippedSkills.Add(skillData);
-            else
-                Debug.LogWarning($"[BattleCharacter] SkillData 없음: {skillId}");
-        }
-
         ApplySkillsToButtons();
 
-        Debug.Log($"[BattleCharacter] Init: {CharacterId} / Skills:{equippedSkills.Count}");
+        Debug.Log($"[BattleCharacter] Init: {CharacterId}");
     }
 
     private void ApplySkillsToButtons()
@@ -40,21 +28,38 @@ public class BattleCharacter : MonoBehaviour
         if (skillButtons == null)
             return;
 
-        for (int i = 0; i < skillButtons.Length; i++)
-        {
-            if (skillButtons[i] == null)
-                continue;
+        SetButtonSkill(0, RuntimeData.AbilitySkillId1);
+        SetButtonSkill(1, RuntimeData.AbilitySkillId2);
+        SetButtonSkill(2, RuntimeData.AbilitySkillId3);
+        SetButtonSkill(3, RuntimeData.UniqueSkillId);
+    }
 
-            if (i < equippedSkills.Count)
-            {
-                skillButtons[i].gameObject.SetActive(true);
-                skillButtons[i].SetSkill(equippedSkills[i]);
-            }
-            else
-            {
-                skillButtons[i].ClearSkill();
-                skillButtons[i].gameObject.SetActive(false);
-            }
+    private void SetButtonSkill(int index, string skillId)
+    {
+        if (skillButtons == null || index < 0 || index >= skillButtons.Length)
+            return;
+
+        if (skillButtons[index] == null)
+            return;
+
+        if (string.IsNullOrWhiteSpace(skillId))
+        {
+            skillButtons[index].ClearSkill();
+            skillButtons[index].gameObject.SetActive(false);
+            return;
         }
+
+        SkillMasterData skillData = DataManager.Instance.SkillDatabase.Get(skillId);
+
+        if (skillData == null)
+        {
+            Debug.LogWarning($"[BattleCharacter] SkillData 없음: {skillId}");
+            skillButtons[index].ClearSkill();
+            skillButtons[index].gameObject.SetActive(false);
+            return;
+        }
+
+        skillButtons[index].gameObject.SetActive(true);
+        skillButtons[index].SetSkill(skillData);
     }
 }

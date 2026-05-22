@@ -12,6 +12,8 @@ public class SkillSelectButton : MonoBehaviour
     [SerializeField] private Image targetSlotImage;
     [SerializeField] private GameObject skillListPanel;
 
+    [SerializeField] private SkillEquipSlotType targetSlotType;
+
     private Sprite cachedIcon;
 
     private SkillIconDatabase DB => DataManager.Instance.SkillIconDatabase;
@@ -76,17 +78,10 @@ public class SkillSelectButton : MonoBehaviour
         }
 
         string characterId = state.CurrentCharacterId;
-        int slotIndex = state.CurrentSkillSlotIndex;
 
         if (string.IsNullOrWhiteSpace(characterId))
         {
             Debug.LogWarning("[SkillSelectButton] No character selected");
-            return;
-        }
-
-        if (slotIndex < 0)
-        {
-            Debug.LogWarning("[SkillSelectButton] No slot selected");
             return;
         }
 
@@ -103,13 +98,7 @@ public class SkillSelectButton : MonoBehaviour
             Debug.LogWarning("[SkillSelectButton] Character runtime not found");
             return;
         }
-
-        if (character.EquippedSkillIds == null || character.EquippedSkillIds.Length <= slotIndex)
-        {
-            Debug.LogWarning("[SkillSelectButton] EquippedSkillIds is invalid");
-            return;
-        }
-
+        
         if (cachedIcon == null)
         {
             if (!DB.TryGetIcon(skillId, out cachedIcon))
@@ -119,7 +108,8 @@ public class SkillSelectButton : MonoBehaviour
             }
         }
 
-        character.EquippedSkillIds[slotIndex] = skillId;
+        var equipService = new SkillEquipService(DataManager.Instance.CharacterRuntimeStore);
+        equipService.EquipSkill(characterId, targetSlotType, skillId);
 
         targetSlotImage.sprite = cachedIcon;
         targetSlotImage.enabled = true;
@@ -127,6 +117,5 @@ public class SkillSelectButton : MonoBehaviour
         if (skillListPanel != null)
             skillListPanel.SetActive(false);
 
-        Debug.Log($"[SkillEquip] {characterId} Slot {slotIndex} = {skillId}");
     }
 }

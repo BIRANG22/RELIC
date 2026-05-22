@@ -2,9 +2,18 @@ using UnityEngine;
 
 namespace Relic.Gameplay.Data
 {
+    public enum SkillEquipSlotType
+    {
+        Move,
+        Passive,
+        Ability1,
+        Ability2,
+        Ability3,
+        Unique
+    }
+
     public class SkillEquipService
     {
-        private const int MaxSkillCount = 4;
         private readonly CharacterRuntimeStore characterStore;
 
         public SkillEquipService(CharacterRuntimeStore characterStore)
@@ -12,7 +21,7 @@ namespace Relic.Gameplay.Data
             this.characterStore = characterStore;
         }
 
-        public bool EquipSkill(string characterId, string skillId)
+        public bool EquipSkill(string characterId, SkillEquipSlotType slotType, string skillId)
         {
             if (!characterStore.TryGet(characterId, out var character))
             {
@@ -20,53 +29,30 @@ namespace Relic.Gameplay.Data
                 return false;
             }
 
-            if (character.EquippedSkillIds == null || character.EquippedSkillIds.Length != MaxSkillCount)
+            switch (slotType)
             {
-                character.EquippedSkillIds = new string[MaxSkillCount];
+                case SkillEquipSlotType.Move:
+                    character.MoveSkillId = skillId;
+                    break;
+                case SkillEquipSlotType.Passive:
+                    character.PassiveSkillId = skillId;
+                    break;
+                case SkillEquipSlotType.Ability1:
+                    character.AbilitySkillId1 = skillId;
+                    break;
+                case SkillEquipSlotType.Ability2:
+                    character.AbilitySkillId2 = skillId;
+                    break;
+                case SkillEquipSlotType.Ability3:
+                    character.AbilitySkillId3 = skillId;
+                    break;
+                case SkillEquipSlotType.Unique:
+                    character.UniqueSkillId = skillId;
+                    break;
             }
 
-            for (int i = 0; i < character.EquippedSkillIds.Length; i++)
-            {
-                if (character.EquippedSkillIds[i] == skillId)
-                {
-                    Debug.LogWarning($"[SkillEquipService] Skill already equipped: {skillId}");
-                    return false;
-                }
-            }
-
-            for (int i = 0; i < character.EquippedSkillIds.Length; i++)
-            {
-                if (string.IsNullOrEmpty(character.EquippedSkillIds[i]))
-                {
-                    character.EquippedSkillIds[i] = skillId;
-
-                    Debug.Log($"[SkillEquipService] Equipped Skill: {characterId} / {skillId} / Slot:{i}");
-                    return true;
-                }
-            }
-
-            Debug.LogWarning($"[SkillEquipService] Skill slot is full: {characterId}");
-            return false;
-        }
-
-        public void UnequipSkill(string characterId, string skillId)
-        {
-            if (!characterStore.TryGet(characterId, out var character))
-                return;
-
-            if (character.EquippedSkillIds == null)
-                return;
-
-            for (int i = 0; i < character.EquippedSkillIds.Length; i++)
-            {
-                if (character.EquippedSkillIds[i] == skillId)
-                {
-                    character.EquippedSkillIds[i] = null;
-
-                    Debug.Log($"[SkillEquipService] Unequipped Skill: {characterId} / {skillId} / Slot:{i}");
-                    return;
-                }
-            }
+            Debug.Log($"[SkillEquipService] Equipped {slotType}: {characterId} / {skillId}");
+            return true;
         }
     }
 }
