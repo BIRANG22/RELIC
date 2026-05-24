@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 5c31a09adbb6f904695049a0620ffa83
+guid: 0e7152f2cb301074a84d84309b4de5e0
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -69,7 +69,7 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 4096
+    maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -97,13 +97,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Cha_02_battle_idle_0
+      name: Mon_N_01_die_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 2048
-        width: 2048
-        height: 2048
+        y: 1024
+        width: 1024
+        height: 1024
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -112,20 +112,42 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 81f9de07f547b0d45a2e0e71ca45022e
-      internalID: -590960854
+      spriteID: f30cfbd56979d5d42b8bffa08000a403
+      internalID: 1244219967
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_02_battle_idle_1
+      name: Mon_N_01_die_1
+      rect:
+        serializedVersion: 2
+        x: 1024
+        y: 1024
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: eb1e10c7a7fa93a4d97d69c205dab2a8
+      internalID: 1827110189
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Mon_N_01_die_2
       rect:
         serializedVersion: 2
         x: 2048
-        y: 2048
-        width: 2048
-        height: 2048
+        y: 1024
+        width: 1024
+        height: 1024
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -134,20 +156,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 0d191fcb098cd6b428ff6ee2be654561
-      internalID: -1049158799
+      spriteID: 0252c2d24d27d554b812518012655a66
+      internalID: 875454466
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_02_battle_idle_2
+      name: Mon_N_01_die_3
       rect:
         serializedVersion: 2
-        x: 4096
-        y: 2048
-        width: 2048
-        height: 2048
+        x: 3072
+        y: 1024
+        width: 1024
+        height: 1024
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -156,42 +178,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e6b4b42cc92c2134cb988c261c94f368
-      internalID: -708545817
+      spriteID: 7d6c19d4cd8173545ad6265ac1c8099b
+      internalID: 793592202
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_02_battle_idle_3
-      rect:
-        serializedVersion: 2
-        x: 6144
-        y: 2048
-        width: 2048
-        height: 2048
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 65f6cd3022ca8854d9a673b367da2037
-      internalID: -1256069269
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Cha_02_battle_idle_4
+      name: Mon_N_01_die_4
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 2048
-        height: 2048
+        width: 1024
+        height: 1024
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -200,20 +200,42 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: aaf0d96a99d1af3438f8ebb85bbd0f27
-      internalID: -728637319
+      spriteID: 39ab2c5045c822645a15d4ad437cf63b
+      internalID: 734912718
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_02_battle_idle_5
+      name: Mon_N_01_die_5
+      rect:
+        serializedVersion: 2
+        x: 1024
+        y: 0
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e9de1d8e62397b64796d8cd7f6067bac
+      internalID: -1156861660
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Mon_N_01_die_6
       rect:
         serializedVersion: 2
         x: 2048
         y: 0
-        width: 2048
-        height: 2048
+        width: 1024
+        height: 1024
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -222,20 +244,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: caf6aed2b75829f429ec2ad7746be158
-      internalID: -381525582
+      spriteID: 24b27b4346cec804ba384a17caa770ef
+      internalID: -245018107
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_02_battle_idle_6
+      name: Mon_N_01_die_7
       rect:
         serializedVersion: 2
-        x: 4096
+        x: 3072
         y: 0
-        width: 2048
-        height: 2048
+        width: 1024
+        height: 1024
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -244,30 +266,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e2a5f52e445efbf4ba6fd26a2950b451
-      internalID: -801864609
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Cha_02_battle_idle_7
-      rect:
-        serializedVersion: 2
-        x: 6144
-        y: 0
-        width: 2048
-        height: 2048
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: ee080c50d86da9a44a766e0fdf7f5fb6
-      internalID: 257021634
+      spriteID: 4ff0ea3c55116f0488b56ca79a0ece8f
+      internalID: 1178370520
       vertices: []
       indices: 
       edges: []
@@ -276,7 +276,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: e67c0b6ab8cd0324887331afbac5f0c7
+    spriteID: e69963aa5e9c30d478e9e63f79b4d141
     internalID: 0
     vertices: []
     indices: 
@@ -286,14 +286,14 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Cha_02_battle_idle_0: -590960854
-      Cha_02_battle_idle_1: -1049158799
-      Cha_02_battle_idle_2: -708545817
-      Cha_02_battle_idle_3: -1256069269
-      Cha_02_battle_idle_4: -728637319
-      Cha_02_battle_idle_5: -381525582
-      Cha_02_battle_idle_6: -801864609
-      Cha_02_battle_idle_7: 257021634
+      Mon_N_01_die_0: 1244219967
+      Mon_N_01_die_1: 1827110189
+      Mon_N_01_die_2: 875454466
+      Mon_N_01_die_3: 793592202
+      Mon_N_01_die_4: 734912718
+      Mon_N_01_die_5: -1156861660
+      Mon_N_01_die_6: -245018107
+      Mon_N_01_die_7: 1178370520
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
