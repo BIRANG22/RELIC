@@ -159,5 +159,30 @@ namespace Relic.Gameplay.Data
                 $"Slot 2: {slots[2].CharacterId ?? "Empty"} / Grid: {slots[2].GridIndex}"
             );
         }
+
+        public int FindCharacterSlot(string characterId)
+        {
+            if (string.IsNullOrWhiteSpace(characterId))
+                return -1;
+
+            for (int i = 0; i < MaxPartyCount; i++)
+            {
+                if (slots[i].CharacterId == characterId)
+                    return i;
+            }
+
+            return -1;
+        }
+
+        public int FindEmptySlot()
+        {
+            for (int i = 0; i < MaxPartyCount; i++)
+            {
+                if (string.IsNullOrWhiteSpace(slots[i].CharacterId))
+                    return i;
+            }
+
+            return -1;
+        }
     }
 }

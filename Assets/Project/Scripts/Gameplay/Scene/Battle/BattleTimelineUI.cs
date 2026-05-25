@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Relic.Gameplay.Data;
 using UnityEngine;
 
 namespace Relic.Gameplay.Battle
@@ -15,16 +16,45 @@ namespace Relic.Gameplay.Battle
                     slots[i].Clear();
             }
 
-            int count = Mathf.Min(actions.Count, slots.Length);
-
-            for (int i = 0; i < count; i++)
+            foreach (TimelineActionData action in actions)
             {
-                TimelineActionData action = actions[i];
+                int slotIndex = action.SlotIndex;
 
-                // 여기서 나중에 Actor 아이콘, Skill 타입 아이콘 연결
-                Debug.Log(
-                    $"[BattleTimelineUI] Slot {i}: {action.ActorType} / {action.ActorRuntimeId} / {action.SkillId}"
-                );
+                if (slotIndex < 0 || slotIndex >= slots.Length)
+                {
+                    Debug.LogWarning($"[BattleTimelineUI] 잘못된 SlotIndex: {slotIndex}");
+                    continue;
+                }
+
+                TimelineSlotUI slot = slots[slotIndex];
+
+                if (slot == null)
+                    continue;
+
+                if (action.ActorType == BattleActorType.Player)
+                {
+                    string characterId = action.ActorRuntimeId;
+
+                    if (DataManager.Instance.CharacterIconDatabase.TryGetIcon(characterId, out Sprite ownerIcon))
+                    {
+                        slot.SetOwnerIcon(ownerIcon);
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[BattleTimelineUI] 캐릭터 아이콘 없음: {characterId}");
+                    }
+                }
+
+                string actionType = action.ActionType.ToString();
+
+                if (DataManager.Instance.ActionTypeIconDatabase.TryGetIcon(actionType, out Sprite actionIcon))
+                {
+                    slot.AddActionTypeIcon(actionIcon);
+                }
+                else
+                {
+                    Debug.LogWarning($"[BattleTimelineUI] ActionType 아이콘 없음: {actionType}");
+                }
             }
         }
     }

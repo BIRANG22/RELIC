@@ -10,6 +10,12 @@ namespace Relic.Gameplay.Data
 
         public void Initialize(IEnumerable<CharacterMasterData> list)
         {
+            foreach (var data in list)
+            {
+                if (data != null)
+                    data.BuildSkillLoadout();
+            }
+
             db.Initialize(list, x => x.CharacterId);
         }
         public CharacterMasterData Get(string id) => db.Get(id);

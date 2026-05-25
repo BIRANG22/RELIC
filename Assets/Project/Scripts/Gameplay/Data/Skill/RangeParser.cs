@@ -1,4 +1,5 @@
 using Relic.Gameplay.Data;
+using UnityEngine;
 
 public static class RangeParser
 {
@@ -19,7 +20,7 @@ public static class RangeParser
             if (int.TryParse(split[0], out int x) &&
                 int.TryParse(split[1], out int y))
             {
-                data.Positions.Add((x, y));
+                data.Positions.Add(new Vector2Int(x, y));
             }
         }
     }

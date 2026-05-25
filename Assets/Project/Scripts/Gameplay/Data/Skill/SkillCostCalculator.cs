@@ -21,26 +21,25 @@ public static class SkillCostCalculator
     {
         payAmount = 0;
 
-        if (caster == null || skill == null || skill.ResourceCost == null)
+        if (caster == null || skill == null)
             return false;
 
         int current = GetCurrentResource(caster, skill.ReferenceResource);
-        var cost = skill.ResourceCost;
 
-        switch (cost.ResourceCostType)
+        switch (skill.ResourceCostType)
         {
             case ResourceCostType.None:
                 payAmount = 0;
                 return true;
 
             case ResourceCostType.Fixed:
-                payAmount = cost.ResourceCostValue;
+                payAmount = skill.ResourceCostValue;
                 return current >= payAmount;
 
             case ResourceCostType.AllCurrent:
-                // AllCurrent일 때 ResourceCostValue는 "최소 요구량"
+                // ResourceCostValue는 최소 요구량
                 payAmount = current;
-                return current >= cost.ResourceCostValue;
+                return current >= skill.ResourceCostValue;
 
             default:
                 return false;

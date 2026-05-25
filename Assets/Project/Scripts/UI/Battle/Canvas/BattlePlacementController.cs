@@ -5,11 +5,16 @@ public class BattlePlacementController : MonoBehaviour
     [SerializeField] private BattlePlacementSelectUI selectUI;
     [SerializeField] private BattleUnitSpawner unitSpawner;
 
+    [Header("Grid Click Mode")]
+    [SerializeField] private Transform playerGridRoot;
+
     private int selectedGridIndex = -1;
 
     public void BeginPlacement()
     {
         selectedGridIndex = -1;
+
+        SetGridPlacementMode(true);
 
         if (selectUI != null)
             selectUI.Close();
@@ -36,7 +41,6 @@ public class BattlePlacementController : MonoBehaviour
         }
 
         var partyStore = DataManager.Instance.PartyRuntimeStore;
-
         string characterId = partyStore.GetCharacterId(partySlotIndex);
 
         if (string.IsNullOrWhiteSpace(characterId))
@@ -52,6 +56,11 @@ public class BattlePlacementController : MonoBehaviour
 
         if (selectUI != null)
             selectUI.Close();
+
+        selectedGridIndex = -1;
+
+        if (!NeedsPlacement())
+            SetGridPlacementMode(false);
 
         Debug.Log($"[BattlePlacementController] Placed {characterId} at Grid_{selectedGridIndex:00}");
     }
@@ -72,5 +81,19 @@ public class BattlePlacementController : MonoBehaviour
         }
 
         return false;
+    }
+
+    private void SetGridPlacementMode(bool value)
+    {
+        if (playerGridRoot == null)
+            return;
+
+        BattleGridClickHandler[] handlers =
+            playerGridRoot.GetComponentsInChildren<BattleGridClickHandler>(true);
+
+        foreach (var handler in handlers)
+        {
+            handler.SetPlacementMode(value);
+        }
     }
 }

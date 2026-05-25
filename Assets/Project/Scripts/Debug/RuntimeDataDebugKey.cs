@@ -63,20 +63,13 @@ public class RuntimeDataDebugKey : Singleton<RuntimeDataDebugKey>
         {
             var data = pair.Value;
 
-            string skills = "None";
-
-            if (data.EquippedSkillIds != null)
-            {
-                var validSkills = System.Array.FindAll(
-                    data.EquippedSkillIds,
-                    skill => !string.IsNullOrEmpty(skill)
-                );
-
-                if (validSkills.Length > 0)
-                {
-                    skills = string.Join(", ", validSkills);
-                }
-            }
+            string skills =
+                $"Move:{data.MoveSkillId}, " +
+                $"Passive:{data.PassiveSkillId}, " +
+                $"Ability1:{data.AbilitySkillId1}, " +
+                $"Ability2:{data.AbilitySkillId2}, " +
+                $"Ability3:{data.AbilitySkillId3}, " +
+                $"Unique:{data.UniqueSkillId}";
 
             Debug.Log(
                 $"ID:{data.CharacterId} / Lv:{data.Level} / " +

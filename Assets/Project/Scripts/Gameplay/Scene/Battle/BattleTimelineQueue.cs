@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 namespace Relic.Gameplay.Battle
 {
@@ -22,6 +23,20 @@ namespace Relic.Gameplay.Battle
         {
             actions.RemoveAll(x => x.ActorRuntimeId == actorRuntimeId);
             Sort();
+        }
+
+        public bool RemoveAction(Predicate<TimelineActionData> match)
+        {
+            if (match == null)
+                return false;
+
+            int removed = actions.RemoveAll(match);
+
+            if (removed <= 0)
+                return false;
+
+            Sort();
+            return true;
         }
 
         public void Clear()

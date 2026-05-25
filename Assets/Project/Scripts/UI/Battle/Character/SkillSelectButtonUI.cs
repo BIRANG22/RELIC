@@ -6,7 +6,7 @@ using Relic.Gameplay.Battle;
 //캐릭터 프리팹 스킬 선택 스크립트
 public class SkillSelectButtonUI : MonoBehaviour
 {
-    [Header("Test")]
+    [SerializeField] private bool useTestSkillId = false;
     [SerializeField] private string testSkillId = "S_Move_1";
 
     [Header("UI")]
@@ -22,15 +22,18 @@ public class SkillSelectButtonUI : MonoBehaviour
     private string skillId;
     private SkillMasterData skillData;
 
+    private void Awake()
+    {
+        if (playerActionPlanner == null)
+        {
+            playerActionPlanner = Object.FindFirstObjectByType<PlayerActionPlanner>();
+        }
+    }
     private void Start()
     {
-        if (!string.IsNullOrEmpty(testSkillId))
+        if (useTestSkillId && !string.IsNullOrEmpty(testSkillId))
         {
             SetSkill(testSkillId);
-        }
-        else
-        {
-            Debug.LogWarning($"[SkillSelectButtonUI] testSkillId가 비어있습니다.");
         }
     }
 
@@ -61,24 +64,38 @@ public class SkillSelectButtonUI : MonoBehaviour
         }
     }
 
+    public void SetSkill(SkillMasterData data)
+    {
+        if (data == null)
+        {
+            skillId = null;
+            skillData = null;
+
+            if (iconImage != null)
+            {
+                iconImage.sprite = null;
+                iconImage.enabled = false;
+            }
+
+            return;
+        }
+
+        skillData = data;
+        skillId = data.SkillId;
+
+        if (iconImage != null)
+        {
+            iconImage.sprite = data.Icon;
+            iconImage.enabled = data.Icon != null;
+        }
+    }
+
     public void OnClickSkill()
     {
         if (skillData == null)
         {
             Debug.LogWarning($"[SkillSelectButtonUI] skillData 없음: {skillId}");
             return;
-        }
-
-        if (useEquipUI)
-        {
-            if (SkillEquipUIController.Instance != null)
-            {
-                SkillEquipUIController.Instance.SelectSkill(skillData);
-            }
-            else
-            {
-                Debug.LogWarning("[SkillSelectButtonUI] SkillEquipUIController.Instance가 없습니다.");
-            }
         }
 
         if (useBattleTimeline)
@@ -90,6 +107,18 @@ public class SkillSelectButtonUI : MonoBehaviour
             }
 
             playerActionPlanner.SelectSkill(skillData);
+        }
+    }
+
+    public void ClearSkill()
+    {
+        skillId = null;
+        skillData = null;
+
+        if (iconImage != null)
+        {
+            iconImage.sprite = null;
+            iconImage.enabled = false;
         }
     }
 }

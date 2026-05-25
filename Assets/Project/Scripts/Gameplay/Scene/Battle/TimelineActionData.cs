@@ -26,6 +26,10 @@ namespace Relic.Gameplay.Battle
 
         public int TargetGridIndex = -1;
 
+        public int SlotIndex = -1;
+
         public int Order;
+
+        public SkillDirection Direction;
     }
 }

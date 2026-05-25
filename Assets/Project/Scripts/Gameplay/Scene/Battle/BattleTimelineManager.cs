@@ -81,5 +81,10 @@ namespace Relic.Gameplay.Battle
         {
             return queue.Actions;
         }
+
+        public bool RemoveAction(System.Predicate<TimelineActionData> match)
+        {
+            return queue.RemoveAction(match);
+        }
     }
 }

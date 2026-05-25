@@ -1,25 +1,72 @@
+using Relic.Gameplay.Data;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class SkillSlotButton : MonoBehaviour
 {
-    [SerializeField] private int slotIndex;
-    [SerializeField] private GameObject skillListPanel;
+    [Header("UI")]
+    [SerializeField] private Button button;
+    [SerializeField] private Image iconImage;
+    [SerializeField] private TMP_Text nameText;
+
+    private SkillSettingPanel owner;
+    private int slotIndex;
+    private SkillMasterData equippedSkill;
+
+    public int SlotIndex => slotIndex;
+    public SkillMasterData EquippedSkill => equippedSkill;
+
+    public void Init(SkillSettingPanel panel, int index)
+    {
+        owner = panel;
+        slotIndex = index;
+
+        if (button != null)
+        {
+            button.onClick.RemoveListener(Execute);
+            button.onClick.AddListener(Execute);
+        }
+    }
+
     public void Execute()
     {
-        if (CharacterSelectionState.Instance == null)
+        Debug.Log($"[SkillSlotButton] Clicked Slot: {slotIndex}");
+
+        if (owner == null)
+        {
+            Debug.LogWarning("[SkillSlotButton] owner is null.");
             return;
-
-        CharacterSelectionState.Instance.SelectSkillSlot(slotIndex);
-
-        Debug.Log($"[SkillSlot] Selected Slot: {slotIndex}");
-
-        if (skillListPanel != null)
-        {
-            skillListPanel.SetActive(true);
         }
-        else
+
+        owner.OpenSkillSelectPanel(this);
+    }
+
+    public void SetSkill(SkillMasterData skill)
+    {
+        equippedSkill = skill;
+
+        Debug.Log(skill != null
+            ? $"[SkillSlotButton] SetSkill: {skill.SkillId} / {skill.Name}"
+            : "[SkillSlotButton] SetSkill: null");
+
+        if (nameText != null)
+            nameText.text = skill != null ? skill.Name : "";
+
+        if (iconImage != null)
         {
-            Debug.LogWarning("[SkillSlotButton] Skill List Panel not assigned.");
+            Sprite icon = null;
+
+            if (skill != null)
+                icon = SkillIconUtility.GetSkillIcon(skill.SkillId);
+
+            Debug.Log(icon != null
+                ? $"[SkillSlotButton] Icon Found: {skill.SkillId}"
+                : $"[SkillSlotButton] Icon Missing: {(skill != null ? skill.SkillId : "null")}");
+
+            iconImage.enabled = icon != null;
+            iconImage.sprite = icon;
+            iconImage.color = Color.white;
         }
     }
 }

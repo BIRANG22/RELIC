@@ -1,3 +1,4 @@
+using Relic.Gameplay.Battle;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -13,6 +14,10 @@ public class SkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     [Header("Selection UI")]
     [SerializeField] private GameObject selectObject;
+
+    [Header("Selection State")]
+    [SerializeField] private Image slotImage;
+    [SerializeField] private Button slotButton;
 
     private readonly List<Sprite> equippedSkillIcons = new List<Sprite>();
     private CharacterSelectButtonUI ownerCharacter;
@@ -46,19 +51,40 @@ public class SkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public void OnClickSlot()
     {
-        if (SkillEquipUIController.Instance == null)
+        PlayerActionPlanner planner =
+            Object.FindFirstObjectByType<PlayerActionPlanner>();
+
+        if (planner != null)
+            planner.SelectSlot(this);
+    }
+
+    public void OnClickSkillIcon(int iconIndex)
+    {
+        Debug.Log($"[SkillSlotUI] ìŠ¤í‚¬ ì•„ì´ì½˜ í´ë¦­ë¨ Slot:{name}, Index:{iconIndex}");
+
+        PlayerActionPlanner planner = Object.FindFirstObjectByType<PlayerActionPlanner>();
+
+        if (planner == null)
         {
-            Debug.LogError("SkillEquipUIController.Instance °¡ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("[SkillSlotUI] PlayerActionPlannerë¥¼ ì°¾ì§€ ëª»í•¨");
             return;
         }
 
-        SkillEquipUIController.Instance.SelectSlot(this);
+        planner.RemovePlannedSkill(this, iconIndex);
     }
 
     public void SetSelected(bool value)
     {
         isSelected = value;
+
+        if (slotImage != null)
+            slotImage.raycastTarget = !isSelected;
+
+        if (slotButton != null)
+            slotButton.interactable = !isSelected;
+
         RefreshSelectObject();
+        RefreshSkillIconRaycast();
     }
 
     private void RefreshSelectObject()
@@ -67,6 +93,24 @@ public class SkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             return;
 
         selectObject.SetActive(isHover || isSelected);
+    }
+
+    private void RefreshSkillIconRaycast()
+    {
+        for (int i = 0; i < skillIconImages.Length; i++)
+        {
+            if (skillIconImages[i] == null)
+                continue;
+
+            bool hasSkill = i < equippedSkillIcons.Count;
+            bool canClickIcon = isSelected && hasSkill;
+
+            skillIconImages[i].raycastTarget = canClickIcon;
+
+            Button iconButton = skillIconImages[i].GetComponent<Button>();
+            if (iconButton != null)
+                iconButton.interactable = canClickIcon;
+        }
     }
 
     public void SetOwnerCharacter(CharacterSelectButtonUI character)
@@ -89,13 +133,13 @@ public class SkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     {
         if (icon == null)
         {
-            Debug.LogWarning($"{name}: Ãß°¡ÇÒ ½ºÅ³ ¾ÆÀÌÄÜÀÌ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning($"{name}: ì¶”ê°€í•  ìŠ¤í‚¬ ì•„ì´ì½˜ì´ ì—†ìŠµë‹ˆë‹¤.");
             return false;
         }
 
         if (IsFull)
         {
-            Debug.Log($"{name}: ÀÌ¹Ì ½ºÅ³ÀÌ °¡µæ Ã¡½À´Ï´Ù.");
+            Debug.Log($"{name}: ì´ë¯¸ ìŠ¤í‚¬ì´ ê°€ë“ ì°¼ìŠµë‹ˆë‹¤.");
             return false;
         }
 
@@ -115,7 +159,7 @@ public class SkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     {
         if (index < 0 || index >= equippedSkillIcons.Count)
         {
-            Debug.LogWarning($"{name}: RemoveSkillAt ÀÎµ¦½º°¡ ¹üÀ§¸¦ ¹ş¾î³µ½À´Ï´Ù.");
+            Debug.LogWarning($"{name}: RemoveSkillAt ì¸ë±ìŠ¤ê°€ ë²”ìœ„ë¥¼ ë²—ì–´ë‚¬ìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -131,7 +175,7 @@ public class SkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     {
         if (skillIconImages == null || skillIconImages.Length == 0)
         {
-            Debug.LogWarning($"{name}: skillIconImages°¡ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù.");
+            Debug.LogWarning($"{name}: skillIconImagesê°€ ì—°ê²°ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -142,7 +186,6 @@ public class SkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
             skillIconImages[i].sprite = null;
             skillIconImages[i].enabled = false;
-            skillIconImages[i].raycastTarget = false;
             skillIconImages[i].gameObject.SetActive(false);
         }
 
@@ -157,6 +200,7 @@ public class SkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         }
 
         UpdateIconLayout();
+        RefreshSkillIconRaycast();
     }
 
     private void UpdateIconLayout()

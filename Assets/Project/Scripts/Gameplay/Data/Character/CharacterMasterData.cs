@@ -1,36 +1,73 @@
 using System;
 using UnityEngine;
 
-
-/// <summary>
-/// [Character] 스크립트. 역할/설정/변수 용도를 코드 주석으로 확인할 수 있도록 정리했습니다.
-/// Unity 연결: MonoBehaviour 스크립트는 Scene/GameObject에 컴포넌트로 부착 후 Inspector 필드를 설정하세요.
-/// 데이터 클래스는 엑셀 시트 컬럼과 필드명을 맞춰 DataBootstrap 로딩 파이프라인에서 자동 매핑됩니다.
-/// </summary>
 namespace Relic.Gameplay.Data
 {
     [Serializable]
-    /// <summary>
-    /// CharacterMasterData의 책임을 담당하는 클래스입니다. 파일 상단 주석의 연결/설정 지침을 참고하세요.
-    /// </summary>
     public class CharacterMasterData
     {
         public string CharacterId;
         public string Name;
+
         public int MaxHealth;
         public int MaxStamina;
         public int StaminaRecovery;
         public int MaxResource;
         public string ResourceType;
         public int MoveValue;
+
         public bool IsDefaultProvided;
         public string UnlockCondition;
+
+        // 엑셀 컬럼과 직접 매칭
+        public string PassiveSkill1;
+        public string PassiveSkill2;
+
+        public string UniqueSkill1;
+        public string UniqueSkill2;
+
+        public string CharacterSkill1;
+        public string CharacterSkill2;
+
+        public string CommonSkill1;
+        public string CommonSkill2;
+
+        public string Rune1;
+        public string Rune2;
+        public string Rune3;
+        public string Rune4;
+        public string Rune5;
+
+        // 런타임에서 쓰기 편한 구조
         public CharacterSkillLoadout DefaultSkillLoadout = new();
 
         [NonSerialized]
         public GameObject BattlePrefab;
 
-        [System.NonSerialized]
+        [NonSerialized]
         public Sprite Icon;
+
+        public void BuildSkillLoadout()
+        {
+            DefaultSkillLoadout.PassiveId = PassiveSkill1;
+            DefaultSkillLoadout.UniqueSkillId = UniqueSkill1;
+
+            DefaultSkillLoadout.AbilitySkillIds = new string[3];
+            DefaultSkillLoadout.AbilitySkillIds[0] = CharacterSkill1;
+            DefaultSkillLoadout.AbilitySkillIds[1] = CharacterSkill2;
+            DefaultSkillLoadout.AbilitySkillIds[2] = CommonSkill1;
+        }
+
+        public string[] GetRuneIds()
+        {
+            return new string[]
+            {
+                Rune1,
+                Rune2,
+                Rune3,
+                Rune4,
+                Rune5
+            };
+        }
     }
 }

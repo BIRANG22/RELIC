@@ -1,37 +1,32 @@
 using System.Collections.Generic;
-using UnityEngine;
+using System.Linq;
 
 namespace Relic.Gameplay.Data
 {
     public class RuneDatabase
     {
-        private readonly Dictionary<string, RuneData> map = new();
+        private readonly LookupDatabase<RuneData> runeDb = new();
+        private List<RuneData> allRunes = new();
 
-        public void Initialize(IEnumerable<RuneData> list)
+        public void Initialize(IEnumerable<RuneData> runes)
         {
-            map.Clear();
-
-            foreach (var data in list)
-            {
-                if (data == null || string.IsNullOrWhiteSpace(data.RuneId))
-                    continue;
-
-                if (map.ContainsKey(data.RuneId))
-                {
-                    Debug.LogWarning($"[RuneDatabase] ม฿บน RuneId: {data.RuneId}");
-                    continue;
-                }
-
-                map.Add(data.RuneId, data);
-            }
-
-            Debug.Log($"[RuneDatabase] Loaded: {map.Count}");
+            allRunes = runes.ToList();
+            runeDb.Initialize(allRunes, x => x.RuneId);
         }
 
-        public RuneData Get(string runeId)
+        public RuneData Get(string id)
         {
-            map.TryGetValue(runeId, out var data);
-            return data;
+            return runeDb.Get(id);
+        }
+
+        public bool TryGet(string id, out RuneData value)
+        {
+            return runeDb.TryGet(id, out value);
+        }
+
+        public List<RuneData> GetAll()
+        {
+            return allRunes;
         }
     }
 }
