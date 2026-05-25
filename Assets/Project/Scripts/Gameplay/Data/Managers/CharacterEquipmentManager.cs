@@ -27,7 +27,7 @@ namespace Relic.Gameplay.Data
 
         public void EquipPassive(string characterId, string passiveId) => GetOrCreate(characterId).SkillLoadout.PassiveId = passiveId;
         public void EquipUnique(string characterId, string uniqueId) => GetOrCreate(characterId).SkillLoadout.UniqueSkillId = uniqueId;
-        public void EquipCommon(string characterId, int slotIndex, string skillId) => GetOrCreate(characterId).SkillLoadout.CommonSkillIds[slotIndex] = skillId;
+        public void EquipCommon(string characterId, int slotIndex, string skillId) => GetOrCreate(characterId).SkillLoadout.AbilitySkillIds[slotIndex] = skillId;
         public void EquipRune(string characterId, int slotIndex, string runeId) => GetOrCreate(characterId).RuneLoadout.RuneIds[slotIndex] = runeId;
         public void EquipFragment(string characterId, int slotIndex, string fragmentId) => GetOrCreate(characterId).FragmentIds[slotIndex] = fragmentId;
     }

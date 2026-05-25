@@ -25,6 +25,7 @@ namespace Relic.Gameplay.Data
         public string UniqueSkillId;    // 전투 스킬 슬롯 4
 
         public string[] EquippedSkillIds = new string[4];
+        public string[] EquippedRuneIds = new string[4];
         public List<string> EquippedItemIds = new();
 
         public bool IsUnlocked;

@@ -9,14 +9,17 @@ public class DataManager : Singleton<DataManager>
     [SerializeField] private MonsterPrefabDatabase monsterPrefabDatabase;
     [SerializeField] private ActionTypeIconDatabase actionTypeIconDatabase;
     [SerializeField] private CharacterIconDatabase characterIconDatabase;
-
+    [SerializeField] private RuneIconDatabase runeIconDatabase;
+    
     private DataBootstrap dataBootstrap = new();
 
     public CharacterDatabase CharacterDatabase => dataBootstrap.CharacterDatabase;
     public CharacterIconDatabase CharacterIconDatabase => characterIconDatabase;
+    public CharacterPrefabDatabase CharacterPrefabDatabase => characterPrefabDatabase;
     public SkillDatabase SkillDatabase => dataBootstrap.SkillDatabase;
     public SkillIconDatabase SkillIconDatabase => skillIconDatabase;
     public RangeDatabase RangeDatabase => dataBootstrap.RangeDatabase;
+    public RuneIconDatabase RuneIconDatabase => runeIconDatabase;
     public EffectDatabase EffectDatabase => dataBootstrap.EffectDatabase;
     public ActionTypeIconDatabase ActionTypeIconDatabase => actionTypeIconDatabase;
     public BattleMapDatabase BattleMapDatabase => dataBootstrap.BattleMapDatabase;

@@ -1,41 +1,90 @@
+using Relic.Gameplay.Data;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-
-/// <summary>
-/// [UI] 스크립트. 역할/설정/변수 용도를 코드 주석으로 확인할 수 있도록 정리했습니다.
-/// Unity 연결: MonoBehaviour 스크립트는 Scene/GameObject에 컴포넌트로 부착 후 Inspector 필드를 설정하세요.
-/// 데이터 클래스는 엑셀 시트 컬럼과 필드명을 맞춰 DataBootstrap 로딩 파이프라인에서 자동 매핑됩니다.
-/// </summary>
-namespace Relic.Gameplay.Data
+public class SkillIconButton : MonoBehaviour
 {
-    /// <summary>
-    /// SkillIconButton의 책임을 담당하는 클래스입니다. 파일 상단 주석의 연결/설정 지침을 참고하세요.
-    /// </summary>
-    public class SkillIconButton : MonoBehaviour
+    [Header("UI")]
+    [SerializeField] private Button button;
+    [SerializeField] private Image iconImage;
+    [SerializeField] private TMP_Text nameText;
+    [SerializeField] private TMP_Text lockText;
+    [SerializeField] private GameObject lockObject;
+
+    private SkillSettingPanel owner;
+    private SkillMasterData currentSkillData;
+
+    private bool isLocked;
+    private int requiredLevel;
+
+    public SkillMasterData CurrentSkillData => currentSkillData;
+
+    public void Init(SkillSettingPanel panel)
     {
-        [SerializeField] private Button button;
-        [SerializeField] private string skillId;
+        owner = panel;
 
-        /// <summary>
-        /// equipmentManager: Inspector에서 연결하는 참조 값입니다.
-        /// </summary>
-        private CharacterEquipmentManager equipmentManager;
-        private CharacterSelectionManager selectionManager;
-
-        public void Initialize(CharacterEquipmentManager equipment, CharacterSelectionManager selection)
+        if (button != null)
         {
-            equipmentManager = equipment;
-            selectionManager = selection;
-            button.onClick.AddListener(OnClick);
+            button.onClick.RemoveListener(Execute);
+            button.onClick.AddListener(Execute);
+        }
+    }
+
+    public void SetSkillData(
+        SkillMasterData skillData,
+        bool locked,
+        int requiredLv
+    )
+    {
+        currentSkillData = skillData;
+        isLocked = locked;
+        requiredLevel = requiredLv;
+
+        bool hasSkill = currentSkillData != null;
+
+        gameObject.SetActive(hasSkill);
+
+        if (!hasSkill)
+            return;
+
+        if (nameText != null)
+            nameText.text = currentSkillData.Name;
+
+        if (iconImage != null)
+        {
+            Sprite icon = SkillIconUtility.GetSkillIcon(currentSkillData.SkillId);
+
+            iconImage.enabled = icon != null;
+            iconImage.sprite = icon;
+            iconImage.color = Color.white;
         }
 
-        private void OnClick()
-        {
-            if (selectionManager == null || equipmentManager == null)
-                return;
+        if (lockObject != null)
+            lockObject.SetActive(isLocked);
 
-            equipmentManager.EquipCommon(selectionManager.CurrentCharacterId, 0, skillId);
+        if (lockText != null)
+            lockText.text = isLocked
+                ? $"LV.{requiredLevel}"
+                : "";
+    }
+
+    public void Execute()
+    {
+        if (owner == null)
+            return;
+
+        if (currentSkillData == null)
+            return;
+
+        if (isLocked)
+        {
+            Debug.Log(
+                $"[SkillIconButton] Locked. Required Level: {requiredLevel}"
+            );
+            return;
         }
+
+        owner.SelectSkill(currentSkillData);
     }
 }

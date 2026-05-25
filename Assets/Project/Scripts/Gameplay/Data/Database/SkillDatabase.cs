@@ -16,6 +16,10 @@ namespace Relic.Gameplay.Data
 
         public SkillMasterData Get(string id) => skillDb.Get(id);
 
+        public bool TryGet(string id, out SkillMasterData value)
+        {
+            return skillDb.TryGet(id, out value);
+        }
         public List<SkillMasterData> GetByType(SkillType type)
         {
             return allSkills.Where(x => x.SkillType == type).ToList();
