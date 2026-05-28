@@ -10,6 +10,8 @@ public class DataManager : Singleton<DataManager>
     [SerializeField] private ActionTypeIconDatabase actionTypeIconDatabase;
     [SerializeField] private CharacterIconDatabase characterIconDatabase;
     [SerializeField] private RuneIconDatabase runeIconDatabase;
+    [SerializeField] private StatusEffectIconDatabase statusEffectIconDatabase;
+
     
     private DataBootstrap dataBootstrap = new();
 
@@ -21,6 +23,7 @@ public class DataManager : Singleton<DataManager>
     public RangeDatabase RangeDatabase => dataBootstrap.RangeDatabase;
     public RuneIconDatabase RuneIconDatabase => runeIconDatabase;
     public EffectDatabase EffectDatabase => dataBootstrap.EffectDatabase;
+    public StatusEffectIconDatabase StatusEffectIconDatabase => statusEffectIconDatabase;
     public ActionTypeIconDatabase ActionTypeIconDatabase => actionTypeIconDatabase;
     public BattleMapDatabase BattleMapDatabase => dataBootstrap.BattleMapDatabase;
     public MonsterDatabase MonsterDatabase => dataBootstrap.MonsterDatabase;

@@ -68,8 +68,6 @@ public class SceneFlowManager : Singleton<SceneFlowManager>
 
         isLoading = true;
 
-        Debug.Log($"[SceneFlowManager] Loading scene async: {sceneName}");
-
         AsyncOperation loadOperation = SceneManager.LoadSceneAsync(sceneName);
         loadOperation.allowSceneActivation = true;
 
@@ -77,8 +75,6 @@ public class SceneFlowManager : Singleton<SceneFlowManager>
         {
             await Task.Yield();
         }
-
-        Debug.Log($"[SceneFlowManager] Loaded scene async: {sceneName}");
 
         isLoading = false;
     }

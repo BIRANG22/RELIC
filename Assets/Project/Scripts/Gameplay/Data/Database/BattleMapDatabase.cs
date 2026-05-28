@@ -30,9 +30,6 @@ namespace Relic.Gameplay.Data
 
                 spawns.Add(data);
             }
-
-            Debug.Log($"[BattleMapDatabase] Loaded Spawn Count: {battleMaps.Count}");
-            Debug.Log($"[BattleMapDatabase] Loaded BattleMap Count: {byBattleMapId.Count}");
         }
 
         public IReadOnlyList<BattleMapData> GetSpawns(string battleMapId)

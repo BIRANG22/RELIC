@@ -9,13 +9,11 @@ public class LobbyState : BaseGameState
 
     public override async Task Enter(GameStateContext context)
     {
-        Debug.Log("[LobbyState] Enter");
         await sceneFlow.LoadSceneAsync(SceneName.Lobby);
     }
 
     public override Task Exit()
     {
-        Debug.Log("[LobbyState] Exit");
         return Task.CompletedTask;
     }
 }

@@ -123,15 +123,25 @@ public class CharBtn : MonoBehaviour,
                 CurrentHealth = master.MaxHealth,
                 CurrentStamina = master.MaxStamina,
                 CurrentResource = master.MaxResource,
-                IsUnlocked = master.IsDefaultProvided
+                CurrentMoveLevel = 1,
+                IsUnlocked = master.IsDefaultProvided,
+
+                PassiveSkillId = master.PassiveSkill1,
+                UniqueSkillId = master.UniqueSkill1,
+                AbilitySkillId1 = master.CharacterSkill1,
+                AbilitySkillId2 = master.CharacterSkill2,
+                AbilitySkillId3 = master.CommonSkill1,
+
+                EquippedSkillIds = new string[4]
+                {
+                    master.PassiveSkill1,
+                    master.UniqueSkill1,
+                    master.CharacterSkill1,
+                    master.CommonSkill1
+                }
             };
 
             runtimeStore.AddOrUpdate(runtime);
-            Debug.Log("[CharacterRuntime] Created");
-        }
-        else
-        {
-            Debug.Log("[CharacterRuntime] Already Exists");
         }
     }
 
@@ -181,12 +191,6 @@ public class CharBtn : MonoBehaviour,
         {
             partyStore.SetGridIndex(emptySlot, emptySlot);
         }
-
-        Debug.Log(
-            $"[Party] Added / " +
-            $"CharacterId: {characterId}, " +
-            $"Slot: {emptySlot}"
-        );
     }
 
     public void OnBeginDrag(PointerEventData eventData)

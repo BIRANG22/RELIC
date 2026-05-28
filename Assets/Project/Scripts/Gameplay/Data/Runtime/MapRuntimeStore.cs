@@ -9,9 +9,6 @@ namespace Relic.Gameplay.Data
         public void Set(MapRuntimeData data)
         {
             currentRun = data;
-
-            Debug.Log("[MapRuntimeStore] Saved current map runtime.");
-            LogMapRuntime(data);
         }
 
         public MapRuntimeData Get()
@@ -32,17 +29,6 @@ namespace Relic.Gameplay.Data
 
         private void LogMapRuntime(MapRuntimeData data)
         {
-            Debug.Log(
-                $"[MapRuntime]\n" +
-                $"Theme: {data.SelectedChapterId}\n" +
-                $"Stage: {data.CurrentStage}\n" +
-                $"MapId: {data.CurrentMapId}\n" +
-                $"Scene: {data.CurrentSceneName}\n" +
-                $"BossUnlocked: {data.IsBossUnlocked}\n" +
-                $"Initialized: {data.IsRunInitialized}\n" +
-                $"Cleared: {string.Join(", ", data.ClearedMapIds)}\n" +
-                $"Visited: {string.Join(", ", data.VisitedMapIds)}"
-            );
         }
     }
 }

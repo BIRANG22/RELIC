@@ -58,8 +58,6 @@ public class GameStateMachine
 
         try
         {
-            Debug.Log($"[GameStateMachine] ChangeState: {CurrentStateType} -> {newStateType}");
-
             if (CurrentState != null)
             {
                 await CurrentState.Exit();

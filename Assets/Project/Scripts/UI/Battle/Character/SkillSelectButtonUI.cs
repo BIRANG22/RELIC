@@ -3,12 +3,8 @@ using UnityEngine.UI;
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Battle;
 
-//캐릭터 프리팹 스킬 선택 스크립트
 public class SkillSelectButtonUI : MonoBehaviour
 {
-    [SerializeField] private bool useTestSkillId = false;
-    [SerializeField] private string testSkillId = "S_Move_1";
-
     [Header("UI")]
     [SerializeField] private Image iconImage;
 
@@ -25,16 +21,7 @@ public class SkillSelectButtonUI : MonoBehaviour
     private void Awake()
     {
         if (playerActionPlanner == null)
-        {
             playerActionPlanner = Object.FindFirstObjectByType<PlayerActionPlanner>();
-        }
-    }
-    private void Start()
-    {
-        if (useTestSkillId && !string.IsNullOrEmpty(testSkillId))
-        {
-            SetSkill(testSkillId);
-        }
     }
 
     public void SetSkill(string id)
@@ -54,40 +41,40 @@ public class SkillSelectButtonUI : MonoBehaviour
         if (skillData == null)
         {
             Debug.LogWarning($"[SkillSelectButtonUI] SkillData 없음: {skillId}");
+            ClearSkill();
             return;
         }
 
-        if (iconImage != null)
-        {
-            iconImage.sprite = skillData.Icon;
-            iconImage.enabled = skillData.Icon != null;
-        }
+        RefreshIcon();
     }
 
     public void SetSkill(SkillMasterData data)
     {
         if (data == null)
         {
-            skillId = null;
-            skillData = null;
-
-            if (iconImage != null)
-            {
-                iconImage.sprite = null;
-                iconImage.enabled = false;
-            }
-
+            ClearSkill();
             return;
         }
 
         skillData = data;
         skillId = data.SkillId;
 
-        if (iconImage != null)
-        {
-            iconImage.sprite = data.Icon;
-            iconImage.enabled = data.Icon != null;
-        }
+        RefreshIcon();
+    }
+
+    private void RefreshIcon()
+    {
+        if (iconImage == null)
+            return;
+
+        Sprite icon = SkillIconUtility.GetSkillIcon(skillId);
+
+        iconImage.sprite = icon;
+        iconImage.enabled = icon != null;
+        iconImage.gameObject.SetActive(icon != null);
+
+        if (icon == null)
+            Debug.LogWarning($"[SkillSelectButtonUI] Skill icon not found: {skillId}");
     }
 
     public void OnClickSkill()
@@ -119,6 +106,7 @@ public class SkillSelectButtonUI : MonoBehaviour
         {
             iconImage.sprite = null;
             iconImage.enabled = false;
+            iconImage.gameObject.SetActive(false);
         }
     }
 }

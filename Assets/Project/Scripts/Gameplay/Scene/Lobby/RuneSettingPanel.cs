@@ -151,8 +151,6 @@ public class RuneSettingPanel : MonoBehaviour
     {
         RuneData[] candidates = GetCurrentRuneCandidates();
 
-        Debug.Log($"[RuneSettingPanel] Rune Candidates Count: {(candidates != null ? candidates.Length : -1)}");
-
         for (int i = 0; i < runeIconButtons.Length; i++)
         {
             if (runeIconButtons[i] == null)
@@ -221,10 +219,6 @@ public class RuneSettingPanel : MonoBehaviour
 
     public void TryEquipRuneToFirstEmptySlot(RuneData runeData)
     {
-        Debug.Log(runeData != null
-            ? $"[RuneSettingPanel] TryEquip: {runeData.RuneId}"
-            : "[RuneSettingPanel] TryEquip: null");
-
         if (runeData == null)
             return;
 
@@ -241,9 +235,6 @@ public class RuneSettingPanel : MonoBehaviour
             Debug.LogWarning("[RuneSettingPanel] 비어 있는 언락 룬 슬롯이 없습니다.");
             return;
         }
-
-        Debug.Log($"[RuneSettingPanel] Equip to Slot: {emptySlot.SlotIndex}");
-        Debug.Log($"[RuneSettingPanel] Send Rune To Slot: {runeData.RuneId}");
 
         emptySlot.SetRune(runeData);
 

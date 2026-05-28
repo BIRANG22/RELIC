@@ -1,5 +1,6 @@
-using UnityEngine;
 using Relic.Gameplay.Data;
+using System.Collections.Generic;
+using UnityEngine;
 
 public class BattleUnitSpawner : MonoBehaviour
 {
@@ -12,8 +13,10 @@ public class BattleUnitSpawner : MonoBehaviour
     [SerializeField] private int playerGridCount = 15;
     [SerializeField] private float unitSpawnZOffset = 0.01f;
 
-    public void SpawnFromRuntimeData()
+    public List<CharacterRuntimeData> SpawnFromRuntimeData()
     {
+        List<CharacterRuntimeData> spawnedRuntimes = new();
+
         var dm = DataManager.Instance;
         var partyStore = dm.PartyRuntimeStore;
 
@@ -78,8 +81,10 @@ public class BattleUnitSpawner : MonoBehaviour
             if (battleCharacter != null)
                 battleCharacter.Initialize(runtimeData);
 
-            Debug.Log($"[BattleUnitSpawner] Spawn Slot {slotIndex}: {characterId} -> Grid_{gridIndex:00}");
+            spawnedRuntimes.Add(runtimeData);
         }
+
+        return spawnedRuntimes;
     }
 
     private Transform FindGridByIndex(int gridIndex)

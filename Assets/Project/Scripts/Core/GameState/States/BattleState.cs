@@ -9,8 +9,6 @@ public class BattleState : BaseGameState
 
     public override async Task Enter(GameStateContext context)
     {
-        Debug.Log("[BattleState] Enter");
-
         var mapRuntime = DataManager.Instance.MapRuntimeStore.Get();
 
         if (mapRuntime == null || !mapRuntime.IsRunInitialized)
@@ -45,7 +43,6 @@ public class BattleState : BaseGameState
 
     public override Task Exit()
     {
-        Debug.Log("[BattleState] Exit");
         return Task.CompletedTask;
     }
 }

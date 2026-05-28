@@ -58,10 +58,6 @@ public class RuneIconButton : MonoBehaviour
 
     public void Execute()
     {
-        Debug.Log(currentRuneData != null
-            ? $"[RuneIconButton] Click: {currentRuneData.RuneId}"
-            : "[RuneIconButton] Click: null");
-
         if (owner == null)
         {
             Debug.LogWarning("[RuneIconButton] owner is null.");
@@ -96,7 +92,6 @@ public class RuneIconButton : MonoBehaviour
 
         if (DataManager.Instance.RuneIconDatabase.TryGetIcon(runeData.RuneId, out var icon))
         {
-            Debug.Log($"[RuneIconButton] Icon Found: {runeData.RuneId}");
             return icon;
         }
 

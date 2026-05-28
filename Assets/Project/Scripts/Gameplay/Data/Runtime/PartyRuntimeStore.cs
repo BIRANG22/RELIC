@@ -64,9 +64,6 @@ namespace Relic.Gameplay.Data
 
             slots[slotIndex].CharacterId = characterId;
 
-            Debug.Log($"[PartyRuntimeStore] Slot {slotIndex} Character saved: {characterId}");
-            LogParty();
-
             return true;
         }
 
@@ -92,19 +89,11 @@ namespace Relic.Gameplay.Data
 
             slots[slotIndex].GridIndex = gridIndex;
 
-            Debug.Log($"[PartyRuntimeStore] Slot {slotIndex} Grid saved: {gridIndex}");
-            LogParty();
-
             return true;
         }
 
         public bool SetSlot(int slotIndex, string characterId, int gridIndex)
         {
-            Debug.LogWarning(
-                $"[PartyRuntimeStore] SetSlot called. slot={slotIndex}, id={characterId}, grid={gridIndex}"
-            );
-            Debug.LogWarning(UnityEngine.StackTraceUtility.ExtractStackTrace());
-
             if (!SetCharacter(slotIndex, characterId))
                 return false;
 
@@ -121,8 +110,6 @@ namespace Relic.Gameplay.Data
 
             slots[slotIndex].CharacterId = null;
             slots[slotIndex].GridIndex = -1;
-
-            LogParty();
         }
 
         public void Clear()
@@ -183,6 +170,17 @@ namespace Relic.Gameplay.Data
             }
 
             return -1;
+        }
+
+        public bool IsGridUsed(int gridIndex)
+        {
+            for (int i = 0; i < MaxPartyCount; i++)
+            {
+                if (slots[i].GridIndex == gridIndex)
+                    return true;
+            }
+
+            return false;
         }
     }
 }

@@ -31,8 +31,6 @@ public class SkillSlotButton : MonoBehaviour
 
     public void Execute()
     {
-        Debug.Log($"[SkillSlotButton] Clicked Slot: {slotIndex}");
-
         if (owner == null)
         {
             Debug.LogWarning("[SkillSlotButton] owner is null.");
@@ -46,10 +44,6 @@ public class SkillSlotButton : MonoBehaviour
     {
         equippedSkill = skill;
 
-        Debug.Log(skill != null
-            ? $"[SkillSlotButton] SetSkill: {skill.SkillId} / {skill.Name}"
-            : "[SkillSlotButton] SetSkill: null");
-
         if (nameText != null)
             nameText.text = skill != null ? skill.Name : "";
 
@@ -59,10 +53,6 @@ public class SkillSlotButton : MonoBehaviour
 
             if (skill != null)
                 icon = SkillIconUtility.GetSkillIcon(skill.SkillId);
-
-            Debug.Log(icon != null
-                ? $"[SkillSlotButton] Icon Found: {skill.SkillId}"
-                : $"[SkillSlotButton] Icon Missing: {(skill != null ? skill.SkillId : "null")}");
 
             iconImage.enabled = icon != null;
             iconImage.sprite = icon;

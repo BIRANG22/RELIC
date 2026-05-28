@@ -14,6 +14,9 @@ namespace Relic.Gameplay.Data
         public int CurrentStamina;
         public int CurrentResource;
         public int CurrentMoveLevel;
+        public int CurrentShield;
+
+        public List<StatusEffectRuntimeData> StatusEffects = new();
 
         public string MoveSkillId;      // 기본 이동, 항상 있음
         public string PassiveSkillId;   // 장착 저장만, 전투 버튼에는 안 보임

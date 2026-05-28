@@ -14,6 +14,9 @@ public class UIPanelButton : MonoBehaviour
     [SerializeField] private GameObject panelToOpen;
     [SerializeField] private GameObject panelToClose;
 
+    [Header("Toggle")]
+    [SerializeField] private bool toggleIfAlreadyOpen = true;
+
     [Header("Effect")]
     [SerializeField] private UIPanelEffect effect = UIPanelEffect.None;
     [SerializeField] private Image fadeImage;
@@ -29,8 +32,17 @@ public class UIPanelButton : MonoBehaviour
         if (isPlayingEffect)
             return;
 
-        if (playClickSound)
+        if (playClickSound && AudioManager.Instance != null)
             AudioManager.Instance.PlaySfx(SfxType.Click);
+
+        // 이미 열려있으면 닫기
+        if (toggleIfAlreadyOpen &&
+            panelToOpen != null &&
+            panelToOpen.activeSelf)
+        {
+            panelToOpen.SetActive(false);
+            return;
+        }
 
         switch (effect)
         {
@@ -41,7 +53,10 @@ public class UIPanelButton : MonoBehaviour
             case UIPanelEffect.Fade:
                 if (fadeImage == null)
                 {
-                    Debug.LogWarning("[UIPanelButton] Fade effect selected but Fade Image is not assigned.");
+                    Debug.LogWarning(
+                        "[UIPanelButton] Fade effect selected but Fade Image is not assigned."
+                    );
+
                     ExecutePanelTransition();
                     return;
                 }
@@ -83,6 +98,7 @@ public class UIPanelButton : MonoBehaviour
         while (time < fadeDuration)
         {
             time += Time.unscaledDeltaTime;
+
             float t = Mathf.Clamp01(time / fadeDuration);
 
             color.a = Mathf.Lerp(from, to, t);

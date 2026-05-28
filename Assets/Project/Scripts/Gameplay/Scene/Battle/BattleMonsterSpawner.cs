@@ -12,10 +12,10 @@ public class BattleMonsterSpawner : MonoBehaviour
     [SerializeField] private string spawnPointName = "Point";
     [SerializeField] private float unitSpawnZOffset = 0.01f;
 
-    public void Spawn(BattleMapData spawnData)
+    public MonsterRuntimeData Spawn(BattleMapData spawnData)
     {
         if (spawnData == null)
-            return;
+            return null;
 
         var dm = DataManager.Instance;
 
@@ -24,13 +24,13 @@ public class BattleMonsterSpawner : MonoBehaviour
         if (monsterData == null)
         {
             Debug.LogWarning($"[BattleMonsterSpawner] MonsterData 없음: {spawnData.MonsterId}");
-            return;
+            return null;
         }
 
         if (monsterData.BattlePrefab == null)
         {
             Debug.LogWarning($"[BattleMonsterSpawner] BattlePrefab 없음: {spawnData.MonsterId}");
-            return;
+            return null;
         }
 
         var cells = spawnData.GetOccupiedCells();
@@ -38,7 +38,7 @@ public class BattleMonsterSpawner : MonoBehaviour
         if (cells.Count <= 0)
         {
             Debug.LogWarning($"[BattleMonsterSpawner] 점유칸 없음: {spawnData.MonsterId}");
-            return;
+            return null;
         }
 
         int mainCell = cells[0];
@@ -48,7 +48,7 @@ public class BattleMonsterSpawner : MonoBehaviour
         if (spawnGrid == null)
         {
             Debug.LogWarning($"[BattleMonsterSpawner] Grid 오브젝트 없음: Grid_{mainCell:00}");
-            return;
+            return null;
         }
 
         Transform spawnPoint = FindSpawnPoint(spawnGrid);
@@ -74,20 +74,14 @@ public class BattleMonsterSpawner : MonoBehaviour
 
         if (monsterUnit == null)
         {
-            Debug.LogError(
-                $"[BattleMonsterSpawner] MonsterUnit 없음: {monster.name}"
-            );
-
+            Debug.LogError($"[BattleMonsterSpawner] MonsterUnit 없음: {monster.name}");
             Destroy(monster);
-            return;
+            return null;
         }
 
         monsterUnit.Initialize(runtimeData);
 
-
-        Debug.Log(
-            $"[BattleMonsterSpawner] Spawn Monster: {spawnData.MonsterId} -> Grid_{mainCell:00} / Cells: {string.Join(", ", cells)}"
-        );
+        return runtimeData;
     }
 
     private Transform FindGridByIndex(int gridIndex)

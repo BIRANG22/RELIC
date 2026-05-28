@@ -37,6 +37,9 @@ public class CharPick : MonoBehaviour
     [SerializeField] private float moveSpeed = 12f;
     [SerializeField] private float scaleSpeed = 12f;
 
+    [Header("Grid")]
+    [SerializeField] private SpawnGridPanel spawnGridPanel;
+
     private int centerIndex = 0;
 
     private bool isDragging;
@@ -188,7 +191,6 @@ public class CharPick : MonoBehaviour
 
         if (runtimeStore.TryGet(characterId, out var runtime))
         {
-            Debug.Log("[CharacterRuntime] Already Exists");
             return;
         }
 
@@ -197,32 +199,40 @@ public class CharPick : MonoBehaviour
             CharacterId = master.CharacterId,
             Level = 1,
             Exp = 0,
+
             CurrentHealth = master.MaxHealth,
             CurrentStamina = master.MaxStamina,
             CurrentResource = master.MaxResource,
-            IsUnlocked = master.IsDefaultProvided
+            CurrentMoveLevel = 1,
+
+            IsUnlocked = master.IsDefaultProvided,
+
+            PassiveSkillId = master.PassiveSkill1,
+            UniqueSkillId = master.UniqueSkill1,
+            AbilitySkillId1 = master.CharacterSkill1,
+            AbilitySkillId2 = master.CommonSkill1,
+
+            EquippedSkillIds = new string[4]
+            {
+                master.PassiveSkill1,
+                master.UniqueSkill1,
+                master.CharacterSkill1,
+                master.CommonSkill1
+            }
         };
 
         runtimeStore.AddOrUpdate(runtime);
-        Debug.Log("[CharacterRuntime] Created");
     }
 
     private void AddChar(string characterId)
     {
-        for (int i = 0; i < partySlots.Count; i++)
+        if (spawnGridPanel == null)
         {
-            if (partySlots[i] != null && partySlots[i].IsEmpty)
-            {
-                partySlots[i].SetChar(characterId);
-                
-                if (setting != null)
-                    setting.OpenCharacterSetting(characterId);
-
-                return;
-            }
+            Debug.LogWarning("[CharPick] SpawnGridPanel is missing.");
+            return;
         }
 
-        Debug.Log("ÆÄÆ¼ ½½·ÔÀÌ °¡µæ Ã¡½À´Ï´Ù.");
+        spawnGridPanel.OpenForCharacter(characterId);
     }
 
     public void RemoveChar(string characterId)

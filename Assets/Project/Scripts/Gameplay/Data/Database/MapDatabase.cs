@@ -15,8 +15,6 @@ namespace Relic.Gameplay.Data
             maps.AddRange(list);
 
             db.Initialize(maps, x => x.MapId);
-
-            Debug.Log($"[MapDatabase] Loaded Map Count: {maps.Count}");
         }
 
         public MapData Get(string id) => db.Get(id);

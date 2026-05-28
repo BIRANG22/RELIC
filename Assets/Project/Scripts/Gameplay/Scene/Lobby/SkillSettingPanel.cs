@@ -156,7 +156,6 @@ public class SkillSettingPanel : MonoBehaviour
 
     public void OpenSkillSelectPanel(SkillSlotButton slotButton)
     {
-        Debug.Log("[SkillSettingPanel] OpenSkillSelectPanel");
 
         if (currentRuntimeData == null || currentMasterData == null)
         {
@@ -170,7 +169,6 @@ public class SkillSettingPanel : MonoBehaviour
         currentSelectedSlot = slotButton;
 
         List<SkillMasterData> candidates = GetSkillCandidates(slotButton.SlotIndex);
-        Debug.Log($"[SkillSettingPanel] Candidates: {candidates.Count}");
 
         SkillMasterData equippedSkill = slotButton.EquippedSkill;
 
@@ -186,8 +184,6 @@ public class SkillSettingPanel : MonoBehaviour
 
             changeableSkills.Add(candidates[i]);
         }
-
-        Debug.Log($"[SkillSettingPanel] ChangeableSkills: {changeableSkills.Count}");
 
         RefreshSkillIconButtons(changeableSkills);
         MoveSelectPanel(slotButton.SlotIndex);
@@ -350,13 +346,22 @@ public class SkillSettingPanel : MonoBehaviour
         if (currentRuntimeData == null)
             return null;
 
-        if (currentRuntimeData.EquippedSkillIds == null)
-            currentRuntimeData.EquippedSkillIds = new string[4];
+        switch (slotIndex)
+        {
+            case 0:
+                return currentRuntimeData.PassiveSkillId;
 
-        if (slotIndex < 0 || slotIndex >= currentRuntimeData.EquippedSkillIds.Length)
-            return null;
+            case 1:
+                return currentRuntimeData.UniqueSkillId;
 
-        return currentRuntimeData.EquippedSkillIds[slotIndex];
+            case 2:
+                return currentRuntimeData.AbilitySkillId1;
+
+            case 3:
+                return currentRuntimeData.AbilitySkillId2;
+        }
+
+        return null;
     }
 
     private void SetRuntimeSkillId(int slotIndex, string skillId)
@@ -364,13 +369,30 @@ public class SkillSettingPanel : MonoBehaviour
         if (currentRuntimeData == null)
             return;
 
+        switch (slotIndex)
+        {
+            case 0:
+                currentRuntimeData.PassiveSkillId = skillId;
+                break;
+
+            case 1:
+                currentRuntimeData.UniqueSkillId = skillId;
+                break;
+
+            case 2:
+                currentRuntimeData.AbilitySkillId1 = skillId;
+                break;
+
+            case 3:
+                currentRuntimeData.AbilitySkillId2 = skillId;
+                break;
+        }
+
         if (currentRuntimeData.EquippedSkillIds == null)
             currentRuntimeData.EquippedSkillIds = new string[4];
 
-        if (slotIndex < 0 || slotIndex >= currentRuntimeData.EquippedSkillIds.Length)
-            return;
-
-        currentRuntimeData.EquippedSkillIds[slotIndex] = skillId;
+        if (slotIndex >= 0 && slotIndex < currentRuntimeData.EquippedSkillIds.Length)
+            currentRuntimeData.EquippedSkillIds[slotIndex] = skillId;
     }
 
     private void ClearSkillSlots()

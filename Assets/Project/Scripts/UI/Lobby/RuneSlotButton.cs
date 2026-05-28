@@ -42,15 +42,8 @@ public class RuneSlotButton : MonoBehaviour
 
     public void SetRune(RuneData runeData)
     {
-        Debug.Log(runeData != null
-            ? $"[RuneSlotButton] Incoming Rune: {runeData.RuneId}"
-            : "[RuneSlotButton] Incoming Rune: null");
-
         equippedRune = runeData;
 
-        Debug.Log(equippedRune != null
-            ? $"[RuneSlotButton] SetRune: {equippedRune.RuneId}"
-            : "[RuneSlotButton] SetRune: null");
 
         if (nameText != null)
             nameText.text = equippedRune != null ? equippedRune.Name : "";
@@ -58,10 +51,6 @@ public class RuneSlotButton : MonoBehaviour
         if (iconImage != null)
         {
             Sprite icon = GetRuneIcon(equippedRune);
-
-            Debug.Log(icon != null
-                ? $"[RuneSlotButton] Icon Found: {equippedRune.RuneId}"
-                : $"[RuneSlotButton] Icon Missing: {(equippedRune != null ? equippedRune.RuneId : "null")}");
 
             iconImage.enabled = icon != null;
             iconImage.sprite = icon;

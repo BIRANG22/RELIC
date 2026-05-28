@@ -30,8 +30,6 @@ namespace Relic.Gameplay.Data
 
                 effects.Add(effect.EffectId, effect);
             }
-
-            Debug.Log($"[EffectDatabase] Initialized: {effects.Count}");
         }
 
         public EffectMasterData Get(string effectId)

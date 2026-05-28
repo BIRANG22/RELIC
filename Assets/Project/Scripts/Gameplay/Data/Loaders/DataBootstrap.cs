@@ -91,12 +91,6 @@ namespace Relic.Gameplay.Data
             InjectMonsterPrefabs(monsters);
 
             CharacterDatabase.Initialize(characters);
-            Debug.Log($"[Before Init] characters count = {characters.Count}");
-
-            foreach (var c in characters)
-            {
-                Debug.Log($"[Before Init] id='{c.CharacterId}' name='{c.Name}'");
-            }
             MonsterDatabase.Initialize(monsters);
             EffectDatabase.Initialize(effects);
 
@@ -141,9 +135,6 @@ namespace Relic.Gameplay.Data
             RewardTableDatabase.Initialize(rewardTables, rewardEntries);
             MapDatabase.Initialize(maps);
             BattleMapDatabase.Initialize(battleMapDataList);
-
-            Debug.Log($"[DataBootstrap] Character Loaded: {characters.Count}");
-            Debug.Log("[DataBootstrap] Workbook load complete.");
         }
 
         private void InjectCharacterPrefabs(List<CharacterMasterData> characters)
