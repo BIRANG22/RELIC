@@ -11,8 +11,15 @@ public class RuneIconButton : MonoBehaviour
     [SerializeField] private Image iconImage;
     [SerializeField] private GameObject equippedObject;
 
+    [Header("Locked UI")]
+    [SerializeField] private GameObject lockedObject;
+    [SerializeField] private TMP_Text requiredLevelText;
+
     private RuneSettingPanel owner;
     private RuneData currentRuneData;
+
+    private bool isLocked;
+    private int requiredLevel;
 
     public RuneData CurrentRuneData => currentRuneData;
 
@@ -29,13 +36,24 @@ public class RuneIconButton : MonoBehaviour
 
     public void SetRuneData(RuneData runeData)
     {
+        SetRuneData(runeData, false, 0);
+    }
+
+    public void SetRuneData(RuneData runeData, bool locked, int requiredLevel)
+    {
         currentRuneData = runeData;
+        isLocked = locked;
+        this.requiredLevel = requiredLevel;
 
         bool hasRune = currentRuneData != null;
         gameObject.SetActive(hasRune);
 
         if (!hasRune)
+        {
+            SetEquippedState(false);
+            SetLockedState(false, 0);
             return;
+        }
 
         if (nameText != null)
             nameText.text = currentRuneData.Name;
@@ -46,14 +64,31 @@ public class RuneIconButton : MonoBehaviour
 
             iconImage.enabled = icon != null;
             iconImage.sprite = icon;
-            iconImage.color = Color.white;
+            iconImage.color = isLocked ? new Color(0.35f, 0.35f, 0.35f, 1f) : Color.white;
         }
+
+        SetLockedState(isLocked, this.requiredLevel);
     }
 
     public void SetEquippedState(bool equipped)
     {
         if (equippedObject != null)
             equippedObject.SetActive(equipped);
+    }
+
+    private void SetLockedState(bool locked, int level)
+    {
+        if (lockedObject != null)
+            lockedObject.SetActive(locked);
+
+        if (requiredLevelText != null)
+        {
+            requiredLevelText.gameObject.SetActive(locked);
+            requiredLevelText.text = locked ? "LV. " + level : "";
+        }
+
+        if (button != null)
+            button.interactable = currentRuneData != null;
     }
 
     public void Execute()
@@ -67,7 +102,7 @@ public class RuneIconButton : MonoBehaviour
         if (currentRuneData == null)
             return;
 
-        owner.TryEquipRuneToFirstEmptySlot(currentRuneData);
+        owner.TrySelectRuneIcon(currentRuneData, isLocked, requiredLevel);
     }
 
     private Sprite GetRuneIcon(RuneData runeData)
@@ -91,9 +126,7 @@ public class RuneIconButton : MonoBehaviour
         }
 
         if (DataManager.Instance.RuneIconDatabase.TryGetIcon(runeData.RuneId, out var icon))
-        {
             return icon;
-        }
 
         Debug.LogWarning($"[RuneIconButton] Icon Missing: {runeData.RuneId}");
         return null;

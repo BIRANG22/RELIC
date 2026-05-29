@@ -3,89 +3,147 @@ using Relic.Gameplay.Data;
 
 public class SpawnGridPanel : MonoBehaviour
 {
-    [SerializeField] private GameObject panelObject;
     [SerializeField] private SpawnGridCell[] cells;
-    [SerializeField] private PartySlot[] partySlots;
 
-    private string pendingCharacterId;
+    private int selectedPartySlotIndex = -1;
 
     private void Awake()
     {
-        for (int i = 0; i < cells.Length; i++)
+        if (cells != null)
         {
-            if (cells[i] != null)
-                cells[i].Init(this, i);
+            for (int i = 0; i < cells.Length; i++)
+            {
+                if (cells[i] != null)
+                    cells[i].Init(this, i);
+            }
         }
-
-        Close();
     }
 
-    public void OpenForCharacter(string characterId)
+    private void Start()
     {
-        pendingCharacterId = characterId;
-
-        if (panelObject != null)
-            panelObject.SetActive(true);
-        else
-            gameObject.SetActive(true);
-
+        AutoPlacePartyIfNeeded();
         Refresh();
     }
 
-    public void Close()
+    private void OnEnable()
     {
-        pendingCharacterId = null;
-
-        if (panelObject != null)
-            panelObject.SetActive(false);
+        AutoPlacePartyIfNeeded();
+        Refresh();
     }
 
-    public void SelectGrid(int gridIndex)
+    public void AutoPlacePartyIfNeeded()
     {
-        if (string.IsNullOrWhiteSpace(pendingCharacterId))
-            return;
-
         if (DataManager.Instance == null)
             return;
 
-        var partyStore = DataManager.Instance.PartyRuntimeStore;
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
 
-        if (partyStore.IsGridUsed(gridIndex))
+        for (int partyIndex = 0; partyIndex < partyStore.MaxPartyCountValue; partyIndex++)
         {
-            Debug.LogWarning($"[SpawnGridPanel] 이미 사용 중인 그리드입니다: {gridIndex}");
+            string characterId = partyStore.GetCharacterId(partyIndex);
+
+            if (string.IsNullOrWhiteSpace(characterId))
+                continue;
+
+            int currentGridIndex = partyStore.GetGridIndex(partyIndex);
+
+            if (currentGridIndex >= 0)
+                continue;
+
+            int emptyGridIndex = FindFirstEmptyGrid();
+
+            if (emptyGridIndex < 0)
+            {
+                Debug.LogWarning("[SpawnGridPanel] 비어있는 그리드가 없습니다.");
+                return;
+            }
+
+            partyStore.SetGridIndex(partyIndex, emptyGridIndex);
+        }
+    }
+
+    public void OnClickCell(int gridIndex)
+    {
+        if (DataManager.Instance == null)
+            return;
+
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+
+        int clickedPartySlotIndex = FindPartySlotByGridIndex(gridIndex);
+
+        if (clickedPartySlotIndex >= 0)
+        {
+            selectedPartySlotIndex = clickedPartySlotIndex;
+            Refresh();
             return;
         }
 
-        int slotIndex = partyStore.FindCharacterSlot(pendingCharacterId);
-
-        if (slotIndex < 0)
-            slotIndex = partyStore.FindEmptySlot();
-
-        if (slotIndex < 0)
+        if (selectedPartySlotIndex < 0)
         {
-            Debug.LogWarning("[SpawnGridPanel] 파티 슬롯이 가득 찼습니다.");
+            Debug.LogWarning("[SpawnGridPanel] 먼저 이동할 캐릭터를 선택하세요.");
             return;
         }
 
-        bool success = partyStore.SetSlot(slotIndex, pendingCharacterId, gridIndex);
+        bool success = partyStore.SetGridIndex(selectedPartySlotIndex, gridIndex);
 
         if (!success)
             return;
 
-        if (partySlots != null &&
-            slotIndex >= 0 &&
-            slotIndex < partySlots.Length &&
-            partySlots[slotIndex] != null)
+        selectedPartySlotIndex = -1;
+        Refresh();
+    }
+
+    private int FindFirstEmptyGrid()
+    {
+        if (cells == null)
+            return -1;
+
+        if (DataManager.Instance == null)
+            return -1;
+
+        for (int i = 0; i < cells.Length; i++)
         {
-            partySlots[slotIndex].SetChar(pendingCharacterId);
+            if (DataManager.Instance.PartyRuntimeStore.IsGridUsed(i))
+                continue;
+
+            return i;
         }
 
-        Refresh();
-        Close();
+        return -1;
+    }
+
+    private int FindPartySlotByGridIndex(int gridIndex)
+    {
+        if (DataManager.Instance == null)
+            return -1;
+
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+
+        for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
+        {
+            if (partyStore.GetGridIndex(i) == gridIndex)
+                return i;
+        }
+
+        return -1;
+    }
+
+    public bool IsSelectedGrid(int gridIndex)
+    {
+        if (selectedPartySlotIndex < 0)
+            return false;
+
+        if (DataManager.Instance == null)
+            return false;
+
+        return DataManager.Instance.PartyRuntimeStore.GetGridIndex(selectedPartySlotIndex) == gridIndex;
     }
 
     public void Refresh()
     {
+        if (cells == null)
+            return;
+
         for (int i = 0; i < cells.Length; i++)
         {
             if (cells[i] != null)

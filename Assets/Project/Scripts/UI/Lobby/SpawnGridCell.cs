@@ -16,6 +16,9 @@ public class SpawnGridCell : MonoBehaviour
         owner = panel;
         gridIndex = index;
 
+        if (button == null)
+            button = GetComponent<Button>();
+
         if (button != null)
         {
             button.onClick.RemoveAllListeners();
@@ -30,7 +33,7 @@ public class SpawnGridCell : MonoBehaviour
         if (owner == null)
             return;
 
-        owner.SelectGrid(gridIndex);
+        owner.OnClickCell(gridIndex);
     }
 
     public void Refresh()
@@ -47,7 +50,7 @@ public class SpawnGridCell : MonoBehaviour
         }
 
         if (selectedObject != null)
-            selectedObject.SetActive(hasCharacter);
+            selectedObject.SetActive(owner != null && owner.IsSelectedGrid(gridIndex));
     }
 
     private string GetCharacterIdOnThisGrid()
@@ -55,7 +58,7 @@ public class SpawnGridCell : MonoBehaviour
         if (DataManager.Instance == null)
             return null;
 
-        var partyStore = DataManager.Instance.PartyRuntimeStore;
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
 
         for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
         {

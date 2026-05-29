@@ -36,7 +36,8 @@ public class DataManager : Singleton<DataManager>
     public SkillRuntimeStore SkillRuntimeStore { get; private set; } = new();
     public SkillEquipService SkillEquipService { get; private set; }
     public MapRuntimeStore MapRuntimeStore { get; private set; } = new();
-    
+    public PlayerRuntimeStore PlayerRuntimeStore { get; private set; } = new();
+
     protected override void Awake()
     {
         base.Awake();

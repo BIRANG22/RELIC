@@ -1,16 +1,10 @@
-using UnityEngine;
-
-public class PlayerRuntimeData : MonoBehaviour
+namespace Relic.Gameplay.Data
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    [System.Serializable]
+    public class PlayerRuntimeData
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        public int Level = 1;
+        public int Exp = 0;
+        public int TotalExp = 0;
     }
 }

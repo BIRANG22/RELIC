@@ -11,8 +11,15 @@ public class SkillSettingPanel : MonoBehaviour
     [SerializeField] private GameObject skillIconSelectPanel;
     [SerializeField] private SkillIconButton[] skillIconButtons;
 
-    [Header("Select Panel Positions")]
+    [Header("Select Panel")]
+    [SerializeField] private bool moveSelectPanelToSlot = false;
     [SerializeField] private Vector2[] selectPanelPositions;
+
+    [Header("Always Visible")]
+    [SerializeField] private bool keepSkillSelectPanelVisible = true;
+
+    [Header("Warning UI")]
+    [SerializeField] private SettingWarningUI warningUI;
 
     private SkillSlotButton currentSelectedSlot;
 
@@ -22,39 +29,87 @@ public class SkillSettingPanel : MonoBehaviour
 
     private void Awake()
     {
+        if (warningUI == null)
+            warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
+
+        InitSkillSlotButtons();
+        InitSkillIconButtons();
+
+        SetSkillSelectPanelVisible(true);
+        ClearSkillIconButtons();
+    }
+
+    private void OnEnable()
+    {
+        if (warningUI == null)
+            warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
+
+        SetSkillSelectPanelVisible(true);
+    }
+
+    private void InitSkillSlotButtons()
+    {
+        if (skillSlotButtons == null)
+            return;
+
         for (int i = 0; i < skillSlotButtons.Length; i++)
         {
             if (skillSlotButtons[i] != null)
                 skillSlotButtons[i].Init(this, i);
         }
+    }
+
+    private void InitSkillIconButtons()
+    {
+        if (skillIconButtons == null)
+            return;
 
         for (int i = 0; i < skillIconButtons.Length; i++)
         {
             if (skillIconButtons[i] != null)
                 skillIconButtons[i].Init(this);
         }
+    }
 
+    public void SetSkillSelectPanelVisible(bool visible)
+    {
         if (skillIconSelectPanel != null)
-            skillIconSelectPanel.SetActive(false);
+            skillIconSelectPanel.SetActive(visible || keepSkillSelectPanelVisible);
     }
 
     public void OpenCharacterSetting(string characterId)
     {
-        SaveCurrentSkillSetting();
+        OpenCharacterSetting(characterId, true);
+    }
+
+    public void OpenCharacterSetting(string characterId, bool saveCurrent)
+    {
+        if (saveCurrent)
+            SaveCurrentSkillSetting();
 
         currentCharacterId = characterId;
         currentMasterData = null;
         currentRuntimeData = null;
+        currentSelectedSlot = null;
 
         if (DataManager.Instance == null)
         {
             ClearSkillSlots();
+            ShowWarning("DataManager가 없습니다.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(characterId))
+        {
+            ClearSkillSlots();
+            ShowWarning("선택된 캐릭터가 없습니다.");
             return;
         }
 
         if (!DataManager.Instance.CharacterDatabase.TryGet(characterId, out currentMasterData))
         {
             ClearSkillSlots();
+            ShowWarning("캐릭터 마스터 데이터를 찾을 수 없습니다: " + characterId);
             return;
         }
 
@@ -63,18 +118,34 @@ public class SkillSettingPanel : MonoBehaviour
         if (currentRuntimeData == null)
         {
             ClearSkillSlots();
+            ShowWarning("캐릭터 런타임 데이터를 찾을 수 없습니다: " + characterId);
             return;
         }
 
         LoadCurrentSkillSetting();
+        ClearSkillIconButtons();
+        SetSkillSelectPanelVisible(true);
+    }
 
-        if (skillIconSelectPanel != null)
-            skillIconSelectPanel.SetActive(false);
+    public void RefreshByCurrentLevel()
+    {
+        if (currentRuntimeData == null || currentMasterData == null)
+            return;
+
+        LoadCurrentSkillSetting();
+
+        if (currentSelectedSlot != null)
+            OpenSkillSelectPanel(currentSelectedSlot);
+        else
+            ClearSkillIconButtons();
     }
 
     private void LoadCurrentSkillSetting()
     {
         if (currentRuntimeData == null)
+            return;
+
+        if (skillSlotButtons == null)
             return;
 
         for (int i = 0; i < skillSlotButtons.Length; i++)
@@ -84,6 +155,12 @@ public class SkillSettingPanel : MonoBehaviour
 
             if (!string.IsNullOrWhiteSpace(skillId))
                 DataManager.Instance.SkillDatabase.TryGet(skillId, out skill);
+
+            if (!IsSkillValidForCurrentCharacterSlot(skill, i))
+                skill = null;
+
+            if (skill != null && IsSkillLockedForCurrentLevel(skill, i))
+                skill = null;
 
             if (skill == null)
                 skill = GetDefaultSkill(i);
@@ -99,40 +176,19 @@ public class SkillSettingPanel : MonoBehaviour
 
     private SkillMasterData GetDefaultSkill(int slotIndex)
     {
-        if (currentMasterData == null)
-            return null;
+        List<SkillMasterData> candidates = GetSkillCandidates(slotIndex);
 
-        string skillId = null;
-
-        switch (slotIndex)
+        for (int i = 0; i < candidates.Count; i++)
         {
-            case 0:
-                skillId = currentMasterData.PassiveSkill1;
-                break;
+            SkillMasterData skill = candidates[i];
 
-            case 1:
-                skillId = currentMasterData.UniqueSkill1;
-                break;
+            if (skill == null)
+                continue;
 
-            case 2:
-                skillId = currentMasterData.CharacterSkill1;
-                break;
-
-            case 3:
-                skillId = currentMasterData.CommonSkill1;
-                break;
+            if (!IsSkillLockedForCurrentLevel(skill, slotIndex))
+                return skill;
         }
 
-        if (string.IsNullOrWhiteSpace(skillId))
-            return null;
-
-        if (DataManager.Instance == null)
-            return null;
-
-        if (DataManager.Instance.SkillDatabase.TryGet(skillId, out var skill))
-            return skill;
-
-        Debug.LogWarning($"[SkillSettingPanel] Default skill not found: {skillId}");
         return null;
     }
 
@@ -141,12 +197,22 @@ public class SkillSettingPanel : MonoBehaviour
         if (currentRuntimeData == null)
             return;
 
+        if (skillSlotButtons == null)
+            return;
+
         for (int i = 0; i < skillSlotButtons.Length; i++)
         {
             if (skillSlotButtons[i] == null)
                 continue;
 
             SkillMasterData skill = skillSlotButtons[i].EquippedSkill;
+
+            if (!IsSkillValidForCurrentCharacterSlot(skill, i))
+                skill = null;
+
+            if (skill != null && IsSkillLockedForCurrentLevel(skill, i))
+                skill = null;
+
             SetRuntimeSkillId(i, skill != null ? skill.SkillId : null);
         }
 
@@ -156,50 +222,35 @@ public class SkillSettingPanel : MonoBehaviour
 
     public void OpenSkillSelectPanel(SkillSlotButton slotButton)
     {
-
-        if (currentRuntimeData == null || currentMasterData == null)
+        if (slotButton == null)
         {
-            Debug.LogWarning("[SkillSettingPanel] current data is null.");
+            ShowWarning("스킬 슬롯이 연결되지 않았습니다.");
             return;
         }
 
-        if (slotButton == null)
+        if (currentRuntimeData == null || currentMasterData == null)
+        {
+            ShowWarning("캐릭터를 먼저 선택해야 합니다.");
             return;
+        }
 
         currentSelectedSlot = slotButton;
 
         List<SkillMasterData> candidates = GetSkillCandidates(slotButton.SlotIndex);
 
-        SkillMasterData equippedSkill = slotButton.EquippedSkill;
+        RefreshSkillIconButtons(candidates, slotButton.SlotIndex);
 
-        List<SkillMasterData> changeableSkills = new();
+        if (moveSelectPanelToSlot)
+            MoveSelectPanel(slotButton.SlotIndex);
 
-        for (int i = 0; i < candidates.Count; i++)
-        {
-            if (candidates[i] == null)
-                continue;
-
-            if (equippedSkill != null && candidates[i].SkillId == equippedSkill.SkillId)
-                continue;
-
-            changeableSkills.Add(candidates[i]);
-        }
-
-        RefreshSkillIconButtons(changeableSkills);
-        MoveSelectPanel(slotButton.SlotIndex);
-
-        if (skillIconSelectPanel != null)
-            skillIconSelectPanel.SetActive(changeableSkills.Count > 0);
+        SetSkillSelectPanelVisible(true);
     }
 
     private List<SkillMasterData> GetSkillCandidates(int slotIndex)
     {
         List<SkillMasterData> result = new();
 
-        if (DataManager.Instance == null)
-            return result;
-
-        if (currentMasterData == null)
+        if (DataManager.Instance == null || currentMasterData == null)
             return result;
 
         string[] skillIds = GetCandidateSkillIds(slotIndex);
@@ -212,9 +263,9 @@ public class SkillSettingPanel : MonoBehaviour
                 continue;
 
             if (DataManager.Instance.SkillDatabase.TryGet(skillId, out var skill))
-                result.Add(skill);
+                AddUniqueSkill(result, skill);
             else
-                Debug.LogWarning($"[SkillSettingPanel] Candidate skill not found: {skillId}");
+                Debug.LogWarning("[SkillSettingPanel] Candidate skill not found: " + skillId);
         }
 
         return result;
@@ -230,29 +281,29 @@ public class SkillSettingPanel : MonoBehaviour
             case 0:
                 return new string[]
                 {
-                currentMasterData.PassiveSkill1,
-                currentMasterData.PassiveSkill2
+                    currentMasterData.PassiveSkill1,
+                    currentMasterData.PassiveSkill2
                 };
 
             case 1:
                 return new string[]
                 {
-                currentMasterData.UniqueSkill1,
-                currentMasterData.UniqueSkill2
+                    currentMasterData.UniqueSkill1,
+                    currentMasterData.UniqueSkill2
                 };
 
             case 2:
                 return new string[]
                 {
-                currentMasterData.CharacterSkill1,
-                currentMasterData.CharacterSkill2
+                    currentMasterData.CharacterSkill1,
+                    currentMasterData.CharacterSkill2
                 };
 
             case 3:
                 return new string[]
                 {
-                currentMasterData.CommonSkill1,
-                currentMasterData.CommonSkill2
+                    currentMasterData.CommonSkill1,
+                    currentMasterData.CommonSkill2
                 };
 
             default:
@@ -260,20 +311,83 @@ public class SkillSettingPanel : MonoBehaviour
         }
     }
 
-    private bool IsValidSkillForSlot(SkillMasterData skill, int slotIndex)
+    private void AddUniqueSkill(List<SkillMasterData> result, SkillMasterData skill)
+    {
+        if (result == null || skill == null)
+            return;
+
+        for (int i = 0; i < result.Count; i++)
+        {
+            if (IsSameSkill(result[i], skill))
+                return;
+        }
+
+        result.Add(skill);
+    }
+
+    private bool IsSkillValidForCurrentCharacterSlot(SkillMasterData skill, int slotIndex)
     {
         if (skill == null)
             return false;
 
-        if (slotIndex == 3)
-            return skill.Category == Category.Unique;
+        List<SkillMasterData> candidates = GetSkillCandidates(slotIndex);
 
-        return skill.Category == Category.Ability;
+        for (int i = 0; i < candidates.Count; i++)
+        {
+            if (IsSameSkill(candidates[i], skill))
+                return true;
+        }
+
+        return false;
     }
 
-    private void RefreshSkillIconButtons(List<SkillMasterData> skills)
+    private bool IsSkillLockedForCurrentLevel(SkillMasterData skill, int slotIndex)
+    {
+        if (skill == null)
+            return false;
+
+        int characterLevel = currentRuntimeData != null ? currentRuntimeData.Level : 1;
+        int requiredLevel = GetRequiredLevelForSkill(skill, slotIndex);
+
+        return characterLevel < requiredLevel;
+    }
+
+    private int GetRequiredLevelForSkill(SkillMasterData skill, int slotIndex)
+    {
+        if (skill == null)
+            return 1;
+
+        /*
+         * 현재 네 SkillMasterData에는 unlockLevel 같은 필드가 없음.
+         * 그래서 기본은 전부 LV.1 해금으로 둠.
+         *
+         * 나중에 엑셀에 RequiredLevel / UnlockLevel 컬럼을 추가하면
+         * SkillMasterData에 int UnlockLevel 추가하고 여기서 반환하면 됨.
+         */
+        return 1;
+    }
+
+    private bool IsSameSkill(SkillMasterData a, SkillMasterData b)
+    {
+        if (a == b)
+            return true;
+
+        if (a == null || b == null)
+            return false;
+
+        if (!string.IsNullOrWhiteSpace(a.SkillId) &&
+            !string.IsNullOrWhiteSpace(b.SkillId))
+            return a.SkillId == b.SkillId;
+
+        return false;
+    }
+
+    private void RefreshSkillIconButtons(List<SkillMasterData> skills, int slotIndex)
     {
         int characterLevel = currentRuntimeData != null ? currentRuntimeData.Level : 1;
+
+        if (skillIconButtons == null)
+            return;
 
         for (int i = 0; i < skillIconButtons.Length; i++)
         {
@@ -282,11 +396,11 @@ public class SkillSettingPanel : MonoBehaviour
 
             if (skills != null && i < skills.Count && skills[i] != null)
             {
-                SkillMasterData skillData = skills[i];
-                int requiredLevel = 1;
+                SkillMasterData skill = skills[i];
+                int requiredLevel = GetRequiredLevelForSkill(skill, slotIndex);
                 bool locked = characterLevel < requiredLevel;
 
-                skillIconButtons[i].SetSkillData(skillData, locked, requiredLevel);
+                skillIconButtons[i].SetSkillData(skill, locked, requiredLevel);
             }
             else
             {
@@ -313,27 +427,43 @@ public class SkillSettingPanel : MonoBehaviour
         }
     }
 
-    public void EquipSkillFromIcon(SkillMasterData skillData)
+    public void EquipSkillFromIcon(SkillMasterData skill)
     {
-        SelectSkill(skillData);
+        SelectSkill(skill);
     }
 
-    public void SelectSkill(SkillMasterData skillData)
+    public void SelectSkill(SkillMasterData skill)
     {
         if (currentSelectedSlot == null)
+        {
+            ShowWarning("스킬을 장착할 슬롯을 먼저 선택하세요.");
             return;
+        }
 
-        if (skillData == null)
+        if (skill == null)
+        {
+            ShowWarning("선택된 스킬이 없습니다.");
             return;
+        }
 
-        currentSelectedSlot.SetSkill(skillData);
+        int requiredLevel = GetRequiredLevelForSkill(skill, currentSelectedSlot.SlotIndex);
+        int characterLevel = currentRuntimeData != null ? currentRuntimeData.Level : 1;
 
+        if (characterLevel < requiredLevel)
+        {
+            ShowWarning("아직 잠겨있는 스킬입니다. 필요 레벨: LV. " + requiredLevel);
+            return;
+        }
+
+        if (!IsSkillValidForCurrentCharacterSlot(skill, currentSelectedSlot.SlotIndex))
+        {
+            ShowWarning("이 슬롯에 장착할 수 없는 스킬입니다.");
+            return;
+        }
+
+        currentSelectedSlot.SetSkill(skill);
         SaveCurrentSkillSetting();
-
-        if (skillIconSelectPanel != null)
-            skillIconSelectPanel.SetActive(false);
-
-        currentSelectedSlot = null;
+        SetSkillSelectPanelVisible(true);
     }
 
     public void SaveBeforeBattle()
@@ -397,24 +527,40 @@ public class SkillSettingPanel : MonoBehaviour
 
     private void ClearSkillSlots()
     {
-        for (int i = 0; i < skillSlotButtons.Length; i++)
+        if (skillSlotButtons != null)
         {
-            if (skillSlotButtons[i] != null)
-                skillSlotButtons[i].SetSkill(null);
+            for (int i = 0; i < skillSlotButtons.Length; i++)
+            {
+                if (skillSlotButtons[i] != null)
+                    skillSlotButtons[i].SetSkill(null);
+            }
         }
 
         ClearSkillIconButtons();
-
-        if (skillIconSelectPanel != null)
-            skillIconSelectPanel.SetActive(false);
+        currentSelectedSlot = null;
+        SetSkillSelectPanelVisible(true);
     }
 
     private void ClearSkillIconButtons()
     {
+        if (skillIconButtons == null)
+            return;
+
         for (int i = 0; i < skillIconButtons.Length; i++)
         {
             if (skillIconButtons[i] != null)
                 skillIconButtons[i].SetSkillData(null, false, 0);
         }
+    }
+
+    public void ShowWarning(string message)
+    {
+        if (warningUI == null)
+            warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
+
+        if (warningUI != null)
+            warningUI.Show(message);
+        else
+            Debug.LogWarning("[SkillSettingPanel] " + message);
     }
 }

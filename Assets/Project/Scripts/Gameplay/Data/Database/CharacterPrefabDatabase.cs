@@ -9,27 +9,67 @@ namespace Relic.Gameplay.Data
     {
         [SerializeField] private List<CharacterPrefabEntry> entries = new();
 
-        private Dictionary<string, GameObject> map;
+        private Dictionary<string, CharacterPrefabEntry> map;
 
         public void Initialize()
         {
-            map = new Dictionary<string, GameObject>();
+            map = new Dictionary<string, CharacterPrefabEntry>();
 
             foreach (var entry in entries)
             {
-                if (string.IsNullOrWhiteSpace(entry.CharacterId) || entry.BattlePrefab == null)
+                if (string.IsNullOrWhiteSpace(entry.CharacterId))
                     continue;
 
-                map[entry.CharacterId] = entry.BattlePrefab;
+                map[entry.CharacterId] = entry;
             }
         }
 
-        public bool TryGetPrefab(string characterId, out GameObject prefab)
+        public bool TryGetBattlePrefab(string characterId, out GameObject prefab)
         {
+            prefab = null;
+
             if (map == null)
                 Initialize();
 
-            return map.TryGetValue(characterId, out prefab);
+            if (!map.TryGetValue(characterId, out var entry))
+                return false;
+
+            prefab = entry.BattlePrefab;
+            return prefab != null;
+        }
+
+        public bool TryGetLobbyPrefab(string characterId, out GameObject prefab)
+        {
+            prefab = null;
+
+            if (map == null)
+                Initialize();
+
+            if (!map.TryGetValue(characterId, out var entry))
+                return false;
+
+            prefab = entry.LobbyPrefab;
+            return prefab != null;
+        }
+
+        public bool TryGetPreviewPrefab(string characterId, out GameObject prefab)
+        {
+            prefab = null;
+
+            if (map == null)
+                Initialize();
+
+            if (!map.TryGetValue(characterId, out var entry))
+                return false;
+
+            prefab = entry.PreviewPrefab;
+            return prefab != null;
+        }
+
+        // 기존 코드 호환용
+        public bool TryGetPrefab(string characterId, out GameObject prefab)
+        {
+            return TryGetBattlePrefab(characterId, out prefab);
         }
     }
 
@@ -37,6 +77,14 @@ namespace Relic.Gameplay.Data
     public class CharacterPrefabEntry
     {
         public string CharacterId;
+
+        [Header("Battle")]
         public GameObject BattlePrefab;
+
+        [Header("Lobby")]
+        public GameObject LobbyPrefab;
+
+        [Header("Preview")]
+        public GameObject PreviewPrefab;
     }
 }

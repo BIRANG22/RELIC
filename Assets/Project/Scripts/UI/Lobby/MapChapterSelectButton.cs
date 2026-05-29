@@ -19,18 +19,27 @@ public class MapChapterSelectButton : MonoBehaviour
 
     private void Awake()
     {
-        RefreshLockState();
-
         if (button == null)
             button = GetComponent<Button>();
+
+        RefreshLockState();
+
+        if (button != null)
+        {
+            button.onClick.RemoveListener(OnClickSelectChapter);
+            button.onClick.AddListener(OnClickSelectChapter);
+        }
     }
 
     private void OnValidate()
     {
+        if (button == null)
+            button = GetComponent<Button>();
+
         RefreshLockState();
     }
 
-    public async void OnClickSelectChapter()
+    public void OnClickSelectChapter()
     {
         if (isLocked)
         {
@@ -41,6 +50,12 @@ public class MapChapterSelectButton : MonoBehaviour
         if (AudioManager.Instance != null)
             AudioManager.Instance.PlaySfx(SfxType.Click);
 
+        if (DataManager.Instance == null)
+        {
+            Debug.LogWarning("[MapChapterSelectButton] DataManager is null.");
+            return;
+        }
+
         DataManager.Instance.MapRuntimeStore.Set(new MapRuntimeData
         {
             SelectedChapterId = chapterId,
@@ -48,7 +63,11 @@ public class MapChapterSelectButton : MonoBehaviour
             IsRunInitialized = true
         });
 
-        await GameManager.Instance.StateMachine.ChangeState(GameStateType.Battle);
+        Debug.Log(
+            "[MapChapterSelectButton] Chapter Selected / " +
+            "Chapter: " + chapterId +
+            " / StartStage: " + startStage
+        );
     }
 
     public void SetLocked(bool locked)
