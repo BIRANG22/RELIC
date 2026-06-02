@@ -12,6 +12,7 @@ namespace Relic.Gameplay.Data
         private SkillIconDatabase skillIconDatabase;
         private MonsterPrefabDatabase monsterPrefabDatabase;
         private CharacterIconDatabase characterIconDatabase;
+        private MapNodeIconDatabase mapNodeIconDatabase;
         public CharacterDatabase CharacterDatabase { get; } = new();
         public MonsterDatabase MonsterDatabase { get; } = new();
         public SkillDatabase SkillDatabase { get; } = new();
@@ -43,6 +44,10 @@ namespace Relic.Gameplay.Data
         public void SetCharacterIconDatabase(CharacterIconDatabase db)
         {
             characterIconDatabase = db;
+        }
+        public void SetMapNodeIconDatabase(MapNodeIconDatabase db)
+        {
+            mapNodeIconDatabase = db;
         }
         public void LoadAllData()
         {

@@ -19,6 +19,10 @@ namespace Relic.Gameplay.Data
 
         public MapData Get(string id) => db.Get(id);
 
+        public List<MapData> GetAll()
+        {
+            return maps;
+        }
         public bool TryGet(string id, out MapData value) => db.TryGet(id, out value);
 
         public MapData GetStartMap(string chapterId, string stage)

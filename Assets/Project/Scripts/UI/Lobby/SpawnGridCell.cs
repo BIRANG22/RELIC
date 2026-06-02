@@ -8,11 +8,19 @@ public class SpawnGridCell : MonoBehaviour
     [SerializeField] private Image characterIconImage;
     [SerializeField] private GameObject selectedObject;
 
+    [Header("Colors")]
+    [SerializeField] private Color normalColor = Color.white;
+    [SerializeField] private Color occupiedColor = Color.red;
+    [SerializeField] private Color selectedColor = Color.blue;
+
+    private Image cellImage;
     private SpawnGridPanel owner;
     private int gridIndex;
 
     public void Init(SpawnGridPanel panel, int index)
     {
+        cellImage = GetComponent<Image>();
+
         owner = panel;
         gridIndex = index;
 
@@ -40,6 +48,17 @@ public class SpawnGridCell : MonoBehaviour
     {
         string characterId = GetCharacterIdOnThisGrid();
         bool hasCharacter = !string.IsNullOrWhiteSpace(characterId);
+        bool isSelected = owner != null && owner.IsSelectedGrid(gridIndex);
+
+        if (cellImage != null)
+        {
+            if (isSelected)
+                cellImage.color = selectedColor;
+            else if (hasCharacter)
+                cellImage.color = occupiedColor;
+            else
+                cellImage.color = normalColor;
+        }
 
         if (characterIconImage != null)
         {

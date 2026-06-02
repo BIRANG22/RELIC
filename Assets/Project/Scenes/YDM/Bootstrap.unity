@@ -1112,6 +1112,7 @@ MonoBehaviour:
   characterIconDatabase: {fileID: 11400000, guid: 53ece5b87675ada49a6c51b9e9b05787, type: 2}
   runeIconDatabase: {fileID: 11400000, guid: e54a1fcccc055114b9acc3de01cc2dc6, type: 2}
   statusEffectIconDatabase: {fileID: 11400000, guid: 27ccdac28e13f804cb658e1da4772852, type: 2}
+  mapNodeIconDatabase: {fileID: 11400000, guid: d5d0769746e99dd44ae97b6bb3a4f196, type: 2}
 --- !u!1 &1726247874
 GameObject:
   m_ObjectHideFlags: 0
