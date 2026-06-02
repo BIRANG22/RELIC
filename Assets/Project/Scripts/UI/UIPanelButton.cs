@@ -10,12 +10,25 @@ public enum UIPanelEffect
 
 public class UIPanelButton : MonoBehaviour
 {
-    [Header("Panel")]
+    [Header("Panel Active")]
     [SerializeField] private GameObject panelToOpen;
-    [SerializeField] private GameObject panelToClose;
+    [SerializeField] private GameObject[] panelsToClose;
+
+    [Header("Panel Move")]
+    [SerializeField] private RectTransform panelToMove;
+    [SerializeField] private Vector2 moveOffset = new Vector2(300f, 0f);
+    [SerializeField] private float moveDuration = 0.2f;
+    [SerializeField] private bool toggleMove = true;
+
+    [Header("Button Flip")]
+    [SerializeField] private bool flipButtonOnMove = false;
+    [SerializeField] private RectTransform flipTarget;
 
     [Header("Toggle")]
     [SerializeField] private bool toggleIfAlreadyOpen = true;
+
+    [Header("Move Together")]
+    [SerializeField] private RectTransform[] moveTogetherTargets;
 
     [Header("Effect")]
     [SerializeField] private UIPanelEffect effect = UIPanelEffect.None;
@@ -25,7 +38,21 @@ public class UIPanelButton : MonoBehaviour
     [Header("Option")]
     [SerializeField] private bool playClickSound = true;
 
-    private bool isPlayingEffect = false;
+    
+
+    private bool isPlayingEffect;
+    private bool isMoved;
+    private Vector2 originalPosition;
+    private Coroutine moveCoroutine;
+
+    private void Awake()
+    {
+        if (panelToMove != null)
+            originalPosition = panelToMove.anchoredPosition;
+
+        if (flipTarget == null)
+            flipTarget = GetComponent<RectTransform>();
+    }
 
     public void Execute()
     {
@@ -35,7 +62,6 @@ public class UIPanelButton : MonoBehaviour
         if (playClickSound && AudioManager.Instance != null)
             AudioManager.Instance.PlaySfx(SfxType.Click);
 
-        // 이미 열려있으면 닫기
         if (toggleIfAlreadyOpen &&
             panelToOpen != null &&
             panelToOpen.activeSelf)
@@ -53,10 +79,7 @@ public class UIPanelButton : MonoBehaviour
             case UIPanelEffect.Fade:
                 if (fadeImage == null)
                 {
-                    Debug.LogWarning(
-                        "[UIPanelButton] Fade effect selected but Fade Image is not assigned."
-                    );
-
+                    Debug.LogWarning("[UIPanelButton] Fade effect selected but Fade Image is not assigned.");
                     ExecutePanelTransition();
                     return;
                 }
@@ -66,13 +89,142 @@ public class UIPanelButton : MonoBehaviour
         }
     }
 
+    public void MovePanel()
+    {
+        if (panelToMove == null)
+        {
+            Debug.LogWarning("[UIPanelButton] Panel To Move가 연결되지 않았습니다.");
+            return;
+        }
+
+        if (isPlayingEffect)
+            return;
+
+        if (playClickSound && AudioManager.Instance != null)
+            AudioManager.Instance.PlaySfx(SfxType.Click);
+
+        Vector2 targetPosition;
+
+        if (toggleMove)
+        {
+            targetPosition = isMoved
+                ? originalPosition
+                : originalPosition + moveOffset;
+
+            isMoved = !isMoved;
+        }
+        else
+        {
+            targetPosition = panelToMove.anchoredPosition + moveOffset;
+        }
+
+        ApplyButtonFlip();
+
+        if (moveCoroutine != null)
+            StopCoroutine(moveCoroutine);
+
+        moveCoroutine = StartCoroutine(MoveRoutine(targetPosition));
+    }
+
+    private void ApplyButtonFlip()
+    {
+        if (!flipButtonOnMove || flipTarget == null)
+            return;
+
+        Vector3 scale = flipTarget.localScale;
+        scale.x *= -1f;
+        flipTarget.localScale = scale;
+    }
+
+    private IEnumerator MoveRoutine(Vector2 targetPosition)
+    {
+        isPlayingEffect = true;
+
+        Vector2 startPosition = panelToMove.anchoredPosition;
+        Vector2 moveDelta = targetPosition - startPosition;
+
+        Vector2[] togetherStartPositions = null;
+
+        if (moveTogetherTargets != null)
+        {
+            togetherStartPositions = new Vector2[moveTogetherTargets.Length];
+
+            for (int i = 0; i < moveTogetherTargets.Length; i++)
+            {
+                if (moveTogetherTargets[i] != null)
+                    togetherStartPositions[i] = moveTogetherTargets[i].anchoredPosition;
+            }
+        }
+
+        float time = 0f;
+
+        while (time < moveDuration)
+        {
+            time += Time.unscaledDeltaTime;
+
+            float t = Mathf.Clamp01(time / moveDuration);
+
+            panelToMove.anchoredPosition = Vector2.Lerp(
+                startPosition,
+                targetPosition,
+                t
+            );
+
+            if (moveTogetherTargets != null)
+            {
+                for (int i = 0; i < moveTogetherTargets.Length; i++)
+                {
+                    if (moveTogetherTargets[i] == null)
+                        continue;
+
+                    moveTogetherTargets[i].anchoredPosition =
+                        Vector2.Lerp(
+                            togetherStartPositions[i],
+                            togetherStartPositions[i] + moveDelta,
+                            t
+                        );
+                }
+            }
+
+            yield return null;
+        }
+
+        panelToMove.anchoredPosition = targetPosition;
+
+        if (moveTogetherTargets != null)
+        {
+            for (int i = 0; i < moveTogetherTargets.Length; i++)
+            {
+                if (moveTogetherTargets[i] == null)
+                    continue;
+
+                moveTogetherTargets[i].anchoredPosition =
+                    togetherStartPositions[i] + moveDelta;
+            }
+        }
+
+        isPlayingEffect = false;
+        moveCoroutine = null;
+    }
+
     private void ExecutePanelTransition()
     {
-        if (panelToClose != null)
-            panelToClose.SetActive(false);
+        ClosePanels();
 
         if (panelToOpen != null)
             panelToOpen.SetActive(true);
+    }
+
+    private void ClosePanels()
+    {
+        if (panelsToClose == null)
+            return;
+
+        for (int i = 0; i < panelsToClose.Length; i++)
+        {
+            if (panelsToClose[i] != null)
+                panelsToClose[i].SetActive(false);
+        }
     }
 
     private IEnumerator FadeRoutine()

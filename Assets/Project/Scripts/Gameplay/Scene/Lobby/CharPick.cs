@@ -34,6 +34,7 @@ public class CharPick : MonoBehaviour
     [SerializeField] private float moveSpeed = 12f;
     [SerializeField] private float scaleSpeed = 12f;
 
+    [SerializeField] private float previewScale = 4f;
     private int centerIndex = 0;
 
     private bool isDragging;
@@ -275,16 +276,16 @@ public class CharPick : MonoBehaviour
         if (DataManager.Instance.CharacterPrefabDatabase == null)
             return;
 
-        if (!DataManager.Instance.CharacterPrefabDatabase.TryGetPrefab(characterId, out var prefab))
+        if (!DataManager.Instance.CharacterPrefabDatabase.TryGetPreviewPrefab(characterId, out var prefab))
             return;
 
         if (prefab == null)
             return;
 
         currentPreview = Instantiate(prefab, previewRoot);
-        currentPreview.transform.localPosition = Vector3.zero;
+        currentPreview.transform.localPosition = new Vector3(0f, 200f, 0f);
         currentPreview.transform.localRotation = Quaternion.identity;
-        currentPreview.transform.localScale = Vector3.one;
+        currentPreview.transform.localScale = Vector3.one * previewScale;
 
         PlayPreviewBackgroundAnim();
     }

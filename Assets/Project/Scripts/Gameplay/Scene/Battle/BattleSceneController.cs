@@ -10,6 +10,14 @@ public class BattleSceneController : MonoBehaviour
     [SerializeField] private string defaultChapterId = "Chapter1";
     [SerializeField] private string defaultStage = "Stage1";
 
+    [Header("Rooms")]
+    [SerializeField] private GameObject startRoom;
+    [SerializeField] private GameObject battleRoom;
+    [SerializeField] private GameObject chestRoom;
+    [SerializeField] private GameObject eventRoom;
+    [SerializeField] private GameObject restRoom;
+    [SerializeField] private GameObject shopRoom;
+
     private MapRuntimeStore mapRuntimeStore;
     private MapRuntimeData mapRuntime;
 
@@ -69,6 +77,10 @@ public class BattleSceneController : MonoBehaviour
     {
         switch (nodeData.Type)
         {
+            case "Start":
+                OpenStartEvent(nodeData);
+                break;
+
             case "Common":
             case "Elite":
             case "Boss":
@@ -95,6 +107,16 @@ public class BattleSceneController : MonoBehaviour
                 Debug.LogWarning($"[BattleSceneController] 처리되지 않은 맵 타입: {nodeData.Type}");
                 break;
         }
+    }
+
+    private void OpenStartEvent(GeneratedMapNodeData nodeData)
+    {
+        Debug.Log($"[BattleSceneController] 시작 이벤트 시작: {nodeData.MapId}");
+
+        battleMapPanel.Close();
+
+        if (startRoom != null)
+            startRoom.SetActive(true);
     }
 
     private void OpenBattleMap(GeneratedMapNodeData nodeData)
