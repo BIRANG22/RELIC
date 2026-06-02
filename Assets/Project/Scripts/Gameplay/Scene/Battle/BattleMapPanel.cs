@@ -1,12 +1,13 @@
+using Relic.Gameplay.Data;
 using System.Collections.Generic;
 using UnityEngine;
-using Relic.Gameplay.Data;
+using UnityEngine.UI;
 
 public class BattleMapPanel : MonoBehaviour
 {
     [Header("View")]
     [SerializeField] private MapViewSpawner mapViewSpawner;
-
+    [SerializeField] private ScrollRect mapScrollRect;
     [Header("Owner")]
     [SerializeField] private BattleSceneController battleSceneController;
 
@@ -39,10 +40,17 @@ public class BattleMapPanel : MonoBehaviour
             return;
         }
 
-        if (runtime.IsRunInitialized)
+        if (runtime.IsRunInitialized &&
+            runtime.GeneratedNodes != null &&
+            runtime.GeneratedNodes.Count > 0)
+        {
             return;
+        }
 
         List<MapData> mapPool = DataManager.Instance.MapDatabase.GetAll();
+
+        Debug.Log($"[BattleMapPanel] MapPool Count: {mapPool.Count}");
+        Debug.Log($"[BattleMapPanel] Chapter: {runtime.SelectedChapterId}, Stage: {runtime.CurrentStage}");
 
         ProceduralMapGenerator generator = new();
 
@@ -56,7 +64,7 @@ public class BattleMapPanel : MonoBehaviour
 
         runtimeStore.Set(runtime);
 
-        Debug.Log($"[BattleMapPanel] Procedural Map Generated: {runtime.GeneratedNodes.Count}");
+        Debug.Log($"[BattleMapPanel] GeneratedNodes Count: {runtime.GeneratedNodes.Count}");
     }
 
     private void SpawnMapView()
@@ -68,6 +76,11 @@ public class BattleMapPanel : MonoBehaviour
         }
 
         mapViewSpawner.Spawn(runtime.GeneratedNodes, OnNodeClicked);
+
+        Canvas.ForceUpdateCanvases();
+
+        if (mapScrollRect != null)
+            mapScrollRect.verticalNormalizedPosition = 0f;
     }
 
     private void OnNodeClicked(GeneratedMapNodeData nodeData)

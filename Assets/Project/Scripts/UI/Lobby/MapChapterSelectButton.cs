@@ -27,7 +27,6 @@ public class MapChapterSelectButton : MonoBehaviour
         if (button != null)
         {
             button.onClick.RemoveListener(OnClickSelectChapter);
-            button.onClick.AddListener(OnClickSelectChapter);
         }
     }
 
@@ -60,7 +59,9 @@ public class MapChapterSelectButton : MonoBehaviour
         {
             SelectedChapterId = chapterId,
             CurrentStage = startStage,
-            IsRunInitialized = true
+            CurrentMapId = "",//넣은 위치 id 부터 시작
+            CurrentSceneName = SceneName.Battle,
+            IsRunInitialized = false
         });
 
         Debug.Log(

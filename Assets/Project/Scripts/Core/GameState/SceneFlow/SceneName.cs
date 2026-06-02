@@ -7,5 +7,5 @@ public static class SceneName
     public const string Lobby = "Lobby";
     public const string CharacterSelect = "CharacterSelect";
     public const string BattleSelect = "BattleSelect";
-    public const string Battle = "BattleMap01";
+    public const string Battle = "Battle";
 }

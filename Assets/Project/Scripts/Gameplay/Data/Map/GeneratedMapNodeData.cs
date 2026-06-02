@@ -7,8 +7,11 @@ namespace Relic.Gameplay.Data
     public class GeneratedMapNodeData
     {
         public int NodeIndex;
+        public int LayerIndex;
+
         public string MapId;
         public string Type;
+
         public Vector2 Position;
         public List<int> NextNodeIndices = new();
     }

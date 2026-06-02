@@ -9,36 +9,33 @@ public class BattleState : BaseGameState
 
     public override async Task Enter(GameStateContext context)
     {
+        Debug.Log("[BattleState] Enter Start");
+
         var mapRuntime = DataManager.Instance.MapRuntimeStore.Get();
 
-        if (mapRuntime == null || !mapRuntime.IsRunInitialized)
+        if (mapRuntime == null)
         {
-            Debug.LogError("[BattleState] MapRuntime is not initialized.");
+            Debug.LogError("[BattleState] MapRuntime is null.");
             return;
         }
 
-        if (string.IsNullOrEmpty(mapRuntime.CurrentSceneName))
+        if (string.IsNullOrWhiteSpace(mapRuntime.SelectedChapterId) ||
+            string.IsNullOrWhiteSpace(mapRuntime.CurrentStage))
         {
-            var mapData = DataManager.Instance.MapDatabase.GetStartMap(
-                mapRuntime.SelectedChapterId,
-                mapRuntime.CurrentStage
-            );
-
-            if (mapData == null)
-            {
-                Debug.LogError(
-                    $"[BattleState] No start map found. Chapter: {mapRuntime.SelectedChapterId}, Stage: {mapRuntime.CurrentStage}"
-                );
-                return;
-            }
-
-            mapRuntime.CurrentMapId = mapData.MapId;
-            mapRuntime.CurrentSceneName = mapData.Name.Trim();
-
-            DataManager.Instance.MapRuntimeStore.Set(mapRuntime);
+            Debug.LogError("[BattleState] Chapter 또는 Stage가 선택되지 않았습니다.");
+            return;
         }
 
+        if (string.IsNullOrWhiteSpace(mapRuntime.CurrentMapId))
+            mapRuntime.CurrentMapId = "";//넣은 id 부터 시작
+
+        mapRuntime.CurrentSceneName = SceneName.Battle;
+
+        DataManager.Instance.MapRuntimeStore.Set(mapRuntime);
+
         await sceneFlow.LoadSceneAsync(mapRuntime.CurrentSceneName);
+
+        Debug.Log("[BattleState] Enter Complete");
     }
 
     public override Task Exit()
