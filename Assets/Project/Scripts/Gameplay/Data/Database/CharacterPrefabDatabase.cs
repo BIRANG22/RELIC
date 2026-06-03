@@ -52,7 +52,7 @@ namespace Relic.Gameplay.Data
             return prefab != null;
         }
 
-        public bool TryGetPreviewPrefab(string characterId, out GameObject prefab)
+        public bool TryGetPreviewUIPrefab(string characterId, out GameObject prefab)
         {
             prefab = null;
 
@@ -62,7 +62,21 @@ namespace Relic.Gameplay.Data
             if (!map.TryGetValue(characterId, out var entry))
                 return false;
 
-            prefab = entry.PreviewPrefab;
+            prefab = entry.PreviewUIPrefab;
+            return prefab != null;
+        }
+
+        public bool TryGetPreviewWorldPrefab(string characterId, out GameObject prefab)
+        {
+            prefab = null;
+
+            if (map == null)
+                Initialize();
+
+            if (!map.TryGetValue(characterId, out var entry))
+                return false;
+
+            prefab = entry.PreviewWorldPrefab;
             return prefab != null;
         }
 
@@ -84,7 +98,10 @@ namespace Relic.Gameplay.Data
         [Header("Lobby")]
         public GameObject LobbyPrefab;
 
-        [Header("Preview")]
-        public GameObject PreviewPrefab;
+        [Header("Preview UI")]
+        public GameObject PreviewUIPrefab;
+
+        [Header("Preview World")]
+        public GameObject PreviewWorldPrefab;
     }
 }

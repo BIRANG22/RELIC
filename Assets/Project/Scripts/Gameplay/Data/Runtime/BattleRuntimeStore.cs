@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Relic.Gameplay.Data
@@ -30,6 +31,10 @@ namespace Relic.Gameplay.Data
                     IsBattleRunInitialized = true
                 };
             }
+
+            currentRun.OwnedRelicIds ??= new List<string>();
+            currentRun.BagItemIds ??= new List<string>();
+            currentRun.SkillInventoryIds ??= new List<string>();
 
             return currentRun;
         }

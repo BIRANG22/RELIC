@@ -8,7 +8,7 @@ public class StartRoomController : MonoBehaviour
 
     [Header("UI")]
     [SerializeField] private StartRoomChatWindow chatWindow;
-    [SerializeField] private GameObject relicChoiceArea;
+    [SerializeField] private RelicChoiceAreaUI relicChoiceArea;
 
     [Header("Dialog")]
     [TextArea]
@@ -22,7 +22,7 @@ public class StartRoomController : MonoBehaviour
             chatWindow.Close();
 
         if (relicChoiceArea != null)
-            relicChoiceArea.SetActive(false);
+            relicChoiceArea.Close();
     }
 
     private void SpawnPartyAllies()
@@ -53,7 +53,7 @@ public class StartRoomController : MonoBehaviour
             if (string.IsNullOrWhiteSpace(characterId))
                 continue;
 
-            if (!prefabDatabase.TryGetPreviewPrefab(characterId, out GameObject lobbyPrefab))
+            if (!prefabDatabase.TryGetPreviewWorldPrefab(characterId, out GameObject lobbyPrefab))
             {
                 Debug.LogWarning($"[StartRoomController] LobbyPrefab ¾øÀ½: {characterId}");
                 continue;
@@ -83,6 +83,6 @@ public class StartRoomController : MonoBehaviour
     private void OnDialogFinished()
     {
         if (relicChoiceArea != null)
-            relicChoiceArea.SetActive(true);
+            relicChoiceArea.Open();
     }
 }

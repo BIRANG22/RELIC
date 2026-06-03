@@ -276,7 +276,7 @@ public class CharPick : MonoBehaviour
         if (DataManager.Instance.CharacterPrefabDatabase == null)
             return;
 
-        if (!DataManager.Instance.CharacterPrefabDatabase.TryGetPreviewPrefab(characterId, out var prefab))
+        if (!DataManager.Instance.CharacterPrefabDatabase.TryGetPreviewUIPrefab(characterId, out var prefab))
             return;
 
         if (prefab == null)

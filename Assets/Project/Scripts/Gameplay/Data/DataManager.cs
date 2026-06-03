@@ -6,6 +6,7 @@ public class DataManager : Singleton<DataManager>
     [Header("Asset Databases")]
     [SerializeField] private CharacterPrefabDatabase characterPrefabDatabase;
     [SerializeField] private SkillIconDatabase skillIconDatabase;
+    [SerializeField] private RelicIconDatabase relicIconDatabase;
     [SerializeField] private MonsterPrefabDatabase monsterPrefabDatabase;
     [SerializeField] private ActionTypeIconDatabase actionTypeIconDatabase;
     [SerializeField] private CharacterIconDatabase characterIconDatabase;
@@ -18,18 +19,16 @@ public class DataManager : Singleton<DataManager>
     public CharacterDatabase CharacterDatabase => dataBootstrap.CharacterDatabase;
     public CharacterIconDatabase CharacterIconDatabase => characterIconDatabase;
     public CharacterPrefabDatabase CharacterPrefabDatabase => characterPrefabDatabase;
-
     public SkillDatabase SkillDatabase => dataBootstrap.SkillDatabase;
     public SkillIconDatabase SkillIconDatabase => skillIconDatabase;
-
+    public RelicIconDatabase RelicIconDatabase => relicIconDatabase;
     public RangeDatabase RangeDatabase => dataBootstrap.RangeDatabase;
     public RuneIconDatabase RuneIconDatabase => runeIconDatabase;
     public EffectDatabase EffectDatabase => dataBootstrap.EffectDatabase;
+    public RelicDatabase RelicDatabase => dataBootstrap.RelicDatabase;
     public StatusEffectIconDatabase StatusEffectIconDatabase => statusEffectIconDatabase;
     public ActionTypeIconDatabase ActionTypeIconDatabase => actionTypeIconDatabase;
-
     public MapNodeIconDatabase MapNodeIconDatabase => mapNodeIconDatabase;
-
     public BattleMapDatabase BattleMapDatabase => dataBootstrap.BattleMapDatabase;
     public MonsterDatabase MonsterDatabase => dataBootstrap.MonsterDatabase;
     public MapDatabase MapDatabase => dataBootstrap.MapDatabase;
