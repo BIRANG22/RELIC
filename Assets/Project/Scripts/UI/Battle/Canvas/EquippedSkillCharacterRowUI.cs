@@ -18,7 +18,6 @@ public class EquippedSkillCharacterRowUI : MonoBehaviour
 
         SetSlot(abilitySkillSlot1, characterData.AbilitySkillId1);
         SetSlot(abilitySkillSlot2, characterData.AbilitySkillId2);
-        SetSlot(abilitySkillSlot3, characterData.AbilitySkillId3);
     }
 
     public void Clear()

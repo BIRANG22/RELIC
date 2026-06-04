@@ -80,8 +80,7 @@ public class SkillEquipUIController : MonoBehaviour
 
         SetSkillButton(0, runtime.AbilitySkillId1);
         SetSkillButton(1, runtime.AbilitySkillId2);
-        SetSkillButton(2, runtime.AbilitySkillId3);
-        SetSkillButton(3, runtime.UniqueSkillId);
+        SetSkillButton(2, runtime.UniqueSkillId);
     }
 
     private void SetSkillButton(int index, string skillId)

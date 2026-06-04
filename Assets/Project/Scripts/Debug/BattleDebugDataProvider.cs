@@ -45,8 +45,7 @@ public class BattleDebugDataProvider : MonoBehaviour
                 PassiveSkillId = "S_Passive_01",
 
                 AbilitySkillId1 = "S_Ability_01",
-                AbilitySkillId2 = "S_Ability_02",
-                AbilitySkillId3 = null,
+                AbilitySkillId2 = null,
 
                 UniqueSkillId = "S_Unique_01",
 

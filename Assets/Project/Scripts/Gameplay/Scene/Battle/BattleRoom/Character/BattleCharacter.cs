@@ -28,7 +28,6 @@ public class BattleCharacter : MonoBehaviour
         AddSkill(RuntimeData.MoveSkillId);
         AddSkill(RuntimeData.AbilitySkillId1);
         AddSkill(RuntimeData.AbilitySkillId2);
-        AddSkill(RuntimeData.AbilitySkillId3);
         AddSkill(RuntimeData.UniqueSkillId);
     }
 

@@ -68,7 +68,6 @@ public class RuntimeDataDebugKey : Singleton<RuntimeDataDebugKey>
                 $"Passive:{data.PassiveSkillId}, " +
                 $"Ability1:{data.AbilitySkillId1}, " +
                 $"Ability2:{data.AbilitySkillId2}, " +
-                $"Ability3:{data.AbilitySkillId3}, " +
                 $"Unique:{data.UniqueSkillId}";
 
             Debug.Log(

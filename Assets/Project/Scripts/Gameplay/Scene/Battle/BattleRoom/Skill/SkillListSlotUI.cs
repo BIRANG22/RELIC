@@ -30,6 +30,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     private bool isPointerOver;
     private RectTransform rectTransform;
     private string detailText = "";
+    private bool canClick;
 
     private void Awake()
     {
@@ -50,10 +51,11 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         ApplyVisualState();
     }
 
-    public void Setup(SkillListPanel ownerPanel, string skillId)
+    public void Setup(SkillListPanel ownerPanel, string skillId, bool interactable)
     {
         owner = ownerPanel;
         this.skillId = skillId;
+        canClick = interactable;
         skillData = null;
         isPointerOver = false;
 
@@ -83,7 +85,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         detailText = BuildDetailText(skillData);
 
         if (button != null)
-            button.interactable = true;
+            button.interactable = interactable && skillData != null;
 
         ApplyVisualState();
     }
@@ -138,6 +140,11 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private void OnClick()
     {
+        Debug.Log($"[SkillListSlotUI] Click / Skill:{skillId} / CanClick:{canClick} / HasData:{skillData != null}");
+
+        if (!canClick)
+            return;
+
         if (skillData == null || owner == null)
             return;
 

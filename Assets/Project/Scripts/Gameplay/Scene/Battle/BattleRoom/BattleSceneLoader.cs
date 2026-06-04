@@ -131,10 +131,10 @@ public class BattleSceneLoader : MonoBehaviour
         hud.OnClicked += OnPlayerHudClicked;
     }
 
-    private void OnPlayerHudClicked(CharacterRuntimeData runtimeData)
+    private void OnPlayerHudClicked(CharacterRuntimeData runtimeData, RectTransform hudRect)
     {
         if (skillListPanel != null)
-            skillListPanel.Open(runtimeData);
+            skillListPanel.Open(runtimeData, hudRect);
     }
 
     private void SpawnMonstersAndHUD()

@@ -52,7 +52,7 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
     private readonly List<StatusEffectIcon> spawnedStatusIcons = new();
     private Vector3 defaultLocalScale;
 
-    public event Action<CharacterRuntimeData> OnClicked;
+    public event Action<CharacterRuntimeData, RectTransform> OnClicked;
 
     private void Awake()
     {
@@ -111,7 +111,7 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
         int maxResource = boundMaster != null ? boundMaster.MaxResource : Mathf.Max(1, boundRuntime.CurrentResource);
 
         RefreshBar(hpFill, hpValueText, boundRuntime.CurrentHealth, maxHp);
-        RefreshBar(staminaFill, staminaValueText, boundRuntime.CurrentStamina, maxStamina);
+        RefreshBar(staminaFill, staminaValueText, boundRuntime.PreviewStamina, maxStamina);
         RefreshUniqueResource(boundRuntime.CurrentResource, maxResource);
         RefreshShield(boundRuntime.CurrentShield, maxHp);
         RefreshStatusEffects(boundRuntime.StatusEffects);
@@ -125,7 +125,7 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
             fill.fillAmount = max > 0 ? (float)current / max : 0f;
 
         if (valueText != null)
-            valueText.text = $"{current} / {max}";
+            valueText.text = current.ToString();
     }
 
     private void RefreshUniqueResource(int currentResource, int maxResource)
@@ -367,8 +367,11 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
 
     private void InvokeHudClicked()
     {
-        if (boundRuntime != null)
-            OnClicked?.Invoke(boundRuntime);
+        if (boundRuntime == null)
+            return;
+
+        RectTransform rect = GetComponent<RectTransform>();
+        OnClicked?.Invoke(boundRuntime, rect);
     }
 
     public void OnPointerClick(PointerEventData eventData)

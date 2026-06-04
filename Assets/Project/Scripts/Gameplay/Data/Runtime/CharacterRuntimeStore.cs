@@ -37,7 +37,6 @@ namespace Relic.Gameplay.Data
                 $"Passive:{data.PassiveSkillId}, " +
                 $"Ability1:{data.AbilitySkillId1}, " +
                 $"Ability2:{data.AbilitySkillId2}, " +
-                $"Ability3:{data.AbilitySkillId3}, " +
                 $"Unique:{data.UniqueSkillId}";
 
             var items = data.EquippedItemIds != null && data.EquippedItemIds.Count > 0
