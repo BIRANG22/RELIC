@@ -7,6 +7,9 @@ public class BattleMonsterSpawner : MonoBehaviour
     [Header("Grid Root")]
     [SerializeField] private Transform gridRoot;
 
+    [Header("Spawn Root")]
+    [SerializeField] private Transform monsterRoot;
+
     [Header("Spawn Setting")]
     [SerializeField] private string gridNamePrefix = "Grid_";
     [SerializeField] private string spawnPointName = "Point";
@@ -62,7 +65,8 @@ public class BattleMonsterSpawner : MonoBehaviour
         GameObject monster = Instantiate(
             monsterData.BattlePrefab,
             spawnPosition,
-            Quaternion.identity
+            Quaternion.identity,
+            monsterRoot
         );
 
         string runtimeId = MonsterRuntimeIdGenerator.Create();

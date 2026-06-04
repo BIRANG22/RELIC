@@ -29,6 +29,9 @@ public class BattleSceneLoader : MonoBehaviour
     [SerializeField] private Camera worldCamera;
     [SerializeField] private Camera uiCamera;
 
+    [Header("Skill List")]
+    [SerializeField] private SkillListPanel skillListPanel;
+
     private bool isLoaded;
 
     private void OnEnable()
@@ -124,6 +127,14 @@ public class BattleSceneLoader : MonoBehaviour
         }
 
         hud.Bind(runtimeData);
+
+        hud.OnClicked += OnPlayerHudClicked;
+    }
+
+    private void OnPlayerHudClicked(CharacterRuntimeData runtimeData)
+    {
+        if (skillListPanel != null)
+            skillListPanel.Open(runtimeData);
     }
 
     private void SpawnMonstersAndHUD()

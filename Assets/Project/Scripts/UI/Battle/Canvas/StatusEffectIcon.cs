@@ -6,8 +6,7 @@ using UnityEngine.UI;
 public class StatusEffectIcon : MonoBehaviour
 {
     [SerializeField] private Image iconImage;
-    [SerializeField] private TMP_Text stackText;
-    [SerializeField] private TMP_Text turnText;
+    [SerializeField] private TMP_Text valueText;
 
     public void Set(StatusEffectRuntimeData data)
     {
@@ -25,11 +24,12 @@ public class StatusEffectIcon : MonoBehaviour
             iconImage.enabled = iconImage.sprite != null;
         }
 
-        if (stackText != null)
-            stackText.text = data.Stack > 1 ? data.Stack.ToString() : "";
-
-        if (turnText != null)
-            turnText.text = data.RemainingTurn > 0 ? data.RemainingTurn.ToString() : "";
+        if (valueText != null)
+        {
+            valueText.text = data.Stack > 0
+                ? data.Stack.ToString()
+                : "";
+        }
     }
 
     private Sprite GetIcon(string effectId)
@@ -40,7 +40,7 @@ public class StatusEffectIcon : MonoBehaviour
         if (DataManager.Instance.StatusEffectIconDatabase == null)
             return null;
 
-        if (DataManager.Instance.StatusEffectIconDatabase.TryGetIcon(effectId, out var icon))
+        if (DataManager.Instance.StatusEffectIconDatabase.TryGetIcon(effectId, out Sprite icon))
             return icon;
 
         return null;
