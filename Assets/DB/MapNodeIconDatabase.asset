@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f83baf5728af2794f872427f957be542, type: 3}
+  m_Name: MapNodeIconDatabase
+  m_EditorClassIdentifier: 
+  entries:
+  - Type: Common
+    Icon: {fileID: 21300000, guid: 17abe5aee64efa34c834b3679ab67a4b, type: 3}
+  - Type: Elite
+    Icon: {fileID: 21300000, guid: 17abe5aee64efa34c834b3679ab67a4b, type: 3}
+  - Type: Boss
+    Icon: {fileID: 21300000, guid: 1780f3a2971269e47a5df9818546b8ad, type: 3}
+  - Type: Rest
+    Icon: {fileID: 21300000, guid: cb490cced05b7e246b83ec3f4f429bad, type: 3}
+  - Type: Shop
+    Icon: {fileID: 21300000, guid: 3bff929db0a9e1544a26a2c30a31dcf4, type: 3}
+  - Type: Chest
+    Icon: {fileID: 21300000, guid: f7356a39877850d4f977511c6816df81, type: 3}
+  - Type: Special
+    Icon: {fileID: 21300000, guid: f7356a39877850d4f977511c6816df81, type: 3}
+  - Type: Start
+    Icon: {fileID: 21300000, guid: 73c2fa62f48b7a44abebe0951c488490, type: 3}

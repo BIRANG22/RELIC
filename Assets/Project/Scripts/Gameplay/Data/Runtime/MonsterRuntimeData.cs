@@ -19,6 +19,7 @@ namespace Relic.Gameplay.Data
 
         public int MaxHp;
         public int CurrentHp;
+        public int CurrentShield;
 
         public string DropTableId;
 
@@ -32,8 +33,7 @@ namespace Relic.Gameplay.Data
         public bool IsDead => CurrentHp <= 0;
 
         // 버프 / 디버프는 나중에 전용 RuntimeData로 확장 가능
-        public List<StatusEffectRuntimeData> Buffs = new();
-        public List<StatusEffectRuntimeData> Debuffs = new();
+        public List<StatusEffectRuntimeData> StatusEffects = new();
 
         public MonsterRuntimeData()
         {

@@ -23,20 +23,16 @@ public class CharacterSelectionState : MonoBehaviour
     public void SelectPartySlot(int slotIndex)
     {
         CurrentPartySlotIndex = slotIndex;
-        Debug.Log($"[CharacterSelectionState] Selected Party Slot: {slotIndex}");
     }
 
     public void SelectCharacter(CharacterType characterType, string characterId)
     {
         CurrentCharacter = characterType;
         CurrentCharacterId = characterId;
-
-        Debug.Log($"[CharacterSelectionState] Selected Character: {CurrentCharacter} / {CurrentCharacterId}");
     }
 
     public void SelectSkillSlot(int slotIndex)
     {
         CurrentSkillSlotIndex = slotIndex;
-        Debug.Log($"[CharacterSelectionState] Selected Skill Slot: {slotIndex}");
     }
 }

@@ -18,10 +18,6 @@ namespace Relic.Gameplay.Monster
 
             gameObject.name =
                 $"{runtimeData.Name}_{runtimeData.RuntimeId}";
-
-            Debug.Log(
-                $"[MonsterUnit] Initialize: {runtimeData.MonsterId} / {runtimeData.RuntimeId}"
-            );
         }
 
         public string SelectSkill(BattleContext context)

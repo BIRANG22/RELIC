@@ -1,15 +1,14 @@
-using Relic.Gameplay.Battle;
 using UnityEngine;
 
 public class CharacterSelectButtonUI : MonoBehaviour
 {
     public GameObject highlightObject;
-    public GameObject skillListObject;
 
     private BattleCharacter battleCharacter;
 
     public BattleCharacter BattleCharacter => battleCharacter;
     public string CharacterId => battleCharacter != null ? battleCharacter.CharacterId : null;
+
     private void Awake()
     {
         battleCharacter = GetComponentInParent<BattleCharacter>();

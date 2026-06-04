@@ -123,15 +123,25 @@ public class CharBtn : MonoBehaviour,
                 CurrentHealth = master.MaxHealth,
                 CurrentStamina = master.MaxStamina,
                 CurrentResource = master.MaxResource,
-                IsUnlocked = master.IsDefaultProvided
+                CurrentMoveLevel = 1,
+                IsUnlocked = master.IsDefaultProvided,
+
+                PassiveSkillId = master.PassiveSkill1,
+                UniqueSkillId = master.UniqueSkill1,
+                AbilitySkillId1 = master.CharacterSkill1,
+                AbilitySkillId2 = master.CharacterSkill2,
+                AbilitySkillId3 = master.CommonSkill1,
+
+                EquippedSkillIds = new string[4]
+                {
+                    master.PassiveSkill1,
+                    master.UniqueSkill1,
+                    master.CharacterSkill1,
+                    master.CommonSkill1
+                }
             };
 
             runtimeStore.AddOrUpdate(runtime);
-            Debug.Log("[CharacterRuntime] Created");
-        }
-        else
-        {
-            Debug.Log("[CharacterRuntime] Already Exists");
         }
     }
 
@@ -145,15 +155,13 @@ public class CharBtn : MonoBehaviour,
 
         var partyStore = DataManager.Instance.PartyRuntimeStore;
 
-        // 이미 파티에 있으면 제거
         int existingSlot = partyStore.FindCharacterSlot(characterId);
 
+        // 이미 파티에 있으면 유지
         if (existingSlot >= 0)
         {
-            partyStore.ClearSlot(existingSlot);
-
             Debug.Log(
-                $"[Party] Removed / " +
+                $"[Party] Already Exists / " +
                 $"CharacterId: {characterId}, " +
                 $"Slot: {existingSlot}"
             );
@@ -161,7 +169,6 @@ public class CharBtn : MonoBehaviour,
             return;
         }
 
-        // 빈 슬롯 찾기
         int emptySlot = partyStore.FindEmptySlot();
 
         if (emptySlot < 0)
@@ -170,22 +177,19 @@ public class CharBtn : MonoBehaviour,
             return;
         }
 
-        // 추가
         bool success = partyStore.SetCharacter(emptySlot, characterId);
 
         if (!success)
             return;
 
-        // GridIndex 자동 설정
         if (partyStore.GetGridIndex(emptySlot) < 0)
-        {
             partyStore.SetGridIndex(emptySlot, emptySlot);
-        }
 
         Debug.Log(
             $"[Party] Added / " +
             $"CharacterId: {characterId}, " +
-            $"Slot: {emptySlot}"
+            $"Slot: {emptySlot}, " +
+            $"Grid: {partyStore.GetGridIndex(emptySlot)}"
         );
     }
 

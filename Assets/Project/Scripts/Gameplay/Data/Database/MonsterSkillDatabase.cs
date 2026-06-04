@@ -24,8 +24,6 @@ namespace Relic.Gameplay.Data
 
                 map.Add(data.SkillId, data);
             }
-
-            Debug.Log($"[MonsterSkillDatabase] Loaded: {map.Count}");
         }
 
         public MonsterSkillData Get(string skillId)

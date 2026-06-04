@@ -11,7 +11,6 @@ namespace Relic.Gameplay.Data
         {
             map[data.CharacterId] = data;
 
-            Debug.Log($"[CharacterRuntimeStore] Saved: {data.CharacterId}");
             LogCharacterRuntime(data);
         }
 
@@ -44,17 +43,6 @@ namespace Relic.Gameplay.Data
             var items = data.EquippedItemIds != null && data.EquippedItemIds.Count > 0
                 ? string.Join(", ", data.EquippedItemIds)
                 : "None";
-
-            Debug.Log(
-                $"[CharacterRuntime]\n" +
-                $"ID: {data.CharacterId}\n" +
-                $"Level: {data.Level}, Exp: {data.Exp}\n" +
-                $"HP: {data.CurrentHealth}, Stamina: {data.CurrentStamina}, Resource: {data.CurrentResource}\n" +
-                $"MoveLevel: {data.CurrentMoveLevel}\n" +
-                $"Unlocked: {data.IsUnlocked}\n" +
-                $"Skills: {skills}\n" +
-                $"Items: {items}"
-            );
         }
     }
 }

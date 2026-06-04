@@ -41,8 +41,6 @@ namespace Relic.Gameplay.Data
                 }
 
                 RangeParser.Parse(data);
-
-                Debug.Log($"[RangeCsvLoader] RangeId:{data.RangeId}, Raw:{data.RangeRaw.Count}, Positions:{data.Positions.Count}");
             }
 
             return list;

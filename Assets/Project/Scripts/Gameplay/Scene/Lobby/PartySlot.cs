@@ -1,98 +1,57 @@
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.EventSystems;
 using Relic.Gameplay.Data;
 
-public class PartySlot : MonoBehaviour, IPointerClickHandler
+public class PartySlot : MonoBehaviour
 {
-    [Header("Border")]
-    [SerializeField] private Image normalBorderImg;
-    [SerializeField] private Image selectedBorderImg;
+    [Header("Party")]
+    [SerializeField] private int partyIndex;
 
-    [Header("Portrait")]
-    [SerializeField] private Image portraitImg;
+    [Header("Empty Slot Object")]
+    [SerializeField] private GameObject emptySlotObject;
+    [SerializeField] private Image emptySlotImage;
 
-    private CharPick charPick;
+    [Header("Selected Character Object")]
+    [SerializeField] private Transform selectedCharacterRoot;
+    [SerializeField] private bool selectedObjectAsLastSibling = true;
+    [SerializeField] private bool stretchSelectedRectTransform = true;
+
+    private GameObject currentSelectedObject;
     private string currentCharacterId;
-    private int partyIndex;
 
+    public int PartyIndex => partyIndex;
     public string CurrentCharacterId => currentCharacterId;
     public bool IsEmpty => string.IsNullOrWhiteSpace(currentCharacterId);
-    public int PartyIndex => partyIndex;
 
-    public void Init(CharPick pick, int index)
+    private void Awake()
     {
-        charPick = pick;
+        AutoPrepareReferences();
+        RefreshFromRuntime();
+    }
+
+    private void OnEnable()
+    {
+        RefreshFromRuntime();
+    }
+
+    private void OnDestroy()
+    {
+        DestroySelectedObject();
+    }
+
+    public void Init(int index)
+    {
         partyIndex = index;
-
-        LoadFromRuntimeStore();
+        AutoPrepareReferences();
+        RefreshFromRuntime();
     }
 
-    public void SetChar(string characterId)
-    {
-        if (string.IsNullOrWhiteSpace(characterId))
-        {
-            Clear();
-            return;
-        }
-
-        if (DataManager.Instance == null)
-        {
-            Debug.LogWarning("[PartySlot] DataManager instance is missing.");
-            return;
-        }
-
-        bool success = DataManager.Instance.PartyRuntimeStore.SetCharacter(
-            partyIndex,
-            characterId
-        );
-
-        if (!success)
-            return;
-
-        currentCharacterId = characterId;
-
-        if (DataManager.Instance.PartyRuntimeStore.GetGridIndex(partyIndex) < 0)
-        {
-            DataManager.Instance.PartyRuntimeStore.SetGridIndex(
-                partyIndex,
-                partyIndex
-            );
-        }
-
-        RefreshVisual();
-
-        Debug.Log(
-            $"[PartySlot] 파티 저장 완료 / " +
-            $"PartyIndex: {partyIndex}, " +
-            $"CharacterId: {characterId}, " +
-            $"GridIndex: {DataManager.Instance.PartyRuntimeStore.GetGridIndex(partyIndex)}"
-        );
-    }
-
-    public void Clear()
+    public void RefreshFromRuntime()
     {
         currentCharacterId = null;
 
         if (DataManager.Instance != null)
-            DataManager.Instance.PartyRuntimeStore.ClearSlot(partyIndex);
-
-        RefreshVisual();
-    }
-
-    private void LoadFromRuntimeStore()
-    {
-        currentCharacterId = null;
-
-        if (DataManager.Instance == null)
-        {
-            Debug.LogWarning("[PartySlot] DataManager instance is missing.");
-            RefreshVisual();
-            return;
-        }
-
-        currentCharacterId =
-            DataManager.Instance.PartyRuntimeStore.GetCharacterId(partyIndex);
+            currentCharacterId = DataManager.Instance.PartyRuntimeStore.GetCharacterId(partyIndex);
 
         RefreshVisual();
     }
@@ -101,23 +60,55 @@ public class PartySlot : MonoBehaviour, IPointerClickHandler
     {
         bool hasCharacter = !string.IsNullOrWhiteSpace(currentCharacterId);
 
-        if (normalBorderImg != null)
-            normalBorderImg.enabled = !hasCharacter;
-
-        if (selectedBorderImg != null)
-            selectedBorderImg.enabled = hasCharacter;
-
-        if (portraitImg != null)
-        {
-            portraitImg.enabled = hasCharacter;
-            portraitImg.sprite = hasCharacter
-                ? GetCharacterPortrait(currentCharacterId)
-                : null;
-            portraitImg.color = Color.white;
-        }
+        RefreshEmptySlotObject(hasCharacter);
+        RefreshSelectedCharacterObject(hasCharacter);
     }
 
-    private Sprite GetCharacterPortrait(string characterId)
+    private void RefreshEmptySlotObject(bool hasCharacter)
+    {
+        bool showEmpty = !hasCharacter;
+
+        if (emptySlotObject != null && emptySlotObject != gameObject)
+        {
+            emptySlotObject.SetActive(showEmpty);
+            return;
+        }
+
+        if (emptySlotImage != null)
+            emptySlotImage.enabled = showEmpty;
+    }
+
+    private void RefreshSelectedCharacterObject(bool hasCharacter)
+    {
+        DestroySelectedObject();
+
+        if (!hasCharacter)
+            return;
+
+        GameObject prefab = GetLobbySlotPrefab(currentCharacterId);
+
+        if (prefab == null)
+        {
+            Debug.LogWarning("[PartySlot] Lobby slot prefab missing: " + currentCharacterId, this);
+            return;
+        }
+
+        Transform parent = GetSelectedCharacterRoot();
+
+        if (parent == null)
+            parent = transform;
+
+        currentSelectedObject = Instantiate(prefab, parent);
+        currentSelectedObject.name = "LobbySlot_" + currentCharacterId;
+        currentSelectedObject.SetActive(true);
+
+        SetupSelectedObjectTransform(currentSelectedObject.transform);
+
+        if (selectedObjectAsLastSibling)
+            currentSelectedObject.transform.SetAsLastSibling();
+    }
+
+    private GameObject GetLobbySlotPrefab(string characterId)
     {
         if (string.IsNullOrWhiteSpace(characterId))
             return null;
@@ -125,25 +116,108 @@ public class PartySlot : MonoBehaviour, IPointerClickHandler
         if (DataManager.Instance == null)
             return null;
 
-        if (DataManager.Instance.CharacterIconDatabase == null)
+        if (DataManager.Instance.CharacterPrefabDatabase == null)
             return null;
 
-        if (DataManager.Instance.CharacterIconDatabase.TryGetIcon(characterId, out var icon))
-            return icon;
+        if (DataManager.Instance.CharacterPrefabDatabase.TryGetLobbyPrefab(characterId, out var prefab))
+            return prefab;
 
         return null;
     }
 
-    public bool HasCharacter()
+    private Transform GetSelectedCharacterRoot()
     {
-        return !string.IsNullOrWhiteSpace(currentCharacterId);
+        if (selectedCharacterRoot != null)
+            return selectedCharacterRoot;
+
+        Transform found = transform.Find("SelectedCharacterRoot");
+
+        if (found != null)
+        {
+            selectedCharacterRoot = found;
+            return selectedCharacterRoot;
+        }
+
+        GameObject rootObject = new GameObject("SelectedCharacterRoot", typeof(RectTransform));
+        RectTransform rootRect = rootObject.GetComponent<RectTransform>();
+        rootRect.SetParent(transform, false);
+        rootRect.anchorMin = Vector2.zero;
+        rootRect.anchorMax = Vector2.one;
+        rootRect.offsetMin = Vector2.zero;
+        rootRect.offsetMax = Vector2.zero;
+        rootRect.localScale = Vector3.one;
+
+        selectedCharacterRoot = rootRect;
+        return selectedCharacterRoot;
     }
 
-    public void OnPointerClick(PointerEventData eventData)
+    private void SetupSelectedObjectTransform(Transform target)
     {
-        if (IsEmpty)
+        if (target == null)
             return;
 
-        Clear();
+        RectTransform rect = target as RectTransform;
+
+        if (rect != null)
+        {
+            rect.localScale = Vector3.one;
+            rect.localRotation = Quaternion.identity;
+
+            if (stretchSelectedRectTransform)
+            {
+                rect.anchorMin = Vector2.zero;
+                rect.anchorMax = Vector2.one;
+                rect.offsetMin = Vector2.zero;
+                rect.offsetMax = Vector2.zero;
+                rect.anchoredPosition = Vector2.zero;
+            }
+            else
+            {
+                rect.anchoredPosition = Vector2.zero;
+            }
+
+            return;
+        }
+
+        target.localPosition = Vector3.zero;
+        target.localRotation = Quaternion.identity;
+        target.localScale = Vector3.one;
+    }
+
+    private void DestroySelectedObject()
+    {
+        if (currentSelectedObject == null)
+            return;
+
+        Destroy(currentSelectedObject);
+        currentSelectedObject = null;
+    }
+
+    private void AutoPrepareReferences()
+    {
+        if (emptySlotObject == null)
+        {
+            Transform emptyChild = transform.Find("EmptySlotObject");
+
+            if (emptyChild != null)
+                emptySlotObject = emptyChild.gameObject;
+        }
+
+        if (emptySlotImage == null)
+        {
+            if (emptySlotObject != null)
+                emptySlotImage = emptySlotObject.GetComponent<Image>();
+
+            if (emptySlotImage == null)
+                emptySlotImage = GetComponent<Image>();
+        }
+
+        if (selectedCharacterRoot == null)
+        {
+            Transform root = transform.Find("SelectedCharacterRoot");
+
+            if (root != null)
+                selectedCharacterRoot = root;
+        }
     }
 }

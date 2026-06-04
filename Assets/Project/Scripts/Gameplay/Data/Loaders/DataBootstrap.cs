@@ -12,11 +12,12 @@ namespace Relic.Gameplay.Data
         private SkillIconDatabase skillIconDatabase;
         private MonsterPrefabDatabase monsterPrefabDatabase;
         private CharacterIconDatabase characterIconDatabase;
+        private MapNodeIconDatabase mapNodeIconDatabase;
         public CharacterDatabase CharacterDatabase { get; } = new();
         public MonsterDatabase MonsterDatabase { get; } = new();
         public SkillDatabase SkillDatabase { get; } = new();
         public EffectDatabase EffectDatabase { get; } = new();
-        public FragmentDatabase FragmentDatabase { get; } = new();
+        public RelicDatabase RelicDatabase { get; } = new();
         public RangeDatabase RangeDatabase { get; } = new();
         public AssetDatabase AssetDatabase { get; } = new();
         public QuestDatabase QuestDatabase { get; } = new();
@@ -43,6 +44,10 @@ namespace Relic.Gameplay.Data
         public void SetCharacterIconDatabase(CharacterIconDatabase db)
         {
             characterIconDatabase = db;
+        }
+        public void SetMapNodeIconDatabase(MapNodeIconDatabase db)
+        {
+            mapNodeIconDatabase = db;
         }
         public void LoadAllData()
         {
@@ -71,7 +76,7 @@ namespace Relic.Gameplay.Data
             var monsters = MonsterCsvLoader.Load(workbook);
             var skills = SkillCsvLoader.LoadSkills(workbook);
             var effects = EffectCsvLoader.Load(workbook);
-            var fragments = FragmentCsvLoader.Load(workbook);
+            var relics = RelicCsvLoader.Load(workbook);
             var ranges = RangeCsvLoader.Load(workbook);
             var assets = AssetCsvLoader.Load(workbook);
             var quests = QuestCsvLoader.Load(workbook);
@@ -91,14 +96,9 @@ namespace Relic.Gameplay.Data
             InjectMonsterPrefabs(monsters);
 
             CharacterDatabase.Initialize(characters);
-            Debug.Log($"[Before Init] characters count = {characters.Count}");
-
-            foreach (var c in characters)
-            {
-                Debug.Log($"[Before Init] id='{c.CharacterId}' name='{c.Name}'");
-            }
             MonsterDatabase.Initialize(monsters);
             EffectDatabase.Initialize(effects);
+           
 
             //파싱
             foreach (var skill in skills)
@@ -108,10 +108,6 @@ namespace Relic.Gameplay.Data
             foreach (var range in ranges)
             {
                 RangeParser.Parse(range);
-            }
-            foreach (var fragment in fragments)
-            {
-                fragment.EffectEntries = SkillEffectParser.Parse(fragment, EffectDatabase);
             }
             foreach (var enhance in skillEnhances)
             {
@@ -127,10 +123,14 @@ namespace Relic.Gameplay.Data
             {
                 rune.EffectEntries = SkillEffectParser.Parse(rune, EffectDatabase);
             }
+            foreach (var relic in relics)
+            {
+                relic.EffectEntries = SkillEffectParser.Parse(relic, EffectDatabase);
+            }
 
             // DB 초기화
+            RelicDatabase.Initialize(relics);
             SkillDatabase.Initialize(skills);
-            FragmentDatabase.Initialize(fragments);
             RangeDatabase.Initialize(ranges);
             SkillEnhanceDatabase.Initialize(skillEnhances);
             MonsterSkillDatabase.Initialize(monsterSkills);
@@ -141,9 +141,6 @@ namespace Relic.Gameplay.Data
             RewardTableDatabase.Initialize(rewardTables, rewardEntries);
             MapDatabase.Initialize(maps);
             BattleMapDatabase.Initialize(battleMapDataList);
-
-            Debug.Log($"[DataBootstrap] Character Loaded: {characters.Count}");
-            Debug.Log("[DataBootstrap] Workbook load complete.");
         }
 
         private void InjectCharacterPrefabs(List<CharacterMasterData> characters)

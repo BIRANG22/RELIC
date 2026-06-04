@@ -22,24 +22,6 @@ public static class SkillEffectParser
         );
     }
 
-    // Fragment용
-    public static List<SkillEffectEntry> Parse(
-        FragmentData fragment,
-        EffectDatabase effectDatabase)
-    {
-        if (fragment == null)
-            return new List<SkillEffectEntry>();
-
-        return ParseInternal(
-            fragment.EffectIds,
-            fragment.ValueCalcTypes,
-            fragment.ValueRate,
-            fragment.CountCalcTypes,
-            fragment.CountRate,
-            effectDatabase
-        );
-    }
-
     // 강화 스킬
     public static List<SkillEffectEntry> Parse(
     SkillEnhanceData data,
@@ -91,6 +73,23 @@ public static class SkillEffectParser
             data.ValueRate,
             data.CountCalcTypes,
             data.CountRate,
+            effectDatabase
+        );
+    }
+
+    public static List<SkillEffectEntry> Parse(
+    RelicData relic,
+    EffectDatabase effectDatabase)
+    {
+        if (relic == null)
+            return new List<SkillEffectEntry>();
+
+        return ParseInternal(
+            relic.EffectIds,
+            relic.ValueCalcTypes,
+            relic.ValueRate,
+            relic.CountCalcTypes,
+            relic.CountRate,
             effectDatabase
         );
     }

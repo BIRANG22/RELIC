@@ -1,6 +1,7 @@
 using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Setting : MonoBehaviour
 {
@@ -19,39 +20,117 @@ public class Setting : MonoBehaviour
     [SerializeField] private TMP_Text characterLevelText;
     [SerializeField] private TMP_Text characterExpText;
 
+    [Header("Preset UI")]
+    [SerializeField] private Button[] presetButtons = new Button[4];
+    [SerializeField] private Color presetNormalColor = Color.white;
+    [SerializeField] private Color presetSelectedColor = new Color(1f, 0.78f, 0.25f, 1f);
+
+    [Header("Setting Area Tabs")]
+    [SerializeField] private GameObject skillArea;
+    [SerializeField] private GameObject runeArea;
+    [SerializeField] private Button skillButton;
+    [SerializeField] private Button runeButton;
+    [SerializeField] private Color tabNormalColor = Color.white;
+    [SerializeField] private Color tabSelectedColor = new Color(1f, 0.78f, 0.25f, 1f);
+
+    [Header("Fixed Info Areas")]
+    [SerializeField] private RectTransform skillInfoArea;
+    [SerializeField] private RectTransform runeInfoArea;
+
+    [Header("Warning UI")]
+    [SerializeField] private SettingWarningUI warningUI;
+
     private string currentCharacterId;
     private CharacterMasterData currentMasterData;
     private CharacterRuntimeData currentRuntimeData;
 
+    private int currentPartyIndex = -1;
+    private bool isSkillTabOpen = true;
+
     private void Awake()
     {
+        if (warningUI == null)
+            warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
+
         if (runeSettingPanelScript != null)
             runeSettingPanelScript.OnRuneChanged += RefreshCharacterInfo;
+
+        InitPresetButtons();
+        InitTabButtons();
+    }
+
+    private void Start()
+    {
+        ShowSkillSetting();
     }
 
     private void OnDestroy()
     {
         if (runeSettingPanelScript != null)
             runeSettingPanelScript.OnRuneChanged -= RefreshCharacterInfo;
+
+        if (skillButton != null)
+            skillButton.onClick.RemoveListener(ShowSkillSetting);
+
+        if (runeButton != null)
+            runeButton.onClick.RemoveListener(ShowRuneSetting);
+    }
+
+    private void InitPresetButtons()
+    {
+        if (presetButtons == null)
+            return;
+
+        for (int i = 0; i < presetButtons.Length; i++)
+        {
+            if (presetButtons[i] == null)
+                continue;
+
+            int presetIndex = i;
+            presetButtons[i].onClick.RemoveAllListeners();
+            presetButtons[i].onClick.AddListener(() => SelectPreset(presetIndex));
+        }
+    }
+
+    private void InitTabButtons()
+    {
+        if (skillButton != null)
+        {
+            skillButton.onClick.RemoveListener(ShowSkillSetting);
+            skillButton.onClick.AddListener(ShowSkillSetting);
+        }
+
+        if (runeButton != null)
+        {
+            runeButton.onClick.RemoveListener(ShowRuneSetting);
+            runeButton.onClick.AddListener(ShowRuneSetting);
+        }
     }
 
     public void OpenCharacterSetting(string characterId)
     {
+        SaveBeforeBattle();
+
+        currentPartyIndex = -1;
+
         if (string.IsNullOrWhiteSpace(characterId))
         {
             Clear();
+            ShowWarning("선택된 캐릭터가 없습니다.");
             return;
         }
 
         if (DataManager.Instance == null)
         {
             Clear();
+            ShowWarning("DataManager가 없습니다.");
             return;
         }
 
         if (!DataManager.Instance.CharacterDatabase.TryGet(characterId, out currentMasterData))
         {
             Clear();
+            ShowWarning("캐릭터 데이터를 찾을 수 없습니다.");
             return;
         }
 
@@ -61,23 +140,23 @@ public class Setting : MonoBehaviour
         if (currentRuntimeData == null)
         {
             Clear();
+            ShowWarning("캐릭터 런타임 데이터를 찾을 수 없습니다.");
             return;
         }
 
-        RefreshCharacterInfo();
-
-        if (skillSettingPanelScript != null)
-            skillSettingPanelScript.OpenCharacterSetting(characterId);
-
-        if (runeSettingPanelScript != null)
-            runeSettingPanelScript.OpenCharacterSetting(characterId);
+        RefreshAllPanels();
     }
 
     public void OpenPartySetting(int partyIndex)
     {
+        SaveBeforeBattle();
+
+        currentPartyIndex = partyIndex;
+
         if (DataManager.Instance == null)
         {
             Clear();
+            ShowWarning("DataManager가 없습니다.");
             return;
         }
 
@@ -86,10 +165,109 @@ public class Setting : MonoBehaviour
         if (string.IsNullOrWhiteSpace(characterId))
         {
             Clear();
+            ShowWarning("해당 파티 슬롯에 캐릭터가 없습니다.");
             return;
         }
 
         OpenCharacterSetting(characterId);
+        currentPartyIndex = partyIndex;
+    }
+
+    private void RefreshAllPanels()
+    {
+        RefreshCharacterInfo();
+        RefreshPresetButtons();
+
+        if (skillSettingPanelScript != null)
+            skillSettingPanelScript.OpenCharacterSetting(currentCharacterId);
+
+        if (runeSettingPanelScript != null)
+            runeSettingPanelScript.OpenCharacterSetting(currentCharacterId);
+
+        if (isSkillTabOpen)
+            ShowSkillSetting();
+        else
+            ShowRuneSetting();
+    }
+
+    public void SelectPreset(int presetIndex)
+    {
+        if (currentRuntimeData == null)
+        {
+            ShowWarning("캐릭터를 먼저 선택해야 합니다.");
+            return;
+        }
+
+        SaveBeforeBattle();
+
+        /*
+         * 여기서 실제 프리셋 데이터 저장을 연결하면 됨.
+         * 예:
+         * currentRuntimeData.ActivePresetIndex = presetIndex;
+         *
+         * 단, CharacterRuntimeData에 ActivePresetIndex가 아직 없다면
+         * 먼저 필드를 추가해야 함.
+         */
+
+        RefreshAllPanels();
+    }
+
+    public void OnClickPresetA() => SelectPreset(0);
+    public void OnClickPresetB() => SelectPreset(1);
+    public void OnClickPresetC() => SelectPreset(2);
+    public void OnClickPresetD() => SelectPreset(3);
+
+    public void ShowSkillSetting()
+    {
+        isSkillTabOpen = true;
+
+        if (skillArea != null)
+            skillArea.SetActive(true);
+
+        if (runeArea != null)
+            runeArea.SetActive(false);
+
+        if (skillSettingPanelScript != null)
+            skillSettingPanelScript.SetSkillSelectPanelVisible(true);
+
+        if (skillInfoArea != null)
+            skillInfoArea.gameObject.SetActive(true);
+
+        if (runeInfoArea != null)
+            runeInfoArea.gameObject.SetActive(false);
+
+        if (InfoTooltip.Instance != null)
+        {
+            InfoTooltip.Instance.SetFixedRoot(skillInfoArea);
+            InfoTooltip.Instance.ClearFixedText();
+        }
+
+        RefreshTabButtons();
+    }
+
+    public void ShowRuneSetting()
+    {
+        isSkillTabOpen = false;
+
+        if (skillArea != null)
+            skillArea.SetActive(false);
+
+        if (runeArea != null)
+            runeArea.SetActive(true);
+
+        if (skillInfoArea != null)
+            skillInfoArea.gameObject.SetActive(false);
+
+        if (runeInfoArea != null)
+            runeInfoArea.gameObject.SetActive(true);
+
+        if (InfoTooltip.Instance != null)
+        {
+            InfoTooltip.Instance.SetFixedRoot(runeInfoArea);
+            InfoTooltip.Instance.ClearFixedText();
+        }
+
+        RefreshTabButtons();
     }
 
     public void SaveBeforeBattle()
@@ -126,6 +304,7 @@ public class Setting : MonoBehaviour
         currentCharacterId = null;
         currentMasterData = null;
         currentRuntimeData = null;
+        currentPartyIndex = -1;
 
         if (characterNameText != null)
             characterNameText.text = "";
@@ -141,6 +320,8 @@ public class Setting : MonoBehaviour
 
         if (characterExpText != null)
             characterExpText.text = "";
+
+        RefreshPresetButtons();
     }
 
     private void RefreshCharacterLevelInfo()
@@ -153,5 +334,109 @@ public class Setting : MonoBehaviour
 
         if (characterExpText != null)
             characterExpText.text = "EXP " + currentRuntimeData.Exp;
+    }
+
+    public void OnClickTestLevelDown()
+    {
+        if (currentRuntimeData == null)
+        {
+            ShowWarning("캐릭터를 먼저 선택해야 합니다.");
+            return;
+        }
+
+        currentRuntimeData.Level = Mathf.Max(1, currentRuntimeData.Level - 1);
+        RefreshAfterLevelChanged();
+    }
+
+    public void OnClickTestLevelUp()
+    {
+        if (currentRuntimeData == null)
+        {
+            ShowWarning("캐릭터를 먼저 선택해야 합니다.");
+            return;
+        }
+
+        currentRuntimeData.Level += 1;
+        RefreshAfterLevelChanged();
+    }
+
+    public void SetTestLevelDirect(int level)
+    {
+        if (currentRuntimeData == null)
+        {
+            ShowWarning("캐릭터를 먼저 선택해야 합니다.");
+            return;
+        }
+
+        currentRuntimeData.Level = Mathf.Max(1, level);
+        RefreshAfterLevelChanged();
+    }
+
+    private void RefreshAfterLevelChanged()
+    {
+        SaveBeforeBattle();
+
+        RefreshCharacterInfo();
+        RefreshPresetButtons();
+
+        if (skillSettingPanelScript != null)
+            skillSettingPanelScript.RefreshByCurrentLevel();
+
+        if (runeSettingPanelScript != null)
+            runeSettingPanelScript.RefreshByCurrentLevel();
+
+        if (characterInfoPanel != null)
+            characterInfoPanel.Refresh();
+    }
+
+    private void RefreshPresetButtons()
+    {
+        if (presetButtons == null)
+            return;
+
+        /*
+         * CharacterRuntimeData에 ActivePresetIndex 같은 값이 있다면 여기 연결.
+         * 지금은 임시로 선택 없음 처리.
+         */
+        int activePresetIndex = -1;
+
+        for (int i = 0; i < presetButtons.Length; i++)
+        {
+            if (presetButtons[i] == null)
+                continue;
+
+            Image image = presetButtons[i].GetComponent<Image>();
+
+            if (image != null)
+                image.color = i == activePresetIndex ? presetSelectedColor : presetNormalColor;
+        }
+    }
+
+    private void RefreshTabButtons()
+    {
+        SetButtonColor(skillButton, isSkillTabOpen ? tabSelectedColor : tabNormalColor);
+        SetButtonColor(runeButton, isSkillTabOpen ? tabNormalColor : tabSelectedColor);
+    }
+
+    private void SetButtonColor(Button button, Color color)
+    {
+        if (button == null)
+            return;
+
+        Image image = button.GetComponent<Image>();
+
+        if (image != null)
+            image.color = color;
+    }
+
+    private void ShowWarning(string message)
+    {
+        if (warningUI == null)
+            warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
+
+        if (warningUI != null)
+            warningUI.Show(message);
+        else
+            Debug.LogWarning("[Setting] " + message);
     }
 }

@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff59a99fca07b8a4f95e5835b0d044ba, type: 3}
+  m_Name: StatusEffectIconDatabase
+  m_EditorClassIdentifier: 
+  entries:
+  - EffectId: E_Strength
+    Icon: {fileID: 21300000, guid: 31dd33e007cb5664bb33d57e00495822, type: 3}
+  - EffectId: E_Thorns
+    Icon: {fileID: 21300000, guid: 7c2b14369cfebbc4e9cc0228c5f8cb27, type: 3}
+  - EffectId: E_Recharge
+    Icon: {fileID: 21300000, guid: 68d155026d2b4c449921a988502c8c02, type: 3}
+  - EffectId: E_Burn
+    Icon: {fileID: 21300000, guid: 2f36f6c2e353e1148af2113d4881846d, type: 3}
+  - EffectId: E_Bleed
+    Icon: {fileID: 21300000, guid: d36214ef5dc403b47a308056977771b0, type: 3}
+  - EffectId: E_Poison
+    Icon: {fileID: 21300000, guid: 5a6906fb61381bf49ad1a1dab297f183, type: 3}
+  - EffectId: E_Vulnerable
+    Icon: {fileID: 21300000, guid: 09545009da7132d49864823d710dfe79, type: 3}
+  - EffectId: E_Weaken
+    Icon: {fileID: 21300000, guid: 14830df844e32ba439ef5aaaf591ced9, type: 3}
+  - EffectId: E_Silence
+    Icon: {fileID: 21300000, guid: 43f9dafa6667a114ea0d1917adce7153, type: 3}
+  - EffectId: E_Block
+    Icon: {fileID: 21300000, guid: f690ed4362d85e94badd9ebab7f8c906, type: 3}
+  - EffectId: E_Haste
+    Icon: {fileID: 21300000, guid: febe5f0d680105e43b3868ab27187932, type: 3}

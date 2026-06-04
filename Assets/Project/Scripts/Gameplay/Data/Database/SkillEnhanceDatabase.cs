@@ -26,8 +26,6 @@ namespace Relic.Gameplay.Data
 
                 map.Add(key, data);
             }
-
-            Debug.Log($"[SkillEnhanceDatabase] Loaded: {map.Count}");
         }
 
         public SkillEnhanceData Get(string name, int enhancementLevel)

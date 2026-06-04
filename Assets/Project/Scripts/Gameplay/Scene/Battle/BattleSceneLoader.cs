@@ -1,24 +1,34 @@
 using System.Collections;
+using System.Collections.Generic;
+using Relic.Gameplay.Data;
 using UnityEngine;
 
 public class BattleSceneLoader : MonoBehaviour
 {
-    [Header("References")]
+    [Header("Spawner")]
     [SerializeField] private BattleUnitSpawner unitSpawner;
     [SerializeField] private BattleMonsterSpawner monsterSpawner;
-    [SerializeField] private GameObject loadingPanel;
-    [SerializeField] private BattlePlacementController placementController;
+
+    [Header("HUD")]
+    [SerializeField] private Transform playerHudRoot;
+    [SerializeField] private Transform monsterHudRoot;
+    [SerializeField] private PlayerHUDSlot playerHudPrefab;
+    [SerializeField] private MonsterHUDSlot monsterHudPrefab;
 
     [Header("Debug")]
     [SerializeField] private bool createDebugDataIfEmpty = true;
     [SerializeField] private BattleDebugDataProvider debugDataProvider;
 
+    [Header("HUD Layout")]
+    [SerializeField] private float hudScale = 0.4f;
+
+    [SerializeField] private float hudStartY = 80f;
+    [SerializeField] private float hudYGap = -40f;
+
+    [SerializeField] private float playerHudX = 60f;
+    [SerializeField] private float monsterHudX = 50f;
     private IEnumerator Start()
     {
-        Debug.Log("[BattleSceneLoader] Start");
-
-        SetLoading(true);
-
         yield return null;
 
         if (DataManager.Instance == null)
@@ -27,20 +37,14 @@ public class BattleSceneLoader : MonoBehaviour
             yield break;
         }
 
-        Debug.Log("[BattleSceneLoader] DataManager found");
-
         DataManager.Instance.Initialize();
 
         yield return null;
-
-        Debug.Log($"[BattleSceneLoader] HasAnyCharacter: {DataManager.Instance.PartyRuntimeStore.HasAnyCharacter}");
 
         PrintPartyData();
 
         if (!DataManager.Instance.PartyRuntimeStore.HasAnyCharacter)
         {
-            Debug.Log("[BattleSceneLoader] Party empty. Create debug data.");
-
             if (!createDebugDataIfEmpty)
             {
                 Debug.LogError("[BattleSceneLoader] 파티 데이터가 없습니다.");
@@ -53,52 +57,58 @@ public class BattleSceneLoader : MonoBehaviour
                 yield break;
             }
 
-            debugProviderCheck();
-
             debugDataProvider.CreateDebugData();
-
-            Debug.Log("[BattleSceneLoader] Debug data created");
-
             PrintPartyData();
         }
 
         yield return null;
 
-        Debug.Log("[BattleSceneLoader] Spawn start");
-
-        if (placementController != null && placementController.NeedsPlacement())
-        {
-            placementController.BeginPlacement();
-        }
-        else
-        {
-            unitSpawner.SpawnFromRuntimeData();
-        }
-
-        SpawnMonstersFromBattleMap();
-
-        Debug.Log("[BattleSceneLoader] Spawn end");
-
-        yield return null;
-
-        SetLoading(false);
-
-        Debug.Log("[BattleSceneLoader] Battle scene ready.");
+        SpawnPlayersAndHUD();
+        SpawnMonstersAndHUD();
     }
 
-    private void PrintPartyData()
+    private void SpawnPlayersAndHUD()
     {
-        var party = DataManager.Instance.PartyRuntimeStore;
+        List<CharacterRuntimeData> playerRuntimes =
+            unitSpawner.SpawnFromRuntimeData();
 
-        Debug.Log("[BattleSceneLoader] Party Data");
+        if (playerRuntimes == null)
+            return;
 
-        for (int i = 0; i < party.MaxPartyCountValue; i++)
+        for (int i = 0; i < playerRuntimes.Count; i++)
         {
-            Debug.Log($"Slot {i}: {party.GetCharacterId(i)} / Grid {party.GetGridIndex(i)}");
+            CreatePlayerHUD(playerRuntimes[i], i);
         }
     }
 
-    private void SpawnMonstersFromBattleMap()
+    private void CreatePlayerHUD(CharacterRuntimeData runtimeData, int index)
+    {
+        if (runtimeData == null)
+            return;
+
+        if (playerHudPrefab == null || playerHudRoot == null)
+        {
+            Debug.LogWarning("[BattleSceneLoader] Player HUD 참조가 없습니다.");
+            return;
+        }
+
+        PlayerHUDSlot hud = Instantiate(playerHudPrefab, playerHudRoot);
+
+        RectTransform rect = hud.GetComponent<RectTransform>();
+
+        if (rect != null)
+        {
+            rect.localScale = Vector3.one * hudScale;
+            rect.anchoredPosition = new Vector2(
+                playerHudX,
+                hudStartY + index * hudYGap
+            );
+        }
+
+        hud.Bind(runtimeData);
+    }
+
+    private void SpawnMonstersAndHUD()
     {
         var mapRuntime = DataManager.Instance.MapRuntimeStore.Get();
 
@@ -118,28 +128,54 @@ public class BattleSceneLoader : MonoBehaviour
 
         var spawns = DataManager.Instance.BattleMapDatabase.GetSpawns(mapData.BattleMapId);
 
-        Debug.Log($"[BattleSceneLoader] CurrentMapId: {mapRuntime.CurrentMapId}");
-        Debug.Log($"[BattleSceneLoader] BattleMapId: {mapData.BattleMapId}");
-
-        foreach (var spawn in spawns)
-        {
-            Debug.Log($"Spawn Monster: {spawn.MonsterId}, Cells: {string.Join(", ", spawn.GetOccupiedCells())}");
-        }
+        int index = 0;
 
         foreach (var spawnData in spawns)
         {
-            monsterSpawner.Spawn(spawnData);
+            MonsterRuntimeData monsterRuntime = monsterSpawner.Spawn(spawnData);
+
+            if (monsterRuntime != null)
+            {
+                CreateMonsterHUD(monsterRuntime, index);
+                index++;
+            }
         }
     }
 
-    private void debugProviderCheck()
+    private void CreateMonsterHUD(MonsterRuntimeData runtimeData, int index)
     {
-        Debug.Log($"[BattleSceneLoader] Debug Provider: {debugDataProvider.name}");
+        if (runtimeData == null)
+            return;
+
+        if (monsterHudPrefab == null || monsterHudRoot == null)
+        {
+            Debug.LogWarning("[BattleSceneLoader] Monster HUD 참조가 없습니다.");
+            return;
+        }
+
+        MonsterHUDSlot hud = Instantiate(monsterHudPrefab, monsterHudRoot);
+
+        RectTransform rect = hud.GetComponent<RectTransform>();
+
+        if (rect != null)
+        {
+            rect.localScale = Vector3.one * hudScale;
+            rect.anchoredPosition = new Vector2(
+                monsterHudX,
+                hudStartY + index * hudYGap
+            );
+        }
+
+        hud.Bind(runtimeData);
     }
 
-    private void SetLoading(bool value)
+    private void PrintPartyData()
     {
-        if (loadingPanel != null)
-            loadingPanel.SetActive(value);
+        var party = DataManager.Instance.PartyRuntimeStore;
+
+        for (int i = 0; i < party.MaxPartyCountValue; i++)
+        {
+            Debug.Log($"Slot {i}: {party.GetCharacterId(i)} / Grid {party.GetGridIndex(i)}");
+        }
     }
 }

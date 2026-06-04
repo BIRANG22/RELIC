@@ -16,11 +16,8 @@ namespace Relic.Gameplay.Data
                     !string.IsNullOrWhiteSpace(id))
                 .ToList();
 
-            Debug.Log($"[CharacterCsvLoader] rows={rows.Count}, validRows={validRows.Count}");
 
             var list = DataRowMapper.MapList<CharacterMasterData>(validRows);
-
-            Debug.Log($"[CharacterCsvLoader] mapped count={list.Count}");
 
             return list;
         }

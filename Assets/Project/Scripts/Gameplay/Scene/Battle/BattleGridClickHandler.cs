@@ -4,10 +4,8 @@ using UnityEngine;
 public class BattleGridClickHandler : MonoBehaviour
 {
     [SerializeField] private int gridIndex;
-    [SerializeField] private BattlePlacementController placementController;
     [SerializeField] private PlayerActionPlanner actionPlanner;
 
-    private bool isPlacementMode;
     private bool isSkillTargetMode;
 
 #if UNITY_EDITOR
@@ -22,44 +20,23 @@ public class BattleGridClickHandler : MonoBehaviour
 
     private void OnMouseDown()
     {
-        if (!isPlacementMode && !isSkillTargetMode)
+        if (!isSkillTargetMode)
             return;
 
         OnClickGrid();
     }
 
-    public void SetPlacementMode(bool value)
-    {
-        isPlacementMode = value;
-
-        if (value)
-            isSkillTargetMode = false;
-    }
-
     public void SetSkillTargetMode(bool value)
     {
         isSkillTargetMode = value;
-
-        if (value)
-            isPlacementMode = false;
     }
 
     public void OnClickGrid()
     {
-        if (isPlacementMode)
-        {
-            if (placementController != null)
-                placementController.SelectGrid(gridIndex);
-
+        if (!isSkillTargetMode)
             return;
-        }
 
-        if (isSkillTargetMode)
-        {
-            if (actionPlanner != null)
-                actionPlanner.SelectTargetGrid(gridIndex);
-
-            return;
-        }
+        if (actionPlanner != null)
+            actionPlanner.SelectTargetGrid(gridIndex);
     }
 }

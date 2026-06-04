@@ -1,0 +1,177 @@
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+using Relic.Gameplay.Data;
+
+public class MapViewSpawner : MonoBehaviour
+{
+    [SerializeField] private MapNodeView nodePrefab;
+    [SerializeField] private MapLineView linePrefab;
+
+    [SerializeField] private RectTransform nodeRoot;
+    [SerializeField] private RectTransform lineRoot;
+
+    private readonly Dictionary<int, MapNodeView> spawnedNodes = new();
+
+    public void Spawn(
+        List<GeneratedMapNodeData> nodes,
+        Action<GeneratedMapNodeData> onNodeClicked)
+    {
+        Debug.Log($"[MapViewSpawner] Spawn 호출됨 / Count: {nodes?.Count}");
+
+        Clear();
+
+        if (nodes == null || nodes.Count == 0)
+            return;
+
+        if (nodePrefab == null || linePrefab == null)
+        {
+            Debug.LogWarning("[MapViewSpawner] NodePrefab 또는 LinePrefab이 연결되지 않았습니다.");
+            return;
+        }
+
+        if (nodeRoot == null || lineRoot == null)
+        {
+            Debug.LogWarning("[MapViewSpawner] NodeRoot 또는 LineRoot가 연결되지 않았습니다.");
+            return;
+        }
+
+        MapRuntimeData runtime = DataManager.Instance.MapRuntimeStore.Get();
+        MapNodeIconDatabase iconDatabase = DataManager.Instance.MapNodeIconDatabase;
+
+        for (int i = 0; i < nodes.Count; i++)
+        {
+            GeneratedMapNodeData data = nodes[i];
+
+            MapNodeView node = Instantiate(nodePrefab, nodeRoot);
+
+            RectTransform rect = node.GetComponent<RectTransform>();
+
+            if (rect != null)
+            {
+                rect.anchorMin = new Vector2(0.5f, 0.5f);
+                rect.anchorMax = new Vector2(0.5f, 0.5f);
+                rect.pivot = new Vector2(0.5f, 0.5f);
+                rect.anchoredPosition = data.Position;
+                rect.localScale = Vector3.one;
+                rect.localRotation = Quaternion.identity;
+            }
+
+            bool canClick = IsNodeClickable(data, nodes, runtime);
+
+            node.Setup(data, iconDatabase, onNodeClicked, canClick);
+
+            spawnedNodes[data.NodeIndex] = node;
+        }
+
+        for (int i = 0; i < nodes.Count; i++)
+        {
+            GeneratedMapNodeData from = nodes[i];
+
+            for (int j = 0; j < from.NextNodeIndices.Count; j++)
+            {
+                int toIndex = from.NextNodeIndices[j];
+
+                GeneratedMapNodeData to = GetNodeData(nodes, toIndex);
+
+                if (to == null)
+                    continue;
+
+                CreateLine(from.Position, to.Position);
+            }
+        }
+    }
+
+    private bool IsNodeClickable(
+     GeneratedMapNodeData node,
+     List<GeneratedMapNodeData> nodes,
+     MapRuntimeData runtime)
+    {
+        if (node == null || runtime == null)
+            return false;
+
+        // 처음 맵을 열었을 때는 Start만 클릭 가능
+        if (string.IsNullOrWhiteSpace(runtime.CurrentMapId))
+            return node.Type == "Start";
+
+        // 현재 위치가 Start면 Start와 연결된 다음 노드만 클릭 가능
+        if (runtime.CurrentMapId == "Start")
+        {
+            GeneratedMapNodeData startNode = FindStartNode(nodes);
+
+            if (startNode == null)
+                return false;
+
+            return startNode.NextNodeIndices.Contains(node.NodeIndex);
+        }
+
+        // 현재 선택된 노드의 다음 연결 노드만 클릭 가능
+        GeneratedMapNodeData currentNode = FindNodeByMapId(
+            nodes,
+            runtime.CurrentMapId
+        );
+
+        if (currentNode == null)
+            return false;
+
+        return currentNode.NextNodeIndices.Contains(node.NodeIndex);
+    }
+
+    private GeneratedMapNodeData FindStartNode(List<GeneratedMapNodeData> nodes)
+    {
+        for (int i = 0; i < nodes.Count; i++)
+        {
+            if (nodes[i].Type == "Start")
+                return nodes[i];
+        }
+
+        return null;
+    }
+
+    private GeneratedMapNodeData FindNodeByMapId(
+        List<GeneratedMapNodeData> nodes,
+        string mapId)
+    {
+        for (int i = 0; i < nodes.Count; i++)
+        {
+            if (nodes[i].MapId == mapId)
+                return nodes[i];
+        }
+
+        return null;
+    }
+
+    private GeneratedMapNodeData GetNodeData(List<GeneratedMapNodeData> nodes, int nodeIndex)
+    {
+        for (int i = 0; i < nodes.Count; i++)
+        {
+            if (nodes[i].NodeIndex == nodeIndex)
+                return nodes[i];
+        }
+
+        return null;
+    }
+
+    private void CreateLine(Vector2 from, Vector2 to)
+    {
+        MapLineView line = Instantiate(linePrefab, lineRoot);
+        line.Setup(from, to);
+    }
+
+    private void Clear()
+    {
+        spawnedNodes.Clear();
+
+        if (nodeRoot != null)
+        {
+            for (int i = nodeRoot.childCount - 1; i >= 0; i--)
+                Destroy(nodeRoot.GetChild(i).gameObject);
+        }
+
+        if (lineRoot != null)
+        {
+            for (int i = lineRoot.childCount - 1; i >= 0; i--)
+                Destroy(lineRoot.GetChild(i).gameObject);
+        }
+    }
+}

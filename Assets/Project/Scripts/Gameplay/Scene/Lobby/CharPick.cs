@@ -7,10 +7,7 @@ using Relic.Gameplay.Data;
 public class CharPick : MonoBehaviour
 {
     [Header("Buttons")]
-    [SerializeField] private List<CharBtn> charBtns = new List<CharBtn>();
-
-    [Header("Party Slots")]
-    [SerializeField] private List<PartySlot> partySlots = new List<PartySlot>();
+    [SerializeField] private List<CharBtn> charBtns = new();
 
     [Header("Preview")]
     [SerializeField] private Transform previewRoot;
@@ -37,6 +34,7 @@ public class CharPick : MonoBehaviour
     [SerializeField] private float moveSpeed = 12f;
     [SerializeField] private float scaleSpeed = 12f;
 
+    [SerializeField] private float previewScale = 4f;
     private int centerIndex = 0;
 
     private bool isDragging;
@@ -60,19 +58,11 @@ public class CharPick : MonoBehaviour
                 charBtns[i].Init(this);
         }
 
-        for (int i = 0; i < partySlots.Count; i++)
-        {
-            if (partySlots[i] != null)
-                partySlots[i].Init(this, i);
-        }
-
         RefreshInstant();
 
         if (charBtns.Count > 0 && charBtns[centerIndex] != null)
         {
-            CharBtn centerBtn = charBtns[centerIndex];
-
-            CreateOrUpdateRuntimeData(centerBtn);
+            CreateOrUpdateRuntimeData(charBtns[centerIndex]);
             RefreshCenterInfo();
         }
     }
@@ -102,7 +92,89 @@ public class CharPick : MonoBehaviour
             return;
         }
 
-        ToggleChar(btn);
+        SelectCharacter(btn);
+    }
+
+    private void SelectCharacter(CharBtn btn)
+    {
+        if (btn == null)
+            return;
+
+        if (btn.IsLocked)
+        {
+            Debug.Log("아직 잠긴 캐릭터입니다.");
+            return;
+        }
+
+        string characterId = btn.CharacterId;
+
+        if (string.IsNullOrWhiteSpace(characterId))
+        {
+            Debug.LogWarning("[CharPick] CharacterId is empty.");
+            return;
+        }
+
+        CreateOrUpdateRuntimeData(btn);
+
+        if (setting != null)
+            setting.OpenCharacterSetting(characterId);
+    }
+
+    private void CreateOrUpdateRuntimeData(CharBtn btn)
+    {
+        if (btn == null)
+            return;
+
+        if (DataManager.Instance == null)
+        {
+            Debug.LogWarning("[CharPick] DataManager instance is missing.");
+            return;
+        }
+
+        string characterId = btn.CharacterId;
+
+        if (string.IsNullOrWhiteSpace(characterId))
+            return;
+
+        if (!DataManager.Instance.CharacterDatabase.TryGet(characterId, out var master))
+        {
+            Debug.LogWarning("[CharPick] Character master not found: " + characterId);
+            return;
+        }
+
+        var runtimeStore = DataManager.Instance.CharacterRuntimeStore;
+
+        if (runtimeStore.TryGet(characterId, out var runtime))
+            return;
+
+        runtime = new CharacterRuntimeData
+        {
+            CharacterId = master.CharacterId,
+            Level = 1,
+            Exp = 0,
+
+            CurrentHealth = master.MaxHealth,
+            CurrentStamina = master.MaxStamina,
+            CurrentResource = master.MaxResource,
+            CurrentMoveLevel = 1,
+
+            IsUnlocked = master.IsDefaultProvided,
+
+            PassiveSkillId = master.PassiveSkill1,
+            UniqueSkillId = master.UniqueSkill1,
+            AbilitySkillId1 = master.CharacterSkill1,
+            AbilitySkillId2 = master.CommonSkill1,
+
+            EquippedSkillIds = new string[4]
+            {
+                master.PassiveSkill1,
+                master.UniqueSkill1,
+                master.CharacterSkill1,
+                master.CommonSkill1
+            }
+        };
+
+        runtimeStore.AddOrUpdate(runtime);
     }
 
     public void BeginDrag(PointerEventData eventData)
@@ -136,122 +208,6 @@ public class CharPick : MonoBehaviour
     public void EndDrag(PointerEventData eventData)
     {
         isDragging = false;
-    }
-
-    private void ToggleChar(CharBtn btn)
-    {
-        if (btn == null)
-            return;
-
-        if (btn.IsLocked)
-        {
-            Debug.Log("아직 잠긴 캐릭터입니다.");
-            return;
-        }
-
-        string characterId = btn.CharacterId;
-
-        if (string.IsNullOrWhiteSpace(characterId))
-        {
-            Debug.LogWarning("[CharPick] CharacterId is empty.");
-            return;
-        }
-
-        CreateOrUpdateRuntimeData(btn);
-
-        if (IsSelected(characterId))
-        {
-            RemoveChar(characterId);
-            return;
-        }
-
-        AddChar(characterId);
-    }
-
-    private void CreateOrUpdateRuntimeData(CharBtn btn)
-    {
-        if (DataManager.Instance == null)
-        {
-            Debug.LogWarning("[CharPick] DataManager instance is missing.");
-            return;
-        }
-
-        string characterId = btn.CharacterId;
-
-        if (!DataManager.Instance.CharacterDatabase.TryGet(characterId, out var master))
-        {
-            Debug.LogWarning($"[CharPick] Character master not found: {characterId}");
-            return;
-        }
-
-        var runtimeStore = DataManager.Instance.CharacterRuntimeStore;
-
-        if (runtimeStore.TryGet(characterId, out var runtime))
-        {
-            Debug.Log("[CharacterRuntime] Already Exists");
-            return;
-        }
-
-        runtime = new CharacterRuntimeData
-        {
-            CharacterId = master.CharacterId,
-            Level = 1,
-            Exp = 0,
-            CurrentHealth = master.MaxHealth,
-            CurrentStamina = master.MaxStamina,
-            CurrentResource = master.MaxResource,
-            IsUnlocked = master.IsDefaultProvided
-        };
-
-        runtimeStore.AddOrUpdate(runtime);
-        Debug.Log("[CharacterRuntime] Created");
-    }
-
-    private void AddChar(string characterId)
-    {
-        for (int i = 0; i < partySlots.Count; i++)
-        {
-            if (partySlots[i] != null && partySlots[i].IsEmpty)
-            {
-                partySlots[i].SetChar(characterId);
-                
-                if (setting != null)
-                    setting.OpenCharacterSetting(characterId);
-
-                return;
-            }
-        }
-
-        Debug.Log("파티 슬롯이 가득 찼습니다.");
-    }
-
-    public void RemoveChar(string characterId)
-    {
-        for (int i = 0; i < partySlots.Count; i++)
-        {
-            if (partySlots[i] != null &&
-                partySlots[i].CurrentCharacterId == characterId)
-            {
-                partySlots[i].Clear();
-
-                if (setting != null)
-                    setting.Clear();
-
-                return;
-            }
-        }
-    }
-
-    private bool IsSelected(string characterId)
-    {
-        for (int i = 0; i < partySlots.Count; i++)
-        {
-            if (partySlots[i] != null &&
-                partySlots[i].CurrentCharacterId == characterId)
-                return true;
-        }
-
-        return false;
     }
 
     private void Next()
@@ -291,6 +247,7 @@ public class CharPick : MonoBehaviour
 
         string characterId = centerBtn.CharacterId;
 
+        CreateOrUpdateRuntimeData(centerBtn);
         ShowPreview(characterId);
 
         if (setting != null && !string.IsNullOrWhiteSpace(characterId))
@@ -319,16 +276,16 @@ public class CharPick : MonoBehaviour
         if (DataManager.Instance.CharacterPrefabDatabase == null)
             return;
 
-        if (!DataManager.Instance.CharacterPrefabDatabase.TryGetPrefab(characterId, out var prefab))
+        if (!DataManager.Instance.CharacterPrefabDatabase.TryGetPreviewUIPrefab(characterId, out var prefab))
             return;
 
         if (prefab == null)
             return;
 
         currentPreview = Instantiate(prefab, previewRoot);
-        currentPreview.transform.localPosition = Vector3.zero;
+        currentPreview.transform.localPosition = new Vector3(0f, 200f, 0f);
         currentPreview.transform.localRotation = Quaternion.identity;
-        currentPreview.transform.localScale = Vector3.one;
+        currentPreview.transform.localScale = Vector3.one * previewScale;
 
         PlayPreviewBackgroundAnim();
     }
@@ -497,13 +454,5 @@ public class CharPick : MonoBehaviour
             return 1;
 
         return 999;
-    }
-
-    public void OpenPartySetting(int partyIndex)
-    {
-        if (setting == null)
-            return;
-
-        setting.OpenPartySetting(partyIndex);
     }
 }

@@ -54,12 +54,12 @@ public class GameStateMachine
             return;
         }
 
+        Debug.Log($"[GameStateMachine] ChangeState Start: {CurrentStateType} -> {newStateType}");
+
         isChangingState = true;
 
         try
         {
-            Debug.Log($"[GameStateMachine] ChangeState: {CurrentStateType} -> {newStateType}");
-
             if (CurrentState != null)
             {
                 await CurrentState.Exit();
@@ -72,5 +72,7 @@ public class GameStateMachine
         {
             isChangingState = false;
         }
+
+        Debug.Log($"[GameStateMachine] ChangeState Complete: {CurrentStateType}");
     }
 }

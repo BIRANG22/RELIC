@@ -183,6 +183,14 @@ namespace Relic.Gameplay.Battle
                 return;
 
             PlannedSkillEntry removedEntry = plannedList[iconIndex];
+
+            if (slot.HasOwnerCharacter &&
+                TryGetActorRuntimeData(slot.OwnerCharacter.CharacterId, out CharacterRuntimeData runtimeData))
+            {
+                SkillMasterData skillData = DataManager.Instance.SkillDatabase.Get(removedEntry.SkillId);
+                RefundSkillCost(runtimeData, skillData, removedEntry.PreviewCost);
+            }
+
             plannedList.RemoveAt(iconIndex);
             slot.RemoveSkillAt(iconIndex);
 
@@ -242,32 +250,33 @@ namespace Relic.Gameplay.Battle
             if (slotIndex < 0)
                 return;
 
-            bool added = currentSlot.AddSkill(currentSkillData.Icon);
+            if (!TryGetActorRuntimeData(currentCharacter.CharacterId, out CharacterRuntimeData actorRuntimeData))
+                return;
+
+            int currentResource = SkillCostCalculator.GetCurrentResource(
+                actorRuntimeData,
+                currentSkillData.ReferenceResource
+            );
+
+            int previewCost = precomputedPreviewCost;
+
+            if (previewCost < 0)
+            {
+                if (!CanPaySkillCostWithAvailable(currentSkillData, currentResource, out previewCost))
+                    return;
+            }
+
+            bool added = currentSlot.AddSkill(
+                SkillIconUtility.GetSkillIcon(currentSkillData.SkillId)
+            );
+
             if (!added)
                 return;
 
             if (!currentSlot.HasOwnerCharacter)
                 currentSlot.SetOwnerCharacter(currentCharacter);
 
-            int previewCost = precomputedPreviewCost;
-            if (previewCost < 0)
-            {
-                if (!TryGetActorRuntimeData(currentCharacter.CharacterId, out CharacterRuntimeData actorRuntimeData))
-                {
-                    currentSlot.RemoveSkillAt(currentSlot.SkillCount - 1);
-                    return;
-                }
-
-                int reservedCost = GetReservedCostByCharacter(currentCharacter.CharacterId, currentSkillData.ReferenceResource);
-                int currentResource = SkillCostCalculator.GetCurrentResource(actorRuntimeData, currentSkillData.ReferenceResource);
-                int availableResource = currentResource - reservedCost;
-
-                if (!CanPaySkillCostWithAvailable(currentSkillData, availableResource, out previewCost))
-                {
-                    currentSlot.RemoveSkillAt(currentSlot.SkillCount - 1);
-                    return;
-                }
-            }
+            SpendSkillCost(actorRuntimeData, currentSkillData, previewCost);
 
             TimelineActionData action = new TimelineActionData
             {
@@ -733,6 +742,88 @@ namespace Relic.Gameplay.Battle
             }
 
             return -1;
+        }
+
+        private void SpendSkillCost(
+    CharacterRuntimeData runtimeData,
+    SkillMasterData skillData,
+    int cost
+)
+        {
+            if (runtimeData == null || skillData == null)
+                return;
+
+            if (cost <= 0)
+                return;
+
+            switch (skillData.ReferenceResource)
+            {
+                case ReferenceResource.Stamina:
+                    runtimeData.CurrentStamina = Mathf.Max(0, runtimeData.CurrentStamina - cost);
+                    break;
+
+                case ReferenceResource.Health:
+                    runtimeData.CurrentHealth = Mathf.Max(0, runtimeData.CurrentHealth - cost);
+                    break;
+
+                case ReferenceResource.UniqueResource:
+                    runtimeData.CurrentResource = Mathf.Max(0, runtimeData.CurrentResource - cost);
+                    break;
+
+                case ReferenceResource.MovePoint:
+                    runtimeData.CurrentMoveLevel = Mathf.Max(0, runtimeData.CurrentMoveLevel - cost);
+                    break;
+            }
+
+            DataManager.Instance.CharacterRuntimeStore.AddOrUpdate(runtimeData);
+        }
+
+        private void RefundSkillCost(
+            CharacterRuntimeData runtimeData,
+            SkillMasterData skillData,
+            int cost
+        )
+        {
+            if (runtimeData == null || skillData == null)
+                return;
+
+            if (cost <= 0)
+                return;
+
+            CharacterMasterData masterData = DataManager.Instance.CharacterDatabase.Get(runtimeData.CharacterId);
+
+            switch (skillData.ReferenceResource)
+            {
+                case ReferenceResource.Stamina:
+                    runtimeData.CurrentStamina = Mathf.Min(
+                        masterData.MaxStamina,
+                        runtimeData.CurrentStamina + cost
+                    );
+                    break;
+
+                case ReferenceResource.Health:
+                    runtimeData.CurrentHealth = Mathf.Min(
+                        masterData.MaxHealth,
+                        runtimeData.CurrentHealth + cost
+                    );
+                    break;
+
+                case ReferenceResource.UniqueResource:
+                    runtimeData.CurrentResource = Mathf.Min(
+                        masterData.MaxResource,
+                        runtimeData.CurrentResource + cost
+                    );
+                    break;
+
+                case ReferenceResource.MovePoint:
+                    runtimeData.CurrentMoveLevel = Mathf.Min(
+                        masterData.MoveValue,
+                        runtimeData.CurrentMoveLevel + cost
+                    );
+                    break;
+            }
+
+            DataManager.Instance.CharacterRuntimeStore.AddOrUpdate(runtimeData);
         }
     }
 }
