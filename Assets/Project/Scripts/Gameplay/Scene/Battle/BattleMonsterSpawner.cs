@@ -12,7 +12,7 @@ public class BattleMonsterSpawner : MonoBehaviour
     [SerializeField] private string spawnPointName = "Point";
     [SerializeField] private float unitSpawnZOffset = 0.01f;
 
-    public MonsterRuntimeData Spawn(BattleMapData spawnData)
+    public SpawnedMonsterResult Spawn(BattleMapData spawnData)
     {
         if (spawnData == null)
             return null;
@@ -81,7 +81,11 @@ public class BattleMonsterSpawner : MonoBehaviour
 
         monsterUnit.Initialize(runtimeData);
 
-        return runtimeData;
+        return new SpawnedMonsterResult
+        {
+            RuntimeData = runtimeData,
+            MonsterTransform = monster.transform
+        };
     }
 
     private Transform FindGridByIndex(int gridIndex)

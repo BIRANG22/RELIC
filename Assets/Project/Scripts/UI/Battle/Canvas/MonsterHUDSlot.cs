@@ -30,6 +30,17 @@ public class MonsterHUDSlot : MonoBehaviour
         Refresh();
     }
 
+    public void Show()
+    {
+        gameObject.SetActive(true);
+        Refresh();
+    }
+
+    public void Hide()
+    {
+        gameObject.SetActive(false);
+    }
+
     public void Refresh()
     {
         if (boundRuntime == null)
@@ -103,6 +114,7 @@ public class MonsterHUDSlot : MonoBehaviour
 
     private Sprite GetMonsterIcon(string monsterId)
     {
+        // 나중에 MonsterIconDatabase 있으면 여기서 연결
         return null;
     }
 

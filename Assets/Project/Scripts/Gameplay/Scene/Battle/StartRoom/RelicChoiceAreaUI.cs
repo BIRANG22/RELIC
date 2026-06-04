@@ -18,6 +18,8 @@ public class RelicChoiceAreaUI : MonoBehaviour
     [SerializeField] private int maxRelicNumber = 20;
     [SerializeField] private string relicIdPrefix = "Relic_";
 
+    [Header("Complete")]
+    [SerializeField] private BattleMapController battleMapController;
     public void Open()
     {
         gameObject.SetActive(true);
@@ -68,8 +70,10 @@ public class RelicChoiceAreaUI : MonoBehaviour
 
         Debug.Log($"[RelicChoiceAreaUI] Relic choice finished: {relicId}");
 
-        // 여기서 다음 처리
-        // 예: 맵 패널 다시 열기, 시작룸 종료 등
+        if (battleMapController != null)
+            battleMapController.OpenMap();
+        else
+            Debug.LogWarning("[RelicChoiceAreaUI] BattleMapController가 연결되지 않았습니다.");
     }
 
     private void Clear()

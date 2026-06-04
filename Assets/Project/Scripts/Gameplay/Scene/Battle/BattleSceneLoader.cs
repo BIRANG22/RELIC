@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using UnityEngine;
@@ -21,25 +20,42 @@ public class BattleSceneLoader : MonoBehaviour
 
     [Header("HUD Layout")]
     [SerializeField] private float hudScale = 0.4f;
-
     [SerializeField] private float hudStartY = 80f;
     [SerializeField] private float hudYGap = -40f;
-
     [SerializeField] private float playerHudX = 60f;
-    [SerializeField] private float monsterHudX = 50f;
-    private IEnumerator Start()
+
+    [Header("Monster World HUD")]
+    [SerializeField] private RectTransform battleCanvasRect;
+    [SerializeField] private Camera worldCamera;
+    [SerializeField] private Camera uiCamera;
+
+    private bool isLoaded;
+
+    private void OnEnable()
     {
-        yield return null;
+        LoadBattle();
+    }
+
+    private void OnDisable()
+    {
+        isLoaded = false;
+        ClearHUD();
+    }
+
+    public void LoadBattle()
+    {
+        if (isLoaded)
+            return;
+
+        isLoaded = true;
 
         if (DataManager.Instance == null)
         {
             Debug.LogError("[BattleSceneLoader] DataManager가 없습니다.");
-            yield break;
+            return;
         }
 
         DataManager.Instance.Initialize();
-
-        yield return null;
 
         PrintPartyData();
 
@@ -48,20 +64,18 @@ public class BattleSceneLoader : MonoBehaviour
             if (!createDebugDataIfEmpty)
             {
                 Debug.LogError("[BattleSceneLoader] 파티 데이터가 없습니다.");
-                yield break;
+                return;
             }
 
             if (debugDataProvider == null)
             {
                 Debug.LogError("[BattleSceneLoader] DebugDataProvider가 없습니다.");
-                yield break;
+                return;
             }
 
             debugDataProvider.CreateDebugData();
             PrintPartyData();
         }
-
-        yield return null;
 
         SpawnPlayersAndHUD();
         SpawnMonstersAndHUD();
@@ -69,6 +83,12 @@ public class BattleSceneLoader : MonoBehaviour
 
     private void SpawnPlayersAndHUD()
     {
+        if (unitSpawner == null)
+        {
+            Debug.LogError("[BattleSceneLoader] UnitSpawner가 없습니다.");
+            return;
+        }
+
         List<CharacterRuntimeData> playerRuntimes =
             unitSpawner.SpawnFromRuntimeData();
 
@@ -76,9 +96,7 @@ public class BattleSceneLoader : MonoBehaviour
             return;
 
         for (int i = 0; i < playerRuntimes.Count; i++)
-        {
             CreatePlayerHUD(playerRuntimes[i], i);
-        }
     }
 
     private void CreatePlayerHUD(CharacterRuntimeData runtimeData, int index)
@@ -110,7 +128,13 @@ public class BattleSceneLoader : MonoBehaviour
 
     private void SpawnMonstersAndHUD()
     {
-        var mapRuntime = DataManager.Instance.MapRuntimeStore.Get();
+        if (monsterSpawner == null)
+        {
+            Debug.LogError("[BattleSceneLoader] MonsterSpawner가 없습니다.");
+            return;
+        }
+
+        MapRuntimeData mapRuntime = DataManager.Instance.MapRuntimeStore.Get();
 
         if (mapRuntime == null || string.IsNullOrWhiteSpace(mapRuntime.CurrentMapId))
         {
@@ -118,7 +142,7 @@ public class BattleSceneLoader : MonoBehaviour
             return;
         }
 
-        var mapData = DataManager.Instance.MapDatabase.Get(mapRuntime.CurrentMapId);
+        MapData mapData = DataManager.Instance.MapDatabase.Get(mapRuntime.CurrentMapId);
 
         if (mapData == null || string.IsNullOrWhiteSpace(mapData.BattleMapId))
         {
@@ -128,45 +152,76 @@ public class BattleSceneLoader : MonoBehaviour
 
         var spawns = DataManager.Instance.BattleMapDatabase.GetSpawns(mapData.BattleMapId);
 
-        int index = 0;
-
         foreach (var spawnData in spawns)
         {
-            MonsterRuntimeData monsterRuntime = monsterSpawner.Spawn(spawnData);
+            SpawnedMonsterResult result = monsterSpawner.Spawn(spawnData);
 
-            if (monsterRuntime != null)
-            {
-                CreateMonsterHUD(monsterRuntime, index);
-                index++;
-            }
+            if (result == null || result.RuntimeData == null || result.MonsterTransform == null)
+                continue;
+
+            MonsterHUDSlot hud = CreateMonsterHUD(
+                result.RuntimeData,
+                result.MonsterTransform
+            );
+
+            Relic.Gameplay.Monster.MonsterUnit monsterUnit =
+            result.MonsterTransform.GetComponent<Relic.Gameplay.Monster.MonsterUnit>();
+
+            if (monsterUnit != null)
+                monsterUnit.BindHUD(hud);
         }
     }
 
-    private void CreateMonsterHUD(MonsterRuntimeData runtimeData, int index)
+    private MonsterHUDSlot CreateMonsterHUD(
+        MonsterRuntimeData runtimeData,
+        Transform monsterTransform)
     {
-        if (runtimeData == null)
-            return;
+        if (runtimeData == null || monsterTransform == null)
+            return null;
 
         if (monsterHudPrefab == null || monsterHudRoot == null)
         {
             Debug.LogWarning("[BattleSceneLoader] Monster HUD 참조가 없습니다.");
-            return;
+            return null;
         }
 
         MonsterHUDSlot hud = Instantiate(monsterHudPrefab, monsterHudRoot);
+        hud.Bind(runtimeData);
+        hud.Hide();
 
         RectTransform rect = hud.GetComponent<RectTransform>();
 
         if (rect != null)
-        {
             rect.localScale = Vector3.one * hudScale;
-            rect.anchoredPosition = new Vector2(
-                monsterHudX,
-                hudStartY + index * hudYGap
+
+        WorldFollowHUD follow = hud.GetComponent<WorldFollowHUD>();
+
+        if (follow != null)
+        {
+            follow.Bind(
+                monsterTransform,
+                worldCamera != null ? worldCamera : Camera.main,
+                battleCanvasRect,
+                uiCamera
             );
         }
 
-        hud.Bind(runtimeData);
+        return hud;
+    }
+
+    private void ClearHUD()
+    {
+        if (playerHudRoot != null)
+        {
+            for (int i = playerHudRoot.childCount - 1; i >= 0; i--)
+                Destroy(playerHudRoot.GetChild(i).gameObject);
+        }
+
+        if (monsterHudRoot != null)
+        {
+            for (int i = monsterHudRoot.childCount - 1; i >= 0; i--)
+                Destroy(monsterHudRoot.GetChild(i).gameObject);
+        }
     }
 
     private void PrintPartyData()
