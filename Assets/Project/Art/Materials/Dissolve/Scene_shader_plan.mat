@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Scene_shader
+  m_Name: Scene_shader_plan
   m_Shader: {fileID: -6465566751694194690, guid: 0cd7e6a023286f54988b7ef006079979, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -107,16 +107,17 @@ Material:
     - _noisescale: 30
     - _noisewidth: 0.146
     m_Colors:
-    - _BaseColor: {r: 0.047058824, g: 0.047058824, b: 0.047058824, a: 1}
+    - _BaseColor: {r: 0.0470588, g: 0.0470588, b: 0.0470588, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _Edgecolor: {r: 1, g: 1, b: 1, a: 1}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
+    - _Vector2: {r: 0.5, g: 0.5, b: 0, a: 0}
     - _noisefloow: {r: 0, g: -0.1, b: 0, a: 0}
-    - _noiseflow: {r: 0.01, g: 0.1, b: 0, a: 0}
+    - _noiseflow: {r: 0.01, g: 0.05, b: 0, a: 0}
     - _noiseflow_1: {r: 0, g: 0, b: 0, a: 0}
     - _noiseoffset: {r: 0.7, g: 2.24, b: 0, a: 0}
     - _noiseoffset_1: {r: 0, g: 0, b: 0, a: 0}
-    - _noisetiling: {r: 2, g: 3, b: 0, a: 0}
+    - _noisetiling: {r: 2, g: 3.5, b: 0, a: 0}
     - _noisetiling_1: {r: 1, g: 1, b: 0, a: 0}
     - _sine: {r: 0.1, g: 0.1, b: 0, a: 0}
   m_BuildTextureStacks: []
