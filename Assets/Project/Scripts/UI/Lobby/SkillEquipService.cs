@@ -43,8 +43,6 @@ namespace Relic.Gameplay.Data
                 case SkillEquipSlotType.Ability2:
                     character.AbilitySkillId2 = skillId;
                     break;
-                case SkillEquipSlotType.Ability3:
-                    character.AbilitySkillId3 = skillId;
                     break;
                 case SkillEquipSlotType.Unique:
                     character.UniqueSkillId = skillId;

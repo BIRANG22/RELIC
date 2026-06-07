@@ -25,9 +25,9 @@ public class BattleCharacter : MonoBehaviour
         if (RuntimeData == null)
             return;
 
+        AddSkill(RuntimeData.MoveSkillId);
         AddSkill(RuntimeData.AbilitySkillId1);
         AddSkill(RuntimeData.AbilitySkillId2);
-        AddSkill(RuntimeData.AbilitySkillId3);
         AddSkill(RuntimeData.UniqueSkillId);
     }
 
@@ -38,6 +38,12 @@ public class BattleCharacter : MonoBehaviour
 
         if (DataManager.Instance == null)
             return;
+
+        for (int i = 0; i < equippedSkills.Count; i++)
+        {
+            if (equippedSkills[i] != null && equippedSkills[i].SkillId == skillId)
+                return;
+        }
 
         SkillMasterData skillData = DataManager.Instance.SkillDatabase.Get(skillId);
 

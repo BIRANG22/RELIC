@@ -7,12 +7,15 @@ public class BattleMonsterSpawner : MonoBehaviour
     [Header("Grid Root")]
     [SerializeField] private Transform gridRoot;
 
+    [Header("Spawn Root")]
+    [SerializeField] private Transform monsterRoot;
+
     [Header("Spawn Setting")]
     [SerializeField] private string gridNamePrefix = "Grid_";
     [SerializeField] private string spawnPointName = "Point";
     [SerializeField] private float unitSpawnZOffset = 0.01f;
 
-    public MonsterRuntimeData Spawn(BattleMapData spawnData)
+    public SpawnedMonsterResult Spawn(BattleMapData spawnData)
     {
         if (spawnData == null)
             return null;
@@ -62,7 +65,8 @@ public class BattleMonsterSpawner : MonoBehaviour
         GameObject monster = Instantiate(
             monsterData.BattlePrefab,
             spawnPosition,
-            Quaternion.identity
+            Quaternion.identity,
+            monsterRoot
         );
 
         string runtimeId = MonsterRuntimeIdGenerator.Create();
@@ -81,7 +85,11 @@ public class BattleMonsterSpawner : MonoBehaviour
 
         monsterUnit.Initialize(runtimeData);
 
-        return runtimeData;
+        return new SpawnedMonsterResult
+        {
+            RuntimeData = runtimeData,
+            MonsterTransform = monster.transform
+        };
     }
 
     private Transform FindGridByIndex(int gridIndex)

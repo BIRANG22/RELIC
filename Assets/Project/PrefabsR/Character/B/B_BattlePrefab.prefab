@@ -9,10 +9,11 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5019167909236436471}
-  - component: {fileID: 877246506160227762}
-  - component: {fileID: 6100611621994924741}
-  - component: {fileID: 5277252320299520518}
   - component: {fileID: 3709657211821925235}
+  - component: {fileID: 7581872610137752895}
+  - component: {fileID: 2838950015189938943}
+  - component: {fileID: 703034747818951370}
+  - component: {fileID: 2144322180777675410}
   m_Layer: 0
   m_Name: B_BattlePrefab
   m_TagString: Untagged
@@ -36,135 +37,6 @@ Transform:
   - {fileID: 7258120374073178037}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &877246506160227762
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2993180762807099658}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a6c85874761ec5e4eb65571e9eaf61de, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  side: 0
-  unitIndex: 0
-  unitName: KATANA
-  portraitSprite: {fileID: 0}
-  allyBuild:
-    characterData: {fileID: 0}
-    finalStats:
-      maxHp: 0
-      maxStamina: 0
-      staminaRecoveryPerTurn: 0
-      moveValue: 0
-      moveSkillLevel: 1
-    equippedRunes: []
-    equippedSkills: []
-    skillLevelResults: []
-    moveSkillResult:
-      skillData: {fileID: 0}
-      baseLevel: 0
-      runeBonusLevel: 0
-      eventBonusLevel: 0
-      finalLevel: 0
-      levelData:
-        level: 1
-        staminaCost: 0
-        hpCost: 0
-        value: 0
-        hitCount: 1
-        effectType: 0
-        damageType: 0
-        extraEffectType: 0
-        extraEffectValue: 0
-        rangeData: {fileID: 0}
-    activePresetIndex: 0
-    activePresetName: 
-  monsterData: {fileID: 0}
-  currentHp: 0
-  maxHp: 0
-  currentStamina: 0
-  maxStamina: 0
-  currentUniqueResource: 0
-  maxUniqueResource: 0
-  uniqueResourceIcon: {fileID: 0}
-  currentArmor: 0
-  currentStrength: 0
-  currentFocus: 0
-  currentQuick: 0
-  currentRecharge: 0
-  currentHeavyStrike: 0
-  currentPoison: 0
-  currentBurn: 0
-  currentBleed: 0
-  currentWeakness: 0
-  currentVulnerable: 0
-  currentSilence: 0
-  currentBlock: 0
-  currentErosion: 0
-  currentGrudge: 0
-  currentVeil: 0
-  activeStatusEffects: []
-  previewStatusEffects: []
-  reservedStaminaCost: 0
-  reservedUniqueResourceCost: 0
---- !u!114 &6100611621994924741
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2993180762807099658}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a292bfb062f1ff24baeed169d10c9198, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  spriteRoot: {fileID: 7258120374073178037}
-  defaultFacingRight: 1
-  startFacingRight: 1
-  minHorizontalDelta: 0.01
---- !u!114 &5277252320299520518
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2993180762807099658}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ddd6f3b6b38fb284995fb19f338d56ba, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  animator: {fileID: 7112751082941974288}
-  isMovingParameter: IsMoving
-  attackTriggerParameter: Attack
-  hitTriggerParameter: Hit
-  deadTriggerParameter: Dead
-  exhaustTriggerParameter: Exhaust
-  playStateDirectly: 1
-  idleStateName: Idle
-  moveStateName: Move
-  controlStateName: Control
-  guardStateName: Guard
-  hitStateName: Hit
-  deadStateName: Dead
-  exhaustStateName: Exhaust
-  attackReady1StateName: AttackReady1
-  attackAction1StateName: AttackAction1
-  attackReady2StateName: AttackReady2
-  attackAction2StateName: AttackAction2
-  attackReady3StateName: AttackReady3
-  attackAction3StateName: AttackAction3
-  animatorLayer: 0
-  crossFadeDuration: 0
-  forceAnimatorUpdate: 1
-  autoFindAnimatorInChildren: 1
-  logDebug: 1
-  logMissingAnimator: 1
-  logMissingParameters: 0
 --- !u!61 &3709657211821925235
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -211,6 +83,114 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 4, y: 8}
   m_EdgeRadius: 0
+--- !u!114 &7581872610137752895
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2993180762807099658}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 846a9e67db6820742bed9200ba1f9afb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spriteRoot: {fileID: 7258120374073178037}
+  defaultFacingRight: 1
+  startFacingRight: 1
+  minHorizontalDelta: 0.01
+--- !u!114 &2838950015189938943
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2993180762807099658}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65329b3ce76752d4b9607a6211627f3d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: 7112751082941974288}
+  isMovingParameter: IsMoving
+  attackTriggerParameter: Attack
+  hitTriggerParameter: Hit
+  deadTriggerParameter: Dead
+  exhaustTriggerParameter: Exhaust
+  playStateDirectly: 1
+  idleStateName: Idle
+  moveStateName: Move
+  controlStateName: Control
+  guardStateName: Guard
+  hitStateName: Hit
+  deadStateName: Dead
+  exhaustStateName: Exhaust
+  attackReady1StateName: AttackReady1
+  attackAction1StateName: AttackAction1
+  attackReady2StateName: AttackReady2
+  attackAction2StateName: AttackAction2
+  attackReady3StateName: AttackReady3
+  attackAction3StateName: AttackAction3
+  animatorLayer: 0
+  crossFadeDuration: 0
+  forceAnimatorUpdate: 0
+  autoFindAnimatorInChildren: 1
+--- !u!114 &703034747818951370
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2993180762807099658}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63eca4e001bc2844c9504e343be1fec3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &2144322180777675410
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2993180762807099658}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 0}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &7813837078036421253
 GameObject:
   m_ObjectHideFlags: 0
@@ -222,6 +202,7 @@ GameObject:
   - component: {fileID: 7258120374073178037}
   - component: {fileID: 517318981075019661}
   - component: {fileID: 7112751082941974288}
+  - component: {fileID: 8364045236987537049}
   m_Layer: 0
   m_Name: SpriteRoot
   m_TagString: Untagged
@@ -285,8 +266,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 1965798861
-  m_SortingLayer: 2
+  m_SortingLayerID: 1597553239
+  m_SortingLayer: 4
   m_SortingOrder: 0
   m_Sprite: {fileID: -1963990187, guid: a932a7a836706a14081d9f72919a35c8, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -321,3 +302,17 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &8364045236987537049
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7813837078036421253}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33c392ea8bf721f4f9b83ea336edc598, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sortingOrderOffset: 0
+  yMultiplier: 100

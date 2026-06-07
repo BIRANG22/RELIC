@@ -129,8 +129,7 @@ public class CharBtn : MonoBehaviour,
                 PassiveSkillId = master.PassiveSkill1,
                 UniqueSkillId = master.UniqueSkill1,
                 AbilitySkillId1 = master.CharacterSkill1,
-                AbilitySkillId2 = master.CharacterSkill2,
-                AbilitySkillId3 = master.CommonSkill1,
+                AbilitySkillId2 = master.CommonSkill1,
 
                 EquippedSkillIds = new string[4]
                 {

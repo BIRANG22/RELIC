@@ -7,17 +7,39 @@ namespace Relic.Gameplay.Data
     {
         public string EffectId;
         public int Stack;
-        public int RemainingTurn;
 
         public StatusEffectRuntimeData()
         {
         }
 
-        public StatusEffectRuntimeData(string effectId, int stack, int remainingTurn)
+        public StatusEffectRuntimeData(string effectId, int stack)
         {
             EffectId = effectId;
             Stack = stack;
-            RemainingTurn = remainingTurn;
+        }
+
+        public bool IsValid()
+        {
+            return !string.IsNullOrWhiteSpace(EffectId) && Stack > 0;
+        }
+
+        public void AddStack(int amount)
+        {
+            if (amount <= 0)
+                return;
+
+            Stack += amount;
+        }
+
+        public void RemoveStack(int amount)
+        {
+            if (amount <= 0)
+                return;
+
+            Stack -= amount;
+
+            if (Stack < 0)
+                Stack = 0;
         }
     }
 }

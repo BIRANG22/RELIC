@@ -83,29 +83,18 @@ public class MapViewSpawner : MonoBehaviour
     }
 
     private bool IsNodeClickable(
-     GeneratedMapNodeData node,
-     List<GeneratedMapNodeData> nodes,
-     MapRuntimeData runtime)
+    GeneratedMapNodeData node,
+    List<GeneratedMapNodeData> nodes,
+    MapRuntimeData runtime)
     {
         if (node == null || runtime == null)
             return false;
 
-        // 처음 맵을 열었을 때는 Start만 클릭 가능
+        // 아직 아무 노드도 방문하지 않았으면 Start만 클릭 가능
         if (string.IsNullOrWhiteSpace(runtime.CurrentMapId))
             return node.Type == "Start";
 
-        // 현재 위치가 Start면 Start와 연결된 다음 노드만 클릭 가능
-        if (runtime.CurrentMapId == "Start")
-        {
-            GeneratedMapNodeData startNode = FindStartNode(nodes);
-
-            if (startNode == null)
-                return false;
-
-            return startNode.NextNodeIndices.Contains(node.NodeIndex);
-        }
-
-        // 현재 선택된 노드의 다음 연결 노드만 클릭 가능
+        // 현재 위치 노드 찾기
         GeneratedMapNodeData currentNode = FindNodeByMapId(
             nodes,
             runtime.CurrentMapId
@@ -114,6 +103,7 @@ public class MapViewSpawner : MonoBehaviour
         if (currentNode == null)
             return false;
 
+        // 현재 노드와 연결된 다음 노드만 클릭 가능
         return currentNode.NextNodeIndices.Contains(node.NodeIndex);
     }
 

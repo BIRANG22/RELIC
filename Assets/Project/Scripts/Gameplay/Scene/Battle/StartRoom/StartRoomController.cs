@@ -14,6 +14,18 @@ public class StartRoomController : MonoBehaviour
     [TextArea]
     [SerializeField] private string[] npcDialogLines;
 
+    [SerializeField] private GameObject startRoomRoot;
+    [SerializeField] private GameObject mapPanel;
+
+    public void CompleteStartRoom()
+    {
+        if (startRoomRoot != null)
+            startRoomRoot.SetActive(false);
+
+        if (mapPanel != null)
+            mapPanel.SetActive(true);
+    }
+
     private void OnEnable()
     {
         SpawnPartyAllies();

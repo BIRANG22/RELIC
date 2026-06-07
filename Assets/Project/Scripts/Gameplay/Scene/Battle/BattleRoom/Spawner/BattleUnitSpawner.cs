@@ -7,6 +7,9 @@ public class BattleUnitSpawner : MonoBehaviour
     [Header("Grid Root")]
     [SerializeField] private Transform gridRoot;
 
+    [Header("Spawn Root")]
+    [SerializeField] private Transform playerRoot;
+
     [Header("Spawn Setting")]
     [SerializeField] private string gridNamePrefix = "Grid_";
     [SerializeField] private string spawnPointName = "Point";
@@ -73,7 +76,8 @@ public class BattleUnitSpawner : MonoBehaviour
             GameObject unit = Instantiate(
                 characterData.BattlePrefab,
                 spawnPosition,
-                Quaternion.identity
+                Quaternion.identity,
+                playerRoot
             );
 
             BattleCharacter battleCharacter = unit.GetComponent<BattleCharacter>();
@@ -85,41 +89,6 @@ public class BattleUnitSpawner : MonoBehaviour
         }
 
         return spawnedRuntimes;
-    }
-
-    private Transform FindGridByIndex(int gridIndex)
-    {
-        if (gridRoot == null)
-        {
-            Debug.LogError("[BattleUnitSpawner] gridRoot가 연결되지 않았습니다.");
-            return null;
-        }
-
-        string gridName = $"{gridNamePrefix}{gridIndex:00}";
-
-        Transform child = gridRoot.Find(gridName);
-
-        if (child != null)
-            return child;
-
-        foreach (Transform t in gridRoot.GetComponentsInChildren<Transform>(true))
-        {
-            if (t.name == gridName)
-                return t;
-        }
-
-        return null;
-    }
-
-    private Transform FindSpawnPoint(Transform grid)
-    {
-        Transform point = grid.Find(spawnPointName);
-
-        if (point != null)
-            return point;
-
-        Debug.LogWarning($"[BattleUnitSpawner] {grid.name} 안에 {spawnPointName} 오브젝트가 없습니다. Grid 위치를 대신 사용합니다.");
-        return null;
     }
 
     public void SpawnSingleFromRuntimeData(int slotIndex)
@@ -178,7 +147,8 @@ public class BattleUnitSpawner : MonoBehaviour
         GameObject unit = Instantiate(
             characterData.BattlePrefab,
             spawnPosition,
-            Quaternion.identity
+            Quaternion.identity,
+            playerRoot
         );
 
         BattleCharacter battleCharacter = unit.GetComponent<BattleCharacter>();
@@ -187,5 +157,40 @@ public class BattleUnitSpawner : MonoBehaviour
             battleCharacter.Initialize(runtimeData);
 
         Debug.Log($"[BattleUnitSpawner] Spawn Single Slot {slotIndex}: {characterId} -> Grid_{gridIndex:00}");
+    }
+
+    private Transform FindGridByIndex(int gridIndex)
+    {
+        if (gridRoot == null)
+        {
+            Debug.LogError("[BattleUnitSpawner] gridRoot가 연결되지 않았습니다.");
+            return null;
+        }
+
+        string gridName = $"{gridNamePrefix}{gridIndex:00}";
+
+        Transform child = gridRoot.Find(gridName);
+
+        if (child != null)
+            return child;
+
+        foreach (Transform t in gridRoot.GetComponentsInChildren<Transform>(true))
+        {
+            if (t.name == gridName)
+                return t;
+        }
+
+        return null;
+    }
+
+    private Transform FindSpawnPoint(Transform grid)
+    {
+        Transform point = grid.Find(spawnPointName);
+
+        if (point != null)
+            return point;
+
+        Debug.LogWarning($"[BattleUnitSpawner] {grid.name} 안에 {spawnPointName} 오브젝트가 없습니다. Grid 위치를 대신 사용합니다.");
+        return null;
     }
 }
