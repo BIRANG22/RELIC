@@ -8,7 +8,7 @@ namespace Relic.Gameplay.Battle
         public int CurrentRound;
         public int CurrentTurn;
 
-        public List<PlayerUnit> PlayerUnits = new();
+        //public List<PlayerUnit> PlayerUnits = new();
 
         public List<MonsterUnit> MonsterUnits = new();
 

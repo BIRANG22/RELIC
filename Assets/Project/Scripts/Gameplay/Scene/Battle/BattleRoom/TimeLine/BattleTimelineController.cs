@@ -8,12 +8,19 @@ public class BattleTimelineController : MonoBehaviour
     [SerializeField] private BattleTimelineBarUI timelineBarUI;
     [SerializeField] private ReserveTurnSlotUI[] reserveSlots;
 
+    [Header("Reservation Preview")]
+    [SerializeField] private PlayerSkillReservationController playerSkillReservationController;
+
+    [Header("Grid")]
+    [SerializeField] private GridManager gridManager;
+
     private int activeSlotIndex = -1;
     private CharacterRuntimeData selectedCharacter;
     private SkillMasterData selectedSkill;
 
     private readonly List<MonsterReservedCommand>[] monsterCommandsBySlot =
-    new List<MonsterReservedCommand>[5];
+        new List<MonsterReservedCommand>[5];
+
     private void Awake()
     {
         InitializeMonsterCommandSlots();
@@ -42,7 +49,7 @@ public class BattleTimelineController : MonoBehaviour
     public void SelectSkill(SkillMasterData skillData)
     {
         selectedSkill = skillData;
-        TryReserveSelectedSkill();
+        TryStartSkillReservation();
     }
 
     public void OnTimelineSlotClicked(int slotIndex)
@@ -52,7 +59,185 @@ public class BattleTimelineController : MonoBehaviour
         if (timelineBarUI != null)
             timelineBarUI.SetActiveTimelineSlot(activeSlotIndex);
 
-        TryReserveSelectedSkill();
+        TryStartSkillReservation();
+    }
+
+    private void TryStartSkillReservation()
+    {
+        if (activeSlotIndex < 0)
+            return;
+
+        if (selectedCharacter == null || selectedSkill == null)
+            return;
+
+        if (reserveSlots == null || activeSlotIndex >= reserveSlots.Length)
+            return;
+
+        ReserveTurnSlotUI slot = reserveSlots[activeSlotIndex];
+
+        if (slot == null)
+            return;
+
+        PlayerReservedCommand costCheckCommand =
+            new PlayerReservedCommand(selectedCharacter, selectedSkill);
+
+        if (!CanReserveCommand(costCheckCommand))
+        {
+            selectedSkill = null;
+            return;
+        }
+
+        if (!slot.CanAcceptCharacter(selectedCharacter))
+        {
+            Debug.LogWarning("[BattleTimelineController] 이 타임라인 슬롯에는 이미 다른 캐릭터의 행동이 예약되어 있습니다.");
+            selectedSkill = null;
+            return;
+        }
+
+        int casterGridIndex = GetSelectedCharacterGridIndex();
+
+        if (casterGridIndex < 0)
+        {
+            Debug.LogWarning($"[BattleTimelineController] 캐릭터 위치를 찾을 수 없습니다: {selectedCharacter.CharacterId}");
+            selectedSkill = null;
+            return;
+        }
+
+        if (playerSkillReservationController == null)
+        {
+            Debug.LogWarning("[BattleTimelineController] PlayerSkillReservationController가 없습니다.");
+            selectedSkill = null;
+            return;
+        }
+
+        playerSkillReservationController.StartReservation(
+            selectedCharacter,
+            selectedSkill,
+            casterGridIndex,
+            activeSlotIndex,
+            GetSelectedCharacterSprite()
+        );
+
+        selectedSkill = null;
+    }
+
+    public bool ConfirmPlayerCommand(int slotIndex, PlayerReservedCommand command)
+    {
+        if (command == null)
+            return false;
+
+        if (reserveSlots == null)
+            return false;
+
+        if (slotIndex < 0 || slotIndex >= reserveSlots.Length)
+            return false;
+
+        ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+
+        if (slot == null)
+            return false;
+
+        if (!CanReserveCommand(command))
+            return false;
+
+        if (!slot.CanAcceptCharacter(command.UserRuntime))
+        {
+            Debug.LogWarning("[BattleTimelineController] 이 타임라인 슬롯에는 이미 다른 캐릭터의 행동이 예약되어 있습니다.");
+            return false;
+        }
+
+        bool added = slot.AddCommand(command);
+
+        if (!added)
+        {
+            Debug.LogWarning("[BattleTimelineController] 예약 슬롯이 가득 찼습니다.");
+            return false;
+        }
+
+        command.UserRuntime.AddReservedHealth(command.HealthCost);
+        command.UserRuntime.AddReservedStamina(command.StaminaCost);
+        command.UserRuntime.AddReservedResource(command.ResourceCost);
+        command.UserRuntime.AddReservedMove(command.MoveCost);
+        command.UserRuntime.AddReservedShield(command.ShieldCost);
+
+        RefreshTimeline();
+        RefreshPlayerHUDs();
+
+        return true;
+    }
+
+    private bool CanReserveCommand(PlayerReservedCommand command)
+    {
+        if (command == null || command.UserRuntime == null)
+            return false;
+
+        CharacterRuntimeData runtime = command.UserRuntime;
+
+        if (!runtime.CanReserveHealth(command.HealthCost) ||
+            !runtime.CanReserveStamina(command.StaminaCost) ||
+            !runtime.CanReserveResource(command.ResourceCost) ||
+            !runtime.CanReserveMove(command.MoveCost) ||
+            !runtime.CanReserveShield(command.ShieldCost))
+        {
+            Debug.LogWarning(
+                $"[BattleTimelineController] 자원 부족 / Character:{runtime.CharacterId} / " +
+                $"HP:{command.HealthCost} / STA:{command.StaminaCost} / RES:{command.ResourceCost} / " +
+                $"MOVE:{command.MoveCost} / SHIELD:{command.ShieldCost}"
+            );
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private int GetSelectedCharacterGridIndex()
+    {
+        if (selectedCharacter == null)
+            return -1;
+
+        if (DataManager.Instance == null)
+            return -1;
+
+        var partyStore = DataManager.Instance.PartyRuntimeStore;
+
+        for (int slotIndex = 0; slotIndex < partyStore.MaxPartyCountValue; slotIndex++)
+        {
+            string characterId = partyStore.GetCharacterId(slotIndex);
+
+            if (characterId != selectedCharacter.CharacterId)
+                continue;
+
+            return partyStore.GetGridIndex(slotIndex);
+        }
+
+        return -1;
+    }
+
+    private Sprite GetSelectedCharacterSprite()
+    {
+        BattleCharacter[] battleCharacters = FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < battleCharacters.Length; i++)
+        {
+            BattleCharacter battleCharacter = battleCharacters[i];
+
+            if (battleCharacter == null || battleCharacter.RuntimeData == null)
+                continue;
+
+            if (battleCharacter.RuntimeData.CharacterId != selectedCharacter.CharacterId)
+                continue;
+
+            SpriteRenderer spriteRenderer = battleCharacter.GetComponentInChildren<SpriteRenderer>();
+
+            if (spriteRenderer != null)
+                return spriteRenderer.sprite;
+        }
+
+        return null;
     }
 
     private void InitializeMonsterCommandSlots()
@@ -97,66 +282,6 @@ public class BattleTimelineController : MonoBehaviour
             monsterCommandsBySlot[i].Clear();
 
         RefreshTimeline();
-    }
-    private void TryReserveSelectedSkill()
-    {
-        if (activeSlotIndex < 0)
-            return;
-
-        if (selectedCharacter == null || selectedSkill == null)
-            return;
-
-        if (reserveSlots == null || activeSlotIndex >= reserveSlots.Length)
-            return;
-
-        ReserveTurnSlotUI slot = reserveSlots[activeSlotIndex];
-
-        if (slot == null)
-            return;
-
-        PlayerReservedCommand command =
-            new PlayerReservedCommand(selectedCharacter, selectedSkill);
-
-        if (!selectedCharacter.CanReserveHealth(command.HealthCost) ||
-            !selectedCharacter.CanReserveStamina(command.StaminaCost) ||
-            !selectedCharacter.CanReserveResource(command.ResourceCost) ||
-            !selectedCharacter.CanReserveMove(command.MoveCost) ||
-            !selectedCharacter.CanReserveShield(command.ShieldCost))
-        {
-            Debug.LogWarning(
-                $"[BattleTimelineController] 자원 부족 / Character:{selectedCharacter.CharacterId} / " +
-                $"HP:{command.HealthCost} / STA:{command.StaminaCost} / RES:{command.ResourceCost} / MOVE:{command.MoveCost} / SHIELD:{command.ShieldCost}"
-            );
-
-            selectedSkill = null;
-            return;
-        }
-
-        if (!slot.CanAcceptCharacter(selectedCharacter))
-        {
-            Debug.LogWarning("[BattleTimelineController] 이 타임라인 슬롯에는 이미 다른 캐릭터의 행동이 예약되어 있습니다.");
-            selectedSkill = null;
-            return;
-        }
-
-        bool added = slot.AddCommand(command);
-
-        if (!added)
-        {
-            Debug.LogWarning("[BattleTimelineController] 예약 슬롯이 가득 찼습니다.");
-            return;
-        }
-
-        selectedCharacter.AddReservedHealth(command.HealthCost);
-        selectedCharacter.AddReservedStamina(command.StaminaCost);
-        selectedCharacter.AddReservedResource(command.ResourceCost);
-        selectedCharacter.AddReservedMove(command.MoveCost);
-        selectedCharacter.AddReservedShield(command.ShieldCost);
-
-        selectedSkill = null;
-
-        RefreshTimeline();
-        RefreshPlayerHUDs();
     }
 
     public void RemoveCommand(int slotIndex, int orderIndex)

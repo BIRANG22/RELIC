@@ -1,5 +1,14 @@
+using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using UnityEngine;
+
+public enum BattleDirection
+{
+    Right,
+    Up,
+    Left,
+    Down
+}
 
 public class PlayerReservedCommand
 {
@@ -11,6 +20,14 @@ public class PlayerReservedCommand
     public int ResourceCost { get; private set; }
     public int MoveCost { get; private set; }
     public int ShieldCost { get; private set; }
+
+    public BattleDirection Direction { get; private set; } = BattleDirection.Right;
+    public int SelectedGridIndex { get; private set; } = -1;
+
+    public List<int> RangeGridIndices { get; private set; } = new();
+    public List<int> TargetGridIndices { get; private set; } = new();
+
+    public int ReservedMoveGridIndex { get; private set; } = -1;
 
     public string CharacterId => UserRuntime != null ? UserRuntime.CharacterId : "";
     public string SkillId => SkillData != null ? SkillData.SkillId : "";
@@ -24,12 +41,37 @@ public class PlayerReservedCommand
         CalculateCosts(skillData);
 
         Debug.Log(
-            $"[BattleReservedCommand] Skill:{SkillId} / " +
+            $"[PlayerReservedCommand] Skill:{SkillId} / " +
             $"Reference:{skillData?.ReferenceResource} / " +
             $"CostType:{skillData?.ResourceCostType} / " +
             $"CostValue:{skillData?.ResourceCostValue} / " +
             $"StaminaCost:{StaminaCost}"
         );
+    }
+
+    public void SetDirectionResult(
+        BattleDirection direction,
+        List<int> rangeGridIndices,
+        List<int> targetGridIndices)
+    {
+        Direction = direction;
+        SelectedGridIndex = -1;
+        ReservedMoveGridIndex = -1;
+
+        RangeGridIndices = rangeGridIndices != null ? new List<int>(rangeGridIndices) : new List<int>();
+        TargetGridIndices = targetGridIndices != null ? new List<int>(targetGridIndices) : new List<int>();
+    }
+
+    public void SetSelectionResult(
+        int selectedGridIndex,
+        List<int> rangeGridIndices)
+    {
+        Direction = BattleDirection.Right;
+        SelectedGridIndex = selectedGridIndex;
+        ReservedMoveGridIndex = selectedGridIndex;
+
+        RangeGridIndices = rangeGridIndices != null ? new List<int>(rangeGridIndices) : new List<int>();
+        TargetGridIndices = new List<int> { selectedGridIndex };
     }
 
     private void CalculateCosts(SkillMasterData skillData)

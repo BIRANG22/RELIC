@@ -1,90 +1,141 @@
-using UnityEngine;
+using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class GridManager : MonoBehaviour
 {
-    public int width = 5;
-    public int height = 4;
-    public float tileSize = 1f;
-    public GameObject tilePrefab;
+    [Header("Grid Size")]
+    [SerializeField] private int width = 7;
+    [SerializeField] private int height = 5;
 
-    private GridTile[,] tiles;
+    [Header("Cells")]
+    [SerializeField] private GridCell[] cells;
+
+    private GridCell[,] cellMap;
+
+    public event Action<GridCell> OnCellClicked;
+
+    public int Width => width;
+    public int Height => height;
 
     private void Awake()
     {
-        GenerateGrid();
+        InitializeCells();
     }
 
-    void GenerateGrid()
+    private void InitializeCells()
     {
-        tiles = new GridTile[width, height];
+        if (cells == null || cells.Length == 0)
+            cells = GetComponentsInChildren<GridCell>(true);
 
-        for (int x = 0; x < width; x++)
+        cellMap = new GridCell[width, height];
+
+        for (int i = 0; i < cells.Length; i++)
         {
-            for (int y = 0; y < height; y++)
-            {
-                Vector3 pos = transform.position +
-                              new Vector3(x * tileSize, 0.1f, y * tileSize);
+            GridCell cell = cells[i];
 
-                GameObject obj = Instantiate(tilePrefab, pos, tilePrefab.transform.rotation, transform);
+            if (cell == null)
+                continue;
 
-                GridTile tile = obj.GetComponent<GridTile>();
-                tile.Initialize(this, x, y);
+            int x = i / height;
+            int y = i % height;
 
-                tiles[x, y] = tile;
-            }
+            if (!IsValidCoord(x, y))
+                continue;
+
+            cell.Initialize(this, x, y, i);
+            cellMap[x, y] = cell;
         }
+
+        Debug.Log($"[GridManager] Initialized Cells: {cells.Length}");
     }
 
-    public GridTile GetTile(int x, int y)
+    public void NotifyCellClicked(GridCell cell)
     {
-        return tiles[x, y];
+        OnCellClicked?.Invoke(cell);
     }
 
-    public List<GridTile> GetNeighbors(GridTile tile)
+    public GridCell GetCell(int x, int y)
     {
-        List<GridTile> neighbors = new List<GridTile>();
+        if (!IsValidCoord(x, y))
+            return null;
 
-        int x = tile.X;
-        int y = tile.Y;
+        return cellMap[x, y];
+    }
 
-        // 직선
-        TryAdd(x + 1, y, neighbors);
-        TryAdd(x - 1, y, neighbors);
-        TryAdd(x, y + 1, neighbors);
-        TryAdd(x, y - 1, neighbors);
+    public GridCell GetCell(Vector2Int coord)
+    {
+        return GetCell(coord.x, coord.y);
+    }
 
-        // 대각선 (코너컷 방지)
-        TryAddDiagonal(x, y, 1, 1, neighbors);
-        TryAddDiagonal(x, y, 1, -1, neighbors);
-        TryAddDiagonal(x, y, -1, 1, neighbors);
-        TryAddDiagonal(x, y, -1, -1, neighbors);
+    public GridCell GetCellByIndex(int index)
+    {
+        Vector2Int coord = IndexToCoord(index);
+        return GetCell(coord);
+    }
+
+    public bool IsValidCoord(int x, int y)
+    {
+        return x >= 0 && x < width &&
+               y >= 0 && y < height;
+    }
+
+    public bool IsValidCoord(Vector2Int coord)
+    {
+        return IsValidCoord(coord.x, coord.y);
+    }
+
+    public int CoordToIndex(Vector2Int coord)
+    {
+        return coord.x * height + coord.y;
+    }
+
+    public Vector2Int IndexToCoord(int index)
+    {
+        int x = index / height;
+        int y = index % height;
+
+        return new Vector2Int(x, y);
+    }
+
+    public Vector3 GetWorldPositionByIndex(int index)
+    {
+        GridCell cell = GetCellByIndex(index);
+
+        if (cell == null)
+            return Vector3.zero;
+
+        return cell.transform.position;
+    }
+
+    public List<GridCell> GetNeighbors(GridCell cell)
+    {
+        List<GridCell> neighbors = new();
+
+        if (cell == null)
+            return neighbors;
+
+        int x = cell.X;
+        int y = cell.Y;
+
+        TryAddCell(x + 1, y, neighbors);
+        TryAddCell(x - 1, y, neighbors);
+        TryAddCell(x, y + 1, neighbors);
+        TryAddCell(x, y - 1, neighbors);
+
+        TryAddCell(x + 1, y + 1, neighbors);
+        TryAddCell(x + 1, y - 1, neighbors);
+        TryAddCell(x - 1, y + 1, neighbors);
+        TryAddCell(x - 1, y - 1, neighbors);
 
         return neighbors;
     }
 
-    void TryAdd(int x, int y, List<GridTile> list)
+    private void TryAddCell(int x, int y, List<GridCell> list)
     {
-        if (x >= 0 && x < width && y >= 0 && y < height)
-        {
-            list.Add(tiles[x, y]);
-        }
-    }
+        GridCell cell = GetCell(x, y);
 
-    void TryAddDiagonal(int x, int y, int dx, int dy, List<GridTile> list)
-    {
-        int nx = x + dx;
-        int ny = y + dy;
-
-        if (nx < 0 || nx >= width || ny < 0 || ny >= height)
-            return;
-
-        GridTile horizontal = tiles[x + dx, y];
-        GridTile vertical = tiles[x, y + dy];
-
-        if (horizontal.IsOccupied() || vertical.IsOccupied())
-            return;
-
-        list.Add(tiles[nx, ny]);
+        if (cell != null)
+            list.Add(cell);
     }
 }

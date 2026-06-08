@@ -25,11 +25,12 @@ namespace Relic.Gameplay.Data
 
         public List<StatusEffectRuntimeData> StatusEffects = new();
 
-        public string MoveSkillId;
+        public string MoveSkillId = "S_Move_1";
         public string PassiveSkillId;
 
         public string AbilitySkillId1;
         public string AbilitySkillId2;
+        public string AbilitySkillId3;
 
         public string UniqueSkillId;
 
