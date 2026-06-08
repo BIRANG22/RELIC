@@ -18,7 +18,7 @@ namespace Relic.Gameplay.Data
         public string MonsterId;
         public string Name;
         public string Grade;
-        public int MaxHp;
+        public int Health;
         public string DropTableId;
         public string PossSkillId01;
         public string PossSkillId02;

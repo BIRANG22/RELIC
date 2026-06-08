@@ -1,4 +1,5 @@
 using Relic.Gameplay.Data;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class BattleTimelineController : MonoBehaviour
@@ -11,8 +12,12 @@ public class BattleTimelineController : MonoBehaviour
     private CharacterRuntimeData selectedCharacter;
     private SkillMasterData selectedSkill;
 
+    private readonly List<MonsterReservedCommand>[] monsterCommandsBySlot =
+    new List<MonsterReservedCommand>[5];
     private void Awake()
     {
+        InitializeMonsterCommandSlots();
+
         if (timelineBarUI != null)
             timelineBarUI.Init(this);
 
@@ -44,18 +49,57 @@ public class BattleTimelineController : MonoBehaviour
     {
         activeSlotIndex = slotIndex;
 
-        Debug.Log($"[BattleTimelineController] Timeline Slot Selected: {activeSlotIndex}");
-
         if (timelineBarUI != null)
             timelineBarUI.SetActiveTimelineSlot(activeSlotIndex);
 
         TryReserveSelectedSkill();
     }
 
+    private void InitializeMonsterCommandSlots()
+    {
+        for (int i = 0; i < monsterCommandsBySlot.Length; i++)
+        {
+            if (monsterCommandsBySlot[i] == null)
+                monsterCommandsBySlot[i] = new List<MonsterReservedCommand>();
+        }
+    }
+
+    public void AddMonsterCommand(int slotIndex, MonsterReservedCommand command)
+    {
+        InitializeMonsterCommandSlots();
+
+        if (command == null)
+            return;
+
+        if (slotIndex < 0 || slotIndex >= monsterCommandsBySlot.Length)
+            slotIndex = 0;
+
+        monsterCommandsBySlot[slotIndex].Add(command);
+
+        RefreshTimeline();
+    }
+
+    public IReadOnlyList<MonsterReservedCommand> GetMonsterCommands(int slotIndex)
+    {
+        InitializeMonsterCommandSlots();
+
+        if (slotIndex < 0 || slotIndex >= monsterCommandsBySlot.Length)
+            return null;
+
+        return monsterCommandsBySlot[slotIndex];
+    }
+
+    public void ClearMonsterReservations()
+    {
+        InitializeMonsterCommandSlots();
+
+        for (int i = 0; i < monsterCommandsBySlot.Length; i++)
+            monsterCommandsBySlot[i].Clear();
+
+        RefreshTimeline();
+    }
     private void TryReserveSelectedSkill()
     {
-        Debug.Log($"[BattleTimelineController] TryReserve / Slot:{activeSlotIndex} / Character:{selectedCharacter?.CharacterId} / Skill:{selectedSkill?.SkillId}");
-
         if (activeSlotIndex < 0)
             return;
 
@@ -70,8 +114,8 @@ public class BattleTimelineController : MonoBehaviour
         if (slot == null)
             return;
 
-        BattleReservedCommand command =
-            new BattleReservedCommand(selectedCharacter, selectedSkill);
+        PlayerReservedCommand command =
+            new PlayerReservedCommand(selectedCharacter, selectedSkill);
 
         if (!selectedCharacter.CanReserveHealth(command.HealthCost) ||
             !selectedCharacter.CanReserveStamina(command.StaminaCost) ||
@@ -128,7 +172,7 @@ public class BattleTimelineController : MonoBehaviour
         if (slot == null)
             return;
 
-        bool removed = slot.RemoveCommandAt(orderIndex, out BattleReservedCommand removedCommand);
+        bool removed = slot.RemoveCommandAt(orderIndex, out PlayerReservedCommand removedCommand);
 
         if (!removed)
             return;
@@ -162,7 +206,7 @@ public class BattleTimelineController : MonoBehaviour
 
             for (int j = commands.Count - 1; j >= 0; j--)
             {
-                if (reserveSlots[i].RemoveCommandAt(j, out BattleReservedCommand removedCommand))
+                if (reserveSlots[i].RemoveCommandAt(j, out PlayerReservedCommand removedCommand))
                 {
                     if (removedCommand != null && removedCommand.UserRuntime != null)
                     {
@@ -185,7 +229,9 @@ public class BattleTimelineController : MonoBehaviour
     private void RefreshTimeline()
     {
         if (timelineBarUI != null)
-            timelineBarUI.Refresh(reserveSlots);
+            timelineBarUI.Refresh(reserveSlots, monsterCommandsBySlot);
+        else
+            Debug.LogWarning("[BattleTimelineController] timelineBarUI가 없습니다.");
     }
 
     private void RefreshPlayerHUDs()

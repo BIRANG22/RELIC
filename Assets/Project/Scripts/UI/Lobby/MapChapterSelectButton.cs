@@ -63,12 +63,6 @@ public class MapChapterSelectButton : MonoBehaviour
             CurrentSceneName = SceneName.Battle,
             IsRunInitialized = false
         });
-
-        Debug.Log(
-            "[MapChapterSelectButton] Chapter Selected / " +
-            "Chapter: " + chapterId +
-            " / StartStage: " + startStage
-        );
     }
 
     public void SetLocked(bool locked)

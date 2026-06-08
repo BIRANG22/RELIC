@@ -47,8 +47,8 @@ namespace Relic.Gameplay.Data
             Name = masterData.Name;
             Grade = masterData.Grade;
 
-            MaxHp = masterData.MaxHp;
-            CurrentHp = masterData.MaxHp;
+            MaxHp = masterData.Health;
+            CurrentHp = masterData.Health;
 
             DropTableId = masterData.DropTableId;
 

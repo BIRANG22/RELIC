@@ -17,8 +17,6 @@ public class MapViewSpawner : MonoBehaviour
         List<GeneratedMapNodeData> nodes,
         Action<GeneratedMapNodeData> onNodeClicked)
     {
-        Debug.Log($"[MapViewSpawner] Spawn »£√‚µ  / Count: {nodes?.Count}");
-
         Clear();
 
         if (nodes == null || nodes.Count == 0)
