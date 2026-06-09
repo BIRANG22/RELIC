@@ -94,7 +94,7 @@ public class BattleTimelineController : MonoBehaviour
             return;
         }
 
-        int casterGridIndex = GetSelectedCharacterGridIndex();
+        int casterGridIndex = GetPreviewGridIndex(selectedCharacter);
 
         if (casterGridIndex < 0)
         {
@@ -238,6 +238,60 @@ public class BattleTimelineController : MonoBehaviour
         }
 
         return null;
+    }
+
+    public int GetPreviewGridIndex(CharacterRuntimeData runtimeData)
+    {
+        if (runtimeData == null)
+            return -1;
+
+        int gridIndex = GetRuntimeStartGridIndex(runtimeData.CharacterId);
+
+        if (gridIndex < 0)
+            return -1;
+
+        if (reserveSlots == null)
+            return gridIndex;
+
+        for (int slotIndex = 0; slotIndex < reserveSlots.Length; slotIndex++)
+        {
+            ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+
+            if (slot == null || slot.Commands == null)
+                continue;
+
+            for (int i = 0; i < slot.Commands.Count; i++)
+            {
+                PlayerReservedCommand command = slot.Commands[i];
+
+                if (command == null || command.UserRuntime == null)
+                    continue;
+
+                if (command.UserRuntime.CharacterId != runtimeData.CharacterId)
+                    continue;
+
+                if (command.ReservedMoveGridIndex >= 0)
+                    gridIndex = command.ReservedMoveGridIndex;
+            }
+        }
+
+        return gridIndex;
+    }
+
+    private int GetRuntimeStartGridIndex(string characterId)
+    {
+        if (DataManager.Instance == null)
+            return -1;
+
+        var partyStore = DataManager.Instance.PartyRuntimeStore;
+
+        for (int slotIndex = 0; slotIndex < partyStore.MaxPartyCountValue; slotIndex++)
+        {
+            if (partyStore.GetCharacterId(slotIndex) == characterId)
+                return partyStore.GetGridIndex(slotIndex);
+        }
+
+        return -1;
     }
 
     private void InitializeMonsterCommandSlots()

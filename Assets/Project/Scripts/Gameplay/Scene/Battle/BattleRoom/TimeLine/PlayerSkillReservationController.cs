@@ -15,7 +15,7 @@ public class PlayerSkillReservationController : MonoBehaviour
     private int currentCasterGridIndex = -1;
     private Sprite currentCasterSprite;
 
-    private readonly List<int> currentDirectionSelectIndices = new();
+    private readonly List<int> currentMoveSelectableIndices = new();
 
     private void OnEnable()
     {
@@ -47,32 +47,37 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (currentUserRuntime == null || currentSkillData == null)
             return;
 
-        if (currentSkillData.RangeType == RangeType.Direction ||
-            currentSkillData.RangeType == RangeType.Selection)
+        if (currentSkillData.RangeType == RangeType.Direction)
         {
-            PreviewDirectionSelectCells();
+            ConfirmDirectionReservation(currentUserRuntime.Direction);
+            return;
+        }
+
+        if (currentSkillData.RangeType == RangeType.Selection)
+        {
+            PreviewMoveSelectableCells();
             return;
         }
 
         ConfirmDirectReservation();
     }
 
-    private void PreviewDirectionSelectCells()
+    private void PreviewMoveSelectableCells()
     {
-        currentDirectionSelectIndices.Clear();
+        currentMoveSelectableIndices.Clear();
 
         Vector2Int casterCoord = gridManager.IndexToCoord(currentCasterGridIndex);
 
-        TryAddDirectionCell(casterCoord + Vector2Int.right);
-        TryAddDirectionCell(casterCoord + Vector2Int.left);
-        TryAddDirectionCell(casterCoord + Vector2Int.up);
-        TryAddDirectionCell(casterCoord + Vector2Int.down);
+        TryAddMoveCell(casterCoord + Vector2Int.right);
+        TryAddMoveCell(casterCoord + Vector2Int.left);
+        TryAddMoveCell(casterCoord + Vector2Int.up);
+        TryAddMoveCell(casterCoord + Vector2Int.down);
 
         if (rangePreview != null)
-            rangePreview.Show(currentDirectionSelectIndices);
+            rangePreview.ShowDirectionCells(currentMoveSelectableIndices);
     }
 
-    private void TryAddDirectionCell(Vector2Int coord)
+    private void TryAddMoveCell(Vector2Int coord)
     {
         if (gridManager == null)
             return;
@@ -80,7 +85,7 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (!gridManager.IsValidCoord(coord))
             return;
 
-        currentDirectionSelectIndices.Add(gridManager.CoordToIndex(coord));
+        currentMoveSelectableIndices.Add(gridManager.CoordToIndex(coord));
     }
 
     private void HandleCellClicked(GridCell cell)
@@ -88,28 +93,16 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (cell == null || currentSkillData == null)
             return;
 
-        if (!currentDirectionSelectIndices.Contains(cell.Index))
+        if (currentSkillData.RangeType != RangeType.Selection)
+            return;
+
+        if (!currentMoveSelectableIndices.Contains(cell.Index))
         {
-            Debug.LogWarning($"[PlayerSkillReservationController] 선택 가능한 방향 칸이 아님: {cell.name}");
+            Debug.LogWarning($"[PlayerSkillReservationController] 선택 가능한 이동 칸이 아님: {cell.name}");
             return;
         }
 
-        BattleDirection direction = GetDirectionFromSelectedGrid(
-            currentCasterGridIndex,
-            cell.Index
-        );
-
-        if (currentSkillData.RangeType == RangeType.Direction)
-        {
-            ConfirmDirectionReservation(direction);
-            return;
-        }
-
-        if (currentSkillData.RangeType == RangeType.Selection)
-        {
-            ConfirmMoveReservation(cell.Index, direction);
-            return;
-        }
+        ConfirmMoveReservation(cell.Index);
     }
 
     private void ConfirmDirectionReservation(BattleDirection direction)
@@ -131,48 +124,41 @@ public class PlayerSkillReservationController : MonoBehaviour
         ClearPreview();
     }
 
-    private void ConfirmMoveReservation(int selectedGridIndex, BattleDirection direction)
+    private void ConfirmMoveReservation(int selectedGridIndex)
     {
-        List<int> rangeIndices = BattleRangeCalculator.GetDirectionRangeIndices(
+        BattleDirection direction = GetDirectionFromMove(
             currentCasterGridIndex,
-            currentSkillData.RangeId,
-            direction,
-            DataManager.Instance.RangeDatabase,
-            gridManager
+            selectedGridIndex
         );
 
+        currentUserRuntime.Direction = direction;
+
         PlayerReservedCommand command = new PlayerReservedCommand(currentUserRuntime, currentSkillData);
-        command.SetSelectionResult(selectedGridIndex, rangeIndices);
+        command.SetSelectionResult(direction, selectedGridIndex, new List<int> { selectedGridIndex });
 
         if (timelineController != null)
             timelineController.ConfirmPlayerCommand(currentSlotIndex, command);
 
         if (moveGhostPreview != null)
-            moveGhostPreview.Show(currentCasterSprite, selectedGridIndex);
+            moveGhostPreview.Show(currentCasterSprite, selectedGridIndex, direction);
 
         ClearPreview();
     }
 
-    private BattleDirection GetDirectionFromSelectedGrid(int casterGridIndex, int selectedGridIndex)
+    private BattleDirection GetDirectionFromMove(int casterGridIndex, int selectedGridIndex)
     {
         Vector2Int caster = gridManager.IndexToCoord(casterGridIndex);
         Vector2Int selected = gridManager.IndexToCoord(selectedGridIndex);
 
-        Vector2Int diff = selected - caster;
-
-        if (diff == Vector2Int.right)
-            return BattleDirection.Right;
-
-        if (diff == Vector2Int.left)
+        if (selected.x < caster.x)
             return BattleDirection.Left;
 
-        if (diff == Vector2Int.up)
-            return BattleDirection.Up;
+        if (selected.x > caster.x)
+            return BattleDirection.Right;
 
-        if (diff == Vector2Int.down)
-            return BattleDirection.Down;
-
-        return BattleDirection.Right;
+        return currentUserRuntime != null
+            ? currentUserRuntime.Direction
+            : BattleDirection.Right;
     }
 
     private void ConfirmDirectReservation()
@@ -192,7 +178,7 @@ public class PlayerSkillReservationController : MonoBehaviour
         currentSlotIndex = -1;
         currentCasterGridIndex = -1;
         currentCasterSprite = null;
-        currentDirectionSelectIndices.Clear();
+        currentMoveSelectableIndices.Clear();
 
         if (rangePreview != null)
             rangePreview.Clear();

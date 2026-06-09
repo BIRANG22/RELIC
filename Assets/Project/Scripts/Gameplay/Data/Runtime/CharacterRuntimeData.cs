@@ -23,6 +23,8 @@ namespace Relic.Gameplay.Data
         public int ReservedMoveCost;
         public int ReservedShieldCost;
 
+        public BattleDirection Direction = BattleDirection.Right;
+
         public List<StatusEffectRuntimeData> StatusEffects = new();
 
         public string MoveSkillId = "S_Move_1";

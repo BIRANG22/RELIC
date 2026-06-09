@@ -4,22 +4,13 @@ public static class BattleDirectionUtility
 {
     public static Vector2Int RotateOffset(Vector2Int offset, BattleDirection direction)
     {
-        int x = offset.x;
-        int y = offset.y;
-
         switch (direction)
         {
             case BattleDirection.Right:
-                return new Vector2Int(x, y);
-
-            case BattleDirection.Up:
-                return new Vector2Int(-y, x);
+                return offset;
 
             case BattleDirection.Left:
-                return new Vector2Int(-x, -y);
-
-            case BattleDirection.Down:
-                return new Vector2Int(y, -x);
+                return new Vector2Int(-offset.x, offset.y);
 
             default:
                 return offset;

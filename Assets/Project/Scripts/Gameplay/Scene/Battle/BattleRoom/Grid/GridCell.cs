@@ -13,6 +13,7 @@ public class GridCell : MonoBehaviour
     [SerializeField] private Color normalColor = Color.white;
     [SerializeField] private Color previewColor = Color.cyan;
     [SerializeField] private Color selectedColor = Color.green;
+    [SerializeField] private Color rangePreviewColor = Color.red;
 
     private Renderer rend;
     private MaterialPropertyBlock propertyBlock;
@@ -38,6 +39,18 @@ public class GridCell : MonoBehaviour
             owner.NotifyCellClicked(this);
     }
 
+    private void OnMouseEnter()
+    {
+        if (owner != null)
+            owner.NotifyCellHovered(this);
+    }
+
+    private void OnMouseExit()
+    {
+        if (owner != null)
+            owner.NotifyCellHoverExited(this);
+    }
+
     public void SetNormal()
     {
         SetColor(normalColor);
@@ -51,6 +64,11 @@ public class GridCell : MonoBehaviour
     public void SetSelected()
     {
         SetColor(selectedColor);
+    }
+
+    public void SetRangePreview()
+    {
+        SetColor(rangePreviewColor);
     }
 
     private void SetColor(Color color)

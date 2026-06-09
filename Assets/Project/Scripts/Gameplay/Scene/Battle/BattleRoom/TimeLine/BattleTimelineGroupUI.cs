@@ -109,6 +109,12 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
                     visibleIndex < playerSkillIconImages.Length)
                 {
                     SetSkillImage(playerSkillIconImages[visibleIndex], entry.SkillIcon, true);
+
+                    TimelineSkillIconHoverUI hoverUI =
+                        playerSkillIconImages[visibleIndex].GetComponentInParent<TimelineSkillIconHoverUI>();
+
+                    if (hoverUI != null)
+                        hoverUI.Setup(entry.PlayerCommand);
                 }
 
                 if (playerMarkObjects != null &&

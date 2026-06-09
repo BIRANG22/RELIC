@@ -7,7 +7,7 @@ public class MoveGhostPreview : MonoBehaviour
 
     private SpriteRenderer currentGhost;
 
-    public void Show(Sprite sprite, int gridIndex)
+    public void Show(Sprite sprite, int gridIndex, BattleDirection direction)
     {
         Clear();
 
@@ -18,6 +18,8 @@ public class MoveGhostPreview : MonoBehaviour
 
         currentGhost = Instantiate(ghostPrefab, position, Quaternion.identity);
         currentGhost.sprite = sprite;
+
+        currentGhost.flipX = direction == BattleDirection.Left;
 
         Color color = currentGhost.color;
         color.a = 0.4f;

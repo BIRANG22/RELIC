@@ -13,7 +13,7 @@ public class BattleTimelinePreviewEntry
     public MonsterRuntimeData MonsterRuntime;
     public SkillMasterData PlayerSkillData;
     public MonsterSkillData MonsterSkillData;
-
+    public PlayerReservedCommand PlayerCommand { get; private set; }
     public string OwnerId
     {
         get
@@ -64,15 +64,18 @@ public class BattleTimelinePreviewEntry
         if (command == null)
             return null;
 
-        return new BattleTimelinePreviewEntry
+        BattleTimelinePreviewEntry entry = new BattleTimelinePreviewEntry
         {
             SlotIndex = slotIndex,
             OrderIndex = orderIndex,
             IsPlayer = true,
             IsMonster = false,
             CharacterRuntime = command.UserRuntime,
-            PlayerSkillData = command.SkillData
+            PlayerSkillData = command.SkillData,
+            PlayerCommand = command
         };
+
+        return entry;
     }
 
     public static BattleTimelinePreviewEntry CreateMonster(

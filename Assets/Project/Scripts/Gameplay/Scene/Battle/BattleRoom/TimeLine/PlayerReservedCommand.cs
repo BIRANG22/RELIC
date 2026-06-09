@@ -5,9 +5,7 @@ using UnityEngine;
 public enum BattleDirection
 {
     Right,
-    Up,
-    Left,
-    Down
+    Left
 }
 
 public class PlayerReservedCommand
@@ -63,10 +61,11 @@ public class PlayerReservedCommand
     }
 
     public void SetSelectionResult(
+        BattleDirection direction,
         int selectedGridIndex,
         List<int> rangeGridIndices)
     {
-        Direction = BattleDirection.Right;
+        Direction = direction;
         SelectedGridIndex = selectedGridIndex;
         ReservedMoveGridIndex = selectedGridIndex;
 

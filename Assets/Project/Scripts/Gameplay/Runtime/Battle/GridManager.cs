@@ -14,6 +14,8 @@ public class GridManager : MonoBehaviour
     private GridCell[,] cellMap;
 
     public event Action<GridCell> OnCellClicked;
+    public event Action<GridCell> OnCellHovered;
+    public event Action<GridCell> OnCellHoverExited;
 
     public int Width => width;
     public int Height => height;
@@ -53,6 +55,16 @@ public class GridManager : MonoBehaviour
     public void NotifyCellClicked(GridCell cell)
     {
         OnCellClicked?.Invoke(cell);
+    }
+
+    public void NotifyCellHovered(GridCell cell)
+    {
+        OnCellHovered?.Invoke(cell);
+    }
+
+    public void NotifyCellHoverExited(GridCell cell)
+    {
+        OnCellHoverExited?.Invoke(cell);
     }
 
     public GridCell GetCell(int x, int y)
