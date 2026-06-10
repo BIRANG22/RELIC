@@ -48,8 +48,6 @@ public class GridManager : MonoBehaviour
             cell.Initialize(this, x, y, i);
             cellMap[x, y] = cell;
         }
-
-        Debug.Log($"[GridManager] Initialized Cells: {cells.Length}");
     }
 
     public void NotifyCellClicked(GridCell cell)

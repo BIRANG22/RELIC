@@ -48,8 +48,6 @@ public class BattleTimelineBarUI : MonoBehaviour
         ReserveTurnSlotUI[] reserveSlots,
         IReadOnlyList<MonsterReservedCommand>[] monsterCommandsBySlot)
     {
-        Debug.Log("[BattleTimelineBarUI] Refresh »£√‚µ ");
-
         AutoFindGroupsIfNeeded();
         InitGroups();
 

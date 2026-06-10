@@ -21,6 +21,8 @@ public class BattleTimelineController : MonoBehaviour
     private readonly List<MonsterReservedCommand>[] monsterCommandsBySlot =
         new List<MonsterReservedCommand>[5];
 
+    public int SlotCount => reserveSlots != null ? reserveSlots.Length : 0;
+
     private void Awake()
     {
         InitializeMonsterCommandSlots();
@@ -166,6 +168,30 @@ public class BattleTimelineController : MonoBehaviour
         return true;
     }
 
+    public IReadOnlyList<PlayerReservedCommand> GetPlayerCommands(int slotIndex)
+    {
+        if (reserveSlots == null)
+            return null;
+
+        if (slotIndex < 0 || slotIndex >= reserveSlots.Length)
+            return null;
+
+        if (reserveSlots[slotIndex] == null)
+            return null;
+
+        return reserveSlots[slotIndex].Commands;
+    }
+
+    public IReadOnlyList<MonsterReservedCommand> GetMonsterCommands(int slotIndex)
+    {
+        InitializeMonsterCommandSlots();
+
+        if (slotIndex < 0 || slotIndex >= monsterCommandsBySlot.Length)
+            return null;
+
+        return monsterCommandsBySlot[slotIndex];
+    }
+
     private bool CanReserveCommand(PlayerReservedCommand command)
     {
         if (command == null || command.UserRuntime == null)
@@ -191,61 +217,15 @@ public class BattleTimelineController : MonoBehaviour
         return true;
     }
 
-    private int GetSelectedCharacterGridIndex()
-    {
-        if (selectedCharacter == null)
-            return -1;
-
-        if (DataManager.Instance == null)
-            return -1;
-
-        var partyStore = DataManager.Instance.PartyRuntimeStore;
-
-        for (int slotIndex = 0; slotIndex < partyStore.MaxPartyCountValue; slotIndex++)
-        {
-            string characterId = partyStore.GetCharacterId(slotIndex);
-
-            if (characterId != selectedCharacter.CharacterId)
-                continue;
-
-            return partyStore.GetGridIndex(slotIndex);
-        }
-
-        return -1;
-    }
-
-    private Sprite GetSelectedCharacterSprite()
-    {
-        BattleCharacter[] battleCharacters = FindObjectsByType<BattleCharacter>(
-            FindObjectsInactive.Exclude,
-            FindObjectsSortMode.None
-        );
-
-        for (int i = 0; i < battleCharacters.Length; i++)
-        {
-            BattleCharacter battleCharacter = battleCharacters[i];
-
-            if (battleCharacter == null || battleCharacter.RuntimeData == null)
-                continue;
-
-            if (battleCharacter.RuntimeData.CharacterId != selectedCharacter.CharacterId)
-                continue;
-
-            SpriteRenderer spriteRenderer = battleCharacter.GetComponentInChildren<SpriteRenderer>();
-
-            if (spriteRenderer != null)
-                return spriteRenderer.sprite;
-        }
-
-        return null;
-    }
-
     public int GetPreviewGridIndex(CharacterRuntimeData runtimeData)
     {
         if (runtimeData == null)
             return -1;
 
-        int gridIndex = GetRuntimeStartGridIndex(runtimeData.CharacterId);
+        int gridIndex = GetCurrentBattleCharacterGridIndex(runtimeData.CharacterId);
+
+        if (gridIndex < 0)
+            gridIndex = GetRuntimeStartGridIndex(runtimeData.CharacterId);
 
         if (gridIndex < 0)
             return -1;
@@ -278,6 +258,27 @@ public class BattleTimelineController : MonoBehaviour
         return gridIndex;
     }
 
+    private int GetCurrentBattleCharacterGridIndex(string characterId)
+    {
+        BattleCharacter[] characters = FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            if (characters[i] == null)
+                continue;
+
+            if (characters[i].CharacterId != characterId)
+                continue;
+
+            return characters[i].CurrentGridIndex;
+        }
+
+        return -1;
+    }
+
     private int GetRuntimeStartGridIndex(string characterId)
     {
         if (DataManager.Instance == null)
@@ -292,6 +293,32 @@ public class BattleTimelineController : MonoBehaviour
         }
 
         return -1;
+    }
+
+    private Sprite GetSelectedCharacterSprite()
+    {
+        BattleCharacter[] battleCharacters = FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < battleCharacters.Length; i++)
+        {
+            BattleCharacter battleCharacter = battleCharacters[i];
+
+            if (battleCharacter == null || battleCharacter.RuntimeData == null)
+                continue;
+
+            if (battleCharacter.RuntimeData.CharacterId != selectedCharacter.CharacterId)
+                continue;
+
+            SpriteRenderer spriteRenderer = battleCharacter.GetComponentInChildren<SpriteRenderer>();
+
+            if (spriteRenderer != null)
+                return spriteRenderer.sprite;
+        }
+
+        return null;
     }
 
     private void InitializeMonsterCommandSlots()
@@ -316,16 +343,6 @@ public class BattleTimelineController : MonoBehaviour
         monsterCommandsBySlot[slotIndex].Add(command);
 
         RefreshTimeline();
-    }
-
-    public IReadOnlyList<MonsterReservedCommand> GetMonsterCommands(int slotIndex)
-    {
-        InitializeMonsterCommandSlots();
-
-        if (slotIndex < 0 || slotIndex >= monsterCommandsBySlot.Length)
-            return null;
-
-        return monsterCommandsBySlot[slotIndex];
     }
 
     public void ClearMonsterReservations()
@@ -356,14 +373,7 @@ public class BattleTimelineController : MonoBehaviour
         if (!removed)
             return;
 
-        if (removedCommand != null && removedCommand.UserRuntime != null)
-        {
-            removedCommand.UserRuntime.RemoveReservedHealth(removedCommand.HealthCost);
-            removedCommand.UserRuntime.RemoveReservedStamina(removedCommand.StaminaCost);
-            removedCommand.UserRuntime.RemoveReservedResource(removedCommand.ResourceCost);
-            removedCommand.UserRuntime.RemoveReservedMove(removedCommand.MoveCost);
-            removedCommand.UserRuntime.RemoveReservedShield(removedCommand.ShieldCost);
-        }
+        RemoveReservedCosts(removedCommand);
 
         RefreshTimeline();
         RefreshPlayerHUDs();
@@ -386,16 +396,7 @@ public class BattleTimelineController : MonoBehaviour
             for (int j = commands.Count - 1; j >= 0; j--)
             {
                 if (reserveSlots[i].RemoveCommandAt(j, out PlayerReservedCommand removedCommand))
-                {
-                    if (removedCommand != null && removedCommand.UserRuntime != null)
-                    {
-                        removedCommand.UserRuntime.RemoveReservedHealth(removedCommand.HealthCost);
-                        removedCommand.UserRuntime.RemoveReservedStamina(removedCommand.StaminaCost);
-                        removedCommand.UserRuntime.RemoveReservedResource(removedCommand.ResourceCost);
-                        removedCommand.UserRuntime.RemoveReservedMove(removedCommand.MoveCost);
-                        removedCommand.UserRuntime.RemoveReservedShield(removedCommand.ShieldCost);
-                    }
-                }
+                    RemoveReservedCosts(removedCommand);
             }
 
             reserveSlots[i].Clear();
@@ -403,6 +404,18 @@ public class BattleTimelineController : MonoBehaviour
 
         RefreshTimeline();
         RefreshPlayerHUDs();
+    }
+
+    private void RemoveReservedCosts(PlayerReservedCommand command)
+    {
+        if (command == null || command.UserRuntime == null)
+            return;
+
+        command.UserRuntime.RemoveReservedHealth(command.HealthCost);
+        command.UserRuntime.RemoveReservedStamina(command.StaminaCost);
+        command.UserRuntime.RemoveReservedResource(command.ResourceCost);
+        command.UserRuntime.RemoveReservedMove(command.MoveCost);
+        command.UserRuntime.RemoveReservedShield(command.ShieldCost);
     }
 
     private void RefreshTimeline()

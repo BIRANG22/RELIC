@@ -133,8 +133,6 @@ public class BattleTimelinePreviewEntry
 
         bool found = DataManager.Instance.ActionTypeIconDatabase.TryGetIcon(key, out Sprite icon);
 
-        Debug.Log($"[TimelineIcon] Key:{key} / Found:{found} / Icon:{icon}");
-
         if (found)
             return icon;
 

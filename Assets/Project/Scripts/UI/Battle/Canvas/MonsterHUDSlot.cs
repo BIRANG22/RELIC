@@ -7,7 +7,6 @@ using UnityEngine.UI;
 public class MonsterHUDSlot : MonoBehaviour
 {
     [Header("Basic")]
-    [SerializeField] private Image portraitImage;
     [SerializeField] private TMP_Text nameText;
 
     [Header("HP")]
@@ -21,12 +20,27 @@ public class MonsterHUDSlot : MonoBehaviour
     [Header("Status Effects")]
     [SerializeField] private Transform statusIconRoot;
     [SerializeField] private StatusEffectIcon statusIconPrefab;
+    [SerializeField] private float statusEffectIconSpacing = 4f;
 
     private MonsterRuntimeData boundRuntime;
+    private readonly List<StatusEffectIcon> spawnedStatusIcons = new();
+
+    private void Awake()
+    {
+        ApplyStatusEffectParentLayout();
+    }
 
     public void Bind(MonsterRuntimeData runtimeData)
     {
         boundRuntime = runtimeData;
+        ApplyStatusEffectParentLayout();
+
+        if (boundRuntime == null)
+        {
+            Clear();
+            return;
+        }
+
         Refresh();
     }
 
@@ -49,39 +63,35 @@ public class MonsterHUDSlot : MonoBehaviour
             return;
         }
 
-        if (portraitImage != null)
-        {
-            portraitImage.sprite = GetMonsterIcon(boundRuntime.MonsterId);
-            portraitImage.enabled = portraitImage.sprite != null;
-        }
-
         if (nameText != null)
             nameText.text = boundRuntime.Name;
 
-        RefreshHp(boundRuntime.CurrentHp, boundRuntime.MaxHp);
-        RefreshShield(boundRuntime.CurrentShield, boundRuntime.MaxHp);
+        RefreshBar(hpFill, hpValueText, boundRuntime.CurrentHp, boundRuntime.MaxHp);
+        //RefreshShield(boundRuntime.CurrentShield, boundRuntime.MaxHp);
         RefreshStatusEffects(boundRuntime.StatusEffects);
     }
 
-    private void RefreshHp(int currentHp, int maxHp)
+    private void RefreshBar(Image fill, TMP_Text valueText, int current, int max)
     {
-        currentHp = Mathf.Clamp(currentHp, 0, maxHp);
+        max = Mathf.Max(1, max);
+        current = Mathf.Clamp(current, 0, max);
 
-        if (hpFill != null)
-            hpFill.fillAmount = maxHp > 0 ? (float)currentHp / maxHp : 0f;
+        if (fill != null)
+            fill.fillAmount = (float)current / max;
 
-        if (hpValueText != null)
-            hpValueText.text = $"{currentHp} / {maxHp}";
+        if (valueText != null)
+            valueText.text = current.ToString();
     }
 
     private void RefreshShield(int shield, int maxHp)
     {
         shield = Mathf.Max(0, shield);
+        maxHp = Mathf.Max(1, maxHp);
 
         if (shieldFill != null)
         {
             shieldFill.gameObject.SetActive(shield > 0);
-            shieldFill.fillAmount = maxHp > 0 ? (float)shield / maxHp : 0f;
+            shieldFill.fillAmount = (float)shield / maxHp;
         }
 
         if (shieldValueText != null)
@@ -93,11 +103,11 @@ public class MonsterHUDSlot : MonoBehaviour
 
     private void RefreshStatusEffects(List<StatusEffectRuntimeData> statusEffects)
     {
+        ClearStatusEffectIcons();
+        ApplyStatusEffectParentLayout();
+
         if (statusIconRoot == null || statusIconPrefab == null)
             return;
-
-        for (int i = statusIconRoot.childCount - 1; i >= 0; i--)
-            Destroy(statusIconRoot.GetChild(i).gameObject);
 
         if (statusEffects == null)
             return;
@@ -108,29 +118,49 @@ public class MonsterHUDSlot : MonoBehaviour
                 continue;
 
             StatusEffectIcon icon = Instantiate(statusIconPrefab, statusIconRoot);
+
+            // 여기서 StatusEffectIcon 내부가 EffectId로 DB 조회해서 Sprite 세팅
             icon.Set(statusEffects[i]);
+
+            spawnedStatusIcons.Add(icon);
         }
     }
 
-    private Sprite GetMonsterIcon(string monsterId)
+    private void ClearStatusEffectIcons()
     {
-        // 나중에 MonsterIconDatabase 있으면 여기서 연결
-        return null;
+        for (int i = spawnedStatusIcons.Count - 1; i >= 0; i--)
+        {
+            if (spawnedStatusIcons[i] != null)
+                Destroy(spawnedStatusIcons[i].gameObject);
+        }
+
+        spawnedStatusIcons.Clear();
+
+        if (statusIconRoot == null)
+            return;
+
+        for (int i = statusIconRoot.childCount - 1; i >= 0; i--)
+            Destroy(statusIconRoot.GetChild(i).gameObject);
+    }
+
+    private void ApplyStatusEffectParentLayout()
+    {
+        if (statusIconRoot == null)
+            return;
+
+        HorizontalLayoutGroup layout = statusIconRoot.GetComponent<HorizontalLayoutGroup>();
+
+        if (layout != null)
+            layout.spacing = statusEffectIconSpacing;
     }
 
     private void Clear()
     {
-        if (portraitImage != null)
-        {
-            portraitImage.sprite = null;
-            portraitImage.enabled = false;
-        }
-
         if (nameText != null)
             nameText.text = "";
 
-        RefreshHp(0, 1);
+        RefreshBar(hpFill, hpValueText, 0, 1);
         RefreshShield(0, 1);
-        RefreshStatusEffects(null);
+        ClearStatusEffectIcons();
     }
 }

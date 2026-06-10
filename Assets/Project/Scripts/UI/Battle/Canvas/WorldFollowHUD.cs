@@ -16,10 +16,23 @@ public class WorldFollowHUD : MonoBehaviour
         RectTransform canvasRect,
         Camera uiCamera = null)
     {
+        if (rectTransform == null)
+            rectTransform = GetComponent<RectTransform>();
+
+        rectTransform.anchoredPosition = Vector2.zero;
+
         this.target = target;
         this.worldCamera = worldCamera;
         this.canvasRect = canvasRect;
-        this.uiCamera = uiCamera;
+
+        Canvas canvas = canvasRect != null
+            ? canvasRect.GetComponentInParent<Canvas>()
+            : null;
+
+        if (canvas != null && canvas.renderMode == RenderMode.ScreenSpaceOverlay)
+            this.uiCamera = null;
+        else
+            this.uiCamera = uiCamera;
 
         if (rectTransform == null)
             rectTransform = GetComponent<RectTransform>();
@@ -45,13 +58,15 @@ public class WorldFollowHUD : MonoBehaviour
             return;
         }
 
+        if (!rectTransform.gameObject.activeSelf)
+            rectTransform.gameObject.SetActive(true);
+
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
             canvasRect,
             screenPos,
             uiCamera,
             out Vector2 localPos
         );
-
         rectTransform.anchoredPosition = localPos;
     }
 }

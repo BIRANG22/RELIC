@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class MoveGhostPreview : MonoBehaviour
@@ -5,32 +6,53 @@ public class MoveGhostPreview : MonoBehaviour
     [SerializeField] private GridManager gridManager;
     [SerializeField] private SpriteRenderer ghostPrefab;
 
-    private SpriteRenderer currentGhost;
+    private readonly Dictionary<string, SpriteRenderer> ghostsByCharacterId = new();
 
-    public void Show(Sprite sprite, int gridIndex, BattleDirection direction)
+    public void Show(string characterId, Sprite sprite, int gridIndex, BattleDirection direction)
     {
-        Clear();
+        if (string.IsNullOrWhiteSpace(characterId))
+            return;
 
         if (gridManager == null || ghostPrefab == null || sprite == null)
             return;
 
+        Clear(characterId);
+
         Vector3 position = gridManager.GetWorldPositionByIndex(gridIndex);
 
-        currentGhost = Instantiate(ghostPrefab, position, Quaternion.identity);
-        currentGhost.sprite = sprite;
+        SpriteRenderer ghost = Instantiate(ghostPrefab, position, Quaternion.identity);
+        ghost.sprite = sprite;
+        ghost.flipX = direction == BattleDirection.Left;
 
-        currentGhost.flipX = direction == BattleDirection.Left;
-
-        Color color = currentGhost.color;
+        Color color = ghost.color;
         color.a = 0.4f;
-        currentGhost.color = color;
+        ghost.color = color;
+
+        ghostsByCharacterId[characterId] = ghost;
     }
 
-    public void Clear()
+    public void Clear(string characterId)
     {
-        if (currentGhost != null)
-            Destroy(currentGhost.gameObject);
+        if (string.IsNullOrWhiteSpace(characterId))
+            return;
 
-        currentGhost = null;
+        if (!ghostsByCharacterId.TryGetValue(characterId, out SpriteRenderer ghost))
+            return;
+
+        if (ghost != null)
+            Destroy(ghost.gameObject);
+
+        ghostsByCharacterId.Remove(characterId);
+    }
+
+    public void ClearAll()
+    {
+        foreach (var pair in ghostsByCharacterId)
+        {
+            if (pair.Value != null)
+                Destroy(pair.Value.gameObject);
+        }
+
+        ghostsByCharacterId.Clear();
     }
 }

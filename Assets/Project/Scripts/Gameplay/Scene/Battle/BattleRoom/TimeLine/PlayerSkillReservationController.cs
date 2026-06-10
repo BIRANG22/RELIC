@@ -133,14 +133,28 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         currentUserRuntime.Direction = direction;
 
+        Vector2Int caster = gridManager.IndexToCoord(currentCasterGridIndex);
+        Vector2Int selected = gridManager.IndexToCoord(selectedGridIndex);
+        Vector2Int moveOffset = selected - caster;
+
         PlayerReservedCommand command = new PlayerReservedCommand(currentUserRuntime, currentSkillData);
-        command.SetSelectionResult(direction, selectedGridIndex, new List<int> { selectedGridIndex });
+        command.SetSelectionResult(
+            direction,
+            selectedGridIndex,
+            new List<int> { selectedGridIndex },
+            moveOffset
+        );
 
         if (timelineController != null)
             timelineController.ConfirmPlayerCommand(currentSlotIndex, command);
 
         if (moveGhostPreview != null)
-            moveGhostPreview.Show(currentCasterSprite, selectedGridIndex, direction);
+            moveGhostPreview.Show(
+                currentUserRuntime.CharacterId,
+                currentCasterSprite,
+                selectedGridIndex,
+                direction
+            );
 
         ClearPreview();
     }

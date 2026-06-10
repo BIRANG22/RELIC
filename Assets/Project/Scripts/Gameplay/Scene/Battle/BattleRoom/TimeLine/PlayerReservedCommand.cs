@@ -31,6 +31,7 @@ public class PlayerReservedCommand
     public string SkillId => SkillData != null ? SkillData.SkillId : "";
     public string SkillName => SkillData != null ? SkillData.Name : "";
 
+    public Vector2Int MoveOffset { get; private set; } = Vector2Int.zero;
     public PlayerReservedCommand(CharacterRuntimeData userRuntime, SkillMasterData skillData)
     {
         UserRuntime = userRuntime;
@@ -61,13 +62,15 @@ public class PlayerReservedCommand
     }
 
     public void SetSelectionResult(
-        BattleDirection direction,
-        int selectedGridIndex,
-        List<int> rangeGridIndices)
+    BattleDirection direction,
+    int selectedGridIndex,
+    List<int> rangeGridIndices,
+    Vector2Int moveOffset)
     {
         Direction = direction;
         SelectedGridIndex = selectedGridIndex;
         ReservedMoveGridIndex = selectedGridIndex;
+        MoveOffset = moveOffset;
 
         RangeGridIndices = rangeGridIndices != null ? new List<int>(rangeGridIndices) : new List<int>();
         TargetGridIndices = new List<int> { selectedGridIndex };

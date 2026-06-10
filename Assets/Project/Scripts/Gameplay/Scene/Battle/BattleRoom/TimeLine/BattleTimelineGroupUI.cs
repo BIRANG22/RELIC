@@ -134,8 +134,6 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
     public void Clear()
     {
-        Debug.Log($"[TimelineGroup] Clear / Slot:{slotIndex}");
-
         currentEntries.Clear();
 
         SetImage(playerIconImage, null, false);

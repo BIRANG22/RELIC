@@ -130,7 +130,6 @@ public class BattleRoomLoader : MonoBehaviour
         }
 
         hud.Bind(runtimeData);
-
         hud.OnClicked += OnPlayerHudClicked;
     }
 
@@ -170,7 +169,7 @@ public class BattleRoomLoader : MonoBehaviour
 
         List<Relic.Gameplay.Monster.MonsterUnit> spawnedMonsterUnits = new();
 
-        foreach (var spawnData in spawns)
+        foreach (BattleMapData spawnData in spawns)
         {
             SpawnedMonsterResult result = monsterSpawner.Spawn(spawnData);
 
@@ -187,6 +186,7 @@ public class BattleRoomLoader : MonoBehaviour
 
             if (monsterUnit != null)
             {
+                monsterUnit.SetOccupiedCells(spawnData.GetOccupiedCells());
                 monsterUnit.BindHUD(hud);
                 spawnedMonsterUnits.Add(monsterUnit);
             }
@@ -256,7 +256,7 @@ public class BattleRoomLoader : MonoBehaviour
 
         for (int i = 0; i < party.MaxPartyCountValue; i++)
         {
-            //Debug.Log($"Slot {i}: {party.GetCharacterId(i)} / Grid {party.GetGridIndex(i)}");
+            // Debug.Log($"Slot {i}: {party.GetCharacterId(i)} / Grid {party.GetGridIndex(i)}");
         }
     }
 }

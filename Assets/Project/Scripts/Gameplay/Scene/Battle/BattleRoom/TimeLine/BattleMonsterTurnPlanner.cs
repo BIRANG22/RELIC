@@ -24,17 +24,13 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         {
             Debug.LogWarning("[BattleMonsterTurnPlanner] monsterUnits null");
             return;
-        }
-
-        Debug.Log($"[BattleMonsterTurnPlanner] Found Monsters: {monsterUnits.Count}");
+        } 
 
         BattleContext context = new BattleContext();
 
         for (int i = 0; i < monsterUnits.Count; i++)
         {
             MonsterUnit monsterUnit = monsterUnits[i];
-
-            Debug.Log($"[BattleMonsterTurnPlanner] Check Monster Index:{i} / Unit:{monsterUnit}");
 
             if (monsterUnit == null)
             {
@@ -50,8 +46,6 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
             MonsterRuntimeData runtime = monsterUnit.RuntimeData;
 
-            Debug.Log($"[BattleMonsterTurnPlanner] Runtime: {runtime.Name} / MonsterId:{runtime.MonsterId} / Hp:{runtime.CurrentHp}");
-
             if (runtime.IsDead)
             {
                 Debug.LogWarning($"[BattleMonsterTurnPlanner] Monster is dead: {runtime.Name}");
@@ -59,8 +53,6 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             }
 
             string skillId = monsterUnit.SelectSkill(context);
-
-            Debug.Log($"[BattleMonsterTurnPlanner] Selected SkillId: {skillId}");
 
             if (string.IsNullOrWhiteSpace(skillId))
             {
@@ -80,8 +72,6 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                 new MonsterReservedCommand(runtime, skillData);
 
             timelineController.AddMonsterCommand(defaultMonsterSlotIndex, command);
-
-            Debug.Log($"[BattleMonsterTurnPlanner] Monster Reserved: {runtime.Name} / {skillId}");
         }
     }
 }
