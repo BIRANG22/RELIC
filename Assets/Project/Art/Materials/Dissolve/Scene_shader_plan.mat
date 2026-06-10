@@ -55,7 +55,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _noisetexture:
-        m_Texture: {fileID: 2800000, guid: 96dcce1503826c54480ca5fa7f3190a2, type: 3}
+        m_Texture: {fileID: 2800000, guid: 8e9f6e86d964cef4db775abb71619b05, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _noisetexture_1:
