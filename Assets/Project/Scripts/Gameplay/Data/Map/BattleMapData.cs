@@ -20,10 +20,10 @@ namespace Relic.Gameplay.Data
         {
             List<int> cells = new();
 
-            if (OccupiedCell1 > 0) cells.Add(OccupiedCell1);
-            if (OccupiedCell2 > 0) cells.Add(OccupiedCell2);
-            if (OccupiedCell3 > 0) cells.Add(OccupiedCell3);
-            if (OccupiedCell4 > 0) cells.Add(OccupiedCell4);
+            if (OccupiedCell1 >= 0) cells.Add(OccupiedCell1);
+            if (OccupiedCell2 >= 0) cells.Add(OccupiedCell2);
+            if (OccupiedCell3 >= 0) cells.Add(OccupiedCell3);
+            if (OccupiedCell4 >= 0) cells.Add(OccupiedCell4);
 
             return cells;
         }

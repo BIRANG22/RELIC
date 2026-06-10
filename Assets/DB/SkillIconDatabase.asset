@@ -93,3 +93,5 @@ MonoBehaviour:
     Icon: {fileID: 21300000, guid: 448b3cacceb521141823af7fd84f9d8b, type: 3}
   - SkillId: S_Essence_10
     Icon: {fileID: 21300000, guid: 01555e61e271d7a4fa03b47930cac907, type: 3}
+  - SkillId: S_Essence_10
+    Icon: {fileID: 21300000, guid: 01555e61e271d7a4fa03b47930cac907, type: 3}

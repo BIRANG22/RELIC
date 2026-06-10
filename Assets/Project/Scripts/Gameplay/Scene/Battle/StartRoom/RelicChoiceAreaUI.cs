@@ -68,8 +68,6 @@ public class RelicChoiceAreaUI : MonoBehaviour
     {
         Close();
 
-        Debug.Log($"[RelicChoiceAreaUI] Relic choice finished: {relicId}");
-
         if (battleMapController != null)
             battleMapController.OpenMap();
         else

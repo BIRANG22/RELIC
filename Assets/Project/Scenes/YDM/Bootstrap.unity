@@ -1369,7 +1369,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d076bd66a5611f7499f8c7fdee06ce4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bgmSource: {fileID: 675309689}
+  bgmSource: {fileID: 0}
   sfxSource: {fileID: 77115731}
   bgmList:
   - type: 0

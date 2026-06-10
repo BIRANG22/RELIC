@@ -57,33 +57,10 @@ public class BattleUnitSpawner : MonoBehaviour
                 continue;
             }
 
-            Transform spawnGrid = FindGridByIndex(gridIndex);
+            GameObject unit = SpawnCharacterUnit(characterData, runtimeData, gridIndex);
 
-            if (spawnGrid == null)
-            {
-                Debug.LogWarning($"[BattleUnitSpawner] Grid 오브젝트 없음: Grid_{gridIndex:00}");
+            if (unit == null)
                 continue;
-            }
-
-            Transform spawnPoint = FindSpawnPoint(spawnGrid);
-
-            Vector3 spawnPosition = spawnPoint != null
-                ? spawnPoint.position
-                : spawnGrid.position;
-
-            spawnPosition.z += unitSpawnZOffset;
-
-            GameObject unit = Instantiate(
-                characterData.BattlePrefab,
-                spawnPosition,
-                Quaternion.identity,
-                playerRoot
-            );
-
-            BattleCharacter battleCharacter = unit.GetComponent<BattleCharacter>();
-
-            if (battleCharacter != null)
-                battleCharacter.Initialize(runtimeData);
 
             spawnedRuntimes.Add(runtimeData);
         }
@@ -128,12 +105,25 @@ public class BattleUnitSpawner : MonoBehaviour
             return;
         }
 
+        GameObject unit = SpawnCharacterUnit(characterData, runtimeData, gridIndex);
+
+        if (unit == null)
+            return;
+
+        Debug.Log($"[BattleUnitSpawner] Spawn Single Slot {slotIndex}: {characterId} -> Grid_{gridIndex:00}");
+    }
+
+    private GameObject SpawnCharacterUnit(
+        CharacterMasterData characterData,
+        CharacterRuntimeData runtimeData,
+        int gridIndex)
+    {
         Transform spawnGrid = FindGridByIndex(gridIndex);
 
         if (spawnGrid == null)
         {
             Debug.LogWarning($"[BattleUnitSpawner] Grid 오브젝트 없음: Grid_{gridIndex:00}");
-            return;
+            return null;
         }
 
         Transform spawnPoint = FindSpawnPoint(spawnGrid);
@@ -154,9 +144,12 @@ public class BattleUnitSpawner : MonoBehaviour
         BattleCharacter battleCharacter = unit.GetComponent<BattleCharacter>();
 
         if (battleCharacter != null)
+        {
             battleCharacter.Initialize(runtimeData);
+            battleCharacter.SetGridIndex(gridIndex);
+        }
 
-        Debug.Log($"[BattleUnitSpawner] Spawn Single Slot {slotIndex}: {characterId} -> Grid_{gridIndex:00}");
+        return unit;
     }
 
     private Transform FindGridByIndex(int gridIndex)

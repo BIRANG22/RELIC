@@ -15,7 +15,6 @@ public class BattleTimelineBarUI : MonoBehaviour
     {
         AutoFindGroupsIfNeeded();
         InitGroups();
-        Clear();
     }
 
     public void Init(BattleTimelineController owner)
@@ -45,13 +44,18 @@ public class BattleTimelineBarUI : MonoBehaviour
         }
     }
 
-    public void Refresh(ReserveTurnSlotUI[] reserveSlots)
+    public void Refresh(
+        ReserveTurnSlotUI[] reserveSlots,
+        IReadOnlyList<MonsterReservedCommand>[] monsterCommandsBySlot)
     {
         AutoFindGroupsIfNeeded();
         InitGroups();
 
         if (timelineGroups == null)
+        {
+            Debug.LogWarning("[BattleTimelineBarUI] timelineGroups null");
             return;
+        }
 
         for (int i = 0; i < timelineGroups.Length; i++)
         {
@@ -71,12 +75,31 @@ public class BattleTimelineBarUI : MonoBehaviour
                 }
             }
 
-            timelineGroups[i].SetTimelineEntries(entries, i);
+            if (monsterCommandsBySlot != null &&
+                i < monsterCommandsBySlot.Length &&
+                monsterCommandsBySlot[i] != null)
+            {
+                var monsterCommands = monsterCommandsBySlot[i];
+
+                for (int j = 0; j < monsterCommands.Count; j++)
+                {
+                    BattleTimelinePreviewEntry entry =
+                        BattleTimelinePreviewEntry.CreateMonster(i, j, monsterCommands[j]);
+
+                    if (entry != null)
+                        entries.Add(entry);
+                }
+            }
+
+            if (timelineGroups[i] != null)
+                timelineGroups[i].SetTimelineEntries(entries, i);
         }
     }
 
     public void Clear()
     {
+        Debug.LogWarning("[BattleTimelineBarUI] Clear È£ÃâµÊ\n" + System.Environment.StackTrace);
+
         AutoFindGroupsIfNeeded();
 
         if (timelineGroups == null)

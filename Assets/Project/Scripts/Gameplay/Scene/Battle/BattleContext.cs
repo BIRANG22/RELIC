@@ -5,9 +5,10 @@ namespace Relic.Gameplay.Battle
 {
     public class BattleContext
     {
+        public int CurrentRound;
         public int CurrentTurn;
 
-        public List<PlayerUnit> PlayerUnits = new();
+        //public List<PlayerUnit> PlayerUnits = new();
 
         public List<MonsterUnit> MonsterUnits = new();
 

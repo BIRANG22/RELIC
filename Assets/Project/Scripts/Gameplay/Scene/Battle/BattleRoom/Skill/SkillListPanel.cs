@@ -78,10 +78,10 @@ public class SkillListPanel : MonoBehaviour
         if (currentRuntime == null)
             return;
 
-        AddSkillSlot(currentRuntime.PassiveSkillId, false);
         AddSkillSlot(currentRuntime.MoveSkillId, true);
         AddSkillSlot(currentRuntime.AbilitySkillId1, true);
         AddSkillSlot(currentRuntime.AbilitySkillId2, true);
+        AddSkillSlot(currentRuntime.AbilitySkillId3, true);
         AddSkillSlot(currentRuntime.UniqueSkillId, true);
     }
 

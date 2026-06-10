@@ -16,8 +16,6 @@ public class BattleMapPanel : MonoBehaviour
 
     public void Open(MapRuntimeData mapRuntime)
     {
-        Debug.Log("[BattleMapPanel] Open »£√‚µ ");
-
         gameObject.SetActive(true);
 
         runtimeStore = DataManager.Instance.MapRuntimeStore;
@@ -49,7 +47,6 @@ public class BattleMapPanel : MonoBehaviour
 
         List<MapData> mapPool = DataManager.Instance.MapDatabase.GetAll();
 
-        Debug.Log($"[BattleMapPanel] MapPool Count: {mapPool.Count}");
         Debug.Log($"[BattleMapPanel] Chapter: {runtime.SelectedChapterId}, Stage: {runtime.CurrentStage}");
 
         ProceduralMapGenerator generator = new();
@@ -63,8 +60,6 @@ public class BattleMapPanel : MonoBehaviour
         runtime.IsRunInitialized = true;
 
         runtimeStore.Set(runtime);
-
-        Debug.Log($"[BattleMapPanel] GeneratedNodes Count: {runtime.GeneratedNodes.Count}");
     }
 
     private void SpawnMapView()

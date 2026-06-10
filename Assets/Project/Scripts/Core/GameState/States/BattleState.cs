@@ -9,8 +9,6 @@ public class BattleState : BaseGameState
 
     public override async Task Enter(GameStateContext context)
     {
-        Debug.Log("[BattleState] Enter Start");
-
         var mapRuntime = DataManager.Instance.MapRuntimeStore.Get();
 
         if (mapRuntime == null)
@@ -34,8 +32,6 @@ public class BattleState : BaseGameState
         DataManager.Instance.MapRuntimeStore.Set(mapRuntime);
 
         await sceneFlow.LoadSceneAsync(mapRuntime.CurrentSceneName);
-
-        Debug.Log("[BattleState] Enter Complete");
     }
 
     public override Task Exit()

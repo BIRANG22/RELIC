@@ -63,8 +63,6 @@ public class RelicChoiceSlotUI : MonoBehaviour
         if (relicInventory != null)
             relicInventory.Refresh();
 
-        Debug.Log($"[RelicChoiceSlotUI] Relic Selected: {relicId}");
-
         if (owner != null)
             owner.OnRelicSelected(relicId);
     }

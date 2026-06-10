@@ -38,7 +38,7 @@ public class BattleMonsterSpawner : MonoBehaviour
 
         var cells = spawnData.GetOccupiedCells();
 
-        if (cells.Count <= 0)
+        if (cells == null || cells.Count <= 0)
         {
             Debug.LogWarning($"[BattleMonsterSpawner] Á¡À¯Ä­ ¾øÀ½: {spawnData.MonsterId}");
             return null;
@@ -84,6 +84,7 @@ public class BattleMonsterSpawner : MonoBehaviour
         }
 
         monsterUnit.Initialize(runtimeData);
+        monsterUnit.SetOccupiedCells(cells);
 
         return new SpawnedMonsterResult
         {

@@ -111,8 +111,6 @@ public class BattleSceneController : MonoBehaviour
 
     private void OpenStartEvent(GeneratedMapNodeData nodeData)
     {
-        Debug.Log($"[BattleSceneController] 시작 이벤트 시작: {nodeData.MapId}");
-
         battleMapPanel.Close();
 
         if (startRoom != null)

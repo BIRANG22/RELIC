@@ -11,13 +11,19 @@ public class BattleCharacter : MonoBehaviour
 
     public string CharacterId => RuntimeData != null ? RuntimeData.CharacterId : null;
 
+    public int CurrentGridIndex { get; private set; } = -1;
+
     public void Initialize(CharacterRuntimeData runtimeData)
     {
         RuntimeData = runtimeData;
-
         LoadEquippedSkills();
     }
 
+    public void SetGridIndex(int gridIndex)
+    {
+        CurrentGridIndex = gridIndex;
+    }
+   
     private void LoadEquippedSkills()
     {
         equippedSkills.Clear();
@@ -28,6 +34,7 @@ public class BattleCharacter : MonoBehaviour
         AddSkill(RuntimeData.MoveSkillId);
         AddSkill(RuntimeData.AbilitySkillId1);
         AddSkill(RuntimeData.AbilitySkillId2);
+        AddSkill(RuntimeData.AbilitySkillId3);
         AddSkill(RuntimeData.UniqueSkillId);
     }
 

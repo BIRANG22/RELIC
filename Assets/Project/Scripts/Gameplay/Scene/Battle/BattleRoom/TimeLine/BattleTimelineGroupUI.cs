@@ -31,7 +31,6 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     private void Awake()
     {
         AutoFindReferences();
-        Clear();
     }
 
     private void Update()
@@ -69,8 +68,10 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             return;
 
         Sprite firstPlayerIcon = null;
+        Sprite firstEnemyIcon = null;
 
         int visibleIndex = 0;
+        int maxOrderCount = 5;
 
         for (int i = 0; i < entries.Count; i++)
         {
@@ -79,27 +80,56 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             if (entry == null)
                 continue;
 
-            if (visibleIndex >= playerSkillIconImages.Length)
+            if (visibleIndex >= maxOrderCount)
                 break;
 
             currentEntries.Add(entry);
 
-            if (firstPlayerIcon == null)
-                firstPlayerIcon = entry.OwnerIcon;
-
-            SetImage(playerSkillIconImages[visibleIndex], entry.SkillIcon, true);
-
-            if (playerMarkObjects != null &&
-                visibleIndex < playerMarkObjects.Length &&
-                playerMarkObjects[visibleIndex] != null)
+            if (entry.IsMonster)
             {
-                playerMarkObjects[visibleIndex].SetActive(true);
+                if (enemySkillIconImages != null &&
+                    visibleIndex < enemySkillIconImages.Length)
+                {
+                    SetSkillImage(enemySkillIconImages[visibleIndex], entry.SkillIcon, true);
+                }
+
+                if (enemyMarkObjects != null &&
+                    visibleIndex < enemyMarkObjects.Length &&
+                    enemyMarkObjects[visibleIndex] != null)
+                {
+                    enemyMarkObjects[visibleIndex].SetActive(true);
+                }
+            }
+            else
+            {
+                if (firstPlayerIcon == null)
+                    firstPlayerIcon = entry.OwnerIcon;
+
+                if (playerSkillIconImages != null &&
+                    visibleIndex < playerSkillIconImages.Length)
+                {
+                    SetSkillImage(playerSkillIconImages[visibleIndex], entry.SkillIcon, true);
+
+                    TimelineSkillIconHoverUI hoverUI =
+                        playerSkillIconImages[visibleIndex].GetComponentInParent<TimelineSkillIconHoverUI>();
+
+                    if (hoverUI != null)
+                        hoverUI.Setup(entry.PlayerCommand);
+                }
+
+                if (playerMarkObjects != null &&
+                    visibleIndex < playerMarkObjects.Length &&
+                    playerMarkObjects[visibleIndex] != null)
+                {
+                    playerMarkObjects[visibleIndex].SetActive(true);
+                }
             }
 
             visibleIndex++;
         }
 
         SetImage(playerIconImage, firstPlayerIcon, firstPlayerIcon != null);
+        SetImage(enemyIconImage, firstEnemyIcon, firstEnemyIcon != null);
     }
 
     public void Clear()
@@ -112,19 +142,49 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         if (playerSkillIconImages != null)
         {
             for (int i = 0; i < playerSkillIconImages.Length; i++)
+            {
                 SetImage(playerSkillIconImages[i], null, false);
+
+                if (playerSkillIconImages[i] != null &&
+                    playerSkillIconImages[i].transform.parent != null)
+                {
+                    playerSkillIconImages[i].transform.parent.gameObject.SetActive(false);
+                }
+            }
         }
 
         if (enemySkillIconImages != null)
         {
             for (int i = 0; i < enemySkillIconImages.Length; i++)
+            {
                 SetImage(enemySkillIconImages[i], null, false);
+
+                if (enemySkillIconImages[i] != null &&
+                    enemySkillIconImages[i].transform.parent != null)
+                {
+                    enemySkillIconImages[i].transform.parent.gameObject.SetActive(false);
+                }
+            }
         }
 
         SetObjectsActive(playerMarkObjects, false);
         SetObjectsActive(enemyMarkObjects, false);
     }
 
+    private void ClearSkillImage(Image image)
+    {
+        if (image == null)
+            return;
+
+        image.sprite = null;
+        image.enabled = false;
+        image.gameObject.SetActive(false);
+
+        Transform parent = image.transform.parent;
+
+        if (parent != null)
+            parent.gameObject.SetActive(false);
+    }
     public void OnPointerClick(PointerEventData eventData)
     {
         if (owner != null)
@@ -314,6 +374,26 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         image.raycastTarget = false;
     }
 
+    private void SetSkillImage(Image image, Sprite sprite, bool visible)
+    {
+        if (image == null)
+            return;
+
+        //Debug.Log($"[SetSkillImage] Path:{GetPath(image.transform)} / Sprite:{sprite}");
+
+        bool show = visible && sprite != null;
+
+        Transform parent = image.transform.parent;
+
+        if (parent != null)
+            parent.gameObject.SetActive(show);
+
+        image.gameObject.SetActive(show);
+        image.sprite = sprite;
+        image.enabled = show;
+        image.raycastTarget = false;
+    }
+
     private void SetObjectsActive(GameObject[] objects, bool active)
     {
         if (objects == null)
@@ -345,5 +425,23 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         }
 
         return null;
+    }
+
+    private string GetPath(Transform target)
+    {
+        if (target == null)
+            return "";
+
+        string path = target.name;
+
+        Transform current = target.parent;
+
+        while (current != null)
+        {
+            path = current.name + "/" + path;
+            current = current.parent;
+        }
+
+        return path;
     }
 }

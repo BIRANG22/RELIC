@@ -17,12 +17,16 @@ namespace Relic.Gameplay.Data
         private const int MinTotalNodeCount = 24;
         private const int MaxTotalNodeCount = 30;
 
-        private const float YStart = -750f;
+        private const float YStart = -1070f;
         private const float YGap = 150f;
-        private const float XGap = 140f;
+        private const float XGap = 280f;
 
-        private const float XJitter = 30f;
-        private const float YJitter = 18f;
+        private const float XJitter = 45f;
+        private const float YJitter = 25f;
+
+        private const float ExtraConnectionChance = 0.60f;
+        private const float EdgeExtraConnectionChance = 0.80f;
+        private const float EdgeColumnThresholdX = 140f;
 
         public List<GeneratedMapNodeData> Generate(
             List<MapData> mapPool,
@@ -105,9 +109,13 @@ namespace Relic.Gameplay.Data
                     {
                         counts[layer] = 2;
                     }
+                    else if(layer == 2)
+                    {
+                        counts[layer] = 3;
+                    }
                     else if (layer == TotalLayerCount - 2)
                     {
-                        counts[layer] = Random.Range(2, 3);
+                        counts[layer] = 2;
                     }
                     else
                     {
@@ -163,6 +171,29 @@ namespace Relic.Gameplay.Data
             if (layer == 1 && nodeCount == 2)
                 return new int[] { 1, 3 };
 
+            if (layer == TotalLayerCount - 3 && nodeCount >= 2)
+            {
+                List<int> fixedColumns = new();
+
+                fixedColumns.Add(Random.value < 0.5f ? 0 : 1);
+                fixedColumns.Add(Random.value < 0.5f ? 3 : 4);
+
+                while (fixedColumns.Count < nodeCount)
+                {
+                    int column = Random.Range(0, MaxColumnCount);
+
+                    if (!fixedColumns.Contains(column))
+                        fixedColumns.Add(column);
+                }
+
+                fixedColumns.Sort();
+
+                return fixedColumns.ToArray();
+            }
+
+            if (layer == TotalLayerCount - 2)
+                return new int[] { 1, 3 };
+
             if (layer == TotalLayerCount - 1)
                 return new int[] { 2 };
 
@@ -188,7 +219,9 @@ namespace Relic.Gameplay.Data
             float baseY = YStart + layer * YGap;
 
             bool isStartLayer = layer == 0;
+            bool isPenultimateLayer = layer == TotalLayerCount - 2;
             bool isBossLayer = layer == TotalLayerCount - 1;
+
 
             if (isStartLayer || isBossLayer)
                 return new Vector2(0f, baseY);
@@ -298,7 +331,12 @@ namespace Relic.Gameplay.Data
                 if (outgoingCount[from.NodeIndex] >= MaxOutgoingConnections)
                     continue;
 
-                if (Random.value > 0.60f)
+                float chance = ExtraConnectionChance;
+
+                if (Mathf.Abs(from.Position.x) >= EdgeColumnThresholdX)
+                    chance = EdgeExtraConnectionChance;
+
+                if (Random.value > chance)
                     continue;
 
                 int leftIndex = FindNearestCurrentIndexOnSide(

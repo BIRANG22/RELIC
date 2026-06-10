@@ -65,7 +65,5 @@ public class DataManager : Singleton<DataManager>
             mapNodeIconDatabase.Initialize();
 
         SkillEquipService = new SkillEquipService(CharacterRuntimeStore);
-
-        Debug.Log("[DataManager] Initialize Complete");
     }
 }
