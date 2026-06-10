@@ -55,10 +55,18 @@ public class BattleActionBatchBuilder
         if (command == null)
             return;
 
-        if (batches.Count == 0)
-            batches.Add(new BattleActionBatch());
+        for (int i = 0; i < batches.Count; i++)
+        {
+            if (CanAddMonsterCommand(batches[i], command))
+            {
+                batches[i].MonsterCommands.Add(command);
+                return;
+            }
+        }
 
-        batches[0].MonsterCommands.Add(command);
+        BattleActionBatch newBatch = new();
+        newBatch.MonsterCommands.Add(command);
+        batches.Add(newBatch);
     }
 
     private bool CanAddPlayerCommand(BattleActionBatch batch, PlayerReservedCommand command)
@@ -76,14 +84,40 @@ public class BattleActionBatchBuilder
             if (existing.CharacterId == command.CharacterId)
                 return false;
 
-            if (existing.ReservedMoveGridIndex >= 0 &&
-                command.ReservedMoveGridIndex >= 0 &&
-                existing.ReservedMoveGridIndex == command.ReservedMoveGridIndex)
-            {
+            if (IsSameMoveTarget(existing, command))
                 return false;
-            }
         }
 
         return true;
+    }
+
+    private bool CanAddMonsterCommand(BattleActionBatch batch, MonsterReservedCommand command)
+    {
+        if (batch == null || command == null)
+            return false;
+
+        for (int i = 0; i < batch.MonsterCommands.Count; i++)
+        {
+            MonsterReservedCommand existing = batch.MonsterCommands[i];
+
+            if (existing == null)
+                continue;
+
+            if (existing.RuntimeId == command.RuntimeId)
+                return false;
+        }
+
+        return true;
+    }
+
+    private bool IsSameMoveTarget(PlayerReservedCommand a, PlayerReservedCommand b)
+    {
+        if (a == null || b == null)
+            return false;
+
+        if (a.ReservedMoveGridIndex < 0 || b.ReservedMoveGridIndex < 0)
+            return false;
+
+        return a.ReservedMoveGridIndex == b.ReservedMoveGridIndex;
     }
 }
