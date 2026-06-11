@@ -1,4 +1,6 @@
 using System.Collections;
+using Relic.Gameplay.Data;
+using Relic.Gameplay.Monster;
 using UnityEngine;
 
 public class BattleActionRunner
@@ -23,7 +25,7 @@ public class BattleActionRunner
                 continue;
 
             if (command.ReservedMoveGridIndex >= 0)
-                ExecuteMove(command);
+                ExecutePlayerMove(command);
             else
                 ExecutePlayerSkill(command);
         }
@@ -35,13 +37,15 @@ public class BattleActionRunner
             if (command == null)
                 continue;
 
-            Debug.Log($"[BattleActionRunner] Monster Action / {command.SkillId}");
+            ExecuteMonsterCommand(command);
         }
+
+        RefreshHUDs();
 
         yield return new WaitForSeconds(0.35f);
     }
 
-    private void ExecuteMove(PlayerReservedCommand command)
+    private void ExecutePlayerMove(PlayerReservedCommand command)
     {
         BattleCharacter character = FindBattleCharacter(command.CharacterId);
 
@@ -51,29 +55,21 @@ public class BattleActionRunner
         int currentGridIndex = character.CurrentGridIndex;
 
         if (currentGridIndex < 0)
-        {
-            Debug.LogWarning($"[BattleActionRunner] 이동 실패 / 현재 위치 없음 / Character:{command.CharacterId}");
             return;
-        }
 
         Vector2Int currentCoord = gridManager.IndexToCoord(currentGridIndex);
         Vector2Int targetCoord = currentCoord + command.MoveOffset;
 
         if (!gridManager.IsValidCoord(targetCoord))
-        {
-            Debug.LogWarning($"[BattleActionRunner] 이동 실패 / 범위 밖 / Character:{command.CharacterId}");
             return;
-        }
 
         int targetGridIndex = gridManager.CoordToIndex(targetCoord);
 
         if (BattleOccupancyService.IsOccupiedByAnyUnit(targetGridIndex, command.CharacterId))
         {
             Debug.LogWarning(
-                $"[BattleActionRunner] 이동 실패 / Character:{command.CharacterId} / " +
-                $"From:{currentGridIndex} / To:{targetGridIndex}"
+                $"[BattleActionRunner] Player Move Blocked / {command.CharacterId} / To:{targetGridIndex}"
             );
-
             return;
         }
 
@@ -83,7 +79,214 @@ public class BattleActionRunner
         character.SetGridIndex(targetGridIndex);
         UpdatePartyGridIndex(command.CharacterId, targetGridIndex);
 
-        Debug.Log($"[BattleActionRunner] Move / {command.CharacterId} -> Grid:{targetGridIndex}");
+        Debug.Log($"[BattleActionRunner] Player Move / {command.CharacterId} -> {targetGridIndex}");
+    }
+
+    private void ExecutePlayerSkill(PlayerReservedCommand command)
+    {
+        int damage = GetPlayerDamage(command);
+
+        MonsterUnit[] monsters =
+            Object.FindObjectsByType<MonsterUnit>(
+                FindObjectsInactive.Exclude,
+                FindObjectsSortMode.None
+            );
+
+        for (int i = 0; i < monsters.Length; i++)
+        {
+            MonsterUnit monster = monsters[i];
+
+            if (monster == null || monster.RuntimeData == null)
+                continue;
+
+            if (!IsMonsterInRange(monster, command))
+                continue;
+
+            monster.RuntimeData.TakeDamage(damage);
+
+            Debug.Log(
+                $"[BattleActionRunner] Player Hit Monster / " +
+                $"{command.CharacterId} -> {monster.RuntimeData.Name} / Damage:{damage} / HP:{monster.RuntimeData.CurrentHp}"
+            );
+        }
+    }
+
+    private void ExecuteMonsterCommand(MonsterReservedCommand command)
+    {
+        if (command == null || command.SkillData == null)
+            return;
+
+        Debug.Log(
+            $"[MonsterCommand] Skill:{command.SkillId} / " +
+            $"GridMove:{command.SkillData.GridMove} / " +
+            $"MoveOffset:{command.MoveOffset} / " +
+            $"RangeCount:{command.RangeGridIndices.Count}"
+        );
+
+        if (command.MoveOffset != Vector2Int.zero ||
+            command.SkillData.TimelineNotation == TimelineActionType.Move)
+        {
+            ExecuteMonsterMove(command);
+            return;
+        }
+
+        ExecuteMonsterSkill(command);
+    }
+
+    private void ExecuteMonsterMove(MonsterReservedCommand command)
+    {
+        MonsterUnit monster = FindMonsterUnit(command.RuntimeId);
+
+        if (monster == null)
+            return;
+
+        int currentGridIndex = monster.MainGridIndex;
+
+        if (currentGridIndex < 0)
+            return;
+
+        Vector2Int moveOffset = GetMonsterMoveOffset(command);
+
+        if (moveOffset == Vector2Int.zero)
+            return;
+
+        for (int i = 0; i < monster.OccupiedGridIndices.Count; i++)
+        {
+            int occupiedIndex = monster.OccupiedGridIndices[i];
+            Vector2Int currentCoord = gridManager.IndexToCoord(occupiedIndex);
+            Vector2Int targetCoord = currentCoord + moveOffset;
+
+            if (!gridManager.IsValidCoord(targetCoord))
+            {
+                Debug.LogWarning($"[BattleActionRunner] Monster Move Blocked / Out of Grid / {monster.RuntimeData.Name}");
+                return;
+            }
+
+            int targetIndex = gridManager.CoordToIndex(targetCoord);
+
+            if (BattleOccupancyService.IsOccupiedByAnyUnit(targetIndex, null, monster))
+            {
+                Debug.LogWarning($"[BattleActionRunner] Monster Move Blocked / {monster.RuntimeData.Name} / To:{targetIndex}");
+                return;
+            }
+        }
+
+        Vector2Int mainCoord = gridManager.IndexToCoord(currentGridIndex);
+        Vector2Int movedMainCoord = mainCoord + moveOffset;
+        int movedMainIndex = gridManager.CoordToIndex(movedMainCoord);
+
+        Vector3 pos = gridManager.GetWorldPositionByIndex(movedMainIndex);
+
+        monster.transform.position = pos;
+        monster.MoveOccupiedCells(moveOffset, gridManager);
+
+        Debug.Log($"[BattleActionRunner] Monster Move / {monster.RuntimeData.Name} -> {movedMainIndex}");
+    }
+
+    private void ExecuteMonsterSkill(MonsterReservedCommand command)
+    {
+        MonsterUnit monster = FindMonsterUnit(command.RuntimeId);
+
+        if (monster == null)
+            return;
+
+        int damage = GetMonsterDamage(command);
+
+        BattleCharacter[] characters =
+            Object.FindObjectsByType<BattleCharacter>(
+                FindObjectsInactive.Exclude,
+                FindObjectsSortMode.None
+            );
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            BattleCharacter character = characters[i];
+
+            if (character == null || character.RuntimeData == null)
+                continue;
+
+            if (!command.RangeGridIndices.Contains(character.CurrentGridIndex))
+                continue;
+
+            character.RuntimeData.CurrentHealth =
+                Mathf.Max(0, character.RuntimeData.CurrentHealth - damage);
+
+            Debug.Log(
+                $"[BattleActionRunner] Monster Hit Player / " +
+                $"{monster.RuntimeData.Name} -> {character.CharacterId} / Damage:{damage} / HP:{character.RuntimeData.CurrentHealth}"
+            );
+        }
+    }
+
+    private Vector2Int GetMonsterMoveOffset(MonsterReservedCommand command)
+    {
+        if (command == null)
+            return Vector2Int.zero;
+
+        if (command.MoveOffset != Vector2Int.zero)
+            return command.MoveOffset;
+
+        int move = command.SkillData != null ? command.SkillData.GridMove : 0;
+
+        if (move == 0)
+            return Vector2Int.zero;
+
+        return new Vector2Int(-1 * Mathf.Abs(move), 0);
+    }
+
+    private bool IsMonsterInRange(MonsterUnit monster, PlayerReservedCommand command)
+    {
+        if (monster == null || command == null)
+            return false;
+
+        for (int i = 0; i < monster.OccupiedGridIndices.Count; i++)
+        {
+            if (command.RangeGridIndices.Contains(monster.OccupiedGridIndices[i]))
+                return true;
+        }
+
+        return false;
+    }
+
+    private int GetPlayerDamage(PlayerReservedCommand command)
+    {
+        if (command == null || command.SkillData == null)
+            return 1;
+
+        int value = ParseFirstInt(command.SkillData.ValueRate);
+
+        return Mathf.Max(1, value);
+    }
+
+    private int GetMonsterDamage(MonsterReservedCommand command)
+    {
+        if (command == null || command.SkillData == null)
+            return 1;
+
+        int value = ParseFirstInt(command.SkillData.ValueRate);
+
+        return Mathf.Max(1, value);
+    }
+
+    private int ParseFirstInt(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return 1;
+
+        string number = "";
+
+        for (int i = 0; i < text.Length; i++)
+        {
+            if (char.IsDigit(text[i]) || text[i] == '-')
+                number += text[i];
+            else if (!string.IsNullOrEmpty(number))
+                break;
+        }
+
+        if (int.TryParse(number, out int result))
+            return result;
+
+        return 1;
     }
 
     private void UpdatePartyGridIndex(string characterId, int gridIndex)
@@ -103,21 +306,13 @@ public class BattleActionRunner
         }
     }
 
-    private void ExecutePlayerSkill(PlayerReservedCommand command)
-    {
-        Debug.Log($"[BattleActionRunner] Player Skill / {command.CharacterId} / {command.SkillId}");
-
-        // 다음 단계:
-        // command.RangeGridIndices 안에 있는 몬스터 찾기
-        // EffectId 기준으로 데미지/버프/디버프 적용
-    }
-
     private BattleCharacter FindBattleCharacter(string characterId)
     {
-        BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
-            FindObjectsInactive.Exclude,
-            FindObjectsSortMode.None
-        );
+        BattleCharacter[] characters =
+            Object.FindObjectsByType<BattleCharacter>(
+                FindObjectsInactive.Exclude,
+                FindObjectsSortMode.None
+            );
 
         for (int i = 0; i < characters.Length; i++)
         {
@@ -126,5 +321,52 @@ public class BattleActionRunner
         }
 
         return null;
+    }
+
+    private MonsterUnit FindMonsterUnit(string runtimeId)
+    {
+        MonsterUnit[] monsters =
+            Object.FindObjectsByType<MonsterUnit>(
+                FindObjectsInactive.Exclude,
+                FindObjectsSortMode.None
+            );
+
+        for (int i = 0; i < monsters.Length; i++)
+        {
+            if (monsters[i] == null || monsters[i].RuntimeData == null)
+                continue;
+
+            if (monsters[i].RuntimeData.RuntimeId == runtimeId)
+                return monsters[i];
+        }
+
+        return null;
+    }
+
+    private void RefreshHUDs()
+    {
+        PlayerHUDSlot[] playerHuds =
+            Object.FindObjectsByType<PlayerHUDSlot>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None
+            );
+
+        for (int i = 0; i < playerHuds.Length; i++)
+        {
+            if (playerHuds[i] != null)
+                playerHuds[i].Refresh();
+        }
+
+        MonsterHUDSlot[] monsterHuds =
+            Object.FindObjectsByType<MonsterHUDSlot>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None
+            );
+
+        for (int i = 0; i < monsterHuds.Length; i++)
+        {
+            if (monsterHuds[i] != null)
+                monsterHuds[i].Refresh();
+        }
     }
 }

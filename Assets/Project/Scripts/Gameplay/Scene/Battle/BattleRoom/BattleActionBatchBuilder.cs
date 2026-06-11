@@ -11,12 +11,14 @@ public class BattleActionBatchBuilder
 
         for (int slotIndex = 0; slotIndex < timelineController.SlotCount; slotIndex++)
         {
+            EnsureBatchExists(batches, slotIndex);
+
             var playerCommands = timelineController.GetPlayerCommands(slotIndex);
 
             if (playerCommands != null)
             {
                 for (int i = 0; i < playerCommands.Count; i++)
-                    AddPlayerCommand(batches, playerCommands[i]);
+                    AddPlayerCommand(batches, playerCommands[i], slotIndex);
             }
 
             var monsterCommands = timelineController.GetMonsterCommands(slotIndex);
@@ -24,19 +26,24 @@ public class BattleActionBatchBuilder
             if (monsterCommands != null)
             {
                 for (int i = 0; i < monsterCommands.Count; i++)
-                    AddMonsterCommand(batches, monsterCommands[i]);
+                    AddMonsterCommand(batches, monsterCommands[i], slotIndex);
             }
         }
 
         return batches;
     }
 
-    private void AddPlayerCommand(List<BattleActionBatch> batches, PlayerReservedCommand command)
+    private void AddPlayerCommand(
+        List<BattleActionBatch> batches,
+        PlayerReservedCommand command,
+        int minBatchIndex)
     {
         if (command == null)
             return;
 
-        for (int i = 0; i < batches.Count; i++)
+        EnsureBatchExists(batches, minBatchIndex);
+
+        for (int i = minBatchIndex; i < batches.Count; i++)
         {
             if (CanAddPlayerCommand(batches[i], command))
             {
@@ -50,12 +57,17 @@ public class BattleActionBatchBuilder
         batches.Add(newBatch);
     }
 
-    private void AddMonsterCommand(List<BattleActionBatch> batches, MonsterReservedCommand command)
+    private void AddMonsterCommand(
+        List<BattleActionBatch> batches,
+        MonsterReservedCommand command,
+        int minBatchIndex)
     {
         if (command == null)
             return;
 
-        for (int i = 0; i < batches.Count; i++)
+        EnsureBatchExists(batches, minBatchIndex);
+
+        for (int i = minBatchIndex; i < batches.Count; i++)
         {
             if (CanAddMonsterCommand(batches[i], command))
             {
@@ -67,6 +79,12 @@ public class BattleActionBatchBuilder
         BattleActionBatch newBatch = new();
         newBatch.MonsterCommands.Add(command);
         batches.Add(newBatch);
+    }
+
+    private void EnsureBatchExists(List<BattleActionBatch> batches, int index)
+    {
+        while (batches.Count <= index)
+            batches.Add(new BattleActionBatch());
     }
 
     private bool CanAddPlayerCommand(BattleActionBatch batch, PlayerReservedCommand command)

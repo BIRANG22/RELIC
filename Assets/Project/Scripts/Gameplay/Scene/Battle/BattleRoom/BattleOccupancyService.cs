@@ -3,12 +3,15 @@ using UnityEngine;
 
 public static class BattleOccupancyService
 {
-    public static bool IsOccupiedByAnyUnit(int gridIndex, string selfCharacterId = null)
+    public static bool IsOccupiedByAnyUnit(
+        int gridIndex,
+        string selfCharacterId = null,
+        MonsterUnit ignoreMonster = null)
     {
         if (IsOccupiedByCharacter(gridIndex, selfCharacterId))
             return true;
 
-        if (IsOccupiedByMonster(gridIndex))
+        if (IsOccupiedByMonster(gridIndex, ignoreMonster))
             return true;
 
         return false;
@@ -40,7 +43,7 @@ public static class BattleOccupancyService
         return false;
     }
 
-    public static bool IsOccupiedByMonster(int gridIndex)
+    public static bool IsOccupiedByMonster(int gridIndex, MonsterUnit ignoreMonster = null)
     {
         MonsterUnit[] monsters =
             Object.FindObjectsByType<MonsterUnit>(
@@ -53,6 +56,9 @@ public static class BattleOccupancyService
             MonsterUnit monster = monsters[i];
 
             if (monster == null)
+                continue;
+
+            if (ignoreMonster != null && monster == ignoreMonster)
                 continue;
 
             if (monster.ContainsGridIndex(gridIndex))
