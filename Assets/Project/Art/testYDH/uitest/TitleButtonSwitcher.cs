@@ -1,8 +1,9 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class TitleButtonSwitcher : MonoBehaviour
+public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
 {
     [System.Serializable]
     public class MoveTarget
@@ -38,6 +39,12 @@ public class TitleButtonSwitcher : MonoBehaviour
     [Header("GameObject (2) Move Targets")]
     [SerializeField] private MoveTarget[] object2MoveTargets;
 
+    [Header("Sound")]
+    [SerializeField] private bool playHoverSound = true;
+    [SerializeField] private SfxType hoverSfx = SfxType.MoveButtonHover;
+    [SerializeField] private bool playClickSound = true;
+    [SerializeField] private SfxType clickSfx = SfxType.MoveButtonClick;
+
     private Coroutine moveCoroutine;
 
     private void Awake()
@@ -57,12 +64,41 @@ public class TitleButtonSwitcher : MonoBehaviour
         }
     }
 
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        PlayHoverSound();
+    }
+
     private void OnClickTitleButton()
     {
+        PlayClickSound();
+
         int currentIndex = GetCurrentActiveIndex();
         int nextIndex = GetRandomNextIndex(currentIndex);
 
         SetActiveObject(nextIndex);
+    }
+
+    private void PlayHoverSound()
+    {
+        if (!playHoverSound)
+            return;
+
+        if (AudioManager.Instance == null)
+            return;
+
+        AudioManager.Instance.PlaySfx(hoverSfx);
+    }
+
+    private void PlayClickSound()
+    {
+        if (!playClickSound)
+            return;
+
+        if (AudioManager.Instance == null)
+            return;
+
+        AudioManager.Instance.PlaySfx(clickSfx);
     }
 
     private int GetCurrentActiveIndex()

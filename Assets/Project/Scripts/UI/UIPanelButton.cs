@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public enum UIPanelEffect
@@ -8,7 +9,7 @@ public enum UIPanelEffect
     Fade
 }
 
-public class UIPanelButton : MonoBehaviour
+public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 {
     [Header("Panel Active")]
     [SerializeField] private GameObject panelToOpen;
@@ -35,15 +36,17 @@ public class UIPanelButton : MonoBehaviour
     [SerializeField] private Image fadeImage;
     [SerializeField] private float fadeDuration = 0.2f;
 
-    [Header("Option")]
+    [Header("Sound")]
+    [SerializeField] private bool playHoverSound = true;
+    [SerializeField] private SfxType hoverSfx = SfxType.NormalButtonHover;
     [SerializeField] private bool playClickSound = true;
-
-    
+    [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
 
     private bool isPlayingEffect;
     private bool isMoved;
     private Vector2 originalPosition;
     private Coroutine moveCoroutine;
+    private int lastClickSoundFrame = -1;
 
     private void Awake()
     {
@@ -54,13 +57,17 @@ public class UIPanelButton : MonoBehaviour
             flipTarget = GetComponent<RectTransform>();
     }
 
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        PlayHoverSound();
+    }
+
     public void Execute()
     {
         if (isPlayingEffect)
             return;
 
-        if (playClickSound && AudioManager.Instance != null)
-            AudioManager.Instance.PlaySfx(SfxType.Click);
+        PlayClickSound();
 
         if (toggleIfAlreadyOpen &&
             panelToOpen != null &&
@@ -93,15 +100,14 @@ public class UIPanelButton : MonoBehaviour
     {
         if (panelToMove == null)
         {
-            Debug.LogWarning("[UIPanelButton] Panel To Move가 연결되지 않았습니다.");
+            Debug.LogWarning("[UIPanelButton] Panel To Move is not assigned.");
             return;
         }
 
         if (isPlayingEffect)
             return;
 
-        if (playClickSound && AudioManager.Instance != null)
-            AudioManager.Instance.PlaySfx(SfxType.Click);
+        PlayClickSound();
 
         Vector2 targetPosition;
 
@@ -124,6 +130,32 @@ public class UIPanelButton : MonoBehaviour
             StopCoroutine(moveCoroutine);
 
         moveCoroutine = StartCoroutine(MoveRoutine(targetPosition));
+    }
+
+    private void PlayHoverSound()
+    {
+        if (!playHoverSound)
+            return;
+
+        if (AudioManager.Instance == null)
+            return;
+
+        AudioManager.Instance.PlaySfx(hoverSfx);
+    }
+
+    private void PlayClickSound()
+    {
+        if (!playClickSound)
+            return;
+
+        if (Time.frameCount == lastClickSoundFrame)
+            return;
+
+        if (AudioManager.Instance == null)
+            return;
+
+        lastClickSoundFrame = Time.frameCount;
+        AudioManager.Instance.PlaySfx(clickSfx);
     }
 
     private void ApplyButtonFlip()
