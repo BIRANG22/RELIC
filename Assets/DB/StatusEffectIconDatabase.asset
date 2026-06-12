@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: StatusEffectIconDatabase
   m_EditorClassIdentifier: 
   entries:
-  - EffectId: E_Strength
+  - EffectId: E_Power
     Icon: {fileID: 21300000, guid: 31dd33e007cb5664bb33d57e00495822, type: 3}
   - EffectId: E_Thorns
     Icon: {fileID: 21300000, guid: 7c2b14369cfebbc4e9cc0228c5f8cb27, type: 3}
@@ -23,7 +23,7 @@ MonoBehaviour:
     Icon: {fileID: 21300000, guid: 2f36f6c2e353e1148af2113d4881846d, type: 3}
   - EffectId: E_Bleed
     Icon: {fileID: 21300000, guid: d36214ef5dc403b47a308056977771b0, type: 3}
-  - EffectId: E_Poison
+  - EffectId: E_Addicted
     Icon: {fileID: 21300000, guid: 5a6906fb61381bf49ad1a1dab297f183, type: 3}
   - EffectId: E_Vulnerable
     Icon: {fileID: 21300000, guid: 09545009da7132d49864823d710dfe79, type: 3}
@@ -33,5 +33,5 @@ MonoBehaviour:
     Icon: {fileID: 21300000, guid: 43f9dafa6667a114ea0d1917adce7153, type: 3}
   - EffectId: E_Block
     Icon: {fileID: 21300000, guid: f690ed4362d85e94badd9ebab7f8c906, type: 3}
-  - EffectId: E_Haste
+  - EffectId: E_Recover
     Icon: {fileID: 21300000, guid: febe5f0d680105e43b3868ab27187932, type: 3}

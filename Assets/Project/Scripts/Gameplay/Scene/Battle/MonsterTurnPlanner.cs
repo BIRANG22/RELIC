@@ -31,7 +31,7 @@ namespace Relic.Gameplay.Battle
                 if (string.IsNullOrWhiteSpace(skillId))
                     continue;
 
-                SkillMasterData skillData = DataManager.Instance.SkillDatabase.Get(skillId);
+                MonsterSkillData skillData = DataManager.Instance.MonsterSkillDatabase.Get(skillId);
 
                 timelineManager.AddMonsterAction(
                     monster,

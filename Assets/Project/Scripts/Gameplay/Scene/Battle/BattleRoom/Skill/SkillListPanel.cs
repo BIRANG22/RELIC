@@ -79,10 +79,17 @@ public class SkillListPanel : MonoBehaviour
             return;
 
         AddSkillSlot(currentRuntime.MoveSkillId, true);
-        AddSkillSlot(currentRuntime.AbilitySkillId1, true);
-        AddSkillSlot(currentRuntime.AbilitySkillId2, true);
-        AddSkillSlot(currentRuntime.AbilitySkillId3, true);
         AddSkillSlot(currentRuntime.UniqueSkillId, true);
+        AddSkillSlot(currentRuntime.AbilitySkillId, true);
+
+        if (currentRuntime.EquippedSkillIds != null)
+        {
+            if (currentRuntime.EquippedSkillIds.Length > 2)
+                AddSkillSlot(currentRuntime.EquippedSkillIds[2], true);
+
+            if (currentRuntime.EquippedSkillIds.Length > 3)
+                AddSkillSlot(currentRuntime.EquippedSkillIds[3], true);
+        }
     }
 
     private void AddSkillSlot(string skillId, bool interactable)

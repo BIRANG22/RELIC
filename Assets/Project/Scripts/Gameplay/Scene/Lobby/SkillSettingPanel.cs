@@ -122,6 +122,8 @@ public class SkillSettingPanel : MonoBehaviour
             return;
         }
 
+        EnsureEquippedSkillArray();
+
         LoadCurrentSkillSetting();
         ClearSkillIconButtons();
         SetSkillSelectPanelVisible(true);
@@ -142,11 +144,10 @@ public class SkillSettingPanel : MonoBehaviour
 
     private void LoadCurrentSkillSetting()
     {
-        if (currentRuntimeData == null)
+        if (currentRuntimeData == null || skillSlotButtons == null)
             return;
 
-        if (skillSlotButtons == null)
-            return;
+        EnsureEquippedSkillArray();
 
         for (int i = 0; i < skillSlotButtons.Length; i++)
         {
@@ -168,7 +169,7 @@ public class SkillSettingPanel : MonoBehaviour
             if (skillSlotButtons[i] != null)
                 skillSlotButtons[i].SetSkill(skill);
 
-            SetRuntimeSkillId(i, skill != null ? skill.SkillId : null);
+            SetRuntimeSkillId(i, skill != null ? skill.SkillId : "");
         }
 
         DataManager.Instance.CharacterRuntimeStore.AddOrUpdate(currentRuntimeData);
@@ -194,11 +195,10 @@ public class SkillSettingPanel : MonoBehaviour
 
     private void SaveCurrentSkillSetting()
     {
-        if (currentRuntimeData == null)
+        if (currentRuntimeData == null || skillSlotButtons == null)
             return;
 
-        if (skillSlotButtons == null)
-            return;
+        EnsureEquippedSkillArray();
 
         for (int i = 0; i < skillSlotButtons.Length; i++)
         {
@@ -213,7 +213,7 @@ public class SkillSettingPanel : MonoBehaviour
             if (skill != null && IsSkillLockedForCurrentLevel(skill, i))
                 skill = null;
 
-            SetRuntimeSkillId(i, skill != null ? skill.SkillId : null);
+            SetRuntimeSkillId(i, skill != null ? skill.SkillId : "");
         }
 
         if (DataManager.Instance != null)
@@ -237,7 +237,6 @@ public class SkillSettingPanel : MonoBehaviour
         currentSelectedSlot = slotButton;
 
         List<SkillMasterData> candidates = GetSkillCandidates(slotButton.SlotIndex);
-
         RefreshSkillIconButtons(candidates, slotButton.SlotIndex);
 
         if (moveSelectPanelToSlot)
@@ -281,34 +280,48 @@ public class SkillSettingPanel : MonoBehaviour
             case 0:
                 return new string[]
                 {
-                    currentMasterData.PassiveSkill1,
-                    currentMasterData.PassiveSkill2
+                currentMasterData.PassiveSkill1,
+                currentMasterData.PassiveSkill2
                 };
 
             case 1:
                 return new string[]
                 {
-                    currentMasterData.UniqueSkill1,
-                    currentMasterData.UniqueSkill2
+                currentMasterData.UniqueSkill1,
+                currentMasterData.UniqueSkill2
                 };
 
             case 2:
                 return new string[]
                 {
-                    currentMasterData.CharacterSkill1,
-                    currentMasterData.CharacterSkill2
+                currentMasterData.CharacterSkill1,
+                currentMasterData.CharacterSkill2
                 };
 
             case 3:
                 return new string[]
                 {
-                    currentMasterData.CommonSkill1,
-                    currentMasterData.CommonSkill2
+                currentMasterData.CommonSkill1,
+                currentMasterData.CommonSkill2
                 };
 
             default:
                 return new string[0];
         }
+    }
+
+    private void AddIfValid(List<string> ids, string skillId)
+    {
+        if (ids == null)
+            return;
+
+        if (string.IsNullOrWhiteSpace(skillId))
+            return;
+
+        if (ids.Contains(skillId))
+            return;
+
+        ids.Add(skillId);
     }
 
     private void AddUniqueSkill(List<SkillMasterData> result, SkillMasterData skill)
@@ -330,15 +343,23 @@ public class SkillSettingPanel : MonoBehaviour
         if (skill == null)
             return false;
 
-        List<SkillMasterData> candidates = GetSkillCandidates(slotIndex);
-
-        for (int i = 0; i < candidates.Count; i++)
+        switch (slotIndex)
         {
-            if (IsSameSkill(candidates[i], skill))
-                return true;
-        }
+            case 0:
+                return skill.Category == Category.Passive;
 
-        return false;
+            case 1:
+                return skill.Category == Category.Unique;
+
+            case 2:
+                return skill.Category == Category.Ability;
+
+            case 3:
+                return skill.Category == Category.Public;
+
+            default:
+                return false;
+        }
     }
 
     private bool IsSkillLockedForCurrentLevel(SkillMasterData skill, int slotIndex)
@@ -354,16 +375,6 @@ public class SkillSettingPanel : MonoBehaviour
 
     private int GetRequiredLevelForSkill(SkillMasterData skill, int slotIndex)
     {
-        if (skill == null)
-            return 1;
-
-        /*
-         * 현재 네 SkillMasterData에는 unlockLevel 같은 필드가 없음.
-         * 그래서 기본은 전부 LV.1 해금으로 둠.
-         *
-         * 나중에 엑셀에 RequiredLevel / UnlockLevel 컬럼을 추가하면
-         * SkillMasterData에 int UnlockLevel 추가하고 여기서 반환하면 됨.
-         */
         return 1;
     }
 
@@ -485,10 +496,13 @@ public class SkillSettingPanel : MonoBehaviour
                 return currentRuntimeData.UniqueSkillId;
 
             case 2:
-                return currentRuntimeData.AbilitySkillId1;
+                return currentRuntimeData.AbilitySkillId;
 
             case 3:
-                return currentRuntimeData.AbilitySkillId2;
+                return currentRuntimeData.EquippedSkillIds != null &&
+                       currentRuntimeData.EquippedSkillIds.Length > 2
+                    ? currentRuntimeData.EquippedSkillIds[2]
+                    : null;
         }
 
         return null;
@@ -499,6 +513,8 @@ public class SkillSettingPanel : MonoBehaviour
         if (currentRuntimeData == null)
             return;
 
+        EnsureEquippedSkillArray();
+
         switch (slotIndex)
         {
             case 0:
@@ -507,22 +523,69 @@ public class SkillSettingPanel : MonoBehaviour
 
             case 1:
                 currentRuntimeData.UniqueSkillId = skillId;
+                currentRuntimeData.EquippedSkillIds[0] = skillId;
                 break;
 
             case 2:
-                currentRuntimeData.AbilitySkillId1 = skillId;
+                currentRuntimeData.AbilitySkillId = skillId;
+                currentRuntimeData.EquippedSkillIds[1] = skillId;
                 break;
 
             case 3:
-                currentRuntimeData.AbilitySkillId2 = skillId;
+                currentRuntimeData.EquippedSkillIds[2] = skillId;
                 break;
         }
+    }
 
-        if (currentRuntimeData.EquippedSkillIds == null)
+    private void EnsureEquippedSkillArray()
+    {
+        if (currentRuntimeData == null)
+            return;
+
+        if (currentRuntimeData.EquippedSkillIds == null ||
+            currentRuntimeData.EquippedSkillIds.Length != 4)
+        {
             currentRuntimeData.EquippedSkillIds = new string[4];
+        }
 
-        if (slotIndex >= 0 && slotIndex < currentRuntimeData.EquippedSkillIds.Length)
-            currentRuntimeData.EquippedSkillIds[slotIndex] = skillId;
+        if (string.IsNullOrWhiteSpace(currentRuntimeData.EquippedSkillIds[0]))
+            currentRuntimeData.EquippedSkillIds[0] = currentRuntimeData.UniqueSkillId;
+
+        if (string.IsNullOrWhiteSpace(currentRuntimeData.EquippedSkillIds[1]))
+            currentRuntimeData.EquippedSkillIds[1] = currentRuntimeData.AbilitySkillId;
+
+        if (string.IsNullOrWhiteSpace(currentRuntimeData.EquippedSkillIds[2]) &&
+        currentMasterData != null)
+        {
+            currentRuntimeData.EquippedSkillIds[2] = currentMasterData.CommonSkill1;
+        }
+
+        if (currentMasterData != null)
+        {
+            string freeSkillId = currentRuntimeData.EquippedSkillIds[2];
+
+            if (string.IsNullOrWhiteSpace(freeSkillId) ||
+                !IsPublicSkill(freeSkillId))
+            {
+                currentRuntimeData.EquippedSkillIds[2] = currentMasterData.CommonSkill1;
+            }
+        }
+    }
+
+    private bool IsPublicSkill(string skillId)
+    {
+        if (string.IsNullOrWhiteSpace(skillId))
+            return false;
+
+        if (DataManager.Instance == null || DataManager.Instance.SkillDatabase == null)
+            return false;
+
+        SkillMasterData skill = DataManager.Instance.SkillDatabase.Get(skillId);
+
+        if (skill == null)
+            return false;
+
+        return skill.Category == Category.Public;
     }
 
     private void ClearSkillSlots()

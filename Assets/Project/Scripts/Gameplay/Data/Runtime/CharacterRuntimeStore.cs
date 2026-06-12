@@ -32,12 +32,19 @@ namespace Relic.Gameplay.Data
 
         private void LogCharacterRuntime(CharacterRuntimeData data)
         {
+            if (data == null)
+                return;
+
+            string equippedSkills = data.EquippedSkillIds != null
+                ? string.Join(", ", data.EquippedSkillIds)
+                : "None";
+
             string skills =
                 $"Move:{data.MoveSkillId}, " +
                 $"Passive:{data.PassiveSkillId}, " +
-                $"Ability1:{data.AbilitySkillId1}, " +
-                $"Ability2:{data.AbilitySkillId2}, " +
-                $"Unique:{data.UniqueSkillId}";
+                $"Unique:{data.UniqueSkillId}, " +
+                $"Ability:{data.AbilitySkillId}, " +
+                $"Equipped:[{equippedSkills}]";
 
             var items = data.EquippedItemIds != null && data.EquippedItemIds.Count > 0
                 ? string.Join(", ", data.EquippedItemIds)

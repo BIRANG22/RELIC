@@ -162,15 +162,14 @@ public class CharPick : MonoBehaviour
 
             PassiveSkillId = master.PassiveSkill1,
             UniqueSkillId = master.UniqueSkill1,
-            AbilitySkillId1 = master.CharacterSkill1,
-            AbilitySkillId2 = master.CommonSkill1,
+            AbilitySkillId = master.CharacterSkill1,
 
             EquippedSkillIds = new string[4]
             {
-                master.PassiveSkill1,
                 master.UniqueSkill1,
                 master.CharacterSkill1,
-                master.CommonSkill1
+                master.CommonSkill1,
+                ""
             }
         };
 

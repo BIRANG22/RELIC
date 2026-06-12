@@ -10,9 +10,23 @@ public class BattleDebugDataProvider : MonoBehaviour
     [Header("Debug Grid Indices")]
     [SerializeField] private int[] debugGridIndices = { 0, 1, 2 };
 
+    [Header("Debug Skills")]
+    [SerializeField] private string defaultMoveSkillId = "S_Move_1";
+    [SerializeField] private string defaultPassiveSkillId = "S_Passive_01";
+    [SerializeField] private string defaultUniqueSkillId = "S_Unique_01";
+    [SerializeField] private string defaultAbilitySkillId = "S_Ability_01";
+    [SerializeField] private string defaultFreeSkillId1 = "S_Public_01";
+    [SerializeField] private string defaultFreeSkillId2 = "";
+
     public void CreateDebugData()
     {
         var dm = DataManager.Instance;
+
+        if (dm == null)
+        {
+            Debug.LogWarning("[BattleDebugDataProvider] DataManager가 없습니다.");
+            return;
+        }
 
         dm.PartyRuntimeStore.Clear();
 
@@ -41,13 +55,18 @@ public class BattleDebugDataProvider : MonoBehaviour
 
                 IsUnlocked = true,
 
-                MoveSkillId = "S_Move_1",
-                PassiveSkillId = "S_Passive_01",
+                MoveSkillId = defaultMoveSkillId,
+                PassiveSkillId = defaultPassiveSkillId,
+                UniqueSkillId = defaultUniqueSkillId,
+                AbilitySkillId = defaultAbilitySkillId,
 
-                AbilitySkillId1 = "S_Ability_01",
-                AbilitySkillId2 = null,
-
-                UniqueSkillId = "S_Unique_01",
+                EquippedSkillIds = new string[4]
+                {
+                    defaultUniqueSkillId,
+                    defaultAbilitySkillId,
+                    defaultFreeSkillId1,
+                    defaultFreeSkillId2
+                },
 
                 EquippedItemIds = new List<string>()
             };

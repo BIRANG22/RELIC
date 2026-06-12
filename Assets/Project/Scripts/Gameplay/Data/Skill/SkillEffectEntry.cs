@@ -10,10 +10,8 @@ namespace Relic.Gameplay.Data
         public ValueCalcType ValueCalcType;
         public int ValueAmount;
 
-        public ValueCalcType CountCalcType;
         public int CountAmount;
 
-        // EffectMaster에서 가져온 실제 효과 데이터
         public EffectMasterData EffectData;
     }
 }

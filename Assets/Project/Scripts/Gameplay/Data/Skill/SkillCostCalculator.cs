@@ -1,9 +1,13 @@
 using Relic.Gameplay.Data;
+using UnityEngine;
 
 public static class SkillCostCalculator
 {
     public static int GetCurrentResource(CharacterRuntimeData caster, ReferenceResource type)
     {
+        if (caster == null)
+            return 0;
+
         return type switch
         {
             ReferenceResource.Health => caster.CurrentHealth,
@@ -14,7 +18,22 @@ public static class SkillCostCalculator
         };
     }
 
-    public static bool TryGetPayAmount(
+    public static int GetPreviewResource(CharacterRuntimeData caster, ReferenceResource type)
+    {
+        if (caster == null)
+            return 0;
+
+        return type switch
+        {
+            ReferenceResource.Health => caster.PreviewHealth,
+            ReferenceResource.Stamina => caster.PreviewStamina,
+            ReferenceResource.UniqueResource => caster.PreviewResource,
+            ReferenceResource.MovePoint => caster.PreviewMoveLevel,
+            _ => 0
+        };
+    }
+
+    public static bool TryGetPreviewPayAmount(
         CharacterRuntimeData caster,
         SkillMasterData skill,
         out int payAmount)
@@ -24,7 +43,8 @@ public static class SkillCostCalculator
         if (caster == null || skill == null)
             return false;
 
-        int current = GetCurrentResource(caster, skill.ReferenceResource);
+        int available = GetPreviewResource(caster, skill.ReferenceResource);
+        int costValue = Mathf.Max(0, skill.ResourceCostValue);
 
         switch (skill.ResourceCostType)
         {
@@ -33,48 +53,15 @@ public static class SkillCostCalculator
                 return true;
 
             case ResourceCostType.Fixed:
-                payAmount = skill.ResourceCostValue;
-                return current >= payAmount;
+                payAmount = costValue;
+                return available >= payAmount;
 
             case ResourceCostType.AllCurrent:
-                // ResourceCostValue는 최소 요구량
-                payAmount = current;
-                return current >= skill.ResourceCostValue;
+                payAmount = available;
+                return available >= Mathf.Max(1, costValue);
 
             default:
                 return false;
         }
-    }
-
-    public static bool CanUse(CharacterRuntimeData caster, SkillMasterData skill)
-    {
-        return TryGetPayAmount(caster, skill, out _);
-    }
-
-    public static bool TryPay(CharacterRuntimeData caster, SkillMasterData skill, out int payAmount)
-    {
-        if (!TryGetPayAmount(caster, skill, out payAmount))
-            return false;
-
-        switch (skill.ReferenceResource)
-        {
-            case ReferenceResource.Health:
-                caster.CurrentHealth -= payAmount;
-                break;
-
-            case ReferenceResource.Stamina:
-                caster.CurrentStamina -= payAmount;
-                break;
-
-            case ReferenceResource.UniqueResource:
-                caster.CurrentResource -= payAmount;
-                break;
-
-            case ReferenceResource.MovePoint:
-                caster.CurrentMoveLevel -= payAmount;
-                break;
-        }
-
-        return true;
     }
 }

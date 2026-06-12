@@ -7,10 +7,8 @@ namespace Relic.Gameplay.Data
     {
         public string PassiveId;
         public string UniqueSkillId;
-        public string[] AbilitySkillIds = new string[3];
-        public SkillFragmentSlotData[] FragmentSlots = new SkillFragmentSlotData[3]
-        {
-            new SkillFragmentSlotData(), new SkillFragmentSlotData(), new SkillFragmentSlotData()
-        };
+        public string AbilitySkillId;
+
+        public string[] FreeSkillIds = new string[2];
     }
 }
