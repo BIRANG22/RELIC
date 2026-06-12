@@ -1,53 +1,14 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
 
-public class OptionCloseButton : MonoBehaviour, IPointerEnterHandler
+public class OptionCloseButton : MonoBehaviour
 {
-    [Header("Sound")]
-    [SerializeField] private bool playHoverSound = true;
-    [SerializeField] private SfxType hoverSfx = SfxType.NormalButtonHover;
     [SerializeField] private bool playClickSound = true;
-    [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
-
-    public void OnPointerEnter(PointerEventData eventData)
-    {
-        PlayHoverSound();
-    }
 
     public void CloseOption()
     {
-        PlayClickSound();
+        if (playClickSound)
+            AudioManager.Instance.PlaySfx(SfxType.Click);
 
         UIManager.Instance.HideOption();
-    }
-
-    private void PlayHoverSound()
-    {
-        if (!playHoverSound)
-        {
-            return;
-        }
-
-        if (AudioManager.Instance == null)
-        {
-            return;
-        }
-
-        AudioManager.Instance.PlaySfx(hoverSfx);
-    }
-
-    private void PlayClickSound()
-    {
-        if (!playClickSound)
-        {
-            return;
-        }
-
-        if (AudioManager.Instance == null)
-        {
-            return;
-        }
-
-        AudioManager.Instance.PlaySfx(clickSfx);
     }
 }
