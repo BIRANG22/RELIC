@@ -38,14 +38,6 @@ public class PlayerReservedCommand
         SkillData = skillData;
 
         CalculateCosts(skillData);
-
-        Debug.Log(
-            $"[PlayerReservedCommand] Skill:{SkillId} / " +
-            $"Reference:{skillData?.ReferenceResource} / " +
-            $"CostType:{skillData?.ResourceCostType} / " +
-            $"CostValue:{skillData?.ResourceCostValue} / " +
-            $"StaminaCost:{StaminaCost}"
-        );
     }
 
     public void SetDirectionResult(

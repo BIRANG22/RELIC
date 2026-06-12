@@ -28,13 +28,10 @@ namespace Relic.Gameplay.Data
         public List<StatusEffectRuntimeData> StatusEffects = new();
 
         public string MoveSkillId = "S_Move_1";
+
         public string PassiveSkillId;
-
-        public string AbilitySkillId1;
-        public string AbilitySkillId2;
-        public string AbilitySkillId3;
-
         public string UniqueSkillId;
+        public string AbilitySkillId;
 
         public string[] EquippedSkillIds = new string[4];
         public string[] EquippedRuneIds = new string[4];
@@ -50,7 +47,7 @@ namespace Relic.Gameplay.Data
 
         public bool CanReserveHealth(int cost)
         {
-            return cost <= 0 || CurrentHealth - ReservedHealthCost >= cost;
+            return cost <= 0 || CurrentHealth - ReservedHealthCost > cost;
         }
 
         public bool CanReserveStamina(int cost)
@@ -86,6 +83,11 @@ namespace Relic.Gameplay.Data
         public void AddReservedResource(int cost)
         {
             ReservedResourceCost = Mathf.Clamp(ReservedResourceCost + Mathf.Max(0, cost), 0, CurrentResource);
+
+            Debug.Log(
+        $"[ReservedResource] +" +
+        $"{cost} / Reserved:{ReservedResourceCost} / Current:{CurrentResource}"
+    );
         }
 
         public void AddReservedMove(int cost)

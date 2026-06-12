@@ -4,9 +4,10 @@ using Relic.Gameplay.Data;
 public class EquippedSkillCharacterRowUI : MonoBehaviour
 {
     [Header("Slots")]
-    [SerializeField] private EquippedSkillSlotUI abilitySkillSlot1;
-    [SerializeField] private EquippedSkillSlotUI abilitySkillSlot2;
-    [SerializeField] private EquippedSkillSlotUI abilitySkillSlot3;
+    [SerializeField] private EquippedSkillSlotUI slot1;
+    [SerializeField] private EquippedSkillSlotUI slot2;
+    [SerializeField] private EquippedSkillSlotUI slot3;
+    [SerializeField] private EquippedSkillSlotUI slot4;
 
     public void Setup(CharacterRuntimeData characterData)
     {
@@ -16,20 +17,30 @@ public class EquippedSkillCharacterRowUI : MonoBehaviour
             return;
         }
 
-        SetSlot(abilitySkillSlot1, characterData.AbilitySkillId1);
-        SetSlot(abilitySkillSlot2, characterData.AbilitySkillId2);
+        SetSlot(slot1, characterData.UniqueSkillId);
+        SetSlot(slot2, characterData.AbilitySkillId);
+
+        SetSlot(
+            slot3,
+            characterData.EquippedSkillIds != null &&
+            characterData.EquippedSkillIds.Length > 2
+                ? characterData.EquippedSkillIds[2]
+                : null);
+
+        SetSlot(
+            slot4,
+            characterData.EquippedSkillIds != null &&
+            characterData.EquippedSkillIds.Length > 3
+                ? characterData.EquippedSkillIds[3]
+                : null);
     }
 
     public void Clear()
     {
-        if (abilitySkillSlot1 != null)
-            abilitySkillSlot1.Clear();
-
-        if (abilitySkillSlot2 != null)
-            abilitySkillSlot2.Clear();
-
-        if (abilitySkillSlot3 != null)
-            abilitySkillSlot3.Clear();
+        if (slot1 != null) slot1.Clear();
+        if (slot2 != null) slot2.Clear();
+        if (slot3 != null) slot3.Clear();
+        if (slot4 != null) slot4.Clear();
     }
 
     private void SetSlot(EquippedSkillSlotUI slot, string skillId)
@@ -52,7 +63,9 @@ public class EquippedSkillCharacterRowUI : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"[EquippedSkillCharacterRowUI] SkillIcon 없음: {skillId}");
+            Debug.LogWarning(
+                $"[EquippedSkillCharacterRowUI] SkillIcon 없음: {skillId}");
+
             slot.Clear();
         }
     }

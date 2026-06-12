@@ -1,16 +1,7 @@
 using System.Collections.Generic;
 
-
-/// <summary>
-/// [Managers] 스크립트. 역할/설정/변수 용도를 코드 주석으로 확인할 수 있도록 정리했습니다.
-/// Unity 연결: MonoBehaviour 스크립트는 Scene/GameObject에 컴포넌트로 부착 후 Inspector 필드를 설정하세요.
-/// 데이터 클래스는 엑셀 시트 컬럼과 필드명을 맞춰 DataBootstrap 로딩 파이프라인에서 자동 매핑됩니다.
-/// </summary>
 namespace Relic.Gameplay.Data
 {
-    /// <summary>
-    /// CharacterEquipmentManager의 책임을 담당하는 클래스입니다. 파일 상단 주석의 연결/설정 지침을 참고하세요.
-    /// </summary>
     public class CharacterEquipmentManager
     {
         private readonly Dictionary<string, CharacterEquipmentData> equipmentMap = new();
@@ -20,15 +11,87 @@ namespace Relic.Gameplay.Data
             if (!equipmentMap.TryGetValue(characterId, out var equipment))
             {
                 equipment = new CharacterEquipmentData { CharacterId = characterId };
+                EnsureLoadout(equipment);
                 equipmentMap[characterId] = equipment;
             }
+
+            EnsureLoadout(equipment);
             return equipment;
         }
 
-        public void EquipPassive(string characterId, string passiveId) => GetOrCreate(characterId).SkillLoadout.PassiveId = passiveId;
-        public void EquipUnique(string characterId, string uniqueId) => GetOrCreate(characterId).SkillLoadout.UniqueSkillId = uniqueId;
-        public void EquipCommon(string characterId, int slotIndex, string skillId) => GetOrCreate(characterId).SkillLoadout.AbilitySkillIds[slotIndex] = skillId;
-        public void EquipRune(string characterId, int slotIndex, string runeId) => GetOrCreate(characterId).RuneLoadout.RuneIds[slotIndex] = runeId;
-        public void EquipFragment(string characterId, int slotIndex, string fragmentId) => GetOrCreate(characterId).FragmentIds[slotIndex] = fragmentId;
+        public void EquipPassive(string characterId, string passiveId)
+        {
+            GetOrCreate(characterId).SkillLoadout.PassiveId = passiveId;
+        }
+
+        public void EquipUnique(string characterId, string uniqueId)
+        {
+            GetOrCreate(characterId).SkillLoadout.UniqueSkillId = uniqueId;
+        }
+
+        public void EquipAbility(string characterId, string abilityId)
+        {
+            GetOrCreate(characterId).SkillLoadout.AbilitySkillId = abilityId;
+        }
+
+        public void EquipFreeSkill(string characterId, int slotIndex, string skillId)
+        {
+            CharacterSkillLoadout loadout = GetOrCreate(characterId).SkillLoadout;
+
+            if (slotIndex < 0 || slotIndex >= loadout.FreeSkillIds.Length)
+                return;
+
+            loadout.FreeSkillIds[slotIndex] = skillId;
+        }
+
+        public void EquipRune(string characterId, int slotIndex, string runeId)
+        {
+            CharacterEquipmentData equipment = GetOrCreate(characterId);
+
+            if (slotIndex < 0 || slotIndex >= equipment.RuneLoadout.RuneIds.Length)
+                return;
+
+            equipment.RuneLoadout.RuneIds[slotIndex] = runeId;
+        }
+
+        public void EquipFragment(string characterId, int slotIndex, string fragmentId)
+        {
+            CharacterEquipmentData equipment = GetOrCreate(characterId);
+
+            if (slotIndex < 0 || slotIndex >= equipment.FragmentIds.Length)
+                return;
+
+            equipment.FragmentIds[slotIndex] = fragmentId;
+        }
+
+        private void EnsureLoadout(CharacterEquipmentData equipment)
+        {
+            if (equipment == null)
+                return;
+
+            if (equipment.SkillLoadout == null)
+                equipment.SkillLoadout = new CharacterSkillLoadout();
+
+            if (equipment.SkillLoadout.FreeSkillIds == null ||
+                equipment.SkillLoadout.FreeSkillIds.Length != 2)
+            {
+                equipment.SkillLoadout.FreeSkillIds = new string[2];
+            }
+
+            if (equipment.RuneLoadout == null)
+                equipment.RuneLoadout = new CharacterRuneLoadout();
+
+            if (equipment.RuneLoadout.RuneIds == null ||
+                equipment.RuneLoadout.RuneIds.Length != 5)
+            {
+                equipment.RuneLoadout.RuneIds = new string[5];
+            }
+
+            if (equipment.FragmentIds == null ||
+                equipment.FragmentIds.Length != 4)
+            {
+                equipment.FragmentIds = new string[4];
+            }
+        }
     }
 }

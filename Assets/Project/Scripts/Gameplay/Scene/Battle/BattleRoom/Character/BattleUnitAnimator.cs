@@ -6,22 +6,13 @@ public class BattleUnitAnimator : MonoBehaviour
     [Header("References")]
     [SerializeField] private Animator animator;
 
-    [Header("Parameters")]
-    [SerializeField] private string isMovingParameter = "IsMoving";
-    [SerializeField] private string attackTriggerParameter = "Attack";
-    [SerializeField] private string hitTriggerParameter = "Hit";
-    [SerializeField] private string deadTriggerParameter = "Dead";
-    [SerializeField] private string exhaustTriggerParameter = "Exhaust";
-
     [Header("State Names")]
-    [SerializeField] private bool playStateDirectly = true;
     [SerializeField] private string idleStateName = "Idle";
     [SerializeField] private string moveStateName = "Move";
-    [SerializeField] private string controlStateName = "Control";
     [SerializeField] private string guardStateName = "Guard";
     [SerializeField] private string hitStateName = "Hit";
     [SerializeField] private string deadStateName = "Dead";
-    [SerializeField] private string exhaustStateName = "Exhaust";
+
     [SerializeField] private string attackReady1StateName = "AttackReady1";
     [SerializeField] private string attackAction1StateName = "AttackAction1";
     [SerializeField] private string attackReady2StateName = "AttackReady2";
@@ -32,72 +23,40 @@ public class BattleUnitAnimator : MonoBehaviour
     [Header("Setting")]
     [SerializeField] private int animatorLayer = 0;
     [SerializeField] private float crossFadeDuration = 0f;
-    [SerializeField] private bool forceAnimatorUpdate = false;
+    [SerializeField] private bool forceAnimatorUpdate = true;
     [SerializeField] private bool autoFindAnimatorInChildren = true;
 
-    private int isMovingHash;
-    private int attackTriggerHash;
-    private int hitTriggerHash;
-    private int deadTriggerHash;
-    private int exhaustTriggerHash;
-
-    private bool hasIsMoving;
-    private bool hasAttackTrigger;
-    private bool hasHitTrigger;
-    private bool hasDeadTrigger;
-    private bool hasExhaustTrigger;
+    private int currentAttackIndex = 1;
 
     private void Awake()
     {
         FindAnimatorIfNeeded();
-        CacheHashes();
-        CacheAvailableParameters();
         PlayIdle();
     }
 
     public void PlayIdle()
     {
-        SetMoving(false);
         PlayState(idleStateName);
     }
 
     public void PlayMove()
     {
-        SetMoving(true);
         PlayState(moveStateName);
-    }
-
-    public void PlayControl()
-    {
-        SetMoving(false);
-        PlayState(controlStateName);
     }
 
     public void PlayGuard()
     {
-        SetMoving(false);
         PlayState(guardStateName);
     }
 
     public void PlayHit()
     {
-        SetMoving(false);
-        SetTrigger(hitTriggerHash, hasHitTrigger);
         PlayState(hitStateName);
     }
 
     public void PlayDead()
     {
-        SetMoving(false);
-        SetTrigger(deadTriggerHash, hasDeadTrigger);
         PlayState(deadStateName);
-    }
-
-    public void PlayExhaust()
-    {
-        SetMoving(false);
-        SetTrigger(exhaustTriggerHash, hasExhaustTrigger);
-        PlayState(exhaustStateName);
     }
 
     public void PlaySkillReady(SkillMasterData skillData)
@@ -116,11 +75,11 @@ public class BattleUnitAnimator : MonoBehaviour
 
         if (skillData.SkillType == SkillType.Power)
         {
-            PlayControl();
+            PlayGuard();
             return;
         }
 
-        PlayAttackReady(GetAttackIndex(skillData));
+        PlayRandomAttackReady();
     }
 
     public void PlaySkillAction(SkillMasterData skillData)
@@ -139,19 +98,18 @@ public class BattleUnitAnimator : MonoBehaviour
 
         if (skillData.SkillType == SkillType.Power)
         {
-            PlayControl();
+            PlayGuard();
             return;
         }
 
-        PlayAttackAction(GetAttackIndex(skillData));
+        PlayCurrentAttackAction();
     }
 
-    public void PlayAttackReady(int attackIndex)
+    public void PlayRandomAttackReady()
     {
-        SetMoving(false);
-        SetTrigger(attackTriggerHash, hasAttackTrigger);
+        currentAttackIndex = Random.Range(1, 4);
 
-        switch (attackIndex)
+        switch (currentAttackIndex)
         {
             case 1:
                 PlayState(attackReady1StateName);
@@ -162,18 +120,12 @@ public class BattleUnitAnimator : MonoBehaviour
             case 3:
                 PlayState(attackReady3StateName);
                 break;
-            default:
-                PlayState(attackReady1StateName);
-                break;
         }
     }
 
-    public void PlayAttackAction(int attackIndex)
+    public void PlayCurrentAttackAction()
     {
-        SetMoving(false);
-        SetTrigger(attackTriggerHash, hasAttackTrigger);
-
-        switch (attackIndex)
+        switch (currentAttackIndex)
         {
             case 1:
                 PlayState(attackAction1StateName);
@@ -190,47 +142,14 @@ public class BattleUnitAnimator : MonoBehaviour
         }
     }
 
-    private int GetAttackIndex(SkillMasterData skillData)
+    public void PlayRandomAttackAction()
     {
-        if (skillData == null)
-            return 1;
-
-        if (skillData.Category == Category.Unique)
-            return 2;
-
-        if (skillData.Category == Category.Ability ||
-            skillData.Category == Category.Essenece)
-            return 3;
-
-        return 1;
-    }
-
-    private void SetMoving(bool isMoving)
-    {
-        if (!EnsureAnimator())
-            return;
-
-        if (hasIsMoving)
-            animator.SetBool(isMovingHash, isMoving);
-    }
-
-    private void SetTrigger(int hash, bool available)
-    {
-        if (!EnsureAnimator())
-            return;
-
-        if (!available)
-            return;
-
-        animator.ResetTrigger(hash);
-        animator.SetTrigger(hash);
+        currentAttackIndex = Random.Range(1, 4);
+        PlayCurrentAttackAction();
     }
 
     private void PlayState(string stateName)
     {
-        if (!playStateDirectly)
-            return;
-
         if (!EnsureAnimator())
             return;
 
@@ -264,44 +183,5 @@ public class BattleUnitAnimator : MonoBehaviour
             return;
 
         animator = GetComponentInChildren<Animator>(true);
-    }
-
-    private void CacheHashes()
-    {
-        isMovingHash = Animator.StringToHash(isMovingParameter);
-        attackTriggerHash = Animator.StringToHash(attackTriggerParameter);
-        hitTriggerHash = Animator.StringToHash(hitTriggerParameter);
-        deadTriggerHash = Animator.StringToHash(deadTriggerParameter);
-        exhaustTriggerHash = Animator.StringToHash(exhaustTriggerParameter);
-    }
-
-    private void CacheAvailableParameters()
-    {
-        hasIsMoving = false;
-        hasAttackTrigger = false;
-        hasHitTrigger = false;
-        hasDeadTrigger = false;
-        hasExhaustTrigger = false;
-
-        if (animator == null)
-            return;
-
-        AnimatorControllerParameter[] parameters = animator.parameters;
-
-        for (int i = 0; i < parameters.Length; i++)
-        {
-            AnimatorControllerParameter parameter = parameters[i];
-
-            if (parameter.nameHash == isMovingHash && parameter.type == AnimatorControllerParameterType.Bool)
-                hasIsMoving = true;
-            else if (parameter.nameHash == attackTriggerHash && parameter.type == AnimatorControllerParameterType.Trigger)
-                hasAttackTrigger = true;
-            else if (parameter.nameHash == hitTriggerHash && parameter.type == AnimatorControllerParameterType.Trigger)
-                hasHitTrigger = true;
-            else if (parameter.nameHash == deadTriggerHash && parameter.type == AnimatorControllerParameterType.Trigger)
-                hasDeadTrigger = true;
-            else if (parameter.nameHash == exhaustTriggerHash && parameter.type == AnimatorControllerParameterType.Trigger)
-                hasExhaustTrigger = true;
-        }
     }
 }

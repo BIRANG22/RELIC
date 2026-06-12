@@ -23,7 +23,7 @@ public class BattleCharacter : MonoBehaviour
     {
         CurrentGridIndex = gridIndex;
     }
-   
+
     private void LoadEquippedSkills()
     {
         equippedSkills.Clear();
@@ -32,10 +32,23 @@ public class BattleCharacter : MonoBehaviour
             return;
 
         AddSkill(RuntimeData.MoveSkillId);
-        AddSkill(RuntimeData.AbilitySkillId1);
-        AddSkill(RuntimeData.AbilitySkillId2);
-        AddSkill(RuntimeData.AbilitySkillId3);
-        AddSkill(RuntimeData.UniqueSkillId);
+
+        if (RuntimeData.EquippedSkillIds == null ||
+            RuntimeData.EquippedSkillIds.Length != 4)
+        {
+            RuntimeData.EquippedSkillIds = new string[4]
+            {
+                RuntimeData.UniqueSkillId,
+                RuntimeData.AbilitySkillId,
+                "",
+                ""
+            };
+        }
+
+        for (int i = 0; i < RuntimeData.EquippedSkillIds.Length; i++)
+        {
+            AddSkill(RuntimeData.EquippedSkillIds[i]);
+        }
     }
 
     private void AddSkill(string skillId)

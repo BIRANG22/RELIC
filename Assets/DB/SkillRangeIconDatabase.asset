@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fac00c582010fb74fa21f63b4df5f200, type: 3}
+  m_Name: SkillRangeIconDatabase
+  m_EditorClassIdentifier: 
+  entries:
+  - RangeId: Range_01
+    Icon: {fileID: 21300000, guid: 5399e1b3a76958a4196bf28d384b9d7f, type: 3}
+  - RangeId: Range_02
+    Icon: {fileID: 21300000, guid: 38c7c7a8d10af7a459d6c0ca9783cc37, type: 3}
+  - RangeId: Range_03
+    Icon: {fileID: 21300000, guid: 1d4ae650d48528f4fb5997318402830d, type: 3}
+  - RangeId: Range_04
+    Icon: {fileID: 21300000, guid: 71c7dd2a19e131f44b5f8717866e6061, type: 3}
+  - RangeId: Range_05
+    Icon: {fileID: 21300000, guid: 26d70bbbf89353543805fc3b472c2134, type: 3}
+  - RangeId: Range_06
+    Icon: {fileID: 21300000, guid: b92d5c3220726bc458262309a2174932, type: 3}
+  - RangeId: Range_07
+    Icon: {fileID: 21300000, guid: d25a794089e0ab749b30702a4ae75c83, type: 3}
+  - RangeId: Range_08
+    Icon: {fileID: 21300000, guid: d3ee1b6639de71f488e8e4d096c33226, type: 3}
+  - RangeId: Range_09
+    Icon: {fileID: 21300000, guid: bcf9d218ee0e1c440baaf029b7248766, type: 3}
+  - RangeId: Range_10
+    Icon: {fileID: 21300000, guid: a9509dc14f8c6cf4eb1d1912e0e97e88, type: 3}
+  - RangeId: Range_11
+    Icon: {fileID: 21300000, guid: 1a02d667346c88d48ba5c4f1ecb92318, type: 3}
+  - RangeId: Range_12
+    Icon: {fileID: 21300000, guid: bc7b66d7f4ad5de4392fb7eb1eab7774, type: 3}
+  - RangeId: Range_13
+    Icon: {fileID: 21300000, guid: 2488c844ad9f51b469a222b8a28dea0e, type: 3}
+  - RangeId: Range_14
+    Icon: {fileID: 21300000, guid: 80c734ad3f4a39744b0010ba6577d97e, type: 3}
+  - RangeId: Range_15
+    Icon: {fileID: 21300000, guid: a9828e2731893284a87affc4dd189887, type: 3}
+  - RangeId: Range_16
+    Icon: {fileID: 21300000, guid: bd602aa41368a4143bafeac9173c207f, type: 3}
+  - RangeId: Range_17
+    Icon: {fileID: 21300000, guid: a1c3c192f9c639941ad910b1fe8e16ad, type: 3}
+  - RangeId: Range_18
+    Icon: {fileID: 21300000, guid: b042d92e057431e48a14993eac67b0b6, type: 3}
+  - RangeId: Range_19
+    Icon: {fileID: 21300000, guid: 487fabbabaa682a4abc247c038c2b0f3, type: 3}
+  - RangeId: Range_20
+    Icon: {fileID: 21300000, guid: 208bea6b71a6b824187d4aa8b6e3a35c, type: 3}
+  - RangeId: Range_21
+    Icon: {fileID: 21300000, guid: 91f57acc4e8319b46b4142fe97423963, type: 3}
+  - RangeId: Range_All
+    Icon: {fileID: 21300000, guid: d3ee1b6639de71f488e8e4d096c33226, type: 3}

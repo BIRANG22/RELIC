@@ -112,19 +112,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   animator: {fileID: 7112751082941974288}
-  isMovingParameter: IsMoving
-  attackTriggerParameter: Attack
-  hitTriggerParameter: Hit
-  deadTriggerParameter: Dead
-  exhaustTriggerParameter: Exhaust
-  playStateDirectly: 1
   idleStateName: Idle
   moveStateName: Move
-  controlStateName: Control
   guardStateName: Guard
   hitStateName: Hit
   deadStateName: Dead
-  exhaustStateName: Exhaust
   attackReady1StateName: AttackReady1
   attackAction1StateName: AttackAction1
   attackReady2StateName: AttackReady2
@@ -133,7 +125,7 @@ MonoBehaviour:
   attackAction3StateName: AttackAction3
   animatorLayer: 0
   crossFadeDuration: 0
-  forceAnimatorUpdate: 0
+  forceAnimatorUpdate: 1
   autoFindAnimatorInChildren: 1
 --- !u!114 &703034747818951370
 MonoBehaviour:

@@ -63,12 +63,17 @@ public class RuntimeDataDebugKey : Singleton<RuntimeDataDebugKey>
         {
             var data = pair.Value;
 
+            string equippedSkills = string.Join(", ", data.EquippedSkillIds);
+
             string skills =
                 $"Move:{data.MoveSkillId}, " +
                 $"Passive:{data.PassiveSkillId}, " +
-                $"Ability1:{data.AbilitySkillId1}, " +
-                $"Ability2:{data.AbilitySkillId2}, " +
-                $"Unique:{data.UniqueSkillId}";
+                $"Unique:{data.UniqueSkillId}, " +
+                $"Ability:{data.AbilitySkillId}, " +
+                $"Slot1:{data.EquippedSkillIds[0]}, " +
+                $"Slot2:{data.EquippedSkillIds[1]}, " +
+                $"Slot3:{data.EquippedSkillIds[2]}, " +
+                $"Slot4:{data.EquippedSkillIds[3]}";
 
             Debug.Log(
                 $"ID:{data.CharacterId} / Lv:{data.Level} / " +

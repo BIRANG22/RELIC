@@ -9,9 +9,10 @@ namespace Relic.Gameplay.Data
     {
         public string RangeId;
         public string Name;
-        public bool IncludeSelf;
 
         public List<string> RangeRaw = new();
+
+        public Sprite Icon;
 
         public List<Vector2Int> Positions = new();
     }

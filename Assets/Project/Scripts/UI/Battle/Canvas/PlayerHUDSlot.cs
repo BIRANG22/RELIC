@@ -110,9 +110,9 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
         int maxStamina = boundMaster != null ? boundMaster.MaxStamina : Mathf.Max(1, boundRuntime.CurrentStamina);
         int maxResource = boundMaster != null ? boundMaster.MaxResource : Mathf.Max(1, boundRuntime.CurrentResource);
 
-        RefreshBar(hpFill, hpValueText, boundRuntime.CurrentHealth, maxHp);
+        RefreshBar(hpFill, hpValueText, boundRuntime.PreviewHealth, maxHp);
         RefreshBar(staminaFill, staminaValueText, boundRuntime.PreviewStamina, maxStamina);
-        RefreshUniqueResource(boundRuntime.CurrentResource, maxResource);
+        RefreshUniqueResource(boundRuntime.PreviewResource, maxResource);
         RefreshShield(boundRuntime.CurrentShield, maxHp);
         RefreshStatusEffects(boundRuntime.StatusEffects);
     }

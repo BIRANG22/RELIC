@@ -4,7 +4,6 @@ using Relic.Gameplay.Data;
 
 public static class SkillEffectParser
 {
-    // Skill용
     public static List<SkillEffectEntry> Parse(
         SkillMasterData skill,
         EffectDatabase effectDatabase)
@@ -16,31 +15,11 @@ public static class SkillEffectParser
             skill.EffectIds,
             skill.ValueCalcTypes,
             skill.ValueRate,
-            skill.CountCalcTypes,
             skill.CountRate,
             effectDatabase
         );
     }
 
-    // 강화 스킬
-    public static List<SkillEffectEntry> Parse(
-    SkillEnhanceData data,
-    EffectDatabase effectDatabase)
-    {
-        if (data == null)
-            return new List<SkillEffectEntry>();
-
-        return ParseInternal(
-            data.EffectIds,
-            data.ValueCalcTypes,
-            data.ValueRate,
-            data.CountCalcTypes,
-            data.CountRate,
-            effectDatabase
-        );
-    }
-
-    // 몬스터 스킬
     public static List<SkillEffectEntry> Parse(
         MonsterSkillData data,
         EffectDatabase effectDatabase)
@@ -52,14 +31,11 @@ public static class SkillEffectParser
             data.EffectIds,
             data.ValueCalcTypes,
             data.ValueRate,
-            data.CountCalcTypes,
             data.CountRate,
             effectDatabase
         );
     }
 
-
-    // 룬
     public static List<SkillEffectEntry> Parse(
         RuneData data,
         EffectDatabase effectDatabase)
@@ -71,15 +47,14 @@ public static class SkillEffectParser
             data.EffectIds,
             data.ValueCalcTypes,
             data.ValueRate,
-            data.CountCalcTypes,
             data.CountRate,
             effectDatabase
         );
     }
 
     public static List<SkillEffectEntry> Parse(
-    RelicData relic,
-    EffectDatabase effectDatabase)
+        RelicData relic,
+        EffectDatabase effectDatabase)
     {
         if (relic == null)
             return new List<SkillEffectEntry>();
@@ -88,54 +63,61 @@ public static class SkillEffectParser
             relic.EffectIds,
             relic.ValueCalcTypes,
             relic.ValueRate,
-            relic.CountCalcTypes,
             relic.CountRate,
             effectDatabase
         );
     }
 
-    // 공통 로직
     private static List<SkillEffectEntry> ParseInternal(
         string effectIdsStr,
         string valueTypesStr,
         string valuesStr,
-        string countTypesStr,
         string countsStr,
         EffectDatabase effectDatabase)
     {
         List<SkillEffectEntry> result = new();
 
-        if (string.IsNullOrEmpty(effectIdsStr))
+        if (string.IsNullOrWhiteSpace(effectIdsStr))
             return result;
 
         string[] effectIds = Split(effectIdsStr);
         string[] valueTypes = Split(valueTypesStr);
         string[] values = Split(valuesStr);
-        string[] countTypes = Split(countTypesStr);
         string[] counts = Split(countsStr);
-
-        // 길이 검증
-        if (effectIds.Length != valueTypes.Length ||
-            effectIds.Length != values.Length ||
-            effectIds.Length != countTypes.Length ||
-            effectIds.Length != counts.Length)
-        {
-            UnityEngine.Debug.LogError(
-                $"[SkillEffectParser] 길이 불일치\n" +
-                $"EffectIds:{effectIds.Length}, ValueTypes:{valueTypes.Length}, Values:{values.Length}, CountTypes:{countTypes.Length}, Counts:{counts.Length}"
-            );
-        }
 
         for (int i = 0; i < effectIds.Length; i++)
         {
-            var entry = new SkillEffectEntry
+            string effectId = GetString(effectIds, i, "");
+
+            if (string.IsNullOrWhiteSpace(effectId))
+                continue;
+
+            ValueCalcType valueCalcType = ParseEnum(
+                GetByIndexOrFirst(valueTypes, i, "None"),
+                ValueCalcType.None
+            );
+
+            int valueAmount = ParseInt(
+                GetByIndexOrFirst(values, i, "0"),
+                0
+            );
+
+            int countAmount = ParseInt(
+                GetByIndexOrFirst(counts, i, "1"),
+                1
+            );
+
+            // None 타입이면 수치는 무조건 0으로 보정
+            if (valueCalcType == ValueCalcType.None)
+                valueAmount = 0;
+
+            SkillEffectEntry entry = new SkillEffectEntry
             {
-                EffectId = effectIds[i],
-                ValueCalcType = ParseEnum<ValueCalcType>(valueTypes, i),
-                ValueAmount = ParseInt(values, i),
-                CountCalcType = ParseEnum<ValueCalcType>(countTypes, i),
-                CountAmount = ParseInt(counts, i),
-                EffectData = effectDatabase.Get(effectIds[i])
+                EffectId = effectId,
+                ValueCalcType = valueCalcType,
+                ValueAmount = valueAmount,
+                CountAmount = countAmount,
+                EffectData = effectDatabase != null ? effectDatabase.Get(effectId) : null
             };
 
             result.Add(entry);
@@ -146,28 +128,53 @@ public static class SkillEffectParser
 
     private static string[] Split(string text)
     {
-        return string.IsNullOrEmpty(text)
+        return string.IsNullOrWhiteSpace(text)
             ? Array.Empty<string>()
             : text.Split(';');
     }
 
-    private static T ParseEnum<T>(string[] arr, int index) where T : struct
+    private static string GetString(string[] arr, int index, string defaultValue)
     {
-        if (index >= arr.Length)
-            return default;
+        if (arr == null || index < 0 || index >= arr.Length)
+            return defaultValue;
 
-        return Enum.TryParse(arr[index], true, out T value)
-            ? value
-            : default;
+        if (string.IsNullOrWhiteSpace(arr[index]))
+            return defaultValue;
+
+        return arr[index].Trim();
     }
 
-    private static int ParseInt(string[] arr, int index)
+    private static string GetByIndexOrFirst(string[] arr, int index, string defaultValue)
     {
-        if (index >= arr.Length)
-            return 0;
+        if (arr == null || arr.Length <= 0)
+            return defaultValue;
 
-        return int.TryParse(arr[index], out int value)
+        if (index >= 0 && index < arr.Length && !string.IsNullOrWhiteSpace(arr[index]))
+            return arr[index].Trim();
+
+        if (!string.IsNullOrWhiteSpace(arr[0]))
+            return arr[0].Trim();
+
+        return defaultValue;
+    }
+
+    private static ValueCalcType ParseEnum(string text, ValueCalcType defaultValue)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return defaultValue;
+
+        return Enum.TryParse(text.Trim(), true, out ValueCalcType value)
             ? value
-            : 0;
+            : defaultValue;
+    }
+
+    private static int ParseInt(string text, int defaultValue)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return defaultValue;
+
+        return int.TryParse(text.Trim(), out int value)
+            ? value
+            : defaultValue;
     }
 }

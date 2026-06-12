@@ -13,6 +13,7 @@ public class DataManager : Singleton<DataManager>
     [SerializeField] private RuneIconDatabase runeIconDatabase;
     [SerializeField] private StatusEffectIconDatabase statusEffectIconDatabase;
     [SerializeField] private MapNodeIconDatabase mapNodeIconDatabase;
+    [SerializeField] private SkillRangeIconDatabase skillRangeIconDatabase;
 
     private DataBootstrap dataBootstrap = new();
 
@@ -21,6 +22,7 @@ public class DataManager : Singleton<DataManager>
     public CharacterPrefabDatabase CharacterPrefabDatabase => characterPrefabDatabase;
     public SkillDatabase SkillDatabase => dataBootstrap.SkillDatabase;
     public SkillIconDatabase SkillIconDatabase => skillIconDatabase;
+    public SkillRangeIconDatabase SkillRangeIconDatabase => skillRangeIconDatabase;
     public RelicIconDatabase RelicIconDatabase => relicIconDatabase;
     public RangeDatabase RangeDatabase => dataBootstrap.RangeDatabase;
     public RuneIconDatabase RuneIconDatabase => runeIconDatabase;
@@ -32,7 +34,6 @@ public class DataManager : Singleton<DataManager>
     public BattleMapDatabase BattleMapDatabase => dataBootstrap.BattleMapDatabase;
     public MonsterDatabase MonsterDatabase => dataBootstrap.MonsterDatabase;
     public MapDatabase MapDatabase => dataBootstrap.MapDatabase;
-    public SkillEnhanceDatabase SkillEnhanceDatabase => dataBootstrap.SkillEnhanceDatabase;
     public MonsterSkillDatabase MonsterSkillDatabase => dataBootstrap.MonsterSkillDatabase;
     public RuneDatabase RuneDatabase => dataBootstrap.RuneDatabase;
 
@@ -55,6 +56,7 @@ public class DataManager : Singleton<DataManager>
     {
         dataBootstrap.SetCharacterPrefabDatabase(characterPrefabDatabase);
         dataBootstrap.SetSkillIconDatabase(skillIconDatabase);
+        dataBootstrap.SetSkillRangeIconDatabase(skillRangeIconDatabase);
         dataBootstrap.SetMonsterPrefabDatabase(monsterPrefabDatabase);
         dataBootstrap.SetCharacterIconDatabase(characterIconDatabase);
         dataBootstrap.SetMapNodeIconDatabase(mapNodeIconDatabase);

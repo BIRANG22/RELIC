@@ -93,5 +93,30 @@ namespace Relic.Gameplay.Monster
 
             return ai.SelectSkill(RuntimeData, context);
         }
+
+        public int MainGridIndex
+        {
+            get
+            {
+                if (occupiedGridIndices.Count <= 0)
+                    return -1;
+
+                return occupiedGridIndices[0];
+            }
+        }
+
+        public void MoveOccupiedCells(Vector2Int moveOffset, GridManager gridManager)
+        {
+            if (gridManager == null)
+                return;
+
+            for (int i = 0; i < occupiedGridIndices.Count; i++)
+            {
+                Vector2Int coord = gridManager.IndexToCoord(occupiedGridIndices[i]);
+                Vector2Int moved = coord + moveOffset;
+
+                occupiedGridIndices[i] = gridManager.CoordToIndex(moved);
+            }
+        }
     }
 }
