@@ -1,5 +1,6 @@
-using System.Collections.Generic;
 using Relic.Gameplay.Data;
+using Relic.Gameplay.Monster;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class BattleRoomLoader : MonoBehaviour
@@ -35,6 +36,7 @@ public class BattleRoomLoader : MonoBehaviour
     [Header("Monster Turn")]
     [SerializeField] private BattleMonsterTurnPlanner monsterTurnPlanner;
 
+    private readonly List<MonsterUnit> spawnedMonsterUnits = new();
     private bool isLoaded;
 
     private void OnEnable()
@@ -141,6 +143,8 @@ public class BattleRoomLoader : MonoBehaviour
 
     private void SpawnMonstersAndHUD()
     {
+        spawnedMonsterUnits.Clear();
+
         if (monsterSpawner == null)
         {
             Debug.LogError("[BattleRoomLoader] MonsterSpawner가 없습니다.");
@@ -166,8 +170,6 @@ public class BattleRoomLoader : MonoBehaviour
         }
 
         var spawns = DataManager.Instance.BattleMapDatabase.GetSpawns(mapData.BattleMapId);
-
-        List<Relic.Gameplay.Monster.MonsterUnit> spawnedMonsterUnits = new();
 
         foreach (BattleMapData spawnData in spawns)
         {
@@ -198,6 +200,16 @@ public class BattleRoomLoader : MonoBehaviour
             Debug.LogWarning("[BattleRoomLoader] MonsterTurnPlanner가 연결되지 않았습니다.");
     }
 
+    public void PlanNextMonsterTurns()
+{
+    if (monsterTurnPlanner == null)
+    {
+        Debug.LogWarning("[BattleRoomLoader] MonsterTurnPlanner가 연결되지 않았습니다.");
+        return;
+    }
+
+    monsterTurnPlanner.PlanMonsterTurns(spawnedMonsterUnits);
+}
     private MonsterHUDSlot CreateMonsterHUD(
         MonsterRuntimeData runtimeData,
         Transform monsterTransform)

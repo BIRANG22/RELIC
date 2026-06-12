@@ -54,6 +54,20 @@ public class BattleTimelineController : MonoBehaviour
         TryStartSkillReservation();
     }
 
+    public void ClearMonsterCommands()
+    {
+        if (monsterCommandsBySlot == null)
+            return;
+
+        for (int i = 0; i < monsterCommandsBySlot.Length; i++)
+        {
+            if (monsterCommandsBySlot[i] != null)
+                monsterCommandsBySlot[i].Clear();
+        }
+
+        RefreshTimeline();
+    }
+
     public void OnTimelineSlotClicked(int slotIndex)
     {
         activeSlotIndex = slotIndex;

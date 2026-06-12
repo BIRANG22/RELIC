@@ -118,5 +118,16 @@ namespace Relic.Gameplay.Monster
                 occupiedGridIndices[i] = gridManager.CoordToIndex(moved);
             }
         }
+
+        public Vector2Int SelectMoveOffset(
+            BattleContext context,
+            GridManager gridManager,
+            int moveAmount)
+        {
+            if (ai == null)
+                return Vector2Int.left * moveAmount;
+
+            return ai.SelectMoveOffset(this, context, gridManager, moveAmount);
+        }
     }
 }
