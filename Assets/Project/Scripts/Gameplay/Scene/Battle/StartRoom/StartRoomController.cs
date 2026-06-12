@@ -17,6 +17,10 @@ public class StartRoomController : MonoBehaviour
     [SerializeField] private GameObject startRoomRoot;
     [SerializeField] private GameObject mapPanel;
 
+    private bool isDialogPlaying;
+    private bool isRelicChoiceOpened;
+    private bool isRelicSelected;
+
     public void CompleteStartRoom()
     {
         if (startRoomRoot != null)
@@ -83,18 +87,38 @@ public class StartRoomController : MonoBehaviour
         for (int i = point.childCount - 1; i >= 0; i--)
             Destroy(point.GetChild(i).gameObject);
     }
-
+    
     public void OnNpcClicked()
     {
-        if (chatWindow == null)
+        if (isDialogPlaying)
             return;
+
+        if (isRelicChoiceOpened)
+            return;
+
+        if (isRelicSelected)
+            return;
+
+        isDialogPlaying = true;
 
         chatWindow.Open(npcDialogLines, OnDialogFinished);
     }
 
     private void OnDialogFinished()
     {
+        isDialogPlaying = false;
+        isRelicChoiceOpened = true;
+
+        if (chatWindow != null)
+            chatWindow.Close();
+
         if (relicChoiceArea != null)
             relicChoiceArea.Open();
+    }
+
+    public void OnRelicChoiceFinished()
+    {
+        isRelicChoiceOpened = false;
+        isRelicSelected = true;
     }
 }

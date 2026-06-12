@@ -12,6 +12,9 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
     [Header("Grid")]
     [SerializeField] private GridManager gridManager;
 
+    [Header("Option")]
+    [SerializeField] private int defaultMonsterSlotIndex = 2;
+
     private const int MonsterActionCountPerRound = 2;
     public void PlanMonsterTurns(List<MonsterUnit> monsterUnits)
     {
@@ -83,6 +86,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
                 timelineController.AddMonsterCommand(slotIndex, command);
             }
+            //timelineController.AddMonsterCommand(defaultMonsterSlotIndex, command);
         }
     }
 
@@ -141,17 +145,6 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             return true;
 
         return false;
-    }
-
-    private Vector2Int GetMonsterMoveOffset(MonsterSkillData skillData)
-    {
-        int move = Mathf.Abs(skillData.GridMove);
-
-        if (move <= 0)
-            move = 1;
-
-        // 몬스터는 기본적으로 왼쪽으로 전진
-        return new Vector2Int(-move, 0);
     }
 
     private void SetMonsterRange(

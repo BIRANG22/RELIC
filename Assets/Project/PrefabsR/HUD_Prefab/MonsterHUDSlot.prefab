@@ -683,8 +683,8 @@ MonoBehaviour:
   nameText: {fileID: 3308567879673977372}
   hpFill: {fileID: 8845114207658701684}
   hpValueText: {fileID: 7278086840193307182}
-  shieldFill: {fileID: 0}
-  shieldValueText: {fileID: 0}
+  shieldFill: {fileID: 7074225067668694720}
+  shieldValueText: {fileID: 445988489934142876}
   statusIconRoot: {fileID: 5754807734497614714}
   statusIconPrefab: {fileID: 2588654849037534649, guid: d35e4bff57f02274580c209f460926d7, type: 3}
   statusEffectIconSpacing: 4

@@ -22,14 +22,51 @@ public class MonsterHUDSlot : MonoBehaviour
     [SerializeField] private StatusEffectIcon statusIconPrefab;
     [SerializeField] private float statusEffectIconSpacing = 4f;
 
+    [Header("Follow")]
+    [SerializeField] private Transform followTarget;
+    [SerializeField] private Vector3 worldOffset = new Vector3(0f, 1.8f, 0f);
+    [SerializeField] private CanvasGroup canvasGroup;
+
+    private RectTransform rectTransform;
+
     private MonsterRuntimeData boundRuntime;
     private readonly List<StatusEffectIcon> spawnedStatusIcons = new();
 
     private void Awake()
     {
+        rectTransform = GetComponent<RectTransform>();
+
+        if (canvasGroup == null)
+            canvasGroup = GetComponent<CanvasGroup>();
+
+        if (canvasGroup == null)
+            canvasGroup = gameObject.AddComponent<CanvasGroup>();
+
         ApplyStatusEffectParentLayout();
     }
 
+    public void SetFollowTarget(Transform target)
+    {
+        followTarget = target;
+        UpdateFollowPosition();
+    }
+    private void LateUpdate()
+    {
+        UpdateFollowPosition();
+    }
+    private void UpdateFollowPosition()
+    {
+        if (followTarget == null || rectTransform == null)
+            return;
+
+        Camera cam = Camera.main;
+
+        if (cam == null)
+            return;
+
+        Vector3 screenPos = cam.WorldToScreenPoint(followTarget.position + worldOffset);
+        rectTransform.position = screenPos;
+    }
     public void Bind(MonsterRuntimeData runtimeData)
     {
         boundRuntime = runtimeData;
@@ -46,13 +83,19 @@ public class MonsterHUDSlot : MonoBehaviour
 
     public void Show()
     {
-        gameObject.SetActive(true);
+        UpdateFollowPosition();
         Refresh();
+
+        canvasGroup.alpha = 1f;
+        canvasGroup.interactable = true;
+        canvasGroup.blocksRaycasts = true;
     }
 
     public void Hide()
     {
-        gameObject.SetActive(false);
+        canvasGroup.alpha = 0f;
+        canvasGroup.interactable = false;
+        canvasGroup.blocksRaycasts = false;
     }
 
     public void Refresh()
@@ -67,7 +110,7 @@ public class MonsterHUDSlot : MonoBehaviour
             nameText.text = boundRuntime.Name;
 
         RefreshBar(hpFill, hpValueText, boundRuntime.CurrentHp, boundRuntime.MaxHp);
-        //RefreshShield(boundRuntime.CurrentShield, boundRuntime.MaxHp);
+        RefreshShield(boundRuntime.CurrentShield, boundRuntime.MaxHp);
         RefreshStatusEffects(boundRuntime.StatusEffects);
     }
 

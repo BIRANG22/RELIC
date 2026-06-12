@@ -1,6 +1,7 @@
-using System.Collections.Generic;
 using Relic.Gameplay.Battle;
 using Relic.Gameplay.Data;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Relic.Gameplay.Monster
@@ -16,6 +17,8 @@ namespace Relic.Gameplay.Monster
 
         private readonly List<int> occupiedGridIndices = new();
         public IReadOnlyList<int> OccupiedGridIndices => occupiedGridIndices;
+
+        public bool IsSelected => selectedMonster == this;
 
         public void SetOccupiedCells(List<int> cells)
         {
@@ -52,24 +55,37 @@ namespace Relic.Gameplay.Monster
             if (this.hud != null)
             {
                 this.hud.Bind(RuntimeData);
+                this.hud.SetFollowTarget(transform);
                 this.hud.Hide();
             }
         }
 
-        private void OnMouseDown()
+        public void HideHUDIfNotSelected()
         {
-            SelectThisMonster();
+            if (IsSelected)
+                return;
+
+            if (hud != null)
+                hud.Hide();
         }
 
-        private void SelectThisMonster()
+        public void SelectThisMonster()
         {
             if (selectedMonster != null && selectedMonster != this)
                 selectedMonster.SetSelected(false);
 
             selectedMonster = this;
-            SetSelected(true);
+
+            StartCoroutine(ShowSelectedHUDNextFrame());
 
             Debug.Log($"[MonsterUnit] Selected: {RuntimeData?.Name} / {RuntimeData?.RuntimeId}");
+        }
+
+        private IEnumerator ShowSelectedHUDNextFrame()
+        {
+            yield return null;
+
+            SetSelected(true);
         }
 
         public void SetSelected(bool selected)
@@ -128,6 +144,31 @@ namespace Relic.Gameplay.Monster
                 return Vector2Int.left * moveAmount;
 
             return ai.SelectMoveOffset(this, context, gridManager, moveAmount);
+        }
+
+        public void ShowHUD()
+        {
+            if (hud == null)
+                return;
+
+            hud.Show();
+        }
+
+        public void RefreshHUD()
+        {
+            if (hud == null)
+                return;
+
+            hud.Refresh();
+        }
+
+        public void ShowAndRefreshHUD()
+        {
+            if (hud == null)
+                return;
+
+            hud.Show();
+            hud.Refresh();
         }
     }
 }

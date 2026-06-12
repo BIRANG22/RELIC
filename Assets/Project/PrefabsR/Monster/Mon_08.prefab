@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 2801837533478725955}
   - component: {fileID: 3876459053962693234}
   - component: {fileID: 3898961320027907389}
+  - component: {fileID: 3633317371967613033}
   m_Layer: 0
   m_Name: Mon_08
   m_TagString: Untagged
@@ -162,3 +163,19 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 4.44, y: 3.7599998}
   m_EdgeRadius: 0
+--- !u!114 &3633317371967613033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8430645116846625561}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0acb2a5b6602dc4ebc65e929968e3d1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetRenderer: {fileID: 0}
+  onClicked:
+    m_PersistentCalls:
+      m_Calls: []

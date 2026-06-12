@@ -66,11 +66,7 @@ public class CharBtn : MonoBehaviour,
 
         PlayClickSound();
 
-        if (!SelectCharacterState())
-            return;
-
-        CreateOrUpdateRuntimeData();
-        SaveCharacterToPartySlot();
+        SelectCharacterState();
     }
 
     private void PlayClickSound()
@@ -154,46 +150,63 @@ public class CharBtn : MonoBehaviour,
             return;
         }
 
+        if (CharacterSelectionState.Instance == null)
+        {
+            Debug.LogWarning("[CharBtn] CharacterSelectionState instance is missing.");
+            return;
+        }
+
         var partyStore = DataManager.Instance.PartyRuntimeStore;
 
-        int existingSlot = partyStore.FindCharacterSlot(characterId);
+        int selectedSlot = CharacterSelectionState.Instance.CurrentPartySlotIndex;
 
-        // 이미 파티에 있으면 유지
-        if (existingSlot >= 0)
+        if (selectedSlot < 0)
         {
-            Debug.Log(
-                $"[Party] Already Exists / " +
-                $"CharacterId: {characterId}, " +
-                $"Slot: {existingSlot}"
-            );
-
+            Debug.LogWarning("[Party] 선택된 파티 슬롯이 없습니다.");
             return;
         }
 
-        int emptySlot = partyStore.FindEmptySlot();
-
-        if (emptySlot < 0)
+        for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
         {
-            Debug.LogWarning("[Party] 파티 슬롯이 가득 찼습니다.");
-            return;
+            if (i == selectedSlot)
+                continue;
+
+            if (partyStore.GetCharacterId(i) != characterId)
+                continue;
+
+            partyStore.ClearSlot(i);
         }
 
-        bool success = partyStore.SetCharacter(emptySlot, characterId);
+        bool success = partyStore.SetCharacter(selectedSlot, characterId);
 
         if (!success)
             return;
 
-        if (partyStore.GetGridIndex(emptySlot) < 0)
-            partyStore.SetGridIndex(emptySlot, emptySlot);
+        partyStore.SetGridIndex(selectedSlot, selectedSlot);
 
         Debug.Log(
-            $"[Party] Added / " +
-            $"CharacterId: {characterId}, " +
-            $"Slot: {emptySlot}, " +
-            $"Grid: {partyStore.GetGridIndex(emptySlot)}"
+            $"[Party] Set Slot / CharacterId:{characterId} / " +
+            $"Slot:{selectedSlot} / Grid:{partyStore.GetGridIndex(selectedSlot)}"
         );
     }
 
+    public void ConfirmCharacterToParty()
+    {
+        if (isLocked)
+        {
+            Debug.Log("[CharBtn] 잠긴 캐릭터입니다.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(characterId))
+        {
+            Debug.LogWarning("[CharBtn] CharacterId is empty.");
+            return;
+        }
+
+        CreateOrUpdateRuntimeData();
+        SaveCharacterToPartySlot();
+    }
     public void OnBeginDrag(PointerEventData eventData)
     {
         if (charPick == null)

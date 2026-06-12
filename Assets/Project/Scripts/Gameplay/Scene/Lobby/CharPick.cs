@@ -95,6 +95,36 @@ public class CharPick : MonoBehaviour
         SelectCharacter(btn);
     }
 
+    public CharBtn CurrentButton
+    {
+        get
+        {
+            if (centerIndex < 0 || centerIndex >= charBtns.Count)
+                return null;
+
+            return charBtns[centerIndex];
+        }
+    }
+
+    public void ConfirmCurrentCharacter()
+    {
+        if (centerIndex < 0 || centerIndex >= charBtns.Count)
+        {
+            Debug.LogWarning("[CharPick] 선택된 캐릭터가 없습니다.");
+            return;
+        }
+
+        CharBtn currentButton = charBtns[centerIndex];
+
+        if (currentButton == null)
+        {
+            Debug.LogWarning("[CharPick] Current button is null.");
+            return;
+        }
+
+        currentButton.ConfirmCharacterToParty();
+    }
+
     private void SelectCharacter(CharBtn btn)
     {
         if (btn == null)
