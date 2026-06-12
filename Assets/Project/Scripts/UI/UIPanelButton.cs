@@ -28,6 +28,10 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
     [Header("Toggle")]
     [SerializeField] private bool toggleIfAlreadyOpen = true;
 
+    [Header("Close On Other Button Hover")]
+    [SerializeField] private bool closeOpenedPanelWhenOtherButtonHovered = false;
+    [SerializeField] private bool resetMoveWhenClosedByOtherButton = true;
+
     [Header("Move Together")]
     [SerializeField] private RectTransform[] moveTogetherTargets;
 
@@ -42,23 +46,32 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
     [SerializeField] private bool playClickSound = true;
     [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
 
+    private static UIPanelButton currentOpenedPanelOwner;
+
     private bool isPlayingEffect;
     private bool isMoved;
     private Vector2 originalPosition;
+    private Vector2[] originalTogetherPositions;
     private Coroutine moveCoroutine;
     private int lastClickSoundFrame = -1;
 
     private void Awake()
     {
-        if (panelToMove != null)
-            originalPosition = panelToMove.anchoredPosition;
+        CacheOriginalMovePositions();
 
         if (flipTarget == null)
             flipTarget = GetComponent<RectTransform>();
     }
 
+    private void OnDisable()
+    {
+        if (currentOpenedPanelOwner == this)
+            currentOpenedPanelOwner = null;
+    }
+
     public void OnPointerEnter(PointerEventData eventData)
     {
+        CloseCurrentOpenedPanelIfThisIsOtherButton();
         PlayHoverSound();
     }
 
@@ -73,7 +86,7 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
             panelToOpen != null &&
             panelToOpen.activeSelf)
         {
-            panelToOpen.SetActive(false);
+            CloseOwnPanel();
             return;
         }
 
@@ -130,6 +143,78 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
             StopCoroutine(moveCoroutine);
 
         moveCoroutine = StartCoroutine(MoveRoutine(targetPosition));
+    }
+
+    private void CacheOriginalMovePositions()
+    {
+        if (panelToMove != null)
+            originalPosition = panelToMove.anchoredPosition;
+
+        if (moveTogetherTargets == null)
+        {
+            originalTogetherPositions = null;
+            return;
+        }
+
+        originalTogetherPositions = new Vector2[moveTogetherTargets.Length];
+
+        for (int i = 0; i < moveTogetherTargets.Length; i++)
+        {
+            if (moveTogetherTargets[i] != null)
+                originalTogetherPositions[i] = moveTogetherTargets[i].anchoredPosition;
+        }
+    }
+
+    private void CloseCurrentOpenedPanelIfThisIsOtherButton()
+    {
+        if (currentOpenedPanelOwner == null)
+            return;
+
+        if (currentOpenedPanelOwner == this)
+            return;
+
+        if (!currentOpenedPanelOwner.closeOpenedPanelWhenOtherButtonHovered)
+            return;
+
+        currentOpenedPanelOwner.CloseOwnPanel();
+    }
+
+    private void CloseOwnPanel()
+    {
+        if (panelToOpen != null)
+            panelToOpen.SetActive(false);
+
+        if (currentOpenedPanelOwner == this)
+            currentOpenedPanelOwner = null;
+
+        if (resetMoveWhenClosedByOtherButton)
+            ResetMoveState();
+    }
+
+    private void ResetMoveState()
+    {
+        if (moveCoroutine != null)
+        {
+            StopCoroutine(moveCoroutine);
+            moveCoroutine = null;
+        }
+
+        if (panelToMove != null)
+            panelToMove.anchoredPosition = originalPosition;
+
+        if (moveTogetherTargets != null && originalTogetherPositions != null)
+        {
+            for (int i = 0; i < moveTogetherTargets.Length; i++)
+            {
+                if (moveTogetherTargets[i] == null || i >= originalTogetherPositions.Length)
+                    continue;
+
+                moveTogetherTargets[i].anchoredPosition = originalTogetherPositions[i];
+            }
+        }
+
+        isMoved = false;
+        isPlayingEffect = false;
     }
 
     private void PlayHoverSound()
@@ -189,12 +274,13 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         }
 
         float time = 0f;
+        float duration = Mathf.Max(0.01f, moveDuration);
 
-        while (time < moveDuration)
+        while (time < duration)
         {
             time += Time.unscaledDeltaTime;
 
-            float t = Mathf.Clamp01(time / moveDuration);
+            float t = Mathf.Clamp01(time / duration);
 
             panelToMove.anchoredPosition = Vector2.Lerp(
                 startPosition,
@@ -244,7 +330,10 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         ClosePanels();
 
         if (panelToOpen != null)
+        {
             panelToOpen.SetActive(true);
+            currentOpenedPanelOwner = this;
+        }
     }
 
     private void ClosePanels()
@@ -275,15 +364,16 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
     private IEnumerator Fade(float from, float to)
     {
         float time = 0f;
+        float duration = Mathf.Max(0.01f, fadeDuration);
         Color color = fadeImage.color;
 
         fadeImage.gameObject.SetActive(true);
 
-        while (time < fadeDuration)
+        while (time < duration)
         {
             time += Time.unscaledDeltaTime;
 
-            float t = Mathf.Clamp01(time / fadeDuration);
+            float t = Mathf.Clamp01(time / duration);
 
             color.a = Mathf.Lerp(from, to, t);
             fadeImage.color = color;

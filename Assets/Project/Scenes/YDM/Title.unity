@@ -152,6 +152,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 460482349}
+  - {fileID: 207842393}
   - {fileID: 1148203448}
   - {fileID: 621433638}
   m_Father: {fileID: 2139877486}
@@ -204,7 +205,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1148203449}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 8270805}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!222 &8270803
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -225,12 +238,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa9b19d30445e9c4f952d5b21bbf6629, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveOffset: {x: 50, y: 0, z: 0}
-  targetScale: {x: 1.2, y: 1.2, z: 1}
-  targetRotation: -10
-  duration: 0.2
   buttonContent: {fileID: 8270800}
+  hoverButtonMoveOffset: {x: 50, y: 0, z: 0}
+  hoverButtonScale: {x: 1.2, y: 1.2, z: 1}
+  hoverDuration: 0.2
   backgroundImage: {fileID: 460482349}
+  secondBackgroundImage: {fileID: 207842393}
+  backgroundHoverRotationZOffset: 8
+  secondBackgroundHoverRotationZOffset: -8
+  changeColorOnClick: 1
+  clickColorTargets:
+  - target: {fileID: 460482350}
+    normalColor: {r: 0.9254902, g: 0.9254902, b: 0.9254902, a: 1}
+    clickedColor: {r: 0.06666667, g: 0.3529412, b: 0.72156864, a: 1}
+  - target: {fileID: 207842394}
+    normalColor: {r: 0.9254902, g: 0.9254902, b: 0.9254902, a: 1}
+    clickedColor: {r: 0.06666667, g: 0.3529412, b: 0.72156864, a: 1}
+  moveButtonContentOnClick: 1
+  clickButtonMoveOffset: {x: 0, y: 0, z: 0}
+  clickDuration: 0.2
+  backgroundClickRotationZOffset: -8
+  secondBackgroundClickRotationZOffset: 8
+  toggleClickState: 1
+  keepHoverStateWhileClicked: 1
+  clearClickedStateWhenAnotherButtonHovered: 1
 --- !u!114 &8270805
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -252,6 +283,8 @@ MonoBehaviour:
   flipButtonOnMove: 0
   flipTarget: {fileID: 0}
   toggleIfAlreadyOpen: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
   moveTogetherTargets: []
   effect: 0
   fadeImage: {fileID: 0}
@@ -402,6 +435,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 634512457}
+  - {fileID: 634098999}
   - {fileID: 2003486357}
   - {fileID: 219310852}
   m_Father: {fileID: 2139877486}
@@ -454,7 +488,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2003486358}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 106453166}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!222 &106453164
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -475,12 +521,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa9b19d30445e9c4f952d5b21bbf6629, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveOffset: {x: -50, y: 0, z: 0}
-  targetScale: {x: 1.1, y: 1.1, z: 1}
-  targetRotation: 10
-  duration: 0.2
   buttonContent: {fileID: 106453161}
+  hoverButtonMoveOffset: {x: -50, y: 0, z: 0}
+  hoverButtonScale: {x: 1.2, y: 1.2, z: 1}
+  hoverDuration: 0.2
   backgroundImage: {fileID: 634512457}
+  secondBackgroundImage: {fileID: 634098999}
+  backgroundHoverRotationZOffset: -8
+  secondBackgroundHoverRotationZOffset: 8
+  changeColorOnClick: 1
+  clickColorTargets:
+  - target: {fileID: 634512458}
+    normalColor: {r: 0.9254902, g: 0.9254902, b: 0.9254902, a: 1}
+    clickedColor: {r: 0.06666667, g: 0.3529412, b: 0.72156864, a: 1}
+  - target: {fileID: 634099000}
+    normalColor: {r: 0.9254902, g: 0.9254902, b: 0.9254902, a: 1}
+    clickedColor: {r: 0.06666667, g: 0.3529412, b: 0.72156864, a: 1}
+  moveButtonContentOnClick: 1
+  clickButtonMoveOffset: {x: 0, y: 0, z: 0}
+  clickDuration: 0.2
+  backgroundClickRotationZOffset: 8
+  secondBackgroundClickRotationZOffset: -8
+  toggleClickState: 1
+  keepHoverStateWhileClicked: 1
+  clearClickedStateWhenAnotherButtonHovered: 1
 --- !u!114 &106453166
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -502,6 +566,8 @@ MonoBehaviour:
   flipButtonOnMove: 0
   flipTarget: {fileID: 0}
   toggleIfAlreadyOpen: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
   moveTogetherTargets: []
   effect: 0
   fadeImage: {fileID: 0}
@@ -543,6 +609,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1825719357}
+  - {fileID: 325763085}
   - {fileID: 740221745}
   - {fileID: 450454604}
   m_Father: {fileID: 2139877486}
@@ -573,6 +640,8 @@ MonoBehaviour:
   flipButtonOnMove: 0
   flipTarget: {fileID: 0}
   toggleIfAlreadyOpen: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
   moveTogetherTargets: []
   effect: 0
   fadeImage: {fileID: 0}
@@ -657,12 +726,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa9b19d30445e9c4f952d5b21bbf6629, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveOffset: {x: -50, y: 0, z: 0}
-  targetScale: {x: 1.2, y: 1.2, z: 1}
-  targetRotation: 10
-  duration: 0.2
   buttonContent: {fileID: 141494591}
+  hoverButtonMoveOffset: {x: -50, y: 0, z: 0}
+  hoverButtonScale: {x: 1.2, y: 1.2, z: 1}
+  hoverDuration: 0.2
   backgroundImage: {fileID: 1825719357}
+  secondBackgroundImage: {fileID: 325763085}
+  backgroundHoverRotationZOffset: -8
+  secondBackgroundHoverRotationZOffset: 8
+  changeColorOnClick: 1
+  clickColorTargets:
+  - target: {fileID: 1825719358}
+    normalColor: {r: 0.9254902, g: 0.9254902, b: 0.9254902, a: 1}
+    clickedColor: {r: 0.06666667, g: 0.3529412, b: 0.72156864, a: 1}
+  - target: {fileID: 325763086}
+    normalColor: {r: 0.9254902, g: 0.9254902, b: 0.9254902, a: 1}
+    clickedColor: {r: 0.06666667, g: 0.3529412, b: 0.72156864, a: 1}
+  moveButtonContentOnClick: 1
+  clickButtonMoveOffset: {x: 0, y: 0, z: 0}
+  clickDuration: 0.2
+  backgroundClickRotationZOffset: 8
+  secondBackgroundClickRotationZOffset: -8
+  toggleClickState: 1
+  keepHoverStateWhileClicked: 1
+  clearClickedStateWhenAnotherButtonHovered: 1
 --- !u!1 &175514131
 GameObject:
   m_ObjectHideFlags: 0
@@ -697,6 +784,81 @@ Transform:
   - {fileID: 979703608}
   m_Father: {fileID: 1403583730}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
+--- !u!1 &207842392
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 207842393}
+  - component: {fileID: 207842395}
+  - component: {fileID: 207842394}
+  m_Layer: 5
+  m_Name: Button_Back2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &207842393
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 207842392}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 8270800}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 259, y: 110}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &207842394
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 207842392}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.9254902, g: 0.9254902, b: 0.9254902, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 0c1bb3e2857d8e249a8e6d7245bc6a94, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &207842395
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 207842392}
+  m_CullTransparentMesh: 1
 --- !u!1 &219310851
 GameObject:
   m_ObjectHideFlags: 0
@@ -722,13 +884,13 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 219310851}
-  m_LocalRotation: {x: 0, y: 0, z: 0.043619405, w: 0.9990483}
+  m_LocalRotation: {x: 0, y: 0, z: 0.06104851, w: 0.99813485}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 106453161}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 5}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 7}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 5, y: 4.5494995}
@@ -1004,6 +1166,81 @@ RectTransform:
   m_AnchoredPosition: {x: -50, y: -50}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &325763084
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 325763085}
+  - component: {fileID: 325763087}
+  - component: {fileID: 325763086}
+  m_Layer: 5
+  m_Name: Button_Back2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &325763085
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 325763084}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 141494591}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 273, y: 103}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &325763086
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 325763084}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.9254902, g: 0.9254902, b: 0.9254902, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 2850330cb29243847b522d1139f799d5, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &325763087
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 325763084}
+  m_CullTransparentMesh: 1
 --- !u!1 &328759114
 GameObject:
   m_ObjectHideFlags: 0
@@ -1031,7 +1268,7 @@ RectTransform:
   m_GameObject: {fileID: 328759114}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.91, y: 0.93, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1375075850}
@@ -1054,7 +1291,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.047058824, g: 0.047058824, b: 0.047058824, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1114,7 +1351,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 300, y: 120}
+  m_SizeDelta: {x: 273, y: 103}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &394837864
 MonoBehaviour:
@@ -1129,7 +1366,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.047058824, g: 0.047058824, b: 0.047058824, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1549,7 +1786,7 @@ GameObject:
   - component: {fileID: 460482351}
   - component: {fileID: 460482350}
   m_Layer: 5
-  m_Name: Button_Back
+  m_Name: Button_Back1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1891,6 +2128,81 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 621433637}
   m_CullTransparentMesh: 1
+--- !u!1 &634098998
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 634098999}
+  - component: {fileID: 634099001}
+  - component: {fileID: 634099000}
+  m_Layer: 5
+  m_Name: Button_Back2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &634098999
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 634098998}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 106453161}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 273, y: 103}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &634099000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 634098998}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.9254902, g: 0.9254902, b: 0.9254902, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 2850330cb29243847b522d1139f799d5, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &634099001
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 634098998}
+  m_CullTransparentMesh: 1
 --- !u!1 &634512456
 GameObject:
   m_ObjectHideFlags: 0
@@ -1903,7 +2215,7 @@ GameObject:
   - component: {fileID: 634512459}
   - component: {fileID: 634512458}
   m_Layer: 5
-  m_Name: Button_Back
+  m_Name: Button_Back1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1926,7 +2238,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 280, y: 110}
+  m_SizeDelta: {x: 273, y: 103}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &634512458
 MonoBehaviour:
@@ -1941,7 +2253,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.043137256, g: 0.34901962, b: 0.7921569, a: 1}
+  m_Color: {r: 0.9254902, g: 0.9254902, b: 0.9254902, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1999,6 +2311,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1173711521}
+  - {fileID: 1537376871}
   - {fileID: 394837863}
   - {fileID: 1840177762}
   m_Father: {fileID: 2139877486}
@@ -2051,7 +2364,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 394837864}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 695691882}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!222 &695691880
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2072,12 +2397,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa9b19d30445e9c4f952d5b21bbf6629, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveOffset: {x: -50, y: 0, z: 0}
-  targetScale: {x: 1.2, y: 1.2, z: 1}
-  targetRotation: 10
-  duration: 0.2
   buttonContent: {fileID: 695691877}
+  hoverButtonMoveOffset: {x: -50, y: 0, z: 0}
+  hoverButtonScale: {x: 1.2, y: 1.2, z: 1}
+  hoverDuration: 0.2
   backgroundImage: {fileID: 1173711521}
+  secondBackgroundImage: {fileID: 1537376871}
+  backgroundHoverRotationZOffset: -8
+  secondBackgroundHoverRotationZOffset: 8
+  changeColorOnClick: 1
+  clickColorTargets:
+  - target: {fileID: 1173711522}
+    normalColor: {r: 0.9254902, g: 0.9254902, b: 0.9254902, a: 1}
+    clickedColor: {r: 0.06666667, g: 0.3529412, b: 0.72156864, a: 1}
+  - target: {fileID: 1537376872}
+    normalColor: {r: 0.9254902, g: 0.9254902, b: 0.9254902, a: 1}
+    clickedColor: {r: 0.06666667, g: 0.3529412, b: 0.72156864, a: 1}
+  moveButtonContentOnClick: 1
+  clickButtonMoveOffset: {x: 0, y: 0, z: 0}
+  clickDuration: 0.2
+  backgroundClickRotationZOffset: 8
+  secondBackgroundClickRotationZOffset: -8
+  toggleClickState: 1
+  keepHoverStateWhileClicked: 1
+  clearClickedStateWhenAnotherButtonHovered: 1
 --- !u!114 &695691882
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2099,6 +2442,8 @@ MonoBehaviour:
   flipButtonOnMove: 0
   flipTarget: {fileID: 0}
   toggleIfAlreadyOpen: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
   moveTogetherTargets: []
   effect: 0
   fadeImage: {fileID: 0}
@@ -2562,7 +2907,7 @@ GameObject:
   - component: {fileID: 1128370918}
   - component: {fileID: 1128370917}
   m_Layer: 5
-  m_Name: Button_Back
+  m_Name: Button_Back1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2600,7 +2945,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.043137256, g: 0.34901962, b: 0.7921569, a: 1}
+  m_Color: {r: 0.9254902, g: 0.9254902, b: 0.9254902, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -2849,7 +3194,7 @@ GameObject:
   - component: {fileID: 1173711523}
   - component: {fileID: 1173711522}
   m_Layer: 5
-  m_Name: Button_Back
+  m_Name: Button_Back1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2872,7 +3217,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 280, y: 110}
+  m_SizeDelta: {x: 273, y: 103}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1173711522
 MonoBehaviour:
@@ -2887,7 +3232,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.043137256, g: 0.34901962, b: 0.7921569, a: 1}
+  m_Color: {r: 0.9254902, g: 0.9254902, b: 0.9254902, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -3460,12 +3805,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa9b19d30445e9c4f952d5b21bbf6629, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveOffset: {x: 0, y: 0, z: 0}
-  targetScale: {x: 1.2, y: 1.2, z: 1}
-  targetRotation: -15
-  duration: 0.2
   buttonContent: {fileID: 1375075850}
+  hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
+  hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
+  hoverDuration: 0.2
   backgroundImage: {fileID: 1128370916}
+  secondBackgroundImage: {fileID: 0}
+  backgroundHoverRotationZOffset: 8
+  secondBackgroundHoverRotationZOffset: 0
+  changeColorOnClick: 1
+  clickColorTargets:
+  - target: {fileID: 1128370917}
+    normalColor: {r: 0.9254902, g: 0.9254902, b: 0.9254902, a: 1}
+    clickedColor: {r: 0.06666667, g: 0.3529412, b: 0.72156864, a: 1}
+  - target: {fileID: 0}
+    normalColor: {r: 0.9254902, g: 0.9254902, b: 0.9254902, a: 1}
+    clickedColor: {r: 0.06666667, g: 0.3529412, b: 0.72156864, a: 1}
+  moveButtonContentOnClick: 1
+  clickButtonMoveOffset: {x: 0, y: 0, z: 0}
+  clickDuration: 0.2
+  backgroundClickRotationZOffset: -8
+  secondBackgroundClickRotationZOffset: 0
+  toggleClickState: 1
+  keepHoverStateWhileClicked: 1
+  clearClickedStateWhenAnotherButtonHovered: 1
 --- !u!1 &1403583729
 GameObject:
   m_ObjectHideFlags: 0
@@ -3536,7 +3899,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 300, y: 120}
+  m_SizeDelta: {x: 259, y: 110}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1480693233
 MonoBehaviour:
@@ -3551,14 +3914,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.047058824, g: 0.047058824, b: 0.047058824, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 252d5348d9ec61d4d98edfde9ab956bd, type: 3}
+  m_Sprite: {fileID: 21300000, guid: a3614a438e928144a862a9660fd9cc4a, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -3689,6 +4052,81 @@ MonoBehaviour:
   hoverSfx: 8
   playClickSound: 1
   clickSfx: 9
+--- !u!1 &1537376870
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1537376871}
+  - component: {fileID: 1537376873}
+  - component: {fileID: 1537376872}
+  m_Layer: 5
+  m_Name: Button_Back2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1537376871
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1537376870}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 695691877}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 273, y: 103}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1537376872
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1537376870}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.9254902, g: 0.9254902, b: 0.9254902, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 2850330cb29243847b522d1139f799d5, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1537376873
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1537376870}
+  m_CullTransparentMesh: 1
 --- !u!1 &1588282836
 GameObject:
   m_ObjectHideFlags: 0
@@ -3913,7 +4351,7 @@ GameObject:
   - component: {fileID: 1766967293}
   - component: {fileID: 1766967292}
   m_Layer: 5
-  m_Name: Button_Back
+  m_Name: Button_Back1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3951,7 +4389,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.043137256, g: 0.34901962, b: 0.7921569, a: 1}
+  m_Color: {r: 0.9254902, g: 0.9254902, b: 0.9254902, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -3988,7 +4426,7 @@ GameObject:
   - component: {fileID: 1769707158}
   - component: {fileID: 1769707157}
   m_Layer: 5
-  m_Name: Button_Back
+  m_Name: Button_Back1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4011,7 +4449,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 280, y: 110}
+  m_SizeDelta: {x: 259, y: 110}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1769707157
 MonoBehaviour:
@@ -4026,7 +4464,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.043137256, g: 0.34901962, b: 0.7921569, a: 1}
+  m_Color: {r: 0.9254902, g: 0.9254902, b: 0.9254902, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -4201,7 +4639,7 @@ GameObject:
   - component: {fileID: 1825719359}
   - component: {fileID: 1825719358}
   m_Layer: 5
-  m_Name: Button_Back
+  m_Name: Button_Back1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4322,13 +4760,13 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1840177761}
-  m_LocalRotation: {x: 0, y: 0, z: 0.043619405, w: 0.9990483}
+  m_LocalRotation: {x: 0, y: 0, z: 0.06104851, w: 0.99813485}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 695691877}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 5}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 7}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 3.5, y: 3.7686462}
@@ -4570,7 +5008,7 @@ RectTransform:
   m_GameObject: {fileID: 1864506439}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.91, y: 0.93, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2070314461}
@@ -4593,7 +5031,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.047058824, g: 0.047058824, b: 0.047058824, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -4653,7 +5091,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: -50}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1936316115
@@ -4698,6 +5136,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1769707156}
+  - {fileID: 1946432975}
   - {fileID: 1480693232}
   - {fileID: 1318608163}
   m_Father: {fileID: 2139877486}
@@ -4799,12 +5238,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa9b19d30445e9c4f952d5b21bbf6629, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveOffset: {x: 50, y: 0, z: 0}
-  targetScale: {x: 1.2, y: 1.2, z: 1}
-  targetRotation: -10
-  duration: 0.2
   buttonContent: {fileID: 1937425791}
+  hoverButtonMoveOffset: {x: 50, y: 0, z: 0}
+  hoverButtonScale: {x: 1.2, y: 1.2, z: 1}
+  hoverDuration: 0.2
   backgroundImage: {fileID: 1769707156}
+  secondBackgroundImage: {fileID: 1946432975}
+  backgroundHoverRotationZOffset: 8
+  secondBackgroundHoverRotationZOffset: -8
+  changeColorOnClick: 1
+  clickColorTargets:
+  - target: {fileID: 1769707157}
+    normalColor: {r: 0.9254902, g: 0.9254902, b: 0.9254902, a: 1}
+    clickedColor: {r: 0.06666667, g: 0.3529412, b: 0.72156864, a: 1}
+  - target: {fileID: 1946432976}
+    normalColor: {r: 0.9254902, g: 0.9254902, b: 0.9254902, a: 1}
+    clickedColor: {r: 0.06666667, g: 0.3529412, b: 0.72156864, a: 1}
+  moveButtonContentOnClick: 1
+  clickButtonMoveOffset: {x: 0, y: 0, z: 0}
+  clickDuration: 0.2
+  backgroundClickRotationZOffset: -8
+  secondBackgroundClickRotationZOffset: 8
+  toggleClickState: 1
+  keepHoverStateWhileClicked: 1
+  clearClickedStateWhenAnotherButtonHovered: 1
 --- !u!114 &1937425797
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4826,6 +5283,8 @@ MonoBehaviour:
   flipButtonOnMove: 0
   flipTarget: {fileID: 0}
   toggleIfAlreadyOpen: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
   moveTogetherTargets: []
   effect: 0
   fadeImage: {fileID: 0}
@@ -4834,6 +5293,81 @@ MonoBehaviour:
   hoverSfx: 8
   playClickSound: 0
   clickSfx: 9
+--- !u!1 &1946432974
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1946432975}
+  - component: {fileID: 1946432977}
+  - component: {fileID: 1946432976}
+  m_Layer: 5
+  m_Name: Button_Back2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1946432975
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1946432974}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 1937425791}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 259, y: 110}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1946432976
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1946432974}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.9254902, g: 0.9254902, b: 0.9254902, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 0c1bb3e2857d8e249a8e6d7245bc6a94, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1946432977
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1946432974}
+  m_CullTransparentMesh: 1
 --- !u!1 &1977252113
 GameObject:
   m_ObjectHideFlags: 0
@@ -4978,7 +5512,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 300, y: 120}
+  m_SizeDelta: {x: 273, y: 103}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2003486358
 MonoBehaviour:
@@ -4993,7 +5527,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.047058824, g: 0.047058824, b: 0.047058824, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -5378,12 +5912,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa9b19d30445e9c4f952d5b21bbf6629, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveOffset: {x: 0, y: 0, z: 0}
-  targetScale: {x: 1.2, y: 1.2, z: 1}
-  targetRotation: 15
-  duration: 0.2
   buttonContent: {fileID: 2070314461}
+  hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
+  hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
+  hoverDuration: 0.2
   backgroundImage: {fileID: 1766967291}
+  secondBackgroundImage: {fileID: 0}
+  backgroundHoverRotationZOffset: 8
+  secondBackgroundHoverRotationZOffset: 0
+  changeColorOnClick: 1
+  clickColorTargets:
+  - target: {fileID: 1766967292}
+    normalColor: {r: 0.9254902, g: 0.9254902, b: 0.9254902, a: 1}
+    clickedColor: {r: 0.06666667, g: 0.3529412, b: 0.72156864, a: 1}
+  - target: {fileID: 0}
+    normalColor: {r: 0.9254902, g: 0.9254902, b: 0.9254902, a: 1}
+    clickedColor: {r: 0.06666667, g: 0.3529412, b: 0.72156864, a: 1}
+  moveButtonContentOnClick: 1
+  clickButtonMoveOffset: {x: 0, y: 0, z: 0}
+  clickDuration: 0.2
+  backgroundClickRotationZOffset: -8
+  secondBackgroundClickRotationZOffset: 0
+  toggleClickState: 1
+  keepHoverStateWhileClicked: 1
+  clearClickedStateWhenAnotherButtonHovered: 1
 --- !u!114 &2070314467
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5405,6 +5957,8 @@ MonoBehaviour:
   flipButtonOnMove: 0
   flipTarget: {fileID: 0}
   toggleIfAlreadyOpen: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
   moveTogetherTargets: []
   effect: 0
   fadeImage: {fileID: 0}
