@@ -10,11 +10,6 @@ public class TimelineSkillIconHoverUI : MonoBehaviour, IPointerEnterHandler, IPo
     public void Setup(PlayerReservedCommand reservedCommand)
     {
         command = reservedCommand;
-
-        Debug.Log(
-            $"[TimelineSkillIconHoverUI] Setup / " +
-            $"Skill:{command?.SkillId} / RangeCount:{command?.RangeGridIndices?.Count ?? -1}"
-        );
     }
 
     public void OnPointerEnter(PointerEventData eventData)

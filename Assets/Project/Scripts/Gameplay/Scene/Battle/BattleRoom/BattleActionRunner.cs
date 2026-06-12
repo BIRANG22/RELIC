@@ -99,8 +99,6 @@ public class BattleActionRunner
         character.SetGridIndex(targetGridIndex);
         UpdatePartyGridIndex(command.CharacterId, targetGridIndex);
         ApplyBurnDamageToPlayerOnMove(character);
-
-        Debug.Log($"[BattleActionRunner] Player Move / {command.CharacterId} -> {targetGridIndex}");
     }
 
     private IEnumerator ExecutePlayerSkill(PlayerReservedCommand command)
@@ -287,21 +285,20 @@ public class BattleActionRunner
         if (command == null || command.SkillData == null)
             yield break;
 
-        Debug.Log(
-            $"[MonsterCommand] Skill:{command.SkillId} / " +
-            $"GridMove:{command.SkillData.GridMove} / " +
-            $"MoveOffset:{command.MoveOffset} / " +
-            $"RangeCount:{command.RangeGridIndices.Count}"
-        );
-
         if (command.MoveOffset != Vector2Int.zero ||
             command.SkillData.TimelineNotation == TimelineActionType.Move)
         {
             ExecuteMonsterMove(command);
-            yield break;
+        }
+        else
+        {
+            yield return ExecuteMonsterSkill(command);
         }
 
-        yield return ExecuteMonsterSkill(command);
+        MonsterUnit monster = FindMonsterUnit(command.RuntimeId);
+
+        if (monster != null && monster.RuntimeData != null)
+            monster.RuntimeData.IncreaseTurnCount();
     }
 
     private void ExecuteMonsterMove(MonsterReservedCommand command)
@@ -366,13 +363,17 @@ public class BattleActionRunner
         monster.transform.position = pos;
         monster.MoveOccupiedCells(moveOffset, gridManager);
         ApplyBurnDamageToMonsterOnMove(monster);
-
-        Debug.Log($"[BattleActionRunner] Monster Move / {monster.RuntimeData.Name} -> {movedMainIndex}");
     }
 
     private IEnumerator ExecuteMonsterSkill(MonsterReservedCommand command)
     {
         MonsterUnit monster = FindMonsterUnit(command.RuntimeId);
+
+
+        Debug.Log(
+            $"[MonsterAttackCheck] Skill:{command.SkillId} / " +
+            $"RangeCount:{command.RangeGridIndices.Count}"
+        );
 
         if (monster == null)
             yield break;
@@ -421,6 +422,11 @@ public class BattleActionRunner
             Debug.Log(
                 $"[BattleActionRunner] Monster Hit Player / " +
                 $"{monster.RuntimeData.Name} -> {character.CharacterId} / Damage:{damage} / HP:{character.RuntimeData.CurrentHealth}"
+            );
+
+            Debug.Log(
+                $"[MonsterAttackCheck] Skill:{command.SkillId} / " +
+                $"RangeCount:{command.RangeGridIndices.Count}"
             );
         }
 

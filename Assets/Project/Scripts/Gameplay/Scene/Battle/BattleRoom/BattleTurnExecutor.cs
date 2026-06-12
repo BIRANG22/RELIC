@@ -7,6 +7,7 @@ public class BattleTurnExecutor : MonoBehaviour
     [SerializeField] private BattleTimelineController timelineController;
     [SerializeField] private GridManager gridManager;
     [SerializeField] private MoveGhostPreview moveGhostPreview;
+    [SerializeField] private BattleRoomLoader roomLoader;
 
     private bool isExecuting;
 
@@ -16,6 +17,9 @@ public class BattleTurnExecutor : MonoBehaviour
             return;
 
         StartCoroutine(ExecuteTurnRoutine());
+
+        if (roomLoader != null)
+            roomLoader.PlanNextMonsterTurns();
     }
 
     private IEnumerator ExecuteTurnRoutine()
@@ -32,11 +36,8 @@ public class BattleTurnExecutor : MonoBehaviour
 
         List<BattleActionBatch> batches = builder.Build(timelineController);
 
-        Debug.Log($"[BattleTurnExecutor] Batch Count:{batches.Count}");
-
         for (int i = 0; i < batches.Count; i++)
         {
-            Debug.Log($"[BattleTurnExecutor] Run Batch:{i}");
             yield return runner.RunBatch(batches[i]);
         }
 
