@@ -105,17 +105,7 @@ public class MapViewSpawner : MonoBehaviour
         return currentNode.NextNodeIndices.Contains(node.NodeIndex);
     }
 
-    private GeneratedMapNodeData FindStartNode(List<GeneratedMapNodeData> nodes)
-    {
-        for (int i = 0; i < nodes.Count; i++)
-        {
-            if (nodes[i].Type == "Start")
-                return nodes[i];
-        }
-
-        return null;
-    }
-
+   
     private GeneratedMapNodeData FindNodeByMapId(
         List<GeneratedMapNodeData> nodes,
         string mapId)

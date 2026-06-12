@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 404873021994415962}
   - component: {fileID: 8255334291390382268}
   - component: {fileID: 4162210848184179271}
+  - component: {fileID: 4400907066527158800}
   m_Layer: 0
   m_Name: Mon_01
   m_TagString: Untagged
@@ -162,3 +163,31 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 4, y: 5.56}
   m_EdgeRadius: 0
+--- !u!114 &4400907066527158800
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1235534776104369310}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0acb2a5b6602dc4ebc65e929968e3d1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetRenderer: {fileID: 8397644799710698544}
+  onClicked:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 8255334291390382268}
+        m_TargetAssemblyTypeName: Relic.Gameplay.Monster.MonsterUnit, Assembly-CSharp
+        m_MethodName: SelectThisMonster
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2

@@ -20,6 +20,7 @@ public class RelicChoiceAreaUI : MonoBehaviour
 
     [Header("Complete")]
     [SerializeField] private BattleMapController battleMapController;
+    [SerializeField] private StartRoomController startRoomController;
     public void Open()
     {
         gameObject.SetActive(true);
@@ -67,6 +68,9 @@ public class RelicChoiceAreaUI : MonoBehaviour
     public void OnRelicSelected(string relicId)
     {
         Close();
+
+        if (startRoomController != null)
+            startRoomController.OnRelicChoiceFinished();
 
         if (battleMapController != null)
             battleMapController.OpenMap();

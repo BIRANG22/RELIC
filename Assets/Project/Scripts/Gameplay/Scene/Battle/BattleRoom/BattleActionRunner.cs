@@ -8,9 +8,12 @@ public class BattleActionRunner
 {
     private readonly GridManager gridManager;
 
-    private const float ReadyDelay = 0.12f;
-    private const float ActionDelay = 0.12f;
-    private const float BatchEndDelay = 0.15f;
+    private const float ReadyDelay = 0.06f;
+    private const float ActionDelay = 0.05f;
+    private const float BatchEndDelay = 0.05f;
+
+    private const float HitCameraDelay = 0.12f;
+    private const float MonsterHUDVisibleDelay = 0.6f;
 
     public BattleActionRunner(GridManager gridManager)
     {
@@ -22,6 +25,8 @@ public class BattleActionRunner
         if (batch == null)
             yield break;
 
+        List<IEnumerator> actionRoutines = new();
+
         for (int i = 0; i < batch.PlayerCommands.Count; i++)
         {
             PlayerReservedCommand command = batch.PlayerCommands[i];
@@ -30,9 +35,9 @@ public class BattleActionRunner
                 continue;
 
             if (command.ReservedMoveGridIndex >= 0)
-                ExecutePlayerMove(command);
+                actionRoutines.Add(ExecutePlayerMove(command));
             else
-                yield return ExecutePlayerSkill(command);
+                actionRoutines.Add(ExecutePlayerSkill(command));
         }
 
         for (int i = 0; i < batch.MonsterCommands.Count; i++)
@@ -42,40 +47,87 @@ public class BattleActionRunner
             if (command == null)
                 continue;
 
-            yield return ExecuteMonsterCommand(command);
+            actionRoutines.Add(ExecuteMonsterCommand(command));
         }
 
+        yield return RunParallel(actionRoutines);
+
         RefreshHUDs();
+
+        yield return new WaitForSeconds(MonsterHUDVisibleDelay);
+
+        HideUnselectedMonsterHUDs();
 
         yield return new WaitForSeconds(BatchEndDelay);
 
         PlayAllAliveIdle();
     }
 
-    private void ExecutePlayerMove(PlayerReservedCommand command)
+    private IEnumerator RunParallel(List<IEnumerator> routines)
+    {
+        if (routines == null || routines.Count == 0)
+            yield break;
+
+        int runningCount = routines.Count;
+
+        for (int i = 0; i < routines.Count; i++)
+        {
+            CoroutineHost.Instance.StartCoroutine(
+                RunAndCountDown(routines[i], () => runningCount--)
+            );
+        }
+
+        while (runningCount > 0)
+            yield return null;
+    }
+
+    private void HideUnselectedMonsterHUDs()
+    {
+        MonsterUnit[] monsters =
+            Object.FindObjectsByType<MonsterUnit>(
+                FindObjectsInactive.Exclude,
+                FindObjectsSortMode.None
+            );
+
+        for (int i = 0; i < monsters.Length; i++)
+        {
+            if (monsters[i] != null)
+                monsters[i].HideHUDIfNotSelected();
+        }
+    }
+
+    private IEnumerator RunAndCountDown(IEnumerator routine, System.Action onComplete)
+    {
+        if (routine != null)
+            yield return CoroutineHost.Instance.StartCoroutine(routine);
+
+        onComplete?.Invoke();
+    }
+
+    private IEnumerator ExecutePlayerMove(PlayerReservedCommand command)
     {
         BattleCharacter character = FindBattleCharacter(command.CharacterId);
 
         if (character == null)
-            return;
+            yield break;
 
         int currentGridIndex = character.CurrentGridIndex;
 
         if (currentGridIndex < 0)
-            return;
+            yield break;
 
         Vector2Int currentCoord = gridManager.IndexToCoord(currentGridIndex);
         Vector2Int targetCoord = currentCoord + command.MoveOffset;
 
         if (!gridManager.IsValidCoord(targetCoord))
-            return;
+            yield break;
 
         int targetGridIndex = gridManager.CoordToIndex(targetCoord);
 
         if (BattleOccupancyService.IsOccupiedByAnyUnit(targetGridIndex, command.CharacterId))
         {
             Debug.LogWarning($"[BattleActionRunner] Player Move Blocked / {command.CharacterId} / To:{targetGridIndex}");
-            return;
+            yield break;
         }
 
         Vector3 pos = gridManager.GetWorldPositionByIndex(targetGridIndex);
@@ -95,10 +147,50 @@ public class BattleActionRunner
         if (animator != null)
             animator.PlayMove();
 
-        character.transform.position = pos;
+        yield return MoveTransformSmooth(
+            character.transform,
+            character.transform.position,
+            pos,
+            0.25f
+        );
+
         character.SetGridIndex(targetGridIndex);
         UpdatePartyGridIndex(command.CharacterId, targetGridIndex);
         ApplyBurnDamageToPlayerOnMove(character);
+
+        RefreshHUDs();
+
+        yield return new WaitForSeconds(ActionDelay);
+    }
+
+    private IEnumerator MoveTransformSmooth(
+    Transform target,
+    Vector3 start,
+    Vector3 end,
+    float duration)
+    {
+        if (target == null)
+            yield break;
+
+        if (duration <= 0f)
+        {
+            target.position = end;
+            yield break;
+        }
+
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+
+            float t = Mathf.Clamp01(elapsed / duration);
+            target.position = Vector3.Lerp(start, end, t);
+
+            yield return null;
+        }
+
+        target.position = end;
     }
 
     private IEnumerator ExecutePlayerSkill(PlayerReservedCommand command)
@@ -135,6 +227,8 @@ public class BattleActionRunner
                 FindObjectsSortMode.None
             );
 
+        List<MonsterUnit> hitTargets = new();
+
         for (int i = 0; i < monsters.Length; i++)
         {
             MonsterUnit monster = monsters[i];
@@ -145,7 +239,18 @@ public class BattleActionRunner
             if (!IsMonsterInRange(monster, command))
                 continue;
 
+            hitTargets.Add(monster);
+        }
+
+        if (hitTargets.Count > 0 && BattleCameraController.Instance != null)
+            yield return BattleCameraController.Instance.ZoomTo(hitTargets[0].transform);
+
+        for (int i = 0; i < hitTargets.Count; i++)
+        {
+            MonsterUnit monster = hitTargets[i];
+
             monster.RuntimeData.TakeDamage(damage);
+            monster.ShowAndRefreshHUD();
 
             BattleUnitAnimator hitAnimator = monster.GetComponent<BattleUnitAnimator>();
 
@@ -156,15 +261,17 @@ public class BattleActionRunner
                 else
                     hitAnimator.PlayHit();
             }
-
-            Debug.Log(
-                $"[BattleActionRunner] Player Hit Monster / " +
-                $"{command.CharacterId} -> {monster.RuntimeData.Name} / Damage:{damage} / HP:{monster.RuntimeData.CurrentHp}"
-            );
         }
 
         RefreshHUDs();
-        yield return new WaitForSeconds(ActionDelay);
+
+        if (hitTargets.Count > 0)
+            yield return new WaitForSeconds(HitCameraDelay);
+        else
+            yield return new WaitForSeconds(ActionDelay);
+
+        if (hitTargets.Count > 0 && BattleCameraController.Instance != null)
+            yield return BattleCameraController.Instance.ReturnDefault();
     }
 
     private void ConsumePlayerSkillCost(PlayerReservedCommand command, BattleCharacter caster)
@@ -288,7 +395,7 @@ public class BattleActionRunner
         if (command.MoveOffset != Vector2Int.zero ||
             command.SkillData.TimelineNotation == TimelineActionType.Move)
         {
-            ExecuteMonsterMove(command);
+            yield return ExecuteMonsterMove(command);
         }
         else
         {
@@ -301,22 +408,22 @@ public class BattleActionRunner
             monster.RuntimeData.IncreaseTurnCount();
     }
 
-    private void ExecuteMonsterMove(MonsterReservedCommand command)
+    private IEnumerator ExecuteMonsterMove(MonsterReservedCommand command)
     {
         MonsterUnit monster = FindMonsterUnit(command.RuntimeId);
 
         if (monster == null)
-            return;
+            yield break;
 
         int currentGridIndex = monster.MainGridIndex;
 
         if (currentGridIndex < 0)
-            return;
+            yield break;
 
         Vector2Int moveOffset = GetMonsterMoveOffset(command);
 
         if (moveOffset == Vector2Int.zero)
-            return;
+            yield break;
 
         for (int i = 0; i < monster.OccupiedGridIndices.Count; i++)
         {
@@ -327,7 +434,7 @@ public class BattleActionRunner
             if (!gridManager.IsValidCoord(targetCoord))
             {
                 Debug.LogWarning($"[BattleActionRunner] Monster Move Blocked / Out of Grid / {monster.RuntimeData.Name}");
-                return;
+                yield break;
             }
 
             int targetIndex = gridManager.CoordToIndex(targetCoord);
@@ -335,7 +442,7 @@ public class BattleActionRunner
             if (BattleOccupancyService.IsOccupiedByAnyUnit(targetIndex, null, monster))
             {
                 Debug.LogWarning($"[BattleActionRunner] Monster Move Blocked / {monster.RuntimeData.Name} / To:{targetIndex}");
-                return;
+                yield break;
             }
         }
 
@@ -360,20 +467,24 @@ public class BattleActionRunner
         if (animator != null)
             animator.PlayMove();
 
-        monster.transform.position = pos;
+        yield return MoveTransformSmooth(
+            monster.transform,
+            monster.transform.position,
+            pos,
+            0.25f
+        );
+
         monster.MoveOccupiedCells(moveOffset, gridManager);
         ApplyBurnDamageToMonsterOnMove(monster);
+
+        RefreshHUDs();
+
+        yield return new WaitForSeconds(ActionDelay);
     }
 
     private IEnumerator ExecuteMonsterSkill(MonsterReservedCommand command)
     {
         MonsterUnit monster = FindMonsterUnit(command.RuntimeId);
-
-
-        Debug.Log(
-            $"[MonsterAttackCheck] Skill:{command.SkillId} / " +
-            $"RangeCount:{command.RangeGridIndices.Count}"
-        );
 
         if (monster == null)
             yield break;
@@ -396,6 +507,8 @@ public class BattleActionRunner
                 FindObjectsSortMode.None
             );
 
+        List<BattleCharacter> hitTargets = new();
+
         for (int i = 0; i < characters.Length; i++)
         {
             BattleCharacter character = characters[i];
@@ -403,8 +516,20 @@ public class BattleActionRunner
             if (character == null || character.RuntimeData == null)
                 continue;
 
-            if (!command.RangeGridIndices.Contains(character.CurrentGridIndex))
+            bool inRange = command.RangeGridIndices.Contains(character.CurrentGridIndex);
+
+            if (!inRange)
                 continue;
+
+            hitTargets.Add(character);
+        }
+
+        if (hitTargets.Count > 0 && BattleCameraController.Instance != null)
+            yield return BattleCameraController.Instance.ZoomTo(hitTargets[0].transform);
+
+        for (int i = 0; i < hitTargets.Count; i++)
+        {
+            BattleCharacter character = hitTargets[i];
 
             character.RuntimeData.CurrentHealth =
                 Mathf.Max(0, character.RuntimeData.CurrentHealth - damage);
@@ -418,19 +543,17 @@ public class BattleActionRunner
                 else
                     hitAnimator.PlayHit();
             }
-
-            Debug.Log(
-                $"[BattleActionRunner] Monster Hit Player / " +
-                $"{monster.RuntimeData.Name} -> {character.CharacterId} / Damage:{damage} / HP:{character.RuntimeData.CurrentHealth}"
-            );
-
-            Debug.Log(
-                $"[MonsterAttackCheck] Skill:{command.SkillId} / " +
-                $"RangeCount:{command.RangeGridIndices.Count}"
-            );
         }
 
-        yield return new WaitForSeconds(ActionDelay);
+        RefreshHUDs();
+
+        if (hitTargets.Count > 0)
+            yield return new WaitForSeconds(HitCameraDelay);
+        else
+            yield return new WaitForSeconds(ActionDelay);
+
+        if (hitTargets.Count > 0 && BattleCameraController.Instance != null)
+            yield return BattleCameraController.Instance.ReturnDefault();
     }
 
     private Vector2Int GetMonsterMoveOffset(MonsterReservedCommand command)
@@ -689,6 +812,7 @@ public class BattleActionRunner
             return;
 
         monster.RuntimeData.TakeDamage(burnStack);
+        monster.ShowAndRefreshHUD();
 
         BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
 

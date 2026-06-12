@@ -24223,6 +24223,7 @@ GameObject:
   - component: {fileID: 1731166315}
   - component: {fileID: 1731166314}
   - component: {fileID: 1731166318}
+  - component: {fileID: 1731166319}
   m_Layer: 0
   m_Name: SelectButton
   m_TagString: Untagged
@@ -24328,6 +24329,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 1731166319}
+        m_TargetAssemblyTypeName: CharacterConfirmButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 1731166314}
         m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
         m_MethodName: Execute
@@ -24378,6 +24391,19 @@ MonoBehaviour:
   toggleClickState: 1
   keepHoverStateWhileClicked: 1
   clearClickedStateWhenAnotherButtonHovered: 1
+--- !u!114 &1731166319
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1731166312}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 899d5594e8cf63847b8c1196cd0b7475, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  charPick: {fileID: 649916677}
 --- !u!1 &1740643822
 GameObject:
   m_ObjectHideFlags: 0

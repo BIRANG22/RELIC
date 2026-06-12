@@ -66,28 +66,31 @@ public class PlayerSkillReservationController : MonoBehaviour
     {
         currentMoveSelectableIndices.Clear();
 
-        Vector2Int casterCoord = gridManager.IndexToCoord(currentCasterGridIndex);
+        if (gridManager == null || currentSkillData == null)
+            return;
 
-        TryAddMoveCell(casterCoord + Vector2Int.right);
-        TryAddMoveCell(casterCoord + Vector2Int.left);
-        TryAddMoveCell(casterCoord + Vector2Int.up);
-        TryAddMoveCell(casterCoord + Vector2Int.down);
+        List<int> rangeIndices = BattleRangeCalculator.GetDirectionRangeIndices(
+            currentCasterGridIndex,
+            currentSkillData.RangeId,
+            currentUserRuntime != null ? currentUserRuntime.Direction : BattleDirection.Right,
+            DataManager.Instance.RangeDatabase,
+            gridManager
+        );
+
+        for (int i = 0; i < rangeIndices.Count; i++)
+        {
+            int index = rangeIndices[i];
+
+            if (index == currentCasterGridIndex)
+                continue;
+
+            if (!currentMoveSelectableIndices.Contains(index))
+                currentMoveSelectableIndices.Add(index);
+        }
 
         if (rangePreview != null)
             rangePreview.ShowDirectionCells(currentMoveSelectableIndices);
     }
-
-    private void TryAddMoveCell(Vector2Int coord)
-    {
-        if (gridManager == null)
-            return;
-
-        if (!gridManager.IsValidCoord(coord))
-            return;
-
-        currentMoveSelectableIndices.Add(gridManager.CoordToIndex(coord));
-    }
-
     private void HandleCellClicked(GridCell cell)
     {
         if (cell == null || currentSkillData == null)

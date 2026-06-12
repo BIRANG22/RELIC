@@ -518,18 +518,18 @@ namespace Relic.Gameplay.Data
                 return CreateVirtualMapData("Start", "Start");
             }
 
-            if (layer == TotalLayerCount - 2)
-            {
-                MapData penultimateMap = PickFixedMapData(
-                    mapPool,
-                    chapter,
-                    stage,
-                    FixedPosition.Penultimate
-                );
+            //if (layer == TotalLayerCount - 2)
+            //{
+            //    MapData penultimateMap = PickFixedMapData(
+            //        mapPool,
+            //        chapter,
+            //        stage,
+            //        FixedPosition.Penultimate
+            //    );
 
-                if (penultimateMap != null)
-                    return penultimateMap;
-            }
+            //    if (penultimateMap != null)
+            //        return penultimateMap;
+            //}
 
             if (layer == TotalLayerCount - 1)
             {
@@ -560,12 +560,13 @@ namespace Relic.Gameplay.Data
         {
             float r = Random.value;
 
-            if (r < 0.50f) return "Common";
-            if (r < 0.65f) return "Elite";
-            if (r < 0.78f) return "Chest";
-            if (r < 0.90f) return "Special";
-
-            return "Rest";
+            //if (r < 0.50f) return "Common";
+            //if (r < 0.65f) return "Elite";
+            //if (r < 0.78f) return "Chest";
+            //if (r < 0.90f) return "Special";
+            //return "Rest";
+            
+            return "Common";
         }
 
         private MapData PickRandomMapData(
