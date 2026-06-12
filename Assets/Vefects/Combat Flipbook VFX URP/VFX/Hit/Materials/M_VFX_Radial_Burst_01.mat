@@ -90,7 +90,7 @@ Material:
     - _ErosionIntensity: 0
     - _ErosionNoiseUVScaleOverall: 1
     - _ErosionSmoothness: 0.03
-    - _FlatColor: 0
+    - _FlatColor: 1
     - _FlipbookX: 3
     - _FlipbookY: 3
     - _Float0: 3.45
@@ -139,3 +139,4 @@ Material:
     - _UVP: {r: 0, g: 0, b: 0, a: 0}
     - _UVS: {r: 1, g: 1, b: 0, a: 0}
   m_BuildTextureStacks: []
+  m_AllowLocking: 1
