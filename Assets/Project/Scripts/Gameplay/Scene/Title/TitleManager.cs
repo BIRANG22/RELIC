@@ -1,34 +1,70 @@
+using System.Collections;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class TitleManager : MonoBehaviour
 {
-
     [Header("Logo")]
     [SerializeField] private GameObject onLogo;
     [SerializeField] private GameObject offLogo;
 
-    // 시작 시 on Logo는 켜지고, off Logo는 꺼진 상태
-    private bool isLogoOn = true;
+    [Header("Blink Option")]
+    [SerializeField] private float blinkOffDuration = 0.08f;
+
+    private Coroutine blinkCoroutine;
 
     private void Start()
     {
-
-        RefreshLogo();
+        RefreshLogoDefaultState();
     }
 
     public void OnClickLogoArea()
     {
-        isLogoOn = !isLogoOn;
-        RefreshLogo();
+        if (blinkCoroutine != null)
+        {
+            StopCoroutine(blinkCoroutine);
+            blinkCoroutine = null;
+        }
+
+        blinkCoroutine = StartCoroutine(BlinkLogoCoroutine());
     }
 
-    private void RefreshLogo()
+    private IEnumerator BlinkLogoCoroutine()
     {
+        if (offLogo != null)
+        {
+            offLogo.SetActive(true);
+        }
+
         if (onLogo != null)
-            onLogo.SetActive(isLogoOn);
+        {
+            onLogo.SetActive(false);
+        }
+
+        yield return new WaitForSeconds(blinkOffDuration);
 
         if (offLogo != null)
-            offLogo.SetActive(!isLogoOn);
+        {
+            offLogo.SetActive(true);
+        }
+
+        if (onLogo != null)
+        {
+            onLogo.SetActive(true);
+        }
+
+        blinkCoroutine = null;
+    }
+
+    private void RefreshLogoDefaultState()
+    {
+        if (offLogo != null)
+        {
+            offLogo.SetActive(true);
+        }
+
+        if (onLogo != null)
+        {
+            onLogo.SetActive(true);
+        }
     }
 }
