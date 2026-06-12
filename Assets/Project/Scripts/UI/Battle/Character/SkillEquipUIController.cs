@@ -78,9 +78,24 @@ public class SkillEquipUIController : MonoBehaviour
 
         CharacterRuntimeData runtime = battleCharacter.RuntimeData;
 
-        SetSkillButton(0, runtime.AbilitySkillId1);
-        SetSkillButton(1, runtime.AbilitySkillId2);
-        SetSkillButton(2, runtime.UniqueSkillId);
+        SetSkillButton(0, runtime.MoveSkillId);
+
+        if (runtime.EquippedSkillIds == null ||
+            runtime.EquippedSkillIds.Length != 4)
+        {
+            runtime.EquippedSkillIds = new string[4]
+            {
+                runtime.UniqueSkillId,
+                runtime.AbilitySkillId,
+                "",
+                ""
+            };
+        }
+
+        for (int i = 0; i < runtime.EquippedSkillIds.Length; i++)
+        {
+            SetSkillButton(i + 1, runtime.EquippedSkillIds[i]);
+        }
     }
 
     private void SetSkillButton(int index, string skillId)
@@ -103,7 +118,15 @@ public class SkillEquipUIController : MonoBehaviour
 
         if (string.IsNullOrWhiteSpace(skillId))
         {
-            Debug.LogWarning($"[SkillEquipUIController] skillId empty: {index}");
+            button.ClearSkill();
+            button.gameObject.SetActive(false);
+            return;
+        }
+
+        if (DataManager.Instance == null ||
+            DataManager.Instance.SkillDatabase == null)
+        {
+            Debug.LogWarning("[SkillEquipUIController] SkillDatabase ¾øÀ½");
             button.ClearSkill();
             button.gameObject.SetActive(false);
             return;
@@ -118,8 +141,6 @@ public class SkillEquipUIController : MonoBehaviour
             button.gameObject.SetActive(false);
             return;
         }
-
-        Debug.Log($"[SkillEquipUIController] SkillData found: {skillData.SkillId}");
 
         button.gameObject.SetActive(true);
         button.SetSkill(skillData);
@@ -158,7 +179,8 @@ public class SkillEquipUIController : MonoBehaviour
 
         foreach (CharacterSelectButtonUI character in characters)
         {
-            character.ShowHighlight(false);
+            if (character != null)
+                character.ShowHighlight(false);
         }
     }
 

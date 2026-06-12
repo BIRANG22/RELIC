@@ -1,18 +1,40 @@
+using System.Collections.Generic;
 using Relic.Gameplay.Data;
+using UnityEngine;
 
 public class MonsterReservedCommand
 {
     public MonsterRuntimeData UserRuntime { get; private set; }
     public MonsterSkillData SkillData { get; private set; }
 
-    public string MonsterId => UserRuntime != null ? UserRuntime.MonsterId : "";
     public string RuntimeId => UserRuntime != null ? UserRuntime.RuntimeId : "";
+    public string MonsterId => UserRuntime != null ? UserRuntime.MonsterId : "";
     public string SkillId => SkillData != null ? SkillData.SkillId : "";
-    public string SkillName => SkillData != null ? SkillData.Name : "";
+
+    public Vector2Int MoveOffset { get; private set; } = Vector2Int.zero;
+
+    public List<int> RangeGridIndices { get; private set; } = new();
+    public List<int> TargetGridIndices { get; private set; } = new();
 
     public MonsterReservedCommand(MonsterRuntimeData userRuntime, MonsterSkillData skillData)
     {
         UserRuntime = userRuntime;
         SkillData = skillData;
+    }
+
+    public void SetMoveOffset(Vector2Int moveOffset)
+    {
+        MoveOffset = moveOffset;
+    }
+
+    public void SetRangeResult(List<int> rangeGridIndices, List<int> targetGridIndices = null)
+    {
+        RangeGridIndices = rangeGridIndices != null
+            ? new List<int>(rangeGridIndices)
+            : new List<int>();
+
+        TargetGridIndices = targetGridIndices != null
+            ? new List<int>(targetGridIndices)
+            : new List<int>(RangeGridIndices);
     }
 }

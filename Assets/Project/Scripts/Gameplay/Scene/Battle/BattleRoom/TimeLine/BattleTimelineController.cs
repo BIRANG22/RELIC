@@ -199,6 +199,25 @@ public class BattleTimelineController : MonoBehaviour
 
         CharacterRuntimeData runtime = command.UserRuntime;
 
+        if (command.SkillData != null &&
+            command.SkillData.ResourceCostType == ResourceCostType.AllCurrent)
+        {
+            int minRequired = Mathf.Max(1, command.SkillData.ResourceCostValue);
+
+            if (command.ResourceCost < minRequired)
+            {
+                Debug.LogWarning(
+                    $"[BattleTimelineController] AllCurrent 자원 부족 / " +
+                    $"Character:{runtime.CharacterId} / " +
+                    $"Skill:{command.SkillId} / " +
+                    $"Cost:{command.ResourceCost} / " +
+                    $"MinRequired:{minRequired}"
+                );
+
+                return false;
+            }
+        }
+
         if (!runtime.CanReserveHealth(command.HealthCost) ||
             !runtime.CanReserveStamina(command.StaminaCost) ||
             !runtime.CanReserveResource(command.ResourceCost) ||

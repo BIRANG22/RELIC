@@ -9,6 +9,9 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
     [Header("Timeline")]
     [SerializeField] private BattleTimelineController timelineController;
 
+    [Header("Grid")]
+    [SerializeField] private GridManager gridManager;
+
     [Header("Option")]
     [SerializeField] private int defaultMonsterSlotIndex = 2;
 
@@ -21,10 +24,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         }
 
         if (monsterUnits == null)
-        {
-            Debug.LogWarning("[BattleMonsterTurnPlanner] monsterUnits null");
             return;
-        } 
 
         BattleContext context = new BattleContext();
 
@@ -32,33 +32,18 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         {
             MonsterUnit monsterUnit = monsterUnits[i];
 
-            if (monsterUnit == null)
-            {
-                Debug.LogWarning($"[BattleMonsterTurnPlanner] monsterUnit null / Index:{i}");
+            if (monsterUnit == null || monsterUnit.RuntimeData == null)
                 continue;
-            }
-
-            if (monsterUnit.RuntimeData == null)
-            {
-                Debug.LogWarning($"[BattleMonsterTurnPlanner] RuntimeData null / Unit:{monsterUnit.name}");
-                continue;
-            }
 
             MonsterRuntimeData runtime = monsterUnit.RuntimeData;
 
             if (runtime.IsDead)
-            {
-                Debug.LogWarning($"[BattleMonsterTurnPlanner] Monster is dead: {runtime.Name}");
                 continue;
-            }
 
             string skillId = monsterUnit.SelectSkill(context);
 
             if (string.IsNullOrWhiteSpace(skillId))
-            {
-                Debug.LogWarning($"[BattleMonsterTurnPlanner] SkillId empty / Monster:{runtime.Name}");
                 continue;
-            }
 
             MonsterSkillData skillData = DataManager.Instance.MonsterSkillDatabase.Get(skillId);
 
@@ -71,7 +56,81 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             MonsterReservedCommand command =
                 new MonsterReservedCommand(runtime, skillData);
 
+            if (IsMoveSkill(skillData))
+            {
+                command.SetMoveOffset(GetMonsterMoveOffset(skillData));
+            }
+            else
+            {
+                SetMonsterRange(monsterUnit, skillData, command);
+            }
+
+            Debug.Log(
+                $"[BattleMonsterTurnPlanner] Reserve / Monster:{runtime.Name} / " +
+                $"Skill:{skillData.SkillId} / GridMove:{skillData.GridMove} / " +
+                $"Notation:{skillData.TimelineNotation} / MoveOffset:{command.MoveOffset}"
+            );
+
             timelineController.AddMonsterCommand(defaultMonsterSlotIndex, command);
         }
+    }
+
+    private bool IsMoveSkill(MonsterSkillData skillData)
+    {
+        if (skillData == null)
+            return false;
+
+        if (skillData.TimelineNotation == TimelineActionType.Move)
+            return true;
+
+        if (skillData.GridMove != 0)
+            return true;
+
+        if (!string.IsNullOrWhiteSpace(skillData.EffectIds) &&
+            skillData.EffectIds.Contains("E_Move"))
+            return true;
+
+        return false;
+    }
+
+    private Vector2Int GetMonsterMoveOffset(MonsterSkillData skillData)
+    {
+        int move = Mathf.Abs(skillData.GridMove);
+
+        if (move <= 0)
+            move = 1;
+
+        // 몬스터는 기본적으로 왼쪽으로 전진
+        return new Vector2Int(-move, 0);
+    }
+
+    private void SetMonsterRange(
+        MonsterUnit monsterUnit,
+        MonsterSkillData skillData,
+        MonsterReservedCommand command)
+    {
+        if (monsterUnit == null || skillData == null || command == null)
+            return;
+
+        if (gridManager == null)
+            return;
+
+        if (skillData.RangeType != RangeType.Direction)
+            return;
+
+        int casterGridIndex = monsterUnit.MainGridIndex;
+
+        if (casterGridIndex < 0)
+            return;
+
+        List<int> rangeIndices = BattleRangeCalculator.GetDirectionRangeIndices(
+            casterGridIndex,
+            skillData.RangeId,
+            BattleDirection.Left,
+            DataManager.Instance.RangeDatabase,
+            gridManager
+        );
+
+        command.SetRangeResult(rangeIndices, rangeIndices);
     }
 }

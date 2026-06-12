@@ -42,7 +42,6 @@ namespace Relic.Gameplay.Battle
                 return;
 
             currentCharacter = character;
-
             currentSelection.Clear();
             currentSelection.PlayerRuntimeId = character.CharacterId;
 
@@ -51,8 +50,6 @@ namespace Relic.Gameplay.Battle
 
             RefreshResourcePreview();
             ClearRangePreview();
-
-            Debug.Log($"[PlayerActionPlanner] Player 선택: {character.CharacterId}");
         }
 
         public void SelectSkill(SkillMasterData skillData)
@@ -62,50 +59,23 @@ namespace Relic.Gameplay.Battle
 
             ClearPendingTargetSelection();
 
-            if (currentSlot == null)
-            {
-                Debug.LogWarning("[PlayerActionPlanner] 선택된 슬롯이 없습니다.");
+            if (currentSlot == null || currentCharacter == null)
                 return;
-            }
-
-            if (currentCharacter == null)
-            {
-                Debug.LogWarning("[PlayerActionPlanner] 캐릭터가 선택되지 않았습니다.");
-                return;
-            }
 
             if (!TryGetActorRuntimeData(currentCharacter.CharacterId, out CharacterRuntimeData actorRuntimeData))
-            {
-                Debug.LogWarning($"[PlayerActionPlanner] CharacterRuntimeData 조회 실패: {currentCharacter.CharacterId}");
                 return;
-            }
 
-            int reservedCost = GetReservedCostByCharacter(currentCharacter.CharacterId, skillData.ReferenceResource);
-            int currentResource = SkillCostCalculator.GetCurrentResource(actorRuntimeData, skillData.ReferenceResource);
-            int availableResource = currentResource - reservedCost;
-            
-            if (!CanPaySkillCostWithAvailable(skillData, availableResource, out int previewCost))
+            if (!SkillCostCalculator.TryGetPreviewPayAmount(actorRuntimeData, skillData, out int previewCost))
             {
-                Debug.Log(
-                    $"[CostCheck] " +
-                    $"Skill:{skillData.SkillId}, " +
-                    $"Resource:{skillData.ReferenceResource}, " +
-                    $"CostType:{skillData.ResourceCostType}, " +
-                    $"CostValue:{skillData.ResourceCostValue}, " +
-                    $"Current:{currentResource}, " +
-                    $"Reserved:{reservedCost}, " +
-                    $"Available:{availableResource}"
-                );
+                Debug.Log($"[CostCheck] Skill:{skillData.SkillId} / Preview �ڿ� ����");
                 return;
             }
 
             currentSkillData = skillData;
             currentPreviewResourceType = skillData.ReferenceResource;
             currentSelection.SkillId = skillData.SkillId;
-            currentSelection.ActionType = skillData.TimelineNotation;
 
             RefreshResourcePreview();
-            Debug.Log($"[PlayerActionPlanner] Skill 선택: {skillData.SkillId} / Target:{skillData.Target} / RangeType:{skillData.RangeType} / RangeId:{skillData.RangeId}");
 
             switch (skillData.RangeType)
             {
@@ -126,24 +96,16 @@ namespace Relic.Gameplay.Battle
                     {
                         ShowGridRangePreview(directionRangeData);
 
-                        if (directionSelectUI != null)
-                            if (TryGetCurrentCharacterGridIndex(out int originGridIndex))
-                                directionSelectUI.Show(originGridIndex);
+                        if (directionSelectUI != null && TryGetCurrentCharacterGridIndex(out int originGridIndex))
+                            directionSelectUI.Show(originGridIndex);
                     }
-                    return;
-
-                default:
-                    Debug.LogWarning($"[PlayerActionPlanner] 알 수 없는 RangeType: {skillData.RangeType}, Skill:{skillData.SkillId}");
                     return;
             }
         }
 
         public void SelectTargetDirection(SkillDirection direction)
         {
-            if (currentSkillData == null)
-                return;
-
-            if (currentSkillData.RangeType != RangeType.Direction)
+            if (currentSkillData == null || currentSkillData.RangeType != RangeType.Direction)
                 return;
 
             currentSelection.Direction = direction;
@@ -168,7 +130,6 @@ namespace Relic.Gameplay.Battle
 
             RefreshResourcePreview();
             ClearRangePreview();
-            Debug.Log($"[PlayerActionPlanner] 슬롯 선택: {slot.name}");
         }
 
         public void RemovePlannedSkill(SkillSlotUI slot, int iconIndex)
@@ -188,21 +149,17 @@ namespace Relic.Gameplay.Battle
                 TryGetActorRuntimeData(slot.OwnerCharacter.CharacterId, out CharacterRuntimeData runtimeData))
             {
                 SkillMasterData skillData = DataManager.Instance.SkillDatabase.Get(removedEntry.SkillId);
-                RefundSkillCost(runtimeData, skillData, removedEntry.PreviewCost);
+                RemoveReservedSkillCost(runtimeData, skillData, removedEntry.PreviewCost);
             }
 
             plannedList.RemoveAt(iconIndex);
             slot.RemoveSkillAt(iconIndex);
 
             if (timelineManager != null)
-            {
                 timelineManager.RemoveAction(x => x.ActionId == removedEntry.ActionId);
-            }
 
             if (plannedList.Count == 0)
-            {
                 plannedSkillsBySlot.Remove(slot);
-            }
 
             RefreshTimelineUI();
             RefreshResourcePreview();
@@ -218,22 +175,13 @@ namespace Relic.Gameplay.Battle
         public void SelectTargetGrid(int gridIndex)
         {
             if (currentSkillData == null)
-            {
-                Debug.LogWarning("[PlayerActionPlanner] 선택 중인 스킬이 없습니다.");
                 return;
-            }
 
             if (currentSkillData.RangeType != RangeType.Selection)
-            {
-                Debug.LogWarning($"[PlayerActionPlanner] 현재 스킬은 그리드 선택형이 아닙니다. Skill:{currentSkillData.SkillId}");
                 return;
-            }
 
             if (!currentValidTargetGridIndexes.Contains(gridIndex))
-            {
-                Debug.LogWarning($"[PlayerActionPlanner] 선택한 그리드가 스킬 범위 밖입니다. Grid:{gridIndex}");
                 return;
-            }
 
             currentSelection.TargetGridIndex = gridIndex;
 
@@ -253,22 +201,27 @@ namespace Relic.Gameplay.Battle
             if (!TryGetActorRuntimeData(currentCharacter.CharacterId, out CharacterRuntimeData actorRuntimeData))
                 return;
 
-            int currentResource = SkillCostCalculator.GetCurrentResource(
-                actorRuntimeData,
-                currentSkillData.ReferenceResource
-            );
-
             int previewCost = precomputedPreviewCost;
 
             if (previewCost < 0)
             {
-                if (!CanPaySkillCostWithAvailable(currentSkillData, currentResource, out previewCost))
+                if (!SkillCostCalculator.TryGetPreviewPayAmount(actorRuntimeData, currentSkillData, out previewCost))
+                {
+                    Debug.Log($"[CostCheck Confirm] Skill:{currentSkillData.SkillId} / Preview �ڿ� ����");
                     return;
+                }
             }
 
-            bool added = currentSlot.AddSkill(
-                SkillIconUtility.GetSkillIcon(currentSkillData.SkillId)
-            );
+            if (currentSkillData.ResourceCostType == ResourceCostType.AllCurrent && previewCost <= 0)
+            {
+                Debug.LogWarning(
+                    $"[ConfirmAction] AllCurrent �ڿ� ���� / " +
+                    $"Skill:{currentSkillData.SkillId} / PreviewCost:{previewCost}"
+                );
+                return;
+            }
+
+            bool added = currentSlot.AddSkill(SkillIconUtility.GetSkillIcon(currentSkillData.SkillId));
 
             if (!added)
                 return;
@@ -276,7 +229,7 @@ namespace Relic.Gameplay.Battle
             if (!currentSlot.HasOwnerCharacter)
                 currentSlot.SetOwnerCharacter(currentCharacter);
 
-            SpendSkillCost(actorRuntimeData, currentSkillData, previewCost);
+            AddReservedSkillCost(actorRuntimeData, currentSkillData, previewCost);
 
             TimelineActionData action = new TimelineActionData
             {
@@ -319,37 +272,6 @@ namespace Relic.Gameplay.Battle
             });
         }
 
-        private int GetReservedCost(SkillSlotUI slot, string actorCharacterId, ReferenceResource resourceType)
-        {
-            if (slot == null)
-                return 0;
-
-            if (!plannedSkillsBySlot.TryGetValue(slot, out List<PlannedSkillEntry> plannedList))
-                return 0;
-
-            int sum = 0;
-
-            foreach (PlannedSkillEntry entry in plannedList)
-            {
-                if (string.IsNullOrWhiteSpace(entry.SkillId))
-                    continue;
-
-                SkillMasterData skillData = DataManager.Instance?.SkillDatabase?.Get(entry.SkillId);
-                if (skillData == null)
-                    continue;
-
-                if (skillData.ReferenceResource != resourceType)
-                    continue;
-
-                if (!slot.HasOwnerCharacter || slot.OwnerCharacter.CharacterId != actorCharacterId)
-                    continue;
-
-                sum += entry.PreviewCost;
-            }
-
-            return sum;
-        }
-
         private int GetReservedCostByCharacter(string actorCharacterId, ReferenceResource resourceType)
         {
             int sum = 0;
@@ -359,25 +281,18 @@ namespace Relic.Gameplay.Battle
                 SkillSlotUI slot = pair.Key;
                 List<PlannedSkillEntry> plannedList = pair.Value;
 
-                if (slot == null)
-                    continue;
-
-                if (!slot.HasOwnerCharacter || slot.OwnerCharacter.CharacterId != actorCharacterId)
+                if (slot == null || !slot.HasOwnerCharacter || slot.OwnerCharacter.CharacterId != actorCharacterId)
                     continue;
 
                 foreach (PlannedSkillEntry entry in plannedList)
                 {
-                    if (string.IsNullOrWhiteSpace(entry.SkillId))
-                        continue;
-
                     SkillMasterData skillData = DataManager.Instance?.SkillDatabase?.Get(entry.SkillId);
+
                     if (skillData == null)
                         continue;
 
-                    if (skillData.ReferenceResource != resourceType)
-                        continue;
-
-                    sum += entry.PreviewCost;
+                    if (skillData.ReferenceResource == resourceType)
+                        sum += entry.PreviewCost;
                 }
             }
 
@@ -388,30 +303,11 @@ namespace Relic.Gameplay.Battle
         {
             rangeData = null;
 
-            if (skillData == null)
+            if (skillData == null || string.IsNullOrWhiteSpace(skillData.RangeId))
                 return false;
-
-            if (string.IsNullOrWhiteSpace(skillData.RangeId))
-            {
-                Debug.LogWarning($"[PlayerActionPlanner] RangeType({skillData.RangeType}) 스킬인데 RangeId가 비어 있습니다. Skill:{skillData.SkillId}");
-                return false;
-            }
 
             rangeData = DataManager.Instance?.RangeDatabase?.Get(skillData.RangeId);
-            if (rangeData == null)
-            {
-                Debug.LogWarning($"[PlayerActionPlanner] RangeDatabase에서 RangeId 조회 실패: {skillData.RangeId}, Skill:{skillData.SkillId}");
-                return false;
-            }
-
-            if (!rangeData.IncludeSelf &&
-            (rangeData.Positions == null || rangeData.Positions.Count == 0))
-            {
-                Debug.LogWarning($"[PlayerActionPlanner] Range 데이터 파싱 결과가 비어 있습니다. RangeId:{skillData.RangeId}, Skill:{skillData.SkillId}");
-                return false;
-            }
-
-            return true;
+            return rangeData != null;
         }
 
         private void ShowGridRangePreview(SkillRangeData rangeData)
@@ -423,19 +319,10 @@ namespace Relic.Gameplay.Battle
                 return;
 
             if (!TryGetCurrentCharacterGridIndex(out int originGridIndex))
-            {
-                Debug.LogWarning($"[PlayerActionPlanner] 현재 캐릭터 그리드 인덱스 조회 실패: {currentCharacter.CharacterId}");
                 return;
-            }
 
             if (!TryGetGridCoord(originGridIndex, out int originX, out int originY))
                 return;
-
-            if (rangeData.IncludeSelf)
-            {
-                currentValidTargetGridIndexes.Add(originGridIndex);
-                TintGridByIndex(originGridIndex, rangePreviewColor);
-            }
 
             foreach (var offset in rangeData.Positions)
             {
@@ -506,10 +393,8 @@ namespace Relic.Gameplay.Battle
 
             foreach (BattleGridClickHandler handler in handlers)
             {
-                if (handler == null)
-                    continue;
-
-                handler.SetSkillTargetMode(value);
+                if (handler != null)
+                    handler.SetSkillTargetMode(value);
             }
         }
 
@@ -526,10 +411,8 @@ namespace Relic.Gameplay.Battle
                 if (!t.name.StartsWith(gridNamePrefix))
                     continue;
 
-                if (!t.TryGetComponent<Renderer>(out var renderer))
-                    continue;
-
-                renderer.SetPropertyBlock(null);
+                if (t.TryGetComponent<Renderer>(out var renderer))
+                    renderer.SetPropertyBlock(null);
             }
         }
 
@@ -548,6 +431,7 @@ namespace Relic.Gameplay.Battle
 
             string gridName = $"{gridNamePrefix}{gridIndex:00}";
             Transform grid = playerGridRoot.Find(gridName);
+
             if (grid == null)
             {
                 foreach (Transform t in playerGridRoot.GetComponentsInChildren<Transform>(true))
@@ -576,59 +460,24 @@ namespace Relic.Gameplay.Battle
             if (string.IsNullOrWhiteSpace(characterId))
                 return false;
 
-            var dm = DataManager.Instance;
-            if (dm == null || dm.CharacterRuntimeStore == null)
-                return false;
-
-            return dm.CharacterRuntimeStore.TryGet(characterId, out runtimeData);
-        }
-
-        private static bool CanPaySkillCostWithAvailable(
-            SkillMasterData skillData,
-            int availableResource,
-            out int previewCost)
-        {
-            previewCost = 0;
-
-            if (skillData == null)
-                return false;
-
-            switch (skillData.ResourceCostType)
-            {
-                case ResourceCostType.None:
-                    previewCost = 0;
-                    return true;
-
-                case ResourceCostType.Fixed:
-                    previewCost = skillData.ResourceCostValue;
-                    return availableResource >= previewCost;
-
-                case ResourceCostType.AllCurrent:
-                    previewCost = availableResource;
-                    return availableResource >= skillData.ResourceCostValue;
-
-                default:
-                    return false;
-            }
+            return DataManager.Instance != null &&
+                   DataManager.Instance.CharacterRuntimeStore != null &&
+                   DataManager.Instance.CharacterRuntimeStore.TryGet(characterId, out runtimeData);
         }
 
         private SkillResourcePreviewUI resourcePreviewUI;
 
         private void ResolveResourcePreviewUI(CharacterSelectButtonUI character)
         {
+            resourcePreviewUI = null;
+
             if (character == null)
-            {
-                resourcePreviewUI = null;
                 return;
-            }
 
             resourcePreviewUI = character.GetComponentInChildren<SkillResourcePreviewUI>(true);
 
             if (resourcePreviewUI == null && character.BattleCharacter != null)
                 resourcePreviewUI = character.BattleCharacter.GetComponentInChildren<SkillResourcePreviewUI>(true);
-
-            if (resourcePreviewUI == null)
-                Debug.LogWarning($"[PlayerActionPlanner] SkillResourcePreviewUI 자동 연결 실패: {character.name}");
         }
 
         private void ResolveDirectionSelectUI(CharacterSelectButtonUI character)
@@ -643,14 +492,11 @@ namespace Relic.Gameplay.Battle
             if (directionSelectUI == null && character.BattleCharacter != null)
                 directionSelectUI = character.BattleCharacter.GetComponentInChildren<DirectionSelectUI>(true);
 
-            if (directionSelectUI == null)
+            if (directionSelectUI != null)
             {
-                Debug.LogWarning($"[PlayerActionPlanner] DirectionSelectUI 자동 연결 실패: {character.name}");
-                return;
+                directionSelectUI.Bind(this);
+                directionSelectUI.Hide();
             }
-
-            directionSelectUI.Bind(this);
-            directionSelectUI.Hide();
         }
 
         private void RefreshResourcePreview()
@@ -678,7 +524,7 @@ namespace Relic.Gameplay.Battle
 
             ReferenceResource previewResourceType = currentPreviewResourceType;
 
-            int currentValue = GetCurrentResourceByType(runtimeData, previewResourceType);
+            int currentValue = SkillCostCalculator.GetCurrentResource(runtimeData, previewResourceType);
             int maxValue = GetMaxResourceByType(masterData, previewResourceType);
             int reserved = GetReservedCostByCharacter(currentCharacter.CharacterId, previewResourceType);
             int remain = Mathf.Max(0, currentValue - reserved);
@@ -693,23 +539,9 @@ namespace Relic.Gameplay.Battle
             if (string.IsNullOrWhiteSpace(characterId))
                 return false;
 
-            var dm = DataManager.Instance;
-            if (dm == null || dm.CharacterDatabase == null)
-                return false;
-
-            return dm.CharacterDatabase.TryGet(characterId, out masterData);
-        }
-
-        private static int GetCurrentResourceByType(CharacterRuntimeData runtimeData, ReferenceResource type)
-        {
-            return type switch
-            {
-                ReferenceResource.Health => runtimeData.CurrentHealth,
-                ReferenceResource.Stamina => runtimeData.CurrentStamina,
-                ReferenceResource.UniqueResource => runtimeData.CurrentResource,
-                ReferenceResource.MovePoint => runtimeData.CurrentMoveLevel,
-                _ => 0
-            };
+            return DataManager.Instance != null &&
+                   DataManager.Instance.CharacterDatabase != null &&
+                   DataManager.Instance.CharacterDatabase.TryGet(characterId, out masterData);
         }
 
         private static int GetMaxResourceByType(CharacterMasterData masterData, ReferenceResource type)
@@ -744,82 +576,54 @@ namespace Relic.Gameplay.Battle
             return -1;
         }
 
-        private void SpendSkillCost(
-    CharacterRuntimeData runtimeData,
-    SkillMasterData skillData,
-    int cost
-)
+        private void AddReservedSkillCost(CharacterRuntimeData runtimeData, SkillMasterData skillData, int cost)
         {
-            if (runtimeData == null || skillData == null)
-                return;
-
-            if (cost <= 0)
+            if (runtimeData == null || skillData == null || cost <= 0)
                 return;
 
             switch (skillData.ReferenceResource)
             {
-                case ReferenceResource.Stamina:
-                    runtimeData.CurrentStamina = Mathf.Max(0, runtimeData.CurrentStamina - cost);
+                case ReferenceResource.Health:
+                    runtimeData.AddReservedHealth(cost);
                     break;
 
-                case ReferenceResource.Health:
-                    runtimeData.CurrentHealth = Mathf.Max(0, runtimeData.CurrentHealth - cost);
+                case ReferenceResource.Stamina:
+                    runtimeData.AddReservedStamina(cost);
                     break;
 
                 case ReferenceResource.UniqueResource:
-                    runtimeData.CurrentResource = Mathf.Max(0, runtimeData.CurrentResource - cost);
+                    runtimeData.AddReservedResource(cost);
                     break;
 
                 case ReferenceResource.MovePoint:
-                    runtimeData.CurrentMoveLevel = Mathf.Max(0, runtimeData.CurrentMoveLevel - cost);
+                    runtimeData.AddReservedMove(cost);
                     break;
             }
 
             DataManager.Instance.CharacterRuntimeStore.AddOrUpdate(runtimeData);
         }
 
-        private void RefundSkillCost(
-            CharacterRuntimeData runtimeData,
-            SkillMasterData skillData,
-            int cost
-        )
+        private void RemoveReservedSkillCost(CharacterRuntimeData runtimeData, SkillMasterData skillData, int cost)
         {
-            if (runtimeData == null || skillData == null)
+            if (runtimeData == null || skillData == null || cost <= 0)
                 return;
-
-            if (cost <= 0)
-                return;
-
-            CharacterMasterData masterData = DataManager.Instance.CharacterDatabase.Get(runtimeData.CharacterId);
 
             switch (skillData.ReferenceResource)
             {
-                case ReferenceResource.Stamina:
-                    runtimeData.CurrentStamina = Mathf.Min(
-                        masterData.MaxStamina,
-                        runtimeData.CurrentStamina + cost
-                    );
+                case ReferenceResource.Health:
+                    runtimeData.RemoveReservedHealth(cost);
                     break;
 
-                case ReferenceResource.Health:
-                    runtimeData.CurrentHealth = Mathf.Min(
-                        masterData.MaxHealth,
-                        runtimeData.CurrentHealth + cost
-                    );
+                case ReferenceResource.Stamina:
+                    runtimeData.RemoveReservedStamina(cost);
                     break;
 
                 case ReferenceResource.UniqueResource:
-                    runtimeData.CurrentResource = Mathf.Min(
-                        masterData.MaxResource,
-                        runtimeData.CurrentResource + cost
-                    );
+                    runtimeData.RemoveReservedResource(cost);
                     break;
 
                 case ReferenceResource.MovePoint:
-                    runtimeData.CurrentMoveLevel = Mathf.Min(
-                        masterData.MoveValue,
-                        runtimeData.CurrentMoveLevel + cost
-                    );
+                    runtimeData.RemoveReservedMove(cost);
                     break;
             }
 

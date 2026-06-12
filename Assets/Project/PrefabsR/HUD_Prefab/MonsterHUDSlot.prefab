@@ -681,7 +681,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   nameText: {fileID: 3308567879673977372}
-  hpFill: {fileID: 0}
+  hpFill: {fileID: 8845114207658701684}
   hpValueText: {fileID: 7278086840193307182}
   shieldFill: {fileID: 0}
   shieldValueText: {fileID: 0}

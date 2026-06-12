@@ -7,6 +7,7 @@ namespace Relic.Gameplay.Data
     {
         public string EffectId;
         public int Stack;
+        public int TurnCount;
 
         public StatusEffectRuntimeData()
         {
@@ -16,11 +17,21 @@ namespace Relic.Gameplay.Data
         {
             EffectId = effectId;
             Stack = stack;
+            TurnCount = 1;
+        }
+
+        public StatusEffectRuntimeData(string effectId, int stack, int turnCount)
+        {
+            EffectId = effectId;
+            Stack = stack;
+            TurnCount = turnCount;
         }
 
         public bool IsValid()
         {
-            return !string.IsNullOrWhiteSpace(EffectId) && Stack > 0;
+            return !string.IsNullOrWhiteSpace(EffectId)
+                && Stack > 0
+                && TurnCount > 0;
         }
 
         public void AddStack(int amount)
@@ -40,6 +51,14 @@ namespace Relic.Gameplay.Data
 
             if (Stack < 0)
                 Stack = 0;
+        }
+
+        public void DecreaseTurn()
+        {
+            TurnCount--;
+
+            if (TurnCount < 0)
+                TurnCount = 0;
         }
     }
 }

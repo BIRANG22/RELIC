@@ -79,6 +79,12 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             skillIconImage.enabled = skillIconImage.sprite != null;
         }
 
+        if (skillRangeImage != null)
+        {
+            skillRangeImage.sprite = GetSkillRangeIcon(skillData.RangeId);
+            skillRangeImage.enabled = skillRangeImage.sprite != null;
+        }
+
         if (skillNameText != null)
             skillNameText.text = skillData.Name;
 
@@ -103,7 +109,10 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         }
 
         if (skillRangeImage != null)
+        {
+            skillRangeImage.sprite = null;
             skillRangeImage.enabled = false;
+        }
 
         if (skillCostImage != null)
             skillCostImage.enabled = false;
@@ -140,8 +149,6 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private void OnClick()
     {
-        Debug.Log($"[SkillListSlotUI] Click / Skill:{skillId} / CanClick:{canClick} / HasData:{skillData != null}");
-
         if (!canClick)
             return;
 
@@ -194,6 +201,20 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         return null;
     }
 
+    private Sprite GetSkillRangeIcon(string rangeId)
+    {
+        if (DataManager.Instance == null)
+            return null;
+
+        if (DataManager.Instance.SkillRangeIconDatabase == null)
+            return null;
+
+        if (DataManager.Instance.SkillRangeIconDatabase.TryGetIcon(rangeId, out Sprite icon))
+            return icon;
+
+        return null;
+    }
+
     private string BuildDetailText(SkillMasterData data)
     {
         if (data == null)
@@ -201,33 +222,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
         string text = data.Name;
 
-        text += $"\n분류: {data.Category}";
-        text += $"\n대상: {data.Target}";
-        text += $"\n타입: {data.SkillType}";
-
-        if (!string.IsNullOrWhiteSpace(data.EffectIds))
-            text += $"\n효과: {data.EffectIds}";
-
-        if (!string.IsNullOrWhiteSpace(data.ValueRate))
-            text += $"\n수치: {data.ValueRate}";
-
-        if (!string.IsNullOrWhiteSpace(data.CountRate))
-            text += $"\n횟수: {data.CountRate}";
-
-        if (data.ResourceCostType != ResourceCostType.None)
-            text += $"\n소모: {data.ReferenceResource} {data.ResourceCostType} {data.ResourceCostValue}";
-
-        if (data.GridMove != 0)
-            text += $"\n이동: {data.GridMove}";
-
-        if (data.RangeType != RangeType.None)
-            text += $"\n범위: {data.RangeType}";
-
-        if (!string.IsNullOrWhiteSpace(data.RangeId))
-            text += $"\nRangeId: {data.RangeId}";
-
-        if (data.TimelineNotation != TimelineActionType.None)
-            text += $"\n타임라인: {data.TimelineNotation}";
+        text += $"{data.ToolTip}";
 
         return text;
     }

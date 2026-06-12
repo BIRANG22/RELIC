@@ -84,8 +84,6 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
             return false;
 
         commands.Add(command);
-
-        Debug.Log($"[ReserveTurnSlotUI] AddCommand / Slot:{slotIndex} / Character:{command.CharacterId} / Skill:{command.SkillName}");
         return true;
     }
 
@@ -99,7 +97,6 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
         removedCommand = commands[index];
         commands.RemoveAt(index);
 
-        Debug.Log($"[ReserveTurnSlotUI] RemoveCommand / Slot:{slotIndex} / Index:{index}");
         return true;
     }
 

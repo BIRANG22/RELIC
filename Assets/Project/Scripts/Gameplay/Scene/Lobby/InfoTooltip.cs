@@ -244,26 +244,8 @@ public class InfoTooltip : MonoBehaviour
 
         string text = "";
 
-        if (!string.IsNullOrWhiteSpace(skillData.EffectIds))
-            text += "Effect: " + skillData.EffectIds;
-
-        if (!string.IsNullOrWhiteSpace(skillData.ValueRate))
-            text += "\nValue: " + skillData.ValueRate;
-
-        if (!string.IsNullOrWhiteSpace(skillData.CountRate))
-            text += "\nCount: " + skillData.CountRate;
-
-        if (skillData.ResourceCostType != ResourceCostType.None)
-            text += "\nCost: " + skillData.ResourceCostType + " " + skillData.ResourceCostValue;
-
-        if (skillData.GridMove != 0)
-            text += "\nMove: " + skillData.GridMove;
-
-        if (!string.IsNullOrWhiteSpace(skillData.RangeId))
-            text += "\nRange: " + skillData.RangeId;
-
-        if (skillData.TimelineNotation != TimelineActionType.None)
-            text += "\nTimeline: " + skillData.TimelineNotation;
+        if (!string.IsNullOrWhiteSpace(skillData.ToolTip))
+            text += "ToolTip: " + skillData.ToolTip;
 
         return string.IsNullOrWhiteSpace(text) ? "효과 없음" : text;
     }

@@ -11,12 +11,14 @@ public class BattleActionBatchBuilder
 
         for (int slotIndex = 0; slotIndex < timelineController.SlotCount; slotIndex++)
         {
+            EnsureBatchExists(batches, slotIndex);
+
             var playerCommands = timelineController.GetPlayerCommands(slotIndex);
 
             if (playerCommands != null)
             {
                 for (int i = 0; i < playerCommands.Count; i++)
-                    AddPlayerCommand(batches, playerCommands[i]);
+                    AddPlayerCommand(batches, playerCommands[i], slotIndex);
             }
 
             var monsterCommands = timelineController.GetMonsterCommands(slotIndex);
@@ -24,19 +26,24 @@ public class BattleActionBatchBuilder
             if (monsterCommands != null)
             {
                 for (int i = 0; i < monsterCommands.Count; i++)
-                    AddMonsterCommand(batches, monsterCommands[i]);
+                    AddMonsterCommand(batches, monsterCommands[i], slotIndex);
             }
         }
 
         return batches;
     }
 
-    private void AddPlayerCommand(List<BattleActionBatch> batches, PlayerReservedCommand command)
+    private void AddPlayerCommand(
+        List<BattleActionBatch> batches,
+        PlayerReservedCommand command,
+        int minBatchIndex)
     {
         if (command == null)
             return;
 
-        for (int i = 0; i < batches.Count; i++)
+        EnsureBatchExists(batches, minBatchIndex);
+
+        for (int i = minBatchIndex; i < batches.Count; i++)
         {
             if (CanAddPlayerCommand(batches[i], command))
             {
@@ -50,15 +57,34 @@ public class BattleActionBatchBuilder
         batches.Add(newBatch);
     }
 
-    private void AddMonsterCommand(List<BattleActionBatch> batches, MonsterReservedCommand command)
+    private void AddMonsterCommand(
+        List<BattleActionBatch> batches,
+        MonsterReservedCommand command,
+        int minBatchIndex)
     {
         if (command == null)
             return;
 
-        if (batches.Count == 0)
-            batches.Add(new BattleActionBatch());
+        EnsureBatchExists(batches, minBatchIndex);
 
-        batches[0].MonsterCommands.Add(command);
+        for (int i = minBatchIndex; i < batches.Count; i++)
+        {
+            if (CanAddMonsterCommand(batches[i], command))
+            {
+                batches[i].MonsterCommands.Add(command);
+                return;
+            }
+        }
+
+        BattleActionBatch newBatch = new();
+        newBatch.MonsterCommands.Add(command);
+        batches.Add(newBatch);
+    }
+
+    private void EnsureBatchExists(List<BattleActionBatch> batches, int index)
+    {
+        while (batches.Count <= index)
+            batches.Add(new BattleActionBatch());
     }
 
     private bool CanAddPlayerCommand(BattleActionBatch batch, PlayerReservedCommand command)
@@ -76,14 +102,40 @@ public class BattleActionBatchBuilder
             if (existing.CharacterId == command.CharacterId)
                 return false;
 
-            if (existing.ReservedMoveGridIndex >= 0 &&
-                command.ReservedMoveGridIndex >= 0 &&
-                existing.ReservedMoveGridIndex == command.ReservedMoveGridIndex)
-            {
+            if (IsSameMoveTarget(existing, command))
                 return false;
-            }
         }
 
         return true;
+    }
+
+    private bool CanAddMonsterCommand(BattleActionBatch batch, MonsterReservedCommand command)
+    {
+        if (batch == null || command == null)
+            return false;
+
+        for (int i = 0; i < batch.MonsterCommands.Count; i++)
+        {
+            MonsterReservedCommand existing = batch.MonsterCommands[i];
+
+            if (existing == null)
+                continue;
+
+            if (existing.RuntimeId == command.RuntimeId)
+                return false;
+        }
+
+        return true;
+    }
+
+    private bool IsSameMoveTarget(PlayerReservedCommand a, PlayerReservedCommand b)
+    {
+        if (a == null || b == null)
+            return false;
+
+        if (a.ReservedMoveGridIndex < 0 || b.ReservedMoveGridIndex < 0)
+            return false;
+
+        return a.ReservedMoveGridIndex == b.ReservedMoveGridIndex;
     }
 }

@@ -4,15 +4,24 @@ public static class SkillValueCalculator
 {
     public static int GetValue(SkillEffectEntry entry, int payAmount)
     {
+        if (entry == null)
+            return 0;
+
         return Calculate(entry.ValueCalcType, entry.ValueAmount, payAmount);
     }
 
-    public static int GetCount(SkillEffectEntry entry, int payAmount)
+    public static int GetCount(SkillEffectEntry entry)
     {
-        return Calculate(entry.CountCalcType, entry.CountAmount, payAmount);
+        if (entry == null)
+            return 0;
+
+        return entry.CountAmount;
     }
 
-    private static int Calculate(ValueCalcType type, int amount, int payAmount)
+    private static int Calculate(
+        ValueCalcType type,
+        int amount,
+        int payAmount)
     {
         return type switch
         {

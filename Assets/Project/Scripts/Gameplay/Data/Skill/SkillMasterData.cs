@@ -24,11 +24,12 @@ namespace Relic.Gameplay.Data
 
     public enum Category
     {
-        Move,
-        Passive,
-        Unique,
-        Ability,
-        Essenece
+        Move,       // 기본 이동
+        Passive,    // 패시브
+        Unique,     // 고유 스킬
+        Ability,    // 캐릭터 전용 스킬
+        Public,     // 공유 스킬
+        Core        // 전투 획득 스킬
     }
 
     public enum ReferenceResource
@@ -89,7 +90,6 @@ namespace Relic.Gameplay.Data
         public string EffectIds;
         public string ValueCalcTypes;
         public string ValueRate;
-        public string CountCalcTypes;
         public string CountRate;
 
         // 패시브
@@ -103,7 +103,8 @@ namespace Relic.Gameplay.Data
         public int GridMove;
         public RangeType RangeType;
         public string RangeId;
-        public TimelineActionType TimelineNotation;
+
+        public string ToolTip;
 
         // 런타임 사용용
         public List<SkillEffectEntry> EffectEntries = new();

@@ -19,7 +19,6 @@ namespace Relic.Gameplay.Data
         public bool IsDefaultProvided;
         public string UnlockCondition;
 
-        // 엑셀 컬럼과 직접 매칭
         public string PassiveSkill1;
         public string PassiveSkill2;
 
@@ -38,7 +37,6 @@ namespace Relic.Gameplay.Data
         public string Rune4;
         public string Rune5;
 
-        // 런타임에서 쓰기 편한 구조
         public CharacterSkillLoadout DefaultSkillLoadout = new();
 
         [NonSerialized]
@@ -49,13 +47,16 @@ namespace Relic.Gameplay.Data
 
         public void BuildSkillLoadout()
         {
+            if (DefaultSkillLoadout == null)
+                DefaultSkillLoadout = new CharacterSkillLoadout();
+
             DefaultSkillLoadout.PassiveId = PassiveSkill1;
             DefaultSkillLoadout.UniqueSkillId = UniqueSkill1;
+            DefaultSkillLoadout.AbilitySkillId = CharacterSkill1;
 
-            DefaultSkillLoadout.AbilitySkillIds = new string[3];
-            DefaultSkillLoadout.AbilitySkillIds[0] = CharacterSkill1;
-            DefaultSkillLoadout.AbilitySkillIds[1] = CharacterSkill2;
-            DefaultSkillLoadout.AbilitySkillIds[2] = CommonSkill1;
+            DefaultSkillLoadout.FreeSkillIds = new string[2];
+            DefaultSkillLoadout.FreeSkillIds[0] = CommonSkill1;
+            DefaultSkillLoadout.FreeSkillIds[1] = "";
         }
 
         public string[] GetRuneIds()
