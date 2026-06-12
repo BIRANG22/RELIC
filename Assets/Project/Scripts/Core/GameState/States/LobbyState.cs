@@ -10,6 +10,7 @@ public class LobbyState : BaseGameState
     public override async Task Enter(GameStateContext context)
     {
         await sceneFlow.LoadSceneAsync(SceneName.Lobby);
+        AudioManager.Instance.PlayBgm(BgmType.Lobby);
     }
 
     public override Task Exit()
