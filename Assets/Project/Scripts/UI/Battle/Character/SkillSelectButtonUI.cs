@@ -12,7 +12,6 @@ public class SkillSelectButtonUI : MonoBehaviour
     [SerializeField] private PlayerActionPlanner playerActionPlanner;
 
     [Header("Mode")]
-    [SerializeField] private bool useEquipUI = false;
     [SerializeField] private bool useBattleTimeline = true;
 
     private string skillId;
