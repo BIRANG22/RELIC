@@ -30,6 +30,7 @@ public class BattleState : BaseGameState
         mapRuntime.CurrentSceneName = SceneName.Battle;
 
         DataManager.Instance.MapRuntimeStore.Set(mapRuntime);
+        AudioManager.Instance.PlayBgm(BgmType.Battle);
 
         await sceneFlow.LoadSceneAsync(mapRuntime.CurrentSceneName);
     }
