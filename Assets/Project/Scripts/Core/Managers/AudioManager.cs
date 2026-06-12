@@ -15,11 +15,7 @@ public enum SfxType
     Confirm,
     Attack,
     Hit,
-    Skill,
-    NormalButtonHover,
-    NormalButtonClick,
-    MoveButtonHover,
-    MoveButtonClick
+    Skill
 }
 
 [System.Serializable]
@@ -34,9 +30,6 @@ public class SfxData
 {
     public SfxType type;
     public AudioClip clip;
-
-    [Range(0f, 1f)]
-    public float volume = 1f;
 }
 
 public class AudioManager : Singleton<AudioManager>
@@ -52,7 +45,7 @@ public class AudioManager : Singleton<AudioManager>
     [SerializeField] private List<SfxData> sfxList = new List<SfxData>();
 
     private Dictionary<BgmType, AudioClip> bgmDict;
-    private Dictionary<SfxType, SfxData> sfxDict;
+    private Dictionary<SfxType, AudioClip> sfxDict;
 
     protected override void Awake()
     {
@@ -66,16 +59,15 @@ public class AudioManager : Singleton<AudioManager>
 
     public void Initialize()
     {
-        InitializeDictionary();
         ApplyVolumes();
     }
 
     private void InitializeDictionary()
     {
         bgmDict = new Dictionary<BgmType, AudioClip>();
-        sfxDict = new Dictionary<SfxType, SfxData>();
+        sfxDict = new Dictionary<SfxType, AudioClip>();
 
-        foreach (BgmData data in bgmList)
+        foreach (var data in bgmList)
         {
             if (data == null || data.clip == null)
                 continue;
@@ -84,26 +76,18 @@ public class AudioManager : Singleton<AudioManager>
                 bgmDict.Add(data.type, data.clip);
         }
 
-        foreach (SfxData data in sfxList)
+        foreach (var data in sfxList)
         {
             if (data == null || data.clip == null)
                 continue;
 
-            data.volume = Mathf.Clamp01(data.volume);
-
             if (!sfxDict.ContainsKey(data.type))
-                sfxDict.Add(data.type, data);
+                sfxDict.Add(data.type, data.clip);
         }
     }
 
     public void PlayBgm(BgmType type, bool loop = true)
     {
-        if (bgmSource == null)
-        {
-            Debug.LogWarning("[AudioManager] BGM Source is not assigned.");
-            return;
-        }
-
         if (!bgmDict.TryGetValue(type, out AudioClip clip))
         {
             Debug.LogWarning($"[AudioManager] BGM not found: {type}");
@@ -122,34 +106,19 @@ public class AudioManager : Singleton<AudioManager>
 
     public void StopBgm()
     {
-        if (bgmSource == null)
-            return;
-
         bgmSource.Stop();
         bgmSource.clip = null;
     }
 
     public void PlaySfx(SfxType type)
     {
-        PlaySfx(type, 1f);
-    }
-
-    public void PlaySfx(SfxType type, float volumeMultiplier)
-    {
-        if (sfxSource == null)
-        {
-            Debug.LogWarning("[AudioManager] SFX Source is not assigned.");
-            return;
-        }
-
-        if (!sfxDict.TryGetValue(type, out SfxData data) || data == null || data.clip == null)
+        if (!sfxDict.TryGetValue(type, out AudioClip clip))
         {
             Debug.LogWarning($"[AudioManager] SFX not found: {type}");
             return;
         }
 
-        float volume = Mathf.Clamp01(data.volume) * Mathf.Clamp01(volumeMultiplier);
-        sfxSource.PlayOneShot(data.clip, volume);
+        sfxSource.PlayOneShot(clip);
     }
 
     public void SetMasterVolume(float volume)
@@ -170,17 +139,6 @@ public class AudioManager : Singleton<AudioManager>
         ApplyVolumes();
     }
 
-    public void SetSfxVolume(SfxType type, float volume)
-    {
-        if (!sfxDict.TryGetValue(type, out SfxData data) || data == null)
-        {
-            Debug.LogWarning($"[AudioManager] SFX not found: {type}");
-            return;
-        }
-
-        data.volume = Mathf.Clamp01(volume);
-    }
-
     public float GetMasterVolume()
     {
         return Settings.Instance.MasterVolume;
@@ -194,14 +152,6 @@ public class AudioManager : Singleton<AudioManager>
     public float GetSfxVolume()
     {
         return Settings.Instance.SFXVolume;
-    }
-
-    public float GetSfxVolume(SfxType type)
-    {
-        if (!sfxDict.TryGetValue(type, out SfxData data) || data == null)
-            return 1f;
-
-        return Mathf.Clamp01(data.volume);
     }
 
     private void ApplyVolumes()
