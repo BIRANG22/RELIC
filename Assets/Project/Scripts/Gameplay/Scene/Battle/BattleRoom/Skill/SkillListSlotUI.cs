@@ -59,6 +59,9 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         skillData = null;
         isPointerOver = false;
 
+        if (rectTransform == null)
+            rectTransform = GetComponent<RectTransform>();
+
         if (string.IsNullOrWhiteSpace(skillId))
         {
             SetEmpty();
@@ -84,6 +87,9 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             skillRangeImage.sprite = GetSkillRangeIcon(skillData.RangeId);
             skillRangeImage.enabled = skillRangeImage.sprite != null;
         }
+
+        if (skillCostImage != null)
+            skillCostImage.enabled = true;
 
         if (skillNameText != null)
             skillNameText.text = skillData.Name;
@@ -135,7 +141,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         ApplyVisualState();
 
         if (owner != null)
-            owner.ShowSkillDetail(detailText);
+            owner.ShowSkillDetail(detailText, rectTransform);
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -156,7 +162,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             return;
 
         owner.SelectSkill(skillId);
-        owner.ShowSkillDetail(detailText);
+        owner.ShowSkillDetail(detailText, rectTransform);
     }
 
     private void ApplyVisualState()
@@ -221,9 +227,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             return "";
 
         string text = data.Name;
-
         text += $"{data.ToolTip}";
-
         return text;
     }
 }

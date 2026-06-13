@@ -28,6 +28,13 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
     [Header("Toggle")]
     [SerializeField] private bool toggleIfAlreadyOpen = true;
 
+    [Header("Opened Panel Front Sorting")]
+    [SerializeField] private bool bringOpenedPanelToFront = true;
+    [SerializeField] private bool forceOpenedPanelCanvasSorting = true;
+    [SerializeField] private int openedPanelSortingOrder = 1000;
+    [SerializeField] private bool addGraphicRaycasterToOpenedPanel = true;
+
+
     [Header("Close On Other Button Hover")]
     [SerializeField] private bool closeOpenedPanelWhenOtherButtonHovered = false;
     [SerializeField] private bool resetMoveWhenClosedByOtherButton = true;
@@ -47,6 +54,14 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
     [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
 
     private static UIPanelButton currentOpenedPanelOwner;
+
+    public static void CloseCurrentOpenedPanel()
+    {
+        if (currentOpenedPanelOwner == null)
+            return;
+
+        currentOpenedPanelOwner.CloseOwnPanel();
+    }
 
     private bool isPlayingEffect;
     private bool isMoved;
@@ -332,8 +347,35 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         if (panelToOpen != null)
         {
             panelToOpen.SetActive(true);
+            ApplyOpenedPanelFrontSorting(panelToOpen);
             currentOpenedPanelOwner = this;
         }
+    }
+
+    private void ApplyOpenedPanelFrontSorting(GameObject openedPanel)
+    {
+        if (openedPanel == null)
+            return;
+
+        if (bringOpenedPanelToFront)
+            openedPanel.transform.SetAsLastSibling();
+
+        if (!forceOpenedPanelCanvasSorting)
+            return;
+
+        Canvas canvas = openedPanel.GetComponent<Canvas>();
+        if (canvas == null)
+            canvas = openedPanel.AddComponent<Canvas>();
+
+        canvas.overrideSorting = true;
+        canvas.sortingOrder = openedPanelSortingOrder;
+
+        if (!addGraphicRaycasterToOpenedPanel)
+            return;
+
+        GraphicRaycaster raycaster = openedPanel.GetComponent<GraphicRaycaster>();
+        if (raycaster == null)
+            openedPanel.AddComponent<GraphicRaycaster>();
     }
 
     private void ClosePanels()

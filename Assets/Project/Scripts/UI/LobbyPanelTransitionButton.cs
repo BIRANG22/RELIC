@@ -15,6 +15,10 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
     [SerializeField] private GameObject[] panelsToClose;
     [SerializeField] private GameObject panelToOpen;
 
+    [Header("Opened Popup Close")]
+    [SerializeField] private bool closeCurrentUIPanelButtonPanelOnExecute = true;
+    [SerializeField] private GameObject[] extraPanelsToCloseOnExecute;
+
     [Header("World Object Change")]
     [SerializeField] private GameObject[] worldObjectsToClose;
     [SerializeField] private GameObject[] worldObjectsToOpen;
@@ -56,6 +60,8 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 
         if (playClickSound && AudioManager.Instance != null)
             AudioManager.Instance.PlaySfx(clickSfx, clickSfxVolumeMultiplier);
+
+        CloseOpenedPopupPanels();
 
         if (lobbyPanelTransition == null)
         {
@@ -105,6 +111,21 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 
         closeDirection = customCloseDirection;
         openDirection = customOpenDirection;
+    }
+
+    private void CloseOpenedPopupPanels()
+    {
+        if (closeCurrentUIPanelButtonPanelOnExecute)
+            UIPanelButton.CloseCurrentOpenedPanel();
+
+        if (extraPanelsToCloseOnExecute == null)
+            return;
+
+        for (int i = 0; i < extraPanelsToCloseOnExecute.Length; i++)
+        {
+            if (extraPanelsToCloseOnExecute[i] != null)
+                extraPanelsToCloseOnExecute[i].SetActive(false);
+        }
     }
 
     private void InvokeBeforePanelChange()

@@ -1,9 +1,13 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using Relic.Gameplay.Data;
 
 public class SpawnGridPanel : MonoBehaviour
 {
     [SerializeField] private SpawnGridCell[] cells;
+
+    [Header("Default Party Deploy Cells")]
+    [SerializeField] private bool usePartySlotDefaultDeployCells = true;
+    [SerializeField] private int firstPartyDefaultDeployCellNumber = 7;
 
     private int selectedPartySlotIndex = -1;
 
@@ -50,11 +54,11 @@ public class SpawnGridPanel : MonoBehaviour
             if (currentGridIndex >= 0)
                 continue;
 
-            int emptyGridIndex = FindFirstEmptyGrid();
+            int emptyGridIndex = FindDefaultEmptyGridForPartySlot(partyIndex);
 
             if (emptyGridIndex < 0)
             {
-                Debug.LogWarning("[SpawnGridPanel] ºñ¾îÀÖ´Â ±×¸®µå°¡ ¾ø½À´Ï´Ù.");
+                Debug.LogWarning("[SpawnGridPanel] ë¹ˆ ë°°ì¹˜ ê·¸ë¦¬ë“œê°€ ì—†ìŠµë‹ˆë‹¤.");
                 return;
             }
 
@@ -80,7 +84,7 @@ public class SpawnGridPanel : MonoBehaviour
 
         if (selectedPartySlotIndex < 0)
         {
-            Debug.LogWarning("[SpawnGridPanel] ¸ÕÀú ÀÌµ¿ÇÒ Ä³¸¯ÅÍ¸¦ ¼±ÅÃÇÏ¼¼¿ä.");
+            Debug.LogWarning("[SpawnGridPanel] ë¨¼ì € ì´ë™í•  ìºë¦­í„°ë¥¼ ì„ íƒí•˜ì„¸ìš”.");
             return;
         }
 
@@ -91,6 +95,29 @@ public class SpawnGridPanel : MonoBehaviour
 
         selectedPartySlotIndex = -1;
         Refresh();
+    }
+
+    private int FindDefaultEmptyGridForPartySlot(int partySlotIndex)
+    {
+        if (usePartySlotDefaultDeployCells && DataManager.Instance != null)
+        {
+            int preferredGridIndex = GetDefaultDeployGridIndex(partySlotIndex);
+
+            if (IsValidGridIndex(preferredGridIndex) && !DataManager.Instance.PartyRuntimeStore.IsGridUsed(preferredGridIndex))
+                return preferredGridIndex;
+        }
+
+        return FindFirstEmptyGrid();
+    }
+
+    private int GetDefaultDeployGridIndex(int partySlotIndex)
+    {
+        return Mathf.Max(1, firstPartyDefaultDeployCellNumber) - 1 + partySlotIndex;
+    }
+
+    private bool IsValidGridIndex(int gridIndex)
+    {
+        return cells != null && gridIndex >= 0 && gridIndex < cells.Length;
     }
 
     private int FindFirstEmptyGrid()

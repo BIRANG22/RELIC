@@ -23,15 +23,15 @@ public class CharacterSubPanelOpenButton : MonoBehaviour
     [Header("Character Panels")]
     [SerializeField] private List<CharacterSubPanelEntry> panels = new();
 
-    [Header("Option")]
+    [Header("Sound")]
     [SerializeField] private bool playClickSound = true;
+    [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
 
     private static GameObject currentOpenedSubPanel;
 
     public void Execute()
     {
-        if (playClickSound && AudioManager.Instance != null)
-            AudioManager.Instance.PlaySfx(SfxType.Click);
+        PlayClickSound();
 
         if (CharacterSelectionState.Instance == null)
         {
@@ -62,6 +62,17 @@ public class CharacterSubPanelOpenButton : MonoBehaviour
         currentOpenedSubPanel = targetPanel;
 
         Debug.Log($"[CharacterSubPanelOpenButton] Open: {currentCharacter} / {panelType} / {targetPanel.name}");
+    }
+
+    private void PlayClickSound()
+    {
+        if (!playClickSound)
+            return;
+
+        if (AudioManager.Instance == null)
+            return;
+
+        AudioManager.Instance.PlaySfx(clickSfx);
     }
 
     private GameObject FindTargetPanel(CharacterType characterType, CharacterSubPanelType type)

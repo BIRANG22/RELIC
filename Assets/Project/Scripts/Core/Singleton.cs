@@ -16,6 +16,7 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
         }
 
         Instance = this as T;
+        MoveToRootIfNeeded();
         DontDestroyOnLoad(gameObject);
         IsDuplicateInstance = false;
     }
@@ -26,5 +27,15 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
         {
             Instance = null;
         }
+    }
+
+    private void MoveToRootIfNeeded()
+    {
+        if (transform.parent == null)
+        {
+            return;
+        }
+
+        transform.SetParent(null, false);
     }
 }

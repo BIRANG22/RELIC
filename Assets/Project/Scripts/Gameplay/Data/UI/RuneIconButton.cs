@@ -9,7 +9,12 @@ public class RuneIconButton : MonoBehaviour
     [SerializeField] private Button button;
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private Image iconImage;
+
+    [Header("Equipped UI")]
+    [SerializeField] private bool useIconAlphaForEquipped = true;
+    [SerializeField, Range(0f, 1f)] private float equippedIconAlpha = 0.35f;
     [SerializeField] private GameObject equippedObject;
+    [SerializeField] private bool useEquippedObject = false;
 
     [Header("Locked UI")]
     [SerializeField] private GameObject lockedObject;
@@ -19,6 +24,7 @@ public class RuneIconButton : MonoBehaviour
     private RuneData currentRuneData;
 
     private bool isLocked;
+    private bool isEquipped;
     private int requiredLevel;
 
     public RuneData CurrentRuneData => currentRuneData;
@@ -44,6 +50,7 @@ public class RuneIconButton : MonoBehaviour
         currentRuneData = runeData;
         isLocked = locked;
         this.requiredLevel = requiredLevel;
+        isEquipped = false;
 
         bool hasRune = currentRuneData != null;
         gameObject.SetActive(hasRune);
@@ -61,19 +68,24 @@ public class RuneIconButton : MonoBehaviour
         if (iconImage != null)
         {
             Sprite icon = GetRuneIcon(currentRuneData);
-
             iconImage.enabled = icon != null;
             iconImage.sprite = icon;
-            iconImage.color = isLocked ? new Color(0.35f, 0.35f, 0.35f, 1f) : Color.white;
         }
 
         SetLockedState(isLocked, this.requiredLevel);
+        ApplyIconVisualState();
     }
 
     public void SetEquippedState(bool equipped)
     {
-        if (equippedObject != null)
+        isEquipped = equipped;
+
+        if (useEquippedObject && equippedObject != null)
             equippedObject.SetActive(equipped);
+        else if (equippedObject != null)
+            equippedObject.SetActive(false);
+
+        ApplyIconVisualState();
     }
 
     private void SetLockedState(bool locked, int level)
@@ -89,6 +101,21 @@ public class RuneIconButton : MonoBehaviour
 
         if (button != null)
             button.interactable = currentRuneData != null;
+    }
+
+    private void ApplyIconVisualState()
+    {
+        if (iconImage == null)
+            return;
+
+        if (isLocked)
+        {
+            iconImage.color = new Color(0.35f, 0.35f, 0.35f, 1f);
+            return;
+        }
+
+        float alpha = useIconAlphaForEquipped && isEquipped ? equippedIconAlpha : 1f;
+        iconImage.color = new Color(1f, 1f, 1f, alpha);
     }
 
     public void Execute()

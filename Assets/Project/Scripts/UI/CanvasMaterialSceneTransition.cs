@@ -8,6 +8,10 @@ public class CanvasMaterialSceneTransition : Singleton<CanvasMaterialSceneTransi
     [SerializeField] private GameObject transitionRoot;
     [SerializeField] private CanvasGroup canvasGroup;
 
+    [Header("Canvas Sorting")]
+    [SerializeField] private bool ensureRootCanvas = true;
+    [SerializeField] private int canvasSortingOrder = 5000;
+
     [Header("Transition Graphics")]
     [SerializeField] private Graphic leftGraphic;
     [SerializeField] private Graphic rightGraphic;
@@ -135,6 +139,8 @@ public class CanvasMaterialSceneTransition : Singleton<CanvasMaterialSceneTransi
             transitionRoot = gameObject;
         }
 
+        EnsureRootCanvas();
+
         if (canvasGroup == null)
         {
             canvasGroup = transitionRoot.GetComponent<CanvasGroup>();
@@ -157,6 +163,30 @@ public class CanvasMaterialSceneTransition : Singleton<CanvasMaterialSceneTransi
 
         InitializeRuntimeMaterials();
         isInitialized = true;
+    }
+
+    private void EnsureRootCanvas()
+    {
+        if (!ensureRootCanvas)
+        {
+            return;
+        }
+
+        Canvas canvas = GetComponent<Canvas>();
+
+        if (canvas == null)
+        {
+            canvas = gameObject.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        }
+
+        canvas.overrideSorting = true;
+        canvas.sortingOrder = canvasSortingOrder;
+
+        if (GetComponent<GraphicRaycaster>() == null)
+        {
+            gameObject.AddComponent<GraphicRaycaster>();
+        }
     }
 
     private void InitializeRuntimeMaterials()
