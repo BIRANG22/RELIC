@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: M_VFX_Poison_Dust_03
-  m_Shader: {fileID: 4800000, guid: 1856e6a949a61c24fb653757ee532790, type: 3}
+  m_Name: M_VFX_Dust_001
+  m_Shader: {fileID: 4800000, guid: 6366c0e956816654fb2ea47400dc1238, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -25,20 +25,12 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
-    - _BumpMap:
-        m_Texture: {fileID: 0}
+    - _AlphaTexture:
+        m_Texture: {fileID: 2800000, guid: 364a0661b0d9a964eaf346797e32026b, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _DetailAlbedoMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _DetailMask:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _DetailNormalMap:
-        m_Texture: {fileID: 0}
+    - _DissolveNoise:
+        m_Texture: {fileID: 2800000, guid: 4a897e6098e8f804a9ec44f2426669c2, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DistortionSecond:
@@ -46,31 +38,19 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DistortionTexture:
-        m_Texture: {fileID: 2800000, guid: 98c3d568d9032a34eb5b038e20fea05d, type: 3}
+        m_Texture: {fileID: 2800000, guid: 4a897e6098e8f804a9ec44f2426669c2, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _EmissionMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _MainTex:
-        m_Texture: {fileID: 2800000, guid: d8b4bb3903f10b14ea99802ea62975ac, type: 3}
+    - _ErosionNoise:
+        m_Texture: {fileID: 2800000, guid: 4a897e6098e8f804a9ec44f2426669c2, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTexture:
-        m_Texture: {fileID: 2800000, guid: 8de42e8852f9c7748b97e0b96daee06b, type: 3}
+        m_Texture: {fileID: 2800000, guid: b1b69c961c2e3854798854b5df548783, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _MetallicGlossMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _OcclusionMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _ParallaxMap:
-        m_Texture: {fileID: 0}
+    - _MaskTexture:
+        m_Texture: {fileID: 2800000, guid: b7c2c8bb5ac205441be09c8e7b1addd4, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _VertexDistortionNoise_tex:
@@ -78,7 +58,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _disolveMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 98c3d568d9032a34eb5b038e20fea05d, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _texcoord:
@@ -100,55 +80,61 @@ Material:
     m_Ints: []
     m_Floats:
     - _AlphaCutoff: 0.5
-    - _BumpScale: 1
-    - _Contrast: 0.309
+    - _AlphaGlow: 0
     - _Cull: 2
-    - _Cutoff: 0.5
-    - _DetailNormalMapScale: 1
-    - _Distanse: 5
-    - _DistortionLerp: 0
+    - _DepthFade: 0.1
+    - _DissolveMapScale: 1
+    - _DistortionLerp: 0.003
     - _Dst: 10
-    - _DstBlend: 0
-    - _ErosionSmoothness: 1.1
+    - _Emissive: 1
+    - _ErosionIntensity: 0
+    - _ErosionNoiseUVScaleOverall: 1
+    - _ErosionSmoothness: 0.03
     - _FlatColor: 0
-    - _GlossMapScale: 1
-    - _Glossiness: 0.5
-    - _GlossyReflections: 1
-    - _Intensity: 1
-    - _Metallic: 0
-    - _Mode: 0
-    - _OcclusionStrength: 1
-    - _Offset: 1
-    - _Parallax: 0.02
+    - _FlipbookX: 4
+    - _FlipbookY: 4
+    - _Float0: 3.45
+    - _Float4: 0
+    - _HueShift: 0
+    - _IntensG: 1
+    - _Intensity: 0.59
+    - _IntensityR: 1.56
     - _Pixelate: 0
     - _PixelsMultiplier: 1
-    - _PixelsX: 32
-    - _PixelsY: 32
+    - _PixelsX: 128
+    - _PixelsY: 128
     - _QueueControl: 0
     - _QueueOffset: 0
     - _ReceiveShadows: 0
+    - _SaturationMultiply: 1
+    - _SecondDistortionAmount: 0.5
     - _SecondDistortionLerp: 0.5
-    - _SmoothnessTextureChannel: 0
-    - _SpecularHighlights: 1
     - _Src: 5
-    - _SrcBlend: 1
-    - _UVSec: 0
     - _VertexDistortion_Scale: 0
     - _VertexDistortion_Speed: 0
     - _ZTest: 2
     - _ZWrite: 0
     - __dirty: 0
-    - _opacityValue: 1
+    - _intenceB: 1.08
     m_Colors:
-    - _B: {r: 0.42869055, g: 0.69387203, b: 0.23455065, a: 1}
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _G: {r: 0, g: 0, b: 0, a: 0}
+    - _B: {r: 0.0627451, g: 0.013035207, b: 0.011764707, a: 1}
+    - _Color01: {r: 1, g: 0.43921572, b: 0, a: 0}
+    - _Color02: {r: 1, g: 0.2627451, b: 0, a: 0}
+    - _Color03: {r: 1, g: 0, b: 0.14508247, a: 0}
+    - _Color04: {r: 1, g: 0, b: 0.28442144, a: 0}
+    - _DistortionUVPan: {r: 0.1, g: -0.2, b: 0, a: 0}
+    - _DistortionUVScale: {r: 1, g: 1, b: 0, a: 0}
+    - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
+    - _ErosionNoiseUVPan: {r: 0, g: 0, b: 0, a: 0}
+    - _G: {r: 1, g: 0.13123226, b: 0, a: 1}
+    - _MaskUVPan: {r: 0, g: 0, b: 0, a: 0}
+    - _MaskUVScale: {r: 1, g: 1, b: 0, a: 0}
     - _Outline: {r: 0, g: 0, b: 0, a: 0}
-    - _R: {r: 0.6444799, g: 0.8148468, b: 0.3515327, a: 1}
-    - _UVDP: {r: 0, g: 0, b: 0, a: 0}
+    - _OverallTint: {r: 1, g: 1, b: 1, a: 0}
+    - _R: {r: 1, g: 0.45361966, b: 0.42075467, a: 1}
+    - _UVDP: {r: 0.05, g: -0.2, b: 0, a: 0}
     - _UVDP1: {r: 0.1, g: -0.2, b: 0, a: 0}
-    - _UVDS: {r: 1, g: 1, b: 0, a: 0}
+    - _UVDS: {r: 3, g: 3, b: 0, a: 0}
     - _UVDS1: {r: 1, g: 1, b: 0, a: 0}
     - _UVP: {r: 0, g: 0, b: 0, a: 0}
     - _UVS: {r: 1, g: 1, b: 0, a: 0}
