@@ -3,12 +3,14 @@ using UnityEngine;
 public class PartySlotButton : MonoBehaviour
 {
     [SerializeField] private int slotIndex;
+
+    [Header("Sound")]
     [SerializeField] private bool playClickSound = false;
+    [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
 
     public void Execute()
     {
-        if (playClickSound && AudioManager.Instance != null)
-            AudioManager.Instance.PlaySfx(SfxType.Click);
+        PlayClickSound();
 
         if (CharacterSelectionState.Instance == null)
         {
@@ -20,6 +22,17 @@ public class PartySlotButton : MonoBehaviour
         CharacterSelectionState.Instance.SelectPartySlot(resolvedSlotIndex);
 
         Debug.Log($"[PartySlotButton] Selected party slot: {resolvedSlotIndex}", this);
+    }
+
+    private void PlayClickSound()
+    {
+        if (!playClickSound)
+            return;
+
+        if (AudioManager.Instance == null)
+            return;
+
+        AudioManager.Instance.PlaySfx(clickSfx);
     }
 
     private int ResolveSlotIndex()

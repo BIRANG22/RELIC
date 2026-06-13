@@ -29,15 +29,23 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
     [SerializeField] private Image hpFill;
     [SerializeField] private TMP_Text hpValueText;
 
-    [Header("Stamina")]
-    [SerializeField] private Image staminaFill;
+    [Header("Cost")]
+    [SerializeField] private Transform costSlotRoot;
+    [SerializeField] private GameObject[] costSlots;
+    [SerializeField] private Image[] costSlotImages;
     [SerializeField] private TMP_Text staminaValueText;
+    [SerializeField] private bool autoFindCostSlots = true;
+    [SerializeField] private string costSlotRootName = "CostBar";
+    [SerializeField] private string costSlotNamePrefix = "Fill_";
+    [SerializeField] private int maxCostSlotCount = 20;
+    [SerializeField] private float oneRowCostScale = 1f;
+    [SerializeField] private float twoRowCostScale = 0.75f;
 
     [Header("Unique Resource")]
     [SerializeField] private GameObject[] resourceSlots;
     [SerializeField] private Image[] resourceFillImages;
 
-    [Header("Shield")]
+    [Header("Armor")]
     [SerializeField] private Image shieldFill;
     [SerializeField] private TMP_Text shieldValueText;
 
@@ -52,6 +60,8 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
     private readonly List<StatusEffectIcon> spawnedStatusIcons = new();
     private Vector3 defaultLocalScale;
 
+    public CharacterRuntimeData BoundRuntime => boundRuntime;
+
     public event Action<CharacterRuntimeData, RectTransform> OnClicked;
 
     private void Awake()
@@ -60,6 +70,7 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
 
         SetupHudClickSelection();
         ResolveCommandSelectedHighlightReferences();
+        ResolveCostSlotReferences();
         ApplyStatusEffectParentLayout();
         ApplyCommandSelectedVisual(false);
     }
@@ -67,6 +78,7 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
     private void OnEnable()
     {
         SetupHudClickSelection();
+        ResolveCostSlotReferences();
 
         if (boundRuntime != null)
             Refresh();
@@ -78,6 +90,7 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
         boundMaster = null;
 
         ResolveCommandSelectedHighlightReferences();
+        ResolveCostSlotReferences();
         ApplyStatusEffectParentLayout();
 
         if (boundRuntime == null)
@@ -107,13 +120,13 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
         }
 
         int maxHp = boundMaster != null ? boundMaster.MaxHealth : Mathf.Max(1, boundRuntime.CurrentHealth);
-        int maxStamina = boundMaster != null ? boundMaster.MaxStamina : Mathf.Max(1, boundRuntime.CurrentStamina);
+        int maxCost = boundMaster != null ? boundMaster.MaxStamina : Mathf.Max(1, boundRuntime.CurrentStamina);
         int maxResource = boundMaster != null ? boundMaster.MaxResource : Mathf.Max(1, boundRuntime.CurrentResource);
 
         RefreshBar(hpFill, hpValueText, boundRuntime.PreviewHealth, maxHp);
-        RefreshBar(staminaFill, staminaValueText, boundRuntime.PreviewStamina, maxStamina);
+        RefreshCost(boundRuntime.PreviewStamina, maxCost);
         RefreshUniqueResource(boundRuntime.PreviewResource, maxResource);
-        RefreshShield(boundRuntime.CurrentShield, maxHp);
+        RefreshArmor(boundRuntime.CurrentShield);
         RefreshStatusEffects(boundRuntime.StatusEffects);
     }
 
@@ -126,6 +139,43 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
 
         if (valueText != null)
             valueText.text = current.ToString();
+    }
+
+    private void RefreshCost(int currentCost, int maxCost)
+    {
+        ResolveCostSlotReferences();
+
+        maxCost = Mathf.Clamp(maxCost, 0, Mathf.Max(0, maxCostSlotCount));
+        currentCost = Mathf.Clamp(currentCost, 0, maxCost);
+
+        int slotCount = costSlots != null ? costSlots.Length : 0;
+        float targetScale = maxCost > 10 ? twoRowCostScale : oneRowCostScale;
+
+        for (int i = 0; i < slotCount; i++)
+        {
+            bool useSlot = i < maxCost;
+            bool filled = useSlot && i < currentCost;
+
+            if (costSlots[i] != null)
+            {
+                costSlots[i].SetActive(useSlot);
+                costSlots[i].transform.localScale = Vector3.one * Mathf.Max(0.01f, targetScale);
+            }
+
+            if (costSlotImages == null || i >= costSlotImages.Length)
+                continue;
+
+            Image slotImage = costSlotImages[i];
+
+            if (slotImage == null)
+                continue;
+
+            slotImage.enabled = filled;
+            slotImage.gameObject.SetActive(filled);
+        }
+
+        if (staminaValueText != null)
+            staminaValueText.text = currentCost.ToString();
     }
 
     private void RefreshUniqueResource(int currentResource, int maxResource)
@@ -154,20 +204,17 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
         }
     }
 
-    private void RefreshShield(int shield, int maxHp)
+    private void RefreshArmor(int armor)
     {
-        shield = Mathf.Max(0, shield);
+        armor = Mathf.Max(0, armor);
 
         if (shieldFill != null)
-        {
-            shieldFill.gameObject.SetActive(shield > 0);
-            shieldFill.fillAmount = maxHp > 0 ? (float)shield / maxHp : 0f;
-        }
+            shieldFill.gameObject.SetActive(armor > 0);
 
         if (shieldValueText != null)
         {
-            shieldValueText.gameObject.SetActive(shield > 0);
-            shieldValueText.text = shield.ToString();
+            shieldValueText.gameObject.SetActive(armor > 0);
+            shieldValueText.text = armor.ToString();
         }
     }
 
@@ -226,6 +273,12 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
         return null;
     }
 
+    public void SetBaseScale(Vector3 baseScale)
+    {
+        defaultLocalScale = baseScale;
+        transform.localScale = baseScale;
+    }
+
     public void SetCommandSelected(bool selected)
     {
         ApplyCommandSelectedVisual(selected);
@@ -270,6 +323,72 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
             commandSelectedHighlightImage = commandSelectedHighlightObject.GetComponent<Image>();
     }
 
+    private void ResolveCostSlotReferences()
+    {
+        if (!autoFindCostSlots)
+            return;
+
+        if (costSlotRoot == null)
+        {
+            GameObject rootObject = FindChildGameObjectByName(costSlotRootName);
+
+            if (rootObject != null)
+                costSlotRoot = rootObject.transform;
+        }
+
+        if (costSlotRoot == null)
+            return;
+
+        int slotCount = Mathf.Max(0, maxCostSlotCount);
+
+        if (costSlots == null || costSlots.Length != slotCount)
+            costSlots = new GameObject[slotCount];
+
+        if (costSlotImages == null || costSlotImages.Length != slotCount)
+            costSlotImages = new Image[slotCount];
+
+        for (int i = 0; i < slotCount; i++)
+        {
+            if (costSlots[i] != null && costSlotImages[i] != null)
+                continue;
+
+            string slotName = costSlotNamePrefix + (i + 1).ToString("00");
+            Transform slotTransform = FindDirectOrNestedChild(costSlotRoot, slotName);
+
+            if (slotTransform == null)
+                continue;
+
+            costSlots[i] = slotTransform.gameObject;
+
+            if (costSlotImages[i] == null)
+                costSlotImages[i] = slotTransform.GetComponent<Image>();
+        }
+    }
+
+    private Transform FindDirectOrNestedChild(Transform root, string targetName)
+    {
+        if (root == null)
+            return null;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform child = root.GetChild(i);
+
+            if (child == null)
+                continue;
+
+            if (child.name == targetName)
+                return child;
+
+            Transform nested = FindDirectOrNestedChild(child, targetName);
+
+            if (nested != null)
+                return nested;
+        }
+
+        return null;
+    }
+
     private void ApplyStatusEffectParentLayout()
     {
         if (statusIconRoot == null)
@@ -308,9 +427,9 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
         }
 
         RefreshBar(hpFill, hpValueText, 0, 1);
-        RefreshBar(staminaFill, staminaValueText, 0, 1);
+        RefreshCost(0, 0);
         RefreshUniqueResource(0, 0);
-        RefreshShield(0, 1);
+        RefreshArmor(0);
         ClearStatusEffectIcons();
         SetCommandSelected(false);
     }

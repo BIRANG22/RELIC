@@ -9,6 +9,11 @@ public class PlayerSkillReservationController : MonoBehaviour
     [SerializeField] private MoveGhostPreview moveGhostPreview;
     [SerializeField] private BattleTimelineController timelineController;
 
+    [Header("Skill List Panel")]
+    [SerializeField] private SkillListPanel skillListPanel;
+    [SerializeField] private bool keepSkillListOpenAfterReservationClick = true;
+    [SerializeField] private int keepSkillListOpenIgnoreFrames = 1;
+
     private CharacterRuntimeData currentUserRuntime;
     private SkillMasterData currentSkillData;
     private int currentSlotIndex = -1;
@@ -27,6 +32,27 @@ public class PlayerSkillReservationController : MonoBehaviour
     {
         if (gridManager != null)
             gridManager.OnCellClicked -= HandleCellClicked;
+    }
+
+    private void EnsureSkillListPanel()
+    {
+        if (skillListPanel != null)
+            return;
+
+        skillListPanel = FindFirstObjectByType<SkillListPanel>(FindObjectsInactive.Include);
+    }
+
+    private void KeepSkillListOpenForThisClick()
+    {
+        if (!keepSkillListOpenAfterReservationClick)
+            return;
+
+        EnsureSkillListPanel();
+
+        if (skillListPanel == null)
+            return;
+
+        skillListPanel.IgnoreOutsideCloseForFrames(keepSkillListOpenIgnoreFrames);
     }
 
     public void StartReservation(
@@ -101,7 +127,7 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         if (!currentMoveSelectableIndices.Contains(cell.Index))
         {
-            Debug.LogWarning($"[PlayerSkillReservationController] 선택 가능한 이동 칸이 아님: {cell.name}");
+            Debug.LogWarning($"[PlayerSkillReservationController] 선택 가능한 이동 칸이 아닙니다: {cell.name}");
             return;
         }
 
@@ -124,6 +150,7 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (timelineController != null)
             timelineController.ConfirmPlayerCommand(currentSlotIndex, command);
 
+        KeepSkillListOpenForThisClick();
         ClearPreview();
     }
 
@@ -159,6 +186,7 @@ public class PlayerSkillReservationController : MonoBehaviour
                 direction
             );
 
+        KeepSkillListOpenForThisClick();
         ClearPreview();
     }
 
@@ -185,6 +213,7 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (timelineController != null)
             timelineController.ConfirmPlayerCommand(currentSlotIndex, command);
 
+        KeepSkillListOpenForThisClick();
         ClearPreview();
     }
 
