@@ -9,7 +9,6 @@ public class BattleCameraController : MonoBehaviour
 
     [Header("Zoom")]
     [SerializeField] private float zoomSize = 4.2f;
-    [SerializeField] private float zoomDuration = 0.18f;
     [SerializeField] private float returnDuration = 0.18f;
 
     private float defaultSize;

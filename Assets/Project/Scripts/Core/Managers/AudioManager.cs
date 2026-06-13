@@ -20,7 +20,8 @@ public enum SfxType
     NormalButtonClick,
     MoveButtonHover,
     MoveButtonClick,
-    SceneTransition
+    SceneTransition,
+    LobbyPanelTransition
 }
 
 [System.Serializable]

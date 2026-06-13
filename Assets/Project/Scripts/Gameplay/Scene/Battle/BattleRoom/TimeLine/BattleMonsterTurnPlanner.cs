@@ -12,8 +12,6 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
     [Header("Grid")]
     [SerializeField] private GridManager gridManager;
 
-    [Header("Option")]
-    [SerializeField] private int defaultMonsterSlotIndex = 2;
 
     private const int MonsterActionCountPerRound = 2;
     public void PlanMonsterTurns(List<MonsterUnit> monsterUnits)
@@ -86,7 +84,6 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
                 timelineController.AddMonsterCommand(slotIndex, command);
             }
-            //timelineController.AddMonsterCommand(defaultMonsterSlotIndex, command);
         }
     }
 

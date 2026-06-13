@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entries:
   - CharacterId: Char_01
-    Icon: {fileID: 21300000, guid: 5104f5c5b5baa73479657503a70587b7, type: 3}
+    Icon: {fileID: 21300000, guid: e9efe1f5fdb8dab4892171bf67f5908d, type: 3}
   - CharacterId: Char_02
-    Icon: {fileID: 21300000, guid: 2d0def2338b6b9c469219a1f407bd7bd, type: 3}
+    Icon: {fileID: 21300000, guid: 67f4deb57112c4d4cade5060022f4962, type: 3}
   - CharacterId: Char_03
-    Icon: {fileID: 21300000, guid: a7fc66d790fa7e9478d1b13f3d171cdf, type: 3}
+    Icon: {fileID: 21300000, guid: 1941f2817d2f1d84c9039acb95d0c12c, type: 3}
