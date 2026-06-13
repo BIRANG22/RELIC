@@ -83,11 +83,6 @@ namespace Relic.Gameplay.Data
         public void AddReservedResource(int cost)
         {
             ReservedResourceCost = Mathf.Clamp(ReservedResourceCost + Mathf.Max(0, cost), 0, CurrentResource);
-
-            Debug.Log(
-        $"[ReservedResource] +" +
-        $"{cost} / Reserved:{ReservedResourceCost} / Current:{CurrentResource}"
-    );
         }
 
         public void AddReservedMove(int cost)

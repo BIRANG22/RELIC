@@ -1414,7 +1414,7 @@ MonoBehaviour:
   m_RequiresOpaqueTextureOption: 2
   m_CameraType: 0
   m_Cameras: []
-  m_RendererIndex: -1
+  m_RendererIndex: 1
   m_VolumeLayerMask:
     serializedVersion: 2
     m_Bits: 1
@@ -5686,6 +5686,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameMode: 1
+  playClickSound: 1
+  clickSfx: 7
 --- !u!114 &2070314466
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1,7 +1,7 @@
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
 using UnityEngine;
-
+using System.Collections;
 public class BattleMonsterSpawner : MonoBehaviour
 {
     [Header("Grid Root")]
@@ -69,6 +69,11 @@ public class BattleMonsterSpawner : MonoBehaviour
             monsterRoot
         );
 
+        BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
+
+        if (facing != null)
+            facing.SetFacingStateOnly(false);
+
         string runtimeId = MonsterRuntimeIdGenerator.Create();
 
         MonsterRuntimeData runtimeData =
@@ -128,3 +133,4 @@ public class BattleMonsterSpawner : MonoBehaviour
         return null;
     }
 }
+

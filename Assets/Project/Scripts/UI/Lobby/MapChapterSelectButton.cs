@@ -78,14 +78,33 @@ public class MapChapterSelectButton : MonoBehaviour
         if (AudioManager.Instance != null)
             AudioManager.Instance.PlaySfx(SfxType.NormalButtonClick);
 
+        ApplySelectedStageLabel();
+        SaveSelectedMapRuntimeData();
+
         if (clickActionDelay <= 0f)
         {
-            SelectChapterNow();
+            ClosePanelAfterSelect();
             return;
         }
 
         isProcessing = true;
-        selectCoroutine = StartCoroutine(SelectChapterAfterDelay());
+        selectCoroutine = StartCoroutine(ClosePanelAfterDelay());
+    }
+
+    private IEnumerator ClosePanelAfterDelay()
+    {
+        yield return new WaitForSecondsRealtime(clickActionDelay);
+
+        ClosePanelAfterSelect();
+
+        isProcessing = false;
+        selectCoroutine = null;
+    }
+
+    private void ClosePanelAfterSelect()
+    {
+        if (closePanelAfterSelect && panelToCloseAfterSelect != null)
+            panelToCloseAfterSelect.SetActive(false);
     }
 
     private IEnumerator SelectChapterAfterDelay()
