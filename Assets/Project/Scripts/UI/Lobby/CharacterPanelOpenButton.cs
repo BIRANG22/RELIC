@@ -23,18 +23,34 @@ public class CharacterPanelOpenButton : MonoBehaviour
     [Header("Option")]
     [SerializeField] private bool playClickSound = true;
 
+    [Header("Delay")]
+    [SerializeField] private float clickActionDelay = 0.2f;
+
     private static GameObject currentDetailPanel;
 
     private bool isPlayingEffect;
+    private bool isProcessing;
     private GameObject pendingTargetPanel;
+    private Coroutine executeCoroutine;
+
+    private void OnDisable()
+    {
+        if (executeCoroutine != null)
+        {
+            StopCoroutine(executeCoroutine);
+            executeCoroutine = null;
+        }
+
+        isProcessing = false;
+    }
 
     public void Execute()
     {
-        if (isPlayingEffect)
+        if (isPlayingEffect || isProcessing)
             return;
 
         if (playClickSound && AudioManager.Instance != null)
-            AudioManager.Instance.PlaySfx(SfxType.Click);
+            AudioManager.Instance.PlaySfx(SfxType.NormalButtonClick);
 
         if (CharacterSelectionState.Instance == null)
         {
@@ -58,6 +74,28 @@ public class CharacterPanelOpenButton : MonoBehaviour
             return;
         }
 
+        if (clickActionDelay <= 0f)
+        {
+            ExecuteOpenNow();
+            return;
+        }
+
+        isProcessing = true;
+        executeCoroutine = StartCoroutine(ExecuteOpenAfterDelay());
+    }
+
+    private IEnumerator ExecuteOpenAfterDelay()
+    {
+        yield return new WaitForSecondsRealtime(clickActionDelay);
+
+        ExecuteOpenNow();
+
+        isProcessing = false;
+        executeCoroutine = null;
+    }
+
+    private void ExecuteOpenNow()
+    {
         if (effect == UIPanelEffect.Fade && fadeImage != null)
             StartCoroutine(FadeRoutine());
         else

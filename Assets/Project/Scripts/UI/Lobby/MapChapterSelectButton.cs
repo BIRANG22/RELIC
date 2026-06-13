@@ -1,3 +1,4 @@
+using System.Collections;
 using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
@@ -22,23 +23,21 @@ public class MapChapterSelectButton : MonoBehaviour
     [SerializeField] private TMP_Text sourceStageText;
     [SerializeField] private TMP_Text targetStageText;
     [SerializeField] private string overrideStageLabel;
-    [SerializeField] private bool useStartStageWhenLabelIsEmpty = true;
 
     [Header("Panel")]
     [SerializeField] private bool closePanelAfterSelect = true;
     [SerializeField] private GameObject panelToCloseAfterSelect;
 
-    [Header("Sound")]
-    [SerializeField] private bool playClickSound = true;
-    [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
+    [Header("Delay")]
+    [SerializeField] private float clickActionDelay = 0.2f;
+
+    private Coroutine selectCoroutine;
+    private bool isProcessing;
 
     private void Awake()
     {
         if (button == null)
             button = GetComponent<Button>();
-
-        if (sourceStageText == null)
-            sourceStageText = GetComponentInChildren<TMP_Text>(true);
 
         RefreshLockState();
 
@@ -51,30 +50,61 @@ public class MapChapterSelectButton : MonoBehaviour
         if (button == null)
             button = GetComponent<Button>();
 
-        if (sourceStageText == null)
-            sourceStageText = GetComponentInChildren<TMP_Text>(true);
-
         RefreshLockState();
+    }
+
+    private void OnDisable()
+    {
+        if (selectCoroutine != null)
+        {
+            StopCoroutine(selectCoroutine);
+            selectCoroutine = null;
+        }
+
+        isProcessing = false;
     }
 
     public void OnClickSelectChapter()
     {
+        if (isProcessing)
+            return;
+
         if (isLocked)
         {
-            Debug.Log("[MapChapterSelectButton] This stage is locked.");
+            Debug.Log("[MapChapterSelectButton] Locked stage.");
             return;
         }
 
-        PlayClickSound();
-        ApplySelectedStageLabel();
-        ClosePanelIfNeeded();
-        SaveSelectedChapter();
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlaySfx(SfxType.NormalButtonClick);
+
+        if (clickActionDelay <= 0f)
+        {
+            SelectChapterNow();
+            return;
+        }
+
+        isProcessing = true;
+        selectCoroutine = StartCoroutine(SelectChapterAfterDelay());
     }
 
-    public void SetLocked(bool locked)
+    private IEnumerator SelectChapterAfterDelay()
     {
-        isLocked = locked;
-        RefreshLockState();
+        yield return new WaitForSecondsRealtime(clickActionDelay);
+
+        SelectChapterNow();
+
+        isProcessing = false;
+        selectCoroutine = null;
+    }
+
+    private void SelectChapterNow()
+    {
+        ApplySelectedStageLabel();
+        SaveSelectedMapRuntimeData();
+
+        if (closePanelAfterSelect && panelToCloseAfterSelect != null)
+            panelToCloseAfterSelect.SetActive(false);
     }
 
     private void ApplySelectedStageLabel()
@@ -82,34 +112,18 @@ public class MapChapterSelectButton : MonoBehaviour
         if (targetStageText == null)
             return;
 
-        string label = GetSelectedStageLabel();
+        string label = overrideStageLabel;
+
+        if (string.IsNullOrWhiteSpace(label) && sourceStageText != null)
+            label = sourceStageText.text;
+
+        if (string.IsNullOrWhiteSpace(label))
+            label = startStage;
+
         targetStageText.text = label;
     }
 
-    private string GetSelectedStageLabel()
-    {
-        if (!string.IsNullOrWhiteSpace(overrideStageLabel))
-            return overrideStageLabel;
-
-        if (sourceStageText != null && !string.IsNullOrWhiteSpace(sourceStageText.text))
-            return sourceStageText.text;
-
-        if (useStartStageWhenLabelIsEmpty && !string.IsNullOrWhiteSpace(startStage))
-            return startStage;
-
-        return targetStageText != null ? targetStageText.text : string.Empty;
-    }
-
-    private void ClosePanelIfNeeded()
-    {
-        if (!closePanelAfterSelect)
-            return;
-
-        if (panelToCloseAfterSelect != null)
-            panelToCloseAfterSelect.SetActive(false);
-    }
-
-    private void SaveSelectedChapter()
+    private void SaveSelectedMapRuntimeData()
     {
         if (DataManager.Instance == null)
         {
@@ -127,15 +141,10 @@ public class MapChapterSelectButton : MonoBehaviour
         });
     }
 
-    private void PlayClickSound()
+    public void SetLocked(bool locked)
     {
-        if (!playClickSound)
-            return;
-
-        if (AudioManager.Instance == null)
-            return;
-
-        AudioManager.Instance.PlaySfx(clickSfx);
+        isLocked = locked;
+        RefreshLockState();
     }
 
     private void RefreshLockState()

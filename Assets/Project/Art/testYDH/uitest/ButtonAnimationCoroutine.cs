@@ -1,106 +1,102 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class ButtonAnimationCoroutine : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
-    [System.Serializable]
-    public class ClickColorTarget
-    {
-        public Graphic target;
-        public Color normalColor = Color.white;
-        public Color clickedColor = Color.white;
-    }
-
     [Header("Hover - Button Content")]
     [SerializeField] private RectTransform buttonContent;
-    [SerializeField] private Vector3 hoverButtonMoveOffset = new Vector3(20f, 0f, 0f);
-    [SerializeField] private Vector3 hoverButtonScale = new Vector3(1.1f, 1.1f, 1f);
+    [SerializeField] private Vector3 hoverButtonMoveOffset = Vector3.zero;
+    [SerializeField] private Vector3 hoverButtonScale = Vector3.one;
     [SerializeField] private float hoverDuration = 0.2f;
 
-    [Header("Hover - Background Rotation")]
-    [SerializeField] private RectTransform backgroundImage;
-    [SerializeField] private RectTransform secondBackgroundImage;
-    [SerializeField] private float backgroundHoverRotationZOffset = 0f;
-    [SerializeField] private float secondBackgroundHoverRotationZOffset = 0f;
+    [Header("Protected Images")]
+    [SerializeField] private Graphic protectedBackgroundImage;
+    [SerializeField] private Graphic protectedButtonImage;
 
-    [Header("Click - Color")]
-    [SerializeField] private bool changeColorOnClick = true;
-    [SerializeField] private ClickColorTarget[] clickColorTargets;
+    [Header("Changing Background")]
+    [SerializeField] private RectTransform changingBackgroundImage;
+    [SerializeField] private Graphic changingBackgroundGraphic;
+    [SerializeField] private Vector3 hoverChangingBackgroundMoveOffset = Vector3.zero;
+    [SerializeField] private float hoverChangingBackgroundRotationZOffset = 0f;
+    [SerializeField] private float changingBackgroundDuration = 0.2f;
 
-    [Header("Click - Button Content Move")]
-    [SerializeField] private bool moveButtonContentOnClick = true;
-    [FormerlySerializedAs("clickMoveOffset")]
-    [SerializeField] private Vector3 clickButtonMoveOffset = new Vector3(50f, 0f, 0f);
-    [FormerlySerializedAs("clickMoveDuration")]
-    [SerializeField] private float clickDuration = 0.2f;
+    [Header("Changing Background Color")]
+    [SerializeField] private Color normalColor = Color.white;
+    [SerializeField] private Color hoverColor = Color.white;
+    [SerializeField] private Color clickedColor = Color.white;
 
-    [Header("Click - Background Rotation")]
-    [FormerlySerializedAs("clickRotationZOffset")]
-    [SerializeField] private float backgroundClickRotationZOffset = 0f;
-    [SerializeField] private float secondBackgroundClickRotationZOffset = 0f;
-
-    [Header("Click State Option")]
+    [Header("Click State")]
     [SerializeField] private bool toggleClickState = true;
-    [SerializeField] private bool keepHoverStateWhileClicked = true;
+    [SerializeField] private bool keepClickedStateWhenPointerExit = true;
     [SerializeField] private bool clearClickedStateWhenAnotherButtonHovered = true;
 
     private static ButtonAnimationCoroutine currentClickedButton;
 
-    private Vector3 buttonOriginPosition;
-    private Vector3 buttonOriginScale;
-    private Vector3 backgroundOriginPosition;
-    private Vector3 secondBackgroundOriginPosition;
-    private Quaternion backgroundOriginRotation;
-    private Quaternion secondBackgroundOriginRotation;
+    private Vector3 originButtonPosition;
+    private Vector3 originButtonScale;
+    private Vector3 originChangingBackgroundPosition;
+    private Quaternion originChangingBackgroundRotation;
+
+    private bool isPointerInside;
+    private bool isClicked;
 
     private Coroutine visualCoroutine;
-    private bool isClicked;
-    private bool isHovering;
 
-    private void Start()
+    private void Awake()
     {
-        CacheOriginStates();
-        ApplyClickColorState(false);
-        SetToCurrentVisualStateImmediately();
+        CacheOriginValues();
+        ApplyVisualStateImmediately();
+    }
+
+    private void OnEnable()
+    {
+        CacheOriginValues();
+        ApplyVisualStateImmediately();
     }
 
     private void OnDisable()
     {
-        if (currentClickedButton == this)
-        {
-            currentClickedButton = null;
-        }
-    }
+        StopVisualAnimation();
 
-    private void OnDestroy()
-    {
+        isPointerInside = false;
+        isClicked = false;
+
         if (currentClickedButton == this)
         {
             currentClickedButton = null;
         }
+
+        ApplyVisualStateImmediately();
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        ClearOtherClickedButton();
+        if (clearClickedStateWhenAnotherButtonHovered)
+        {
+            ClearOtherClickedButton();
+        }
 
-        isHovering = true;
+        isPointerInside = true;
         AnimateToCurrentVisualState();
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        isHovering = false;
+        isPointerInside = false;
+
+        if (isClicked && keepClickedStateWhenPointerExit)
+        {
+            ApplyVisualStateImmediately();
+            return;
+        }
+
         AnimateToCurrentVisualState();
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        ClearOtherClickedButton();
-
         if (toggleClickState)
         {
             isClicked = !isClicked;
@@ -112,6 +108,11 @@ public class ButtonAnimationCoroutine : MonoBehaviour, IPointerEnterHandler, IPo
 
         if (isClicked)
         {
+            if (currentClickedButton != null && currentClickedButton != this)
+            {
+                currentClickedButton.ForceClearState(false);
+            }
+
             currentClickedButton = this;
         }
         else if (currentClickedButton == this)
@@ -119,50 +120,27 @@ public class ButtonAnimationCoroutine : MonoBehaviour, IPointerEnterHandler, IPo
             currentClickedButton = null;
         }
 
-        ApplyClickColorState(isClicked);
         AnimateToCurrentVisualState();
     }
 
-    public void SetClicked(bool clicked)
+    public void ForceClearState(bool animate)
     {
-        if (clicked)
-        {
-            ClearOtherClickedButton();
-            currentClickedButton = this;
-        }
-        else if (currentClickedButton == this)
+        isClicked = false;
+        isPointerInside = false;
+
+        if (currentClickedButton == this)
         {
             currentClickedButton = null;
         }
 
-        isClicked = clicked;
-        ApplyClickColorState(isClicked);
-        SetToCurrentVisualStateImmediately();
-    }
-
-    public void ClearState()
-    {
-        ForceClearState(true);
-    }
-
-    private void CacheOriginStates()
-    {
-        if (buttonContent != null)
+        if (animate)
         {
-            buttonOriginPosition = buttonContent.anchoredPosition;
-            buttonOriginScale = buttonContent.localScale;
+            AnimateToCurrentVisualState();
         }
-
-        if (backgroundImage != null)
+        else
         {
-            backgroundOriginPosition = backgroundImage.anchoredPosition;
-            backgroundOriginRotation = backgroundImage.localRotation;
-        }
-
-        if (secondBackgroundImage != null)
-        {
-            secondBackgroundOriginPosition = secondBackgroundImage.anchoredPosition;
-            secondBackgroundOriginRotation = secondBackgroundImage.localRotation;
+            StopVisualAnimation();
+            ApplyVisualStateImmediately();
         }
     }
 
@@ -173,29 +151,40 @@ public class ButtonAnimationCoroutine : MonoBehaviour, IPointerEnterHandler, IPo
             return;
         }
 
-        if (!clearClickedStateWhenAnotherButtonHovered)
+        currentClickedButton.ForceClearState(true);
+    }
+
+    private void CacheOriginValues()
+    {
+        if (buttonContent != null)
         {
+            originButtonPosition = buttonContent.anchoredPosition;
+            originButtonScale = buttonContent.localScale;
+        }
+
+        if (changingBackgroundImage != null)
+        {
+            originChangingBackgroundPosition = changingBackgroundImage.anchoredPosition;
+            originChangingBackgroundRotation = changingBackgroundImage.localRotation;
+        }
+
+        if (changingBackgroundGraphic == null && changingBackgroundImage != null)
+        {
+            changingBackgroundGraphic = changingBackgroundImage.GetComponent<Graphic>();
+        }
+    }
+
+    private void AnimateToCurrentVisualState()
+    {
+        StopVisualAnimation();
+
+        if (!isActiveAndEnabled || !gameObject.activeInHierarchy)
+        {
+            ApplyVisualStateImmediately();
             return;
         }
 
-        currentClickedButton.ForceClearState(true);
-        currentClickedButton = null;
-    }
-
-    private void ForceClearState(bool animate)
-    {
-        isClicked = false;
-        isHovering = false;
-        ApplyClickColorState(false);
-
-        if (animate)
-        {
-            AnimateToCurrentVisualState();
-        }
-        else
-        {
-            SetToCurrentVisualStateImmediately();
-        }
+        visualCoroutine = StartCoroutine(AnimateVisualState());
     }
 
     private void StopVisualAnimation()
@@ -207,174 +196,125 @@ public class ButtonAnimationCoroutine : MonoBehaviour, IPointerEnterHandler, IPo
         }
     }
 
-    private void AnimateToCurrentVisualState()
-    {
-        StopVisualAnimation();
-
-        if (!isActiveAndEnabled || !gameObject.activeInHierarchy)
-        {
-            return;
-        }
-
-        visualCoroutine = StartCoroutine(AnimateVisualState());
-    }
-
-    private void SetToCurrentVisualStateImmediately()
-    {
-        StopVisualAnimation();
-
-        GetCurrentTargets(
-            out Vector3 buttonTargetPosition,
-            out Vector3 buttonTargetScale,
-            out Quaternion backgroundTargetRotation,
-            out Quaternion secondBackgroundTargetRotation
-        );
-
-        if (buttonContent != null)
-        {
-            buttonContent.anchoredPosition = buttonTargetPosition;
-            buttonContent.localScale = buttonTargetScale;
-        }
-
-        if (backgroundImage != null)
-        {
-            backgroundImage.anchoredPosition = backgroundOriginPosition;
-            backgroundImage.localRotation = backgroundTargetRotation;
-        }
-
-        if (secondBackgroundImage != null)
-        {
-            secondBackgroundImage.anchoredPosition = secondBackgroundOriginPosition;
-            secondBackgroundImage.localRotation = secondBackgroundTargetRotation;
-        }
-    }
-
     private IEnumerator AnimateVisualState()
     {
-        GetCurrentTargets(
-            out Vector3 buttonEndPosition,
-            out Vector3 buttonEndScale,
-            out Quaternion backgroundEndRotation,
-            out Quaternion secondBackgroundEndRotation
-        );
+        Vector3 startButtonPosition = buttonContent != null ? buttonContent.anchoredPosition : Vector3.zero;
+        Vector3 startButtonScale = buttonContent != null ? buttonContent.localScale : Vector3.one;
+        Vector3 startChangingBackgroundPosition = changingBackgroundImage != null ? changingBackgroundImage.anchoredPosition : Vector3.zero;
+        Quaternion startChangingBackgroundRotation = changingBackgroundImage != null ? changingBackgroundImage.localRotation : Quaternion.identity;
+        Color startColor = changingBackgroundGraphic != null ? changingBackgroundGraphic.color : Color.white;
 
-        Vector3 buttonStartPosition = buttonContent != null ? buttonContent.anchoredPosition : Vector3.zero;
-        Vector3 buttonStartScale = buttonContent != null ? buttonContent.localScale : Vector3.one;
+        Vector3 targetButtonPosition = GetTargetButtonPosition();
+        Vector3 targetButtonScale = GetTargetButtonScale();
+        Vector3 targetChangingBackgroundPosition = GetTargetChangingBackgroundPosition();
+        Quaternion targetChangingBackgroundRotation = GetTargetChangingBackgroundRotation();
+        Color targetColor = GetTargetChangingBackgroundColor();
 
-        Quaternion backgroundStartRotation = backgroundImage != null ? backgroundImage.localRotation : Quaternion.identity;
-        Quaternion secondBackgroundStartRotation = secondBackgroundImage != null ? secondBackgroundImage.localRotation : Quaternion.identity;
-
-        float totalDuration = Mathf.Max(0.01f, Mathf.Max(hoverDuration, clickDuration));
+        float safeDuration = Mathf.Max(0.01f, Mathf.Max(hoverDuration, changingBackgroundDuration));
         float elapsedTime = 0f;
 
-        while (elapsedTime < totalDuration)
+        while (elapsedTime < safeDuration)
         {
             elapsedTime += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsedTime / totalDuration);
+            float t = Mathf.Clamp01(elapsedTime / safeDuration);
             t = Mathf.SmoothStep(0f, 1f, t);
 
             if (buttonContent != null)
             {
-                buttonContent.anchoredPosition = Vector3.Lerp(buttonStartPosition, buttonEndPosition, t);
-                buttonContent.localScale = Vector3.Lerp(buttonStartScale, buttonEndScale, t);
+                buttonContent.anchoredPosition = Vector3.Lerp(startButtonPosition, targetButtonPosition, t);
+                buttonContent.localScale = Vector3.Lerp(startButtonScale, targetButtonScale, t);
             }
 
-            if (backgroundImage != null)
+            if (changingBackgroundImage != null)
             {
-                backgroundImage.anchoredPosition = backgroundOriginPosition;
-                backgroundImage.localRotation = Quaternion.Slerp(backgroundStartRotation, backgroundEndRotation, t);
+                changingBackgroundImage.anchoredPosition = Vector3.Lerp(startChangingBackgroundPosition, targetChangingBackgroundPosition, t);
+                changingBackgroundImage.localRotation = Quaternion.Slerp(startChangingBackgroundRotation, targetChangingBackgroundRotation, t);
             }
 
-            if (secondBackgroundImage != null)
+            if (changingBackgroundGraphic != null)
             {
-                secondBackgroundImage.anchoredPosition = secondBackgroundOriginPosition;
-                secondBackgroundImage.localRotation = Quaternion.Slerp(secondBackgroundStartRotation, secondBackgroundEndRotation, t);
+                changingBackgroundGraphic.color = Color.Lerp(startColor, targetColor, t);
             }
 
             yield return null;
         }
 
-        if (buttonContent != null)
-        {
-            buttonContent.anchoredPosition = buttonEndPosition;
-            buttonContent.localScale = buttonEndScale;
-        }
-
-        if (backgroundImage != null)
-        {
-            backgroundImage.anchoredPosition = backgroundOriginPosition;
-            backgroundImage.localRotation = backgroundEndRotation;
-        }
-
-        if (secondBackgroundImage != null)
-        {
-            secondBackgroundImage.anchoredPosition = secondBackgroundOriginPosition;
-            secondBackgroundImage.localRotation = secondBackgroundEndRotation;
-        }
-
+        ApplyVisualStateImmediately();
         visualCoroutine = null;
     }
 
-    private void GetCurrentTargets(
-        out Vector3 buttonTargetPosition,
-        out Vector3 buttonTargetScale,
-        out Quaternion backgroundTargetRotation,
-        out Quaternion secondBackgroundTargetRotation)
+    private void ApplyVisualStateImmediately()
     {
-        bool hoverVisual = ShouldUseHoverVisual();
-
-        buttonTargetPosition = buttonOriginPosition;
-        buttonTargetScale = buttonOriginScale;
-
-        if (hoverVisual)
+        if (buttonContent != null)
         {
-            buttonTargetPosition += hoverButtonMoveOffset;
-            buttonTargetScale = hoverButtonScale;
+            buttonContent.anchoredPosition = GetTargetButtonPosition();
+            buttonContent.localScale = GetTargetButtonScale();
         }
 
-        if (isClicked && moveButtonContentOnClick)
+        if (changingBackgroundImage != null)
         {
-            buttonTargetPosition += clickButtonMoveOffset;
+            changingBackgroundImage.anchoredPosition = GetTargetChangingBackgroundPosition();
+            changingBackgroundImage.localRotation = GetTargetChangingBackgroundRotation();
         }
 
-        backgroundTargetRotation = backgroundOriginRotation;
-        secondBackgroundTargetRotation = secondBackgroundOriginRotation;
-
-        if (hoverVisual)
+        if (changingBackgroundGraphic != null)
         {
-            backgroundTargetRotation *= Quaternion.Euler(0f, 0f, backgroundHoverRotationZOffset);
-            secondBackgroundTargetRotation *= Quaternion.Euler(0f, 0f, secondBackgroundHoverRotationZOffset);
+            changingBackgroundGraphic.color = GetTargetChangingBackgroundColor();
+        }
+    }
+
+    private Vector3 GetTargetButtonPosition()
+    {
+        if (isPointerInside || isClicked)
+        {
+            return originButtonPosition + hoverButtonMoveOffset;
         }
 
+        return originButtonPosition;
+    }
+
+    private Vector3 GetTargetButtonScale()
+    {
+        if (isPointerInside || isClicked)
+        {
+            return hoverButtonScale;
+        }
+
+        return originButtonScale;
+    }
+
+    private Vector3 GetTargetChangingBackgroundPosition()
+    {
+        if (isPointerInside || isClicked)
+        {
+            return originChangingBackgroundPosition + hoverChangingBackgroundMoveOffset;
+        }
+
+        return originChangingBackgroundPosition;
+    }
+
+    private Quaternion GetTargetChangingBackgroundRotation()
+    {
+        if (isPointerInside)
+        {
+            return originChangingBackgroundRotation * Quaternion.Euler(0f, 0f, hoverChangingBackgroundRotationZOffset);
+        }
+
+        return originChangingBackgroundRotation;
+    }
+
+    private Color GetTargetChangingBackgroundColor()
+    {
         if (isClicked)
         {
-            backgroundTargetRotation *= Quaternion.Euler(0f, 0f, backgroundClickRotationZOffset);
-            secondBackgroundTargetRotation *= Quaternion.Euler(0f, 0f, secondBackgroundClickRotationZOffset);
+            return clickedColor;
         }
-    }
 
-    private bool ShouldUseHoverVisual()
-    {
-        return isHovering || (keepHoverStateWhileClicked && isClicked);
-    }
-
-    private void ApplyClickColorState(bool clicked)
-    {
-        if (!changeColorOnClick || clickColorTargets == null)
+        if (isPointerInside)
         {
-            return;
+            return hoverColor;
         }
 
-        for (int i = 0; i < clickColorTargets.Length; i++)
-        {
-            ClickColorTarget colorTarget = clickColorTargets[i];
-
-            if (colorTarget == null || colorTarget.target == null)
-            {
-                continue;
-            }
-
-            colorTarget.target.color = clicked ? colorTarget.clickedColor : colorTarget.normalColor;
-        }
+        return normalColor;
     }
 }

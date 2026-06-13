@@ -25,6 +25,7 @@ public class PartySlot : MonoBehaviour
 
     private void Awake()
     {
+        ApplyAutoPartyIndexFromName();
         AutoPrepareReferences();
         RefreshFromRuntime();
     }
@@ -38,6 +39,13 @@ public class PartySlot : MonoBehaviour
     {
         DestroySelectedObject();
     }
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        ApplyAutoPartyIndexFromName();
+    }
+#endif
 
     public void Init(int index)
     {
@@ -191,6 +199,32 @@ public class PartySlot : MonoBehaviour
 
         Destroy(currentSelectedObject);
         currentSelectedObject = null;
+    }
+
+    private void ApplyAutoPartyIndexFromName()
+    {
+        if (!TryGetPartyIndexFromObjectName(out int parsedIndex))
+            return;
+
+        partyIndex = parsedIndex;
+    }
+
+    private bool TryGetPartyIndexFromObjectName(out int result)
+    {
+        result = -1;
+
+        string objectName = gameObject.name;
+
+        if (string.IsNullOrWhiteSpace(objectName))
+            return false;
+
+        int lastSeparatorIndex = objectName.LastIndexOf('_');
+
+        if (lastSeparatorIndex < 0 || lastSeparatorIndex >= objectName.Length - 1)
+            return false;
+
+        string numberText = objectName.Substring(lastSeparatorIndex + 1);
+        return int.TryParse(numberText, out result);
     }
 
     private void AutoPrepareReferences()
