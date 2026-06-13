@@ -124,6 +124,11 @@ public class BattleActionRunner
 
         int targetGridIndex = gridManager.CoordToIndex(targetCoord);
 
+        BattleUnitFacing facing = character.GetComponent<BattleUnitFacing>();
+
+        if (facing != null)
+            facing.FaceByMoveOffset(command.MoveOffset);
+
         if (BattleOccupancyService.IsOccupiedByAnyUnit(targetGridIndex, command.CharacterId))
         {
             Debug.LogWarning($"[BattleActionRunner] Player Move Blocked / {command.CharacterId} / To:{targetGridIndex}");
@@ -131,16 +136,6 @@ public class BattleActionRunner
         }
 
         Vector3 pos = gridManager.GetWorldPositionByIndex(targetGridIndex);
-
-        BattleUnitFacing facing = character.GetComponent<BattleUnitFacing>();
-
-        if (facing != null)
-        {
-            if (command.MoveOffset.x > 0)
-                facing.FaceRight();
-            else if (command.MoveOffset.x < 0)
-                facing.FaceLeft();
-        }
 
         BattleUnitAnimator animator = character.GetComponent<BattleUnitAnimator>();
 
@@ -281,24 +276,24 @@ public class BattleActionRunner
 
         CharacterRuntimeData runtime = caster.RuntimeData;
 
-        if (command.HealthCost > 0)
-            Debug.Log($"[BattleCost] {caster.CharacterId} / HP -{command.HealthCost}");
+        //if (command.HealthCost > 0)
+        //    Debug.Log($"[BattleCost] {caster.CharacterId} / HP -{command.HealthCost}");
 
-        if (command.StaminaCost > 0)
-            Debug.Log($"[BattleCost] {caster.CharacterId} / Stamina -{command.StaminaCost}");
+        //if (command.StaminaCost > 0)
+        //    Debug.Log($"[BattleCost] {caster.CharacterId} / Stamina -{command.StaminaCost}");
 
-        if (command.ResourceCost > 0)
-            Debug.Log($"[BattleCost] {caster.CharacterId} / Resource -{command.ResourceCost}");
+        //if (command.ResourceCost > 0)
+        //    Debug.Log($"[BattleCost] {caster.CharacterId} / Resource -{command.ResourceCost}");
 
-        if (command.MoveCost > 0)
-            Debug.Log($"[BattleCost] {caster.CharacterId} / Move -{command.MoveCost}");
+        //if (command.MoveCost > 0)
+        //    Debug.Log($"[BattleCost] {caster.CharacterId} / Move -{command.MoveCost}");
 
-        if (command.ShieldCost > 0)
-            Debug.Log($"[BattleCost] {caster.CharacterId} / Shield -{command.ShieldCost}");
+        //if (command.ShieldCost > 0)
+        //    Debug.Log($"[BattleCost] {caster.CharacterId} / Shield -{command.ShieldCost}");
 
         runtime.ApplyReservedCosts();
 
-        Debug.Log($"[BattleCost] Apply Reserved Costs / {caster.CharacterId}");
+        //Debug.Log($"[BattleCost] Apply Reserved Costs / {caster.CharacterId}");
     }
 
     private bool TryApplyPlayerSelfEffect(PlayerReservedCommand command, BattleCharacter caster)
@@ -455,12 +450,7 @@ public class BattleActionRunner
         BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
 
         if (facing != null)
-        {
-            if (moveOffset.x > 0)
-                facing.FaceRight();
-            else if (moveOffset.x < 0)
-                facing.FaceLeft();
-        }
+            facing.FaceByMoveOffset(command.MoveOffset);
 
         BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
 
@@ -522,6 +512,14 @@ public class BattleActionRunner
                 continue;
 
             hitTargets.Add(character);
+        }
+
+        if (hitTargets.Count > 0)
+        {
+            BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
+
+            if (facing != null)
+                facing.FaceByWorldTarget(hitTargets[0].transform.position);
         }
 
         if (hitTargets.Count > 0 && BattleCameraController.Instance != null)

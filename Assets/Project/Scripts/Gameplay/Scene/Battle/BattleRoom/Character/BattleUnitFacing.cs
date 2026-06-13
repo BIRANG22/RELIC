@@ -6,12 +6,10 @@ public class BattleUnitFacing : MonoBehaviour
     [SerializeField] private Transform spriteRoot;
 
     [Header("Facing")]
-    [SerializeField] private bool defaultFacingRight = true;
     [SerializeField] private bool startFacingRight = true;
     [SerializeField] private float minHorizontalDelta = 0.01f;
 
     private bool isFacingRight = true;
-    private float originalAbsScaleX = 1f;
     private bool initialized;
 
     public bool IsFacingRight => isFacingRight;
@@ -19,7 +17,9 @@ public class BattleUnitFacing : MonoBehaviour
     private void Awake()
     {
         InitializeIfNeeded();
-        FaceRight(startFacingRight);
+
+        if (!startFacingRight)
+            FlipOnce();
     }
 
     private void InitializeIfNeeded()
@@ -33,12 +33,41 @@ public class BattleUnitFacing : MonoBehaviour
             spriteRoot = found != null ? found : transform;
         }
 
-        originalAbsScaleX = Mathf.Abs(spriteRoot.localScale.x);
-
-        if (originalAbsScaleX <= 0.0001f)
-            originalAbsScaleX = 1f;
-
         initialized = true;
+    }
+
+    public void SetFacingStateOnly(bool faceRight)
+    {
+        isFacingRight = faceRight;
+    }
+
+    public void FlipOnce()
+    {
+        InitializeIfNeeded();
+
+        Vector3 scale = spriteRoot.localScale;
+        scale.x *= -1f;
+        spriteRoot.localScale = scale;
+
+        isFacingRight = !isFacingRight;
+    }
+
+    public void FaceRight(bool faceRight)
+    {
+        InitializeIfNeeded();
+
+        if (isFacingRight == faceRight)
+            return;
+
+        FlipOnce();
+    }
+
+    public void FaceByMoveOffset(Vector2Int moveOffset)
+    {
+        if (moveOffset.x > 0)
+            FaceRight(true);
+        else if (moveOffset.x < 0)
+            FaceRight(false);
     }
 
     public void FaceByWorldTarget(Vector3 targetPosition)
@@ -51,41 +80,13 @@ public class BattleUnitFacing : MonoBehaviour
         FaceRight(deltaX > 0f);
     }
 
-    public void FaceLeft()
-    {
-        FaceRight(false);
-    }
-
-    public void FaceRight()
-    {
-        FaceRight(true);
-    }
-
-    public void FaceRight(bool faceRight)
-    {
-        InitializeIfNeeded();
-
-        isFacingRight = faceRight;
-
-        Vector3 scale = spriteRoot.localScale;
-
-        bool usePositiveScale = defaultFacingRight
-            ? faceRight
-            : !faceRight;
-
-        scale.x = usePositiveScale
-            ? originalAbsScaleX
-            : -originalAbsScaleX;
-
-        spriteRoot.localScale = scale;
-    }
-
 #if UNITY_EDITOR
     private void OnValidate()
     {
         if (spriteRoot == null)
         {
             Transform found = transform.Find("SpriteRoot");
+
             if (found != null)
                 spriteRoot = found;
         }

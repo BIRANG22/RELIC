@@ -1,6 +1,13 @@
 using Relic.Gameplay.Data;
 using UnityEngine;
 
+public enum VfxFlipType
+{
+    RotationY180,
+    ParticleRendererFlipY,
+    None
+}
+
 public class BattleUnitAnimator : MonoBehaviour
 {
     [Header("References")]
@@ -19,6 +26,24 @@ public class BattleUnitAnimator : MonoBehaviour
     [SerializeField] private string attackAction2StateName = "AttackAction2";
     [SerializeField] private string attackReady3StateName = "AttackReady3";
     [SerializeField] private string attackAction3StateName = "AttackAction3";
+
+    [Header("Move VFX")]
+    [SerializeField] private BattleVfxEntry moveVfx;
+
+    [Header("Guard VFX")]
+    [SerializeField] private BattleVfxEntry guardVfx;
+
+    [Header("Hit VFX")]
+    [SerializeField] private BattleVfxEntry hitVfx;
+
+    [Header("Attack VFX")]
+    [SerializeField] private BattleVfxEntry attackVfx1;
+    [SerializeField] private BattleVfxEntry attackVfx2;
+    [SerializeField] private BattleVfxEntry attackVfx3;
+    [SerializeField] private Transform vfxSpawnPoint;
+    [SerializeField] private bool parentVfxToSpawnPoint = true;
+
+    [SerializeField] private float vfxLifeTime = 2f;
 
     [Header("Setting")]
     [SerializeField] private int animatorLayer = 0;
@@ -42,16 +67,19 @@ public class BattleUnitAnimator : MonoBehaviour
     public void PlayMove()
     {
         PlayState(moveStateName);
+        SpawnVfx(moveVfx);
     }
 
     public void PlayGuard()
     {
         PlayState(guardStateName);
+        SpawnVfx(guardVfx);
     }
 
     public void PlayHit()
     {
         PlayState(hitStateName);
+        SpawnVfx(hitVfx);
     }
 
     public void PlayDead()
@@ -129,15 +157,19 @@ public class BattleUnitAnimator : MonoBehaviour
         {
             case 1:
                 PlayState(attackAction1StateName);
+                SpawnVfx(attackVfx1);
                 break;
             case 2:
                 PlayState(attackAction2StateName);
+                SpawnVfx(attackVfx2);
                 break;
             case 3:
                 PlayState(attackAction3StateName);
+                SpawnVfx(attackVfx3);
                 break;
             default:
                 PlayState(attackAction1StateName);
+                SpawnVfx(attackVfx1);
                 break;
         }
     }
@@ -148,6 +180,71 @@ public class BattleUnitAnimator : MonoBehaviour
         PlayCurrentAttackAction();
     }
 
+    private void SpawnVfx(BattleVfxEntry entry)
+    {
+        if (entry == null || entry.prefab == null)
+            return;
+
+        Transform spawn = vfxSpawnPoint != null ? vfxSpawnPoint : transform;
+
+        GameObject vfx = Instantiate(entry.prefab, spawn, false);
+
+        ApplyVfxFlip(vfx, entry.flipType);
+
+        Destroy(vfx, vfxLifeTime);
+    }
+
+    private void ApplyVfxFlip(GameObject vfx, VfxFlipType flipType)
+    {
+        if (vfx == null)
+            return;
+
+        if (!ShouldFlipVfx())
+            return;
+
+        FlipLocalPositionX(vfx.transform);
+
+        switch (flipType)
+        {
+            case VfxFlipType.None:
+                break;
+
+            case VfxFlipType.RotationY180:
+                AddLocalRotationY(vfx.transform, 180f);
+                break;
+
+            case VfxFlipType.ParticleRendererFlipY:
+                FlipParticleRendererY(vfx);
+                break;
+        }
+    }
+
+    private void FlipLocalPositionX(Transform target)
+    {
+        Vector3 pos = target.localPosition;
+        pos.x *= -1f;
+        target.localPosition = pos;
+    }
+
+    private void AddLocalRotationY(Transform target, float amount)
+    {
+        Vector3 euler = target.localEulerAngles;
+        euler.y += amount;
+        target.localEulerAngles = euler;
+    }
+
+    private void FlipParticleRendererY(GameObject vfx)
+    {
+        ParticleSystemRenderer[] renderers =
+            vfx.GetComponentsInChildren<ParticleSystemRenderer>(true);
+
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            Vector3 flip = renderers[i].flip;
+            flip.y = 1f - flip.y;
+            renderers[i].flip = flip;
+        }
+    }
     private void PlayState(string stateName)
     {
         if (!EnsureAnimator())
@@ -183,5 +280,15 @@ public class BattleUnitAnimator : MonoBehaviour
             return;
 
         animator = GetComponentInChildren<Animator>(true);
+    }
+
+    private bool ShouldFlipVfx()
+    {
+        BattleUnitFacing facing = GetComponent<BattleUnitFacing>();
+
+        if (facing == null)
+            return false;
+
+        return !facing.IsFacingRight;
     }
 }

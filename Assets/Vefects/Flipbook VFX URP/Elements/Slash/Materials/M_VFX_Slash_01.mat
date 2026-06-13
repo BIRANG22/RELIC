@@ -102,7 +102,7 @@ Material:
     - _AlphaCutoff: 0.5
     - _BumpScale: 1
     - _Contrast: 0.309
-    - _Cull: 2
+    - _Cull: 0
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _Distanse: 5
@@ -153,3 +153,4 @@ Material:
     - _UVP: {r: 0, g: 0, b: 0, a: 0}
     - _UVS: {r: 1, g: 1, b: 0, a: 0}
   m_BuildTextureStacks: []
+  m_AllowLocking: 1

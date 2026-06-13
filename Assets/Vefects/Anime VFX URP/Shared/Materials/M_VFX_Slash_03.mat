@@ -13,9 +13,9 @@ Material:
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - _CUSTOMPANSWITCH_ON
-  - _RECEIVE_SHADOWS_OFF
   m_InvalidKeywords:
   - _RECEIVESHADOWS_OFF
+  - _RECEIVE_SHADOWS_OFF
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
@@ -92,7 +92,7 @@ Material:
     - _ColorRotation2: 0
     - _CoreIntensity: 0
     - _CorePower: 1
-    - _Cull: 2
+    - _Cull: 0
     - _CustomPanSwitch: 1
     - _CutoutErosion: 0
     - _CutoutErosionSmoothness: 0.1
@@ -140,3 +140,4 @@ Material:
     - _TextureChannel: {r: 0, g: 1, b: 0, a: 0}
     - _TexturePanSpeed: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
+  m_AllowLocking: 1

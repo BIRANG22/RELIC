@@ -220,8 +220,6 @@ public class SkillListPanel : MonoBehaviour
 
         battleTimelineController.SelectCharacter(currentRuntime);
         battleTimelineController.SelectSkill(skillData);
-
-        Debug.Log($"[SkillListPanel] Skill Selected: {currentRuntime.CharacterId} / {skillId}");
     }
 
     private void CaptureInitialPosition()
