@@ -244,6 +244,11 @@ public class BattleActionRunner
         {
             MonsterUnit monster = hitTargets[i];
 
+            BattleUnitFacing hitFacing = monster.GetComponent<BattleUnitFacing>();
+
+            if (hitFacing != null)
+                hitFacing.FaceByWorldTarget(attacker.transform.position);
+
             monster.RuntimeData.TakeDamage(damage);
             monster.ShowAndRefreshHUD();
 
@@ -528,6 +533,11 @@ public class BattleActionRunner
         for (int i = 0; i < hitTargets.Count; i++)
         {
             BattleCharacter character = hitTargets[i];
+
+            BattleUnitFacing hitFacing = character.GetComponent<BattleUnitFacing>();
+
+            if (hitFacing != null)
+                hitFacing.FaceByWorldTarget(monster.transform.position);
 
             character.RuntimeData.CurrentHealth =
                 Mathf.Max(0, character.RuntimeData.CurrentHealth - damage);
