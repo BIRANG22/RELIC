@@ -51,10 +51,15 @@ public class BattleUnitAnimator : MonoBehaviour
     [SerializeField] private bool forceAnimatorUpdate = true;
     [SerializeField] private bool autoFindAnimatorInChildren = true;
 
+    [SerializeField] private string vfxLayerName = "VFX";
+    private int vfxLayer = -1;
+
     private int currentAttackIndex = 1;
 
     private void Awake()
     {
+        vfxLayer = LayerMask.NameToLayer(vfxLayerName);
+
         FindAnimatorIfNeeded();
         PlayIdle();
     }
@@ -185,21 +190,31 @@ public class BattleUnitAnimator : MonoBehaviour
         if (entry == null || entry.prefab == null)
             return;
 
+        if (vfxLayer < 0)
+            vfxLayer = LayerMask.NameToLayer(vfxLayerName);
+
         Transform spawn = vfxSpawnPoint != null ? vfxSpawnPoint : transform;
 
-        GameObject vfx;
+        GameObject vfx = Instantiate(entry.prefab, spawn, false);
 
-        if (parentVfxToSpawnPoint)
-            vfx = Instantiate(entry.prefab, spawn, false);
-        else
-            vfx = Instantiate(entry.prefab, spawn.position, spawn.rotation);
+        if (vfxLayer >= 0)
+            SetLayerRecursively(vfx, vfxLayer);
 
-        ApplyVfxFlip(vfx, entry.flipType, parentVfxToSpawnPoint);
+        ApplyVfxFlip(vfx, entry.flipType);
 
         Destroy(vfx, vfxLifeTime);
     }
 
-    private void ApplyVfxFlip(GameObject vfx, VfxFlipType flipType, bool isParentedToSpawnPoint)
+    private void SetLayerRecursively(GameObject obj, int layer)
+    {
+        obj.layer = layer;
+
+        foreach (Transform child in obj.transform)
+            SetLayerRecursively(child.gameObject, layer);
+    }
+
+
+    private void ApplyVfxFlip(GameObject vfx, VfxFlipType flipType)
     {
         if (vfx == null)
             return;
@@ -207,8 +222,7 @@ public class BattleUnitAnimator : MonoBehaviour
         if (!ShouldFlipVfx())
             return;
 
-        if (isParentedToSpawnPoint)
-            FlipLocalPositionX(vfx.transform);
+        FlipLocalPositionX(vfx.transform);
 
         switch (flipType)
         {
