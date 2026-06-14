@@ -4,14 +4,23 @@ using Relic.Gameplay.Data;
 public class EquippedSkillCharacterRowUI : MonoBehaviour
 {
     [Header("Slots")]
-    [SerializeField] private EquippedSkillSlotUI passiveSlot;   // 1
-    [SerializeField] private EquippedSkillSlotUI uniqueSlot;    // 2
-    [SerializeField] private EquippedSkillSlotUI abilitySlot;   // 3
-    [SerializeField] private EquippedSkillSlotUI freeSlot1;     // 4 Common/Core
-    [SerializeField] private EquippedSkillSlotUI freeSlot2;     // 5 Common/Core
+    [SerializeField] private EquippedSkillSlotUI passiveSlot;
+    [SerializeField] private EquippedSkillSlotUI uniqueSlot;
+    [SerializeField] private EquippedSkillSlotUI abilitySlot;
+    [SerializeField] private EquippedSkillSlotUI freeSlot1;
+    [SerializeField] private EquippedSkillSlotUI freeSlot2;
+
+    private EquippedSkillPanelUI ownerPanel;
 
     public void Setup(CharacterRuntimeData characterData)
     {
+        Setup(ownerPanel, characterData);
+    }
+
+    public void Setup(EquippedSkillPanelUI owner, CharacterRuntimeData characterData)
+    {
+        ownerPanel = owner;
+
         if (characterData == null)
         {
             Clear();
@@ -59,22 +68,25 @@ public class EquippedSkillCharacterRowUI : MonoBehaviour
 
         if (DataManager.Instance == null)
         {
-            Debug.LogWarning("[EquippedSkillCharacterRowUI] DataManager 없음");
+            Debug.LogWarning("[EquippedSkillCharacterRowUI] DataManager가 없습니다.");
             slot.Clear();
             return;
         }
 
+        SkillDatabase skillDatabase = DataManager.Instance.SkillDatabase;
+        if (skillDatabase == null || !skillDatabase.TryGet(skillId, out SkillMasterData skillData))
+        {
+            Debug.LogWarning($"[EquippedSkillCharacterRowUI] SkillData가 없습니다: {skillId}");
+            slot.Clear();
+            return;
+        }
+
+        Sprite icon = null;
         SkillIconDatabase iconDatabase = DataManager.Instance.SkillIconDatabase;
 
-        if (iconDatabase != null &&
-            iconDatabase.TryGetIcon(skillId, out Sprite icon))
-        {
-            slot.SetSkill(icon);
-        }
-        else
-        {
-            Debug.LogWarning($"[EquippedSkillCharacterRowUI] SkillIcon 없음: {skillId}");
-            slot.Clear();
-        }
+        if (iconDatabase != null)
+            iconDatabase.TryGetIcon(skillId, out icon);
+
+        slot.SetSkill(ownerPanel, skillData, icon);
     }
 }

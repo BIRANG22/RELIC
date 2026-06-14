@@ -41,7 +41,6 @@ public class BattleUnitAnimator : MonoBehaviour
     [SerializeField] private BattleVfxEntry attackVfx2;
     [SerializeField] private BattleVfxEntry attackVfx3;
     [SerializeField] private Transform vfxSpawnPoint;
-    [SerializeField] private bool parentVfxToSpawnPoint = true;
 
     [SerializeField] private float vfxLifeTime = 2f;
 
