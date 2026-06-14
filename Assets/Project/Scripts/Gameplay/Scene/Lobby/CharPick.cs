@@ -8,6 +8,8 @@ public class CharPick : MonoBehaviour
 {
     [Header("Buttons")]
     [SerializeField] private List<CharBtn> charBtns = new();
+    [SerializeField] private bool autoBindCharButtons = true;
+    [SerializeField] private Transform charButtonRoot;
 
     [Header("Preview")]
     [SerializeField] private Transform previewRoot;
@@ -40,7 +42,10 @@ public class CharPick : MonoBehaviour
     [SerializeField] private bool resetPendingSelectionOnEnable = true;
     [SerializeField] private bool resetPendingSelectionOnDisable = true;
 
-    [SerializeField] private float previewScale = 4f;
+    [Header("World Preview Transform")]
+    [SerializeField] private Vector3 previewLocalPosition = Vector3.zero;
+    [SerializeField] private Vector3 previewLocalEulerAngles = Vector3.zero;
+    [SerializeField] private float previewScale = 1f;
 
     private readonly List<string> pendingCharacterIds = new();
     private readonly List<string> runtimeCharacterIdsSnapshot = new();
@@ -72,14 +77,25 @@ public class CharPick : MonoBehaviour
 
     private void OnEnable()
     {
+        AutoBindCharButtonsIfNeeded();
+        ClampCenterIndex();
+
         if (resetPendingSelectionOnEnable)
             ResetPendingSelectionFromRuntime();
+
+        if (isStarted)
+        {
+            RefreshInstant();
+            RefreshCenterInfo();
+        }
     }
 
     private void Start()
     {
         isStarted = true;
         CachePreviewBackgroundScale();
+        AutoBindCharButtonsIfNeeded();
+        ClampCenterIndex();
 
         for (int i = 0; i < charBtns.Count; i++)
         {
@@ -132,12 +148,21 @@ public class CharPick : MonoBehaviour
             return;
         }
 
+        if (btn.IsLocked || !HasUsableCharacterData(btn))
+        {
+            RefreshCenterInfo();
+            return;
+        }
+
         ToggleButtonPartyMarker(btn);
     }
 
     public void ToggleButtonPartyMarker(CharBtn btn)
     {
         if (btn == null)
+            return;
+
+        if (btn.IsLocked || !HasUsableCharacterData(btn))
             return;
 
         if (!btn.PrepareCharacterForPartyAction(true))
@@ -532,10 +557,177 @@ public class CharPick : MonoBehaviour
             centerIndex = charBtns.Count - 1;
     }
 
+
+    private void AutoBindCharButtonsIfNeeded()
+    {
+        if (!autoBindCharButtons)
+            return;
+
+        Transform root = ResolveCharButtonRoot();
+
+        if (root == null)
+            return;
+
+        List<CharBtn> foundButtons = CollectCharButtons(root);
+
+        if (foundButtons.Count <= 0)
+            return;
+
+        bool shouldReplace = charBtns == null || charBtns.Count != foundButtons.Count;
+
+        if (!shouldReplace)
+        {
+            for (int i = 0; i < foundButtons.Count; i++)
+            {
+                if (charBtns[i] != foundButtons[i])
+                {
+                    shouldReplace = true;
+                    break;
+                }
+            }
+        }
+
+        if (!shouldReplace)
+            return;
+
+        charBtns = foundButtons;
+
+        for (int i = 0; i < charBtns.Count; i++)
+        {
+            if (charBtns[i] != null)
+                charBtns[i].Init(this);
+        }
+
+        ClampCenterIndex();
+    }
+
+    private List<CharBtn> CollectCharButtons(Transform root)
+    {
+        List<CharBtn> result = new();
+
+        if (root == null)
+            return result;
+
+        List<Transform> candidates = new();
+        CollectCharButtonTransforms(root, candidates);
+
+        candidates.Sort(CompareCharButtonTransforms);
+
+        for (int i = 0; i < candidates.Count; i++)
+        {
+            Transform candidate = candidates[i];
+
+            if (candidate == null)
+                continue;
+
+            CharBtn btn = candidate.GetComponent<CharBtn>();
+
+            if (btn == null && IsCharButtonName(candidate.name))
+                btn = candidate.gameObject.AddComponent<CharBtn>();
+
+            if (btn == null)
+                continue;
+
+            if (result.Contains(btn))
+                continue;
+
+            result.Add(btn);
+        }
+
+        return result;
+    }
+
+    private void CollectCharButtonTransforms(Transform root, List<Transform> result)
+    {
+        if (root == null || result == null)
+            return;
+
+        CharBtn rootButton = root.GetComponent<CharBtn>();
+
+        if (rootButton != null || IsCharButtonName(root.name))
+            result.Add(root);
+
+        for (int i = 0; i < root.childCount; i++)
+            CollectCharButtonTransforms(root.GetChild(i), result);
+    }
+
+    private static bool IsCharButtonName(string objectName)
+    {
+        if (string.IsNullOrWhiteSpace(objectName))
+            return false;
+
+        return objectName.StartsWith("CharBtn_", System.StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static int CompareCharButtonTransforms(Transform a, Transform b)
+    {
+        int aIndex = ExtractTrailingNumber(a != null ? a.name : string.Empty);
+        int bIndex = ExtractTrailingNumber(b != null ? b.name : string.Empty);
+
+        if (aIndex != bIndex)
+            return aIndex.CompareTo(bIndex);
+
+        int aSibling = a != null ? a.GetSiblingIndex() : 0;
+        int bSibling = b != null ? b.GetSiblingIndex() : 0;
+
+        return aSibling.CompareTo(bSibling);
+    }
+
+    private static int ExtractTrailingNumber(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return int.MaxValue;
+
+        int end = value.Length - 1;
+
+        while (end >= 0 && char.IsDigit(value[end]))
+            end--;
+
+        if (end >= value.Length - 1)
+            return int.MaxValue;
+
+        string numberText = value.Substring(end + 1);
+
+        if (int.TryParse(numberText, out int number))
+            return number;
+
+        return int.MaxValue;
+    }
+
+    private Transform ResolveCharButtonRoot()
+    {
+        if (charButtonRoot != null)
+            return charButtonRoot;
+
+        if (charBtns != null)
+        {
+            for (int i = 0; i < charBtns.Count; i++)
+            {
+                if (charBtns[i] != null && charBtns[i].transform.parent != null)
+                    return charBtns[i].transform.parent;
+            }
+        }
+
+        return transform;
+    }
+
+    private void ClampCenterIndex()
+    {
+        if (charBtns == null || charBtns.Count <= 0)
+        {
+            centerIndex = 0;
+            return;
+        }
+
+        centerIndex = Mathf.Clamp(centerIndex, 0, charBtns.Count - 1);
+    }
+
     private void RefreshCenterInfo()
     {
         if (charBtns.Count <= 0)
             return;
+
+        ClampCenterIndex();
 
         if (centerIndex < 0 || centerIndex >= charBtns.Count)
             return;
@@ -543,15 +735,77 @@ public class CharPick : MonoBehaviour
         CharBtn centerBtn = charBtns[centerIndex];
 
         if (centerBtn == null)
+        {
+            ClearCenterCharacterInfo();
             return;
+        }
 
         string characterId = centerBtn.CharacterId;
 
+        if (!CanShowCharacterData(centerBtn, characterId))
+        {
+            ClearCenterCharacterInfo();
+            return;
+        }
+
         CreateOrUpdateRuntimeData(centerBtn);
+        SelectCenterCharacterState(centerBtn, characterId);
         ShowPreview(characterId);
 
-        if (setting != null && !string.IsNullOrWhiteSpace(characterId))
+        if (setting != null)
             setting.OpenCharacterSetting(characterId);
+    }
+
+    private bool CanShowCharacterData(CharBtn btn, string characterId)
+    {
+        if (btn == null)
+            return false;
+
+        if (btn.IsLocked)
+            return false;
+
+        return HasUsableCharacterData(btn);
+    }
+
+    private bool HasUsableCharacterData(CharBtn btn)
+    {
+        if (btn == null)
+            return false;
+
+        string characterId = btn.CharacterId;
+
+        if (string.IsNullOrWhiteSpace(characterId))
+            return false;
+
+        if (DataManager.Instance == null)
+            return false;
+
+        if (DataManager.Instance.CharacterDatabase == null)
+            return false;
+
+        return DataManager.Instance.CharacterDatabase.TryGet(characterId, out _);
+    }
+
+    private void ClearCenterCharacterInfo()
+    {
+        ShowPreview(null);
+
+        if (CharacterSelectionState.Instance != null)
+            CharacterSelectionState.Instance.SelectCharacter(CharacterType.None, null);
+
+        if (setting != null)
+            setting.Clear();
+    }
+
+    private void SelectCenterCharacterState(CharBtn btn, string characterId)
+    {
+        if (btn == null)
+            return;
+
+        if (CharacterSelectionState.Instance == null)
+            return;
+
+        CharacterSelectionState.Instance.SelectCharacter(btn.CharacterType, characterId);
     }
 
     private void ShowPreview(string characterId)
@@ -559,32 +813,44 @@ public class CharPick : MonoBehaviour
         if (previewRoot == null)
             return;
 
-        if (characterId == currentPreviewCharacterId)
+        if (characterId == currentPreviewCharacterId && currentPreview != null)
             return;
 
         currentPreviewCharacterId = characterId;
 
         if (currentPreview != null)
+        {
             Destroy(currentPreview);
+            currentPreview = null;
+        }
 
         if (string.IsNullOrWhiteSpace(characterId))
             return;
 
         if (DataManager.Instance == null)
+        {
+            Debug.LogWarning("[CharPick] DataManager instance is missing.");
             return;
+        }
 
         if (DataManager.Instance.CharacterPrefabDatabase == null)
+        {
+            Debug.LogWarning("[CharPick] CharacterPrefabDatabase is missing.");
             return;
+        }
 
-        if (!DataManager.Instance.CharacterPrefabDatabase.TryGetPreviewUIPrefab(characterId, out var prefab))
+        if (!DataManager.Instance.CharacterPrefabDatabase.TryGetPreviewWorldPrefab(characterId, out var prefab))
+        {
+            Debug.LogWarning("[CharPick] PreviewWorldPrefab not found: " + characterId);
             return;
+        }
 
         if (prefab == null)
             return;
 
         currentPreview = Instantiate(prefab, previewRoot);
-        currentPreview.transform.localPosition = new Vector3(0f, 200f, 0f);
-        currentPreview.transform.localRotation = Quaternion.identity;
+        currentPreview.transform.localPosition = previewLocalPosition;
+        currentPreview.transform.localRotation = Quaternion.Euler(previewLocalEulerAngles);
         currentPreview.transform.localScale = Vector3.one * previewScale;
 
         PlayPreviewBackgroundAnim();

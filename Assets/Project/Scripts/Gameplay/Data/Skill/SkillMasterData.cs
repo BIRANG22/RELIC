@@ -105,6 +105,7 @@ namespace Relic.Gameplay.Data
         public string RangeId;
 
         public string ToolTip;
+        public string Details;
 
         // 런타임 사용용
         public List<SkillEffectEntry> EffectEntries = new();

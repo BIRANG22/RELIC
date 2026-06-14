@@ -1,6 +1,9 @@
 using Relic.Gameplay.Data;
 using System;
 using System.Collections.Generic;
+using System.Text;
+using System.Text.RegularExpressions;
+using TMPro;
 using UnityEngine;
 
 public class RuneSettingPanel : MonoBehaviour
@@ -11,6 +14,12 @@ public class RuneSettingPanel : MonoBehaviour
     [Header("Rune Icon List Panel")]
     [SerializeField] private GameObject runeIconSelectPanel;
     [SerializeField] private RuneIconButton[] runeIconButtons;
+
+    [Header("Rune Info Area")]
+    [SerializeField] private TMP_Text runeInfoTitleText;
+    [SerializeField] private TMP_Text runeInfoEffectText;
+    [SerializeField] private string emptyRuneInfoTitle = "룬 정보";
+    [SerializeField, TextArea] private string emptyRuneInfoEffect = "룬을 선택하면 정보가 표시됩니다.";
 
     [Header("Warning UI")]
     [SerializeField] private SettingWarningUI warningUI;
@@ -26,6 +35,9 @@ public class RuneSettingPanel : MonoBehaviour
         if (warningUI == null)
             warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
 
+        AutoBindRuneInfoTexts();
+        ClearRuneInfo();
+
         InitRuneSlots();
         InitRuneIconButtons();
         ApplyDefaultLockedState();
@@ -38,6 +50,8 @@ public class RuneSettingPanel : MonoBehaviour
     {
         if (warningUI == null)
             warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
+
+        AutoBindRuneInfoTexts();
 
         if (runeIconSelectPanel != null)
             runeIconSelectPanel.SetActive(true);
@@ -85,6 +99,8 @@ public class RuneSettingPanel : MonoBehaviour
         currentCharacterId = characterId;
         currentMasterData = null;
         currentRuntimeData = null;
+
+        ClearRuneInfo();
 
         if (DataManager.Instance == null)
         {
@@ -310,6 +326,8 @@ public class RuneSettingPanel : MonoBehaviour
                 AddRuneIfNotExists(result, rune);
         }
 
+        result.Sort(CompareRuneDisplayOrder);
+
         return result.ToArray();
     }
 
@@ -318,10 +336,125 @@ public class RuneSettingPanel : MonoBehaviour
         if (rune == null)
             return false;
 
-        bool isCommonRune = rune.TargetCharacterId == "All";
-        bool isCharacterRune = rune.TargetCharacterId == currentCharacterId;
+        if (string.IsNullOrWhiteSpace(currentCharacterId))
+            return false;
 
-        return isCommonRune || isCharacterRune;
+        int runeNumber = GetRuneNumber(rune.RuneId);
+
+        if (IsCommonRuneNumber(runeNumber))
+            return true;
+
+        if (IsCurrentCharacterRuneNumber(runeNumber))
+            return true;
+
+        bool isCommonRuneByData = rune.TargetCharacterId == "All";
+        bool isCharacterRuneByData = rune.TargetCharacterId == currentCharacterId;
+
+        return isCommonRuneByData || isCharacterRuneByData;
+    }
+
+    private int CompareRuneDisplayOrder(RuneData a, RuneData b)
+    {
+        int groupA = GetRuneDisplayGroup(a);
+        int groupB = GetRuneDisplayGroup(b);
+
+        if (groupA != groupB)
+            return groupA.CompareTo(groupB);
+
+        int numberA = GetRuneNumber(a != null ? a.RuneId : null);
+        int numberB = GetRuneNumber(b != null ? b.RuneId : null);
+
+        if (numberA != numberB)
+        {
+            if (numberA <= 0)
+                return 1;
+
+            if (numberB <= 0)
+                return -1;
+
+            return numberA.CompareTo(numberB);
+        }
+
+        string idA = a != null ? a.RuneId : string.Empty;
+        string idB = b != null ? b.RuneId : string.Empty;
+
+        return string.CompareOrdinal(idA, idB);
+    }
+
+    private int GetRuneDisplayGroup(RuneData rune)
+    {
+        if (rune == null)
+            return 99;
+
+        int runeNumber = GetRuneNumber(rune.RuneId);
+
+        if (IsCommonRuneNumber(runeNumber))
+            return 0;
+
+        if (IsCurrentCharacterRuneNumber(runeNumber))
+            return 1;
+
+        if (rune.TargetCharacterId == "All")
+            return 2;
+
+        if (rune.TargetCharacterId == currentCharacterId)
+            return 3;
+
+        return 99;
+    }
+
+    private bool IsCommonRuneNumber(int runeNumber)
+    {
+        return runeNumber >= 16 && runeNumber <= 25;
+    }
+
+    private bool IsCurrentCharacterRuneNumber(int runeNumber)
+    {
+        int characterNumber = GetCurrentCharacterNumber();
+
+        if (characterNumber < 1 || characterNumber > 3)
+            return false;
+
+        int start = ((characterNumber - 1) * 5) + 1;
+        int end = start + 4;
+
+        return runeNumber >= start && runeNumber <= end;
+    }
+
+    private int GetCurrentCharacterNumber()
+    {
+        return GetTrailingNumber(currentCharacterId);
+    }
+
+    private int GetRuneNumber(string runeId)
+    {
+        return GetTrailingNumber(runeId);
+    }
+
+    private int GetTrailingNumber(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return -1;
+
+        int end = value.Length - 1;
+
+        while (end >= 0 && char.IsWhiteSpace(value[end]))
+            end--;
+
+        if (end < 0 || !char.IsDigit(value[end]))
+            return -1;
+
+        int start = end;
+
+        while (start >= 0 && char.IsDigit(value[start]))
+            start--;
+
+        string numberText = value.Substring(start + 1, end - start);
+
+        if (int.TryParse(numberText, out int number))
+            return number;
+
+        return -1;
     }
 
     private void AddRuneIfNotExists(List<RuneData> list, RuneData rune)
@@ -686,6 +819,7 @@ public class RuneSettingPanel : MonoBehaviour
 
     private void ClearRuneIconButtons()
     {
+        ClearRuneInfo();
         if (runeIconButtons != null)
         {
             for (int i = 0; i < runeIconButtons.Length; i++)
@@ -697,6 +831,188 @@ public class RuneSettingPanel : MonoBehaviour
 
         if (runeIconSelectPanel != null)
             runeIconSelectPanel.SetActive(true);
+    }
+
+    public void ClearForEmptyCharacter()
+    {
+        currentCharacterId = null;
+        currentMasterData = null;
+        currentRuntimeData = null;
+
+        ClearRuneSlotsAndLockAll();
+        ClearRuneIconButtons();
+        ClearRuneInfo();
+
+        if (runeIconSelectPanel != null)
+            runeIconSelectPanel.SetActive(true);
+    }
+
+    public void ShowRuneInfo(RuneData runeData)
+    {
+        AutoBindRuneInfoTexts();
+
+        if (runeData == null)
+        {
+            ClearRuneInfo();
+            return;
+        }
+
+        if (runeInfoTitleText != null)
+            runeInfoTitleText.text = string.IsNullOrWhiteSpace(runeData.Name) ? runeData.RuneId : runeData.Name;
+
+        if (runeInfoEffectText != null)
+            runeInfoEffectText.text = BuildRuneEffectText(runeData);
+    }
+
+    private void ClearRuneInfo()
+    {
+        AutoBindRuneInfoTexts();
+
+        if (runeInfoTitleText != null)
+            runeInfoTitleText.text = emptyRuneInfoTitle;
+
+        if (runeInfoEffectText != null)
+            runeInfoEffectText.text = emptyRuneInfoEffect;
+    }
+
+    private void AutoBindRuneInfoTexts()
+    {
+        if (runeInfoTitleText != null && runeInfoEffectText != null)
+            return;
+
+        Transform infoArea = FindDeepChild(transform, "RuneInfoArea");
+
+        if (infoArea == null)
+            infoArea = FindDeepChild(transform, "RuenInfoArea");
+
+        TMP_Text[] texts = infoArea != null
+            ? infoArea.GetComponentsInChildren<TMP_Text>(true)
+            : GetComponentsInChildren<TMP_Text>(true);
+
+        for (int i = 0; i < texts.Length; i++)
+        {
+            if (texts[i] == null)
+                continue;
+
+            string objectName = texts[i].gameObject.name;
+
+            if (runeInfoTitleText == null && objectName == "TitleText")
+                runeInfoTitleText = texts[i];
+            else if (runeInfoEffectText == null && objectName == "EffectText")
+                runeInfoEffectText = texts[i];
+        }
+    }
+
+    private Transform FindDeepChild(Transform parent, string childName)
+    {
+        if (parent == null || string.IsNullOrWhiteSpace(childName))
+            return null;
+
+        for (int i = 0; i < parent.childCount; i++)
+        {
+            Transform child = parent.GetChild(i);
+
+            if (child == null)
+                continue;
+
+            if (child.name == childName)
+                return child;
+
+            Transform result = FindDeepChild(child, childName);
+
+            if (result != null)
+                return result;
+        }
+
+        return null;
+    }
+
+    private string BuildRuneEffectText(RuneData runeData)
+    {
+        if (runeData == null)
+            return string.Empty;
+
+        if (!string.IsNullOrWhiteSpace(runeData.EffectDesc))
+            return ColorizeRuneEffectDesc(NormalizeRuneEffectDesc(runeData.EffectDesc));
+
+        StringBuilder builder = new StringBuilder();
+
+        if (!string.IsNullOrWhiteSpace(runeData.EffectIds))
+        {
+            builder.Append("- ");
+            builder.Append(runeData.EffectIds);
+        }
+
+        if (builder.Length <= 0)
+            builder.Append("등록된 효과 설명이 없습니다.");
+
+        return ColorizeRuneEffectDesc(builder.ToString());
+    }
+
+    private string NormalizeRuneEffectDesc(string effectDesc)
+    {
+        if (string.IsNullOrEmpty(effectDesc))
+            return string.Empty;
+
+        return effectDesc
+            .Replace("\\n", "\n")
+            .Replace("\\r", "")
+            .Replace("<br>", "\n")
+            .Replace("<br/>", "\n")
+            .Replace("<br />", "\n");
+    }
+
+    private string ColorizeRuneEffectDesc(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+            return string.Empty;
+
+        const string orangeColor = "#FF9A00";
+        const string pattern = @"(?<![A-Za-z0-9_])([+-]?\d+(?:\.\d+)?%?|[+-])";
+
+        return Regex.Replace(text, pattern, match =>
+        {
+            string value = match.Value;
+
+            if (string.IsNullOrEmpty(value))
+                return value;
+
+            return "<color=" + orangeColor + ">" + value + "</color>";
+        });
+    }
+
+    private string GetEffectDisplayName(SkillEffectEntry entry)
+    {
+        if (entry == null)
+            return string.Empty;
+
+        if (entry.EffectData != null && !string.IsNullOrWhiteSpace(entry.EffectData.Name))
+            return entry.EffectData.Name;
+
+        return entry.EffectId;
+    }
+
+    private string BuildEffectAmountText(SkillEffectEntry entry)
+    {
+        if (entry == null)
+            return string.Empty;
+
+        List<string> parts = new List<string>();
+
+        if (entry.ValueAmount != 0)
+        {
+            string valueCalcTypeName = entry.ValueCalcType.ToString();
+            string valueText = valueCalcTypeName == "Percent"
+                ? entry.ValueAmount + "%"
+                : entry.ValueAmount.ToString();
+
+            parts.Add("수치 " + valueText);
+        }
+
+        if (entry.CountAmount > 0)
+            parts.Add("횟수 " + entry.CountAmount);
+
+        return parts.Count > 0 ? "(" + string.Join(", ", parts) + ")" : string.Empty;
     }
 
     public void SaveBeforeBattle()

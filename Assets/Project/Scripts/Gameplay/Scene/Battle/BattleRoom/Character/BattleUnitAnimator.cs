@@ -187,14 +187,19 @@ public class BattleUnitAnimator : MonoBehaviour
 
         Transform spawn = vfxSpawnPoint != null ? vfxSpawnPoint : transform;
 
-        GameObject vfx = Instantiate(entry.prefab, spawn, false);
+        GameObject vfx;
 
-        ApplyVfxFlip(vfx, entry.flipType);
+        if (parentVfxToSpawnPoint)
+            vfx = Instantiate(entry.prefab, spawn, false);
+        else
+            vfx = Instantiate(entry.prefab, spawn.position, spawn.rotation);
+
+        ApplyVfxFlip(vfx, entry.flipType, parentVfxToSpawnPoint);
 
         Destroy(vfx, vfxLifeTime);
     }
 
-    private void ApplyVfxFlip(GameObject vfx, VfxFlipType flipType)
+    private void ApplyVfxFlip(GameObject vfx, VfxFlipType flipType, bool isParentedToSpawnPoint)
     {
         if (vfx == null)
             return;
@@ -202,7 +207,8 @@ public class BattleUnitAnimator : MonoBehaviour
         if (!ShouldFlipVfx())
             return;
 
-        FlipLocalPositionX(vfx.transform);
+        if (isParentedToSpawnPoint)
+            FlipLocalPositionX(vfx.transform);
 
         switch (flipType)
         {

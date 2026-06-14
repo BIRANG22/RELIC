@@ -1,9 +1,10 @@
 using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class SkillSlotButton : MonoBehaviour
+public class SkillSlotButton : MonoBehaviour, IPointerEnterHandler
 {
     [Header("UI")]
     [SerializeField] private Button button;
@@ -29,6 +30,12 @@ public class SkillSlotButton : MonoBehaviour
         }
     }
 
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (owner != null && equippedSkill != null)
+            owner.ShowSkillInfo(equippedSkill);
+    }
+
     public void Execute()
     {
         if (owner == null)
@@ -37,6 +44,7 @@ public class SkillSlotButton : MonoBehaviour
             return;
         }
 
+        owner.ShowSkillInfo(equippedSkill);
         owner.OpenSkillSelectPanel(this);
     }
 

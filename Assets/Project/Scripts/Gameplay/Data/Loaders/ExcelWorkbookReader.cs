@@ -3,33 +3,55 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text;
 using System.Xml.Linq;
 
-
-/// <summary>
-/// [Loaders] 스크립트. 역할/설정/변수 용도를 코드 주석으로 확인할 수 있도록 정리했습니다.
-/// Unity 연결: MonoBehaviour 스크립트는 Scene/GameObject에 컴포넌트로 부착 후 Inspector 필드를 설정하세요.
-/// 데이터 클래스는 엑셀 시트 컬럼과 필드명을 맞춰 DataBootstrap 로딩 파이프라인에서 자동 매핑됩니다.
-/// </summary>
 namespace Relic.Gameplay.Data
 {
     /// <summary>
-    /// ExcelWorkbookReader의 책임을 담당하는 클래스입니다. 파일 상단 주석의 연결/설정 지침을 참고하세요.
+    /// Resources/Data/GameData를 읽어 각 데이터 시트 Dictionary로 변환합니다.
+    /// .xlsx/.bytes 형식의 엑셀 워크북과, 하나의 GameData.csv 안에 '# SheetName' 섹션으로 나눈 CSV 형식을 모두 지원합니다.
+    /// CSV 섹션은 0번 행 = 한글 설명, 1번 행 = 영어 필드명, 2번 행부터 데이터로 처리합니다.
     /// </summary>
     public static class ExcelWorkbookReader
     {
-        public static Dictionary<string, List<Dictionary<string, string>>> Read(byte[] excelBytes)
+        public static Dictionary<string, List<Dictionary<string, string>>> Read(byte[] dataBytes)
         {
             var result = new Dictionary<string, List<Dictionary<string, string>>>(StringComparer.OrdinalIgnoreCase);
-            if (excelBytes == null || excelBytes.Length == 0)
+            if (dataBytes == null || dataBytes.Length == 0)
                 return result;
+
+            if (IsZipWorkbook(dataBytes))
+                return ReadExcelWorkbook(dataBytes);
+
+            return ReadSectionedCsv(dataBytes);
+        }
+
+        private static bool IsZipWorkbook(byte[] dataBytes)
+        {
+            return dataBytes.Length >= 4
+                && dataBytes[0] == 0x50
+                && dataBytes[1] == 0x4B
+                && dataBytes[2] == 0x03
+                && dataBytes[3] == 0x04;
+        }
+
+        private static Dictionary<string, List<Dictionary<string, string>>> ReadExcelWorkbook(byte[] excelBytes)
+        {
+            var result = new Dictionary<string, List<Dictionary<string, string>>>(StringComparer.OrdinalIgnoreCase);
 
             using var stream = new MemoryStream(excelBytes);
             using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
 
             var sharedStrings = ReadSharedStrings(archive);
-            var workbook = XDocument.Load(archive.GetEntry("xl/workbook.xml")?.Open() ?? Stream.Null);
-            var rels = XDocument.Load(archive.GetEntry("xl/_rels/workbook.xml.rels")?.Open() ?? Stream.Null);
+            var workbookEntry = archive.GetEntry("xl/workbook.xml");
+            var relsEntry = archive.GetEntry("xl/_rels/workbook.xml.rels");
+
+            if (workbookEntry == null || relsEntry == null)
+                return result;
+
+            var workbook = XDocument.Load(workbookEntry.Open());
+            var rels = XDocument.Load(relsEntry.Open());
 
             XNamespace ns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
             XNamespace relNs = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
@@ -65,6 +87,127 @@ namespace Relic.Gameplay.Data
             }
 
             return result;
+        }
+
+        private static Dictionary<string, List<Dictionary<string, string>>> ReadSectionedCsv(byte[] csvBytes)
+        {
+            var result = new Dictionary<string, List<Dictionary<string, string>>>(StringComparer.OrdinalIgnoreCase);
+            var text = DecodeCsvText(csvBytes);
+            var sectionRows = new Dictionary<string, List<List<string>>>(StringComparer.OrdinalIgnoreCase);
+            string currentSectionName = null;
+
+            using var reader = new StringReader(text);
+            string line;
+            while ((line = reader.ReadLine()) != null)
+            {
+                var values = ParseCsvLine(line);
+                if (values.Count == 0 || values.All(string.IsNullOrWhiteSpace))
+                    continue;
+
+                var firstValue = values[0]?.Trim() ?? string.Empty;
+                if (firstValue.StartsWith("#", StringComparison.Ordinal))
+                {
+                    currentSectionName = firstValue.Substring(1).Trim();
+                    if (!string.IsNullOrWhiteSpace(currentSectionName) && !sectionRows.ContainsKey(currentSectionName))
+                        sectionRows[currentSectionName] = new List<List<string>>();
+
+                    continue;
+                }
+
+                if (string.IsNullOrWhiteSpace(currentSectionName))
+                    continue;
+
+                sectionRows[currentSectionName].Add(values);
+            }
+
+            foreach (var pair in sectionRows)
+                result[pair.Key] = ConvertCsvRowsToDictionaries(pair.Value);
+
+            return result;
+        }
+
+        private static string DecodeCsvText(byte[] csvBytes)
+        {
+            if (csvBytes.Length >= 3 && csvBytes[0] == 0xEF && csvBytes[1] == 0xBB && csvBytes[2] == 0xBF)
+                return Encoding.UTF8.GetString(csvBytes, 3, csvBytes.Length - 3);
+
+            return Encoding.UTF8.GetString(csvBytes);
+        }
+
+        private static List<Dictionary<string, string>> ConvertCsvRowsToDictionaries(List<List<string>> csvRows)
+        {
+            var rows = new List<Dictionary<string, string>>();
+
+            // 최소 2행은 있어야 함
+            // 0번 행 = 한글 설명
+            // 1번 행 = 영어 필드명
+            if (csvRows == null || csvRows.Count < 2)
+                return rows;
+
+            var headerRowIndex = 1;
+            var dataStartRowIndex = 2;
+            var headers = csvRows[headerRowIndex];
+
+            for (var i = dataStartRowIndex; i < csvRows.Count; i++)
+            {
+                var values = csvRows[i];
+                var row = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+                for (var h = 0; h < headers.Count; h++)
+                {
+                    var key = headers[h]?.Trim();
+                    if (string.IsNullOrWhiteSpace(key))
+                        continue;
+
+                    row[key] = h < values.Count ? values[h]?.Trim() ?? string.Empty : string.Empty;
+                }
+
+                var isEmptyRow = row.Values.All(v => string.IsNullOrWhiteSpace(v));
+                if (!isEmptyRow)
+                    rows.Add(row);
+            }
+
+            return rows;
+        }
+
+        private static List<string> ParseCsvLine(string line)
+        {
+            var values = new List<string>();
+            if (line == null)
+                return values;
+
+            var current = new StringBuilder();
+            var inQuotes = false;
+
+            for (var i = 0; i < line.Length; i++)
+            {
+                var c = line[i];
+
+                if (c == '"')
+                {
+                    if (inQuotes && i + 1 < line.Length && line[i + 1] == '"')
+                    {
+                        current.Append('"');
+                        i++;
+                    }
+                    else
+                    {
+                        inQuotes = !inQuotes;
+                    }
+                }
+                else if (c == ',' && !inQuotes)
+                {
+                    values.Add(current.ToString());
+                    current.Clear();
+                }
+                else
+                {
+                    current.Append(c);
+                }
+            }
+
+            values.Add(current.ToString());
+            return values;
         }
 
         private static List<string> ReadSharedStrings(ZipArchive archive)
