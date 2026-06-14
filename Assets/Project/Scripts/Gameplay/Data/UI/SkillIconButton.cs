@@ -1,10 +1,11 @@
+using System.Collections;
 using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class SkillIconButton : MonoBehaviour, IPointerEnterHandler
+public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [Header("UI")]
     [SerializeField] private Button button;
@@ -13,13 +14,40 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler
     [SerializeField] private TMP_Text lockText;
     [SerializeField] private GameObject lockObject;
 
+    [Header("Hover Scale Effect")]
+    [SerializeField] private Transform scaleTarget;
+    [SerializeField] private float hoverScale = 1.1f;
+    [SerializeField] private float breathMaxScale = 1.16f;
+    [SerializeField] private float scaleInDuration = 0.08f;
+    [SerializeField] private float breathSpeed = 4f;
+    [SerializeField] private bool useUnscaledTime = true;
+
     private SkillSettingPanel owner;
     private SkillMasterData currentSkillData;
 
     private bool isLocked;
     private int requiredLevel;
 
+    private Vector3 originalScale = Vector3.one;
+    private bool isScaleCached;
+    private Coroutine hoverScaleCoroutine;
+
     public SkillMasterData CurrentSkillData => currentSkillData;
+
+    private void Awake()
+    {
+        CacheOriginalScale();
+    }
+
+    private void OnEnable()
+    {
+        CacheOriginalScale();
+    }
+
+    private void OnDisable()
+    {
+        StopHoverScaleEffect(true);
+    }
 
     public void Init(SkillSettingPanel panel)
     {
@@ -38,6 +66,8 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler
         int requiredLv
     )
     {
+        StopHoverScaleEffect(true);
+
         currentSkillData = skillData;
         isLocked = locked;
         requiredLevel = requiredLv;
@@ -74,6 +104,13 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler
     {
         if (owner != null && currentSkillData != null)
             owner.ShowSkillInfo(currentSkillData);
+
+        StartHoverScaleEffect();
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        StopHoverScaleEffect(true);
     }
 
     public void Execute()
@@ -95,5 +132,88 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler
         }
 
         owner.SelectSkill(currentSkillData);
+    }
+
+    private void CacheOriginalScale()
+    {
+        if (scaleTarget == null)
+            scaleTarget = transform;
+
+        if (scaleTarget == null)
+            return;
+
+        if (isScaleCached)
+            return;
+
+        originalScale = scaleTarget.localScale;
+        isScaleCached = true;
+    }
+
+    private void StartHoverScaleEffect()
+    {
+        if (!isActiveAndEnabled)
+            return;
+
+        if (currentSkillData == null)
+            return;
+
+        CacheOriginalScale();
+
+        if (scaleTarget == null)
+            return;
+
+        StopHoverScaleEffect(false);
+        hoverScaleCoroutine = StartCoroutine(HoverScaleRoutine());
+    }
+
+    private void StopHoverScaleEffect(bool resetScale)
+    {
+        if (hoverScaleCoroutine != null)
+        {
+            StopCoroutine(hoverScaleCoroutine);
+            hoverScaleCoroutine = null;
+        }
+
+        if (resetScale && scaleTarget != null && isScaleCached)
+            scaleTarget.localScale = originalScale;
+    }
+
+    private IEnumerator HoverScaleRoutine()
+    {
+        float safeScaleInDuration = Mathf.Max(0.01f, scaleInDuration);
+        float elapsed = 0f;
+
+        Vector3 startScale = scaleTarget.localScale;
+        Vector3 firstTargetScale = originalScale * hoverScale;
+
+        while (elapsed < safeScaleInDuration)
+        {
+            elapsed += GetDeltaTime();
+            float t = Mathf.Clamp01(elapsed / safeScaleInDuration);
+            t = Mathf.SmoothStep(0f, 1f, t);
+
+            scaleTarget.localScale = Vector3.LerpUnclamped(startScale, firstTargetScale, t);
+            yield return null;
+        }
+
+        float time = 0f;
+        float minScale = hoverScale;
+        float maxScale = Mathf.Max(hoverScale, breathMaxScale);
+
+        while (true)
+        {
+            time += GetDeltaTime() * breathSpeed;
+
+            float pingPong = (Mathf.Sin(time) + 1f) * 0.5f;
+            float currentScale = Mathf.Lerp(minScale, maxScale, pingPong);
+
+            scaleTarget.localScale = originalScale * currentScale;
+            yield return null;
+        }
+    }
+
+    private float GetDeltaTime()
+    {
+        return useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
     }
 }

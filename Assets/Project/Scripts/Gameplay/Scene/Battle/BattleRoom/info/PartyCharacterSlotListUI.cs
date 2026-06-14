@@ -4,9 +4,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// 현재 선택된 파티 캐릭터들을 슬롯 UI에 표시하는 클래스입니다.
-/// Backimage는 절대 변경하지 않고,
-/// Backimage 하위의 mask 하위 PortraitImage에만 캐릭터 이미지를 표시합니다.
+/// 현재 선택된 파티 캐릭터들을 배틀 인벤토리 패널의 슬롯 UI에 표시합니다.
+/// 슬롯 하위의 PortraitImage 오브젝트에 CharacterIconDatabase의 Mark 이미지를 표시합니다.
 /// </summary>
 public class PartyCharacterSlotListUI : MonoBehaviour
 {
@@ -66,26 +65,25 @@ public class PartyCharacterSlotListUI : MonoBehaviour
             if (DataManager.Instance.CharacterDatabase != null)
                 masterData = DataManager.Instance.CharacterDatabase.Get(characterId);
 
-            Sprite portraitSprite = null;
+            Sprite markSprite = null;
 
             if (DataManager.Instance.CharacterIconDatabase != null)
-                DataManager.Instance.CharacterIconDatabase.TryGetIcon(characterId, out portraitSprite);
+                DataManager.Instance.CharacterIconDatabase.TryGetMark(characterId, out markSprite);
 
             string characterName = masterData != null
                 ? masterData.Name
                 : characterId;
 
-            ApplySlot(slot.transform, characterName, portraitSprite);
+            ApplySlot(slot.transform, characterName, markSprite);
 
             displaySlotIndex++;
         }
     }
 
     /// <summary>
-    /// 슬롯에 캐릭터 이름과 초상화 이미지를 적용합니다.
-    /// Backimage는 건드리지 않고 PortraitImage만 변경합니다.
+    /// 슬롯에 캐릭터 이름과 캐릭터 마크 이미지를 적용합니다.
     /// </summary>
-    private void ApplySlot(Transform slotTransform, string characterName, Sprite portraitSprite)
+    private void ApplySlot(Transform slotTransform, string characterName, Sprite markSprite)
     {
         if (slotTransform == null)
             return;
@@ -95,13 +93,16 @@ public class PartyCharacterSlotListUI : MonoBehaviour
         if (nameText != null)
             nameText.text = characterName;
 
-        Image portraitImage = FindOrCreatePortraitImage(slotTransform);
+        Image portraitImage = FindPortraitImage(slotTransform);
 
         if (portraitImage == null)
+        {
+            Debug.LogWarning($"{gameObject.name}: {slotTransform.name} 안에서 {PortraitImageName} 오브젝트를 찾지 못했습니다.");
             return;
+        }
 
-        portraitImage.sprite = portraitSprite;
-        portraitImage.enabled = portraitSprite != null;
+        portraitImage.sprite = markSprite;
+        portraitImage.enabled = markSprite != null;
         portraitImage.preserveAspect = true;
         portraitImage.raycastTarget = false;
     }
@@ -123,85 +124,62 @@ public class PartyCharacterSlotListUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Backimage/mask/PortraitImage 구조에서 PortraitImage만 찾거나 생성합니다.
-    /// Backimage의 Image 컴포넌트는 절대 수정하지 않습니다.
-    /// mask의 Image 컴포넌트도 캐릭터 이미지로 바꾸지 않습니다.
-    /// PortraitImage의 기존 크기와 위치도 유지합니다.
+    /// 현재 구조인 Slot_01/PortraitImage를 우선으로 찾습니다.
+    /// 이전 구조인 Backimage/mask/PortraitImage도 호환되도록 같이 찾습니다.
     /// </summary>
-    private Image FindOrCreatePortraitImage(Transform slotTransform)
+    private Image FindPortraitImage(Transform slotTransform)
     {
         if (slotTransform == null)
             return null;
 
+        Transform directPortraitTransform = slotTransform.Find(PortraitImageName);
+
+        if (directPortraitTransform != null)
+        {
+            Image directPortraitImage = directPortraitTransform.GetComponent<Image>();
+
+            if (directPortraitImage != null)
+                return directPortraitImage;
+        }
+
+        Image[] childImages = slotTransform.GetComponentsInChildren<Image>(true);
+
+        for (int i = 0; i < childImages.Length; i++)
+        {
+            Image childImage = childImages[i];
+
+            if (childImage == null)
+                continue;
+
+            if (childImage.gameObject.name == PortraitImageName)
+                return childImage;
+        }
+
         Transform backImageTransform = slotTransform.Find(BackImageName);
 
-        if (backImageTransform == null)
+        if (backImageTransform != null)
         {
-            Debug.LogWarning($"{gameObject.name}: {slotTransform.name} 안에서 {BackImageName}을 찾지 못했습니다.");
-            return null;
-        }
+            Transform maskTransform = backImageTransform.Find(MaskName);
 
-        Transform maskTransform = backImageTransform.Find(MaskName);
-
-        if (maskTransform == null)
-        {
-            GameObject maskObject = new GameObject(MaskName, typeof(RectTransform), typeof(RectMask2D));
-            maskTransform = maskObject.transform;
-            maskTransform.SetParent(backImageTransform, false);
-
-            RectTransform maskRect = maskObject.GetComponent<RectTransform>();
-            SetDefaultChildRect(maskRect);
-        }
-        else
-        {
-            if (maskTransform.GetComponent<Mask>() == null &&
-                maskTransform.GetComponent<RectMask2D>() == null)
+            if (maskTransform != null)
             {
-                maskTransform.gameObject.AddComponent<RectMask2D>();
+                Transform oldPortraitTransform = maskTransform.Find(PortraitImageName);
+
+                if (oldPortraitTransform != null)
+                {
+                    Image oldPortraitImage = oldPortraitTransform.GetComponent<Image>();
+
+                    if (oldPortraitImage != null)
+                        return oldPortraitImage;
+                }
             }
         }
 
-        Transform portraitTransform = maskTransform.Find(PortraitImageName);
-
-        if (portraitTransform == null)
-        {
-            GameObject portraitObject = new GameObject(PortraitImageName, typeof(RectTransform), typeof(Image));
-            portraitTransform = portraitObject.transform;
-            portraitTransform.SetParent(maskTransform, false);
-
-            RectTransform portraitRect = portraitObject.GetComponent<RectTransform>();
-            SetDefaultChildRect(portraitRect);
-        }
-
-        Image portraitImage = portraitTransform.GetComponent<Image>();
-
-        if (portraitImage == null)
-            portraitImage = portraitTransform.gameObject.AddComponent<Image>();
-
-        return portraitImage;
-    }
-
-    /// <summary>
-    /// 새로 생성한 mask 또는 PortraitImage의 기본 위치만 설정합니다.
-    /// 이미 존재하던 오브젝트의 크기와 위치는 건드리지 않습니다.
-    /// </summary>
-    private void SetDefaultChildRect(RectTransform rectTransform)
-    {
-        if (rectTransform == null)
-            return;
-
-        rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
-        rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
-        rectTransform.pivot = new Vector2(0.5f, 0.5f);
-        rectTransform.anchoredPosition = Vector2.zero;
-        rectTransform.sizeDelta = new Vector2(100f, 100f);
-        rectTransform.localScale = Vector3.one;
-        rectTransform.localRotation = Quaternion.identity;
+        return null;
     }
 
     /// <summary>
     /// 모든 슬롯의 캐릭터 이름과 PortraitImage만 비웁니다.
-    /// Backimage는 절대 비우지 않습니다.
     /// </summary>
     private void ClearAll()
     {
@@ -216,7 +194,6 @@ public class PartyCharacterSlotListUI : MonoBehaviour
 
     /// <summary>
     /// 특정 슬롯의 이름과 PortraitImage만 비웁니다.
-    /// Backimage, mask의 sprite/enabled/color는 변경하지 않습니다.
     /// </summary>
     private void ClearSlot(Transform slotTransform)
     {
@@ -228,7 +205,7 @@ public class PartyCharacterSlotListUI : MonoBehaviour
         if (nameText != null)
             nameText.text = string.Empty;
 
-        Image portraitImage = FindOrCreatePortraitImage(slotTransform);
+        Image portraitImage = FindPortraitImage(slotTransform);
 
         if (portraitImage == null)
             return;

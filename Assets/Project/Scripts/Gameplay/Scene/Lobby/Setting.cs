@@ -33,6 +33,14 @@ public class Setting : MonoBehaviour
     [SerializeField] private Color tabNormalColor = Color.white;
     [SerializeField] private Color tabSelectedColor = new Color(1f, 0.78f, 0.25f, 1f);
 
+    [Header("Setting Area Tab Scale Effect")]
+    [SerializeField] private float tabHoverScale = 1.08f;
+    [SerializeField] private float tabBreathMaxScale = 1.12f;
+    [SerializeField] private float tabSelectedScale = 1.2f;
+    [SerializeField] private float tabScaleInDuration = 0.12f;
+    [SerializeField] private float tabScaleOutDuration = 0.10f;
+    [SerializeField] private float tabBreathSpeed = 3.5f;
+
     [Header("Fixed Info Areas")]
     [SerializeField] private RectTransform skillInfoArea;
     [SerializeField] private RectTransform runeInfoArea;
@@ -46,6 +54,9 @@ public class Setting : MonoBehaviour
 
     private int currentPartyIndex = -1;
     private bool isSkillTabOpen = true;
+
+    private CharacterSettingTabButtonScaleEffect skillButtonScaleEffect;
+    private CharacterSettingTabButtonScaleEffect runeButtonScaleEffect;
 
     private void Awake()
     {
@@ -62,6 +73,11 @@ public class Setting : MonoBehaviour
     private void Start()
     {
         ShowSkillSetting();
+    }
+
+    private void OnDisable()
+    {
+        ResetTabButtonScaleEffects();
     }
 
     private void OnDestroy()
@@ -105,6 +121,8 @@ public class Setting : MonoBehaviour
             runeButton.onClick.RemoveListener(ShowRuneSetting);
             runeButton.onClick.AddListener(ShowRuneSetting);
         }
+
+        InitTabButtonScaleEffects();
     }
 
     public void OpenCharacterSetting(string characterId)
@@ -425,6 +443,61 @@ public class Setting : MonoBehaviour
     {
         SetButtonColor(skillButton, isSkillTabOpen ? tabSelectedColor : tabNormalColor);
         SetButtonColor(runeButton, isSkillTabOpen ? tabNormalColor : tabSelectedColor);
+
+        RefreshTabButtonScaleEffects();
+    }
+
+    private void InitTabButtonScaleEffects()
+    {
+        skillButtonScaleEffect = InitTabButtonScaleEffect(skillButton);
+        runeButtonScaleEffect = InitTabButtonScaleEffect(runeButton);
+
+        RefreshTabButtonScaleEffects();
+    }
+
+    private CharacterSettingTabButtonScaleEffect InitTabButtonScaleEffect(Button button)
+    {
+        if (button == null)
+            return null;
+
+        CharacterSettingTabButtonScaleEffect effect = button.GetComponent<CharacterSettingTabButtonScaleEffect>();
+
+        if (effect == null)
+            effect = button.gameObject.AddComponent<CharacterSettingTabButtonScaleEffect>();
+
+        effect.Setup(
+            tabHoverScale,
+            tabBreathMaxScale,
+            tabSelectedScale,
+            tabScaleInDuration,
+            tabScaleOutDuration,
+            tabBreathSpeed);
+
+        return effect;
+    }
+
+    private void RefreshTabButtonScaleEffects()
+    {
+        if (skillButtonScaleEffect == null && skillButton != null)
+            skillButtonScaleEffect = InitTabButtonScaleEffect(skillButton);
+
+        if (runeButtonScaleEffect == null && runeButton != null)
+            runeButtonScaleEffect = InitTabButtonScaleEffect(runeButton);
+
+        if (skillButtonScaleEffect != null)
+            skillButtonScaleEffect.SetSelected(isSkillTabOpen);
+
+        if (runeButtonScaleEffect != null)
+            runeButtonScaleEffect.SetSelected(!isSkillTabOpen);
+    }
+
+    private void ResetTabButtonScaleEffects()
+    {
+        if (skillButtonScaleEffect != null)
+            skillButtonScaleEffect.ResetScaleImmediate();
+
+        if (runeButtonScaleEffect != null)
+            runeButtonScaleEffect.ResetScaleImmediate();
     }
 
     private void SetButtonColor(Button button, Color color)

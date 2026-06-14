@@ -6,6 +6,8 @@ using Relic.Gameplay.Data;
 
 public class CharBtn : MonoBehaviour,
     IPointerClickHandler,
+    IPointerEnterHandler,
+    IPointerExitHandler,
     IBeginDragHandler,
     IDragHandler,
     IEndDragHandler
@@ -81,6 +83,22 @@ public class CharBtn : MonoBehaviour,
     public void OnPointerClick(PointerEventData eventData)
     {
         NotifyClickToCharPickOrExecuteDirect();
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (charPick == null)
+            return;
+
+        charPick.PointerEnterButton(this);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (charPick == null)
+            return;
+
+        charPick.PointerExitButton(this);
     }
 
     public void Execute()

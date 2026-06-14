@@ -9,27 +9,50 @@ namespace Relic.Gameplay.Data
     {
         [SerializeField] private List<CharacterIconEntry> entries = new();
 
-        private Dictionary<string, Sprite> map;
+        private Dictionary<string, CharacterIconEntry> map;
 
         public void Initialize()
         {
-            map = new Dictionary<string, Sprite>();
+            map = new Dictionary<string, CharacterIconEntry>();
 
             foreach (var entry in entries)
             {
-                if (string.IsNullOrWhiteSpace(entry.CharacterId) || entry.Icon == null)
+                if (entry == null)
                     continue;
 
-                map[entry.CharacterId] = entry.Icon;
+                if (string.IsNullOrWhiteSpace(entry.CharacterId))
+                    continue;
+
+                map[entry.CharacterId] = entry;
             }
         }
 
         public bool TryGetIcon(string characterId, out Sprite icon)
         {
+            icon = null;
+
             if (map == null)
                 Initialize();
 
-            return map.TryGetValue(characterId, out icon);
+            if (!map.TryGetValue(characterId, out var entry))
+                return false;
+
+            icon = entry.Icon;
+            return icon != null;
+        }
+
+        public bool TryGetMark(string characterId, out Sprite mark)
+        {
+            mark = null;
+
+            if (map == null)
+                Initialize();
+
+            if (!map.TryGetValue(characterId, out var entry))
+                return false;
+
+            mark = entry.Mark;
+            return mark != null;
         }
     }
 
@@ -38,5 +61,6 @@ namespace Relic.Gameplay.Data
     {
         public string CharacterId;
         public Sprite Icon;
+        public Sprite Mark;
     }
 }

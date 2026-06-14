@@ -1,9 +1,14 @@
 ﻿using UnityEngine;
+using UnityEngine.Serialization;
 using Relic.Gameplay.Data;
 
 public class SpawnGridPanel : MonoBehaviour
 {
     [SerializeField] private SpawnGridCell[] cells;
+
+    [Header("Party Slot Order Icon Objects")]
+    [FormerlySerializedAs("partySlotOrderIcons")]
+    [SerializeField] private GameObject[] partySlotOrderIconObjects;
 
     [Header("Default Party Deploy Cells")]
     [SerializeField] private bool usePartySlotDefaultDeployCells = true;
@@ -95,6 +100,20 @@ public class SpawnGridPanel : MonoBehaviour
 
         selectedPartySlotIndex = -1;
         Refresh();
+    }
+
+    public bool TryGetPartySlotOrderIconObject(int partySlotIndex, out GameObject iconObject)
+    {
+        iconObject = null;
+
+        if (partySlotOrderIconObjects == null)
+            return false;
+
+        if (partySlotIndex < 0 || partySlotIndex >= partySlotOrderIconObjects.Length)
+            return false;
+
+        iconObject = partySlotOrderIconObjects[partySlotIndex];
+        return iconObject != null;
     }
 
     private int FindDefaultEmptyGridForPartySlot(int partySlotIndex)

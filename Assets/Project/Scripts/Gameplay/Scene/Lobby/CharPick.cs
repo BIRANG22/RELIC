@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -26,8 +26,9 @@ public class CharPick : MonoBehaviour
     [SerializeField] private float spacing = 260f;
 
     [Header("Scale")]
-    [SerializeField] private float centerScale = 1.15f;
+    [SerializeField] private float centerScale = 1.2f;
     [SerializeField] private float sideScale = 0.9f;
+    [SerializeField] private float sideHoverScale = 1.1f;
 
     [Header("Drag")]
     [SerializeField] private float dragThreshold = 180f;
@@ -55,6 +56,7 @@ public class CharPick : MonoBehaviour
     private bool isDragging;
     private float dragStartX;
     private bool movedByDrag;
+    private CharBtn hoveredButton;
 
     private GameObject currentPreview;
     private string currentPreviewCharacterId;
@@ -128,6 +130,23 @@ public class CharPick : MonoBehaviour
         RefreshSmooth();
     }
 
+    public void PointerEnterButton(CharBtn btn)
+    {
+        if (btn == null)
+            return;
+
+        hoveredButton = btn;
+    }
+
+    public void PointerExitButton(CharBtn btn)
+    {
+        if (btn == null)
+            return;
+
+        if (hoveredButton == btn)
+            hoveredButton = null;
+    }
+
     public void ClickBtn(CharBtn btn)
     {
         if (movedByDrag)
@@ -183,7 +202,7 @@ public class CharPick : MonoBehaviour
 
             if (pendingCharacterIds.Count >= maxPartyCount)
             {
-                Debug.LogWarning("[Party] ºó ÆÄÆ¼ ½½·ÔÀÌ ¾ø½À´Ï´Ù.");
+                Debug.LogWarning("[Party] ë¹ˆ íŒŒí‹° ìŠ¬ë¡¯ì´ ì—†ìŠµë‹ˆë‹¤.");
                 return;
             }
 
@@ -207,7 +226,7 @@ public class CharPick : MonoBehaviour
 
         if (currentButton == null)
         {
-            Debug.LogWarning("[CharPick] ¼±ÅÃµÈ Ä³¸¯ÅÍ°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("[CharPick] ì„ íƒëœ ìºë¦­í„°ê°€ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -314,7 +333,7 @@ public class CharPick : MonoBehaviour
             if (IsValidDeployGridIndex(defaultGridIndex))
                 partyStore.SetSpawnGridIndex(i, defaultGridIndex);
             else
-                Debug.LogWarning("[Party] ºó ¹èÄ¡ ±×¸®µå°¡ ¾ø½À´Ï´Ù.");
+                Debug.LogWarning("[Party] ë¹ˆ ë°°ì¹˜ ê·¸ë¦¬ë“œê°€ ì—†ìŠµë‹ˆë‹¤.");
         }
     }
 
@@ -341,7 +360,7 @@ public class CharPick : MonoBehaviour
 
         if (enteredSlot < 0 || enteredSlot >= partyStore.MaxPartyCountValue)
         {
-            Debug.LogWarning("[Party] ¼±ÅÃµÈ ÆÄÆ¼ ½½·ÔÀÌ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("[Party] ì„ íƒëœ íŒŒí‹° ìŠ¬ë¡¯ì´ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -363,7 +382,7 @@ public class CharPick : MonoBehaviour
         if (defaultGridIndex >= 0)
             partyStore.SetSpawnGridIndex(enteredSlot, defaultGridIndex);
         else
-            Debug.LogWarning("[Party] ºó ¹èÄ¡ ±×¸®µå°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("[Party] ë¹ˆ ë°°ì¹˜ ê·¸ë¦¬ë“œê°€ ì—†ìŠµë‹ˆë‹¤.");
     }
 
     private int FindDefaultDeployGridIndexForSlot(int partySlotIndex)
@@ -504,6 +523,7 @@ public class CharPick : MonoBehaviour
 
     public void BeginDrag(PointerEventData eventData)
     {
+        hoveredButton = null;
         isDragging = true;
         movedByDrag = false;
         dragStartX = eventData.position.x;
@@ -930,11 +950,11 @@ public class CharPick : MonoBehaviour
             int offset = GetOffset(i);
 
             if (offset == -1)
-                ApplyInstant(charBtns[i], new Vector2(-spacing, 0f), sideScale, true, false);
+                ApplyInstant(charBtns[i], new Vector2(-spacing, 0f), GetSideButtonScale(charBtns[i]), true, false);
             else if (offset == 0)
                 ApplyInstant(charBtns[i], Vector2.zero, centerScale, true, true);
             else if (offset == 1)
-                ApplyInstant(charBtns[i], new Vector2(spacing, 0f), sideScale, true, false);
+                ApplyInstant(charBtns[i], new Vector2(spacing, 0f), GetSideButtonScale(charBtns[i]), true, false);
             else
             {
                 charBtns[i].SetVisible(false);
@@ -956,17 +976,25 @@ public class CharPick : MonoBehaviour
             int offset = GetOffset(i);
 
             if (offset == -1)
-                ApplySmooth(charBtns[i], new Vector2(-spacing, 0f), sideScale, true, false);
+                ApplySmooth(charBtns[i], new Vector2(-spacing, 0f), GetSideButtonScale(charBtns[i]), true, false);
             else if (offset == 0)
                 ApplySmooth(charBtns[i], Vector2.zero, centerScale, true, true);
             else if (offset == 1)
-                ApplySmooth(charBtns[i], new Vector2(spacing, 0f), sideScale, true, false);
+                ApplySmooth(charBtns[i], new Vector2(spacing, 0f), GetSideButtonScale(charBtns[i]), true, false);
             else
             {
                 charBtns[i].SetVisible(false);
                 charBtns[i].SetCenter(false);
             }
         }
+    }
+
+    private float GetSideButtonScale(CharBtn btn)
+    {
+        if (!isDragging && hoveredButton == btn)
+            return sideHoverScale;
+
+        return sideScale;
     }
 
     private void ApplyInstant(CharBtn btn, Vector2 pos, float scale, bool visible, bool center)

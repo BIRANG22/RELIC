@@ -18,7 +18,7 @@ MonoBehaviour:
   - ActionType: Defense
     Icon: {fileID: 21300000, guid: 172f40b792ddbf648bc72b6e1c82b8a4, type: 3}
   - ActionType: Attack
-    Icon: {fileID: 21300000, guid: c7027fa194c1ac549a31c9975b8a1546, type: 3}
+    Icon: {fileID: 21300000, guid: 4a4957c8f922a224a9b47874371ccfa1, type: 3}
   - ActionType: Debuff
     Icon: {fileID: 21300000, guid: e82bca95b3544c3439c703560577f301, type: 3}
   - ActionType: Heal

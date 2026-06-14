@@ -8,6 +8,7 @@ namespace Relic.Gameplay.Data
     {
         public string CharacterId;
         public string Name;
+        public string Introduction;
 
         public int MaxHealth;
         public int MaxStamina;
