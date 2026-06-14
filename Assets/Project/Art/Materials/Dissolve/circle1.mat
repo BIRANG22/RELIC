@@ -20,7 +20,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: 1 2
+  m_Name: circle1
   m_Shader: {fileID: -6465566751694194690, guid: a00031b5681648e4fa411df3e58b7cb4, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -90,13 +90,13 @@ Material:
     - _ZWrite: 1
     - _ZWriteControl: 0
     m_Colors:
-    - _BaseColor: {r: 0.06588236, g: 0.15006535, b: 0.27450982, a: 0}
+    - _BaseColor: {r: 0.03186667, g: 0.06876363, b: 0.13333334, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
     - _Vector2: {r: 0.5, g: 0.5, b: 0, a: 0}
     - _center: {r: 0.5, g: 0.5, b: 0, a: 0}
     - _noiseflow: {r: 0.01, g: 0.01, b: 0, a: 0}
-    - _noiseoffset: {r: 1.19, g: 0, b: 0, a: 0}
+    - _noiseoffset: {r: 0, g: 0, b: 0, a: 0}
     - _noisetiling: {r: 1, g: 1, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
