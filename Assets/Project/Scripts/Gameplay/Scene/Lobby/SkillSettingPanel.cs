@@ -29,6 +29,8 @@ public class SkillSettingPanel : MonoBehaviour
     [SerializeField] private GameObject skillInfoArea;
     [SerializeField] private TMP_Text skillInfoTitleText;
     [SerializeField] private TMP_Text skillInfoEffectText;
+    [SerializeField] private string emptySkillInfoTitle = "스킬명";
+    [SerializeField, TextArea] private string emptySkillInfoEffect = "스킬을 선택하면 정보가 표시됩니다.";
     [SerializeField] private bool autoBindSkillInfoArea = true;
 
     [Header("Warning UI")]
@@ -50,9 +52,9 @@ public class SkillSettingPanel : MonoBehaviour
         InitSkillSlotButtons();
         InitSkillIconButtons();
 
-        SetSkillSelectPanelVisible(true);
         ClearSkillIconButtons();
         ClearSkillInfo();
+        SetSkillSelectPanelVisible(false);
     }
 
     private void OnEnable()
@@ -62,9 +64,12 @@ public class SkillSettingPanel : MonoBehaviour
 
         BindSkillIconButtonsIfNeeded();
         BindSkillInfoAreaIfNeeded();
+        InitSkillSlotButtons();
         InitSkillIconButtons();
-        SetSkillSelectPanelVisible(true);
+        SetSelectedSkillSlot(null);
+        ClearSkillIconButtons();
         ClearSkillInfo();
+        SetSkillSelectPanelVisible(false);
     }
 
 #if UNITY_EDITOR
@@ -84,6 +89,20 @@ public class SkillSettingPanel : MonoBehaviour
         {
             if (skillSlotButtons[i] != null)
                 skillSlotButtons[i].Init(this, i);
+        }
+    }
+
+    private void SetSelectedSkillSlot(SkillSlotButton selectedSlot)
+    {
+        currentSelectedSlot = selectedSlot;
+
+        if (skillSlotButtons == null)
+            return;
+
+        for (int i = 0; i < skillSlotButtons.Length; i++)
+        {
+            if (skillSlotButtons[i] != null)
+                skillSlotButtons[i].SetSelected(skillSlotButtons[i] == selectedSlot);
         }
     }
 
@@ -150,11 +169,20 @@ public class SkillSettingPanel : MonoBehaviour
         if (area == null)
             area = transform.Find("SkillInfoArea");
 
+        if (area == null)
+            area = transform.Find("SkillInfo_Area");
+
         if (area == null && transform.parent != null)
             area = transform.parent.Find("SkillInfoArea");
 
+        if (area == null && transform.parent != null)
+            area = transform.parent.Find("SkillInfo_Area");
+
         if (area == null)
             area = FindChildByName(transform.root, "SkillInfoArea");
+
+        if (area == null)
+            area = FindChildByName(transform.root, "SkillInfo_Area");
 
         if (area == null)
             return;
@@ -164,6 +192,10 @@ public class SkillSettingPanel : MonoBehaviour
         if (skillInfoTitleText == null)
         {
             Transform title = area.Find("TitleText");
+            if (title == null)
+                title = area.Find("NameText");
+            if (title == null)
+                title = area.Find("SkillNameText");
             if (title != null)
                 skillInfoTitleText = title.GetComponent<TMP_Text>();
         }
@@ -171,6 +203,10 @@ public class SkillSettingPanel : MonoBehaviour
         if (skillInfoEffectText == null)
         {
             Transform effect = area.Find("EffectText");
+            if (effect == null)
+                effect = area.Find("DescriptionText");
+            if (effect == null)
+                effect = area.Find("SkillEffectText");
             if (effect != null)
                 skillInfoEffectText = effect.GetComponent<TMP_Text>();
         }
@@ -196,8 +232,11 @@ public class SkillSettingPanel : MonoBehaviour
 
     public void SetSkillSelectPanelVisible(bool visible)
     {
-        if (skillIconSelectPanel != null)
-            skillIconSelectPanel.SetActive(visible || keepSkillSelectPanelVisible);
+        if (skillIconSelectPanel == null)
+            return;
+
+        bool canShow = visible && currentSelectedSlot != null;
+        skillIconSelectPanel.SetActive(canShow);
     }
 
     public void OpenCharacterSetting(string characterId)
@@ -213,7 +252,7 @@ public class SkillSettingPanel : MonoBehaviour
         currentCharacterId = characterId;
         currentMasterData = null;
         currentRuntimeData = null;
-        currentSelectedSlot = null;
+        SetSelectedSkillSlot(null);
 
         if (DataManager.Instance == null)
         {
@@ -248,9 +287,10 @@ public class SkillSettingPanel : MonoBehaviour
         EnsureEquippedSkillArray();
 
         LoadCurrentSkillSetting();
+        SetSelectedSkillSlot(null);
         ClearSkillIconButtons();
         ClearSkillInfo();
-        SetSkillSelectPanelVisible(true);
+        SetSkillSelectPanelVisible(false);
     }
 
     public void RefreshByCurrentLevel()
@@ -261,9 +301,14 @@ public class SkillSettingPanel : MonoBehaviour
         LoadCurrentSkillSetting();
 
         if (currentSelectedSlot != null)
+        {
             OpenSkillSelectPanel(currentSelectedSlot);
+        }
         else
+        {
             ClearSkillIconButtons();
+            SetSkillSelectPanelVisible(false);
+        }
     }
 
     private void LoadCurrentSkillSetting()
@@ -358,7 +403,7 @@ public class SkillSettingPanel : MonoBehaviour
             return;
         }
 
-        currentSelectedSlot = slotButton;
+        SetSelectedSkillSlot(slotButton);
         ShowSkillInfo(slotButton.EquippedSkill);
 
         List<SkillMasterData> candidates = GetSkillCandidates(slotButton.SlotIndex);
@@ -678,11 +723,17 @@ public class SkillSettingPanel : MonoBehaviour
         BindSkillInfoAreaIfNeeded();
         ConfigureSkillInfoTextComponents();
 
+        if (skill == null)
+        {
+            ClearSkillInfo();
+            return;
+        }
+
         if (skillInfoArea != null)
             skillInfoArea.SetActive(true);
 
-        SetPlainTmpText(skillInfoTitleText, skill != null ? skill.Name : "");
-        SetRichTmpText(skillInfoEffectText, skill != null ? BuildSkillDetailsText(skill) : "");
+        SetPlainTmpText(skillInfoTitleText, skill.Name);
+        SetRichTmpText(skillInfoEffectText, BuildSkillDetailsText(skill));
     }
 
     public void ClearSkillInfo()
@@ -690,8 +741,11 @@ public class SkillSettingPanel : MonoBehaviour
         BindSkillInfoAreaIfNeeded();
         ConfigureSkillInfoTextComponents();
 
-        SetPlainTmpText(skillInfoTitleText, "");
-        SetRichTmpText(skillInfoEffectText, "");
+        if (skillInfoArea != null)
+            skillInfoArea.SetActive(true);
+
+        SetPlainTmpText(skillInfoTitleText, emptySkillInfoTitle);
+        SetRichTmpText(skillInfoEffectText, emptySkillInfoEffect);
     }
 
     private void ConfigureSkillInfoTextComponents()
@@ -982,8 +1036,8 @@ public class SkillSettingPanel : MonoBehaviour
 
         ClearSkillIconButtons();
         ClearSkillInfo();
-        currentSelectedSlot = null;
-        SetSkillSelectPanelVisible(true);
+        SetSelectedSkillSlot(null);
+        SetSkillSelectPanelVisible(false);
     }
 
     private void ClearSkillIconButtons()
@@ -1005,12 +1059,12 @@ public class SkillSettingPanel : MonoBehaviour
         currentCharacterId = null;
         currentMasterData = null;
         currentRuntimeData = null;
-        currentSelectedSlot = null;
+        SetSelectedSkillSlot(null);
 
         ClearSkillSlots();
         ClearSkillIconButtons();
         ClearSkillInfo();
-        SetSkillSelectPanelVisible(true);
+        SetSkillSelectPanelVisible(false);
     }
 
     public void ShowWarning(string message)
