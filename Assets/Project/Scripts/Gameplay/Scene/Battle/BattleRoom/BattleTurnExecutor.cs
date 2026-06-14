@@ -14,36 +14,60 @@ public class BattleTurnExecutor : MonoBehaviour
     public void ExecuteTurn()
     {
         if (isExecuting)
+        {
+            Debug.LogWarning("[BattleTurnExecutor] Already executing.");
             return;
+        }
 
         StartCoroutine(ExecuteTurnRoutine());
-
-        if (roomLoader != null)
-            roomLoader.PlanNextMonsterTurns();
     }
 
     private IEnumerator ExecuteTurnRoutine()
     {
         isExecuting = true;
 
-        isExecuting = true;
-
-        if (moveGhostPreview != null)
-            moveGhostPreview.ClearAll();
-
-        BattleActionBatchBuilder builder = new();
-        BattleActionRunner runner = new(gridManager);
-
-        List<BattleActionBatch> batches = builder.Build(timelineController);
-
-        for (int i = 0; i < batches.Count; i++)
+        try
         {
-            yield return runner.RunBatch(batches[i]);
-        }
+            if (moveGhostPreview != null)
+                moveGhostPreview.ClearAll();
 
+            BattleActionBatchBuilder builder = new();
+            BattleActionRunner runner = new(gridManager);
+
+            List<BattleActionBatch> batches = builder.Build(timelineController);
+
+            for (int i = 0; i < batches.Count; i++)
+            {
+                yield return runner.RunBatch(batches[i]);
+
+                if (BattleResultChecker.Instance != null &&
+                    BattleResultChecker.Instance.CheckBattleEnd())
+                {
+                    ClearTimeline();
+                    yield break;
+                }
+            }
+
+            ClearTimeline();
+
+            if (BattleResultChecker.Instance != null &&
+                BattleResultChecker.Instance.CheckBattleEnd())
+            {
+                yield break;
+            }
+
+            if (roomLoader != null)
+                roomLoader.PlanNextMonsterTurns();
+        }
+        finally
+        {
+            isExecuting = false;
+        }
+    }
+
+    private void ClearTimeline()
+    {
         if (timelineController != null)
             timelineController.ClearAllReservations();
-
-        isExecuting = false;
     }
 }

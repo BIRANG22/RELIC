@@ -232,4 +232,25 @@ public class RelicEquipPanelUI : MonoBehaviour
         if (tooltipPanelOwner == null)
             tooltipPanelOwner = FindFirstObjectByType<EquippedSkillPanelUI>();
     }
+
+    public void UnequipRelic(string characterId, int relicSlotIndex)
+    {
+        if (DataManager.Instance == null)
+            return;
+
+        BattleRuntimeData battleRuntimeData =
+            DataManager.Instance.BattleRuntimeStore.GetOrCreate();
+
+        RelicEquipService service = new RelicEquipService(
+            DataManager.Instance.CharacterRuntimeStore,
+            battleRuntimeData
+        );
+
+        if (service.UnequipRelic(characterId, relicSlotIndex))
+        {
+            selectedCharacterId = null;
+            selectedRelicSlotIndex = -1;
+            Refresh();
+        }
+    }
 }

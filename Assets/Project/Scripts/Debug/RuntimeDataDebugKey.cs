@@ -45,7 +45,7 @@ public class RuntimeDataDebugKey : Singleton<RuntimeDataDebugKey>
         for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
         {
             string characterId = partyStore.GetCharacterId(i);
-            int gridIndex = partyStore.GetGridIndex(i);
+            int gridIndex = partyStore.GetSpawnGridIndex(i);
 
             Debug.Log(
                 $"Slot {i}: {(string.IsNullOrWhiteSpace(characterId) ? "Empty" : characterId)} / Grid: {gridIndex}"

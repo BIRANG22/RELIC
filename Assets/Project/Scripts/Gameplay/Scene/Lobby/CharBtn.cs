@@ -261,11 +261,11 @@ public class CharBtn : MonoBehaviour,
         int defaultGridIndex = FindDefaultDeployGridIndex(selectedSlot);
 
         if (defaultGridIndex >= 0)
-            partyStore.SetGridIndex(selectedSlot, defaultGridIndex);
+            partyStore.SetSpawnGridIndex(selectedSlot, defaultGridIndex);
 
         Debug.Log(
             $"[Party] Set Slot / CharacterId:{characterId} / " +
-            $"Slot:{selectedSlot} / Grid:{partyStore.GetGridIndex(selectedSlot)}"
+            $"Slot:{selectedSlot} / Grid:{partyStore.GetSpawnGridIndex(selectedSlot)}"
         );
     }
 
@@ -303,7 +303,7 @@ public class CharBtn : MonoBehaviour,
             if (i == partySlotIndex)
                 continue;
 
-            if (partyStore.GetGridIndex(i) == gridIndex)
+            if (partyStore.GetSpawnGridIndex(i) == gridIndex)
                 return false;
         }
 

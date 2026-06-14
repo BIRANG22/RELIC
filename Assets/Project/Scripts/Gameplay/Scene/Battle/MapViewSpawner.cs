@@ -13,10 +13,16 @@ public class MapViewSpawner : MonoBehaviour
 
     private readonly Dictionary<int, MapNodeView> spawnedNodes = new();
 
+    private List<GeneratedMapNodeData> lastNodes;
+    private Action<GeneratedMapNodeData> lastOnNodeClicked;
+
     public void Spawn(
         List<GeneratedMapNodeData> nodes,
         Action<GeneratedMapNodeData> onNodeClicked)
     {
+        lastNodes = nodes;
+        lastOnNodeClicked = onNodeClicked;
+
         Clear();
 
         if (nodes == null || nodes.Count == 0)
@@ -151,5 +157,10 @@ public class MapViewSpawner : MonoBehaviour
             for (int i = lineRoot.childCount - 1; i >= 0; i--)
                 Destroy(lineRoot.GetChild(i).gameObject);
         }
+    }
+
+    public void Refresh()
+    {
+        Spawn(lastNodes, lastOnNodeClicked);
     }
 }

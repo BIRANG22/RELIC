@@ -49,7 +49,7 @@ public class SpawnGridPanel : MonoBehaviour
             if (string.IsNullOrWhiteSpace(characterId))
                 continue;
 
-            int currentGridIndex = partyStore.GetGridIndex(partyIndex);
+            int currentGridIndex = partyStore.GetSpawnGridIndex(partyIndex);
 
             if (currentGridIndex >= 0)
                 continue;
@@ -62,7 +62,7 @@ public class SpawnGridPanel : MonoBehaviour
                 return;
             }
 
-            partyStore.SetGridIndex(partyIndex, emptyGridIndex);
+            partyStore.SetSpawnGridIndex(partyIndex, emptyGridIndex);
         }
     }
 
@@ -88,7 +88,7 @@ public class SpawnGridPanel : MonoBehaviour
             return;
         }
 
-        bool success = partyStore.SetGridIndex(selectedPartySlotIndex, gridIndex);
+        bool success = partyStore.SetSpawnGridIndex(selectedPartySlotIndex, gridIndex);
 
         if (!success)
             return;
@@ -148,7 +148,7 @@ public class SpawnGridPanel : MonoBehaviour
 
         for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
         {
-            if (partyStore.GetGridIndex(i) == gridIndex)
+            if (partyStore.GetSpawnGridIndex(i) == gridIndex)
                 return i;
         }
 
@@ -163,7 +163,7 @@ public class SpawnGridPanel : MonoBehaviour
         if (DataManager.Instance == null)
             return false;
 
-        return DataManager.Instance.PartyRuntimeStore.GetGridIndex(selectedPartySlotIndex) == gridIndex;
+        return DataManager.Instance.PartyRuntimeStore.GetSpawnGridIndex(selectedPartySlotIndex) == gridIndex;
     }
 
     public void Refresh()

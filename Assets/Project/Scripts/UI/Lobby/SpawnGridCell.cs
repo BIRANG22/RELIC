@@ -81,7 +81,7 @@ public class SpawnGridCell : MonoBehaviour
 
         for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
         {
-            if (partyStore.GetGridIndex(i) == gridIndex)
+            if (partyStore.GetSpawnGridIndex(i) == gridIndex)
                 return partyStore.GetCharacterId(i);
         }
 

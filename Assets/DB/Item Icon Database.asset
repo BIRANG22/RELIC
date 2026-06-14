@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 945765bfa29d09f4a90af0f25af05991, type: 3}
+  m_Name: Item Icon Database
+  m_EditorClassIdentifier: 
+  entries:
+  - ItemId: Item_001
+    Icon: {fileID: 21300000, guid: 943bb2b1e41218b44b45c82eac247569, type: 3}
+  - ItemId: Item_002
+    Icon: {fileID: 21300000, guid: ab218cc153b83c940aae93bfb083dede, type: 3}
+  - ItemId: Item_003
+    Icon: {fileID: 21300000, guid: 228e0be055dc5fb46a16ff7ae53a411c, type: 3}
+  - ItemId: Item_004
+    Icon: {fileID: 21300000, guid: e7acc850d64de384ea8716d2e56919de, type: 3}
+  - ItemId: Item_005
+    Icon: {fileID: 21300000, guid: a24adccb7c49fc241b862c558587afa5, type: 3}
+  - ItemId: Item_006
+    Icon: {fileID: 21300000, guid: eb784db775507e84a988dfd584585b18, type: 3}
+  - ItemId: Item_007
+    Icon: {fileID: 21300000, guid: eb784db775507e84a988dfd584585b18, type: 3}
+  - ItemId: Item_008
+    Icon: {fileID: 21300000, guid: eb784db775507e84a988dfd584585b18, type: 3}
+  - ItemId: Item_009
+    Icon: {fileID: 21300000, guid: eb784db775507e84a988dfd584585b18, type: 3}
+  - ItemId: Item_010
+    Icon: {fileID: 21300000, guid: eb784db775507e84a988dfd584585b18, type: 3}
+  - ItemId: Item_011
+    Icon: {fileID: 21300000, guid: eb784db775507e84a988dfd584585b18, type: 3}
+  - ItemId: Item_012
+    Icon: {fileID: 21300000, guid: eb784db775507e84a988dfd584585b18, type: 3}

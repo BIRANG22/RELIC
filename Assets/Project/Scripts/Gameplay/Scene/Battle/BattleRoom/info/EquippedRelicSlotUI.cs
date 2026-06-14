@@ -131,17 +131,44 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
         string characterId = GetCharacterId();
 
         if (string.IsNullOrWhiteSpace(characterId))
+            return;
+
+        string equippedRelicId = GetEquippedRelicId(characterId);
+
+        if (!string.IsNullOrWhiteSpace(equippedRelicId))
         {
-            Debug.LogWarning($"[EquippedRelicSlotUI] 캐릭터 없음 / PartySlot:{partySlotIndex}");
+            owner?.UnequipRelic(characterId, relicSlotIndex);
+
+            Debug.Log(
+                $"[EquippedRelicSlotUI] 유물 해제 / Character:{characterId} / Slot:{relicSlotIndex + 1} / Relic:{equippedRelicId}"
+            );
+
             return;
         }
 
-        PlayClickSfx();
         owner?.SelectEquipSlot(characterId, relicSlotIndex);
 
         Debug.Log(
-            $"[EquippedRelicSlotUI] 슬롯 선택 / Character:{characterId} / PartySlot:{partySlotIndex} / RelicSlot:{relicSlotIndex + 1}"
+            $"[EquippedRelicSlotUI] 빈 슬롯 선택 / Character:{characterId} / Slot:{relicSlotIndex + 1}"
         );
+    }
+
+    private string GetEquippedRelicId(string characterId)
+    {
+        if (DataManager.Instance == null)
+            return null;
+
+        if (!DataManager.Instance.CharacterRuntimeStore.TryGet(
+                characterId,
+                out CharacterRuntimeData character))
+            return null;
+
+        RelicEquipService.EnsureRelicSlots(character);
+
+        if (relicSlotIndex < 0 || relicSlotIndex >= character.EquippedRelicIds.Length)
+            return null;
+
+        return character.EquippedRelicIds[relicSlotIndex];
     }
 
     public void OnPointerEnter(PointerEventData eventData)

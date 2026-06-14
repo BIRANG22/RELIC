@@ -26,7 +26,7 @@ public class BattleUnitSpawner : MonoBehaviour
         for (int slotIndex = 0; slotIndex < partyStore.MaxPartyCountValue; slotIndex++)
         {
             string characterId = partyStore.GetCharacterId(slotIndex);
-            int gridIndex = partyStore.GetGridIndex(slotIndex);
+            int gridIndex = partyStore.GetSpawnGridIndex(slotIndex);
 
             if (string.IsNullOrWhiteSpace(characterId))
                 continue;
@@ -74,7 +74,7 @@ public class BattleUnitSpawner : MonoBehaviour
         var partyStore = dm.PartyRuntimeStore;
 
         string characterId = partyStore.GetCharacterId(slotIndex);
-        int gridIndex = partyStore.GetGridIndex(slotIndex);
+        int gridIndex = partyStore.GetSpawnGridIndex(slotIndex);
 
         if (string.IsNullOrWhiteSpace(characterId))
             return;

@@ -12,6 +12,7 @@ namespace Relic.Gameplay.Data
 
         public int MaxPartyCountValue => MaxPartyCount;
         public IReadOnlyList<PartySlotRuntimeData> Slots => slots;
+
         public bool HasAnyCharacter
         {
             get
@@ -40,12 +41,26 @@ namespace Relic.Gameplay.Data
             return slots[slotIndex].CharacterId;
         }
 
+        // 기존 코드 호환용: 시작 위치 반환
         public int GetGridIndex(int slotIndex)
+        {
+            return GetSpawnGridIndex(slotIndex);
+        }
+
+        public int GetSpawnGridIndex(int slotIndex)
         {
             if (!IsValidSlot(slotIndex))
                 return -1;
 
-            return slots[slotIndex].GridIndex;
+            return slots[slotIndex].SpawnGridIndex;
+        }
+
+        public int GetCurrentGridIndex(int slotIndex)
+        {
+            if (!IsValidSlot(slotIndex))
+                return -1;
+
+            return slots[slotIndex].CurrentGridIndex;
         }
 
         public bool SetCharacter(int slotIndex, string characterId)
@@ -63,11 +78,16 @@ namespace Relic.Gameplay.Data
             }
 
             slots[slotIndex].CharacterId = characterId;
-
             return true;
         }
 
+        // 기존 코드 호환용: 시작 위치 저장
         public bool SetGridIndex(int slotIndex, int gridIndex)
+        {
+            return SetSpawnGridIndex(slotIndex, gridIndex);
+        }
+
+        public bool SetSpawnGridIndex(int slotIndex, int gridIndex)
         {
             if (!IsValidSlot(slotIndex))
             {
@@ -75,21 +95,46 @@ namespace Relic.Gameplay.Data
                 return false;
             }
 
-            if (gridIndex < 0 || gridIndex >= MaxGridCount)
+            if (!IsValidGrid(gridIndex))
             {
-                Debug.LogWarning($"[PartyRuntimeStore] Invalid grid index: {gridIndex}");
+                Debug.LogWarning($"[PartyRuntimeStore] Invalid spawn grid index: {gridIndex}");
                 return false;
             }
 
-            if (IsGridUsedByOtherSlot(slotIndex, gridIndex))
+            if (IsSpawnGridUsedByOtherSlot(slotIndex, gridIndex))
             {
-                Debug.LogWarning($"[PartyRuntimeStore] Grid already used: {gridIndex}");
+                Debug.LogWarning($"[PartyRuntimeStore] Spawn grid already used: {gridIndex}");
                 return false;
             }
 
-            slots[slotIndex].GridIndex = gridIndex;
+            slots[slotIndex].SpawnGridIndex = gridIndex;
+            slots[slotIndex].CurrentGridIndex = gridIndex;
 
             return true;
+        }
+
+        public bool SetCurrentGridIndex(int slotIndex, int gridIndex)
+        {
+            if (!IsValidSlot(slotIndex))
+            {
+                Debug.LogWarning($"[PartyRuntimeStore] Invalid slot index: {slotIndex}");
+                return false;
+            }
+
+            if (!IsValidGrid(gridIndex))
+            {
+                Debug.LogWarning($"[PartyRuntimeStore] Invalid current grid index: {gridIndex}");
+                return false;
+            }
+
+            slots[slotIndex].CurrentGridIndex = gridIndex;
+            return true;
+        }
+
+        public void ResetCurrentGridIndicesToSpawn()
+        {
+            for (int i = 0; i < MaxPartyCount; i++)
+                slots[i].CurrentGridIndex = slots[i].SpawnGridIndex;
         }
 
         public bool SetSlot(int slotIndex, string characterId, int gridIndex)
@@ -97,7 +142,7 @@ namespace Relic.Gameplay.Data
             if (!SetCharacter(slotIndex, characterId))
                 return false;
 
-            if (!SetGridIndex(slotIndex, gridIndex))
+            if (!SetSpawnGridIndex(slotIndex, gridIndex))
                 return false;
 
             return true;
@@ -109,7 +154,8 @@ namespace Relic.Gameplay.Data
                 return;
 
             slots[slotIndex].CharacterId = null;
-            slots[slotIndex].GridIndex = -1;
+            slots[slotIndex].SpawnGridIndex = -1;
+            slots[slotIndex].CurrentGridIndex = -1;
         }
 
         public void Clear()
@@ -118,14 +164,14 @@ namespace Relic.Gameplay.Data
                 ClearSlot(i);
         }
 
-        private bool IsGridUsedByOtherSlot(int slotIndex, int gridIndex)
+        private bool IsSpawnGridUsedByOtherSlot(int slotIndex, int gridIndex)
         {
             for (int i = 0; i < MaxPartyCount; i++)
             {
                 if (i == slotIndex)
                     continue;
 
-                if (slots[i].GridIndex == gridIndex)
+                if (slots[i].SpawnGridIndex == gridIndex)
                     return true;
             }
 
@@ -137,13 +183,18 @@ namespace Relic.Gameplay.Data
             return slotIndex >= 0 && slotIndex < MaxPartyCount;
         }
 
+        private bool IsValidGrid(int gridIndex)
+        {
+            return gridIndex >= 0 && gridIndex < MaxGridCount;
+        }
+
         private void LogParty()
         {
             Debug.Log(
                 $"[PartyRuntimeStore]\n" +
-                $"Slot 0: {slots[0].CharacterId ?? "Empty"} / Grid: {slots[0].GridIndex}\n" +
-                $"Slot 1: {slots[1].CharacterId ?? "Empty"} / Grid: {slots[1].GridIndex}\n" +
-                $"Slot 2: {slots[2].CharacterId ?? "Empty"} / Grid: {slots[2].GridIndex}"
+                $"Slot 0: {slots[0].CharacterId ?? "Empty"} / Spawn: {slots[0].SpawnGridIndex} / Current: {slots[0].CurrentGridIndex}\n" +
+                $"Slot 1: {slots[1].CharacterId ?? "Empty"} / Spawn: {slots[1].SpawnGridIndex} / Current: {slots[1].CurrentGridIndex}\n" +
+                $"Slot 2: {slots[2].CharacterId ?? "Empty"} / Spawn: {slots[2].SpawnGridIndex} / Current: {slots[2].CurrentGridIndex}"
             );
         }
 
@@ -172,11 +223,12 @@ namespace Relic.Gameplay.Data
             return -1;
         }
 
+        // 기존 코드 호환용: 시작 위치 기준
         public bool IsGridUsed(int gridIndex)
         {
             for (int i = 0; i < MaxPartyCount; i++)
             {
-                if (slots[i].GridIndex == gridIndex)
+                if (slots[i].SpawnGridIndex == gridIndex)
                     return true;
             }
 

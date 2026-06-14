@@ -322,7 +322,7 @@ public class BattleTimelineController : MonoBehaviour
         for (int slotIndex = 0; slotIndex < partyStore.MaxPartyCountValue; slotIndex++)
         {
             if (partyStore.GetCharacterId(slotIndex) == characterId)
-                return partyStore.GetGridIndex(slotIndex);
+                return partyStore.GetSpawnGridIndex(slotIndex);
         }
 
         return -1;

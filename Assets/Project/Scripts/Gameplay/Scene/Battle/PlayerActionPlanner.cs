@@ -354,7 +354,7 @@ namespace Relic.Gameplay.Battle
                 if (slots[i].CharacterId != characterId)
                     continue;
 
-                gridIndex = slots[i].GridIndex;
+                gridIndex = slots[i].CurrentGridIndex;
                 return gridIndex >= 0;
             }
 
