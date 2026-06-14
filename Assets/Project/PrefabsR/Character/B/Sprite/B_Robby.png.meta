@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 86a404e25812a604bba86b3efc110586
+guid: 1016866ed5509044d9929c0070bed621
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -97,13 +97,189 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Cha_02_normal_idle_0
+      name: cha2_live_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 3072
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 29d032568f1d1054d91c1c74ca46c35c
+      internalID: 975819943
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cha2_live_1
+      rect:
+        serializedVersion: 2
+        x: 1024
+        y: 3072
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e5cb57f9b49962f4db9bb9cafb841d9b
+      internalID: 169419451
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cha2_live_2
+      rect:
+        serializedVersion: 2
+        x: 2048
+        y: 3072
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 08c61123cb970a341892cdab0b16cf2b
+      internalID: -769611239
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cha2_live_3
+      rect:
+        serializedVersion: 2
+        x: 3072
+        y: 3072
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 11f284ad5833e8c4aa91322d19170f18
+      internalID: 1130908091
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cha2_live_4
+      rect:
+        serializedVersion: 2
+        x: 4096
+        y: 3072
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ef1be8dd30bd97f479fa068bf5c61540
+      internalID: 621337953
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cha2_live_5
+      rect:
+        serializedVersion: 2
+        x: 5120
+        y: 3072
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 483a81a0e73a3cd45931a8065e8c45da
+      internalID: -497256562
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cha2_live_6
+      rect:
+        serializedVersion: 2
+        x: 6144
+        y: 3072
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a3c81dd3a6996d64db086b3dd8700186
+      internalID: -2098739892
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cha2_live_7
+      rect:
+        serializedVersion: 2
+        x: 7168
+        y: 3072
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e1172c7af8f2bc14fba58edbd26e6758
+      internalID: -1753876497
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cha2_live_8
       rect:
         serializedVersion: 2
         x: 0
         y: 2048
-        width: 2048
-        height: 2048
+        width: 1024
+        height: 1024
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -112,20 +288,42 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 31c4a66df6c51934c82013258d025d7f
-      internalID: 133131260
+      spriteID: ee4cb2a39a7a9514ab35cb92e073561d
+      internalID: 159663739
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_02_normal_idle_1
+      name: cha2_live_9
+      rect:
+        serializedVersion: 2
+        x: 1024
+        y: 2048
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 120c230747aaf4e4892b644cabe37c7e
+      internalID: 1474867907
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cha2_live_10
       rect:
         serializedVersion: 2
         x: 2048
         y: 2048
-        width: 2048
-        height: 2048
+        width: 1024
+        height: 1024
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -134,20 +332,42 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 3117a541ee14cdf43a5b3c5a303533aa
-      internalID: -1230087507
+      spriteID: b03b1d791d56c754bad766f48c79670c
+      internalID: -714871743
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_02_normal_idle_2
+      name: cha2_live_11
+      rect:
+        serializedVersion: 2
+        x: 3072
+        y: 2048
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a1fe4061b7f794f4eb020437fffc5ed2
+      internalID: -536877488
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cha2_live_12
       rect:
         serializedVersion: 2
         x: 4096
         y: 2048
-        width: 2048
-        height: 2048
+        width: 1024
+        height: 1024
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -156,20 +376,42 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 54940aa681564fc4e94cdcaa2e8738ff
-      internalID: 1915645181
+      spriteID: 605c8334978788449a481b0d53ddc34b
+      internalID: 2120278095
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_02_normal_idle_3
+      name: cha2_live_13
+      rect:
+        serializedVersion: 2
+        x: 5120
+        y: 2048
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1c4c9ef084da13945a229c07f7c9fd1a
+      internalID: 1135750763
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cha2_live_14
       rect:
         serializedVersion: 2
         x: 6144
         y: 2048
-        width: 2048
-        height: 2048
+        width: 1024
+        height: 1024
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -178,20 +420,218 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 2ec8c43e589b2ce4aa89e8490403516b
-      internalID: -636779835
+      spriteID: 22306b28600b6f24f8a6ec84a2a5ef66
+      internalID: -1484437875
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_02_normal_idle_4
+      name: cha2_live_15
+      rect:
+        serializedVersion: 2
+        x: 7168
+        y: 2048
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1a278e8f979a4004883f0416531d2f83
+      internalID: -549278743
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cha2_live_16
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1024
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 91d9f10245131294984e0a9b76038cb2
+      internalID: 937204771
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cha2_live_17
+      rect:
+        serializedVersion: 2
+        x: 1024
+        y: 1024
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6202b7e199d7b4848a7c83d3f84a7434
+      internalID: -1209942328
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cha2_live_18
+      rect:
+        serializedVersion: 2
+        x: 2048
+        y: 1024
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0642f19b68a10e54e87e703974d1fd7f
+      internalID: -1631148441
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cha2_live_19
+      rect:
+        serializedVersion: 2
+        x: 3072
+        y: 1024
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b85a6a09ded49044ab6de5baf9613c32
+      internalID: -2069610529
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cha2_live_20
+      rect:
+        serializedVersion: 2
+        x: 4096
+        y: 1024
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4bdb56f095130d642893385e1abcde7e
+      internalID: -874327106
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cha2_live_21
+      rect:
+        serializedVersion: 2
+        x: 5120
+        y: 1024
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5215f21bf97a9de4c93ddc2bb6e5c2ce
+      internalID: -709554087
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cha2_live_22
+      rect:
+        serializedVersion: 2
+        x: 6144
+        y: 1024
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0abe4fff4f2ed65489af631f2c4306a4
+      internalID: -1445211794
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cha2_live_23
+      rect:
+        serializedVersion: 2
+        x: 7168
+        y: 1024
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1c515cb4859776e499765019e61a64b3
+      internalID: -1162298618
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cha2_live_24
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 2048
-        height: 2048
+        width: 1024
+        height: 1024
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -200,20 +640,42 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 802991d23adf60b47ab3f4517d1fea20
-      internalID: 873929375
+      spriteID: 109b7fb846d750b48b716c017db520af
+      internalID: 2026379614
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_02_normal_idle_5
+      name: cha2_live_25
+      rect:
+        serializedVersion: 2
+        x: 1024
+        y: 0
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7faf7a8a10150fb47819c68b9610701b
+      internalID: 1254911144
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cha2_live_26
       rect:
         serializedVersion: 2
         x: 2048
         y: 0
-        width: 2048
-        height: 2048
+        width: 1024
+        height: 1024
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -222,20 +684,42 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: efbbd9c7549aa64479568d4334874e42
-      internalID: -1053024173
+      spriteID: 24438504ac623434ea27ead7f0e83263
+      internalID: -1747267351
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_02_normal_idle_6
+      name: cha2_live_27
+      rect:
+        serializedVersion: 2
+        x: 3072
+        y: 0
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c20fa0e1a1f309e48bec697cf0b8ec82
+      internalID: -958649519
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cha2_live_28
       rect:
         serializedVersion: 2
         x: 4096
         y: 0
-        width: 2048
-        height: 2048
+        width: 1024
+        height: 1024
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -244,20 +728,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 7c492c612dc5db849b1ec8726510b814
-      internalID: -945394614
+      spriteID: 855846ae3a2bde141ae9a81ed0dadd14
+      internalID: 395563307
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_02_normal_idle_7
+      name: cha2_live_29
       rect:
         serializedVersion: 2
-        x: 6144
+        x: 5120
         y: 0
-        width: 2048
-        height: 2048
+        width: 1024
+        height: 1024
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -266,8 +750,52 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 102ec7725c5b8be42a43993bc8984eca
-      internalID: -86989554
+      spriteID: 21153e2a921d8e743a208a70878a0a47
+      internalID: 1951011980
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cha2_live_30
+      rect:
+        serializedVersion: 2
+        x: 6144
+        y: 0
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 33082f18a303251428046e11ca74cbdf
+      internalID: 898911203
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cha2_live_31
+      rect:
+        serializedVersion: 2
+        x: 7168
+        y: 0
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 718aa767c1cedb945b84c19b3814e0c7
+      internalID: -533698331
       vertices: []
       indices: 
       edges: []
@@ -276,7 +804,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 7f7cc32b3e0ee534bab92295e5841f0d
+    spriteID: e781a08bfd2a6a34cad0db27d1e28dc4
     internalID: 0
     vertices: []
     indices: 
@@ -286,14 +814,38 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Cha_02_normal_idle_0: 133131260
-      Cha_02_normal_idle_1: -1230087507
-      Cha_02_normal_idle_2: 1915645181
-      Cha_02_normal_idle_3: -636779835
-      Cha_02_normal_idle_4: 873929375
-      Cha_02_normal_idle_5: -1053024173
-      Cha_02_normal_idle_6: -945394614
-      Cha_02_normal_idle_7: -86989554
+      cha2_live_0: 975819943
+      cha2_live_1: 169419451
+      cha2_live_10: -714871743
+      cha2_live_11: -536877488
+      cha2_live_12: 2120278095
+      cha2_live_13: 1135750763
+      cha2_live_14: -1484437875
+      cha2_live_15: -549278743
+      cha2_live_16: 937204771
+      cha2_live_17: -1209942328
+      cha2_live_18: -1631148441
+      cha2_live_19: -2069610529
+      cha2_live_2: -769611239
+      cha2_live_20: -874327106
+      cha2_live_21: -709554087
+      cha2_live_22: -1445211794
+      cha2_live_23: -1162298618
+      cha2_live_24: 2026379614
+      cha2_live_25: 1254911144
+      cha2_live_26: -1747267351
+      cha2_live_27: -958649519
+      cha2_live_28: 395563307
+      cha2_live_29: 1951011980
+      cha2_live_3: 1130908091
+      cha2_live_30: 898911203
+      cha2_live_31: -533698331
+      cha2_live_4: 621337953
+      cha2_live_5: -497256562
+      cha2_live_6: -2098739892
+      cha2_live_7: -1753876497
+      cha2_live_8: 159663739
+      cha2_live_9: 1474867907
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
