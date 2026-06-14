@@ -97,13 +97,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: cha2_live_0
+      name: B_Robby_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 3072
-        width: 1024
-        height: 1024
+        y: 6144
+        width: 2048
+        height: 2048
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -112,42 +112,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 29d032568f1d1054d91c1c74ca46c35c
-      internalID: 975819943
+      spriteID: 1cf43cd2821132543a3db27c8634c4f4
+      internalID: 29174898
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: cha2_live_1
-      rect:
-        serializedVersion: 2
-        x: 1024
-        y: 3072
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: e5cb57f9b49962f4db9bb9cafb841d9b
-      internalID: 169419451
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: cha2_live_2
+      name: B_Robby_1
       rect:
         serializedVersion: 2
         x: 2048
-        y: 3072
-        width: 1024
-        height: 1024
+        y: 6144
+        width: 2048
+        height: 2048
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -156,42 +134,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 08c61123cb970a341892cdab0b16cf2b
-      internalID: -769611239
+      spriteID: c55ed0d33f3127b41bf2db48935a3b7a
+      internalID: -2086311101
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: cha2_live_3
-      rect:
-        serializedVersion: 2
-        x: 3072
-        y: 3072
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 11f284ad5833e8c4aa91322d19170f18
-      internalID: 1130908091
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: cha2_live_4
+      name: B_Robby_2
       rect:
         serializedVersion: 2
         x: 4096
-        y: 3072
-        width: 1024
-        height: 1024
+        y: 6144
+        width: 2048
+        height: 2048
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -200,42 +156,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ef1be8dd30bd97f479fa068bf5c61540
-      internalID: 621337953
+      spriteID: 66e5ce9afa2f19c499280dbab3a274bb
+      internalID: 1188647871
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: cha2_live_5
-      rect:
-        serializedVersion: 2
-        x: 5120
-        y: 3072
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 483a81a0e73a3cd45931a8065e8c45da
-      internalID: -497256562
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: cha2_live_6
+      name: B_Robby_3
       rect:
         serializedVersion: 2
         x: 6144
-        y: 3072
-        width: 1024
-        height: 1024
+        y: 6144
+        width: 2048
+        height: 2048
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -244,20 +178,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: a3c81dd3a6996d64db086b3dd8700186
-      internalID: -2098739892
+      spriteID: f497c1acb2cccdf43b2137487e4e4b5a
+      internalID: 866522264
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: cha2_live_7
+      name: B_Robby_4
       rect:
         serializedVersion: 2
-        x: 7168
-        y: 3072
-        width: 1024
-        height: 1024
+        x: 8192
+        y: 6144
+        width: 2048
+        height: 2048
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -266,20 +200,262 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e1172c7af8f2bc14fba58edbd26e6758
-      internalID: -1753876497
+      spriteID: 98a73d549121ba042b3134cee5280704
+      internalID: -738454232
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: cha2_live_8
+      name: B_Robby_5
+      rect:
+        serializedVersion: 2
+        x: 10240
+        y: 6144
+        width: 2048
+        height: 2048
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a9b8e9957dd3d694bbc775ac3ae49d4b
+      internalID: -1904446831
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: B_Robby_6
+      rect:
+        serializedVersion: 2
+        x: 12288
+        y: 6144
+        width: 2048
+        height: 2048
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: aedc904293297fc40984038de82fffdf
+      internalID: 1037118925
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: B_Robby_7
+      rect:
+        serializedVersion: 2
+        x: 14336
+        y: 6144
+        width: 2048
+        height: 2048
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bedaf7c8f74b56d4cbd7644de01127a7
+      internalID: 1804701298
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: B_Robby_8
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 4096
+        width: 2048
+        height: 2048
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c2c15a7dc711597409ed8de0ca6d4621
+      internalID: 689925692
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: B_Robby_9
+      rect:
+        serializedVersion: 2
+        x: 2048
+        y: 4096
+        width: 2048
+        height: 2048
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0a0ba23e50e5f504391f9557aa19b946
+      internalID: 1833948384
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: B_Robby_10
+      rect:
+        serializedVersion: 2
+        x: 4096
+        y: 4096
+        width: 2048
+        height: 2048
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 66b8e0990701c874e9d783c954a84628
+      internalID: -1104086723
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: B_Robby_11
+      rect:
+        serializedVersion: 2
+        x: 6144
+        y: 4096
+        width: 2048
+        height: 2048
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dc47c2d568b376d45884f1f7f702f461
+      internalID: -621863151
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: B_Robby_12
+      rect:
+        serializedVersion: 2
+        x: 8192
+        y: 4096
+        width: 2048
+        height: 2048
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1689f351d68a6fc43860ab00a576d269
+      internalID: -1593756547
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: B_Robby_13
+      rect:
+        serializedVersion: 2
+        x: 10240
+        y: 4096
+        width: 2048
+        height: 2048
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 827a16992d0ba6c4a9c6740d42cdd06f
+      internalID: 1558699468
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: B_Robby_14
+      rect:
+        serializedVersion: 2
+        x: 12288
+        y: 4096
+        width: 2048
+        height: 2048
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8d1a27e8505e6714190afe7f246af61d
+      internalID: 1829743210
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: B_Robby_15
+      rect:
+        serializedVersion: 2
+        x: 14336
+        y: 4096
+        width: 2048
+        height: 2048
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4c7f91839862624428e14cc4616c15be
+      internalID: 1854628361
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: B_Robby_16
       rect:
         serializedVersion: 2
         x: 0
         y: 2048
-        width: 1024
-        height: 1024
+        width: 2048
+        height: 2048
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -288,42 +464,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ee4cb2a39a7a9514ab35cb92e073561d
-      internalID: 159663739
+      spriteID: a8c949f3cbad2b147ad44d0d0d291929
+      internalID: 1157818973
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: cha2_live_9
-      rect:
-        serializedVersion: 2
-        x: 1024
-        y: 2048
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 120c230747aaf4e4892b644cabe37c7e
-      internalID: 1474867907
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: cha2_live_10
+      name: B_Robby_17
       rect:
         serializedVersion: 2
         x: 2048
         y: 2048
-        width: 1024
-        height: 1024
+        width: 2048
+        height: 2048
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -332,42 +486,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: b03b1d791d56c754bad766f48c79670c
-      internalID: -714871743
+      spriteID: de6b20f11f6c9ad4c902c3e462e11421
+      internalID: 1122656146
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: cha2_live_11
-      rect:
-        serializedVersion: 2
-        x: 3072
-        y: 2048
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: a1fe4061b7f794f4eb020437fffc5ed2
-      internalID: -536877488
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: cha2_live_12
+      name: B_Robby_18
       rect:
         serializedVersion: 2
         x: 4096
         y: 2048
-        width: 1024
-        height: 1024
+        width: 2048
+        height: 2048
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -376,42 +508,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 605c8334978788449a481b0d53ddc34b
-      internalID: 2120278095
+      spriteID: fb698cb1b112ab84ea4acb26fd32bf14
+      internalID: 186096049
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: cha2_live_13
-      rect:
-        serializedVersion: 2
-        x: 5120
-        y: 2048
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 1c4c9ef084da13945a229c07f7c9fd1a
-      internalID: 1135750763
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: cha2_live_14
+      name: B_Robby_19
       rect:
         serializedVersion: 2
         x: 6144
         y: 2048
-        width: 1024
-        height: 1024
+        width: 2048
+        height: 2048
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -420,20 +530,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 22306b28600b6f24f8a6ec84a2a5ef66
-      internalID: -1484437875
+      spriteID: 6ece21003f3ba2244b14614458fd899d
+      internalID: -199198932
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: cha2_live_15
+      name: B_Robby_20
       rect:
         serializedVersion: 2
-        x: 7168
+        x: 8192
         y: 2048
-        width: 1024
-        height: 1024
+        width: 2048
+        height: 2048
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -442,20 +552,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 1a278e8f979a4004883f0416531d2f83
-      internalID: -549278743
+      spriteID: de3e01027221bae4e94d8137bfb2705c
+      internalID: -1652733101
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: cha2_live_16
+      name: B_Robby_21
       rect:
         serializedVersion: 2
-        x: 0
-        y: 1024
-        width: 1024
-        height: 1024
+        x: 10240
+        y: 2048
+        width: 2048
+        height: 2048
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -464,20 +574,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 91d9f10245131294984e0a9b76038cb2
-      internalID: 937204771
+      spriteID: 29c4e1ac159bdb140965f771975a68f5
+      internalID: 1578629082
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: cha2_live_17
+      name: B_Robby_22
       rect:
         serializedVersion: 2
-        x: 1024
-        y: 1024
-        width: 1024
-        height: 1024
+        x: 12288
+        y: 2048
+        width: 2048
+        height: 2048
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -486,20 +596,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 6202b7e199d7b4848a7c83d3f84a7434
-      internalID: -1209942328
+      spriteID: 53f00850e94969e4096c441be4c68dd5
+      internalID: 1266968217
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: cha2_live_18
+      name: B_Robby_23
       rect:
         serializedVersion: 2
-        x: 2048
-        y: 1024
-        width: 1024
-        height: 1024
+        x: 14336
+        y: 2048
+        width: 2048
+        height: 2048
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -508,130 +618,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 0642f19b68a10e54e87e703974d1fd7f
-      internalID: -1631148441
+      spriteID: 282816b0b9ebc264782a8cd7f31edf0b
+      internalID: -1232886083
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: cha2_live_19
-      rect:
-        serializedVersion: 2
-        x: 3072
-        y: 1024
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: b85a6a09ded49044ab6de5baf9613c32
-      internalID: -2069610529
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: cha2_live_20
-      rect:
-        serializedVersion: 2
-        x: 4096
-        y: 1024
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 4bdb56f095130d642893385e1abcde7e
-      internalID: -874327106
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: cha2_live_21
-      rect:
-        serializedVersion: 2
-        x: 5120
-        y: 1024
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 5215f21bf97a9de4c93ddc2bb6e5c2ce
-      internalID: -709554087
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: cha2_live_22
-      rect:
-        serializedVersion: 2
-        x: 6144
-        y: 1024
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 0abe4fff4f2ed65489af631f2c4306a4
-      internalID: -1445211794
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: cha2_live_23
-      rect:
-        serializedVersion: 2
-        x: 7168
-        y: 1024
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 1c515cb4859776e499765019e61a64b3
-      internalID: -1162298618
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: cha2_live_24
+      name: B_Robby_24
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 1024
-        height: 1024
+        width: 2048
+        height: 2048
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -640,42 +640,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 109b7fb846d750b48b716c017db520af
-      internalID: 2026379614
+      spriteID: 365d2d0699abf744ca289b66ba00b763
+      internalID: 257346953
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: cha2_live_25
-      rect:
-        serializedVersion: 2
-        x: 1024
-        y: 0
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 7faf7a8a10150fb47819c68b9610701b
-      internalID: 1254911144
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: cha2_live_26
+      name: B_Robby_25
       rect:
         serializedVersion: 2
         x: 2048
         y: 0
-        width: 1024
-        height: 1024
+        width: 2048
+        height: 2048
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -684,42 +662,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 24438504ac623434ea27ead7f0e83263
-      internalID: -1747267351
+      spriteID: b5443c08b400d3848b49aa642969b58b
+      internalID: 74347358
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: cha2_live_27
-      rect:
-        serializedVersion: 2
-        x: 3072
-        y: 0
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: c20fa0e1a1f309e48bec697cf0b8ec82
-      internalID: -958649519
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: cha2_live_28
+      name: B_Robby_26
       rect:
         serializedVersion: 2
         x: 4096
         y: 0
-        width: 1024
-        height: 1024
+        width: 2048
+        height: 2048
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -728,42 +684,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 855846ae3a2bde141ae9a81ed0dadd14
-      internalID: 395563307
+      spriteID: 5d237e739aeccf248a5dfed13a0c6475
+      internalID: -985995821
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: cha2_live_29
-      rect:
-        serializedVersion: 2
-        x: 5120
-        y: 0
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 21153e2a921d8e743a208a70878a0a47
-      internalID: 1951011980
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: cha2_live_30
+      name: B_Robby_27
       rect:
         serializedVersion: 2
         x: 6144
         y: 0
-        width: 1024
-        height: 1024
+        width: 2048
+        height: 2048
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -772,20 +706,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 33082f18a303251428046e11ca74cbdf
-      internalID: 898911203
+      spriteID: 4d45b7e345f27d14fbde5ad17582acd7
+      internalID: 1265560052
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: cha2_live_31
+      name: B_Robby_28
       rect:
         serializedVersion: 2
-        x: 7168
+        x: 8192
         y: 0
-        width: 1024
-        height: 1024
+        width: 2048
+        height: 2048
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -794,8 +728,74 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 718aa767c1cedb945b84c19b3814e0c7
-      internalID: -533698331
+      spriteID: 0ae94960e73feda4d991bd5b722f8729
+      internalID: -407263688
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: B_Robby_29
+      rect:
+        serializedVersion: 2
+        x: 10240
+        y: 0
+        width: 2048
+        height: 2048
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d5eae3eea5f049e4e9d3f3f176a2bde0
+      internalID: -275253342
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: B_Robby_30
+      rect:
+        serializedVersion: 2
+        x: 12288
+        y: 0
+        width: 2048
+        height: 2048
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c37334953383ad94cb1734ad5d4c996b
+      internalID: -251260010
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: B_Robby_31
+      rect:
+        serializedVersion: 2
+        x: 14336
+        y: 0
+        width: 2048
+        height: 2048
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1ff7a20a79ead644e974a3bdb027b85d
+      internalID: 1032386951
       vertices: []
       indices: 
       edges: []
@@ -814,38 +814,38 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      cha2_live_0: 975819943
-      cha2_live_1: 169419451
-      cha2_live_10: -714871743
-      cha2_live_11: -536877488
-      cha2_live_12: 2120278095
-      cha2_live_13: 1135750763
-      cha2_live_14: -1484437875
-      cha2_live_15: -549278743
-      cha2_live_16: 937204771
-      cha2_live_17: -1209942328
-      cha2_live_18: -1631148441
-      cha2_live_19: -2069610529
-      cha2_live_2: -769611239
-      cha2_live_20: -874327106
-      cha2_live_21: -709554087
-      cha2_live_22: -1445211794
-      cha2_live_23: -1162298618
-      cha2_live_24: 2026379614
-      cha2_live_25: 1254911144
-      cha2_live_26: -1747267351
-      cha2_live_27: -958649519
-      cha2_live_28: 395563307
-      cha2_live_29: 1951011980
-      cha2_live_3: 1130908091
-      cha2_live_30: 898911203
-      cha2_live_31: -533698331
-      cha2_live_4: 621337953
-      cha2_live_5: -497256562
-      cha2_live_6: -2098739892
-      cha2_live_7: -1753876497
-      cha2_live_8: 159663739
-      cha2_live_9: 1474867907
+      B_Robby_0: 29174898
+      B_Robby_1: -2086311101
+      B_Robby_10: -1104086723
+      B_Robby_11: -621863151
+      B_Robby_12: -1593756547
+      B_Robby_13: 1558699468
+      B_Robby_14: 1829743210
+      B_Robby_15: 1854628361
+      B_Robby_16: 1157818973
+      B_Robby_17: 1122656146
+      B_Robby_18: 186096049
+      B_Robby_19: -199198932
+      B_Robby_2: 1188647871
+      B_Robby_20: -1652733101
+      B_Robby_21: 1578629082
+      B_Robby_22: 1266968217
+      B_Robby_23: -1232886083
+      B_Robby_24: 257346953
+      B_Robby_25: 74347358
+      B_Robby_26: -985995821
+      B_Robby_27: 1265560052
+      B_Robby_28: -407263688
+      B_Robby_29: -275253342
+      B_Robby_3: 866522264
+      B_Robby_30: -251260010
+      B_Robby_31: 1032386951
+      B_Robby_4: -738454232
+      B_Robby_5: -1904446831
+      B_Robby_6: 1037118925
+      B_Robby_7: 1804701298
+      B_Robby_8: 689925692
+      B_Robby_9: 1833948384
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
