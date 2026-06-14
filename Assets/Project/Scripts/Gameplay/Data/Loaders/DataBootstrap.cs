@@ -24,6 +24,7 @@ namespace Relic.Gameplay.Data
         public QuestDatabase QuestDatabase { get; } = new();
         public EventDatabase EventDatabase { get; } = new();
         public RewardTableDatabase RewardTableDatabase { get; } = new();
+        public ItemDatabase ItemDatabase { get; } = new();
         public MapDatabase MapDatabase { get; } = new();
         public BattleMapDatabase BattleMapDatabase { get; } = new();
         public MonsterSkillDatabase MonsterSkillDatabase { get; } = new();
@@ -90,8 +91,8 @@ namespace Relic.Gameplay.Data
             var quests = QuestCsvLoader.Load(workbook);
             var events = EventCsvLoader.LoadMaster(workbook);
             var eventChoices = EventCsvLoader.LoadChoices(workbook);
-            var rewardTables = RewardTableCsvLoader.LoadTables(workbook);
-            var rewardEntries = RewardTableCsvLoader.LoadEntries(workbook);
+            var rewardTables = RewardTableCsvLoader.Load(workbook);
+            var items = ItemCsvLoader.Load(workbook);
             var maps = MapCsvLoader.Load(workbook);
             var battleMapDataList = BattleMapCsvLoader.Load(workbook);
             var monsterSkills = MonsterSkillCsvLoader.Load(workbook);
@@ -130,7 +131,8 @@ namespace Relic.Gameplay.Data
             AssetDatabase.Initialize(assets);
             QuestDatabase.Initialize(quests);
             EventDatabase.Initialize(events, eventChoices);
-            RewardTableDatabase.Initialize(rewardTables, rewardEntries);
+            RewardTableDatabase.Initialize(rewardTables);
+            ItemDatabase.Initialize(items);
             MapDatabase.Initialize(maps);
             BattleMapDatabase.Initialize(battleMapDataList);
         }

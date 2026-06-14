@@ -36,7 +36,8 @@ public class DataManager : Singleton<DataManager>
     public MapDatabase MapDatabase => dataBootstrap.MapDatabase;
     public MonsterSkillDatabase MonsterSkillDatabase => dataBootstrap.MonsterSkillDatabase;
     public RuneDatabase RuneDatabase => dataBootstrap.RuneDatabase;
-
+    public RewardTableDatabase RewardTableDatabase => dataBootstrap.RewardTableDatabase;
+    public ItemDatabase ItemDatabase => dataBootstrap.ItemDatabase;
     public CharacterRuntimeStore CharacterRuntimeStore { get; private set; } = new();
     public PartyRuntimeStore PartyRuntimeStore { get; private set; } = new();
     public SkillRuntimeStore SkillRuntimeStore { get; private set; } = new();
