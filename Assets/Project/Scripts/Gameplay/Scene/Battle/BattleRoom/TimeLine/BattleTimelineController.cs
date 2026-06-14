@@ -81,31 +81,73 @@ public class BattleTimelineController : MonoBehaviour
     private void TryStartSkillReservation()
     {
         if (activeSlotIndex < 0)
+        {
+            if (selectedSkill != null)
+                ShowBattleWarning("타임라인 슬롯을 먼저 선택해주세요.");
+
+            return;
+        }
+
+        if (selectedCharacter == null && selectedSkill == null)
+        {
+            ShowBattleWarning("캐릭터와 스킬을 먼저 선택해주세요.");
+            return;
+        }
+
+        if (selectedCharacter == null)
+        {
+            ShowBattleWarning("캐릭터를 먼저 선택해주세요.");
+            return;
+        }
+
+        if (selectedSkill == null)
             return;
 
-        if (selectedCharacter == null || selectedSkill == null)
+        if (reserveSlots == null || reserveSlots.Length <= 0)
+        {
+            ShowBattleWarning("타임라인 슬롯이 없습니다.");
+            selectedSkill = null;
             return;
+        }
 
-        if (reserveSlots == null || activeSlotIndex >= reserveSlots.Length)
+        if (activeSlotIndex >= reserveSlots.Length)
+        {
+            ShowBattleWarning("선택한 타임라인 슬롯을 사용할 수 없습니다.");
+            selectedSkill = null;
             return;
+        }
 
         ReserveTurnSlotUI slot = reserveSlots[activeSlotIndex];
 
         if (slot == null)
+        {
+            ShowBattleWarning("선택한 타임라인 슬롯을 사용할 수 없습니다.");
+            selectedSkill = null;
             return;
+        }
 
         PlayerReservedCommand costCheckCommand =
             new PlayerReservedCommand(selectedCharacter, selectedSkill);
 
-        if (!CanReserveCommand(costCheckCommand))
+        string blockReason = GetReserveBlockReason(costCheckCommand);
+        if (!string.IsNullOrEmpty(blockReason))
         {
+            ShowBattleWarning(blockReason);
             selectedSkill = null;
             return;
         }
 
         if (!slot.CanAcceptCharacter(selectedCharacter))
         {
+            ShowBattleWarning("이 슬롯에는 이미 다른 캐릭터의 행동이 예약되어 있습니다.");
             Debug.LogWarning("[BattleTimelineController] 이 타임라인 슬롯에는 이미 다른 캐릭터의 행동이 예약되어 있습니다.");
+            selectedSkill = null;
+            return;
+        }
+
+        if (!slot.CanAddCommand())
+        {
+            ShowBattleWarning("한 슬롯에는 최대 3개의 스킬만 예약할 수 있습니다.");
             selectedSkill = null;
             return;
         }
@@ -114,13 +156,18 @@ public class BattleTimelineController : MonoBehaviour
 
         if (casterGridIndex < 0)
         {
+            ShowBattleWarning("캐릭터 위치를 찾을 수 없습니다.");
             Debug.LogWarning($"[BattleTimelineController] 캐릭터 위치를 찾을 수 없습니다: {selectedCharacter.CharacterId}");
             selectedSkill = null;
             return;
         }
 
         if (playerSkillReservationController == null)
+            playerSkillReservationController = FindFirstObjectByType<PlayerSkillReservationController>(FindObjectsInactive.Include);
+
+        if (playerSkillReservationController == null)
         {
+            ShowBattleWarning("스킬 예약 컨트롤러를 찾을 수 없습니다.");
             Debug.LogWarning("[BattleTimelineController] PlayerSkillReservationController가 없습니다.");
             selectedSkill = null;
             return;
@@ -140,25 +187,48 @@ public class BattleTimelineController : MonoBehaviour
     public bool ConfirmPlayerCommand(int slotIndex, PlayerReservedCommand command)
     {
         if (command == null)
+        {
+            ShowBattleWarning("예약할 스킬 정보가 없습니다.");
             return false;
+        }
 
-        if (reserveSlots == null)
+        if (reserveSlots == null || reserveSlots.Length <= 0)
+        {
+            ShowBattleWarning("타임라인 슬롯이 없습니다.");
             return false;
+        }
 
         if (slotIndex < 0 || slotIndex >= reserveSlots.Length)
+        {
+            ShowBattleWarning("선택한 타임라인 슬롯을 사용할 수 없습니다.");
             return false;
+        }
 
         ReserveTurnSlotUI slot = reserveSlots[slotIndex];
 
         if (slot == null)
+        {
+            ShowBattleWarning("선택한 타임라인 슬롯을 사용할 수 없습니다.");
             return false;
+        }
 
-        if (!CanReserveCommand(command))
+        string blockReason = GetReserveBlockReason(command);
+        if (!string.IsNullOrEmpty(blockReason))
+        {
+            ShowBattleWarning(blockReason);
             return false;
+        }
 
         if (!slot.CanAcceptCharacter(command.UserRuntime))
         {
+            ShowBattleWarning("이 슬롯에는 이미 다른 캐릭터의 행동이 예약되어 있습니다.");
             Debug.LogWarning("[BattleTimelineController] 이 타임라인 슬롯에는 이미 다른 캐릭터의 행동이 예약되어 있습니다.");
+            return false;
+        }
+
+        if (!slot.CanAddCommand())
+        {
+            ShowBattleWarning("한 슬롯에는 최대 3개의 스킬만 예약할 수 있습니다.");
             return false;
         }
 
@@ -166,6 +236,7 @@ public class BattleTimelineController : MonoBehaviour
 
         if (!added)
         {
+            ShowBattleWarning("스킬을 예약할 수 없습니다.");
             Debug.LogWarning("[BattleTimelineController] 예약 슬롯이 가득 찼습니다.");
             return false;
         }
@@ -208,8 +279,16 @@ public class BattleTimelineController : MonoBehaviour
 
     private bool CanReserveCommand(PlayerReservedCommand command)
     {
-        if (command == null || command.UserRuntime == null)
-            return false;
+        return string.IsNullOrEmpty(GetReserveBlockReason(command));
+    }
+
+    private string GetReserveBlockReason(PlayerReservedCommand command)
+    {
+        if (command == null)
+            return "예약할 스킬 정보가 없습니다.";
+
+        if (command.UserRuntime == null)
+            return "선택된 캐릭터가 없습니다.";
 
         CharacterRuntimeData runtime = command.UserRuntime;
 
@@ -228,26 +307,65 @@ public class BattleTimelineController : MonoBehaviour
                     $"MinRequired:{minRequired}"
                 );
 
-                return false;
+                return $"{GetCostLabel(command.SkillData.ReferenceResource)}이 부족합니다. 필요:{minRequired} / 보유:{command.ResourceCost}";
             }
         }
 
-        if (!runtime.CanReserveHealth(command.HealthCost) ||
-            !runtime.CanReserveStamina(command.StaminaCost) ||
-            !runtime.CanReserveResource(command.ResourceCost) ||
-            !runtime.CanReserveMove(command.MoveCost) ||
-            !runtime.CanReserveShield(command.ShieldCost))
+        string shortageMessage = GetShortageMessage(runtime, command);
+        if (!string.IsNullOrEmpty(shortageMessage))
+            return shortageMessage;
+
+        return string.Empty;
+    }
+
+    private string GetShortageMessage(CharacterRuntimeData runtime, PlayerReservedCommand command)
+    {
+        if (runtime == null || command == null)
+            return "예약할 스킬 정보가 없습니다.";
+
+        if (!runtime.CanReserveHealth(command.HealthCost))
+            return BuildShortageMessage("체력", command.HealthCost, runtime.CurrentHealth - runtime.ReservedHealthCost);
+
+        if (!runtime.CanReserveStamina(command.StaminaCost))
+            return BuildShortageMessage("코스트", command.StaminaCost, runtime.CurrentStamina - runtime.ReservedStaminaCost);
+
+        if (!runtime.CanReserveResource(command.ResourceCost))
+            return BuildShortageMessage("고유자원", command.ResourceCost, runtime.CurrentResource - runtime.ReservedResourceCost);
+
+        if (!runtime.CanReserveMove(command.MoveCost))
+            return BuildShortageMessage("이동 포인트", command.MoveCost, runtime.CurrentMoveLevel - runtime.ReservedMoveCost);
+
+        if (!runtime.CanReserveShield(command.ShieldCost))
+            return BuildShortageMessage("방어도", command.ShieldCost, runtime.CurrentShield - runtime.ReservedShieldCost);
+
+        return string.Empty;
+    }
+
+    private string BuildShortageMessage(string label, int required, int available)
+    {
+        int safeAvailable = Mathf.Max(0, available);
+        return $"{label}이 부족합니다. 필요:{required} / 보유:{safeAvailable}";
+    }
+
+    private string GetCostLabel(ReferenceResource resource)
+    {
+        switch (resource)
         {
-            Debug.LogWarning(
-                $"[BattleTimelineController] 자원 부족 / Character:{runtime.CharacterId} / " +
-                $"HP:{command.HealthCost} / STA:{command.StaminaCost} / RES:{command.ResourceCost} / " +
-                $"MOVE:{command.MoveCost} / SHIELD:{command.ShieldCost}"
-            );
+            case ReferenceResource.Health:
+                return "체력";
 
-            return false;
+            case ReferenceResource.Stamina:
+                return "코스트";
+
+            case ReferenceResource.UniqueResource:
+                return "고유자원";
+
+            case ReferenceResource.MovePoint:
+                return "이동 포인트";
+
+            default:
+                return "자원";
         }
-
-        return true;
     }
 
     public int GetPreviewGridIndex(CharacterRuntimeData runtimeData)
@@ -451,12 +569,20 @@ public class BattleTimelineController : MonoBehaviour
         command.UserRuntime.RemoveReservedShield(command.ShieldCost);
     }
 
+    private void ShowBattleWarning(string message)
+    {
+        BattleWarningUI.ShowMessage(message);
+    }
+
     private void RefreshTimeline()
     {
         if (timelineBarUI != null)
             timelineBarUI.Refresh(reserveSlots, monsterCommandsBySlot);
         else
+        {
+            ShowBattleWarning("타임라인 UI를 찾을 수 없습니다.");
             Debug.LogWarning("[BattleTimelineController] timelineBarUI가 없습니다.");
+        }
     }
 
     private void RefreshPlayerHUDs()

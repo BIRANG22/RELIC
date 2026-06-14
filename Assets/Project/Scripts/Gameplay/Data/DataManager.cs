@@ -8,6 +8,7 @@ public class DataManager : Singleton<DataManager>
     [SerializeField] private SkillIconDatabase skillIconDatabase;
     [SerializeField] private RelicIconDatabase relicIconDatabase;
     [SerializeField] private MonsterPrefabDatabase monsterPrefabDatabase;
+    [SerializeField] private MonsterIconDatabase monsterIconDatabase;
     [SerializeField] private ActionTypeIconDatabase actionTypeIconDatabase;
     [SerializeField] private CharacterIconDatabase characterIconDatabase;
     [SerializeField] private RuneIconDatabase runeIconDatabase;
@@ -34,6 +35,7 @@ public class DataManager : Singleton<DataManager>
     public MapNodeIconDatabase MapNodeIconDatabase => mapNodeIconDatabase;
     public BattleMapDatabase BattleMapDatabase => dataBootstrap.BattleMapDatabase;
     public MonsterDatabase MonsterDatabase => dataBootstrap.MonsterDatabase;
+    public MonsterIconDatabase MonsterIconDatabase => monsterIconDatabase;
     public MapDatabase MapDatabase => dataBootstrap.MapDatabase;
     public MonsterSkillDatabase MonsterSkillDatabase => dataBootstrap.MonsterSkillDatabase;
     public RuneDatabase RuneDatabase => dataBootstrap.RuneDatabase;
@@ -68,6 +70,9 @@ public class DataManager : Singleton<DataManager>
 
         if (mapNodeIconDatabase != null)
             mapNodeIconDatabase.Initialize();
+
+        if (monsterIconDatabase != null)
+            monsterIconDatabase.Initialize();
 
         SkillEquipService = new SkillEquipService(CharacterRuntimeStore);
     }

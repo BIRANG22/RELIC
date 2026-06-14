@@ -1,4 +1,4 @@
-using Relic.Gameplay.Data;
+ï»¿using Relic.Gameplay.Data;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -25,11 +25,13 @@ public class MonsterHUDSlot : MonoBehaviour
     [Header("Follow")]
     [SerializeField] private Transform followTarget;
     [SerializeField] private Vector3 worldOffset = new Vector3(0f, 1.8f, 0f);
+    [SerializeField] private float colliderTopScreenPadding = 4f;
     [SerializeField] private CanvasGroup canvasGroup;
 
     private RectTransform rectTransform;
 
     private MonsterRuntimeData boundRuntime;
+    private Collider2D followCollider2D;
     private readonly List<StatusEffectIcon> spawnedStatusIcons = new();
 
     private void Awake()
@@ -47,7 +49,13 @@ public class MonsterHUDSlot : MonoBehaviour
 
     public void SetFollowTarget(Transform target)
     {
+        SetFollowTarget(target, null);
+    }
+
+    public void SetFollowTarget(Transform target, Collider2D collider2D)
+    {
         followTarget = target;
+        followCollider2D = collider2D;
         UpdateFollowPosition();
     }
     private void LateUpdate()
@@ -64,9 +72,28 @@ public class MonsterHUDSlot : MonoBehaviour
         if (cam == null)
             return;
 
-        Vector3 screenPos = cam.WorldToScreenPoint(followTarget.position + worldOffset);
+        Vector3 followWorldPosition = GetFollowWorldPosition();
+        Vector3 screenPos = cam.WorldToScreenPoint(followWorldPosition);
+
+        if (followCollider2D != null)
+        {
+            float pivotOffset = rectTransform.rect.height * rectTransform.lossyScale.y * rectTransform.pivot.y;
+            screenPos.y += pivotOffset + colliderTopScreenPadding;
+        }
+
         rectTransform.position = screenPos;
     }
+    private Vector3 GetFollowWorldPosition()
+    {
+        if (followCollider2D != null)
+        {
+            Bounds bounds = followCollider2D.bounds;
+            return new Vector3(bounds.center.x, bounds.max.y, followTarget.position.z);
+        }
+
+        return followTarget.position + worldOffset;
+    }
+
     public void Bind(MonsterRuntimeData runtimeData)
     {
         boundRuntime = runtimeData;
@@ -162,7 +189,7 @@ public class MonsterHUDSlot : MonoBehaviour
 
             StatusEffectIcon icon = Instantiate(statusIconPrefab, statusIconRoot);
 
-            // ¿©±â¼­ StatusEffectIcon ³»ºÎ°¡ EffectId·Î DB Á¶È¸ÇØ¼­ Sprite ¼¼ÆÃ
+            // â¼­ StatusEffectIcon Î° EffectId DB È¸Ø¼ Sprite 
             icon.Set(statusEffects[i]);
 
             spawnedStatusIcons.Add(icon);

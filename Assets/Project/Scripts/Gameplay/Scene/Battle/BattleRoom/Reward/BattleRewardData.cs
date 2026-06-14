@@ -12,7 +12,21 @@ public class BattleRewardData
 {
     public BattleRewardType Type;
     public string RewardId;
+    public string SourceKey;
     public int Amount;
     public Sprite Icon;
     public string Name;
+    public string Description;
+    public int Value;
+
+    public string GetDisplayName()
+    {
+        return string.IsNullOrWhiteSpace(Name) ? RewardId : Name;
+    }
+
+    public string GetRemnantAmountDescription()
+    {
+        int amount = Mathf.Max(0, Amount);
+        return $"{amount} 잔재를 얻는다.";
+    }
 }

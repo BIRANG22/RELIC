@@ -41,6 +41,24 @@ namespace Relic.Gameplay.Data
             return icon != null;
         }
 
+        public bool TryGetTimelineIcon(string characterId, out Sprite icon)
+        {
+            icon = null;
+
+            if (map == null)
+                Initialize();
+
+            if (!map.TryGetValue(characterId, out var entry))
+                return false;
+
+            icon = entry.TimelineIcon;
+
+            if (icon == null)
+                icon = entry.Icon;
+
+            return icon != null;
+        }
+
         public bool TryGetMark(string characterId, out Sprite mark)
         {
             mark = null;
@@ -61,6 +79,7 @@ namespace Relic.Gameplay.Data
     {
         public string CharacterId;
         public Sprite Icon;
+        public Sprite TimelineIcon;
         public Sprite Mark;
     }
 }

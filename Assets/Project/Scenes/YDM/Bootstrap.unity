@@ -1843,6 +1843,7 @@ MonoBehaviour:
   skillIconDatabase: {fileID: 11400000, guid: 89e95184eaa1afa4e989ee194c8a2264, type: 2}
   relicIconDatabase: {fileID: 11400000, guid: d95065b58011a524aabbe8ae55bf1459, type: 2}
   monsterPrefabDatabase: {fileID: 11400000, guid: 196f24977f0b6714db3466914f8baf08, type: 2}
+  monsterIconDatabase: {fileID: 11400000, guid: 437719a542efd8c47a9019cf9bf2909f, type: 2}
   actionTypeIconDatabase: {fileID: 11400000, guid: 8b82ef4954faebd44a690524528fe93c, type: 2}
   characterIconDatabase: {fileID: 11400000, guid: 53ece5b87675ada49a6c51b9e9b05787, type: 2}
   runeIconDatabase: {fileID: 11400000, guid: e54a1fcccc055114b9acc3de01cc2dc6, type: 2}

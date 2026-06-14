@@ -26,11 +26,13 @@ namespace Relic.Gameplay.Data
             if (string.IsNullOrWhiteSpace(relicId))
                 return false;
 
+            relicId = relicId.Trim();
+
             if (battleRuntimeData == null ||
                 battleRuntimeData.OwnedRelicIds == null ||
-                !battleRuntimeData.OwnedRelicIds.Contains(relicId))
+                !HasOwnedRelic(relicId))
             {
-                Debug.LogWarning($"[RelicEquipService] 보유하지 않은 렐릭: {relicId}");
+                Debug.LogWarning($"[RelicEquipService] 보유하지 않은 유물: {relicId}");
                 return false;
             }
 
@@ -45,10 +47,10 @@ namespace Relic.Gameplay.Data
             string previousRelicId = character.EquippedRelicIds[slotIndex];
 
             if (!string.IsNullOrWhiteSpace(previousRelicId))
-                battleRuntimeData.OwnedRelicIds.Add(previousRelicId);
+                AddOwnedRelicIfMissing(previousRelicId);
 
             character.EquippedRelicIds[slotIndex] = relicId;
-            battleRuntimeData.OwnedRelicIds.Remove(relicId);
+            RemoveAllOwnedRelic(relicId);
 
             return true;
         }
@@ -73,10 +75,51 @@ namespace Relic.Gameplay.Data
 
             character.EquippedRelicIds[slotIndex] = null;
 
-            battleRuntimeData.OwnedRelicIds ??= new System.Collections.Generic.List<string>();
-            battleRuntimeData.OwnedRelicIds.Add(relicId);
+            AddOwnedRelicIfMissing(relicId);
 
             return true;
+        }
+
+        private void AddOwnedRelicIfMissing(string relicId)
+        {
+            if (battleRuntimeData == null || string.IsNullOrWhiteSpace(relicId))
+                return;
+
+            relicId = relicId.Trim();
+            battleRuntimeData.OwnedRelicIds ??= new System.Collections.Generic.List<string>();
+
+            if (!HasOwnedRelic(relicId))
+                battleRuntimeData.OwnedRelicIds.Add(relicId);
+        }
+
+        private bool HasOwnedRelic(string relicId)
+        {
+            if (battleRuntimeData == null || battleRuntimeData.OwnedRelicIds == null || string.IsNullOrWhiteSpace(relicId))
+                return false;
+
+            string targetId = relicId.Trim();
+
+            for (int i = 0; i < battleRuntimeData.OwnedRelicIds.Count; i++)
+            {
+                if (string.Equals(battleRuntimeData.OwnedRelicIds[i]?.Trim(), targetId, System.StringComparison.Ordinal))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private void RemoveAllOwnedRelic(string relicId)
+        {
+            if (battleRuntimeData == null || battleRuntimeData.OwnedRelicIds == null || string.IsNullOrWhiteSpace(relicId))
+                return;
+
+            string targetId = relicId.Trim();
+
+            for (int i = battleRuntimeData.OwnedRelicIds.Count - 1; i >= 0; i--)
+            {
+                if (string.Equals(battleRuntimeData.OwnedRelicIds[i]?.Trim(), targetId, System.StringComparison.Ordinal))
+                    battleRuntimeData.OwnedRelicIds.RemoveAt(i);
+            }
         }
 
         public static void EnsureRelicSlots(CharacterRuntimeData character)

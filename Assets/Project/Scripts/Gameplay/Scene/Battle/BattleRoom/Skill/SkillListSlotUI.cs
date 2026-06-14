@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerClickHandler
 {
     [Header("Root")]
     [SerializeField] private Image backgroundImage;
@@ -14,7 +14,18 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     [SerializeField] private Image skillIconImage;
     [SerializeField] private TMP_Text skillNameText;
     [SerializeField] private Image skillRangeImage;
+    [SerializeField] private TMP_Text skillCostTypeText;
+    [SerializeField] private TMP_Text skillCostValueText;
+
+    [Header("Legacy UI")]
     [SerializeField] private Image skillCostImage;
+
+    [Header("Auto Bind Names")]
+    [SerializeField] private string skillIconObjectName = "SkillIcon";
+    [SerializeField] private string skillNameObjectName = "SkillName";
+    [SerializeField] private string skillRangeObjectName = "RangeIcon";
+    [SerializeField] private string skillCostTypeObjectName = "CostType";
+    [SerializeField] private string skillCostValueObjectName = "CostValue";
 
     [Header("Color")]
     [SerializeField] private Color normalBackgroundColor = new Color(1f, 1f, 1f, 0f);
@@ -51,6 +62,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     private RectTransform rectTransform;
     private string detailText = "";
     private bool canClick;
+    private int lastSelectFrame = -1;
     private Vector3 baseScale = Vector3.one;
     private bool hasCapturedBaseScale;
     private Canvas sortingCanvas;
@@ -66,6 +78,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             scaleTarget = rectTransform;
 
         CaptureBaseScaleOnce();
+        BindMissingReferences();
 
         if (backgroundImage == null)
             backgroundImage = GetComponent<Image>();
@@ -114,7 +127,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             scaleTarget = rectTransform;
 
         CaptureBaseScaleOnce();
-
+        BindMissingReferences();
         CaptureSortingCanvas();
 
         if (string.IsNullOrWhiteSpace(skillId))
@@ -131,23 +144,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             return;
         }
 
-        if (skillIconImage != null)
-        {
-            skillIconImage.sprite = GetSkillIcon(skillId);
-            skillIconImage.enabled = skillIconImage.sprite != null;
-        }
-
-        if (skillRangeImage != null)
-        {
-            skillRangeImage.sprite = GetSkillRangeIcon(skillData.RangeId);
-            skillRangeImage.enabled = skillRangeImage.sprite != null;
-        }
-
-        if (skillCostImage != null)
-            skillCostImage.enabled = true;
-
-        if (skillNameText != null)
-            skillNameText.text = skillData.Name;
+        ApplySkillMasterData(skillData);
 
         detailText = BuildDetailText(skillData);
 
@@ -167,6 +164,39 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         ApplySortingState();
     }
 
+    private void ApplySkillMasterData(SkillMasterData data)
+    {
+        if (data == null)
+        {
+            SetEmpty();
+            return;
+        }
+
+        if (skillIconImage != null)
+        {
+            skillIconImage.sprite = GetSkillIcon(data);
+            skillIconImage.enabled = skillIconImage.sprite != null;
+        }
+
+        if (skillRangeImage != null)
+        {
+            skillRangeImage.sprite = GetSkillRangeIcon(data.RangeId);
+            skillRangeImage.enabled = skillRangeImage.sprite != null;
+        }
+
+        if (skillCostImage != null)
+            skillCostImage.enabled = false;
+
+        if (skillNameText != null)
+            skillNameText.text = string.IsNullOrWhiteSpace(data.Name) ? data.SkillId : data.Name;
+
+        if (skillCostTypeText != null)
+            skillCostTypeText.text = GetReferenceResourceDisplayName(data.ReferenceResource);
+
+        if (skillCostValueText != null)
+            skillCostValueText.text = data.ResourceCostValue.ToString();
+    }
+
     private void SetEmpty()
     {
         skillId = "";
@@ -174,6 +204,8 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         detailText = "";
         isPointerOver = false;
         isSelected = false;
+
+        BindMissingReferences();
 
         if (skillIconImage != null)
         {
@@ -192,6 +224,12 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
         if (skillNameText != null)
             skillNameText.text = "스킬 없음";
+
+        if (skillCostTypeText != null)
+            skillCostTypeText.text = "";
+
+        if (skillCostValueText != null)
+            skillCostValueText.text = "";
 
         if (button != null)
             button.interactable = false;
@@ -224,13 +262,40 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             owner.HideSkillDetail();
     }
 
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        if (owner != null)
+            owner.IgnoreOutsideCloseForFrames(2);
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (eventData != null && eventData.button != PointerEventData.InputButton.Left)
+            return;
+
+        SelectThisSlot();
+    }
+
     private void OnClick()
     {
+        SelectThisSlot();
+    }
+
+    private void SelectThisSlot()
+    {
+        if (lastSelectFrame == Time.frameCount)
+            return;
+
+        lastSelectFrame = Time.frameCount;
+
         if (!canClick)
             return;
 
         if (skillData == null || owner == null)
             return;
+
+        if (owner != null)
+            owner.IgnoreOutsideCloseForFrames(2);
 
         PlayClickSfx();
         owner.SelectSkillSlot(this);
@@ -257,6 +322,12 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
         if (skillNameText != null)
             skillNameText.color = textColor;
+
+        if (skillCostTypeText != null)
+            skillCostTypeText.color = textColor;
+
+        if (skillCostValueText != null)
+            skillCostValueText.color = textColor;
 
         ApplyImageColor(skillIconImage, imageColor);
         ApplyImageColor(skillRangeImage, imageColor);
@@ -366,15 +437,43 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         AudioManager.Instance.PlaySfx(clickSfxType);
     }
 
-    private Sprite GetSkillIcon(string skillId)
+
+    private string GetReferenceResourceDisplayName(ReferenceResource resource)
     {
+        switch (resource)
+        {
+            case ReferenceResource.Health:
+                return "Hp";
+
+            case ReferenceResource.UniqueResource:
+                return "Ulti";
+
+            case ReferenceResource.Stamina:
+                return "Cost";
+
+            case ReferenceResource.MovePoint:
+                return "MovePoint";
+
+            default:
+                return resource.ToString();
+        }
+    }
+
+    private Sprite GetSkillIcon(SkillMasterData data)
+    {
+        if (data == null)
+            return null;
+
+        if (data.Icon != null)
+            return data.Icon;
+
         if (DataManager.Instance == null)
             return null;
 
         if (DataManager.Instance.SkillIconDatabase == null)
             return null;
 
-        if (DataManager.Instance.SkillIconDatabase.TryGetIcon(skillId, out Sprite icon))
+        if (DataManager.Instance.SkillIconDatabase.TryGetIcon(data.SkillId, out Sprite icon))
             return icon;
 
         return null;
@@ -382,6 +481,9 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private Sprite GetSkillRangeIcon(string rangeId)
     {
+        if (string.IsNullOrWhiteSpace(rangeId))
+            return null;
+
         if (DataManager.Instance == null)
             return null;
 
@@ -399,12 +501,61 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         if (data == null)
             return "";
 
-        string skillName = string.IsNullOrWhiteSpace(data.Name) ? data.SkillId : data.Name;
-        string description = !string.IsNullOrWhiteSpace(data.ToolTip) ? data.ToolTip : data.Details;
+        return string.IsNullOrWhiteSpace(data.Details) ? "" : data.Details;
+    }
 
-        if (string.IsNullOrWhiteSpace(description))
-            return skillName;
+    private void BindMissingReferences()
+    {
+        if (skillIconImage == null)
+            skillIconImage = FindChildComponentByName<Image>(skillIconObjectName);
 
-        return skillName + "\n" + description;
+        if (skillNameText == null)
+            skillNameText = FindChildComponentByName<TMP_Text>(skillNameObjectName);
+
+        if (skillRangeImage == null)
+            skillRangeImage = FindChildComponentByName<Image>(skillRangeObjectName);
+
+        if (skillCostTypeText == null)
+            skillCostTypeText = FindChildComponentByName<TMP_Text>(skillCostTypeObjectName);
+
+        if (skillCostValueText == null)
+            skillCostValueText = FindChildComponentByName<TMP_Text>(skillCostValueObjectName);
+    }
+
+    private T FindChildComponentByName<T>(string objectName) where T : Component
+    {
+        if (string.IsNullOrWhiteSpace(objectName))
+            return null;
+
+        Transform[] children = GetComponentsInChildren<Transform>(true);
+        for (int i = 0; i < children.Length; i++)
+        {
+            Transform child = children[i];
+            if (child == null)
+                continue;
+
+            if (child.name == objectName)
+            {
+                T component = child.GetComponent<T>();
+                if (component != null)
+                    return component;
+            }
+        }
+
+        for (int i = 0; i < children.Length; i++)
+        {
+            Transform child = children[i];
+            if (child == null)
+                continue;
+
+            if (child.name.Contains(objectName))
+            {
+                T component = child.GetComponent<T>();
+                if (component != null)
+                    return component;
+            }
+        }
+
+        return null;
     }
 }

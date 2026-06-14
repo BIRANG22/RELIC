@@ -42,6 +42,14 @@ public class PlayerSkillReservationController : MonoBehaviour
         skillListPanel = FindFirstObjectByType<SkillListPanel>(FindObjectsInactive.Include);
     }
 
+    private void EnsureTimelineController()
+    {
+        if (timelineController != null)
+            return;
+
+        timelineController = FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Include);
+    }
+
     private void KeepSkillListOpenForThisClick()
     {
         if (!keepSkillListOpenAfterReservationClick)
@@ -70,8 +78,17 @@ public class PlayerSkillReservationController : MonoBehaviour
         currentSlotIndex = slotIndex;
         currentCasterSprite = casterSprite;
 
-        if (currentUserRuntime == null || currentSkillData == null)
+        if (currentUserRuntime == null)
+        {
+            ShowBattleWarning("선택된 캐릭터가 없습니다.");
             return;
+        }
+
+        if (currentSkillData == null)
+        {
+            ShowBattleWarning("예약할 스킬 정보가 없습니다.");
+            return;
+        }
 
         if (currentSkillData.RangeType == RangeType.Direction)
         {
@@ -92,7 +109,7 @@ public class PlayerSkillReservationController : MonoBehaviour
     {
         currentMoveSelectableIndices.Clear();
 
-        if (gridManager == null || currentSkillData == null)
+        if (!CanUseRangeData())
             return;
 
         List<int> rangeIndices = BattleRangeCalculator.GetDirectionRangeIndices(
@@ -114,9 +131,13 @@ public class PlayerSkillReservationController : MonoBehaviour
                 currentMoveSelectableIndices.Add(index);
         }
 
+        if (currentMoveSelectableIndices.Count <= 0)
+            ShowBattleWarning("선택 가능한 칸이 없습니다.");
+
         if (rangePreview != null)
             rangePreview.ShowDirectionCells(currentMoveSelectableIndices);
     }
+
     private void HandleCellClicked(GridCell cell)
     {
         if (cell == null || currentSkillData == null)
@@ -127,6 +148,7 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         if (!currentMoveSelectableIndices.Contains(cell.Index))
         {
+            ShowBattleWarning("선택할 수 없는 칸입니다.");
             Debug.LogWarning($"[PlayerSkillReservationController] 선택 가능한 이동 칸이 아닙니다: {cell.name}");
             return;
         }
@@ -136,6 +158,9 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     private void ConfirmDirectionReservation(BattleDirection direction)
     {
+        if (!CanConfirmReservation())
+            return;
+
         List<int> rangeIndices = BattleRangeCalculator.GetDirectionRangeIndices(
             currentCasterGridIndex,
             currentSkillData.RangeId,
@@ -147,15 +172,16 @@ public class PlayerSkillReservationController : MonoBehaviour
         PlayerReservedCommand command = new PlayerReservedCommand(currentUserRuntime, currentSkillData);
         command.SetDirectionResult(direction, rangeIndices, rangeIndices);
 
-        if (timelineController != null)
-            timelineController.ConfirmPlayerCommand(currentSlotIndex, command);
-
+        ConfirmCommand(command);
         KeepSkillListOpenForThisClick();
         ClearPreview();
     }
 
     private void ConfirmMoveReservation(int selectedGridIndex)
     {
+        if (!CanConfirmReservation())
+            return;
+
         BattleDirection direction = GetDirectionFromMove(
             currentCasterGridIndex,
             selectedGridIndex
@@ -175,16 +201,17 @@ public class PlayerSkillReservationController : MonoBehaviour
             moveOffset
         );
 
-        if (timelineController != null)
-            timelineController.ConfirmPlayerCommand(currentSlotIndex, command);
+        bool confirmed = ConfirmCommand(command);
 
-        if (moveGhostPreview != null)
+        if (confirmed && moveGhostPreview != null)
+        {
             moveGhostPreview.Show(
                 currentUserRuntime.CharacterId,
                 currentCasterSprite,
                 selectedGridIndex,
                 direction
             );
+        }
 
         KeepSkillListOpenForThisClick();
         ClearPreview();
@@ -208,13 +235,78 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     private void ConfirmDirectReservation()
     {
+        if (!CanConfirmReservation())
+            return;
+
         PlayerReservedCommand command = new PlayerReservedCommand(currentUserRuntime, currentSkillData);
 
-        if (timelineController != null)
-            timelineController.ConfirmPlayerCommand(currentSlotIndex, command);
-
+        ConfirmCommand(command);
         KeepSkillListOpenForThisClick();
         ClearPreview();
+    }
+
+    private bool ConfirmCommand(PlayerReservedCommand command)
+    {
+        EnsureTimelineController();
+
+        if (timelineController == null)
+        {
+            ShowBattleWarning("타임라인 컨트롤러를 찾을 수 없습니다.");
+            return false;
+        }
+
+        return timelineController.ConfirmPlayerCommand(currentSlotIndex, command);
+    }
+
+    private bool CanConfirmReservation()
+    {
+        if (currentUserRuntime == null)
+        {
+            ShowBattleWarning("선택된 캐릭터가 없습니다.");
+            return false;
+        }
+
+        if (currentSkillData == null)
+        {
+            ShowBattleWarning("예약할 스킬 정보가 없습니다.");
+            return false;
+        }
+
+        if (currentSlotIndex < 0)
+        {
+            ShowBattleWarning("타임라인 슬롯을 먼저 선택해주세요.");
+            return false;
+        }
+
+        return CanUseRangeData();
+    }
+
+    private bool CanUseRangeData()
+    {
+        if (gridManager == null)
+        {
+            ShowBattleWarning("전투 그리드를 찾을 수 없습니다.");
+            return false;
+        }
+
+        if (currentSkillData == null)
+        {
+            ShowBattleWarning("예약할 스킬 정보가 없습니다.");
+            return false;
+        }
+
+        if (DataManager.Instance == null || DataManager.Instance.RangeDatabase == null)
+        {
+            ShowBattleWarning("스킬 범위 데이터를 찾을 수 없습니다.");
+            return false;
+        }
+
+        return true;
+    }
+
+    private void ShowBattleWarning(string message)
+    {
+        BattleWarningUI.ShowMessage(message);
     }
 
     public void ClearPreview()

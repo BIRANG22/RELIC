@@ -6,14 +6,8 @@ namespace Relic.Gameplay.Data
     [Serializable]
     public class MonsterRuntimeData
     {
-        // 전투 중 개별 몬스터 고유 ID
-        // 예: RuntimeMonster_0001, RuntimeMonster_0002
         public string RuntimeId;
-
-        // 원본 마스터 데이터 ID
-        // 예: Mon_01, Mon_12
         public string MonsterId;
-
         public string Name;
         public string Grade;
 
@@ -21,18 +15,15 @@ namespace Relic.Gameplay.Data
         public int CurrentHp;
         public int CurrentShield;
 
-        public string DropTableId;
+        public int MinRemnant;
+        public int MaxRemnant;
+        public string UniqueItemId;
+        public float UniqueItemChance;
+        public float RelicChance;
 
-        // 몬스터가 실제로 사용 가능한 스킬 목록
         public List<string> PossSkillIds = new();
-
-        // 전투 중 턴 카운트
         public int TurnCount;
-
-        // 생존 여부
         public bool IsDead => CurrentHp <= 0;
-
-        // 버프 / 디버프는 나중에 전용 RuntimeData로 확장 가능
         public List<StatusEffectRuntimeData> StatusEffects = new();
 
         public MonsterRuntimeData()
@@ -50,7 +41,11 @@ namespace Relic.Gameplay.Data
             MaxHp = masterData.Health;
             CurrentHp = masterData.Health;
 
-            DropTableId = masterData.DropTableId;
+            MinRemnant = masterData.MinRemnant;
+            MaxRemnant = masterData.MaxRemnant;
+            UniqueItemId = masterData.UniqueItemId;
+            UniqueItemChance = masterData.UniqueItemChance;
+            RelicChance = masterData.RelicChance;
 
             TurnCount = 0;
 

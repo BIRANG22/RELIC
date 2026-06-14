@@ -10,7 +10,13 @@ namespace Relic.Gameplay.Data
         public string Name;
         public string Grade;
         public int Health;
-        public string DropTableId;
+
+        public int MinRemnant;
+        public int MaxRemnant;
+        public string UniqueItemId;
+        public float UniqueItemChance;
+        public float RelicChance;
+
         public string PossSkillId01;
         public string PossSkillId02;
         public string PossSkillId03;

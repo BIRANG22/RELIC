@@ -1,22 +1,78 @@
 using System.Collections.Generic;
 
-
-/// <summary>
-/// [Loaders] 스크립트. 역할/설정/변수 용도를 코드 주석으로 확인할 수 있도록 정리했습니다.
-/// Unity 연결: MonoBehaviour 스크립트는 Scene/GameObject에 컴포넌트로 부착 후 Inspector 필드를 설정하세요.
-/// 데이터 클래스는 엑셀 시트 컬럼과 필드명을 맞춰 DataBootstrap 로딩 파이프라인에서 자동 매핑됩니다.
-/// </summary>
 namespace Relic.Gameplay.Data
 {
-    /// <summary>
-    /// MonsterCsvLoader의 책임을 담당하는 클래스입니다. 파일 상단 주석의 연결/설정 지침을 참고하세요.
-    /// </summary>
     public static class MonsterCsvLoader
     {
         public static List<MonsterMasterData> Load(Dictionary<string, List<Dictionary<string, string>>> workbook)
         {
             var rows = ExcelSheetSelector.GetSheet(workbook, "MonsterMasterData", "MonsterMaster", "Monster");
+            ApplyRewardColumnAliases(rows);
             return DataRowMapper.MapList<MonsterMasterData>(rows);
+        }
+
+        private static void ApplyRewardColumnAliases(IReadOnlyList<Dictionary<string, string>> rows)
+        {
+            if (rows == null)
+                return;
+
+            for (int i = 0; i < rows.Count; i++)
+            {
+                Dictionary<string, string> row = rows[i];
+
+                if (row == null)
+                    continue;
+
+                CopyAlias(row, "MinRemnant", "MinRemnant", "RemnantMin", "MinimumRemnant", "최소렘넌트", "렘넌트최소");
+                CopyAlias(row, "MaxRemnant", "MaxRemnant", "RemnantMax", "MaximumRemnant", "최대렘넌트", "렘넌트최대");
+                CopyAlias(row, "UniqueItemId", "UniqueItemId", "UniqueItemID", "UniqueItem", "FixedItemId", "FixedItem", "고유아이템", "고유아이템ID", "고유아이템Id");
+                CopyAlias(row, "UniqueItemChance", "UniqueItemChance", "UniqueItemRate", "UniqueItemProbability", "ItemChance", "ItemRate", "고유아이템확률", "아이템확률");
+                CopyAlias(row, "RelicChance", "RelicChance", "RelicRate", "RelicProbability", "유물확률");
+            }
+        }
+
+        private static void CopyAlias(Dictionary<string, string> row, string targetKey, params string[] aliases)
+        {
+            if (HasKey(row, targetKey))
+                return;
+
+            for (int i = 0; i < aliases.Length; i++)
+            {
+                string alias = aliases[i];
+
+                foreach (var pair in row)
+                {
+                    if (NormalizeKey(pair.Key) != NormalizeKey(alias))
+                        continue;
+
+                    row[targetKey] = pair.Value;
+                    return;
+                }
+            }
+        }
+
+        private static bool HasKey(Dictionary<string, string> row, string key)
+        {
+            foreach (var pair in row)
+            {
+                if (NormalizeKey(pair.Key) == NormalizeKey(key))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static string NormalizeKey(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return string.Empty;
+
+            return value
+                .Replace("\uFEFF", "")
+                .Replace("_", "")
+                .Replace(" ", "")
+                .Trim()
+                .ToLowerInvariant();
         }
     }
 }

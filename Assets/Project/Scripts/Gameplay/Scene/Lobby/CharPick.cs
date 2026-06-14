@@ -499,7 +499,7 @@ public class CharPick : MonoBehaviour
 
             CurrentHealth = master.MaxHealth,
             CurrentStamina = master.MaxStamina,
-            CurrentResource = master.MaxResource,
+            CurrentResource = 0,
             CurrentMoveLevel = 1,
 
             IsUnlocked = master.IsDefaultProvided,

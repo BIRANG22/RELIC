@@ -10,10 +10,10 @@ public class BattleDebugKillAllMonsters : MonoBehaviour
         if (!Input.GetKeyDown(killKey))
             return;
 
-        MonsterUnit[] monsters =
-            Object.FindObjectsByType<MonsterUnit>(
-                FindObjectsInactive.Exclude,
-                FindObjectsSortMode.None);
+        MonsterUnit[] monsters = Object.FindObjectsByType<MonsterUnit>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
 
         for (int i = 0; i < monsters.Length; i++)
         {
@@ -23,18 +23,17 @@ public class BattleDebugKillAllMonsters : MonoBehaviour
                 continue;
 
             monster.RuntimeData.CurrentHp = 0;
+            monster.RuntimeData.CurrentShield = 0;
 
             if (BattleRewardCollector.Instance != null)
-            {
-                BattleRewardCollector.Instance.CollectMonsterDrop(
-                    monster.RuntimeData.RuntimeId,
-                    monster.RuntimeData.DropTableId
-                );
-            }
+                BattleRewardCollector.Instance.CollectMonsterReward(monster.RuntimeData);
 
-            Debug.Log(
-                $"[DebugKill] Monster:{monster.RuntimeData.MonsterId} / DropTable:{monster.RuntimeData.DropTableId}"
-            );
+            monster.RefreshHUD();
+
+            Debug.Log($"[DebugKill] Monster:{monster.RuntimeData.MonsterId}");
         }
+
+        if (BattleResultChecker.Instance != null)
+            BattleResultChecker.Instance.CheckBattleEnd();
     }
 }

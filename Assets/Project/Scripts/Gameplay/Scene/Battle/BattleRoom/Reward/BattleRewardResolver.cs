@@ -1,103 +1,243 @@
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Relic.Gameplay.Data;
+using Relic.Gameplay.Monster;
 using UnityEngine;
 
 public class BattleRewardResolver : MonoBehaviour
 {
-    public List<BattleRewardData> Resolve(IReadOnlyList<string> dropTableIds)
+    public List<BattleRewardData> Resolve(IReadOnlyList<MonsterRuntimeData> monsters)
     {
         List<BattleRewardData> rewards = new();
 
-        Debug.Log($"[BattleRewardResolver] Resolve Start / DropTableCount:{dropTableIds.Count}");
+        Debug.Log($"[BattleRewardResolver] Resolve Start / MonsterCount:{monsters?.Count ?? 0}");
 
-        if (dropTableIds == null || DataManager.Instance == null)
+        if (monsters == null || DataManager.Instance == null)
             return rewards;
 
-        for (int i = 0; i < dropTableIds.Count; i++)
+        HashSet<string> resolvedMonsterKeys = new();
+        HashSet<string> uniqueItemResolvedMonsterKeys = new();
+
+        for (int i = 0; i < monsters.Count; i++)
         {
-            string dropTableId = dropTableIds[i];
+            MonsterRuntimeData monster = monsters[i];
 
-            Debug.Log($"[BattleRewardResolver] DropTableId:{dropTableId}");
+            if (monster == null)
+                continue;
 
-            List<RewardTableData> entries =
-                DataManager.Instance.RewardTableDatabase.GetEntries(dropTableId);
+            string monsterKey = GetMonsterRewardKey(monster);
 
-            Debug.Log($"[BattleRewardResolver] EntryCount:{entries.Count}");
-
-            for (int j = 0; j < entries.Count; j++)
+            if (!resolvedMonsterKeys.Add(monsterKey))
             {
-                TryResolveEntry(entries[j], rewards);
+                Debug.LogWarning($"[BattleRewardResolver] 이미 처리한 몬스터 보상입니다. MonsterKey:{monsterKey} / MonsterId:{monster.MonsterId}");
+                continue;
             }
+
+            TryResolveMonster(monster, rewards, monsterKey, uniqueItemResolvedMonsterKeys);
         }
+
+        int uniqueMonsterCount = resolvedMonsterKeys.Count;
+        int sceneMonsterCount = GetCurrentBattleMonsterUnitCount();
+        int uniqueItemLimit = sceneMonsterCount > 0
+            ? Mathf.Min(uniqueMonsterCount, sceneMonsterCount)
+            : uniqueMonsterCount;
+
+        TrimUniqueItemRewardsToMonsterCount(rewards, uniqueItemLimit);
 
         return rewards;
     }
 
-    private void TryResolveEntry(RewardTableData entry, List<BattleRewardData> rewards)
+    private int GetCurrentBattleMonsterUnitCount()
     {
-        if (entry == null)
-            return;
+        MonsterUnit[] monsterUnits = Object.FindObjectsByType<MonsterUnit>(FindObjectsSortMode.None);
 
-        if (Random.value > entry.Chance)
-            return;
+        if (monsterUnits == null || monsterUnits.Length == 0)
+            return 0;
 
-        switch (entry.DropType)
+        HashSet<string> monsterKeys = new();
+
+        for (int i = 0; i < monsterUnits.Length; i++)
         {
-            case "Remnant":
-                AddRemnant(entry, rewards);
-                break;
+            MonsterUnit unit = monsterUnits[i];
 
-            case "Item":
-                AddItem(entry, rewards);
-                break;
+            if (unit == null || unit.RuntimeData == null)
+                continue;
 
-            case "Relic":
-                AddRelic(entry, rewards);
-                break;
+            if (!unit.gameObject.scene.IsValid() || !unit.gameObject.scene.isLoaded)
+                continue;
+
+            string key = GetMonsterUnitSceneKey(unit);
+
+            if (!string.IsNullOrWhiteSpace(key))
+                monsterKeys.Add(key);
+        }
+
+        return monsterKeys.Count;
+    }
+
+    private string GetMonsterUnitSceneKey(MonsterUnit unit)
+    {
+        if (unit == null)
+            return null;
+
+        MonsterRuntimeData runtime = unit.RuntimeData;
+
+        if (runtime != null && !string.IsNullOrWhiteSpace(runtime.RuntimeId))
+            return $"Runtime:{runtime.RuntimeId.Trim()}";
+
+        return $"Unit:{unit.GetInstanceID()}";
+    }
+
+    private void TrimUniqueItemRewardsToMonsterCount(List<BattleRewardData> rewards, int uniqueItemLimit)
+    {
+        if (rewards == null)
+            return;
+
+        uniqueItemLimit = Mathf.Max(0, uniqueItemLimit);
+
+        for (int i = rewards.Count - 1; i >= 0; i--)
+        {
+            BattleRewardData reward = rewards[i];
+
+            if (reward == null || reward.Type != BattleRewardType.Item)
+                continue;
+
+            int order = CountUniqueItemRewardsBeforeOrAt(rewards, i);
+
+            if (order <= uniqueItemLimit)
+                continue;
+
+            Debug.LogWarning($"[BattleRewardResolver] 고유아이템 보상이 몬스터 수보다 많아 제거합니다. Limit:{uniqueItemLimit} / Removed:{reward.RewardId}");
+            rewards.RemoveAt(i);
         }
     }
 
-    private void AddRemnant(RewardTableData entry, List<BattleRewardData> rewards)
+    private int CountUniqueItemRewardsBeforeOrAt(List<BattleRewardData> rewards, int index)
     {
-        int amount = Random.Range(entry.MinAmount, entry.MaxAmount + 1);
+        if (rewards == null)
+            return 0;
+
+        int count = 0;
+        int lastIndex = Mathf.Min(index, rewards.Count - 1);
+
+        for (int i = 0; i <= lastIndex; i++)
+        {
+            BattleRewardData reward = rewards[i];
+
+            if (reward != null && reward.Type == BattleRewardType.Item)
+                count++;
+        }
+
+        return count;
+    }
+
+    private void TryResolveMonster(
+        MonsterRuntimeData monster,
+        List<BattleRewardData> rewards,
+        string monsterKey,
+        HashSet<string> uniqueItemResolvedMonsterKeys)
+    {
+        if (monster == null)
+            return;
+
+        Debug.Log($"[BattleRewardResolver] Monster:{monster.MonsterId} / Key:{monsterKey} / Remnant:{monster.MinRemnant}-{monster.MaxRemnant} / Item:{monster.UniqueItemId}({monster.UniqueItemChance}) / Relic:{monster.RelicChance}");
+
+        AddRemnant(monster, rewards);
+        AddUniqueItem(monster, rewards, monsterKey, uniqueItemResolvedMonsterKeys);
+        AddRelic(monster, rewards);
+    }
+
+    private void AddRemnant(MonsterRuntimeData monster, List<BattleRewardData> rewards)
+    {
+        int min = Mathf.Max(0, monster.MinRemnant);
+        int max = Mathf.Max(min, monster.MaxRemnant);
+
+        if (max <= 0)
+            return;
+
+        int amount = Random.Range(min, max + 1);
+
+        if (amount <= 0)
+            return;
+
+        BattleRewardData existing = rewards.Find(x => x != null && x.Type == BattleRewardType.Remnant);
+
+        if (existing != null)
+        {
+            existing.Amount += amount;
+            existing.Name = "잔재";
+            existing.Description = "";
+            return;
+        }
 
         rewards.Add(new BattleRewardData
         {
             Type = BattleRewardType.Remnant,
             RewardId = "0",
             Amount = amount,
-            Name = "Remnant"
+            Name = "잔재",
+            Description = ""
         });
     }
 
-    private void AddItem(RewardTableData entry, List<BattleRewardData> rewards)
+    private void AddUniqueItem(
+        MonsterRuntimeData monster,
+        List<BattleRewardData> rewards,
+        string monsterKey,
+        HashSet<string> uniqueItemResolvedMonsterKeys)
     {
-        if (string.IsNullOrWhiteSpace(entry.DropId))
+        if (string.IsNullOrWhiteSpace(monster.UniqueItemId))
             return;
 
-        ItemData item = DataManager.Instance.ItemDatabase.Get(entry.DropId);
+        string itemMonsterKey = string.IsNullOrWhiteSpace(monsterKey) ? GetMonsterRewardKey(monster) : monsterKey;
+
+        if (uniqueItemResolvedMonsterKeys != null && !uniqueItemResolvedMonsterKeys.Add(itemMonsterKey))
+        {
+            Debug.LogWarning($"[BattleRewardResolver] 이 몬스터의 고유아이템 판정은 이미 처리되었습니다. MonsterKey:{itemMonsterKey} / MonsterId:{monster.MonsterId}");
+            return;
+        }
+
+        string uniqueItemId = monster.UniqueItemId.Trim();
+        string uniqueRewardKey = $"{itemMonsterKey}|Item|{uniqueItemId}";
+
+        if (HasRewardSource(rewards, uniqueRewardKey))
+            return;
+
+        if (!IsChanceSuccess(monster.UniqueItemChance))
+            return;
+
+        ItemData item = DataManager.Instance.ItemDatabase.Get(uniqueItemId);
 
         Sprite icon = null;
 
         if (DataManager.Instance.ItemIconDatabase != null)
-            DataManager.Instance.ItemIconDatabase.TryGetIcon(entry.DropId, out icon);
+            DataManager.Instance.ItemIconDatabase.TryGetIcon(uniqueItemId, out icon);
 
         rewards.Add(new BattleRewardData
         {
             Type = BattleRewardType.Item,
-            RewardId = entry.DropId,
+            RewardId = uniqueItemId,
+            SourceKey = uniqueRewardKey,
             Amount = 1,
             Icon = icon,
-            Name = item != null ? item.Name : entry.DropId
+            Name = item != null ? item.Name : uniqueItemId,
+            Description = item != null ? item.Desc : "",
+            Value = item != null ? item.Value : 0
         });
     }
 
-    private void AddRelic(RewardTableData entry, List<BattleRewardData> rewards)
+    private void AddRelic(MonsterRuntimeData monster, List<BattleRewardData> rewards)
     {
-        RelicData relic = GetRandomRelic();
+        if (!IsChanceSuccess(monster.RelicChance))
+            return;
+
+        RelicData relic = GetRandomAvailableRelic(rewards);
 
         if (relic == null)
+        {
+            Debug.Log("[BattleRewardResolver] 획득 가능한 새 유물이 없습니다.");
             return;
+        }
 
         Sprite icon = null;
 
@@ -108,20 +248,142 @@ public class BattleRewardResolver : MonoBehaviour
         {
             Type = BattleRewardType.Relic,
             RewardId = relic.FragmentId,
+            SourceKey = $"Relic|{relic.FragmentId}",
             Amount = 1,
             Icon = icon,
-            Name = relic.Name
+            Name = relic.Name,
+            Description = relic.EffectDesc,
+            Value = 0
         });
     }
 
-    private RelicData GetRandomRelic()
+    private bool HasRewardSource(List<BattleRewardData> rewards, string sourceKey)
     {
-        IReadOnlyList<RelicData> allRelics =
-            DataManager.Instance.RelicDatabase.GetAll();
+        if (rewards == null || string.IsNullOrWhiteSpace(sourceKey))
+            return false;
+
+        for (int i = 0; i < rewards.Count; i++)
+        {
+            if (rewards[i] == null)
+                continue;
+
+            if (rewards[i].SourceKey == sourceKey)
+                return true;
+        }
+
+        return false;
+    }
+
+    private string GetMonsterRewardKey(MonsterRuntimeData monster)
+    {
+        if (monster == null)
+            return "Monster:null";
+
+        if (!string.IsNullOrWhiteSpace(monster.RuntimeId))
+            return $"Runtime:{monster.RuntimeId.Trim()}";
+
+        return $"Reference:{RuntimeHelpers.GetHashCode(monster)}:{monster.MonsterId}";
+    }
+
+    private bool IsChanceSuccess(float chance)
+    {
+        if (chance <= 0f)
+            return false;
+
+        if (chance > 1f)
+            chance *= 0.01f;
+
+        chance = Mathf.Clamp01(chance);
+        return Random.value <= chance;
+    }
+
+    private RelicData GetRandomAvailableRelic(List<BattleRewardData> pendingRewards)
+    {
+        if (DataManager.Instance == null || DataManager.Instance.RelicDatabase == null)
+            return null;
+
+        IReadOnlyList<RelicData> allRelics = DataManager.Instance.RelicDatabase.GetAll();
 
         if (allRelics == null || allRelics.Count == 0)
             return null;
 
-        return allRelics[Random.Range(0, allRelics.Count)];
+        HashSet<string> unavailableRelicIds = GetUnavailableRelicIds(pendingRewards);
+        List<RelicData> candidates = new();
+
+        for (int i = 0; i < allRelics.Count; i++)
+        {
+            RelicData relic = allRelics[i];
+
+            if (relic == null || string.IsNullOrWhiteSpace(relic.FragmentId))
+                continue;
+
+            string relicId = relic.FragmentId.Trim();
+
+            if (unavailableRelicIds.Contains(relicId))
+                continue;
+
+            candidates.Add(relic);
+        }
+
+        if (candidates.Count == 0)
+            return null;
+
+        return candidates[Random.Range(0, candidates.Count)];
+    }
+
+    private HashSet<string> GetUnavailableRelicIds(List<BattleRewardData> pendingRewards)
+    {
+        HashSet<string> ids = new();
+
+        if (DataManager.Instance == null)
+            return ids;
+
+        BattleRuntimeData runtime = DataManager.Instance.BattleRuntimeStore?.GetOrCreate();
+
+        if (runtime?.OwnedRelicIds != null)
+        {
+            for (int i = 0; i < runtime.OwnedRelicIds.Count; i++)
+                AddRelicId(ids, runtime.OwnedRelicIds[i]);
+        }
+
+        IReadOnlyDictionary<string, CharacterRuntimeData> characters =
+            DataManager.Instance.CharacterRuntimeStore?.GetAll();
+
+        if (characters != null)
+        {
+            foreach (KeyValuePair<string, CharacterRuntimeData> pair in characters)
+            {
+                CharacterRuntimeData character = pair.Value;
+
+                if (character?.EquippedRelicIds == null)
+                    continue;
+
+                for (int i = 0; i < character.EquippedRelicIds.Length; i++)
+                    AddRelicId(ids, character.EquippedRelicIds[i]);
+            }
+        }
+
+        if (pendingRewards != null)
+        {
+            for (int i = 0; i < pendingRewards.Count; i++)
+            {
+                BattleRewardData reward = pendingRewards[i];
+
+                if (reward == null || reward.Type != BattleRewardType.Relic)
+                    continue;
+
+                AddRelicId(ids, reward.RewardId);
+            }
+        }
+
+        return ids;
+    }
+
+    private void AddRelicId(HashSet<string> ids, string relicId)
+    {
+        if (ids == null || string.IsNullOrWhiteSpace(relicId))
+            return;
+
+        ids.Add(relicId.Trim());
     }
 }

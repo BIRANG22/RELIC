@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
 using UnityEngine;
 
@@ -53,32 +54,26 @@ public class BattleResultChecker : MonoBehaviour
         if (rewardResolver == null || rewardPanel == null)
             return;
 
-        IReadOnlyList<string> dropTableIds =
+        IReadOnlyList<MonsterRuntimeData> monsters =
             BattleRewardCollector.Instance != null
-                ? BattleRewardCollector.Instance.CollectedDropTableIds
+                ? BattleRewardCollector.Instance.CollectedMonsters
                 : null;
 
-        Debug.Log(
-     $"[BattleResultChecker] DropTableCount:{dropTableIds?.Count ?? 0}"
- );
+        Debug.Log($"[BattleResultChecker] RewardMonsterCount:{monsters?.Count ?? 0}");
 
-        List<BattleRewardData> rewards =
-            rewardResolver.Resolve(dropTableIds);
+        List<BattleRewardData> rewards = rewardResolver.Resolve(monsters);
 
-        Debug.Log(
-            $"[BattleResultChecker] ResolvedRewardCount:{rewards.Count}"
-        );
+        Debug.Log($"[BattleResultChecker] ResolvedRewardCount:{rewards.Count}");
 
         rewardPanel.Open(rewards);
     }
 
     private bool IsAllMonstersDead()
     {
-        MonsterUnit[] monsters =
-            Object.FindObjectsByType<MonsterUnit>(
-                FindObjectsInactive.Exclude,
-                FindObjectsSortMode.None
-            );
+        MonsterUnit[] monsters = Object.FindObjectsByType<MonsterUnit>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
 
         if (monsters.Length == 0)
             return false;
@@ -97,11 +92,10 @@ public class BattleResultChecker : MonoBehaviour
 
     private bool IsAllPlayersDead()
     {
-        BattleCharacter[] characters =
-            Object.FindObjectsByType<BattleCharacter>(
-                FindObjectsInactive.Exclude,
-                FindObjectsSortMode.None
-            );
+        BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
 
         if (characters.Length == 0)
             return false;

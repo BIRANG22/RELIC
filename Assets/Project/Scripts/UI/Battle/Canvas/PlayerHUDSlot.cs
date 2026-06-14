@@ -42,8 +42,14 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
     [SerializeField] private float twoRowCostScale = 0.75f;
 
     [Header("Unique Resource")]
+    [SerializeField] private Transform resourceSlotRoot;
     [SerializeField] private GameObject[] resourceSlots;
     [SerializeField] private Image[] resourceFillImages;
+    [SerializeField] private bool autoFindResourceSlots = true;
+    [SerializeField] private string resourceSlotRootName = "ResourceSlotGroup";
+    [SerializeField] private string resourceSlotNamePrefix = "ResourceSlot_";
+    [SerializeField] private string resourceFillImageName = "FillImage";
+    [SerializeField] private int maxResourceSlotCount = 5;
 
     [Header("Armor")]
     [SerializeField] private Image shieldFill;
@@ -71,6 +77,7 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
         SetupHudClickSelection();
         ResolveCommandSelectedHighlightReferences();
         ResolveCostSlotReferences();
+        ResolveResourceSlotReferences();
         ApplyStatusEffectParentLayout();
         ApplyCommandSelectedVisual(false);
     }
@@ -79,6 +86,7 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
     {
         SetupHudClickSelection();
         ResolveCostSlotReferences();
+        ResolveResourceSlotReferences();
 
         if (boundRuntime != null)
             Refresh();
@@ -91,6 +99,7 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
 
         ResolveCommandSelectedHighlightReferences();
         ResolveCostSlotReferences();
+        ResolveResourceSlotReferences();
         ApplyStatusEffectParentLayout();
 
         if (boundRuntime == null)
@@ -180,6 +189,9 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
 
     private void RefreshUniqueResource(int currentResource, int maxResource)
     {
+        ResolveResourceSlotReferences();
+
+        maxResource = Mathf.Clamp(maxResource, 0, Mathf.Max(0, maxResourceSlotCount));
         currentResource = Mathf.Clamp(currentResource, 0, maxResource);
 
         int slotCount = resourceSlots != null ? resourceSlots.Length : 0;
@@ -187,7 +199,11 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
         for (int i = 0; i < slotCount; i++)
         {
             bool useSlot = i < maxResource;
+            bool filled = useSlot && i < currentResource;
 
+            // ResourceSlot itself is the empty frame/background.
+            // Keep the slot visible while this character can own that resource slot.
+            // Only the FillImage is hidden when the resource is empty.
             if (resourceSlots[i] != null)
                 resourceSlots[i].SetActive(useSlot);
 
@@ -199,7 +215,7 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
             if (fillImage == null)
                 continue;
 
-            bool filled = useSlot && i < currentResource;
+            fillImage.enabled = filled;
             fillImage.gameObject.SetActive(filled);
         }
     }
@@ -214,7 +230,7 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
         if (shieldValueText != null)
         {
             shieldValueText.gameObject.SetActive(armor > 0);
-            shieldValueText.text = armor.ToString();
+            shieldValueText.text = "+" + armor.ToString();
         }
     }
 
@@ -364,6 +380,54 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
                 costSlotImages[i] = slotTransform.GetComponent<Image>();
         }
     }
+
+    private void ResolveResourceSlotReferences()
+    {
+        if (!autoFindResourceSlots)
+            return;
+
+        if (resourceSlotRoot == null)
+        {
+            GameObject rootObject = FindChildGameObjectByName(resourceSlotRootName);
+
+            if (rootObject != null)
+                resourceSlotRoot = rootObject.transform;
+        }
+
+        if (resourceSlotRoot == null)
+            return;
+
+        int slotCount = Mathf.Max(0, maxResourceSlotCount);
+
+        if (resourceSlots == null || resourceSlots.Length != slotCount)
+            resourceSlots = new GameObject[slotCount];
+
+        if (resourceFillImages == null || resourceFillImages.Length != slotCount)
+            resourceFillImages = new Image[slotCount];
+
+        for (int i = 0; i < slotCount; i++)
+        {
+            if (resourceSlots[i] != null && resourceFillImages[i] != null)
+                continue;
+
+            string slotName = resourceSlotNamePrefix + i;
+            Transform slotTransform = FindDirectOrNestedChild(resourceSlotRoot, slotName);
+
+            if (slotTransform == null)
+                continue;
+
+            resourceSlots[i] = slotTransform.gameObject;
+
+            if (resourceFillImages[i] == null)
+            {
+                Transform fillTransform = FindDirectOrNestedChild(slotTransform, resourceFillImageName);
+
+                if (fillTransform != null)
+                    resourceFillImages[i] = fillTransform.GetComponent<Image>();
+            }
+        }
+    }
+
 
     private Transform FindDirectOrNestedChild(Transform root, string targetName)
     {

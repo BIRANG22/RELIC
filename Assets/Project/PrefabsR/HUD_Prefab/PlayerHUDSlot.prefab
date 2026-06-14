@@ -604,7 +604,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 6a22400304f2a874a8fc165056738dd6, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 5ead07e230d91ab498497ce2518615d5, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -791,16 +791,16 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1994342144541077033}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5650058696516913346}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -105}
+  m_AnchoredPosition: {x: 0, y: -75}
   m_SizeDelta: {x: 512, y: 512}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4706489625538668037
@@ -982,7 +982,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 6a22400304f2a874a8fc165056738dd6, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 5ead07e230d91ab498497ce2518615d5, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1630,6 +1630,7 @@ MonoBehaviour:
   maxCostSlotCount: 20
   oneRowCostScale: 1
   twoRowCostScale: 1
+  resourceSlotRoot: {fileID: 0}
   resourceSlots:
   - {fileID: 2234662161949582537}
   - {fileID: 4016534682669341005}
@@ -1642,6 +1643,11 @@ MonoBehaviour:
   - {fileID: 2293803519778184143}
   - {fileID: 3134334133059195545}
   - {fileID: 90591683472763175}
+  autoFindResourceSlots: 1
+  resourceSlotRootName: ResourceSlotGroup
+  resourceSlotNamePrefix: ResourceSlot_
+  resourceFillImageName: FillImage
+  maxResourceSlotCount: 5
   shieldFill: {fileID: 4651748590680892108}
   shieldValueText: {fileID: 4474803155211574994}
   statusIconRoot: {fileID: 2473163195493461540}
@@ -1788,7 +1794,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 6a22400304f2a874a8fc165056738dd6, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 5ead07e230d91ab498497ce2518615d5, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -3169,7 +3175,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 6a22400304f2a874a8fc165056738dd6, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 5ead07e230d91ab498497ce2518615d5, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -4770,7 +4776,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 6a22400304f2a874a8fc165056738dd6, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 5ead07e230d91ab498497ce2518615d5, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
