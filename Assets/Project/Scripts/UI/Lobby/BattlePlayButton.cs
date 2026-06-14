@@ -10,11 +10,13 @@ public class BattlePlayButton : MonoBehaviour
     [Header("Option")]
     [SerializeField] private bool checkMapSelected = true;
     [SerializeField] private bool checkPartyExists = true;
+    [SerializeField] private bool requireFullParty = true;
 
     [Header("Warning UI")]
     [SerializeField] private SettingWarningUI warningUI;
     [SerializeField] private string mapNotSelectedMessage = "스테이지를 선택해야 합니다.";
     [SerializeField] private string partyEmptyMessage = "캐릭터를 편성해야 합니다.";
+    [SerializeField] private string partyNotFullMessage = "캐릭터 3명을 모두 편성해야 합니다. 현재 {0}/{1}";
     [SerializeField] private string dataManagerMissingMessage = "데이터 매니저가 없습니다.";
     [SerializeField] private string gameManagerMissingMessage = "게임 매니저가 없습니다.";
 
@@ -66,12 +68,8 @@ public class BattlePlayButton : MonoBehaviour
                 return;
             }
 
-            if (checkPartyExists && !DataManager.Instance.PartyRuntimeStore.HasAnyCharacter)
-            {
-                ShowWarning(partyEmptyMessage);
-                Debug.LogWarning("[BattlePlayButton] 파티에 캐릭터가 없습니다.");
+            if (checkPartyExists && !CanStartWithCurrentParty())
                 return;
-            }
 
             if (GameManager.Instance == null)
             {
@@ -100,6 +98,70 @@ public class BattlePlayButton : MonoBehaviour
             return;
 
         AudioManager.Instance.PlaySfx(clickSfx);
+    }
+
+    private bool CanStartWithCurrentParty()
+    {
+        if (DataManager.Instance == null)
+            return false;
+
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+
+        if (partyStore == null)
+        {
+            ShowWarning(partyEmptyMessage);
+            Debug.LogWarning("[BattlePlayButton] PartyRuntimeStore is null.");
+            return false;
+        }
+
+        int currentCount = CountPartyCharacters(partyStore);
+        int requiredCount = Mathf.Max(1, partyStore.MaxPartyCountValue);
+
+        if (requireFullParty)
+        {
+            if (currentCount < requiredCount)
+            {
+                ShowWarning(FormatPartyNotFullMessage(currentCount, requiredCount));
+                Debug.LogWarning($"[BattlePlayButton] 파티 인원이 부족합니다. Current:{currentCount} / Required:{requiredCount}");
+                return false;
+            }
+        }
+        else if (currentCount <= 0)
+        {
+            ShowWarning(partyEmptyMessage);
+            Debug.LogWarning("[BattlePlayButton] 파티에 캐릭터가 없습니다.");
+            return false;
+        }
+
+        return true;
+    }
+
+    private int CountPartyCharacters(PartyRuntimeStore partyStore)
+    {
+        if (partyStore == null)
+            return 0;
+
+        int count = 0;
+        int maxPartyCount = partyStore.MaxPartyCountValue;
+
+        for (int i = 0; i < maxPartyCount; i++)
+        {
+            if (!string.IsNullOrWhiteSpace(partyStore.GetCharacterId(i)))
+                count++;
+        }
+
+        return count;
+    }
+
+    private string FormatPartyNotFullMessage(int currentCount, int requiredCount)
+    {
+        if (string.IsNullOrWhiteSpace(partyNotFullMessage))
+            return $"캐릭터 {requiredCount}명을 모두 편성해야 합니다. 현재 {currentCount}/{requiredCount}";
+
+        if (partyNotFullMessage.Contains("{0}") || partyNotFullMessage.Contains("{1}"))
+            return string.Format(partyNotFullMessage, currentCount, requiredCount);
+
+        return partyNotFullMessage;
     }
 
     private void ShowWarning(string message)

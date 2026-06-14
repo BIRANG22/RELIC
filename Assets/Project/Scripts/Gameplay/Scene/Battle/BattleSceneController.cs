@@ -10,6 +10,11 @@ public class BattleSceneController : MonoBehaviour
     [Header("Battle Scene Transition")]
     [SerializeField] private BattleDiagonalSceneTransition battleTransition;
 
+    [Header("Battle Map Intro Text")]
+    [SerializeField] private BattleMapIntroText battleMapIntroText;
+    [SerializeField] private string startRoomIntroMessage = "수상한 자와 조우";
+    [SerializeField] private string battleRoomIntroMessage = "전투 시작";
+
     [Header("Auto Return To Map")]
     [SerializeField] private bool autoDetectReturnToMap = true;
     [SerializeField] private Transform roomRoot;
@@ -37,10 +42,12 @@ public class BattleSceneController : MonoBehaviour
     private bool isAutoReturningToMap;
     private bool isRestoringExternallyDisabledRoom;
     private GameObject autoReturnRoomToKeepVisible;
+    private string pendingRoomIntroMessage;
 
     private void Awake()
     {
         AutoFindRoomRootIfNeeded();
+        AutoFindBattleMapIntroTextIfNeeded();
         InstallMapPanelAutoReturnWatcher();
     }
 
@@ -131,6 +138,14 @@ public class BattleSceneController : MonoBehaviour
         GameObject foundRoomRoot = GameObject.Find("RoomRoot");
         if (foundRoomRoot != null)
             roomRoot = foundRoomRoot.transform;
+    }
+
+    private void AutoFindBattleMapIntroTextIfNeeded()
+    {
+        if (battleMapIntroText != null)
+            return;
+
+        battleMapIntroText = Object.FindFirstObjectByType<BattleMapIntroText>(FindObjectsInactive.Include);
     }
 
     private void InstallMapPanelAutoReturnWatcher()
@@ -344,12 +359,14 @@ public class BattleSceneController : MonoBehaviour
         if (battleTransition == null)
         {
             onCovered?.Invoke();
+            PlayPendingRoomIntroText();
             isChangingRoom = false;
             UpdateLastActiveRoomState();
             return;
         }
 
         await battleTransition.PlayMapToRoomAsync(onCovered);
+        PlayPendingRoomIntroText();
         isChangingRoom = false;
         UpdateLastActiveRoomState();
     }
@@ -426,12 +443,14 @@ public class BattleSceneController : MonoBehaviour
 
     private void OpenStartEvent(GeneratedMapNodeData nodeData)
     {
+        pendingRoomIntroMessage = startRoomIntroMessage;
         OpenRoom(startRoom, "StartRoom");
     }
 
     private void OpenBattleMap(GeneratedMapNodeData nodeData)
     {
         Debug.Log($"[BattleSceneController] Battle room start: {nodeData.MapId}");
+        pendingRoomIntroMessage = battleRoomIntroMessage;
         OpenRoom(battleRoom, "BattleRoom");
     }
 
@@ -459,6 +478,20 @@ public class BattleSceneController : MonoBehaviour
         OpenRoom(eventRoom, "EventRoom");
     }
 
+    private void PlayPendingRoomIntroText()
+    {
+        if (string.IsNullOrEmpty(pendingRoomIntroMessage))
+            return;
+
+        if (battleMapIntroText == null)
+            AutoFindBattleMapIntroTextIfNeeded();
+
+        if (battleMapIntroText != null)
+            battleMapIntroText.Play(pendingRoomIntroMessage);
+
+        pendingRoomIntroMessage = null;
+    }
+
     private void OpenRoom(GameObject roomObject, string roomName)
     {
         if (battleMapPanel != null)
@@ -473,6 +506,25 @@ public class BattleSceneController : MonoBehaviour
         }
 
         roomObject.SetActive(true);
+
+        if (roomObject == battleRoom)
+            RequestBattleRoomLoadOnce();
+    }
+
+    private void RequestBattleRoomLoadOnce()
+    {
+        if (battleRoom == null)
+            return;
+
+        BattleRoomLoader loader = battleRoom.GetComponentInChildren<BattleRoomLoader>(true);
+
+        if (loader == null)
+        {
+            Debug.LogWarning("[BattleSceneController] BattleRoomLoader is missing in BattleRoom.");
+            return;
+        }
+
+        loader.LoadBattleFromSceneController();
     }
 
     private void CloseAllRooms()

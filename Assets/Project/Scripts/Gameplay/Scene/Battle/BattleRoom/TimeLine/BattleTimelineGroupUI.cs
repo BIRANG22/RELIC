@@ -15,10 +15,19 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     [SerializeField] private GameObject[] playerMarkObjects;
     [SerializeField] private GameObject[] enemyMarkObjects;
 
-    [Header("Active Visual")]
-    [SerializeField] private Transform activeScaleTarget;
-    [SerializeField] private Vector3 normalScale = Vector3.one;
-    [SerializeField] private Vector3 activeScale = new Vector3(1.12f, 1.12f, 1f);
+    [Header("Reserved Colors")]
+    [SerializeField] private Color playerReservedColor = new Color32(0x0A, 0x46, 0x9E, 0xFF);
+    [SerializeField] private Color enemyReservedColor = new Color32(0xDF, 0x4D, 0x56, 0xFF);
+
+    [Header("Selected Turn Mark")]
+    [SerializeField] private Transform turnMarkTransform;
+    [SerializeField] private Image turnMarkImage;
+    [SerializeField] private Color selectedTurnMarkColorA = new Color32(0x00, 0x00, 0x00, 0xFF);
+    [SerializeField] private Color selectedTurnMarkColorB = new Color32(0xFF, 0xFF, 0xFF, 0xFF);
+    [SerializeField] private float selectedTurnMarkScale = 1.2f;
+    [SerializeField] private float selectedTurnMarkBreathScale = 0.06f;
+    [SerializeField] private float selectedTurnMarkBreathSpeed = 3f;
+    [SerializeField] private float selectedTurnMarkColorSpeed = 4f;
 
     private readonly List<BattleTimelinePreviewEntry> currentEntries = new();
 
@@ -26,25 +35,22 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     private int slotIndex;
     private bool isActive;
 
+    private Vector3 turnMarkNormalScale = Vector3.one;
+    private bool hasCachedTurnMarkVisual;
+    private Color turnMarkNormalImageColor = Color.white;
+
     public int SlotIndex => slotIndex;
 
     private void Awake()
     {
         AutoFindReferences();
+        CacheTurnMarkNormalVisual();
+        ApplyTurnMarkSelectedVisual(false);
     }
 
     private void Update()
     {
-        if (activeScaleTarget == null)
-            return;
-
-        Vector3 targetScale = isActive ? activeScale : normalScale;
-
-        activeScaleTarget.localScale = Vector3.Lerp(
-            activeScaleTarget.localScale,
-            targetScale,
-            Time.unscaledDeltaTime * 12f
-        );
+        UpdateTurnMarkSelectedAnimation();
     }
 
     public void Init(BattleTimelineBarUI owner, int slotIndex)
@@ -53,11 +59,14 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         this.slotIndex = slotIndex;
 
         AutoFindReferences();
+        CacheTurnMarkNormalVisual();
+        ApplyTurnMarkSelectedVisual(isActive);
     }
 
     public void SetActiveTimelineSlot(bool active)
     {
         isActive = active;
+        ApplyTurnMarkSelectedVisual(active);
     }
 
     public void SetTimelineEntries(IReadOnlyList<BattleTimelinePreviewEntry> entries, int targetSlotIndex)
@@ -87,16 +96,20 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
             if (entry.IsMonster)
             {
+                if (firstEnemyIcon == null)
+                    firstEnemyIcon = entry.OwnerIcon;
+
                 if (enemySkillIconImages != null &&
                     visibleIndex < enemySkillIconImages.Length)
                 {
-                    SetSkillImage(enemySkillIconImages[visibleIndex], entry.SkillIcon, true);
+                    SetSkillImage(enemySkillIconImages[visibleIndex], entry.SkillIcon, true, enemyReservedColor);
                 }
 
                 if (enemyMarkObjects != null &&
                     visibleIndex < enemyMarkObjects.Length &&
                     enemyMarkObjects[visibleIndex] != null)
                 {
+                    SetRootImageColor(enemyMarkObjects[visibleIndex], enemyReservedColor);
                     enemyMarkObjects[visibleIndex].SetActive(true);
                 }
             }
@@ -108,7 +121,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
                 if (playerSkillIconImages != null &&
                     visibleIndex < playerSkillIconImages.Length)
                 {
-                    SetSkillImage(playerSkillIconImages[visibleIndex], entry.SkillIcon, true);
+                    SetSkillImage(playerSkillIconImages[visibleIndex], entry.SkillIcon, true, playerReservedColor);
 
                     TimelineSkillIconHoverUI hoverUI =
                         playerSkillIconImages[visibleIndex].GetComponentInParent<TimelineSkillIconHoverUI>();
@@ -121,6 +134,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
                     visibleIndex < playerMarkObjects.Length &&
                     playerMarkObjects[visibleIndex] != null)
                 {
+                    SetRootImageColor(playerMarkObjects[visibleIndex], playerReservedColor);
                     playerMarkObjects[visibleIndex].SetActive(true);
                 }
             }
@@ -128,28 +142,22 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             visibleIndex++;
         }
 
-        SetImage(playerIconImage, firstPlayerIcon, firstPlayerIcon != null);
-        SetImage(enemyIconImage, firstEnemyIcon, firstEnemyIcon != null);
+        SetOwnerIconImage(playerIconImage, firstPlayerIcon, firstPlayerIcon != null, playerReservedColor);
+        SetOwnerIconImage(enemyIconImage, firstEnemyIcon, firstEnemyIcon != null, enemyReservedColor);
     }
 
     public void Clear()
     {
         currentEntries.Clear();
 
-        SetImage(playerIconImage, null, false);
-        SetImage(enemyIconImage, null, false);
+        SetOwnerIconImage(playerIconImage, null, false, Color.white);
+        SetOwnerIconImage(enemyIconImage, null, false, Color.white);
 
         if (playerSkillIconImages != null)
         {
             for (int i = 0; i < playerSkillIconImages.Length; i++)
             {
-                SetImage(playerSkillIconImages[i], null, false);
-
-                if (playerSkillIconImages[i] != null &&
-                    playerSkillIconImages[i].transform.parent != null)
-                {
-                    playerSkillIconImages[i].transform.parent.gameObject.SetActive(false);
-                }
+                ClearSkillImage(playerSkillIconImages[i]);
             }
         }
 
@@ -157,13 +165,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         {
             for (int i = 0; i < enemySkillIconImages.Length; i++)
             {
-                SetImage(enemySkillIconImages[i], null, false);
-
-                if (enemySkillIconImages[i] != null &&
-                    enemySkillIconImages[i].transform.parent != null)
-                {
-                    enemySkillIconImages[i].transform.parent.gameObject.SetActive(false);
-                }
+                ClearSkillImage(enemySkillIconImages[i]);
             }
         }
 
@@ -183,7 +185,10 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         Transform parent = image.transform.parent;
 
         if (parent != null)
+        {
+            SetRootImageColor(parent.gameObject, Color.white);
             parent.gameObject.SetActive(false);
+        }
     }
     public void OnPointerClick(PointerEventData eventData)
     {
@@ -202,8 +207,11 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
     private void AutoFindReferences()
     {
-        if (activeScaleTarget == null)
-            activeScaleTarget = transform;
+        if (turnMarkTransform == null)
+            turnMarkTransform = FindChildRecursive(transform, "TurnMark");
+
+        if (turnMarkImage == null && turnMarkTransform != null)
+            turnMarkImage = turnMarkTransform.GetComponent<Image>();
 
         if (playerIconImage == null)
             playerIconImage = FindImage("Player_Icon", "image");
@@ -225,6 +233,70 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
         EnsureButton();
         SetupOrderClickTargets();
+    }
+
+
+    private void CacheTurnMarkNormalVisual()
+    {
+        if (hasCachedTurnMarkVisual)
+            return;
+
+        if (turnMarkTransform == null)
+            return;
+
+        turnMarkNormalScale = turnMarkTransform.localScale;
+
+        if (turnMarkImage != null)
+            turnMarkNormalImageColor = turnMarkImage.color;
+
+        hasCachedTurnMarkVisual = true;
+    }
+
+    private void UpdateTurnMarkSelectedAnimation()
+    {
+        if (turnMarkTransform == null)
+            return;
+
+        if (!isActive)
+            return;
+
+        float breath = (Mathf.Sin(Time.unscaledTime * selectedTurnMarkBreathSpeed) + 1f) * 0.5f;
+        float scale = selectedTurnMarkScale + (breath * selectedTurnMarkBreathScale);
+        turnMarkTransform.localScale = turnMarkNormalScale * scale;
+
+        ApplyTurnMarkSelectedBlinkColor();
+    }
+
+    private void ApplyTurnMarkSelectedVisual(bool selected)
+    {
+        CacheTurnMarkNormalVisual();
+
+        if (turnMarkTransform == null)
+            return;
+
+        if (selected)
+            ApplyTurnMarkSelectedBlinkColor();
+        else
+        {
+            if (turnMarkImage != null)
+                turnMarkImage.color = turnMarkNormalImageColor;
+
+        }
+
+        if (!selected)
+            turnMarkTransform.localScale = turnMarkNormalScale;
+        else
+            turnMarkTransform.localScale = turnMarkNormalScale * selectedTurnMarkScale;
+    }
+
+    private void ApplyTurnMarkSelectedBlinkColor()
+    {
+        float t = (Mathf.Sin(Time.unscaledTime * selectedTurnMarkColorSpeed) + 1f) * 0.5f;
+        Color blinkColor = Color.Lerp(selectedTurnMarkColorA, selectedTurnMarkColorB, t);
+
+        if (turnMarkImage != null)
+            turnMarkImage.color = blinkColor;
+
     }
 
     private void EnsureButton()
@@ -365,33 +437,74 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
     private void SetImage(Image image, Sprite sprite, bool visible)
     {
-        if (image == null)
-            return;
-
-        image.sprite = sprite;
-        image.enabled = visible && sprite != null;
-        image.gameObject.SetActive(visible && sprite != null);
-        image.raycastTarget = false;
+        SetImage(image, sprite, visible, Color.white);
     }
 
-    private void SetSkillImage(Image image, Sprite sprite, bool visible)
+    private void SetImage(Image image, Sprite sprite, bool visible, Color color)
     {
         if (image == null)
             return;
 
-        //Debug.Log($"[SetSkillImage] Path:{GetPath(image.transform)} / Sprite:{sprite}");
-
         bool show = visible && sprite != null;
 
+        image.sprite = sprite;
+        image.color = show ? color : Color.white;
+        image.enabled = show;
+        image.gameObject.SetActive(show);
+        image.raycastTarget = false;
+    }
+
+    private void SetOwnerIconImage(Image image, Sprite sprite, bool visible, Color borderColor)
+    {
+        if (image == null)
+            return;
+
+        bool show = visible && sprite != null;
         Transform parent = image.transform.parent;
 
         if (parent != null)
+        {
+            SetRootImageColor(parent.gameObject, show ? borderColor : Color.white);
             parent.gameObject.SetActive(show);
+        }
+
+        image.sprite = sprite;
+        image.color = Color.white;
+        image.enabled = show;
+        image.gameObject.SetActive(show);
+        image.raycastTarget = false;
+    }
+
+    private void SetSkillImage(Image image, Sprite sprite, bool visible, Color borderColor)
+    {
+        if (image == null)
+            return;
+
+        bool show = visible && sprite != null;
+        Transform parent = image.transform.parent;
+
+        if (parent != null)
+        {
+            SetRootImageColor(parent.gameObject, show ? borderColor : Color.white);
+            parent.gameObject.SetActive(show);
+        }
 
         image.gameObject.SetActive(show);
         image.sprite = sprite;
+        image.color = Color.white;
         image.enabled = show;
         image.raycastTarget = false;
+    }
+
+    private void SetRootImageColor(GameObject root, Color color)
+    {
+        if (root == null)
+            return;
+
+        Image image = root.GetComponent<Image>();
+
+        if (image != null)
+            image.color = color;
     }
 
     private void SetObjectsActive(GameObject[] objects, bool active)
@@ -402,7 +515,12 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         for (int i = 0; i < objects.Length; i++)
         {
             if (objects[i] != null)
+            {
+                if (!active)
+                    SetRootImageColor(objects[i], Color.white);
+
                 objects[i].SetActive(active);
+            }
         }
     }
 

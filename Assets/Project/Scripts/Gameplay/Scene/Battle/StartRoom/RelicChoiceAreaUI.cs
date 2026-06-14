@@ -174,14 +174,15 @@ public class RelicChoiceAreaUI : MonoBehaviour
 
     private void RemoveAlreadyOwnedRelics(List<string> candidates)
     {
-        if (DataManager.Instance == null || DataManager.Instance.BattleRuntimeStore == null)
+        if (candidates == null || candidates.Count == 0)
             return;
 
-        BattleRuntimeData runtime = DataManager.Instance.BattleRuntimeStore.GetOrCreate();
-        if (runtime.OwnedRelicIds == null || runtime.OwnedRelicIds.Count == 0)
+        HashSet<string> unavailableRelicIds = GetUnavailableRelicIds();
+
+        if (unavailableRelicIds.Count == 0)
             return;
 
-        candidates.RemoveAll(id => runtime.OwnedRelicIds.Contains(id));
+        candidates.RemoveAll(id => !string.IsNullOrWhiteSpace(id) && unavailableRelicIds.Contains(id.Trim()));
     }
 
     public void ShowRelicHoverInfo(string relicId)
@@ -231,9 +232,18 @@ public class RelicChoiceAreaUI : MonoBehaviour
             return;
         }
 
+        relicId = relicId.Trim();
+
         if (!DataManager.Instance.RelicDatabase.TryGet(relicId, out _))
         {
             Debug.LogWarning($"[RelicChoiceAreaUI] Unknown relic id: {relicId}");
+            return;
+        }
+
+        if (HasRelicAnywhere(relicId))
+        {
+            Debug.LogWarning($"[RelicChoiceAreaUI] 이미 보유 중인 유물입니다. Relic:{relicId}");
+            SetupChoices();
             return;
         }
 
@@ -245,20 +255,101 @@ public class RelicChoiceAreaUI : MonoBehaviour
 
     private void GrantRelic(string relicId)
     {
+        if (string.IsNullOrWhiteSpace(relicId) || HasRelicAnywhere(relicId))
+            return;
+
         BattleRuntimeData runtime = DataManager.Instance.BattleRuntimeStore.GetOrCreate();
         runtime.OwnedRelicIds ??= new List<string>();
 
-        if (!runtime.OwnedRelicIds.Contains(relicId))
-            runtime.OwnedRelicIds.Add(relicId);
-
+        runtime.OwnedRelicIds.Add(relicId.Trim());
+        NormalizeOwnedRelics(runtime);
         DataManager.Instance.BattleRuntimeStore.Set(runtime);
+    }
+
+    private HashSet<string> GetUnavailableRelicIds()
+    {
+        HashSet<string> ids = new();
+
+        if (DataManager.Instance == null)
+            return ids;
+
+        BattleRuntimeData runtime = DataManager.Instance.BattleRuntimeStore?.GetOrCreate();
+
+        if (runtime?.OwnedRelicIds != null)
+        {
+            for (int i = 0; i < runtime.OwnedRelicIds.Count; i++)
+                AddRelicId(ids, runtime.OwnedRelicIds[i]);
+        }
+
+        IReadOnlyDictionary<string, CharacterRuntimeData> characters =
+            DataManager.Instance.CharacterRuntimeStore?.GetAll();
+
+        if (characters != null)
+        {
+            foreach (KeyValuePair<string, CharacterRuntimeData> pair in characters)
+            {
+                CharacterRuntimeData character = pair.Value;
+
+                if (character?.EquippedRelicIds == null)
+                    continue;
+
+                for (int i = 0; i < character.EquippedRelicIds.Length; i++)
+                    AddRelicId(ids, character.EquippedRelicIds[i]);
+            }
+        }
+
+        return ids;
+    }
+
+    private bool HasRelicAnywhere(string relicId)
+    {
+        if (string.IsNullOrWhiteSpace(relicId))
+            return false;
+
+        return GetUnavailableRelicIds().Contains(relicId.Trim());
+    }
+
+    private void AddRelicId(HashSet<string> ids, string relicId)
+    {
+        if (ids == null || string.IsNullOrWhiteSpace(relicId))
+            return;
+
+        ids.Add(relicId.Trim());
+    }
+
+    private void NormalizeOwnedRelics(BattleRuntimeData runtime)
+    {
+        if (runtime == null)
+            return;
+
+        runtime.OwnedRelicIds ??= new List<string>();
+        HashSet<string> uniqueIds = new();
+
+        for (int i = runtime.OwnedRelicIds.Count - 1; i >= 0; i--)
+        {
+            string relicId = runtime.OwnedRelicIds[i];
+
+            if (string.IsNullOrWhiteSpace(relicId))
+            {
+                runtime.OwnedRelicIds.RemoveAt(i);
+                continue;
+            }
+
+            relicId = relicId.Trim();
+
+            if (!uniqueIds.Add(relicId))
+            {
+                runtime.OwnedRelicIds.RemoveAt(i);
+                continue;
+            }
+
+            runtime.OwnedRelicIds[i] = relicId;
+        }
     }
 
     private void RefreshRelicEquipPanel()
     {
-        RelicEquipPanelUI relicEquipPanel = Object.FindFirstObjectByType<RelicEquipPanelUI>(FindObjectsInactive.Include);
-        if (relicEquipPanel != null)
-            relicEquipPanel.Refresh();
+        RelicEquipPanelUI.RefreshAll();
     }
 
     private void CompleteChoiceEvent()

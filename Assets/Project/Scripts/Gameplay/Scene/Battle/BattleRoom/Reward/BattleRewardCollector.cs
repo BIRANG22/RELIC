@@ -1,14 +1,16 @@
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using Relic.Gameplay.Data;
 using UnityEngine;
 
 public class BattleRewardCollector : MonoBehaviour
 {
     public static BattleRewardCollector Instance { get; private set; }
 
-    private readonly HashSet<string> collectedMonsterRuntimeIds = new();
-    private readonly List<string> collectedDropTableIds = new();
+    private readonly HashSet<string> collectedMonsterKeys = new();
+    private readonly List<MonsterRuntimeData> collectedMonsters = new();
 
-    public IReadOnlyList<string> CollectedDropTableIds => collectedDropTableIds;
+    public IReadOnlyList<MonsterRuntimeData> CollectedMonsters => collectedMonsters;
 
     private void Awake()
     {
@@ -17,24 +19,36 @@ public class BattleRewardCollector : MonoBehaviour
 
     public void Clear()
     {
-        collectedMonsterRuntimeIds.Clear();
-        collectedDropTableIds.Clear();
+        collectedMonsterKeys.Clear();
+        collectedMonsters.Clear();
     }
 
-    public void CollectMonsterDrop(string monsterRuntimeId, string dropTableId)
+    public void CollectMonsterReward(MonsterRuntimeData monsterData)
     {
-        if (string.IsNullOrWhiteSpace(monsterRuntimeId))
+        if (monsterData == null)
             return;
 
-        if (string.IsNullOrWhiteSpace(dropTableId))
+        string monsterKey = GetMonsterKey(monsterData);
+
+        if (!collectedMonsterKeys.Add(monsterKey))
+        {
+            Debug.LogWarning($"[BattleRewardCollector] 이미 수집한 몬스터 보상입니다. MonsterKey:{monsterKey} / MonsterId:{monsterData.MonsterId}");
             return;
+        }
 
-        if (collectedMonsterRuntimeIds.Contains(monsterRuntimeId))
-            return;
+        collectedMonsters.Add(monsterData);
 
-        collectedMonsterRuntimeIds.Add(monsterRuntimeId);
-        collectedDropTableIds.Add(dropTableId);
+        Debug.Log($"[BattleRewardCollector] Collect / MonsterKey:{monsterKey} / MonsterId:{monsterData.MonsterId}");
+    }
 
-        Debug.Log($"[BattleRewardCollector] Collect / Monster:{monsterRuntimeId} / DropTable:{dropTableId}");
+    private string GetMonsterKey(MonsterRuntimeData monsterData)
+    {
+        if (monsterData == null)
+            return "Monster:null";
+
+        if (!string.IsNullOrWhiteSpace(monsterData.RuntimeId))
+            return $"Runtime:{monsterData.RuntimeId.Trim()}";
+
+        return $"Reference:{RuntimeHelpers.GetHashCode(monsterData)}:{monsterData.MonsterId}";
     }
 }

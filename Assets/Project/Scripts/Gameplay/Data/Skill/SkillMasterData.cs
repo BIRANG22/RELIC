@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using UnityEngine;
 
 namespace Relic.Gameplay.Data
@@ -24,20 +24,28 @@ namespace Relic.Gameplay.Data
 
     public enum Category
     {
-        Move,       // ±âº» ÀÌµ¿
-        Passive,    // ÆĞ½Ãºê
-        Unique,     // °íÀ¯ ½ºÅ³
-        Ability,    // Ä³¸¯ÅÍ Àü¿ë ½ºÅ³
-        Public,     // °øÀ¯ ½ºÅ³
-        Core        // ÀüÅõ È¹µæ ½ºÅ³
+        Move,       // ê¸°ë³¸ ì´ë™
+        Passive,    // íŒ¨ì‹œë¸Œ
+        Unique,     // ê³ ìœ  ìŠ¤í‚¬
+        Ability,    // ìºë¦­í„° ì „ìš© ìŠ¤í‚¬
+        Public,     // ê³µìœ  ìŠ¤í‚¬
+        Core        // ì „íˆ¬ íšë“ ìŠ¤í‚¬
     }
 
     public enum ReferenceResource
     {
-        MovePoint,
-        UniqueResource,
-        Stamina,
-        Health
+        MovePoint = 0,
+        UniqueResource = 1,
+        Stamina = 2,
+        Health = 3,
+
+        // SkillMasterì˜ ReferenceResource ì»¬ëŸ¼ì—ì„œ ì‚¬ìš©í•˜ëŠ” ë³„ì¹­ì…ë‹ˆë‹¤.
+        // Cost  -> ìŠ¤íƒœë¯¸ë‚˜ / ì½”ìŠ¤íŠ¸
+        // Hp    -> ì²´ë ¥
+        // Ulti  -> ê³ ìœ ìì›
+        Cost = Stamina,
+        Hp = Health,
+        Ulti = UniqueResource
     }
 
     public enum RangeType
@@ -72,8 +80,8 @@ namespace Relic.Gameplay.Data
     public enum ValueCalcType
     {
         None,
-        Fixed,   // °íÁ¤°ª
-        PerCost  // ½ÇÁ¦ ¼Ò¸ğ·® * °ª
+        Fixed,   // ê³ ì •ê°’
+        PerCost  // ì‹¤ì œ ì†Œëª¨ëŸ‰ * ê°’
     }
 
     [System.Serializable]
@@ -86,17 +94,17 @@ namespace Relic.Gameplay.Data
         public TargetType Target;
         public SkillType SkillType;
 
-        // ¿¢¼¿ ¿øº» ¹®ÀÚ¿­: ¼¼¹ÌÄİ·Ğ ±¸ºĞ
+        // ì—‘ì…€ ì›ë³¸ ë¬¸ìì—´: ì„¸ë¯¸ì½œë¡  êµ¬ë¶„
         public string EffectIds;
         public string ValueCalcTypes;
         public string ValueRate;
         public string CountRate;
 
-        // ÆĞ½Ãºê
+        // íŒ¨ì‹œë¸Œ
         public PassiveFormulaType PassiveFormulaType;
         public int PassiveMinResource;
 
-        // ÀÚ¿ø ¼Ò¸ğ
+        // ìì› ì†Œëª¨
         public ResourceCostType ResourceCostType;
         public int ResourceCostValue;
 
@@ -107,7 +115,7 @@ namespace Relic.Gameplay.Data
         public string ToolTip;
         public string Details;
 
-        // ·±Å¸ÀÓ »ç¿ë¿ë
+        // ëŸ°íƒ€ì„ ì‚¬ìš©ìš©
         public List<SkillEffectEntry> EffectEntries = new();
 
         [System.NonSerialized]

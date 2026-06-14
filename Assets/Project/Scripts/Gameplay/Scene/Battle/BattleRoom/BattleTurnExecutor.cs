@@ -15,7 +15,14 @@ public class BattleTurnExecutor : MonoBehaviour
     {
         if (isExecuting)
         {
+            ShowBattleWarning("이미 턴을 실행 중입니다.");
             Debug.LogWarning("[BattleTurnExecutor] Already executing.");
+            return;
+        }
+
+        if (timelineController == null)
+        {
+            ShowBattleWarning("타임라인 컨트롤러를 찾을 수 없습니다.");
             return;
         }
 
@@ -35,6 +42,12 @@ public class BattleTurnExecutor : MonoBehaviour
             BattleActionRunner runner = new(gridManager);
 
             List<BattleActionBatch> batches = builder.Build(timelineController);
+
+            if (batches == null || batches.Count <= 0)
+            {
+                ShowBattleWarning("실행할 행동이 없습니다.");
+                yield break;
+            }
 
             for (int i = 0; i < batches.Count; i++)
             {
@@ -57,12 +70,20 @@ public class BattleTurnExecutor : MonoBehaviour
             }
 
             if (roomLoader != null)
+            {
+                roomLoader.RecoverPlayerCostsToMax();
                 roomLoader.PlanNextMonsterTurns();
+            }
         }
         finally
         {
             isExecuting = false;
         }
+    }
+
+    private void ShowBattleWarning(string message)
+    {
+        BattleWarningUI.ShowMessage(message);
     }
 
     private void ClearTimeline()

@@ -3,15 +3,21 @@ using Relic.Gameplay.Data;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace Relic.Gameplay.Monster
 {
     public class MonsterUnit : MonoBehaviour
     {
+        [Header("Click Collider")]
+        [SerializeField] private bool autoAddClickCollider2D = true;
+        [SerializeField] private Vector2 fallbackColliderSize = new Vector2(1f, 1f);
+
         public MonsterRuntimeData RuntimeData { get; private set; }
 
         private MonsterAIBase ai;
         private MonsterHUDSlot hud;
+        private Collider2D clickCollider2D;
 
         private static MonsterUnit selectedMonster;
 
@@ -43,20 +49,103 @@ namespace Relic.Gameplay.Monster
         {
             RuntimeData = runtimeData;
             ai = MonsterAIFactory.Create(runtimeData.MonsterId);
+            EnsureClickCollider2D();
 
             gameObject.name =
                 $"{runtimeData.Name}_{runtimeData.RuntimeId}";
         }
 
-        public string DropTableId
+        private void OnMouseDown()
         {
-            get
-            {
-                if (RuntimeData == null)
-                    return null;
+            if (RuntimeData == null)
+                return;
 
-                return RuntimeData.DropTableId;
+            if (IsPointerOverUI())
+                return;
+
+            SelectThisMonster();
+        }
+
+        private bool IsPointerOverUI()
+        {
+            if (EventSystem.current == null)
+                return false;
+
+            if (EventSystem.current.IsPointerOverGameObject())
+                return true;
+
+            if (Input.touchCount > 0)
+                return EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId);
+
+            return false;
+        }
+
+        private void EnsureClickCollider2D()
+        {
+            clickCollider2D = GetComponentInChildren<Collider2D>();
+
+            if (clickCollider2D != null || !autoAddClickCollider2D)
+                return;
+
+            BoxCollider2D boxCollider = gameObject.AddComponent<BoxCollider2D>();
+            boxCollider.isTrigger = false;
+
+            if (TryGetRendererBounds(out Bounds bounds))
+            {
+                Vector3 localCenter = transform.InverseTransformPoint(bounds.center);
+                Vector3 lossyScale = transform.lossyScale;
+
+                float scaleX = Mathf.Approximately(lossyScale.x, 0f) ? 1f : Mathf.Abs(lossyScale.x);
+                float scaleY = Mathf.Approximately(lossyScale.y, 0f) ? 1f : Mathf.Abs(lossyScale.y);
+
+                boxCollider.offset = new Vector2(localCenter.x, localCenter.y);
+                boxCollider.size = new Vector2(
+                    Mathf.Max(0.01f, bounds.size.x / scaleX),
+                    Mathf.Max(0.01f, bounds.size.y / scaleY)
+                );
             }
+            else
+            {
+                boxCollider.offset = Vector2.zero;
+                boxCollider.size = fallbackColliderSize;
+            }
+
+            clickCollider2D = boxCollider;
+        }
+
+        private bool TryGetRendererBounds(out Bounds bounds)
+        {
+            Renderer[] renderers = GetComponentsInChildren<Renderer>(true);
+            bounds = new Bounds(transform.position, Vector3.zero);
+            bool hasBounds = false;
+
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                Renderer renderer = renderers[i];
+
+                if (renderer == null)
+                    continue;
+
+                if (!hasBounds)
+                {
+                    bounds = renderer.bounds;
+                    hasBounds = true;
+                }
+                else
+                {
+                    bounds.Encapsulate(renderer.bounds);
+                }
+            }
+
+            return hasBounds;
+        }
+
+        public Collider2D GetClickCollider2D()
+        {
+            if (clickCollider2D == null)
+                EnsureClickCollider2D();
+
+            return clickCollider2D;
         }
 
         public void BindHUD(MonsterHUDSlot hud)
@@ -66,7 +155,7 @@ namespace Relic.Gameplay.Monster
             if (this.hud != null)
             {
                 this.hud.Bind(RuntimeData);
-                this.hud.SetFollowTarget(transform);
+                this.hud.SetFollowTarget(transform, GetClickCollider2D());
                 this.hud.Hide();
             }
         }

@@ -14,6 +14,7 @@ public class BattleTimelinePreviewEntry
     public SkillMasterData PlayerSkillData;
     public MonsterSkillData MonsterSkillData;
     public PlayerReservedCommand PlayerCommand { get; private set; }
+
     public string OwnerId
     {
         get
@@ -33,7 +34,7 @@ public class BattleTimelinePreviewEntry
         get
         {
             if (IsPlayer)
-                return GetCharacterIcon(OwnerId);
+                return GetCharacterTimelineIcon(OwnerId);
 
             if (IsMonster)
                 return GetMonsterIcon(OwnerId);
@@ -57,9 +58,9 @@ public class BattleTimelinePreviewEntry
     }
 
     public static BattleTimelinePreviewEntry CreatePlayer(
-    int slotIndex,
-    int orderIndex,
-    PlayerReservedCommand command)
+        int slotIndex,
+        int orderIndex,
+        PlayerReservedCommand command)
     {
         if (command == null)
             return null;
@@ -79,9 +80,9 @@ public class BattleTimelinePreviewEntry
     }
 
     public static BattleTimelinePreviewEntry CreateMonster(
-    int slotIndex,
-    int orderIndex,
-    MonsterReservedCommand command)
+        int slotIndex,
+        int orderIndex,
+        MonsterReservedCommand command)
     {
         if (command == null)
             return null;
@@ -97,13 +98,13 @@ public class BattleTimelinePreviewEntry
         };
     }
 
-    private static Sprite GetCharacterIcon(string characterId)
+    private static Sprite GetCharacterTimelineIcon(string characterId)
     {
         if (DataManager.Instance == null ||
             DataManager.Instance.CharacterIconDatabase == null)
             return null;
 
-        if (DataManager.Instance.CharacterIconDatabase.TryGetIcon(characterId, out Sprite icon))
+        if (DataManager.Instance.CharacterIconDatabase.TryGetTimelineIcon(characterId, out Sprite icon))
             return icon;
 
         return null;
@@ -111,21 +112,27 @@ public class BattleTimelinePreviewEntry
 
     private static Sprite GetMonsterIcon(string monsterId)
     {
-        // MonsterIconDatabase가 아직 없으면 일단 null.
-        // 나중에 만들면 여기 연결.
+        if (DataManager.Instance == null ||
+            DataManager.Instance.MonsterIconDatabase == null)
+            return null;
+
+        if (DataManager.Instance.MonsterIconDatabase.TryGetTimelineIcon(monsterId, out Sprite icon))
+            return icon;
+
         return null;
     }
+
     private static Sprite GetTimelineActionIcon(TimelineActionType actionType)
     {
         if (DataManager.Instance == null)
         {
-            Debug.LogWarning("[TimelineIcon] DataManager 없음");
+            Debug.LogWarning("[TimelineIcon] DataManager가 없습니다.");
             return null;
         }
 
         if (DataManager.Instance.ActionTypeIconDatabase == null)
         {
-            Debug.LogWarning("[TimelineIcon] ActionTypeIconDatabase 없음");
+            Debug.LogWarning("[TimelineIcon] ActionTypeIconDatabase가 없습니다.");
             return null;
         }
 

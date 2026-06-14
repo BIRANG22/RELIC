@@ -15,10 +15,13 @@ MonoBehaviour:
   entries:
   - CharacterId: Char_01
     Icon: {fileID: 21300000, guid: e9efe1f5fdb8dab4892171bf67f5908d, type: 3}
+    TimelineIcon: {fileID: 21300000, guid: 294dd1c8706b81745aa729180de40529, type: 3}
     Mark: {fileID: 21300000, guid: 80d22705c1ab33f4cbbfc2adf849d6cf, type: 3}
   - CharacterId: Char_02
     Icon: {fileID: 21300000, guid: 67f4deb57112c4d4cade5060022f4962, type: 3}
+    TimelineIcon: {fileID: 21300000, guid: ce28a1a579b8dfc44bed8befb2b8aac1, type: 3}
     Mark: {fileID: 21300000, guid: 3d1cfdd4679cdd545a7e1541a076736e, type: 3}
   - CharacterId: Char_03
     Icon: {fileID: 21300000, guid: 1941f2817d2f1d84c9039acb95d0c12c, type: 3}
+    TimelineIcon: {fileID: 21300000, guid: e7112661892142e41bfb5051cbc4c4bf, type: 3}
     Mark: {fileID: 21300000, guid: e27844ec0bb5fe94abcbaec30f9794e1, type: 3}

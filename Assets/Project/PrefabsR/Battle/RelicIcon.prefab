@@ -36,7 +36,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 80, y: 80}
+  m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6153007939688059327
 CanvasRenderer:
@@ -89,3 +89,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   iconImage: {fileID: 2679557058206997311}
+  scaleTarget: {fileID: 0}
+  useHoverBreathEffect: 1
+  hoverBaseScale: 1.08
+  breathAmount: 0.04
+  breathSpeed: 4
+  scaleLerpSpeed: 14
+  useSelectedScale: 1
+  selectedScale: 1.08
+  boostSortingOnHoverOrSelected: 1
+  sortingOrderBoost: 2000
+  playClickSfx: 1
+  clickSfxType: 7

@@ -164,17 +164,24 @@ public class SkillListPanel : MonoBehaviour
             return;
 
         AddSkillSlot(currentRuntime.MoveSkillId, true);
-        AddSkillSlot(currentRuntime.UniqueSkillId, true);
         AddSkillSlot(currentRuntime.AbilitySkillId, true);
+        AddSkillSlot(GetEquippedSkillId(2), true);
+        AddSkillSlot(GetEquippedSkillId(3), true);
+        AddSkillSlot(currentRuntime.UniqueSkillId, true);
+    }
 
-        if (currentRuntime.EquippedSkillIds != null)
-        {
-            if (currentRuntime.EquippedSkillIds.Length > 2)
-                AddSkillSlot(currentRuntime.EquippedSkillIds[2], true);
+    private string GetEquippedSkillId(int index)
+    {
+        if (currentRuntime == null)
+            return string.Empty;
 
-            if (currentRuntime.EquippedSkillIds.Length > 3)
-                AddSkillSlot(currentRuntime.EquippedSkillIds[3], true);
-        }
+        if (currentRuntime.EquippedSkillIds == null)
+            return string.Empty;
+
+        if (index < 0 || index >= currentRuntime.EquippedSkillIds.Length)
+            return string.Empty;
+
+        return currentRuntime.EquippedSkillIds[index];
     }
 
     private void AddSkillSlot(string skillId, bool interactable)
@@ -229,15 +236,20 @@ public class SkillListPanel : MonoBehaviour
     {
         if (currentRuntime == null)
         {
+            ShowBattleWarning("선택된 캐릭터가 없습니다.");
             Debug.LogWarning("[SkillListPanel] 선택된 캐릭터가 없습니다.");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(skillId))
+        {
+            ShowBattleWarning("등록된 스킬이 없습니다.");
             return;
+        }
 
         if (DataManager.Instance == null || DataManager.Instance.SkillDatabase == null)
         {
+            ShowBattleWarning("스킬 데이터를 찾을 수 없습니다.");
             Debug.LogWarning("[SkillListPanel] SkillDatabase가 없습니다.");
             return;
         }
@@ -246,6 +258,7 @@ public class SkillListPanel : MonoBehaviour
 
         if (skillData == null)
         {
+            ShowBattleWarning("스킬 데이터를 찾을 수 없습니다.");
             Debug.LogWarning($"[SkillListPanel] SkillData 없음: {skillId}");
             return;
         }
@@ -255,12 +268,18 @@ public class SkillListPanel : MonoBehaviour
 
         if (battleTimelineController == null)
         {
+            ShowBattleWarning("타임라인 컨트롤러를 찾을 수 없습니다.");
             Debug.LogWarning("[SkillListPanel] BattleTimelineController가 없습니다.");
             return;
         }
 
         battleTimelineController.SelectCharacter(currentRuntime);
         battleTimelineController.SelectSkill(skillData);
+    }
+
+    private void ShowBattleWarning(string message)
+    {
+        BattleWarningUI.ShowMessage(message);
     }
 
     private void CaptureInitialPosition()
@@ -414,6 +433,9 @@ public class SkillListPanel : MonoBehaviour
     private bool IsScreenPositionInsidePanelOrKeepOpenRoots(Vector2 screenPosition)
     {
         if (IsScreenPositionInsideRect(panelRect, screenPosition))
+            return true;
+
+        if (contentRoot is RectTransform contentRect && IsScreenPositionInsideRect(contentRect, screenPosition))
             return true;
 
         if (IsScreenPositionInsideRect(detailsBackgroundRect, screenPosition))

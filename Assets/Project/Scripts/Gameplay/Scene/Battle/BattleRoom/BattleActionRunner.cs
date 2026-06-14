@@ -874,9 +874,6 @@ public class BattleActionRunner
         if (BattleRewardCollector.Instance == null)
             return;
 
-        BattleRewardCollector.Instance.CollectMonsterDrop(
-            monster.RuntimeData.RuntimeId,
-            monster.RuntimeData.DropTableId
-        );
+        BattleRewardCollector.Instance.CollectMonsterReward(monster.RuntimeData);
     }
 }

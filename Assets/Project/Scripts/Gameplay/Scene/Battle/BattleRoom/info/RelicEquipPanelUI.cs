@@ -1,11 +1,17 @@
+using System.Collections;
+using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class RelicEquipPanelUI : MonoBehaviour
 {
     [Header("Inventory")]
     [SerializeField] private Transform inventoryContent;
     [SerializeField] private RelicIconUI inventorySlotPrefab;
+    [SerializeField] private bool useVerticalInventoryLayout = true;
+    [SerializeField] private float inventorySlotSpacing = 8f;
+    [SerializeField] private Vector2 fallbackSlotSize = new Vector2(64f, 64f);
 
     [Header("Equipped Slots")]
     [SerializeField] private EquippedRelicSlotUI[] equippedSlots;
@@ -20,12 +26,14 @@ public class RelicEquipPanelUI : MonoBehaviour
     private void Awake()
     {
         ResolveTooltipPanelOwner();
+        EnsureInventoryVerticalLayout();
         InitSlots();
     }
 
     private void OnEnable()
     {
         ResolveTooltipPanelOwner();
+        EnsureInventoryVerticalLayout();
         ResetSelectionState();
         Refresh();
     }
@@ -53,9 +61,7 @@ public class RelicEquipPanelUI : MonoBehaviour
         selectedRelicSlotIndex = relicSlotIndex;
         UpdateEquippedSlotSelectionVisuals();
 
-        Debug.Log(
-            $"[RelicEquipPanelUI] ÀåÂø ½½·Ô ¼±ÅÃ / Character:{selectedCharacterId} / RelicSlot:{selectedRelicSlotIndex + 1}"
-        );
+        Debug.Log($"[RelicEquipPanelUI] ÀåÂø ½½·Ô ¼±ÅÃ / Character:{selectedCharacterId} / RelicSlot:{selectedRelicSlotIndex + 1}");
     }
 
     public void SelectInventoryRelicIcon(RelicIconUI selectedIcon)
@@ -77,9 +83,7 @@ public class RelicEquipPanelUI : MonoBehaviour
 
     public void SelectRelic(string relicId)
     {
-        Debug.Log(
-            $"[RelicEquipPanelUI] À¯¹° Å¬¸¯ / Character:{selectedCharacterId} / RelicSlot:{selectedRelicSlotIndex + 1} / Relic:{relicId}"
-        );
+        Debug.Log($"[RelicEquipPanelUI] À¯¹° Å¬¸¯ / Character:{selectedCharacterId} / RelicSlot:{selectedRelicSlotIndex + 1} / Relic:{relicId}");
 
         if (string.IsNullOrWhiteSpace(selectedCharacterId))
         {
@@ -145,10 +149,10 @@ public class RelicEquipPanelUI : MonoBehaviour
         if (inventoryContent == null || inventorySlotPrefab == null)
             return;
 
+        EnsureInventoryVerticalLayout();
         selectedInventoryRelicIcon = null;
 
-        for (int i = inventoryContent.childCount - 1; i >= 0; i--)
-            Destroy(inventoryContent.GetChild(i).gameObject);
+        ClearInventoryIcons();
 
         if (DataManager.Instance == null)
             return;
@@ -156,8 +160,12 @@ public class RelicEquipPanelUI : MonoBehaviour
         BattleRuntimeData runtime =
             DataManager.Instance.BattleRuntimeStore.GetOrCreate();
 
+        NormalizeOwnedRelicIds(runtime);
+
         if (runtime.OwnedRelicIds == null)
             return;
+
+        HashSet<string> displayedRelicIds = new();
 
         for (int i = 0; i < runtime.OwnedRelicIds.Count; i++)
         {
@@ -166,8 +174,169 @@ public class RelicEquipPanelUI : MonoBehaviour
             if (string.IsNullOrWhiteSpace(relicId))
                 continue;
 
+            relicId = relicId.Trim();
+
+            if (!displayedRelicIds.Add(relicId))
+                continue;
+
             RelicIconUI icon = Instantiate(inventorySlotPrefab, inventoryContent);
             icon.Setup(relicId, this);
+            EnsureInventoryIconLayoutElement(icon);
+        }
+
+        RebuildInventoryLayout();
+        ScheduleRebuildInventoryLayout();
+    }
+
+    private void ClearInventoryIcons()
+    {
+        if (inventoryContent == null)
+            return;
+
+        for (int i = inventoryContent.childCount - 1; i >= 0; i--)
+        {
+            Transform child = inventoryContent.GetChild(i);
+
+            if (child == null)
+                continue;
+
+            child.gameObject.SetActive(false);
+            child.SetParent(null, false);
+            Destroy(child.gameObject);
+        }
+    }
+
+    private void EnsureInventoryVerticalLayout()
+    {
+        if (!useVerticalInventoryLayout || inventoryContent == null)
+            return;
+
+        GameObject contentObject = inventoryContent.gameObject;
+
+        GridLayoutGroup grid = contentObject.GetComponent<GridLayoutGroup>();
+        if (grid != null)
+            grid.enabled = false;
+
+        HorizontalLayoutGroup horizontal = contentObject.GetComponent<HorizontalLayoutGroup>();
+        if (horizontal != null)
+            horizontal.enabled = false;
+
+        VerticalLayoutGroup vertical = contentObject.GetComponent<VerticalLayoutGroup>();
+        if (vertical == null)
+            vertical = contentObject.AddComponent<VerticalLayoutGroup>();
+
+        vertical.enabled = true;
+        vertical.childAlignment = TextAnchor.UpperCenter;
+        vertical.spacing = inventorySlotSpacing;
+        vertical.childControlWidth = true;
+        vertical.childControlHeight = true;
+        vertical.childForceExpandWidth = false;
+        vertical.childForceExpandHeight = false;
+        vertical.childScaleWidth = false;
+        vertical.childScaleHeight = false;
+
+        ContentSizeFitter fitter = contentObject.GetComponent<ContentSizeFitter>();
+        if (fitter == null)
+            fitter = contentObject.AddComponent<ContentSizeFitter>();
+
+        fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+    }
+
+    private void EnsureInventoryIconLayoutElement(RelicIconUI icon)
+    {
+        if (icon == null)
+            return;
+
+        RectTransform rect = icon.GetComponent<RectTransform>();
+        LayoutElement layoutElement = icon.GetComponent<LayoutElement>();
+
+        if (layoutElement == null)
+            layoutElement = icon.gameObject.AddComponent<LayoutElement>();
+
+        Vector2 size = fallbackSlotSize;
+
+        if (rect != null)
+        {
+            if (rect.sizeDelta.x > 0f)
+                size.x = rect.sizeDelta.x;
+
+            if (rect.sizeDelta.y > 0f)
+                size.y = rect.sizeDelta.y;
+        }
+
+        layoutElement.ignoreLayout = false;
+        layoutElement.preferredWidth = size.x;
+        layoutElement.preferredHeight = size.y;
+        layoutElement.minWidth = size.x;
+        layoutElement.minHeight = size.y;
+        layoutElement.flexibleWidth = 0f;
+        layoutElement.flexibleHeight = 0f;
+    }
+
+    private void RebuildInventoryLayout()
+    {
+        if (inventoryContent is RectTransform rect)
+            LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
+    }
+
+    private void ScheduleRebuildInventoryLayout()
+    {
+        if (!isActiveAndEnabled)
+            return;
+
+        StopCoroutine(nameof(RebuildInventoryLayoutNextFrame));
+        StartCoroutine(nameof(RebuildInventoryLayoutNextFrame));
+    }
+
+    private IEnumerator RebuildInventoryLayoutNextFrame()
+    {
+        yield return null;
+        RebuildInventoryLayout();
+        Canvas.ForceUpdateCanvases();
+        RebuildInventoryLayout();
+    }
+
+    private void NormalizeOwnedRelicIds(BattleRuntimeData runtime)
+    {
+        if (runtime == null)
+            return;
+
+        runtime.OwnedRelicIds ??= new List<string>();
+        HashSet<string> uniqueIds = new();
+
+        for (int i = runtime.OwnedRelicIds.Count - 1; i >= 0; i--)
+        {
+            string relicId = runtime.OwnedRelicIds[i];
+
+            if (string.IsNullOrWhiteSpace(relicId))
+            {
+                runtime.OwnedRelicIds.RemoveAt(i);
+                continue;
+            }
+
+            relicId = relicId.Trim();
+
+            if (!uniqueIds.Add(relicId))
+            {
+                runtime.OwnedRelicIds.RemoveAt(i);
+                continue;
+            }
+
+            runtime.OwnedRelicIds[i] = relicId;
+        }
+
+        DataManager.Instance?.BattleRuntimeStore?.Set(runtime);
+    }
+
+    public static void RefreshAll()
+    {
+        RelicEquipPanelUI[] panels = Object.FindObjectsByType<RelicEquipPanelUI>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+        for (int i = 0; i < panels.Length; i++)
+        {
+            if (panels[i] != null)
+                panels[i].Refresh();
         }
     }
 

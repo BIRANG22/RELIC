@@ -5,6 +5,16 @@ public class BattleRoomCleaner : MonoBehaviour
 {
     public void Clean()
     {
+        BattleRoomLoader[] loaders = Object.FindObjectsByType<BattleRoomLoader>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < loaders.Length; i++)
+        {
+            if (loaders[i] != null)
+                loaders[i].ResetLoadedStateForNextBattle(true);
+        }
+
         BattleCharacter[] characters =
             Object.FindObjectsByType<BattleCharacter>(
                 FindObjectsInactive.Include,

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class BattleCharacter : MonoBehaviour
 {
@@ -22,6 +23,39 @@ public class BattleCharacter : MonoBehaviour
     public void SetGridIndex(int gridIndex)
     {
         CurrentGridIndex = gridIndex;
+    }
+
+    private void OnMouseDown()
+    {
+        if (RuntimeData == null)
+            return;
+
+        if (IsPointerOverUI())
+            return;
+
+        BattleRoomLoader roomLoader = FindFirstObjectByType<BattleRoomLoader>(FindObjectsInactive.Include);
+
+        if (roomLoader == null)
+        {
+            Debug.LogWarning("[BattleCharacter] BattleRoomLoader가 없습니다.");
+            return;
+        }
+
+        roomLoader.OnPlayerCharacterClicked(RuntimeData);
+    }
+
+    private bool IsPointerOverUI()
+    {
+        if (EventSystem.current == null)
+            return false;
+
+        if (EventSystem.current.IsPointerOverGameObject())
+            return true;
+
+        if (Input.touchCount > 0)
+            return EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId);
+
+        return false;
     }
 
     private void LoadEquippedSkills()

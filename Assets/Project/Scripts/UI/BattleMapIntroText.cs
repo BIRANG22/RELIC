@@ -9,7 +9,7 @@ public class BattleMapIntroText : MonoBehaviour
     [SerializeField, TextArea(2, 5)] private string message = "전투 지역 진입";
 
     [Header("Timing")]
-    [SerializeField] private bool playOnStart = true;
+    [SerializeField] private bool playOnStart;
     [SerializeField] private float startDelay = 0.2f;
     [SerializeField] private float fadeInDuration = 0.25f;
     [SerializeField] private float stayDuration = 1.2f;
@@ -76,7 +76,7 @@ public class BattleMapIntroText : MonoBehaviour
 
     private IEnumerator PlayRoutine(string text)
     {
-        introText.text = text;
+        introText.text = string.IsNullOrEmpty(text) ? message : text;
         introText.alpha = 0f;
         introText.gameObject.SetActive(true);
 

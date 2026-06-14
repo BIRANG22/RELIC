@@ -1,4 +1,4 @@
-using Relic.Gameplay.Data;
+﻿using Relic.Gameplay.Data;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -63,25 +63,32 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
 
     public bool CanAddCommand()
     {
-        return commands.Count < 5;
+        return commands.Count < 3;
     }
 
     public bool AddCommand(PlayerReservedCommand command)
     {
         if (command == null)
+        {
+            ShowBattleWarning("예약할 스킬 정보가 없습니다.");
             return false;
+        }
 
         if (!CanAcceptCharacter(command.UserRuntime))
         {
             string reservedId = ReservedCharacter != null ? ReservedCharacter.CharacterId : "None";
             string newId = command.UserRuntime != null ? command.UserRuntime.CharacterId : "None";
 
-            Debug.LogWarning($"[ReserveTurnSlotUI] �� ������ �̹� �ٸ� ĳ���Ͱ� ��� ���Դϴ�. Reserved:{reservedId} / New:{newId}");
+            ShowBattleWarning("이 슬롯에는 이미 다른 캐릭터의 행동이 예약되어 있습니다.");
+            Debug.LogWarning($"[ReserveTurnSlotUI] 이 슬롯은 이미 다른 캐릭터가 사용 중입니다. Reserved:{reservedId} / New:{newId}");
             return false;
         }
 
         if (!CanAddCommand())
+        {
+            ShowBattleWarning("한 슬롯에는 최대 3개의 스킬만 예약할 수 있습니다.");
             return false;
+        }
 
         commands.Add(command);
         return true;
@@ -107,7 +114,7 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
 
     public void SetActiveSlot(bool active)
     {
-        // ���� ǥ�ô� BattleTimelineGroupUI���� ó��.
+        // 선택 표시는 BattleTimelineGroupUI에서 처리.
     }
 
     public bool CanAcceptCharacter(CharacterRuntimeData character)
@@ -130,7 +137,15 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
         if (owner != null)
             owner.OnTimelineSlotClicked(slotIndex);
         else
-            Debug.LogWarning("[ReserveTurnSlotUI] owner�� �����ϴ�.");
+        {
+            ShowBattleWarning("타임라인 컨트롤러를 찾을 수 없습니다.");
+            Debug.LogWarning("[ReserveTurnSlotUI] owner가 없습니다.");
+        }
+    }
+
+    private void ShowBattleWarning(string message)
+    {
+        BattleWarningUI.ShowMessage(message);
     }
 
     public void OnPointerClick(PointerEventData eventData)
