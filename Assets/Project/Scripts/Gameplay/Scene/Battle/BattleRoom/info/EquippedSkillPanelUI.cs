@@ -28,6 +28,7 @@ public class EquippedSkillPanelUI : MonoBehaviour
 
     private Canvas cachedCanvas;
     private GraphicRaycaster cachedGraphicRaycaster;
+    private EquippedSkillSlotUI selectedEquippedSkillSlot;
 
     private void Awake()
     {
@@ -47,11 +48,13 @@ public class EquippedSkillPanelUI : MonoBehaviour
 
     private void OnDisable()
     {
+        ResetSelectionState();
         HideSkillTooltip();
     }
 
     public void Refresh()
     {
+        selectedEquippedSkillSlot = null;
         if (DataManager.Instance == null)
         {
             Debug.LogWarning("[EquippedSkillPanelUI] DataManager가 없습니다.");
@@ -93,6 +96,30 @@ public class EquippedSkillPanelUI : MonoBehaviour
         }
     }
 
+    public void SelectEquippedSkillSlot(EquippedSkillSlotUI selectedSlot)
+    {
+        InventoryPanelSelectionResetter.ResetAllSelectionsExcept(this);
+
+        selectedEquippedSkillSlot = selectedSlot;
+        ApplyEquippedSkillSlotSelectionVisuals();
+    }
+
+    public void ResetSelectionState()
+    {
+        selectedEquippedSkillSlot = null;
+        ApplyEquippedSkillSlotSelectionVisuals();
+    }
+
+    private void ApplyEquippedSkillSlotSelectionVisuals()
+    {
+        EquippedSkillSlotUI[] slots = GetComponentsInChildren<EquippedSkillSlotUI>(true);
+        for (int i = 0; i < slots.Length; i++)
+        {
+            if (slots[i] != null)
+                slots[i].SetSelected(slots[i] == selectedEquippedSkillSlot);
+        }
+    }
+
     public void ShowSkillTooltip(SkillMasterData skillData, RectTransform hoveredSlotRect)
     {
         if (skillData == null)
@@ -101,17 +128,43 @@ public class EquippedSkillPanelUI : MonoBehaviour
             return;
         }
 
-        if (tooltipPanel != null && !tooltipPanel.activeSelf)
-            tooltipPanel.SetActive(true);
+        SetTooltip(
+            string.IsNullOrWhiteSpace(skillData.Name) ? skillData.SkillId : skillData.Name,
+            BuildSkillDescription(skillData),
+            hoveredSlotRect
+        );
+    }
 
-        if (tooltipNameText != null)
-            tooltipNameText.text = string.IsNullOrWhiteSpace(skillData.Name) ? skillData.SkillId : skillData.Name;
+    public void ShowRelicTooltip(string relicId, RectTransform hoveredSlotRect)
+    {
+        if (string.IsNullOrWhiteSpace(relicId) || DataManager.Instance == null || DataManager.Instance.RelicDatabase == null)
+        {
+            HideSkillTooltip();
+            return;
+        }
 
-        if (tooltipDescriptionText != null)
-            tooltipDescriptionText.text = BuildDescription(skillData);
+        if (!DataManager.Instance.RelicDatabase.TryGet(relicId, out RelicData relicData))
+        {
+            HideSkillTooltip();
+            return;
+        }
 
-        if (moveTooltipToHoveredSlot)
-            MoveTooltipToSlot(hoveredSlotRect);
+        ShowRelicTooltip(relicData, hoveredSlotRect);
+    }
+
+    public void ShowRelicTooltip(RelicData relicData, RectTransform hoveredSlotRect)
+    {
+        if (relicData == null)
+        {
+            HideSkillTooltip();
+            return;
+        }
+
+        SetTooltip(
+            string.IsNullOrWhiteSpace(relicData.Name) ? relicData.FragmentId : relicData.Name,
+            BuildRelicDescription(relicData),
+            hoveredSlotRect
+        );
     }
 
     public void HideSkillTooltip()
@@ -130,6 +183,7 @@ public class EquippedSkillPanelUI : MonoBehaviour
 
     private void ClearRows()
     {
+        ResetSelectionState();
         if (characterRows == null)
             return;
 
@@ -140,7 +194,22 @@ public class EquippedSkillPanelUI : MonoBehaviour
         }
     }
 
-    private string BuildDescription(SkillMasterData skillData)
+    private void SetTooltip(string title, string description, RectTransform hoveredSlotRect)
+    {
+        if (tooltipPanel != null && !tooltipPanel.activeSelf)
+            tooltipPanel.SetActive(true);
+
+        if (tooltipNameText != null)
+            tooltipNameText.text = title;
+
+        if (tooltipDescriptionText != null)
+            tooltipDescriptionText.text = description;
+
+        if (moveTooltipToHoveredSlot)
+            MoveTooltipToSlot(hoveredSlotRect);
+    }
+
+    private string BuildSkillDescription(SkillMasterData skillData)
     {
         if (skillData == null)
             return string.Empty;
@@ -150,6 +219,17 @@ public class EquippedSkillPanelUI : MonoBehaviour
 
         if (!string.IsNullOrWhiteSpace(skillData.Details))
             return skillData.Details;
+
+        return "효과 설명이 없습니다.";
+    }
+
+    private string BuildRelicDescription(RelicData relicData)
+    {
+        if (relicData == null)
+            return string.Empty;
+
+        if (!string.IsNullOrWhiteSpace(relicData.EffectDesc))
+            return relicData.EffectDesc;
 
         return "효과 설명이 없습니다.";
     }
