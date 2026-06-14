@@ -1,4 +1,4 @@
-using Relic.Gameplay.Data;
+ï»¿using Relic.Gameplay.Data;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -36,6 +36,8 @@ public class SkillListPanel : MonoBehaviour
     [SerializeField] private RectTransform[] keepOpenClickRoots;
 
     private readonly List<RectTransform> runtimeKeepOpenClickRoots = new();
+    private readonly List<SkillListSlotUI> skillSlots = new();
+    private SkillListSlotUI selectedSkillSlot;
 
     private CharacterRuntimeData currentRuntime;
     private bool hasCapturedInitialPosition;
@@ -181,14 +183,53 @@ public class SkillListPanel : MonoBehaviour
             return;
 
         SkillListSlotUI slot = Instantiate(skillSlotPrefab, contentRoot);
+        skillSlots.Add(slot);
         slot.Setup(this, skillId, interactable);
+    }
+
+    public void SelectSkillSlot(SkillListSlotUI selectedSlot)
+    {
+        InventoryPanelSelectionResetter.ResetAllSelectionsExcept(this);
+
+        selectedSkillSlot = selectedSlot;
+        ApplySkillSlotSelectionVisuals();
+    }
+
+    public void ResetSelectionState()
+    {
+        selectedSkillSlot = null;
+        ApplySkillSlotSelectionVisuals();
+    }
+
+    private void ApplySkillSlotSelectionVisuals()
+    {
+        for (int i = skillSlots.Count - 1; i >= 0; i--)
+        {
+            SkillListSlotUI slot = skillSlots[i];
+
+            if (slot == null)
+            {
+                skillSlots.RemoveAt(i);
+                continue;
+            }
+
+            slot.SetSelected(slot == selectedSkillSlot);
+        }
+
+        SkillListSlotUI[] childSlots = GetComponentsInChildren<SkillListSlotUI>(true);
+        for (int i = 0; i < childSlots.Length; i++)
+        {
+            SkillListSlotUI slot = childSlots[i];
+            if (slot != null && !skillSlots.Contains(slot))
+                slot.SetSelected(slot == selectedSkillSlot);
+        }
     }
 
     public void SelectSkill(string skillId)
     {
         if (currentRuntime == null)
         {
-            Debug.LogWarning("[SkillListPanel] ¼±ÅÃµÈ Ä³¸¯ÅÍ°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("[SkillListPanel] ì„ íƒëœ ìºë¦­í„°ê°€ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -197,7 +238,7 @@ public class SkillListPanel : MonoBehaviour
 
         if (DataManager.Instance == null || DataManager.Instance.SkillDatabase == null)
         {
-            Debug.LogWarning("[SkillListPanel] SkillDatabase°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("[SkillListPanel] SkillDatabaseê°€ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -205,7 +246,7 @@ public class SkillListPanel : MonoBehaviour
 
         if (skillData == null)
         {
-            Debug.LogWarning($"[SkillListPanel] SkillData ¾øÀ½: {skillId}");
+            Debug.LogWarning($"[SkillListPanel] SkillData ì—†ìŒ: {skillId}");
             return;
         }
 
@@ -214,7 +255,7 @@ public class SkillListPanel : MonoBehaviour
 
         if (battleTimelineController == null)
         {
-            Debug.LogWarning("[SkillListPanel] BattleTimelineController°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("[SkillListPanel] BattleTimelineControllerê°€ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -438,6 +479,9 @@ public class SkillListPanel : MonoBehaviour
 
     private void Clear()
     {
+        selectedSkillSlot = null;
+        skillSlots.Clear();
+
         if (contentRoot == null)
             return;
 
