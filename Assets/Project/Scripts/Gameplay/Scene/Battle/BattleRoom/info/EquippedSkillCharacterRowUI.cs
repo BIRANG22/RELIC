@@ -1,40 +1,51 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using Relic.Gameplay.Data;
 
 public class EquippedSkillCharacterRowUI : MonoBehaviour
 {
     [Header("Slots")]
-    [SerializeField] private EquippedSkillSlotUI passiveSlot;   // 1
-    [SerializeField] private EquippedSkillSlotUI uniqueSlot;    // 2
-    [SerializeField] private EquippedSkillSlotUI abilitySlot;   // 3
-    [SerializeField] private EquippedSkillSlotUI freeSlot1;     // 4 Common/Core
-    [SerializeField] private EquippedSkillSlotUI freeSlot2;     // 5 Common/Core
+    [SerializeField] private EquippedSkillSlotUI passiveSlot;
+    [SerializeField] private EquippedSkillSlotUI uniqueSlot;
+    [SerializeField] private EquippedSkillSlotUI abilitySlot;
+    [SerializeField] private EquippedSkillSlotUI freeSlot1;
+    [SerializeField] private EquippedSkillSlotUI freeSlot2;
+
+    private EquippedSkillPanelUI ownerPanel;
 
     public void Setup(CharacterRuntimeData characterData)
     {
+        Setup(ownerPanel, characterData);
+    }
+
+    public void Setup(EquippedSkillPanelUI owner, CharacterRuntimeData characterData)
+    {
+        ownerPanel = owner;
+
         if (characterData == null)
         {
             Clear();
             return;
         }
 
-        SetSlot(passiveSlot, characterData.PassiveSkillId);
-        SetSlot(uniqueSlot, characterData.UniqueSkillId);
-        SetSlot(abilitySlot, characterData.AbilitySkillId);
+        SetSlot(passiveSlot, characterData.PassiveSkillId, false);
+        SetSlot(uniqueSlot, characterData.UniqueSkillId, false);
+        SetSlot(abilitySlot, characterData.AbilitySkillId, true);
 
         SetSlot(
             freeSlot1,
             characterData.EquippedSkillIds != null &&
             characterData.EquippedSkillIds.Length > 2
                 ? characterData.EquippedSkillIds[2]
-                : null);
+                : null,
+            true);
 
         SetSlot(
             freeSlot2,
             characterData.EquippedSkillIds != null &&
             characterData.EquippedSkillIds.Length > 3
                 ? characterData.EquippedSkillIds[3]
-                : null);
+                : null,
+            true);
     }
 
     public void Clear()
@@ -46,7 +57,7 @@ public class EquippedSkillCharacterRowUI : MonoBehaviour
         if (freeSlot2 != null) freeSlot2.Clear();
     }
 
-    private void SetSlot(EquippedSkillSlotUI slot, string skillId)
+    private void SetSlot(EquippedSkillSlotUI slot, string skillId, bool clickable)
     {
         if (slot == null)
             return;
@@ -59,22 +70,25 @@ public class EquippedSkillCharacterRowUI : MonoBehaviour
 
         if (DataManager.Instance == null)
         {
-            Debug.LogWarning("[EquippedSkillCharacterRowUI] DataManager ¾øÀ½");
+            Debug.LogWarning("[EquippedSkillCharacterRowUI] DataManagerê°€ ì—†ìŠµë‹ˆë‹¤.");
             slot.Clear();
             return;
         }
 
+        SkillDatabase skillDatabase = DataManager.Instance.SkillDatabase;
+        if (skillDatabase == null || !skillDatabase.TryGet(skillId, out SkillMasterData skillData))
+        {
+            Debug.LogWarning($"[EquippedSkillCharacterRowUI] SkillDataê°€ ì—†ìŠµë‹ˆë‹¤: {skillId}");
+            slot.Clear();
+            return;
+        }
+
+        Sprite icon = null;
         SkillIconDatabase iconDatabase = DataManager.Instance.SkillIconDatabase;
 
-        if (iconDatabase != null &&
-            iconDatabase.TryGetIcon(skillId, out Sprite icon))
-        {
-            slot.SetSkill(icon);
-        }
-        else
-        {
-            Debug.LogWarning($"[EquippedSkillCharacterRowUI] SkillIcon ¾øÀ½: {skillId}");
-            slot.Clear();
-        }
+        if (iconDatabase != null)
+            iconDatabase.TryGetIcon(skillId, out icon);
+
+        slot.SetSkill(ownerPanel, skillData, icon, clickable);
     }
 }

@@ -10,17 +10,30 @@ public class RelicEquipPanelUI : MonoBehaviour
     [Header("Equipped Slots")]
     [SerializeField] private EquippedRelicSlotUI[] equippedSlots;
 
+    [Header("Tooltip")]
+    [SerializeField] private EquippedSkillPanelUI tooltipPanelOwner;
+
     private string selectedCharacterId;
     private int selectedRelicSlotIndex = -1;
+    private RelicIconUI selectedInventoryRelicIcon;
 
     private void Awake()
     {
+        ResolveTooltipPanelOwner();
         InitSlots();
     }
 
     private void OnEnable()
     {
+        ResolveTooltipPanelOwner();
+        ResetSelectionState();
         Refresh();
+    }
+
+    private void OnDisable()
+    {
+        ResetSelectionState();
+        HideRelicTooltip();
     }
 
     private void InitSlots()
@@ -34,12 +47,32 @@ public class RelicEquipPanelUI : MonoBehaviour
 
     public void SelectEquipSlot(string characterId, int relicSlotIndex)
     {
+        InventoryPanelSelectionResetter.ResetAllSelectionsExcept(this);
+
         selectedCharacterId = characterId;
         selectedRelicSlotIndex = relicSlotIndex;
+        UpdateEquippedSlotSelectionVisuals();
 
         Debug.Log(
             $"[RelicEquipPanelUI] 장착 슬롯 선택 / Character:{selectedCharacterId} / RelicSlot:{selectedRelicSlotIndex + 1}"
         );
+    }
+
+    public void SelectInventoryRelicIcon(RelicIconUI selectedIcon)
+    {
+        InventoryPanelSelectionResetter.ResetAllSelectionsExcept(this);
+
+        selectedInventoryRelicIcon = selectedIcon;
+        UpdateInventorySelectionVisuals();
+    }
+
+    public void ResetSelectionState()
+    {
+        selectedCharacterId = null;
+        selectedRelicSlotIndex = -1;
+        selectedInventoryRelicIcon = null;
+        UpdateEquippedSlotSelectionVisuals();
+        UpdateInventorySelectionVisuals();
     }
 
     public void SelectRelic(string relicId)
@@ -50,17 +83,35 @@ public class RelicEquipPanelUI : MonoBehaviour
 
         if (string.IsNullOrWhiteSpace(selectedCharacterId))
         {
-            Debug.LogWarning("[RelicEquipPanelUI] 먼저 렐릭 슬롯을 선택해야 합니다.");
+            Debug.LogWarning("[RelicEquipPanelUI] 먼저 유물 장착 슬롯을 선택해야 합니다.");
             return;
         }
 
         if (selectedRelicSlotIndex < 0)
         {
-            Debug.LogWarning("[RelicEquipPanelUI] 먼저 렐릭 슬롯을 선택해야 합니다.");
+            Debug.LogWarning("[RelicEquipPanelUI] 먼저 유물 장착 슬롯을 선택해야 합니다.");
             return;
         }
 
         EquipRelic(selectedCharacterId, selectedRelicSlotIndex, relicId);
+    }
+
+    public void ShowRelicTooltip(string relicId, RectTransform hoveredSlotRect)
+    {
+        ResolveTooltipPanelOwner();
+
+        if (tooltipPanelOwner == null)
+            return;
+
+        tooltipPanelOwner.ShowRelicTooltip(relicId, hoveredSlotRect);
+    }
+
+    public void HideRelicTooltip()
+    {
+        if (tooltipPanelOwner == null)
+            return;
+
+        tooltipPanelOwner.HideSkillTooltip();
     }
 
     private void EquipRelic(string characterId, int relicSlotIndex, string relicId)
@@ -78,8 +129,7 @@ public class RelicEquipPanelUI : MonoBehaviour
 
         if (service.EquipRelic(characterId, relicSlotIndex, relicId))
         {
-            selectedCharacterId = null;
-            selectedRelicSlotIndex = -1;
+            ResetSelectionState();
             Refresh();
         }
     }
@@ -94,6 +144,8 @@ public class RelicEquipPanelUI : MonoBehaviour
     {
         if (inventoryContent == null || inventorySlotPrefab == null)
             return;
+
+        selectedInventoryRelicIcon = null;
 
         for (int i = inventoryContent.childCount - 1; i >= 0; i--)
             Destroy(inventoryContent.GetChild(i).gameObject);
@@ -126,5 +178,58 @@ public class RelicEquipPanelUI : MonoBehaviour
             if (equippedSlots[i] != null)
                 equippedSlots[i].Refresh();
         }
+
+        UpdateEquippedSlotSelectionVisuals();
+    }
+
+    private void UpdateInventorySelectionVisuals()
+    {
+        if (inventoryContent == null)
+            return;
+
+        for (int i = inventoryContent.childCount - 1; i >= 0; i--)
+        {
+            RelicIconUI icon = inventoryContent.GetChild(i).GetComponent<RelicIconUI>();
+            if (icon != null)
+                icon.SetSelected(icon == selectedInventoryRelicIcon);
+        }
+    }
+
+    private void UpdateEquippedSlotSelectionVisuals()
+    {
+        if (equippedSlots == null)
+            return;
+
+        for (int i = 0; i < equippedSlots.Length; i++)
+        {
+            EquippedRelicSlotUI slot = equippedSlots[i];
+            if (slot == null)
+                continue;
+
+            bool selected = !string.IsNullOrWhiteSpace(selectedCharacterId) &&
+                            slot.RelicSlotIndex == selectedRelicSlotIndex &&
+                            GetCharacterIdByPartySlot(slot.PartySlotIndex) == selectedCharacterId;
+
+            slot.SetSelected(selected);
+        }
+    }
+
+    private string GetCharacterIdByPartySlot(int partySlotIndex)
+    {
+        if (DataManager.Instance == null || DataManager.Instance.PartyRuntimeStore == null)
+            return null;
+
+        return DataManager.Instance.PartyRuntimeStore.GetCharacterId(partySlotIndex);
+    }
+
+    private void ResolveTooltipPanelOwner()
+    {
+        if (tooltipPanelOwner != null)
+            return;
+
+        tooltipPanelOwner = GetComponentInParent<EquippedSkillPanelUI>();
+
+        if (tooltipPanelOwner == null)
+            tooltipPanelOwner = FindFirstObjectByType<EquippedSkillPanelUI>();
     }
 }
