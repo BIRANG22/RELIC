@@ -4,10 +4,11 @@ using Relic.Gameplay.Data;
 public class EquippedSkillCharacterRowUI : MonoBehaviour
 {
     [Header("Slots")]
-    [SerializeField] private EquippedSkillSlotUI slot1;
-    [SerializeField] private EquippedSkillSlotUI slot2;
-    [SerializeField] private EquippedSkillSlotUI slot3;
-    [SerializeField] private EquippedSkillSlotUI slot4;
+    [SerializeField] private EquippedSkillSlotUI passiveSlot;   // 1
+    [SerializeField] private EquippedSkillSlotUI uniqueSlot;    // 2
+    [SerializeField] private EquippedSkillSlotUI abilitySlot;   // 3
+    [SerializeField] private EquippedSkillSlotUI freeSlot1;     // 4 Common/Core
+    [SerializeField] private EquippedSkillSlotUI freeSlot2;     // 5 Common/Core
 
     public void Setup(CharacterRuntimeData characterData)
     {
@@ -17,18 +18,19 @@ public class EquippedSkillCharacterRowUI : MonoBehaviour
             return;
         }
 
-        SetSlot(slot1, characterData.UniqueSkillId);
-        SetSlot(slot2, characterData.AbilitySkillId);
+        SetSlot(passiveSlot, characterData.PassiveSkillId);
+        SetSlot(uniqueSlot, characterData.UniqueSkillId);
+        SetSlot(abilitySlot, characterData.AbilitySkillId);
 
         SetSlot(
-            slot3,
+            freeSlot1,
             characterData.EquippedSkillIds != null &&
             characterData.EquippedSkillIds.Length > 2
                 ? characterData.EquippedSkillIds[2]
                 : null);
 
         SetSlot(
-            slot4,
+            freeSlot2,
             characterData.EquippedSkillIds != null &&
             characterData.EquippedSkillIds.Length > 3
                 ? characterData.EquippedSkillIds[3]
@@ -37,10 +39,11 @@ public class EquippedSkillCharacterRowUI : MonoBehaviour
 
     public void Clear()
     {
-        if (slot1 != null) slot1.Clear();
-        if (slot2 != null) slot2.Clear();
-        if (slot3 != null) slot3.Clear();
-        if (slot4 != null) slot4.Clear();
+        if (passiveSlot != null) passiveSlot.Clear();
+        if (uniqueSlot != null) uniqueSlot.Clear();
+        if (abilitySlot != null) abilitySlot.Clear();
+        if (freeSlot1 != null) freeSlot1.Clear();
+        if (freeSlot2 != null) freeSlot2.Clear();
     }
 
     private void SetSlot(EquippedSkillSlotUI slot, string skillId)
@@ -54,6 +57,13 @@ public class EquippedSkillCharacterRowUI : MonoBehaviour
             return;
         }
 
+        if (DataManager.Instance == null)
+        {
+            Debug.LogWarning("[EquippedSkillCharacterRowUI] DataManager 없음");
+            slot.Clear();
+            return;
+        }
+
         SkillIconDatabase iconDatabase = DataManager.Instance.SkillIconDatabase;
 
         if (iconDatabase != null &&
@@ -63,9 +73,7 @@ public class EquippedSkillCharacterRowUI : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning(
-                $"[EquippedSkillCharacterRowUI] SkillIcon 없음: {skillId}");
-
+            Debug.LogWarning($"[EquippedSkillCharacterRowUI] SkillIcon 없음: {skillId}");
             slot.Clear();
         }
     }

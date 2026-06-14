@@ -46,9 +46,6 @@ namespace Relic.Gameplay.Data
                 $"Ability:{data.AbilitySkillId}, " +
                 $"Equipped:[{equippedSkills}]";
 
-            var items = data.EquippedItemIds != null && data.EquippedItemIds.Count > 0
-                ? string.Join(", ", data.EquippedItemIds)
-                : "None";
         }
     }
 }
