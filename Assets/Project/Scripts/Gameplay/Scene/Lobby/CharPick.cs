@@ -312,7 +312,7 @@ public class CharPick : MonoBehaviour
             int defaultGridIndex = GetDefaultDeployGridIndex(i);
 
             if (IsValidDeployGridIndex(defaultGridIndex))
-                partyStore.SetGridIndex(i, defaultGridIndex);
+                partyStore.SetSpawnGridIndex(i, defaultGridIndex);
             else
                 Debug.LogWarning("[Party] 빈 배치 그리드가 없습니다.");
         }
@@ -361,7 +361,7 @@ public class CharPick : MonoBehaviour
         int defaultGridIndex = FindDefaultDeployGridIndexForSlot(enteredSlot);
 
         if (defaultGridIndex >= 0)
-            partyStore.SetGridIndex(enteredSlot, defaultGridIndex);
+            partyStore.SetSpawnGridIndex(enteredSlot, defaultGridIndex);
         else
             Debug.LogWarning("[Party] 빈 배치 그리드가 없습니다.");
     }
@@ -407,7 +407,7 @@ public class CharPick : MonoBehaviour
             if (i == partySlotIndex)
                 continue;
 
-            if (partyStore.GetGridIndex(i) == gridIndex)
+            if (partyStore.GetSpawnGridIndex(i) == gridIndex)
                 return false;
         }
 

@@ -12,6 +12,8 @@ namespace Relic.Gameplay.Data
     public class PartySlotRuntimeData
     {
         public string CharacterId;
-        public int GridIndex = -1;
+
+        public int SpawnGridIndex = -1;   // 전투 시작 위치
+        public int CurrentGridIndex = -1; // 전투 중 현재 위치
     }
 }

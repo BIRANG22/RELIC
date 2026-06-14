@@ -90,8 +90,41 @@ public class BattleRoomLoader : MonoBehaviour
         }
 
         RegisterSkillListKeepOpenRoots();
+
+        ResetPartyCurrentGridToSpawn();
+
+        if (BattleResultChecker.Instance != null)
+            BattleResultChecker.Instance.ResetBattle();
+
         SpawnPlayersAndHUD();
         SpawnMonstersAndHUD();
+    }
+
+    private void ResetPartyCurrentGridToSpawn()
+    {
+        if (DataManager.Instance == null)
+            return;
+
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+
+        for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
+        {
+            string characterId = partyStore.GetCharacterId(i);
+
+            if (string.IsNullOrWhiteSpace(characterId))
+                continue;
+
+            int spawnGridIndex = partyStore.GetSpawnGridIndex(i);
+
+            if (spawnGridIndex < 0)
+                continue;
+
+            partyStore.SetCurrentGridIndex(i, spawnGridIndex);
+
+            Debug.Log(
+                $"[BattleRoomLoader] Reset CurrentGrid / Slot:{i} / Character:{characterId} / Grid:{spawnGridIndex}"
+            );
+        }
     }
 
     private void RegisterSkillListKeepOpenRoots()

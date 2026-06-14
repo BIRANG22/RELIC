@@ -1849,6 +1849,7 @@ MonoBehaviour:
   statusEffectIconDatabase: {fileID: 11400000, guid: 27ccdac28e13f804cb658e1da4772852, type: 2}
   mapNodeIconDatabase: {fileID: 11400000, guid: d5d0769746e99dd44ae97b6bb3a4f196, type: 2}
   skillRangeIconDatabase: {fileID: 11400000, guid: 09d2c1b69fb5b3f44af4df6fb1368947, type: 2}
+  itemIconDatabase: {fileID: 11400000, guid: 9a35744c33f245f4dbaf83fcee49049d, type: 2}
 --- !u!1 &1726247874
 GameObject:
   m_ObjectHideFlags: 0

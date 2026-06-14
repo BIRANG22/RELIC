@@ -48,6 +48,17 @@ namespace Relic.Gameplay.Monster
                 $"{runtimeData.Name}_{runtimeData.RuntimeId}";
         }
 
+        public string DropTableId
+        {
+            get
+            {
+                if (RuntimeData == null)
+                    return null;
+
+                return RuntimeData.DropTableId;
+            }
+        }
+
         public void BindHUD(MonsterHUDSlot hud)
         {
             this.hud = hud;

@@ -14,6 +14,7 @@ public class DataManager : Singleton<DataManager>
     [SerializeField] private StatusEffectIconDatabase statusEffectIconDatabase;
     [SerializeField] private MapNodeIconDatabase mapNodeIconDatabase;
     [SerializeField] private SkillRangeIconDatabase skillRangeIconDatabase;
+    [SerializeField] private ItemIconDatabase itemIconDatabase;
 
     private DataBootstrap dataBootstrap = new();
 
@@ -38,6 +39,7 @@ public class DataManager : Singleton<DataManager>
     public RuneDatabase RuneDatabase => dataBootstrap.RuneDatabase;
     public RewardTableDatabase RewardTableDatabase => dataBootstrap.RewardTableDatabase;
     public ItemDatabase ItemDatabase => dataBootstrap.ItemDatabase;
+    public ItemIconDatabase ItemIconDatabase => itemIconDatabase;
     public CharacterRuntimeStore CharacterRuntimeStore { get; private set; } = new();
     public PartyRuntimeStore PartyRuntimeStore { get; private set; } = new();
     public SkillRuntimeStore SkillRuntimeStore { get; private set; } = new();

@@ -72,13 +72,35 @@ public class BattleActionRunner
 
         for (int i = 0; i < routines.Count; i++)
         {
+            int routineIndex = i;
+
             CoroutineHost.Instance.StartCoroutine(
-                RunAndCountDown(routines[i], () => runningCount--)
+                RunAndCountDown(
+                    routines[i],
+                    () =>
+                    {
+                        runningCount--;
+                        Debug.Log($"[BattleActionRunner] Routine End:{routineIndex} / Left:{runningCount}");
+                    }
+                )
             );
         }
 
+        float timeout = 10f;
+        float elapsed = 0f;
+
         while (runningCount > 0)
+        {
+            elapsed += Time.deltaTime;
+
+            if (elapsed >= timeout)
+            {
+                Debug.LogError($"[BattleActionRunner] RunParallel Timeout / Left:{runningCount}");
+                break;
+            }
+
             yield return null;
+        }
     }
 
     private void HideUnselectedMonsterHUDs()
@@ -98,10 +120,15 @@ public class BattleActionRunner
 
     private IEnumerator RunAndCountDown(IEnumerator routine, System.Action onComplete)
     {
-        if (routine != null)
-            yield return CoroutineHost.Instance.StartCoroutine(routine);
-
-        onComplete?.Invoke();
+        try
+        {
+            if (routine != null)
+                yield return CoroutineHost.Instance.StartCoroutine(routine);
+        }
+        finally
+        {
+            onComplete?.Invoke();
+        }
     }
 
     private IEnumerator ExecutePlayerMove(PlayerReservedCommand command)
@@ -254,12 +281,14 @@ public class BattleActionRunner
 
             BattleUnitAnimator hitAnimator = monster.GetComponent<BattleUnitAnimator>();
 
-            if (hitAnimator != null)
+            if (monster.RuntimeData.IsDead)
             {
-                if (monster.RuntimeData.IsDead)
-                    hitAnimator.PlayDead();
-                else
-                    hitAnimator.PlayHit();
+                CollectMonsterReward(monster);
+                hitAnimator.PlayDead();
+            }
+            else
+            {
+                hitAnimator.PlayHit();
             }
         }
 
@@ -671,7 +700,7 @@ public class BattleActionRunner
             if (partyStore.GetCharacterId(i) != characterId)
                 continue;
 
-            partyStore.SetGridIndex(i, gridIndex);
+            partyStore.SetCurrentGridIndex(i, gridIndex);
             return;
         }
     }
@@ -824,14 +853,30 @@ public class BattleActionRunner
 
         BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
 
-        if (animator != null)
+        if (monster.RuntimeData.IsDead)
         {
-            if (monster.RuntimeData.IsDead)
-                animator.PlayDead();
-            else
-                animator.PlayHit();
+            CollectMonsterReward(monster);
+            animator.PlayDead();
+        }
+        else
+        {
+            animator.PlayHit();
         }
 
         Debug.Log($"[BattleEffect] Burn Damage / Monster:{monster.RuntimeData.Name} / Damage:{burnStack} / HP:{monster.RuntimeData.CurrentHp}");
+    }
+
+    private void CollectMonsterReward(MonsterUnit monster)
+    {
+        if (monster == null || monster.RuntimeData == null)
+            return;
+
+        if (BattleRewardCollector.Instance == null)
+            return;
+
+        BattleRewardCollector.Instance.CollectMonsterDrop(
+            monster.RuntimeData.RuntimeId,
+            monster.RuntimeData.DropTableId
+        );
     }
 }
