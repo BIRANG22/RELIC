@@ -310,20 +310,6 @@ public class SkillSettingPanel : MonoBehaviour
         }
     }
 
-    private void AddIfValid(List<string> ids, string skillId)
-    {
-        if (ids == null)
-            return;
-
-        if (string.IsNullOrWhiteSpace(skillId))
-            return;
-
-        if (ids.Contains(skillId))
-            return;
-
-        ids.Add(skillId);
-    }
-
     private void AddUniqueSkill(List<SkillMasterData> result, SkillMasterData skill)
     {
         if (result == null || skill == null)

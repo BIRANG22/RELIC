@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 3932305815829094159}
   - component: {fileID: 6153007939688059327}
   - component: {fileID: 2679557058206997311}
-  - component: {fileID: 6627312945370566379}
+  - component: {fileID: 8893114488053379403}
   m_Layer: 5
   m_Name: RelicIcon
   m_TagString: Untagged
@@ -76,7 +76,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &6627312945370566379
+--- !u!114 &8893114488053379403
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -85,7 +85,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 305879587127973699}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9e24aa8cc733d974a9948688efdea307, type: 3}
+  m_Script: {fileID: 11500000, guid: 39f32c166ea32d6459675904b26c797e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   iconImage: {fileID: 2679557058206997311}

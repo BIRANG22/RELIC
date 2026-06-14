@@ -790,7 +790,7 @@ MonoBehaviour:
   m_RequiresOpaqueTextureOption: 2
   m_CameraType: 0
   m_Cameras: []
-  m_RendererIndex: 0
+  m_RendererIndex: 1
   m_VolumeLayerMask:
     serializedVersion: 2
     m_Bits: 1
@@ -868,6 +868,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   transitionRoot: {fileID: 1874284952}
   canvasGroup: {fileID: 1874284955}
+  ensureRootCanvas: 1
+  canvasSortingOrder: 5000
   leftGraphic: {fileID: 830640519}
   rightGraphic: {fileID: 129263041}
   leftMaterial: {fileID: 0}

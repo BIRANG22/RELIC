@@ -34,6 +34,11 @@ public class RelicChoiceSlotUI : MonoBehaviour
             relicIconImage.sprite = icon;
             relicIconImage.enabled = true;
         }
+        else if (relicIconImage != null)
+        {
+            relicIconImage.sprite = null;
+            relicIconImage.enabled = false;
+        }
     }
 
     public void OnClick()
@@ -57,11 +62,11 @@ public class RelicChoiceSlotUI : MonoBehaviour
 
         DataManager.Instance.BattleRuntimeStore.Set(runtime);
 
-        RelicInventoryPanelUI relicInventory =
-        Object.FindFirstObjectByType<RelicInventoryPanelUI>(FindObjectsInactive.Include);
+        RelicEquipPanelUI relicEquipPanel =
+            Object.FindFirstObjectByType<RelicEquipPanelUI>(FindObjectsInactive.Include);
 
-        if (relicInventory != null)
-            relicInventory.Refresh();
+        if (relicEquipPanel != null)
+            relicEquipPanel.Refresh();
 
         if (owner != null)
             owner.OnRelicSelected(relicId);
