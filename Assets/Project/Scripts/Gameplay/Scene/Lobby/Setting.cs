@@ -1,4 +1,4 @@
-using Relic.Gameplay.Data;
+ï»¿using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -116,21 +116,21 @@ public class Setting : MonoBehaviour
         if (string.IsNullOrWhiteSpace(characterId))
         {
             Clear();
-            ShowWarning("¼±ÅÃµÈ Ä³¸¯ÅÍ°¡ ¾ø½À´Ï´Ù.");
+            ShowWarning("ì„ íƒëœ ìºë¦­í„°ê°€ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
         if (DataManager.Instance == null)
         {
             Clear();
-            ShowWarning("DataManager°¡ ¾ø½À´Ï´Ù.");
+            ShowWarning("DataManagerê°€ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
         if (!DataManager.Instance.CharacterDatabase.TryGet(characterId, out currentMasterData))
         {
             Clear();
-            ShowWarning("Ä³¸¯ÅÍ µ¥ÀÌÅÍ¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.");
+            ShowWarning("ìºë¦­í„° ë°ì´í„°ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -140,7 +140,7 @@ public class Setting : MonoBehaviour
         if (currentRuntimeData == null)
         {
             Clear();
-            ShowWarning("Ä³¸¯ÅÍ ·±Å¸ÀÓ µ¥ÀÌÅÍ¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.");
+            ShowWarning("ìºë¦­í„° ëŸ°íƒ€ì„ ë°ì´í„°ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -156,7 +156,7 @@ public class Setting : MonoBehaviour
         if (DataManager.Instance == null)
         {
             Clear();
-            ShowWarning("DataManager°¡ ¾ø½À´Ï´Ù.");
+            ShowWarning("DataManagerê°€ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -165,7 +165,7 @@ public class Setting : MonoBehaviour
         if (string.IsNullOrWhiteSpace(characterId))
         {
             Clear();
-            ShowWarning("ÇØ´ç ÆÄÆ¼ ½½·Ô¿¡ Ä³¸¯ÅÍ°¡ ¾ø½À´Ï´Ù.");
+            ShowWarning("í•´ë‹¹ íŒŒí‹° ìŠ¬ë¡¯ì— ìºë¦­í„°ê°€ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -194,19 +194,19 @@ public class Setting : MonoBehaviour
     {
         if (currentRuntimeData == null)
         {
-            ShowWarning("Ä³¸¯ÅÍ¸¦ ¸ÕÀú ¼±ÅÃÇØ¾ß ÇÕ´Ï´Ù.");
+            ShowWarning("ìºë¦­í„°ë¥¼ ë¨¼ì € ì„ íƒí•´ì•¼ í•©ë‹ˆë‹¤.");
             return;
         }
 
         SaveBeforeBattle();
 
         /*
-         * ¿©±â¼­ ½ÇÁ¦ ÇÁ¸®¼Â µ¥ÀÌÅÍ ÀúÀåÀ» ¿¬°áÇÏ¸é µÊ.
-         * ¿¹:
+         * ì—¬ê¸°ì„œ ì‹¤ì œ í”„ë¦¬ì…‹ ë³€ê²½ ë¡œì§ì„ ì²˜ë¦¬í•˜ë©´ ë¨.
+         * ì˜ˆ:
          * currentRuntimeData.ActivePresetIndex = presetIndex;
          *
-         * ´Ü, CharacterRuntimeData¿¡ ActivePresetIndex°¡ ¾ÆÁ÷ ¾ø´Ù¸é
-         * ¸ÕÀú ÇÊµå¸¦ Ãß°¡ÇØ¾ß ÇÔ.
+         * ë‹¨, CharacterRuntimeDataì— ActivePresetIndexê°€ ì•„ì§ ì—†ë‹¤ë©´
+         * í•´ë‹¹ í•„ë“œë¥¼ ì¶”ê°€í•´ì•¼ í•¨.
          */
 
         RefreshAllPanels();
@@ -321,6 +321,15 @@ public class Setting : MonoBehaviour
         if (characterExpText != null)
             characterExpText.text = "";
 
+        if (skillSettingPanelScript != null)
+            skillSettingPanelScript.ClearForEmptyCharacter();
+
+        if (runeSettingPanelScript != null)
+            runeSettingPanelScript.ClearForEmptyCharacter();
+
+        if (InfoTooltip.Instance != null)
+            InfoTooltip.Instance.ClearFixedText();
+
         RefreshPresetButtons();
     }
 
@@ -340,7 +349,7 @@ public class Setting : MonoBehaviour
     {
         if (currentRuntimeData == null)
         {
-            ShowWarning("Ä³¸¯ÅÍ¸¦ ¸ÕÀú ¼±ÅÃÇØ¾ß ÇÕ´Ï´Ù.");
+            ShowWarning("ìºë¦­í„°ë¥¼ ë¨¼ì € ì„ íƒí•´ì•¼ í•©ë‹ˆë‹¤.");
             return;
         }
 
@@ -352,7 +361,7 @@ public class Setting : MonoBehaviour
     {
         if (currentRuntimeData == null)
         {
-            ShowWarning("Ä³¸¯ÅÍ¸¦ ¸ÕÀú ¼±ÅÃÇØ¾ß ÇÕ´Ï´Ù.");
+            ShowWarning("ìºë¦­í„°ë¥¼ ë¨¼ì € ì„ íƒí•´ì•¼ í•©ë‹ˆë‹¤.");
             return;
         }
 
@@ -364,7 +373,7 @@ public class Setting : MonoBehaviour
     {
         if (currentRuntimeData == null)
         {
-            ShowWarning("Ä³¸¯ÅÍ¸¦ ¸ÕÀú ¼±ÅÃÇØ¾ß ÇÕ´Ï´Ù.");
+            ShowWarning("ìºë¦­í„°ë¥¼ ë¨¼ì € ì„ íƒí•´ì•¼ í•©ë‹ˆë‹¤.");
             return;
         }
 
@@ -395,8 +404,8 @@ public class Setting : MonoBehaviour
             return;
 
         /*
-         * CharacterRuntimeData¿¡ ActivePresetIndex °°Àº °ªÀÌ ÀÖ´Ù¸é ¿©±â ¿¬°á.
-         * Áö±İÀº ÀÓ½Ã·Î ¼±ÅÃ ¾øÀ½ Ã³¸®.
+         * CharacterRuntimeDataì— ActivePresetIndex ê°™ì€ ê°’ì´ ìˆë‹¤ë©´ ì—¬ê¸°ì„œ ì‚¬ìš©.
+         * ì§€ê¸ˆì€ ì„ì‹œë¡œ ì„ íƒ ì—†ìŒ ì²˜ë¦¬.
          */
         int activePresetIndex = -1;
 

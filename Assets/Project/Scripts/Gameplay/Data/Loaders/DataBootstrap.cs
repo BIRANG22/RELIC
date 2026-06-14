@@ -64,7 +64,7 @@ namespace Relic.Gameplay.Data
 
             if (excelWorkbook == null)
             {
-                Debug.LogError("[DataBootstrap] excelWorkbook이 비어 있습니다. Resources/Data/GameData.bytes 경로를 확인하세요.");
+                Debug.LogError("[DataBootstrap] GameData가 비어 있습니다. Resources/Data/GameData.csv 또는 Resources/Data/GameData.bytes 경로를 확인하세요.");
                 return;
             }
 
@@ -76,7 +76,7 @@ namespace Relic.Gameplay.Data
             }
             catch (System.Exception ex)
             {
-                Debug.LogError($"[DataBootstrap] 엑셀 파싱 실패: {ex.Message}");
+                Debug.LogError($"[DataBootstrap] GameData 파싱 실패: {ex.Message}");
                 return;
             }
 

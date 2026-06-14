@@ -1,9 +1,10 @@
 using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class RuneIconButton : MonoBehaviour
+public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, ISelectHandler
 {
     [Header("UI")]
     [SerializeField] private Button button;
@@ -129,7 +130,26 @@ public class RuneIconButton : MonoBehaviour
         if (currentRuneData == null)
             return;
 
+        owner.ShowRuneInfo(currentRuneData);
         owner.TrySelectRuneIcon(currentRuneData, isLocked, requiredLevel);
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        ShowCurrentRuneInfo();
+    }
+
+    public void OnSelect(BaseEventData eventData)
+    {
+        ShowCurrentRuneInfo();
+    }
+
+    private void ShowCurrentRuneInfo()
+    {
+        if (owner == null || currentRuneData == null)
+            return;
+
+        owner.ShowRuneInfo(currentRuneData);
     }
 
     private Sprite GetRuneIcon(RuneData runeData)

@@ -1,9 +1,10 @@
 using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class SkillIconButton : MonoBehaviour
+public class SkillIconButton : MonoBehaviour, IPointerEnterHandler
 {
     [Header("UI")]
     [SerializeField] private Button button;
@@ -69,6 +70,12 @@ public class SkillIconButton : MonoBehaviour
                 : "";
     }
 
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (owner != null && currentSkillData != null)
+            owner.ShowSkillInfo(currentSkillData);
+    }
+
     public void Execute()
     {
         if (owner == null)
@@ -76,6 +83,8 @@ public class SkillIconButton : MonoBehaviour
 
         if (currentSkillData == null)
             return;
+
+        owner.ShowSkillInfo(currentSkillData);
 
         if (isLocked)
         {
