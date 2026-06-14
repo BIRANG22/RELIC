@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using Relic.Gameplay.Data;
 
 public class EquippedSkillCharacterRowUI : MonoBehaviour
@@ -27,23 +27,25 @@ public class EquippedSkillCharacterRowUI : MonoBehaviour
             return;
         }
 
-        SetSlot(passiveSlot, characterData.PassiveSkillId);
-        SetSlot(uniqueSlot, characterData.UniqueSkillId);
-        SetSlot(abilitySlot, characterData.AbilitySkillId);
+        SetSlot(passiveSlot, characterData.PassiveSkillId, false);
+        SetSlot(uniqueSlot, characterData.UniqueSkillId, false);
+        SetSlot(abilitySlot, characterData.AbilitySkillId, true);
 
         SetSlot(
             freeSlot1,
             characterData.EquippedSkillIds != null &&
             characterData.EquippedSkillIds.Length > 2
                 ? characterData.EquippedSkillIds[2]
-                : null);
+                : null,
+            true);
 
         SetSlot(
             freeSlot2,
             characterData.EquippedSkillIds != null &&
             characterData.EquippedSkillIds.Length > 3
                 ? characterData.EquippedSkillIds[3]
-                : null);
+                : null,
+            true);
     }
 
     public void Clear()
@@ -55,7 +57,7 @@ public class EquippedSkillCharacterRowUI : MonoBehaviour
         if (freeSlot2 != null) freeSlot2.Clear();
     }
 
-    private void SetSlot(EquippedSkillSlotUI slot, string skillId)
+    private void SetSlot(EquippedSkillSlotUI slot, string skillId, bool clickable)
     {
         if (slot == null)
             return;
@@ -68,7 +70,7 @@ public class EquippedSkillCharacterRowUI : MonoBehaviour
 
         if (DataManager.Instance == null)
         {
-            Debug.LogWarning("[EquippedSkillCharacterRowUI] DataManager°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("[EquippedSkillCharacterRowUI] DataManagerê°€ ì—†ìŠµë‹ˆë‹¤.");
             slot.Clear();
             return;
         }
@@ -76,7 +78,7 @@ public class EquippedSkillCharacterRowUI : MonoBehaviour
         SkillDatabase skillDatabase = DataManager.Instance.SkillDatabase;
         if (skillDatabase == null || !skillDatabase.TryGet(skillId, out SkillMasterData skillData))
         {
-            Debug.LogWarning($"[EquippedSkillCharacterRowUI] SkillData°¡ ¾ø½À´Ï´Ù: {skillId}");
+            Debug.LogWarning($"[EquippedSkillCharacterRowUI] SkillDataê°€ ì—†ìŠµë‹ˆë‹¤: {skillId}");
             slot.Clear();
             return;
         }
@@ -87,6 +89,6 @@ public class EquippedSkillCharacterRowUI : MonoBehaviour
         if (iconDatabase != null)
             iconDatabase.TryGetIcon(skillId, out icon);
 
-        slot.SetSkill(ownerPanel, skillData, icon);
+        slot.SetSkill(ownerPanel, skillData, icon, clickable);
     }
 }
