@@ -16,6 +16,9 @@ public class StartRoomNpcClick : MonoBehaviour
 
     private void Awake()
     {
+        if (startRoomController == null)
+            startRoomController = GetComponentInParent<StartRoomController>(true);
+
         InitializeScale();
     }
 
@@ -32,12 +35,7 @@ public class StartRoomNpcClick : MonoBehaviour
             return;
 
         InitializeScale();
-
-        transform.localScale = Vector3.Lerp(
-            transform.localScale,
-            targetScale,
-            Time.deltaTime * scaleSpeed
-        );
+        transform.localScale = Vector3.Lerp(transform.localScale, targetScale, Time.deltaTime * scaleSpeed);
     }
 
     private void OnMouseEnter()
@@ -62,6 +60,8 @@ public class StartRoomNpcClick : MonoBehaviour
     {
         if (startRoomController != null)
             startRoomController.OnNpcClicked();
+        else
+            Debug.LogWarning("[StartRoomNpcClick] StartRoomController is not connected.");
     }
 
     private void InitializeScale()

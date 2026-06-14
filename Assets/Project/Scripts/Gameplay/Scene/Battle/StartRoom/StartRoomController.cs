@@ -14,12 +14,36 @@ public class StartRoomController : MonoBehaviour
     [TextArea]
     [SerializeField] private string[] npcDialogLines;
 
+    [Header("Room")]
     [SerializeField] private GameObject startRoomRoot;
     [SerializeField] private GameObject mapPanel;
 
     private bool isDialogPlaying;
     private bool isRelicChoiceOpened;
     private bool isRelicSelected;
+
+    private void Awake()
+    {
+        if (chatWindow == null)
+            chatWindow = GetComponentInChildren<StartRoomChatWindow>(true);
+
+        if (relicChoiceArea == null)
+            relicChoiceArea = GetComponentInChildren<RelicChoiceAreaUI>(true);
+    }
+
+    private void OnEnable()
+    {
+        isDialogPlaying = false;
+        isRelicChoiceOpened = false;
+
+        SpawnPartyAllies();
+
+        if (chatWindow != null)
+            chatWindow.Close();
+
+        if (relicChoiceArea != null)
+            relicChoiceArea.Close();
+    }
 
     public void CompleteStartRoom()
     {
@@ -28,17 +52,6 @@ public class StartRoomController : MonoBehaviour
 
         if (mapPanel != null)
             mapPanel.SetActive(true);
-    }
-
-    private void OnEnable()
-    {
-        SpawnPartyAllies();
-
-        if (chatWindow != null)
-            chatWindow.Close();
-
-        if (relicChoiceArea != null)
-            relicChoiceArea.Close();
     }
 
     private void SpawnPartyAllies()
@@ -71,7 +84,7 @@ public class StartRoomController : MonoBehaviour
 
             if (!prefabDatabase.TryGetPreviewWorldPrefab(characterId, out GameObject lobbyPrefab))
             {
-                Debug.LogWarning($"[StartRoomController] LobbyPrefab ¾øÀ½: {characterId}");
+                Debug.LogWarning($"[StartRoomController] Lobby prefab not found: {characterId}");
                 continue;
             }
 
@@ -87,25 +100,25 @@ public class StartRoomController : MonoBehaviour
         for (int i = point.childCount - 1; i >= 0; i--)
             Destroy(point.GetChild(i).gameObject);
     }
-    
+
     public void OnNpcClicked()
     {
-        if (isDialogPlaying)
-            return;
-
-        if (isRelicChoiceOpened)
-            return;
-
-        if (isRelicSelected)
+        if (isDialogPlaying || isRelicChoiceOpened || isRelicSelected)
             return;
 
         isDialogPlaying = true;
 
-        chatWindow.Open(npcDialogLines, OnDialogFinished);
+        if (chatWindow != null)
+            chatWindow.Open(npcDialogLines, OnDialogFinished);
+        else
+            OnDialogFinished();
     }
 
     private void OnDialogFinished()
     {
+        if (isRelicSelected)
+            return;
+
         isDialogPlaying = false;
         isRelicChoiceOpened = true;
 
@@ -114,10 +127,13 @@ public class StartRoomController : MonoBehaviour
 
         if (relicChoiceArea != null)
             relicChoiceArea.Open();
+        else
+            Debug.LogWarning("[StartRoomController] RelicChoiceAreaUI is not connected.");
     }
 
     public void OnRelicChoiceFinished()
     {
+        isDialogPlaying = false;
         isRelicChoiceOpened = false;
         isRelicSelected = true;
     }

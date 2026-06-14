@@ -14,42 +14,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entries:
   - RelicId: Relic_01
-    Icon: {fileID: 21300000, guid: 2e7968c22c9dab941a7298339dbaf636, type: 3}
+    Icon: {fileID: 21300000, guid: be7cf21ba8db5464c989ee8609c27093, type: 3}
   - RelicId: Relic_02
-    Icon: {fileID: 21300000, guid: e011a40f799e9704d94bef201dd876fc, type: 3}
+    Icon: {fileID: 21300000, guid: 969ed0f6e3e11b641b8f7c2ad7f742e5, type: 3}
   - RelicId: Relic_03
-    Icon: {fileID: 21300000, guid: 365537d6587b5dd4e8b9623e181d9fba, type: 3}
+    Icon: {fileID: 21300000, guid: dab2f4009a9a83147837dbbb43833712, type: 3}
   - RelicId: Relic_04
-    Icon: {fileID: 21300000, guid: 6a0684cc51eeb484faedd144672aa2dd, type: 3}
+    Icon: {fileID: 21300000, guid: 89f2ea2e9930c614fb1c32837fe5a146, type: 3}
   - RelicId: Relic_05
-    Icon: {fileID: 21300000, guid: b357d60f154845b4192c4ad7acbd9049, type: 3}
+    Icon: {fileID: 21300000, guid: 70d437be2ed4cee44a32f44239a84275, type: 3}
   - RelicId: Relic_06
-    Icon: {fileID: 21300000, guid: b1348f0da71d5d7418afafb33aff098a, type: 3}
+    Icon: {fileID: 21300000, guid: c7e69e9863248e247bdcdf066acc6f5d, type: 3}
   - RelicId: Relic_07
-    Icon: {fileID: 21300000, guid: 3c781d8b66b83294faaa4e65c9236fd2, type: 3}
+    Icon: {fileID: 21300000, guid: a7639ec46fc231d4eafed634207c16b4, type: 3}
   - RelicId: Relic_08
-    Icon: {fileID: 21300000, guid: eadad0824546fc6449f5cfcbc6f7f8ad, type: 3}
+    Icon: {fileID: 21300000, guid: 1d7d9f9b1b53aa14abb17e92246c183f, type: 3}
   - RelicId: Relic_09
-    Icon: {fileID: 21300000, guid: 133474b93388f45419314b21b8149da5, type: 3}
+    Icon: {fileID: 21300000, guid: 96fa88603443c09448cf341716dcd3b0, type: 3}
   - RelicId: Relic_10
-    Icon: {fileID: 21300000, guid: 68b36da396bc5e3438a0dd928e0a271e, type: 3}
-  - RelicId: Relic_11
-    Icon: {fileID: 21300000, guid: 75b7b503ba4f96a47946aecc51ae3315, type: 3}
-  - RelicId: Relic_12
-    Icon: {fileID: 21300000, guid: 5276c6a8851f66f42a40ed25e68e3bca, type: 3}
-  - RelicId: Relic_13
-    Icon: {fileID: 21300000, guid: f6552219565126b4e88083408c5a8d51, type: 3}
-  - RelicId: Relic_14
-    Icon: {fileID: 21300000, guid: 4d20aa6f59d341f438494afc64dbf467, type: 3}
-  - RelicId: Relic_15
-    Icon: {fileID: 21300000, guid: e532430ac958994479a512c7b12bc964, type: 3}
-  - RelicId: Relic_16
-    Icon: {fileID: 21300000, guid: e532430ac958994479a512c7b12bc964, type: 3}
-  - RelicId: Relic_17
-    Icon: {fileID: 21300000, guid: e532430ac958994479a512c7b12bc964, type: 3}
-  - RelicId: Relic_18
-    Icon: {fileID: 21300000, guid: e532430ac958994479a512c7b12bc964, type: 3}
-  - RelicId: Relic_19
-    Icon: {fileID: 21300000, guid: e532430ac958994479a512c7b12bc964, type: 3}
-  - RelicId: Relic_20
-    Icon: {fileID: 21300000, guid: e532430ac958994479a512c7b12bc964, type: 3}
+    Icon: {fileID: 21300000, guid: b1d8f80328b836a45b14524a1dbeda61, type: 3}

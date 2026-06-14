@@ -1,74 +1,190 @@
-using TMPro;
-using UnityEngine;
-using UnityEngine.UI;
 using Relic.Gameplay.Data;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
-public class RelicChoiceSlotUI : MonoBehaviour
+public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
+    [Header("UI")]
     [SerializeField] private Image relicIconImage;
-    [SerializeField] private TMP_Text relicNameText;
-    [SerializeField] private TMP_Text relicDescText;
+    [SerializeField] private Button button;
+
+    [Header("Hover Scale Effect")]
+    [SerializeField] private Transform scaleTarget;
+    [SerializeField, Min(1f)] private float hoverBaseScale = 1.08f;
+    [SerializeField, Min(0f)] private float breathAmount = 0.04f;
+    [SerializeField, Min(0.1f)] private float breathSpeed = 4f;
+    [SerializeField, Min(0.1f)] private float scaleLerpSpeed = 14f;
 
     private string relicId;
     private RelicChoiceAreaUI owner;
+    private bool isSetup;
+    private bool isPointerInside;
+    private Vector3 originalScale = Vector3.one;
+
+    private void Awake()
+    {
+        if (button == null)
+            button = GetComponent<Button>();
+
+        if (button != null)
+            button.onClick.AddListener(OnClick);
+
+        if (scaleTarget == null)
+            scaleTarget = transform;
+
+        originalScale = scaleTarget.localScale;
+    }
+
+    private void OnEnable()
+    {
+        if (scaleTarget == null)
+            scaleTarget = transform;
+
+        if (originalScale == Vector3.zero)
+            originalScale = scaleTarget.localScale;
+
+        isPointerInside = false;
+        ResetScaleImmediate();
+    }
+
+    private void Update()
+    {
+        if (scaleTarget == null)
+            return;
+
+        Vector3 targetScale = originalScale;
+
+        if (isSetup && isPointerInside)
+        {
+            float breath = Mathf.Sin(Time.unscaledTime * breathSpeed) * breathAmount;
+            float scale = hoverBaseScale + breath;
+            targetScale = originalScale * scale;
+        }
+
+        scaleTarget.localScale = Vector3.Lerp(
+            scaleTarget.localScale,
+            targetScale,
+            Time.unscaledDeltaTime * scaleLerpSpeed
+        );
+    }
+
+    private void OnDisable()
+    {
+        isPointerInside = false;
+        ResetScaleImmediate();
+    }
+
+    private void OnDestroy()
+    {
+        if (button != null)
+            button.onClick.RemoveListener(OnClick);
+    }
 
     public void Setup(string id, RelicChoiceAreaUI choiceArea)
     {
         relicId = id;
         owner = choiceArea;
+        isSetup = false;
+        isPointerInside = false;
+        ResetScaleImmediate();
 
-        RelicData relicData = DataManager.Instance.RelicDatabase.Get(relicId);
+        if (string.IsNullOrWhiteSpace(relicId))
+        {
+            ClearSlot();
+            return;
+        }
 
-        if (relicData == null)
+        if (DataManager.Instance == null || DataManager.Instance.RelicDatabase == null)
+        {
+            Debug.LogWarning("[RelicChoiceSlotUI] DataManager or RelicDatabase is null.");
+            ClearSlot();
+            return;
+        }
+
+        if (!DataManager.Instance.RelicDatabase.TryGet(relicId, out RelicData relicData) || relicData == null)
+        {
+            Debug.LogWarning($"[RelicChoiceSlotUI] Unknown relic id: {relicId}");
+            ClearSlot();
+            return;
+        }
+
+        SetupIcon();
+        isSetup = true;
+        gameObject.SetActive(true);
+    }
+
+    private void SetupIcon()
+    {
+        if (relicIconImage == null)
             return;
 
-        if (relicNameText != null)
-            relicNameText.text = relicData.Name;
-
-        if (relicDescText != null)
-            relicDescText.text = relicData.EffectDesc;
-
-        if (relicIconImage != null &&
+        if (DataManager.Instance != null &&
+            DataManager.Instance.RelicIconDatabase != null &&
             DataManager.Instance.RelicIconDatabase.TryGetIcon(relicId, out Sprite icon))
         {
             relicIconImage.sprite = icon;
             relicIconImage.enabled = true;
+            relicIconImage.raycastTarget = true;
         }
-        else if (relicIconImage != null)
+        else
         {
             relicIconImage.sprite = null;
             relicIconImage.enabled = false;
+            relicIconImage.raycastTarget = false;
         }
+    }
+
+    public void ClearSlot()
+    {
+        relicId = string.Empty;
+        owner = null;
+        isSetup = false;
+        isPointerInside = false;
+        ResetScaleImmediate();
+
+        if (relicIconImage != null)
+        {
+            relicIconImage.sprite = null;
+            relicIconImage.enabled = false;
+            relicIconImage.raycastTarget = false;
+        }
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (!isSetup || owner == null)
+            return;
+
+        isPointerInside = true;
+        owner.ShowRelicHoverInfo(relicId);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        isPointerInside = false;
+
+        if (owner != null)
+            owner.HideRelicHoverInfo();
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        OnClick();
     }
 
     public void OnClick()
     {
-        if (string.IsNullOrWhiteSpace(relicId))
+        if (!isSetup || string.IsNullOrWhiteSpace(relicId))
             return;
-
-        if (DataManager.Instance == null)
-        {
-            Debug.LogWarning("[RelicChoiceSlotUI] DataManager is null.");
-            return;
-        }
-
-        BattleRuntimeData runtime =
-            DataManager.Instance.BattleRuntimeStore.GetOrCreate();
-
-        runtime.OwnedRelicIds ??= new System.Collections.Generic.List<string>();
-
-        if (!runtime.OwnedRelicIds.Contains(relicId))
-            runtime.OwnedRelicIds.Add(relicId);
-
-        DataManager.Instance.BattleRuntimeStore.Set(runtime);
-
-        RelicEquipPanelUI relicEquipPanel =
-            Object.FindFirstObjectByType<RelicEquipPanelUI>(FindObjectsInactive.Include);
-
-        if (relicEquipPanel != null)
-            relicEquipPanel.Refresh();
 
         if (owner != null)
-            owner.OnRelicSelected(relicId);
+            owner.SelectRelic(relicId);
+    }
+
+    private void ResetScaleImmediate()
+    {
+        if (scaleTarget != null)
+            scaleTarget.localScale = originalScale;
     }
 }

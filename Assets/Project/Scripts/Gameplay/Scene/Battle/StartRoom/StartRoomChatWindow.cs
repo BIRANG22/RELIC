@@ -1,8 +1,9 @@
 using System;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
-public class StartRoomChatWindow : MonoBehaviour
+public class StartRoomChatWindow : MonoBehaviour, IPointerClickHandler
 {
     [Header("UI")]
     [SerializeField] private TMP_Text dialogText;
@@ -22,6 +23,11 @@ public class StartRoomChatWindow : MonoBehaviour
 
         gameObject.SetActive(true);
         ShowSingleLine(dialogLines);
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        OnClickNext();
     }
 
     public void OnClickNext()
