@@ -136,5 +136,44 @@ public class StartRoomController : MonoBehaviour
         isDialogPlaying = false;
         isRelicChoiceOpened = false;
         isRelicSelected = true;
+
+        CompleteCurrentNode();
+
+        BattleSceneController sceneController =
+            Object.FindFirstObjectByType<BattleSceneController>(FindObjectsInactive.Include);
+
+        if (sceneController != null)
+        {
+            sceneController.ReturnToMap();
+        }
+        else
+        {
+            Debug.LogWarning("[StartRoomController] BattleSceneController ¾øÀ½");
+        }
+    }
+
+    private void CompleteCurrentNode()
+    {
+        if (DataManager.Instance == null)
+            return;
+
+        MapRuntimeData runtime = DataManager.Instance.MapRuntimeStore.Get();
+
+        if (runtime == null)
+            return;
+
+        string nodeKey = runtime.CurrentNodeIndex.ToString();
+
+        if (!runtime.ClearedMapIds.Contains(nodeKey))
+            runtime.ClearedMapIds.Add(nodeKey);
+
+        if (!runtime.VisitedMapIds.Contains(nodeKey))
+            runtime.VisitedMapIds.Add(nodeKey);
+
+        DataManager.Instance.MapRuntimeStore.Set(runtime);
+
+        Debug.Log(
+            $"[StartRoomController] Complete Node / Node:{runtime.CurrentNodeIndex} / Map:{runtime.CurrentMapId}"
+        );
     }
 }

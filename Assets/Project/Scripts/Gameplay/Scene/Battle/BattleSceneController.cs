@@ -191,13 +191,17 @@ public class BattleSceneController : MonoBehaviour
             return;
 
         mapRuntime.CurrentMapId = nodeData.MapId;
+        mapRuntime.CurrentNodeIndex = nodeData.NodeIndex;
 
         if (!mapRuntime.VisitedMapIds.Contains(nodeData.MapId))
             mapRuntime.VisitedMapIds.Add(nodeData.MapId);
 
         mapRuntimeStore.Set(mapRuntime);
 
-        Debug.Log($"[BattleSceneController] Map Selected: {nodeData.MapId} / {nodeData.Type}");
+        Debug.Log(
+            $"[BattleSceneController] Map Selected: " +
+            $"{nodeData.MapId} / Node:{nodeData.NodeIndex} / {nodeData.Type}"
+        );
 
         await PlayMapToRoomTransitionAsync(() => HandleSelectedMap(nodeData));
     }

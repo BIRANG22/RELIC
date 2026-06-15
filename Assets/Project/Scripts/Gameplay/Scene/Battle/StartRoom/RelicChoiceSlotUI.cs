@@ -20,6 +20,7 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
     private RelicChoiceAreaUI owner;
     private bool isSetup;
     private bool isPointerInside;
+    private bool isClicked;
     private Vector3 originalScale = Vector3.one;
 
     private void Awake()
@@ -28,7 +29,10 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
             button = GetComponent<Button>();
 
         if (button != null)
+        {
+            button.onClick.RemoveListener(OnClick);
             button.onClick.AddListener(OnClick);
+        }
 
         if (scaleTarget == null)
             scaleTarget = transform;
@@ -41,10 +45,10 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
         if (scaleTarget == null)
             scaleTarget = transform;
 
-        if (originalScale == Vector3.zero)
-            originalScale = scaleTarget.localScale;
+        originalScale = scaleTarget.localScale;
 
         isPointerInside = false;
+        isClicked = false;
         ResetScaleImmediate();
     }
 
@@ -55,7 +59,7 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
 
         Vector3 targetScale = originalScale;
 
-        if (isSetup && isPointerInside)
+        if (isSetup && isPointerInside && !isClicked)
         {
             float breath = Mathf.Sin(Time.unscaledTime * breathSpeed) * breathAmount;
             float scale = hoverBaseScale + breath;
@@ -72,6 +76,7 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
     private void OnDisable()
     {
         isPointerInside = false;
+        isClicked = false;
         ResetScaleImmediate();
     }
 
@@ -87,6 +92,7 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
         owner = choiceArea;
         isSetup = false;
         isPointerInside = false;
+        isClicked = false;
         ResetScaleImmediate();
 
         if (string.IsNullOrWhiteSpace(relicId))
@@ -102,7 +108,9 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
             return;
         }
 
-        if (!DataManager.Instance.RelicDatabase.TryGet(relicId, out RelicData relicData) || relicData == null)
+        RelicData relicData = DataManager.Instance.RelicDatabase.Get(relicId);
+
+        if (relicData == null)
         {
             Debug.LogWarning($"[RelicChoiceSlotUI] Unknown relic id: {relicId}");
             ClearSlot();
@@ -110,7 +118,12 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
         }
 
         SetupIcon();
+
         isSetup = true;
+
+        if (button != null)
+            button.interactable = true;
+
         gameObject.SetActive(true);
     }
 
@@ -141,7 +154,11 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
         owner = null;
         isSetup = false;
         isPointerInside = false;
+        isClicked = false;
         ResetScaleImmediate();
+
+        if (button != null)
+            button.interactable = false;
 
         if (relicIconImage != null)
         {
@@ -153,7 +170,7 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (!isSetup || owner == null)
+        if (!isSetup || owner == null || isClicked)
             return;
 
         isPointerInside = true;
@@ -175,8 +192,14 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
 
     public void OnClick()
     {
-        if (!isSetup || string.IsNullOrWhiteSpace(relicId))
+        if (!isSetup || isClicked || string.IsNullOrWhiteSpace(relicId))
             return;
+
+        isClicked = true;
+        isPointerInside = false;
+
+        if (button != null)
+            button.interactable = false;
 
         if (owner != null)
             owner.SelectRelic(relicId);

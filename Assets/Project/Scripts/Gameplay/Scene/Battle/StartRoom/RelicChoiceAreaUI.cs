@@ -358,14 +358,8 @@ public class RelicChoiceAreaUI : MonoBehaviour
 
         if (startRoomController != null)
             startRoomController.OnRelicChoiceFinished();
-
-        if (battleMapController == null)
-            battleMapController = Object.FindFirstObjectByType<BattleMapController>(FindObjectsInactive.Include);
-
-        if (battleMapController != null)
-            battleMapController.OpenMap();
         else
-            Debug.LogWarning("[RelicChoiceAreaUI] BattleMapController is not connected.");
+            Debug.LogWarning("[RelicChoiceAreaUI] StartRoomController is not connected.");
     }
 
     private void ClearSlots()

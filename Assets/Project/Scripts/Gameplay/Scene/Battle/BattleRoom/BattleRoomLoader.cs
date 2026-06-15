@@ -773,4 +773,34 @@ public class BattleRoomLoader : MonoBehaviour
             // Debug.Log($"Slot {i}: {party.GetCharacterId(i)} / Grid {party.GetGridIndex(i)}");
         }
     }
+
+    public void RegisterRuntimeMonster(SpawnedMonsterResult result)
+    {
+        if (result == null || result.RuntimeData == null || result.MonsterTransform == null)
+            return;
+
+        MonsterUnit monsterUnit = result.MonsterTransform.GetComponent<MonsterUnit>();
+
+        if (monsterUnit == null)
+            return;
+
+        Collider2D monsterCollider =
+            result.MonsterTransform.GetComponentInChildren<Collider2D>();
+
+        MonsterHUDSlot hud =
+            CreateMonsterHUD(result.RuntimeData, result.MonsterTransform, monsterCollider);
+
+        monsterUnit.BindHUD(hud);
+
+        if (!spawnedMonsterUnits.Contains(monsterUnit))
+            spawnedMonsterUnits.Add(monsterUnit);
+    }
+
+    public void UnregisterRuntimeMonster(MonsterUnit monsterUnit)
+    {
+        if (monsterUnit == null)
+            return;
+
+        spawnedMonsterUnits.Remove(monsterUnit);
+    }
 }

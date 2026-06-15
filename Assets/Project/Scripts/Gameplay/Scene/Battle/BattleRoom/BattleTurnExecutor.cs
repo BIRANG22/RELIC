@@ -8,6 +8,7 @@ public class BattleTurnExecutor : MonoBehaviour
     [SerializeField] private GridManager gridManager;
     [SerializeField] private MoveGhostPreview moveGhostPreview;
     [SerializeField] private BattleRoomLoader roomLoader;
+    [SerializeField] private BattleMonsterSpawner monsterSpawner;
 
     private bool isExecuting;
 
@@ -39,7 +40,7 @@ public class BattleTurnExecutor : MonoBehaviour
                 moveGhostPreview.ClearAll();
 
             BattleActionBatchBuilder builder = new();
-            BattleActionRunner runner = new(gridManager);
+            BattleActionRunner runner = new(gridManager, monsterSpawner, roomLoader);
 
             List<BattleActionBatch> batches = builder.Build(timelineController);
 

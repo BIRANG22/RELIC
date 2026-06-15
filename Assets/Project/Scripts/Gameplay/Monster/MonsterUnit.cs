@@ -12,6 +12,8 @@ namespace Relic.Gameplay.Monster
         [Header("Click Collider")]
         [SerializeField] private bool autoAddClickCollider2D = true;
         [SerializeField] private Vector2 fallbackColliderSize = new Vector2(1f, 1f);
+        [Header("Timeline Hover Highlight")]
+        [SerializeField] private GameObject timelineHoverHighlightObject;
 
         public MonsterRuntimeData RuntimeData { get; private set; }
 
@@ -25,6 +27,80 @@ namespace Relic.Gameplay.Monster
         public IReadOnlyList<int> OccupiedGridIndices => occupiedGridIndices;
 
         public bool IsSelected => selectedMonster == this;
+
+        public int MainGridIndex
+        {
+            get
+            {
+                if (occupiedGridIndices.Count <= 0)
+                    return -1;
+
+                return occupiedGridIndices[0];
+            }
+        }
+
+        public void Initialize(MonsterRuntimeData runtimeData)
+        {
+            RuntimeData = runtimeData;
+
+            if (RuntimeData != null)
+                ai = MonsterAIFactory.Create(RuntimeData.MonsterId);
+
+            EnsureClickCollider2D();
+
+            if (RuntimeData != null)
+                gameObject.name = $"{RuntimeData.Name}_{RuntimeData.RuntimeId}";
+        }
+
+        public MonsterAIPlan CreateAIPlan(
+            BattleContext context,
+            GridManager gridManager)
+        {
+            if (ai == null)
+            {
+                Debug.LogWarning($"[MonsterUnit] AI 없음: {RuntimeData?.MonsterId}");
+                return new MonsterAIPlan();
+            }
+
+            return ai.CreatePlan(this, context, gridManager);
+        }
+
+        public string SelectSkill(BattleContext context)
+        {
+            if (ai == null)
+            {
+                Debug.LogWarning($"[MonsterUnit] AI 없음: {RuntimeData?.MonsterId}");
+                return null;
+            }
+
+            return ai.SelectSkill(RuntimeData, context);
+        }
+
+        public void DestroyHUD()
+        {
+            if (hud != null)
+            {
+                Destroy(hud.gameObject);
+                hud = null;
+            }
+        }
+
+        public Vector2Int SelectMoveOffset(
+            BattleContext context,
+            GridManager gridManager,
+            int moveAmount)
+        {
+            if (ai == null)
+                return Vector2Int.left * moveAmount;
+
+            return ai.SelectMoveOffset(this, context, gridManager, moveAmount);
+        }
+
+        public void SetTimelineHoverHighlight(bool active)
+        {
+            if (timelineHoverHighlightObject != null)
+                timelineHoverHighlightObject.SetActive(active);
+        }
 
         public void SetOccupiedCells(List<int> cells)
         {
@@ -45,14 +121,18 @@ namespace Relic.Gameplay.Monster
             return occupiedGridIndices.Contains(gridIndex);
         }
 
-        public void Initialize(MonsterRuntimeData runtimeData)
+        public void MoveOccupiedCells(Vector2Int moveOffset, GridManager gridManager)
         {
-            RuntimeData = runtimeData;
-            ai = MonsterAIFactory.Create(runtimeData.MonsterId);
-            EnsureClickCollider2D();
+            if (gridManager == null)
+                return;
 
-            gameObject.name =
-                $"{runtimeData.Name}_{runtimeData.RuntimeId}";
+            for (int i = 0; i < occupiedGridIndices.Count; i++)
+            {
+                Vector2Int coord = gridManager.IndexToCoord(occupiedGridIndices[i]);
+                Vector2Int moved = coord + moveOffset;
+
+                occupiedGridIndices[i] = gridManager.CoordToIndex(moved);
+            }
         }
 
         private void OnMouseDown()
@@ -197,53 +277,6 @@ namespace Relic.Gameplay.Monster
                 hud.Show();
             else
                 hud.Hide();
-        }
-
-        public string SelectSkill(BattleContext context)
-        {
-            if (ai == null)
-            {
-                Debug.LogWarning($"[MonsterUnit] AI 없음: {RuntimeData.MonsterId}");
-                return null;
-            }
-
-            return ai.SelectSkill(RuntimeData, context);
-        }
-
-        public int MainGridIndex
-        {
-            get
-            {
-                if (occupiedGridIndices.Count <= 0)
-                    return -1;
-
-                return occupiedGridIndices[0];
-            }
-        }
-
-        public void MoveOccupiedCells(Vector2Int moveOffset, GridManager gridManager)
-        {
-            if (gridManager == null)
-                return;
-
-            for (int i = 0; i < occupiedGridIndices.Count; i++)
-            {
-                Vector2Int coord = gridManager.IndexToCoord(occupiedGridIndices[i]);
-                Vector2Int moved = coord + moveOffset;
-
-                occupiedGridIndices[i] = gridManager.CoordToIndex(moved);
-            }
-        }
-
-        public Vector2Int SelectMoveOffset(
-            BattleContext context,
-            GridManager gridManager,
-            int moveAmount)
-        {
-            if (ai == null)
-                return Vector2Int.left * moveAmount;
-
-            return ai.SelectMoveOffset(this, context, gridManager, moveAmount);
         }
 
         public void ShowHUD()
