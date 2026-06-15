@@ -22,10 +22,10 @@ public static class BattleEffectUtility
     }
 
     public static void AddOrStackStatus(
-     List<StatusEffectRuntimeData> statusEffects,
-     string effectId,
-     int stack,
-     int turnCount = 1)
+        List<StatusEffectRuntimeData> statusEffects,
+        string effectId,
+        int stack,
+        int turnCount = 1)
     {
         if (statusEffects == null)
             return;
@@ -35,6 +35,13 @@ public static class BattleEffectUtility
 
         stack = Mathf.Max(1, stack);
         turnCount = Mathf.Max(0, turnCount);
+
+        EffectMasterData effectData = null;
+
+        if (DataManager.Instance != null && DataManager.Instance.EffectDatabase != null)
+            DataManager.Instance.EffectDatabase.TryGet(effectId, out effectData);
+
+        bool canNest = effectData == null || effectData.Nesting == true;
 
         for (int i = 0; i < statusEffects.Count; i++)
         {
@@ -46,7 +53,11 @@ public static class BattleEffectUtility
             if (status.EffectId != effectId)
                 continue;
 
-            status.Stack += stack;
+            if (canNest)
+                status.Stack += stack;
+            else
+                status.Stack = Mathf.Max(status.Stack, stack);
+
             status.TurnCount = Mathf.Max(status.TurnCount, turnCount);
             return;
         }

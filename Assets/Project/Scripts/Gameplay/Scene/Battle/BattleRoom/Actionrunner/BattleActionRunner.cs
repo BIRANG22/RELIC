@@ -72,8 +72,6 @@ public class BattleActionRunner
 
         IncreaseMonsterTurnCountsOnceInSlot(batch);
 
-        hudService.RefreshHUDs();
-
         yield return new WaitForSeconds(MonsterHUDVisibleDelay);
 
         hudService.HideUnselectedMonsterHUDs();
@@ -81,6 +79,10 @@ public class BattleActionRunner
         yield return new WaitForSeconds(BatchEndDelay);
 
         hudService.PlayAllAliveIdle();
+
+        statusEffectService.ApplyTurnEndEffects();
+
+        hudService.RefreshHUDs();
     }
 
     private void IncreaseMonsterTurnCountsOnceInSlot(BattleActionBatch batch)

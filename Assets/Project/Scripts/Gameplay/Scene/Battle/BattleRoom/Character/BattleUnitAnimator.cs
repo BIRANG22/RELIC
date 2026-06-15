@@ -310,4 +310,10 @@ public class BattleUnitAnimator : MonoBehaviour
 
         return !facing.IsFacingRight;
     }
+
+    public void PlayAttackAction(int attackIndex)
+    {
+        currentAttackIndex = Mathf.Clamp(attackIndex, 1, 3);
+        PlayCurrentAttackAction();
+    }
 }

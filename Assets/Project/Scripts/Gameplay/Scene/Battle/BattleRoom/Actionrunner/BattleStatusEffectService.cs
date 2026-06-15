@@ -150,4 +150,149 @@ public class BattleStatusEffectService
                 animator.PlayHit();
         }
     }
+
+    public void ApplyTurnEndEffects()
+    {
+        ApplyTurnEndEffectsToPlayers();
+        ApplyTurnEndEffectsToMonsters();
+    }
+
+    private void ApplyTurnEndEffectsToPlayers()
+    {
+        BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            BattleCharacter character = characters[i];
+
+            if (character == null || character.RuntimeData == null)
+                continue;
+
+            ApplyPlayerTurnEndStatusEffects(character);
+        }
+    }
+
+    private void ApplyTurnEndEffectsToMonsters()
+    {
+        MonsterUnit[] monsters = Object.FindObjectsByType<MonsterUnit>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < monsters.Length; i++)
+        {
+            MonsterUnit monster = monsters[i];
+
+            if (monster == null || monster.RuntimeData == null)
+                continue;
+
+            ApplyMonsterTurnEndStatusEffects(monster);
+        }
+    }
+
+    private void ApplyPlayerTurnEndStatusEffects(BattleCharacter character)
+    {
+        List<StatusEffectRuntimeData> statuses = character.RuntimeData.StatusEffects;
+
+        if (statuses == null)
+            return;
+
+        for (int i = statuses.Count - 1; i >= 0; i--)
+        {
+            StatusEffectRuntimeData status = statuses[i];
+
+            if (status == null)
+                continue;
+
+            if (status.EffectId == "E_Addicted")
+                BattleEffectUtility.DamagePlayer(character, status.Stack);
+
+            if (status.EffectId == "E_Recover")
+                character.RuntimeData.CurrentResource += 1;
+
+            if (status.EffectId == "E_Recharge")
+            {
+                character.RuntimeData.CurrentStamina =
+                    Mathf.Min(
+                        character.RuntimeData.MaxStamina,
+                        character.RuntimeData.CurrentStamina + 1
+                    );
+            }
+
+            ApplyEndTurnRule(statuses, i, status);
+        }
+    }
+
+    private void ApplyMonsterTurnEndStatusEffects(MonsterUnit monster)
+    {
+        List<StatusEffectRuntimeData> statuses = monster.RuntimeData.StatusEffects;
+
+        if (statuses == null)
+            return;
+
+        for (int i = statuses.Count - 1; i >= 0; i--)
+        {
+            StatusEffectRuntimeData status = statuses[i];
+
+            if (status == null)
+                continue;
+
+            if (status.EffectId == "E_Addicted")
+            {
+                BattleEffectUtility.DamageMonster(monster, status.Stack);
+
+                if (monster.RuntimeData.IsDead)
+                    deathService.HandleMonsterDead(monster);
+            }
+
+            ApplyEndTurnRule(statuses, i, status);
+        }
+    }
+
+    private void ApplyEndTurnRule(
+        List<StatusEffectRuntimeData> statuses,
+        int index,
+        StatusEffectRuntimeData status)
+    {
+        if (statuses == null || status == null)
+            return;
+
+        EffectMasterData effectData = null;
+
+        if (DataManager.Instance != null &&
+            DataManager.Instance.EffectDatabase != null)
+        {
+            DataManager.Instance.EffectDatabase.TryGet(
+                status.EffectId,
+                out effectData
+            );
+        }
+
+        if (effectData == null)
+            return;
+
+        switch (effectData.EndTurn)
+        {
+            case EndTurn.None:
+                break;
+
+            case EndTurn.ReMove:
+                statuses.RemoveAt(index);
+                break;
+
+            case EndTurn.Decrease:
+                status.Stack--;
+
+                if (status.Stack <= 0)
+                    statuses.RemoveAt(index);
+
+                break;
+
+            case EndTurn.Maintain:
+                break;
+        }
+    }
 }
