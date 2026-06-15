@@ -72,6 +72,8 @@ public class BattleTurnExecutor : MonoBehaviour
                 }
             }
 
+            runner.ApplyTurnEndEffects();
+
             ClearTimeline();
 
             if (BattleResultChecker.Instance != null &&

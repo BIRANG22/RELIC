@@ -295,4 +295,39 @@ public class BattleStatusEffectService
                 break;
         }
     }
+
+    public void ApplyBleedingDamageToPlayerOnAttack(BattleCharacter character)
+    {
+        if (character == null || character.RuntimeData == null)
+            return;
+
+        int bleedingStack = damageService.GetStatusStack(
+            character.RuntimeData.StatusEffects,
+            "E_Bleeding"
+        );
+
+        if (bleedingStack <= 0)
+            return;
+
+        BattleEffectUtility.DamagePlayer(character, bleedingStack);
+    }
+
+    public void ApplyBleedingDamageToMonsterOnAttack(MonsterUnit monster)
+    {
+        if (monster == null || monster.RuntimeData == null)
+            return;
+
+        int bleedingStack = damageService.GetStatusStack(
+            monster.RuntimeData.StatusEffects,
+            "E_Bleeding"
+        );
+
+        if (bleedingStack <= 0)
+            return;
+
+        BattleEffectUtility.DamageMonster(monster, bleedingStack);
+
+        if (monster.RuntimeData.IsDead)
+            deathService.HandleMonsterDead(monster);
+    }
 }

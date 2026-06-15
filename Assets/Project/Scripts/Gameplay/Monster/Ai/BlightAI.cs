@@ -32,8 +32,6 @@ namespace Relic.Gameplay.Monster
 
             bool danger = HasPlayerAround8(monsterUnit, gridManager);
 
-            Debug.Log($"[BlightAI] Danger:{danger} / Monster:{monsterUnit.RuntimeData.Name}");
-
             if (!danger)
                 return plan;
 
@@ -64,8 +62,6 @@ namespace Relic.Gameplay.Monster
                         moveOffsets
                     );
             }
-
-            Debug.Log($"[BlightAI] MoveOffset:{moveOffset}");
 
             if (moveOffset != Vector2Int.zero)
             {

@@ -218,10 +218,6 @@ public class BattleRoomLoader : MonoBehaviour
                 continue;
 
             partyStore.SetCurrentGridIndex(i, spawnGridIndex);
-
-            Debug.Log(
-                $"[BattleRoomLoader] Reset CurrentGrid / Slot:{i} / Character:{characterId} / Grid:{spawnGridIndex}"
-            );
         }
     }
 

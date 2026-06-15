@@ -112,10 +112,6 @@ public class MapViewSpawner : MonoBehaviour
 
         bool canClick = currentNode.NextNodeIndices.Contains(node.NodeIndex);
 
-        Debug.Log(
-            $"[MapViewSpawner] ClickCheck / Current:{currentNode.NodeIndex} -> Target:{node.NodeIndex} / Can:{canClick}"
-        );
-
         return canClick;
     }
 

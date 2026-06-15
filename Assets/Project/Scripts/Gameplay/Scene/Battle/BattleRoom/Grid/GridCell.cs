@@ -33,8 +33,6 @@ public class GridCell : MonoBehaviour
 
     private void OnMouseDown()
     {
-        Debug.Log($"[GridCell] Clicked: {name} / Index:{Index} / X:{X} / Y:{Y}");
-
         if (owner != null)
             owner.NotifyCellClicked(this);
     }

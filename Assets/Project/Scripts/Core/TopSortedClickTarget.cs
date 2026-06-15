@@ -32,7 +32,6 @@ public class TopSortedClickTarget : MonoBehaviour
 
     public void Click()
     {
-        Debug.Log($"[TopSortedClickTarget] Clicked: {name}");
         onClicked?.Invoke();
     }
 }
