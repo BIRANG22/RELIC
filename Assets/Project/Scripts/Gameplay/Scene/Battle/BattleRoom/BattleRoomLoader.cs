@@ -164,6 +164,10 @@ public class BattleRoomLoader : MonoBehaviour
             BattleResultChecker.Instance.ResetBattle();
 
         ClearSpawnedBattleObjects();
+
+        if (monsterTurnPlanner != null)
+            monsterTurnPlanner.ResetBattleStartIntroState();
+
         SpawnPlayersAndHUD();
         SpawnMonstersAndHUD();
 
@@ -623,7 +627,7 @@ public class BattleRoomLoader : MonoBehaviour
         }
 
         if (monsterTurnPlanner != null)
-            monsterTurnPlanner.PlanMonsterTurns(spawnedMonsterUnits);
+            monsterTurnPlanner.PlanMonsterTurns(spawnedMonsterUnits, true);
         else
             Debug.LogWarning("[BattleRoomLoader] MonsterTurnPlanner is missing.");
     }

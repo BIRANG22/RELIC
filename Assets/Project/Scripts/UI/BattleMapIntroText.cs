@@ -4,12 +4,15 @@ using UnityEngine;
 
 public class BattleMapIntroText : MonoBehaviour
 {
+    private static BattleMapIntroText instance;
+
     [Header("Text")]
     [SerializeField] private TMP_Text introText;
     [SerializeField, TextArea(2, 5)] private string message = "전투 지역 진입";
 
     [Header("Timing")]
     [SerializeField] private bool playOnStart;
+    [SerializeField] private bool ignorePlayOnStart = true;
     [SerializeField] private float startDelay = 0.2f;
     [SerializeField] private float fadeInDuration = 0.25f;
     [SerializeField] private float stayDuration = 1.2f;
@@ -23,9 +26,12 @@ public class BattleMapIntroText : MonoBehaviour
     private RectTransform rectTransform;
     private Vector2 baseAnchoredPosition;
     private Coroutine playRoutine;
+    private int playVersion;
 
     private void Awake()
     {
+        instance = this;
+
         if (introText == null)
             introText = GetComponentInChildren<TMP_Text>(true);
 
@@ -37,10 +43,48 @@ public class BattleMapIntroText : MonoBehaviour
         HideImmediate();
     }
 
+    private void OnEnable()
+    {
+        if (instance == null)
+            instance = this;
+    }
+
+    private void OnDestroy()
+    {
+        if (instance == this)
+            instance = null;
+    }
+
     private void Start()
     {
-        if (playOnStart)
+        if (playOnStart && !ignorePlayOnStart)
             Play();
+    }
+
+    public static void ShowMessage(string text)
+    {
+        BattleMapIntroText target = FindTarget();
+
+        if (target == null)
+        {
+            Debug.LogWarning($"[BattleMapIntroText] BattleMapIntroText를 찾을 수 없습니다. Message: {text}");
+            return;
+        }
+
+        target.Play(text);
+    }
+
+    public static IEnumerator ShowMessageAndWait(string text)
+    {
+        BattleMapIntroText target = FindTarget();
+
+        if (target == null)
+        {
+            Debug.LogWarning($"[BattleMapIntroText] BattleMapIntroText를 찾을 수 없습니다. Message: {text}");
+            yield break;
+        }
+
+        yield return target.PlayAndWait(text);
     }
 
     public void Play()
@@ -56,10 +100,40 @@ public class BattleMapIntroText : MonoBehaviour
             return;
         }
 
-        if (playRoutine != null)
-            StopCoroutine(playRoutine);
+        StopCurrentRoutine();
 
-        playRoutine = StartCoroutine(PlayRoutine(text));
+        int version = ++playVersion;
+        playRoutine = StartCoroutine(PlayRoutine(text, version));
+    }
+
+    public IEnumerator PlayAndWait(string text)
+    {
+        if (introText == null)
+        {
+            Debug.LogWarning("[BattleMapIntroText] Intro Text가 연결되어 있지 않습니다.", this);
+            yield break;
+        }
+
+        StopCurrentRoutine();
+
+        int version = ++playVersion;
+        playRoutine = StartCoroutine(PlayRoutine(text, version));
+        yield return playRoutine;
+    }
+
+    public void StopAndHide()
+    {
+        StopCurrentRoutine();
+        playVersion++;
+        HideImmediate();
+    }
+
+    public float GetTotalPlayDuration()
+    {
+        return Mathf.Max(0f, startDelay) +
+               Mathf.Max(0f, fadeInDuration) +
+               Mathf.Max(0f, stayDuration) +
+               Mathf.Max(0f, fadeOutDuration);
     }
 
     public void HideImmediate()
@@ -74,7 +148,16 @@ public class BattleMapIntroText : MonoBehaviour
             rectTransform.anchoredPosition = baseAnchoredPosition + startOffset;
     }
 
-    private IEnumerator PlayRoutine(string text)
+    private void StopCurrentRoutine()
+    {
+        if (playRoutine == null)
+            return;
+
+        StopCoroutine(playRoutine);
+        playRoutine = null;
+    }
+
+    private IEnumerator PlayRoutine(string text, int version)
     {
         introText.text = string.IsNullOrEmpty(text) ? message : text;
         introText.alpha = 0f;
@@ -93,8 +176,11 @@ public class BattleMapIntroText : MonoBehaviour
 
         yield return FadeAndMove(1f, 0f, fadeOutDuration, endOffset, endOffset);
 
-        introText.gameObject.SetActive(false);
-        playRoutine = null;
+        if (version == playVersion)
+        {
+            introText.gameObject.SetActive(false);
+            playRoutine = null;
+        }
     }
 
     private IEnumerator FadeAndMove(float fromAlpha, float toAlpha, float duration, Vector2 fromOffset, Vector2 toOffset)
@@ -129,6 +215,15 @@ public class BattleMapIntroText : MonoBehaviour
 
         if (useMoveEffect && rectTransform != null)
             rectTransform.anchoredPosition = baseAnchoredPosition + toOffset;
+    }
+
+    private static BattleMapIntroText FindTarget()
+    {
+        if (instance != null)
+            return instance;
+
+        instance = FindFirstObjectByType<BattleMapIntroText>(FindObjectsInactive.Include);
+        return instance;
     }
 
     private static float EaseOutCubic(float t)

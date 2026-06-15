@@ -109,6 +109,7 @@ public class BattleRewardPanelUI : MonoBehaviour
             return;
 
         ApplyReward(reward);
+        PlayRewardAcquireSfx(reward);
         claimedRewards.Add(reward);
         activeSlots.Remove(slot);
 
@@ -165,6 +166,24 @@ public class BattleRewardPanelUI : MonoBehaviour
         }
 
         DataManager.Instance.BattleRuntimeStore.Set(runtime);
+    }
+
+    private void PlayRewardAcquireSfx(BattleRewardData reward)
+    {
+        if (reward == null || AudioManager.Instance == null)
+            return;
+
+        switch (reward.Type)
+        {
+            case BattleRewardType.Remnant:
+                AudioManager.Instance.PlaySfx(SfxType.BattleRewardRemnantAcquire);
+                break;
+
+            case BattleRewardType.Item:
+            case BattleRewardType.Relic:
+                AudioManager.Instance.PlaySfx(SfxType.BattleRewardRelicSkillAcquire);
+                break;
+        }
     }
 
     private bool CanClaimReward(BattleRewardData reward)

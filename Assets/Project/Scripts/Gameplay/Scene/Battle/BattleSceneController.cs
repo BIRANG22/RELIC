@@ -12,8 +12,11 @@ public class BattleSceneController : MonoBehaviour
 
     [Header("Battle Map Intro Text")]
     [SerializeField] private BattleMapIntroText battleMapIntroText;
+    [SerializeField] private string mapIntroMessage = "제1구역 폐허";
     [SerializeField] private string startRoomIntroMessage = "수상한 자와 조우";
     [SerializeField] private string battleRoomIntroMessage = "전투 시작";
+    [SerializeField] private bool playMapIntroOnStart = true;
+    [SerializeField] private bool playBattleRoomIntroFromSceneController = false;
 
     [Header("Auto Return To Map")]
     [SerializeField] private bool autoDetectReturnToMap = true;
@@ -56,6 +59,7 @@ public class BattleSceneController : MonoBehaviour
         InitializeRuntime();
         CloseAllRooms();
         OpenMapPanelImmediate();
+        PlayMapIntroTextOnStart();
 
         lastActiveRoomLastFrame = FindActiveRoomObject();
         wasAnyRoomActiveLastFrame = lastActiveRoomLastFrame != null;
@@ -454,7 +458,7 @@ public class BattleSceneController : MonoBehaviour
     private void OpenBattleMap(GeneratedMapNodeData nodeData)
     {
         Debug.Log($"[BattleSceneController] Battle room start: {nodeData.MapId}");
-        pendingRoomIntroMessage = battleRoomIntroMessage;
+        pendingRoomIntroMessage = playBattleRoomIntroFromSceneController ? battleRoomIntroMessage : null;
         OpenRoom(battleRoom, "BattleRoom");
     }
 
@@ -480,6 +484,21 @@ public class BattleSceneController : MonoBehaviour
     {
         Debug.Log($"[BattleSceneController] Special event start: {nodeData.MapId}");
         OpenRoom(eventRoom, "EventRoom");
+    }
+
+    private void PlayMapIntroTextOnStart()
+    {
+        if (!playMapIntroOnStart)
+            return;
+
+        if (string.IsNullOrEmpty(mapIntroMessage))
+            return;
+
+        if (battleMapIntroText == null)
+            AutoFindBattleMapIntroTextIfNeeded();
+
+        if (battleMapIntroText != null)
+            battleMapIntroText.Play(mapIntroMessage);
     }
 
     private void PlayPendingRoomIntroText()

@@ -132,6 +132,7 @@ GameObject:
   - component: {fileID: 25012818}
   - component: {fileID: 25012817}
   - component: {fileID: 25012820}
+  - component: {fileID: 25012821}
   m_Layer: 0
   m_Name: DeployCell_06
   m_TagString: Untagged
@@ -201,7 +202,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 25012818}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 25012821}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &25012818
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -258,6 +271,41 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   occupiedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   selectedColor: {r: 0.8627451, g: 0.31372556, b: 0.3520858, a: 1}
+--- !u!114 &25012821
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 25012814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &26929532
 GameObject:
   m_ObjectHideFlags: 0
@@ -699,6 +747,7 @@ GameObject:
   - component: {fileID: 86989396}
   - component: {fileID: 86989394}
   - component: {fileID: 86989398}
+  - component: {fileID: 86989399}
   m_Layer: 0
   m_Name: RuneSlotButton_3
   m_TagString: Untagged
@@ -800,7 +849,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 86989394}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 86989399}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!222 &86989397
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -827,6 +888,41 @@ MonoBehaviour:
   borderImage: {fileID: 0}
   lockObject: {fileID: 1954074079}
   equippedBorderColorHex: '#4E66DF'
+--- !u!114 &86989399
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 86989392}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &98833943
 GameObject:
   m_ObjectHideFlags: 0
@@ -1599,6 +1695,7 @@ GameObject:
   - component: {fileID: 135277109}
   - component: {fileID: 135277107}
   - component: {fileID: 135277111}
+  - component: {fileID: 135277112}
   m_Layer: 0
   m_Name: RuneSlotButton_2
   m_TagString: Untagged
@@ -1700,7 +1797,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 135277107}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 86989399}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!222 &135277110
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1727,6 +1836,41 @@ MonoBehaviour:
   borderImage: {fileID: 0}
   lockObject: {fileID: 1235241926}
   equippedBorderColorHex: '#4E66DF'
+--- !u!114 &135277112
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 135277105}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &139218943
 GameObject:
   m_ObjectHideFlags: 0
@@ -2406,6 +2550,7 @@ GameObject:
   - component: {fileID: 179520012}
   - component: {fileID: 179520010}
   - component: {fileID: 179520014}
+  - component: {fileID: 179520015}
   m_Layer: 0
   m_Name: RuneSlotButton_0
   m_TagString: Untagged
@@ -2507,7 +2652,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 179520010}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 86989399}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!222 &179520013
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2534,6 +2691,41 @@ MonoBehaviour:
   borderImage: {fileID: 0}
   lockObject: {fileID: 1840988870}
   equippedBorderColorHex: '#4E66DF'
+--- !u!114 &179520015
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 179520008}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &180323733
 GameObject:
   m_ObjectHideFlags: 0
@@ -3317,6 +3509,7 @@ GameObject:
   - component: {fileID: 254103267}
   - component: {fileID: 254103265}
   - component: {fileID: 254103269}
+  - component: {fileID: 254103270}
   m_Layer: 0
   m_Name: RuneSlotButton_11
   m_TagString: Untagged
@@ -3418,7 +3611,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 254103265}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 86989399}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!222 &254103268
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3445,6 +3650,41 @@ MonoBehaviour:
   borderImage: {fileID: 0}
   lockObject: {fileID: 1262024742}
   equippedBorderColorHex: '#4E66DF'
+--- !u!114 &254103270
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 254103263}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &266558055
 GameObject:
   m_ObjectHideFlags: 0
@@ -4509,6 +4749,7 @@ GameObject:
   - component: {fileID: 346895500}
   - component: {fileID: 346895498}
   - component: {fileID: 346895502}
+  - component: {fileID: 346895503}
   m_Layer: 0
   m_Name: RuneSlotButton_6
   m_TagString: Untagged
@@ -4610,7 +4851,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 346895498}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 86989399}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!222 &346895501
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4637,6 +4890,41 @@ MonoBehaviour:
   borderImage: {fileID: 0}
   lockObject: {fileID: 1643084844}
   equippedBorderColorHex: '#4E66DF'
+--- !u!114 &346895503
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 346895496}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &350354470
 GameObject:
   m_ObjectHideFlags: 0
@@ -4930,6 +5218,7 @@ GameObject:
   - component: {fileID: 358226679}
   - component: {fileID: 358226678}
   - component: {fileID: 358226681}
+  - component: {fileID: 358226682}
   m_Layer: 0
   m_Name: DeployCell_03
   m_TagString: Untagged
@@ -4999,7 +5288,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 358226679}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 25012821}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &358226679
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5056,6 +5357,41 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   occupiedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   selectedColor: {r: 0.8627451, g: 0.31372556, b: 0.3520858, a: 1}
+--- !u!114 &358226682
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 358226675}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &363072781
 GameObject:
   m_ObjectHideFlags: 0
@@ -7126,6 +7462,7 @@ GameObject:
   - component: {fileID: 460202023}
   - component: {fileID: 460202022}
   - component: {fileID: 460202025}
+  - component: {fileID: 460202026}
   m_Layer: 0
   m_Name: DeployCell_15
   m_TagString: Untagged
@@ -7195,7 +7532,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 460202023}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 25012821}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &460202023
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7252,6 +7601,41 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   occupiedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   selectedColor: {r: 0.8627451, g: 0.31372556, b: 0.3520858, a: 1}
+--- !u!114 &460202026
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 460202019}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &467927555
 GameObject:
   m_ObjectHideFlags: 0
@@ -7340,6 +7724,7 @@ GameObject:
   - component: {fileID: 470519067}
   - component: {fileID: 470519066}
   - component: {fileID: 470519069}
+  - component: {fileID: 470519070}
   m_Layer: 0
   m_Name: DeployCell_05
   m_TagString: Untagged
@@ -7409,7 +7794,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 470519067}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 25012821}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &470519067
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7466,6 +7863,41 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   occupiedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   selectedColor: {r: 0.8627451, g: 0.31372556, b: 0.3520858, a: 1}
+--- !u!114 &470519070
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 470519063}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &481111787
 GameObject:
   m_ObjectHideFlags: 0
@@ -7629,6 +8061,7 @@ GameObject:
   - component: {fileID: 488690732}
   - component: {fileID: 488690731}
   - component: {fileID: 488690734}
+  - component: {fileID: 488690735}
   m_Layer: 0
   m_Name: DeployCell_08
   m_TagString: Untagged
@@ -7698,7 +8131,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 488690732}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 25012821}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &488690732
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7755,6 +8200,41 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   occupiedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   selectedColor: {r: 0.8627451, g: 0.31372556, b: 0.3520858, a: 1}
+--- !u!114 &488690735
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 488690728}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &495141979
 GameObject:
   m_ObjectHideFlags: 0
@@ -8041,6 +8521,7 @@ GameObject:
   - component: {fileID: 504628763}
   - component: {fileID: 504628762}
   - component: {fileID: 504628764}
+  - component: {fileID: 504628765}
   m_Layer: 0
   m_Name: RuneIconButton_11
   m_TagString: Untagged
@@ -8113,9 +8594,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: RuneIconButton, Assembly-CSharp
-        m_MethodName: OnClickIcon
+      - m_Target: {fileID: 86989399}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -8160,6 +8641,41 @@ MonoBehaviour:
   useEquippedObject: 0
   lockedObject: {fileID: 0}
   requiredLevelText: {fileID: 0}
+--- !u!114 &504628765
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 504628759}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &507048500
 GameObject:
   m_ObjectHideFlags: 0
@@ -8310,6 +8826,7 @@ GameObject:
   - component: {fileID: 516982208}
   - component: {fileID: 516982207}
   - component: {fileID: 516982210}
+  - component: {fileID: 516982211}
   m_Layer: 0
   m_Name: SkillButton_3
   m_TagString: Untagged
@@ -8381,9 +8898,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: SkillSlotButton, Assembly-CSharp
-        m_MethodName: OnClickSlot
+      - m_Target: {fileID: 516982211}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -8450,6 +8967,41 @@ MonoBehaviour:
   selectedBorderColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   selectedScale: 1.1
   autoBindBorderImage: 1
+--- !u!114 &516982211
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 516982204}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 7
 --- !u!1 &531500847
 GameObject:
   m_ObjectHideFlags: 0
@@ -8463,6 +9015,7 @@ GameObject:
   - component: {fileID: 531500851}
   - component: {fileID: 531500850}
   - component: {fileID: 531500853}
+  - component: {fileID: 531500854}
   m_Layer: 0
   m_Name: SkillIconButton_1
   m_TagString: Untagged
@@ -8535,9 +9088,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: SkillIconButton, Assembly-CSharp
-        m_MethodName: OnClickIcon
+      - m_Target: {fileID: 516982211}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -8608,6 +9161,41 @@ MonoBehaviour:
   scaleInDuration: 0.08
   breathSpeed: 4
   useUnscaledTime: 1
+--- !u!114 &531500854
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 531500847}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 7
 --- !u!1 &532715569
 GameObject:
   m_ObjectHideFlags: 0
@@ -9990,6 +10578,7 @@ GameObject:
   - component: {fileID: 647303331}
   - component: {fileID: 647303330}
   - component: {fileID: 647303332}
+  - component: {fileID: 647303333}
   m_Layer: 0
   m_Name: RuneIconButton_5
   m_TagString: Untagged
@@ -10062,9 +10651,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: RuneIconButton, Assembly-CSharp
-        m_MethodName: OnClickIcon
+      - m_Target: {fileID: 86989399}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -10109,6 +10698,41 @@ MonoBehaviour:
   useEquippedObject: 0
   lockedObject: {fileID: 0}
   requiredLevelText: {fileID: 0}
+--- !u!114 &647303333
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 647303327}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &649727431
 GameObject:
   m_ObjectHideFlags: 0
@@ -10353,6 +10977,7 @@ GameObject:
   - component: {fileID: 655768713}
   - component: {fileID: 655768712}
   - component: {fileID: 655768711}
+  - component: {fileID: 655768714}
   m_Layer: 0
   m_Name: SkillButton
   m_TagString: Untagged
@@ -10436,6 +11061,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 655768714}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &655768712
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10474,6 +11111,41 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 655768709}
   m_CullTransparentMesh: 1
+--- !u!114 &655768714
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 655768709}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 1
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 7
 --- !u!1 &663196646
 GameObject:
   m_ObjectHideFlags: 0
@@ -10913,6 +11585,7 @@ GameObject:
   - component: {fileID: 689335316}
   - component: {fileID: 689335314}
   - component: {fileID: 689335318}
+  - component: {fileID: 689335319}
   m_Layer: 0
   m_Name: RuneSlotButton_5
   m_TagString: Untagged
@@ -11014,7 +11687,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 689335314}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 86989399}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!222 &689335317
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -11041,6 +11726,41 @@ MonoBehaviour:
   borderImage: {fileID: 0}
   lockObject: {fileID: 1233657295}
   equippedBorderColorHex: '#4E66DF'
+--- !u!114 &689335319
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 689335312}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &692025214
 GameObject:
   m_ObjectHideFlags: 0
@@ -11613,6 +12333,7 @@ GameObject:
   - component: {fileID: 729216677}
   - component: {fileID: 729216676}
   - component: {fileID: 729216678}
+  - component: {fileID: 729216679}
   m_Layer: 0
   m_Name: RuneIconButton_9
   m_TagString: Untagged
@@ -11685,9 +12406,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: RuneIconButton, Assembly-CSharp
-        m_MethodName: OnClickIcon
+      - m_Target: {fileID: 86989399}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -11732,6 +12453,41 @@ MonoBehaviour:
   useEquippedObject: 0
   lockedObject: {fileID: 0}
   requiredLevelText: {fileID: 0}
+--- !u!114 &729216679
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 729216673}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &734507664
 GameObject:
   m_ObjectHideFlags: 0
@@ -11895,6 +12651,7 @@ GameObject:
   - component: {fileID: 736917587}
   - component: {fileID: 736917586}
   - component: {fileID: 736917589}
+  - component: {fileID: 736917590}
   m_Layer: 0
   m_Name: SkillButton_2
   m_TagString: Untagged
@@ -11966,9 +12723,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: SkillSlotButton, Assembly-CSharp
-        m_MethodName: OnClickSlot
+      - m_Target: {fileID: 516982211}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -12035,6 +12792,41 @@ MonoBehaviour:
   selectedBorderColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   selectedScale: 1.1
   autoBindBorderImage: 1
+--- !u!114 &736917590
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 736917583}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 7
 --- !u!1 &738839978
 GameObject:
   m_ObjectHideFlags: 0
@@ -13854,6 +14646,7 @@ GameObject:
   - component: {fileID: 844438425}
   - component: {fileID: 844438424}
   - component: {fileID: 844438426}
+  - component: {fileID: 844438427}
   m_Layer: 0
   m_Name: RuneIconButton_13
   m_TagString: Untagged
@@ -13926,9 +14719,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: RuneIconButton, Assembly-CSharp
-        m_MethodName: OnClickIcon
+      - m_Target: {fileID: 86989399}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -13973,6 +14766,41 @@ MonoBehaviour:
   useEquippedObject: 0
   lockedObject: {fileID: 0}
   requiredLevelText: {fileID: 0}
+--- !u!114 &844438427
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 844438421}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &848790875
 GameObject:
   m_ObjectHideFlags: 0
@@ -14123,6 +14951,7 @@ GameObject:
   - component: {fileID: 856252883}
   - component: {fileID: 856252882}
   - component: {fileID: 856252885}
+  - component: {fileID: 856252886}
   m_Layer: 0
   m_Name: SkillIconButton_0
   m_TagString: Untagged
@@ -14195,9 +15024,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: SkillIconButton, Assembly-CSharp
-        m_MethodName: OnClickIcon
+      - m_Target: {fileID: 516982211}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -14268,6 +15097,41 @@ MonoBehaviour:
   scaleInDuration: 0.08
   breathSpeed: 4
   useUnscaledTime: 1
+--- !u!114 &856252886
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 856252879}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 7
 --- !u!1 &856816972
 GameObject:
   m_ObjectHideFlags: 0
@@ -14280,6 +15144,7 @@ GameObject:
   - component: {fileID: 856816976}
   - component: {fileID: 856816975}
   - component: {fileID: 856816977}
+  - component: {fileID: 856816978}
   m_Layer: 0
   m_Name: RuneIconButton_6
   m_TagString: Untagged
@@ -14352,9 +15217,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: RuneIconButton, Assembly-CSharp
-        m_MethodName: OnClickIcon
+      - m_Target: {fileID: 86989399}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -14399,6 +15264,41 @@ MonoBehaviour:
   useEquippedObject: 0
   lockedObject: {fileID: 0}
   requiredLevelText: {fileID: 0}
+--- !u!114 &856816978
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 856816972}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &857470026
 GameObject:
   m_ObjectHideFlags: 0
@@ -15053,6 +15953,7 @@ GameObject:
   - component: {fileID: 917107882}
   - component: {fileID: 917107881}
   - component: {fileID: 917107884}
+  - component: {fileID: 917107885}
   m_Layer: 0
   m_Name: DeployCell_11
   m_TagString: Untagged
@@ -15122,7 +16023,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 917107882}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 25012821}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &917107882
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15179,6 +16092,41 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   occupiedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   selectedColor: {r: 0.8627451, g: 0.31372556, b: 0.3520858, a: 1}
+--- !u!114 &917107885
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 917107878}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &930038982
 GameObject:
   m_ObjectHideFlags: 0
@@ -16143,6 +17091,7 @@ GameObject:
   - component: {fileID: 1021369611}
   - component: {fileID: 1021369610}
   - component: {fileID: 1021369613}
+  - component: {fileID: 1021369614}
   m_Layer: 0
   m_Name: DeployCell_01
   m_TagString: Untagged
@@ -16212,7 +17161,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1021369611}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 25012821}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1021369611
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16269,6 +17230,41 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   occupiedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   selectedColor: {r: 0.8627451, g: 0.31372556, b: 0.3520858, a: 1}
+--- !u!114 &1021369614
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1021369607}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &1021595314
 GameObject:
   m_ObjectHideFlags: 0
@@ -16282,6 +17278,7 @@ GameObject:
   - component: {fileID: 1021595318}
   - component: {fileID: 1021595317}
   - component: {fileID: 1021595320}
+  - component: {fileID: 1021595321}
   m_Layer: 0
   m_Name: SkillButton_0
   m_TagString: Untagged
@@ -16353,9 +17350,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: SkillSlotButton, Assembly-CSharp
-        m_MethodName: OnClickSlot
+      - m_Target: {fileID: 516982211}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -16422,6 +17419,41 @@ MonoBehaviour:
   selectedBorderColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   selectedScale: 1.1
   autoBindBorderImage: 1
+--- !u!114 &1021595321
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1021595314}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 7
 --- !u!1 &1030713899
 GameObject:
   m_ObjectHideFlags: 0
@@ -16434,6 +17466,7 @@ GameObject:
   - component: {fileID: 1030713903}
   - component: {fileID: 1030713902}
   - component: {fileID: 1030713904}
+  - component: {fileID: 1030713905}
   m_Layer: 0
   m_Name: RuneIconButton_14
   m_TagString: Untagged
@@ -16506,9 +17539,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: RuneIconButton, Assembly-CSharp
-        m_MethodName: OnClickIcon
+      - m_Target: {fileID: 86989399}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -16553,6 +17586,41 @@ MonoBehaviour:
   useEquippedObject: 0
   lockedObject: {fileID: 0}
   requiredLevelText: {fileID: 0}
+--- !u!114 &1030713905
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1030713899}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &1034322401
 GameObject:
   m_ObjectHideFlags: 0
@@ -16715,6 +17783,7 @@ GameObject:
   - component: {fileID: 1038584835}
   - component: {fileID: 1038584834}
   - component: {fileID: 1038584836}
+  - component: {fileID: 1038584837}
   m_Layer: 0
   m_Name: RuneIconButton_7
   m_TagString: Untagged
@@ -16787,9 +17856,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: RuneIconButton, Assembly-CSharp
-        m_MethodName: OnClickIcon
+      - m_Target: {fileID: 86989399}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -16834,6 +17903,41 @@ MonoBehaviour:
   useEquippedObject: 0
   lockedObject: {fileID: 0}
   requiredLevelText: {fileID: 0}
+--- !u!114 &1038584837
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1038584831}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &1053330443
 GameObject:
   m_ObjectHideFlags: 0
@@ -17834,6 +18938,7 @@ GameObject:
   - component: {fileID: 1101973065}
   - component: {fileID: 1101973064}
   - component: {fileID: 1101973066}
+  - component: {fileID: 1101973067}
   m_Layer: 0
   m_Name: RuneIconButton_12
   m_TagString: Untagged
@@ -17906,9 +19011,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: RuneIconButton, Assembly-CSharp
-        m_MethodName: OnClickIcon
+      - m_Target: {fileID: 86989399}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -17953,6 +19058,41 @@ MonoBehaviour:
   useEquippedObject: 0
   lockedObject: {fileID: 0}
   requiredLevelText: {fileID: 0}
+--- !u!114 &1101973067
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1101973061}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &1104539774
 GameObject:
   m_ObjectHideFlags: 0
@@ -18260,6 +19400,7 @@ GameObject:
   - component: {fileID: 1114992597}
   - component: {fileID: 1114992596}
   - component: {fileID: 1114992598}
+  - component: {fileID: 1114992599}
   m_Layer: 0
   m_Name: RuneIconButton_3
   m_TagString: Untagged
@@ -18332,9 +19473,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: RuneIconButton, Assembly-CSharp
-        m_MethodName: OnClickIcon
+      - m_Target: {fileID: 86989399}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -18379,6 +19520,41 @@ MonoBehaviour:
   useEquippedObject: 0
   lockedObject: {fileID: 0}
   requiredLevelText: {fileID: 0}
+--- !u!114 &1114992599
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1114992593}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &1126974680
 GameObject:
   m_ObjectHideFlags: 0
@@ -19479,6 +20655,7 @@ GameObject:
   - component: {fileID: 1246466303}
   - component: {fileID: 1246466302}
   - component: {fileID: 1246466305}
+  - component: {fileID: 1246466306}
   m_Layer: 0
   m_Name: DeployCell_07
   m_TagString: Untagged
@@ -19548,7 +20725,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1246466303}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 25012821}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1246466303
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19605,6 +20794,41 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   occupiedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   selectedColor: {r: 0.8627451, g: 0.31372556, b: 0.3520858, a: 1}
+--- !u!114 &1246466306
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1246466299}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &1252097820
 GameObject:
   m_ObjectHideFlags: 0
@@ -19904,6 +21128,7 @@ GameObject:
   - component: {fileID: 1262872693}
   - component: {fileID: 1262872692}
   - component: {fileID: 1262872694}
+  - component: {fileID: 1262872695}
   m_Layer: 0
   m_Name: RuneIconButton_4
   m_TagString: Untagged
@@ -19976,9 +21201,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: RuneIconButton, Assembly-CSharp
-        m_MethodName: OnClickIcon
+      - m_Target: {fileID: 86989399}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -20023,6 +21248,41 @@ MonoBehaviour:
   useEquippedObject: 0
   lockedObject: {fileID: 0}
   requiredLevelText: {fileID: 0}
+--- !u!114 &1262872695
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1262872689}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &1263103059
 GameObject:
   m_ObjectHideFlags: 0
@@ -20637,6 +21897,7 @@ GameObject:
   - component: {fileID: 1316769588}
   - component: {fileID: 1316769587}
   - component: {fileID: 1316769589}
+  - component: {fileID: 1316769590}
   m_Layer: 0
   m_Name: RuneIconButton_1
   m_TagString: Untagged
@@ -20709,9 +21970,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: RuneIconButton, Assembly-CSharp
-        m_MethodName: OnClickIcon
+      - m_Target: {fileID: 86989399}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -20756,6 +22017,41 @@ MonoBehaviour:
   useEquippedObject: 0
   lockedObject: {fileID: 0}
   requiredLevelText: {fileID: 0}
+--- !u!114 &1316769590
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1316769584}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &1322040430
 GameObject:
   m_ObjectHideFlags: 0
@@ -20927,10 +22223,13 @@ MonoBehaviour:
   button: {fileID: 1341909872}
   checkMapSelected: 1
   checkPartyExists: 1
+  requireFullParty: 1
   warningUI: {fileID: 1763934034}
   mapNotSelectedMessage: "\uC2A4\uD14C\uC774\uC9C0\uB97C \uC120\uD0DD\uD574\uC57C
     \uD569\uB2C8\uB2E4."
   partyEmptyMessage: "\uCE90\uB9AD\uD130\uB97C \uD3B8\uC131\uD574\uC57C \uD569\uB2C8\uB2E4."
+  partyNotFullMessage: "\uCE90\uB9AD\uD130 3\uBA85\uC744 \uBAA8\uB450 \uD3B8\uC131\uD574\uC57C
+    \uD569\uB2C8\uB2E4. \uD604\uC7AC {0}/{1}"
   dataManagerMissingMessage: "\uB370\uC774\uD130 \uB9E4\uB2C8\uC800\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4."
   gameManagerMissingMessage: "\uAC8C\uC784 \uB9E4\uB2C8\uC800\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4."
   playClickSound: 1
@@ -21980,6 +23279,7 @@ GameObject:
   - component: {fileID: 1425413256}
   - component: {fileID: 1425413255}
   - component: {fileID: 1425413257}
+  - component: {fileID: 1425413258}
   m_Layer: 0
   m_Name: RuneIconButton_8
   m_TagString: Untagged
@@ -22052,9 +23352,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: RuneIconButton, Assembly-CSharp
-        m_MethodName: OnClickIcon
+      - m_Target: {fileID: 86989399}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -22099,6 +23399,41 @@ MonoBehaviour:
   useEquippedObject: 0
   lockedObject: {fileID: 0}
   requiredLevelText: {fileID: 0}
+--- !u!114 &1425413258
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1425413252}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &1434628577
 GameObject:
   m_ObjectHideFlags: 0
@@ -22296,6 +23631,7 @@ GameObject:
   - component: {fileID: 1439620482}
   - component: {fileID: 1439620481}
   - component: {fileID: 1439620483}
+  - component: {fileID: 1439620484}
   m_Layer: 0
   m_Name: RuneIconButton_2
   m_TagString: Untagged
@@ -22368,9 +23704,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: RuneIconButton, Assembly-CSharp
-        m_MethodName: OnClickIcon
+      - m_Target: {fileID: 86989399}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -22415,6 +23751,41 @@ MonoBehaviour:
   useEquippedObject: 0
   lockedObject: {fileID: 0}
   requiredLevelText: {fileID: 0}
+--- !u!114 &1439620484
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1439620478}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &1445541570
 GameObject:
   m_ObjectHideFlags: 0
@@ -22715,6 +24086,7 @@ GameObject:
   - component: {fileID: 1466774041}
   - component: {fileID: 1466774040}
   - component: {fileID: 1466774043}
+  - component: {fileID: 1466774044}
   m_Layer: 0
   m_Name: DeployCell_04
   m_TagString: Untagged
@@ -22784,7 +24156,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1466774041}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 25012821}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1466774041
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -22841,6 +24225,41 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   occupiedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   selectedColor: {r: 0.8627451, g: 0.31372556, b: 0.3520858, a: 1}
+--- !u!114 &1466774044
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1466774037}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &1468615241
 GameObject:
   m_ObjectHideFlags: 0
@@ -23078,6 +24497,7 @@ GameObject:
   - component: {fileID: 1486948050}
   - component: {fileID: 1486948049}
   - component: {fileID: 1486948051}
+  - component: {fileID: 1486948052}
   m_Layer: 0
   m_Name: RuneIconButton_0
   m_TagString: Untagged
@@ -23150,9 +24570,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: RuneIconButton, Assembly-CSharp
-        m_MethodName: OnClickIcon
+      - m_Target: {fileID: 86989399}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -23197,6 +24617,41 @@ MonoBehaviour:
   useEquippedObject: 0
   lockedObject: {fileID: 0}
   requiredLevelText: {fileID: 0}
+--- !u!114 &1486948052
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1486948046}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &1493379785
 GameObject:
   m_ObjectHideFlags: 0
@@ -23769,6 +25224,7 @@ GameObject:
   - component: {fileID: 1528879877}
   - component: {fileID: 1528879875}
   - component: {fileID: 1528879879}
+  - component: {fileID: 1528879880}
   m_Layer: 0
   m_Name: RuneSlotButton_7
   m_TagString: Untagged
@@ -23870,7 +25326,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1528879875}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 86989399}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!222 &1528879878
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -23897,6 +25365,41 @@ MonoBehaviour:
   borderImage: {fileID: 0}
   lockObject: {fileID: 1373419082}
   equippedBorderColorHex: '#4E66DF'
+--- !u!114 &1528879880
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1528879873}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &1530167122
 GameObject:
   m_ObjectHideFlags: 0
@@ -25330,6 +26833,7 @@ GameObject:
   - component: {fileID: 1657213835}
   - component: {fileID: 1657213834}
   - component: {fileID: 1657213837}
+  - component: {fileID: 1657213838}
   m_Layer: 0
   m_Name: SkillButton_1
   m_TagString: Untagged
@@ -25401,9 +26905,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: SkillSlotButton, Assembly-CSharp
-        m_MethodName: OnClickSlot
+      - m_Target: {fileID: 516982211}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -25470,6 +26974,41 @@ MonoBehaviour:
   selectedBorderColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   selectedScale: 1.1
   autoBindBorderImage: 1
+--- !u!114 &1657213838
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1657213831}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 7
 --- !u!1 &1661096954
 GameObject:
   m_ObjectHideFlags: 0
@@ -25889,6 +27428,7 @@ GameObject:
   - component: {fileID: 1693695439}
   - component: {fileID: 1693695437}
   - component: {fileID: 1693695441}
+  - component: {fileID: 1693695442}
   m_Layer: 0
   m_Name: RuneSlotButton_1
   m_TagString: Untagged
@@ -25990,7 +27530,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1693695437}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 86989399}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!222 &1693695440
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -26017,6 +27569,41 @@ MonoBehaviour:
   borderImage: {fileID: 0}
   lockObject: {fileID: 1997675705}
   equippedBorderColorHex: '#4E66DF'
+--- !u!114 &1693695442
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1693695435}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &1706284656
 GameObject:
   m_ObjectHideFlags: 0
@@ -26364,6 +27951,7 @@ GameObject:
   - component: {fileID: 1727905240}
   - component: {fileID: 1727905239}
   - component: {fileID: 1727905242}
+  - component: {fileID: 1727905243}
   m_Layer: 0
   m_Name: DeployCell_02
   m_TagString: Untagged
@@ -26433,7 +28021,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1727905240}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 25012821}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1727905240
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -26490,6 +28090,41 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   occupiedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   selectedColor: {r: 0.8627451, g: 0.31372556, b: 0.3520858, a: 1}
+--- !u!114 &1727905243
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1727905236}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &1731166312
 GameObject:
   m_ObjectHideFlags: 0
@@ -28363,6 +29998,7 @@ GameObject:
   - component: {fileID: 1855212277}
   - component: {fileID: 1855212275}
   - component: {fileID: 1855212279}
+  - component: {fileID: 1855212280}
   m_Layer: 0
   m_Name: RuneSlotButton_4
   m_TagString: Untagged
@@ -28464,7 +30100,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1855212275}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 86989399}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!222 &1855212278
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -28491,6 +30139,41 @@ MonoBehaviour:
   borderImage: {fileID: 0}
   lockObject: {fileID: 1415713998}
   equippedBorderColorHex: '#4E66DF'
+--- !u!114 &1855212280
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1855212273}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &1873321967
 GameObject:
   m_ObjectHideFlags: 0
@@ -29010,6 +30693,7 @@ GameObject:
   - component: {fileID: 1923417530}
   - component: {fileID: 1923417529}
   - component: {fileID: 1923417532}
+  - component: {fileID: 1923417533}
   m_Layer: 0
   m_Name: DeployCell_10
   m_TagString: Untagged
@@ -29079,7 +30763,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1923417530}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 25012821}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1923417530
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -29136,6 +30832,41 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   occupiedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   selectedColor: {r: 0.8627451, g: 0.31372556, b: 0.3520858, a: 1}
+--- !u!114 &1923417533
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1923417526}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &1924107324
 GameObject:
   m_ObjectHideFlags: 0
@@ -29361,6 +31092,7 @@ GameObject:
   - component: {fileID: 1935511620}
   - component: {fileID: 1935511619}
   - component: {fileID: 1935511622}
+  - component: {fileID: 1935511623}
   m_Layer: 0
   m_Name: DeployCell_09
   m_TagString: Untagged
@@ -29430,7 +31162,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1935511620}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 25012821}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1935511620
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -29487,6 +31231,41 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   occupiedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   selectedColor: {r: 0.8627451, g: 0.31372556, b: 0.3520858, a: 1}
+--- !u!114 &1935511623
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1935511616}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &1937100845
 GameObject:
   m_ObjectHideFlags: 0
@@ -29786,6 +31565,7 @@ GameObject:
   - component: {fileID: 1949944196}
   - component: {fileID: 1949944194}
   - component: {fileID: 1949944198}
+  - component: {fileID: 1949944199}
   m_Layer: 0
   m_Name: RuneSlotButton_8
   m_TagString: Untagged
@@ -29887,7 +31667,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1949944194}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 86989399}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!222 &1949944197
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -29914,6 +31706,41 @@ MonoBehaviour:
   borderImage: {fileID: 0}
   lockObject: {fileID: 2085418328}
   equippedBorderColorHex: '#4E66DF'
+--- !u!114 &1949944199
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1949944192}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &1950010341
 GameObject:
   m_ObjectHideFlags: 0
@@ -30654,6 +32481,7 @@ GameObject:
   - component: {fileID: 1992899978}
   - component: {fileID: 1992899977}
   - component: {fileID: 1992899980}
+  - component: {fileID: 1992899981}
   m_Layer: 0
   m_Name: DeployCell_12
   m_TagString: Untagged
@@ -30723,7 +32551,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1992899978}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 25012821}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1992899978
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -30780,6 +32620,41 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   occupiedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   selectedColor: {r: 0.8627451, g: 0.31372556, b: 0.3520858, a: 1}
+--- !u!114 &1992899981
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1992899974}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &1993662116
 GameObject:
   m_ObjectHideFlags: 0
@@ -31052,6 +32927,7 @@ GameObject:
   - component: {fileID: 2004588199}
   - component: {fileID: 2004588198}
   - component: {fileID: 2004588201}
+  - component: {fileID: 2004588202}
   m_Layer: 0
   m_Name: DeployCell_13
   m_TagString: Untagged
@@ -31121,7 +32997,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2004588199}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 25012821}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &2004588199
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -31178,6 +33066,41 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   occupiedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   selectedColor: {r: 0.8627451, g: 0.31372556, b: 0.3520858, a: 1}
+--- !u!114 &2004588202
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2004588195}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &2012554165
 GameObject:
   m_ObjectHideFlags: 0
@@ -31190,6 +33113,7 @@ GameObject:
   - component: {fileID: 2012554169}
   - component: {fileID: 2012554168}
   - component: {fileID: 2012554167}
+  - component: {fileID: 2012554170}
   m_Layer: 0
   m_Name: RuneButton
   m_TagString: Untagged
@@ -31273,6 +33197,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 655768714}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &2012554168
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -31311,6 +33247,41 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2012554165}
   m_CullTransparentMesh: 1
+--- !u!114 &2012554170
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2012554165}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 1
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 7
 --- !u!1 &2015401050
 GameObject:
   m_ObjectHideFlags: 0
@@ -32220,6 +34191,7 @@ GameObject:
   - component: {fileID: 2076955008}
   - component: {fileID: 2076955006}
   - component: {fileID: 2076955010}
+  - component: {fileID: 2076955011}
   m_Layer: 0
   m_Name: RuneSlotButton_9
   m_TagString: Untagged
@@ -32321,7 +34293,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2076955006}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 86989399}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!222 &2076955009
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -32348,6 +34332,41 @@ MonoBehaviour:
   borderImage: {fileID: 0}
   lockObject: {fileID: 1588163060}
   equippedBorderColorHex: '#4E66DF'
+--- !u!114 &2076955011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2076955004}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &2078247910
 GameObject:
   m_ObjectHideFlags: 0
@@ -32361,6 +34380,7 @@ GameObject:
   - component: {fileID: 2078247914}
   - component: {fileID: 2078247912}
   - component: {fileID: 2078247916}
+  - component: {fileID: 2078247917}
   m_Layer: 0
   m_Name: RuneSlotButton_10
   m_TagString: Untagged
@@ -32462,7 +34482,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2078247912}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 86989399}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!222 &2078247915
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -32489,6 +34521,41 @@ MonoBehaviour:
   borderImage: {fileID: 0}
   lockObject: {fileID: 1034322401}
   equippedBorderColorHex: '#4E66DF'
+--- !u!114 &2078247917
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2078247910}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &2078505866
 GameObject:
   m_ObjectHideFlags: 0
@@ -33714,6 +35781,7 @@ GameObject:
   - component: {fileID: 2137911542}
   - component: {fileID: 2137911541}
   - component: {fileID: 2137911544}
+  - component: {fileID: 2137911545}
   m_Layer: 0
   m_Name: DeployCell_14
   m_TagString: Untagged
@@ -33783,7 +35851,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2137911542}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 25012821}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &2137911542
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33840,6 +35920,41 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   occupiedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   selectedColor: {r: 0.8627451, g: 0.31372556, b: 0.3520858, a: 1}
+--- !u!114 &2137911545
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2137911538}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1 &2145142138
 GameObject:
   m_ObjectHideFlags: 0
@@ -33852,6 +35967,7 @@ GameObject:
   - component: {fileID: 2145142142}
   - component: {fileID: 2145142141}
   - component: {fileID: 2145142143}
+  - component: {fileID: 2145142144}
   m_Layer: 0
   m_Name: RuneIconButton_10
   m_TagString: Untagged
@@ -33924,9 +36040,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: RuneIconButton, Assembly-CSharp
-        m_MethodName: OnClickIcon
+      - m_Target: {fileID: 86989399}
+        m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
+        m_MethodName: Execute
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -33971,6 +36087,41 @@ MonoBehaviour:
   useEquippedObject: 0
   lockedObject: {fileID: 0}
   requiredLevelText: {fileID: 0}
+--- !u!114 &2145142144
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2145142138}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 1
+  forceOpenedPanelCanvasSorting: 1
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  playHoverSound: 0
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 6
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
