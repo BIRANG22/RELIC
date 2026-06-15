@@ -113,11 +113,11 @@ Material:
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
     - _Vector2: {r: 0.5, g: 0.5, b: 0, a: 0}
     - _noisefloow: {r: 0, g: -0.1, b: 0, a: 0}
-    - _noiseflow: {r: 0.01, g: 0.05, b: 0, a: 0}
+    - _noiseflow: {r: 0.001, g: 0.01, b: 0, a: 0}
     - _noiseflow_1: {r: 0, g: 0, b: 0, a: 0}
-    - _noiseoffset: {r: 0.7, g: 2.24, b: 0, a: 0}
+    - _noiseoffset: {r: 0, g: 0, b: 0, a: 0}
     - _noiseoffset_1: {r: 0, g: 0, b: 0, a: 0}
-    - _noisetiling: {r: 2, g: 3.5, b: 0, a: 0}
+    - _noisetiling: {r: 0.99, g: 1, b: 0, a: 0}
     - _noisetiling_1: {r: 1, g: 1, b: 0, a: 0}
     - _sine: {r: 0.1, g: 0.1, b: 0, a: 0}
   m_BuildTextureStacks: []
