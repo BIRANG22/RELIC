@@ -132,8 +132,6 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
 
     public void OnClickSlot()
     {
-        Debug.Log($"[ReserveTurnSlotUI] Click Slot:{slotIndex}");
-
         if (owner != null)
             owner.OnTimelineSlotClicked(slotIndex);
         else

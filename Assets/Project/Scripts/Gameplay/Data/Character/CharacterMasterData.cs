@@ -3,6 +3,22 @@ using UnityEngine;
 
 namespace Relic.Gameplay.Data
 {
+    public enum ResourceType
+    {
+        None,
+        Rage,
+        Momentum,
+        Aether
+    }
+    public enum ResourceTrigger
+    {
+        None,
+
+        OnDamaged,              // 피격 시
+        OnUseSameSlotTwice,     // 슬롯 하나에 특정 행동 2회
+        OnSpendStaminaInSlot    // 슬롯 하나에 스태미나 일정량 소모
+    }
+
     [Serializable]
     public class CharacterMasterData
     {
@@ -14,7 +30,8 @@ namespace Relic.Gameplay.Data
         public int MaxStamina;
         public int StaminaRecovery;
         public int MaxResource;
-        public string ResourceType;
+        public ResourceType ResourceType;
+        public ResourceTrigger ResourceTrigger;
         public int MoveValue;
 
         public bool IsDefaultProvided;

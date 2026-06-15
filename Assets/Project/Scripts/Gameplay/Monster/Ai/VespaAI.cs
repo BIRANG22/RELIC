@@ -49,11 +49,6 @@ namespace Relic.Gameplay.Monster
                 1
             ));
 
-            Debug.Log(
-                $"[VespaAI] Target:{target.CharacterId} / " +
-                $"MoveOffset:{moveOffset} / Attack:{AttackSkillId}"
-            );
-
             return plan;
         }
 

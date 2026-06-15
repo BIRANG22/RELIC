@@ -257,8 +257,6 @@ namespace Relic.Gameplay.Monster
             selectedMonster = this;
 
             StartCoroutine(ShowSelectedHUDNextFrame());
-
-            Debug.Log($"[MonsterUnit] Selected: {RuntimeData?.Name} / {RuntimeData?.RuntimeId}");
         }
 
         private IEnumerator ShowSelectedHUDNextFrame()

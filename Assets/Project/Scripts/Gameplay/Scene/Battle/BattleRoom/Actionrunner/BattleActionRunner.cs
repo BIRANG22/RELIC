@@ -35,7 +35,7 @@ public class BattleActionRunner
         damageService = new BattleDamageService(unitFinder);
         deathService = new BattleDeathService(gridManager, monsterSpawner, roomLoader);
         statusEffectService = new BattleStatusEffectService(damageService, deathService);
-        monsterSkillEffectService = new MonsterSkillEffectService(damageService,deathService,hudService);
+        monsterSkillEffectService = new MonsterSkillEffectService(damageService, deathService, hudService, gridManager);
     }
 
     public IEnumerator RunBatch(BattleActionBatch batch)
@@ -79,9 +79,11 @@ public class BattleActionRunner
         yield return new WaitForSeconds(BatchEndDelay);
 
         hudService.PlayAllAliveIdle();
+    }
 
+    public void ApplyTurnEndEffects()
+    {
         statusEffectService.ApplyTurnEndEffects();
-
         hudService.RefreshHUDs();
     }
 
@@ -257,20 +259,47 @@ public class BattleActionRunner
         if (attackerAnimator != null)
             attackerAnimator.PlaySkillAction(command.SkillData);
 
-        if (statusEffectService.TryApplyPlayerSelfEffect(command, attacker))
+        statusEffectService.ApplyBleedingDamageToPlayerOnAttack(attacker);
+
+        if (command.SkillData.Target == TargetType.PlayerParty)
         {
+            BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
+                FindObjectsInactive.Exclude,
+                FindObjectsSortMode.None
+            );
+
+            for (int i = 0; i < characters.Length; i++)
+            {
+                BattleCharacter target = characters[i];
+
+                if (target == null || target.RuntimeData == null)
+                    continue;
+
+                if (!command.RangeGridIndices.Contains(target.CurrentGridIndex))
+                    continue;
+
+                ExecutePlayerSkillEffectsToPlayer(attacker, target, command);
+            }
+
             hudService.RefreshHUDs();
             yield return new WaitForSeconds(ActionDelay);
             yield break;
         }
 
-        int damage = damageService.GetPlayerDamage(command);
+        if (command.SkillData.Target == TargetType.Self)
+        {
+            ExecutePlayerSkillEffectsToPlayer(attacker, attacker, command);
+
+            hudService.RefreshHUDs();
+            yield return new WaitForSeconds(ActionDelay);
+            yield break;
+        }
 
         MonsterUnit[] monsters =
-    Object.FindObjectsByType<MonsterUnit>(
-        FindObjectsInactive.Exclude,
-        FindObjectsSortMode.None
-    );
+            Object.FindObjectsByType<MonsterUnit>(
+                FindObjectsInactive.Exclude,
+                FindObjectsSortMode.None
+            );
 
         List<MonsterUnit> hitTargets = new();
 
@@ -358,8 +387,11 @@ public class BattleActionRunner
                 MonsterTarget = monsterTarget,
                 PlayerSkillData = command.SkillData,
 
+                Direction = command.Direction,
+                GridManager = gridManager,
+
                 EffectId = entry.EffectId,
-                Value = entry.ValueAmount,
+                Value = GetPlayerEffectValue(command, entry),
                 Count = entry.CountAmount
             };
 
@@ -367,6 +399,58 @@ public class BattleActionRunner
         }
     }
 
+    private void ExecutePlayerSkillEffectsToPlayer(
+    BattleCharacter caster,
+    BattleCharacter playerTarget,
+    PlayerReservedCommand command)
+    {
+        if (caster == null || playerTarget == null || command == null || command.SkillData == null)
+            return;
+
+        if (command.SkillData.EffectEntries == null || command.SkillData.EffectEntries.Count == 0)
+            return;
+
+        for (int i = 0; i < command.SkillData.EffectEntries.Count; i++)
+        {
+            SkillEffectEntry entry = command.SkillData.EffectEntries[i];
+
+            if (entry == null)
+                continue;
+
+            if (string.IsNullOrWhiteSpace(entry.EffectId))
+                continue;
+
+            BattleEffectContext context = new BattleEffectContext
+            {
+                PlayerCaster = caster,
+                PlayerTarget = playerTarget,
+                PlayerSkillData = command.SkillData,
+
+                Direction = command.Direction,
+                GridManager = gridManager,
+
+                EffectId = entry.EffectId,
+                Value = GetPlayerEffectValue(command, entry),
+                Count = entry.CountAmount
+            };
+
+            effectExecutor.Execute(entry.EffectId, context);
+        }
+    }
+
+    private int GetPlayerEffectValue(PlayerReservedCommand command, SkillEffectEntry entry)
+    {
+        if (command == null || entry == null)
+            return 1;
+
+        if (entry.EffectId == "E_Strike")
+            return damageService.GetPlayerDamage(command);
+
+        if (entry.EffectId == "E_Pierce")
+            return damageService.GetPlayerDamage(command);
+
+        return entry.ValueAmount;
+    }
     private IEnumerator ExecuteMonsterCommand(MonsterReservedCommand command)
     {
         if (command == null || command.SkillData == null)
@@ -399,6 +483,11 @@ public class BattleActionRunner
         if (moveOffset == Vector2Int.zero)
             yield break;
 
+        BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
+
+        if (facing != null)
+            facing.FaceByMoveOffset(moveOffset);
+
         for (int i = 0; i < monster.OccupiedGridIndices.Count; i++)
         {
             int occupiedIndex = monster.OccupiedGridIndices[i];
@@ -419,11 +508,6 @@ public class BattleActionRunner
         int movedMainIndex = gridManager.CoordToIndex(movedMainCoord);
 
         Vector3 pos = gridManager.GetWorldPositionByIndex(movedMainIndex);
-
-        BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
-
-        if (facing != null)
-            facing.FaceByMoveOffset(command.MoveOffset);
 
         BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
 
@@ -473,6 +557,8 @@ public class BattleActionRunner
 
         if (monsterAnimator != null)
             monsterAnimator.PlayCurrentAttackAction();
+
+        statusEffectService.ApplyBleedingDamageToMonsterOnAttack(monster);
 
         BattleCharacter firstPlayerTarget = FindFirstPlayerTarget(command);
 
@@ -524,14 +610,6 @@ public class BattleActionRunner
             );
 
         command.SetRangeResult(rangeGridIndices, targetGridIndices);
-
-        Debug.Log(
-            $"[MonsterRange Execute] Monster:{monster.RuntimeData?.Name} / " +
-            $"Skill:{command.SkillData.SkillId} / " +
-            $"RangeId:{command.SkillData.RangeId} / " +
-            $"RangeCount:{rangeGridIndices.Count} / " +
-            $"TargetCount:{targetGridIndices.Count}"
-        );
     }
 
     private BattleCharacter FindFirstPlayerTarget(MonsterReservedCommand command)
@@ -776,8 +854,7 @@ public class BattleActionRunner
 
         int damage = damageService.GetMonsterDamage(command);
 
-        target.RuntimeData.CurrentHealth =
-            Mathf.Max(0, target.RuntimeData.CurrentHealth - damage);
+        BattleEffectUtility.DamagePlayer(target, damage);
 
         BattleUnitFacing targetFacing = target.GetComponent<BattleUnitFacing>();
 

@@ -30,9 +30,7 @@ namespace Relic.Gameplay.Monster
                 10
             ));
 
-            bool danger = HasPlayerAround8(monsterUnit, gridManager);
-
-            Debug.Log($"[RancorAI] Danger:{danger} / Monster:{monsterUnit.RuntimeData.Name}");
+            bool danger = HasPlayerAround8(monsterUnit, gridManager);;
 
             if (!danger)
                 return plan;
