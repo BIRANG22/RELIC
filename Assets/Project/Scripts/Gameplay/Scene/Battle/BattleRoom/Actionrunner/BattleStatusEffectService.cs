@@ -108,8 +108,7 @@ public class BattleStatusEffectService
         if (burnStack <= 0)
             return;
 
-        character.RuntimeData.CurrentHealth =
-            Mathf.Max(0, character.RuntimeData.CurrentHealth - burnStack);
+        BattleEffectUtility.DamagePlayer(character, burnStack);
 
         BattleUnitAnimator animator = character.GetComponent<BattleUnitAnimator>();
 

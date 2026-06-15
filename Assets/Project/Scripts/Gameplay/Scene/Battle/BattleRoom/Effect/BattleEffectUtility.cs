@@ -5,6 +5,7 @@ using Relic.Gameplay.Monster;
 
 public static class BattleEffectUtility
 {
+    public static System.Action<BattleCharacter> OnPlayerDamaged;
     public static BattleCharacter GetPlayerTargetOrCaster(BattleEffectContext context)
     {
         if (context == null)
@@ -110,6 +111,8 @@ public static class BattleEffectUtility
             target.RuntimeData.CurrentHealth =
                 Mathf.Max(0, target.RuntimeData.CurrentHealth - damage);
         }
+
+        OnPlayerDamaged?.Invoke(target);
 
         BattleUnitAnimator animator = target.GetComponent<BattleUnitAnimator>();
 

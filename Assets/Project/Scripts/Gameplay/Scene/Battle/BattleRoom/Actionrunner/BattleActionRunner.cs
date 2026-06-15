@@ -483,6 +483,11 @@ public class BattleActionRunner
         if (moveOffset == Vector2Int.zero)
             yield break;
 
+        BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
+
+        if (facing != null)
+            facing.FaceByMoveOffset(moveOffset);
+
         for (int i = 0; i < monster.OccupiedGridIndices.Count; i++)
         {
             int occupiedIndex = monster.OccupiedGridIndices[i];
@@ -503,11 +508,6 @@ public class BattleActionRunner
         int movedMainIndex = gridManager.CoordToIndex(movedMainCoord);
 
         Vector3 pos = gridManager.GetWorldPositionByIndex(movedMainIndex);
-
-        BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
-
-        if (facing != null)
-            facing.FaceByMoveOffset(command.MoveOffset);
 
         BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
 
@@ -854,8 +854,7 @@ public class BattleActionRunner
 
         int damage = damageService.GetMonsterDamage(command);
 
-        target.RuntimeData.CurrentHealth =
-            Mathf.Max(0, target.RuntimeData.CurrentHealth - damage);
+        BattleEffectUtility.DamagePlayer(target, damage);
 
         BattleUnitFacing targetFacing = target.GetComponent<BattleUnitFacing>();
 
