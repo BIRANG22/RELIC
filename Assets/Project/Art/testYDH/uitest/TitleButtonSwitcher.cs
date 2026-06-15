@@ -22,22 +22,26 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
         public float moveDuration = 0.5f;
     }
 
+    [System.Serializable]
+    public class SwitchObject
+    {
+        [Header("Main Object")]
+        public GameObject targetObject;
+
+        [Header("Back Main")]
+        public GameObject backMainObject;
+
+        [Header("Move Targets")]
+        public MoveTarget[] moveTargets;
+    }
+
     [Header("Button")]
     [SerializeField] private Button titleButton;
 
     [Header("Objects")]
-    [SerializeField] private GameObject object0; // GameObject
-    [SerializeField] private GameObject object1; // GameObject (1)
-    [SerializeField] private GameObject object2; // GameObject (2)
-
-    [Header("GameObject Move Targets")]
-    [SerializeField] private MoveTarget[] object0MoveTargets;
-
-    [Header("GameObject (1) Move Targets")]
-    [SerializeField] private MoveTarget[] object1MoveTargets;
-
-    [Header("GameObject (2) Move Targets")]
-    [SerializeField] private MoveTarget[] object2MoveTargets;
+    [Min(1)]
+    [SerializeField] private int objectCount = 3;
+    [SerializeField] private SwitchObject[] objects = new SwitchObject[3];
 
     [Header("Sound")]
     [SerializeField] private bool playHoverSound = true;
@@ -47,12 +51,39 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
 
     private Coroutine moveCoroutine;
 
+    private void OnValidate()
+    {
+        objectCount = Mathf.Max(1, objectCount);
+        ResizeObjectsArray();
+    }
+
     private void Awake()
     {
+        ResizeObjectsArray();
+
         if (titleButton != null)
         {
             titleButton.onClick.RemoveListener(OnClickTitleButton);
             titleButton.onClick.AddListener(OnClickTitleButton);
+        }
+    }
+
+    private void Start()
+    {
+        int currentIndex = GetCurrentActiveIndex();
+
+        if (currentIndex < 0)
+        {
+            int firstValidIndex = GetFirstValidObjectIndex();
+
+            if (firstValidIndex >= 0)
+            {
+                SetActiveObject(firstValidIndex);
+            }
+        }
+        else
+        {
+            SetActiveObject(currentIndex);
         }
     }
 
@@ -82,10 +113,14 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
     private void PlayHoverSound()
     {
         if (!playHoverSound)
+        {
             return;
+        }
 
         if (AudioManager.Instance == null)
+        {
             return;
+        }
 
         AudioManager.Instance.PlaySfx(hoverSfx);
     }
@@ -93,29 +128,88 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
     private void PlayClickSound()
     {
         if (!playClickSound)
+        {
             return;
+        }
 
         if (AudioManager.Instance == null)
+        {
             return;
+        }
 
         AudioManager.Instance.PlaySfx(clickSfx);
     }
 
+    private void ResizeObjectsArray()
+    {
+        if (objects == null)
+        {
+            objects = new SwitchObject[objectCount];
+
+            for (int i = 0; i < objects.Length; i++)
+            {
+                objects[i] = new SwitchObject();
+            }
+
+            return;
+        }
+
+        if (objects.Length == objectCount)
+        {
+            for (int i = 0; i < objects.Length; i++)
+            {
+                if (objects[i] == null)
+                {
+                    objects[i] = new SwitchObject();
+                }
+            }
+
+            return;
+        }
+
+        SwitchObject[] resizedObjects = new SwitchObject[objectCount];
+
+        int copyCount = Mathf.Min(objects.Length, resizedObjects.Length);
+
+        for (int i = 0; i < copyCount; i++)
+        {
+            resizedObjects[i] = objects[i];
+        }
+
+        for (int i = 0; i < resizedObjects.Length; i++)
+        {
+            if (resizedObjects[i] == null)
+            {
+                resizedObjects[i] = new SwitchObject();
+            }
+        }
+
+        objects = resizedObjects;
+    }
+
     private int GetCurrentActiveIndex()
     {
-        if (object0 != null && object0.activeSelf)
+        if (objects == null)
         {
-            return 0;
+            return -1;
         }
 
-        if (object1 != null && object1.activeSelf)
+        for (int i = 0; i < objects.Length; i++)
         {
-            return 1;
-        }
+            if (objects[i] == null)
+            {
+                continue;
+            }
 
-        if (object2 != null && object2.activeSelf)
-        {
-            return 2;
+            if (objects[i].targetObject == null)
+            {
+                continue;
+            }
+
+            if (objects[i].targetObject.activeSelf)
+            {
+                return i;
+            }
         }
 
         return -1;
@@ -123,58 +217,161 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
 
     private int GetRandomNextIndex(int currentIndex)
     {
-        if (currentIndex == 0)
+        int validCount = GetValidObjectCount();
+
+        if (validCount <= 0)
         {
-            return Random.Range(0, 2) == 0 ? 1 : 2;
+            return -1;
         }
 
-        if (currentIndex == 1)
+        if (validCount == 1)
         {
-            return Random.Range(0, 2) == 0 ? 0 : 2;
+            return GetFirstValidObjectIndex();
         }
 
-        if (currentIndex == 2)
+        int nextIndex = currentIndex;
+
+        while (nextIndex == currentIndex)
         {
-            return Random.Range(0, 2) == 0 ? 0 : 1;
+            nextIndex = GetRandomValidObjectIndex();
         }
 
-        return Random.Range(0, 3);
+        return nextIndex;
+    }
+
+    private int GetValidObjectCount()
+    {
+        int validCount = 0;
+
+        if (objects == null)
+        {
+            return validCount;
+        }
+
+        for (int i = 0; i < objects.Length; i++)
+        {
+            if (objects[i] == null)
+            {
+                continue;
+            }
+
+            if (objects[i].targetObject == null)
+            {
+                continue;
+            }
+
+            validCount++;
+        }
+
+        return validCount;
+    }
+
+    private int GetFirstValidObjectIndex()
+    {
+        if (objects == null)
+        {
+            return -1;
+        }
+
+        for (int i = 0; i < objects.Length; i++)
+        {
+            if (objects[i] == null)
+            {
+                continue;
+            }
+
+            if (objects[i].targetObject == null)
+            {
+                continue;
+            }
+
+            return i;
+        }
+
+        return -1;
+    }
+
+    private int GetRandomValidObjectIndex()
+    {
+        int validCount = GetValidObjectCount();
+
+        if (validCount <= 0)
+        {
+            return -1;
+        }
+
+        int randomValidOrder = Random.Range(0, validCount);
+        int currentValidOrder = 0;
+
+        for (int i = 0; i < objects.Length; i++)
+        {
+            if (objects[i] == null)
+            {
+                continue;
+            }
+
+            if (objects[i].targetObject == null)
+            {
+                continue;
+            }
+
+            if (currentValidOrder == randomValidOrder)
+            {
+                return i;
+            }
+
+            currentValidOrder++;
+        }
+
+        return -1;
     }
 
     private void SetActiveObject(int index)
     {
+        if (index < 0)
+        {
+            return;
+        }
+
+        if (objects == null)
+        {
+            return;
+        }
+
+        if (index >= objects.Length)
+        {
+            return;
+        }
+
         if (moveCoroutine != null)
         {
             StopCoroutine(moveCoroutine);
             moveCoroutine = null;
         }
 
-        if (object0 != null)
+        for (int i = 0; i < objects.Length; i++)
         {
-            object0.SetActive(index == 0);
+            if (objects[i] == null)
+            {
+                continue;
+            }
+
+            bool isActive = i == index;
+
+            if (objects[i].targetObject != null)
+            {
+                objects[i].targetObject.SetActive(isActive);
+            }
+
+            if (objects[i].backMainObject != null)
+            {
+                objects[i].backMainObject.SetActive(isActive);
+            }
         }
 
-        if (object1 != null)
+        if (objects[index] != null)
         {
-            object1.SetActive(index == 1);
-        }
-
-        if (object2 != null)
-        {
-            object2.SetActive(index == 2);
-        }
-
-        if (index == 0)
-        {
-            moveCoroutine = StartCoroutine(MoveTargetsCoroutine(object0MoveTargets));
-        }
-        else if (index == 1)
-        {
-            moveCoroutine = StartCoroutine(MoveTargetsCoroutine(object1MoveTargets));
-        }
-        else if (index == 2)
-        {
-            moveCoroutine = StartCoroutine(MoveTargetsCoroutine(object2MoveTargets));
+            moveCoroutine = StartCoroutine(MoveTargetsCoroutine(objects[index].moveTargets));
         }
     }
 
