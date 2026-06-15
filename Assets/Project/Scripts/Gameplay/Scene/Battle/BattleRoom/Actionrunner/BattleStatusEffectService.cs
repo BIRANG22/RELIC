@@ -108,8 +108,7 @@ public class BattleStatusEffectService
         if (burnStack <= 0)
             return;
 
-        character.RuntimeData.CurrentHealth =
-            Mathf.Max(0, character.RuntimeData.CurrentHealth - burnStack);
+        BattleEffectUtility.DamagePlayer(character, burnStack);
 
         BattleUnitAnimator animator = character.GetComponent<BattleUnitAnimator>();
 
@@ -294,5 +293,40 @@ public class BattleStatusEffectService
             case EndTurn.Maintain:
                 break;
         }
+    }
+
+    public void ApplyBleedingDamageToPlayerOnAttack(BattleCharacter character)
+    {
+        if (character == null || character.RuntimeData == null)
+            return;
+
+        int bleedingStack = damageService.GetStatusStack(
+            character.RuntimeData.StatusEffects,
+            "E_Bleeding"
+        );
+
+        if (bleedingStack <= 0)
+            return;
+
+        BattleEffectUtility.DamagePlayer(character, bleedingStack);
+    }
+
+    public void ApplyBleedingDamageToMonsterOnAttack(MonsterUnit monster)
+    {
+        if (monster == null || monster.RuntimeData == null)
+            return;
+
+        int bleedingStack = damageService.GetStatusStack(
+            monster.RuntimeData.StatusEffects,
+            "E_Bleeding"
+        );
+
+        if (bleedingStack <= 0)
+            return;
+
+        BattleEffectUtility.DamageMonster(monster, bleedingStack);
+
+        if (monster.RuntimeData.IsDead)
+            deathService.HandleMonsterDead(monster);
     }
 }

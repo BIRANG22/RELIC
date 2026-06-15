@@ -9,17 +9,26 @@ public class StrikeEffect : BattleEffectBase
         if (context == null)
             return;
 
-        if (context.PlayerTarget != null)
-        {
-            BattleEffectUtility.DamagePlayer(context.PlayerTarget, context.Value);
-            Debug.Log($"[Effect] E_Strike Player / Damage:{context.Value}");
-            return;
-        }
+        int damage = Mathf.Max(0, context.Value);
+        int count = Mathf.Max(1, context.Count);
 
-        if (context.MonsterTarget != null)
+        for (int i = 0; i < count; i++)
         {
-            BattleEffectUtility.DamageMonster(context.MonsterTarget, context.Value);
-            Debug.Log($"[Effect] E_Strike Monster / Damage:{context.Value}");
+            if (context.PlayerTarget != null)
+            {
+                BattleEffectUtility.DamagePlayer(context.PlayerTarget, damage);
+
+                if (context.PlayerTarget.RuntimeData.CurrentHealth <= 0)
+                    break;
+            }
+
+            if (context.MonsterTarget != null)
+            {
+                BattleEffectUtility.DamageMonster(context.MonsterTarget, damage);
+
+                if (context.MonsterTarget.RuntimeData.IsDead)
+                    break;
+            }
         }
     }
 }

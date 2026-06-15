@@ -52,10 +52,6 @@ public class BattleActionBatchBuilder
 
                 if (command == null)
                     continue;
-
-                UnityEngine.Debug.Log(
-                    $"[Batch] Index:{i} / Player:{command.CharacterId} / Skill:{command.SkillId}"
-                );
             }
 
             for (int m = 0; m < batch.MonsterCommands.Count; m++)
@@ -64,12 +60,6 @@ public class BattleActionBatchBuilder
 
                 if (command == null)
                     continue;
-
-                UnityEngine.Debug.Log(
-                    $"[Batch] Index:{i} / Monster:{command.RuntimeId} / " +
-                    $"Skill:{command.SkillId} / Move:{command.MoveOffset} / " +
-                    $"Timeline:{command.SkillData.TimelineNotation}"
-                );
             }
         }
     }

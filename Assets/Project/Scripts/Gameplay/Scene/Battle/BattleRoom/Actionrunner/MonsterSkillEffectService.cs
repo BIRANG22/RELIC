@@ -8,15 +8,18 @@ public class MonsterSkillEffectService
     private readonly BattleDamageService damageService;
     private readonly BattleDeathService deathService;
     private readonly BattleHUDService hudService;
+    private readonly GridManager gridManager;
 
     public MonsterSkillEffectService(
         BattleDamageService damageService,
         BattleDeathService deathService,
-        BattleHUDService hudService)
+        BattleHUDService hudService,
+        GridManager gridManager)
     {
         this.damageService = damageService;
         this.deathService = deathService;
         this.hudService = hudService;
+        this.gridManager = gridManager;
     }
 
     public void ApplyMonsterSkill(MonsterUnit caster, MonsterReservedCommand command)
@@ -125,21 +128,27 @@ public class MonsterSkillEffectService
             int value = ParseIndexedValue(command.SkillData.ValueRate, i);
             int count = ParseIndexedValue(command.SkillData.CountRate, i);
 
+            BattleUnitFacing facing = caster.GetComponent<BattleUnitFacing>();
+
+            BattleDirection direction =
+                facing != null && !facing.IsFacingRight
+                    ? BattleDirection.Left
+                    : BattleDirection.Right;
+
             BattleEffectContext context = new BattleEffectContext
             {
                 MonsterCaster = caster,
                 PlayerTarget = playerTarget,
                 MonsterTarget = monsterTarget,
                 MonsterSkillData = command.SkillData,
+
+                Direction = direction,
+                GridManager = gridManager,
+
                 EffectId = effectId,
                 Value = value,
                 Count = count
             };
-
-            Debug.Log(
-                $"[MonsterSkillEffect] Caster:{caster.RuntimeData.Name} / " +
-                $"Skill:{command.SkillData.Name} / Effect:{effectId} / Value:{value} / Count:{count}"
-            );
 
             try
             {

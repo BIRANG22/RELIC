@@ -20,6 +20,19 @@ public class BattleTurnExecutor : MonoBehaviour
 
     private bool isExecuting;
 
+    private readonly BattleUniqueResourceService uniqueResourceService = new();
+
+    private void OnEnable()
+    {
+        BattleEffectUtility.OnPlayerDamaged -= uniqueResourceService.OnPlayerDamaged;
+        BattleEffectUtility.OnPlayerDamaged += uniqueResourceService.OnPlayerDamaged;
+    }
+
+    private void OnDisable()
+    {
+        BattleEffectUtility.OnPlayerDamaged -= uniqueResourceService.OnPlayerDamaged;
+    }
+
     public void ExecuteTurn()
     {
         if (isExecuting)
@@ -50,6 +63,8 @@ public class BattleTurnExecutor : MonoBehaviour
             BattleActionBatchBuilder builder = new();
             BattleActionRunner runner = new(gridManager, monsterSpawner, roomLoader);
 
+            uniqueResourceService.ApplyTimelineSlotResourceGain(timelineController);
+
             List<BattleActionBatch> batches = builder.Build(timelineController);
 
             if (batches == null || batches.Count <= 0)
@@ -71,6 +86,8 @@ public class BattleTurnExecutor : MonoBehaviour
                     yield break;
                 }
             }
+
+            runner.ApplyTurnEndEffects();
 
             ClearTimeline();
 
