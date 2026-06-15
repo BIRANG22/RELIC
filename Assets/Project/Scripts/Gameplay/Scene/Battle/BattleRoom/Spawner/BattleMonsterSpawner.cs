@@ -1,7 +1,8 @@
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
-using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 public class BattleMonsterSpawner : MonoBehaviour
 {
     [Header("Grid Root")]
@@ -131,6 +132,79 @@ public class BattleMonsterSpawner : MonoBehaviour
 
         Debug.LogWarning($"[BattleMonsterSpawner] {grid.name} 안에 {spawnPointName} 오브젝트가 없습니다. Grid 위치를 대신 사용합니다.");
         return null;
+    }
+
+    public SpawnedMonsterResult SpawnRuntimeMonster(string monsterId, List<int> cells)
+    {
+        if (string.IsNullOrWhiteSpace(monsterId))
+            return null;
+
+        if (cells == null || cells.Count <= 0)
+            return null;
+
+        var dm = DataManager.Instance;
+
+        if (dm == null || dm.MonsterDatabase == null)
+            return null;
+
+        MonsterMasterData monsterData = dm.MonsterDatabase.Get(monsterId);
+
+        if (monsterData == null || monsterData.BattlePrefab == null)
+        {
+            Debug.LogWarning($"[BattleMonsterSpawner] MonsterData 또는 BattlePrefab 없음: {monsterId}");
+            return null;
+        }
+
+        int mainCell = cells[0];
+
+        Transform spawnGrid = FindGridByIndex(mainCell);
+
+        if (spawnGrid == null)
+        {
+            Debug.LogWarning($"[BattleMonsterSpawner] Grid 오브젝트 없음: Grid_{mainCell:00}");
+            return null;
+        }
+
+        Transform spawnPoint = FindSpawnPoint(spawnGrid);
+
+        Vector3 spawnPosition = spawnPoint != null
+            ? spawnPoint.position
+            : spawnGrid.position;
+
+        spawnPosition.z += unitSpawnZOffset;
+
+        GameObject monster = Instantiate(
+            monsterData.BattlePrefab,
+            spawnPosition,
+            Quaternion.identity,
+            monsterRoot
+        );
+
+        BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
+
+        if (facing != null)
+            facing.SetFacingStateOnly(false);
+
+        string runtimeId = MonsterRuntimeIdGenerator.Create();
+        MonsterRuntimeData runtimeData = new MonsterRuntimeData(runtimeId, monsterData);
+
+        MonsterUnit monsterUnit = monster.GetComponent<MonsterUnit>();
+
+        if (monsterUnit == null)
+        {
+            Debug.LogError($"[BattleMonsterSpawner] MonsterUnit 없음: {monster.name}");
+            Destroy(monster);
+            return null;
+        }
+
+        monsterUnit.Initialize(runtimeData);
+        monsterUnit.SetOccupiedCells(cells);
+
+        return new SpawnedMonsterResult
+        {
+            RuntimeData = runtimeData,
+            MonsterTransform = monster.transform
+        };
     }
 }
 

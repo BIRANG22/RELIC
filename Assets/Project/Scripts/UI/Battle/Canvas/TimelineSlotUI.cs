@@ -23,7 +23,13 @@ public class TimelineSlotUI : MonoBehaviour
     [SerializeField] private float threeIconCenterX = 0f;
     [SerializeField] private float threeIconRightX = 48f;
 
-    private readonly List<Sprite> actionTypeIcons = new();
+    private class ActionIconData
+    {
+        public Sprite Icon;
+        public string MonsterRuntimeId;
+    }
+
+    private readonly List<ActionIconData> actionTypeIcons = new();
 
     private void Awake()
     {
@@ -40,7 +46,7 @@ public class TimelineSlotUI : MonoBehaviour
         ownerIconImage.enabled = ownerIcon != null;
     }
 
-    public void AddActionTypeIcon(Sprite actionTypeIcon)
+    public void AddActionTypeIcon(Sprite actionTypeIcon, string monsterRuntimeId = "")
     {
         if (actionTypeIcon == null)
         {
@@ -51,7 +57,12 @@ public class TimelineSlotUI : MonoBehaviour
         if (actionTypeIcons.Count >= maxActionCount)
             actionTypeIcons.RemoveAt(0);
 
-        actionTypeIcons.Add(actionTypeIcon);
+        actionTypeIcons.Add(new ActionIconData
+        {
+            Icon = actionTypeIcon,
+            MonsterRuntimeId = monsterRuntimeId
+        });
+
         Refresh();
     }
 
@@ -90,9 +101,17 @@ public class TimelineSlotUI : MonoBehaviour
             if (actionTypeIconImages[i] == null)
                 continue;
 
-            actionTypeIconImages[i].sprite = actionTypeIcons[i];
+            actionTypeIconImages[i].sprite = actionTypeIcons[i].Icon;
             actionTypeIconImages[i].enabled = true;
             actionTypeIconImages[i].gameObject.SetActive(true);
+
+            BattleTimelineMonsterHoverTarget hoverTarget =
+                actionTypeIconImages[i].GetComponent<BattleTimelineMonsterHoverTarget>();
+
+            if (hoverTarget == null)
+                hoverTarget = actionTypeIconImages[i].gameObject.AddComponent<BattleTimelineMonsterHoverTarget>();
+
+            hoverTarget.SetMonsterRuntimeId(actionTypeIcons[i].MonsterRuntimeId);
         }
 
         UpdateActionIconLayout();

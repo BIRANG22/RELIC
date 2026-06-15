@@ -10,6 +10,12 @@ public class BattleEffectRegistry
         Register(new ArmorEffect());
         Register(new BurnEffect());
         Register(new PowerEffect());
+
+        Register(new StrikeEffect());
+
+        Register(new LogOnlyEffect("E_Corrosion"));
+        Register(new LogOnlyEffect("E_Block"));
+        Register(new LogOnlyEffect("E_Grudge"));
     }
 
     private void Register(BattleEffectBase effect)

@@ -9,6 +9,8 @@ namespace Relic.Gameplay.Data
 
         public string CurrentStage;
         public string CurrentMapId;
+        public int CurrentNodeIndex = -1;
+
         public string CurrentSceneName;
 
         public List<string> ClearedMapIds = new();

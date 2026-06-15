@@ -57,6 +57,17 @@ public class BattleTimelinePreviewEntry
         }
     }
 
+    public string MonsterRuntimeId
+    {
+        get
+        {
+            if (IsMonster && MonsterRuntime != null)
+                return MonsterRuntime.RuntimeId;
+
+            return "";
+        }
+    }
+
     public static BattleTimelinePreviewEntry CreatePlayer(
         int slotIndex,
         int orderIndex,

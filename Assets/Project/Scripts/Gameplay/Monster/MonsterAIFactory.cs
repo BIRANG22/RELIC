@@ -7,7 +7,22 @@ namespace Relic.Gameplay.Monster
             switch (monsterId)
             {
                 case "Mon_01":
-                    return new SlimeAI();
+                    return new MuckAI();
+
+                case "Mon_02":
+                    return new BlobAI();
+
+                case "Mon_03":
+                    return new RancorAI();
+
+                case "Mon_04":
+                    return new BlightAI();
+
+                case "Mon_05":
+                    return new VespaAI();
+
+                case "Mon_10":
+                    return new EliseAI();
 
                 default:
                     return new DefaultMonsterAI();

@@ -103,6 +103,14 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
                     visibleIndex < enemySkillIconImages.Length)
                 {
                     SetSkillImage(enemySkillIconImages[visibleIndex], entry.SkillIcon, true, enemyReservedColor);
+
+                    BattleTimelineMonsterHoverTarget hoverTarget =
+                        enemySkillIconImages[visibleIndex].GetComponent<BattleTimelineMonsterHoverTarget>();
+
+                    if (hoverTarget == null)
+                        hoverTarget = enemySkillIconImages[visibleIndex].gameObject.AddComponent<BattleTimelineMonsterHoverTarget>();
+
+                    hoverTarget.SetMonsterRuntimeId(entry.MonsterRuntimeId);
                 }
 
                 if (enemyMarkObjects != null &&
@@ -189,6 +197,12 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             SetRootImageColor(parent.gameObject, Color.white);
             parent.gameObject.SetActive(false);
         }
+
+        BattleTimelineMonsterHoverTarget hoverTarget =
+            image.GetComponent<BattleTimelineMonsterHoverTarget>();
+
+        if (hoverTarget != null)
+            hoverTarget.SetMonsterRuntimeId("");
     }
     public void OnPointerClick(PointerEventData eventData)
     {
@@ -493,7 +507,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         image.sprite = sprite;
         image.color = Color.white;
         image.enabled = show;
-        image.raycastTarget = false;
+        image.raycastTarget = true;
     }
 
     private void SetRootImageColor(GameObject root, Color color)

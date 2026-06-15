@@ -1,0 +1,49 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace Relic.Gameplay.Monster
+{
+    public enum MonsterAISlotPreference
+    {
+        Front,
+        Back,
+        Center,
+        Last,
+        NextSlot,
+        SameSlot
+    }
+
+    public class MonsterAIAction
+    {
+        public string SkillId;
+        public Vector2Int MoveOffset;
+        public MonsterAISlotPreference SlotPreference;
+        public int SameSlotGroup;
+        public int Priority;
+
+        public MonsterAIAction(
+            string skillId,
+            Vector2Int moveOffset,
+            MonsterAISlotPreference slotPreference,
+            int sameSlotGroup = -1,
+            int priority = 0)
+        {
+            SkillId = skillId;
+            MoveOffset = moveOffset;
+            SlotPreference = slotPreference;
+            SameSlotGroup = sameSlotGroup;
+            Priority = priority;
+        }
+    }
+
+    public class MonsterAIPlan
+    {
+        public readonly List<MonsterAIAction> Actions = new();
+
+        public void Add(MonsterAIAction action)
+        {
+            if (action != null && !string.IsNullOrWhiteSpace(action.SkillId))
+                Actions.Add(action);
+        }
+    }
+}

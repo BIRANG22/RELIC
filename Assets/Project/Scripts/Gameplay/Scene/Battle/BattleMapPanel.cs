@@ -85,6 +85,10 @@ public class BattleMapPanel : MonoBehaviour
             Debug.LogWarning("[BattleMapPanel] BattleSceneController가 연결되지 않았습니다.");
             return;
         }
+        //테스트용
+#if UNITY_EDITOR
+        nodeData.MapId = "Map_08";
+#endif
 
         battleSceneController.OnMapNodeSelected(nodeData);
     }

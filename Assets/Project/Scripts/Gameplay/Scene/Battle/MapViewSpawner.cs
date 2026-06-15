@@ -94,35 +94,29 @@ public class MapViewSpawner : MonoBehaviour
         if (node == null || runtime == null)
             return false;
 
-        // 아직 아무 노드도 방문하지 않았으면 Start만 클릭 가능
-        if (string.IsNullOrWhiteSpace(runtime.CurrentMapId))
+        if (runtime.CurrentNodeIndex < 0)
             return node.Type == "Start";
 
-        // 현재 위치 노드 찾기
-        GeneratedMapNodeData currentNode = FindNodeByMapId(
+        GeneratedMapNodeData currentNode = GetNodeData(
             nodes,
-            runtime.CurrentMapId
+            runtime.CurrentNodeIndex
         );
 
         if (currentNode == null)
-            return false;
-
-        // 현재 노드와 연결된 다음 노드만 클릭 가능
-        return currentNode.NextNodeIndices.Contains(node.NodeIndex);
-    }
-
-   
-    private GeneratedMapNodeData FindNodeByMapId(
-        List<GeneratedMapNodeData> nodes,
-        string mapId)
-    {
-        for (int i = 0; i < nodes.Count; i++)
         {
-            if (nodes[i].MapId == mapId)
-                return nodes[i];
+            Debug.LogWarning(
+                $"[MapViewSpawner] CurrentNode not found / CurrentNodeIndex:{runtime.CurrentNodeIndex}"
+            );
+            return false;
         }
 
-        return null;
+        bool canClick = currentNode.NextNodeIndices.Contains(node.NodeIndex);
+
+        Debug.Log(
+            $"[MapViewSpawner] ClickCheck / Current:{currentNode.NodeIndex} -> Target:{node.NodeIndex} / Can:{canClick}"
+        );
+
+        return canClick;
     }
 
     private GeneratedMapNodeData GetNodeData(List<GeneratedMapNodeData> nodes, int nodeIndex)

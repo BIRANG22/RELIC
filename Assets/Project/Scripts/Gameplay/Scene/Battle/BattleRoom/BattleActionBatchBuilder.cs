@@ -30,7 +30,48 @@ public class BattleActionBatchBuilder
             }
         }
 
+        DebugPrintBatches(batches);
         return batches;
+    }
+
+    private void DebugPrintBatches(List<BattleActionBatch> batches)
+    {
+        if (batches == null)
+            return;
+
+        for (int i = 0; i < batches.Count; i++)
+        {
+            BattleActionBatch batch = batches[i];
+
+            if (batch == null)
+                continue;
+
+            for (int p = 0; p < batch.PlayerCommands.Count; p++)
+            {
+                PlayerReservedCommand command = batch.PlayerCommands[p];
+
+                if (command == null)
+                    continue;
+
+                UnityEngine.Debug.Log(
+                    $"[Batch] Index:{i} / Player:{command.CharacterId} / Skill:{command.SkillId}"
+                );
+            }
+
+            for (int m = 0; m < batch.MonsterCommands.Count; m++)
+            {
+                MonsterReservedCommand command = batch.MonsterCommands[m];
+
+                if (command == null)
+                    continue;
+
+                UnityEngine.Debug.Log(
+                    $"[Batch] Index:{i} / Monster:{command.RuntimeId} / " +
+                    $"Skill:{command.SkillId} / Move:{command.MoveOffset} / " +
+                    $"Timeline:{command.SkillData.TimelineNotation}"
+                );
+            }
+        }
     }
 
     private void AddPlayerCommand(

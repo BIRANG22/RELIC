@@ -26,9 +26,7 @@ namespace Relic.Gameplay.Data
         public bool IsDead => CurrentHp <= 0;
         public List<StatusEffectRuntimeData> StatusEffects = new();
 
-        public MonsterRuntimeData()
-        {
-        }
+        public bool IsDeathHandled;
 
         public MonsterRuntimeData(string runtimeId, MonsterMasterData masterData)
         {
