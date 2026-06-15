@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,15 +7,12 @@ public class TitleManager : MonoBehaviour
     [SerializeField] private GameObject onLogo;
     [SerializeField] private GameObject offLogo;
 
-    [Header("Logo Blink Option")]
-    [SerializeField] private float blinkOffDuration = 0.08f;
-
     [Header("Warning")]
     [SerializeField] private TitleWarningUI warningUI;
     [SerializeField] private string unavailableMessage = "아직 준비되지 않았습니다.";
     [SerializeField] private Button[] unavailableButtons;
 
-    private Coroutine blinkCoroutine;
+    private bool isOnLogoActive = true;
 
     private void Awake()
     {
@@ -35,13 +31,8 @@ public class TitleManager : MonoBehaviour
 
     public void OnClickLogoArea()
     {
-        if (blinkCoroutine != null)
-        {
-            StopCoroutine(blinkCoroutine);
-            blinkCoroutine = null;
-        }
-
-        blinkCoroutine = StartCoroutine(BlinkLogoCoroutine());
+        isOnLogoActive = !isOnLogoActive;
+        ApplyLogoState();
     }
 
     public void ShowUnavailableWarning()
@@ -57,43 +48,22 @@ public class TitleManager : MonoBehaviour
         targetWarningUI.Show(unavailableMessage);
     }
 
-    private IEnumerator BlinkLogoCoroutine()
-    {
-        if (offLogo != null)
-        {
-            offLogo.SetActive(true);
-        }
-
-        if (onLogo != null)
-        {
-            onLogo.SetActive(false);
-        }
-
-        yield return new WaitForSeconds(blinkOffDuration);
-
-        if (offLogo != null)
-        {
-            offLogo.SetActive(true);
-        }
-
-        if (onLogo != null)
-        {
-            onLogo.SetActive(true);
-        }
-
-        blinkCoroutine = null;
-    }
-
     private void RefreshLogoDefaultState()
     {
-        if (offLogo != null)
-        {
-            offLogo.SetActive(true);
-        }
+        isOnLogoActive = true;
+        ApplyLogoState();
+    }
 
+    private void ApplyLogoState()
+    {
         if (onLogo != null)
         {
-            onLogo.SetActive(true);
+            onLogo.SetActive(isOnLogoActive);
+        }
+
+        if (offLogo != null)
+        {
+            offLogo.SetActive(!isOnLogoActive);
         }
     }
 
