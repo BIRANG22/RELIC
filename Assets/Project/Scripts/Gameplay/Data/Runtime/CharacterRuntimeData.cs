@@ -11,6 +11,9 @@ namespace Relic.Gameplay.Data
         public int Level = 1;
         public int Exp = 0;
 
+        public int MaxHealth;
+        public int MaxStamina;
+
         public int CurrentHealth;
         public int CurrentStamina;
         public int CurrentResource;
