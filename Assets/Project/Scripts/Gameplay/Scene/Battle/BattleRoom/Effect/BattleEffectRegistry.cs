@@ -7,15 +7,32 @@ public class BattleEffectRegistry
 
     public BattleEffectRegistry()
     {
-        Register(new ArmorEffect());
-        Register(new BurnEffect());
-        Register(new PowerEffect());
-
         Register(new StrikeEffect());
+        Register(new PierceEffect());
 
-        Register(new LogOnlyEffect("E_Corrosion"));
-        Register(new LogOnlyEffect("E_Block"));
-        Register(new LogOnlyEffect("E_Grudge"));
+        Register(new BurnEffect());
+        Register(new BleedingEffect());
+        Register(new AddictedEffect());
+
+        Register(new PowerEffect());
+        Register(new ArmorEffect());
+        Register(new AimingEffect());
+        Register(new RecoverEffect());
+        Register(new RechargeEffect());
+        Register(new FocusEffect());
+        Register(new SwiftEffect());
+
+        Register(new VulnerableEffect());
+        Register(new WeakenEffect());
+        Register(new GrudgeEffect());
+        Register(new CorrosionEffect());
+
+        Register(new BlockEffect());
+        Register(new ThornsEffect());
+        Register(new DrainEffect());
+
+        Register(new KnockbackEffect());
+        Register(new GrabEffect());
     }
 
     private void Register(BattleEffectBase effect)
@@ -31,7 +48,9 @@ public class BattleEffectRegistry
         if (string.IsNullOrWhiteSpace(effectId))
             return null;
 
-        if (effects.TryGetValue(effectId.Trim(), out BattleEffectBase effect))
+        effectId = effectId.Trim();
+
+        if (effects.TryGetValue(effectId, out BattleEffectBase effect))
             return effect;
 
         Debug.LogWarning($"[BattleEffectRegistry] 등록되지 않은 EffectId: {effectId}");

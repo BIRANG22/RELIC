@@ -14,6 +14,7 @@ public class BattleActionRunner
     private readonly BattleDeathService deathService;
     private readonly BattleStatusEffectService statusEffectService;
     private readonly MonsterSkillEffectService monsterSkillEffectService;
+    private readonly BattleEffectExecutor effectExecutor = new();
 
     private const float ReadyDelay = 0.06f;
     private const float ActionDelay = 0.05f;
@@ -264,10 +265,10 @@ public class BattleActionRunner
         int damage = damageService.GetPlayerDamage(command);
 
         MonsterUnit[] monsters =
-            Object.FindObjectsByType<MonsterUnit>(
-                FindObjectsInactive.Exclude,
-                FindObjectsSortMode.None
-            );
+    Object.FindObjectsByType<MonsterUnit>(
+        FindObjectsInactive.Exclude,
+        FindObjectsSortMode.None
+    );
 
         List<MonsterUnit> hitTargets = new();
 
@@ -296,8 +297,7 @@ public class BattleActionRunner
             if (hitFacing != null)
                 hitFacing.FaceByWorldTarget(attacker.transform.position);
 
-            monster.RuntimeData.TakeDamage(damage);
-            monster.ShowAndRefreshHUD();
+            ExecutePlayerSkillEffects(attacker, monster, command);
 
             BattleUnitAnimator hitAnimator = monster.GetComponent<BattleUnitAnimator>();
 
@@ -324,6 +324,45 @@ public class BattleActionRunner
 
         if (hitTargets.Count > 0 && BattleCameraController.Instance != null)
             yield return BattleCameraController.Instance.ReturnDefault();
+    }
+
+    private void ExecutePlayerSkillEffects(
+        BattleCharacter caster,
+        MonsterUnit monsterTarget,
+        PlayerReservedCommand command)
+    {
+        if (caster == null || monsterTarget == null || command == null || command.SkillData == null)
+            return;
+
+        if (command.SkillData.EffectEntries == null || command.SkillData.EffectEntries.Count == 0)
+        {
+            Debug.LogWarning($"[PlayerSkillEffect] EffectEntries ¾øÀ½ / Skill:{command.SkillData.SkillId}");
+            return;
+        }
+
+        for (int i = 0; i < command.SkillData.EffectEntries.Count; i++)
+        {
+            SkillEffectEntry entry = command.SkillData.EffectEntries[i];
+
+            if (entry == null)
+                continue;
+
+            if (string.IsNullOrWhiteSpace(entry.EffectId))
+                continue;
+
+            BattleEffectContext context = new BattleEffectContext
+            {
+                PlayerCaster = caster,
+                MonsterTarget = monsterTarget,
+                PlayerSkillData = command.SkillData,
+
+                EffectId = entry.EffectId,
+                Value = entry.ValueAmount,
+                Count = entry.CountAmount
+            };
+
+            effectExecutor.Execute(entry.EffectId, context);
+        }
     }
 
     private IEnumerator ExecuteMonsterCommand(MonsterReservedCommand command)

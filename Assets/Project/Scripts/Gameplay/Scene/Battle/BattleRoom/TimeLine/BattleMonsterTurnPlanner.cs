@@ -26,8 +26,6 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
     [SerializeField] private SfxType actionReserveSfxType = SfxType.BattleActionReserveText;
     [SerializeField, Range(0f, 1f)] private float actionReserveSfxVolume = 1f;
 
-    private const int MonsterActionCountPerRound = 2;
-
     private Coroutine planRoutine;
     private Coroutine battleStartTextRoutine;
     private bool battleStartIntroShown;
@@ -121,6 +119,9 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
         for (int i = 0; i < plans.Count; i++)
         {
+            if (plans[i].SlotIndex < 0 || plans[i].SlotIndex >= timelineController.SlotCount)
+                continue;
+
             timelineController.AddMonsterCommand(plans[i].SlotIndex, plans[i].Command);
 
             if (monsterCommandInterval > 0f && i < plans.Count - 1)
@@ -140,7 +141,10 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         planRoutine = null;
     }
 
-    private void PlanMonsterTurnsImmediate(List<MonsterUnit> monsterUnits, bool showBattleStart, bool showActionReserve)
+    private void PlanMonsterTurnsImmediate(
+        List<MonsterUnit> monsterUnits,
+        bool showBattleStart,
+        bool showActionReserve)
     {
         if (timelineController == null)
         {
@@ -156,7 +160,12 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         List<MonsterReservedCommandPlan> plans = BuildMonsterCommandPlans(monsterUnits);
 
         for (int i = 0; i < plans.Count; i++)
+        {
+            if (plans[i].SlotIndex < 0 || plans[i].SlotIndex >= timelineController.SlotCount)
+                continue;
+
             timelineController.AddMonsterCommand(plans[i].SlotIndex, plans[i].Command);
+        }
 
         if (showActionReserve)
             ShowActionReserveIntroText();
@@ -183,43 +192,54 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             if (runtime.IsDead)
                 continue;
 
-            for (int actionIndex = 0; actionIndex < MonsterActionCountPerRound; actionIndex++)
-            {
-                string skillId = monsterUnit.SelectSkill(context);
+            MonsterAIPlan plan = monsterUnit.CreateAIPlan(context, gridManager);
 
-                if (string.IsNullOrWhiteSpace(skillId))
+            if (plan == null || plan.Actions == null || plan.Actions.Count <= 0)
+                continue;
+
+            plan.Actions.Sort((a, b) => a.Priority.CompareTo(b.Priority));
+
+            int baseSlotIndex = FindAvailableMonsterSlot(runtime, plans);
+
+            if (baseSlotIndex < 0)
+                continue;
+
+            for (int actionIndex = 0; actionIndex < plan.Actions.Count; actionIndex++)
+            {
+                MonsterAIAction action = plan.Actions[actionIndex];
+
+                if (action == null || string.IsNullOrWhiteSpace(action.SkillId))
                     continue;
 
-                MonsterSkillData skillData = DataManager.Instance.MonsterSkillDatabase.Get(skillId);
+                MonsterSkillData skillData =
+                    DataManager.Instance.MonsterSkillDatabase.Get(action.SkillId);
 
                 if (skillData == null)
                 {
-                    Debug.LogWarning($"[BattleMonsterTurnPlanner] SkillData 없음: {skillId}");
+                    Debug.LogWarning($"[BattleMonsterTurnPlanner] SkillData 없음: {action.SkillId}");
                     continue;
                 }
 
                 MonsterReservedCommand command = new MonsterReservedCommand(runtime, skillData);
+                command.SetMoveOffset(action.MoveOffset);
 
-                if (IsMoveSkill(skillData))
-                {
-                    int move = Mathf.Abs(skillData.GridMove);
-                    if (move <= 0)
-                        move = 1;
-
-                    Vector2Int moveOffset = monsterUnit.SelectMoveOffset(
-                        context,
-                        gridManager,
-                        move
-                    );
-
-                    command.SetMoveOffset(moveOffset);
-                }
-                else
-                {
+                if (!IsMoveSkill(skillData))
                     SetMonsterRange(monsterUnit, skillData, command);
-                }
 
-                int slotIndex = FindAvailableMonsterSlot(runtime, plans);
+                int slotIndex = ResolveMonsterActionSlot(baseSlotIndex, action, plans);
+
+                if (slotIndex < 0 || slotIndex >= timelineController.SlotCount)
+                    continue;
+
+                Debug.Log(
+                    $"[MonsterReserve] Monster:{runtime.Name} / " +
+                    $"ActionSkill:{action.SkillId} / " +
+                    $"CommandSkill:{command.SkillData.SkillId} / " +
+                    $"MoveOffset:{command.MoveOffset} / " +
+                    $"Slot:{slotIndex} / " +
+                    $"Preference:{action.SlotPreference}"
+                );
+
                 plans.Add(new MonsterReservedCommandPlan(slotIndex, command));
             }
         }
@@ -227,7 +247,72 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         return plans;
     }
 
-    private int FindAvailableMonsterSlot(MonsterRuntimeData runtime, List<MonsterReservedCommandPlan> pendingPlans)
+    private int ResolveMonsterActionSlot(
+        int baseSlotIndex,
+        MonsterAIAction action,
+        List<MonsterReservedCommandPlan> pendingPlans)
+    {
+        if (action == null)
+            return baseSlotIndex;
+
+        int slotCount = timelineController != null ? timelineController.SlotCount : 0;
+
+        if (slotCount <= 0)
+            return -1;
+
+        switch (action.SlotPreference)
+        {
+            case MonsterAISlotPreference.NextSlot:
+                return Mathf.Clamp(baseSlotIndex + 1, 0, slotCount - 1);
+
+            case MonsterAISlotPreference.SameSlot:
+                return baseSlotIndex;
+
+            case MonsterAISlotPreference.Back:
+                return FindBackSlot(pendingPlans);
+
+            case MonsterAISlotPreference.Last:
+                return slotCount - 1;
+
+            case MonsterAISlotPreference.Center:
+                return slotCount / 2;
+
+            case MonsterAISlotPreference.Front:
+            default:
+                return baseSlotIndex;
+        }
+    }
+
+    private int FindBackSlot(List<MonsterReservedCommandPlan> pendingPlans)
+    {
+        for (int i = timelineController.SlotCount - 1; i >= 0; i--)
+        {
+            var commands = timelineController.GetMonsterCommands(i);
+
+            bool hasCommand = commands != null && commands.Count > 0;
+
+            if (!hasCommand && pendingPlans != null)
+            {
+                for (int j = 0; j < pendingPlans.Count; j++)
+                {
+                    if (pendingPlans[j].SlotIndex == i)
+                    {
+                        hasCommand = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!hasCommand)
+                return i;
+        }
+
+        return timelineController.SlotCount - 1;
+    }
+
+    private int FindAvailableMonsterSlot(
+        MonsterRuntimeData runtime,
+        List<MonsterReservedCommandPlan> pendingPlans)
     {
         if (runtime == null)
             return -1;
@@ -332,7 +417,8 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             return;
         }
 
-        BattleMapIntroText target = FindFirstObjectByType<BattleMapIntroText>(FindObjectsInactive.Include);
+        BattleMapIntroText target =
+            FindFirstObjectByType<BattleMapIntroText>(FindObjectsInactive.Include);
 
         if (target != null)
             target.StopAndHide();
