@@ -26,6 +26,10 @@ public class RelicChoiceAreaUI : MonoBehaviour
     [SerializeField] private BattleMapController battleMapController;
     [SerializeField] private StartRoomController startRoomController;
 
+    [Header("SFX")]
+    [SerializeField] private bool playAcquireSfx = true;
+    [SerializeField] private SfxType acquireSfxType = SfxType.RelicChoiceAcquire;
+
     private bool isOpen;
     private bool isSelectionCompleted;
 
@@ -248,15 +252,23 @@ public class RelicChoiceAreaUI : MonoBehaviour
         }
 
         isSelectionCompleted = true;
-        GrantRelic(relicId);
+
+        if (!GrantRelic(relicId))
+        {
+            isSelectionCompleted = false;
+            SetupChoices();
+            return;
+        }
+
+        PlayAcquireSfx();
         RefreshRelicEquipPanel();
         CompleteChoiceEvent();
     }
 
-    private void GrantRelic(string relicId)
+    private bool GrantRelic(string relicId)
     {
         if (string.IsNullOrWhiteSpace(relicId) || HasRelicAnywhere(relicId))
-            return;
+            return false;
 
         BattleRuntimeData runtime = DataManager.Instance.BattleRuntimeStore.GetOrCreate();
         runtime.OwnedRelicIds ??= new List<string>();
@@ -264,6 +276,18 @@ public class RelicChoiceAreaUI : MonoBehaviour
         runtime.OwnedRelicIds.Add(relicId.Trim());
         NormalizeOwnedRelics(runtime);
         DataManager.Instance.BattleRuntimeStore.Set(runtime);
+        return true;
+    }
+
+    private void PlayAcquireSfx()
+    {
+        if (!playAcquireSfx)
+            return;
+
+        if (AudioManager.Instance == null)
+            return;
+
+        AudioManager.Instance.PlaySfx(acquireSfxType);
     }
 
     private HashSet<string> GetUnavailableRelicIds()

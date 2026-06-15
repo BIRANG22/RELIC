@@ -10,6 +10,14 @@ public class BattleTurnExecutor : MonoBehaviour
     [SerializeField] private BattleRoomLoader roomLoader;
     [SerializeField] private BattleMonsterSpawner monsterSpawner;
 
+    [Header("Intro Text")]
+    [SerializeField] private string battleProgressMessage = "전투 진행";
+
+    [Header("SFX")]
+    [SerializeField] private bool playBattleProgressSfx = true;
+    [SerializeField] private SfxType battleProgressSfxType = SfxType.BattleProgressText;
+    [SerializeField, Range(0f, 1f)] private float battleProgressSfxVolume = 1f;
+
     private bool isExecuting;
 
     public void ExecuteTurn()
@@ -50,6 +58,8 @@ public class BattleTurnExecutor : MonoBehaviour
                 yield break;
             }
 
+            yield return ShowBattleProgressIntroTextRoutine();
+
             for (int i = 0; i < batches.Count; i++)
             {
                 yield return runner.RunBatch(batches[i]);
@@ -80,6 +90,23 @@ public class BattleTurnExecutor : MonoBehaviour
         {
             isExecuting = false;
         }
+    }
+
+    private IEnumerator ShowBattleProgressIntroTextRoutine()
+    {
+        PlaySfx(playBattleProgressSfx, battleProgressSfxType, battleProgressSfxVolume);
+        yield return BattleMapIntroText.ShowMessageAndWait(battleProgressMessage);
+    }
+
+    private void PlaySfx(bool play, SfxType sfxType, float volume)
+    {
+        if (!play)
+            return;
+
+        if (AudioManager.Instance == null)
+            return;
+
+        AudioManager.Instance.PlaySfx(sfxType, volume);
     }
 
     private void ShowBattleWarning(string message)

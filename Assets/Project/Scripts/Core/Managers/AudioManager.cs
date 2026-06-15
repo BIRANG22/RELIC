@@ -21,7 +21,12 @@ public enum SfxType
     MoveButtonHover,
     MoveButtonClick,
     SceneTransition,
-    LobbyPanelTransition
+    LobbyPanelTransition,
+    BattleActionReserveText,
+    BattleProgressText,
+    RelicChoiceAcquire,
+    BattleRewardRemnantAcquire,
+    BattleRewardRelicSkillAcquire
 }
 
 [System.Serializable]
