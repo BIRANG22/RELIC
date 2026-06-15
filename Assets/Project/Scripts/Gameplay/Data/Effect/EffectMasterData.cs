@@ -3,10 +3,9 @@ namespace Relic.Gameplay.Data
     public enum EndTurn
     {
         None,
-        Self,
-        Target,
-        PlayerParty,
-        EnemyParty
+        ReMove,
+        Decrease,
+        Maintain,
     }
 
     [System.Serializable]
@@ -16,7 +15,7 @@ namespace Relic.Gameplay.Data
         public string Name;
 
         public bool Nesting;
-        public EndTurn TurnEndStatus;
+        public EndTurn EndTurn;
 
         public string ToolTip;
     }
