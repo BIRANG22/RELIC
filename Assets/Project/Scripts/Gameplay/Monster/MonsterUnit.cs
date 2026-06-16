@@ -1,4 +1,4 @@
-using Relic.Gameplay.Battle;
+ï»¿using Relic.Gameplay.Battle;
 using Relic.Gameplay.Data;
 using System.Collections;
 using System.Collections.Generic;
@@ -15,6 +15,10 @@ namespace Relic.Gameplay.Monster
         [Header("Timeline Hover Highlight")]
         [SerializeField] private GameObject timelineHoverHighlightObject;
 
+        [Header("Status Click Tooltip")]
+        [SerializeField] private bool showStatusTooltipOnClick = true;
+        [SerializeField] private UnitStatusEffectTooltipUI statusTooltipUI;
+
         public MonsterRuntimeData RuntimeData { get; private set; }
 
         private MonsterAIBase ai;
@@ -22,6 +26,7 @@ namespace Relic.Gameplay.Monster
         private Collider2D clickCollider2D;
 
         private static MonsterUnit selectedMonster;
+        private static int selectedMonsterClickFrame = -1000;
 
         private readonly List<int> occupiedGridIndices = new();
         public IReadOnlyList<int> OccupiedGridIndices => occupiedGridIndices;
@@ -58,7 +63,7 @@ namespace Relic.Gameplay.Monster
         {
             if (ai == null)
             {
-                Debug.LogWarning($"[MonsterUnit] AI ¾øÀ½: {RuntimeData?.MonsterId}");
+                Debug.LogWarning($"[MonsterUnit] AI ï¿½ï¿½ï¿½ï¿½: {RuntimeData?.MonsterId}");
                 return new MonsterAIPlan();
             }
 
@@ -69,7 +74,7 @@ namespace Relic.Gameplay.Monster
         {
             if (ai == null)
             {
-                Debug.LogWarning($"[MonsterUnit] AI ¾øÀ½: {RuntimeData?.MonsterId}");
+                Debug.LogWarning($"[MonsterUnit] AI ï¿½ï¿½ï¿½ï¿½: {RuntimeData?.MonsterId}");
                 return null;
             }
 
@@ -135,6 +140,106 @@ namespace Relic.Gameplay.Monster
             }
         }
 
+        private void OnDisable()
+        {
+            if (selectedMonster == this)
+            {
+                SetSelected(false);
+                selectedMonster = null;
+            }
+
+            HideStatusClickTooltip();
+        }
+
+        private void OnDestroy()
+        {
+            if (selectedMonster == this)
+            {
+                SetSelected(false);
+                selectedMonster = null;
+            }
+
+            HideStatusClickTooltip();
+        }
+
+        private void Update()
+        {
+            if (selectedMonster != this)
+                return;
+
+            if (!Input.GetMouseButtonDown(0))
+                return;
+
+            if (Time.frameCount <= selectedMonsterClickFrame + 1)
+                return;
+
+            if (IsPointerOverUI())
+                return;
+
+            if (IsScreenPointOverAnyMonster(Input.mousePosition))
+                return;
+
+            DeselectCurrentMonster();
+        }
+
+        private void ShowStatusClickTooltip()
+        {
+            if (!showStatusTooltipOnClick)
+                return;
+
+            if (RuntimeData == null || RuntimeData.StatusEffects == null || RuntimeData.StatusEffects.Count <= 0)
+            {
+                HideStatusClickTooltip();
+                return;
+            }
+
+            if (statusTooltipUI == null)
+                statusTooltipUI = UnitStatusEffectTooltipUI.GetOrCreate();
+
+            if (statusTooltipUI == null)
+                return;
+
+            UnitStatusEffectTooltipSide tooltipSide = GetStatusTooltipSide();
+            Vector2 screenPosition = GetStatusTooltipScreenPosition(tooltipSide);
+            statusTooltipUI.Show(this, RuntimeData.StatusEffects, screenPosition, tooltipSide);
+        }
+
+        private UnitStatusEffectTooltipSide GetStatusTooltipSide()
+        {
+            int gridIndex = MainGridIndex;
+
+            if (gridIndex >= 20 && gridIndex <= 34)
+                return UnitStatusEffectTooltipSide.Left;
+
+            return UnitStatusEffectTooltipSide.Right;
+        }
+
+        private Vector2 GetStatusTooltipScreenPosition(UnitStatusEffectTooltipSide side)
+        {
+            Camera mainCamera = Camera.main;
+            if (mainCamera == null)
+                return Input.mousePosition;
+
+            Bounds bounds;
+            Collider2D collider = GetClickCollider2D();
+            if (collider != null)
+                bounds = collider.bounds;
+            else if (!TryGetRendererBounds(out bounds))
+                bounds = new Bounds(transform.position, Vector3.zero);
+
+            float anchorX = side == UnitStatusEffectTooltipSide.Left ? bounds.min.x : bounds.max.x;
+            Vector3 worldPosition = new Vector3(anchorX, bounds.center.y, bounds.center.z);
+            return mainCamera.WorldToScreenPoint(worldPosition);
+        }
+
+        private void HideStatusClickTooltip()
+        {
+            if (statusTooltipUI == null)
+                return;
+
+            statusTooltipUI.Hide(this);
+        }
+
         private void OnMouseDown()
         {
             if (RuntimeData == null)
@@ -158,6 +263,54 @@ namespace Relic.Gameplay.Monster
                 return EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId);
 
             return false;
+        }
+
+        private bool IsScreenPointOverAnyMonster(Vector2 screenPoint)
+        {
+            Camera mainCamera = Camera.main;
+            if (mainCamera == null)
+                return false;
+
+            Ray ray = mainCamera.ScreenPointToRay(screenPoint);
+            RaycastHit2D[] rayHits = Physics2D.GetRayIntersectionAll(ray);
+
+            for (int i = 0; i < rayHits.Length; i++)
+            {
+                Collider2D hitCollider = rayHits[i].collider;
+                if (hitCollider == null)
+                    continue;
+
+                if (hitCollider.GetComponentInParent<MonsterUnit>() != null)
+                    return true;
+            }
+
+            Vector3 worldPoint = mainCamera.ScreenToWorldPoint(screenPoint);
+            Vector2 overlapPoint = new Vector2(worldPoint.x, worldPoint.y);
+            Collider2D[] overlapHits = Physics2D.OverlapPointAll(overlapPoint);
+
+            for (int i = 0; i < overlapHits.Length; i++)
+            {
+                Collider2D hitCollider = overlapHits[i];
+                if (hitCollider == null)
+                    continue;
+
+                if (hitCollider.GetComponentInParent<MonsterUnit>() != null)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static void DeselectCurrentMonster()
+        {
+            if (selectedMonster == null)
+                return;
+
+            MonsterUnit monster = selectedMonster;
+            selectedMonster = null;
+
+            monster.SetSelected(false);
+            monster.HideStatusClickTooltip();
         }
 
         private void EnsureClickCollider2D()
@@ -252,18 +405,26 @@ namespace Relic.Gameplay.Monster
         public void SelectThisMonster()
         {
             if (selectedMonster != null && selectedMonster != this)
+            {
                 selectedMonster.SetSelected(false);
+                selectedMonster.HideStatusClickTooltip();
+            }
 
             selectedMonster = this;
+            selectedMonsterClickFrame = Time.frameCount;
 
-            StartCoroutine(ShowSelectedHUDNextFrame());
+            StartCoroutine(ShowSelectedHUDAndTooltipNextFrame());
         }
 
-        private IEnumerator ShowSelectedHUDNextFrame()
+        private IEnumerator ShowSelectedHUDAndTooltipNextFrame()
         {
             yield return null;
 
+            if (selectedMonster != this)
+                yield break;
+
             SetSelected(true);
+            ShowStatusClickTooltip();
         }
 
         public void SetSelected(bool selected)

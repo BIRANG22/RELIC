@@ -14,24 +14,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entries:
   - EffectId: E_Power
-    Icon: {fileID: 21300000, guid: 31dd33e007cb5664bb33d57e00495822, type: 3}
+    Icon: {fileID: 21300000, guid: 6e9fbfdb521f41046a01c0e5d1e3a1f4, type: 3}
   - EffectId: E_Thorns
-    Icon: {fileID: 21300000, guid: 7c2b14369cfebbc4e9cc0228c5f8cb27, type: 3}
+    Icon: {fileID: 21300000, guid: 21a399c6d5e23644489856ea07cc26c0, type: 3}
   - EffectId: E_Recharge
-    Icon: {fileID: 21300000, guid: 68d155026d2b4c449921a988502c8c02, type: 3}
+    Icon: {fileID: 21300000, guid: 00554984b21fd8e45a0c2520f55ac47a, type: 3}
   - EffectId: E_Burn
-    Icon: {fileID: 21300000, guid: 2f36f6c2e353e1148af2113d4881846d, type: 3}
+    Icon: {fileID: 21300000, guid: 43b006f495f25f941aac34d0684092d4, type: 3}
   - EffectId: E_Bleed
-    Icon: {fileID: 21300000, guid: d36214ef5dc403b47a308056977771b0, type: 3}
+    Icon: {fileID: 21300000, guid: 91d86b9f65c58ab47acc1ec5a896fd84, type: 3}
   - EffectId: E_Addicted
-    Icon: {fileID: 21300000, guid: 5a6906fb61381bf49ad1a1dab297f183, type: 3}
+    Icon: {fileID: 21300000, guid: 8e4a613cf2278c24d87afa317ab8ed7c, type: 3}
   - EffectId: E_Vulnerable
-    Icon: {fileID: 21300000, guid: 09545009da7132d49864823d710dfe79, type: 3}
+    Icon: {fileID: 21300000, guid: 8f726f03d6869a74baca6a5a14b8f7ad, type: 3}
   - EffectId: E_Weaken
-    Icon: {fileID: 21300000, guid: 14830df844e32ba439ef5aaaf591ced9, type: 3}
+    Icon: {fileID: 21300000, guid: c1b03667955cb284db78537f8e2317d9, type: 3}
   - EffectId: E_Silence
     Icon: {fileID: 21300000, guid: 43f9dafa6667a114ea0d1917adce7153, type: 3}
   - EffectId: E_Block
-    Icon: {fileID: 21300000, guid: f690ed4362d85e94badd9ebab7f8c906, type: 3}
+    Icon: {fileID: 21300000, guid: e6ca7f1ecbfb666429ebdbf9bf9aec99, type: 3}
   - EffectId: E_Recover
-    Icon: {fileID: 21300000, guid: febe5f0d680105e43b3868ab27187932, type: 3}
+    Icon: {fileID: 21300000, guid: 1793c665807dfcf40901ffa309d6b347, type: 3}
+  - EffectId: E_Grudge
+    Icon: {fileID: 21300000, guid: aa7838dcb9f103e458ace51355d286c9, type: 3}
+  - EffectId: E_Corrosion
+    Icon: {fileID: 21300000, guid: f943f0cf97295a44183e84137985a2b0, type: 3}
