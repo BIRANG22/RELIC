@@ -19,6 +19,7 @@ public class BattleUnitAnimator : MonoBehaviour
     [SerializeField] private string guardStateName = "Guard";
     [SerializeField] private string hitStateName = "Hit";
     [SerializeField] private string deadStateName = "Dead";
+    [SerializeField] private string controlStateName = "Control";
 
     [SerializeField] private string attackReady1StateName = "AttackReady1";
     [SerializeField] private string attackAction1StateName = "AttackAction1";
@@ -35,6 +36,10 @@ public class BattleUnitAnimator : MonoBehaviour
 
     [Header("Hit VFX")]
     [SerializeField] private BattleVfxEntry hitVfx;
+
+    [Header("Buff Debuff VFX")]
+    [SerializeField] private BattleVfxEntry buffVfx;
+    [SerializeField] private BattleVfxEntry debuffVfx;
 
     [Header("Attack VFX")]
     [SerializeField] private BattleVfxEntry attackVfx1;
@@ -91,6 +96,17 @@ public class BattleUnitAnimator : MonoBehaviour
         PlayState(deadStateName);
     }
 
+    public void PlayBuff()
+    {
+        PlayState(controlStateName);
+        SpawnVfx(buffVfx);
+    }
+
+    public void PlayDebuff()
+    {
+        PlayState(controlStateName);
+        SpawnVfx(debuffVfx);
+    }
     public void PlaySkillReady(SkillMasterData skillData)
     {
         if (skillData == null)
@@ -105,13 +121,24 @@ public class BattleUnitAnimator : MonoBehaviour
             return;
         }
 
-        if (skillData.SkillType == SkillType.Power)
+        switch (skillData.SkillType)
         {
-            PlayGuard();
-            return;
-        }
+            case SkillType.Power:
+                PlayBuff();
+                break;
 
-        PlayRandomAttackReady();
+            case SkillType.Skill:
+                PlayDebuff();
+                break;
+
+            case SkillType.Attack:
+                PlayRandomAttackReady();
+                break;
+
+            default:
+                PlayRandomAttackReady();
+                break;
+        }
     }
 
     public void PlaySkillAction(SkillMasterData skillData)
@@ -128,13 +155,80 @@ public class BattleUnitAnimator : MonoBehaviour
             return;
         }
 
-        if (skillData.SkillType == SkillType.Power)
+        switch (skillData.SkillType)
         {
-            PlayGuard();
+            case SkillType.Power:
+            case SkillType.Skill:
+                break;
+
+            case SkillType.Attack:
+                PlayCurrentAttackAction();
+                break;
+
+            default:
+                PlayCurrentAttackAction();
+                break;
+        }
+    }
+
+    public void PlayMonsterSkillReady(MonsterSkillData skillData)
+    {
+        if (skillData == null)
+        {
+            PlayIdle();
             return;
         }
 
-        PlayCurrentAttackAction();
+        switch (skillData.TimelineNotation)
+        {
+            case TimelineActionType.Move:
+                PlayMove();
+                break;
+
+            case TimelineActionType.Buff:
+                PlayBuff();
+                break;
+
+            case TimelineActionType.Debuff:
+                PlayDebuff();
+                break;
+
+            case TimelineActionType.Attack:
+                PlayRandomAttackReady();
+                break;
+
+            default:
+                PlayRandomAttackReady();
+                break;
+        }
+    }
+
+    public void PlayMonsterSkillAction(MonsterSkillData skillData)
+    {
+        if (skillData == null)
+        {
+            PlayIdle();
+            return;
+        }
+
+        switch (skillData.TimelineNotation)
+        {
+            case TimelineActionType.Move:
+                PlayMove();
+                break;
+
+            case TimelineActionType.Buff:
+            case TimelineActionType.Debuff:
+                break;
+
+            case TimelineActionType.Attack:
+                PlayCurrentAttackAction();
+                break;
+
+            default:
+                PlayCurrentAttackAction();
+                break;
+        }
     }
 
     public void PlayRandomAttackReady()

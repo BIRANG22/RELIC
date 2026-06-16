@@ -97,7 +97,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spriteRoot: {fileID: 7258120374073178037}
-  defaultFacingRight: 1
   startFacingRight: 1
   minHorizontalDelta: 0.01
 --- !u!114 &2838950015189938943
@@ -118,6 +117,7 @@ MonoBehaviour:
   guardStateName: Guard
   hitStateName: Hit
   deadStateName: Dead
+  controlStateName: Control
   attackReady1StateName: AttackReady1
   attackAction1StateName: AttackAction1
   attackReady2StateName: AttackReady2
@@ -133,6 +133,12 @@ MonoBehaviour:
   hitVfx:
     prefab: {fileID: 1117934107437797500, guid: 6dd4d37e972a5e74894acd84b22787f5, type: 3}
     flipType: 0
+  buffVfx:
+    prefab: {fileID: 3735160729632926878, guid: 06ff285cfc76073418c032632c8767bb, type: 3}
+    flipType: 0
+  debuffVfx:
+    prefab: {fileID: 8859418495948438561, guid: 672aceed576af3f4ab865da5acac1ee6, type: 3}
+    flipType: 0
   attackVfx1:
     prefab: {fileID: 6293248234558996122, guid: b9512964e087b0f418bf2df75517a3f5, type: 3}
     flipType: 0
@@ -143,12 +149,12 @@ MonoBehaviour:
     prefab: {fileID: 5493529977810887604, guid: 3fcfdcdad5c3f6d468034699a96dbba6, type: 3}
     flipType: 0
   vfxSpawnPoint: {fileID: 2974702484805108507}
-  parentVfxToSpawnPoint: 1
   vfxLifeTime: 2
   animatorLayer: 0
   crossFadeDuration: 0
   forceAnimatorUpdate: 1
   autoFindAnimatorInChildren: 1
+  vfxLayerName: VFX
 --- !u!114 &703034747818951370
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -141,7 +141,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spriteRoot: {fileID: 7408106657174270568}
-  startFacingRight: 1
+  startFacingRight: 0
   minHorizontalDelta: 0.01
 --- !u!114 &7270617575162286544
 MonoBehaviour:
@@ -161,12 +161,13 @@ MonoBehaviour:
   guardStateName: 
   hitStateName: Hit
   deadStateName: 
-  attackReady1StateName: AttackReady
-  attackAction1StateName: AttackAction
-  attackReady2StateName: AttackReady
-  attackAction2StateName: AttackAction
-  attackReady3StateName: AttackReady
-  attackAction3StateName: AttackAction
+  controlStateName: Control
+  attackReady1StateName: AttackAction1
+  attackAction1StateName: AttackAction2
+  attackReady2StateName: AttackAction1
+  attackAction2StateName: AttackAction2
+  attackReady3StateName: AttackAction1
+  attackAction3StateName: AttackAction2
   moveVfx:
     prefab: {fileID: 4145361429921181282, guid: f45be1937c3904848ac7f971b1276398, type: 3}
     flipType: 0
@@ -175,6 +176,12 @@ MonoBehaviour:
     flipType: 0
   hitVfx:
     prefab: {fileID: 1117934107437797500, guid: 6dd4d37e972a5e74894acd84b22787f5, type: 3}
+    flipType: 0
+  buffVfx:
+    prefab: {fileID: 0}
+    flipType: 0
+  debuffVfx:
+    prefab: {fileID: 0}
     flipType: 0
   attackVfx1:
     prefab: {fileID: 3362751810309854143, guid: 3d23142866cb42f41b142372dfa89542, type: 3}

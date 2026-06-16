@@ -108,7 +108,7 @@ public class BattleStatusEffectService
         if (burnStack <= 0)
             return;
 
-        BattleEffectUtility.DamagePlayer(character, burnStack);
+        BattleEffectUtility.StatusDamagePlayer(character, burnStack);
 
         BattleUnitAnimator animator = character.GetComponent<BattleUnitAnimator>();
 
@@ -131,23 +131,10 @@ public class BattleStatusEffectService
         if (burnStack <= 0)
             return;
 
-        monster.RuntimeData.TakeDamage(burnStack);
-        monster.ShowAndRefreshHUD();
-
-        BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
+        BattleEffectUtility.StatusDamageMonster(monster, burnStack);
 
         if (monster.RuntimeData.IsDead)
-        {
             deathService.HandleMonsterDead(monster);
-
-            if (animator != null)
-                animator.PlayDead();
-        }
-        else
-        {
-            if (animator != null)
-                animator.PlayHit();
-        }
     }
 
     public void ApplyTurnEndEffects()
@@ -207,7 +194,7 @@ public class BattleStatusEffectService
                 continue;
 
             if (status.EffectId == "E_Addicted")
-                BattleEffectUtility.DamagePlayer(character, status.Stack);
+                BattleEffectUtility.StatusDamagePlayer(character, status.Stack);
 
             if (status.EffectId == "E_Recover")
                 character.RuntimeData.CurrentResource += 1;
@@ -241,7 +228,7 @@ public class BattleStatusEffectService
 
             if (status.EffectId == "E_Addicted")
             {
-                BattleEffectUtility.DamageMonster(monster, status.Stack);
+                BattleEffectUtility.StatusDamageMonster(monster, status.Stack);
 
                 if (monster.RuntimeData.IsDead)
                     deathService.HandleMonsterDead(monster);
@@ -308,7 +295,7 @@ public class BattleStatusEffectService
         if (bleedingStack <= 0)
             return;
 
-        BattleEffectUtility.DamagePlayer(character, bleedingStack);
+        BattleEffectUtility.StatusDamagePlayer(character, bleedingStack);
     }
 
     public void ApplyBleedingDamageToMonsterOnAttack(MonsterUnit monster)
@@ -324,7 +311,7 @@ public class BattleStatusEffectService
         if (bleedingStack <= 0)
             return;
 
-        BattleEffectUtility.DamageMonster(monster, bleedingStack);
+        BattleEffectUtility.StatusDamageMonster(monster, bleedingStack);
 
         if (monster.RuntimeData.IsDead)
             deathService.HandleMonsterDead(monster);

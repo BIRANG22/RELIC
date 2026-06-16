@@ -70,10 +70,7 @@ public class BattleMonsterSpawner : MonoBehaviour
             monsterRoot
         );
 
-        BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
-
-        if (facing != null)
-            facing.SetFacingStateOnly(false);
+        SetMonsterInitialFacingLeft(monster);
 
         string runtimeId = MonsterRuntimeIdGenerator.Create();
 
@@ -180,10 +177,7 @@ public class BattleMonsterSpawner : MonoBehaviour
             monsterRoot
         );
 
-        BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
-
-        if (facing != null)
-            facing.SetFacingStateOnly(false);
+        SetMonsterInitialFacingLeft(monster);
 
         string runtimeId = MonsterRuntimeIdGenerator.Create();
         MonsterRuntimeData runtimeData = new MonsterRuntimeData(runtimeId, monsterData);
@@ -205,6 +199,25 @@ public class BattleMonsterSpawner : MonoBehaviour
             RuntimeData = runtimeData,
             MonsterTransform = monster.transform
         };
+    }
+
+    private void SetMonsterInitialFacingLeft(GameObject monster)
+    {
+        if (monster == null)
+            return;
+
+        BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
+
+        if (facing == null)
+        {
+            Debug.LogWarning($"[BattleMonsterSpawner] BattleUnitFacing ¾øÀ½: {monster.name}");
+            return;
+        }
+
+        facing.InitializeIfNeeded();
+        facing.FaceRight(false);
+
+        Debug.Log($"[BattleMonsterSpawner] Spawn Facing Left / {monster.name} / IsFacingRight:{facing.IsFacingRight}");
     }
 }
 
