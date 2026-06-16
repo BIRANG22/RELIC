@@ -199,7 +199,12 @@ public class BattleActionRunner
             yield break;
 
         Vector2Int currentCoord = gridManager.IndexToCoord(currentGridIndex);
-        Vector2Int targetCoord = currentCoord + command.MoveOffset;
+        Vector2Int moveOffset = command.EffectiveMoveOffset;
+
+        if (moveOffset == Vector2Int.zero)
+            yield break;
+
+        Vector2Int targetCoord = currentCoord + moveOffset;
 
         if (!gridManager.IsValidCoord(targetCoord))
             yield break;
@@ -209,7 +214,7 @@ public class BattleActionRunner
         BattleUnitFacing facing = character.GetComponent<BattleUnitFacing>();
 
         if (facing != null)
-            facing.FaceByMoveOffset(command.MoveOffset);
+            facing.FaceByMoveOffset(moveOffset);
 
         if (BattleOccupancyService.IsOccupiedByAnyUnit(targetGridIndex, command.CharacterId))
         {
@@ -671,7 +676,7 @@ public class BattleActionRunner
         if (command == null)
             return Vector2Int.zero;
 
-        return command.MoveOffset;
+        return command.EffectiveMoveOffset;
     }
 
     private bool IsMonsterInRange(MonsterUnit monster, PlayerReservedCommand command)

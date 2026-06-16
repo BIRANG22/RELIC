@@ -40,6 +40,41 @@ public class PlayerReservedCommand
         CalculateCosts(skillData);
     }
 
+    public bool HasSimulatedResult { get; private set; }
+    public bool IsSimulatedMoveBlocked { get; private set; }
+    public Vector2Int SimulatedMoveOffset { get; private set; } = Vector2Int.zero;
+    public int SimulatedMoveGridIndex { get; private set; } = -1;
+
+    public Vector2Int EffectiveMoveOffset =>
+        HasSimulatedResult ? SimulatedMoveOffset : MoveOffset;
+
+    public int EffectiveMoveGridIndex =>
+        HasSimulatedResult ? SimulatedMoveGridIndex : ReservedMoveGridIndex;
+
+    public void SetSimulatedMoveResult(
+        bool blocked,
+        int gridIndex,
+        Vector2Int moveOffset)
+    {
+        HasSimulatedResult = true;
+        IsSimulatedMoveBlocked = blocked;
+        SimulatedMoveGridIndex = gridIndex;
+        SimulatedMoveOffset = moveOffset;
+    }
+
+    public void SetSimulatedRangeResult(
+        List<int> rangeGridIndices,
+        List<int> targetGridIndices)
+    {
+        RangeGridIndices = rangeGridIndices != null
+            ? new List<int>(rangeGridIndices)
+            : new List<int>();
+
+        TargetGridIndices = targetGridIndices != null
+            ? new List<int>(targetGridIndices)
+            : new List<int>(RangeGridIndices);
+    }
+
     public void SetDirectionResult(
         BattleDirection direction,
         List<int> rangeGridIndices,

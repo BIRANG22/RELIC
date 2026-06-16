@@ -68,8 +68,11 @@ public class BattleTurnExecutor : MonoBehaviour
 
             BattleActionBatchBuilder builder = new(gridManager);
             BattleActionRunner runner = new(gridManager, monsterSpawner, roomLoader);
+            BattleActionSimulationService simulator = new(gridManager);
 
             uniqueResourceService.ApplyTimelineSlotResourceGain(timelineController);
+
+            simulator.Simulate(timelineController);
 
             List<BattleActionBatch> batches = builder.Build(timelineController);
 

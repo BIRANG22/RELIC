@@ -61,18 +61,35 @@ public class BattleTimelineBarUI : MonoBehaviour
         {
             List<BattleTimelinePreviewEntry> entries = new();
 
+            List<PlayerReservedCommand> playerCommands = new();
+
             if (reserveSlots != null && i < reserveSlots.Length && reserveSlots[i] != null)
             {
                 var commands = reserveSlots[i].Commands;
 
                 for (int j = 0; j < commands.Count; j++)
                 {
-                    BattleTimelinePreviewEntry entry =
-                        BattleTimelinePreviewEntry.CreatePlayer(i, j, commands[j]);
-
-                    if (entry != null)
-                        entries.Add(entry);
+                    if (commands[j] != null)
+                        playerCommands.Add(commands[j]);
                 }
+            }
+
+            int orderIndex = 0;
+
+            for (int j = 0; j < playerCommands.Count; j++)
+            {
+                PlayerReservedCommand command = playerCommands[j];
+
+                if (!BattleActionOrderUtility.HasSwift(command))
+                    continue;
+
+                BattleTimelinePreviewEntry entry =
+                    BattleTimelinePreviewEntry.CreatePlayer(i, orderIndex, command, j);
+
+                if (entry != null)
+                    entries.Add(entry);
+
+                orderIndex++;
             }
 
             if (monsterCommandsBySlot != null &&
@@ -84,11 +101,29 @@ public class BattleTimelineBarUI : MonoBehaviour
                 for (int j = 0; j < monsterCommands.Count; j++)
                 {
                     BattleTimelinePreviewEntry entry =
-                        BattleTimelinePreviewEntry.CreateMonster(i, j, monsterCommands[j]);
+                        BattleTimelinePreviewEntry.CreateMonster(i, orderIndex, monsterCommands[j]);
 
                     if (entry != null)
                         entries.Add(entry);
+
+                    orderIndex++;
                 }
+            }
+
+            for (int j = 0; j < playerCommands.Count; j++)
+            {
+                PlayerReservedCommand command = playerCommands[j];
+
+                if (BattleActionOrderUtility.HasSwift(command))
+                    continue;
+
+                BattleTimelinePreviewEntry entry =
+                    BattleTimelinePreviewEntry.CreatePlayer(i, orderIndex, command, j);
+
+                if (entry != null)
+                    entries.Add(entry);
+
+                orderIndex++;
             }
 
             if (timelineGroups[i] != null)
@@ -177,5 +212,17 @@ public class BattleTimelineBarUI : MonoBehaviour
     {
         if (owner != null)
             owner.RemoveCommand(slotIndex, orderIndex);
+    }
+
+    public void OnEntryClicked(BattleTimelinePreviewEntry entry)
+    {
+        if (entry == null)
+            return;
+
+        if (!entry.IsPlayer)
+            return;
+
+        if (owner != null)
+            owner.RemoveCommand(entry.SlotIndex, entry.PlayerCommandIndex);
     }
 }

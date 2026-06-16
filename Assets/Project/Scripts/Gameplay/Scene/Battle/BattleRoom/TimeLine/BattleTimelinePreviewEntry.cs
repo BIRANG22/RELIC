@@ -15,6 +15,7 @@ public class BattleTimelinePreviewEntry
     public SkillMasterData PlayerSkillData;
     public MonsterSkillData MonsterSkillData;
     public PlayerReservedCommand PlayerCommand { get; private set; }
+    public int PlayerCommandIndex = -1;
     public MonsterReservedCommand MonsterCommand { get; private set; }
 
     public string OwnerId
@@ -144,9 +145,10 @@ public class BattleTimelinePreviewEntry
     }
 
     public static BattleTimelinePreviewEntry CreatePlayer(
-        int slotIndex,
-        int orderIndex,
-        PlayerReservedCommand command)
+    int slotIndex,
+    int orderIndex,
+    PlayerReservedCommand command,
+    int playerCommandIndex)
     {
         if (command == null)
             return null;
@@ -155,6 +157,7 @@ public class BattleTimelinePreviewEntry
         {
             SlotIndex = slotIndex,
             OrderIndex = orderIndex,
+            PlayerCommandIndex = playerCommandIndex,
             IsPlayer = true,
             IsMonster = false,
             CharacterRuntime = command.UserRuntime,
@@ -282,13 +285,13 @@ public class BattleTimelinePreviewEntry
     {
         if (DataManager.Instance == null)
         {
-            Debug.LogWarning("[TimelineIcon] DataManager°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("[TimelineIcon] DataManagerÂ°Â¡ Â¾Ã¸Â½Ã€Â´ÃÂ´Ã™.");
             return null;
         }
 
         if (DataManager.Instance.ActionTypeIconDatabase == null)
         {
-            Debug.LogWarning("[TimelineIcon] ActionTypeIconDatabase°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("[TimelineIcon] ActionTypeIconDatabaseÂ°Â¡ Â¾Ã¸Â½Ã€Â´ÃÂ´Ã™.");
             return null;
         }
 
