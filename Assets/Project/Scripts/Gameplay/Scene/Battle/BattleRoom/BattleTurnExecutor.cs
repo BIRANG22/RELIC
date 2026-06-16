@@ -60,7 +60,7 @@ public class BattleTurnExecutor : MonoBehaviour
             if (moveGhostPreview != null)
                 moveGhostPreview.ClearAll();
 
-            BattleActionBatchBuilder builder = new();
+            BattleActionBatchBuilder builder = new(gridManager);
             BattleActionRunner runner = new(gridManager, monsterSpawner, roomLoader);
 
             uniqueResourceService.ApplyTimelineSlotResourceGain(timelineController);

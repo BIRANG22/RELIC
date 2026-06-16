@@ -15,6 +15,7 @@ public class BattleUnitSpawner : MonoBehaviour
     [SerializeField] private string spawnPointName = "Point";
     [SerializeField] private int playerGridCount = 15;
     [SerializeField] private float unitSpawnZOffset = 0.01f;
+    [SerializeField] private float unitSpawnYOffset = 0.1f;
 
     public List<CharacterRuntimeData> SpawnFromRuntimeData()
     {
@@ -133,6 +134,7 @@ public class BattleUnitSpawner : MonoBehaviour
             : spawnGrid.position;
 
         spawnPosition.z += unitSpawnZOffset;
+        spawnPosition.y += unitSpawnYOffset;
 
         GameObject unit = Instantiate(
             characterData.BattlePrefab,
