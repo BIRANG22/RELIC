@@ -57,6 +57,65 @@ public class BattleTimelinePreviewEntry
         }
     }
 
+    public string SkillName
+    {
+        get
+        {
+            if (IsPlayer && PlayerSkillData != null)
+            {
+                if (!string.IsNullOrWhiteSpace(PlayerSkillData.Name))
+                    return PlayerSkillData.Name;
+
+                return PlayerSkillData.SkillId;
+            }
+
+            if (IsMonster && MonsterSkillData != null)
+            {
+                if (!string.IsNullOrWhiteSpace(MonsterSkillData.Name))
+                    return MonsterSkillData.Name;
+
+                if (!string.IsNullOrWhiteSpace(MonsterSkillData.SkillId))
+                    return MonsterSkillData.SkillId;
+
+                return MonsterSkillData.TimelineNotation.ToString();
+            }
+
+            return "";
+        }
+    }
+
+    public string SkillEffectDescription
+    {
+        get
+        {
+            if (IsPlayer && PlayerSkillData != null)
+            {
+                if (!string.IsNullOrWhiteSpace(PlayerSkillData.EffectDescription))
+                    return PlayerSkillData.EffectDescription;
+
+                if (!string.IsNullOrWhiteSpace(PlayerSkillData.EffectDesc))
+                    return PlayerSkillData.EffectDesc;
+
+                if (!string.IsNullOrWhiteSpace(PlayerSkillData.ToolTip))
+                    return PlayerSkillData.ToolTip;
+
+                if (!string.IsNullOrWhiteSpace(PlayerSkillData.Details))
+                    return PlayerSkillData.Details;
+            }
+
+            if (IsMonster && MonsterSkillData != null)
+            {
+                if (!string.IsNullOrWhiteSpace(MonsterSkillData.EffectDescription))
+                    return MonsterSkillData.EffectDescription;
+
+                if (!string.IsNullOrWhiteSpace(MonsterSkillData.EffectDesc))
+                    return MonsterSkillData.EffectDesc;
+            }
+
+            return "";
+        }
+    }
+
     public string MonsterRuntimeId
     {
         get

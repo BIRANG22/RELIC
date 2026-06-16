@@ -47,7 +47,27 @@ public class BattleGoldHudUI : MonoBehaviour
         if (goldText == null)
             return;
 
-        goldText.text = GetRemnantText();
+        goldText.text = FormatRemnantText();
+    }
+
+    private string FormatRemnantText()
+    {
+        string value = GetRemnantText();
+
+        if (string.IsNullOrWhiteSpace(value))
+            value = emptyText;
+
+        if (string.IsNullOrWhiteSpace(format))
+            return value;
+
+        try
+        {
+            return string.Format(format, value);
+        }
+        catch (System.FormatException)
+        {
+            return value;
+        }
     }
 
     public static void RefreshAll()

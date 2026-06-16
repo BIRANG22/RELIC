@@ -104,13 +104,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
                 {
                     SetSkillImage(enemySkillIconImages[visibleIndex], entry.SkillIcon, true, enemyReservedColor);
 
-                    BattleTimelineMonsterHoverTarget hoverTarget =
-                        enemySkillIconImages[visibleIndex].GetComponent<BattleTimelineMonsterHoverTarget>();
-
-                    if (hoverTarget == null)
-                        hoverTarget = enemySkillIconImages[visibleIndex].gameObject.AddComponent<BattleTimelineMonsterHoverTarget>();
-
-                    hoverTarget.SetMonsterRuntimeId(entry.MonsterRuntimeId);
+                    SetupEnemySkillHoverTarget(enemySkillIconImages[visibleIndex], entry);
                 }
 
                 if (enemyMarkObjects != null &&
@@ -131,11 +125,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
                 {
                     SetSkillImage(playerSkillIconImages[visibleIndex], entry.SkillIcon, true, playerReservedColor);
 
-                    TimelineSkillIconHoverUI hoverUI =
-                        playerSkillIconImages[visibleIndex].GetComponentInParent<TimelineSkillIconHoverUI>();
-
-                    if (hoverUI != null)
-                        hoverUI.Setup(entry.PlayerCommand);
+                    SetupPlayerSkillHoverTarget(playerSkillIconImages[visibleIndex], entry);
                 }
 
                 if (playerMarkObjects != null &&
@@ -198,12 +188,114 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             parent.gameObject.SetActive(false);
         }
 
-        BattleTimelineMonsterHoverTarget hoverTarget =
-            image.GetComponent<BattleTimelineMonsterHoverTarget>();
-
-        if (hoverTarget != null)
-            hoverTarget.SetMonsterRuntimeId("");
+        ClearSkillHoverTarget(image);
     }
+
+    private void SetupEnemySkillHoverTarget(Image skillImage, BattleTimelinePreviewEntry entry)
+    {
+        GameObject hoverObject = GetSkillHoverObject(skillImage);
+
+        if (hoverObject == null)
+            return;
+
+        BattleTimelineMonsterHoverTarget monsterHoverTarget =
+            hoverObject.GetComponent<BattleTimelineMonsterHoverTarget>();
+
+        if (monsterHoverTarget == null)
+            monsterHoverTarget = hoverObject.AddComponent<BattleTimelineMonsterHoverTarget>();
+
+        monsterHoverTarget.SetMonsterRuntimeId(entry != null ? entry.MonsterRuntimeId : "");
+
+        TimelineSkillIconHoverUI skillHoverUI =
+            hoverObject.GetComponent<TimelineSkillIconHoverUI>();
+
+        if (skillHoverUI == null)
+            skillHoverUI = hoverObject.AddComponent<TimelineSkillIconHoverUI>();
+
+        skillHoverUI.Setup(entry);
+        EnsureHoverRaycastTarget(hoverObject);
+
+        if (skillImage != null)
+            skillImage.raycastTarget = true;
+    }
+
+    private void SetupPlayerSkillHoverTarget(Image skillImage, BattleTimelinePreviewEntry entry)
+    {
+        GameObject hoverObject = GetSkillHoverObject(skillImage);
+
+        if (hoverObject == null)
+            return;
+
+        TimelineSkillIconHoverUI skillHoverUI =
+            hoverObject.GetComponent<TimelineSkillIconHoverUI>();
+
+        if (skillHoverUI == null)
+            skillHoverUI = hoverObject.AddComponent<TimelineSkillIconHoverUI>();
+
+        skillHoverUI.Setup(entry);
+        EnsureHoverRaycastTarget(hoverObject);
+
+        if (skillImage != null)
+            skillImage.raycastTarget = true;
+    }
+
+    private void ClearSkillHoverTarget(Image skillImage)
+    {
+        GameObject hoverObject = GetSkillHoverObject(skillImage);
+
+        ClearSkillHoverComponents(skillImage != null ? skillImage.gameObject : null);
+
+        if (hoverObject != null && (skillImage == null || hoverObject != skillImage.gameObject))
+            ClearSkillHoverComponents(hoverObject);
+    }
+
+    private void ClearSkillHoverComponents(GameObject target)
+    {
+        if (target == null)
+            return;
+
+        BattleTimelineMonsterHoverTarget monsterHoverTarget =
+            target.GetComponent<BattleTimelineMonsterHoverTarget>();
+
+        if (monsterHoverTarget != null)
+            monsterHoverTarget.SetMonsterRuntimeId("");
+
+        TimelineSkillIconHoverUI skillHoverUI =
+            target.GetComponent<TimelineSkillIconHoverUI>();
+
+        if (skillHoverUI != null)
+            skillHoverUI.Clear();
+    }
+
+    private GameObject GetSkillHoverObject(Image skillImage)
+    {
+        if (skillImage == null)
+            return null;
+
+        Transform parent = skillImage.transform.parent;
+
+        if (parent != null)
+            return parent.gameObject;
+
+        return skillImage.gameObject;
+    }
+
+    private void EnsureHoverRaycastTarget(GameObject hoverObject)
+    {
+        if (hoverObject == null)
+            return;
+
+        Image image = hoverObject.GetComponent<Image>();
+
+        if (image == null)
+        {
+            image = hoverObject.AddComponent<Image>();
+            image.color = new Color(1f, 1f, 1f, 0f);
+        }
+
+        image.raycastTarget = true;
+    }
+
     public void OnPointerClick(PointerEventData eventData)
     {
         if (owner != null)
