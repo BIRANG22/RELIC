@@ -52,6 +52,24 @@ public class BattleRoomLoader : MonoBehaviour
     private bool isLoading;
     private string loadedMapId;
 
+    private readonly BattlePassiveSkillService passiveSkillService = new();
+
+    public void RefreshBattleHUDs()
+    {
+        RefreshPlayerHUDs();
+
+        MonsterHUDSlot[] monsterHuds = FindObjectsByType<MonsterHUDSlot>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < monsterHuds.Length; i++)
+        {
+            if (monsterHuds[i] != null)
+                monsterHuds[i].Refresh();
+        }
+    }
+
     private void OnEnable()
     {
         if (loadOnEnableWithoutSceneController)
@@ -170,6 +188,7 @@ public class BattleRoomLoader : MonoBehaviour
 
         SpawnPlayersAndHUD();
         SpawnMonstersAndHUD();
+        passiveSkillService.RefreshAllPlayerPassives();
 
         loadedMapId = currentMapId;
         isLoaded = true;
@@ -267,14 +286,38 @@ public class BattleRoomLoader : MonoBehaviour
             if (!DataManager.Instance.CharacterDatabase.TryGet(characterId, out CharacterMasterData masterData))
                 continue;
 
-            runtimeData.CurrentStamina = Mathf.Max(0, masterData.MaxStamina);
-            runtimeData.ReservedStaminaCost = 0;
+            int rechargeBonus = GetStatusStack(runtimeData.StatusEffects, "E_Recharge") * 2;
+
+            runtimeData.CurrentStamina =
+                Mathf.Min(
+                    masterData.MaxStamina,
+                    runtimeData.CurrentStamina + 4 + rechargeBonus
+                );
         }
 
         RefreshPlayerHUDs();
 
         if (skillListPanel != null)
             skillListPanel.Refresh();
+    }
+
+    private int GetStatusStack(
+    List<StatusEffectRuntimeData> statuses,
+    string effectId)
+    {
+        if (statuses == null)
+            return 0;
+
+        for (int i = 0; i < statuses.Count; i++)
+        {
+            if (statuses[i] == null)
+                continue;
+
+            if (statuses[i].EffectId == effectId)
+                return statuses[i].Stack;
+        }
+
+        return 0;
     }
 
     private void RefreshPlayerHUDs()

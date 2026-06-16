@@ -21,7 +21,7 @@ public class BattleTurnExecutor : MonoBehaviour
     private bool isExecuting;
 
     private readonly BattleUniqueResourceService uniqueResourceService = new();
-
+    private readonly BattlePassiveSkillService passiveSkillService = new();
     private void OnEnable()
     {
         BattleEffectUtility.OnPlayerDamaged -= uniqueResourceService.OnPlayerDamaged;
@@ -100,12 +100,34 @@ public class BattleTurnExecutor : MonoBehaviour
             if (roomLoader != null)
             {
                 roomLoader.RecoverPlayerCostsToMax();
+
+                passiveSkillService.ClearAllPlayerPassiveEffects();
+
                 roomLoader.PlanNextMonsterTurns();
+
+                passiveSkillService.RefreshAllPlayerPassives();
+
+                roomLoader.RefreshBattleHUDs();
             }
         }
         finally
         {
             isExecuting = false;
+        }
+    }
+
+
+    public void RefreshBattleHUDs()
+    {
+        MonsterHUDSlot[] monsterHuds = FindObjectsByType<MonsterHUDSlot>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < monsterHuds.Length; i++)
+        {
+            if (monsterHuds[i] != null)
+                monsterHuds[i].Refresh();
         }
     }
 

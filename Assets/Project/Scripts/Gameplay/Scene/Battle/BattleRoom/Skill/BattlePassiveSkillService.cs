@@ -159,4 +159,22 @@ public class BattlePassiveSkillService
                 runtime.StatusEffects.RemoveAt(i);
         }
     }
+
+    public void ClearAllPlayerPassiveEffects()
+    {
+        BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            BattleCharacter character = characters[i];
+
+            if (character == null || character.RuntimeData == null)
+                continue;
+
+            ClearPassiveStatusEffects(character.RuntimeData);
+        }
+    }
 }
