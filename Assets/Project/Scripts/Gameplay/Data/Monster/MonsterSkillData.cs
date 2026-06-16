@@ -23,6 +23,10 @@ namespace Relic.Gameplay.Data
 
         public TimelineActionType TimelineNotation;
 
+        // CSV/엑셀에 EffectDescription 또는 EffectDesc 컬럼을 추가하면 자동으로 매핑됩니다.
+        public string EffectDescription;
+        public string EffectDesc;
+
         public List<SkillEffectEntry> EffectEntries = new();
     }
 }

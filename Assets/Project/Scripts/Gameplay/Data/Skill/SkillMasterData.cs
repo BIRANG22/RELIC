@@ -65,9 +65,8 @@ namespace Relic.Gameplay.Data
     public enum PassiveFormulaType
     {
         None,
-        Per1Resource_Stack1,
-        Per2Resource_Stack2,
-        FromMin_Per1Resource_Stack1
+        ResourceStack,      // 자원 N마다 스택 M
+        MinResourceStack    // 자원 N 이상이면 스택 M
     }
 
     public enum TargetType
@@ -111,6 +110,10 @@ namespace Relic.Gameplay.Data
         public int GridMove;
         public RangeType RangeType;
         public string RangeId;
+
+        // CSV/엑셀에 EffectDescription 또는 EffectDesc 컬럼을 추가하면 자동으로 매핑됩니다.
+        public string EffectDescription;
+        public string EffectDesc;
 
         public string ToolTip;
         public string Details;
