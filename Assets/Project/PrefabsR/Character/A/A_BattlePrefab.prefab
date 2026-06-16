@@ -97,6 +97,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spriteRoot: {fileID: 6266912706082996574}
+  linkedFacingRoots: []
   startFacingRight: 1
   minHorizontalDelta: 0.01
 --- !u!114 &3761036322764372819
