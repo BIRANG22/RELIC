@@ -10,6 +10,11 @@ public class BattleMapIntroText : MonoBehaviour
     [SerializeField] private TMP_Text introText;
     [SerializeField, TextArea(2, 5)] private string message = "전투 지역 진입";
 
+    [Header("Image")]
+    [SerializeField] private GameObject introImage;
+    [SerializeField] private bool autoBindIntroImage = true;
+    [SerializeField] private string introImageObjectName = "Image";
+
     [Header("Timing")]
     [SerializeField] private bool playOnStart;
     [SerializeField] private bool ignorePlayOnStart = true;
@@ -34,6 +39,8 @@ public class BattleMapIntroText : MonoBehaviour
 
         if (introText == null)
             introText = GetComponentInChildren<TMP_Text>(true);
+
+        BindIntroImageIfNeeded();
 
         rectTransform = introText != null ? introText.rectTransform : null;
 
@@ -138,11 +145,14 @@ public class BattleMapIntroText : MonoBehaviour
 
     public void HideImmediate()
     {
-        if (introText == null)
-            return;
+        if (introText != null)
+        {
+            introText.alpha = 0f;
+            introText.gameObject.SetActive(false);
+        }
 
-        introText.alpha = 0f;
-        introText.gameObject.SetActive(false);
+        if (introImage != null)
+            introImage.SetActive(false);
 
         if (rectTransform != null)
             rectTransform.anchoredPosition = baseAnchoredPosition + startOffset;
@@ -163,6 +173,9 @@ public class BattleMapIntroText : MonoBehaviour
         introText.alpha = 0f;
         introText.gameObject.SetActive(true);
 
+        if (introImage != null)
+            introImage.SetActive(true);
+
         if (rectTransform != null)
             rectTransform.anchoredPosition = baseAnchoredPosition + startOffset;
 
@@ -179,6 +192,10 @@ public class BattleMapIntroText : MonoBehaviour
         if (version == playVersion)
         {
             introText.gameObject.SetActive(false);
+
+            if (introImage != null)
+                introImage.SetActive(false);
+
             playRoutine = null;
         }
     }
@@ -215,6 +232,17 @@ public class BattleMapIntroText : MonoBehaviour
 
         if (useMoveEffect && rectTransform != null)
             rectTransform.anchoredPosition = baseAnchoredPosition + toOffset;
+    }
+
+    private void BindIntroImageIfNeeded()
+    {
+        if (!autoBindIntroImage || introImage != null || string.IsNullOrWhiteSpace(introImageObjectName))
+            return;
+
+        Transform found = transform.Find(introImageObjectName);
+
+        if (found != null)
+            introImage = found.gameObject;
     }
 
     private static BattleMapIntroText FindTarget()
