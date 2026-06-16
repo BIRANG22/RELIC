@@ -1,4 +1,5 @@
 using Relic.Gameplay.Data;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class BattleTimelinePreviewEntry
@@ -15,6 +16,8 @@ public class BattleTimelinePreviewEntry
     public MonsterSkillData MonsterSkillData;
     public PlayerReservedCommand PlayerCommand { get; private set; }
     public int PlayerCommandIndex = -1;
+    public MonsterReservedCommand MonsterCommand { get; private set; }
+
     public string OwnerId
     {
         get
@@ -116,6 +119,20 @@ public class BattleTimelinePreviewEntry
         }
     }
 
+    public string SkillValueText
+    {
+        get
+        {
+            if (IsPlayer)
+                return GetDisplayValueText(PlayerSkillData != null ? PlayerSkillData.EffectEntries : null, GetPlayerPayAmount());
+
+            if (IsMonster)
+                return GetDisplayValueText(MonsterSkillData != null ? MonsterSkillData.EffectEntries : null, 0);
+
+            return "";
+        }
+    }
+
     public string MonsterRuntimeId
     {
         get
@@ -166,8 +183,78 @@ public class BattleTimelinePreviewEntry
             IsPlayer = false,
             IsMonster = true,
             MonsterRuntime = command.UserRuntime,
-            MonsterSkillData = command.SkillData
+            MonsterSkillData = command.SkillData,
+            MonsterCommand = command
         };
+    }
+
+    private static string GetDisplayValueText(List<SkillEffectEntry> effectEntries, int payAmount)
+    {
+        if (effectEntries == null || effectEntries.Count <= 0)
+            return "";
+
+        for (int i = 0; i < effectEntries.Count; i++)
+        {
+            SkillEffectEntry entry = effectEntries[i];
+
+            if (entry == null)
+                continue;
+
+            if (!ShouldShowValueText(entry.EffectId))
+                continue;
+
+            int value = SkillValueCalculator.GetValue(entry, payAmount);
+
+            if (value <= 0)
+                value = entry.ValueAmount;
+
+            return value.ToString();
+        }
+
+        return "";
+    }
+
+    private static bool ShouldShowValueText(string effectId)
+    {
+        switch (effectId)
+        {
+            case "E_Strike":
+            case "E_Pierce":
+            case "E_Addicted":
+            case "E_Bleeding":
+            case "E_Burn":
+            case "E_Thorns":
+            case "E_Power":
+            case "E_Armor":
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
+    private int GetPlayerPayAmount()
+    {
+        if (PlayerCommand == null || PlayerSkillData == null)
+            return 0;
+
+        switch (PlayerSkillData.ReferenceResource)
+        {
+            case ReferenceResource.Health:
+                return PlayerCommand.HealthCost;
+
+            case ReferenceResource.Stamina:
+                return PlayerCommand.StaminaCost;
+
+            case ReferenceResource.UniqueResource:
+                return PlayerCommand.ResourceCost;
+
+            case ReferenceResource.MovePoint:
+                return PlayerCommand.MoveCost;
+
+            default:
+                return 0;
+        }
     }
 
     private static Sprite GetCharacterTimelineIcon(string characterId)
@@ -198,13 +285,13 @@ public class BattleTimelinePreviewEntry
     {
         if (DataManager.Instance == null)
         {
-            Debug.LogWarning("[TimelineIcon] DataManager°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("[TimelineIcon] DataManagerÂ°Â¡ Â¾Ã¸Â½Ã€Â´ÃÂ´Ã™.");
             return null;
         }
 
         if (DataManager.Instance.ActionTypeIconDatabase == null)
         {
-            Debug.LogWarning("[TimelineIcon] ActionTypeIconDatabase°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("[TimelineIcon] ActionTypeIconDatabaseÂ°Â¡ Â¾Ã¸Â½Ã€Â´ÃÂ´Ã™.");
             return null;
         }
 
