@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class BattleTurnExecutor : MonoBehaviour
 {
@@ -13,22 +14,35 @@ public class BattleTurnExecutor : MonoBehaviour
     [SerializeField] private BattleRoomLoader roomLoader;
     [SerializeField] private BattleMonsterSpawner monsterSpawner;
 
+    [Header("End Turn")]
+    [SerializeField] private Button endTurnButton;
+
     [Header("Safe Execution")]
     [SerializeField] private bool useSafeSequentialExecution = true;
     [SerializeField] private float actionRoutineTimeout = 8f;
 
     [Header("Intro Text")]
     [SerializeField] private string battleProgressMessage = "전투 진행";
+    [SerializeField] private bool waitIntroText = false;
+    [SerializeField] private float introTextTimeout = 1.5f;
 
     [Header("SFX")]
     [SerializeField] private bool playBattleProgressSfx = true;
     [SerializeField] private SfxType battleProgressSfxType = SfxType.BattleProgressText;
     [SerializeField, Range(0f, 1f)] private float battleProgressSfxVolume = 1f;
 
+    private bool isMonsterPlanReady;
+    private bool isPlayerInputReady;
     private bool isExecuting;
 
     private readonly BattleUniqueResourceService uniqueResourceService = new();
     private readonly BattlePassiveSkillService passiveSkillService = new();
+
+    private void Start()
+    {
+        RefreshEndTurnButton();
+    }
+
     private void OnEnable()
     {
         BattleEffectUtility.OnPlayerDamaged -= uniqueResourceService.OnPlayerDamaged;
@@ -40,12 +54,39 @@ public class BattleTurnExecutor : MonoBehaviour
         BattleEffectUtility.OnPlayerDamaged -= uniqueResourceService.OnPlayerDamaged;
     }
 
+    public void SetBattleInputReady(bool ready)
+    {
+        isMonsterPlanReady = ready;
+        isPlayerInputReady = ready;
+        RefreshEndTurnButton();
+    }
+
+    public void SetMonsterPlanReady(bool ready)
+    {
+        isMonsterPlanReady = ready;
+        RefreshEndTurnButton();
+    }
+
+    public void SetPlayerInputReady(bool ready)
+    {
+        isPlayerInputReady = ready;
+        RefreshEndTurnButton();
+    }
+
     public void ExecuteTurn()
     {
+        Debug.Log(
+       $"[EndTurnCheck] isExecuting:{isExecuting} / " +
+       $"MonsterReady:{isMonsterPlanReady} / " +
+       $"PlayerReady:{isPlayerInputReady}"
+   );
+
         if (isExecuting)
+            return;
+
+        if (!isMonsterPlanReady || !isPlayerInputReady)
         {
-            ShowBattleWarning("이미 턴을 실행 중입니다.");
-            Debug.LogWarning("[BattleTurnExecutor] Already executing.");
+            ShowBattleWarning("아직 행동 준비가 완료되지 않았습니다.");
             return;
         }
 
@@ -55,6 +96,15 @@ public class BattleTurnExecutor : MonoBehaviour
             return;
         }
 
+        isExecuting = true;
+
+        isMonsterPlanReady = false;
+        isPlayerInputReady = false;
+        RefreshEndTurnButton();
+
+        if (endTurnButton != null)
+            endTurnButton.interactable = false;
+
         timelineController.ClearSelectedSlotSelection();
         timelineController.SetSlotSelectionLocked(true);
 
@@ -63,7 +113,7 @@ public class BattleTurnExecutor : MonoBehaviour
 
     private IEnumerator ExecuteTurnRoutine()
     {
-        isExecuting = true;
+        bool battleEnded = false;
 
         try
         {
@@ -71,7 +121,14 @@ public class BattleTurnExecutor : MonoBehaviour
                 moveGhostPreview.ClearAll();
 
             BattleActionBatchBuilder builder = new(gridManager);
-            BattleActionRunner runner = new(gridManager, monsterSpawner, roomLoader, useSafeSequentialExecution, actionRoutineTimeout);
+            BattleActionRunner runner = new(
+                gridManager,
+                monsterSpawner,
+                roomLoader,
+                useSafeSequentialExecution,
+                actionRoutineTimeout
+            );
+
             BattleActionSimulationService simulator = new(gridManager);
 
             uniqueResourceService.ApplyTimelineSlotResourceGain(timelineController);
@@ -80,13 +137,7 @@ public class BattleTurnExecutor : MonoBehaviour
 
             List<BattleActionBatch> batches = builder.Build(timelineController);
 
-            if (batches == null || batches.Count <= 0)
-            {
-                ShowBattleWarning("실행할 행동이 없습니다.");
-                yield break;
-            }
-
-            yield return ShowBattleProgressIntroTextRoutine();
+            yield return ShowBattleProgressIntroTextRoutineSafe();
 
             int slidThroughSlotIndex = -1;
 
@@ -102,7 +153,14 @@ public class BattleTurnExecutor : MonoBehaviour
                 if (currentSlotIndex > slidThroughSlotIndex + 1)
                 {
                     int beforeActionSlideThroughSlotIndex = currentSlotIndex - 1;
-                    yield return timelineController.SlideTimelineSlotsLeftThroughSlotRoutine(beforeActionSlideThroughSlotIndex);
+
+                    if (timelineController != null)
+                    {
+                        yield return timelineController.SlideTimelineSlotsLeftThroughSlotRoutine(
+                            beforeActionSlideThroughSlotIndex
+                        );
+                    }
+
                     slidThroughSlotIndex = Mathf.Max(slidThroughSlotIndex, beforeActionSlideThroughSlotIndex);
                 }
 
@@ -111,6 +169,7 @@ public class BattleTurnExecutor : MonoBehaviour
                 if (BattleResultChecker.Instance != null &&
                     BattleResultChecker.Instance.CheckBattleEnd())
                 {
+                    battleEnded = true;
                     ClearTimeline();
                     yield break;
                 }
@@ -118,11 +177,14 @@ public class BattleTurnExecutor : MonoBehaviour
                 if (HasNextExecutableBatchInSameTimelineSlot(batches, i + 1, currentSlotIndex))
                     continue;
 
-                int slideThroughSlotIndex = GetSlideThroughSlotIndexAfterExecutedTimelineSlot(batches, i, currentSlotIndex);
+                int slideThroughSlotIndex =
+                    GetSlideThroughSlotIndexAfterExecutedTimelineSlot(batches, i, currentSlotIndex);
 
                 if (slideThroughSlotIndex > slidThroughSlotIndex)
                 {
-                    yield return timelineController.SlideTimelineSlotsLeftThroughSlotRoutine(slideThroughSlotIndex);
+                    if (timelineController != null)
+                        yield return timelineController.SlideTimelineSlotsLeftThroughSlotRoutine(slideThroughSlotIndex);
+
                     slidThroughSlotIndex = slideThroughSlotIndex;
                 }
             }
@@ -135,10 +197,12 @@ public class BattleTurnExecutor : MonoBehaviour
             if (BattleResultChecker.Instance != null &&
                 BattleResultChecker.Instance.CheckBattleEnd())
             {
+                battleEnded = true;
                 yield break;
             }
 
-            yield return timelineController.ResetTimelineSlotsToOriginalPositionRoutine();
+            if (timelineController != null)
+                yield return timelineController.ResetTimelineSlotsToOriginalPositionRoutine();
 
             if (roomLoader != null)
             {
@@ -159,29 +223,34 @@ public class BattleTurnExecutor : MonoBehaviour
                 timelineController.SetSlotSelectionLocked(false);
 
             isExecuting = false;
+
+            RefreshEndTurnButton();
+
             PlayerTurnReturned?.Invoke();
         }
     }
 
-
-    public void RefreshBattleHUDs()
+    private void RefreshEndTurnButton()
     {
-        MonsterHUDSlot[] monsterHuds = FindObjectsByType<MonsterHUDSlot>(
-            FindObjectsInactive.Include,
-            FindObjectsSortMode.None
-        );
+        if (endTurnButton == null)
+            return;
 
-        for (int i = 0; i < monsterHuds.Length; i++)
-        {
-            if (monsterHuds[i] != null)
-                monsterHuds[i].Refresh();
-        }
+        endTurnButton.interactable =
+            !isExecuting &&
+            isMonsterPlanReady &&
+            isPlayerInputReady;
     }
 
-    private IEnumerator ShowBattleProgressIntroTextRoutine()
+    private IEnumerator ShowBattleProgressIntroTextRoutineSafe()
     {
         PlaySfx(playBattleProgressSfx, battleProgressSfxType, battleProgressSfxVolume);
-        yield return BattleMapIntroText.ShowMessageAndWait(battleProgressMessage);
+
+        IEnumerator routine = BattleMapIntroText.ShowMessageAndWait(battleProgressMessage);
+
+        if (routine != null)
+            StartCoroutine(routine);
+
+        yield break;
     }
 
     private int GetNextExecutableBatchIndex(List<BattleActionBatch> batches, int startIndex)
