@@ -226,6 +226,14 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         if (hoverObject == null)
             return;
 
+        BattleTimelineCharacterHoverTarget characterHoverTarget =
+            hoverObject.GetComponent<BattleTimelineCharacterHoverTarget>();
+
+        if (characterHoverTarget == null)
+            characterHoverTarget = hoverObject.AddComponent<BattleTimelineCharacterHoverTarget>();
+
+        characterHoverTarget.SetCharacterId(entry != null ? entry.OwnerId : "");
+
         TimelineSkillIconHoverUI skillHoverUI =
             hoverObject.GetComponent<TimelineSkillIconHoverUI>();
 
@@ -259,6 +267,12 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
         if (monsterHoverTarget != null)
             monsterHoverTarget.SetMonsterRuntimeId("");
+
+        BattleTimelineCharacterHoverTarget characterHoverTarget =
+            target.GetComponent<BattleTimelineCharacterHoverTarget>();
+
+        if (characterHoverTarget != null)
+            characterHoverTarget.SetCharacterId("");
 
         TimelineSkillIconHoverUI skillHoverUI =
             target.GetComponent<TimelineSkillIconHoverUI>();

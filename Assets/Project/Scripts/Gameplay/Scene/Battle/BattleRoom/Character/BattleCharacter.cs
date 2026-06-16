@@ -5,6 +5,10 @@ using UnityEngine.EventSystems;
 
 public class BattleCharacter : MonoBehaviour
 {
+    [Header("Timeline Hover Highlight")]
+    [SerializeField] private GameObject timelineHoverHighlightObject;
+    [SerializeField] private bool autoFindTimelineHoverHighlightObject = true;
+
     public CharacterRuntimeData RuntimeData { get; private set; }
 
     private readonly List<SkillMasterData> equippedSkills = new();
@@ -14,15 +18,37 @@ public class BattleCharacter : MonoBehaviour
 
     public int CurrentGridIndex { get; private set; } = -1;
 
+    private void Awake()
+    {
+        EnsureTimelineHoverHighlightObject();
+        SetTimelineHoverHighlight(false);
+    }
+
     public void Initialize(CharacterRuntimeData runtimeData)
     {
         RuntimeData = runtimeData;
         LoadEquippedSkills();
+
+        EnsureTimelineHoverHighlightObject();
+        SetTimelineHoverHighlight(false);
     }
 
     public void SetGridIndex(int gridIndex)
     {
         CurrentGridIndex = gridIndex;
+    }
+
+    public void SetTimelineHoverHighlight(bool active)
+    {
+        EnsureTimelineHoverHighlightObject();
+
+        if (timelineHoverHighlightObject != null)
+            timelineHoverHighlightObject.SetActive(active);
+    }
+
+    private void OnDisable()
+    {
+        SetTimelineHoverHighlight(false);
     }
 
     private void OnMouseDown()
@@ -108,5 +134,43 @@ public class BattleCharacter : MonoBehaviour
         }
 
         equippedSkills.Add(skillData);
+    }
+
+    private void EnsureTimelineHoverHighlightObject()
+    {
+        if (timelineHoverHighlightObject != null)
+            return;
+
+        if (!autoFindTimelineHoverHighlightObject)
+            return;
+
+        timelineHoverHighlightObject = FindTimelineHoverHighlightObject(transform);
+    }
+
+    private GameObject FindTimelineHoverHighlightObject(Transform root)
+    {
+        if (root == null)
+            return null;
+
+        string objectName = root.name;
+
+        if (objectName == "TimelineHoverHighlight" ||
+            objectName == "Timeline_HoverHighlight" ||
+            objectName == "Timeline_Hover_Highlight" ||
+            objectName == "TimelineHighlight" ||
+            objectName == "Timeline_Highlight")
+        {
+            return root.gameObject;
+        }
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            GameObject found = FindTimelineHoverHighlightObject(root.GetChild(i));
+
+            if (found != null)
+                return found;
+        }
+
+        return null;
     }
 }
