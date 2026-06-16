@@ -14,7 +14,7 @@ public class BattleTimelinePreviewEntry
     public SkillMasterData PlayerSkillData;
     public MonsterSkillData MonsterSkillData;
     public PlayerReservedCommand PlayerCommand { get; private set; }
-
+    public int PlayerCommandIndex = -1;
     public string OwnerId
     {
         get
@@ -128,9 +128,10 @@ public class BattleTimelinePreviewEntry
     }
 
     public static BattleTimelinePreviewEntry CreatePlayer(
-        int slotIndex,
-        int orderIndex,
-        PlayerReservedCommand command)
+    int slotIndex,
+    int orderIndex,
+    PlayerReservedCommand command,
+    int playerCommandIndex)
     {
         if (command == null)
             return null;
@@ -139,6 +140,7 @@ public class BattleTimelinePreviewEntry
         {
             SlotIndex = slotIndex,
             OrderIndex = orderIndex,
+            PlayerCommandIndex = playerCommandIndex,
             IsPlayer = true,
             IsMonster = false,
             CharacterRuntime = command.UserRuntime,

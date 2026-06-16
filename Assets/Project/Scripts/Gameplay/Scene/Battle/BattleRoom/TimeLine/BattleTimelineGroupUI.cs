@@ -321,8 +321,13 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         if (orderIndex < 0 || orderIndex >= currentEntries.Count)
             return;
 
+        BattleTimelinePreviewEntry entry = currentEntries[orderIndex];
+
+        if (entry == null)
+            return;
+
         if (owner != null)
-            owner.OnOrderClicked(slotIndex, orderIndex);
+            owner.OnEntryClicked(entry);
     }
 
     private void AutoFindReferences()

@@ -562,12 +562,73 @@ public class BattleTimelineController : MonoBehaviour
         if (command == null)
             return;
 
-        if (slotIndex < 0 || slotIndex >= monsterCommandsBySlot.Length)
-            slotIndex = 0;
+        int resolvedSlotIndex = ResolveMonsterSlotIndex(slotIndex, command);
 
-        monsterCommandsBySlot[slotIndex].Add(command);
+        if (resolvedSlotIndex < 0)
+        {
+            Debug.LogWarning(
+                $"[BattleTimelineController] 몬스터 행동을 넣을 슬롯이 없습니다. " +
+                $"Monster:{command.RuntimeId} / Skill:{command.SkillId}"
+            );
+            return;
+        }
+
+        monsterCommandsBySlot[resolvedSlotIndex].Add(command);
 
         RefreshTimeline();
+    }
+
+    private int ResolveMonsterSlotIndex(int preferredSlotIndex, MonsterReservedCommand command)
+    {
+        if (command == null)
+            return -1;
+
+        if (preferredSlotIndex < 0)
+            preferredSlotIndex = 0;
+
+        if (preferredSlotIndex >= monsterCommandsBySlot.Length)
+            preferredSlotIndex = monsterCommandsBySlot.Length - 1;
+
+        if (CanMonsterUseSlot(preferredSlotIndex, command.RuntimeId))
+            return preferredSlotIndex;
+
+        for (int i = preferredSlotIndex + 1; i < monsterCommandsBySlot.Length; i++)
+        {
+            if (CanMonsterUseSlot(i, command.RuntimeId))
+                return i;
+        }
+
+        for (int i = preferredSlotIndex - 1; i >= 0; i--)
+        {
+            if (CanMonsterUseSlot(i, command.RuntimeId))
+                return i;
+        }
+
+        return -1;
+    }
+
+    private bool CanMonsterUseSlot(int slotIndex, string runtimeId)
+    {
+        if (slotIndex < 0 || slotIndex >= monsterCommandsBySlot.Length)
+            return false;
+
+        List<MonsterReservedCommand> commands = monsterCommandsBySlot[slotIndex];
+
+        if (commands == null || commands.Count <= 0)
+            return true;
+
+        for (int i = 0; i < commands.Count; i++)
+        {
+            MonsterReservedCommand command = commands[i];
+
+            if (command == null)
+                continue;
+
+            if (command.RuntimeId != runtimeId)
+                return false;
+        }
+
+        return true;
     }
 
     public void ClearMonsterReservations()
