@@ -1,0 +1,142 @@
+using UnityEngine;
+using Relic.Gameplay.Data;
+
+public class RestRoomController : MonoBehaviour
+{
+    [Header("Ally Spawn")]
+    [SerializeField] private Transform[] allySpawnPoints;
+
+    private bool isRestUsed;
+
+    private void OnEnable()
+    {
+        isRestUsed = false;
+        SpawnPartyAllies();
+    }
+
+    public void OnRestButtonClicked()
+    {
+        if (isRestUsed)
+            return;
+
+        isRestUsed = true;
+
+        RecoverAllPartyHealthToMax();
+        CompleteCurrentNode();
+
+        BattleSceneController sceneController =
+            Object.FindFirstObjectByType<BattleSceneController>(FindObjectsInactive.Include);
+
+        if (sceneController != null)
+            sceneController.ReturnToMap();
+        else
+            Debug.LogWarning("[RestRoomController] BattleSceneController 없음");
+    }
+
+    private void RecoverAllPartyHealthToMax()
+    {
+        if (DataManager.Instance == null)
+            return;
+
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+
+        for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
+        {
+            string characterId = partyStore.GetCharacterId(i);
+
+            if (string.IsNullOrWhiteSpace(characterId))
+                continue;
+
+            if (!DataManager.Instance.CharacterRuntimeStore.TryGet(
+                    characterId,
+                    out CharacterRuntimeData runtimeData))
+            {
+                continue;
+            }
+
+            if (!DataManager.Instance.CharacterDatabase.TryGet(
+                    characterId,
+                    out CharacterMasterData masterData))
+            {
+                continue;
+            }
+
+            runtimeData.MaxHealth = masterData.MaxHealth;
+            runtimeData.CurrentHealth = masterData.MaxHealth;
+        }
+
+        Debug.Log("[RestRoomController] 모든 파티원 체력 회복 완료");
+    }
+
+    private void SpawnPartyAllies()
+    {
+        if (DataManager.Instance == null)
+            return;
+
+        if (allySpawnPoints == null || allySpawnPoints.Length == 0)
+            return;
+
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+        CharacterPrefabDatabase prefabDatabase = DataManager.Instance.CharacterPrefabDatabase;
+
+        if (partyStore == null || prefabDatabase == null)
+            return;
+
+        for (int i = 0; i < allySpawnPoints.Length; i++)
+        {
+            Transform point = allySpawnPoints[i];
+
+            if (point == null)
+                continue;
+
+            ClearPoint(point);
+
+            string characterId = partyStore.GetCharacterId(i);
+
+            if (string.IsNullOrWhiteSpace(characterId))
+                continue;
+
+            if (!prefabDatabase.TryGetPreviewWorldPrefab(characterId, out GameObject lobbyPrefab))
+            {
+                Debug.LogWarning($"[RestRoomController] Lobby prefab not found: {characterId}");
+                continue;
+            }
+
+            GameObject ally = Instantiate(lobbyPrefab, point);
+            ally.transform.localPosition = Vector3.zero;
+            ally.transform.localRotation = Quaternion.identity;
+            ally.transform.localScale = Vector3.one;
+        }
+    }
+
+    private void ClearPoint(Transform point)
+    {
+        for (int i = point.childCount - 1; i >= 0; i--)
+            Destroy(point.GetChild(i).gameObject);
+    }
+
+    private void CompleteCurrentNode()
+    {
+        if (DataManager.Instance == null)
+            return;
+
+        MapRuntimeData runtime = DataManager.Instance.MapRuntimeStore.Get();
+
+        if (runtime == null)
+            return;
+
+        string nodeKey = runtime.CurrentNodeIndex.ToString();
+
+        if (!runtime.ClearedMapIds.Contains(nodeKey))
+            runtime.ClearedMapIds.Add(nodeKey);
+
+        if (!runtime.VisitedMapIds.Contains(nodeKey))
+            runtime.VisitedMapIds.Add(nodeKey);
+
+        DataManager.Instance.MapRuntimeStore.Set(runtime);
+
+        Debug.Log(
+            $"[RestRoomController] Complete Node / Node:{runtime.CurrentNodeIndex} / Map:{runtime.CurrentMapId}"
+        );
+    }
+}
