@@ -96,7 +96,7 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
 
     private static UnitStatusEffectTooltipUI FindBestTooltipInScene()
     {
-        UnitStatusEffectTooltipUI[] tooltips = FindObjectsOfType<UnitStatusEffectTooltipUI>(true);
+        UnitStatusEffectTooltipUI[] tooltips = FindObjectsByType<UnitStatusEffectTooltipUI>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         if (tooltips == null || tooltips.Length <= 0)
             return null;
 
@@ -119,7 +119,7 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
 
     private static Canvas FindBestCanvasInScene()
     {
-        Canvas[] canvases = FindObjectsOfType<Canvas>(true);
+        Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         if (canvases == null || canvases.Length <= 0)
             return null;
 
@@ -361,7 +361,7 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
 
     private int GetHighestCanvasSortingOrder()
     {
-        Canvas[] canvases = FindObjectsOfType<Canvas>(true);
+        Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         if (canvases == null || canvases.Length <= 0)
             return 0;
 
@@ -380,7 +380,7 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
 
     private int GetHighestCanvasSortingOrderExceptSelf()
     {
-        Canvas[] canvases = FindObjectsOfType<Canvas>(true);
+        Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         if (canvases == null || canvases.Length <= 0)
             return 0;
 
@@ -455,7 +455,7 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
         text.fontSize = fontSize;
         text.fontStyle = fontStyle;
         text.raycastTarget = false;
-        text.enableWordWrapping = true;
+        text.textWrappingMode = TextWrappingModes.Normal;
         text.color = Color.white;
         return text;
     }

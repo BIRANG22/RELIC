@@ -235,8 +235,9 @@ public class SkillSettingPanel : MonoBehaviour
         if (skillIconSelectPanel == null)
             return;
 
+        bool shouldKeepVisibleAfterSelection = keepSkillSelectPanelVisible;
         bool canShow = visible && currentSelectedSlot != null;
-        skillIconSelectPanel.SetActive(canShow);
+        skillIconSelectPanel.SetActive(canShow || (shouldKeepVisibleAfterSelection && canShow));
     }
 
     public void OpenCharacterSetting(string characterId)
