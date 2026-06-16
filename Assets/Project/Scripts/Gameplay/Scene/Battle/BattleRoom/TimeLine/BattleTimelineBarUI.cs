@@ -1,3 +1,4 @@
+using Relic.Gameplay.Data;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,6 +10,8 @@ public class BattleTimelineBarUI : MonoBehaviour
     [Header("Timeline Slots")]
     [SerializeField] private BattleTimelineGroupUI[] timelineGroups;
 
+    [SerializeField] private RangePreview rangePreview;
+    [SerializeField] private GridManager gridManager;
     private int activeSlotIndex = -1;
 
     private void Awake()
@@ -61,18 +64,35 @@ public class BattleTimelineBarUI : MonoBehaviour
         {
             List<BattleTimelinePreviewEntry> entries = new();
 
+            List<PlayerReservedCommand> playerCommands = new();
+
             if (reserveSlots != null && i < reserveSlots.Length && reserveSlots[i] != null)
             {
                 var commands = reserveSlots[i].Commands;
 
                 for (int j = 0; j < commands.Count; j++)
                 {
-                    BattleTimelinePreviewEntry entry =
-                        BattleTimelinePreviewEntry.CreatePlayer(i, j, commands[j]);
-
-                    if (entry != null)
-                        entries.Add(entry);
+                    if (commands[j] != null)
+                        playerCommands.Add(commands[j]);
                 }
+            }
+
+            int orderIndex = 0;
+
+            for (int j = 0; j < playerCommands.Count; j++)
+            {
+                PlayerReservedCommand command = playerCommands[j];
+
+                if (!BattleActionOrderUtility.HasSwift(command))
+                    continue;
+
+                BattleTimelinePreviewEntry entry =
+                    BattleTimelinePreviewEntry.CreatePlayer(i, orderIndex, command, j);
+
+                if (entry != null)
+                    entries.Add(entry);
+
+                orderIndex++;
             }
 
             if (monsterCommandsBySlot != null &&
@@ -84,11 +104,29 @@ public class BattleTimelineBarUI : MonoBehaviour
                 for (int j = 0; j < monsterCommands.Count; j++)
                 {
                     BattleTimelinePreviewEntry entry =
-                        BattleTimelinePreviewEntry.CreateMonster(i, j, monsterCommands[j]);
+                        BattleTimelinePreviewEntry.CreateMonster(i, orderIndex, monsterCommands[j]);
 
                     if (entry != null)
                         entries.Add(entry);
+
+                    orderIndex++;
                 }
+            }
+
+            for (int j = 0; j < playerCommands.Count; j++)
+            {
+                PlayerReservedCommand command = playerCommands[j];
+
+                if (BattleActionOrderUtility.HasSwift(command))
+                    continue;
+
+                BattleTimelinePreviewEntry entry =
+                    BattleTimelinePreviewEntry.CreatePlayer(i, orderIndex, command, j);
+
+                if (entry != null)
+                    entries.Add(entry);
+
+                orderIndex++;
             }
 
             if (timelineGroups[i] != null)
@@ -177,5 +215,74 @@ public class BattleTimelineBarUI : MonoBehaviour
     {
         if (owner != null)
             owner.RemoveCommand(slotIndex, orderIndex);
+    }
+
+    public void OnEntryClicked(BattleTimelinePreviewEntry entry)
+    {
+        if (entry == null)
+            return;
+
+        if (!entry.IsPlayer)
+            return;
+
+        if (owner != null)
+            owner.RemoveCommand(entry.SlotIndex, entry.PlayerCommandIndex);
+    }
+
+    public void ShowEntryRangePreview(BattleTimelinePreviewEntry entry)
+    {
+        if (entry == null || rangePreview == null || gridManager == null)
+            return;
+
+        if (!entry.IsPlayer || entry.PlayerCommand == null)
+            return;
+
+        PlayerReservedCommand command = entry.PlayerCommand;
+
+        if (command.SkillData == null || command.UserRuntime == null)
+            return;
+
+        int casterGridIndex = owner.GetPreviewGridIndexBeforeCommand(
+            command.UserRuntime,
+            entry.SlotIndex,
+            entry.PlayerCommandIndex
+        );
+
+        if (casterGridIndex < 0)
+            return;
+
+        List<int> rangeIndices = new();
+
+        if (command.SkillData.RangeType == RangeType.Direction)
+        {
+            rangeIndices = BattleRangeCalculator.GetDirectionRangeIndices(
+                casterGridIndex,
+                command.SkillData.RangeId,
+                command.Direction,
+                DataManager.Instance.RangeDatabase,
+                gridManager
+            );
+        }
+        else if (command.SkillData.RangeType == RangeType.Selection)
+        {
+            rangeIndices = BattleRangeCalculator.GetSelectionRangeIndices(
+                casterGridIndex,
+                command.SkillData.RangeId,
+                DataManager.Instance.RangeDatabase,
+                gridManager
+            );
+        }
+        else
+        {
+            rangeIndices = command.RangeGridIndices;
+        }
+
+        rangePreview.ShowDirectionCells(rangeIndices);
+    }
+
+    public void ClearEntryRangePreview()
+    {
+        if (rangePreview != null)
+            rangePreview.Clear();
     }
 }

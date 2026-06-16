@@ -26,7 +26,8 @@ public enum SfxType
     BattleProgressText,
     RelicChoiceAcquire,
     BattleRewardRemnantAcquire,
-    BattleRewardRelicSkillAcquire
+    BattleRewardRelicSkillAcquire,
+    BattleTimelineSlotRotate
 }
 
 [System.Serializable]

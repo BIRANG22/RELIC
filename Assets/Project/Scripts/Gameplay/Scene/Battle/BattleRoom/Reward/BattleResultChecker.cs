@@ -75,19 +75,20 @@ public class BattleResultChecker : MonoBehaviour
             FindObjectsSortMode.None
         );
 
-        if (monsters.Length == 0)
-            return false;
+        int aliveCount = 0;
 
         for (int i = 0; i < monsters.Length; i++)
         {
-            if (monsters[i] == null || monsters[i].RuntimeData == null)
+            MonsterUnit monster = monsters[i];
+
+            if (monster == null || monster.RuntimeData == null)
                 continue;
 
-            if (!monsters[i].RuntimeData.IsDead)
-                return false;
+            if (!monster.RuntimeData.IsDead)
+                aliveCount++;
         }
 
-        return true;
+        return aliveCount <= 0;
     }
 
     private bool IsAllPlayersDead()

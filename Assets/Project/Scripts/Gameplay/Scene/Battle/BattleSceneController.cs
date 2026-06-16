@@ -34,6 +34,9 @@ public class BattleSceneController : MonoBehaviour
     [SerializeField] private GameObject restRoom;
     [SerializeField] private GameObject shopRoom;
 
+    [Header("Boss Demo")]
+    [SerializeField] private GameObject bossDemoPanel;
+
     private MapRuntimeStore mapRuntimeStore;
     private MapRuntimeData mapRuntime;
     private bool isChangingRoom;
@@ -423,8 +426,11 @@ public class BattleSceneController : MonoBehaviour
 
             case "Common":
             case "Elite":
-            case "Boss":
                 OpenBattleMap(nodeData);
+                break;
+
+            case "Boss":
+                OpenBossDemo(nodeData);
                 break;
 
             case "Rest":
@@ -484,6 +490,19 @@ public class BattleSceneController : MonoBehaviour
     {
         Debug.Log($"[BattleSceneController] Special event start: {nodeData.MapId}");
         OpenRoom(eventRoom, "EventRoom");
+    }
+
+    private void OpenBossDemo(GeneratedMapNodeData nodeData)
+    {
+        Debug.Log($"[BattleSceneController] Boss Demo Open : {nodeData.MapId}");
+
+        if (battleMapPanel != null)
+            battleMapPanel.Close();
+
+        CloseAllRooms();
+
+        if (bossDemoPanel != null)
+            bossDemoPanel.SetActive(true);
     }
 
     private void PlayMapIntroTextOnStart()
@@ -566,6 +585,7 @@ public class BattleSceneController : MonoBehaviour
         SetActiveIfNotNull(eventRoom, false);
         SetActiveIfNotNull(restRoom, false);
         SetActiveIfNotNull(shopRoom, false);
+        SetActiveIfNotNull(bossDemoPanel, false);
     }
 
     private void KeepExternalReturnRoomVisibleIfNeeded()

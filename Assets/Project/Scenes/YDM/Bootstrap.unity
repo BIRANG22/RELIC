@@ -1451,7 +1451,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1473913511}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1118156665
@@ -1713,7 +1714,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 971541963}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
 --- !u!114 &1473913512
 MonoBehaviour:
@@ -2064,7 +2065,7 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: 97920063d95b7e94c8098f16e03d9bf8, type: 3}
     volume: 0.8
   - type: 13
-    clip: {fileID: 8300000, guid: b92be3634f17aea4e924b30f90bc14d8, type: 3}
+    clip: {fileID: 8300000, guid: 9b3175ceaf0d78541b44e5e8545f1540, type: 3}
     volume: 0.8
   - type: 14
     clip: {fileID: 8300000, guid: 10d1753e32fe58a42954ac2cbed901df, type: 3}
@@ -2074,6 +2075,9 @@ MonoBehaviour:
     volume: 0.5
   - type: 16
     clip: {fileID: 8300000, guid: 10d1753e32fe58a42954ac2cbed901df, type: 3}
+    volume: 0.3
+  - type: 17
+    clip: {fileID: 8300000, guid: bf7b5b48727a01e46bd0d073a6d64494, type: 3}
     volume: 0.3
 --- !u!82 &1960083566
 AudioSource:
@@ -2431,7 +2435,6 @@ SceneRoots:
   m_Roots:
   - {fileID: 596459993}
   - {fileID: 884914687}
-  - {fileID: 1473913511}
   - {fileID: 191440535}
   - {fileID: 971541963}
   - {fileID: 1726247875}

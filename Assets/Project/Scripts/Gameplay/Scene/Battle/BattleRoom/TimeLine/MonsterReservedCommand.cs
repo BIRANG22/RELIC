@@ -22,6 +22,19 @@ public class MonsterReservedCommand
         SkillData = skillData;
     }
 
+    public bool HasSimulatedResult { get; private set; }
+    public bool IsSimulatedMoveBlocked { get; private set; }
+    public Vector2Int SimulatedMoveOffset { get; private set; } = Vector2Int.zero;
+
+    public Vector2Int EffectiveMoveOffset =>
+        HasSimulatedResult ? SimulatedMoveOffset : MoveOffset;
+
+    public void SetSimulatedMoveResult(bool blocked, Vector2Int moveOffset)
+    {
+        HasSimulatedResult = true;
+        IsSimulatedMoveBlocked = blocked;
+        SimulatedMoveOffset = moveOffset;
+    }
     public void SetMoveOffset(Vector2Int moveOffset)
     {
         MoveOffset = moveOffset;

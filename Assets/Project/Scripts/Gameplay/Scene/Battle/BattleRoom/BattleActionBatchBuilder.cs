@@ -34,19 +34,34 @@ public class BattleActionBatchBuilder
             EnsureBatchExists(batches, slotIndex);
 
             var playerCommands = timelineController.GetPlayerCommands(slotIndex);
+            var monsterCommands = timelineController.GetMonsterCommands(slotIndex);
 
             if (playerCommands != null)
             {
                 for (int i = 0; i < playerCommands.Count; i++)
-                    AddPlayerCommand(batches, playerCommands[i], slotIndex);
-            }
+                {
+                    PlayerReservedCommand command = playerCommands[i];
 
-            var monsterCommands = timelineController.GetMonsterCommands(slotIndex);
+                    if (BattleActionOrderUtility.HasSwift(command))
+                        AddPlayerCommand(batches, command, slotIndex);
+                }
+            }
 
             if (monsterCommands != null)
             {
                 for (int i = 0; i < monsterCommands.Count; i++)
                     AddMonsterCommand(batches, monsterCommands[i], slotIndex);
+            }
+
+            if (playerCommands != null)
+            {
+                for (int i = 0; i < playerCommands.Count; i++)
+                {
+                    PlayerReservedCommand command = playerCommands[i];
+
+                    if (!BattleActionOrderUtility.HasSwift(command))
+                        AddPlayerCommand(batches, command, slotIndex);
+                }
             }
         }
 
@@ -68,14 +83,19 @@ public class BattleActionBatchBuilder
 
         for (int i = minBatchIndex; i < batches.Count; i++)
         {
+            if (!CanUseBatchForTimelineSlot(batches[i], minBatchIndex))
+                continue;
+
             if (CanAddAction(batches[i], next))
             {
+                batches[i].SetTimelineSlotIndexIfNeeded(minBatchIndex);
                 batches[i].PlayerCommands.Add(command);
                 return;
             }
         }
 
         BattleActionBatch newBatch = new();
+        newBatch.SetTimelineSlotIndexIfNeeded(minBatchIndex);
         newBatch.PlayerCommands.Add(command);
         batches.Add(newBatch);
     }
@@ -94,16 +114,30 @@ public class BattleActionBatchBuilder
 
         for (int i = minBatchIndex; i < batches.Count; i++)
         {
+            if (!CanUseBatchForTimelineSlot(batches[i], minBatchIndex))
+                continue;
+
             if (CanAddAction(batches[i], next))
             {
+                batches[i].SetTimelineSlotIndexIfNeeded(minBatchIndex);
                 batches[i].MonsterCommands.Add(command);
                 return;
             }
         }
 
         BattleActionBatch newBatch = new();
+        newBatch.SetTimelineSlotIndexIfNeeded(minBatchIndex);
         newBatch.MonsterCommands.Add(command);
         batches.Add(newBatch);
+    }
+
+
+    private bool CanUseBatchForTimelineSlot(BattleActionBatch batch, int timelineSlotIndex)
+    {
+        if (batch == null)
+            return false;
+
+        return batch.CanAcceptTimelineSlot(timelineSlotIndex);
     }
 
     private bool CanAddAction(BattleActionBatch batch, ActionInfo next)

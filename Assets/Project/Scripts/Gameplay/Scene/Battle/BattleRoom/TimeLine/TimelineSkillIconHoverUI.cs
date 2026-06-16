@@ -43,8 +43,8 @@ public class TimelineSkillIconHoverUI : MonoBehaviour, IPointerEnterHandler, IPo
     {
         FindReferencesIfNeeded();
 
-        if (hoverPreview != null && command != null)
-            hoverPreview.Show(command);
+        if (hoverPreview != null && entry != null)
+            hoverPreview.Show(entry);
 
         if (hoverPopup != null)
             hoverPopup.Show(entry, rectTransform);

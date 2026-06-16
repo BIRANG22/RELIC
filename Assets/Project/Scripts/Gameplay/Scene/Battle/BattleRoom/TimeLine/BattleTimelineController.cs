@@ -1,5 +1,7 @@
-using Relic.Gameplay.Data;
+ï»¿using Relic.Gameplay.Data;
+using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class BattleTimelineController : MonoBehaviour
@@ -11,12 +13,52 @@ public class BattleTimelineController : MonoBehaviour
     [Header("Reservation Preview")]
     [SerializeField] private PlayerSkillReservationController playerSkillReservationController;
 
+    [Header("MoveGhostPreview")]
+    [SerializeField] private MoveGhostPreview moveGhostPreview;
+
     [Header("Grid")]
     [SerializeField] private GridManager gridManager;
+
+    [Header("Selected Slot Text")]
+    [SerializeField] private TMP_Text selectedSlotValueText;
+    [SerializeField] private string emptySelectedSlotText = "-";
+    [SerializeField] private bool autoFindSelectedSlotValueText = true;
+
+    [Header("Selected Slot Effect")]
+    [SerializeField] private Transform selectedSlotEffect;
+    [SerializeField] private bool autoFindSelectedSlotEffect = true;
+    [SerializeField] private string selectedSlotEffectObjectName = "Effect";
+    [SerializeField] private float selectedSlotEffectRotateStepZ = -60f;
+    [SerializeField] private float selectedSlotEffectDuration = 0.08f;
+    [SerializeField] private bool useUnscaledTimeForSelectedSlotEffect = true;
+
+    [Header("Selected Slot Effect SFX")]
+    [SerializeField] private bool playSelectedSlotEffectSfx = true;
+    [SerializeField] private SfxType selectedSlotEffectSfxType = SfxType.BattleTimelineSlotRotate;
+    [SerializeField, Range(0f, 1f)] private float selectedSlotEffectSfxVolume = 1f;
+
+    [Header("Slot Selection Lock")]
+    [SerializeField] private bool showWarningWhenSlotSelectionLocked = false;
+    [SerializeField] private string slotSelectionLockedMessage = "í„´ ì§„í–‰ ì¤‘ì—ëŠ” ìŠ¬ë¡¯ì„ ì„ íƒí•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.";
+
+    [Header("Timeline Slot Slide")]
+    [SerializeField] private bool playTimelineSlotSlide = true;
+    [SerializeField] private RectTransform[] timelineSlotSlideTargets;
+    [SerializeField] private bool autoBindTimelineSlotSlideTargets = true;
+    [SerializeField] private string timelineSlotSlideTargetNamePrefix = "TimelineSlot";
+    [SerializeField] private float completedTimelineSlotSlideAmountX = -260f;
+    [SerializeField] private float waitingTimelineSlotSlideAmountX = -250f;
+    [SerializeField] private float timelineSlotSlideDuration = 0.18f;
+    [SerializeField] private bool useUnscaledTimeForTimelineSlotSlide = false;
 
     private int activeSlotIndex = -1;
     private CharacterRuntimeData selectedCharacter;
     private SkillMasterData selectedSkill;
+    private Coroutine selectedSlotEffectRoutine;
+    private Coroutine timelineSlotSlideRoutine;
+    private bool isSlotSelectionLocked;
+    private Vector2[] timelineSlotOriginalAnchoredPositions;
+    private int timelineSlotSlideStepIndex;
 
     private readonly List<MonsterReservedCommand>[] monsterCommandsBySlot =
         new List<MonsterReservedCommand>[5];
@@ -26,6 +68,11 @@ public class BattleTimelineController : MonoBehaviour
     private void Awake()
     {
         InitializeMonsterCommandSlots();
+        AutoFindSelectedSlotValueTextIfNeeded();
+        AutoFindSelectedSlotEffectIfNeeded();
+        AutoBindTimelineSlotSlideTargetsIfNeeded();
+        CaptureTimelineSlotOriginalPositionsIfNeeded();
+        RefreshSelectedSlotValueText();
 
         if (timelineBarUI != null)
             timelineBarUI.Init(this);
@@ -70,12 +117,555 @@ public class BattleTimelineController : MonoBehaviour
 
     public void OnTimelineSlotClicked(int slotIndex)
     {
+        if (isSlotSelectionLocked)
+        {
+            if (showWarningWhenSlotSelectionLocked)
+                ShowBattleWarning(slotSelectionLockedMessage);
+
+            return;
+        }
+
+        int previousSlotIndex = activeSlotIndex;
         activeSlotIndex = slotIndex;
 
         if (timelineBarUI != null)
             timelineBarUI.SetActiveTimelineSlot(activeSlotIndex);
 
+        RefreshSelectedSlotValueText();
+        PlaySelectedSlotEffect(previousSlotIndex, activeSlotIndex);
         TryStartSkillReservation();
+    }
+
+    public void ClearSelectedSlotSelection()
+    {
+        activeSlotIndex = -1;
+        selectedSkill = null;
+
+        if (timelineBarUI != null)
+            timelineBarUI.SetActiveTimelineSlot(activeSlotIndex);
+
+        RefreshSelectedSlotValueText();
+    }
+
+    public void SetSlotSelectionLocked(bool locked)
+    {
+        isSlotSelectionLocked = locked;
+    }
+
+    public IEnumerator SlideTimelineSlotsLeftOneStepRoutine()
+    {
+        yield return SlideTimelineSlotsLeftOneStepRoutine(timelineSlotSlideStepIndex);
+    }
+
+    public IEnumerator SlideTimelineSlotsLeftOneStepRoutine(int completedSlotIndex)
+    {
+        yield return SlideTimelineSlotsLeftThroughSlotRoutine(completedSlotIndex);
+    }
+
+    public IEnumerator SlideTimelineSlotsLeftThroughSlotRoutine(int lastSlotIndexInclusive)
+    {
+        if (!playTimelineSlotSlide)
+            yield break;
+
+        AutoBindTimelineSlotSlideTargetsIfNeeded();
+        CaptureTimelineSlotOriginalPositionsIfNeeded();
+
+        if (!HasTimelineSlotSlideTargets())
+            yield break;
+
+        int startSlotIndex = Mathf.Clamp(timelineSlotSlideStepIndex, 0, timelineSlotSlideTargets.Length);
+        int endSlotIndex = Mathf.Clamp(lastSlotIndexInclusive, -1, timelineSlotSlideTargets.Length - 1);
+
+        if (endSlotIndex < startSlotIndex)
+            yield break;
+
+        yield return MoveTimelineSlotSlideTargetsThroughCompletedSlotsRoutine(startSlotIndex, endSlotIndex);
+        timelineSlotSlideStepIndex = Mathf.Clamp(endSlotIndex + 1, 0, timelineSlotSlideTargets.Length);
+    }
+
+    public IEnumerator ResetTimelineSlotsToOriginalPositionRoutine()
+    {
+        AutoBindTimelineSlotSlideTargetsIfNeeded();
+        CaptureTimelineSlotOriginalPositionsIfNeeded();
+
+        if (!HasTimelineSlotSlideTargets())
+            yield break;
+
+        yield return MoveTimelineSlotSlideTargetsToOriginalOneByOneRoutine();
+        timelineSlotSlideStepIndex = 0;
+    }
+
+    private void AutoFindSelectedSlotValueTextIfNeeded()
+    {
+        if (!autoFindSelectedSlotValueText)
+            return;
+
+        if (selectedSlotValueText != null)
+            return;
+
+        Transform searchRoot = GetTimelineSearchRoot();
+        Transform found = FindChildRecursive(searchRoot, "Value_text");
+
+        if (found == null)
+        {
+            BattleTimelineBarUI foundTimelineBar = FindFirstObjectByType<BattleTimelineBarUI>(FindObjectsInactive.Include);
+
+            if (foundTimelineBar != null)
+                found = FindChildRecursive(foundTimelineBar.transform, "Value_text");
+        }
+
+        if (found == null)
+            return;
+
+        selectedSlotValueText = found.GetComponent<TMP_Text>();
+    }
+
+    private void AutoFindSelectedSlotEffectIfNeeded()
+    {
+        if (!autoFindSelectedSlotEffect)
+            return;
+
+        if (selectedSlotEffect != null)
+            return;
+
+        Transform searchRoot = GetTimelineSearchRoot();
+        Transform found = FindChildRecursive(searchRoot, selectedSlotEffectObjectName);
+
+        if (found == null)
+        {
+            BattleTimelineBarUI foundTimelineBar = FindFirstObjectByType<BattleTimelineBarUI>(FindObjectsInactive.Include);
+
+            if (foundTimelineBar != null)
+                found = FindChildRecursive(foundTimelineBar.transform, selectedSlotEffectObjectName);
+        }
+
+        selectedSlotEffect = found;
+    }
+
+    private void AutoBindTimelineSlotSlideTargetsIfNeeded()
+    {
+        if (!autoBindTimelineSlotSlideTargets)
+            return;
+
+        if (timelineSlotSlideTargets != null && timelineSlotSlideTargets.Length > 0)
+            return;
+
+        List<RectTransform> foundTargets = new();
+
+        if (reserveSlots != null)
+        {
+            for (int i = 0; i < reserveSlots.Length; i++)
+            {
+                if (reserveSlots[i] == null)
+                    continue;
+
+                RectTransform slotRect = reserveSlots[i].GetComponent<RectTransform>();
+
+                if (slotRect != null && !foundTargets.Contains(slotRect))
+                    foundTargets.Add(slotRect);
+            }
+        }
+
+        if (foundTargets.Count <= 0)
+        {
+            Transform searchRoot = GetTimelineSearchRoot();
+            AddTimelineSlotSlideTargetsRecursive(searchRoot, foundTargets);
+        }
+
+        if (foundTargets.Count <= 0)
+        {
+            BattleTimelineBarUI foundTimelineBar = FindFirstObjectByType<BattleTimelineBarUI>(FindObjectsInactive.Include);
+
+            if (foundTimelineBar != null)
+                AddTimelineSlotSlideTargetsRecursive(foundTimelineBar.transform, foundTargets);
+        }
+
+        foundTargets.Sort(CompareTimelineSlotSlideTargetOrder);
+        timelineSlotSlideTargets = foundTargets.ToArray();
+    }
+
+    private void AddTimelineSlotSlideTargetsRecursive(Transform root, List<RectTransform> results)
+    {
+        if (root == null || results == null)
+            return;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform child = root.GetChild(i);
+
+            if (child.name.StartsWith(timelineSlotSlideTargetNamePrefix))
+            {
+                RectTransform rectTransform = child.GetComponent<RectTransform>();
+
+                if (rectTransform != null && !results.Contains(rectTransform))
+                    results.Add(rectTransform);
+            }
+
+            AddTimelineSlotSlideTargetsRecursive(child, results);
+        }
+    }
+
+    private int CompareTimelineSlotSlideTargetOrder(RectTransform a, RectTransform b)
+    {
+        int aIndex = ExtractTrailingNumber(a != null ? a.name : string.Empty);
+        int bIndex = ExtractTrailingNumber(b != null ? b.name : string.Empty);
+
+        if (aIndex != bIndex)
+            return aIndex.CompareTo(bIndex);
+
+        string aName = a != null ? a.name : string.Empty;
+        string bName = b != null ? b.name : string.Empty;
+
+        return string.CompareOrdinal(aName, bName);
+    }
+
+    private int ExtractTrailingNumber(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return int.MaxValue;
+
+        int multiplier = 1;
+        int result = 0;
+        bool hasNumber = false;
+
+        for (int i = value.Length - 1; i >= 0; i--)
+        {
+            char c = value[i];
+
+            if (c < '0' || c > '9')
+                break;
+
+            hasNumber = true;
+            result += (c - '0') * multiplier;
+            multiplier *= 10;
+        }
+
+        return hasNumber ? result : int.MaxValue;
+    }
+
+    private void CaptureTimelineSlotOriginalPositionsIfNeeded()
+    {
+        AutoBindTimelineSlotSlideTargetsIfNeeded();
+
+        if (timelineSlotSlideTargets == null || timelineSlotSlideTargets.Length <= 0)
+            return;
+
+        if (timelineSlotOriginalAnchoredPositions != null &&
+            timelineSlotOriginalAnchoredPositions.Length == timelineSlotSlideTargets.Length)
+        {
+            return;
+        }
+
+        timelineSlotOriginalAnchoredPositions = new Vector2[timelineSlotSlideTargets.Length];
+
+        for (int i = 0; i < timelineSlotSlideTargets.Length; i++)
+        {
+            if (timelineSlotSlideTargets[i] != null)
+                timelineSlotOriginalAnchoredPositions[i] = timelineSlotSlideTargets[i].anchoredPosition;
+        }
+    }
+
+    private bool HasTimelineSlotSlideTargets()
+    {
+        if (timelineSlotSlideTargets == null || timelineSlotSlideTargets.Length <= 0)
+            return false;
+
+        for (int i = 0; i < timelineSlotSlideTargets.Length; i++)
+        {
+            if (timelineSlotSlideTargets[i] != null)
+                return true;
+        }
+
+        return false;
+    }
+
+    private IEnumerator MoveTimelineSlotSlideTargetsThroughCompletedSlotsRoutine(int startSlotIndex, int endSlotIndex)
+    {
+        AutoBindTimelineSlotSlideTargetsIfNeeded();
+
+        if (!HasTimelineSlotSlideTargets())
+            yield break;
+
+        Vector2[] startPositions = GetTimelineSlotCurrentPositions();
+        Vector2[] targetPositions = new Vector2[startPositions.Length];
+
+        for (int i = 0; i < startPositions.Length; i++)
+            targetPositions[i] = startPositions[i];
+
+        int safeStartSlotIndex = Mathf.Clamp(startSlotIndex, 0, targetPositions.Length);
+        int safeEndSlotIndex = Mathf.Clamp(endSlotIndex, -1, targetPositions.Length - 1);
+
+        for (int completedSlotIndex = safeStartSlotIndex; completedSlotIndex <= safeEndSlotIndex; completedSlotIndex++)
+        {
+            for (int i = completedSlotIndex; i < targetPositions.Length; i++)
+            {
+                float deltaX = i == completedSlotIndex
+                    ? completedTimelineSlotSlideAmountX
+                    : waitingTimelineSlotSlideAmountX;
+
+                targetPositions[i] += new Vector2(deltaX, 0f);
+            }
+        }
+
+        yield return MoveTimelineSlotSlideTargetsToPositionsRoutine(startPositions, targetPositions);
+    }
+
+    private IEnumerator MoveTimelineSlotSlideTargetsToOriginalOneByOneRoutine()
+    {
+        AutoBindTimelineSlotSlideTargetsIfNeeded();
+        CaptureTimelineSlotOriginalPositionsIfNeeded();
+
+        if (!HasTimelineSlotSlideTargets())
+            yield break;
+
+        if (timelineSlotOriginalAnchoredPositions == null ||
+            timelineSlotOriginalAnchoredPositions.Length != timelineSlotSlideTargets.Length)
+        {
+            yield break;
+        }
+
+        for (int i = timelineSlotSlideTargets.Length - 1; i >= 0; i--)
+        {
+            if (timelineSlotSlideTargets[i] == null)
+                continue;
+
+            yield return MoveSingleTimelineSlotToOriginalRoutine(i);
+        }
+    }
+
+    private IEnumerator MoveSingleTimelineSlotToOriginalRoutine(int slotIndex)
+    {
+        Vector2[] startPositions = GetTimelineSlotCurrentPositions();
+        Vector2[] targetPositions = GetTimelineSlotCurrentPositions();
+
+        if (slotIndex < 0 ||
+            slotIndex >= targetPositions.Length ||
+            slotIndex >= timelineSlotOriginalAnchoredPositions.Length)
+        {
+            yield break;
+        }
+
+        targetPositions[slotIndex] = timelineSlotOriginalAnchoredPositions[slotIndex];
+        yield return MoveTimelineSlotSlideTargetsToPositionsRoutine(startPositions, targetPositions);
+    }
+
+    private Vector2[] GetTimelineSlotCurrentPositions()
+    {
+        AutoBindTimelineSlotSlideTargetsIfNeeded();
+
+        if (timelineSlotSlideTargets == null)
+            return new Vector2[0];
+
+        Vector2[] positions = new Vector2[timelineSlotSlideTargets.Length];
+
+        for (int i = 0; i < timelineSlotSlideTargets.Length; i++)
+        {
+            if (timelineSlotSlideTargets[i] != null)
+                positions[i] = timelineSlotSlideTargets[i].anchoredPosition;
+        }
+
+        return positions;
+    }
+
+    private IEnumerator MoveTimelineSlotSlideTargetsToPositionsRoutine(Vector2[] startPositions, Vector2[] targetPositions)
+    {
+        if (startPositions == null || targetPositions == null)
+            yield break;
+
+        if (startPositions.Length != targetPositions.Length)
+            yield break;
+
+        if (timelineSlotSlideRoutine != null)
+            StopCoroutine(timelineSlotSlideRoutine);
+
+        timelineSlotSlideRoutine = StartCoroutine(MoveTimelineSlotSlideTargetsCoroutine(startPositions, targetPositions));
+        yield return timelineSlotSlideRoutine;
+    }
+
+    private IEnumerator MoveTimelineSlotSlideTargetsCoroutine(Vector2[] startPositions, Vector2[] targetPositions)
+    {
+        float duration = Mathf.Max(0.01f, timelineSlotSlideDuration);
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += useUnscaledTimeForTimelineSlotSlide ? Time.unscaledDeltaTime : Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float easedT = 1f - Mathf.Pow(1f - t, 3f);
+
+            ApplyTimelineSlotSlidePositions(startPositions, targetPositions, easedT);
+            yield return null;
+        }
+
+        ApplyTimelineSlotSlidePositions(startPositions, targetPositions, 1f);
+        timelineSlotSlideRoutine = null;
+    }
+
+    private void ApplyTimelineSlotSlidePositions(Vector2[] startPositions, Vector2[] targetPositions, float t)
+    {
+        if (timelineSlotSlideTargets == null || startPositions == null || targetPositions == null)
+            return;
+
+        int count = Mathf.Min(timelineSlotSlideTargets.Length, Mathf.Min(startPositions.Length, targetPositions.Length));
+
+        for (int i = 0; i < count; i++)
+        {
+            RectTransform target = timelineSlotSlideTargets[i];
+
+            if (target == null)
+                continue;
+
+            target.anchoredPosition = Vector2.Lerp(startPositions[i], targetPositions[i], t);
+        }
+    }
+
+    private Transform GetTimelineSearchRoot()
+    {
+        if (timelineBarUI != null)
+            return timelineBarUI.transform;
+
+        return transform;
+    }
+
+    private void PlaySelectedSlotEffect(int previousSlotIndex, int currentSlotIndex)
+    {
+        AutoFindSelectedSlotEffectIfNeeded();
+
+        if (selectedSlotEffect == null)
+            return;
+
+        float rotateStepZ = GetSelectedSlotEffectRotateStep(previousSlotIndex, currentSlotIndex);
+
+        if (Mathf.Approximately(rotateStepZ, 0f))
+            return;
+
+        if (!selectedSlotEffect.gameObject.activeSelf)
+            selectedSlotEffect.gameObject.SetActive(true);
+
+        PlaySelectedSlotEffectSfx();
+
+        if (selectedSlotEffectRoutine != null)
+            StopCoroutine(selectedSlotEffectRoutine);
+
+        selectedSlotEffectRoutine = StartCoroutine(PlaySelectedSlotEffectRoutine(rotateStepZ));
+    }
+
+    private void PlaySelectedSlotEffectSfx()
+    {
+        if (!playSelectedSlotEffectSfx)
+            return;
+
+        if (AudioManager.Instance == null)
+            return;
+
+        AudioManager.Instance.PlaySfx(selectedSlotEffectSfxType, selectedSlotEffectSfxVolume);
+    }
+
+    private float GetSelectedSlotEffectRotateStep(int previousSlotIndex, int currentSlotIndex)
+    {
+        if (currentSlotIndex < 0)
+            return 0f;
+
+        if (previousSlotIndex < 0)
+            return selectedSlotEffectRotateStepZ;
+
+        if (currentSlotIndex > previousSlotIndex)
+            return selectedSlotEffectRotateStepZ;
+
+        if (currentSlotIndex < previousSlotIndex)
+            return -selectedSlotEffectRotateStepZ;
+
+        return 0f;
+    }
+
+    private IEnumerator PlaySelectedSlotEffectRoutine(float rotateStepZ)
+    {
+        float duration = Mathf.Max(0.01f, selectedSlotEffectDuration);
+        float elapsed = 0f;
+
+        float startZ = GetSelectedSlotEffectRotationZ();
+        float targetZ = startZ + rotateStepZ;
+
+        while (elapsed < duration)
+        {
+            elapsed += useUnscaledTimeForSelectedSlotEffect ? Time.unscaledDeltaTime : Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float easedT = 1f - Mathf.Pow(1f - t, 3f);
+            float z = Mathf.Lerp(startZ, targetZ, easedT);
+
+            SetSelectedSlotEffectRotation(z);
+            yield return null;
+        }
+
+        SetSelectedSlotEffectRotation(targetZ);
+        selectedSlotEffectRoutine = null;
+    }
+
+    private float GetSelectedSlotEffectRotationZ()
+    {
+        AutoFindSelectedSlotEffectIfNeeded();
+
+        if (selectedSlotEffect == null)
+            return 0f;
+
+        return NormalizeAngle(selectedSlotEffect.localEulerAngles.z);
+    }
+
+    private float NormalizeAngle(float angle)
+    {
+        while (angle > 180f)
+            angle -= 360f;
+
+        while (angle <= -180f)
+            angle += 360f;
+
+        return angle;
+    }
+
+    private void SetSelectedSlotEffectRotation(float zRotation)
+    {
+        AutoFindSelectedSlotEffectIfNeeded();
+
+        if (selectedSlotEffect == null)
+            return;
+
+        Vector3 eulerAngles = selectedSlotEffect.localEulerAngles;
+        eulerAngles.z = zRotation;
+        selectedSlotEffect.localEulerAngles = eulerAngles;
+    }
+
+    private void RefreshSelectedSlotValueText()
+    {
+        AutoFindSelectedSlotValueTextIfNeeded();
+
+        if (selectedSlotValueText == null)
+            return;
+
+        if (activeSlotIndex < 0)
+            selectedSlotValueText.text = emptySelectedSlotText;
+        else
+            selectedSlotValueText.text = (activeSlotIndex + 1).ToString();
+    }
+
+    private Transform FindChildRecursive(Transform root, string childName)
+    {
+        if (root == null)
+            return null;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform child = root.GetChild(i);
+
+            if (child.name == childName)
+                return child;
+
+            Transform found = FindChildRecursive(child, childName);
+
+            if (found != null)
+                return found;
+        }
+
+        return null;
     }
 
     private void TryStartSkillReservation()
@@ -83,20 +673,20 @@ public class BattleTimelineController : MonoBehaviour
         if (activeSlotIndex < 0)
         {
             if (selectedSkill != null)
-                ShowBattleWarning("Å¸ÀÓ¶óÀÎ ½½·ÔÀ» ¸ÕÀú ¼±ÅÃÇØÁÖ¼¼¿ä.");
+                ShowBattleWarning("íƒ€ì„ë¼ì¸ ìŠ¬ë¡¯ì„ ë¨¼ì € ì„ íƒí•´ì£¼ì„¸ìš”.");
 
             return;
         }
 
         if (selectedCharacter == null && selectedSkill == null)
         {
-            ShowBattleWarning("Ä³¸¯ÅÍ¿Í ½ºÅ³À» ¸ÕÀú ¼±ÅÃÇØÁÖ¼¼¿ä.");
+            ShowBattleWarning("ìºë¦­í„°ì™€ ìŠ¤í‚¬ì„ ë¨¼ì € ì„ íƒí•´ì£¼ì„¸ìš”.");
             return;
         }
 
         if (selectedCharacter == null)
         {
-            ShowBattleWarning("Ä³¸¯ÅÍ¸¦ ¸ÕÀú ¼±ÅÃÇØÁÖ¼¼¿ä.");
+            ShowBattleWarning("ìºë¦­í„°ë¥¼ ë¨¼ì € ì„ íƒí•´ì£¼ì„¸ìš”.");
             return;
         }
 
@@ -105,14 +695,14 @@ public class BattleTimelineController : MonoBehaviour
 
         if (reserveSlots == null || reserveSlots.Length <= 0)
         {
-            ShowBattleWarning("Å¸ÀÓ¶óÀÎ ½½·ÔÀÌ ¾ø½À´Ï´Ù.");
+            ShowBattleWarning("íƒ€ì„ë¼ì¸ ìŠ¬ë¡¯ì´ ì—†ìŠµë‹ˆë‹¤.");
             selectedSkill = null;
             return;
         }
 
         if (activeSlotIndex >= reserveSlots.Length)
         {
-            ShowBattleWarning("¼±ÅÃÇÑ Å¸ÀÓ¶óÀÎ ½½·ÔÀ» »ç¿ëÇÒ ¼ö ¾ø½À´Ï´Ù.");
+            ShowBattleWarning("ì„ íƒí•œ íƒ€ì„ë¼ì¸ ìŠ¬ë¡¯ì„ ì‚¬ìš©í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
             selectedSkill = null;
             return;
         }
@@ -121,7 +711,7 @@ public class BattleTimelineController : MonoBehaviour
 
         if (slot == null)
         {
-            ShowBattleWarning("¼±ÅÃÇÑ Å¸ÀÓ¶óÀÎ ½½·ÔÀ» »ç¿ëÇÒ ¼ö ¾ø½À´Ï´Ù.");
+            ShowBattleWarning("ì„ íƒí•œ íƒ€ì„ë¼ì¸ ìŠ¬ë¡¯ì„ ì‚¬ìš©í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
             selectedSkill = null;
             return;
         }
@@ -139,15 +729,15 @@ public class BattleTimelineController : MonoBehaviour
 
         if (!slot.CanAcceptCharacter(selectedCharacter))
         {
-            ShowBattleWarning("ÀÌ ½½·Ô¿¡´Â ÀÌ¹Ì ´Ù¸¥ Ä³¸¯ÅÍÀÇ Çàµ¿ÀÌ ¿¹¾àµÇ¾î ÀÖ½À´Ï´Ù.");
-            Debug.LogWarning("[BattleTimelineController] ÀÌ Å¸ÀÓ¶óÀÎ ½½·Ô¿¡´Â ÀÌ¹Ì ´Ù¸¥ Ä³¸¯ÅÍÀÇ Çàµ¿ÀÌ ¿¹¾àµÇ¾î ÀÖ½À´Ï´Ù.");
+            ShowBattleWarning("ì´ ìŠ¬ë¡¯ì—ëŠ” ì´ë¯¸ ë‹¤ë¥¸ ìºë¦­í„°ì˜ í–‰ë™ì´ ì˜ˆì•½ë˜ì–´ ìˆìŠµë‹ˆë‹¤.");
+            Debug.LogWarning("[BattleTimelineController] ì´ íƒ€ì„ë¼ì¸ ìŠ¬ë¡¯ì—ëŠ” ì´ë¯¸ ë‹¤ë¥¸ ìºë¦­í„°ì˜ í–‰ë™ì´ ì˜ˆì•½ë˜ì–´ ìˆìŠµë‹ˆë‹¤.");
             selectedSkill = null;
             return;
         }
 
         if (!slot.CanAddCommand())
         {
-            ShowBattleWarning("ÇÑ ½½·Ô¿¡´Â ÃÖ´ë 3°³ÀÇ ½ºÅ³¸¸ ¿¹¾àÇÒ ¼ö ÀÖ½À´Ï´Ù.");
+            ShowBattleWarning("í•œ ìŠ¬ë¡¯ì—ëŠ” ìµœëŒ€ 3ê°œì˜ ìŠ¤í‚¬ë§Œ ì˜ˆì•½í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.");
             selectedSkill = null;
             return;
         }
@@ -156,8 +746,8 @@ public class BattleTimelineController : MonoBehaviour
 
         if (casterGridIndex < 0)
         {
-            ShowBattleWarning("Ä³¸¯ÅÍ À§Ä¡¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.");
-            Debug.LogWarning($"[BattleTimelineController] Ä³¸¯ÅÍ À§Ä¡¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù: {selectedCharacter.CharacterId}");
+            ShowBattleWarning("ìºë¦­í„° ìœ„ì¹˜ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
+            Debug.LogWarning($"[BattleTimelineController] ìºë¦­í„° ìœ„ì¹˜ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤: {selectedCharacter.CharacterId}");
             selectedSkill = null;
             return;
         }
@@ -167,8 +757,8 @@ public class BattleTimelineController : MonoBehaviour
 
         if (playerSkillReservationController == null)
         {
-            ShowBattleWarning("½ºÅ³ ¿¹¾à ÄÁÆ®·Ñ·¯¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.");
-            Debug.LogWarning("[BattleTimelineController] PlayerSkillReservationController°¡ ¾ø½À´Ï´Ù.");
+            ShowBattleWarning("ìŠ¤í‚¬ ì˜ˆì•½ ì»¨íŠ¸ë¡¤ëŸ¬ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
+            Debug.LogWarning("[BattleTimelineController] PlayerSkillReservationControllerê°€ ì—†ìŠµë‹ˆë‹¤.");
             selectedSkill = null;
             return;
         }
@@ -188,19 +778,19 @@ public class BattleTimelineController : MonoBehaviour
     {
         if (command == null)
         {
-            ShowBattleWarning("¿¹¾àÇÒ ½ºÅ³ Á¤º¸°¡ ¾ø½À´Ï´Ù.");
+            ShowBattleWarning("ì˜ˆì•½í•  ìŠ¤í‚¬ ì •ë³´ê°€ ì—†ìŠµë‹ˆë‹¤.");
             return false;
         }
 
         if (reserveSlots == null || reserveSlots.Length <= 0)
         {
-            ShowBattleWarning("Å¸ÀÓ¶óÀÎ ½½·ÔÀÌ ¾ø½À´Ï´Ù.");
+            ShowBattleWarning("íƒ€ì„ë¼ì¸ ìŠ¬ë¡¯ì´ ì—†ìŠµë‹ˆë‹¤.");
             return false;
         }
 
         if (slotIndex < 0 || slotIndex >= reserveSlots.Length)
         {
-            ShowBattleWarning("¼±ÅÃÇÑ Å¸ÀÓ¶óÀÎ ½½·ÔÀ» »ç¿ëÇÒ ¼ö ¾ø½À´Ï´Ù.");
+            ShowBattleWarning("ì„ íƒí•œ íƒ€ì„ë¼ì¸ ìŠ¬ë¡¯ì„ ì‚¬ìš©í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
             return false;
         }
 
@@ -208,7 +798,7 @@ public class BattleTimelineController : MonoBehaviour
 
         if (slot == null)
         {
-            ShowBattleWarning("¼±ÅÃÇÑ Å¸ÀÓ¶óÀÎ ½½·ÔÀ» »ç¿ëÇÒ ¼ö ¾ø½À´Ï´Ù.");
+            ShowBattleWarning("ì„ íƒí•œ íƒ€ì„ë¼ì¸ ìŠ¬ë¡¯ì„ ì‚¬ìš©í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
             return false;
         }
 
@@ -221,14 +811,14 @@ public class BattleTimelineController : MonoBehaviour
 
         if (!slot.CanAcceptCharacter(command.UserRuntime))
         {
-            ShowBattleWarning("ÀÌ ½½·Ô¿¡´Â ÀÌ¹Ì ´Ù¸¥ Ä³¸¯ÅÍÀÇ Çàµ¿ÀÌ ¿¹¾àµÇ¾î ÀÖ½À´Ï´Ù.");
-            Debug.LogWarning("[BattleTimelineController] ÀÌ Å¸ÀÓ¶óÀÎ ½½·Ô¿¡´Â ÀÌ¹Ì ´Ù¸¥ Ä³¸¯ÅÍÀÇ Çàµ¿ÀÌ ¿¹¾àµÇ¾î ÀÖ½À´Ï´Ù.");
+            ShowBattleWarning("ì´ ìŠ¬ë¡¯ì—ëŠ” ì´ë¯¸ ë‹¤ë¥¸ ìºë¦­í„°ì˜ í–‰ë™ì´ ì˜ˆì•½ë˜ì–´ ìˆìŠµë‹ˆë‹¤.");
+            Debug.LogWarning("[BattleTimelineController] ì´ íƒ€ì„ë¼ì¸ ìŠ¬ë¡¯ì—ëŠ” ì´ë¯¸ ë‹¤ë¥¸ ìºë¦­í„°ì˜ í–‰ë™ì´ ì˜ˆì•½ë˜ì–´ ìˆìŠµë‹ˆë‹¤.");
             return false;
         }
 
         if (!slot.CanAddCommand())
         {
-            ShowBattleWarning("ÇÑ ½½·Ô¿¡´Â ÃÖ´ë 3°³ÀÇ ½ºÅ³¸¸ ¿¹¾àÇÒ ¼ö ÀÖ½À´Ï´Ù.");
+            ShowBattleWarning("í•œ ìŠ¬ë¡¯ì—ëŠ” ìµœëŒ€ 3ê°œì˜ ìŠ¤í‚¬ë§Œ ì˜ˆì•½í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.");
             return false;
         }
 
@@ -236,8 +826,8 @@ public class BattleTimelineController : MonoBehaviour
 
         if (!added)
         {
-            ShowBattleWarning("½ºÅ³À» ¿¹¾àÇÒ ¼ö ¾ø½À´Ï´Ù.");
-            Debug.LogWarning("[BattleTimelineController] ¿¹¾à ½½·ÔÀÌ °¡µæ Ã¡½À´Ï´Ù.");
+            ShowBattleWarning("ìŠ¤í‚¬ì„ ì˜ˆì•½í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
+            Debug.LogWarning("[BattleTimelineController] ì˜ˆì•½ ìŠ¬ë¡¯ì´ ê°€ë“ ì°¼ìŠµë‹ˆë‹¤.");
             return false;
         }
 
@@ -249,6 +839,7 @@ public class BattleTimelineController : MonoBehaviour
 
         RefreshTimeline();
         RefreshPlayerHUDs();
+        RefreshMoveGhostPreview();
 
         return true;
     }
@@ -285,10 +876,10 @@ public class BattleTimelineController : MonoBehaviour
     private string GetReserveBlockReason(PlayerReservedCommand command)
     {
         if (command == null)
-            return "¿¹¾àÇÒ ½ºÅ³ Á¤º¸°¡ ¾ø½À´Ï´Ù.";
+            return "ì˜ˆì•½í•  ìŠ¤í‚¬ ì •ë³´ê°€ ì—†ìŠµë‹ˆë‹¤.";
 
         if (command.UserRuntime == null)
-            return "¼±ÅÃµÈ Ä³¸¯ÅÍ°¡ ¾ø½À´Ï´Ù.";
+            return "ì„ íƒëœ ìºë¦­í„°ê°€ ì—†ìŠµë‹ˆë‹¤.";
 
         CharacterRuntimeData runtime = command.UserRuntime;
 
@@ -300,14 +891,14 @@ public class BattleTimelineController : MonoBehaviour
             if (command.ResourceCost < minRequired)
             {
                 Debug.LogWarning(
-                    $"[BattleTimelineController] AllCurrent ÀÚ¿ø ºÎÁ· / " +
+                    $"[BattleTimelineController] AllCurrent ìì› ë¶€ì¡± / " +
                     $"Character:{runtime.CharacterId} / " +
                     $"Skill:{command.SkillId} / " +
                     $"Cost:{command.ResourceCost} / " +
                     $"MinRequired:{minRequired}"
                 );
 
-                return $"{GetCostLabel(command.SkillData.ReferenceResource)}ÀÌ ºÎÁ·ÇÕ´Ï´Ù. ÇÊ¿ä:{minRequired} / º¸À¯:{command.ResourceCost}";
+                return $"{GetCostLabel(command.SkillData.ReferenceResource)}ì´ ë¶€ì¡±í•©ë‹ˆë‹¤. í•„ìš”:{minRequired} / ë³´ìœ :{command.ResourceCost}";
             }
         }
 
@@ -321,22 +912,22 @@ public class BattleTimelineController : MonoBehaviour
     private string GetShortageMessage(CharacterRuntimeData runtime, PlayerReservedCommand command)
     {
         if (runtime == null || command == null)
-            return "¿¹¾àÇÒ ½ºÅ³ Á¤º¸°¡ ¾ø½À´Ï´Ù.";
+            return "ì˜ˆì•½í•  ìŠ¤í‚¬ ì •ë³´ê°€ ì—†ìŠµë‹ˆë‹¤.";
 
         if (!runtime.CanReserveHealth(command.HealthCost))
-            return BuildShortageMessage("Ã¼·Â", command.HealthCost, runtime.CurrentHealth - runtime.ReservedHealthCost);
+            return BuildShortageMessage("ì²´ë ¥", command.HealthCost, runtime.CurrentHealth - runtime.ReservedHealthCost);
 
         if (!runtime.CanReserveStamina(command.StaminaCost))
-            return BuildShortageMessage("ÄÚ½ºÆ®", command.StaminaCost, runtime.CurrentStamina - runtime.ReservedStaminaCost);
+            return BuildShortageMessage("ì½”ìŠ¤íŠ¸", command.StaminaCost, runtime.CurrentStamina - runtime.ReservedStaminaCost);
 
         if (!runtime.CanReserveResource(command.ResourceCost))
-            return BuildShortageMessage("°íÀ¯ÀÚ¿ø", command.ResourceCost, runtime.CurrentResource - runtime.ReservedResourceCost);
+            return BuildShortageMessage("ê³ ìœ ìì›", command.ResourceCost, runtime.CurrentResource - runtime.ReservedResourceCost);
 
         if (!runtime.CanReserveMove(command.MoveCost))
-            return BuildShortageMessage("ÀÌµ¿ Æ÷ÀÎÆ®", command.MoveCost, runtime.CurrentMoveLevel - runtime.ReservedMoveCost);
+            return BuildShortageMessage("ì´ë™ í¬ì¸íŠ¸", command.MoveCost, runtime.CurrentMoveLevel - runtime.ReservedMoveCost);
 
         if (!runtime.CanReserveShield(command.ShieldCost))
-            return BuildShortageMessage("¹æ¾îµµ", command.ShieldCost, runtime.CurrentShield - runtime.ReservedShieldCost);
+            return BuildShortageMessage("ë°©ì–´ë„", command.ShieldCost, runtime.CurrentShield - runtime.ReservedShieldCost);
 
         return string.Empty;
     }
@@ -344,7 +935,7 @@ public class BattleTimelineController : MonoBehaviour
     private string BuildShortageMessage(string label, int required, int available)
     {
         int safeAvailable = Mathf.Max(0, available);
-        return $"{label}ÀÌ ºÎÁ·ÇÕ´Ï´Ù. ÇÊ¿ä:{required} / º¸À¯:{safeAvailable}";
+        return $"{label}ì´ ë¶€ì¡±í•©ë‹ˆë‹¤. í•„ìš”:{required} / ë³´ìœ :{safeAvailable}";
     }
 
     private string GetCostLabel(ReferenceResource resource)
@@ -352,19 +943,19 @@ public class BattleTimelineController : MonoBehaviour
         switch (resource)
         {
             case ReferenceResource.Health:
-                return "Ã¼·Â";
+                return "ì²´ë ¥";
 
             case ReferenceResource.Stamina:
-                return "ÄÚ½ºÆ®";
+                return "ì½”ìŠ¤íŠ¸";
 
             case ReferenceResource.UniqueResource:
-                return "°íÀ¯ÀÚ¿ø";
+                return "ê³ ìœ ìì›";
 
             case ReferenceResource.MovePoint:
-                return "ÀÌµ¿ Æ÷ÀÎÆ®";
+                return "ì´ë™ í¬ì¸íŠ¸";
 
             default:
-                return "ÀÚ¿ø";
+                return "ìì›";
         }
     }
 
@@ -488,12 +1079,73 @@ public class BattleTimelineController : MonoBehaviour
         if (command == null)
             return;
 
-        if (slotIndex < 0 || slotIndex >= monsterCommandsBySlot.Length)
-            slotIndex = 0;
+        int resolvedSlotIndex = ResolveMonsterSlotIndex(slotIndex, command);
 
-        monsterCommandsBySlot[slotIndex].Add(command);
+        if (resolvedSlotIndex < 0)
+        {
+            Debug.LogWarning(
+                $"[BattleTimelineController] ëª¬ìŠ¤í„° í–‰ë™ì„ ë„£ì„ ìŠ¬ë¡¯ì´ ì—†ìŠµë‹ˆë‹¤. " +
+                $"Monster:{command.RuntimeId} / Skill:{command.SkillId}"
+            );
+            return;
+        }
+
+        monsterCommandsBySlot[resolvedSlotIndex].Add(command);
 
         RefreshTimeline();
+    }
+
+    private int ResolveMonsterSlotIndex(int preferredSlotIndex, MonsterReservedCommand command)
+    {
+        if (command == null)
+            return -1;
+
+        if (preferredSlotIndex < 0)
+            preferredSlotIndex = 0;
+
+        if (preferredSlotIndex >= monsterCommandsBySlot.Length)
+            preferredSlotIndex = monsterCommandsBySlot.Length - 1;
+
+        if (CanMonsterUseSlot(preferredSlotIndex, command.RuntimeId))
+            return preferredSlotIndex;
+
+        for (int i = preferredSlotIndex + 1; i < monsterCommandsBySlot.Length; i++)
+        {
+            if (CanMonsterUseSlot(i, command.RuntimeId))
+                return i;
+        }
+
+        for (int i = preferredSlotIndex - 1; i >= 0; i--)
+        {
+            if (CanMonsterUseSlot(i, command.RuntimeId))
+                return i;
+        }
+
+        return -1;
+    }
+
+    private bool CanMonsterUseSlot(int slotIndex, string runtimeId)
+    {
+        if (slotIndex < 0 || slotIndex >= monsterCommandsBySlot.Length)
+            return false;
+
+        List<MonsterReservedCommand> commands = monsterCommandsBySlot[slotIndex];
+
+        if (commands == null || commands.Count <= 0)
+            return true;
+
+        for (int i = 0; i < commands.Count; i++)
+        {
+            MonsterReservedCommand command = commands[i];
+
+            if (command == null)
+                continue;
+
+            if (command.RuntimeId != runtimeId)
+                return false;
+        }
+
+        return true;
     }
 
     public void ClearMonsterReservations()
@@ -528,33 +1180,52 @@ public class BattleTimelineController : MonoBehaviour
 
         RefreshTimeline();
         RefreshPlayerHUDs();
+        RefreshMoveGhostPreview();
 
-        Debug.Log($"[BattleTimelineController] ¿¹¾à Ãë¼Ò / Slot:{slotIndex} / Order:{orderIndex}");
+        Debug.Log($"[BattleTimelineController] ì˜ˆì•½ ì·¨ì†Œ / Slot:{slotIndex} / Order:{orderIndex}");
     }
 
     public void ClearAllReservations()
     {
-        if (reserveSlots == null)
-            return;
+        ClearSelectedSlotSelection();
 
-        for (int i = 0; i < reserveSlots.Length; i++)
+        if (reserveSlots != null)
         {
-            if (reserveSlots[i] == null)
-                continue;
-
-            var commands = reserveSlots[i].Commands;
-
-            for (int j = commands.Count - 1; j >= 0; j--)
+            for (int i = 0; i < reserveSlots.Length; i++)
             {
-                if (reserveSlots[i].RemoveCommandAt(j, out PlayerReservedCommand removedCommand))
-                    RemoveReservedCosts(removedCommand);
-            }
+                if (reserveSlots[i] == null)
+                    continue;
 
-            reserveSlots[i].Clear();
+                var commands = reserveSlots[i].Commands;
+
+                for (int j = commands.Count - 1; j >= 0; j--)
+                {
+                    if (reserveSlots[i].RemoveCommandAt(j, out PlayerReservedCommand removedCommand))
+                        RemoveReservedCosts(removedCommand);
+                }
+
+                reserveSlots[i].Clear();
+            }
         }
+
+        ClearAllMonsterCommandsWithoutRefresh();
 
         RefreshTimeline();
         RefreshPlayerHUDs();
+    }
+
+    private void ClearAllMonsterCommandsWithoutRefresh()
+    {
+        InitializeMonsterCommandSlots();
+
+        if (monsterCommandsBySlot == null)
+            return;
+
+        for (int i = 0; i < monsterCommandsBySlot.Length; i++)
+        {
+            if (monsterCommandsBySlot[i] != null)
+                monsterCommandsBySlot[i].Clear();
+        }
     }
 
     private void RemoveReservedCosts(PlayerReservedCommand command)
@@ -580,8 +1251,8 @@ public class BattleTimelineController : MonoBehaviour
             timelineBarUI.Refresh(reserveSlots, monsterCommandsBySlot);
         else
         {
-            ShowBattleWarning("Å¸ÀÓ¶óÀÎ UI¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.");
-            Debug.LogWarning("[BattleTimelineController] timelineBarUI°¡ ¾ø½À´Ï´Ù.");
+            ShowBattleWarning("íƒ€ì„ë¼ì¸ UIë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
+            Debug.LogWarning("[BattleTimelineController] timelineBarUIê°€ ì—†ìŠµë‹ˆë‹¤.");
         }
     }
 
@@ -597,5 +1268,121 @@ public class BattleTimelineController : MonoBehaviour
             if (hudSlots[i] != null)
                 hudSlots[i].Refresh();
         }
+    }
+
+    public int GetPreviewGridIndexBeforeCommand(
+    CharacterRuntimeData runtimeData,
+    int targetSlotIndex,
+    int targetPlayerCommandIndex)
+    {
+        if (runtimeData == null)
+            return -1;
+
+        int gridIndex = GetCurrentBattleCharacterGridIndex(runtimeData.CharacterId);
+
+        if (gridIndex < 0)
+            gridIndex = GetRuntimeStartGridIndex(runtimeData.CharacterId);
+
+        if (gridIndex < 0)
+            return -1;
+
+        if (reserveSlots == null)
+            return gridIndex;
+
+        for (int slotIndex = 0; slotIndex <= targetSlotIndex; slotIndex++)
+        {
+            ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+
+            if (slot == null || slot.Commands == null)
+                continue;
+
+            for (int i = 0; i < slot.Commands.Count; i++)
+            {
+                PlayerReservedCommand command = slot.Commands[i];
+
+                if (command == null || command.UserRuntime == null)
+                    continue;
+
+                if (command.UserRuntime.CharacterId != runtimeData.CharacterId)
+                    continue;
+
+                if (slotIndex == targetSlotIndex && i >= targetPlayerCommandIndex)
+                    break;
+
+                if (command.ReservedMoveGridIndex >= 0)
+                    gridIndex = command.ReservedMoveGridIndex;
+            }
+        }
+
+        return gridIndex;
+    }
+
+    private void RefreshMoveGhostPreview()
+    {
+        if (moveGhostPreview == null)
+            moveGhostPreview = FindFirstObjectByType<MoveGhostPreview>(FindObjectsInactive.Include);
+
+        if (moveGhostPreview == null)
+            return;
+
+        moveGhostPreview.ClearAll();
+
+        if (reserveSlots == null)
+            return;
+
+        for (int slotIndex = 0; slotIndex < reserveSlots.Length; slotIndex++)
+        {
+            ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+
+            if (slot == null || slot.Commands == null)
+                continue;
+
+            for (int i = 0; i < slot.Commands.Count; i++)
+            {
+                PlayerReservedCommand command = slot.Commands[i];
+
+                if (command == null || command.UserRuntime == null)
+                    continue;
+
+                if (command.ReservedMoveGridIndex < 0)
+                    continue;
+
+                Sprite sprite = GetCharacterSprite(command.UserRuntime.CharacterId);
+
+                moveGhostPreview.Show(
+                    command.UserRuntime.CharacterId,
+                    sprite,
+                    command.ReservedMoveGridIndex,
+                    command.Direction
+                );
+            }
+        }
+    }
+
+    private Sprite GetCharacterSprite(string characterId)
+    {
+        BattleCharacter[] characters = FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            BattleCharacter character = characters[i];
+
+            if (character == null || character.RuntimeData == null)
+                continue;
+
+            if (character.RuntimeData.CharacterId != characterId)
+                continue;
+
+            SpriteRenderer spriteRenderer =
+                character.GetComponentInChildren<SpriteRenderer>();
+
+            if (spriteRenderer != null)
+                return spriteRenderer.sprite;
+        }
+
+        return null;
     }
 }
