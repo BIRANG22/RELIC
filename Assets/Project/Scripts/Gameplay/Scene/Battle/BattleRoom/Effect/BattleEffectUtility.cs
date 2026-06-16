@@ -102,6 +102,8 @@ public static class BattleEffectUtility
 
         damage = Mathf.Max(0, damage);
 
+        int hpBefore = target.RuntimeData.CurrentHealth;
+
         int shieldDamage = Mathf.Min(target.RuntimeData.CurrentShield, damage);
         target.RuntimeData.CurrentShield -= shieldDamage;
         damage -= shieldDamage;
@@ -120,6 +122,8 @@ public static class BattleEffectUtility
         {
             if (target.RuntimeData.CurrentHealth <= 0)
                 animator.PlayDead();
+            else if (target.RuntimeData.CurrentHealth == hpBefore)
+                animator.PlayGuard();
             else
                 animator.PlayHit();
         }
@@ -132,12 +136,26 @@ public static class BattleEffectUtility
 
         damage = Mathf.Max(0, damage);
 
+        int hpBefore = target.RuntimeData.CurrentHp;
+
         int shieldDamage = Mathf.Min(target.RuntimeData.CurrentShield, damage);
         target.RuntimeData.CurrentShield -= shieldDamage;
         damage -= shieldDamage;
 
         if (damage > 0)
             target.RuntimeData.TakeDamage(damage);
+
+        BattleUnitAnimator animator = target.GetComponent<BattleUnitAnimator>();
+
+        if (animator != null)
+        {
+            if (target.RuntimeData.IsDead)
+                animator.PlayDead();
+            else if (target.RuntimeData.CurrentHp == hpBefore)
+                animator.PlayGuard();
+            else
+                animator.PlayHit();
+        }
 
         target.ShowAndRefreshHUD();
     }
@@ -171,6 +189,51 @@ public static class BattleEffectUtility
         damage = Mathf.Max(0, damage);
 
         target.RuntimeData.TakeDamage(damage);
+        target.ShowAndRefreshHUD();
+    }
+
+    public static void StatusDamagePlayer(BattleCharacter target, int damage)
+    {
+        if (target == null || target.RuntimeData == null)
+            return;
+
+        damage = Mathf.Max(0, damage);
+
+        target.RuntimeData.CurrentHealth =
+            Mathf.Max(0, target.RuntimeData.CurrentHealth - damage);
+
+        OnPlayerDamaged?.Invoke(target);
+
+        BattleUnitAnimator animator = target.GetComponent<BattleUnitAnimator>();
+
+        if (animator != null)
+        {
+            if (target.RuntimeData.CurrentHealth <= 0)
+                animator.PlayDead();
+            else
+                animator.PlayHit();
+        }
+    }
+
+    public static void StatusDamageMonster(MonsterUnit target, int damage)
+    {
+        if (target == null || target.RuntimeData == null)
+            return;
+
+        damage = Mathf.Max(0, damage);
+
+        target.RuntimeData.TakeDamage(damage);
+
+        BattleUnitAnimator animator = target.GetComponent<BattleUnitAnimator>();
+
+        if (animator != null)
+        {
+            if (target.RuntimeData.IsDead)
+                animator.PlayDead();
+            else
+                animator.PlayHit();
+        }
+
         target.ShowAndRefreshHUD();
     }
 

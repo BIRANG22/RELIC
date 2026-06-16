@@ -551,12 +551,12 @@ public class BattleActionRunner
         BattleUnitAnimator monsterAnimator = monster.GetComponent<BattleUnitAnimator>();
 
         if (monsterAnimator != null)
-            monsterAnimator.PlayRandomAttackReady();
+            monsterAnimator.PlayMonsterSkillReady(command.SkillData);
 
         yield return new WaitForSeconds(ReadyDelay);
 
         if (monsterAnimator != null)
-            monsterAnimator.PlayCurrentAttackAction();
+            monsterAnimator.PlayMonsterSkillAction(command.SkillData);
 
         statusEffectService.ApplyBleedingDamageToMonsterOnAttack(monster);
 
