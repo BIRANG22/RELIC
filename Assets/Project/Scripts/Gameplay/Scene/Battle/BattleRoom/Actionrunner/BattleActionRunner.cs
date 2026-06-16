@@ -15,8 +15,6 @@ public class BattleActionRunner
     private readonly BattleStatusEffectService statusEffectService;
     private readonly MonsterSkillEffectService monsterSkillEffectService;
     private readonly BattleEffectExecutor effectExecutor = new();
-    private readonly bool useSafeSequentialExecution;
-    private readonly float actionRoutineTimeout;
 
     private const float ReadyDelay = 0.06f;
     private const float ActionDelay = 0.05f;
@@ -26,15 +24,11 @@ public class BattleActionRunner
     private const float MonsterHUDVisibleDelay = 0.6f;
 
     public BattleActionRunner(
-    GridManager gridManager,
-    BattleMonsterSpawner monsterSpawner = null,
-    BattleRoomLoader roomLoader = null,
-    bool useSafeSequentialExecution = true,
-    float actionRoutineTimeout = 8f)
+      GridManager gridManager,
+      BattleMonsterSpawner monsterSpawner = null,
+      BattleRoomLoader roomLoader = null)
     {
         this.gridManager = gridManager;
-        this.useSafeSequentialExecution = useSafeSequentialExecution;
-        this.actionRoutineTimeout = Mathf.Max(1f, actionRoutineTimeout);
 
         unitFinder = new BattleUnitFinder();
         hudService = new BattleHUDService();
@@ -44,7 +38,17 @@ public class BattleActionRunner
         monsterSkillEffectService = new MonsterSkillEffectService(damageService, deathService, hudService, gridManager);
     }
 
-    public IEnumerator RunBatch(BattleActionBatch batch)
+    public BattleActionRunner(
+      GridManager gridManager,
+      BattleMonsterSpawner monsterSpawner,
+      BattleRoomLoader roomLoader,
+      object unusedFourthArgument,
+      object unusedFifthArgument)
+        : this(gridManager, monsterSpawner, roomLoader)
+    {
+    }
+
+    public IEnumerator RunBatch(BattleActionBatch batch, bool keepCameraAfterBatch = false)
     {
         if (batch == null)
             yield break;
@@ -74,17 +78,21 @@ public class BattleActionRunner
             actionRoutines.Add(ExecuteMonsterCommand(command));
         }
 
-        bool holdCameraUntilBatchEnd = ShouldHoldCameraUntilBatchEnd(batch);
+        bool batchHasCrossSideHit = BatchHasCrossSideHitAction(batch);
+        bool holdCameraDuringBatch = batchHasCrossSideHit &&
+            (ShouldHoldCameraUntilBatchEnd(batch) || keepCameraAfterBatch);
 
-        if (holdCameraUntilBatchEnd && BattleCameraController.Instance != null)
-            BattleCameraController.Instance.SetHoldDefaultReturn(true);
-      
-        if (useSafeSequentialExecution)
-            yield return RunSequentialSafe(actionRoutines);
-        else
-            yield return RunParallelSafe(actionRoutines);
+        if (BattleCameraController.Instance != null)
+        {
+            BattleCameraController.Instance.SetHoldDefaultReturn(holdCameraDuringBatch);
 
-        if (holdCameraUntilBatchEnd && BattleCameraController.Instance != null)
+            if (!batchHasCrossSideHit && BattleCameraController.Instance.IsCombatZoomActive)
+                yield return BattleCameraController.Instance.ReturnDefault();
+        }
+
+        yield return RunParallel(actionRoutines);
+
+        if (holdCameraDuringBatch && !keepCameraAfterBatch && BattleCameraController.Instance != null)
         {
             BattleCameraController.Instance.SetHoldDefaultReturn(false);
             yield return BattleCameraController.Instance.ReturnDefault();
@@ -107,9 +115,23 @@ public class BattleActionRunner
         hudService.RefreshHUDs();
     }
 
+    public IEnumerator ReturnCameraDefaultIfNeeded()
+    {
+        if (BattleCameraController.Instance == null)
+            yield break;
+
+        BattleCameraController.Instance.SetHoldDefaultReturn(false);
+        yield return BattleCameraController.Instance.ReturnDefault();
+    }
+
     private bool ShouldHoldCameraUntilBatchEnd(BattleActionBatch batch)
     {
         return CountCrossSideHitActions(batch) > 1;
+    }
+
+    public bool BatchHasCrossSideHitAction(BattleActionBatch batch)
+    {
+        return CountCrossSideHitActions(batch) > 0;
     }
 
     private int CountCrossSideHitActions(BattleActionBatch batch)
@@ -215,67 +237,39 @@ public class BattleActionRunner
         }
     }
 
-    private IEnumerator RunSequentialSafe(List<IEnumerator> routines)
+    private IEnumerator RunParallel(List<IEnumerator> routines)
     {
-        if (routines == null || routines.Count <= 0)
+        if (routines == null || routines.Count == 0)
             yield break;
-
-        for (int i = 0; i < routines.Count; i++)
-        {
-            yield return RunRoutineWithTimeout(
-                routines[i],
-                actionRoutineTimeout,
-                $"SequentialAction:{i}"
-            );
-        }
-    }
-
-    private IEnumerator RunParallelSafe(List<IEnumerator> routines)
-    {
-        if (routines == null || routines.Count <= 0)
-            yield break;
-
-        if (CoroutineHost.Instance == null)
-        {
-            Debug.LogWarning("[BattleActionRunner] CoroutineHost ����. ���� �������� ��ü�մϴ�.");
-            yield return RunSequentialSafe(routines);
-            yield break;
-        }
 
         int runningCount = routines.Count;
-        List<Coroutine> runningCoroutines = new();
 
         for (int i = 0; i < routines.Count; i++)
         {
-            int index = i;
+            int routineIndex = i;
 
-            Coroutine coroutine = CoroutineHost.Instance.StartCoroutine(
-                RunAndCountDownSafe(
+            CoroutineHost.Instance.StartCoroutine(
+                RunAndCountDown(
                     routines[i],
-                    () => runningCount--,
-                    $"ParallelAction:{index}"
+                    () =>
+                    {
+                        runningCount--;
+                        //Debug.Log($"[BattleActionRunner] Routine End:{routineIndex} / Left:{runningCount}");
+                    }
                 )
             );
-
-            runningCoroutines.Add(coroutine);
         }
 
+        float timeout = 10f;
         float elapsed = 0f;
 
         while (runningCount > 0)
         {
-            elapsed += Time.unscaledDeltaTime;
+            elapsed += Time.deltaTime;
 
-            if (elapsed >= actionRoutineTimeout)
+            if (elapsed >= timeout)
             {
-                Debug.LogError($"[BattleActionRunner] Parallel Timeout / Left:{runningCount}");
-
-                for (int i = 0; i < runningCoroutines.Count; i++)
-                {
-                    if (runningCoroutines[i] != null)
-                        CoroutineHost.Instance.StopCoroutine(runningCoroutines[i]);
-                }
-
+                Debug.LogError($"[BattleActionRunner] RunParallel Timeout / Left:{runningCount}");
                 break;
             }
 
@@ -283,15 +277,8 @@ public class BattleActionRunner
         }
     }
 
-    private IEnumerator RunRoutineWithTimeout(
-        IEnumerator routine,
-        float timeout,
-        string label)
+    private IEnumerator RunAndCountDown(IEnumerator routine, System.Action onComplete)
     {
-        if (routine == null)
-            yield break;
-
-        float elapsed = 0f;
         bool done = false;
 
         while (!done)
@@ -300,7 +287,7 @@ public class BattleActionRunner
 
             try
             {
-                if (!routine.MoveNext())
+                if (routine == null || !routine.MoveNext())
                 {
                     done = true;
                 }
@@ -311,32 +298,14 @@ public class BattleActionRunner
             }
             catch (System.Exception e)
             {
-                Debug.LogError($"[BattleActionRunner] Routine Exception / {label}");
                 Debug.LogException(e);
-                yield break;
+                done = true;
             }
 
-            if (done)
-                yield break;
-
-            elapsed += Time.unscaledDeltaTime;
-
-            if (elapsed >= timeout)
-            {
-                Debug.LogError($"[BattleActionRunner] Routine Timeout / {label}");
-                yield break;
-            }
-
-            yield return current;
+            if (!done)
+                yield return current;
         }
-    }
 
-    private IEnumerator RunAndCountDownSafe(
-        IEnumerator routine,
-        System.Action onComplete,
-        string label)
-    {
-        yield return RunRoutineWithTimeout(routine, actionRoutineTimeout, label);
         onComplete?.Invoke();
     }
 
@@ -481,7 +450,7 @@ public class BattleActionRunner
         }
 
         if (hitTargets.Count > 0 && BattleCameraController.Instance != null)
-            yield return BattleCameraController.Instance.ZoomToHitTarget(hitTargets[0].transform);
+            yield return BattleCameraController.Instance.ZoomToAttacker(attacker.transform);
 
         if (attackerAnimator != null)
             attackerAnimator.PlaySkillAction(command.SkillData);
@@ -737,7 +706,7 @@ public class BattleActionRunner
         }
 
         if (firstPlayerTarget != null && BattleCameraController.Instance != null)
-            yield return BattleCameraController.Instance.ZoomToHitTarget(firstPlayerTarget.transform);
+            yield return BattleCameraController.Instance.ZoomToAttacker(monster.transform);
 
         if (monsterAnimator != null)
             monsterAnimator.PlayMonsterSkillAction(command.SkillData);
@@ -927,7 +896,7 @@ public class BattleActionRunner
         yield return new WaitForSeconds(ReadyDelay);
 
         if (hitPlayer != null && BattleCameraController.Instance != null)
-            yield return BattleCameraController.Instance.ZoomToHitTarget(hitPlayer.transform);
+            yield return BattleCameraController.Instance.ZoomToAttacker(monster.transform);
 
         if (animator != null)
             animator.PlayCurrentAttackAction();
@@ -940,12 +909,18 @@ public class BattleActionRunner
 
             Vector3 pos = gridManager.GetWorldPositionByIndex(movedIndex);
 
+            if (hitPlayer != null && BattleCameraController.Instance != null)
+                BattleCameraController.Instance.BeginZoomFollowTarget(monster.transform);
+
             yield return MoveTransformSmooth(
                 monster.transform,
                 monster.transform.position,
                 pos,
                 0.25f
             );
+
+            if (hitPlayer != null && BattleCameraController.Instance != null)
+                BattleCameraController.Instance.EndZoomFollowTarget();
 
             monster.MoveOccupiedCells(finalOffset, gridManager);
         }

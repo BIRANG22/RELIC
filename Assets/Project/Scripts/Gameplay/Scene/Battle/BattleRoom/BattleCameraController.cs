@@ -14,43 +14,39 @@ public class BattleCameraController : MonoBehaviour
     [SerializeField] private Vector2 zoomOffset = new Vector2(0f, 0.35f);
     [SerializeField] private bool usePositionZZoom = true;
     [SerializeField] private bool useFixedZoomZPosition = true;
-    [SerializeField] private float zoomZPosition = -10f;
-    [SerializeField] private float zoomZOffset = 10f;
+    [SerializeField] private float zoomZPosition = -15f;
+    [SerializeField] private float zoomZOffset = 5f;
     [SerializeField] private bool useOrthographicSizeZoom = false;
     [SerializeField] private bool clampZoomPosition = false;
     [SerializeField] private AnimationCurve zoomCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
-    [Header("Safety")]
-    [SerializeField] private bool ignoreCameraRequestWhileBusy = true;
-    [SerializeField] private float cameraRoutineTimeout = 2f;
-
     [Header("Damage Impact")]
     [SerializeField] private bool enableDamageImpact = true;
-    [SerializeField] private float impactZoomAmount = 0.25f;
-    [SerializeField] private float impactZoomZOffset = 0.35f;
-    [SerializeField] private float impactZoomInDuration = 0.04f;
-    [SerializeField] private float impactZoomOutDuration = 0.08f;
-    [SerializeField] private float impactShakeDuration = 0.12f;
-    [SerializeField] private float impactShakeStrength = 0.12f;
-    [SerializeField] private float impactShakeFrequency = 55f;
-    [SerializeField] private float impactHitStopDuration = 0.04f;
+    [SerializeField] private float impactZoomAmount = 0f;
+    [SerializeField] private float impactZoomZOffset = 0f;
+    [SerializeField] private float impactZoomInDuration = 0f;
+    [SerializeField] private float impactZoomOutDuration = 0f;
+    [SerializeField] private float impactShakeDuration = 0.08f;
+    [SerializeField] private float impactShakeStrength = 0.1f;
+    [SerializeField] private float impactShakeFrequency = 20f;
+    [SerializeField] private float impactHitStopDuration = 0.1f;
     [SerializeField] private bool useUnscaledTimeForImpact = true;
 
     [Header("Drag")]
     [SerializeField] private bool enableMouseDrag = true;
+    [SerializeField] private bool dragOnlyInBattleRoom = true;
+    [SerializeField] private Transform battleRoomRoot;
+    [SerializeField] private string battleRoomObjectName = "BattleRoom";
     [SerializeField] private float dragSpeed = 1f;
     [SerializeField] private float dragSmoothTime = 0.08f;
     [SerializeField] private bool returnToDefaultAfterDrag = true;
-    [SerializeField] private float dragReturnDuration = 1.25f;
-    [SerializeField] private Vector2 minCameraPosition = new Vector2(-3f, -2f);
-    [SerializeField] private Vector2 maxCameraPosition = new Vector2(3f, 2f);
+    [SerializeField] private float dragReturnDuration = 0.5f;
+    [SerializeField] private Vector2 minCameraPosition = new Vector2(-0.5f, -1f);
+    [SerializeField] private Vector2 maxCameraPosition = new Vector2(0.5f, 1f);
 
     private float defaultSize;
     private Vector3 defaultPosition;
-
     private Coroutine routine;
-    private bool isCameraBusy;
-
     private Vector3 lastMouseWorldPosition;
     private Vector3 dragTargetPosition;
     private Vector3 dragSmoothVelocity;
@@ -58,12 +54,19 @@ public class BattleCameraController : MonoBehaviour
     private bool hasDragTarget;
     private bool holdDefaultReturn;
     private bool hasHeldSequenceZoom;
+    private bool hasActiveCombatZoom;
     private bool suppressDragUntilMouseReleased;
+
+    private Transform zoomFollowTarget;
+    private Vector3 zoomFollowVelocity;
+    private const float ZoomFollowSmoothTime = 0.045f;
 
     private Vector3 activeImpactOffset;
     private Vector3 lastImpactAppliedPosition;
     private bool isImpactHitStopActive;
     private float previousTimeScale = 1f;
+
+    public bool IsCombatZoomActive => hasActiveCombatZoom;
 
     private void Awake()
     {
@@ -79,17 +82,21 @@ public class BattleCameraController : MonoBehaviour
         }
     }
 
+    private void Start()
+    {
+        TryFindBattleRoomRoot();
+    }
+
     private void OnDisable()
     {
-        StopActiveCameraRoutine();
         RestoreTimeScaleIfNeeded();
         ClearImpactOffset();
-        isCameraBusy = false;
     }
 
     private void Update()
     {
         HandleMouseDrag();
+        HandleZoomFollowTarget();
     }
 
     public IEnumerator ZoomTo(Transform target)
@@ -109,18 +116,28 @@ public class BattleCameraController : MonoBehaviour
         yield return ZoomToPosition(focusPosition);
     }
 
-    public IEnumerator ZoomToHitTarget(Transform hitTarget)
+    public IEnumerator ZoomToAttacker(Transform attacker)
     {
-        if (targetCamera == null || hitTarget == null)
+        if (targetCamera == null || attacker == null)
             yield break;
 
-        if (holdDefaultReturn && hasHeldSequenceZoom)
+        // 전투 줌은 한 연속 행동 묶음에서 처음 잡은 타격자 기준으로 한 번만 이동한다.
+        // 피격자가 바뀌어도 피격자 위치로 다시 줌 이동하지 않는다.
+        if (hasActiveCombatZoom)
             yield break;
+
+        hasActiveCombatZoom = true;
 
         if (holdDefaultReturn)
             hasHeldSequenceZoom = true;
 
-        yield return ZoomToPosition(hitTarget.position);
+        yield return ZoomToPosition(attacker.position);
+    }
+
+    public IEnumerator ZoomToHitTarget(Transform hitTarget)
+    {
+        // 기존 호출부 호환용이다. 실제 기준은 피격자가 아니라 최초 타격자다.
+        yield return ZoomToAttacker(hitTarget);
     }
 
     public void SetHoldDefaultReturn(bool hold)
@@ -129,6 +146,19 @@ public class BattleCameraController : MonoBehaviour
 
         if (!hold)
             hasHeldSequenceZoom = false;
+    }
+
+    public void BeginZoomFollowTarget(Transform target)
+    {
+        zoomFollowTarget = target;
+        zoomFollowVelocity = Vector3.zero;
+        CancelDrag(false);
+    }
+
+    public void EndZoomFollowTarget()
+    {
+        zoomFollowTarget = null;
+        zoomFollowVelocity = Vector3.zero;
     }
 
     public IEnumerator ReturnDefaultIfNotHeld()
@@ -144,14 +174,12 @@ public class BattleCameraController : MonoBehaviour
         if (targetCamera == null)
             yield break;
 
-        if (isCameraBusy && ignoreCameraRequestWhileBusy)
-            yield break;
-
-        isCameraBusy = true;
-
         CancelDrag(false);
-        StopActiveCameraRoutine();
-        RestoreTimeScaleIfNeeded();
+        EndZoomFollowTarget();
+
+        if (routine != null)
+            StopCoroutine(routine);
+
         ClearImpactOffset();
 
         Vector3 targetPos = worldPosition;
@@ -161,16 +189,9 @@ public class BattleCameraController : MonoBehaviour
             ? GetZoomZPosition()
             : targetCamera.transform.position.z;
 
-        float targetSize = useOrthographicSizeZoom
-            ? zoomSize
-            : targetCamera.orthographicSize;
-
-        yield return RunCameraRoutineSafe(
-            MoveCamera(targetPos, targetSize, zoomDuration, clampZoomPosition),
-            "ZoomToPosition"
-        );
-
-        isCameraBusy = false;
+        float targetSize = useOrthographicSizeZoom ? zoomSize : targetCamera.orthographicSize;
+        routine = StartCoroutine(MoveCamera(targetPos, targetSize, zoomDuration, clampZoomPosition));
+        yield return routine;
     }
 
     public IEnumerator ReturnDefault()
@@ -178,22 +199,19 @@ public class BattleCameraController : MonoBehaviour
         if (targetCamera == null)
             yield break;
 
-        if (isCameraBusy && ignoreCameraRequestWhileBusy)
-            yield break;
-
-        isCameraBusy = true;
-
         CancelDrag(false);
-        StopActiveCameraRoutine();
-        RestoreTimeScaleIfNeeded();
+        EndZoomFollowTarget();
+
+        if (routine != null)
+            StopCoroutine(routine);
+
         ClearImpactOffset();
 
-        yield return RunCameraRoutineSafe(
-            MoveCamera(defaultPosition, defaultSize, returnDuration, false),
-            "ReturnDefault"
-        );
+        routine = StartCoroutine(MoveCamera(defaultPosition, defaultSize, returnDuration, false));
+        yield return routine;
 
-        isCameraBusy = false;
+        hasActiveCombatZoom = false;
+        hasHeldSequenceZoom = false;
     }
 
     public IEnumerator PlayDamageImpact()
@@ -201,12 +219,9 @@ public class BattleCameraController : MonoBehaviour
         if (targetCamera == null || !enableDamageImpact)
             yield break;
 
-        if (isCameraBusy && ignoreCameraRequestWhileBusy)
-            yield break;
+        if (routine != null)
+            yield return routine;
 
-        isCameraBusy = true;
-
-        StopActiveCameraRoutine();
         ClearImpactOffset();
 
         float baseSize = targetCamera.orthographicSize;
@@ -214,20 +229,6 @@ public class BattleCameraController : MonoBehaviour
         float baseZ = targetCamera.transform.position.z;
         float targetZ = usePositionZZoom ? baseZ + Mathf.Max(0f, impactZoomZOffset) : baseZ;
 
-        yield return RunCameraRoutineSafe(
-            PlayDamageImpactRoutine(baseSize, targetSize, baseZ, targetZ),
-            "PlayDamageImpact"
-        );
-
-        isCameraBusy = false;
-    }
-
-    private IEnumerator PlayDamageImpactRoutine(
-        float baseSize,
-        float targetSize,
-        float baseZ,
-        float targetZ)
-    {
         yield return LerpImpactZoom(baseSize, targetSize, baseZ, targetZ, impactZoomInDuration);
         yield return ShakeAndHitStop();
         yield return LerpImpactZoom(targetCamera.orthographicSize, baseSize, targetCamera.transform.position.z, baseZ, impactZoomOutDuration);
@@ -238,51 +239,10 @@ public class BattleCameraController : MonoBehaviour
         Vector3 restoredPosition = targetCamera.transform.position;
         restoredPosition.z = baseZ;
         targetCamera.transform.position = restoredPosition;
-
         ClearImpactOffset();
     }
 
-    private IEnumerator RunCameraRoutineSafe(IEnumerator cameraRoutine, string label)
-    {
-        if (cameraRoutine == null)
-            yield break;
-
-        float elapsed = 0f;
-        float timeout = Mathf.Max(0.2f, cameraRoutineTimeout);
-
-        routine = StartCoroutine(cameraRoutine);
-
-        while (routine != null)
-        {
-            elapsed += Time.unscaledDeltaTime;
-
-            if (elapsed >= timeout)
-            {
-                Debug.LogWarning($"[BattleCameraController] Timeout / {label}");
-                StopActiveCameraRoutine();
-                RestoreTimeScaleIfNeeded();
-                ClearImpactOffset();
-                yield break;
-            }
-
-            yield return null;
-        }
-    }
-
-    private void StopActiveCameraRoutine()
-    {
-        if (routine == null)
-            return;
-
-        StopCoroutine(routine);
-        routine = null;
-    }
-
-    private IEnumerator MoveCamera(
-        Vector3 targetPos,
-        float targetSize,
-        float duration,
-        bool clampPosition = true)
+    private IEnumerator MoveCamera(Vector3 targetPos, float targetSize, float duration, bool clampPosition = true)
     {
         Vector3 startPos = targetCamera.transform.position;
         float startSize = targetCamera.orthographicSize;
@@ -292,13 +252,10 @@ public class BattleCameraController : MonoBehaviour
 
         if (duration <= 0f)
         {
-            targetCamera.transform.position = clampPosition
-                ? ClampCameraPosition(targetPos)
-                : targetPos;
+            targetCamera.transform.position = clampPosition ? ClampCameraPosition(targetPos) : targetPos;
 
             if (useOrthographicSizeZoom)
                 targetCamera.orthographicSize = targetSize;
-
             routine = null;
             yield break;
         }
@@ -307,15 +264,12 @@ public class BattleCameraController : MonoBehaviour
 
         while (timer < duration)
         {
-            timer += Time.unscaledDeltaTime;
-
+            timer += Time.deltaTime;
             float t = Mathf.Clamp01(timer / duration);
             float curvedT = EvaluateZoomCurve(t);
 
             Vector3 nextPosition = Vector3.Lerp(startPos, targetPos, curvedT);
-            targetCamera.transform.position = clampPosition
-                ? ClampCameraPosition(nextPosition)
-                : nextPosition;
+            targetCamera.transform.position = clampPosition ? ClampCameraPosition(nextPosition) : nextPosition;
 
             if (useOrthographicSizeZoom)
             {
@@ -326,22 +280,14 @@ public class BattleCameraController : MonoBehaviour
             yield return null;
         }
 
-        targetCamera.transform.position = clampPosition
-            ? ClampCameraPosition(targetPos)
-            : targetPos;
+        targetCamera.transform.position = clampPosition ? ClampCameraPosition(targetPos) : targetPos;
 
         if (useOrthographicSizeZoom)
             targetCamera.orthographicSize = targetSize;
-
         routine = null;
     }
 
-    private IEnumerator LerpImpactZoom(
-        float startSize,
-        float targetSize,
-        float startZ,
-        float targetZ,
-        float duration)
+    private IEnumerator LerpImpactZoom(float startSize, float targetSize, float startZ, float targetZ, float duration)
     {
         if (targetCamera == null)
             yield break;
@@ -362,7 +308,6 @@ public class BattleCameraController : MonoBehaviour
         while (elapsed < duration)
         {
             elapsed += GetImpactDeltaTime();
-
             float t = Mathf.Clamp01(elapsed / duration);
             float curvedT = EvaluateZoomCurve(t);
 
@@ -431,11 +376,7 @@ public class BattleCameraController : MonoBehaviour
             if (elapsed < shakeDuration && shakeStrength > 0f)
             {
                 elapsed += deltaTime;
-
-                float t = shakeDuration > 0f
-                    ? Mathf.Clamp01(elapsed / shakeDuration)
-                    : 1f;
-
+                float t = shakeDuration > 0f ? Mathf.Clamp01(elapsed / shakeDuration) : 1f;
                 float fade = 1f - t;
 
                 Vector3 currentPosition = targetCamera.transform.position;
@@ -458,6 +399,25 @@ public class BattleCameraController : MonoBehaviour
 
         RestoreTimeScaleIfNeeded();
         ClearImpactOffset();
+    }
+
+    private void HandleZoomFollowTarget()
+    {
+        if (targetCamera == null || zoomFollowTarget == null || routine != null)
+            return;
+
+        Vector3 targetPosition = zoomFollowTarget.position;
+        targetPosition.x += zoomOffset.x;
+        targetPosition.y += zoomOffset.y;
+        targetPosition.z = targetCamera.transform.position.z;
+
+        targetCamera.transform.position = Vector3.SmoothDamp(
+            targetCamera.transform.position,
+            targetPosition,
+            ref zoomFollowVelocity,
+            ZoomFollowSmoothTime,
+            Mathf.Infinity,
+            Time.deltaTime);
     }
 
     private float GetZoomZPosition()
@@ -509,11 +469,11 @@ public class BattleCameraController : MonoBehaviour
 
     private void HandleMouseDrag()
     {
-        if (!enableMouseDrag || targetCamera == null)
+        if (!enableMouseDrag || targetCamera == null || !IsDragAllowedInCurrentRoom())
+        {
+            CancelDrag(false);
             return;
-
-        if (isCameraBusy)
-            return;
+        }
 
         if (suppressDragUntilMouseReleased)
         {
@@ -557,8 +517,7 @@ public class BattleCameraController : MonoBehaviour
         Vector3 delta = lastMouseWorldPosition - currentMouseWorldPosition;
 
         dragTargetPosition = ClampCameraPosition(dragTargetPosition + delta * dragSpeed);
-        targetCamera.transform.position =
-            SmoothMoveToDragTarget(targetCamera.transform.position, dragTargetPosition);
+        targetCamera.transform.position = SmoothMoveToDragTarget(targetCamera.transform.position, dragTargetPosition);
 
         lastMouseWorldPosition = currentMouseWorldPosition;
     }
@@ -604,8 +563,7 @@ public class BattleCameraController : MonoBehaviour
             ref dragSmoothVelocity,
             dragSmoothTime,
             Mathf.Infinity,
-            Time.unscaledDeltaTime
-        );
+            Time.deltaTime);
     }
 
     private void StartDragReturnToDefault()
@@ -615,12 +573,44 @@ public class BattleCameraController : MonoBehaviour
         if (!hasDragTarget || targetCamera == null)
             return;
 
-        StopActiveCameraRoutine();
+        if (routine != null)
+            StopCoroutine(routine);
 
         hasDragTarget = false;
         ClearImpactOffset();
-
         routine = StartCoroutine(MoveCamera(defaultPosition, defaultSize, dragReturnDuration, false));
+    }
+
+    private bool IsDragAllowedInCurrentRoom()
+    {
+        if (!dragOnlyInBattleRoom)
+            return true;
+
+        if (battleRoomRoot == null)
+            TryFindBattleRoomRoot();
+
+        return battleRoomRoot != null && battleRoomRoot.gameObject.activeInHierarchy;
+    }
+
+    private void TryFindBattleRoomRoot()
+    {
+        if (battleRoomRoot != null || string.IsNullOrWhiteSpace(battleRoomObjectName))
+            return;
+
+        Transform[] transforms = Resources.FindObjectsOfTypeAll<Transform>();
+        for (int i = 0; i < transforms.Length; i++)
+        {
+            Transform candidate = transforms[i];
+            if (candidate == null || candidate.name != battleRoomObjectName)
+                continue;
+
+            GameObject candidateObject = candidate.gameObject;
+            if (!candidateObject.scene.IsValid() || !candidateObject.scene.isLoaded)
+                continue;
+
+            battleRoomRoot = candidate;
+            return;
+        }
     }
 
     private Vector3 GetMouseWorldPosition()
@@ -644,7 +634,6 @@ public class BattleCameraController : MonoBehaviour
         zoomDuration = Mathf.Max(0f, zoomDuration);
         returnDuration = Mathf.Max(0f, returnDuration);
         zoomZOffset = Mathf.Max(0f, zoomZOffset);
-        cameraRoutineTimeout = Mathf.Max(0.2f, cameraRoutineTimeout);
         dragSmoothTime = Mathf.Max(0f, dragSmoothTime);
         dragReturnDuration = Mathf.Max(0f, dragReturnDuration);
         impactZoomAmount = Mathf.Max(0f, impactZoomAmount);

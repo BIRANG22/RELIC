@@ -13,10 +13,6 @@ public class BattleTurnExecutor : MonoBehaviour
     [SerializeField] private BattleRoomLoader roomLoader;
     [SerializeField] private BattleMonsterSpawner monsterSpawner;
 
-    [Header("Safe Execution")]
-    [SerializeField] private bool useSafeSequentialExecution = true;
-    [SerializeField] private float actionRoutineTimeout = 8f;
-
     [Header("Intro Text")]
     [SerializeField] private string battleProgressMessage = "전투 진행";
 
@@ -71,7 +67,7 @@ public class BattleTurnExecutor : MonoBehaviour
                 moveGhostPreview.ClearAll();
 
             BattleActionBatchBuilder builder = new(gridManager);
-            BattleActionRunner runner = new(gridManager, monsterSpawner, roomLoader, useSafeSequentialExecution, actionRoutineTimeout);
+            BattleActionRunner runner = new(gridManager, monsterSpawner, roomLoader);
             BattleActionSimulationService simulator = new(gridManager);
 
             uniqueResourceService.ApplyTimelineSlotResourceGain(timelineController);
@@ -106,7 +102,11 @@ public class BattleTurnExecutor : MonoBehaviour
                     slidThroughSlotIndex = Mathf.Max(slidThroughSlotIndex, beforeActionSlideThroughSlotIndex);
                 }
 
-                yield return runner.RunBatch(batch);
+                bool keepCameraAfterBatch =
+                    runner.BatchHasCrossSideHitAction(batch) &&
+                    NextExecutableBatchHasCrossSideHitAction(batches, i + 1, runner);
+
+                yield return runner.RunBatch(batch, keepCameraAfterBatch);
 
                 if (BattleResultChecker.Instance != null &&
                     BattleResultChecker.Instance.CheckBattleEnd())
@@ -126,6 +126,8 @@ public class BattleTurnExecutor : MonoBehaviour
                     slidThroughSlotIndex = slideThroughSlotIndex;
                 }
             }
+
+            yield return runner.ReturnCameraDefaultIfNeeded();
 
             runner.ApplyTurnEndEffects();
 
@@ -251,6 +253,23 @@ public class BattleTurnExecutor : MonoBehaviour
             return timelineController.SlotCount - 1;
 
         return executedTimelineSlotIndex;
+    }
+
+
+    private bool NextExecutableBatchHasCrossSideHitAction(
+        List<BattleActionBatch> batches,
+        int startIndex,
+        BattleActionRunner runner)
+    {
+        if (batches == null || runner == null)
+            return false;
+
+        int nextExecutableBatchIndex = GetNextExecutableBatchIndex(batches, startIndex);
+
+        if (nextExecutableBatchIndex < 0)
+            return false;
+
+        return runner.BatchHasCrossSideHitAction(batches[nextExecutableBatchIndex]);
     }
 
     private bool BatchHasCommands(BattleActionBatch batch)
