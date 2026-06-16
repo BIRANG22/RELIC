@@ -1,4 +1,4 @@
-using Relic.Gameplay.Data;
+Ôªøusing Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
 using System.Collections;
 using System.Collections.Generic;
@@ -68,7 +68,18 @@ public class BattleActionRunner
             actionRoutines.Add(ExecuteMonsterCommand(command));
         }
 
+        bool holdCameraUntilBatchEnd = ShouldHoldCameraUntilBatchEnd(batch);
+
+        if (holdCameraUntilBatchEnd && BattleCameraController.Instance != null)
+            BattleCameraController.Instance.SetHoldDefaultReturn(true);
+
         yield return RunParallel(actionRoutines);
+
+        if (holdCameraUntilBatchEnd && BattleCameraController.Instance != null)
+        {
+            BattleCameraController.Instance.SetHoldDefaultReturn(false);
+            yield return BattleCameraController.Instance.ReturnDefault();
+        }
 
         IncreaseMonsterTurnCountsOnceInSlot(batch);
 
@@ -85,6 +96,87 @@ public class BattleActionRunner
     {
         statusEffectService.ApplyTurnEndEffects();
         hudService.RefreshHUDs();
+    }
+
+    private bool ShouldHoldCameraUntilBatchEnd(BattleActionBatch batch)
+    {
+        return CountCrossSideHitActions(batch) > 1;
+    }
+
+    private int CountCrossSideHitActions(BattleActionBatch batch)
+    {
+        if (batch == null)
+            return 0;
+
+        int count = 0;
+
+        if (batch.PlayerCommands != null)
+        {
+            for (int i = 0; i < batch.PlayerCommands.Count; i++)
+            {
+                PlayerReservedCommand command = batch.PlayerCommands[i];
+
+                if (command == null || command.SkillData == null)
+                    continue;
+
+                if (command.ReservedMoveGridIndex >= 0)
+                    continue;
+
+                if (command.SkillData.Target == TargetType.Self || command.SkillData.Target == TargetType.PlayerParty)
+                    continue;
+
+                if (HasMonsterTarget(command))
+                    count++;
+            }
+        }
+
+        if (batch.MonsterCommands != null)
+        {
+            for (int i = 0; i < batch.MonsterCommands.Count; i++)
+            {
+                MonsterReservedCommand command = batch.MonsterCommands[i];
+
+                if (command == null || command.SkillData == null)
+                    continue;
+
+                if (command.SkillData.TimelineNotation == TimelineActionType.Move)
+                    continue;
+
+                if (HasPlayerTarget(command))
+                    count++;
+            }
+        }
+
+        return count;
+    }
+
+    private bool HasMonsterTarget(PlayerReservedCommand command)
+    {
+        if (command == null)
+            return false;
+
+        MonsterUnit[] monsters = Object.FindObjectsByType<MonsterUnit>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < monsters.Length; i++)
+        {
+            MonsterUnit monster = monsters[i];
+
+            if (monster == null || monster.RuntimeData == null)
+                continue;
+
+            if (IsMonsterInRange(monster, command))
+                return true;
+        }
+
+        return false;
+    }
+
+    private bool HasPlayerTarget(MonsterReservedCommand command)
+    {
+        return FindFirstPlayerTarget(command) != null;
     }
 
     private void IncreaseMonsterTurnCountsOnceInSlot(BattleActionBatch batch)
@@ -261,13 +353,13 @@ public class BattleActionRunner
 
         yield return new WaitForSeconds(ReadyDelay);
 
-        if (attackerAnimator != null)
-            attackerAnimator.PlaySkillAction(command.SkillData);
-
-        statusEffectService.ApplyBleedingDamageToPlayerOnAttack(attacker);
-
         if (command.SkillData.Target == TargetType.PlayerParty)
         {
+            if (attackerAnimator != null)
+                attackerAnimator.PlaySkillAction(command.SkillData);
+
+            statusEffectService.ApplyBleedingDamageToPlayerOnAttack(attacker);
+
             BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
                 FindObjectsInactive.Exclude,
                 FindObjectsSortMode.None
@@ -293,6 +385,11 @@ public class BattleActionRunner
 
         if (command.SkillData.Target == TargetType.Self)
         {
+            if (attackerAnimator != null)
+                attackerAnimator.PlaySkillAction(command.SkillData);
+
+            statusEffectService.ApplyBleedingDamageToPlayerOnAttack(attacker);
+
             ExecutePlayerSkillEffectsToPlayer(attacker, attacker, command);
 
             hudService.RefreshHUDs();
@@ -322,7 +419,12 @@ public class BattleActionRunner
         }
 
         if (hitTargets.Count > 0 && BattleCameraController.Instance != null)
-            yield return BattleCameraController.Instance.ZoomTo(hitTargets[0].transform);
+            yield return BattleCameraController.Instance.ZoomToHitTarget(hitTargets[0].transform);
+
+        if (attackerAnimator != null)
+            attackerAnimator.PlaySkillAction(command.SkillData);
+
+        statusEffectService.ApplyBleedingDamageToPlayerOnAttack(attacker);
 
         for (int i = 0; i < hitTargets.Count; i++)
         {
@@ -353,13 +455,16 @@ public class BattleActionRunner
 
         hudService.RefreshHUDs();
 
+        if (hitTargets.Count > 0 && BattleCameraController.Instance != null)
+            yield return BattleCameraController.Instance.PlayDamageImpact();
+
         if (hitTargets.Count > 0)
             yield return new WaitForSeconds(HitCameraDelay);
         else
             yield return new WaitForSeconds(ActionDelay);
 
         if (hitTargets.Count > 0 && BattleCameraController.Instance != null)
-            yield return BattleCameraController.Instance.ReturnDefault();
+            yield return BattleCameraController.Instance.ReturnDefaultIfNotHeld();
     }
 
     private void ExecutePlayerSkillEffects(
@@ -372,7 +477,7 @@ public class BattleActionRunner
 
         if (command.SkillData.EffectEntries == null || command.SkillData.EffectEntries.Count == 0)
         {
-            Debug.LogWarning($"[PlayerSkillEffect] EffectEntries æ¯¿Ω / Skill:{command.SkillData.SkillId}");
+            Debug.LogWarning($"[PlayerSkillEffect] EffectEntries ÏóÜÏùå / Skill:{command.SkillData.SkillId}");
             return;
         }
 
@@ -552,6 +657,7 @@ public class BattleActionRunner
             yield break;
         }
 
+        BattleCharacter firstPlayerTarget = FindFirstPlayerTarget(command);
 
         BattleUnitAnimator monsterAnimator = monster.GetComponent<BattleUnitAnimator>();
 
@@ -559,13 +665,6 @@ public class BattleActionRunner
             monsterAnimator.PlayMonsterSkillReady(command.SkillData);
 
         yield return new WaitForSeconds(ReadyDelay);
-
-        if (monsterAnimator != null)
-            monsterAnimator.PlayMonsterSkillAction(command.SkillData);
-
-        statusEffectService.ApplyBleedingDamageToMonsterOnAttack(monster);
-
-        BattleCharacter firstPlayerTarget = FindFirstPlayerTarget(command);
 
         if (firstPlayerTarget != null)
         {
@@ -576,9 +675,17 @@ public class BattleActionRunner
         }
 
         if (firstPlayerTarget != null && BattleCameraController.Instance != null)
-            yield return BattleCameraController.Instance.ZoomTo(firstPlayerTarget.transform);
+            yield return BattleCameraController.Instance.ZoomToHitTarget(firstPlayerTarget.transform);
+
+        if (monsterAnimator != null)
+            monsterAnimator.PlayMonsterSkillAction(command.SkillData);
+
+        statusEffectService.ApplyBleedingDamageToMonsterOnAttack(monster);
 
         monsterSkillEffectService.ApplyMonsterSkill(monster, command);
+
+        if (firstPlayerTarget != null && BattleCameraController.Instance != null)
+            yield return BattleCameraController.Instance.PlayDamageImpact();
 
         if (firstPlayerTarget != null)
             yield return new WaitForSeconds(HitCameraDelay);
@@ -586,7 +693,7 @@ public class BattleActionRunner
             yield return new WaitForSeconds(ActionDelay);
 
         if (firstPlayerTarget != null && BattleCameraController.Instance != null)
-            yield return BattleCameraController.Instance.ReturnDefault();
+            yield return BattleCameraController.Instance.ReturnDefaultIfNotHeld();
     }
 
     private void RecalculateMonsterSkillRangeAtExecution(
@@ -757,6 +864,9 @@ public class BattleActionRunner
 
         yield return new WaitForSeconds(ReadyDelay);
 
+        if (hitPlayer != null && BattleCameraController.Instance != null)
+            yield return BattleCameraController.Instance.ZoomToHitTarget(hitPlayer.transform);
+
         if (animator != null)
             animator.PlayCurrentAttackAction();
 
@@ -781,7 +891,14 @@ public class BattleActionRunner
         if (hitPlayer != null)
         {
             ApplyMonsterDashDamage(command, monster, hitPlayer);
+
+            if (BattleCameraController.Instance != null)
+                yield return BattleCameraController.Instance.PlayDamageImpact();
+
             yield return new WaitForSeconds(HitCameraDelay);
+
+            if (BattleCameraController.Instance != null)
+                yield return BattleCameraController.Instance.ReturnDefaultIfNotHeld();
         }
         else
         {
