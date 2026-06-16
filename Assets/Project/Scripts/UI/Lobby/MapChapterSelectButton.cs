@@ -15,6 +15,11 @@ public class MapChapterSelectButton : MonoBehaviour
     [Header("Lock")]
     [SerializeField] private bool isLocked;
     [SerializeField] private GameObject lockMark;
+    [SerializeField] private bool allowLockedButtonClick = true;
+
+    [Header("Locked Warning")]
+    [SerializeField] private SettingWarningUI warningUI;
+    [SerializeField] private string lockedMessage = "아직 잠겨있는 스테이지입니다.";
 
     [Header("Button")]
     [SerializeField] private Button button;
@@ -39,6 +44,7 @@ public class MapChapterSelectButton : MonoBehaviour
         if (button == null)
             button = GetComponent<Button>();
 
+        FindWarningUIIfMissing();
         RefreshLockState();
 
         if (button != null)
@@ -71,6 +77,7 @@ public class MapChapterSelectButton : MonoBehaviour
 
         if (isLocked)
         {
+            ShowWarning(lockedMessage);
             Debug.Log("[MapChapterSelectButton] Locked stage.");
             return;
         }
@@ -172,6 +179,36 @@ public class MapChapterSelectButton : MonoBehaviour
             lockMark.SetActive(isLocked);
 
         if (button != null)
-            button.interactable = !isLocked;
+            button.interactable = !isLocked || allowLockedButtonClick;
+    }
+
+    private void ShowWarning(string message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+            return;
+
+        FindWarningUIIfMissing();
+
+        if (warningUI != null)
+        {
+            warningUI.Show(message);
+            return;
+        }
+
+        if (SettingWarningUI.Instance != null)
+        {
+            SettingWarningUI.Instance.Show(message);
+            return;
+        }
+
+        Debug.LogWarning($"[MapChapterSelectButton] Warning UI is missing. Message: {message}");
+    }
+
+    private void FindWarningUIIfMissing()
+    {
+        if (warningUI != null)
+            return;
+
+        warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
     }
 }

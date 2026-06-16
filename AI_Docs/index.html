@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RELIC Project Structure Analysis</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --ink: #20242c;
+      --muted: #657083;
+      --line: #d9dee7;
+      --accent: #2f6f73;
+      --accent-2: #7a5230;
+      --code: #eef2f5;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Noto Sans KR", Arial, sans-serif;
+      line-height: 1.65;
+      color: var(--ink);
+      background: var(--bg);
+    }
+
+    header {
+      background: #20242c;
+      color: #fff;
+      padding: 44px 28px 34px;
+      border-bottom: 5px solid var(--accent);
+    }
+
+    header .wrap,
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 34px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    header p {
+      margin: 0;
+      color: #d6dde8;
+      max-width: 900px;
+    }
+
+    main {
+      padding: 28px;
+    }
+
+    section {
+      margin: 0 0 22px;
+      padding: 24px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 22px;
+      line-height: 1.3;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 22px 0 8px;
+      font-size: 17px;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0 0 12px;
+    }
+
+    ul {
+      margin: 8px 0 0;
+      padding-left: 22px;
+    }
+
+    li {
+      margin: 4px 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 4px;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      background: #eef2f5;
+      color: #303743;
+      white-space: nowrap;
+    }
+
+    code {
+      padding: 2px 5px;
+      background: var(--code);
+      border-radius: 4px;
+      font-family: Consolas, "Cascadia Mono", monospace;
+      font-size: 0.94em;
+    }
+
+    pre {
+      overflow-x: auto;
+      padding: 14px;
+      background: #151922;
+      color: #edf2f7;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .metric {
+      padding: 14px;
+      background: #f2f5f7;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 20px;
+      color: var(--accent);
+    }
+
+    .note {
+      padding: 14px;
+      border-left: 4px solid var(--accent-2);
+      background: #f8f2ec;
+      color: #3b322c;
+      border-radius: 6px;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .flow div {
+      padding: 12px;
+      background: #eef6f6;
+      border: 1px solid #c7dbdc;
+      border-radius: 8px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    footer {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 28px 34px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>RELIC 프로젝트 전체 구조 분석</h1>
+      <p>Unity 6 기반 로그라이크 전술 RPG 프로젝트의 폴더 구조, 초기화 흐름, 데이터 로딩, 씬 전환, 전투 시스템, UI/에셋 구성을 한눈에 파악하기 위한 AI 문서입니다.</p>
+      <div class="meta">
+        <div class="metric"><strong>Unity 6000.0.68f1</strong>ProjectSettings 기준 에디터 버전</div>
+        <div class="metric"><strong>334+</strong><code>Assets/Project/Scripts</code> 내 C# 스크립트 수</div>
+        <div class="metric"><strong>URP 17.0.4</strong>렌더 파이프라인 및 ShaderGraph 사용</div>
+        <div class="metric"><strong>2026-06-16</strong>문서 생성일</div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <h2>1. 프로젝트 개요</h2>
+      <p><strong>RELIC</strong>은 Unity 6 기반의 로그라이크 전술 RPG 프로젝트입니다. 핵심 코드는 <code>Assets/Project/Scripts</code> 아래에 집중되어 있고, 외부 VFX/GUI/TextMesh Pro 예제 에셋과 실제 프로젝트 에셋이 함께 존재합니다.</p>
+      <table>
+        <tr><th>항목</th><th>내용</th></tr>
+        <tr><td>엔진</td><td>Unity <code>6000.0.68f1</code></td></tr>
+        <tr><td>렌더링</td><td>Universal Render Pipeline, ShaderGraph, Post Processing</td></tr>
+        <tr><td>주요 패키지</td><td>Input System, Localization, Cinemachine, AI Navigation, Timeline, UGUI, TextMesh Pro</td></tr>
+        <tr><td>데이터 원천</td><td><code>Assets/ExcelSource/GameData.xlsx</code> 및 런타임 <code>Resources/Data/GameData</code> 로딩 구조</td></tr>
+        <tr><td>주요 씬</td><td><code>Bootstrap</code>, <code>Title</code>, <code>Lobby</code>, <code>Battle</code> 중심</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>2. 루트 폴더 구조</h2>
+      <table>
+        <tr><th>경로</th><th>역할</th><th>비고</th></tr>
+        <tr><td><code>Assets</code></td><td>Unity 프로젝트 에셋 전체</td><td>프로젝트 코드, 씬, 프리팹, VFX, 폰트, 외부 패키지 에셋 포함</td></tr>
+        <tr><td><code>Assets/Project</code></td><td>실제 게임 개발용 핵심 영역</td><td>분석상 가장 중요한 폴더</td></tr>
+        <tr><td><code>Assets/DB</code></td><td>ScriptableObject 데이터베이스 에셋</td><td>아이콘/프리팹 매핑 DB 다수 존재</td></tr>
+        <tr><td><code>Assets/ExcelSource</code></td><td>기획 데이터 원본</td><td><code>GameData.xlsx</code> 관리</td></tr>
+        <tr><td><code>Packages</code></td><td>Unity 패키지 매니페스트</td><td><code>manifest.json</code>, lock 파일</td></tr>
+        <tr><td><code>ProjectSettings</code></td><td>Unity 프로젝트 설정</td><td>버전, 렌더링, 입력, 품질, 빌드 설정</td></tr>
+        <tr><td><code>Docs</code></td><td>기존 개발 문서</td><td>멀티플레이 준비성 리뷰 문서 존재</td></tr>
+        <tr><td><code>Library</code>, <code>Temp</code>, <code>Logs</code>, <code>obj</code></td><td>Unity/IDE 생성물</td><td>분석 대상보다는 캐시/빌드 산출물 성격</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>3. 핵심 스크립트 분포</h2>
+      <p><code>Assets/Project/Scripts</code> 기준으로 게임 코드가 세 덩어리로 나뉩니다.</p>
+      <table>
+        <tr><th>폴더</th><th>스크립트 수</th><th>책임</th></tr>
+        <tr><td><code>Gameplay</code></td><td>241</td><td>데이터, 런타임 상태, 맵, 로비, 배틀, 몬스터 AI, 전투 효과 등 실제 게임 로직</td></tr>
+        <tr><td><code>UI</code></td><td>64</td><td>타이틀/로비/배틀 UI, 버튼, 패널, 전환, HUD, 보드 UI</td></tr>
+        <tr><td><code>Core</code></td><td>29</td><td>부트스트랩, 싱글톤, 매니저, 상태 머신, 씬 플로우, 이벤트 버스</td></tr>
+        <tr><td><code>Debug</code></td><td>5</td><td>런타임 데이터, 배틀, 애니메이션 테스트용 디버그 도구</td></tr>
+        <tr><td><code>dispose</code></td><td>6</td><td>사용 보류 또는 폐기 후보로 보이는 실험성 코드</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>4. 실행 초기화 흐름</h2>
+      <p>진입점은 <code>Bootstrap</code>이며, 각 전역 매니저를 순서대로 초기화한 뒤 상태 머신을 통해 첫 상태로 이동합니다.</p>
+      <div class="flow">
+        <div>Bootstrap.Start</div>
+        <div>Settings.Load</div>
+        <div>SaveSystem.Initialize</div>
+        <div>EventBus.Initialize</div>
+        <div>DataManager.Initialize</div>
+        <div>Audio/Input/UI Init</div>
+        <div>GameManager.Initialize</div>
+        <div>Localization Init</div>
+        <div>StateMachine.ChangeState</div>
+      </div>
+      <h3>주요 파일</h3>
+      <ul>
+        <li><code>Assets/Project/Scripts/Core/Bootstrap.cs</code>: 전역 초기화 순서 정의</li>
+        <li><code>Assets/Project/Scripts/Core/Managers/GameManager.cs</code>: <code>GameStateMachine</code>과 <code>GameStateContext</code> 생성</li>
+        <li><code>Assets/Project/Scripts/Core/GameState/GameStateMachine.cs</code>: 상태 등록/전환 처리</li>
+        <li><code>Assets/Project/Scripts/Core/GameState/SceneFlow/SceneFlowManager.cs</code>: 씬 로딩 및 전환 연출 연결</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>5. Core 계층</h2>
+      <table>
+        <tr><th>구성</th><th>역할</th></tr>
+        <tr><td><code>Singleton&lt;T&gt;</code></td><td>전역 매니저 베이스. 중복 인스턴스 방지 및 생명주기 관리</td></tr>
+        <tr><td><code>GameState</code></td><td><code>Bootstrap</code>, <code>Title</code>, <code>Lobby</code>, <code>BattleSelect</code>, <code>Battle</code> 상태 구분</td></tr>
+        <tr><td><code>SceneFlow</code></td><td>상태 전환과 실제 Unity 씬 로딩을 연결</td></tr>
+        <tr><td><code>Managers</code></td><td><code>GameManager</code>, <code>UIManager</code>, <code>AudioManager</code>, <code>InputManager</code></td></tr>
+        <tr><td><code>Events</code></td><td><code>EventBus</code>, <code>MouseLeftClickEvent</code> 기반의 느슨한 결합 구조</td></tr>
+        <tr><td>월드 유틸</td><td>Y 정렬, 월드 클릭, 월드 캔버스 카메라 세팅, 상단 정렬 클릭 타겟 관리</td></tr>
+      </table>
+      <p class="note">기존 <code>Docs/MultiplayerReadinessReview.md</code>에 따르면, EventBus 구독 해제와 Singleton 정리 이슈는 수정된 바 있고, 멀티플레이 전환 시에는 클라이언트 권한 입력, 글로벌 싱글톤, 직접 씬 로딩이 주요 리스크로 지적되어 있습니다.</p>
+    </section>
+
+    <section>
+      <h2>6. 데이터 계층</h2>
+      <p>데이터는 Excel 워크북을 바이너리/리소스로 읽고, 각 CSV 로더와 데이터베이스 객체로 분산 초기화하는 구조입니다.</p>
+      <pre>DataManager
+  └─ DataBootstrap
+      ├─ ExcelWorkbookReader
+      ├─ CharacterCsvLoader / SkillCsvLoader / EffectCsvLoader / ...
+      ├─ CharacterDatabase / SkillDatabase / MonsterDatabase / ...
+      └─ RuntimeStore 계열(Character, Party, Skill, Map, Player, Battle)</pre>
+      <table>
+        <tr><th>영역</th><th>대표 클래스</th><th>설명</th></tr>
+        <tr><td>마스터 데이터</td><td><code>CharacterMasterData</code>, <code>SkillMasterData</code>, <code>MonsterMasterData</code>, <code>RelicData</code></td><td>기획 테이블에서 읽히는 불변성 게임 데이터</td></tr>
+        <tr><td>데이터베이스</td><td><code>CharacterDatabase</code>, <code>SkillDatabase</code>, <code>RangeDatabase</code>, <code>RewardTableDatabase</code></td><td>ID 기반 조회용 저장소</td></tr>
+        <tr><td>런타임 스토어</td><td><code>PartyRuntimeStore</code>, <code>MapRuntimeStore</code>, <code>BattleRuntimeStore</code></td><td>실행 중 선택/맵/전투 상태 유지</td></tr>
+        <tr><td>ScriptableObject DB</td><td><code>CharacterPrefabDatabase</code>, <code>SkillIconDatabase</code>, <code>MonsterPrefabDatabase</code></td><td>프리팹, 아이콘, 맵 노드 아이콘 등 에셋 매핑</td></tr>
+        <tr><td>스킬 계산</td><td><code>SkillCostCalculator</code>, <code>SkillValueCalculator</code>, <code>RangeParser</code>, <code>SkillEffectParser</code></td><td>코스트, 수치, 범위, 효과 문자열 해석</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>7. 씬 구조</h2>
+      <p>실제 프로젝트 씬은 <code>Assets/Project/Scenes</code> 아래에 있으며, YDM 폴더가 현재 메인 플로우에 가까운 구조로 보입니다.</p>
+      <table>
+        <tr><th>씬</th><th>역할 추정</th></tr>
+        <tr><td><code>Assets/Project/Scenes/YDM/Bootstrap.unity</code></td><td>전역 매니저와 초기화 진입점</td></tr>
+        <tr><td><code>Assets/Project/Scenes/YDM/Title.unity</code></td><td>타이틀 화면</td></tr>
+        <tr><td><code>Assets/Project/Scenes/YDM/Lobby.unity</code></td><td>캐릭터/스킬/룬/파티 설정 로비</td></tr>
+        <tr><td><code>Assets/Project/Scenes/YDM/Battle.unity</code></td><td>런 맵, 방 전환, 전투 방 실행</td></tr>
+        <tr><td><code>Assets/Project/Scenes/YDH/*</code></td><td>아트/맵/상점/휴식/VFX 테스트 씬</td></tr>
+        <tr><td><code>Assets/Test_asset_DJ</code>, <code>Assets/Vefects</code>, <code>TextMesh Pro Examples</code></td><td>외부 에셋 데모 또는 참고 씬</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>8. 로비와 선택 흐름</h2>
+      <p>로비는 캐릭터 선택, 파티 슬롯, 스킬/룬 세팅, 보상/성장 표시를 담당합니다. 선택 결과는 런타임 스토어에 저장되어 배틀 진입 시 사용됩니다.</p>
+      <ul>
+        <li><code>Gameplay/Scene/Lobby</code>: 캐릭터 선택, 파티 슬롯, 정보 툴팁, 스킬/룬 설정 패널</li>
+        <li><code>UI/Lobby</code>: 로비 버튼, 스폰 그리드, 스킬 슬롯, 룬 슬롯, 보상 슬롯 UI</li>
+        <li><code>Gameplay/Runtime/Selection/PlayerSelectionData.cs</code>: 플레이어 선택 상태 보관</li>
+        <li><code>Gameplay/Data/Managers</code>: 캐릭터 선택, 장비, 성장, 파티, 보상, 퀘스트 관련 서비스</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>9. 배틀 맵과 방 전환</h2>
+      <p><code>BattleSceneController</code>는 배틀 씬의 맵 패널, 방 오브젝트, 전환 애니메이션, 방 복귀 흐름을 조율합니다.</p>
+      <table>
+        <tr><th>구성</th><th>설명</th></tr>
+        <tr><td><code>ProceduralMapGenerator</code></td><td>10개 레이어 기반의 런 맵 노드 생성. 시작/보스 고정, 중간 노드 랜덤 및 비교차 연결 처리</td></tr>
+        <tr><td><code>BattleMapPanel</code>, <code>MapViewSpawner</code>, <code>MapNodeView</code>, <code>MapLineView</code></td><td>생성된 맵 데이터의 UI/시각화</td></tr>
+        <tr><td><code>BattleSceneController</code></td><td>Start/Common/Elite/Boss/Rest/Shop/Chest/Special 노드 타입별 방 오픈</td></tr>
+        <tr><td><code>BattleDiagonalSceneTransition</code>, <code>BattleMapIntroText</code></td><td>맵-방 전환 연출 및 인트로 텍스트</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>10. 전투 실행 구조</h2>
+      <p>전투는 타임라인 예약 → 배치 생성 → 플레이어/몬스터 행동 병렬 실행 → 턴 종료 효과 → 다음 몬스터 턴 계획 순서로 진행됩니다.</p>
+      <div class="flow">
+        <div>PlayerActionPlanner</div>
+        <div>BattleTimelineController</div>
+        <div>BattleTurnExecutor</div>
+        <div>BattleActionBatchBuilder</div>
+        <div>BattleActionRunner</div>
+        <div>Effect/Death/HUD Services</div>
+        <div>BattleResultChecker</div>
+        <div>PlanNextMonsterTurns</div>
+      </div>
+      <h3>주요 하위 계층</h3>
+      <table>
+        <tr><th>폴더</th><th>역할</th></tr>
+        <tr><td><code>BattleRoom/Actionrunner</code></td><td>데미지, 사망, HUD, 상태이상, 몬스터 스킬 효과, 유닛 탐색 서비스</td></tr>
+        <tr><td><code>BattleRoom/Effect</code></td><td>전투 효과 인터페이스, 컨텍스트, 실행기, 레지스트리</td></tr>
+        <tr><td><code>BattleRoom/Effect/Effects</code></td><td>Strike/Pierce, Burn/Bleeding, Power/Armor, Vulnerable/Weaken, Knockback/Grab 등 개별 효과</td></tr>
+        <tr><td><code>BattleRoom/Grid</code></td><td>전투 격자 셀과 워프/시각 조정</td></tr>
+        <tr><td><code>BattleRoom/Character</code></td><td>전투 캐릭터, 방향, 애니메이션, 이동 프리뷰, 고유 자원</td></tr>
+        <tr><td><code>BattleRoom/Spawner</code></td><td>플레이어/몬스터 유닛 배치</td></tr>
+        <tr><td><code>BattleRoom/TimeLine</code></td><td>플레이어/몬스터 행동 예약 및 표시</td></tr>
+        <tr><td><code>BattleRoom/Reward</code></td><td>전투 결과 체크, 보상 수집/표시</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>11. 몬스터 AI</h2>
+      <p>몬스터 AI는 <code>MonsterAIBase</code>를 기반으로 몬스터별 파생 클래스를 두고, <code>MonsterAIFactory</code>에서 생성하는 구조입니다.</p>
+      <ul>
+        <li>기본 AI: <code>DefaultMonsterAI</code></li>
+        <li>개별 AI: <code>BlobAI</code>, <code>BlightAI</code>, <code>EliseAI</code>, <code>MuckAI</code>, <code>RancorAI</code>, <code>VespaAI</code></li>
+        <li>행동 결과: <code>MonsterAIAction</code>, <code>MonsterAIPlan</code>, <code>MonsterAISlotPreference</code></li>
+        <li>전투 실행 시 몬스터 명령은 <code>MonsterReservedCommand</code>와 <code>BattleActionRunner</code>로 연결됩니다.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>12. UI 구조</h2>
+      <table>
+        <tr><th>UI 영역</th><th>대표 파일</th><th>역할</th></tr>
+        <tr><td>타이틀</td><td><code>UI/Title/*</code></td><td>시작 모드, 옵션 패널, 언어 선택, 볼륨, 타이틀 복귀</td></tr>
+        <tr><td>로비</td><td><code>UI/Lobby/*</code></td><td>캐릭터/스킬/룬 선택, 파티 슬롯, 스폰 그리드, 경고 UI</td></tr>
+        <tr><td>배틀 HUD</td><td><code>UI/Battle/Canvas/*</code></td><td>플레이어/몬스터 HUD, 타임라인 슬롯, 스킬 슬롯, 상태효과 아이콘</td></tr>
+        <tr><td>배틀 캐릭터 UI</td><td><code>UI/Battle/Character/*</code></td><td>방향 선택, 스킬 장착, 캐릭터 선택 버튼, 월드 바</td></tr>
+        <tr><td>보드/그리드</td><td><code>UI/Grid_Icon/*</code></td><td>보드 슬롯, 원근 프로필, UI 워프, 호버 처리</td></tr>
+        <tr><td>전환/공통</td><td><code>BattleDiagonalSceneTransition</code>, <code>CanvasMaterialSceneTransition</code>, <code>UIPanelButton</code></td><td>화면 전환과 패널 제어</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>13. 에셋과 데이터베이스</h2>
+      <p>에셋 매핑은 런타임 데이터와 Unity 오브젝트를 분리하기 위한 ScriptableObject DB로 구성되어 있습니다.</p>
+      <ul>
+        <li><code>Assets/DB</code>: 캐릭터/몬스터 프리팹, 아이콘, 스킬 아이콘, 범위 아이콘, 유물/룬/아이템/상태효과 아이콘 DB</li>
+        <li><code>Assets/Project</code>: 실제 프로젝트 씬, 스크립트, 프리팹, 리소스가 모이는 영역</li>
+        <li><code>Assets/TextMesh Pro</code>, <code>Assets/Fonts</code>: 한국어/중국어/일본어 폰트와 TMP 설정</li>
+        <li><code>Assets/Vefects</code>, <code>VFXPACK_*</code>: 전투 VFX와 데모 리소스</li>
+        <li><code>Assets/Test_asset_DJ</code>: 테스트 또는 외부 GUI/배경 에셋</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>14. 유지보수 관점 요약</h2>
+      <table>
+        <tr><th>작업 종류</th><th>먼저 볼 위치</th></tr>
+        <tr><td>게임 시작/씬 전환 문제</td><td><code>Bootstrap.cs</code>, <code>GameManager.cs</code>, <code>GameStateMachine.cs</code>, <code>SceneFlowManager.cs</code></td></tr>
+        <tr><td>데이터가 안 뜨는 문제</td><td><code>DataManager.cs</code>, <code>DataBootstrap.cs</code>, 관련 <code>*CsvLoader</code>, <code>Assets/DB</code></td></tr>
+        <tr><td>스킬 효과 수정</td><td><code>SkillEffectParser.cs</code>, <code>BattleEffectRegistry.cs</code>, <code>BattleRoom/Effect/Effects</code></td></tr>
+        <tr><td>전투 턴 실행 문제</td><td><code>BattleTurnExecutor.cs</code>, <code>BattleActionBatchBuilder.cs</code>, <code>BattleActionRunner.cs</code></td></tr>
+        <tr><td>몬스터 행동 수정</td><td><code>Gameplay/Monster</code>, <code>BattleMonsterTurnPlanner.cs</code>, <code>MonsterSkillRangeService.cs</code></td></tr>
+        <tr><td>맵 생성/노드 문제</td><td><code>ProceduralMapGenerator.cs</code>, <code>BattleMapController.cs</code>, <code>BattleSceneController.cs</code></td></tr>
+        <tr><td>로비 선택/장착 문제</td><td><code>Gameplay/Scene/Lobby</code>, <code>UI/Lobby</code>, <code>Gameplay/Data/Managers</code></td></tr>
+        <tr><td>UI 표시 문제</td><td><code>Assets/Project/Scripts/UI</code>, <code>Gameplay/Data/UI</code>, 관련 프리팹</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>15. 리스크와 개선 포인트</h2>
+      <ul>
+        <li><strong>싱글톤 의존도:</strong> 전역 매니저가 많아 테스트와 멀티 세션 확장 시 결합도가 높아질 수 있습니다.</li>
+        <li><strong>씬 전환 결합:</strong> 상태 전환이 씬 로딩과 직접 연결되어 있어 멀티플레이나 비동기 로딩 정책을 넣을 때 별도 오케스트레이션 계층이 필요합니다.</li>
+        <li><strong>전투 실행 클래스 비대화:</strong> <code>BattleActionRunner</code>는 이동, 스킬, 몬스터 특수공격, 효과 적용까지 많은 책임을 가집니다. 기능 추가가 많아지면 플레이어/몬스터 실행기를 분리하는 것이 좋습니다.</li>
+        <li><strong>외부 에셋 혼재:</strong> 실제 프로젝트 에셋과 데모 에셋이 같은 <code>Assets</code> 아래에 많아 빌드 포함/참조 관리가 중요합니다.</li>
+        <li><strong>문자 인코딩:</strong> 일부 기존 문서와 로그 문자열이 깨져 보입니다. 문서/소스 파일의 UTF-8 통일이 필요합니다.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    이 문서는 로컬 파일 구조와 주요 C# 소스 분석을 바탕으로 생성되었습니다. Unity 에디터 내 프리팹 연결 상태와 씬 Hierarchy의 세부 값은 별도 에디터 검증이 필요합니다.
+  </footer>
+</body>
+</html>

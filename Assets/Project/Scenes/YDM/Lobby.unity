@@ -922,7 +922,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: 6
   playClickSound: 1
-  clickSfx: 6
+  clickSfx: 8
 --- !u!1 &98833943
 GameObject:
   m_ObjectHideFlags: 0
@@ -1870,7 +1870,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: 6
   playClickSound: 1
-  clickSfx: 6
+  clickSfx: 8
 --- !u!1 &139218943
 GameObject:
   m_ObjectHideFlags: 0
@@ -2725,7 +2725,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: 6
   playClickSound: 1
-  clickSfx: 6
+  clickSfx: 8
 --- !u!1 &180323733
 GameObject:
   m_ObjectHideFlags: 0
@@ -3319,11 +3319,23 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 0
+  m_Interactable: 1
   m_TargetGraphic: {fileID: 2056474037}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 235363507}
+        m_TargetAssemblyTypeName: MapChapterSelectButton, Assembly-CSharp
+        m_MethodName: OnClickSelectChapter
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!222 &235363506
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3348,6 +3360,9 @@ MonoBehaviour:
   startStage: Stage1
   isLocked: 1
   lockMark: {fileID: 1830226081}
+  allowLockedButtonClick: 1
+  warningUI: {fileID: 1763934034}
+  lockedMessage: "\uC544\uC9C1 \uC7A0\uACA8\uC788\uB294 \uC2A4\uD14C\uC774\uC9C0\uC785\uB2C8\uB2E4."
   button: {fileID: 235363505}
   sourceStageText: {fileID: 1053330445}
   targetStageText: {fileID: 1634241963}
@@ -3684,7 +3699,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: 6
   playClickSound: 1
-  clickSfx: 6
+  clickSfx: 8
 --- !u!1 &266558055
 GameObject:
   m_ObjectHideFlags: 0
@@ -4924,7 +4939,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: 6
   playClickSound: 1
-  clickSfx: 6
+  clickSfx: 8
 --- !u!1 &350354470
 GameObject:
   m_ObjectHideFlags: 0
@@ -5173,7 +5188,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &358065592
 RectTransform:
   m_ObjectHideFlags: 0
@@ -6014,6 +6029,9 @@ MonoBehaviour:
   startStage: Stage1
   isLocked: 0
   lockMark: {fileID: 930038982}
+  allowLockedButtonClick: 1
+  warningUI: {fileID: 0}
+  lockedMessage: "\uC544\uC9C1 \uC7A0\uACA8\uC788\uB294 \uC2A4\uD14C\uC774\uC9C0\uC785\uB2C8\uB2E4."
   button: {fileID: 406478876}
   sourceStageText: {fileID: 1650983052}
   targetStageText: {fileID: 1634241963}
@@ -7345,7 +7363,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 60, y: 60}
+  m_SizeDelta: {x: 70, y: 70}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &456977623
 MonoBehaviour:
@@ -8675,7 +8693,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: 6
   playClickSound: 1
-  clickSfx: 6
+  clickSfx: 8
 --- !u!1 &507048500
 GameObject:
   m_ObjectHideFlags: 0
@@ -10732,7 +10750,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: 6
   playClickSound: 1
-  clickSfx: 6
+  clickSfx: 8
 --- !u!1 &649727431
 GameObject:
   m_ObjectHideFlags: 0
@@ -11144,7 +11162,7 @@ MonoBehaviour:
   fadeDuration: 0.2
   playHoverSound: 1
   hoverSfx: 6
-  playClickSound: 1
+  playClickSound: 0
   clickSfx: 7
 --- !u!1 &663196646
 GameObject:
@@ -11760,7 +11778,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: 6
   playClickSound: 1
-  clickSfx: 6
+  clickSfx: 8
 --- !u!1 &692025214
 GameObject:
   m_ObjectHideFlags: 0
@@ -12487,7 +12505,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: 6
   playClickSound: 1
-  clickSfx: 6
+  clickSfx: 8
 --- !u!1 &734507664
 GameObject:
   m_ObjectHideFlags: 0
@@ -13469,11 +13487,23 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 0
+  m_Interactable: 1
   m_TargetGraphic: {fileID: 1931714688}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 235363507}
+        m_TargetAssemblyTypeName: MapChapterSelectButton, Assembly-CSharp
+        m_MethodName: OnClickSelectChapter
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!222 &793956456
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -13498,6 +13528,9 @@ MonoBehaviour:
   startStage: Stage1
   isLocked: 1
   lockMark: {fileID: 1952775453}
+  allowLockedButtonClick: 1
+  warningUI: {fileID: 1763934034}
+  lockedMessage: "\uC544\uC9C1 \uC7A0\uACA8\uC788\uB294 \uC2A4\uD14C\uC774\uC9C0\uC785\uB2C8\uB2E4."
   button: {fileID: 793956455}
   sourceStageText: {fileID: 2088337609}
   targetStageText: {fileID: 1634241963}
@@ -14800,7 +14833,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: 6
   playClickSound: 1
-  clickSfx: 6
+  clickSfx: 8
 --- !u!1 &848790875
 GameObject:
   m_ObjectHideFlags: 0
@@ -15298,7 +15331,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: 6
   playClickSound: 1
-  clickSfx: 6
+  clickSfx: 8
 --- !u!1 &857470026
 GameObject:
   m_ObjectHideFlags: 0
@@ -16639,7 +16672,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 60, y: 60}
+  m_SizeDelta: {x: 70, y: 70}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &986901244
 MonoBehaviour:
@@ -17620,7 +17653,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: 6
   playClickSound: 1
-  clickSfx: 6
+  clickSfx: 8
 --- !u!1 &1034322401
 GameObject:
   m_ObjectHideFlags: 0
@@ -17937,7 +17970,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: 6
   playClickSound: 1
-  clickSfx: 6
+  clickSfx: 8
 --- !u!1 &1053330443
 GameObject:
   m_ObjectHideFlags: 0
@@ -19092,7 +19125,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: 6
   playClickSound: 1
-  clickSfx: 6
+  clickSfx: 8
 --- !u!1 &1104539774
 GameObject:
   m_ObjectHideFlags: 0
@@ -19128,7 +19161,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 60, y: 60}
+  m_SizeDelta: {x: 70, y: 70}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1104539776
 MonoBehaviour:
@@ -19554,7 +19587,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: 6
   playClickSound: 1
-  clickSfx: 6
+  clickSfx: 8
 --- !u!1 &1126974680
 GameObject:
   m_ObjectHideFlags: 0
@@ -21282,7 +21315,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: 6
   playClickSound: 1
-  clickSfx: 6
+  clickSfx: 8
 --- !u!1 &1263103059
 GameObject:
   m_ObjectHideFlags: 0
@@ -22051,7 +22084,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: 6
   playClickSound: 1
-  clickSfx: 6
+  clickSfx: 8
 --- !u!1 &1322040430
 GameObject:
   m_ObjectHideFlags: 0
@@ -23433,7 +23466,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: 6
   playClickSound: 1
-  clickSfx: 6
+  clickSfx: 8
 --- !u!1 &1434628577
 GameObject:
   m_ObjectHideFlags: 0
@@ -23785,7 +23818,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: 6
   playClickSound: 1
-  clickSfx: 6
+  clickSfx: 8
 --- !u!1 &1445541570
 GameObject:
   m_ObjectHideFlags: 0
@@ -24651,7 +24684,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: 6
   playClickSound: 1
-  clickSfx: 6
+  clickSfx: 8
 --- !u!1 &1493379785
 GameObject:
   m_ObjectHideFlags: 0
@@ -25399,7 +25432,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: 6
   playClickSound: 1
-  clickSfx: 6
+  clickSfx: 8
 --- !u!1 &1530167122
 GameObject:
   m_ObjectHideFlags: 0
@@ -27350,11 +27383,23 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 0
+  m_Interactable: 1
   m_TargetGraphic: {fileID: 1348846160}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 235363507}
+        m_TargetAssemblyTypeName: MapChapterSelectButton, Assembly-CSharp
+        m_MethodName: OnClickSelectChapter
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!222 &1691667063
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -27379,6 +27424,9 @@ MonoBehaviour:
   startStage: Stage1
   isLocked: 1
   lockMark: {fileID: 790947376}
+  allowLockedButtonClick: 1
+  warningUI: {fileID: 1763934034}
+  lockedMessage: "\uC544\uC9C1 \uC7A0\uACA8\uC788\uB294 \uC2A4\uD14C\uC774\uC9C0\uC785\uB2C8\uB2E4."
   button: {fileID: 1691667062}
   sourceStageText: {fileID: 1363166990}
   targetStageText: {fileID: 1634241963}
@@ -27603,7 +27651,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: 6
   playClickSound: 1
-  clickSfx: 6
+  clickSfx: 8
 --- !u!1 &1706284656
 GameObject:
   m_ObjectHideFlags: 0
@@ -30173,7 +30221,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: 6
   playClickSound: 1
-  clickSfx: 6
+  clickSfx: 8
 --- !u!1 &1873321967
 GameObject:
   m_ObjectHideFlags: 0
@@ -31740,7 +31788,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: 6
   playClickSound: 1
-  clickSfx: 6
+  clickSfx: 8
 --- !u!1 &1950010341
 GameObject:
   m_ObjectHideFlags: 0
@@ -33280,7 +33328,7 @@ MonoBehaviour:
   fadeDuration: 0.2
   playHoverSound: 1
   hoverSfx: 6
-  playClickSound: 1
+  playClickSound: 0
   clickSfx: 7
 --- !u!1 &2015401050
 GameObject:
@@ -34366,7 +34414,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: 6
   playClickSound: 1
-  clickSfx: 6
+  clickSfx: 8
 --- !u!1 &2078247910
 GameObject:
   m_ObjectHideFlags: 0
@@ -34555,7 +34603,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: 6
   playClickSound: 1
-  clickSfx: 6
+  clickSfx: 8
 --- !u!1 &2078505866
 GameObject:
   m_ObjectHideFlags: 0
@@ -35128,7 +35176,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2098004792
 RectTransform:
   m_ObjectHideFlags: 0
@@ -36121,7 +36169,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: 6
   playClickSound: 1
-  clickSfx: 6
+  clickSfx: 8
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

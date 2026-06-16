@@ -4903,9 +4903,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   onLogo: {fileID: 795231885}
   offLogo: {fileID: 1605403324}
-  warningUI: {fileID: 0}
+  warningUI: {fileID: 757439506}
   unavailableMessage: "\uC544\uC9C1 \uC900\uBE44\uB418\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4."
-  unavailableButtons: []
+  unavailableButtons:
+  - {fileID: 8270801}
+  - {fileID: 695691878}
+  - {fileID: 1375075851}
 --- !u!4 &1527988016
 Transform:
   m_ObjectHideFlags: 0
