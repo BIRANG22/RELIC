@@ -86373,6 +86373,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 9
       objectReference: {fileID: 0}
+    - target: {fileID: 1235534776104369310, guid: 7cc58717bc8f99245a0a0ed88fbc5412, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4228327288099776649, guid: 7cc58717bc8f99245a0a0ed88fbc5412, type: 3}
       propertyPath: m_Layer
       value: 9
@@ -91447,6 +91451,10 @@ PrefabInstance:
     - target: {fileID: 5458565981867785420, guid: ade7ee4127830f64e94e95aa654cf20e, type: 3}
       propertyPath: m_Name
       value: Cha_B
+      objectReference: {fileID: 0}
+    - target: {fileID: 5458565981867785420, guid: ade7ee4127830f64e94e95aa654cf20e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -101838,6 +101846,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Cha_A
       objectReference: {fileID: 0}
+    - target: {fileID: 7906634120019628704, guid: 7ea19703226bb0843b8b337a7e25cb7a, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -101894,6 +101906,10 @@ PrefabInstance:
     - target: {fileID: 4325625955674003563, guid: b2acdec95c18f1e4f86fa531c5fb912d, type: 3}
       propertyPath: m_Name
       value: SlimeMini
+      objectReference: {fileID: 0}
+    - target: {fileID: 4325625955674003563, guid: b2acdec95c18f1e4f86fa531c5fb912d, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -102658,6 +102674,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: FlameRed
       objectReference: {fileID: 0}
+    - target: {fileID: 8626733832829211505, guid: 5632025e1603472489015b0fae2c4ec2, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 9055945213956989705, guid: 5632025e1603472489015b0fae2c4ec2, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -102755,6 +102775,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Hornet
       objectReference: {fileID: 0}
+    - target: {fileID: 5574107069964105487, guid: 457cee0b1eb54f847a1c291219c9813a, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -102812,6 +102836,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: FlameGreen
       objectReference: {fileID: 0}
+    - target: {fileID: 2714778586373151725, guid: eb648143a760b884699d049b21ecb7bd, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -102838,6 +102866,10 @@ PrefabInstance:
     - target: {fileID: 3215717407918631906, guid: d5eff94d53a6245479a1d96d662dc35e, type: 3}
       propertyPath: m_Name
       value: Cha_C
+      objectReference: {fileID: 0}
+    - target: {fileID: 3215717407918631906, guid: d5eff94d53a6245479a1d96d662dc35e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3971957498582665592, guid: d5eff94d53a6245479a1d96d662dc35e, type: 3}
       propertyPath: m_LocalPosition.x
