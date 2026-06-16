@@ -15,6 +15,8 @@ public class BattleActionRunner
     private readonly BattleStatusEffectService statusEffectService;
     private readonly MonsterSkillEffectService monsterSkillEffectService;
     private readonly BattleEffectExecutor effectExecutor = new();
+    private readonly bool useSafeSequentialExecution;
+    private readonly float actionRoutineTimeout;
 
     private const float ReadyDelay = 0.06f;
     private const float ActionDelay = 0.05f;
@@ -24,11 +26,15 @@ public class BattleActionRunner
     private const float MonsterHUDVisibleDelay = 0.6f;
 
     public BattleActionRunner(
-      GridManager gridManager,
-      BattleMonsterSpawner monsterSpawner = null,
-      BattleRoomLoader roomLoader = null)
+    GridManager gridManager,
+    BattleMonsterSpawner monsterSpawner = null,
+    BattleRoomLoader roomLoader = null,
+    bool useSafeSequentialExecution = true,
+    float actionRoutineTimeout = 8f)
     {
         this.gridManager = gridManager;
+        this.useSafeSequentialExecution = useSafeSequentialExecution;
+        this.actionRoutineTimeout = Mathf.Max(1f, actionRoutineTimeout);
 
         unitFinder = new BattleUnitFinder();
         hudService = new BattleHUDService();
@@ -72,8 +78,11 @@ public class BattleActionRunner
 
         if (holdCameraUntilBatchEnd && BattleCameraController.Instance != null)
             BattleCameraController.Instance.SetHoldDefaultReturn(true);
-
-        yield return RunParallel(actionRoutines);
+      
+        if (useSafeSequentialExecution)
+            yield return RunSequentialSafe(actionRoutines);
+        else
+            yield return RunParallelSafe(actionRoutines);
 
         if (holdCameraUntilBatchEnd && BattleCameraController.Instance != null)
         {
@@ -206,39 +215,67 @@ public class BattleActionRunner
         }
     }
 
-    private IEnumerator RunParallel(List<IEnumerator> routines)
+    private IEnumerator RunSequentialSafe(List<IEnumerator> routines)
     {
-        if (routines == null || routines.Count == 0)
+        if (routines == null || routines.Count <= 0)
             yield break;
-
-        int runningCount = routines.Count;
 
         for (int i = 0; i < routines.Count; i++)
         {
-            int routineIndex = i;
-
-            CoroutineHost.Instance.StartCoroutine(
-                RunAndCountDown(
-                    routines[i],
-                    () =>
-                    {
-                        runningCount--;
-                        //Debug.Log($"[BattleActionRunner] Routine End:{routineIndex} / Left:{runningCount}");
-                    }
-                )
+            yield return RunRoutineWithTimeout(
+                routines[i],
+                actionRoutineTimeout,
+                $"SequentialAction:{i}"
             );
         }
+    }
 
-        float timeout = 10f;
+    private IEnumerator RunParallelSafe(List<IEnumerator> routines)
+    {
+        if (routines == null || routines.Count <= 0)
+            yield break;
+
+        if (CoroutineHost.Instance == null)
+        {
+            Debug.LogWarning("[BattleActionRunner] CoroutineHost ����. ���� �������� ��ü�մϴ�.");
+            yield return RunSequentialSafe(routines);
+            yield break;
+        }
+
+        int runningCount = routines.Count;
+        List<Coroutine> runningCoroutines = new();
+
+        for (int i = 0; i < routines.Count; i++)
+        {
+            int index = i;
+
+            Coroutine coroutine = CoroutineHost.Instance.StartCoroutine(
+                RunAndCountDownSafe(
+                    routines[i],
+                    () => runningCount--,
+                    $"ParallelAction:{index}"
+                )
+            );
+
+            runningCoroutines.Add(coroutine);
+        }
+
         float elapsed = 0f;
 
         while (runningCount > 0)
         {
-            elapsed += Time.deltaTime;
+            elapsed += Time.unscaledDeltaTime;
 
-            if (elapsed >= timeout)
+            if (elapsed >= actionRoutineTimeout)
             {
-                Debug.LogError($"[BattleActionRunner] RunParallel Timeout / Left:{runningCount}");
+                Debug.LogError($"[BattleActionRunner] Parallel Timeout / Left:{runningCount}");
+
+                for (int i = 0; i < runningCoroutines.Count; i++)
+                {
+                    if (runningCoroutines[i] != null)
+                        CoroutineHost.Instance.StopCoroutine(runningCoroutines[i]);
+                }
+
                 break;
             }
 
@@ -246,8 +283,15 @@ public class BattleActionRunner
         }
     }
 
-    private IEnumerator RunAndCountDown(IEnumerator routine, System.Action onComplete)
+    private IEnumerator RunRoutineWithTimeout(
+        IEnumerator routine,
+        float timeout,
+        string label)
     {
+        if (routine == null)
+            yield break;
+
+        float elapsed = 0f;
         bool done = false;
 
         while (!done)
@@ -256,7 +300,7 @@ public class BattleActionRunner
 
             try
             {
-                if (routine == null || !routine.MoveNext())
+                if (!routine.MoveNext())
                 {
                     done = true;
                 }
@@ -267,14 +311,32 @@ public class BattleActionRunner
             }
             catch (System.Exception e)
             {
+                Debug.LogError($"[BattleActionRunner] Routine Exception / {label}");
                 Debug.LogException(e);
-                done = true;
+                yield break;
             }
 
-            if (!done)
-                yield return current;
-        }
+            if (done)
+                yield break;
 
+            elapsed += Time.unscaledDeltaTime;
+
+            if (elapsed >= timeout)
+            {
+                Debug.LogError($"[BattleActionRunner] Routine Timeout / {label}");
+                yield break;
+            }
+
+            yield return current;
+        }
+    }
+
+    private IEnumerator RunAndCountDownSafe(
+        IEnumerator routine,
+        System.Action onComplete,
+        string label)
+    {
+        yield return RunRoutineWithTimeout(routine, actionRoutineTimeout, label);
         onComplete?.Invoke();
     }
 
