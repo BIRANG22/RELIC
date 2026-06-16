@@ -28,6 +28,8 @@ namespace Relic.Gameplay.Data
 
         public bool IsDeathHandled;
 
+        public BattleDirection Direction = BattleDirection.Left;
+
         public MonsterRuntimeData(string runtimeId, MonsterMasterData masterData)
         {
             RuntimeId = runtimeId;

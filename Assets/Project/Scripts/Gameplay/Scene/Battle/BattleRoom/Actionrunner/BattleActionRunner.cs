@@ -3,6 +3,7 @@ using Relic.Gameplay.Monster;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements.Experimental;
 
 public class BattleActionRunner
 {
@@ -375,6 +376,8 @@ public class BattleActionRunner
         if (attacker == null)
             yield break;
 
+        RecalculatePlayerSkillRangeAtExecution(attacker, command);
+
         ConsumePlayerSkillCost(command, attacker);
 
         BattleUnitAnimator attackerAnimator = attacker.GetComponent<BattleUnitAnimator>();
@@ -464,7 +467,12 @@ public class BattleActionRunner
             BattleUnitFacing hitFacing = monster.GetComponent<BattleUnitFacing>();
 
             if (hitFacing != null)
+            {
                 hitFacing.FaceByWorldTarget(attacker.transform.position);
+
+                if (monster.RuntimeData != null)
+                    monster.RuntimeData.Direction = hitFacing.GetBattleDirection();
+            }
 
             ExecutePlayerSkillEffects(attacker, monster, command);
 
@@ -496,6 +504,64 @@ public class BattleActionRunner
 
         if (hitTargets.Count > 0 && BattleCameraController.Instance != null)
             yield return BattleCameraController.Instance.ReturnDefaultIfNotHeld();
+    }
+
+    private void RecalculatePlayerSkillRangeAtExecution(
+    BattleCharacter attacker,
+    PlayerReservedCommand command)
+    {
+        if (attacker == null || command == null || command.SkillData == null)
+            return;
+
+        if (command.ReservedMoveGridIndex >= 0)
+            return;
+
+        if (command.SkillData.RangeType == RangeType.None)
+            return;
+
+        if (DataManager.Instance == null || DataManager.Instance.RangeDatabase == null)
+            return;
+
+        BattleDirection direction = attacker.RuntimeData != null
+            ? attacker.RuntimeData.Direction
+            : command.Direction;
+
+        List<int> rangeGridIndices = new();
+
+        if (command.SkillData.RangeType == RangeType.Direction)
+        {
+            rangeGridIndices = BattleRangeCalculator.GetDirectionRangeIndices(
+                attacker.CurrentGridIndex,
+                command.SkillData.RangeId,
+                direction,
+                DataManager.Instance.RangeDatabase,
+                gridManager
+            );
+
+            command.SetDirectionResult(
+                direction,
+                rangeGridIndices,
+                rangeGridIndices
+            );
+
+            return;
+        }
+
+        if (command.SkillData.RangeType == RangeType.Selection)
+        {
+            rangeGridIndices = BattleRangeCalculator.GetSelectionRangeIndices(
+                attacker.CurrentGridIndex,
+                command.SkillData.RangeId,
+                DataManager.Instance.RangeDatabase,
+                gridManager
+            );
+
+            command.SetDirectionResult(
+                direction,
+                rangeGridIndices,
+                rangeGridIndices
+            );
+        }
     }
 
     private void ExecutePlayerSkillEffects(
@@ -680,13 +746,14 @@ public class BattleActionRunner
         if (monster == null)
             yield break;
 
-        RecalculateMonsterSkillRangeAtExecution(monster, command);
-
         if (command.SkillData.SkillId == "S_Monster_07")
         {
             yield return ExecuteMonsterDashAttack(command);
             yield break;
         }
+
+        // 현재 방향 기준으로 먼저 범위 재계산
+        RecalculateMonsterSkillRangeAtExecution(monster, command);
 
         BattleCharacter firstPlayerTarget = FindFirstPlayerTarget(command);
 
@@ -697,12 +764,21 @@ public class BattleActionRunner
 
         yield return new WaitForSeconds(ReadyDelay);
 
+        // 타겟이 있으면 바라보고, 바라본 방향으로 다시 범위 재계산
         if (firstPlayerTarget != null)
         {
             BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
 
             if (facing != null)
+            {
                 facing.FaceByWorldTarget(firstPlayerTarget.transform.position);
+
+                if (monster.RuntimeData != null)
+                    monster.RuntimeData.Direction = facing.GetBattleDirection();
+
+                RecalculateMonsterSkillRangeAtExecution(monster, command);
+                firstPlayerTarget = FindFirstPlayerTarget(command);
+            }
         }
 
         if (firstPlayerTarget != null && BattleCameraController.Instance != null)
@@ -864,6 +940,10 @@ public class BattleActionRunner
             yield break;
 
         BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
+
+        if (facing != null && monster.RuntimeData != null)
+            monster.RuntimeData.Direction = facing.GetBattleDirection();
+
         bool facingRight = facing == null || facing.IsFacingRight;
 
         int dirX = facingRight ? 1 : -1;
@@ -1018,7 +1098,12 @@ public class BattleActionRunner
         BattleUnitFacing targetFacing = target.GetComponent<BattleUnitFacing>();
 
         if (targetFacing != null)
+        {
             targetFacing.FaceByWorldTarget(monster.transform.position);
+
+            if (target.RuntimeData != null)
+                target.RuntimeData.Direction = targetFacing.GetBattleDirection();
+        }
 
         BattleUnitAnimator hitAnimator = target.GetComponent<BattleUnitAnimator>();
 
