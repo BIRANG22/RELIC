@@ -22,7 +22,7 @@ public class BattleUnitFacing : MonoBehaviour
             FlipOnce();
     }
 
-    private void InitializeIfNeeded()
+    public void InitializeIfNeeded()
     {
         if (initialized)
             return;
