@@ -44,6 +44,9 @@ public class BattleRoomLoader : MonoBehaviour
     [SerializeField] private bool createDebugDataIfEmpty = true;
     [SerializeField] private BattleDebugDataProvider debugDataProvider;
 
+    [Header("Turn Executor")]
+    [SerializeField] private BattleTurnExecutor turnExecutor;
+
     private readonly List<MonsterUnit> spawnedMonsterUnits = new();
     private readonly List<PlayerHUDSlot> playerHudSlots = new();
     private CharacterRuntimeData selectedPlayerRuntime;
@@ -189,6 +192,14 @@ public class BattleRoomLoader : MonoBehaviour
         SpawnPlayersAndHUD();
         SpawnMonstersAndHUD();
         passiveSkillService.RefreshAllPlayerPassives();
+
+        EnsureTurnExecutor();
+
+        if (turnExecutor != null)
+        {
+            turnExecutor.SetBattleInputReady(true);
+            Debug.Log("[BattleRoomLoader] Battle input ready true after LoadBattle");
+        }
 
         loadedMapId = currentMapId;
         isLoaded = true;
@@ -666,20 +677,36 @@ public class BattleRoomLoader : MonoBehaviour
         }
 
         if (monsterTurnPlanner != null)
+        {
             monsterTurnPlanner.PlanMonsterTurns(spawnedMonsterUnits, true);
+        }
         else
+        {
             Debug.LogWarning("[BattleRoomLoader] MonsterTurnPlanner is missing.");
+        }
     }
 
     public void PlanNextMonsterTurns()
     {
+        EnsureTurnExecutor();
+
+        if (turnExecutor != null)
+            turnExecutor.SetBattleInputReady(false);
+
         if (monsterTurnPlanner == null)
         {
             Debug.LogWarning("[BattleRoomLoader] MonsterTurnPlanner is missing.");
+
+            if (turnExecutor != null)
+                turnExecutor.SetBattleInputReady(true);
+
             return;
         }
 
         monsterTurnPlanner.PlanMonsterTurns(spawnedMonsterUnits);
+
+        if (turnExecutor != null)
+            turnExecutor.SetBattleInputReady(true);
     }
 
     private MonsterHUDSlot CreateMonsterHUD(MonsterRuntimeData runtimeData, Transform monsterTransform, Collider2D monsterCollider)
@@ -845,5 +872,13 @@ public class BattleRoomLoader : MonoBehaviour
             return;
 
         spawnedMonsterUnits.Remove(monsterUnit);
+    }
+
+    private void EnsureTurnExecutor()
+    {
+        if (turnExecutor != null)
+            return;
+
+        turnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
     }
 }

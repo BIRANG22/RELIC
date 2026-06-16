@@ -2438,7 +2438,6 @@ GameObject:
   m_Component:
   - component: {fileID: 682535973}
   - component: {fileID: 682535972}
-  - component: {fileID: 682535971}
   - component: {fileID: 682535970}
   m_Layer: 0
   m_Name: VFX Camera
@@ -2491,14 +2490,6 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
---- !u!81 &682535971
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 682535969}
-  m_Enabled: 1
 --- !u!20 &682535972
 Camera:
   m_ObjectHideFlags: 0
