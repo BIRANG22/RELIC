@@ -1,9 +1,12 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class BattleTurnExecutor : MonoBehaviour
 {
+    public static event Action PlayerTurnReturned;
+
     [SerializeField] private BattleTimelineController timelineController;
     [SerializeField] private GridManager gridManager;
     [SerializeField] private MoveGhostPreview moveGhostPreview;
@@ -48,6 +51,9 @@ public class BattleTurnExecutor : MonoBehaviour
             return;
         }
 
+        timelineController.ClearSelectedSlotSelection();
+        timelineController.SetSlotSelectionLocked(true);
+
         StartCoroutine(ExecuteTurnRoutine());
     }
 
@@ -75,9 +81,25 @@ public class BattleTurnExecutor : MonoBehaviour
 
             yield return ShowBattleProgressIntroTextRoutine();
 
+            int slidThroughSlotIndex = -1;
+
             for (int i = 0; i < batches.Count; i++)
             {
-                yield return runner.RunBatch(batches[i]);
+                BattleActionBatch batch = batches[i];
+
+                if (!BatchHasCommands(batch))
+                    continue;
+
+                int currentSlotIndex = GetBatchTimelineSlotIndex(batch, i);
+
+                if (currentSlotIndex > slidThroughSlotIndex + 1)
+                {
+                    int beforeActionSlideThroughSlotIndex = currentSlotIndex - 1;
+                    yield return timelineController.SlideTimelineSlotsLeftThroughSlotRoutine(beforeActionSlideThroughSlotIndex);
+                    slidThroughSlotIndex = Mathf.Max(slidThroughSlotIndex, beforeActionSlideThroughSlotIndex);
+                }
+
+                yield return runner.RunBatch(batch);
 
                 if (BattleResultChecker.Instance != null &&
                     BattleResultChecker.Instance.CheckBattleEnd())
@@ -85,17 +107,31 @@ public class BattleTurnExecutor : MonoBehaviour
                     ClearTimeline();
                     yield break;
                 }
+
+                if (HasNextExecutableBatchInSameTimelineSlot(batches, i + 1, currentSlotIndex))
+                    continue;
+
+                int slideThroughSlotIndex = GetSlideThroughSlotIndexAfterExecutedTimelineSlot(batches, i, currentSlotIndex);
+
+                if (slideThroughSlotIndex > slidThroughSlotIndex)
+                {
+                    yield return timelineController.SlideTimelineSlotsLeftThroughSlotRoutine(slideThroughSlotIndex);
+                    slidThroughSlotIndex = slideThroughSlotIndex;
+                }
             }
 
             runner.ApplyTurnEndEffects();
 
             ClearTimeline();
+            yield return null;
 
             if (BattleResultChecker.Instance != null &&
                 BattleResultChecker.Instance.CheckBattleEnd())
             {
                 yield break;
             }
+
+            yield return timelineController.ResetTimelineSlotsToOriginalPositionRoutine();
 
             if (roomLoader != null)
             {
@@ -112,7 +148,11 @@ public class BattleTurnExecutor : MonoBehaviour
         }
         finally
         {
+            if (timelineController != null)
+                timelineController.SetSlotSelectionLocked(false);
+
             isExecuting = false;
+            PlayerTurnReturned?.Invoke();
         }
     }
 
@@ -135,6 +175,91 @@ public class BattleTurnExecutor : MonoBehaviour
     {
         PlaySfx(playBattleProgressSfx, battleProgressSfxType, battleProgressSfxVolume);
         yield return BattleMapIntroText.ShowMessageAndWait(battleProgressMessage);
+    }
+
+    private int GetNextExecutableBatchIndex(List<BattleActionBatch> batches, int startIndex)
+    {
+        if (batches == null)
+            return -1;
+
+        for (int i = Mathf.Max(0, startIndex); i < batches.Count; i++)
+        {
+            if (BatchHasCommands(batches[i]))
+                return i;
+        }
+
+        return -1;
+    }
+
+    private int GetBatchTimelineSlotIndex(BattleActionBatch batch, int fallbackIndex)
+    {
+        int slotCount = timelineController != null ? timelineController.SlotCount : 0;
+
+        if (batch != null && batch.TimelineSlotIndex >= 0)
+            return slotCount > 0
+                ? Mathf.Clamp(batch.TimelineSlotIndex, 0, slotCount - 1)
+                : batch.TimelineSlotIndex;
+
+        return slotCount > 0
+            ? Mathf.Clamp(fallbackIndex, 0, slotCount - 1)
+            : fallbackIndex;
+    }
+
+    private bool HasNextExecutableBatchInSameTimelineSlot(
+        List<BattleActionBatch> batches,
+        int startIndex,
+        int timelineSlotIndex)
+    {
+        int nextExecutableBatchIndex = GetNextExecutableBatchIndex(batches, startIndex);
+
+        if (nextExecutableBatchIndex < 0)
+            return false;
+
+        int nextTimelineSlotIndex = GetBatchTimelineSlotIndex(
+            batches[nextExecutableBatchIndex],
+            nextExecutableBatchIndex
+        );
+
+        return nextTimelineSlotIndex == timelineSlotIndex;
+    }
+
+    private int GetSlideThroughSlotIndexAfterExecutedTimelineSlot(
+        List<BattleActionBatch> batches,
+        int executedBatchIndex,
+        int executedTimelineSlotIndex)
+    {
+        int nextExecutableBatchIndex = GetNextExecutableBatchIndex(batches, executedBatchIndex + 1);
+
+        if (nextExecutableBatchIndex >= 0)
+        {
+            int nextTimelineSlotIndex = GetBatchTimelineSlotIndex(
+                batches[nextExecutableBatchIndex],
+                nextExecutableBatchIndex
+            );
+
+            return Mathf.Max(executedTimelineSlotIndex, nextTimelineSlotIndex - 1);
+        }
+
+        if (timelineController != null && timelineController.SlotCount > 0)
+            return timelineController.SlotCount - 1;
+
+        return executedTimelineSlotIndex;
+    }
+
+    private bool BatchHasCommands(BattleActionBatch batch)
+    {
+        if (batch == null)
+            return false;
+
+        bool hasPlayerCommand =
+            batch.PlayerCommands != null &&
+            batch.PlayerCommands.Count > 0;
+
+        bool hasMonsterCommand =
+            batch.MonsterCommands != null &&
+            batch.MonsterCommands.Count > 0;
+
+        return hasPlayerCommand || hasMonsterCommand;
     }
 
     private void PlaySfx(bool play, SfxType sfxType, float volume)

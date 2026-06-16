@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -12,6 +13,8 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     [Header("Order Slots")]
     [SerializeField] private Image[] playerSkillIconImages;
     [SerializeField] private Image[] enemySkillIconImages;
+    [SerializeField] private TMP_Text[] playerSkillValueTexts;
+    [SerializeField] private TMP_Text[] enemySkillValueTexts;
     [SerializeField] private GameObject[] playerMarkObjects;
     [SerializeField] private GameObject[] enemyMarkObjects;
 
@@ -103,6 +106,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
                     visibleIndex < enemySkillIconImages.Length)
                 {
                     SetSkillImage(enemySkillIconImages[visibleIndex], entry.SkillIcon, true, enemyReservedColor);
+                    SetSkillValueText(enemySkillValueTexts, visibleIndex, entry.SkillValueText);
 
                     SetupEnemySkillHoverTarget(enemySkillIconImages[visibleIndex], entry);
                 }
@@ -124,6 +128,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
                     visibleIndex < playerSkillIconImages.Length)
                 {
                     SetSkillImage(playerSkillIconImages[visibleIndex], entry.SkillIcon, true, playerReservedColor);
+                    SetSkillValueText(playerSkillValueTexts, visibleIndex, entry.SkillValueText);
 
                     SetupPlayerSkillHoverTarget(playerSkillIconImages[visibleIndex], entry);
                 }
@@ -166,6 +171,9 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
                 ClearSkillImage(enemySkillIconImages[i]);
             }
         }
+
+        ClearSkillValueTexts(playerSkillValueTexts);
+        ClearSkillValueTexts(enemySkillValueTexts);
 
         SetObjectsActive(playerMarkObjects, false);
         SetObjectsActive(enemyMarkObjects, false);
@@ -345,6 +353,12 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         if (enemySkillIconImages == null || enemySkillIconImages.Length == 0)
             enemySkillIconImages = FindOrderImages("Enemy_Skill", "Skill_Image");
 
+        if (playerSkillValueTexts == null || playerSkillValueTexts.Length == 0)
+            playerSkillValueTexts = FindOrderTexts("Player_Skill", "Text (TMP)");
+
+        if (enemySkillValueTexts == null || enemySkillValueTexts.Length == 0)
+            enemySkillValueTexts = FindOrderTexts("Enemy_Skill", "Text (TMP)");
+
         if (playerMarkObjects == null || playerMarkObjects.Length == 0)
             playerMarkObjects = FindOrderObjects("Player_Mark");
 
@@ -520,6 +534,39 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         return images.ToArray();
     }
 
+    private TMP_Text[] FindOrderTexts(string rootName, string textName)
+    {
+        List<TMP_Text> texts = new();
+
+        for (int i = 1; i <= 5; i++)
+        {
+            Transform order = FindChildRecursive(transform, "Order" + i.ToString("00"));
+
+            if (order == null)
+                continue;
+
+            Transform root = FindChildRecursive(order, rootName);
+
+            if (root == null)
+                continue;
+
+            Transform textTransform = FindChildRecursive(root, textName);
+
+            if (textTransform == null)
+                textTransform = FindChildRecursive(root, "Text");
+
+            if (textTransform == null)
+                continue;
+
+            TMP_Text text = textTransform.GetComponent<TMP_Text>();
+
+            if (text != null)
+                texts.Add(text);
+        }
+
+        return texts.ToArray();
+    }
+
     private GameObject[] FindOrderObjects(string objectName)
     {
         List<GameObject> objects = new();
@@ -614,6 +661,36 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         image.color = Color.white;
         image.enabled = show;
         image.raycastTarget = true;
+    }
+
+    private void SetSkillValueText(TMP_Text[] texts, int index, string valueText)
+    {
+        if (texts == null || index < 0 || index >= texts.Length)
+            return;
+
+        TMP_Text text = texts[index];
+
+        if (text == null)
+            return;
+
+        bool show = !string.IsNullOrWhiteSpace(valueText);
+        text.text = show ? valueText : "";
+        text.gameObject.SetActive(show);
+    }
+
+    private void ClearSkillValueTexts(TMP_Text[] texts)
+    {
+        if (texts == null)
+            return;
+
+        for (int i = 0; i < texts.Length; i++)
+        {
+            if (texts[i] == null)
+                continue;
+
+            texts[i].text = "";
+            texts[i].gameObject.SetActive(false);
+        }
     }
 
     private void SetRootImageColor(GameObject root, Color color)
