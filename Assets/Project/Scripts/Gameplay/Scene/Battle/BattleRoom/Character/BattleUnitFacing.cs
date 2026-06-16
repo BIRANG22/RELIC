@@ -102,6 +102,11 @@ public class BattleUnitFacing : MonoBehaviour
         target.localScale = scale;
     }
 
+    public BattleDirection GetBattleDirection()
+    {
+        return isFacingRight ? BattleDirection.Right : BattleDirection.Left;
+    }
+
 #if UNITY_EDITOR
     private void OnValidate()
     {
