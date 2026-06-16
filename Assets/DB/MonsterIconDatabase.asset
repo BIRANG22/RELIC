@@ -16,3 +16,15 @@ MonoBehaviour:
   - MonsterId: Mon_01
     Icon: {fileID: 21300000, guid: 1f4ea27e3d77cfa46a0b7bd337c4f47d, type: 3}
     TimelineIcon: {fileID: 21300000, guid: 1f4ea27e3d77cfa46a0b7bd337c4f47d, type: 3}
+  - MonsterId: Mon_02
+    Icon: {fileID: 21300000, guid: 822cdf42e7dda294f904831c83895d49, type: 3}
+    TimelineIcon: {fileID: 21300000, guid: 822cdf42e7dda294f904831c83895d49, type: 3}
+  - MonsterId: Mon_03
+    Icon: {fileID: 21300000, guid: fbd92a68cc28c0b409f9fce990fe1c77, type: 3}
+    TimelineIcon: {fileID: 21300000, guid: fbd92a68cc28c0b409f9fce990fe1c77, type: 3}
+  - MonsterId: Mon_04
+    Icon: {fileID: 21300000, guid: 5368a1ce2b0948c43bdec0e579cbc9a9, type: 3}
+    TimelineIcon: {fileID: 21300000, guid: 5368a1ce2b0948c43bdec0e579cbc9a9, type: 3}
+  - MonsterId: Mon_05
+    Icon: {fileID: 21300000, guid: d4b3768ff54e7a045afad50bbb00f202, type: 3}
+    TimelineIcon: {fileID: 21300000, guid: d4b3768ff54e7a045afad50bbb00f202, type: 3}

@@ -1,5 +1,59 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &427850490315398454
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3966146801233875755}
+  - component: {fileID: 42000459691947540}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3966146801233875755
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 427850490315398454}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2813237850901197649}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!95 &42000459691947540
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 427850490315398454}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 0}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &811240831905421785
 GameObject:
   m_ObjectHideFlags: 0
@@ -31,7 +85,8 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 3966146801233875755}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -146,3 +201,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   iconImage: {fileID: 7568125776497338497}
+  button: {fileID: 0}
+  playCheckAnimationBeforeClick: 1
+  checkAnimationImage: {fileID: 0}
+  autoCreateCheckAnimationImage: 1
+  checkAnimationSprites:
+  - {fileID: 1334043367, guid: 2ac684da53438b3438da40c37d139393, type: 3}
+  - {fileID: -178522706, guid: 2ac684da53438b3438da40c37d139393, type: 3}
+  - {fileID: 886354276, guid: 2ac684da53438b3438da40c37d139393, type: 3}
+  - {fileID: -42160603, guid: 2ac684da53438b3438da40c37d139393, type: 3}
+  - {fileID: 1666982526, guid: 2ac684da53438b3438da40c37d139393, type: 3}
+  - {fileID: -1938716273, guid: 2ac684da53438b3438da40c37d139393, type: 3}
+  - {fileID: 1199986042, guid: 2ac684da53438b3438da40c37d139393, type: 3}
+  - {fileID: 2101312200, guid: 2ac684da53438b3438da40c37d139393, type: 3}
+  checkFrameInterval: 0.05
+  checkImageSize: {x: 96, y: 96}
+  hideIconDuringCheckAnimation: 0
+  keepLastCheckSpriteUntilRoomOpens: 1
+  useUnscaledTime: 1

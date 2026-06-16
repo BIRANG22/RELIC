@@ -200,8 +200,10 @@ public class BattleSceneController : MonoBehaviour
         mapRuntime.CurrentMapId = nodeData.MapId;
         mapRuntime.CurrentNodeIndex = nodeData.NodeIndex;
 
-        if (!mapRuntime.VisitedMapIds.Contains(nodeData.MapId))
-            mapRuntime.VisitedMapIds.Add(nodeData.MapId);
+        string nodeKey = nodeData.NodeIndex.ToString();
+
+        if (!mapRuntime.VisitedMapIds.Contains(nodeKey))
+            mapRuntime.VisitedMapIds.Add(nodeKey);
 
         mapRuntimeStore.Set(mapRuntime);
 

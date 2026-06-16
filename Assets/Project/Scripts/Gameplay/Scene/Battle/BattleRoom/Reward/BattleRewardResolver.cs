@@ -165,7 +165,7 @@ public class BattleRewardResolver : MonoBehaviour
         if (existing != null)
         {
             existing.Amount += amount;
-            existing.Name = "잔재";
+            existing.Name = "더스티움";
             existing.Description = "";
             return;
         }
@@ -175,7 +175,7 @@ public class BattleRewardResolver : MonoBehaviour
             Type = BattleRewardType.Remnant,
             RewardId = "0",
             Amount = amount,
-            Name = "잔재",
+            Name = "더스티움",
             Description = ""
         });
     }
