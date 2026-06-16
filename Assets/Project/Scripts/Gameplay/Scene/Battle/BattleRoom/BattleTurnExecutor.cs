@@ -13,6 +13,10 @@ public class BattleTurnExecutor : MonoBehaviour
     [SerializeField] private BattleRoomLoader roomLoader;
     [SerializeField] private BattleMonsterSpawner monsterSpawner;
 
+    [Header("Safe Execution")]
+    [SerializeField] private bool useSafeSequentialExecution = true;
+    [SerializeField] private float actionRoutineTimeout = 8f;
+
     [Header("Intro Text")]
     [SerializeField] private string battleProgressMessage = "전투 진행";
 
@@ -67,7 +71,7 @@ public class BattleTurnExecutor : MonoBehaviour
                 moveGhostPreview.ClearAll();
 
             BattleActionBatchBuilder builder = new(gridManager);
-            BattleActionRunner runner = new(gridManager, monsterSpawner, roomLoader);
+            BattleActionRunner runner = new(gridManager, monsterSpawner, roomLoader, useSafeSequentialExecution, actionRoutineTimeout);
             BattleActionSimulationService simulator = new(gridManager);
 
             uniqueResourceService.ApplyTimelineSlotResourceGain(timelineController);

@@ -1,3 +1,4 @@
+using Relic.Gameplay.Data;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,6 +10,8 @@ public class BattleTimelineBarUI : MonoBehaviour
     [Header("Timeline Slots")]
     [SerializeField] private BattleTimelineGroupUI[] timelineGroups;
 
+    [SerializeField] private RangePreview rangePreview;
+    [SerializeField] private GridManager gridManager;
     private int activeSlotIndex = -1;
 
     private void Awake()
@@ -224,5 +227,62 @@ public class BattleTimelineBarUI : MonoBehaviour
 
         if (owner != null)
             owner.RemoveCommand(entry.SlotIndex, entry.PlayerCommandIndex);
+    }
+
+    public void ShowEntryRangePreview(BattleTimelinePreviewEntry entry)
+    {
+        if (entry == null || rangePreview == null || gridManager == null)
+            return;
+
+        if (!entry.IsPlayer || entry.PlayerCommand == null)
+            return;
+
+        PlayerReservedCommand command = entry.PlayerCommand;
+
+        if (command.SkillData == null || command.UserRuntime == null)
+            return;
+
+        int casterGridIndex = owner.GetPreviewGridIndexBeforeCommand(
+            command.UserRuntime,
+            entry.SlotIndex,
+            entry.PlayerCommandIndex
+        );
+
+        if (casterGridIndex < 0)
+            return;
+
+        List<int> rangeIndices = new();
+
+        if (command.SkillData.RangeType == RangeType.Direction)
+        {
+            rangeIndices = BattleRangeCalculator.GetDirectionRangeIndices(
+                casterGridIndex,
+                command.SkillData.RangeId,
+                command.Direction,
+                DataManager.Instance.RangeDatabase,
+                gridManager
+            );
+        }
+        else if (command.SkillData.RangeType == RangeType.Selection)
+        {
+            rangeIndices = BattleRangeCalculator.GetSelectionRangeIndices(
+                casterGridIndex,
+                command.SkillData.RangeId,
+                DataManager.Instance.RangeDatabase,
+                gridManager
+            );
+        }
+        else
+        {
+            rangeIndices = command.RangeGridIndices;
+        }
+
+        rangePreview.ShowDirectionCells(rangeIndices);
+    }
+
+    public void ClearEntryRangePreview()
+    {
+        if (rangePreview != null)
+            rangePreview.Clear();
     }
 }

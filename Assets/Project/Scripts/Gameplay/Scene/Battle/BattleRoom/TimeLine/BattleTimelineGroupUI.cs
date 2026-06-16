@@ -334,6 +334,8 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         if (entry == null)
             return;
 
+        TimelineReservationHoverPreview.HideCurrent();
+
         if (owner != null)
             owner.OnEntryClicked(entry);
     }

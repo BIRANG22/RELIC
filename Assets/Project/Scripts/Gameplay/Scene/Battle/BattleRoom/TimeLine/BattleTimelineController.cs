@@ -13,6 +13,9 @@ public class BattleTimelineController : MonoBehaviour
     [Header("Reservation Preview")]
     [SerializeField] private PlayerSkillReservationController playerSkillReservationController;
 
+    [Header("MoveGhostPreview")]
+    [SerializeField] private MoveGhostPreview moveGhostPreview;
+
     [Header("Grid")]
     [SerializeField] private GridManager gridManager;
 
@@ -836,6 +839,7 @@ public class BattleTimelineController : MonoBehaviour
 
         RefreshTimeline();
         RefreshPlayerHUDs();
+        RefreshMoveGhostPreview();
 
         return true;
     }
@@ -1176,6 +1180,7 @@ public class BattleTimelineController : MonoBehaviour
 
         RefreshTimeline();
         RefreshPlayerHUDs();
+        RefreshMoveGhostPreview();
 
         Debug.Log($"[BattleTimelineController] 예약 취소 / Slot:{slotIndex} / Order:{orderIndex}");
     }
@@ -1263,5 +1268,121 @@ public class BattleTimelineController : MonoBehaviour
             if (hudSlots[i] != null)
                 hudSlots[i].Refresh();
         }
+    }
+
+    public int GetPreviewGridIndexBeforeCommand(
+    CharacterRuntimeData runtimeData,
+    int targetSlotIndex,
+    int targetPlayerCommandIndex)
+    {
+        if (runtimeData == null)
+            return -1;
+
+        int gridIndex = GetCurrentBattleCharacterGridIndex(runtimeData.CharacterId);
+
+        if (gridIndex < 0)
+            gridIndex = GetRuntimeStartGridIndex(runtimeData.CharacterId);
+
+        if (gridIndex < 0)
+            return -1;
+
+        if (reserveSlots == null)
+            return gridIndex;
+
+        for (int slotIndex = 0; slotIndex <= targetSlotIndex; slotIndex++)
+        {
+            ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+
+            if (slot == null || slot.Commands == null)
+                continue;
+
+            for (int i = 0; i < slot.Commands.Count; i++)
+            {
+                PlayerReservedCommand command = slot.Commands[i];
+
+                if (command == null || command.UserRuntime == null)
+                    continue;
+
+                if (command.UserRuntime.CharacterId != runtimeData.CharacterId)
+                    continue;
+
+                if (slotIndex == targetSlotIndex && i >= targetPlayerCommandIndex)
+                    break;
+
+                if (command.ReservedMoveGridIndex >= 0)
+                    gridIndex = command.ReservedMoveGridIndex;
+            }
+        }
+
+        return gridIndex;
+    }
+
+    private void RefreshMoveGhostPreview()
+    {
+        if (moveGhostPreview == null)
+            moveGhostPreview = FindFirstObjectByType<MoveGhostPreview>(FindObjectsInactive.Include);
+
+        if (moveGhostPreview == null)
+            return;
+
+        moveGhostPreview.ClearAll();
+
+        if (reserveSlots == null)
+            return;
+
+        for (int slotIndex = 0; slotIndex < reserveSlots.Length; slotIndex++)
+        {
+            ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+
+            if (slot == null || slot.Commands == null)
+                continue;
+
+            for (int i = 0; i < slot.Commands.Count; i++)
+            {
+                PlayerReservedCommand command = slot.Commands[i];
+
+                if (command == null || command.UserRuntime == null)
+                    continue;
+
+                if (command.ReservedMoveGridIndex < 0)
+                    continue;
+
+                Sprite sprite = GetCharacterSprite(command.UserRuntime.CharacterId);
+
+                moveGhostPreview.Show(
+                    command.UserRuntime.CharacterId,
+                    sprite,
+                    command.ReservedMoveGridIndex,
+                    command.Direction
+                );
+            }
+        }
+    }
+
+    private Sprite GetCharacterSprite(string characterId)
+    {
+        BattleCharacter[] characters = FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            BattleCharacter character = characters[i];
+
+            if (character == null || character.RuntimeData == null)
+                continue;
+
+            if (character.RuntimeData.CharacterId != characterId)
+                continue;
+
+            SpriteRenderer spriteRenderer =
+                character.GetComponentInChildren<SpriteRenderer>();
+
+            if (spriteRenderer != null)
+                return spriteRenderer.sprite;
+        }
+
+        return null;
     }
 }
