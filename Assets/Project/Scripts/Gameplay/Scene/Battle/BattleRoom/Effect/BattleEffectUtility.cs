@@ -114,6 +114,10 @@ public static class BattleEffectUtility
                 Mathf.Max(0, target.RuntimeData.CurrentHealth - damage);
         }
 
+        int healthDamage = Mathf.Max(0, hpBefore - target.RuntimeData.CurrentHealth);
+        int shownDamage = shieldDamage + healthDamage;
+        BattleDamageTextPopupUI.Show(target.transform, shownDamage);
+
         OnPlayerDamaged?.Invoke(target);
 
         BattleUnitAnimator animator = target.GetComponent<BattleUnitAnimator>();
@@ -145,6 +149,10 @@ public static class BattleEffectUtility
         if (damage > 0)
             target.RuntimeData.TakeDamage(damage);
 
+        int healthDamage = Mathf.Max(0, hpBefore - target.RuntimeData.CurrentHp);
+        int shownDamage = shieldDamage + healthDamage;
+        BattleDamageTextPopupUI.Show(target.transform, shownDamage);
+
         BattleUnitAnimator animator = target.GetComponent<BattleUnitAnimator>();
 
         if (animator != null)
@@ -167,8 +175,13 @@ public static class BattleEffectUtility
 
         damage = Mathf.Max(0, damage);
 
+        int hpBefore = target.RuntimeData.CurrentHealth;
+
         target.RuntimeData.CurrentHealth =
             Mathf.Max(0, target.RuntimeData.CurrentHealth - damage);
+
+        int shownDamage = Mathf.Max(0, hpBefore - target.RuntimeData.CurrentHealth);
+        BattleDamageTextPopupUI.Show(target.transform, shownDamage);
 
         BattleUnitAnimator animator = target.GetComponent<BattleUnitAnimator>();
 
@@ -188,7 +201,13 @@ public static class BattleEffectUtility
 
         damage = Mathf.Max(0, damage);
 
+        int hpBefore = target.RuntimeData.CurrentHp;
+
         target.RuntimeData.TakeDamage(damage);
+
+        int shownDamage = Mathf.Max(0, hpBefore - target.RuntimeData.CurrentHp);
+        BattleDamageTextPopupUI.Show(target.transform, shownDamage);
+
         target.ShowAndRefreshHUD();
     }
 
@@ -199,8 +218,13 @@ public static class BattleEffectUtility
 
         damage = Mathf.Max(0, damage);
 
+        int hpBefore = target.RuntimeData.CurrentHealth;
+
         target.RuntimeData.CurrentHealth =
             Mathf.Max(0, target.RuntimeData.CurrentHealth - damage);
+
+        int shownDamage = Mathf.Max(0, hpBefore - target.RuntimeData.CurrentHealth);
+        BattleDamageTextPopupUI.Show(target.transform, shownDamage);
 
         OnPlayerDamaged?.Invoke(target);
 
@@ -222,7 +246,12 @@ public static class BattleEffectUtility
 
         damage = Mathf.Max(0, damage);
 
+        int hpBefore = target.RuntimeData.CurrentHp;
+
         target.RuntimeData.TakeDamage(damage);
+
+        int shownDamage = Mathf.Max(0, hpBefore - target.RuntimeData.CurrentHp);
+        BattleDamageTextPopupUI.Show(target.transform, shownDamage);
 
         BattleUnitAnimator animator = target.GetComponent<BattleUnitAnimator>();
 
