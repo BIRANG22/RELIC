@@ -1,9 +1,12 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class BattleTurnExecutor : MonoBehaviour
 {
+    public static event Action PlayerTurnReturned;
+
     [SerializeField] private BattleTimelineController timelineController;
     [SerializeField] private GridManager gridManager;
     [SerializeField] private MoveGhostPreview moveGhostPreview;
@@ -113,6 +116,7 @@ public class BattleTurnExecutor : MonoBehaviour
         finally
         {
             isExecuting = false;
+            PlayerTurnReturned?.Invoke();
         }
     }
 

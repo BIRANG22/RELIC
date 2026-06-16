@@ -1,4 +1,5 @@
 ﻿using Relic.Gameplay.Data;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -20,9 +21,23 @@ public class BattleTimelineController : MonoBehaviour
     [SerializeField] private string emptySelectedSlotText = "-";
     [SerializeField] private bool autoFindSelectedSlotValueText = true;
 
+    [Header("Selected Slot Effect")]
+    [SerializeField] private Transform selectedSlotEffect;
+    [SerializeField] private bool autoFindSelectedSlotEffect = true;
+    [SerializeField] private string selectedSlotEffectObjectName = "Effect";
+    [SerializeField] private float selectedSlotEffectRotateStepZ = -60f;
+    [SerializeField] private float selectedSlotEffectDuration = 0.08f;
+    [SerializeField] private bool useUnscaledTimeForSelectedSlotEffect = true;
+
+    [Header("Selected Slot Effect SFX")]
+    [SerializeField] private bool playSelectedSlotEffectSfx = true;
+    [SerializeField] private SfxType selectedSlotEffectSfxType = SfxType.BattleTimelineSlotRotate;
+    [SerializeField, Range(0f, 1f)] private float selectedSlotEffectSfxVolume = 1f;
+
     private int activeSlotIndex = -1;
     private CharacterRuntimeData selectedCharacter;
     private SkillMasterData selectedSkill;
+    private Coroutine selectedSlotEffectRoutine;
 
     private readonly List<MonsterReservedCommand>[] monsterCommandsBySlot =
         new List<MonsterReservedCommand>[5];
@@ -33,6 +48,7 @@ public class BattleTimelineController : MonoBehaviour
     {
         InitializeMonsterCommandSlots();
         AutoFindSelectedSlotValueTextIfNeeded();
+        AutoFindSelectedSlotEffectIfNeeded();
         RefreshSelectedSlotValueText();
 
         if (timelineBarUI != null)
@@ -78,12 +94,14 @@ public class BattleTimelineController : MonoBehaviour
 
     public void OnTimelineSlotClicked(int slotIndex)
     {
+        int previousSlotIndex = activeSlotIndex;
         activeSlotIndex = slotIndex;
 
         if (timelineBarUI != null)
             timelineBarUI.SetActiveTimelineSlot(activeSlotIndex);
 
         RefreshSelectedSlotValueText();
+        PlaySelectedSlotEffect(previousSlotIndex, activeSlotIndex);
         TryStartSkillReservation();
     }
 
@@ -95,13 +113,7 @@ public class BattleTimelineController : MonoBehaviour
         if (selectedSlotValueText != null)
             return;
 
-        Transform searchRoot = null;
-
-        if (timelineBarUI != null)
-            searchRoot = timelineBarUI.transform;
-        else
-            searchRoot = transform;
-
+        Transform searchRoot = GetTimelineSearchRoot();
         Transform found = FindChildRecursive(searchRoot, "Value_text");
 
         if (found == null)
@@ -116,6 +128,143 @@ public class BattleTimelineController : MonoBehaviour
             return;
 
         selectedSlotValueText = found.GetComponent<TMP_Text>();
+    }
+
+    private void AutoFindSelectedSlotEffectIfNeeded()
+    {
+        if (!autoFindSelectedSlotEffect)
+            return;
+
+        if (selectedSlotEffect != null)
+            return;
+
+        Transform searchRoot = GetTimelineSearchRoot();
+        Transform found = FindChildRecursive(searchRoot, selectedSlotEffectObjectName);
+
+        if (found == null)
+        {
+            BattleTimelineBarUI foundTimelineBar = FindFirstObjectByType<BattleTimelineBarUI>(FindObjectsInactive.Include);
+
+            if (foundTimelineBar != null)
+                found = FindChildRecursive(foundTimelineBar.transform, selectedSlotEffectObjectName);
+        }
+
+        selectedSlotEffect = found;
+    }
+
+    private Transform GetTimelineSearchRoot()
+    {
+        if (timelineBarUI != null)
+            return timelineBarUI.transform;
+
+        return transform;
+    }
+
+    private void PlaySelectedSlotEffect(int previousSlotIndex, int currentSlotIndex)
+    {
+        AutoFindSelectedSlotEffectIfNeeded();
+
+        if (selectedSlotEffect == null)
+            return;
+
+        float rotateStepZ = GetSelectedSlotEffectRotateStep(previousSlotIndex, currentSlotIndex);
+
+        if (Mathf.Approximately(rotateStepZ, 0f))
+            return;
+
+        if (!selectedSlotEffect.gameObject.activeSelf)
+            selectedSlotEffect.gameObject.SetActive(true);
+
+        PlaySelectedSlotEffectSfx();
+
+        if (selectedSlotEffectRoutine != null)
+            StopCoroutine(selectedSlotEffectRoutine);
+
+        selectedSlotEffectRoutine = StartCoroutine(PlaySelectedSlotEffectRoutine(rotateStepZ));
+    }
+
+    private void PlaySelectedSlotEffectSfx()
+    {
+        if (!playSelectedSlotEffectSfx)
+            return;
+
+        if (AudioManager.Instance == null)
+            return;
+
+        AudioManager.Instance.PlaySfx(selectedSlotEffectSfxType, selectedSlotEffectSfxVolume);
+    }
+
+    private float GetSelectedSlotEffectRotateStep(int previousSlotIndex, int currentSlotIndex)
+    {
+        if (currentSlotIndex < 0)
+            return 0f;
+
+        if (previousSlotIndex < 0)
+            return selectedSlotEffectRotateStepZ;
+
+        if (currentSlotIndex > previousSlotIndex)
+            return selectedSlotEffectRotateStepZ;
+
+        if (currentSlotIndex < previousSlotIndex)
+            return -selectedSlotEffectRotateStepZ;
+
+        return 0f;
+    }
+
+    private IEnumerator PlaySelectedSlotEffectRoutine(float rotateStepZ)
+    {
+        float duration = Mathf.Max(0.01f, selectedSlotEffectDuration);
+        float elapsed = 0f;
+
+        float startZ = GetSelectedSlotEffectRotationZ();
+        float targetZ = startZ + rotateStepZ;
+
+        while (elapsed < duration)
+        {
+            elapsed += useUnscaledTimeForSelectedSlotEffect ? Time.unscaledDeltaTime : Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float easedT = 1f - Mathf.Pow(1f - t, 3f);
+            float z = Mathf.Lerp(startZ, targetZ, easedT);
+
+            SetSelectedSlotEffectRotation(z);
+            yield return null;
+        }
+
+        SetSelectedSlotEffectRotation(targetZ);
+        selectedSlotEffectRoutine = null;
+    }
+
+    private float GetSelectedSlotEffectRotationZ()
+    {
+        AutoFindSelectedSlotEffectIfNeeded();
+
+        if (selectedSlotEffect == null)
+            return 0f;
+
+        return NormalizeAngle(selectedSlotEffect.localEulerAngles.z);
+    }
+
+    private float NormalizeAngle(float angle)
+    {
+        while (angle > 180f)
+            angle -= 360f;
+
+        while (angle <= -180f)
+            angle += 360f;
+
+        return angle;
+    }
+
+    private void SetSelectedSlotEffectRotation(float zRotation)
+    {
+        AutoFindSelectedSlotEffectIfNeeded();
+
+        if (selectedSlotEffect == null)
+            return;
+
+        Vector3 eulerAngles = selectedSlotEffect.localEulerAngles;
+        eulerAngles.z = zRotation;
+        selectedSlotEffect.localEulerAngles = eulerAngles;
     }
 
     private void RefreshSelectedSlotValueText()
