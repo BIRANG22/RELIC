@@ -27,6 +27,6 @@ public class BattleRewardData
     public string GetRemnantAmountDescription()
     {
         int amount = Mathf.Max(0, Amount);
-        return $"{amount} 잔재를 얻는다.";
+        return $"{amount} 더스티움을 얻는다.";
     }
 }

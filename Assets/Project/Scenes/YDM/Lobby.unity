@@ -3997,6 +3997,122 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 273255856}
   m_CullTransparentMesh: 1
+--- !u!1 &276403258
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 276403260}
+  - component: {fileID: 276403259}
+  m_Layer: 0
+  m_Name: LobbyKeyboardInputController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &276403259
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 276403258}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf383b90cfbed034c87523211c984a21, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lobbyMainPanel: {fileID: 1169754714}
+  requireLobbyMainPanelActive: 1
+  characterSettingPanel: {fileID: 1880677614}
+  requireCharacterSettingPanelActive: 1
+  blockingPanels:
+  - {fileID: 753710470}
+  - {fileID: 1873321967}
+  - {fileID: 1763934030}
+  characterBlockingPanels: []
+  backButton: {fileID: 2078505868}
+  stageButton: {fileID: 1134996832}
+  playButton: {fileID: 1341909872}
+  partySlot0: {fileID: 266558055}
+  partySlot1: {fileID: 1558730615}
+  partySlot2: {fileID: 639621066}
+  stageSelectPanel: {fileID: 753710470}
+  stagePanelCloseButton: {fileID: 0}
+  stageSelectButtons:
+  - {fileID: 406478876}
+  - {fileID: 235363505}
+  - {fileID: 793956455}
+  - {fileID: 1691667062}
+  selectFirstStageWhenPanelOpens: 1
+  wrapStageSelection: 1
+  closeStagePanelBySetActiveWhenCloseButtonMissing: 1
+  characterBackButton: {fileID: 1368566476}
+  selectButton: {fileID: 1731166315}
+  characterConfirmButton: {fileID: 1731166319}
+  charPick: {fileID: 649916677}
+  charButtonRoot: {fileID: 649916676}
+  characterButtons:
+  - {fileID: 443209981}
+  - {fileID: 1395517687}
+  - {fileID: 2030413773}
+  - {fileID: 835046380}
+  - {fileID: 234256141}
+  - {fileID: 411751190}
+  autoBindCharacterButtons: 1
+  wrapCharacterSelection: 1
+  characterPartySlot0: {fileID: 266558055}
+  characterPartySlot1: {fileID: 1558730615}
+  characterPartySlot2: {fileID: 639621066}
+  skillButton: {fileID: 655768711}
+  runeButton: {fileID: 2012554167}
+  skillOpenButton: {fileID: 0}
+  runeOpenButton: {fileID: 0}
+  skillArea: {fileID: 2098004791}
+  runeArea: {fileID: 358065591}
+  tabCyclesSkillRuneAndClose: 1
+  backKey: 27
+  partySlot0Key: 49
+  partySlot1Key: 50
+  partySlot2Key: 51
+  stageKey: 9
+  playKey: 32
+  stageMoveUpKey: 119
+  stageMoveDownKey: 115
+  stageSelectKey: 32
+  stageCloseKey: 27
+  useStageKeyToCloseStagePanel: 1
+  characterBackKey: 27
+  characterMoveLeftKey: 97
+  characterMoveRightKey: 100
+  characterTabKey: 9
+  characterSlot0Key: 49
+  characterSlot1Key: 50
+  characterSlot2Key: 51
+  characterSelectKey: 32
+  ignoreWhenInputFieldSelected: 1
+  ignoreWhenPointerDragging: 1
+  requireButtonInteractable: 1
+  inputCooldown: 0.08
+--- !u!4 &276403260
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 276403258}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -93.72885, y: 128.6136, z: -211.31693}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &278612158
 GameObject:
   m_ObjectHideFlags: 0
@@ -10996,6 +11112,7 @@ GameObject:
   - component: {fileID: 655768712}
   - component: {fileID: 655768711}
   - component: {fileID: 655768714}
+  - component: {fileID: 655768715}
   m_Layer: 0
   m_Name: SkillButton
   m_TagString: Untagged
@@ -11162,6 +11279,22 @@ MonoBehaviour:
   fadeDuration: 0.2
   playHoverSound: 1
   hoverSfx: 6
+  playClickSound: 0
+  clickSfx: 7
+--- !u!114 &655768715
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 655768709}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 154cd430fc56df847bdca7e0ddef7d8c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelType: 0
+  panels: []
   playClickSound: 0
   clickSfx: 7
 --- !u!1 &663196646
@@ -33162,6 +33295,7 @@ GameObject:
   - component: {fileID: 2012554168}
   - component: {fileID: 2012554167}
   - component: {fileID: 2012554170}
+  - component: {fileID: 2012554171}
   m_Layer: 0
   m_Name: RuneButton
   m_TagString: Untagged
@@ -33328,6 +33462,22 @@ MonoBehaviour:
   fadeDuration: 0.2
   playHoverSound: 1
   hoverSfx: 6
+  playClickSound: 0
+  clickSfx: 7
+--- !u!114 &2012554171
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2012554165}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 154cd430fc56df847bdca7e0ddef7d8c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelType: 1
+  panels: []
   playClickSound: 0
   clickSfx: 7
 --- !u!1 &2015401050
@@ -36180,3 +36330,4 @@ SceneRoots:
   - {fileID: 1438059791}
   - {fileID: 126366152}
   - {fileID: 29908008}
+  - {fileID: 276403260}
