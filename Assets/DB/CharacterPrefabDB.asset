@@ -14,17 +14,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entries:
   - CharacterId: Char_01
-    BattlePrefab: {fileID: 7906634120019628704, guid: 7ea19703226bb0843b8b337a7e25cb7a, type: 3}
+    BattlePrefab: {fileID: 2864985933646917633, guid: 2db172b6d8d7a814ba8cc92074c5c9c9, type: 3}
     LobbyPrefab: {fileID: 9215462581426021436, guid: 3b472fb55a82da142befdfde4c174cfa, type: 3}
     PreviewUIPrefab: {fileID: 4264537240060521113, guid: 18c207ff381f6c74a861d2fedd96615d, type: 3}
     PreviewWorldPrefab: {fileID: 4856766094544398864, guid: 4eb2554239383ac46950680a90def7bc, type: 3}
   - CharacterId: Char_02
-    BattlePrefab: {fileID: 5458565981867785420, guid: ade7ee4127830f64e94e95aa654cf20e, type: 3}
+    BattlePrefab: {fileID: 4760919951882294998, guid: e6386b64cdefe0a46a71fa286ad468ec, type: 3}
     LobbyPrefab: {fileID: 5460656413765981800, guid: a747fc76b738ff24081efc7aee822e9c, type: 3}
     PreviewUIPrefab: {fileID: 764790700527652886, guid: 586ce2b5f994a5640ba4e9534d46cb2f, type: 3}
     PreviewWorldPrefab: {fileID: 751468726288164493, guid: d47263835d7fa5d4f9d3323a5aa27e2a, type: 3}
   - CharacterId: Char_03
-    BattlePrefab: {fileID: 3215717407918631906, guid: d5eff94d53a6245479a1d96d662dc35e, type: 3}
+    BattlePrefab: {fileID: 3215762211319408885, guid: b53eca07276100d45b439cf363492066, type: 3}
     LobbyPrefab: {fileID: 1777314354953963968, guid: 5087d7653061543428fcd9af01427f6e, type: 3}
     PreviewUIPrefab: {fileID: 3465749094083845712, guid: 2a1c66be244d1134887100bd5cca83c7, type: 3}
     PreviewWorldPrefab: {fileID: 2853597004644342624, guid: 2b468da7e5a9f814f994cf564e4a9891, type: 3}
