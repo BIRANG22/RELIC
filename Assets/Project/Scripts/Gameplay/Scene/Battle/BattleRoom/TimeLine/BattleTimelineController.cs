@@ -34,10 +34,28 @@ public class BattleTimelineController : MonoBehaviour
     [SerializeField] private SfxType selectedSlotEffectSfxType = SfxType.BattleTimelineSlotRotate;
     [SerializeField, Range(0f, 1f)] private float selectedSlotEffectSfxVolume = 1f;
 
+    [Header("Slot Selection Lock")]
+    [SerializeField] private bool showWarningWhenSlotSelectionLocked = false;
+    [SerializeField] private string slotSelectionLockedMessage = "턴 진행 중에는 슬롯을 선택할 수 없습니다.";
+
+    [Header("Timeline Slot Slide")]
+    [SerializeField] private bool playTimelineSlotSlide = true;
+    [SerializeField] private RectTransform[] timelineSlotSlideTargets;
+    [SerializeField] private bool autoBindTimelineSlotSlideTargets = true;
+    [SerializeField] private string timelineSlotSlideTargetNamePrefix = "TimelineSlot";
+    [SerializeField] private float completedTimelineSlotSlideAmountX = -260f;
+    [SerializeField] private float waitingTimelineSlotSlideAmountX = -250f;
+    [SerializeField] private float timelineSlotSlideDuration = 0.18f;
+    [SerializeField] private bool useUnscaledTimeForTimelineSlotSlide = false;
+
     private int activeSlotIndex = -1;
     private CharacterRuntimeData selectedCharacter;
     private SkillMasterData selectedSkill;
     private Coroutine selectedSlotEffectRoutine;
+    private Coroutine timelineSlotSlideRoutine;
+    private bool isSlotSelectionLocked;
+    private Vector2[] timelineSlotOriginalAnchoredPositions;
+    private int timelineSlotSlideStepIndex;
 
     private readonly List<MonsterReservedCommand>[] monsterCommandsBySlot =
         new List<MonsterReservedCommand>[5];
@@ -49,6 +67,8 @@ public class BattleTimelineController : MonoBehaviour
         InitializeMonsterCommandSlots();
         AutoFindSelectedSlotValueTextIfNeeded();
         AutoFindSelectedSlotEffectIfNeeded();
+        AutoBindTimelineSlotSlideTargetsIfNeeded();
+        CaptureTimelineSlotOriginalPositionsIfNeeded();
         RefreshSelectedSlotValueText();
 
         if (timelineBarUI != null)
@@ -94,6 +114,14 @@ public class BattleTimelineController : MonoBehaviour
 
     public void OnTimelineSlotClicked(int slotIndex)
     {
+        if (isSlotSelectionLocked)
+        {
+            if (showWarningWhenSlotSelectionLocked)
+                ShowBattleWarning(slotSelectionLockedMessage);
+
+            return;
+        }
+
         int previousSlotIndex = activeSlotIndex;
         activeSlotIndex = slotIndex;
 
@@ -103,6 +131,65 @@ public class BattleTimelineController : MonoBehaviour
         RefreshSelectedSlotValueText();
         PlaySelectedSlotEffect(previousSlotIndex, activeSlotIndex);
         TryStartSkillReservation();
+    }
+
+    public void ClearSelectedSlotSelection()
+    {
+        activeSlotIndex = -1;
+        selectedSkill = null;
+
+        if (timelineBarUI != null)
+            timelineBarUI.SetActiveTimelineSlot(activeSlotIndex);
+
+        RefreshSelectedSlotValueText();
+    }
+
+    public void SetSlotSelectionLocked(bool locked)
+    {
+        isSlotSelectionLocked = locked;
+    }
+
+    public IEnumerator SlideTimelineSlotsLeftOneStepRoutine()
+    {
+        yield return SlideTimelineSlotsLeftOneStepRoutine(timelineSlotSlideStepIndex);
+    }
+
+    public IEnumerator SlideTimelineSlotsLeftOneStepRoutine(int completedSlotIndex)
+    {
+        yield return SlideTimelineSlotsLeftThroughSlotRoutine(completedSlotIndex);
+    }
+
+    public IEnumerator SlideTimelineSlotsLeftThroughSlotRoutine(int lastSlotIndexInclusive)
+    {
+        if (!playTimelineSlotSlide)
+            yield break;
+
+        AutoBindTimelineSlotSlideTargetsIfNeeded();
+        CaptureTimelineSlotOriginalPositionsIfNeeded();
+
+        if (!HasTimelineSlotSlideTargets())
+            yield break;
+
+        int startSlotIndex = Mathf.Clamp(timelineSlotSlideStepIndex, 0, timelineSlotSlideTargets.Length);
+        int endSlotIndex = Mathf.Clamp(lastSlotIndexInclusive, -1, timelineSlotSlideTargets.Length - 1);
+
+        if (endSlotIndex < startSlotIndex)
+            yield break;
+
+        yield return MoveTimelineSlotSlideTargetsThroughCompletedSlotsRoutine(startSlotIndex, endSlotIndex);
+        timelineSlotSlideStepIndex = Mathf.Clamp(endSlotIndex + 1, 0, timelineSlotSlideTargets.Length);
+    }
+
+    public IEnumerator ResetTimelineSlotsToOriginalPositionRoutine()
+    {
+        AutoBindTimelineSlotSlideTargetsIfNeeded();
+        CaptureTimelineSlotOriginalPositionsIfNeeded();
+
+        if (!HasTimelineSlotSlideTargets())
+            yield break;
+
+        yield return MoveTimelineSlotSlideTargetsToOriginalOneByOneRoutine();
+        timelineSlotSlideStepIndex = 0;
     }
 
     private void AutoFindSelectedSlotValueTextIfNeeded()
@@ -150,6 +237,283 @@ public class BattleTimelineController : MonoBehaviour
         }
 
         selectedSlotEffect = found;
+    }
+
+    private void AutoBindTimelineSlotSlideTargetsIfNeeded()
+    {
+        if (!autoBindTimelineSlotSlideTargets)
+            return;
+
+        if (timelineSlotSlideTargets != null && timelineSlotSlideTargets.Length > 0)
+            return;
+
+        List<RectTransform> foundTargets = new();
+
+        if (reserveSlots != null)
+        {
+            for (int i = 0; i < reserveSlots.Length; i++)
+            {
+                if (reserveSlots[i] == null)
+                    continue;
+
+                RectTransform slotRect = reserveSlots[i].GetComponent<RectTransform>();
+
+                if (slotRect != null && !foundTargets.Contains(slotRect))
+                    foundTargets.Add(slotRect);
+            }
+        }
+
+        if (foundTargets.Count <= 0)
+        {
+            Transform searchRoot = GetTimelineSearchRoot();
+            AddTimelineSlotSlideTargetsRecursive(searchRoot, foundTargets);
+        }
+
+        if (foundTargets.Count <= 0)
+        {
+            BattleTimelineBarUI foundTimelineBar = FindFirstObjectByType<BattleTimelineBarUI>(FindObjectsInactive.Include);
+
+            if (foundTimelineBar != null)
+                AddTimelineSlotSlideTargetsRecursive(foundTimelineBar.transform, foundTargets);
+        }
+
+        foundTargets.Sort(CompareTimelineSlotSlideTargetOrder);
+        timelineSlotSlideTargets = foundTargets.ToArray();
+    }
+
+    private void AddTimelineSlotSlideTargetsRecursive(Transform root, List<RectTransform> results)
+    {
+        if (root == null || results == null)
+            return;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform child = root.GetChild(i);
+
+            if (child.name.StartsWith(timelineSlotSlideTargetNamePrefix))
+            {
+                RectTransform rectTransform = child.GetComponent<RectTransform>();
+
+                if (rectTransform != null && !results.Contains(rectTransform))
+                    results.Add(rectTransform);
+            }
+
+            AddTimelineSlotSlideTargetsRecursive(child, results);
+        }
+    }
+
+    private int CompareTimelineSlotSlideTargetOrder(RectTransform a, RectTransform b)
+    {
+        int aIndex = ExtractTrailingNumber(a != null ? a.name : string.Empty);
+        int bIndex = ExtractTrailingNumber(b != null ? b.name : string.Empty);
+
+        if (aIndex != bIndex)
+            return aIndex.CompareTo(bIndex);
+
+        string aName = a != null ? a.name : string.Empty;
+        string bName = b != null ? b.name : string.Empty;
+
+        return string.CompareOrdinal(aName, bName);
+    }
+
+    private int ExtractTrailingNumber(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return int.MaxValue;
+
+        int multiplier = 1;
+        int result = 0;
+        bool hasNumber = false;
+
+        for (int i = value.Length - 1; i >= 0; i--)
+        {
+            char c = value[i];
+
+            if (c < '0' || c > '9')
+                break;
+
+            hasNumber = true;
+            result += (c - '0') * multiplier;
+            multiplier *= 10;
+        }
+
+        return hasNumber ? result : int.MaxValue;
+    }
+
+    private void CaptureTimelineSlotOriginalPositionsIfNeeded()
+    {
+        AutoBindTimelineSlotSlideTargetsIfNeeded();
+
+        if (timelineSlotSlideTargets == null || timelineSlotSlideTargets.Length <= 0)
+            return;
+
+        if (timelineSlotOriginalAnchoredPositions != null &&
+            timelineSlotOriginalAnchoredPositions.Length == timelineSlotSlideTargets.Length)
+        {
+            return;
+        }
+
+        timelineSlotOriginalAnchoredPositions = new Vector2[timelineSlotSlideTargets.Length];
+
+        for (int i = 0; i < timelineSlotSlideTargets.Length; i++)
+        {
+            if (timelineSlotSlideTargets[i] != null)
+                timelineSlotOriginalAnchoredPositions[i] = timelineSlotSlideTargets[i].anchoredPosition;
+        }
+    }
+
+    private bool HasTimelineSlotSlideTargets()
+    {
+        if (timelineSlotSlideTargets == null || timelineSlotSlideTargets.Length <= 0)
+            return false;
+
+        for (int i = 0; i < timelineSlotSlideTargets.Length; i++)
+        {
+            if (timelineSlotSlideTargets[i] != null)
+                return true;
+        }
+
+        return false;
+    }
+
+    private IEnumerator MoveTimelineSlotSlideTargetsThroughCompletedSlotsRoutine(int startSlotIndex, int endSlotIndex)
+    {
+        AutoBindTimelineSlotSlideTargetsIfNeeded();
+
+        if (!HasTimelineSlotSlideTargets())
+            yield break;
+
+        Vector2[] startPositions = GetTimelineSlotCurrentPositions();
+        Vector2[] targetPositions = new Vector2[startPositions.Length];
+
+        for (int i = 0; i < startPositions.Length; i++)
+            targetPositions[i] = startPositions[i];
+
+        int safeStartSlotIndex = Mathf.Clamp(startSlotIndex, 0, targetPositions.Length);
+        int safeEndSlotIndex = Mathf.Clamp(endSlotIndex, -1, targetPositions.Length - 1);
+
+        for (int completedSlotIndex = safeStartSlotIndex; completedSlotIndex <= safeEndSlotIndex; completedSlotIndex++)
+        {
+            for (int i = completedSlotIndex; i < targetPositions.Length; i++)
+            {
+                float deltaX = i == completedSlotIndex
+                    ? completedTimelineSlotSlideAmountX
+                    : waitingTimelineSlotSlideAmountX;
+
+                targetPositions[i] += new Vector2(deltaX, 0f);
+            }
+        }
+
+        yield return MoveTimelineSlotSlideTargetsToPositionsRoutine(startPositions, targetPositions);
+    }
+
+    private IEnumerator MoveTimelineSlotSlideTargetsToOriginalOneByOneRoutine()
+    {
+        AutoBindTimelineSlotSlideTargetsIfNeeded();
+        CaptureTimelineSlotOriginalPositionsIfNeeded();
+
+        if (!HasTimelineSlotSlideTargets())
+            yield break;
+
+        if (timelineSlotOriginalAnchoredPositions == null ||
+            timelineSlotOriginalAnchoredPositions.Length != timelineSlotSlideTargets.Length)
+        {
+            yield break;
+        }
+
+        for (int i = timelineSlotSlideTargets.Length - 1; i >= 0; i--)
+        {
+            if (timelineSlotSlideTargets[i] == null)
+                continue;
+
+            yield return MoveSingleTimelineSlotToOriginalRoutine(i);
+        }
+    }
+
+    private IEnumerator MoveSingleTimelineSlotToOriginalRoutine(int slotIndex)
+    {
+        Vector2[] startPositions = GetTimelineSlotCurrentPositions();
+        Vector2[] targetPositions = GetTimelineSlotCurrentPositions();
+
+        if (slotIndex < 0 ||
+            slotIndex >= targetPositions.Length ||
+            slotIndex >= timelineSlotOriginalAnchoredPositions.Length)
+        {
+            yield break;
+        }
+
+        targetPositions[slotIndex] = timelineSlotOriginalAnchoredPositions[slotIndex];
+        yield return MoveTimelineSlotSlideTargetsToPositionsRoutine(startPositions, targetPositions);
+    }
+
+    private Vector2[] GetTimelineSlotCurrentPositions()
+    {
+        AutoBindTimelineSlotSlideTargetsIfNeeded();
+
+        if (timelineSlotSlideTargets == null)
+            return new Vector2[0];
+
+        Vector2[] positions = new Vector2[timelineSlotSlideTargets.Length];
+
+        for (int i = 0; i < timelineSlotSlideTargets.Length; i++)
+        {
+            if (timelineSlotSlideTargets[i] != null)
+                positions[i] = timelineSlotSlideTargets[i].anchoredPosition;
+        }
+
+        return positions;
+    }
+
+    private IEnumerator MoveTimelineSlotSlideTargetsToPositionsRoutine(Vector2[] startPositions, Vector2[] targetPositions)
+    {
+        if (startPositions == null || targetPositions == null)
+            yield break;
+
+        if (startPositions.Length != targetPositions.Length)
+            yield break;
+
+        if (timelineSlotSlideRoutine != null)
+            StopCoroutine(timelineSlotSlideRoutine);
+
+        timelineSlotSlideRoutine = StartCoroutine(MoveTimelineSlotSlideTargetsCoroutine(startPositions, targetPositions));
+        yield return timelineSlotSlideRoutine;
+    }
+
+    private IEnumerator MoveTimelineSlotSlideTargetsCoroutine(Vector2[] startPositions, Vector2[] targetPositions)
+    {
+        float duration = Mathf.Max(0.01f, timelineSlotSlideDuration);
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += useUnscaledTimeForTimelineSlotSlide ? Time.unscaledDeltaTime : Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float easedT = 1f - Mathf.Pow(1f - t, 3f);
+
+            ApplyTimelineSlotSlidePositions(startPositions, targetPositions, easedT);
+            yield return null;
+        }
+
+        ApplyTimelineSlotSlidePositions(startPositions, targetPositions, 1f);
+        timelineSlotSlideRoutine = null;
+    }
+
+    private void ApplyTimelineSlotSlidePositions(Vector2[] startPositions, Vector2[] targetPositions, float t)
+    {
+        if (timelineSlotSlideTargets == null || startPositions == null || targetPositions == null)
+            return;
+
+        int count = Mathf.Min(timelineSlotSlideTargets.Length, Mathf.Min(startPositions.Length, targetPositions.Length));
+
+        for (int i = 0; i < count; i++)
+        {
+            RectTransform target = timelineSlotSlideTargets[i];
+
+            if (target == null)
+                continue;
+
+            target.anchoredPosition = Vector2.Lerp(startPositions[i], targetPositions[i], t);
+        }
     }
 
     private Transform GetTimelineSearchRoot()
@@ -757,27 +1121,45 @@ public class BattleTimelineController : MonoBehaviour
 
     public void ClearAllReservations()
     {
-        if (reserveSlots == null)
-            return;
+        ClearSelectedSlotSelection();
 
-        for (int i = 0; i < reserveSlots.Length; i++)
+        if (reserveSlots != null)
         {
-            if (reserveSlots[i] == null)
-                continue;
-
-            var commands = reserveSlots[i].Commands;
-
-            for (int j = commands.Count - 1; j >= 0; j--)
+            for (int i = 0; i < reserveSlots.Length; i++)
             {
-                if (reserveSlots[i].RemoveCommandAt(j, out PlayerReservedCommand removedCommand))
-                    RemoveReservedCosts(removedCommand);
-            }
+                if (reserveSlots[i] == null)
+                    continue;
 
-            reserveSlots[i].Clear();
+                var commands = reserveSlots[i].Commands;
+
+                for (int j = commands.Count - 1; j >= 0; j--)
+                {
+                    if (reserveSlots[i].RemoveCommandAt(j, out PlayerReservedCommand removedCommand))
+                        RemoveReservedCosts(removedCommand);
+                }
+
+                reserveSlots[i].Clear();
+            }
         }
+
+        ClearAllMonsterCommandsWithoutRefresh();
 
         RefreshTimeline();
         RefreshPlayerHUDs();
+    }
+
+    private void ClearAllMonsterCommandsWithoutRefresh()
+    {
+        InitializeMonsterCommandSlots();
+
+        if (monsterCommandsBySlot == null)
+            return;
+
+        for (int i = 0; i < monsterCommandsBySlot.Length; i++)
+        {
+            if (monsterCommandsBySlot[i] != null)
+                monsterCommandsBySlot[i].Clear();
+        }
     }
 
     private void RemoveReservedCosts(PlayerReservedCommand command)
