@@ -9,6 +9,8 @@ namespace Relic.Gameplay.Data
         public int Stack;
         public int TurnCount;
 
+        public bool IsPassive;
+        public string SourceSkillId;
         public StatusEffectRuntimeData()
         {
         }
