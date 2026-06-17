@@ -1,8 +1,9 @@
-using Relic.Gameplay.Data;
+ï»¿using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class BattleRoomLoader : MonoBehaviour
@@ -33,11 +34,15 @@ public class BattleRoomLoader : MonoBehaviour
     [Header("Skill List")]
     [SerializeField] private SkillListPanel skillListPanel;
 
+    [Header("Keyboard Input")]
+    [SerializeField] private bool enableCharacterCycleInput = true;
+    [SerializeField] private bool enableSkillPanelToggleInput = true;
+
     [Header("Monster Turn")]
     [SerializeField] private BattleMonsterTurnPlanner monsterTurnPlanner;
 
     [Header("Load Control")]
-    [Tooltip("BattleSceneController°¡ ¾ø´Â Å×½ºÆ® ¾À¿¡¼­¸¸ ÄÑ¼¼¿ä. ÀüÈ¯ ¿¬ÃâÀÌ ÀÖ´Â ½ÇÁ¦ ¹èÆ²¾À¿¡¼­´Â ²¨µÖ¾ß Áßº¹ ½ºÆùÀÌ »ı±âÁö ¾Ê½À´Ï´Ù.")]
+    [Tooltip("BattleSceneControllerê°€ ì—†ëŠ” í…ŒìŠ¤íŠ¸ ì”¬ì—ì„œë§Œ ì¼œì„¸ìš”. ì „í™˜ ì—°ì¶œì´ ìˆëŠ” ì‹¤ì œ ë°°í‹€ì”¬ì—ì„œëŠ” êº¼ë‘¬ì•¼ ì¤‘ë³µ ìŠ¤í°ì´ ìƒê¸°ì§€ ì•ŠìŠµë‹ˆë‹¤.")]
     [SerializeField] private bool loadOnEnableWithoutSceneController = false;
 
     [Header("Debug")]
@@ -79,6 +84,162 @@ public class BattleRoomLoader : MonoBehaviour
             RequestLoadBattle();
     }
 
+    private void Update()
+    {
+        HandleSkillPanelToggleInput();
+        HandleCharacterCycleInput();
+    }
+
+    private void HandleSkillPanelToggleInput()
+    {
+        if (!enableSkillPanelToggleInput)
+            return;
+
+        if (!Input.GetKeyDown(KeyCode.Tab))
+            return;
+
+        if (skillListPanel == null)
+            return;
+
+        if (IsTypingInputFieldSelected())
+            return;
+
+        if (turnExecutor == null)
+            EnsureTurnExecutor();
+
+        if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
+            return;
+
+        ToggleSkillListForSelectedPlayer();
+    }
+
+    private void HandleCharacterCycleInput()
+    {
+        if (!enableCharacterCycleInput)
+            return;
+
+        if (skillListPanel == null || !skillListPanel.IsOpen())
+            return;
+
+        if (IsTypingInputFieldSelected())
+            return;
+
+        if (turnExecutor == null)
+            EnsureTurnExecutor();
+
+        if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
+            return;
+
+        if (Input.GetKeyDown(KeyCode.D))
+        {
+            SelectAdjacentPlayerCharacter(1);
+        }
+        else if (Input.GetKeyDown(KeyCode.A))
+        {
+            SelectAdjacentPlayerCharacter(-1);
+        }
+    }
+
+    private void ToggleSkillListForSelectedPlayer()
+    {
+        if (skillListPanel == null)
+            return;
+
+        if (skillListPanel.IsOpen())
+        {
+            skillListPanel.Close();
+            return;
+        }
+
+        CharacterRuntimeData runtimeData = GetSelectedOrFirstPlayerRuntime();
+
+        if (runtimeData == null)
+            return;
+
+        OpenSkillListForPlayer(runtimeData);
+    }
+
+    private CharacterRuntimeData GetSelectedOrFirstPlayerRuntime()
+    {
+        RemoveNullPlayerHudSlots();
+
+        if (selectedPlayerRuntime != null && FindPlayerHudIndex(selectedPlayerRuntime) >= 0)
+            return selectedPlayerRuntime;
+
+        for (int i = 0; i < playerHudSlots.Count; i++)
+        {
+            PlayerHUDSlot hud = playerHudSlots[i];
+
+            if (hud != null && hud.BoundRuntime != null)
+                return hud.BoundRuntime;
+        }
+
+        return null;
+    }
+
+    private void SelectAdjacentPlayerCharacter(int direction)
+    {
+        RemoveNullPlayerHudSlots();
+
+        if (playerHudSlots.Count <= 0)
+            return;
+
+        int currentIndex = FindPlayerHudIndex(selectedPlayerRuntime);
+
+        if (currentIndex < 0)
+            currentIndex = 0;
+
+        int nextIndex = WrapIndex(currentIndex + direction, playerHudSlots.Count);
+        PlayerHUDSlot nextHud = playerHudSlots[nextIndex];
+
+        if (nextHud == null || nextHud.BoundRuntime == null)
+            return;
+
+        OpenSkillListForPlayer(nextHud.BoundRuntime);
+    }
+
+    private int WrapIndex(int index, int count)
+    {
+        if (count <= 0)
+            return 0;
+
+        while (index < 0)
+            index += count;
+
+        while (index >= count)
+            index -= count;
+
+        return index;
+    }
+
+    private void RemoveNullPlayerHudSlots()
+    {
+        for (int i = playerHudSlots.Count - 1; i >= 0; i--)
+        {
+            if (playerHudSlots[i] == null)
+                playerHudSlots.RemoveAt(i);
+        }
+    }
+
+    private bool IsTypingInputFieldSelected()
+    {
+        if (EventSystem.current == null)
+            return false;
+
+        GameObject selectedObject = EventSystem.current.currentSelectedGameObject;
+
+        if (selectedObject == null)
+            return false;
+
+        if (selectedObject.GetComponent<TMPro.TMP_InputField>() != null)
+            return true;
+
+        if (selectedObject.GetComponent<InputField>() != null)
+            return true;
+
+        return false;
+    }
+
     public void RequestLoadBattle()
     {
         if (!isActiveAndEnabled)
@@ -117,7 +278,7 @@ public class BattleRoomLoader : MonoBehaviour
         {
             if (!warned)
             {
-                Debug.LogWarning("[BattleRoomLoader] DataManager°¡ ¾ÆÁ÷ ÁØºñµÇÁö ¾Ê¾Æ ÀüÅõ ·Îµå¸¦ ´ë±âÇÕ´Ï´Ù.");
+                Debug.LogWarning("[BattleRoomLoader] DataManagerê°€ ì•„ì§ ì¤€ë¹„ë˜ì§€ ì•Šì•„ ì „íˆ¬ ë¡œë“œë¥¼ ëŒ€ê¸°í•©ë‹ˆë‹¤.");
                 warned = true;
             }
 
@@ -147,7 +308,7 @@ public class BattleRoomLoader : MonoBehaviour
 
         if (DataManager.Instance == null)
         {
-            Debug.LogWarning("[BattleRoomLoader] DataManager°¡ ¾ÆÁ÷ ÁØºñµÇÁö ¾Ê¾Æ ÀüÅõ ·Îµå¸¦ °Ç³Ê¶İ´Ï´Ù.");
+            Debug.LogWarning("[BattleRoomLoader] DataManagerê°€ ì•„ì§ ì¤€ë¹„ë˜ì§€ ì•Šì•„ ì „íˆ¬ ë¡œë“œë¥¼ ê±´ë„ˆëœë‹ˆë‹¤.");
             isLoading = false;
             return;
         }

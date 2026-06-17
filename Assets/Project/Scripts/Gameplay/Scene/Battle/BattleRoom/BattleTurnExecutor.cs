@@ -1,12 +1,15 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class BattleTurnExecutor : MonoBehaviour
 {
     public static event Action PlayerTurnReturned;
+
+    public bool CanAcceptPlayerInput => !isExecuting && isMonsterPlanReady && isPlayerInputReady;
 
     [SerializeField] private BattleTimelineController timelineController;
     [SerializeField] private GridManager gridManager;
@@ -17,12 +20,15 @@ public class BattleTurnExecutor : MonoBehaviour
     [Header("End Turn")]
     [SerializeField] private Button endTurnButton;
 
+    [Header("Keyboard Input")]
+    [SerializeField] private bool enableSpaceEndTurnInput = true;
+
     [Header("Safe Execution")]
     [SerializeField] private bool useSafeSequentialExecution = true;
     [SerializeField] private float actionRoutineTimeout = 8f;
 
     [Header("Intro Text")]
-    [SerializeField] private string battleProgressMessage = "ÀüÅõ ÁøÇà";
+    [SerializeField] private string battleProgressMessage = "ì „íˆ¬ ì§„í–‰";
     [SerializeField] private bool waitIntroText = false;
     [SerializeField] private float introTextTimeout = 1.5f;
 
@@ -61,6 +67,23 @@ public class BattleTurnExecutor : MonoBehaviour
         RefreshEndTurnButton();
     }
 
+    private void Update()
+    {
+        if (!enableSpaceEndTurnInput)
+            return;
+
+        if (!Input.GetKeyDown(KeyCode.Space))
+            return;
+
+        if (IsTypingInputFieldSelected())
+            return;
+
+        if (!CanAcceptPlayerInput)
+            return;
+
+        ExecuteTurn();
+    }
+
     public void SetMonsterPlanReady(bool ready)
     {
         isMonsterPlanReady = ready;
@@ -86,13 +109,13 @@ public class BattleTurnExecutor : MonoBehaviour
 
         if (!isMonsterPlanReady || !isPlayerInputReady)
         {
-            ShowBattleWarning("¾ÆÁ÷ Çàµ¿ ÁØºñ°¡ ¿Ï·áµÇÁö ¾Ê¾Ò½À´Ï´Ù.");
+            ShowBattleWarning("ì•„ì§ í–‰ë™ ì¤€ë¹„ê°€ ì™„ë£Œë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
             return;
         }
 
         if (timelineController == null)
         {
-            ShowBattleWarning("Å¸ÀÓ¶óÀÎ ÄÁÆ®·Ñ·¯¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.");
+            ShowBattleWarning("íƒ€ì„ë¼ì¸ ì»¨íŠ¸ë¡¤ëŸ¬ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -233,6 +256,25 @@ public class BattleTurnExecutor : MonoBehaviour
 
             PlayerTurnReturned?.Invoke();
         }
+    }
+
+    private bool IsTypingInputFieldSelected()
+    {
+        if (EventSystem.current == null)
+            return false;
+
+        GameObject selectedObject = EventSystem.current.currentSelectedGameObject;
+
+        if (selectedObject == null)
+            return false;
+
+        if (selectedObject.GetComponent<TMPro.TMP_InputField>() != null)
+            return true;
+
+        if (selectedObject.GetComponent<InputField>() != null)
+            return true;
+
+        return false;
     }
 
     private void RefreshEndTurnButton()

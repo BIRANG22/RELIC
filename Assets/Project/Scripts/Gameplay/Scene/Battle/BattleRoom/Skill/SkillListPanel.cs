@@ -491,7 +491,7 @@ public class SkillListPanel : MonoBehaviour
         return canvas.worldCamera;
     }
 
-    private bool IsOpen()
+    public bool IsOpen()
     {
         if (panelRoot == null)
             return gameObject.activeInHierarchy;
