@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class BattleTimelineController : MonoBehaviour
 {
@@ -41,6 +43,10 @@ public class BattleTimelineController : MonoBehaviour
     [SerializeField] private bool showWarningWhenSlotSelectionLocked = false;
     [SerializeField] private string slotSelectionLockedMessage = "턴 진행 중에는 슬롯을 선택할 수 없습니다.";
 
+    [Header("Keyboard Input")]
+    [SerializeField] private bool enableNumberKeySlotSelection = true;
+    [SerializeField] private BattleTurnExecutor turnExecutor;
+
     [Header("Timeline Slot Slide")]
     [SerializeField] private bool playTimelineSlotSlide = true;
     [SerializeField] private RectTransform[] timelineSlotSlideTargets;
@@ -72,6 +78,10 @@ public class BattleTimelineController : MonoBehaviour
         AutoFindSelectedSlotEffectIfNeeded();
         AutoBindTimelineSlotSlideTargetsIfNeeded();
         CaptureTimelineSlotOriginalPositionsIfNeeded();
+
+        if (turnExecutor == null)
+            turnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
+
         RefreshSelectedSlotValueText();
 
         if (timelineBarUI != null)
@@ -88,6 +98,81 @@ public class BattleTimelineController : MonoBehaviour
 
         RefreshTimeline();
         RefreshPlayerHUDs();
+    }
+
+    private void Update()
+    {
+        HandleNumberKeySlotSelectionInput();
+    }
+
+    private void HandleNumberKeySlotSelectionInput()
+    {
+        if (!enableNumberKeySlotSelection)
+            return;
+
+        if (!isActiveAndEnabled)
+            return;
+
+        if (IsTypingInputFieldSelected())
+            return;
+
+        int slotIndex = GetPressedNumberSlotIndex();
+
+        if (slotIndex < 0)
+            return;
+
+        if (reserveSlots == null || slotIndex >= reserveSlots.Length || reserveSlots[slotIndex] == null)
+            return;
+
+        if (isSlotSelectionLocked)
+            return;
+
+        if (turnExecutor == null)
+            turnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
+
+        if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
+            return;
+
+        OnTimelineSlotClicked(slotIndex);
+    }
+
+    private int GetPressedNumberSlotIndex()
+    {
+        if (Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Keypad1))
+            return 0;
+
+        if (Input.GetKeyDown(KeyCode.Alpha2) || Input.GetKeyDown(KeyCode.Keypad2))
+            return 1;
+
+        if (Input.GetKeyDown(KeyCode.Alpha3) || Input.GetKeyDown(KeyCode.Keypad3))
+            return 2;
+
+        if (Input.GetKeyDown(KeyCode.Alpha4) || Input.GetKeyDown(KeyCode.Keypad4))
+            return 3;
+
+        if (Input.GetKeyDown(KeyCode.Alpha5) || Input.GetKeyDown(KeyCode.Keypad5))
+            return 4;
+
+        return -1;
+    }
+
+    private bool IsTypingInputFieldSelected()
+    {
+        if (EventSystem.current == null)
+            return false;
+
+        GameObject selectedObject = EventSystem.current.currentSelectedGameObject;
+
+        if (selectedObject == null)
+            return false;
+
+        if (selectedObject.GetComponent<TMPro.TMP_InputField>() != null)
+            return true;
+
+        if (selectedObject.GetComponent<InputField>() != null)
+            return true;
+
+        return false;
     }
 
     public void SelectCharacter(CharacterRuntimeData runtimeData)
