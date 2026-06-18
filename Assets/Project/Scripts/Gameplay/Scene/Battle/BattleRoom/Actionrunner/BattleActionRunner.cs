@@ -25,6 +25,7 @@ public class BattleActionRunner
     private const float HitCameraDelay = 0.12f;
     private const float MonsterHUDVisibleDelay = 0.6f;
     private const float DefaultActionRoutineTimeout = 8f;
+    public const float MoveAnimationDuration = 0.15f;
 
     private class ActionRoutine
     {
@@ -89,9 +90,16 @@ public class BattleActionRunner
                 continue;
 
             if (command.ReservedMoveGridIndex >= 0)
+            {
+                if (IsConsumedVisualSkipMove(command))
+                    continue;
+
                 actionRoutines.Add(CreateActionRoutine($"PlayerMove:{command.CharacterId}", ExecutePlayerMove(command)));
+            }
             else
+            {
                 actionRoutines.Add(CreateActionRoutine($"PlayerSkill:{command.CharacterId}:{command.SkillId}", ExecutePlayerSkill(command)));
+            }
         }
 
         for (int i = 0; i < batch.MonsterCommands.Count; i++)
@@ -103,6 +111,9 @@ public class BattleActionRunner
 
             actionRoutines.Add(CreateActionRoutine($"Monster:{command.RuntimeId}:{command.SkillId}", ExecuteMonsterCommand(command)));
         }
+
+        if (actionRoutines.Count <= 0)
+            yield break;
 
         bool batchHasCrossSideHit = BatchHasCrossSideHitAction(batch);
         bool holdCameraDuringBatch = batchHasCrossSideHit &&
@@ -451,8 +462,21 @@ public class BattleActionRunner
         if (currentGridIndex < 0)
             yield break;
 
-        Vector2Int currentCoord = gridManager.IndexToCoord(currentGridIndex);
-        Vector2Int moveOffset = command.EffectiveMoveOffset;
+        if (IsConsumedVisualSkipMove(command))
+        {
+            hudService.RefreshHUDs();
+            yield break;
+        }
+
+        bool useVisualMove = TryGetPlayerVisualMoveTargetGridIndex(
+            command,
+            currentGridIndex,
+            out int targetGridIndex,
+            out Vector2Int moveOffset
+        );
+
+        if (!useVisualMove)
+            moveOffset = command.ExecutionMoveOffset;
 
         if (moveOffset == Vector2Int.zero)
         {
@@ -462,18 +486,23 @@ public class BattleActionRunner
             yield break;
         }
 
-        Vector2Int targetCoord = currentCoord + moveOffset;
-
-        if (!gridManager.IsValidCoord(targetCoord))
-            yield break;
-
-        int targetGridIndex = gridManager.CoordToIndex(targetCoord);
-
         ApplyPlayerMoveFacing(character, command.Direction, moveOffset);
 
-        if (BattleOccupancyService.IsOccupiedByAnyUnit(targetGridIndex, command.CharacterId))
+        if (!useVisualMove &&
+            !TryGetPlayerMoveTargetGridIndex(
+                currentGridIndex,
+                moveOffset,
+                command.CharacterId,
+                out targetGridIndex))
         {
-            Debug.LogWarning($"[BattleActionRunner] Player Move Blocked / {command.CharacterId} / To:{targetGridIndex}");
+            Debug.LogWarning($"[BattleActionRunner] Player Move Blocked / {command.CharacterId} / Offset:{moveOffset}");
+            yield break;
+        }
+
+        if (targetGridIndex == currentGridIndex)
+        {
+            hudService.RefreshHUDs();
+            yield return new WaitForSeconds(ActionDelay);
             yield break;
         }
 
@@ -488,7 +517,7 @@ public class BattleActionRunner
             character.transform,
             character.transform.position,
             pos,
-            0.25f
+            MoveAnimationDuration
         );
 
         character.SetGridIndex(targetGridIndex);
@@ -498,6 +527,149 @@ public class BattleActionRunner
         hudService.RefreshHUDs();
 
         yield return new WaitForSeconds(ActionDelay);
+    }
+
+    private bool IsConsumedVisualSkipMove(PlayerReservedCommand command)
+    {
+        if (command == null || !command.SkipMoveVisual)
+            return false;
+
+        BattleCharacter character = unitFinder.FindBattleCharacter(command.CharacterId);
+
+        return character != null &&
+               command.IsVisualSkipConsumedAtGrid(character.CurrentGridIndex);
+    }
+
+    private bool TryGetPlayerVisualMoveTargetGridIndex(
+        PlayerReservedCommand command,
+        int currentGridIndex,
+        out int targetGridIndex,
+        out Vector2Int visualMoveOffset)
+    {
+        targetGridIndex = currentGridIndex;
+        visualMoveOffset = Vector2Int.zero;
+
+        if (command == null ||
+            !command.HasVisualMoveResult ||
+            command.IsSimulatedMoveBlocked ||
+            command.VisualMoveSteps == null ||
+            command.VisualMoveSteps.Count <= 1)
+        {
+            return false;
+        }
+
+        if (!TryGetPlayerMoveTargetGridIndex(
+            currentGridIndex,
+            command.VisualMoveSteps,
+            command.CharacterId,
+            out targetGridIndex))
+        {
+            return false;
+        }
+
+        if (command.EffectiveVisualMoveGridIndex >= 0 &&
+            targetGridIndex != command.EffectiveVisualMoveGridIndex)
+        {
+            return false;
+        }
+
+        visualMoveOffset = command.EffectiveVisualMoveOffset;
+        return visualMoveOffset != Vector2Int.zero;
+    }
+
+    private bool TryGetPlayerMoveTargetGridIndex(
+        int currentGridIndex,
+        Vector2Int moveOffset,
+        string characterId,
+        out int targetGridIndex)
+    {
+        targetGridIndex = currentGridIndex;
+
+        if (gridManager == null)
+            return false;
+
+        Vector2Int currentCoord = gridManager.IndexToCoord(currentGridIndex);
+
+        if (!gridManager.IsValidCoord(currentCoord))
+            return false;
+
+        if (moveOffset == Vector2Int.zero)
+            return true;
+
+        bool reachedTarget = true;
+
+        if (!TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.x, true, characterId))
+            reachedTarget = false;
+
+        if (reachedTarget &&
+            !TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.y, false, characterId))
+        {
+            reachedTarget = false;
+        }
+
+        targetGridIndex = gridManager.CoordToIndex(currentCoord);
+        return true;
+    }
+
+    private bool TryGetPlayerMoveTargetGridIndex(
+        int currentGridIndex,
+        IReadOnlyList<Vector2Int> moveSteps,
+        string characterId,
+        out int targetGridIndex)
+    {
+        targetGridIndex = currentGridIndex;
+
+        if (gridManager == null || moveSteps == null || moveSteps.Count <= 0)
+            return false;
+
+        Vector2Int currentCoord = gridManager.IndexToCoord(currentGridIndex);
+
+        if (!gridManager.IsValidCoord(currentCoord))
+            return false;
+
+        for (int i = 0; i < moveSteps.Count; i++)
+        {
+            Vector2Int moveOffset = moveSteps[i];
+
+            if (!TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.x, true, characterId))
+                break;
+
+            if (!TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.y, false, characterId))
+                break;
+        }
+
+        targetGridIndex = gridManager.CoordToIndex(currentCoord);
+        return true;
+    }
+
+    private bool TryApplyPlayerMoveAxisStep(
+        ref Vector2Int currentCoord,
+        int amount,
+        bool horizontal,
+        string characterId)
+    {
+        int remaining = amount;
+
+        while (remaining != 0)
+        {
+            int step = remaining > 0 ? 1 : -1;
+            Vector2Int nextCoord = currentCoord + (horizontal
+                ? new Vector2Int(step, 0)
+                : new Vector2Int(0, step));
+
+            if (!gridManager.IsValidCoord(nextCoord))
+                return false;
+
+            int gridIndex = gridManager.CoordToIndex(nextCoord);
+
+            if (BattleOccupancyService.IsOccupiedByAnyUnit(gridIndex, characterId))
+                return false;
+
+            currentCoord = nextCoord;
+            remaining -= step;
+        }
+
+        return true;
     }
 
     private void ApplyPlayerMoveFacing(
@@ -902,7 +1074,7 @@ public class BattleActionRunner
             monster.transform,
             monster.transform.position,
             pos,
-            0.25f
+            MoveAnimationDuration
         );
 
         monster.MoveOccupiedCells(moveOffset, gridManager);
@@ -1173,7 +1345,7 @@ public class BattleActionRunner
                 monster.transform,
                 monster.transform.position,
                 pos,
-                0.25f
+                MoveAnimationDuration
             );
 
             if (hitPlayer != null && BattleCameraController.Instance != null)

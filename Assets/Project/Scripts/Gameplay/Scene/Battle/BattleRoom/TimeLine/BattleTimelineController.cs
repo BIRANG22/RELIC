@@ -827,7 +827,7 @@ public class BattleTimelineController : MonoBehaviour
             return;
         }
 
-        int casterGridIndex = GetPreviewGridIndex(selectedCharacter);
+        int casterGridIndex = GetPreviewGridIndexAtSlotEnd(selectedCharacter, activeSlotIndex);
 
         if (casterGridIndex < 0)
         {
@@ -933,6 +933,81 @@ public class BattleTimelineController : MonoBehaviour
         return true;
     }
 
+    public bool ConfirmPlayerCommands(
+        int slotIndex,
+        IReadOnlyList<PlayerReservedCommand> commands)
+    {
+        if (commands == null || commands.Count <= 0)
+        {
+            ShowBattleWarning("예약할 스킬 정보가 없습니다.");
+            return false;
+        }
+
+        int addedCount = 0;
+
+        for (int i = 0; i < commands.Count; i++)
+        {
+            if (ConfirmPlayerCommand(slotIndex, commands[i]))
+            {
+                addedCount++;
+                continue;
+            }
+
+            RollbackLastPlayerCommands(slotIndex, addedCount);
+            return false;
+        }
+
+        return true;
+    }
+
+    private void RollbackLastPlayerCommands(int slotIndex, int rollbackCount)
+    {
+        if (rollbackCount <= 0 || reserveSlots == null)
+            return;
+
+        if (slotIndex < 0 || slotIndex >= reserveSlots.Length)
+            return;
+
+        ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+
+        if (slot == null)
+            return;
+
+        for (int i = 0; i < rollbackCount; i++)
+        {
+            int removeIndex = slot.Commands != null
+                ? slot.Commands.Count - 1
+                : -1;
+
+            if (removeIndex < 0)
+                break;
+
+            if (slot.RemoveCommandAt(removeIndex, out PlayerReservedCommand removedCommand))
+                RemoveReservedCosts(removedCommand);
+        }
+
+        RefreshReservationSimulation();
+        RefreshTimeline();
+        RefreshPlayerHUDs();
+        RefreshMoveGhostPreview();
+    }
+
+    public int GetRemainingPlayerCommandCapacity(int slotIndex)
+    {
+        if (reserveSlots == null)
+            return 0;
+
+        if (slotIndex < 0 || slotIndex >= reserveSlots.Length)
+            return 0;
+
+        ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+
+        if (slot == null)
+            return 0;
+
+        return slot.RemainingCommandCapacity;
+    }
+
     public IReadOnlyList<PlayerReservedCommand> GetPlayerCommands(int slotIndex)
     {
         if (reserveSlots == null)
@@ -955,6 +1030,19 @@ public class BattleTimelineController : MonoBehaviour
             return null;
 
         return monsterCommandsBySlot[slotIndex];
+    }
+
+    public int GetPreviewGridIndexAtSlotEnd(CharacterRuntimeData runtimeData, int targetSlotIndex)
+    {
+        if (runtimeData == null)
+            return -1;
+
+        if (reserveSlots == null || reserveSlots.Length <= 0)
+            return GetPreviewGridIndexBeforeCommand(runtimeData, targetSlotIndex, int.MaxValue);
+
+        int safeSlotIndex = Mathf.Clamp(targetSlotIndex, 0, reserveSlots.Length - 1);
+
+        return GetPreviewGridIndexBeforeCommand(runtimeData, safeSlotIndex, int.MaxValue);
     }
 
     private bool CanReserveCommand(PlayerReservedCommand command)
@@ -1082,11 +1170,52 @@ public class BattleTimelineController : MonoBehaviour
                     continue;
 
                 if (command.ReservedMoveGridIndex >= 0)
-                    gridIndex = command.ReservedMoveGridIndex;
+                    gridIndex = command.EffectiveMoveGridIndex;
             }
         }
 
         return gridIndex;
+    }
+
+    public bool TryGetLastMoveGhostPreviewResult(
+        CharacterRuntimeData runtimeData,
+        out int gridIndex,
+        out BattleDirection direction)
+    {
+        gridIndex = -1;
+        direction = runtimeData != null
+            ? runtimeData.Direction
+            : BattleDirection.Right;
+
+        if (runtimeData == null || reserveSlots == null)
+            return false;
+
+        PlayerReservedCommand lastMoveCommand = null;
+
+        for (int slotIndex = 0; slotIndex < reserveSlots.Length; slotIndex++)
+        {
+            ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+
+            if (slot == null || slot.Commands == null)
+                continue;
+
+            for (int i = 0; i < slot.Commands.Count; i++)
+            {
+                PlayerReservedCommand command = slot.Commands[i];
+
+                if (!IsGhostMoveCommandForRuntime(command, runtimeData.CharacterId))
+                    continue;
+
+                lastMoveCommand = command;
+            }
+        }
+
+        if (lastMoveCommand == null)
+            return false;
+
+        gridIndex = lastMoveCommand.PreviewMoveGridIndex;
+        direction = lastMoveCommand.Direction;
+        return gridIndex >= 0;
     }
 
     public BattleDirection GetPreviewDirection(CharacterRuntimeData runtimeData, int targetSlotIndex)
@@ -1342,12 +1471,46 @@ public class BattleTimelineController : MonoBehaviour
 
         RemoveReservedCosts(removedCommand);
 
+        if (IsMoveCommand(removedCommand))
+            RemoveFollowingMoveCommands(slot, orderIndex, removedCommand.CharacterId);
+
         RefreshReservationSimulation();
         RefreshTimeline();
         RefreshPlayerHUDs();
         RefreshMoveGhostPreview();
 
         Debug.Log($"[BattleTimelineController] 예약 취소 / Slot:{slotIndex} / Order:{orderIndex}");
+    }
+
+    private bool IsMoveCommand(PlayerReservedCommand command)
+    {
+        return command != null && command.ReservedMoveGridIndex >= 0;
+    }
+
+    private void RemoveFollowingMoveCommands(
+        ReserveTurnSlotUI slot,
+        int startIndex,
+        string characterId)
+    {
+        if (slot == null || slot.Commands == null)
+            return;
+
+        for (int i = slot.Commands.Count - 1; i >= startIndex; i--)
+        {
+            PlayerReservedCommand command = slot.Commands[i];
+
+            if (command == null)
+                continue;
+
+            if (command.CharacterId != characterId)
+                continue;
+
+            if (!IsMoveCommand(command))
+                continue;
+
+            if (slot.RemoveCommandAt(i, out PlayerReservedCommand removedCommand))
+                RemoveReservedCosts(removedCommand);
+        }
     }
 
     public void ClearAllReservations()
@@ -1484,7 +1647,7 @@ public class BattleTimelineController : MonoBehaviour
                     break;
 
                 if (command.ReservedMoveGridIndex >= 0)
-                    gridIndex = command.ReservedMoveGridIndex;
+                    gridIndex = command.EffectiveMoveGridIndex;
             }
         }
 
@@ -1504,6 +1667,34 @@ public class BattleTimelineController : MonoBehaviour
         if (reserveSlots == null)
             return;
 
+        Dictionary<string, PlayerReservedCommand> lastMoveCommands =
+            GetLastMoveGhostCommandsByCharacter();
+
+        foreach (var pair in lastMoveCommands)
+        {
+            PlayerReservedCommand command = pair.Value;
+
+            if (command == null || command.UserRuntime == null)
+                continue;
+
+            Sprite sprite = GetCharacterSprite(command.UserRuntime.CharacterId);
+
+            moveGhostPreview.Show(
+                command.UserRuntime.CharacterId,
+                sprite,
+                command.PreviewMoveGridIndex,
+                command.Direction
+            );
+        }
+    }
+
+    private Dictionary<string, PlayerReservedCommand> GetLastMoveGhostCommandsByCharacter()
+    {
+        Dictionary<string, PlayerReservedCommand> result = new();
+
+        if (reserveSlots == null)
+            return result;
+
         for (int slotIndex = 0; slotIndex < reserveSlots.Length; slotIndex++)
         {
             ReserveTurnSlotUI slot = reserveSlots[slotIndex];
@@ -1518,19 +1709,25 @@ public class BattleTimelineController : MonoBehaviour
                 if (command == null || command.UserRuntime == null)
                     continue;
 
-                if (command.ReservedMoveGridIndex < 0)
+                if (!IsGhostMoveCommandForRuntime(command, command.UserRuntime.CharacterId))
                     continue;
 
-                Sprite sprite = GetCharacterSprite(command.UserRuntime.CharacterId);
-
-                moveGhostPreview.Show(
-                    command.UserRuntime.CharacterId,
-                    sprite,
-                    command.ReservedMoveGridIndex,
-                    command.Direction
-                );
+                result[command.UserRuntime.CharacterId] = command;
             }
         }
+
+        return result;
+    }
+
+    private bool IsGhostMoveCommandForRuntime(PlayerReservedCommand command, string characterId)
+    {
+        if (command == null || command.UserRuntime == null)
+            return false;
+
+        if (command.ReservedMoveGridIndex < 0 || command.PreviewMoveGridIndex < 0)
+            return false;
+
+        return command.UserRuntime.CharacterId == characterId;
     }
 
     private Sprite GetCharacterSprite(string characterId)

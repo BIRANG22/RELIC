@@ -58,6 +58,9 @@ public static class BattleOccupancyService
             if (monster == null)
                 continue;
 
+            if (monster.RuntimeData != null && monster.RuntimeData.IsDead)
+                continue;
+
             if (ignoreMonster != null && monster == ignoreMonster)
                 continue;
 
