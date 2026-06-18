@@ -3,7 +3,6 @@ using Relic.Gameplay.Monster;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements.Experimental;
 
 public class BattleActionRunner
 {
@@ -16,6 +15,8 @@ public class BattleActionRunner
     private readonly BattleStatusEffectService statusEffectService;
     private readonly MonsterSkillEffectService monsterSkillEffectService;
     private readonly BattleEffectExecutor effectExecutor = new();
+    private readonly bool useSafeSequentialExecution;
+    private readonly float actionRoutineTimeout;
 
     private const float ReadyDelay = 0.06f;
     private const float ActionDelay = 0.05f;
@@ -23,13 +24,32 @@ public class BattleActionRunner
 
     private const float HitCameraDelay = 0.12f;
     private const float MonsterHUDVisibleDelay = 0.6f;
+    private const float DefaultActionRoutineTimeout = 8f;
+
+    private class ActionRoutine
+    {
+        public string Label;
+        public IEnumerator Routine;
+    }
 
     public BattleActionRunner(
       GridManager gridManager,
       BattleMonsterSpawner monsterSpawner = null,
       BattleRoomLoader roomLoader = null)
+        : this(gridManager, monsterSpawner, roomLoader, true, DefaultActionRoutineTimeout)
+    {
+    }
+
+    public BattleActionRunner(
+      GridManager gridManager,
+      BattleMonsterSpawner monsterSpawner,
+      BattleRoomLoader roomLoader,
+      bool useSafeSequentialExecution,
+      float actionRoutineTimeout)
     {
         this.gridManager = gridManager;
+        this.useSafeSequentialExecution = useSafeSequentialExecution;
+        this.actionRoutineTimeout = Mathf.Max(0.1f, actionRoutineTimeout);
 
         unitFinder = new BattleUnitFinder();
         hudService = new BattleHUDService();
@@ -43,9 +63,14 @@ public class BattleActionRunner
       GridManager gridManager,
       BattleMonsterSpawner monsterSpawner,
       BattleRoomLoader roomLoader,
-      object unusedFourthArgument,
-      object unusedFifthArgument)
-        : this(gridManager, monsterSpawner, roomLoader)
+      object fourthArgument,
+      object fifthArgument)
+        : this(
+            gridManager,
+            monsterSpawner,
+            roomLoader,
+            fourthArgument is bool safeSequential ? safeSequential : true,
+            fifthArgument is float timeout ? timeout : DefaultActionRoutineTimeout)
     {
     }
 
@@ -54,7 +79,7 @@ public class BattleActionRunner
         if (batch == null)
             yield break;
 
-        List<IEnumerator> actionRoutines = new();
+        List<ActionRoutine> actionRoutines = new();
 
         for (int i = 0; i < batch.PlayerCommands.Count; i++)
         {
@@ -64,9 +89,9 @@ public class BattleActionRunner
                 continue;
 
             if (command.ReservedMoveGridIndex >= 0)
-                actionRoutines.Add(ExecutePlayerMove(command));
+                actionRoutines.Add(CreateActionRoutine($"PlayerMove:{command.CharacterId}", ExecutePlayerMove(command)));
             else
-                actionRoutines.Add(ExecutePlayerSkill(command));
+                actionRoutines.Add(CreateActionRoutine($"PlayerSkill:{command.CharacterId}:{command.SkillId}", ExecutePlayerSkill(command)));
         }
 
         for (int i = 0; i < batch.MonsterCommands.Count; i++)
@@ -76,7 +101,7 @@ public class BattleActionRunner
             if (command == null)
                 continue;
 
-            actionRoutines.Add(ExecuteMonsterCommand(command));
+            actionRoutines.Add(CreateActionRoutine($"Monster:{command.RuntimeId}:{command.SkillId}", ExecuteMonsterCommand(command)));
         }
 
         bool batchHasCrossSideHit = BatchHasCrossSideHitAction(batch);
@@ -91,7 +116,10 @@ public class BattleActionRunner
                 yield return BattleCameraController.Instance.ReturnDefault();
         }
 
-        yield return RunParallel(actionRoutines);
+        if (useSafeSequentialExecution)
+            yield return RunSequential(actionRoutines);
+        else
+            yield return RunParallel(actionRoutines);
 
         if (holdCameraDuringBatch && !keepCameraAfterBatch && BattleCameraController.Instance != null)
         {
@@ -238,22 +266,91 @@ public class BattleActionRunner
         }
     }
 
-    private IEnumerator RunParallel(List<IEnumerator> routines)
+    private ActionRoutine CreateActionRoutine(string label, IEnumerator routine)
+    {
+        return new ActionRoutine
+        {
+            Label = label,
+            Routine = routine
+        };
+    }
+
+    private IEnumerator RunSequential(List<ActionRoutine> routines)
     {
         if (routines == null || routines.Count == 0)
             yield break;
 
+        for (int i = 0; i < routines.Count; i++)
+            yield return RunSingleWithTimeout(routines[i]);
+    }
+
+    private IEnumerator RunSingleWithTimeout(ActionRoutine actionRoutine)
+    {
+        if (actionRoutine == null || actionRoutine.Routine == null)
+            yield break;
+
+        if (CoroutineHost.Instance == null)
+        {
+            Debug.LogError($"[BattleActionRunner] CoroutineHost 없음 / Action:{actionRoutine.Label}");
+            yield break;
+        }
+
+        bool completed = false;
+        Coroutine runningCoroutine = CoroutineHost.Instance.StartCoroutine(
+            RunAndCountDown(
+                actionRoutine,
+                () => completed = true
+            )
+        );
+
+        float elapsed = 0f;
+
+        while (!completed)
+        {
+            elapsed += Time.unscaledDeltaTime;
+
+            if (elapsed >= actionRoutineTimeout)
+            {
+                Debug.LogError(
+                    $"[BattleActionRunner] Action Timeout / " +
+                    $"Action:{actionRoutine.Label} / Timeout:{actionRoutineTimeout:0.00}s"
+                );
+
+                if (runningCoroutine != null && CoroutineHost.Instance != null)
+                    CoroutineHost.Instance.StopCoroutine(runningCoroutine);
+
+                yield break;
+            }
+
+            yield return null;
+        }
+    }
+
+    private IEnumerator RunParallel(List<ActionRoutine> routines)
+    {
+        if (routines == null || routines.Count == 0)
+            yield break;
+
+        if (CoroutineHost.Instance == null)
+        {
+            Debug.LogError("[BattleActionRunner] CoroutineHost 없음");
+            yield break;
+        }
+
         int runningCount = routines.Count;
+        bool[] completed = new bool[routines.Count];
+        Coroutine[] runningCoroutines = new Coroutine[routines.Count];
 
         for (int i = 0; i < routines.Count; i++)
         {
             int routineIndex = i;
 
-            CoroutineHost.Instance.StartCoroutine(
+            runningCoroutines[i] = CoroutineHost.Instance.StartCoroutine(
                 RunAndCountDown(
                     routines[i],
                     () =>
                     {
+                        completed[routineIndex] = true;
                         runningCount--;
                         //Debug.Log($"[BattleActionRunner] Routine End:{routineIndex} / Left:{runningCount}");
                     }
@@ -261,16 +358,28 @@ public class BattleActionRunner
             );
         }
 
-        float timeout = 10f;
         float elapsed = 0f;
 
         while (runningCount > 0)
         {
-            elapsed += Time.deltaTime;
+            elapsed += Time.unscaledDeltaTime;
 
-            if (elapsed >= timeout)
+            if (elapsed >= actionRoutineTimeout)
             {
-                Debug.LogError($"[BattleActionRunner] RunParallel Timeout / Left:{runningCount}");
+                Debug.LogError(
+                    $"[BattleActionRunner] RunParallel Timeout / " +
+                    $"Left:{runningCount} / Timeout:{actionRoutineTimeout:0.00}s / " +
+                    $"Actions:{BuildPendingActionLabel(completed, routines)}"
+                );
+
+                for (int i = 0; i < runningCoroutines.Length; i++)
+                {
+                    if (completed[i] || runningCoroutines[i] == null || CoroutineHost.Instance == null)
+                        continue;
+
+                    CoroutineHost.Instance.StopCoroutine(runningCoroutines[i]);
+                }
+
                 break;
             }
 
@@ -278,9 +387,28 @@ public class BattleActionRunner
         }
     }
 
-    private IEnumerator RunAndCountDown(IEnumerator routine, System.Action onComplete)
+    private string BuildPendingActionLabel(bool[] completed, List<ActionRoutine> routines)
+    {
+        if (completed == null || routines == null)
+            return "";
+
+        List<string> pendingLabels = new();
+
+        for (int i = 0; i < routines.Count; i++)
+        {
+            if (i < completed.Length && completed[i])
+                continue;
+
+            pendingLabels.Add(routines[i] != null ? routines[i].Label : $"Index:{i}");
+        }
+
+        return string.Join(", ", pendingLabels);
+    }
+
+    private IEnumerator RunAndCountDown(ActionRoutine actionRoutine, System.Action onComplete)
     {
         bool done = false;
+        IEnumerator routine = actionRoutine != null ? actionRoutine.Routine : null;
 
         while (!done)
         {
@@ -299,6 +427,7 @@ public class BattleActionRunner
             }
             catch (System.Exception e)
             {
+                Debug.LogError($"[BattleActionRunner] Action Exception / Action:{actionRoutine?.Label}");
                 Debug.LogException(e);
                 done = true;
             }
@@ -326,7 +455,12 @@ public class BattleActionRunner
         Vector2Int moveOffset = command.EffectiveMoveOffset;
 
         if (moveOffset == Vector2Int.zero)
+        {
+            ApplyPlayerMoveFacing(character, command.Direction, moveOffset);
+            hudService.RefreshHUDs();
+            yield return new WaitForSeconds(ActionDelay);
             yield break;
+        }
 
         Vector2Int targetCoord = currentCoord + moveOffset;
 
@@ -335,10 +469,7 @@ public class BattleActionRunner
 
         int targetGridIndex = gridManager.CoordToIndex(targetCoord);
 
-        BattleUnitFacing facing = character.GetComponent<BattleUnitFacing>();
-
-        if (facing != null)
-            facing.FaceByMoveOffset(moveOffset);
+        ApplyPlayerMoveFacing(character, command.Direction, moveOffset);
 
         if (BattleOccupancyService.IsOccupiedByAnyUnit(targetGridIndex, command.CharacterId))
         {
@@ -367,6 +498,33 @@ public class BattleActionRunner
         hudService.RefreshHUDs();
 
         yield return new WaitForSeconds(ActionDelay);
+    }
+
+    private void ApplyPlayerMoveFacing(
+        BattleCharacter character,
+        BattleDirection direction,
+        Vector2Int moveOffset)
+    {
+        if (character == null)
+            return;
+
+        BattleUnitFacing facing = character.GetComponent<BattleUnitFacing>();
+
+        if (facing != null)
+        {
+            if (moveOffset.x != 0)
+                facing.FaceByMoveOffset(moveOffset);
+            else
+                facing.FaceRight(direction == BattleDirection.Right);
+
+            if (character.RuntimeData != null)
+                character.RuntimeData.Direction = facing.GetBattleDirection();
+
+            return;
+        }
+
+        if (character.RuntimeData != null)
+            character.RuntimeData.Direction = direction;
     }
 
     private IEnumerator ExecutePlayerSkill(PlayerReservedCommand command)
@@ -480,10 +638,10 @@ public class BattleActionRunner
 
             if (monster.RuntimeData.IsDead)
             {
-                deathService.HandleMonsterDead(monster);
-
                 if (hitAnimator != null)
                     hitAnimator.PlayDead();
+
+                deathService.HandleMonsterDead(monster);
             }
             else
             {
@@ -602,7 +760,7 @@ public class BattleActionRunner
                 Count = entry.CountAmount
             };
 
-            effectExecutor.Execute(entry.EffectId, context);
+            ExecutePlayerEffectSafely(entry.EffectId, context, command.SkillData.SkillId);
         }
     }
 
@@ -641,7 +799,26 @@ public class BattleActionRunner
                 Count = entry.CountAmount
             };
 
-            effectExecutor.Execute(entry.EffectId, context);
+            ExecutePlayerEffectSafely(entry.EffectId, context, command.SkillData.SkillId);
+        }
+    }
+
+    private void ExecutePlayerEffectSafely(
+        string effectId,
+        BattleEffectContext context,
+        string skillId)
+    {
+        try
+        {
+            effectExecutor.Execute(effectId, context);
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError(
+                $"[PlayerSkillEffect] Effect 실행 중 에러 / " +
+                $"Skill:{skillId} / Effect:{effectId}"
+            );
+            Debug.LogException(e);
         }
     }
 

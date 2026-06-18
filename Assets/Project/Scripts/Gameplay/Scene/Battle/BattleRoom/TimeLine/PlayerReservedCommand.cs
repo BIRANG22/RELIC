@@ -62,6 +62,11 @@ public class PlayerReservedCommand
         SimulatedMoveOffset = moveOffset;
     }
 
+    public void SetMoveDirection(BattleDirection direction)
+    {
+        Direction = direction;
+    }
+
     public void SetSimulatedRangeResult(
         List<int> rangeGridIndices,
         List<int> targetGridIndices)

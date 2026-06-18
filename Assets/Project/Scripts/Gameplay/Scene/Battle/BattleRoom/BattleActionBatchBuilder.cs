@@ -241,7 +241,9 @@ public class BattleActionBatchBuilder
         if (command.ReservedMoveGridIndex >= 0)
         {
             info.IsMove = true;
-            AddUnique(info.MoveTargetCells, command.ReservedMoveGridIndex);
+
+            if (command.EffectiveMoveGridIndex >= 0)
+                AddUnique(info.MoveTargetCells, command.EffectiveMoveGridIndex);
         }
         else
         {
@@ -279,7 +281,7 @@ public class BattleActionBatchBuilder
         if (isTimelineMove)
         {
             info.IsMove = true;
-            AddMonsterMoveTargetCells(info, monster, command.MoveOffset);
+            AddMonsterMoveTargetCells(info, monster, command.EffectiveMoveOffset);
         }
         else if (isDashAttack)
         {

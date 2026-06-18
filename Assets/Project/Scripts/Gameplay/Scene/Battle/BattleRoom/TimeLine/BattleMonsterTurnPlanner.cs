@@ -61,6 +61,14 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         planRoutine = StartCoroutine(PlanMonsterTurnsRoutine(monsterUnits, shouldShowBattleStart));
     }
 
+    public IEnumerator PlanMonsterTurnsAndWait(List<MonsterUnit> monsterUnits, bool showBattleStart = false)
+    {
+        PlanMonsterTurns(monsterUnits, showBattleStart);
+
+        while (planRoutine != null)
+            yield return null;
+    }
+
     public void ResetBattleStartIntroState()
     {
         battleStartIntroShown = false;

@@ -75,15 +75,18 @@ public class KnockbackEffect : BattleEffectBase
 
     private bool TryMoveMonster(MonsterUnit target, Vector2Int offset, GridManager gridManager)
     {
+        if (target == null || target.RuntimeData == null)
+            return false;
+
+        if (target.OccupiedGridIndices == null || target.OccupiedGridIndices.Count <= 0)
+            return false;
+
         Debug.Log(
     $"[KnockbackEffect] Target:{target.RuntimeData.Name} / " +
     $"RuntimeId:{target.RuntimeData.RuntimeId} / " +
     $"Cells:{string.Join(",", target.OccupiedGridIndices)} / " +
     $"Main:{target.MainGridIndex}"
 );
-
-        if (target == null || target.RuntimeData == null)
-            return false;
 
         List<int> currentCells = new List<int>(target.OccupiedGridIndices);
         List<int> movedCells = new();
@@ -125,10 +128,11 @@ public class KnockbackEffect : BattleEffectBase
             }
         }
 
-        int movedMainIndex = movedCells[0];
+        if (movedCells.Count <= 0)
+            return false;
 
         int oldMainIndex = target.MainGridIndex;
-        int newMainIndex = movedCells.Count > 0 ? movedCells[0] : oldMainIndex;
+        int newMainIndex = movedCells[0];
 
         Vector3 oldWorldPos = target.transform.position;
         Vector3 oldCellWorldPos = gridManager.GetWorldPositionByIndex(oldMainIndex);
