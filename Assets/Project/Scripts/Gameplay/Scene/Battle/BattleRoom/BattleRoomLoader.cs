@@ -849,6 +849,11 @@ public class BattleRoomLoader : MonoBehaviour
 
     public void PlanNextMonsterTurns()
     {
+        StartCoroutine(PlanNextMonsterTurnsRoutine());
+    }
+
+    public IEnumerator PlanNextMonsterTurnsRoutine()
+    {
         EnsureTurnExecutor();
 
         if (turnExecutor != null)
@@ -861,10 +866,10 @@ public class BattleRoomLoader : MonoBehaviour
             if (turnExecutor != null)
                 turnExecutor.SetBattleInputReady(true);
 
-            return;
+            yield break;
         }
 
-        monsterTurnPlanner.PlanMonsterTurns(spawnedMonsterUnits);
+        yield return monsterTurnPlanner.PlanMonsterTurnsAndWait(spawnedMonsterUnits);
 
         if (turnExecutor != null)
             turnExecutor.SetBattleInputReady(true);

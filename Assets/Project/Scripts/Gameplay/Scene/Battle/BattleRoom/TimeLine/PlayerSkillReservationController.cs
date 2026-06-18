@@ -18,6 +18,7 @@ public class PlayerSkillReservationController : MonoBehaviour
     private SkillMasterData currentSkillData;
     private int currentSlotIndex = -1;
     private int currentCasterGridIndex = -1;
+    private BattleDirection currentCasterDirection = BattleDirection.Right;
     private Sprite currentCasterSprite;
 
     private readonly List<int> currentMoveSelectableIndices = new();
@@ -70,12 +71,35 @@ public class PlayerSkillReservationController : MonoBehaviour
         int slotIndex,
         Sprite casterSprite = null)
     {
+        BattleDirection casterDirection = userRuntime != null
+            ? userRuntime.Direction
+            : BattleDirection.Right;
+
+        StartReservation(
+            userRuntime,
+            skillData,
+            casterGridIndex,
+            slotIndex,
+            casterDirection,
+            casterSprite
+        );
+    }
+
+    public void StartReservation(
+        CharacterRuntimeData userRuntime,
+        SkillMasterData skillData,
+        int casterGridIndex,
+        int slotIndex,
+        BattleDirection casterDirection,
+        Sprite casterSprite = null)
+    {
         ClearPreview();
 
         currentUserRuntime = userRuntime;
         currentSkillData = skillData;
         currentCasterGridIndex = casterGridIndex;
         currentSlotIndex = slotIndex;
+        currentCasterDirection = casterDirection;
         currentCasterSprite = casterSprite;
 
         if (currentUserRuntime == null)
@@ -92,7 +116,7 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         if (currentSkillData.RangeType == RangeType.Direction)
         {
-            ConfirmDirectionReservation(currentUserRuntime.Direction);
+            ConfirmDirectionReservation(currentCasterDirection);
             return;
         }
 
@@ -115,17 +139,17 @@ public class PlayerSkillReservationController : MonoBehaviour
         List<int> rangeIndices = BattleRangeCalculator.GetDirectionRangeIndices(
             currentCasterGridIndex,
             currentSkillData.RangeId,
-            currentUserRuntime != null ? currentUserRuntime.Direction : BattleDirection.Right,
+            currentCasterDirection,
             DataManager.Instance.RangeDatabase,
             gridManager
         );
 
+        if (currentCasterGridIndex >= 0 && !rangeIndices.Contains(currentCasterGridIndex))
+            rangeIndices.Add(currentCasterGridIndex);
+
         for (int i = 0; i < rangeIndices.Count; i++)
         {
             int index = rangeIndices[i];
-
-            if (index == currentCasterGridIndex)
-                continue;
 
             if (!currentMoveSelectableIndices.Contains(index))
                 currentMoveSelectableIndices.Add(index);
@@ -187,8 +211,6 @@ public class PlayerSkillReservationController : MonoBehaviour
             selectedGridIndex
         );
 
-        currentUserRuntime.Direction = direction;
-
         Vector2Int caster = gridManager.IndexToCoord(currentCasterGridIndex);
         Vector2Int selected = gridManager.IndexToCoord(selectedGridIndex);
         Vector2Int moveOffset = selected - caster;
@@ -228,8 +250,16 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (selected.x > caster.x)
             return BattleDirection.Right;
 
-        return currentUserRuntime != null
-            ? currentUserRuntime.Direction
+        if (selectedGridIndex == casterGridIndex)
+            return GetOppositeDirection(currentCasterDirection);
+
+        return currentCasterDirection;
+    }
+
+    private BattleDirection GetOppositeDirection(BattleDirection direction)
+    {
+        return direction == BattleDirection.Right
+            ? BattleDirection.Left
             : BattleDirection.Right;
     }
 
@@ -315,6 +345,7 @@ public class PlayerSkillReservationController : MonoBehaviour
         currentSkillData = null;
         currentSlotIndex = -1;
         currentCasterGridIndex = -1;
+        currentCasterDirection = BattleDirection.Right;
         currentCasterSprite = null;
         currentMoveSelectableIndices.Clear();
 

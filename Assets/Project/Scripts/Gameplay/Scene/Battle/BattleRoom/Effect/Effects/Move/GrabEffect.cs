@@ -68,6 +68,12 @@ public class GrabEffect : BattleEffectBase
         if (target == null || target.RuntimeData == null)
             return false;
 
+        if (target.OccupiedGridIndices == null || target.OccupiedGridIndices.Count <= 0)
+            return false;
+
+        if (target.MainGridIndex < 0)
+            return false;
+
         for (int i = 0; i < target.OccupiedGridIndices.Count; i++)
         {
             int currentIndex = target.OccupiedGridIndices[i];
