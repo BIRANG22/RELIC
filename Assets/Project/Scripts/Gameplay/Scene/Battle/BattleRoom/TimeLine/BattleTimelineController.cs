@@ -1,4 +1,4 @@
-ï»¿using Relic.Gameplay.Data;
+using Relic.Gameplay.Data;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -41,7 +41,7 @@ public class BattleTimelineController : MonoBehaviour
 
     [Header("Slot Selection Lock")]
     [SerializeField] private bool showWarningWhenSlotSelectionLocked = false;
-    [SerializeField] private string slotSelectionLockedMessage = "í„´ ì§„í–‰ ì¤‘ì—ëŠ” ìŠ¬ë¡¯ì„ ì„ íƒí•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.";
+    [SerializeField] private string slotSelectionLockedMessage = "ÅÏ ÁøÇà Áß¿¡´Â ½½·ÔÀ» ¼±ÅÃÇÒ ¼ö ¾ø½À´Ï´Ù.";
 
     [Header("Keyboard Input")]
     [SerializeField] private bool enableNumberKeySlotSelection = true;
@@ -758,20 +758,20 @@ public class BattleTimelineController : MonoBehaviour
         if (activeSlotIndex < 0)
         {
             if (selectedSkill != null)
-                ShowBattleWarning("íƒ€ì„ë¼ì¸ ìŠ¬ë¡¯ì„ ë¨¼ì € ì„ íƒí•´ì£¼ì„¸ìš”.");
+                ShowBattleWarning("Å¸ÀÓ¶óÀÎ ½½·ÔÀ» ¸ÕÀú ¼±ÅÃÇØÁÖ¼¼¿ä.");
 
             return;
         }
 
         if (selectedCharacter == null && selectedSkill == null)
         {
-            ShowBattleWarning("ìºë¦­í„°ì™€ ìŠ¤í‚¬ì„ ë¨¼ì € ì„ íƒí•´ì£¼ì„¸ìš”.");
+            ShowBattleWarning("Ä³¸¯ÅÍ¿Í ½ºÅ³À» ¸ÕÀú ¼±ÅÃÇØÁÖ¼¼¿ä.");
             return;
         }
 
         if (selectedCharacter == null)
         {
-            ShowBattleWarning("ìºë¦­í„°ë¥¼ ë¨¼ì € ì„ íƒí•´ì£¼ì„¸ìš”.");
+            ShowBattleWarning("Ä³¸¯ÅÍ¸¦ ¸ÕÀú ¼±ÅÃÇØÁÖ¼¼¿ä.");
             return;
         }
 
@@ -780,14 +780,14 @@ public class BattleTimelineController : MonoBehaviour
 
         if (reserveSlots == null || reserveSlots.Length <= 0)
         {
-            ShowBattleWarning("íƒ€ì„ë¼ì¸ ìŠ¬ë¡¯ì´ ì—†ìŠµë‹ˆë‹¤.");
+            ShowBattleWarning("Å¸ÀÓ¶óÀÎ ½½·ÔÀÌ ¾ø½À´Ï´Ù.");
             selectedSkill = null;
             return;
         }
 
         if (activeSlotIndex >= reserveSlots.Length)
         {
-            ShowBattleWarning("ì„ íƒí•œ íƒ€ì„ë¼ì¸ ìŠ¬ë¡¯ì„ ì‚¬ìš©í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
+            ShowBattleWarning("¼±ÅÃÇÑ Å¸ÀÓ¶óÀÎ ½½·ÔÀ» »ç¿ëÇÒ ¼ö ¾ø½À´Ï´Ù.");
             selectedSkill = null;
             return;
         }
@@ -796,7 +796,7 @@ public class BattleTimelineController : MonoBehaviour
 
         if (slot == null)
         {
-            ShowBattleWarning("ì„ íƒí•œ íƒ€ì„ë¼ì¸ ìŠ¬ë¡¯ì„ ì‚¬ìš©í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
+            ShowBattleWarning("¼±ÅÃÇÑ Å¸ÀÓ¶óÀÎ ½½·ÔÀ» »ç¿ëÇÒ ¼ö ¾ø½À´Ï´Ù.");
             selectedSkill = null;
             return;
         }
@@ -814,15 +814,15 @@ public class BattleTimelineController : MonoBehaviour
 
         if (!slot.CanAcceptCharacter(selectedCharacter))
         {
-            ShowBattleWarning("ì´ ìŠ¬ë¡¯ì—ëŠ” ì´ë¯¸ ë‹¤ë¥¸ ìºë¦­í„°ì˜ í–‰ë™ì´ ì˜ˆì•½ë˜ì–´ ìˆìŠµë‹ˆë‹¤.");
-            Debug.LogWarning("[BattleTimelineController] ì´ íƒ€ì„ë¼ì¸ ìŠ¬ë¡¯ì—ëŠ” ì´ë¯¸ ë‹¤ë¥¸ ìºë¦­í„°ì˜ í–‰ë™ì´ ì˜ˆì•½ë˜ì–´ ìˆìŠµë‹ˆë‹¤.");
+            ShowBattleWarning("ÀÌ ½½·Ô¿¡´Â ÀÌ¹Ì ´Ù¸¥ Ä³¸¯ÅÍÀÇ Çàµ¿ÀÌ ¿¹¾àµÇ¾î ÀÖ½À´Ï´Ù.");
+            Debug.LogWarning("[BattleTimelineController] ÀÌ Å¸ÀÓ¶óÀÎ ½½·Ô¿¡´Â ÀÌ¹Ì ´Ù¸¥ Ä³¸¯ÅÍÀÇ Çàµ¿ÀÌ ¿¹¾àµÇ¾î ÀÖ½À´Ï´Ù.");
             selectedSkill = null;
             return;
         }
 
         if (!slot.CanAddCommand())
         {
-            ShowBattleWarning("í•œ ìŠ¬ë¡¯ì—ëŠ” ìµœëŒ€ 3ê°œì˜ ìŠ¤í‚¬ë§Œ ì˜ˆì•½í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.");
+            ShowBattleWarning("ÇÑ ½½·Ô¿¡´Â ÃÖ´ë 3°³ÀÇ ½ºÅ³¸¸ ¿¹¾àÇÒ ¼ö ÀÖ½À´Ï´Ù.");
             selectedSkill = null;
             return;
         }
@@ -831,8 +831,8 @@ public class BattleTimelineController : MonoBehaviour
 
         if (casterGridIndex < 0)
         {
-            ShowBattleWarning("ìºë¦­í„° ìœ„ì¹˜ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
-            Debug.LogWarning($"[BattleTimelineController] ìºë¦­í„° ìœ„ì¹˜ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤: {selectedCharacter.CharacterId}");
+            ShowBattleWarning("Ä³¸¯ÅÍ À§Ä¡¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.");
+            Debug.LogWarning($"[BattleTimelineController] Ä³¸¯ÅÍ À§Ä¡¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù: {selectedCharacter.CharacterId}");
             selectedSkill = null;
             return;
         }
@@ -842,17 +842,20 @@ public class BattleTimelineController : MonoBehaviour
 
         if (playerSkillReservationController == null)
         {
-            ShowBattleWarning("ìŠ¤í‚¬ ì˜ˆì•½ ì»¨íŠ¸ë¡¤ëŸ¬ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
-            Debug.LogWarning("[BattleTimelineController] PlayerSkillReservationControllerê°€ ì—†ìŠµë‹ˆë‹¤.");
+            ShowBattleWarning("½ºÅ³ ¿¹¾à ÄÁÆ®·Ñ·¯¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("[BattleTimelineController] PlayerSkillReservationController°¡ ¾ø½À´Ï´Ù.");
             selectedSkill = null;
             return;
         }
+
+        BattleDirection casterDirection = GetPreviewDirection(selectedCharacter, activeSlotIndex);
 
         playerSkillReservationController.StartReservation(
             selectedCharacter,
             selectedSkill,
             casterGridIndex,
             activeSlotIndex,
+            casterDirection,
             GetSelectedCharacterSprite()
         );
 
@@ -863,19 +866,19 @@ public class BattleTimelineController : MonoBehaviour
     {
         if (command == null)
         {
-            ShowBattleWarning("ì˜ˆì•½í•  ìŠ¤í‚¬ ì •ë³´ê°€ ì—†ìŠµë‹ˆë‹¤.");
+            ShowBattleWarning("¿¹¾àÇÒ ½ºÅ³ Á¤º¸°¡ ¾ø½À´Ï´Ù.");
             return false;
         }
 
         if (reserveSlots == null || reserveSlots.Length <= 0)
         {
-            ShowBattleWarning("íƒ€ì„ë¼ì¸ ìŠ¬ë¡¯ì´ ì—†ìŠµë‹ˆë‹¤.");
+            ShowBattleWarning("Å¸ÀÓ¶óÀÎ ½½·ÔÀÌ ¾ø½À´Ï´Ù.");
             return false;
         }
 
         if (slotIndex < 0 || slotIndex >= reserveSlots.Length)
         {
-            ShowBattleWarning("ì„ íƒí•œ íƒ€ì„ë¼ì¸ ìŠ¬ë¡¯ì„ ì‚¬ìš©í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
+            ShowBattleWarning("¼±ÅÃÇÑ Å¸ÀÓ¶óÀÎ ½½·ÔÀ» »ç¿ëÇÒ ¼ö ¾ø½À´Ï´Ù.");
             return false;
         }
 
@@ -883,7 +886,7 @@ public class BattleTimelineController : MonoBehaviour
 
         if (slot == null)
         {
-            ShowBattleWarning("ì„ íƒí•œ íƒ€ì„ë¼ì¸ ìŠ¬ë¡¯ì„ ì‚¬ìš©í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
+            ShowBattleWarning("¼±ÅÃÇÑ Å¸ÀÓ¶óÀÎ ½½·ÔÀ» »ç¿ëÇÒ ¼ö ¾ø½À´Ï´Ù.");
             return false;
         }
 
@@ -896,14 +899,14 @@ public class BattleTimelineController : MonoBehaviour
 
         if (!slot.CanAcceptCharacter(command.UserRuntime))
         {
-            ShowBattleWarning("ì´ ìŠ¬ë¡¯ì—ëŠ” ì´ë¯¸ ë‹¤ë¥¸ ìºë¦­í„°ì˜ í–‰ë™ì´ ì˜ˆì•½ë˜ì–´ ìˆìŠµë‹ˆë‹¤.");
-            Debug.LogWarning("[BattleTimelineController] ì´ íƒ€ì„ë¼ì¸ ìŠ¬ë¡¯ì—ëŠ” ì´ë¯¸ ë‹¤ë¥¸ ìºë¦­í„°ì˜ í–‰ë™ì´ ì˜ˆì•½ë˜ì–´ ìˆìŠµë‹ˆë‹¤.");
+            ShowBattleWarning("ÀÌ ½½·Ô¿¡´Â ÀÌ¹Ì ´Ù¸¥ Ä³¸¯ÅÍÀÇ Çàµ¿ÀÌ ¿¹¾àµÇ¾î ÀÖ½À´Ï´Ù.");
+            Debug.LogWarning("[BattleTimelineController] ÀÌ Å¸ÀÓ¶óÀÎ ½½·Ô¿¡´Â ÀÌ¹Ì ´Ù¸¥ Ä³¸¯ÅÍÀÇ Çàµ¿ÀÌ ¿¹¾àµÇ¾î ÀÖ½À´Ï´Ù.");
             return false;
         }
 
         if (!slot.CanAddCommand())
         {
-            ShowBattleWarning("í•œ ìŠ¬ë¡¯ì—ëŠ” ìµœëŒ€ 3ê°œì˜ ìŠ¤í‚¬ë§Œ ì˜ˆì•½í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.");
+            ShowBattleWarning("ÇÑ ½½·Ô¿¡´Â ÃÖ´ë 3°³ÀÇ ½ºÅ³¸¸ ¿¹¾àÇÒ ¼ö ÀÖ½À´Ï´Ù.");
             return false;
         }
 
@@ -911,8 +914,8 @@ public class BattleTimelineController : MonoBehaviour
 
         if (!added)
         {
-            ShowBattleWarning("ìŠ¤í‚¬ì„ ì˜ˆì•½í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
-            Debug.LogWarning("[BattleTimelineController] ì˜ˆì•½ ìŠ¬ë¡¯ì´ ê°€ë“ ì°¼ìŠµë‹ˆë‹¤.");
+            ShowBattleWarning("½ºÅ³À» ¿¹¾àÇÒ ¼ö ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("[BattleTimelineController] ¿¹¾à ½½·ÔÀÌ °¡µæ Ã¡½À´Ï´Ù.");
             return false;
         }
 
@@ -922,6 +925,7 @@ public class BattleTimelineController : MonoBehaviour
         command.UserRuntime.AddReservedMove(command.MoveCost);
         command.UserRuntime.AddReservedShield(command.ShieldCost);
 
+        RefreshReservationSimulation();
         RefreshTimeline();
         RefreshPlayerHUDs();
         RefreshMoveGhostPreview();
@@ -961,10 +965,10 @@ public class BattleTimelineController : MonoBehaviour
     private string GetReserveBlockReason(PlayerReservedCommand command)
     {
         if (command == null)
-            return "ì˜ˆì•½í•  ìŠ¤í‚¬ ì •ë³´ê°€ ì—†ìŠµë‹ˆë‹¤.";
+            return "¿¹¾àÇÒ ½ºÅ³ Á¤º¸°¡ ¾ø½À´Ï´Ù.";
 
         if (command.UserRuntime == null)
-            return "ì„ íƒëœ ìºë¦­í„°ê°€ ì—†ìŠµë‹ˆë‹¤.";
+            return "¼±ÅÃµÈ Ä³¸¯ÅÍ°¡ ¾ø½À´Ï´Ù.";
 
         CharacterRuntimeData runtime = command.UserRuntime;
 
@@ -976,14 +980,14 @@ public class BattleTimelineController : MonoBehaviour
             if (command.ResourceCost < minRequired)
             {
                 Debug.LogWarning(
-                    $"[BattleTimelineController] AllCurrent ìì› ë¶€ì¡± / " +
+                    $"[BattleTimelineController] AllCurrent ÀÚ¿ø ºÎÁ· / " +
                     $"Character:{runtime.CharacterId} / " +
                     $"Skill:{command.SkillId} / " +
                     $"Cost:{command.ResourceCost} / " +
                     $"MinRequired:{minRequired}"
                 );
 
-                return $"{GetCostLabel(command.SkillData.ReferenceResource)}ì´ ë¶€ì¡±í•©ë‹ˆë‹¤. í•„ìš”:{minRequired} / ë³´ìœ :{command.ResourceCost}";
+                return $"{GetCostLabel(command.SkillData.ReferenceResource)}ÀÌ ºÎÁ·ÇÕ´Ï´Ù. ÇÊ¿ä:{minRequired} / º¸À¯:{command.ResourceCost}";
             }
         }
 
@@ -997,22 +1001,22 @@ public class BattleTimelineController : MonoBehaviour
     private string GetShortageMessage(CharacterRuntimeData runtime, PlayerReservedCommand command)
     {
         if (runtime == null || command == null)
-            return "ì˜ˆì•½í•  ìŠ¤í‚¬ ì •ë³´ê°€ ì—†ìŠµë‹ˆë‹¤.";
+            return "¿¹¾àÇÒ ½ºÅ³ Á¤º¸°¡ ¾ø½À´Ï´Ù.";
 
         if (!runtime.CanReserveHealth(command.HealthCost))
-            return BuildShortageMessage("ì²´ë ¥", command.HealthCost, runtime.CurrentHealth - runtime.ReservedHealthCost);
+            return BuildShortageMessage("Ã¼·Â", command.HealthCost, runtime.CurrentHealth - runtime.ReservedHealthCost);
 
         if (!runtime.CanReserveStamina(command.StaminaCost))
-            return BuildShortageMessage("ì½”ìŠ¤íŠ¸", command.StaminaCost, runtime.CurrentStamina - runtime.ReservedStaminaCost);
+            return BuildShortageMessage("ÄÚ½ºÆ®", command.StaminaCost, runtime.CurrentStamina - runtime.ReservedStaminaCost);
 
         if (!runtime.CanReserveResource(command.ResourceCost))
-            return BuildShortageMessage("ê³ ìœ ìì›", command.ResourceCost, runtime.CurrentResource - runtime.ReservedResourceCost);
+            return BuildShortageMessage("°íÀ¯ÀÚ¿ø", command.ResourceCost, runtime.CurrentResource - runtime.ReservedResourceCost);
 
         if (!runtime.CanReserveMove(command.MoveCost))
-            return BuildShortageMessage("ì´ë™ í¬ì¸íŠ¸", command.MoveCost, runtime.CurrentMoveLevel - runtime.ReservedMoveCost);
+            return BuildShortageMessage("ÀÌµ¿ Æ÷ÀÎÆ®", command.MoveCost, runtime.CurrentMoveLevel - runtime.ReservedMoveCost);
 
         if (!runtime.CanReserveShield(command.ShieldCost))
-            return BuildShortageMessage("ë°©ì–´ë„", command.ShieldCost, runtime.CurrentShield - runtime.ReservedShieldCost);
+            return BuildShortageMessage("¹æ¾îµµ", command.ShieldCost, runtime.CurrentShield - runtime.ReservedShieldCost);
 
         return string.Empty;
     }
@@ -1020,7 +1024,7 @@ public class BattleTimelineController : MonoBehaviour
     private string BuildShortageMessage(string label, int required, int available)
     {
         int safeAvailable = Mathf.Max(0, available);
-        return $"{label}ì´ ë¶€ì¡±í•©ë‹ˆë‹¤. í•„ìš”:{required} / ë³´ìœ :{safeAvailable}";
+        return $"{label}ÀÌ ºÎÁ·ÇÕ´Ï´Ù. ÇÊ¿ä:{required} / º¸À¯:{safeAvailable}";
     }
 
     private string GetCostLabel(ReferenceResource resource)
@@ -1028,19 +1032,19 @@ public class BattleTimelineController : MonoBehaviour
         switch (resource)
         {
             case ReferenceResource.Health:
-                return "ì²´ë ¥";
+                return "Ã¼·Â";
 
             case ReferenceResource.Stamina:
-                return "ì½”ìŠ¤íŠ¸";
+                return "ÄÚ½ºÆ®";
 
             case ReferenceResource.UniqueResource:
-                return "ê³ ìœ ìì›";
+                return "°íÀ¯ÀÚ¿ø";
 
             case ReferenceResource.MovePoint:
-                return "ì´ë™ í¬ì¸íŠ¸";
+                return "ÀÌµ¿ Æ÷ÀÎÆ®";
 
             default:
-                return "ìì›";
+                return "ÀÚ¿ø";
         }
     }
 
@@ -1083,6 +1087,81 @@ public class BattleTimelineController : MonoBehaviour
         }
 
         return gridIndex;
+    }
+
+    public BattleDirection GetPreviewDirection(CharacterRuntimeData runtimeData, int targetSlotIndex)
+    {
+        if (runtimeData == null)
+            return BattleDirection.Right;
+
+        BattleDirection direction = runtimeData.Direction;
+
+        if (reserveSlots == null || reserveSlots.Length <= 0)
+            return direction;
+
+        if (targetSlotIndex < 0)
+            return direction;
+
+        int lastSlotIndex = Mathf.Clamp(targetSlotIndex, 0, reserveSlots.Length - 1);
+
+        for (int slotIndex = 0; slotIndex <= lastSlotIndex; slotIndex++)
+        {
+            ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+
+            if (slot == null || slot.Commands == null)
+                continue;
+
+            for (int i = 0; i < slot.Commands.Count; i++)
+            {
+                PlayerReservedCommand command = slot.Commands[i];
+
+                if (command == null || command.UserRuntime == null)
+                    continue;
+
+                if (command.UserRuntime.CharacterId != runtimeData.CharacterId)
+                    continue;
+
+                direction = GetDirectionAfterCommand(direction, command);
+            }
+        }
+
+        return direction;
+    }
+
+    private BattleDirection GetDirectionAfterCommand(
+        BattleDirection currentDirection,
+        PlayerReservedCommand command)
+    {
+        if (command == null)
+            return currentDirection;
+
+        if (command.ReservedMoveGridIndex < 0)
+            return currentDirection;
+
+        return GetDirectionAfterMove(currentDirection, command.MoveOffset);
+    }
+
+    private BattleDirection GetDirectionAfterMove(
+        BattleDirection currentDirection,
+        Vector2Int moveOffset)
+    {
+        if (moveOffset.x < 0)
+            return BattleDirection.Left;
+
+        if (moveOffset.x > 0)
+            return BattleDirection.Right;
+
+        if (moveOffset == Vector2Int.zero)
+            return GetOppositeDirection(currentDirection);
+
+        return currentDirection;
+    }
+
+    private BattleDirection GetOppositeDirection(BattleDirection direction)
+    {
+        return direction == BattleDirection.Right
+            ? BattleDirection.Left
+            : BattleDirection.Right;
     }
 
     private int GetCurrentBattleCharacterGridIndex(string characterId)
@@ -1169,7 +1248,7 @@ public class BattleTimelineController : MonoBehaviour
         if (resolvedSlotIndex < 0)
         {
             Debug.LogWarning(
-                $"[BattleTimelineController] ëª¬ìŠ¤í„° í–‰ë™ì„ ë„£ì„ ìŠ¬ë¡¯ì´ ì—†ìŠµë‹ˆë‹¤. " +
+                $"[BattleTimelineController] ¸ó½ºÅÍ Çàµ¿À» ³ÖÀ» ½½·ÔÀÌ ¾ø½À´Ï´Ù. " +
                 $"Monster:{command.RuntimeId} / Skill:{command.SkillId}"
             );
             return;
@@ -1263,11 +1342,12 @@ public class BattleTimelineController : MonoBehaviour
 
         RemoveReservedCosts(removedCommand);
 
+        RefreshReservationSimulation();
         RefreshTimeline();
         RefreshPlayerHUDs();
         RefreshMoveGhostPreview();
 
-        Debug.Log($"[BattleTimelineController] ì˜ˆì•½ ì·¨ì†Œ / Slot:{slotIndex} / Order:{orderIndex}");
+        Debug.Log($"[BattleTimelineController] ¿¹¾à Ãë¼Ò / Slot:{slotIndex} / Order:{orderIndex}");
     }
 
     public void ClearAllReservations()
@@ -1295,6 +1375,7 @@ public class BattleTimelineController : MonoBehaviour
 
         ClearAllMonsterCommandsWithoutRefresh();
 
+        RefreshReservationSimulation();
         RefreshTimeline();
         RefreshPlayerHUDs();
     }
@@ -1325,8 +1406,16 @@ public class BattleTimelineController : MonoBehaviour
         command.UserRuntime.RemoveReservedShield(command.ShieldCost);
     }
 
-    private void ShowBattleWarning(string message)
+    private void RefreshReservationSimulation()
     {
+        if (gridManager == null)
+            return;
+
+        BattleActionSimulationService simulator = new(gridManager);
+        simulator.Simulate(this);
+    }
+
+    private void ShowBattleWarning(string message)    {
         BattleWarningUI.ShowMessage(message);
     }
 
@@ -1336,8 +1425,8 @@ public class BattleTimelineController : MonoBehaviour
             timelineBarUI.Refresh(reserveSlots, monsterCommandsBySlot);
         else
         {
-            ShowBattleWarning("íƒ€ì„ë¼ì¸ UIë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
-            Debug.LogWarning("[BattleTimelineController] timelineBarUIê°€ ì—†ìŠµë‹ˆë‹¤.");
+            ShowBattleWarning("Å¸ÀÓ¶óÀÎ UI¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("[BattleTimelineController] timelineBarUI°¡ ¾ø½À´Ï´Ù.");
         }
     }
 

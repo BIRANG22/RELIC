@@ -6,7 +6,7 @@ namespace Relic.Gameplay.Data
     public class PartyRuntimeStore
     {
         private const int MaxPartyCount = 3;
-        private const int MaxGridCount = 15;
+        private const int MaxGridCount = 35;
 
         private readonly PartySlotRuntimeData[] slots = new PartySlotRuntimeData[MaxPartyCount];
 

@@ -8,6 +8,7 @@ public class BattleActionSimulationService
     private readonly GridManager gridManager;
 
     private readonly Dictionary<string, int> playerPositions = new();
+    private readonly Dictionary<string, BattleDirection> playerDirections = new();
     private readonly Dictionary<string, List<int>> monsterPositions = new();
 
     public BattleActionSimulationService(GridManager gridManager)
@@ -83,6 +84,14 @@ public class BattleActionSimulationService
 
     private void SimulatePlayerMove(PlayerReservedCommand command, int currentGrid)
     {
+        BattleDirection direction = GetDirectionAfterMove(
+            GetPlayerDirection(command),
+            command.MoveOffset
+        );
+
+        playerDirections[command.CharacterId] = direction;
+        command.SetMoveDirection(direction);
+
         Vector2Int currentCoord = gridManager.IndexToCoord(currentGrid);
         Vector2Int targetCoord = currentCoord + command.MoveOffset;
 
@@ -107,16 +116,20 @@ public class BattleActionSimulationService
     private void SimulatePlayerSkillRange(PlayerReservedCommand command, int casterGrid)
     {
         List<int> range = new();
+        BattleDirection direction = GetPlayerDirection(command);
 
         if (command.SkillData.RangeType == RangeType.Direction)
         {
             range = BattleRangeCalculator.GetDirectionRangeIndices(
                 casterGrid,
                 command.SkillData.RangeId,
-                command.Direction,
+                direction,
                 DataManager.Instance.RangeDatabase,
                 gridManager
             );
+
+            command.SetDirectionResult(direction, range, range);
+            return;
         }
         else if (command.SkillData.RangeType == RangeType.Selection)
         {
@@ -129,6 +142,40 @@ public class BattleActionSimulationService
         }
 
         command.SetSimulatedRangeResult(range, range);
+    }
+
+    private BattleDirection GetPlayerDirection(PlayerReservedCommand command)
+    {
+        if (command == null)
+            return BattleDirection.Right;
+
+        if (playerDirections.TryGetValue(command.CharacterId, out BattleDirection direction))
+            return direction;
+
+        return command.Direction;
+    }
+
+    private BattleDirection GetDirectionAfterMove(
+        BattleDirection currentDirection,
+        Vector2Int moveOffset)
+    {
+        if (moveOffset.x < 0)
+            return BattleDirection.Left;
+
+        if (moveOffset.x > 0)
+            return BattleDirection.Right;
+
+        if (moveOffset == Vector2Int.zero)
+            return GetOppositeDirection(currentDirection);
+
+        return currentDirection;
+    }
+
+    private BattleDirection GetOppositeDirection(BattleDirection direction)
+    {
+        return direction == BattleDirection.Right
+            ? BattleDirection.Left
+            : BattleDirection.Right;
     }
 
     private void SimulateMonsterCommand(MonsterReservedCommand command)
@@ -251,6 +298,7 @@ public class BattleActionSimulationService
     private void CaptureCurrentPositions()
     {
         playerPositions.Clear();
+        playerDirections.Clear();
         monsterPositions.Clear();
 
         BattleCharacter[] players = Object.FindObjectsByType<BattleCharacter>(
@@ -267,6 +315,7 @@ public class BattleActionSimulationService
                 continue;
 
             playerPositions[players[i].CharacterId] = players[i].CurrentGridIndex;
+            playerDirections[players[i].CharacterId] = players[i].RuntimeData.Direction;
         }
 
         MonsterUnit[] monsters = Object.FindObjectsByType<MonsterUnit>(

@@ -238,7 +238,7 @@ public class BattleTurnExecutor : MonoBehaviour
 
                 passiveSkillService.ClearAllPlayerPassiveEffects();
 
-                roomLoader.PlanNextMonsterTurns();
+                yield return roomLoader.PlanNextMonsterTurnsRoutine();
 
                 passiveSkillService.RefreshAllPlayerPassives();
 
