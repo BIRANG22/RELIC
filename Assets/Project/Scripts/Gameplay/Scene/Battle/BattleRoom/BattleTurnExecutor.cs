@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Relic.Gameplay.Monster;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -47,6 +48,7 @@ public class BattleTurnExecutor : MonoBehaviour
     private void Start()
     {
         RefreshEndTurnButton();
+        RefreshBattlePresentationState();
     }
 
     private void OnEnable()
@@ -65,6 +67,7 @@ public class BattleTurnExecutor : MonoBehaviour
         isMonsterPlanReady = ready;
         isPlayerInputReady = ready;
         RefreshEndTurnButton();
+        RefreshBattlePresentationState();
     }
 
     private void Update()
@@ -88,12 +91,14 @@ public class BattleTurnExecutor : MonoBehaviour
     {
         isMonsterPlanReady = ready;
         RefreshEndTurnButton();
+        RefreshBattlePresentationState();
     }
 
     public void SetPlayerInputReady(bool ready)
     {
         isPlayerInputReady = ready;
         RefreshEndTurnButton();
+        RefreshBattlePresentationState();
     }
 
     public void ExecuteTurn()
@@ -119,11 +124,14 @@ public class BattleTurnExecutor : MonoBehaviour
             return;
         }
 
+        MonsterUnit.HideAllTemporaryHUDs();
+
         isExecuting = true;
 
         isMonsterPlanReady = false;
         isPlayerInputReady = false;
         RefreshEndTurnButton();
+        RefreshBattlePresentationState();
 
         if (endTurnButton != null)
             endTurnButton.interactable = false;
@@ -217,7 +225,7 @@ public class BattleTurnExecutor : MonoBehaviour
 
             yield return runner.ReturnCameraDefaultIfNeeded();
 
-            runner.ApplyTurnEndEffects();
+            yield return runner.ApplyTurnEndEffectsRoutine();
 
             ClearTimeline();
             yield return null;
@@ -253,6 +261,7 @@ public class BattleTurnExecutor : MonoBehaviour
             isExecuting = false;
 
             RefreshEndTurnButton();
+            RefreshBattlePresentationState();
 
             PlayerTurnReturned?.Invoke();
         }
@@ -286,6 +295,16 @@ public class BattleTurnExecutor : MonoBehaviour
             !isExecuting &&
             isMonsterPlanReady &&
             isPlayerInputReady;
+    }
+
+    private void RefreshBattlePresentationState()
+    {
+        bool isReservationState = CanAcceptPlayerInput;
+
+        if (gridManager != null)
+            gridManager.SetGridVisible(isReservationState);
+
+        MonsterUnit.SetAllReservationVisualState(isReservationState);
     }
 
     private IEnumerator ShowBattleProgressIntroTextRoutineSafe()

@@ -137,14 +137,20 @@ public class BattleStatusEffectService
             deathService.HandleMonsterDead(monster);
     }
 
-    public void ApplyTurnEndEffects()
+    public bool ApplyTurnEndEffects()
     {
-        ApplyTurnEndEffectsToPlayers();
-        ApplyTurnEndEffectsToMonsters();
+        bool playedPresentation = false;
+
+        playedPresentation |= ApplyTurnEndEffectsToPlayers();
+        playedPresentation |= ApplyTurnEndEffectsToMonsters();
+
+        return playedPresentation;
     }
 
-    private void ApplyTurnEndEffectsToPlayers()
+    private bool ApplyTurnEndEffectsToPlayers()
     {
+        bool playedPresentation = false;
+
         BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
             FindObjectsInactive.Exclude,
             FindObjectsSortMode.None
@@ -157,12 +163,16 @@ public class BattleStatusEffectService
             if (character == null || character.RuntimeData == null)
                 continue;
 
-            ApplyPlayerTurnEndStatusEffects(character);
+            playedPresentation |= ApplyPlayerTurnEndStatusEffects(character);
         }
+
+        return playedPresentation;
     }
 
-    private void ApplyTurnEndEffectsToMonsters()
+    private bool ApplyTurnEndEffectsToMonsters()
     {
+        bool playedPresentation = false;
+
         MonsterUnit[] monsters = Object.FindObjectsByType<MonsterUnit>(
             FindObjectsInactive.Exclude,
             FindObjectsSortMode.None
@@ -175,16 +185,20 @@ public class BattleStatusEffectService
             if (monster == null || monster.RuntimeData == null)
                 continue;
 
-            ApplyMonsterTurnEndStatusEffects(monster);
+            playedPresentation |= ApplyMonsterTurnEndStatusEffects(monster);
         }
+
+        return playedPresentation;
     }
 
-    private void ApplyPlayerTurnEndStatusEffects(BattleCharacter character)
+    private bool ApplyPlayerTurnEndStatusEffects(BattleCharacter character)
     {
         List<StatusEffectRuntimeData> statuses = character.RuntimeData.StatusEffects;
 
         if (statuses == null)
-            return;
+            return false;
+
+        bool playedPresentation = false;
 
         for (int i = statuses.Count - 1; i >= 0; i--)
         {
@@ -194,7 +208,10 @@ public class BattleStatusEffectService
                 continue;
 
             if (status.EffectId == "E_Addicted")
+            {
                 BattleEffectUtility.StatusDamagePlayer(character, status.Stack);
+                playedPresentation = true;
+            }
 
             if (status.EffectId == "E_Recover")
                 character.RuntimeData.CurrentResource += 1;
@@ -210,14 +227,18 @@ public class BattleStatusEffectService
 
             ApplyEndTurnRule(statuses, i, status);
         }
+
+        return playedPresentation;
     }
 
-    private void ApplyMonsterTurnEndStatusEffects(MonsterUnit monster)
+    private bool ApplyMonsterTurnEndStatusEffects(MonsterUnit monster)
     {
         List<StatusEffectRuntimeData> statuses = monster.RuntimeData.StatusEffects;
 
         if (statuses == null)
-            return;
+            return false;
+
+        bool playedPresentation = false;
 
         for (int i = statuses.Count - 1; i >= 0; i--)
         {
@@ -229,6 +250,7 @@ public class BattleStatusEffectService
             if (status.EffectId == "E_Addicted")
             {
                 BattleEffectUtility.StatusDamageMonster(monster, status.Stack);
+                playedPresentation = true;
 
                 if (monster.RuntimeData.IsDead)
                     deathService.HandleMonsterDead(monster);
@@ -236,6 +258,8 @@ public class BattleStatusEffectService
 
             ApplyEndTurnRule(statuses, i, status);
         }
+
+        return playedPresentation;
     }
 
     private void ApplyEndTurnRule(

@@ -140,6 +140,11 @@ public class BattleActionRunner
 
         IncreaseMonsterTurnCountsOnceInSlot(batch);
 
+        yield return RunPostActionPresentationRoutine();
+    }
+
+    private IEnumerator RunPostActionPresentationRoutine()
+    {
         yield return new WaitForSeconds(MonsterHUDVisibleDelay);
 
         hudService.HideUnselectedMonsterHUDs();
@@ -149,10 +154,25 @@ public class BattleActionRunner
         hudService.PlayAllAliveIdle();
     }
 
-    public void ApplyTurnEndEffects()
+    public bool ApplyTurnEndEffects()
     {
-        statusEffectService.ApplyTurnEndEffects();
+        bool playedPresentation = statusEffectService.ApplyTurnEndEffects();
         hudService.RefreshHUDs();
+
+        return playedPresentation;
+    }
+
+    public IEnumerator ApplyTurnEndEffectsRoutine()
+    {
+        bool playedPresentation = ApplyTurnEndEffects();
+
+        if (!playedPresentation)
+            yield break;
+
+        IEnumerator presentationRoutine = RunPostActionPresentationRoutine();
+
+        while (presentationRoutine.MoveNext())
+            yield return presentationRoutine.Current;
     }
 
     public IEnumerator ReturnCameraDefaultIfNeeded()

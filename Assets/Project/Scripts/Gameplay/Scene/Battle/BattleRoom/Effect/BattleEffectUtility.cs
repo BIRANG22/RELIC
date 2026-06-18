@@ -93,6 +93,7 @@ public static class BattleEffectUtility
             return;
 
         AddOrStackStatus(target.RuntimeData.StatusEffects, effectId, stack, turnCount);
+        target.ShowAndRefreshHUD();
     }
 
     public static void DamagePlayer(BattleCharacter target, int damage)

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
+using Relic.Gameplay.Monster;
 using UnityEngine;
 
 public class PlayerSkillReservationController : MonoBehaviour
@@ -97,6 +98,7 @@ public class PlayerSkillReservationController : MonoBehaviour
         BattleDirection casterDirection,
         Sprite casterSprite = null)
     {
+        MonsterUnit.HideAllTemporaryHUDs();
         ClearPreview();
 
         currentUserRuntime = userRuntime;
@@ -731,7 +733,12 @@ public class PlayerSkillReservationController : MonoBehaviour
             return false;
         }
 
-        return timelineController.ConfirmPlayerCommand(currentSlotIndex, command);
+        bool confirmed = timelineController.ConfirmPlayerCommand(currentSlotIndex, command);
+
+        if (confirmed)
+            ShowTemporaryMonsterHUDsForCommand(command);
+
+        return confirmed;
     }
 
     private bool ConfirmCommands(IReadOnlyList<PlayerReservedCommand> commands)
@@ -744,7 +751,35 @@ public class PlayerSkillReservationController : MonoBehaviour
             return false;
         }
 
-        return timelineController.ConfirmPlayerCommands(currentSlotIndex, commands);
+        bool confirmed = timelineController.ConfirmPlayerCommands(currentSlotIndex, commands);
+
+        if (confirmed)
+            ShowTemporaryMonsterHUDsForCommands(commands);
+
+        return confirmed;
+    }
+
+    private void ShowTemporaryMonsterHUDsForCommands(IReadOnlyList<PlayerReservedCommand> commands)
+    {
+        if (commands == null)
+            return;
+
+        for (int i = 0; i < commands.Count; i++)
+            ShowTemporaryMonsterHUDsForCommand(commands[i]);
+    }
+
+    private void ShowTemporaryMonsterHUDsForCommand(PlayerReservedCommand command)
+    {
+        if (command == null)
+            return;
+
+        if (command.ReservedMoveGridIndex >= 0)
+            return;
+
+        if (command.RangeGridIndices == null || command.RangeGridIndices.Count <= 0)
+            return;
+
+        MonsterUnit.ShowTemporaryHUDsInRange(command.RangeGridIndices, 1f);
     }
 
     private bool CanConfirmReservation()
