@@ -12,6 +12,7 @@ public class GridManager : MonoBehaviour
     [SerializeField] private GridCell[] cells;
 
     private GridCell[,] cellMap;
+    private bool isGridVisible = true;
 
     public event Action<GridCell> OnCellClicked;
     public event Action<GridCell> OnCellHovered;
@@ -19,6 +20,7 @@ public class GridManager : MonoBehaviour
 
     public int Width => width;
     public int Height => height;
+    public bool IsGridVisible => isGridVisible;
 
     private void Awake()
     {
@@ -47,6 +49,52 @@ public class GridManager : MonoBehaviour
 
             cell.Initialize(this, x, y, i);
             cellMap[x, y] = cell;
+        }
+
+        ApplyGridVisibilityToCells();
+    }
+
+    public void SetGridVisible(bool visible)
+    {
+        isGridVisible = visible;
+        ApplyGridVisibilityToCells();
+    }
+
+    private void ApplyGridVisibilityToCells()
+    {
+        if (cells == null || cells.Length == 0)
+            cells = GetComponentsInChildren<GridCell>(true);
+
+        if (cells == null)
+            return;
+
+        for (int i = 0; i < cells.Length; i++)
+        {
+            GridCell cell = cells[i];
+
+            if (cell == null)
+                continue;
+
+            Renderer[] renderers = cell.GetComponentsInChildren<Renderer>(true);
+            for (int rendererIndex = 0; rendererIndex < renderers.Length; rendererIndex++)
+            {
+                if (renderers[rendererIndex] != null)
+                    renderers[rendererIndex].enabled = isGridVisible;
+            }
+
+            Collider[] colliders = cell.GetComponentsInChildren<Collider>(true);
+            for (int colliderIndex = 0; colliderIndex < colliders.Length; colliderIndex++)
+            {
+                if (colliders[colliderIndex] != null)
+                    colliders[colliderIndex].enabled = isGridVisible;
+            }
+
+            Collider2D[] colliders2D = cell.GetComponentsInChildren<Collider2D>(true);
+            for (int colliderIndex = 0; colliderIndex < colliders2D.Length; colliderIndex++)
+            {
+                if (colliders2D[colliderIndex] != null)
+                    colliders2D[colliderIndex].enabled = isGridVisible;
+            }
         }
     }
 

@@ -25,6 +25,8 @@ public class BurnEffect : BattleEffectBase
                 EffectId,
                 context.Value
             );
+
+            context.MonsterTarget.ShowAndRefreshHUD();
         }
     }
 

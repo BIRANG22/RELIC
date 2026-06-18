@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using NUnit.Framework;
@@ -7,6 +8,291 @@ using UnityEngine;
 
 public class BattleActionRegressionTests
 {
+    [Test]
+    public void MonsterClick_DoesNotSelectMonsterForHud()
+    {
+        MonsterUnit monster = CreateMonsterWithHud(
+            "ClickNoHudMonster",
+            "M_ClickNoHud",
+            12,
+            out CanvasGroup canvasGroup
+        );
+
+        FieldInfo selectedMonsterField = typeof(MonsterUnit).GetField(
+            "selectedMonster",
+            BindingFlags.Static | BindingFlags.NonPublic);
+        selectedMonsterField.SetValue(null, null);
+
+        MethodInfo mouseDownMethod = typeof(MonsterUnit).GetMethod(
+            "OnMouseDown",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+
+        mouseDownMethod.Invoke(monster, null);
+
+        Assert.That(selectedMonsterField.GetValue(null), Is.Null);
+        Assert.That(canvasGroup.alpha, Is.EqualTo(0f));
+
+        Object.DestroyImmediate(canvasGroup.gameObject);
+        Object.DestroyImmediate(monster.gameObject);
+    }
+
+    [Test]
+    public void MonsterHover_ShowsAndHidesBoundHud()
+    {
+        MonsterUnit monster = CreateMonsterWithHud(
+            "HoverHudMonster",
+            "M_HoverHud",
+            12,
+            out CanvasGroup canvasGroup
+        );
+
+        MethodInfo mouseEnterMethod = typeof(MonsterUnit).GetMethod(
+            "OnMouseEnter",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        MethodInfo mouseExitMethod = typeof(MonsterUnit).GetMethod(
+            "OnMouseExit",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+
+        Assert.That(mouseEnterMethod, Is.Not.Null);
+        Assert.That(mouseExitMethod, Is.Not.Null);
+        Assert.That(canvasGroup.alpha, Is.EqualTo(0f));
+
+        mouseEnterMethod.Invoke(monster, null);
+        Assert.That(canvasGroup.alpha, Is.EqualTo(1f));
+
+        mouseExitMethod.Invoke(monster, null);
+        Assert.That(canvasGroup.alpha, Is.EqualTo(0f));
+
+        Object.DestroyImmediate(canvasGroup.gameObject);
+        Object.DestroyImmediate(monster.gameObject);
+    }
+
+    [Test]
+    public void TemporaryMonsterHudRange_ShowsMatchingMonstersAndCanBeCleared()
+    {
+        MonsterUnit inRangeMonster = CreateMonsterWithHud(
+            "TemporaryHudInRange",
+            "M_TemporaryInRange",
+            12,
+            out CanvasGroup inRangeCanvasGroup
+        );
+        MonsterUnit outOfRangeMonster = CreateMonsterWithHud(
+            "TemporaryHudOutOfRange",
+            "M_TemporaryOutOfRange",
+            22,
+            out CanvasGroup outOfRangeCanvasGroup
+        );
+
+        MethodInfo showTemporaryMethod = typeof(MonsterUnit).GetMethod(
+            "ShowTemporaryHUDsInRange",
+            BindingFlags.Static | BindingFlags.Public);
+        MethodInfo hideTemporaryMethod = typeof(MonsterUnit).GetMethod(
+            "HideAllTemporaryHUDs",
+            BindingFlags.Static | BindingFlags.Public);
+
+        Assert.That(showTemporaryMethod, Is.Not.Null);
+        Assert.That(hideTemporaryMethod, Is.Not.Null);
+
+        showTemporaryMethod.Invoke(null, new object[] { new List<int> { 12 }, 1f });
+
+        Assert.That(inRangeCanvasGroup.alpha, Is.EqualTo(1f));
+        Assert.That(outOfRangeCanvasGroup.alpha, Is.EqualTo(0f));
+
+        hideTemporaryMethod.Invoke(null, null);
+
+        Assert.That(inRangeCanvasGroup.alpha, Is.EqualTo(0f));
+        Assert.That(outOfRangeCanvasGroup.alpha, Is.EqualTo(0f));
+
+        Object.DestroyImmediate(inRangeCanvasGroup.gameObject);
+        Object.DestroyImmediate(outOfRangeCanvasGroup.gameObject);
+        Object.DestroyImmediate(inRangeMonster.gameObject);
+        Object.DestroyImmediate(outOfRangeMonster.gameObject);
+    }
+
+    [Test]
+    public void AddStatusToMonster_ShowsBoundHud()
+    {
+        MonsterUnit monster = CreateMonsterWithHud(
+            "StatusHudMonster",
+            "M_StatusHud",
+            12,
+            out CanvasGroup canvasGroup
+        );
+
+        BattleEffectUtility.AddStatusToMonster(monster, "E_Weaken", 1, 1);
+
+        Assert.That(monster.RuntimeData.StatusEffects, Has.Count.EqualTo(1));
+        Assert.That(monster.RuntimeData.StatusEffects[0].EffectId, Is.EqualTo("E_Weaken"));
+        Assert.That(canvasGroup.alpha, Is.EqualTo(1f));
+
+        Object.DestroyImmediate(canvasGroup.gameObject);
+        Object.DestroyImmediate(monster.gameObject);
+    }
+
+    [Test]
+    public void BurnEffectOnMonster_ShowsBoundHud()
+    {
+        MonsterUnit monster = CreateMonsterWithHud(
+            "BurnStatusHudMonster",
+            "M_BurnStatusHud",
+            12,
+            out CanvasGroup canvasGroup
+        );
+
+        BurnEffect effect = new();
+        effect.Execute(new BattleEffectContext
+        {
+            MonsterTarget = monster,
+            Value = 2
+        });
+
+        Assert.That(monster.RuntimeData.StatusEffects, Has.Count.EqualTo(1));
+        Assert.That(monster.RuntimeData.StatusEffects[0].EffectId, Is.EqualTo("E_Burn"));
+        Assert.That(canvasGroup.alpha, Is.EqualTo(1f));
+
+        Object.DestroyImmediate(canvasGroup.gameObject);
+        Object.DestroyImmediate(monster.gameObject);
+    }
+
+    [Test]
+    public void TurnEndAddictedMonsterDamage_HidesHudBeforeNextReservation()
+    {
+        MonsterUnit monster = CreateMonsterWithHud(
+            "TurnEndAddictedMonster",
+            "M_TurnEndAddicted",
+            12,
+            out CanvasGroup canvasGroup
+        );
+        monster.RuntimeData.StatusEffects.Add(new StatusEffectRuntimeData
+        {
+            EffectId = "E_Addicted",
+            Stack = 1,
+            TurnCount = 1
+        });
+
+        BattleActionRunner runner = new(null);
+        MethodInfo method = typeof(BattleActionRunner).GetMethod(
+            "ApplyTurnEndEffectsRoutine",
+            BindingFlags.Instance | BindingFlags.Public);
+
+        Assert.That(method, Is.Not.Null);
+
+        IEnumerator routine = (IEnumerator)method.Invoke(runner, null);
+
+        Assert.That(routine.MoveNext(), Is.True);
+        Assert.That(routine.Current, Is.TypeOf<WaitForSeconds>());
+        Assert.That(monster.RuntimeData.CurrentHp, Is.EqualTo(monster.RuntimeData.MaxHp - 1));
+        Assert.That(canvasGroup.alpha, Is.EqualTo(1f));
+
+        Assert.That(routine.MoveNext(), Is.True);
+        Assert.That(routine.Current, Is.TypeOf<WaitForSeconds>());
+        Assert.That(canvasGroup.alpha, Is.EqualTo(0f));
+
+        Object.DestroyImmediate(canvasGroup.gameObject);
+        Object.DestroyImmediate(monster.gameObject);
+    }
+
+    [Test]
+    public void GridVisibility_TogglesCellRendererAndCollider()
+    {
+        GridManager gridManager = CreateOneCellGrid(
+            "GridVisibility",
+            out Renderer cellRenderer,
+            out Collider cellCollider,
+            out GameObject gridObject,
+            out GameObject cellObject
+        );
+
+        MethodInfo method = typeof(GridManager).GetMethod(
+            "SetGridVisible",
+            BindingFlags.Instance | BindingFlags.Public);
+
+        Assert.That(method, Is.Not.Null);
+
+        method.Invoke(gridManager, new object[] { false });
+
+        Assert.That(cellRenderer.enabled, Is.False);
+        Assert.That(cellCollider.enabled, Is.False);
+
+        method.Invoke(gridManager, new object[] { true });
+
+        Assert.That(cellRenderer.enabled, Is.True);
+        Assert.That(cellCollider.enabled, Is.True);
+
+        Object.DestroyImmediate(cellObject);
+        Object.DestroyImmediate(gridObject);
+    }
+
+    [Test]
+    public void MonsterReservationVisualState_MakesTransparentButKeepsCollider()
+    {
+        MonsterUnit monster = CreateMonsterWithSprite(
+            "ReservationVisualMonster",
+            "M_ReservationVisual",
+            out SpriteRenderer spriteRenderer,
+            out Collider2D clickCollider
+        );
+
+        MethodInfo method = typeof(MonsterUnit).GetMethod(
+            "SetReservationVisualState",
+            BindingFlags.Instance | BindingFlags.Public);
+
+        Assert.That(method, Is.Not.Null);
+
+        method.Invoke(monster, new object[] { true });
+
+        Assert.That(spriteRenderer.color.a, Is.LessThan(1f));
+        Assert.That(clickCollider.enabled, Is.True);
+
+        method.Invoke(monster, new object[] { false });
+
+        Assert.That(spriteRenderer.color.a, Is.EqualTo(1f).Within(0.001f));
+        Assert.That(clickCollider.enabled, Is.True);
+
+        Object.DestroyImmediate(monster.gameObject);
+    }
+
+    [Test]
+    public void BattleInputReady_TogglesGridAndMonsterPresentation()
+    {
+        GridManager gridManager = CreateOneCellGrid(
+            "BattleInputGrid",
+            out Renderer cellRenderer,
+            out Collider cellCollider,
+            out GameObject gridObject,
+            out GameObject cellObject
+        );
+        MonsterUnit monster = CreateMonsterWithSprite(
+            "BattleInputMonster",
+            "M_BattleInput",
+            out SpriteRenderer spriteRenderer,
+            out Collider2D _);
+
+        BattleTurnExecutor executor =
+            new GameObject("BattleInputExecutor").AddComponent<BattleTurnExecutor>();
+
+        typeof(BattleTurnExecutor)
+            .GetField("gridManager", BindingFlags.Instance | BindingFlags.NonPublic)
+            .SetValue(executor, gridManager);
+
+        executor.SetBattleInputReady(true);
+
+        Assert.That(cellRenderer.enabled, Is.True);
+        Assert.That(cellCollider.enabled, Is.True);
+        Assert.That(spriteRenderer.color.a, Is.LessThan(1f));
+
+        executor.SetBattleInputReady(false);
+
+        Assert.That(cellRenderer.enabled, Is.False);
+        Assert.That(cellCollider.enabled, Is.False);
+        Assert.That(spriteRenderer.color.a, Is.EqualTo(1f).Within(0.001f));
+
+        Object.DestroyImmediate(executor.gameObject);
+        Object.DestroyImmediate(monster.gameObject);
+        Object.DestroyImmediate(cellObject);
+        Object.DestroyImmediate(gridObject);
+    }
+
     [Test]
     public void PartyRuntimeStore_AllowsFullBattleGridCurrentIndex()
     {
@@ -793,5 +1079,87 @@ public class BattleActionRegressionTests
     {
         Assert.That(BattleActionRunner.MoveAnimationDuration, Is.GreaterThan(0f));
         Assert.That(BattleActionRunner.MoveAnimationDuration, Is.LessThan(0.25f));
+    }
+
+    private static MonsterUnit CreateMonsterWithHud(
+        string name,
+        string runtimeId,
+        int occupiedGridIndex,
+        out CanvasGroup canvasGroup)
+    {
+        MonsterMasterData masterData = new()
+        {
+            MonsterId = name,
+            Name = name,
+            Health = 10
+        };
+
+        MonsterRuntimeData runtimeData = new(runtimeId, masterData);
+        MonsterUnit monster = new GameObject(name).AddComponent<MonsterUnit>();
+        monster.Initialize(runtimeData);
+        monster.SetOccupiedCells(new List<int> { occupiedGridIndex });
+
+        GameObject hudObject = new(name + "HUD");
+        canvasGroup = hudObject.AddComponent<CanvasGroup>();
+        MonsterHUDSlot hud = hudObject.AddComponent<MonsterHUDSlot>();
+        monster.BindHUD(hud);
+
+        return monster;
+    }
+
+    private static GridManager CreateOneCellGrid(
+        string name,
+        out Renderer cellRenderer,
+        out Collider cellCollider,
+        out GameObject gridObject,
+        out GameObject cellObject)
+    {
+        gridObject = new GameObject(name);
+        GridManager gridManager = gridObject.AddComponent<GridManager>();
+
+        cellObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        cellObject.name = name + "_Cell";
+        cellObject.transform.SetParent(gridObject.transform);
+
+        GridCell cell = cellObject.AddComponent<GridCell>();
+        cell.Initialize(gridManager, 0, 0, 0);
+
+        typeof(GridManager)
+            .GetField("width", BindingFlags.Instance | BindingFlags.NonPublic)
+            .SetValue(gridManager, 1);
+        typeof(GridManager)
+            .GetField("height", BindingFlags.Instance | BindingFlags.NonPublic)
+            .SetValue(gridManager, 1);
+        typeof(GridManager)
+            .GetField("cells", BindingFlags.Instance | BindingFlags.NonPublic)
+            .SetValue(gridManager, new[] { cell });
+
+        cellRenderer = cellObject.GetComponent<Renderer>();
+        cellCollider = cellObject.GetComponent<Collider>();
+
+        return gridManager;
+    }
+
+    private static MonsterUnit CreateMonsterWithSprite(
+        string name,
+        string runtimeId,
+        out SpriteRenderer spriteRenderer,
+        out Collider2D clickCollider)
+    {
+        MonsterMasterData masterData = new()
+        {
+            MonsterId = name,
+            Name = name,
+            Health = 10
+        };
+
+        MonsterRuntimeData runtimeData = new(runtimeId, masterData);
+        MonsterUnit monster = new GameObject(name).AddComponent<MonsterUnit>();
+        spriteRenderer = monster.gameObject.AddComponent<SpriteRenderer>();
+        spriteRenderer.color = Color.white;
+        clickCollider = monster.gameObject.AddComponent<BoxCollider2D>();
+        monster.Initialize(runtimeData);
+
+        return monster;
     }
 }

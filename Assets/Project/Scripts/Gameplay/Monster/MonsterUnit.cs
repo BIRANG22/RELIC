@@ -15,6 +15,9 @@ namespace Relic.Gameplay.Monster
         [Header("Timeline Hover Highlight")]
         [SerializeField] private GameObject timelineHoverHighlightObject;
 
+        [Header("Reservation Visual")]
+        [SerializeField, Range(0f, 1f)] private float reservationAlpha = 0.45f;
+
         [Header("Status Click Tooltip")]
         [SerializeField] private bool showStatusTooltipOnClick = true;
         [SerializeField] private UnitStatusEffectTooltipUI statusTooltipUI;
@@ -24,6 +27,9 @@ namespace Relic.Gameplay.Monster
         private MonsterAIBase ai;
         private MonsterHUDSlot hud;
         private Collider2D clickCollider2D;
+        private Coroutine temporaryHUDRoutine;
+        private bool isTemporaryHUDVisible;
+        private MaterialPropertyBlock reservationPropertyBlock;
 
         private static MonsterUnit selectedMonster;
         private static int selectedMonsterClickFrame = -1000;
@@ -142,6 +148,8 @@ namespace Relic.Gameplay.Monster
 
         private void OnDisable()
         {
+            HideTemporaryHUD();
+
             if (selectedMonster == this)
             {
                 SetSelected(false);
@@ -153,6 +161,8 @@ namespace Relic.Gameplay.Monster
 
         private void OnDestroy()
         {
+            HideTemporaryHUD();
+
             if (selectedMonster == this)
             {
                 SetSelected(false);
@@ -242,13 +252,25 @@ namespace Relic.Gameplay.Monster
 
         private void OnMouseDown()
         {
-            if (RuntimeData == null)
+        }
+
+        private void OnMouseEnter()
+        {
+            if (RuntimeData == null || RuntimeData.IsDead)
                 return;
 
             if (IsPointerOverUI())
                 return;
 
             SelectThisMonster();
+        }
+
+        private void OnMouseExit()
+        {
+            if (selectedMonster != this)
+                return;
+
+            DeselectCurrentMonster();
         }
 
         private bool IsPointerOverUI()
@@ -402,6 +424,83 @@ namespace Relic.Gameplay.Monster
                 hud.Hide();
         }
 
+        public void SetReservationVisualState(bool reservation)
+        {
+            float alpha = reservation ? reservationAlpha : 1f;
+
+            SpriteRenderer[] spriteRenderers = GetComponentsInChildren<SpriteRenderer>(true);
+            for (int i = 0; i < spriteRenderers.Length; i++)
+            {
+                SpriteRenderer spriteRenderer = spriteRenderers[i];
+
+                if (spriteRenderer == null)
+                    continue;
+
+                Color color = spriteRenderer.color;
+                color.a = alpha;
+                spriteRenderer.color = color;
+            }
+
+            Renderer[] renderers = GetComponentsInChildren<Renderer>(true);
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                Renderer renderer = renderers[i];
+
+                if (renderer == null || renderer is SpriteRenderer)
+                    continue;
+
+                SetRendererAlpha(renderer, alpha);
+            }
+
+            Collider2D collider = GetClickCollider2D();
+            if (collider != null)
+                collider.enabled = true;
+        }
+
+        public static void SetAllReservationVisualState(bool reservation)
+        {
+            MonsterUnit[] monsters =
+                Object.FindObjectsByType<MonsterUnit>(
+                    FindObjectsInactive.Exclude,
+                    FindObjectsSortMode.None
+                );
+
+            for (int i = 0; i < monsters.Length; i++)
+            {
+                if (monsters[i] != null)
+                    monsters[i].SetReservationVisualState(reservation);
+            }
+        }
+
+        private void SetRendererAlpha(Renderer renderer, float alpha)
+        {
+            Material sharedMaterial = renderer.sharedMaterial;
+
+            if (sharedMaterial == null)
+                return;
+
+            string colorProperty = null;
+
+            if (sharedMaterial.HasProperty("_BaseColor"))
+                colorProperty = "_BaseColor";
+            else if (sharedMaterial.HasProperty("_Color"))
+                colorProperty = "_Color";
+
+            if (string.IsNullOrEmpty(colorProperty))
+                return;
+
+            if (reservationPropertyBlock == null)
+                reservationPropertyBlock = new MaterialPropertyBlock();
+
+            renderer.GetPropertyBlock(reservationPropertyBlock);
+
+            Color color = sharedMaterial.GetColor(colorProperty);
+            color.a = alpha;
+            reservationPropertyBlock.SetColor(colorProperty, color);
+
+            renderer.SetPropertyBlock(reservationPropertyBlock);
+        }
+
         public void SelectThisMonster()
         {
             if (selectedMonster != null && selectedMonster != this)
@@ -413,16 +512,6 @@ namespace Relic.Gameplay.Monster
             selectedMonster = this;
             selectedMonsterClickFrame = Time.frameCount;
 
-            StartCoroutine(ShowSelectedHUDAndTooltipNextFrame());
-        }
-
-        private IEnumerator ShowSelectedHUDAndTooltipNextFrame()
-        {
-            yield return null;
-
-            if (selectedMonster != this)
-                yield break;
-
             SetSelected(true);
             ShowStatusClickTooltip();
         }
@@ -433,9 +522,13 @@ namespace Relic.Gameplay.Monster
                 return;
 
             if (selected)
+            {
                 hud.Show();
-            else
+            }
+            else if (!isTemporaryHUDVisible)
+            {
                 hud.Hide();
+            }
         }
 
         public void ShowHUD()
@@ -461,6 +554,110 @@ namespace Relic.Gameplay.Monster
 
             hud.Show();
             hud.Refresh();
+        }
+
+        public void ShowTemporaryHUD(float duration)
+        {
+            if (hud == null)
+                return;
+
+            if (temporaryHUDRoutine != null)
+            {
+                StopCoroutine(temporaryHUDRoutine);
+                temporaryHUDRoutine = null;
+            }
+
+            isTemporaryHUDVisible = true;
+            ShowAndRefreshHUD();
+
+            if (duration > 0f)
+                temporaryHUDRoutine = StartCoroutine(HideTemporaryHUDAfterDelay(duration));
+        }
+
+        public void HideTemporaryHUD()
+        {
+            if (temporaryHUDRoutine != null)
+            {
+                StopCoroutine(temporaryHUDRoutine);
+                temporaryHUDRoutine = null;
+            }
+
+            isTemporaryHUDVisible = false;
+
+            if (!IsSelected && hud != null)
+                hud.Hide();
+        }
+
+        public static void ShowTemporaryHUDsInRange(
+            IReadOnlyCollection<int> rangeGridIndices,
+            float duration)
+        {
+            HideAllTemporaryHUDs();
+
+            if (rangeGridIndices == null || rangeGridIndices.Count <= 0)
+                return;
+
+            HashSet<int> rangeSet = rangeGridIndices as HashSet<int> ??
+                                    new HashSet<int>(rangeGridIndices);
+
+            MonsterUnit[] monsters =
+                Object.FindObjectsByType<MonsterUnit>(
+                    FindObjectsInactive.Exclude,
+                    FindObjectsSortMode.None
+                );
+
+            for (int i = 0; i < monsters.Length; i++)
+            {
+                MonsterUnit monster = monsters[i];
+
+                if (monster == null || monster.RuntimeData == null)
+                    continue;
+
+                if (monster.RuntimeData.IsDead)
+                    continue;
+
+                if (!monster.OccupiesAnyGrid(rangeSet))
+                    continue;
+
+                monster.ShowTemporaryHUD(duration);
+            }
+        }
+
+        public static void HideAllTemporaryHUDs()
+        {
+            MonsterUnit[] monsters =
+                Object.FindObjectsByType<MonsterUnit>(
+                    FindObjectsInactive.Exclude,
+                    FindObjectsSortMode.None
+                );
+
+            for (int i = 0; i < monsters.Length; i++)
+            {
+                if (monsters[i] != null)
+                    monsters[i].HideTemporaryHUD();
+            }
+        }
+
+        private IEnumerator HideTemporaryHUDAfterDelay(float duration)
+        {
+            yield return new WaitForSeconds(duration);
+
+            temporaryHUDRoutine = null;
+            HideTemporaryHUD();
+        }
+
+        private bool OccupiesAnyGrid(ISet<int> rangeGridIndices)
+        {
+            if (rangeGridIndices == null || rangeGridIndices.Count <= 0)
+                return false;
+
+            for (int i = 0; i < occupiedGridIndices.Count; i++)
+            {
+                if (rangeGridIndices.Contains(occupiedGridIndices[i]))
+                    return true;
+            }
+
+            return false;
         }
     }
 }
