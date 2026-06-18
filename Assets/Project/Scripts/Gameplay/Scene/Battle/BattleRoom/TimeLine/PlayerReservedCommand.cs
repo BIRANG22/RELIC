@@ -35,6 +35,7 @@ public class PlayerReservedCommand
 
     public Vector2Int VisualMoveOffset { get; private set; } = Vector2Int.zero;
     public int VisualMoveGridIndex { get; private set; } = -1;
+    private readonly List<Vector2Int> visualMoveSteps = new();
 
     public Vector2Int EffectiveVisualMoveOffset =>
         VisualMoveOffset != Vector2Int.zero ? VisualMoveOffset : EffectiveMoveOffset;
@@ -42,16 +43,31 @@ public class PlayerReservedCommand
     public int EffectiveVisualMoveGridIndex =>
         VisualMoveGridIndex >= 0 ? VisualMoveGridIndex : EffectiveMoveGridIndex;
 
+    public IReadOnlyList<Vector2Int> VisualMoveSteps => visualMoveSteps;
+
+    public bool HasVisualMoveResult =>
+        VisualMoveGridIndex >= 0 && VisualMoveOffset != Vector2Int.zero;
+
     public bool SkipMoveVisual { get; private set; }
 
     public void SetSkipMoveVisual(bool skip)
     {
         SkipMoveVisual = skip;
     }
-    public void SetVisualMoveResult(int visualGridIndex, Vector2Int visualMoveOffset)
+    public void SetVisualMoveResult(
+        int visualGridIndex,
+        Vector2Int visualMoveOffset,
+        IReadOnlyList<Vector2Int> moveSteps = null)
     {
         VisualMoveGridIndex = visualGridIndex;
         VisualMoveOffset = visualMoveOffset;
+        visualMoveSteps.Clear();
+
+        if (moveSteps == null)
+            return;
+
+        for (int i = 0; i < moveSteps.Count; i++)
+            visualMoveSteps.Add(moveSteps[i]);
     }
     public PlayerReservedCommand(CharacterRuntimeData userRuntime, SkillMasterData skillData)
     {
@@ -71,6 +87,21 @@ public class PlayerReservedCommand
 
     public int EffectiveMoveGridIndex =>
         HasSimulatedResult ? SimulatedMoveGridIndex : ReservedMoveGridIndex;
+
+    public Vector2Int ExecutionMoveOffset =>
+        SkipMoveVisual ? MoveOffset : EffectiveMoveOffset;
+
+    public int PreviewMoveGridIndex =>
+        SkipMoveVisual && ReservedMoveGridIndex >= 0
+            ? ReservedMoveGridIndex
+            : EffectiveMoveGridIndex;
+
+    public bool IsVisualSkipConsumedAtGrid(int gridIndex)
+    {
+        return SkipMoveVisual &&
+               ReservedMoveGridIndex >= 0 &&
+               gridIndex == ReservedMoveGridIndex;
+    }
 
     public void SetSimulatedMoveResult(
         bool blocked,
@@ -109,6 +140,7 @@ public class PlayerReservedCommand
         Direction = direction;
         SelectedGridIndex = -1;
         ReservedMoveGridIndex = -1;
+        ClearVisualMoveResult();
 
         RangeGridIndices = rangeGridIndices != null ? new List<int>(rangeGridIndices) : new List<int>();
         TargetGridIndices = targetGridIndices != null ? new List<int>(targetGridIndices) : new List<int>();
@@ -124,9 +156,18 @@ public class PlayerReservedCommand
         SelectedGridIndex = selectedGridIndex;
         ReservedMoveGridIndex = selectedGridIndex;
         MoveOffset = moveOffset;
+        ClearVisualMoveResult();
 
         RangeGridIndices = rangeGridIndices != null ? new List<int>(rangeGridIndices) : new List<int>();
         TargetGridIndices = new List<int> { selectedGridIndex };
+    }
+
+    private void ClearVisualMoveResult()
+    {
+        VisualMoveGridIndex = -1;
+        VisualMoveOffset = Vector2Int.zero;
+        visualMoveSteps.Clear();
+        SkipMoveVisual = false;
     }
 
     private void CalculateCosts(SkillMasterData skillData)

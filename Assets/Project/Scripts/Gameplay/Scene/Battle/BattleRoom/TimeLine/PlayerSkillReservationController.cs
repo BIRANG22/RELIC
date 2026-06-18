@@ -157,24 +157,20 @@ public class PlayerSkillReservationController : MonoBehaviour
             gridManager
         );
 
-        Vector2Int casterCoord = gridManager.IndexToCoord(currentCasterGridIndex);
+        HashSet<int> blockedGridIndices = BuildCurrentMoveBlockedGridIndices();
 
         for (int i = 0; i < rangeIndices.Count; i++)
         {
             int index = rangeIndices[i];
-            Vector2Int selectedCoord = gridManager.IndexToCoord(index);
-            Vector2Int moveOffset = selectedCoord - casterCoord;
             List<List<Vector2Int>> pathCandidates =
-                BuildMoveReservationPathCandidates(
-                    moveOffset,
-                    currentMoveDistancePerCommand
+                GetReservableMovePathCandidates(
+                    currentCasterGridIndex,
+                    index,
+                    currentMoveDistancePerCommand,
+                    currentMoveReservationCapacity,
+                    gridManager,
+                    blockedGridIndices
                 );
-
-            pathCandidates.RemoveAll(path =>
-                path == null ||
-                path.Count <= 0 ||
-                path.Count > currentMoveReservationCapacity
-            );
 
             if (pathCandidates.Count <= 0)
                 continue;
@@ -240,13 +236,13 @@ public class PlayerSkillReservationController : MonoBehaviour
             selectedGridIndex,
             out List<List<Vector2Int>> pathCandidates))
         {
-            Vector2Int caster = gridManager.IndexToCoord(currentCasterGridIndex);
-            Vector2Int selected = gridManager.IndexToCoord(selectedGridIndex);
-            Vector2Int moveOffset = selected - caster;
-
-            pathCandidates = BuildMoveReservationPathCandidates(
-                moveOffset,
-                currentMoveDistancePerCommand
+            pathCandidates = GetReservableMovePathCandidates(
+                currentCasterGridIndex,
+                selectedGridIndex,
+                currentMoveDistancePerCommand,
+                currentMoveReservationCapacity,
+                gridManager,
+                BuildCurrentMoveBlockedGridIndices()
             );
         }
 
@@ -272,18 +268,7 @@ public class PlayerSkillReservationController : MonoBehaviour
             return;
         }
 
-        bool confirmed = ConfirmCommands(commands);
-        BattleDirection finalDirection = commands[commands.Count - 1].Direction;
-
-        if (confirmed && moveGhostPreview != null)
-        {
-            moveGhostPreview.Show(
-                currentUserRuntime.CharacterId,
-                currentCasterSprite,
-                selectedGridIndex,
-                finalDirection
-            );
-        }
+        ConfirmCommands(commands);
 
         KeepSkillListOpenForThisClick();
         ClearPreview();
@@ -383,6 +368,31 @@ public class PlayerSkillReservationController : MonoBehaviour
         return commands;
     }
 
+    private HashSet<int> BuildCurrentMoveBlockedGridIndices()
+    {
+        HashSet<int> blockedGridIndices = new();
+
+        if (gridManager == null)
+            return blockedGridIndices;
+
+        string selfCharacterId = currentUserRuntime != null
+            ? currentUserRuntime.CharacterId
+            : null;
+
+        for (int x = 0; x < gridManager.Width; x++)
+        {
+            for (int y = 0; y < gridManager.Height; y++)
+            {
+                int gridIndex = gridManager.CoordToIndex(new Vector2Int(x, y));
+
+                if (BattleOccupancyService.IsOccupiedByAnyUnit(gridIndex, selfCharacterId))
+                    blockedGridIndices.Add(gridIndex);
+            }
+        }
+
+        return blockedGridIndices;
+    }
+
     private void ApplyVisualMovePath(List<PlayerReservedCommand> commands)
     {
         if (commands == null || commands.Count <= 1 || gridManager == null)
@@ -398,6 +408,7 @@ public class PlayerSkillReservationController : MonoBehaviour
                 continue;
 
             Vector2Int visualOffset = current.MoveOffset;
+            List<Vector2Int> visualMoveSteps = null;
 
             if (i + 1 < commands.Count)
             {
@@ -406,6 +417,11 @@ public class PlayerSkillReservationController : MonoBehaviour
                 if (CanMergeToDiagonal(current.MoveOffset, next.MoveOffset))
                 {
                     visualOffset = current.MoveOffset + next.MoveOffset;
+                    visualMoveSteps = new List<Vector2Int>
+                    {
+                        current.MoveOffset,
+                        next.MoveOffset
+                    };
 
                     next.SetSkipMoveVisual(true);
 
@@ -420,10 +436,14 @@ public class PlayerSkillReservationController : MonoBehaviour
 
             int visualTargetGridIndex = gridManager.CoordToIndex(visualTargetCoord);
 
-            current.SetVisualMoveResult(
-                visualTargetGridIndex,
-                visualOffset
-            );
+            if (visualMoveSteps != null)
+            {
+                current.SetVisualMoveResult(
+                    visualTargetGridIndex,
+                    visualOffset,
+                    visualMoveSteps
+                );
+            }
 
             visualCurrentCoord = visualTargetCoord;
         }
@@ -514,6 +534,123 @@ public class PlayerSkillReservationController : MonoBehaviour
         AddAxisMoveOffsets(result, moveOffset.y, safeDistancePerCommand, false);
 
         return result;
+    }
+
+    public static List<List<Vector2Int>> GetReservableMovePathCandidates(
+        int casterGridIndex,
+        int targetGridIndex,
+        int moveDistancePerCommand,
+        int reservationCapacity,
+        GridManager gridManager,
+        ISet<int> blockedGridIndices = null)
+    {
+        List<List<Vector2Int>> result = new();
+
+        if (gridManager == null || reservationCapacity <= 0)
+            return result;
+
+        Vector2Int casterCoord = gridManager.IndexToCoord(casterGridIndex);
+        Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
+
+        if (!gridManager.IsValidCoord(casterCoord) ||
+            !gridManager.IsValidCoord(targetCoord))
+            return result;
+
+        Vector2Int moveOffset = targetCoord - casterCoord;
+        List<List<Vector2Int>> pathCandidates =
+            BuildMoveReservationPathCandidates(moveOffset, moveDistancePerCommand);
+
+        for (int i = 0; i < pathCandidates.Count; i++)
+        {
+            List<Vector2Int> path = pathCandidates[i];
+
+            if (path == null || path.Count <= 0)
+                continue;
+
+            if (path.Count > reservationCapacity)
+                continue;
+
+            if (!IsMovePathReservable(casterGridIndex, path, gridManager, blockedGridIndices))
+                continue;
+
+            result.Add(new List<Vector2Int>(path));
+        }
+
+        return result;
+    }
+
+    private static bool IsMovePathReservable(
+        int casterGridIndex,
+        List<Vector2Int> path,
+        GridManager gridManager,
+        ISet<int> blockedGridIndices)
+    {
+        if (gridManager == null || path == null || path.Count <= 0)
+            return false;
+
+        Vector2Int currentCoord = gridManager.IndexToCoord(casterGridIndex);
+
+        if (!gridManager.IsValidCoord(currentCoord))
+            return false;
+
+        for (int i = 0; i < path.Count; i++)
+        {
+            Vector2Int offset = path[i];
+
+            if (offset == Vector2Int.zero)
+                continue;
+
+            if (!TryApplyReservableMoveStep(
+                ref currentCoord,
+                offset,
+                gridManager,
+                blockedGridIndices))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool TryApplyReservableMoveStep(
+        ref Vector2Int currentCoord,
+        Vector2Int offset,
+        GridManager gridManager,
+        ISet<int> blockedGridIndices)
+    {
+        if (gridManager == null)
+            return false;
+
+        if (offset.x != 0 && offset.y != 0)
+            return false;
+
+        int stepCount = Mathf.Abs(offset.x) + Mathf.Abs(offset.y);
+
+        if (stepCount <= 0)
+            return true;
+
+        Vector2Int unitStep = Vector2Int.zero;
+
+        if (offset.x != 0)
+            unitStep.x = offset.x > 0 ? 1 : -1;
+        else
+            unitStep.y = offset.y > 0 ? 1 : -1;
+
+        for (int step = 0; step < stepCount; step++)
+        {
+            currentCoord += unitStep;
+
+            if (!gridManager.IsValidCoord(currentCoord))
+                return false;
+
+            int gridIndex = gridManager.CoordToIndex(currentCoord);
+
+            if (blockedGridIndices != null && blockedGridIndices.Contains(gridIndex))
+                return false;
+        }
+
+        return true;
     }
 
     private static void AddAxisMoveOffsets(

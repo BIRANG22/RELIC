@@ -10,6 +10,7 @@ public class BattleActionSimulationService
     private readonly Dictionary<string, int> playerPositions = new();
     private readonly Dictionary<string, BattleDirection> playerDirections = new();
     private readonly Dictionary<string, List<int>> monsterPositions = new();
+    private readonly Dictionary<string, List<int>> initialMonsterPositions = new();
 
     public BattleActionSimulationService(GridManager gridManager)
     {
@@ -92,18 +93,11 @@ public class BattleActionSimulationService
         playerDirections[command.CharacterId] = direction;
         command.SetMoveDirection(direction);
 
-        Vector2Int currentCoord = gridManager.IndexToCoord(currentGrid);
-        Vector2Int targetCoord = currentCoord + command.MoveOffset;
-
-        if (!gridManager.IsValidCoord(targetCoord))
-        {
-            command.SetSimulatedMoveResult(true, currentGrid, Vector2Int.zero);
-            return;
-        }
-
-        int targetGrid = gridManager.CoordToIndex(targetCoord);
-
-        if (IsOccupied(targetGrid, "P:" + command.CharacterId))
+        if (!TryGetPlayerMoveTargetGridIndex(
+            currentGrid,
+            command.MoveOffset,
+            "P:" + command.CharacterId,
+            out int targetGrid))
         {
             command.SetSimulatedMoveResult(true, currentGrid, Vector2Int.zero);
             return;
@@ -111,6 +105,61 @@ public class BattleActionSimulationService
 
         playerPositions[command.CharacterId] = targetGrid;
         command.SetSimulatedMoveResult(false, targetGrid, command.MoveOffset);
+    }
+
+    private bool TryGetPlayerMoveTargetGridIndex(
+        int currentGrid,
+        Vector2Int moveOffset,
+        string selfKey,
+        out int targetGrid)
+    {
+        targetGrid = currentGrid;
+
+        Vector2Int currentCoord = gridManager.IndexToCoord(currentGrid);
+
+        if (!gridManager.IsValidCoord(currentCoord))
+            return false;
+
+        if (moveOffset == Vector2Int.zero)
+            return true;
+
+        if (!TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.x, true, selfKey))
+            return false;
+
+        if (!TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.y, false, selfKey))
+            return false;
+
+        targetGrid = gridManager.CoordToIndex(currentCoord);
+        return true;
+    }
+
+    private bool TryApplyPlayerMoveAxisStep(
+        ref Vector2Int currentCoord,
+        int amount,
+        bool horizontal,
+        string selfKey)
+    {
+        int remaining = amount;
+
+        while (remaining != 0)
+        {
+            int step = remaining > 0 ? 1 : -1;
+            currentCoord += horizontal
+                ? new Vector2Int(step, 0)
+                : new Vector2Int(0, step);
+
+            if (!gridManager.IsValidCoord(currentCoord))
+                return false;
+
+            int gridIndex = gridManager.CoordToIndex(currentCoord);
+
+            if (IsOccupiedForPlayerMove(gridIndex, selfKey))
+                return false;
+
+            remaining -= step;
+        }
+
+        return true;
     }
 
     private void SimulatePlayerSkillRange(PlayerReservedCommand command, int casterGrid)
@@ -295,11 +344,32 @@ public class BattleActionSimulationService
         return false;
     }
 
+    private bool IsOccupiedForPlayerMove(int gridIndex, string selfKey)
+    {
+        foreach (var pair in playerPositions)
+        {
+            if ("P:" + pair.Key == selfKey)
+                continue;
+
+            if (pair.Value == gridIndex)
+                return true;
+        }
+
+        foreach (var pair in initialMonsterPositions)
+        {
+            if (pair.Value != null && pair.Value.Contains(gridIndex))
+                return true;
+        }
+
+        return false;
+    }
+
     private void CaptureCurrentPositions()
     {
         playerPositions.Clear();
         playerDirections.Clear();
         monsterPositions.Clear();
+        initialMonsterPositions.Clear();
 
         BattleCharacter[] players = Object.FindObjectsByType<BattleCharacter>(
             FindObjectsInactive.Exclude,
@@ -331,8 +401,12 @@ public class BattleActionSimulationService
             if (monsters[i].RuntimeData.IsDead)
                 continue;
 
+            List<int> occupiedGridIndices = new(monsters[i].OccupiedGridIndices);
+
             monsterPositions[monsters[i].RuntimeData.RuntimeId] =
-                new List<int>(monsters[i].OccupiedGridIndices);
+                new List<int>(occupiedGridIndices);
+            initialMonsterPositions[monsters[i].RuntimeData.RuntimeId] =
+                new List<int>(occupiedGridIndices);
         }
     }
 
