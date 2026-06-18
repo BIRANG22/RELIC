@@ -451,8 +451,22 @@ public class BattleActionRunner
         if (currentGridIndex < 0)
             yield break;
 
+        if (command.SkipMoveVisual)
+        {
+            int skipGridIndex = command.EffectiveMoveGridIndex;
+
+            if (skipGridIndex >= 0)
+            {
+                character.SetGridIndex(skipGridIndex);
+                UpdatePartyGridIndex(command.CharacterId, skipGridIndex);
+            }
+
+            hudService.RefreshHUDs();
+            yield break;
+        }
+
         Vector2Int currentCoord = gridManager.IndexToCoord(currentGridIndex);
-        Vector2Int moveOffset = command.EffectiveMoveOffset;
+        Vector2Int moveOffset = command.EffectiveVisualMoveOffset;
 
         if (moveOffset == Vector2Int.zero)
         {
@@ -491,8 +505,10 @@ public class BattleActionRunner
             0.25f
         );
 
-        character.SetGridIndex(targetGridIndex);
-        UpdatePartyGridIndex(command.CharacterId, targetGridIndex);
+        int dataGridIndex = command.EffectiveMoveGridIndex;
+
+        character.SetGridIndex(dataGridIndex);
+        UpdatePartyGridIndex(command.CharacterId, dataGridIndex);
         statusEffectService.ApplyBurnDamageToPlayerOnMove(character);
 
         hudService.RefreshHUDs();

@@ -6,6 +6,8 @@ using UnityEngine.UI;
 
 public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
 {
+    public const int MaxCommandCount = 3;
+
     [Header("Click")]
     [SerializeField] private bool autoBindButtonsInChildren = true;
 
@@ -16,6 +18,8 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
 
     public int SlotIndex => slotIndex;
     public IReadOnlyList<PlayerReservedCommand> Commands => commands;
+    public int CommandCount => commands.Count;
+    public int RemainingCommandCapacity => Mathf.Max(0, MaxCommandCount - commands.Count);
 
     public CharacterRuntimeData ReservedCharacter
     {
@@ -63,7 +67,7 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
 
     public bool CanAddCommand()
     {
-        return commands.Count < 3;
+        return RemainingCommandCapacity > 0;
     }
 
     public bool AddCommand(PlayerReservedCommand command)

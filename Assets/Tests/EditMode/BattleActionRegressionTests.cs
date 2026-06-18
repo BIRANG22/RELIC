@@ -208,4 +208,116 @@ public class BattleActionRegressionTests
         Object.DestroyImmediate(slot0.gameObject);
         Object.DestroyImmediate(slot1.gameObject);
     }
+
+    [Test]
+    public void MoveRangePreview_UsesRemainingSlotCapacityAsManhattanDistance()
+    {
+        GridManager gridManager = new GameObject("GridManagerMoveRange").AddComponent<GridManager>();
+
+        List<int> range = PlayerSkillReservationController.GetMoveRangeIndices(
+            12,
+            3,
+            gridManager
+        );
+
+        Object.DestroyImmediate(gridManager.gameObject);
+
+        Assert.That(range, Does.Contain(12));
+        Assert.That(range, Does.Contain(27));
+        Assert.That(range, Does.Contain(15));
+        Assert.That(range, Has.No.Member(28));
+    }
+
+    [Test]
+    public void MoveReservationCount_TreatsDiagonalAsHorizontalPlusVertical()
+    {
+        int count = PlayerSkillReservationController.GetRequiredMoveReservationCount(
+            new Vector2Int(1, 1),
+            1
+        );
+
+        Assert.That(count, Is.EqualTo(2));
+    }
+
+    [Test]
+    public void MoveReservationOffsets_SplitsDiagonalIntoCardinalSteps()
+    {
+        List<Vector2Int> offsets = PlayerSkillReservationController.BuildMoveReservationOffsets(
+            new Vector2Int(1, 1),
+            1
+        );
+
+        Assert.That(offsets, Is.EqualTo(new List<Vector2Int>
+        {
+            Vector2Int.right,
+            Vector2Int.up
+        }));
+    }
+
+    [Test]
+    public void MoveReservationOffsets_UsesMoveDistanceForStraightSteps()
+    {
+        List<Vector2Int> offsets = PlayerSkillReservationController.BuildMoveReservationOffsets(
+            new Vector2Int(2, 0),
+            2
+        );
+
+        Assert.That(offsets, Is.EqualTo(new List<Vector2Int>
+        {
+            new Vector2Int(2, 0)
+        }));
+    }
+
+    [Test]
+    public void MoveRangePreview_LevelTwoMoveAllowsStraightTwoButNotDiagonalInOneReservation()
+    {
+        GridManager gridManager = new GameObject("GridManagerLevelTwoMoveRange").AddComponent<GridManager>();
+
+        List<int> range = PlayerSkillReservationController.GetMoveRangeIndices(
+            12,
+            1,
+            2,
+            gridManager
+        );
+
+        Object.DestroyImmediate(gridManager.gameObject);
+
+        Assert.That(range, Does.Contain(22));
+        Assert.That(range, Does.Contain(14));
+        Assert.That(range, Has.No.Member(18));
+    }
+
+    [Test]
+    public void TimelineRemainingPlayerCommandCapacity_SubtractsExistingCommands()
+    {
+        GameObject timelineObject = new("TimelineCapacity");
+        BattleTimelineController timeline =
+            timelineObject.AddComponent<BattleTimelineController>();
+
+        ReserveTurnSlotUI slot0 = new GameObject("SlotCapacity0").AddComponent<ReserveTurnSlotUI>();
+        ReserveTurnSlotUI[] slots = { slot0 };
+
+        typeof(BattleTimelineController)
+            .GetField("reserveSlots", BindingFlags.Instance | BindingFlags.NonPublic)
+            .SetValue(timeline, slots);
+
+        CharacterRuntimeData runtime = new()
+        {
+            CharacterId = "Char_Test"
+        };
+
+        SkillMasterData skill = new()
+        {
+            SkillId = "S_Test"
+        };
+
+        Assert.That(slot0.AddCommand(new PlayerReservedCommand(runtime, skill)), Is.True);
+
+        int remainingCapacity = timeline.GetRemainingPlayerCommandCapacity(0);
+
+        Object.DestroyImmediate(timelineObject);
+        Object.DestroyImmediate(slot0.gameObject);
+
+        Assert.That(remainingCapacity, Is.EqualTo(2));
+    }
 }

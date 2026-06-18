@@ -32,6 +32,27 @@ public class PlayerReservedCommand
     public string SkillName => SkillData != null ? SkillData.Name : "";
 
     public Vector2Int MoveOffset { get; private set; } = Vector2Int.zero;
+
+    public Vector2Int VisualMoveOffset { get; private set; } = Vector2Int.zero;
+    public int VisualMoveGridIndex { get; private set; } = -1;
+
+    public Vector2Int EffectiveVisualMoveOffset =>
+        VisualMoveOffset != Vector2Int.zero ? VisualMoveOffset : EffectiveMoveOffset;
+
+    public int EffectiveVisualMoveGridIndex =>
+        VisualMoveGridIndex >= 0 ? VisualMoveGridIndex : EffectiveMoveGridIndex;
+
+    public bool SkipMoveVisual { get; private set; }
+
+    public void SetSkipMoveVisual(bool skip)
+    {
+        SkipMoveVisual = skip;
+    }
+    public void SetVisualMoveResult(int visualGridIndex, Vector2Int visualMoveOffset)
+    {
+        VisualMoveGridIndex = visualGridIndex;
+        VisualMoveOffset = visualMoveOffset;
+    }
     public PlayerReservedCommand(CharacterRuntimeData userRuntime, SkillMasterData skillData)
     {
         UserRuntime = userRuntime;
