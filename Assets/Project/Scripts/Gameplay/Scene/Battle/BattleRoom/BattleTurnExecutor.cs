@@ -238,6 +238,9 @@ public class BattleTurnExecutor : MonoBehaviour
 
             yield return runner.ApplyTurnEndEffectsRoutine();
 
+            ClearAllShield();
+            RefreshBattleHUDs();
+
             ClearTimeline();
             yield return null;
 
@@ -485,5 +488,56 @@ public class BattleTurnExecutor : MonoBehaviour
     {
         if (timelineController != null)
             timelineController.ClearAllReservations();
+    }
+
+    private void ClearAllShield()
+    {
+        BattleCharacter[] characters = FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            if (characters[i] == null || characters[i].RuntimeData == null)
+                continue;
+
+            characters[i].RuntimeData.CurrentShield = 0;
+        }
+
+        MonsterUnit[] monsters = FindObjectsByType<MonsterUnit>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < monsters.Length; i++)
+        {
+            if (monsters[i] == null || monsters[i].RuntimeData == null)
+                continue;
+
+            monsters[i].RuntimeData.CurrentShield = 0;
+        }
+    }
+
+    private void RefreshBattleHUDs()
+    {
+        if (roomLoader != null)
+        {
+            roomLoader.RefreshBattleHUDs();
+            return;
+        }
+
+        PlayerHUDSlot[] playerHUDs = FindObjectsByType<PlayerHUDSlot>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < playerHUDs.Length; i++)
+        {
+            if (playerHUDs[i] != null)
+                playerHUDs[i].Refresh();
+        }
+
+        MonsterUnit.HideAllTemporaryHUDs();
     }
 }
