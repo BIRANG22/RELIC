@@ -58,7 +58,11 @@ public static class SkillCostCalculator
 
             case ResourceCostType.AllCurrent:
                 payAmount = available;
-                return available >= Mathf.Max(1, costValue);
+                int minimum = BattleEquipmentEffectService.GetAllCurrentMinimumCost(
+                    caster,
+                    skill,
+                    costValue);
+                return available >= minimum;
 
             default:
                 return false;

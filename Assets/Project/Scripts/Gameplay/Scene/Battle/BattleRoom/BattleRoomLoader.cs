@@ -358,6 +358,7 @@ public class BattleRoomLoader : MonoBehaviour
 
         if (turnExecutor != null)
         {
+            turnExecutor.ResetBattleTurnState();
             turnExecutor.SetBattleInputReady(true);
             Debug.Log("[BattleRoomLoader] Battle input ready true after LoadBattle");
         }
@@ -432,9 +433,7 @@ public class BattleRoomLoader : MonoBehaviour
             if (!DataManager.Instance.CharacterDatabase.TryGet(characterId, out CharacterMasterData masterData))
                 continue;
 
-            runtimeData.CurrentStamina = Mathf.Max(0, masterData.MaxStamina);
-            runtimeData.CurrentResource = 0;
-            runtimeData.ClearReservedCosts();
+            BattleEquipmentEffectService.ApplyBattleStartEffects(runtimeData, masterData);
         }
     }
 
@@ -455,14 +454,16 @@ public class BattleRoomLoader : MonoBehaviour
             if (!DataManager.Instance.CharacterRuntimeStore.TryGet(characterId, out CharacterRuntimeData runtimeData))
                 continue;
 
-            if (!DataManager.Instance.CharacterDatabase.TryGet(characterId, out CharacterMasterData masterData))
-                continue;
+            DataManager.Instance.CharacterDatabase.TryGet(characterId, out CharacterMasterData masterData);
 
             int rechargeBonus = GetStatusStack(runtimeData.StatusEffects, "E_Recharge") * 2;
+            int maxStamina = runtimeData.MaxStamina > 0
+                ? runtimeData.MaxStamina
+                : masterData != null ? Mathf.Max(0, masterData.MaxStamina) : 0;
 
             runtimeData.CurrentStamina =
                 Mathf.Min(
-                    masterData.MaxStamina,
+                    maxStamina,
                     runtimeData.CurrentStamina + 4 + rechargeBonus
                 );
         }

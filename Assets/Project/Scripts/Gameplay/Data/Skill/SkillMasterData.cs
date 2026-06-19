@@ -92,6 +92,7 @@ namespace Relic.Gameplay.Data
         public ReferenceResource ReferenceResource;
         public TargetType Target;
         public SkillType SkillType;
+        public TimelineActionType TimelineNotation;
 
         // 엑셀 원본 문자열: 세미콜론 구분
         public string EffectIds;

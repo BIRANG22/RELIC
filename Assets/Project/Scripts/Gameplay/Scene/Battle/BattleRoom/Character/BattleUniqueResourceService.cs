@@ -148,13 +148,16 @@ public class BattleUniqueResourceService
             ? Mathf.Max(0, masterData.MaxResource)
             : 999;
 
+        int finalAmount =
+            BattleEquipmentEffectService.ModifyUniqueResourceGain(runtime, amount);
+
         runtime.CurrentResource =
-            Mathf.Min(maxResource, runtime.CurrentResource + Mathf.Max(0, amount));
+            Mathf.Min(maxResource, runtime.CurrentResource + finalAmount);
 
         RefreshPlayerHUDs();
 
         Debug.Log(
-            $"[UniqueResource] {runtime.CharacterId} +{amount} / " +
+            $"[UniqueResource] {runtime.CharacterId} +{finalAmount} / " +
             $"{runtime.CurrentResource}/{maxResource}"
         );
     }

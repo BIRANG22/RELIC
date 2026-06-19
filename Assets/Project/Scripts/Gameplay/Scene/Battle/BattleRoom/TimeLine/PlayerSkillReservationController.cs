@@ -215,7 +215,7 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         List<int> rangeIndices = BattleRangeCalculator.GetDirectionRangeIndices(
             currentCasterGridIndex,
-            currentSkillData.RangeId,
+            BattleEquipmentEffectService.GetEffectiveRangeId(currentUserRuntime, currentSkillData),
             direction,
             DataManager.Instance.RangeDatabase,
             gridManager
@@ -317,7 +317,10 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (DataManager.Instance == null || DataManager.Instance.RangeDatabase == null || currentSkillData == null)
             return 1;
 
-        if (!DataManager.Instance.RangeDatabase.TryGet(currentSkillData.RangeId, out SkillRangeData rangeData))
+        string rangeId =
+            BattleEquipmentEffectService.GetEffectiveRangeId(currentUserRuntime, currentSkillData);
+
+        if (!DataManager.Instance.RangeDatabase.TryGet(rangeId, out SkillRangeData rangeData))
             return 1;
 
         if (rangeData == null || rangeData.Positions == null)

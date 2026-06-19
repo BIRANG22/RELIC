@@ -166,12 +166,15 @@ public class BattleActionSimulationService
     {
         List<int> range = new();
         BattleDirection direction = GetPlayerDirection(command);
+        string rangeId = BattleEquipmentEffectService.GetEffectiveRangeId(
+            command.UserRuntime,
+            command.SkillData);
 
         if (command.SkillData.RangeType == RangeType.Direction)
         {
             range = BattleRangeCalculator.GetDirectionRangeIndices(
                 casterGrid,
-                command.SkillData.RangeId,
+                rangeId,
                 direction,
                 DataManager.Instance.RangeDatabase,
                 gridManager
@@ -184,7 +187,7 @@ public class BattleActionSimulationService
         {
             range = BattleRangeCalculator.GetSelectionRangeIndices(
                 casterGrid,
-                command.SkillData.RangeId,
+                rangeId,
                 DataManager.Instance.RangeDatabase,
                 gridManager
             );

@@ -128,8 +128,12 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
             portraitImage.enabled = portraitImage.sprite != null;
         }
 
-        int maxHp = boundMaster != null ? boundMaster.MaxHealth : Mathf.Max(1, boundRuntime.CurrentHealth);
-        int maxCost = boundMaster != null ? boundMaster.MaxStamina : Mathf.Max(1, boundRuntime.CurrentStamina);
+        int maxHp = boundRuntime.MaxHealth > 0
+            ? boundRuntime.MaxHealth
+            : boundMaster != null ? boundMaster.MaxHealth : Mathf.Max(1, boundRuntime.CurrentHealth);
+        int maxCost = boundRuntime.MaxStamina > 0
+            ? Mathf.Max(boundRuntime.MaxStamina, boundRuntime.PreviewStamina)
+            : boundMaster != null ? boundMaster.MaxStamina : Mathf.Max(1, boundRuntime.CurrentStamina);
         int maxResource = boundMaster != null ? boundMaster.MaxResource : Mathf.Max(1, boundRuntime.CurrentResource);
 
         RefreshBar(hpFill, hpValueText, boundRuntime.PreviewHealth, maxHp);

@@ -257,7 +257,7 @@ public class BattleTimelineBarUI : MonoBehaviour
         {
             rangeIndices = BattleRangeCalculator.GetDirectionRangeIndices(
                 casterGridIndex,
-                command.SkillData.RangeId,
+                BattleEquipmentEffectService.GetEffectiveRangeId(command.UserRuntime, command.SkillData),
                 command.Direction,
                 DataManager.Instance.RangeDatabase,
                 gridManager
@@ -267,7 +267,7 @@ public class BattleTimelineBarUI : MonoBehaviour
         {
             rangeIndices = BattleRangeCalculator.GetSelectionRangeIndices(
                 casterGridIndex,
-                command.SkillData.RangeId,
+                BattleEquipmentEffectService.GetEffectiveRangeId(command.UserRuntime, command.SkillData),
                 DataManager.Instance.RangeDatabase,
                 gridManager
             );

@@ -77,7 +77,7 @@ public class TimelineReservationHoverPreview : MonoBehaviour
         {
             return BattleRangeCalculator.GetDirectionRangeIndices(
                 casterGridIndex,
-                command.SkillData.RangeId,
+                BattleEquipmentEffectService.GetEffectiveRangeId(command.UserRuntime, command.SkillData),
                 command.Direction,
                 DataManager.Instance.RangeDatabase,
                 gridManager
@@ -88,7 +88,7 @@ public class TimelineReservationHoverPreview : MonoBehaviour
         {
             return BattleRangeCalculator.GetSelectionRangeIndices(
                 casterGridIndex,
-                command.SkillData.RangeId,
+                BattleEquipmentEffectService.GetEffectiveRangeId(command.UserRuntime, command.SkillData),
                 DataManager.Instance.RangeDatabase,
                 gridManager
             );
