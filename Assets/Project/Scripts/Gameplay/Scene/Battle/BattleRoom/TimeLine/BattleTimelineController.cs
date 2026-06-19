@@ -57,12 +57,24 @@ public class BattleTimelineController : MonoBehaviour
     [SerializeField] private float timelineSlotSlideDuration = 0.18f;
     [SerializeField] private bool useUnscaledTimeForTimelineSlotSlide = false;
 
+    [Header("End Button Hover Rotation")]
+    [SerializeField] private bool playEndButtonHoverRotation = true;
+    [SerializeField] private bool autoBindEndButtonHoverRotationTarget = true;
+    [SerializeField] private RectTransform endButtonHoverRotationTarget;
+    [SerializeField] private string endButtonHoverRotationTargetName = "EndButton";
+    [SerializeField] private float endButtonHoverRotationOffsetZ = -45f;
+    [SerializeField] private float endButtonHoverRotationDuration = 0.12f;
+    [SerializeField] private bool useUnscaledTimeForEndButtonHoverRotation = true;
+
     private int activeSlotIndex = -1;
     private CharacterRuntimeData selectedCharacter;
     private SkillMasterData selectedSkill;
     private Coroutine selectedSlotEffectRoutine;
     private Coroutine timelineSlotSlideRoutine;
+    private Coroutine endButtonHoverRotationRoutine;
     private bool isSlotSelectionLocked;
+    private bool isEndButtonHovering;
+    private float endButtonRotationBeforeHoverZ;
     private Vector2[] timelineSlotOriginalAnchoredPositions;
     private int timelineSlotSlideStepIndex;
 
@@ -78,6 +90,8 @@ public class BattleTimelineController : MonoBehaviour
         AutoFindSelectedSlotEffectIfNeeded();
         AutoBindTimelineSlotSlideTargetsIfNeeded();
         CaptureTimelineSlotOriginalPositionsIfNeeded();
+        AutoBindEndButtonHoverRotationTargetIfNeeded();
+        BindEndButtonHoverRotationEventsIfNeeded();
 
         if (turnExecutor == null)
             turnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
@@ -278,6 +292,171 @@ public class BattleTimelineController : MonoBehaviour
 
         yield return MoveTimelineSlotSlideTargetsToOriginalOneByOneRoutine();
         timelineSlotSlideStepIndex = 0;
+    }
+
+    private void AutoBindEndButtonHoverRotationTargetIfNeeded()
+    {
+        if (!autoBindEndButtonHoverRotationTarget)
+            return;
+
+        if (endButtonHoverRotationTarget != null)
+            return;
+
+        endButtonHoverRotationTarget = FindRectTransformByName(transform, endButtonHoverRotationTargetName);
+
+        if (endButtonHoverRotationTarget != null)
+            return;
+
+        Transform searchRoot = GetTimelineSearchRoot();
+        endButtonHoverRotationTarget = FindRectTransformByName(searchRoot, endButtonHoverRotationTargetName);
+
+        if (endButtonHoverRotationTarget != null)
+            return;
+
+        BattleTimelineBarUI foundTimelineBar = FindFirstObjectByType<BattleTimelineBarUI>(FindObjectsInactive.Include);
+
+        if (foundTimelineBar != null)
+            endButtonHoverRotationTarget = FindRectTransformByName(foundTimelineBar.transform, endButtonHoverRotationTargetName);
+    }
+
+    private RectTransform FindRectTransformByName(Transform root, string targetName)
+    {
+        if (root == null || string.IsNullOrEmpty(targetName))
+            return null;
+
+        Transform found = FindChildRecursive(root, targetName);
+
+        if (found == null)
+            return null;
+
+        return found.GetComponent<RectTransform>();
+    }
+
+    private void BindEndButtonHoverRotationEventsIfNeeded()
+    {
+        if (!playEndButtonHoverRotation)
+            return;
+
+        AutoBindEndButtonHoverRotationTargetIfNeeded();
+
+        if (endButtonHoverRotationTarget == null)
+            return;
+
+        EndButtonHoverRotationRelay relay = endButtonHoverRotationTarget.GetComponent<EndButtonHoverRotationRelay>();
+
+        if (relay == null)
+            relay = endButtonHoverRotationTarget.gameObject.AddComponent<EndButtonHoverRotationRelay>();
+
+        relay.Initialize(this);
+    }
+
+    private void OnEndButtonHoverEnter()
+    {
+        if (!playEndButtonHoverRotation)
+            return;
+
+        AutoBindEndButtonHoverRotationTargetIfNeeded();
+
+        if (endButtonHoverRotationTarget == null)
+            return;
+
+        if (isEndButtonHovering)
+            return;
+
+        isEndButtonHovering = true;
+        endButtonRotationBeforeHoverZ = GetTransformRotationZ(endButtonHoverRotationTarget);
+
+        float targetRotationZ = endButtonRotationBeforeHoverZ + endButtonHoverRotationOffsetZ;
+        PlayEndButtonHoverRotationTo(targetRotationZ);
+    }
+
+    private void OnEndButtonHoverExit()
+    {
+        if (!playEndButtonHoverRotation)
+            return;
+
+        AutoBindEndButtonHoverRotationTargetIfNeeded();
+
+        if (endButtonHoverRotationTarget == null)
+            return;
+
+        if (!isEndButtonHovering)
+            return;
+
+        isEndButtonHovering = false;
+        PlayEndButtonHoverRotationTo(endButtonRotationBeforeHoverZ);
+    }
+
+    private void PlayEndButtonHoverRotationTo(float targetRotationZ)
+    {
+        if (endButtonHoverRotationTarget == null)
+            return;
+
+        if (endButtonHoverRotationRoutine != null)
+            StopCoroutine(endButtonHoverRotationRoutine);
+
+        endButtonHoverRotationRoutine = StartCoroutine(
+            RotateEndButtonHoverToRoutine(targetRotationZ)
+        );
+    }
+
+    private IEnumerator RotateEndButtonHoverToRoutine(float targetRotationZ)
+    {
+        float duration = Mathf.Max(0.01f, endButtonHoverRotationDuration);
+        float elapsed = 0f;
+        float startRotationZ = GetTransformRotationZ(endButtonHoverRotationTarget);
+
+        while (elapsed < duration)
+        {
+            elapsed += useUnscaledTimeForEndButtonHoverRotation ? Time.unscaledDeltaTime : Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float easedT = 1f - Mathf.Pow(1f - t, 3f);
+            float z = Mathf.Lerp(startRotationZ, targetRotationZ, easedT);
+
+            SetTransformRotationZ(endButtonHoverRotationTarget, z);
+            yield return null;
+        }
+
+        SetTransformRotationZ(endButtonHoverRotationTarget, targetRotationZ);
+        endButtonHoverRotationRoutine = null;
+    }
+
+    private float GetTransformRotationZ(Transform target)
+    {
+        if (target == null)
+            return 0f;
+
+        return NormalizeAngle(target.localEulerAngles.z);
+    }
+
+    private void SetTransformRotationZ(Transform target, float zRotation)
+    {
+        if (target == null)
+            return;
+
+        Vector3 eulerAngles = target.localEulerAngles;
+        eulerAngles.z = zRotation;
+        target.localEulerAngles = eulerAngles;
+    }
+
+    private sealed class EndButtonHoverRotationRelay : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+    {
+        private BattleTimelineController owner;
+
+        public void Initialize(BattleTimelineController controller)
+        {
+            owner = controller;
+        }
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            owner?.OnEndButtonHoverEnter();
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            owner?.OnEndButtonHoverExit();
+        }
     }
 
     private void AutoFindSelectedSlotValueTextIfNeeded()
@@ -1729,7 +1908,8 @@ public class BattleTimelineController : MonoBehaviour
         simulator.Simulate(this);
     }
 
-    private void ShowBattleWarning(string message)    {
+    private void ShowBattleWarning(string message)
+    {
         BattleWarningUI.ShowMessage(message);
     }
 
