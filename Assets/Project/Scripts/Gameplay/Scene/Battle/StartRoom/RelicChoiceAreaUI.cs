@@ -262,7 +262,7 @@ public class RelicChoiceAreaUI : MonoBehaviour
 
         PlayAcquireSfx();
         RefreshRelicEquipPanel();
-        CompleteChoiceEvent();
+        CompleteChoiceEvent(relicId);
     }
 
     private bool GrantRelic(string relicId)
@@ -376,12 +376,10 @@ public class RelicChoiceAreaUI : MonoBehaviour
         RelicEquipPanelUI.RefreshAll();
     }
 
-    private void CompleteChoiceEvent()
+    private void CompleteChoiceEvent(string relicId)
     {
-        Close();
-
         if (startRoomController != null)
-            startRoomController.OnRelicChoiceFinished();
+            startRoomController.OnRelicChoiceFinished(relicId);
         else
             Debug.LogWarning("[RelicChoiceAreaUI] StartRoomController is not connected.");
     }
