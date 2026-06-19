@@ -23,6 +23,9 @@ public class RelicEquipPanelUI : MonoBehaviour
     private int selectedRelicSlotIndex = -1;
     private RelicIconUI selectedInventoryRelicIcon;
 
+    [SerializeField] private bool lockEditInBattleRoom = true;
+    [SerializeField] private string battleRoomLockMessage = "전투 중에는 유물을 변경할 수 없습니다.";
+
     private void Awake()
     {
         ResolveTooltipPanelOwner();
@@ -120,6 +123,9 @@ public class RelicEquipPanelUI : MonoBehaviour
 
     private void EquipRelic(string characterId, int relicSlotIndex, string relicId)
     {
+        if (CheckRelicEditLocked())
+            return;
+
         if (DataManager.Instance == null)
             return;
 
@@ -404,6 +410,9 @@ public class RelicEquipPanelUI : MonoBehaviour
 
     public void UnequipRelic(string characterId, int relicSlotIndex)
     {
+        if (CheckRelicEditLocked())
+            return;
+
         if (DataManager.Instance == null)
             return;
 
@@ -421,5 +430,25 @@ public class RelicEquipPanelUI : MonoBehaviour
             selectedRelicSlotIndex = -1;
             Refresh();
         }
+    }
+
+    private bool IsRelicEditLocked()
+    {
+        if (!lockEditInBattleRoom)
+            return false;
+
+        BattleRoomLoader battleRoomLoader =
+            Object.FindFirstObjectByType<BattleRoomLoader>(FindObjectsInactive.Include);
+
+        return battleRoomLoader != null && battleRoomLoader.gameObject.activeInHierarchy;
+    }
+
+    private bool CheckRelicEditLocked()
+    {
+        if (!IsRelicEditLocked())
+            return false;
+
+        BattleWarningUI.ShowMessage(battleRoomLockMessage);
+        return true;
     }
 }

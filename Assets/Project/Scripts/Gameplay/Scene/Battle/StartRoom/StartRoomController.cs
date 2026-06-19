@@ -1,5 +1,8 @@
 using UnityEngine;
 using Relic.Gameplay.Data;
+using System.Collections;
+using TMPro;
+using UnityEngine.UI;
 
 public class StartRoomController : MonoBehaviour
 {
@@ -17,6 +20,21 @@ public class StartRoomController : MonoBehaviour
     [Header("Room")]
     [SerializeField] private GameObject startRoomRoot;
     [SerializeField] private GameObject mapPanel;
+
+    [Header("Relic Acquire Animation")]
+    [SerializeField] private RectTransform relicFlyRoot;
+    [SerializeField] private Image relicFlyIconImage;
+    [SerializeField] private GameObject relicFlyHighlight;
+    [SerializeField] private RectTransform relicSettingButtonTarget;
+    [SerializeField] private TMP_Text relicSettingGuideText;
+
+    [SerializeField] private float relicScaleUpDuration = 0.18f;
+    [SerializeField] private float relicHoldDuration = 0.15f;
+    [SerializeField] private float relicFlyDuration = 0.45f;
+    [SerializeField] private float relicStartScale = 1f;
+    [SerializeField] private float relicBigScale = 1.35f;
+    [SerializeField] private float relicEndScale = 0.25f;
+    [SerializeField] private float relicCurveHeight = 180f;
 
     private bool isDialogPlaying;
     private bool isRelicChoiceOpened;
@@ -43,6 +61,15 @@ public class StartRoomController : MonoBehaviour
 
         if (relicChoiceArea != null)
             relicChoiceArea.Close();
+
+        if (relicFlyRoot != null)
+            relicFlyRoot.gameObject.SetActive(false);
+
+        if (relicFlyHighlight != null)
+            relicFlyHighlight.SetActive(false);
+
+        if (relicSettingGuideText != null)
+            relicSettingGuideText.gameObject.SetActive(false);
     }
 
     public void CompleteStartRoom()
@@ -131,25 +158,16 @@ public class StartRoomController : MonoBehaviour
             Debug.LogWarning("[StartRoomController] RelicChoiceAreaUI is not connected.");
     }
 
-    public void OnRelicChoiceFinished()
+    public void OnRelicChoiceFinished(string relicId)
     {
+        if (isRelicSelected)
+            return;
+
         isDialogPlaying = false;
         isRelicChoiceOpened = false;
         isRelicSelected = true;
 
-        CompleteCurrentNode();
-
-        BattleSceneController sceneController =
-            Object.FindFirstObjectByType<BattleSceneController>(FindObjectsInactive.Include);
-
-        if (sceneController != null)
-        {
-            sceneController.ReturnToMap();
-        }
-        else
-        {
-            Debug.LogWarning("[StartRoomController] BattleSceneController 없음");
-        }
+        StartCoroutine(PlayRelicAcquireRoutine(relicId));
     }
 
     private void CompleteCurrentNode()
@@ -175,5 +193,168 @@ public class StartRoomController : MonoBehaviour
         Debug.Log(
             $"[StartRoomController] Complete Node / Node:{runtime.CurrentNodeIndex} / Map:{runtime.CurrentMapId}"
         );
+    }
+
+    private IEnumerator PlayRelicAcquireRoutine(string relicId)
+    {
+        if (relicChoiceArea != null)
+            relicChoiceArea.Close();
+
+        Sprite relicSprite = GetRelicSprite(relicId);
+
+        if (relicFlyIconImage != null)
+        {
+            relicFlyIconImage.sprite = relicSprite;
+            relicFlyIconImage.enabled = relicSprite != null;
+        }
+
+        if (relicFlyRoot != null)
+        {
+            relicFlyRoot.gameObject.SetActive(true);
+            relicFlyRoot.localScale = Vector3.one * relicStartScale;
+        }
+
+        if (relicFlyHighlight != null)
+            relicFlyHighlight.SetActive(true);
+
+        yield return ScaleRelicRoutine(relicStartScale, relicBigScale, relicScaleUpDuration);
+        yield return new WaitForSeconds(relicHoldDuration);
+
+        if (relicFlyHighlight != null)
+            relicFlyHighlight.SetActive(false);
+
+        yield return FlyRelicToSettingButtonRoutine();
+
+        if (relicFlyRoot != null)
+            relicFlyRoot.gameObject.SetActive(false);
+
+        if (relicSettingGuideText != null)
+            relicSettingGuideText.gameObject.SetActive(true);
+
+        CompleteCurrentNode();
+
+        BattleSceneController sceneController =
+            Object.FindFirstObjectByType<BattleSceneController>(FindObjectsInactive.Include);
+
+        if (sceneController != null)
+            sceneController.ReturnToMap();
+        else
+            Debug.LogWarning("[StartRoomController] BattleSceneController 없음");
+    }
+
+    public void HideRelicSettingGuideText()
+    {
+        if (relicSettingGuideText != null)
+            relicSettingGuideText.gameObject.SetActive(false);
+    }
+
+    private Sprite GetRelicSprite(string relicId)
+    {
+        if (string.IsNullOrWhiteSpace(relicId))
+            return null;
+
+        if (DataManager.Instance == null)
+            return null;
+
+        if (DataManager.Instance.RelicIconDatabase == null)
+            return null;
+
+        if (!DataManager.Instance.RelicIconDatabase.TryGetIcon(relicId, out Sprite icon))
+            return null;
+
+        return icon;
+    }
+
+    private IEnumerator ScaleRelicRoutine(float from, float to, float duration)
+    {
+        if (relicFlyRoot == null)
+            yield break;
+
+        float elapsed = 0f;
+        float safeDuration = Mathf.Max(0.01f, duration);
+
+        while (elapsed < safeDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / safeDuration);
+            float scale = Mathf.Lerp(from, to, EaseOutCubic(t));
+            relicFlyRoot.localScale = Vector3.one * scale;
+            yield return null;
+        }
+
+        relicFlyRoot.localScale = Vector3.one * to;
+    }
+
+    private IEnumerator FlyRelicToSettingButtonRoutine()
+    {
+        if (relicFlyRoot == null || relicSettingButtonTarget == null)
+            yield break;
+
+        Vector2 start = relicFlyRoot.anchoredPosition;
+        Vector2 end = GetTargetLocalPosition(relicFlyRoot, relicSettingButtonTarget);
+        Vector2 control = (start + end) * 0.5f + Vector2.up * relicCurveHeight;
+
+        float elapsed = 0f;
+        float safeDuration = Mathf.Max(0.01f, relicFlyDuration);
+
+        while (elapsed < safeDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / safeDuration);
+            float eased = EaseInOutCubic(t);
+
+            Vector2 p1 = Vector2.Lerp(start, control, eased);
+            Vector2 p2 = Vector2.Lerp(control, end, eased);
+
+            relicFlyRoot.anchoredPosition = Vector2.Lerp(p1, p2, eased);
+            relicFlyRoot.localScale = Vector3.one * Mathf.Lerp(relicBigScale, relicEndScale, eased);
+
+            yield return null;
+        }
+
+        relicFlyRoot.anchoredPosition = end;
+        relicFlyRoot.localScale = Vector3.one * relicEndScale;
+    }
+
+    private Vector2 GetTargetLocalPosition(RectTransform movingRect, RectTransform targetRect)
+    {
+        RectTransform parentRect = movingRect.parent as RectTransform;
+
+        if (parentRect == null || targetRect == null)
+            return movingRect.anchoredPosition;
+
+        Canvas canvas = movingRect.GetComponentInParent<Canvas>();
+        Camera uiCamera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? canvas.worldCamera
+            : null;
+
+        Vector3[] corners = new Vector3[4];
+        targetRect.GetWorldCorners(corners);
+
+        Vector3 worldCenter = (corners[0] + corners[2]) * 0.5f;
+        Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(uiCamera, worldCenter);
+
+        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            parentRect,
+            screenPoint,
+            uiCamera,
+            out Vector2 localPoint))
+        {
+            return localPoint;
+        }
+
+        return movingRect.anchoredPosition;
+    }
+
+    private float EaseOutCubic(float t)
+    {
+        return 1f - Mathf.Pow(1f - t, 3f);
+    }
+
+    private float EaseInOutCubic(float t)
+    {
+        return t < 0.5f
+            ? 4f * t * t * t
+            : 1f - Mathf.Pow(-2f * t + 2f, 3f) * 0.5f;
     }
 }
