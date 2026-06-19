@@ -26,15 +26,24 @@ public class BattlePassiveSkillService
         SkillMasterData passiveSkill = GetPassiveSkill(runtime);
 
         if (passiveSkill == null)
+        {
+            BattleEquipmentEffectService.ApplyPassiveExtras(runtime);
             return;
+        }
 
         int stack = CalculatePassiveStack(runtime, passiveSkill);
 
         if (stack <= 0)
+        {
+            BattleEquipmentEffectService.ApplyPassiveExtras(runtime);
             return;
+        }
 
         if (string.IsNullOrWhiteSpace(passiveSkill.EffectIds))
+        {
+            BattleEquipmentEffectService.ApplyPassiveExtras(runtime);
             return;
+        }
 
         string[] effectIds = passiveSkill.EffectIds.Split(';');
 
@@ -47,6 +56,8 @@ public class BattlePassiveSkillService
 
             ApplyPassiveEffect(runtime, passiveSkill, effectId, stack);
         }
+
+        BattleEquipmentEffectService.ApplyPassiveExtras(runtime);
     }
 
     private void ApplyPassiveEffect(
@@ -57,15 +68,23 @@ public class BattlePassiveSkillService
     {
         if (effectId == "E_Armor")
         {
-            runtime.CurrentShield += stack;
+            int finalStack =
+                BattleEquipmentEffectService.ModifyPassiveEffectStack(runtime, effectId, stack);
+
+            runtime.CurrentShield += finalStack;
 
             Debug.Log(
                 $"[Passive] Armor / Character:{runtime.CharacterId} / " +
-                $"Skill:{passiveSkill.SkillId} / Shield:+{stack} / CurrentShield:{runtime.CurrentShield}"
+                $"Skill:{passiveSkill.SkillId} / Shield:+{finalStack} / CurrentShield:{runtime.CurrentShield}"
             );
 
             return;
         }
+
+        stack = BattleEquipmentEffectService.ModifyPassiveEffectStack(runtime, effectId, stack);
+
+        if (stack <= 0)
+            return;
 
         StatusEffectRuntimeData status = new StatusEffectRuntimeData
         {

@@ -876,13 +876,16 @@ public class BattleActionRunner
             ? attacker.RuntimeData.Direction
             : command.Direction;
 
+        string rangeId =
+            BattleEquipmentEffectService.GetEffectiveRangeId(attacker.RuntimeData, command.SkillData);
+
         List<int> rangeGridIndices = new();
 
         if (command.SkillData.RangeType == RangeType.Direction)
         {
             rangeGridIndices = BattleRangeCalculator.GetDirectionRangeIndices(
                 attacker.CurrentGridIndex,
-                command.SkillData.RangeId,
+                rangeId,
                 direction,
                 DataManager.Instance.RangeDatabase,
                 gridManager
@@ -901,7 +904,7 @@ public class BattleActionRunner
         {
             rangeGridIndices = BattleRangeCalculator.GetSelectionRangeIndices(
                 attacker.CurrentGridIndex,
-                command.SkillData.RangeId,
+                rangeId,
                 DataManager.Instance.RangeDatabase,
                 gridManager
             );
@@ -949,7 +952,7 @@ public class BattleActionRunner
 
                 EffectId = entry.EffectId,
                 Value = GetPlayerEffectValue(command, entry),
-                Count = entry.CountAmount
+                Count = GetPlayerEffectCount(command, entry)
             };
 
             ExecutePlayerEffectSafely(entry.EffectId, context, command.SkillData.SkillId);
@@ -988,7 +991,7 @@ public class BattleActionRunner
 
                 EffectId = entry.EffectId,
                 Value = GetPlayerEffectValue(command, entry),
-                Count = entry.CountAmount
+                Count = GetPlayerEffectCount(command, entry)
             };
 
             ExecutePlayerEffectSafely(entry.EffectId, context, command.SkillData.SkillId);
@@ -1020,12 +1023,36 @@ public class BattleActionRunner
             return 1;
 
         if (entry.EffectId == "E_Strike")
-            return damageService.GetPlayerDamage(command);
+            return BattleEquipmentEffectService.ModifyPlayerEffectValue(
+                command.UserRuntime,
+                command,
+                entry,
+                damageService.GetPlayerDamage(command));
 
         if (entry.EffectId == "E_Pierce")
-            return damageService.GetPlayerDamage(command);
+            return BattleEquipmentEffectService.ModifyPlayerEffectValue(
+                command.UserRuntime,
+                command,
+                entry,
+                damageService.GetPlayerDamage(command));
 
-        return entry.ValueAmount;
+        return BattleEquipmentEffectService.ModifyPlayerEffectValue(
+            command.UserRuntime,
+            command,
+            entry,
+            entry.ValueAmount);
+    }
+
+    private int GetPlayerEffectCount(PlayerReservedCommand command, SkillEffectEntry entry)
+    {
+        if (command == null || entry == null)
+            return 1;
+
+        return BattleEquipmentEffectService.ModifyPlayerEffectCount(
+            command.UserRuntime,
+            command,
+            entry,
+            entry.CountAmount);
     }
     private IEnumerator ExecuteMonsterCommand(MonsterReservedCommand command)
     {

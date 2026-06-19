@@ -1081,6 +1081,172 @@ public class BattleActionRegressionTests
         Assert.That(BattleActionRunner.MoveAnimationDuration, Is.LessThan(0.25f));
     }
 
+    [Test]
+    public void EquipmentBattleStart_AppliesRuneAndRelicStatBonuses()
+    {
+        CharacterRuntimeData runtime = new()
+        {
+            CharacterId = "Char_01",
+            MaxHealth = 114,
+            CurrentHealth = 114,
+            EquippedRuneIds = new[] { "Rune_01", "Rune_16", "Rune_20", "Rune_25" },
+            EquippedRelicIds = new[] { "Relic_01", "Relic_08", "Relic_09", "Relic_10" }
+        };
+
+        CharacterMasterData master = new()
+        {
+            CharacterId = "Char_01",
+            MaxHealth = 114,
+            MaxStamina = 8,
+            MaxResource = 3,
+            MoveValue = 12
+        };
+
+        BattleEquipmentEffectService.ApplyBattleStartEffects(runtime, master);
+
+        Assert.That(runtime.MaxHealth, Is.EqualTo(125));
+        Assert.That(runtime.CurrentHealth, Is.EqualTo(125));
+        Assert.That(runtime.MaxStamina, Is.EqualTo(11));
+        Assert.That(runtime.CurrentStamina, Is.EqualTo(13));
+        Assert.That(runtime.CurrentResource, Is.EqualTo(3));
+        Assert.That(runtime.CurrentMoveLevel, Is.EqualTo(23));
+    }
+
+    [Test]
+    public void AllCurrentUniqueResourceRune_LowersMinimumCostToOne()
+    {
+        CharacterRuntimeData runtime = new()
+        {
+            CharacterId = "Char_01",
+            CurrentResource = 1,
+            EquippedRuneIds = new[] { "Rune_05" }
+        };
+
+        SkillMasterData skill = new()
+        {
+            SkillId = "S_AllCurrent_Test",
+            ReferenceResource = ReferenceResource.UniqueResource,
+            ResourceCostType = ResourceCostType.AllCurrent,
+            ResourceCostValue = 2
+        };
+
+        bool canPay = SkillCostCalculator.TryGetPreviewPayAmount(
+            runtime,
+            skill,
+            out int payAmount);
+
+        Assert.That(canPay, Is.True);
+        Assert.That(payAmount, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void EquipmentEffectValue_AppliesDamageArmorAndSlotBonuses()
+    {
+        CharacterRuntimeData runtime = new()
+        {
+            CharacterId = "Char_02",
+            EquippedRuneIds = new[] { "Rune_09" },
+            EquippedRelicIds = new[] { "Relic_03" }
+        };
+
+        SkillMasterData attackSkill = new()
+        {
+            SkillId = "S_Attack_Test",
+            SkillType = SkillType.Attack
+        };
+
+        PlayerReservedCommand command = new(runtime, attackSkill);
+        command.SetTimelineSlotIndex(4);
+
+        SkillEffectEntry strike = new()
+        {
+            EffectId = "E_Strike",
+            ValueAmount = 5,
+            CountAmount = 1
+        };
+
+        int value = BattleEquipmentEffectService.ModifyPlayerEffectValue(
+            runtime,
+            command,
+            strike,
+            5);
+
+        Assert.That(value, Is.EqualTo(8));
+    }
+
+    [Test]
+    public void EquipmentRangeRune_ExpandsChar03FrontFourToFrontSix()
+    {
+        CharacterRuntimeData runtime = new()
+        {
+            CharacterId = "Char_03",
+            EquippedRuneIds = new[] { "Rune_14" }
+        };
+
+        SkillMasterData skill = new()
+        {
+            RangeId = "Range_21"
+        };
+
+        string rangeId = BattleEquipmentEffectService.GetEffectiveRangeId(runtime, skill);
+
+        Assert.That(rangeId, Is.EqualTo("Range_18"));
+    }
+
+    [Test]
+    public void PlayerReservedCommand_CostModifiersCanResetToBaseCost()
+    {
+        CharacterRuntimeData runtime = new()
+        {
+            CharacterId = "Char_Test",
+            CurrentStamina = 3,
+            EquippedRuneIds = new[] { "Rune_24" }
+        };
+
+        SkillMasterData moveSkill = new()
+        {
+            SkillId = "S_Move_Test",
+            Category = Category.Move,
+            ReferenceResource = ReferenceResource.Stamina,
+            ResourceCostType = ResourceCostType.Fixed,
+            ResourceCostValue = 1
+        };
+
+        PlayerReservedCommand command = new(runtime, moveSkill);
+
+        BattleEquipmentEffectService.ApplyReservationCostModifiers(
+            command,
+            0,
+            true,
+            false);
+
+        Assert.That(command.StaminaCost, Is.EqualTo(0));
+
+        command.ResetCostsToBase();
+
+        Assert.That(command.StaminaCost, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void Relic06_AppliesArmorOnlyAtSecondPlayerTurnStart()
+    {
+        CharacterRuntimeData runtime = new()
+        {
+            CharacterId = "Char_Test",
+            CurrentShield = 0,
+            EquippedRelicIds = new[] { "Relic_06" }
+        };
+
+        BattleEquipmentEffectService.ApplyPlayerTurnStartEffects(runtime, 1);
+        Assert.That(runtime.CurrentShield, Is.EqualTo(0));
+
+        BattleEquipmentEffectService.ApplyPlayerTurnStartEffects(runtime, 2);
+        Assert.That(runtime.CurrentShield, Is.EqualTo(10));
+
+        BattleEquipmentEffectService.ApplyPlayerTurnStartEffects(runtime, 3);
+        Assert.That(runtime.CurrentShield, Is.EqualTo(10));
+    }
+
     private static MonsterUnit CreateMonsterWithHud(
         string name,
         string runtimeId,

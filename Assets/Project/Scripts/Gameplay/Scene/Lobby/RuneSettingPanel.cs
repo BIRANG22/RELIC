@@ -761,8 +761,7 @@ public class RuneSettingPanel : MonoBehaviour
         if (currentRuntimeData == null)
             return null;
 
-        if (currentRuntimeData.EquippedRuneIds == null)
-            currentRuntimeData.EquippedRuneIds = new string[4];
+        EnsureRuntimeRuneSlots();
 
         if (slotIndex < 0 || slotIndex >= currentRuntimeData.EquippedRuneIds.Length)
             return null;
@@ -775,13 +774,40 @@ public class RuneSettingPanel : MonoBehaviour
         if (currentRuntimeData == null)
             return;
 
-        if (currentRuntimeData.EquippedRuneIds == null)
-            currentRuntimeData.EquippedRuneIds = new string[4];
+        EnsureRuntimeRuneSlots();
 
         if (slotIndex < 0 || slotIndex >= currentRuntimeData.EquippedRuneIds.Length)
             return;
 
         currentRuntimeData.EquippedRuneIds[slotIndex] = runeId;
+    }
+
+    private void EnsureRuntimeRuneSlots()
+    {
+        if (currentRuntimeData == null)
+            return;
+
+        int requiredLength = Mathf.Max(12, runeSlotButtons != null ? runeSlotButtons.Length : 0);
+
+        if (currentRuntimeData.EquippedRuneIds != null &&
+            currentRuntimeData.EquippedRuneIds.Length >= requiredLength)
+        {
+            return;
+        }
+
+        string[] expanded = new string[requiredLength];
+
+        if (currentRuntimeData.EquippedRuneIds != null)
+        {
+            int copyLength = Mathf.Min(
+                currentRuntimeData.EquippedRuneIds.Length,
+                expanded.Length);
+
+            for (int i = 0; i < copyLength; i++)
+                expanded[i] = currentRuntimeData.EquippedRuneIds[i];
+        }
+
+        currentRuntimeData.EquippedRuneIds = expanded;
     }
 
     private void ClearRuneSlots()

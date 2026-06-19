@@ -19,6 +19,15 @@ public class PlayerReservedCommand
     public int MoveCost { get; private set; }
     public int ShieldCost { get; private set; }
 
+    public int BaseHealthCost { get; private set; }
+    public int BaseStaminaCost { get; private set; }
+    public int BaseResourceCost { get; private set; }
+    public int BaseMoveCost { get; private set; }
+    public int BaseShieldCost { get; private set; }
+
+    public int TimelineSlotIndex { get; private set; } = -1;
+    public bool ReservationCostModifiersApplied { get; private set; }
+
     public BattleDirection Direction { get; private set; } = BattleDirection.Right;
     public int SelectedGridIndex { get; private set; } = -1;
 
@@ -119,6 +128,40 @@ public class PlayerReservedCommand
         Direction = direction;
     }
 
+    public void SetTimelineSlotIndex(int slotIndex)
+    {
+        TimelineSlotIndex = slotIndex;
+    }
+
+    public void MarkReservationCostModifiersApplied()
+    {
+        ReservationCostModifiersApplied = true;
+    }
+
+    public void ResetCostsToBase()
+    {
+        HealthCost = BaseHealthCost;
+        StaminaCost = BaseStaminaCost;
+        ResourceCost = BaseResourceCost;
+        MoveCost = BaseMoveCost;
+        ShieldCost = BaseShieldCost;
+        ReservationCostModifiersApplied = false;
+    }
+
+    public void SetCosts(
+        int healthCost,
+        int staminaCost,
+        int resourceCost,
+        int moveCost,
+        int shieldCost)
+    {
+        HealthCost = Mathf.Max(0, healthCost);
+        StaminaCost = Mathf.Max(0, staminaCost);
+        ResourceCost = Mathf.Max(0, resourceCost);
+        MoveCost = Mathf.Max(0, moveCost);
+        ShieldCost = Mathf.Max(0, shieldCost);
+    }
+
     public void SetSimulatedRangeResult(
         List<int> rangeGridIndices,
         List<int> targetGridIndices)
@@ -177,6 +220,11 @@ public class PlayerReservedCommand
         ResourceCost = 0;
         MoveCost = 0;
         ShieldCost = 0;
+        BaseHealthCost = 0;
+        BaseStaminaCost = 0;
+        BaseResourceCost = 0;
+        BaseMoveCost = 0;
+        BaseShieldCost = 0;
 
         if (skillData == null)
             return;
@@ -201,6 +249,12 @@ public class PlayerReservedCommand
                 MoveCost = cost;
                 break;
         }
+
+        BaseHealthCost = HealthCost;
+        BaseStaminaCost = StaminaCost;
+        BaseResourceCost = ResourceCost;
+        BaseMoveCost = MoveCost;
+        BaseShieldCost = ShieldCost;
     }
 
     private int GetCostValue(SkillMasterData skillData)

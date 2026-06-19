@@ -39,6 +39,7 @@ namespace Relic.Gameplay.Data
         public string[] EquippedSkillIds = new string[4];
         public string[] EquippedRuneIds = new string[12];
         public string[] EquippedRelicIds = new string[5];
+        public List<string> AppliedBattleEquipmentEffectIds = new();
 
         public bool IsUnlocked;
 

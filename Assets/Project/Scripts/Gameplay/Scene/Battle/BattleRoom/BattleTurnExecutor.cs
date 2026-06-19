@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -41,6 +42,7 @@ public class BattleTurnExecutor : MonoBehaviour
     private bool isMonsterPlanReady;
     private bool isPlayerInputReady;
     private bool isExecuting;
+    private int playerTurnNumber = 1;
 
     private readonly BattleUniqueResourceService uniqueResourceService = new();
     private readonly BattlePassiveSkillService passiveSkillService = new();
@@ -66,8 +68,17 @@ public class BattleTurnExecutor : MonoBehaviour
     {
         isMonsterPlanReady = ready;
         isPlayerInputReady = ready;
+
+        if (ready)
+            ApplyPlayerTurnStartEquipmentEffects();
+
         RefreshEndTurnButton();
         RefreshBattlePresentationState();
+    }
+
+    public void ResetBattleTurnState()
+    {
+        playerTurnNumber = 1;
     }
 
     private void Update()
@@ -237,6 +248,8 @@ public class BattleTurnExecutor : MonoBehaviour
                 yield break;
             }
 
+            playerTurnNumber++;
+
             if (timelineController != null)
                 yield return timelineController.ResetTimelineSlotsToOriginalPositionRoutine();
 
@@ -305,6 +318,37 @@ public class BattleTurnExecutor : MonoBehaviour
             gridManager.SetGridVisible(isReservationState);
 
         MonsterUnit.SetAllReservationVisualState(isReservationState);
+    }
+
+    private void ApplyPlayerTurnStartEquipmentEffects()
+    {
+        if (DataManager.Instance == null ||
+            DataManager.Instance.PartyRuntimeStore == null ||
+            DataManager.Instance.CharacterRuntimeStore == null)
+        {
+            return;
+        }
+
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+
+        for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
+        {
+            string characterId = partyStore.GetCharacterId(i);
+
+            if (string.IsNullOrWhiteSpace(characterId))
+                continue;
+
+            if (!DataManager.Instance.CharacterRuntimeStore.TryGet(
+                characterId,
+                out CharacterRuntimeData runtime))
+            {
+                continue;
+            }
+
+            BattleEquipmentEffectService.ApplyPlayerTurnStartEffects(
+                runtime,
+                playerTurnNumber);
+        }
     }
 
     private IEnumerator ShowBattleProgressIntroTextRoutineSafe()

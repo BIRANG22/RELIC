@@ -804,6 +804,8 @@ public class BattleTimelineController : MonoBehaviour
         PlayerReservedCommand costCheckCommand =
             new PlayerReservedCommand(selectedCharacter, selectedSkill);
 
+        PrepareCommandForReservation(activeSlotIndex, costCheckCommand);
+
         string blockReason = GetReserveBlockReason(costCheckCommand);
         if (!string.IsNullOrEmpty(blockReason))
         {
@@ -890,6 +892,8 @@ public class BattleTimelineController : MonoBehaviour
             return false;
         }
 
+        PrepareCommandForReservation(slotIndex, command);
+
         string blockReason = GetReserveBlockReason(command);
         if (!string.IsNullOrEmpty(blockReason))
         {
@@ -919,11 +923,7 @@ public class BattleTimelineController : MonoBehaviour
             return false;
         }
 
-        command.UserRuntime.AddReservedHealth(command.HealthCost);
-        command.UserRuntime.AddReservedStamina(command.StaminaCost);
-        command.UserRuntime.AddReservedResource(command.ResourceCost);
-        command.UserRuntime.AddReservedMove(command.MoveCost);
-        command.UserRuntime.AddReservedShield(command.ShieldCost);
+        RecalculateAllReservedCosts();
 
         RefreshReservationSimulation();
         RefreshTimeline();
@@ -1045,6 +1045,152 @@ public class BattleTimelineController : MonoBehaviour
         return GetPreviewGridIndexBeforeCommand(runtimeData, safeSlotIndex, int.MaxValue);
     }
 
+    private void PrepareCommandForReservation(int slotIndex, PlayerReservedCommand command)
+    {
+        if (command == null)
+            return;
+
+        bool isFirstMoveCommand =
+            BattleEquipmentEffectService.IsMoveCommand(command) &&
+            !HasEarlierMoveCommand(command.UserRuntime, slotIndex);
+
+        bool isLastTimelineSlot =
+            reserveSlots != null &&
+            slotIndex == reserveSlots.Length - 1;
+
+        BattleEquipmentEffectService.ApplyReservationCostModifiers(
+            command,
+            slotIndex,
+            isFirstMoveCommand,
+            isLastTimelineSlot);
+    }
+
+    private bool HasEarlierMoveCommand(CharacterRuntimeData runtime, int targetSlotIndex)
+    {
+        if (runtime == null || reserveSlots == null || reserveSlots.Length <= 0)
+            return false;
+
+        int safeTargetSlotIndex = Mathf.Clamp(targetSlotIndex, 0, reserveSlots.Length - 1);
+
+        for (int slotIndex = 0; slotIndex <= safeTargetSlotIndex; slotIndex++)
+        {
+            ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+
+            if (slot == null || slot.Commands == null)
+                continue;
+
+            for (int i = 0; i < slot.Commands.Count; i++)
+            {
+                PlayerReservedCommand command = slot.Commands[i];
+
+                if (command == null || command.UserRuntime == null)
+                    continue;
+
+                if (command.UserRuntime.CharacterId != runtime.CharacterId)
+                    continue;
+
+                if (BattleEquipmentEffectService.IsMoveCommand(command))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void RecalculateAllReservedCosts()
+    {
+        List<CharacterRuntimeData> runtimes = CollectReservedRuntimes();
+
+        for (int i = 0; i < runtimes.Count; i++)
+            runtimes[i].ClearReservedCosts();
+
+        if (reserveSlots == null || reserveSlots.Length <= 0)
+            return;
+
+        HashSet<string> firstMoveAppliedCharacterIds = new();
+
+        for (int slotIndex = 0; slotIndex < reserveSlots.Length; slotIndex++)
+        {
+            ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+
+            if (slot == null || slot.Commands == null)
+                continue;
+
+            bool isLastTimelineSlot = slotIndex == reserveSlots.Length - 1;
+
+            for (int i = 0; i < slot.Commands.Count; i++)
+            {
+                PlayerReservedCommand command = slot.Commands[i];
+
+                if (command == null || command.UserRuntime == null)
+                    continue;
+
+                bool isMoveCommand = BattleEquipmentEffectService.IsMoveCommand(command);
+                bool isFirstMoveCommand =
+                    isMoveCommand &&
+                    !firstMoveAppliedCharacterIds.Contains(command.CharacterId);
+
+                BattleEquipmentEffectService.ApplyReservationCostModifiers(
+                    command,
+                    slotIndex,
+                    isFirstMoveCommand,
+                    isLastTimelineSlot);
+
+                AddReservedCosts(command);
+
+                if (isMoveCommand && !firstMoveAppliedCharacterIds.Contains(command.CharacterId))
+                    firstMoveAppliedCharacterIds.Add(command.CharacterId);
+            }
+        }
+    }
+
+    private List<CharacterRuntimeData> CollectReservedRuntimes()
+    {
+        List<CharacterRuntimeData> runtimes = new();
+
+        if (reserveSlots == null)
+            return runtimes;
+
+        for (int slotIndex = 0; slotIndex < reserveSlots.Length; slotIndex++)
+        {
+            ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+
+            if (slot == null || slot.Commands == null)
+                continue;
+
+            for (int i = 0; i < slot.Commands.Count; i++)
+                AddRuntimeIfNeeded(runtimes, slot.Commands[i] != null ? slot.Commands[i].UserRuntime : null);
+        }
+
+        return runtimes;
+    }
+
+    private void AddRuntimeIfNeeded(List<CharacterRuntimeData> runtimes, CharacterRuntimeData runtime)
+    {
+        if (runtimes == null || runtime == null)
+            return;
+
+        for (int i = 0; i < runtimes.Count; i++)
+        {
+            if (runtimes[i] != null && runtimes[i].CharacterId == runtime.CharacterId)
+                return;
+        }
+
+        runtimes.Add(runtime);
+    }
+
+    private void AddReservedCosts(PlayerReservedCommand command)
+    {
+        if (command == null || command.UserRuntime == null)
+            return;
+
+        command.UserRuntime.AddReservedHealth(command.HealthCost);
+        command.UserRuntime.AddReservedStamina(command.StaminaCost);
+        command.UserRuntime.AddReservedResource(command.ResourceCost);
+        command.UserRuntime.AddReservedMove(command.MoveCost);
+        command.UserRuntime.AddReservedShield(command.ShieldCost);
+    }
+
     private bool CanReserveCommand(PlayerReservedCommand command)
     {
         return string.IsNullOrEmpty(GetReserveBlockReason(command));
@@ -1063,7 +1209,10 @@ public class BattleTimelineController : MonoBehaviour
         if (command.SkillData != null &&
             command.SkillData.ResourceCostType == ResourceCostType.AllCurrent)
         {
-            int minRequired = Mathf.Max(1, command.SkillData.ResourceCostValue);
+            int minRequired = BattleEquipmentEffectService.GetAllCurrentMinimumCost(
+                runtime,
+                command.SkillData,
+                command.SkillData.ResourceCostValue);
 
             if (command.ResourceCost < minRequired)
             {
@@ -1474,6 +1623,8 @@ public class BattleTimelineController : MonoBehaviour
         if (IsMoveCommand(removedCommand))
             RemoveFollowingMoveCommands(slot, orderIndex, removedCommand.CharacterId);
 
+
+        RecalculateAllReservedCosts();
         RefreshReservationSimulation();
         RefreshTimeline();
         RefreshPlayerHUDs();
