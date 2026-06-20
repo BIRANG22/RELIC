@@ -209,6 +209,16 @@ public static class BattleEffectUtility
         int shownDamage = Mathf.Max(0, hpBefore - target.RuntimeData.CurrentHp);
         BattleDamageTextPopupUI.Show(target.transform, shownDamage);
 
+        BattleUnitAnimator animator = target.GetComponent<BattleUnitAnimator>();
+
+        if (animator != null)
+        {
+            if (target.RuntimeData.IsDead)
+                animator.PlayDead();
+            else
+                animator.PlayHit();
+        }
+
         target.ShowAndRefreshHUD();
     }
 

@@ -28,6 +28,9 @@ public class PlayerSkillReservationController : MonoBehaviour
     private int currentMoveDistancePerCommand = 1;
     private int currentMoveReservationCapacity = 1;
 
+    private const string MoveSkillLevelOneId = "S_Move_1";
+    private const string MoveSkillLevelTwoId = "S_Move_2";
+
     private void OnEnable()
     {
         if (gridManager != null)
@@ -110,13 +113,13 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         if (currentUserRuntime == null)
         {
-            ShowBattleWarning("¼±ÅÃµÈ Ä³¸¯ÅÍ°¡ ¾ø½À´Ï´Ù.");
+            ShowBattleWarning("ì„ íƒëœ ìºë¦­í„°ê°€ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
         if (currentSkillData == null)
         {
-            ShowBattleWarning("¿¹¾àÇÒ ½ºÅ³ Á¤º¸°¡ ¾ø½À´Ï´Ù.");
+            ShowBattleWarning("ì˜ˆì•½í•  ìŠ¤í‚¬ ì •ë³´ê°€ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -146,9 +149,15 @@ public class PlayerSkillReservationController : MonoBehaviour
         currentMoveDistancePerCommand = GetMoveDistancePerCommand();
         currentMoveReservationCapacity = GetMoveReservationCapacity();
 
+        if (!HasMoveCommandSlotCapacity())
+        {
+            ShowBattleWarning("ì´ ìŠ¬ë¡¯ì—ëŠ” ë” ì´ìƒ ìŠ¤í‚¬ì„ ì˜ˆì•½í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
+            return;
+        }
+
         if (currentMoveReservationCapacity <= 0)
         {
-            ShowBattleWarning("ÀÌ ½½·Ô¿¡´Â ´õ ÀÌ»ó ½ºÅ³À» ¿¹¾àÇÒ ¼ö ¾ø½À´Ï´Ù.");
+            ShowBattleWarning("ì´ë™ì— í•„ìš”í•œ ì½”ìŠ¤íŠ¸ê°€ ë¶€ì¡±í•©ë‹ˆë‹¤.");
             return;
         }
 
@@ -184,7 +193,7 @@ public class PlayerSkillReservationController : MonoBehaviour
         }
 
         if (currentMoveSelectableIndices.Count <= 0)
-            ShowBattleWarning("¼±ÅÃ °¡´ÉÇÑ Ä­ÀÌ ¾ø½À´Ï´Ù.");
+            ShowBattleWarning("ì„ íƒ ê°€ëŠ¥í•œ ì¹¸ì´ ì—†ìŠµë‹ˆë‹¤.");
 
         if (rangePreview != null)
             rangePreview.ShowDirectionCells(currentMoveSelectableIndices);
@@ -200,8 +209,8 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         if (!currentMoveSelectableIndices.Contains(cell.Index))
         {
-            ShowBattleWarning("¼±ÅÃÇÒ ¼ö ¾ø´Â Ä­ÀÔ´Ï´Ù.");
-            Debug.LogWarning($"[PlayerSkillReservationController] ¼±ÅÃ °¡´ÉÇÑ ÀÌµ¿ Ä­ÀÌ ¾Æ´Õ´Ï´Ù: {cell.name}");
+            ShowBattleWarning("ì„ íƒí•  ìˆ˜ ì—†ëŠ” ì¹¸ì…ë‹ˆë‹¤.");
+            Debug.LogWarning($"[PlayerSkillReservationController] ì„ íƒ ê°€ëŠ¥í•œ ì´ë™ ì¹¸ì´ ì•„ë‹™ë‹ˆë‹¤: {cell.name}");
             return;
         }
 
@@ -252,21 +261,24 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         if (moveOffsets == null || moveOffsets.Count <= 0)
         {
-            ShowBattleWarning("ÀÌµ¿ÇÒ ¼ö ¾ø´Â À§Ä¡ÀÔ´Ï´Ù.");
+            ShowBattleWarning("ì´ë™í•  ìˆ˜ ì—†ëŠ” ìœ„ì¹˜ì…ë‹ˆë‹¤.");
             return;
         }
 
         if (moveOffsets.Count > currentMoveReservationCapacity)
         {
-            ShowBattleWarning("¼±ÅÃÇÑ À§Ä¡±îÁö ÀÌµ¿ÇÒ ½½·ÔÀÌ ºÎÁ·ÇÕ´Ï´Ù.");
+            ShowBattleWarning("ì„ íƒí•œ ìœ„ì¹˜ê¹Œì§€ ì´ë™í•  ì½”ìŠ¤íŠ¸ê°€ ë¶€ì¡±í•©ë‹ˆë‹¤.");
             return;
         }
 
-        List<PlayerReservedCommand> commands = BuildMoveReservationCommands(moveOffsets);
+        List<PlayerReservedCommand> commands = BuildMoveReservationCommands(
+            selectedGridIndex,
+            moveOffsets
+        );
 
         if (commands.Count <= 0)
         {
-            ShowBattleWarning("ÀÌµ¿ ¿¹¾àÀ» ¸¸µé ¼ö ¾ø½À´Ï´Ù.");
+            ShowBattleWarning("ì´ë™ ì˜ˆì•½ì„ ë§Œë“¤ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -299,12 +311,20 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     private int GetMoveReservationCapacity()
     {
+        if (currentUserRuntime == null)
+            return 0;
+
+        return Mathf.Max(0, currentUserRuntime.PreviewStamina);
+    }
+
+    private bool HasMoveCommandSlotCapacity()
+    {
         EnsureTimelineController();
 
         if (timelineController == null)
-            return 1;
+            return true;
 
-        return timelineController.GetRemainingPlayerCommandCapacity(currentSlotIndex);
+        return timelineController.GetRemainingPlayerCommandCapacity(currentSlotIndex) > 0;
     }
 
     private int GetMoveDistancePerCommand()
@@ -314,11 +334,23 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (distance > 0)
             return distance;
 
+        if (currentSkillData != null)
+        {
+            if (currentSkillData.SkillId == MoveSkillLevelTwoId)
+                return 2;
+
+            if (currentSkillData.SkillId == MoveSkillLevelOneId)
+                return 1;
+        }
+
         if (DataManager.Instance == null || DataManager.Instance.RangeDatabase == null || currentSkillData == null)
             return 1;
 
         string rangeId =
             BattleEquipmentEffectService.GetEffectiveRangeId(currentUserRuntime, currentSkillData);
+
+        if (IsAllMoveRangeId(rangeId))
+            return 1;
 
         if (!DataManager.Instance.RangeDatabase.TryGet(rangeId, out SkillRangeData rangeData))
             return 1;
@@ -335,41 +367,48 @@ public class PlayerSkillReservationController : MonoBehaviour
         return Mathf.Max(1, distance);
     }
 
-    private List<PlayerReservedCommand> BuildMoveReservationCommands(List<Vector2Int> moveOffsets)
+    private List<PlayerReservedCommand> BuildMoveReservationCommands(
+        int selectedGridIndex,
+        IReadOnlyList<Vector2Int> moveOffsets)
     {
         List<PlayerReservedCommand> commands = new();
 
-        if (moveOffsets == null || gridManager == null)
+        if (moveOffsets == null || moveOffsets.Count <= 0 || gridManager == null)
             return commands;
 
         Vector2Int currentCoord = gridManager.IndexToCoord(currentCasterGridIndex);
+        Vector2Int targetCoord = gridManager.IndexToCoord(selectedGridIndex);
+
+        if (!gridManager.IsValidCoord(currentCoord) || !gridManager.IsValidCoord(targetCoord))
+            return commands;
+
+        Vector2Int totalMoveOffset = targetCoord - currentCoord;
         BattleDirection direction = currentCasterDirection;
 
         for (int i = 0; i < moveOffsets.Count; i++)
         {
             Vector2Int moveOffset = moveOffsets[i];
-            Vector2Int targetCoord = currentCoord + moveOffset;
-
-            if (!gridManager.IsValidCoord(targetCoord))
-                return new List<PlayerReservedCommand>();
-
-            int targetGridIndex = gridManager.CoordToIndex(targetCoord);
             direction = GetDirectionAfterMove(direction, moveOffset);
-
-            PlayerReservedCommand command = new PlayerReservedCommand(currentUserRuntime, currentSkillData);
-            command.SetSelectionResult(
-                direction,
-                targetGridIndex,
-                new List<int> { targetGridIndex },
-                moveOffset
-            );
-
-            commands.Add(command);
-            currentCoord = targetCoord;
         }
 
-        ApplyVisualMovePath(commands);
+        PlayerReservedCommand command = new PlayerReservedCommand(currentUserRuntime, currentSkillData);
+        command.SetSelectionResult(
+            direction,
+            selectedGridIndex,
+            new List<int> { selectedGridIndex },
+            totalMoveOffset
+        );
+        command.SetMoveReservationCost(
+            GetMoveDistance(totalMoveOffset),
+            currentMoveDistancePerCommand
+        );
+        command.SetVisualMoveResult(
+            selectedGridIndex,
+            totalMoveOffset,
+            moveOffsets
+        );
 
+        commands.Add(command);
         return commands;
     }
 
@@ -581,6 +620,25 @@ public class PlayerSkillReservationController : MonoBehaviour
             result.Add(new List<Vector2Int>(path));
         }
 
+        if (result.Count > 0)
+            return result;
+
+        for (int i = 0; i < pathCandidates.Count; i++)
+        {
+            List<Vector2Int> path = pathCandidates[i];
+
+            if (path == null || path.Count <= 0)
+                continue;
+
+            if (path.Count > reservationCapacity)
+                continue;
+
+            if (!IsMovePathReservable(casterGridIndex, path, gridManager, null))
+                continue;
+
+            result.Add(new List<Vector2Int>(path));
+        }
+
         return result;
     }
 
@@ -684,6 +742,11 @@ public class PlayerSkillReservationController : MonoBehaviour
         return Mathf.Abs(moveOffset.x) + Mathf.Abs(moveOffset.y);
     }
 
+    private static bool IsAllMoveRangeId(string rangeId)
+    {
+        return rangeId == "Range_All" || rangeId == "Rnage_All";
+    }
+
     private static BattleDirection GetDirectionAfterMove(
         BattleDirection currentDirection,
         Vector2Int moveOffset)
@@ -732,7 +795,7 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         if (timelineController == null)
         {
-            ShowBattleWarning("Å¸ÀÓ¶óÀÎ ÄÁÆ®·Ñ·¯¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.");
+            ShowBattleWarning("íƒ€ì„ë¼ì¸ ì»¨íŠ¸ë¡¤ëŸ¬ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
             return false;
         }
 
@@ -750,7 +813,7 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         if (timelineController == null)
         {
-            ShowBattleWarning("Å¸ÀÓ¶óÀÎ ÄÁÆ®·Ñ·¯¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.");
+            ShowBattleWarning("íƒ€ì„ë¼ì¸ ì»¨íŠ¸ë¡¤ëŸ¬ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
             return false;
         }
 
@@ -789,19 +852,19 @@ public class PlayerSkillReservationController : MonoBehaviour
     {
         if (currentUserRuntime == null)
         {
-            ShowBattleWarning("¼±ÅÃµÈ Ä³¸¯ÅÍ°¡ ¾ø½À´Ï´Ù.");
+            ShowBattleWarning("ì„ íƒëœ ìºë¦­í„°ê°€ ì—†ìŠµë‹ˆë‹¤.");
             return false;
         }
 
         if (currentSkillData == null)
         {
-            ShowBattleWarning("¿¹¾àÇÒ ½ºÅ³ Á¤º¸°¡ ¾ø½À´Ï´Ù.");
+            ShowBattleWarning("ì˜ˆì•½í•  ìŠ¤í‚¬ ì •ë³´ê°€ ì—†ìŠµë‹ˆë‹¤.");
             return false;
         }
 
         if (currentSlotIndex < 0)
         {
-            ShowBattleWarning("Å¸ÀÓ¶óÀÎ ½½·ÔÀ» ¸ÕÀú ¼±ÅÃÇØÁÖ¼¼¿ä.");
+            ShowBattleWarning("íƒ€ì„ë¼ì¸ ìŠ¬ë¡¯ì„ ë¨¼ì € ì„ íƒí•´ì£¼ì„¸ìš”.");
             return false;
         }
 
@@ -812,19 +875,19 @@ public class PlayerSkillReservationController : MonoBehaviour
     {
         if (gridManager == null)
         {
-            ShowBattleWarning("ÀüÅõ ±×¸®µå¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.");
+            ShowBattleWarning("ì „íˆ¬ ê·¸ë¦¬ë“œë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
             return false;
         }
 
         if (currentSkillData == null)
         {
-            ShowBattleWarning("¿¹¾àÇÒ ½ºÅ³ Á¤º¸°¡ ¾ø½À´Ï´Ù.");
+            ShowBattleWarning("ì˜ˆì•½í•  ìŠ¤í‚¬ ì •ë³´ê°€ ì—†ìŠµë‹ˆë‹¤.");
             return false;
         }
 
         if (DataManager.Instance == null || DataManager.Instance.RangeDatabase == null)
         {
-            ShowBattleWarning("½ºÅ³ ¹üÀ§ µ¥ÀÌÅÍ¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.");
+            ShowBattleWarning("ìŠ¤í‚¬ ë²”ìœ„ ë°ì´í„°ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
             return false;
         }
 

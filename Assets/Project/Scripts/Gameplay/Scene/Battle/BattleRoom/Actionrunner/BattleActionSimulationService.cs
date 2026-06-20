@@ -38,7 +38,7 @@ public class BattleActionSimulationService
         IReadOnlyList<MonsterReservedCommand> monsterCommands =
             timelineController.GetMonsterCommands(slotIndex);
 
-        // 1. Swift «√∑π¿ÃæÓ
+        // 1. Swift ÌîåÎ†àÏù¥Ïñ¥
         if (playerCommands != null)
         {
             for (int i = 0; i < playerCommands.Count; i++)
@@ -48,14 +48,14 @@ public class BattleActionSimulationService
             }
         }
 
-        // 2. ∏ÛΩ∫≈Õ
+        // 2. Î™¨Ïä§ÌÑ∞
         if (monsterCommands != null)
         {
             for (int i = 0; i < monsterCommands.Count; i++)
                 SimulateMonsterCommand(monsterCommands[i]);
         }
 
-        // 3. ¿œπ› «√∑π¿ÃæÓ
+        // 3. ÏùºÎ∞ò ÌîåÎ†àÏù¥Ïñ¥
         if (playerCommands != null)
         {
             for (int i = 0; i < playerCommands.Count; i++)
@@ -93,18 +93,54 @@ public class BattleActionSimulationService
         playerDirections[command.CharacterId] = direction;
         command.SetMoveDirection(direction);
 
-        if (!TryGetPlayerMoveTargetGridIndex(
+        bool reachedTarget = TryGetPlayerMoveTargetGridIndex(
             currentGrid,
-            command.MoveOffset,
+            command,
             "P:" + command.CharacterId,
-            out int targetGrid))
+            out int targetGrid);
+
+        Vector2Int startCoord = gridManager.IndexToCoord(currentGrid);
+        Vector2Int targetCoord = gridManager.IndexToCoord(targetGrid);
+        Vector2Int actualMoveOffset = targetCoord - startCoord;
+
+        if (!reachedTarget)
         {
-            command.SetSimulatedMoveResult(true, currentGrid, Vector2Int.zero);
+            playerPositions[command.CharacterId] = targetGrid;
+            command.SetSimulatedMoveResult(true, targetGrid, actualMoveOffset);
             return;
         }
 
         playerPositions[command.CharacterId] = targetGrid;
-        command.SetSimulatedMoveResult(false, targetGrid, command.MoveOffset);
+        command.SetSimulatedMoveResult(false, targetGrid, actualMoveOffset);
+    }
+
+    private bool TryGetPlayerMoveTargetGridIndex(
+        int currentGrid,
+        PlayerReservedCommand command,
+        string selfKey,
+        out int targetGrid)
+    {
+        targetGrid = currentGrid;
+
+        if (command == null)
+            return false;
+
+        if (command.VisualMoveSteps != null && command.VisualMoveSteps.Count > 0)
+        {
+            return TryGetPlayerMoveTargetGridIndex(
+                currentGrid,
+                command.VisualMoveSteps,
+                selfKey,
+                out targetGrid
+            );
+        }
+
+        return TryGetPlayerMoveTargetGridIndex(
+            currentGrid,
+            command.MoveOffset,
+            selfKey,
+            out targetGrid
+        );
     }
 
     private bool TryGetPlayerMoveTargetGridIndex(
@@ -123,14 +159,58 @@ public class BattleActionSimulationService
         if (moveOffset == Vector2Int.zero)
             return true;
 
-        if (!TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.x, true, selfKey))
-            return false;
+        bool reachedTarget = true;
 
-        if (!TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.y, false, selfKey))
-            return false;
+        if (!TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.x, true, selfKey))
+            reachedTarget = false;
+
+        if (reachedTarget &&
+            !TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.y, false, selfKey))
+        {
+            reachedTarget = false;
+        }
 
         targetGrid = gridManager.CoordToIndex(currentCoord);
-        return true;
+        return reachedTarget;
+    }
+
+    private bool TryGetPlayerMoveTargetGridIndex(
+        int currentGrid,
+        IReadOnlyList<Vector2Int> moveSteps,
+        string selfKey,
+        out int targetGrid)
+    {
+        targetGrid = currentGrid;
+
+        if (moveSteps == null || moveSteps.Count <= 0)
+            return false;
+
+        Vector2Int currentCoord = gridManager.IndexToCoord(currentGrid);
+
+        if (!gridManager.IsValidCoord(currentCoord))
+            return false;
+
+        bool reachedTarget = true;
+
+        for (int i = 0; i < moveSteps.Count; i++)
+        {
+            Vector2Int moveOffset = moveSteps[i];
+
+            if (!TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.x, true, selfKey))
+            {
+                reachedTarget = false;
+                break;
+            }
+
+            if (!TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.y, false, selfKey))
+            {
+                reachedTarget = false;
+                break;
+            }
+        }
+
+        targetGrid = gridManager.CoordToIndex(currentCoord);
+        return reachedTarget;
     }
 
     private bool TryApplyPlayerMoveAxisStep(
@@ -144,18 +224,19 @@ public class BattleActionSimulationService
         while (remaining != 0)
         {
             int step = remaining > 0 ? 1 : -1;
-            currentCoord += horizontal
+            Vector2Int nextCoord = currentCoord + (horizontal
                 ? new Vector2Int(step, 0)
-                : new Vector2Int(0, step);
+                : new Vector2Int(0, step));
 
-            if (!gridManager.IsValidCoord(currentCoord))
+            if (!gridManager.IsValidCoord(nextCoord))
                 return false;
 
-            int gridIndex = gridManager.CoordToIndex(currentCoord);
+            int gridIndex = gridManager.CoordToIndex(nextCoord);
 
             if (IsOccupiedForPlayerMove(gridIndex, selfKey))
                 return false;
 
+            currentCoord = nextCoord;
             remaining -= step;
         }
 

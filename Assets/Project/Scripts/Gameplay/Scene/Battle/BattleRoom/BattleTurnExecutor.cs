@@ -241,6 +241,12 @@ public class BattleTurnExecutor : MonoBehaviour
             ClearAllShield();
             RefreshBattleHUDs();
 
+            if (timelineController != null)
+            {
+                timelineController.ApplyBlockedMoveStaminaRefunds();
+                RefreshBattleHUDs();
+            }
+
             ClearTimeline();
             yield return null;
 
