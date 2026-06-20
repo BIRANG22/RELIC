@@ -155,6 +155,48 @@ public class BattleActionRegressionTests
     }
 
     [Test]
+    public void StrikeEffect_ExecuteAppliesOnlyOneHitEvenWhenContextCountIsThree()
+    {
+        MonsterUnit monster = CreateDamageTargetMonster(
+            "StrikeSingleHitMonster",
+            "M_StrikeSingleHit",
+            30);
+
+        StrikeEffect effect = new();
+        effect.Execute(new BattleEffectContext
+        {
+            MonsterTarget = monster,
+            Value = 5,
+            Count = 3
+        });
+
+        Assert.That(monster.RuntimeData.CurrentHp, Is.EqualTo(25));
+
+        Object.DestroyImmediate(monster.gameObject);
+    }
+
+    [Test]
+    public void PierceEffect_ExecuteAppliesOnlyOneHitEvenWhenContextCountIsThree()
+    {
+        MonsterUnit monster = CreateDamageTargetMonster(
+            "PierceSingleHitMonster",
+            "M_PierceSingleHit",
+            30);
+
+        PierceEffect effect = new();
+        effect.Execute(new BattleEffectContext
+        {
+            MonsterTarget = monster,
+            Value = 5,
+            Count = 3
+        });
+
+        Assert.That(monster.RuntimeData.CurrentHp, Is.EqualTo(25));
+
+        Object.DestroyImmediate(monster.gameObject);
+    }
+
+    [Test]
     public void TurnEndAddictedMonsterDamage_HidesHudBeforeNextReservation()
     {
         MonsterUnit monster = CreateMonsterWithHud(
@@ -497,7 +539,7 @@ public class BattleActionRegressionTests
     }
 
     [Test]
-    public void MoveRangePreview_UsesRemainingSlotCapacityAsManhattanDistance()
+    public void MoveRangePreview_UsesStaminaBudgetAsManhattanCost()
     {
         GridManager gridManager = new GameObject("GridManagerMoveRange").AddComponent<GridManager>();
 
@@ -516,7 +558,7 @@ public class BattleActionRegressionTests
     }
 
     [Test]
-    public void MoveReservationCount_TreatsDiagonalAsHorizontalPlusVertical()
+    public void MoveStaminaCost_TreatsDiagonalAsHorizontalPlusVertical()
     {
         int count = PlayerSkillReservationController.GetRequiredMoveReservationCount(
             new Vector2Int(1, 1),
@@ -638,7 +680,35 @@ public class BattleActionRegressionTests
     }
 
     [Test]
-    public void MoveReservationCommands_AddsDiagonalVisualWithoutChangingDataSteps()
+    public void MoveReservationPathCandidates_KeepsStaminaPathWhenRuntimeBlockerExists()
+    {
+        GridManager gridManager = new GameObject("GridManagerMoveRuntimeBlockerPath").AddComponent<GridManager>();
+        HashSet<int> blockedGridIndices = new()
+        {
+            17
+        };
+
+        List<List<Vector2Int>> paths =
+            PlayerSkillReservationController.GetReservableMovePathCandidates(
+                12,
+                22,
+                2,
+                1,
+                gridManager,
+                blockedGridIndices
+            );
+
+        Object.DestroyImmediate(gridManager.gameObject);
+
+        Assert.That(paths, Has.Count.EqualTo(1));
+        Assert.That(paths[0], Is.EqualTo(new List<Vector2Int>
+        {
+            new Vector2Int(2, 0)
+        }));
+    }
+
+    [Test]
+    public void MoveReservationCommands_CreatesSingleDistanceCostedCommandWithPath()
     {
         GameObject controllerObject = new("ReservationControllerNoDiagonalJump");
         PlayerSkillReservationController controller =
@@ -654,7 +724,10 @@ public class BattleActionRegressionTests
         SkillMasterData moveSkill = new()
         {
             SkillId = "S_Move_Test",
-            RangeType = RangeType.Selection
+            RangeType = RangeType.Selection,
+            ReferenceResource = ReferenceResource.Stamina,
+            ResourceCostType = ResourceCostType.Fixed,
+            ResourceCostValue = 1
         };
 
         typeof(PlayerSkillReservationController)
@@ -677,6 +750,10 @@ public class BattleActionRegressionTests
             .GetField("currentCasterDirection", BindingFlags.Instance | BindingFlags.NonPublic)
             .SetValue(controller, BattleDirection.Right);
 
+        typeof(PlayerSkillReservationController)
+            .GetField("currentMoveDistancePerCommand", BindingFlags.Instance | BindingFlags.NonPublic)
+            .SetValue(controller, 1);
+
         MethodInfo method = typeof(PlayerSkillReservationController).GetMethod(
             "BuildMoveReservationCommands",
             BindingFlags.Instance | BindingFlags.NonPublic);
@@ -686,6 +763,7 @@ public class BattleActionRegressionTests
                 controller,
                 new object[]
                 {
+                    16,
                     new List<Vector2Int>
                     {
                         Vector2Int.right,
@@ -696,10 +774,9 @@ public class BattleActionRegressionTests
         Object.DestroyImmediate(controllerObject);
         Object.DestroyImmediate(gridManager.gameObject);
 
-        Assert.That(commands, Has.Count.EqualTo(2));
-        Assert.That(commands[0].MoveOffset, Is.EqualTo(Vector2Int.right));
-        Assert.That(commands[0].ReservedMoveGridIndex, Is.EqualTo(17));
-        Assert.That(commands[0].EffectiveVisualMoveOffset, Is.EqualTo(Vector2Int.right + Vector2Int.down));
+        Assert.That(commands, Has.Count.EqualTo(1));
+        Assert.That(commands[0].MoveOffset, Is.EqualTo(Vector2Int.right + Vector2Int.down));
+        Assert.That(commands[0].ReservedMoveGridIndex, Is.EqualTo(16));
         Assert.That(commands[0].EffectiveVisualMoveGridIndex, Is.EqualTo(16));
         Assert.That(commands[0].VisualMoveSteps, Is.EqualTo(new List<Vector2Int>
         {
@@ -707,10 +784,69 @@ public class BattleActionRegressionTests
             Vector2Int.down
         }));
         Assert.That(commands[0].SkipMoveVisual, Is.False);
+        Assert.That(commands[0].BaseStaminaCost, Is.EqualTo(2));
+        Assert.That(commands[0].StaminaCost, Is.EqualTo(2));
+        Assert.That(commands[0].PlannedMoveDistance, Is.EqualTo(2));
+        Assert.That(commands[0].MoveDistancePerStamina, Is.EqualTo(1));
+    }
 
-        Assert.That(commands[1].MoveOffset, Is.EqualTo(Vector2Int.down));
-        Assert.That(commands[1].ReservedMoveGridIndex, Is.EqualTo(16));
-        Assert.That(commands[1].SkipMoveVisual, Is.True);
+    [Test]
+    public void MoveBlockedRefund_FloorsHalfOfBlockedStaminaCost()
+    {
+        CharacterRuntimeData runtime = new()
+        {
+            CharacterId = "Char_Test",
+            CurrentStamina = 10,
+            MaxStamina = 10
+        };
+
+        SkillMasterData moveSkill = new()
+        {
+            SkillId = "S_Move_2",
+            RangeType = RangeType.Selection,
+            ReferenceResource = ReferenceResource.Stamina,
+            ResourceCostType = ResourceCostType.Fixed,
+            ResourceCostValue = 1
+        };
+
+        PlayerReservedCommand command = new(runtime, moveSkill);
+        command.SetSelectionResult(
+            BattleDirection.Right,
+            0,
+            new List<int> { 0 },
+            new Vector2Int(7, 0)
+        );
+        command.SetMoveReservationCost(7, 2);
+        command.SetExecutedMoveDistance(4);
+
+        Assert.That(command.BaseStaminaCost, Is.EqualTo(4));
+        Assert.That(command.StaminaCost, Is.EqualTo(4));
+        Assert.That(command.GetBlockedMoveStaminaRefund(), Is.EqualTo(1));
+
+        command.ResetCostsToBase();
+
+        Assert.That(command.StaminaCost, Is.EqualTo(4));
+    }
+
+    [Test]
+    public void BattleStartMoveValue50_UpgradesMoveSkillToLevelTwo()
+    {
+        CharacterRuntimeData runtime = new()
+        {
+            CharacterId = "Char_Test",
+            MoveSkillId = "S_Move_1"
+        };
+
+        CharacterMasterData masterData = new()
+        {
+            MaxHealth = 10,
+            MaxStamina = 5,
+            MoveValue = 50
+        };
+
+        BattleEquipmentEffectService.ApplyBattleStartEffects(runtime, masterData);
+
+        Assert.That(runtime.MoveSkillId, Is.EqualTo("S_Move_2"));
     }
 
     [Test]
@@ -1325,6 +1461,26 @@ public class BattleActionRegressionTests
         spriteRenderer.color = Color.white;
         clickCollider = monster.gameObject.AddComponent<BoxCollider2D>();
         monster.Initialize(runtimeData);
+
+        return monster;
+    }
+
+    private static MonsterUnit CreateDamageTargetMonster(
+        string name,
+        string runtimeId,
+        int health)
+    {
+        MonsterMasterData masterData = new()
+        {
+            MonsterId = name,
+            Name = name,
+            Health = health
+        };
+
+        MonsterRuntimeData runtimeData = new(runtimeId, masterData);
+        MonsterUnit monster = new GameObject(name).AddComponent<MonsterUnit>();
+        monster.Initialize(runtimeData);
+        monster.SetOccupiedCells(new List<int> { 12 });
 
         return monster;
     }

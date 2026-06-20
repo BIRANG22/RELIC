@@ -5,6 +5,9 @@ using UnityEngine;
 public static class BattleEquipmentEffectService
 {
     private const int LastTimelineSlotIndex = 4;
+    private const int MoveSkillLevelTwoThreshold = 50;
+    private const string MoveSkillLevelOneId = "S_Move_1";
+    private const string MoveSkillLevelTwoId = "S_Move_2";
     private const string Relic06Turn2ArmorAppliedId = "Relic_06_Turn2Armor";
 
     public static void ApplyBattleStartEffects(
@@ -42,7 +45,18 @@ public static class BattleEquipmentEffectService
 
         runtime.CurrentResource = GetBattleStartUniqueResource(runtime, masterData);
         runtime.CurrentMoveLevel = Mathf.Max(0, GetEffectiveMoveValue(runtime, masterData));
+        SyncMoveSkillForMoveValue(runtime);
         runtime.ClearReservedCosts();
+    }
+
+    public static void SyncMoveSkillForMoveValue(CharacterRuntimeData runtime)
+    {
+        if (runtime == null)
+            return;
+
+        runtime.MoveSkillId = runtime.CurrentMoveLevel >= MoveSkillLevelTwoThreshold
+            ? MoveSkillLevelTwoId
+            : MoveSkillLevelOneId;
     }
 
     public static void ResetBattleOnlyEffectState(CharacterRuntimeData runtime)
