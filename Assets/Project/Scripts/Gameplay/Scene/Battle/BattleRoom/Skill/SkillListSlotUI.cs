@@ -111,7 +111,11 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         ApplySortingState();
     }
 
-    public void Setup(SkillListPanel ownerPanel, string skillId, bool interactable)
+    public void Setup(
+        SkillListPanel ownerPanel,
+        string skillId,
+        bool interactable,
+        int displayedCostValue = -1)
     {
         owner = ownerPanel;
         this.skillId = skillId;
@@ -144,7 +148,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             return;
         }
 
-        ApplySkillMasterData(skillData);
+        ApplySkillMasterData(skillData, displayedCostValue);
 
         detailText = BuildDetailText(skillData);
 
@@ -164,7 +168,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         ApplySortingState();
     }
 
-    private void ApplySkillMasterData(SkillMasterData data)
+    private void ApplySkillMasterData(SkillMasterData data, int displayedCostValue = -1)
     {
         if (data == null)
         {
@@ -193,8 +197,17 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         if (skillCostTypeText != null)
             skillCostTypeText.text = GetReferenceResourceDisplayName(data.ReferenceResource);
 
+        SetDisplayedCostValue(displayedCostValue >= 0
+            ? displayedCostValue
+            : data.ResourceCostValue);
+    }
+
+    public void SetDisplayedCostValue(int costValue)
+    {
+        BindMissingReferences();
+
         if (skillCostValueText != null)
-            skillCostValueText.text = data.ResourceCostValue.ToString();
+            skillCostValueText.text = Mathf.Max(0, costValue).ToString();
     }
 
     private void SetEmpty()
@@ -223,7 +236,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             skillCostImage.enabled = false;
 
         if (skillNameText != null)
-            skillNameText.text = "Ω∫≈≥ æ¯¿Ω";
+            skillNameText.text = "Ïä§ÌÇ¨ ÏóÜÏùå";
 
         if (skillCostTypeText != null)
             skillCostTypeText.text = "";

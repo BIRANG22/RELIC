@@ -617,7 +617,7 @@ public class BattleActionRegressionTests
     }
 
     [Test]
-    public void TimelineRemainingPlayerCommandCapacity_SubtractsExistingCommands()
+    public void TimelineRemainingPlayerCommandCapacity_SubtractsExistingPlayerCommandsFromFiveSlotCapacity()
     {
         GameObject timelineObject = new("TimelineCapacity");
         BattleTimelineController timeline =
@@ -647,7 +647,84 @@ public class BattleActionRegressionTests
         Object.DestroyImmediate(timelineObject);
         Object.DestroyImmediate(slot0.gameObject);
 
-        Assert.That(remainingCapacity, Is.EqualTo(2));
+        Assert.That(remainingCapacity, Is.EqualTo(4));
+    }
+
+    [Test]
+    public void TimelineCombinedSlotCapacity_AllowsFivePlayerCommandsWhenNoMonsterActions()
+    {
+        GameObject timelineObject = new("TimelineFivePlayerCapacity");
+        BattleTimelineController timeline =
+            timelineObject.AddComponent<BattleTimelineController>();
+
+        ReserveTurnSlotUI slot0 = new GameObject("SlotFivePlayerCapacity0").AddComponent<ReserveTurnSlotUI>();
+        ReserveTurnSlotUI[] slots = { slot0 };
+
+        typeof(BattleTimelineController)
+            .GetField("reserveSlots", BindingFlags.Instance | BindingFlags.NonPublic)
+            .SetValue(timeline, slots);
+
+        CharacterRuntimeData runtime = new()
+        {
+            CharacterId = "Char_Test",
+            CurrentStamina = 100,
+            MaxStamina = 100
+        };
+
+        SkillMasterData skill = new()
+        {
+            SkillId = "S_Test"
+        };
+
+        for (int i = 0; i < 5; i++)
+            Assert.That(timeline.ConfirmPlayerCommand(0, new PlayerReservedCommand(runtime, skill)), Is.True);
+
+        Assert.That(timeline.GetRemainingPlayerCommandCapacity(0), Is.EqualTo(0));
+        Assert.That(timeline.ConfirmPlayerCommand(0, new PlayerReservedCommand(runtime, skill)), Is.False);
+
+        Object.DestroyImmediate(timelineObject);
+        Object.DestroyImmediate(slot0.gameObject);
+    }
+
+    [Test]
+    public void TimelineCombinedSlotCapacity_SubtractsMonsterCommandsFromPlayerCapacity()
+    {
+        GameObject timelineObject = new("TimelineMonsterPlayerCapacity");
+        BattleTimelineController timeline =
+            timelineObject.AddComponent<BattleTimelineController>();
+
+        ReserveTurnSlotUI slot0 = new GameObject("SlotMonsterPlayerCapacity0").AddComponent<ReserveTurnSlotUI>();
+        ReserveTurnSlotUI[] slots = { slot0 };
+
+        typeof(BattleTimelineController)
+            .GetField("reserveSlots", BindingFlags.Instance | BindingFlags.NonPublic)
+            .SetValue(timeline, slots);
+
+        timeline.AddMonsterCommand(0, CreateMonsterReservedCommand("Monster_Runtime_01"));
+        timeline.AddMonsterCommand(0, CreateMonsterReservedCommand("Monster_Runtime_02"));
+
+        Assert.That(timeline.GetMonsterCommands(0), Has.Count.EqualTo(2));
+        Assert.That(timeline.GetRemainingPlayerCommandCapacity(0), Is.EqualTo(3));
+
+        CharacterRuntimeData runtime = new()
+        {
+            CharacterId = "Char_Test",
+            CurrentStamina = 100,
+            MaxStamina = 100
+        };
+
+        SkillMasterData skill = new()
+        {
+            SkillId = "S_Test"
+        };
+
+        for (int i = 0; i < 3; i++)
+            Assert.That(timeline.ConfirmPlayerCommand(0, new PlayerReservedCommand(runtime, skill)), Is.True);
+
+        Assert.That(timeline.ConfirmPlayerCommand(0, new PlayerReservedCommand(runtime, skill)), Is.False);
+
+        Object.DestroyImmediate(timelineObject);
+        Object.DestroyImmediate(slot0.gameObject);
     }
 
     [Test]
@@ -705,6 +782,91 @@ public class BattleActionRegressionTests
         {
             new Vector2Int(2, 0)
         }));
+    }
+
+    [Test]
+    public void MoveDestinationBlockers_UseOtherPlayerReservedGridAtSelectedSlot()
+    {
+        GameObject controllerObject = new("ReservationControllerPlayerDestinationBlock");
+        PlayerSkillReservationController controller =
+            controllerObject.AddComponent<PlayerSkillReservationController>();
+
+        GridManager gridManager = new GameObject("GridManagerPlayerDestinationBlock").AddComponent<GridManager>();
+        GameObject timelineObject = new("TimelinePlayerDestinationBlock");
+        BattleTimelineController timeline =
+            timelineObject.AddComponent<BattleTimelineController>();
+
+        ReserveTurnSlotUI slot0 = new GameObject("DestinationBlockSlot0").AddComponent<ReserveTurnSlotUI>();
+        ReserveTurnSlotUI slot1 = new GameObject("DestinationBlockSlot1").AddComponent<ReserveTurnSlotUI>();
+        ReserveTurnSlotUI[] slots = { slot0, slot1 };
+
+        typeof(BattleTimelineController)
+            .GetField("reserveSlots", BindingFlags.Instance | BindingFlags.NonPublic)
+            .SetValue(timeline, slots);
+
+        CharacterRuntimeData currentRuntime = new()
+        {
+            CharacterId = "Char_Current"
+        };
+
+        CharacterRuntimeData otherRuntime = new()
+        {
+            CharacterId = "Char_Other"
+        };
+
+        BattleCharacter otherCharacter =
+            new GameObject("OtherDestinationBlockCharacter").AddComponent<BattleCharacter>();
+        otherCharacter.Initialize(otherRuntime);
+        otherCharacter.SetGridIndex(12);
+
+        SkillMasterData moveSkill = new()
+        {
+            SkillId = "S_Move_Test",
+            RangeType = RangeType.Selection
+        };
+
+        PlayerReservedCommand otherMove = new(otherRuntime, moveSkill);
+        otherMove.SetSelectionResult(
+            BattleDirection.Right,
+            22,
+            new List<int> { 22 },
+            new Vector2Int(2, 0)
+        );
+
+        Assert.That(slot0.AddCommand(otherMove), Is.True);
+
+        typeof(PlayerSkillReservationController)
+            .GetField("gridManager", BindingFlags.Instance | BindingFlags.NonPublic)
+            .SetValue(controller, gridManager);
+
+        typeof(PlayerSkillReservationController)
+            .GetField("timelineController", BindingFlags.Instance | BindingFlags.NonPublic)
+            .SetValue(controller, timeline);
+
+        typeof(PlayerSkillReservationController)
+            .GetField("currentUserRuntime", BindingFlags.Instance | BindingFlags.NonPublic)
+            .SetValue(controller, currentRuntime);
+
+        typeof(PlayerSkillReservationController)
+            .GetField("currentSlotIndex", BindingFlags.Instance | BindingFlags.NonPublic)
+            .SetValue(controller, 1);
+
+        MethodInfo method = typeof(PlayerSkillReservationController).GetMethod(
+            "BuildKnownOtherPlayerDestinationGridIndices",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+
+        HashSet<int> blockedDestinations =
+            (HashSet<int>)method.Invoke(controller, null);
+
+        Object.DestroyImmediate(otherCharacter.gameObject);
+        Object.DestroyImmediate(controllerObject);
+        Object.DestroyImmediate(gridManager.gameObject);
+        Object.DestroyImmediate(timelineObject);
+        Object.DestroyImmediate(slot0.gameObject);
+        Object.DestroyImmediate(slot1.gameObject);
+
+        Assert.That(blockedDestinations, Does.Contain(22));
+        Assert.That(blockedDestinations, Has.No.Member(12));
     }
 
     [Test]
@@ -1330,6 +1492,120 @@ public class BattleActionRegressionTests
     }
 
     [Test]
+    public void DuplicateSkillReservations_IncreaseStaminaCostOnlyWithinSameSlot()
+    {
+        GameObject timelineObject = new("DuplicateSkillCostTimeline");
+        BattleTimelineController timeline =
+            timelineObject.AddComponent<BattleTimelineController>();
+
+        ReserveTurnSlotUI slot0 = new GameObject("DuplicateSkillCostSlot0")
+            .AddComponent<ReserveTurnSlotUI>();
+        ReserveTurnSlotUI slot1 = new GameObject("DuplicateSkillCostSlot1")
+            .AddComponent<ReserveTurnSlotUI>();
+        ReserveTurnSlotUI[] slots = { slot0, slot1 };
+
+        typeof(BattleTimelineController)
+            .GetField("reserveSlots", BindingFlags.Instance | BindingFlags.NonPublic)
+            .SetValue(timeline, slots);
+
+        CharacterRuntimeData runtime = new()
+        {
+            CharacterId = "Char_Test",
+            MaxStamina = 10,
+            CurrentStamina = 10
+        };
+
+        SkillMasterData skill = new()
+        {
+            SkillId = "S_Duplicate_Test",
+            ReferenceResource = ReferenceResource.Stamina,
+            ResourceCostType = ResourceCostType.Fixed,
+            ResourceCostValue = 1
+        };
+
+        PlayerReservedCommand firstSlotFirst = new(runtime, skill);
+        PlayerReservedCommand firstSlotSecond = new(runtime, skill);
+        PlayerReservedCommand firstSlotThird = new(runtime, skill);
+        PlayerReservedCommand nextSlotFirst = new(runtime, skill);
+
+        Assert.That(slot0.AddCommand(firstSlotFirst), Is.True);
+        Assert.That(slot0.AddCommand(firstSlotSecond), Is.True);
+        Assert.That(slot0.AddCommand(firstSlotThird), Is.True);
+        Assert.That(slot1.AddCommand(nextSlotFirst), Is.True);
+
+        MethodInfo recalculateMethod = typeof(BattleTimelineController).GetMethod(
+            "RecalculateAllReservedCosts",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+
+        Assert.That(recalculateMethod, Is.Not.Null);
+        recalculateMethod.Invoke(timeline, null);
+
+        Assert.That(firstSlotFirst.StaminaCost, Is.EqualTo(1));
+        Assert.That(firstSlotSecond.StaminaCost, Is.EqualTo(2));
+        Assert.That(firstSlotThird.StaminaCost, Is.EqualTo(3));
+        Assert.That(nextSlotFirst.StaminaCost, Is.EqualTo(1));
+        Assert.That(runtime.ReservedStaminaCost, Is.EqualTo(7));
+
+        Object.DestroyImmediate(timelineObject);
+        Object.DestroyImmediate(slot0.gameObject);
+        Object.DestroyImmediate(slot1.gameObject);
+    }
+
+    [Test]
+    public void PreviewReservationCostValue_IncludesDuplicateSkillStaminaSurchargeForActiveSlotOnly()
+    {
+        GameObject timelineObject = new("DuplicateSkillPreviewCostTimeline");
+        BattleTimelineController timeline =
+            timelineObject.AddComponent<BattleTimelineController>();
+
+        ReserveTurnSlotUI slot0 = new GameObject("DuplicateSkillPreviewCostSlot0")
+            .AddComponent<ReserveTurnSlotUI>();
+        ReserveTurnSlotUI slot1 = new GameObject("DuplicateSkillPreviewCostSlot1")
+            .AddComponent<ReserveTurnSlotUI>();
+        ReserveTurnSlotUI[] slots = { slot0, slot1 };
+
+        typeof(BattleTimelineController)
+            .GetField("reserveSlots", BindingFlags.Instance | BindingFlags.NonPublic)
+            .SetValue(timeline, slots);
+
+        CharacterRuntimeData runtime = new()
+        {
+            CharacterId = "Char_Test",
+            MaxStamina = 10,
+            CurrentStamina = 10
+        };
+
+        SkillMasterData skill = new()
+        {
+            SkillId = "S_Duplicate_Preview_Test",
+            ReferenceResource = ReferenceResource.Stamina,
+            ResourceCostType = ResourceCostType.Fixed,
+            ResourceCostValue = 1
+        };
+
+        Assert.That(slot0.AddCommand(new PlayerReservedCommand(runtime, skill)), Is.True);
+
+        typeof(BattleTimelineController)
+            .GetField("activeSlotIndex", BindingFlags.Instance | BindingFlags.NonPublic)
+            .SetValue(timeline, 0);
+
+        int slot0PreviewCost = timeline.GetPreviewReservationCostValue(runtime, skill);
+
+        typeof(BattleTimelineController)
+            .GetField("activeSlotIndex", BindingFlags.Instance | BindingFlags.NonPublic)
+            .SetValue(timeline, 1);
+
+        int slot1PreviewCost = timeline.GetPreviewReservationCostValue(runtime, skill);
+
+        Assert.That(slot0PreviewCost, Is.EqualTo(2));
+        Assert.That(slot1PreviewCost, Is.EqualTo(1));
+
+        Object.DestroyImmediate(timelineObject);
+        Object.DestroyImmediate(slot0.gameObject);
+        Object.DestroyImmediate(slot1.gameObject);
+    }
+
+    [Test]
     public void PlayerReservedCommand_CostModifiersCanResetToBaseCost()
     {
         CharacterRuntimeData runtime = new()
@@ -1407,6 +1683,24 @@ public class BattleActionRegressionTests
         monster.BindHUD(hud);
 
         return monster;
+    }
+
+    private static MonsterReservedCommand CreateMonsterReservedCommand(string runtimeId)
+    {
+        MonsterMasterData monsterData = new()
+        {
+            MonsterId = "Monster_Test",
+            Name = "Monster_Test",
+            Health = 10
+        };
+
+        MonsterRuntimeData runtime = new(runtimeId, monsterData);
+        MonsterSkillData skill = new()
+        {
+            SkillId = "MS_Test"
+        };
+
+        return new MonsterReservedCommand(runtime, skill);
     }
 
     private static GridManager CreateOneCellGrid(
