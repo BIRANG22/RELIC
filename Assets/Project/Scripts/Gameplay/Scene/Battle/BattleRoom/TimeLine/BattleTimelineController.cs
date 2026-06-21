@@ -69,6 +69,7 @@ public class BattleTimelineController : MonoBehaviour
     private int activeSlotIndex = -1;
     private CharacterRuntimeData selectedCharacter;
     private SkillMasterData selectedSkill;
+    private int reservationVersion;
     private Coroutine selectedSlotEffectRoutine;
     private Coroutine timelineSlotSlideRoutine;
     private Coroutine endButtonHoverRotationRoutine;
@@ -82,6 +83,8 @@ public class BattleTimelineController : MonoBehaviour
         new List<MonsterReservedCommand>[5];
 
     public int SlotCount => reserveSlots != null ? reserveSlots.Length : 0;
+    public int ActiveSlotIndex => activeSlotIndex;
+    public int ReservationVersion => reservationVersion;
 
     private void Awake()
     {
@@ -1001,9 +1004,9 @@ public class BattleTimelineController : MonoBehaviour
             return;
         }
 
-        if (!slot.CanAddCommand())
+        if (!CanAddPlayerCommandToSlot(activeSlotIndex))
         {
-            ShowBattleWarning("한 슬롯에는 최대 3개의 스킬만 예약할 수 있습니다.");
+            ShowCombinedSlotCapacityWarning();
             selectedSkill = null;
             return;
         }
@@ -1087,9 +1090,9 @@ public class BattleTimelineController : MonoBehaviour
             return false;
         }
 
-        if (!slot.CanAddCommand())
+        if (!CanAddPlayerCommandToSlot(slotIndex))
         {
-            ShowBattleWarning("한 슬롯에는 최대 3개의 스킬만 예약할 수 있습니다.");
+            ShowCombinedSlotCapacityWarning();
             return false;
         }
 
@@ -1165,6 +1168,7 @@ public class BattleTimelineController : MonoBehaviour
                 RemoveReservedCosts(removedCommand);
         }
 
+        reservationVersion++;
         RefreshReservationSimulation();
         RefreshTimeline();
         RefreshPlayerHUDs();
@@ -1173,18 +1177,117 @@ public class BattleTimelineController : MonoBehaviour
 
     public int GetRemainingPlayerCommandCapacity(int slotIndex)
     {
-        if (reserveSlots == null)
+        if (reserveSlots == null || slotIndex < 0 || slotIndex >= reserveSlots.Length)
             return 0;
 
-        if (slotIndex < 0 || slotIndex >= reserveSlots.Length)
+        if (reserveSlots[slotIndex] == null)
             return 0;
+
+        return GetRemainingCombinedCommandCapacity(slotIndex);
+    }
+
+    private bool CanAddPlayerCommandToSlot(int slotIndex)
+    {
+        if (reserveSlots == null)
+            return false;
+
+        if (slotIndex < 0 || slotIndex >= reserveSlots.Length)
+            return false;
 
         ReserveTurnSlotUI slot = reserveSlots[slotIndex];
 
         if (slot == null)
+            return false;
+
+        return slot.CanAddCommand() && GetRemainingCombinedCommandCapacity(slotIndex) > 0;
+    }
+
+    private int GetRemainingCombinedCommandCapacity(int slotIndex)
+    {
+        if (slotIndex < 0)
             return 0;
 
-        return slot.RemainingCommandCapacity;
+        int playerCommandCount = GetPlayerCommandCount(slotIndex);
+        int monsterCommandCount = GetMonsterCommandCount(slotIndex);
+
+        return Mathf.Max(
+            0,
+            ReserveTurnSlotUI.MaxCommandCount - playerCommandCount - monsterCommandCount);
+    }
+
+    private int GetPlayerCommandCount(int slotIndex)
+    {
+        if (reserveSlots == null || slotIndex < 0 || slotIndex >= reserveSlots.Length)
+            return 0;
+
+        ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+
+        return slot != null ? slot.CommandCount : 0;
+    }
+
+    private int GetMonsterCommandCount(int slotIndex)
+    {
+        InitializeMonsterCommandSlots();
+
+        if (slotIndex < 0 || slotIndex >= monsterCommandsBySlot.Length)
+            return 0;
+
+        List<MonsterReservedCommand> commands = monsterCommandsBySlot[slotIndex];
+
+        return commands != null ? commands.Count : 0;
+    }
+
+    private void ShowCombinedSlotCapacityWarning()
+    {
+        ShowBattleWarning("한 슬롯에는 몬스터 행동과 캐릭터 행동을 합쳐 최대 5개만 예약할 수 있습니다.");
+    }
+
+    public int GetPreviewReservationCostValue(
+        CharacterRuntimeData runtimeData,
+        SkillMasterData skillData)
+    {
+        if (skillData == null)
+            return 0;
+
+        PlayerReservedCommand command = new(runtimeData, skillData);
+
+        if (HasActiveReservationSlot())
+            PrepareCommandForReservation(activeSlotIndex, command);
+
+        return GetReservationCostValue(command, skillData.ReferenceResource);
+    }
+
+    private bool HasActiveReservationSlot()
+    {
+        return reserveSlots != null &&
+               activeSlotIndex >= 0 &&
+               activeSlotIndex < reserveSlots.Length;
+    }
+
+    private int GetReservationCostValue(
+        PlayerReservedCommand command,
+        ReferenceResource resource)
+    {
+        if (command == null)
+            return 0;
+
+        switch (resource)
+        {
+            case ReferenceResource.Health:
+                return command.HealthCost;
+
+            case ReferenceResource.Stamina:
+                return command.StaminaCost;
+
+            case ReferenceResource.UniqueResource:
+                return command.ResourceCost;
+
+            case ReferenceResource.MovePoint:
+                return command.MoveCost;
+
+            default:
+                return 0;
+        }
     }
 
     public IReadOnlyList<PlayerReservedCommand> GetPlayerCommands(int slotIndex)
@@ -1237,11 +1340,15 @@ public class BattleTimelineController : MonoBehaviour
             reserveSlots != null &&
             slotIndex == reserveSlots.Length - 1;
 
+        int duplicateSkillReservationCountInSlot =
+            CountEarlierSameSkillReservationsInSlot(command, slotIndex);
+
         BattleEquipmentEffectService.ApplyReservationCostModifiers(
             command,
             slotIndex,
             isFirstMoveCommand,
-            isLastTimelineSlot);
+            isLastTimelineSlot,
+            duplicateSkillReservationCountInSlot);
     }
 
     private bool HasEarlierMoveCommand(CharacterRuntimeData runtime, int targetSlotIndex)
@@ -1276,8 +1383,43 @@ public class BattleTimelineController : MonoBehaviour
         return false;
     }
 
+    private int CountEarlierSameSkillReservationsInSlot(
+        PlayerReservedCommand targetCommand,
+        int targetSlotIndex)
+    {
+        if (targetCommand == null || reserveSlots == null || reserveSlots.Length <= 0)
+            return 0;
+
+        string targetKey = GetDuplicateSkillReservationKey(targetCommand);
+        if (string.IsNullOrEmpty(targetKey))
+            return 0;
+
+        int safeTargetSlotIndex = Mathf.Clamp(targetSlotIndex, 0, reserveSlots.Length - 1);
+        ReserveTurnSlotUI slot = reserveSlots[safeTargetSlotIndex];
+
+        if (slot == null || slot.Commands == null)
+            return 0;
+
+        int count = 0;
+
+        for (int i = 0; i < slot.Commands.Count; i++)
+        {
+            PlayerReservedCommand command = slot.Commands[i];
+
+            if (command == null)
+                continue;
+
+            if (GetDuplicateSkillReservationKey(command) == targetKey)
+                count++;
+        }
+
+        return count;
+    }
+
     private void RecalculateAllReservedCosts()
     {
+        reservationVersion++;
+
         List<CharacterRuntimeData> runtimes = CollectReservedRuntimes();
 
         for (int i = 0; i < runtimes.Count; i++)
@@ -1296,6 +1438,7 @@ public class BattleTimelineController : MonoBehaviour
                 continue;
 
             bool isLastTimelineSlot = slotIndex == reserveSlots.Length - 1;
+            Dictionary<string, int> duplicateSkillReservationCounts = new();
 
             for (int i = 0; i < slot.Commands.Count; i++)
             {
@@ -1308,12 +1451,17 @@ public class BattleTimelineController : MonoBehaviour
                 bool isFirstMoveCommand =
                     isMoveCommand &&
                     !firstMoveAppliedCharacterIds.Contains(command.CharacterId);
+                int duplicateSkillReservationCountInSlot =
+                    GetAndIncrementDuplicateSkillReservationCount(
+                        duplicateSkillReservationCounts,
+                        command);
 
                 BattleEquipmentEffectService.ApplyReservationCostModifiers(
                     command,
                     slotIndex,
                     isFirstMoveCommand,
-                    isLastTimelineSlot);
+                    isLastTimelineSlot,
+                    duplicateSkillReservationCountInSlot);
 
                 AddReservedCosts(command);
 
@@ -1321,6 +1469,35 @@ public class BattleTimelineController : MonoBehaviour
                     firstMoveAppliedCharacterIds.Add(command.CharacterId);
             }
         }
+    }
+
+    private int GetAndIncrementDuplicateSkillReservationCount(
+        Dictionary<string, int> duplicateSkillReservationCounts,
+        PlayerReservedCommand command)
+    {
+        if (duplicateSkillReservationCounts == null || command == null)
+            return 0;
+
+        string key = GetDuplicateSkillReservationKey(command);
+        if (string.IsNullOrEmpty(key))
+            return 0;
+
+        duplicateSkillReservationCounts.TryGetValue(key, out int currentCount);
+        duplicateSkillReservationCounts[key] = currentCount + 1;
+
+        return currentCount;
+    }
+
+    private string GetDuplicateSkillReservationKey(PlayerReservedCommand command)
+    {
+        if (command == null ||
+            string.IsNullOrEmpty(command.CharacterId) ||
+            string.IsNullOrEmpty(command.SkillId))
+        {
+            return string.Empty;
+        }
+
+        return $"{command.CharacterId}:{command.SkillId}";
     }
 
     private List<CharacterRuntimeData> CollectReservedRuntimes()
@@ -1712,6 +1889,7 @@ public class BattleTimelineController : MonoBehaviour
         }
 
         monsterCommandsBySlot[resolvedSlotIndex].Add(command);
+        reservationVersion++;
 
         RefreshTimeline();
     }
@@ -1750,23 +1928,7 @@ public class BattleTimelineController : MonoBehaviour
         if (slotIndex < 0 || slotIndex >= monsterCommandsBySlot.Length)
             return false;
 
-        List<MonsterReservedCommand> commands = monsterCommandsBySlot[slotIndex];
-
-        if (commands == null || commands.Count <= 0)
-            return true;
-
-        for (int i = 0; i < commands.Count; i++)
-        {
-            MonsterReservedCommand command = commands[i];
-
-            if (command == null)
-                continue;
-
-            if (command.RuntimeId != runtimeId)
-                return false;
-        }
-
-        return true;
+        return GetRemainingCombinedCommandCapacity(slotIndex) > 0;
     }
 
     public void ClearMonsterReservations()
@@ -1776,6 +1938,7 @@ public class BattleTimelineController : MonoBehaviour
         for (int i = 0; i < monsterCommandsBySlot.Length; i++)
             monsterCommandsBySlot[i].Clear();
 
+        reservationVersion++;
         RefreshTimeline();
     }
 
@@ -1846,6 +2009,7 @@ public class BattleTimelineController : MonoBehaviour
     public void ClearAllReservations()
     {
         ClearSelectedSlotSelection();
+        reservationVersion++;
 
         if (reserveSlots != null)
         {

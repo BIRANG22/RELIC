@@ -44,6 +44,8 @@ public class SkillListPanel : MonoBehaviour
     private bool hasCapturedInitialDetailPosition;
     private Vector2 initialDetailAnchoredPosition;
     private int ignoreOutsideCloseFrame = -1;
+    private int renderedActiveSlotIndex = int.MinValue;
+    private int renderedReservationVersion = int.MinValue;
 
     private void Awake()
     {
@@ -59,8 +61,7 @@ public class SkillListPanel : MonoBehaviour
         CaptureInitialPosition();
         CaptureInitialDetailPosition();
 
-        if (battleTimelineController == null)
-            battleTimelineController = FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Include);
+        EnsureBattleTimelineController();
 
         HideSkillDetail();
         Close();
@@ -74,20 +75,50 @@ public class SkillListPanel : MonoBehaviour
 
     private void Update()
     {
-        if (!closeWhenClickOutside)
-            return;
-
-        if (!IsOpen())
-            return;
-
-        if (Time.frameCount <= ignoreOutsideCloseFrame)
-            return;
-
-        if (WasPointerPressedThisFrame(out Vector2 screenPosition))
+        if (closeWhenClickOutside &&
+            IsOpen() &&
+            Time.frameCount > ignoreOutsideCloseFrame &&
+            WasPointerPressedThisFrame(out Vector2 screenPosition))
         {
             if (!IsScreenPositionInsidePanelOrKeepOpenRoots(screenPosition))
+            {
                 Close();
+                return;
+            }
         }
+
+        RefreshIfTimelinePreviewStateChanged();
+    }
+
+    private void EnsureBattleTimelineController()
+    {
+        if (battleTimelineController != null)
+            return;
+
+        battleTimelineController = FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Include);
+    }
+
+    private void RefreshIfTimelinePreviewStateChanged()
+    {
+        if (!IsOpen() || currentRuntime == null)
+            return;
+
+        EnsureBattleTimelineController();
+
+        int activeSlotIndex = battleTimelineController != null
+            ? battleTimelineController.ActiveSlotIndex
+            : -1;
+        int reservationVersion = battleTimelineController != null
+            ? battleTimelineController.ReservationVersion
+            : -1;
+
+        if (activeSlotIndex == renderedActiveSlotIndex &&
+            reservationVersion == renderedReservationVersion)
+        {
+            return;
+        }
+
+        Refresh();
     }
 
     public void Open(CharacterRuntimeData runtimeData)
@@ -103,8 +134,7 @@ public class SkillListPanel : MonoBehaviour
         if (panelRoot != null)
             panelRoot.SetActive(true);
 
-        if (battleTimelineController == null)
-            battleTimelineController = FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Include);
+        EnsureBattleTimelineController();
 
         if (battleTimelineController != null)
             battleTimelineController.SelectCharacter(currentRuntime);
@@ -119,6 +149,8 @@ public class SkillListPanel : MonoBehaviour
             panelRoot.SetActive(false);
 
         currentRuntime = null;
+        renderedActiveSlotIndex = int.MinValue;
+        renderedReservationVersion = int.MinValue;
         Clear();
         HideSkillDetail();
     }
@@ -158,6 +190,7 @@ public class SkillListPanel : MonoBehaviour
 
     public void Refresh()
     {
+        UpdateRenderedTimelinePreviewState();
         Clear();
 
         if (currentRuntime == null)
@@ -191,7 +224,39 @@ public class SkillListPanel : MonoBehaviour
 
         SkillListSlotUI slot = Instantiate(skillSlotPrefab, contentRoot);
         skillSlots.Add(slot);
-        slot.Setup(this, skillId, interactable);
+        slot.Setup(this, skillId, interactable, GetPreviewSkillCostValue(skillId));
+    }
+
+    private void UpdateRenderedTimelinePreviewState()
+    {
+        EnsureBattleTimelineController();
+
+        renderedActiveSlotIndex = battleTimelineController != null
+            ? battleTimelineController.ActiveSlotIndex
+            : -1;
+        renderedReservationVersion = battleTimelineController != null
+            ? battleTimelineController.ReservationVersion
+            : -1;
+    }
+
+    private int GetPreviewSkillCostValue(string skillId)
+    {
+        if (string.IsNullOrWhiteSpace(skillId))
+            return -1;
+
+        if (DataManager.Instance == null ||
+            DataManager.Instance.SkillDatabase == null ||
+            !DataManager.Instance.SkillDatabase.TryGet(skillId, out SkillMasterData skillData))
+        {
+            return -1;
+        }
+
+        EnsureBattleTimelineController();
+
+        if (battleTimelineController == null)
+            return skillData.ResourceCostValue;
+
+        return battleTimelineController.GetPreviewReservationCostValue(currentRuntime, skillData);
     }
 
     public void SelectSkillSlot(SkillListSlotUI selectedSlot)
@@ -263,8 +328,7 @@ public class SkillListPanel : MonoBehaviour
             return;
         }
 
-        if (battleTimelineController == null)
-            battleTimelineController = FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Include);
+        EnsureBattleTimelineController();
 
         if (battleTimelineController == null)
         {

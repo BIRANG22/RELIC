@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
 {
-    public const int MaxCommandCount = 3;
+    public const int MaxCommandCount = 5;
 
     [Header("Click")]
     [SerializeField] private bool autoBindButtonsInChildren = true;
@@ -90,7 +90,7 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
 
         if (!CanAddCommand())
         {
-            ShowBattleWarning("한 슬롯에는 최대 3개의 스킬만 예약할 수 있습니다.");
+            ShowBattleWarning("한 슬롯에는 최대 5개의 행동만 예약할 수 있습니다.");
             return false;
         }
 

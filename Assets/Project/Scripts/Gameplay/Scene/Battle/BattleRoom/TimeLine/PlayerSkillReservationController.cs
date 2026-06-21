@@ -169,10 +169,15 @@ public class PlayerSkillReservationController : MonoBehaviour
         );
 
         HashSet<int> blockedGridIndices = BuildCurrentMoveBlockedGridIndices();
+        HashSet<int> blockedDestinationGridIndices = BuildKnownOtherPlayerDestinationGridIndices();
 
         for (int i = 0; i < rangeIndices.Count; i++)
         {
             int index = rangeIndices[i];
+
+            if (blockedDestinationGridIndices.Contains(index))
+                continue;
+
             List<List<Vector2Int>> pathCandidates =
                 GetReservableMovePathCandidates(
                     currentCasterGridIndex,
@@ -242,6 +247,12 @@ public class PlayerSkillReservationController : MonoBehaviour
     {
         if (!CanConfirmReservation())
             return;
+
+        if (BuildKnownOtherPlayerDestinationGridIndices().Contains(selectedGridIndex))
+        {
+            ShowBattleWarning("다른 캐릭터가 있는 위치로는 이동할 수 없습니다.");
+            return;
+        }
 
         if (!currentMovePathCandidatesByTargetIndex.TryGetValue(
             selectedGridIndex,
@@ -435,6 +446,126 @@ public class PlayerSkillReservationController : MonoBehaviour
         }
 
         return blockedGridIndices;
+    }
+
+    private HashSet<int> BuildKnownOtherPlayerDestinationGridIndices()
+    {
+        HashSet<int> blockedGridIndices = new();
+
+        string selfCharacterId = currentUserRuntime != null
+            ? currentUserRuntime.CharacterId
+            : null;
+
+        EnsureTimelineController();
+        AddKnownOtherPlayerDestinationsFromScene(blockedGridIndices, selfCharacterId);
+        AddKnownOtherPlayerDestinationsFromPartyStore(blockedGridIndices, selfCharacterId);
+
+        return blockedGridIndices;
+    }
+
+    private void AddKnownOtherPlayerDestinationsFromScene(
+        HashSet<int> blockedGridIndices,
+        string selfCharacterId)
+    {
+        if (blockedGridIndices == null)
+            return;
+
+        BattleCharacter[] characters = FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            BattleCharacter character = characters[i];
+
+            if (character == null || character.RuntimeData == null)
+                continue;
+
+            AddKnownOtherPlayerDestination(
+                blockedGridIndices,
+                character.RuntimeData,
+                character.CurrentGridIndex,
+                selfCharacterId
+            );
+        }
+    }
+
+    private void AddKnownOtherPlayerDestinationsFromPartyStore(
+        HashSet<int> blockedGridIndices,
+        string selfCharacterId)
+    {
+        if (blockedGridIndices == null || DataManager.Instance == null)
+            return;
+
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+        CharacterRuntimeStore characterStore = DataManager.Instance.CharacterRuntimeStore;
+
+        if (partyStore == null || characterStore == null)
+            return;
+
+        for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
+        {
+            string characterId = partyStore.GetCharacterId(i);
+
+            if (string.IsNullOrWhiteSpace(characterId))
+                continue;
+
+            if (!characterStore.TryGet(characterId, out CharacterRuntimeData runtime))
+                continue;
+
+            int fallbackGridIndex = partyStore.GetCurrentGridIndex(i);
+
+            if (fallbackGridIndex < 0)
+                fallbackGridIndex = partyStore.GetSpawnGridIndex(i);
+
+            AddKnownOtherPlayerDestination(
+                blockedGridIndices,
+                runtime,
+                fallbackGridIndex,
+                selfCharacterId
+            );
+        }
+    }
+
+    private void AddKnownOtherPlayerDestination(
+        HashSet<int> blockedGridIndices,
+        CharacterRuntimeData runtime,
+        int fallbackGridIndex,
+        string selfCharacterId)
+    {
+        if (blockedGridIndices == null || runtime == null)
+            return;
+
+        if (!string.IsNullOrWhiteSpace(selfCharacterId) &&
+            runtime.CharacterId == selfCharacterId)
+        {
+            return;
+        }
+
+        int gridIndex = -1;
+
+        if (timelineController != null && currentSlotIndex >= 0)
+            gridIndex = timelineController.GetPreviewGridIndexAtSlotEnd(runtime, currentSlotIndex);
+
+        if (gridIndex < 0)
+            gridIndex = fallbackGridIndex;
+
+        if (!IsValidMoveDestinationGridIndex(gridIndex))
+            return;
+
+        blockedGridIndices.Add(gridIndex);
+    }
+
+    private bool IsValidMoveDestinationGridIndex(int gridIndex)
+    {
+        if (gridIndex < 0)
+            return false;
+
+        if (gridManager == null)
+            return true;
+
+        return gridManager.IsValidCoord(gridManager.IndexToCoord(gridIndex));
     }
 
     private void ApplyVisualMovePath(List<PlayerReservedCommand> commands)
