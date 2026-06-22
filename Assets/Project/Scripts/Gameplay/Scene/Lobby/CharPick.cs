@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -497,8 +497,8 @@ public class CharPick : MonoBehaviour
             Level = 1,
             Exp = 0,
 
-            CurrentHealth = master.MaxHealth,
-            CurrentStamina = master.MaxStamina,
+            CurrentHP = master.MaxHP,
+            CurrentCost = master.MaxCost,
             CurrentResource = 0,
             CurrentMoveLevel = 1,
 

@@ -60,6 +60,17 @@ public class BattleTimelinePreviewEntry
         }
     }
 
+    public Sprite SkillRangeIcon
+    {
+        get
+        {
+            if (IsMonster && MonsterSkillData != null)
+                return GetSkillRangeIcon(MonsterSkillData.RangeId);
+
+            return null;
+        }
+    }
+
     public string SkillName
     {
         get
@@ -94,22 +105,22 @@ public class BattleTimelinePreviewEntry
             if (IsPlayer && PlayerSkillData != null)
             {
                 if (!string.IsNullOrWhiteSpace(PlayerSkillData.EffectDescription))
-                    return PlayerSkillData.EffectDescription;
+                    return FormatPlayerSkillEffectDescription(PlayerSkillData.EffectDescription);
 
                 if (!string.IsNullOrWhiteSpace(PlayerSkillData.EffectDesc))
-                    return PlayerSkillData.EffectDesc;
+                    return FormatPlayerSkillEffectDescription(PlayerSkillData.EffectDesc);
 
                 if (!string.IsNullOrWhiteSpace(PlayerSkillData.ToolTip))
-                    return PlayerSkillData.ToolTip;
+                    return FormatPlayerSkillEffectDescription(PlayerSkillData.ToolTip);
 
                 if (!string.IsNullOrWhiteSpace(PlayerSkillData.Details))
-                    return PlayerSkillData.Details;
+                    return FormatPlayerSkillEffectDescription(PlayerSkillData.Details);
             }
 
             if (IsMonster && MonsterSkillData != null)
             {
                 if (!string.IsNullOrWhiteSpace(MonsterSkillData.EffectDesc))
-                    return MonsterSkillData.EffectDesc;
+                    return FormatMonsterSkillEffectDescription(MonsterSkillData.EffectDesc, MonsterSkillData);
             }
 
             return "";
@@ -237,11 +248,11 @@ public class BattleTimelinePreviewEntry
 
         switch (PlayerSkillData.ReferenceResource)
         {
-            case ReferenceResource.Health:
-                return PlayerCommand.HealthCost;
+            case ReferenceResource.HP:
+                return PlayerCommand.HPCost;
 
-            case ReferenceResource.Stamina:
-                return PlayerCommand.StaminaCost;
+            case ReferenceResource.Cost:
+                return PlayerCommand.Cost;
 
             case ReferenceResource.UniqueResource:
                 return PlayerCommand.ResourceCost;
@@ -252,6 +263,23 @@ public class BattleTimelinePreviewEntry
             default:
                 return 0;
         }
+    }
+
+    private string FormatPlayerSkillEffectDescription(string description)
+    {
+        if (string.IsNullOrWhiteSpace(description))
+            return "";
+
+        int payAmount = PlayerCommand != null
+            ? GetPlayerPayAmount()
+            : PlayerSkillData.ResourceCostValue;
+
+        return SkillTooltipFormatter.Format(
+            PlayerSkillData,
+            description,
+            CharacterRuntime,
+            payAmount
+        );
     }
 
     private static Sprite GetCharacterTimelineIcon(string characterId)
@@ -313,4 +341,39 @@ public class BattleTimelinePreviewEntry
 
         return null;
     }
+
+    private static Sprite GetSkillRangeIcon(string rangeId)
+    {
+        if (string.IsNullOrWhiteSpace(rangeId))
+            return null;
+
+        if (DataManager.Instance == null ||
+            DataManager.Instance.SkillRangeIconDatabase == null)
+            return null;
+
+        if (DataManager.Instance.SkillRangeIconDatabase.TryGetIcon(rangeId, out Sprite icon))
+            return icon;
+
+        return null;
+    }
+
+    private static string FormatMonsterSkillEffectDescription(
+        string description,
+        MonsterSkillData skillData)
+    {
+        if (string.IsNullOrWhiteSpace(description))
+            return "";
+
+        string damageRangeText = BattleDamageService.GetMonsterDamageRangeText(skillData);
+
+        if (string.IsNullOrWhiteSpace(damageRangeText))
+            return description;
+
+        const string valueToken = "\uC218\uCE58";
+
+        return description
+            .Replace($"\"{valueToken}\"", damageRangeText)
+            .Replace(valueToken, damageRangeText);
+    }
+
 }

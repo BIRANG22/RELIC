@@ -27,12 +27,48 @@ public class BattleDamageService
 
     public int GetMonsterDamage(MonsterReservedCommand command)
     {
-        if (command == null || command.SkillData == null)
+        if (!TryGetMonsterDamageRange(command, out int minDamage, out int maxDamage))
             return 1;
 
-        int value = ParseFirstInt(command.SkillData.ValueRate);
+        return Random.Range(minDamage, maxDamage + 1);
+    }
 
-        return Mathf.Max(1, value);
+    public bool TryGetMonsterDamageRange(MonsterReservedCommand command, out int minDamage, out int maxDamage)
+    {
+        minDamage = 0;
+        maxDamage = 0;
+
+        if (command == null)
+            return false;
+
+        return TryGetMonsterDamageRange(command.SkillData, out minDamage, out maxDamage);
+    }
+
+    public static bool TryGetMonsterDamageRange(MonsterSkillData skillData, out int minDamage, out int maxDamage)
+    {
+        minDamage = 0;
+        maxDamage = 0;
+
+        if (skillData == null)
+            return false;
+
+        int baseDamage = ParseFirstIntValue(skillData.ValueRate);
+        int randomRange = Mathf.Max(0, skillData.ValueRandomRange);
+
+        minDamage = Mathf.Max(1, baseDamage - randomRange);
+        maxDamage = Mathf.Max(minDamage, baseDamage + randomRange);
+        return true;
+    }
+
+    public static string GetMonsterDamageRangeText(MonsterSkillData skillData)
+    {
+        if (!TryGetMonsterDamageRange(skillData, out int minDamage, out int maxDamage))
+            return "";
+
+        if (minDamage == maxDamage)
+            return minDamage.ToString();
+
+        return $"{minDamage}-{maxDamage}";
     }
 
     public int GetStatusStack(
@@ -55,6 +91,11 @@ public class BattleDamageService
     }
 
     public int ParseFirstInt(string text)
+    {
+        return ParseFirstIntValue(text);
+    }
+
+    private static int ParseFirstIntValue(string text)
     {
         if (string.IsNullOrWhiteSpace(text))
             return 1;

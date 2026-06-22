@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Relic.Gameplay.Data
@@ -36,15 +36,13 @@ namespace Relic.Gameplay.Data
     {
         MovePoint = 0,
         UniqueResource = 1,
-        Stamina = 2,
-        Health = 3,
+        Cost = 2,
+        HP = 3,
 
-        // SkillMaster의 ReferenceResource 컬럼에서 사용하는 별칭입니다.
-        // Cost  -> 스태미나 / 코스트
-        // Hp    -> 체력
-        // Ulti  -> 고유자원
-        Cost = Stamina,
-        Hp = Health,
+        // Legacy Excel aliases.
+        Stamina = Cost,
+        Health = HP,
+        Hp = HP,
         Ulti = UniqueResource
     }
 

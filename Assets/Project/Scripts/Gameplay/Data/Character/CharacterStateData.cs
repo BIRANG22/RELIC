@@ -16,13 +16,13 @@ namespace Relic.Gameplay.Data
     public class CharacterStateData
     {
         /// <summary>
-        /// CurrentHealth: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
+        /// CurrentHP: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
         /// </summary>
-        public int CurrentHealth;
+        public int CurrentHP;
         /// <summary>
-        /// CurrentStamina: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
+        /// CurrentCost: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
         /// </summary>
-        public int CurrentStamina;
+        public int CurrentCost;
         /// <summary>
         /// CurrentUniqueResource: 엑셀/런타임 데이터에서 이 필드가 담아야 할 값을 저장합니다.
         /// </summary>

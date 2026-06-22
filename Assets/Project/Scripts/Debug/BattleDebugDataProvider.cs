@@ -24,7 +24,7 @@ public class BattleDebugDataProvider : MonoBehaviour
 
         if (dm == null)
         {
-            Debug.LogWarning("[BattleDebugDataProvider] DataManager°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("[BattleDebugDataProvider] DataManagerê°€ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -48,8 +48,8 @@ public class BattleDebugDataProvider : MonoBehaviour
                 Level = 1,
                 Exp = 0,
 
-                CurrentHealth = 100,
-                CurrentStamina = 100,
+                CurrentHP = 100,
+                CurrentCost = 100,
                 CurrentResource = 0,
                 CurrentMoveLevel = 0,
 

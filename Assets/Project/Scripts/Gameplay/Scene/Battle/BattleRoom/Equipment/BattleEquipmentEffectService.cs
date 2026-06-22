@@ -19,29 +19,29 @@ public static class BattleEquipmentEffectService
 
         ResetBattleOnlyEffectState(runtime);
 
-        int baseMaxHealth = masterData != null
-            ? Mathf.Max(1, masterData.MaxHealth)
-            : Mathf.Max(1, runtime.MaxHealth);
+        int baseMaxHP = masterData != null
+            ? Mathf.Max(1, masterData.MaxHP)
+            : Mathf.Max(1, runtime.MaxHP);
 
-        int previousMaxHealth = runtime.MaxHealth > 0
-            ? runtime.MaxHealth
-            : baseMaxHealth;
+        int previousMaxHP = runtime.MaxHP > 0
+            ? runtime.MaxHP
+            : baseMaxHP;
 
-        bool shouldFillHealth =
-            runtime.CurrentHealth <= 0 ||
-            runtime.CurrentHealth >= previousMaxHealth;
+        bool shouldFillHP =
+            runtime.CurrentHP <= 0 ||
+            runtime.CurrentHP >= previousMaxHP;
 
-        runtime.MaxHealth = Mathf.Max(1, baseMaxHealth + GetMaxHealthBonus(runtime));
-        runtime.CurrentHealth = shouldFillHealth
-            ? runtime.MaxHealth
-            : Mathf.Clamp(runtime.CurrentHealth, 1, runtime.MaxHealth);
+        runtime.MaxHP = Mathf.Max(1, baseMaxHP + GetMaxHPBonus(runtime));
+        runtime.CurrentHP = shouldFillHP
+            ? runtime.MaxHP
+            : Mathf.Clamp(runtime.CurrentHP, 1, runtime.MaxHP);
 
-        int baseMaxStamina = masterData != null
-            ? Mathf.Max(0, masterData.MaxStamina)
-            : Mathf.Max(0, runtime.MaxStamina);
+        int baseMaxCost = masterData != null
+            ? Mathf.Max(0, masterData.MaxCost)
+            : Mathf.Max(0, runtime.MaxCost);
 
-        runtime.MaxStamina = Mathf.Max(0, baseMaxStamina + GetMaxStaminaBonus(runtime));
-        runtime.CurrentStamina = Mathf.Max(0, runtime.MaxStamina + GetBattleStartStaminaBonus(runtime));
+        runtime.MaxCost = Mathf.Max(0, baseMaxCost + GetMaxCostBonus(runtime));
+        runtime.CurrentCost = Mathf.Max(0, runtime.MaxCost + GetBattleStartCostBonus(runtime));
 
         runtime.CurrentResource = GetBattleStartUniqueResource(runtime, masterData);
         runtime.CurrentMoveLevel = Mathf.Max(0, GetEffectiveMoveValue(runtime, masterData));
@@ -156,8 +156,8 @@ public static class BattleEquipmentEffectService
         command.ResetCostsToBase();
         command.SetTimelineSlotIndex(slotIndex);
 
-        int healthCost = command.HealthCost;
-        int staminaCost = command.StaminaCost;
+        int hpCost = command.HPCost;
+        int cost = command.Cost;
         int resourceCost = command.ResourceCost;
         int moveCost = command.MoveCost;
         int shieldCost = command.ShieldCost;
@@ -167,8 +167,8 @@ public static class BattleEquipmentEffectService
             IsMoveCommand(command))
         {
             ReduceFirstPositiveCost(
-                ref healthCost,
-                ref staminaCost,
+                ref hpCost,
+                ref cost,
                 ref resourceCost,
                 ref moveCost,
                 ref shieldCost);
@@ -177,18 +177,18 @@ public static class BattleEquipmentEffectService
         if (HasRelic(command.UserRuntime, "Relic_05") && slotIndex == 0)
         {
             ReduceFirstPositiveCost(
-                ref healthCost,
-                ref staminaCost,
+                ref hpCost,
+                ref cost,
                 ref resourceCost,
                 ref moveCost,
                 ref shieldCost);
         }
 
-        staminaCost += Mathf.Max(0, duplicateSkillReservationCountInSlot);
+        cost += Mathf.Max(0, duplicateSkillReservationCountInSlot);
 
         command.SetCosts(
-            healthCost,
-            staminaCost,
+            hpCost,
+            cost,
             resourceCost,
             moveCost,
             shieldCost);
@@ -371,7 +371,7 @@ public static class BattleEquipmentEffectService
         return skillData.Category == Category.Move;
     }
 
-    private static int GetMaxHealthBonus(CharacterRuntimeData runtime)
+    private static int GetMaxHPBonus(CharacterRuntimeData runtime)
     {
         int bonus = 0;
 
@@ -393,7 +393,7 @@ public static class BattleEquipmentEffectService
         return bonus;
     }
 
-    private static int GetMaxStaminaBonus(CharacterRuntimeData runtime)
+    private static int GetMaxCostBonus(CharacterRuntimeData runtime)
     {
         int bonus = 0;
 
@@ -434,7 +434,7 @@ public static class BattleEquipmentEffectService
         return bonus;
     }
 
-    private static int GetBattleStartStaminaBonus(CharacterRuntimeData runtime)
+    private static int GetBattleStartCostBonus(CharacterRuntimeData runtime)
     {
         return HasRelic(runtime, "Relic_01") ? 2 : 0;
     }
@@ -596,15 +596,15 @@ public static class BattleEquipmentEffectService
     }
 
     private static void ReduceFirstPositiveCost(
-        ref int healthCost,
-        ref int staminaCost,
+        ref int hpCost,
+        ref int cost,
         ref int resourceCost,
         ref int moveCost,
         ref int shieldCost)
     {
-        if (staminaCost > 0)
+        if (cost > 0)
         {
-            staminaCost -= 1;
+            cost -= 1;
             return;
         }
 
@@ -626,7 +626,7 @@ public static class BattleEquipmentEffectService
             return;
         }
 
-        if (healthCost > 0)
-            healthCost -= 1;
+        if (hpCost > 0)
+            hpCost -= 1;
     }
 }

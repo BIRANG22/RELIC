@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 
 /// <summary>
@@ -14,13 +15,14 @@ namespace Relic.Gameplay.Data
     /// </summary>
     public class CharacterDetailView : MonoBehaviour
     {
-        [SerializeField] private TMP_Text healthText;
+        [FormerlySerializedAs("healthText")]
+        [SerializeField] private TMP_Text hpText;
         [SerializeField] private TMP_Text resourceText;
         [SerializeField] private TMP_Text moveLevelText;
 
         public void Bind(CharacterMasterData master)
         {
-            healthText.text = $"HP {master.MaxHealth}";
+            hpText.text = $"HP {master.MaxHP}";
             resourceText.text = $"{master.ResourceType} {master.MaxResource}";
         }
     }

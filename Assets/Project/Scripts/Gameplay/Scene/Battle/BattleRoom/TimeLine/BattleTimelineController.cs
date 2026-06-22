@@ -1273,11 +1273,11 @@ public class BattleTimelineController : MonoBehaviour
 
         switch (resource)
         {
-            case ReferenceResource.Health:
-                return command.HealthCost;
+            case ReferenceResource.HP:
+                return command.HPCost;
 
-            case ReferenceResource.Stamina:
-                return command.StaminaCost;
+            case ReferenceResource.Cost:
+                return command.Cost;
 
             case ReferenceResource.UniqueResource:
                 return command.ResourceCost;
@@ -1540,8 +1540,8 @@ public class BattleTimelineController : MonoBehaviour
         if (command == null || command.UserRuntime == null)
             return;
 
-        command.UserRuntime.AddReservedHealth(command.HealthCost);
-        command.UserRuntime.AddReservedStamina(command.StaminaCost);
+        command.UserRuntime.AddReservedHP(command.HPCost);
+        command.UserRuntime.AddReservedCost(command.Cost);
         command.UserRuntime.AddReservedResource(command.ResourceCost);
         command.UserRuntime.AddReservedMove(command.MoveCost);
         command.UserRuntime.AddReservedShield(command.ShieldCost);
@@ -1596,11 +1596,11 @@ public class BattleTimelineController : MonoBehaviour
         if (runtime == null || command == null)
             return "예약할 스킬 정보가 없습니다.";
 
-        if (!runtime.CanReserveHealth(command.HealthCost))
-            return BuildShortageMessage("체력", command.HealthCost, runtime.CurrentHealth - runtime.ReservedHealthCost);
+        if (!runtime.CanReserveHP(command.HPCost))
+            return BuildShortageMessage("HP", command.HPCost, runtime.CurrentHP - runtime.ReservedHPCost);
 
-        if (!runtime.CanReserveStamina(command.StaminaCost))
-            return BuildShortageMessage("코스트", command.StaminaCost, runtime.CurrentStamina - runtime.ReservedStaminaCost);
+        if (!runtime.CanReserveCost(command.Cost))
+            return BuildShortageMessage("Cost", command.Cost, runtime.CurrentCost - runtime.ReservedCost);
 
         if (!runtime.CanReserveResource(command.ResourceCost))
             return BuildShortageMessage("고유자원", command.ResourceCost, runtime.CurrentResource - runtime.ReservedResourceCost);
@@ -1624,11 +1624,11 @@ public class BattleTimelineController : MonoBehaviour
     {
         switch (resource)
         {
-            case ReferenceResource.Health:
-                return "체력";
+            case ReferenceResource.HP:
+                return "HP";
 
-            case ReferenceResource.Stamina:
-                return "코스트";
+            case ReferenceResource.Cost:
+                return "Cost";
 
             case ReferenceResource.UniqueResource:
                 return "고유자원";
@@ -2072,7 +2072,7 @@ public class BattleTimelineController : MonoBehaviour
         RefreshPlayerHUDs();
     }
 
-    public int ApplyBlockedMoveStaminaRefunds()
+    public int ApplyBlockedMoveCostRefunds()
     {
         int totalRefund = 0;
 
@@ -2093,14 +2093,14 @@ public class BattleTimelineController : MonoBehaviour
                 if (!IsMoveCommand(command))
                     continue;
 
-                int refund = command.ApplyBlockedMoveStaminaRefund();
+                int refund = command.ApplyBlockedMoveCostRefund();
 
                 if (refund <= 0)
                     continue;
 
                 totalRefund += refund;
                 Debug.Log(
-                    $"[BattleTimelineController] Move stamina refund / " +
+                    $"[BattleTimelineController] Move Cost refund / " +
                     $"Character:{command.CharacterId} / Refund:{refund}"
                 );
             }
@@ -2131,8 +2131,8 @@ public class BattleTimelineController : MonoBehaviour
         if (command == null || command.UserRuntime == null)
             return;
 
-        command.UserRuntime.RemoveReservedHealth(command.HealthCost);
-        command.UserRuntime.RemoveReservedStamina(command.StaminaCost);
+        command.UserRuntime.RemoveReservedHP(command.HPCost);
+        command.UserRuntime.RemoveReservedCost(command.Cost);
         command.UserRuntime.RemoveReservedResource(command.ResourceCost);
         command.UserRuntime.RemoveReservedMove(command.MoveCost);
         command.UserRuntime.RemoveReservedShield(command.ShieldCost);

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
@@ -243,7 +243,7 @@ public class BattleTurnExecutor : MonoBehaviour
 
             if (timelineController != null)
             {
-                timelineController.ApplyBlockedMoveStaminaRefunds();
+                timelineController.ApplyBlockedMoveCostRefunds();
                 RefreshBattleHUDs();
             }
 

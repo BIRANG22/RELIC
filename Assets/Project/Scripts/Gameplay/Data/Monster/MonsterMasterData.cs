@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Relic.Gameplay.Data
 {
@@ -9,7 +10,8 @@ namespace Relic.Gameplay.Data
         public string MonsterId;
         public string Name;
         public string Grade;
-        public int Health;
+        [FormerlySerializedAs("Health")]
+        public int HP;
 
         public int MinRemnant;
         public int MaxRemnant;

@@ -1,4 +1,4 @@
-﻿using Relic.Gameplay.Data;
+using Relic.Gameplay.Data;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -224,7 +224,7 @@ public class SkillListPanel : MonoBehaviour
 
         SkillListSlotUI slot = Instantiate(skillSlotPrefab, contentRoot);
         skillSlots.Add(slot);
-        slot.Setup(this, skillId, interactable, GetPreviewSkillCostValue(skillId));
+        slot.Setup(this, skillId, interactable, GetPreviewSkillCostValue(skillId), currentRuntime);
     }
 
     private void UpdateRenderedTimelinePreviewState()

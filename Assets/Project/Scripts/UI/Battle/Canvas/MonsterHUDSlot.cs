@@ -1,4 +1,4 @@
-﻿using Relic.Gameplay.Data;
+using Relic.Gameplay.Data;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -136,8 +136,8 @@ public class MonsterHUDSlot : MonoBehaviour
         if (nameText != null)
             nameText.text = boundRuntime.Name;
 
-        RefreshBar(hpFill, hpValueText, boundRuntime.CurrentHp, boundRuntime.MaxHp);
-        RefreshShield(boundRuntime.CurrentShield, boundRuntime.MaxHp);
+        RefreshBar(hpFill, hpValueText, boundRuntime.CurrentHP, boundRuntime.MaxHP);
+        RefreshShield(boundRuntime.CurrentShield, boundRuntime.MaxHP);
         RefreshStatusEffects(boundRuntime.StatusEffects);
     }
 
@@ -153,15 +153,15 @@ public class MonsterHUDSlot : MonoBehaviour
             valueText.text = current.ToString();
     }
 
-    private void RefreshShield(int shield, int maxHp)
+    private void RefreshShield(int shield, int maxHP)
     {
         shield = Mathf.Max(0, shield);
-        maxHp = Mathf.Max(1, maxHp);
+        maxHP = Mathf.Max(1, maxHP);
 
         if (shieldFill != null)
         {
             shieldFill.gameObject.SetActive(shield > 0);
-            shieldFill.fillAmount = (float)shield / maxHp;
+            shieldFill.fillAmount = (float)shield / maxHP;
         }
 
         if (shieldValueText != null)

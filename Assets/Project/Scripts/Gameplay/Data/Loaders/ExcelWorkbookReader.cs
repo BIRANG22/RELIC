@@ -75,9 +75,7 @@ namespace Relic.Gameplay.Data
                 if (!relMap.TryGetValue(relId, out var target))
                     continue;
 
-                var normalized = target.Replace('\\', '/');
-                if (!normalized.StartsWith("xl/", StringComparison.OrdinalIgnoreCase))
-                    normalized = "xl/" + normalized.TrimStart('/');
+                var normalized = NormalizeWorkbookRelationshipTarget(target);
 
                 var sheetEntry = archive.GetEntry(normalized);
                 if (sheetEntry == null)
@@ -87,6 +85,22 @@ namespace Relic.Gameplay.Data
             }
 
             return result;
+        }
+
+        private static string NormalizeWorkbookRelationshipTarget(string target)
+        {
+            if (string.IsNullOrWhiteSpace(target))
+                return string.Empty;
+
+            var normalized = target.Replace('\\', '/').Trim();
+
+            if (normalized.StartsWith("/", StringComparison.Ordinal))
+                return normalized.TrimStart('/');
+
+            if (normalized.StartsWith("xl/", StringComparison.OrdinalIgnoreCase))
+                return normalized;
+
+            return "xl/" + normalized.TrimStart('/');
         }
 
         private static Dictionary<string, List<Dictionary<string, string>>> ReadSectionedCsv(byte[] csvBytes)
@@ -277,21 +291,66 @@ namespace Relic.Gameplay.Data
         {
             XNamespace ns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
             var values = new List<string>();
+            var nextColumnIndex = 0;
 
             foreach (var cell in rowNode.Elements(ns + "c"))
             {
+                int columnIndex;
+                if (!TryGetColumnIndex(cell.Attribute("r")?.Value, out columnIndex))
+                    columnIndex = nextColumnIndex;
+
+                while (values.Count < columnIndex)
+                    values.Add(string.Empty);
+
                 var type = cell.Attribute("t")?.Value;
                 var valueNode = cell.Element(ns + "v");
-                var inlineNode = cell.Element(ns + "is")?.Element(ns + "t");
-                var raw = valueNode?.Value ?? inlineNode?.Value ?? string.Empty;
+                var inlineNode = cell.Element(ns + "is");
+                var raw = valueNode?.Value ??
+                    (inlineNode != null
+                        ? string.Concat(inlineNode.Descendants(ns + "t").Select(x => x.Value))
+                        : string.Empty);
+
+                string value;
 
                 if (type == "s" && int.TryParse(raw, out var sharedIndex) && sharedIndex >= 0 && sharedIndex < sharedStrings.Count)
-                    values.Add(sharedStrings[sharedIndex]);
+                    value = sharedStrings[sharedIndex];
                 else
-                    values.Add(raw);
+                    value = raw;
+
+                if (values.Count == columnIndex)
+                    values.Add(value);
+                else
+                    values[columnIndex] = value;
+
+                nextColumnIndex = columnIndex + 1;
             }
 
             return values;
+        }
+
+        private static bool TryGetColumnIndex(string cellReference, out int columnIndex)
+        {
+            columnIndex = 0;
+
+            if (string.IsNullOrWhiteSpace(cellReference))
+                return false;
+
+            var foundColumn = false;
+            for (var i = 0; i < cellReference.Length; i++)
+            {
+                var c = char.ToUpperInvariant(cellReference[i]);
+                if (c < 'A' || c > 'Z')
+                    break;
+
+                foundColumn = true;
+                columnIndex = columnIndex * 26 + (c - 'A' + 1);
+            }
+
+            if (!foundColumn)
+                return false;
+
+            columnIndex -= 1;
+            return true;
         }
     }
 }

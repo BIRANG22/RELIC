@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using Relic.Gameplay.Data;
 
 public class EquippedSkillCharacterRowUI : MonoBehaviour
@@ -27,9 +27,9 @@ public class EquippedSkillCharacterRowUI : MonoBehaviour
             return;
         }
 
-        SetSlot(passiveSlot, characterData.PassiveSkillId, false);
-        SetSlot(uniqueSlot, characterData.UniqueSkillId, false);
-        SetSlot(abilitySlot, characterData.AbilitySkillId, true);
+        SetSlot(passiveSlot, characterData.PassiveSkillId, false, characterData);
+        SetSlot(uniqueSlot, characterData.UniqueSkillId, false, characterData);
+        SetSlot(abilitySlot, characterData.AbilitySkillId, true, characterData);
 
         SetSlot(
             freeSlot1,
@@ -37,7 +37,8 @@ public class EquippedSkillCharacterRowUI : MonoBehaviour
             characterData.EquippedSkillIds.Length > 2
                 ? characterData.EquippedSkillIds[2]
                 : null,
-            true);
+            true,
+            characterData);
 
         SetSlot(
             freeSlot2,
@@ -45,7 +46,8 @@ public class EquippedSkillCharacterRowUI : MonoBehaviour
             characterData.EquippedSkillIds.Length > 3
                 ? characterData.EquippedSkillIds[3]
                 : null,
-            true);
+            true,
+            characterData);
     }
 
     public void Clear()
@@ -57,7 +59,11 @@ public class EquippedSkillCharacterRowUI : MonoBehaviour
         if (freeSlot2 != null) freeSlot2.Clear();
     }
 
-    private void SetSlot(EquippedSkillSlotUI slot, string skillId, bool clickable)
+    private void SetSlot(
+        EquippedSkillSlotUI slot,
+        string skillId,
+        bool clickable,
+        CharacterRuntimeData characterData)
     {
         if (slot == null)
             return;
@@ -89,6 +95,6 @@ public class EquippedSkillCharacterRowUI : MonoBehaviour
         if (iconDatabase != null)
             iconDatabase.TryGetIcon(skillId, out icon);
 
-        slot.SetSkill(ownerPanel, skillData, icon, clickable);
+        slot.SetSkill(ownerPanel, skillData, icon, clickable, characterData);
     }
 }

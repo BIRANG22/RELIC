@@ -1,4 +1,4 @@
-﻿using Relic.Gameplay.Data;
+using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
 using System.Collections;
 using System.Collections.Generic;
@@ -735,20 +735,20 @@ public class BattleActionRunner
         if (command == null || character == null || character.RuntimeData == null)
             return;
 
-        if (command.MoveStaminaCostConsumed)
+        if (command.MoveCostConsumed)
             return;
 
-        int staminaCost = Mathf.Max(0, command.StaminaCost);
+        int cost = Mathf.Max(0, command.Cost);
 
-        if (staminaCost > 0)
+        if (cost > 0)
         {
-            character.RuntimeData.CurrentStamina = Mathf.Max(
+            character.RuntimeData.CurrentCost = Mathf.Max(
                 0,
-                character.RuntimeData.CurrentStamina - staminaCost
+                character.RuntimeData.CurrentCost - cost
             );
         }
 
-        command.MarkMoveStaminaCostConsumed();
+        command.MarkMoveCostConsumed();
     }
 
     private void RecordPlayerMoveExecutionDistance(
@@ -1276,7 +1276,7 @@ public class BattleActionRunner
 
                 for (int hit = 0; hit < hitCount; hit++)
                 {
-                    if (playerTarget.RuntimeData.CurrentHealth <= 0)
+                    if (playerTarget.RuntimeData.CurrentHP <= 0)
                         break;
 
                     context.Count = 1;
@@ -1631,7 +1631,7 @@ public class BattleActionRunner
             if (character == null || character.RuntimeData == null)
                 continue;
 
-            if (character.RuntimeData.CurrentHealth <= 0)
+            if (character.RuntimeData.CurrentHP <= 0)
                 continue;
 
             if (command.TargetGridIndices.Contains(character.CurrentGridIndex))
@@ -1927,7 +1927,7 @@ public class BattleActionRunner
 
         if (hitAnimator != null)
         {
-            if (target.RuntimeData.CurrentHealth <= 0)
+            if (target.RuntimeData.CurrentHP <= 0)
                 hitAnimator.PlayDead();
             else
                 hitAnimator.PlayHit();

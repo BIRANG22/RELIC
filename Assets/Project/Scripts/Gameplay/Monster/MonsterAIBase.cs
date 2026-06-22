@@ -63,9 +63,9 @@ namespace Relic.Gameplay.Monster
             return monster.TurnCount <= 0;
         }
 
-        protected bool IsHpBelow(MonsterRuntimeData monster, float percent)
+        protected bool IsHPBelow(MonsterRuntimeData monster, float percent)
         {
-            return monster.GetHpPercent() <= percent;
+            return monster.GetHPPercent() <= percent;
         }
 
         protected string PickWeighted(params (string skillId, int weight)[] candidates)
@@ -183,12 +183,12 @@ namespace Relic.Gameplay.Monster
             return farthest;
         }
 
-        protected BattleCharacter FindHighestHpPlayer()
+        protected BattleCharacter FindHighestHPPlayer()
         {
             BattleCharacter[] players = FindPlayers();
 
             BattleCharacter result = null;
-            int highestHp = -1;
+            int highestHP = -1;
 
             for (int i = 0; i < players.Length; i++)
             {
@@ -197,9 +197,9 @@ namespace Relic.Gameplay.Monster
                 if (player == null || player.RuntimeData == null)
                     continue;
 
-                if (player.RuntimeData.CurrentHealth > highestHp)
+                if (player.RuntimeData.CurrentHP > highestHP)
                 {
-                    highestHp = player.RuntimeData.CurrentHealth;
+                    highestHP = player.RuntimeData.CurrentHP;
                     result = player;
                 }
             }

@@ -22,7 +22,7 @@ public class BattleDebugKillAllMonsters : MonoBehaviour
             if (monster == null || monster.RuntimeData == null)
                 continue;
 
-            monster.RuntimeData.CurrentHp = 0;
+            monster.RuntimeData.CurrentHP = 0;
             monster.RuntimeData.CurrentShield = 0;
 
             if (BattleRewardCollector.Instance != null)
@@ -37,3 +37,4 @@ public class BattleDebugKillAllMonsters : MonoBehaviour
             BattleResultChecker.Instance.CheckBattleEnd();
     }
 }
+

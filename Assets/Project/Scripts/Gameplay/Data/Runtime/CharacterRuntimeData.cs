@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Relic.Gameplay.Data
 {
@@ -11,19 +12,27 @@ namespace Relic.Gameplay.Data
         public int Level = 1;
         public int Exp = 0;
 
-        public int MaxHealth;
-        public int MaxStamina;
-        public int StaminaRecovery;
-        public int BonusStaminaRecovery;
+        [FormerlySerializedAs("MaxHealth")]
+        public int MaxHP;
+        [FormerlySerializedAs("MaxStamina")]
+        public int MaxCost;
+        [FormerlySerializedAs("StaminaRecovery")]
+        public int CostRecovery;
+        [FormerlySerializedAs("BonusStaminaRecovery")]
+        public int BonusCostRecovery;
 
-        public int CurrentHealth;
-        public int CurrentStamina;
+        [FormerlySerializedAs("CurrentHealth")]
+        public int CurrentHP;
+        [FormerlySerializedAs("CurrentStamina")]
+        public int CurrentCost;
         public int CurrentResource;
         public int CurrentMoveLevel;
         public int CurrentShield;
 
-        public int ReservedHealthCost;
-        public int ReservedStaminaCost;
+        [FormerlySerializedAs("ReservedHealthCost")]
+        public int ReservedHPCost;
+        [FormerlySerializedAs("ReservedStaminaCost")]
+        public int ReservedCost;
         public int ReservedResourceCost;
         public int ReservedMoveCost;
         public int ReservedShieldCost;     
@@ -45,21 +54,21 @@ namespace Relic.Gameplay.Data
 
         public bool IsUnlocked;
                 
-        public int TotalStaminaRecovery => Mathf.Max(0, StaminaRecovery + BonusStaminaRecovery);
-        public int PreviewHealth => Mathf.Max(0, CurrentHealth - ReservedHealthCost);
-        public int PreviewStamina => Mathf.Max(0, CurrentStamina - ReservedStaminaCost);
+        public int TotalCostRecovery => Mathf.Max(0, CostRecovery + BonusCostRecovery);
+        public int PreviewHP => Mathf.Max(0, CurrentHP - ReservedHPCost);
+        public int PreviewCost => Mathf.Max(0, CurrentCost - ReservedCost);
         public int PreviewResource => Mathf.Max(0, CurrentResource - ReservedResourceCost);
         public int PreviewMoveLevel => Mathf.Max(0, CurrentMoveLevel - ReservedMoveCost);
         public int PreviewShield => Mathf.Max(0, CurrentShield - ReservedShieldCost);
 
-        public bool CanReserveHealth(int cost)
+        public bool CanReserveHP(int cost)
         {
-            return cost <= 0 || CurrentHealth - ReservedHealthCost > cost;
+            return cost <= 0 || CurrentHP - ReservedHPCost > cost;
         }
 
-        public bool CanReserveStamina(int cost)
+        public bool CanReserveCost(int cost)
         {
-            return cost <= 0 || CurrentStamina - ReservedStaminaCost >= cost;
+            return cost <= 0 || CurrentCost - ReservedCost >= cost;
         }
 
         public bool CanReserveResource(int cost)
@@ -77,14 +86,14 @@ namespace Relic.Gameplay.Data
             return cost <= 0 || CurrentShield - ReservedShieldCost >= cost;
         }
 
-        public void AddReservedHealth(int cost)
+        public void AddReservedHP(int cost)
         {
-            ReservedHealthCost = Mathf.Clamp(ReservedHealthCost + Mathf.Max(0, cost), 0, CurrentHealth);
+            ReservedHPCost = Mathf.Clamp(ReservedHPCost + Mathf.Max(0, cost), 0, CurrentHP);
         }
 
-        public void AddReservedStamina(int cost)
+        public void AddReservedCost(int cost)
         {
-            ReservedStaminaCost = Mathf.Clamp(ReservedStaminaCost + Mathf.Max(0, cost), 0, CurrentStamina);
+            ReservedCost = Mathf.Clamp(ReservedCost + Mathf.Max(0, cost), 0, CurrentCost);
         }
 
         public void AddReservedResource(int cost)
@@ -102,14 +111,14 @@ namespace Relic.Gameplay.Data
             ReservedShieldCost = Mathf.Clamp(ReservedShieldCost + Mathf.Max(0, cost), 0, CurrentShield);
         }
 
-        public void RemoveReservedHealth(int cost)
+        public void RemoveReservedHP(int cost)
         {
-            ReservedHealthCost = Mathf.Max(0, ReservedHealthCost - Mathf.Max(0, cost));
+            ReservedHPCost = Mathf.Max(0, ReservedHPCost - Mathf.Max(0, cost));
         }
 
-        public void RemoveReservedStamina(int cost)
+        public void RemoveReservedCost(int cost)
         {
-            ReservedStaminaCost = Mathf.Max(0, ReservedStaminaCost - Mathf.Max(0, cost));
+            ReservedCost = Mathf.Max(0, ReservedCost - Mathf.Max(0, cost));
         }
 
         public void RemoveReservedResource(int cost)
@@ -128,8 +137,8 @@ namespace Relic.Gameplay.Data
         }
         public void ClearReservedCosts()
         {
-            ReservedHealthCost = 0;
-            ReservedStaminaCost = 0;
+            ReservedHPCost = 0;
+            ReservedCost = 0;
             ReservedResourceCost = 0;
             ReservedMoveCost = 0;
             ReservedShieldCost = 0;
@@ -137,8 +146,8 @@ namespace Relic.Gameplay.Data
 
         public void ApplyReservedCosts()
         {
-            CurrentHealth = PreviewHealth;
-            CurrentStamina = PreviewStamina;
+            CurrentHP = PreviewHP;
+            CurrentCost = PreviewCost;
             CurrentResource = PreviewResource;
             CurrentMoveLevel = PreviewMoveLevel;
             CurrentShield = PreviewShield;

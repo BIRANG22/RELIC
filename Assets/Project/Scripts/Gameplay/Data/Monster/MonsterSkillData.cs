@@ -16,6 +16,7 @@ namespace Relic.Gameplay.Data
         public string ValueRate;
         public string CountCalcTypes;
         public string CountRate;
+        public int ValueRandomRange;
 
         public string RangeId;
 

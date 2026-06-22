@@ -9,6 +9,7 @@ namespace Relic.Gameplay.Data
         public static List<CharacterMasterData> Load(Dictionary<string, List<Dictionary<string, string>>> workbook)
         {
             var rows = ExcelSheetSelector.GetSheet(workbook, "CharacterData", "Character");
+            ApplyStatColumnAliases(rows);
 
             var validRows = rows
                 .Where(row =>
@@ -35,6 +36,24 @@ namespace Relic.Gameplay.Data
             }
 
             return list;
+        }
+
+        private static void ApplyStatColumnAliases(IReadOnlyList<Dictionary<string, string>> rows)
+        {
+            if (rows == null)
+                return;
+
+            for (int i = 0; i < rows.Count; i++)
+            {
+                Dictionary<string, string> row = rows[i];
+
+                if (row == null)
+                    continue;
+
+                DataColumnAliasUtility.CopyAlias(row, "MaxHP", "MaxHP", "MaxHealth", "HP", "Health");
+                DataColumnAliasUtility.CopyAlias(row, "MaxCost", "MaxCost", "MaxStamina", "Cost", "Stamina");
+                DataColumnAliasUtility.CopyAlias(row, "CostRecovery", "CostRecovery", "StaminaRecovery");
+            }
         }
     }
 }

@@ -21,7 +21,7 @@ public class RestRoomController : MonoBehaviour
 
         isRestUsed = true;
 
-        RecoverAllPartyHealthToMax();
+        RecoverAllPartyHPToMax();
         CompleteCurrentNode();
 
         BattleSceneController sceneController =
@@ -30,10 +30,10 @@ public class RestRoomController : MonoBehaviour
         if (sceneController != null)
             sceneController.ReturnToMap();
         else
-            Debug.LogWarning("[RestRoomController] BattleSceneController ¾øÀ½");
+            Debug.LogWarning("[RestRoomController] BattleSceneController ì—†ìŒ");
     }
 
-    private void RecoverAllPartyHealthToMax()
+    private void RecoverAllPartyHPToMax()
     {
         if (DataManager.Instance == null)
             return;
@@ -61,11 +61,11 @@ public class RestRoomController : MonoBehaviour
                 continue;
             }
 
-            runtimeData.MaxHealth = masterData.MaxHealth;
-            runtimeData.CurrentHealth = masterData.MaxHealth;
+            runtimeData.MaxHP = masterData.MaxHP;
+            runtimeData.CurrentHP = masterData.MaxHP;
         }
 
-        Debug.Log("[RestRoomController] ¸ğµç ÆÄÆ¼¿ø Ã¼·Â È¸º¹ ¿Ï·á");
+        Debug.Log("[RestRoomController] ëª¨ë“  íŒŒí‹°ì› HP íšŒë³µ ì™„ë£Œ");
     }
 
     private void SpawnPartyAllies()

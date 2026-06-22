@@ -8,6 +8,11 @@ public class TimelineSkillHoverPopupView : MonoBehaviour
     [SerializeField] private Image backgroundImage;
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private TMP_Text effectText;
+    [SerializeField] private Image rangeIconImage;
+
+    [Header("Range Icon")]
+    [SerializeField] private Vector2 rangeIconSize = new Vector2(28f, 28f);
+    [SerializeField] private float rangeIconGap = 4f;
 
     [Header("Fallback Text")]
     [SerializeField] private string emptyNameText = "";
@@ -27,6 +32,11 @@ public class TimelineSkillHoverPopupView : MonoBehaviour
 
     public void Set(string skillName, string effectDescription)
     {
+        Set(skillName, effectDescription, null);
+    }
+
+    public void Set(string skillName, string effectDescription, Sprite rangeIcon)
+    {
         if (!gameObject.activeSelf)
             gameObject.SetActive(true);
 
@@ -38,6 +48,8 @@ public class TimelineSkillHoverPopupView : MonoBehaviour
 
         if (effectText != null)
             effectText.text = string.IsNullOrWhiteSpace(effectDescription) ? emptyEffectText : effectDescription;
+
+        SetRangeIcon(rangeIcon);
     }
 
     private void AutoBindReferences()
@@ -65,6 +77,73 @@ public class TimelineSkillHoverPopupView : MonoBehaviour
 
         if (effectText == null)
             effectText = FindText("Effect");
+
+        if (rangeIconImage == null)
+            rangeIconImage = FindImage("RangeIcon");
+
+        if (rangeIconImage == null)
+            rangeIconImage = FindImage("SkillRangeIcon");
+
+        if (rangeIconImage == null)
+            rangeIconImage = FindImage("RangeImage");
+    }
+
+    private void SetRangeIcon(Sprite rangeIcon)
+    {
+        if (rangeIcon == null)
+        {
+            if (rangeIconImage != null)
+                rangeIconImage.gameObject.SetActive(false);
+
+            return;
+        }
+
+        if (rangeIconImage == null)
+            rangeIconImage = CreateRangeIconImage();
+
+        if (rangeIconImage == null)
+            return;
+
+        rangeIconImage.sprite = rangeIcon;
+        rangeIconImage.preserveAspect = true;
+        rangeIconImage.raycastTarget = false;
+        rangeIconImage.gameObject.SetActive(true);
+    }
+
+    private Image CreateRangeIconImage()
+    {
+        RectTransform parent = effectText != null && effectText.transform.parent != null
+            ? effectText.transform.parent as RectTransform
+            : transform as RectTransform;
+
+        if (parent == null)
+            return null;
+
+        GameObject iconObject = new GameObject("RangeIcon", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        iconObject.layer = gameObject.layer;
+        iconObject.transform.SetParent(parent, false);
+
+        RectTransform iconRect = iconObject.transform as RectTransform;
+        iconRect.anchorMin = new Vector2(0.5f, 0.5f);
+        iconRect.anchorMax = new Vector2(0.5f, 0.5f);
+        iconRect.pivot = new Vector2(0.5f, 0.5f);
+        iconRect.sizeDelta = rangeIconSize;
+
+        RectTransform effectRect = effectText != null ? effectText.transform as RectTransform : null;
+        if (effectRect != null)
+        {
+            float iconX = effectRect.anchoredPosition.x - effectRect.sizeDelta.x * 0.5f - rangeIconSize.x * 0.5f - rangeIconGap;
+            iconRect.anchoredPosition = new Vector2(iconX, effectRect.anchoredPosition.y);
+        }
+        else
+        {
+            iconRect.anchoredPosition = Vector2.zero;
+        }
+
+        Image image = iconObject.GetComponent<Image>();
+        image.raycastTarget = false;
+        image.preserveAspect = true;
+        return image;
     }
 
     private Image FindImage(string objectName)

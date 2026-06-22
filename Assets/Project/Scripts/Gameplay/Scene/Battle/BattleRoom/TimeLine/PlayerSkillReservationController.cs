@@ -157,7 +157,7 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         if (currentMoveReservationCapacity <= 0)
         {
-            ShowBattleWarning("이동에 필요한 코스트가 부족합니다.");
+            ShowBattleWarning("이동에 필요한 Cost가 부족합니다.");
             return;
         }
 
@@ -278,7 +278,7 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         if (moveOffsets.Count > currentMoveReservationCapacity)
         {
-            ShowBattleWarning("선택한 위치까지 이동할 코스트가 부족합니다.");
+            ShowBattleWarning("선택한 위치까지 이동할 Cost가 부족합니다.");
             return;
         }
 
@@ -325,7 +325,7 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (currentUserRuntime == null)
             return 0;
 
-        return Mathf.Max(0, currentUserRuntime.PreviewStamina);
+        return Mathf.Max(0, currentUserRuntime.PreviewCost);
     }
 
     private bool HasMoveCommandSlotCapacity()

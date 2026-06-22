@@ -7,8 +7,8 @@ public class BattleUniqueResourceService
     private const int DamagedGainAmount = 1;
     private const int SameSlotActionRequiredCount = 2;
     private const int SameSlotGainAmount = 1;
-    private const int StaminaRequiredInSlot = 6;
-    private const int StaminaGainAmount = 1;
+    private const int CostRequiredInSlot = 6;
+    private const int CostGainAmount = 1;
 
     public void ApplyTimelineSlotResourceGain(BattleTimelineController timelineController)
     {
@@ -24,7 +24,7 @@ public class BattleUniqueResourceService
                 continue;
 
             CheckSameSlotActionTwice(commands, slotIndex);
-            CheckSpendStaminaInSlot(commands, slotIndex);
+            CheckSpendCostInSlot(commands, slotIndex);
         }
     }
 
@@ -92,11 +92,11 @@ public class BattleUniqueResourceService
         }
     }
 
-    private void CheckSpendStaminaInSlot(
+    private void CheckSpendCostInSlot(
         IReadOnlyList<PlayerReservedCommand> commands,
         int slotIndex)
     {
-        Dictionary<string, int> staminaSpent = new();
+        Dictionary<string, int> costSpent = new();
         Dictionary<string, CharacterRuntimeData> runtimes = new();
 
         for (int i = 0; i < commands.Count; i++)
@@ -108,14 +108,14 @@ public class BattleUniqueResourceService
 
             string characterId = command.UserRuntime.CharacterId;
 
-            if (!staminaSpent.ContainsKey(characterId))
-                staminaSpent[characterId] = 0;
+            if (!costSpent.ContainsKey(characterId))
+                costSpent[characterId] = 0;
 
-            staminaSpent[characterId] += command.StaminaCost;
+            costSpent[characterId] += command.Cost;
             runtimes[characterId] = command.UserRuntime;
         }
 
-        foreach (var pair in staminaSpent)
+        foreach (var pair in costSpent)
         {
             string characterId = pair.Key;
             int spent = pair.Value;
@@ -125,15 +125,15 @@ public class BattleUniqueResourceService
             if (masterData == null)
                 continue;
 
-            if (masterData.ResourceTrigger != ResourceTrigger.OnSpendStaminaInSlot)
+            if (masterData.ResourceTrigger != ResourceTrigger.OnSpendCostInSlot)
                 continue;
 
-            if (spent < StaminaRequiredInSlot)
+            if (spent < CostRequiredInSlot)
                 continue;
 
-            AddUniqueResource(runtimes[characterId], StaminaGainAmount);
+            AddUniqueResource(runtimes[characterId], CostGainAmount);
 
-            Debug.Log($"[UniqueResource] SpendStamina / Slot:{slotIndex} / Character:{characterId} / Spent:{spent}");
+            Debug.Log($"[UniqueResource] SpendCost / Slot:{slotIndex} / Character:{characterId} / Spent:{spent}");
         }
     }
 

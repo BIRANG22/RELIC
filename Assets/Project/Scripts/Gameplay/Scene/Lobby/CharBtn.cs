@@ -1,4 +1,4 @@
-﻿using TMPro;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
@@ -213,8 +213,8 @@ public class CharBtn : MonoBehaviour,
             Level = 1,
             Exp = 0,
 
-            CurrentHealth = master.MaxHealth,
-            CurrentStamina = master.MaxStamina,
+            CurrentHP = master.MaxHP,
+            CurrentCost = master.MaxCost,
             CurrentResource = 0,
             CurrentMoveLevel = 1,
 

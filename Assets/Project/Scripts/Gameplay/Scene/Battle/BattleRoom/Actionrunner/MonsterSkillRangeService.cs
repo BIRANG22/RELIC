@@ -133,7 +133,7 @@ public static class MonsterSkillRangeService
                 if (players[i] == null || players[i].RuntimeData == null)
                     continue;
 
-                if (players[i].RuntimeData.CurrentHealth <= 0)
+                if (players[i].RuntimeData.CurrentHP <= 0)
                     continue;
 
                 if (players[i].CurrentGridIndex >= 0)

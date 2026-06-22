@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Relic.Gameplay.Data
 {
@@ -14,9 +15,10 @@ namespace Relic.Gameplay.Data
     {
         None,
 
-        OnDamaged,              // ÇÇ°İ ½Ã
-        OnUseSameSlotTwice,     // ½½·Ô ÇÏ³ª¿¡ Æ¯Á¤ Çàµ¿ 2È¸
-        OnSpendStaminaInSlot    // ½½·Ô ÇÏ³ª¿¡ ½ºÅÂ¹Ì³ª ÀÏÁ¤·® ¼Ò¸ğ
+        OnDamaged,              // í”¼ê²© ì‹œ
+        OnUseSameSlotTwice,     // ìŠ¬ë¡¯ í•˜ë‚˜ì— íŠ¹ì • í–‰ë™ 2íšŒ
+        OnSpendCostInSlot,      // ìŠ¬ë¡¯ í•˜ë‚˜ì— Cost ì¼ì •ëŸ‰ ì†Œëª¨
+        OnSpendStaminaInSlot = OnSpendCostInSlot
     }
 
     [Serializable]
@@ -26,9 +28,12 @@ namespace Relic.Gameplay.Data
         public string Name;
         public string Introduction;
 
-        public int MaxHealth;
-        public int MaxStamina;
-        public int StaminaRecovery;
+        [FormerlySerializedAs("MaxHealth")]
+        public int MaxHP;
+        [FormerlySerializedAs("MaxStamina")]
+        public int MaxCost;
+        [FormerlySerializedAs("StaminaRecovery")]
+        public int CostRecovery;
         public int MaxResource;
         public ResourceType ResourceType;
         public ResourceTrigger ResourceTrigger;

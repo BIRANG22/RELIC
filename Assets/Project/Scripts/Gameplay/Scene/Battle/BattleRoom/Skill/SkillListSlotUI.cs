@@ -57,6 +57,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     private SkillListPanel owner;
     private string skillId;
     private SkillMasterData skillData;
+    private CharacterRuntimeData runtimeData;
     private bool isPointerOver;
     private bool isSelected;
     private RectTransform rectTransform;
@@ -115,10 +116,12 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         SkillListPanel ownerPanel,
         string skillId,
         bool interactable,
-        int displayedCostValue = -1)
+        int displayedCostValue = -1,
+        CharacterRuntimeData runtimeData = null)
     {
         owner = ownerPanel;
         this.skillId = skillId;
+        this.runtimeData = runtimeData;
         canClick = interactable;
         skillData = null;
         isPointerOver = false;
@@ -148,9 +151,13 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             return;
         }
 
+        int payAmount = displayedCostValue >= 0
+            ? displayedCostValue
+            : skillData.ResourceCostValue;
+
         ApplySkillMasterData(skillData, displayedCostValue);
 
-        detailText = BuildDetailText(skillData);
+        detailText = BuildDetailText(skillData, payAmount);
 
         if (button != null)
             button.interactable = interactable && skillData != null;
@@ -214,6 +221,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     {
         skillId = "";
         skillData = null;
+        runtimeData = null;
         detailText = "";
         isPointerOver = false;
         isSelected = false;
@@ -455,13 +463,13 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     {
         switch (resource)
         {
-            case ReferenceResource.Health:
-                return "Hp";
+            case ReferenceResource.HP:
+                return "HP";
 
             case ReferenceResource.UniqueResource:
                 return "Ulti";
 
-            case ReferenceResource.Stamina:
+            case ReferenceResource.Cost:
                 return "Cost";
 
             case ReferenceResource.MovePoint:
@@ -509,12 +517,16 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         return null;
     }
 
-    private string BuildDetailText(SkillMasterData data)
+    private string BuildDetailText(SkillMasterData data, int payAmount)
     {
         if (data == null)
             return "";
 
-        return string.IsNullOrWhiteSpace(data.Details) ? "" : data.Details;
+        string text = !string.IsNullOrWhiteSpace(data.ToolTip)
+            ? data.ToolTip
+            : data.Details;
+
+        return SkillTooltipFormatter.Format(data, text, runtimeData, payAmount);
     }
 
     private void BindMissingReferences()

@@ -7,7 +7,7 @@ public class CharacterInfoPanel : MonoBehaviour
 {
     [Header("Value Texts")]
     [SerializeField] private TMP_Text hpValueText;
-    [SerializeField] private TMP_Text staminaValueText;
+    [SerializeField] private TMP_Text costValueText;
     [SerializeField] private TMP_Text recoveryValueText;
     [SerializeField] private TMP_Text moveValueText;
 
@@ -51,13 +51,13 @@ public class CharacterInfoPanel : MonoBehaviour
         }
 
         if (hpValueText != null)
-            hpValueText.text = currentMasterData.MaxHealth.ToString();
+            hpValueText.text = currentMasterData.MaxHP.ToString();
 
-        if (staminaValueText != null)
-            staminaValueText.text = currentMasterData.MaxStamina.ToString();
+        if (costValueText != null)
+            costValueText.text = currentMasterData.MaxCost.ToString();
 
         if (recoveryValueText != null)
-            recoveryValueText.text = currentMasterData.StaminaRecovery.ToString();
+            recoveryValueText.text = currentMasterData.CostRecovery.ToString();
 
         if (moveValueText != null)
             moveValueText.text = currentMasterData.MoveValue.ToString();
@@ -76,8 +76,8 @@ public class CharacterInfoPanel : MonoBehaviour
         if (hpValueText != null)
             hpValueText.text = "";
 
-        if (staminaValueText != null)
-            staminaValueText.text = "";
+        if (costValueText != null)
+            costValueText.text = "";
 
         if (recoveryValueText != null)
             recoveryValueText.text = "";
