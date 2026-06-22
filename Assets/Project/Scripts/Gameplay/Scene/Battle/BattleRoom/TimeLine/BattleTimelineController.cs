@@ -1899,16 +1899,21 @@ public class BattleTimelineController : MonoBehaviour
         if (command == null)
             return -1;
 
+        int monsterSlotCount = GetMonsterReservationSlotCount();
+
+        if (monsterSlotCount <= 0)
+            return -1;
+
         if (preferredSlotIndex < 0)
             preferredSlotIndex = 0;
 
-        if (preferredSlotIndex >= monsterCommandsBySlot.Length)
-            preferredSlotIndex = monsterCommandsBySlot.Length - 1;
+        if (preferredSlotIndex >= monsterSlotCount)
+            preferredSlotIndex = monsterSlotCount - 1;
 
         if (CanMonsterUseSlot(preferredSlotIndex, command.RuntimeId))
             return preferredSlotIndex;
 
-        for (int i = preferredSlotIndex + 1; i < monsterCommandsBySlot.Length; i++)
+        for (int i = preferredSlotIndex + 1; i < monsterSlotCount; i++)
         {
             if (CanMonsterUseSlot(i, command.RuntimeId))
                 return i;
@@ -1925,10 +1930,40 @@ public class BattleTimelineController : MonoBehaviour
 
     private bool CanMonsterUseSlot(int slotIndex, string runtimeId)
     {
-        if (slotIndex < 0 || slotIndex >= monsterCommandsBySlot.Length)
+        if (slotIndex < 0 || slotIndex >= GetMonsterReservationSlotCount())
             return false;
 
-        return GetRemainingCombinedCommandCapacity(slotIndex) > 0;
+        if (string.IsNullOrWhiteSpace(runtimeId))
+            return false;
+
+        if (GetRemainingCombinedCommandCapacity(slotIndex) <= 0)
+            return false;
+
+        List<MonsterReservedCommand> commands = monsterCommandsBySlot[slotIndex];
+
+        if (commands == null || commands.Count <= 0)
+            return true;
+
+        for (int i = 0; i < commands.Count; i++)
+        {
+            MonsterReservedCommand command = commands[i];
+
+            if (command == null || command.RuntimeId != runtimeId)
+                return false;
+        }
+
+        return true;
+    }
+
+    private int GetMonsterReservationSlotCount()
+    {
+        if (monsterCommandsBySlot == null)
+            return 0;
+
+        if (reserveSlots == null || reserveSlots.Length <= 0)
+            return monsterCommandsBySlot.Length;
+
+        return Mathf.Min(reserveSlots.Length, monsterCommandsBySlot.Length);
     }
 
     public void ClearMonsterReservations()

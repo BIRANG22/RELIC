@@ -13,6 +13,8 @@ namespace Relic.Gameplay.Data
 
         public int MaxHealth;
         public int MaxStamina;
+        public int StaminaRecovery;
+        public int BonusStaminaRecovery;
 
         public int CurrentHealth;
         public int CurrentStamina;
@@ -24,7 +26,7 @@ namespace Relic.Gameplay.Data
         public int ReservedStaminaCost;
         public int ReservedResourceCost;
         public int ReservedMoveCost;
-        public int ReservedShieldCost;
+        public int ReservedShieldCost;     
 
         public BattleDirection Direction = BattleDirection.Right;
 
@@ -42,7 +44,8 @@ namespace Relic.Gameplay.Data
         public List<string> AppliedBattleEquipmentEffectIds = new();
 
         public bool IsUnlocked;
-
+                
+        public int TotalStaminaRecovery => Mathf.Max(0, StaminaRecovery + BonusStaminaRecovery);
         public int PreviewHealth => Mathf.Max(0, CurrentHealth - ReservedHealthCost);
         public int PreviewStamina => Mathf.Max(0, CurrentStamina - ReservedStaminaCost);
         public int PreviewResource => Mathf.Max(0, CurrentResource - ReservedResourceCost);

@@ -1765,7 +1765,7 @@ public class BattleActionRunner
         bool facingRight = facing == null || facing.IsFacingRight;
 
         int dirX = facingRight ? 1 : -1;
-        int maxMove = Mathf.Max(1, command.SkillData.GridMove);
+        int maxMove = gridManager.Width;
 
         Vector2Int finalOffset = Vector2Int.zero;
         BattleCharacter hitPlayer = null;

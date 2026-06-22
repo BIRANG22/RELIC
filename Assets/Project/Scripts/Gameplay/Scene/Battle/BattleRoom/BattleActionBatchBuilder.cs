@@ -327,9 +327,9 @@ public class BattleActionBatchBuilder
     }
 
     private void AddDashMovePathCells(
-        ActionInfo info,
-        MonsterUnit monster,
-        MonsterReservedCommand command)
+    ActionInfo info,
+    MonsterUnit monster,
+    MonsterReservedCommand command)
     {
         if (info == null || monster == null || command == null || command.SkillData == null || gridManager == null)
             return;
@@ -338,7 +338,7 @@ public class BattleActionBatchBuilder
         bool facingRight = facing == null || facing.IsFacingRight;
 
         int dirX = facingRight ? 1 : -1;
-        int maxMove = Mathf.Max(1, command.SkillData.GridMove);
+        int maxMove = gridManager.Width;
 
         for (int step = 1; step <= maxMove; step++)
         {

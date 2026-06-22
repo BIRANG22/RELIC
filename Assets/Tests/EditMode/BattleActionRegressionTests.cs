@@ -701,7 +701,7 @@ public class BattleActionRegressionTests
             .SetValue(timeline, slots);
 
         timeline.AddMonsterCommand(0, CreateMonsterReservedCommand("Monster_Runtime_01"));
-        timeline.AddMonsterCommand(0, CreateMonsterReservedCommand("Monster_Runtime_02"));
+        timeline.AddMonsterCommand(0, CreateMonsterReservedCommand("Monster_Runtime_01"));
 
         Assert.That(timeline.GetMonsterCommands(0), Has.Count.EqualTo(2));
         Assert.That(timeline.GetRemainingPlayerCommandCapacity(0), Is.EqualTo(3));
@@ -725,6 +725,36 @@ public class BattleActionRegressionTests
 
         Object.DestroyImmediate(timelineObject);
         Object.DestroyImmediate(slot0.gameObject);
+    }
+
+    [Test]
+    public void TimelineMonsterSlot_AllowsOnlyOneMonsterRuntimePerSlot()
+    {
+        GameObject timelineObject = new("TimelineSingleMonsterPerSlot");
+        BattleTimelineController timeline =
+            timelineObject.AddComponent<BattleTimelineController>();
+
+        ReserveTurnSlotUI slot0 = new GameObject("SingleMonsterSlot0").AddComponent<ReserveTurnSlotUI>();
+        ReserveTurnSlotUI slot1 = new GameObject("SingleMonsterSlot1").AddComponent<ReserveTurnSlotUI>();
+        ReserveTurnSlotUI[] slots = { slot0, slot1 };
+
+        typeof(BattleTimelineController)
+            .GetField("reserveSlots", BindingFlags.Instance | BindingFlags.NonPublic)
+            .SetValue(timeline, slots);
+
+        timeline.AddMonsterCommand(0, CreateMonsterReservedCommand("Monster_Runtime_01"));
+        timeline.AddMonsterCommand(0, CreateMonsterReservedCommand("Monster_Runtime_01"));
+        timeline.AddMonsterCommand(0, CreateMonsterReservedCommand("Monster_Runtime_02"));
+
+        Assert.That(timeline.GetMonsterCommands(0), Has.Count.EqualTo(2));
+        Assert.That(timeline.GetMonsterCommands(0)[0].RuntimeId, Is.EqualTo("Monster_Runtime_01"));
+        Assert.That(timeline.GetMonsterCommands(0)[1].RuntimeId, Is.EqualTo("Monster_Runtime_01"));
+        Assert.That(timeline.GetMonsterCommands(1), Has.Count.EqualTo(1));
+        Assert.That(timeline.GetMonsterCommands(1)[0].RuntimeId, Is.EqualTo("Monster_Runtime_02"));
+
+        Object.DestroyImmediate(timelineObject);
+        Object.DestroyImmediate(slot0.gameObject);
+        Object.DestroyImmediate(slot1.gameObject);
     }
 
     [Test]
