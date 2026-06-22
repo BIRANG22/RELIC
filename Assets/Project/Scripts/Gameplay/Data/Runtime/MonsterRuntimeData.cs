@@ -48,28 +48,6 @@ namespace Relic.Gameplay.Data
             RelicChance = masterData.RelicChance;
 
             TurnCount = 0;
-
-            AddSkillIfValid(masterData.PossSkillId01);
-            AddSkillIfValid(masterData.PossSkillId02);
-            AddSkillIfValid(masterData.PossSkillId03);
-            AddSkillIfValid(masterData.PossSkillId04);
-            AddSkillIfValid(masterData.PossSkillId05);
-            AddSkillIfValid(masterData.PossSkillId06);
-            AddSkillIfValid(masterData.PossSkillId07);
-            AddSkillIfValid(masterData.PossSkillId08);
-            AddSkillIfValid(masterData.PossSkillId09);
-            AddSkillIfValid(masterData.PossSkillId10);
-        }
-
-        private void AddSkillIfValid(string skillId)
-        {
-            if (string.IsNullOrWhiteSpace(skillId))
-                return;
-
-            if (skillId == "0")
-                return;
-
-            PossSkillIds.Add(skillId);
         }
 
         public void TakeDamage(int damage)

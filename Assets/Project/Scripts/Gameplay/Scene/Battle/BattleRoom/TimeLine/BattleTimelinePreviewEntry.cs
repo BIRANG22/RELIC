@@ -108,9 +108,6 @@ public class BattleTimelinePreviewEntry
 
             if (IsMonster && MonsterSkillData != null)
             {
-                if (!string.IsNullOrWhiteSpace(MonsterSkillData.EffectDescription))
-                    return MonsterSkillData.EffectDescription;
-
                 if (!string.IsNullOrWhiteSpace(MonsterSkillData.EffectDesc))
                     return MonsterSkillData.EffectDesc;
             }

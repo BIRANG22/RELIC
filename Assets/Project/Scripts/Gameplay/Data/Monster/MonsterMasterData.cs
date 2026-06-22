@@ -17,17 +17,6 @@ namespace Relic.Gameplay.Data
         public float UniqueItemChance;
         public float RelicChance;
 
-        public string PossSkillId01;
-        public string PossSkillId02;
-        public string PossSkillId03;
-        public string PossSkillId04;
-        public string PossSkillId05;
-        public string PossSkillId06;
-        public string PossSkillId07;
-        public string PossSkillId08;
-        public string PossSkillId09;
-        public string PossSkillId10;
-
         [NonSerialized]
         public GameObject BattlePrefab;
     }

@@ -54,30 +54,35 @@ namespace Relic.Gameplay.Data
                 int nodeCount = layerNodeCounts[layer];
                 int[] columns = DecideColumns(layer, nodeCount);
 
-                for (int i = 0; i < nodeCount; i++)
-                {
-                    MapData mapData = PickMapDataForLayer(
-                        mapPool,
-                        chapter,
-                        stage,
-                        layer
-                    );
+              List<string> layerTypes = DecideLayerTypes(layer, nodeCount, layers);
 
-                    if (mapData == null)
-                        continue;
+for (int i = 0; i < nodeCount; i++)
+{
+    string type = layerTypes[i];
 
-                    Vector2 position = CalculatePosition(layer, columns[i]);
+    MapData mapData = PickMapDataForLayer(
+        mapPool,
+        chapter,
+        stage,
+        layer,
+        type
+    );
 
-                    GeneratedMapNodeData node = CreateNode(
-                        mapData.MapId,
-                        mapData.Type,
-                        position,
-                        layer
-                    );
+    if (mapData == null)
+        continue;
 
-                    currentLayer.Add(node);
-                    result.Add(node);
-                }
+    Vector2 position = CalculatePosition(layer, columns[i]);
+
+    GeneratedMapNodeData node = CreateNode(
+        mapData.MapId,
+        mapData.Type,
+        position,
+        layer
+    );
+
+    currentLayer.Add(node);
+    result.Add(node);
+}
 
                 FixLayerNodeOverlap(currentLayer);
                 layers.Add(currentLayer);
@@ -116,6 +121,10 @@ namespace Relic.Gameplay.Data
                     else if (layer == TotalLayerCount - 2)
                     {
                         counts[layer] = 2;
+                    }
+                    else if (layer == TotalLayerCount - 3)
+                    {
+                        counts[layer] = 4;
                     }
                     else
                     {
@@ -171,24 +180,9 @@ namespace Relic.Gameplay.Data
             if (layer == 1 && nodeCount == 2)
                 return new int[] { 1, 3 };
 
-            if (layer == TotalLayerCount - 3 && nodeCount >= 2)
+            if (layer == TotalLayerCount - 3)
             {
-                List<int> fixedColumns = new();
-
-                fixedColumns.Add(Random.value < 0.5f ? 0 : 1);
-                fixedColumns.Add(Random.value < 0.5f ? 3 : 4);
-
-                while (fixedColumns.Count < nodeCount)
-                {
-                    int column = Random.Range(0, MaxColumnCount);
-
-                    if (!fixedColumns.Contains(column))
-                        fixedColumns.Add(column);
-                }
-
-                fixedColumns.Sort();
-
-                return fixedColumns.ToArray();
+                return new int[] { 0, 1, 3, 4 };
             }
 
             if (layer == TotalLayerCount - 2)
@@ -498,10 +492,11 @@ namespace Relic.Gameplay.Data
         }
 
         private MapData PickMapDataForLayer(
-            List<MapData> mapPool,
+           List<MapData> mapPool,
             string chapter,
             string stage,
-            int layer)
+            int layer,
+            string decidedType)
         {
             if (layer == 0)
             {
@@ -546,26 +541,29 @@ namespace Relic.Gameplay.Data
                 return PickRandomMapData(mapPool, chapter, stage, "Boss");
             }
 
-            string randomType = DecideRandomType();
-
             return PickRandomMapData(
                 mapPool,
                 chapter,
                 stage,
-                randomType
+                decidedType
             );
         }
 
-        private string DecideRandomType()
+        private string DecideRandomType(string previousType = "")
         {
-            float r = Random.value;
+            float eventChance = 0.35f;
 
-            if (r < 0.50f) return "Common";
-            if (r < 0.65f) return "Elite";
-            //if (r < 0.78f) return "Chest";
-            //if (r < 0.90f) return "Special";
+            if (previousType == "Common")
+                eventChance += 0.25f;
 
-            return "Rest";
+            if (previousType == "Special")
+                eventChance -= 0.25f;
+
+            eventChance = Mathf.Clamp01(eventChance);
+
+            return Random.value < eventChance
+                ? "Special"
+                : "Common";
         }
 
         private MapData PickRandomMapData(
@@ -818,6 +816,92 @@ namespace Relic.Gameplay.Data
                 Type = type,
                 Position = position
             };
+        }
+
+        private List<string> DecideLayerTypes(
+            int layer,
+            int nodeCount,
+            List<List<GeneratedMapNodeData>> previousLayers)
+        {
+            List<string> result = new();
+
+            if (layer == 0)
+            {
+                result.Add("Start");
+                return result;
+            }
+
+            if (layer == 1)
+            {
+                for (int i = 0; i < nodeCount; i++)
+                    result.Add("Common");
+
+                return result;
+            }
+
+            if (layer == TotalLayerCount - 1)
+            {
+                result.Add("Boss");
+                return result;
+            }
+
+            if (layer == TotalLayerCount - 2)
+            {
+                for (int i = 0; i < nodeCount; i++)
+                    result.Add("Rest");
+
+                return result;
+            }
+
+            if (layer == TotalLayerCount - 3)
+            {
+                result.Add("Elite");
+                result.Add("Common");
+
+                while (result.Count < nodeCount)
+                    result.Add(Random.value < 0.5f ? "Elite" : "Common");
+
+                ShuffleStrings(result);
+                return result;
+            }
+
+            for (int i = 0; i < nodeCount; i++)
+            {
+                string previousType = GetRandomPreviousLayerType(previousLayers);
+                result.Add(DecideRandomType(previousType));
+            }
+
+            return result;
+        }
+
+        private string GetRandomPreviousLayerType(
+            List<List<GeneratedMapNodeData>> previousLayers)
+        {
+            if (previousLayers == null || previousLayers.Count <= 0)
+                return "";
+
+            List<GeneratedMapNodeData> previousLayer =
+                previousLayers[previousLayers.Count - 1];
+
+            if (previousLayer == null || previousLayer.Count <= 0)
+                return "";
+
+            GeneratedMapNodeData node =
+                previousLayer[Random.Range(0, previousLayer.Count)];
+
+            return node != null ? node.Type : "";
+        }
+
+        private void ShuffleStrings(List<string> list)
+        {
+            if (list == null)
+                return;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                int randomIndex = Random.Range(i, list.Count);
+                (list[i], list[randomIndex]) = (list[randomIndex], list[i]);
+            }
         }
     }
 }

@@ -457,14 +457,26 @@ public class BattleRoomLoader : MonoBehaviour
             DataManager.Instance.CharacterDatabase.TryGet(characterId, out CharacterMasterData masterData);
 
             int rechargeBonus = GetStatusStack(runtimeData.StatusEffects, "E_Recharge") * 2;
+
             int maxStamina = runtimeData.MaxStamina > 0
                 ? runtimeData.MaxStamina
                 : masterData != null ? Mathf.Max(0, masterData.MaxStamina) : 0;
 
+            int baseRecovery = runtimeData.StaminaRecovery > 0
+                ? runtimeData.StaminaRecovery
+                : masterData != null ? Mathf.Max(0, masterData.StaminaRecovery) : 0;
+
+            int totalRecovery = Mathf.Max(
+                0,
+                baseRecovery + runtimeData.BonusStaminaRecovery + rechargeBonus
+            );
+
+            runtimeData.StaminaRecovery = baseRecovery;
+
             runtimeData.CurrentStamina =
                 Mathf.Min(
                     maxStamina,
-                    runtimeData.CurrentStamina + 4 + rechargeBonus
+                    runtimeData.CurrentStamina + totalRecovery
                 );
         }
 

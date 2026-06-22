@@ -431,9 +431,6 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         if (skillData.TimelineNotation == TimelineActionType.Move)
             return true;
 
-        if (skillData.GridMove != 0)
-            return true;
-
         if (!string.IsNullOrWhiteSpace(skillData.EffectIds) &&
             skillData.EffectIds.Contains("E_Move"))
             return true;
