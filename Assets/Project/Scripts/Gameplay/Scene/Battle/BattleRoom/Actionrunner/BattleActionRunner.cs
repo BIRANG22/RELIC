@@ -510,6 +510,12 @@ public class BattleActionRunner
             yield break;
         }
 
+        if (command.VisualMoveSteps != null && command.VisualMoveSteps.Count > 1)
+        {
+            yield return ExecutePlayerVisualMoveSteps(command, character, currentGridIndex);
+            yield break;
+        }
+
         ApplyPlayerMoveFacing(character, command.Direction, moveOffset);
 
         if (!useVisualMove &&
@@ -553,6 +559,67 @@ public class BattleActionRunner
 
         hudService.RefreshHUDs();
 
+        yield return new WaitForSeconds(ActionDelay);
+    }
+
+    private IEnumerator ExecutePlayerVisualMoveSteps(
+        PlayerReservedCommand command,
+        BattleCharacter character,
+        int startGridIndex)
+    {
+        int currentGridIndex = startGridIndex;
+        int executedDistance = 0;
+        BattleUnitAnimator animator = character.GetComponent<BattleUnitAnimator>();
+
+        for (int i = 0; i < command.VisualMoveSteps.Count; i++)
+        {
+            Vector2Int stepOffset = command.VisualMoveSteps[i];
+
+            if (stepOffset == Vector2Int.zero)
+                continue;
+
+            if (!TryGetPlayerMoveTargetGridIndex(
+                currentGridIndex,
+                stepOffset,
+                command.CharacterId,
+                out int targetGridIndex))
+            {
+                break;
+            }
+
+            if (targetGridIndex == currentGridIndex)
+                break;
+
+            Vector2Int currentCoord = gridManager.IndexToCoord(currentGridIndex);
+            Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
+            Vector2Int actualOffset = targetCoord - currentCoord;
+
+            ApplyPlayerMoveFacing(character, command.Direction, actualOffset);
+
+            if (animator != null)
+                animator.PlayMove();
+
+            Vector3 pos = gridManager.GetWorldPositionByIndex(targetGridIndex);
+
+            yield return MoveTransformSmooth(
+                character.transform,
+                character.transform.position,
+                pos,
+                MoveAnimationDuration
+            );
+
+            character.SetGridIndex(targetGridIndex);
+            UpdatePartyGridIndex(command.CharacterId, targetGridIndex);
+            currentGridIndex = targetGridIndex;
+            executedDistance += Mathf.Abs(actualOffset.x) + Mathf.Abs(actualOffset.y);
+        }
+
+        command.SetExecutedMoveDistance(executedDistance);
+
+        if (currentGridIndex != startGridIndex)
+            statusEffectService.ApplyBurnDamageToPlayerOnMove(character);
+
+        hudService.RefreshHUDs();
         yield return new WaitForSeconds(ActionDelay);
     }
 

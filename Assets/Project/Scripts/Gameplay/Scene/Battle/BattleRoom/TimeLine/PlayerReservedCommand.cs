@@ -27,6 +27,7 @@ public class PlayerReservedCommand
 
     public int TimelineSlotIndex { get; private set; } = -1;
     public bool ReservationCostModifiersApplied { get; private set; }
+    public bool IsMoveContinuationCommand { get; private set; }
 
     public BattleDirection Direction { get; private set; } = BattleDirection.Right;
     public int SelectedGridIndex { get; private set; } = -1;
@@ -83,6 +84,34 @@ public class PlayerReservedCommand
 
         for (int i = 0; i < moveSteps.Count; i++)
             visualMoveSteps.Add(moveSteps[i]);
+    }
+
+    public void MergeMoveReservation(PlayerReservedCommand nextCommand)
+    {
+        if (nextCommand == null || nextCommand.ReservedMoveGridIndex < 0)
+            return;
+
+        List<Vector2Int> mergedMoveSteps = new();
+        AppendMoveSteps(mergedMoveSteps, this);
+        AppendMoveSteps(mergedMoveSteps, nextCommand);
+
+        Vector2Int mergedMoveOffset = MoveOffset + nextCommand.MoveOffset;
+        int moveDistancePerCost = nextCommand.MoveDistancePerCost > 0
+            ? nextCommand.MoveDistancePerCost
+            : MoveDistancePerCost;
+
+        SetSelectionResult(
+            nextCommand.Direction,
+            nextCommand.ReservedMoveGridIndex,
+            new List<int> { nextCommand.ReservedMoveGridIndex },
+            mergedMoveOffset);
+        SetMoveReservationCost(
+            GetMoveStepDistance(mergedMoveSteps),
+            moveDistancePerCost);
+        SetVisualMoveResult(
+            nextCommand.ReservedMoveGridIndex,
+            mergedMoveOffset,
+            mergedMoveSteps);
     }
     public PlayerReservedCommand(CharacterRuntimeData userRuntime, SkillMasterData skillData)
     {
@@ -210,6 +239,12 @@ public class PlayerReservedCommand
         MoveCostConsumed = true;
     }
 
+    public void MarkMoveContinuationCommand()
+    {
+        IsMoveContinuationCommand = true;
+        SetBaseCosts(0, 0, 0, 0, 0);
+    }
+
     public int ApplyBlockedMoveCostRefund()
     {
         if (BlockedMoveCostRefundApplied)
@@ -259,6 +294,63 @@ public class PlayerReservedCommand
 
         int safeDistancePerCost = Mathf.Max(1, moveDistancePerCost);
         return Mathf.CeilToInt(safeDistance / (float)safeDistancePerCost);
+    }
+
+    private static void AppendMoveSteps(
+        List<Vector2Int> target,
+        PlayerReservedCommand source)
+    {
+        if (target == null || source == null)
+            return;
+
+        if (source.visualMoveSteps.Count > 0)
+        {
+            for (int i = 0; i < source.visualMoveSteps.Count; i++)
+                target.Add(source.visualMoveSteps[i]);
+
+            return;
+        }
+
+        AppendUnitMoveSteps(target, source.MoveOffset);
+    }
+
+    private static void AppendUnitMoveSteps(List<Vector2Int> target, Vector2Int moveOffset)
+    {
+        if (target == null)
+            return;
+
+        AppendAxisUnitMoveSteps(target, moveOffset.x, true);
+        AppendAxisUnitMoveSteps(target, moveOffset.y, false);
+    }
+
+    private static void AppendAxisUnitMoveSteps(
+        List<Vector2Int> target,
+        int amount,
+        bool horizontal)
+    {
+        int remaining = amount;
+
+        while (remaining != 0)
+        {
+            int step = remaining > 0 ? 1 : -1;
+            target.Add(horizontal
+                ? new Vector2Int(step, 0)
+                : new Vector2Int(0, step));
+            remaining -= step;
+        }
+    }
+
+    private static int GetMoveStepDistance(IReadOnlyList<Vector2Int> moveSteps)
+    {
+        if (moveSteps == null)
+            return 0;
+
+        int total = 0;
+
+        for (int i = 0; i < moveSteps.Count; i++)
+            total += Mathf.Abs(moveSteps[i].x) + Mathf.Abs(moveSteps[i].y);
+
+        return total;
     }
 
     public void SetSimulatedRangeResult(

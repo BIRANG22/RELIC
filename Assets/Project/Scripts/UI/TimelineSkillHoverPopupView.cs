@@ -11,7 +11,7 @@ public class TimelineSkillHoverPopupView : MonoBehaviour
     [SerializeField] private Image rangeIconImage;
 
     [Header("Range Icon")]
-    [SerializeField] private Vector2 rangeIconSize = new Vector2(28f, 28f);
+    [SerializeField] private Vector2 rangeIconSize = new Vector2(60f, 60f);
     [SerializeField] private float rangeIconGap = 4f;
 
     [Header("Fallback Text")]

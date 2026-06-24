@@ -10,7 +10,6 @@ public class BattleActionSimulationService
     private readonly Dictionary<string, int> playerPositions = new();
     private readonly Dictionary<string, BattleDirection> playerDirections = new();
     private readonly Dictionary<string, List<int>> monsterPositions = new();
-    private readonly Dictionary<string, List<int>> initialMonsterPositions = new();
 
     public BattleActionSimulationService(GridManager gridManager)
     {
@@ -439,12 +438,6 @@ public class BattleActionSimulationService
                 return true;
         }
 
-        foreach (var pair in initialMonsterPositions)
-        {
-            if (pair.Value != null && pair.Value.Contains(gridIndex))
-                return true;
-        }
-
         return false;
     }
 
@@ -453,7 +446,6 @@ public class BattleActionSimulationService
         playerPositions.Clear();
         playerDirections.Clear();
         monsterPositions.Clear();
-        initialMonsterPositions.Clear();
 
         BattleCharacter[] players = Object.FindObjectsByType<BattleCharacter>(
             FindObjectsInactive.Exclude,
@@ -488,8 +480,6 @@ public class BattleActionSimulationService
             List<int> occupiedGridIndices = new(monsters[i].OccupiedGridIndices);
 
             monsterPositions[monsters[i].RuntimeData.RuntimeId] =
-                new List<int>(occupiedGridIndices);
-            initialMonsterPositions[monsters[i].RuntimeData.RuntimeId] =
                 new List<int>(occupiedGridIndices);
         }
     }

@@ -156,6 +156,13 @@ public static class BattleEquipmentEffectService
         command.ResetCostsToBase();
         command.SetTimelineSlotIndex(slotIndex);
 
+        if (command.IsMoveContinuationCommand)
+        {
+            command.SetCosts(0, 0, 0, 0, 0);
+            command.MarkReservationCostModifiersApplied();
+            return;
+        }
+
         int hpCost = command.HPCost;
         int cost = command.Cost;
         int resourceCost = command.ResourceCost;
