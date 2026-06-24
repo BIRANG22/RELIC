@@ -294,6 +294,73 @@ public class PlayerMovePathfindingRegressionTests
     }
 
     [Test]
+    public void MoveExecution_RefundsHalfOfBlockedMoveCostImmediately()
+    {
+        GameObject gridObject = new("GridManagerBlockedMoveRefund");
+        GameObject characterObject = new("CharacterBlockedMoveRefund");
+
+        try
+        {
+            GridManager gridManager = gridObject.AddComponent<GridManager>();
+            BattleCharacter character = characterObject.AddComponent<BattleCharacter>();
+            CharacterRuntimeData runtime = new()
+            {
+                CharacterId = "Char_Test",
+                CurrentCost = 10,
+                MaxCost = 10
+            };
+            SkillMasterData moveSkill = new()
+            {
+                SkillId = "S_Move_2",
+                Category = Category.Move,
+                RangeType = RangeType.Selection,
+                ReferenceResource = ReferenceResource.Cost,
+                ResourceCostType = ResourceCostType.Fixed,
+                ResourceCostValue = 1
+            };
+            PlayerReservedCommand command = new(runtime, moveSkill);
+            int startIndex = gridManager.CoordToIndex(new Vector2Int(0, 0));
+            int stoppedIndex = gridManager.CoordToIndex(new Vector2Int(4, 0));
+
+            character.Initialize(runtime);
+            command.SetSelectionResult(
+                BattleDirection.Right,
+                gridManager.CoordToIndex(new Vector2Int(7, 0)),
+                new List<int> { gridManager.CoordToIndex(new Vector2Int(7, 0)) },
+                new Vector2Int(7, 0));
+            command.SetMoveReservationCost(7, 2);
+
+            BattleActionRunner runner = new(gridManager);
+
+            InvokePrivateMethod(
+                runner,
+                "ConsumePlayerMoveCost",
+                command,
+                character);
+
+            Assert.That(runtime.CurrentCost, Is.EqualTo(6));
+
+            InvokePrivateMethod(
+                runner,
+                "RecordPlayerMoveExecutionDistance",
+                command,
+                startIndex,
+                stoppedIndex);
+
+            Assert.That(command.ExecutedMoveDistance, Is.EqualTo(4));
+            Assert.That(command.BlockedMoveCostRefundApplied, Is.True);
+            Assert.That(runtime.CurrentCost, Is.EqualTo(7));
+            Assert.That(command.ApplyBlockedMoveCostRefund(), Is.EqualTo(0));
+            Assert.That(runtime.CurrentCost, Is.EqualTo(7));
+        }
+        finally
+        {
+            Object.DestroyImmediate(characterObject);
+            Object.DestroyImmediate(gridObject);
+        }
+    }
+
+    [Test]
     public void MoveRangeIndices_TreatsDiagonalAsOneMoveCostWhenDistanceFits()
     {
         GridManager gridManager = new GameObject("GridManagerDiagonalRange").AddComponent<GridManager>();
@@ -660,6 +727,19 @@ public class PlayerMovePathfindingRegressionTests
 
         Assert.That(method, Is.Not.Null, $"{methodName} method is missing.");
         method.Invoke(target, null);
+    }
+
+    private static object InvokePrivateMethod(
+        object target,
+        string methodName,
+        params object[] args)
+    {
+        MethodInfo method = target.GetType().GetMethod(
+            methodName,
+            BindingFlags.Instance | BindingFlags.NonPublic);
+
+        Assert.That(method, Is.Not.Null, $"{methodName} method is missing.");
+        return method.Invoke(target, args);
     }
 
     private static PlayerReservedCommand CreateMoveCommand(

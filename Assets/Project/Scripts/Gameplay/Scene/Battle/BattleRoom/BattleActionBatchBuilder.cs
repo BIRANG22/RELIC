@@ -36,6 +36,9 @@ public class BattleActionBatchBuilder
             var playerCommands = timelineController.GetPlayerCommands(slotIndex);
             var monsterCommands = timelineController.GetMonsterCommands(slotIndex);
 
+            int swiftPhaseStartBatchIndex = slotIndex;
+            int lastSwiftBatchIndex = -1;
+
             if (playerCommands != null)
             {
                 for (int i = 0; i < playerCommands.Count; i++)
@@ -43,15 +46,38 @@ public class BattleActionBatchBuilder
                     PlayerReservedCommand command = playerCommands[i];
 
                     if (BattleActionOrderUtility.HasSwift(command))
-                        AddPlayerCommand(batches, command, slotIndex);
+                    {
+                        int batchIndex = AddPlayerCommand(
+                            batches,
+                            command,
+                            slotIndex,
+                            swiftPhaseStartBatchIndex);
+                        lastSwiftBatchIndex = Mathf.Max(lastSwiftBatchIndex, batchIndex);
+                    }
                 }
             }
+
+            int monsterPhaseStartBatchIndex = GetNextPhaseBatchIndex(
+                swiftPhaseStartBatchIndex,
+                lastSwiftBatchIndex);
+            int lastMonsterBatchIndex = -1;
 
             if (monsterCommands != null)
             {
                 for (int i = 0; i < monsterCommands.Count; i++)
-                    AddMonsterCommand(batches, monsterCommands[i], slotIndex);
+                {
+                    int batchIndex = AddMonsterCommand(
+                        batches,
+                        monsterCommands[i],
+                        slotIndex,
+                        monsterPhaseStartBatchIndex);
+                    lastMonsterBatchIndex = Mathf.Max(lastMonsterBatchIndex, batchIndex);
+                }
             }
+
+            int playerPhaseStartBatchIndex = GetNextPhaseBatchIndex(
+                monsterPhaseStartBatchIndex,
+                lastMonsterBatchIndex);
 
             if (playerCommands != null)
             {
@@ -60,7 +86,13 @@ public class BattleActionBatchBuilder
                     PlayerReservedCommand command = playerCommands[i];
 
                     if (!BattleActionOrderUtility.HasSwift(command))
-                        AddPlayerCommand(batches, command, slotIndex);
+                    {
+                        AddPlayerCommand(
+                            batches,
+                            command,
+                            slotIndex,
+                            playerPhaseStartBatchIndex);
+                    }
                 }
             }
         }
@@ -69,13 +101,14 @@ public class BattleActionBatchBuilder
         return batches;
     }
 
-    private void AddPlayerCommand(
+    private int AddPlayerCommand(
         List<BattleActionBatch> batches,
         PlayerReservedCommand command,
+        int timelineSlotIndex,
         int minBatchIndex)
     {
         if (command == null)
-            return;
+            return -1;
 
         ActionInfo next = CreatePlayerActionInfo(command);
 
@@ -83,30 +116,32 @@ public class BattleActionBatchBuilder
 
         for (int i = minBatchIndex; i < batches.Count; i++)
         {
-            if (!CanUseBatchForTimelineSlot(batches[i], minBatchIndex))
+            if (!CanUseBatchForTimelineSlot(batches[i], timelineSlotIndex))
                 continue;
 
             if (CanAddAction(batches[i], next))
             {
-                batches[i].SetTimelineSlotIndexIfNeeded(minBatchIndex);
+                batches[i].SetTimelineSlotIndexIfNeeded(timelineSlotIndex);
                 batches[i].PlayerCommands.Add(command);
-                return;
+                return i;
             }
         }
 
         BattleActionBatch newBatch = new();
-        newBatch.SetTimelineSlotIndexIfNeeded(minBatchIndex);
+        newBatch.SetTimelineSlotIndexIfNeeded(timelineSlotIndex);
         newBatch.PlayerCommands.Add(command);
         batches.Add(newBatch);
+        return batches.Count - 1;
     }
 
-    private void AddMonsterCommand(
+    private int AddMonsterCommand(
         List<BattleActionBatch> batches,
         MonsterReservedCommand command,
+        int timelineSlotIndex,
         int minBatchIndex)
     {
         if (command == null)
-            return;
+            return -1;
 
         ActionInfo next = CreateMonsterActionInfo(command);
 
@@ -114,23 +149,31 @@ public class BattleActionBatchBuilder
 
         for (int i = minBatchIndex; i < batches.Count; i++)
         {
-            if (!CanUseBatchForTimelineSlot(batches[i], minBatchIndex))
+            if (!CanUseBatchForTimelineSlot(batches[i], timelineSlotIndex))
                 continue;
 
             if (CanAddAction(batches[i], next))
             {
-                batches[i].SetTimelineSlotIndexIfNeeded(minBatchIndex);
+                batches[i].SetTimelineSlotIndexIfNeeded(timelineSlotIndex);
                 batches[i].MonsterCommands.Add(command);
-                return;
+                return i;
             }
         }
 
         BattleActionBatch newBatch = new();
-        newBatch.SetTimelineSlotIndexIfNeeded(minBatchIndex);
+        newBatch.SetTimelineSlotIndexIfNeeded(timelineSlotIndex);
         newBatch.MonsterCommands.Add(command);
         batches.Add(newBatch);
+        return batches.Count - 1;
     }
 
+    private int GetNextPhaseBatchIndex(int phaseStartBatchIndex, int lastUsedBatchIndex)
+    {
+        if (lastUsedBatchIndex < phaseStartBatchIndex)
+            return phaseStartBatchIndex;
+
+        return lastUsedBatchIndex + 1;
+    }
 
     private bool CanUseBatchForTimelineSlot(BattleActionBatch batch, int timelineSlotIndex)
     {

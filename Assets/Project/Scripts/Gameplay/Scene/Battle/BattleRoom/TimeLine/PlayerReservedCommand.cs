@@ -247,6 +247,9 @@ public class PlayerReservedCommand
 
     public int ApplyBlockedMoveCostRefund()
     {
+        if (!MoveCostConsumed)
+            return 0;
+
         if (BlockedMoveCostRefundApplied)
             return 0;
 

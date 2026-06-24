@@ -531,6 +531,7 @@ public class BattleActionRunner
         if (moveOffset == Vector2Int.zero)
         {
             command.SetExecutedMoveDistance(0);
+            ApplyBlockedPlayerMoveCostRefund(command);
             ApplyPlayerMoveFacing(character, command.Direction, moveOffset);
             hudService.RefreshHUDs();
             yield return new WaitForSeconds(ActionDelay);
@@ -553,6 +554,8 @@ public class BattleActionRunner
                 out targetGridIndex))
         {
             command.SetExecutedMoveDistance(0);
+            ApplyBlockedPlayerMoveCostRefund(command);
+            hudService.RefreshHUDs();
             Debug.LogWarning($"[BattleActionRunner] Player Move Blocked / {command.CharacterId} / Offset:{moveOffset}");
             yield break;
         }
@@ -642,6 +645,7 @@ public class BattleActionRunner
         }
 
         command.SetExecutedMoveDistance(executedDistance);
+        ApplyBlockedPlayerMoveCostRefund(command);
 
         if (currentGridIndex != startGridIndex)
             statusEffectService.ApplyBurnDamageToPlayerOnMove(character);
@@ -865,6 +869,23 @@ public class BattleActionRunner
         Vector2Int actualOffset = targetCoord - startCoord;
         command.SetExecutedMoveDistance(
             Mathf.Abs(actualOffset.x) + Mathf.Abs(actualOffset.y)
+        );
+        ApplyBlockedPlayerMoveCostRefund(command);
+    }
+
+    private void ApplyBlockedPlayerMoveCostRefund(PlayerReservedCommand command)
+    {
+        if (command == null || !command.MoveCostConsumed)
+            return;
+
+        int refund = command.ApplyBlockedMoveCostRefund();
+
+        if (refund <= 0)
+            return;
+
+        Debug.Log(
+            $"[BattleActionRunner] Move Cost refund / " +
+            $"Character:{command.CharacterId} / Refund:{refund}"
         );
     }
 

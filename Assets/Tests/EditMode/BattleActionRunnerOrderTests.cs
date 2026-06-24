@@ -143,6 +143,57 @@ public class BattleActionRunnerOrderTests
         }
     }
 
+    [Test]
+    public void BuildBatches_KeepsNonSwiftPlayerAfterAllMonsterBatchesInSameSlot()
+    {
+        GameObject timelineObject = new("TimelineAllMonstersBeforeNormalPlayer");
+        GameObject slotObject = new("SlotAllMonstersBeforeNormalPlayer");
+
+        try
+        {
+            BattleTimelineController timeline =
+                timelineObject.AddComponent<BattleTimelineController>();
+            ReserveTurnSlotUI slot =
+                slotObject.AddComponent<ReserveTurnSlotUI>();
+            slot.Init(timeline, 0);
+
+            SetPrivateField(timeline, "reserveSlots", new[] { slot });
+
+            MonsterReservedCommand monsterMoveCommand = CreateMonsterCommand(
+                "Monster_Runtime_Test",
+                "S_Monster_Move_Test",
+                timelineNotation: TimelineActionType.Move);
+            monsterMoveCommand.SetMoveOffset(Vector2Int.right);
+
+            MonsterReservedCommand monsterAttackCommand = CreateMonsterCommand(
+                "Monster_Runtime_Test",
+                "S_Monster_Attack_Test");
+
+            PlayerReservedCommand playerMoveCommand = CreatePlayerMoveCommand(
+                "Char_Test",
+                selectedGridIndex: 20,
+                moveOffset: Vector2Int.right);
+
+            AddMonsterCommandDirectly(timeline, 0, monsterMoveCommand);
+            AddMonsterCommandDirectly(timeline, 0, monsterAttackCommand);
+            Assert.That(slot.AddCommand(playerMoveCommand), Is.True);
+
+            List<BattleActionBatch> batches = new BattleActionBatchBuilder(null).Build(timeline);
+
+            Assert.That(batches, Has.Count.GreaterThanOrEqualTo(3));
+            Assert.That(batches[0].MonsterCommands, Has.Count.EqualTo(1));
+            Assert.That(batches[0].PlayerCommands, Is.Empty);
+            Assert.That(batches[1].MonsterCommands, Has.Count.EqualTo(1));
+            Assert.That(batches[1].PlayerCommands, Is.Empty);
+            Assert.That(batches[2].PlayerCommands, Has.Count.EqualTo(1));
+        }
+        finally
+        {
+            Object.DestroyImmediate(slotObject);
+            Object.DestroyImmediate(timelineObject);
+        }
+    }
+
     private static PlayerReservedCommand CreatePlayerCommand(
         string characterId,
         string skillId,
@@ -174,10 +225,38 @@ public class BattleActionRunnerOrderTests
         return command;
     }
 
+    private static PlayerReservedCommand CreatePlayerMoveCommand(
+        string characterId,
+        int selectedGridIndex,
+        Vector2Int moveOffset)
+    {
+        CharacterRuntimeData runtime = new()
+        {
+            CharacterId = characterId
+        };
+
+        SkillMasterData skill = new()
+        {
+            SkillId = "S_Player_Move_Test",
+            Category = Category.Move,
+            RangeType = RangeType.Selection
+        };
+
+        PlayerReservedCommand command = new(runtime, skill);
+        command.SetSelectionResult(
+            BattleDirection.Right,
+            selectedGridIndex,
+            new List<int> { selectedGridIndex },
+            moveOffset);
+
+        return command;
+    }
+
     private static MonsterReservedCommand CreateMonsterCommand(
         string runtimeId,
         string skillId,
-        int targetGridIndex = -1)
+        int targetGridIndex = -1,
+        TimelineActionType timelineNotation = TimelineActionType.Attack)
     {
         MonsterMasterData masterData = new()
         {
@@ -189,7 +268,8 @@ public class BattleActionRunnerOrderTests
         MonsterRuntimeData runtime = new(runtimeId, masterData);
         MonsterSkillData skill = new()
         {
-            SkillId = skillId
+            SkillId = skillId,
+            TimelineNotation = timelineNotation
         };
 
         MonsterReservedCommand command = new(runtime, skill);
