@@ -77,7 +77,7 @@ public class RuntimeDataDebugKey : Singleton<RuntimeDataDebugKey>
 
             Debug.Log(
                 $"ID:{data.CharacterId} / Lv:{data.Level} / " +
-                $"HP:{data.CurrentHealth} / Stamina:{data.CurrentStamina} / Resource:{data.CurrentResource} / " +
+                $"HP:{data.CurrentHP} / Cost:{data.CurrentCost} / Resource:{data.CurrentResource} / " +
                 $"Skills:{skills}"
             );
         }

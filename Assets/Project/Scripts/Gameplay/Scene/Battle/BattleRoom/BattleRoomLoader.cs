@@ -1,4 +1,4 @@
-﻿using Relic.Gameplay.Data;
+using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
 using System.Collections;
 using System.Collections.Generic;
@@ -458,25 +458,25 @@ public class BattleRoomLoader : MonoBehaviour
 
             int rechargeBonus = GetStatusStack(runtimeData.StatusEffects, "E_Recharge") * 2;
 
-            int maxStamina = runtimeData.MaxStamina > 0
-                ? runtimeData.MaxStamina
-                : masterData != null ? Mathf.Max(0, masterData.MaxStamina) : 0;
+            int maxCost = runtimeData.MaxCost > 0
+                ? runtimeData.MaxCost
+                : masterData != null ? Mathf.Max(0, masterData.MaxCost) : 0;
 
-            int baseRecovery = runtimeData.StaminaRecovery > 0
-                ? runtimeData.StaminaRecovery
-                : masterData != null ? Mathf.Max(0, masterData.StaminaRecovery) : 0;
+            int baseRecovery = runtimeData.CostRecovery > 0
+                ? runtimeData.CostRecovery
+                : masterData != null ? Mathf.Max(0, masterData.CostRecovery) : 0;
 
             int totalRecovery = Mathf.Max(
                 0,
-                baseRecovery + runtimeData.BonusStaminaRecovery + rechargeBonus
+                baseRecovery + runtimeData.BonusCostRecovery + rechargeBonus
             );
 
-            runtimeData.StaminaRecovery = baseRecovery;
+            runtimeData.CostRecovery = baseRecovery;
 
-            runtimeData.CurrentStamina =
+            runtimeData.CurrentCost =
                 Mathf.Min(
-                    maxStamina,
-                    runtimeData.CurrentStamina + totalRecovery
+                    maxCost,
+                    runtimeData.CurrentCost + totalRecovery
                 );
         }
 

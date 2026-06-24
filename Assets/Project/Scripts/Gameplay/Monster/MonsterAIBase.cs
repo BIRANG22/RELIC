@@ -63,9 +63,9 @@ namespace Relic.Gameplay.Monster
             return monster.TurnCount <= 0;
         }
 
-        protected bool IsHpBelow(MonsterRuntimeData monster, float percent)
+        protected bool IsHPBelow(MonsterRuntimeData monster, float percent)
         {
-            return monster.GetHpPercent() <= percent;
+            return monster.GetHPPercent() <= percent;
         }
 
         protected string PickWeighted(params (string skillId, int weight)[] candidates)
@@ -183,12 +183,12 @@ namespace Relic.Gameplay.Monster
             return farthest;
         }
 
-        protected BattleCharacter FindHighestHpPlayer()
+        protected BattleCharacter FindHighestHPPlayer()
         {
             BattleCharacter[] players = FindPlayers();
 
             BattleCharacter result = null;
-            int highestHp = -1;
+            int highestHP = -1;
 
             for (int i = 0; i < players.Length; i++)
             {
@@ -197,9 +197,9 @@ namespace Relic.Gameplay.Monster
                 if (player == null || player.RuntimeData == null)
                     continue;
 
-                if (player.RuntimeData.CurrentHealth > highestHp)
+                if (player.RuntimeData.CurrentHP > highestHP)
                 {
-                    highestHp = player.RuntimeData.CurrentHealth;
+                    highestHP = player.RuntimeData.CurrentHP;
                     result = player;
                 }
             }
@@ -419,20 +419,94 @@ namespace Relic.Gameplay.Monster
             if (moveOffset == Vector2Int.zero)
                 return false;
 
-            for (int i = 0; i < monsterUnit.OccupiedGridIndices.Count; i++)
+            if (moveOffset.x != 0 && moveOffset.y != 0)
             {
-                int occupiedIndex = monsterUnit.OccupiedGridIndices[i];
+                return CanMonsterMoveAxisOrder(monsterUnit, gridManager, moveOffset, true) ||
+                       CanMonsterMoveAxisOrder(monsterUnit, gridManager, moveOffset, false);
+            }
 
-                Vector2Int currentCoord = gridManager.IndexToCoord(occupiedIndex);
-                Vector2Int targetCoord = currentCoord + moveOffset;
+            return CanMonsterMoveAxisOrder(
+                monsterUnit,
+                gridManager,
+                moveOffset,
+                moveOffset.x != 0);
+        }
 
-                if (!gridManager.IsValidCoord(targetCoord))
-                    return false;
+        private bool CanMonsterMoveAxisOrder(
+            MonsterUnit monsterUnit,
+            GridManager gridManager,
+            Vector2Int moveOffset,
+            bool horizontalFirst)
+        {
+            List<Vector2Int> currentCoords = new();
 
-                int targetIndex = gridManager.CoordToIndex(targetCoord);
+            for (int i = 0; i < monsterUnit.OccupiedGridIndices.Count; i++)
+                currentCoords.Add(gridManager.IndexToCoord(monsterUnit.OccupiedGridIndices[i]));
 
-                if (BattleOccupancyService.IsOccupiedByAnyUnit(targetIndex, null, monsterUnit))
-                    return false;
+            if (horizontalFirst)
+            {
+                return TryApplyMonsterMoveAxisSteps(
+                           currentCoords,
+                           moveOffset.x,
+                           true,
+                           monsterUnit,
+                           gridManager) &&
+                       TryApplyMonsterMoveAxisSteps(
+                           currentCoords,
+                           moveOffset.y,
+                           false,
+                           monsterUnit,
+                           gridManager);
+            }
+
+            return TryApplyMonsterMoveAxisSteps(
+                       currentCoords,
+                       moveOffset.y,
+                       false,
+                       monsterUnit,
+                       gridManager) &&
+                   TryApplyMonsterMoveAxisSteps(
+                       currentCoords,
+                       moveOffset.x,
+                       true,
+                       monsterUnit,
+                       gridManager);
+        }
+
+        private bool TryApplyMonsterMoveAxisSteps(
+            List<Vector2Int> currentCoords,
+            int amount,
+            bool horizontal,
+            MonsterUnit monsterUnit,
+            GridManager gridManager)
+        {
+            int remaining = amount;
+
+            while (remaining != 0)
+            {
+                int step = remaining > 0 ? 1 : -1;
+                List<Vector2Int> nextCoords = new();
+
+                for (int i = 0; i < currentCoords.Count; i++)
+                {
+                    Vector2Int nextCoord = currentCoords[i] + (horizontal
+                        ? new Vector2Int(step, 0)
+                        : new Vector2Int(0, step));
+
+                    if (!gridManager.IsValidCoord(nextCoord))
+                        return false;
+
+                    int targetIndex = gridManager.CoordToIndex(nextCoord);
+
+                    if (BattleOccupancyService.IsOccupiedByAnyUnit(targetIndex, null, monsterUnit))
+                        return false;
+
+                    nextCoords.Add(nextCoord);
+                }
+
+                currentCoords.Clear();
+                currentCoords.AddRange(nextCoords);
+                remaining -= step;
             }
 
             return true;

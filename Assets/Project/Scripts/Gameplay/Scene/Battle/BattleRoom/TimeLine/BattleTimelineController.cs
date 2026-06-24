@@ -985,15 +985,20 @@ public class BattleTimelineController : MonoBehaviour
 
         PlayerReservedCommand costCheckCommand =
             new PlayerReservedCommand(selectedCharacter, selectedSkill);
+        bool canMergeMoveCommand =
+            CanMergeMoveCommandInSlot(activeSlotIndex, selectedCharacter, selectedSkill);
 
-        PrepareCommandForReservation(activeSlotIndex, costCheckCommand);
-
-        string blockReason = GetReserveBlockReason(costCheckCommand);
-        if (!string.IsNullOrEmpty(blockReason))
+        if (!canMergeMoveCommand)
         {
-            ShowBattleWarning(blockReason);
-            selectedSkill = null;
-            return;
+            PrepareCommandForReservation(activeSlotIndex, costCheckCommand);
+
+            string blockReason = GetReserveBlockReason(costCheckCommand);
+            if (!string.IsNullOrEmpty(blockReason))
+            {
+                ShowBattleWarning(blockReason);
+                selectedSkill = null;
+                return;
+            }
         }
 
         if (!slot.CanAcceptCharacter(selectedCharacter))
@@ -1004,7 +1009,7 @@ public class BattleTimelineController : MonoBehaviour
             return;
         }
 
-        if (!CanAddPlayerCommandToSlot(activeSlotIndex))
+        if (!canMergeMoveCommand && !CanAddPlayerCommandToSlot(activeSlotIndex))
         {
             ShowCombinedSlotCapacityWarning();
             selectedSkill = null;
@@ -1074,19 +1079,22 @@ public class BattleTimelineController : MonoBehaviour
             return false;
         }
 
+        if (!slot.CanAcceptCharacter(command.UserRuntime))
+        {
+            ShowBattleWarning("이 슬롯에는 이미 다른 캐릭터의 행동이 예약되어 있습니다.");
+            Debug.LogWarning("[BattleTimelineController] 이 타임라인 슬롯에는 이미 다른 캐릭터의 행동이 예약되어 있습니다.");
+            return false;
+        }
+
+        if (TryHandleMoveCommandMerge(slot, command, out bool mergeSucceeded))
+            return mergeSucceeded;
+
         PrepareCommandForReservation(slotIndex, command);
 
         string blockReason = GetReserveBlockReason(command);
         if (!string.IsNullOrEmpty(blockReason))
         {
             ShowBattleWarning(blockReason);
-            return false;
-        }
-
-        if (!slot.CanAcceptCharacter(command.UserRuntime))
-        {
-            ShowBattleWarning("이 슬롯에는 이미 다른 캐릭터의 행동이 예약되어 있습니다.");
-            Debug.LogWarning("[BattleTimelineController] 이 타임라인 슬롯에는 이미 다른 캐릭터의 행동이 예약되어 있습니다.");
             return false;
         }
 
@@ -1113,6 +1121,114 @@ public class BattleTimelineController : MonoBehaviour
         RefreshMoveGhostPreview();
 
         return true;
+    }
+
+    private bool TryHandleMoveCommandMerge(
+        ReserveTurnSlotUI slot,
+        PlayerReservedCommand command,
+        out bool mergeSucceeded)
+    {
+        mergeSucceeded = false;
+
+        if (!IsMoveCommand(command) || slot == null || slot.Commands == null)
+            return false;
+
+        PlayerReservedCommand existingMoveCommand =
+            FindMoveCommandInSlot(slot, command.CharacterId);
+
+        if (existingMoveCommand == null)
+            return false;
+
+        if (!CanReserveMergedMoveCommand(existingMoveCommand, command, out string blockReason))
+        {
+            ShowBattleWarning(blockReason);
+            return true;
+        }
+
+        existingMoveCommand.MergeMoveReservation(command);
+
+        RecalculateAllReservedCosts();
+        RefreshReservationSimulation();
+        RefreshTimeline();
+        RefreshPlayerHUDs();
+        RefreshMoveGhostPreview();
+
+        mergeSucceeded = true;
+        return true;
+    }
+
+    private PlayerReservedCommand FindMoveCommandInSlot(
+        ReserveTurnSlotUI slot,
+        string characterId)
+    {
+        if (slot == null || slot.Commands == null || string.IsNullOrWhiteSpace(characterId))
+            return null;
+
+        for (int i = 0; i < slot.Commands.Count; i++)
+        {
+            PlayerReservedCommand command = slot.Commands[i];
+
+            if (!IsMoveCommand(command))
+                continue;
+
+            if (command.CharacterId == characterId)
+                return command;
+        }
+
+        return null;
+    }
+
+    private bool CanMergeMoveCommandInSlot(
+        int slotIndex,
+        CharacterRuntimeData runtime,
+        SkillMasterData skillData)
+    {
+        if (runtime == null || skillData == null || reserveSlots == null)
+            return false;
+
+        if (skillData.Category != Category.Move)
+            return false;
+
+        if (slotIndex < 0 || slotIndex >= reserveSlots.Length)
+            return false;
+
+        ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+
+        return FindMoveCommandInSlot(slot, runtime.CharacterId) != null;
+    }
+
+    private bool CanReserveMergedMoveCommand(
+        PlayerReservedCommand existingCommand,
+        PlayerReservedCommand nextCommand,
+        out string blockReason)
+    {
+        blockReason = string.Empty;
+
+        if (existingCommand == null || nextCommand == null || nextCommand.UserRuntime == null)
+            return false;
+
+        CharacterRuntimeData runtime = nextCommand.UserRuntime;
+        int mergedMoveDistance =
+            Mathf.Max(0, existingCommand.PlannedMoveDistance) +
+            Mathf.Max(0, nextCommand.PlannedMoveDistance);
+        int moveDistancePerCost = Mathf.Max(
+            1,
+            nextCommand.MoveDistancePerCost > 0
+                ? nextCommand.MoveDistancePerCost
+                : existingCommand.MoveDistancePerCost);
+        int mergedCost = PlayerReservedCommand.CalculateMoveCost(
+            mergedMoveDistance,
+            moveDistancePerCost);
+        int additionalCost = Mathf.Max(0, mergedCost - Mathf.Max(0, existingCommand.Cost));
+
+        if (runtime.CanReserveCost(additionalCost))
+            return true;
+
+        blockReason = BuildShortageMessage(
+            "Cost",
+            additionalCost,
+            runtime.CurrentCost - runtime.ReservedCost);
+        return false;
     }
 
     public bool ConfirmPlayerCommands(
@@ -1273,11 +1389,11 @@ public class BattleTimelineController : MonoBehaviour
 
         switch (resource)
         {
-            case ReferenceResource.Health:
-                return command.HealthCost;
+            case ReferenceResource.HP:
+                return command.HPCost;
 
-            case ReferenceResource.Stamina:
-                return command.StaminaCost;
+            case ReferenceResource.Cost:
+                return command.Cost;
 
             case ReferenceResource.UniqueResource:
                 return command.ResourceCost;
@@ -1447,9 +1563,11 @@ public class BattleTimelineController : MonoBehaviour
                 if (command == null || command.UserRuntime == null)
                     continue;
 
+                bool isMoveContinuationCommand = command.IsMoveContinuationCommand;
                 bool isMoveCommand = BattleEquipmentEffectService.IsMoveCommand(command);
                 bool isFirstMoveCommand =
                     isMoveCommand &&
+                    !isMoveContinuationCommand &&
                     !firstMoveAppliedCharacterIds.Contains(command.CharacterId);
                 int duplicateSkillReservationCountInSlot =
                     GetAndIncrementDuplicateSkillReservationCount(
@@ -1465,8 +1583,12 @@ public class BattleTimelineController : MonoBehaviour
 
                 AddReservedCosts(command);
 
-                if (isMoveCommand && !firstMoveAppliedCharacterIds.Contains(command.CharacterId))
+                if (isMoveCommand &&
+                    !isMoveContinuationCommand &&
+                    !firstMoveAppliedCharacterIds.Contains(command.CharacterId))
+                {
                     firstMoveAppliedCharacterIds.Add(command.CharacterId);
+                }
             }
         }
     }
@@ -1491,6 +1613,7 @@ public class BattleTimelineController : MonoBehaviour
     private string GetDuplicateSkillReservationKey(PlayerReservedCommand command)
     {
         if (command == null ||
+            command.IsMoveContinuationCommand ||
             string.IsNullOrEmpty(command.CharacterId) ||
             string.IsNullOrEmpty(command.SkillId))
         {
@@ -1540,8 +1663,8 @@ public class BattleTimelineController : MonoBehaviour
         if (command == null || command.UserRuntime == null)
             return;
 
-        command.UserRuntime.AddReservedHealth(command.HealthCost);
-        command.UserRuntime.AddReservedStamina(command.StaminaCost);
+        command.UserRuntime.AddReservedHP(command.HPCost);
+        command.UserRuntime.AddReservedCost(command.Cost);
         command.UserRuntime.AddReservedResource(command.ResourceCost);
         command.UserRuntime.AddReservedMove(command.MoveCost);
         command.UserRuntime.AddReservedShield(command.ShieldCost);
@@ -1596,11 +1719,11 @@ public class BattleTimelineController : MonoBehaviour
         if (runtime == null || command == null)
             return "예약할 스킬 정보가 없습니다.";
 
-        if (!runtime.CanReserveHealth(command.HealthCost))
-            return BuildShortageMessage("체력", command.HealthCost, runtime.CurrentHealth - runtime.ReservedHealthCost);
+        if (!runtime.CanReserveHP(command.HPCost))
+            return BuildShortageMessage("HP", command.HPCost, runtime.CurrentHP - runtime.ReservedHPCost);
 
-        if (!runtime.CanReserveStamina(command.StaminaCost))
-            return BuildShortageMessage("코스트", command.StaminaCost, runtime.CurrentStamina - runtime.ReservedStaminaCost);
+        if (!runtime.CanReserveCost(command.Cost))
+            return BuildShortageMessage("Cost", command.Cost, runtime.CurrentCost - runtime.ReservedCost);
 
         if (!runtime.CanReserveResource(command.ResourceCost))
             return BuildShortageMessage("고유자원", command.ResourceCost, runtime.CurrentResource - runtime.ReservedResourceCost);
@@ -1624,11 +1747,11 @@ public class BattleTimelineController : MonoBehaviour
     {
         switch (resource)
         {
-            case ReferenceResource.Health:
-                return "체력";
+            case ReferenceResource.HP:
+                return "HP";
 
-            case ReferenceResource.Stamina:
-                return "코스트";
+            case ReferenceResource.Cost:
+                return "Cost";
 
             case ReferenceResource.UniqueResource:
                 return "고유자원";
@@ -2072,7 +2195,7 @@ public class BattleTimelineController : MonoBehaviour
         RefreshPlayerHUDs();
     }
 
-    public int ApplyBlockedMoveStaminaRefunds()
+    public int ApplyBlockedMoveCostRefunds()
     {
         int totalRefund = 0;
 
@@ -2093,14 +2216,14 @@ public class BattleTimelineController : MonoBehaviour
                 if (!IsMoveCommand(command))
                     continue;
 
-                int refund = command.ApplyBlockedMoveStaminaRefund();
+                int refund = command.ApplyBlockedMoveCostRefund();
 
                 if (refund <= 0)
                     continue;
 
                 totalRefund += refund;
                 Debug.Log(
-                    $"[BattleTimelineController] Move stamina refund / " +
+                    $"[BattleTimelineController] Move Cost refund / " +
                     $"Character:{command.CharacterId} / Refund:{refund}"
                 );
             }
@@ -2131,8 +2254,11 @@ public class BattleTimelineController : MonoBehaviour
         if (command == null || command.UserRuntime == null)
             return;
 
-        command.UserRuntime.RemoveReservedHealth(command.HealthCost);
-        command.UserRuntime.RemoveReservedStamina(command.StaminaCost);
+        command.UserRuntime.RemoveReservedHP(command.HPCost);
+
+        if (!command.MoveCostConsumed)
+            command.UserRuntime.RemoveReservedCost(command.Cost);
+
         command.UserRuntime.RemoveReservedResource(command.ResourceCost);
         command.UserRuntime.RemoveReservedMove(command.MoveCost);
         command.UserRuntime.RemoveReservedShield(command.ShieldCost);

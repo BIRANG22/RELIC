@@ -263,20 +263,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2652770f2d8f03541a2d81ca5ac1b6f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rootObject: {fileID: 1937777369455068133}
-  popupRect: {fileID: 8884926842994633789}
-  canvasGroup: {fileID: 0}
   backgroundImage: {fileID: 1019937651692282611}
   nameText: {fileID: 587171940176213344}
   effectText: {fileID: 4043037016791117272}
+  rangeIconImage: {fileID: 0}
+  rangeIconSize: {x: 60, y: 60}
+  rangeIconGap: 4
   emptyNameText: 
   emptyEffectText: 
-  backgroundObjectName: BackGround
-  nameObjectName: NameText
-  effectObjectName: EffectText
-  hideOnAwake: 1
-  hideWithCanvasGroup: 1
-  disableRaycastTargets: 1
 --- !u!1 &2042345676309525431
 GameObject:
   m_ObjectHideFlags: 0
@@ -408,7 +402,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: -43.805237, y: 0, z: -41.779663, w: 0}
+  m_margin: {x: 8.624939, y: 0, z: -41.779663, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0

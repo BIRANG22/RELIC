@@ -6,7 +6,7 @@ namespace Relic.Gameplay.Monster
 {
     public class EliseAI : MonsterAIBase
     {
-        private const string AttackHighHpSkillId = "S_Monster_08";
+        private const string AttackHighHPSkillId = "S_Monster_08";
         private const string LastSlotAttackSkillId = "S_Monster_09";
         private const string BuffSkillId = "S_Monster_11";
         private const string DebuffSkillId = "S_Monster_13";
@@ -14,7 +14,7 @@ namespace Relic.Gameplay.Monster
 
         public override string SelectSkill(MonsterRuntimeData monster, BattleContext context)
         {
-            return AttackHighHpSkillId;
+            return AttackHighHPSkillId;
         }
 
         public override MonsterAIPlan CreatePlan(
@@ -39,7 +39,7 @@ namespace Relic.Gameplay.Monster
             }
 
             plan.Add(new MonsterAIAction(
-                AttackHighHpSkillId,
+                AttackHighHPSkillId,
                 Vector2Int.zero,
                 MonsterAISlotPreference.Center,
                 -1,

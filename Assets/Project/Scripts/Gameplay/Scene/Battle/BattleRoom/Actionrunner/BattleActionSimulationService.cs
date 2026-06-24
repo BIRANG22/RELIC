@@ -10,7 +10,6 @@ public class BattleActionSimulationService
     private readonly Dictionary<string, int> playerPositions = new();
     private readonly Dictionary<string, BattleDirection> playerDirections = new();
     private readonly Dictionary<string, List<int>> monsterPositions = new();
-    private readonly Dictionary<string, List<int>> initialMonsterPositions = new();
 
     public BattleActionSimulationService(GridManager gridManager)
     {
@@ -28,6 +27,69 @@ public class BattleActionSimulationService
         {
             SimulateSlot(timelineController, slotIndex);
         }
+    }
+
+    public HashSet<int> GetProjectedMonsterOccupiedGridIndices(
+        BattleTimelineController timelineController,
+        int targetSlotIndex,
+        bool includeTargetSlotMonsterCommands)
+    {
+        HashSet<int> result = new();
+
+        if (gridManager == null)
+            return result;
+
+        CaptureCurrentPositions();
+
+        if (timelineController != null && targetSlotIndex >= 0)
+        {
+            int lastSlotIndex = Mathf.Min(targetSlotIndex, timelineController.SlotCount - 1);
+
+            for (int slotIndex = 0; slotIndex <= lastSlotIndex; slotIndex++)
+            {
+                bool isTargetSlot = slotIndex == lastSlotIndex;
+                IReadOnlyList<PlayerReservedCommand> playerCommands =
+                    timelineController.GetPlayerCommands(slotIndex);
+                IReadOnlyList<MonsterReservedCommand> monsterCommands =
+                    timelineController.GetMonsterCommands(slotIndex);
+
+                if (playerCommands != null)
+                {
+                    for (int i = 0; i < playerCommands.Count; i++)
+                    {
+                        if (BattleActionOrderUtility.HasSwift(playerCommands[i]))
+                            SimulatePlayerCommand(playerCommands[i]);
+                    }
+                }
+
+                if ((!isTargetSlot || includeTargetSlotMonsterCommands) &&
+                    monsterCommands != null)
+                {
+                    for (int i = 0; i < monsterCommands.Count; i++)
+                        SimulateMonsterCommand(monsterCommands[i]);
+                }
+
+                if (!isTargetSlot && playerCommands != null)
+                {
+                    for (int i = 0; i < playerCommands.Count; i++)
+                    {
+                        if (!BattleActionOrderUtility.HasSwift(playerCommands[i]))
+                            SimulatePlayerCommand(playerCommands[i]);
+                    }
+                }
+            }
+        }
+
+        foreach (var pair in monsterPositions)
+        {
+            if (pair.Value == null)
+                continue;
+
+            for (int i = 0; i < pair.Value.Count; i++)
+                result.Add(pair.Value[i]);
+        }
+
+        return result;
     }
 
     private void SimulateSlot(BattleTimelineController timelineController, int slotIndex)
@@ -85,6 +147,8 @@ public class BattleActionSimulationService
 
     private void SimulatePlayerMove(PlayerReservedCommand command, int currentGrid)
     {
+        ReplanPlayerMovePath(command, currentGrid);
+
         BattleDirection direction = GetDirectionAfterMove(
             GetPlayerDirection(command),
             command.MoveOffset
@@ -112,6 +176,193 @@ public class BattleActionSimulationService
 
         playerPositions[command.CharacterId] = targetGrid;
         command.SetSimulatedMoveResult(false, targetGrid, actualMoveOffset);
+    }
+
+    private void ReplanPlayerMovePath(PlayerReservedCommand command, int currentGrid)
+    {
+        if (command == null || gridManager == null)
+            return;
+
+        if (command.ReservedMoveGridIndex < 0)
+            return;
+
+        int targetGridIndex = command.ReservedMoveGridIndex;
+        int moveDistancePerCommand = Mathf.Max(1, command.MoveDistancePerCost);
+        int reservationCapacity = Mathf.Max(
+            command.Cost,
+            PlayerReservedCommand.CalculateMoveCost(
+                command.PlannedMoveDistance,
+                moveDistancePerCommand));
+
+        if (reservationCapacity <= 0)
+            return;
+
+        HashSet<int> blockedGridIndices =
+            BuildPlayerMoveBlockedGridIndices(
+                "P:" + command.CharacterId,
+                targetGridIndex);
+
+        if (command.VisualMoveSteps != null &&
+            command.VisualMoveSteps.Count > 0 &&
+            IsMovePathClear(currentGrid, command.VisualMoveSteps, blockedGridIndices))
+        {
+            return;
+        }
+
+        List<Vector2Int> path = PlayerSkillReservationController.ChooseReservableMovePath(
+            currentGrid,
+            targetGridIndex,
+            moveDistancePerCommand,
+            reservationCapacity,
+            gridManager,
+            blockedGridIndices,
+            blockedGridIndices);
+
+        if (path == null || path.Count <= 0)
+            return;
+
+        Vector2Int totalMoveOffset = GetTotalMoveOffset(path);
+
+        if (command.VisualMoveSteps != null &&
+            IsSamePath(command.VisualMoveSteps, path) &&
+            command.MoveOffset == totalMoveOffset)
+        {
+            return;
+        }
+
+        BattleDirection direction = GetDirectionAfterMove(
+            GetPlayerDirection(command),
+            totalMoveOffset);
+
+        command.SetSelectionResult(
+            direction,
+            targetGridIndex,
+            new List<int> { targetGridIndex },
+            totalMoveOffset);
+        command.SetVisualMoveResult(
+            targetGridIndex,
+            totalMoveOffset,
+            path);
+    }
+
+    private HashSet<int> BuildPlayerMoveBlockedGridIndices(
+        string selfKey,
+        int targetGridIndex)
+    {
+        HashSet<int> blockedGridIndices = new();
+
+        foreach (var pair in playerPositions)
+        {
+            if ("P:" + pair.Key == selfKey)
+                continue;
+
+            blockedGridIndices.Add(pair.Value);
+        }
+
+        foreach (var pair in monsterPositions)
+        {
+            if (pair.Value == null)
+                continue;
+
+            for (int i = 0; i < pair.Value.Count; i++)
+            {
+                int gridIndex = pair.Value[i];
+
+                if (gridIndex == targetGridIndex)
+                    continue;
+
+                blockedGridIndices.Add(gridIndex);
+            }
+        }
+
+        return blockedGridIndices;
+    }
+
+    private bool IsMovePathClear(
+        int currentGrid,
+        IReadOnlyList<Vector2Int> moveSteps,
+        ISet<int> blockedGridIndices)
+    {
+        if (gridManager == null || moveSteps == null || moveSteps.Count <= 0)
+            return false;
+
+        Vector2Int currentCoord = gridManager.IndexToCoord(currentGrid);
+
+        if (!gridManager.IsValidCoord(currentCoord))
+            return false;
+
+        for (int i = 0; i < moveSteps.Count; i++)
+        {
+            Vector2Int moveOffset = moveSteps[i];
+
+            if (!IsMoveOffsetClear(ref currentCoord, moveOffset.x, true, blockedGridIndices))
+                return false;
+
+            if (!IsMoveOffsetClear(ref currentCoord, moveOffset.y, false, blockedGridIndices))
+                return false;
+        }
+
+        return true;
+    }
+
+    private bool IsMoveOffsetClear(
+        ref Vector2Int currentCoord,
+        int amount,
+        bool horizontal,
+        ISet<int> blockedGridIndices)
+    {
+        int remaining = amount;
+
+        while (remaining != 0)
+        {
+            int step = remaining > 0 ? 1 : -1;
+            Vector2Int nextCoord = currentCoord + (horizontal
+                ? new Vector2Int(step, 0)
+                : new Vector2Int(0, step));
+
+            if (!gridManager.IsValidCoord(nextCoord))
+                return false;
+
+            int gridIndex = gridManager.CoordToIndex(nextCoord);
+
+            if (blockedGridIndices != null && blockedGridIndices.Contains(gridIndex))
+                return false;
+
+            currentCoord = nextCoord;
+            remaining -= step;
+        }
+
+        return true;
+    }
+
+    private Vector2Int GetTotalMoveOffset(IReadOnlyList<Vector2Int> moveSteps)
+    {
+        Vector2Int total = Vector2Int.zero;
+
+        if (moveSteps == null)
+            return total;
+
+        for (int i = 0; i < moveSteps.Count; i++)
+            total += moveSteps[i];
+
+        return total;
+    }
+
+    private bool IsSamePath(IReadOnlyList<Vector2Int> a, IReadOnlyList<Vector2Int> b)
+    {
+        if (a == null || b == null)
+            return false;
+
+        if (a.Count != b.Count)
+            return false;
+
+        for (int i = 0; i < a.Count; i++)
+        {
+            if (a[i] != b[i])
+                return false;
+        }
+
+        return true;
     }
 
     private bool TryGetPlayerMoveTargetGridIndex(
@@ -340,32 +591,120 @@ public class BattleActionSimulationService
             return;
         }
 
-        List<int> movedCells = new();
-
-        for (int i = 0; i < currentCells.Count; i++)
+        if (!TryGetSimulatedMonsterMoveCells(
+            currentCells,
+            moveOffset,
+            "M:" + command.RuntimeId,
+            out List<int> movedCells))
         {
-            Vector2Int currentCoord = gridManager.IndexToCoord(currentCells[i]);
-            Vector2Int targetCoord = currentCoord + moveOffset;
-
-            if (!gridManager.IsValidCoord(targetCoord))
-            {
-                command.SetSimulatedMoveResult(true, Vector2Int.zero);
-                return;
-            }
-
-            int targetGrid = gridManager.CoordToIndex(targetCoord);
-
-            if (IsOccupied(targetGrid, "M:" + command.RuntimeId))
-            {
-                command.SetSimulatedMoveResult(true, Vector2Int.zero);
-                return;
-            }
-
-            movedCells.Add(targetGrid);
+            command.SetSimulatedMoveResult(true, Vector2Int.zero);
+            return;
         }
 
         monsterPositions[command.RuntimeId] = movedCells;
         command.SetSimulatedMoveResult(false, moveOffset);
+    }
+
+    private bool TryGetSimulatedMonsterMoveCells(
+        IReadOnlyList<int> currentCells,
+        Vector2Int moveOffset,
+        string selfKey,
+        out List<int> movedCells)
+    {
+        movedCells = null;
+
+        if (currentCells == null || currentCells.Count <= 0)
+            return false;
+
+        if (moveOffset.x != 0 && moveOffset.y != 0)
+        {
+            return TryGetSimulatedMonsterMoveCellsInAxisOrder(
+                       currentCells,
+                       moveOffset,
+                       selfKey,
+                       true,
+                       out movedCells) ||
+                   TryGetSimulatedMonsterMoveCellsInAxisOrder(
+                       currentCells,
+                       moveOffset,
+                       selfKey,
+                       false,
+                       out movedCells);
+        }
+
+        return TryGetSimulatedMonsterMoveCellsInAxisOrder(
+            currentCells,
+            moveOffset,
+            selfKey,
+            moveOffset.x != 0,
+            out movedCells);
+    }
+
+    private bool TryGetSimulatedMonsterMoveCellsInAxisOrder(
+        IReadOnlyList<int> currentCells,
+        Vector2Int moveOffset,
+        string selfKey,
+        bool horizontalFirst,
+        out List<int> movedCells)
+    {
+        List<Vector2Int> currentCoords = new();
+
+        for (int i = 0; i < currentCells.Count; i++)
+            currentCoords.Add(gridManager.IndexToCoord(currentCells[i]));
+
+        bool canMove = horizontalFirst
+            ? TryApplySimulatedMonsterMoveAxisSteps(currentCoords, moveOffset.x, true, selfKey) &&
+              TryApplySimulatedMonsterMoveAxisSteps(currentCoords, moveOffset.y, false, selfKey)
+            : TryApplySimulatedMonsterMoveAxisSteps(currentCoords, moveOffset.y, false, selfKey) &&
+              TryApplySimulatedMonsterMoveAxisSteps(currentCoords, moveOffset.x, true, selfKey);
+
+        movedCells = new List<int>();
+
+        if (!canMove)
+            return false;
+
+        for (int i = 0; i < currentCoords.Count; i++)
+            movedCells.Add(gridManager.CoordToIndex(currentCoords[i]));
+
+        return true;
+    }
+
+    private bool TryApplySimulatedMonsterMoveAxisSteps(
+        List<Vector2Int> currentCoords,
+        int amount,
+        bool horizontal,
+        string selfKey)
+    {
+        int remaining = amount;
+
+        while (remaining != 0)
+        {
+            int step = remaining > 0 ? 1 : -1;
+            List<Vector2Int> nextCoords = new();
+
+            for (int i = 0; i < currentCoords.Count; i++)
+            {
+                Vector2Int nextCoord = currentCoords[i] + (horizontal
+                    ? new Vector2Int(step, 0)
+                    : new Vector2Int(0, step));
+
+                if (!gridManager.IsValidCoord(nextCoord))
+                    return false;
+
+                int targetGrid = gridManager.CoordToIndex(nextCoord);
+
+                if (IsOccupied(targetGrid, selfKey))
+                    return false;
+
+                nextCoords.Add(nextCoord);
+            }
+
+            currentCoords.Clear();
+            currentCoords.AddRange(nextCoords);
+            remaining -= step;
+        }
+
+        return true;
     }
 
     private void SimulateMonsterSkillRange(
@@ -439,12 +778,6 @@ public class BattleActionSimulationService
                 return true;
         }
 
-        foreach (var pair in initialMonsterPositions)
-        {
-            if (pair.Value != null && pair.Value.Contains(gridIndex))
-                return true;
-        }
-
         return false;
     }
 
@@ -453,7 +786,6 @@ public class BattleActionSimulationService
         playerPositions.Clear();
         playerDirections.Clear();
         monsterPositions.Clear();
-        initialMonsterPositions.Clear();
 
         BattleCharacter[] players = Object.FindObjectsByType<BattleCharacter>(
             FindObjectsInactive.Exclude,
@@ -488,8 +820,6 @@ public class BattleActionSimulationService
             List<int> occupiedGridIndices = new(monsters[i].OccupiedGridIndices);
 
             monsterPositions[monsters[i].RuntimeData.RuntimeId] =
-                new List<int>(occupiedGridIndices);
-            initialMonsterPositions[monsters[i].RuntimeData.RuntimeId] =
                 new List<int>(occupiedGridIndices);
         }
     }

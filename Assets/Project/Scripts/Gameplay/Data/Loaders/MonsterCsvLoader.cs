@@ -7,11 +7,11 @@ namespace Relic.Gameplay.Data
         public static List<MonsterMasterData> Load(Dictionary<string, List<Dictionary<string, string>>> workbook)
         {
             var rows = ExcelSheetSelector.GetSheet(workbook, "MonsterMasterData", "MonsterMaster", "Monster");
-            ApplyRewardColumnAliases(rows);
+            ApplyColumnAliases(rows);
             return DataRowMapper.MapList<MonsterMasterData>(rows);
         }
 
-        private static void ApplyRewardColumnAliases(IReadOnlyList<Dictionary<string, string>> rows)
+        private static void ApplyColumnAliases(IReadOnlyList<Dictionary<string, string>> rows)
         {
             if (rows == null)
                 return;
@@ -23,56 +23,13 @@ namespace Relic.Gameplay.Data
                 if (row == null)
                     continue;
 
-                CopyAlias(row, "MinRemnant", "MinRemnant", "RemnantMin", "MinimumRemnant", "최소렘넌트", "렘넌트최소");
-                CopyAlias(row, "MaxRemnant", "MaxRemnant", "RemnantMax", "MaximumRemnant", "최대렘넌트", "렘넌트최대");
-                CopyAlias(row, "UniqueItemId", "UniqueItemId", "UniqueItemID", "UniqueItem", "FixedItemId", "FixedItem", "고유아이템", "고유아이템ID", "고유아이템Id");
-                CopyAlias(row, "UniqueItemChance", "UniqueItemChance", "UniqueItemRate", "UniqueItemProbability", "ItemChance", "ItemRate", "고유아이템확률", "아이템확률");
-                CopyAlias(row, "RelicChance", "RelicChance", "RelicRate", "RelicProbability", "유물확률");
+                DataColumnAliasUtility.CopyAlias(row, "HP", "HP", "Health");
+                DataColumnAliasUtility.CopyAlias(row, "MinRemnant", "MinRemnant", "RemnantMin", "MinimumRemnant", "\uCD5C\uC18C\uC794\uC7AC", "\uC794\uC7AC\uCD5C\uC18C");
+                DataColumnAliasUtility.CopyAlias(row, "MaxRemnant", "MaxRemnant", "RemnantMax", "MaximumRemnant", "\uCD5C\uB300\uC794\uC7AC", "\uC794\uC7AC\uCD5C\uB300");
+                DataColumnAliasUtility.CopyAlias(row, "UniqueItemId", "UniqueItemId", "UniqueItemID", "UniqueItem", "FixedItemId", "FixedItem", "\uACE0\uC720\uC544\uC774\uD15C", "\uACE0\uC720\uC544\uC774\uD15CID", "\uACE0\uC720\uC544\uC774\uD15CId");
+                DataColumnAliasUtility.CopyAlias(row, "UniqueItemChance", "UniqueItemChance", "UniqueItemRate", "UniqueItemProbability", "ItemChance", "ItemRate", "\uACE0\uC720\uC544\uC774\uD15C\uD655\uB960", "\uC544\uC774\uD15C\uD655\uB960");
+                DataColumnAliasUtility.CopyAlias(row, "RelicChance", "RelicChance", "RelicRate", "RelicProbability", "\uC720\uBB3C\uD655\uB960");
             }
-        }
-
-        private static void CopyAlias(Dictionary<string, string> row, string targetKey, params string[] aliases)
-        {
-            if (HasKey(row, targetKey))
-                return;
-
-            for (int i = 0; i < aliases.Length; i++)
-            {
-                string alias = aliases[i];
-
-                foreach (var pair in row)
-                {
-                    if (NormalizeKey(pair.Key) != NormalizeKey(alias))
-                        continue;
-
-                    row[targetKey] = pair.Value;
-                    return;
-                }
-            }
-        }
-
-        private static bool HasKey(Dictionary<string, string> row, string key)
-        {
-            foreach (var pair in row)
-            {
-                if (NormalizeKey(pair.Key) == NormalizeKey(key))
-                    return true;
-            }
-
-            return false;
-        }
-
-        private static string NormalizeKey(string value)
-        {
-            if (string.IsNullOrEmpty(value))
-                return string.Empty;
-
-            return value
-                .Replace("\uFEFF", "")
-                .Replace("_", "")
-                .Replace(" ", "")
-                .Trim()
-                .ToLowerInvariant();
         }
     }
 }

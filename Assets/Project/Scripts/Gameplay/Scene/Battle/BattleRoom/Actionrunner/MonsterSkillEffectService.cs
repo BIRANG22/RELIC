@@ -216,9 +216,9 @@ public class MonsterSkillEffectService
             if (string.IsNullOrWhiteSpace(effectId))
                 continue;
 
-            int value = ParseIndexedValue(command.SkillData.ValueRate, i);
             int count = ParseIndexedValue(command.SkillData.CountRate, i);
             bool isDamageHitEffect = IsDamageHitEffect(effectId);
+            int value = ResolveEffectValue(command, effectId, i);
 
             if (mode == EffectExecutionMode.DamageHit && !isDamageHitEffect)
                 continue;
@@ -259,6 +259,7 @@ public class MonsterSkillEffectService
                 {
                     for (int hit = 0; hit < hitCount; hit++)
                     {
+                        context.Value = ResolveEffectValue(command, effectId, i);
                         context.Count = 1;
                         effectExecutor.Execute(effectId, context);
                     }
@@ -290,6 +291,27 @@ public class MonsterSkillEffectService
             return damageService.ParseFirstInt(split[index]);
 
         return damageService.ParseFirstInt(text);
+    }
+
+    private int ResolveEffectValue(MonsterReservedCommand command, string effectId, int index)
+    {
+        if (IsDamageHitEffect(effectId))
+        {
+            if (damageService != null)
+                return damageService.GetMonsterDamage(command);
+
+            if (BattleDamageService.TryGetMonsterDamageRange(
+                    command?.SkillData,
+                    out int minDamage,
+                    out int maxDamage))
+            {
+                return Random.Range(minDamage, maxDamage + 1);
+            }
+
+            return 1;
+        }
+
+        return ParseIndexedValue(command.SkillData.ValueRate, index);
     }
 
     private bool IsDamageHitEffect(string effectId)

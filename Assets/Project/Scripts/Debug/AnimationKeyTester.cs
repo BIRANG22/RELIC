@@ -15,7 +15,7 @@ public class AnimationKeyTestController : MonoBehaviour
     [SerializeField] private string guardStateName = "cha1_guard";
     [SerializeField] private string hitStateName = "cha1_hit";
     [SerializeField] private string battleStateName = "char1_battle";
-    [SerializeField] private string lowHpStateName = "char1_lowhp";
+    [SerializeField] private string lowHPStateName = "char1_lowhp";
 
     private Coroutine currentRoutine;
 
@@ -47,7 +47,7 @@ public class AnimationKeyTestController : MonoBehaviour
             PlayOnceThenIdle(battleStateName);
 
         if (Input.GetKeyDown(KeyCode.Alpha6))
-            PlayOnceThenIdle(lowHpStateName);
+            PlayOnceThenIdle(lowHPStateName);
     }
 
     private void PlayOnceThenIdle(string stateName)

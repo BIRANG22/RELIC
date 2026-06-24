@@ -13,20 +13,21 @@ public class PlayerReservedCommand
     public CharacterRuntimeData UserRuntime { get; private set; }
     public SkillMasterData SkillData { get; private set; }
 
-    public int HealthCost { get; private set; }
-    public int StaminaCost { get; private set; }
+    public int HPCost { get; private set; }
+    public int Cost { get; private set; }
     public int ResourceCost { get; private set; }
     public int MoveCost { get; private set; }
     public int ShieldCost { get; private set; }
 
-    public int BaseHealthCost { get; private set; }
-    public int BaseStaminaCost { get; private set; }
+    public int BaseHPCost { get; private set; }
+    public int BaseCost { get; private set; }
     public int BaseResourceCost { get; private set; }
     public int BaseMoveCost { get; private set; }
     public int BaseShieldCost { get; private set; }
 
     public int TimelineSlotIndex { get; private set; } = -1;
     public bool ReservationCostModifiersApplied { get; private set; }
+    public bool IsMoveContinuationCommand { get; private set; }
 
     public BattleDirection Direction { get; private set; } = BattleDirection.Right;
     public int SelectedGridIndex { get; private set; } = -1;
@@ -47,10 +48,10 @@ public class PlayerReservedCommand
     private readonly List<Vector2Int> visualMoveSteps = new();
 
     public int PlannedMoveDistance { get; private set; }
-    public int MoveDistancePerStamina { get; private set; } = 1;
+    public int MoveDistancePerCost { get; private set; } = 1;
     public int ExecutedMoveDistance { get; private set; } = -1;
-    public bool MoveStaminaCostConsumed { get; private set; }
-    public bool BlockedMoveStaminaRefundApplied { get; private set; }
+    public bool MoveCostConsumed { get; private set; }
+    public bool BlockedMoveCostRefundApplied { get; private set; }
 
     public Vector2Int EffectiveVisualMoveOffset =>
         VisualMoveOffset != Vector2Int.zero ? VisualMoveOffset : EffectiveMoveOffset;
@@ -83,6 +84,34 @@ public class PlayerReservedCommand
 
         for (int i = 0; i < moveSteps.Count; i++)
             visualMoveSteps.Add(moveSteps[i]);
+    }
+
+    public void MergeMoveReservation(PlayerReservedCommand nextCommand)
+    {
+        if (nextCommand == null || nextCommand.ReservedMoveGridIndex < 0)
+            return;
+
+        List<Vector2Int> mergedMoveSteps = new();
+        AppendMoveSteps(mergedMoveSteps, this);
+        AppendMoveSteps(mergedMoveSteps, nextCommand);
+
+        Vector2Int mergedMoveOffset = MoveOffset + nextCommand.MoveOffset;
+        int moveDistancePerCost = nextCommand.MoveDistancePerCost > 0
+            ? nextCommand.MoveDistancePerCost
+            : MoveDistancePerCost;
+
+        SetSelectionResult(
+            nextCommand.Direction,
+            nextCommand.ReservedMoveGridIndex,
+            new List<int> { nextCommand.ReservedMoveGridIndex },
+            mergedMoveOffset);
+        SetMoveReservationCost(
+            GetMoveStepDistance(mergedMoveSteps),
+            moveDistancePerCost);
+        SetVisualMoveResult(
+            nextCommand.ReservedMoveGridIndex,
+            mergedMoveOffset,
+            mergedMoveSteps);
     }
     public PlayerReservedCommand(CharacterRuntimeData userRuntime, SkillMasterData skillData)
     {
@@ -146,8 +175,8 @@ public class PlayerReservedCommand
 
     public void ResetCostsToBase()
     {
-        HealthCost = BaseHealthCost;
-        StaminaCost = BaseStaminaCost;
+        HPCost = BaseHPCost;
+        Cost = BaseCost;
         ResourceCost = BaseResourceCost;
         MoveCost = BaseMoveCost;
         ShieldCost = BaseShieldCost;
@@ -155,14 +184,14 @@ public class PlayerReservedCommand
     }
 
     public void SetBaseCosts(
-        int healthCost,
-        int staminaCost,
+        int hpCost,
+        int cost,
         int resourceCost,
         int moveCost,
         int shieldCost)
     {
-        BaseHealthCost = Mathf.Max(0, healthCost);
-        BaseStaminaCost = Mathf.Max(0, staminaCost);
+        BaseHPCost = Mathf.Max(0, hpCost);
+        BaseCost = Mathf.Max(0, cost);
         BaseResourceCost = Mathf.Max(0, resourceCost);
         BaseMoveCost = Mathf.Max(0, moveCost);
         BaseShieldCost = Mathf.Max(0, shieldCost);
@@ -171,14 +200,14 @@ public class PlayerReservedCommand
     }
 
     public void SetCosts(
-        int healthCost,
-        int staminaCost,
+        int hpCost,
+        int cost,
         int resourceCost,
         int moveCost,
         int shieldCost)
     {
-        HealthCost = Mathf.Max(0, healthCost);
-        StaminaCost = Mathf.Max(0, staminaCost);
+        HPCost = Mathf.Max(0, hpCost);
+        Cost = Mathf.Max(0, cost);
         ResourceCost = Mathf.Max(0, resourceCost);
         MoveCost = Mathf.Max(0, moveCost);
         ShieldCost = Mathf.Max(0, shieldCost);
@@ -186,14 +215,14 @@ public class PlayerReservedCommand
 
     public void SetMoveReservationCost(
         int plannedMoveDistance,
-        int moveDistancePerStamina)
+        int moveDistancePerCost)
     {
         PlannedMoveDistance = Mathf.Max(0, plannedMoveDistance);
-        MoveDistancePerStamina = Mathf.Max(1, moveDistancePerStamina);
+        MoveDistancePerCost = Mathf.Max(1, moveDistancePerCost);
 
         SetBaseCosts(
             0,
-            CalculateMoveStaminaCost(PlannedMoveDistance, MoveDistancePerStamina),
+            CalculateMoveCost(PlannedMoveDistance, MoveDistancePerCost),
             0,
             0,
             0
@@ -205,60 +234,126 @@ public class PlayerReservedCommand
         ExecutedMoveDistance = Mathf.Max(0, executedMoveDistance);
     }
 
-    public void MarkMoveStaminaCostConsumed()
+    public void MarkMoveCostConsumed()
     {
-        MoveStaminaCostConsumed = true;
+        MoveCostConsumed = true;
     }
 
-    public int ApplyBlockedMoveStaminaRefund()
+    public void MarkMoveContinuationCommand()
     {
-        if (BlockedMoveStaminaRefundApplied)
+        IsMoveContinuationCommand = true;
+        SetBaseCosts(0, 0, 0, 0, 0);
+    }
+
+    public int ApplyBlockedMoveCostRefund()
+    {
+        if (!MoveCostConsumed)
             return 0;
 
-        BlockedMoveStaminaRefundApplied = true;
+        if (BlockedMoveCostRefundApplied)
+            return 0;
 
-        int refund = GetBlockedMoveStaminaRefund();
+        BlockedMoveCostRefundApplied = true;
+
+        int refund = GetBlockedMoveCostRefund();
 
         if (refund <= 0 || UserRuntime == null)
             return 0;
 
-        int maxStamina = UserRuntime.MaxStamina > 0
-            ? UserRuntime.MaxStamina
-            : UserRuntime.CurrentStamina + refund;
+        int maxCost = UserRuntime.MaxCost > 0
+            ? UserRuntime.MaxCost
+            : UserRuntime.CurrentCost + refund;
 
-        UserRuntime.CurrentStamina = Mathf.Min(
-            maxStamina,
-            UserRuntime.CurrentStamina + refund
+        UserRuntime.CurrentCost = Mathf.Min(
+            maxCost,
+            UserRuntime.CurrentCost + refund
         );
 
         return refund;
     }
 
-    public int GetBlockedMoveStaminaRefund()
+    public int GetBlockedMoveCostRefund()
     {
         if (PlannedMoveDistance <= 0 || ExecutedMoveDistance < 0)
             return 0;
 
-        int actualStaminaCost = CalculateMoveStaminaCost(
+        int actualCost = CalculateMoveCost(
             ExecutedMoveDistance,
-            MoveDistancePerStamina
+            MoveDistancePerCost
         );
 
-        int blockedStaminaCost = Mathf.Max(0, StaminaCost - actualStaminaCost);
-        return blockedStaminaCost / 2;
+        int blockedCost = Mathf.Max(0, Cost - actualCost);
+        return blockedCost / 2;
     }
 
-    public static int CalculateMoveStaminaCost(
+    public static int CalculateMoveCost(
         int moveDistance,
-        int moveDistancePerStamina)
+        int moveDistancePerCost)
     {
         int safeDistance = Mathf.Max(0, moveDistance);
 
         if (safeDistance <= 0)
             return 0;
 
-        int safeDistancePerStamina = Mathf.Max(1, moveDistancePerStamina);
-        return Mathf.CeilToInt(safeDistance / (float)safeDistancePerStamina);
+        int safeDistancePerCost = Mathf.Max(1, moveDistancePerCost);
+        return Mathf.CeilToInt(safeDistance / (float)safeDistancePerCost);
+    }
+
+    private static void AppendMoveSteps(
+        List<Vector2Int> target,
+        PlayerReservedCommand source)
+    {
+        if (target == null || source == null)
+            return;
+
+        if (source.visualMoveSteps.Count > 0)
+        {
+            for (int i = 0; i < source.visualMoveSteps.Count; i++)
+                target.Add(source.visualMoveSteps[i]);
+
+            return;
+        }
+
+        AppendUnitMoveSteps(target, source.MoveOffset);
+    }
+
+    private static void AppendUnitMoveSteps(List<Vector2Int> target, Vector2Int moveOffset)
+    {
+        if (target == null)
+            return;
+
+        AppendAxisUnitMoveSteps(target, moveOffset.x, true);
+        AppendAxisUnitMoveSteps(target, moveOffset.y, false);
+    }
+
+    private static void AppendAxisUnitMoveSteps(
+        List<Vector2Int> target,
+        int amount,
+        bool horizontal)
+    {
+        int remaining = amount;
+
+        while (remaining != 0)
+        {
+            int step = remaining > 0 ? 1 : -1;
+            target.Add(horizontal
+                ? new Vector2Int(step, 0)
+                : new Vector2Int(0, step));
+            remaining -= step;
+        }
+    }
+
+    private static int GetMoveStepDistance(IReadOnlyList<Vector2Int> moveSteps)
+    {
+        if (moveSteps == null)
+            return 0;
+
+        int total = 0;
+
+        for (int i = 0; i < moveSteps.Count; i++)
+            total += Mathf.Abs(moveSteps[i].x) + Mathf.Abs(moveSteps[i].y);
+
+        return total;
     }
 
     public void SetSimulatedRangeResult(
@@ -314,13 +409,13 @@ public class PlayerReservedCommand
 
     private void CalculateCosts(SkillMasterData skillData)
     {
-        HealthCost = 0;
-        StaminaCost = 0;
+        HPCost = 0;
+        Cost = 0;
         ResourceCost = 0;
         MoveCost = 0;
         ShieldCost = 0;
-        BaseHealthCost = 0;
-        BaseStaminaCost = 0;
+        BaseHPCost = 0;
+        BaseCost = 0;
         BaseResourceCost = 0;
         BaseMoveCost = 0;
         BaseShieldCost = 0;
@@ -332,12 +427,12 @@ public class PlayerReservedCommand
 
         switch (skillData.ReferenceResource)
         {
-            case ReferenceResource.Health:
-                HealthCost = cost;
+            case ReferenceResource.HP:
+                HPCost = cost;
                 break;
 
-            case ReferenceResource.Stamina:
-                StaminaCost = cost;
+            case ReferenceResource.Cost:
+                Cost = cost;
                 break;
 
             case ReferenceResource.UniqueResource:
@@ -349,8 +444,8 @@ public class PlayerReservedCommand
                 break;
         }
 
-        BaseHealthCost = HealthCost;
-        BaseStaminaCost = StaminaCost;
+        BaseHPCost = HPCost;
+        BaseCost = Cost;
         BaseResourceCost = ResourceCost;
         BaseMoveCost = MoveCost;
         BaseShieldCost = ShieldCost;
@@ -381,11 +476,11 @@ public class PlayerReservedCommand
 
         switch (resource)
         {
-            case ReferenceResource.Health:
-                return Mathf.Max(0, UserRuntime.PreviewHealth);
+            case ReferenceResource.HP:
+                return Mathf.Max(0, UserRuntime.PreviewHP);
 
-            case ReferenceResource.Stamina:
-                return Mathf.Max(0, UserRuntime.PreviewStamina);
+            case ReferenceResource.Cost:
+                return Mathf.Max(0, UserRuntime.PreviewCost);
 
             case ReferenceResource.UniqueResource:
                 return Mathf.Max(0, UserRuntime.PreviewResource);

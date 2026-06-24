@@ -122,6 +122,14 @@ public class EquippedSkillPanelUI : MonoBehaviour
 
     public void ShowSkillTooltip(SkillMasterData skillData, RectTransform hoveredSlotRect)
     {
+        ShowSkillTooltip(skillData, null, hoveredSlotRect);
+    }
+
+    public void ShowSkillTooltip(
+        SkillMasterData skillData,
+        CharacterRuntimeData runtimeData,
+        RectTransform hoveredSlotRect)
+    {
         if (skillData == null)
         {
             HideSkillTooltip();
@@ -130,7 +138,7 @@ public class EquippedSkillPanelUI : MonoBehaviour
 
         SetTooltip(
             string.IsNullOrWhiteSpace(skillData.Name) ? skillData.SkillId : skillData.Name,
-            BuildSkillDescription(skillData),
+            BuildSkillDescription(skillData, runtimeData),
             hoveredSlotRect
         );
     }
@@ -209,16 +217,27 @@ public class EquippedSkillPanelUI : MonoBehaviour
             MoveTooltipToSlot(hoveredSlotRect);
     }
 
-    private string BuildSkillDescription(SkillMasterData skillData)
+    private string BuildSkillDescription(SkillMasterData skillData, CharacterRuntimeData runtimeData)
     {
         if (skillData == null)
             return string.Empty;
 
-        if (!string.IsNullOrWhiteSpace(skillData.ToolTip))
-            return skillData.ToolTip;
+        string text = "";
 
-        if (!string.IsNullOrWhiteSpace(skillData.Details))
-            return skillData.Details;
+        if (!string.IsNullOrWhiteSpace(skillData.ToolTip))
+            text = skillData.ToolTip;
+        else if (!string.IsNullOrWhiteSpace(skillData.Details))
+            text = skillData.Details;
+
+        if (!string.IsNullOrWhiteSpace(text))
+        {
+            int payAmount = skillData.ResourceCostValue;
+
+            if (SkillCostCalculator.TryGetPreviewPayAmount(runtimeData, skillData, out int previewPayAmount))
+                payAmount = previewPayAmount;
+
+            return SkillTooltipFormatter.Format(skillData, text, runtimeData, payAmount);
+        }
 
         return "효과 설명이 없습니다.";
     }

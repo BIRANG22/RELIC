@@ -27,7 +27,7 @@ namespace Relic.Gameplay.Battle
         private SkillSlotUI currentSlot;
         private CharacterSelectButtonUI currentCharacter;
         private SkillMasterData currentSkillData;
-        private ReferenceResource currentPreviewResourceType = ReferenceResource.Stamina;
+        private ReferenceResource currentPreviewResourceType = ReferenceResource.Cost;
 
         private sealed class PlannedSkillEntry
         {
@@ -67,7 +67,7 @@ namespace Relic.Gameplay.Battle
 
             if (!SkillCostCalculator.TryGetPreviewPayAmount(actorRuntimeData, skillData, out int previewCost))
             {
-                Debug.Log($"[CostCheck] Skill:{skillData.SkillId} / Preview ¿⁄ø¯ ∫Œ¡∑");
+                Debug.Log($"[CostCheck] Skill:{skillData.SkillId} / Preview ÏûêÏõê Î∂ÄÏ°±");
                 return;
             }
 
@@ -207,7 +207,7 @@ namespace Relic.Gameplay.Battle
             {
                 if (!SkillCostCalculator.TryGetPreviewPayAmount(actorRuntimeData, currentSkillData, out previewCost))
                 {
-                    Debug.Log($"[CostCheck Confirm] Skill:{currentSkillData.SkillId} / Preview ¿⁄ø¯ ∫Œ¡∑");
+                    Debug.Log($"[CostCheck Confirm] Skill:{currentSkillData.SkillId} / Preview ÏûêÏõê Î∂ÄÏ°±");
                     return;
                 }
             }
@@ -215,7 +215,7 @@ namespace Relic.Gameplay.Battle
             if (currentSkillData.ResourceCostType == ResourceCostType.AllCurrent && previewCost <= 0)
             {
                 Debug.LogWarning(
-                    $"[ConfirmAction] AllCurrent ¿⁄ø¯ ∫Œ¡∑ / " +
+                    $"[ConfirmAction] AllCurrent ÏûêÏõê Î∂ÄÏ°± / " +
                     $"Skill:{currentSkillData.SkillId} / PreviewCost:{previewCost}"
                 );
                 return;
@@ -548,8 +548,8 @@ namespace Relic.Gameplay.Battle
         {
             return type switch
             {
-                ReferenceResource.Health => masterData.MaxHealth,
-                ReferenceResource.Stamina => masterData.MaxStamina,
+                ReferenceResource.HP => masterData.MaxHP,
+                ReferenceResource.Cost => masterData.MaxCost,
                 ReferenceResource.UniqueResource => masterData.MaxResource,
                 ReferenceResource.MovePoint => masterData.MoveValue,
                 _ => 0
@@ -583,12 +583,12 @@ namespace Relic.Gameplay.Battle
 
             switch (skillData.ReferenceResource)
             {
-                case ReferenceResource.Health:
-                    runtimeData.AddReservedHealth(cost);
+                case ReferenceResource.HP:
+                    runtimeData.AddReservedHP(cost);
                     break;
 
-                case ReferenceResource.Stamina:
-                    runtimeData.AddReservedStamina(cost);
+                case ReferenceResource.Cost:
+                    runtimeData.AddReservedCost(cost);
                     break;
 
                 case ReferenceResource.UniqueResource:
@@ -610,12 +610,12 @@ namespace Relic.Gameplay.Battle
 
             switch (skillData.ReferenceResource)
             {
-                case ReferenceResource.Health:
-                    runtimeData.RemoveReservedHealth(cost);
+                case ReferenceResource.HP:
+                    runtimeData.RemoveReservedHP(cost);
                     break;
 
-                case ReferenceResource.Stamina:
-                    runtimeData.RemoveReservedStamina(cost);
+                case ReferenceResource.Cost:
+                    runtimeData.RemoveReservedCost(cost);
                     break;
 
                 case ReferenceResource.UniqueResource:

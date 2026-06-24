@@ -58,7 +58,7 @@ public class BattleHUDService
             if (characters[i] == null || characters[i].RuntimeData == null)
                 continue;
 
-            if (characters[i].RuntimeData.CurrentHealth <= 0)
+            if (characters[i].RuntimeData.CurrentHP <= 0)
                 continue;
 
             BattleUnitAnimator animator = characters[i].GetComponent<BattleUnitAnimator>();

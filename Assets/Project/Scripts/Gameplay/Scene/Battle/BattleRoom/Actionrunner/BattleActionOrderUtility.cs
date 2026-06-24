@@ -7,7 +7,15 @@ public static class BattleActionOrderUtility
         if (command == null || command.SkillData == null)
             return false;
 
-        return HasEffectId(command.SkillData.EffectIds, "E_Swift");
+        return HasSwift(command.SkillData);
+    }
+
+    public static bool HasSwift(SkillMasterData skillData)
+    {
+        if (skillData == null)
+            return false;
+
+        return HasEffectId(skillData.EffectIds, "E_Swift");
     }
 
     private static bool HasEffectId(string effectIds, string targetEffectId)

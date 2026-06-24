@@ -1,4 +1,4 @@
-﻿using Relic.Gameplay.Data;
+using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
 using System.Collections;
 using System.Collections.Generic;
@@ -80,37 +80,7 @@ public class BattleActionRunner
         if (batch == null)
             yield break;
 
-        List<ActionRoutine> actionRoutines = new();
-
-        for (int i = 0; i < batch.PlayerCommands.Count; i++)
-        {
-            PlayerReservedCommand command = batch.PlayerCommands[i];
-
-            if (command == null)
-                continue;
-
-            if (command.ReservedMoveGridIndex >= 0)
-            {
-                if (IsConsumedVisualSkipMove(command))
-                    continue;
-
-                actionRoutines.Add(CreateActionRoutine($"PlayerMove:{command.CharacterId}", ExecutePlayerMove(command)));
-            }
-            else
-            {
-                actionRoutines.Add(CreateActionRoutine($"PlayerSkill:{command.CharacterId}:{command.SkillId}", ExecutePlayerSkill(command)));
-            }
-        }
-
-        for (int i = 0; i < batch.MonsterCommands.Count; i++)
-        {
-            MonsterReservedCommand command = batch.MonsterCommands[i];
-
-            if (command == null)
-                continue;
-
-            actionRoutines.Add(CreateActionRoutine($"Monster:{command.RuntimeId}:{command.SkillId}", ExecuteMonsterCommand(command)));
-        }
+        List<ActionRoutine> actionRoutines = BuildActionRoutines(batch);
 
         if (actionRoutines.Count <= 0)
             yield break;
@@ -141,6 +111,63 @@ public class BattleActionRunner
         IncreaseMonsterTurnCountsOnceInSlot(batch);
 
         yield return RunPostActionPresentationRoutine();
+    }
+
+    private List<ActionRoutine> BuildActionRoutines(BattleActionBatch batch)
+    {
+        List<ActionRoutine> actionRoutines = new();
+
+        if (batch == null)
+            return actionRoutines;
+
+        for (int i = 0; i < batch.PlayerCommands.Count; i++)
+        {
+            PlayerReservedCommand command = batch.PlayerCommands[i];
+
+            if (!BattleActionOrderUtility.HasSwift(command))
+                continue;
+
+            AddPlayerActionRoutine(actionRoutines, command);
+        }
+
+        for (int i = 0; i < batch.MonsterCommands.Count; i++)
+        {
+            MonsterReservedCommand command = batch.MonsterCommands[i];
+
+            if (command == null)
+                continue;
+
+            actionRoutines.Add(CreateActionRoutine($"Monster:{command.RuntimeId}:{command.SkillId}", ExecuteMonsterCommand(command)));
+        }
+
+        for (int i = 0; i < batch.PlayerCommands.Count; i++)
+        {
+            PlayerReservedCommand command = batch.PlayerCommands[i];
+
+            if (BattleActionOrderUtility.HasSwift(command))
+                continue;
+
+            AddPlayerActionRoutine(actionRoutines, command);
+        }
+
+        return actionRoutines;
+    }
+
+    private void AddPlayerActionRoutine(List<ActionRoutine> actionRoutines, PlayerReservedCommand command)
+    {
+        if (actionRoutines == null || command == null)
+            return;
+
+        if (command.ReservedMoveGridIndex >= 0)
+        {
+            if (IsConsumedVisualSkipMove(command))
+                return;
+
+            actionRoutines.Add(CreateActionRoutine($"PlayerMove:{command.CharacterId}", ExecutePlayerMove(command)));
+            return;
+        }
+
+        actionRoutines.Add(CreateActionRoutine($"PlayerSkill:{command.CharacterId}:{command.SkillId}", ExecutePlayerSkill(command)));
     }
 
     private IEnumerator RunPostActionPresentationRoutine()
@@ -504,9 +531,16 @@ public class BattleActionRunner
         if (moveOffset == Vector2Int.zero)
         {
             command.SetExecutedMoveDistance(0);
+            ApplyBlockedPlayerMoveCostRefund(command);
             ApplyPlayerMoveFacing(character, command.Direction, moveOffset);
             hudService.RefreshHUDs();
             yield return new WaitForSeconds(ActionDelay);
+            yield break;
+        }
+
+        if (command.VisualMoveSteps != null && command.VisualMoveSteps.Count > 1)
+        {
+            yield return ExecutePlayerVisualMoveSteps(command, character, currentGridIndex);
             yield break;
         }
 
@@ -520,6 +554,8 @@ public class BattleActionRunner
                 out targetGridIndex))
         {
             command.SetExecutedMoveDistance(0);
+            ApplyBlockedPlayerMoveCostRefund(command);
+            hudService.RefreshHUDs();
             Debug.LogWarning($"[BattleActionRunner] Player Move Blocked / {command.CharacterId} / Offset:{moveOffset}");
             yield break;
         }
@@ -553,6 +589,68 @@ public class BattleActionRunner
 
         hudService.RefreshHUDs();
 
+        yield return new WaitForSeconds(ActionDelay);
+    }
+
+    private IEnumerator ExecutePlayerVisualMoveSteps(
+        PlayerReservedCommand command,
+        BattleCharacter character,
+        int startGridIndex)
+    {
+        int currentGridIndex = startGridIndex;
+        int executedDistance = 0;
+        BattleUnitAnimator animator = character.GetComponent<BattleUnitAnimator>();
+
+        for (int i = 0; i < command.VisualMoveSteps.Count; i++)
+        {
+            Vector2Int stepOffset = command.VisualMoveSteps[i];
+
+            if (stepOffset == Vector2Int.zero)
+                continue;
+
+            if (!TryGetPlayerMoveTargetGridIndex(
+                currentGridIndex,
+                stepOffset,
+                command.CharacterId,
+                out int targetGridIndex))
+            {
+                break;
+            }
+
+            if (targetGridIndex == currentGridIndex)
+                break;
+
+            Vector2Int currentCoord = gridManager.IndexToCoord(currentGridIndex);
+            Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
+            Vector2Int actualOffset = targetCoord - currentCoord;
+
+            ApplyPlayerMoveFacing(character, command.Direction, actualOffset);
+
+            if (animator != null)
+                animator.PlayMove();
+
+            Vector3 pos = gridManager.GetWorldPositionByIndex(targetGridIndex);
+
+            yield return MoveTransformSmooth(
+                character.transform,
+                character.transform.position,
+                pos,
+                MoveAnimationDuration
+            );
+
+            character.SetGridIndex(targetGridIndex);
+            UpdatePartyGridIndex(command.CharacterId, targetGridIndex);
+            currentGridIndex = targetGridIndex;
+            executedDistance += Mathf.Abs(actualOffset.x) + Mathf.Abs(actualOffset.y);
+        }
+
+        command.SetExecutedMoveDistance(executedDistance);
+        ApplyBlockedPlayerMoveCostRefund(command);
+
+        if (currentGridIndex != startGridIndex)
+            statusEffectService.ApplyBurnDamageToPlayerOnMove(character);
+
+        hudService.RefreshHUDs();
         yield return new WaitForSeconds(ActionDelay);
     }
 
@@ -735,20 +833,21 @@ public class BattleActionRunner
         if (command == null || character == null || character.RuntimeData == null)
             return;
 
-        if (command.MoveStaminaCostConsumed)
+        if (command.MoveCostConsumed)
             return;
 
-        int staminaCost = Mathf.Max(0, command.StaminaCost);
+        int cost = Mathf.Max(0, command.Cost);
 
-        if (staminaCost > 0)
+        if (cost > 0)
         {
-            character.RuntimeData.CurrentStamina = Mathf.Max(
+            character.RuntimeData.RemoveReservedCost(cost);
+            character.RuntimeData.CurrentCost = Mathf.Max(
                 0,
-                character.RuntimeData.CurrentStamina - staminaCost
+                character.RuntimeData.CurrentCost - cost
             );
         }
 
-        command.MarkMoveStaminaCostConsumed();
+        command.MarkMoveCostConsumed();
     }
 
     private void RecordPlayerMoveExecutionDistance(
@@ -771,6 +870,23 @@ public class BattleActionRunner
         Vector2Int actualOffset = targetCoord - startCoord;
         command.SetExecutedMoveDistance(
             Mathf.Abs(actualOffset.x) + Mathf.Abs(actualOffset.y)
+        );
+        ApplyBlockedPlayerMoveCostRefund(command);
+    }
+
+    private void ApplyBlockedPlayerMoveCostRefund(PlayerReservedCommand command)
+    {
+        if (command == null || !command.MoveCostConsumed)
+            return;
+
+        int refund = command.ApplyBlockedMoveCostRefund();
+
+        if (refund <= 0)
+            return;
+
+        Debug.Log(
+            $"[BattleActionRunner] Move Cost refund / " +
+            $"Character:{command.CharacterId} / Refund:{refund}"
         );
     }
 
@@ -1276,7 +1392,7 @@ public class BattleActionRunner
 
                 for (int hit = 0; hit < hitCount; hit++)
                 {
-                    if (playerTarget.RuntimeData.CurrentHealth <= 0)
+                    if (playerTarget.RuntimeData.CurrentHP <= 0)
                         break;
 
                     context.Count = 1;
@@ -1383,20 +1499,8 @@ public class BattleActionRunner
         if (facing != null)
             facing.FaceByMoveOffset(moveOffset);
 
-        for (int i = 0; i < monster.OccupiedGridIndices.Count; i++)
-        {
-            int occupiedIndex = monster.OccupiedGridIndices[i];
-            Vector2Int currentCoord = gridManager.IndexToCoord(occupiedIndex);
-            Vector2Int targetCoord = currentCoord + moveOffset;
-
-            if (!gridManager.IsValidCoord(targetCoord))
-                yield break;
-
-            int targetIndex = gridManager.CoordToIndex(targetCoord);
-
-            if (BattleOccupancyService.IsOccupiedByAnyUnit(targetIndex, null, monster))
-                yield break;
-        }
+        if (!CanApplyMonsterMove(monster, moveOffset))
+            yield break;
 
         Vector2Int mainCoord = gridManager.IndexToCoord(currentGridIndex);
         Vector2Int movedMainCoord = mainCoord + moveOffset;
@@ -1422,6 +1526,81 @@ public class BattleActionRunner
         hudService.RefreshHUDs();
 
         yield return new WaitForSeconds(ActionDelay);
+    }
+
+    private bool CanApplyMonsterMove(MonsterUnit monster, Vector2Int moveOffset)
+    {
+        if (monster == null || gridManager == null)
+            return false;
+
+        if (moveOffset == Vector2Int.zero)
+            return false;
+
+        if (moveOffset.x != 0 && moveOffset.y != 0)
+        {
+            return CanApplyMonsterMoveAxisOrder(monster, moveOffset, true) ||
+                   CanApplyMonsterMoveAxisOrder(monster, moveOffset, false);
+        }
+
+        return CanApplyMonsterMoveAxisOrder(monster, moveOffset, moveOffset.x != 0);
+    }
+
+    private bool CanApplyMonsterMoveAxisOrder(
+        MonsterUnit monster,
+        Vector2Int moveOffset,
+        bool horizontalFirst)
+    {
+        List<Vector2Int> currentCoords = new();
+
+        for (int i = 0; i < monster.OccupiedGridIndices.Count; i++)
+            currentCoords.Add(gridManager.IndexToCoord(monster.OccupiedGridIndices[i]));
+
+        if (horizontalFirst)
+        {
+            return TryApplyMonsterMoveAxisSteps(currentCoords, moveOffset.x, true, monster) &&
+                   TryApplyMonsterMoveAxisSteps(currentCoords, moveOffset.y, false, monster);
+        }
+
+        return TryApplyMonsterMoveAxisSteps(currentCoords, moveOffset.y, false, monster) &&
+               TryApplyMonsterMoveAxisSteps(currentCoords, moveOffset.x, true, monster);
+    }
+
+    private bool TryApplyMonsterMoveAxisSteps(
+        List<Vector2Int> currentCoords,
+        int amount,
+        bool horizontal,
+        MonsterUnit monster)
+    {
+        int remaining = amount;
+
+        while (remaining != 0)
+        {
+            int step = remaining > 0 ? 1 : -1;
+            List<Vector2Int> nextCoords = new();
+
+            for (int i = 0; i < currentCoords.Count; i++)
+            {
+                Vector2Int nextCoord = currentCoords[i] + (horizontal
+                    ? new Vector2Int(step, 0)
+                    : new Vector2Int(0, step));
+
+                if (!gridManager.IsValidCoord(nextCoord))
+                    return false;
+
+                int targetIndex = gridManager.CoordToIndex(nextCoord);
+
+                if (BattleOccupancyService.IsOccupiedByAnyUnit(targetIndex, null, monster))
+                    return false;
+
+                nextCoords.Add(nextCoord);
+            }
+
+            currentCoords.Clear();
+            currentCoords.AddRange(nextCoords);
+            remaining -= step;
+        }
+
+        return true;
     }
 
     private IEnumerator ExecuteMonsterSkill(MonsterReservedCommand command)
@@ -1631,7 +1810,7 @@ public class BattleActionRunner
             if (character == null || character.RuntimeData == null)
                 continue;
 
-            if (character.RuntimeData.CurrentHealth <= 0)
+            if (character.RuntimeData.CurrentHP <= 0)
                 continue;
 
             if (command.TargetGridIndices.Contains(character.CurrentGridIndex))
@@ -1927,7 +2106,7 @@ public class BattleActionRunner
 
         if (hitAnimator != null)
         {
-            if (target.RuntimeData.CurrentHealth <= 0)
+            if (target.RuntimeData.CurrentHP <= 0)
                 hitAnimator.PlayDead();
             else
                 hitAnimator.PlayHit();

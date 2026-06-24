@@ -34,6 +34,7 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
 
     private EquippedSkillPanelUI ownerPanel;
     private SkillMasterData skillData;
+    private CharacterRuntimeData runtimeData;
     private RectTransform rectTransform;
     private Vector3 baseScale = Vector3.one;
     private bool hasCapturedBaseScale;
@@ -89,13 +90,24 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
 
     public void SetSkill(EquippedSkillPanelUI owner, SkillMasterData data, Sprite icon)
     {
-        SetSkill(owner, data, icon, true);
+        SetSkill(owner, data, icon, true, null);
     }
 
     public void SetSkill(EquippedSkillPanelUI owner, SkillMasterData data, Sprite icon, bool clickable)
     {
+        SetSkill(owner, data, icon, clickable, null);
+    }
+
+    public void SetSkill(
+        EquippedSkillPanelUI owner,
+        SkillMasterData data,
+        Sprite icon,
+        bool clickable,
+        CharacterRuntimeData runtime)
+    {
         ownerPanel = owner;
         skillData = data;
+        runtimeData = runtime;
         canClick = clickable;
         isPointerOver = false;
         isSelected = false;
@@ -126,6 +138,7 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
     {
         ownerPanel = null;
         skillData = null;
+        runtimeData = null;
         canClick = true;
         isPointerOver = false;
         isSelected = false;
@@ -183,7 +196,7 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         if (rectTransform == null)
             rectTransform = GetComponent<RectTransform>();
 
-        ownerPanel.ShowSkillTooltip(skillData, rectTransform);
+        ownerPanel.ShowSkillTooltip(skillData, runtimeData, rectTransform);
     }
 
     public void OnPointerExit(PointerEventData eventData)

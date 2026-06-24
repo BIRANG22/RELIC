@@ -33,7 +33,7 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
     [SerializeField] private Transform costSlotRoot;
     [SerializeField] private GameObject[] costSlots;
     [SerializeField] private Image[] costSlotImages;
-    [SerializeField] private TMP_Text staminaValueText;
+    [SerializeField] private TMP_Text costValueText;
     [SerializeField] private bool autoFindCostSlots = true;
     [SerializeField] private string costSlotRootName = "CostBar";
     [SerializeField] private string costSlotNamePrefix = "Fill_";
@@ -128,16 +128,16 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
             portraitImage.enabled = portraitImage.sprite != null;
         }
 
-        int maxHp = boundRuntime.MaxHealth > 0
-            ? boundRuntime.MaxHealth
-            : boundMaster != null ? boundMaster.MaxHealth : Mathf.Max(1, boundRuntime.CurrentHealth);
-        int maxCost = boundRuntime.MaxStamina > 0
-            ? Mathf.Max(boundRuntime.MaxStamina, boundRuntime.PreviewStamina)
-            : boundMaster != null ? boundMaster.MaxStamina : Mathf.Max(1, boundRuntime.CurrentStamina);
+        int maxHP = boundRuntime.MaxHP > 0
+            ? boundRuntime.MaxHP
+            : boundMaster != null ? boundMaster.MaxHP : Mathf.Max(1, boundRuntime.CurrentHP);
+        int maxCost = boundRuntime.MaxCost > 0
+            ? Mathf.Max(boundRuntime.MaxCost, boundRuntime.PreviewCost)
+            : boundMaster != null ? boundMaster.MaxCost : Mathf.Max(1, boundRuntime.CurrentCost);
         int maxResource = boundMaster != null ? boundMaster.MaxResource : Mathf.Max(1, boundRuntime.CurrentResource);
 
-        RefreshBar(hpFill, hpValueText, boundRuntime.PreviewHealth, maxHp);
-        RefreshCost(boundRuntime.PreviewStamina, maxCost);
+        RefreshBar(hpFill, hpValueText, boundRuntime.PreviewHP, maxHP);
+        RefreshCost(boundRuntime.PreviewCost, maxCost);
         RefreshUniqueResource(boundRuntime.PreviewResource, maxResource);
         RefreshArmor(boundRuntime.CurrentShield);
         RefreshStatusEffects(boundRuntime.StatusEffects);
@@ -187,8 +187,8 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
             slotImage.gameObject.SetActive(filled);
         }
 
-        if (staminaValueText != null)
-            staminaValueText.text = currentCost.ToString();
+        if (costValueText != null)
+            costValueText.text = currentCost.ToString();
     }
 
     private void RefreshUniqueResource(int currentResource, int maxResource)
@@ -572,3 +572,4 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
         InvokeHudClicked();
     }
 }
+

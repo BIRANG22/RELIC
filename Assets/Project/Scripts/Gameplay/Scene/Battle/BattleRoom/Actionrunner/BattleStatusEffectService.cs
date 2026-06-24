@@ -114,7 +114,7 @@ public class BattleStatusEffectService
 
         if (animator != null)
         {
-            if (character.RuntimeData.CurrentHealth <= 0)
+            if (character.RuntimeData.CurrentHP <= 0)
                 animator.PlayDead();
             else
                 animator.PlayHit();
@@ -218,10 +218,10 @@ public class BattleStatusEffectService
 
             if (status.EffectId == "E_Recharge")
             {
-                character.RuntimeData.CurrentStamina =
+                character.RuntimeData.CurrentCost =
                     Mathf.Min(
-                        character.RuntimeData.MaxStamina,
-                        character.RuntimeData.CurrentStamina + 1
+                        character.RuntimeData.MaxCost,
+                        character.RuntimeData.CurrentCost + 1
                     );
             }
 

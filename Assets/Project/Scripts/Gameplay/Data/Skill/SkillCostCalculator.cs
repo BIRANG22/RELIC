@@ -10,8 +10,8 @@ public static class SkillCostCalculator
 
         return type switch
         {
-            ReferenceResource.Health => caster.CurrentHealth,
-            ReferenceResource.Stamina => caster.CurrentStamina,
+            ReferenceResource.HP => caster.CurrentHP,
+            ReferenceResource.Cost => caster.CurrentCost,
             ReferenceResource.UniqueResource => caster.CurrentResource,
             ReferenceResource.MovePoint => caster.CurrentMoveLevel,
             _ => 0
@@ -25,8 +25,8 @@ public static class SkillCostCalculator
 
         return type switch
         {
-            ReferenceResource.Health => caster.PreviewHealth,
-            ReferenceResource.Stamina => caster.PreviewStamina,
+            ReferenceResource.HP => caster.PreviewHP,
+            ReferenceResource.Cost => caster.PreviewCost,
             ReferenceResource.UniqueResource => caster.PreviewResource,
             ReferenceResource.MovePoint => caster.PreviewMoveLevel,
             _ => 0

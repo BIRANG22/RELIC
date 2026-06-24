@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine.Serialization;
 
 namespace Relic.Gameplay.Data
 {
@@ -11,8 +12,10 @@ namespace Relic.Gameplay.Data
         public string Name;
         public string Grade;
 
-        public int MaxHp;
-        public int CurrentHp;
+        [FormerlySerializedAs("MaxHp")]
+        public int MaxHP;
+        [FormerlySerializedAs("CurrentHp")]
+        public int CurrentHP;
         public int CurrentShield;
 
         public int MinRemnant;
@@ -23,7 +26,7 @@ namespace Relic.Gameplay.Data
 
         public List<string> PossSkillIds = new();
         public int TurnCount;
-        public bool IsDead => CurrentHp <= 0;
+        public bool IsDead => CurrentHP <= 0;
         public List<StatusEffectRuntimeData> StatusEffects = new();
 
         public bool IsDeathHandled;
@@ -38,8 +41,8 @@ namespace Relic.Gameplay.Data
             Name = masterData.Name;
             Grade = masterData.Grade;
 
-            MaxHp = masterData.Health;
-            CurrentHp = masterData.Health;
+            MaxHP = masterData.HP;
+            CurrentHP = masterData.HP;
 
             MinRemnant = masterData.MinRemnant;
             MaxRemnant = masterData.MaxRemnant;
@@ -55,10 +58,10 @@ namespace Relic.Gameplay.Data
             if (damage <= 0)
                 return;
 
-            CurrentHp -= damage;
+            CurrentHP -= damage;
 
-            if (CurrentHp < 0)
-                CurrentHp = 0;
+            if (CurrentHP < 0)
+                CurrentHP = 0;
         }
 
         public void Heal(int amount)
@@ -66,10 +69,10 @@ namespace Relic.Gameplay.Data
             if (amount <= 0)
                 return;
 
-            CurrentHp += amount;
+            CurrentHP += amount;
 
-            if (CurrentHp > MaxHp)
-                CurrentHp = MaxHp;
+            if (CurrentHP > MaxHP)
+                CurrentHP = MaxHP;
         }
 
         public void IncreaseTurnCount()
@@ -82,12 +85,13 @@ namespace Relic.Gameplay.Data
             return PossSkillIds.Contains(skillId);
         }
 
-        public float GetHpPercent()
+        public float GetHPPercent()
         {
-            if (MaxHp <= 0)
+            if (MaxHP <= 0)
                 return 0f;
 
-            return (float)CurrentHp / MaxHp;
+            return (float)CurrentHP / MaxHP;
         }
     }
 }
+

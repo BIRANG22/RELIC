@@ -80,10 +80,19 @@ public class TimelineSkillHoverPopupUI : MonoBehaviour
             return;
         }
 
-        Show(entry.SkillName, entry.SkillEffectDescription, hoveredIconRect);
+        Show(entry.SkillName, entry.SkillEffectDescription, entry.SkillRangeIcon, hoveredIconRect);
     }
 
     public void Show(string skillName, string effectDescription, RectTransform hoveredIconRect)
+    {
+        Show(skillName, effectDescription, null, hoveredIconRect);
+    }
+
+    public void Show(
+        string skillName,
+        string effectDescription,
+        Sprite rangeIcon,
+        RectTransform hoveredIconRect)
     {
         InitializeIfNeeded();
 
@@ -105,7 +114,7 @@ public class TimelineSkillHoverPopupUI : MonoBehaviour
 
         BringToFront();
 
-        item.Set(skillName, effectDescription);
+        item.Set(skillName, effectDescription, rangeIcon);
         SetVisible(true);
 
         if (moveToHoveredIcon)
