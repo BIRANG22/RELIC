@@ -840,6 +840,7 @@ public class BattleActionRunner
 
         if (cost > 0)
         {
+            character.RuntimeData.RemoveReservedCost(cost);
             character.RuntimeData.CurrentCost = Mathf.Max(
                 0,
                 character.RuntimeData.CurrentCost - cost

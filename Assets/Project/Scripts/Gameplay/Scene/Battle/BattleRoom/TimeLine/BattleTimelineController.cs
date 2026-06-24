@@ -2255,7 +2255,10 @@ public class BattleTimelineController : MonoBehaviour
             return;
 
         command.UserRuntime.RemoveReservedHP(command.HPCost);
-        command.UserRuntime.RemoveReservedCost(command.Cost);
+
+        if (!command.MoveCostConsumed)
+            command.UserRuntime.RemoveReservedCost(command.Cost);
+
         command.UserRuntime.RemoveReservedResource(command.ResourceCost);
         command.UserRuntime.RemoveReservedMove(command.MoveCost);
         command.UserRuntime.RemoveReservedShield(command.ShieldCost);

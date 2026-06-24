@@ -361,6 +361,212 @@ public class PlayerMovePathfindingRegressionTests
     }
 
     [Test]
+    public void MoveExecution_ReleasesReservedMoveCostWhenConsumed()
+    {
+        GameObject gridObject = new("GridManagerMoveCostPreview");
+        GameObject characterObject = new("CharacterMoveCostPreview");
+
+        try
+        {
+            GridManager gridManager = gridObject.AddComponent<GridManager>();
+            BattleCharacter character = characterObject.AddComponent<BattleCharacter>();
+            CharacterRuntimeData runtime = new()
+            {
+                CharacterId = "Char_Test",
+                CurrentCost = 10,
+                MaxCost = 10
+            };
+            SkillMasterData moveSkill = new()
+            {
+                SkillId = "S_Move_2",
+                Category = Category.Move,
+                RangeType = RangeType.Selection,
+                ReferenceResource = ReferenceResource.Cost,
+                ResourceCostType = ResourceCostType.Fixed,
+                ResourceCostValue = 1
+            };
+            PlayerReservedCommand command = new(runtime, moveSkill);
+
+            character.Initialize(runtime);
+            command.SetSelectionResult(
+                BattleDirection.Right,
+                gridManager.CoordToIndex(new Vector2Int(4, 0)),
+                new List<int> { gridManager.CoordToIndex(new Vector2Int(4, 0)) },
+                new Vector2Int(4, 0));
+            command.SetMoveReservationCost(4, 1);
+            runtime.AddReservedCost(command.Cost);
+
+            Assert.That(runtime.CurrentCost, Is.EqualTo(10));
+            Assert.That(runtime.ReservedCost, Is.EqualTo(4));
+            Assert.That(runtime.PreviewCost, Is.EqualTo(6));
+
+            BattleActionRunner runner = new(gridManager);
+            InvokePrivateMethod(
+                runner,
+                "ConsumePlayerMoveCost",
+                command,
+                character);
+
+            Assert.That(runtime.CurrentCost, Is.EqualTo(6));
+            Assert.That(runtime.ReservedCost, Is.EqualTo(0));
+            Assert.That(runtime.PreviewCost, Is.EqualTo(6));
+        }
+        finally
+        {
+            Object.DestroyImmediate(characterObject);
+            Object.DestroyImmediate(gridObject);
+        }
+    }
+
+    [Test]
+    public void MoveExecution_DoesNotReleaseConsumedMoveReservationTwice()
+    {
+        GameObject timelineObject = new("TimelineConsumedMoveCostRelease");
+        GameObject gridObject = new("GridManagerConsumedMoveCostRelease");
+        GameObject characterObject = new("CharacterConsumedMoveCostRelease");
+
+        try
+        {
+            BattleTimelineController timeline =
+                timelineObject.AddComponent<BattleTimelineController>();
+            GridManager gridManager = gridObject.AddComponent<GridManager>();
+            BattleCharacter character = characterObject.AddComponent<BattleCharacter>();
+            CharacterRuntimeData runtime = new()
+            {
+                CharacterId = "Char_Test",
+                CurrentCost = 10,
+                MaxCost = 10
+            };
+            SkillMasterData moveSkill = new()
+            {
+                SkillId = "S_Move_2",
+                Category = Category.Move,
+                RangeType = RangeType.Selection,
+                ReferenceResource = ReferenceResource.Cost,
+                ResourceCostType = ResourceCostType.Fixed,
+                ResourceCostValue = 1
+            };
+            PlayerReservedCommand executedMove = new(runtime, moveSkill);
+            PlayerReservedCommand laterMove = new(runtime, moveSkill);
+
+            character.Initialize(runtime);
+            executedMove.SetSelectionResult(
+                BattleDirection.Right,
+                gridManager.CoordToIndex(new Vector2Int(4, 0)),
+                new List<int> { gridManager.CoordToIndex(new Vector2Int(4, 0)) },
+                new Vector2Int(4, 0));
+            executedMove.SetMoveReservationCost(4, 1);
+            laterMove.SetSelectionResult(
+                BattleDirection.Right,
+                gridManager.CoordToIndex(new Vector2Int(7, 0)),
+                new List<int> { gridManager.CoordToIndex(new Vector2Int(7, 0)) },
+                new Vector2Int(3, 0));
+            laterMove.SetMoveReservationCost(3, 1);
+
+            runtime.AddReservedCost(executedMove.Cost);
+            runtime.AddReservedCost(laterMove.Cost);
+
+            BattleActionRunner runner = new(gridManager);
+            InvokePrivateMethod(
+                runner,
+                "ConsumePlayerMoveCost",
+                executedMove,
+                character);
+
+            Assert.That(runtime.ReservedCost, Is.EqualTo(laterMove.Cost));
+
+            InvokePrivateMethod(
+                timeline,
+                "RemoveReservedCosts",
+                executedMove);
+
+            Assert.That(runtime.ReservedCost, Is.EqualTo(laterMove.Cost));
+        }
+        finally
+        {
+            Object.DestroyImmediate(characterObject);
+            Object.DestroyImmediate(gridObject);
+            Object.DestroyImmediate(timelineObject);
+        }
+    }
+
+    [Test]
+    public void MoveSimulation_ReplansLaterMovePathAroundEarlierPlayerMove()
+    {
+        GridManager gridManager = new GameObject("GridManagerReplanLaterMove").AddComponent<GridManager>();
+
+        try
+        {
+            BattleActionSimulationService simulator = new(gridManager);
+            Dictionary<string, int> playerPositions =
+                GetPrivateField<Dictionary<string, int>>(
+                    simulator,
+                    "playerPositions");
+
+            int startIndex = gridManager.CoordToIndex(new Vector2Int(0, 1));
+            int blockedIndex = gridManager.CoordToIndex(new Vector2Int(1, 1));
+            int targetIndex = gridManager.CoordToIndex(new Vector2Int(3, 1));
+            CharacterRuntimeData runtime = new()
+            {
+                CharacterId = "Char_Replan"
+            };
+            SkillMasterData moveSkill = new()
+            {
+                SkillId = "S_Move_1",
+                Category = Category.Move,
+                RangeType = RangeType.Selection,
+                ReferenceResource = ReferenceResource.Cost,
+                ResourceCostType = ResourceCostType.Fixed,
+                ResourceCostValue = 1
+            };
+            PlayerReservedCommand command = new(runtime, moveSkill);
+
+            command.SetSelectionResult(
+                BattleDirection.Right,
+                targetIndex,
+                new List<int> { targetIndex },
+                new Vector2Int(3, 0));
+            command.SetMoveReservationCost(5, 1);
+            command.SetVisualMoveResult(
+                targetIndex,
+                new Vector2Int(3, 0),
+                new List<Vector2Int>
+                {
+                    Vector2Int.right,
+                    Vector2Int.right,
+                    Vector2Int.right
+                });
+
+            playerPositions["Char_Replan"] = startIndex;
+            playerPositions["Char_Blocker"] = blockedIndex;
+
+            InvokePrivateMethod(
+                simulator,
+                "SimulatePlayerMove",
+                command,
+                startIndex);
+
+            Assert.That(command.IsSimulatedMoveBlocked, Is.False);
+            Assert.That(command.SimulatedMoveGridIndex, Is.EqualTo(targetIndex));
+            Assert.That(command.VisualMoveSteps, Is.Not.EqualTo(new List<Vector2Int>
+            {
+                Vector2Int.right,
+                Vector2Int.right,
+                Vector2Int.right
+            }));
+            AssertPathAvoidsBlockedCell(
+                startIndex,
+                command.VisualMoveSteps,
+                gridManager,
+                blockedIndex);
+        }
+        finally
+        {
+            Object.DestroyImmediate(gridManager.gameObject);
+        }
+    }
+
+    [Test]
     public void MoveRangeIndices_TreatsDiagonalAsOneMoveCostWhenDistanceFits()
     {
         GridManager gridManager = new GameObject("GridManagerDiagonalRange").AddComponent<GridManager>();
