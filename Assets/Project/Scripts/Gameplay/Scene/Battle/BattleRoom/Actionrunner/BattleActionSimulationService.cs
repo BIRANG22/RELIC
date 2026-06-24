@@ -591,32 +591,120 @@ public class BattleActionSimulationService
             return;
         }
 
-        List<int> movedCells = new();
-
-        for (int i = 0; i < currentCells.Count; i++)
+        if (!TryGetSimulatedMonsterMoveCells(
+            currentCells,
+            moveOffset,
+            "M:" + command.RuntimeId,
+            out List<int> movedCells))
         {
-            Vector2Int currentCoord = gridManager.IndexToCoord(currentCells[i]);
-            Vector2Int targetCoord = currentCoord + moveOffset;
-
-            if (!gridManager.IsValidCoord(targetCoord))
-            {
-                command.SetSimulatedMoveResult(true, Vector2Int.zero);
-                return;
-            }
-
-            int targetGrid = gridManager.CoordToIndex(targetCoord);
-
-            if (IsOccupied(targetGrid, "M:" + command.RuntimeId))
-            {
-                command.SetSimulatedMoveResult(true, Vector2Int.zero);
-                return;
-            }
-
-            movedCells.Add(targetGrid);
+            command.SetSimulatedMoveResult(true, Vector2Int.zero);
+            return;
         }
 
         monsterPositions[command.RuntimeId] = movedCells;
         command.SetSimulatedMoveResult(false, moveOffset);
+    }
+
+    private bool TryGetSimulatedMonsterMoveCells(
+        IReadOnlyList<int> currentCells,
+        Vector2Int moveOffset,
+        string selfKey,
+        out List<int> movedCells)
+    {
+        movedCells = null;
+
+        if (currentCells == null || currentCells.Count <= 0)
+            return false;
+
+        if (moveOffset.x != 0 && moveOffset.y != 0)
+        {
+            return TryGetSimulatedMonsterMoveCellsInAxisOrder(
+                       currentCells,
+                       moveOffset,
+                       selfKey,
+                       true,
+                       out movedCells) ||
+                   TryGetSimulatedMonsterMoveCellsInAxisOrder(
+                       currentCells,
+                       moveOffset,
+                       selfKey,
+                       false,
+                       out movedCells);
+        }
+
+        return TryGetSimulatedMonsterMoveCellsInAxisOrder(
+            currentCells,
+            moveOffset,
+            selfKey,
+            moveOffset.x != 0,
+            out movedCells);
+    }
+
+    private bool TryGetSimulatedMonsterMoveCellsInAxisOrder(
+        IReadOnlyList<int> currentCells,
+        Vector2Int moveOffset,
+        string selfKey,
+        bool horizontalFirst,
+        out List<int> movedCells)
+    {
+        List<Vector2Int> currentCoords = new();
+
+        for (int i = 0; i < currentCells.Count; i++)
+            currentCoords.Add(gridManager.IndexToCoord(currentCells[i]));
+
+        bool canMove = horizontalFirst
+            ? TryApplySimulatedMonsterMoveAxisSteps(currentCoords, moveOffset.x, true, selfKey) &&
+              TryApplySimulatedMonsterMoveAxisSteps(currentCoords, moveOffset.y, false, selfKey)
+            : TryApplySimulatedMonsterMoveAxisSteps(currentCoords, moveOffset.y, false, selfKey) &&
+              TryApplySimulatedMonsterMoveAxisSteps(currentCoords, moveOffset.x, true, selfKey);
+
+        movedCells = new List<int>();
+
+        if (!canMove)
+            return false;
+
+        for (int i = 0; i < currentCoords.Count; i++)
+            movedCells.Add(gridManager.CoordToIndex(currentCoords[i]));
+
+        return true;
+    }
+
+    private bool TryApplySimulatedMonsterMoveAxisSteps(
+        List<Vector2Int> currentCoords,
+        int amount,
+        bool horizontal,
+        string selfKey)
+    {
+        int remaining = amount;
+
+        while (remaining != 0)
+        {
+            int step = remaining > 0 ? 1 : -1;
+            List<Vector2Int> nextCoords = new();
+
+            for (int i = 0; i < currentCoords.Count; i++)
+            {
+                Vector2Int nextCoord = currentCoords[i] + (horizontal
+                    ? new Vector2Int(step, 0)
+                    : new Vector2Int(0, step));
+
+                if (!gridManager.IsValidCoord(nextCoord))
+                    return false;
+
+                int targetGrid = gridManager.CoordToIndex(nextCoord);
+
+                if (IsOccupied(targetGrid, selfKey))
+                    return false;
+
+                nextCoords.Add(nextCoord);
+            }
+
+            currentCoords.Clear();
+            currentCoords.AddRange(nextCoords);
+            remaining -= step;
+        }
+
+        return true;
     }
 
     private void SimulateMonsterSkillRange(

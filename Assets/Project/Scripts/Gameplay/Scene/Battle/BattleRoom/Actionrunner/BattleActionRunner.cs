@@ -1499,20 +1499,8 @@ public class BattleActionRunner
         if (facing != null)
             facing.FaceByMoveOffset(moveOffset);
 
-        for (int i = 0; i < monster.OccupiedGridIndices.Count; i++)
-        {
-            int occupiedIndex = monster.OccupiedGridIndices[i];
-            Vector2Int currentCoord = gridManager.IndexToCoord(occupiedIndex);
-            Vector2Int targetCoord = currentCoord + moveOffset;
-
-            if (!gridManager.IsValidCoord(targetCoord))
-                yield break;
-
-            int targetIndex = gridManager.CoordToIndex(targetCoord);
-
-            if (BattleOccupancyService.IsOccupiedByAnyUnit(targetIndex, null, monster))
-                yield break;
-        }
+        if (!CanApplyMonsterMove(monster, moveOffset))
+            yield break;
 
         Vector2Int mainCoord = gridManager.IndexToCoord(currentGridIndex);
         Vector2Int movedMainCoord = mainCoord + moveOffset;
@@ -1538,6 +1526,81 @@ public class BattleActionRunner
         hudService.RefreshHUDs();
 
         yield return new WaitForSeconds(ActionDelay);
+    }
+
+    private bool CanApplyMonsterMove(MonsterUnit monster, Vector2Int moveOffset)
+    {
+        if (monster == null || gridManager == null)
+            return false;
+
+        if (moveOffset == Vector2Int.zero)
+            return false;
+
+        if (moveOffset.x != 0 && moveOffset.y != 0)
+        {
+            return CanApplyMonsterMoveAxisOrder(monster, moveOffset, true) ||
+                   CanApplyMonsterMoveAxisOrder(monster, moveOffset, false);
+        }
+
+        return CanApplyMonsterMoveAxisOrder(monster, moveOffset, moveOffset.x != 0);
+    }
+
+    private bool CanApplyMonsterMoveAxisOrder(
+        MonsterUnit monster,
+        Vector2Int moveOffset,
+        bool horizontalFirst)
+    {
+        List<Vector2Int> currentCoords = new();
+
+        for (int i = 0; i < monster.OccupiedGridIndices.Count; i++)
+            currentCoords.Add(gridManager.IndexToCoord(monster.OccupiedGridIndices[i]));
+
+        if (horizontalFirst)
+        {
+            return TryApplyMonsterMoveAxisSteps(currentCoords, moveOffset.x, true, monster) &&
+                   TryApplyMonsterMoveAxisSteps(currentCoords, moveOffset.y, false, monster);
+        }
+
+        return TryApplyMonsterMoveAxisSteps(currentCoords, moveOffset.y, false, monster) &&
+               TryApplyMonsterMoveAxisSteps(currentCoords, moveOffset.x, true, monster);
+    }
+
+    private bool TryApplyMonsterMoveAxisSteps(
+        List<Vector2Int> currentCoords,
+        int amount,
+        bool horizontal,
+        MonsterUnit monster)
+    {
+        int remaining = amount;
+
+        while (remaining != 0)
+        {
+            int step = remaining > 0 ? 1 : -1;
+            List<Vector2Int> nextCoords = new();
+
+            for (int i = 0; i < currentCoords.Count; i++)
+            {
+                Vector2Int nextCoord = currentCoords[i] + (horizontal
+                    ? new Vector2Int(step, 0)
+                    : new Vector2Int(0, step));
+
+                if (!gridManager.IsValidCoord(nextCoord))
+                    return false;
+
+                int targetIndex = gridManager.CoordToIndex(nextCoord);
+
+                if (BattleOccupancyService.IsOccupiedByAnyUnit(targetIndex, null, monster))
+                    return false;
+
+                nextCoords.Add(nextCoord);
+            }
+
+            currentCoords.Clear();
+            currentCoords.AddRange(nextCoords);
+            remaining -= step;
+        }
+
+        return true;
     }
 
     private IEnumerator ExecuteMonsterSkill(MonsterReservedCommand command)
