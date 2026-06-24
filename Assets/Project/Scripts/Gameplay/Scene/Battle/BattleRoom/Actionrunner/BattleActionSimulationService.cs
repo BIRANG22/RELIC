@@ -29,6 +29,69 @@ public class BattleActionSimulationService
         }
     }
 
+    public HashSet<int> GetProjectedMonsterOccupiedGridIndices(
+        BattleTimelineController timelineController,
+        int targetSlotIndex,
+        bool includeTargetSlotMonsterCommands)
+    {
+        HashSet<int> result = new();
+
+        if (gridManager == null)
+            return result;
+
+        CaptureCurrentPositions();
+
+        if (timelineController != null && targetSlotIndex >= 0)
+        {
+            int lastSlotIndex = Mathf.Min(targetSlotIndex, timelineController.SlotCount - 1);
+
+            for (int slotIndex = 0; slotIndex <= lastSlotIndex; slotIndex++)
+            {
+                bool isTargetSlot = slotIndex == lastSlotIndex;
+                IReadOnlyList<PlayerReservedCommand> playerCommands =
+                    timelineController.GetPlayerCommands(slotIndex);
+                IReadOnlyList<MonsterReservedCommand> monsterCommands =
+                    timelineController.GetMonsterCommands(slotIndex);
+
+                if (playerCommands != null)
+                {
+                    for (int i = 0; i < playerCommands.Count; i++)
+                    {
+                        if (BattleActionOrderUtility.HasSwift(playerCommands[i]))
+                            SimulatePlayerCommand(playerCommands[i]);
+                    }
+                }
+
+                if ((!isTargetSlot || includeTargetSlotMonsterCommands) &&
+                    monsterCommands != null)
+                {
+                    for (int i = 0; i < monsterCommands.Count; i++)
+                        SimulateMonsterCommand(monsterCommands[i]);
+                }
+
+                if (!isTargetSlot && playerCommands != null)
+                {
+                    for (int i = 0; i < playerCommands.Count; i++)
+                    {
+                        if (!BattleActionOrderUtility.HasSwift(playerCommands[i]))
+                            SimulatePlayerCommand(playerCommands[i]);
+                    }
+                }
+            }
+        }
+
+        foreach (var pair in monsterPositions)
+        {
+            if (pair.Value == null)
+                continue;
+
+            for (int i = 0; i < pair.Value.Count; i++)
+                result.Add(pair.Value[i]);
+        }
+
+        return result;
+    }
+
     private void SimulateSlot(BattleTimelineController timelineController, int slotIndex)
     {
         IReadOnlyList<PlayerReservedCommand> playerCommands =

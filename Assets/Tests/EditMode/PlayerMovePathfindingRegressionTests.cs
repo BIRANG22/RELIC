@@ -226,6 +226,74 @@ public class PlayerMovePathfindingRegressionTests
     }
 
     [Test]
+    public void MovePathSelection_UsesReservedMonsterPathWhenItIsNotLonger()
+    {
+        GridManager gridManager = new GameObject("GridManagerReservedMonsterShorter").AddComponent<GridManager>();
+        int startIndex = gridManager.CoordToIndex(new Vector2Int(0, 1));
+        int targetIndex = gridManager.CoordToIndex(new Vector2Int(3, 1));
+        int currentMonsterIndex = gridManager.CoordToIndex(new Vector2Int(2, 1));
+
+        HashSet<int> currentBlockedGridIndices = new()
+        {
+            currentMonsterIndex
+        };
+        HashSet<int> reservedBlockedGridIndices = new();
+
+        List<Vector2Int> path = PlayerSkillReservationController.ChooseReservableMovePath(
+            startIndex,
+            targetIndex,
+            2,
+            3,
+            gridManager,
+            currentBlockedGridIndices,
+            reservedBlockedGridIndices,
+            true);
+
+        Assert.That(path, Is.EqualTo(new List<Vector2Int>
+        {
+            Vector2Int.right,
+            Vector2Int.right,
+            Vector2Int.right
+        }));
+
+        Object.DestroyImmediate(gridManager.gameObject);
+    }
+
+    [Test]
+    public void MovePathSelection_KeepsCurrentMonsterPathWhenReservedMonsterPathIsLonger()
+    {
+        GridManager gridManager = new GameObject("GridManagerCurrentMonsterShorter").AddComponent<GridManager>();
+        int startIndex = gridManager.CoordToIndex(new Vector2Int(0, 1));
+        int targetIndex = gridManager.CoordToIndex(new Vector2Int(3, 1));
+        int reservedMonsterIndex = gridManager.CoordToIndex(new Vector2Int(2, 1));
+
+        HashSet<int> currentBlockedGridIndices = new();
+        HashSet<int> reservedBlockedGridIndices = new()
+        {
+            reservedMonsterIndex
+        };
+
+        List<Vector2Int> path = PlayerSkillReservationController.ChooseReservableMovePath(
+            startIndex,
+            targetIndex,
+            2,
+            3,
+            gridManager,
+            currentBlockedGridIndices,
+            reservedBlockedGridIndices,
+            true);
+
+        Assert.That(path, Is.EqualTo(new List<Vector2Int>
+        {
+            Vector2Int.right,
+            Vector2Int.right,
+            Vector2Int.right
+        }));
+
+        Object.DestroyImmediate(gridManager.gameObject);
+    }
+
+    [Test]
     public void MoveRangeIndices_TreatsDiagonalAsOneMoveCostWhenDistanceFits()
     {
         GridManager gridManager = new GameObject("GridManagerDiagonalRange").AddComponent<GridManager>();

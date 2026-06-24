@@ -162,7 +162,8 @@ public class PlayerSkillReservationController : MonoBehaviour
             gridManager
         );
 
-        HashSet<int> blockedGridIndices = BuildCurrentMoveBlockedGridIndices();
+        HashSet<int> currentBlockedGridIndices = BuildCurrentMoveBlockedGridIndices();
+        HashSet<int> projectedBlockedGridIndices = BuildProjectedMoveBlockedGridIndices();
         HashSet<int> blockedDestinationGridIndices = BuildKnownOtherPlayerDestinationGridIndices();
 
         for (int i = 0; i < rangeIndices.Count; i++)
@@ -172,16 +173,10 @@ public class PlayerSkillReservationController : MonoBehaviour
             if (blockedDestinationGridIndices.Contains(index))
                 continue;
 
-            List<List<Vector2Int>> pathCandidates =
-                GetReservableMovePathCandidates(
-                    currentCasterGridIndex,
-                    index,
-                    currentMoveDistancePerCommand,
-                    currentMoveReservationCapacity,
-                    gridManager,
-                    blockedGridIndices,
-                    true
-                );
+            List<List<Vector2Int>> pathCandidates = BuildPreferredMovePathCandidates(
+                index,
+                currentBlockedGridIndices,
+                projectedBlockedGridIndices);
 
             if (pathCandidates.Count <= 0)
                 continue;
@@ -253,15 +248,7 @@ public class PlayerSkillReservationController : MonoBehaviour
             selectedGridIndex,
             out List<List<Vector2Int>> pathCandidates))
         {
-            pathCandidates = GetReservableMovePathCandidates(
-                currentCasterGridIndex,
-                selectedGridIndex,
-                currentMoveDistancePerCommand,
-                currentMoveReservationCapacity,
-                gridManager,
-                BuildCurrentMoveBlockedGridIndices(),
-                true
-            );
+            pathCandidates = BuildPreferredMovePathCandidates(selectedGridIndex);
         }
 
         List<Vector2Int> moveOffsets = GetFirstReservableMovePath(pathCandidates);
@@ -322,6 +309,32 @@ public class PlayerSkillReservationController : MonoBehaviour
         }
 
         return null;
+    }
+
+    private List<List<Vector2Int>> BuildPreferredMovePathCandidates(
+        int targetGridIndex,
+        ISet<int> currentBlockedGridIndices = null,
+        ISet<int> projectedBlockedGridIndices = null)
+    {
+        List<List<Vector2Int>> result = new();
+
+        currentBlockedGridIndices ??= BuildCurrentMoveBlockedGridIndices();
+        projectedBlockedGridIndices ??= BuildProjectedMoveBlockedGridIndices();
+
+        List<Vector2Int> path = ChooseReservableMovePath(
+            currentCasterGridIndex,
+            targetGridIndex,
+            currentMoveDistancePerCommand,
+            currentMoveReservationCapacity,
+            gridManager,
+            currentBlockedGridIndices,
+            projectedBlockedGridIndices,
+            true);
+
+        if (path != null && path.Count > 0)
+            result.Add(path);
+
+        return result;
     }
 
     private int GetMoveReservationCapacity()
@@ -448,6 +461,24 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     private HashSet<int> BuildCurrentMoveBlockedGridIndices()
     {
+        HashSet<int> blockedGridIndices = BuildCurrentCharacterMoveBlockedGridIndices();
+
+        AddCurrentMonsterOccupiedGridIndices(blockedGridIndices);
+
+        return blockedGridIndices;
+    }
+
+    private HashSet<int> BuildProjectedMoveBlockedGridIndices()
+    {
+        HashSet<int> blockedGridIndices = BuildCurrentCharacterMoveBlockedGridIndices();
+
+        AddProjectedMonsterOccupiedGridIndices(blockedGridIndices);
+
+        return blockedGridIndices;
+    }
+
+    private HashSet<int> BuildCurrentCharacterMoveBlockedGridIndices()
+    {
         HashSet<int> blockedGridIndices = new();
 
         if (gridManager == null)
@@ -468,9 +499,43 @@ public class PlayerSkillReservationController : MonoBehaviour
             }
         }
 
-        AddCurrentMonsterOccupiedGridIndices(blockedGridIndices);
-
         return blockedGridIndices;
+    }
+
+    private void AddProjectedMonsterOccupiedGridIndices(HashSet<int> blockedGridIndices)
+    {
+        if (blockedGridIndices == null)
+            return;
+
+        EnsureTimelineController();
+
+        if (timelineController == null || gridManager == null || currentSlotIndex < 0)
+        {
+            AddCurrentMonsterOccupiedGridIndices(blockedGridIndices);
+            return;
+        }
+
+        BattleActionSimulationService simulationService = new(gridManager);
+        bool includeCurrentSlotMonsterCommands =
+            !BattleActionOrderUtility.HasSwift(currentSkillData);
+
+        HashSet<int> projectedGridIndices =
+            simulationService.GetProjectedMonsterOccupiedGridIndices(
+                timelineController,
+                currentSlotIndex,
+                includeCurrentSlotMonsterCommands);
+
+        if (projectedGridIndices == null || projectedGridIndices.Count <= 0)
+        {
+            AddCurrentMonsterOccupiedGridIndices(blockedGridIndices);
+            return;
+        }
+
+        foreach (int gridIndex in projectedGridIndices)
+        {
+            if (IsValidMoveDestinationGridIndex(gridIndex))
+                blockedGridIndices.Add(gridIndex);
+        }
     }
 
     private void AddCurrentMonsterOccupiedGridIndices(HashSet<int> blockedGridIndices)
@@ -856,6 +921,66 @@ public class PlayerSkillReservationController : MonoBehaviour
         );
 
         return result;
+    }
+
+    public static List<Vector2Int> ChooseReservableMovePath(
+        int casterGridIndex,
+        int targetGridIndex,
+        int moveDistancePerCommand,
+        int reservationCapacity,
+        GridManager gridManager,
+        ISet<int> currentBlockedGridIndices,
+        ISet<int> projectedBlockedGridIndices,
+        bool allowBlockedTargetGridIndex = false)
+    {
+        List<Vector2Int> currentPath = GetFirstMovePath(
+            GetReservableMovePathCandidates(
+                casterGridIndex,
+                targetGridIndex,
+                moveDistancePerCommand,
+                reservationCapacity,
+                gridManager,
+                currentBlockedGridIndices,
+                allowBlockedTargetGridIndex));
+
+        List<Vector2Int> projectedPath = GetFirstMovePath(
+            GetReservableMovePathCandidates(
+                casterGridIndex,
+                targetGridIndex,
+                moveDistancePerCommand,
+                reservationCapacity,
+                gridManager,
+                projectedBlockedGridIndices,
+                allowBlockedTargetGridIndex));
+
+        if (currentPath == null)
+            return projectedPath != null ? new List<Vector2Int>(projectedPath) : null;
+
+        if (projectedPath == null)
+            return new List<Vector2Int>(currentPath);
+
+        int currentDistance = GetMoveStepDistance(currentPath);
+        int projectedDistance = GetMoveStepDistance(projectedPath);
+
+        return projectedDistance <= currentDistance
+            ? new List<Vector2Int>(projectedPath)
+            : new List<Vector2Int>(currentPath);
+    }
+
+    private static List<Vector2Int> GetFirstMovePath(List<List<Vector2Int>> pathCandidates)
+    {
+        if (pathCandidates == null)
+            return null;
+
+        for (int i = 0; i < pathCandidates.Count; i++)
+        {
+            List<Vector2Int> path = pathCandidates[i];
+
+            if (path != null && path.Count > 0)
+                return path;
+        }
+
+        return null;
     }
 
     private static void TryAddReservableMoveStepPath(

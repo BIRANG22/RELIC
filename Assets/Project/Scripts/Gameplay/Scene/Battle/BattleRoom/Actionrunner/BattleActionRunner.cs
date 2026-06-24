@@ -80,37 +80,7 @@ public class BattleActionRunner
         if (batch == null)
             yield break;
 
-        List<ActionRoutine> actionRoutines = new();
-
-        for (int i = 0; i < batch.PlayerCommands.Count; i++)
-        {
-            PlayerReservedCommand command = batch.PlayerCommands[i];
-
-            if (command == null)
-                continue;
-
-            if (command.ReservedMoveGridIndex >= 0)
-            {
-                if (IsConsumedVisualSkipMove(command))
-                    continue;
-
-                actionRoutines.Add(CreateActionRoutine($"PlayerMove:{command.CharacterId}", ExecutePlayerMove(command)));
-            }
-            else
-            {
-                actionRoutines.Add(CreateActionRoutine($"PlayerSkill:{command.CharacterId}:{command.SkillId}", ExecutePlayerSkill(command)));
-            }
-        }
-
-        for (int i = 0; i < batch.MonsterCommands.Count; i++)
-        {
-            MonsterReservedCommand command = batch.MonsterCommands[i];
-
-            if (command == null)
-                continue;
-
-            actionRoutines.Add(CreateActionRoutine($"Monster:{command.RuntimeId}:{command.SkillId}", ExecuteMonsterCommand(command)));
-        }
+        List<ActionRoutine> actionRoutines = BuildActionRoutines(batch);
 
         if (actionRoutines.Count <= 0)
             yield break;
@@ -141,6 +111,63 @@ public class BattleActionRunner
         IncreaseMonsterTurnCountsOnceInSlot(batch);
 
         yield return RunPostActionPresentationRoutine();
+    }
+
+    private List<ActionRoutine> BuildActionRoutines(BattleActionBatch batch)
+    {
+        List<ActionRoutine> actionRoutines = new();
+
+        if (batch == null)
+            return actionRoutines;
+
+        for (int i = 0; i < batch.PlayerCommands.Count; i++)
+        {
+            PlayerReservedCommand command = batch.PlayerCommands[i];
+
+            if (!BattleActionOrderUtility.HasSwift(command))
+                continue;
+
+            AddPlayerActionRoutine(actionRoutines, command);
+        }
+
+        for (int i = 0; i < batch.MonsterCommands.Count; i++)
+        {
+            MonsterReservedCommand command = batch.MonsterCommands[i];
+
+            if (command == null)
+                continue;
+
+            actionRoutines.Add(CreateActionRoutine($"Monster:{command.RuntimeId}:{command.SkillId}", ExecuteMonsterCommand(command)));
+        }
+
+        for (int i = 0; i < batch.PlayerCommands.Count; i++)
+        {
+            PlayerReservedCommand command = batch.PlayerCommands[i];
+
+            if (BattleActionOrderUtility.HasSwift(command))
+                continue;
+
+            AddPlayerActionRoutine(actionRoutines, command);
+        }
+
+        return actionRoutines;
+    }
+
+    private void AddPlayerActionRoutine(List<ActionRoutine> actionRoutines, PlayerReservedCommand command)
+    {
+        if (actionRoutines == null || command == null)
+            return;
+
+        if (command.ReservedMoveGridIndex >= 0)
+        {
+            if (IsConsumedVisualSkipMove(command))
+                return;
+
+            actionRoutines.Add(CreateActionRoutine($"PlayerMove:{command.CharacterId}", ExecutePlayerMove(command)));
+            return;
+        }
+
+        actionRoutines.Add(CreateActionRoutine($"PlayerSkill:{command.CharacterId}:{command.SkillId}", ExecutePlayerSkill(command)));
     }
 
     private IEnumerator RunPostActionPresentationRoutine()
