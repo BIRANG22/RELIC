@@ -6,6 +6,9 @@ public class RestRoomController : MonoBehaviour
     [Header("Ally Spawn")]
     [SerializeField] private Transform[] allySpawnPoints;
 
+    [Header("Upgrade")]
+    [SerializeField] private SkillUpgradePanel upgradePanel;
+
     private bool isRestUsed;
 
     private void OnEnable()
@@ -31,6 +34,17 @@ public class RestRoomController : MonoBehaviour
             sceneController.ReturnToMap();
         else
             Debug.LogWarning("[RestRoomController] BattleSceneController 없음");
+    }
+
+    public void OnUpgradeButtonClicked()
+    {
+        if (upgradePanel == null)
+        {
+            Debug.LogWarning("[RestRoomController] SkillUpgradePanel 없음");
+            return;
+        }
+
+        upgradePanel.Open();
     }
 
     private void RecoverAllPartyHPToMax()

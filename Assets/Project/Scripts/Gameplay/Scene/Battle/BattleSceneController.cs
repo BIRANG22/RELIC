@@ -29,10 +29,8 @@ public class BattleSceneController : MonoBehaviour
     [Header("Rooms")]
     [SerializeField] private GameObject startRoom;
     [SerializeField] private GameObject battleRoom;
-    [SerializeField] private GameObject chestRoom;
     [SerializeField] private GameObject eventRoom;
     [SerializeField] private GameObject restRoom;
-    [SerializeField] private GameObject shopRoom;
 
     [Header("Boss Demo")]
     [SerializeField] private GameObject bossDemoPanel;
@@ -439,14 +437,6 @@ public class BattleSceneController : MonoBehaviour
                 OpenRestEvent(nodeData);
                 break;
 
-            case "Shop":
-                OpenShopEvent(nodeData);
-                break;
-
-            case "Chest":
-                OpenRewardEvent(nodeData);
-                break;
-
             case "Special":
                 OpenSpecialEvent(nodeData);
                 break;
@@ -474,18 +464,6 @@ public class BattleSceneController : MonoBehaviour
     {
         Debug.Log($"[BattleSceneController] Rest event start: {nodeData.MapId}");
         OpenRoom(restRoom, "RestRoom");
-    }
-
-    private void OpenShopEvent(GeneratedMapNodeData nodeData)
-    {
-        Debug.Log($"[BattleSceneController] Shop event start: {nodeData.MapId}");
-        OpenRoom(shopRoom, "ShopRoom");
-    }
-
-    private void OpenRewardEvent(GeneratedMapNodeData nodeData)
-    {
-        Debug.Log($"[BattleSceneController] Chest reward start: {nodeData.MapId}");
-        OpenRoom(chestRoom, "ChestRoom");
     }
 
     private void OpenSpecialEvent(GeneratedMapNodeData nodeData)
@@ -583,10 +561,8 @@ public class BattleSceneController : MonoBehaviour
 
         SetActiveIfNotNull(startRoom, false);
         SetActiveIfNotNull(battleRoom, false);
-        SetActiveIfNotNull(chestRoom, false);
         SetActiveIfNotNull(eventRoom, false);
         SetActiveIfNotNull(restRoom, false);
-        SetActiveIfNotNull(shopRoom, false);
         SetActiveIfNotNull(bossDemoPanel, false);
     }
 
@@ -647,18 +623,11 @@ public class BattleSceneController : MonoBehaviour
 
         if (IsActiveSelf(battleRoom))
             return battleRoom;
-
-        if (IsActiveSelf(chestRoom))
-            return chestRoom;
-
         if (IsActiveSelf(eventRoom))
             return eventRoom;
 
         if (IsActiveSelf(restRoom))
             return restRoom;
-
-        if (IsActiveSelf(shopRoom))
-            return shopRoom;
 
         return null;
     }
@@ -681,10 +650,8 @@ public class BattleSceneController : MonoBehaviour
 
         return target == startRoom ||
                target == battleRoom ||
-               target == chestRoom ||
                target == eventRoom ||
-               target == restRoom ||
-               target == shopRoom;
+               target == restRoom;
     }
 
     private bool IsMapPanelActive()
