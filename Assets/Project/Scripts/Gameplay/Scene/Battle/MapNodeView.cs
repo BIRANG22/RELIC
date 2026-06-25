@@ -3,8 +3,9 @@ using System.Collections;
 using Relic.Gameplay.Data;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
-public class MapNodeView : MonoBehaviour
+public class MapNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [Header("Base")]
     [SerializeField] private Image iconImage;
@@ -27,18 +28,40 @@ public class MapNodeView : MonoBehaviour
     [SerializeField] private bool showCheckSpriteForVisitedNode = true;
     [SerializeField] private bool showCheckSpriteForClearedNode = true;
 
+    [Header("Selectable Hover Breath")]
+    [SerializeField] private bool useSelectableHoverBreath = true;
+    [SerializeField] private float hoverBreathScaleMultiplier = 1.08f;
+    [SerializeField] private float hoverBreathSpeed = 4f;
+
     private GeneratedMapNodeData nodeData;
     private Action<GeneratedMapNodeData> onClicked;
     private Coroutine clickRoutine;
     private bool isClickProcessing;
     private bool currentCanClick;
+    private bool isPointerInside;
+    private RectTransform rectTransform;
+    private Vector3 baseScale = Vector3.one;
 
     private void Awake()
     {
+        rectTransform = transform as RectTransform;
+        baseScale = transform.localScale;
+
         if (button == null)
             button = GetComponent<Button>();
 
         EnsureCheckAnimationImage();
+    }
+
+    private void OnDisable()
+    {
+        isPointerInside = false;
+        ResetHoverScale();
+    }
+
+    private void Update()
+    {
+        UpdateSelectableHoverBreath();
     }
 
     public void Setup(
@@ -51,6 +74,9 @@ public class MapNodeView : MonoBehaviour
         onClicked = clickCallback;
         currentCanClick = canClick;
         isClickProcessing = false;
+        isPointerInside = false;
+        CaptureBaseScale();
+        ResetHoverScale();
 
         if (clickRoutine != null)
         {
@@ -87,6 +113,23 @@ public class MapNodeView : MonoBehaviour
             color.a = canClick ? 1f : 0.45f;
             iconImage.color = color;
         }
+
+        if (!CanPlayHoverBreath())
+            ResetHoverScale();
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        isPointerInside = true;
+
+        if (!CanPlayHoverBreath())
+            ResetHoverScale();
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        isPointerInside = false;
+        ResetHoverScale();
     }
 
     public void OnClick()
@@ -112,6 +155,7 @@ public class MapNodeView : MonoBehaviour
     private IEnumerator PlayCheckAnimationThenClick()
     {
         isClickProcessing = true;
+        ResetHoverScale();
 
         if (button != null)
             button.interactable = false;
@@ -160,6 +204,49 @@ public class MapNodeView : MonoBehaviour
             iconImage.enabled = true;
 
         InvokeClick();
+    }
+
+    private void CaptureBaseScale()
+    {
+        if (rectTransform == null)
+            rectTransform = transform as RectTransform;
+
+        baseScale = transform.localScale;
+    }
+
+    private void UpdateSelectableHoverBreath()
+    {
+        if (!CanPlayHoverBreath())
+            return;
+
+        float speed = Mathf.Max(0.01f, hoverBreathSpeed);
+        float multiplier = Mathf.Max(1f, hoverBreathScaleMultiplier);
+        float t = (Mathf.Sin(Time.unscaledTime * speed) + 1f) * 0.5f;
+        float scale = Mathf.Lerp(1f, multiplier, t);
+
+        transform.localScale = baseScale * scale;
+    }
+
+    private bool CanPlayHoverBreath()
+    {
+        if (!useSelectableHoverBreath)
+            return false;
+
+        if (!isPointerInside)
+            return false;
+
+        if (!currentCanClick || isClickProcessing)
+            return false;
+
+        if (button != null && !button.interactable)
+            return false;
+
+        return true;
+    }
+
+    private void ResetHoverScale()
+    {
+        transform.localScale = baseScale;
     }
 
     private void InvokeClick()

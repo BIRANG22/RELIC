@@ -88,19 +88,40 @@ public class RelicEquipPanelUI : MonoBehaviour
     {
         Debug.Log($"[RelicEquipPanelUI] 유물 클릭 / Character:{selectedCharacterId} / RelicSlot:{selectedRelicSlotIndex + 1} / Relic:{relicId}");
 
+        if (string.IsNullOrWhiteSpace(relicId))
+            return;
+
         if (string.IsNullOrWhiteSpace(selectedCharacterId))
         {
-            Debug.LogWarning("[RelicEquipPanelUI] 먼저 유물 장착 슬롯을 선택해야 합니다.");
+            Debug.Log("[RelicEquipPanelUI] 유물 먼저 선택됨. 장착할 유물 슬롯을 선택하면 장착됩니다.");
             return;
         }
 
         if (selectedRelicSlotIndex < 0)
         {
-            Debug.LogWarning("[RelicEquipPanelUI] 먼저 유물 장착 슬롯을 선택해야 합니다.");
+            Debug.Log("[RelicEquipPanelUI] 유물 먼저 선택됨. 장착할 유물 슬롯을 선택하면 장착됩니다.");
             return;
         }
 
         EquipRelic(selectedCharacterId, selectedRelicSlotIndex, relicId);
+    }
+
+    public bool EquipSelectedInventoryRelicToSlot(string characterId, int relicSlotIndex)
+    {
+        if (selectedInventoryRelicIcon == null)
+            return false;
+
+        string relicId = selectedInventoryRelicIcon.RelicId;
+
+        if (string.IsNullOrWhiteSpace(relicId))
+            return false;
+
+        selectedCharacterId = characterId;
+        selectedRelicSlotIndex = relicSlotIndex;
+        UpdateEquippedSlotSelectionVisuals();
+
+        EquipRelic(characterId, relicSlotIndex, relicId);
+        return true;
     }
 
     public void ShowRelicTooltip(string relicId, RectTransform hoveredSlotRect)
@@ -121,13 +142,13 @@ public class RelicEquipPanelUI : MonoBehaviour
         tooltipPanelOwner.HideSkillTooltip();
     }
 
-    private void EquipRelic(string characterId, int relicSlotIndex, string relicId)
+    private bool EquipRelic(string characterId, int relicSlotIndex, string relicId)
     {
         if (CheckRelicEditLocked())
-            return;
+            return false;
 
         if (DataManager.Instance == null)
-            return;
+            return false;
 
         BattleRuntimeData battleRuntimeData =
             DataManager.Instance.BattleRuntimeStore.GetOrCreate();
@@ -141,7 +162,10 @@ public class RelicEquipPanelUI : MonoBehaviour
         {
             ResetSelectionState();
             Refresh();
+            return true;
         }
+
+        return false;
     }
 
     public void Refresh()

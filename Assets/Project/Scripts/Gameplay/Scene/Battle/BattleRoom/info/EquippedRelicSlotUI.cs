@@ -133,6 +133,15 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
         if (string.IsNullOrWhiteSpace(characterId))
             return;
 
+        if (owner != null && owner.EquipSelectedInventoryRelicToSlot(characterId, relicSlotIndex))
+        {
+            Debug.Log(
+                $"[EquippedRelicSlotUI] 선택한 유물 장착 / Character:{characterId} / Slot:{relicSlotIndex + 1}"
+            );
+
+            return;
+        }
+
         string equippedRelicId = GetEquippedRelicId(characterId);
 
         if (!string.IsNullOrWhiteSpace(equippedRelicId))

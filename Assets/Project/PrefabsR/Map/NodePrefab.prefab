@@ -218,4 +218,11 @@ MonoBehaviour:
   checkImageSize: {x: 96, y: 96}
   hideIconDuringCheckAnimation: 0
   keepLastCheckSpriteUntilRoomOpens: 1
+  keepFrameIndex: -1
   useUnscaledTime: 1
+  checkImageColor: {r: 0.69803923, g: 0.24313726, b: 0.27058825, a: 1}
+  showCheckSpriteForVisitedNode: 1
+  showCheckSpriteForClearedNode: 1
+  useSelectableHoverBreath: 1
+  hoverBreathScaleMultiplier: 1.2
+  hoverBreathSpeed: 4
