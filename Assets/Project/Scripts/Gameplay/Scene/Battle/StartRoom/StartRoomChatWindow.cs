@@ -74,7 +74,12 @@ public class StartRoomChatWindow : MonoBehaviour, IPointerClickHandler
         if (string.IsNullOrEmpty(value))
             return string.Empty;
 
-        return value.Replace("\\n", "\n");
+        string normalized = value.Replace("\\n", "\n");
+
+        if (normalized.Contains("운이 좋네. 내가"))
+            normalized = normalized.Replace("운이 좋네. 내가", "운이 좋네.\n내가");
+
+        return normalized;
     }
 
     private void InvokeFinishedOnce()
