@@ -155,8 +155,6 @@ public class BattleTurnExecutor : MonoBehaviour
 
     private IEnumerator ExecuteTurnRoutine()
     {
-        bool battleEnded = false;
-
         try
         {
             if (moveGhostPreview != null)
@@ -214,7 +212,6 @@ public class BattleTurnExecutor : MonoBehaviour
                 if (BattleResultChecker.Instance != null &&
                     BattleResultChecker.Instance.CheckBattleEnd())
                 {
-                    battleEnded = true;
                     ClearTimeline();
                     yield break;
                 }
@@ -253,7 +250,6 @@ public class BattleTurnExecutor : MonoBehaviour
             if (BattleResultChecker.Instance != null &&
                 BattleResultChecker.Instance.CheckBattleEnd())
             {
-                battleEnded = true;
                 yield break;
             }
 
@@ -366,10 +362,34 @@ public class BattleTurnExecutor : MonoBehaviour
 
         IEnumerator routine = BattleMapIntroText.ShowMessageAndWait(battleProgressMessage);
 
-        if (routine != null)
-            StartCoroutine(routine);
+        if (routine == null)
+            yield break;
 
-        yield break;
+        if (!waitIntroText)
+        {
+            StartCoroutine(routine);
+            yield break;
+        }
+
+        bool isIntroTextFinished = false;
+        StartCoroutine(RunBattleProgressIntroTextRoutine(routine, () => isIntroTextFinished = true));
+
+        float elapsed = 0f;
+        float timeout = Mathf.Max(0f, introTextTimeout);
+
+        while (!isIntroTextFinished && elapsed < timeout)
+        {
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+    }
+
+    private IEnumerator RunBattleProgressIntroTextRoutine(IEnumerator routine, Action onFinished)
+    {
+        if (routine != null)
+            yield return routine;
+
+        onFinished?.Invoke();
     }
 
     private int GetNextExecutableBatchIndex(List<BattleActionBatch> batches, int startIndex)

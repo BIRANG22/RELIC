@@ -55,7 +55,7 @@ public class BattleEndButtonEffectSizeUI : MonoBehaviour, IPointerEnterHandler, 
         if (isPressedUntilTurnReturned)
             return;
 
-        ResizeTo(normalSize);
+        ResizeTo(isPointerInside ? hoverSize : normalSize);
     }
 
     public void OnPointerDown(PointerEventData eventData)
