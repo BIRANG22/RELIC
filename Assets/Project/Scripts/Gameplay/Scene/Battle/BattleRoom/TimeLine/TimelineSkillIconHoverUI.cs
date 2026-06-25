@@ -35,6 +35,8 @@ public class TimelineSkillIconHoverUI : MonoBehaviour, IPointerEnterHandler, IPo
 
     public void Clear()
     {
+        HideHoverElements();
+
         command = null;
         entry = null;
     }
@@ -47,16 +49,33 @@ public class TimelineSkillIconHoverUI : MonoBehaviour, IPointerEnterHandler, IPo
             hoverPreview.Show(entry);
 
         if (hoverPopup != null)
-            hoverPopup.Show(entry, rectTransform);
+            hoverPopup.Show(entry, rectTransform, this);
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
+        HideHoverElements();
+    }
+
+    private void OnDisable()
+    {
+        HideHoverElements();
+    }
+
+    private void OnDestroy()
+    {
+        HideHoverElements();
+    }
+
+    private void HideHoverElements()
+    {
+        FindReferencesIfNeeded();
+
         if (hoverPreview != null)
             hoverPreview.Hide();
 
         if (hoverPopup != null)
-            hoverPopup.Hide();
+            hoverPopup.Hide(this);
     }
 
     private void FindReferencesIfNeeded()

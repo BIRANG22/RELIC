@@ -1,11 +1,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Relic.Gameplay.Data;
+using Relic.Gameplay.Monster;
 
 namespace Relic.Gameplay.Battle
 {
     public class PlayerActionPlanner : MonoBehaviour
     {
+        private const string MoveSkillLevelOneId = "S_Move_1";
+        private const string MoveSkillLevelTwoId = "S_Move_2";
+
         [Header("Timeline")]
         [SerializeField] private BattleTimelineManager timelineManager;
 
@@ -28,6 +32,7 @@ namespace Relic.Gameplay.Battle
         private CharacterSelectButtonUI currentCharacter;
         private SkillMasterData currentSkillData;
         private ReferenceResource currentPreviewResourceType = ReferenceResource.Cost;
+        private bool isMoveGridTargetSelectionActive;
 
         private sealed class PlannedSkillEntry
         {
@@ -88,6 +93,7 @@ namespace Relic.Gameplay.Battle
                     {
                         ShowGridRangePreview(gridRangeData);
                         SetGridSkillTargetMode(true);
+                        SetMoveGridTargetSelectionActive(IsMoveSkill(skillData));
                     }
                     return;
 
@@ -402,6 +408,7 @@ namespace Relic.Gameplay.Battle
         {
             currentValidTargetGridIndexes.Clear();
             SetGridSkillTargetMode(false);
+            SetMoveGridTargetSelectionActive(false);
 
             if (playerGridRoot == null)
                 return;
@@ -414,6 +421,30 @@ namespace Relic.Gameplay.Battle
                 if (t.TryGetComponent<Renderer>(out var renderer))
                     renderer.SetPropertyBlock(null);
             }
+        }
+
+        private void SetMoveGridTargetSelectionActive(bool active)
+        {
+            if (isMoveGridTargetSelectionActive == active)
+                return;
+
+            isMoveGridTargetSelectionActive = active;
+            MonsterUnit.SetAllReservationVisualState(active);
+        }
+
+        private bool IsMoveSkill(SkillMasterData skillData)
+        {
+            if (skillData == null)
+                return false;
+
+            if (skillData.Category == Category.Move)
+                return true;
+
+            if (skillData.TimelineNotation == TimelineActionType.Move)
+                return true;
+
+            return skillData.SkillId == MoveSkillLevelOneId ||
+                   skillData.SkillId == MoveSkillLevelTwoId;
         }
 
         private void ClearPendingTargetSelection()

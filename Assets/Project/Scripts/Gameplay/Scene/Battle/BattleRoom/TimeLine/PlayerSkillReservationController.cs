@@ -24,6 +24,7 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     private readonly List<int> currentMoveSelectableIndices = new();
     private readonly Dictionary<int, List<List<Vector2Int>>> currentMovePathCandidatesByTargetIndex = new();
+    private bool isMoveTargetMonsterVisualActive;
 
     private int currentMoveDistancePerCommand = 1;
     private int currentMoveReservationCapacity = 1;
@@ -39,6 +40,8 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     private void OnDisable()
     {
+        SetMoveTargetMonsterVisualActive(false);
+
         if (gridManager != null)
             gridManager.OnCellClicked -= HandleCellClicked;
     }
@@ -131,16 +134,19 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         if (currentSkillData.RangeType == RangeType.Direction)
         {
+            SetMoveTargetMonsterVisualActive(false);
             ConfirmDirectionReservation(currentCasterDirection);
             return;
         }
 
         if (currentSkillData.RangeType == RangeType.Selection)
         {
+            SetMoveTargetMonsterVisualActive(IsMoveSkill(currentSkillData));
             PreviewMoveSelectableCells();
             return;
         }
 
+        SetMoveTargetMonsterVisualActive(false);
         ConfirmDirectReservation();
     }
 
@@ -1653,6 +1659,30 @@ public class PlayerSkillReservationController : MonoBehaviour
         return true;
     }
 
+    private void SetMoveTargetMonsterVisualActive(bool active)
+    {
+        if (isMoveTargetMonsterVisualActive == active)
+            return;
+
+        isMoveTargetMonsterVisualActive = active;
+        MonsterUnit.SetAllReservationVisualState(active);
+    }
+
+    private bool IsMoveSkill(SkillMasterData skillData)
+    {
+        if (skillData == null)
+            return false;
+
+        if (skillData.Category == Category.Move)
+            return true;
+
+        if (skillData.TimelineNotation == TimelineActionType.Move)
+            return true;
+
+        return skillData.SkillId == MoveSkillLevelOneId ||
+               skillData.SkillId == MoveSkillLevelTwoId;
+    }
+
     private void ShowBattleWarning(string message)
     {
         BattleWarningUI.ShowMessage(message);
@@ -1660,6 +1690,8 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     public void ClearPreview()
     {
+        SetMoveTargetMonsterVisualActive(false);
+
         currentUserRuntime = null;
         currentSkillData = null;
         currentSlotIndex = -1;
