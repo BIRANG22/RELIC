@@ -58,6 +58,7 @@ public class BattleUnitAnimator : MonoBehaviour
     [Header("Setting")]
     [SerializeField] private int animatorLayer = 0;
     [SerializeField] private float crossFadeDuration = 0f;
+    [SerializeField] private float deadAnimationDuration = 0.6f;
     [SerializeField] private bool forceAnimatorUpdate = true;
     [SerializeField] private bool autoFindAnimatorInChildren = true;
 
@@ -65,6 +66,8 @@ public class BattleUnitAnimator : MonoBehaviour
     private int vfxLayer = -1;
 
     private int currentAttackIndex = 1;
+
+    public float DeadAnimationDuration => Mathf.Max(0f, deadAnimationDuration);
 
     private void Awake()
     {

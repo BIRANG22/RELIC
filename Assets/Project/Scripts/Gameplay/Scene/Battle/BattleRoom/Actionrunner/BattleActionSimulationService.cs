@@ -133,6 +133,9 @@ public class BattleActionSimulationService
         if (command == null || command.UserRuntime == null || command.SkillData == null)
             return;
 
+        if (command.UserRuntime.IsDead)
+            return;
+
         if (!playerPositions.TryGetValue(command.CharacterId, out int currentGrid))
             return;
 

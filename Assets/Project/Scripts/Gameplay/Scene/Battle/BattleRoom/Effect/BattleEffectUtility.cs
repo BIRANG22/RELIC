@@ -22,6 +22,24 @@ public static class BattleEffectUtility
         return context.MonsterTarget != null ? context.MonsterTarget : context.MonsterCaster;
     }
 
+    public static bool IsDeadPlayer(BattleCharacter target)
+    {
+        return target == null ||
+               target.RuntimeData == null ||
+               target.RuntimeData.IsDead;
+    }
+
+    private static void HandlePlayerDeathIfNeeded(BattleCharacter target)
+    {
+        if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
+            return;
+
+        if (!target.RuntimeData.IsDead)
+            return;
+
+        target.RuntimeData.HandleDeath();
+    }
+
     public static void AddOrStackStatus(
         List<StatusEffectRuntimeData> statusEffects,
         string effectId,
@@ -77,7 +95,7 @@ public static class BattleEffectUtility
         int stack,
         int turnCount = 1)
     {
-        if (target == null || target.RuntimeData == null)
+        if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return;
 
         AddOrStackStatus(target.RuntimeData.StatusEffects, effectId, stack, turnCount);
@@ -89,7 +107,7 @@ public static class BattleEffectUtility
         int stack,
         int turnCount = 1)
     {
-        if (target == null || target.RuntimeData == null)
+        if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return;
 
         AddOrStackStatus(target.RuntimeData.StatusEffects, effectId, stack, turnCount);
@@ -98,7 +116,7 @@ public static class BattleEffectUtility
 
     public static void DamagePlayer(BattleCharacter target, int damage)
     {
-        if (target == null || target.RuntimeData == null)
+        if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return;
 
         damage = Mathf.Max(0, damage);
@@ -117,6 +135,7 @@ public static class BattleEffectUtility
 
         int hpDamage = Mathf.Max(0, hpBefore - target.RuntimeData.CurrentHP);
         int shownDamage = shieldDamage + hpDamage;
+        HandlePlayerDeathIfNeeded(target);
         BattleDamageTextPopupUI.Show(target.transform, shownDamage);
 
         OnPlayerDamaged?.Invoke(target);
@@ -125,7 +144,7 @@ public static class BattleEffectUtility
 
         if (animator != null)
         {
-            if (target.RuntimeData.CurrentHP <= 0)
+            if (target.RuntimeData.IsDead)
                 animator.PlayDead();
             else if (target.RuntimeData.CurrentHP == hpBefore)
                 animator.PlayGuard();
@@ -136,7 +155,7 @@ public static class BattleEffectUtility
 
     public static void DamageMonster(MonsterUnit target, int damage)
     {
-        if (target == null || target.RuntimeData == null)
+        if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return;
 
         damage = Mathf.Max(0, damage);
@@ -171,7 +190,7 @@ public static class BattleEffectUtility
 
     public static void PierceDamagePlayer(BattleCharacter target, int damage)
     {
-        if (target == null || target.RuntimeData == null)
+        if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return;
 
         damage = Mathf.Max(0, damage);
@@ -182,13 +201,14 @@ public static class BattleEffectUtility
             Mathf.Max(0, target.RuntimeData.CurrentHP - damage);
 
         int shownDamage = Mathf.Max(0, hpBefore - target.RuntimeData.CurrentHP);
+        HandlePlayerDeathIfNeeded(target);
         BattleDamageTextPopupUI.Show(target.transform, shownDamage);
 
         BattleUnitAnimator animator = target.GetComponent<BattleUnitAnimator>();
 
         if (animator != null)
         {
-            if (target.RuntimeData.CurrentHP <= 0)
+            if (target.RuntimeData.IsDead)
                 animator.PlayDead();
             else
                 animator.PlayHit();
@@ -197,7 +217,7 @@ public static class BattleEffectUtility
 
     public static void PierceDamageMonster(MonsterUnit target, int damage)
     {
-        if (target == null || target.RuntimeData == null)
+        if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return;
 
         damage = Mathf.Max(0, damage);
@@ -224,7 +244,7 @@ public static class BattleEffectUtility
 
     public static void StatusDamagePlayer(BattleCharacter target, int damage)
     {
-        if (target == null || target.RuntimeData == null)
+        if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return;
 
         damage = Mathf.Max(0, damage);
@@ -235,6 +255,7 @@ public static class BattleEffectUtility
             Mathf.Max(0, target.RuntimeData.CurrentHP - damage);
 
         int shownDamage = Mathf.Max(0, hpBefore - target.RuntimeData.CurrentHP);
+        HandlePlayerDeathIfNeeded(target);
         BattleDamageTextPopupUI.Show(target.transform, shownDamage);
 
         OnPlayerDamaged?.Invoke(target);
@@ -243,7 +264,7 @@ public static class BattleEffectUtility
 
         if (animator != null)
         {
-            if (target.RuntimeData.CurrentHP <= 0)
+            if (target.RuntimeData.IsDead)
                 animator.PlayDead();
             else
                 animator.PlayHit();
@@ -252,7 +273,7 @@ public static class BattleEffectUtility
 
     public static void StatusDamageMonster(MonsterUnit target, int damage)
     {
-        if (target == null || target.RuntimeData == null)
+        if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return;
 
         damage = Mathf.Max(0, damage);
@@ -279,7 +300,7 @@ public static class BattleEffectUtility
 
     public static void HealPlayer(BattleCharacter target, int value)
     {
-        if (target == null || target.RuntimeData == null)
+        if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return;
 
         value = Mathf.Max(0, value);
@@ -309,7 +330,7 @@ public static class BattleEffectUtility
 
     public static void AddShieldToPlayer(BattleCharacter target, int value)
     {
-        if (target == null || target.RuntimeData == null)
+        if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return;
 
         target.RuntimeData.CurrentShield += Mathf.Max(0, value);

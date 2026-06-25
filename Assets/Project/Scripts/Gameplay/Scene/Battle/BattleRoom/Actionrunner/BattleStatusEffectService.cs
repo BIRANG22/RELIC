@@ -21,6 +21,9 @@ public class BattleStatusEffectService
         if (command == null || command.SkillData == null || caster == null || caster.RuntimeData == null)
             return false;
 
+        if (caster.RuntimeData.IsDead)
+            return false;
+
         if (string.IsNullOrWhiteSpace(command.SkillData.EffectIds))
             return false;
 
@@ -100,7 +103,7 @@ public class BattleStatusEffectService
 
     public void ApplyBurnDamageToPlayerOnMove(BattleCharacter character)
     {
-        if (character == null || character.RuntimeData == null)
+        if (character == null || character.RuntimeData == null || character.RuntimeData.IsDead)
             return;
 
         int burnStack = damageService.GetStatusStack(character.RuntimeData.StatusEffects, "E_Burn");
@@ -160,7 +163,7 @@ public class BattleStatusEffectService
         {
             BattleCharacter character = characters[i];
 
-            if (character == null || character.RuntimeData == null)
+            if (character == null || character.RuntimeData == null || character.RuntimeData.IsDead)
                 continue;
 
             playedPresentation |= ApplyPlayerTurnEndStatusEffects(character);
@@ -193,6 +196,9 @@ public class BattleStatusEffectService
 
     private bool ApplyPlayerTurnEndStatusEffects(BattleCharacter character)
     {
+        if (character == null || character.RuntimeData == null || character.RuntimeData.IsDead)
+            return false;
+
         List<StatusEffectRuntimeData> statuses = character.RuntimeData.StatusEffects;
 
         if (statuses == null)
@@ -211,6 +217,9 @@ public class BattleStatusEffectService
             {
                 BattleEffectUtility.StatusDamagePlayer(character, status.Stack);
                 playedPresentation = true;
+
+                if (character.RuntimeData.IsDead)
+                    return playedPresentation;
             }
 
             if (status.EffectId == "E_Recover")
@@ -308,7 +317,7 @@ public class BattleStatusEffectService
 
     public void ApplyBleedingDamageToPlayerOnAttack(BattleCharacter character)
     {
-        if (character == null || character.RuntimeData == null)
+        if (character == null || character.RuntimeData == null || character.RuntimeData.IsDead)
             return;
 
         int bleedingStack = damageService.GetStatusStack(

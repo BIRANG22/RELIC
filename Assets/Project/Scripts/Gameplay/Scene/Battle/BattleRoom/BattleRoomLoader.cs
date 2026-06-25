@@ -454,6 +454,9 @@ public class BattleRoomLoader : MonoBehaviour
             if (!DataManager.Instance.CharacterRuntimeStore.TryGet(characterId, out CharacterRuntimeData runtimeData))
                 continue;
 
+            if (runtimeData.IsDead)
+                continue;
+
             DataManager.Instance.CharacterDatabase.TryGet(characterId, out CharacterMasterData masterData);
 
             int rechargeBonus = GetStatusStack(runtimeData.StatusEffects, "E_Recharge") * 2;

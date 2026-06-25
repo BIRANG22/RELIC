@@ -1,9 +1,12 @@
 using Relic.Gameplay.Monster;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class BattleDeathService
 {
+    private const float DefaultMonsterDeathDestroyDelay = 0.6f;
+
     private readonly GridManager gridManager;
     private readonly BattleMonsterSpawner monsterSpawner;
     private readonly BattleRoomLoader roomLoader;
@@ -23,10 +26,45 @@ public class BattleDeathService
         if (monster == null || monster.RuntimeData == null)
             return;
 
-        if (monster.RuntimeData.IsDeathHandled)
+        if (CoroutineHost.Instance != null && Application.isPlaying)
+        {
+            CoroutineHost.Instance.StartCoroutine(HandleMonsterDeadRoutine(monster));
+            return;
+        }
+
+        if (!TryBeginMonsterDeath(monster))
             return;
 
+        RemoveDeadMonster(monster);
+    }
+
+    public IEnumerator HandleMonsterDeadRoutine(MonsterUnit monster)
+    {
+        if (!TryBeginMonsterDeath(monster))
+            yield break;
+
+        yield return new WaitForSeconds(GetMonsterDeathDestroyDelay(monster));
+
+        RemoveDeadMonster(monster);
+    }
+
+    private bool TryBeginMonsterDeath(MonsterUnit monster)
+    {
+        if (monster == null || monster.RuntimeData == null)
+            return false;
+
+        if (!monster.RuntimeData.IsDead)
+            return false;
+
+        if (monster.RuntimeData.IsDeathHandled)
+            return false;
+
         monster.RuntimeData.IsDeathHandled = true;
+
+        BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
+
+        if (animator != null)
+            animator.PlayDead();
 
         if (monster.RuntimeData.MonsterId == "Mon_01")
             SpawnBlobsFromMuck(monster);
@@ -36,9 +74,33 @@ public class BattleDeathService
         if (roomLoader != null)
             roomLoader.UnregisterRuntimeMonster(monster);
 
+        return true;
+    }
+
+    private void RemoveDeadMonster(MonsterUnit monster)
+    {
+        if (monster == null)
+            return;
+
         monster.DestroyHUD();
 
-        Object.Destroy(monster.gameObject);
+        if (Application.isPlaying)
+            Object.Destroy(monster.gameObject);
+        else
+            Object.DestroyImmediate(monster.gameObject);
+    }
+
+    private float GetMonsterDeathDestroyDelay(MonsterUnit monster)
+    {
+        if (monster == null)
+            return DefaultMonsterDeathDestroyDelay;
+
+        BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
+
+        if (animator == null)
+            return DefaultMonsterDeathDestroyDelay;
+
+        return Mathf.Max(0f, animator.DeadAnimationDuration);
     }
 
     private void CollectMonsterReward(MonsterUnit monster)

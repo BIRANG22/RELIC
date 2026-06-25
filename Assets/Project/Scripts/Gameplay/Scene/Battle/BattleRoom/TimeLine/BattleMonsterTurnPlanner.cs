@@ -504,7 +504,13 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
         for (int i = 0; i < players.Length; i++)
         {
-            if (players[i] == null || players[i].CurrentGridIndex < 0)
+            if (players[i] == null || players[i].RuntimeData == null)
+                continue;
+
+            if (players[i].RuntimeData.IsDead)
+                continue;
+
+            if (players[i].CurrentGridIndex < 0)
                 continue;
 
             Vector2Int playerCoord = gridManager.IndexToCoord(players[i].CurrentGridIndex);

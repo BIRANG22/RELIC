@@ -45,6 +45,9 @@ public class BattleActionBatchBuilder
                 {
                     PlayerReservedCommand command = playerCommands[i];
 
+                    if (IsDeadPlayerCommand(command))
+                        continue;
+
                     if (BattleActionOrderUtility.HasSwift(command))
                     {
                         int batchIndex = AddPlayerCommand(
@@ -85,6 +88,9 @@ public class BattleActionBatchBuilder
                 {
                     PlayerReservedCommand command = playerCommands[i];
 
+                    if (IsDeadPlayerCommand(command))
+                        continue;
+
                     if (!BattleActionOrderUtility.HasSwift(command))
                     {
                         AddPlayerCommand(
@@ -107,7 +113,7 @@ public class BattleActionBatchBuilder
         int timelineSlotIndex,
         int minBatchIndex)
     {
-        if (command == null)
+        if (command == null || IsDeadPlayerCommand(command))
             return -1;
 
         ActionInfo next = CreatePlayerActionInfo(command);
@@ -297,6 +303,13 @@ public class BattleActionBatchBuilder
         }
 
         return info;
+    }
+
+    private bool IsDeadPlayerCommand(PlayerReservedCommand command)
+    {
+        return command == null ||
+               command.UserRuntime == null ||
+               command.UserRuntime.IsDead;
     }
 
     private ActionInfo CreateMonsterActionInfo(MonsterReservedCommand command)
