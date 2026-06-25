@@ -13,7 +13,7 @@ public static class SkillCostCalculator
             ReferenceResource.HP => caster.CurrentHP,
             ReferenceResource.Cost => caster.CurrentCost,
             ReferenceResource.UniqueResource => caster.CurrentResource,
-            ReferenceResource.MovePoint => caster.CurrentMoveLevel,
+            ReferenceResource.MovePoint => caster.CurrentCost,
             _ => 0
         };
     }
@@ -28,7 +28,7 @@ public static class SkillCostCalculator
             ReferenceResource.HP => caster.PreviewHP,
             ReferenceResource.Cost => caster.PreviewCost,
             ReferenceResource.UniqueResource => caster.PreviewResource,
-            ReferenceResource.MovePoint => caster.PreviewMoveLevel,
+            ReferenceResource.MovePoint => caster.PreviewCost,
             _ => 0
         };
     }

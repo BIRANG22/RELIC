@@ -16,19 +16,42 @@ public class MoveGhostPreview : MonoBehaviour
         if (gridManager == null || ghostPrefab == null || sprite == null)
             return;
 
-        Clear(characterId);
-
         Vector3 position = gridManager.GetWorldPositionByIndex(gridIndex);
 
-        SpriteRenderer ghost = Instantiate(ghostPrefab, position, Quaternion.identity);
+        if (!ghostsByCharacterId.TryGetValue(characterId, out SpriteRenderer ghost) ||
+            ghost == null)
+        {
+            ghost = Instantiate(ghostPrefab, position, Quaternion.identity);
+            ghostsByCharacterId[characterId] = ghost;
+        }
+
+        ghost.transform.position = position;
         ghost.sprite = sprite;
-        ghost.flipX = direction == BattleDirection.Left;
+        ApplyDirection(ghost, direction);
 
         Color color = ghost.color;
         color.a = 0.4f;
         ghost.color = color;
+    }
 
-        ghostsByCharacterId[characterId] = ghost;
+    public void ClearExcept(ICollection<string> characterIdsToKeep)
+    {
+        if (characterIdsToKeep == null)
+        {
+            ClearAll();
+            return;
+        }
+
+        List<string> removeTargets = new();
+
+        foreach (var pair in ghostsByCharacterId)
+        {
+            if (!characterIdsToKeep.Contains(pair.Key))
+                removeTargets.Add(pair.Key);
+        }
+
+        for (int i = 0; i < removeTargets.Count; i++)
+            Clear(removeTargets[i]);
     }
 
     public void Clear(string characterId)
@@ -39,8 +62,7 @@ public class MoveGhostPreview : MonoBehaviour
         if (!ghostsByCharacterId.TryGetValue(characterId, out SpriteRenderer ghost))
             return;
 
-        if (ghost != null)
-            Destroy(ghost.gameObject);
+        DestroyGhost(ghost);
 
         ghostsByCharacterId.Remove(characterId);
     }
@@ -49,10 +71,39 @@ public class MoveGhostPreview : MonoBehaviour
     {
         foreach (var pair in ghostsByCharacterId)
         {
-            if (pair.Value != null)
-                Destroy(pair.Value.gameObject);
+            DestroyGhost(pair.Value);
         }
 
         ghostsByCharacterId.Clear();
+    }
+
+    private static void ApplyDirection(SpriteRenderer ghost, BattleDirection direction)
+    {
+        if (ghost == null)
+            return;
+
+        BattleUnitFacing facing = ghost.GetComponentInParent<BattleUnitFacing>();
+
+        if (facing == null)
+            facing = ghost.GetComponentInChildren<BattleUnitFacing>();
+
+        if (facing != null)
+        {
+            facing.FaceRight(direction == BattleDirection.Right);
+            return;
+        }
+
+        ghost.flipX = direction == BattleDirection.Left;
+    }
+
+    private static void DestroyGhost(SpriteRenderer ghost)
+    {
+        if (ghost == null)
+            return;
+
+        if (Application.isPlaying)
+            Destroy(ghost.gameObject);
+        else
+            DestroyImmediate(ghost.gameObject);
     }
 }

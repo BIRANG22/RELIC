@@ -1139,6 +1139,9 @@ public class BattleTimelineController : MonoBehaviour
         if (existingMoveCommand == null)
             return false;
 
+        if (!IsSelfFlipMoveCommand(command))
+            return false;
+
         if (!CanReserveMergedMoveCommand(existingMoveCommand, command, out string blockReason))
         {
             ShowBattleWarning(blockReason);
@@ -1157,6 +1160,13 @@ public class BattleTimelineController : MonoBehaviour
         return true;
     }
 
+    private bool IsSelfFlipMoveCommand(PlayerReservedCommand command)
+    {
+        return IsMoveCommand(command) &&
+               command.ReservedMoveGridIndex >= 0 &&
+               command.MoveOffset == Vector2Int.zero;
+    }
+
     private PlayerReservedCommand FindMoveCommandInSlot(
         ReserveTurnSlotUI slot,
         string characterId)
@@ -1164,7 +1174,7 @@ public class BattleTimelineController : MonoBehaviour
         if (slot == null || slot.Commands == null || string.IsNullOrWhiteSpace(characterId))
             return null;
 
-        for (int i = 0; i < slot.Commands.Count; i++)
+        for (int i = slot.Commands.Count - 1; i >= 0; i--)
         {
             PlayerReservedCommand command = slot.Commands[i];
 
@@ -1393,13 +1403,11 @@ public class BattleTimelineController : MonoBehaviour
                 return command.HPCost;
 
             case ReferenceResource.Cost:
+            case ReferenceResource.MovePoint:
                 return command.Cost;
 
             case ReferenceResource.UniqueResource:
                 return command.ResourceCost;
-
-            case ReferenceResource.MovePoint:
-                return command.MoveCost;
 
             default:
                 return 0;
@@ -1666,7 +1674,6 @@ public class BattleTimelineController : MonoBehaviour
         command.UserRuntime.AddReservedHP(command.HPCost);
         command.UserRuntime.AddReservedCost(command.Cost);
         command.UserRuntime.AddReservedResource(command.ResourceCost);
-        command.UserRuntime.AddReservedMove(command.MoveCost);
         command.UserRuntime.AddReservedShield(command.ShieldCost);
     }
 
@@ -1728,9 +1735,6 @@ public class BattleTimelineController : MonoBehaviour
         if (!runtime.CanReserveResource(command.ResourceCost))
             return BuildShortageMessage("고유자원", command.ResourceCost, runtime.CurrentResource - runtime.ReservedResourceCost);
 
-        if (!runtime.CanReserveMove(command.MoveCost))
-            return BuildShortageMessage("이동 포인트", command.MoveCost, runtime.CurrentMoveLevel - runtime.ReservedMoveCost);
-
         if (!runtime.CanReserveShield(command.ShieldCost))
             return BuildShortageMessage("방어도", command.ShieldCost, runtime.CurrentShield - runtime.ReservedShieldCost);
 
@@ -1751,13 +1755,11 @@ public class BattleTimelineController : MonoBehaviour
                 return "HP";
 
             case ReferenceResource.Cost:
+            case ReferenceResource.MovePoint:
                 return "Cost";
 
             case ReferenceResource.UniqueResource:
                 return "고유자원";
-
-            case ReferenceResource.MovePoint:
-                return "이동 포인트";
 
             default:
                 return "자원";
@@ -1842,7 +1844,7 @@ public class BattleTimelineController : MonoBehaviour
             return false;
 
         gridIndex = lastMoveCommand.PreviewMoveGridIndex;
-        direction = lastMoveCommand.Direction;
+        direction = lastMoveCommand.PreviewMoveDirection;
         return gridIndex >= 0;
     }
 
@@ -1895,30 +1897,7 @@ public class BattleTimelineController : MonoBehaviour
         if (command.ReservedMoveGridIndex < 0)
             return currentDirection;
 
-        return GetDirectionAfterMove(currentDirection, command.MoveOffset);
-    }
-
-    private BattleDirection GetDirectionAfterMove(
-        BattleDirection currentDirection,
-        Vector2Int moveOffset)
-    {
-        if (moveOffset.x < 0)
-            return BattleDirection.Left;
-
-        if (moveOffset.x > 0)
-            return BattleDirection.Right;
-
-        if (moveOffset == Vector2Int.zero)
-            return GetOppositeDirection(currentDirection);
-
-        return currentDirection;
-    }
-
-    private BattleDirection GetOppositeDirection(BattleDirection direction)
-    {
-        return direction == BattleDirection.Right
-            ? BattleDirection.Left
-            : BattleDirection.Right;
+        return command.Direction;
     }
 
     private int GetCurrentBattleCharacterGridIndex(string characterId)
@@ -2260,7 +2239,6 @@ public class BattleTimelineController : MonoBehaviour
             command.UserRuntime.RemoveReservedCost(command.Cost);
 
         command.UserRuntime.RemoveReservedResource(command.ResourceCost);
-        command.UserRuntime.RemoveReservedMove(command.MoveCost);
         command.UserRuntime.RemoveReservedShield(command.ShieldCost);
     }
 
@@ -2358,10 +2336,11 @@ public class BattleTimelineController : MonoBehaviour
         if (moveGhostPreview == null)
             return;
 
-        moveGhostPreview.ClearAll();
-
         if (reserveSlots == null)
+        {
+            moveGhostPreview.ClearAll();
             return;
+        }
 
         Dictionary<string, PlayerReservedCommand> lastMoveCommands =
             GetLastMoveGhostCommandsByCharacter();
@@ -2379,9 +2358,11 @@ public class BattleTimelineController : MonoBehaviour
                 command.UserRuntime.CharacterId,
                 sprite,
                 command.PreviewMoveGridIndex,
-                command.Direction
+                command.PreviewMoveDirection
             );
         }
+
+        moveGhostPreview.ClearExcept(lastMoveCommands.Keys);
     }
 
     private Dictionary<string, PlayerReservedCommand> GetLastMoveGhostCommandsByCharacter()

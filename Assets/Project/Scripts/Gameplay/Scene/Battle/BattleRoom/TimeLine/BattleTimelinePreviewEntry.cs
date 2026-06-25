@@ -252,13 +252,11 @@ public class BattleTimelinePreviewEntry
                 return PlayerCommand.HPCost;
 
             case ReferenceResource.Cost:
+            case ReferenceResource.MovePoint:
                 return PlayerCommand.Cost;
 
             case ReferenceResource.UniqueResource:
                 return PlayerCommand.ResourceCost;
-
-            case ReferenceResource.MovePoint:
-                return PlayerCommand.MoveCost;
 
             default:
                 return 0;

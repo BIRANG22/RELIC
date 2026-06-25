@@ -786,7 +786,55 @@ public class PlayerMovePathfindingRegressionTests
     }
 
     [Test]
-    public void ConfirmPlayerCommand_MergesMoveReservationInSameSlot()
+    public void MoveExecutionStepGroups_CombinesMonotonicStairPathIntoSingleSegment()
+    {
+        List<List<Vector2Int>> groups = BuildPlayerMoveExecutionStepGroups(
+            new List<Vector2Int>
+            {
+                Vector2Int.right,
+                Vector2Int.right,
+                Vector2Int.up
+            });
+
+        Assert.That(groups, Has.Count.EqualTo(1));
+        Assert.That(GetTotalOffset(groups[0]), Is.EqualTo(new Vector2Int(2, 1)));
+    }
+
+    [Test]
+    public void MoveExecutionStepGroups_SplitsWhenPathReversesAxis()
+    {
+        List<List<Vector2Int>> groups = BuildPlayerMoveExecutionStepGroups(
+            new List<Vector2Int>
+            {
+                Vector2Int.right,
+                Vector2Int.right,
+                Vector2Int.up,
+                Vector2Int.right,
+                Vector2Int.down
+            });
+
+        Assert.That(groups, Has.Count.EqualTo(2));
+        Assert.That(GetTotalOffset(groups[0]), Is.EqualTo(new Vector2Int(3, 1)));
+        Assert.That(GetTotalOffset(groups[1]), Is.EqualTo(Vector2Int.down));
+    }
+
+    [Test]
+    public void MoveExecutionStepGroups_PreservesTerminalSelfFlip()
+    {
+        List<List<Vector2Int>> groups = BuildPlayerMoveExecutionStepGroups(
+            new List<Vector2Int>
+            {
+                Vector2Int.right,
+                Vector2Int.zero
+            });
+
+        Assert.That(groups, Has.Count.EqualTo(2));
+        Assert.That(GetTotalOffset(groups[0]), Is.EqualTo(Vector2Int.right));
+        Assert.That(groups[1], Is.EqualTo(new List<Vector2Int> { Vector2Int.zero }));
+    }
+
+    [Test]
+    public void ConfirmPlayerCommand_AddsSecondMoveReservationInSameSlot()
     {
         GameObject timelineObject = new("TimelineMergeMove");
         GameObject slotObject = new("SlotMergeMove");
@@ -837,23 +885,872 @@ public class PlayerMovePathfindingRegressionTests
             Assert.That(timeline.ConfirmPlayerCommand(0, first), Is.True);
             Assert.That(timeline.ConfirmPlayerCommand(0, second), Is.True);
 
+            Assert.That(slot.Commands, Has.Count.EqualTo(2));
+
+            Assert.That(slot.Commands[0].ReservedMoveGridIndex, Is.EqualTo(1));
+            Assert.That(slot.Commands[0].MoveOffset, Is.EqualTo(Vector2Int.right));
+            Assert.That(slot.Commands[0].Cost, Is.EqualTo(1));
+            Assert.That(slot.Commands[1].ReservedMoveGridIndex, Is.EqualTo(2));
+            Assert.That(slot.Commands[1].MoveOffset, Is.EqualTo(Vector2Int.right));
+            Assert.That(slot.Commands[1].Cost, Is.EqualTo(1));
+            Assert.That(runtime.ReservedCost, Is.EqualTo(2));
+        }
+        finally
+        {
+            Object.DestroyImmediate(slotObject);
+            Object.DestroyImmediate(timelineObject);
+        }
+    }
+
+    [Test]
+    public void ConfirmPlayerCommand_SecondMoveReservationKeepsItsOwnDirection()
+    {
+        GameObject timelineObject = new("TimelineMergeMoveDirection");
+        GameObject slotObject = new("SlotMergeMoveDirection");
+
+        try
+        {
+            BattleTimelineController timeline =
+                timelineObject.AddComponent<BattleTimelineController>();
+            ReserveTurnSlotUI slot = slotObject.AddComponent<ReserveTurnSlotUI>();
+            slot.Init(timeline, 0);
+
+            SetPrivateField(timeline, "reserveSlots", new[] { slot });
+
+            CharacterRuntimeData runtime = new()
+            {
+                CharacterId = "Char_Test_Direction",
+                CurrentCost = 10,
+                MaxCost = 10,
+                Direction = BattleDirection.Left
+            };
+
+            SkillMasterData moveSkill = new()
+            {
+                SkillId = "S_Move_1",
+                RangeType = RangeType.Selection,
+                ReferenceResource = ReferenceResource.Cost,
+                ResourceCostType = ResourceCostType.Fixed,
+                ResourceCostValue = 1,
+                GridMove = 1
+            };
+
+            PlayerReservedCommand first = CreateMoveCommand(
+                runtime,
+                moveSkill,
+                1,
+                Vector2Int.right,
+                1,
+                new List<Vector2Int> { Vector2Int.right });
+
+            PlayerReservedCommand second = CreateMoveCommand(
+                runtime,
+                moveSkill,
+                0,
+                Vector2Int.left,
+                1,
+                new List<Vector2Int> { Vector2Int.left });
+            second.SetMoveDirection(BattleDirection.Left);
+
+            Assert.That(timeline.ConfirmPlayerCommand(0, first), Is.True);
+            Assert.That(timeline.ConfirmPlayerCommand(0, second), Is.True);
+
+            Assert.That(slot.Commands, Has.Count.EqualTo(2));
+            Assert.That(slot.Commands[0].MoveOffset, Is.EqualTo(Vector2Int.right));
+            Assert.That(slot.Commands[0].ReservedMoveGridIndex, Is.EqualTo(1));
+            Assert.That(slot.Commands[1].MoveOffset, Is.EqualTo(Vector2Int.left));
+            Assert.That(slot.Commands[1].ReservedMoveGridIndex, Is.EqualTo(0));
+            Assert.That(slot.Commands[1].Direction, Is.EqualTo(BattleDirection.Left));
+            Assert.That(timeline.GetPreviewDirection(runtime, 0), Is.EqualTo(BattleDirection.Left));
+        }
+        finally
+        {
+            Object.DestroyImmediate(slotObject);
+            Object.DestroyImmediate(timelineObject);
+        }
+    }
+
+    [Test]
+    public void StartReservation_UsesExistingMoveGhostPositionForSelfFlip()
+    {
+        GameObject timelineObject = new("TimelineSelfFlipGhostPosition");
+        GameObject slotObject = new("SlotSelfFlipGhostPosition");
+        GameObject controllerObject = new("ControllerSelfFlipGhostPosition");
+        GameObject gridObject = new("GridSelfFlipGhostPosition");
+
+        try
+        {
+            BattleTimelineController timeline =
+                timelineObject.AddComponent<BattleTimelineController>();
+            ReserveTurnSlotUI slot = slotObject.AddComponent<ReserveTurnSlotUI>();
+            PlayerSkillReservationController controller =
+                controllerObject.AddComponent<PlayerSkillReservationController>();
+            GridManager gridManager = gridObject.AddComponent<GridManager>();
+
+            slot.Init(timeline, 0);
+
+            SetPrivateField(timeline, "reserveSlots", new[] { slot });
+            SetPrivateField(controller, "timelineController", timeline);
+            SetPrivateField(controller, "gridManager", gridManager);
+
+            CharacterRuntimeData runtime = new()
+            {
+                CharacterId = "Char_Test_SelfFlip_Ghost",
+                CurrentCost = 10,
+                MaxCost = 10,
+                Direction = BattleDirection.Right
+            };
+
+            SkillMasterData moveSkill = new()
+            {
+                SkillId = "S_Move_1",
+                RangeType = RangeType.Selection,
+                ReferenceResource = ReferenceResource.Cost,
+                ResourceCostType = ResourceCostType.Fixed,
+                ResourceCostValue = 1,
+                GridMove = 1
+            };
+
+            PlayerReservedCommand existingMove = CreateMoveCommand(
+                runtime,
+                moveSkill,
+                1,
+                Vector2Int.right,
+                1,
+                new List<Vector2Int> { Vector2Int.right });
+
+            Assert.That(slot.AddCommand(existingMove), Is.True);
+
+            controller.StartReservation(
+                runtime,
+                moveSkill,
+                0,
+                0,
+                BattleDirection.Right);
+
+            Assert.That(
+                GetPrivateField<int>(controller, "currentCasterGridIndex"),
+                Is.EqualTo(1));
+            Assert.That(
+                GetPrivateField<BattleDirection>(controller, "currentCasterDirection"),
+                Is.EqualTo(BattleDirection.Right));
+
+            InvokePrivateMethod(
+                controller,
+                "AddCurrentCasterSelfFlipCandidate",
+                new HashSet<int>());
+
+            List<int> selectableIndices =
+                GetPrivateField<List<int>>(
+                    controller,
+                    "currentMoveSelectableIndices");
+            Dictionary<int, List<List<Vector2Int>>> candidatesByTarget =
+                GetPrivateField<Dictionary<int, List<List<Vector2Int>>>>(
+                    controller,
+                    "currentMovePathCandidatesByTargetIndex");
+
+            Assert.That(selectableIndices, Does.Contain(1));
+            Assert.That(
+                candidatesByTarget.TryGetValue(1, out List<List<Vector2Int>> selfFlipCandidates),
+                Is.True);
+            Assert.That(selfFlipCandidates, Has.Count.EqualTo(1));
+            Assert.That(selfFlipCandidates[0], Is.EqualTo(new List<Vector2Int> { Vector2Int.zero }));
+
+            List<PlayerReservedCommand> commands =
+                (List<PlayerReservedCommand>)InvokePrivateMethod(
+                    controller,
+                    "BuildMoveReservationCommands",
+                    1,
+                    new List<Vector2Int> { Vector2Int.zero });
+
+            Assert.That(commands, Has.Count.EqualTo(1));
+            Assert.That(commands[0].MoveOffset, Is.EqualTo(Vector2Int.zero));
+            Assert.That(commands[0].ReservedMoveGridIndex, Is.EqualTo(1));
+            Assert.That(commands[0].Direction, Is.EqualTo(BattleDirection.Left));
+        }
+        finally
+        {
+            Object.DestroyImmediate(gridObject);
+            Object.DestroyImmediate(controllerObject);
+            Object.DestroyImmediate(slotObject);
+            Object.DestroyImmediate(timelineObject);
+        }
+    }
+
+    [Test]
+    public void StartReservation_ClickingReservedCurrentPositionMergesSelfFlip()
+    {
+        GameObject dataManagerObject = new("DataManagerReservedCurrentSelfFlipClick");
+        GameObject timelineObject = new("TimelineReservedCurrentSelfFlipClick");
+        GameObject slotObject = new("SlotReservedCurrentSelfFlipClick");
+        GameObject controllerObject = new("ControllerReservedCurrentSelfFlipClick");
+        GameObject gridObject = new("GridReservedCurrentSelfFlipClick");
+        GameObject cellObject = new("CellReservedCurrentSelfFlipClick");
+
+        try
+        {
+            DataManager dataManager = dataManagerObject.AddComponent<DataManager>();
+            InvokePrivateMethod(dataManager, "Awake");
+
+            BattleTimelineController timeline =
+                timelineObject.AddComponent<BattleTimelineController>();
+            ReserveTurnSlotUI slot = slotObject.AddComponent<ReserveTurnSlotUI>();
+            PlayerSkillReservationController controller =
+                controllerObject.AddComponent<PlayerSkillReservationController>();
+            GridManager gridManager = gridObject.AddComponent<GridManager>();
+            GridCell currentPreviewCell = cellObject.AddComponent<GridCell>();
+
+            slot.Init(timeline, 0);
+            currentPreviewCell.Initialize(gridManager, 0, 1, 1);
+
+            SetPrivateField(timeline, "reserveSlots", new[] { slot });
+            SetPrivateField(controller, "timelineController", timeline);
+            SetPrivateField(controller, "gridManager", gridManager);
+
+            CharacterRuntimeData runtime = new()
+            {
+                CharacterId = "Char_Test_Reserved_Current_SelfFlip_Click",
+                CurrentCost = 1,
+                MaxCost = 1,
+                Direction = BattleDirection.Right
+            };
+
+            SkillMasterData moveSkill = new()
+            {
+                SkillId = "S_Move_1",
+                Category = Category.Move,
+                RangeType = RangeType.Selection,
+                ReferenceResource = ReferenceResource.Cost,
+                ResourceCostType = ResourceCostType.Fixed,
+                ResourceCostValue = 1,
+                GridMove = 1
+            };
+
+            PlayerReservedCommand firstMove = CreateMoveCommand(
+                runtime,
+                moveSkill,
+                1,
+                Vector2Int.right,
+                1,
+                new List<Vector2Int> { Vector2Int.right });
+
+            Assert.That(timeline.ConfirmPlayerCommand(0, firstMove), Is.True);
+
+            controller.StartReservation(
+                runtime,
+                moveSkill,
+                0,
+                0,
+                BattleDirection.Right);
+
+            InvokePrivateMethod(controller, "HandleCellClicked", currentPreviewCell);
+
+            Assert.That(slot.Commands, Has.Count.EqualTo(1));
+            Assert.That(slot.Commands[0].MoveOffset, Is.EqualTo(Vector2Int.right));
+            Assert.That(slot.Commands[0].ReservedMoveGridIndex, Is.EqualTo(1));
+            Assert.That(slot.Commands[0].Direction, Is.EqualTo(BattleDirection.Left));
+            Assert.That(timeline.GetPreviewDirection(runtime, 0), Is.EqualTo(BattleDirection.Left));
+        }
+        finally
+        {
+            Object.DestroyImmediate(cellObject);
+            Object.DestroyImmediate(gridObject);
+            Object.DestroyImmediate(controllerObject);
+            Object.DestroyImmediate(slotObject);
+            Object.DestroyImmediate(timelineObject);
+            Object.DestroyImmediate(dataManagerObject);
+        }
+    }
+
+    [Test]
+    public void CharacterRuntimeData_DoesNotExposeReservedMoveCost()
+    {
+        Assert.That(
+            typeof(CharacterRuntimeData).GetField("ReservedMoveCost"),
+            Is.Null);
+    }
+
+    [Test]
+    public void LegacyMovePointReference_ReservesCostInsteadOfMoveCost()
+    {
+        GameObject timelineObject = new("TimelineLegacyMovePointCost");
+        GameObject slotObject = new("SlotLegacyMovePointCost");
+
+        try
+        {
+            BattleTimelineController timeline =
+                timelineObject.AddComponent<BattleTimelineController>();
+            ReserveTurnSlotUI slot = slotObject.AddComponent<ReserveTurnSlotUI>();
+            slot.Init(timeline, 0);
+
+            SetPrivateField(timeline, "reserveSlots", new[] { slot });
+
+            CharacterRuntimeData runtime = new()
+            {
+                CharacterId = "Char_Test_Legacy_MovePoint",
+                CurrentCost = 3,
+                MaxCost = 3,
+                CurrentMoveLevel = 0
+            };
+
+            SkillMasterData legacyMovePointSkill = new()
+            {
+                SkillId = "S_Legacy_MovePoint",
+                ReferenceResource = ReferenceResource.MovePoint,
+                ResourceCostType = ResourceCostType.Fixed,
+                ResourceCostValue = 2
+            };
+
+            PlayerReservedCommand command = new(runtime, legacyMovePointSkill);
+
+            Assert.That(command.Cost, Is.EqualTo(2));
+            Assert.That(timeline.ConfirmPlayerCommand(0, command), Is.True);
+            Assert.That(runtime.ReservedCost, Is.EqualTo(2));
+        }
+        finally
+        {
+            Object.DestroyImmediate(slotObject);
+            Object.DestroyImmediate(timelineObject);
+        }
+    }
+
+    [Test]
+    public void PreviewMoveSelectableCells_KeepsGhostSelfFlipWhenNoRemainingCostForMergedMove()
+    {
+        GameObject dataManagerObject = new("DataManagerSelfFlipNoCost");
+        GameObject timelineObject = new("TimelineSelfFlipNoCost");
+        GameObject slotObject = new("SlotSelfFlipNoCost");
+        GameObject controllerObject = new("ControllerSelfFlipNoCost");
+        GameObject gridObject = new("GridSelfFlipNoCost");
+
+        try
+        {
+            DataManager dataManager = dataManagerObject.AddComponent<DataManager>();
+            InvokePrivateMethod(dataManager, "Awake");
+
+            BattleTimelineController timeline =
+                timelineObject.AddComponent<BattleTimelineController>();
+            ReserveTurnSlotUI slot = slotObject.AddComponent<ReserveTurnSlotUI>();
+            PlayerSkillReservationController controller =
+                controllerObject.AddComponent<PlayerSkillReservationController>();
+            GridManager gridManager = gridObject.AddComponent<GridManager>();
+
+            slot.Init(timeline, 0);
+
+            SetPrivateField(timeline, "reserveSlots", new[] { slot });
+            SetPrivateField(controller, "timelineController", timeline);
+            SetPrivateField(controller, "gridManager", gridManager);
+
+            CharacterRuntimeData runtime = new()
+            {
+                CharacterId = "Char_Test_SelfFlip_NoCost",
+                CurrentCost = 1,
+                MaxCost = 1,
+                ReservedCost = 1,
+                Direction = BattleDirection.Right
+            };
+
+            SkillMasterData moveSkill = new()
+            {
+                SkillId = "S_Move_1",
+                Category = Category.Move,
+                RangeType = RangeType.Selection,
+                ReferenceResource = ReferenceResource.Cost,
+                ResourceCostType = ResourceCostType.Fixed,
+                ResourceCostValue = 1,
+                GridMove = 1
+            };
+
+            PlayerReservedCommand existingMove = CreateMoveCommand(
+                runtime,
+                moveSkill,
+                1,
+                Vector2Int.right,
+                1,
+                new List<Vector2Int> { Vector2Int.right });
+
+            Assert.That(slot.AddCommand(existingMove), Is.True);
+
+            SetPrivateField(controller, "currentUserRuntime", runtime);
+            SetPrivateField(controller, "currentSkillData", moveSkill);
+            SetPrivateField(controller, "currentCasterGridIndex", 0);
+            SetPrivateField(controller, "currentCasterDirection", BattleDirection.Right);
+            SetPrivateField(controller, "currentSlotIndex", 0);
+
+            InvokePrivateMethod(controller, "PreviewMoveSelectableCells");
+
+            List<int> selectableIndices =
+                GetPrivateField<List<int>>(
+                    controller,
+                    "currentMoveSelectableIndices");
+            Dictionary<int, List<List<Vector2Int>>> candidatesByTarget =
+                GetPrivateField<Dictionary<int, List<List<Vector2Int>>>>(
+                    controller,
+                    "currentMovePathCandidatesByTargetIndex");
+
+            Assert.That(selectableIndices, Does.Contain(1));
+            Assert.That(
+                candidatesByTarget.TryGetValue(1, out List<List<Vector2Int>> selfFlipCandidates),
+                Is.True);
+            Assert.That(selfFlipCandidates, Has.Count.EqualTo(1));
+            Assert.That(selfFlipCandidates[0], Is.EqualTo(new List<Vector2Int> { Vector2Int.zero }));
+        }
+        finally
+        {
+            Object.DestroyImmediate(gridObject);
+            Object.DestroyImmediate(controllerObject);
+            Object.DestroyImmediate(slotObject);
+            Object.DestroyImmediate(timelineObject);
+            Object.DestroyImmediate(dataManagerObject);
+        }
+    }
+
+    [Test]
+    public void ConfirmMoveReservation_MergesGhostSelfFlipWhenNoRemainingCost()
+    {
+        GameObject dataManagerObject = new("DataManagerConfirmSelfFlipNoCost");
+        GameObject timelineObject = new("TimelineConfirmSelfFlipNoCost");
+        GameObject slotObject = new("SlotConfirmSelfFlipNoCost");
+        GameObject controllerObject = new("ControllerConfirmSelfFlipNoCost");
+        GameObject gridObject = new("GridConfirmSelfFlipNoCost");
+
+        try
+        {
+            DataManager dataManager = dataManagerObject.AddComponent<DataManager>();
+            InvokePrivateMethod(dataManager, "Awake");
+
+            BattleTimelineController timeline =
+                timelineObject.AddComponent<BattleTimelineController>();
+            ReserveTurnSlotUI slot = slotObject.AddComponent<ReserveTurnSlotUI>();
+            PlayerSkillReservationController controller =
+                controllerObject.AddComponent<PlayerSkillReservationController>();
+            GridManager gridManager = gridObject.AddComponent<GridManager>();
+
+            slot.Init(timeline, 0);
+
+            SetPrivateField(timeline, "reserveSlots", new[] { slot });
+            SetPrivateField(controller, "timelineController", timeline);
+            SetPrivateField(controller, "gridManager", gridManager);
+
+            CharacterRuntimeData runtime = new()
+            {
+                CharacterId = "Char_Test_Confirm_SelfFlip_NoCost",
+                CurrentCost = 1,
+                MaxCost = 1,
+                ReservedCost = 1,
+                Direction = BattleDirection.Right
+            };
+
+            SkillMasterData moveSkill = new()
+            {
+                SkillId = "S_Move_1",
+                Category = Category.Move,
+                RangeType = RangeType.Selection,
+                ReferenceResource = ReferenceResource.Cost,
+                ResourceCostType = ResourceCostType.Fixed,
+                ResourceCostValue = 1,
+                GridMove = 1
+            };
+
+            PlayerReservedCommand existingMove = CreateMoveCommand(
+                runtime,
+                moveSkill,
+                1,
+                Vector2Int.right,
+                1,
+                new List<Vector2Int> { Vector2Int.right });
+
+            Assert.That(slot.AddCommand(existingMove), Is.True);
+
+            SetPrivateField(controller, "currentUserRuntime", runtime);
+            SetPrivateField(controller, "currentSkillData", moveSkill);
+            SetPrivateField(controller, "currentCasterGridIndex", 1);
+            SetPrivateField(controller, "currentCasterDirection", BattleDirection.Right);
+            SetPrivateField(controller, "currentSlotIndex", 0);
+            SetPrivateField(controller, "currentMoveDistancePerCommand", 1);
+            SetPrivateField(controller, "currentMoveReservationCapacity", 0);
+
+            InvokePrivateMethod(controller, "ConfirmMoveReservation", 1);
+
+            Assert.That(slot.Commands, Has.Count.EqualTo(1));
+            Assert.That(slot.Commands[0].MoveOffset, Is.EqualTo(Vector2Int.right));
+            Assert.That(slot.Commands[0].ReservedMoveGridIndex, Is.EqualTo(1));
+            Assert.That(slot.Commands[0].Direction, Is.EqualTo(BattleDirection.Left));
+        }
+        finally
+        {
+            Object.DestroyImmediate(gridObject);
+            Object.DestroyImmediate(controllerObject);
+            Object.DestroyImmediate(slotObject);
+            Object.DestroyImmediate(timelineObject);
+            Object.DestroyImmediate(dataManagerObject);
+        }
+    }
+
+    [Test]
+    public void ConfirmPlayerCommand_MergedSelfFlipUpdatesMoveAndGhostDirection()
+    {
+        GameObject timelineObject = new("TimelineMergeSelfFlipDirection");
+        GameObject slotObject = new("SlotMergeSelfFlipDirection");
+
+        try
+        {
+            BattleTimelineController timeline =
+                timelineObject.AddComponent<BattleTimelineController>();
+            ReserveTurnSlotUI slot = slotObject.AddComponent<ReserveTurnSlotUI>();
+            slot.Init(timeline, 0);
+
+            SetPrivateField(timeline, "reserveSlots", new[] { slot });
+
+            CharacterRuntimeData runtime = new()
+            {
+                CharacterId = "Char_Test_Merge_SelfFlip",
+                CurrentCost = 10,
+                MaxCost = 10,
+                Direction = BattleDirection.Right
+            };
+
+            SkillMasterData moveSkill = new()
+            {
+                SkillId = "S_Move_1",
+                RangeType = RangeType.Selection,
+                ReferenceResource = ReferenceResource.Cost,
+                ResourceCostType = ResourceCostType.Fixed,
+                ResourceCostValue = 1,
+                GridMove = 1
+            };
+
+            PlayerReservedCommand first = CreateMoveCommand(
+                runtime,
+                moveSkill,
+                1,
+                Vector2Int.right,
+                1,
+                new List<Vector2Int> { Vector2Int.right });
+
+            PlayerReservedCommand selfFlip = new(runtime, moveSkill);
+            selfFlip.SetSelectionResult(
+                BattleDirection.Left,
+                1,
+                new List<int> { 1 },
+                Vector2Int.zero);
+            selfFlip.SetMoveReservationCost(1, 1);
+            selfFlip.SetVisualMoveResult(
+                1,
+                Vector2Int.zero,
+                new List<Vector2Int> { Vector2Int.zero });
+
+            Assert.That(timeline.ConfirmPlayerCommand(0, first), Is.True);
+            Assert.That(timeline.ConfirmPlayerCommand(0, selfFlip), Is.True);
+
             Assert.That(slot.Commands, Has.Count.EqualTo(1));
 
             PlayerReservedCommand merged = slot.Commands[0];
-            Assert.That(merged.ReservedMoveGridIndex, Is.EqualTo(2));
-            Assert.That(merged.MoveOffset, Is.EqualTo(new Vector2Int(2, 0)));
-            Assert.That(merged.Cost, Is.EqualTo(2));
-            Assert.That(runtime.ReservedCost, Is.EqualTo(2));
-            Assert.That(merged.VisualMoveSteps, Is.EqualTo(new List<Vector2Int>
+            Assert.That(merged.MoveOffset, Is.EqualTo(Vector2Int.right));
+            Assert.That(merged.ReservedMoveGridIndex, Is.EqualTo(1));
+            Assert.That(merged.Direction, Is.EqualTo(BattleDirection.Left));
+            Assert.That(merged.PreviewMoveDirection, Is.EqualTo(BattleDirection.Left));
+            Assert.That(timeline.GetPreviewDirection(runtime, 0), Is.EqualTo(BattleDirection.Left));
+
+            bool found = timeline.TryGetLastMoveGhostPreviewResult(
+                runtime,
+                out int ghostGridIndex,
+                out BattleDirection ghostDirection);
+
+            Assert.That(found, Is.True);
+            Assert.That(ghostGridIndex, Is.EqualTo(1));
+            Assert.That(ghostDirection, Is.EqualTo(BattleDirection.Left));
+        }
+        finally
+        {
+            Object.DestroyImmediate(slotObject);
+            Object.DestroyImmediate(timelineObject);
+        }
+    }
+
+    [Test]
+    public void ConfirmPlayerCommand_SelfFlipMergesIntoLastMoveWhenSlotHasMultipleMoves()
+    {
+        GameObject timelineObject = new("TimelineMergeSelfFlipIntoLastMove");
+        GameObject slotObject = new("SlotMergeSelfFlipIntoLastMove");
+
+        try
+        {
+            BattleTimelineController timeline =
+                timelineObject.AddComponent<BattleTimelineController>();
+            ReserveTurnSlotUI slot = slotObject.AddComponent<ReserveTurnSlotUI>();
+            slot.Init(timeline, 0);
+
+            SetPrivateField(timeline, "reserveSlots", new[] { slot });
+
+            CharacterRuntimeData runtime = new()
+            {
+                CharacterId = "Char_Test_Merge_SelfFlip_Last",
+                CurrentCost = 10,
+                MaxCost = 10,
+                Direction = BattleDirection.Right
+            };
+
+            SkillMasterData moveSkill = new()
+            {
+                SkillId = "S_Move_1",
+                RangeType = RangeType.Selection,
+                ReferenceResource = ReferenceResource.Cost,
+                ResourceCostType = ResourceCostType.Fixed,
+                ResourceCostValue = 1,
+                GridMove = 1
+            };
+
+            PlayerReservedCommand first = CreateMoveCommand(
+                runtime,
+                moveSkill,
+                1,
+                Vector2Int.right,
+                1,
+                new List<Vector2Int> { Vector2Int.right });
+
+            PlayerReservedCommand second = CreateMoveCommand(
+                runtime,
+                moveSkill,
+                2,
+                Vector2Int.right,
+                1,
+                new List<Vector2Int> { Vector2Int.right });
+
+            PlayerReservedCommand selfFlip = new(runtime, moveSkill);
+            selfFlip.SetSelectionResult(
+                BattleDirection.Left,
+                2,
+                new List<int> { 2 },
+                Vector2Int.zero);
+            selfFlip.SetMoveReservationCost(0, 1);
+            selfFlip.SetVisualMoveResult(
+                2,
+                Vector2Int.zero,
+                new List<Vector2Int> { Vector2Int.zero });
+
+            Assert.That(timeline.ConfirmPlayerCommand(0, first), Is.True);
+            Assert.That(timeline.ConfirmPlayerCommand(0, second), Is.True);
+            Assert.That(timeline.ConfirmPlayerCommand(0, selfFlip), Is.True);
+
+            Assert.That(slot.Commands, Has.Count.EqualTo(2));
+            Assert.That(slot.Commands[0].ReservedMoveGridIndex, Is.EqualTo(1));
+            Assert.That(slot.Commands[0].Direction, Is.EqualTo(BattleDirection.Right));
+            Assert.That(slot.Commands[1].ReservedMoveGridIndex, Is.EqualTo(2));
+            Assert.That(slot.Commands[1].Direction, Is.EqualTo(BattleDirection.Left));
+            Assert.That(slot.Commands[1].VisualMoveSteps, Is.EqualTo(new List<Vector2Int>
             {
                 Vector2Int.right,
-                Vector2Int.right
+                Vector2Int.zero
             }));
         }
         finally
         {
             Object.DestroyImmediate(slotObject);
             Object.DestroyImmediate(timelineObject);
+        }
+    }
+
+    [Test]
+    public void ConfirmPlayerCommand_MergedSelfFlipKeepsDirectionAfterSimulation()
+    {
+        GameObject timelineObject = new("TimelineMergeSelfFlipSimulationDirection");
+        GameObject slotObject = new("SlotMergeSelfFlipSimulationDirection");
+        GameObject gridObject = new("GridMergeSelfFlipSimulationDirection");
+        GameObject characterObject = new("CharacterMergeSelfFlipSimulationDirection");
+
+        try
+        {
+            BattleTimelineController timeline =
+                timelineObject.AddComponent<BattleTimelineController>();
+            ReserveTurnSlotUI slot = slotObject.AddComponent<ReserveTurnSlotUI>();
+            GridManager gridManager = gridObject.AddComponent<GridManager>();
+            BattleCharacter character = characterObject.AddComponent<BattleCharacter>();
+            slot.Init(timeline, 0);
+
+            SetPrivateField(timeline, "reserveSlots", new[] { slot });
+            SetPrivateField(timeline, "gridManager", gridManager);
+
+            CharacterRuntimeData runtime = new()
+            {
+                CharacterId = "Char_Test_Merge_SelfFlip_Sim",
+                CurrentCost = 10,
+                MaxCost = 10,
+                Direction = BattleDirection.Right
+            };
+
+            character.Initialize(runtime);
+            character.SetGridIndex(0);
+
+            SkillMasterData moveSkill = new()
+            {
+                SkillId = "S_Move_1",
+                RangeType = RangeType.Selection,
+                ReferenceResource = ReferenceResource.Cost,
+                ResourceCostType = ResourceCostType.Fixed,
+                ResourceCostValue = 1,
+                GridMove = 1
+            };
+
+            PlayerReservedCommand first = CreateMoveCommand(
+                runtime,
+                moveSkill,
+                1,
+                Vector2Int.right,
+                1,
+                new List<Vector2Int> { Vector2Int.right });
+
+            PlayerReservedCommand selfFlip = new(runtime, moveSkill);
+            selfFlip.SetSelectionResult(
+                BattleDirection.Left,
+                1,
+                new List<int> { 1 },
+                Vector2Int.zero);
+            selfFlip.SetMoveReservationCost(0, 1);
+            selfFlip.SetVisualMoveResult(
+                1,
+                Vector2Int.zero,
+                new List<Vector2Int> { Vector2Int.zero });
+
+            Assert.That(timeline.ConfirmPlayerCommand(0, first), Is.True);
+            Assert.That(timeline.ConfirmPlayerCommand(0, selfFlip), Is.True);
+
+            Assert.That(slot.Commands, Has.Count.EqualTo(1));
+
+            PlayerReservedCommand merged = slot.Commands[0];
+            Assert.That(merged.VisualMoveSteps, Is.EqualTo(new List<Vector2Int>
+            {
+                Vector2Int.right,
+                Vector2Int.zero
+            }));
+            Assert.That(merged.Direction, Is.EqualTo(BattleDirection.Left));
+            Assert.That(timeline.GetPreviewDirection(runtime, 0), Is.EqualTo(BattleDirection.Left));
+        }
+        finally
+        {
+            Object.DestroyImmediate(characterObject);
+            Object.DestroyImmediate(gridObject);
+            Object.DestroyImmediate(slotObject);
+            Object.DestroyImmediate(timelineObject);
+        }
+    }
+
+    [Test]
+    public void RefreshMoveGhostPreview_UpdatesExistingGhostDirectionAfterMergedMove()
+    {
+        GameObject timelineObject = new("TimelineMergeMoveGhostDirection");
+        GameObject slotObject = new("SlotMergeMoveGhostDirection");
+        GameObject gridObject = new("GridMergeMoveGhostDirection");
+        GameObject previewObject = new("MoveGhostPreviewMergeDirection");
+        GameObject prefabObject = new("MoveGhostPrefabMergeDirection");
+        GameObject characterObject = new("BattleCharacterMergeDirection");
+        MoveGhostPreview moveGhostPreview = null;
+        Texture2D texture = null;
+        Sprite sprite = null;
+
+        try
+        {
+            BattleTimelineController timeline =
+                timelineObject.AddComponent<BattleTimelineController>();
+            ReserveTurnSlotUI slot = slotObject.AddComponent<ReserveTurnSlotUI>();
+            GridManager gridManager = gridObject.AddComponent<GridManager>();
+            moveGhostPreview = previewObject.AddComponent<MoveGhostPreview>();
+            SpriteRenderer ghostPrefab = prefabObject.AddComponent<SpriteRenderer>();
+            BattleCharacter character = characterObject.AddComponent<BattleCharacter>();
+            SpriteRenderer characterRenderer = characterObject.AddComponent<SpriteRenderer>();
+
+            slot.Init(timeline, 0);
+
+            SetPrivateField(timeline, "reserveSlots", new[] { slot });
+            SetPrivateField(timeline, "moveGhostPreview", moveGhostPreview);
+            SetPrivateField(moveGhostPreview, "gridManager", gridManager);
+            SetPrivateField(moveGhostPreview, "ghostPrefab", ghostPrefab);
+
+            texture = new Texture2D(1, 1);
+            texture.SetPixel(0, 0, Color.white);
+            texture.Apply();
+            sprite = Sprite.Create(
+                texture,
+                new Rect(0, 0, 1, 1),
+                new Vector2(0.5f, 0.5f));
+            characterRenderer.sprite = sprite;
+
+            CharacterRuntimeData runtime = new()
+            {
+                CharacterId = "Char_Test_Ghost_Direction",
+                CurrentCost = 10,
+                MaxCost = 10,
+                Direction = BattleDirection.Right
+            };
+            character.Initialize(runtime);
+            character.SetGridIndex(0);
+
+            SkillMasterData moveSkill = new()
+            {
+                SkillId = "S_Move_1",
+                RangeType = RangeType.Selection,
+                ReferenceResource = ReferenceResource.Cost,
+                ResourceCostType = ResourceCostType.Fixed,
+                ResourceCostValue = 1,
+                GridMove = 1
+            };
+
+            PlayerReservedCommand first = CreateMoveCommand(
+                runtime,
+                moveSkill,
+                1,
+                Vector2Int.right,
+                1,
+                new List<Vector2Int> { Vector2Int.right });
+
+            PlayerReservedCommand second = CreateMoveCommand(
+                runtime,
+                moveSkill,
+                0,
+                Vector2Int.left,
+                1,
+                new List<Vector2Int> { Vector2Int.left });
+
+            Assert.That(timeline.ConfirmPlayerCommand(0, first), Is.True);
+
+            Dictionary<string, SpriteRenderer> ghosts =
+                GetPrivateField<Dictionary<string, SpriteRenderer>>(
+                    moveGhostPreview,
+                    "ghostsByCharacterId");
+            SpriteRenderer firstGhost = ghosts[runtime.CharacterId];
+            Assert.That(firstGhost.flipX, Is.False);
+
+            Assert.That(timeline.ConfirmPlayerCommand(0, second), Is.True);
+
+            SpriteRenderer updatedGhost = ghosts[runtime.CharacterId];
+            Assert.That(updatedGhost, Is.SameAs(firstGhost));
+            Assert.That(updatedGhost.flipX, Is.True);
+
+            PlayerReservedCommand merged = slot.Commands[0];
+            merged.SetMoveDirection(BattleDirection.Right);
+
+            InvokePrivateMethod(timeline, "RefreshMoveGhostPreview");
+
+            Assert.That(merged.PreviewMoveDirection, Is.EqualTo(BattleDirection.Right));
+            Assert.That(updatedGhost.flipX, Is.False);
+        }
+        finally
+        {
+            if (moveGhostPreview != null)
+                moveGhostPreview.ClearAll();
+
+            Object.DestroyImmediate(characterObject);
+            Object.DestroyImmediate(prefabObject);
+            Object.DestroyImmediate(previewObject);
+            Object.DestroyImmediate(gridObject);
+            Object.DestroyImmediate(slotObject);
+            Object.DestroyImmediate(timelineObject);
+
+            if (sprite != null)
+                Object.DestroyImmediate(sprite);
+
+            if (texture != null)
+                Object.DestroyImmediate(texture);
         }
     }
 
@@ -903,6 +1800,20 @@ public class PlayerMovePathfindingRegressionTests
             currentCoord += moveStep;
             Assert.That(gridManager.CoordToIndex(currentCoord), Is.Not.EqualTo(blockedGridIndex));
         }
+    }
+
+    private static List<List<Vector2Int>> BuildPlayerMoveExecutionStepGroups(
+        IReadOnlyList<Vector2Int> moveSteps)
+    {
+        MethodInfo method = typeof(BattleActionRunner).GetMethod(
+            "BuildPlayerMoveExecutionStepGroups",
+            BindingFlags.Static | BindingFlags.NonPublic);
+
+        Assert.That(method, Is.Not.Null, "BuildPlayerMoveExecutionStepGroups method is missing.");
+
+        return (List<List<Vector2Int>>)method.Invoke(
+            null,
+            new object[] { moveSteps });
     }
 
     private static void SetPrivateField<T>(object target, string fieldName, T value)

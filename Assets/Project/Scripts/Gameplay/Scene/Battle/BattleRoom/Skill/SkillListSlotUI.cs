@@ -470,10 +470,8 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
                 return "Ulti";
 
             case ReferenceResource.Cost:
-                return "Cost";
-
             case ReferenceResource.MovePoint:
-                return "MovePoint";
+                return "Cost";
 
             default:
                 return resource.ToString();

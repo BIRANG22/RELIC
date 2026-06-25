@@ -600,17 +600,23 @@ public class BattleActionRunner
         int currentGridIndex = startGridIndex;
         int executedDistance = 0;
         BattleUnitAnimator animator = character.GetComponent<BattleUnitAnimator>();
+        List<List<Vector2Int>> executionStepGroups =
+            BuildPlayerMoveExecutionStepGroups(command.VisualMoveSteps);
 
-        for (int i = 0; i < command.VisualMoveSteps.Count; i++)
+        for (int i = 0; i < executionStepGroups.Count; i++)
         {
-            Vector2Int stepOffset = command.VisualMoveSteps[i];
+            IReadOnlyList<Vector2Int> stepGroup = executionStepGroups[i];
+            Vector2Int stepOffset = GetTotalMoveOffset(stepGroup);
 
             if (stepOffset == Vector2Int.zero)
+            {
+                ApplyPlayerMoveFacing(character, command.Direction, stepOffset);
                 continue;
+            }
 
             if (!TryGetPlayerMoveTargetGridIndex(
                 currentGridIndex,
-                stepOffset,
+                stepGroup,
                 command.CharacterId,
                 out int targetGridIndex))
             {
@@ -641,7 +647,7 @@ public class BattleActionRunner
             character.SetGridIndex(targetGridIndex);
             UpdatePartyGridIndex(command.CharacterId, targetGridIndex);
             currentGridIndex = targetGridIndex;
-            executedDistance += Mathf.Abs(actualOffset.x) + Mathf.Abs(actualOffset.y);
+            executedDistance += GetMoveDistance(actualOffset);
         }
 
         command.SetExecutedMoveDistance(executedDistance);
@@ -652,6 +658,112 @@ public class BattleActionRunner
 
         hudService.RefreshHUDs();
         yield return new WaitForSeconds(ActionDelay);
+    }
+
+    private static List<List<Vector2Int>> BuildPlayerMoveExecutionStepGroups(
+        IReadOnlyList<Vector2Int> moveSteps)
+    {
+        List<List<Vector2Int>> groups = new();
+
+        if (moveSteps == null || moveSteps.Count <= 0)
+            return groups;
+
+        List<Vector2Int> currentGroup = new();
+        int currentXSign = 0;
+        int currentYSign = 0;
+
+        for (int i = 0; i < moveSteps.Count; i++)
+        {
+            Vector2Int step = moveSteps[i];
+
+            if (step == Vector2Int.zero)
+            {
+                FlushMoveExecutionGroup(groups, currentGroup, ref currentXSign, ref currentYSign);
+                groups.Add(new List<Vector2Int> { Vector2Int.zero });
+                continue;
+            }
+
+            if (WouldReverseMoveExecutionAxis(step, currentXSign, currentYSign))
+                FlushMoveExecutionGroup(groups, currentGroup, ref currentXSign, ref currentYSign);
+
+            currentGroup.Add(step);
+            UpdateMoveExecutionAxisSigns(step, ref currentXSign, ref currentYSign);
+        }
+
+        FlushMoveExecutionGroup(groups, currentGroup, ref currentXSign, ref currentYSign);
+        return groups;
+    }
+
+    private static void FlushMoveExecutionGroup(
+        List<List<Vector2Int>> groups,
+        List<Vector2Int> currentGroup,
+        ref int currentXSign,
+        ref int currentYSign)
+    {
+        if (currentGroup != null && currentGroup.Count > 0)
+        {
+            groups.Add(new List<Vector2Int>(currentGroup));
+            currentGroup.Clear();
+        }
+
+        currentXSign = 0;
+        currentYSign = 0;
+    }
+
+    private static bool WouldReverseMoveExecutionAxis(
+        Vector2Int step,
+        int currentXSign,
+        int currentYSign)
+    {
+        int stepXSign = GetSign(step.x);
+        int stepYSign = GetSign(step.y);
+
+        return (stepXSign != 0 && currentXSign != 0 && stepXSign != currentXSign) ||
+               (stepYSign != 0 && currentYSign != 0 && stepYSign != currentYSign);
+    }
+
+    private static void UpdateMoveExecutionAxisSigns(
+        Vector2Int step,
+        ref int currentXSign,
+        ref int currentYSign)
+    {
+        int stepXSign = GetSign(step.x);
+        int stepYSign = GetSign(step.y);
+
+        if (stepXSign != 0)
+            currentXSign = stepXSign;
+
+        if (stepYSign != 0)
+            currentYSign = stepYSign;
+    }
+
+    private static int GetSign(int value)
+    {
+        if (value > 0)
+            return 1;
+
+        if (value < 0)
+            return -1;
+
+        return 0;
+    }
+
+    private static Vector2Int GetTotalMoveOffset(IReadOnlyList<Vector2Int> moveSteps)
+    {
+        Vector2Int total = Vector2Int.zero;
+
+        if (moveSteps == null)
+            return total;
+
+        for (int i = 0; i < moveSteps.Count; i++)
+            total += moveSteps[i];
+
+        return total;
+    }
+
+    private static int GetMoveDistance(Vector2Int moveOffset)
+    {
+        return Mathf.Abs(moveOffset.x) + Mathf.Abs(moveOffset.y);
     }
 
     private bool IsConsumedVisualSkipMove(PlayerReservedCommand command)
