@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using UnityEngine;
 
 public class BattleCameraController : MonoBehaviour
@@ -53,7 +53,6 @@ public class BattleCameraController : MonoBehaviour
     private bool isDragging;
     private bool hasDragTarget;
     private bool holdDefaultReturn;
-    private bool hasHeldSequenceZoom;
     private bool hasActiveCombatZoom;
     private bool suppressDragUntilMouseReleased;
 
@@ -121,31 +120,25 @@ public class BattleCameraController : MonoBehaviour
         if (targetCamera == null || attacker == null)
             yield break;
 
-        // ÀüÅõ ÁÜÀº ÇÑ ¿¬¼Ó Çàµ¿ ¹­À½¿¡¼­ Ã³À½ ÀâÀº Å¸°İÀÚ ±âÁØÀ¸·Î ÇÑ ¹ø¸¸ ÀÌµ¿ÇÑ´Ù.
-        // ÇÇ°İÀÚ°¡ ¹Ù²î¾îµµ ÇÇ°İÀÚ À§Ä¡·Î ´Ù½Ã ÁÜ ÀÌµ¿ÇÏÁö ¾Ê´Â´Ù.
+        // ì „íˆ¬ ì¤Œì€ í•œ ì—°ì† í–‰ë™ ë¬¶ìŒì—ì„œ ì²˜ìŒ ì¡ì€ íƒ€ê²©ì ê¸°ì¤€ìœ¼ë¡œ í•œ ë²ˆë§Œ ì´ë™í•œë‹¤.
+        // í”¼ê²©ìê°€ ë°”ë€Œì–´ë„ í”¼ê²©ì ìœ„ì¹˜ë¡œ ë‹¤ì‹œ ì¤Œ ì´ë™í•˜ì§€ ì•ŠëŠ”ë‹¤.
         if (hasActiveCombatZoom)
             yield break;
 
         hasActiveCombatZoom = true;
-
-        if (holdDefaultReturn)
-            hasHeldSequenceZoom = true;
 
         yield return ZoomToPosition(attacker.position);
     }
 
     public IEnumerator ZoomToHitTarget(Transform hitTarget)
     {
-        // ±âÁ¸ È£ÃâºÎ È£È¯¿ëÀÌ´Ù. ½ÇÁ¦ ±âÁØÀº ÇÇ°İÀÚ°¡ ¾Æ´Ï¶ó ÃÖÃÊ Å¸°İÀÚ´Ù.
+        // ê¸°ì¡´ í˜¸ì¶œë¶€ í˜¸í™˜ìš©ì´ë‹¤. ì‹¤ì œ ê¸°ì¤€ì€ í”¼ê²©ìê°€ ì•„ë‹ˆë¼ ìµœì´ˆ íƒ€ê²©ìë‹¤.
         yield return ZoomToAttacker(hitTarget);
     }
 
     public void SetHoldDefaultReturn(bool hold)
     {
         holdDefaultReturn = hold;
-
-        if (!hold)
-            hasHeldSequenceZoom = false;
     }
 
     public void BeginZoomFollowTarget(Transform target)
@@ -211,7 +204,6 @@ public class BattleCameraController : MonoBehaviour
         yield return routine;
 
         hasActiveCombatZoom = false;
-        hasHeldSequenceZoom = false;
     }
 
     public IEnumerator PlayDamageImpact()
