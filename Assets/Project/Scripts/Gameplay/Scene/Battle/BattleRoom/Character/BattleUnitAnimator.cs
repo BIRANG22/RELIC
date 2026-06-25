@@ -240,7 +240,7 @@ public class BattleUnitAnimator : MonoBehaviour
 
     public void PlayRandomAttackReady()
     {
-        currentAttackIndex = Random.Range(1, 4);
+        currentAttackIndex = GetRandomAssignedAttackIndex();
 
         switch (currentAttackIndex)
         {
@@ -258,6 +258,8 @@ public class BattleUnitAnimator : MonoBehaviour
 
     public void PlayCurrentAttackAction()
     {
+        currentAttackIndex = GetAssignedAttackIndexOrFallback(currentAttackIndex);
+
         switch (currentAttackIndex)
         {
             case 1:
@@ -281,8 +283,83 @@ public class BattleUnitAnimator : MonoBehaviour
 
     public void PlayRandomAttackAction()
     {
-        currentAttackIndex = Random.Range(1, 4);
+        currentAttackIndex = GetRandomAssignedAttackIndex();
         PlayCurrentAttackAction();
+    }
+
+
+    private int GetRandomAssignedAttackIndex()
+    {
+        int assignedCount = 0;
+
+        if (HasVfx(attackVfx1))
+            assignedCount++;
+
+        if (HasVfx(attackVfx2))
+            assignedCount++;
+
+        if (HasVfx(attackVfx3))
+            assignedCount++;
+
+        if (assignedCount <= 0)
+            return Random.Range(1, 4);
+
+        int selected = Random.Range(0, assignedCount);
+
+        if (HasVfx(attackVfx1))
+        {
+            if (selected == 0)
+                return 1;
+
+            selected--;
+        }
+
+        if (HasVfx(attackVfx2))
+        {
+            if (selected == 0)
+                return 2;
+
+            selected--;
+        }
+
+        return 3;
+    }
+
+    private int GetAssignedAttackIndexOrFallback(int attackIndex)
+    {
+        switch (attackIndex)
+        {
+            case 1:
+                if (HasVfx(attackVfx1))
+                    return 1;
+                break;
+
+            case 2:
+                if (HasVfx(attackVfx2))
+                    return 2;
+                break;
+
+            case 3:
+                if (HasVfx(attackVfx3))
+                    return 3;
+                break;
+        }
+
+        if (HasVfx(attackVfx1))
+            return 1;
+
+        if (HasVfx(attackVfx2))
+            return 2;
+
+        if (HasVfx(attackVfx3))
+            return 3;
+
+        return Mathf.Clamp(attackIndex, 1, 3);
+    }
+
+    private bool HasVfx(BattleVfxEntry entry)
+    {
+        return entry != null && entry.prefab != null;
     }
 
     private void SpawnVfx(BattleVfxEntry entry)
