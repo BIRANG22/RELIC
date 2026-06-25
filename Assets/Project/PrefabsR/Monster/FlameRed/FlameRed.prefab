@@ -498,7 +498,7 @@ MonoBehaviour:
   moveStateName: Move
   guardStateName: Guard
   hitStateName: Hit
-  deadStateName: 
+  deadStateName: Dead
   controlStateName: Control
   attackReady1StateName: AttackAction1
   attackAction1StateName: AttackAction1
@@ -517,10 +517,10 @@ MonoBehaviour:
     flipType: 0
   buffVfx:
     prefab: {fileID: 3735160729632926878, guid: 6912a87f7e57d104ea9f8f50e9760c32, type: 3}
-    flipType: 0
+    flipType: 2
   debuffVfx:
     prefab: {fileID: 8859418495948438561, guid: be2c283da800bc6448c892659971586f, type: 3}
-    flipType: 0
+    flipType: 2
   attackVfx1:
     prefab: {fileID: 7970636651724152907, guid: b1b3ea2e395b71b418c51fb63d62d503, type: 3}
     flipType: 0
@@ -560,3 +560,5 @@ MonoBehaviour:
   attack1Key: 52
   attack2Key: 53
   attack3Key: 54
+  targetFacing: {fileID: 0}
+  flipKey: 122
