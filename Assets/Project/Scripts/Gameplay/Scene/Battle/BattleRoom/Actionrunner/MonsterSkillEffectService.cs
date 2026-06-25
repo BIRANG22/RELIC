@@ -300,6 +300,13 @@ public class MonsterSkillEffectService
             if (damageService != null)
                 return damageService.GetMonsterDamage(command);
 
+            int reservedDamage = command != null
+                ? command.EnsureReservedDamage()
+                : 0;
+
+            if (reservedDamage > 0)
+                return reservedDamage;
+
             if (BattleDamageService.TryGetMonsterDamageRange(
                     command?.SkillData,
                     out int minDamage,
@@ -316,6 +323,6 @@ public class MonsterSkillEffectService
 
     private bool IsDamageHitEffect(string effectId)
     {
-        return effectId == "E_Strike" || effectId == "E_Pierce";
+        return BattleDamageService.IsMonsterDamageHitEffect(effectId);
     }
 }

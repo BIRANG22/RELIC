@@ -55,4 +55,91 @@ public class TimelinePreviewEntryTests
         Assert.That(entry.SkillEffectDescription, Does.Not.Contain("{"));
         Assert.That(entry.SkillEffectDescription, Does.Not.Contain("\uC18C\uBAA8\uB7C9"));
     }
+
+    [Test]
+    public void MonsterPreviewEntry_UsesReservedDamageForTooltipAndValueText()
+    {
+        MonsterSkillData skill = new()
+        {
+            SkillId = "M_Timeline_Damage",
+            EffectIds = "E_Strike",
+            ValueCalcTypes = "Fixed",
+            ValueRate = "6",
+            CountRate = "1",
+            ValueRandomRange = 2,
+            EffectDesc = "Deals \"\uC218\uCE58\" damage."
+        };
+        skill.EffectEntries.Add(new SkillEffectEntry
+        {
+            EffectId = "E_Strike",
+            ValueCalcType = ValueCalcType.Fixed,
+            ValueAmount = 6,
+            CountAmount = 1
+        });
+
+        MonsterReservedCommand command = new(CreateMonsterRuntime(), skill);
+        command.SetReservedDamage(7);
+
+        BattleTimelinePreviewEntry entry = BattleTimelinePreviewEntry.CreateMonster(0, 0, command);
+
+        Assert.That(entry.SkillValueText, Is.EqualTo("7"));
+        Assert.That(entry.SkillEffectDescription, Does.Contain("7 damage"));
+        Assert.That(entry.SkillEffectDescription, Does.Not.Contain("4-8"));
+        Assert.That(entry.SkillEffectDescription, Does.Not.Contain("\uC218\uCE58"));
+    }
+
+    [Test]
+    public void BattleDamageService_UsesReservedMonsterDamage()
+    {
+        MonsterSkillData skill = new()
+        {
+            SkillId = "M_Reserved_Damage",
+            EffectIds = "E_Strike",
+            ValueRate = "6",
+            ValueRandomRange = 2
+        };
+
+        MonsterReservedCommand command = new(CreateMonsterRuntime(), skill);
+        command.SetReservedDamage(7);
+
+        BattleDamageService service = new(null);
+
+        Assert.That(service.GetMonsterDamage(command), Is.EqualTo(7));
+    }
+
+    [Test]
+    public void MonsterPreviewEntry_UsesReservedDamageForAttackNotationWithoutDamageEffectEntry()
+    {
+        MonsterSkillData skill = new()
+        {
+            SkillId = "M_Timeline_Attack_Notation",
+            TimelineNotation = TimelineActionType.Attack,
+            ValueRate = "6",
+            ValueRandomRange = 2,
+            EffectDesc = "Deals \"\uC218\uCE58\" damage."
+        };
+
+        MonsterReservedCommand command = new(CreateMonsterRuntime(), skill);
+        command.SetReservedDamage(5);
+
+        BattleTimelinePreviewEntry entry = BattleTimelinePreviewEntry.CreateMonster(0, 0, command);
+
+        Assert.That(entry.SkillValueText, Is.EqualTo("5"));
+        Assert.That(entry.SkillEffectDescription, Does.Contain("5 damage"));
+        Assert.That(entry.SkillEffectDescription, Does.Not.Contain("4-8"));
+        Assert.That(entry.SkillEffectDescription, Does.Not.Contain("\uC218\uCE58"));
+    }
+
+    private static MonsterRuntimeData CreateMonsterRuntime()
+    {
+        MonsterMasterData masterData = new()
+        {
+            MonsterId = "M_Timeline_Test",
+            Name = "Timeline Test Monster",
+            Grade = "Common",
+            HP = 10
+        };
+
+        return new MonsterRuntimeData("Runtime_Timeline_Test", masterData);
+    }
 }

@@ -27,10 +27,15 @@ public class BattleDamageService
 
     public int GetMonsterDamage(MonsterReservedCommand command)
     {
-        if (!TryGetMonsterDamageRange(command, out int minDamage, out int maxDamage))
+        if (command == null)
             return 1;
 
-        return Random.Range(minDamage, maxDamage + 1);
+        int reservedDamage = command.EnsureReservedDamage();
+
+        if (reservedDamage > 0)
+            return reservedDamage;
+
+        return RollMonsterDamage(command.SkillData);
     }
 
     public bool TryGetMonsterDamageRange(MonsterReservedCommand command, out int minDamage, out int maxDamage)
@@ -58,6 +63,62 @@ public class BattleDamageService
         minDamage = Mathf.Max(1, baseDamage - randomRange);
         maxDamage = Mathf.Max(minDamage, baseDamage + randomRange);
         return true;
+    }
+
+    public static int RollMonsterDamage(MonsterSkillData skillData)
+    {
+        if (!TryGetMonsterDamageRange(skillData, out int minDamage, out int maxDamage))
+            return 1;
+
+        return Random.Range(minDamage, maxDamage + 1);
+    }
+
+    public static string GetMonsterDamageText(MonsterReservedCommand command)
+    {
+        if (command == null || !ShouldReserveMonsterDamage(command.SkillData))
+            return "";
+
+        int damage = command.EnsureReservedDamage();
+
+        return damage > 0
+            ? damage.ToString()
+            : "";
+    }
+
+    public static bool ShouldReserveMonsterDamage(MonsterSkillData skillData)
+    {
+        if (skillData == null)
+            return false;
+
+        if (HasMonsterDamageHitEffect(skillData))
+            return true;
+
+        return skillData.TimelineNotation == TimelineActionType.Attack;
+    }
+
+    public static bool HasMonsterDamageHitEffect(MonsterSkillData skillData)
+    {
+        if (skillData == null || string.IsNullOrWhiteSpace(skillData.EffectIds))
+            return false;
+
+        string[] effectIds = skillData.EffectIds.Split(';');
+
+        for (int i = 0; i < effectIds.Length; i++)
+        {
+            if (IsMonsterDamageHitEffect(effectIds[i]))
+                return true;
+        }
+
+        return false;
+    }
+
+    public static bool IsMonsterDamageHitEffect(string effectId)
+    {
+        if (string.IsNullOrWhiteSpace(effectId))
+            return false;
+
+        string trimmedEffectId = effectId.Trim();
+        return trimmedEffectId == "E_Strike" || trimmedEffectId == "E_Pierce";
     }
 
     public static string GetMonsterDamageRangeText(MonsterSkillData skillData)
