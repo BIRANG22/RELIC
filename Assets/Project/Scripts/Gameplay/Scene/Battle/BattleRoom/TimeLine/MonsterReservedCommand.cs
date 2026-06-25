@@ -13,6 +13,9 @@ public class MonsterReservedCommand
 
     public Vector2Int MoveOffset { get; private set; } = Vector2Int.zero;
 
+    public int ReservedDamage { get; private set; } = -1;
+    public bool HasReservedDamage => ReservedDamage > 0;
+
     public List<int> RangeGridIndices { get; private set; } = new();
     public List<int> TargetGridIndices { get; private set; } = new();
 
@@ -20,6 +23,7 @@ public class MonsterReservedCommand
     {
         UserRuntime = userRuntime;
         SkillData = skillData;
+        ReserveDamage();
     }
 
     public bool HasSimulatedResult { get; private set; }
@@ -38,6 +42,33 @@ public class MonsterReservedCommand
     public void SetMoveOffset(Vector2Int moveOffset)
     {
         MoveOffset = moveOffset;
+    }
+
+    public int EnsureReservedDamage()
+    {
+        if (!BattleDamageService.ShouldReserveMonsterDamage(SkillData))
+            return 0;
+
+        if (!HasReservedDamage)
+            ReserveDamage();
+
+        return ReservedDamage;
+    }
+
+    public void ReserveDamage()
+    {
+        if (!BattleDamageService.ShouldReserveMonsterDamage(SkillData))
+        {
+            ReservedDamage = -1;
+            return;
+        }
+
+        ReservedDamage = BattleDamageService.RollMonsterDamage(SkillData);
+    }
+
+    public void SetReservedDamage(int damage)
+    {
+        ReservedDamage = Mathf.Max(1, damage);
     }
 
     public void SetRangeResult(List<int> rangeGridIndices, List<int> targetGridIndices = null)

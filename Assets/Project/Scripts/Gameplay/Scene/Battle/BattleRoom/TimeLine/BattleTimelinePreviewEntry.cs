@@ -120,7 +120,7 @@ public class BattleTimelinePreviewEntry
             if (IsMonster && MonsterSkillData != null)
             {
                 if (!string.IsNullOrWhiteSpace(MonsterSkillData.EffectDesc))
-                    return FormatMonsterSkillEffectDescription(MonsterSkillData.EffectDesc, MonsterSkillData);
+                    return FormatMonsterSkillEffectDescription(MonsterSkillData.EffectDesc, MonsterCommand, MonsterSkillData);
             }
 
             return "";
@@ -135,7 +135,7 @@ public class BattleTimelinePreviewEntry
                 return GetDisplayValueText(PlayerSkillData != null ? PlayerSkillData.EffectEntries : null, GetPlayerPayAmount());
 
             if (IsMonster)
-                return GetDisplayValueText(MonsterSkillData != null ? MonsterSkillData.EffectEntries : null, 0);
+                return GetMonsterDisplayValueText(MonsterCommand);
 
             return "";
         }
@@ -198,6 +198,14 @@ public class BattleTimelinePreviewEntry
 
     private static string GetDisplayValueText(List<SkillEffectEntry> effectEntries, int payAmount)
     {
+        return GetDisplayValueText(effectEntries, payAmount, null);
+    }
+
+    private static string GetDisplayValueText(
+        List<SkillEffectEntry> effectEntries,
+        int payAmount,
+        MonsterReservedCommand monsterCommand)
+    {
         if (effectEntries == null || effectEntries.Count <= 0)
             return "";
 
@@ -211,6 +219,15 @@ public class BattleTimelinePreviewEntry
             if (!ShouldShowValueText(entry.EffectId))
                 continue;
 
+            if (monsterCommand != null &&
+                BattleDamageService.IsMonsterDamageHitEffect(entry.EffectId))
+            {
+                string damageText = BattleDamageService.GetMonsterDamageText(monsterCommand);
+
+                if (!string.IsNullOrWhiteSpace(damageText))
+                    return damageText;
+            }
+
             int value = SkillValueCalculator.GetValue(entry, payAmount);
 
             if (value <= 0)
@@ -220,6 +237,22 @@ public class BattleTimelinePreviewEntry
         }
 
         return "";
+    }
+
+    private static string GetMonsterDisplayValueText(MonsterReservedCommand command)
+    {
+        if (command == null || command.SkillData == null)
+            return "";
+
+        string valueText = GetDisplayValueText(command.SkillData.EffectEntries, 0, command);
+
+        if (!string.IsNullOrWhiteSpace(valueText))
+            return valueText;
+
+        if (!BattleDamageService.ShouldReserveMonsterDamage(command.SkillData))
+            return "";
+
+        return BattleDamageService.GetMonsterDamageText(command);
     }
 
     private static bool ShouldShowValueText(string effectId)
@@ -357,21 +390,29 @@ public class BattleTimelinePreviewEntry
 
     private static string FormatMonsterSkillEffectDescription(
         string description,
+        MonsterReservedCommand command,
         MonsterSkillData skillData)
     {
         if (string.IsNullOrWhiteSpace(description))
             return "";
 
-        string damageRangeText = BattleDamageService.GetMonsterDamageRangeText(skillData);
+        MonsterSkillData sourceSkillData = command != null && command.SkillData != null
+            ? command.SkillData
+            : skillData;
 
-        if (string.IsNullOrWhiteSpace(damageRangeText))
+        string valueText = BattleDamageService.GetMonsterDamageText(command);
+
+        if (string.IsNullOrWhiteSpace(valueText))
+            valueText = BattleDamageService.GetMonsterDamageRangeText(sourceSkillData);
+
+        if (string.IsNullOrWhiteSpace(valueText))
             return description;
 
         const string valueToken = "\uC218\uCE58";
 
         return description
-            .Replace($"\"{valueToken}\"", damageRangeText)
-            .Replace(valueToken, damageRangeText);
+            .Replace($"\"{valueToken}\"", valueText)
+            .Replace(valueToken, valueText);
     }
 
 }
