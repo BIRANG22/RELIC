@@ -28,6 +28,8 @@ public class TimelineSkillHoverPopupUI : MonoBehaviour
     private Canvas rootCanvas;
     private Canvas popupCanvas;
     private Vector2 lastScreenPosition;
+    private RectTransform currentHoveredIconRect;
+    private Object currentOwner;
     private bool initialized;
 
     public static TimelineSkillHoverPopupUI Instance
@@ -66,26 +68,50 @@ public class TimelineSkillHoverPopupUI : MonoBehaviour
         if (canvasGroup == null || canvasGroup.alpha <= 0f)
             return;
 
+        if (!IsCurrentOwnerValid())
+        {
+            Hide();
+            return;
+        }
+
         if (moveToHoveredIcon)
-            UpdatePosition(lastScreenPosition);
+            UpdatePosition(GetScreenPosition(currentHoveredIconRect));
+    }
+
+    private void OnDisable()
+    {
+        ClearActiveOwner();
+    }
+
+    private void OnDestroy()
+    {
+        if (instance == this)
+            instance = null;
+
+        ClearActiveOwner();
     }
 
     public void Show(BattleTimelinePreviewEntry entry, RectTransform hoveredIconRect)
     {
+        Show(entry, hoveredIconRect, null);
+    }
+
+    public void Show(BattleTimelinePreviewEntry entry, RectTransform hoveredIconRect, Object owner)
+    {
         if (entry == null)
         {
             if (hideWhenNoSkill)
-                Hide();
+                Hide(owner);
 
             return;
         }
 
-        Show(entry.SkillName, entry.SkillEffectDescription, entry.SkillRangeIcon, hoveredIconRect);
+        Show(entry.SkillName, entry.SkillEffectDescription, entry.SkillRangeIcon, hoveredIconRect, owner);
     }
 
     public void Show(string skillName, string effectDescription, RectTransform hoveredIconRect)
     {
-        Show(skillName, effectDescription, null, hoveredIconRect);
+        Show(skillName, effectDescription, null, hoveredIconRect, null);
     }
 
     public void Show(
@@ -94,11 +120,21 @@ public class TimelineSkillHoverPopupUI : MonoBehaviour
         Sprite rangeIcon,
         RectTransform hoveredIconRect)
     {
+        Show(skillName, effectDescription, rangeIcon, hoveredIconRect, null);
+    }
+
+    public void Show(
+        string skillName,
+        string effectDescription,
+        Sprite rangeIcon,
+        RectTransform hoveredIconRect,
+        Object owner)
+    {
         InitializeIfNeeded();
 
         if (string.IsNullOrWhiteSpace(skillName) && hideWhenNoSkill)
         {
-            Hide();
+            Hide(owner);
             return;
         }
 
@@ -114,6 +150,9 @@ public class TimelineSkillHoverPopupUI : MonoBehaviour
 
         BringToFront();
 
+        currentOwner = owner;
+        currentHoveredIconRect = hoveredIconRect;
+
         item.Set(skillName, effectDescription, rangeIcon);
         SetVisible(true);
 
@@ -125,6 +164,52 @@ public class TimelineSkillHoverPopupUI : MonoBehaviour
     {
         InitializeIfNeeded();
         SetVisible(false);
+        ClearActiveOwner();
+    }
+
+    public void Hide(Object owner)
+    {
+        if (owner != null && currentOwner != null && currentOwner != owner)
+            return;
+
+        Hide();
+    }
+
+    public static void HideCurrent()
+    {
+        if (Instance != null)
+            Instance.Hide();
+    }
+
+    private bool IsCurrentOwnerValid()
+    {
+        if (currentOwner == null && currentHoveredIconRect == null)
+            return true;
+
+        if (currentOwner is Component ownerComponent)
+        {
+            if (ownerComponent == null || ownerComponent.gameObject == null)
+                return false;
+
+            if (!ownerComponent.gameObject.activeInHierarchy)
+                return false;
+        }
+        else if (currentOwner is GameObject ownerObject)
+        {
+            if (ownerObject == null || !ownerObject.activeInHierarchy)
+                return false;
+        }
+
+        if (currentHoveredIconRect != null && !currentHoveredIconRect.gameObject.activeInHierarchy)
+            return false;
+
+        return true;
+    }
+
+    private void ClearActiveOwner()
+    {
+        currentOwner = null;
+        currentHoveredIconRect = null;
     }
 
     private void InitializeIfNeeded()

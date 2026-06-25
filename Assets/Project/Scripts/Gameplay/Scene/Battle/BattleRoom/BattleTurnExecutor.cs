@@ -322,7 +322,7 @@ public class BattleTurnExecutor : MonoBehaviour
         if (gridManager != null)
             gridManager.SetGridVisible(isReservationState);
 
-        MonsterUnit.SetAllReservationVisualState(isReservationState);
+        MonsterUnit.SetAllReservationVisualState(false);
     }
 
     private void ApplyPlayerTurnStartEquipmentEffects()

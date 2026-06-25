@@ -16,7 +16,9 @@ namespace Relic.Gameplay.Monster
         [SerializeField] private GameObject timelineHoverHighlightObject;
 
         [Header("Reservation Visual")]
+        [SerializeField] private bool dimMonsterDuringMoveTargetSelection = true;
         [SerializeField, Range(0f, 1f)] private float reservationAlpha = 0.45f;
+        [SerializeField] private bool disableInteractionDuringReservationVisual = true;
 
         [Header("Status Click Tooltip")]
         [SerializeField] private bool showStatusTooltipOnClick = true;
@@ -30,6 +32,7 @@ namespace Relic.Gameplay.Monster
         private Coroutine temporaryHUDRoutine;
         private bool isTemporaryHUDVisible;
         private MaterialPropertyBlock reservationPropertyBlock;
+        private bool reservationVisualActive;
 
         private static MonsterUnit selectedMonster;
         private static int selectedMonsterClickFrame = -1000;
@@ -69,7 +72,7 @@ namespace Relic.Gameplay.Monster
         {
             if (ai == null)
             {
-                Debug.LogWarning($"[MonsterUnit] AI ����: {RuntimeData?.MonsterId}");
+                Debug.LogWarning($"[MonsterUnit] AI 없음: {RuntimeData?.MonsterId}");
                 return new MonsterAIPlan();
             }
 
@@ -80,7 +83,7 @@ namespace Relic.Gameplay.Monster
         {
             if (ai == null)
             {
-                Debug.LogWarning($"[MonsterUnit] AI ����: {RuntimeData?.MonsterId}");
+                Debug.LogWarning($"[MonsterUnit] AI 없음: {RuntimeData?.MonsterId}");
                 return null;
             }
 
@@ -256,6 +259,9 @@ namespace Relic.Gameplay.Monster
 
         private void OnMouseEnter()
         {
+            if (reservationVisualActive)
+                return;
+
             if (RuntimeData == null || RuntimeData.IsDead)
                 return;
 
@@ -267,6 +273,9 @@ namespace Relic.Gameplay.Monster
 
         private void OnMouseExit()
         {
+            if (reservationVisualActive)
+                return;
+
             if (selectedMonster != this)
                 return;
 
@@ -426,7 +435,18 @@ namespace Relic.Gameplay.Monster
 
         public void SetReservationVisualState(bool reservation)
         {
-            float alpha = reservation ? reservationAlpha : 1f;
+            reservationVisualActive = reservation;
+
+            if (reservation)
+            {
+                if (selectedMonster == this)
+                    DeselectCurrentMonster();
+
+                HideTemporaryHUD();
+                HideStatusClickTooltip();
+            }
+
+            float alpha = reservation && dimMonsterDuringMoveTargetSelection ? reservationAlpha : 1f;
 
             SpriteRenderer[] spriteRenderers = GetComponentsInChildren<SpriteRenderer>(true);
             for (int i = 0; i < spriteRenderers.Length; i++)
@@ -454,7 +474,7 @@ namespace Relic.Gameplay.Monster
 
             Collider2D collider = GetClickCollider2D();
             if (collider != null)
-                collider.enabled = true;
+                collider.enabled = !reservation || !disableInteractionDuringReservationVisual;
         }
 
         public static void SetAllReservationVisualState(bool reservation)
