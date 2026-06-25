@@ -360,14 +360,18 @@ MonoBehaviour:
     flipType: 0
   attackVfx1:
     prefab: {fileID: 6293248234558996122, guid: 4cbee2fb921f34849a106c69eeccef33, type: 3}
-    flipType: 1
+    flipType: 0
   attackVfx2:
     prefab: {fileID: 7410942046107803020, guid: 9127da7b7b065eb40aff7b7c724a1634, type: 3}
-    flipType: 1
+    flipType: 0
   attackVfx3:
     prefab: {fileID: 5493529977810887604, guid: 4b23b15df0ab8f14989f6e22b3afd51c, type: 3}
-    flipType: 1
+    flipType: 0
   vfxSpawnPoint: {fileID: 8553652059678573032}
+  unitFacing: {fileID: 0}
+  autoFindFacing: 1
+  flipVfxLocalPositionX: 1
+  flipVfxScaleXWhenFlipTypeNone: 1
   vfxLifeTime: 2
   animatorLayer: 0
   crossFadeDuration: 0
