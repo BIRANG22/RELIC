@@ -31,6 +31,13 @@ public class BattleWarningUI : MonoBehaviour
     [SerializeField] private Color normalBackgroundColor = new Color(0f, 0f, 0f, 0.75f);
     [SerializeField] private Color warningTextColor = Color.white;
 
+    [Header("Sort Order")]
+    [SerializeField] private bool forceTopSorting = true;
+    [SerializeField] private int topSortingOrder = 30000;
+    [SerializeField] private bool setAsLastSiblingOnShow = true;
+
+    private Canvas sortingCanvas;
+    private GraphicRaycaster sortingRaycaster;
     private Vector2 baseAnchoredPosition;
     private float timer;
     private bool isShowing;
@@ -46,6 +53,7 @@ public class BattleWarningUI : MonoBehaviour
         if (moveTarget == null)
             moveTarget = transform as RectTransform;
 
+        EnsureTopSorting();
         CaptureBasePositionIfNeeded();
         HideImmediate();
     }
@@ -58,6 +66,7 @@ public class BattleWarningUI : MonoBehaviour
 
     private void OnEnable()
     {
+        EnsureTopSorting();
         CaptureBasePositionIfNeeded();
     }
 
@@ -83,6 +92,7 @@ public class BattleWarningUI : MonoBehaviour
             return;
 
         CaptureBasePositionIfNeeded();
+        BringToFront();
 
         if (moveTarget != null)
             moveTarget.anchoredPosition = baseAnchoredPosition + endOffset;
@@ -214,6 +224,37 @@ public class BattleWarningUI : MonoBehaviour
         float c3 = c1 + 1f;
 
         return 1f + c3 * Mathf.Pow(t - 1f, 3f) + c1 * Mathf.Pow(t - 1f, 2f);
+    }
+
+    private void BringToFront()
+    {
+        EnsureTopSorting();
+
+        if (setAsLastSiblingOnShow)
+            transform.SetAsLastSibling();
+    }
+
+    private void EnsureTopSorting()
+    {
+        if (!forceTopSorting)
+            return;
+
+        if (sortingCanvas == null)
+            sortingCanvas = GetComponent<Canvas>();
+
+        if (sortingCanvas == null)
+            sortingCanvas = gameObject.AddComponent<Canvas>();
+
+        sortingCanvas.overrideSorting = true;
+        sortingCanvas.sortingOrder = topSortingOrder;
+
+        if (sortingRaycaster == null)
+            sortingRaycaster = GetComponent<GraphicRaycaster>();
+
+        if (sortingRaycaster == null)
+            sortingRaycaster = gameObject.AddComponent<GraphicRaycaster>();
+
+        sortingRaycaster.enabled = false;
     }
 
     private void SetAlpha(float alpha)
