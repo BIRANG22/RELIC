@@ -299,6 +299,7 @@ MonoBehaviour:
   autoAddClickCollider2D: 1
   fallbackColliderSize: {x: 1, y: 1}
   timelineHoverHighlightObject: {fileID: 8343663252781661587}
+  reservationAlpha: 0.45
   showStatusTooltipOnClick: 1
   statusTooltipUI: {fileID: 0}
 --- !u!61 &7097434160429846699
@@ -435,14 +436,18 @@ MonoBehaviour:
     flipType: 0
   attackVfx1:
     prefab: {fileID: 3362751810309854143, guid: 3d23142866cb42f41b142372dfa89542, type: 3}
-    flipType: 1
+    flipType: 0
   attackVfx2:
     prefab: {fileID: 0}
-    flipType: 1
+    flipType: 0
   attackVfx3:
     prefab: {fileID: 0}
-    flipType: 1
+    flipType: 0
   vfxSpawnPoint: {fileID: 2443549660959925802}
+  unitFacing: {fileID: 0}
+  autoFindFacing: 1
+  flipVfxLocalPositionX: 1
+  flipVfxScaleXWhenFlipTypeNone: 1
   vfxLifeTime: 2
   animatorLayer: 0
   crossFadeDuration: 0
