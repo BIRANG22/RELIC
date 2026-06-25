@@ -34,6 +34,9 @@ public class CharacterInfoPanel : MonoBehaviour
     private CharacterMasterData currentMasterData;
     private CharacterRuntimeData currentRuntimeData;
 
+    public CharacterMasterData CurrentMasterData => currentMasterData;
+    public CharacterRuntimeData CurrentRuntimeData => currentRuntimeData;
+
     private void Awake()
     {
         AutoBindCharacterMarkImageIfNeeded();
