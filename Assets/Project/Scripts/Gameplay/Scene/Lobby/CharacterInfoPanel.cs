@@ -30,9 +30,12 @@ public class CharacterInfoPanel : MonoBehaviour
 
     [Header("Story")]
     [SerializeField] private TMP_Text storyText;
+    [SerializeField] private string storyTooltipTitleColor = "#4E66DF";
 
     private CharacterMasterData currentMasterData;
     private CharacterRuntimeData currentRuntimeData;
+    private string currentStoryText = "";
+    private Component temporaryStoryOwner;
 
     public CharacterMasterData CurrentMasterData => currentMasterData;
     public CharacterRuntimeData CurrentRuntimeData => currentRuntimeData;
@@ -55,6 +58,7 @@ public class CharacterInfoPanel : MonoBehaviour
     {
         currentMasterData = masterData;
         currentRuntimeData = runtimeData;
+        temporaryStoryOwner = null;
 
         Refresh();
     }
@@ -92,15 +96,18 @@ public class CharacterInfoPanel : MonoBehaviour
             moveValueText.text = FormatStatValue(baseMove, effectiveMove);
 
         RefreshCharacterMark();
+        RefreshStoryTextCache();
 
-        if (storyText != null)
-            storyText.text = FormatIntroduction(currentMasterData.Introduction);
+        if (temporaryStoryOwner == null)
+            ApplyStoryText(currentStoryText);
     }
 
     public void Clear()
     {
         currentMasterData = null;
         currentRuntimeData = null;
+        currentStoryText = "";
+        temporaryStoryOwner = null;
 
         ApplyCostLabels();
 
@@ -117,9 +124,38 @@ public class CharacterInfoPanel : MonoBehaviour
             moveValueText.text = "";
 
         ClearCharacterMark();
+        ApplyStoryText("");
+    }
 
+    public void ShowStatTooltipInStory(Component owner, string statName, string description, string valueLine)
+    {
+        if (storyText == null)
+            return;
+
+        temporaryStoryOwner = owner;
+        ApplyStoryText(FormatStoryTooltip(statName, description, valueLine));
+    }
+
+    public void HideStatTooltipInStory(Component owner)
+    {
+        if (temporaryStoryOwner != null && owner != null && temporaryStoryOwner != owner)
+            return;
+
+        temporaryStoryOwner = null;
+        ApplyStoryText(currentStoryText);
+    }
+
+    private void RefreshStoryTextCache()
+    {
+        currentStoryText = currentMasterData != null
+            ? FormatIntroduction(currentMasterData.Introduction)
+            : "";
+    }
+
+    private void ApplyStoryText(string text)
+    {
         if (storyText != null)
-            storyText.text = "";
+            storyText.text = text ?? "";
     }
 
     private void ApplyCostLabels()
@@ -144,6 +180,27 @@ public class CharacterInfoPanel : MonoBehaviour
             return effectiveValue + " (" + sign + delta + ")";
 
         return effectiveValue + " <color=" + color + ">(" + sign + delta + ")</color>";
+    }
+
+    private string FormatStoryTooltip(string statName, string description, string valueLine)
+    {
+        string title = string.IsNullOrWhiteSpace(statName) ? "Á¤º¸" : statName.Trim();
+        string body = string.IsNullOrWhiteSpace(description) ? "" : description.Trim();
+        string value = string.IsNullOrWhiteSpace(valueLine) ? "" : valueLine.Trim();
+
+        if (!string.IsNullOrWhiteSpace(storyTooltipTitleColor))
+            title = "<color=" + storyTooltipTitleColor + ">" + title + "</color>";
+
+        if (!string.IsNullOrWhiteSpace(body) && !string.IsNullOrWhiteSpace(value))
+            return title + "\n\n" + body + "\n\n" + value;
+
+        if (!string.IsNullOrWhiteSpace(body))
+            return title + "\n\n" + body;
+
+        if (!string.IsNullOrWhiteSpace(value))
+            return title + "\n\n" + value;
+
+        return title;
     }
 
     private void RefreshCharacterMark()

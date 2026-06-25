@@ -47,6 +47,12 @@ public class BattleUnitAnimator : MonoBehaviour
     [SerializeField] private BattleVfxEntry attackVfx3;
     [SerializeField] private Transform vfxSpawnPoint;
 
+    [Header("VFX Facing")]
+    [SerializeField] private BattleUnitFacing unitFacing;
+    [SerializeField] private bool autoFindFacing = true;
+    [SerializeField] private bool flipVfxLocalPositionX = true;
+    [SerializeField] private bool flipVfxScaleXWhenFlipTypeNone = true;
+
     [SerializeField] private float vfxLifeTime = 2f;
 
     [Header("Setting")]
@@ -65,6 +71,7 @@ public class BattleUnitAnimator : MonoBehaviour
         vfxLayer = LayerMask.NameToLayer(vfxLayerName);
 
         FindAnimatorIfNeeded();
+        FindFacingIfNeeded();
         PlayIdle();
     }
 
@@ -315,11 +322,14 @@ public class BattleUnitAnimator : MonoBehaviour
         if (!ShouldFlipVfx())
             return;
 
-        FlipLocalPositionX(vfx.transform);
+        if (flipVfxLocalPositionX)
+            FlipLocalPositionX(vfx.transform);
 
         switch (flipType)
         {
             case VfxFlipType.None:
+                if (flipVfxScaleXWhenFlipTypeNone)
+                    FlipLocalScaleX(vfx.transform);
                 break;
 
             case VfxFlipType.RotationY180:
@@ -337,6 +347,16 @@ public class BattleUnitAnimator : MonoBehaviour
         Vector3 pos = target.localPosition;
         pos.x *= -1f;
         target.localPosition = pos;
+    }
+
+    private void FlipLocalScaleX(Transform target)
+    {
+        if (target == null)
+            return;
+
+        Vector3 scale = target.localScale;
+        scale.x *= -1f;
+        target.localScale = scale;
     }
 
     private void AddLocalRotationY(Transform target, float amount)
@@ -395,14 +415,35 @@ public class BattleUnitAnimator : MonoBehaviour
         animator = GetComponentInChildren<Animator>(true);
     }
 
+    private void FindFacingIfNeeded()
+    {
+        if (unitFacing != null)
+            return;
+
+        if (!autoFindFacing)
+            return;
+
+        unitFacing = GetComponent<BattleUnitFacing>();
+
+        if (unitFacing != null)
+            return;
+
+        unitFacing = GetComponentInParent<BattleUnitFacing>();
+
+        if (unitFacing != null)
+            return;
+
+        unitFacing = GetComponentInChildren<BattleUnitFacing>(true);
+    }
+
     private bool ShouldFlipVfx()
     {
-        BattleUnitFacing facing = GetComponent<BattleUnitFacing>();
+        FindFacingIfNeeded();
 
-        if (facing == null)
+        if (unitFacing == null)
             return false;
 
-        return !facing.IsFacingRight;
+        return !unitFacing.IsFacingRight;
     }
 
     public void PlayAttackAction(int attackIndex)
