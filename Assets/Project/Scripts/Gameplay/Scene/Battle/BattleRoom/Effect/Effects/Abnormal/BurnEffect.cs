@@ -9,53 +9,19 @@ public class BurnEffect : BattleEffectBase
 
         if (context.PlayerTarget != null && context.PlayerTarget.RuntimeData != null)
         {
-            AddOrStackStatus(
-                context.PlayerTarget.RuntimeData.StatusEffects,
+            BattleEffectUtility.AddStatusToPlayer(
+                context.PlayerTarget,
                 EffectId,
-                context.Value
-            );
-
+                context.Value);
             return;
         }
 
         if (context.MonsterTarget != null && context.MonsterTarget.RuntimeData != null)
         {
-            AddOrStackStatus(
-                context.MonsterTarget.RuntimeData.StatusEffects,
+            BattleEffectUtility.AddStatusToMonster(
+                context.MonsterTarget,
                 EffectId,
-                context.Value
-            );
-
-            context.MonsterTarget.ShowAndRefreshHUD();
+                context.Value);
         }
-    }
-
-    private void AddOrStackStatus(
-        System.Collections.Generic.List<Relic.Gameplay.Data.StatusEffectRuntimeData> statusEffects,
-        string effectId,
-        int stack)
-    {
-        if (statusEffects == null)
-            return;
-
-        stack = UnityEngine.Mathf.Max(1, stack);
-
-        for (int i = 0; i < statusEffects.Count; i++)
-        {
-            if (statusEffects[i] == null)
-                continue;
-
-            if (statusEffects[i].EffectId != effectId)
-                continue;
-
-            statusEffects[i].Stack += stack;
-            return;
-        }
-
-        statusEffects.Add(new Relic.Gameplay.Data.StatusEffectRuntimeData
-        {
-            EffectId = effectId,
-            Stack = stack
-        });
     }
 }

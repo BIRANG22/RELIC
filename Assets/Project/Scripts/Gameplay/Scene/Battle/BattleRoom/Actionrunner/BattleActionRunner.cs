@@ -158,6 +158,9 @@ public class BattleActionRunner
         if (actionRoutines == null || command == null)
             return;
 
+        if (command.UserRuntime == null || command.UserRuntime.IsDead)
+            return;
+
         if (command.ReservedMoveGridIndex >= 0)
         {
             if (IsConsumedVisualSkipMove(command))
@@ -502,6 +505,9 @@ public class BattleActionRunner
         BattleCharacter character = unitFinder.FindBattleCharacter(command.CharacterId);
 
         if (character == null)
+            yield break;
+
+        if (character.RuntimeData == null || character.RuntimeData.IsDead)
             yield break;
 
         int currentGridIndex = character.CurrentGridIndex;
@@ -1009,9 +1015,18 @@ public class BattleActionRunner
         if (attacker == null)
             yield break;
 
+        if (attacker.RuntimeData == null || attacker.RuntimeData.IsDead)
+            yield break;
+
         RecalculatePlayerSkillRangeAtExecution(attacker, command);
 
         ConsumePlayerSkillCost(command, attacker);
+
+        if (attacker.RuntimeData == null || attacker.RuntimeData.IsDead)
+        {
+            hudService.RefreshHUDs();
+            yield break;
+        }
 
         BattleUnitAnimator attackerAnimator = attacker.GetComponent<BattleUnitAnimator>();
 
@@ -1027,6 +1042,12 @@ public class BattleActionRunner
 
             statusEffectService.ApplyBleedingDamageToPlayerOnAttack(attacker);
 
+            if (attacker.RuntimeData == null || attacker.RuntimeData.IsDead)
+            {
+                hudService.RefreshHUDs();
+                yield break;
+            }
+
             BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
                 FindObjectsInactive.Exclude,
                 FindObjectsSortMode.None
@@ -1037,6 +1058,9 @@ public class BattleActionRunner
                 BattleCharacter target = characters[i];
 
                 if (target == null || target.RuntimeData == null)
+                    continue;
+
+                if (target.RuntimeData.IsDead)
                     continue;
 
                 if (!command.RangeGridIndices.Contains(target.CurrentGridIndex))
@@ -1056,6 +1080,12 @@ public class BattleActionRunner
                 attackerAnimator.PlaySkillAction(command.SkillData);
 
             statusEffectService.ApplyBleedingDamageToPlayerOnAttack(attacker);
+
+            if (attacker.RuntimeData == null || attacker.RuntimeData.IsDead)
+            {
+                hudService.RefreshHUDs();
+                yield break;
+            }
 
             ExecutePlayerSkillEffectsToPlayer(attacker, attacker, command);
 
@@ -1089,6 +1119,12 @@ public class BattleActionRunner
             yield return BattleCameraController.Instance.ZoomToAttacker(attacker.transform);
 
         statusEffectService.ApplyBleedingDamageToPlayerOnAttack(attacker);
+
+        if (attacker.RuntimeData == null || attacker.RuntimeData.IsDead)
+        {
+            hudService.RefreshHUDs();
+            yield break;
+        }
 
         if (hitTargets.Count <= 0)
         {
@@ -1471,11 +1507,17 @@ public class BattleActionRunner
         if (caster == null || playerTarget == null || command == null || command.SkillData == null)
             return;
 
+        if (playerTarget.RuntimeData == null || playerTarget.RuntimeData.IsDead)
+            return;
+
         if (command.SkillData.EffectEntries == null || command.SkillData.EffectEntries.Count == 0)
             return;
 
         for (int i = 0; i < command.SkillData.EffectEntries.Count; i++)
         {
+            if (playerTarget.RuntimeData == null || playerTarget.RuntimeData.IsDead)
+                break;
+
             SkillEffectEntry entry = command.SkillData.EffectEntries[i];
 
             if (entry == null)
@@ -1868,6 +1910,9 @@ public class BattleActionRunner
             if (character == null || character.RuntimeData == null)
                 continue;
 
+            if (character.RuntimeData.IsDead)
+                continue;
+
             if (command.TargetGridIndices.Contains(character.CurrentGridIndex))
                 return character;
         }
@@ -2185,6 +2230,9 @@ public class BattleActionRunner
             if (character == null || character.RuntimeData == null)
                 continue;
 
+            if (character.RuntimeData.IsDead)
+                continue;
+
             if (character.CurrentGridIndex == gridIndex)
                 return character;
         }
@@ -2198,6 +2246,9 @@ public class BattleActionRunner
     BattleCharacter target)
     {
         if (command == null || monster == null || target == null || target.RuntimeData == null)
+            return;
+
+        if (target.RuntimeData.IsDead)
             return;
 
         int damage = damageService.GetMonsterDamage(command);

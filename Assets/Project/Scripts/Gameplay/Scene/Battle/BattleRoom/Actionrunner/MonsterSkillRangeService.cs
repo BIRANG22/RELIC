@@ -86,8 +86,13 @@ public static class MonsterSkillRangeService
 
             for (int i = 0; i < characters.Length; i++)
             {
-                if (characters[i] != null &&
-                    characters[i].CurrentGridIndex == gridIndex)
+                if (characters[i] == null || characters[i].RuntimeData == null)
+                    continue;
+
+                if (characters[i].RuntimeData.IsDead)
+                    continue;
+
+                if (characters[i].CurrentGridIndex == gridIndex)
                     return true;
             }
 
@@ -103,8 +108,13 @@ public static class MonsterSkillRangeService
 
             for (int i = 0; i < monsters.Length; i++)
             {
-                if (monsters[i] != null &&
-                    monsters[i].ContainsGridIndex(gridIndex))
+                if (monsters[i] == null || monsters[i].RuntimeData == null)
+                    continue;
+
+                if (monsters[i].RuntimeData.IsDead)
+                    continue;
+
+                if (monsters[i].ContainsGridIndex(gridIndex))
                     return true;
             }
 

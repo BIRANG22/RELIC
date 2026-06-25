@@ -54,6 +54,7 @@ namespace Relic.Gameplay.Data
         public bool IsUnlocked;
                 
         public int TotalCostRecovery => Mathf.Max(0, CostRecovery + BonusCostRecovery);
+        public bool IsDead => CurrentHP <= 0;
         public int PreviewHP => Mathf.Max(0, CurrentHP - ReservedHPCost);
         public int PreviewCost => Mathf.Max(0, CurrentCost - ReservedCost);
         public int PreviewResource => Mathf.Max(0, CurrentResource - ReservedResourceCost);
@@ -61,21 +62,33 @@ namespace Relic.Gameplay.Data
 
         public bool CanReserveHP(int cost)
         {
+            if (IsDead)
+                return false;
+
             return cost <= 0 || CurrentHP - ReservedHPCost > cost;
         }
 
         public bool CanReserveCost(int cost)
         {
+            if (IsDead)
+                return false;
+
             return cost <= 0 || CurrentCost - ReservedCost >= cost;
         }
 
         public bool CanReserveResource(int cost)
         {
+            if (IsDead)
+                return false;
+
             return cost <= 0 || CurrentResource - ReservedResourceCost >= cost;
         }
 
         public bool CanReserveShield(int cost)
         {
+            if (IsDead)
+                return false;
+
             return cost <= 0 || CurrentShield - ReservedShieldCost >= cost;
         }
 
@@ -126,6 +139,16 @@ namespace Relic.Gameplay.Data
             ReservedShieldCost = 0;
         }
 
+        public void HandleDeath()
+        {
+            CurrentHP = 0;
+            CurrentShield = 0;
+            ClearReservedCosts();
+
+            if (StatusEffects != null)
+                StatusEffects.Clear();
+        }
+
         public void ApplyReservedCosts()
         {
             CurrentHP = PreviewHP;
@@ -134,6 +157,9 @@ namespace Relic.Gameplay.Data
             CurrentShield = PreviewShield;
 
             ClearReservedCosts();
+
+            if (IsDead)
+                HandleDeath();
         }
     }
 }

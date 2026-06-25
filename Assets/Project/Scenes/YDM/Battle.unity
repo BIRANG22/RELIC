@@ -174450,7 +174450,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &911281008
 Transform:
   m_ObjectHideFlags: 0
@@ -174483,6 +174483,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   killKey: 107
+  damagePlayersKey: 106
+  debugPlayerDamage: 1
 --- !u!1 &916366400
 GameObject:
   m_ObjectHideFlags: 0

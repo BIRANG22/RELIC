@@ -100,6 +100,13 @@ namespace Relic.Gameplay.Monster
             );
         }
 
+        protected bool IsAlivePlayer(BattleCharacter player)
+        {
+            return player != null &&
+                   player.RuntimeData != null &&
+                   !player.RuntimeData.IsDead;
+        }
+
         protected Vector2Int GetMoveTowardNearestPlayer(
             MonsterUnit monsterUnit,
             GridManager gridManager,
@@ -130,7 +137,7 @@ namespace Relic.Gameplay.Monster
             {
                 BattleCharacter player = players[i];
 
-                if (player == null || player.CurrentGridIndex < 0)
+                if (!IsAlivePlayer(player) || player.CurrentGridIndex < 0)
                     continue;
 
                 Vector2Int playerCoord = gridManager.IndexToCoord(player.CurrentGridIndex);
@@ -165,7 +172,7 @@ namespace Relic.Gameplay.Monster
             {
                 BattleCharacter player = players[i];
 
-                if (player == null || player.CurrentGridIndex < 0)
+                if (!IsAlivePlayer(player) || player.CurrentGridIndex < 0)
                     continue;
 
                 Vector2Int playerCoord = gridManager.IndexToCoord(player.CurrentGridIndex);
@@ -194,7 +201,7 @@ namespace Relic.Gameplay.Monster
             {
                 BattleCharacter player = players[i];
 
-                if (player == null || player.RuntimeData == null)
+                if (!IsAlivePlayer(player))
                     continue;
 
                 if (player.RuntimeData.CurrentHP > highestHP)
@@ -272,7 +279,7 @@ namespace Relic.Gameplay.Monster
             {
                 BattleCharacter player = players[i];
 
-                if (player == null || player.CurrentGridIndex < 0)
+                if (!IsAlivePlayer(player) || player.CurrentGridIndex < 0)
                     continue;
 
                 Vector2Int playerCoord = gridManager.IndexToCoord(player.CurrentGridIndex);

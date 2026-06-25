@@ -27,14 +27,17 @@ public static class BattleEquipmentEffectService
             ? runtime.MaxHP
             : baseMaxHP;
 
-        bool shouldFillHP =
-            runtime.CurrentHP <= 0 ||
-            runtime.CurrentHP >= previousMaxHP;
+        bool wasDead = runtime.CurrentHP <= 0;
+        bool shouldFillHP = !wasDead && runtime.CurrentHP >= previousMaxHP;
 
         runtime.MaxHP = Mathf.Max(1, baseMaxHP + GetMaxHPBonus(runtime));
-        runtime.CurrentHP = shouldFillHP
-            ? runtime.MaxHP
-            : Mathf.Clamp(runtime.CurrentHP, 1, runtime.MaxHP);
+
+        if (wasDead)
+            runtime.CurrentHP = 1;
+        else if (shouldFillHP)
+            runtime.CurrentHP = runtime.MaxHP;
+        else
+            runtime.CurrentHP = Mathf.Clamp(runtime.CurrentHP, 1, runtime.MaxHP);
 
         int baseMaxCost = masterData != null
             ? Mathf.Max(0, masterData.MaxCost)
