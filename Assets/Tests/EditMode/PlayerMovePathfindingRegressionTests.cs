@@ -786,7 +786,55 @@ public class PlayerMovePathfindingRegressionTests
     }
 
     [Test]
-    public void ConfirmPlayerCommand_MergesMoveReservationInSameSlot()
+    public void MoveExecutionStepGroups_CombinesMonotonicStairPathIntoSingleSegment()
+    {
+        List<List<Vector2Int>> groups = BuildPlayerMoveExecutionStepGroups(
+            new List<Vector2Int>
+            {
+                Vector2Int.right,
+                Vector2Int.right,
+                Vector2Int.up
+            });
+
+        Assert.That(groups, Has.Count.EqualTo(1));
+        Assert.That(GetTotalOffset(groups[0]), Is.EqualTo(new Vector2Int(2, 1)));
+    }
+
+    [Test]
+    public void MoveExecutionStepGroups_SplitsWhenPathReversesAxis()
+    {
+        List<List<Vector2Int>> groups = BuildPlayerMoveExecutionStepGroups(
+            new List<Vector2Int>
+            {
+                Vector2Int.right,
+                Vector2Int.right,
+                Vector2Int.up,
+                Vector2Int.right,
+                Vector2Int.down
+            });
+
+        Assert.That(groups, Has.Count.EqualTo(2));
+        Assert.That(GetTotalOffset(groups[0]), Is.EqualTo(new Vector2Int(3, 1)));
+        Assert.That(GetTotalOffset(groups[1]), Is.EqualTo(Vector2Int.down));
+    }
+
+    [Test]
+    public void MoveExecutionStepGroups_PreservesTerminalSelfFlip()
+    {
+        List<List<Vector2Int>> groups = BuildPlayerMoveExecutionStepGroups(
+            new List<Vector2Int>
+            {
+                Vector2Int.right,
+                Vector2Int.zero
+            });
+
+        Assert.That(groups, Has.Count.EqualTo(2));
+        Assert.That(GetTotalOffset(groups[0]), Is.EqualTo(Vector2Int.right));
+        Assert.That(groups[1], Is.EqualTo(new List<Vector2Int> { Vector2Int.zero }));
+    }
+
+    [Test]
+    public void ConfirmPlayerCommand_AddsSecondMoveReservationInSameSlot()
     {
         GameObject timelineObject = new("TimelineMergeMove");
         GameObject slotObject = new("SlotMergeMove");
@@ -837,18 +885,15 @@ public class PlayerMovePathfindingRegressionTests
             Assert.That(timeline.ConfirmPlayerCommand(0, first), Is.True);
             Assert.That(timeline.ConfirmPlayerCommand(0, second), Is.True);
 
-            Assert.That(slot.Commands, Has.Count.EqualTo(1));
+            Assert.That(slot.Commands, Has.Count.EqualTo(2));
 
-            PlayerReservedCommand merged = slot.Commands[0];
-            Assert.That(merged.ReservedMoveGridIndex, Is.EqualTo(2));
-            Assert.That(merged.MoveOffset, Is.EqualTo(new Vector2Int(2, 0)));
-            Assert.That(merged.Cost, Is.EqualTo(2));
+            Assert.That(slot.Commands[0].ReservedMoveGridIndex, Is.EqualTo(1));
+            Assert.That(slot.Commands[0].MoveOffset, Is.EqualTo(Vector2Int.right));
+            Assert.That(slot.Commands[0].Cost, Is.EqualTo(1));
+            Assert.That(slot.Commands[1].ReservedMoveGridIndex, Is.EqualTo(2));
+            Assert.That(slot.Commands[1].MoveOffset, Is.EqualTo(Vector2Int.right));
+            Assert.That(slot.Commands[1].Cost, Is.EqualTo(1));
             Assert.That(runtime.ReservedCost, Is.EqualTo(2));
-            Assert.That(merged.VisualMoveSteps, Is.EqualTo(new List<Vector2Int>
-            {
-                Vector2Int.right,
-                Vector2Int.right
-            }));
         }
         finally
         {
@@ -858,7 +903,7 @@ public class PlayerMovePathfindingRegressionTests
     }
 
     [Test]
-    public void ConfirmPlayerCommand_MergedMoveUsesSecondLegDirection()
+    public void ConfirmPlayerCommand_SecondMoveReservationKeepsItsOwnDirection()
     {
         GameObject timelineObject = new("TimelineMergeMoveDirection");
         GameObject slotObject = new("SlotMergeMoveDirection");
@@ -905,17 +950,17 @@ public class PlayerMovePathfindingRegressionTests
                 Vector2Int.left,
                 1,
                 new List<Vector2Int> { Vector2Int.left });
+            second.SetMoveDirection(BattleDirection.Left);
 
             Assert.That(timeline.ConfirmPlayerCommand(0, first), Is.True);
             Assert.That(timeline.ConfirmPlayerCommand(0, second), Is.True);
 
-            Assert.That(slot.Commands, Has.Count.EqualTo(1));
-
-            PlayerReservedCommand merged = slot.Commands[0];
-            Assert.That(merged.MoveOffset, Is.EqualTo(Vector2Int.zero));
-            Assert.That(merged.ReservedMoveGridIndex, Is.EqualTo(0));
-            Assert.That(merged.Direction, Is.EqualTo(BattleDirection.Left));
-            Assert.That(merged.PreviewMoveDirection, Is.EqualTo(BattleDirection.Left));
+            Assert.That(slot.Commands, Has.Count.EqualTo(2));
+            Assert.That(slot.Commands[0].MoveOffset, Is.EqualTo(Vector2Int.right));
+            Assert.That(slot.Commands[0].ReservedMoveGridIndex, Is.EqualTo(1));
+            Assert.That(slot.Commands[1].MoveOffset, Is.EqualTo(Vector2Int.left));
+            Assert.That(slot.Commands[1].ReservedMoveGridIndex, Is.EqualTo(0));
+            Assert.That(slot.Commands[1].Direction, Is.EqualTo(BattleDirection.Left));
             Assert.That(timeline.GetPreviewDirection(runtime, 0), Is.EqualTo(BattleDirection.Left));
         }
         finally
@@ -1424,6 +1469,89 @@ public class PlayerMovePathfindingRegressionTests
     }
 
     [Test]
+    public void ConfirmPlayerCommand_SelfFlipMergesIntoLastMoveWhenSlotHasMultipleMoves()
+    {
+        GameObject timelineObject = new("TimelineMergeSelfFlipIntoLastMove");
+        GameObject slotObject = new("SlotMergeSelfFlipIntoLastMove");
+
+        try
+        {
+            BattleTimelineController timeline =
+                timelineObject.AddComponent<BattleTimelineController>();
+            ReserveTurnSlotUI slot = slotObject.AddComponent<ReserveTurnSlotUI>();
+            slot.Init(timeline, 0);
+
+            SetPrivateField(timeline, "reserveSlots", new[] { slot });
+
+            CharacterRuntimeData runtime = new()
+            {
+                CharacterId = "Char_Test_Merge_SelfFlip_Last",
+                CurrentCost = 10,
+                MaxCost = 10,
+                Direction = BattleDirection.Right
+            };
+
+            SkillMasterData moveSkill = new()
+            {
+                SkillId = "S_Move_1",
+                RangeType = RangeType.Selection,
+                ReferenceResource = ReferenceResource.Cost,
+                ResourceCostType = ResourceCostType.Fixed,
+                ResourceCostValue = 1,
+                GridMove = 1
+            };
+
+            PlayerReservedCommand first = CreateMoveCommand(
+                runtime,
+                moveSkill,
+                1,
+                Vector2Int.right,
+                1,
+                new List<Vector2Int> { Vector2Int.right });
+
+            PlayerReservedCommand second = CreateMoveCommand(
+                runtime,
+                moveSkill,
+                2,
+                Vector2Int.right,
+                1,
+                new List<Vector2Int> { Vector2Int.right });
+
+            PlayerReservedCommand selfFlip = new(runtime, moveSkill);
+            selfFlip.SetSelectionResult(
+                BattleDirection.Left,
+                2,
+                new List<int> { 2 },
+                Vector2Int.zero);
+            selfFlip.SetMoveReservationCost(0, 1);
+            selfFlip.SetVisualMoveResult(
+                2,
+                Vector2Int.zero,
+                new List<Vector2Int> { Vector2Int.zero });
+
+            Assert.That(timeline.ConfirmPlayerCommand(0, first), Is.True);
+            Assert.That(timeline.ConfirmPlayerCommand(0, second), Is.True);
+            Assert.That(timeline.ConfirmPlayerCommand(0, selfFlip), Is.True);
+
+            Assert.That(slot.Commands, Has.Count.EqualTo(2));
+            Assert.That(slot.Commands[0].ReservedMoveGridIndex, Is.EqualTo(1));
+            Assert.That(slot.Commands[0].Direction, Is.EqualTo(BattleDirection.Right));
+            Assert.That(slot.Commands[1].ReservedMoveGridIndex, Is.EqualTo(2));
+            Assert.That(slot.Commands[1].Direction, Is.EqualTo(BattleDirection.Left));
+            Assert.That(slot.Commands[1].VisualMoveSteps, Is.EqualTo(new List<Vector2Int>
+            {
+                Vector2Int.right,
+                Vector2Int.zero
+            }));
+        }
+        finally
+        {
+            Object.DestroyImmediate(slotObject);
+            Object.DestroyImmediate(timelineObject);
+        }
+    }
+
+    [Test]
     public void ConfirmPlayerCommand_MergedSelfFlipKeepsDirectionAfterSimulation()
     {
         GameObject timelineObject = new("TimelineMergeSelfFlipSimulationDirection");
@@ -1672,6 +1800,20 @@ public class PlayerMovePathfindingRegressionTests
             currentCoord += moveStep;
             Assert.That(gridManager.CoordToIndex(currentCoord), Is.Not.EqualTo(blockedGridIndex));
         }
+    }
+
+    private static List<List<Vector2Int>> BuildPlayerMoveExecutionStepGroups(
+        IReadOnlyList<Vector2Int> moveSteps)
+    {
+        MethodInfo method = typeof(BattleActionRunner).GetMethod(
+            "BuildPlayerMoveExecutionStepGroups",
+            BindingFlags.Static | BindingFlags.NonPublic);
+
+        Assert.That(method, Is.Not.Null, "BuildPlayerMoveExecutionStepGroups method is missing.");
+
+        return (List<List<Vector2Int>>)method.Invoke(
+            null,
+            new object[] { moveSteps });
     }
 
     private static void SetPrivateField<T>(object target, string fieldName, T value)

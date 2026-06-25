@@ -1139,6 +1139,9 @@ public class BattleTimelineController : MonoBehaviour
         if (existingMoveCommand == null)
             return false;
 
+        if (!IsSelfFlipMoveCommand(command))
+            return false;
+
         if (!CanReserveMergedMoveCommand(existingMoveCommand, command, out string blockReason))
         {
             ShowBattleWarning(blockReason);
@@ -1157,6 +1160,13 @@ public class BattleTimelineController : MonoBehaviour
         return true;
     }
 
+    private bool IsSelfFlipMoveCommand(PlayerReservedCommand command)
+    {
+        return IsMoveCommand(command) &&
+               command.ReservedMoveGridIndex >= 0 &&
+               command.MoveOffset == Vector2Int.zero;
+    }
+
     private PlayerReservedCommand FindMoveCommandInSlot(
         ReserveTurnSlotUI slot,
         string characterId)
@@ -1164,7 +1174,7 @@ public class BattleTimelineController : MonoBehaviour
         if (slot == null || slot.Commands == null || string.IsNullOrWhiteSpace(characterId))
             return null;
 
-        for (int i = 0; i < slot.Commands.Count; i++)
+        for (int i = slot.Commands.Count - 1; i >= 0; i--)
         {
             PlayerReservedCommand command = slot.Commands[i];
 
