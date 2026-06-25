@@ -149,9 +149,11 @@ public class BattleActionSimulationService
     {
         ReplanPlayerMovePath(command, currentGrid);
 
-        BattleDirection direction = GetDirectionAfterMove(
+        BattleDirection direction = GetDirectionAfterMoveSteps(
             GetPlayerDirection(command),
-            command.MoveOffset
+            command.VisualMoveSteps != null && command.VisualMoveSteps.Count > 0
+                ? command.VisualMoveSteps
+                : new List<Vector2Int> { command.MoveOffset }
         );
 
         playerDirections[command.CharacterId] = direction;
@@ -221,18 +223,19 @@ public class BattleActionSimulationService
         if (path == null || path.Count <= 0)
             return;
 
-        Vector2Int totalMoveOffset = GetTotalMoveOffset(path);
+        List<Vector2Int> visualPath = BuildReplannedVisualMoveSteps(command, path);
+        Vector2Int totalMoveOffset = GetTotalMoveOffset(visualPath);
 
         if (command.VisualMoveSteps != null &&
-            IsSamePath(command.VisualMoveSteps, path) &&
+            IsSamePath(command.VisualMoveSteps, visualPath) &&
             command.MoveOffset == totalMoveOffset)
         {
             return;
         }
 
-        BattleDirection direction = GetDirectionAfterMove(
+        BattleDirection direction = GetDirectionAfterMoveSteps(
             GetPlayerDirection(command),
-            totalMoveOffset);
+            visualPath);
 
         command.SetSelectionResult(
             direction,
@@ -242,7 +245,30 @@ public class BattleActionSimulationService
         command.SetVisualMoveResult(
             targetGridIndex,
             totalMoveOffset,
-            path);
+            visualPath);
+    }
+
+    private List<Vector2Int> BuildReplannedVisualMoveSteps(
+        PlayerReservedCommand command,
+        IReadOnlyList<Vector2Int> replannedPath)
+    {
+        List<Vector2Int> visualPath = replannedPath != null
+            ? new List<Vector2Int>(replannedPath)
+            : new List<Vector2Int>();
+
+        if (HasTerminalSelfFlipStep(command))
+            visualPath.Add(Vector2Int.zero);
+
+        return visualPath;
+    }
+
+    private bool HasTerminalSelfFlipStep(PlayerReservedCommand command)
+    {
+        if (command == null || command.VisualMoveSteps == null)
+            return false;
+
+        int lastIndex = command.VisualMoveSteps.Count - 1;
+        return lastIndex >= 0 && command.VisualMoveSteps[lastIndex] == Vector2Int.zero;
     }
 
     private HashSet<int> BuildPlayerMoveBlockedGridIndices(
@@ -553,6 +579,21 @@ public class BattleActionSimulationService
             return GetOppositeDirection(currentDirection);
 
         return currentDirection;
+    }
+
+    private BattleDirection GetDirectionAfterMoveSteps(
+        BattleDirection currentDirection,
+        IReadOnlyList<Vector2Int> moveSteps)
+    {
+        if (moveSteps == null || moveSteps.Count <= 0)
+            return currentDirection;
+
+        BattleDirection direction = currentDirection;
+
+        for (int i = 0; i < moveSteps.Count; i++)
+            direction = GetDirectionAfterMove(direction, moveSteps[i]);
+
+        return direction;
     }
 
     private BattleDirection GetOppositeDirection(BattleDirection direction)

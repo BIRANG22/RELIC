@@ -551,7 +551,7 @@ namespace Relic.Gameplay.Battle
                 ReferenceResource.HP => masterData.MaxHP,
                 ReferenceResource.Cost => masterData.MaxCost,
                 ReferenceResource.UniqueResource => masterData.MaxResource,
-                ReferenceResource.MovePoint => masterData.MoveValue,
+                ReferenceResource.MovePoint => masterData.MaxCost,
                 _ => 0
             };
         }
@@ -588,15 +588,12 @@ namespace Relic.Gameplay.Battle
                     break;
 
                 case ReferenceResource.Cost:
+                case ReferenceResource.MovePoint:
                     runtimeData.AddReservedCost(cost);
                     break;
 
                 case ReferenceResource.UniqueResource:
                     runtimeData.AddReservedResource(cost);
-                    break;
-
-                case ReferenceResource.MovePoint:
-                    runtimeData.AddReservedMove(cost);
                     break;
             }
 
@@ -615,15 +612,12 @@ namespace Relic.Gameplay.Battle
                     break;
 
                 case ReferenceResource.Cost:
+                case ReferenceResource.MovePoint:
                     runtimeData.RemoveReservedCost(cost);
                     break;
 
                 case ReferenceResource.UniqueResource:
                     runtimeData.RemoveReservedResource(cost);
-                    break;
-
-                case ReferenceResource.MovePoint:
-                    runtimeData.RemoveReservedMove(cost);
                     break;
             }
 

@@ -104,6 +104,12 @@ public class PlayerSkillReservationController : MonoBehaviour
         MonsterUnit.HideAllTemporaryHUDs();
         ClearPreview();
 
+        ResolveTimelinePreviewCasterState(
+            userRuntime,
+            slotIndex,
+            ref casterGridIndex,
+            ref casterDirection);
+
         currentUserRuntime = userRuntime;
         currentSkillData = skillData;
         currentCasterGridIndex = casterGridIndex;
@@ -138,6 +144,49 @@ public class PlayerSkillReservationController : MonoBehaviour
         ConfirmDirectReservation();
     }
 
+    private void ResolveTimelinePreviewCasterState(
+        CharacterRuntimeData userRuntime,
+        int slotIndex,
+        ref int casterGridIndex,
+        ref BattleDirection casterDirection)
+    {
+        if (userRuntime == null || slotIndex < 0)
+            return;
+
+        EnsureTimelineController();
+
+        if (timelineController == null)
+            return;
+
+        int previewGridIndex =
+            timelineController.GetPreviewGridIndexAtSlotEnd(userRuntime, slotIndex);
+
+        if (previewGridIndex >= 0)
+            casterGridIndex = previewGridIndex;
+
+        casterDirection = timelineController.GetPreviewDirection(userRuntime, slotIndex);
+    }
+
+    private void RefreshCurrentCasterStateFromTimelinePreview()
+    {
+        if (currentUserRuntime == null || currentSlotIndex < 0)
+            return;
+
+        EnsureTimelineController();
+
+        if (timelineController == null)
+            return;
+
+        int previewGridIndex =
+            timelineController.GetPreviewGridIndexAtSlotEnd(currentUserRuntime, currentSlotIndex);
+
+        if (previewGridIndex >= 0)
+            currentCasterGridIndex = previewGridIndex;
+
+        currentCasterDirection =
+            timelineController.GetPreviewDirection(currentUserRuntime, currentSlotIndex);
+    }
+
     private void PreviewMoveSelectableCells()
     {
         currentMoveSelectableIndices.Clear();
@@ -146,11 +195,23 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (!CanUseRangeData())
             return;
 
+        RefreshCurrentCasterStateFromTimelinePreview();
+
         currentMoveDistancePerCommand = GetMoveDistancePerCommand();
         currentMoveReservationCapacity = GetMoveReservationCapacity();
 
+        HashSet<int> blockedDestinationGridIndices = BuildKnownOtherPlayerDestinationGridIndices();
+
+        AddCurrentCasterSelfFlipCandidate(blockedDestinationGridIndices);
+
         if (currentMoveReservationCapacity <= 0)
         {
+            if (currentMoveSelectableIndices.Count > 0 && rangePreview != null)
+                rangePreview.ShowDirectionCells(currentMoveSelectableIndices);
+
+            if (currentMoveSelectableIndices.Count > 0)
+                return;
+
             ShowBattleWarning("이동에 필요한 Cost가 부족합니다.");
             return;
         }
@@ -164,7 +225,6 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         HashSet<int> currentBlockedGridIndices = BuildCurrentMoveBlockedGridIndices();
         HashSet<int> projectedBlockedGridIndices = BuildProjectedMoveBlockedGridIndices();
-        HashSet<int> blockedDestinationGridIndices = BuildKnownOtherPlayerDestinationGridIndices();
 
         for (int i = 0; i < rangeIndices.Count; i++)
         {
@@ -192,6 +252,45 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         if (rangePreview != null)
             rangePreview.ShowDirectionCells(currentMoveSelectableIndices);
+    }
+
+    private void AddCurrentCasterSelfFlipCandidate(ISet<int> blockedDestinationGridIndices)
+    {
+        RefreshCurrentCasterStateFromTimelinePreview();
+
+        if (!IsCurrentCasterGridIndexValid())
+            return;
+
+        if (blockedDestinationGridIndices != null &&
+            blockedDestinationGridIndices.Contains(currentCasterGridIndex))
+        {
+            return;
+        }
+
+        currentMovePathCandidatesByTargetIndex[currentCasterGridIndex] =
+            BuildSelfFlipMovePathCandidates();
+
+        if (!currentMoveSelectableIndices.Contains(currentCasterGridIndex))
+            currentMoveSelectableIndices.Add(currentCasterGridIndex);
+    }
+
+    private bool IsCurrentCasterGridIndexValid()
+    {
+        return IsValidMoveDestinationGridIndex(currentCasterGridIndex);
+    }
+
+    private bool IsCurrentCasterGridIndex(int gridIndex)
+    {
+        RefreshCurrentCasterStateFromTimelinePreview();
+        return gridIndex >= 0 && gridIndex == currentCasterGridIndex;
+    }
+
+    private static List<List<Vector2Int>> BuildSelfFlipMovePathCandidates()
+    {
+        return new List<List<Vector2Int>>
+        {
+            new List<Vector2Int> { Vector2Int.zero }
+        };
     }
 
     private void HandleCellClicked(GridCell cell)
@@ -238,17 +337,44 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (!CanConfirmReservation())
             return;
 
-        if (BuildKnownOtherPlayerDestinationGridIndices().Contains(selectedGridIndex))
+        bool isCurrentCasterGridIndex = IsCurrentCasterGridIndex(selectedGridIndex);
+        HashSet<int> blockedDestinationGridIndices = BuildKnownOtherPlayerDestinationGridIndices();
+
+        if (!isCurrentCasterGridIndex &&
+            blockedDestinationGridIndices.Contains(selectedGridIndex))
         {
             ShowBattleWarning("다른 캐릭터가 있는 위치로는 이동할 수 없습니다.");
             return;
         }
 
-        if (!currentMovePathCandidatesByTargetIndex.TryGetValue(
+        List<List<Vector2Int>> pathCandidates;
+
+        if (isCurrentCasterGridIndex)
+        {
+            pathCandidates = BuildSelfFlipMovePathCandidates();
+        }
+        else if (!currentMovePathCandidatesByTargetIndex.TryGetValue(
             selectedGridIndex,
-            out List<List<Vector2Int>> pathCandidates))
+            out pathCandidates))
         {
             pathCandidates = BuildPreferredMovePathCandidates(selectedGridIndex);
+        }
+
+        if (isCurrentCasterGridIndex)
+        {
+            List<PlayerReservedCommand> selfFlipCommands = BuildMoveReservationCommands(
+                selectedGridIndex,
+                new List<Vector2Int> { Vector2Int.zero }
+            );
+
+            if (selfFlipCommands.Count <= 0)
+                return;
+
+            ConfirmCommands(selfFlipCommands);
+
+            KeepSkillListOpenForThisClick();
+            ClearPreview();
+            return;
         }
 
         List<Vector2Int> moveOffsets = GetFirstReservableMovePath(pathCandidates);
@@ -420,9 +546,9 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (targetGridIndex != selectedGridIndex)
             return new List<PlayerReservedCommand>();
 
-        BattleDirection direction = GetDirectionAfterMove(
+        BattleDirection direction = GetDirectionAfterMoveSteps(
             currentCasterDirection,
-            totalMoveOffset);
+            moveOffsets);
 
         PlayerReservedCommand command = new PlayerReservedCommand(currentUserRuntime, currentSkillData);
         command.SetSelectionResult(
@@ -1379,6 +1505,22 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         return currentDirection;
     }
+
+    private static BattleDirection GetDirectionAfterMoveSteps(
+        BattleDirection currentDirection,
+        IReadOnlyList<Vector2Int> moveSteps)
+    {
+        if (moveSteps == null || moveSteps.Count <= 0)
+            return currentDirection;
+
+        BattleDirection direction = currentDirection;
+
+        for (int i = 0; i < moveSteps.Count; i++)
+            direction = GetDirectionAfterMove(direction, moveSteps[i]);
+
+        return direction;
+    }
+
     private BattleDirection GetDirectionFromMove(int casterGridIndex, int selectedGridIndex)
     {
         Vector2Int caster = gridManager.IndexToCoord(casterGridIndex);

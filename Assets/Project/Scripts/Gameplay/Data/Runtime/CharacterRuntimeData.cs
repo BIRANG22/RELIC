@@ -34,7 +34,6 @@ namespace Relic.Gameplay.Data
         [FormerlySerializedAs("ReservedStaminaCost")]
         public int ReservedCost;
         public int ReservedResourceCost;
-        public int ReservedMoveCost;
         public int ReservedShieldCost;     
 
         public BattleDirection Direction = BattleDirection.Right;
@@ -58,7 +57,6 @@ namespace Relic.Gameplay.Data
         public int PreviewHP => Mathf.Max(0, CurrentHP - ReservedHPCost);
         public int PreviewCost => Mathf.Max(0, CurrentCost - ReservedCost);
         public int PreviewResource => Mathf.Max(0, CurrentResource - ReservedResourceCost);
-        public int PreviewMoveLevel => Mathf.Max(0, CurrentMoveLevel - ReservedMoveCost);
         public int PreviewShield => Mathf.Max(0, CurrentShield - ReservedShieldCost);
 
         public bool CanReserveHP(int cost)
@@ -74,11 +72,6 @@ namespace Relic.Gameplay.Data
         public bool CanReserveResource(int cost)
         {
             return cost <= 0 || CurrentResource - ReservedResourceCost >= cost;
-        }
-
-        public bool CanReserveMove(int cost)
-        {
-            return cost <= 0 || CurrentMoveLevel - ReservedMoveCost >= cost;
         }
 
         public bool CanReserveShield(int cost)
@@ -101,11 +94,6 @@ namespace Relic.Gameplay.Data
             ReservedResourceCost = Mathf.Clamp(ReservedResourceCost + Mathf.Max(0, cost), 0, CurrentResource);
         }
 
-        public void AddReservedMove(int cost)
-        {
-            ReservedMoveCost = Mathf.Clamp(ReservedMoveCost + Mathf.Max(0, cost), 0, CurrentMoveLevel);
-        }
-
         public void AddReservedShield(int cost)
         {
             ReservedShieldCost = Mathf.Clamp(ReservedShieldCost + Mathf.Max(0, cost), 0, CurrentShield);
@@ -126,11 +114,6 @@ namespace Relic.Gameplay.Data
             ReservedResourceCost = Mathf.Max(0, ReservedResourceCost - Mathf.Max(0, cost));
         }
 
-        public void RemoveReservedMove(int cost)
-        {
-            ReservedMoveCost = Mathf.Max(0, ReservedMoveCost - Mathf.Max(0, cost));
-        }
-
         public void RemoveReservedShield(int cost)
         {
             ReservedShieldCost = Mathf.Max(0, ReservedShieldCost - Mathf.Max(0, cost));
@@ -140,7 +123,6 @@ namespace Relic.Gameplay.Data
             ReservedHPCost = 0;
             ReservedCost = 0;
             ReservedResourceCost = 0;
-            ReservedMoveCost = 0;
             ReservedShieldCost = 0;
         }
 
@@ -149,7 +131,6 @@ namespace Relic.Gameplay.Data
             CurrentHP = PreviewHP;
             CurrentCost = PreviewCost;
             CurrentResource = PreviewResource;
-            CurrentMoveLevel = PreviewMoveLevel;
             CurrentShield = PreviewShield;
 
             ClearReservedCosts();

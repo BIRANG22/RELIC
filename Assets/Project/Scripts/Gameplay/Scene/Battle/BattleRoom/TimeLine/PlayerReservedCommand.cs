@@ -16,13 +16,11 @@ public class PlayerReservedCommand
     public int HPCost { get; private set; }
     public int Cost { get; private set; }
     public int ResourceCost { get; private set; }
-    public int MoveCost { get; private set; }
     public int ShieldCost { get; private set; }
 
     public int BaseHPCost { get; private set; }
     public int BaseCost { get; private set; }
     public int BaseResourceCost { get; private set; }
-    public int BaseMoveCost { get; private set; }
     public int BaseShieldCost { get; private set; }
 
     public int TimelineSlotIndex { get; private set; } = -1;
@@ -60,6 +58,8 @@ public class PlayerReservedCommand
         VisualMoveGridIndex >= 0 ? VisualMoveGridIndex : EffectiveMoveGridIndex;
 
     public IReadOnlyList<Vector2Int> VisualMoveSteps => visualMoveSteps;
+
+    public BattleDirection PreviewMoveDirection => Direction;
 
     public bool HasVisualMoveResult =>
         VisualMoveGridIndex >= 0 && VisualMoveOffset != Vector2Int.zero;
@@ -99,9 +99,14 @@ public class PlayerReservedCommand
         int moveDistancePerCost = nextCommand.MoveDistancePerCost > 0
             ? nextCommand.MoveDistancePerCost
             : MoveDistancePerCost;
+        BattleDirection mergedDirection = GetDirectionAfterMoveSteps(
+            Direction,
+            nextCommand.visualMoveSteps.Count > 0
+                ? nextCommand.visualMoveSteps
+                : new List<Vector2Int> { nextCommand.MoveOffset });
 
         SetSelectionResult(
-            nextCommand.Direction,
+            mergedDirection,
             nextCommand.ReservedMoveGridIndex,
             new List<int> { nextCommand.ReservedMoveGridIndex },
             mergedMoveOffset);
@@ -113,6 +118,40 @@ public class PlayerReservedCommand
             mergedMoveOffset,
             mergedMoveSteps);
     }
+
+    private static BattleDirection GetDirectionAfterMove(
+        BattleDirection currentDirection,
+        Vector2Int moveOffset)
+    {
+        if (moveOffset.x < 0)
+            return BattleDirection.Left;
+
+        if (moveOffset.x > 0)
+            return BattleDirection.Right;
+
+        if (moveOffset == Vector2Int.zero)
+            return currentDirection == BattleDirection.Right
+                ? BattleDirection.Left
+                : BattleDirection.Right;
+
+        return currentDirection;
+    }
+
+    private static BattleDirection GetDirectionAfterMoveSteps(
+        BattleDirection currentDirection,
+        IReadOnlyList<Vector2Int> moveSteps)
+    {
+        if (moveSteps == null || moveSteps.Count <= 0)
+            return currentDirection;
+
+        BattleDirection direction = currentDirection;
+
+        for (int i = 0; i < moveSteps.Count; i++)
+            direction = GetDirectionAfterMove(direction, moveSteps[i]);
+
+        return direction;
+    }
+
     public PlayerReservedCommand(CharacterRuntimeData userRuntime, SkillMasterData skillData)
     {
         UserRuntime = userRuntime;
@@ -178,7 +217,6 @@ public class PlayerReservedCommand
         HPCost = BaseHPCost;
         Cost = BaseCost;
         ResourceCost = BaseResourceCost;
-        MoveCost = BaseMoveCost;
         ShieldCost = BaseShieldCost;
         ReservationCostModifiersApplied = false;
     }
@@ -187,13 +225,11 @@ public class PlayerReservedCommand
         int hpCost,
         int cost,
         int resourceCost,
-        int moveCost,
         int shieldCost)
     {
         BaseHPCost = Mathf.Max(0, hpCost);
         BaseCost = Mathf.Max(0, cost);
         BaseResourceCost = Mathf.Max(0, resourceCost);
-        BaseMoveCost = Mathf.Max(0, moveCost);
         BaseShieldCost = Mathf.Max(0, shieldCost);
 
         ResetCostsToBase();
@@ -203,13 +239,11 @@ public class PlayerReservedCommand
         int hpCost,
         int cost,
         int resourceCost,
-        int moveCost,
         int shieldCost)
     {
         HPCost = Mathf.Max(0, hpCost);
         Cost = Mathf.Max(0, cost);
         ResourceCost = Mathf.Max(0, resourceCost);
-        MoveCost = Mathf.Max(0, moveCost);
         ShieldCost = Mathf.Max(0, shieldCost);
     }
 
@@ -223,7 +257,6 @@ public class PlayerReservedCommand
         SetBaseCosts(
             0,
             CalculateMoveCost(PlannedMoveDistance, MoveDistancePerCost),
-            0,
             0,
             0
         );
@@ -242,7 +275,7 @@ public class PlayerReservedCommand
     public void MarkMoveContinuationCommand()
     {
         IsMoveContinuationCommand = true;
-        SetBaseCosts(0, 0, 0, 0, 0);
+        SetBaseCosts(0, 0, 0, 0);
     }
 
     public int ApplyBlockedMoveCostRefund()
@@ -412,12 +445,10 @@ public class PlayerReservedCommand
         HPCost = 0;
         Cost = 0;
         ResourceCost = 0;
-        MoveCost = 0;
         ShieldCost = 0;
         BaseHPCost = 0;
         BaseCost = 0;
         BaseResourceCost = 0;
-        BaseMoveCost = 0;
         BaseShieldCost = 0;
 
         if (skillData == null)
@@ -432,22 +463,18 @@ public class PlayerReservedCommand
                 break;
 
             case ReferenceResource.Cost:
+            case ReferenceResource.MovePoint:
                 Cost = cost;
                 break;
 
             case ReferenceResource.UniqueResource:
                 ResourceCost = cost;
                 break;
-
-            case ReferenceResource.MovePoint:
-                MoveCost = cost;
-                break;
         }
 
         BaseHPCost = HPCost;
         BaseCost = Cost;
         BaseResourceCost = ResourceCost;
-        BaseMoveCost = MoveCost;
         BaseShieldCost = ShieldCost;
     }
 
@@ -480,13 +507,11 @@ public class PlayerReservedCommand
                 return Mathf.Max(0, UserRuntime.PreviewHP);
 
             case ReferenceResource.Cost:
+            case ReferenceResource.MovePoint:
                 return Mathf.Max(0, UserRuntime.PreviewCost);
 
             case ReferenceResource.UniqueResource:
                 return Mathf.Max(0, UserRuntime.PreviewResource);
-
-            case ReferenceResource.MovePoint:
-                return Mathf.Max(0, UserRuntime.PreviewMoveLevel);
 
             default:
                 return 0;

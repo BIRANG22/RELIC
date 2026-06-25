@@ -193,7 +193,7 @@ public static class BattleEquipmentEffectService
 
         if (command.IsMoveContinuationCommand)
         {
-            command.SetCosts(0, 0, 0, 0, 0);
+            command.SetCosts(0, 0, 0, 0);
             command.MarkReservationCostModifiersApplied();
             return;
         }
@@ -201,7 +201,6 @@ public static class BattleEquipmentEffectService
         int hpCost = command.HPCost;
         int cost = command.Cost;
         int resourceCost = command.ResourceCost;
-        int moveCost = command.MoveCost;
         int shieldCost = command.ShieldCost;
 
         if (HasRune(command.UserRuntime, "Rune_24") &&
@@ -212,7 +211,6 @@ public static class BattleEquipmentEffectService
                 ref hpCost,
                 ref cost,
                 ref resourceCost,
-                ref moveCost,
                 ref shieldCost);
         }
 
@@ -222,7 +220,6 @@ public static class BattleEquipmentEffectService
                 ref hpCost,
                 ref cost,
                 ref resourceCost,
-                ref moveCost,
                 ref shieldCost);
         }
 
@@ -232,7 +229,6 @@ public static class BattleEquipmentEffectService
             hpCost,
             cost,
             resourceCost,
-            moveCost,
             shieldCost);
         command.MarkReservationCostModifiersApplied();
     }
@@ -646,7 +642,6 @@ public static class BattleEquipmentEffectService
         ref int hpCost,
         ref int cost,
         ref int resourceCost,
-        ref int moveCost,
         ref int shieldCost)
     {
         if (cost > 0)
@@ -658,12 +653,6 @@ public static class BattleEquipmentEffectService
         if (resourceCost > 0)
         {
             resourceCost -= 1;
-            return;
-        }
-
-        if (moveCost > 0)
-        {
-            moveCost -= 1;
             return;
         }
 
