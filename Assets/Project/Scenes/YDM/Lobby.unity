@@ -5416,6 +5416,9 @@ MonoBehaviour:
   - {fileID: 416906533}
   usePartySlotDefaultDeployCells: 1
   firstPartyDefaultDeployCellNumber: 7
+  noPartyCharacterMessage: "\uCE90\uB9AD\uD130\uB97C \uBA3C\uC800 \uC120\uD0DD\uD558\uC138\uC694."
+  noSelectedDeployedCharacterMessage: "\uD3EC\uC9C0\uC158\uC744 \uBCC0\uACBD\uD560
+    \uCE90\uB9AD\uD130\uB97C \uC120\uD0DD\uD558\uC138\uC694."
 --- !u!1 &328256505
 GameObject:
   m_ObjectHideFlags: 0
@@ -10908,7 +10911,7 @@ RectTransform:
   m_GameObject: {fileID: 579324474}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.05, y: 1.05, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 639621067}
@@ -11180,7 +11183,7 @@ RectTransform:
   m_GameObject: {fileID: 603498180}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.05, y: 1.05, z: 1}
+  m_LocalScale: {x: 1.03, y: 1.03, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 639621067}
@@ -12214,6 +12217,8 @@ MonoBehaviour:
   bgExpandDuration: 0.12
   spacing: 260
   centerScale: 1.4
+  centerHoverBreathScale: 1.5
+  centerHoverBreathSpeed: 3
   sideScale: 0.9
   sideHoverScale: 1.1
   dragThreshold: 180
@@ -12801,7 +12806,7 @@ RectTransform:
   m_GameObject: {fileID: 685601315}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.05, y: 1.05, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 266558056}
@@ -17590,7 +17595,7 @@ RectTransform:
   m_GameObject: {fileID: 898828658}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.05, y: 1.05, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1558730616}
@@ -19896,7 +19901,7 @@ RectTransform:
   m_GameObject: {fileID: 1035797102}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.05, y: 1.05, z: 1}
+  m_LocalScale: {x: 1.03, y: 1.03, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1558730616}
@@ -21396,9 +21401,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hpValueText: {fileID: 350354472}
-  staminaValueText: {fileID: 1010941010}
+  costValueText: {fileID: 1010941010}
   recoveryValueText: {fileID: 411590396}
   moveValueText: {fileID: 1804636187}
+  costLabelText: {fileID: 0}
+  recoveryLabelText: {fileID: 0}
+  costLabel: "\uCF54\uC2A4\uD2B8"
+  recoveryLabel: "\uCF54\uC2A4\uD2B8 \uD68C\uBCF5\uB7C9"
+  showModifiedStatDelta: 1
+  statIncreaseColor: '#4E66DF'
+  statDecreaseColor: '#D94B4B'
   characterMarkImage: {fileID: 1937100846}
   autoBindCharacterMarkImage: 1
   hideMarkWhenMissing: 1
@@ -34107,6 +34119,13 @@ MonoBehaviour:
   skillSettingPanelScript: {fileID: 1083875122}
   characterLevelText: {fileID: 1740643824}
   characterExpText: {fileID: 1493379787}
+  testExpPerLevel: 1000
+  maxTestLevel: 30
+  testLevelUpButton: {fileID: 2123399296}
+  testLevelDownButton: {fileID: 1126974682}
+  testLevelHoldStartDelay: 0.35
+  testLevelHoldRepeatInterval: 0.08
+  maxLevelWarningMessage: "\uCD5C\uB300 \uB808\uBCA8\uC785\uB2C8\uB2E4."
   presetButtons:
   - {fileID: 0}
   - {fileID: 0}
@@ -34451,7 +34470,7 @@ RectTransform:
   m_GameObject: {fileID: 1902440597}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.05, y: 1.05, z: 1}
+  m_LocalScale: {x: 1.03, y: 1.03, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 266558056}
@@ -35585,6 +35604,8 @@ MonoBehaviour:
   - {fileID: 2076955010}
   - {fileID: 2078247916}
   - {fileID: 254103269}
+  defaultUnlockedRuneSlotCount: 4
+  levelUpsPerRuneSlotUnlock: 2
   runeIconSelectPanel: {fileID: 1955125029}
   runeIconButtons:
   - {fileID: 1486948051}

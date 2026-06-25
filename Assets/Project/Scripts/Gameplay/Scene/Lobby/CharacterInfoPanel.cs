@@ -1,15 +1,27 @@
 using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class CharacterInfoPanel : MonoBehaviour
 {
     [Header("Value Texts")]
     [SerializeField] private TMP_Text hpValueText;
-    [SerializeField] private TMP_Text costValueText;
-    [SerializeField] private TMP_Text recoveryValueText;
+    [SerializeField, FormerlySerializedAs("staminaValueText")] private TMP_Text costValueText;
+    [SerializeField, FormerlySerializedAs("staminaRecoveryValueText")] private TMP_Text recoveryValueText;
     [SerializeField] private TMP_Text moveValueText;
+
+    [Header("Label Texts")]
+    [SerializeField, FormerlySerializedAs("staminaLabelText")] private TMP_Text costLabelText;
+    [SerializeField, FormerlySerializedAs("staminaRecoveryLabelText")] private TMP_Text recoveryLabelText;
+    [SerializeField] private string costLabel = "코스트";
+    [SerializeField] private string recoveryLabel = "코스트 회복량";
+
+    [Header("Rune Modified Stat Display")]
+    [SerializeField] private bool showModifiedStatDelta = true;
+    [SerializeField] private string statIncreaseColor = "#4E66DF";
+    [SerializeField] private string statDecreaseColor = "#D94B4B";
 
     [Header("Character Mark")]
     [SerializeField] private Image characterMarkImage;
@@ -25,12 +37,14 @@ public class CharacterInfoPanel : MonoBehaviour
     private void Awake()
     {
         AutoBindCharacterMarkImageIfNeeded();
+        ApplyCostLabels();
     }
 
 #if UNITY_EDITOR
     private void OnValidate()
     {
         AutoBindCharacterMarkImageIfNeeded();
+        ApplyCostLabels();
     }
 #endif
 
@@ -44,23 +58,35 @@ public class CharacterInfoPanel : MonoBehaviour
 
     public void Refresh()
     {
+        ApplyCostLabels();
+
         if (currentMasterData == null)
         {
             Clear();
             return;
         }
 
+        int baseHP = Mathf.Max(1, currentMasterData.MaxHP);
+        int baseCost = Mathf.Max(0, currentMasterData.MaxCost);
+        int baseRecovery = Mathf.Max(0, currentMasterData.CostRecovery);
+        int baseMove = Mathf.Max(0, currentMasterData.MoveValue);
+
+        int effectiveHP = BattleEquipmentEffectService.GetEffectiveMaxHP(currentRuntimeData, currentMasterData);
+        int effectiveCost = BattleEquipmentEffectService.GetEffectiveMaxCost(currentRuntimeData, currentMasterData);
+        int effectiveRecovery = BattleEquipmentEffectService.GetEffectiveCostRecovery(currentRuntimeData, currentMasterData);
+        int effectiveMove = BattleEquipmentEffectService.GetEffectiveMoveValue(currentRuntimeData, currentMasterData);
+
         if (hpValueText != null)
-            hpValueText.text = currentMasterData.MaxHP.ToString();
+            hpValueText.text = FormatStatValue(baseHP, effectiveHP);
 
         if (costValueText != null)
-            costValueText.text = currentMasterData.MaxCost.ToString();
+            costValueText.text = FormatStatValue(baseCost, effectiveCost);
 
         if (recoveryValueText != null)
-            recoveryValueText.text = currentMasterData.CostRecovery.ToString();
+            recoveryValueText.text = FormatStatValue(baseRecovery, effectiveRecovery);
 
         if (moveValueText != null)
-            moveValueText.text = currentMasterData.MoveValue.ToString();
+            moveValueText.text = FormatStatValue(baseMove, effectiveMove);
 
         RefreshCharacterMark();
 
@@ -72,6 +98,8 @@ public class CharacterInfoPanel : MonoBehaviour
     {
         currentMasterData = null;
         currentRuntimeData = null;
+
+        ApplyCostLabels();
 
         if (hpValueText != null)
             hpValueText.text = "";
@@ -89,6 +117,30 @@ public class CharacterInfoPanel : MonoBehaviour
 
         if (storyText != null)
             storyText.text = "";
+    }
+
+    private void ApplyCostLabels()
+    {
+        if (costLabelText != null)
+            costLabelText.text = costLabel;
+
+        if (recoveryLabelText != null)
+            recoveryLabelText.text = recoveryLabel;
+    }
+
+    private string FormatStatValue(int baseValue, int effectiveValue)
+    {
+        if (!showModifiedStatDelta || baseValue == effectiveValue)
+            return effectiveValue.ToString();
+
+        int delta = effectiveValue - baseValue;
+        string sign = delta > 0 ? "+" : "";
+        string color = delta > 0 ? statIncreaseColor : statDecreaseColor;
+
+        if (string.IsNullOrWhiteSpace(color))
+            return effectiveValue + " (" + sign + delta + ")";
+
+        return effectiveValue + " <color=" + color + ">(" + sign + delta + ")</color>";
     }
 
     private void RefreshCharacterMark()

@@ -365,6 +365,7 @@ public class CharBtn : MonoBehaviour,
         if (!showSelectedPartyMarker)
         {
             SetSelectedPartyMarkerActive(false);
+            SetSelectionBorder(false);
             return;
         }
 
@@ -372,6 +373,7 @@ public class CharBtn : MonoBehaviour,
         bool isRegistered = registeredSlot >= 0;
 
         SetSelectedPartyMarkerActive(isRegistered);
+        SetSelectionBorder(isRegistered);
 
         if (!isRegistered)
             return;
@@ -469,11 +471,17 @@ public class CharBtn : MonoBehaviour,
 
     public void SetCenter(bool isCenter)
     {
+        // 중앙 배치 여부는 위치/크기 계산에만 사용하고, 테두리 표시는 선택 상태에서만 켠다.
+        // 예전처럼 중앙에 왔다는 이유만으로 BorderImg1이 켜지지 않도록 여기서는 테두리를 건드리지 않는다.
+    }
+
+    public void SetSelectionBorder(bool selected)
+    {
         if (borderImg == null)
             return;
 
-        borderImg.gameObject.SetActive(isCenter);
-        borderImg.enabled = isCenter;
+        borderImg.gameObject.SetActive(selected);
+        borderImg.enabled = selected;
     }
 
     public void SetVisible(bool visible)
