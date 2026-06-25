@@ -20,6 +20,15 @@ public class Setting : MonoBehaviour
     [SerializeField] private TMP_Text characterLevelText;
     [SerializeField] private TMP_Text characterExpText;
 
+    [Header("Test Level Settings")]
+    [SerializeField] private int testExpPerLevel = 1000;
+    [SerializeField] private int maxTestLevel = 30;
+    [SerializeField] private Button testLevelUpButton;
+    [SerializeField] private Button testLevelDownButton;
+    [SerializeField] private float testLevelHoldStartDelay = 0.35f;
+    [SerializeField] private float testLevelHoldRepeatInterval = 0.08f;
+    [SerializeField] private string maxLevelWarningMessage = "최대 레벨입니다.";
+
     [Header("Preset UI")]
     [SerializeField] private Button[] presetButtons = new Button[4];
     [SerializeField] private Color presetNormalColor = Color.white;
@@ -68,6 +77,7 @@ public class Setting : MonoBehaviour
 
         InitPresetButtons();
         InitTabButtons();
+        InitTestLevelHoldButtons();
     }
 
     private void Start()
@@ -123,6 +133,25 @@ public class Setting : MonoBehaviour
         }
 
         InitTabButtonScaleEffects();
+    }
+
+    private void InitTestLevelHoldButtons()
+    {
+        InitTestLevelHoldButton(testLevelUpButton, true);
+        InitTestLevelHoldButton(testLevelDownButton, false);
+    }
+
+    private void InitTestLevelHoldButton(Button targetButton, bool isLevelUpButton)
+    {
+        if (targetButton == null)
+            return;
+
+        SettingTestLevelHoldButton holdButton = targetButton.GetComponent<SettingTestLevelHoldButton>();
+
+        if (holdButton == null)
+            holdButton = targetButton.gameObject.AddComponent<SettingTestLevelHoldButton>();
+
+        holdButton.Setup(this, isLevelUpButton, testLevelHoldStartDelay, testLevelHoldRepeatInterval);
     }
 
     public void OpenCharacterSetting(string characterId)
@@ -372,6 +401,7 @@ public class Setting : MonoBehaviour
         }
 
         currentRuntimeData.Level = Mathf.Max(1, currentRuntimeData.Level - 1);
+        ApplyTestExpByCurrentLevel();
         RefreshAfterLevelChanged();
     }
 
@@ -383,7 +413,19 @@ public class Setting : MonoBehaviour
             return;
         }
 
-        currentRuntimeData.Level += 1;
+        int safeMaxLevel = GetSafeMaxTestLevel();
+
+        if (currentRuntimeData.Level >= safeMaxLevel)
+        {
+            currentRuntimeData.Level = safeMaxLevel;
+            ApplyTestExpByCurrentLevel();
+            RefreshAfterLevelChanged();
+            ShowWarning(maxLevelWarningMessage);
+            return;
+        }
+
+        currentRuntimeData.Level = Mathf.Min(safeMaxLevel, currentRuntimeData.Level + 1);
+        ApplyTestExpByCurrentLevel();
         RefreshAfterLevelChanged();
     }
 
@@ -395,8 +437,29 @@ public class Setting : MonoBehaviour
             return;
         }
 
-        currentRuntimeData.Level = Mathf.Max(1, level);
+        int safeMaxLevel = GetSafeMaxTestLevel();
+        currentRuntimeData.Level = Mathf.Clamp(level, 1, safeMaxLevel);
+        ApplyTestExpByCurrentLevel();
         RefreshAfterLevelChanged();
+
+        if (level > safeMaxLevel)
+            ShowWarning(maxLevelWarningMessage);
+    }
+
+    private void ApplyTestExpByCurrentLevel()
+    {
+        if (currentRuntimeData == null)
+            return;
+
+        int safeLevel = Mathf.Clamp(currentRuntimeData.Level, 1, GetSafeMaxTestLevel());
+        int safeExpPerLevel = Mathf.Max(0, testExpPerLevel);
+        currentRuntimeData.Level = safeLevel;
+        currentRuntimeData.Exp = (safeLevel - 1) * safeExpPerLevel;
+    }
+
+    private int GetSafeMaxTestLevel()
+    {
+        return Mathf.Max(1, maxTestLevel);
     }
 
     private void RefreshAfterLevelChanged()

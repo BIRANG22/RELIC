@@ -57,6 +57,20 @@ public class SettingWarningUI : MonoBehaviour
             Instance = null;
     }
 
+    public static bool ShowMessage(string message)
+    {
+        SettingWarningUI warningUI = Instance;
+
+        if (warningUI == null)
+            warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
+
+        if (warningUI == null)
+            return false;
+
+        warningUI.Show(message);
+        return true;
+    }
+
     private void OnEnable()
     {
         if (moveTarget != null && !isShowing)

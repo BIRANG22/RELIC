@@ -14,6 +14,10 @@ public class SpawnGridPanel : MonoBehaviour
     [SerializeField] private bool usePartySlotDefaultDeployCells = true;
     [SerializeField] private int firstPartyDefaultDeployCellNumber = 7;
 
+    [Header("Warning")]
+    [SerializeField] private string noPartyCharacterMessage = "캐릭터를 먼저 선택하세요.";
+    [SerializeField] private string noSelectedDeployedCharacterMessage = "포지션을 변경할 캐릭터를 선택하세요.";
+
     private int selectedPartySlotIndex = -1;
 
     private void Awake()
@@ -89,7 +93,7 @@ public class SpawnGridPanel : MonoBehaviour
 
         if (selectedPartySlotIndex < 0)
         {
-            Debug.LogWarning("[SpawnGridPanel] 먼저 이동할 캐릭터를 선택하세요.");
+            ShowNoSelectedCharacterWarning();
             return;
         }
 
@@ -100,6 +104,32 @@ public class SpawnGridPanel : MonoBehaviour
 
         selectedPartySlotIndex = -1;
         Refresh();
+    }
+
+
+    private void ShowNoSelectedCharacterWarning()
+    {
+        PartyRuntimeStore partyStore = DataManager.Instance != null
+            ? DataManager.Instance.PartyRuntimeStore
+            : null;
+
+        bool hasPartyCharacter = partyStore != null && partyStore.HasAnyCharacter;
+        string defaultMessage = hasPartyCharacter
+            ? "포지션을 변경할 캐릭터를 선택하세요."
+            : "캐릭터를 먼저 선택하세요.";
+
+        string configuredMessage = hasPartyCharacter
+            ? noSelectedDeployedCharacterMessage
+            : noPartyCharacterMessage;
+
+        string message = string.IsNullOrWhiteSpace(configuredMessage)
+            ? defaultMessage
+            : configuredMessage;
+
+        if (SettingWarningUI.ShowMessage(message))
+            return;
+
+        Debug.LogWarning($"[SpawnGridPanel] {message}");
     }
 
     public bool TryGetPartySlotOrderIconObject(int partySlotIndex, out GameObject iconObject)

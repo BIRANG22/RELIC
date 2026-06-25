@@ -26,7 +26,9 @@ public class CharPick : MonoBehaviour
     [SerializeField] private float spacing = 260f;
 
     [Header("Scale")]
-    [SerializeField] private float centerScale = 1.2f;
+    [SerializeField] private float centerScale = 1.4f;
+    [SerializeField] private float centerHoverBreathScale = 1.5f;
+    [SerializeField] private float centerHoverBreathSpeed = 3f;
     [SerializeField] private float sideScale = 0.9f;
     [SerializeField] private float sideHoverScale = 1.1f;
 
@@ -950,11 +952,11 @@ public class CharPick : MonoBehaviour
             int offset = GetOffset(i);
 
             if (offset == -1)
-                ApplyInstant(charBtns[i], new Vector2(-spacing, 0f), GetSideButtonScale(charBtns[i]), true, false);
+                ApplyInstant(charBtns[i], new Vector2(-spacing, 0f), GetButtonScale(charBtns[i], false), true, false);
             else if (offset == 0)
-                ApplyInstant(charBtns[i], Vector2.zero, centerScale, true, true);
+                ApplyInstant(charBtns[i], Vector2.zero, GetButtonScale(charBtns[i], true), true, true);
             else if (offset == 1)
-                ApplyInstant(charBtns[i], new Vector2(spacing, 0f), GetSideButtonScale(charBtns[i]), true, false);
+                ApplyInstant(charBtns[i], new Vector2(spacing, 0f), GetButtonScale(charBtns[i], false), true, false);
             else
             {
                 charBtns[i].SetVisible(false);
@@ -976,11 +978,11 @@ public class CharPick : MonoBehaviour
             int offset = GetOffset(i);
 
             if (offset == -1)
-                ApplySmooth(charBtns[i], new Vector2(-spacing, 0f), GetSideButtonScale(charBtns[i]), true, false);
+                ApplySmooth(charBtns[i], new Vector2(-spacing, 0f), GetButtonScale(charBtns[i], false), true, false);
             else if (offset == 0)
-                ApplySmooth(charBtns[i], Vector2.zero, centerScale, true, true);
+                ApplySmooth(charBtns[i], Vector2.zero, GetButtonScale(charBtns[i], true), true, true);
             else if (offset == 1)
-                ApplySmooth(charBtns[i], new Vector2(spacing, 0f), GetSideButtonScale(charBtns[i]), true, false);
+                ApplySmooth(charBtns[i], new Vector2(spacing, 0f), GetButtonScale(charBtns[i], false), true, false);
             else
             {
                 charBtns[i].SetVisible(false);
@@ -989,12 +991,26 @@ public class CharPick : MonoBehaviour
         }
     }
 
-    private float GetSideButtonScale(CharBtn btn)
+    private float GetButtonScale(CharBtn btn, bool isCenter)
     {
         if (!isDragging && hoveredButton == btn)
-            return sideHoverScale;
+        {
+            if (isCenter)
+                return GetCenterHoverBreathScale();
 
-        return sideScale;
+            return sideHoverScale;
+        }
+
+        return isCenter ? centerScale : sideScale;
+    }
+
+    private float GetCenterHoverBreathScale()
+    {
+        float minScale = Mathf.Min(centerScale, centerHoverBreathScale);
+        float maxScale = Mathf.Max(centerScale, centerHoverBreathScale);
+        float breath = (Mathf.Sin(Time.unscaledTime * centerHoverBreathSpeed) + 1f) * 0.5f;
+
+        return Mathf.Lerp(minScale, maxScale, breath);
     }
 
     private void ApplyInstant(CharBtn btn, Vector2 pos, float scale, bool visible, bool center)

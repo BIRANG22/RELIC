@@ -59,6 +59,41 @@ public static class BattleEquipmentEffectService
             : MoveSkillLevelOneId;
     }
 
+    public static int GetEffectiveMaxHP(
+        CharacterRuntimeData runtime,
+        CharacterMasterData masterData)
+    {
+        int baseMaxHP = masterData != null
+            ? Mathf.Max(1, masterData.MaxHP)
+            : runtime != null ? Mathf.Max(1, runtime.MaxHP) : 1;
+
+        return Mathf.Max(1, baseMaxHP + GetMaxHPBonus(runtime));
+    }
+
+    public static int GetEffectiveMaxCost(
+        CharacterRuntimeData runtime,
+        CharacterMasterData masterData)
+    {
+        int baseMaxCost = masterData != null
+            ? Mathf.Max(0, masterData.MaxCost)
+            : runtime != null ? Mathf.Max(0, runtime.MaxCost) : 0;
+
+        return Mathf.Max(0, baseMaxCost + GetMaxCostBonus(runtime));
+    }
+
+    public static int GetEffectiveCostRecovery(
+        CharacterRuntimeData runtime,
+        CharacterMasterData masterData)
+    {
+        int baseRecovery = masterData != null
+            ? Mathf.Max(0, masterData.CostRecovery)
+            : runtime != null ? Mathf.Max(0, runtime.CostRecovery) : 0;
+
+        int bonusRecovery = runtime != null ? runtime.BonusCostRecovery : 0;
+
+        return Mathf.Max(0, baseRecovery + bonusRecovery + GetCostRecoveryBonus(runtime));
+    }
+
     public static void ResetBattleOnlyEffectState(CharacterRuntimeData runtime)
     {
         if (runtime == null)
@@ -417,6 +452,11 @@ public static class BattleEquipmentEffectService
             bonus += 1;
 
         return bonus;
+    }
+
+    private static int GetCostRecoveryBonus(CharacterRuntimeData runtime)
+    {
+        return 0;
     }
 
     private static int GetMoveValueBonus(CharacterRuntimeData runtime)

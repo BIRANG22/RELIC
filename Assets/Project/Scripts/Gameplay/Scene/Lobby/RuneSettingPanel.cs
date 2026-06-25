@@ -11,6 +11,10 @@ public class RuneSettingPanel : MonoBehaviour
     [Header("Rune Slots")]
     [SerializeField] private RuneSlotButton[] runeSlotButtons;
 
+    [Header("Rune Slot Unlock Settings")]
+    [SerializeField] private int defaultUnlockedRuneSlotCount = 4;
+    [SerializeField] private int levelUpsPerRuneSlotUnlock = 2;
+
     [Header("Rune Icon List Panel")]
     [SerializeField] private GameObject runeIconSelectPanel;
     [SerializeField] private RuneIconButton[] runeIconButtons;
@@ -239,8 +243,13 @@ public class RuneSettingPanel : MonoBehaviour
 
     private int GetUnlockedRuneSlotCount(int level)
     {
-        int baseSlot = 4;
-        return Mathf.Clamp(baseSlot + (level - 1), 0, runeSlotButtons.Length);
+        int totalSlotCount = runeSlotButtons != null ? runeSlotButtons.Length : 0;
+        int safeBaseSlotCount = Mathf.Max(0, defaultUnlockedRuneSlotCount);
+        int safeUnlockInterval = Mathf.Max(1, levelUpsPerRuneSlotUnlock);
+        int safeLevel = Mathf.Max(1, level);
+        int extraUnlockedSlotCount = (safeLevel - 1) / safeUnlockInterval;
+
+        return Mathf.Clamp(safeBaseSlotCount + extraUnlockedSlotCount, 0, totalSlotCount);
     }
 
     private void SaveCurrentRuneSetting()
@@ -674,56 +683,15 @@ public class RuneSettingPanel : MonoBehaviour
 
     private bool IsRuneLockedForCurrentState(RuneData runeData)
     {
-        if (runeData == null)
-            return false;
-
-        int requiredLevel = GetRequiredLevelForRune(runeData);
-
-        if (requiredLevel <= 1)
-            return false;
-
-        int currentLevel = currentRuntimeData != null ? currentRuntimeData.Level : 1;
-
-        return currentLevel < requiredLevel;
+        // 테스트를 위해 룬 아이템 자체는 전부 해금 상태로 둔다.
+        // 장착 가능 여부는 룬 슬롯 잠금 상태에서만 제한한다.
+        return false;
     }
 
     private int GetRequiredLevelForRune(RuneData runeData)
     {
-        if (runeData == null)
-            return 0;
-
-        /*
-         * 현재 RuneData에는 unlockLevel, category, common/unique 구분 enum이 없음.
-         * 그래서 TargetCharacterId 기준으로 임시 해금 레벨을 계산함.
-         *
-         * 공용룬 TargetCharacterId == "All" : 기본 LV.1
-         * 전용룬 TargetCharacterId == currentCharacterId : EnhancementLevel 기준 임시 계산
-         */
-
-        if (runeData.TargetCharacterId == "All")
-            return 1;
-
-        if (runeData.TargetCharacterId == currentCharacterId)
-        {
-            switch (runeData.EnhancementLevel)
-            {
-                case 0:
-                case 1:
-                    return 1;
-                case 2:
-                    return 5;
-                case 3:
-                    return 9;
-                case 4:
-                    return 13;
-                case 5:
-                    return 17;
-                default:
-                    return 20;
-            }
-        }
-
-        return 0;
+        // 현재 테스트 단계에서는 캐릭터 룬과 공용룬을 모두 LV.1부터 사용할 수 있게 둔다.
+        return 1;
     }
 
     private void ShowRuneLockedWarning(RuneData runeData)
