@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 [DisallowMultipleComponent]
-public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerMoveHandler
+public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     public enum StatType
     {
@@ -17,12 +17,6 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
     [Header("Target")]
     [SerializeField] private StatType statType = StatType.Auto;
     [SerializeField] private CharacterInfoPanel characterInfoPanel;
-    [SerializeField] private CharacterStatTooltipUI tooltipUI;
-
-    [Header("Position")]
-    [SerializeField] private RectTransform positionAnchor;
-    [SerializeField] private bool autoUseChildIconAsAnchor = true;
-    [SerializeField] private Vector2 iconBottomRightOffset = new Vector2(16f, -16f);
 
     [Header("Text Override")]
     [SerializeField] private string customName;
@@ -31,7 +25,6 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
     [Header("Value Color")]
     [SerializeField] private string runeIncreaseColor = "#4E66DF";
     [SerializeField] private string runeDecreaseColor = "#D94B4B";
-    [SerializeField] private string runeZeroColor = "#4E66DF";
 
     private bool isPointerInside;
 
@@ -47,34 +40,33 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
     }
 #endif
 
+    private void OnDisable()
+    {
+        if (isPointerInside && characterInfoPanel != null)
+            characterInfoPanel.HideStatTooltipInStory(this);
+
+        isPointerInside = false;
+    }
+
     public void OnPointerEnter(PointerEventData eventData)
     {
         isPointerInside = true;
-        Show(GetTooltipScreenPosition(eventData));
-    }
-
-    public void OnPointerMove(PointerEventData eventData)
-    {
-        if (!isPointerInside)
-            return;
-
-        if (tooltipUI != null)
-            tooltipUI.SetPosition(GetTooltipScreenPosition(eventData));
+        ShowInStory();
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
         isPointerInside = false;
 
-        if (tooltipUI != null)
-            tooltipUI.Hide();
+        if (characterInfoPanel != null)
+            characterInfoPanel.HideStatTooltipInStory(this);
     }
 
-    private void Show(Vector2 screenPosition)
+    private void ShowInStory()
     {
         AutoBindIfNeeded();
 
-        if (tooltipUI == null || characterInfoPanel == null)
+        if (characterInfoPanel == null)
             return;
 
         CharacterMasterData masterData = characterInfoPanel.CurrentMasterData;
@@ -88,12 +80,11 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
         int effectiveValue = GetEffectiveValue(runtimeData, masterData, resolvedStatType);
         int runeBonus = effectiveValue - baseValue;
 
-        tooltipUI.SetFollowMouse(false);
-        tooltipUI.Show(
+        characterInfoPanel.ShowStatTooltipInStory(
+            this,
             GetStatName(resolvedStatType),
             GetStatDescription(resolvedStatType),
-            FormatValueLine(baseValue, runeBonus),
-            screenPosition);
+            FormatValueLine(baseValue, runeBonus));
     }
 
     private int GetBaseValue(CharacterMasterData masterData, StatType resolvedStatType)
@@ -167,12 +158,11 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
             case StatType.CostRecovery:
                 return "턴이 시작될 때 회복되는 코스트 수치입니다.\n회복량이 높을수록 매 턴 사용할 수 있는 스킬 선택지가 늘어납니다.";
             case StatType.Move:
-                return "전투 중 이동할 수 있는 거리입니다.\n이동력이 높을수록 더 먼 위치로 이동할 수 있습니다.";
+                return "전투 중 이동스킬 사용 시 1칸 이동에 1코스트를 사용합니다.\n이동력이 50 이상일 때는 2칸 이동에 1코스트를 사용합니다.";
             default:
                 return "";
         }
     }
-
 
     private StatType GetResolvedStatType()
     {
@@ -222,87 +212,18 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
 
     private string FormatValueLine(int baseValue, int runeBonus)
     {
-        string sign = runeBonus >= 0 ? "+" : "";
-        string runeColor = runeBonus > 0
-            ? runeIncreaseColor
-            : runeBonus < 0 ? runeDecreaseColor : runeZeroColor;
+        if (runeBonus == 0)
+            return "기본 수치 " + baseValue;
 
-        string runeText = sign + runeBonus + "(룬)";
+        string sign = runeBonus > 0 ? "+" : "";
+        string runeColor = runeBonus > 0 ? runeIncreaseColor : runeDecreaseColor;
+        string runeText = sign + runeBonus;
 
         if (!string.IsNullOrWhiteSpace(runeColor))
             runeText = "<color=" + runeColor + ">" + runeText + "</color>";
 
-        return baseValue + "(기본) " + runeText;
-    }
-
-    private Vector2 GetTooltipScreenPosition(PointerEventData eventData)
-    {
-        AutoBindIfNeeded();
-
-        RectTransform anchor = GetPositionAnchor();
-
-        if (anchor == null)
-            return eventData != null ? eventData.position : (Vector2)Input.mousePosition;
-
-        Vector3[] corners = new Vector3[4];
-        anchor.GetWorldCorners(corners);
-
-        Camera camera = GetCanvasCamera(anchor);
-        Vector2 bottomRight = RectTransformUtility.WorldToScreenPoint(camera, corners[3]);
-        return bottomRight + iconBottomRightOffset;
-    }
-
-    private RectTransform GetPositionAnchor()
-    {
-        if (positionAnchor != null)
-            return positionAnchor;
-
-        if (!autoUseChildIconAsAnchor)
-            return transform as RectTransform;
-
-        Transform icon = FindChildByName(transform, "Icon");
-
-        if (icon != null && icon.TryGetComponent(out RectTransform iconRect))
-            return iconRect;
-
-        return transform as RectTransform;
-    }
-
-    private Camera GetCanvasCamera(RectTransform targetRect)
-    {
-        if (targetRect == null)
-            return null;
-
-        Canvas canvas = targetRect.GetComponentInParent<Canvas>();
-
-        if (canvas == null)
-            return null;
-
-        Canvas rootCanvas = canvas.rootCanvas != null ? canvas.rootCanvas : canvas;
-
-        if (rootCanvas.renderMode == RenderMode.ScreenSpaceOverlay)
-            return null;
-
-        return rootCanvas.worldCamera != null ? rootCanvas.worldCamera : Camera.main;
-    }
-
-    private Transform FindChildByName(Transform root, string targetName)
-    {
-        if (root == null || string.IsNullOrWhiteSpace(targetName))
-            return null;
-
-        if (root.name == targetName)
-            return root;
-
-        for (int i = 0; i < root.childCount; i++)
-        {
-            Transform result = FindChildByName(root.GetChild(i), targetName);
-
-            if (result != null)
-                return result;
-        }
-
-        return null;
+        return "기본 수치 " + baseValue + "\n" +
+               "룬 보정 " + runeText;
     }
 
     private void AutoBindIfNeeded()
@@ -312,11 +233,7 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
 
         if (characterInfoPanel == null)
             characterInfoPanel = FindFirstObjectByTypeSafe<CharacterInfoPanel>();
-
-        if (tooltipUI == null)
-            tooltipUI = FindTooltipUI();
     }
-
 
     private static T FindFirstObjectByTypeSafe<T>() where T : Object
     {
@@ -325,30 +242,5 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
 #else
         return FindObjectOfType<T>();
 #endif
-    }
-
-    private CharacterStatTooltipUI FindTooltipUI()
-    {
-        CharacterStatTooltipUI activeTooltip = FindFirstObjectByTypeSafe<CharacterStatTooltipUI>();
-
-        if (activeTooltip != null)
-            return activeTooltip;
-
-        CharacterStatTooltipUI[] allTooltips = Resources.FindObjectsOfTypeAll<CharacterStatTooltipUI>();
-
-        for (int i = 0; i < allTooltips.Length; i++)
-        {
-            CharacterStatTooltipUI candidate = allTooltips[i];
-
-            if (candidate == null)
-                continue;
-
-            if (!candidate.gameObject.scene.IsValid())
-                continue;
-
-            return candidate;
-        }
-
-        return null;
     }
 }
