@@ -165,9 +165,9 @@ MonoBehaviour:
   animator: {fileID: 1069507655856377534}
   idleStateName: Idle
   moveStateName: Move
-  guardStateName: 
+  guardStateName: Guard
   hitStateName: Hit
-  deadStateName: 
+  deadStateName: Dead
   controlStateName: Control
   attackReady1StateName: AttackAction1
   attackAction1StateName: AttackAction2
@@ -186,10 +186,10 @@ MonoBehaviour:
     flipType: 0
   buffVfx:
     prefab: {fileID: 0}
-    flipType: 0
+    flipType: 2
   debuffVfx:
     prefab: {fileID: 0}
-    flipType: 0
+    flipType: 2
   attackVfx1:
     prefab: {fileID: 3362751810309854143, guid: 3d23142866cb42f41b142372dfa89542, type: 3}
     flipType: 0

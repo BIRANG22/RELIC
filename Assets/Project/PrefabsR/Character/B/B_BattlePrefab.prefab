@@ -335,7 +335,7 @@ MonoBehaviour:
   moveStateName: Move
   guardStateName: Guard
   hitStateName: Hit
-  deadStateName: 
+  deadStateName: Dead
   controlStateName: Control
   attackReady1StateName: AttackReady
   attackAction1StateName: AttackAction1
