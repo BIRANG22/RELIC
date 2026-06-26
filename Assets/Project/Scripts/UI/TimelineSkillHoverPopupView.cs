@@ -14,6 +14,18 @@ public class TimelineSkillHoverPopupView : MonoBehaviour
     [SerializeField] private Vector2 rangeIconSize = new Vector2(60f, 60f);
     [SerializeField] private float rangeIconGap = 4f;
 
+    [Header("Readable Layout")]
+    [SerializeField] private float layoutWidth = 340f;
+    [SerializeField] private float horizontalPadding = 18f;
+    [SerializeField] private float verticalPadding = 12f;
+    [SerializeField] private float titleHeight = 24f;
+    [SerializeField] private float titleGap = 4f;
+    [SerializeField] private float minimumEffectHeight = 42f;
+    [SerializeField] private float maximumEffectHeight = 180f;
+    [SerializeField] private float titleFontSize = 16f;
+    [SerializeField] private float effectFontSize = 14f;
+    [SerializeField] private float effectLineSpacing = 2f;
+
     [Header("Fallback Text")]
     [SerializeField] private string emptyNameText = "";
     [TextArea]
@@ -49,7 +61,81 @@ public class TimelineSkillHoverPopupView : MonoBehaviour
         if (effectText != null)
             effectText.text = string.IsNullOrWhiteSpace(effectDescription) ? emptyEffectText : effectDescription;
 
+        ApplyReadableLayout();
         SetRangeIcon(rangeIcon);
+    }
+
+    private void ApplyReadableLayout()
+    {
+        RectTransform rootRect = transform as RectTransform;
+        RectTransform backgroundRect = backgroundImage != null
+            ? backgroundImage.transform as RectTransform
+            : null;
+        RectTransform nameRect = nameText != null
+            ? nameText.transform as RectTransform
+            : null;
+        RectTransform effectRect = effectText != null
+            ? effectText.transform as RectTransform
+            : null;
+
+        float width = Mathf.Max(260f, layoutWidth);
+        float textWidth = Mathf.Max(1f, width - horizontalPadding * 2f);
+        float effectHeight = minimumEffectHeight;
+
+        if (nameText != null)
+        {
+            nameText.fontSize = titleFontSize;
+            nameText.textWrappingMode = TextWrappingModes.NoWrap;
+            nameText.overflowMode = TextOverflowModes.Overflow;
+            nameText.alignment = TextAlignmentOptions.Left;
+        }
+
+        if (effectText != null)
+        {
+            effectText.fontSize = effectFontSize;
+            effectText.textWrappingMode = TextWrappingModes.Normal;
+            effectText.overflowMode = TextOverflowModes.Overflow;
+            effectText.alignment = TextAlignmentOptions.TopLeft;
+            effectText.lineSpacing = effectLineSpacing;
+
+            Vector2 preferred = effectText.GetPreferredValues(effectText.text, textWidth, 0f);
+            effectHeight = Mathf.Clamp(preferred.y, minimumEffectHeight, maximumEffectHeight);
+        }
+
+        float height = verticalPadding * 2f + titleHeight + titleGap + effectHeight;
+        Vector2 size = new Vector2(width, height);
+
+        if (rootRect != null)
+            rootRect.sizeDelta = size;
+
+        if (backgroundRect != null)
+        {
+            backgroundRect.anchorMin = new Vector2(0.5f, 0.5f);
+            backgroundRect.anchorMax = new Vector2(0.5f, 0.5f);
+            backgroundRect.pivot = new Vector2(0.5f, 0.5f);
+            backgroundRect.anchoredPosition = Vector2.zero;
+            backgroundRect.sizeDelta = size;
+        }
+
+        if (nameRect != null)
+        {
+            nameRect.anchorMin = new Vector2(0f, 1f);
+            nameRect.anchorMax = new Vector2(0f, 1f);
+            nameRect.pivot = new Vector2(0f, 1f);
+            nameRect.anchoredPosition = new Vector2(horizontalPadding, -verticalPadding);
+            nameRect.sizeDelta = new Vector2(textWidth, titleHeight);
+        }
+
+        if (effectRect != null)
+        {
+            effectRect.anchorMin = new Vector2(0f, 1f);
+            effectRect.anchorMax = new Vector2(0f, 1f);
+            effectRect.pivot = new Vector2(0f, 1f);
+            effectRect.anchoredPosition = new Vector2(
+                horizontalPadding,
+                -(verticalPadding + titleHeight + titleGap));
+            effectRect.sizeDelta = new Vector2(textWidth, effectHeight);
+        }
     }
 
     private void AutoBindReferences()

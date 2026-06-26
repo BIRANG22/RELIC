@@ -391,11 +391,7 @@ public class PlayerSkillReservationController : MonoBehaviour
             return;
         }
 
-        int requiredMoveCost = GetRequiredMoveReservationCount(
-            moveOffsets,
-            currentMoveDistancePerCommand);
-
-        if (requiredMoveCost > currentMoveReservationCapacity)
+        if (!CanReserveMovePathWithEffectiveCost(moveOffsets))
         {
             ShowBattleWarning("선택한 위치까지 이동할 Cost가 부족합니다.");
             return;
@@ -430,11 +426,7 @@ public class PlayerSkillReservationController : MonoBehaviour
             if (path == null || path.Count <= 0)
                 continue;
 
-            int requiredCost = GetRequiredMoveReservationCount(
-                path,
-                currentMoveDistancePerCommand);
-
-            if (requiredCost > currentMoveReservationCapacity)
+            if (!CanReserveMovePathWithEffectiveCost(path))
                 continue;
 
             return path;
@@ -463,10 +455,59 @@ public class PlayerSkillReservationController : MonoBehaviour
             projectedBlockedGridIndices,
             true);
 
-        if (path != null && path.Count > 0)
+        if (path != null &&
+            path.Count > 0 &&
+            CanReserveMovePathWithEffectiveCost(path))
+        {
             result.Add(path);
+        }
 
         return result;
+    }
+
+    private bool CanReserveMovePathWithEffectiveCost(IReadOnlyList<Vector2Int> moveOffsets)
+    {
+        if (IsSelfFlipMovePath(moveOffsets))
+            return true;
+
+        int effectiveCost = GetEffectiveMoveReservationCost(moveOffsets);
+
+        if (effectiveCost < 0)
+            return false;
+
+        return currentUserRuntime != null && currentUserRuntime.CanReserveCost(effectiveCost);
+    }
+
+    private int GetEffectiveMoveReservationCost(IReadOnlyList<Vector2Int> moveOffsets)
+    {
+        if (currentUserRuntime == null ||
+            currentSkillData == null ||
+            moveOffsets == null ||
+            moveOffsets.Count <= 0)
+        {
+            return -1;
+        }
+
+        PlayerReservedCommand previewCommand =
+            new PlayerReservedCommand(currentUserRuntime, currentSkillData);
+
+        previewCommand.SetMoveReservationCost(
+            GetMoveStepDistance(moveOffsets),
+            currentMoveDistancePerCommand);
+
+        EnsureTimelineController();
+
+        if (timelineController != null && currentSlotIndex >= 0)
+            timelineController.PreparePreviewCommandForReservation(currentSlotIndex, previewCommand);
+
+        return previewCommand.Cost;
+    }
+
+    private static bool IsSelfFlipMovePath(IReadOnlyList<Vector2Int> moveOffsets)
+    {
+        return moveOffsets != null &&
+               moveOffsets.Count == 1 &&
+               moveOffsets[0] == Vector2Int.zero;
     }
 
     private int GetMoveReservationCapacity()

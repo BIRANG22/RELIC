@@ -14,6 +14,9 @@ public class RestRoomController : MonoBehaviour
     private void OnEnable()
     {
         isRestUsed = false;
+        if (upgradePanel != null)
+            upgradePanel.ResetRestRoomUpgradeLimit();
+
         SpawnPartyAllies();
     }
 

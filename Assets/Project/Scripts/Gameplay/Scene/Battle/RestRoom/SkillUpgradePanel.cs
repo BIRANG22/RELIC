@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using Relic.Gameplay.Data;
 
 public enum SkillSlotType
@@ -26,15 +27,52 @@ public class SkillUpgradePanel : MonoBehaviour
     [SerializeField] private Transform contentRoot;
     [SerializeField] private SkillUpgradeIconItem iconPrefab;
 
+    [Header("Layout")]
+    [SerializeField] private Vector2 fallbackIconSize = new(20f, 20f);
+    [SerializeField] private Vector2 iconSpacing = new(8f, 8f);
+    [SerializeField] private RectOffset iconPadding = new();
+    [SerializeField] private TextAnchor iconAlignment = TextAnchor.UpperLeft;
+
     private readonly List<SkillUpgradeIconItem> spawnedItems = new();
+    private bool hasUpgradedThisRestRoom;
+
+    public bool HasUpgradedThisRestRoom => hasUpgradedThisRestRoom;
+
+    private void Awake()
+    {
+        ConfigureContentLayout();
+    }
+
+    private void OnEnable()
+    {
+        ConfigureContentLayout();
+    }
+
+    private void OnRectTransformDimensionsChange()
+    {
+        if (isActiveAndEnabled)
+            ConfigureContentLayout();
+    }
+
+    public void ResetRestRoomUpgradeLimit()
+    {
+        hasUpgradedThisRestRoom = false;
+    }
 
     public void Open()
     {
+        if (hasUpgradedThisRestRoom)
+        {
+            Close();
+            return;
+        }
+
         if (panelRoot != null)
             panelRoot.SetActive(true);
         else
             gameObject.SetActive(true);
 
+        ConfigureContentLayout();
         Refresh();
     }
 
@@ -51,6 +89,7 @@ public class SkillUpgradePanel : MonoBehaviour
     private void Refresh()
     {
         Clear();
+        ConfigureContentLayout();
 
         if (DataManager.Instance == null)
             return;
@@ -78,6 +117,7 @@ public class SkillUpgradePanel : MonoBehaviour
         }
 
         SpawnInventorySkillItems();
+        RebuildContentLayout();
     }
 
     private void SpawnInventorySkillItems()
@@ -106,6 +146,7 @@ public class SkillUpgradePanel : MonoBehaviour
             return;
 
         SkillUpgradeIconItem item = Instantiate(iconPrefab, contentRoot);
+        PrepareSpawnedItemLayout(item);
         item.Initialize(
             null,
             skillId,
@@ -158,6 +199,7 @@ public class SkillUpgradePanel : MonoBehaviour
             return;
 
         SkillUpgradeIconItem item = Instantiate(iconPrefab, contentRoot);
+        PrepareSpawnedItemLayout(item);
         item.Initialize(
             characterRuntime.CharacterId,
             skillId,
@@ -173,6 +215,9 @@ public class SkillUpgradePanel : MonoBehaviour
     private void OnSkillItemClicked(SkillUpgradeRequest request)
     {
         if (DataManager.Instance == null)
+            return;
+
+        if (hasUpgradedThisRestRoom)
             return;
 
         if (request.SlotType == SkillSlotType.Inventory)
@@ -222,8 +267,9 @@ public class SkillUpgradePanel : MonoBehaviour
             $"{request.CurrentSkillId} -> {request.UpgradeSkillId}"
         );
 
-        Refresh();
+        CompleteUpgrade();
     }
+
     private void UpgradeInventorySkill(SkillUpgradeRequest request)
     {
         BattleRuntimeData runtime = DataManager.Instance.BattleRuntimeStore.GetOrCreate();
@@ -243,8 +289,15 @@ public class SkillUpgradePanel : MonoBehaviour
             $"{request.CurrentSkillId} -> {request.UpgradeSkillId}"
         );
 
-        Refresh();
+        CompleteUpgrade();
     }
+
+    private void CompleteUpgrade()
+    {
+        hasUpgradedThisRestRoom = true;
+        Close();
+    }
+
     private void Clear()
     {
         for (int i = 0; i < spawnedItems.Count; i++)
@@ -254,6 +307,150 @@ public class SkillUpgradePanel : MonoBehaviour
         }
 
         spawnedItems.Clear();
+    }
+
+    private void ConfigureContentLayout()
+    {
+        if (contentRoot == null)
+            return;
+
+        iconPadding ??= new RectOffset();
+
+        Vector2 iconSize = ResolveIconSize();
+        GridLayoutGroup grid = contentRoot.GetComponent<GridLayoutGroup>();
+
+        if (grid == null)
+            grid = contentRoot.gameObject.AddComponent<GridLayoutGroup>();
+
+        DisableCompetingLayoutGroups(grid);
+
+        grid.enabled = true;
+        grid.childAlignment = iconAlignment;
+        grid.startCorner = GridLayoutGroup.Corner.UpperLeft;
+        grid.startAxis = GridLayoutGroup.Axis.Horizontal;
+        grid.cellSize = iconSize;
+        grid.spacing = iconSpacing;
+        grid.padding = iconPadding;
+        grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        grid.constraintCount = CalculateColumnCount(iconSize);
+
+        ContentSizeFitter fitter = contentRoot.GetComponent<ContentSizeFitter>();
+
+        if (fitter == null)
+            fitter = contentRoot.gameObject.AddComponent<ContentSizeFitter>();
+
+        fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+    }
+
+    private void DisableCompetingLayoutGroups(GridLayoutGroup activeGrid)
+    {
+        LayoutGroup[] layoutGroups = contentRoot.GetComponents<LayoutGroup>();
+
+        for (int i = 0; i < layoutGroups.Length; i++)
+        {
+            LayoutGroup layoutGroup = layoutGroups[i];
+
+            if (layoutGroup == null || layoutGroup == activeGrid)
+                continue;
+
+            layoutGroup.enabled = false;
+        }
+    }
+
+    private int CalculateColumnCount(Vector2 iconSize)
+    {
+        RectTransform rectTransform = contentRoot as RectTransform;
+        float width = rectTransform != null ? rectTransform.rect.width : 0f;
+
+        if (width <= 0f && rectTransform != null)
+            width = rectTransform.sizeDelta.x;
+
+        if (width <= 0f)
+            return 1;
+
+        float availableWidth = Mathf.Max(0f, width - iconPadding.left - iconPadding.right);
+        float cellWidth = Mathf.Max(1f, iconSize.x);
+        float spacing = Mathf.Max(0f, iconSpacing.x);
+
+        return Mathf.Max(1, Mathf.FloorToInt((availableWidth + spacing) / (cellWidth + spacing)));
+    }
+
+    private Vector2 ResolveIconSize()
+    {
+        Vector2 size = fallbackIconSize;
+
+        if (iconPrefab == null)
+            return ClampIconSize(size);
+
+        LayoutElement prefabLayout = iconPrefab.GetComponent<LayoutElement>();
+
+        if (prefabLayout != null &&
+            prefabLayout.preferredWidth > 0f &&
+            prefabLayout.preferredHeight > 0f)
+        {
+            return ClampIconSize(new Vector2(prefabLayout.preferredWidth, prefabLayout.preferredHeight));
+        }
+
+        RectTransform prefabRect = iconPrefab.GetComponent<RectTransform>();
+
+        if (prefabRect == null)
+            return ClampIconSize(size);
+
+        Vector2 rectSize = prefabRect.rect.size;
+
+        if (rectSize.x > 0f && rectSize.y > 0f)
+            return ClampIconSize(rectSize);
+
+        if (prefabRect.sizeDelta.x > 0f && prefabRect.sizeDelta.y > 0f)
+            return ClampIconSize(prefabRect.sizeDelta);
+
+        return ClampIconSize(size);
+    }
+
+    private Vector2 ClampIconSize(Vector2 size)
+    {
+        return new Vector2(
+            Mathf.Max(1f, size.x),
+            Mathf.Max(1f, size.y)
+        );
+    }
+
+    private void PrepareSpawnedItemLayout(SkillUpgradeIconItem item)
+    {
+        if (item == null)
+            return;
+
+        Vector2 iconSize = ResolveIconSize();
+        RectTransform rectTransform = item.GetComponent<RectTransform>();
+
+        if (rectTransform != null)
+        {
+            rectTransform.anchorMin = new Vector2(0f, 1f);
+            rectTransform.anchorMax = new Vector2(0f, 1f);
+            rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            rectTransform.sizeDelta = iconSize;
+            rectTransform.localScale = Vector3.one;
+        }
+
+        LayoutElement layoutElement = item.GetComponent<LayoutElement>();
+
+        if (layoutElement == null)
+            layoutElement = item.gameObject.AddComponent<LayoutElement>();
+
+        layoutElement.ignoreLayout = false;
+        layoutElement.minWidth = iconSize.x;
+        layoutElement.minHeight = iconSize.y;
+        layoutElement.preferredWidth = iconSize.x;
+        layoutElement.preferredHeight = iconSize.y;
+        layoutElement.flexibleWidth = 0f;
+        layoutElement.flexibleHeight = 0f;
+    }
+
+    private void RebuildContentLayout()
+    {
+        if (contentRoot is RectTransform rectTransform)
+            LayoutRebuilder.ForceRebuildLayoutImmediate(rectTransform);
     }
 
     private bool TryGetSkillUpgradeId(string skillId, out string upgradeSkillId)
