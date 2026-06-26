@@ -65,7 +65,12 @@ public class GridCell : MonoBehaviour
 
     public void SetPreview()
     {
-        SetHighlightColor(previewColor);
+        SetPreview(previewColor);
+    }
+
+    public void SetPreview(Color color)
+    {
+        SetHighlightColor(color);
         SetHighlightActive(true);
     }
 
@@ -77,7 +82,12 @@ public class GridCell : MonoBehaviour
 
     public void SetRangePreview()
     {
-        SetHighlightColor(rangePreviewColor);
+        SetRangePreview(rangePreviewColor);
+    }
+
+    public void SetRangePreview(Color color)
+    {
+        SetHighlightColor(color);
         SetHighlightActive(true);
     }
 
@@ -109,6 +119,8 @@ public class GridCell : MonoBehaviour
         if (highlightRenderer == null)
             return;
 
+        color.a = 1f;
+
         if (highlightPropertyBlock == null)
             highlightPropertyBlock = new MaterialPropertyBlock();
 
@@ -116,6 +128,10 @@ public class GridCell : MonoBehaviour
 
         highlightPropertyBlock.SetColor("_BaseColor", color);
         highlightPropertyBlock.SetColor("_Color", color);
+        highlightPropertyBlock.SetColor("_Tint", color);
+        highlightPropertyBlock.SetColor("_RendererColor", color);
+        highlightPropertyBlock.SetFloat("_Alpha", 1f);
+        highlightPropertyBlock.SetFloat("_Opacity", 1f);
 
         highlightRenderer.SetPropertyBlock(highlightPropertyBlock);
     }

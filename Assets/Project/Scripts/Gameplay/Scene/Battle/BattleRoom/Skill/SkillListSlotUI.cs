@@ -270,7 +270,10 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         ApplySortingState();
 
         if (owner != null)
+        {
             owner.ShowSkillDetail(detailText, rectTransform);
+            owner.ShowSkillHoverRangePreview(skillData);
+        }
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -280,7 +283,10 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         ApplySortingState();
 
         if (owner != null)
+        {
             owner.HideSkillDetail();
+            owner.ClearSkillHoverRangePreview();
+        }
     }
 
     public void OnPointerDown(PointerEventData eventData)
@@ -322,6 +328,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         owner.SelectSkillSlot(this);
         owner.SelectSkill(skillId);
         owner.ShowSkillDetail(detailText, rectTransform);
+        owner.ShowSkillHoverRangePreview(skillData);
     }
 
     private void ApplyVisualState()

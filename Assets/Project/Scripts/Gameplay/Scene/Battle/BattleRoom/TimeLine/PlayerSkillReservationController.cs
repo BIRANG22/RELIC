@@ -15,6 +15,12 @@ public class PlayerSkillReservationController : MonoBehaviour
     [SerializeField] private bool keepSkillListOpenAfterReservationClick = true;
     [SerializeField] private int keepSkillListOpenIgnoreFrames = 1;
 
+    [Header("Range Highlight Colors")]
+    [SerializeField] private Color moveHighlightColor = new Color(0.698f, 0.698f, 0.243f, 1f);
+    [SerializeField] private Color powerHighlightColor = new Color(0.243f, 0.318f, 0.698f, 1f);
+    [SerializeField] private Color attackHighlightColor = new Color(0.698f, 0.243f, 0.271f, 1f);
+    [SerializeField] private Color skillHighlightColor = new Color(0.686f, 0.243f, 0.698f, 1f);
+
     private CharacterRuntimeData currentUserRuntime;
     private SkillMasterData currentSkillData;
     private int currentSlotIndex = -1;
@@ -73,6 +79,84 @@ public class PlayerSkillReservationController : MonoBehaviour
             return;
 
         skillListPanel.IgnoreOutsideCloseForFrames(keepSkillListOpenIgnoreFrames);
+    }
+
+    public void ShowSkillHoverRangePreview(
+        CharacterRuntimeData userRuntime,
+        SkillMasterData skillData,
+        int slotIndex)
+    {
+        if (rangePreview == null)
+            return;
+
+        rangePreview.ClearRangeOnly();
+
+        if (userRuntime == null || skillData == null)
+            return;
+
+        if (IsMoveSkillSelectionActive())
+            return;
+
+        if (IsMoveSkill(skillData))
+            return;
+
+        if (gridManager == null || DataManager.Instance == null || DataManager.Instance.RangeDatabase == null)
+            return;
+
+        EnsureTimelineController();
+
+        int casterGridIndex = FindCurrentCharacterGridIndex(userRuntime);
+        BattleDirection casterDirection = userRuntime.Direction;
+
+        if (timelineController != null && slotIndex >= 0)
+        {
+            int previewGridIndex = timelineController.GetPreviewGridIndexAtSlotEnd(userRuntime, slotIndex);
+
+            if (previewGridIndex >= 0)
+                casterGridIndex = previewGridIndex;
+
+            casterDirection = timelineController.GetPreviewDirection(userRuntime, slotIndex);
+        }
+
+        if (casterGridIndex < 0)
+            return;
+
+        string rangeId = BattleEquipmentEffectService.GetEffectiveRangeId(userRuntime, skillData);
+        List<int> rangeIndices = new();
+
+        if (skillData.RangeType == RangeType.Direction)
+        {
+            rangeIndices = BattleRangeCalculator.GetDirectionRangeIndices(
+                casterGridIndex,
+                rangeId,
+                casterDirection,
+                DataManager.Instance.RangeDatabase,
+                gridManager
+            );
+        }
+        else if (skillData.RangeType == RangeType.Selection)
+        {
+            rangeIndices = BattleRangeCalculator.GetSelectionRangeIndices(
+                casterGridIndex,
+                rangeId,
+                DataManager.Instance.RangeDatabase,
+                gridManager
+            );
+        }
+
+        if (ShouldExcludeCasterGridFromPreview(skillData))
+            rangeIndices.RemoveAll(index => index == casterGridIndex);
+
+        if (rangeIndices.Count <= 0)
+            return;
+
+        rangePreview.ShowRangeCells(rangeIndices, GetHighlightColor(skillData));
+    }
+
+    public void ClearSkillHoverRangePreview()
+    {
+        if (rangePreview != null)
+            rangePreview.ClearRangeOnly();
     }
 
     public void StartReservation(
@@ -213,7 +297,7 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (currentMoveReservationCapacity <= 0)
         {
             if (currentMoveSelectableIndices.Count > 0 && rangePreview != null)
-                rangePreview.ShowDirectionCells(currentMoveSelectableIndices);
+                rangePreview.ShowDirectionCells(currentMoveSelectableIndices, GetHighlightColor(currentSkillData));
 
             if (currentMoveSelectableIndices.Count > 0)
                 return;
@@ -257,7 +341,7 @@ public class PlayerSkillReservationController : MonoBehaviour
             ShowBattleWarning("선택 가능한 칸이 없습니다.");
 
         if (rangePreview != null)
-            rangePreview.ShowDirectionCells(currentMoveSelectableIndices);
+            rangePreview.ShowDirectionCells(currentMoveSelectableIndices, GetHighlightColor(currentSkillData));
     }
 
     private void AddCurrentCasterSelfFlipCandidate(ISet<int> blockedDestinationGridIndices)
@@ -1722,6 +1806,76 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         return skillData.SkillId == MoveSkillLevelOneId ||
                skillData.SkillId == MoveSkillLevelTwoId;
+    }
+
+    private int FindCurrentCharacterGridIndex(CharacterRuntimeData userRuntime)
+    {
+        if (userRuntime == null)
+            return -1;
+
+        BattleCharacter[] characters = FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            BattleCharacter character = characters[i];
+
+            if (character == null || character.RuntimeData == null)
+                continue;
+
+            if (character.RuntimeData.CharacterId != userRuntime.CharacterId)
+                continue;
+
+            return character.CurrentGridIndex;
+        }
+
+        return -1;
+    }
+
+
+    public bool IsMoveSkillSelectionActive()
+    {
+        return currentSkillData != null && IsMoveSkill(currentSkillData);
+    }
+
+    public Color GetHighlightColorForSkill(SkillMasterData skillData)
+    {
+        return GetHighlightColor(skillData);
+    }
+
+    public bool ShouldExcludeCasterGridFromPreview(SkillMasterData skillData)
+    {
+        if (skillData == null)
+            return false;
+
+        return skillData.SkillType == SkillType.Attack ||
+               skillData.SkillType == SkillType.Skill;
+    }
+
+    private Color GetHighlightColor(SkillMasterData skillData)
+    {
+        if (skillData == null)
+            return skillHighlightColor;
+
+        if (IsMoveSkill(skillData))
+            return moveHighlightColor;
+
+        switch (skillData.SkillType)
+        {
+            case SkillType.Power:
+                return powerHighlightColor;
+
+            case SkillType.Attack:
+                return attackHighlightColor;
+
+            case SkillType.Skill:
+                return skillHighlightColor;
+
+            default:
+                return skillHighlightColor;
+        }
     }
 
     private void ShowBattleWarning(string message)
