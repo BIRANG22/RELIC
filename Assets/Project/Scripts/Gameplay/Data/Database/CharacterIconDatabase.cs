@@ -72,6 +72,20 @@ namespace Relic.Gameplay.Data
             mark = entry.Mark;
             return mark != null;
         }
+
+        public bool TryGetMark2(string characterId, out Sprite mark2)
+        {
+            mark2 = null;
+
+            if (map == null)
+                Initialize();
+
+            if (!map.TryGetValue(characterId, out var entry))
+                return false;
+
+            mark2 = entry.Mark2;
+            return mark2 != null;
+        }
     }
 
     [Serializable]
@@ -81,5 +95,6 @@ namespace Relic.Gameplay.Data
         public Sprite Icon;
         public Sprite TimelineIcon;
         public Sprite Mark;
+        public Sprite Mark2;
     }
 }

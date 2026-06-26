@@ -8,8 +8,7 @@ public class UIManager : Singleton<UIManager>
     [Header("UI Prefabs")]
     [SerializeField] private GameObject optionPanelPrefab;
 
-    [Header("Option Panel Settings")]
-    [SerializeField] private Vector3 optionPanelScale = new Vector3(0.5f, 0.5f, 1f);
+    private static readonly Vector3 OptionPanelDefaultScale = Vector3.one;
 
     private GameObject optionPanelInstance;
 
@@ -45,7 +44,7 @@ public class UIManager : Singleton<UIManager>
         }
 
         optionPanelInstance = Instantiate(optionPanelPrefab, mainCanvas.transform, false);
-        optionPanelInstance.transform.localScale = optionPanelScale;
+        ApplyOptionPanelScale();
         optionPanelInstance.SetActive(false);
     }
 
@@ -56,9 +55,21 @@ public class UIManager : Singleton<UIManager>
 
         if (optionPanelInstance != null)
         {
-            optionPanelInstance.transform.localScale = optionPanelScale;
+            ApplyOptionPanelScale();
             optionPanelInstance.SetActive(true);
         }
+    }
+
+    private void ApplyOptionPanelScale()
+    {
+        if (optionPanelInstance == null)
+            return;
+
+        Transform optionTransform = optionPanelInstance.transform;
+        optionTransform.localScale = OptionPanelDefaultScale;
+
+        if (optionTransform is RectTransform rectTransform)
+            rectTransform.localScale = OptionPanelDefaultScale;
     }
 
     public void HideOption()

@@ -1,3 +1,4 @@
+using System.Collections;
 using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
@@ -25,6 +26,7 @@ public class CharacterInfoPanel : MonoBehaviour
 
     [Header("Character Mark")]
     [SerializeField] private Image characterMarkImage;
+    [SerializeField] private Image characterMark2Image;
     [SerializeField] private bool autoBindCharacterMarkImage = true;
     [SerializeField] private bool hideMarkWhenMissing = true;
 
@@ -32,10 +34,14 @@ public class CharacterInfoPanel : MonoBehaviour
     [SerializeField] private TMP_Text storyText;
     [SerializeField] private string storyTooltipTitleColor = "#4E66DF";
 
+    [Header("Story Tooltip Timing")]
+    [SerializeField, Min(0f)] private float storyTooltipRestoreDelay = 0.15f;
+
     private CharacterMasterData currentMasterData;
     private CharacterRuntimeData currentRuntimeData;
     private string currentStoryText = "";
     private Component temporaryStoryOwner;
+    private Coroutine restoreStoryCoroutine;
 
     public CharacterMasterData CurrentMasterData => currentMasterData;
     public CharacterRuntimeData CurrentRuntimeData => currentRuntimeData;
@@ -59,6 +65,7 @@ public class CharacterInfoPanel : MonoBehaviour
         currentMasterData = masterData;
         currentRuntimeData = runtimeData;
         temporaryStoryOwner = null;
+        CancelRestoreStoryCoroutine();
 
         Refresh();
     }
@@ -108,6 +115,7 @@ public class CharacterInfoPanel : MonoBehaviour
         currentRuntimeData = null;
         currentStoryText = "";
         temporaryStoryOwner = null;
+        CancelRestoreStoryCoroutine();
 
         ApplyCostLabels();
 
@@ -132,6 +140,7 @@ public class CharacterInfoPanel : MonoBehaviour
         if (storyText == null)
             return;
 
+        CancelRestoreStoryCoroutine();
         temporaryStoryOwner = owner;
         ApplyStoryText(FormatStoryTooltip(statName, description, valueLine));
     }
@@ -141,8 +150,41 @@ public class CharacterInfoPanel : MonoBehaviour
         if (temporaryStoryOwner != null && owner != null && temporaryStoryOwner != owner)
             return;
 
+        CancelRestoreStoryCoroutine();
+
+        if (storyTooltipRestoreDelay <= 0f || !gameObject.activeInHierarchy)
+        {
+            RestoreStoryText(owner);
+            return;
+        }
+
+        restoreStoryCoroutine = StartCoroutine(RestoreStoryTextAfterDelay(owner));
+    }
+
+    private IEnumerator RestoreStoryTextAfterDelay(Component owner)
+    {
+        yield return new WaitForSecondsRealtime(storyTooltipRestoreDelay);
+
+        restoreStoryCoroutine = null;
+        RestoreStoryText(owner);
+    }
+
+    private void RestoreStoryText(Component owner)
+    {
+        if (temporaryStoryOwner != null && owner != null && temporaryStoryOwner != owner)
+            return;
+
         temporaryStoryOwner = null;
         ApplyStoryText(currentStoryText);
+    }
+
+    private void CancelRestoreStoryCoroutine()
+    {
+        if (restoreStoryCoroutine == null)
+            return;
+
+        StopCoroutine(restoreStoryCoroutine);
+        restoreStoryCoroutine = null;
     }
 
     private void RefreshStoryTextCache()
@@ -207,28 +249,39 @@ public class CharacterInfoPanel : MonoBehaviour
     {
         AutoBindCharacterMarkImageIfNeeded();
 
-        if (characterMarkImage == null)
-            return;
-
-        Sprite markSprite = GetCharacterMarkSprite();
-        bool hasMark = markSprite != null;
-
-        characterMarkImage.sprite = markSprite;
-        characterMarkImage.enabled = hasMark || !hideMarkWhenMissing;
-        characterMarkImage.gameObject.SetActive(hasMark || !hideMarkWhenMissing);
+        ApplyCharacterMarkImage(characterMarkImage, GetCharacterMarkSprite());
+        ApplyCharacterMarkImage(characterMark2Image, GetCharacterMark2Sprite());
     }
 
     private void ClearCharacterMark()
     {
-        if (characterMarkImage == null)
+        ClearCharacterMarkImage(characterMarkImage);
+        ClearCharacterMarkImage(characterMark2Image);
+    }
+
+    private void ApplyCharacterMarkImage(Image targetImage, Sprite sprite)
+    {
+        if (targetImage == null)
             return;
 
-        characterMarkImage.sprite = null;
+        bool hasSprite = sprite != null;
+
+        targetImage.sprite = sprite;
+        targetImage.enabled = hasSprite || !hideMarkWhenMissing;
+        targetImage.gameObject.SetActive(hasSprite || !hideMarkWhenMissing);
+    }
+
+    private void ClearCharacterMarkImage(Image targetImage)
+    {
+        if (targetImage == null)
+            return;
+
+        targetImage.sprite = null;
 
         if (hideMarkWhenMissing)
         {
-            characterMarkImage.enabled = false;
-            characterMarkImage.gameObject.SetActive(false);
+            targetImage.enabled = false;
+            targetImage.gameObject.SetActive(false);
         }
     }
 
@@ -249,29 +302,69 @@ public class CharacterInfoPanel : MonoBehaviour
         return null;
     }
 
+    private Sprite GetCharacterMark2Sprite()
+    {
+        if (currentMasterData == null)
+            return null;
+
+        if (DataManager.Instance == null)
+            return null;
+
+        if (DataManager.Instance.CharacterIconDatabase == null)
+            return null;
+
+        if (DataManager.Instance.CharacterIconDatabase.TryGetMark2(currentMasterData.CharacterId, out Sprite mark2))
+            return mark2;
+
+        return null;
+    }
+
     private void AutoBindCharacterMarkImageIfNeeded()
     {
         if (!autoBindCharacterMarkImage)
             return;
 
-        if (characterMarkImage != null)
-            return;
-
-        Transform markTransform = FindChildByName(transform, "CharacterMark");
-
-        if (markTransform == null)
-            markTransform = FindChildByName(transform, "Mark");
-
-        if (markTransform == null)
-            markTransform = FindChildByName(transform, "MarkImage");
-
-        if (markTransform == null)
-            return;
-
-        characterMarkImage = markTransform.GetComponent<Image>();
-
         if (characterMarkImage == null)
-            characterMarkImage = markTransform.GetComponentInChildren<Image>(true);
+        {
+            characterMarkImage = FindImageByNames(
+                "Character_mark",
+                "CharacterMark",
+                "Mark",
+                "MarkImage");
+        }
+
+        if (characterMark2Image == null)
+        {
+            characterMark2Image = FindImageByNames(
+                "Character_mark2",
+                "CharacterMark2",
+                "Mark2",
+                "Mark2Image");
+        }
+    }
+
+    private Image FindImageByNames(params string[] names)
+    {
+        if (names == null)
+            return null;
+
+        for (int i = 0; i < names.Length; i++)
+        {
+            Transform target = FindChildByName(transform, names[i]);
+
+            if (target == null)
+                continue;
+
+            Image image = target.GetComponent<Image>();
+
+            if (image == null)
+                image = target.GetComponentInChildren<Image>(true);
+
+            if (image != null)
+                return image;
+        }
+
+        return null;
     }
 
     private Transform FindChildByName(Transform root, string targetName)
