@@ -4,8 +4,9 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// 현재 선택된 파티 캐릭터들을 배틀 인벤토리 패널의 슬롯 UI에 표시합니다.
-/// 슬롯 하위의 PortraitImage 오브젝트에 CharacterIconDatabase의 Mark 이미지를 표시합니다.
+/// 현재 선택된 파티 캐릭터들을 슬롯형 인벤토리 패널에 표시합니다.
+/// PortraitImage에는 CharacterIconDatabase의 Mark 이미지를 표시하고,
+/// PortraitImage2에는 CharacterIconDatabase의 Mark2 이미지를 표시합니다.
 /// </summary>
 public class PartyCharacterSlotListUI : MonoBehaviour
 {
@@ -15,6 +16,7 @@ public class PartyCharacterSlotListUI : MonoBehaviour
     private const string BackImageName = "Backimage";
     private const string MaskName = "mask";
     private const string PortraitImageName = "PortraitImage";
+    private const string PortraitImage2Name = "PortraitImage2";
     private const string NameTextName = "Name";
 
     private void OnEnable()
@@ -66,24 +68,28 @@ public class PartyCharacterSlotListUI : MonoBehaviour
                 masterData = DataManager.Instance.CharacterDatabase.Get(characterId);
 
             Sprite markSprite = null;
+            Sprite mark2Sprite = null;
 
             if (DataManager.Instance.CharacterIconDatabase != null)
+            {
                 DataManager.Instance.CharacterIconDatabase.TryGetMark(characterId, out markSprite);
+                DataManager.Instance.CharacterIconDatabase.TryGetMark2(characterId, out mark2Sprite);
+            }
 
             string characterName = masterData != null
                 ? masterData.Name
                 : characterId;
 
-            ApplySlot(slot.transform, characterName, markSprite);
+            ApplySlot(slot.transform, characterName, markSprite, mark2Sprite);
 
             displaySlotIndex++;
         }
     }
 
     /// <summary>
-    /// 슬롯에 캐릭터 이름과 캐릭터 마크 이미지를 적용합니다.
+    /// 슬롯에 캐릭터 이름, Mark, Mark2 이미지를 적용합니다.
     /// </summary>
-    private void ApplySlot(Transform slotTransform, string characterName, Sprite markSprite)
+    private void ApplySlot(Transform slotTransform, string characterName, Sprite markSprite, Sprite mark2Sprite)
     {
         if (slotTransform == null)
             return;
@@ -93,22 +99,21 @@ public class PartyCharacterSlotListUI : MonoBehaviour
         if (nameText != null)
             nameText.text = characterName;
 
-        Image portraitImage = FindPortraitImage(slotTransform);
+        Image portraitImage = FindNamedImage(slotTransform, PortraitImageName);
 
         if (portraitImage == null)
-        {
             Debug.LogWarning($"{gameObject.name}: {slotTransform.name} 안에서 {PortraitImageName} 오브젝트를 찾지 못했습니다.");
-            return;
-        }
+        else
+            ApplyImage(portraitImage, markSprite);
 
-        portraitImage.sprite = markSprite;
-        portraitImage.enabled = markSprite != null;
-        portraitImage.preserveAspect = true;
-        portraitImage.raycastTarget = false;
+        Image portraitImage2 = FindNamedImage(slotTransform, PortraitImage2Name);
+
+        if (portraitImage2 != null)
+            ApplyImage(portraitImage2, mark2Sprite);
     }
 
     /// <summary>
-    /// 슬롯 안에서 이름 텍스트를 찾습니다.
+    /// 슬롯 안의 이름 텍스트를 찾습니다.
     /// </summary>
     private TMP_Text FindNameText(Transform slotTransform)
     {
@@ -129,17 +134,22 @@ public class PartyCharacterSlotListUI : MonoBehaviour
     /// </summary>
     private Image FindPortraitImage(Transform slotTransform)
     {
-        if (slotTransform == null)
+        return FindNamedImage(slotTransform, PortraitImageName);
+    }
+
+    private Image FindNamedImage(Transform slotTransform, string imageObjectName)
+    {
+        if (slotTransform == null || string.IsNullOrWhiteSpace(imageObjectName))
             return null;
 
-        Transform directPortraitTransform = slotTransform.Find(PortraitImageName);
+        Transform directImageTransform = slotTransform.Find(imageObjectName);
 
-        if (directPortraitTransform != null)
+        if (directImageTransform != null)
         {
-            Image directPortraitImage = directPortraitTransform.GetComponent<Image>();
+            Image directImage = directImageTransform.GetComponent<Image>();
 
-            if (directPortraitImage != null)
-                return directPortraitImage;
+            if (directImage != null)
+                return directImage;
         }
 
         Image[] childImages = slotTransform.GetComponentsInChildren<Image>(true);
@@ -151,7 +161,7 @@ public class PartyCharacterSlotListUI : MonoBehaviour
             if (childImage == null)
                 continue;
 
-            if (childImage.gameObject.name == PortraitImageName)
+            if (childImage.gameObject.name == imageObjectName)
                 return childImage;
         }
 
@@ -163,14 +173,14 @@ public class PartyCharacterSlotListUI : MonoBehaviour
 
             if (maskTransform != null)
             {
-                Transform oldPortraitTransform = maskTransform.Find(PortraitImageName);
+                Transform oldImageTransform = maskTransform.Find(imageObjectName);
 
-                if (oldPortraitTransform != null)
+                if (oldImageTransform != null)
                 {
-                    Image oldPortraitImage = oldPortraitTransform.GetComponent<Image>();
+                    Image oldImage = oldImageTransform.GetComponent<Image>();
 
-                    if (oldPortraitImage != null)
-                        return oldPortraitImage;
+                    if (oldImage != null)
+                        return oldImage;
                 }
             }
         }
@@ -178,8 +188,19 @@ public class PartyCharacterSlotListUI : MonoBehaviour
         return null;
     }
 
+    private void ApplyImage(Image image, Sprite sprite)
+    {
+        if (image == null)
+            return;
+
+        image.sprite = sprite;
+        image.enabled = sprite != null;
+        image.preserveAspect = true;
+        image.raycastTarget = false;
+    }
+
     /// <summary>
-    /// 모든 슬롯의 캐릭터 이름과 PortraitImage만 비웁니다.
+    /// 모든 슬롯의 캐릭터 이름과 이미지를 비웁니다.
     /// </summary>
     private void ClearAll()
     {
@@ -193,7 +214,7 @@ public class PartyCharacterSlotListUI : MonoBehaviour
     }
 
     /// <summary>
-    /// 특정 슬롯의 이름과 PortraitImage만 비웁니다.
+    /// 특정 슬롯의 이름과 이미지를 비웁니다.
     /// </summary>
     private void ClearSlot(Transform slotTransform)
     {
@@ -205,12 +226,10 @@ public class PartyCharacterSlotListUI : MonoBehaviour
         if (nameText != null)
             nameText.text = string.Empty;
 
-        Image portraitImage = FindPortraitImage(slotTransform);
+        Image portraitImage = FindNamedImage(slotTransform, PortraitImageName);
+        Image portraitImage2 = FindNamedImage(slotTransform, PortraitImage2Name);
 
-        if (portraitImage == null)
-            return;
-
-        portraitImage.sprite = null;
-        portraitImage.enabled = false;
+        ApplyImage(portraitImage, null);
+        ApplyImage(portraitImage2, null);
     }
 }
