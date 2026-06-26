@@ -33,8 +33,10 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
     [SerializeField] private SfxType clickSfxType = SfxType.NormalButtonClick;
 
     private EquippedSkillPanelUI ownerPanel;
+    private SkillInventoryPanelUI skillInventoryPanel;
     private SkillMasterData skillData;
     private CharacterRuntimeData runtimeData;
+    private int equippedSkillIndex = -1;
     private RectTransform rectTransform;
     private Vector3 baseScale = Vector3.one;
     private bool hasCapturedBaseScale;
@@ -103,11 +105,15 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         SkillMasterData data,
         Sprite icon,
         bool clickable,
-        CharacterRuntimeData runtime)
+        CharacterRuntimeData runtime,
+        int equippedSkillIndex = -1,
+        SkillInventoryPanelUI inventoryPanel = null)
     {
         ownerPanel = owner;
+        skillInventoryPanel = inventoryPanel;
         skillData = data;
         runtimeData = runtime;
+        this.equippedSkillIndex = equippedSkillIndex;
         canClick = clickable;
         isPointerOver = false;
         isSelected = false;
@@ -134,11 +140,49 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         ApplySortingState();
     }
 
+    public void SetEmptySkillSlot(
+        EquippedSkillPanelUI owner,
+        CharacterRuntimeData runtime,
+        int equippedSkillIndex,
+        SkillInventoryPanelUI inventoryPanel)
+    {
+        ownerPanel = owner;
+        skillInventoryPanel = inventoryPanel;
+        skillData = null;
+        runtimeData = runtime;
+        this.equippedSkillIndex = equippedSkillIndex;
+        canClick = true;
+        isPointerOver = false;
+        isSelected = false;
+
+        if (scaleTarget == null)
+            scaleTarget = GetComponent<RectTransform>();
+
+        CaptureBaseScaleOnce();
+        CaptureSortingCanvas();
+
+        if (iconImage != null)
+        {
+            iconImage.sprite = null;
+            iconImage.enabled = !hideEmptySlotIcon;
+            iconImage.raycastTarget = true;
+        }
+
+        if (button != null)
+            button.interactable = true;
+
+        ApplyBorderState();
+        ApplyScale(true);
+        ApplySortingState();
+    }
+
     public void Clear()
     {
         ownerPanel = null;
+        skillInventoryPanel = null;
         skillData = null;
         runtimeData = null;
+        equippedSkillIndex = -1;
         canClick = true;
         isPointerOver = false;
         isSelected = false;
@@ -160,7 +204,7 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
 
     public void SetSelected(bool selected)
     {
-        isSelected = selected && canClick && skillData != null;
+        isSelected = selected && canClick && (skillData != null || skillInventoryPanel != null);
         ApplyBorderState();
         ApplyScale(false);
         ApplySortingState();
@@ -213,10 +257,39 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        if (skillData == null || !canClick)
+        if (!canClick)
             return;
 
         PlayClickSfx();
+
+        if (skillInventoryPanel != null &&
+            runtimeData != null &&
+            SkillInventoryEquipService.IsFreeSkillSlotIndex(equippedSkillIndex))
+        {
+            if (skillInventoryPanel.CheckSkillEditLocked())
+                return;
+
+            if (skillInventoryPanel.EquipSelectedInventorySkillToSlot(
+                    runtimeData.CharacterId,
+                    equippedSkillIndex))
+            {
+                return;
+            }
+
+            if (skillData != null &&
+                skillInventoryPanel.UnequipSkill(runtimeData.CharacterId, equippedSkillIndex))
+            {
+                return;
+            }
+
+            skillInventoryPanel.SelectEquipSlot(runtimeData.CharacterId, equippedSkillIndex);
+            ownerPanel?.SelectEquippedSkillSlot(this);
+            return;
+        }
+
+        if (skillData == null)
+            return;
+
         ownerPanel?.SelectEquippedSkillSlot(this);
     }
 
@@ -225,7 +298,7 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         if (!useHoverBorderColor || borderImage == null)
             return;
 
-        bool canShowHoverOrSelectedEffect = canClick && skillData != null;
+        bool canShowHoverOrSelectedEffect = canClick && (skillData != null || skillInventoryPanel != null);
 
         if (isSelected && canShowHoverOrSelectedEffect)
             borderImage.color = selectedBorderColor;
@@ -242,7 +315,7 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
 
         CaptureBaseScaleOnce();
 
-        float scaleMultiplier = useSelectedScale && isSelected && canClick && skillData != null ? selectedScale : 1f;
+        float scaleMultiplier = useSelectedScale && isSelected && canClick && (skillData != null || skillInventoryPanel != null) ? selectedScale : 1f;
         Vector3 targetScale = baseScale * scaleMultiplier;
 
         if (instant)
@@ -307,7 +380,7 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         if (!boostSortingOnHoverOrSelected || sortingCanvas == null)
             return;
 
-        bool shouldBoost = (isPointerOver || isSelected) && canClick && skillData != null;
+        bool shouldBoost = (isPointerOver || isSelected) && canClick && (skillData != null || skillInventoryPanel != null);
 
         if (shouldBoost)
         {

@@ -9,6 +9,7 @@ public class EquippedSkillCharacterRowUI : MonoBehaviour
     [SerializeField] private EquippedSkillSlotUI abilitySlot;
     [SerializeField] private EquippedSkillSlotUI freeSlot1;
     [SerializeField] private EquippedSkillSlotUI freeSlot2;
+    [SerializeField] private SkillInventoryPanelUI skillInventoryPanel;
 
     private EquippedSkillPanelUI ownerPanel;
 
@@ -27,9 +28,11 @@ public class EquippedSkillCharacterRowUI : MonoBehaviour
             return;
         }
 
-        SetSlot(passiveSlot, characterData.PassiveSkillId, false, characterData);
-        SetSlot(uniqueSlot, characterData.UniqueSkillId, false, characterData);
-        SetSlot(abilitySlot, characterData.AbilitySkillId, true, characterData);
+        ResolveSkillInventoryPanel();
+
+        SetSlot(passiveSlot, characterData.PassiveSkillId, false, characterData, -1);
+        SetSlot(uniqueSlot, characterData.UniqueSkillId, false, characterData, 0);
+        SetSlot(abilitySlot, characterData.AbilitySkillId, false, characterData, 1);
 
         SetSlot(
             freeSlot1,
@@ -38,7 +41,8 @@ public class EquippedSkillCharacterRowUI : MonoBehaviour
                 ? characterData.EquippedSkillIds[2]
                 : null,
             true,
-            characterData);
+            characterData,
+            2);
 
         SetSlot(
             freeSlot2,
@@ -47,7 +51,8 @@ public class EquippedSkillCharacterRowUI : MonoBehaviour
                 ? characterData.EquippedSkillIds[3]
                 : null,
             true,
-            characterData);
+            characterData,
+            3);
     }
 
     public void Clear()
@@ -63,14 +68,19 @@ public class EquippedSkillCharacterRowUI : MonoBehaviour
         EquippedSkillSlotUI slot,
         string skillId,
         bool clickable,
-        CharacterRuntimeData characterData)
+        CharacterRuntimeData characterData,
+        int equippedSkillIndex)
     {
         if (slot == null)
             return;
 
         if (string.IsNullOrWhiteSpace(skillId))
         {
-            slot.Clear();
+            if (clickable && SkillInventoryEquipService.IsFreeSkillSlotIndex(equippedSkillIndex))
+                slot.SetEmptySkillSlot(ownerPanel, characterData, equippedSkillIndex, skillInventoryPanel);
+            else
+                slot.Clear();
+
             return;
         }
 
@@ -95,6 +105,27 @@ public class EquippedSkillCharacterRowUI : MonoBehaviour
         if (iconDatabase != null)
             iconDatabase.TryGetIcon(skillId, out icon);
 
-        slot.SetSkill(ownerPanel, skillData, icon, clickable, characterData);
+        slot.SetSkill(
+            ownerPanel,
+            skillData,
+            icon,
+            clickable,
+            characterData,
+            equippedSkillIndex,
+            skillInventoryPanel);
+    }
+
+    private void ResolveSkillInventoryPanel()
+    {
+        if (skillInventoryPanel != null)
+            return;
+
+        skillInventoryPanel = FindFirstObjectByType<SkillInventoryPanelUI>(FindObjectsInactive.Include);
+
+        if (skillInventoryPanel != null)
+            return;
+
+        SkillInventoryPanelUI.RefreshAll();
+        skillInventoryPanel = FindFirstObjectByType<SkillInventoryPanelUI>(FindObjectsInactive.Include);
     }
 }

@@ -48,5 +48,31 @@ namespace Relic.Gameplay.Data
             Debug.LogWarning($"[BattleMapDatabase] No spawns found. BattleMapId: {id}");
             return System.Array.Empty<BattleMapData>();
         }
+
+        public BattleMapData GetDropSettings(string battleMapId)
+        {
+            IReadOnlyList<BattleMapData> spawns = GetSpawns(battleMapId);
+
+            if (spawns == null || spawns.Count == 0)
+                return null;
+
+            for (int i = 0; i < spawns.Count; i++)
+            {
+                BattleMapData data = spawns[i];
+
+                if (data == null)
+                    continue;
+
+                if (data.SkillDropChance > 0f ||
+                    data.CoreCommonChance > 0f ||
+                    data.CoreRareChance > 0f ||
+                    data.CoreEpicChance > 0f)
+                {
+                    return data;
+                }
+            }
+
+            return spawns[0];
+        }
     }
 }
