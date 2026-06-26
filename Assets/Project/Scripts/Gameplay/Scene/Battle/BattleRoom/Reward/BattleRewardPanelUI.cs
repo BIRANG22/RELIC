@@ -12,6 +12,7 @@ public class BattleRewardPanelUI : MonoBehaviour
     [SerializeField] private Transform rewardRoot;
     [SerializeField] private BattleRewardSlotUI rewardSlotPrefab;
     [SerializeField] private Sprite remnantIcon;
+    [SerializeField] private Color remnantIconColor = Color.white;
 
     [Header("Detail Panel")]
     [SerializeField] private GameObject detailPanel;
@@ -30,6 +31,7 @@ public class BattleRewardPanelUI : MonoBehaviour
     private readonly List<BattleRewardData> currentRewards = new();
     private readonly List<BattleRewardData> claimedRewards = new();
     private readonly List<BattleRewardSlotUI> activeSlots = new();
+    private BattleRewardSlotUI focusedSlot;
 
     private void Awake()
     {
@@ -59,10 +61,14 @@ public class BattleRewardPanelUI : MonoBehaviour
         EnsureVerticalRewardLayout();
         Refresh();
 
-        if (activeSlots.Count > 0)
-            ShowRewardDetail(activeSlots[0].Reward);
-        else
+        if (activeSlots.Count <= 0)
+        {
             FinishRewardFlow();
+            return;
+        }
+
+        ClearFocusedSlot();
+        HideDetailPanel();
     }
 
     private void Refresh()
@@ -83,17 +89,32 @@ public class BattleRewardPanelUI : MonoBehaviour
                 continue;
 
             BattleRewardSlotUI slot = Instantiate(rewardSlotPrefab, rewardRoot);
-            slot.Setup(reward, remnantIcon, OnClickRewardSlot, OnFocusRewardSlot);
+            slot.Setup(reward, remnantIcon, remnantIconColor, OnClickRewardSlot, OnFocusRewardSlot, OnExitRewardSlot);
             activeSlots.Add(slot);
         }
     }
 
     private void OnFocusRewardSlot(BattleRewardSlotUI slot)
     {
-        if (slot == null)
+        if (slot == null || slot.Reward == null)
             return;
 
+        focusedSlot = slot;
         ShowRewardDetail(slot.Reward);
+    }
+
+    private void OnExitRewardSlot(BattleRewardSlotUI slot)
+    {
+        if (slot == null || focusedSlot != slot)
+            return;
+
+        ClearFocusedSlot();
+        HideDetailPanel();
+    }
+
+    private void ClearFocusedSlot()
+    {
+        focusedSlot = null;
     }
 
     private void OnClickRewardSlot(BattleRewardSlotUI slot)
@@ -103,8 +124,6 @@ public class BattleRewardPanelUI : MonoBehaviour
 
         BattleRewardData reward = slot.Reward;
 
-        ShowRewardDetail(reward);
-
         if (!CanClaimReward(reward))
             return;
 
@@ -112,6 +131,12 @@ public class BattleRewardPanelUI : MonoBehaviour
         PlayRewardAcquireSfx(reward);
         claimedRewards.Add(reward);
         activeSlots.Remove(slot);
+
+        if (focusedSlot == slot)
+        {
+            ClearFocusedSlot();
+            HideDetailPanel();
+        }
 
         Destroy(slot.gameObject);
 
@@ -123,10 +148,8 @@ public class BattleRewardPanelUI : MonoBehaviour
 
         LayoutRebuilder.ForceRebuildLayoutImmediate(rewardRoot as RectTransform);
 
-        if (activeSlots.Count > 0)
-            ShowRewardDetail(activeSlots[0].Reward);
-        else
-            HideDetailPanel();
+        ClearFocusedSlot();
+        HideDetailPanel();
     }
 
     private void ApplyReward(BattleRewardData reward)
@@ -393,13 +416,20 @@ public class BattleRewardPanelUI : MonoBehaviour
         }
 
         Sprite icon = reward.Icon;
+        Color iconColor = Color.white;
 
-        if (reward.Type == BattleRewardType.Remnant && icon == null)
-            icon = remnantIcon;
+        if (reward.Type == BattleRewardType.Remnant)
+        {
+            if (icon == null)
+                icon = remnantIcon;
+
+            iconColor = remnantIconColor;
+        }
 
         if (detailIconImage != null)
         {
             detailIconImage.sprite = icon;
+            detailIconImage.color = iconColor;
             detailIconImage.enabled = icon != null;
         }
 

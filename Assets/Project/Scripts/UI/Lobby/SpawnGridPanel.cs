@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
 using Relic.Gameplay.Data;
 
@@ -19,6 +22,7 @@ public class SpawnGridPanel : MonoBehaviour
     [SerializeField] private string noSelectedDeployedCharacterMessage = "포지션을 변경할 캐릭터를 선택하세요.";
 
     private int selectedPartySlotIndex = -1;
+    private readonly List<RaycastResult> pointerRaycastResults = new List<RaycastResult>();
 
     private void Awake()
     {
@@ -42,6 +46,84 @@ public class SpawnGridPanel : MonoBehaviour
     {
         AutoPlacePartyIfNeeded();
         Refresh();
+    }
+
+    private void Update()
+    {
+        if (selectedPartySlotIndex < 0)
+            return;
+
+        if (!WasPointerPressedThisFrame())
+            return;
+
+        if (IsPointerOverThisDeployPanel())
+            return;
+
+        ClearSelection();
+    }
+
+    public void ClearSelection()
+    {
+        if (selectedPartySlotIndex < 0)
+            return;
+
+        selectedPartySlotIndex = -1;
+        Refresh();
+    }
+
+    private bool WasPointerPressedThisFrame()
+    {
+        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+            return true;
+
+        if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame)
+            return true;
+
+        return false;
+    }
+
+    private bool IsPointerOverThisDeployPanel()
+    {
+        if (EventSystem.current == null)
+            return false;
+
+        Vector2 pointerPosition;
+
+        if (Mouse.current != null)
+        {
+            pointerPosition = Mouse.current.position.ReadValue();
+        }
+        else if (Touchscreen.current != null)
+        {
+            pointerPosition = Touchscreen.current.primaryTouch.position.ReadValue();
+        }
+        else
+        {
+            return false;
+        }
+
+        PointerEventData pointerData = new PointerEventData(EventSystem.current)
+        {
+            position = pointerPosition
+        };
+
+        pointerRaycastResults.Clear();
+        EventSystem.current.RaycastAll(pointerData, pointerRaycastResults);
+
+        for (int i = 0; i < pointerRaycastResults.Count; i++)
+        {
+            GameObject hitObject = pointerRaycastResults[i].gameObject;
+
+            if (hitObject == null)
+                continue;
+
+            Transform hitTransform = hitObject.transform;
+
+            if (hitTransform == transform || hitTransform.IsChildOf(transform))
+                return true;
+        }
+
+        return false;
     }
 
     public void AutoPlacePartyIfNeeded()
