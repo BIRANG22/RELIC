@@ -943,7 +943,7 @@ MonoBehaviour:
   m_RequiresOpaqueTextureOption: 2
   m_CameraType: 0
   m_Cameras: []
-  m_RendererIndex: 1
+  m_RendererIndex: 0
   m_VolumeLayerMask:
     serializedVersion: 2
     m_Bits: 1
@@ -1923,7 +1923,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mainCanvas: {fileID: 142019126}
   optionPanelPrefab: {fileID: 4058710123885056422, guid: 999fd8f12d24e814bb5b05d877821511, type: 3}
-  optionPanelScale: {x: 0.5, y: 0.5, z: 1}
 --- !u!4 &1558849450
 Transform:
   m_ObjectHideFlags: 0
@@ -2617,6 +2616,11 @@ MonoBehaviour:
   extraCharacters: 
   preloadOnAwake: 1
   logResult: 0
+  preventEditorAssetModification: 1
+  useRuntimeFontClonesInEditor: 1
+  replaceTextFontsOnSceneLoaded: 1
+  scanRuntimeTextsInEditor: 1
+  runtimeTextScanInterval: 0.25
 --- !u!4 &1974905143
 Transform:
   m_ObjectHideFlags: 0
