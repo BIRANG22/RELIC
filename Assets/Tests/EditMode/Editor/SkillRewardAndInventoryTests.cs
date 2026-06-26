@@ -242,6 +242,77 @@ public class SkillRewardAndInventoryTests
         }
     }
 
+    [Test]
+    public void SkillUpgradePanel_ConfiguresContentGridUsingPrefabSizeAndWraps()
+    {
+        GameObject panelObject = new("SkillUpgradePanel");
+        GameObject contentObject = new("Content", typeof(RectTransform));
+        GameObject prefabObject = new("SkillUpgradeIconPrefab", typeof(RectTransform));
+
+        try
+        {
+            contentObject.transform.SetParent(panelObject.transform);
+            RectTransform contentRect = contentObject.GetComponent<RectTransform>();
+            contentRect.sizeDelta = new Vector2(150f, 100f);
+
+            RectTransform prefabRect = prefabObject.GetComponent<RectTransform>();
+            prefabRect.sizeDelta = new Vector2(40f, 40f);
+
+            SkillUpgradePanel panel = panelObject.AddComponent<SkillUpgradePanel>();
+            SkillUpgradeIconItem prefab = prefabObject.AddComponent<SkillUpgradeIconItem>();
+
+            typeof(SkillUpgradePanel)
+                .GetField("contentRoot", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.SetValue(panel, contentObject.transform);
+            typeof(SkillUpgradePanel)
+                .GetField("iconPrefab", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.SetValue(panel, prefab);
+
+            MethodInfo method = typeof(SkillUpgradePanel)
+                .GetMethod("ConfigureContentLayout", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            Assert.That(method, Is.Not.Null);
+            Assert.DoesNotThrow(() => method.Invoke(panel, null));
+
+            GridLayoutGroup grid = contentObject.GetComponent<GridLayoutGroup>();
+            Assert.That(grid, Is.Not.Null);
+            Assert.That(grid.cellSize, Is.EqualTo(new Vector2(40f, 40f)));
+            Assert.That(grid.constraint, Is.EqualTo(GridLayoutGroup.Constraint.FixedColumnCount));
+            Assert.That(grid.constraintCount, Is.EqualTo(3));
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(panelObject);
+            UnityEngine.Object.DestroyImmediate(prefabObject);
+        }
+    }
+
+    [Test]
+    public void SkillUpgradePanel_ResetRestRoomUpgradeLimitClearsUpgradeLock()
+    {
+        GameObject panelObject = new("SkillUpgradePanel");
+
+        try
+        {
+            SkillUpgradePanel panel = panelObject.AddComponent<SkillUpgradePanel>();
+
+            MethodInfo method = typeof(SkillUpgradePanel)
+                .GetMethod("CompleteUpgrade", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            Assert.That(method, Is.Not.Null);
+            Assert.DoesNotThrow(() => method.Invoke(panel, null));
+            Assert.That(panel.HasUpgradedThisRestRoom, Is.True);
+
+            panel.ResetRestRoomUpgradeLimit();
+
+            Assert.That(panel.HasUpgradedThisRestRoom, Is.False);
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(panelObject);
+        }
+    }
+
     private static SkillMasterData CreateSkill(
         string skillId,
         Category category,

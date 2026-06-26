@@ -10,13 +10,16 @@ public class GridCell : MonoBehaviour
 
     private GridManager owner;
 
-    [SerializeField] private Color normalColor = Color.white;
+    [Header("Highlight Object")]
+    [SerializeField] private GameObject highlightObject;
+    [SerializeField] private Renderer highlightRenderer;
+
+    [Header("Highlight Colors")]
     [SerializeField] private Color previewColor = Color.cyan;
     [SerializeField] private Color selectedColor = Color.green;
     [SerializeField] private Color rangePreviewColor = Color.red;
 
-    private Renderer rend;
-    private MaterialPropertyBlock propertyBlock;
+    private MaterialPropertyBlock highlightPropertyBlock;
 
     public void Initialize(GridManager gridManager, int x, int y, int index)
     {
@@ -25,10 +28,16 @@ public class GridCell : MonoBehaviour
         Y = y;
         Index = index;
 
-        rend = GetComponent<Renderer>();
-        propertyBlock = new MaterialPropertyBlock();
+        AutoFindHighlightIfNeeded();
+
+        highlightPropertyBlock = new MaterialPropertyBlock();
 
         SetNormal();
+    }
+
+    private void Awake()
+    {
+        AutoFindHighlightIfNeeded();
     }
 
     private void OnMouseDown()
@@ -51,34 +60,70 @@ public class GridCell : MonoBehaviour
 
     public void SetNormal()
     {
-        SetColor(normalColor);
+        SetHighlightActive(false);
     }
 
     public void SetPreview()
     {
-        SetColor(previewColor);
+        SetHighlightColor(previewColor);
+        SetHighlightActive(true);
     }
 
     public void SetSelected()
     {
-        SetColor(selectedColor);
+        SetHighlightColor(selectedColor);
+        SetHighlightActive(true);
     }
 
     public void SetRangePreview()
     {
-        SetColor(rangePreviewColor);
+        SetHighlightColor(rangePreviewColor);
+        SetHighlightActive(true);
     }
 
-    private void SetColor(Color color)
+    private void AutoFindHighlightIfNeeded()
     {
-        if (rend == null)
-            rend = GetComponent<Renderer>();
+        if (highlightObject == null)
+        {
+            Transform found = transform.Find("Highlight");
 
-        if (propertyBlock == null)
-            propertyBlock = new MaterialPropertyBlock();
+            if (found != null)
+                highlightObject = found.gameObject;
+        }
 
-        rend.GetPropertyBlock(propertyBlock);
-        propertyBlock.SetColor("_BaseColor", color);
-        rend.SetPropertyBlock(propertyBlock);
+        if (highlightRenderer == null && highlightObject != null)
+            highlightRenderer = highlightObject.GetComponent<Renderer>();
     }
+
+    private void SetHighlightActive(bool active)
+    {
+        if (highlightObject == null)
+            return;
+
+        if (highlightObject.activeSelf != active)
+            highlightObject.SetActive(active);
+    }
+
+    private void SetHighlightColor(Color color)
+    {
+        if (highlightRenderer == null)
+            return;
+
+        if (highlightPropertyBlock == null)
+            highlightPropertyBlock = new MaterialPropertyBlock();
+
+        highlightRenderer.GetPropertyBlock(highlightPropertyBlock);
+
+        highlightPropertyBlock.SetColor("_BaseColor", color);
+        highlightPropertyBlock.SetColor("_Color", color);
+
+        highlightRenderer.SetPropertyBlock(highlightPropertyBlock);
+    }
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        AutoFindHighlightIfNeeded();
+    }
+#endif
 }

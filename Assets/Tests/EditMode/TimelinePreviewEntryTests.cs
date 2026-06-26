@@ -1,7 +1,9 @@
 using System.Reflection;
 using NUnit.Framework;
 using Relic.Gameplay.Data;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class TimelinePreviewEntryTests
 {
@@ -30,6 +32,50 @@ public class TimelinePreviewEntryTests
     }
 
     [Test]
+    public void TimelineSkillHoverPopupView_ExpandsLayoutForUpgradeTooltipText()
+    {
+        GameObject rootObject = new("TimelinePopupPrefab", typeof(RectTransform), typeof(TimelineSkillHoverPopupView));
+        GameObject backgroundObject = new("BackGround", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        GameObject nameObject = new("NameText", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
+        GameObject effectObject = new("EffectText", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
+
+        try
+        {
+            RectTransform rootRect = rootObject.GetComponent<RectTransform>();
+            rootRect.sizeDelta = new Vector2(100f, 100f);
+
+            RectTransform backgroundRect = backgroundObject.GetComponent<RectTransform>();
+            backgroundRect.SetParent(rootRect, false);
+            backgroundRect.sizeDelta = new Vector2(300f, 80f);
+
+            RectTransform nameRect = nameObject.GetComponent<RectTransform>();
+            nameRect.SetParent(rootRect, false);
+            nameRect.sizeDelta = new Vector2(200f, 30f);
+
+            RectTransform effectRect = effectObject.GetComponent<RectTransform>();
+            effectRect.SetParent(rootRect, false);
+            effectRect.sizeDelta = new Vector2(200f, 50f);
+
+            TimelineSkillHoverPopupView view = rootObject.GetComponent<TimelineSkillHoverPopupView>();
+
+            view.Set(
+                "\uB3C5\uC131 \uC548\uAC1C -> \uB3C5\uC131 \uC548\uAC1C+",
+                "\uD604\uC7AC\n10 \uC911\uB3C5\uC744 \uBD80\uC5EC\uD55C\uB2E4.\n\n\uAC15\uD654 \uD6C4\n15 \uC911\uB3C5\uC744 \uBD80\uC5EC\uD55C\uB2E4.",
+                null);
+
+            Assert.That(rootRect.sizeDelta.x, Is.GreaterThanOrEqualTo(320f));
+            Assert.That(rootRect.sizeDelta.y, Is.GreaterThan(100f));
+            Assert.That(nameRect.sizeDelta.x, Is.GreaterThanOrEqualTo(280f));
+            Assert.That(effectRect.sizeDelta.x, Is.GreaterThanOrEqualTo(280f));
+            Assert.That(effectRect.sizeDelta.y, Is.GreaterThan(50f));
+        }
+        finally
+        {
+            Object.DestroyImmediate(rootObject);
+        }
+    }
+
+    [Test]
     public void PlayerPreviewEntry_FormatsReservedSkillTooltipWithActualPayAmount()
     {
         SkillMasterData skill = new()
@@ -54,6 +100,67 @@ public class TimelinePreviewEntryTests
         Assert.That(entry.SkillEffectDescription, Does.Contain("8\uC758 \uBC29\uC5B4\uB3C4"));
         Assert.That(entry.SkillEffectDescription, Does.Not.Contain("{"));
         Assert.That(entry.SkillEffectDescription, Does.Not.Contain("\uC18C\uBAA8\uB7C9"));
+    }
+
+    [Test]
+    public void SkillTooltipFormatter_PrependsCalculatedValueWhenTextHasNoToken()
+    {
+        SkillMasterData skill = new()
+        {
+            SkillId = "S_Tooltip_Value",
+            ToolTip = "\uD53C\uD574\uB97C \uC900\uB2E4."
+        };
+        skill.EffectEntries.Add(new SkillEffectEntry
+        {
+            EffectId = "E_Strike",
+            ValueCalcType = ValueCalcType.Fixed,
+            ValueAmount = 5
+        });
+
+        string description = SkillTooltipFormatter.Format(skill, skill.ToolTip, null, 0);
+
+        Assert.That(description, Is.EqualTo("5 \uD53C\uD574\uB97C \uC900\uB2E4."));
+    }
+
+    [Test]
+    public void SkillTooltipFormatter_RemovesValueTokenWhenMasterValueIsZero()
+    {
+        SkillMasterData skill = new()
+        {
+            SkillId = "S_Tooltip_No_Value",
+            ToolTip = "\"\uC218\uCE58\" \uD654\uC0C1\uC744 \uBD80\uC5EC\uD55C\uB2E4."
+        };
+        skill.EffectEntries.Add(new SkillEffectEntry
+        {
+            EffectId = "E_Burn",
+            ValueCalcType = ValueCalcType.Fixed,
+            ValueAmount = 0
+        });
+
+        string description = SkillTooltipFormatter.Format(skill, skill.ToolTip, null, 0);
+
+        Assert.That(description, Is.EqualTo("\uD654\uC0C1\uC744 \uBD80\uC5EC\uD55C\uB2E4."));
+        Assert.That(description, Does.Not.Contain("\uC218\uCE58"));
+    }
+
+    [Test]
+    public void SkillTooltipFormatter_ShowsZeroWhenRuntimeCalculationReachesZero()
+    {
+        SkillMasterData skill = new()
+        {
+            SkillId = "S_Tooltip_Runtime_Zero",
+            ToolTip = "\uD53C\uD574\uB97C \uC900\uB2E4."
+        };
+        skill.EffectEntries.Add(new SkillEffectEntry
+        {
+            EffectId = "E_Strike",
+            ValueCalcType = ValueCalcType.PerCost,
+            ValueAmount = 3
+        });
+
+        string description = SkillTooltipFormatter.Format(skill, skill.ToolTip, null, 0);
+
+        Assert.That(description, Is.EqualTo("0 \uD53C\uD574\uB97C \uC900\uB2E4."));
     }
 
     [Test]

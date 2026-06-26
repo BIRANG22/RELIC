@@ -1438,6 +1438,11 @@ public class BattleTimelineController : MonoBehaviour
         return monsterCommandsBySlot[slotIndex];
     }
 
+    public void PreparePreviewCommandForReservation(int slotIndex, PlayerReservedCommand command)
+    {
+        PrepareCommandForReservation(slotIndex, command);
+    }
+
     public int GetPreviewGridIndexAtSlotEnd(CharacterRuntimeData runtimeData, int targetSlotIndex)
     {
         if (runtimeData == null)

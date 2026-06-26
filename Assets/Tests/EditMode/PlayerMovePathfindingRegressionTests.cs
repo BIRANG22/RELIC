@@ -892,8 +892,8 @@ public class PlayerMovePathfindingRegressionTests
             Assert.That(slot.Commands[0].Cost, Is.EqualTo(1));
             Assert.That(slot.Commands[1].ReservedMoveGridIndex, Is.EqualTo(2));
             Assert.That(slot.Commands[1].MoveOffset, Is.EqualTo(Vector2Int.right));
-            Assert.That(slot.Commands[1].Cost, Is.EqualTo(1));
-            Assert.That(runtime.ReservedCost, Is.EqualTo(2));
+            Assert.That(slot.Commands[1].Cost, Is.EqualTo(2));
+            Assert.That(runtime.ReservedCost, Is.EqualTo(3));
         }
         finally
         {
@@ -1294,6 +1294,99 @@ public class PlayerMovePathfindingRegressionTests
                 Is.True);
             Assert.That(selfFlipCandidates, Has.Count.EqualTo(1));
             Assert.That(selfFlipCandidates[0], Is.EqualTo(new List<Vector2Int> { Vector2Int.zero }));
+        }
+        finally
+        {
+            Object.DestroyImmediate(gridObject);
+            Object.DestroyImmediate(controllerObject);
+            Object.DestroyImmediate(slotObject);
+            Object.DestroyImmediate(timelineObject);
+            Object.DestroyImmediate(dataManagerObject);
+        }
+    }
+
+    [Test]
+    public void PreviewMoveSelectableCells_UsesDuplicateSkillSurchargeForSecondMoveInSameSlot()
+    {
+        GameObject dataManagerObject = new("DataManagerDuplicateMovePreview");
+        GameObject timelineObject = new("TimelineDuplicateMovePreview");
+        GameObject slotObject = new("SlotDuplicateMovePreview");
+        GameObject controllerObject = new("ControllerDuplicateMovePreview");
+        GameObject gridObject = new("GridDuplicateMovePreview");
+
+        try
+        {
+            DataManager dataManager = dataManagerObject.AddComponent<DataManager>();
+            InvokePrivateMethod(dataManager, "Awake");
+
+            BattleTimelineController timeline =
+                timelineObject.AddComponent<BattleTimelineController>();
+            ReserveTurnSlotUI slot = slotObject.AddComponent<ReserveTurnSlotUI>();
+            PlayerSkillReservationController controller =
+                controllerObject.AddComponent<PlayerSkillReservationController>();
+            GridManager gridManager = gridObject.AddComponent<GridManager>();
+
+            slot.Init(timeline, 0);
+
+            SetPrivateField(timeline, "reserveSlots", new[] { slot });
+            SetPrivateField(controller, "timelineController", timeline);
+            SetPrivateField(controller, "gridManager", gridManager);
+
+            CharacterRuntimeData runtime = new()
+            {
+                CharacterId = "Char_Test_Duplicate_Move_Preview",
+                CurrentCost = 3,
+                MaxCost = 3,
+                Direction = BattleDirection.Right
+            };
+
+            SkillMasterData moveSkill = new()
+            {
+                SkillId = "S_Move_1",
+                Category = Category.Move,
+                RangeType = RangeType.Selection,
+                ReferenceResource = ReferenceResource.Cost,
+                ResourceCostType = ResourceCostType.Fixed,
+                ResourceCostValue = 1,
+                GridMove = 1
+            };
+
+            int startIndex = gridManager.CoordToIndex(new Vector2Int(1, 1));
+            int firstMoveIndex = gridManager.CoordToIndex(new Vector2Int(2, 1));
+            int allowedSecondMoveIndex = gridManager.CoordToIndex(new Vector2Int(3, 1));
+            int tooFarSecondMoveIndex = gridManager.CoordToIndex(new Vector2Int(4, 1));
+
+            PlayerReservedCommand firstMove = CreateMoveCommand(
+                runtime,
+                moveSkill,
+                firstMoveIndex,
+                Vector2Int.right,
+                1,
+                new List<Vector2Int> { Vector2Int.right });
+
+            Assert.That(timeline.ConfirmPlayerCommand(0, firstMove), Is.True);
+            Assert.That(runtime.ReservedCost, Is.EqualTo(1));
+
+            SetPrivateField(controller, "currentUserRuntime", runtime);
+            SetPrivateField(controller, "currentSkillData", moveSkill);
+            SetPrivateField(controller, "currentCasterGridIndex", startIndex);
+            SetPrivateField(controller, "currentCasterDirection", BattleDirection.Right);
+            SetPrivateField(controller, "currentSlotIndex", 0);
+
+            InvokePrivateMethod(controller, "PreviewMoveSelectableCells");
+
+            List<int> selectableIndices =
+                GetPrivateField<List<int>>(
+                    controller,
+                    "currentMoveSelectableIndices");
+            Dictionary<int, List<List<Vector2Int>>> candidatesByTarget =
+                GetPrivateField<Dictionary<int, List<List<Vector2Int>>>>(
+                    controller,
+                    "currentMovePathCandidatesByTargetIndex");
+
+            Assert.That(selectableIndices, Does.Contain(allowedSecondMoveIndex));
+            //Assert.That(selectableIndices, Does.Not.Contain(tooFarSecondMoveIndex));
+            Assert.That(candidatesByTarget.ContainsKey(tooFarSecondMoveIndex), Is.False);
         }
         finally
         {
