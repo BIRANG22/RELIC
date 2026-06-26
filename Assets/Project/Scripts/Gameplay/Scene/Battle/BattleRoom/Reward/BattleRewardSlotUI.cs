@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class BattleRewardSlotUI : MonoBehaviour, IPointerEnterHandler, ISelectHandler
+public class BattleRewardSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [Header("UI")]
     [SerializeField] private Image iconImage;
@@ -13,8 +13,10 @@ public class BattleRewardSlotUI : MonoBehaviour, IPointerEnterHandler, ISelectHa
 
     private BattleRewardData reward;
     private Sprite remnantIcon;
+    private Color remnantIconColor = Color.white;
     private Action<BattleRewardSlotUI> onClick;
     private Action<BattleRewardSlotUI> onFocus;
+    private Action<BattleRewardSlotUI> onExit;
 
     public BattleRewardData Reward => reward;
 
@@ -33,13 +35,17 @@ public class BattleRewardSlotUI : MonoBehaviour, IPointerEnterHandler, ISelectHa
     public void Setup(
         BattleRewardData rewardData,
         Sprite fallbackRemnantIcon,
+        Color fallbackRemnantIconColor,
         Action<BattleRewardSlotUI> clickCallback,
-        Action<BattleRewardSlotUI> focusCallback)
+        Action<BattleRewardSlotUI> focusCallback,
+        Action<BattleRewardSlotUI> exitCallback)
     {
         reward = rewardData;
         remnantIcon = fallbackRemnantIcon;
+        remnantIconColor = fallbackRemnantIconColor;
         onClick = clickCallback;
         onFocus = focusCallback;
+        onExit = exitCallback;
 
         if (reward == null)
         {
@@ -59,13 +65,20 @@ public class BattleRewardSlotUI : MonoBehaviour, IPointerEnterHandler, ISelectHa
     private void Refresh()
     {
         Sprite icon = reward.Icon;
+        Color iconColor = Color.white;
 
-        if (reward.Type == BattleRewardType.Remnant && icon == null)
-            icon = remnantIcon;
+        if (reward.Type == BattleRewardType.Remnant)
+        {
+            if (icon == null)
+                icon = remnantIcon;
+
+            iconColor = remnantIconColor;
+        }
 
         if (iconImage != null)
         {
             iconImage.sprite = icon;
+            iconImage.color = iconColor;
             iconImage.enabled = icon != null;
         }
 
@@ -89,11 +102,11 @@ public class BattleRewardSlotUI : MonoBehaviour, IPointerEnterHandler, ISelectHa
         onFocus?.Invoke(this);
     }
 
-    public void OnSelect(BaseEventData eventData)
+    public void OnPointerExit(PointerEventData eventData)
     {
         if (reward == null)
             return;
 
-        onFocus?.Invoke(this);
+        onExit?.Invoke(this);
     }
 }

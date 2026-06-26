@@ -153,6 +153,7 @@ public class SkillListPanel : MonoBehaviour
         renderedReservationVersion = int.MinValue;
         Clear();
         HideSkillDetail();
+        ClearSkillHoverRangePreview();
     }
 
     public void RegisterKeepOpenClickRoot(RectTransform root)
@@ -410,6 +411,24 @@ public class SkillListPanel : MonoBehaviour
         }
 
         panelRect.anchoredPosition = localPoint + offsetFromHud;
+    }
+
+    public void ShowSkillHoverRangePreview(SkillMasterData skillData)
+    {
+        EnsureBattleTimelineController();
+
+        if (battleTimelineController == null)
+            return;
+
+        battleTimelineController.ShowSkillHoverRangePreview(currentRuntime, skillData);
+    }
+
+    public void ClearSkillHoverRangePreview()
+    {
+        EnsureBattleTimelineController();
+
+        if (battleTimelineController != null)
+            battleTimelineController.ClearSkillHoverRangePreview();
     }
 
     public void ShowSkillDetail(string text)

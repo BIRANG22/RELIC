@@ -935,6 +935,36 @@ public class BattleTimelineController : MonoBehaviour
         return null;
     }
 
+    public void ShowSkillHoverRangePreview(CharacterRuntimeData runtimeData, SkillMasterData skillData)
+    {
+        if (runtimeData == null || skillData == null)
+            return;
+
+        if (activeSlotIndex < 0)
+            return;
+
+        if (playerSkillReservationController == null)
+            playerSkillReservationController = FindFirstObjectByType<PlayerSkillReservationController>(FindObjectsInactive.Include);
+
+        if (playerSkillReservationController == null)
+            return;
+
+        playerSkillReservationController.ShowSkillHoverRangePreview(
+            runtimeData,
+            skillData,
+            activeSlotIndex
+        );
+    }
+
+    public void ClearSkillHoverRangePreview()
+    {
+        if (playerSkillReservationController == null)
+            playerSkillReservationController = FindFirstObjectByType<PlayerSkillReservationController>(FindObjectsInactive.Include);
+
+        if (playerSkillReservationController != null)
+            playerSkillReservationController.ClearSkillHoverRangePreview();
+    }
+
     private void TryStartSkillReservation()
     {
         if (activeSlotIndex < 0)

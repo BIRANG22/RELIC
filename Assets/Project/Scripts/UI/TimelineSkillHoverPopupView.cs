@@ -10,35 +10,39 @@ public class TimelineSkillHoverPopupView : MonoBehaviour
     [SerializeField] private TMP_Text effectText;
     [SerializeField] private Image rangeIconImage;
 
-    [Header("Range Icon")]
-    [SerializeField] private Vector2 rangeIconSize = new Vector2(60f, 60f);
-    [SerializeField] private float rangeIconGap = 4f;
+    [Header("Font Override")]
+    [SerializeField] private bool applyFontAssetToTexts = false;
+    [SerializeField] private TMP_FontAsset textFontAsset;
 
-    [Header("Readable Layout")]
-    [SerializeField] private float layoutWidth = 340f;
-    [SerializeField] private float horizontalPadding = 18f;
-    [SerializeField] private float verticalPadding = 12f;
-    [SerializeField] private float titleHeight = 24f;
-    [SerializeField] private float titleGap = 4f;
-    [SerializeField] private float minimumEffectHeight = 42f;
-    [SerializeField] private float maximumEffectHeight = 180f;
-    [SerializeField] private float titleFontSize = 16f;
-    [SerializeField] private float effectFontSize = 14f;
-    [SerializeField] private float effectLineSpacing = 2f;
+    [Header("No Range Icon Layout")]
+    [SerializeField] private bool expandEffectTextWhenNoRangeIcon = true;
+    [SerializeField] private float noRangeEffectTextXOffset = -30f;
+    [SerializeField] private float noRangeEffectTextWidth = 370f;
 
     [Header("Fallback Text")]
     [SerializeField] private string emptyNameText = "";
     [TextArea]
     [SerializeField] private string emptyEffectText = "";
 
+    private RectTransform effectTextRect;
+    private Vector2 originalEffectTextAnchoredPosition;
+    private Vector2 originalEffectTextSizeDelta;
+    private bool hasOriginalEffectTextLayout;
+
     private void Awake()
     {
+        NormalizeNoRangeIconLayoutDefaults();
         AutoBindReferences();
+        CacheOriginalEffectTextLayout();
         DisableRaycastTargets();
+        ApplyFontAsset();
+        HideRangeIcon();
+        ApplyNoRangeIconLayout();
     }
 
     private void OnValidate()
     {
+        NormalizeNoRangeIconLayoutDefaults();
         AutoBindReferences();
     }
 
@@ -53,7 +57,9 @@ public class TimelineSkillHoverPopupView : MonoBehaviour
             gameObject.SetActive(true);
 
         AutoBindReferences();
+        CacheOriginalEffectTextLayout();
         DisableRaycastTargets();
+        ApplyFontAsset();
 
         if (nameText != null)
             nameText.text = string.IsNullOrWhiteSpace(skillName) ? emptyNameText : skillName;
@@ -61,81 +67,115 @@ public class TimelineSkillHoverPopupView : MonoBehaviour
         if (effectText != null)
             effectText.text = string.IsNullOrWhiteSpace(effectDescription) ? emptyEffectText : effectDescription;
 
-        ApplyReadableLayout();
         SetRangeIcon(rangeIcon);
     }
 
-    private void ApplyReadableLayout()
-    {
-        RectTransform rootRect = transform as RectTransform;
-        RectTransform backgroundRect = backgroundImage != null
-            ? backgroundImage.transform as RectTransform
-            : null;
-        RectTransform nameRect = nameText != null
-            ? nameText.transform as RectTransform
-            : null;
-        RectTransform effectRect = effectText != null
-            ? effectText.transform as RectTransform
-            : null;
 
-        float width = Mathf.Max(260f, layoutWidth);
-        float textWidth = Mathf.Max(1f, width - horizontalPadding * 2f);
-        float effectHeight = minimumEffectHeight;
+    private void NormalizeNoRangeIconLayoutDefaults()
+    {
+        // 기존 프리팹/씬에 저장되어 있던 이전 기본값을 새 기본값으로 갱신합니다.
+        if (Mathf.Approximately(noRangeEffectTextXOffset, -45f) || Mathf.Approximately(noRangeEffectTextXOffset, -50f) || Mathf.Approximately(noRangeEffectTextXOffset, -75f))
+            noRangeEffectTextXOffset = -30f;
+
+        if (Mathf.Approximately(noRangeEffectTextWidth, 300f) || Mathf.Approximately(noRangeEffectTextWidth, 350f))
+            noRangeEffectTextWidth = 370f;
+    }
+
+    private void ApplyFontAsset()
+    {
+        if (!applyFontAssetToTexts)
+            return;
+
+        if (textFontAsset == null)
+            return;
 
         if (nameText != null)
-        {
-            nameText.fontSize = titleFontSize;
-            nameText.textWrappingMode = TextWrappingModes.NoWrap;
-            nameText.overflowMode = TextOverflowModes.Overflow;
-            nameText.alignment = TextAlignmentOptions.Left;
-        }
+            nameText.font = textFontAsset;
 
         if (effectText != null)
-        {
-            effectText.fontSize = effectFontSize;
-            effectText.textWrappingMode = TextWrappingModes.Normal;
-            effectText.overflowMode = TextOverflowModes.Overflow;
-            effectText.alignment = TextAlignmentOptions.TopLeft;
-            effectText.lineSpacing = effectLineSpacing;
+            effectText.font = textFontAsset;
+    }
 
-            Vector2 preferred = effectText.GetPreferredValues(effectText.text, textWidth, 0f);
-            effectHeight = Mathf.Clamp(preferred.y, minimumEffectHeight, maximumEffectHeight);
+    private void SetRangeIcon(Sprite rangeIcon)
+    {
+        if (rangeIconImage == null)
+        {
+            ApplyNoRangeIconLayout();
+            return;
         }
 
-        float height = verticalPadding * 2f + titleHeight + titleGap + effectHeight;
-        Vector2 size = new Vector2(width, height);
-
-        if (rootRect != null)
-            rootRect.sizeDelta = size;
-
-        if (backgroundRect != null)
+        if (rangeIcon == null)
         {
-            backgroundRect.anchorMin = new Vector2(0.5f, 0.5f);
-            backgroundRect.anchorMax = new Vector2(0.5f, 0.5f);
-            backgroundRect.pivot = new Vector2(0.5f, 0.5f);
-            backgroundRect.anchoredPosition = Vector2.zero;
-            backgroundRect.sizeDelta = size;
+            HideRangeIcon();
+            ApplyNoRangeIconLayout();
+            return;
         }
 
-        if (nameRect != null)
-        {
-            nameRect.anchorMin = new Vector2(0f, 1f);
-            nameRect.anchorMax = new Vector2(0f, 1f);
-            nameRect.pivot = new Vector2(0f, 1f);
-            nameRect.anchoredPosition = new Vector2(horizontalPadding, -verticalPadding);
-            nameRect.sizeDelta = new Vector2(textWidth, titleHeight);
-        }
+        rangeIconImage.sprite = rangeIcon;
+        rangeIconImage.gameObject.SetActive(true);
+        RestoreOriginalEffectTextLayout();
+    }
 
-        if (effectRect != null)
-        {
-            effectRect.anchorMin = new Vector2(0f, 1f);
-            effectRect.anchorMax = new Vector2(0f, 1f);
-            effectRect.pivot = new Vector2(0f, 1f);
-            effectRect.anchoredPosition = new Vector2(
-                horizontalPadding,
-                -(verticalPadding + titleHeight + titleGap));
-            effectRect.sizeDelta = new Vector2(textWidth, effectHeight);
-        }
+    private void HideRangeIcon()
+    {
+        if (rangeIconImage != null)
+            rangeIconImage.gameObject.SetActive(false);
+    }
+
+    private void CacheOriginalEffectTextLayout()
+    {
+        if (hasOriginalEffectTextLayout)
+            return;
+
+        if (effectText == null)
+            return;
+
+        effectTextRect = effectText.rectTransform;
+        if (effectTextRect == null)
+            return;
+
+        originalEffectTextAnchoredPosition = effectTextRect.anchoredPosition;
+        originalEffectTextSizeDelta = effectTextRect.sizeDelta;
+        hasOriginalEffectTextLayout = true;
+    }
+
+    private void ApplyNoRangeIconLayout()
+    {
+        if (!expandEffectTextWhenNoRangeIcon)
+            return;
+
+        if (effectText == null)
+            return;
+
+        effectTextRect = effectText.rectTransform;
+        if (effectTextRect == null)
+            return;
+
+        Vector2 anchoredPosition = effectTextRect.anchoredPosition;
+        anchoredPosition.x = hasOriginalEffectTextLayout
+            ? originalEffectTextAnchoredPosition.x + noRangeEffectTextXOffset
+            : anchoredPosition.x + noRangeEffectTextXOffset;
+        effectTextRect.anchoredPosition = anchoredPosition;
+
+        Vector2 sizeDelta = effectTextRect.sizeDelta;
+        sizeDelta.x = noRangeEffectTextWidth;
+        effectTextRect.sizeDelta = sizeDelta;
+    }
+
+    private void RestoreOriginalEffectTextLayout()
+    {
+        if (!hasOriginalEffectTextLayout)
+            return;
+
+        if (effectText == null)
+            return;
+
+        effectTextRect = effectText.rectTransform;
+        if (effectTextRect == null)
+            return;
+
+        effectTextRect.anchoredPosition = originalEffectTextAnchoredPosition;
+        effectTextRect.sizeDelta = originalEffectTextSizeDelta;
     }
 
     private void AutoBindReferences()
@@ -168,68 +208,13 @@ public class TimelineSkillHoverPopupView : MonoBehaviour
             rangeIconImage = FindImage("RangeIcon");
 
         if (rangeIconImage == null)
+            rangeIconImage = FindImage("RangeIconImage");
+
+        if (rangeIconImage == null)
             rangeIconImage = FindImage("SkillRangeIcon");
 
         if (rangeIconImage == null)
             rangeIconImage = FindImage("RangeImage");
-    }
-
-    private void SetRangeIcon(Sprite rangeIcon)
-    {
-        if (rangeIcon == null)
-        {
-            if (rangeIconImage != null)
-                rangeIconImage.gameObject.SetActive(false);
-
-            return;
-        }
-
-        if (rangeIconImage == null)
-            rangeIconImage = CreateRangeIconImage();
-
-        if (rangeIconImage == null)
-            return;
-
-        rangeIconImage.sprite = rangeIcon;
-        rangeIconImage.preserveAspect = true;
-        rangeIconImage.raycastTarget = false;
-        rangeIconImage.gameObject.SetActive(true);
-    }
-
-    private Image CreateRangeIconImage()
-    {
-        RectTransform parent = effectText != null && effectText.transform.parent != null
-            ? effectText.transform.parent as RectTransform
-            : transform as RectTransform;
-
-        if (parent == null)
-            return null;
-
-        GameObject iconObject = new GameObject("RangeIcon", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-        iconObject.layer = gameObject.layer;
-        iconObject.transform.SetParent(parent, false);
-
-        RectTransform iconRect = iconObject.transform as RectTransform;
-        iconRect.anchorMin = new Vector2(0.5f, 0.5f);
-        iconRect.anchorMax = new Vector2(0.5f, 0.5f);
-        iconRect.pivot = new Vector2(0.5f, 0.5f);
-        iconRect.sizeDelta = rangeIconSize;
-
-        RectTransform effectRect = effectText != null ? effectText.transform as RectTransform : null;
-        if (effectRect != null)
-        {
-            float iconX = effectRect.anchoredPosition.x - effectRect.sizeDelta.x * 0.5f - rangeIconSize.x * 0.5f - rangeIconGap;
-            iconRect.anchoredPosition = new Vector2(iconX, effectRect.anchoredPosition.y);
-        }
-        else
-        {
-            iconRect.anchoredPosition = Vector2.zero;
-        }
-
-        Image image = iconObject.GetComponent<Image>();
-        image.raycastTarget = false;
-        image.preserveAspect = true;
-        return image;
     }
 
     private Image FindImage(string objectName)
