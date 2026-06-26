@@ -97,7 +97,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Mon_N_02_idle_die_0
+      name: Mon_N_00_idle_die_0
       rect:
         serializedVersion: 2
         x: 0
@@ -112,162 +112,162 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 23b93803f848d8c41b96205998b5febc
-      internalID: 1432846393
+      spriteID: 9723e24fad029084da1ff8ef1bf05c83
+      internalID: 343808631
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_N_02_idle_die_1
+      name: Mon_N_00_idle_die_1
       rect:
         serializedVersion: 2
         x: 1024
         y: 1024
         width: 1024
         height: 1024
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      alignment: 9
+      pivot: {x: 0.5, y: 0.1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: b9ee5bc098773e64db84c5a1e63cdd64
-      internalID: -1011115287
+      spriteID: 8f8c996af76f8d047bf1e62ea3b363c8
+      internalID: 821218086
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_N_02_idle_die_2
+      name: Mon_N_00_idle_die_2
       rect:
         serializedVersion: 2
         x: 2048
         y: 1024
         width: 1024
         height: 1024
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      alignment: 9
+      pivot: {x: 0.5, y: 0.1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 5090217b7e514c948949ae096e888c8a
-      internalID: 1128537368
+      spriteID: 27faf9be1344e1a429670a4876950f54
+      internalID: 1734804270
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_N_02_idle_die_3
+      name: Mon_N_00_idle_die_3
       rect:
         serializedVersion: 2
         x: 3072
         y: 1024
         width: 1024
         height: 1024
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      alignment: 9
+      pivot: {x: 0.5, y: 0.1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: b72d4818806c1df4d960312bce09b5bd
-      internalID: 1712193714
+      spriteID: bac5bc778c3c845449cb82ef62fe2182
+      internalID: 2116347973
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_N_02_idle_die_4
+      name: Mon_N_00_idle_die_4
       rect:
         serializedVersion: 2
         x: 0
         y: 0
         width: 1024
         height: 1024
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      alignment: 9
+      pivot: {x: 0.5, y: 0.1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c35c5ecb7e694844681de89553a5c82d
-      internalID: 334737504
+      spriteID: 94a0a2a7f8d3e4c468ca64de6f63f6df
+      internalID: -995927406
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_N_02_idle_die_5
+      name: Mon_N_00_idle_die_5
       rect:
         serializedVersion: 2
         x: 1024
         y: 0
         width: 1024
         height: 1024
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      alignment: 9
+      pivot: {x: 0.5, y: 0.1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 0cd5d09735dc83845a88f2e6393a2991
-      internalID: 1024612025
+      spriteID: 9f7e272aacd3d5f4eb30959a3d028cad
+      internalID: -317732566
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_N_02_idle_die_6
+      name: Mon_N_00_idle_die_6
       rect:
         serializedVersion: 2
         x: 2048
         y: 0
         width: 1024
         height: 1024
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      alignment: 9
+      pivot: {x: 0.5, y: 0.1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 231f5e27d211a314f9f11380d841b865
-      internalID: -1267755623
+      spriteID: d77dcf8f20362314e84ca64973877693
+      internalID: 622230634
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_N_02_idle_die_7
+      name: Mon_N_00_idle_die_7
       rect:
         serializedVersion: 2
         x: 3072
         y: 0
         width: 1024
         height: 1024
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      alignment: 9
+      pivot: {x: 0.5, y: 0.1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 65f390d3fb0a7d440b26051a1c3a9614
-      internalID: -1019662856
+      spriteID: 9a1f3350631e4b0488de6e20799712cf
+      internalID: 738214804
       vertices: []
       indices: 
       edges: []
@@ -286,14 +286,14 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Mon_N_02_idle_die_0: 1432846393
-      Mon_N_02_idle_die_1: -1011115287
-      Mon_N_02_idle_die_2: 1128537368
-      Mon_N_02_idle_die_3: 1712193714
-      Mon_N_02_idle_die_4: 334737504
-      Mon_N_02_idle_die_5: 1024612025
-      Mon_N_02_idle_die_6: -1267755623
-      Mon_N_02_idle_die_7: -1019662856
+      Mon_N_00_idle_die_0: 343808631
+      Mon_N_00_idle_die_1: 821218086
+      Mon_N_00_idle_die_2: 1734804270
+      Mon_N_00_idle_die_3: 2116347973
+      Mon_N_00_idle_die_4: -995927406
+      Mon_N_00_idle_die_5: -317732566
+      Mon_N_00_idle_die_6: 622230634
+      Mon_N_00_idle_die_7: 738214804
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

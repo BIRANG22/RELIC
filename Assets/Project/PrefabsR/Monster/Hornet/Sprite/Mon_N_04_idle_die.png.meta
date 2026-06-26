@@ -97,353 +97,353 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: hornet_die_0
+      name: Mon_N_04_idle_die_0
       rect:
         serializedVersion: 2
         x: 0
         y: 3072
         width: 1024
         height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 9
+      pivot: {x: 0.5, y: 0.2}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 12cec33f6e67b44498e2a9ea585385d7
-      internalID: -363004917
+      spriteID: 16bba8046de5b6a409cecc256374f7db
+      internalID: -477536491
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: hornet_die_1
+      name: Mon_N_04_idle_die_1
       rect:
         serializedVersion: 2
         x: 1024
         y: 3072
         width: 1024
         height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 9
+      pivot: {x: 0.5, y: 0.2}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 15e6f5be69e714042a2746baf1741242
-      internalID: -1764027562
+      spriteID: 8233ed6b46f4f854fb017e7ae6753306
+      internalID: -321858551
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: hornet_die_2
+      name: Mon_N_04_idle_die_2
       rect:
         serializedVersion: 2
         x: 2048
         y: 3072
         width: 1024
         height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 9
+      pivot: {x: 0.5, y: 0.2}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: d3b08385128712a43a72442625faab92
-      internalID: -716941971
+      spriteID: a0e4a5ce9ae69fd4289a5f8541366b8a
+      internalID: -2145739043
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: hornet_die_3
+      name: Mon_N_04_idle_die_3
       rect:
         serializedVersion: 2
         x: 3072
         y: 3072
         width: 1024
         height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 9
+      pivot: {x: 0.5, y: 0.2}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: eaa9b98434eff0b4a9211f21f80a67c3
-      internalID: 1363969280
+      spriteID: 7e022bf0b0aac40498ea8d23b7585c35
+      internalID: -426537122
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: hornet_die_4
+      name: Mon_N_04_idle_die_4
       rect:
         serializedVersion: 2
         x: 0
         y: 2048
         width: 1024
         height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 9
+      pivot: {x: 0.5, y: 0.2}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 9fb9e8005aa67224a969ce56833ff877
-      internalID: -1201832854
+      spriteID: a04c6f8f031babb4fafb42f30da2a33f
+      internalID: 2125039153
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: hornet_die_5
+      name: Mon_N_04_idle_die_5
       rect:
         serializedVersion: 2
         x: 1024
         y: 2048
         width: 1024
         height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 9
+      pivot: {x: 0.5, y: 0.2}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: d02b6c7e6a247ee48b26512ff9b3bad9
-      internalID: -813361632
+      spriteID: 6e1acdd4f8b0880499cbaad32e93c7a0
+      internalID: 1828341190
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: hornet_die_6
+      name: Mon_N_04_idle_die_6
       rect:
         serializedVersion: 2
         x: 2048
         y: 2048
         width: 1024
         height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 9
+      pivot: {x: 0.5, y: 0.2}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 3de2e3cef199a004785db4d3576d3d79
-      internalID: -411889994
+      spriteID: 172057c2147a8ff4f8a137d2d7e16129
+      internalID: -745728998
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: hornet_die_7
+      name: Mon_N_04_idle_die_7
       rect:
         serializedVersion: 2
         x: 3072
         y: 2048
         width: 1024
         height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 9
+      pivot: {x: 0.5, y: 0.2}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 248ad1feeb7b09c4a91ffb60e4fb9e9c
-      internalID: -210698248
+      spriteID: d7ba896dbef031f428cc1f1069a0caea
+      internalID: 195732222
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: hornet_die_8
+      name: Mon_N_04_idle_die_8
       rect:
         serializedVersion: 2
         x: 0
         y: 1024
         width: 1024
         height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 9
+      pivot: {x: 0.5, y: 0.2}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 07ce76fc10097c84ca99bf75a141e92c
-      internalID: 443043335
+      spriteID: 6ce0c75396b757e4295b0a9cebb3387a
+      internalID: -369430485
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: hornet_die_9
+      name: Mon_N_04_idle_die_9
       rect:
         serializedVersion: 2
         x: 1024
         y: 1024
         width: 1024
         height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 9
+      pivot: {x: 0.5, y: 0.2}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 394b39d0808d75844b451a9817f8b7e6
-      internalID: -660522518
+      spriteID: 36df7f64acc86a148bd10a3849155e9c
+      internalID: 680154505
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: hornet_die_10
+      name: Mon_N_04_idle_die_10
       rect:
         serializedVersion: 2
         x: 2048
         y: 1024
         width: 1024
         height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 9
+      pivot: {x: 0.5, y: 0.2}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 5ac2b0d1d5ca3884892900e3adcb6beb
-      internalID: -1710884898
+      spriteID: e77a07078663a3747982fde40279b681
+      internalID: -1452731635
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: hornet_die_11
+      name: Mon_N_04_idle_die_11
       rect:
         serializedVersion: 2
         x: 3072
         y: 1024
         width: 1024
         height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 9
+      pivot: {x: 0.5, y: 0.2}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 49f979946827cb947b01231270370583
-      internalID: -1808568754
+      spriteID: 695ad86d71bf3ce4ba0f38f4d56a84ef
+      internalID: 1315866651
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: hornet_die_12
+      name: Mon_N_04_idle_die_12
       rect:
         serializedVersion: 2
         x: 0
         y: 0
         width: 1024
         height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 9
+      pivot: {x: 0.5, y: 0.2}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 8a564fdcd9d81a34a8622d7b47cc011b
-      internalID: 2082542507
+      spriteID: 7db1bc1f561a7214ea422e6bc6c42d53
+      internalID: -1023820972
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: hornet_die_13
+      name: Mon_N_04_idle_die_13
       rect:
         serializedVersion: 2
         x: 1024
         y: 0
         width: 1024
         height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 9
+      pivot: {x: 0.5, y: 0.2}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 7bdacaf7470567640b5a0f465a4030a4
-      internalID: 42247298
+      spriteID: e7fa251a5a015684abd9d541520ff912
+      internalID: 100492188
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: hornet_die_14
+      name: Mon_N_04_idle_die_14
       rect:
         serializedVersion: 2
         x: 2048
         y: 0
         width: 1024
         height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 9
+      pivot: {x: 0.5, y: 0.2}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: a42264d844aede34181cd9cbde52f99c
-      internalID: -1196375186
+      spriteID: d03cf36b0f8d83146ad9b425d5e2be61
+      internalID: -1542121958
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: hornet_die_15
+      name: Mon_N_04_idle_die_15
       rect:
         serializedVersion: 2
         x: 3072
         y: 0
         width: 1024
         height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 9
+      pivot: {x: 0.5, y: 0.2}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 728fdbfb59b40244ba249115a300567b
-      internalID: -771443933
+      spriteID: 60f769af73f68f84dbdc9a93c7fea8fc
+      internalID: -1940719804
       vertices: []
       indices: 
       edges: []
@@ -462,22 +462,22 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      hornet_die_0: -363004917
-      hornet_die_1: -1764027562
-      hornet_die_10: -1710884898
-      hornet_die_11: -1808568754
-      hornet_die_12: 2082542507
-      hornet_die_13: 42247298
-      hornet_die_14: -1196375186
-      hornet_die_15: -771443933
-      hornet_die_2: -716941971
-      hornet_die_3: 1363969280
-      hornet_die_4: -1201832854
-      hornet_die_5: -813361632
-      hornet_die_6: -411889994
-      hornet_die_7: -210698248
-      hornet_die_8: 443043335
-      hornet_die_9: -660522518
+      Mon_N_04_idle_die_0: -477536491
+      Mon_N_04_idle_die_1: -321858551
+      Mon_N_04_idle_die_10: -1452731635
+      Mon_N_04_idle_die_11: 1315866651
+      Mon_N_04_idle_die_12: -1023820972
+      Mon_N_04_idle_die_13: 100492188
+      Mon_N_04_idle_die_14: -1542121958
+      Mon_N_04_idle_die_15: -1940719804
+      Mon_N_04_idle_die_2: -2145739043
+      Mon_N_04_idle_die_3: -426537122
+      Mon_N_04_idle_die_4: 2125039153
+      Mon_N_04_idle_die_5: 1828341190
+      Mon_N_04_idle_die_6: -745728998
+      Mon_N_04_idle_die_7: 195732222
+      Mon_N_04_idle_die_8: -369430485
+      Mon_N_04_idle_die_9: 680154505
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
