@@ -9,6 +9,7 @@ public class TimelineReservationHoverPreview : MonoBehaviour
     [SerializeField] private RangePreview rangePreview;
     [SerializeField] private BattleTimelineController timelineController;
     [SerializeField] private GridManager gridManager;
+    [SerializeField] private PlayerSkillReservationController reservationController;
 
     private void Awake()
     {
@@ -35,9 +36,14 @@ public class TimelineReservationHoverPreview : MonoBehaviour
 
         FindReferencesIfNeeded();
 
+        if (reservationController != null && reservationController.IsMoveSkillSelectionActive())
+            return;
+
         if (timelineController == null || gridManager == null)
         {
-            rangePreview.ShowRangeCells(command.RangeGridIndices);
+            List<int> fallbackIndices = new List<int>(command.RangeGridIndices);
+
+            rangePreview.ShowRangeCells(fallbackIndices, GetHighlightColor(command.SkillData));
             return;
         }
 
@@ -50,13 +56,18 @@ public class TimelineReservationHoverPreview : MonoBehaviour
 
         if (casterGridIndex < 0)
         {
-            rangePreview.ShowRangeCells(command.RangeGridIndices);
+            List<int> fallbackIndices = new List<int>(command.RangeGridIndices);
+
+            rangePreview.ShowRangeCells(fallbackIndices, GetHighlightColor(command.SkillData));
             return;
         }
 
         List<int> rangeIndices = BuildRange(command, casterGridIndex);
 
-        rangePreview.ShowRangeCells(rangeIndices);
+        if (reservationController != null && reservationController.ShouldExcludeCasterGridFromPreview(command.SkillData))
+            rangeIndices.RemoveAll(index => index == casterGridIndex);
+
+        rangePreview.ShowRangeCells(rangeIndices, GetHighlightColor(command.SkillData));
     }
 
     public void Hide()
@@ -71,7 +82,7 @@ public class TimelineReservationHoverPreview : MonoBehaviour
             return new List<int>();
 
         if (DataManager.Instance == null || DataManager.Instance.RangeDatabase == null)
-            return command.RangeGridIndices;
+            return new List<int>(command.RangeGridIndices);
 
         if (command.SkillData.RangeType == RangeType.Direction)
         {
@@ -94,7 +105,7 @@ public class TimelineReservationHoverPreview : MonoBehaviour
             );
         }
 
-        return command.RangeGridIndices;
+        return new List<int>(command.RangeGridIndices);
     }
 
     private void FindReferencesIfNeeded()
@@ -107,5 +118,15 @@ public class TimelineReservationHoverPreview : MonoBehaviour
 
         if (rangePreview == null)
             rangePreview = FindFirstObjectByType<RangePreview>(FindObjectsInactive.Include);
+
+        if (reservationController == null)
+            reservationController = FindFirstObjectByType<PlayerSkillReservationController>(FindObjectsInactive.Include);
+    }
+    private Color GetHighlightColor(SkillMasterData skillData)
+    {
+        if (reservationController != null)
+            return reservationController.GetHighlightColorForSkill(skillData);
+
+        return Color.white;
     }
 }
