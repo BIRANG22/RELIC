@@ -7,7 +7,8 @@ public enum SkillSlotType
     Passive,
     Unique,
     Ability,
-    Equipped
+    Equipped,
+    Inventory
 }
 
 public struct SkillUpgradeRequest
@@ -75,6 +76,46 @@ public class SkillUpgradePanel : MonoBehaviour
 
             SpawnCharacterSkillItems(characterRuntime);
         }
+
+        SpawnInventorySkillItems();
+    }
+
+    private void SpawnInventorySkillItems()
+    {
+        if (DataManager.Instance == null)
+            return;
+
+        BattleRuntimeData runtime = DataManager.Instance.BattleRuntimeStore.GetOrCreate();
+
+        if (runtime.SkillInventoryIds == null)
+            return;
+
+        for (int i = 0; i < runtime.SkillInventoryIds.Count; i++)
+            SpawnInventorySkillItem(runtime.SkillInventoryIds[i], i);
+    }
+
+    private void SpawnInventorySkillItem(string skillId, int inventoryIndex)
+    {
+        if (string.IsNullOrWhiteSpace(skillId))
+            return;
+
+        if (iconPrefab == null || contentRoot == null)
+            return;
+
+        if (!TryGetSkillUpgradeId(skillId, out string upgradeSkillId))
+            return;
+
+        SkillUpgradeIconItem item = Instantiate(iconPrefab, contentRoot);
+        item.Initialize(
+            null,
+            skillId,
+            upgradeSkillId,
+            SkillSlotType.Inventory,
+            inventoryIndex,
+            OnSkillItemClicked
+        );
+
+        spawnedItems.Add(item);
     }
 
     private void SpawnCharacterSkillItems(CharacterRuntimeData characterRuntime)
@@ -89,7 +130,7 @@ public class SkillUpgradePanel : MonoBehaviour
         if (characterRuntime.EquippedSkillIds == null)
             return;
 
-        for (int i = 0; i < characterRuntime.EquippedSkillIds.Length; i++)
+        for (int i = 2; i < characterRuntime.EquippedSkillIds.Length; i++)
         {
             SpawnSkillItem(characterRuntime, characterRuntime.EquippedSkillIds[i], SkillSlotType.Equipped, i);
         }
@@ -106,6 +147,12 @@ public class SkillUpgradePanel : MonoBehaviour
 
         if (iconPrefab == null || contentRoot == null)
             return;
+
+        if (!DataManager.Instance.SkillDatabase.TryGet(skillId.Trim(), out SkillMasterData currentSkill) ||
+            !SkillRarityUtility.CanUpgrade(currentSkill))
+        {
+            return;
+        }
 
         if (!TryGetSkillUpgradeId(skillId, out string upgradeSkillId))
             return;
@@ -127,6 +174,12 @@ public class SkillUpgradePanel : MonoBehaviour
     {
         if (DataManager.Instance == null)
             return;
+
+        if (request.SlotType == SkillSlotType.Inventory)
+        {
+            UpgradeInventorySkill(request);
+            return;
+        }
 
         if (!DataManager.Instance.CharacterRuntimeStore.TryGet(
                 request.CharacterId,
@@ -161,9 +214,32 @@ public class SkillUpgradePanel : MonoBehaviour
         }
 
         DataManager.Instance.CharacterRuntimeStore.AddOrUpdate(characterRuntime);
+        EquippedSkillPanelUI.RefreshAll();
+        SkillInventoryPanelUI.RefreshAll();
 
         Debug.Log(
             $"[SkillUpgradePanel] Skill upgraded / Character:{request.CharacterId} / " +
+            $"{request.CurrentSkillId} -> {request.UpgradeSkillId}"
+        );
+
+        Refresh();
+    }
+    private void UpgradeInventorySkill(SkillUpgradeRequest request)
+    {
+        BattleRuntimeData runtime = DataManager.Instance.BattleRuntimeStore.GetOrCreate();
+
+        if (runtime.SkillInventoryIds == null)
+            return;
+
+        if (request.SlotIndex < 0 || request.SlotIndex >= runtime.SkillInventoryIds.Count)
+            return;
+
+        runtime.SkillInventoryIds[request.SlotIndex] = request.UpgradeSkillId;
+        DataManager.Instance.BattleRuntimeStore.Set(runtime);
+        SkillInventoryPanelUI.RefreshAll();
+
+        Debug.Log(
+            $"[SkillUpgradePanel] Inventory skill upgraded / " +
             $"{request.CurrentSkillId} -> {request.UpgradeSkillId}"
         );
 
@@ -198,7 +274,7 @@ public class SkillUpgradePanel : MonoBehaviour
         if (!int.TryParse(numberText, out int number))
             return false;
 
-        // ¿ÃπÃ ∞≠»≠ Ω∫≈≥¿Ã∏È ¡¶ø‹
+        // Ïù¥ÎØ∏ Í∞ïÌôîÎêú Ïä§ÌÇ¨Ïù¥Î©¥ Ï†úÏô∏
         if (number % 2 == 0)
             return false;
 
@@ -208,6 +284,12 @@ public class SkillUpgradePanel : MonoBehaviour
 
         if (DataManager.Instance == null)
             return false;
+
+        if (!DataManager.Instance.SkillDatabase.TryGet(skillId.Trim(), out SkillMasterData currentSkill) ||
+            !SkillRarityUtility.CanUpgrade(currentSkill))
+        {
+            return false;
+        }
 
         return DataManager.Instance.SkillDatabase.TryGet(upgradeSkillId, out _);
     }

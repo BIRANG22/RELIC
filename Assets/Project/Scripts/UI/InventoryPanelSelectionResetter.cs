@@ -4,6 +4,7 @@ public class InventoryPanelSelectionResetter : MonoBehaviour
 {
     [SerializeField] private EquippedSkillPanelUI equippedSkillPanel;
     [SerializeField] private RelicEquipPanelUI relicEquipPanel;
+    [SerializeField] private SkillInventoryPanelUI skillInventoryPanel;
     [SerializeField] private SkillListPanel[] skillListPanels;
 
     private void Awake()
@@ -35,6 +36,9 @@ public class InventoryPanelSelectionResetter : MonoBehaviour
 
         if (relicEquipPanel != null && relicEquipPanel != exceptOwner)
             relicEquipPanel.ResetSelectionState();
+
+        if (skillInventoryPanel != null && skillInventoryPanel != exceptOwner)
+            skillInventoryPanel.ResetSelectionState();
 
         if (skillListPanels != null)
         {
@@ -70,6 +74,9 @@ public class InventoryPanelSelectionResetter : MonoBehaviour
 
         if (relicEquipPanel == null)
             relicEquipPanel = GetComponentInChildren<RelicEquipPanelUI>(true);
+
+        if (skillInventoryPanel == null)
+            skillInventoryPanel = GetComponentInChildren<SkillInventoryPanelUI>(true);
 
         if (skillListPanels == null || skillListPanels.Length == 0)
             skillListPanels = GetComponentsInChildren<SkillListPanel>(true);

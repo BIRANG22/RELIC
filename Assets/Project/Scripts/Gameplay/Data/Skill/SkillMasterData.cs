@@ -32,6 +32,19 @@ namespace Relic.Gameplay.Data
         Core        // 전투 획득 스킬
     }
 
+    public enum SkillRarity
+    {
+        None,
+        Move,
+        Passive,
+        Unique,
+        CharacterExclusive,
+        Shared,
+        CoreCommon,
+        CoreRare,
+        CoreEpic
+    }
+
     public enum ReferenceResource
     {
         MovePoint = 0,
@@ -89,6 +102,8 @@ namespace Relic.Gameplay.Data
         public Category Category;
         public ReferenceResource ReferenceResource;
         public TargetType Target;
+        public int Level;
+        public SkillRarity Rarity;
         public SkillType SkillType;
         public TimelineActionType TimelineNotation;
 

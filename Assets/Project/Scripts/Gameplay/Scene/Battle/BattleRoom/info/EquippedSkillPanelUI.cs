@@ -57,7 +57,7 @@ public class EquippedSkillPanelUI : MonoBehaviour
         selectedEquippedSkillSlot = null;
         if (DataManager.Instance == null)
         {
-            Debug.LogWarning("[EquippedSkillPanelUI] DataManager°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("[EquippedSkillPanelUI] DataManagerê°€ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -66,7 +66,7 @@ public class EquippedSkillPanelUI : MonoBehaviour
 
         if (partyStore == null || characterStore == null)
         {
-            Debug.LogWarning("[EquippedSkillPanelUI] PartyRuntimeStore ¶Ç´Â CharacterRuntimeStore°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("[EquippedSkillPanelUI] PartyRuntimeStore ë˜ëŠ” CharacterRuntimeStoreê°€ ì—†ìŠµë‹ˆë‹¤.");
             ClearRows();
             return;
         }
@@ -90,12 +90,24 @@ public class EquippedSkillPanelUI : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning($"[EquippedSkillPanelUI] CharacterRuntimeData°¡ ¾ø½À´Ï´Ù: {characterId}");
+                Debug.LogWarning($"[EquippedSkillPanelUI] CharacterRuntimeDataê°€ ì—†ìŠµë‹ˆë‹¤: {characterId}");
                 characterRows[i].Clear();
             }
         }
     }
 
+    public static void RefreshAll()
+    {
+        EquippedSkillPanelUI[] panels = Object.FindObjectsByType<EquippedSkillPanelUI>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < panels.Length; i++)
+        {
+            if (panels[i] != null)
+                panels[i].Refresh();
+        }
+    }
     public void SelectEquippedSkillSlot(EquippedSkillSlotUI selectedSlot)
     {
         InventoryPanelSelectionResetter.ResetAllSelectionsExcept(this);
@@ -239,7 +251,7 @@ public class EquippedSkillPanelUI : MonoBehaviour
             return SkillTooltipFormatter.Format(skillData, text, runtimeData, payAmount);
         }
 
-        return "È¿°ú ¼³¸íÀÌ ¾ø½À´Ï´Ù.";
+        return "íš¨ê³¼ ì„¤ëª…ì´ ì—†ìŠµë‹ˆë‹¤.";
     }
 
     private string BuildRelicDescription(RelicData relicData)
@@ -250,7 +262,7 @@ public class EquippedSkillPanelUI : MonoBehaviour
         if (!string.IsNullOrWhiteSpace(relicData.EffectDesc))
             return relicData.EffectDesc;
 
-        return "È¿°ú ¼³¸íÀÌ ¾ø½À´Ï´Ù.";
+        return "íš¨ê³¼ ì„¤ëª…ì´ ì—†ìŠµë‹ˆë‹¤.";
     }
 
     private void MoveTooltipToSlot(RectTransform hoveredSlotRect)

@@ -29,7 +29,7 @@ public class BattleRewardResolver : MonoBehaviour
 
             if (!resolvedMonsterKeys.Add(monsterKey))
             {
-                Debug.LogWarning($"[BattleRewardResolver] ¿ÃπÃ √≥∏Æ«— ∏ÛΩ∫≈Õ ∫∏ªÛ¿‘¥œ¥Ÿ. MonsterKey:{monsterKey} / MonsterId:{monster.MonsterId}");
+                Debug.LogWarning($"[BattleRewardResolver] Ïù¥ÎØ∏ Ï≤òÎ¶¨Ìïú Î™¨Ïä§ÌÑ∞ Î≥¥ÏÉÅÏûÖÎãàÎã§. MonsterKey:{monsterKey} / MonsterId:{monster.MonsterId}");
                 continue;
             }
 
@@ -43,6 +43,7 @@ public class BattleRewardResolver : MonoBehaviour
             : uniqueMonsterCount;
 
         TrimUniqueItemRewardsToMonsterCount(rewards, uniqueItemLimit);
+        AddSkillReward(rewards);
 
         return rewards;
     }
@@ -107,7 +108,7 @@ public class BattleRewardResolver : MonoBehaviour
             if (order <= uniqueItemLimit)
                 continue;
 
-            Debug.LogWarning($"[BattleRewardResolver] ∞Ì¿Øæ∆¿Ã≈€ ∫∏ªÛ¿Ã ∏ÛΩ∫≈Õ ºˆ∫∏¥Ÿ ∏πæ∆ ¡¶∞≈«’¥œ¥Ÿ. Limit:{uniqueItemLimit} / Removed:{reward.RewardId}");
+            Debug.LogWarning($"[BattleRewardResolver] Í≥†Ïú†ÏïÑÏù¥ÌÖú Î≥¥ÏÉÅÏù¥ Î™¨Ïä§ÌÑ∞ ÏàòÎ≥¥Îã§ ÎßéÏïÑ Ï†úÍ±∞Ìï©ÎãàÎã§. Limit:{uniqueItemLimit} / Removed:{reward.RewardId}");
             rewards.RemoveAt(i);
         }
     }
@@ -165,7 +166,7 @@ public class BattleRewardResolver : MonoBehaviour
         if (existing != null)
         {
             existing.Amount += amount;
-            existing.Name = "¥ıΩ∫∆ºøÚ";
+            existing.Name = "ÎçîÏä§Ìã∞ÏõÄ";
             existing.Description = "";
             return;
         }
@@ -175,7 +176,7 @@ public class BattleRewardResolver : MonoBehaviour
             Type = BattleRewardType.Remnant,
             RewardId = "0",
             Amount = amount,
-            Name = "¥ıΩ∫∆ºøÚ",
+            Name = "ÎçîÏä§Ìã∞ÏõÄ",
             Description = ""
         });
     }
@@ -193,7 +194,7 @@ public class BattleRewardResolver : MonoBehaviour
 
         if (uniqueItemResolvedMonsterKeys != null && !uniqueItemResolvedMonsterKeys.Add(itemMonsterKey))
         {
-            Debug.LogWarning($"[BattleRewardResolver] ¿Ã ∏ÛΩ∫≈Õ¿« ∞Ì¿Øæ∆¿Ã≈€ ∆«¡§¿∫ ¿ÃπÃ √≥∏Æµ«æ˙Ω¿¥œ¥Ÿ. MonsterKey:{itemMonsterKey} / MonsterId:{monster.MonsterId}");
+            Debug.LogWarning($"[BattleRewardResolver] Ïù¥ Î™¨Ïä§ÌÑ∞Ïùò Í≥†Ïú†ÏïÑÏù¥ÌÖú ÌåêÏ†ïÏùÄ Ïù¥ÎØ∏ Ï≤òÎ¶¨ÎêòÏóàÏäµÎãàÎã§. MonsterKey:{itemMonsterKey} / MonsterId:{monster.MonsterId}");
             return;
         }
 
@@ -235,7 +236,7 @@ public class BattleRewardResolver : MonoBehaviour
 
         if (relic == null)
         {
-            Debug.Log("[BattleRewardResolver] »πµÊ ∞°¥…«— ªı ¿Øπ∞¿Ã æ¯Ω¿¥œ¥Ÿ.");
+            Debug.Log("[BattleRewardResolver] ÌöçÎìù Í∞ÄÎä•Ìïú ÏÉà Ïú†Î¨ºÏù¥ ÏóÜÏäµÎãàÎã§.");
             return;
         }
 
@@ -255,6 +256,170 @@ public class BattleRewardResolver : MonoBehaviour
             Description = relic.EffectDesc,
             Value = 0
         });
+    }
+
+    private void AddSkillReward(List<BattleRewardData> rewards)
+    {
+        if (DataManager.Instance == null)
+            return;
+
+        BattleMapData dropSettings = GetCurrentBattleMapDropSettings();
+
+        if (dropSettings == null)
+            return;
+
+        IReadOnlyList<SkillMasterData> candidates = GetAvailableSkillRewardCandidates(rewards);
+
+        if (!SkillRewardRoller.TryRoll(
+                dropSettings,
+                candidates,
+                new UnitySkillRewardRandom(),
+                out SkillMasterData skill))
+        {
+            return;
+        }
+
+        Sprite icon = skill.Icon;
+
+        if (icon == null && DataManager.Instance.SkillIconDatabase != null)
+            DataManager.Instance.SkillIconDatabase.TryGetIcon(skill.SkillId, out icon);
+
+        rewards.Add(new BattleRewardData
+        {
+            Type = BattleRewardType.Skill,
+            RewardId = skill.SkillId,
+            SourceKey = $"Skill|{dropSettings.BattleMapId}|{skill.SkillId}",
+            Amount = 1,
+            Icon = icon,
+            Name = string.IsNullOrWhiteSpace(skill.Name) ? skill.SkillId : skill.Name,
+            Description = BuildSkillRewardDescription(skill),
+            Value = 0
+        });
+    }
+
+    private BattleMapData GetCurrentBattleMapDropSettings()
+    {
+        MapRuntimeData mapRuntime = DataManager.Instance?.MapRuntimeStore?.Get();
+
+        if (mapRuntime == null || string.IsNullOrWhiteSpace(mapRuntime.CurrentMapId))
+            return null;
+
+        MapData mapData = DataManager.Instance.MapDatabase.Get(mapRuntime.CurrentMapId);
+
+        if (mapData == null || string.IsNullOrWhiteSpace(mapData.BattleMapId))
+            return null;
+
+        return DataManager.Instance.BattleMapDatabase.GetDropSettings(mapData.BattleMapId);
+    }
+
+    private IReadOnlyList<SkillMasterData> GetAvailableSkillRewardCandidates(List<BattleRewardData> pendingRewards)
+    {
+        List<SkillMasterData> candidates = new();
+
+        if (DataManager.Instance == null || DataManager.Instance.SkillDatabase == null)
+            return candidates;
+
+        HashSet<string> unavailableSkillIds = GetUnavailableSkillIds(pendingRewards);
+        List<SkillMasterData> allSkills = DataManager.Instance.SkillDatabase.GetAll();
+
+        for (int i = 0; i < allSkills.Count; i++)
+        {
+            SkillMasterData skill = allSkills[i];
+
+            if (skill == null || string.IsNullOrWhiteSpace(skill.SkillId))
+                continue;
+
+            if (unavailableSkillIds.Contains(skill.SkillId.Trim()))
+                continue;
+
+            candidates.Add(skill);
+        }
+
+        return candidates;
+    }
+
+    private HashSet<string> GetUnavailableSkillIds(List<BattleRewardData> pendingRewards)
+    {
+        HashSet<string> ids = new();
+
+        BattleRuntimeData runtime = DataManager.Instance?.BattleRuntimeStore?.GetOrCreate();
+
+        if (runtime?.SkillInventoryIds != null)
+        {
+            for (int i = 0; i < runtime.SkillInventoryIds.Count; i++)
+                AddSkillId(ids, runtime.SkillInventoryIds[i]);
+        }
+
+        IReadOnlyDictionary<string, CharacterRuntimeData> characters =
+            DataManager.Instance?.CharacterRuntimeStore?.GetAll();
+
+        if (characters != null)
+        {
+            foreach (KeyValuePair<string, CharacterRuntimeData> pair in characters)
+            {
+                CharacterRuntimeData character = pair.Value;
+
+                if (character == null)
+                    continue;
+
+                AddSkillId(ids, character.MoveSkillId);
+                AddSkillId(ids, character.PassiveSkillId);
+                AddSkillId(ids, character.UniqueSkillId);
+                AddSkillId(ids, character.AbilitySkillId);
+
+                if (character.EquippedSkillIds == null)
+                    continue;
+
+                for (int i = 0; i < character.EquippedSkillIds.Length; i++)
+                    AddSkillId(ids, character.EquippedSkillIds[i]);
+            }
+        }
+
+        if (pendingRewards != null)
+        {
+            for (int i = 0; i < pendingRewards.Count; i++)
+            {
+                BattleRewardData reward = pendingRewards[i];
+
+                if (reward == null || reward.Type != BattleRewardType.Skill)
+                    continue;
+
+                AddSkillId(ids, reward.RewardId);
+            }
+        }
+
+        return ids;
+    }
+
+    private void AddSkillId(HashSet<string> ids, string skillId)
+    {
+        if (ids == null || string.IsNullOrWhiteSpace(skillId))
+            return;
+
+        string normalizedSkillId = skillId.Trim();
+        ids.Add(normalizedSkillId);
+
+        if (SkillRarityUtility.TryGetPairedVariantId(normalizedSkillId, out string pairedSkillId))
+            ids.Add(pairedSkillId);
+    }
+
+    private string BuildSkillRewardDescription(SkillMasterData skill)
+    {
+        if (skill == null)
+            return "";
+
+        string rarityName = SkillRarityUtility.GetDisplayName(skill.Rarity);
+        string description = !string.IsNullOrWhiteSpace(skill.Details)
+            ? skill.Details
+            : skill.ToolTip;
+
+        if (string.IsNullOrWhiteSpace(description))
+            description = "ÌöçÎìù Í∞ÄÎä•Ìïú Ïä§ÌÇ¨ÏûÖÎãàÎã§.";
+
+        if (string.IsNullOrWhiteSpace(rarityName))
+            return description;
+
+        return $"[{rarityName}] {description}";
     }
 
     private bool HasRewardSource(List<BattleRewardData> rewards, string sourceKey)

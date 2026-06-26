@@ -4,7 +4,8 @@ public enum BattleRewardType
 {
     Remnant,
     Item,
-    Relic
+    Relic,
+    Skill
 }
 
 [System.Serializable]
@@ -27,6 +28,6 @@ public class BattleRewardData
     public string GetRemnantAmountDescription()
     {
         int amount = Mathf.Max(0, Amount);
-        return $"{amount} ´õ½ºÆ¼¿òÀ» ¾ò´Â´Ù.";
+        return $"{amount} ë”ìŠ¤í‹°ì›€ì„ ì–»ëŠ”ë‹¤.";
     }
 }

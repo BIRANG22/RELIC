@@ -14,6 +14,11 @@ namespace Relic.Gameplay.Data
         public int OccupiedCell3;
         public int OccupiedCell4;
 
+        public float SkillDropChance;
+        public float CoreCommonChance;
+        public float CoreRareChance;
+        public float CoreEpicChance;
+
         public string Description;
 
         public List<int> GetOccupiedCells()

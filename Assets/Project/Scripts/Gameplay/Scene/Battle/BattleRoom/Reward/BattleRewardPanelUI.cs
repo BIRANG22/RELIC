@@ -138,6 +138,7 @@ public class BattleRewardPanelUI : MonoBehaviour
 
         runtime.BagItemIds ??= new List<string>();
         runtime.OwnedRelicIds ??= new List<string>();
+        runtime.SkillInventoryIds ??= new List<string>();
 
         switch (reward.Type)
         {
@@ -163,6 +164,15 @@ public class BattleRewardPanelUI : MonoBehaviour
                     RelicEquipPanelUI.RefreshAll();
                 }
                 break;
+
+            case BattleRewardType.Skill:
+                if (!string.IsNullOrWhiteSpace(reward.RewardId) && !HasSkill(runtime, reward.RewardId))
+                {
+                    runtime.SkillInventoryIds.Add(reward.RewardId.Trim());
+                    SkillInventoryNotificationUI.ShowNewSkillNotice();
+                    SkillInventoryPanelUI.RefreshAll();
+                }
+                break;
         }
 
         DataManager.Instance.BattleRuntimeStore.Set(runtime);
@@ -181,6 +191,7 @@ public class BattleRewardPanelUI : MonoBehaviour
 
             case BattleRewardType.Item:
             case BattleRewardType.Relic:
+            case BattleRewardType.Skill:
                 AudioManager.Instance.PlaySfx(SfxType.BattleRewardRelicSkillAcquire);
                 break;
         }
@@ -199,7 +210,7 @@ public class BattleRewardPanelUI : MonoBehaviour
         if (currentCount < MaxBagItemCount)
             return true;
 
-        ShowWarning($"°¡¹æÀÌ °¡µæ Ã¡½À´Ï´Ù. °íÀ¯¾ÆÀÌÅÛÀº ÃÖ´ë {MaxBagItemCount}°³±îÁö º¸À¯ÇÒ ¼ö ÀÖ½À´Ï´Ù.");
+        ShowWarning($"ê°€ë°©ì´ ê°€ë“ ì°¼ìŠµë‹ˆë‹¤. ê³ ìœ ì•„ì´í…œì€ ìµœëŒ€ {MaxBagItemCount}ê°œê¹Œì§€ ë³´ìœ í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤.");
         return false;
     }
 
@@ -219,6 +230,60 @@ public class BattleRewardPanelUI : MonoBehaviour
             return;
 
         BattleWarningUI.ShowMessage(message);
+    }
+
+    private bool HasSkill(BattleRuntimeData runtime, string skillId)
+    {
+        if (runtime == null || string.IsNullOrWhiteSpace(skillId))
+            return false;
+
+        string targetId = skillId.Trim();
+
+        if (runtime.SkillInventoryIds != null)
+        {
+            for (int i = 0; i < runtime.SkillInventoryIds.Count; i++)
+            {
+                if (IsSameSkillOrPairedVariant(runtime.SkillInventoryIds[i], targetId))
+                    return true;
+            }
+        }
+
+        IReadOnlyDictionary<string, CharacterRuntimeData> characters =
+            DataManager.Instance?.CharacterRuntimeStore?.GetAll();
+
+        if (characters == null)
+            return false;
+
+        foreach (KeyValuePair<string, CharacterRuntimeData> pair in characters)
+        {
+            CharacterRuntimeData character = pair.Value;
+
+            if (character?.EquippedSkillIds == null)
+                continue;
+
+            for (int i = 0; i < character.EquippedSkillIds.Length; i++)
+            {
+                if (IsSameSkillOrPairedVariant(character.EquippedSkillIds[i], targetId))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool IsSameSkillOrPairedVariant(string ownedSkillId, string targetSkillId)
+    {
+        if (string.IsNullOrWhiteSpace(ownedSkillId) || string.IsNullOrWhiteSpace(targetSkillId))
+            return false;
+
+        string normalizedOwnedSkillId = ownedSkillId.Trim();
+        string normalizedTargetSkillId = targetSkillId.Trim();
+
+        if (string.Equals(normalizedOwnedSkillId, normalizedTargetSkillId, System.StringComparison.Ordinal))
+            return true;
+
+        return SkillRarityUtility.TryGetPairedVariantId(normalizedOwnedSkillId, out string pairedSkillId) &&
+               string.Equals(pairedSkillId, normalizedTargetSkillId, System.StringComparison.Ordinal);
     }
 
     private bool HasRelic(BattleRuntimeData runtime, string relicId)
@@ -352,7 +417,7 @@ public class BattleRewardPanelUI : MonoBehaviour
         if (detailValueText != null)
         {
             if (reward.Type == BattleRewardType.Item)
-                detailValueText.text = $"°¡Ä¡ {reward.Value}";
+                detailValueText.text = $"ê°€ì¹˜ {reward.Value}";
             else
                 detailValueText.text = "";
         }
@@ -374,9 +439,11 @@ public class BattleRewardPanelUI : MonoBehaviour
             case BattleRewardType.Remnant:
                 return reward.GetRemnantAmountDescription();
             case BattleRewardType.Item:
-                return "È¹µæ °¡´ÉÇÑ ¾ÆÀÌÅÛÀÔ´Ï´Ù.";
+                return "íšë“ ê°€ëŠ¥í•œ ì•„ì´í…œìž…ë‹ˆë‹¤.";
             case BattleRewardType.Relic:
-                return "È¹µæ °¡´ÉÇÑ À¯¹°ÀÔ´Ï´Ù.";
+                return "íšë“ ê°€ëŠ¥í•œ ìœ ë¬¼ìž…ë‹ˆë‹¤.";
+            case BattleRewardType.Skill:
+                return "íšë“ ê°€ëŠ¥í•œ ìŠ¤í‚¬ìž…ë‹ˆë‹¤.";
             default:
                 return "";
         }
