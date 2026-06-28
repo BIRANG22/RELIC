@@ -44,6 +44,7 @@ public class CharBtn : MonoBehaviour,
 
     public CharacterType CharacterType => characterType;
     public string CharacterId => characterId;
+    public bool HasCharacterBinding => !string.IsNullOrWhiteSpace(characterId);
     public RectTransform Rect => rect;
     public bool IsLocked => isLocked;
 
@@ -231,7 +232,9 @@ public class CharBtn : MonoBehaviour,
                 master.CharacterSkill1,
                 master.CommonSkill1,
                 ""
-            }
+            },
+
+            EquippedRuneIds = new string[12]
         };
 
         runtimeStore.AddOrUpdate(runtime);

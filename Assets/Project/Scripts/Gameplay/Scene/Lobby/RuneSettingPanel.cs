@@ -1,4 +1,4 @@
-using Relic.Gameplay.Data;
+ï»¿using Relic.Gameplay.Data;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -22,8 +22,8 @@ public class RuneSettingPanel : MonoBehaviour
     [Header("Rune Info Area")]
     [SerializeField] private TMP_Text runeInfoTitleText;
     [SerializeField] private TMP_Text runeInfoEffectText;
-    [SerializeField] private string emptyRuneInfoTitle = "·é Á¤º¸";
-    [SerializeField, TextArea] private string emptyRuneInfoEffect = "·éÀ» ¼±ÅÃÇÏ¸é Á¤º¸°¡ Ç¥½ÃµË´Ï´Ù.";
+    [SerializeField] private string emptyRuneInfoTitle = "ë£¬ ì •ë³´";
+    [SerializeField, TextArea] private string emptyRuneInfoEffect = "ë£¬ì„ ì„ íƒí•˜ë©´ ì •ë³´ê°€ í‘œì‹œë©ë‹ˆë‹¤.";
 
     [Header("Warning UI")]
     [SerializeField] private SettingWarningUI warningUI;
@@ -110,7 +110,7 @@ public class RuneSettingPanel : MonoBehaviour
         {
             ClearRuneSlotsAndLockAll();
             ClearRuneIconButtons();
-            ShowWarning("DataManager°¡ ¾ø½À´Ï´Ù.");
+            ShowWarning("DataManagerê°€ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -118,7 +118,7 @@ public class RuneSettingPanel : MonoBehaviour
         {
             ClearRuneSlotsAndLockAll();
             ClearRuneIconButtons();
-            ShowWarning("¼±ÅÃµÈ Ä³¸¯ÅÍ°¡ ¾ø½À´Ï´Ù.");
+            ShowWarning("ì„ íƒëœ ìºë¦­í„°ê°€ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -126,7 +126,7 @@ public class RuneSettingPanel : MonoBehaviour
         {
             ClearRuneSlotsAndLockAll();
             ClearRuneIconButtons();
-            ShowWarning("Ä³¸¯ÅÍ ¸¶½ºÅÍ µ¥ÀÌÅÍ¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù: " + characterId);
+            ShowWarning("ìºë¦­í„° ë§ˆìŠ¤í„° ë°ì´í„°ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤: " + characterId);
             return;
         }
 
@@ -136,7 +136,7 @@ public class RuneSettingPanel : MonoBehaviour
         {
             ClearRuneSlotsAndLockAll();
             ClearRuneIconButtons();
-            ShowWarning("Ä³¸¯ÅÍ ·±Å¸ÀÓ µ¥ÀÌÅÍ¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù: " + characterId);
+            ShowWarning("ìºë¦­í„° ëŸ°íƒ€ì„ ë°ì´í„°ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤: " + characterId);
             return;
         }
 
@@ -181,10 +181,14 @@ public class RuneSettingPanel : MonoBehaviour
             if (!string.IsNullOrWhiteSpace(runeId))
                 DataManager.Instance.RuneDatabase.TryGet(runeId, out runeData);
 
-            if (!IsRuneValidForCurrentCharacter(runeData))
+            bool slotLocked = runeSlotButtons[i] != null && runeSlotButtons[i].IsLocked;
+
+            if (slotLocked || !IsRuneValidForCurrentCharacter(runeData))
             {
+                if (!string.IsNullOrWhiteSpace(runeId))
+                    changed = true;
+
                 runeData = null;
-                changed = true;
             }
 
             if (runeSlotButtons[i] != null)
@@ -225,8 +229,6 @@ public class RuneSettingPanel : MonoBehaviour
             if (!unlocked)
                 runeSlotButtons[i].SetRune(null);
         }
-
-        SaveCurrentRuneSetting();
     }
 
     private void ApplyDefaultLockedState()
@@ -484,13 +486,13 @@ public class RuneSettingPanel : MonoBehaviour
     {
         if (currentRuntimeData == null || currentMasterData == null)
         {
-            ShowWarning("Ä³¸¯ÅÍ¸¦ ¸ÕÀú ¼±ÅÃÇØ¾ß ÇÕ´Ï´Ù.");
+            ShowWarning("ìºë¦­í„°ë¥¼ ë¨¼ì € ì„ íƒí•´ì•¼ í•©ë‹ˆë‹¤.");
             return;
         }
 
         if (runeData == null)
         {
-            ShowWarning("¼±ÅÃµÈ ·éÀÌ ¾ø½À´Ï´Ù.");
+            ShowWarning("ì„ íƒëœ ë£¬ì´ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -502,7 +504,7 @@ public class RuneSettingPanel : MonoBehaviour
 
         if (!IsRuneValidForCurrentCharacter(runeData))
         {
-            ShowWarning("ÇöÀç Ä³¸¯ÅÍ°¡ »ç¿ëÇÒ ¼ö ¾ø´Â ·éÀÔ´Ï´Ù.");
+            ShowWarning("í˜„ì¬ ìºë¦­í„°ê°€ ì‚¬ìš©í•  ìˆ˜ ì—†ëŠ” ë£¬ì…ë‹ˆë‹¤.");
             return;
         }
 
@@ -516,7 +518,7 @@ public class RuneSettingPanel : MonoBehaviour
 
         if (emptySlot == null)
         {
-            ShowWarning("ºñ¾îÀÖ´Â ·é ½½·ÔÀÌ ¾ø½À´Ï´Ù.");
+            ShowWarning("ë¹„ì–´ìˆëŠ” ë£¬ ìŠ¬ë¡¯ì´ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -539,9 +541,9 @@ public class RuneSettingPanel : MonoBehaviour
         if (locked)
         {
             if (runeData.TargetCharacterId == "All")
-                ShowWarning("ÇÃ·¹ÀÌ¾î ¶Ç´Â °èÁ¤ ·¹º§ Á¶°ÇÀÌ ÇÊ¿äÇÑ °ø¿ë·éÀÔ´Ï´Ù.");
+                ShowWarning("í”Œë ˆì´ì–´ ë˜ëŠ” ê³„ì • ë ˆë²¨ ì¡°ê±´ì´ í•„ìš”í•œ ê³µìš©ë£¬ì…ë‹ˆë‹¤.");
             else
-                ShowWarning("Ä³¸¯ÅÍ LV." + requiredLevel + "¿¡ ÇØ±İµÇ´Â Àü¿ë·éÀÔ´Ï´Ù.");
+                ShowWarning("ìºë¦­í„° LV." + requiredLevel + "ì— í•´ê¸ˆë˜ëŠ” ì „ìš©ë£¬ì…ë‹ˆë‹¤.");
 
             return;
         }
@@ -553,7 +555,7 @@ public class RuneSettingPanel : MonoBehaviour
     {
         if (runeData == null)
         {
-            ShowWarning("ÇØÁ¦ÇÒ ·éÀÌ ¾ø½À´Ï´Ù.");
+            ShowWarning("í•´ì œí•  ë£¬ì´ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -582,7 +584,7 @@ public class RuneSettingPanel : MonoBehaviour
 
         if (!removed)
         {
-            ShowWarning("ÀåÂø ÁßÀÎ ·éÀÌ ¾Æ´Õ´Ï´Ù.");
+            ShowWarning("ì¥ì°© ì¤‘ì¸ ë£¬ì´ ì•„ë‹™ë‹ˆë‹¤.");
             return;
         }
 
@@ -596,19 +598,19 @@ public class RuneSettingPanel : MonoBehaviour
     {
         if (slotButton == null)
         {
-            ShowWarning("·é ½½·ÔÀÌ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù.");
+            ShowWarning("ë£¬ ìŠ¬ë¡¯ì´ ì—°ê²°ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
             return;
         }
 
         if (slotButton.IsLocked)
         {
-            ShowWarning("¾ÆÁ÷ Àá°ÜÀÖ´Â ·é ½½·ÔÀÔ´Ï´Ù.");
+            ShowWarning("ì•„ì§ ì ê²¨ìˆëŠ” ë£¬ ìŠ¬ë¡¯ì…ë‹ˆë‹¤.");
             return;
         }
 
         if (slotButton.EquippedRune == null)
         {
-            ShowWarning("ÇØÁ¦ÇÒ ·éÀÌ ¾ø½À´Ï´Ù.");
+            ShowWarning("í•´ì œí•  ë£¬ì´ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -683,14 +685,14 @@ public class RuneSettingPanel : MonoBehaviour
 
     private bool IsRuneLockedForCurrentState(RuneData runeData)
     {
-        // Å×½ºÆ®¸¦ À§ÇØ ·é ¾ÆÀÌÅÛ ÀÚÃ¼´Â ÀüºÎ ÇØ±İ »óÅÂ·Î µĞ´Ù.
-        // ÀåÂø °¡´É ¿©ºÎ´Â ·é ½½·Ô Àá±İ »óÅÂ¿¡¼­¸¸ Á¦ÇÑÇÑ´Ù.
+        // í…ŒìŠ¤íŠ¸ë¥¼ ìœ„í•´ ë£¬ ì•„ì´í…œ ìì²´ëŠ” ì „ë¶€ í•´ê¸ˆ ìƒíƒœë¡œ ë‘”ë‹¤.
+        // ì¥ì°© ê°€ëŠ¥ ì—¬ë¶€ëŠ” ë£¬ ìŠ¬ë¡¯ ì ê¸ˆ ìƒíƒœì—ì„œë§Œ ì œí•œí•œë‹¤.
         return false;
     }
 
     private int GetRequiredLevelForRune(RuneData runeData)
     {
-        // ÇöÀç Å×½ºÆ® ´Ü°è¿¡¼­´Â Ä³¸¯ÅÍ ·é°ú °ø¿ë·éÀ» ¸ğµÎ LV.1ºÎÅÍ »ç¿ëÇÒ ¼ö ÀÖ°Ô µĞ´Ù.
+        // í˜„ì¬ í…ŒìŠ¤íŠ¸ ë‹¨ê³„ì—ì„œëŠ” ìºë¦­í„° ë£¬ê³¼ ê³µìš©ë£¬ì„ ëª¨ë‘ LV.1ë¶€í„° ì‚¬ìš©í•  ìˆ˜ ìˆê²Œ ë‘”ë‹¤.
         return 1;
     }
 
@@ -700,11 +702,11 @@ public class RuneSettingPanel : MonoBehaviour
 
         if (runeData != null && runeData.TargetCharacterId == "All")
         {
-            ShowWarning("¾ÆÁ÷ Àá°ÜÀÖ´Â °ø¿ë·éÀÔ´Ï´Ù.");
+            ShowWarning("ì•„ì§ ì ê²¨ìˆëŠ” ê³µìš©ë£¬ì…ë‹ˆë‹¤.");
             return;
         }
 
-        ShowWarning("Ä³¸¯ÅÍ LV." + requiredLevel + "¿¡ ÇØ±İµÇ´Â Àü¿ë·éÀÔ´Ï´Ù.");
+        ShowWarning("ìºë¦­í„° LV." + requiredLevel + "ì— í•´ê¸ˆë˜ëŠ” ì „ìš©ë£¬ì…ë‹ˆë‹¤.");
     }
 
     private void RefreshRuneIconEquippedStates()
@@ -938,7 +940,7 @@ public class RuneSettingPanel : MonoBehaviour
         }
 
         if (builder.Length <= 0)
-            builder.Append("µî·ÏµÈ È¿°ú ¼³¸íÀÌ ¾ø½À´Ï´Ù.");
+            builder.Append("ë“±ë¡ëœ íš¨ê³¼ ì„¤ëª…ì´ ì—†ìŠµë‹ˆë‹¤.");
 
         return ColorizeRuneEffectDesc(builder.ToString());
     }
@@ -1000,11 +1002,11 @@ public class RuneSettingPanel : MonoBehaviour
                 ? entry.ValueAmount + "%"
                 : entry.ValueAmount.ToString();
 
-            parts.Add("¼öÄ¡ " + valueText);
+            parts.Add("ìˆ˜ì¹˜ " + valueText);
         }
 
         if (entry.CountAmount > 0)
-            parts.Add("È½¼ö " + entry.CountAmount);
+            parts.Add("íšŸìˆ˜ " + entry.CountAmount);
 
         return parts.Count > 0 ? "(" + string.Join(", ", parts) + ")" : string.Empty;
     }

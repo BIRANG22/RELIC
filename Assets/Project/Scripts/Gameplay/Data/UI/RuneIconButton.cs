@@ -23,6 +23,7 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     [Header("Equipped UI")]
     [SerializeField] private bool useIconAlphaForEquipped = true;
     [SerializeField, Range(0f, 1f)] private float equippedIconAlpha = 0.35f;
+    [SerializeField] private Color equippedIconColor = new Color32(0x82, 0x82, 0x82, 0xFF);
     [SerializeField] private GameObject equippedObject;
     [SerializeField] private bool useEquippedObject = false;
 
@@ -145,8 +146,15 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
             return;
         }
 
-        float alpha = useIconAlphaForEquipped && isEquipped ? equippedIconAlpha : 1f;
-        iconImage.color = new Color(1f, 1f, 1f, alpha);
+        if (isEquipped)
+        {
+            Color color = equippedIconColor;
+            color.a = useIconAlphaForEquipped ? equippedIconAlpha : color.a;
+            iconImage.color = color;
+            return;
+        }
+
+        iconImage.color = Color.white;
     }
 
     public void Execute()
