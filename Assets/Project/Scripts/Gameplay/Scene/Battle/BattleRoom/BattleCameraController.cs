@@ -32,6 +32,19 @@ public class BattleCameraController : MonoBehaviour
     [SerializeField] private float impactHitStopDuration = 0.1f;
     [SerializeField] private bool useUnscaledTimeForImpact = true;
 
+    [Header("Character Selection Focus")]
+    [SerializeField] private bool enableCharacterSelectionFocus = true;
+    [SerializeField] private float characterSelectionFocusDuration = 0.55f;
+    [SerializeField] private float minimumCharacterSelectionFocusDuration = 0.55f;
+    [SerializeField] private Vector2 characterSelectionFocusOffset = new Vector2(0f, 0.25f);
+    [SerializeField] private bool useCharacterSelectionFocusZ = true;
+    [SerializeField] private bool useFixedCharacterSelectionFocusZ = true;
+    [SerializeField] private float characterSelectionFocusZPosition = -17.5f;
+    [SerializeField] private float characterSelectionFocusZOffset = 2.5f;
+    [SerializeField] private bool useCharacterSelectionFocusOrthographicSize = false;
+    [SerializeField] private float characterSelectionFocusOrthographicSize = 4.4f;
+    [SerializeField] private bool clampCharacterSelectionFocusPosition = false;
+
     [Header("Drag")]
     [SerializeField] private bool enableMouseDrag = true;
     [SerializeField] private bool dragOnlyInBattleRoom = true;
@@ -90,6 +103,7 @@ public class BattleCameraController : MonoBehaviour
     {
         RestoreTimeScaleIfNeeded();
         ClearImpactOffset();
+        ForceReturnDefaultImmediate();
     }
 
     private void Update()
@@ -185,6 +199,80 @@ public class BattleCameraController : MonoBehaviour
         float targetSize = useOrthographicSizeZoom ? zoomSize : targetCamera.orthographicSize;
         routine = StartCoroutine(MoveCamera(targetPos, targetSize, zoomDuration, clampZoomPosition));
         yield return routine;
+    }
+
+    public void FocusOnCharacterSelection(Transform target)
+    {
+        if (!enableCharacterSelectionFocus)
+            return;
+
+        if (targetCamera == null || target == null)
+            return;
+
+        if (hasActiveCombatZoom)
+            return;
+
+        CancelDrag(false);
+        EndZoomFollowTarget();
+
+        if (routine != null)
+            StopCoroutine(routine);
+
+        ClearImpactOffset();
+
+        Vector3 targetPos = target.position;
+        targetPos.x += characterSelectionFocusOffset.x;
+        targetPos.y += characterSelectionFocusOffset.y;
+        targetPos.z = useCharacterSelectionFocusZ
+            ? GetCharacterSelectionFocusZPosition()
+            : targetCamera.transform.position.z;
+
+        float targetSize = useCharacterSelectionFocusOrthographicSize
+            ? characterSelectionFocusOrthographicSize
+            : targetCamera.orthographicSize;
+
+        float focusDuration = Mathf.Max(characterSelectionFocusDuration, minimumCharacterSelectionFocusDuration);
+
+        routine = StartCoroutine(MoveCamera(
+            targetPos,
+            targetSize,
+            focusDuration,
+            clampCharacterSelectionFocusPosition));
+    }
+
+    public void StartReturnDefault()
+    {
+        if (targetCamera == null)
+            return;
+
+        if (!isActiveAndEnabled)
+        {
+            ForceReturnDefaultImmediate();
+            return;
+        }
+
+        StartCoroutine(ReturnDefault());
+    }
+
+    public void ForceReturnDefaultImmediate()
+    {
+        if (targetCamera == null)
+            return;
+
+        CancelDrag(false);
+        EndZoomFollowTarget();
+
+        if (routine != null)
+        {
+            StopCoroutine(routine);
+            routine = null;
+        }
+
+        ClearImpactOffset();
+
+        targetCamera.transform.position = defaultPosition;
+        targetCamera.orthographicSize = defaultSize;
+        hasActiveCombatZoom = false;
     }
 
     public IEnumerator ReturnDefault()
@@ -418,6 +506,14 @@ public class BattleCameraController : MonoBehaviour
             return zoomZPosition;
 
         return defaultPosition.z + zoomZOffset;
+    }
+
+    private float GetCharacterSelectionFocusZPosition()
+    {
+        if (useFixedCharacterSelectionFocusZ)
+            return characterSelectionFocusZPosition;
+
+        return defaultPosition.z + characterSelectionFocusZOffset;
     }
 
     private float EvaluateZoomCurve(float t)

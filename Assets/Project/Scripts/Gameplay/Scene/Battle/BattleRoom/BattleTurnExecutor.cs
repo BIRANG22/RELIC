@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -21,6 +22,11 @@ public class BattleTurnExecutor : MonoBehaviour
 
     [Header("End Turn")]
     [SerializeField] private Button endTurnButton;
+
+    [Header("Turn Text")]
+    [SerializeField] private TMP_Text turnNumberText;
+    [SerializeField] private bool autoFindTurnNumberText = true;
+    [SerializeField] private string turnNumberTextObjectName = "TURN_TEXT2";
 
     [Header("Keyboard Input")]
     [SerializeField] private bool enableSpaceEndTurnInput = true;
@@ -49,6 +55,8 @@ public class BattleTurnExecutor : MonoBehaviour
 
     private void Start()
     {
+        AutoFindTurnNumberTextIfNeeded();
+        RefreshTurnNumberText();
         RefreshEndTurnButton();
         RefreshBattlePresentationState();
     }
@@ -74,11 +82,15 @@ public class BattleTurnExecutor : MonoBehaviour
 
         RefreshEndTurnButton();
         RefreshBattlePresentationState();
+
+        if (ready && timelineController != null)
+            timelineController.SelectDefaultSlotWhenInputReady();
     }
 
     public void ResetBattleTurnState()
     {
         playerTurnNumber = 1;
+        RefreshTurnNumberText();
     }
 
     private void Update()
@@ -148,6 +160,7 @@ public class BattleTurnExecutor : MonoBehaviour
             endTurnButton.interactable = false;
 
         timelineController.ClearSelectedSlotSelection();
+        timelineController.SetSelectedCharacterScaleFeedbackActive(false);
         timelineController.SetSlotSelectionLocked(true);
 
         StartCoroutine(ExecuteTurnRoutine());
@@ -159,6 +172,8 @@ public class BattleTurnExecutor : MonoBehaviour
         {
             if (moveGhostPreview != null)
                 moveGhostPreview.ClearAll();
+
+            yield return ReturnCameraDefaultRoutine();
 
             BattleActionBatchBuilder builder = new(gridManager);
             BattleActionRunner runner = new(
@@ -212,6 +227,7 @@ public class BattleTurnExecutor : MonoBehaviour
                 if (BattleResultChecker.Instance != null &&
                     BattleResultChecker.Instance.CheckBattleEnd())
                 {
+                    yield return ReturnCameraDefaultRoutine();
                     ClearTimeline();
                     yield break;
                 }
@@ -250,10 +266,12 @@ public class BattleTurnExecutor : MonoBehaviour
             if (BattleResultChecker.Instance != null &&
                 BattleResultChecker.Instance.CheckBattleEnd())
             {
+                yield return ReturnCameraDefaultRoutine();
                 yield break;
             }
 
             playerTurnNumber++;
+            RefreshTurnNumberText();
 
             if (timelineController != null)
                 yield return timelineController.ResetTimelineSlotsToOriginalPositionRoutine();
@@ -281,8 +299,25 @@ public class BattleTurnExecutor : MonoBehaviour
             RefreshEndTurnButton();
             RefreshBattlePresentationState();
 
+            if (CanAcceptPlayerInput && timelineController != null)
+            {
+                timelineController.SelectDefaultSlotWhenInputReady();
+                timelineController.SetSelectedCharacterScaleFeedbackActive(true);
+                timelineController.RefocusCurrentSelectedCharacterWhenInputReady();
+            }
+
             PlayerTurnReturned?.Invoke();
         }
+    }
+
+    private IEnumerator ReturnCameraDefaultRoutine()
+    {
+        BattleCameraController cameraController = BattleCameraController.Instance;
+
+        if (cameraController == null)
+            yield break;
+
+        yield return cameraController.ReturnDefault();
     }
 
     private bool IsTypingInputFieldSelected()
@@ -302,6 +337,36 @@ public class BattleTurnExecutor : MonoBehaviour
             return true;
 
         return false;
+    }
+
+    private void AutoFindTurnNumberTextIfNeeded()
+    {
+        if (!autoFindTurnNumberText)
+            return;
+
+        if (turnNumberText != null)
+            return;
+
+        if (string.IsNullOrWhiteSpace(turnNumberTextObjectName))
+            return;
+
+        GameObject found = GameObject.Find(turnNumberTextObjectName);
+
+        if (found == null)
+            return;
+
+        turnNumberText = found.GetComponent<TMP_Text>();
+    }
+
+    private void RefreshTurnNumberText()
+    {
+        AutoFindTurnNumberTextIfNeeded();
+
+        if (turnNumberText == null)
+            return;
+
+        int displayTurnNumber = Mathf.Max(1, playerTurnNumber);
+        turnNumberText.text = displayTurnNumber.ToString();
     }
 
     private void RefreshEndTurnButton()

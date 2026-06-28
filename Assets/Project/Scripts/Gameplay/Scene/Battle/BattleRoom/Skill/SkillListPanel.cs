@@ -145,6 +145,11 @@ public class SkillListPanel : MonoBehaviour
 
     public void Close()
     {
+        EnsureBattleTimelineController();
+
+        if (battleTimelineController != null)
+            battleTimelineController.ClearCharacterSelectionFromSkillList(currentRuntime);
+
         if (panelRoot != null)
             panelRoot.SetActive(false);
 

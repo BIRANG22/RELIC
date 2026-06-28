@@ -34,6 +34,16 @@ public class BattleTimelineController : MonoBehaviour
     [SerializeField] private float selectedSlotEffectDuration = 0.08f;
     [SerializeField] private bool useUnscaledTimeForSelectedSlotEffect = true;
 
+    [Header("Selected Slot Gear Effects")]
+    [SerializeField] private Transform selectedSlotLargeGearEffect;
+    [SerializeField] private bool autoFindSelectedSlotLargeGearEffect = false;
+    [SerializeField] private string selectedSlotLargeGearEffectObjectName = "LargeGear";
+    [SerializeField] private float selectedSlotLargeGearRotateStepZ = 30f;
+    [SerializeField] private Transform selectedSlotSmallGearEffect;
+    [SerializeField] private bool autoFindSelectedSlotSmallGearEffect = false;
+    [SerializeField] private string selectedSlotSmallGearEffectObjectName = "SmallGear";
+    [SerializeField] private float selectedSlotSmallGearRotateStepZ = -90f;
+
     [Header("Selected Slot Effect SFX")]
     [SerializeField] private bool playSelectedSlotEffectSfx = true;
     [SerializeField] private SfxType selectedSlotEffectSfxType = SfxType.BattleTimelineSlotRotate;
@@ -42,6 +52,15 @@ public class BattleTimelineController : MonoBehaviour
     [Header("Slot Selection Lock")]
     [SerializeField] private bool showWarningWhenSlotSelectionLocked = false;
     [SerializeField] private string slotSelectionLockedMessage = "턴 진행 중에는 슬롯을 선택할 수 없습니다.";
+
+    [Header("Auto Slot Selection")]
+    [SerializeField] private bool autoSelectFirstSlotWhenInputReady = true;
+    [SerializeField] private int defaultSlotIndex = 0;
+
+    [Header("Character Selection Camera Focus")]
+    [SerializeField] private bool focusCameraOnCharacterSelect = true;
+    [SerializeField] private bool focusCameraOnlyWhenInputReady = true;
+    [SerializeField] private bool refocusSameCharacter = false;
 
     [Header("Keyboard Input")]
     [SerializeField] private bool enableNumberKeySlotSelection = true;
@@ -78,6 +97,7 @@ public class BattleTimelineController : MonoBehaviour
     private float endButtonRotationBeforeHoverZ;
     private Vector2[] timelineSlotOriginalAnchoredPositions;
     private int timelineSlotSlideStepIndex;
+    private string lastCameraFocusedCharacterId;
 
     private readonly List<MonsterReservedCommand>[] monsterCommandsBySlot =
         new List<MonsterReservedCommand>[5];
@@ -91,6 +111,7 @@ public class BattleTimelineController : MonoBehaviour
         InitializeMonsterCommandSlots();
         AutoFindSelectedSlotValueTextIfNeeded();
         AutoFindSelectedSlotEffectIfNeeded();
+        AutoFindSelectedSlotGearEffectsIfNeeded();
         AutoBindTimelineSlotSlideTargetsIfNeeded();
         CaptureTimelineSlotOriginalPositionsIfNeeded();
         AutoBindEndButtonHoverRotationTargetIfNeeded();
@@ -195,6 +216,140 @@ public class BattleTimelineController : MonoBehaviour
     public void SelectCharacter(CharacterRuntimeData runtimeData)
     {
         selectedCharacter = runtimeData;
+        ApplySelectedCharacterScaleFeedback(runtimeData);
+        TryFocusCameraOnSelectedCharacter(runtimeData);
+    }
+
+    public void ClearCharacterSelectionFromSkillList(CharacterRuntimeData runtimeData)
+    {
+        if (runtimeData != null &&
+            selectedCharacter != null &&
+            selectedCharacter != runtimeData &&
+            selectedCharacter.CharacterId != runtimeData.CharacterId)
+        {
+            return;
+        }
+
+        selectedCharacter = null;
+        selectedSkill = null;
+        lastCameraFocusedCharacterId = null;
+        ApplySelectedCharacterScaleFeedbackById(null);
+
+        BattleCameraController cameraController = BattleCameraController.Instance;
+        if (cameraController != null)
+            cameraController.StartReturnDefault();
+    }
+
+    private void ApplySelectedCharacterScaleFeedback(CharacterRuntimeData runtimeData)
+    {
+        string selectedCharacterId = runtimeData != null ? runtimeData.CharacterId : null;
+
+        ApplySelectedCharacterScaleFeedbackById(selectedCharacterId);
+    }
+
+    public void SetSelectedCharacterScaleFeedbackActive(bool active)
+    {
+        if (!active || selectedCharacter == null)
+        {
+            ApplySelectedCharacterScaleFeedbackById(null);
+            return;
+        }
+
+        ApplySelectedCharacterScaleFeedbackById(selectedCharacter.CharacterId);
+    }
+
+    private void ApplySelectedCharacterScaleFeedbackById(string selectedCharacterId)
+    {
+        BattleCharacter[] characters = FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            BattleCharacter character = characters[i];
+
+            if (character == null)
+                continue;
+
+            bool selected = !string.IsNullOrWhiteSpace(selectedCharacterId) &&
+                            character.CharacterId == selectedCharacterId;
+
+            character.SetSelectionScaleFeedback(selected);
+        }
+    }
+
+    private void TryFocusCameraOnSelectedCharacter(CharacterRuntimeData runtimeData)
+    {
+        TryFocusCameraOnSelectedCharacter(runtimeData, false);
+    }
+
+    public void RefocusCurrentSelectedCharacterWhenInputReady()
+    {
+        TryFocusCameraOnSelectedCharacter(selectedCharacter, true);
+    }
+
+    private void TryFocusCameraOnSelectedCharacter(CharacterRuntimeData runtimeData, bool forceRefocus)
+    {
+        if (!focusCameraOnCharacterSelect)
+            return;
+
+        if (runtimeData == null || string.IsNullOrWhiteSpace(runtimeData.CharacterId))
+        {
+            lastCameraFocusedCharacterId = null;
+            return;
+        }
+
+        if (!forceRefocus && !refocusSameCharacter && lastCameraFocusedCharacterId == runtimeData.CharacterId)
+            return;
+
+        if (focusCameraOnlyWhenInputReady)
+        {
+            if (turnExecutor == null)
+                turnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
+
+            if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
+                return;
+        }
+
+        BattleCameraController cameraController = BattleCameraController.Instance;
+
+        if (cameraController == null)
+            return;
+
+        Transform focusTarget = FindBattleCharacterTransform(runtimeData.CharacterId);
+
+        if (focusTarget == null)
+            return;
+
+        cameraController.FocusOnCharacterSelection(focusTarget);
+        lastCameraFocusedCharacterId = runtimeData.CharacterId;
+    }
+
+    private Transform FindBattleCharacterTransform(string characterId)
+    {
+        if (string.IsNullOrWhiteSpace(characterId))
+            return null;
+
+        BattleCharacter[] characters = FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            BattleCharacter character = characters[i];
+
+            if (character == null)
+                continue;
+
+            if (character.CharacterId != characterId)
+                continue;
+
+            return character.transform;
+        }
+
+        return null;
     }
 
     public void SelectSkill(SkillMasterData skillData)
@@ -252,6 +407,33 @@ public class BattleTimelineController : MonoBehaviour
     public void SetSlotSelectionLocked(bool locked)
     {
         isSlotSelectionLocked = locked;
+    }
+
+    public void SelectDefaultSlotWhenInputReady()
+    {
+        if (!autoSelectFirstSlotWhenInputReady)
+            return;
+
+        if (isSlotSelectionLocked)
+            return;
+
+        if (reserveSlots == null || reserveSlots.Length <= 0)
+            return;
+
+        int slotIndex = Mathf.Clamp(defaultSlotIndex, 0, reserveSlots.Length - 1);
+
+        if (reserveSlots[slotIndex] == null)
+            return;
+
+        int previousSlotIndex = activeSlotIndex;
+        activeSlotIndex = slotIndex;
+        selectedSkill = null;
+
+        if (timelineBarUI != null)
+            timelineBarUI.SetActiveTimelineSlot(activeSlotIndex);
+
+        RefreshSelectedSlotValueText();
+        PlaySelectedSlotEffect(previousSlotIndex, activeSlotIndex);
     }
 
     public IEnumerator SlideTimelineSlotsLeftOneStepRoutine()
@@ -495,18 +677,35 @@ public class BattleTimelineController : MonoBehaviour
         if (selectedSlotEffect != null)
             return;
 
+        selectedSlotEffect = FindTimelineChildByName(selectedSlotEffectObjectName);
+    }
+
+    private void AutoFindSelectedSlotGearEffectsIfNeeded()
+    {
+        if (autoFindSelectedSlotLargeGearEffect && selectedSlotLargeGearEffect == null)
+            selectedSlotLargeGearEffect = FindTimelineChildByName(selectedSlotLargeGearEffectObjectName);
+
+        if (autoFindSelectedSlotSmallGearEffect && selectedSlotSmallGearEffect == null)
+            selectedSlotSmallGearEffect = FindTimelineChildByName(selectedSlotSmallGearEffectObjectName);
+    }
+
+    private Transform FindTimelineChildByName(string childName)
+    {
+        if (string.IsNullOrEmpty(childName))
+            return null;
+
         Transform searchRoot = GetTimelineSearchRoot();
-        Transform found = FindChildRecursive(searchRoot, selectedSlotEffectObjectName);
+        Transform found = FindChildRecursive(searchRoot, childName);
 
-        if (found == null)
-        {
-            BattleTimelineBarUI foundTimelineBar = FindFirstObjectByType<BattleTimelineBarUI>(FindObjectsInactive.Include);
+        if (found != null)
+            return found;
 
-            if (foundTimelineBar != null)
-                found = FindChildRecursive(foundTimelineBar.transform, selectedSlotEffectObjectName);
-        }
+        BattleTimelineBarUI foundTimelineBar = FindFirstObjectByType<BattleTimelineBarUI>(FindObjectsInactive.Include);
 
-        selectedSlotEffect = found;
+        if (foundTimelineBar != null)
+            found = FindChildRecursive(foundTimelineBar.transform, childName);
+
+        return found;
     }
 
     private void AutoBindTimelineSlotSlideTargetsIfNeeded()
@@ -797,24 +996,35 @@ public class BattleTimelineController : MonoBehaviour
     private void PlaySelectedSlotEffect(int previousSlotIndex, int currentSlotIndex)
     {
         AutoFindSelectedSlotEffectIfNeeded();
+        AutoFindSelectedSlotGearEffectsIfNeeded();
 
-        if (selectedSlotEffect == null)
+        if (selectedSlotEffect == null &&
+            selectedSlotLargeGearEffect == null &&
+            selectedSlotSmallGearEffect == null)
+        {
+            return;
+        }
+
+        int rotateDirection = GetSelectedSlotEffectRotateDirection(previousSlotIndex, currentSlotIndex);
+
+        if (rotateDirection == 0)
             return;
 
-        float rotateStepZ = GetSelectedSlotEffectRotateStep(previousSlotIndex, currentSlotIndex);
-
-        if (Mathf.Approximately(rotateStepZ, 0f))
-            return;
-
-        if (!selectedSlotEffect.gameObject.activeSelf)
+        if (selectedSlotEffect != null && !selectedSlotEffect.gameObject.activeSelf)
             selectedSlotEffect.gameObject.SetActive(true);
+
+        if (selectedSlotLargeGearEffect != null && !selectedSlotLargeGearEffect.gameObject.activeSelf)
+            selectedSlotLargeGearEffect.gameObject.SetActive(true);
+
+        if (selectedSlotSmallGearEffect != null && !selectedSlotSmallGearEffect.gameObject.activeSelf)
+            selectedSlotSmallGearEffect.gameObject.SetActive(true);
 
         PlaySelectedSlotEffectSfx();
 
         if (selectedSlotEffectRoutine != null)
             StopCoroutine(selectedSlotEffectRoutine);
 
-        selectedSlotEffectRoutine = StartCoroutine(PlaySelectedSlotEffectRoutine(rotateStepZ));
+        selectedSlotEffectRoutine = StartCoroutine(PlaySelectedSlotEffectRoutine(rotateDirection));
     }
 
     private void PlaySelectedSlotEffectSfx()
@@ -828,43 +1038,52 @@ public class BattleTimelineController : MonoBehaviour
         AudioManager.Instance.PlaySfx(selectedSlotEffectSfxType, selectedSlotEffectSfxVolume);
     }
 
-    private float GetSelectedSlotEffectRotateStep(int previousSlotIndex, int currentSlotIndex)
+    private int GetSelectedSlotEffectRotateDirection(int previousSlotIndex, int currentSlotIndex)
     {
         if (currentSlotIndex < 0)
-            return 0f;
+            return 0;
 
         if (previousSlotIndex < 0)
-            return selectedSlotEffectRotateStepZ;
+            return 1;
 
         if (currentSlotIndex > previousSlotIndex)
-            return selectedSlotEffectRotateStepZ;
+            return 1;
 
         if (currentSlotIndex < previousSlotIndex)
-            return -selectedSlotEffectRotateStepZ;
+            return -1;
 
-        return 0f;
+        return 0;
     }
 
-    private IEnumerator PlaySelectedSlotEffectRoutine(float rotateStepZ)
+    private IEnumerator PlaySelectedSlotEffectRoutine(int rotateDirection)
     {
         float duration = Mathf.Max(0.01f, selectedSlotEffectDuration);
         float elapsed = 0f;
 
-        float startZ = GetSelectedSlotEffectRotationZ();
-        float targetZ = startZ + rotateStepZ;
+        float mainStartZ = GetTransformRotationZ(selectedSlotEffect);
+        float mainTargetZ = mainStartZ + selectedSlotEffectRotateStepZ * rotateDirection;
+
+        float largeGearStartZ = GetTransformRotationZ(selectedSlotLargeGearEffect);
+        float largeGearTargetZ = largeGearStartZ + selectedSlotLargeGearRotateStepZ * rotateDirection;
+
+        float smallGearStartZ = GetTransformRotationZ(selectedSlotSmallGearEffect);
+        float smallGearTargetZ = smallGearStartZ + selectedSlotSmallGearRotateStepZ * rotateDirection;
 
         while (elapsed < duration)
         {
             elapsed += useUnscaledTimeForSelectedSlotEffect ? Time.unscaledDeltaTime : Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / duration);
             float easedT = 1f - Mathf.Pow(1f - t, 3f);
-            float z = Mathf.Lerp(startZ, targetZ, easedT);
 
-            SetSelectedSlotEffectRotation(z);
+            SetTransformRotationZ(selectedSlotEffect, Mathf.Lerp(mainStartZ, mainTargetZ, easedT));
+            SetTransformRotationZ(selectedSlotLargeGearEffect, Mathf.Lerp(largeGearStartZ, largeGearTargetZ, easedT));
+            SetTransformRotationZ(selectedSlotSmallGearEffect, Mathf.Lerp(smallGearStartZ, smallGearTargetZ, easedT));
             yield return null;
         }
 
-        SetSelectedSlotEffectRotation(targetZ);
+        SetTransformRotationZ(selectedSlotEffect, mainTargetZ);
+        SetTransformRotationZ(selectedSlotLargeGearEffect, largeGearTargetZ);
+        SetTransformRotationZ(selectedSlotSmallGearEffect, smallGearTargetZ);
         selectedSlotEffectRoutine = null;
     }
 

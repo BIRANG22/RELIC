@@ -293,6 +293,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   timelineHoverHighlightObject: {fileID: 579637725321350266}
   autoFindTimelineHoverHighlightObject: 1
+  selectionScaleTargetName: SpriteRoot
+  selectionScaleTarget: {fileID: 0}
+  selectedScale: {x: 1.2, y: 1.2, z: 1}
+  selectionScaleDuration: 0.12
 --- !u!114 &5808486640025453813
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -394,6 +398,7 @@ MonoBehaviour:
   vfxLifeTime: 2
   animatorLayer: 0
   crossFadeDuration: 0
+  deadAnimationDuration: 0.6
   forceAnimatorUpdate: 1
   autoFindAnimatorInChildren: 1
   vfxLayerName: VFX
@@ -447,7 +452,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.2, y: 1.2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6867562735545302686}
