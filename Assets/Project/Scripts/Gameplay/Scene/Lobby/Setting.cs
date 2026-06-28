@@ -244,9 +244,6 @@ public class Setting : MonoBehaviour
 
     public void SelectPreset(int presetIndex)
     {
-        if (!enablePresetButtons)
-            return;
-
         if (currentRuntimeData == null)
         {
             ShowWarning("캐릭터를 먼저 선택해야 합니다.");
