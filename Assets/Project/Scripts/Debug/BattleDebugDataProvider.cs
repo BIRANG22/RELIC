@@ -67,6 +67,8 @@ public class BattleDebugDataProvider : MonoBehaviour
                     defaultFreeSkillId1,
                     defaultFreeSkillId2
                 },
+
+                EquippedRuneIds = new string[12],
             };
 
             dm.CharacterRuntimeStore.AddOrUpdate(runtimeData);

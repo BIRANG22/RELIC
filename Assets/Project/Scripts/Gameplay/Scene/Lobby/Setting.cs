@@ -31,6 +31,7 @@ public class Setting : MonoBehaviour
 
     [Header("Preset UI")]
     [SerializeField] private Button[] presetButtons = new Button[4];
+    [SerializeField] private bool enablePresetButtons = false;
     [SerializeField] private Color presetNormalColor = Color.white;
     [SerializeField] private Color presetSelectedColor = new Color(1f, 0.78f, 0.25f, 1f);
 
@@ -114,7 +115,11 @@ public class Setting : MonoBehaviour
 
             int presetIndex = i;
             presetButtons[i].onClick.RemoveAllListeners();
-            presetButtons[i].onClick.AddListener(() => SelectPreset(presetIndex));
+            presetButtons[i].interactable = enablePresetButtons;
+            presetButtons[i].navigation = new Navigation { mode = Navigation.Mode.None };
+
+            if (enablePresetButtons)
+                presetButtons[i].onClick.AddListener(() => SelectPreset(presetIndex));
         }
     }
 
@@ -239,6 +244,9 @@ public class Setting : MonoBehaviour
 
     public void SelectPreset(int presetIndex)
     {
+        if (!enablePresetButtons)
+            return;
+
         if (currentRuntimeData == null)
         {
             ShowWarning("캐릭터를 먼저 선택해야 합니다.");
@@ -494,6 +502,9 @@ public class Setting : MonoBehaviour
         {
             if (presetButtons[i] == null)
                 continue;
+
+            presetButtons[i].interactable = enablePresetButtons;
+            presetButtons[i].navigation = new Navigation { mode = Navigation.Mode.None };
 
             Image image = presetButtons[i].GetComponent<Image>();
 
