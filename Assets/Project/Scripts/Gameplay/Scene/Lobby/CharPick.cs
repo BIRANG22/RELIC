@@ -82,7 +82,6 @@ public class CharPick : MonoBehaviour
     private void OnEnable()
     {
         AutoBindCharButtonsIfNeeded();
-        NormalizeCharacterButtonList();
         ClampCenterIndex();
 
         if (resetPendingSelectionOnEnable)
@@ -100,7 +99,6 @@ public class CharPick : MonoBehaviour
         isStarted = true;
         CachePreviewBackgroundScale();
         AutoBindCharButtonsIfNeeded();
-        NormalizeCharacterButtonList();
         ClampCenterIndex();
 
         for (int i = 0; i < charBtns.Count; i++)
@@ -595,7 +593,6 @@ public class CharPick : MonoBehaviour
             return;
 
         List<CharBtn> foundButtons = CollectCharButtons(root);
-        RemoveInvalidCharacterButtons(foundButtons);
 
         if (foundButtons.Count <= 0)
             return;
@@ -628,64 +625,6 @@ public class CharPick : MonoBehaviour
         ClampCenterIndex();
     }
 
-    private void NormalizeCharacterButtonList()
-    {
-        if (charBtns == null)
-            return;
-
-        RemoveInvalidCharacterButtons(charBtns);
-    }
-
-    private void RemoveInvalidCharacterButtons(List<CharBtn> buttons)
-    {
-        if (buttons == null)
-            return;
-
-        for (int i = buttons.Count - 1; i >= 0; i--)
-        {
-            if (!IsValidCharacterButton(buttons[i]))
-                buttons.RemoveAt(i);
-        }
-    }
-
-    private bool IsValidCharacterButton(CharBtn btn)
-    {
-        if (btn == null)
-            return false;
-
-        if (IsPresetObject(btn.transform))
-            return false;
-
-        if (!btn.HasCharacterBinding)
-            return false;
-
-        return true;
-    }
-
-    private static bool IsPresetObject(Transform target)
-    {
-        Transform current = target;
-
-        while (current != null)
-        {
-            if (IsPresetObjectName(current.name))
-                return true;
-
-            current = current.parent;
-        }
-
-        return false;
-    }
-
-    private static bool IsPresetObjectName(string objectName)
-    {
-        if (string.IsNullOrWhiteSpace(objectName))
-            return false;
-
-        return objectName.IndexOf("Preset", System.StringComparison.OrdinalIgnoreCase) >= 0 ||
-               objectName.IndexOf("프리셋", System.StringComparison.OrdinalIgnoreCase) >= 0;
-    }
-
     private List<CharBtn> CollectCharButtons(Transform root)
     {
         List<CharBtn> result = new();
@@ -711,12 +650,6 @@ public class CharPick : MonoBehaviour
                 btn = candidate.gameObject.AddComponent<CharBtn>();
 
             if (btn == null)
-                continue;
-
-            if (IsPresetObject(candidate))
-                continue;
-
-            if (!btn.HasCharacterBinding)
                 continue;
 
             if (result.Contains(btn))

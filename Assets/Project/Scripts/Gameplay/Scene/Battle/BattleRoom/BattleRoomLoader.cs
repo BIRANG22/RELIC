@@ -33,6 +33,7 @@ public class BattleRoomLoader : MonoBehaviour
 
     [Header("Skill List")]
     [SerializeField] private SkillListPanel skillListPanel;
+    [SerializeField] private bool openSelectedCharacterSkillListWhenInputReady = true;
 
     [Header("Keyboard Input")]
     [SerializeField] private bool enableCharacterCycleInput = true;
@@ -150,6 +151,22 @@ public class BattleRoomLoader : MonoBehaviour
             skillListPanel.Close();
             return;
         }
+
+        CharacterRuntimeData runtimeData = GetSelectedOrFirstPlayerRuntime();
+
+        if (runtimeData == null)
+            return;
+
+        OpenSkillListForPlayer(runtimeData);
+    }
+
+    private void OpenSelectedCharacterSkillListWhenInputReady()
+    {
+        if (!openSelectedCharacterSkillListWhenInputReady)
+            return;
+
+        if (skillListPanel == null)
+            return;
 
         CharacterRuntimeData runtimeData = GetSelectedOrFirstPlayerRuntime();
 
@@ -351,7 +368,7 @@ public class BattleRoomLoader : MonoBehaviour
             monsterTurnPlanner.ResetBattleStartIntroState();
 
         SpawnPlayersAndHUD();
-        SpawnMonstersAndHUD();
+        SpawnMonstersAndHUD(false);
         passiveSkillService.RefreshAllPlayerPassives();
 
         EnsureTurnExecutor();
@@ -359,13 +376,14 @@ public class BattleRoomLoader : MonoBehaviour
         if (turnExecutor != null)
         {
             turnExecutor.ResetBattleTurnState();
-            turnExecutor.SetBattleInputReady(true);
-            Debug.Log("[BattleRoomLoader] Battle input ready true after LoadBattle");
+            turnExecutor.SetBattleInputReady(false);
         }
 
         loadedMapId = currentMapId;
         isLoaded = true;
         isLoading = false;
+
+        StartCoroutine(PlanInitialMonsterTurnsAndEnableInputRoutine());
     }
 
     public void ResetLoadedStateForNextBattle(bool clearSpawnedObjects = true)
@@ -805,7 +823,7 @@ public class BattleRoomLoader : MonoBehaviour
         }
     }
 
-    private void SpawnMonstersAndHUD()
+    private void SpawnMonstersAndHUD(bool planMonsterTurns = true)
     {
         spawnedMonsterUnits.Clear();
 
@@ -853,6 +871,9 @@ public class BattleRoomLoader : MonoBehaviour
             }
         }
 
+        if (!planMonsterTurns)
+            return;
+
         if (monsterTurnPlanner != null)
         {
             monsterTurnPlanner.PlanMonsterTurns(spawnedMonsterUnits, true);
@@ -861,6 +882,31 @@ public class BattleRoomLoader : MonoBehaviour
         {
             Debug.LogWarning("[BattleRoomLoader] MonsterTurnPlanner is missing.");
         }
+    }
+
+    private IEnumerator PlanInitialMonsterTurnsAndEnableInputRoutine()
+    {
+        EnsureTurnExecutor();
+
+        if (turnExecutor != null)
+            turnExecutor.SetBattleInputReady(false);
+
+        if (monsterTurnPlanner != null)
+        {
+            yield return monsterTurnPlanner.PlanMonsterTurnsAndWait(spawnedMonsterUnits, true);
+        }
+        else
+        {
+            Debug.LogWarning("[BattleRoomLoader] MonsterTurnPlanner is missing.");
+        }
+
+        if (turnExecutor != null)
+        {
+            turnExecutor.SetBattleInputReady(true);
+            Debug.Log("[BattleRoomLoader] Battle input ready true after initial monster plan");
+        }
+
+        OpenSelectedCharacterSkillListWhenInputReady();
     }
 
     public void PlanNextMonsterTurns()
@@ -889,6 +935,8 @@ public class BattleRoomLoader : MonoBehaviour
 
         if (turnExecutor != null)
             turnExecutor.SetBattleInputReady(true);
+
+        OpenSelectedCharacterSkillListWhenInputReady();
     }
 
     private MonsterHUDSlot CreateMonsterHUD(MonsterRuntimeData runtimeData, Transform monsterTransform, Collider2D monsterCollider)
