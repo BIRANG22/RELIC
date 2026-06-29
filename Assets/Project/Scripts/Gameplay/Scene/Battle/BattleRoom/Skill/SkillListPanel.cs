@@ -34,12 +34,15 @@ public class SkillListPanel : MonoBehaviour
     [Header("Close")]
     [SerializeField] private bool closeWhenClickOutside = true;
     [SerializeField] private RectTransform[] keepOpenClickRoots;
+    [SerializeField] private bool keepOpenWhenClickTimeline = true;
 
     private readonly List<RectTransform> runtimeKeepOpenClickRoots = new();
+    private readonly List<RectTransform> timelineKeepOpenClickRoots = new();
     private readonly List<SkillListSlotUI> skillSlots = new();
     private SkillListSlotUI selectedSkillSlot;
 
     private CharacterRuntimeData currentRuntime;
+    private CharacterRuntimeData battleExecutionClosedRuntime;
     private bool hasCapturedInitialPosition;
     private bool hasCapturedInitialDetailPosition;
     private Vector2 initialDetailAnchoredPosition;
@@ -135,6 +138,7 @@ public class SkillListPanel : MonoBehaviour
             panelRoot.SetActive(true);
 
         EnsureBattleTimelineController();
+        RefreshTimelineKeepOpenClickRoots();
 
         if (battleTimelineController != null)
             battleTimelineController.SelectCharacter(currentRuntime);
@@ -148,7 +152,10 @@ public class SkillListPanel : MonoBehaviour
         EnsureBattleTimelineController();
 
         if (battleTimelineController != null)
+        {
+            battleTimelineController.CancelSkillReservationPreviewFromSkillList(currentRuntime);
             battleTimelineController.ClearCharacterSelectionFromSkillList(currentRuntime);
+        }
 
         if (panelRoot != null)
             panelRoot.SetActive(false);
@@ -159,6 +166,45 @@ public class SkillListPanel : MonoBehaviour
         Clear();
         HideSkillDetail();
         ClearSkillHoverRangePreview();
+    }
+
+
+    public void CloseForBattleExecution()
+    {
+        EnsureBattleTimelineController();
+
+        battleExecutionClosedRuntime = currentRuntime;
+
+        if (battleTimelineController != null)
+            battleTimelineController.CancelSkillReservationPreviewFromSkillList(currentRuntime);
+
+        if (panelRoot != null)
+            panelRoot.SetActive(false);
+
+        currentRuntime = null;
+        renderedActiveSlotIndex = int.MinValue;
+        renderedReservationVersion = int.MinValue;
+        Clear();
+        HideSkillDetail();
+        ClearSkillHoverRangePreview();
+    }
+
+    public void ReopenAfterBattleExecution()
+    {
+        EnsureBattleTimelineController();
+
+        CharacterRuntimeData runtimeData = battleTimelineController != null
+            ? battleTimelineController.SelectedCharacter
+            : null;
+
+        if (runtimeData == null)
+            runtimeData = battleExecutionClosedRuntime;
+
+        if (runtimeData == null)
+            return;
+
+        battleExecutionClosedRuntime = null;
+        Open(runtimeData);
     }
 
     public void RegisterKeepOpenClickRoot(RectTransform root)
@@ -552,7 +598,74 @@ public class SkillListPanel : MonoBehaviour
                 return true;
         }
 
+        if (keepOpenWhenClickTimeline)
+        {
+            RefreshTimelineKeepOpenClickRoots();
+
+            for (int i = timelineKeepOpenClickRoots.Count - 1; i >= 0; i--)
+            {
+                RectTransform root = timelineKeepOpenClickRoots[i];
+
+                if (root == null)
+                {
+                    timelineKeepOpenClickRoots.RemoveAt(i);
+                    continue;
+                }
+
+                if (IsScreenPositionInsideRect(root, screenPosition))
+                    return true;
+            }
+        }
+
         return false;
+    }
+
+    private void RefreshTimelineKeepOpenClickRoots()
+    {
+        if (!keepOpenWhenClickTimeline)
+            return;
+
+        timelineKeepOpenClickRoots.Clear();
+
+        AddTimelineKeepOpenRoot(battleTimelineController);
+
+        BattleTimelineBarUI[] timelineBars = FindObjectsByType<BattleTimelineBarUI>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < timelineBars.Length; i++)
+            AddTimelineKeepOpenRoot(timelineBars[i]);
+
+        BattleTimelineGroupUI[] timelineGroups = FindObjectsByType<BattleTimelineGroupUI>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < timelineGroups.Length; i++)
+            AddTimelineKeepOpenRoot(timelineGroups[i]);
+
+        ReserveTurnSlotUI[] reserveTurnSlots = FindObjectsByType<ReserveTurnSlotUI>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < reserveTurnSlots.Length; i++)
+            AddTimelineKeepOpenRoot(reserveTurnSlots[i]);
+    }
+
+    private void AddTimelineKeepOpenRoot(Component component)
+    {
+        if (component == null)
+            return;
+
+        RectTransform rectTransform = component.GetComponent<RectTransform>();
+
+        if (rectTransform == null)
+            return;
+
+        if (!timelineKeepOpenClickRoots.Contains(rectTransform))
+            timelineKeepOpenClickRoots.Add(rectTransform);
     }
 
     private bool IsScreenPositionInsideRect(RectTransform targetRect, Vector2 screenPosition)
