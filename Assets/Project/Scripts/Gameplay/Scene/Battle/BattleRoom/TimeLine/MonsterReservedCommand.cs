@@ -16,6 +16,7 @@ public class MonsterReservedCommand
     public int ReservedDamage { get; private set; } = -1;
     public bool HasReservedDamage => ReservedDamage > 0;
     public int ActionIndex { get; private set; }
+    public int RangeOriginGridIndex { get; private set; } = -1;
 
     public List<int> RangeGridIndices { get; private set; } = new();
     public List<int> TargetGridIndices { get; private set; } = new();
@@ -51,6 +52,11 @@ public class MonsterReservedCommand
     public void SetActionIndex(int actionIndex)
     {
         ActionIndex = Mathf.Clamp(actionIndex, 0, MonsterMasterData.PossibleSkillSlotCount);
+    }
+
+    public void SetRangeOriginGridIndex(int gridIndex)
+    {
+        RangeOriginGridIndex = Mathf.Max(-1, gridIndex);
     }
 
     public int EnsureReservedDamage()

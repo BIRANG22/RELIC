@@ -1863,14 +1863,17 @@ public class BattleActionRunner
 
         BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
 
-        bool facingRight = facing == null || facing.IsFacingRight;
+        bool facingRight = command.RangeOriginGridIndex >= 0
+            ? IsNearestPlayerToRight(command.RangeOriginGridIndex)
+            : facing == null || facing.IsFacingRight;
 
         List<int> rangeGridIndices =
             MonsterSkillRangeService.BuildRangeGridIndices(
                 monster,
                 command.SkillData,
                 gridManager,
-                facingRight
+                facingRight,
+                command.RangeOriginGridIndex
             );
 
         List<int> targetGridIndices =
@@ -1880,6 +1883,51 @@ public class BattleActionRunner
             );
 
         command.SetRangeResult(rangeGridIndices, targetGridIndices);
+    }
+
+    private bool IsNearestPlayerToRight(int originGridIndex)
+    {
+        if (gridManager == null || originGridIndex < 0)
+            return false;
+
+        BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
+
+        Vector2Int originCoord = gridManager.IndexToCoord(originGridIndex);
+        BattleCharacter nearest = null;
+        int nearestDistance = int.MaxValue;
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            BattleCharacter character = characters[i];
+
+            if (character == null || character.RuntimeData == null)
+                continue;
+
+            if (character.RuntimeData.IsDead)
+                continue;
+
+            if (character.CurrentGridIndex < 0)
+                continue;
+
+            Vector2Int targetCoord = gridManager.IndexToCoord(character.CurrentGridIndex);
+            int distance =
+                Mathf.Abs(targetCoord.x - originCoord.x) +
+                Mathf.Abs(targetCoord.y - originCoord.y);
+
+            if (distance < nearestDistance)
+            {
+                nearestDistance = distance;
+                nearest = character;
+            }
+        }
+
+        if (nearest == null)
+            return false;
+
+        return gridManager.IndexToCoord(nearest.CurrentGridIndex).x >= originCoord.x;
     }
 
     private BattleCharacter FindFirstPlayerTarget(MonsterReservedCommand command)

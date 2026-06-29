@@ -759,11 +759,16 @@ public class BattleActionSimulationService
             return;
 
         int casterGrid = currentCells[0];
+        int rangeOriginGrid = command.RangeOriginGridIndex >= 0
+            ? command.RangeOriginGridIndex
+            : casterGrid;
 
-        BattleDirection direction = GetMonsterDirection(command.RuntimeId);
+        BattleDirection direction = command.RangeOriginGridIndex >= 0
+            ? GetDirectionToNearestSimulatedPlayer(rangeOriginGrid)
+            : GetMonsterDirection(command.RuntimeId);
 
         List<int> range = BattleRangeCalculator.GetDirectionRangeIndices(
-            casterGrid,
+            rangeOriginGrid,
             command.SkillData.RangeId,
             direction,
             DataManager.Instance.RangeDatabase,
@@ -771,6 +776,42 @@ public class BattleActionSimulationService
         );
 
         command.SetRangeResult(range, range);
+    }
+
+    private BattleDirection GetDirectionToNearestSimulatedPlayer(int originGridIndex)
+    {
+        if (gridManager == null || originGridIndex < 0 || playerPositions.Count <= 0)
+            return BattleDirection.Left;
+
+        Vector2Int originCoord = gridManager.IndexToCoord(originGridIndex);
+        int nearestDistance = int.MaxValue;
+        int nearestGridIndex = -1;
+
+        foreach (var pair in playerPositions)
+        {
+            int playerGridIndex = pair.Value;
+
+            if (playerGridIndex < 0)
+                continue;
+
+            Vector2Int playerCoord = gridManager.IndexToCoord(playerGridIndex);
+            int distance =
+                Mathf.Abs(playerCoord.x - originCoord.x) +
+                Mathf.Abs(playerCoord.y - originCoord.y);
+
+            if (distance < nearestDistance)
+            {
+                nearestDistance = distance;
+                nearestGridIndex = playerGridIndex;
+            }
+        }
+
+        if (nearestGridIndex < 0)
+            return BattleDirection.Left;
+
+        return gridManager.IndexToCoord(nearestGridIndex).x >= originCoord.x
+            ? BattleDirection.Right
+            : BattleDirection.Left;
     }
 
     private BattleDirection GetMonsterDirection(string runtimeId)

@@ -4,6 +4,8 @@ Do do list
 3. 불필요한 구현작업은 진행하지 마.
 4. 커밋이나 PR은 반드시 나에게 물어보고 진행해
 5. 한국어로 답해야해
+6. 테스트를 생성할 경우 반드시 Assets/Tests/EditMode~/ 또는 Assets/Tests/PlayMode~/ 아래에 생성해.
+7. 테스트는 빌드 대상에 포함되지 않도록 반드시 '~'가 붙은 폴더에만 작성해.
 
 Do Not list
 1. 
