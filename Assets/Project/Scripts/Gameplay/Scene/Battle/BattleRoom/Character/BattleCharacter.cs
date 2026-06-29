@@ -70,7 +70,9 @@ public class BattleCharacter : MonoBehaviour
         if (selectionScaleTarget == null)
             return;
 
-        Vector3 targetScale = selected ? GetSelectedScaleTarget() : originalSelectionScale;
+        Vector3 targetScale = selected
+            ? GetSelectedScaleTarget()
+            : GetOriginalScaleTargetKeepingFacing();
 
         if (selectionScaleRoutine != null)
             StopCoroutine(selectionScaleRoutine);
@@ -89,18 +91,41 @@ public class BattleCharacter : MonoBehaviour
     private Vector3 GetSelectedScaleTarget()
     {
         if (!useSelectedScaleMultiplier)
-            return selectedScale;
+            return GetScaleTargetKeepingFacing(selectedScale);
 
         float multiplier = selectedScaleMultiplier;
 
         if (multiplier <= 0f)
             multiplier = 1f;
 
-        return new Vector3(
-            originalSelectionScale.x * multiplier,
+        return GetScaleTargetKeepingFacing(new Vector3(
+            Mathf.Abs(originalSelectionScale.x) * multiplier,
             originalSelectionScale.y * multiplier,
             originalSelectionScale.z
-        );
+        ));
+    }
+
+    private Vector3 GetOriginalScaleTargetKeepingFacing()
+    {
+        return GetScaleTargetKeepingFacing(originalSelectionScale);
+    }
+
+    private Vector3 GetScaleTargetKeepingFacing(Vector3 baseScale)
+    {
+        float currentX = selectionScaleTarget != null
+            ? selectionScaleTarget.localScale.x
+            : baseScale.x;
+
+        float sign = currentX < 0f ? -1f : 1f;
+
+        if (Mathf.Approximately(currentX, 0f))
+        {
+            BattleUnitFacing facing = GetComponent<BattleUnitFacing>();
+            sign = facing != null && !facing.IsFacingRight ? -1f : 1f;
+        }
+
+        baseScale.x = Mathf.Abs(baseScale.x) * sign;
+        return baseScale;
     }
 
     private IEnumerator AnimateSelectionScale(Vector3 targetScale)
@@ -143,7 +168,7 @@ public class BattleCharacter : MonoBehaviour
         }
 
         if (selectionScaleTarget != null && hasOriginalSelectionScale)
-            selectionScaleTarget.localScale = originalSelectionScale;
+            selectionScaleTarget.localScale = GetOriginalScaleTargetKeepingFacing();
     }
 
     private void EnsureSelectionScaleTarget()

@@ -27,7 +27,10 @@ public enum SfxType
     RelicChoiceAcquire,
     BattleRewardRemnantAcquire,
     BattleRewardRelicSkillAcquire,
-    BattleTimelineSlotRotate
+    BattleTimelineSlotRotate,
+    BattleEndButtonHover,
+    BattleTimelineSlotSlide,
+    BattleMapNodeCheckAnimation
 }
 
 [System.Serializable]
