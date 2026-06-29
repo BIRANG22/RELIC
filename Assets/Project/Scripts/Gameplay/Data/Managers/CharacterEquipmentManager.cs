@@ -11,47 +11,47 @@ namespace Relic.Gameplay.Data
             if (!equipmentMap.TryGetValue(characterId, out var equipment))
             {
                 equipment = new CharacterEquipmentData { CharacterId = characterId };
-                EnsureLoadout(equipment);
+                EnsureArrays(equipment);
                 equipmentMap[characterId] = equipment;
             }
 
-            EnsureLoadout(equipment);
+            EnsureArrays(equipment);
             return equipment;
         }
 
         public void EquipPassive(string characterId, string passiveId)
         {
-            GetOrCreate(characterId).SkillLoadout.PassiveId = passiveId;
+            GetOrCreate(characterId).PassiveSkillId = passiveId;
         }
 
         public void EquipUnique(string characterId, string uniqueId)
         {
-            GetOrCreate(characterId).SkillLoadout.UniqueSkillId = uniqueId;
+            GetOrCreate(characterId).UniqueSkillId = uniqueId;
         }
 
         public void EquipAbility(string characterId, string abilityId)
         {
-            GetOrCreate(characterId).SkillLoadout.AbilitySkillId = abilityId;
+            GetOrCreate(characterId).AbilitySkillId = abilityId;
         }
 
         public void EquipFreeSkill(string characterId, int slotIndex, string skillId)
         {
-            CharacterSkillLoadout loadout = GetOrCreate(characterId).SkillLoadout;
+            CharacterEquipmentData equipment = GetOrCreate(characterId);
 
-            if (slotIndex < 0 || slotIndex >= loadout.FreeSkillIds.Length)
+            if (slotIndex < 0 || slotIndex >= equipment.FreeSkillIds.Length)
                 return;
 
-            loadout.FreeSkillIds[slotIndex] = skillId;
+            equipment.FreeSkillIds[slotIndex] = skillId;
         }
 
         public void EquipRune(string characterId, int slotIndex, string runeId)
         {
             CharacterEquipmentData equipment = GetOrCreate(characterId);
 
-            if (slotIndex < 0 || slotIndex >= equipment.RuneLoadout.RuneIds.Length)
+            if (slotIndex < 0 || slotIndex >= equipment.RuneIds.Length)
                 return;
 
-            equipment.RuneLoadout.RuneIds[slotIndex] = runeId;
+            equipment.RuneIds[slotIndex] = runeId;
         }
 
         public void EquipFragment(string characterId, int slotIndex, string fragmentId)
@@ -64,27 +64,21 @@ namespace Relic.Gameplay.Data
             equipment.FragmentIds[slotIndex] = fragmentId;
         }
 
-        private void EnsureLoadout(CharacterEquipmentData equipment)
+        private void EnsureArrays(CharacterEquipmentData equipment)
         {
             if (equipment == null)
                 return;
 
-            if (equipment.SkillLoadout == null)
-                equipment.SkillLoadout = new CharacterSkillLoadout();
-
-            if (equipment.SkillLoadout.FreeSkillIds == null ||
-                equipment.SkillLoadout.FreeSkillIds.Length != 2)
+            if (equipment.FreeSkillIds == null ||
+                equipment.FreeSkillIds.Length != 2)
             {
-                equipment.SkillLoadout.FreeSkillIds = new string[2];
+                equipment.FreeSkillIds = new string[2];
             }
 
-            if (equipment.RuneLoadout == null)
-                equipment.RuneLoadout = new CharacterRuneLoadout();
-
-            if (equipment.RuneLoadout.RuneIds == null ||
-                equipment.RuneLoadout.RuneIds.Length != 5)
+            if (equipment.RuneIds == null ||
+                equipment.RuneIds.Length != 5)
             {
-                equipment.RuneLoadout.RuneIds = new string[5];
+                equipment.RuneIds = new string[5];
             }
 
             if (equipment.FragmentIds == null ||

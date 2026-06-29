@@ -18,7 +18,6 @@ public class BattleActionRunner
     private readonly bool useSafeSequentialExecution;
     private readonly float actionRoutineTimeout;
 
-    private const float ReadyDelay = 0.06f;
     private const float ActionDelay = 0.05f;
     private const float BatchEndDelay = 0.05f;
 
@@ -1030,11 +1029,6 @@ public class BattleActionRunner
 
         BattleUnitAnimator attackerAnimator = attacker.GetComponent<BattleUnitAnimator>();
 
-        if (attackerAnimator != null)
-            attackerAnimator.PlaySkillReady(command.SkillData);
-
-        yield return new WaitForSeconds(ReadyDelay);
-
         if (command.SkillData.Target == TargetType.PlayerParty)
         {
             if (attackerAnimator != null)
@@ -1780,11 +1774,6 @@ public class BattleActionRunner
 
         BattleUnitAnimator monsterAnimator = monster.GetComponent<BattleUnitAnimator>();
 
-        if (monsterAnimator != null)
-            monsterAnimator.PlayMonsterSkillReady(command.SkillData);
-
-        yield return new WaitForSeconds(ReadyDelay);
-
         // 타겟이 있으면 바라보고, 바라본 방향으로 다시 범위 재계산
         if (firstPlayerTarget != null)
         {
@@ -1817,7 +1806,7 @@ public class BattleActionRunner
         else
         {
             if (monsterAnimator != null)
-                monsterAnimator.PlayMonsterSkillAction(command.SkillData);
+                monsterAnimator.PlayMonsterSkillAction(command);
 
             monsterSkillEffectService.ApplyMonsterSkill(monster, command);
 
@@ -1850,7 +1839,7 @@ public class BattleActionRunner
                 yield break;
 
             if (monsterAnimator != null)
-                monsterAnimator.PlayMonsterSkillAction(command.SkillData);
+                monsterAnimator.PlayMonsterSkillAction(command);
 
             yield return new WaitForSeconds(ActionDelay);
 
@@ -2124,16 +2113,11 @@ public class BattleActionRunner
 
         BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
 
-        if (animator != null)
-            animator.PlayRandomAttackReady();
-
-        yield return new WaitForSeconds(ReadyDelay);
-
         if (hitPlayer != null && BattleCameraController.Instance != null)
             yield return BattleCameraController.Instance.ZoomToAttacker(monster.transform);
 
         if (animator != null)
-            animator.PlayCurrentAttackAction();
+            animator.PlayMonsterSkillAction(command);
 
         if (finalOffset != Vector2Int.zero)
         {

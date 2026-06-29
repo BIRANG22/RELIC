@@ -207,6 +207,8 @@ MonoBehaviour:
   autoFindTimelineHoverHighlightObject: 1
   selectionScaleTargetName: SpriteRoot
   selectionScaleTarget: {fileID: 0}
+  useSelectedScaleMultiplier: 1
+  selectedScaleMultiplier: 1.125
   selectedScale: {x: 1.2, y: 1.2, z: 1}
   selectionScaleDuration: 0.12
 --- !u!114 &2194174503204016879
@@ -271,13 +273,6 @@ MonoBehaviour:
   guardStateName: Guard
   hitStateName: Hit
   deadStateName: Dead
-  controlStateName: Control
-  attackReady1StateName: AttackReady
-  attackAction1StateName: AttackAction1
-  attackReady2StateName: AttackReady
-  attackAction2StateName: AttackAction2
-  attackReady3StateName: AttackReady
-  attackAction3StateName: AttackAction3
   moveVfx:
     prefab: {fileID: 4145361429921181282, guid: f45be1937c3904848ac7f971b1276398, type: 3}
     flipType: 0
@@ -287,21 +282,122 @@ MonoBehaviour:
   hitVfx:
     prefab: {fileID: 1117934107437797500, guid: 6dd4d37e972a5e74894acd84b22787f5, type: 3}
     flipType: 0
-  buffVfx:
-    prefab: {fileID: 0}
-    flipType: 0
-  debuffVfx:
-    prefab: {fileID: 0}
-    flipType: 0
-  attackVfx1:
-    prefab: {fileID: 7246877767994350761, guid: 850dde0b243b3694293b43e76fc9afd7, type: 3}
-    flipType: 0
-  attackVfx2:
-    prefab: {fileID: 3127906768008823332, guid: 790222bb35b3a984990ac2bc4122b587, type: 3}
-    flipType: 0
-  attackVfx3:
-    prefab: {fileID: 2841605795099109794, guid: c47ba19841760834ea798963184f6f73, type: 3}
-    flipType: 0
+  statusVfx:
+    aimingVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    armorVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    blockVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    focusVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    powerVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    rechargeVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    recoverVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    swiftVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    thornsVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    addictedVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    bleedingVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    burnVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    corrosionVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    grudgeVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    vulnerableVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    weakenVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+  playerSkillPresentations:
+    power:
+      stateName: Control
+      vfx:
+        prefab: {fileID: 0}
+        flipType: 0
+    attack1:
+      stateName: AttackAction1
+      vfx:
+        prefab: {fileID: 5464498477634507533, guid: bdc8593002004414291efd23ad621fe2, type: 3}
+        flipType: 0
+    attack2:
+      stateName: AttackAction2
+      vfx:
+        prefab: {fileID: 8450343264324062456, guid: 5d4877a37dfaf5942afa7cac0b4c3b75, type: 3}
+        flipType: 0
+    attack3:
+      stateName: AttackAction3
+      vfx:
+        prefab: {fileID: 2841605795099109794, guid: 2ef7054a95ae0e44d9b3fc626023139e, type: 3}
+        flipType: 0
+    skill:
+      stateName: Control
+      vfx:
+        prefab: {fileID: 5464498477634507533, guid: bdc8593002004414291efd23ad621fe2, type: 3}
+        flipType: 0
+  monsterActionPresentations:
+  - stateName: 
+    vfx:
+      prefab: {fileID: 0}
+      flipType: 0
+  - stateName: 
+    vfx:
+      prefab: {fileID: 0}
+      flipType: 0
+  - stateName: 
+    vfx:
+      prefab: {fileID: 0}
+      flipType: 0
+  - stateName: 
+    vfx:
+      prefab: {fileID: 0}
+      flipType: 0
+  - stateName: 
+    vfx:
+      prefab: {fileID: 0}
+      flipType: 0
+  - stateName: 
+    vfx:
+      prefab: {fileID: 0}
+      flipType: 0
+  - stateName: 
+    vfx:
+      prefab: {fileID: 0}
+      flipType: 0
+  - stateName: 
+    vfx:
+      prefab: {fileID: 0}
+      flipType: 0
+  - stateName: 
+    vfx:
+      prefab: {fileID: 0}
+      flipType: 0
+  - stateName: 
+    vfx:
+      prefab: {fileID: 0}
+      flipType: 0
   vfxSpawnPoint: {fileID: 8290003474214558198}
   unitFacing: {fileID: 0}
   autoFindFacing: 1
