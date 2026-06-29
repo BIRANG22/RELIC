@@ -13,6 +13,7 @@ public class GridManager : MonoBehaviour
 
     private GridCell[,] cellMap;
     private bool isGridVisible = true;
+    private readonly List<GridCell> executionRangeCells = new();
 
     public event Action<GridCell> OnCellClicked;
     public event Action<GridCell> OnCellHovered;
@@ -58,6 +59,41 @@ public class GridManager : MonoBehaviour
     {
         isGridVisible = visible;
         ApplyGridVisibilityToCells();
+    }
+
+    public void ShowExecutionRange(IReadOnlyCollection<int> gridIndices, Color color)
+    {
+        ClearExecutionRange();
+
+        if (gridIndices == null || gridIndices.Count <= 0)
+            return;
+
+        foreach (int index in gridIndices)
+        {
+            GridCell cell = GetCellByIndex(index);
+
+            if (cell == null)
+                continue;
+
+            if (executionRangeCells.Contains(cell))
+                continue;
+
+            cell.SetExecutionRangeTint(color);
+            executionRangeCells.Add(cell);
+        }
+    }
+
+    public void ClearExecutionRange()
+    {
+        for (int i = 0; i < executionRangeCells.Count; i++)
+        {
+            GridCell cell = executionRangeCells[i];
+
+            if (cell != null)
+                cell.ClearExecutionRangeTint();
+        }
+
+        executionRangeCells.Clear();
     }
 
     private void ApplyGridVisibilityToCells()
