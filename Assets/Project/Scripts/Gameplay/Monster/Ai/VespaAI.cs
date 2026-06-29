@@ -41,12 +41,24 @@ namespace Relic.Gameplay.Monster
                 0
             ));
 
+            int projectedGridIndex = GetProjectedMainGridIndex(
+                monsterUnit,
+                gridManager,
+                moveOffset);
+            BattleDirection attackDirection = GetHorizontalDirectionToTarget(
+                projectedGridIndex,
+                target.CurrentGridIndex,
+                gridManager);
+
             plan.Add(new MonsterAIAction(
                 AttackSkillId,
                 Vector2Int.zero,
                 MonsterAISlotPreference.NextSlot,
                 2,
-                1
+                1,
+                -1,
+                true,
+                attackDirection
             ));
 
             return plan;
@@ -61,7 +73,7 @@ namespace Relic.Gameplay.Monster
                 return Vector2Int.zero;
 
             MonsterSkillData moveSkill =
-                DataManager.Instance.MonsterSkillDatabase.Get(MoveSkillId);
+                DataManager.Instance?.MonsterSkillDatabase.Get(MoveSkillId);
 
             if (moveSkill == null)
                 return Vector2Int.zero;
@@ -85,6 +97,10 @@ namespace Relic.Gameplay.Monster
             Vector2Int horizontal = new Vector2Int(dirX, 0);
             Vector2Int vertical = new Vector2Int(0, dirY);
 
+            if (dirY != 0 &&
+                IsCandidateValid(monsterUnit, gridManager, candidates, vertical))
+                return vertical;
+
             if (dirX != 0 && dirY != 0 &&
                 IsCandidateValid(monsterUnit, gridManager, candidates, diagonal))
                 return diagonal;
@@ -93,11 +109,23 @@ namespace Relic.Gameplay.Monster
                 IsCandidateValid(monsterUnit, gridManager, candidates, horizontal))
                 return horizontal;
 
-            if (dirY != 0 &&
-                IsCandidateValid(monsterUnit, gridManager, candidates, vertical))
-                return vertical;
-
             return GetAnyValidMove(monsterUnit, gridManager, candidates);
+        }
+
+        private BattleDirection GetHorizontalDirectionToTarget(
+            int originGridIndex,
+            int targetGridIndex,
+            GridManager gridManager)
+        {
+            if (gridManager == null || originGridIndex < 0 || targetGridIndex < 0)
+                return BattleDirection.Right;
+
+            Vector2Int originCoord = gridManager.IndexToCoord(originGridIndex);
+            Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
+
+            return targetCoord.x >= originCoord.x
+                ? BattleDirection.Right
+                : BattleDirection.Left;
         }
 
         private bool IsCandidateValid(

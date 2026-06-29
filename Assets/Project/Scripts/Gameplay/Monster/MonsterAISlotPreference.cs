@@ -21,6 +21,8 @@ namespace Relic.Gameplay.Monster
         public int SameSlotGroup;
         public int Priority;
         public int RangeOriginGridIndex;
+        public bool HasForcedDirection;
+        public BattleDirection ForcedDirection;
 
         public MonsterAIAction(
             string skillId,
@@ -28,7 +30,9 @@ namespace Relic.Gameplay.Monster
             MonsterAISlotPreference slotPreference,
             int sameSlotGroup = -1,
             int priority = 0,
-            int rangeOriginGridIndex = -1)
+            int rangeOriginGridIndex = -1,
+            bool hasForcedDirection = false,
+            BattleDirection forcedDirection = BattleDirection.Right)
         {
             SkillId = skillId;
             MoveOffset = moveOffset;
@@ -36,6 +40,8 @@ namespace Relic.Gameplay.Monster
             SameSlotGroup = sameSlotGroup;
             Priority = priority;
             RangeOriginGridIndex = Mathf.Max(-1, rangeOriginGridIndex);
+            HasForcedDirection = hasForcedDirection;
+            ForcedDirection = forcedDirection;
         }
     }
 

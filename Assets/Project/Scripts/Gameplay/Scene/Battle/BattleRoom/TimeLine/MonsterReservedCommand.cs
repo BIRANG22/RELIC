@@ -17,6 +17,8 @@ public class MonsterReservedCommand
     public bool HasReservedDamage => ReservedDamage > 0;
     public int ActionIndex { get; private set; }
     public int RangeOriginGridIndex { get; private set; } = -1;
+    public bool HasForcedDirection { get; private set; }
+    public BattleDirection ForcedDirection { get; private set; } = BattleDirection.Right;
 
     public List<int> RangeGridIndices { get; private set; } = new();
     public List<int> TargetGridIndices { get; private set; } = new();
@@ -57,6 +59,12 @@ public class MonsterReservedCommand
     public void SetRangeOriginGridIndex(int gridIndex)
     {
         RangeOriginGridIndex = Mathf.Max(-1, gridIndex);
+    }
+
+    public void SetForcedDirection(BattleDirection direction)
+    {
+        HasForcedDirection = true;
+        ForcedDirection = direction;
     }
 
     public int EnsureReservedDamage()

@@ -232,6 +232,9 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                 command.SetMoveOffset(action.MoveOffset);
                 command.SetRangeOriginGridIndex(action.RangeOriginGridIndex);
 
+                if (action.HasForcedDirection)
+                    command.SetForcedDirection(action.ForcedDirection);
+
                 if (!IsMoveSkill(skillData))
                     SetMonsterRange(monsterUnit, skillData, command);
 
@@ -474,7 +477,9 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             ? command.RangeOriginGridIndex
             : casterGridIndex;
 
-        BattleDirection direction = GetDirectionToNearestPlayer(rangeOriginGridIndex);
+        BattleDirection direction = command.HasForcedDirection
+            ? command.ForcedDirection
+            : GetDirectionToNearestPlayer(rangeOriginGridIndex);
 
         List<int> rangeIndices = BattleRangeCalculator.GetDirectionRangeIndices(
             rangeOriginGridIndex,
