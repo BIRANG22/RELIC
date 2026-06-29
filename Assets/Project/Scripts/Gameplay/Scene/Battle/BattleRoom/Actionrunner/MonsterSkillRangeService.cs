@@ -11,23 +11,36 @@ public static class MonsterSkillRangeService
         GridManager gridManager,
         bool facingRight)
     {
+        return BuildRangeGridIndices(monster, skillData, gridManager, facingRight, -1);
+    }
+
+    public static List<int> BuildRangeGridIndices(
+        MonsterUnit monster,
+        MonsterSkillData skillData,
+        GridManager gridManager,
+        bool facingRight,
+        int explicitOriginGridIndex,
+        RangeDatabase rangeDatabase = null)
+    {
         List<int> result = new();
 
         if (monster == null || skillData == null || gridManager == null)
             return result;
 
+        RangeDatabase resolvedRangeDatabase = rangeDatabase ?? DataManager.Instance?.RangeDatabase;
+
         if (skillData.RangeId == "Range_All")
             return GetAllTargetGridIndices(skillData.Target);
 
         if (skillData.RangeId == "Range_X-axis")
-            return GetXAxisRange(monster, gridManager, facingRight);
+            return GetXAxisRange(GetOriginGridIndex(monster, explicitOriginGridIndex), gridManager, facingRight);
 
-        SkillRangeData rangeData = DataManager.Instance.RangeDatabase.Get(skillData.RangeId);
+        SkillRangeData rangeData = resolvedRangeDatabase?.Get(skillData.RangeId);
 
         if (rangeData == null || rangeData.Positions == null)
             return result;
 
-        int originIndex = monster.MainGridIndex;
+        int originIndex = GetOriginGridIndex(monster, explicitOriginGridIndex);
 
         if (originIndex < 0)
             return result;
@@ -175,14 +188,20 @@ public static class MonsterSkillRangeService
         return result;
     }
 
+    private static int GetOriginGridIndex(MonsterUnit monster, int explicitOriginGridIndex)
+    {
+        if (explicitOriginGridIndex >= 0)
+            return explicitOriginGridIndex;
+
+        return monster != null ? monster.MainGridIndex : -1;
+    }
+
     private static List<int> GetXAxisRange(
-        MonsterUnit monster,
+        int originIndex,
         GridManager gridManager,
         bool facingRight)
     {
         List<int> result = new();
-
-        int originIndex = monster.MainGridIndex;
 
         if (originIndex < 0)
             return result;

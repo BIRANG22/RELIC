@@ -23,6 +23,7 @@ namespace Relic.Gameplay.Data
         public string UniqueItemId;
         public float UniqueItemChance;
         public float RelicChance;
+        public string AttackRangeId;
 
         public string[] PossibleSkillIdsByActionIndex = new string[MonsterMasterData.PossibleSkillSlotCount];
         public List<string> PossSkillIds = new();
@@ -57,6 +58,7 @@ namespace Relic.Gameplay.Data
             UniqueItemId = masterData.UniqueItemId;
             UniqueItemChance = masterData.UniqueItemChance;
             RelicChance = masterData.RelicChance;
+            AttackRangeId = masterData.AttackRangeId;
 
             TurnCount = 0;
             InitializePossibleSkills(masterData);

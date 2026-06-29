@@ -155,6 +155,131 @@ namespace Relic.Gameplay.Monster
             return nearest;
         }
 
+        protected int FindRangedAttackOrigin(
+            MonsterUnit monsterUnit,
+            int casterGridIndex,
+            MonsterSkillData attackSkill,
+            string attackRangeId,
+            GridManager gridManager)
+        {
+            if (monsterUnit == null ||
+                attackSkill == null ||
+                gridManager == null ||
+                casterGridIndex < 0 ||
+                string.IsNullOrWhiteSpace(attackRangeId) ||
+                attackRangeId.Trim() == "0")
+            {
+                return -1;
+            }
+
+            RangeDatabase rangeDatabase = DataManager.Instance?.RangeDatabase;
+
+            if (rangeDatabase == null)
+                return -1;
+
+            List<int> candidateGridIndices = BattleRangeCalculator.GetSelectionRangeIndices(
+                casterGridIndex,
+                attackRangeId,
+                rangeDatabase,
+                gridManager);
+
+            if (candidateGridIndices == null || candidateGridIndices.Count <= 0)
+                return -1;
+
+            List<int> validOrigins = new();
+
+            for (int i = 0; i < candidateGridIndices.Count; i++)
+            {
+                int candidateGridIndex = candidateGridIndices[i];
+
+                if (candidateGridIndex < 0)
+                    continue;
+
+                BattleDirection direction = GetDirectionToNearestPlayer(candidateGridIndex, gridManager);
+
+                List<int> attackRange = MonsterSkillRangeService.BuildRangeGridIndices(
+                    monsterUnit,
+                    attackSkill,
+                    gridManager,
+                    direction == BattleDirection.Right,
+                    candidateGridIndex,
+                    rangeDatabase);
+
+                List<int> targetGridIndices = MonsterSkillRangeService.FilterTargetGridIndices(
+                    attackSkill,
+                    attackRange);
+
+                if (targetGridIndices.Count > 0)
+                    validOrigins.Add(candidateGridIndex);
+            }
+
+            if (validOrigins.Count <= 0)
+                return -1;
+
+            return validOrigins[Random.Range(0, validOrigins.Count)];
+        }
+
+        protected int GetProjectedMainGridIndex(
+            MonsterUnit monsterUnit,
+            GridManager gridManager,
+            Vector2Int moveOffset)
+        {
+            if (monsterUnit == null || gridManager == null || monsterUnit.MainGridIndex < 0)
+                return -1;
+
+            if (moveOffset == Vector2Int.zero)
+                return monsterUnit.MainGridIndex;
+
+            Vector2Int currentCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
+            Vector2Int projectedCoord = currentCoord + moveOffset;
+
+            return gridManager.IsValidCoord(projectedCoord)
+                ? gridManager.CoordToIndex(projectedCoord)
+                : monsterUnit.MainGridIndex;
+        }
+
+        protected BattleDirection GetDirectionToNearestPlayer(
+            int originGridIndex,
+            GridManager gridManager)
+        {
+            if (gridManager == null || originGridIndex < 0)
+                return BattleDirection.Left;
+
+            BattleCharacter[] players = FindPlayers();
+            Vector2Int originCoord = gridManager.IndexToCoord(originGridIndex);
+
+            BattleCharacter nearest = null;
+            int nearestDistance = int.MaxValue;
+
+            for (int i = 0; i < players.Length; i++)
+            {
+                BattleCharacter player = players[i];
+
+                if (!IsAlivePlayer(player) || player.CurrentGridIndex < 0)
+                    continue;
+
+                Vector2Int playerCoord = gridManager.IndexToCoord(player.CurrentGridIndex);
+                int distance =
+                    Mathf.Abs(playerCoord.x - originCoord.x) +
+                    Mathf.Abs(playerCoord.y - originCoord.y);
+
+                if (distance < nearestDistance)
+                {
+                    nearestDistance = distance;
+                    nearest = player;
+                }
+            }
+
+            if (nearest == null)
+                return BattleDirection.Left;
+
+            Vector2Int targetCoord = gridManager.IndexToCoord(nearest.CurrentGridIndex);
+
+            return targetCoord.x >= originCoord.x
+                ? BattleDirection.Right
+                : BattleDirection.Left;
+        }
+
         protected BattleCharacter FindFarthestPlayer(
             MonsterUnit monsterUnit,
             GridManager gridManager)
