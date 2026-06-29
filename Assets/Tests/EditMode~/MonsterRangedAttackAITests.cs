@@ -176,10 +176,244 @@ public class MonsterRangedAttackAITests
         Assert.That(attack.RangeOriginGridIndex, Is.EqualTo(gridManager.CoordToIndex(new Vector2Int(3, 2))));
     }
 
+    [Test]
+    public void BlobAI_AttacksOnlyWhenPlayerIsInsideFrontTwo()
+    {
+        CreateBlobDataManager("DataManager_Blob_FrontTwo");
+        GridManager gridManager = CreateObject("Grid_Blob_FrontTwo").AddComponent<GridManager>();
+        MonsterUnit blob = CreateBlob(gridManager, new Vector2Int(1, 2));
+        CreatePlayer("Player_Blob_InRange", gridManager, new Vector2Int(3, 2));
+
+        MonsterAIPlan plan = new BlobAI().CreatePlan(blob, new BattleContext(), gridManager);
+
+        Assert.That(plan.Actions, Has.Count.EqualTo(1));
+        Assert.That(plan.Actions[0].SkillId, Is.EqualTo("S_Monster_05"));
+        Assert.That(plan.Actions[0].RangeOriginGridIndex, Is.EqualTo(blob.MainGridIndex));
+        Assert.That(plan.Actions[0].HasForcedDirection, Is.True);
+        Assert.That(plan.Actions[0].ForcedDirection, Is.EqualTo(BattleDirection.Right));
+    }
+
+    [Test]
+    public void BlobAI_AttacksPlayerOnLeftWithinTwo()
+    {
+        CreateBlobDataManager("DataManager_Blob_LeftTwo");
+        GridManager gridManager = CreateObject("Grid_Blob_LeftTwo").AddComponent<GridManager>();
+        MonsterUnit blob = CreateBlob(gridManager, new Vector2Int(3, 2));
+        CreatePlayer("Player_Blob_LeftRange", gridManager, new Vector2Int(1, 2));
+
+        MonsterAIPlan plan = new BlobAI().CreatePlan(blob, new BattleContext(), gridManager);
+
+        Assert.That(plan.Actions, Has.Count.EqualTo(1));
+        Assert.That(plan.Actions[0].SkillId, Is.EqualTo("S_Monster_05"));
+        Assert.That(plan.Actions[0].RangeOriginGridIndex, Is.EqualTo(blob.MainGridIndex));
+        Assert.That(plan.Actions[0].HasForcedDirection, Is.True);
+        Assert.That(plan.Actions[0].ForcedDirection, Is.EqualTo(BattleDirection.Left));
+    }
+
+    [Test]
+    public void BlobAI_MovesTowardVerticalLineWithoutAttackingWhenFrontTwoIsEmpty()
+    {
+        CreateBlobDataManager("DataManager_Blob_Move_Line");
+        GridManager gridManager = CreateObject("Grid_Blob_Move_Line").AddComponent<GridManager>();
+        MonsterUnit blob = CreateBlob(gridManager, new Vector2Int(1, 1));
+        CreatePlayer("Player_Blob_OffLine", gridManager, new Vector2Int(4, 2));
+
+        MonsterAIPlan plan = new BlobAI().CreatePlan(blob, new BattleContext(), gridManager);
+
+        Assert.That(plan.Actions, Has.Count.EqualTo(1));
+        Assert.That(plan.Actions[0].SkillId, Is.EqualTo("S_Monster_01"));
+        Assert.That(plan.Actions[0].MoveOffset, Is.EqualTo(Vector2Int.up));
+    }
+
+    [Test]
+    public void BlobAI_MovesThenAttacksWhenMovePlacesPlayerInFrontTwo()
+    {
+        CreateBlobDataManager("DataManager_Blob_Move_Attack");
+        GridManager gridManager = CreateObject("Grid_Blob_Move_Attack").AddComponent<GridManager>();
+        MonsterUnit blob = CreateBlob(gridManager, new Vector2Int(1, 1));
+        CreatePlayer("Player_Blob_AfterMove", gridManager, new Vector2Int(3, 2));
+
+        MonsterAIPlan plan = new BlobAI().CreatePlan(blob, new BattleContext(), gridManager);
+
+        Assert.That(plan.Actions, Has.Count.EqualTo(2));
+        Assert.That(plan.Actions[0].SkillId, Is.EqualTo("S_Monster_01"));
+        Assert.That(plan.Actions[0].MoveOffset, Is.EqualTo(Vector2Int.up));
+        Assert.That(plan.Actions[1].SkillId, Is.EqualTo("S_Monster_05"));
+        Assert.That(plan.Actions[1].RangeOriginGridIndex, Is.EqualTo(gridManager.CoordToIndex(new Vector2Int(1, 2))));
+        Assert.That(plan.Actions[1].HasForcedDirection, Is.True);
+        Assert.That(plan.Actions[1].ForcedDirection, Is.EqualTo(BattleDirection.Right));
+    }
+
+    [Test]
+    public void VespaAI_PrefersVerticalMoveTowardPlayerBeforeDiagonalWhenClear()
+    {
+        CreateVespaDataManager("DataManager_Vespa_Vertical_Clear");
+        GridManager gridManager = CreateObject("Grid_Vespa_Vertical_Clear").AddComponent<GridManager>();
+        MonsterUnit vespa = CreateMonster(
+            "Mon_04",
+            "Vespa",
+            "Vespa_Vertical_Clear",
+            gridManager,
+            new Vector2Int(2, 2));
+        CreatePlayer("Player_Vespa_UpperRight", gridManager, new Vector2Int(4, 3));
+
+        MonsterAIPlan plan = new VespaAI().CreatePlan(vespa, new BattleContext(), gridManager);
+
+        Assert.That(plan.Actions, Has.Count.EqualTo(2));
+        Assert.That(plan.Actions[0].SkillId, Is.EqualTo("S_Monster_01"));
+        Assert.That(plan.Actions[0].MoveOffset, Is.EqualTo(Vector2Int.up));
+        Assert.That(plan.Actions[1].HasForcedDirection, Is.True);
+        Assert.That(plan.Actions[1].ForcedDirection, Is.EqualTo(BattleDirection.Right));
+    }
+
+    [Test]
+    public void VespaAI_UsesDiagonalTowardPlayerWhenVerticalMoveIsBlocked()
+    {
+        CreateVespaDataManager("DataManager_Vespa_Vertical_Blocked");
+        GridManager gridManager = CreateObject("Grid_Vespa_Vertical_Blocked").AddComponent<GridManager>();
+        MonsterUnit vespa = CreateMonster(
+            "Mon_04",
+            "Vespa",
+            "Vespa_Vertical_Blocked",
+            gridManager,
+            new Vector2Int(2, 2));
+        CreateMonster(
+            "Mon_Blocker",
+            "Blocker",
+            "Vespa_Vertical_Blocker",
+            gridManager,
+            new Vector2Int(2, 3));
+        CreatePlayer("Player_Vespa_UpperRight_Blocked", gridManager, new Vector2Int(4, 3));
+
+        MonsterAIPlan plan = new VespaAI().CreatePlan(vespa, new BattleContext(), gridManager);
+
+        Assert.That(plan.Actions, Has.Count.EqualTo(2));
+        Assert.That(plan.Actions[0].SkillId, Is.EqualTo("S_Monster_01"));
+        Assert.That(plan.Actions[0].MoveOffset, Is.EqualTo(new Vector2Int(1, 1)));
+        Assert.That(plan.Actions[1].HasForcedDirection, Is.True);
+        Assert.That(plan.Actions[1].ForcedDirection, Is.EqualTo(BattleDirection.Right));
+    }
+
     private GameObject CreateObject(string objectName)
     {
         GameObject go = new(objectName);
         createdObjects.Add(go);
         return go;
+    }
+
+    private DataManager CreateBlobDataManager(string objectName)
+    {
+        GameObject dataObject = CreateObject(objectName);
+        DataManager dataManager = dataObject.AddComponent<DataManager>();
+        dataManager.RangeDatabase.Initialize(new[]
+        {
+            new SkillRangeData
+            {
+                RangeId = "Range_10",
+                Positions = new List<Vector2Int>
+                {
+                    Vector2Int.zero,
+                    new(1, 0),
+                    new(2, 0)
+                }
+            }
+        });
+        dataManager.MonsterSkillDatabase.Initialize(new[]
+        {
+            new MonsterSkillData
+            {
+                SkillId = "S_Monster_05",
+                RangeId = "Range_10",
+                Target = TargetType.PlayerParty,
+                TimelineNotation = TimelineActionType.Attack
+            }
+        });
+
+        return dataManager;
+    }
+
+    private DataManager CreateVespaDataManager(string objectName)
+    {
+        GameObject dataObject = CreateObject(objectName);
+        DataManager dataManager = dataObject.AddComponent<DataManager>();
+        dataManager.RangeDatabase.Initialize(new[]
+        {
+            new SkillRangeData
+            {
+                RangeId = "Range_Vespa_Move",
+                Positions = new List<Vector2Int>
+                {
+                    Vector2Int.up,
+                    Vector2Int.down,
+                    Vector2Int.left,
+                    Vector2Int.right,
+                    new(1, 1),
+                    new(-1, 1),
+                    new(1, -1),
+                    new(-1, -1)
+                }
+            }
+        });
+        dataManager.MonsterSkillDatabase.Initialize(new[]
+        {
+            new MonsterSkillData
+            {
+                SkillId = "S_Monster_01",
+                RangeId = "Range_Vespa_Move",
+                Target = TargetType.Self,
+                TimelineNotation = TimelineActionType.Move
+            },
+            new MonsterSkillData
+            {
+                SkillId = "S_Monster_07",
+                RangeId = "Range_10",
+                Target = TargetType.PlayerParty,
+                TimelineNotation = TimelineActionType.Attack
+            }
+        });
+
+        return dataManager;
+    }
+
+    private MonsterUnit CreateBlob(GridManager gridManager, Vector2Int coord)
+    {
+        return CreateMonster("Mon_02", "Blob", $"Blob_{coord.x}_{coord.y}", gridManager, coord);
+    }
+
+    private MonsterUnit CreateMonster(
+        string monsterId,
+        string monsterName,
+        string runtimeSuffix,
+        GridManager gridManager,
+        Vector2Int coord)
+    {
+        GameObject monsterObject = CreateObject($"{monsterName}_{coord.x}_{coord.y}");
+        MonsterUnit monster = monsterObject.AddComponent<MonsterUnit>();
+        MonsterRuntimeData runtime = new(
+            $"Runtime_{runtimeSuffix}",
+            new MonsterMasterData
+            {
+                MonsterId = monsterId,
+                Name = monsterName,
+                HP = 10
+            });
+
+        monster.Initialize(runtime);
+        monster.SetOccupiedCells(new List<int> { gridManager.CoordToIndex(coord) });
+        return monster;
+    }
+
+    private BattleCharacter CreatePlayer(string objectName, GridManager gridManager, Vector2Int coord)
+    {
+        GameObject playerObject = CreateObject(objectName);
+        BattleCharacter player = playerObject.AddComponent<BattleCharacter>();
+        player.Initialize(new CharacterRuntimeData
+        {
+            CharacterId = objectName,
+            MaxHP = 10,
+            CurrentHP = 10
+        });
+        player.SetGridIndex(gridManager.CoordToIndex(coord));
+        return player;
     }
 }

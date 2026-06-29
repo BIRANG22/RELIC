@@ -763,9 +763,11 @@ public class BattleActionSimulationService
             ? command.RangeOriginGridIndex
             : casterGrid;
 
-        BattleDirection direction = command.RangeOriginGridIndex >= 0
-            ? GetDirectionToNearestSimulatedPlayer(rangeOriginGrid)
-            : GetMonsterDirection(command.RuntimeId);
+        BattleDirection direction = command.HasForcedDirection
+            ? command.ForcedDirection
+            : command.RangeOriginGridIndex >= 0
+                ? GetDirectionToNearestSimulatedPlayer(rangeOriginGrid)
+                : GetMonsterDirection(command.RuntimeId);
 
         List<int> range = BattleRangeCalculator.GetDirectionRangeIndices(
             rangeOriginGrid,

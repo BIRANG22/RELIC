@@ -2001,9 +2001,11 @@ public class BattleActionRunner
 
         BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
 
-        bool facingRight = command.RangeOriginGridIndex >= 0
-            ? IsNearestPlayerToRight(command.RangeOriginGridIndex)
-            : facing == null || facing.IsFacingRight;
+        bool facingRight = command.HasForcedDirection
+            ? command.ForcedDirection == BattleDirection.Right
+            : command.RangeOriginGridIndex >= 0
+                ? IsNearestPlayerToRight(command.RangeOriginGridIndex)
+                : facing == null || facing.IsFacingRight;
 
         List<int> rangeGridIndices =
             MonsterSkillRangeService.BuildRangeGridIndices(
@@ -2270,10 +2272,15 @@ public class BattleActionRunner
 
         BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
 
+        if (facing != null && command.HasForcedDirection)
+            facing.FaceRight(command.ForcedDirection == BattleDirection.Right);
+
         if (facing != null && monster.RuntimeData != null)
             monster.RuntimeData.Direction = facing.GetBattleDirection();
 
-        bool facingRight = facing == null || facing.IsFacingRight;
+        bool facingRight = command.HasForcedDirection
+            ? command.ForcedDirection == BattleDirection.Right
+            : facing == null || facing.IsFacingRight;
 
         int dirX = facingRight ? 1 : -1;
         int maxMove = gridManager.Width;
