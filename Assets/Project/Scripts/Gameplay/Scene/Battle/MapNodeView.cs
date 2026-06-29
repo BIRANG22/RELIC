@@ -24,11 +24,6 @@ public class MapNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     [SerializeField] private bool useUnscaledTime = true;
     [SerializeField] private Color checkImageColor = new Color32(0xB2, 0x3E, 0x45, 0xFF);
 
-    [Header("Check Animation SFX")]
-    [SerializeField] private bool playCheckAnimationSfx = true;
-    [SerializeField] private SfxType checkAnimationSfxType = SfxType.BattleMapNodeCheckAnimation;
-    [SerializeField, Range(0f, 1f)] private float checkAnimationSfxVolume = 1f;
-
     [Header("Persistent Check")]
     [SerializeField] private bool showCheckSpriteForVisitedNode = true;
     [SerializeField] private bool showCheckSpriteForClearedNode = true;
@@ -169,7 +164,6 @@ public class MapNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             iconImage.enabled = false;
 
         EnsureCheckAnimationImage();
-        PlayCheckAnimationSfx();
 
         if (checkAnimationImage != null)
         {
@@ -210,17 +204,6 @@ public class MapNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             iconImage.enabled = true;
 
         InvokeClick();
-    }
-
-    private void PlayCheckAnimationSfx()
-    {
-        if (!playCheckAnimationSfx)
-            return;
-
-        if (AudioManager.Instance == null)
-            return;
-
-        AudioManager.Instance.PlaySfx(checkAnimationSfxType, checkAnimationSfxVolume);
     }
 
     private void CaptureBaseScale()

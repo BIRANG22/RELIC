@@ -19,7 +19,6 @@ public class BattleTurnExecutor : MonoBehaviour
     [SerializeField] private MoveGhostPreview moveGhostPreview;
     [SerializeField] private BattleRoomLoader roomLoader;
     [SerializeField] private BattleMonsterSpawner monsterSpawner;
-    [SerializeField] private SkillListPanel skillListPanel;
 
     [Header("End Turn")]
     [SerializeField] private Button endTurnButton;
@@ -60,15 +59,6 @@ public class BattleTurnExecutor : MonoBehaviour
         RefreshTurnNumberText();
         RefreshEndTurnButton();
         RefreshBattlePresentationState();
-    }
-
-
-    private void EnsureSkillListPanel()
-    {
-        if (skillListPanel != null)
-            return;
-
-        skillListPanel = FindFirstObjectByType<SkillListPanel>(FindObjectsInactive.Include);
     }
 
     private void OnEnable()
@@ -158,10 +148,6 @@ public class BattleTurnExecutor : MonoBehaviour
         }
 
         MonsterUnit.HideAllTemporaryHUDs();
-
-        EnsureSkillListPanel();
-        if (skillListPanel != null)
-            skillListPanel.CloseForBattleExecution();
 
         isExecuting = true;
 
@@ -319,10 +305,6 @@ public class BattleTurnExecutor : MonoBehaviour
                 timelineController.SetSelectedCharacterScaleFeedbackActive(true);
                 timelineController.RefocusCurrentSelectedCharacterWhenInputReady();
             }
-
-            EnsureSkillListPanel();
-            if (CanAcceptPlayerInput && skillListPanel != null)
-                skillListPanel.ReopenAfterBattleExecution();
 
             PlayerTurnReturned?.Invoke();
         }

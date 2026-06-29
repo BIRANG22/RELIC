@@ -85,44 +85,16 @@ public class BattleTimelineController : MonoBehaviour
     [SerializeField] private float endButtonHoverRotationDuration = 0.12f;
     [SerializeField] private bool useUnscaledTimeForEndButtonHoverRotation = true;
 
-    [Header("End Button Hover Linked Gears")]
-    [SerializeField] private bool autoBindEndButtonHoverLinkedGears = true;
-    [SerializeField] private RectTransform endButtonHoverSmallGearRotationTarget;
-    [SerializeField] private string endButtonHoverSmallGearRotationTargetName = "EndButtonSmallGear";
-    [SerializeField] private float endButtonHoverSmallGearRotationOffsetZ = 60f;
-    [SerializeField] private RectTransform endButtonHoverLargeGearRotationTarget;
-    [SerializeField] private string endButtonHoverLargeGearRotationTargetName = "EndButtonLargeGear";
-    [SerializeField] private float endButtonHoverLargeGearRotationOffsetZ = -30f;
-
-    [Header("End Button Hover SFX")]
-    [SerializeField] private bool playEndButtonHoverSfx = true;
-    [SerializeField] private SfxType endButtonHoverSfxType = SfxType.BattleEndButtonHover;
-    [SerializeField, Range(0f, 1f)] private float endButtonHoverSfxVolume = 1f;
-
-    [Header("Timeline Slot Slide SFX")]
-    [SerializeField] private bool playTimelineSlotSlideSfx = true;
-    [SerializeField] private SfxType timelineSlotSlideSfxType = SfxType.BattleTimelineSlotSlide;
-    [SerializeField, Range(0f, 1f)] private float timelineSlotSlideSfxVolume = 1f;
-
-    [Header("Total Used Cost Text")]
-    [SerializeField] private TMP_Text totalUsedCostText;
-    [SerializeField] private bool autoFindTotalUsedCostText = true;
-    [SerializeField] private string totalUsedCostTextObjectName = "useCOST";
-    [SerializeField] private string totalUsedCostFormat = "{0}";
-
     private int activeSlotIndex = -1;
     private CharacterRuntimeData selectedCharacter;
     private SkillMasterData selectedSkill;
     private int reservationVersion;
     private Coroutine selectedSlotEffectRoutine;
     private Coroutine timelineSlotSlideRoutine;
-    private Coroutine timelineSlideGearRotationRoutine;
     private Coroutine endButtonHoverRotationRoutine;
     private bool isSlotSelectionLocked;
     private bool isEndButtonHovering;
     private float endButtonRotationBeforeHoverZ;
-    private float endButtonSmallGearRotationBeforeHoverZ;
-    private float endButtonLargeGearRotationBeforeHoverZ;
     private Vector2[] timelineSlotOriginalAnchoredPositions;
     private int timelineSlotSlideStepIndex;
     private string lastCameraFocusedCharacterId;
@@ -133,7 +105,6 @@ public class BattleTimelineController : MonoBehaviour
     public int SlotCount => reserveSlots != null ? reserveSlots.Length : 0;
     public int ActiveSlotIndex => activeSlotIndex;
     public int ReservationVersion => reservationVersion;
-    public CharacterRuntimeData SelectedCharacter => selectedCharacter;
 
     private void Awake()
     {
@@ -144,15 +115,12 @@ public class BattleTimelineController : MonoBehaviour
         AutoBindTimelineSlotSlideTargetsIfNeeded();
         CaptureTimelineSlotOriginalPositionsIfNeeded();
         AutoBindEndButtonHoverRotationTargetIfNeeded();
-        AutoBindEndButtonHoverLinkedGearTargetsIfNeeded();
-        AutoFindTotalUsedCostTextIfNeeded();
         BindEndButtonHoverRotationEventsIfNeeded();
 
         if (turnExecutor == null)
             turnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
 
         RefreshSelectedSlotValueText();
-        RefreshTotalUsedCostText();
 
         if (timelineBarUI != null)
             timelineBarUI.Init(this);
@@ -439,9 +407,6 @@ public class BattleTimelineController : MonoBehaviour
     public void SetSlotSelectionLocked(bool locked)
     {
         isSlotSelectionLocked = locked;
-
-        if (locked)
-            CancelEndButtonHoverRotationIfNeeded();
     }
 
     public void SelectDefaultSlotWhenInputReady()
@@ -498,10 +463,6 @@ public class BattleTimelineController : MonoBehaviour
         if (endSlotIndex < startSlotIndex)
             yield break;
 
-        int completedStepCount = endSlotIndex - startSlotIndex + 1;
-        PlayTimelineSlotSlideSfx();
-        PlayTimelineSlideGearRotation(completedStepCount);
-
         yield return MoveTimelineSlotSlideTargetsThroughCompletedSlotsRoutine(startSlotIndex, endSlotIndex);
         timelineSlotSlideStepIndex = Mathf.Clamp(endSlotIndex + 1, 0, timelineSlotSlideTargets.Length);
     }
@@ -543,49 +504,6 @@ public class BattleTimelineController : MonoBehaviour
             endButtonHoverRotationTarget = FindRectTransformByName(foundTimelineBar.transform, endButtonHoverRotationTargetName);
     }
 
-    private void AutoBindEndButtonHoverLinkedGearTargetsIfNeeded()
-    {
-        if (!autoBindEndButtonHoverLinkedGears)
-            return;
-
-        endButtonHoverSmallGearRotationTarget = AutoBindEndButtonHoverLinkedGearTargetIfNeeded(
-            endButtonHoverSmallGearRotationTarget,
-            endButtonHoverSmallGearRotationTargetName
-        );
-
-        endButtonHoverLargeGearRotationTarget = AutoBindEndButtonHoverLinkedGearTargetIfNeeded(
-            endButtonHoverLargeGearRotationTarget,
-            endButtonHoverLargeGearRotationTargetName
-        );
-    }
-
-    private RectTransform AutoBindEndButtonHoverLinkedGearTargetIfNeeded(RectTransform currentTarget, string targetName)
-    {
-        if (currentTarget != null)
-            return currentTarget;
-
-        if (string.IsNullOrEmpty(targetName))
-            return null;
-
-        RectTransform found = FindRectTransformByName(transform, targetName);
-
-        if (found != null)
-            return found;
-
-        Transform searchRoot = GetTimelineSearchRoot();
-        found = FindRectTransformByName(searchRoot, targetName);
-
-        if (found != null)
-            return found;
-
-        BattleTimelineBarUI foundTimelineBar = FindFirstObjectByType<BattleTimelineBarUI>(FindObjectsInactive.Include);
-
-        if (foundTimelineBar == null)
-            return null;
-
-        return FindRectTransformByName(foundTimelineBar.transform, targetName);
-    }
-
     private RectTransform FindRectTransformByName(Transform root, string targetName)
     {
         if (root == null || string.IsNullOrEmpty(targetName))
@@ -605,7 +523,6 @@ public class BattleTimelineController : MonoBehaviour
             return;
 
         AutoBindEndButtonHoverRotationTargetIfNeeded();
-        AutoBindEndButtonHoverLinkedGearTargetsIfNeeded();
 
         if (endButtonHoverRotationTarget == null)
             return;
@@ -618,53 +535,12 @@ public class BattleTimelineController : MonoBehaviour
         relay.Initialize(this);
     }
 
-    private bool IsEndButtonHoverRotationAllowed()
-    {
-        if (!playEndButtonHoverRotation)
-            return false;
-
-        if (!isActiveAndEnabled)
-            return false;
-
-        if (isSlotSelectionLocked)
-            return false;
-
-        if (turnExecutor == null)
-            turnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
-
-        if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
-            return false;
-
-        return true;
-    }
-
-    private void CancelEndButtonHoverRotationIfNeeded()
-    {
-        if (!isEndButtonHovering)
-            return;
-
-        isEndButtonHovering = false;
-
-        if (endButtonHoverRotationRoutine != null)
-        {
-            StopCoroutine(endButtonHoverRotationRoutine);
-            endButtonHoverRotationRoutine = null;
-        }
-
-        PlayEndButtonHoverRotationTo(
-            endButtonRotationBeforeHoverZ,
-            endButtonSmallGearRotationBeforeHoverZ,
-            endButtonLargeGearRotationBeforeHoverZ
-        );
-    }
-
     private void OnEndButtonHoverEnter()
     {
-        if (!IsEndButtonHoverRotationAllowed())
+        if (!playEndButtonHoverRotation)
             return;
 
         AutoBindEndButtonHoverRotationTargetIfNeeded();
-        AutoBindEndButtonHoverLinkedGearTargetsIfNeeded();
 
         if (endButtonHoverRotationTarget == null)
             return;
@@ -674,15 +550,9 @@ public class BattleTimelineController : MonoBehaviour
 
         isEndButtonHovering = true;
         endButtonRotationBeforeHoverZ = GetTransformRotationZ(endButtonHoverRotationTarget);
-        endButtonSmallGearRotationBeforeHoverZ = GetTransformRotationZ(endButtonHoverSmallGearRotationTarget);
-        endButtonLargeGearRotationBeforeHoverZ = GetTransformRotationZ(endButtonHoverLargeGearRotationTarget);
 
         float targetRotationZ = endButtonRotationBeforeHoverZ + endButtonHoverRotationOffsetZ;
-        float smallGearTargetRotationZ = endButtonSmallGearRotationBeforeHoverZ + endButtonHoverSmallGearRotationOffsetZ;
-        float largeGearTargetRotationZ = endButtonLargeGearRotationBeforeHoverZ + endButtonHoverLargeGearRotationOffsetZ;
-
-        PlayEndButtonHoverSfx();
-        PlayEndButtonHoverRotationTo(targetRotationZ, smallGearTargetRotationZ, largeGearTargetRotationZ);
+        PlayEndButtonHoverRotationTo(targetRotationZ);
     }
 
     private void OnEndButtonHoverExit()
@@ -691,7 +561,6 @@ public class BattleTimelineController : MonoBehaviour
             return;
 
         AutoBindEndButtonHoverRotationTargetIfNeeded();
-        AutoBindEndButtonHoverLinkedGearTargetsIfNeeded();
 
         if (endButtonHoverRotationTarget == null)
             return;
@@ -700,14 +569,10 @@ public class BattleTimelineController : MonoBehaviour
             return;
 
         isEndButtonHovering = false;
-        PlayEndButtonHoverRotationTo(
-            endButtonRotationBeforeHoverZ,
-            endButtonSmallGearRotationBeforeHoverZ,
-            endButtonLargeGearRotationBeforeHoverZ
-        );
+        PlayEndButtonHoverRotationTo(endButtonRotationBeforeHoverZ);
     }
 
-    private void PlayEndButtonHoverRotationTo(float targetRotationZ, float smallGearTargetRotationZ, float largeGearTargetRotationZ)
+    private void PlayEndButtonHoverRotationTo(float targetRotationZ)
     {
         if (endButtonHoverRotationTarget == null)
             return;
@@ -716,170 +581,29 @@ public class BattleTimelineController : MonoBehaviour
             StopCoroutine(endButtonHoverRotationRoutine);
 
         endButtonHoverRotationRoutine = StartCoroutine(
-            RotateEndButtonHoverToRoutine(targetRotationZ, smallGearTargetRotationZ, largeGearTargetRotationZ)
+            RotateEndButtonHoverToRoutine(targetRotationZ)
         );
     }
 
-    private IEnumerator RotateEndButtonHoverToRoutine(float targetRotationZ, float smallGearTargetRotationZ, float largeGearTargetRotationZ)
+    private IEnumerator RotateEndButtonHoverToRoutine(float targetRotationZ)
     {
         float duration = Mathf.Max(0.01f, endButtonHoverRotationDuration);
         float elapsed = 0f;
         float startRotationZ = GetTransformRotationZ(endButtonHoverRotationTarget);
-        float smallGearStartRotationZ = GetTransformRotationZ(endButtonHoverSmallGearRotationTarget);
-        float largeGearStartRotationZ = GetTransformRotationZ(endButtonHoverLargeGearRotationTarget);
 
         while (elapsed < duration)
         {
             elapsed += useUnscaledTimeForEndButtonHoverRotation ? Time.unscaledDeltaTime : Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / duration);
             float easedT = 1f - Mathf.Pow(1f - t, 3f);
+            float z = Mathf.Lerp(startRotationZ, targetRotationZ, easedT);
 
-            SetTransformRotationZ(endButtonHoverRotationTarget, Mathf.Lerp(startRotationZ, targetRotationZ, easedT));
-            SetTransformRotationZ(endButtonHoverSmallGearRotationTarget, Mathf.Lerp(smallGearStartRotationZ, smallGearTargetRotationZ, easedT));
-            SetTransformRotationZ(endButtonHoverLargeGearRotationTarget, Mathf.Lerp(largeGearStartRotationZ, largeGearTargetRotationZ, easedT));
-
+            SetTransformRotationZ(endButtonHoverRotationTarget, z);
             yield return null;
         }
 
         SetTransformRotationZ(endButtonHoverRotationTarget, targetRotationZ);
-        SetTransformRotationZ(endButtonHoverSmallGearRotationTarget, smallGearTargetRotationZ);
-        SetTransformRotationZ(endButtonHoverLargeGearRotationTarget, largeGearTargetRotationZ);
         endButtonHoverRotationRoutine = null;
-    }
-
-    private void PlayEndButtonHoverSfx()
-    {
-        if (!playEndButtonHoverSfx)
-            return;
-
-        if (AudioManager.Instance == null)
-            return;
-
-        AudioManager.Instance.PlaySfx(endButtonHoverSfxType, endButtonHoverSfxVolume);
-    }
-
-    private void PlayTimelineSlotSlideSfx()
-    {
-        if (!playTimelineSlotSlideSfx)
-            return;
-
-        if (AudioManager.Instance == null)
-            return;
-
-        AudioManager.Instance.PlaySfx(timelineSlotSlideSfxType, timelineSlotSlideSfxVolume);
-    }
-
-    private void PlayTimelineSlideGearRotation(int completedStepCount)
-    {
-        if (completedStepCount <= 0)
-            return;
-
-        AutoFindSelectedSlotEffectIfNeeded();
-        AutoFindSelectedSlotGearEffectsIfNeeded();
-        AutoBindEndButtonHoverRotationTargetIfNeeded();
-        AutoBindEndButtonHoverLinkedGearTargetsIfNeeded();
-
-        bool hasTarget =
-            selectedSlotEffect != null ||
-            selectedSlotLargeGearEffect != null ||
-            selectedSlotSmallGearEffect != null ||
-            endButtonHoverRotationTarget != null ||
-            endButtonHoverSmallGearRotationTarget != null ||
-            endButtonHoverLargeGearRotationTarget != null;
-
-        if (!hasTarget)
-            return;
-
-        if (selectedSlotEffect != null && !selectedSlotEffect.gameObject.activeSelf)
-            selectedSlotEffect.gameObject.SetActive(true);
-
-        if (selectedSlotLargeGearEffect != null && !selectedSlotLargeGearEffect.gameObject.activeSelf)
-            selectedSlotLargeGearEffect.gameObject.SetActive(true);
-
-        if (selectedSlotSmallGearEffect != null && !selectedSlotSmallGearEffect.gameObject.activeSelf)
-            selectedSlotSmallGearEffect.gameObject.SetActive(true);
-
-        float mainTargetZ = GetTransformRotationZ(selectedSlotEffect) + selectedSlotEffectRotateStepZ * completedStepCount;
-        float largeGearTargetZ = GetTransformRotationZ(selectedSlotLargeGearEffect) + selectedSlotLargeGearRotateStepZ * completedStepCount;
-        float smallGearTargetZ = GetTransformRotationZ(selectedSlotSmallGearEffect) + selectedSlotSmallGearRotateStepZ * completedStepCount;
-
-        float endButtonTargetZ = GetTransformRotationZ(endButtonHoverRotationTarget) + endButtonHoverRotationOffsetZ * completedStepCount;
-        float endButtonSmallGearTargetZ = GetTransformRotationZ(endButtonHoverSmallGearRotationTarget) + endButtonHoverSmallGearRotationOffsetZ * completedStepCount;
-        float endButtonLargeGearTargetZ = GetTransformRotationZ(endButtonHoverLargeGearRotationTarget) + endButtonHoverLargeGearRotationOffsetZ * completedStepCount;
-
-        if (isEndButtonHovering)
-        {
-            endButtonRotationBeforeHoverZ += endButtonHoverRotationOffsetZ * completedStepCount;
-            endButtonSmallGearRotationBeforeHoverZ += endButtonHoverSmallGearRotationOffsetZ * completedStepCount;
-            endButtonLargeGearRotationBeforeHoverZ += endButtonHoverLargeGearRotationOffsetZ * completedStepCount;
-        }
-
-        if (selectedSlotEffectRoutine != null)
-        {
-            StopCoroutine(selectedSlotEffectRoutine);
-            selectedSlotEffectRoutine = null;
-        }
-
-        if (endButtonHoverRotationRoutine != null)
-        {
-            StopCoroutine(endButtonHoverRotationRoutine);
-            endButtonHoverRotationRoutine = null;
-        }
-
-        if (timelineSlideGearRotationRoutine != null)
-            StopCoroutine(timelineSlideGearRotationRoutine);
-
-        timelineSlideGearRotationRoutine = StartCoroutine(PlayTimelineSlideGearRotationRoutine(
-            mainTargetZ,
-            largeGearTargetZ,
-            smallGearTargetZ,
-            endButtonTargetZ,
-            endButtonSmallGearTargetZ,
-            endButtonLargeGearTargetZ
-        ));
-    }
-
-    private IEnumerator PlayTimelineSlideGearRotationRoutine(
-        float mainTargetZ,
-        float largeGearTargetZ,
-        float smallGearTargetZ,
-        float endButtonTargetZ,
-        float endButtonSmallGearTargetZ,
-        float endButtonLargeGearTargetZ)
-    {
-        float duration = Mathf.Max(0.01f, timelineSlotSlideDuration);
-        float elapsed = 0f;
-
-        float mainStartZ = GetTransformRotationZ(selectedSlotEffect);
-        float largeGearStartZ = GetTransformRotationZ(selectedSlotLargeGearEffect);
-        float smallGearStartZ = GetTransformRotationZ(selectedSlotSmallGearEffect);
-        float endButtonStartZ = GetTransformRotationZ(endButtonHoverRotationTarget);
-        float endButtonSmallGearStartZ = GetTransformRotationZ(endButtonHoverSmallGearRotationTarget);
-        float endButtonLargeGearStartZ = GetTransformRotationZ(endButtonHoverLargeGearRotationTarget);
-
-        while (elapsed < duration)
-        {
-            elapsed += useUnscaledTimeForTimelineSlotSlide ? Time.unscaledDeltaTime : Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / duration);
-            float easedT = 1f - Mathf.Pow(1f - t, 3f);
-
-            SetTransformRotationZ(selectedSlotEffect, Mathf.Lerp(mainStartZ, mainTargetZ, easedT));
-            SetTransformRotationZ(selectedSlotLargeGearEffect, Mathf.Lerp(largeGearStartZ, largeGearTargetZ, easedT));
-            SetTransformRotationZ(selectedSlotSmallGearEffect, Mathf.Lerp(smallGearStartZ, smallGearTargetZ, easedT));
-            SetTransformRotationZ(endButtonHoverRotationTarget, Mathf.Lerp(endButtonStartZ, endButtonTargetZ, easedT));
-            SetTransformRotationZ(endButtonHoverSmallGearRotationTarget, Mathf.Lerp(endButtonSmallGearStartZ, endButtonSmallGearTargetZ, easedT));
-            SetTransformRotationZ(endButtonHoverLargeGearRotationTarget, Mathf.Lerp(endButtonLargeGearStartZ, endButtonLargeGearTargetZ, easedT));
-
-            yield return null;
-        }
-
-        SetTransformRotationZ(selectedSlotEffect, mainTargetZ);
-        SetTransformRotationZ(selectedSlotLargeGearEffect, largeGearTargetZ);
-        SetTransformRotationZ(selectedSlotSmallGearEffect, smallGearTargetZ);
-        SetTransformRotationZ(endButtonHoverRotationTarget, endButtonTargetZ);
-        SetTransformRotationZ(endButtonHoverSmallGearRotationTarget, endButtonSmallGearTargetZ);
-        SetTransformRotationZ(endButtonHoverLargeGearRotationTarget, endButtonLargeGearTargetZ);
-        timelineSlideGearRotationRoutine = null;
     }
 
     private float GetTransformRotationZ(Transform target)
@@ -918,71 +642,6 @@ public class BattleTimelineController : MonoBehaviour
         {
             owner?.OnEndButtonHoverExit();
         }
-    }
-
-    private void AutoFindTotalUsedCostTextIfNeeded()
-    {
-        if (!autoFindTotalUsedCostText)
-            return;
-
-        if (totalUsedCostText != null)
-            return;
-
-        Transform searchRoot = GetTimelineSearchRoot();
-        Transform found = FindChildRecursive(searchRoot, totalUsedCostTextObjectName);
-
-        if (found == null)
-        {
-            BattleTimelineBarUI foundTimelineBar = FindFirstObjectByType<BattleTimelineBarUI>(FindObjectsInactive.Include);
-
-            if (foundTimelineBar != null)
-                found = FindChildRecursive(foundTimelineBar.transform, totalUsedCostTextObjectName);
-        }
-
-        if (found == null)
-            return;
-
-        totalUsedCostText = found.GetComponent<TMP_Text>();
-    }
-
-    private void RefreshTotalUsedCostText()
-    {
-        AutoFindTotalUsedCostTextIfNeeded();
-
-        if (totalUsedCostText == null)
-            return;
-
-        int totalUsedCost = CalculateTotalReservedCost();
-        string format = string.IsNullOrEmpty(totalUsedCostFormat) ? "{0}" : totalUsedCostFormat;
-        totalUsedCostText.text = string.Format(format, totalUsedCost);
-    }
-
-    private int CalculateTotalReservedCost()
-    {
-        if (reserveSlots == null || reserveSlots.Length <= 0)
-            return 0;
-
-        int totalCost = 0;
-
-        for (int slotIndex = 0; slotIndex < reserveSlots.Length; slotIndex++)
-        {
-            ReserveTurnSlotUI slot = reserveSlots[slotIndex];
-
-            if (slot == null || slot.Commands == null)
-                continue;
-
-            for (int i = 0; i < slot.Commands.Count; i++)
-            {
-                PlayerReservedCommand command = slot.Commands[i];
-
-                if (command == null)
-                    continue;
-
-                totalCost += Mathf.Max(0, command.Cost);
-            }
-        }
-
-        return totalCost;
     }
 
     private void AutoFindSelectedSlotValueTextIfNeeded()
@@ -1525,25 +1184,6 @@ public class BattleTimelineController : MonoBehaviour
             playerSkillReservationController.ClearSkillHoverRangePreview();
     }
 
-    public void CancelSkillReservationPreviewFromSkillList(CharacterRuntimeData runtimeData)
-    {
-        if (runtimeData != null &&
-            selectedCharacter != null &&
-            selectedCharacter != runtimeData &&
-            selectedCharacter.CharacterId != runtimeData.CharacterId)
-        {
-            return;
-        }
-
-        if (playerSkillReservationController == null)
-            playerSkillReservationController = FindFirstObjectByType<PlayerSkillReservationController>(FindObjectsInactive.Include);
-
-        if (playerSkillReservationController != null)
-            playerSkillReservationController.ClearPreview();
-
-        selectedSkill = null;
-    }
-
     private void TryStartSkillReservation()
     {
         if (activeSlotIndex < 0)
@@ -1656,6 +1296,8 @@ public class BattleTimelineController : MonoBehaviour
             casterDirection,
             GetSelectedCharacterSprite()
         );
+
+        selectedSkill = null;
     }
 
     public bool ConfirmPlayerCommand(int slotIndex, PlayerReservedCommand command)
@@ -1694,12 +1336,7 @@ public class BattleTimelineController : MonoBehaviour
         }
 
         if (TryHandleMoveCommandMerge(slot, command, out bool mergeSucceeded))
-        {
-            if (mergeSucceeded)
-                selectedSkill = null;
-
             return mergeSucceeded;
-        }
 
         PrepareCommandForReservation(slotIndex, command);
 
@@ -1731,7 +1368,6 @@ public class BattleTimelineController : MonoBehaviour
         RefreshTimeline();
         RefreshPlayerHUDs();
         RefreshMoveGhostPreview();
-        selectedSkill = null;
 
         return true;
     }
@@ -2883,8 +2519,6 @@ public class BattleTimelineController : MonoBehaviour
             ShowBattleWarning("타임라인 UI를 찾을 수 없습니다.");
             Debug.LogWarning("[BattleTimelineController] timelineBarUI가 없습니다.");
         }
-
-        RefreshTotalUsedCostText();
     }
 
     private void RefreshPlayerHUDs()
