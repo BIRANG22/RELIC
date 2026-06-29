@@ -11,16 +11,15 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     [SerializeField] private Image enemyIconImage;
 
     [Header("Order Slots")]
-    [SerializeField] private Image[] playerSkillIconImages;
-    [SerializeField] private Image[] enemySkillIconImages;
-    [SerializeField] private TMP_Text[] playerSkillValueTexts;
-    [SerializeField] private TMP_Text[] enemySkillValueTexts;
-    [SerializeField] private GameObject[] playerMarkObjects;
-    [SerializeField] private GameObject[] enemyMarkObjects;
+    [SerializeField] private Image[] useSkillIconImages;
+    [SerializeField] private TMP_Text[] useSkillValueTexts;
 
     [Header("Reserved Colors")]
     [SerializeField] private Color playerReservedColor = new Color32(0x0A, 0x46, 0x9E, 0xFF);
     [SerializeField] private Color enemyReservedColor = new Color32(0xDF, 0x4D, 0x56, 0xFF);
+
+    [Header("Empty Use Skill Slots")]
+    [SerializeField] private Color emptyUseSkillColor = new Color32(0xFF, 0xFF, 0xFF, 0x05);
 
     [Header("Selected Turn Mark")]
     [SerializeField] private Transform turnMarkTransform;
@@ -37,6 +36,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     private BattleTimelineBarUI owner;
     private int slotIndex;
     private bool isActive;
+    private bool emptyUseSkillSlotsVisible = true;
 
     private Vector3 turnMarkNormalScale = Vector3.one;
     private bool hasCachedTurnMarkVisual;
@@ -97,49 +97,31 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
             currentEntries.Add(entry);
 
-            if (entry.IsMonster)
+            bool isMonster = entry.IsMonster;
+            Color reservedColor = isMonster ? enemyReservedColor : playerReservedColor;
+
+            if (isMonster)
             {
                 if (firstEnemyIcon == null)
                     firstEnemyIcon = entry.OwnerIcon;
-
-                if (enemySkillIconImages != null &&
-                    visibleIndex < enemySkillIconImages.Length)
-                {
-                    SetSkillImage(enemySkillIconImages[visibleIndex], entry.SkillIcon, true, enemyReservedColor);
-                    SetSkillValueText(enemySkillValueTexts, visibleIndex, entry.SkillValueText);
-
-                    SetupEnemySkillHoverTarget(enemySkillIconImages[visibleIndex], entry);
-                }
-
-                if (enemyMarkObjects != null &&
-                    visibleIndex < enemyMarkObjects.Length &&
-                    enemyMarkObjects[visibleIndex] != null)
-                {
-                    SetRootImageColor(enemyMarkObjects[visibleIndex], enemyReservedColor);
-                    enemyMarkObjects[visibleIndex].SetActive(true);
-                }
             }
             else
             {
                 if (firstPlayerIcon == null)
                     firstPlayerIcon = entry.OwnerIcon;
+            }
 
-                if (playerSkillIconImages != null &&
-                    visibleIndex < playerSkillIconImages.Length)
-                {
-                    SetSkillImage(playerSkillIconImages[visibleIndex], entry.SkillIcon, true, playerReservedColor);
-                    SetSkillValueText(playerSkillValueTexts, visibleIndex, entry.SkillValueText);
+            if (useSkillIconImages != null && visibleIndex < useSkillIconImages.Length)
+            {
+                Image useSkillImage = useSkillIconImages[visibleIndex];
 
-                    SetupPlayerSkillHoverTarget(playerSkillIconImages[visibleIndex], entry);
-                }
+                SetSkillImage(useSkillImage, entry.SkillIcon, true, reservedColor);
+                SetSkillValueText(useSkillValueTexts, visibleIndex, entry.SkillValueText);
 
-                if (playerMarkObjects != null &&
-                    visibleIndex < playerMarkObjects.Length &&
-                    playerMarkObjects[visibleIndex] != null)
-                {
-                    SetRootImageColor(playerMarkObjects[visibleIndex], playerReservedColor);
-                    playerMarkObjects[visibleIndex].SetActive(true);
-                }
+                if (isMonster)
+                    SetupEnemySkillHoverTarget(useSkillImage, entry);
+                else
+                    SetupPlayerSkillHoverTarget(useSkillImage, entry);
             }
 
             visibleIndex++;
@@ -156,27 +138,15 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         SetOwnerIconImage(playerIconImage, null, false, Color.white);
         SetOwnerIconImage(enemyIconImage, null, false, Color.white);
 
-        if (playerSkillIconImages != null)
+        if (useSkillIconImages != null)
         {
-            for (int i = 0; i < playerSkillIconImages.Length; i++)
+            for (int i = 0; i < useSkillIconImages.Length; i++)
             {
-                ClearSkillImage(playerSkillIconImages[i]);
+                ClearSkillImage(useSkillIconImages[i]);
             }
         }
 
-        if (enemySkillIconImages != null)
-        {
-            for (int i = 0; i < enemySkillIconImages.Length; i++)
-            {
-                ClearSkillImage(enemySkillIconImages[i]);
-            }
-        }
-
-        ClearSkillValueTexts(playerSkillValueTexts);
-        ClearSkillValueTexts(enemySkillValueTexts);
-
-        SetObjectsActive(playerMarkObjects, false);
-        SetObjectsActive(enemyMarkObjects, false);
+        ClearSkillValueTexts(useSkillValueTexts);
     }
 
     private void ClearSkillImage(Image image)
@@ -185,15 +155,19 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             return;
 
         image.sprite = null;
+        image.color = Color.white;
         image.enabled = false;
         image.gameObject.SetActive(false);
+        image.raycastTarget = false;
 
-        Transform parent = image.transform.parent;
+        GameObject hoverObject = GetSkillHoverObject(image);
 
-        if (parent != null)
+        if (hoverObject != null)
         {
-            SetRootImageColor(parent.gameObject, Color.white);
-            parent.gameObject.SetActive(false);
+            if (emptyUseSkillSlotsVisible)
+                ShowEmptyUseSkillSlot(hoverObject);
+            else
+                HideEmptyUseSkillSlot(hoverObject);
         }
 
         ClearSkillHoverTarget(image);
@@ -294,6 +268,9 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         if (skillImage == null)
             return null;
 
+        if (skillImage.gameObject.name == "Use_skill")
+            return skillImage.gameObject;
+
         Transform parent = skillImage.transform.parent;
 
         if (parent != null)
@@ -354,28 +331,15 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         if (enemyIconImage == null)
             enemyIconImage = FindImage("Enemy_Icon", "image");
 
-        if (playerSkillIconImages == null || playerSkillIconImages.Length == 0)
-            playerSkillIconImages = FindOrderImages("Player_Skill", "Skill_Image");
+        if (useSkillIconImages == null || useSkillIconImages.Length == 0)
+            useSkillIconImages = FindOrderUseSkillImages();
 
-        if (enemySkillIconImages == null || enemySkillIconImages.Length == 0)
-            enemySkillIconImages = FindOrderImages("Enemy_Skill", "Skill_Image");
-
-        if (playerSkillValueTexts == null || playerSkillValueTexts.Length == 0)
-            playerSkillValueTexts = FindOrderTexts("Player_Skill", "Text (TMP)");
-
-        if (enemySkillValueTexts == null || enemySkillValueTexts.Length == 0)
-            enemySkillValueTexts = FindOrderTexts("Enemy_Skill", "Text (TMP)");
-
-        if (playerMarkObjects == null || playerMarkObjects.Length == 0)
-            playerMarkObjects = FindOrderObjects("Player_Mark");
-
-        if (enemyMarkObjects == null || enemyMarkObjects.Length == 0)
-            enemyMarkObjects = FindOrderObjects("Enemy_Mark");
+        if (useSkillValueTexts == null || useSkillValueTexts.Length == 0)
+            useSkillValueTexts = FindOrderUseSkillTexts();
 
         EnsureButton();
         SetupOrderClickTargets();
     }
-
 
     private void CacheTurnMarkNormalVisual()
     {
@@ -421,7 +385,6 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         {
             if (turnMarkImage != null)
                 turnMarkImage.color = turnMarkNormalImageColor;
-
         }
 
         if (!selected)
@@ -437,7 +400,6 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
         if (turnMarkImage != null)
             turnMarkImage.color = blinkColor;
-
     }
 
     private void EnsureButton()
@@ -511,28 +473,18 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         }
     }
 
-    private Image[] FindOrderImages(string rootName, string imageName)
+    private Image[] FindOrderUseSkillImages()
     {
         List<Image> images = new();
 
         for (int i = 1; i <= 5; i++)
         {
-            Transform order = FindChildRecursive(transform, "Order" + i.ToString("00"));
-
-            if (order == null)
-                continue;
-
-            Transform root = FindChildRecursive(order, rootName);
+            Transform root = FindOrderUseSkillRoot(i);
 
             if (root == null)
                 continue;
 
-            Transform imageTransform = FindChildRecursive(root, imageName);
-
-            if (imageTransform == null)
-                continue;
-
-            Image image = imageTransform.GetComponent<Image>();
+            Image image = FindUseSkillImage(root);
 
             if (image != null)
                 images.Add(image);
@@ -541,31 +493,18 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         return images.ToArray();
     }
 
-    private TMP_Text[] FindOrderTexts(string rootName, string textName)
+    private TMP_Text[] FindOrderUseSkillTexts()
     {
         List<TMP_Text> texts = new();
 
         for (int i = 1; i <= 5; i++)
         {
-            Transform order = FindChildRecursive(transform, "Order" + i.ToString("00"));
-
-            if (order == null)
-                continue;
-
-            Transform root = FindChildRecursive(order, rootName);
+            Transform root = FindOrderUseSkillRoot(i);
 
             if (root == null)
                 continue;
 
-            Transform textTransform = FindChildRecursive(root, textName);
-
-            if (textTransform == null)
-                textTransform = FindChildRecursive(root, "Text");
-
-            if (textTransform == null)
-                continue;
-
-            TMP_Text text = textTransform.GetComponent<TMP_Text>();
+            TMP_Text text = FindUseSkillText(root);
 
             if (text != null)
                 texts.Add(text);
@@ -574,24 +513,51 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         return texts.ToArray();
     }
 
-    private GameObject[] FindOrderObjects(string objectName)
+    private Transform FindOrderUseSkillRoot(int orderNumber)
     {
-        List<GameObject> objects = new();
+        Transform order = FindChildRecursive(transform, "Order" + orderNumber.ToString("00"));
 
-        for (int i = 1; i <= 5; i++)
+        if (order == null)
+            return null;
+
+        return FindChildRecursive(order, "Use_skill");
+    }
+
+    private Image FindUseSkillImage(Transform root)
+    {
+        if (root == null)
+            return null;
+
+        Transform imageTransform = FindChildRecursive(root, "Skill_Image");
+
+        if (imageTransform == null)
+            imageTransform = FindChildRecursive(root, "image");
+
+        if (imageTransform != null)
         {
-            Transform order = FindChildRecursive(transform, "Order" + i.ToString("00"));
+            Image childImage = imageTransform.GetComponent<Image>();
 
-            if (order == null)
-                continue;
-
-            Transform found = FindChildRecursive(order, objectName);
-
-            if (found != null)
-                objects.Add(found.gameObject);
+            if (childImage != null)
+                return childImage;
         }
 
-        return objects.ToArray();
+        return root.GetComponent<Image>();
+    }
+
+    private TMP_Text FindUseSkillText(Transform root)
+    {
+        if (root == null)
+            return null;
+
+        Transform textTransform = FindChildRecursive(root, "Text (TMP)");
+
+        if (textTransform == null)
+            textTransform = FindChildRecursive(root, "Text");
+
+        if (textTransform == null)
+            return null;
+
+        return textTransform.GetComponent<TMP_Text>();
     }
 
     private Image FindImage(string rootName, string imageName)
@@ -655,19 +621,77 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             return;
 
         bool show = visible && sprite != null;
-        Transform parent = image.transform.parent;
+        GameObject hoverObject = GetSkillHoverObject(image);
 
-        if (parent != null)
+        if (hoverObject != null)
         {
-            SetRootImageColor(parent.gameObject, show ? borderColor : Color.white);
-            parent.gameObject.SetActive(show);
+            SetRootImageColor(hoverObject, show ? borderColor : emptyUseSkillColor);
+            hoverObject.SetActive(true);
+
+            Image rootImage = hoverObject.GetComponent<Image>();
+
+            if (rootImage != null)
+                rootImage.raycastTarget = show;
         }
 
         image.gameObject.SetActive(show);
         image.sprite = sprite;
         image.color = Color.white;
         image.enabled = show;
-        image.raycastTarget = true;
+        image.raycastTarget = show;
+    }
+
+    private void ShowEmptyUseSkillSlot(GameObject useSkillRoot)
+    {
+        if (useSkillRoot == null)
+            return;
+
+        useSkillRoot.SetActive(true);
+
+        Image rootImage = useSkillRoot.GetComponent<Image>();
+
+        if (rootImage != null)
+        {
+            rootImage.color = emptyUseSkillColor;
+            rootImage.enabled = true;
+            rootImage.raycastTarget = false;
+        }
+    }
+
+    private void HideEmptyUseSkillSlot(GameObject useSkillRoot)
+    {
+        if (useSkillRoot == null)
+            return;
+
+        useSkillRoot.SetActive(false);
+    }
+
+    public void SetEmptyUseSkillSlotsVisible(bool visible)
+    {
+        emptyUseSkillSlotsVisible = visible;
+
+        if (useSkillIconImages == null)
+            return;
+
+        int usedCount = Mathf.Clamp(currentEntries.Count, 0, useSkillIconImages.Length);
+
+        for (int i = usedCount; i < useSkillIconImages.Length; i++)
+        {
+            Image image = useSkillIconImages[i];
+
+            if (image == null)
+                continue;
+
+            GameObject hoverObject = GetSkillHoverObject(image);
+
+            if (hoverObject == null)
+                continue;
+
+            if (visible)
+                ShowEmptyUseSkillSlot(hoverObject);
+            else
+                HideEmptyUseSkillSlot(hoverObject);
+        }
     }
 
     private void SetSkillValueText(TMP_Text[] texts, int index, string valueText)
@@ -709,23 +733,6 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
         if (image != null)
             image.color = color;
-    }
-
-    private void SetObjectsActive(GameObject[] objects, bool active)
-    {
-        if (objects == null)
-            return;
-
-        for (int i = 0; i < objects.Length; i++)
-        {
-            if (objects[i] != null)
-            {
-                if (!active)
-                    SetRootImageColor(objects[i], Color.white);
-
-                objects[i].SetActive(active);
-            }
-        }
     }
 
     private Transform FindChildRecursive(Transform root, string childName)

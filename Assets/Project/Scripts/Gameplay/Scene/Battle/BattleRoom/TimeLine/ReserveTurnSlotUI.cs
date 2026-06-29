@@ -136,6 +136,8 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
 
     public void OnClickSlot()
     {
+        EnsureOwner();
+
         if (owner != null)
             owner.OnTimelineSlotClicked(slotIndex);
         else
@@ -143,6 +145,22 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
             ShowBattleWarning("타임라인 컨트롤러를 찾을 수 없습니다.");
             Debug.LogWarning("[ReserveTurnSlotUI] owner가 없습니다.");
         }
+    }
+
+    private void EnsureOwner()
+    {
+        if (owner != null)
+            return;
+
+        BattleTimelineBarUI barUI = GetComponentInParent<BattleTimelineBarUI>(true);
+
+        if (barUI != null && barUI.TryGetOwner(out BattleTimelineController foundOwner))
+        {
+            owner = foundOwner;
+            return;
+        }
+
+        owner = FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Include);
     }
 
     private void ShowBattleWarning(string message)
