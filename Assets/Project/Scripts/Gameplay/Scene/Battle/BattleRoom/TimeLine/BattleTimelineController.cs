@@ -9,7 +9,12 @@ using UnityEngine.UI;
 public class BattleTimelineController : MonoBehaviour
 {
     [Header("Timeline")]
+    [Tooltip("이전 구조 호환용입니다. 비어 있지 않으면 TimelineBar1로 사용합니다.")]
     [SerializeField] private BattleTimelineBarUI timelineBarUI;
+    [Tooltip("홀수 턴에 예약 표시를 담당하는 TimelineBar입니다.")]
+    [SerializeField] private BattleTimelineBarUI timelineBarUI1;
+    [Tooltip("짝수 턴에 예약 표시를 담당하는 TimelineBar입니다.")]
+    [SerializeField] private BattleTimelineBarUI timelineBarUI2;
     [SerializeField] private ReserveTurnSlotUI[] reserveSlots;
 
     [Header("Reservation Preview")]
@@ -66,15 +71,34 @@ public class BattleTimelineController : MonoBehaviour
     [SerializeField] private bool enableNumberKeySlotSelection = true;
     [SerializeField] private BattleTurnExecutor turnExecutor;
 
-    [Header("Timeline Slot Slide")]
+    [Header("Timeline Bar Slide")]
     [SerializeField] private bool playTimelineSlotSlide = true;
-    [SerializeField] private RectTransform[] timelineSlotSlideTargets;
-    [SerializeField] private bool autoBindTimelineSlotSlideTargets = true;
-    [SerializeField] private string timelineSlotSlideTargetNamePrefix = "TimelineSlot";
-    [SerializeField] private float completedTimelineSlotSlideAmountX = -260f;
-    [SerializeField] private float waitingTimelineSlotSlideAmountX = -250f;
+    [Tooltip("이전 구조 호환용입니다. 비어 있지 않으면 TimelineBar1 이동 대상으로 사용합니다.")]
+    [SerializeField] private RectTransform timelineBarSlideTarget;
+    [Tooltip("홀수 턴에 사용하는 TimelineBar1 이동 대상입니다.")]
+    [SerializeField] private RectTransform timelineBarSlideTarget1;
+    [Tooltip("짝수 턴에 사용하는 TimelineBar2 이동 대상입니다.")]
+    [SerializeField] private RectTransform timelineBarSlideTarget2;
+    [Tooltip("대기 중인 TimelineBar를 현재 TimelineBar 오른쪽에 이어붙일 X 거리입니다.")]
+    [SerializeField] private float standbyTimelineBarOffsetX = 1420f;
+    [Tooltip("5슬롯까지 모두 진행된 뒤 현재 TimelineBar가 도착해야 하는 X 위치입니다. 기본 위치 X=0 기준입니다. 5슬롯 종료 위치에서 이 값까지 추가 이동합니다.")]
+    [SerializeField] private float completedTurnTimelineBarPositionX = -1420f;
+    [Tooltip("턴엔드 버튼을 누른 직후, 1번 슬롯이 시작되기 전에 TimelineBar가 먼저 왼쪽으로 이동하는 거리입니다. 1번 슬롯에서만 한 번 적용됩니다.")]
+    [SerializeField] private float firstSlotEndTurnTimelineLineSlideAmountX = -60f;
     [SerializeField] private float timelineSlotSlideDuration = 0.18f;
+    [Tooltip("TurnMark와 Use_skill의 4프레임 갈림 애니메이션이 눈에 보이도록, 갈림 연출과 함께 이동할 때 사용하는 최소 이동 시간입니다.")]
+    [SerializeField] private float grindTimelineSlideDuration = 0.32f;
     [SerializeField] private bool useUnscaledTimeForTimelineSlotSlide = false;
+
+    [Header("Timeline Sprite Grind Animation")]
+    [SerializeField] private BattleTimelineSpriteAnimationController timelineSpriteAnimationController;
+    [SerializeField] private bool autoFindTimelineSpriteAnimationController = true;
+    [Tooltip("각 슬롯이 시작될 때 TurnMark가 갈리면서 TimelineBar 전체가 왼쪽으로 이동하는 거리입니다.")]
+    [SerializeField] private float slotStartTimelineLineSlideAmountX = -50f;
+    [Tooltip("해당 슬롯의 첫 번째 Use_skill이 갈릴 때 전체 타임라인 라인이 왼쪽으로 이동하는 거리입니다.")]
+    [SerializeField] private float firstUseSkillTimelineLineSlideAmountX = -45f;
+    [Tooltip("해당 슬롯의 두 번째 이후 Use_skill이 갈릴 때 전체 타임라인 라인이 왼쪽으로 이동하는 거리입니다.")]
+    [SerializeField] private float additionalUseSkillTimelineLineSlideAmountX = -40f;
 
     [Header("End Button Hover Rotation")]
     [SerializeField] private bool playEndButtonHoverRotation = true;
@@ -125,8 +149,13 @@ public class BattleTimelineController : MonoBehaviour
     private float endButtonRotationBeforeHoverZ;
     private float endButtonSmallGearRotationBeforeHoverZ;
     private float endButtonLargeGearRotationBeforeHoverZ;
-    private Vector2[] timelineSlotOriginalAnchoredPositions;
+    private Vector2 timelineBar1OriginalAnchoredPosition;
+    private Vector2 timelineBar2OriginalAnchoredPosition;
+    private bool timelineBarOriginalPositionCaptured;
+    private float resolvedStandbyTimelineBarOffsetX = 1420f;
+    private bool completedTimelineBarPositionApplied;
     private int timelineSlotSlideStepIndex;
+    private int activeTimelineBarIndex;
     private string lastCameraFocusedCharacterId;
 
     private readonly List<MonsterReservedCommand>[] monsterCommandsBySlot =
@@ -137,14 +166,31 @@ public class BattleTimelineController : MonoBehaviour
     public int ReservationVersion => reservationVersion;
     public CharacterRuntimeData SelectedCharacter => selectedCharacter;
 
+
+    private void OnValidate()
+    {
+        // Unity는 스크립트 기본값이 바뀌어도 이미 씬/프리팹에 저장된 Inspector 값을 유지합니다.
+        // 이전 수정본에서 남은 1335 / -1440 값은 현재 구조의 기준값인 1420 / -1420으로 자동 보정합니다.
+        if (Mathf.Approximately(standbyTimelineBarOffsetX, 1335f) || standbyTimelineBarOffsetX <= 0f)
+            standbyTimelineBarOffsetX = 1420f;
+
+        if (Mathf.Approximately(completedTurnTimelineBarPositionX, -1440f) || completedTurnTimelineBarPositionX >= 0f)
+            completedTurnTimelineBarPositionX = -1420f;
+
+        resolvedStandbyTimelineBarOffsetX = Mathf.Abs(standbyTimelineBarOffsetX);
+    }
+
     private void Awake()
     {
         InitializeMonsterCommandSlots();
         AutoFindSelectedSlotValueTextIfNeeded();
         AutoFindSelectedSlotEffectIfNeeded();
         AutoFindSelectedSlotGearEffectsIfNeeded();
+        AutoFindTimelineBarsIfNeeded();
         AutoBindTimelineSlotSlideTargetsIfNeeded();
         CaptureTimelineSlotOriginalPositionsIfNeeded();
+        PrepareTimelineBarsForActiveTurn(false);
+        AutoFindTimelineSpriteAnimationControllerIfNeeded();
         AutoBindEndButtonHoverRotationTargetIfNeeded();
         AutoBindEndButtonHoverLinkedGearTargetsIfNeeded();
         AutoFindTotalUsedCostTextIfNeeded();
@@ -156,8 +202,7 @@ public class BattleTimelineController : MonoBehaviour
         RefreshSelectedSlotValueText();
         RefreshTotalUsedCostText();
 
-        if (timelineBarUI != null)
-            timelineBarUI.Init(this);
+        InitTimelineBars();
 
         if (reserveSlots != null)
         {
@@ -420,8 +465,7 @@ public class BattleTimelineController : MonoBehaviour
         int previousSlotIndex = activeSlotIndex;
         activeSlotIndex = slotIndex;
 
-        if (timelineBarUI != null)
-            timelineBarUI.SetActiveTimelineSlot(activeSlotIndex);
+        SetActiveTimelineSlotVisual(activeSlotIndex);
 
         RefreshSelectedSlotValueText();
         PlaySelectedSlotEffect(previousSlotIndex, activeSlotIndex);
@@ -433,8 +477,7 @@ public class BattleTimelineController : MonoBehaviour
         activeSlotIndex = -1;
         selectedSkill = null;
 
-        if (timelineBarUI != null)
-            timelineBarUI.SetActiveTimelineSlot(activeSlotIndex);
+        SetActiveTimelineSlotVisual(activeSlotIndex);
 
         RefreshSelectedSlotValueText();
     }
@@ -467,8 +510,7 @@ public class BattleTimelineController : MonoBehaviour
         activeSlotIndex = slotIndex;
         selectedSkill = null;
 
-        if (timelineBarUI != null)
-            timelineBarUI.SetActiveTimelineSlot(activeSlotIndex);
+        SetActiveTimelineSlotVisual(activeSlotIndex);
 
         RefreshSelectedSlotValueText();
         PlaySelectedSlotEffect(previousSlotIndex, activeSlotIndex);
@@ -489,28 +531,209 @@ public class BattleTimelineController : MonoBehaviour
         if (!playTimelineSlotSlide)
             yield break;
 
+        AutoFindTimelineBarsIfNeeded();
         AutoBindTimelineSlotSlideTargetsIfNeeded();
         CaptureTimelineSlotOriginalPositionsIfNeeded();
+        AutoFindTimelineSpriteAnimationControllerIfNeeded();
 
         if (!HasTimelineSlotSlideTargets())
             yield break;
 
-        int startSlotIndex = Mathf.Clamp(timelineSlotSlideStepIndex, 0, timelineSlotSlideTargets.Length);
-        int endSlotIndex = Mathf.Clamp(lastSlotIndexInclusive, -1, timelineSlotSlideTargets.Length - 1);
+        BattleTimelineBarUI activeBarForSlide = GetActiveTimelineBarUI();
+        BattleTimelineBarUI standbyBarForSlide = GetStandbyTimelineBarUI();
+
+        if (activeBarForSlide != null)
+            activeBarForSlide.SetEmptyUseSkillSlotsVisible(false);
+
+        if (standbyBarForSlide != null && standbyBarForSlide != activeBarForSlide)
+            standbyBarForSlide.SetEmptyUseSkillSlotsVisible(false);
+
+        int slideSlotCount = GetTimelineSlideSlotCount();
+        int startSlotIndex = Mathf.Clamp(timelineSlotSlideStepIndex, 0, slideSlotCount);
+        int endSlotIndex = Mathf.Clamp(lastSlotIndexInclusive, -1, slideSlotCount - 1);
 
         if (endSlotIndex < startSlotIndex)
             yield break;
 
-        int completedStepCount = endSlotIndex - startSlotIndex + 1;
-        PlayTimelineSlotSlideSfx();
-        PlayTimelineSlideGearRotation(completedStepCount);
+        for (int completedSlotIndex = startSlotIndex; completedSlotIndex <= endSlotIndex; completedSlotIndex++)
+        {
+            PlayTimelineSlotSlideSfx();
 
-        yield return MoveTimelineSlotSlideTargetsThroughCompletedSlotsRoutine(startSlotIndex, endSlotIndex);
-        timelineSlotSlideStepIndex = Mathf.Clamp(endSlotIndex + 1, 0, timelineSlotSlideTargets.Length);
+            bool isEmptySlot = IsTimelineSlotEmpty(completedSlotIndex);
+            yield return PlayTimelineTurnMarkAnimationAndLineSlideRoutine(completedSlotIndex, isEmptySlot);
+        }
+
+        timelineSlotSlideStepIndex = Mathf.Clamp(endSlotIndex + 1, 0, slideSlotCount);
+
+        // 5번 슬롯의 TurnMark가 갈렸다고 해서 턴 라인을 바로 완료 위치로 보내면,
+        // 5번 슬롯에 등록된 Use_skill들이 개별적으로 갈리기 전에 한 번에 이동해 보입니다.
+        // 완료 위치 보정은 BattleTurnExecutor가 모든 슬롯/스킬 처리를 끝낸 뒤 호출합니다.
     }
+
+    public IEnumerator PlayTimelineTurnMarkAnimationRoutine(int slotIndex)
+    {
+        AutoFindTimelineSpriteAnimationControllerIfNeeded();
+        ConfigureTimelineSpriteAnimationRootForActiveBar();
+
+        if (timelineSpriteAnimationController == null)
+            yield break;
+
+        // TurnMark 프레임만 재생합니다. 실제 라인 이동은 PlayTimelineTurnMarkAnimationAndLineSlideRoutine에서 함께 처리합니다.
+        PlayTimelineSlideGearRotation(1);
+        yield return timelineSpriteAnimationController.PlayTurnMarkRoutine(slotIndex);
+    }
+
+    private IEnumerator PlayTimelineTurnMarkAnimationAndLineSlideRoutine(int slotIndex, bool isEmptySlot)
+    {
+        AutoFindTimelineSpriteAnimationControllerIfNeeded();
+        ConfigureTimelineSpriteAnimationRootForActiveBar();
+
+        // 턴 엔드 직후 1번 슬롯이 진행될 때만 라인을 먼저 -60 이동합니다.
+        // 2번 슬롯부터는 이 선행 이동 없이 슬롯 시작 이동만 진행합니다.
+        if (slotIndex == 0 && !Mathf.Approximately(firstSlotEndTurnTimelineLineSlideAmountX, 0f))
+        {
+            PlayTimelineSlideGearRotation(1);
+            yield return MoveAllTimelineSlotSlideTargetsByOffsetRoutine(firstSlotEndTurnTimelineLineSlideAmountX);
+        }
+
+        // 슬롯 시작 시 TurnMark 애니메이션을 먼저 보여주고, 그 다음 TimelineBar 전체를 이동합니다.
+        // 스킬이 없는 슬롯은 Use_skill 1~5칸까지 한 번에 이동해서 다음 슬롯 직전까지 보냅니다.
+        float animationDuration = GetTurnMarkGrindDuration();
+
+        if (timelineSpriteAnimationController != null)
+            yield return timelineSpriteAnimationController.PlayTurnMarkRoutine(slotIndex);
+
+        float lineSlideAmountX = isEmptySlot
+            ? GetFullUseSkillTimelineLineSlideAmountX()
+            : slotStartTimelineLineSlideAmountX;
+
+        PlayTimelineSlideGearRotation(1, animationDuration);
+        yield return MoveAllTimelineSlotSlideTargetsByOffsetRoutine(lineSlideAmountX, animationDuration);
+    }
+
+    public IEnumerator MoveTimelineBarsToCompletedTurnPositionRoutine()
+    {
+        if (completedTimelineBarPositionApplied)
+            yield break;
+
+        RectTransform activeTarget = GetActiveTimelineBarSlideTarget();
+        RectTransform standbyTarget = GetStandbyTimelineBarSlideTarget();
+
+        if (activeTarget == null)
+            yield break;
+
+        Vector2 basePosition = GetTimelineBarBasePosition();
+        float completedX = basePosition.x + completedTurnTimelineBarPositionX;
+        float standbyX = basePosition.x;
+        float offsetX = completedX - activeTarget.anchoredPosition.x;
+
+        // 이미 완료 위치에 도착했거나 지나친 경우에는 추가 이동을 재생하지 않습니다.
+        // active는 -1420, standby는 0으로 위치만 보정합니다.
+        bool alreadyAtOrPastCompletedPosition = completedTurnTimelineBarPositionX < 0f
+            ? activeTarget.anchoredPosition.x <= completedX + 0.01f
+            : activeTarget.anchoredPosition.x >= completedX - 0.01f;
+
+        if (!alreadyAtOrPastCompletedPosition && !Mathf.Approximately(offsetX, 0f))
+            yield return MoveAllTimelineSlotSlideTargetsByOffsetRoutine(offsetX, timelineSlotSlideDuration, true);
+
+        activeTarget.anchoredPosition = new Vector2(completedX, activeTarget.anchoredPosition.y);
+
+        if (standbyTarget != null && standbyTarget != activeTarget)
+            standbyTarget.anchoredPosition = new Vector2(standbyX, standbyTarget.anchoredPosition.y);
+
+        completedTimelineBarPositionApplied = true;
+    }
+
+    private int GetTimelineSlideSlotCount()
+    {
+        if (reserveSlots != null && reserveSlots.Length > 0)
+            return reserveSlots.Length;
+
+        return 5;
+    }
+
+    private bool IsTimelineSlotEmpty(int slotIndex)
+    {
+        if (slotIndex < 0)
+            return true;
+
+        return GetPlayerCommandCount(slotIndex) + GetMonsterCommandCount(slotIndex) <= 0;
+    }
+
+    private float GetFullUseSkillTimelineLineSlideAmountX()
+    {
+        return slotStartTimelineLineSlideAmountX +
+               firstUseSkillTimelineLineSlideAmountX +
+               additionalUseSkillTimelineLineSlideAmountX * 4f;
+    }
+
+    public IEnumerator PlayTimelineActionAnimationsRoutine(int slotIndex, int startOrderIndex, int count, bool fillRemainingUseSkillLine = false)
+    {
+        AutoFindTimelineSpriteAnimationControllerIfNeeded();
+        ConfigureTimelineSpriteAnimationRootForActiveBar();
+
+        int safeStartOrderIndex = Mathf.Clamp(startOrderIndex, 0, 5);
+        int safeCount = Mathf.Max(0, count);
+
+        for (int i = 0; i < safeCount; i++)
+        {
+            int orderIndex = safeStartOrderIndex + i;
+
+            if (orderIndex < 0 || orderIndex >= 5)
+                yield break;
+
+            // Use_skill 애니메이션을 먼저 보여주고, 그 다음 TimelineBar 전체를 이동합니다.
+            float animationDuration = GetUseSkillGrindDuration();
+
+            if (timelineSpriteAnimationController != null)
+                yield return timelineSpriteAnimationController.PlayUseSkillRoutine(slotIndex, orderIndex);
+
+            float lineSlideAmountX = orderIndex == 0
+                ? firstUseSkillTimelineLineSlideAmountX
+                : additionalUseSkillTimelineLineSlideAmountX;
+
+            if (fillRemainingUseSkillLine && i == safeCount - 1)
+                lineSlideAmountX += GetRemainingUseSkillTimelineLineSlideAmountX(orderIndex);
+
+            PlayTimelineSlideGearRotation(1, animationDuration);
+            yield return MoveAllTimelineSlotSlideTargetsByOffsetRoutine(lineSlideAmountX, animationDuration);
+        }
+    }
+
+
+    private float GetTurnMarkGrindDuration()
+    {
+        float frameDuration = timelineSpriteAnimationController != null
+            ? timelineSpriteAnimationController.GetTurnMarkAnimationDuration()
+            : 0f;
+
+        return GetGrindTimelineSlideDuration(frameDuration);
+    }
+
+    private float GetUseSkillGrindDuration()
+    {
+        float frameDuration = timelineSpriteAnimationController != null
+            ? timelineSpriteAnimationController.GetUseSkillAnimationDuration()
+            : 0f;
+
+        return GetGrindTimelineSlideDuration(frameDuration);
+    }
+
+    private float GetGrindTimelineSlideDuration(float frameAnimationDuration)
+    {
+        return Mathf.Max(0.01f, timelineSlotSlideDuration, grindTimelineSlideDuration, frameAnimationDuration);
+    }
+
+    private float GetRemainingUseSkillTimelineLineSlideAmountX(int lastPlayedOrderIndex)
+    {
+        int remainingUseSkillCount = Mathf.Clamp(4 - lastPlayedOrderIndex, 0, 4);
+        return additionalUseSkillTimelineLineSlideAmountX * remainingUseSkillCount;
+    }
+
 
     public IEnumerator ResetTimelineSlotsToOriginalPositionRoutine()
     {
+        AutoFindTimelineBarsIfNeeded();
         AutoBindTimelineSlotSlideTargetsIfNeeded();
         CaptureTimelineSlotOriginalPositionsIfNeeded();
 
@@ -519,6 +742,27 @@ public class BattleTimelineController : MonoBehaviour
 
         yield return MoveTimelineSlotSlideTargetsToOriginalOneByOneRoutine();
         timelineSlotSlideStepIndex = 0;
+
+        AutoFindTimelineSpriteAnimationControllerIfNeeded();
+        if (timelineSpriteAnimationController != null)
+        {
+            RectTransform bar1 = timelineBarSlideTarget1;
+            RectTransform bar2 = timelineBarSlideTarget2;
+
+            if (bar1 != null)
+            {
+                timelineSpriteAnimationController.SetAnimationRoot(bar1);
+                timelineSpriteAnimationController.ResetTurnMarksForNextTurn();
+            }
+
+            if (bar2 != null && bar2 != bar1)
+            {
+                timelineSpriteAnimationController.SetAnimationRoot(bar2);
+                timelineSpriteAnimationController.ResetTurnMarksForNextTurn();
+            }
+
+            ConfigureTimelineSpriteAnimationRootForActiveBar();
+        }
     }
 
     private void AutoBindEndButtonHoverRotationTargetIfNeeded()
@@ -848,7 +1092,7 @@ public class BattleTimelineController : MonoBehaviour
         AudioManager.Instance.PlaySfx(timelineSlotSlideSfxType, timelineSlotSlideSfxVolume);
     }
 
-    private void PlayTimelineSlideGearRotation(int completedStepCount)
+    private void PlayTimelineSlideGearRotation(int completedStepCount, float durationOverride = -1f)
     {
         if (completedStepCount <= 0)
             return;
@@ -914,7 +1158,8 @@ public class BattleTimelineController : MonoBehaviour
             smallGearTargetZ,
             endButtonTargetZ,
             endButtonSmallGearTargetZ,
-            endButtonLargeGearTargetZ
+            endButtonLargeGearTargetZ,
+            durationOverride
         ));
     }
 
@@ -924,9 +1169,12 @@ public class BattleTimelineController : MonoBehaviour
         float smallGearTargetZ,
         float endButtonTargetZ,
         float endButtonSmallGearTargetZ,
-        float endButtonLargeGearTargetZ)
+        float endButtonLargeGearTargetZ,
+        float durationOverride)
     {
-        float duration = Mathf.Max(0.01f, timelineSlotSlideDuration);
+        float duration = durationOverride > 0f
+            ? Mathf.Max(0.01f, durationOverride)
+            : Mathf.Max(0.01f, timelineSlotSlideDuration);
         float elapsed = 0f;
 
         float mainStartZ = GetTransformRotationZ(selectedSlotEffect);
@@ -1109,6 +1357,35 @@ public class BattleTimelineController : MonoBehaviour
             selectedSlotSmallGearEffect = FindTimelineChildByName(selectedSlotSmallGearEffectObjectName);
     }
 
+
+    private void AutoFindTimelineSpriteAnimationControllerIfNeeded()
+    {
+        if (!autoFindTimelineSpriteAnimationController)
+            return;
+
+        if (timelineSpriteAnimationController != null)
+            return;
+
+        BattleTimelineBarUI activeTimelineBarUI = GetActiveTimelineBarUI();
+
+        if (activeTimelineBarUI != null)
+        {
+            timelineSpriteAnimationController = activeTimelineBarUI.GetComponentInParent<BattleTimelineSpriteAnimationController>(true);
+
+            if (timelineSpriteAnimationController == null)
+                timelineSpriteAnimationController = activeTimelineBarUI.GetComponentInChildren<BattleTimelineSpriteAnimationController>(true);
+        }
+
+        if (timelineSpriteAnimationController == null)
+            timelineSpriteAnimationController = GetComponentInParent<BattleTimelineSpriteAnimationController>(true);
+
+        if (timelineSpriteAnimationController == null)
+            timelineSpriteAnimationController = GetComponentInChildren<BattleTimelineSpriteAnimationController>(true);
+
+        if (timelineSpriteAnimationController == null)
+            timelineSpriteAnimationController = FindFirstObjectByType<BattleTimelineSpriteAnimationController>(FindObjectsInactive.Include);
+    }
+
     private Transform FindTimelineChildByName(string childName)
     {
         if (string.IsNullOrEmpty(childName))
@@ -1128,249 +1405,305 @@ public class BattleTimelineController : MonoBehaviour
         return found;
     }
 
+    private void AutoFindTimelineBarsIfNeeded()
+    {
+        if (timelineBarUI1 == null && timelineBarUI != null)
+            timelineBarUI1 = timelineBarUI;
+
+        if (timelineBarSlideTarget1 == null && timelineBarSlideTarget != null)
+            timelineBarSlideTarget1 = timelineBarSlideTarget;
+
+        Transform searchRoot = transform;
+
+        if (timelineBarUI1 == null)
+            timelineBarUI1 = FindTimelineBarUIByName(searchRoot, "TimelineBar1");
+
+        if (timelineBarUI2 == null)
+            timelineBarUI2 = FindTimelineBarUIByName(searchRoot, "TimelineBar2");
+
+        if (timelineBarUI1 == null)
+            timelineBarUI1 = FindTimelineBarUIByName(searchRoot, "TimelineBar");
+
+        if (timelineBarSlideTarget1 == null && timelineBarUI1 != null)
+            timelineBarSlideTarget1 = timelineBarUI1.GetComponent<RectTransform>();
+
+        if (timelineBarSlideTarget2 == null && timelineBarUI2 != null)
+            timelineBarSlideTarget2 = timelineBarUI2.GetComponent<RectTransform>();
+
+        if (timelineBarUI == null)
+            timelineBarUI = timelineBarUI1;
+    }
+
+    private BattleTimelineBarUI FindTimelineBarUIByName(Transform searchRoot, string objectName)
+    {
+        Transform found = FindChildRecursive(searchRoot, objectName);
+
+        if (found == null)
+            return null;
+
+        BattleTimelineBarUI barUI = found.GetComponent<BattleTimelineBarUI>();
+
+        if (barUI == null)
+            barUI = found.gameObject.AddComponent<BattleTimelineBarUI>();
+
+        return barUI;
+    }
+
+    private void InitTimelineBars()
+    {
+        AutoFindTimelineBarsIfNeeded();
+
+        if (timelineBarUI1 != null)
+            timelineBarUI1.Init(this);
+
+        if (timelineBarUI2 != null && timelineBarUI2 != timelineBarUI1)
+            timelineBarUI2.Init(this);
+
+        SetActiveTimelineSlotVisual(activeSlotIndex);
+    }
+
+    private BattleTimelineBarUI GetActiveTimelineBarUI()
+    {
+        AutoFindTimelineBarsIfNeeded();
+
+        if (activeTimelineBarIndex == 0)
+            return timelineBarUI1 != null ? timelineBarUI1 : timelineBarUI2;
+
+        return timelineBarUI2 != null ? timelineBarUI2 : timelineBarUI1;
+    }
+
+    private BattleTimelineBarUI GetStandbyTimelineBarUI()
+    {
+        AutoFindTimelineBarsIfNeeded();
+
+        if (activeTimelineBarIndex == 0)
+            return timelineBarUI2;
+
+        return timelineBarUI1;
+    }
+
+    private RectTransform GetActiveTimelineBarSlideTarget()
+    {
+        AutoFindTimelineBarsIfNeeded();
+
+        if (activeTimelineBarIndex == 0)
+            return timelineBarSlideTarget1 != null ? timelineBarSlideTarget1 : timelineBarSlideTarget2;
+
+        return timelineBarSlideTarget2 != null ? timelineBarSlideTarget2 : timelineBarSlideTarget1;
+    }
+
+    private RectTransform GetStandbyTimelineBarSlideTarget()
+    {
+        AutoFindTimelineBarsIfNeeded();
+
+        if (activeTimelineBarIndex == 0)
+            return timelineBarSlideTarget2;
+
+        return timelineBarSlideTarget1;
+    }
+
+    private RectTransform[] GetTimelineBarSlideTargets()
+    {
+        AutoFindTimelineBarsIfNeeded();
+
+        if (timelineBarSlideTarget1 != null && timelineBarSlideTarget2 != null)
+            return new[] { timelineBarSlideTarget1, timelineBarSlideTarget2 };
+
+        RectTransform singleTarget = GetActiveTimelineBarSlideTarget();
+        return singleTarget != null ? new[] { singleTarget } : System.Array.Empty<RectTransform>();
+    }
+
+    private void SetActiveTimelineSlotVisual(int slotIndex)
+    {
+        BattleTimelineBarUI activeBar = GetActiveTimelineBarUI();
+        BattleTimelineBarUI standbyBar = GetStandbyTimelineBarUI();
+
+        if (activeBar != null)
+        {
+            activeBar.SetActiveTimelineSlot(slotIndex);
+            activeBar.SetTurnMarkChildrenVisible(true);
+        }
+
+        if (standbyBar != null && standbyBar != activeBar)
+        {
+            standbyBar.SetActiveTimelineSlot(-1);
+            standbyBar.SetTurnMarkChildrenVisible(false);
+        }
+    }
+
     private void AutoBindTimelineSlotSlideTargetsIfNeeded()
     {
-        if (!autoBindTimelineSlotSlideTargets)
-            return;
-
-        if (timelineSlotSlideTargets != null && timelineSlotSlideTargets.Length > 0)
-            return;
-
-        List<RectTransform> foundTargets = new();
-
-        if (reserveSlots != null)
-        {
-            for (int i = 0; i < reserveSlots.Length; i++)
-            {
-                if (reserveSlots[i] == null)
-                    continue;
-
-                RectTransform slotRect = reserveSlots[i].GetComponent<RectTransform>();
-
-                if (slotRect != null && !foundTargets.Contains(slotRect))
-                    foundTargets.Add(slotRect);
-            }
-        }
-
-        if (foundTargets.Count <= 0)
-        {
-            Transform searchRoot = GetTimelineSearchRoot();
-            AddTimelineSlotSlideTargetsRecursive(searchRoot, foundTargets);
-        }
-
-        if (foundTargets.Count <= 0)
-        {
-            BattleTimelineBarUI foundTimelineBar = FindFirstObjectByType<BattleTimelineBarUI>(FindObjectsInactive.Include);
-
-            if (foundTimelineBar != null)
-                AddTimelineSlotSlideTargetsRecursive(foundTimelineBar.transform, foundTargets);
-        }
-
-        foundTargets.Sort(CompareTimelineSlotSlideTargetOrder);
-        timelineSlotSlideTargets = foundTargets.ToArray();
-    }
-
-    private void AddTimelineSlotSlideTargetsRecursive(Transform root, List<RectTransform> results)
-    {
-        if (root == null || results == null)
-            return;
-
-        for (int i = 0; i < root.childCount; i++)
-        {
-            Transform child = root.GetChild(i);
-
-            if (child.name.StartsWith(timelineSlotSlideTargetNamePrefix))
-            {
-                RectTransform rectTransform = child.GetComponent<RectTransform>();
-
-                if (rectTransform != null && !results.Contains(rectTransform))
-                    results.Add(rectTransform);
-            }
-
-            AddTimelineSlotSlideTargetsRecursive(child, results);
-        }
-    }
-
-    private int CompareTimelineSlotSlideTargetOrder(RectTransform a, RectTransform b)
-    {
-        int aIndex = ExtractTrailingNumber(a != null ? a.name : string.Empty);
-        int bIndex = ExtractTrailingNumber(b != null ? b.name : string.Empty);
-
-        if (aIndex != bIndex)
-            return aIndex.CompareTo(bIndex);
-
-        string aName = a != null ? a.name : string.Empty;
-        string bName = b != null ? b.name : string.Empty;
-
-        return string.CompareOrdinal(aName, bName);
-    }
-
-    private int ExtractTrailingNumber(string value)
-    {
-        if (string.IsNullOrEmpty(value))
-            return int.MaxValue;
-
-        int multiplier = 1;
-        int result = 0;
-        bool hasNumber = false;
-
-        for (int i = value.Length - 1; i >= 0; i--)
-        {
-            char c = value[i];
-
-            if (c < '0' || c > '9')
-                break;
-
-            hasNumber = true;
-            result += (c - '0') * multiplier;
-            multiplier *= 10;
-        }
-
-        return hasNumber ? result : int.MaxValue;
+        AutoFindTimelineBarsIfNeeded();
     }
 
     private void CaptureTimelineSlotOriginalPositionsIfNeeded()
     {
-        AutoBindTimelineSlotSlideTargetsIfNeeded();
+        AutoFindTimelineBarsIfNeeded();
 
-        if (timelineSlotSlideTargets == null || timelineSlotSlideTargets.Length <= 0)
+        if (timelineBarOriginalPositionCaptured)
             return;
 
-        if (timelineSlotOriginalAnchoredPositions != null &&
-            timelineSlotOriginalAnchoredPositions.Length == timelineSlotSlideTargets.Length)
-        {
+        if (timelineBarSlideTarget1 != null)
+            timelineBar1OriginalAnchoredPosition = timelineBarSlideTarget1.anchoredPosition;
+
+        if (timelineBarSlideTarget2 != null)
+            timelineBar2OriginalAnchoredPosition = timelineBarSlideTarget2.anchoredPosition;
+        else if (timelineBarSlideTarget1 != null)
+            timelineBar2OriginalAnchoredPosition = timelineBar1OriginalAnchoredPosition + new Vector2(standbyTimelineBarOffsetX, 0f);
+
+        // 두 TimelineBar의 실제 RectTransform width나 현재 배치값을 기준으로 간격을 다시 계산하지 않습니다.
+        // Inspector에서 지정한 Standby Timeline Bar Offset X 값만 사용해야
+        // 0 / 1420 위치를 번갈아 쓰는 구조가 흔들리지 않습니다.
+        resolvedStandbyTimelineBarOffsetX = Mathf.Abs(standbyTimelineBarOffsetX);
+
+        if (resolvedStandbyTimelineBarOffsetX <= 0.01f)
+            resolvedStandbyTimelineBarOffsetX = 1420f;
+
+        timelineBarOriginalPositionCaptured = true;
+    }
+
+    private Vector2 GetTimelineBarBasePosition()
+    {
+        if (timelineBarSlideTarget1 != null)
+            return timelineBar1OriginalAnchoredPosition;
+
+        return timelineBar2OriginalAnchoredPosition;
+    }
+
+    private void PrepareTimelineBarsForActiveTurn(bool swapActiveBar)
+    {
+        AutoFindTimelineBarsIfNeeded();
+        CaptureTimelineSlotOriginalPositionsIfNeeded();
+
+        if (swapActiveBar && timelineBarSlideTarget1 != null && timelineBarSlideTarget2 != null)
+            activeTimelineBarIndex = activeTimelineBarIndex == 0 ? 1 : 0;
+
+        completedTimelineBarPositionApplied = false;
+
+        RectTransform activeTarget = GetActiveTimelineBarSlideTarget();
+        RectTransform standbyTarget = GetStandbyTimelineBarSlideTarget();
+
+        Vector2 activeBasePosition = GetTimelineBarBasePosition();
+
+        if (activeTarget != null)
+            activeTarget.anchoredPosition = activeBasePosition;
+
+        if (standbyTarget != null && standbyTarget != activeTarget)
+            standbyTarget.anchoredPosition = activeBasePosition + new Vector2(resolvedStandbyTimelineBarOffsetX, 0f);
+
+        ConfigureTimelineSpriteAnimationRootForActiveBar();
+        SetActiveTimelineSlotVisual(activeSlotIndex);
+
+        BattleTimelineBarUI activeBar = GetActiveTimelineBarUI();
+        BattleTimelineBarUI standbyBar = GetStandbyTimelineBarUI();
+
+        if (activeBar != null)
+            activeBar.SetEmptyUseSkillSlotsVisible(true);
+
+        if (standbyBar != null && standbyBar != activeBar)
+            standbyBar.SetEmptyUseSkillSlotsVisible(false);
+    }
+
+    private void ConfigureTimelineSpriteAnimationRootForActiveBar()
+    {
+        AutoFindTimelineSpriteAnimationControllerIfNeeded();
+
+        if (timelineSpriteAnimationController == null)
             return;
-        }
 
-        timelineSlotOriginalAnchoredPositions = new Vector2[timelineSlotSlideTargets.Length];
-
-        for (int i = 0; i < timelineSlotSlideTargets.Length; i++)
-        {
-            if (timelineSlotSlideTargets[i] != null)
-                timelineSlotOriginalAnchoredPositions[i] = timelineSlotSlideTargets[i].anchoredPosition;
-        }
+        RectTransform activeTarget = GetActiveTimelineBarSlideTarget();
+        timelineSpriteAnimationController.SetAnimationRoot(activeTarget != null ? activeTarget : null);
     }
 
     private bool HasTimelineSlotSlideTargets()
     {
-        if (timelineSlotSlideTargets == null || timelineSlotSlideTargets.Length <= 0)
-            return false;
-
-        for (int i = 0; i < timelineSlotSlideTargets.Length; i++)
-        {
-            if (timelineSlotSlideTargets[i] != null)
-                return true;
-        }
-
-        return false;
+        return GetTimelineBarSlideTargets().Length > 0;
     }
 
-    private IEnumerator MoveTimelineSlotSlideTargetsThroughCompletedSlotsRoutine(int startSlotIndex, int endSlotIndex)
+    private IEnumerator MoveAllTimelineSlotSlideTargetsByOffsetRoutine(float offsetX, float durationOverride = -1f, bool allowCompletedClamp = false)
     {
-        AutoBindTimelineSlotSlideTargetsIfNeeded();
+        RectTransform[] targets = GetTimelineBarSlideTargets();
 
-        if (!HasTimelineSlotSlideTargets())
+        if (targets == null || targets.Length <= 0 || Mathf.Approximately(offsetX, 0f))
             yield break;
 
-        Vector2[] startPositions = GetTimelineSlotCurrentPositions();
-        Vector2[] targetPositions = new Vector2[startPositions.Length];
+        // 두 개의 TimelineBar가 0 / 1420 위치를 번갈아 쓰는 구조에서는
+        // 진행 중인 바가 완료 위치(-1420)에 도착한 뒤 추가 보정 이동이 들어가면 안 됩니다.
+        // 그래서 모든 라인 이동 요청은 완료 위치를 넘지 않도록 항상 한 번 클램프합니다.
+        float appliedOffsetX = ClampTimelineBarOffsetToCompletedPosition(offsetX);
 
-        for (int i = 0; i < startPositions.Length; i++)
-            targetPositions[i] = startPositions[i];
+        if (Mathf.Approximately(appliedOffsetX, 0f))
+            yield break;
 
-        int safeStartSlotIndex = Mathf.Clamp(startSlotIndex, 0, targetPositions.Length);
-        int safeEndSlotIndex = Mathf.Clamp(endSlotIndex, -1, targetPositions.Length - 1);
+        Vector2[] startPositions = new Vector2[targets.Length];
+        Vector2[] targetPositions = new Vector2[targets.Length];
 
-        for (int completedSlotIndex = safeStartSlotIndex; completedSlotIndex <= safeEndSlotIndex; completedSlotIndex++)
+        for (int i = 0; i < targets.Length; i++)
         {
-            for (int i = completedSlotIndex; i < targetPositions.Length; i++)
-            {
-                float deltaX = i == completedSlotIndex
-                    ? completedTimelineSlotSlideAmountX
-                    : waitingTimelineSlotSlideAmountX;
-
-                targetPositions[i] += new Vector2(deltaX, 0f);
-            }
+            startPositions[i] = targets[i].anchoredPosition;
+            targetPositions[i] = startPositions[i] + new Vector2(appliedOffsetX, 0f);
         }
 
-        yield return MoveTimelineSlotSlideTargetsToPositionsRoutine(startPositions, targetPositions);
+        yield return MoveTimelineBarsToPositionsRoutine(targets, startPositions, targetPositions, durationOverride);
+    }
+
+    private float ClampTimelineBarOffsetToCompletedPosition(float offsetX)
+    {
+        RectTransform activeTarget = GetActiveTimelineBarSlideTarget();
+
+        if (activeTarget == null || Mathf.Approximately(offsetX, 0f))
+            return offsetX;
+
+        Vector2 basePosition = GetTimelineBarBasePosition();
+        float completedX = basePosition.x + completedTurnTimelineBarPositionX;
+        float currentX = activeTarget.anchoredPosition.x;
+        float targetX = currentX + offsetX;
+
+        if (completedTurnTimelineBarPositionX < 0f && targetX < completedX)
+            return completedX - currentX;
+
+        if (completedTurnTimelineBarPositionX > 0f && targetX > completedX)
+            return completedX - currentX;
+
+        return offsetX;
     }
 
     private IEnumerator MoveTimelineSlotSlideTargetsToOriginalOneByOneRoutine()
     {
-        AutoBindTimelineSlotSlideTargetsIfNeeded();
-        CaptureTimelineSlotOriginalPositionsIfNeeded();
-
-        if (!HasTimelineSlotSlideTargets())
-            yield break;
-
-        if (timelineSlotOriginalAnchoredPositions == null ||
-            timelineSlotOriginalAnchoredPositions.Length != timelineSlotSlideTargets.Length)
-        {
-            yield break;
-        }
-
-        for (int i = timelineSlotSlideTargets.Length - 1; i >= 0; i--)
-        {
-            if (timelineSlotSlideTargets[i] == null)
-                continue;
-
-            yield return MoveSingleTimelineSlotToOriginalRoutine(i);
-        }
+        PrepareTimelineBarsForActiveTurn(true);
+        yield break;
     }
 
-    private IEnumerator MoveSingleTimelineSlotToOriginalRoutine(int slotIndex)
+    private IEnumerator MoveTimelineBarsToPositionsRoutine(
+        RectTransform[] targets,
+        Vector2[] startPositions,
+        Vector2[] targetPositions,
+        float durationOverride = -1f)
     {
-        Vector2[] startPositions = GetTimelineSlotCurrentPositions();
-        Vector2[] targetPositions = GetTimelineSlotCurrentPositions();
-
-        if (slotIndex < 0 ||
-            slotIndex >= targetPositions.Length ||
-            slotIndex >= timelineSlotOriginalAnchoredPositions.Length)
-        {
-            yield break;
-        }
-
-        targetPositions[slotIndex] = timelineSlotOriginalAnchoredPositions[slotIndex];
-        yield return MoveTimelineSlotSlideTargetsToPositionsRoutine(startPositions, targetPositions);
-    }
-
-    private Vector2[] GetTimelineSlotCurrentPositions()
-    {
-        AutoBindTimelineSlotSlideTargetsIfNeeded();
-
-        if (timelineSlotSlideTargets == null)
-            return new Vector2[0];
-
-        Vector2[] positions = new Vector2[timelineSlotSlideTargets.Length];
-
-        for (int i = 0; i < timelineSlotSlideTargets.Length; i++)
-        {
-            if (timelineSlotSlideTargets[i] != null)
-                positions[i] = timelineSlotSlideTargets[i].anchoredPosition;
-        }
-
-        return positions;
-    }
-
-    private IEnumerator MoveTimelineSlotSlideTargetsToPositionsRoutine(Vector2[] startPositions, Vector2[] targetPositions)
-    {
-        if (startPositions == null || targetPositions == null)
-            yield break;
-
-        if (startPositions.Length != targetPositions.Length)
-            yield break;
-
         if (timelineSlotSlideRoutine != null)
             StopCoroutine(timelineSlotSlideRoutine);
 
-        timelineSlotSlideRoutine = StartCoroutine(MoveTimelineSlotSlideTargetsCoroutine(startPositions, targetPositions));
+        timelineSlotSlideRoutine = StartCoroutine(MoveTimelineBarsCoroutine(
+            targets,
+            startPositions,
+            targetPositions,
+            durationOverride));
+
         yield return timelineSlotSlideRoutine;
     }
 
-    private IEnumerator MoveTimelineSlotSlideTargetsCoroutine(Vector2[] startPositions, Vector2[] targetPositions)
+    private IEnumerator MoveTimelineBarsCoroutine(
+        RectTransform[] targets,
+        Vector2[] startPositions,
+        Vector2[] targetPositions,
+        float durationOverride = -1f)
     {
-        float duration = Mathf.Max(0.01f, timelineSlotSlideDuration);
+        if (targets == null || startPositions == null || targetPositions == null)
+            yield break;
+
+        float duration = durationOverride > 0f
+            ? Mathf.Max(0.01f, durationOverride)
+            : Mathf.Max(0.01f, timelineSlotSlideDuration);
         float elapsed = 0f;
 
         while (elapsed < duration)
@@ -1379,36 +1712,34 @@ public class BattleTimelineController : MonoBehaviour
             float t = Mathf.Clamp01(elapsed / duration);
             float easedT = 1f - Mathf.Pow(1f - t, 3f);
 
-            ApplyTimelineSlotSlidePositions(startPositions, targetPositions, easedT);
+            for (int i = 0; i < targets.Length; i++)
+            {
+                if (targets[i] == null || i >= startPositions.Length || i >= targetPositions.Length)
+                    continue;
+
+                targets[i].anchoredPosition = Vector2.Lerp(startPositions[i], targetPositions[i], easedT);
+            }
+
             yield return null;
         }
 
-        ApplyTimelineSlotSlidePositions(startPositions, targetPositions, 1f);
-        timelineSlotSlideRoutine = null;
-    }
-
-    private void ApplyTimelineSlotSlidePositions(Vector2[] startPositions, Vector2[] targetPositions, float t)
-    {
-        if (timelineSlotSlideTargets == null || startPositions == null || targetPositions == null)
-            return;
-
-        int count = Mathf.Min(timelineSlotSlideTargets.Length, Mathf.Min(startPositions.Length, targetPositions.Length));
-
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < targets.Length; i++)
         {
-            RectTransform target = timelineSlotSlideTargets[i];
-
-            if (target == null)
+            if (targets[i] == null || i >= targetPositions.Length)
                 continue;
 
-            target.anchoredPosition = Vector2.Lerp(startPositions[i], targetPositions[i], t);
+            targets[i].anchoredPosition = targetPositions[i];
         }
+
+        timelineSlotSlideRoutine = null;
     }
 
     private Transform GetTimelineSearchRoot()
     {
-        if (timelineBarUI != null)
-            return timelineBarUI.transform;
+        BattleTimelineBarUI activeBar = GetActiveTimelineBarUI();
+
+        if (activeBar != null)
+            return activeBar.transform;
 
         return transform;
     }
@@ -2955,12 +3286,28 @@ public class BattleTimelineController : MonoBehaviour
 
     private void RefreshTimeline()
     {
-        if (timelineBarUI != null)
-            timelineBarUI.Refresh(reserveSlots, monsterCommandsBySlot);
+        BattleTimelineBarUI activeBar = GetActiveTimelineBarUI();
+        BattleTimelineBarUI standbyBar = GetStandbyTimelineBarUI();
+
+        if (activeBar != null)
+            activeBar.Refresh(reserveSlots, monsterCommandsBySlot);
         else
         {
             ShowBattleWarning("타임라인 UI를 찾을 수 없습니다.");
-            Debug.LogWarning("[BattleTimelineController] timelineBarUI가 없습니다.");
+            Debug.LogWarning("[BattleTimelineController] active timelineBarUI가 없습니다.");
+        }
+
+        if (standbyBar != null && standbyBar != activeBar)
+        {
+            standbyBar.Clear();
+            standbyBar.SetTurnMarkChildrenVisible(false);
+            standbyBar.SetEmptyUseSkillSlotsVisible(false);
+        }
+
+        if (activeBar != null)
+        {
+            activeBar.SetTurnMarkChildrenVisible(true);
+            activeBar.SetEmptyUseSkillSlotsVisible(true);
         }
 
         RefreshTotalUsedCostText();

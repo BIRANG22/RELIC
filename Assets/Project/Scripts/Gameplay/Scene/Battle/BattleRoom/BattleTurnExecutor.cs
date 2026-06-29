@@ -208,6 +208,7 @@ public class BattleTurnExecutor : MonoBehaviour
             yield return ShowBattleProgressIntroTextRoutineSafe();
 
             int slidThroughSlotIndex = -1;
+            Dictionary<int, int> nextTimelineOrderAnimationIndexBySlot = new Dictionary<int, int>();
 
             for (int i = 0; i < batches.Count; i++)
             {
@@ -218,25 +219,44 @@ public class BattleTurnExecutor : MonoBehaviour
 
                 int currentSlotIndex = GetBatchTimelineSlotIndex(batch, i);
 
-                if (currentSlotIndex > slidThroughSlotIndex + 1)
+                if (currentSlotIndex > slidThroughSlotIndex)
                 {
-                    int beforeActionSlideThroughSlotIndex = currentSlotIndex - 1;
-
+                    // 해당 슬롯의 행동이 시작되기 전에, 비어 있는 슬롯과 현재 슬롯의 TurnMark가 먼저 갈리면서 전체 타임라인 라인이 왼쪽으로 이동합니다.
                     if (timelineController != null)
                     {
                         yield return timelineController.SlideTimelineSlotsLeftThroughSlotRoutine(
-                            beforeActionSlideThroughSlotIndex
+                            currentSlotIndex
                         );
                     }
 
-                    slidThroughSlotIndex = Mathf.Max(slidThroughSlotIndex, beforeActionSlideThroughSlotIndex);
+                    slidThroughSlotIndex = Mathf.Max(slidThroughSlotIndex, currentSlotIndex);
                 }
+
+                int nextOrderAnimationIndex = 0;
+                if (nextTimelineOrderAnimationIndexBySlot.TryGetValue(currentSlotIndex, out int savedOrderIndex))
+                    nextOrderAnimationIndex = savedOrderIndex;
+
+                int batchCommandCount = GetBatchCommandCount(batch);
 
                 bool keepCameraAfterBatch =
                     runner.BatchHasCrossSideHitAction(batch) &&
                     NextExecutableBatchHasCrossSideHitAction(batches, i + 1, runner);
 
                 yield return runner.RunBatch(batch, keepCameraAfterBatch);
+
+                bool hasNextBatchInSameTimelineSlot = HasNextExecutableBatchInSameTimelineSlot(batches, i + 1, currentSlotIndex);
+
+                if (timelineController != null && batchCommandCount > 0)
+                {
+                    yield return timelineController.PlayTimelineActionAnimationsRoutine(
+                        currentSlotIndex,
+                        nextOrderAnimationIndex,
+                        batchCommandCount,
+                        !hasNextBatchInSameTimelineSlot
+                    );
+                }
+
+                nextTimelineOrderAnimationIndexBySlot[currentSlotIndex] = nextOrderAnimationIndex + batchCommandCount;
 
                 if (BattleResultChecker.Instance != null &&
                     BattleResultChecker.Instance.CheckBattleEnd())
@@ -246,7 +266,7 @@ public class BattleTurnExecutor : MonoBehaviour
                     yield break;
                 }
 
-                if (HasNextExecutableBatchInSameTimelineSlot(batches, i + 1, currentSlotIndex))
+                if (hasNextBatchInSameTimelineSlot)
                     continue;
 
                 int slideThroughSlotIndex =
@@ -260,6 +280,18 @@ public class BattleTurnExecutor : MonoBehaviour
                     slidThroughSlotIndex = slideThroughSlotIndex;
                 }
             }
+
+            // 실행할 행동이 없는 빈 슬롯도 한 턴의 라인 길이를 모두 지나가야 하므로,
+            // 마지막 행동 슬롯 이후부터 5번 슬롯까지 TurnMark 갈림과 TimelineBar 이동을 진행합니다.
+            if (timelineController != null && slidThroughSlotIndex < 4)
+            {
+                yield return timelineController.SlideTimelineSlotsLeftThroughSlotRoutine(4);
+            }
+
+            // 5번 슬롯의 Use_skill 애니메이션까지 모두 끝난 뒤에만
+            // 진행 중인 TimelineBar를 -1420 완료 위치로 보정합니다.
+            if (timelineController != null)
+                yield return timelineController.MoveTimelineBarsToCompletedTurnPositionRoutine();
 
             yield return runner.ReturnCameraDefaultIfNeeded();
 
@@ -544,6 +576,22 @@ public class BattleTurnExecutor : MonoBehaviour
         return executedTimelineSlotIndex;
     }
 
+
+    private int GetBatchCommandCount(BattleActionBatch batch)
+    {
+        if (batch == null)
+            return 0;
+
+        int count = 0;
+
+        if (batch.PlayerCommands != null)
+            count += batch.PlayerCommands.Count;
+
+        if (batch.MonsterCommands != null)
+            count += batch.MonsterCommands.Count;
+
+        return count;
+    }
 
     private bool NextExecutableBatchHasCrossSideHitAction(
         List<BattleActionBatch> batches,
