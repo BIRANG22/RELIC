@@ -60,27 +60,11 @@ namespace Relic.Gameplay.Data
         public string Rune4;
         public string Rune5;
 
-        public CharacterSkillLoadout DefaultSkillLoadout = new();
-
         [NonSerialized]
         public GameObject BattlePrefab;
 
         [NonSerialized]
         public Sprite Icon;
-
-        public void BuildSkillLoadout()
-        {
-            if (DefaultSkillLoadout == null)
-                DefaultSkillLoadout = new CharacterSkillLoadout();
-
-            DefaultSkillLoadout.PassiveId = PassiveSkill1;
-            DefaultSkillLoadout.UniqueSkillId = UniqueSkill1;
-            DefaultSkillLoadout.AbilitySkillId = CharacterSkill1;
-
-            DefaultSkillLoadout.FreeSkillIds = new string[2];
-            DefaultSkillLoadout.FreeSkillIds[0] = CommonSkill1;
-            DefaultSkillLoadout.FreeSkillIds[1] = "";
-        }
 
         public string[] GetRuneIds()
         {

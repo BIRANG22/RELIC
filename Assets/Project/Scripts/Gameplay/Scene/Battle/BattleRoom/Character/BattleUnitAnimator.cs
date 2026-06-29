@@ -19,14 +19,6 @@ public class BattleUnitAnimator : MonoBehaviour
     [SerializeField] private string guardStateName = "Guard";
     [SerializeField] private string hitStateName = "Hit";
     [SerializeField] private string deadStateName = "Dead";
-    [SerializeField] private string controlStateName = "Control";
-
-    [SerializeField] private string attackReady1StateName = "AttackReady1";
-    [SerializeField] private string attackAction1StateName = "AttackAction1";
-    [SerializeField] private string attackReady2StateName = "AttackReady2";
-    [SerializeField] private string attackAction2StateName = "AttackAction2";
-    [SerializeField] private string attackReady3StateName = "AttackReady3";
-    [SerializeField] private string attackAction3StateName = "AttackAction3";
 
     [Header("Move VFX")]
     [SerializeField] private BattleVfxEntry moveVfx;
@@ -37,14 +29,17 @@ public class BattleUnitAnimator : MonoBehaviour
     [Header("Hit VFX")]
     [SerializeField] private BattleVfxEntry hitVfx;
 
-    [Header("Buff Debuff VFX")]
-    [SerializeField] private BattleVfxEntry buffVfx;
-    [SerializeField] private BattleVfxEntry debuffVfx;
+    [Header("Status VFX")]
+    [SerializeField] private BattleStatusVfxSet statusVfx = new();
 
-    [Header("Attack VFX")]
-    [SerializeField] private BattleVfxEntry attackVfx1;
-    [SerializeField] private BattleVfxEntry attackVfx2;
-    [SerializeField] private BattleVfxEntry attackVfx3;
+    [Header("Player Skill Presentations")]
+    [SerializeField] private BattleUnitPlayerSkillPresentations playerSkillPresentations = new();
+
+    [Header("Monster Action Presentations")]
+    [SerializeField] private BattleUnitActionPresentation[] monsterActionPresentations =
+        BattleUnitActionPresentation.CreateArray(10);
+
+    [Header("VFX Spawn")]
     [SerializeField] private Transform vfxSpawnPoint;
 
     [Header("VFX Facing")]
@@ -65,17 +60,27 @@ public class BattleUnitAnimator : MonoBehaviour
     [SerializeField] private string vfxLayerName = "VFX";
     private int vfxLayer = -1;
 
-    private int currentAttackIndex = 1;
+    private int currentAttackIndex;
 
     public float DeadAnimationDuration => Mathf.Max(0f, deadAnimationDuration);
 
     private void Awake()
     {
+        EnsurePlayerSkillPresentations();
+        EnsureMonsterActionPresentationArray();
+
         vfxLayer = LayerMask.NameToLayer(vfxLayerName);
 
         FindAnimatorIfNeeded();
         FindFacingIfNeeded();
         PlayIdle();
+    }
+
+    private void OnValidate()
+    {
+        EnsurePlayerSkillPresentations();
+        EnsureMonsterActionPresentationArray();
+        statusVfx ??= new BattleStatusVfxSet();
     }
 
     public void PlayIdle()
@@ -108,47 +113,21 @@ public class BattleUnitAnimator : MonoBehaviour
 
     public void PlayBuff()
     {
-        PlayState(controlStateName);
-        SpawnVfx(buffVfx);
+        //PlayState(controlStateName);
     }
 
     public void PlayDebuff()
     {
-        PlayState(controlStateName);
-        SpawnVfx(debuffVfx);
+        //PlayState(controlStateName);
     }
+
+    public void PlayStatusVfx(string effectId)
+    {
+        SpawnVfx(statusVfx?.Get(effectId));
+    }
+
     public void PlaySkillReady(SkillMasterData skillData)
     {
-        if (skillData == null)
-        {
-            PlayIdle();
-            return;
-        }
-
-        if (skillData.Category == Category.Move)
-        {
-            PlayMove();
-            return;
-        }
-
-        switch (skillData.SkillType)
-        {
-            case SkillType.Power:
-                PlayBuff();
-                break;
-
-            case SkillType.Skill:
-                PlayDebuff();
-                break;
-
-            case SkillType.Attack:
-                PlayRandomAttackReady();
-                break;
-
-            default:
-                PlayRandomAttackReady();
-                break;
-        }
     }
 
     public void PlaySkillAction(SkillMasterData skillData)
@@ -168,49 +147,54 @@ public class BattleUnitAnimator : MonoBehaviour
         switch (skillData.SkillType)
         {
             case SkillType.Power:
+                EnsurePlayerSkillPresentations();
+                PlayPresentation(playerSkillPresentations.power);
+                break;
+
             case SkillType.Skill:
+                EnsurePlayerSkillPresentations();
+                PlayPresentation(playerSkillPresentations.skill);
                 break;
 
             case SkillType.Attack:
-                PlayCurrentAttackAction();
+                PlayRandomAttackAction();
                 break;
 
             default:
-                PlayCurrentAttackAction();
+                PlayRandomAttackAction();
                 break;
         }
     }
 
+    public void PlayMonsterSkillReady(MonsterReservedCommand command)
+    {
+    }
+
     public void PlayMonsterSkillReady(MonsterSkillData skillData)
     {
-        if (skillData == null)
+    }
+
+    public void PlayMonsterSkillAction(MonsterReservedCommand command)
+    {
+        if (command == null || command.SkillData == null)
         {
             PlayIdle();
             return;
         }
 
-        switch (skillData.TimelineNotation)
+        if (command.SkillData.TimelineNotation == TimelineActionType.Move)
         {
-            case TimelineActionType.Move:
-                PlayMove();
-                break;
-
-            case TimelineActionType.Buff:
-                PlayBuff();
-                break;
-
-            case TimelineActionType.Debuff:
-                PlayDebuff();
-                break;
-
-            case TimelineActionType.Attack:
-                PlayRandomAttackReady();
-                break;
-
-            default:
-                PlayRandomAttackReady();
-                break;
+            PlayMove();
+            return;
         }
+
+        if (!IsValidMonsterActionIndex(command.ActionIndex))
+        {
+            PlayMonsterSkillAction(command.SkillData);
+            return;
+        }
+
+        PlayPresentation(GetMonsterActionPresentation(command.ActionIndex));
     }
 
     public void PlayMonsterSkillAction(MonsterSkillData skillData)
@@ -232,56 +216,22 @@ public class BattleUnitAnimator : MonoBehaviour
                 break;
 
             case TimelineActionType.Attack:
-                PlayCurrentAttackAction();
                 break;
 
             default:
-                PlayCurrentAttackAction();
-                break;
-        }
-    }
-
-    public void PlayRandomAttackReady()
-    {
-        currentAttackIndex = GetRandomAssignedAttackIndex();
-
-        switch (currentAttackIndex)
-        {
-            case 1:
-                PlayState(attackReady1StateName);
-                break;
-            case 2:
-                PlayState(attackReady2StateName);
-                break;
-            case 3:
-                PlayState(attackReady3StateName);
                 break;
         }
     }
 
     public void PlayCurrentAttackAction()
     {
-        currentAttackIndex = GetAssignedAttackIndexOrFallback(currentAttackIndex);
+        EnsurePlayerSkillPresentations();
 
-        switch (currentAttackIndex)
-        {
-            case 1:
-                PlayState(attackAction1StateName);
-                SpawnVfx(attackVfx1);
-                break;
-            case 2:
-                PlayState(attackAction2StateName);
-                SpawnVfx(attackVfx2);
-                break;
-            case 3:
-                PlayState(attackAction3StateName);
-                SpawnVfx(attackVfx3);
-                break;
-            default:
-                PlayState(attackAction1StateName);
-                SpawnVfx(attackVfx1);
-                break;
-        }
+        if (currentAttackIndex < 1 || currentAttackIndex > 3)
+            currentAttackIndex = GetRandomAssignedAttackIndex();
+
+        currentAttackIndex = GetAssignedAttackIndexOrFallback(currentAttackIndex);
+        PlayPresentation(playerSkillPresentations.GetAttack(currentAttackIndex));
     }
 
     public void PlayRandomAttackAction()
@@ -290,18 +240,75 @@ public class BattleUnitAnimator : MonoBehaviour
         PlayCurrentAttackAction();
     }
 
+    private void PlayPresentation(BattleUnitActionPresentation presentation)
+    {
+        if (presentation == null)
+            return;
+
+        PlayState(presentation.stateName);
+        SpawnVfx(presentation.vfx);
+    }
+
+    private BattleUnitActionPresentation GetMonsterActionPresentation(int actionIndex)
+    {
+        EnsureMonsterActionPresentationArray();
+
+        return monsterActionPresentations[actionIndex - 1];
+    }
+
+    private void EnsurePlayerSkillPresentations()
+    {
+        playerSkillPresentations ??= new BattleUnitPlayerSkillPresentations();
+        playerSkillPresentations.EnsureSlots();
+    }
+
+    private bool IsValidMonsterActionIndex(int actionIndex)
+    {
+        EnsureMonsterActionPresentationArray();
+        return actionIndex >= 1 && actionIndex <= monsterActionPresentations.Length;
+    }
+
+    private void EnsureMonsterActionPresentationArray()
+    {
+        const int ActionPresentationCount = 10;
+
+        if (monsterActionPresentations == null ||
+            monsterActionPresentations.Length != ActionPresentationCount)
+        {
+            BattleUnitActionPresentation[] fixedPresentations =
+                BattleUnitActionPresentation.CreateArray(ActionPresentationCount);
+
+            if (monsterActionPresentations != null)
+            {
+                int copyCount = Mathf.Min(monsterActionPresentations.Length, fixedPresentations.Length);
+
+                for (int i = 0; i < copyCount; i++)
+                    fixedPresentations[i] = monsterActionPresentations[i];
+            }
+
+            monsterActionPresentations = fixedPresentations;
+        }
+
+        for (int i = 0; i < monsterActionPresentations.Length; i++)
+        {
+            if (monsterActionPresentations[i] == null)
+                monsterActionPresentations[i] = new BattleUnitActionPresentation();
+        }
+    }
 
     private int GetRandomAssignedAttackIndex()
     {
         int assignedCount = 0;
 
-        if (HasVfx(attackVfx1))
+        EnsurePlayerSkillPresentations();
+
+        if (HasPresentation(playerSkillPresentations.attack1))
             assignedCount++;
 
-        if (HasVfx(attackVfx2))
+        if (HasPresentation(playerSkillPresentations.attack2))
             assignedCount++;
 
-        if (HasVfx(attackVfx3))
+        if (HasPresentation(playerSkillPresentations.attack3))
             assignedCount++;
 
         if (assignedCount <= 0)
@@ -309,7 +316,7 @@ public class BattleUnitAnimator : MonoBehaviour
 
         int selected = Random.Range(0, assignedCount);
 
-        if (HasVfx(attackVfx1))
+        if (HasPresentation(playerSkillPresentations.attack1))
         {
             if (selected == 0)
                 return 1;
@@ -317,7 +324,7 @@ public class BattleUnitAnimator : MonoBehaviour
             selected--;
         }
 
-        if (HasVfx(attackVfx2))
+        if (HasPresentation(playerSkillPresentations.attack2))
         {
             if (selected == 0)
                 return 2;
@@ -330,31 +337,33 @@ public class BattleUnitAnimator : MonoBehaviour
 
     private int GetAssignedAttackIndexOrFallback(int attackIndex)
     {
+        EnsurePlayerSkillPresentations();
+
         switch (attackIndex)
         {
             case 1:
-                if (HasVfx(attackVfx1))
+                if (HasPresentation(playerSkillPresentations.attack1))
                     return 1;
                 break;
 
             case 2:
-                if (HasVfx(attackVfx2))
+                if (HasPresentation(playerSkillPresentations.attack2))
                     return 2;
                 break;
 
             case 3:
-                if (HasVfx(attackVfx3))
+                if (HasPresentation(playerSkillPresentations.attack3))
                     return 3;
                 break;
         }
 
-        if (HasVfx(attackVfx1))
+        if (HasPresentation(playerSkillPresentations.attack1))
             return 1;
 
-        if (HasVfx(attackVfx2))
+        if (HasPresentation(playerSkillPresentations.attack2))
             return 2;
 
-        if (HasVfx(attackVfx3))
+        if (HasPresentation(playerSkillPresentations.attack3))
             return 3;
 
         return Mathf.Clamp(attackIndex, 1, 3);
@@ -363,6 +372,12 @@ public class BattleUnitAnimator : MonoBehaviour
     private bool HasVfx(BattleVfxEntry entry)
     {
         return entry != null && entry.prefab != null;
+    }
+
+    private bool HasPresentation(BattleUnitActionPresentation presentation)
+    {
+        return presentation != null &&
+               (!string.IsNullOrWhiteSpace(presentation.stateName) || HasVfx(presentation.vfx));
     }
 
     private void SpawnVfx(BattleVfxEntry entry)

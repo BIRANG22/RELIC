@@ -15,6 +15,7 @@ public class MonsterReservedCommand
 
     public int ReservedDamage { get; private set; } = -1;
     public bool HasReservedDamage => ReservedDamage > 0;
+    public int ActionIndex { get; private set; }
 
     public List<int> RangeGridIndices { get; private set; } = new();
     public List<int> TargetGridIndices { get; private set; } = new();
@@ -23,6 +24,9 @@ public class MonsterReservedCommand
     {
         UserRuntime = userRuntime;
         SkillData = skillData;
+        SetActionIndex(userRuntime != null && skillData != null
+            ? userRuntime.GetActionIndexForSkill(skillData.SkillId)
+            : 0);
         ReserveDamage();
     }
 
@@ -42,6 +46,11 @@ public class MonsterReservedCommand
     public void SetMoveOffset(Vector2Int moveOffset)
     {
         MoveOffset = moveOffset;
+    }
+
+    public void SetActionIndex(int actionIndex)
+    {
+        ActionIndex = Mathf.Clamp(actionIndex, 0, MonsterMasterData.PossibleSkillSlotCount);
     }
 
     public int EnsureReservedDamage()
