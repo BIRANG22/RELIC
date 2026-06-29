@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Renderer))]
@@ -20,6 +21,16 @@ public class GridCell : MonoBehaviour
     [SerializeField] private Color rangePreviewColor = Color.red;
 
     private MaterialPropertyBlock highlightPropertyBlock;
+    private Renderer[] baseRenderers;
+    private bool executionRangeTintActive;
+    private readonly List<ExecutionRendererState> executionRendererStates = new();
+
+    private sealed class ExecutionRendererState
+    {
+        public Renderer Renderer;
+        public bool Enabled;
+        public MaterialPropertyBlock PropertyBlock;
+    }
 
     public void Initialize(GridManager gridManager, int x, int y, int index)
     {
@@ -29,6 +40,7 @@ public class GridCell : MonoBehaviour
         Index = index;
 
         AutoFindHighlightIfNeeded();
+        CacheBaseRenderers();
 
         highlightPropertyBlock = new MaterialPropertyBlock();
 
@@ -38,6 +50,7 @@ public class GridCell : MonoBehaviour
     private void Awake()
     {
         AutoFindHighlightIfNeeded();
+        CacheBaseRenderers();
     }
 
     private void OnMouseDown()
@@ -91,6 +104,64 @@ public class GridCell : MonoBehaviour
         SetHighlightActive(true);
     }
 
+    public void SetExecutionRangeTint(Color color)
+    {
+        ClearExecutionRangeTint();
+        CacheBaseRenderers();
+
+        if (baseRenderers == null || baseRenderers.Length == 0)
+            return;
+
+        color.a = 1f;
+
+        for (int i = 0; i < baseRenderers.Length; i++)
+        {
+            Renderer renderer = baseRenderers[i];
+
+            if (renderer == null)
+                continue;
+
+            MaterialPropertyBlock originalBlock = new();
+            renderer.GetPropertyBlock(originalBlock);
+
+            executionRendererStates.Add(new ExecutionRendererState
+            {
+                Renderer = renderer,
+                Enabled = renderer.enabled,
+                PropertyBlock = originalBlock
+            });
+
+            MaterialPropertyBlock tintedBlock = new();
+            renderer.GetPropertyBlock(tintedBlock);
+            SetTintProperties(tintedBlock, color);
+
+            renderer.enabled = true;
+            renderer.SetPropertyBlock(tintedBlock);
+        }
+
+        executionRangeTintActive = executionRendererStates.Count > 0;
+    }
+
+    public void ClearExecutionRangeTint()
+    {
+        if (!executionRangeTintActive)
+            return;
+
+        for (int i = 0; i < executionRendererStates.Count; i++)
+        {
+            ExecutionRendererState state = executionRendererStates[i];
+
+            if (state == null || state.Renderer == null)
+                continue;
+
+            state.Renderer.enabled = state.Enabled;
+            state.Renderer.SetPropertyBlock(state.PropertyBlock);
+        }
+
+        executionRendererStates.Clear();
+        executionRangeTintActive = false;
+    }
+
     private void AutoFindHighlightIfNeeded()
     {
         if (highlightObject == null)
@@ -103,6 +174,33 @@ public class GridCell : MonoBehaviour
 
         if (highlightRenderer == null && highlightObject != null)
             highlightRenderer = highlightObject.GetComponent<Renderer>();
+    }
+
+    private void CacheBaseRenderers()
+    {
+        Renderer[] renderers = GetComponentsInChildren<Renderer>(true);
+        List<Renderer> filteredRenderers = new();
+
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            Renderer renderer = renderers[i];
+
+            if (renderer == null)
+                continue;
+
+            if (highlightRenderer != null && renderer == highlightRenderer)
+                continue;
+
+            if (highlightObject != null &&
+                renderer.transform.IsChildOf(highlightObject.transform))
+            {
+                continue;
+            }
+
+            filteredRenderers.Add(renderer);
+        }
+
+        baseRenderers = filteredRenderers.ToArray();
     }
 
     private void SetHighlightActive(bool active)
@@ -126,14 +224,22 @@ public class GridCell : MonoBehaviour
 
         highlightRenderer.GetPropertyBlock(highlightPropertyBlock);
 
-        highlightPropertyBlock.SetColor("_BaseColor", color);
-        highlightPropertyBlock.SetColor("_Color", color);
-        highlightPropertyBlock.SetColor("_Tint", color);
-        highlightPropertyBlock.SetColor("_RendererColor", color);
-        highlightPropertyBlock.SetFloat("_Alpha", 1f);
-        highlightPropertyBlock.SetFloat("_Opacity", 1f);
+        SetTintProperties(highlightPropertyBlock, color);
 
         highlightRenderer.SetPropertyBlock(highlightPropertyBlock);
+    }
+
+    private static void SetTintProperties(MaterialPropertyBlock propertyBlock, Color color)
+    {
+        if (propertyBlock == null)
+            return;
+
+        propertyBlock.SetColor("_BaseColor", color);
+        propertyBlock.SetColor("_Color", color);
+        propertyBlock.SetColor("_Tint", color);
+        propertyBlock.SetColor("_RendererColor", color);
+        propertyBlock.SetFloat("_Alpha", 1f);
+        propertyBlock.SetFloat("_Opacity", 1f);
     }
 
 #if UNITY_EDITOR
