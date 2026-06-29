@@ -6,6 +6,7 @@ using Relic.Gameplay.Monster;
 public static class BattleEffectUtility
 {
     public static System.Action<BattleCharacter> OnPlayerDamaged;
+
     public static BattleCharacter GetPlayerTargetOrCaster(BattleEffectContext context)
     {
         if (context == null)
@@ -40,17 +41,17 @@ public static class BattleEffectUtility
         target.RuntimeData.HandleDeath();
     }
 
-    public static void AddOrStackStatus(
+    public static bool AddOrStackStatus(
         List<StatusEffectRuntimeData> statusEffects,
         string effectId,
         int stack,
         int turnCount = 1)
     {
         if (statusEffects == null)
-            return;
+            return false;
 
         if (string.IsNullOrWhiteSpace(effectId))
-            return;
+            return false;
 
         stack = Mathf.Max(1, stack);
         turnCount = Mathf.Max(0, turnCount);
@@ -78,7 +79,7 @@ public static class BattleEffectUtility
                 status.Stack = Mathf.Max(status.Stack, stack);
 
             status.TurnCount = Mathf.Max(status.TurnCount, turnCount);
-            return;
+            return true;
         }
 
         statusEffects.Add(new StatusEffectRuntimeData
@@ -87,6 +88,8 @@ public static class BattleEffectUtility
             Stack = stack,
             TurnCount = turnCount
         });
+
+        return true;
     }
 
     public static void AddStatusToPlayer(
@@ -98,7 +101,8 @@ public static class BattleEffectUtility
         if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return;
 
-        AddOrStackStatus(target.RuntimeData.StatusEffects, effectId, stack, turnCount);
+        if (AddOrStackStatus(target.RuntimeData.StatusEffects, effectId, stack, turnCount))
+            PlayStatusVfx(target.GetComponent<BattleUnitAnimator>(), effectId);
     }
 
     public static void AddStatusToMonster(
@@ -110,8 +114,18 @@ public static class BattleEffectUtility
         if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return;
 
-        AddOrStackStatus(target.RuntimeData.StatusEffects, effectId, stack, turnCount);
+        if (AddOrStackStatus(target.RuntimeData.StatusEffects, effectId, stack, turnCount))
+            PlayStatusVfx(target.GetComponent<BattleUnitAnimator>(), effectId);
+
         target.ShowAndRefreshHUD();
+    }
+
+    private static void PlayStatusVfx(BattleUnitAnimator animator, string effectId)
+    {
+        if (animator == null)
+            return;
+
+        animator.PlayStatusVfx(effectId);
     }
 
     public static void DamagePlayer(BattleCharacter target, int damage)

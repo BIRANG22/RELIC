@@ -80,6 +80,23 @@ namespace Relic.Gameplay.Data
             return prefab != null;
         }
 
+        public bool TryGetBattleEventWorldPrefab(string characterId, out GameObject prefab)
+        {
+            prefab = null;
+
+            if (map == null)
+                Initialize();
+
+            if (!map.TryGetValue(characterId, out var entry))
+                return false;
+
+            prefab = entry.BattleEventWorldPrefab != null
+                ? entry.BattleEventWorldPrefab
+                : entry.PreviewWorldPrefab;
+
+            return prefab != null;
+        }
+
         // 기존 코드 호환용
         public bool TryGetPrefab(string characterId, out GameObject prefab)
         {
@@ -103,5 +120,8 @@ namespace Relic.Gameplay.Data
 
         [Header("Preview World")]
         public GameObject PreviewWorldPrefab;
+
+        [Header("Battle Event World")]
+        public GameObject BattleEventWorldPrefab;
     }
 }

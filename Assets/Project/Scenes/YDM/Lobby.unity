@@ -1781,9 +1781,9 @@ MonoBehaviour:
   lobbyMainPanel: {fileID: 1169754714}
   characterSettingPanel: {fileID: 1880677614}
   previewRoot: {fileID: 302548447}
-  character1Preview: {fileID: 1299522200}
-  character2Preview: {fileID: 2035679613}
-  character3Preview: {fileID: 1769836610}
+  character1Preview: {fileID: 0}
+  character2Preview: {fileID: 0}
+  character3Preview: {fileID: 0}
   defaultCharacterIndex: 0
 --- !u!1 &130168484
 GameObject:
@@ -5319,13 +5319,10 @@ Transform:
   m_GameObject: {fileID: 302548447}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: 1, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.3, y: 0.3, z: 0.3}
   m_ConstrainProportionsScale: 1
-  m_Children:
-  - {fileID: 1299522201}
-  - {fileID: 2035679614}
-  - {fileID: 1769836611}
+  m_Children: []
   m_Father: {fileID: 1438059791}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!1 &318394358
@@ -9950,6 +9947,7 @@ MonoBehaviour:
   useUnscaledTime: 1
   useIconAlphaForEquipped: 1
   equippedIconAlpha: 0.35
+  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 1539171414}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -12083,6 +12081,7 @@ MonoBehaviour:
   useUnscaledTime: 1
   useIconAlphaForEquipped: 1
   equippedIconAlpha: 0.35
+  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 841494690}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -13953,6 +13952,7 @@ MonoBehaviour:
   useUnscaledTime: 1
   useIconAlphaForEquipped: 1
   equippedIconAlpha: 0.35
+  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 1095159848}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -16446,6 +16446,7 @@ MonoBehaviour:
   useUnscaledTime: 1
   useIconAlphaForEquipped: 1
   equippedIconAlpha: 0.35
+  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 1111764090}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -17081,6 +17082,7 @@ MonoBehaviour:
   useUnscaledTime: 1
   useIconAlphaForEquipped: 1
   equippedIconAlpha: 0.35
+  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 1498544883}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -19925,6 +19927,7 @@ MonoBehaviour:
   useUnscaledTime: 1
   useIconAlphaForEquipped: 1
   equippedIconAlpha: 0.35
+  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 782082078}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -20242,6 +20245,7 @@ MonoBehaviour:
   useUnscaledTime: 1
   useIconAlphaForEquipped: 1
   equippedIconAlpha: 0.35
+  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 1219044165}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -21397,6 +21401,7 @@ MonoBehaviour:
   useUnscaledTime: 1
   useIconAlphaForEquipped: 1
   equippedIconAlpha: 0.35
+  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 1961740766}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -21869,6 +21874,7 @@ MonoBehaviour:
   useUnscaledTime: 1
   useIconAlphaForEquipped: 1
   equippedIconAlpha: 0.35
+  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 1163532398}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -23918,6 +23924,7 @@ MonoBehaviour:
   useUnscaledTime: 1
   useIconAlphaForEquipped: 1
   equippedIconAlpha: 0.35
+  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 449995420}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -24528,37 +24535,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1296319429}
   m_CullTransparentMesh: 1
---- !u!1 &1299522200
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1299522201}
-  m_Layer: 0
-  m_Name: CharacterPreview_01
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1299522201
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1299522200}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 302548448}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1302177603
 GameObject:
   m_ObjectHideFlags: 0
@@ -24900,6 +24876,7 @@ MonoBehaviour:
   useUnscaledTime: 1
   useIconAlphaForEquipped: 1
   equippedIconAlpha: 0.35
+  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 1009527793}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -26621,6 +26598,7 @@ MonoBehaviour:
   useUnscaledTime: 1
   useIconAlphaForEquipped: 1
   equippedIconAlpha: 0.35
+  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 907841824}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -26973,6 +26951,7 @@ MonoBehaviour:
   useUnscaledTime: 1
   useIconAlphaForEquipped: 1
   equippedIconAlpha: 0.35
+  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 639041934}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -27839,6 +27818,7 @@ MonoBehaviour:
   useUnscaledTime: 1
   useIconAlphaForEquipped: 1
   equippedIconAlpha: 0.35
+  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 1845124780}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -32711,37 +32691,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!1 &1769836610
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1769836611}
-  m_Layer: 0
-  m_Name: CharacterPreview_03
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1769836611
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1769836610}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 302548448}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1770843204
 GameObject:
   m_ObjectHideFlags: 0
@@ -34338,6 +34287,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+  enablePresetButtons: 0
   presetNormalColor: {r: 1, g: 1, b: 1, a: 1}
   presetSelectedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   skillArea: {fileID: 2098004791}
@@ -38331,37 +38281,6 @@ MonoBehaviour:
   hoverSfx: 6
   playClickSound: 1
   clickSfx: 7
---- !u!1 &2035679613
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2035679614}
-  m_Layer: 0
-  m_Name: CharacterPreview_02
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2035679614
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2035679613}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 302548448}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2036665668
 GameObject:
   m_ObjectHideFlags: 0
@@ -38390,7 +38309,7 @@ Transform:
   m_GameObject: {fileID: 2036665668}
   serializedVersion: 2
   m_LocalRotation: {x: 0.70691776, y: -0.016350597, z: -0.016350597, w: 0.70691776}
-  m_LocalPosition: {x: 0.6, y: 18.8, z: 1}
+  m_LocalPosition: {x: 0.6, y: 18.8, z: 0}
   m_LocalScale: {x: 4, y: 4, z: 4}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -40847,6 +40766,7 @@ MonoBehaviour:
   useUnscaledTime: 1
   useIconAlphaForEquipped: 1
   equippedIconAlpha: 0.35
+  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 692025214}
   useEquippedObject: 0
   lockedObject: {fileID: 0}

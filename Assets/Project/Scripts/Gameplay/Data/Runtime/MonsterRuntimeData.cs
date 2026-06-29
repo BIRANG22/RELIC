@@ -24,6 +24,7 @@ namespace Relic.Gameplay.Data
         public float UniqueItemChance;
         public float RelicChance;
 
+        public string[] PossibleSkillIdsByActionIndex = new string[MonsterMasterData.PossibleSkillSlotCount];
         public List<string> PossSkillIds = new();
         public int TurnCount;
         public bool IsDead => CurrentHP <= 0;
@@ -36,6 +37,13 @@ namespace Relic.Gameplay.Data
         public MonsterRuntimeData(string runtimeId, MonsterMasterData masterData)
         {
             RuntimeId = runtimeId;
+
+            if (masterData == null)
+            {
+                TurnCount = 0;
+                InitializePossibleSkills(null);
+                return;
+            }
 
             MonsterId = masterData.MonsterId;
             Name = masterData.Name;
@@ -51,6 +59,7 @@ namespace Relic.Gameplay.Data
             RelicChance = masterData.RelicChance;
 
             TurnCount = 0;
+            InitializePossibleSkills(masterData);
         }
 
         public void TakeDamage(int damage)
@@ -85,12 +94,49 @@ namespace Relic.Gameplay.Data
             return PossSkillIds.Contains(skillId);
         }
 
+        public int GetActionIndexForSkill(string skillId)
+        {
+            if (string.IsNullOrWhiteSpace(skillId))
+                return 0;
+
+            string normalizedSkillId = skillId.Trim();
+
+            if (normalizedSkillId == "0")
+                return 0;
+
+            for (int i = 0; i < PossibleSkillIdsByActionIndex.Length; i++)
+            {
+                if (PossibleSkillIdsByActionIndex[i] == normalizedSkillId)
+                    return i + 1;
+            }
+
+            return 0;
+        }
+
         public float GetHPPercent()
         {
             if (MaxHP <= 0)
                 return 0f;
 
             return (float)CurrentHP / MaxHP;
+        }
+
+        private void InitializePossibleSkills(MonsterMasterData masterData)
+        {
+            string[] slots = masterData != null
+                ? masterData.GetPossibleSkillIdSlots()
+                : Array.Empty<string>();
+            PossibleSkillIdsByActionIndex = new string[MonsterMasterData.PossibleSkillSlotCount];
+            PossSkillIds.Clear();
+
+            for (int i = 0; i < PossibleSkillIdsByActionIndex.Length; i++)
+            {
+                string skillId = i < slots.Length ? slots[i] : "";
+                PossibleSkillIdsByActionIndex[i] = skillId;
+
+                if (!string.IsNullOrEmpty(skillId))
+                    PossSkillIds.Add(skillId);
+            }
         }
     }
 }

@@ -113,13 +113,13 @@ public class RestRoomController : MonoBehaviour
             if (string.IsNullOrWhiteSpace(characterId))
                 continue;
 
-            if (!prefabDatabase.TryGetPreviewWorldPrefab(characterId, out GameObject lobbyPrefab))
+            if (!prefabDatabase.TryGetBattleEventWorldPrefab(characterId, out GameObject battleEventPrefab))
             {
-                Debug.LogWarning($"[RestRoomController] Lobby prefab not found: {characterId}");
+                Debug.LogWarning($"[RestRoomController] Battle event world prefab not found: {characterId}");
                 continue;
             }
 
-            GameObject ally = Instantiate(lobbyPrefab, point);
+            GameObject ally = Instantiate(battleEventPrefab, point);
             ally.transform.localPosition = Vector3.zero;
             ally.transform.localRotation = Quaternion.identity;
             ally.transform.localScale = Vector3.one;
