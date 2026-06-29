@@ -20,19 +20,22 @@ namespace Relic.Gameplay.Monster
         public MonsterAISlotPreference SlotPreference;
         public int SameSlotGroup;
         public int Priority;
+        public int RangeOriginGridIndex;
 
         public MonsterAIAction(
             string skillId,
             Vector2Int moveOffset,
             MonsterAISlotPreference slotPreference,
             int sameSlotGroup = -1,
-            int priority = 0)
+            int priority = 0,
+            int rangeOriginGridIndex = -1)
         {
             SkillId = skillId;
             MoveOffset = moveOffset;
             SlotPreference = slotPreference;
             SameSlotGroup = sameSlotGroup;
             Priority = priority;
+            RangeOriginGridIndex = Mathf.Max(-1, rangeOriginGridIndex);
         }
     }
 

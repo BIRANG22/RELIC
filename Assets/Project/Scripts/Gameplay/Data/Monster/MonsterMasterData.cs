@@ -21,6 +21,7 @@ namespace Relic.Gameplay.Data
         public string UniqueItemId;
         public float UniqueItemChance;
         public float RelicChance;
+        public string AttackRangeId;
 
         public string PossSkillId01;
         public string PossSkillId02;

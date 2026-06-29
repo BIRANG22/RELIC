@@ -29,6 +29,7 @@ namespace Relic.Gameplay.Data
                 DataColumnAliasUtility.CopyAlias(row, "UniqueItemId", "UniqueItemId", "UniqueItemID", "UniqueItem", "FixedItemId", "FixedItem", "\uACE0\uC720\uC544\uC774\uD15C", "\uACE0\uC720\uC544\uC774\uD15CID", "\uACE0\uC720\uC544\uC774\uD15CId");
                 DataColumnAliasUtility.CopyAlias(row, "UniqueItemChance", "UniqueItemChance", "UniqueItemRate", "UniqueItemProbability", "ItemChance", "ItemRate", "\uACE0\uC720\uC544\uC774\uD15C\uD655\uB960", "\uC544\uC774\uD15C\uD655\uB960");
                 DataColumnAliasUtility.CopyAlias(row, "RelicChance", "RelicChance", "RelicRate", "RelicProbability", "\uC720\uBB3C\uD655\uB960");
+                DataColumnAliasUtility.CopyAlias(row, "AttackRangeId", "AttackRangeId", "AttackRange", "\uACF5\uACA9\uBC94\uC704");
             }
         }
     }
