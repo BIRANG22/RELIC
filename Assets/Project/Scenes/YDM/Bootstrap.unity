@@ -2383,6 +2383,15 @@ MonoBehaviour:
   - type: 17
     clip: {fileID: 8300000, guid: bf7b5b48727a01e46bd0d073a6d64494, type: 3}
     volume: 0.3
+  - type: 18
+    clip: {fileID: 8300000, guid: bf7b5b48727a01e46bd0d073a6d64494, type: 3}
+    volume: 0.3
+  - type: 19
+    clip: {fileID: 8300000, guid: bf7b5b48727a01e46bd0d073a6d64494, type: 3}
+    volume: 0.3
+  - type: 20
+    clip: {fileID: 8300000, guid: 23ffa4d4eed73744eac96aa612ee44d5, type: 3}
+    volume: 0.3
 --- !u!82 &1960083566
 AudioSource:
   m_ObjectHideFlags: 0
