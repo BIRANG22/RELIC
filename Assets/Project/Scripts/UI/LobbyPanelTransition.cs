@@ -61,6 +61,20 @@ public class LobbyPanelTransition : MonoBehaviour
             }
         }
 
+        public void SetRootRotationZ(float zRotation)
+        {
+            if (root != null)
+                root.transform.localRotation = Quaternion.Euler(0f, 0f, zRotation);
+        }
+
+        public float GetRootRotationZ()
+        {
+            if (root == null)
+                return 0f;
+
+            return root.transform.localEulerAngles.z;
+        }
+
         public void Show()
         {
             if (root != null)
@@ -113,11 +127,16 @@ public class LobbyPanelTransition : MonoBehaviour
 
     [Header("Timing")]
     [SerializeField] private float closeDuration = 0.35f;
+    [SerializeField] private float rotationDuration = 0.2f;
     [SerializeField] private float openDuration = 0.35f;
     [SerializeField] private float closedHoldDuration = 0.05f;
 
+    [Header("Rotation")]
+    [SerializeField] private float directionChangeRotationAngle = 90f;
+
     [Header("Curve")]
     [SerializeField] private AnimationCurve closeCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+    [SerializeField] private AnimationCurve rotationCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
     [SerializeField] private AnimationCurve openCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
     [Header("Transition Sound")]
@@ -129,7 +148,16 @@ public class LobbyPanelTransition : MonoBehaviour
     private bool isPlaying;
 
     public bool IsPlaying => isPlaying;
-    public float EstimatedTransitionTime => Mathf.Max(0f, closeDuration) + Mathf.Max(0f, openDuration) + Mathf.Max(0f, closedHoldDuration);
+    public float EstimatedTransitionTime
+    {
+        get
+        {
+            return Mathf.Max(0f, closeDuration)
+                + Mathf.Max(0f, rotationDuration)
+                + Mathf.Max(0f, openDuration)
+                + Mathf.Max(0f, closedHoldDuration);
+        }
+    }
 
     private void Awake()
     {
@@ -189,7 +217,10 @@ public class LobbyPanelTransition : MonoBehaviour
 
     public void SetAllOpenedImmediate()
     {
+        horizontalTransition.SetRootRotationZ(0f);
         horizontalTransition.SetOpenedImmediate();
+
+        verticalTransition.SetRootRotationZ(0f);
         verticalTransition.SetOpenedImmediate();
     }
 
@@ -206,20 +237,22 @@ public class LobbyPanelTransition : MonoBehaviour
     {
         isPlaying = true;
 
-        TransitionImageSet closeSet = GetSet(closeDirection);
-        TransitionImageSet openSet = GetSet(openDirection);
+        TransitionImageSet activeSet = GetSet(closeDirection);
+        bool shouldRotateForOpen = closeDirection != openDirection;
+        float openRotationZ = shouldRotateForOpen ? directionChangeRotationAngle : 0f;
 
-        HideInactiveSet(closeSet);
-        closeSet.Show();
-        closeSet.SetOpenedImmediate();
+        HideInactiveSet(activeSet);
+        activeSet.Show();
+        activeSet.SetRootRotationZ(0f);
+        activeSet.SetOpenedImmediate();
 
         if (startDelay > 0f)
             yield return new WaitForSecondsRealtime(startDelay);
 
         PlayTransitionSound();
 
-        yield return AnimatePosition(closeSet, true, closeDuration, closeCurve);
-        closeSet.SetClosedImmediate();
+        yield return AnimatePosition(activeSet, true, closeDuration, closeCurve);
+        activeSet.SetClosedImmediate();
 
         beforePanelChange?.Invoke();
         ApplyWorldObjectChange(worldObjectsToClose, worldObjectsToOpen);
@@ -229,24 +262,17 @@ public class LobbyPanelTransition : MonoBehaviour
         if (closedHoldDuration > 0f)
             yield return new WaitForSecondsRealtime(closedHoldDuration);
 
-        if (openSet != closeSet)
-        {
-            closeSet.Hide();
-            openSet.Show();
-        }
+        if (shouldRotateForOpen)
+            yield return AnimateRootRotation(activeSet, 0f, openRotationZ, rotationDuration, rotationCurve);
         else
-        {
-            openSet.Show();
-        }
+            activeSet.SetRootRotationZ(0f);
 
-        openSet.SetClosedImmediate();
+        activeSet.SetClosedImmediate();
 
-        yield return AnimatePosition(openSet, false, openDuration, openCurve);
-        openSet.SetOpenedImmediate();
-        openSet.Hide();
-
-        if (openSet != closeSet)
-            closeSet.SetOpenedImmediate();
+        yield return AnimatePosition(activeSet, false, openDuration, openCurve);
+        activeSet.SetOpenedImmediate();
+        activeSet.Hide();
+        activeSet.SetRootRotationZ(0f);
 
         isPlaying = false;
         transitionCoroutine = null;
@@ -293,6 +319,29 @@ public class LobbyPanelTransition : MonoBehaviour
             set.secondImage.localPosition = secondEnd;
     }
 
+    private IEnumerator AnimateRootRotation(TransitionImageSet set, float startZ, float endZ, float duration, AnimationCurve curve)
+    {
+        if (set == null)
+            yield break;
+
+        float safeDuration = Mathf.Max(0.01f, duration);
+        float elapsedTime = 0f;
+
+        while (elapsedTime < safeDuration)
+        {
+            elapsedTime += Time.unscaledDeltaTime;
+            float normalizedTime = Mathf.Clamp01(elapsedTime / safeDuration);
+            float t = curve != null ? curve.Evaluate(normalizedTime) : normalizedTime;
+            float currentZ = Mathf.LerpUnclamped(startZ, endZ, t);
+
+            set.SetRootRotationZ(currentZ);
+
+            yield return null;
+        }
+
+        set.SetRootRotationZ(endZ);
+    }
+
     private void PlayTransitionSound()
     {
         if (!playTransitionSound)
@@ -310,10 +359,16 @@ public class LobbyPanelTransition : MonoBehaviour
     private void HideInactiveSet(TransitionImageSet activeSet)
     {
         if (horizontalTransition != activeSet)
+        {
+            horizontalTransition.SetRootRotationZ(0f);
             horizontalTransition.Hide();
+        }
 
         if (verticalTransition != activeSet)
+        {
+            verticalTransition.SetRootRotationZ(0f);
             verticalTransition.Hide();
+        }
     }
 
     private void HideAllRoots()
@@ -321,7 +376,6 @@ public class LobbyPanelTransition : MonoBehaviour
         horizontalTransition.Hide();
         verticalTransition.Hide();
     }
-
 
     private void ApplyWorldObjectChange(GameObject[] worldObjectsToClose, GameObject[] worldObjectsToOpen)
     {
