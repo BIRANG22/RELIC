@@ -1,6 +1,10 @@
 using UnityEngine;
 using UnityEngine.UI;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 public class TitleManager : MonoBehaviour
 {
     [Header("Logo")]
@@ -12,10 +16,18 @@ public class TitleManager : MonoBehaviour
     [SerializeField] private string unavailableMessage = "아직 준비되지 않았습니다.";
     [SerializeField] private Button[] unavailableButtons;
 
+    [Header("Exit")]
+    [SerializeField] private Button exitButton;
+    [SerializeField] private bool autoFindExitButton = true;
+    [SerializeField] private bool playExitClickSound = true;
+    [SerializeField] private SfxType exitClickSfx = SfxType.NormalButtonClick;
+
     private bool isOnLogoActive = true;
 
     private void Awake()
     {
+        ResolveExitButton();
+        AddExitButtonListener();
         AddUnavailableButtonListeners();
     }
 
@@ -26,6 +38,7 @@ public class TitleManager : MonoBehaviour
 
     private void OnDestroy()
     {
+        RemoveExitButtonListener();
         RemoveUnavailableButtonListeners();
     }
 
@@ -46,6 +59,17 @@ public class TitleManager : MonoBehaviour
         }
 
         targetWarningUI.Show(unavailableMessage);
+    }
+
+    public void OnClickExitGame()
+    {
+        PlayExitClickSound();
+
+#if UNITY_EDITOR
+        EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
     }
 
     private void RefreshLogoDefaultState()
@@ -84,6 +108,58 @@ public class TitleManager : MonoBehaviour
         return warningUI;
     }
 
+    private void ResolveExitButton()
+    {
+        if (exitButton != null || !autoFindExitButton)
+        {
+            return;
+        }
+
+        Button[] buttons = GetComponentsInChildren<Button>(true);
+        for (int i = 0; i < buttons.Length; i++)
+        {
+            Button button = buttons[i];
+            if (button == null)
+            {
+                continue;
+            }
+
+            string buttonName = button.gameObject.name;
+            if (string.IsNullOrWhiteSpace(buttonName))
+            {
+                continue;
+            }
+
+            string lowerName = buttonName.ToLowerInvariant();
+            if (lowerName.Contains("exit") || lowerName.Contains("quit"))
+            {
+                exitButton = button;
+                return;
+            }
+        }
+    }
+
+    private void AddExitButtonListener()
+    {
+        if (exitButton == null)
+        {
+            return;
+        }
+
+        exitButton.onClick.RemoveListener(OnClickExitGame);
+        exitButton.onClick.AddListener(OnClickExitGame);
+    }
+
+    private void RemoveExitButtonListener()
+    {
+        if (exitButton == null)
+        {
+            return;
+        }
+
+        exitButton.onClick.RemoveListener(OnClickExitGame);
+    }
+
     private void AddUnavailableButtonListeners()
     {
         if (unavailableButtons == null)
@@ -93,13 +169,14 @@ public class TitleManager : MonoBehaviour
 
         for (int i = 0; i < unavailableButtons.Length; i++)
         {
-            if (unavailableButtons[i] == null)
+            Button unavailableButton = unavailableButtons[i];
+            if (unavailableButton == null || unavailableButton == exitButton)
             {
                 continue;
             }
 
-            unavailableButtons[i].onClick.RemoveListener(ShowUnavailableWarning);
-            unavailableButtons[i].onClick.AddListener(ShowUnavailableWarning);
+            unavailableButton.onClick.RemoveListener(ShowUnavailableWarning);
+            unavailableButton.onClick.AddListener(ShowUnavailableWarning);
         }
     }
 
@@ -112,12 +189,28 @@ public class TitleManager : MonoBehaviour
 
         for (int i = 0; i < unavailableButtons.Length; i++)
         {
-            if (unavailableButtons[i] == null)
+            Button unavailableButton = unavailableButtons[i];
+            if (unavailableButton == null)
             {
                 continue;
             }
 
-            unavailableButtons[i].onClick.RemoveListener(ShowUnavailableWarning);
+            unavailableButton.onClick.RemoveListener(ShowUnavailableWarning);
         }
+    }
+
+    private void PlayExitClickSound()
+    {
+        if (!playExitClickSound)
+        {
+            return;
+        }
+
+        if (AudioManager.Instance == null)
+        {
+            return;
+        }
+
+        AudioManager.Instance.PlaySfx(exitClickSfx);
     }
 }

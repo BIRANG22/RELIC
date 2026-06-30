@@ -30,6 +30,7 @@ public class ButtonAnimationCoroutine : MonoBehaviour, IPointerEnterHandler, IPo
     [Header("Click State")]
     [SerializeField] private bool toggleClickState = true;
     [SerializeField] private bool keepClickedStateWhenPointerExit = true;
+    [SerializeField] private bool usePersistentClickedState = false;
     [SerializeField] private bool clearClickedStateWhenAnotherButtonHovered = true;
 
     private static ButtonAnimationCoroutine currentClickedButton;
@@ -41,34 +42,25 @@ public class ButtonAnimationCoroutine : MonoBehaviour, IPointerEnterHandler, IPo
 
     private bool isPointerInside;
     private bool isClicked;
+    private bool hasCachedOriginValues;
 
     private Coroutine visualCoroutine;
 
     private void Awake()
     {
-        CacheOriginValues();
-        ApplyVisualStateImmediately();
+        CacheOriginValuesIfNeeded();
+        ForceClearState(false);
     }
 
     private void OnEnable()
     {
-        CacheOriginValues();
-        ApplyVisualStateImmediately();
+        CacheOriginValuesIfNeeded();
+        ForceClearState(false);
     }
 
     private void OnDisable()
     {
-        StopVisualAnimation();
-
-        isPointerInside = false;
-        isClicked = false;
-
-        if (currentClickedButton == this)
-        {
-            currentClickedButton = null;
-        }
-
-        ApplyVisualStateImmediately();
+        ForceClearState(false);
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -86,10 +78,17 @@ public class ButtonAnimationCoroutine : MonoBehaviour, IPointerEnterHandler, IPo
     {
         isPointerInside = false;
 
-        if (isClicked && keepClickedStateWhenPointerExit)
+        if (isClicked && keepClickedStateWhenPointerExit && usePersistentClickedState)
         {
             ApplyVisualStateImmediately();
             return;
+        }
+
+        isClicked = false;
+
+        if (currentClickedButton == this)
+        {
+            currentClickedButton = null;
         }
 
         AnimateToCurrentVisualState();
@@ -154,6 +153,15 @@ public class ButtonAnimationCoroutine : MonoBehaviour, IPointerEnterHandler, IPo
         currentClickedButton.ForceClearState(true);
     }
 
+    private void CacheOriginValuesIfNeeded()
+    {
+        if (hasCachedOriginValues)
+            return;
+
+        CacheOriginValues();
+        hasCachedOriginValues = true;
+    }
+
     private void CacheOriginValues()
     {
         if (buttonContent != null)
@@ -215,7 +223,7 @@ public class ButtonAnimationCoroutine : MonoBehaviour, IPointerEnterHandler, IPo
 
         while (elapsedTime < safeDuration)
         {
-            elapsedTime += Time.deltaTime;
+            elapsedTime += Time.unscaledDeltaTime;
             float t = Mathf.Clamp01(elapsedTime / safeDuration);
             t = Mathf.SmoothStep(0f, 1f, t);
 
