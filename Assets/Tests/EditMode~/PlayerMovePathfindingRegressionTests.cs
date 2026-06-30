@@ -651,8 +651,7 @@ public class PlayerMovePathfindingRegressionTests
             commands[0],
             0,
             false,
-            false,
-            0);
+            false);
         Assert.That(commands[0].Cost, Is.EqualTo(2));
 
         Object.DestroyImmediate(controllerObject);
@@ -1306,7 +1305,57 @@ public class PlayerMovePathfindingRegressionTests
     }
 
     [Test]
-    public void PreviewMoveSelectableCells_UsesDuplicateSkillSurchargeForSecondMoveInSameSlot()
+    public void DuplicateSkillReservations_DoNotIncreaseCostWithinSameSlot()
+    {
+        GameObject timelineObject = new("DuplicateSkillNoSurchargeTimeline");
+        GameObject slotObject = new("DuplicateSkillNoSurchargeSlot");
+
+        try
+        {
+            BattleTimelineController timeline =
+                timelineObject.AddComponent<BattleTimelineController>();
+            ReserveTurnSlotUI slot = slotObject.AddComponent<ReserveTurnSlotUI>();
+
+            slot.Init(timeline, 0);
+            SetPrivateField(timeline, "reserveSlots", new[] { slot });
+
+            CharacterRuntimeData runtime = new()
+            {
+                CharacterId = "Char_Test_No_Duplicate_Cost",
+                MaxCost = 10,
+                CurrentCost = 10
+            };
+
+            SkillMasterData skill = new()
+            {
+                SkillId = "S_Duplicate_No_Cost",
+                ReferenceResource = ReferenceResource.Cost,
+                ResourceCostType = ResourceCostType.Fixed,
+                ResourceCostValue = 1
+            };
+
+            PlayerReservedCommand first = new(runtime, skill);
+            PlayerReservedCommand second = new(runtime, skill);
+            PlayerReservedCommand third = new(runtime, skill);
+
+            Assert.That(timeline.ConfirmPlayerCommand(0, first), Is.True);
+            Assert.That(timeline.ConfirmPlayerCommand(0, second), Is.True);
+            Assert.That(timeline.ConfirmPlayerCommand(0, third), Is.True);
+
+            Assert.That(first.Cost, Is.EqualTo(1));
+            Assert.That(second.Cost, Is.EqualTo(1));
+            Assert.That(third.Cost, Is.EqualTo(1));
+            Assert.That(runtime.ReservedCost, Is.EqualTo(3));
+        }
+        finally
+        {
+            Object.DestroyImmediate(slotObject);
+            Object.DestroyImmediate(timelineObject);
+        }
+    }
+
+    [Test]
+    public void PreviewMoveSelectableCells_DoesNotUseDuplicateSkillSurchargeForSecondMoveInSameSlot()
     {
         GameObject dataManagerObject = new("DataManagerDuplicateMovePreview");
         GameObject timelineObject = new("TimelineDuplicateMovePreview");
@@ -1385,8 +1434,8 @@ public class PlayerMovePathfindingRegressionTests
                     "currentMovePathCandidatesByTargetIndex");
 
             Assert.That(selectableIndices, Does.Contain(allowedSecondMoveIndex));
-            //Assert.That(selectableIndices, Does.Not.Contain(tooFarSecondMoveIndex));
-            Assert.That(candidatesByTarget.ContainsKey(tooFarSecondMoveIndex), Is.False);
+            Assert.That(selectableIndices, Does.Contain(tooFarSecondMoveIndex));
+            Assert.That(candidatesByTarget.ContainsKey(tooFarSecondMoveIndex), Is.True);
         }
         finally
         {
