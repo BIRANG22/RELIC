@@ -23,9 +23,16 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
     [SerializeField] private GameObject[] characterBlockingPanels;
 
     [Header("Lobby Main Buttons")]
-    [SerializeField] private Button backButton;
     [SerializeField] private Button stageButton;
     [SerializeField] private Button playButton;
+
+    [Header("Lobby Menu Panel")]
+    [Tooltip("로비 메뉴를 열고 닫는 전용 컨트롤러입니다. MenuButton, ContinueButton, ESC가 같은 방식으로 동작하게 합니다.")]
+    [SerializeField] private LobbyMenuController lobbyMenuController;
+    [Tooltip("로비 메뉴 패널입니다. 컨트롤러가 비어 있을 때 자동 연결과 입력 차단 확인에 사용합니다.")]
+    [SerializeField] private GameObject menuPanel;
+    [Tooltip("MenuPanel이 열려 있으면 로비 메인 키보드 입력을 막습니다.")]
+    [SerializeField] private bool blockMainInputWhenMenuPanelOpen = true;
 
     [Header("Lobby Main Party Slots")]
     [SerializeField] private GameObject partySlot0;
@@ -38,7 +45,13 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
     [SerializeField] private Button[] stageSelectButtons = new Button[4];
     [SerializeField] private bool selectFirstStageWhenPanelOpens = true;
     [SerializeField] private bool wrapStageSelection = true;
+    [Tooltip("스테이지 패널을 로비 메인에서 항상 켜둡니다. StageButton을 제거하거나 비활성화한 구조에서 사용합니다.")]
+    [SerializeField] private bool keepStagePanelAlwaysOpen = true;
+    [Tooltip("항상 켜둔 스테이지 패널을 별도 입력 모드로 처리할지 설정합니다. 기본값은 false이며, Space는 PlayButton 입력으로 유지됩니다.")]
+    [SerializeField] private bool handleAlwaysOpenStagePanelAsModal = false;
     [SerializeField] private bool closeStagePanelBySetActiveWhenCloseButtonMissing = true;
+    [Tooltip("스테이지 버튼을 중앙 선택 방식으로 회전시키는 컨트롤러입니다.")]
+    [SerializeField] private LobbyStageButtonCarousel stageButtonCarousel;
 
     [Header("Character Setting Buttons")]
     [SerializeField] private Button characterBackButton;
@@ -74,12 +87,8 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
     [SerializeField] private KeyCode playKey = KeyCode.Space;
 
     [Header("Stage Select Keys")]
-    [SerializeField] private KeyCode stageMoveUpKey = KeyCode.W;
-    [SerializeField] private KeyCode stageMoveDownKey = KeyCode.S;
     [SerializeField] private KeyCode stageSelectKey = KeyCode.Space;
     [SerializeField] private KeyCode stageCloseKey = KeyCode.Escape;
-    [Tooltip("When enabled, the LobbyMain stage key also closes StageSelectPanel while the panel is open. Default stage key is Tab.")]
-    [SerializeField] private bool useStageKeyToCloseStagePanel = true;
 
     [Header("Character Setting Keys")]
     [SerializeField] private KeyCode characterBackKey = KeyCode.Escape;
@@ -96,6 +105,8 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
     [SerializeField] private bool ignoreWhenInputFieldSelected = true;
     [SerializeField] private bool ignoreWhenPointerDragging = true;
     [SerializeField] private bool requireButtonInteractable = true;
+    [Tooltip("SettingWarningUI처럼 잠깐 표시되는 경고 UI는 켜져 있어도 로비 키보드 조작을 막지 않습니다.")]
+    [SerializeField] private bool ignoreWarningUIBlockingPanel = true;
     [SerializeField] private float inputCooldown = 0.08f;
 
     private float nextInputAllowedTime;
@@ -108,18 +119,26 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
     private void Awake()
     {
         AutoBindCharacterReferencesIfNeeded();
+        AutoBindStageCarouselIfNeeded();
+        AutoBindLobbyMenuControllerIfNeeded();
+        OpenStagePanelIfNeeded();
     }
 
     private void OnEnable()
     {
         AutoBindCharacterReferencesIfNeeded();
+        AutoBindStageCarouselIfNeeded();
+        AutoBindLobbyMenuControllerIfNeeded();
         SyncCurrentCharacterIndex();
+        OpenStagePanelIfNeeded();
     }
 
     private void Update()
     {
         if (!isActiveAndEnabled)
             return;
+
+        OpenStagePanelIfNeeded();
 
         bool stagePanelActive = IsPanelActive(stageSelectPanel);
 
@@ -130,13 +149,19 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
 
         wasStagePanelActive = stagePanelActive;
 
+        if (IsLobbyMenuOpen())
+        {
+            HandleMenuPanelInput();
+            return;
+        }
+
         if (CanHandleCharacterSettingInput())
         {
             HandleCharacterSettingInput();
             return;
         }
 
-        if (stagePanelActive)
+        if (stagePanelActive && (!keepStagePanelAlwaysOpen || handleAlwaysOpenStagePanelAsModal))
         {
             HandleStageSelectInput();
             return;
@@ -152,7 +177,7 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
 
         if (Input.GetKeyDown(backKey))
         {
-            InvokeButton(backButton);
+            ToggleMenuPanel();
             BlockInputForCooldown();
             return;
         }
@@ -180,9 +205,35 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
 
         if (Input.GetKeyDown(stageKey))
         {
+            if (keepStagePanelAlwaysOpen && IsPanelActive(stageSelectPanel))
+            {
+                // 스테이지 패널이 항상 켜져 있는 구조에서는 Tab으로 다음 스테이지를 중앙으로 불러옵니다.
+                // A/D는 침식 난이도 선택에 사용하므로 여기서는 처리하지 않습니다.
+                MoveStageSelection(1);
+                BlockInputForCooldown();
+                return;
+            }
+
             InvokeButton(stageButton);
             BlockInputForCooldown();
             return;
+        }
+
+        if (keepStagePanelAlwaysOpen && IsPanelActive(stageSelectPanel))
+        {
+            if (Input.GetKeyDown(KeyCode.RightArrow))
+            {
+                MoveStageSelection(1);
+                BlockInputForCooldown();
+                return;
+            }
+
+            if (Input.GetKeyDown(KeyCode.LeftArrow))
+            {
+                MoveStageSelection(-1);
+                BlockInputForCooldown();
+                return;
+            }
         }
 
         if (Input.GetKeyDown(playKey))
@@ -192,26 +243,116 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
         }
     }
 
+
+    private void AutoBindLobbyMenuControllerIfNeeded()
+    {
+        if (lobbyMenuController != null)
+            return;
+
+        if (menuPanel != null)
+        {
+            lobbyMenuController = menuPanel.GetComponent<LobbyMenuController>();
+
+            if (lobbyMenuController == null)
+                lobbyMenuController = menuPanel.GetComponentInParent<LobbyMenuController>(true);
+
+            if (lobbyMenuController == null)
+                lobbyMenuController = menuPanel.GetComponentInChildren<LobbyMenuController>(true);
+        }
+
+        if (lobbyMenuController == null)
+            lobbyMenuController = GetComponent<LobbyMenuController>();
+
+        if (lobbyMenuController != null && menuPanel == null)
+            menuPanel = lobbyMenuController.MenuPanel;
+    }
+
+    private bool IsLobbyMenuOpen()
+    {
+        if (lobbyMenuController != null)
+            return lobbyMenuController.IsMenuOpen;
+
+        return IsPanelActive(menuPanel);
+    }
+
+    private void ToggleMenuPanel()
+    {
+        AutoBindLobbyMenuControllerIfNeeded();
+
+        if (lobbyMenuController != null)
+        {
+            lobbyMenuController.ToggleMenu();
+            return;
+        }
+
+        if (menuPanel == null)
+            return;
+
+        menuPanel.SetActive(!menuPanel.activeSelf);
+    }
+
+    private void HandleMenuPanelInput()
+    {
+        if (!CanHandleSharedInput())
+            return;
+
+        if (Input.GetKeyDown(backKey))
+        {
+            CloseMenuPanel();
+            BlockInputForCooldown();
+        }
+    }
+
+    private void CloseMenuPanel()
+    {
+        AutoBindLobbyMenuControllerIfNeeded();
+
+        if (lobbyMenuController != null)
+        {
+            lobbyMenuController.CloseMenu();
+            return;
+        }
+
+        if (menuPanel == null)
+            return;
+
+        menuPanel.SetActive(false);
+
+        if (EventSystem.current != null && EventSystem.current.currentSelectedGameObject != null)
+        {
+            if (EventSystem.current.currentSelectedGameObject.transform.IsChildOf(menuPanel.transform))
+                EventSystem.current.SetSelectedGameObject(null);
+        }
+    }
+
     private void HandleStageSelectInput()
     {
         if (!CanHandleSharedInput())
             return;
 
-        if (Input.GetKeyDown(stageCloseKey) || (useStageKeyToCloseStagePanel && Input.GetKeyDown(stageKey)))
+        if (Input.GetKeyDown(stageCloseKey))
         {
             CloseStagePanel();
             BlockInputForCooldown();
             return;
         }
 
-        if (Input.GetKeyDown(stageMoveUpKey))
+        if (Input.GetKeyDown(stageKey))
+        {
+            // StageSelectPanel 안에서도 Tab은 패널 닫기가 아니라 다음 스테이지 이동으로 사용합니다.
+            MoveStageSelection(1);
+            BlockInputForCooldown();
+            return;
+        }
+
+        if (Input.GetKeyDown(KeyCode.RightArrow))
         {
             MoveStageSelection(1);
             BlockInputForCooldown();
             return;
         }
 
-        if (Input.GetKeyDown(stageMoveDownKey))
+        if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
             MoveStageSelection(-1);
             BlockInputForCooldown();
@@ -301,7 +442,10 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
         if (requireLobbyMainPanelActive && !IsPanelActive(lobbyMainPanel))
             return false;
 
-        if (HasActivePanel(blockingPanels))
+        if (blockMainInputWhenMenuPanelOpen && IsLobbyMenuOpen())
+            return false;
+
+        if (HasActiveBlockingPanel(blockingPanels))
             return false;
 
         return true;
@@ -336,12 +480,31 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
     {
         currentStageIndex = GetFirstAvailableStageIndex();
 
+        if (stageButtonCarousel != null)
+        {
+            stageButtonCarousel.SetSelection(currentStageIndex, true);
+            currentStageIndex = stageButtonCarousel.CurrentIndex;
+        }
+
         if (selectFirstStageWhenPanelOpens)
             ApplyStageHover(currentStageIndex);
     }
 
     private void MoveStageSelection(int direction)
     {
+        if (stageButtonCarousel != null)
+        {
+            int movedIndex = stageButtonCarousel.MoveSelection(direction);
+
+            if (movedIndex >= 0)
+            {
+                currentStageIndex = movedIndex;
+                ApplyStageHover(currentStageIndex);
+            }
+
+            return;
+        }
+
         if (stageSelectButtons == null || stageSelectButtons.Length <= 0)
             return;
 
@@ -471,6 +634,12 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
 
     private void CloseStagePanel()
     {
+        if (keepStagePanelAlwaysOpen)
+        {
+            OpenStagePanelIfNeeded();
+            return;
+        }
+
         ClearStageHover();
 
         if (InvokeButton(stagePanelCloseButton))
@@ -478,6 +647,26 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
 
         if (closeStagePanelBySetActiveWhenCloseButtonMissing && stageSelectPanel != null)
             stageSelectPanel.SetActive(false);
+    }
+
+    private void AutoBindStageCarouselIfNeeded()
+    {
+        if (stageButtonCarousel != null)
+            return;
+
+        if (stageSelectPanel == null)
+            return;
+
+        stageButtonCarousel = stageSelectPanel.GetComponentInChildren<LobbyStageButtonCarousel>(true);
+    }
+
+    private void OpenStagePanelIfNeeded()
+    {
+        if (!keepStagePanelAlwaysOpen)
+            return;
+
+        if (stageSelectPanel != null && !stageSelectPanel.activeSelf)
+            stageSelectPanel.SetActive(true);
     }
 
     private void MoveCharacterSelection(int direction)
@@ -840,6 +1029,28 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
         return true;
     }
 
+    private bool HasActiveBlockingPanel(GameObject[] panels)
+    {
+        if (panels == null)
+            return false;
+
+        for (int i = 0; i < panels.Length; i++)
+        {
+            GameObject panel = panels[i];
+
+            if (keepStagePanelAlwaysOpen && stageSelectPanel != null && panel == stageSelectPanel)
+                continue;
+
+            if (IsNonBlockingWarningPanel(panel))
+                continue;
+
+            if (IsPanelActive(panel))
+                return true;
+        }
+
+        return false;
+    }
+
     private bool HasActivePanel(GameObject[] panels)
     {
         if (panels == null)
@@ -847,11 +1058,26 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
 
         for (int i = 0; i < panels.Length; i++)
         {
-            if (IsPanelActive(panels[i]))
+            GameObject panel = panels[i];
+
+            if (IsNonBlockingWarningPanel(panel))
+                continue;
+
+            if (IsPanelActive(panel))
                 return true;
         }
 
         return false;
+    }
+
+    private bool IsNonBlockingWarningPanel(GameObject panel)
+    {
+        if (!ignoreWarningUIBlockingPanel || panel == null)
+            return false;
+
+        return panel.GetComponent<SettingWarningUI>() != null ||
+               panel.GetComponentInParent<SettingWarningUI>(true) != null ||
+               panel.GetComponentInChildren<SettingWarningUI>(true) != null;
     }
 
     private bool IsPanelActive(GameObject panel)

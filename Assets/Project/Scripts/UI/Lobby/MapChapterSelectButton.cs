@@ -36,6 +36,10 @@ public class MapChapterSelectButton : MonoBehaviour
     [Header("Delay")]
     [SerializeField] private float clickActionDelay = 0.2f;
 
+    [Header("Data Manager")]
+    [Tooltip("DataManager가 없는 상태에서 스테이지 선택 저장을 시도했을 때 경고 로그를 출력합니다. 로비씬 단독 테스트 중 로그가 반복되면 꺼둘 수 있습니다.")]
+    [SerializeField] private bool logDataManagerMissingWarning = false;
+
     private Coroutine selectCoroutine;
     private bool isProcessing;
 
@@ -72,35 +76,69 @@ public class MapChapterSelectButton : MonoBehaviour
 
     public void OnClickSelectChapter()
     {
+        LobbyStageButtonCarousel carousel = GetComponentInParent<LobbyStageButtonCarousel>();
+
+        if (carousel != null)
+        {
+            if (button == null)
+                button = GetComponent<Button>();
+
+            if (carousel.HandleStageButtonClick(button))
+                return;
+        }
+
+        TrySelectChapter(true, closePanelAfterSelect, clickActionDelay);
+    }
+
+    public bool SelectChapterForCarousel()
+    {
+        return TrySelectChapter(false, false, 0f, true);
+    }
+
+    private bool TrySelectChapter(bool playSound, bool closeAfterSelect, float delay)
+    {
+        return TrySelectChapter(playSound, closeAfterSelect, delay, false);
+    }
+
+    private bool TrySelectChapter(bool playSound, bool closeAfterSelect, float delay, bool suppressLockedWarning)
+    {
         if (isProcessing)
-            return;
+            return false;
 
         if (isLocked)
         {
-            ShowWarning(lockedMessage);
-            Debug.Log("[MapChapterSelectButton] Locked stage.");
-            return;
+            if (!suppressLockedWarning)
+            {
+                ShowWarning(lockedMessage);
+                Debug.Log("[MapChapterSelectButton] Locked stage.");
+            }
+
+            return false;
         }
 
-        if (AudioManager.Instance != null)
+        if (playSound && AudioManager.Instance != null)
             AudioManager.Instance.PlaySfx(SfxType.NormalButtonClick);
 
         ApplySelectedStageLabel();
         SaveSelectedMapRuntimeData();
 
-        if (clickActionDelay <= 0f)
+        if (!closeAfterSelect)
+            return true;
+
+        if (delay <= 0f)
         {
             ClosePanelAfterSelect();
-            return;
+            return true;
         }
 
         isProcessing = true;
-        selectCoroutine = StartCoroutine(ClosePanelAfterDelay());
+        selectCoroutine = StartCoroutine(ClosePanelAfterDelay(delay));
+        return true;
     }
 
-    private IEnumerator ClosePanelAfterDelay()
+    private IEnumerator ClosePanelAfterDelay(float delay)
     {
-        yield return new WaitForSecondsRealtime(clickActionDelay);
+        yield return new WaitForSecondsRealtime(delay);
 
         ClosePanelAfterSelect();
 
@@ -153,7 +191,17 @@ public class MapChapterSelectButton : MonoBehaviour
     {
         if (DataManager.Instance == null)
         {
-            Debug.LogWarning("[MapChapterSelectButton] DataManager is null.");
+            if (logDataManagerMissingWarning)
+                Debug.LogWarning("[MapChapterSelectButton] DataManager가 없어서 스테이지 선택값을 저장하지 못했습니다. 로비씬을 단독 실행 중이라면 Bootstrap 씬에서 시작하거나 DataManager가 포함된 Bootstrap 오브젝트를 먼저 로드해야 합니다.");
+
+            return;
+        }
+
+        if (DataManager.Instance.MapRuntimeStore == null)
+        {
+            if (logDataManagerMissingWarning)
+                Debug.LogWarning("[MapChapterSelectButton] MapRuntimeStore가 없어서 스테이지 선택값을 저장하지 못했습니다.");
+
             return;
         }
 
@@ -171,6 +219,11 @@ public class MapChapterSelectButton : MonoBehaviour
     {
         isLocked = locked;
         RefreshLockState();
+    }
+
+    public bool IsLocked()
+    {
+        return isLocked;
     }
 
     private void RefreshLockState()
