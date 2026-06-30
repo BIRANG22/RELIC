@@ -51,6 +51,14 @@ public class SkillListPanel : MonoBehaviour
     [SerializeField] private RectTransform[] keepOpenClickRoots;
     [SerializeField] private bool keepOpenWhenClickTimeline = true;
 
+    [Header("Sound")]
+    [SerializeField] private bool playOpenSound = true;
+    [SerializeField] private SfxType openSfx = SfxType.SkillListPanelOpen;
+    [SerializeField, Range(0f, 1f)] private float openSfxVolume = 1f;
+    [SerializeField] private bool playCloseSound = true;
+    [SerializeField] private SfxType closeSfx = SfxType.SkillListPanelClose;
+    [SerializeField, Range(0f, 1f)] private float closeSfxVolume = 1f;
+
     private readonly List<RectTransform> runtimeKeepOpenClickRoots = new();
     private readonly List<RectTransform> timelineKeepOpenClickRoots = new();
     private readonly List<SkillListSlotUI> skillSlots = new();
@@ -150,6 +158,8 @@ public class SkillListPanel : MonoBehaviour
 
     public void Open(CharacterRuntimeData runtimeData, RectTransform hudRect)
     {
+        bool wasOpenBeforeRequest = IsOpen();
+
         // 패널 오브젝트 자체가 비활성화된 상태에서는 StartCoroutine을 사용할 수 없으므로
         // 열기 처리의 가장 처음에 이 컴포넌트가 붙은 오브젝트를 먼저 활성화한다.
         if (!gameObject.activeSelf)
@@ -206,10 +216,15 @@ public class SkillListPanel : MonoBehaviour
 
         Refresh();
         PlayOpenAnimation();
+
+        if (!wasOpenBeforeRequest)
+            PlayOpenSound();
     }
 
     public void Close()
     {
+        bool wasOpenBeforeRequest = IsOpen();
+
         EnsureBattleTimelineController();
         StopCharacterChangeFadeRoutine(true);
 
@@ -225,11 +240,16 @@ public class SkillListPanel : MonoBehaviour
         HideSkillDetail();
         ClearSkillHoverRangePreview();
         PlayCloseAnimation(true);
+
+        if (wasOpenBeforeRequest)
+            PlayCloseSound();
     }
 
 
     public void CloseForBattleExecution()
     {
+        bool wasOpenBeforeRequest = IsOpen();
+
         EnsureBattleTimelineController();
         StopCharacterChangeFadeRoutine(true);
 
@@ -244,6 +264,9 @@ public class SkillListPanel : MonoBehaviour
         HideSkillDetail();
         ClearSkillHoverRangePreview();
         PlayCloseAnimation(true);
+
+        if (wasOpenBeforeRequest)
+            PlayCloseSound();
     }
 
     public void ReopenAfterBattleExecution()
@@ -373,6 +396,28 @@ public class SkillListPanel : MonoBehaviour
 
         StopSlideRoutine();
         slideRoutine = StartCoroutine(SlidePanel(openedAnchoredPosition, openSlideDuration, false, false));
+    }
+
+    private void PlayOpenSound()
+    {
+        if (!playOpenSound)
+            return;
+
+        if (AudioManager.Instance == null)
+            return;
+
+        AudioManager.Instance.PlaySfx(openSfx, openSfxVolume);
+    }
+
+    private void PlayCloseSound()
+    {
+        if (!playCloseSound)
+            return;
+
+        if (AudioManager.Instance == null)
+            return;
+
+        AudioManager.Instance.PlaySfx(closeSfx, closeSfxVolume);
     }
 
     private void PlayCloseAnimation(bool clearContentWhenComplete)
