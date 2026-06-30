@@ -24,11 +24,33 @@ namespace Relic.Gameplay.Monster
             if (monsterUnit == null || monsterUnit.RuntimeData == null)
                 return plan;
 
+            string attackRangeId = monsterUnit.RuntimeData.AttackRangeId;
+            bool usesRangedAttackOrigin =
+                !string.IsNullOrWhiteSpace(attackRangeId) &&
+                attackRangeId.Trim() != "0";
+            MonsterSkillData attackSkill = usesRangedAttackOrigin
+                ? DataManager.Instance?.MonsterSkillDatabase.Get(AttackSkillId)
+                : null;
+            int currentRangeOriginGridIndex = -1;
+
+            if (usesRangedAttackOrigin)
+            {
+                currentRangeOriginGridIndex = FindRangedAttackOrigin(
+                    monsterUnit,
+                    monsterUnit.MainGridIndex,
+                    attackSkill,
+                    attackRangeId,
+                    gridManager);
+            }
+
+            bool canAttackFromCurrentPosition =
+                !usesRangedAttackOrigin || currentRangeOriginGridIndex >= 0;
             Vector2Int moveOffset = GetMoveTowardNearestPlayer(monsterUnit, gridManager, 1);
             bool canMove = moveOffset != Vector2Int.zero &&
                            CanMonsterMove(monsterUnit, gridManager, moveOffset);
 
-            bool skipMove = !canMove || Random.value < 0.5f;
+            bool skipMove = !canMove ||
+                            (canAttackFromCurrentPosition && Random.value < 0.5f);
             Vector2Int effectiveMoveOffset = skipMove ? Vector2Int.zero : moveOffset;
 
             int group = 1;
@@ -44,14 +66,10 @@ namespace Relic.Gameplay.Monster
                 ));
             }
 
-            int rangeOriginGridIndex = -1;
-            string attackRangeId = monsterUnit.RuntimeData.AttackRangeId;
+            int rangeOriginGridIndex = currentRangeOriginGridIndex;
 
-            if (!string.IsNullOrWhiteSpace(attackRangeId) && attackRangeId.Trim() != "0")
+            if (usesRangedAttackOrigin && !skipMove)
             {
-                MonsterSkillData attackSkill =
-                    DataManager.Instance?.MonsterSkillDatabase.Get(AttackSkillId);
-
                 int projectedMainGridIndex = GetProjectedMainGridIndex(
                     monsterUnit,
                     gridManager,
@@ -63,10 +81,10 @@ namespace Relic.Gameplay.Monster
                     attackSkill,
                     attackRangeId,
                     gridManager);
-
-                if (rangeOriginGridIndex < 0)
-                    return plan;
             }
+
+            if (usesRangedAttackOrigin && rangeOriginGridIndex < 0)
+                return plan;
 
             plan.Add(new MonsterAIAction(
                 AttackSkillId,
