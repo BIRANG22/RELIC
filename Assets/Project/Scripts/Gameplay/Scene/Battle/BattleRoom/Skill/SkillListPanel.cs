@@ -176,6 +176,21 @@ public class SkillListPanel : MonoBehaviour
         EnsureContentCanvasGroup();
         RefreshTimelineKeepOpenClickRoots();
 
+        // 이미 같은 캐릭터의 스킬리스트가 열려 있는 상태에서 HUD를 다시 클릭하면
+        // 닫힌 위치에서 다시 내려오는 오픈 애니메이션을 재생하지 않고 현재 열린 상태를 유지한다.
+        if (wasOpenBeforeRequest && currentRuntime == runtimeData)
+        {
+            ignoreOutsideCloseFrame = Time.frameCount;
+            SetPanelAnchoredPosition(openedAnchoredPosition);
+            SetContentAlpha(1f);
+
+            if (battleTimelineController != null)
+                battleTimelineController.SelectCharacter(currentRuntime);
+
+            RefreshIfTimelinePreviewStateChanged();
+            return;
+        }
+
         if (isChangingCharacter && useCharacterChangeFade)
         {
             currentRuntime = runtimeData;
