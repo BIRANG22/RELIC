@@ -1,10 +1,5 @@
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 
 public class TitleManager : MonoBehaviour
 {
@@ -17,29 +12,10 @@ public class TitleManager : MonoBehaviour
     [SerializeField] private string unavailableMessage = "아직 준비되지 않았습니다.";
     [SerializeField] private Button[] unavailableButtons;
 
-    [Header("Title Mode Panels")]
-    [SerializeField] private GameObject[] titleModePanels;
-    [SerializeField] private bool autoFindTitleModePanels = true;
-    [SerializeField]
-    private string[] autoFindTitleModePanelNames =
-    {
-        "SingleModePanel",
-        "MultiModePanel"
-    };
-
-    [Header("Exit")]
-    [SerializeField] private Button exitButton;
-    [SerializeField] private bool autoFindExitButton = true;
-    [SerializeField] private bool playExitClickSound = true;
-    [SerializeField] private SfxType exitClickSfx = SfxType.NormalButtonClick;
-
     private bool isOnLogoActive = true;
 
     private void Awake()
     {
-        ResolveTitleModePanels();
-        ResolveExitButton();
-        AddExitButtonListener();
         AddUnavailableButtonListeners();
     }
 
@@ -50,7 +26,6 @@ public class TitleManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        RemoveExitButtonListener();
         RemoveUnavailableButtonListeners();
     }
 
@@ -71,84 +46,6 @@ public class TitleManager : MonoBehaviour
         }
 
         targetWarningUI.Show(unavailableMessage);
-    }
-
-    public void OnClickExitGame()
-    {
-        PlayExitClickSound();
-        CloseTitleModePanels();
-
-        if (UIManager.Instance != null)
-        {
-            UIManager.Instance.ShowQuitConfirm();
-            return;
-        }
-
-        Debug.LogWarning("[TitleManager] UIManager is not found. Quit confirm dialog cannot be opened. Quitting directly instead.");
-        QuitGameImmediately();
-    }
-
-    private void QuitGameImmediately()
-    {
-#if UNITY_EDITOR
-        EditorApplication.isPlaying = false;
-#else
-        Application.Quit();
-#endif
-    }
-
-    public void CloseTitleModePanels()
-    {
-        CloseTitleModePanelsExcept(null);
-    }
-
-    public void CloseTitleModePanelsExcept(GameObject panelToKeep)
-    {
-        ResolveTitleModePanels();
-
-        if (titleModePanels == null)
-        {
-            return;
-        }
-
-        for (int i = 0; i < titleModePanels.Length; i++)
-        {
-            GameObject panel = titleModePanels[i];
-
-            if (panel == null || panel == panelToKeep)
-            {
-                continue;
-            }
-
-            if (panel.activeSelf)
-            {
-                panel.SetActive(false);
-            }
-        }
-    }
-
-    public static void CloseTitleModePanelsInScene()
-    {
-        TitleManager manager = FindFirstObjectByType<TitleManager>(FindObjectsInactive.Include);
-
-        if (manager == null)
-        {
-            return;
-        }
-
-        manager.CloseTitleModePanels();
-    }
-
-    public static void CloseTitleModePanelsExceptInScene(GameObject panelToKeep)
-    {
-        TitleManager manager = FindFirstObjectByType<TitleManager>(FindObjectsInactive.Include);
-
-        if (manager == null)
-        {
-            return;
-        }
-
-        manager.CloseTitleModePanelsExcept(panelToKeep);
     }
 
     private void RefreshLogoDefaultState()
@@ -187,124 +84,6 @@ public class TitleManager : MonoBehaviour
         return warningUI;
     }
 
-    private void ResolveTitleModePanels()
-    {
-        if (!autoFindTitleModePanels)
-        {
-            return;
-        }
-
-        List<GameObject> resolvedPanels = new List<GameObject>();
-
-        if (titleModePanels != null)
-        {
-            for (int i = 0; i < titleModePanels.Length; i++)
-            {
-                AddPanelIfValid(resolvedPanels, titleModePanels[i]);
-            }
-        }
-
-        if (autoFindTitleModePanelNames != null)
-        {
-            Transform[] transforms = FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-
-            for (int i = 0; i < autoFindTitleModePanelNames.Length; i++)
-            {
-                string panelName = autoFindTitleModePanelNames[i];
-
-                if (string.IsNullOrWhiteSpace(panelName))
-                {
-                    continue;
-                }
-
-                for (int j = 0; j < transforms.Length; j++)
-                {
-                    Transform target = transforms[j];
-
-                    if (target == null || target.gameObject == null)
-                    {
-                        continue;
-                    }
-
-                    if (target.name == panelName)
-                    {
-                        AddPanelIfValid(resolvedPanels, target.gameObject);
-                        break;
-                    }
-                }
-            }
-        }
-
-        titleModePanels = resolvedPanels.ToArray();
-    }
-
-    private void AddPanelIfValid(List<GameObject> panels, GameObject panel)
-    {
-        if (panels == null || panel == null)
-        {
-            return;
-        }
-
-        if (panels.Contains(panel))
-        {
-            return;
-        }
-
-        panels.Add(panel);
-    }
-
-    private void ResolveExitButton()
-    {
-        if (exitButton != null || !autoFindExitButton)
-        {
-            return;
-        }
-
-        Button[] buttons = FindObjectsByType<Button>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-        for (int i = 0; i < buttons.Length; i++)
-        {
-            Button button = buttons[i];
-            if (button == null)
-            {
-                continue;
-            }
-
-            string buttonName = button.gameObject.name;
-            if (string.IsNullOrWhiteSpace(buttonName))
-            {
-                continue;
-            }
-
-            string lowerName = buttonName.ToLowerInvariant();
-            if (lowerName.Contains("exit") || lowerName.Contains("quit"))
-            {
-                exitButton = button;
-                return;
-            }
-        }
-    }
-
-    private void AddExitButtonListener()
-    {
-        if (exitButton == null)
-        {
-            return;
-        }
-
-        exitButton.onClick.RemoveListener(OnClickExitGame);
-        exitButton.onClick.AddListener(OnClickExitGame);
-    }
-
-    private void RemoveExitButtonListener()
-    {
-        if (exitButton == null)
-        {
-            return;
-        }
-
-        exitButton.onClick.RemoveListener(OnClickExitGame);
-    }
-
     private void AddUnavailableButtonListeners()
     {
         if (unavailableButtons == null)
@@ -314,14 +93,13 @@ public class TitleManager : MonoBehaviour
 
         for (int i = 0; i < unavailableButtons.Length; i++)
         {
-            Button unavailableButton = unavailableButtons[i];
-            if (unavailableButton == null || unavailableButton == exitButton)
+            if (unavailableButtons[i] == null)
             {
                 continue;
             }
 
-            unavailableButton.onClick.RemoveListener(ShowUnavailableWarning);
-            unavailableButton.onClick.AddListener(ShowUnavailableWarning);
+            unavailableButtons[i].onClick.RemoveListener(ShowUnavailableWarning);
+            unavailableButtons[i].onClick.AddListener(ShowUnavailableWarning);
         }
     }
 
@@ -334,28 +112,12 @@ public class TitleManager : MonoBehaviour
 
         for (int i = 0; i < unavailableButtons.Length; i++)
         {
-            Button unavailableButton = unavailableButtons[i];
-            if (unavailableButton == null)
+            if (unavailableButtons[i] == null)
             {
                 continue;
             }
 
-            unavailableButton.onClick.RemoveListener(ShowUnavailableWarning);
+            unavailableButtons[i].onClick.RemoveListener(ShowUnavailableWarning);
         }
-    }
-
-    private void PlayExitClickSound()
-    {
-        if (!playExitClickSound)
-        {
-            return;
-        }
-
-        if (AudioManager.Instance == null)
-        {
-            return;
-        }
-
-        AudioManager.Instance.PlaySfx(exitClickSfx);
     }
 }
