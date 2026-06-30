@@ -55,12 +55,20 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
     private static UIPanelButton currentOpenedPanelOwner;
 
+    public static bool HasCurrentOpenedPanel => currentOpenedPanelOwner != null;
+
     public static void CloseCurrentOpenedPanel()
     {
+        TryCloseCurrentOpenedPanel();
+    }
+
+    public static bool TryCloseCurrentOpenedPanel()
+    {
         if (currentOpenedPanelOwner == null)
-            return;
+            return false;
 
         currentOpenedPanelOwner.CloseOwnPanel();
+        return true;
     }
 
     private bool isPlayingEffect;
@@ -122,6 +130,21 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
                 StartCoroutine(FadeRoutine());
                 break;
         }
+    }
+
+
+    public void ExecuteCloseCurrentPanel()
+    {
+        if (isPlayingEffect)
+            return;
+
+        PlayClickSound();
+
+        if (TryCloseCurrentOpenedPanel())
+            return;
+
+        if (panelToOpen != null && panelToOpen.activeSelf)
+            CloseOwnPanel();
     }
 
     public void MovePanel()
@@ -196,6 +219,8 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
     private void CloseOwnPanel()
     {
+        ResetButtonAnimationsInClosedPanel();
+
         if (panelToOpen != null)
             panelToOpen.SetActive(false);
 
@@ -204,6 +229,29 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
         if (resetMoveWhenClosedByOtherButton)
             ResetMoveState();
+    }
+
+    private void ResetButtonAnimationsInClosedPanel()
+    {
+        if (panelToOpen == null)
+            return;
+
+        ButtonAnimationCoroutine[] buttonAnimations =
+            panelToOpen.GetComponentsInChildren<ButtonAnimationCoroutine>(true);
+
+        for (int i = 0; i < buttonAnimations.Length; i++)
+        {
+            if (buttonAnimations[i] != null)
+                buttonAnimations[i].ForceClearState(false);
+        }
+
+        EventSystem eventSystem = EventSystem.current;
+        if (eventSystem != null &&
+            eventSystem.currentSelectedGameObject != null &&
+            eventSystem.currentSelectedGameObject.transform.IsChildOf(panelToOpen.transform))
+        {
+            eventSystem.SetSelectedGameObject(null);
+        }
     }
 
     private void ResetMoveState()
