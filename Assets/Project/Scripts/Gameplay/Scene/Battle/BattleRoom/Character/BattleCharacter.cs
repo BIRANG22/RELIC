@@ -13,6 +13,7 @@ public class BattleCharacter : MonoBehaviour
     private SpriteRenderer[] timelineHoverHighlightRenderers;
     private float[] timelineHoverHighlightOriginalAlphas;
     private SpriteRenderer timelineHoverHighlightSourceRenderer;
+    private SpriteRenderer[] timelineHoverHighlightForegroundRenderers;
     private SpriteRenderer[] timelineHoverHighlightIdleBackRenderers;
     private Animator timelineHoverHighlightSourceAnimator;
     private Animator timelineHoverHighlightIdleBackAnimator;
@@ -183,6 +184,7 @@ public class BattleCharacter : MonoBehaviour
         CacheTimelineHoverHighlightSourceRenderer();
         CacheTimelineHoverHighlightSourceAnimator();
         CacheTimelineHoverHighlightIdleBackAnimator();
+        CacheTimelineHoverHighlightForegroundRenderers();
         CacheTimelineHoverHighlightIdleBackRenderers();
         SyncTimelineHoverHighlightSorting();
 
@@ -261,12 +263,28 @@ public class BattleCharacter : MonoBehaviour
 
     private void SyncTimelineHoverHighlightSorting()
     {
-        if (timelineHoverHighlightSourceRenderer == null ||
-            timelineHoverHighlightIdleBackRenderers == null)
+        if (timelineHoverHighlightSourceRenderer == null)
             return;
 
         int sortingLayerId = timelineHoverHighlightSourceRenderer.sortingLayerID;
-        int sortingOrder = timelineHoverHighlightSourceRenderer.sortingOrder - 1;
+        int sourceSortingOrder = GetTimelineHoverHighlightSourceSortingOrder();
+
+        if (timelineHoverHighlightForegroundRenderers != null)
+        {
+            for (int i = 0; i < timelineHoverHighlightForegroundRenderers.Length; i++)
+            {
+                SpriteRenderer highlightRenderer = timelineHoverHighlightForegroundRenderers[i];
+
+                if (highlightRenderer == null)
+                    continue;
+
+                highlightRenderer.sortingLayerID = sortingLayerId;
+                highlightRenderer.sortingOrder = sourceSortingOrder + 1;
+            }
+        }
+
+        if (timelineHoverHighlightIdleBackRenderers == null)
+            return;
 
         for (int i = 0; i < timelineHoverHighlightIdleBackRenderers.Length; i++)
         {
@@ -276,8 +294,19 @@ public class BattleCharacter : MonoBehaviour
                 continue;
 
             idleBackRenderer.sortingLayerID = sortingLayerId;
-            idleBackRenderer.sortingOrder = sortingOrder;
+            idleBackRenderer.sortingOrder = sourceSortingOrder - 1;
         }
+    }
+
+    private int GetTimelineHoverHighlightSourceSortingOrder()
+    {
+        YSortSprite ySortSprite = timelineHoverHighlightSourceRenderer.GetComponent<YSortSprite>();
+
+        if (ySortSprite != null)
+            return (int)(-ySortSprite.transform.position.y * ySortSprite.yMultiplier) +
+                   ySortSprite.sortingOrderOffset;
+
+        return timelineHoverHighlightSourceRenderer.sortingOrder;
     }
 
     private void CacheTimelineHoverHighlightSourceRenderer()
@@ -356,6 +385,31 @@ public class BattleCharacter : MonoBehaviour
             timelineHoverHighlightIdleBackAnimator = idleBack.GetComponentInChildren<Animator>(true);
     }
 
+    private void CacheTimelineHoverHighlightForegroundRenderers()
+    {
+        if (timelineHoverHighlightForegroundRenderers != null)
+            return;
+
+        Transform idleBack = FindTimelineHoverHighlightIdleBackTransform();
+        List<SpriteRenderer> foregroundRenderers = new();
+        SpriteRenderer[] renderers = timelineHoverHighlightObject.GetComponentsInChildren<SpriteRenderer>(true);
+
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            SpriteRenderer renderer = renderers[i];
+
+            if (renderer == null)
+                continue;
+
+            if (idleBack != null && IsTransformChildOf(renderer.transform, idleBack))
+                continue;
+
+            foregroundRenderers.Add(renderer);
+        }
+
+        timelineHoverHighlightForegroundRenderers = foregroundRenderers.ToArray();
+    }
+
     private void CacheTimelineHoverHighlightIdleBackRenderers()
     {
         if (timelineHoverHighlightIdleBackRenderers != null)
@@ -415,6 +469,24 @@ public class BattleCharacter : MonoBehaviour
         }
 
         return null;
+    }
+
+    private static bool IsTransformChildOf(Transform target, Transform root)
+    {
+        if (target == null || root == null)
+            return false;
+
+        Transform current = target;
+
+        while (current != null)
+        {
+            if (current == root)
+                return true;
+
+            current = current.parent;
+        }
+
+        return false;
     }
 
     private bool IsTimelineHoverHighlightChild(Transform target)
