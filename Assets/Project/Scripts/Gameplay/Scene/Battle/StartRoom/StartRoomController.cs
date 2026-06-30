@@ -16,10 +16,6 @@ public class StartRoomController : MonoBehaviour
     [Header("Dialog")]
     [TextArea]
     [SerializeField] private string[] npcDialogLines;
-    [SerializeField] private bool openDialogOnEnter = true;
-    [SerializeField] private float openDialogDelay = 0.05f;
-    [SerializeField] private bool waitForIntroTextToFinish = true;
-    [SerializeField] private float maxWaitForIntroTextStart = 2f;
 
     [Header("Room")]
     [SerializeField] private GameObject startRoomRoot;
@@ -43,7 +39,6 @@ public class StartRoomController : MonoBehaviour
     private bool isDialogPlaying;
     private bool isRelicChoiceOpened;
     private bool isRelicSelected;
-    private Coroutine openDialogOnEnterRoutine;
 
     private void Awake()
     {
@@ -75,62 +70,6 @@ public class StartRoomController : MonoBehaviour
 
         if (relicSettingGuideText != null)
             relicSettingGuideText.gameObject.SetActive(false);
-
-        if (openDialogOnEnter && !isRelicSelected)
-        {
-            if (openDialogOnEnterRoutine != null)
-                StopCoroutine(openDialogOnEnterRoutine);
-
-            openDialogOnEnterRoutine = StartCoroutine(OpenDialogOnEnterRoutine());
-        }
-    }
-
-    private void OnDisable()
-    {
-        if (openDialogOnEnterRoutine != null)
-        {
-            StopCoroutine(openDialogOnEnterRoutine);
-            openDialogOnEnterRoutine = null;
-        }
-    }
-
-    private IEnumerator OpenDialogOnEnterRoutine()
-    {
-        yield return null;
-
-        if (openDialogDelay > 0f)
-            yield return new WaitForSecondsRealtime(openDialogDelay);
-
-        if (waitForIntroTextToFinish)
-            yield return WaitForBattleMapIntroTextFinished();
-
-        openDialogOnEnterRoutine = null;
-
-        if (!isActiveAndEnabled)
-            yield break;
-
-        if (isDialogPlaying || isRelicChoiceOpened || isRelicSelected)
-            yield break;
-
-        OnNpcClicked();
-    }
-
-    private IEnumerator WaitForBattleMapIntroTextFinished()
-    {
-        int startPlayCounter = BattleMapIntroText.CurrentPlayCounter;
-        float elapsed = 0f;
-
-        while (isActiveAndEnabled &&
-               elapsed < Mathf.Max(0f, maxWaitForIntroTextStart) &&
-               BattleMapIntroText.CurrentPlayCounter == startPlayCounter &&
-               !BattleMapIntroText.IsAnyPlayingOrVisible())
-        {
-            elapsed += Time.unscaledDeltaTime;
-            yield return null;
-        }
-
-        while (isActiveAndEnabled && BattleMapIntroText.IsAnyPlayingOrVisible())
-            yield return null;
     }
 
     public void CompleteStartRoom()

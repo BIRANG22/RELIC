@@ -534,13 +534,6 @@ public class BattleActionRunner
         return range;
     }
 
-    private List<int> BuildPlayerExecutionRange(PlayerReservedCommand command, int excludeGridIndex)
-    {
-        List<int> range = BuildPlayerExecutionRange(command);
-        RemoveGridIndex(range, excludeGridIndex);
-        return range;
-    }
-
     private List<int> BuildMonsterSkillExecutionRange(MonsterReservedCommand command)
     {
         List<int> range = new();
@@ -550,21 +543,6 @@ public class BattleActionRunner
 
         AddUniqueRange(range, command.RangeGridIndices);
         return range;
-    }
-
-    private List<int> BuildMonsterSkillExecutionRange(MonsterReservedCommand command, int excludeGridIndex)
-    {
-        List<int> range = BuildMonsterSkillExecutionRange(command);
-        RemoveGridIndex(range, excludeGridIndex);
-        return range;
-    }
-
-    private static void RemoveGridIndex(List<int> range, int gridIndex)
-    {
-        if (range == null || gridIndex < 0)
-            return;
-
-        range.RemoveAll(index => index == gridIndex);
     }
 
     private List<int> BuildMonsterMoveExecutionRange(
@@ -1142,7 +1120,7 @@ public class BattleActionRunner
 
         RecalculatePlayerSkillRangeAtExecution(attacker, command);
 
-        ShowExecutionRange(BuildPlayerExecutionRange(command, attacker.CurrentGridIndex));
+        ShowExecutionRange(BuildPlayerExecutionRange(command));
 
         try
         {
@@ -1904,7 +1882,7 @@ public class BattleActionRunner
 
         if (command.SkillData.SkillId == "S_Monster_07")
         {
-            ShowExecutionRange(BuildMonsterSkillExecutionRange(command, monster.MainGridIndex));
+            ShowExecutionRange(BuildMonsterSkillExecutionRange(command));
 
             try
             {
@@ -1942,7 +1920,7 @@ public class BattleActionRunner
             }
         }
 
-        ShowExecutionRange(BuildMonsterSkillExecutionRange(command, monster.MainGridIndex));
+        ShowExecutionRange(BuildMonsterSkillExecutionRange(command));
 
         try
         {

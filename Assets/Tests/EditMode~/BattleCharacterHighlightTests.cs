@@ -121,11 +121,11 @@ public class BattleCharacterHighlightTests
     }
 
     [Test]
-    public void TimelineHoverHighlight_KeepsIdleBackRendererBehindSourceRenderer()
+    public void TimelineHoverHighlight_SortsHighlightAboveSourceAndIdleBackBehind()
     {
         BattleCharacter character = CreateCharacterWithHighlight(
             out _,
-            out _,
+            out SpriteRenderer highlightRenderer,
             out SpriteRenderer idleBackRenderer);
 
         SpriteRenderer sourceRenderer = CreateSourceRenderer();
@@ -135,6 +135,8 @@ public class BattleCharacterHighlightTests
         character.SetTimelineHoverHighlight(true);
         InvokePrivate(character, "LateUpdate");
 
+        Assert.That(highlightRenderer.sortingLayerID, Is.EqualTo(sourceRenderer.sortingLayerID));
+        Assert.That(highlightRenderer.sortingOrder, Is.EqualTo(sourceRenderer.sortingOrder + 1));
         Assert.That(idleBackRenderer.sortingLayerID, Is.EqualTo(sourceRenderer.sortingLayerID));
         Assert.That(idleBackRenderer.sortingOrder, Is.EqualTo(sourceRenderer.sortingOrder - 1));
     }
