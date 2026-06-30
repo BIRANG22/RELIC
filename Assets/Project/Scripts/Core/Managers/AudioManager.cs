@@ -30,7 +30,9 @@ public enum SfxType
     BattleTimelineSlotRotate,
     BattleEndButtonHover,
     BattleTimelineSlotSlide,
-    BattleMapNodeCheckAnimation
+    BattleMapNodeCheckAnimation,
+    SkillListPanelOpen,
+    SkillListPanelClose
 }
 
 [System.Serializable]

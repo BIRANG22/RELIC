@@ -510,7 +510,7 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
             return;
 
         currentCharacterIndex = nextIndex;
-        targetButton.Execute();
+        targetButton.Execute(true);
     }
 
     private void HandleSkillRuneTabInput()
@@ -587,7 +587,7 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
         if (currentButton == null)
             return;
 
-        currentButton.Execute();
+        currentButton.Execute(true);
     }
 
     private CharBtn GetCurrentCharacterButton()
