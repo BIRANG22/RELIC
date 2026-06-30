@@ -2551,15 +2551,11 @@ public class BattleTimelineController : MonoBehaviour
             reserveSlots != null &&
             slotIndex == reserveSlots.Length - 1;
 
-        int duplicateSkillReservationCountInSlot =
-            CountEarlierSameSkillReservationsInSlot(command, slotIndex);
-
         BattleEquipmentEffectService.ApplyReservationCostModifiers(
             command,
             slotIndex,
             isFirstMoveCommand,
-            isLastTimelineSlot,
-            duplicateSkillReservationCountInSlot);
+            isLastTimelineSlot);
     }
 
     private bool HasEarlierMoveCommand(CharacterRuntimeData runtime, int targetSlotIndex)
@@ -2594,39 +2590,6 @@ public class BattleTimelineController : MonoBehaviour
         return false;
     }
 
-    private int CountEarlierSameSkillReservationsInSlot(
-        PlayerReservedCommand targetCommand,
-        int targetSlotIndex)
-    {
-        if (targetCommand == null || reserveSlots == null || reserveSlots.Length <= 0)
-            return 0;
-
-        string targetKey = GetDuplicateSkillReservationKey(targetCommand);
-        if (string.IsNullOrEmpty(targetKey))
-            return 0;
-
-        int safeTargetSlotIndex = Mathf.Clamp(targetSlotIndex, 0, reserveSlots.Length - 1);
-        ReserveTurnSlotUI slot = reserveSlots[safeTargetSlotIndex];
-
-        if (slot == null || slot.Commands == null)
-            return 0;
-
-        int count = 0;
-
-        for (int i = 0; i < slot.Commands.Count; i++)
-        {
-            PlayerReservedCommand command = slot.Commands[i];
-
-            if (command == null)
-                continue;
-
-            if (GetDuplicateSkillReservationKey(command) == targetKey)
-                count++;
-        }
-
-        return count;
-    }
-
     private void RecalculateAllReservedCosts()
     {
         reservationVersion++;
@@ -2649,7 +2612,6 @@ public class BattleTimelineController : MonoBehaviour
                 continue;
 
             bool isLastTimelineSlot = slotIndex == reserveSlots.Length - 1;
-            Dictionary<string, int> duplicateSkillReservationCounts = new();
 
             for (int i = 0; i < slot.Commands.Count; i++)
             {
@@ -2664,17 +2626,12 @@ public class BattleTimelineController : MonoBehaviour
                     isMoveCommand &&
                     !isMoveContinuationCommand &&
                     !firstMoveAppliedCharacterIds.Contains(command.CharacterId);
-                int duplicateSkillReservationCountInSlot =
-                    GetAndIncrementDuplicateSkillReservationCount(
-                        duplicateSkillReservationCounts,
-                        command);
 
                 BattleEquipmentEffectService.ApplyReservationCostModifiers(
                     command,
                     slotIndex,
                     isFirstMoveCommand,
-                    isLastTimelineSlot,
-                    duplicateSkillReservationCountInSlot);
+                    isLastTimelineSlot);
 
                 AddReservedCosts(command);
 
@@ -2686,36 +2643,6 @@ public class BattleTimelineController : MonoBehaviour
                 }
             }
         }
-    }
-
-    private int GetAndIncrementDuplicateSkillReservationCount(
-        Dictionary<string, int> duplicateSkillReservationCounts,
-        PlayerReservedCommand command)
-    {
-        if (duplicateSkillReservationCounts == null || command == null)
-            return 0;
-
-        string key = GetDuplicateSkillReservationKey(command);
-        if (string.IsNullOrEmpty(key))
-            return 0;
-
-        duplicateSkillReservationCounts.TryGetValue(key, out int currentCount);
-        duplicateSkillReservationCounts[key] = currentCount + 1;
-
-        return currentCount;
-    }
-
-    private string GetDuplicateSkillReservationKey(PlayerReservedCommand command)
-    {
-        if (command == null ||
-            command.IsMoveContinuationCommand ||
-            string.IsNullOrEmpty(command.CharacterId) ||
-            string.IsNullOrEmpty(command.SkillId))
-        {
-            return string.Empty;
-        }
-
-        return $"{command.CharacterId}:{command.SkillId}";
     }
 
     private List<CharacterRuntimeData> CollectReservedRuntimes()

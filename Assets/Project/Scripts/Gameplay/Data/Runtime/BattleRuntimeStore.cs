@@ -5,6 +5,8 @@ namespace Relic.Gameplay.Data
 {
     public class BattleRuntimeStore
     {
+        public const int StartingRemnant = 100;
+
         private BattleRuntimeData currentRun;
 
         public void Set(BattleRuntimeData data)
@@ -28,6 +30,7 @@ namespace Relic.Gameplay.Data
             {
                 currentRun = new BattleRuntimeData
                 {
+                    Remnant = StartingRemnant,
                     IsBattleRunInitialized = true
                 };
             }

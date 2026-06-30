@@ -9,7 +9,15 @@ public class RestRoomController : MonoBehaviour
     [Header("Upgrade")]
     [SerializeField] private SkillUpgradePanel upgradePanel;
 
+    [Header("Shop")]
+    [SerializeField] private RestRoomShopPanel shopPanel;
+
     private bool isRestUsed;
+
+    private void Awake()
+    {
+        EnsureShopPanelSpawner();
+    }
 
     private void OnEnable()
     {
@@ -17,6 +25,7 @@ public class RestRoomController : MonoBehaviour
         if (upgradePanel != null)
             upgradePanel.ResetRestRoomUpgradeLimit();
 
+        EnsureShopPanelSpawner();
         SpawnPartyAllies();
     }
 
@@ -130,6 +139,52 @@ public class RestRoomController : MonoBehaviour
     {
         for (int i = point.childCount - 1; i >= 0; i--)
             Destroy(point.GetChild(i).gameObject);
+    }
+
+    private void EnsureShopPanelSpawner()
+    {
+        if (shopPanel != null)
+            return;
+
+        shopPanel = Object.FindFirstObjectByType<RestRoomShopPanel>(FindObjectsInactive.Include);
+
+        if (shopPanel != null)
+            return;
+
+        Transform shopPanelTransform = FindSceneTransformByName("ShopPanel");
+
+        if (shopPanelTransform == null)
+            return;
+
+        shopPanel = shopPanelTransform.GetComponent<RestRoomShopPanel>();
+
+        if (shopPanel == null)
+            shopPanel = shopPanelTransform.gameObject.AddComponent<RestRoomShopPanel>();
+    }
+
+    private Transform FindSceneTransformByName(string targetName)
+    {
+        if (string.IsNullOrWhiteSpace(targetName))
+            return null;
+
+        Transform[] transforms = Resources.FindObjectsOfTypeAll<Transform>();
+
+        for (int i = 0; i < transforms.Length; i++)
+        {
+            Transform candidate = transforms[i];
+
+            if (candidate == null ||
+                !candidate.gameObject.scene.IsValid() ||
+                !candidate.gameObject.scene.isLoaded)
+            {
+                continue;
+            }
+
+            if (string.Equals(candidate.name, targetName, System.StringComparison.Ordinal))
+                return candidate;
+        }
+
+        return null;
     }
 
     private void CompleteCurrentNode()
