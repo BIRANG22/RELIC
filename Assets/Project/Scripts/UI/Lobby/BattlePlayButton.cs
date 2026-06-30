@@ -7,6 +7,12 @@ public class BattlePlayButton : MonoBehaviour
     [Header("Button")]
     [SerializeField] private Button button;
 
+    [Header("Stage Carousel")]
+    [Tooltip("스테이지 버튼을 캐러셀 방식으로 사용할 때 연결합니다. 비워두면 씬에서 자동으로 찾습니다.")]
+    [SerializeField] private LobbyStageButtonCarousel stageButtonCarousel;
+    [Tooltip("중앙에 있는 스테이지가 잠겨 있을 때 PlayButton을 누르면 입장을 막고 경고를 표시합니다.")]
+    [SerializeField] private bool blockLockedCarouselStage = true;
+
     [Header("Option")]
     [SerializeField] private bool checkMapSelected = true;
     [SerializeField] private bool checkPartyExists = true;
@@ -14,6 +20,7 @@ public class BattlePlayButton : MonoBehaviour
 
     [Header("Warning UI")]
     [SerializeField] private SettingWarningUI warningUI;
+    [SerializeField] private string lockedStageEnterMessage = "아직 입장할 수 없는 구역입니다.";
     [SerializeField] private string mapNotSelectedMessage = "스테이지를 선택해야 합니다.";
     [SerializeField] private string partyEmptyMessage = "캐릭터를 편성해야 합니다.";
     [SerializeField] private string partyNotFullMessage = "캐릭터 3명을 모두 편성해야 합니다. 현재 {0}/{1}";
@@ -32,6 +39,7 @@ public class BattlePlayButton : MonoBehaviour
             button = GetComponent<Button>();
 
         FindWarningUIIfMissing();
+        FindStageCarouselIfMissing();
     }
 
     private void OnValidate()
@@ -53,6 +61,12 @@ public class BattlePlayButton : MonoBehaviour
         try
         {
             PlayClickSound();
+
+            if (IsLockedCarouselStageCentered())
+            {
+                ShowWarning(lockedStageEnterMessage);
+                return;
+            }
 
             if (DataManager.Instance == null)
             {
@@ -98,6 +112,16 @@ public class BattlePlayButton : MonoBehaviour
             return;
 
         AudioManager.Instance.PlaySfx(clickSfx);
+    }
+
+    private bool IsLockedCarouselStageCentered()
+    {
+        if (!blockLockedCarouselStage)
+            return false;
+
+        FindStageCarouselIfMissing();
+
+        return stageButtonCarousel != null && stageButtonCarousel.IsCurrentStageLocked();
     }
 
     private bool CanStartWithCurrentParty()
@@ -192,6 +216,14 @@ public class BattlePlayButton : MonoBehaviour
             return;
 
         warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
+    }
+
+    private void FindStageCarouselIfMissing()
+    {
+        if (stageButtonCarousel != null)
+            return;
+
+        stageButtonCarousel = FindFirstObjectByType<LobbyStageButtonCarousel>(FindObjectsInactive.Include);
     }
 
     private bool IsMapSelected()
