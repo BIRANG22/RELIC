@@ -17,7 +17,6 @@ public class OptionOpenButton : MonoBehaviour, IPointerEnterHandler
     public void OpenOption()
     {
         PlayClickSound();
-        TitleManager.CloseTitleModePanelsInScene();
 
         UIManager.Instance.ShowOption();
     }

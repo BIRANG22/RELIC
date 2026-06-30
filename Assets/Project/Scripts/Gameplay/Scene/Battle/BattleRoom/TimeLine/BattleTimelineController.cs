@@ -1570,65 +1570,6 @@ public class BattleTimelineController : MonoBehaviour
         return timelineBar2OriginalAnchoredPosition;
     }
 
-
-
-    public void ResetTimelineBarsForNewBattleRoom()
-    {
-        AutoFindTimelineBarsIfNeeded();
-        CaptureTimelineSlotOriginalPositionsIfNeeded();
-
-        if (timelineSlotSlideRoutine != null)
-        {
-            StopCoroutine(timelineSlotSlideRoutine);
-            timelineSlotSlideRoutine = null;
-        }
-
-        if (timelineSlideGearRotationRoutine != null)
-        {
-            StopCoroutine(timelineSlideGearRotationRoutine);
-            timelineSlideGearRotationRoutine = null;
-        }
-
-        activeTimelineBarIndex = 0;
-        completedTimelineBarPositionApplied = false;
-        timelineSlotSlideStepIndex = 0;
-
-        RectTransform activeTarget = GetActiveTimelineBarSlideTarget();
-        RectTransform standbyTarget = GetStandbyTimelineBarSlideTarget();
-        Vector2 basePosition = GetTimelineBarBasePosition();
-
-        if (activeTarget != null)
-            activeTarget.anchoredPosition = basePosition;
-
-        if (standbyTarget != null && standbyTarget != activeTarget)
-            standbyTarget.anchoredPosition = basePosition + new Vector2(resolvedStandbyTimelineBarOffsetX, 0f);
-
-        ConfigureTimelineSpriteAnimationRootForActiveBar();
-
-        if (timelineSpriteAnimationController != null)
-            timelineSpriteAnimationController.ResetTimelineSpritesForNextTurn();
-
-        BattleTimelineBarUI activeBar = GetActiveTimelineBarUI();
-        BattleTimelineBarUI standbyBar = GetStandbyTimelineBarUI();
-
-        if (activeBar != null)
-        {
-            activeBar.SetActiveTimelineSlot(activeSlotIndex);
-            activeBar.SetTurnMarkChildrenVisible(true);
-            activeBar.SetEmptyUseSkillSlotsVisible(true);
-        }
-
-        if (standbyBar != null && standbyBar != activeBar)
-        {
-            standbyBar.Clear();
-            standbyBar.SetActiveTimelineSlot(-1);
-            standbyBar.SetTurnMarkChildrenVisible(false);
-            standbyBar.SetEmptyUseSkillSlotsVisible(false);
-        }
-
-        RefreshTimeline();
-    }
-
     private void PrepareTimelineBarsForActiveTurn(bool swapActiveBar)
     {
         AutoFindTimelineBarsIfNeeded();

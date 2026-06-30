@@ -11,7 +11,6 @@ public class StartModeButton : MonoBehaviour
     public async void OnClickStartMode()
     {
         PlayClickSound();
-        TitleManager.CloseTitleModePanelsInScene();
 
         GameManager.Instance.Context.SelectedGameMode = gameMode;
         await GameManager.Instance.StateMachine.ChangeState(GameStateType.Lobby);
