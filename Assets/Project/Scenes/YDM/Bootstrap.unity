@@ -1923,6 +1923,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mainCanvas: {fileID: 142019126}
   optionPanelPrefab: {fileID: 4058710123885056422, guid: 999fd8f12d24e814bb5b05d877821511, type: 3}
+  confirmDialogPrefab: {fileID: 4344066926318577350, guid: 206cfc55405435f489546356113e5908, type: 3}
+  bringOptionPanelToFront: 1
+  overrideOptionPanelSorting: 1
+  optionPanelSortingOrderOffset: 10
+  bringConfirmDialogToFront: 1
+  overrideConfirmDialogSorting: 1
+  confirmDialogSortingOrderOffset: 20
+  giveUpConfirmMessage: "\uD0C0\uC774\uD2C0\uB85C \uB3CC\uC544\uAC00\uACA0\uC2B5\uB2C8\uAE4C?"
+  quitConfirmMessage: "\uAC8C\uC784\uC744 \uC885\uB8CC\uD558\uACA0\uC2B5\uB2C8\uAE4C?"
+  confirmYesText: "\uC608"
+  confirmNoText: "\uC544\uB2C8\uC624"
+  closeOptionPanelWithEscape: 1
+  closeConfirmDialogWithEscape: 1
 --- !u!4 &1558849450
 Transform:
   m_ObjectHideFlags: 0
@@ -2723,7 +2736,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 0
-  m_AdditionalShaderChannelsFlag: 0
+  m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
   m_SortingOrder: 0

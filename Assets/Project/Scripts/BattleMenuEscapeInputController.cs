@@ -52,7 +52,10 @@ public class BattleMenuEscapeInputController : MonoBehaviour
     {
         if (enableEscapeInput && WasEscapePressedThisFrame() && !IsTypingInputFieldSelected())
         {
-            if (UIManager.WasOptionPanelClosedByEscapeThisFrame)
+            if (UIManager.WasConfirmDialogClosedByEscapeThisFrame || UIManager.WasOptionPanelClosedByEscapeThisFrame)
+                return;
+
+            if (UIManager.Instance != null && UIManager.Instance.TryHideConfirmDialogIfOpen(true))
                 return;
 
             if (UIManager.Instance != null && UIManager.Instance.TryHideOptionIfOpen(true))

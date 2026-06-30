@@ -133,6 +133,40 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
     }
 
 
+
+
+    public void ExecuteGiveUpConfirm()
+    {
+        if (isPlayingEffect)
+            return;
+
+        PlayClickSound();
+
+        if (UIManager.Instance == null)
+        {
+            Debug.LogWarning("[UIPanelButton] UIManager.Instance를 찾지 못했습니다.");
+            return;
+        }
+
+        UIManager.Instance.ShowGiveUpConfirm();
+    }
+
+    public void ExecuteQuitConfirm()
+    {
+        if (isPlayingEffect)
+            return;
+
+        PlayClickSound();
+
+        if (UIManager.Instance == null)
+        {
+            Debug.LogWarning("[UIPanelButton] UIManager.Instance를 찾지 못했습니다.");
+            return;
+        }
+
+        UIManager.Instance.ShowQuitConfirm();
+    }
+
     public void ExecuteCloseCurrentPanel()
     {
         if (isPlayingEffect)
@@ -394,6 +428,8 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
         if (panelToOpen != null)
         {
+            TitleManager.CloseTitleModePanelsExceptInScene(panelToOpen);
+
             panelToOpen.SetActive(true);
             ApplyOpenedPanelFrontSorting(panelToOpen);
             currentOpenedPanelOwner = this;

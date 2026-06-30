@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,6 +17,16 @@ public class TitleManager : MonoBehaviour
     [SerializeField] private string unavailableMessage = "아직 준비되지 않았습니다.";
     [SerializeField] private Button[] unavailableButtons;
 
+    [Header("Title Mode Panels")]
+    [SerializeField] private GameObject[] titleModePanels;
+    [SerializeField] private bool autoFindTitleModePanels = true;
+    [SerializeField]
+    private string[] autoFindTitleModePanelNames =
+    {
+        "SingleModePanel",
+        "MultiModePanel"
+    };
+
     [Header("Exit")]
     [SerializeField] private Button exitButton;
     [SerializeField] private bool autoFindExitButton = true;
@@ -26,6 +37,7 @@ public class TitleManager : MonoBehaviour
 
     private void Awake()
     {
+        ResolveTitleModePanels();
         ResolveExitButton();
         AddExitButtonListener();
         AddUnavailableButtonListeners();
@@ -64,12 +76,79 @@ public class TitleManager : MonoBehaviour
     public void OnClickExitGame()
     {
         PlayExitClickSound();
+        CloseTitleModePanels();
 
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.ShowQuitConfirm();
+            return;
+        }
+
+        Debug.LogWarning("[TitleManager] UIManager is not found. Quit confirm dialog cannot be opened. Quitting directly instead.");
+        QuitGameImmediately();
+    }
+
+    private void QuitGameImmediately()
+    {
 #if UNITY_EDITOR
         EditorApplication.isPlaying = false;
 #else
         Application.Quit();
 #endif
+    }
+
+    public void CloseTitleModePanels()
+    {
+        CloseTitleModePanelsExcept(null);
+    }
+
+    public void CloseTitleModePanelsExcept(GameObject panelToKeep)
+    {
+        ResolveTitleModePanels();
+
+        if (titleModePanels == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < titleModePanels.Length; i++)
+        {
+            GameObject panel = titleModePanels[i];
+
+            if (panel == null || panel == panelToKeep)
+            {
+                continue;
+            }
+
+            if (panel.activeSelf)
+            {
+                panel.SetActive(false);
+            }
+        }
+    }
+
+    public static void CloseTitleModePanelsInScene()
+    {
+        TitleManager manager = FindFirstObjectByType<TitleManager>(FindObjectsInactive.Include);
+
+        if (manager == null)
+        {
+            return;
+        }
+
+        manager.CloseTitleModePanels();
+    }
+
+    public static void CloseTitleModePanelsExceptInScene(GameObject panelToKeep)
+    {
+        TitleManager manager = FindFirstObjectByType<TitleManager>(FindObjectsInactive.Include);
+
+        if (manager == null)
+        {
+            return;
+        }
+
+        manager.CloseTitleModePanelsExcept(panelToKeep);
     }
 
     private void RefreshLogoDefaultState()
@@ -108,6 +187,72 @@ public class TitleManager : MonoBehaviour
         return warningUI;
     }
 
+    private void ResolveTitleModePanels()
+    {
+        if (!autoFindTitleModePanels)
+        {
+            return;
+        }
+
+        List<GameObject> resolvedPanels = new List<GameObject>();
+
+        if (titleModePanels != null)
+        {
+            for (int i = 0; i < titleModePanels.Length; i++)
+            {
+                AddPanelIfValid(resolvedPanels, titleModePanels[i]);
+            }
+        }
+
+        if (autoFindTitleModePanelNames != null)
+        {
+            Transform[] transforms = FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+            for (int i = 0; i < autoFindTitleModePanelNames.Length; i++)
+            {
+                string panelName = autoFindTitleModePanelNames[i];
+
+                if (string.IsNullOrWhiteSpace(panelName))
+                {
+                    continue;
+                }
+
+                for (int j = 0; j < transforms.Length; j++)
+                {
+                    Transform target = transforms[j];
+
+                    if (target == null || target.gameObject == null)
+                    {
+                        continue;
+                    }
+
+                    if (target.name == panelName)
+                    {
+                        AddPanelIfValid(resolvedPanels, target.gameObject);
+                        break;
+                    }
+                }
+            }
+        }
+
+        titleModePanels = resolvedPanels.ToArray();
+    }
+
+    private void AddPanelIfValid(List<GameObject> panels, GameObject panel)
+    {
+        if (panels == null || panel == null)
+        {
+            return;
+        }
+
+        if (panels.Contains(panel))
+        {
+            return;
+        }
+
+        panels.Add(panel);
+    }
+
     private void ResolveExitButton()
     {
         if (exitButton != null || !autoFindExitButton)
@@ -115,7 +260,7 @@ public class TitleManager : MonoBehaviour
             return;
         }
 
-        Button[] buttons = GetComponentsInChildren<Button>(true);
+        Button[] buttons = FindObjectsByType<Button>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         for (int i = 0; i < buttons.Length; i++)
         {
             Button button = buttons[i];
