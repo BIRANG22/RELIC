@@ -177,6 +177,26 @@ public class MonsterRangedAttackAITests
     }
 
     [Test]
+    public void MuckAI_AlwaysMovesWhenCurrentPositionCannotAttackPlayer()
+    {
+        CreateMuckDataManager("DataManager_Muck_Move_When_No_Attack");
+        GridManager gridManager = CreateObject("Grid_Muck_Move_When_No_Attack").AddComponent<GridManager>();
+        MonsterUnit muck = CreateMuck(gridManager, new Vector2Int(0, 2));
+        CreatePlayer("Player_Muck_Move_Target", gridManager, new Vector2Int(4, 2));
+
+        for (int seed = 0; seed < 20; seed++)
+        {
+            Random.InitState(seed);
+
+            MonsterAIPlan plan = new MuckAI().CreatePlan(muck, new BattleContext(), gridManager);
+
+            Assert.That(plan.Actions, Is.Not.Empty, $"seed {seed} produced no Muck action.");
+            Assert.That(plan.Actions[0].SkillId, Is.EqualTo("S_Monster_01"), $"seed {seed} skipped movement.");
+            Assert.That(plan.Actions[0].MoveOffset, Is.EqualTo(Vector2Int.right), $"seed {seed} chose the wrong movement.");
+        }
+    }
+
+    [Test]
     public void BlobAI_AttacksOnlyWhenPlayerIsInsideFrontTwo()
     {
         CreateBlobDataManager("DataManager_Blob_FrontTwo");
@@ -332,6 +352,44 @@ public class MonsterRangedAttackAITests
         return dataManager;
     }
 
+    private DataManager CreateMuckDataManager(string objectName)
+    {
+        GameObject dataObject = CreateObject(objectName);
+        DataManager dataManager = dataObject.AddComponent<DataManager>();
+        dataManager.RangeDatabase.Initialize(new[]
+        {
+            new SkillRangeData
+            {
+                RangeId = "Range_Muck_Remote",
+                Positions = new List<Vector2Int>
+                {
+                    new(1, 0),
+                    new(2, 0)
+                }
+            },
+            new SkillRangeData
+            {
+                RangeId = "Range_Muck_Attack",
+                Positions = new List<Vector2Int>
+                {
+                    new(1, 0)
+                }
+            }
+        });
+        dataManager.MonsterSkillDatabase.Initialize(new[]
+        {
+            new MonsterSkillData
+            {
+                SkillId = "S_Monster_04",
+                RangeId = "Range_Muck_Attack",
+                Target = TargetType.PlayerParty,
+                TimelineNotation = TimelineActionType.Attack
+            }
+        });
+
+        return dataManager;
+    }
+
     private DataManager CreateVespaDataManager(string objectName)
     {
         GameObject dataObject = CreateObject(objectName);
@@ -380,12 +438,24 @@ public class MonsterRangedAttackAITests
         return CreateMonster("Mon_02", "Blob", $"Blob_{coord.x}_{coord.y}", gridManager, coord);
     }
 
+    private MonsterUnit CreateMuck(GridManager gridManager, Vector2Int coord)
+    {
+        return CreateMonster(
+            "Mon_Muck",
+            "Muck",
+            $"Muck_{coord.x}_{coord.y}",
+            gridManager,
+            coord,
+            "Range_Muck_Remote");
+    }
+
     private MonsterUnit CreateMonster(
         string monsterId,
         string monsterName,
         string runtimeSuffix,
         GridManager gridManager,
-        Vector2Int coord)
+        Vector2Int coord,
+        string attackRangeId = null)
     {
         GameObject monsterObject = CreateObject($"{monsterName}_{coord.x}_{coord.y}");
         MonsterUnit monster = monsterObject.AddComponent<MonsterUnit>();
@@ -395,7 +465,8 @@ public class MonsterRangedAttackAITests
             {
                 MonsterId = monsterId,
                 Name = monsterName,
-                HP = 10
+                HP = 10,
+                AttackRangeId = attackRangeId
             });
 
         monster.Initialize(runtime);
