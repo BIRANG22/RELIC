@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using UnityEngine;
@@ -6,9 +5,18 @@ using UnityEngine.EventSystems;
 
 public class BattleCharacter : MonoBehaviour
 {
+    private const string TimelineHoverHighlightIdleBackName = "Idle_Back";
+
     [Header("Timeline Hover Highlight")]
     [SerializeField] private GameObject timelineHoverHighlightObject;
-    [SerializeField] private bool autoFindTimelineHoverHighlightObject = true;
+
+    private SpriteRenderer[] timelineHoverHighlightRenderers;
+    private float[] timelineHoverHighlightOriginalAlphas;
+    private SpriteRenderer timelineHoverHighlightSourceRenderer;
+    private SpriteRenderer[] timelineHoverHighlightIdleBackRenderers;
+    private Animator timelineHoverHighlightSourceAnimator;
+    private Animator timelineHoverHighlightIdleBackAnimator;
+    private bool timelineHoverHighlightVisible;
 
     public CharacterRuntimeData RuntimeData { get; private set; }
 
@@ -19,24 +27,9 @@ public class BattleCharacter : MonoBehaviour
 
     public int CurrentGridIndex { get; private set; } = -1;
 
-    [Header("Selection Scale Feedback")]
-    [SerializeField] private string selectionScaleTargetName = "SpriteRoot";
-    [SerializeField] private Transform selectionScaleTarget;
-    [Tooltip("켜두면 선택 확대값을 절대 스케일이 아니라 현재 SpriteRoot 기본 스케일에 곱해서 계산합니다. 예: 기본 1.2에 1.125를 곱하면 1.35가 됩니다.")]
-    [SerializeField] private bool useSelectedScaleMultiplier = true;
-    [Tooltip("기본 SpriteRoot 스케일에 곱할 선택 확대 배율입니다. SpriteRoot 기본값이 1.2일 때 1.125면 선택 시 1.35가 됩니다.")]
-    [SerializeField] private float selectedScaleMultiplier = 1.125f;
-    [Tooltip("Use Selected Scale Multiplier를 끈 경우 사용할 절대 선택 스케일입니다.")]
-    [SerializeField] private Vector3 selectedScale = new Vector3(1.35f, 1.35f, 1f);
-    [SerializeField] private float selectionScaleDuration = 0.12f;
-
-    private Vector3 originalSelectionScale = Vector3.one;
-    private bool hasOriginalSelectionScale;
-    private Coroutine selectionScaleRoutine;
 
     private void Awake()
     {
-        EnsureTimelineHoverHighlightObject();
         SetTimelineHoverHighlight(false);
     }
 
@@ -45,7 +38,6 @@ public class BattleCharacter : MonoBehaviour
         RuntimeData = runtimeData;
         LoadEquippedSkills();
 
-        EnsureTimelineHoverHighlightObject();
         SetTimelineHoverHighlight(false);
     }
 
@@ -56,164 +48,28 @@ public class BattleCharacter : MonoBehaviour
 
     public void SetTimelineHoverHighlight(bool active)
     {
-        EnsureTimelineHoverHighlightObject();
-
-        if (timelineHoverHighlightObject != null)
-            timelineHoverHighlightObject.SetActive(active);
+        SetTimelineHoverHighlightAlpha(active);
     }
 
 
     public void SetSelectionScaleFeedback(bool selected)
     {
-        EnsureSelectionScaleTarget();
-
-        if (selectionScaleTarget == null)
-            return;
-
-        Vector3 targetScale = selected
-            ? GetSelectedScaleTarget()
-            : GetOriginalScaleTargetKeepingFacing();
-
-        if (selectionScaleRoutine != null)
-            StopCoroutine(selectionScaleRoutine);
-
-        if (!isActiveAndEnabled || selectionScaleDuration <= 0f)
-        {
-            selectionScaleTarget.localScale = targetScale;
-            selectionScaleRoutine = null;
-            return;
-        }
-
-        selectionScaleRoutine = StartCoroutine(AnimateSelectionScale(targetScale));
+        SetTimelineHoverHighlight(selected);
     }
 
-
-    private Vector3 GetSelectedScaleTarget()
+    private void LateUpdate()
     {
-        if (!useSelectedScaleMultiplier)
-            return GetScaleTargetKeepingFacing(selectedScale);
-
-        float multiplier = selectedScaleMultiplier;
-
-        if (multiplier <= 0f)
-            multiplier = 1f;
-
-        return GetScaleTargetKeepingFacing(new Vector3(
-            Mathf.Abs(originalSelectionScale.x) * multiplier,
-            originalSelectionScale.y * multiplier,
-            originalSelectionScale.z
-        ));
-    }
-
-    private Vector3 GetOriginalScaleTargetKeepingFacing()
-    {
-        return GetScaleTargetKeepingFacing(originalSelectionScale);
-    }
-
-    private Vector3 GetScaleTargetKeepingFacing(Vector3 baseScale)
-    {
-        float currentX = selectionScaleTarget != null
-            ? selectionScaleTarget.localScale.x
-            : baseScale.x;
-
-        float sign = currentX < 0f ? -1f : 1f;
-
-        if (Mathf.Approximately(currentX, 0f))
-        {
-            BattleUnitFacing facing = GetComponent<BattleUnitFacing>();
-            sign = facing != null && !facing.IsFacingRight ? -1f : 1f;
-        }
-
-        baseScale.x = Mathf.Abs(baseScale.x) * sign;
-        return baseScale;
-    }
-
-    private IEnumerator AnimateSelectionScale(Vector3 targetScale)
-    {
-        if (selectionScaleTarget == null)
-        {
-            selectionScaleRoutine = null;
-            yield break;
-        }
-
-        Vector3 startScale = selectionScaleTarget.localScale;
-        float elapsed = 0f;
-
-        while (elapsed < selectionScaleDuration)
-        {
-            if (selectionScaleTarget == null)
-            {
-                selectionScaleRoutine = null;
-                yield break;
-            }
-
-            elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / selectionScaleDuration);
-            selectionScaleTarget.localScale = Vector3.Lerp(startScale, targetScale, t);
-            yield return null;
-        }
-
-        if (selectionScaleTarget != null)
-            selectionScaleTarget.localScale = targetScale;
-
-        selectionScaleRoutine = null;
-    }
-
-    private void ResetSelectionScaleImmediate()
-    {
-        if (selectionScaleRoutine != null)
-        {
-            StopCoroutine(selectionScaleRoutine);
-            selectionScaleRoutine = null;
-        }
-
-        if (selectionScaleTarget != null && hasOriginalSelectionScale)
-            selectionScaleTarget.localScale = GetOriginalScaleTargetKeepingFacing();
-    }
-
-    private void EnsureSelectionScaleTarget()
-    {
-        if (selectionScaleTarget == null)
-            selectionScaleTarget = FindChildByName(transform, selectionScaleTargetName);
-
-        if (selectionScaleTarget == null)
-            return;
-
-        if (hasOriginalSelectionScale)
-            return;
-
-        originalSelectionScale = selectionScaleTarget.localScale;
-        hasOriginalSelectionScale = true;
-    }
-
-    private Transform FindChildByName(Transform root, string targetName)
-    {
-        if (root == null || string.IsNullOrWhiteSpace(targetName))
-            return null;
-
-        if (root.name == targetName)
-            return root;
-
-        for (int i = 0; i < root.childCount; i++)
-        {
-            Transform found = FindChildByName(root.GetChild(i), targetName);
-
-            if (found != null)
-                return found;
-        }
-
-        return null;
+        SyncTimelineHoverHighlightAnimation();
     }
 
     private void OnDisable()
     {
         SetTimelineHoverHighlight(false);
-        ResetSelectionScaleImmediate();
     }
 
     private void OnDestroy()
     {
-        ResetSelectionScaleImmediate();
+        SetTimelineHoverHighlight(false);
     }
 
     private void OnMouseDown()
@@ -301,41 +157,281 @@ public class BattleCharacter : MonoBehaviour
         equippedSkills.Add(skillData);
     }
 
-    private void EnsureTimelineHoverHighlightObject()
+    private void SetTimelineHoverHighlightAlpha(bool active)
     {
-        if (timelineHoverHighlightObject != null)
+        timelineHoverHighlightVisible = active;
+
+        if (timelineHoverHighlightObject == null)
             return;
 
-        if (!autoFindTimelineHoverHighlightObject)
-            return;
+        if (!timelineHoverHighlightObject.activeSelf)
+            timelineHoverHighlightObject.SetActive(true);
 
-        timelineHoverHighlightObject = FindTimelineHoverHighlightObject(transform);
+        SyncTimelineHoverHighlightAnimation();
+        ApplyTimelineHoverHighlightAlpha();
     }
 
-    private GameObject FindTimelineHoverHighlightObject(Transform root)
+    private void SyncTimelineHoverHighlightAnimation()
+    {
+        if (timelineHoverHighlightObject == null)
+            return;
+
+        if (!timelineHoverHighlightObject.activeSelf)
+            timelineHoverHighlightObject.SetActive(true);
+
+        CacheTimelineHoverHighlightRenderers();
+        CacheTimelineHoverHighlightSourceRenderer();
+        CacheTimelineHoverHighlightSourceAnimator();
+        CacheTimelineHoverHighlightIdleBackAnimator();
+        CacheTimelineHoverHighlightIdleBackRenderers();
+        SyncTimelineHoverHighlightSorting();
+
+        if (timelineHoverHighlightSourceAnimator == null ||
+            timelineHoverHighlightIdleBackAnimator == null)
+        {
+            ApplyTimelineHoverHighlightAlpha();
+            return;
+        }
+
+        AnimatorStateInfo sourceState = timelineHoverHighlightSourceAnimator.GetCurrentAnimatorStateInfo(0);
+        int idleBackStateHash = GetTimelineHoverHighlightIdleBackStateHash();
+
+        if (sourceState.shortNameHash == 0 || idleBackStateHash == 0)
+        {
+            ApplyTimelineHoverHighlightAlpha();
+            return;
+        }
+
+        float normalizedTime = sourceState.normalizedTime % 1f;
+        if (normalizedTime < 0f)
+            normalizedTime += 1f;
+
+        PauseTimelineHoverHighlightIdleBackAnimator();
+        timelineHoverHighlightIdleBackAnimator.Play(idleBackStateHash, 0, normalizedTime);
+        timelineHoverHighlightIdleBackAnimator.Update(0f);
+        ApplyTimelineHoverHighlightAlpha();
+    }
+
+    private void ApplyTimelineHoverHighlightAlpha()
+    {
+        if (timelineHoverHighlightRenderers == null)
+            return;
+
+        for (int i = 0; i < timelineHoverHighlightRenderers.Length; i++)
+        {
+            SpriteRenderer spriteRenderer = timelineHoverHighlightRenderers[i];
+
+            if (spriteRenderer == null)
+                continue;
+
+            Color color = spriteRenderer.color;
+            color.a = timelineHoverHighlightVisible ? timelineHoverHighlightOriginalAlphas[i] : 0f;
+            spriteRenderer.color = color;
+        }
+    }
+
+    private void CacheTimelineHoverHighlightRenderers()
+    {
+        if (timelineHoverHighlightRenderers != null)
+            return;
+
+        timelineHoverHighlightRenderers =
+            timelineHoverHighlightObject.GetComponentsInChildren<SpriteRenderer>(true);
+        timelineHoverHighlightOriginalAlphas = new float[timelineHoverHighlightRenderers.Length];
+
+        for (int i = 0; i < timelineHoverHighlightRenderers.Length; i++)
+        {
+            timelineHoverHighlightOriginalAlphas[i] =
+                timelineHoverHighlightRenderers[i] != null
+                    ? timelineHoverHighlightRenderers[i].color.a
+                    : 1f;
+        }
+    }
+
+    private void PauseTimelineHoverHighlightIdleBackAnimator()
+    {
+        if (timelineHoverHighlightIdleBackAnimator == null)
+            return;
+
+        if (!timelineHoverHighlightIdleBackAnimator.enabled)
+            timelineHoverHighlightIdleBackAnimator.enabled = true;
+
+        timelineHoverHighlightIdleBackAnimator.speed = 0f;
+    }
+
+    private void SyncTimelineHoverHighlightSorting()
+    {
+        if (timelineHoverHighlightSourceRenderer == null ||
+            timelineHoverHighlightIdleBackRenderers == null)
+            return;
+
+        int sortingLayerId = timelineHoverHighlightSourceRenderer.sortingLayerID;
+        int sortingOrder = timelineHoverHighlightSourceRenderer.sortingOrder - 1;
+
+        for (int i = 0; i < timelineHoverHighlightIdleBackRenderers.Length; i++)
+        {
+            SpriteRenderer idleBackRenderer = timelineHoverHighlightIdleBackRenderers[i];
+
+            if (idleBackRenderer == null)
+                continue;
+
+            idleBackRenderer.sortingLayerID = sortingLayerId;
+            idleBackRenderer.sortingOrder = sortingOrder;
+        }
+    }
+
+    private void CacheTimelineHoverHighlightSourceRenderer()
+    {
+        if (timelineHoverHighlightSourceRenderer != null)
+            return;
+
+        Transform spriteRoot = transform.Find("SpriteRoot");
+
+        if (spriteRoot != null)
+            timelineHoverHighlightSourceRenderer = spriteRoot.GetComponentInChildren<SpriteRenderer>(true);
+
+        if (timelineHoverHighlightSourceRenderer != null)
+            return;
+
+        SpriteRenderer[] renderers = GetComponentsInChildren<SpriteRenderer>(true);
+
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            SpriteRenderer renderer = renderers[i];
+
+            if (renderer == null)
+                continue;
+
+            if (IsTimelineHoverHighlightChild(renderer.transform))
+                continue;
+
+            timelineHoverHighlightSourceRenderer = renderer;
+            return;
+        }
+    }
+
+    private void CacheTimelineHoverHighlightSourceAnimator()
+    {
+        if (timelineHoverHighlightSourceAnimator != null)
+            return;
+
+        Transform spriteRoot = transform.Find("SpriteRoot");
+
+        if (spriteRoot != null)
+            timelineHoverHighlightSourceAnimator = spriteRoot.GetComponentInChildren<Animator>(true);
+
+        if (timelineHoverHighlightSourceAnimator != null)
+            return;
+
+        Animator[] animators = GetComponentsInChildren<Animator>(true);
+
+        for (int i = 0; i < animators.Length; i++)
+        {
+            Animator animator = animators[i];
+
+            if (animator == null)
+                continue;
+
+            if (IsTimelineHoverHighlightChild(animator.transform))
+                continue;
+
+            timelineHoverHighlightSourceAnimator = animator;
+            return;
+        }
+    }
+
+    private void CacheTimelineHoverHighlightIdleBackAnimator()
+    {
+        if (timelineHoverHighlightIdleBackAnimator != null)
+            return;
+
+        Transform idleBack = FindTimelineHoverHighlightIdleBackTransform();
+
+        if (idleBack == null)
+            return;
+
+        timelineHoverHighlightIdleBackAnimator = idleBack.GetComponent<Animator>();
+
+        if (timelineHoverHighlightIdleBackAnimator == null)
+            timelineHoverHighlightIdleBackAnimator = idleBack.GetComponentInChildren<Animator>(true);
+    }
+
+    private void CacheTimelineHoverHighlightIdleBackRenderers()
+    {
+        if (timelineHoverHighlightIdleBackRenderers != null)
+            return;
+
+        Transform idleBack = FindTimelineHoverHighlightIdleBackTransform();
+
+        if (idleBack == null)
+            return;
+
+        timelineHoverHighlightIdleBackRenderers = idleBack.GetComponentsInChildren<SpriteRenderer>(true);
+    }
+
+    private int GetTimelineHoverHighlightIdleBackStateHash()
+    {
+        if (timelineHoverHighlightIdleBackAnimator == null)
+            return 0;
+
+        AnimatorStateInfo currentState =
+            timelineHoverHighlightIdleBackAnimator.GetCurrentAnimatorStateInfo(0);
+
+        if (currentState.shortNameHash != 0)
+            return currentState.shortNameHash;
+
+        return Animator.StringToHash(TimelineHoverHighlightIdleBackName);
+    }
+
+    private Transform FindTimelineHoverHighlightIdleBackTransform()
+    {
+        Transform idleBack = FindChildRecursive(
+            timelineHoverHighlightObject.transform,
+            TimelineHoverHighlightIdleBackName);
+
+        if (idleBack != null)
+            return idleBack;
+
+        return FindChildRecursive(
+            timelineHoverHighlightObject.transform,
+            "Idle_back");
+    }
+
+    private static Transform FindChildRecursive(Transform root, string childName)
     {
         if (root == null)
             return null;
 
-        string objectName = root.name;
-
-        if (objectName == "TimelineHoverHighlight" ||
-            objectName == "Timeline_HoverHighlight" ||
-            objectName == "Timeline_Hover_Highlight" ||
-            objectName == "TimelineHighlight" ||
-            objectName == "Timeline_Highlight")
-        {
-            return root.gameObject;
-        }
-
         for (int i = 0; i < root.childCount; i++)
         {
-            GameObject found = FindTimelineHoverHighlightObject(root.GetChild(i));
+            Transform child = root.GetChild(i);
 
-            if (found != null)
-                return found;
+            if (string.Equals(child.name, childName, System.StringComparison.OrdinalIgnoreCase))
+                return child;
+
+            Transform nested = FindChildRecursive(child, childName);
+            if (nested != null)
+                return nested;
         }
 
         return null;
+    }
+
+    private bool IsTimelineHoverHighlightChild(Transform target)
+    {
+        if (target == null || timelineHoverHighlightObject == null)
+            return false;
+
+        Transform current = target;
+
+        while (current != null)
+        {
+            if (current.gameObject == timelineHoverHighlightObject)
+                return true;
+
+            current = current.parent;
+        }
+
+        return false;
     }
 }
