@@ -53,15 +53,27 @@ public class BattleRoomLoader : MonoBehaviour
     [Header("Turn Executor")]
     [SerializeField] private BattleTurnExecutor turnExecutor;
 
+    [Header("Timeline")]
+    [SerializeField] private BattleTimelineController timelineController;
+
     private readonly List<MonsterUnit> spawnedMonsterUnits = new();
     private readonly List<PlayerHUDSlot> playerHudSlots = new();
     private CharacterRuntimeData selectedPlayerRuntime;
+    private Coroutine openSelectedSkillListWhenReadyRoutine;
     private Coroutine loadRoutine;
     private bool isLoaded;
     private bool isLoading;
     private string loadedMapId;
 
     private readonly BattlePassiveSkillService passiveSkillService = new();
+
+    private void EnsureTimelineController()
+    {
+        if (timelineController != null)
+            return;
+
+        timelineController = Object.FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Include);
+    }
 
     public void RefreshBattleHUDs()
     {
@@ -99,6 +111,8 @@ public class BattleRoomLoader : MonoBehaviour
         if (!Input.GetKeyDown(KeyCode.Tab))
             return;
 
+        EnsureSkillListPanel();
+
         if (skillListPanel == null)
             return;
 
@@ -118,6 +132,8 @@ public class BattleRoomLoader : MonoBehaviour
     {
         if (!enableCharacterCycleInput)
             return;
+
+        EnsureSkillListPanel();
 
         if (skillListPanel == null || !skillListPanel.IsOpen())
             return;
@@ -143,6 +159,8 @@ public class BattleRoomLoader : MonoBehaviour
 
     private void ToggleSkillListForSelectedPlayer()
     {
+        EnsureSkillListPanel();
+
         if (skillListPanel == null)
             return;
 
@@ -165,15 +183,51 @@ public class BattleRoomLoader : MonoBehaviour
         if (!openSelectedCharacterSkillListWhenInputReady)
             return;
 
+        if (openSelectedSkillListWhenReadyRoutine != null)
+            StopCoroutine(openSelectedSkillListWhenReadyRoutine);
+
+        openSelectedSkillListWhenReadyRoutine = StartCoroutine(OpenSelectedCharacterSkillListWhenInputReadyRoutine());
+    }
+
+    private IEnumerator OpenSelectedCharacterSkillListWhenInputReadyRoutine()
+    {
+        // 첫 전투방은 HUD/캐릭터 선택/스킬 패널 참조가 같은 프레임에 준비될 수 있어서
+        // 한 프레임 기다린 뒤 다시 확인해야 자동 오픈이 안정적으로 동작합니다.
+        yield return null;
+
+        EnsureSkillListPanel();
+        EnsureTurnExecutor();
+
         if (skillListPanel == null)
-            return;
+        {
+            openSelectedSkillListWhenReadyRoutine = null;
+            yield break;
+        }
+
+        if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
+        {
+            openSelectedSkillListWhenReadyRoutine = null;
+            yield break;
+        }
 
         CharacterRuntimeData runtimeData = GetSelectedOrFirstPlayerRuntime();
 
         if (runtimeData == null)
-            return;
+        {
+            openSelectedSkillListWhenReadyRoutine = null;
+            yield break;
+        }
 
         OpenSkillListForPlayer(runtimeData);
+        openSelectedSkillListWhenReadyRoutine = null;
+    }
+
+    private void EnsureSkillListPanel()
+    {
+        if (skillListPanel != null)
+            return;
+
+        skillListPanel = FindFirstObjectByType<SkillListPanel>(FindObjectsInactive.Include);
     }
 
     private CharacterRuntimeData GetSelectedOrFirstPlayerRuntime()
@@ -379,6 +433,11 @@ public class BattleRoomLoader : MonoBehaviour
             turnExecutor.SetBattleInputReady(false);
         }
 
+        EnsureTimelineController();
+
+        if (timelineController != null)
+            timelineController.ResetTimelineBarsForNewBattleRoom();
+
         loadedMapId = currentMapId;
         isLoaded = true;
         isLoading = false;
@@ -397,6 +456,11 @@ public class BattleRoomLoader : MonoBehaviour
 
         ClearHUD();
         spawnedMonsterUnits.Clear();
+
+        EnsureTimelineController();
+
+        if (timelineController != null)
+            timelineController.ResetTimelineBarsForNewBattleRoom();
     }
 
     private string GetCurrentMapIdSafe()
@@ -671,6 +735,7 @@ public class BattleRoomLoader : MonoBehaviour
     private void OpenSkillListForPlayer(CharacterRuntimeData runtimeData)
     {
         SelectPlayerHUD(runtimeData);
+        EnsureSkillListPanel();
 
         if (skillListPanel != null)
             skillListPanel.Open(runtimeData);
