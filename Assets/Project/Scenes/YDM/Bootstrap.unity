@@ -1023,6 +1023,9 @@ MonoBehaviour:
   canvasGroup: {fileID: 1874284955}
   ensureRootCanvas: 1
   canvasSortingOrder: 5000
+  ensureRootCanvasScaler: 1
+  canvasReferenceResolution: {x: 1920, y: 1080}
+  canvasMatchWidthOrHeight: 0
   leftGraphic: {fileID: 830640519}
   rightGraphic: {fileID: 129263041}
   leftMaterial: {fileID: 0}

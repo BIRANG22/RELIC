@@ -11,6 +11,9 @@ public class CanvasMaterialSceneTransition : Singleton<CanvasMaterialSceneTransi
     [Header("Canvas Sorting")]
     [SerializeField] private bool ensureRootCanvas = true;
     [SerializeField] private int canvasSortingOrder = 5000;
+    [SerializeField] private bool ensureRootCanvasScaler = true;
+    [SerializeField] private Vector2 canvasReferenceResolution = new Vector2(1920f, 1080f);
+    [SerializeField, Range(0f, 1f)] private float canvasMatchWidthOrHeight = 0f;
 
     [Header("Transition Graphics")]
     [SerializeField] private Graphic leftGraphic;
@@ -183,10 +186,39 @@ public class CanvasMaterialSceneTransition : Singleton<CanvasMaterialSceneTransi
         canvas.overrideSorting = true;
         canvas.sortingOrder = canvasSortingOrder;
 
+        EnsureRootCanvasScaler();
+
         if (GetComponent<GraphicRaycaster>() == null)
         {
             gameObject.AddComponent<GraphicRaycaster>();
         }
+    }
+
+    private void EnsureRootCanvasScaler()
+    {
+        if (!ensureRootCanvasScaler)
+        {
+            return;
+        }
+
+        CanvasScaler scaler = GetComponent<CanvasScaler>();
+
+        if (scaler == null)
+        {
+            scaler = gameObject.AddComponent<CanvasScaler>();
+        }
+
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = GetSafeCanvasReferenceResolution();
+        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+        scaler.matchWidthOrHeight = Mathf.Clamp01(canvasMatchWidthOrHeight);
+    }
+
+    private Vector2 GetSafeCanvasReferenceResolution()
+    {
+        return new Vector2(
+            Mathf.Max(1f, canvasReferenceResolution.x),
+            Mathf.Max(1f, canvasReferenceResolution.y));
     }
 
     private void InitializeRuntimeMaterials()
