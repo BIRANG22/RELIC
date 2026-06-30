@@ -671,7 +671,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 106453166}
         m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
-        m_MethodName: ExecuteQuitConfirm
+        m_MethodName: Execute
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

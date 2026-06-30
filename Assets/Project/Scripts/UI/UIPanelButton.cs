@@ -325,6 +325,11 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         AudioManager.Instance.PlaySfx(hoverSfx);
     }
 
+    public void PlayClickSoundOnly()
+    {
+        PlayClickSound();
+    }
+
     private void PlayClickSound()
     {
         if (!playClickSound)

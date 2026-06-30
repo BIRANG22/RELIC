@@ -151,6 +151,11 @@ public class CharPick : MonoBehaviour
 
     public void ClickBtn(CharBtn btn)
     {
+        ClickBtn(btn, true);
+    }
+
+    public void ClickBtn(CharBtn btn, bool playPartyActionSound)
+    {
         if (movedByDrag)
         {
             movedByDrag = false;
@@ -175,10 +180,15 @@ public class CharPick : MonoBehaviour
             return;
         }
 
-        ToggleButtonPartyMarker(btn);
+        ToggleButtonPartyMarker(btn, playPartyActionSound);
     }
 
     public void ToggleButtonPartyMarker(CharBtn btn)
+    {
+        ToggleButtonPartyMarker(btn, true);
+    }
+
+    public void ToggleButtonPartyMarker(CharBtn btn, bool withClickSound)
     {
         if (btn == null)
             return;
@@ -186,7 +196,7 @@ public class CharPick : MonoBehaviour
         if (btn.IsLocked || !HasUsableCharacterData(btn))
             return;
 
-        if (!btn.PrepareCharacterForPartyAction(true))
+        if (!btn.PrepareCharacterForPartyAction(withClickSound))
             return;
 
         string characterId = btn.CharacterId;
@@ -224,6 +234,11 @@ public class CharPick : MonoBehaviour
 
     public void ConfirmCurrentCharacter()
     {
+        ConfirmCurrentCharacter(true);
+    }
+
+    public void ConfirmCurrentCharacter(bool withClickSound)
+    {
         CharBtn currentButton = CurrentButton;
 
         if (currentButton == null)
@@ -232,7 +247,7 @@ public class CharPick : MonoBehaviour
             return;
         }
 
-        if (!currentButton.PrepareCharacterForPartyAction(true))
+        if (!currentButton.PrepareCharacterForPartyAction(withClickSound))
             return;
 
         if (HasPendingSelectionChanged())

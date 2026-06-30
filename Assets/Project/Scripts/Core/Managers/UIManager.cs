@@ -286,13 +286,29 @@ public class UIManager : Singleton<UIManager>
         UIPanelButton.CloseCurrentOpenedPanel();
         Time.timeScale = 1f;
 
+        if (GameManager.Instance != null && GameManager.Instance.StateMachine != null)
+        {
+            await GameManager.Instance.StateMachine.ChangeState(GameStateType.Title);
+            return;
+        }
+
         if (SceneFlowManager.Instance != null)
         {
             await SceneFlowManager.Instance.LoadSceneAsync(SceneName.Title);
+            PlayTitleBgmIfPossible();
             return;
         }
 
         UnityEngine.SceneManagement.SceneManager.LoadScene(SceneName.Title);
+        PlayTitleBgmIfPossible();
+    }
+
+    private void PlayTitleBgmIfPossible()
+    {
+        if (AudioManager.Instance == null)
+            return;
+
+        AudioManager.Instance.PlayBgm(BgmType.Title);
     }
 
     private void OnConfirmQuitGame()

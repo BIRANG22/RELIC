@@ -6,6 +6,27 @@ public class BattleMapIntroText : MonoBehaviour
 {
     private static BattleMapIntroText instance;
 
+    public static int CurrentPlayCounter { get; private set; }
+
+    public static bool IsAnyPlayingOrVisible()
+    {
+        BattleMapIntroText target = FindTarget();
+
+        if (target == null)
+            return false;
+
+        if (target.playRoutine != null)
+            return true;
+
+        if (target.introText != null && target.introText.gameObject.activeInHierarchy && target.introText.alpha > 0.001f)
+            return true;
+
+        if (target.introImage != null && target.introImage.activeInHierarchy)
+            return true;
+
+        return false;
+    }
+
     [Header("Text")]
     [SerializeField] private TMP_Text introText;
     [SerializeField, TextArea(2, 5)] private string message = "전투 지역 진입";
@@ -109,6 +130,7 @@ public class BattleMapIntroText : MonoBehaviour
 
         StopCurrentRoutine();
 
+        CurrentPlayCounter++;
         int version = ++playVersion;
         playRoutine = StartCoroutine(PlayRoutine(text, version));
     }
@@ -123,6 +145,7 @@ public class BattleMapIntroText : MonoBehaviour
 
         StopCurrentRoutine();
 
+        CurrentPlayCounter++;
         int version = ++playVersion;
         playRoutine = StartCoroutine(PlayRoutine(text, version));
         yield return playRoutine;
