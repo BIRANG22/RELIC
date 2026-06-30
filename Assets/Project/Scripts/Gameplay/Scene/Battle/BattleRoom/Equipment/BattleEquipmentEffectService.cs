@@ -185,8 +185,7 @@ public static class BattleEquipmentEffectService
         PlayerReservedCommand command,
         int slotIndex,
         bool isFirstMoveCommand,
-        bool isLastTimelineSlot,
-        int duplicateSkillReservationCountInSlot = 0)
+        bool isLastTimelineSlot)
     {
         if (command == null)
             return;
@@ -225,8 +224,6 @@ public static class BattleEquipmentEffectService
                 ref resourceCost,
                 ref shieldCost);
         }
-
-        cost += Mathf.Max(0, duplicateSkillReservationCountInSlot);
 
         command.SetCosts(
             hpCost,
