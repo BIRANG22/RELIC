@@ -2246,6 +2246,7 @@ MonoBehaviour:
   clickedColor: {r: 1, g: 1, b: 1, a: 1}
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
+  usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
 --- !u!1 &140237108
 GameObject:
@@ -3639,7 +3640,7 @@ MonoBehaviour:
   characterType: 0
   characterId: 
   isLocked: 1
-  playClickSound: 0
+  playClickSound: 1
   clickSfx: 7
   firstPartyDefaultDeployCellNumber: 7
   maxDeployGridCount: 15
@@ -3916,6 +3917,7 @@ MonoBehaviour:
   clickedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
+  usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
 --- !u!1 &237775138
 GameObject:
@@ -4389,6 +4391,7 @@ MonoBehaviour:
   clickedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
+  usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
 --- !u!114 &266558064
 MonoBehaviour:
@@ -4793,6 +4796,7 @@ MonoBehaviour:
   clickedColor: {r: 1, g: 1, b: 1, a: 1}
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
+  usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
 --- !u!1 &282013506
 GameObject:
@@ -7146,6 +7150,7 @@ MonoBehaviour:
   clickedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
+  usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
 --- !u!1 &409304354
 GameObject:
@@ -7453,7 +7458,7 @@ MonoBehaviour:
   characterType: 0
   characterId: 
   isLocked: 1
-  playClickSound: 0
+  playClickSound: 1
   clickSfx: 7
   firstPartyDefaultDeployCellNumber: 7
   maxDeployGridCount: 15
@@ -8106,7 +8111,7 @@ MonoBehaviour:
   characterType: 1
   characterId: Char_01
   isLocked: 0
-  playClickSound: 0
+  playClickSound: 1
   clickSfx: 7
   firstPartyDefaultDeployCellNumber: 7
   maxDeployGridCount: 15
@@ -11765,6 +11770,7 @@ MonoBehaviour:
   clickedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
+  usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
 --- !u!114 &639621075
 MonoBehaviour:
@@ -15189,6 +15195,7 @@ MonoBehaviour:
   clickedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
+  usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
 --- !u!1 &799725650
 GameObject:
@@ -16017,7 +16024,7 @@ MonoBehaviour:
   characterType: 0
   characterId: 
   isLocked: 1
-  playClickSound: 0
+  playClickSound: 1
   clickSfx: 7
   firstPartyDefaultDeployCellNumber: 7
   maxDeployGridCount: 15
@@ -22250,6 +22257,7 @@ MonoBehaviour:
   clickedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
+  usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
 --- !u!1 &1141531002
 GameObject:
@@ -24460,6 +24468,7 @@ MonoBehaviour:
   clickedColor: {r: 1, g: 1, b: 1, a: 1}
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
+  usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
 --- !u!1 &1296319429
 GameObject:
@@ -25146,6 +25155,7 @@ MonoBehaviour:
   clickedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
+  usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
 --- !u!114 &1341909877
 MonoBehaviour:
@@ -25528,6 +25538,7 @@ MonoBehaviour:
   clickedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
+  usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
 --- !u!114 &1368566481
 MonoBehaviour:
@@ -26196,7 +26207,7 @@ MonoBehaviour:
   characterType: 2
   characterId: Char_02
   isLocked: 0
-  playClickSound: 0
+  playClickSound: 1
   clickSfx: 7
   firstPartyDefaultDeployCellNumber: 7
   maxDeployGridCount: 15
@@ -29162,6 +29173,7 @@ MonoBehaviour:
   clickedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
+  usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
 --- !u!114 &1558730624
 MonoBehaviour:
@@ -31064,6 +31076,7 @@ MonoBehaviour:
   clickedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
+  usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
 --- !u!1 &1693695435
 GameObject:
@@ -31910,6 +31923,7 @@ MonoBehaviour:
   clickedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
+  usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
 --- !u!114 &1731166319
 MonoBehaviour:
@@ -38266,7 +38280,7 @@ MonoBehaviour:
   characterType: 5
   characterId: Char_03
   isLocked: 0
-  playClickSound: 0
+  playClickSound: 1
   clickSfx: 7
   firstPartyDefaultDeployCellNumber: 7
   maxDeployGridCount: 15
@@ -39397,6 +39411,7 @@ MonoBehaviour:
   clickedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
+  usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
 --- !u!114 &2078505873
 MonoBehaviour:
@@ -40226,6 +40241,7 @@ MonoBehaviour:
   clickedColor: {r: 1, g: 1, b: 1, a: 1}
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
+  usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
 --- !u!1 &2117597972
 GameObject:

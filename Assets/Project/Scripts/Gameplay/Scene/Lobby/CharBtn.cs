@@ -103,23 +103,39 @@ public class CharBtn : MonoBehaviour,
 
     public void Execute()
     {
-        NotifyClickToCharPickOrExecuteDirect();
+        Execute(false);
+    }
+
+    public void Execute(bool playClickSoundBeforeAction)
+    {
+        NotifyClickToCharPickOrExecuteDirect(playClickSoundBeforeAction);
     }
 
     private void NotifyClickToCharPickOrExecuteDirect()
+    {
+        NotifyClickToCharPickOrExecuteDirect(false);
+    }
+
+    private void NotifyClickToCharPickOrExecuteDirect(bool playClickSoundBeforeAction)
     {
         if (lastHandledClickFrame == Time.frameCount)
             return;
 
         lastHandledClickFrame = Time.frameCount;
 
+        if (playClickSoundBeforeAction)
+            PlayClickSound();
+
         if (charPick != null)
         {
-            charPick.ClickBtn(this);
+            charPick.ClickBtn(this, !playClickSoundBeforeAction);
             return;
         }
 
-        ConfirmCharacterToSelectedPartySlotDirectly();
+        if (playClickSoundBeforeAction)
+            ConfirmCharacterToSelectedPartySlotDirectly(false);
+        else
+            ConfirmCharacterToSelectedPartySlotDirectly();
     }
 
     public bool PrepareCharacterForPartyAction(bool withClickSound)
@@ -157,7 +173,12 @@ public class CharBtn : MonoBehaviour,
 
     private void ConfirmCharacterToSelectedPartySlotDirectly()
     {
-        if (!PrepareCharacterForPartyAction(true))
+        ConfirmCharacterToSelectedPartySlotDirectly(true);
+    }
+
+    private void ConfirmCharacterToSelectedPartySlotDirectly(bool withClickSound)
+    {
+        if (!PrepareCharacterForPartyAction(withClickSound))
             return;
 
         SaveCharacterToSelectedPartySlot();
@@ -166,7 +187,24 @@ public class CharBtn : MonoBehaviour,
 
     private void PlayClickSound()
     {
-        if (playClickSound && AudioManager.Instance != null)
+        if (!playClickSound)
+            return;
+
+        UIPanelButton panelButton = GetComponent<UIPanelButton>();
+
+        if (panelButton == null)
+            panelButton = GetComponentInChildren<UIPanelButton>(true);
+
+        if (panelButton == null)
+            panelButton = GetComponentInParent<UIPanelButton>();
+
+        if (panelButton != null)
+        {
+            panelButton.PlayClickSoundOnly();
+            return;
+        }
+
+        if (AudioManager.Instance != null)
             AudioManager.Instance.PlaySfx(clickSfx);
     }
 
