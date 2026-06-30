@@ -669,6 +669,37 @@ public class BattleRoomLoader : MonoBehaviour
         hud.Bind(runtimeData);
         hud.OnClicked += OnPlayerHudClicked;
         playerHudSlots.Add(hud);
+
+        RegisterPlayerHudAsSkillListKeepOpenRoot(hud);
+    }
+
+    private void RegisterPlayerHudAsSkillListKeepOpenRoot(PlayerHUDSlot hud)
+    {
+        if (hud == null)
+            return;
+
+        EnsureSkillListPanel();
+
+        if (skillListPanel == null)
+            return;
+
+        RectTransform hudRect = hud.GetComponent<RectTransform>();
+
+        if (hudRect != null)
+            skillListPanel.RegisterKeepOpenClickRoot(hudRect);
+    }
+
+    private void RegisterAllPlayerHudsAsSkillListKeepOpenRoots()
+    {
+        EnsureSkillListPanel();
+
+        if (skillListPanel == null)
+            return;
+
+        RemoveNullPlayerHudSlots();
+
+        for (int i = 0; i < playerHudSlots.Count; i++)
+            RegisterPlayerHudAsSkillListKeepOpenRoot(playerHudSlots[i]);
     }
 
     private Transform GetPlayerHudPositionAnchor(int displayIndex)
@@ -724,7 +755,7 @@ public class BattleRoomLoader : MonoBehaviour
 
     private void OnPlayerHudClicked(CharacterRuntimeData runtimeData, RectTransform hudRect)
     {
-        OpenSkillListForPlayer(runtimeData);
+        OpenSkillListForPlayer(runtimeData, hudRect);
     }
 
     public void OnPlayerCharacterClicked(CharacterRuntimeData runtimeData)
@@ -734,11 +765,23 @@ public class BattleRoomLoader : MonoBehaviour
 
     private void OpenSkillListForPlayer(CharacterRuntimeData runtimeData)
     {
+        OpenSkillListForPlayer(runtimeData, null);
+    }
+
+    private void OpenSkillListForPlayer(CharacterRuntimeData runtimeData, RectTransform hudRect)
+    {
         SelectPlayerHUD(runtimeData);
         EnsureSkillListPanel();
 
-        if (skillListPanel != null)
-            skillListPanel.Open(runtimeData);
+        if (skillListPanel == null)
+            return;
+
+        RegisterAllPlayerHudsAsSkillListKeepOpenRoots();
+
+        if (hudRect != null)
+            skillListPanel.RegisterKeepOpenClickRoot(hudRect);
+
+        skillListPanel.Open(runtimeData, hudRect);
     }
 
     private void SelectPlayerHUD(CharacterRuntimeData runtimeData)
