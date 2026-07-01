@@ -267,6 +267,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  allowSpriteRendererClick: 1
+  ignoreSpriteClickWhenMoved: 1
   panelToOpen: {fileID: 1556281822}
   panelsToClose: []
   panelToMove: {fileID: 0}
@@ -286,6 +288,10 @@ MonoBehaviour:
   effect: 0
   fadeImage: {fileID: 0}
   fadeDuration: 0.2
+  fadePanelImageOnChange: 0
+  panelFadeImage: {fileID: 0}
+  openedPanelAlpha: 0.9019608
+  panelFadeDuration: 0.2
   playHoverSound: 1
   hoverSfx: 8
   playClickSound: 1
@@ -731,6 +737,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  allowSpriteRendererClick: 1
+  ignoreSpriteClickWhenMoved: 1
   panelToOpen: {fileID: 0}
   panelsToClose: []
   panelToMove: {fileID: 0}
@@ -750,6 +758,10 @@ MonoBehaviour:
   effect: 0
   fadeImage: {fileID: 0}
   fadeDuration: 0.2
+  fadePanelImageOnChange: 0
+  panelFadeImage: {fileID: 0}
+  openedPanelAlpha: 0.9019608
+  panelFadeDuration: 0.2
   playHoverSound: 1
   hoverSfx: 8
   playClickSound: 1
@@ -808,6 +820,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  allowSpriteRendererClick: 1
+  ignoreSpriteClickWhenMoved: 1
   panelToOpen: {fileID: 1936316113}
   panelsToClose: []
   panelToMove: {fileID: 0}
@@ -827,6 +841,10 @@ MonoBehaviour:
   effect: 0
   fadeImage: {fileID: 0}
   fadeDuration: 0.2
+  fadePanelImageOnChange: 0
+  panelFadeImage: {fileID: 0}
+  openedPanelAlpha: 0.9019608
+  panelFadeDuration: 0.2
   playHoverSound: 1
   hoverSfx: 8
   playClickSound: 1
@@ -1816,6 +1834,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  allowSpriteRendererClick: 1
+  ignoreSpriteClickWhenMoved: 1
   panelToOpen: {fileID: 0}
   panelsToClose: []
   panelToMove: {fileID: 0}
@@ -1835,6 +1855,10 @@ MonoBehaviour:
   effect: 0
   fadeImage: {fileID: 0}
   fadeDuration: 0.2
+  fadePanelImageOnChange: 0
+  panelFadeImage: {fileID: 0}
+  openedPanelAlpha: 0.9019608
+  panelFadeDuration: 0.2
   playHoverSound: 1
   hoverSfx: 8
   playClickSound: 1
@@ -2577,8 +2601,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -507, y: 317}
-  m_SizeDelta: {x: 863, y: 482}
+  m_AnchoredPosition: {x: -507, y: 275}
+  m_SizeDelta: {x: 853, y: 201}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &570449838
 MonoBehaviour:
@@ -2600,7 +2624,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: fa90aebbc50913648834c35136a7f3c6, type: 3}
+  m_Sprite: {fileID: 21300000, guid: ce12d8b09bcf904469bd34c742d5fd04, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -3318,6 +3342,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  allowSpriteRendererClick: 1
+  ignoreSpriteClickWhenMoved: 1
   panelToOpen: {fileID: 0}
   panelsToClose: []
   panelToMove: {fileID: 0}
@@ -3337,6 +3363,10 @@ MonoBehaviour:
   effect: 0
   fadeImage: {fileID: 0}
   fadeDuration: 0.2
+  fadePanelImageOnChange: 0
+  panelFadeImage: {fileID: 0}
+  openedPanelAlpha: 0.9019608
+  panelFadeDuration: 0.2
   playHoverSound: 1
   hoverSfx: 8
   playClickSound: 1
@@ -6247,6 +6277,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  allowSpriteRendererClick: 1
+  ignoreSpriteClickWhenMoved: 1
   panelToOpen: {fileID: 0}
   panelsToClose: []
   panelToMove: {fileID: 0}
@@ -6266,6 +6298,10 @@ MonoBehaviour:
   effect: 0
   fadeImage: {fileID: 0}
   fadeDuration: 0.2
+  fadePanelImageOnChange: 0
+  panelFadeImage: {fileID: 0}
+  openedPanelAlpha: 0.9019608
+  panelFadeDuration: 0.2
   playHoverSound: 1
   hoverSfx: 8
   playClickSound: 1
@@ -6526,6 +6562,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  allowSpriteRendererClick: 1
+  ignoreSpriteClickWhenMoved: 1
   panelToOpen: {fileID: 0}
   panelsToClose: []
   panelToMove: {fileID: 0}
@@ -6545,6 +6583,10 @@ MonoBehaviour:
   effect: 0
   fadeImage: {fileID: 0}
   fadeDuration: 0.2
+  fadePanelImageOnChange: 0
+  panelFadeImage: {fileID: 0}
+  openedPanelAlpha: 0.9019608
+  panelFadeDuration: 0.2
   playHoverSound: 1
   hoverSfx: 8
   playClickSound: 1
@@ -8691,6 +8733,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  allowSpriteRendererClick: 1
+  ignoreSpriteClickWhenMoved: 1
   panelToOpen: {fileID: 0}
   panelsToClose: []
   panelToMove: {fileID: 0}
@@ -8710,6 +8754,10 @@ MonoBehaviour:
   effect: 0
   fadeImage: {fileID: 0}
   fadeDuration: 0.2
+  fadePanelImageOnChange: 0
+  panelFadeImage: {fileID: 0}
+  openedPanelAlpha: 0.9019608
+  panelFadeDuration: 0.2
   playHoverSound: 0
   hoverSfx: 8
   playClickSound: 0
@@ -9376,6 +9424,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  allowSpriteRendererClick: 1
+  ignoreSpriteClickWhenMoved: 1
   panelToOpen: {fileID: 0}
   panelsToClose: []
   panelToMove: {fileID: 0}
@@ -9395,6 +9445,10 @@ MonoBehaviour:
   effect: 0
   fadeImage: {fileID: 0}
   fadeDuration: 0.2
+  fadePanelImageOnChange: 0
+  panelFadeImage: {fileID: 0}
+  openedPanelAlpha: 0.9019608
+  panelFadeDuration: 0.2
   playHoverSound: 1
   hoverSfx: 8
   playClickSound: 1
