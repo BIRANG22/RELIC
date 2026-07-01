@@ -12,11 +12,16 @@ public class RestRoomController : MonoBehaviour
     [Header("Shop")]
     [SerializeField] private RestRoomShopPanel shopPanel;
 
+    [Header("Progression")]
+    [SerializeField] private GameObject nextButtonRoot;
+
     private bool isRestUsed;
+    private bool IsRestActionLocked => isRestUsed;
 
     private void Awake()
     {
         EnsureShopPanelSpawner();
+        EnsureNextButtonRoot();
     }
 
     private void OnEnable()
@@ -26,17 +31,56 @@ public class RestRoomController : MonoBehaviour
             upgradePanel.ResetRestRoomUpgradeLimit();
 
         EnsureShopPanelSpawner();
+        EnsureNextButtonRoot();
+        SetNextButtonVisible(false);
         SpawnPartyAllies();
     }
 
     public void OnRestButtonClicked()
     {
-        if (isRestUsed)
+        if (IsRestActionLocked)
             return;
 
         isRestUsed = true;
+        if (upgradePanel != null)
+            upgradePanel.Close();
 
         RecoverAllPartyHPToMax();
+        SetNextButtonVisible(true);
+    }
+
+    public void OnUpgradeButtonClicked()
+    {
+        if (IsRestActionLocked)
+            return;
+
+        if (upgradePanel == null)
+        {
+            Debug.LogWarning("[RestRoomController] SkillUpgradePanel 없음");
+            return;
+        }
+
+        isRestUsed = true;
+        upgradePanel.Open();
+        SetNextButtonVisible(true);
+    }
+
+    public void OnTuningButtonClicked()
+    {
+        if (upgradePanel == null)
+        {
+            Debug.LogWarning("[RestRoomController] SkillUpgradePanel 없음");
+            return;
+        }
+
+        upgradePanel.TuneSelectedSkill();
+    }
+
+    public void OnNextButtonClicked()
+    {
+        if (!isRestUsed)
+            return;
+
         CompleteCurrentNode();
 
         BattleSceneController sceneController =
@@ -45,18 +89,7 @@ public class RestRoomController : MonoBehaviour
         if (sceneController != null)
             sceneController.ReturnToMap();
         else
-            Debug.LogWarning("[RestRoomController] BattleSceneController 없음");
-    }
-
-    public void OnUpgradeButtonClicked()
-    {
-        if (upgradePanel == null)
-        {
-            Debug.LogWarning("[RestRoomController] SkillUpgradePanel 없음");
-            return;
-        }
-
-        upgradePanel.Open();
+            Debug.LogWarning("[RestRoomController] BattleSceneController not found");
     }
 
     private void RecoverAllPartyHPToMax()
@@ -160,6 +193,25 @@ public class RestRoomController : MonoBehaviour
 
         if (shopPanel == null)
             shopPanel = shopPanelTransform.gameObject.AddComponent<RestRoomShopPanel>();
+    }
+
+    private void EnsureNextButtonRoot()
+    {
+        if (nextButtonRoot != null)
+            return;
+
+        Transform nextButtonTransform = FindSceneTransformByName("NextButton");
+
+        if (nextButtonTransform != null)
+            nextButtonRoot = nextButtonTransform.gameObject;
+    }
+
+    private void SetNextButtonVisible(bool visible)
+    {
+        EnsureNextButtonRoot();
+
+        if (nextButtonRoot != null)
+            nextButtonRoot.SetActive(visible);
     }
 
     private Transform FindSceneTransformByName(string targetName)

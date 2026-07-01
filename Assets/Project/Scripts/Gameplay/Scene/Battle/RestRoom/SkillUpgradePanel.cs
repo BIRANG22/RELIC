@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -26,6 +27,7 @@ public class SkillUpgradePanel : MonoBehaviour
     [SerializeField] private GameObject panelRoot;
     [SerializeField] private Transform contentRoot;
     [SerializeField] private SkillUpgradeIconItem iconPrefab;
+    [SerializeField] private Image selectedSkillIconImage;
 
     [Header("Layout")]
     [SerializeField] private Vector2 fallbackIconSize = new(80f, 80f);
@@ -35,6 +37,11 @@ public class SkillUpgradePanel : MonoBehaviour
 
     private readonly List<SkillUpgradeIconItem> spawnedItems = new();
     private bool hasUpgradedThisRestRoom;
+    private bool hasSelectedUpgradeRequest;
+    private SkillUpgradeRequest selectedUpgradeRequest;
+    private bool hasCachedSelectedIconDefault;
+    private Sprite selectedIconDefaultSprite;
+    private bool selectedIconDefaultEnabled;
 
     public bool HasUpgradedThisRestRoom => hasUpgradedThisRestRoom;
 
@@ -57,6 +64,7 @@ public class SkillUpgradePanel : MonoBehaviour
     public void ResetRestRoomUpgradeLimit()
     {
         hasUpgradedThisRestRoom = false;
+        ClearSelectedUpgradeSelection();
     }
 
     public void Open()
@@ -72,6 +80,7 @@ public class SkillUpgradePanel : MonoBehaviour
         else
             gameObject.SetActive(true);
 
+        ClearSelectedUpgradeSelection();
         ConfigureContentLayout();
         Refresh();
     }
@@ -79,11 +88,20 @@ public class SkillUpgradePanel : MonoBehaviour
     public void Close()
     {
         Clear();
+        ClearSelectedUpgradeSelection();
 
         if (panelRoot != null)
             panelRoot.SetActive(false);
         else
             gameObject.SetActive(false);
+    }
+
+    public bool TuneSelectedSkill()
+    {
+        if (hasUpgradedThisRestRoom || !hasSelectedUpgradeRequest)
+            return false;
+
+        return ApplySkillUpgrade(selectedUpgradeRequest);
     }
 
     private void Refresh()
@@ -212,25 +230,39 @@ public class SkillUpgradePanel : MonoBehaviour
         spawnedItems.Add(item);
     }
 
-    private void OnSkillItemClicked(SkillUpgradeRequest request)
+    private void OnSkillItemClicked(SkillUpgradeRequest request, Sprite selectedIcon)
     {
-        if (DataManager.Instance == null)
-            return;
-
         if (hasUpgradedThisRestRoom)
             return;
 
+        SelectSkillForUpgrade(request, selectedIcon);
+    }
+
+    private void SelectSkillForUpgrade(SkillUpgradeRequest request, Sprite selectedIcon)
+    {
+        selectedUpgradeRequest = request;
+        hasSelectedUpgradeRequest = true;
+        SetSelectedSkillIcon(selectedIcon != null ? selectedIcon : ResolveSkillIcon(request.CurrentSkillId));
+    }
+
+    private bool ApplySkillUpgrade(SkillUpgradeRequest request)
+    {
+        if (DataManager.Instance == null)
+            return false;
+
+        if (hasUpgradedThisRestRoom)
+            return false;
+
         if (request.SlotType == SkillSlotType.Inventory)
         {
-            UpgradeInventorySkill(request);
-            return;
+            return UpgradeInventorySkill(request);
         }
 
         if (!DataManager.Instance.CharacterRuntimeStore.TryGet(
                 request.CharacterId,
                 out CharacterRuntimeData characterRuntime))
         {
-            return;
+            return false;
         }
 
         switch (request.SlotType)
@@ -249,13 +281,16 @@ public class SkillUpgradePanel : MonoBehaviour
 
             case SkillSlotType.Equipped:
                 if (characterRuntime.EquippedSkillIds == null)
-                    return;
+                    return false;
 
                 if (request.SlotIndex < 0 || request.SlotIndex >= characterRuntime.EquippedSkillIds.Length)
-                    return;
+                    return false;
 
                 characterRuntime.EquippedSkillIds[request.SlotIndex] = request.UpgradeSkillId;
                 break;
+
+            default:
+                return false;
         }
 
         DataManager.Instance.CharacterRuntimeStore.AddOrUpdate(characterRuntime);
@@ -268,17 +303,18 @@ public class SkillUpgradePanel : MonoBehaviour
         );
 
         CompleteUpgrade();
+        return true;
     }
 
-    private void UpgradeInventorySkill(SkillUpgradeRequest request)
+    private bool UpgradeInventorySkill(SkillUpgradeRequest request)
     {
         BattleRuntimeData runtime = DataManager.Instance.BattleRuntimeStore.GetOrCreate();
 
         if (runtime.SkillInventoryIds == null)
-            return;
+            return false;
 
         if (request.SlotIndex < 0 || request.SlotIndex >= runtime.SkillInventoryIds.Count)
-            return;
+            return false;
 
         runtime.SkillInventoryIds[request.SlotIndex] = request.UpgradeSkillId;
         DataManager.Instance.BattleRuntimeStore.Set(runtime);
@@ -290,12 +326,111 @@ public class SkillUpgradePanel : MonoBehaviour
         );
 
         CompleteUpgrade();
+        return true;
     }
 
     private void CompleteUpgrade()
     {
         hasUpgradedThisRestRoom = true;
         Close();
+    }
+
+    private void SetSelectedSkillIcon(Sprite selectedIcon)
+    {
+        Image targetImage = ResolveSelectedSkillIconImage();
+
+        if (targetImage == null)
+            return;
+
+        CacheSelectedSkillIconDefault(targetImage);
+        targetImage.sprite = selectedIcon;
+        targetImage.enabled = selectedIcon != null;
+        targetImage.preserveAspect = true;
+    }
+
+    private void ClearSelectedUpgradeSelection()
+    {
+        hasSelectedUpgradeRequest = false;
+        selectedUpgradeRequest = default;
+
+        Image targetImage = ResolveSelectedSkillIconImage();
+
+        if (targetImage == null)
+            return;
+
+        CacheSelectedSkillIconDefault(targetImage);
+        targetImage.sprite = selectedIconDefaultSprite;
+        targetImage.enabled = selectedIconDefaultEnabled;
+    }
+
+    private Image ResolveSelectedSkillIconImage()
+    {
+        if (selectedSkillIconImage != null)
+            return selectedSkillIconImage;
+
+        Transform root = panelRoot != null ? panelRoot.transform : transform;
+        Transform wheel = root.Find("Wheel") ?? FindChildByName(root, "Wheel");
+        Transform image = wheel != null
+            ? wheel.Find("Image") ?? FindChildByName(wheel, "Image")
+            : null;
+
+        if (image == null)
+            return null;
+
+        selectedSkillIconImage = image.GetComponent<Image>();
+        return selectedSkillIconImage;
+    }
+
+    private Transform FindChildByName(Transform root, string childName)
+    {
+        if (root == null)
+            return null;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform child = root.GetChild(i);
+
+            if (string.Equals(child.name, childName, StringComparison.OrdinalIgnoreCase))
+                return child;
+
+            Transform nested = FindChildByName(child, childName);
+
+            if (nested != null)
+                return nested;
+        }
+
+        return null;
+    }
+
+    private void CacheSelectedSkillIconDefault(Image targetImage)
+    {
+        if (hasCachedSelectedIconDefault || targetImage == null)
+            return;
+
+        selectedIconDefaultSprite = targetImage.sprite;
+        selectedIconDefaultEnabled = targetImage.enabled;
+        hasCachedSelectedIconDefault = true;
+    }
+
+    private Sprite ResolveSkillIcon(string skillId)
+    {
+        if (DataManager.Instance == null)
+            return null;
+
+        if (DataManager.Instance.SkillDatabase != null &&
+            DataManager.Instance.SkillDatabase.TryGet(skillId, out SkillMasterData skillData) &&
+            skillData.Icon != null)
+        {
+            return skillData.Icon;
+        }
+
+        if (DataManager.Instance.SkillIconDatabase != null &&
+            DataManager.Instance.SkillIconDatabase.TryGetIcon(skillId, out Sprite databaseIcon))
+        {
+            return databaseIcon;
+        }
+
+        return null;
     }
 
     private void Clear()
