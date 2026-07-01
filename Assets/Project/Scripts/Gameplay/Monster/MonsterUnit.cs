@@ -255,6 +255,17 @@ namespace Relic.Gameplay.Monster
 
         private void OnMouseDown()
         {
+            if (reservationVisualActive)
+                return;
+
+            if (RuntimeData == null || RuntimeData.IsDead)
+                return;
+
+            if (IsPointerOverUI())
+                return;
+
+            SelectThisMonster();
+            global::UIDissolveReveal.ShowForMonsterClick(this);
         }
 
         private void OnMouseEnter()
