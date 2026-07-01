@@ -16,6 +16,9 @@ public class LobbyMenuController : MonoBehaviour
     [Tooltip("켜져 있으면 ESC로 열 때 MenuButton 클릭 이벤트를 실행합니다. 기존 UIPanelButton 상태와 같은 방식으로 열기 위해 사용합니다.")]
     [SerializeField] private bool openByClickingMenuButton = true;
 
+    [Tooltip("켜져 있으면 MenuButton을 직접 눌러 메뉴를 열었을 때도 로비 일시정지 상태로 기록합니다.")]
+    [SerializeField] private bool bindMenuButtonOpenState = true;
+
     [Header("Continue Button")]
     [Tooltip("메뉴 패널 안의 Continue 버튼입니다. 이 버튼을 눌렀을 때도 CloseMenu와 같은 방식으로 닫히게 합니다.")]
     [SerializeField] private Button continueButton;
@@ -34,24 +37,30 @@ public class LobbyMenuController : MonoBehaviour
     [SerializeField] private bool addGraphicRaycaster = true;
 
     public GameObject MenuPanel => menuPanel;
-    public bool IsMenuOpen => menuPanel != null && menuPanel.activeInHierarchy;
+    public bool IsMenuOpen => isMenuOpen && menuPanel != null && menuPanel.activeInHierarchy;
 
+    private bool isMenuOpen;
     private bool isExecutingMenuButtonClick;
 
     private void Awake()
     {
         FindReferencesIfNeeded();
+        BindMenuButtonOpenStateIfNeeded();
         BindContinueButtonIfNeeded();
     }
 
     private void OnEnable()
     {
         FindReferencesIfNeeded();
+        BindMenuButtonOpenStateIfNeeded();
         BindContinueButtonIfNeeded();
     }
 
     private void OnDestroy()
     {
+        if (menuButton != null)
+            menuButton.onClick.RemoveListener(MarkMenuOpenedByMenuButton);
+
         if (continueButton != null)
             continueButton.onClick.RemoveListener(CloseMenu);
     }
@@ -80,8 +89,9 @@ public class LobbyMenuController : MonoBehaviour
             ExecuteButtonClick(menuButton);
             isExecutingMenuButtonClick = false;
 
-            if (IsMenuOpen)
+            if (menuPanel != null && menuPanel.activeInHierarchy)
             {
+                isMenuOpen = true;
                 ApplyOpenedPanelState();
                 return;
             }
@@ -113,6 +123,9 @@ public class LobbyMenuController : MonoBehaviour
 
         if (UIPanelButton.HasCurrentOpenedPanel && UIPanelButton.TryCloseCurrentOpenedPanel())
         {
+            if (menuPanel == null || !menuPanel.activeInHierarchy)
+                isMenuOpen = false;
+
             ClearSelectionIfInsideMenu();
             return;
         }
@@ -120,6 +133,7 @@ public class LobbyMenuController : MonoBehaviour
         if (menuPanel != null)
             menuPanel.SetActive(false);
 
+        isMenuOpen = false;
         ClearSelectionIfInsideMenu();
     }
 
@@ -131,6 +145,7 @@ public class LobbyMenuController : MonoBehaviour
             return;
 
         menuPanel.SetActive(true);
+        isMenuOpen = true;
         ApplyOpenedPanelState();
     }
 
@@ -203,6 +218,28 @@ public class LobbyMenuController : MonoBehaviour
 
         if (selectedObject.transform.IsChildOf(menuPanel.transform))
             EventSystem.current.SetSelectedGameObject(null);
+    }
+
+
+    private void BindMenuButtonOpenStateIfNeeded()
+    {
+        if (!bindMenuButtonOpenState)
+            return;
+
+        FindReferencesIfNeeded();
+
+        if (menuButton == null)
+            return;
+
+        menuButton.onClick.RemoveListener(MarkMenuOpenedByMenuButton);
+        menuButton.onClick.AddListener(MarkMenuOpenedByMenuButton);
+    }
+
+    private void MarkMenuOpenedByMenuButton()
+    {
+        // MenuButton을 직접 클릭해 UIPanelButton이 메뉴를 열 때도
+        // ESC로 연 것과 같은 일시정지 상태로 기록합니다.
+        isMenuOpen = true;
     }
 
     private void BindContinueButtonIfNeeded()

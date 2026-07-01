@@ -223,9 +223,12 @@ public class ErosionSelectCarousel : MonoBehaviour
         {
             FindInputBlockReferencesIfNeeded();
 
-            if (lobbyMenuController != null && lobbyMenuController.IsMenuOpen)
-                return true;
+            if (lobbyMenuController != null)
+                return lobbyMenuController.IsMenuOpen;
 
+            // LobbyMenuController를 찾지 못했을 때만 패널 활성 상태를 예비로 확인합니다.
+            // 컨트롤러가 연결된 상태에서는 컨트롤러가 기록한 일시정지 상태만 믿어야
+            // 비활성처럼 쓰는 메뉴 패널 때문에 A/D가 계속 막히는 일을 피할 수 있습니다.
             if (menuPanel != null && menuPanel.activeInHierarchy)
                 return true;
         }
