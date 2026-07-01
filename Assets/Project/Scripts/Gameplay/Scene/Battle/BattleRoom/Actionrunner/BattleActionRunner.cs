@@ -2549,7 +2549,11 @@ public class BattleActionRunner
         if (target.RuntimeData.IsDead)
             return;
 
-        int damage = damageService.GetMonsterDamage(command);
+        int damage = BattleDamageService.CalculateFinalMonsterDamageToPlayer(
+            command,
+            monster,
+            target,
+            damageService.GetMonsterDamage(command));
 
         BattleEffectUtility.DamagePlayer(target, damage);
 

@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using Relic.Gameplay.Data;
+using Relic.Gameplay.Monster;
 using UnityEngine;
 
 public class BattleDamageService
@@ -78,11 +80,49 @@ public class BattleDamageService
         if (command == null || !ShouldReserveMonsterDamage(command.SkillData))
             return "";
 
-        int damage = command.EnsureReservedDamage();
+        int baseDamage = command.EnsureReservedDamage();
 
-        return damage > 0
-            ? damage.ToString()
+        if (baseDamage <= 0)
+            return "";
+
+        if (TryGetMonsterModifiedDamageText(command, baseDamage, out string modifiedText))
+            return modifiedText;
+
+        return baseDamage > 0
+            ? baseDamage.ToString()
             : "";
+    }
+
+    public static int CalculateFinalMonsterDamageToPlayer(
+        MonsterReservedCommand command,
+        MonsterUnit caster,
+        BattleCharacter target,
+        int baseDamage)
+    {
+        BattleEffectContext context = new()
+        {
+            MonsterCaster = caster,
+            PlayerTarget = target,
+            MonsterSkillData = command?.SkillData
+        };
+
+        return BattleDamageModifierUtility.CalculateFinalDamageToPlayer(context, baseDamage);
+    }
+
+    public static int CalculateFinalMonsterDamageToMonster(
+        MonsterReservedCommand command,
+        MonsterUnit caster,
+        MonsterUnit target,
+        int baseDamage)
+    {
+        BattleEffectContext context = new()
+        {
+            MonsterCaster = caster,
+            MonsterTarget = target,
+            MonsterSkillData = command?.SkillData
+        };
+
+        return BattleDamageModifierUtility.CalculateFinalDamageToMonster(context, baseDamage);
     }
 
     public static bool ShouldReserveMonsterDamage(MonsterSkillData skillData)
@@ -125,6 +165,150 @@ public class BattleDamageService
     {
         if (!TryGetMonsterDamageRange(skillData, out int minDamage, out int maxDamage))
             return "";
+
+        if (minDamage == maxDamage)
+            return minDamage.ToString();
+
+        return $"{minDamage}-{maxDamage}";
+    }
+
+    private static bool TryGetMonsterModifiedDamageText(
+        MonsterReservedCommand command,
+        int baseDamage,
+        out string damageText)
+    {
+        damageText = "";
+
+        if (command == null || command.SkillData == null)
+            return false;
+
+        MonsterUnit caster = FindMonsterUnit(command.RuntimeId);
+        List<int> damageValues = new();
+
+        if (command.SkillData.Target == TargetType.PlayerParty)
+            AddPlayerTargetDamageValues(command, caster, baseDamage, damageValues);
+        else if (command.SkillData.Target == TargetType.EnemyParty)
+            AddMonsterTargetDamageValues(command, caster, baseDamage, damageValues);
+        else if (command.SkillData.Target == TargetType.Self && caster != null)
+            damageValues.Add(CalculateFinalMonsterDamageToMonster(command, caster, caster, baseDamage));
+
+        if (damageValues.Count <= 0 && caster != null)
+            damageValues.Add(CalculateFinalMonsterDamageToPlayer(command, caster, null, baseDamage));
+
+        if (damageValues.Count <= 0)
+            return false;
+
+        damageText = FormatDamageValues(damageValues);
+        return !string.IsNullOrWhiteSpace(damageText);
+    }
+
+    private static void AddPlayerTargetDamageValues(
+        MonsterReservedCommand command,
+        MonsterUnit caster,
+        int baseDamage,
+        List<int> damageValues)
+    {
+        if (command == null || damageValues == null)
+            return;
+
+        BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            BattleCharacter character = characters[i];
+
+            if (character == null || character.RuntimeData == null || character.RuntimeData.IsDead)
+                continue;
+
+            if (command.TargetGridIndices == null ||
+                !command.TargetGridIndices.Contains(character.CurrentGridIndex))
+            {
+                continue;
+            }
+
+            damageValues.Add(CalculateFinalMonsterDamageToPlayer(command, caster, character, baseDamage));
+        }
+    }
+
+    private static void AddMonsterTargetDamageValues(
+        MonsterReservedCommand command,
+        MonsterUnit caster,
+        int baseDamage,
+        List<int> damageValues)
+    {
+        if (command == null || damageValues == null)
+            return;
+
+        MonsterUnit[] monsters = Object.FindObjectsByType<MonsterUnit>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < monsters.Length; i++)
+        {
+            MonsterUnit monster = monsters[i];
+
+            if (monster == null || monster.RuntimeData == null || monster.RuntimeData.IsDead)
+                continue;
+
+            if (!OccupiesAnyTargetGrid(command, monster))
+                continue;
+
+            damageValues.Add(CalculateFinalMonsterDamageToMonster(command, caster, monster, baseDamage));
+        }
+    }
+
+    private static bool OccupiesAnyTargetGrid(MonsterReservedCommand command, MonsterUnit monster)
+    {
+        if (command?.TargetGridIndices == null || monster == null)
+            return false;
+
+        for (int i = 0; i < monster.OccupiedGridIndices.Count; i++)
+        {
+            if (command.TargetGridIndices.Contains(monster.OccupiedGridIndices[i]))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static MonsterUnit FindMonsterUnit(string runtimeId)
+    {
+        if (string.IsNullOrWhiteSpace(runtimeId))
+            return null;
+
+        MonsterUnit[] monsters = Object.FindObjectsByType<MonsterUnit>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < monsters.Length; i++)
+        {
+            MonsterUnit monster = monsters[i];
+
+            if (monster == null || monster.RuntimeData == null)
+                continue;
+
+            if (monster.RuntimeData.RuntimeId == runtimeId)
+                return monster;
+        }
+
+        return null;
+    }
+
+    private static string FormatDamageValues(List<int> damageValues)
+    {
+        if (damageValues == null || damageValues.Count <= 0)
+            return "";
+
+        int minDamage = damageValues[0];
+        int maxDamage = damageValues[0];
+
+        for (int i = 1; i < damageValues.Count; i++)
+        {
+            minDamage = Mathf.Min(minDamage, damageValues[i]);
+            maxDamage = Mathf.Max(maxDamage, damageValues[i]);
+        }
 
         if (minDamage == maxDamage)
             return minDamage.ToString();

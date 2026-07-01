@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Reflection;
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
 using NUnit.Framework;
@@ -121,6 +123,69 @@ public class StatusEffectDamageModifierTests
         }
     }
 
+    [Test]
+    public void MonsterDamageText_CorrosionOnCasterAndGrudgeOnTargetShowsModifiedReservedDamage()
+    {
+        BattleCharacter playerTarget = CreatePlayer("Preview_Grudge_Player_Target", 20);
+        MonsterUnit monsterCaster = CreateMonster("Preview_Corrosion_Monster_Caster", 20);
+
+        try
+        {
+            playerTarget.SetGridIndex(7);
+            playerTarget.RuntimeData.StatusEffects.Add(new StatusEffectRuntimeData("E_Grudge", 2));
+            monsterCaster.RuntimeData.StatusEffects.Add(new StatusEffectRuntimeData("E_Corrosion", 3));
+
+            MonsterSkillData skill = CreateMonsterStrikeSkill("M_Status_Modifier_Preview", 5);
+            MonsterReservedCommand command = new(monsterCaster.RuntimeData, skill);
+            command.SetReservedDamage(5);
+            command.SetRangeResult(new List<int> { 7 }, new List<int> { 7 });
+
+            Assert.That(BattleDamageService.GetMonsterDamageText(command), Is.EqualTo("10"));
+        }
+        finally
+        {
+            DestroyBattleObject(playerTarget);
+            DestroyBattleObject(monsterCaster);
+            DestroyIfExists("BattleDamageTextPopupUI_Auto");
+            DestroyIfExists("BattleDamageTextCanvas_Auto");
+        }
+    }
+
+    [Test]
+    public void MonsterDashDamage_AppliesCorrosionAndGrudgeToDirectDamage()
+    {
+        BattleCharacter playerTarget = CreatePlayer("Dash_Grudge_Player_Target", 20);
+        MonsterUnit monsterCaster = CreateMonster("Dash_Corrosion_Monster_Caster", 20);
+
+        try
+        {
+            playerTarget.RuntimeData.StatusEffects.Add(new StatusEffectRuntimeData("E_Grudge", 2));
+            monsterCaster.RuntimeData.StatusEffects.Add(new StatusEffectRuntimeData("E_Corrosion", 3));
+
+            MonsterSkillData skill = CreateMonsterStrikeSkill("S_Monster_07", 5);
+            MonsterReservedCommand command = new(monsterCaster.RuntimeData, skill);
+            command.SetReservedDamage(5);
+
+            BattleActionRunner runner = new(null);
+            MethodInfo method = typeof(BattleActionRunner).GetMethod(
+                "ApplyMonsterDashDamage",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+
+            Assert.That(method, Is.Not.Null);
+
+            method.Invoke(runner, new object[] { command, monsterCaster, playerTarget });
+
+            Assert.That(playerTarget.RuntimeData.CurrentHP, Is.EqualTo(10));
+        }
+        finally
+        {
+            DestroyBattleObject(playerTarget);
+            DestroyBattleObject(monsterCaster);
+            DestroyIfExists("BattleDamageTextPopupUI_Auto");
+            DestroyIfExists("BattleDamageTextCanvas_Auto");
+        }
+    }
+
     private static BattleCharacter CreatePlayer(string name, int hp)
     {
         GameObject gameObject = new(name);
@@ -149,6 +214,30 @@ public class StatusEffectDamageModifierTests
 
         monster.Initialize(new MonsterRuntimeData(name, masterData));
         return monster;
+    }
+
+    private static MonsterSkillData CreateMonsterStrikeSkill(string skillId, int value)
+    {
+        MonsterSkillData skill = new()
+        {
+            SkillId = skillId,
+            Target = TargetType.PlayerParty,
+            EffectIds = "E_Strike",
+            ValueCalcTypes = "Fixed",
+            ValueRate = value.ToString(),
+            CountRate = "1",
+            TimelineNotation = TimelineActionType.Attack
+        };
+
+        skill.EffectEntries.Add(new SkillEffectEntry
+        {
+            EffectId = "E_Strike",
+            ValueCalcType = ValueCalcType.Fixed,
+            ValueAmount = value,
+            CountAmount = 1
+        });
+
+        return skill;
     }
 
     private static void DestroyBattleObject(BattleCharacter character)
