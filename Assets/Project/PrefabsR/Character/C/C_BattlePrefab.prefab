@@ -330,67 +330,247 @@ MonoBehaviour:
       vfx:
         prefab: {fileID: 0}
         flipType: 0
+      projectileVfx:
+        skillId: 
+        missilePrefab: {fileID: 0}
+        impactPrefab: {fileID: 0}
+        missileFlipType: 2
+        impactFlipType: 2
+        launchDelay: 0
+        travelDuration: 0.25
+        arrivalDistance: 0.05
+        impactLifeTime: 2
+        launchOffset: {x: 0, y: 0, z: 0}
+        impactOffset: {x: 0, y: 0, z: 0}
     attack1:
       stateName: AttackAction1
       vfx:
         prefab: {fileID: 5464498477634507533, guid: bdc8593002004414291efd23ad621fe2, type: 3}
         flipType: 0
+      projectileVfx:
+        skillId: 
+        missilePrefab: {fileID: 0}
+        impactPrefab: {fileID: 0}
+        missileFlipType: 2
+        impactFlipType: 2
+        launchDelay: 0
+        travelDuration: 0.25
+        arrivalDistance: 0.05
+        impactLifeTime: 2
+        launchOffset: {x: 0, y: 0, z: 0}
+        impactOffset: {x: 0, y: 0, z: 0}
     attack2:
       stateName: AttackAction2
       vfx:
         prefab: {fileID: 8450343264324062456, guid: 5d4877a37dfaf5942afa7cac0b4c3b75, type: 3}
         flipType: 0
+      projectileVfx:
+        skillId: 
+        missilePrefab: {fileID: 0}
+        impactPrefab: {fileID: 0}
+        missileFlipType: 2
+        impactFlipType: 2
+        launchDelay: 0
+        travelDuration: 0.25
+        arrivalDistance: 0.05
+        impactLifeTime: 2
+        launchOffset: {x: 0, y: 0, z: 0}
+        impactOffset: {x: 0, y: 0, z: 0}
     attack3:
       stateName: AttackAction3
       vfx:
         prefab: {fileID: 2841605795099109794, guid: 2ef7054a95ae0e44d9b3fc626023139e, type: 3}
         flipType: 0
+      projectileVfx:
+        skillId: 
+        missilePrefab: {fileID: 0}
+        impactPrefab: {fileID: 0}
+        missileFlipType: 2
+        impactFlipType: 2
+        launchDelay: 0
+        travelDuration: 0.25
+        arrivalDistance: 0.05
+        impactLifeTime: 2
+        launchOffset: {x: 0, y: 0, z: 0}
+        impactOffset: {x: 0, y: 0, z: 0}
     skill:
       stateName: Control
       vfx:
         prefab: {fileID: 5464498477634507533, guid: bdc8593002004414291efd23ad621fe2, type: 3}
         flipType: 0
+      projectileVfx:
+        skillId: 
+        missilePrefab: {fileID: 0}
+        impactPrefab: {fileID: 0}
+        missileFlipType: 2
+        impactFlipType: 2
+        launchDelay: 0
+        travelDuration: 0.25
+        arrivalDistance: 0.05
+        impactLifeTime: 2
+        launchOffset: {x: 0, y: 0, z: 0}
+        impactOffset: {x: 0, y: 0, z: 0}
   monsterActionPresentations:
   - stateName: 
     vfx:
       prefab: {fileID: 0}
       flipType: 0
+    projectileVfx:
+      skillId: 
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
   - stateName: 
     vfx:
       prefab: {fileID: 0}
       flipType: 0
+    projectileVfx:
+      skillId: 
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
   - stateName: 
     vfx:
       prefab: {fileID: 0}
       flipType: 0
+    projectileVfx:
+      skillId: 
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
   - stateName: 
     vfx:
       prefab: {fileID: 0}
       flipType: 0
+    projectileVfx:
+      skillId: 
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
   - stateName: 
     vfx:
       prefab: {fileID: 0}
       flipType: 0
+    projectileVfx:
+      skillId: 
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
   - stateName: 
     vfx:
       prefab: {fileID: 0}
       flipType: 0
+    projectileVfx:
+      skillId: 
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
   - stateName: 
     vfx:
       prefab: {fileID: 0}
       flipType: 0
+    projectileVfx:
+      skillId: 
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
   - stateName: 
     vfx:
       prefab: {fileID: 0}
       flipType: 0
+    projectileVfx:
+      skillId: 
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
   - stateName: 
     vfx:
       prefab: {fileID: 0}
       flipType: 0
+    projectileVfx:
+      skillId: 
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
   - stateName: 
     vfx:
       prefab: {fileID: 0}
       flipType: 0
+    projectileVfx:
+      skillId: 
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
   vfxSpawnPoint: {fileID: 8290003474214558198}
   unitFacing: {fileID: 0}
   autoFindFacing: 1
@@ -638,7 +818,7 @@ SpriteRenderer:
   m_SortingLayer: 4
   m_SortingOrder: 0
   m_Sprite: {fileID: -266922743, guid: 279769be7b731ad4a8869211bee5cf6a, type: 3}
-  m_Color: {r: 0.7058824, g: 0.7058824, b: 1, a: 1}
+  m_Color: {r: 0.047058824, g: 0.34509805, b: 0.77254903, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
