@@ -263,6 +263,18 @@ MonoBehaviour:
     vfx:
       prefab: {fileID: 3362751810309854143, guid: 3d23142866cb42f41b142372dfa89542, type: 3}
       flipType: 1
+    projectileVfx:
+      skillId: S_Monster_04
+      missilePrefab: {fileID: 1554735761749976267, guid: 45ee36e1c71c3cd42819c858e8377f4f, type: 3}
+      impactPrefab: {fileID: 7625895887722065679, guid: 1c9b42262eb93ec478addfe957d19586, type: 3}
+      missileFlipType: 1
+      impactFlipType: 1
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
   - stateName: 
     vfx:
       prefab: {fileID: 0}

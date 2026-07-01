@@ -24,6 +24,7 @@ public class BattleActionRunner
     private const float HitCameraDelay = 0.12f;
     private const float MonsterHUDVisibleDelay = 0.6f;
     private const float DefaultActionRoutineTimeout = 8f;
+    private const string MuckProjectileSkillId = "S_Monster_04";
     private static readonly Color ExecutionRangeColor = Color.red;
     public const float MoveAnimationDuration = 0.15f;
 
@@ -1963,6 +1964,8 @@ public class BattleActionRunner
                 if (monsterAnimator != null)
                     monsterAnimator.PlayMonsterSkillAction(command);
 
+                yield return PlayMonsterProjectileVfxIfNeeded(monster, command, monsterAnimator);
+
                 monsterSkillEffectService.ApplyMonsterSkill(monster, command);
 
                 if (firstPlayerTarget != null && BattleCameraController.Instance != null)
@@ -1995,13 +1998,25 @@ public class BattleActionRunner
 
         for (int hitIndex = 0; hitIndex < hitCount; hitIndex++)
         {
-            if (!HasAliveMonsterSkillTarget(monster, command))
+            bool hasAliveTarget = HasAliveMonsterSkillTarget(monster, command);
+            bool canPlayProjectileVfx = ShouldPlayMonsterProjectileVfx(monster, command, monsterAnimator);
+
+            if (!hasAliveTarget && !canPlayProjectileVfx)
                 yield break;
 
             if (monsterAnimator != null)
                 monsterAnimator.PlayMonsterSkillAction(command);
 
-            yield return new WaitForSeconds(ActionDelay);
+            if (canPlayProjectileVfx)
+                yield return PlayMonsterProjectileVfxIfNeeded(monster, command, monsterAnimator);
+            else
+                yield return new WaitForSeconds(ActionDelay);
+
+            if (!hasAliveTarget)
+            {
+                yield return new WaitForSeconds(ActionDelay);
+                yield break;
+            }
 
             bool hadCameraTarget = HasMonsterSkillCameraTarget(command);
 
@@ -2236,6 +2251,90 @@ public class BattleActionRunner
         }
 
         target.position = end;
+    }
+
+    private bool ShouldPlayMonsterProjectileVfx(
+        MonsterUnit monster,
+        MonsterReservedCommand command,
+        BattleUnitAnimator animator)
+    {
+        return monster != null &&
+               command != null &&
+               animator != null &&
+               animator.HasMonsterProjectileVfx(command) &&
+               TryGetMonsterProjectileTargetPosition(command, out _);
+    }
+
+    private IEnumerator PlayMonsterProjectileVfxIfNeeded(
+        MonsterUnit monster,
+        MonsterReservedCommand command,
+        BattleUnitAnimator animator)
+    {
+        if (!ShouldPlayMonsterProjectileVfx(monster, command, animator))
+            yield break;
+
+        if (!TryGetMonsterProjectileTargetPosition(command, out Vector3 targetPosition))
+            yield break;
+
+        yield return animator.PlayMonsterProjectileVfx(command, targetPosition);
+    }
+
+    private bool TryGetMonsterProjectileTargetPosition(
+        MonsterReservedCommand command,
+        out Vector3 targetPosition)
+    {
+        targetPosition = Vector3.zero;
+
+        if (gridManager == null || command == null)
+            return false;
+
+        if (TryGetGroundTargetedProjectilePosition(command, out targetPosition))
+            return true;
+
+        BattleCharacter target = FindFirstAlivePlayerTarget(command);
+
+        if (target == null)
+            target = FindFirstPlayerTarget(command);
+
+        if (target != null && target.CurrentGridIndex >= 0)
+        {
+            targetPosition = gridManager.GetWorldPositionByIndex(target.CurrentGridIndex);
+            return true;
+        }
+
+        if (command.TargetGridIndices == null || command.TargetGridIndices.Count <= 0)
+            return false;
+
+        targetPosition = gridManager.GetWorldPositionByIndex(command.TargetGridIndices[0]);
+        return true;
+    }
+
+    private bool TryGetGroundTargetedProjectilePosition(
+        MonsterReservedCommand command,
+        out Vector3 targetPosition)
+    {
+        targetPosition = Vector3.zero;
+
+        if (!ShouldUseRangeOriginForProjectileTarget(command))
+            return false;
+
+        Vector2Int originCoord = gridManager.IndexToCoord(command.RangeOriginGridIndex);
+
+        if (!gridManager.IsValidCoord(originCoord))
+            return false;
+
+        targetPosition = gridManager.GetWorldPositionByIndex(command.RangeOriginGridIndex);
+        return true;
+    }
+
+    private static bool ShouldUseRangeOriginForProjectileTarget(MonsterReservedCommand command)
+    {
+        return command != null &&
+               command.RangeOriginGridIndex >= 0 &&
+               string.Equals(
+                   command.SkillId,
+                   MuckProjectileSkillId,
+                   System.StringComparison.Ordinal);
     }
 
     private Vector2Int GetMonsterMoveOffset(MonsterReservedCommand command)

@@ -1,3 +1,4 @@
+using System.Collections;
 using Relic.Gameplay.Data;
 using UnityEngine;
 
@@ -197,6 +198,26 @@ public class BattleUnitAnimator : MonoBehaviour
         PlayPresentation(GetMonsterActionPresentation(command.ActionIndex));
     }
 
+    public bool HasMonsterProjectileVfx(MonsterReservedCommand command)
+    {
+        return TryGetMonsterProjectilePresentation(command, out BattleUnitActionPresentation _);
+    }
+
+    public IEnumerator PlayMonsterProjectileVfx(
+        MonsterReservedCommand command,
+        Vector3 targetWorldPosition)
+    {
+        if (!TryGetMonsterProjectilePresentation(command, out BattleUnitActionPresentation presentation))
+            yield break;
+
+        BattleProjectileVfxEntry projectile = presentation.projectileVfx;
+
+        if (!HasProjectileVfx(projectile))
+            yield break;
+
+        yield return PlayProjectileVfx(projectile, targetWorldPosition);
+    }
+
     public void PlayMonsterSkillAction(MonsterSkillData skillData)
     {
         if (skillData == null)
@@ -254,6 +275,58 @@ public class BattleUnitAnimator : MonoBehaviour
         EnsureMonsterActionPresentationArray();
 
         return monsterActionPresentations[actionIndex - 1];
+    }
+
+    private bool TryGetMonsterActionPresentation(
+        MonsterReservedCommand command,
+        out BattleUnitActionPresentation presentation)
+    {
+        presentation = null;
+
+        if (command == null || !IsValidMonsterActionIndex(command.ActionIndex))
+            return false;
+
+        presentation = GetMonsterActionPresentation(command.ActionIndex);
+        return presentation != null;
+    }
+
+    private bool TryGetMonsterProjectilePresentation(
+        MonsterReservedCommand command,
+        out BattleUnitActionPresentation presentation)
+    {
+        presentation = null;
+
+        if (command == null)
+            return false;
+
+        if (TryGetMonsterActionPresentation(command, out BattleUnitActionPresentation mapped) &&
+            HasProjectileVfx(mapped.projectileVfx) &&
+            ProjectileVfxMatchesSkill(command, mapped.projectileVfx, true))
+        {
+            presentation = mapped;
+            return true;
+        }
+
+        EnsureMonsterActionPresentationArray();
+
+        for (int i = 0; i < monsterActionPresentations.Length; i++)
+        {
+            BattleUnitActionPresentation candidate = monsterActionPresentations[i];
+
+            if (candidate == null)
+                continue;
+
+            if (!HasProjectileVfx(candidate.projectileVfx))
+                continue;
+
+            if (!ProjectileVfxMatchesSkill(command, candidate.projectileVfx, false))
+                continue;
+
+            presentation = candidate;
+            return true;
+        }
+
+        return false;
     }
 
     private void EnsurePlayerSkillPresentations()
@@ -374,6 +447,26 @@ public class BattleUnitAnimator : MonoBehaviour
         return entry != null && entry.prefab != null;
     }
 
+    private bool HasProjectileVfx(BattleProjectileVfxEntry entry)
+    {
+        return entry != null && entry.missilePrefab != null;
+    }
+
+    private bool ProjectileVfxMatchesSkill(
+        MonsterReservedCommand command,
+        BattleProjectileVfxEntry entry,
+        bool allowEmptySkillId)
+    {
+        if (entry == null)
+            return false;
+
+        if (string.IsNullOrWhiteSpace(entry.skillId))
+            return allowEmptySkillId;
+
+        return command != null &&
+               string.Equals(entry.skillId.Trim(), command.SkillId, System.StringComparison.Ordinal);
+    }
+
     private bool HasPresentation(BattleUnitActionPresentation presentation)
     {
         return presentation != null &&
@@ -388,7 +481,7 @@ public class BattleUnitAnimator : MonoBehaviour
         if (vfxLayer < 0)
             vfxLayer = LayerMask.NameToLayer(vfxLayerName);
 
-        Transform spawn = vfxSpawnPoint != null ? vfxSpawnPoint : transform;
+        Transform spawn = GetVfxSpawnTransform();
 
         GameObject vfx = Instantiate(entry.prefab, spawn, false);
 
@@ -398,6 +491,126 @@ public class BattleUnitAnimator : MonoBehaviour
         ApplyVfxFlip(vfx, entry.flipType);
 
         Destroy(vfx, vfxLifeTime);
+    }
+
+    private IEnumerator PlayProjectileVfx(
+        BattleProjectileVfxEntry entry,
+        Vector3 targetWorldPosition)
+    {
+        if (entry == null || entry.missilePrefab == null)
+            yield break;
+
+        if (entry.launchDelay > 0f)
+            yield return new WaitForSeconds(entry.launchDelay);
+
+        if (vfxLayer < 0)
+            vfxLayer = LayerMask.NameToLayer(vfxLayerName);
+
+        Transform spawn = GetVfxSpawnTransform();
+        GameObject missile = Instantiate(entry.missilePrefab, spawn, false);
+        missile.transform.localPosition = Vector3.zero;
+
+        if (vfxLayer >= 0)
+            SetLayerRecursively(missile, vfxLayer);
+
+        ApplyVfxFlip(missile, entry.missileFlipType);
+        missile.transform.SetParent(null, true);
+        missile.transform.position += entry.launchOffset;
+
+        Vector3 startPosition = missile.transform.position;
+        Vector3 impactPosition = ResolveProjectileImpactPosition(
+            targetWorldPosition,
+            entry.impactOffset,
+            startPosition.z);
+
+        yield return MoveProjectileVfx(
+            missile.transform,
+            startPosition,
+            impactPosition,
+            entry.travelDuration,
+            entry.arrivalDistance);
+
+        if (missile != null)
+            Destroy(missile);
+
+        SpawnImpactVfx(entry, impactPosition);
+    }
+
+    private static Vector3 ResolveProjectileImpactPosition(
+        Vector3 targetWorldPosition,
+        Vector3 impactOffset,
+        float projectileZ)
+    {
+        Vector3 impactPosition = targetWorldPosition + impactOffset;
+        impactPosition.z = projectileZ;
+        return impactPosition;
+    }
+
+    private IEnumerator MoveProjectileVfx(
+        Transform projectile,
+        Vector3 startPosition,
+        Vector3 targetPosition,
+        float duration,
+        float arrivalDistance)
+    {
+        if (projectile == null)
+            yield break;
+
+        float safeArrivalDistance = Mathf.Max(0f, arrivalDistance);
+
+        if (duration <= 0f)
+        {
+            projectile.position = targetPosition;
+            yield break;
+        }
+
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            if (projectile == null)
+                yield break;
+
+            elapsed += Time.deltaTime;
+
+            float t = Mathf.Clamp01(elapsed / duration);
+            projectile.position = Vector3.Lerp(startPosition, targetPosition, t);
+
+            if (safeArrivalDistance > 0f &&
+                Vector3.Distance(projectile.position, targetPosition) <= safeArrivalDistance)
+            {
+                break;
+            }
+
+            yield return null;
+        }
+
+        if (projectile != null)
+            projectile.position = targetPosition;
+    }
+
+    private void SpawnImpactVfx(BattleProjectileVfxEntry entry, Vector3 impactPosition)
+    {
+        if (entry == null || entry.impactPrefab == null)
+            return;
+
+        Transform spawn = GetVfxSpawnTransform();
+        GameObject impact = Instantiate(entry.impactPrefab, spawn, false);
+        impact.transform.localPosition = Vector3.zero;
+
+        if (vfxLayer >= 0)
+            SetLayerRecursively(impact, vfxLayer);
+
+        ApplyVfxFlip(impact, entry.impactFlipType);
+        impact.transform.SetParent(null, true);
+        impact.transform.position = impactPosition;
+
+        Destroy(impact, Mathf.Max(0.01f, entry.impactLifeTime));
+    }
+
+    private Transform GetVfxSpawnTransform()
+    {
+        return vfxSpawnPoint != null ? vfxSpawnPoint : transform;
     }
 
     private void SetLayerRecursively(GameObject obj, int layer)

@@ -10,6 +10,8 @@ public class BattleUnitActionPresentation
     [FormerlySerializedAs("actionVfx")]
     public BattleVfxEntry vfx;
 
+    public BattleProjectileVfxEntry projectileVfx;
+
     public static BattleUnitActionPresentation[] CreateArray(int count)
     {
         int safeCount = Math.Max(0, count);

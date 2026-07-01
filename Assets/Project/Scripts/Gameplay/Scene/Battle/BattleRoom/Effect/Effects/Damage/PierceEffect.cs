@@ -13,12 +13,16 @@ public class PierceEffect : BattleEffectBase
 
         if (context.PlayerTarget != null)
         {
-            BattleEffectUtility.PierceDamagePlayer(context.PlayerTarget, damage);
+            int finalDamage = BattleDamageModifierUtility.CalculateFinalDamageToPlayer(context, damage);
+
+            BattleEffectUtility.PierceDamagePlayer(context.PlayerTarget, finalDamage);
         }
 
         if (context.MonsterTarget != null)
         {
-            BattleEffectUtility.PierceDamageMonster(context.MonsterTarget, damage);
+            int finalDamage = BattleDamageModifierUtility.CalculateFinalDamageToMonster(context, damage);
+
+            BattleEffectUtility.PierceDamageMonster(context.MonsterTarget, finalDamage);
         }
     }
 }
