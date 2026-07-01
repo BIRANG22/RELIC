@@ -23,13 +23,13 @@ public class MonsterHUDSlot : MonoBehaviour
     [SerializeField] private float statusEffectIconSpacing = 4f;
 
     [Header("Follow")]
+    [SerializeField] private bool useFollowPosition = true;
     [SerializeField] private Transform followTarget;
     [SerializeField] private Vector3 worldOffset = new Vector3(0f, 1.8f, 0f);
     [SerializeField] private float colliderTopScreenPadding = 4f;
     [SerializeField] private CanvasGroup canvasGroup;
 
     private RectTransform rectTransform;
-
     private MonsterRuntimeData boundRuntime;
     private Collider2D followCollider2D;
     private readonly List<StatusEffectIcon> spawnedStatusIcons = new();
@@ -47,6 +47,19 @@ public class MonsterHUDSlot : MonoBehaviour
         ApplyStatusEffectParentLayout();
     }
 
+    private void LateUpdate()
+    {
+        if (!useFollowPosition)
+            return;
+
+        UpdateFollowPosition();
+    }
+
+    public void SetUseFollowPosition(bool value)
+    {
+        useFollowPosition = value;
+    }
+
     public void SetFollowTarget(Transform target)
     {
         SetFollowTarget(target, null);
@@ -56,19 +69,20 @@ public class MonsterHUDSlot : MonoBehaviour
     {
         followTarget = target;
         followCollider2D = collider2D;
-        UpdateFollowPosition();
+
+        if (useFollowPosition)
+            UpdateFollowPosition();
     }
-    private void LateUpdate()
-    {
-        UpdateFollowPosition();
-    }
+
     private void UpdateFollowPosition()
     {
+        if (!useFollowPosition)
+            return;
+
         if (followTarget == null || rectTransform == null)
             return;
 
         Camera cam = Camera.main;
-
         if (cam == null)
             return;
 
@@ -83,6 +97,7 @@ public class MonsterHUDSlot : MonoBehaviour
 
         rectTransform.position = screenPos;
     }
+
     private Vector3 GetFollowWorldPosition()
     {
         if (followCollider2D != null)
@@ -110,7 +125,9 @@ public class MonsterHUDSlot : MonoBehaviour
 
     public void Show()
     {
-        UpdateFollowPosition();
+        if (useFollowPosition)
+            UpdateFollowPosition();
+
         Refresh();
 
         canvasGroup.alpha = 1f;
@@ -139,6 +156,27 @@ public class MonsterHUDSlot : MonoBehaviour
         RefreshBar(hpFill, hpValueText, boundRuntime.CurrentHP, boundRuntime.MaxHP);
         RefreshShield(boundRuntime.CurrentShield, boundRuntime.MaxHP);
         RefreshStatusEffects(boundRuntime.StatusEffects);
+    }
+
+    public void AlignLeft()
+    {
+        AlignSelf(0f);
+    }
+
+    public void AlignRight()
+    {
+        AlignSelf(1f);
+    }
+
+    private void AlignSelf(float x)
+    {
+        if (rectTransform == null)
+            rectTransform = GetComponent<RectTransform>();
+
+        rectTransform.anchorMin = new Vector2(x, rectTransform.anchorMin.y);
+        rectTransform.anchorMax = new Vector2(x, rectTransform.anchorMax.y);
+        rectTransform.pivot = new Vector2(x, rectTransform.pivot.y);
+        rectTransform.anchoredPosition = new Vector2(0f, rectTransform.anchoredPosition.y);
     }
 
     private void RefreshBar(Image fill, TMP_Text valueText, int current, int max)
@@ -188,8 +226,6 @@ public class MonsterHUDSlot : MonoBehaviour
                 continue;
 
             StatusEffectIcon icon = Instantiate(statusIconPrefab, statusIconRoot);
-
-            // ⼭ StatusEffectIcon ΰ EffectId DB ȸؼ Sprite 
             icon.Set(statusEffects[i]);
 
             spawnedStatusIcons.Add(icon);
