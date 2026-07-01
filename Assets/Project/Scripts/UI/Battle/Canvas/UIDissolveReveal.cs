@@ -38,7 +38,6 @@ public class UIDissolveReveal : MonoBehaviour
     [SerializeField] private string[] autoEnableObjectNames =
     {
         "DissolveCamera",
-        "RawImage(RT)",
         "DissolvePanelCanvas"
     };
 
@@ -99,20 +98,19 @@ public class UIDissolveReveal : MonoBehaviour
     private void ResolveControlledObjects()
     {
         List<GameObject> objects = new();
+        GameObject alwaysActiveRenderRoot = ResolveAlwaysActiveRenderRoot();
 
-        AddUniqueObjects(objects, objectsEnabledWhileVisible);
+        KeepAlwaysActiveRenderRootOn();
+        AddUniqueObjects(objects, objectsEnabledWhileVisible, alwaysActiveRenderRoot);
 
         if (autoEnableObjectNames != null)
         {
             for (int i = 0; i < autoEnableObjectNames.Length; i++)
             {
                 GameObject found = FindSceneGameObject(autoEnableObjectNames[i]);
-                AddUniqueObject(objects, found);
+                AddUniqueObject(objects, found, alwaysActiveRenderRoot);
             }
         }
-
-        if (targetRawImage != null && targetRawImage.transform.parent != null)
-            AddUniqueObject(objects, targetRawImage.transform.parent.gameObject);
 
         cachedObjectsEnabledWhileVisible = objects.ToArray();
     }
@@ -411,15 +409,46 @@ public class UIDissolveReveal : MonoBehaviour
 
     private void SetControlledObjectsActive(bool active)
     {
+        GameObject alwaysActiveRenderRoot = ResolveAlwaysActiveRenderRoot();
+        KeepAlwaysActiveRenderRootOn();
+
         if (cachedObjectsEnabledWhileVisible == null)
             return;
 
         for (int i = 0; i < cachedObjectsEnabledWhileVisible.Length; i++)
         {
             GameObject controlledObject = cachedObjectsEnabledWhileVisible[i];
-            if (controlledObject != null)
-                controlledObject.SetActive(active);
+            if (controlledObject == null)
+                continue;
+
+            if (controlledObject == alwaysActiveRenderRoot)
+            {
+                controlledObject.SetActive(true);
+                continue;
+            }
+
+            controlledObject.SetActive(active);
         }
+    }
+
+    private void KeepAlwaysActiveRenderRootOn()
+    {
+        GameObject alwaysActiveRenderRoot = ResolveAlwaysActiveRenderRoot();
+        if (alwaysActiveRenderRoot != null && !alwaysActiveRenderRoot.activeSelf)
+            alwaysActiveRenderRoot.SetActive(true);
+    }
+
+    private GameObject ResolveAlwaysActiveRenderRoot()
+    {
+        if (targetRawImage != null &&
+            targetRawImage.transform.parent != null &&
+            targetRawImage.transform.parent.gameObject != gameObject)
+        {
+            return targetRawImage.transform.parent.gameObject;
+        }
+
+        GameObject autoRoot = FindSceneGameObject(autoRenderOutputRootName);
+        return autoRoot != gameObject ? autoRoot : null;
     }
 
     private void ApplyFrontSorting()
@@ -665,18 +694,24 @@ public class UIDissolveReveal : MonoBehaviour
         return fallback;
     }
 
-    private static void AddUniqueObjects(List<GameObject> objects, GameObject[] candidates)
+    private static void AddUniqueObjects(
+        List<GameObject> objects,
+        GameObject[] candidates,
+        GameObject excludedObject = null)
     {
         if (candidates == null)
             return;
 
         for (int i = 0; i < candidates.Length; i++)
-            AddUniqueObject(objects, candidates[i]);
+            AddUniqueObject(objects, candidates[i], excludedObject);
     }
 
-    private static void AddUniqueObject(List<GameObject> objects, GameObject candidate)
+    private static void AddUniqueObject(
+        List<GameObject> objects,
+        GameObject candidate,
+        GameObject excludedObject = null)
     {
-        if (objects == null || candidate == null)
+        if (objects == null || candidate == null || candidate == excludedObject)
             return;
 
         if (!objects.Contains(candidate))
