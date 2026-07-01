@@ -45,6 +45,20 @@ public class BattleCameraController : MonoBehaviour
     [SerializeField] private float characterSelectionFocusOrthographicSize = 4.4f;
     [SerializeField] private bool clampCharacterSelectionFocusPosition = false;
 
+    [Header("Monster Info Focus")]
+    [SerializeField] private bool enableMonsterInfoFocus = true;
+    [SerializeField] private float monsterInfoFocusDuration = 0.22f;
+    [SerializeField] private float monsterInfoReturnDuration = 0.22f;
+    [SerializeField] private Vector2 monsterInfoFocusOffset = new Vector2(0f, 0.25f);
+    [SerializeField, Min(0f)] private float monsterInfoFocusSideOffset = 4.0f;
+    [SerializeField] private bool useMonsterInfoFocusZ = true;
+    [SerializeField] private bool useFixedMonsterInfoFocusZ = false;
+    [SerializeField] private float monsterInfoFocusZPosition = -18f;
+    [SerializeField] private float monsterInfoFocusZOffset = 2f;
+    [SerializeField] private bool useMonsterInfoFocusOrthographicSize = false;
+    [SerializeField] private float monsterInfoFocusOrthographicSize = 4.4f;
+    [SerializeField] private bool clampMonsterInfoFocusPosition = false;
+
     [Header("Drag")]
     [SerializeField] private bool enableMouseDrag = true;
     [SerializeField] private bool dragOnlyInBattleRoom = true;
@@ -67,6 +81,7 @@ public class BattleCameraController : MonoBehaviour
     private bool hasDragTarget;
     private bool holdDefaultReturn;
     private bool hasActiveCombatZoom;
+    private bool hasActiveMonsterInfoFocus;
     private bool suppressDragUntilMouseReleased;
 
     private Transform zoomFollowTarget;
@@ -79,6 +94,7 @@ public class BattleCameraController : MonoBehaviour
     private float previousTimeScale = 1f;
 
     public bool IsCombatZoomActive => hasActiveCombatZoom;
+    public bool IsMonsterInfoFocusActive => hasActiveMonsterInfoFocus;
 
     private void Awake()
     {
@@ -181,6 +197,7 @@ public class BattleCameraController : MonoBehaviour
         if (targetCamera == null)
             yield break;
 
+        hasActiveMonsterInfoFocus = false;
         CancelDrag(false);
         EndZoomFollowTarget();
 
@@ -197,7 +214,12 @@ public class BattleCameraController : MonoBehaviour
             : targetCamera.transform.position.z;
 
         float targetSize = useOrthographicSizeZoom ? zoomSize : targetCamera.orthographicSize;
-        routine = StartCoroutine(MoveCamera(targetPos, targetSize, zoomDuration, clampZoomPosition));
+        routine = StartCoroutine(MoveCamera(
+            targetPos,
+            targetSize,
+            zoomDuration,
+            clampZoomPosition,
+            useOrthographicSizeZoom));
         yield return routine;
     }
 
@@ -212,6 +234,7 @@ public class BattleCameraController : MonoBehaviour
         if (hasActiveCombatZoom)
             return;
 
+        hasActiveMonsterInfoFocus = false;
         CancelDrag(false);
         EndZoomFollowTarget();
 
@@ -237,7 +260,93 @@ public class BattleCameraController : MonoBehaviour
             targetPos,
             targetSize,
             focusDuration,
-            clampCharacterSelectionFocusPosition));
+            clampCharacterSelectionFocusPosition,
+            useCharacterSelectionFocusOrthographicSize));
+    }
+
+    public void FocusMonsterInfo(Transform target)
+    {
+        FocusMonsterInfo(target, 0f);
+    }
+
+    public void FocusMonsterInfoWithPanelSide(Transform target, bool panelOnLeft)
+    {
+        float sideOffset = Mathf.Abs(monsterInfoFocusSideOffset);
+        float horizontalOffset = panelOnLeft
+            ? -sideOffset
+            : sideOffset;
+
+        FocusMonsterInfo(target, horizontalOffset);
+    }
+
+    private void FocusMonsterInfo(Transform target, float horizontalOffset)
+    {
+        if (!enableMonsterInfoFocus)
+            return;
+
+        if (targetCamera == null || target == null)
+            return;
+
+        if (hasActiveCombatZoom)
+            return;
+
+        CancelDrag(false);
+        EndZoomFollowTarget();
+
+        if (routine != null)
+            StopCoroutine(routine);
+
+        ClearImpactOffset();
+
+        Vector3 targetPos = target.position;
+        targetPos.x += monsterInfoFocusOffset.x + horizontalOffset;
+        targetPos.y += monsterInfoFocusOffset.y;
+        targetPos.z = useMonsterInfoFocusZ
+            ? GetMonsterInfoFocusZPosition()
+            : targetCamera.transform.position.z;
+
+        float targetSize = useMonsterInfoFocusOrthographicSize
+            ? monsterInfoFocusOrthographicSize
+            : targetCamera.orthographicSize;
+
+        hasActiveMonsterInfoFocus = true;
+        MoveCameraWithOptionalImmediate(
+            targetPos,
+            targetSize,
+            monsterInfoFocusDuration,
+            clampMonsterInfoFocusPosition,
+            useMonsterInfoFocusOrthographicSize);
+    }
+
+    public void ReturnDefaultFromMonsterInfoFocus()
+    {
+        if (!hasActiveMonsterInfoFocus)
+            return;
+
+        if (targetCamera == null)
+            return;
+
+        if (!isActiveAndEnabled)
+        {
+            ForceReturnDefaultImmediate();
+            return;
+        }
+
+        CancelDrag(false);
+        EndZoomFollowTarget();
+
+        if (routine != null)
+            StopCoroutine(routine);
+
+        ClearImpactOffset();
+
+        hasActiveMonsterInfoFocus = false;
+        MoveCameraWithOptionalImmediate(
+            defaultPosition,
+            defaultSize,
+            monsterInfoReturnDuration,
+            false,
+            true);
     }
 
     public void StartReturnDefault()
@@ -273,6 +382,7 @@ public class BattleCameraController : MonoBehaviour
         targetCamera.transform.position = defaultPosition;
         targetCamera.orthographicSize = defaultSize;
         hasActiveCombatZoom = false;
+        hasActiveMonsterInfoFocus = false;
     }
 
     public IEnumerator ReturnDefault()
@@ -288,10 +398,11 @@ public class BattleCameraController : MonoBehaviour
 
         ClearImpactOffset();
 
-        routine = StartCoroutine(MoveCamera(defaultPosition, defaultSize, returnDuration, false));
+        routine = StartCoroutine(MoveCamera(defaultPosition, defaultSize, returnDuration, false, true));
         yield return routine;
 
         hasActiveCombatZoom = false;
+        hasActiveMonsterInfoFocus = false;
     }
 
     public IEnumerator PlayDamageImpact()
@@ -322,7 +433,12 @@ public class BattleCameraController : MonoBehaviour
         ClearImpactOffset();
     }
 
-    private IEnumerator MoveCamera(Vector3 targetPos, float targetSize, float duration, bool clampPosition = true)
+    private IEnumerator MoveCamera(
+        Vector3 targetPos,
+        float targetSize,
+        float duration,
+        bool clampPosition = true,
+        bool applyOrthographicSize = false)
     {
         Vector3 startPos = targetCamera.transform.position;
         float startSize = targetCamera.orthographicSize;
@@ -334,7 +450,7 @@ public class BattleCameraController : MonoBehaviour
         {
             targetCamera.transform.position = clampPosition ? ClampCameraPosition(targetPos) : targetPos;
 
-            if (useOrthographicSizeZoom)
+            if (applyOrthographicSize)
                 targetCamera.orthographicSize = targetSize;
             routine = null;
             yield break;
@@ -351,7 +467,7 @@ public class BattleCameraController : MonoBehaviour
             Vector3 nextPosition = Vector3.Lerp(startPos, targetPos, curvedT);
             targetCamera.transform.position = clampPosition ? ClampCameraPosition(nextPosition) : nextPosition;
 
-            if (useOrthographicSizeZoom)
+            if (applyOrthographicSize)
             {
                 targetCamera.orthographicSize =
                     Mathf.Lerp(startSize, targetSize, curvedT);
@@ -362,9 +478,38 @@ public class BattleCameraController : MonoBehaviour
 
         targetCamera.transform.position = clampPosition ? ClampCameraPosition(targetPos) : targetPos;
 
-        if (useOrthographicSizeZoom)
+        if (applyOrthographicSize)
             targetCamera.orthographicSize = targetSize;
         routine = null;
+    }
+
+    private void MoveCameraWithOptionalImmediate(
+        Vector3 targetPos,
+        float targetSize,
+        float duration,
+        bool clampPosition,
+        bool applyOrthographicSize)
+    {
+        if (targetCamera == null)
+            return;
+
+        if (duration <= 0f)
+        {
+            targetCamera.transform.position = clampPosition ? ClampCameraPosition(targetPos) : targetPos;
+
+            if (applyOrthographicSize)
+                targetCamera.orthographicSize = targetSize;
+
+            routine = null;
+            return;
+        }
+
+        routine = StartCoroutine(MoveCamera(
+            targetPos,
+            targetSize,
+            duration,
+            clampPosition,
+            applyOrthographicSize));
     }
 
     private IEnumerator LerpImpactZoom(float startSize, float targetSize, float startZ, float targetZ, float duration)
@@ -514,6 +659,14 @@ public class BattleCameraController : MonoBehaviour
             return characterSelectionFocusZPosition;
 
         return defaultPosition.z + characterSelectionFocusZOffset;
+    }
+
+    private float GetMonsterInfoFocusZPosition()
+    {
+        if (useFixedMonsterInfoFocusZ)
+            return monsterInfoFocusZPosition;
+
+        return defaultPosition.z + monsterInfoFocusZOffset;
     }
 
     private float EvaluateZoomCurve(float t)
@@ -666,7 +819,7 @@ public class BattleCameraController : MonoBehaviour
 
         hasDragTarget = false;
         ClearImpactOffset();
-        routine = StartCoroutine(MoveCamera(defaultPosition, defaultSize, dragReturnDuration, false));
+        routine = StartCoroutine(MoveCamera(defaultPosition, defaultSize, dragReturnDuration, false, true));
     }
 
     private bool IsDragAllowedInCurrentRoom()
@@ -732,6 +885,11 @@ public class BattleCameraController : MonoBehaviour
         impactShakeStrength = Mathf.Max(0f, impactShakeStrength);
         impactShakeFrequency = Mathf.Max(1f, impactShakeFrequency);
         impactHitStopDuration = Mathf.Max(0f, impactHitStopDuration);
+        monsterInfoFocusDuration = Mathf.Max(0f, monsterInfoFocusDuration);
+        monsterInfoReturnDuration = Mathf.Max(0f, monsterInfoReturnDuration);
+        monsterInfoFocusSideOffset = Mathf.Max(0f, monsterInfoFocusSideOffset);
+        monsterInfoFocusZOffset = Mathf.Max(0f, monsterInfoFocusZOffset);
+        monsterInfoFocusOrthographicSize = Mathf.Max(0.1f, monsterInfoFocusOrthographicSize);
     }
 #endif
 }

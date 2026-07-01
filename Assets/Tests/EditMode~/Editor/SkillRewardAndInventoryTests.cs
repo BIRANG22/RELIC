@@ -313,6 +313,189 @@ public class SkillRewardAndInventoryTests
         }
     }
 
+    [Test]
+    public void SkillUpgradePanel_SelectSkillForUpgradeSetsWheelImageWithoutLockingRestRoom()
+    {
+        GameObject panelObject = new("UpgradePanel");
+        GameObject wheelObject = new("Wheel");
+        GameObject imageObject = new("Image");
+        Sprite selectedSprite = Sprite.Create(
+            Texture2D.whiteTexture,
+            new Rect(0f, 0f, 1f, 1f),
+            new Vector2(0.5f, 0.5f));
+
+        try
+        {
+            wheelObject.transform.SetParent(panelObject.transform, false);
+            imageObject.transform.SetParent(wheelObject.transform, false);
+            Image wheelImage = imageObject.AddComponent<Image>();
+            wheelImage.enabled = false;
+
+            SkillUpgradePanel panel = panelObject.AddComponent<SkillUpgradePanel>();
+
+            MethodInfo method = typeof(SkillUpgradePanel)
+                .GetMethod("SelectSkillForUpgrade", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            Assert.That(method, Is.Not.Null);
+
+            SkillUpgradeRequest request = new()
+            {
+                CurrentSkillId = "S_Core_01",
+                UpgradeSkillId = "S_Core_02",
+                SlotType = SkillSlotType.Inventory,
+                SlotIndex = 0
+            };
+
+            Assert.DoesNotThrow(() => method.Invoke(panel, new object[] { request, selectedSprite }));
+            Assert.That(wheelImage.sprite, Is.EqualTo(selectedSprite));
+            Assert.That(wheelImage.enabled, Is.True);
+            Assert.That(panel.HasUpgradedThisRestRoom, Is.False);
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(selectedSprite);
+            UnityEngine.Object.DestroyImmediate(panelObject);
+        }
+    }
+
+    [Test]
+    public void SkillUpgradePanel_TuneSelectedSkillUpgradesSelectedInventorySkill()
+    {
+        if (DataManager.Instance != null)
+            UnityEngine.Object.DestroyImmediate(DataManager.Instance.gameObject);
+
+        GameObject dataManagerObject = new("DataManager");
+        GameObject panelObject = new("SkillUpgradePanel");
+
+        try
+        {
+            DataManager dataManager = dataManagerObject.AddComponent<DataManager>();
+            dataManager.SkillDatabase.Initialize(new[]
+            {
+                CreateSkill("S_Core_01", Category.Core, SkillRarity.CoreCommon),
+                CreateSkill("S_Core_02", Category.Core, SkillRarity.CoreCommon)
+            });
+
+            BattleRuntimeData runtime = new()
+            {
+                IsBattleRunInitialized = true,
+                SkillInventoryIds = new List<string> { "S_Core_01" }
+            };
+            dataManager.BattleRuntimeStore.Set(runtime);
+
+            SkillUpgradePanel panel = panelObject.AddComponent<SkillUpgradePanel>();
+            MethodInfo selectMethod = typeof(SkillUpgradePanel)
+                .GetMethod("SelectSkillForUpgrade", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            Assert.That(selectMethod, Is.Not.Null);
+
+            SkillUpgradeRequest request = new()
+            {
+                CurrentSkillId = "S_Core_01",
+                UpgradeSkillId = "S_Core_02",
+                SlotType = SkillSlotType.Inventory,
+                SlotIndex = 0
+            };
+
+            selectMethod.Invoke(panel, new object[] { request, null });
+
+            Assert.That(panel.TuneSelectedSkill(), Is.True);
+            Assert.That(dataManager.BattleRuntimeStore.GetOrCreate().SkillInventoryIds[0], Is.EqualTo("S_Core_02"));
+            Assert.That(panel.HasUpgradedThisRestRoom, Is.True);
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(panelObject);
+            UnityEngine.Object.DestroyImmediate(dataManagerObject);
+        }
+    }
+
+    [Test]
+    public void RestRoomController_HealShowsNextButtonWithoutOpeningUpgradePanel()
+    {
+        GameObject controllerObject = new("RestRoom");
+        GameObject panelObject = new("SkillUpgradePanel");
+        GameObject panelRootObject = new("UpgradePanelRoot");
+        GameObject nextButtonObject = new("NextButton");
+
+        try
+        {
+            panelRootObject.transform.SetParent(panelObject.transform, false);
+            panelRootObject.SetActive(false);
+            nextButtonObject.SetActive(false);
+
+            SkillUpgradePanel panel = panelObject.AddComponent<SkillUpgradePanel>();
+            typeof(SkillUpgradePanel)
+                .GetField("panelRoot", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.SetValue(panel, panelRootObject);
+
+            RestRoomController controller = controllerObject.AddComponent<RestRoomController>();
+            typeof(RestRoomController)
+                .GetField("upgradePanel", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.SetValue(controller, panel);
+            typeof(RestRoomController)
+                .GetField("nextButtonRoot", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.SetValue(controller, nextButtonObject);
+
+            controller.OnRestButtonClicked();
+
+            Assert.That(panelRootObject.activeSelf, Is.False);
+            Assert.That(nextButtonObject.activeSelf, Is.True);
+
+            controller.OnUpgradeButtonClicked();
+
+            Assert.That(panelRootObject.activeSelf, Is.False);
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(controllerObject);
+            UnityEngine.Object.DestroyImmediate(panelObject);
+            UnityEngine.Object.DestroyImmediate(nextButtonObject);
+        }
+    }
+
+    [Test]
+    public void RestRoomController_UpgradeShowsNextButtonAndStillAllowsTuning()
+    {
+        GameObject controllerObject = new("RestRoom");
+        GameObject panelObject = new("SkillUpgradePanel");
+        GameObject panelRootObject = new("UpgradePanelRoot");
+        GameObject nextButtonObject = new("NextButton");
+
+        try
+        {
+            panelRootObject.transform.SetParent(panelObject.transform, false);
+            panelRootObject.SetActive(false);
+            nextButtonObject.SetActive(false);
+
+            SkillUpgradePanel panel = panelObject.AddComponent<SkillUpgradePanel>();
+            typeof(SkillUpgradePanel)
+                .GetField("panelRoot", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.SetValue(panel, panelRootObject);
+
+            RestRoomController controller = controllerObject.AddComponent<RestRoomController>();
+            typeof(RestRoomController)
+                .GetField("upgradePanel", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.SetValue(controller, panel);
+            typeof(RestRoomController)
+                .GetField("nextButtonRoot", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.SetValue(controller, nextButtonObject);
+
+            controller.OnUpgradeButtonClicked();
+
+            Assert.That(panelRootObject.activeSelf, Is.True);
+            Assert.That(nextButtonObject.activeSelf, Is.True);
+
+            Assert.DoesNotThrow(() => controller.OnTuningButtonClicked());
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(controllerObject);
+            UnityEngine.Object.DestroyImmediate(panelObject);
+            UnityEngine.Object.DestroyImmediate(nextButtonObject);
+        }
+    }
+
     private static SkillMasterData CreateSkill(
         string skillId,
         Category category,

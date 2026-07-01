@@ -12,8 +12,8 @@ public class BattleDebugKillAllMonsters : MonoBehaviour
         if (Input.GetKeyDown(killKey))
             KillAllMonstersForDebug();
 
-        if (Input.GetKeyDown(damagePlayersKey))
-            DamagePlayersForDebug();
+        //if (Input.GetKeyDown(damagePlayersKey))
+        //    DamagePlayersForDebug();
     }
 
     public void KillAllMonstersForDebug()
