@@ -28,8 +28,8 @@ public class SkillUpgradePanel : MonoBehaviour
     [SerializeField] private SkillUpgradeIconItem iconPrefab;
 
     [Header("Layout")]
-    [SerializeField] private Vector2 fallbackIconSize = new(20f, 20f);
-    [SerializeField] private Vector2 iconSpacing = new(8f, 8f);
+    [SerializeField] private Vector2 fallbackIconSize = new(80f, 80f);
+    [SerializeField] private Vector2 iconSpacing = new(15f, 15f);
     [SerializeField] private RectOffset iconPadding = new();
     [SerializeField] private TextAnchor iconAlignment = TextAnchor.UpperLeft;
 

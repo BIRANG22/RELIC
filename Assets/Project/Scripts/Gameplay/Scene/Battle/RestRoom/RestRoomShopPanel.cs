@@ -23,8 +23,8 @@ public class RestRoomShopPanel : MonoBehaviour
 
     [Header("Layout")]
     [SerializeField] private int columnCount = RestRoomShopService.DefaultColumnCount;
-    [SerializeField] private Vector2 firstCellAnchoredPosition = new(-330f, 120f);
-    [SerializeField] private Vector2 cellSpacing = new(220f, 320f);
+    [SerializeField] private Vector2 firstCellAnchoredPosition = new(-330f, 100f);
+    [SerializeField] private Vector2 cellSpacing = new(220f, 300f);
     [SerializeField] private Vector2 fallbackItemSize = new(130f, 150f);
 
     private readonly List<GoodsIconItem> spawnedItems = new();
