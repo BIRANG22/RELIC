@@ -100,6 +100,11 @@ public class BattleTimelineController : MonoBehaviour
     [Tooltip("해당 슬롯의 두 번째 이후 Use_skill이 갈릴 때 전체 타임라인 라인이 왼쪽으로 이동하는 거리입니다.")]
     [SerializeField] private float additionalUseSkillTimelineLineSlideAmountX = -40f;
 
+    [Header("Timeline Grind VFX")]
+    [SerializeField] private GameObject timelineGrindVfxPrefab;
+    [SerializeField] private Vector3 timelineGrindVfxPosition = new(-6.0f, -3.6f, 0f);
+    [SerializeField] private float timelineGrindVfxLifeTime = 2f;
+
     [Header("End Button Hover Rotation")]
     [SerializeField] private bool playEndButtonHoverRotation = true;
     [SerializeField] private bool autoBindEndButtonHoverRotationTarget = true;
@@ -176,6 +181,9 @@ public class BattleTimelineController : MonoBehaviour
 
         if (Mathf.Approximately(completedTurnTimelineBarPositionX, -1440f) || completedTurnTimelineBarPositionX >= 0f)
             completedTurnTimelineBarPositionX = -1420f;
+
+        if (timelineGrindVfxLifeTime < 0f)
+            timelineGrindVfxLifeTime = 0f;
 
         resolvedStandbyTimelineBarOffsetX = Mathf.Abs(standbyTimelineBarOffsetX);
     }
@@ -580,6 +588,7 @@ public class BattleTimelineController : MonoBehaviour
 
         // TurnMark 프레임만 재생합니다. 실제 라인 이동은 PlayTimelineTurnMarkAnimationAndLineSlideRoutine에서 함께 처리합니다.
         PlayTimelineSlideGearRotation(1);
+        SpawnTimelineGrindVfx();
         yield return timelineSpriteAnimationController.PlayTurnMarkRoutine(slotIndex);
     }
 
@@ -601,7 +610,10 @@ public class BattleTimelineController : MonoBehaviour
         float animationDuration = GetTurnMarkGrindDuration();
 
         if (timelineSpriteAnimationController != null)
+        {
+            SpawnTimelineGrindVfx();
             yield return timelineSpriteAnimationController.PlayTurnMarkRoutine(slotIndex);
+        }
 
         float lineSlideAmountX = isEmptySlot
             ? GetFullUseSkillTimelineLineSlideAmountX()
@@ -686,7 +698,10 @@ public class BattleTimelineController : MonoBehaviour
             float animationDuration = GetUseSkillGrindDuration();
 
             if (timelineSpriteAnimationController != null)
+            {
+                SpawnTimelineGrindVfx();
                 yield return timelineSpriteAnimationController.PlayUseSkillRoutine(slotIndex, orderIndex);
+            }
 
             float lineSlideAmountX = orderIndex == 0
                 ? firstUseSkillTimelineLineSlideAmountX
@@ -722,6 +737,22 @@ public class BattleTimelineController : MonoBehaviour
     private float GetGrindTimelineSlideDuration(float frameAnimationDuration)
     {
         return Mathf.Max(0.01f, timelineSlotSlideDuration, grindTimelineSlideDuration, frameAnimationDuration);
+    }
+
+    private GameObject SpawnTimelineGrindVfx()
+    {
+        if (timelineGrindVfxPrefab == null)
+            return null;
+
+        GameObject vfx = Instantiate(
+            timelineGrindVfxPrefab,
+            timelineGrindVfxPosition,
+            Quaternion.identity);
+
+        if (timelineGrindVfxLifeTime > 0f)
+            Destroy(vfx, timelineGrindVfxLifeTime);
+
+        return vfx;
     }
 
     private float GetRemainingUseSkillTimelineLineSlideAmountX(int lastPlayedOrderIndex)
