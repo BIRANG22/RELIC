@@ -1,9 +1,16 @@
+using Relic.Gameplay.Monster;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class UIDissolveReveal : MonoBehaviour
 {
+    private const int DefaultGridWidth = 7;
+    private const int DefaultGridHeight = 5;
+
     [SerializeField] private RawImage targetRawImage;
     [SerializeField] private float duration = 0.35f;
     [SerializeField] private string revealProperty = "_Reveal";
@@ -15,31 +22,136 @@ public class UIDissolveReveal : MonoBehaviour
     [Header("Info Content Alignment")]
     [SerializeField] private HorizontalOrVerticalLayoutGroup infoContentLayout;
     [SerializeField] private RectTransform monsterInfoPanel;
+    [SerializeField] private string autoMonsterInfoPanelName = "MonsterInfoPanel";
     [SerializeField, Min(0f)] private float horizontalPanelPadding = 80f;
     [SerializeField, Min(0f)] private float verticalBoundsSpacing = 24f;
     [SerializeField] private TextAnchor leftAlignment = TextAnchor.UpperLeft;
     [SerializeField] private TextAnchor rightAlignment = TextAnchor.UpperRight;
 
+    [Header("Battle Monster Reveal")]
+    [SerializeField] private bool enableKeyboardDebugInput;
+    [SerializeField] private bool hideOnAwake = true;
+    [SerializeField] private bool deactivateSelfWhenHidden = true;
+    [SerializeField, Min(1)] private int gridWidth = DefaultGridWidth;
+    [SerializeField, Min(1)] private int gridHeight = DefaultGridHeight;
+    [SerializeField] private GameObject[] objectsEnabledWhileVisible;
+    [SerializeField] private string[] autoEnableObjectNames =
+    {
+        "DissolveCamera",
+        "RawImage(RT)",
+        "DissolvePanelCanvas"
+    };
+
+    [Header("Info Panel Click Policy")]
+    [SerializeField] private CanvasGroup infoPanelCanvasGroup;
+    [SerializeField] private string autoInfoPanelRootName = "DissolvePanelCanvas";
+    [SerializeField] private bool disableInfoPanelClickInteraction = true;
+    [SerializeField] private bool blockInfoPanelRaycasts = true;
+
+    [Header("Render Output Front Sorting")]
+    [SerializeField] private bool bringVisibleObjectsToFront = true;
+    [SerializeField] private bool forceRenderOutputCanvasSorting = true;
+    [SerializeField] private int renderOutputCanvasSortingOrder = 30000;
+    [SerializeField] private string autoRenderOutputRootName = "RawImage(RT)";
+    [SerializeField] private Canvas renderOutputCanvas;
+
     private Material runtimeMaterial;
     private Coroutine routine;
     private readonly Vector3[] worldCorners = new Vector3[4];
+    private GameObject[] cachedObjectsEnabledWhileVisible;
+    private bool initialized;
+    private bool isVisible;
+    private bool lastRevealFromLeft = true;
+    private bool showInProgress;
+    private int inputSuppressedUntilFrame = -1;
 
     private void Awake()
     {
+        InitializeIfNeeded();
+
+        if (hideOnAwake && !showInProgress)
+            HideImmediate();
+    }
+
+    private void InitializeIfNeeded()
+    {
+        if (initialized)
+            return;
+
         if (targetRawImage == null)
             targetRawImage = GetComponent<RawImage>();
 
-        if (targetRawImage == null || targetRawImage.material == null)
+        if (targetRawImage != null && targetRawImage.material != null)
+        {
+            runtimeMaterial = Instantiate(targetRawImage.material);
+            runtimeMaterial.name = targetRawImage.material.name + " (Runtime)";
+            targetRawImage.material = runtimeMaterial;
+
+            runtimeMaterial.SetFloat(revealProperty, hiddenReveal);
+        }
+
+        ResolveControlledObjects();
+        ApplyInfoPanelClickPolicy();
+
+        initialized = true;
+    }
+
+    private void ResolveControlledObjects()
+    {
+        List<GameObject> objects = new();
+
+        AddUniqueObjects(objects, objectsEnabledWhileVisible);
+
+        if (autoEnableObjectNames != null)
+        {
+            for (int i = 0; i < autoEnableObjectNames.Length; i++)
+            {
+                GameObject found = FindSceneGameObject(autoEnableObjectNames[i]);
+                AddUniqueObject(objects, found);
+            }
+        }
+
+        if (targetRawImage != null && targetRawImage.transform.parent != null)
+            AddUniqueObject(objects, targetRawImage.transform.parent.gameObject);
+
+        cachedObjectsEnabledWhileVisible = objects.ToArray();
+    }
+
+    private void ApplyInfoPanelClickPolicy()
+    {
+        if (!disableInfoPanelClickInteraction)
             return;
 
-        runtimeMaterial = Instantiate(targetRawImage.material);
-        runtimeMaterial.name = targetRawImage.material.name + " (Runtime)";
-        targetRawImage.material = runtimeMaterial;
+        RectTransform panel = ResolveInfoPanelClickRoot();
+        if (panel == null)
+            return;
 
-        runtimeMaterial.SetFloat(revealProperty, hiddenReveal);
+        if (infoPanelCanvasGroup == null)
+            infoPanelCanvasGroup = panel.GetComponent<CanvasGroup>();
+
+        if (infoPanelCanvasGroup == null)
+            infoPanelCanvasGroup = panel.gameObject.AddComponent<CanvasGroup>();
+
+        infoPanelCanvasGroup.interactable = false;
+        infoPanelCanvasGroup.blocksRaycasts = blockInfoPanelRaycasts;
+
+        Selectable[] selectables = panel.GetComponentsInChildren<Selectable>(true);
+        for (int i = 0; i < selectables.Length; i++)
+        {
+            if (selectables[i] != null)
+                selectables[i].interactable = false;
+        }
     }
 
     private void Update()
+    {
+        if (enableKeyboardDebugInput)
+            HandleKeyboardDebugInput();
+
+        HandleHideClickInput();
+    }
+
+    private void HandleKeyboardDebugInput()
     {
         if (Input.GetKeyDown(KeyCode.LeftArrow))
             ShowFromLeft();
@@ -54,59 +166,195 @@ public class UIDissolveReveal : MonoBehaviour
             HideToRight();
     }
 
+    private void HandleHideClickInput()
+    {
+        if (!isVisible)
+            return;
+
+        if (!Input.GetMouseButtonDown(0))
+            return;
+
+        if (Time.frameCount <= inputSuppressedUntilFrame)
+            return;
+
+        bool pointerOverUI = IsPointerOverUI();
+        if (!pointerOverUI && IsScreenPointOverAnyMonster(Input.mousePosition))
+            return;
+
+        HideToLastRevealSide();
+    }
+
+    public static void ShowForMonsterClick(MonsterUnit monster)
+    {
+        if (monster == null)
+            return;
+
+        UIDissolveReveal reveal = FindBestReveal();
+        if (reveal == null)
+            return;
+
+        reveal.ShowForMonster(monster);
+    }
+
+    public void ShowForMonster(MonsterUnit monster)
+    {
+        if (monster == null)
+            return;
+
+        bool panelOnLeft = ShouldRevealFromLeft(monster.MainGridIndex);
+        ShowForGridIndex(monster.MainGridIndex);
+        FocusMonsterInfoCamera(monster.transform, panelOnLeft);
+    }
+
+    public void ShowForGridIndex(int gridIndex)
+    {
+        if (ShouldRevealFromLeft(gridIndex))
+            ShowFromLeft();
+        else
+            ShowFromRight();
+    }
+
+    public bool ShouldRevealFromLeft(int gridIndex)
+    {
+        return ShouldRevealFromLeft(gridIndex, gridWidth, gridHeight);
+    }
+
+    public static bool ShouldRevealFromLeft(int gridIndex, int gridWidth, int gridHeight)
+    {
+        if (gridIndex < 0)
+            return true;
+
+        int resolvedWidth = Mathf.Max(1, gridWidth);
+        int resolvedHeight = Mathf.Max(1, gridHeight);
+        int centerColumnStartGridIndex = resolvedHeight * (resolvedWidth / 2);
+
+        return gridIndex >= centerColumnStartGridIndex;
+    }
+
     public void ShowFromLeft()
     {
+        lastRevealFromLeft = true;
         SetDirection(0f);
-        AlignContentLeft();
-        Show();
+        ShowWithContentAlignment(false);
     }
 
     public void ShowFromRight()
     {
+        lastRevealFromLeft = false;
         SetDirection(1f);
-        AlignContentRight();
-        Show();
+        ShowWithContentAlignment(true);
     }
 
     public void HideToLeft()
     {
-        SetDirection(1f);
-        AlignContentRight();
+        SetDirection(0f);
         Hide();
     }
 
     public void HideToRight()
     {
-        SetDirection(0f);
-        AlignContentLeft();
+        SetDirection(1f);
         Hide();
     }
 
     public void Show()
     {
-        if (!gameObject.activeSelf)
-            gameObject.SetActive(true);
+        ShowWithContentAlignment(!lastRevealFromLeft);
+    }
 
-        Play(hiddenReveal, shownReveal);
+    private void ShowWithContentAlignment(bool? alignRight)
+    {
+        showInProgress = true;
+        InitializeIfNeeded();
+
+        try
+        {
+            if (!gameObject.activeSelf)
+                gameObject.SetActive(true);
+
+            SetControlledObjectsActive(true);
+
+            if (!gameObject.activeSelf)
+                gameObject.SetActive(true);
+
+            ApplyFrontSorting();
+
+            if (alignRight.HasValue)
+                ApplyContentAlignment(alignRight.Value);
+
+            isVisible = true;
+            inputSuppressedUntilFrame = Time.frameCount;
+
+            Play(hiddenReveal, shownReveal, false);
+        }
+        finally
+        {
+            showInProgress = false;
+        }
     }
 
     public void Hide()
     {
-        Play(shownReveal, hiddenReveal);
+        InitializeIfNeeded();
+        bool wasVisible = isVisible;
+        isVisible = false;
+
+        if (wasVisible)
+            ReturnMonsterInfoCameraFocus();
+
+        if (!gameObject.activeInHierarchy)
+        {
+            HideImmediate();
+            return;
+        }
+
+        Play(shownReveal, hiddenReveal, true);
     }
 
-    private void Play(float from, float to)
+    public void HideImmediate()
     {
+        InitializeIfNeeded();
+        bool wasVisible = isVisible;
+
+        if (routine != null)
+        {
+            StopCoroutine(routine);
+            routine = null;
+        }
+
+        isVisible = false;
+
+        if (wasVisible)
+            ReturnMonsterInfoCameraFocus();
+
+        if (runtimeMaterial != null)
+            runtimeMaterial.SetFloat(revealProperty, hiddenReveal);
+
+        SetControlledObjectsActive(false);
+
+        if (deactivateSelfWhenHidden && gameObject.activeSelf)
+            gameObject.SetActive(false);
+    }
+
+    private void Play(float from, float to, bool deactivateWhenDone)
+    {
+        InitializeIfNeeded();
+
         if (runtimeMaterial == null)
+        {
+            if (deactivateWhenDone)
+                HideImmediate();
+
             return;
+        }
 
         if (routine != null)
             StopCoroutine(routine);
 
-        routine = StartCoroutine(RevealRoutine(from, to));
+        routine = StartCoroutine(RevealRoutine(from, to, deactivateWhenDone));
     }
 
-    private IEnumerator RevealRoutine(float from, float to)
+    private IEnumerator RevealRoutine(float from, float to, bool deactivateWhenDone)
     {
         float time = 0f;
         runtimeMaterial.SetFloat(revealProperty, from);
@@ -124,14 +372,163 @@ public class UIDissolveReveal : MonoBehaviour
 
         runtimeMaterial.SetFloat(revealProperty, to);
         routine = null;
+
+        if (deactivateWhenDone)
+            HideImmediate();
     }
 
     private void SetDirection(float direction)
     {
+        InitializeIfNeeded();
+
         if (runtimeMaterial == null)
             return;
 
         runtimeMaterial.SetFloat(directionProperty, direction);
+    }
+
+    private void HideToLastRevealSide()
+    {
+        if (lastRevealFromLeft)
+            HideToLeft();
+        else
+            HideToRight();
+    }
+
+    private void FocusMonsterInfoCamera(Transform target, bool panelOnLeft)
+    {
+        BattleCameraController cameraController = BattleCameraController.Instance;
+        if (cameraController != null)
+            cameraController.FocusMonsterInfoWithPanelSide(target, panelOnLeft);
+    }
+
+    private void ReturnMonsterInfoCameraFocus()
+    {
+        BattleCameraController cameraController = BattleCameraController.Instance;
+        if (cameraController != null)
+            cameraController.ReturnDefaultFromMonsterInfoFocus();
+    }
+
+    private void SetControlledObjectsActive(bool active)
+    {
+        if (cachedObjectsEnabledWhileVisible == null)
+            return;
+
+        for (int i = 0; i < cachedObjectsEnabledWhileVisible.Length; i++)
+        {
+            GameObject controlledObject = cachedObjectsEnabledWhileVisible[i];
+            if (controlledObject != null)
+                controlledObject.SetActive(active);
+        }
+    }
+
+    private void ApplyFrontSorting()
+    {
+        if (bringVisibleObjectsToFront)
+        {
+            MoveToLastSibling(gameObject);
+
+            if (targetRawImage != null)
+            {
+                MoveToLastSibling(targetRawImage.gameObject);
+
+                if (targetRawImage.transform.parent != null)
+                    MoveToLastSibling(targetRawImage.transform.parent.gameObject);
+            }
+
+            if (cachedObjectsEnabledWhileVisible != null)
+            {
+                for (int i = 0; i < cachedObjectsEnabledWhileVisible.Length; i++)
+                    MoveToLastSibling(cachedObjectsEnabledWhileVisible[i]);
+            }
+        }
+
+        if (!forceRenderOutputCanvasSorting)
+            return;
+
+        Canvas canvas = ResolveRenderOutputCanvas();
+        if (canvas == null)
+            return;
+
+        canvas.overrideSorting = true;
+        canvas.sortingOrder = renderOutputCanvasSortingOrder;
+    }
+
+    private Canvas ResolveRenderOutputCanvas()
+    {
+        if (renderOutputCanvas != null)
+            return renderOutputCanvas;
+
+        GameObject renderRoot = ResolveRenderOutputRoot();
+        if (renderRoot == null)
+            return null;
+
+        renderOutputCanvas = renderRoot.GetComponent<Canvas>();
+        if (renderOutputCanvas == null)
+            renderOutputCanvas = renderRoot.AddComponent<Canvas>();
+
+        return renderOutputCanvas;
+    }
+
+    private GameObject ResolveRenderOutputRoot()
+    {
+        if (targetRawImage != null && targetRawImage.transform.parent != null)
+            return targetRawImage.transform.parent.gameObject;
+
+        GameObject autoRoot = FindSceneGameObject(autoRenderOutputRootName);
+        if (autoRoot != null)
+            return autoRoot;
+
+        return targetRawImage != null ? targetRawImage.gameObject : gameObject;
+    }
+
+    private static void MoveToLastSibling(GameObject target)
+    {
+        if (target != null && target.transform.parent != null)
+            target.transform.SetAsLastSibling();
+    }
+
+    private bool IsPointerOverUI()
+    {
+        if (EventSystem.current == null)
+            return false;
+
+        if (EventSystem.current.IsPointerOverGameObject())
+            return true;
+
+        if (Input.touchCount > 0)
+            return EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId);
+
+        return false;
+    }
+
+    private bool IsScreenPointOverAnyMonster(Vector2 screenPoint)
+    {
+        Camera mainCamera = Camera.main;
+        if (mainCamera == null)
+            return false;
+
+        Ray ray = mainCamera.ScreenPointToRay(screenPoint);
+        RaycastHit2D[] rayHits = Physics2D.GetRayIntersectionAll(ray);
+
+        for (int i = 0; i < rayHits.Length; i++)
+        {
+            Collider2D hitCollider = rayHits[i].collider;
+            if (hitCollider != null && hitCollider.GetComponentInParent<MonsterUnit>() != null)
+                return true;
+        }
+
+        Vector3 worldPoint = mainCamera.ScreenToWorldPoint(screenPoint);
+        Collider2D[] overlapHits = Physics2D.OverlapPointAll(new Vector2(worldPoint.x, worldPoint.y));
+
+        for (int i = 0; i < overlapHits.Length; i++)
+        {
+            Collider2D hitCollider = overlapHits[i];
+            if (hitCollider != null && hitCollider.GetComponentInParent<MonsterUnit>() != null)
+                return true;
+        }
+
+        return false;
     }
 
     private void AlignContentLeft()
@@ -153,7 +550,19 @@ public class UIDissolveReveal : MonoBehaviour
         if (infoContentLayout != null)
         {
             infoContentLayout.childAlignment = alignRight ? rightAlignment : leftAlignment;
+
+            if (panel.gameObject.activeInHierarchy)
+            {
+                infoContentLayout.enabled = true;
+                LayoutRebuilder.ForceRebuildLayoutImmediate(panel);
+                Canvas.ForceUpdateCanvases();
+            }
+
             infoContentLayout.enabled = false;
+        }
+        else if (panel.gameObject.activeInHierarchy)
+        {
+            Canvas.ForceUpdateCanvases();
         }
 
         float targetX = alignRight
@@ -181,11 +590,33 @@ public class UIDissolveReveal : MonoBehaviour
         if (monsterInfoPanel != null)
             return monsterInfoPanel;
 
+        GameObject autoPanel = FindSceneGameObject(autoMonsterInfoPanelName);
+        if (autoPanel != null)
+        {
+            monsterInfoPanel = autoPanel.GetComponent<RectTransform>();
+
+            if (infoContentLayout == null)
+                infoContentLayout = autoPanel.GetComponent<HorizontalOrVerticalLayoutGroup>();
+
+            if (monsterInfoPanel != null)
+                return monsterInfoPanel;
+        }
+
         if (infoContentLayout == null)
             return null;
 
         monsterInfoPanel = infoContentLayout.GetComponent<RectTransform>();
         return monsterInfoPanel;
+    }
+
+    private RectTransform ResolveInfoPanelClickRoot()
+    {
+        RectTransform panel = ResolveMonsterInfoPanel();
+        if (panel != null)
+            return panel;
+
+        GameObject autoRoot = FindSceneGameObject(autoInfoPanelRootName);
+        return autoRoot != null ? autoRoot.GetComponent<RectTransform>() : null;
     }
 
     private Bounds GetBoundsInPanel(RectTransform panel, RectTransform rect)
@@ -205,5 +636,97 @@ public class UIDissolveReveal : MonoBehaviour
         Bounds bounds = new();
         bounds.SetMinMax(min, max);
         return bounds;
+    }
+
+    private static UIDissolveReveal FindBestReveal()
+    {
+        UIDissolveReveal[] reveals =
+            FindObjectsByType<UIDissolveReveal>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None);
+
+        if (reveals == null || reveals.Length <= 0)
+            return null;
+
+        UIDissolveReveal fallback = null;
+        for (int i = 0; i < reveals.Length; i++)
+        {
+            UIDissolveReveal reveal = reveals[i];
+            if (reveal == null)
+                continue;
+
+            if (reveal.gameObject.activeInHierarchy)
+                return reveal;
+
+            if (fallback == null)
+                fallback = reveal;
+        }
+
+        return fallback;
+    }
+
+    private static void AddUniqueObjects(List<GameObject> objects, GameObject[] candidates)
+    {
+        if (candidates == null)
+            return;
+
+        for (int i = 0; i < candidates.Length; i++)
+            AddUniqueObject(objects, candidates[i]);
+    }
+
+    private static void AddUniqueObject(List<GameObject> objects, GameObject candidate)
+    {
+        if (objects == null || candidate == null)
+            return;
+
+        if (!objects.Contains(candidate))
+            objects.Add(candidate);
+    }
+
+    private static GameObject FindSceneGameObject(string objectName)
+    {
+        if (string.IsNullOrWhiteSpace(objectName))
+            return null;
+
+        Scene activeScene = SceneManager.GetActiveScene();
+        if (!activeScene.IsValid())
+            return null;
+
+        GameObject[] roots = activeScene.GetRootGameObjects();
+        for (int i = 0; i < roots.Length; i++)
+        {
+            GameObject root = roots[i];
+            if (root == null)
+                continue;
+
+            if (root.name == objectName)
+                return root;
+
+            Transform found = FindChildRecursive(root.transform, objectName);
+            if (found != null)
+                return found.gameObject;
+        }
+
+        return null;
+    }
+
+    private static Transform FindChildRecursive(Transform root, string childName)
+    {
+        if (root == null)
+            return null;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform child = root.GetChild(i);
+
+            if (child.name == childName)
+                return child;
+
+            Transform nested = FindChildRecursive(child, childName);
+            if (nested != null)
+                return nested;
+        }
+
+        return null;
     }
 }

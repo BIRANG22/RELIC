@@ -11,7 +11,7 @@ public class SkillUpgradeIconItem : MonoBehaviour, IPointerEnterHandler, IPointe
     [SerializeField] private Image iconImage;
 
     private SkillUpgradeRequest request;
-    private Action<SkillUpgradeRequest> onClicked;
+    private Action<SkillUpgradeRequest, Sprite> onClicked;
     private RectTransform rectTransform;
 
     private const string CurrentTooltipHeader = "\uD604\uC7AC";
@@ -33,7 +33,7 @@ public class SkillUpgradeIconItem : MonoBehaviour, IPointerEnterHandler, IPointe
         string upgradeSkillId,
         SkillSlotType slotType,
         int slotIndex,
-        Action<SkillUpgradeRequest> onClicked)
+        Action<SkillUpgradeRequest, Sprite> onClicked)
     {
         request = new SkillUpgradeRequest
         {
@@ -70,7 +70,7 @@ public class SkillUpgradeIconItem : MonoBehaviour, IPointerEnterHandler, IPointe
 
     private void HandleClick()
     {
-        onClicked?.Invoke(request);
+        onClicked?.Invoke(request, iconImage != null ? iconImage.sprite : null);
     }
 
     private void ShowTooltip()
