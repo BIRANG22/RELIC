@@ -1,10 +1,14 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public class AnimationVfxLoadoutCleanupTests
 {
@@ -312,6 +316,364 @@ public class AnimationVfxLoadoutCleanupTests
             UnityEngine.Object.DestroyImmediate(owner);
         }
     }
+
+    [Test]
+    public void BattleUnitAnimator_MonsterCommandActionRecognizesMappedProjectileVfx()
+    {
+        GameObject owner = new("MonsterProjectileAnimatorOwner");
+        GameObject missilePrefab = new("MonsterProjectileMissileVfx");
+        GameObject impactPrefab = new("MonsterProjectileImpactVfx");
+
+        try
+        {
+            BattleUnitAnimator animator = owner.AddComponent<BattleUnitAnimator>();
+
+            BattleUnitActionPresentation[] slots = BattleUnitActionPresentation.CreateArray(10);
+            slots[1].projectileVfx = new BattleProjectileVfxEntry
+            {
+                skillId = "S_Monster_Projectile",
+                missilePrefab = missilePrefab,
+                impactPrefab = impactPrefab,
+                travelDuration = 0.01f
+            };
+            SetPrivateField(animator, "monsterActionPresentations", slots);
+
+            MonsterMasterData master = new()
+            {
+                MonsterId = "M_Projectile",
+                HP = 10,
+                PossSkillId02 = "S_Monster_Projectile"
+            };
+            MonsterRuntimeData runtime = new("Runtime_Projectile", master);
+            MonsterReservedCommand command = new(runtime, new MonsterSkillData { SkillId = "S_Monster_Projectile" });
+
+            Assert.That(animator.HasMonsterProjectileVfx(command), Is.True);
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(missilePrefab);
+            UnityEngine.Object.DestroyImmediate(impactPrefab);
+            UnityEngine.Object.DestroyImmediate(owner);
+        }
+    }
+
+    [Test]
+    public void BattleUnitAnimator_MonsterCommandProjectileVfxCanBeMatchedBySkillId()
+    {
+        GameObject owner = new("MonsterProjectileSkillIdOwner");
+        GameObject missilePrefab = new("MonsterSkillIdProjectileMissileVfx");
+
+        try
+        {
+            BattleUnitAnimator animator = owner.AddComponent<BattleUnitAnimator>();
+
+            BattleUnitActionPresentation[] slots = BattleUnitActionPresentation.CreateArray(10);
+            slots[1].projectileVfx = new BattleProjectileVfxEntry
+            {
+                skillId = "S_Monster_Projectile",
+                missilePrefab = missilePrefab
+            };
+            SetPrivateField(animator, "monsterActionPresentations", slots);
+
+            MonsterRuntimeData runtime = new(
+                "Runtime_Projectile_Unmapped",
+                new MonsterMasterData
+                {
+                    MonsterId = "M_Projectile_Unmapped",
+                    HP = 10
+                });
+            MonsterReservedCommand command = new(runtime, new MonsterSkillData { SkillId = "S_Monster_Projectile" });
+
+            Assert.That(command.ActionIndex, Is.EqualTo(0));
+            Assert.That(animator.HasMonsterProjectileVfx(command), Is.True);
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(missilePrefab);
+            UnityEngine.Object.DestroyImmediate(owner);
+        }
+    }
+
+    [Test]
+    public void BattleUnitAnimator_ProjectileImpactKeepsLaunchZFor2D()
+    {
+        MethodInfo method = typeof(BattleUnitAnimator).GetMethod(
+            "ResolveProjectileImpactPosition",
+            BindingFlags.Static | BindingFlags.NonPublic);
+
+        Assert.That(method, Is.Not.Null);
+
+        Vector3 result = (Vector3)method.Invoke(
+            null,
+            new object[]
+            {
+                new Vector3(5f, 2f, 99f),
+                new Vector3(0.25f, -0.5f, 7f),
+                -3f
+            });
+
+        Assert.That(result, Is.EqualTo(new Vector3(5.25f, 1.5f, -3f)));
+    }
+
+    [Test]
+    public void BattleUnitAnimator_ProjectileImpactUsesVfxSpawnPointRotation()
+    {
+        GameObject owner = new("ProjectileImpactSpawnPointOwner");
+        GameObject spawnPoint = new("VfxSpawnPoint");
+        GameObject impactPrefab = new("ProjectileImpactSpawnPointVfx");
+
+        try
+        {
+            spawnPoint.transform.SetParent(owner.transform, false);
+            spawnPoint.transform.localRotation = Quaternion.Euler(0f, 0f, 37f);
+
+            BattleUnitAnimator animator = owner.AddComponent<BattleUnitAnimator>();
+            SetPrivateField(animator, "vfxSpawnPoint", spawnPoint.transform);
+
+            MethodInfo method = typeof(BattleUnitAnimator).GetMethod(
+                "SpawnImpactVfx",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+
+            Assert.That(method, Is.Not.Null);
+
+            Vector3 impactPosition = new(4f, 5f, -2f);
+            BattleProjectileVfxEntry entry = new()
+            {
+                impactPrefab = impactPrefab,
+                impactLifeTime = 2f
+            };
+
+            method.Invoke(animator, new object[] { entry, impactPosition });
+
+            GameObject spawned = GameObject.Find("ProjectileImpactSpawnPointVfx(Clone)");
+
+            Assert.That(spawned, Is.Not.Null);
+            Assert.That(spawned.transform.position, Is.EqualTo(impactPosition));
+            Assert.That(spawned.transform.eulerAngles.z, Is.EqualTo(37f).Within(0.01f));
+
+            UnityEngine.Object.DestroyImmediate(spawned);
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(impactPrefab);
+            UnityEngine.Object.DestroyImmediate(owner);
+        }
+    }
+
+    [Test]
+    public void BattleVfxCameraSyncCopiesSourceCameraButPreservesVfxOutput()
+    {
+        GameObject sourceObject = new("MainCameraSource");
+        GameObject targetObject = new("VfxCameraTarget");
+        RenderTexture targetTexture = new(64, 64, 0);
+
+        try
+        {
+            Camera sourceCamera = sourceObject.AddComponent<Camera>();
+            Camera targetCamera = targetObject.AddComponent<Camera>();
+            BattleVfxCameraSync sync = targetObject.AddComponent<BattleVfxCameraSync>();
+
+            sourceCamera.transform.position = new Vector3(1.25f, -2.5f, -17f);
+            sourceCamera.transform.rotation = Quaternion.Euler(5f, 10f, 15f);
+            sourceCamera.orthographic = false;
+            sourceCamera.fieldOfView = 31f;
+            sourceCamera.orthographicSize = 4.25f;
+            sourceCamera.nearClipPlane = 0.2f;
+            sourceCamera.farClipPlane = 250f;
+            sourceCamera.rect = new Rect(0.1f, 0.2f, 0.7f, 0.6f);
+
+            targetCamera.orthographic = true;
+            targetCamera.fieldOfView = 20f;
+            targetCamera.orthographicSize = 8f;
+            targetCamera.cullingMask = 1 << 9;
+            targetCamera.targetTexture = targetTexture;
+            targetCamera.clearFlags = CameraClearFlags.SolidColor;
+            targetCamera.backgroundColor = new Color(0f, 0f, 0f, 0f);
+            targetCamera.depth = 99f;
+
+            SetPrivateField(sync, "sourceCamera", sourceCamera);
+            SetPrivateField(sync, "targetCamera", targetCamera);
+
+            sync.SyncNow();
+
+            Assert.That(targetCamera.transform.position, Is.EqualTo(sourceCamera.transform.position));
+            Assert.That(Quaternion.Angle(targetCamera.transform.rotation, sourceCamera.transform.rotation), Is.LessThan(0.01f));
+            Assert.That(targetCamera.orthographic, Is.EqualTo(sourceCamera.orthographic));
+            Assert.That(targetCamera.fieldOfView, Is.EqualTo(sourceCamera.fieldOfView));
+            Assert.That(targetCamera.orthographicSize, Is.EqualTo(sourceCamera.orthographicSize));
+            Assert.That(targetCamera.nearClipPlane, Is.EqualTo(sourceCamera.nearClipPlane));
+            Assert.That(targetCamera.farClipPlane, Is.EqualTo(sourceCamera.farClipPlane));
+            Assert.That(targetCamera.rect, Is.EqualTo(sourceCamera.rect));
+            Assert.That(targetCamera.cullingMask, Is.EqualTo(1 << 9));
+            Assert.That(targetCamera.targetTexture, Is.SameAs(targetTexture));
+            Assert.That(targetCamera.clearFlags, Is.EqualTo(CameraClearFlags.SolidColor));
+            Assert.That(targetCamera.backgroundColor, Is.EqualTo(new Color(0f, 0f, 0f, 0f)));
+            Assert.That(targetCamera.depth, Is.EqualTo(99f));
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(targetTexture);
+            UnityEngine.Object.DestroyImmediate(targetObject);
+            UnityEngine.Object.DestroyImmediate(sourceObject);
+        }
+    }
+
+#if UNITY_EDITOR
+    [Test]
+    public void MuckProjectileImpactRootUsesSimpleGlowMaterial()
+    {
+        const string ImpactPrefabPath =
+            "Assets/Project/Art/testYDM/VFXtest/Mon/Vfx_Mon_N_01_attack_01.prefab";
+        const string SimpleGlowGuid = "dbdd7248b23714e4a860091a66653785";
+
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(ImpactPrefabPath);
+
+        Assert.That(prefab, Is.Not.Null);
+
+        ParticleSystemRenderer rootRenderer = prefab.GetComponent<ParticleSystemRenderer>();
+
+        Assert.That(rootRenderer, Is.Not.Null);
+        Assert.That(rootRenderer.sharedMaterial, Is.Not.Null);
+        Assert.That(
+            AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(rootRenderer.sharedMaterial)),
+            Is.EqualTo(SimpleGlowGuid));
+    }
+
+    [Test]
+    public void MuckProjectileMissileEnabledRenderersDoNotUseNullMaterialSlots()
+    {
+        const string MissilePrefabPath =
+            "Assets/Project/Art/testYDM/VFXtest/Mon/Vfx_Mon_N_01_attack_01_missile.prefab";
+
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(MissilePrefabPath);
+
+        Assert.That(prefab, Is.Not.Null);
+
+        string[] rendererNamesWithNullMaterials = prefab
+            .GetComponentsInChildren<ParticleSystemRenderer>(true)
+            .Where(renderer => renderer.enabled && renderer.gameObject.activeSelf)
+            .Where(renderer => renderer.sharedMaterials.Any(material => material == null))
+            .Select(renderer => renderer.name)
+            .ToArray();
+
+        Assert.That(rendererNamesWithNullMaterials, Is.Empty);
+    }
+
+    [Test]
+    public void MuckProjectileVfxUsesParticleRendererFlipInsteadOfRootScaleFlip()
+    {
+        const string MuckPrefabPath = "Assets/Project/PrefabsR/Monster/Muck/Slime.prefab";
+
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(MuckPrefabPath);
+
+        Assert.That(prefab, Is.Not.Null);
+
+        BattleUnitAnimator animator = prefab.GetComponent<BattleUnitAnimator>();
+
+        Assert.That(animator, Is.Not.Null);
+
+        FieldInfo field = typeof(BattleUnitAnimator).GetField(
+            "monsterActionPresentations",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+
+        Assert.That(field, Is.Not.Null);
+
+        BattleUnitActionPresentation[] presentations =
+            (BattleUnitActionPresentation[])field.GetValue(animator);
+
+        BattleProjectileVfxEntry projectileVfx = presentations
+            .Select(presentation => presentation?.projectileVfx)
+            .FirstOrDefault(entry => entry != null && entry.skillId == "S_Monster_04");
+
+        Assert.That(projectileVfx, Is.Not.Null);
+        Assert.That(projectileVfx.missileFlipType, Is.EqualTo(VfxFlipType.ParticleRendererFlipY));
+        Assert.That(projectileVfx.impactFlipType, Is.EqualTo(VfxFlipType.ParticleRendererFlipY));
+    }
+
+    [Test]
+    public void BattleVfxCameraClearsRenderTextureWithTransparentColor()
+    {
+        const string BattleScenePath = "Assets/Project/Scenes/YDM/Battle.unity";
+        const string VfxRenderTextureGuid = "f8cac70b5bbf43d449f6cf54ffa93abc";
+
+        string sceneYaml = File.ReadAllText(BattleScenePath);
+        int nameIndex = sceneYaml.IndexOf("m_Name: VFXCamera", StringComparison.Ordinal);
+
+        Assert.That(nameIndex, Is.GreaterThanOrEqualTo(0));
+
+        int cameraIndex = sceneYaml.IndexOf("Camera:", nameIndex, StringComparison.Ordinal);
+        int transformIndex = sceneYaml.IndexOf("--- !u!4", cameraIndex, StringComparison.Ordinal);
+
+        Assert.That(cameraIndex, Is.GreaterThan(nameIndex));
+        Assert.That(transformIndex, Is.GreaterThan(cameraIndex));
+
+        string cameraBlock = sceneYaml.Substring(cameraIndex, transformIndex - cameraIndex);
+
+        Assert.That(cameraBlock, Does.Contain("m_ClearFlags: 2"));
+        Assert.That(cameraBlock, Does.Contain("m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}"));
+        Assert.That(cameraBlock, Does.Contain($"guid: {VfxRenderTextureGuid}"));
+    }
+
+    [Test]
+    public void BattleVfxRawImageUsesAdditiveRenderTextureMaterial()
+    {
+        const string BattleScenePath = "Assets/Project/Scenes/YDM/Battle.unity";
+        const string VfxRenderTextureGuid = "f8cac70b5bbf43d449f6cf54ffa93abc";
+        const string AdditiveMaterialGuid = "4cb96efc760942549b8609077d6f61fa";
+
+        string sceneYaml = File.ReadAllText(BattleScenePath);
+        string textureNeedle =
+            $"m_Texture: {{fileID: 8400000, guid: {VfxRenderTextureGuid}, type: 2}}";
+        int textureIndex = sceneYaml.IndexOf(textureNeedle, StringComparison.Ordinal);
+
+        Assert.That(textureIndex, Is.GreaterThanOrEqualTo(0));
+
+        int materialIndex = sceneYaml.LastIndexOf(
+            "m_Material:",
+            textureIndex,
+            StringComparison.Ordinal);
+
+        Assert.That(materialIndex, Is.GreaterThanOrEqualTo(0));
+
+        string rawImageMaterialLine = sceneYaml.Substring(
+            materialIndex,
+            sceneYaml.IndexOf('\n', materialIndex) - materialIndex);
+
+        Assert.That(rawImageMaterialLine, Does.Contain($"guid: {AdditiveMaterialGuid}"));
+    }
+
+    [Test]
+    public void BattleVfxCameraHasMainCameraSyncComponent()
+    {
+        const string BattleScenePath = "Assets/Project/Scenes/YDM/Battle.unity";
+        const string VfxCameraSyncGuid = "edfd70dcf5b9445c819d92a30cd29470";
+        const string VfxCameraFileId = "147280529";
+        const string VfxCameraComponentFileId = "147280534";
+
+        string sceneYaml = File.ReadAllText(BattleScenePath);
+        string gameObjectNeedle = $"--- !u!1 &{VfxCameraFileId}";
+        int gameObjectIndex = sceneYaml.IndexOf(gameObjectNeedle, StringComparison.Ordinal);
+
+        Assert.That(gameObjectIndex, Is.GreaterThanOrEqualTo(0));
+
+        int nextObjectIndex = sceneYaml.IndexOf("--- !u!", gameObjectIndex + gameObjectNeedle.Length, StringComparison.Ordinal);
+        string gameObjectBlock = sceneYaml.Substring(gameObjectIndex, nextObjectIndex - gameObjectIndex);
+
+        Assert.That(gameObjectBlock, Does.Contain($"- component: {{fileID: {VfxCameraComponentFileId}}}"));
+
+        string componentNeedle = $"--- !u!114 &{VfxCameraComponentFileId}";
+        int componentIndex = sceneYaml.IndexOf(componentNeedle, StringComparison.Ordinal);
+
+        Assert.That(componentIndex, Is.GreaterThanOrEqualTo(0));
+
+        int nextComponentIndex = sceneYaml.IndexOf("--- !u!", componentIndex + componentNeedle.Length, StringComparison.Ordinal);
+        string componentBlock = sceneYaml.Substring(componentIndex, nextComponentIndex - componentIndex);
+
+        Assert.That(componentBlock, Does.Contain($"guid: {VfxCameraSyncGuid}"));
+        Assert.That(componentBlock, Does.Contain("sourceCamera: {fileID: 1610817905}"));
+        Assert.That(componentBlock, Does.Contain("targetCamera: {fileID: 147280532}"));
+    }
+#endif
 
     [Test]
     public void BattleUnitAnimator_MonsterCommandReadyDoesNotSpawnPresentationVfx()
