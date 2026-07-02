@@ -6,6 +6,7 @@ namespace Relic.Gameplay.Data
         public string GridEffectID;
         public string Name;
         public int Passed;
+        public int Consumable;
         public int ValueRate;
         public string EffectIds;
         public string ToolTip;

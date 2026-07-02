@@ -279,7 +279,7 @@ public class BattleCharacter : MonoBehaviour
                     continue;
 
                 highlightRenderer.sortingLayerID = sortingLayerId;
-                highlightRenderer.sortingOrder = sourceSortingOrder + 1;
+                highlightRenderer.sortingOrder = sourceSortingOrder - 1;
             }
         }
 

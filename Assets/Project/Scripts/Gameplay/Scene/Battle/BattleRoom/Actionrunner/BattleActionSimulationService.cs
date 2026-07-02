@@ -10,6 +10,7 @@ public class BattleActionSimulationService
     private readonly Dictionary<string, int> playerPositions = new();
     private readonly Dictionary<string, BattleDirection> playerDirections = new();
     private readonly Dictionary<string, List<int>> monsterPositions = new();
+    private BattleGridEffectController gridEffectController;
 
     public BattleActionSimulationService(GridManager gridManager)
     {
@@ -304,6 +305,8 @@ public class BattleActionSimulationService
             }
         }
 
+        AddBlockedGridEffectIndices(blockedGridIndices);
+
         return blockedGridIndices;
     }
 
@@ -514,6 +517,9 @@ public class BattleActionSimulationService
             int gridIndex = gridManager.CoordToIndex(nextCoord);
 
             if (IsOccupiedForPlayerMove(gridIndex, selfKey))
+                return false;
+
+            if (IsGridEffectBlocked(gridIndex))
                 return false;
 
             currentCoord = nextCoord;
@@ -740,6 +746,9 @@ public class BattleActionSimulationService
                 if (IsOccupied(targetGrid, selfKey))
                     return false;
 
+                if (IsGridEffectBlocked(targetGrid))
+                    return false;
+
                 nextCoords.Add(nextCoord);
             }
 
@@ -866,6 +875,46 @@ public class BattleActionSimulationService
         }
 
         return false;
+    }
+
+    private void AddBlockedGridEffectIndices(HashSet<int> blockedGridIndices)
+    {
+        if (blockedGridIndices == null)
+            return;
+
+        BattleGridEffectController controller = ResolveGridEffectController();
+
+        if (controller == null || controller.State == null)
+            return;
+
+        IReadOnlyList<Relic.Gameplay.Battle.BattleGridEffectPlacement> placements =
+            controller.State.GetPlacements();
+
+        for (int i = 0; i < placements.Count; i++)
+        {
+            int gridIndex = placements[i].GridIndex;
+
+            if (gridIndex >= 0 && controller.IsBlocked(gridIndex))
+                blockedGridIndices.Add(gridIndex);
+        }
+    }
+
+    private bool IsGridEffectBlocked(int gridIndex)
+    {
+        BattleGridEffectController controller = ResolveGridEffectController();
+        return controller != null && controller.IsBlocked(gridIndex);
+    }
+
+    private BattleGridEffectController ResolveGridEffectController()
+    {
+        if (gridEffectController != null)
+            return gridEffectController;
+
+        gridEffectController = Object.FindFirstObjectByType<BattleGridEffectController>(
+            FindObjectsInactive.Include
+        );
+
+        return gridEffectController;
     }
 
     private void CaptureCurrentPositions()

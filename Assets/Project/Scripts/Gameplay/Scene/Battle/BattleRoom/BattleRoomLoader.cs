@@ -56,6 +56,9 @@ public class BattleRoomLoader : MonoBehaviour
     [Header("Timeline")]
     [SerializeField] private BattleTimelineController timelineController;
 
+    [Header("Grid Effects")]
+    [SerializeField] private BattleGridEffectController gridEffectController;
+
     private readonly List<MonsterUnit> spawnedMonsterUnits = new();
     private readonly List<PlayerHUDSlot> playerHudSlots = new();
     private CharacterRuntimeData selectedPlayerRuntime;
@@ -423,6 +426,7 @@ public class BattleRoomLoader : MonoBehaviour
 
         SpawnPlayersAndHUD();
         SpawnMonstersAndHUD(false);
+        SpawnInitialGridEffects();
         passiveSkillService.RefreshAllPlayerPassives();
 
         EnsureTurnExecutor();
@@ -1115,6 +1119,7 @@ public class BattleRoomLoader : MonoBehaviour
         ClearMonsterHUDSlots();
         ClearPlayerHUDSlotsOnly();
         spawnedMonsterUnits.Clear();
+        ClearGridEffects();
     }
 
     private void ClearHUD()
@@ -1218,5 +1223,34 @@ public class BattleRoomLoader : MonoBehaviour
             return;
 
         turnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
+    }
+
+    private void SpawnInitialGridEffects()
+    {
+        EnsureGridEffectController();
+
+        if (gridEffectController != null)
+            gridEffectController.SpawnInitialEffects();
+    }
+
+    private void ClearGridEffects()
+    {
+        EnsureGridEffectController(false);
+
+        if (gridEffectController != null)
+            gridEffectController.ClearAll();
+    }
+
+    private void EnsureGridEffectController(bool createIfMissing = true)
+    {
+        if (gridEffectController != null)
+            return;
+
+        gridEffectController = FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+
+        if (gridEffectController != null || !createIfMissing)
+            return;
+
+        gridEffectController = gameObject.AddComponent<BattleGridEffectController>();
     }
 }

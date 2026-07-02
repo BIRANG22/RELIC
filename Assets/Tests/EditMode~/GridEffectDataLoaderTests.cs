@@ -14,17 +14,19 @@ public class GridEffectDataLoaderTests
                 new()
                 {
                     ["GridEffectID"] = "GR_thorn",
-                    ["Name"] = "가시",
-                    ["Passed"] = "-1",
+                    ["Name"] = "Thorn",
+                    ["Passed"] = "1",
+                    ["Consumable"] = "1",
                     ["ValueRate"] = "5",
                     ["EffectIds"] = "E_Damage",
-                    ["ToolTip"] = "피해"
+                    ["ToolTip"] = "Damage on pass"
                 },
                 new()
                 {
                     ["GridEffectID"] = "",
                     ["Name"] = "",
                     ["Passed"] = "",
+                    ["Consumable"] = "",
                     ["ValueRate"] = "",
                     ["EffectIds"] = "",
                     ["ToolTip"] = ""
@@ -36,11 +38,63 @@ public class GridEffectDataLoaderTests
 
         Assert.That(result, Has.Count.EqualTo(1));
         Assert.That(result[0].GridEffectID, Is.EqualTo("GR_thorn"));
-        Assert.That(result[0].Name, Is.EqualTo("가시"));
-        Assert.That(result[0].Passed, Is.EqualTo(-1));
+        Assert.That(result[0].Name, Is.EqualTo("Thorn"));
+        Assert.That(result[0].Passed, Is.EqualTo(1));
+        Assert.That(result[0].Consumable, Is.EqualTo(1));
         Assert.That(result[0].ValueRate, Is.EqualTo(5));
         Assert.That(result[0].EffectIds, Is.EqualTo("E_Damage"));
-        Assert.That(result[0].ToolTip, Is.EqualTo("피해"));
+        Assert.That(result[0].ToolTip, Is.EqualTo("Damage on pass"));
+    }
+
+    [Test]
+    public void Load_MapsKoreanColumnAliases()
+    {
+        Dictionary<string, List<Dictionary<string, string>>> workbook = new()
+        {
+            ["GridEffect"] = new List<Dictionary<string, string>>
+            {
+                new()
+                {
+                    ["GridEffectID"] = "GR_debris",
+                    ["Name"] = "Debris",
+                    ["\uD1B5\uACFC\uC720\uBB34"] = "0",
+                    ["\uC18C\uBAA8\uC131"] = "0",
+                    ["ValueRate"] = "0",
+                    ["EffectIds"] = ""
+                }
+            }
+        };
+
+        List<GridEffectData> result = GridEffectCsvLoader.Load(workbook);
+
+        Assert.That(result, Has.Count.EqualTo(1));
+        Assert.That(result[0].Passed, Is.EqualTo(0));
+        Assert.That(result[0].Consumable, Is.EqualTo(0));
+    }
+
+    [Test]
+    public void Load_MapsExpendableAliasToConsumable()
+    {
+        Dictionary<string, List<Dictionary<string, string>>> workbook = new()
+        {
+            ["GridEffect"] = new List<Dictionary<string, string>>
+            {
+                new()
+                {
+                    ["GridEffectID"] = "GR_helmet",
+                    ["Name"] = "Helmet",
+                    ["Passed"] = "1",
+                    ["expendable"] = "1",
+                    ["ValueRate"] = "3",
+                    ["EffectIds"] = "E_Armor"
+                }
+            }
+        };
+
+        List<GridEffectData> result = GridEffectCsvLoader.Load(workbook);
+
+        Assert.That(result, Has.Count.EqualTo(1));
+        Assert.That(result[0].Consumable, Is.EqualTo(1));
     }
 
     [Test]
@@ -50,8 +104,9 @@ public class GridEffectDataLoaderTests
         GridEffectData data = new()
         {
             GridEffectID = "GR_helmet",
-            Name = "투구",
-            Passed = -1,
+            Name = "Helmet",
+            Passed = 1,
+            Consumable = 0,
             ValueRate = 3,
             EffectIds = "E_Armor"
         };
