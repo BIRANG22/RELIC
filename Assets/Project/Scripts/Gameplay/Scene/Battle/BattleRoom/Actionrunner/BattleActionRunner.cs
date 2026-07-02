@@ -1,4 +1,5 @@
 using Relic.Gameplay.Data;
+using Relic.Gameplay.Battle;
 using Relic.Gameplay.Monster;
 using System.Collections;
 using System.Collections.Generic;
@@ -17,6 +18,7 @@ public class BattleActionRunner
     private readonly BattleEffectExecutor effectExecutor = new();
     private readonly bool useSafeSequentialExecution;
     private readonly float actionRoutineTimeout;
+    private BattleGridEffectController gridEffectController;
 
     private const float ActionDelay = 0.05f;
     private const float BatchEndDelay = 0.05f;
@@ -614,6 +616,66 @@ public class BattleActionRunner
             target.Add(index);
     }
 
+    private bool IsGridEffectBlocked(int gridIndex)
+    {
+        BattleGridEffectController controller = ResolveGridEffectController();
+        return controller != null && controller.IsBlocked(gridIndex);
+    }
+
+    private void ApplyGridEffectsToPlayer(
+        IReadOnlyList<int> gridIndices,
+        BattleCharacter character)
+    {
+        if (gridIndices == null || character == null || character.RuntimeData == null)
+            return;
+
+        BattleGridEffectController controller = ResolveGridEffectController();
+
+        if (controller == null)
+            return;
+
+        for (int i = 0; i < gridIndices.Count; i++)
+        {
+            controller.ApplyToPlayer(gridIndices[i], character);
+
+            if (character.RuntimeData.IsDead)
+                break;
+        }
+    }
+
+    private void ApplyGridEffectsToMonster(
+        IReadOnlyList<int> gridIndices,
+        MonsterUnit monster)
+    {
+        if (gridIndices == null || monster == null || monster.RuntimeData == null)
+            return;
+
+        BattleGridEffectController controller = ResolveGridEffectController();
+
+        if (controller == null)
+            return;
+
+        for (int i = 0; i < gridIndices.Count; i++)
+        {
+            controller.ApplyToMonster(gridIndices[i], monster);
+
+            if (monster.RuntimeData.IsDead)
+                break;
+        }
+    }
+
+    private BattleGridEffectController ResolveGridEffectController()
+    {
+        if (gridEffectController != null)
+            return gridEffectController;
+
+        gridEffectController = Object.FindFirstObjectByType<BattleGridEffectController>(
+            FindObjectsInactive.Include
+        );
+
+        return gridEffectController;
+    }
+
     private IEnumerator ExecutePlayerMove(PlayerReservedCommand command)
     {
         BattleCharacter character = unitFinder.FindBattleCharacter(command.CharacterId);
@@ -652,6 +714,8 @@ public class BattleActionRunner
             if (!useVisualMove)
                 moveOffset = command.ExecutionMoveOffset;
 
+            List<int> enteredGridIndices = new();
+
             if (moveOffset == Vector2Int.zero)
             {
                 command.SetExecutedMoveDistance(0);
@@ -670,12 +734,21 @@ public class BattleActionRunner
 
             ApplyPlayerMoveFacing(character, command.Direction, moveOffset);
 
-            if (!useVisualMove &&
-                !TryGetPlayerMoveTargetGridIndex(
+            bool foundMoveTarget = useVisualMove && command.VisualMoveSteps != null
+                ? TryGetPlayerMoveTargetGridIndex(
+                    currentGridIndex,
+                    command.VisualMoveSteps,
+                    command.CharacterId,
+                    out targetGridIndex,
+                    enteredGridIndices)
+                : TryGetPlayerMoveTargetGridIndex(
                     currentGridIndex,
                     moveOffset,
                     command.CharacterId,
-                    out targetGridIndex))
+                    out targetGridIndex,
+                    enteredGridIndices);
+
+            if (!foundMoveTarget)
             {
                 command.SetExecutedMoveDistance(0);
                 ApplyBlockedPlayerMoveCostRefund(command);
@@ -709,6 +782,7 @@ public class BattleActionRunner
 
             character.SetGridIndex(targetGridIndex);
             UpdatePartyGridIndex(command.CharacterId, targetGridIndex);
+            ApplyGridEffectsToPlayer(enteredGridIndices, character);
             statusEffectService.ApplyBurnDamageToPlayerOnMove(character);
 
             hudService.RefreshHUDs();
@@ -743,11 +817,14 @@ public class BattleActionRunner
                 continue;
             }
 
+            List<int> enteredGridIndices = new();
+
             if (!TryGetPlayerMoveTargetGridIndex(
                 currentGridIndex,
                 stepGroup,
                 command.CharacterId,
-                out int targetGridIndex))
+                out int targetGridIndex,
+                enteredGridIndices))
             {
                 break;
             }
@@ -775,8 +852,12 @@ public class BattleActionRunner
 
             character.SetGridIndex(targetGridIndex);
             UpdatePartyGridIndex(command.CharacterId, targetGridIndex);
+            ApplyGridEffectsToPlayer(enteredGridIndices, character);
             currentGridIndex = targetGridIndex;
             executedDistance += GetMoveDistance(actualOffset);
+
+            if (character.RuntimeData == null || character.RuntimeData.IsDead)
+                break;
         }
 
         command.SetExecutedMoveDistance(executedDistance);
@@ -951,7 +1032,8 @@ public class BattleActionRunner
         int currentGridIndex,
         Vector2Int moveOffset,
         string characterId,
-        out int targetGridIndex)
+        out int targetGridIndex,
+        List<int> enteredGridIndices = null)
     {
         targetGridIndex = currentGridIndex;
 
@@ -968,11 +1050,11 @@ public class BattleActionRunner
 
         bool reachedTarget = true;
 
-        if (!TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.x, true, characterId))
+        if (!TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.x, true, characterId, enteredGridIndices))
             reachedTarget = false;
 
         if (reachedTarget &&
-            !TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.y, false, characterId))
+            !TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.y, false, characterId, enteredGridIndices))
         {
             reachedTarget = false;
         }
@@ -985,7 +1067,8 @@ public class BattleActionRunner
         int currentGridIndex,
         IReadOnlyList<Vector2Int> moveSteps,
         string characterId,
-        out int targetGridIndex)
+        out int targetGridIndex,
+        List<int> enteredGridIndices = null)
     {
         targetGridIndex = currentGridIndex;
 
@@ -1001,10 +1084,10 @@ public class BattleActionRunner
         {
             Vector2Int moveOffset = moveSteps[i];
 
-            if (!TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.x, true, characterId))
+            if (!TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.x, true, characterId, enteredGridIndices))
                 break;
 
-            if (!TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.y, false, characterId))
+            if (!TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.y, false, characterId, enteredGridIndices))
                 break;
         }
 
@@ -1016,7 +1099,8 @@ public class BattleActionRunner
         ref Vector2Int currentCoord,
         int amount,
         bool horizontal,
-        string characterId)
+        string characterId,
+        List<int> enteredGridIndices = null)
     {
         int remaining = amount;
 
@@ -1035,7 +1119,11 @@ public class BattleActionRunner
             if (BattleOccupancyService.IsOccupiedByAnyUnit(gridIndex, characterId))
                 return false;
 
+            if (IsGridEffectBlocked(gridIndex))
+                return false;
+
             currentCoord = nextCoord;
+            AddUnique(enteredGridIndices, gridIndex);
             remaining -= step;
         }
 
@@ -1787,6 +1875,8 @@ public class BattleActionRunner
             if (!CanApplyMonsterMove(monster, moveOffset))
                 yield break;
 
+            List<int> enteredGridIndices = BuildMonsterEnteredGridIndices(monster, moveOffset);
+
             Vector2Int mainCoord = gridManager.IndexToCoord(currentGridIndex);
             Vector2Int movedMainCoord = mainCoord + moveOffset;
             int movedMainIndex = gridManager.CoordToIndex(movedMainCoord);
@@ -1806,6 +1896,7 @@ public class BattleActionRunner
             );
 
             monster.MoveOccupiedCells(moveOffset, gridManager);
+            ApplyGridEffectsToMonster(enteredGridIndices, monster);
             statusEffectService.ApplyBurnDamageToMonsterOnMove(monster);
 
             hudService.RefreshHUDs();
@@ -1859,7 +1950,8 @@ public class BattleActionRunner
         List<Vector2Int> currentCoords,
         int amount,
         bool horizontal,
-        MonsterUnit monster)
+        MonsterUnit monster,
+        List<int> enteredGridIndices = null)
     {
         int remaining = amount;
 
@@ -1882,7 +1974,11 @@ public class BattleActionRunner
                 if (BattleOccupancyService.IsOccupiedByAnyUnit(targetIndex, null, monster))
                     return false;
 
+                if (IsGridEffectBlocked(targetIndex))
+                    return false;
+
                 nextCoords.Add(nextCoord);
+                AddUnique(enteredGridIndices, targetIndex);
             }
 
             currentCoords.Clear();
@@ -1891,6 +1987,55 @@ public class BattleActionRunner
         }
 
         return true;
+    }
+
+    private List<int> BuildMonsterEnteredGridIndices(MonsterUnit monster, Vector2Int moveOffset)
+    {
+        List<int> enteredGridIndices = new();
+
+        if (monster == null || gridManager == null || moveOffset == Vector2Int.zero)
+            return enteredGridIndices;
+
+        if (moveOffset.x != 0 && moveOffset.y != 0)
+        {
+            if (TryBuildMonsterMovePath(monster, moveOffset, true, enteredGridIndices))
+                return enteredGridIndices;
+
+            enteredGridIndices.Clear();
+
+            if (TryBuildMonsterMovePath(monster, moveOffset, false, enteredGridIndices))
+                return enteredGridIndices;
+
+            enteredGridIndices.Clear();
+            return enteredGridIndices;
+        }
+
+        TryBuildMonsterMovePath(monster, moveOffset, moveOffset.x != 0, enteredGridIndices);
+        return enteredGridIndices;
+    }
+
+    private bool TryBuildMonsterMovePath(
+        MonsterUnit monster,
+        Vector2Int moveOffset,
+        bool horizontalFirst,
+        List<int> enteredGridIndices)
+    {
+        if (monster == null || gridManager == null)
+            return false;
+
+        List<Vector2Int> currentCoords = new();
+
+        for (int i = 0; i < monster.OccupiedGridIndices.Count; i++)
+            currentCoords.Add(gridManager.IndexToCoord(monster.OccupiedGridIndices[i]));
+
+        if (horizontalFirst)
+        {
+            return TryApplyMonsterMoveAxisSteps(currentCoords, moveOffset.x, true, monster, enteredGridIndices) &&
+                   TryApplyMonsterMoveAxisSteps(currentCoords, moveOffset.y, false, monster, enteredGridIndices);
+        }
+
+        return TryApplyMonsterMoveAxisSteps(currentCoords, moveOffset.y, false, monster, enteredGridIndices) &&
+               TryApplyMonsterMoveAxisSteps(currentCoords, moveOffset.x, true, monster, enteredGridIndices);
     }
 
     private IEnumerator ExecuteMonsterSkill(MonsterReservedCommand command)
@@ -2435,6 +2580,7 @@ public class BattleActionRunner
 
         if (finalOffset != Vector2Int.zero)
         {
+            List<int> enteredGridIndices = BuildMonsterEnteredGridIndices(monster, finalOffset);
             Vector2Int currentCoord = gridManager.IndexToCoord(monster.MainGridIndex);
             Vector2Int movedCoord = currentCoord + finalOffset;
             int movedIndex = gridManager.CoordToIndex(movedCoord);
@@ -2455,6 +2601,7 @@ public class BattleActionRunner
                 BattleCameraController.Instance.EndZoomFollowTarget();
 
             monster.MoveOccupiedCells(finalOffset, gridManager);
+            ApplyGridEffectsToMonster(enteredGridIndices, monster);
         }
 
         if (hitPlayer != null)
@@ -2508,6 +2655,9 @@ public class BattleActionRunner
             }
 
             if (BattleOccupancyService.IsOccupiedByAnyUnit(targetIndex, null, monster))
+                return false;
+
+            if (IsGridEffectBlocked(targetIndex))
                 return false;
         }
 

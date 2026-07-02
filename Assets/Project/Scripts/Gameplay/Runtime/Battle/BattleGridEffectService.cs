@@ -1,0 +1,442 @@
+using System;
+using System.Collections.Generic;
+using Relic.Gameplay.Data;
+using UnityEngine;
+
+namespace Relic.Gameplay.Battle
+{
+    public sealed class BattleGridEffectApplyResult
+    {
+        public static readonly BattleGridEffectApplyResult None = new();
+
+        private readonly List<string> appliedEffectIds = new();
+
+        public bool Applied { get; private set; }
+        public bool Consumed { get; private set; }
+        public int GridIndex { get; private set; } = -1;
+        public string GridEffectId { get; private set; }
+        public IReadOnlyList<string> AppliedEffectIds => appliedEffectIds;
+
+        public static BattleGridEffectApplyResult Create(
+            int gridIndex,
+            string gridEffectId,
+            bool applied,
+            bool consumed,
+            IReadOnlyList<string> effectIds)
+        {
+            BattleGridEffectApplyResult result = new()
+            {
+                GridIndex = gridIndex,
+                GridEffectId = gridEffectId,
+                Applied = applied,
+                Consumed = consumed
+            };
+
+            if (effectIds != null)
+                result.appliedEffectIds.AddRange(effectIds);
+
+            return result;
+        }
+    }
+
+    public sealed class BattleGridEffectService
+    {
+        private const int DefaultMinSpawnCount = 2;
+        private const int DefaultMaxSpawnCount = 3;
+
+        private readonly GridEffectDatabase database;
+
+        public BattleGridEffectService(GridEffectDatabase database)
+        {
+            this.database = database;
+        }
+
+        public IReadOnlyList<BattleGridEffectPlacement> SpawnRandomEffects(
+            BattleGridEffectState state,
+            int width,
+            int height,
+            IReadOnlyCollection<int> excludedGridIndices,
+            int minCount = DefaultMinSpawnCount,
+            int maxCount = DefaultMaxSpawnCount)
+        {
+            List<BattleGridEffectPlacement> placements = new();
+
+            if (state == null || database == null || width <= 0 || height <= 0)
+                return placements;
+
+            List<string> effectIds = GetEffectIds();
+
+            if (effectIds.Count <= 0)
+                return placements;
+
+            List<int> availableGridIndices = BuildAvailableGridIndices(
+                state,
+                width,
+                height,
+                excludedGridIndices
+            );
+
+            if (availableGridIndices.Count <= 0)
+                return placements;
+
+            int safeMin = Mathf.Max(0, minCount);
+            int safeMax = Mathf.Max(safeMin, maxCount);
+            int spawnCount = BattleRandom.Range(safeMin, safeMax + 1);
+            spawnCount = Mathf.Min(spawnCount, availableGridIndices.Count);
+
+            for (int i = 0; i < spawnCount; i++)
+            {
+                int cellPickIndex = BattleRandom.Range(0, availableGridIndices.Count);
+                int gridIndex = availableGridIndices[cellPickIndex];
+                availableGridIndices.RemoveAt(cellPickIndex);
+
+                string gridEffectId = BattleRandom.Pick(effectIds);
+
+                if (!state.Place(gridIndex, gridEffectId))
+                    continue;
+
+                placements.Add(new BattleGridEffectPlacement(gridIndex, gridEffectId));
+            }
+
+            return placements;
+        }
+
+        public bool IsBlocked(BattleGridEffectState state, int gridIndex)
+        {
+            if (!TryGetGridEffectData(state, gridIndex, out GridEffectData data))
+                return false;
+
+            return data.Passed == 0;
+        }
+
+        public BattleGridEffectApplyResult ApplyToPlayer(
+            BattleGridEffectState state,
+            int gridIndex,
+            CharacterRuntimeData runtimeData)
+        {
+            if (runtimeData == null || runtimeData.IsDead)
+                return BattleGridEffectApplyResult.None;
+
+            return ApplyToRuntime(
+                state,
+                gridIndex,
+                data => ApplyPlayerEffect(runtimeData, data),
+                () =>
+                {
+                    if (runtimeData.IsDead)
+                        runtimeData.HandleDeath();
+                }
+            );
+        }
+
+        public BattleGridEffectApplyResult ApplyToMonster(
+            BattleGridEffectState state,
+            int gridIndex,
+            MonsterRuntimeData runtimeData)
+        {
+            if (runtimeData == null || runtimeData.IsDead)
+                return BattleGridEffectApplyResult.None;
+
+            return ApplyToRuntime(
+                state,
+                gridIndex,
+                data => ApplyMonsterEffect(runtimeData, data),
+                null
+            );
+        }
+
+        private BattleGridEffectApplyResult ApplyToRuntime(
+            BattleGridEffectState state,
+            int gridIndex,
+            Func<GridEffectData, IReadOnlyList<string>> applyEffects,
+            Action onDeath)
+        {
+            if (!TryGetGridEffectData(state, gridIndex, out GridEffectData data))
+                return BattleGridEffectApplyResult.None;
+
+            if (data.Passed == 0)
+                return BattleGridEffectApplyResult.None;
+
+            IReadOnlyList<string> appliedEffectIds = applyEffects(data);
+            bool applied = appliedEffectIds != null && appliedEffectIds.Count > 0;
+            bool consumed = applied && data.Consumable == 1;
+
+            if (consumed)
+                state.Remove(gridIndex);
+
+            onDeath?.Invoke();
+
+            return BattleGridEffectApplyResult.Create(
+                gridIndex,
+                data.GridEffectID,
+                applied,
+                consumed,
+                appliedEffectIds
+            );
+        }
+
+        private IReadOnlyList<string> ApplyPlayerEffect(CharacterRuntimeData runtimeData, GridEffectData data)
+        {
+            List<string> applied = new();
+            string[] effectIds = SplitEffectIds(data.EffectIds);
+
+            for (int i = 0; i < effectIds.Length; i++)
+            {
+                string effectId = effectIds[i].Trim();
+
+                if (string.IsNullOrWhiteSpace(effectId))
+                    continue;
+
+                if (ApplyDamage(runtimeData, data.ValueRate, effectId) ||
+                    ApplyArmor(runtimeData, data.ValueRate, effectId) ||
+                    ApplyHeal(runtimeData, data.ValueRate, effectId) ||
+                    ApplyStatus(runtimeData.StatusEffects, data.ValueRate, effectId))
+                {
+                    applied.Add(effectId);
+                }
+            }
+
+            return applied;
+        }
+
+        private IReadOnlyList<string> ApplyMonsterEffect(MonsterRuntimeData runtimeData, GridEffectData data)
+        {
+            List<string> applied = new();
+            string[] effectIds = SplitEffectIds(data.EffectIds);
+
+            for (int i = 0; i < effectIds.Length; i++)
+            {
+                string effectId = effectIds[i].Trim();
+
+                if (string.IsNullOrWhiteSpace(effectId))
+                    continue;
+
+                if (ApplyDamage(runtimeData, data.ValueRate, effectId) ||
+                    ApplyArmor(runtimeData, data.ValueRate, effectId) ||
+                    ApplyHeal(runtimeData, data.ValueRate, effectId) ||
+                    ApplyStatus(runtimeData.StatusEffects, data.ValueRate, effectId))
+                {
+                    applied.Add(effectId);
+                }
+            }
+
+            return applied;
+        }
+
+        private bool ApplyDamage(CharacterRuntimeData runtimeData, int value, string effectId)
+        {
+            if (!IsDamageEffect(effectId))
+                return false;
+
+            int damage = Mathf.Max(0, value);
+
+            if (damage <= 0)
+                return false;
+
+            int shieldDamage = Mathf.Min(runtimeData.CurrentShield, damage);
+            runtimeData.CurrentShield -= shieldDamage;
+            damage -= shieldDamage;
+
+            if (damage > 0)
+                runtimeData.CurrentHP = Mathf.Max(0, runtimeData.CurrentHP - damage);
+
+            return true;
+        }
+
+        private bool ApplyDamage(MonsterRuntimeData runtimeData, int value, string effectId)
+        {
+            if (!IsDamageEffect(effectId))
+                return false;
+
+            int damage = Mathf.Max(0, value);
+
+            if (damage <= 0)
+                return false;
+
+            int shieldDamage = Mathf.Min(runtimeData.CurrentShield, damage);
+            runtimeData.CurrentShield -= shieldDamage;
+            damage -= shieldDamage;
+
+            if (damage > 0)
+                runtimeData.TakeDamage(damage);
+
+            return true;
+        }
+
+        private bool ApplyArmor(CharacterRuntimeData runtimeData, int value, string effectId)
+        {
+            if (!IsArmorEffect(effectId))
+                return false;
+
+            int shield = Mathf.Max(0, value);
+
+            if (shield <= 0)
+                return false;
+
+            runtimeData.CurrentShield += shield;
+            return true;
+        }
+
+        private bool ApplyArmor(MonsterRuntimeData runtimeData, int value, string effectId)
+        {
+            if (!IsArmorEffect(effectId))
+                return false;
+
+            int shield = Mathf.Max(0, value);
+
+            if (shield <= 0)
+                return false;
+
+            runtimeData.CurrentShield += shield;
+            return true;
+        }
+
+        private bool ApplyHeal(CharacterRuntimeData runtimeData, int value, string effectId)
+        {
+            if (!IsHealEffect(effectId))
+                return false;
+
+            int heal = Mathf.Max(0, value);
+
+            if (heal <= 0)
+                return false;
+
+            if (runtimeData.MaxHP > 0)
+                runtimeData.CurrentHP = Mathf.Min(runtimeData.MaxHP, runtimeData.CurrentHP + heal);
+            else
+                runtimeData.CurrentHP += heal;
+
+            return true;
+        }
+
+        private bool ApplyHeal(MonsterRuntimeData runtimeData, int value, string effectId)
+        {
+            if (!IsHealEffect(effectId))
+                return false;
+
+            int heal = Mathf.Max(0, value);
+
+            if (heal <= 0)
+                return false;
+
+            runtimeData.Heal(heal);
+            return true;
+        }
+
+        private bool ApplyStatus(
+            List<StatusEffectRuntimeData> statusEffects,
+            int value,
+            string effectId)
+        {
+            if (string.IsNullOrWhiteSpace(effectId))
+                return false;
+
+            if (IsDamageEffect(effectId) || IsArmorEffect(effectId) || IsHealEffect(effectId))
+                return false;
+
+            return BattleEffectUtility.AddOrStackStatus(
+                statusEffects,
+                effectId.Trim(),
+                Mathf.Max(1, value),
+                1
+            );
+        }
+
+        private bool TryGetGridEffectData(
+            BattleGridEffectState state,
+            int gridIndex,
+            out GridEffectData data)
+        {
+            data = null;
+
+            if (state == null || database == null)
+                return false;
+
+            if (!state.TryGetEffectId(gridIndex, out string gridEffectId))
+                return false;
+
+            return database.TryGet(gridEffectId, out data) && data != null;
+        }
+
+        private List<string> GetEffectIds()
+        {
+            List<string> effectIds = new();
+
+            IReadOnlyDictionary<string, GridEffectData> all = database.GetAll();
+
+            if (all == null)
+                return effectIds;
+
+            foreach (KeyValuePair<string, GridEffectData> pair in all)
+            {
+                if (!string.IsNullOrWhiteSpace(pair.Key) && pair.Value != null)
+                    effectIds.Add(pair.Key);
+            }
+
+            return effectIds;
+        }
+
+        private static List<int> BuildAvailableGridIndices(
+            BattleGridEffectState state,
+            int width,
+            int height,
+            IReadOnlyCollection<int> excludedGridIndices)
+        {
+            HashSet<int> excluded = excludedGridIndices != null
+                ? new HashSet<int>(excludedGridIndices)
+                : new HashSet<int>();
+
+            if (state != null)
+            {
+                foreach (BattleGridEffectPlacement placement in state.GetPlacements())
+                    excluded.Add(placement.GridIndex);
+            }
+
+            int cellCount = Mathf.Max(0, width * height);
+            List<int> available = new();
+
+            for (int i = 0; i < cellCount; i++)
+            {
+                if (!excluded.Contains(i))
+                    available.Add(i);
+            }
+
+            return available;
+        }
+
+        private static string[] SplitEffectIds(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return Array.Empty<string>();
+
+            return value.Split(new[] { ';', '|', ',' }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        private static bool IsDamageEffect(string effectId)
+        {
+            if (string.IsNullOrWhiteSpace(effectId))
+                return false;
+
+            string normalized = effectId.Trim();
+            return string.Equals(normalized, "E_Damage", StringComparison.Ordinal) ||
+                   string.Equals(normalized, "E_Strike", StringComparison.Ordinal) ||
+                   string.Equals(normalized, "E_Pierce", StringComparison.Ordinal);
+        }
+
+        private static bool IsArmorEffect(string effectId)
+        {
+            return string.Equals(effectId?.Trim(), "E_Armor", StringComparison.Ordinal);
+        }
+
+        private static bool IsHealEffect(string effectId)
+        {
+            if (string.IsNullOrWhiteSpace(effectId))
+                return false;
+
+            string normalized = effectId.Trim();
+            return string.Equals(normalized, "E_Recover", StringComparison.Ordinal) ||
+                   normalized.IndexOf("Heal", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                   normalized.IndexOf("Recover", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+    }
+}

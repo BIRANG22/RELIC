@@ -6,6 +6,7 @@ using UnityEngine;
 public class PlayerSkillReservationController : MonoBehaviour
 {
     [SerializeField] private GridManager gridManager;
+    [SerializeField] private BattleGridEffectController gridEffectController;
     [SerializeField] private RangePreview rangePreview;
     [SerializeField] private MoveGhostPreview moveGhostPreview;
     [SerializeField] private BattleTimelineController timelineController;
@@ -721,6 +722,7 @@ public class PlayerSkillReservationController : MonoBehaviour
         HashSet<int> blockedGridIndices = BuildCurrentCharacterMoveBlockedGridIndices();
 
         AddCurrentMonsterOccupiedGridIndices(blockedGridIndices);
+        AddBlockedGridEffectIndices(blockedGridIndices);
 
         return blockedGridIndices;
     }
@@ -730,6 +732,7 @@ public class PlayerSkillReservationController : MonoBehaviour
         HashSet<int> blockedGridIndices = BuildCurrentCharacterMoveBlockedGridIndices();
 
         AddProjectedMonsterOccupiedGridIndices(blockedGridIndices);
+        AddBlockedGridEffectIndices(blockedGridIndices);
 
         return blockedGridIndices;
     }
@@ -830,6 +833,40 @@ public class PlayerSkillReservationController : MonoBehaviour
         }
     }
 
+    private void AddBlockedGridEffectIndices(HashSet<int> blockedGridIndices)
+    {
+        if (blockedGridIndices == null)
+            return;
+
+        BattleGridEffectController controller = ResolveGridEffectController();
+
+        if (controller == null || controller.State == null)
+            return;
+
+        IReadOnlyList<Relic.Gameplay.Battle.BattleGridEffectPlacement> placements =
+            controller.State.GetPlacements();
+
+        for (int i = 0; i < placements.Count; i++)
+        {
+            int gridIndex = placements[i].GridIndex;
+
+            if (IsValidMoveDestinationGridIndex(gridIndex) && controller.IsBlocked(gridIndex))
+                blockedGridIndices.Add(gridIndex);
+        }
+    }
+
+    private BattleGridEffectController ResolveGridEffectController()
+    {
+        if (gridEffectController != null)
+            return gridEffectController;
+
+        gridEffectController = FindFirstObjectByType<BattleGridEffectController>(
+            FindObjectsInactive.Include
+        );
+
+        return gridEffectController;
+    }
+
     private HashSet<int> BuildKnownOtherPlayerDestinationGridIndices()
     {
         HashSet<int> blockedGridIndices = new();
@@ -841,6 +878,7 @@ public class PlayerSkillReservationController : MonoBehaviour
         EnsureTimelineController();
         AddKnownOtherPlayerDestinationsFromScene(blockedGridIndices, selfCharacterId);
         AddKnownOtherPlayerDestinationsFromPartyStore(blockedGridIndices, selfCharacterId);
+        AddBlockedGridEffectIndices(blockedGridIndices);
 
         return blockedGridIndices;
     }
