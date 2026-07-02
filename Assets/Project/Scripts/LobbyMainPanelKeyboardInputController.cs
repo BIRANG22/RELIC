@@ -78,6 +78,12 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
     [SerializeField] private GameObject skillArea;
     [SerializeField] private GameObject runeArea;
 
+    [Header("Skill Rune Toggle Keyboard SFX")]
+    [Tooltip("CharacterSettingPanel에서 Tab 키로 SkillArea/RuneArea를 전환할 때 마우스 호버와 같은 효과음을 재생합니다.")]
+    [SerializeField] private bool playSkillRuneKeyboardHoverSfx = true;
+    [SerializeField] private SfxType skillRuneKeyboardHoverSfx = SfxType.NormalButtonHover;
+    [SerializeField, Range(0f, 2f)] private float skillRuneKeyboardHoverSfxVolume = 1f;
+
     [Header("Lobby Main Keys")]
     [SerializeField] private KeyCode backKey = KeyCode.Escape;
     [SerializeField] private KeyCode partySlot0Key = KeyCode.Alpha1;
@@ -710,10 +716,12 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
         if (skillOpen && !runeOpen)
         {
             OpenRuneArea();
+            PlaySkillRuneKeyboardHoverSfx();
             return;
         }
 
         OpenSkillArea();
+        PlaySkillRuneKeyboardHoverSfx();
     }
 
     private void OpenSkillArea()
@@ -750,6 +758,17 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
 
         if (runeArea != null)
             runeArea.SetActive(true);
+    }
+
+    private void PlaySkillRuneKeyboardHoverSfx()
+    {
+        if (!playSkillRuneKeyboardHoverSfx)
+            return;
+
+        if (AudioManager.Instance == null)
+            return;
+
+        AudioManager.Instance.PlaySfx(skillRuneKeyboardHoverSfx, skillRuneKeyboardHoverSfxVolume);
     }
 
     private void SelectCharacterPartySlot(int slotIndex, GameObject slotObject)

@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
@@ -89,7 +90,21 @@ public class ErosionSelectCarousel : MonoBehaviour
 
     [SerializeField] private AnimationCurve moveCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
+    [Header("Selection Move SFX")]
+    [SerializeField] private bool playSelectionMoveSfx = true;
+    [SerializeField] private SfxType selectionMoveSfxType = SfxType.NormalButtonClick;
+    [Range(0f, 1f)]
+    [SerializeField] private float selectionMoveSfxVolume = 1f;
+
+    [Header("Navigation Button Press Feedback")]
+    [Tooltip("버튼을 직접 누르지 않고 키보드로 중앙 선택이 이동해도 이전/다음 버튼이 눌린 것처럼 보이게 합니다.")]
+    [SerializeField] private bool playNavigationButtonPressFeedback = true;
+    [Tooltip("키보드 이동 시 버튼이 눌린 상태로 유지되는 시간입니다.")]
+    [SerializeField] private float navigationButtonPressDuration = 0.08f;
+
     private Coroutine moveCoroutine;
+    private Coroutine prevButtonPressCoroutine;
+    private Coroutine nextButtonPressCoroutine;
     private int currentIndex;
     private float nextInputAllowedTime;
     private bool isInitialized;
@@ -118,6 +133,8 @@ public class ErosionSelectCarousel : MonoBehaviour
             StopCoroutine(moveCoroutine);
             moveCoroutine = null;
         }
+
+        StopNavigationButtonPressFeedback();
     }
 
     private void OnDestroy()
@@ -182,9 +199,15 @@ public class ErosionSelectCarousel : MonoBehaviour
         if (lastIndex < 0)
             return;
 
-        currentIndex = Mathf.Clamp(index, 0, lastIndex);
+        int nextIndex = Mathf.Clamp(index, 0, lastIndex);
+        bool selectionChanged = currentIndex != nextIndex;
+
+        currentIndex = nextIndex;
         ApplyPositions(instant);
         RefreshNavigationButtons();
+
+        if (selectionChanged && !instant)
+            PlaySelectionMoveSfx();
     }
 
     private void MoveSelection(int direction)
@@ -215,6 +238,88 @@ public class ErosionSelectCarousel : MonoBehaviour
         currentIndex = nextIndex;
         ApplyPositions(false);
         RefreshNavigationButtons();
+        PlaySelectionMoveSfx();
+        PlayNavigationButtonPressFeedback(direction);
+    }
+
+    private void PlaySelectionMoveSfx()
+    {
+        if (!playSelectionMoveSfx || AudioManager.Instance == null)
+            return;
+
+        AudioManager.Instance.PlaySfx(selectionMoveSfxType, selectionMoveSfxVolume);
+    }
+
+    private void PlayNavigationButtonPressFeedback(int direction)
+    {
+        if (!playNavigationButtonPressFeedback)
+            return;
+
+        // 현재 연결 기준상 prevButton은 MoveSelection(1), nextButton은 MoveSelection(-1)을 실행합니다.
+        Button targetButton = direction > 0 ? prevButton : nextButton;
+
+        if (targetButton == null || !targetButton.gameObject.activeInHierarchy || !targetButton.interactable)
+            return;
+
+        if (direction > 0)
+        {
+            if (prevButtonPressCoroutine != null)
+                StopCoroutine(prevButtonPressCoroutine);
+
+            prevButtonPressCoroutine = StartCoroutine(PlayButtonPressFeedbackRoutine(targetButton, true));
+        }
+        else
+        {
+            if (nextButtonPressCoroutine != null)
+                StopCoroutine(nextButtonPressCoroutine);
+
+            nextButtonPressCoroutine = StartCoroutine(PlayButtonPressFeedbackRoutine(targetButton, false));
+        }
+    }
+
+    private IEnumerator PlayButtonPressFeedbackRoutine(Button button, bool isPrevButton)
+    {
+        if (button == null || EventSystem.current == null)
+            yield break;
+
+        PointerEventData pointerData = new PointerEventData(EventSystem.current)
+        {
+            button = PointerEventData.InputButton.Left,
+            position = Vector2.zero
+        };
+
+        ExecuteEvents.Execute(button.gameObject, pointerData, ExecuteEvents.pointerDownHandler);
+
+        float elapsed = 0f;
+        float duration = Mathf.Max(0f, navigationButtonPressDuration);
+
+        while (elapsed < duration)
+        {
+            elapsed += GetDeltaTime();
+            yield return null;
+        }
+
+        ExecuteEvents.Execute(button.gameObject, pointerData, ExecuteEvents.pointerUpHandler);
+
+        if (isPrevButton)
+            prevButtonPressCoroutine = null;
+        else
+            nextButtonPressCoroutine = null;
+    }
+
+    private void StopNavigationButtonPressFeedback()
+    {
+        if (prevButtonPressCoroutine != null)
+        {
+            StopCoroutine(prevButtonPressCoroutine);
+            prevButtonPressCoroutine = null;
+        }
+
+        if (nextButtonPressCoroutine != null)
+        {
+            StopCoroutine(nextButtonPressCoroutine);
+            nextButtonPressCoroutine = null;
+        }
     }
 
     private bool IsInputBlocked()
