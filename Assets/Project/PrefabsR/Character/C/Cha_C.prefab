@@ -169,13 +169,13 @@ MonoBehaviour:
   attackReady3StateName: AttackReady
   attackAction3StateName: AttackAction3
   moveVfx:
-    prefab: {fileID: 4145361429921181282, guid: f45be1937c3904848ac7f971b1276398, type: 3}
+    prefab: {fileID: 4145361429921181282, guid: 64eec7862f4d94a4198ea5d201af5b88, type: 3}
     flipType: 0
   guardVfx:
-    prefab: {fileID: 8802234492492066749, guid: f89e65c3cca54b84abfbbc69dc6c185f, type: 3}
+    prefab: {fileID: 8802234492492066749, guid: 0beedeb423fa0d84585fcbbb3397e1d8, type: 3}
     flipType: 0
   hitVfx:
-    prefab: {fileID: 1117934107437797500, guid: 6dd4d37e972a5e74894acd84b22787f5, type: 3}
+    prefab: {fileID: 1117934107437797500, guid: 88f1a976e51edc6498fbd356d3e3f7f1, type: 3}
     flipType: 0
   attackVfx1:
     prefab: {fileID: 7246877767994350761, guid: 850dde0b243b3694293b43e76fc9afd7, type: 3}
