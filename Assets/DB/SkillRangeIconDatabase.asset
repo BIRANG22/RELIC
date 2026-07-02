@@ -56,4 +56,4 @@ MonoBehaviour:
   - RangeId: Range_21
     Icon: {fileID: 21300000, guid: a7dd181c3f9a4c74facb0603d3d10907, type: 3}
   - RangeId: Range_All
-    Icon: {fileID: 21300000, guid: fa15450a1abbdbe4da1f0333351beb67, type: 3}
+    Icon: {fileID: 21300000, guid: fcbe972d3cbe4574fbaf14237b82626d, type: 3}

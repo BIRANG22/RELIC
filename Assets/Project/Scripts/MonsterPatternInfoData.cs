@@ -8,6 +8,7 @@ namespace Relic.Gameplay.Data
         public string PatternId;
         public string MonsterId;
         public int Order;
+        public string SkillId;
         public string Description;
     }
 }

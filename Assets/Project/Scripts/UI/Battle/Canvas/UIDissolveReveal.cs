@@ -24,8 +24,6 @@ public class UIDissolveReveal : MonoBehaviour
     [SerializeField] private RectTransform monsterInfoPanel;
     [SerializeField] private MonsterInfoPanelUI monsterInfoPanelUI;
     [SerializeField] private string autoMonsterInfoPanelName = "MonsterInfoPanel";
-    [SerializeField, Min(0f)] private float horizontalPanelPadding = 80f;
-    [SerializeField, Min(0f)] private float verticalBoundsSpacing = 24f;
     [SerializeField] private TextAnchor leftAlignment = TextAnchor.UpperLeft;
     [SerializeField] private TextAnchor rightAlignment = TextAnchor.UpperRight;
     [SerializeField] private float leftPanelPositionX = 0f;
