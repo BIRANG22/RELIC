@@ -13,6 +13,14 @@ public class BattlePlayButton : MonoBehaviour
     [Tooltip("중앙에 있는 스테이지가 잠겨 있을 때 PlayButton을 누르면 입장을 막고 경고를 표시합니다.")]
     [SerializeField] private bool blockLockedCarouselStage = true;
 
+    [Header("Erosion Entry Lock")]
+    [Tooltip("침식도 선택 캐러셀입니다. 비워두면 씬에서 자동으로 찾습니다.")]
+    [SerializeField] private ErosionSelectCarousel erosionSelectCarousel;
+    [Tooltip("체크하면 Erosion_0이 아닌 Erosion_1~5 선택 상태에서는 게임 입장을 막습니다.")]
+    [SerializeField] private bool blockNonZeroErosionEntry = true;
+    [Tooltip("입장이 가능한 침식도 인덱스입니다. 기본값 0은 Erosion_0입니다.")]
+    [SerializeField] private int allowedErosionIndex = 0;
+
     [Header("Option")]
     [SerializeField] private bool checkMapSelected = true;
     [SerializeField] private bool checkPartyExists = true;
@@ -21,6 +29,7 @@ public class BattlePlayButton : MonoBehaviour
     [Header("Warning UI")]
     [SerializeField] private SettingWarningUI warningUI;
     [SerializeField] private string lockedStageEnterMessage = "아직 입장할 수 없는 구역입니다.";
+    [SerializeField] private string lockedErosionEnterMessage = "현재는 기본 난이도만 입장할 수 있습니다.";
     [SerializeField] private string mapNotSelectedMessage = "스테이지를 선택해야 합니다.";
     [SerializeField] private string partyEmptyMessage = "캐릭터를 편성해야 합니다.";
     [SerializeField] private string partyNotFullMessage = "캐릭터 3명을 모두 편성해야 합니다. 현재 {0}/{1}";
@@ -40,6 +49,7 @@ public class BattlePlayButton : MonoBehaviour
 
         FindWarningUIIfMissing();
         FindStageCarouselIfMissing();
+        FindErosionCarouselIfMissing();
     }
 
     private void OnValidate()
@@ -65,6 +75,12 @@ public class BattlePlayButton : MonoBehaviour
             if (IsLockedCarouselStageCentered())
             {
                 ShowWarning(lockedStageEnterMessage);
+                return;
+            }
+
+            if (IsBlockedErosionSelected())
+            {
+                ShowWarning(lockedErosionEnterMessage);
                 return;
             }
 
@@ -122,6 +138,19 @@ public class BattlePlayButton : MonoBehaviour
         FindStageCarouselIfMissing();
 
         return stageButtonCarousel != null && stageButtonCarousel.IsCurrentStageLocked();
+    }
+
+    private bool IsBlockedErosionSelected()
+    {
+        if (!blockNonZeroErosionEntry)
+            return false;
+
+        FindErosionCarouselIfMissing();
+
+        if (erosionSelectCarousel == null)
+            return false;
+
+        return erosionSelectCarousel.CurrentIndex != allowedErosionIndex;
     }
 
     private bool CanStartWithCurrentParty()
@@ -224,6 +253,14 @@ public class BattlePlayButton : MonoBehaviour
             return;
 
         stageButtonCarousel = FindFirstObjectByType<LobbyStageButtonCarousel>(FindObjectsInactive.Include);
+    }
+
+    private void FindErosionCarouselIfMissing()
+    {
+        if (erosionSelectCarousel != null)
+            return;
+
+        erosionSelectCarousel = FindFirstObjectByType<ErosionSelectCarousel>(FindObjectsInactive.Include);
     }
 
     private bool IsMapSelected()
