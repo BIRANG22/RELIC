@@ -67,6 +67,18 @@ public class LobbyStageButtonCarousel : MonoBehaviour, IBeginDragHandler, IDragH
     [SerializeField] private float moveDuration = 0.25f;
     [SerializeField] private AnimationCurve moveCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
+    [Header("Selection Move SFX")]
+    [SerializeField] private bool playSelectionMoveSfx = true;
+    [SerializeField] private SfxType selectionMoveSfxType = SfxType.NormalButtonClick;
+    [Range(0f, 1f)]
+    [SerializeField] private float selectionMoveSfxVolume = 1f;
+
+    [Header("Navigation Button Press Feedback")]
+    [Tooltip("버튼을 직접 누르지 않고 키보드나 드래그로 중앙 선택이 이동해도 이전/다음 버튼이 눌린 것처럼 보이게 합니다.")]
+    [SerializeField] private bool playNavigationButtonPressFeedback = true;
+    [Tooltip("키보드 이동 시 버튼이 눌린 상태로 유지되는 시간입니다.")]
+    [SerializeField] private float navigationButtonPressDuration = 0.08f;
+
     [Header("Selection")]
     [Tooltip("중앙으로 온 스테이지를 즉시 선택 상태로 저장합니다. PlayButton을 누르면 이 스테이지로 시작됩니다.")]
     [SerializeField] private bool applyStageSelectionWhenCentered = true;
@@ -83,6 +95,8 @@ public class LobbyStageButtonCarousel : MonoBehaviour, IBeginDragHandler, IDragH
 
     private RectTransform[] rects;
     private Coroutine animationCoroutine;
+    private Coroutine previousButtonPressCoroutine;
+    private Coroutine nextButtonPressCoroutine;
     private int currentIndex = -1;
     private Vector2 dragStartPosition;
     private bool isDragging;
@@ -144,6 +158,8 @@ public class LobbyStageButtonCarousel : MonoBehaviour, IBeginDragHandler, IDragH
             animationCoroutine = null;
         }
 
+        StopNavigationButtonPressFeedback();
+
         UnbindNavigationButtons();
     }
 
@@ -173,12 +189,17 @@ public class LobbyStageButtonCarousel : MonoBehaviour, IBeginDragHandler, IDragH
         AutoBindStageFrontImagesIfNeeded();
         ApplyStageDisplayNames();
 
+        int previousIndex = currentIndex;
         int nextIndex = FindNextAvailableIndex(currentIndex, direction);
 
         if (nextIndex < 0)
             return currentIndex;
 
         SetSelection(nextIndex, false);
+
+        if (previousIndex != currentIndex)
+            PlayNavigationButtonPressFeedback(direction);
+
         return currentIndex;
     }
 
@@ -196,12 +217,17 @@ public class LobbyStageButtonCarousel : MonoBehaviour, IBeginDragHandler, IDragH
         if (index < 0)
             return;
 
+        bool selectionChanged = currentIndex != index;
+
         currentIndex = index;
         ApplyLayout(instant);
         ApplyCenteredTextVisibility();
         ApplyStageFrontImageColors();
         ApplyCenteredSelection();
         RefreshNavigationButtonInteractable();
+
+        if (selectionChanged && !instant)
+            PlaySelectionMoveSfx();
     }
 
     public bool HandleStageButtonClick(Button clickedButton)
@@ -219,6 +245,85 @@ public class LobbyStageButtonCarousel : MonoBehaviour, IBeginDragHandler, IDragH
     {
         int index = GetButtonIndex(button);
         return index >= 0 && index == currentIndex;
+    }
+
+    private void PlaySelectionMoveSfx()
+    {
+        if (!playSelectionMoveSfx || AudioManager.Instance == null)
+            return;
+
+        AudioManager.Instance.PlaySfx(selectionMoveSfxType, selectionMoveSfxVolume);
+    }
+
+    private void PlayNavigationButtonPressFeedback(int direction)
+    {
+        if (!playNavigationButtonPressFeedback)
+            return;
+
+        Button targetButton = direction < 0 ? previousStageNavigationButton : nextStageNavigationButton;
+
+        if (targetButton == null || !targetButton.gameObject.activeInHierarchy || !targetButton.interactable)
+            return;
+
+        if (direction < 0)
+        {
+            if (previousButtonPressCoroutine != null)
+                StopCoroutine(previousButtonPressCoroutine);
+
+            previousButtonPressCoroutine = StartCoroutine(PlayButtonPressFeedbackRoutine(targetButton, true));
+        }
+        else
+        {
+            if (nextButtonPressCoroutine != null)
+                StopCoroutine(nextButtonPressCoroutine);
+
+            nextButtonPressCoroutine = StartCoroutine(PlayButtonPressFeedbackRoutine(targetButton, false));
+        }
+    }
+
+    private IEnumerator PlayButtonPressFeedbackRoutine(Button button, bool isPreviousButton)
+    {
+        if (button == null || EventSystem.current == null)
+            yield break;
+
+        PointerEventData pointerData = new PointerEventData(EventSystem.current)
+        {
+            button = PointerEventData.InputButton.Left,
+            position = Vector2.zero
+        };
+
+        ExecuteEvents.Execute(button.gameObject, pointerData, ExecuteEvents.pointerDownHandler);
+
+        float elapsed = 0f;
+        float duration = Mathf.Max(0f, navigationButtonPressDuration);
+
+        while (elapsed < duration)
+        {
+            elapsed += useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+            yield return null;
+        }
+
+        ExecuteEvents.Execute(button.gameObject, pointerData, ExecuteEvents.pointerUpHandler);
+
+        if (isPreviousButton)
+            previousButtonPressCoroutine = null;
+        else
+            nextButtonPressCoroutine = null;
+    }
+
+    private void StopNavigationButtonPressFeedback()
+    {
+        if (previousButtonPressCoroutine != null)
+        {
+            StopCoroutine(previousButtonPressCoroutine);
+            previousButtonPressCoroutine = null;
+        }
+
+        if (nextButtonPressCoroutine != null)
+        {
+            StopCoroutine(nextButtonPressCoroutine);
+            nextButtonPressCoroutine = null;
+        }
     }
 
     public void OnBeginDrag(PointerEventData eventData)
