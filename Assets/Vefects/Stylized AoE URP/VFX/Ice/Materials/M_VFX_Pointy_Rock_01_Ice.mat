@@ -24,7 +24,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _LUT:
-        m_Texture: {fileID: 2800000, guid: d64eeaab48dd8c748b4b6aae4ebcff2e, type: 3}
+        m_Texture: {fileID: 2800000, guid: f2a43a0387a3e6543a7ddd9f3dd5954d, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTexture1:
@@ -54,25 +54,26 @@ Material:
     m_Ints: []
     m_Floats:
     - _AlphaCutoff: 0.5
-    - _BaseEmissionMultiply: 0.7
-    - _Emissive: 10
+    - _BaseEmissionMultiply: 0
+    - _Emissive: 0
     - _EnvironmentReflections: 1
     - _FresnelBias: 0
     - _FresnelMultiply: 1
     - _FresnelPower: 1
     - _FresnelScale: 1
     - _LUTAmplitude: 1
-    - _LUTOffset: 0.28
+    - _LUTOffset: 0.25
     - _LUTPanSpeed: 0
     - _Metallic: 0
     - _QueueControl: 0
     - _QueueOffset: 0
     - _ReceiveShadows: 1
-    - _Smoothness: 0.3
+    - _Smoothness: 0.1
     - _SpecularHighlights: 1
     m_Colors:
     - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
     - _NoiseTextureSelector: {r: 0, g: 1, b: 0, a: 0}
-    - _NoiseUVPanSpeed: {r: 0.3, g: -0.2, b: 0, a: 0}
+    - _NoiseUVPanSpeed: {r: 0.1, g: -0.2, b: 0, a: 0}
     - _NoiseUVScale: {r: 0.3, g: 0.3, b: 0, a: 0}
   m_BuildTextureStacks: []
+  m_AllowLocking: 1
