@@ -14,18 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entries:
   - Type: Common
-    Icon: {fileID: 21300000, guid: 0dabf1778695a6847b07c16a722bcc1a, type: 3}
+    Icon: {fileID: 21300000, guid: bb4c06ae7c71f784ca7976c1eee5ecb2, type: 3}
   - Type: Elite
-    Icon: {fileID: 21300000, guid: c0dcf2ce435aed94487c91076f205b6f, type: 3}
+    Icon: {fileID: 21300000, guid: 764baa217927f604a9d094159243fd7c, type: 3}
   - Type: Boss
-    Icon: {fileID: 21300000, guid: fdf3e98f3a2677840bba588e75825bdb, type: 3}
+    Icon: {fileID: 21300000, guid: a21f791167f81394f8fdae70deae9e7b, type: 3}
   - Type: Rest
-    Icon: {fileID: 21300000, guid: ec94551c05dcea84bb91d943b029e4be, type: 3}
-  - Type: Shop
-    Icon: {fileID: 21300000, guid: 01fc59574dc4122449761ea53792bced, type: 3}
-  - Type: Chest
-    Icon: {fileID: 21300000, guid: b104db19305240545b95dc4f225a1cee, type: 3}
+    Icon: {fileID: 21300000, guid: c07e3888fbf85154badd80b572ea008f, type: 3}
   - Type: Special
-    Icon: {fileID: 21300000, guid: b104db19305240545b95dc4f225a1cee, type: 3}
+    Icon: {fileID: 21300000, guid: c593e07fd2008324988d3f8d5903fe1e, type: 3}
   - Type: Start
-    Icon: {fileID: 21300000, guid: 11d5a6afdbefb2d4c8b42515b97d7719, type: 3}
+    Icon: {fileID: 21300000, guid: a147ed98ec7034b4d86e240c78a90ccc, type: 3}

@@ -267,13 +267,13 @@ MonoBehaviour:
   hitStateName: Hit
   deadStateName: Dead
   moveVfx:
-    prefab: {fileID: 4145361429921181282, guid: f45be1937c3904848ac7f971b1276398, type: 3}
+    prefab: {fileID: 4145361429921181282, guid: 64eec7862f4d94a4198ea5d201af5b88, type: 3}
     flipType: 0
   guardVfx:
-    prefab: {fileID: 8802234492492066749, guid: f89e65c3cca54b84abfbbc69dc6c185f, type: 3}
+    prefab: {fileID: 8802234492492066749, guid: 0beedeb423fa0d84585fcbbb3397e1d8, type: 3}
     flipType: 0
   hitVfx:
-    prefab: {fileID: 1117934107437797500, guid: 6dd4d37e972a5e74894acd84b22787f5, type: 3}
+    prefab: {fileID: 1117934107437797500, guid: 88f1a976e51edc6498fbd356d3e3f7f1, type: 3}
     flipType: 0
   statusVfx:
     aimingVfx:
@@ -345,7 +345,7 @@ MonoBehaviour:
     attack1:
       stateName: AttackAction1
       vfx:
-        prefab: {fileID: 7907684367932010881, guid: 850dde0b243b3694293b43e76fc9afd7, type: 3}
+        prefab: {fileID: 5464498477634507533, guid: 7d62d8b59c052e74f841fe794b1df8a6, type: 3}
         flipType: 0
       projectileVfx:
         skillId: 
@@ -362,7 +362,7 @@ MonoBehaviour:
     attack2:
       stateName: AttackAction2
       vfx:
-        prefab: {fileID: 3127906768008823332, guid: 790222bb35b3a984990ac2bc4122b587, type: 3}
+        prefab: {fileID: 8450343264324062456, guid: 8940258aeab2fc4478a1717538600122, type: 3}
         flipType: 0
       projectileVfx:
         skillId: 
@@ -379,7 +379,7 @@ MonoBehaviour:
     attack3:
       stateName: AttackAction3
       vfx:
-        prefab: {fileID: 2841605795099109794, guid: c47ba19841760834ea798963184f6f73, type: 3}
+        prefab: {fileID: 2841605795099109794, guid: 69ccb2bf4a2fae641bfda27160ed0dd5, type: 3}
         flipType: 0
       projectileVfx:
         skillId: 
@@ -396,7 +396,7 @@ MonoBehaviour:
     skill:
       stateName: Control
       vfx:
-        prefab: {fileID: 5464498477634507533, guid: bdc8593002004414291efd23ad621fe2, type: 3}
+        prefab: {fileID: 5464498477634507533, guid: 7d62d8b59c052e74f841fe794b1df8a6, type: 3}
         flipType: 0
       projectileVfx:
         skillId: 
