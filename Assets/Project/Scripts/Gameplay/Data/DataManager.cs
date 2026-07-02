@@ -16,6 +16,7 @@ public class DataManager : Singleton<DataManager>
     [SerializeField] private MapNodeIconDatabase mapNodeIconDatabase;
     [SerializeField] private SkillRangeIconDatabase skillRangeIconDatabase;
     [SerializeField] private ItemIconDatabase itemIconDatabase;
+    [SerializeField] private GridEffectSpriteDatabase gridEffectSpriteDatabase;
 
     private DataBootstrap dataBootstrap = new();
 
@@ -43,6 +44,8 @@ public class DataManager : Singleton<DataManager>
     public RewardTableDatabase RewardTableDatabase => dataBootstrap.RewardTableDatabase;
     public ItemDatabase ItemDatabase => dataBootstrap.ItemDatabase;
     public ItemIconDatabase ItemIconDatabase => itemIconDatabase;
+    public GridEffectDatabase GridEffectDatabase => dataBootstrap.GridEffectDatabase;
+    public GridEffectSpriteDatabase GridEffectSpriteDatabase => gridEffectSpriteDatabase;
     public CharacterRuntimeStore CharacterRuntimeStore { get; private set; } = new();
     public PartyRuntimeStore PartyRuntimeStore { get; private set; } = new();
     public SkillRuntimeStore SkillRuntimeStore { get; private set; } = new();
@@ -74,6 +77,9 @@ public class DataManager : Singleton<DataManager>
 
         if (monsterIconDatabase != null)
             monsterIconDatabase.Initialize();
+
+        if (gridEffectSpriteDatabase != null)
+            gridEffectSpriteDatabase.Initialize();
 
         SkillEquipService = new SkillEquipService(CharacterRuntimeStore);
     }

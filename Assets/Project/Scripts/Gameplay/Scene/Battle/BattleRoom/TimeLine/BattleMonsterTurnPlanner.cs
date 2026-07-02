@@ -369,7 +369,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         if (candidates.Count <= 0)
             return -1;
 
-        int randomIndex = Random.Range(0, candidates.Count);
+        int randomIndex = BattleRandom.Range(0, candidates.Count);
         return candidates[randomIndex];
     }
 

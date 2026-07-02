@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Relic.Gameplay.Battle;
 using UnityEngine;
 
 namespace Relic.Gameplay.Data
@@ -128,7 +129,7 @@ for (int i = 0; i < nodeCount; i++)
                     }
                     else
                     {
-                        counts[layer] = Random.Range(2, MaxColumnCount + 1);
+                        counts[layer] = BattleRandom.Range(2, MaxColumnCount + 1);
                     }
                 }
 
@@ -195,7 +196,7 @@ for (int i = 0; i < nodeCount; i++)
 
             while (columns.Count < nodeCount)
             {
-                int column = Random.Range(0, MaxColumnCount);
+                int column = BattleRandom.Range(0, MaxColumnCount);
 
                 if (!columns.Contains(column))
                     columns.Add(column);
@@ -220,8 +221,8 @@ for (int i = 0; i < nodeCount; i++)
             if (isStartLayer || isBossLayer)
                 return new Vector2(0f, baseY);
 
-            float randomX = Random.Range(-XJitter, XJitter);
-            float randomY = Random.Range(-YJitter, YJitter);
+            float randomX = BattleRandom.Range(-XJitter, XJitter);
+            float randomY = BattleRandom.Range(-YJitter, YJitter);
 
             return new Vector2(
                 baseX + randomX,
@@ -330,7 +331,7 @@ for (int i = 0; i < nodeCount; i++)
                 if (Mathf.Abs(from.Position.x) >= EdgeColumnThresholdX)
                     chance = EdgeExtraConnectionChance;
 
-                if (Random.value > chance)
+                if (BattleRandom.Value() > chance)
                     continue;
 
                 int leftIndex = FindNearestCurrentIndexOnSide(
@@ -382,7 +383,7 @@ for (int i = 0; i < nodeCount; i++)
                     }
                     else
                     {
-                        int targetIndex = Random.value < 0.5f ? leftIndex : rightIndex;
+                        int targetIndex = BattleRandom.Value() < 0.5f ? leftIndex : rightIndex;
 
                         AddLimitedConnection(
                             from,
@@ -561,7 +562,7 @@ for (int i = 0; i < nodeCount; i++)
 
             eventChance = Mathf.Clamp01(eventChance);
 
-            return Random.value < eventChance
+            return BattleRandom.Value() < eventChance
                 ? "Special"
                 : "Common";
         }
@@ -666,9 +667,9 @@ for (int i = 0; i < nodeCount; i++)
                 totalWeight += Mathf.Max(0, candidates[i].SpawnWeight);
 
             if (totalWeight <= 0)
-                return candidates[Random.Range(0, candidates.Count)];
+                return candidates[BattleRandom.Range(0, candidates.Count)];
 
-            int random = Random.Range(0, totalWeight);
+            int random = BattleRandom.Range(0, totalWeight);
             int current = 0;
 
             for (int i = 0; i < candidates.Count; i++)
@@ -859,7 +860,7 @@ for (int i = 0; i < nodeCount; i++)
                 result.Add("Common");
 
                 while (result.Count < nodeCount)
-                    result.Add(Random.value < 0.5f ? "Elite" : "Common");
+                    result.Add(BattleRandom.Value() < 0.5f ? "Elite" : "Common");
 
                 ShuffleStrings(result);
                 return result;
@@ -887,7 +888,7 @@ for (int i = 0; i < nodeCount; i++)
                 return "";
 
             GeneratedMapNodeData node =
-                previousLayer[Random.Range(0, previousLayer.Count)];
+                previousLayer[BattleRandom.Range(0, previousLayer.Count)];
 
             return node != null ? node.Type : "";
         }
@@ -899,7 +900,7 @@ for (int i = 0; i < nodeCount; i++)
 
             for (int i = 0; i < list.Count; i++)
             {
-                int randomIndex = Random.Range(i, list.Count);
+                int randomIndex = BattleRandom.Range(i, list.Count);
                 (list[i], list[randomIndex]) = (list[randomIndex], list[i]);
             }
         }

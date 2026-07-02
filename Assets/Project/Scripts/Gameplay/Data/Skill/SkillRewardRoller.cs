@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Relic.Gameplay.Battle;
 using UnityEngine;
 
 namespace Relic.Gameplay.Data
@@ -19,6 +20,19 @@ namespace Relic.Gameplay.Data
         public int Range(int minInclusive, int maxExclusive)
         {
             return Random.Range(minInclusive, maxExclusive);
+        }
+    }
+
+    public sealed class BattleSkillRewardRandom : ISkillRewardRandom
+    {
+        public float Value()
+        {
+            return BattleRandom.Value();
+        }
+
+        public int Range(int minInclusive, int maxExclusive)
+        {
+            return BattleRandom.Range(minInclusive, maxExclusive);
         }
     }
 

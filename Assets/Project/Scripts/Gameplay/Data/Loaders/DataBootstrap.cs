@@ -26,6 +26,7 @@ namespace Relic.Gameplay.Data
         public RewardTableDatabase RewardTableDatabase { get; } = new();
         public ItemDatabase ItemDatabase { get; } = new();
         public MapDatabase MapDatabase { get; } = new();
+        public GridEffectDatabase GridEffectDatabase { get; } = new();
         public BattleMapDatabase BattleMapDatabase { get; } = new();
         public MonsterSkillDatabase MonsterSkillDatabase { get; } = new();
         public MonsterPatternInfoDatabase MonsterPatternInfoDatabase { get; } = new();
@@ -95,6 +96,7 @@ namespace Relic.Gameplay.Data
             var rewardTables = RewardTableCsvLoader.Load(workbook);
             var items = ItemCsvLoader.Load(workbook);
             var maps = MapCsvLoader.Load(workbook);
+            var gridEffects = GridEffectCsvLoader.Load(workbook);
             var battleMapDataList = BattleMapCsvLoader.Load(workbook);
             var monsterSkills = MonsterSkillCsvLoader.Load(workbook);
             var monsterPatternInfos = MonsterPatternInfoCsvLoader.Load(workbook);
@@ -137,6 +139,7 @@ namespace Relic.Gameplay.Data
             RewardTableDatabase.Initialize(rewardTables);
             ItemDatabase.Initialize(items);
             MapDatabase.Initialize(maps);
+            GridEffectDatabase.Initialize(gridEffects);
             BattleMapDatabase.Initialize(battleMapDataList);
         }
 
