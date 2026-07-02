@@ -102,7 +102,7 @@ public static class BattleEffectUtility
             return;
 
         if (AddOrStackStatus(target.RuntimeData.StatusEffects, effectId, stack, turnCount))
-            PlayStatusVfx(target.GetComponent<BattleUnitAnimator>(), effectId);
+            PlayStatusVfx(ResolveUnitAnimator(target), effectId);
     }
 
     public static void AddStatusToMonster(
@@ -115,9 +115,27 @@ public static class BattleEffectUtility
             return;
 
         if (AddOrStackStatus(target.RuntimeData.StatusEffects, effectId, stack, turnCount))
-            PlayStatusVfx(target.GetComponent<BattleUnitAnimator>(), effectId);
+            PlayStatusVfx(ResolveUnitAnimator(target), effectId);
 
         target.ShowAndRefreshHUD();
+    }
+
+    private static BattleUnitAnimator ResolveUnitAnimator(Component target)
+    {
+        if (target == null)
+            return null;
+
+        BattleUnitAnimator animator = target.GetComponent<BattleUnitAnimator>();
+
+        if (animator != null)
+            return animator;
+
+        animator = target.GetComponentInChildren<BattleUnitAnimator>(true);
+
+        if (animator != null)
+            return animator;
+
+        return target.GetComponentInParent<BattleUnitAnimator>();
     }
 
     private static void PlayStatusVfx(BattleUnitAnimator animator, string effectId)
@@ -347,7 +365,13 @@ public static class BattleEffectUtility
         if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return;
 
-        target.RuntimeData.CurrentShield += Mathf.Max(0, value);
+        int shieldValue = Mathf.Max(0, value);
+
+        if (shieldValue <= 0)
+            return;
+
+        target.RuntimeData.CurrentShield += shieldValue;
+        PlayStatusVfx(ResolveUnitAnimator(target), "E_Armor");
     }
 
     public static void AddShieldToMonster(MonsterUnit target, int value)
@@ -355,7 +379,13 @@ public static class BattleEffectUtility
         if (target == null || target.RuntimeData == null)
             return;
 
-        target.RuntimeData.CurrentShield += Mathf.Max(0, value);
+        int shieldValue = Mathf.Max(0, value);
+
+        if (shieldValue <= 0)
+            return;
+
+        target.RuntimeData.CurrentShield += shieldValue;
+        PlayStatusVfx(ResolveUnitAnimator(target), "E_Armor");
         target.ShowAndRefreshHUD();
     }
 }

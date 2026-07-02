@@ -50,7 +50,7 @@ namespace Relic.Gameplay.Monster
                            CanMonsterMove(monsterUnit, gridManager, moveOffset);
 
             bool skipMove = !canMove ||
-                            (canAttackFromCurrentPosition && Random.value < 0.5f);
+                            (canAttackFromCurrentPosition && BattleRandom.Value() < 0.5f);
             Vector2Int effectiveMoveOffset = skipMove ? Vector2Int.zero : moveOffset;
 
             int group = 1;

@@ -50,7 +50,7 @@ namespace Relic.Gameplay.Monster
                 Vector2Int.down
             };
 
-            return directions[Random.Range(0, directions.Length)] * moveAmount;
+            return directions[BattleRandom.Range(0, directions.Length)] * moveAmount;
         }
 
         public abstract string SelectSkill(
@@ -78,7 +78,7 @@ namespace Relic.Gameplay.Monster
             if (totalWeight <= 0)
                 return candidates.Length > 0 ? candidates[0].skillId : null;
 
-            int random = Random.Range(0, totalWeight);
+            int random = BattleRandom.Range(0, totalWeight);
             int current = 0;
 
             for (int i = 0; i < candidates.Length; i++)
@@ -216,7 +216,7 @@ namespace Relic.Gameplay.Monster
             if (validOrigins.Count <= 0)
                 return -1;
 
-            return validOrigins[Random.Range(0, validOrigins.Count)];
+            return validOrigins[BattleRandom.Range(0, validOrigins.Count)];
         }
 
         protected int GetProjectedMainGridIndex(

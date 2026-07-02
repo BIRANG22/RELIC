@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Relic.Gameplay.Battle;
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
 using UnityEngine;
@@ -156,7 +157,7 @@ public class BattleRewardResolver : MonoBehaviour
         if (max <= 0)
             return;
 
-        int amount = Random.Range(min, max + 1);
+        int amount = BattleRandom.Range(min, max + 1);
 
         if (amount <= 0)
             return;
@@ -273,7 +274,7 @@ public class BattleRewardResolver : MonoBehaviour
         if (!SkillRewardRoller.TryRoll(
                 dropSettings,
                 candidates,
-                new UnitySkillRewardRandom(),
+                new BattleSkillRewardRandom(),
                 out SkillMasterData skill))
         {
             return;
@@ -459,7 +460,7 @@ public class BattleRewardResolver : MonoBehaviour
             chance *= 0.01f;
 
         chance = Mathf.Clamp01(chance);
-        return Random.value <= chance;
+        return BattleRandom.Value() <= chance;
     }
 
     private RelicData GetRandomAvailableRelic(List<BattleRewardData> pendingRewards)
@@ -493,7 +494,7 @@ public class BattleRewardResolver : MonoBehaviour
         if (candidates.Count == 0)
             return null;
 
-        return candidates[Random.Range(0, candidates.Count)];
+        return candidates[BattleRandom.Range(0, candidates.Count)];
     }
 
     private HashSet<string> GetUnavailableRelicIds(List<BattleRewardData> pendingRewards)

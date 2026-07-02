@@ -591,6 +591,54 @@ public class AnimationVfxLoadoutCleanupTests
     }
 
     [Test]
+    public void MonsterBattlePrefabs_AssignStatusVfxUsedByPlayerBattlePrefabs()
+    {
+        const string MonsterPrefabRoot = "Assets/Project/PrefabsR/Monster";
+
+        string[] requiredEffectIds =
+        {
+            "E_Aiming",
+            "E_Armor",
+            "E_Focus",
+            "E_Power",
+            "E_Recharge",
+            "E_Recover",
+            "E_Swift",
+            "E_Thorns",
+            "E_Addicted",
+            "E_Bleeding",
+            "E_Burn",
+            "E_Corrosion",
+            "E_Grudge",
+            "E_Vulnerable",
+            "E_Weaken"
+        };
+
+        string[] prefabPaths = AssetDatabase
+            .FindAssets("t:Prefab", new[] { MonsterPrefabRoot })
+            .Select(AssetDatabase.GUIDToAssetPath)
+            .OrderBy(path => path)
+            .ToArray();
+
+        Assert.That(prefabPaths, Is.Not.Empty);
+
+        string[] missingEntries = prefabPaths
+            .Select(path => new
+            {
+                Path = path,
+                Animator = AssetDatabase.LoadAssetAtPath<GameObject>(path)
+                    ?.GetComponentInChildren<BattleUnitAnimator>(true)
+            })
+            .Where(entry => entry.Animator != null)
+            .SelectMany(entry => requiredEffectIds
+                .Where(effectId => GetStatusVfx(entry.Animator, effectId)?.prefab == null)
+                .Select(effectId => $"{entry.Path}:{effectId}"))
+            .ToArray();
+
+        Assert.That(missingEntries, Is.Empty);
+    }
+
+    [Test]
     public void BattleVfxCameraClearsRenderTextureWithTransparentColor()
     {
         const string BattleScenePath = "Assets/Project/Scenes/YDM/Battle.unity";
@@ -924,6 +972,119 @@ public class AnimationVfxLoadoutCleanupTests
         }
     }
 
+    [Test]
+    public void AddStatusToMonster_UsesChildAnimatorForStatusVfx()
+    {
+        GameObject owner = new("MonsterStatusRoot");
+        GameObject visual = new("MonsterVisual");
+        GameObject debuffPrefab = new("ChildDebuffStatusVfx");
+
+        try
+        {
+            visual.transform.SetParent(owner.transform, false);
+
+            MonsterUnit monster = owner.AddComponent<MonsterUnit>();
+            BattleUnitAnimator animator = visual.AddComponent<BattleUnitAnimator>();
+            SetPrivateField(animator, "statusVfx", new BattleStatusVfxSet
+            {
+                weakenVfx = new BattleVfxEntry { prefab = debuffPrefab, flipType = VfxFlipType.None }
+            });
+
+            MonsterRuntimeData runtime = new(
+                "Runtime_Status_ChildAnimator",
+                new MonsterMasterData
+                {
+                    MonsterId = "M_Status_ChildAnimator",
+                    Name = "StatusChildAnimatorMonster",
+                    HP = 10
+                });
+
+            monster.Initialize(runtime);
+
+            BattleEffectUtility.AddStatusToMonster(monster, "E_Weaken", 1, 1);
+
+            Assert.That(visual.transform.Find("ChildDebuffStatusVfx(Clone)"), Is.Not.Null);
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(debuffPrefab);
+            UnityEngine.Object.DestroyImmediate(owner);
+        }
+    }
+
+    [Test]
+    public void AddShieldToPlayer_SpawnsArmorVfxWhenShieldIncreases()
+    {
+        GameObject owner = new("PlayerArmorTarget");
+        GameObject armorPrefab = new("PlayerArmorStatusVfx");
+
+        try
+        {
+            BattleCharacter character = owner.AddComponent<BattleCharacter>();
+            BattleUnitAnimator animator = owner.AddComponent<BattleUnitAnimator>();
+            SetPrivateField(animator, "statusVfx", new BattleStatusVfxSet
+            {
+                armorVfx = new BattleVfxEntry { prefab = armorPrefab, flipType = VfxFlipType.None }
+            });
+
+            character.Initialize(new CharacterRuntimeData
+            {
+                CharacterId = "C_Armor",
+                MaxHP = 10,
+                CurrentHP = 10
+            });
+
+            BattleEffectUtility.AddShieldToPlayer(character, 2);
+
+            Assert.That(owner.transform.Find("PlayerArmorStatusVfx(Clone)"), Is.Not.Null);
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(armorPrefab);
+            UnityEngine.Object.DestroyImmediate(owner);
+        }
+    }
+
+    [Test]
+    public void AddShieldToMonster_UsesChildAnimatorForArmorVfxWhenShieldIncreases()
+    {
+        GameObject owner = new("MonsterArmorRoot");
+        GameObject visual = new("MonsterArmorVisual");
+        GameObject armorPrefab = new("MonsterArmorStatusVfx");
+
+        try
+        {
+            visual.transform.SetParent(owner.transform, false);
+
+            MonsterUnit monster = owner.AddComponent<MonsterUnit>();
+            BattleUnitAnimator animator = visual.AddComponent<BattleUnitAnimator>();
+            SetPrivateField(animator, "statusVfx", new BattleStatusVfxSet
+            {
+                armorVfx = new BattleVfxEntry { prefab = armorPrefab, flipType = VfxFlipType.None }
+            });
+
+            MonsterRuntimeData runtime = new(
+                "Runtime_Armor_ChildAnimator",
+                new MonsterMasterData
+                {
+                    MonsterId = "M_Armor_ChildAnimator",
+                    Name = "ArmorChildAnimatorMonster",
+                    HP = 10
+                });
+
+            monster.Initialize(runtime);
+
+            BattleEffectUtility.AddShieldToMonster(monster, 2);
+
+            Assert.That(visual.transform.Find("MonsterArmorStatusVfx(Clone)"), Is.Not.Null);
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(armorPrefab);
+            UnityEngine.Object.DestroyImmediate(owner);
+        }
+    }
+
     private static Type FindType(string fullName)
     {
         return AppDomain.CurrentDomain
@@ -937,5 +1098,17 @@ public class AnimationVfxLoadoutCleanupTests
         FieldInfo field = target.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
         Assert.That(field, Is.Not.Null, fieldName);
         field.SetValue(target, value);
+    }
+
+    private static BattleVfxEntry GetStatusVfx(BattleUnitAnimator animator, string effectId)
+    {
+        FieldInfo field = typeof(BattleUnitAnimator).GetField(
+            "statusVfx",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+
+        Assert.That(field, Is.Not.Null);
+
+        BattleStatusVfxSet statusVfx = (BattleStatusVfxSet)field.GetValue(animator);
+        return statusVfx?.Get(effectId);
     }
 }

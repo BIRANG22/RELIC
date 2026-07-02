@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Relic.Gameplay.Battle;
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
 using UnityEngine;
@@ -72,7 +73,7 @@ public class BattleDamageService
         if (!TryGetMonsterDamageRange(skillData, out int minDamage, out int maxDamage))
             return 1;
 
-        return Random.Range(minDamage, maxDamage + 1);
+        return BattleRandom.Range(minDamage, maxDamage + 1);
     }
 
     public static string GetMonsterDamageText(MonsterReservedCommand command)
