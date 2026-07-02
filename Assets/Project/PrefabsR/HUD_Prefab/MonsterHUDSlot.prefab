@@ -248,9 +248,9 @@ MonoBehaviour:
     m_Top: 0
     m_Bottom: 0
   m_ChildAlignment: 0
-  m_Spacing: 0
-  m_ChildForceExpandWidth: 1
-  m_ChildForceExpandHeight: 1
+  m_Spacing: 1
+  m_ChildForceExpandWidth: 0
+  m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 0
   m_ChildControlHeight: 0
   m_ChildScaleWidth: 0
@@ -688,6 +688,11 @@ MonoBehaviour:
   statusIconRoot: {fileID: 5754807734497614714}
   statusIconPrefab: {fileID: 2588654849037534649, guid: d35e4bff57f02274580c209f460926d7, type: 3}
   statusEffectIconSpacing: 4
+  useFollowPosition: 1
+  followTarget: {fileID: 0}
+  worldOffset: {x: 0, y: 1.8, z: 0}
+  colliderTopScreenPadding: 4
+  canvasGroup: {fileID: 0}
 --- !u!114 &494788633881130243
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -702,6 +707,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rectTransform: {fileID: 3340524542048883757}
   worldOffset: {x: 8, y: -3, z: 0}
+  colliderTopCanvasPadding: 4
 --- !u!1 &6174467385130885952
 GameObject:
   m_ObjectHideFlags: 0
