@@ -294,6 +294,60 @@ public class UIDissolveRevealLayoutTests
         }
     }
 
+    [Test]
+    public void HideImmediate_ResetsRenderOutputCanvasSorting()
+    {
+        InactiveInfoCanvasFixture fixture = CreateInactiveInfoCanvasFixture();
+
+        try
+        {
+            fixture.Reveal.ShowFromLeft();
+
+            Canvas renderCanvas = fixture.RenderObject.GetComponent<Canvas>();
+            Assert.That(renderCanvas, Is.Not.Null);
+            Assert.That(renderCanvas.overrideSorting, Is.True);
+            Assert.That(renderCanvas.sortingOrder, Is.EqualTo(30000));
+
+            fixture.Reveal.HideImmediate();
+
+            Assert.That(renderCanvas.overrideSorting, Is.False);
+            Assert.That(renderCanvas.sortingOrder, Is.EqualTo(0));
+        }
+        finally
+        {
+            Object.DestroyImmediate(fixture.Root);
+        }
+    }
+
+    [Test]
+    public void ShowFromLeft_InfoPanelDoesNotBlockHudRaycasts()
+    {
+        GameObject root = new("UIDissolveRevealLayoutTests_ClickPolicyRoot");
+        GameObject revealObject = new("DissolveImage", typeof(RectTransform), typeof(RawImage), typeof(UIDissolveReveal));
+        revealObject.transform.SetParent(root.transform, false);
+
+        GameObject panelObject = new("MonsterInfoPanel", typeof(RectTransform), typeof(Image));
+        panelObject.transform.SetParent(root.transform, false);
+
+        try
+        {
+            UIDissolveReveal reveal = revealObject.GetComponent<UIDissolveReveal>();
+            SetPrivateField(reveal, "monsterInfoPanel", panelObject.GetComponent<RectTransform>());
+
+            reveal.ShowFromLeft();
+
+            CanvasGroup canvasGroup = panelObject.GetComponent<CanvasGroup>();
+
+            Assert.That(canvasGroup, Is.Not.Null);
+            Assert.That(canvasGroup.interactable, Is.False);
+            Assert.That(canvasGroup.blocksRaycasts, Is.False);
+        }
+        finally
+        {
+            Object.DestroyImmediate(root);
+        }
+    }
+
     private static LayoutFixture CreateFixture()
     {
         GameObject root = new("UIDissolveRevealLayoutTests_Root", typeof(RectTransform), typeof(UIDissolveReveal));

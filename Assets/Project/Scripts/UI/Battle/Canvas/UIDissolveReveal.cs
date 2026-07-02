@@ -45,7 +45,7 @@ public class UIDissolveReveal : MonoBehaviour
     [SerializeField] private CanvasGroup infoPanelCanvasGroup;
     [SerializeField] private string autoInfoPanelRootName = "DissolvePanelCanvas";
     [SerializeField] private bool disableInfoPanelClickInteraction = true;
-    [SerializeField] private bool blockInfoPanelRaycasts = true;
+    [SerializeField] private bool blockInfoPanelRaycasts;
 
     [Header("Render Output Front Sorting")]
     [SerializeField] private bool bringVisibleObjectsToFront = true;
@@ -79,6 +79,9 @@ public class UIDissolveReveal : MonoBehaviour
 
         if (targetRawImage == null)
             targetRawImage = GetComponent<RawImage>();
+
+        if (targetRawImage != null)
+            targetRawImage.raycastTarget = false;
 
         if (targetRawImage != null && targetRawImage.material != null)
         {
@@ -328,6 +331,7 @@ public class UIDissolveReveal : MonoBehaviour
         if (runtimeMaterial != null)
             runtimeMaterial.SetFloat(revealProperty, hiddenReveal);
 
+        ResetRenderOutputCanvasSorting();
         SetControlledObjectsActive(false);
 
         if (deactivateSelfWhenHidden && gameObject.activeSelf)
@@ -481,6 +485,19 @@ public class UIDissolveReveal : MonoBehaviour
 
         canvas.overrideSorting = true;
         canvas.sortingOrder = renderOutputCanvasSortingOrder;
+    }
+
+    private void ResetRenderOutputCanvasSorting()
+    {
+        if (!forceRenderOutputCanvasSorting)
+            return;
+
+        Canvas canvas = ResolveRenderOutputCanvas();
+        if (canvas == null)
+            return;
+
+        canvas.overrideSorting = false;
+        canvas.sortingOrder = 0;
     }
 
     private Canvas ResolveRenderOutputCanvas()
