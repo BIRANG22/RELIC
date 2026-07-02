@@ -4,16 +4,12 @@ using UnityEngine;
 public class BattleDebugKillAllMonsters : MonoBehaviour
 {
     [SerializeField] private KeyCode killKey = KeyCode.K;
-    [SerializeField] private KeyCode damagePlayersKey = KeyCode.J;
     [SerializeField] private int debugPlayerDamage = 1;
 
     private void Update()
     {
         if (Input.GetKeyDown(killKey))
             KillAllMonstersForDebug();
-
-        //if (Input.GetKeyDown(damagePlayersKey))
-        //    DamagePlayersForDebug();
     }
 
     public void KillAllMonstersForDebug()
@@ -39,6 +35,8 @@ public class BattleDebugKillAllMonsters : MonoBehaviour
 
             Debug.Log($"[DebugKill] Monster:{monster.RuntimeData.MonsterId}");
         }
+
+        PrepareBattleStateForDebugWin();
 
         if (BattleResultChecker.Instance != null)
             BattleResultChecker.Instance.CheckBattleEnd();
@@ -77,5 +75,40 @@ public class BattleDebugKillAllMonsters : MonoBehaviour
         if (BattleResultChecker.Instance != null)
             BattleResultChecker.Instance.CheckBattleEnd();
     }
-}
 
+    private void PrepareBattleStateForDebugWin()
+    {
+        BattleTurnExecutor turnExecutor = Object.FindFirstObjectByType<BattleTurnExecutor>(
+            FindObjectsInactive.Include
+        );
+
+        if (turnExecutor != null)
+            turnExecutor.SetBattleInputReady(false);
+
+        SkillListPanel skillListPanel = Object.FindFirstObjectByType<SkillListPanel>(
+            FindObjectsInactive.Include
+        );
+
+        if (skillListPanel != null)
+            skillListPanel.CloseForBattleExecution();
+
+        MoveGhostPreview moveGhostPreview = Object.FindFirstObjectByType<MoveGhostPreview>(
+            FindObjectsInactive.Include
+        );
+
+        if (moveGhostPreview != null)
+            moveGhostPreview.ClearAll();
+
+        BattleTimelineController timelineController = Object.FindFirstObjectByType<BattleTimelineController>(
+            FindObjectsInactive.Include
+        );
+
+        if (timelineController == null)
+            return;
+
+        timelineController.SetSlotSelectionLocked(false);
+        timelineController.SetSelectedCharacterScaleFeedbackActive(false);
+        timelineController.ClearAllReservations();
+        timelineController.ResetTimelineBarsForNewBattleRoom();
+    }
+}

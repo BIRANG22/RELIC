@@ -5577,6 +5577,9 @@ MonoBehaviour:
   runeOpenButton: {fileID: 0}
   skillArea: {fileID: 2098004791}
   runeArea: {fileID: 358065591}
+  playSkillRuneKeyboardHoverSfx: 1
+  skillRuneKeyboardHoverSfx: 6
+  skillRuneKeyboardHoverSfxVolume: 1
   backKey: 27
   partySlot0Key: 49
   partySlot1Key: 50
@@ -8723,6 +8726,11 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  playSelectionMoveSfx: 1
+  selectionMoveSfxType: 7
+  selectionMoveSfxVolume: 1
+  playNavigationButtonPressFeedback: 1
+  navigationButtonPressDuration: 0.08
 --- !u!222 &397856611
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -17466,6 +17474,11 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  playSelectionMoveSfx: 1
+  selectionMoveSfxType: 7
+  selectionMoveSfxVolume: 1
+  playNavigationButtonPressFeedback: 1
+  navigationButtonPressDuration: 0.08
   applyStageSelectionWhenCentered: 1
   sendPointerHoverToCenteredButton: 1
   onlyCenteredButtonInteractable: 0
@@ -18763,7 +18776,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 30, y: -82}
+  m_AnchoredPosition: {x: 30, y: -230}
   m_SizeDelta: {x: 400, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &816321144
@@ -28708,7 +28721,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 30, y: -82}
+  m_AnchoredPosition: {x: 30, y: -230}
   m_SizeDelta: {x: 400, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1261030179
@@ -31775,7 +31788,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 30, y: -82}
+  m_AnchoredPosition: {x: 30, y: -230}
   m_SizeDelta: {x: 400, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1418829331
