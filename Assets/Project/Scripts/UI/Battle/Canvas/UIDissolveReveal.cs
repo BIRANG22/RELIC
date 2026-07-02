@@ -22,11 +22,14 @@ public class UIDissolveReveal : MonoBehaviour
     [Header("Info Content Alignment")]
     [SerializeField] private HorizontalOrVerticalLayoutGroup infoContentLayout;
     [SerializeField] private RectTransform monsterInfoPanel;
+    [SerializeField] private MonsterInfoPanelUI monsterInfoPanelUI;
     [SerializeField] private string autoMonsterInfoPanelName = "MonsterInfoPanel";
     [SerializeField, Min(0f)] private float horizontalPanelPadding = 80f;
     [SerializeField, Min(0f)] private float verticalBoundsSpacing = 24f;
     [SerializeField] private TextAnchor leftAlignment = TextAnchor.UpperLeft;
     [SerializeField] private TextAnchor rightAlignment = TextAnchor.UpperRight;
+    [SerializeField] private float leftPanelPositionX = 0f;
+    [SerializeField] private float rightPanelPositionX = 1200f;
 
     [Header("Battle Monster Reveal")]
     [SerializeField] private bool enableKeyboardDebugInput;
@@ -35,7 +38,8 @@ public class UIDissolveReveal : MonoBehaviour
     [SerializeField, Min(1)] private int gridWidth = DefaultGridWidth;
     [SerializeField, Min(1)] private int gridHeight = DefaultGridHeight;
     [SerializeField] private GameObject[] objectsEnabledWhileVisible;
-    [SerializeField] private string[] autoEnableObjectNames =
+    [SerializeField]
+    private string[] autoEnableObjectNames =
     {
         "DissolveCamera",
         "DissolvePanelCanvas"
@@ -203,6 +207,7 @@ public class UIDissolveReveal : MonoBehaviour
             return;
 
         bool panelOnLeft = ShouldRevealFromLeft(monster.MainGridIndex);
+        BindMonsterInfoPanel(monster);
         ShowForGridIndex(monster.MainGridIndex);
         FocusMonsterInfoCamera(monster.transform, panelOnLeft);
     }
@@ -593,42 +598,44 @@ public class UIDissolveReveal : MonoBehaviour
         if (panel == null)
             return;
 
+        Vector2 anchoredPosition = panel.anchoredPosition;
+        anchoredPosition.x = alignRight ? rightPanelPositionX : leftPanelPositionX;
+        panel.anchoredPosition = anchoredPosition;
+
         if (infoContentLayout != null)
-        {
             infoContentLayout.childAlignment = alignRight ? rightAlignment : leftAlignment;
+    }
 
-            if (panel.gameObject.activeInHierarchy)
-            {
-                infoContentLayout.enabled = true;
-                LayoutRebuilder.ForceRebuildLayoutImmediate(panel);
-                Canvas.ForceUpdateCanvases();
-            }
+    private void BindMonsterInfoPanel(MonsterUnit monster)
+    {
+        MonsterInfoPanelUI panelUI = ResolveMonsterInfoPanelUI();
+        if (panelUI == null)
+            return;
 
-            infoContentLayout.enabled = false;
-        }
-        else if (panel.gameObject.activeInHierarchy)
+        panelUI.Bind(monster);
+    }
+
+    private MonsterInfoPanelUI ResolveMonsterInfoPanelUI()
+    {
+        if (monsterInfoPanelUI != null)
+            return monsterInfoPanelUI;
+
+        RectTransform panel = ResolveMonsterInfoPanel();
+        if (panel != null)
         {
-            Canvas.ForceUpdateCanvases();
+            monsterInfoPanelUI = panel.GetComponent<MonsterInfoPanelUI>();
+            if (monsterInfoPanelUI == null)
+                monsterInfoPanelUI = panel.GetComponentInChildren<MonsterInfoPanelUI>(true);
         }
 
-        float targetX = alignRight
-            ? panel.rect.max.x - horizontalPanelPadding
-            : panel.rect.min.x + horizontalPanelPadding;
-        float nextTop = panel.rect.max.y - verticalBoundsSpacing;
-
-        for (int i = 0; i < panel.childCount; i++)
+        if (monsterInfoPanelUI == null)
         {
-            RectTransform child = panel.GetChild(i) as RectTransform;
-            if (child == null || !child.gameObject.activeSelf)
-                continue;
-
-            Bounds bounds = GetBoundsInPanel(panel, child);
-            float deltaX = alignRight ? targetX - bounds.max.x : targetX - bounds.min.x;
-            float deltaY = nextTop - bounds.max.y;
-
-            child.localPosition += new Vector3(deltaX, deltaY, 0f);
-            nextTop -= bounds.size.y + verticalBoundsSpacing;
+            GameObject autoPanel = FindSceneGameObject(autoMonsterInfoPanelName);
+            if (autoPanel != null)
+                monsterInfoPanelUI = autoPanel.GetComponentInChildren<MonsterInfoPanelUI>(true);
         }
+
+        return monsterInfoPanelUI;
     }
 
     private RectTransform ResolveMonsterInfoPanel()
