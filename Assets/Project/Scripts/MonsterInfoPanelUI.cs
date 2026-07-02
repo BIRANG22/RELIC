@@ -26,6 +26,11 @@ public class MonsterInfoPanelUI : MonoBehaviour
     [SerializeField] private StatusEffectIcon statusIconPrefab;
     [SerializeField, Min(0.01f)] private float statusIconScale = 3f;
 
+    [Header("Pattern Info")]
+    [SerializeField] private Transform skillContent;
+    [SerializeField] private MonsterPatternInfoItemUI patternInfoItemPrefab;
+    [SerializeField, Min(0.01f)] private float patternItemScale = 1f;
+
     [Header("Auto Find Names")]
     [SerializeField] private string nameObjectName = "Name";
     [SerializeField] private string hpBarObjectName = "HPBar";
@@ -34,8 +39,10 @@ public class MonsterInfoPanelUI : MonoBehaviour
     [SerializeField] private string armorFillObjectName = "ArmorFill";
     [SerializeField] private string armorValueObjectName = "ArmorValueText";
     [SerializeField] private string statusContentObjectName = "StatusContent";
+    [SerializeField] private string skillContentObjectName = "SkillContent";
 
     private readonly List<StatusEffectIcon> spawnedStatusIcons = new();
+    private readonly List<MonsterPatternInfoItemUI> spawnedPatternItems = new();
 
     private void Awake()
     {
@@ -45,6 +52,7 @@ public class MonsterInfoPanelUI : MonoBehaviour
     private void OnDisable()
     {
         ClearStatusIcons();
+        ClearPatternItems();
     }
 
     public void Bind(MonsterUnit monster)
@@ -62,6 +70,7 @@ public class MonsterInfoPanelUI : MonoBehaviour
             SetHP(0, 0);
             SetArmor(0);
             ClearStatusIcons();
+            ClearPatternItems();
             return;
         }
 
@@ -69,6 +78,7 @@ public class MonsterInfoPanelUI : MonoBehaviour
         SetHP(monsterData.CurrentHP, monsterData.MaxHP);
         SetArmor(monsterData.CurrentShield);
         SetStatusIcons(monsterData.StatusEffects);
+        SetPatternItems(monsterData.MonsterId);
     }
 
     private void SetName(string monsterName)
@@ -166,6 +176,58 @@ public class MonsterInfoPanelUI : MonoBehaviour
         spawnedStatusIcons.Clear();
     }
 
+    private void SetPatternItems(string monsterId)
+    {
+        ClearPatternItems();
+
+        if (skillContent == null)
+            return;
+
+        MonsterPatternInfoItemUI template = ResolvePatternItemTemplate();
+        if (template == null)
+            return;
+
+        if (template.transform.IsChildOf(skillContent))
+            template.gameObject.SetActive(false);
+
+        DataManager dataManager = DataManager.Instance;
+        if (dataManager == null || dataManager.MonsterPatternInfoDatabase == null)
+            return;
+
+        IReadOnlyList<MonsterPatternInfoData> patternInfos = dataManager.MonsterPatternInfoDatabase.GetByMonsterId(monsterId);
+        if (patternInfos == null)
+            return;
+
+        for (int i = 0; i < patternInfos.Count; i++)
+        {
+            MonsterPatternInfoData patternInfo = patternInfos[i];
+            if (patternInfo == null || string.IsNullOrWhiteSpace(patternInfo.Description))
+                continue;
+
+            MonsterPatternInfoItemUI item = Instantiate(template, skillContent);
+            item.gameObject.name = template.gameObject.name + "_" + patternInfo.PatternId;
+            item.transform.localScale = Vector3.one * patternItemScale;
+            item.gameObject.SetActive(true);
+            item.Bind(patternInfo.Order, patternInfo.Description);
+            spawnedPatternItems.Add(item);
+        }
+    }
+
+    private void ClearPatternItems()
+    {
+        for (int i = 0; i < spawnedPatternItems.Count; i++)
+        {
+            MonsterPatternInfoItemUI item = spawnedPatternItems[i];
+            if (item == null)
+                continue;
+
+            item.gameObject.SetActive(false);
+            Destroy(item.gameObject);
+        }
+
+        spawnedPatternItems.Clear();
+    }
+
     private void ResolveReferencesIfNeeded()
     {
         if (nameText == null && legacyNameText == null)
@@ -190,6 +252,13 @@ public class MonsterInfoPanelUI : MonoBehaviour
             Transform statusRoot = FindChildRecursive(transform, statusContentObjectName);
             if (statusRoot != null)
                 statusContent = statusRoot;
+        }
+
+        if (skillContent == null)
+        {
+            Transform skillRoot = FindChildRecursive(transform, skillContentObjectName);
+            if (skillRoot != null)
+                skillContent = skillRoot;
         }
     }
 
@@ -268,6 +337,18 @@ public class MonsterInfoPanelUI : MonoBehaviour
 
         statusIconPrefab = statusContent.GetComponentInChildren<StatusEffectIcon>(true);
         return statusIconPrefab;
+    }
+
+    private MonsterPatternInfoItemUI ResolvePatternItemTemplate()
+    {
+        if (patternInfoItemPrefab != null)
+            return patternInfoItemPrefab;
+
+        if (skillContent == null)
+            return null;
+
+        patternInfoItemPrefab = skillContent.GetComponentInChildren<MonsterPatternInfoItemUI>(true);
+        return patternInfoItemPrefab;
     }
 
     private static Transform FindDirectChild(Transform root, string childName)

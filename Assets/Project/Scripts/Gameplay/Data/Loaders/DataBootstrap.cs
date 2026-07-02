@@ -28,6 +28,7 @@ namespace Relic.Gameplay.Data
         public MapDatabase MapDatabase { get; } = new();
         public BattleMapDatabase BattleMapDatabase { get; } = new();
         public MonsterSkillDatabase MonsterSkillDatabase { get; } = new();
+        public MonsterPatternInfoDatabase MonsterPatternInfoDatabase { get; } = new();
         public RuneDatabase RuneDatabase { get; } = new();
 
         public void SetCharacterPrefabDatabase(CharacterPrefabDatabase db)
@@ -96,6 +97,7 @@ namespace Relic.Gameplay.Data
             var maps = MapCsvLoader.Load(workbook);
             var battleMapDataList = BattleMapCsvLoader.Load(workbook);
             var monsterSkills = MonsterSkillCsvLoader.Load(workbook);
+            var monsterPatternInfos = MonsterPatternInfoCsvLoader.Load(workbook);
             var runes = RuneCsvLoader.Load(workbook);
 
             InjectCharacterPrefabs(characters);
@@ -127,6 +129,7 @@ namespace Relic.Gameplay.Data
             SkillDatabase.Initialize(skills);
             RangeDatabase.Initialize(ranges);
             MonsterSkillDatabase.Initialize(monsterSkills);
+            MonsterPatternInfoDatabase.Initialize(monsterPatternInfos);
             RuneDatabase.Initialize(runes);
             AssetDatabase.Initialize(assets);
             QuestDatabase.Initialize(quests);

@@ -38,6 +38,7 @@ public class DataManager : Singleton<DataManager>
     public MonsterIconDatabase MonsterIconDatabase => monsterIconDatabase;
     public MapDatabase MapDatabase => dataBootstrap.MapDatabase;
     public MonsterSkillDatabase MonsterSkillDatabase => dataBootstrap.MonsterSkillDatabase;
+    public MonsterPatternInfoDatabase MonsterPatternInfoDatabase => dataBootstrap.MonsterPatternInfoDatabase;
     public RuneDatabase RuneDatabase => dataBootstrap.RuneDatabase;
     public RewardTableDatabase RewardTableDatabase => dataBootstrap.RewardTableDatabase;
     public ItemDatabase ItemDatabase => dataBootstrap.ItemDatabase;
