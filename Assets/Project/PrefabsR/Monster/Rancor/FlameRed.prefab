@@ -505,10 +505,10 @@ MonoBehaviour:
     prefab: {fileID: 7536603162193489409, guid: 247ccc1305ac9a143b18c44c2da5f74f, type: 3}
     flipType: 1
   guardVfx:
-    prefab: {fileID: 8802234492492066749, guid: f89e65c3cca54b84abfbbc69dc6c185f, type: 3}
+    prefab: {fileID: 8802234492492066749, guid: 0beedeb423fa0d84585fcbbb3397e1d8, type: 3}
     flipType: 0
   hitVfx:
-    prefab: {fileID: 1117934107437797500, guid: 6dd4d37e972a5e74894acd84b22787f5, type: 3}
+    prefab: {fileID: 1117934107437797500, guid: 88f1a976e51edc6498fbd356d3e3f7f1, type: 3}
     flipType: 0
   statusVfx:
     aimingVfx:

@@ -356,13 +356,13 @@ MonoBehaviour:
   hitStateName: Hit
   deadStateName: Dead
   moveVfx:
-    prefab: {fileID: 4145361429921181282, guid: f45be1937c3904848ac7f971b1276398, type: 3}
+    prefab: {fileID: 4145361429921181282, guid: 64eec7862f4d94a4198ea5d201af5b88, type: 3}
     flipType: 0
   guardVfx:
-    prefab: {fileID: 8802234492492066749, guid: f89e65c3cca54b84abfbbc69dc6c185f, type: 3}
+    prefab: {fileID: 8802234492492066749, guid: 0beedeb423fa0d84585fcbbb3397e1d8, type: 3}
     flipType: 0
   hitVfx:
-    prefab: {fileID: 1117934107437797500, guid: 6dd4d37e972a5e74894acd84b22787f5, type: 3}
+    prefab: {fileID: 1117934107437797500, guid: 88f1a976e51edc6498fbd356d3e3f7f1, type: 3}
     flipType: 0
   statusVfx:
     aimingVfx:
@@ -434,7 +434,7 @@ MonoBehaviour:
     attack1:
       stateName: AttackAction1
       vfx:
-        prefab: {fileID: 7311764206653381872, guid: 1b37822cfd5301b42822e7007a3e8f6a, type: 3}
+        prefab: {fileID: 7311764206653381872, guid: e60bee9487d55684db191b1b1c1eb04d, type: 3}
         flipType: 0
       projectileVfx:
         skillId: 
@@ -451,7 +451,7 @@ MonoBehaviour:
     attack2:
       stateName: AttackAction2
       vfx:
-        prefab: {fileID: 9032009973510874767, guid: 5927f497de4893446932684c7a239987, type: 3}
+        prefab: {fileID: 9206864599997765105, guid: 84666d4664e176142abb5f53fecd97cc, type: 3}
         flipType: 0
       projectileVfx:
         skillId: 
@@ -468,7 +468,7 @@ MonoBehaviour:
     attack3:
       stateName: AttackAction3
       vfx:
-        prefab: {fileID: 9206864599997765105, guid: 31d96fd439ecfe9489d587acd912bce9, type: 3}
+        prefab: {fileID: 9032009973510874767, guid: cd098c4abf4c0094b9c18e2d5c90dfe0, type: 3}
         flipType: 0
       projectileVfx:
         skillId: 

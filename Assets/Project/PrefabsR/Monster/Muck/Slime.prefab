@@ -171,13 +171,13 @@ MonoBehaviour:
   hitStateName: Hit
   deadStateName: Dead
   moveVfx:
-    prefab: {fileID: 4145361429921181282, guid: f45be1937c3904848ac7f971b1276398, type: 3}
+    prefab: {fileID: 4145361429921181282, guid: 64eec7862f4d94a4198ea5d201af5b88, type: 3}
     flipType: 0
   guardVfx:
-    prefab: {fileID: 8802234492492066749, guid: f89e65c3cca54b84abfbbc69dc6c185f, type: 3}
+    prefab: {fileID: 8802234492492066749, guid: 0beedeb423fa0d84585fcbbb3397e1d8, type: 3}
     flipType: 0
   hitVfx:
-    prefab: {fileID: 1117934107437797500, guid: 6dd4d37e972a5e74894acd84b22787f5, type: 3}
+    prefab: {fileID: 1117934107437797500, guid: 88f1a976e51edc6498fbd356d3e3f7f1, type: 3}
     flipType: 0
   statusVfx:
     aimingVfx:
@@ -257,16 +257,16 @@ MonoBehaviour:
   monsterActionPresentations:
   - stateName: Move
     vfx:
-      prefab: {fileID: 4145361429921181282, guid: f45be1937c3904848ac7f971b1276398, type: 3}
+      prefab: {fileID: 4145361429921181282, guid: 64eec7862f4d94a4198ea5d201af5b88, type: 3}
       flipType: 0
   - stateName: AttackAction2
     vfx:
-      prefab: {fileID: 3362751810309854143, guid: 3d23142866cb42f41b142372dfa89542, type: 3}
+      prefab: {fileID: 3362751810309854143, guid: ec16484300f824c4dba8bf7959423f46, type: 3}
       flipType: 1
     projectileVfx:
       skillId: S_Monster_04
-      missilePrefab: {fileID: 1554735761749976267, guid: 45ee36e1c71c3cd42819c858e8377f4f, type: 3}
-      impactPrefab: {fileID: 7625895887722065679, guid: 1c9b42262eb93ec478addfe957d19586, type: 3}
+      missilePrefab: {fileID: 1554735761749976267, guid: c9eb4dfd9497ee14790a1f27d664d476, type: 3}
+      impactPrefab: {fileID: 7625895887722065679, guid: 46f6c725fd762724d94b566b0d4f508e, type: 3}
       missileFlipType: 1
       impactFlipType: 1
       launchDelay: 0

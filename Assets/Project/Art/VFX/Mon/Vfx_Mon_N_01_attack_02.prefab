@@ -27,7 +27,7 @@ Transform:
   m_GameObject: {fileID: 1479347052810548621}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: 0.15132152, w: 0.9884846}
-  m_LocalPosition: {x: -8.41, y: 6.67, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4872,7 +4872,7 @@ ParticleSystemRenderer:
   m_ShadowBias: 0
   m_RenderAlignment: 1
   m_Pivot: {x: 0, y: 0.022, z: 0}
-  m_Flip: {x: 1, y: 0, z: 0}
+  m_Flip: {x: 1, y: 1, z: 0}
   m_EnableGPUInstancing: 1
   m_ApplyActiveColorSpace: 1
   m_AllowRoll: 1
@@ -4918,8 +4918,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3362751810309854143}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 3, y: 3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -5445,7 +5445,7 @@ ParticleSystem:
     startRotation:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0.12845623
+      scalar: 0
       minScalar: 0
       maxCurve:
         serializedVersion: 2
@@ -9753,7 +9753,7 @@ AudioSource:
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
-  Loop: 1
+  Loop: 0
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
