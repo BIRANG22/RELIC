@@ -26559,7 +26559,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1141531003
 RectTransform:
   m_ObjectHideFlags: 0
@@ -40713,6 +40713,9 @@ MonoBehaviour:
   testLevelHoldStartDelay: 0.35
   testLevelHoldRepeatInterval: 0.08
   maxLevelWarningMessage: "\uCD5C\uB300 \uB808\uBCA8\uC785\uB2C8\uB2E4."
+  enableTestLevelCheatKeys: 1
+  levelDownCheatKey: 29
+  levelUpCheatKey: 30
   presetButtons:
   - {fileID: 0}
   - {fileID: 0}

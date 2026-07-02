@@ -2,6 +2,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
 public class Setting : MonoBehaviour
 {
@@ -28,6 +29,11 @@ public class Setting : MonoBehaviour
     [SerializeField] private float testLevelHoldStartDelay = 0.35f;
     [SerializeField] private float testLevelHoldRepeatInterval = 0.08f;
     [SerializeField] private string maxLevelWarningMessage = "최대 레벨입니다.";
+
+    [Header("Test Level Cheat Keys")]
+    [SerializeField] private bool enableTestLevelCheatKeys = true;
+    [SerializeField] private Key levelDownCheatKey = Key.O;
+    [SerializeField] private Key levelUpCheatKey = Key.P;
 
     [Header("Preset UI")]
     [SerializeField] private Button[] presetButtons = new Button[4];
@@ -84,6 +90,11 @@ public class Setting : MonoBehaviour
     private void Start()
     {
         ShowSkillSetting();
+    }
+
+    private void Update()
+    {
+        HandleTestLevelCheatKeys();
     }
 
     private void OnDisable()
@@ -395,6 +406,23 @@ public class Setting : MonoBehaviour
 
         if (characterExpText != null)
             characterExpText.text = "EXP " + currentRuntimeData.Exp;
+    }
+
+    private void HandleTestLevelCheatKeys()
+    {
+        if (!enableTestLevelCheatKeys)
+            return;
+
+        Keyboard keyboard = Keyboard.current;
+
+        if (keyboard == null)
+            return;
+
+        if (levelDownCheatKey != Key.None && keyboard[levelDownCheatKey].wasPressedThisFrame)
+            OnClickTestLevelDown();
+
+        if (levelUpCheatKey != Key.None && keyboard[levelUpCheatKey].wasPressedThisFrame)
+            OnClickTestLevelUp();
     }
 
     public void OnClickTestLevelDown()
