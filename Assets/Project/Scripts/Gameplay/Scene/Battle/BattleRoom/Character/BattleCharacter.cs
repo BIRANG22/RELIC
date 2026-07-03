@@ -6,6 +6,7 @@ using UnityEngine.EventSystems;
 public class BattleCharacter : MonoBehaviour
 {
     private const string TimelineHoverHighlightIdleBackName = "Idle_Back";
+    private const string TimelineHoverHighlightShadowName = "Shadow";
 
     [Header("Timeline Hover Highlight")]
     [SerializeField] private GameObject timelineHoverHighlightObject;
@@ -15,6 +16,7 @@ public class BattleCharacter : MonoBehaviour
     private SpriteRenderer timelineHoverHighlightSourceRenderer;
     private SpriteRenderer[] timelineHoverHighlightForegroundRenderers;
     private SpriteRenderer[] timelineHoverHighlightIdleBackRenderers;
+    private SpriteRenderer[] timelineHoverHighlightShadowRenderers;
     private Animator timelineHoverHighlightSourceAnimator;
     private Animator timelineHoverHighlightIdleBackAnimator;
     private bool timelineHoverHighlightVisible;
@@ -186,6 +188,7 @@ public class BattleCharacter : MonoBehaviour
         CacheTimelineHoverHighlightIdleBackAnimator();
         CacheTimelineHoverHighlightForegroundRenderers();
         CacheTimelineHoverHighlightIdleBackRenderers();
+        CacheTimelineHoverHighlightShadowRenderers();
         SyncTimelineHoverHighlightSorting();
 
         if (timelineHoverHighlightSourceAnimator == null ||
@@ -267,34 +270,39 @@ public class BattleCharacter : MonoBehaviour
             return;
 
         int sortingLayerId = timelineHoverHighlightSourceRenderer.sortingLayerID;
-        int sourceSortingOrder = GetTimelineHoverHighlightSourceSortingOrder();
+        int behindSourceSortingOrder = GetTimelineHoverHighlightSourceSortingOrder() - 1;
 
-        if (timelineHoverHighlightForegroundRenderers != null)
-        {
-            for (int i = 0; i < timelineHoverHighlightForegroundRenderers.Length; i++)
-            {
-                SpriteRenderer highlightRenderer = timelineHoverHighlightForegroundRenderers[i];
+        ApplyTimelineHoverHighlightSorting(
+            timelineHoverHighlightForegroundRenderers,
+            sortingLayerId,
+            behindSourceSortingOrder);
+        ApplyTimelineHoverHighlightSorting(
+            timelineHoverHighlightIdleBackRenderers,
+            sortingLayerId,
+            behindSourceSortingOrder);
+        ApplyTimelineHoverHighlightSorting(
+            timelineHoverHighlightShadowRenderers,
+            sortingLayerId,
+            behindSourceSortingOrder);
+    }
 
-                if (highlightRenderer == null)
-                    continue;
-
-                highlightRenderer.sortingLayerID = sortingLayerId;
-                highlightRenderer.sortingOrder = sourceSortingOrder - 1;
-            }
-        }
-
-        if (timelineHoverHighlightIdleBackRenderers == null)
+    private static void ApplyTimelineHoverHighlightSorting(
+        SpriteRenderer[] renderers,
+        int sortingLayerId,
+        int sortingOrder)
+    {
+        if (renderers == null)
             return;
 
-        for (int i = 0; i < timelineHoverHighlightIdleBackRenderers.Length; i++)
+        for (int i = 0; i < renderers.Length; i++)
         {
-            SpriteRenderer idleBackRenderer = timelineHoverHighlightIdleBackRenderers[i];
+            SpriteRenderer renderer = renderers[i];
 
-            if (idleBackRenderer == null)
+            if (renderer == null)
                 continue;
 
-            idleBackRenderer.sortingLayerID = sortingLayerId;
-            idleBackRenderer.sortingOrder = sourceSortingOrder - 1;
+            renderer.sortingLayerID = sortingLayerId;
+            renderer.sortingOrder = sortingOrder;
         }
     }
 
@@ -423,6 +431,24 @@ public class BattleCharacter : MonoBehaviour
         timelineHoverHighlightIdleBackRenderers = idleBack.GetComponentsInChildren<SpriteRenderer>(true);
     }
 
+    private void CacheTimelineHoverHighlightShadowRenderers()
+    {
+        if (timelineHoverHighlightShadowRenderers != null)
+            return;
+
+        Transform shadow = transform.Find(TimelineHoverHighlightShadowName);
+
+        if (shadow == null)
+            shadow = FindChildRecursiveExcludingTimelineHoverHighlight(
+                transform,
+                TimelineHoverHighlightShadowName);
+
+        timelineHoverHighlightShadowRenderers =
+            shadow != null
+                ? shadow.GetComponentsInChildren<SpriteRenderer>(true)
+                : System.Array.Empty<SpriteRenderer>();
+    }
+
     private int GetTimelineHoverHighlightIdleBackStateHash()
     {
         if (timelineHoverHighlightIdleBackAnimator == null)
@@ -464,6 +490,29 @@ public class BattleCharacter : MonoBehaviour
                 return child;
 
             Transform nested = FindChildRecursive(child, childName);
+            if (nested != null)
+                return nested;
+        }
+
+        return null;
+    }
+
+    private Transform FindChildRecursiveExcludingTimelineHoverHighlight(Transform root, string childName)
+    {
+        if (root == null)
+            return null;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform child = root.GetChild(i);
+
+            if (IsTimelineHoverHighlightChild(child))
+                continue;
+
+            if (string.Equals(child.name, childName, System.StringComparison.OrdinalIgnoreCase))
+                return child;
+
+            Transform nested = FindChildRecursiveExcludingTimelineHoverHighlight(child, childName);
             if (nested != null)
                 return nested;
         }

@@ -2,6 +2,12 @@ using UnityEngine;
 
 public class YSortSprite : MonoBehaviour
 {
+    [SerializeField]
+    private bool useVirtualYOffset;
+
+    [SerializeField]
+    private float virtualYOffset = 0f;
+
     private const string IdleBackName = "Idle_Back";
     private const string LegacyIdleBackName = "Idle_back";
     private const string SpriteRootName = "SpriteRoot";
@@ -32,7 +38,12 @@ public class YSortSprite : MonoBehaviour
 
     private int CalculateSortingOrder()
     {
-        return (int)(-transform.position.y * yMultiplier) + sortingOrderOffset;
+        float y = transform.position.y;
+
+        if (useVirtualYOffset)
+            y += virtualYOffset;
+
+        return (int)(-y * yMultiplier) + sortingOrderOffset;
     }
 
     private bool ApplyIdleBackSorting()
