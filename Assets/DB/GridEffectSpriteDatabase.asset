@@ -20,6 +20,6 @@ MonoBehaviour:
   - gridEffectId: GR_helmet
     prefab: {fileID: 320881646469708045, guid: b95a520da38e04744bf49b2d0fb01ca9, type: 3}
   - gridEffectId: GR_bandage
-    prefab: {fileID: 895469662491882876, guid: f899d253f3aeecb438683013d084676c, type: 3}
+    prefab: {fileID: 3068387715957150525, guid: f899d253f3aeecb438683013d084676c, type: 3}
   - gridEffectId: GR_Poisson
-    prefab: {fileID: 192679289106982780, guid: 856df3037918ae9458bc104242ac020a, type: 3}
+    prefab: {fileID: 6416350362071025190, guid: 856df3037918ae9458bc104242ac020a, type: 3}

@@ -459,6 +459,7 @@ MonoBehaviour:
   moveStateName: Move
   guardStateName: Guard
   hitStateName: Hit
+  healStateName: 
   deadStateName: Dead
   moveVfx:
     prefab: {fileID: 4145361429921181282, guid: 64eec7862f4d94a4198ea5d201af5b88, type: 3}
@@ -468,6 +469,9 @@ MonoBehaviour:
     flipType: 0
   hitVfx:
     prefab: {fileID: 1117934107437797500, guid: 88f1a976e51edc6498fbd356d3e3f7f1, type: 3}
+    flipType: 0
+  healVfx:
+    prefab: {fileID: 9091916896245564796, guid: 3302b6aa62dc8fb4d8d9a88c6f8e8ac0, type: 3}
     flipType: 0
   statusVfx:
     aimingVfx:

@@ -64,10 +64,11 @@ public class BattleGridEffectController : MonoBehaviour
         if (!EnsureDependencies())
             return BattleGridEffectApplyResult.None;
 
+        int hpBefore = character.RuntimeData.CurrentHP;
         BattleGridEffectApplyResult result =
             service.ApplyToPlayer(state, gridIndex, character.RuntimeData);
 
-        PresentAppliedEffects(character, result);
+        PresentAppliedEffects(character, result, character.RuntimeData.CurrentHP > hpBefore);
         RemoveViewIfConsumed(result);
         return result;
     }
@@ -80,10 +81,11 @@ public class BattleGridEffectController : MonoBehaviour
         if (!EnsureDependencies())
             return BattleGridEffectApplyResult.None;
 
+        int hpBefore = monster.RuntimeData.CurrentHP;
         BattleGridEffectApplyResult result =
             service.ApplyToMonster(state, gridIndex, monster.RuntimeData);
 
-        PresentAppliedEffects(monster, result);
+        PresentAppliedEffects(monster, result, monster.RuntimeData.CurrentHP > hpBefore);
         RemoveViewIfConsumed(result);
 
         if (result.Applied)
@@ -214,7 +216,10 @@ public class BattleGridEffectController : MonoBehaviour
         }
     }
 
-    private void PresentAppliedEffects(Component target, BattleGridEffectApplyResult result)
+    private void PresentAppliedEffects(
+        Component target,
+        BattleGridEffectApplyResult result,
+        bool hpRecovered)
     {
         if (target == null || result == null || !result.Applied)
             return;
@@ -232,11 +237,14 @@ public class BattleGridEffectController : MonoBehaviour
                 animator.PlayHit();
         }
 
+        if (hpRecovered && HasHealEffect(result.AppliedEffectIds))
+            animator.PlayHeal();
+
         for (int i = 0; i < result.AppliedEffectIds.Count; i++)
         {
             string effectId = result.AppliedEffectIds[i];
 
-            if (IsDamageEffect(effectId))
+            if (IsDamageEffect(effectId) || IsHealEffect(effectId))
                 continue;
 
             animator.PlayStatusVfx(effectId);
@@ -286,6 +294,20 @@ public class BattleGridEffectController : MonoBehaviour
         return false;
     }
 
+    private static bool HasHealEffect(IReadOnlyList<string> effectIds)
+    {
+        if (effectIds == null)
+            return false;
+
+        for (int i = 0; i < effectIds.Count; i++)
+        {
+            if (IsHealEffect(effectIds[i]))
+                return true;
+        }
+
+        return false;
+    }
+
     private static bool IsDamageEffect(string effectId)
     {
         if (string.IsNullOrWhiteSpace(effectId))
@@ -295,6 +317,17 @@ public class BattleGridEffectController : MonoBehaviour
         return normalized == "E_Damage" ||
                normalized == "E_Strike" ||
                normalized == "E_Pierce";
+    }
+
+    private static bool IsHealEffect(string effectId)
+    {
+        if (string.IsNullOrWhiteSpace(effectId))
+            return false;
+
+        string normalized = effectId.Trim();
+        return normalized == "E_Recover" ||
+               normalized.IndexOf("Heal", System.StringComparison.OrdinalIgnoreCase) >= 0 ||
+               normalized.IndexOf("Recover", System.StringComparison.OrdinalIgnoreCase) >= 0;
     }
 
     private void RemoveViewIfConsumed(BattleGridEffectApplyResult result)

@@ -146,6 +146,14 @@ public static class BattleEffectUtility
         animator.PlayStatusVfx(effectId);
     }
 
+    private static void PlayHealVfx(BattleUnitAnimator animator)
+    {
+        if (animator == null)
+            return;
+
+        animator.PlayHeal();
+    }
+
     public static void DamagePlayer(BattleCharacter target, int damage)
     {
         if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
@@ -336,17 +344,24 @@ public static class BattleEffectUtility
             return;
 
         value = Mathf.Max(0, value);
+        int hpBefore = target.RuntimeData.CurrentHP;
 
         int maxHP = target.RuntimeData.MaxHP;
 
         if (maxHP <= 0)
         {
             target.RuntimeData.CurrentHP += value;
+            if (target.RuntimeData.CurrentHP > hpBefore)
+                PlayHealVfx(ResolveUnitAnimator(target));
+
             return;
         }
 
         target.RuntimeData.CurrentHP =
             Mathf.Min(maxHP, target.RuntimeData.CurrentHP + value);
+
+        if (target.RuntimeData.CurrentHP > hpBefore)
+            PlayHealVfx(ResolveUnitAnimator(target));
     }
 
     public static void HealMonster(MonsterUnit target, int value)
@@ -355,8 +370,13 @@ public static class BattleEffectUtility
             return;
 
         value = Mathf.Max(0, value);
+        int hpBefore = target.RuntimeData.CurrentHP;
 
         target.RuntimeData.Heal(value);
+
+        if (target.RuntimeData.CurrentHP > hpBefore)
+            PlayHealVfx(ResolveUnitAnimator(target));
+
         target.ShowAndRefreshHUD();
     }
 
