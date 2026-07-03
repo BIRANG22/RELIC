@@ -467,6 +467,7 @@ public class BattleRoomLoader : MonoBehaviour
 
         if (turnExecutor != null)
         {
+            turnExecutor.ForceStopBattleExecutionForRoomEnd();
             turnExecutor.ResetBattleTurnState();
             turnExecutor.SetBattleInputReady(false);
         }
