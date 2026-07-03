@@ -146,15 +146,26 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
             return;
         }
 
+        Color baseColor = GetRuneDisplayColor(currentRuneData);
+
         if (isEquipped)
         {
-            Color color = equippedIconColor;
-            color.a = useIconAlphaForEquipped ? equippedIconAlpha : color.a;
+            Color color = baseColor;
+
+            if (useIconAlphaForEquipped)
+            {
+                color.a = equippedIconAlpha;
+            }
+            else if (equippedIconColor.a < 1f)
+            {
+                color.a = equippedIconColor.a;
+            }
+
             iconImage.color = color;
             return;
         }
 
-        iconImage.color = Color.white;
+        iconImage.color = baseColor;
     }
 
     public void Execute()
@@ -277,6 +288,65 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     private float GetDeltaTime()
     {
         return useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+    }
+
+    private Color GetRuneDisplayColor(RuneData runeData)
+    {
+        if (runeData == null)
+            return Color.white;
+
+        string runeId = runeData.RuneId;
+
+        if (IsRuneNumberInRange(runeId, 1, 5))
+            return ParseColorOrWhite("#576DB2");
+
+        if (IsRuneNumberInRange(runeId, 6, 10))
+            return ParseColorOrWhite("#4A5681");
+
+        if (IsRuneNumberInRange(runeId, 11, 15))
+            return ParseColorOrWhite("#393B6A");
+
+        return Color.white;
+    }
+
+    private bool IsRuneNumberInRange(string runeId, int min, int max)
+    {
+        int runeNumber = GetTrailingNumber(runeId);
+        return runeNumber >= min && runeNumber <= max;
+    }
+
+    private int GetTrailingNumber(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return -1;
+
+        int end = value.Length - 1;
+
+        while (end >= 0 && char.IsWhiteSpace(value[end]))
+            end--;
+
+        if (end < 0 || !char.IsDigit(value[end]))
+            return -1;
+
+        int start = end;
+
+        while (start >= 0 && char.IsDigit(value[start]))
+            start--;
+
+        string numberText = value.Substring(start + 1, end - start);
+
+        if (int.TryParse(numberText, out int number))
+            return number;
+
+        return -1;
+    }
+
+    private Color ParseColorOrWhite(string hex)
+    {
+        if (ColorUtility.TryParseHtmlString(hex, out Color color))
+            return color;
+
+        return Color.white;
     }
 
     private Sprite GetRuneIcon(RuneData runeData)
