@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 479897272797855055}
   - component: {fileID: 4203820656838235839}
   - component: {fileID: 1703263015218971150}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Vfx_Gr_Armor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4957,7 +4957,7 @@ GameObject:
   - component: {fileID: 4911980999623090024}
   - component: {fileID: 633681079753468788}
   - component: {fileID: 4128364773697377917}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Shield
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -9848,7 +9848,7 @@ GameObject:
   - component: {fileID: 6619782745971608370}
   - component: {fileID: 1068248106042785857}
   - component: {fileID: 3914980578823323579}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Glow Floor IN
   m_TagString: Untagged
   m_Icon: {fileID: 0}

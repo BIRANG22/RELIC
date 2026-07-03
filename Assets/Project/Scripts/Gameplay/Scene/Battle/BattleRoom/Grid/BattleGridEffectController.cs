@@ -19,7 +19,7 @@ public class BattleGridEffectController : MonoBehaviour
     private readonly BattleGridEffectState state = new();
     private readonly Dictionary<int, GameObject> viewsByGridIndex = new();
     private BattleGridEffectService service;
-    private GridEffectSpriteDatabase spriteDatabase;
+    private GridEffectSpriteDatabase prefabDatabase;
 
     public BattleGridEffectState State => state;
 
@@ -104,7 +104,7 @@ public class BattleGridEffectController : MonoBehaviour
             return false;
 
         service ??= new BattleGridEffectService(DataManager.Instance.GridEffectDatabase);
-        spriteDatabase = DataManager.Instance.GridEffectSpriteDatabase;
+        prefabDatabase = DataManager.Instance.GridEffectSpriteDatabase;
 
         if (effectRoot == null)
             effectRoot = GetOrCreateEffectRoot();
@@ -170,25 +170,48 @@ public class BattleGridEffectController : MonoBehaviour
 
     private void SpawnView(BattleGridEffectPlacement placement)
     {
-        if (gridManager == null || spriteDatabase == null)
+        if (gridManager == null || prefabDatabase == null)
             return;
 
-        if (!spriteDatabase.TryGetSprite(placement.GridEffectId, out Sprite sprite) || sprite == null)
+        if (!prefabDatabase.TryGetPrefab(placement.GridEffectId, out GameObject prefab) || prefab == null)
             return;
 
         RemoveView(placement.GridIndex);
 
-        GameObject view = new($"GridEffect_{placement.GridEffectId}_{placement.GridIndex}");
-        view.transform.SetParent(effectRoot != null ? effectRoot : transform, true);
+        Transform parent = effectRoot != null ? effectRoot : transform;
+        GameObject view = Instantiate(prefab, parent);
+        view.name = $"GridEffect_{placement.GridEffectId}_{placement.GridIndex}";
         view.transform.position = gridManager.GetWorldPositionByIndex(placement.GridIndex) + worldOffset;
-        view.transform.localScale = Vector3.one * Mathf.Max(0.01f, viewScale);
+        view.transform.localRotation = prefab.transform.localRotation;
+        view.transform.localScale = prefab.transform.localScale * Mathf.Max(0.01f, viewScale);
 
-        SpriteRenderer renderer = view.AddComponent<SpriteRenderer>();
-        renderer.sprite = sprite;
-        renderer.sortingLayerName = sortingLayerName;
-        renderer.sortingOrder = sortingOrder;
+        ApplyRendererSorting(view);
+        view.SetActive(true);
 
         viewsByGridIndex[placement.GridIndex] = view;
+    }
+
+    private void ApplyRendererSorting(GameObject view)
+    {
+        if (view == null)
+            return;
+
+        Renderer[] renderers = view.GetComponentsInChildren<Renderer>(true);
+
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            Renderer renderer = renderers[i];
+
+            if (renderer == null)
+                continue;
+
+            int prefabSortingOrder = renderer.sortingOrder;
+
+            if (!string.IsNullOrWhiteSpace(sortingLayerName))
+                renderer.sortingLayerName = sortingLayerName;
+
+            renderer.sortingOrder = sortingOrder + prefabSortingOrder;
+        }
     }
 
     private void PresentAppliedEffects(Component target, BattleGridEffectApplyResult result)
