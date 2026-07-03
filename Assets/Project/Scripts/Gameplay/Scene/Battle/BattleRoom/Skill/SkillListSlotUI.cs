@@ -175,6 +175,17 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         ApplySortingState();
     }
 
+    public bool CanSelectByKeyboard => canClick && skillData != null;
+    public string SkillId => skillId;
+    public SkillMasterData SkillData => skillData;
+    public string DetailText => detailText;
+    public RectTransform SlotRectTransform => rectTransform;
+
+    public void PlayKeyboardSelectSfx()
+    {
+        PlayClickSfx();
+    }
+
     private void ApplySkillMasterData(SkillMasterData data, int displayedCostValue = -1)
     {
         if (data == null)

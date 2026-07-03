@@ -319,7 +319,7 @@ public class MonsterInfoPanelUI : MonoBehaviour
 
             MonsterSkillData skillData = GetMonsterSkillData(skillId);
             string skillName = GetSkillName(skillId, skillData);
-            string description = GetSkillDescription(skillData);
+            string description = GetSkillDescription(patternInfo, skillData);
             Sprite timelineIcon = GetTimelineActionIcon(skillData);
             Sprite rangeIcon = GetSkillRangeIcon(skillData);
 
@@ -372,8 +372,11 @@ public class MonsterInfoPanelUI : MonoBehaviour
         return string.IsNullOrWhiteSpace(skillId) ? string.Empty : skillId.Trim();
     }
 
-    private static string GetSkillDescription(MonsterSkillData skillData)
+    private static string GetSkillDescription(MonsterPatternInfoData patternInfo, MonsterSkillData skillData)
     {
+        if (patternInfo != null && !string.IsNullOrWhiteSpace(patternInfo.SkillInfo))
+            return patternInfo.SkillInfo.Trim();
+
         if (skillData != null && !string.IsNullOrWhiteSpace(skillData.EffectDesc))
             return skillData.EffectDesc.Trim();
 
