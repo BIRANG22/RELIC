@@ -89,6 +89,24 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         return true;
     }
 
+    public static void ClearCurrentOpenedPanelIfPanel(GameObject closedPanel)
+    {
+        if (currentOpenedPanelOwner == null || closedPanel == null)
+            return;
+
+        if (currentOpenedPanelOwner.panelToOpen == closedPanel)
+        {
+            currentOpenedPanelOwner = null;
+            return;
+        }
+
+        if (currentOpenedPanelOwner.panelToOpen != null &&
+            currentOpenedPanelOwner.panelToOpen.transform.IsChildOf(closedPanel.transform))
+        {
+            currentOpenedPanelOwner = null;
+        }
+    }
+
     private void Awake()
     {
         CacheOriginalMovePositions();
@@ -210,6 +228,8 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
         if (toggleMove)
         {
+            SyncMoveStateFromCurrentPosition();
+
             willOpen = !isMoved;
 
             targetPosition = willOpen
@@ -251,6 +271,20 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
             if (moveTogetherTargets[i] != null)
                 originalTogetherPositions[i] = moveTogetherTargets[i].anchoredPosition;
         }
+    }
+
+    private void SyncMoveStateFromCurrentPosition()
+    {
+        if (panelToMove == null)
+            return;
+
+        Vector2 openedPosition = originalPosition + moveOffset;
+        Vector2 currentPosition = panelToMove.anchoredPosition;
+
+        float distanceToClosed = Vector2.SqrMagnitude(currentPosition - originalPosition);
+        float distanceToOpened = Vector2.SqrMagnitude(currentPosition - openedPosition);
+
+        isMoved = distanceToOpened < distanceToClosed;
     }
 
     private void CloseCurrentOpenedPanelIfThisIsOtherButton()
