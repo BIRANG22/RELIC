@@ -283,7 +283,7 @@ ParticleSystemRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -341724045
-  m_SortingLayer: 1
+  m_SortingLayer: -3
   m_SortingOrder: 0
   m_RenderMode: 4
   m_MeshDistribution: 0
@@ -5368,7 +5368,7 @@ ParticleSystemRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -341724045
-  m_SortingLayer: 1
+  m_SortingLayer: -3
   m_SortingOrder: 0
   m_RenderMode: 0
   m_MeshDistribution: 0
@@ -25189,6 +25189,67 @@ ParticleSystem:
         m_PostInfinity: 2
         m_RotationOrder: 4
     vectorLabel1_3: W
+--- !u!1001 &329785096
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 3791662060515219001, guid: b2acdec95c18f1e4f86fa531c5fb912d, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3791662060515219001, guid: b2acdec95c18f1e4f86fa531c5fb912d, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3791662060515219001, guid: b2acdec95c18f1e4f86fa531c5fb912d, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3791662060515219001, guid: b2acdec95c18f1e4f86fa531c5fb912d, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3791662060515219001, guid: b2acdec95c18f1e4f86fa531c5fb912d, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3791662060515219001, guid: b2acdec95c18f1e4f86fa531c5fb912d, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3791662060515219001, guid: b2acdec95c18f1e4f86fa531c5fb912d, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3791662060515219001, guid: b2acdec95c18f1e4f86fa531c5fb912d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3791662060515219001, guid: b2acdec95c18f1e4f86fa531c5fb912d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3791662060515219001, guid: b2acdec95c18f1e4f86fa531c5fb912d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4325625955674003563, guid: b2acdec95c18f1e4f86fa531c5fb912d, type: 3}
+      propertyPath: m_Name
+      value: SlimeMini
+      objectReference: {fileID: 0}
+    - target: {fileID: 5190771714538004787, guid: b2acdec95c18f1e4f86fa531c5fb912d, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: b2acdec95c18f1e4f86fa531c5fb912d, type: 3}
 --- !u!1 &508155792
 GameObject:
   m_ObjectHideFlags: 0
@@ -25204,7 +25265,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &508155793
 Transform:
   m_ObjectHideFlags: 0
@@ -55646,7 +55707,7 @@ ParticleSystemRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -341724045
-  m_SortingLayer: 1
+  m_SortingLayer: -3
   m_SortingOrder: 10
   m_RenderMode: 0
   m_MeshDistribution: 0
@@ -73671,7 +73732,7 @@ ParticleSystemRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -341724045
-  m_SortingLayer: 1
+  m_SortingLayer: -3
   m_SortingOrder: 0
   m_RenderMode: 0
   m_MeshDistribution: 0
@@ -83652,7 +83713,7 @@ ParticleSystemRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -341724045
-  m_SortingLayer: 1
+  m_SortingLayer: -3
   m_SortingOrder: -1
   m_RenderMode: 0
   m_MeshDistribution: 0
@@ -88628,7 +88689,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2002891594
 Transform:
   m_ObjectHideFlags: 0
@@ -104567,6 +104628,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Vfx_Gr_HpUP
       objectReference: {fileID: 0}
+    - target: {fileID: 3068387715957150525, guid: f899d253f3aeecb438683013d084676c, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -104684,6 +104749,10 @@ PrefabInstance:
     - target: {fileID: 6416350362071025190, guid: 856df3037918ae9458bc104242ac020a, type: 3}
       propertyPath: m_Name
       value: Vfx_Gr_poisson
+      objectReference: {fileID: 0}
+    - target: {fileID: 6416350362071025190, guid: 856df3037918ae9458bc104242ac020a, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -109964,3 +110033,4 @@ SceneRoots:
   - {fileID: 6009543528897436799}
   - {fileID: 6049779457587200608}
   - {fileID: 6155398759551970176}
+  - {fileID: 329785096}
