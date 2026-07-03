@@ -270,20 +270,22 @@ public class BattleCharacter : MonoBehaviour
             return;
 
         int sortingLayerId = timelineHoverHighlightSourceRenderer.sortingLayerID;
-        int behindSourceSortingOrder = GetTimelineHoverHighlightSourceSortingOrder() - 1;
+        int sourceSortingOrder = GetTimelineHoverHighlightSourceSortingOrder();
 
         ApplyTimelineHoverHighlightSorting(
             timelineHoverHighlightForegroundRenderers,
             sortingLayerId,
-            behindSourceSortingOrder);
+            sourceSortingOrder - 1);
+
         ApplyTimelineHoverHighlightSorting(
             timelineHoverHighlightIdleBackRenderers,
             sortingLayerId,
-            behindSourceSortingOrder);
+            sourceSortingOrder - 1);
+
         ApplyTimelineHoverHighlightSorting(
             timelineHoverHighlightShadowRenderers,
             sortingLayerId,
-            behindSourceSortingOrder);
+            sourceSortingOrder - 2);
     }
 
     private static void ApplyTimelineHoverHighlightSorting(
