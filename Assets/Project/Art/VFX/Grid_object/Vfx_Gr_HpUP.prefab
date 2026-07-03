@@ -4930,7 +4930,7 @@ GameObject:
   - component: {fileID: 1072978672974431025}
   - component: {fileID: 2117746248528793985}
   - component: {fileID: 3632207186215142342}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Vfx_Gr_HpUP
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -9875,7 +9875,7 @@ GameObject:
   - component: {fileID: 6765776122227143279}
   - component: {fileID: 1894287984983124330}
   - component: {fileID: 3766748237910559037}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Glow Floor IN
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -14766,7 +14766,7 @@ GameObject:
   - component: {fileID: 411429697697621387}
   - component: {fileID: 175387707492859580}
   - component: {fileID: 8899219819898367936}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Shield
   m_TagString: Untagged
   m_Icon: {fileID: 0}

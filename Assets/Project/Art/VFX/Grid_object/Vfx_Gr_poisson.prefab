@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2609435206021258902}
   - component: {fileID: 8162702228349404990}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: GR_poisson
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -99,7 +99,7 @@ GameObject:
   - component: {fileID: 7852983656410029256}
   - component: {fileID: 2764893236833711709}
   - component: {fileID: 4624903171334701823}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Vfx_Gr_poisson
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5043,7 +5043,7 @@ GameObject:
   - component: {fileID: 8429190012645275570}
   - component: {fileID: 4095663312952853663}
   - component: {fileID: 9153486032232488761}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Bubbles
   m_TagString: Untagged
   m_Icon: {fileID: 0}

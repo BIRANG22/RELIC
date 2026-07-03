@@ -14,12 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entries:
   - gridEffectId: GR_debris
-    sprite: {fileID: 21300000, guid: da34d26935b6c324f89ce9835d54d228, type: 3}
+    prefab: {fileID: 7292564715269318754, guid: 55c1deb426eceda4da41cc3e14d447cd, type: 3}
   - gridEffectId: GR_thorn
-    sprite: {fileID: 21300000, guid: ff40760cccb49c14b92d74fdf62c2608, type: 3}
+    prefab: {fileID: 7510714500437303365, guid: 2ef70dbb844adfd43bd31b97818a7fe5, type: 3}
   - gridEffectId: GR_helmet
-    sprite: {fileID: 21300000, guid: 4e9c992b95d228b4a86f33695f54787b, type: 3}
+    prefab: {fileID: 320881646469708045, guid: b95a520da38e04744bf49b2d0fb01ca9, type: 3}
   - gridEffectId: GR_bandage
-    sprite: {fileID: 21300000, guid: 790f0446e7241fb4aab2b5e6cffc0654, type: 3}
+    prefab: {fileID: 895469662491882876, guid: f899d253f3aeecb438683013d084676c, type: 3}
   - gridEffectId: GR_Poisson
-    sprite: {fileID: 21300000, guid: 0635d47d012fa654f94a6462c92781f3, type: 3}
+    prefab: {fileID: 192679289106982780, guid: 856df3037918ae9458bc104242ac020a, type: 3}

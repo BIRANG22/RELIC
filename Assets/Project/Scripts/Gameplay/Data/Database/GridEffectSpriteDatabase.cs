@@ -3,7 +3,7 @@ using UnityEngine;
 
 [CreateAssetMenu(
     fileName = "GridEffectSpriteDatabase",
-    menuName = "Relic/Data/Grid Effect Sprite Database"
+    menuName = "Relic/Data/Grid Effect Prefab Database"
 )]
 public class GridEffectSpriteDatabase : ScriptableObject
 {
@@ -11,16 +11,16 @@ public class GridEffectSpriteDatabase : ScriptableObject
     public class Entry
     {
         public string gridEffectId;
-        public Sprite sprite;
+        public GameObject prefab;
     }
 
     [SerializeField] private List<Entry> entries = new();
 
-    private Dictionary<string, Sprite> spriteMap;
+    private Dictionary<string, GameObject> prefabMap;
 
     public void Initialize()
     {
-        spriteMap = new Dictionary<string, Sprite>();
+        prefabMap = new Dictionary<string, GameObject>();
 
         foreach (Entry entry in entries)
         {
@@ -32,32 +32,32 @@ public class GridEffectSpriteDatabase : ScriptableObject
             if (string.IsNullOrWhiteSpace(gridEffectId))
                 continue;
 
-            if (entry.sprite == null)
+            if (entry.prefab == null)
             {
-                Debug.LogWarning($"[GridEffectSpriteDatabase] Sprite 없음: {gridEffectId}");
+                Debug.LogWarning($"[GridEffectSpriteDatabase] Prefab 없음: {gridEffectId}");
                 continue;
             }
 
-            if (spriteMap.ContainsKey(gridEffectId))
+            if (prefabMap.ContainsKey(gridEffectId))
             {
                 Debug.LogWarning($"[GridEffectSpriteDatabase] 중복 GridEffectID: {gridEffectId}");
                 continue;
             }
 
-            spriteMap.Add(gridEffectId, entry.sprite);
+            prefabMap.Add(gridEffectId, entry.prefab);
         }
     }
 
-    public bool TryGetSprite(string gridEffectId, out Sprite sprite)
+    public bool TryGetPrefab(string gridEffectId, out GameObject prefab)
     {
-        sprite = null;
+        prefab = null;
 
         if (string.IsNullOrWhiteSpace(gridEffectId))
             return false;
 
-        if (spriteMap == null)
+        if (prefabMap == null)
             Initialize();
 
-        return spriteMap.TryGetValue(gridEffectId.Trim(), out sprite);
+        return prefabMap.TryGetValue(gridEffectId.Trim(), out prefab);
     }
 }
