@@ -1,3 +1,4 @@
+using Relic.Gameplay.Monster;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -42,6 +43,11 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     private bool hasCachedTurnMarkVisual;
     private Color turnMarkNormalImageColor = Color.white;
 
+    private string enemyOwnerIconMonsterRuntimeId = "";
+    private MonsterUnit hoveredEnemyOwnerIconMonster;
+    private GameObject registeredEnemyOwnerIconImageObject;
+    private GameObject registeredEnemyOwnerIconRootObject;
+
     public int SlotIndex => slotIndex;
 
     private void Awake()
@@ -81,6 +87,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
         Sprite firstPlayerIcon = null;
         Sprite firstEnemyIcon = null;
+        string firstEnemyRuntimeId = "";
 
         int visibleIndex = 0;
         int maxOrderCount = 5;
@@ -103,7 +110,10 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             if (isMonster)
             {
                 if (firstEnemyIcon == null)
+                {
                     firstEnemyIcon = entry.OwnerIcon;
+                    firstEnemyRuntimeId = entry.MonsterRuntimeId;
+                }
             }
             else
             {
@@ -129,6 +139,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
         SetOwnerIconImage(playerIconImage, firstPlayerIcon, firstPlayerIcon != null, playerReservedColor);
         SetOwnerIconImage(enemyIconImage, firstEnemyIcon, firstEnemyIcon != null, enemyReservedColor);
+        SetupEnemyOwnerIconHudHoverTarget(enemyIconImage, firstEnemyRuntimeId);
     }
 
     public void Clear()
@@ -137,6 +148,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
         SetOwnerIconImage(playerIconImage, null, false, Color.white);
         SetOwnerIconImage(enemyIconImage, null, false, Color.white);
+        ClearEnemyOwnerIconHudHoverTarget();
 
         if (useSkillIconImages != null)
         {
@@ -171,6 +183,164 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         }
 
         ClearSkillHoverTarget(image);
+    }
+
+    private void SetupEnemyOwnerIconHudHoverTarget(Image ownerIconImage, string monsterRuntimeId)
+    {
+        ClearEnemyOwnerIconHudHoverTarget(false);
+
+        if (ownerIconImage == null || string.IsNullOrWhiteSpace(monsterRuntimeId))
+            return;
+
+        enemyOwnerIconMonsterRuntimeId = monsterRuntimeId;
+
+        GameObject imageObject = ownerIconImage.gameObject;
+        GameObject rootObject = ownerIconImage.transform.parent != null
+            ? ownerIconImage.transform.parent.gameObject
+            : imageObject;
+
+        RegisterEnemyOwnerIconHoverEvents(imageObject, true);
+
+        if (rootObject != imageObject)
+            RegisterEnemyOwnerIconHoverEvents(rootObject, false);
+    }
+
+    private void ClearEnemyOwnerIconHudHoverTarget(bool clearRegisteredObjects = true)
+    {
+        HideHoveredEnemyOwnerIconHUD();
+        enemyOwnerIconMonsterRuntimeId = "";
+
+        if (registeredEnemyOwnerIconImageObject != null)
+        {
+            Image image = registeredEnemyOwnerIconImageObject.GetComponent<Image>();
+
+            if (image != null)
+                image.raycastTarget = false;
+        }
+
+        if (registeredEnemyOwnerIconRootObject != null)
+        {
+            Image image = registeredEnemyOwnerIconRootObject.GetComponent<Image>();
+
+            if (image != null)
+                image.raycastTarget = false;
+        }
+
+        if (clearRegisteredObjects)
+        {
+            registeredEnemyOwnerIconImageObject = null;
+            registeredEnemyOwnerIconRootObject = null;
+        }
+    }
+
+    private void RegisterEnemyOwnerIconHoverEvents(GameObject targetObject, bool isImageObject)
+    {
+        if (targetObject == null)
+            return;
+
+        if (isImageObject)
+            registeredEnemyOwnerIconImageObject = targetObject;
+        else
+            registeredEnemyOwnerIconRootObject = targetObject;
+
+        Image image = targetObject.GetComponent<Image>();
+
+        if (image == null)
+        {
+            image = targetObject.AddComponent<Image>();
+            image.color = new Color(1f, 1f, 1f, 0f);
+        }
+
+        image.raycastTarget = true;
+
+        EventTrigger trigger = targetObject.GetComponent<EventTrigger>();
+
+        if (trigger == null)
+            trigger = targetObject.AddComponent<EventTrigger>();
+
+        RemoveEnemyOwnerIconHoverEvents(trigger);
+
+        EventTrigger.Entry enterEntry = new EventTrigger.Entry
+        {
+            eventID = EventTriggerType.PointerEnter
+        };
+
+        enterEntry.callback.AddListener(_ => ShowEnemyOwnerIconHUD());
+        trigger.triggers.Add(enterEntry);
+
+        EventTrigger.Entry exitEntry = new EventTrigger.Entry
+        {
+            eventID = EventTriggerType.PointerExit
+        };
+
+        exitEntry.callback.AddListener(_ => HideHoveredEnemyOwnerIconHUD());
+        trigger.triggers.Add(exitEntry);
+    }
+
+    private void RemoveEnemyOwnerIconHoverEvents(EventTrigger trigger)
+    {
+        if (trigger == null || trigger.triggers == null)
+            return;
+
+        for (int i = trigger.triggers.Count - 1; i >= 0; i--)
+        {
+            EventTrigger.Entry entry = trigger.triggers[i];
+
+            if (entry == null)
+                continue;
+
+            if (entry.eventID == EventTriggerType.PointerEnter ||
+                entry.eventID == EventTriggerType.PointerExit)
+            {
+                trigger.triggers.RemoveAt(i);
+            }
+        }
+    }
+
+    private void ShowEnemyOwnerIconHUD()
+    {
+        hoveredEnemyOwnerIconMonster = FindEnemyOwnerIconMonster();
+
+        if (hoveredEnemyOwnerIconMonster != null)
+            hoveredEnemyOwnerIconMonster.ShowAndRefreshHUD();
+    }
+
+    private void HideHoveredEnemyOwnerIconHUD()
+    {
+        if (hoveredEnemyOwnerIconMonster == null)
+            hoveredEnemyOwnerIconMonster = FindEnemyOwnerIconMonster();
+
+        if (hoveredEnemyOwnerIconMonster != null)
+            hoveredEnemyOwnerIconMonster.HideHUDIfNotSelected();
+
+        hoveredEnemyOwnerIconMonster = null;
+    }
+
+    private MonsterUnit FindEnemyOwnerIconMonster()
+    {
+        if (string.IsNullOrWhiteSpace(enemyOwnerIconMonsterRuntimeId))
+            return null;
+
+        MonsterUnit[] monsters = Object.FindObjectsByType<MonsterUnit>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < monsters.Length; i++)
+        {
+            if (monsters[i] == null || monsters[i].RuntimeData == null)
+                continue;
+
+            if (monsters[i].RuntimeData.RuntimeId == enemyOwnerIconMonsterRuntimeId)
+                return monsters[i];
+        }
+
+        return null;
+    }
+
+    private void OnDisable()
+    {
+        HideHoveredEnemyOwnerIconHUD();
     }
 
     private void SetupEnemySkillHoverTarget(Image skillImage, BattleTimelinePreviewEntry entry)
