@@ -104,7 +104,7 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: -341724045
+  m_SortingLayerID: 1597553239
   m_SortingLayer: 1
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 9f50d00e0f5f7314ba28e83b3854e295, type: 3}
@@ -194,7 +194,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1597553239
-  m_SortingLayer: 4
+  m_SortingLayer: 1
   m_SortingOrder: 0
   m_Sprite: {fileID: -2045190579, guid: e79e541f169acb4469ae939a1d47dfa4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -316,7 +316,7 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: -341724045
+  m_SortingLayerID: 1597553239
   m_SortingLayer: 1
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 9f50d00e0f5f7314ba28e83b3854e295, type: 3}
@@ -500,6 +500,7 @@ MonoBehaviour:
   moveStateName: Move
   guardStateName: Guard
   hitStateName: Hit
+  healStateName: 
   deadStateName: Dead
   moveVfx:
     prefab: {fileID: 7536603162193489409, guid: 247ccc1305ac9a143b18c44c2da5f74f, type: 3}
@@ -509,6 +510,9 @@ MonoBehaviour:
     flipType: 0
   hitVfx:
     prefab: {fileID: 1117934107437797500, guid: 88f1a976e51edc6498fbd356d3e3f7f1, type: 3}
+    flipType: 0
+  healVfx:
+    prefab: {fileID: 0}
     flipType: 0
   statusVfx:
     aimingVfx:
