@@ -1,3 +1,4 @@
+using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
 using UnityEngine;
 
@@ -5,6 +6,8 @@ public class BattleRoomCleaner : MonoBehaviour
 {
     public void Clean()
     {
+        ClearPartyBattleRoomTemporaryStatusEffects();
+
         BattleRoomLoader[] loaders = Object.FindObjectsByType<BattleRoomLoader>(
             FindObjectsInactive.Include,
             FindObjectsSortMode.None);
@@ -35,6 +38,27 @@ public class BattleRoomCleaner : MonoBehaviour
         {
             if (monsters[i] != null)
                 Destroy(monsters[i].gameObject);
+        }
+    }
+
+    private void ClearPartyBattleRoomTemporaryStatusEffects()
+    {
+        if (DataManager.Instance == null)
+            return;
+
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+
+        for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
+        {
+            string characterId = partyStore.GetCharacterId(i);
+
+            if (string.IsNullOrWhiteSpace(characterId))
+                continue;
+
+            if (!DataManager.Instance.CharacterRuntimeStore.TryGet(characterId, out CharacterRuntimeData runtimeData))
+                continue;
+
+            runtimeData.ClearBattleRoomTemporaryStatusEffects();
         }
     }
 }

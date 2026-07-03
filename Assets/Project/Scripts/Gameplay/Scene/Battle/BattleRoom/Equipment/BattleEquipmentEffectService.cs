@@ -46,7 +46,11 @@ public static class BattleEquipmentEffectService
         runtime.MaxCost = Mathf.Max(0, baseMaxCost + GetMaxCostBonus(runtime));
         runtime.CurrentCost = Mathf.Max(0, runtime.MaxCost + GetBattleStartCostBonus(runtime));
 
-        runtime.CurrentResource = GetBattleStartUniqueResource(runtime, masterData);
+        int maxResource = masterData != null
+            ? Mathf.Max(0, masterData.MaxResource)
+            : Mathf.Max(0, runtime.CurrentResource);
+        int battleStartResource = GetBattleStartUniqueResource(runtime, masterData);
+        runtime.CurrentResource = Mathf.Clamp(Mathf.Max(runtime.CurrentResource, battleStartResource), 0, maxResource);
         runtime.CurrentMoveLevel = Mathf.Max(0, GetEffectiveMoveValue(runtime, masterData));
         SyncMoveSkillForMoveValue(runtime);
         runtime.ClearReservedCosts();
