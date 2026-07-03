@@ -44,6 +44,25 @@ public class YSortSpriteTests
         Assert.That(idleBackRenderer.sortingOrder, Is.EqualTo(spriteRootRenderer.sortingOrder - 1));
     }
 
+    [Test]
+    public void ParticleSystemRendererYSort_UsesCalculatedSortingOrder()
+    {
+        rootObject = new GameObject("GridEffectVfx");
+        rootObject.transform.position = new Vector3(0f, 1.25f, 0f);
+
+        rootObject.AddComponent<ParticleSystem>();
+        ParticleSystemRenderer particleRenderer = rootObject.GetComponent<ParticleSystemRenderer>();
+        particleRenderer.sortingOrder = 42;
+
+        YSortSprite sorter = rootObject.AddComponent<YSortSprite>();
+        sorter.sortingOrderOffset = 7;
+
+        InvokeUnityMessage(sorter, "Awake");
+        InvokeUnityMessage(sorter, "LateUpdate");
+
+        Assert.That(particleRenderer.sortingOrder, Is.EqualTo(-118));
+    }
+
     private static void InvokeUnityMessage(object target, string methodName)
     {
         MethodInfo method = target.GetType().GetMethod(
