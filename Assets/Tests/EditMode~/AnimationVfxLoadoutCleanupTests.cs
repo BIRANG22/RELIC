@@ -869,6 +869,32 @@ public class AnimationVfxLoadoutCleanupTests
     }
 
     [Test]
+    public void BattleUnitAnimator_PlayHealSpawnsHealVfxWhenAssigned()
+    {
+        GameObject owner = new("HealAnimatorOwner");
+        GameObject healPrefab = new("HealVfx");
+
+        try
+        {
+            BattleUnitAnimator animator = owner.AddComponent<BattleUnitAnimator>();
+            SetPrivateField(animator, "healVfx", new BattleVfxEntry
+            {
+                prefab = healPrefab,
+                flipType = VfxFlipType.None
+            });
+
+            animator.PlayHeal();
+
+            Assert.That(owner.transform.Find("HealVfx(Clone)"), Is.Not.Null);
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(healPrefab);
+            UnityEngine.Object.DestroyImmediate(owner);
+        }
+    }
+
+    [Test]
     public void AddStatusToPlayer_SpawnsBuffVfxOnTarget()
     {
         GameObject owner = new("PlayerStatusTarget");
@@ -931,6 +957,76 @@ public class AnimationVfxLoadoutCleanupTests
         finally
         {
             UnityEngine.Object.DestroyImmediate(buffPrefab);
+            UnityEngine.Object.DestroyImmediate(owner);
+        }
+    }
+
+    [Test]
+    public void HealPlayer_SpawnsHealVfxWhenHpIncreases()
+    {
+        GameObject owner = new("PlayerHealTarget");
+        GameObject healPrefab = new("PlayerHealVfx");
+
+        try
+        {
+            BattleCharacter character = owner.AddComponent<BattleCharacter>();
+            BattleUnitAnimator animator = owner.AddComponent<BattleUnitAnimator>();
+            SetPrivateField(animator, "healVfx", new BattleVfxEntry
+            {
+                prefab = healPrefab,
+                flipType = VfxFlipType.None
+            });
+
+            character.Initialize(new CharacterRuntimeData
+            {
+                CharacterId = "C_Heal",
+                MaxHP = 10,
+                CurrentHP = 5
+            });
+
+            BattleEffectUtility.HealPlayer(character, 3);
+
+            Assert.That(character.RuntimeData.CurrentHP, Is.EqualTo(8));
+            Assert.That(owner.transform.Find("PlayerHealVfx(Clone)"), Is.Not.Null);
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(healPrefab);
+            UnityEngine.Object.DestroyImmediate(owner);
+        }
+    }
+
+    [Test]
+    public void HealPlayer_DoesNotSpawnHealVfxWhenHpDoesNotIncrease()
+    {
+        GameObject owner = new("PlayerFullHealTarget");
+        GameObject healPrefab = new("PlayerFullHealVfx");
+
+        try
+        {
+            BattleCharacter character = owner.AddComponent<BattleCharacter>();
+            BattleUnitAnimator animator = owner.AddComponent<BattleUnitAnimator>();
+            SetPrivateField(animator, "healVfx", new BattleVfxEntry
+            {
+                prefab = healPrefab,
+                flipType = VfxFlipType.None
+            });
+
+            character.Initialize(new CharacterRuntimeData
+            {
+                CharacterId = "C_FullHeal",
+                MaxHP = 10,
+                CurrentHP = 10
+            });
+
+            BattleEffectUtility.HealPlayer(character, 3);
+
+            Assert.That(character.RuntimeData.CurrentHP, Is.EqualTo(10));
+            Assert.That(owner.transform.Find("PlayerFullHealVfx(Clone)"), Is.Null);
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(healPrefab);
             UnityEngine.Object.DestroyImmediate(owner);
         }
     }

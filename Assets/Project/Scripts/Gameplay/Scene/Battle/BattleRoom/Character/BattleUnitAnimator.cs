@@ -19,6 +19,7 @@ public class BattleUnitAnimator : MonoBehaviour
     [SerializeField] private string moveStateName = "Move";
     [SerializeField] private string guardStateName = "Guard";
     [SerializeField] private string hitStateName = "Hit";
+    [SerializeField] private string healStateName = "";
     [SerializeField] private string deadStateName = "Dead";
 
     [Header("Move VFX")]
@@ -29,6 +30,9 @@ public class BattleUnitAnimator : MonoBehaviour
 
     [Header("Hit VFX")]
     [SerializeField] private BattleVfxEntry hitVfx;
+
+    [Header("Heal VFX")]
+    [SerializeField] private BattleVfxEntry healVfx;
 
     [Header("Status VFX")]
     [SerializeField] private BattleStatusVfxSet statusVfx = new();
@@ -105,6 +109,12 @@ public class BattleUnitAnimator : MonoBehaviour
     {
         PlayState(hitStateName);
         SpawnVfx(hitVfx);
+    }
+
+    public void PlayHeal()
+    {
+        PlayOptionalState(healStateName);
+        SpawnVfx(healVfx);
     }
 
     public void PlayDead()
@@ -697,6 +707,47 @@ public class BattleUnitAnimator : MonoBehaviour
         if (animator.runtimeAnimatorController == null)
             return;
 
+        PlayAnimatorState(stateName);
+    }
+
+    private void PlayOptionalState(string stateName)
+    {
+        if (!CanPlayOptionalState(stateName))
+            return;
+
+        PlayAnimatorState(stateName);
+    }
+
+    private bool CanPlayOptionalState(string stateName)
+    {
+        if (!EnsureAnimator())
+            return false;
+
+        if (string.IsNullOrWhiteSpace(stateName))
+            return false;
+
+        if (animator.runtimeAnimatorController == null)
+            return false;
+
+        if (animatorLayer < 0 || animatorLayer >= animator.layerCount)
+            return false;
+
+        if (animator.HasState(animatorLayer, Animator.StringToHash(stateName)))
+            return true;
+
+        string layerName = animator.GetLayerName(animatorLayer);
+
+        if (string.IsNullOrWhiteSpace(layerName))
+            return false;
+
+        return animator.HasState(
+            animatorLayer,
+            Animator.StringToHash($"{layerName}.{stateName}")
+        );
+    }
+
+    private void PlayAnimatorState(string stateName)
+    {
         if (crossFadeDuration > 0f)
             animator.CrossFadeInFixedTime(stateName, crossFadeDuration, animatorLayer, 0f);
         else

@@ -5,6 +5,7 @@ public class RestRoomController : MonoBehaviour
 {
     [Header("Ally Spawn")]
     [SerializeField] private Transform[] allySpawnPoints;
+    [SerializeField] private float allySpawnScale = 0.7f;
 
     [Header("Upgrade")]
     [SerializeField] private SkillUpgradePanel upgradePanel;
@@ -16,6 +17,8 @@ public class RestRoomController : MonoBehaviour
     [SerializeField] private GameObject nextButtonRoot;
 
     private bool isRestUsed;
+    private BattleUnitAnimator[] spawnedAllyAnimators;
+
     private bool IsRestActionLocked => isRestUsed;
 
     private void Awake()
@@ -46,6 +49,7 @@ public class RestRoomController : MonoBehaviour
             upgradePanel.Close();
 
         RecoverAllPartyHPToMax();
+        PlayHealVfxOnSpawnedAllies();
         SetNextButtonVisible(true);
     }
 
@@ -129,6 +133,8 @@ public class RestRoomController : MonoBehaviour
 
     private void SpawnPartyAllies()
     {
+        spawnedAllyAnimators = null;
+
         if (DataManager.Instance == null)
             return;
 
@@ -140,6 +146,8 @@ public class RestRoomController : MonoBehaviour
 
         if (partyStore == null || prefabDatabase == null)
             return;
+
+        spawnedAllyAnimators = new BattleUnitAnimator[allySpawnPoints.Length];
 
         for (int i = 0; i < allySpawnPoints.Length; i++)
         {
@@ -155,16 +163,48 @@ public class RestRoomController : MonoBehaviour
             if (string.IsNullOrWhiteSpace(characterId))
                 continue;
 
-            if (!prefabDatabase.TryGetBattleEventWorldPrefab(characterId, out GameObject battleEventPrefab))
+            if (!prefabDatabase.TryGetPreviewWorldPrefab(characterId, out GameObject restRoomPrefab))
             {
-                Debug.LogWarning($"[RestRoomController] Battle event world prefab not found: {characterId}");
+                Debug.LogWarning($"[RestRoomController] Rest room world prefab not found: {characterId}");
                 continue;
             }
 
-            GameObject ally = Instantiate(battleEventPrefab, point);
+            GameObject ally = Instantiate(restRoomPrefab, point);
             ally.transform.localPosition = Vector3.zero;
             ally.transform.localRotation = Quaternion.identity;
-            ally.transform.localScale = Vector3.one;
+            ally.transform.localScale = Vector3.one * Mathf.Max(0f, allySpawnScale);
+
+            spawnedAllyAnimators[i] = ally.GetComponentInChildren<BattleUnitAnimator>(true);
+        }
+    }
+
+    private void PlayHealVfxOnSpawnedAllies()
+    {
+        CacheSpawnedAllyAnimatorsIfNeeded();
+
+        if (spawnedAllyAnimators == null)
+            return;
+
+        for (int i = 0; i < spawnedAllyAnimators.Length; i++)
+            spawnedAllyAnimators[i]?.PlayHeal();
+    }
+
+    private void CacheSpawnedAllyAnimatorsIfNeeded()
+    {
+        if (spawnedAllyAnimators != null && spawnedAllyAnimators.Length > 0)
+            return;
+
+        if (allySpawnPoints == null || allySpawnPoints.Length == 0)
+            return;
+
+        spawnedAllyAnimators = new BattleUnitAnimator[allySpawnPoints.Length];
+
+        for (int i = 0; i < allySpawnPoints.Length; i++)
+        {
+            Transform point = allySpawnPoints[i];
+
+            if (point != null)
+                spawnedAllyAnimators[i] = point.GetComponentInChildren<BattleUnitAnimator>(true);
         }
     }
 

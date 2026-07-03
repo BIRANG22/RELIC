@@ -11,6 +11,9 @@ GameObject:
   - component: {fileID: 2261522867038043951}
   - component: {fileID: 3625111865358224378}
   - component: {fileID: 7352732593814645887}
+  - component: {fileID: 910300000000000001}
+  - component: {fileID: 910300000000000002}
+  - component: {fileID: 8584613397215895268}
   m_Layer: 0
   m_Name: C_Robby_idle
   m_TagString: Untagged
@@ -106,11 +109,380 @@ Animator:
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
-  m_WarningMessage: 
+  m_WarningMessage:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &910300000000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2853597004644342624}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 846a9e67db6820742bed9200ba1f9afb, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  spriteRoot: {fileID: 2261522867038043951}
+  linkedFacingRoots: []
+  startFacingRight: 1
+  minHorizontalDelta: 0.01
+--- !u!114 &910300000000000002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2853597004644342624}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65329b3ce76752d4b9607a6211627f3d, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  animator: {fileID: 7352732593814645887}
+  idleStateName: New Animation
+  moveStateName:
+  guardStateName:
+  hitStateName:
+  healStateName:
+  deadStateName:
+  moveVfx:
+    prefab: {fileID: 0}
+    flipType: 0
+  guardVfx:
+    prefab: {fileID: 0}
+    flipType: 0
+  hitVfx:
+    prefab: {fileID: 0}
+    flipType: 0
+  healVfx:
+    prefab: {fileID: 9091916896245564796, guid: 3302b6aa62dc8fb4d8d9a88c6f8e8ac0, type: 3}
+    flipType: 0
+  statusVfx:
+    aimingVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    armorVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    blockVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    focusVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    powerVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    rechargeVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    recoverVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    swiftVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    thornsVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    addictedVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    bleedingVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    burnVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    corrosionVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    grudgeVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    vulnerableVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    weakenVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+  playerSkillPresentations:
+    power:
+      stateName:
+      vfx:
+        prefab: {fileID: 0}
+        flipType: 0
+      projectileVfx:
+        skillId:
+        missilePrefab: {fileID: 0}
+        impactPrefab: {fileID: 0}
+        missileFlipType: 2
+        impactFlipType: 2
+        launchDelay: 0
+        travelDuration: 0.25
+        arrivalDistance: 0.05
+        impactLifeTime: 2
+        launchOffset: {x: 0, y: 0, z: 0}
+        impactOffset: {x: 0, y: 0, z: 0}
+    attack1:
+      stateName:
+      vfx:
+        prefab: {fileID: 0}
+        flipType: 0
+      projectileVfx:
+        skillId:
+        missilePrefab: {fileID: 0}
+        impactPrefab: {fileID: 0}
+        missileFlipType: 2
+        impactFlipType: 2
+        launchDelay: 0
+        travelDuration: 0.25
+        arrivalDistance: 0.05
+        impactLifeTime: 2
+        launchOffset: {x: 0, y: 0, z: 0}
+        impactOffset: {x: 0, y: 0, z: 0}
+    attack2:
+      stateName:
+      vfx:
+        prefab: {fileID: 0}
+        flipType: 0
+      projectileVfx:
+        skillId:
+        missilePrefab: {fileID: 0}
+        impactPrefab: {fileID: 0}
+        missileFlipType: 2
+        impactFlipType: 2
+        launchDelay: 0
+        travelDuration: 0.25
+        arrivalDistance: 0.05
+        impactLifeTime: 2
+        launchOffset: {x: 0, y: 0, z: 0}
+        impactOffset: {x: 0, y: 0, z: 0}
+    attack3:
+      stateName:
+      vfx:
+        prefab: {fileID: 0}
+        flipType: 0
+      projectileVfx:
+        skillId:
+        missilePrefab: {fileID: 0}
+        impactPrefab: {fileID: 0}
+        missileFlipType: 2
+        impactFlipType: 2
+        launchDelay: 0
+        travelDuration: 0.25
+        arrivalDistance: 0.05
+        impactLifeTime: 2
+        launchOffset: {x: 0, y: 0, z: 0}
+        impactOffset: {x: 0, y: 0, z: 0}
+    skill:
+      stateName:
+      vfx:
+        prefab: {fileID: 0}
+        flipType: 0
+      projectileVfx:
+        skillId:
+        missilePrefab: {fileID: 0}
+        impactPrefab: {fileID: 0}
+        missileFlipType: 2
+        impactFlipType: 2
+        launchDelay: 0
+        travelDuration: 0.25
+        arrivalDistance: 0.05
+        impactLifeTime: 2
+        launchOffset: {x: 0, y: 0, z: 0}
+        impactOffset: {x: 0, y: 0, z: 0}
+  monsterActionPresentations:
+  - stateName:
+    vfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    projectileVfx:
+      skillId:
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
+  - stateName:
+    vfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    projectileVfx:
+      skillId:
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
+  - stateName:
+    vfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    projectileVfx:
+      skillId:
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
+  - stateName:
+    vfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    projectileVfx:
+      skillId:
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
+  - stateName:
+    vfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    projectileVfx:
+      skillId:
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
+  - stateName:
+    vfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    projectileVfx:
+      skillId:
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
+  - stateName:
+    vfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    projectileVfx:
+      skillId:
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
+  - stateName:
+    vfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    projectileVfx:
+      skillId:
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
+  - stateName:
+    vfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    projectileVfx:
+      skillId:
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
+  - stateName:
+    vfx:
+      prefab: {fileID: 0}
+      flipType: 0
+    projectileVfx:
+      skillId:
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
+  vfxSpawnPoint: {fileID: 0}
+  unitFacing: {fileID: 910300000000000001}
+  autoFindFacing: 1
+  flipVfxLocalPositionX: 1
+  flipVfxScaleXWhenFlipTypeNone: 1
+  vfxLifeTime: 2
+  animatorLayer: 0
+  crossFadeDuration: 0
+  deadAnimationDuration: 0.6
+  forceAnimatorUpdate: 1
+  autoFindAnimatorInChildren: 1
+  vfxLayerName: VFX
+--- !u!114 &8584613397215895268
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2853597004644342624}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33c392ea8bf721f4f9b83ea336edc598, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  sortingOrderOffset: 0
+  yMultiplier: 100
 --- !u!1 &5710865275822379766
 GameObject:
   m_ObjectHideFlags: 0
