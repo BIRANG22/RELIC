@@ -19,7 +19,30 @@ public class OptionOpenButton : MonoBehaviour, IPointerEnterHandler
         PlayClickSound();
         TitleManager.CloseTitleModePanelsInScene();
 
-        UIManager.Instance.ShowOption();
+        UIManager uiManager = GetUIManager();
+        if (uiManager == null)
+        {
+            Debug.LogWarning("[OptionOpenButton] UIManager is not found. Option panel cannot be opened.");
+            return;
+        }
+
+        uiManager.ShowOption();
+    }
+
+    private UIManager GetUIManager()
+    {
+        if (UIManager.Instance != null)
+        {
+            return UIManager.Instance;
+        }
+
+        UIManager uiManager = FindFirstObjectByType<UIManager>(FindObjectsInactive.Include);
+        if (uiManager != null)
+        {
+            return uiManager;
+        }
+
+        return null;
     }
 
     private void PlayHoverSound()
