@@ -16,8 +16,16 @@ public class RestRoomController : MonoBehaviour
     [Header("Progression")]
     [SerializeField] private GameObject nextButtonRoot;
 
+    [Header("Player HUD")]
+    [SerializeField] private Transform playerHudRoot;
+    [SerializeField] private PlayerHUDSlot playerHudPrefab;
+    [SerializeField] private Transform[] playerHudPositionAnchors = new Transform[3];
+    [SerializeField] private float playerHudScale = 0.4f;
+    [SerializeField] private bool autoFindPlayerHudReferences = true;
+
     private bool isRestUsed;
     private BattleUnitAnimator[] spawnedAllyAnimators;
+    private PlayerHUDSlot[] spawnedPlayerHuds;
 
     private bool IsRestActionLocked => isRestUsed;
 
@@ -35,8 +43,15 @@ public class RestRoomController : MonoBehaviour
 
         EnsureShopPanelSpawner();
         EnsureNextButtonRoot();
+        EnsurePlayerHudReferences();
         SetNextButtonVisible(false);
         SpawnPartyAllies();
+        SpawnPlayerHUDs();
+    }
+
+    private void OnDisable()
+    {
+        ClearPlayerHUDs();
     }
 
     public void OnRestButtonClicked()
@@ -49,6 +64,7 @@ public class RestRoomController : MonoBehaviour
             upgradePanel.Close();
 
         RecoverAllPartyHPToMax();
+        RefreshPlayerHUDs();
         PlayHealVfxOnSpawnedAllies();
         SetNextButtonVisible(true);
     }
@@ -66,6 +82,7 @@ public class RestRoomController : MonoBehaviour
 
         isRestUsed = true;
         upgradePanel.Open();
+        RefreshPlayerHUDs();
         SetNextButtonVisible(true);
     }
 
@@ -163,7 +180,7 @@ public class RestRoomController : MonoBehaviour
             if (string.IsNullOrWhiteSpace(characterId))
                 continue;
 
-            if (!prefabDatabase.TryGetPreviewWorldPrefab(characterId, out GameObject restRoomPrefab))
+            if (!prefabDatabase.TryGetBattleEventWorldPrefab(characterId, out GameObject restRoomPrefab))
             {
                 Debug.LogWarning($"[RestRoomController] Rest room world prefab not found: {characterId}");
                 continue;
@@ -187,6 +204,204 @@ public class RestRoomController : MonoBehaviour
 
         for (int i = 0; i < spawnedAllyAnimators.Length; i++)
             spawnedAllyAnimators[i]?.PlayHeal();
+    }
+
+    private void SpawnPlayerHUDs()
+    {
+        ClearPlayerHUDs();
+        EnsurePlayerHudReferences();
+
+        if (DataManager.Instance == null)
+            return;
+
+        if (playerHudPrefab == null || playerHudRoot == null)
+            return;
+
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+
+        if (partyStore == null)
+            return;
+
+        int hudCount = Mathf.Max(0, partyStore.MaxPartyCountValue);
+        spawnedPlayerHuds = new PlayerHUDSlot[hudCount];
+
+        for (int i = 0; i < hudCount; i++)
+        {
+            string characterId = partyStore.GetCharacterId(i);
+
+            if (string.IsNullOrWhiteSpace(characterId))
+                continue;
+
+            if (!DataManager.Instance.CharacterRuntimeStore.TryGet(
+                    characterId,
+                    out CharacterRuntimeData runtimeData))
+            {
+                continue;
+            }
+
+            Transform anchor = GetPlayerHudAnchor(i);
+
+            if (anchor == null)
+                anchor = playerHudRoot;
+
+            ClearPlayerHudAnchor(anchor);
+
+            PlayerHUDSlot hud = Instantiate(playerHudPrefab, anchor);
+            ApplyPlayerHudTransform(hud, anchor);
+            hud.Bind(runtimeData);
+            hud.SetCommandSelected(false);
+
+            spawnedPlayerHuds[i] = hud;
+        }
+    }
+
+    private void RefreshPlayerHUDs()
+    {
+        if (spawnedPlayerHuds == null || spawnedPlayerHuds.Length == 0)
+        {
+            SpawnPlayerHUDs();
+            return;
+        }
+
+        for (int i = 0; i < spawnedPlayerHuds.Length; i++)
+        {
+            if (spawnedPlayerHuds[i] != null)
+                spawnedPlayerHuds[i].Refresh();
+        }
+    }
+
+    private void ClearPlayerHUDs()
+    {
+        if (spawnedPlayerHuds != null)
+        {
+            for (int i = spawnedPlayerHuds.Length - 1; i >= 0; i--)
+            {
+                if (spawnedPlayerHuds[i] != null)
+                    Destroy(spawnedPlayerHuds[i].gameObject);
+            }
+        }
+
+        spawnedPlayerHuds = null;
+
+        if (playerHudPositionAnchors == null)
+            return;
+
+        for (int i = 0; i < playerHudPositionAnchors.Length; i++)
+            ClearPlayerHudAnchor(playerHudPositionAnchors[i]);
+    }
+
+    private void ClearPlayerHudAnchor(Transform anchor)
+    {
+        if (anchor == null)
+            return;
+
+        for (int i = anchor.childCount - 1; i >= 0; i--)
+        {
+            Transform child = anchor.GetChild(i);
+
+            if (child != null && child.GetComponent<PlayerHUDSlot>() != null)
+                Destroy(child.gameObject);
+        }
+    }
+
+    private void ApplyPlayerHudTransform(PlayerHUDSlot hud, Transform anchor)
+    {
+        if (hud == null || anchor == null)
+            return;
+
+        Transform hudTransform = hud.transform;
+
+        if (hudTransform.parent != anchor)
+            hudTransform.SetParent(anchor, false);
+
+        RectTransform rect = hud.GetComponent<RectTransform>();
+
+        if (rect != null)
+        {
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = Vector2.zero;
+            rect.localPosition = Vector3.zero;
+            rect.localRotation = Quaternion.identity;
+            rect.localScale = Vector3.one * Mathf.Max(0f, playerHudScale);
+        }
+
+        hudTransform.localPosition = Vector3.zero;
+        hudTransform.localRotation = Quaternion.identity;
+        hudTransform.localScale = Vector3.one * Mathf.Max(0f, playerHudScale);
+        hud.SetBaseScale(Vector3.one * Mathf.Max(0f, playerHudScale));
+    }
+
+    private Transform GetPlayerHudAnchor(int index)
+    {
+        EnsurePlayerHudReferences();
+
+        if (index < 0)
+            return null;
+
+        if (playerHudPositionAnchors != null && index < playerHudPositionAnchors.Length)
+        {
+            Transform anchor = playerHudPositionAnchors[index];
+
+            if (anchor != null)
+                return anchor;
+        }
+
+        if (playerHudRoot != null && index < playerHudRoot.childCount)
+            return playerHudRoot.GetChild(index);
+
+        return null;
+    }
+
+    private void EnsurePlayerHudReferences()
+    {
+        if (!autoFindPlayerHudReferences)
+            return;
+
+        if (playerHudRoot == null)
+        {
+            Transform rootTransform = FindSceneTransformByName("PlayerHUD_Root");
+
+            if (rootTransform != null)
+                playerHudRoot = rootTransform;
+        }
+
+        if (playerHudRoot == null)
+            return;
+
+        if (playerHudPositionAnchors == null || playerHudPositionAnchors.Length < 3)
+            playerHudPositionAnchors = new Transform[3];
+
+        for (int i = 0; i < playerHudPositionAnchors.Length; i++)
+        {
+            if (playerHudPositionAnchors[i] != null)
+                continue;
+
+            string anchorName = "HUD_Pos_" + (i + 1).ToString("00");
+            Transform anchor = FindDirectChildByName(playerHudRoot, anchorName);
+
+            if (anchor != null)
+                playerHudPositionAnchors[i] = anchor;
+            else if (i < playerHudRoot.childCount)
+                playerHudPositionAnchors[i] = playerHudRoot.GetChild(i);
+        }
+    }
+
+    private Transform FindDirectChildByName(Transform root, string targetName)
+    {
+        if (root == null || string.IsNullOrWhiteSpace(targetName))
+            return null;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform child = root.GetChild(i);
+
+            if (child != null && child.name == targetName)
+                return child;
+        }
+
+        return null;
     }
 
     private void CacheSpawnedAllyAnimatorsIfNeeded()

@@ -448,6 +448,7 @@ public class BattleRoomLoader : MonoBehaviour
         RegisterSkillListKeepOpenRoots();
 
         ResetPartyCurrentGridToSpawn();
+        ClearPartyBattleRoomTemporaryStatusEffects();
         ResetPartyBattleStartResources();
 
         if (BattleResultChecker.Instance != null)
@@ -461,7 +462,7 @@ public class BattleRoomLoader : MonoBehaviour
         SpawnPlayersAndHUD();
         SpawnMonstersAndHUD(false);
         SpawnInitialGridEffects();
-        passiveSkillService.RefreshAllPlayerPassives();
+        RefreshBattleHUDs();
 
         EnsureTurnExecutor();
 
@@ -533,6 +534,27 @@ public class BattleRoomLoader : MonoBehaviour
         }
     }
 
+    private void ClearPartyBattleRoomTemporaryStatusEffects()
+    {
+        if (DataManager.Instance == null)
+            return;
+
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+
+        for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
+        {
+            string characterId = partyStore.GetCharacterId(i);
+
+            if (string.IsNullOrWhiteSpace(characterId))
+                continue;
+
+            if (!DataManager.Instance.CharacterRuntimeStore.TryGet(characterId, out CharacterRuntimeData runtimeData))
+                continue;
+
+            runtimeData.ClearBattleRoomTemporaryStatusEffects();
+        }
+    }
+
     private void ResetPartyBattleStartResources()
     {
         if (DataManager.Instance == null)
@@ -554,6 +576,7 @@ public class BattleRoomLoader : MonoBehaviour
                 continue;
 
             BattleEquipmentEffectService.ApplyBattleStartEffects(runtimeData, masterData);
+            BattlePassiveSkillService.RefreshRuntimePassiveEffects(runtimeData);
         }
     }
 

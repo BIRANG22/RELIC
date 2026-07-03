@@ -34,7 +34,7 @@ namespace Relic.Gameplay.Data
         [FormerlySerializedAs("ReservedStaminaCost")]
         public int ReservedCost;
         public int ReservedResourceCost;
-        public int ReservedShieldCost;     
+        public int ReservedShieldCost;
 
         public BattleDirection Direction = BattleDirection.Right;
 
@@ -52,7 +52,7 @@ namespace Relic.Gameplay.Data
         public List<string> AppliedBattleEquipmentEffectIds = new();
 
         public bool IsUnlocked;
-                
+
         public int TotalCostRecovery => Mathf.Max(0, CostRecovery + BonusCostRecovery);
         public bool IsDead => CurrentHP <= 0;
         public int PreviewHP => Mathf.Max(0, CurrentHP - ReservedHPCost);
@@ -137,6 +137,15 @@ namespace Relic.Gameplay.Data
             ReservedCost = 0;
             ReservedResourceCost = 0;
             ReservedShieldCost = 0;
+        }
+
+        public void ClearBattleRoomTemporaryStatusEffects()
+        {
+            CurrentShield = 0;
+            ClearReservedCosts();
+
+            if (StatusEffects != null)
+                StatusEffects.Clear();
         }
 
         public void HandleDeath()

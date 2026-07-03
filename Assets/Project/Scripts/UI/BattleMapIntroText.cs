@@ -53,28 +53,17 @@ public class BattleMapIntroText : MonoBehaviour
     private Vector2 baseAnchoredPosition;
     private Coroutine playRoutine;
     private int playVersion;
+    private bool isInitialized;
 
     private void Awake()
     {
-        instance = this;
-
-        if (introText == null)
-            introText = GetComponentInChildren<TMP_Text>(true);
-
-        BindIntroImageIfNeeded();
-
-        rectTransform = introText != null ? introText.rectTransform : null;
-
-        if (rectTransform != null)
-            baseAnchoredPosition = rectTransform.anchoredPosition;
-
+        InitializeReferencesIfNeeded();
         HideImmediate();
     }
 
     private void OnEnable()
     {
-        if (instance == null)
-            instance = this;
+        InitializeReferencesIfNeeded();
     }
 
     private void OnDestroy()
@@ -122,6 +111,9 @@ public class BattleMapIntroText : MonoBehaviour
 
     public void Play(string text)
     {
+        EnsureRootActiveForPlay();
+        InitializeReferencesIfNeeded();
+
         if (introText == null)
         {
             Debug.LogWarning("[BattleMapIntroText] Intro Text가 연결되어 있지 않습니다.", this);
@@ -137,6 +129,9 @@ public class BattleMapIntroText : MonoBehaviour
 
     public IEnumerator PlayAndWait(string text)
     {
+        EnsureRootActiveForPlay();
+        InitializeReferencesIfNeeded();
+
         if (introText == null)
         {
             Debug.LogWarning("[BattleMapIntroText] Intro Text가 연결되어 있지 않습니다.", this);
@@ -168,6 +163,8 @@ public class BattleMapIntroText : MonoBehaviour
 
     public void HideImmediate()
     {
+        InitializeReferencesIfNeeded();
+
         if (introText != null)
         {
             introText.alpha = 0f;
@@ -255,6 +252,33 @@ public class BattleMapIntroText : MonoBehaviour
 
         if (useMoveEffect && rectTransform != null)
             rectTransform.anchoredPosition = baseAnchoredPosition + toOffset;
+    }
+
+    private void InitializeReferencesIfNeeded()
+    {
+        if (instance == null)
+            instance = this;
+
+        if (introText == null)
+            introText = GetComponentInChildren<TMP_Text>(true);
+
+        BindIntroImageIfNeeded();
+
+        rectTransform = introText != null ? introText.rectTransform : null;
+
+        if (!isInitialized && rectTransform != null)
+            baseAnchoredPosition = rectTransform.anchoredPosition;
+
+        isInitialized = true;
+    }
+
+    private void EnsureRootActiveForPlay()
+    {
+        if (!gameObject.activeSelf)
+            gameObject.SetActive(true);
+
+        if (instance == null)
+            instance = this;
     }
 
     private void BindIntroImageIfNeeded()

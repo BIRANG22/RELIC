@@ -15,6 +15,8 @@ public class BattleSceneController : MonoBehaviour
     [SerializeField] private string mapIntroMessage = "제1구역 폐허";
     [SerializeField] private string startRoomIntroMessage = "수상한 자와 조우";
     [SerializeField] private string battleRoomIntroMessage = "전투 시작";
+    [SerializeField] private string restRoomIntroMessage = "휴식 구역";
+    [SerializeField] private string eventRoomIntroMessage = "휴식 구역";
     [SerializeField] private bool playMapIntroOnStart = true;
     [SerializeField] private bool playBattleRoomIntroFromSceneController = false;
 
@@ -463,12 +465,18 @@ public class BattleSceneController : MonoBehaviour
     private void OpenRestEvent(GeneratedMapNodeData nodeData)
     {
         Debug.Log($"[BattleSceneController] Rest event start: {nodeData.MapId}");
+        pendingRoomIntroMessage = restRoomIntroMessage;
         OpenRoom(restRoom, "RestRoom");
     }
 
     private void OpenSpecialEvent(GeneratedMapNodeData nodeData)
     {
         Debug.Log($"[BattleSceneController] Special event start: {nodeData.MapId}");
+
+        // 현재는 이벤트방 노드도 RestRoom 오브젝트를 함께 사용할 수 있으므로
+        // Event Room Intro Message 기본값을 휴식 구역으로 둔다.
+        // 나중에 실제 EventRoom을 추가하면 인스펙터에서 문구만 바꾸면 된다.
+        pendingRoomIntroMessage = eventRoomIntroMessage;
         OpenRoom(eventRoom, "EventRoom");
     }
 

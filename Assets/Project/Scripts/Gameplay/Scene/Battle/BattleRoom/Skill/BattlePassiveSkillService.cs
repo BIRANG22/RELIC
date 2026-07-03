@@ -19,7 +19,13 @@ public class BattlePassiveSkillService
         if (character == null || character.RuntimeData == null)
             return;
 
-        CharacterRuntimeData runtime = character.RuntimeData;
+        RefreshRuntimePassiveEffects(character.RuntimeData);
+    }
+
+    public static void RefreshRuntimePassiveEffects(CharacterRuntimeData runtime)
+    {
+        if (runtime == null)
+            return;
 
         ClearPassiveStatusEffects(runtime);
 
@@ -60,7 +66,7 @@ public class BattlePassiveSkillService
         BattleEquipmentEffectService.ApplyPassiveExtras(runtime);
     }
 
-    private void ApplyPassiveEffect(
+    private static void ApplyPassiveEffect(
         CharacterRuntimeData runtime,
         SkillMasterData passiveSkill,
         string effectId,
@@ -95,6 +101,9 @@ public class BattlePassiveSkillService
             SourceSkillId = passiveSkill.SkillId
         };
 
+        if (runtime.StatusEffects == null)
+            runtime.StatusEffects = new System.Collections.Generic.List<StatusEffectRuntimeData>();
+
         runtime.StatusEffects.Add(status);
 
         Debug.Log(
@@ -103,7 +112,7 @@ public class BattlePassiveSkillService
         );
     }
 
-    private SkillMasterData GetPassiveSkill(CharacterRuntimeData runtime)
+    private static SkillMasterData GetPassiveSkill(CharacterRuntimeData runtime)
     {
         if (runtime == null || DataManager.Instance == null)
             return null;
@@ -128,7 +137,7 @@ public class BattlePassiveSkillService
         return skillData;
     }
 
-    private int CalculatePassiveStack(
+    private static int CalculatePassiveStack(
         CharacterRuntimeData runtime,
         SkillMasterData passiveSkill)
     {
@@ -162,7 +171,7 @@ public class BattlePassiveSkillService
         }
     }
 
-    private void ClearPassiveStatusEffects(CharacterRuntimeData runtime)
+    private static void ClearPassiveStatusEffects(CharacterRuntimeData runtime)
     {
         if (runtime == null || runtime.StatusEffects == null)
             return;
