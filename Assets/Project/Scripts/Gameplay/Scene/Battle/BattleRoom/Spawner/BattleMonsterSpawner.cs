@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using UnityEngine;
 public class BattleMonsterSpawner : MonoBehaviour
 {
+    private readonly Dictionary<string, int> displayNameSuffixCounters = new();
+
     [Header("Grid Root")]
     [SerializeField] private Transform gridRoot;
 
@@ -76,6 +78,7 @@ public class BattleMonsterSpawner : MonoBehaviour
 
         MonsterRuntimeData runtimeData =
             new MonsterRuntimeData(runtimeId, monsterData);
+        ApplyDisplayNameSuffix(runtimeData);
 
         MonsterUnit monsterUnit = monster.GetComponent<MonsterUnit>();
 
@@ -181,6 +184,7 @@ public class BattleMonsterSpawner : MonoBehaviour
 
         string runtimeId = MonsterRuntimeIdGenerator.Create();
         MonsterRuntimeData runtimeData = new MonsterRuntimeData(runtimeId, monsterData);
+        ApplyDisplayNameSuffix(runtimeData);
 
         MonsterUnit monsterUnit = monster.GetComponent<MonsterUnit>();
 
@@ -199,6 +203,40 @@ public class BattleMonsterSpawner : MonoBehaviour
             RuntimeData = runtimeData,
             MonsterTransform = monster.transform
         };
+    }
+
+
+    public void ResetDisplayNameSuffixes()
+    {
+        displayNameSuffixCounters.Clear();
+    }
+
+    private void ApplyDisplayNameSuffix(MonsterRuntimeData runtimeData)
+    {
+        if (runtimeData == null || string.IsNullOrWhiteSpace(runtimeData.MonsterId))
+            return;
+
+        string monsterId = runtimeData.MonsterId.Trim();
+        displayNameSuffixCounters.TryGetValue(monsterId, out int currentCount);
+        displayNameSuffixCounters[monsterId] = currentCount + 1;
+
+        runtimeData.SetDisplaySuffix(ToAlphabeticSuffix(currentCount));
+    }
+
+    private static string ToAlphabeticSuffix(int index)
+    {
+        index = Mathf.Max(0, index);
+        string result = string.Empty;
+
+        do
+        {
+            int letterIndex = index % 26;
+            result = (char)('A' + letterIndex) + result;
+            index = (index / 26) - 1;
+        }
+        while (index >= 0);
+
+        return result;
     }
 
     private void SetMonsterInitialFacingLeft(GameObject monster)

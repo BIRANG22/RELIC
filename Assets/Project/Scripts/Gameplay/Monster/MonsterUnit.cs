@@ -62,8 +62,23 @@ namespace Relic.Gameplay.Monster
 
             EnsureClickCollider2D();
 
-            if (RuntimeData != null)
-                gameObject.name = $"{RuntimeData.Name}_{RuntimeData.RuntimeId}";
+            RefreshRuntimeDisplayName();
+        }
+
+
+        public void RefreshRuntimeDisplayName()
+        {
+            if (RuntimeData == null)
+                return;
+
+            string displayName = RuntimeData.GetDisplayName();
+            if (string.IsNullOrWhiteSpace(displayName))
+                displayName = RuntimeData.MonsterId;
+
+            gameObject.name = $"{displayName}_{RuntimeData.RuntimeId}";
+
+            if (hud != null)
+                hud.Refresh();
         }
 
         public MonsterAIPlan CreateAIPlan(

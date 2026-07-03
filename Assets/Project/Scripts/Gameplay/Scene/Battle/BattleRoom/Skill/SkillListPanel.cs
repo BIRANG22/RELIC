@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class SkillListPanel : MonoBehaviour
 {
@@ -26,6 +27,9 @@ public class SkillListPanel : MonoBehaviour
     [Header("Timeline")]
     [SerializeField] private BattleTimelineController battleTimelineController;
 
+    [Header("Turn Executor")]
+    [SerializeField] private BattleTurnExecutor turnExecutor;
+
     [Header("Position")]
     [SerializeField] private bool useFixedAnchoredPosition = true;
     [SerializeField] private bool useInitialPositionAsFixedPosition = true;
@@ -45,6 +49,10 @@ public class SkillListPanel : MonoBehaviour
     [SerializeField] private CanvasGroup contentCanvasGroup;
     [SerializeField] private float characterChangeFadeOutDuration = 0.08f;
     [SerializeField] private float characterChangeFadeInDuration = 0.08f;
+
+    [Header("Keyboard Input")]
+    [SerializeField] private bool enableKeyboardSkillSelection = true;
+    [SerializeField] private bool wrapKeyboardSkillSelection = true;
 
     [Header("Close")]
     [SerializeField] private bool closeWhenClickOutside = true;
@@ -72,6 +80,7 @@ public class SkillListPanel : MonoBehaviour
     private int ignoreOutsideCloseFrame = -1;
     private int renderedActiveSlotIndex = int.MinValue;
     private int renderedReservationVersion = int.MinValue;
+    private int keyboardSelectedSkillIndex = -1;
     private Coroutine slideRoutine;
     private Coroutine characterChangeFadeRoutine;
     private bool isChangingCharacterContent;
@@ -91,6 +100,7 @@ public class SkillListPanel : MonoBehaviour
         CaptureInitialDetailPosition();
 
         EnsureBattleTimelineController();
+        EnsureTurnExecutor();
         EnsureContentCanvasGroup();
 
         HideSkillDetail();
@@ -105,6 +115,8 @@ public class SkillListPanel : MonoBehaviour
 
     private void Update()
     {
+        HandleKeyboardSkillSelectionInput();
+
         if (closeWhenClickOutside &&
             IsOpen() &&
             Time.frameCount > ignoreOutsideCloseFrame &&
@@ -126,6 +138,174 @@ public class SkillListPanel : MonoBehaviour
             return;
 
         battleTimelineController = FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Include);
+    }
+
+    private void EnsureTurnExecutor()
+    {
+        if (turnExecutor != null)
+            return;
+
+        turnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
+    }
+
+    private void HandleKeyboardSkillSelectionInput()
+    {
+        if (!enableKeyboardSkillSelection)
+            return;
+
+        if (!IsOpen())
+            return;
+
+        if (IsTypingInputFieldSelected())
+            return;
+
+        EnsureTurnExecutor();
+
+        if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
+            return;
+
+        if (Input.GetKeyDown(KeyCode.W))
+        {
+            MoveKeyboardSkillSelection(-1);
+            return;
+        }
+
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            MoveKeyboardSkillSelection(1);
+            return;
+        }
+
+        if (Input.GetKeyDown(KeyCode.F))
+            UseKeyboardSelectedSkill();
+    }
+
+    private bool IsTypingInputFieldSelected()
+    {
+        if (EventSystem.current == null)
+            return false;
+
+        GameObject selectedObject = EventSystem.current.currentSelectedGameObject;
+
+        if (selectedObject == null)
+            return false;
+
+        if (selectedObject.GetComponent<TMP_InputField>() != null)
+            return true;
+
+        if (selectedObject.GetComponent<InputField>() != null)
+            return true;
+
+        return false;
+    }
+
+    private void MoveKeyboardSkillSelection(int direction)
+    {
+        if (direction == 0)
+            return;
+
+        RemoveNullSkillSlots();
+
+        if (skillSlots.Count <= 0)
+            return;
+
+        int startIndex = keyboardSelectedSkillIndex;
+
+        if (selectedSkillSlot != null)
+        {
+            int selectedIndex = skillSlots.IndexOf(selectedSkillSlot);
+            if (selectedIndex >= 0)
+                startIndex = selectedIndex;
+        }
+
+        if (startIndex < 0)
+            startIndex = direction > 0 ? -1 : skillSlots.Count;
+
+        int nextIndex = startIndex + direction;
+        int safety = 0;
+
+        while (safety < skillSlots.Count)
+        {
+            if (wrapKeyboardSkillSelection)
+            {
+                while (nextIndex < 0)
+                    nextIndex += skillSlots.Count;
+
+                while (nextIndex >= skillSlots.Count)
+                    nextIndex -= skillSlots.Count;
+            }
+            else if (nextIndex < 0 || nextIndex >= skillSlots.Count)
+            {
+                return;
+            }
+
+            SkillListSlotUI slot = skillSlots[nextIndex];
+
+            if (slot != null && slot.CanSelectByKeyboard)
+            {
+                SelectSkillSlotByKeyboard(nextIndex, slot);
+                return;
+            }
+
+            nextIndex += direction;
+            safety++;
+        }
+    }
+
+    private void SelectSkillSlotByKeyboard(int slotIndex, SkillListSlotUI slot)
+    {
+        if (slot == null || !slot.CanSelectByKeyboard)
+            return;
+
+        keyboardSelectedSkillIndex = slotIndex;
+        InventoryPanelSelectionResetter.ResetAllSelectionsExcept(this);
+        selectedSkillSlot = slot;
+        ApplySkillSlotSelectionVisuals();
+        ShowSkillDetail(slot.DetailText, slot.SlotRectTransform);
+        ShowSkillHoverRangePreview(slot.SkillData);
+    }
+
+    private void UseKeyboardSelectedSkill()
+    {
+        RemoveNullSkillSlots();
+
+        SkillListSlotUI slot = selectedSkillSlot;
+
+        if (slot == null || !slot.CanSelectByKeyboard || !skillSlots.Contains(slot))
+        {
+            int startIndex = keyboardSelectedSkillIndex >= 0 ? keyboardSelectedSkillIndex : -1;
+
+            for (int i = 0; i < skillSlots.Count; i++)
+            {
+                int index = (startIndex + 1 + i) % skillSlots.Count;
+                SkillListSlotUI candidate = skillSlots[index];
+
+                if (candidate == null || !candidate.CanSelectByKeyboard)
+                    continue;
+
+                SelectSkillSlotByKeyboard(index, candidate);
+                slot = candidate;
+                break;
+            }
+        }
+
+        if (slot == null || !slot.CanSelectByKeyboard)
+            return;
+
+        IgnoreOutsideCloseForFrames(2);
+        slot.PlayKeyboardSelectSfx();
+        SelectSkill(slot.SkillId);
+        ShowSkillDetail(slot.DetailText, slot.SlotRectTransform);
+        ShowSkillHoverRangePreview(slot.SkillData);
+    }
+
+    private void RemoveNullSkillSlots()
+    {
+        for (int i = skillSlots.Count - 1; i >= 0; i--)
+        {
+            if (skillSlots[i] == null)
+                skillSlots.RemoveAt(i);
+        }
     }
 
     private void RefreshIfTimelinePreviewStateChanged()
@@ -621,12 +801,14 @@ public class SkillListPanel : MonoBehaviour
         InventoryPanelSelectionResetter.ResetAllSelectionsExcept(this);
 
         selectedSkillSlot = selectedSlot;
+        keyboardSelectedSkillIndex = selectedSlot != null ? skillSlots.IndexOf(selectedSlot) : -1;
         ApplySkillSlotSelectionVisuals();
     }
 
     public void ResetSelectionState()
     {
         selectedSkillSlot = null;
+        keyboardSelectedSkillIndex = -1;
         ApplySkillSlotSelectionVisuals();
     }
 
@@ -1008,6 +1190,7 @@ public class SkillListPanel : MonoBehaviour
     private void Clear()
     {
         selectedSkillSlot = null;
+        keyboardSelectedSkillIndex = -1;
         skillSlots.Clear();
 
         if (contentRoot == null)

@@ -36,7 +36,7 @@ public class BattleRoomLoader : MonoBehaviour
     [SerializeField] private bool openSelectedCharacterSkillListWhenInputReady = true;
 
     [Header("Keyboard Input")]
-    [SerializeField] private bool enableCharacterCycleInput = true;
+    [SerializeField] private bool enableCharacterNumberSelectInput = true;
     [SerializeField] private bool enableSkillPanelToggleInput = true;
 
     [Header("Monster Turn")]
@@ -61,6 +61,7 @@ public class BattleRoomLoader : MonoBehaviour
 
     private readonly List<MonsterUnit> spawnedMonsterUnits = new();
     private readonly List<PlayerHUDSlot> playerHudSlots = new();
+    private readonly List<PlayerHUDSlot> playerHudNumberOrder = new();
     private CharacterRuntimeData selectedPlayerRuntime;
     private Coroutine openSelectedSkillListWhenReadyRoutine;
     private Coroutine loadRoutine;
@@ -103,7 +104,7 @@ public class BattleRoomLoader : MonoBehaviour
     private void Update()
     {
         HandleSkillPanelToggleInput();
-        HandleCharacterCycleInput();
+        HandleCharacterNumberSelectInput();
     }
 
     private void HandleSkillPanelToggleInput()
@@ -131,14 +132,9 @@ public class BattleRoomLoader : MonoBehaviour
         ToggleSkillListForSelectedPlayer();
     }
 
-    private void HandleCharacterCycleInput()
+    private void HandleCharacterNumberSelectInput()
     {
-        if (!enableCharacterCycleInput)
-            return;
-
-        EnsureSkillListPanel();
-
-        if (skillListPanel == null || !skillListPanel.IsOpen())
+        if (!enableCharacterNumberSelectInput)
             return;
 
         if (IsTypingInputFieldSelected())
@@ -150,14 +146,43 @@ public class BattleRoomLoader : MonoBehaviour
         if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
             return;
 
-        if (Input.GetKeyDown(KeyCode.D))
-        {
-            SelectAdjacentPlayerCharacter(1);
-        }
-        else if (Input.GetKeyDown(KeyCode.A))
-        {
-            SelectAdjacentPlayerCharacter(-1);
-        }
+        int characterIndex = GetPressedCharacterNumberIndex();
+
+        if (characterIndex < 0)
+            return;
+
+        SelectPlayerCharacterByNumberIndex(characterIndex);
+    }
+
+    private int GetPressedCharacterNumberIndex()
+    {
+        if (Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Keypad1))
+            return 0;
+
+        if (Input.GetKeyDown(KeyCode.Alpha2) || Input.GetKeyDown(KeyCode.Keypad2))
+            return 1;
+
+        if (Input.GetKeyDown(KeyCode.Alpha3) || Input.GetKeyDown(KeyCode.Keypad3))
+            return 2;
+
+        return -1;
+    }
+
+    private void SelectPlayerCharacterByNumberIndex(int characterIndex)
+    {
+        RemoveNullPlayerHudSlots();
+        RemoveNullPlayerHudNumberOrder();
+
+        if (characterIndex < 0 || characterIndex >= playerHudNumberOrder.Count)
+            return;
+
+        PlayerHUDSlot hud = playerHudNumberOrder[characterIndex];
+
+        if (hud == null || hud.BoundRuntime == null)
+            return;
+
+        RectTransform hudRect = hud.GetComponent<RectTransform>();
+        OpenSkillListForPlayer(hud.BoundRuntime, hudRect);
     }
 
     private void ToggleSkillListForSelectedPlayer()
@@ -292,6 +317,15 @@ public class BattleRoomLoader : MonoBehaviour
         {
             if (playerHudSlots[i] == null)
                 playerHudSlots.RemoveAt(i);
+        }
+    }
+
+    private void RemoveNullPlayerHudNumberOrder()
+    {
+        for (int i = playerHudNumberOrder.Count - 1; i >= 0; i--)
+        {
+            if (playerHudNumberOrder[i] == null)
+                playerHudNumberOrder.RemoveAt(i);
         }
     }
 
@@ -624,6 +658,7 @@ public class BattleRoomLoader : MonoBehaviour
     private void SpawnPlayersAndHUD()
     {
         playerHudSlots.Clear();
+        playerHudNumberOrder.Clear();
         selectedPlayerRuntime = null;
 
         if (unitSpawner == null)
@@ -673,6 +708,7 @@ public class BattleRoomLoader : MonoBehaviour
         hud.Bind(runtimeData);
         hud.OnClicked += OnPlayerHudClicked;
         playerHudSlots.Add(hud);
+        playerHudNumberOrder.Add(hud);
 
         RegisterPlayerHudAsSkillListKeepOpenRoot(hud);
     }
@@ -983,6 +1019,8 @@ public class BattleRoomLoader : MonoBehaviour
             }
         }
 
+        RefreshMonsterDisplayNames();
+
         if (!planMonsterTurns)
             return;
 
@@ -1166,6 +1204,7 @@ public class BattleRoomLoader : MonoBehaviour
         }
 
         playerHudSlots.Clear();
+        playerHudNumberOrder.Clear();
     }
 
     private void ClearMonsterHUDSlots()
@@ -1207,6 +1246,8 @@ public class BattleRoomLoader : MonoBehaviour
 
         if (!spawnedMonsterUnits.Contains(monsterUnit))
             spawnedMonsterUnits.Add(monsterUnit);
+
+        RefreshMonsterDisplayNames();
     }
 
     public void UnregisterRuntimeMonster(MonsterUnit monsterUnit)
@@ -1215,6 +1256,69 @@ public class BattleRoomLoader : MonoBehaviour
             return;
 
         spawnedMonsterUnits.Remove(monsterUnit);
+        RefreshMonsterDisplayNames();
+    }
+
+    private void RefreshMonsterDisplayNames()
+    {
+        Dictionary<string, List<MonsterUnit>> monstersById = new Dictionary<string, List<MonsterUnit>>();
+
+        for (int i = 0; i < spawnedMonsterUnits.Count; i++)
+        {
+            MonsterUnit monsterUnit = spawnedMonsterUnits[i];
+            if (monsterUnit == null || monsterUnit.RuntimeData == null)
+                continue;
+
+            string monsterId = monsterUnit.RuntimeData.MonsterId;
+            if (string.IsNullOrWhiteSpace(monsterId))
+                monsterId = monsterUnit.RuntimeData.Name;
+
+            if (string.IsNullOrWhiteSpace(monsterId))
+                continue;
+
+            if (!monstersById.TryGetValue(monsterId, out List<MonsterUnit> sameMonsters))
+            {
+                sameMonsters = new List<MonsterUnit>();
+                monstersById.Add(monsterId, sameMonsters);
+            }
+
+            sameMonsters.Add(monsterUnit);
+        }
+
+        foreach (KeyValuePair<string, List<MonsterUnit>> pair in monstersById)
+        {
+            List<MonsterUnit> sameMonsters = pair.Value;
+            if (sameMonsters == null)
+                continue;
+
+            bool useSuffix = sameMonsters.Count > 1;
+            for (int i = 0; i < sameMonsters.Count; i++)
+            {
+                MonsterUnit monsterUnit = sameMonsters[i];
+                if (monsterUnit == null || monsterUnit.RuntimeData == null)
+                    continue;
+
+                string suffix = useSuffix ? GetMonsterDisplaySuffix(i) : string.Empty;
+                monsterUnit.RuntimeData.SetDisplaySuffix(suffix);
+                monsterUnit.RefreshRuntimeDisplayName();
+            }
+        }
+    }
+
+    private static string GetMonsterDisplaySuffix(int index)
+    {
+        index = Mathf.Max(0, index);
+
+        string suffix = string.Empty;
+        do
+        {
+            int remainder = index % 26;
+            suffix = (char)('A' + remainder) + suffix;
+            index = (index / 26) - 1;
+        }
+        while (index >= 0);
+
+        return suffix;
     }
 
     private void EnsureTurnExecutor()

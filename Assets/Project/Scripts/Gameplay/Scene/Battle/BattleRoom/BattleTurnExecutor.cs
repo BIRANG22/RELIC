@@ -49,6 +49,7 @@ public class BattleTurnExecutor : MonoBehaviour
     private bool isMonsterPlanReady;
     private bool isPlayerInputReady;
     private bool isExecuting;
+    private Coroutine executeTurnCoroutine;
     private int playerTurnNumber = 1;
 
     private readonly BattleUniqueResourceService uniqueResourceService = new();
@@ -101,6 +102,37 @@ public class BattleTurnExecutor : MonoBehaviour
     {
         playerTurnNumber = 1;
         RefreshTurnNumberText();
+    }
+
+    public void ForceStopBattleExecutionForRoomEnd()
+    {
+        if (executeTurnCoroutine != null)
+        {
+            StopCoroutine(executeTurnCoroutine);
+            executeTurnCoroutine = null;
+        }
+
+        isExecuting = false;
+        isMonsterPlanReady = false;
+        isPlayerInputReady = false;
+
+        EnsureSkillListPanel();
+        if (skillListPanel != null)
+            skillListPanel.CloseForBattleExecution();
+
+        if (moveGhostPreview != null)
+            moveGhostPreview.ClearAll();
+
+        if (timelineController != null)
+        {
+            timelineController.SetSlotSelectionLocked(false);
+            timelineController.SetSelectedCharacterScaleFeedbackActive(false);
+            timelineController.ClearAllReservations();
+            timelineController.ResetTimelineBarsForNewBattleRoom();
+        }
+
+        RefreshEndTurnButton();
+        RefreshBattlePresentationState();
     }
 
     private void Update()
@@ -177,7 +209,7 @@ public class BattleTurnExecutor : MonoBehaviour
         timelineController.SetSelectedCharacterScaleFeedbackActive(false);
         timelineController.SetSlotSelectionLocked(true);
 
-        StartCoroutine(ExecuteTurnRoutine());
+        executeTurnCoroutine = StartCoroutine(ExecuteTurnRoutine());
     }
 
     private IEnumerator ExecuteTurnRoutine()
@@ -337,6 +369,8 @@ public class BattleTurnExecutor : MonoBehaviour
         }
         finally
         {
+            executeTurnCoroutine = null;
+
             if (timelineController != null)
                 timelineController.SetSlotSelectionLocked(false);
 

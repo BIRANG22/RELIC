@@ -83,7 +83,10 @@ public class BattleDebugKillAllMonsters : MonoBehaviour
         );
 
         if (turnExecutor != null)
-            turnExecutor.SetBattleInputReady(false);
+        {
+            turnExecutor.ForceStopBattleExecutionForRoomEnd();
+            return;
+        }
 
         SkillListPanel skillListPanel = Object.FindFirstObjectByType<SkillListPanel>(
             FindObjectsInactive.Include
