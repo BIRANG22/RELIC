@@ -121,7 +121,7 @@ public class BattleCharacterHighlightTests
     }
 
     [Test]
-    public void TimelineHoverHighlight_SortsHighlightAboveSourceAndIdleBackBehind()
+    public void TimelineHoverHighlight_SortsHighlightIdleBackAndShadowBehindSource()
     {
         BattleCharacter character = CreateCharacterWithHighlight(
             out _,
@@ -129,16 +129,21 @@ public class BattleCharacterHighlightTests
             out SpriteRenderer idleBackRenderer);
 
         SpriteRenderer sourceRenderer = CreateSourceRenderer();
+        SpriteRenderer shadowRenderer = CreateShadowRenderer();
         sourceRenderer.sortingLayerID = SortingLayer.NameToID("Default");
         sourceRenderer.sortingOrder = 7;
+        shadowRenderer.sortingLayerID = SortingLayer.NameToID("Unit");
+        shadowRenderer.sortingOrder = 99;
 
         character.SetTimelineHoverHighlight(true);
         InvokePrivate(character, "LateUpdate");
 
         Assert.That(highlightRenderer.sortingLayerID, Is.EqualTo(sourceRenderer.sortingLayerID));
-        Assert.That(highlightRenderer.sortingOrder, Is.EqualTo(sourceRenderer.sortingOrder + 1));
+        Assert.That(highlightRenderer.sortingOrder, Is.EqualTo(sourceRenderer.sortingOrder - 1));
         Assert.That(idleBackRenderer.sortingLayerID, Is.EqualTo(sourceRenderer.sortingLayerID));
         Assert.That(idleBackRenderer.sortingOrder, Is.EqualTo(sourceRenderer.sortingOrder - 1));
+        Assert.That(shadowRenderer.sortingLayerID, Is.EqualTo(sourceRenderer.sortingLayerID));
+        Assert.That(shadowRenderer.sortingOrder, Is.EqualTo(sourceRenderer.sortingOrder - 1));
     }
 
     private BattleCharacter CreateCharacterWithHighlight(
@@ -179,6 +184,13 @@ public class BattleCharacterHighlightTests
         GameObject spriteRoot = new("SpriteRoot");
         spriteRoot.transform.SetParent(characterObject.transform);
         return spriteRoot.AddComponent<SpriteRenderer>();
+    }
+
+    private SpriteRenderer CreateShadowRenderer()
+    {
+        GameObject shadow = new("Shadow");
+        shadow.transform.SetParent(characterObject.transform);
+        return shadow.AddComponent<SpriteRenderer>();
     }
 
     private Animator CreateSourceAnimator()

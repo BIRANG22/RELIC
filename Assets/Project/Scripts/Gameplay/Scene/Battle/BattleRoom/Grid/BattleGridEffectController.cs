@@ -13,6 +13,7 @@ public class BattleGridEffectController : MonoBehaviour
     [Header("View")]
     [SerializeField] private Vector3 worldOffset = new(0f, 0.05f, 0f);
     [SerializeField] private float viewScale = 1f;
+    [SerializeField] private bool overrideSortingLayer;
     [SerializeField] private string sortingLayerName = "Default";
     [SerializeField] private int sortingOrder = 1;
 
@@ -209,7 +210,7 @@ public class BattleGridEffectController : MonoBehaviour
 
             int prefabSortingOrder = renderer.sortingOrder;
 
-            if (!string.IsNullOrWhiteSpace(sortingLayerName))
+            if (overrideSortingLayer && !string.IsNullOrWhiteSpace(sortingLayerName))
                 renderer.sortingLayerName = sortingLayerName;
 
             renderer.sortingOrder = sortingOrder + prefabSortingOrder;
