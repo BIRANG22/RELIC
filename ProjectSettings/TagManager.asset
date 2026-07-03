@@ -39,17 +39,17 @@ TagManager:
   - 
   - 
   m_SortingLayers:
-  - name: Default
-    uniqueID: 0
-    locked: 0
-  - name: New Layer 1
+  - name: Background_far
     uniqueID: 3953243251
     locked: 0
-  - name: New Layer 2
+  - name: Background
     uniqueID: 2187390285
     locked: 0
-  - name: New Layer 3
+  - name: Empty
     uniqueID: 735699439
+    locked: 0
+  - name: Default
+    uniqueID: 0
     locked: 0
   - name: Unit
     uniqueID: 1597553239
