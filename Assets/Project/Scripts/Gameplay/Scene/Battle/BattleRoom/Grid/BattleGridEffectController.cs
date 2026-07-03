@@ -12,7 +12,7 @@ public class BattleGridEffectController : MonoBehaviour
 
     [Header("View")]
     [SerializeField] private Vector3 worldOffset = new(0f, 0.05f, 0f);
-    [SerializeField] private float viewScale = 0.3f;
+    [SerializeField] private float viewScale = 1f;
     [SerializeField] private string sortingLayerName = "Default";
     [SerializeField] private int sortingOrder = 1;
 

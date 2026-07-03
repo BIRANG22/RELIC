@@ -36,7 +36,7 @@ public class BattleRoomLoader : MonoBehaviour
     [SerializeField] private bool openSelectedCharacterSkillListWhenInputReady = true;
 
     [Header("Keyboard Input")]
-    [SerializeField] private bool enableCharacterCycleInput = true;
+    [SerializeField] private bool enableCharacterNumberSelectInput = true;
     [SerializeField] private bool enableSkillPanelToggleInput = true;
 
     [Header("Monster Turn")]
@@ -61,6 +61,7 @@ public class BattleRoomLoader : MonoBehaviour
 
     private readonly List<MonsterUnit> spawnedMonsterUnits = new();
     private readonly List<PlayerHUDSlot> playerHudSlots = new();
+    private readonly List<PlayerHUDSlot> playerHudNumberOrder = new();
     private CharacterRuntimeData selectedPlayerRuntime;
     private Coroutine openSelectedSkillListWhenReadyRoutine;
     private Coroutine loadRoutine;
@@ -103,7 +104,7 @@ public class BattleRoomLoader : MonoBehaviour
     private void Update()
     {
         HandleSkillPanelToggleInput();
-        HandleCharacterCycleInput();
+        HandleCharacterNumberSelectInput();
     }
 
     private void HandleSkillPanelToggleInput()
@@ -131,14 +132,9 @@ public class BattleRoomLoader : MonoBehaviour
         ToggleSkillListForSelectedPlayer();
     }
 
-    private void HandleCharacterCycleInput()
+    private void HandleCharacterNumberSelectInput()
     {
-        if (!enableCharacterCycleInput)
-            return;
-
-        EnsureSkillListPanel();
-
-        if (skillListPanel == null || !skillListPanel.IsOpen())
+        if (!enableCharacterNumberSelectInput)
             return;
 
         if (IsTypingInputFieldSelected())
@@ -150,14 +146,43 @@ public class BattleRoomLoader : MonoBehaviour
         if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
             return;
 
-        if (Input.GetKeyDown(KeyCode.D))
-        {
-            SelectAdjacentPlayerCharacter(1);
-        }
-        else if (Input.GetKeyDown(KeyCode.A))
-        {
-            SelectAdjacentPlayerCharacter(-1);
-        }
+        int characterIndex = GetPressedCharacterNumberIndex();
+
+        if (characterIndex < 0)
+            return;
+
+        SelectPlayerCharacterByNumberIndex(characterIndex);
+    }
+
+    private int GetPressedCharacterNumberIndex()
+    {
+        if (Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Keypad1))
+            return 0;
+
+        if (Input.GetKeyDown(KeyCode.Alpha2) || Input.GetKeyDown(KeyCode.Keypad2))
+            return 1;
+
+        if (Input.GetKeyDown(KeyCode.Alpha3) || Input.GetKeyDown(KeyCode.Keypad3))
+            return 2;
+
+        return -1;
+    }
+
+    private void SelectPlayerCharacterByNumberIndex(int characterIndex)
+    {
+        RemoveNullPlayerHudSlots();
+        RemoveNullPlayerHudNumberOrder();
+
+        if (characterIndex < 0 || characterIndex >= playerHudNumberOrder.Count)
+            return;
+
+        PlayerHUDSlot hud = playerHudNumberOrder[characterIndex];
+
+        if (hud == null || hud.BoundRuntime == null)
+            return;
+
+        RectTransform hudRect = hud.GetComponent<RectTransform>();
+        OpenSkillListForPlayer(hud.BoundRuntime, hudRect);
     }
 
     private void ToggleSkillListForSelectedPlayer()
@@ -292,6 +317,15 @@ public class BattleRoomLoader : MonoBehaviour
         {
             if (playerHudSlots[i] == null)
                 playerHudSlots.RemoveAt(i);
+        }
+    }
+
+    private void RemoveNullPlayerHudNumberOrder()
+    {
+        for (int i = playerHudNumberOrder.Count - 1; i >= 0; i--)
+        {
+            if (playerHudNumberOrder[i] == null)
+                playerHudNumberOrder.RemoveAt(i);
         }
     }
 
@@ -624,6 +658,7 @@ public class BattleRoomLoader : MonoBehaviour
     private void SpawnPlayersAndHUD()
     {
         playerHudSlots.Clear();
+        playerHudNumberOrder.Clear();
         selectedPlayerRuntime = null;
 
         if (unitSpawner == null)
@@ -673,6 +708,7 @@ public class BattleRoomLoader : MonoBehaviour
         hud.Bind(runtimeData);
         hud.OnClicked += OnPlayerHudClicked;
         playerHudSlots.Add(hud);
+        playerHudNumberOrder.Add(hud);
 
         RegisterPlayerHudAsSkillListKeepOpenRoot(hud);
     }
@@ -1166,6 +1202,7 @@ public class BattleRoomLoader : MonoBehaviour
         }
 
         playerHudSlots.Clear();
+        playerHudNumberOrder.Clear();
     }
 
     private void ClearMonsterHUDSlots()

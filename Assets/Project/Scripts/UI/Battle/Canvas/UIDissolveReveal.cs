@@ -33,6 +33,10 @@ public class UIDissolveReveal : MonoBehaviour
     [SerializeField] private bool enableKeyboardDebugInput;
     [SerializeField] private bool hideOnAwake = true;
     [SerializeField] private bool deactivateSelfWhenHidden = true;
+
+    [Header("Battle UI Close Policy")]
+    [SerializeField] private bool closeSkillListPanelWhenShown = true;
+    [SerializeField] private SkillListPanel skillListPanel;
     [SerializeField, Min(1)] private int gridWidth = DefaultGridWidth;
     [SerializeField, Min(1)] private int gridHeight = DefaultGridHeight;
     [SerializeField] private GameObject[] objectsEnabledWhileVisible;
@@ -273,6 +277,8 @@ public class UIDissolveReveal : MonoBehaviour
 
         try
         {
+            CloseSkillListPanelIfNeeded();
+
             if (!gameObject.activeSelf)
                 gameObject.SetActive(true);
 
@@ -313,6 +319,23 @@ public class UIDissolveReveal : MonoBehaviour
         }
 
         Play(shownReveal, hiddenReveal, true);
+    }
+
+    private void CloseSkillListPanelIfNeeded()
+    {
+        if (!closeSkillListPanelWhenShown)
+            return;
+
+        if (skillListPanel == null)
+            skillListPanel = FindFirstObjectByType<SkillListPanel>(FindObjectsInactive.Include);
+
+        if (skillListPanel == null)
+            return;
+
+        if (!skillListPanel.IsOpen())
+            return;
+
+        skillListPanel.Close();
     }
 
     public void HideImmediate()

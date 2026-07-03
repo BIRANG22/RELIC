@@ -10,5 +10,6 @@ namespace Relic.Gameplay.Data
         public int Order;
         public string SkillId;
         public string Description;
+        public string SkillInfo;
     }
 }

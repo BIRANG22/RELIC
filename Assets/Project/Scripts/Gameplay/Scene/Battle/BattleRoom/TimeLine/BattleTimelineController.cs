@@ -68,7 +68,7 @@ public class BattleTimelineController : MonoBehaviour
     [SerializeField] private bool refocusSameCharacter = false;
 
     [Header("Keyboard Input")]
-    [SerializeField] private bool enableNumberKeySlotSelection = true;
+    [SerializeField] private bool enableKeyboardSlotMoveInput = true;
     [SerializeField] private BattleTurnExecutor turnExecutor;
 
     [Header("Timeline Bar Slide")]
@@ -166,6 +166,8 @@ public class BattleTimelineController : MonoBehaviour
     private readonly List<MonsterReservedCommand>[] monsterCommandsBySlot =
         new List<MonsterReservedCommand>[5];
 
+    private readonly List<PlayerReservationHistoryEntry> playerReservationHistory = new();
+
     public int SlotCount => reserveSlots != null ? reserveSlots.Length : 0;
     public int ActiveSlotIndex => activeSlotIndex;
     public int ReservationVersion => reservationVersion;
@@ -227,13 +229,14 @@ public class BattleTimelineController : MonoBehaviour
 
     private void Update()
     {
-        HandleNumberKeySlotSelectionInput();
+        HandleKeyboardSlotMoveInput();
+        HandleKeyboardUndoReservationInput();
         HandleEndButtonHoverOutsidePolling();
     }
 
-    private void HandleNumberKeySlotSelectionInput()
+    private void HandleKeyboardSlotMoveInput()
     {
-        if (!enableNumberKeySlotSelection)
+        if (!enableKeyboardSlotMoveInput)
             return;
 
         if (!isActiveAndEnabled)
@@ -242,12 +245,64 @@ public class BattleTimelineController : MonoBehaviour
         if (IsTypingInputFieldSelected())
             return;
 
-        int slotIndex = GetPressedNumberSlotIndex();
+        int direction = 0;
 
-        if (slotIndex < 0)
+        if (Input.GetKeyDown(KeyCode.D))
+            direction = 1;
+        else if (Input.GetKeyDown(KeyCode.A))
+            direction = -1;
+
+        if (direction == 0)
             return;
 
-        if (reserveSlots == null || slotIndex >= reserveSlots.Length || reserveSlots[slotIndex] == null)
+        MoveSelectedTimelineSlot(direction);
+    }
+
+    private void HandleKeyboardUndoReservationInput()
+    {
+        if (!isActiveAndEnabled)
+            return;
+
+        if (IsTypingInputFieldSelected())
+            return;
+
+        if (!Input.GetKeyDown(KeyCode.Q))
+            return;
+
+        UndoLastPlayerReservation();
+    }
+
+    public void UndoLastPlayerReservation()
+    {
+        if (isSlotSelectionLocked)
+            return;
+
+        if (turnExecutor == null)
+            turnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
+
+        if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
+            return;
+
+        PruneInvalidPlayerReservationHistory();
+
+        if (playerReservationHistory.Count <= 0)
+        {
+            ShowBattleWarning("되돌릴 예약이 없습니다.");
+            return;
+        }
+
+        PlayerReservationHistoryEntry entry = playerReservationHistory[playerReservationHistory.Count - 1];
+        playerReservationHistory.RemoveAt(playerReservationHistory.Count - 1);
+
+        RemovePlayerReservationEntry(entry, true);
+    }
+
+    public void MoveSelectedTimelineSlot(int direction)
+    {
+        if (direction == 0)
+            return;
+
+        if (reserveSlots == null || reserveSlots.Length <= 0)
             return;
 
         if (isSlotSelectionLocked)
@@ -259,27 +314,37 @@ public class BattleTimelineController : MonoBehaviour
         if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
             return;
 
-        OnTimelineSlotClicked(slotIndex);
-    }
+        int slotCount = reserveSlots.Length;
+        int currentIndex = activeSlotIndex >= 0
+            ? activeSlotIndex
+            : Mathf.Clamp(defaultSlotIndex, 0, slotCount - 1);
 
-    private int GetPressedNumberSlotIndex()
-    {
-        if (Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Keypad1))
-            return 0;
+        int nextIndex = currentIndex + direction;
 
-        if (Input.GetKeyDown(KeyCode.Alpha2) || Input.GetKeyDown(KeyCode.Keypad2))
-            return 1;
+        while (nextIndex < 0)
+            nextIndex += slotCount;
 
-        if (Input.GetKeyDown(KeyCode.Alpha3) || Input.GetKeyDown(KeyCode.Keypad3))
-            return 2;
+        while (nextIndex >= slotCount)
+            nextIndex -= slotCount;
 
-        if (Input.GetKeyDown(KeyCode.Alpha4) || Input.GetKeyDown(KeyCode.Keypad4))
-            return 3;
+        int safety = 0;
+        while (safety < slotCount && reserveSlots[nextIndex] == null)
+        {
+            nextIndex += direction;
 
-        if (Input.GetKeyDown(KeyCode.Alpha5) || Input.GetKeyDown(KeyCode.Keypad5))
-            return 4;
+            while (nextIndex < 0)
+                nextIndex += slotCount;
 
-        return -1;
+            while (nextIndex >= slotCount)
+                nextIndex -= slotCount;
+
+            safety++;
+        }
+
+        if (reserveSlots[nextIndex] == null)
+            return;
+
+        OnTimelineSlotClicked(nextIndex);
     }
 
     private bool IsTypingInputFieldSelected()
@@ -2225,6 +2290,8 @@ public class BattleTimelineController : MonoBehaviour
             return false;
         }
 
+        RecordPlayerReservation(slotIndex, command);
+
         RecalculateAllReservedCosts();
 
         RefreshReservationSimulation();
@@ -2262,6 +2329,7 @@ public class BattleTimelineController : MonoBehaviour
         }
 
         existingMoveCommand.MergeMoveReservation(command);
+        RecordPlayerReservation(GetSlotIndexOf(slot), existingMoveCommand);
 
         RecalculateAllReservedCosts();
         RefreshReservationSimulation();
@@ -2404,7 +2472,10 @@ public class BattleTimelineController : MonoBehaviour
                 break;
 
             if (slot.RemoveCommandAt(removeIndex, out PlayerReservedCommand removedCommand))
+            {
                 RemoveReservedCosts(removedCommand);
+                RemovePlayerReservationHistoryEntries(removedCommand);
+            }
         }
 
         reservationVersion++;
@@ -2412,6 +2483,122 @@ public class BattleTimelineController : MonoBehaviour
         RefreshTimeline();
         RefreshPlayerHUDs();
         RefreshMoveGhostPreview();
+    }
+
+    private void RecordPlayerReservation(int slotIndex, PlayerReservedCommand command)
+    {
+        if (command == null)
+            return;
+
+        if (slotIndex < 0)
+            return;
+
+        RemovePlayerReservationHistoryEntries(command);
+        playerReservationHistory.Add(new PlayerReservationHistoryEntry(slotIndex, command));
+    }
+
+    private int GetSlotIndexOf(ReserveTurnSlotUI slot)
+    {
+        if (slot == null || reserveSlots == null)
+            return -1;
+
+        for (int i = 0; i < reserveSlots.Length; i++)
+        {
+            if (reserveSlots[i] == slot)
+                return i;
+        }
+
+        return -1;
+    }
+
+    private void PruneInvalidPlayerReservationHistory()
+    {
+        for (int i = playerReservationHistory.Count - 1; i >= 0; i--)
+        {
+            if (!IsPlayerReservationEntryValid(playerReservationHistory[i]))
+                playerReservationHistory.RemoveAt(i);
+        }
+    }
+
+    private bool IsPlayerReservationEntryValid(PlayerReservationHistoryEntry entry)
+    {
+        if (entry == null || entry.Command == null)
+            return false;
+
+        if (reserveSlots == null || entry.SlotIndex < 0 || entry.SlotIndex >= reserveSlots.Length)
+            return false;
+
+        ReserveTurnSlotUI slot = reserveSlots[entry.SlotIndex];
+
+        if (slot == null || slot.Commands == null)
+            return false;
+
+        for (int i = 0; i < slot.Commands.Count; i++)
+        {
+            if (slot.Commands[i] == entry.Command)
+                return true;
+        }
+
+        return false;
+    }
+
+    private void RemovePlayerReservationHistoryEntries(PlayerReservedCommand command)
+    {
+        if (command == null)
+            return;
+
+        for (int i = playerReservationHistory.Count - 1; i >= 0; i--)
+        {
+            if (playerReservationHistory[i] != null && playerReservationHistory[i].Command == command)
+                playerReservationHistory.RemoveAt(i);
+        }
+    }
+
+    private void RemovePlayerReservationHistoryEntriesInSlot(int slotIndex)
+    {
+        for (int i = playerReservationHistory.Count - 1; i >= 0; i--)
+        {
+            if (playerReservationHistory[i] != null && playerReservationHistory[i].SlotIndex == slotIndex)
+                playerReservationHistory.RemoveAt(i);
+        }
+    }
+
+    private bool RemovePlayerReservationEntry(PlayerReservationHistoryEntry entry, bool showLog)
+    {
+        if (!IsPlayerReservationEntryValid(entry))
+            return false;
+
+        ReserveTurnSlotUI slot = reserveSlots[entry.SlotIndex];
+
+        for (int i = slot.Commands.Count - 1; i >= 0; i--)
+        {
+            if (slot.Commands[i] != entry.Command)
+                continue;
+
+            bool removed = slot.RemoveCommandAt(i, out PlayerReservedCommand removedCommand);
+
+            if (!removed)
+                return false;
+
+            RemoveReservedCosts(removedCommand);
+            RemovePlayerReservationHistoryEntries(removedCommand);
+
+            if (IsMoveCommand(removedCommand))
+                RemoveFollowingMoveCommands(slot, i, removedCommand.CharacterId);
+
+            RecalculateAllReservedCosts();
+            RefreshReservationSimulation();
+            RefreshTimeline();
+            RefreshPlayerHUDs();
+            RefreshMoveGhostPreview();
+
+            if (showLog)
+                Debug.Log($"[BattleTimelineController] 마지막 예약 되돌림 / Slot:{entry.SlotIndex} / Order:{i}");
+
+            return true;
+        }
+
+        return false;
     }
 
     public int GetRemainingPlayerCommandCapacity(int slotIndex)
@@ -3143,6 +3330,7 @@ public class BattleTimelineController : MonoBehaviour
             return;
 
         RemoveReservedCosts(removedCommand);
+        RemovePlayerReservationHistoryEntries(removedCommand);
 
         if (IsMoveCommand(removedCommand))
             RemoveFollowingMoveCommands(slot, orderIndex, removedCommand.CharacterId);
@@ -3184,13 +3372,17 @@ public class BattleTimelineController : MonoBehaviour
                 continue;
 
             if (slot.RemoveCommandAt(i, out PlayerReservedCommand removedCommand))
+            {
                 RemoveReservedCosts(removedCommand);
+                RemovePlayerReservationHistoryEntries(removedCommand);
+            }
         }
     }
 
     public void ClearAllReservations()
     {
         ClearSelectedSlotSelection();
+        playerReservationHistory.Clear();
         reservationVersion++;
 
         if (reserveSlots != null)
@@ -3496,4 +3688,16 @@ public class BattleTimelineController : MonoBehaviour
 
         return null;
     }
+    private sealed class PlayerReservationHistoryEntry
+    {
+        public PlayerReservationHistoryEntry(int slotIndex, PlayerReservedCommand command)
+        {
+            SlotIndex = slotIndex;
+            Command = command;
+        }
+
+        public int SlotIndex { get; }
+        public PlayerReservedCommand Command { get; }
+    }
+
 }
