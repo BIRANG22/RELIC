@@ -120,7 +120,7 @@ public class MonsterInfoPanelUI : MonoBehaviour
             return;
         }
 
-        SetName(boundMonsterData.Name);
+        SetName(boundMonsterData.GetDisplayName());
         SetHP(boundMonsterData.CurrentHP, boundMonsterData.MaxHP);
         SetArmor(boundMonsterData.CurrentShield);
 

@@ -467,7 +467,6 @@ public class BattleRoomLoader : MonoBehaviour
 
         if (turnExecutor != null)
         {
-            turnExecutor.ForceStopBattleExecutionForRoomEnd();
             turnExecutor.ResetBattleTurnState();
             turnExecutor.SetBattleInputReady(false);
         }
@@ -1020,6 +1019,8 @@ public class BattleRoomLoader : MonoBehaviour
             }
         }
 
+        RefreshMonsterDisplayNames();
+
         if (!planMonsterTurns)
             return;
 
@@ -1245,6 +1246,8 @@ public class BattleRoomLoader : MonoBehaviour
 
         if (!spawnedMonsterUnits.Contains(monsterUnit))
             spawnedMonsterUnits.Add(monsterUnit);
+
+        RefreshMonsterDisplayNames();
     }
 
     public void UnregisterRuntimeMonster(MonsterUnit monsterUnit)
@@ -1253,6 +1256,69 @@ public class BattleRoomLoader : MonoBehaviour
             return;
 
         spawnedMonsterUnits.Remove(monsterUnit);
+        RefreshMonsterDisplayNames();
+    }
+
+    private void RefreshMonsterDisplayNames()
+    {
+        Dictionary<string, List<MonsterUnit>> monstersById = new Dictionary<string, List<MonsterUnit>>();
+
+        for (int i = 0; i < spawnedMonsterUnits.Count; i++)
+        {
+            MonsterUnit monsterUnit = spawnedMonsterUnits[i];
+            if (monsterUnit == null || monsterUnit.RuntimeData == null)
+                continue;
+
+            string monsterId = monsterUnit.RuntimeData.MonsterId;
+            if (string.IsNullOrWhiteSpace(monsterId))
+                monsterId = monsterUnit.RuntimeData.Name;
+
+            if (string.IsNullOrWhiteSpace(monsterId))
+                continue;
+
+            if (!monstersById.TryGetValue(monsterId, out List<MonsterUnit> sameMonsters))
+            {
+                sameMonsters = new List<MonsterUnit>();
+                monstersById.Add(monsterId, sameMonsters);
+            }
+
+            sameMonsters.Add(monsterUnit);
+        }
+
+        foreach (KeyValuePair<string, List<MonsterUnit>> pair in monstersById)
+        {
+            List<MonsterUnit> sameMonsters = pair.Value;
+            if (sameMonsters == null)
+                continue;
+
+            bool useSuffix = sameMonsters.Count > 1;
+            for (int i = 0; i < sameMonsters.Count; i++)
+            {
+                MonsterUnit monsterUnit = sameMonsters[i];
+                if (monsterUnit == null || monsterUnit.RuntimeData == null)
+                    continue;
+
+                string suffix = useSuffix ? GetMonsterDisplaySuffix(i) : string.Empty;
+                monsterUnit.RuntimeData.SetDisplaySuffix(suffix);
+                monsterUnit.RefreshRuntimeDisplayName();
+            }
+        }
+    }
+
+    private static string GetMonsterDisplaySuffix(int index)
+    {
+        index = Mathf.Max(0, index);
+
+        string suffix = string.Empty;
+        do
+        {
+            int remainder = index % 26;
+            suffix = (char)('A' + remainder) + suffix;
+            index = (index / 26) - 1;
+        }
+        while (index >= 0);
+
+        return suffix;
     }
 
     private void EnsureTurnExecutor()

@@ -10,6 +10,7 @@ namespace Relic.Gameplay.Data
         public string RuntimeId;
         public string MonsterId;
         public string Name;
+        public string DisplayName;
         public string Grade;
 
         [FormerlySerializedAs("MaxHp")]
@@ -48,6 +49,7 @@ namespace Relic.Gameplay.Data
 
             MonsterId = masterData.MonsterId;
             Name = masterData.Name;
+            DisplayName = masterData.Name;
             Grade = masterData.Grade;
 
             MaxHP = masterData.HP;
@@ -62,6 +64,28 @@ namespace Relic.Gameplay.Data
 
             TurnCount = 0;
             InitializePossibleSkills(masterData);
+        }
+
+
+        public string GetDisplayName()
+        {
+            if (!string.IsNullOrWhiteSpace(DisplayName))
+                return DisplayName;
+
+            return string.IsNullOrWhiteSpace(Name) ? string.Empty : Name;
+        }
+
+        public void SetDisplaySuffix(string suffix)
+        {
+            string baseName = string.IsNullOrWhiteSpace(Name) ? MonsterId : Name;
+
+            if (string.IsNullOrWhiteSpace(suffix))
+            {
+                DisplayName = baseName;
+                return;
+            }
+
+            DisplayName = $"{baseName}_{suffix.Trim()}";
         }
 
         public void TakeDamage(int damage)

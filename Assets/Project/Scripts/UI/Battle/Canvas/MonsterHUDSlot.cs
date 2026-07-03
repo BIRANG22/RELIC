@@ -151,7 +151,7 @@ public class MonsterHUDSlot : MonoBehaviour
         }
 
         if (nameText != null)
-            nameText.text = boundRuntime.Name;
+            nameText.text = boundRuntime.GetDisplayName();
 
         RefreshBar(hpFill, hpValueText, boundRuntime.CurrentHP, boundRuntime.MaxHP);
         RefreshShield(boundRuntime.CurrentShield, boundRuntime.MaxHP);
