@@ -728,6 +728,15 @@ public class SkillListPanel : MonoBehaviour
     public void Refresh()
     {
         UpdateRenderedTimelinePreviewState();
+
+        // 타임라인 등록이 끝나면 예약 비용 표시를 갱신하기 위해 슬롯을 다시 그린다.
+        // 이때 키보드로 선택해 둔 스킬까지 사라지면 같은 스킬을 여러 번 등록할 때
+        // 매번 W/S로 다시 이동해야 하므로, 갱신 전 선택 스킬을 기억했다가 다시 선택한다.
+        string previouslySelectedSkillId = selectedSkillSlot != null
+            ? selectedSkillSlot.SkillId
+            : string.Empty;
+        int previouslySelectedSkillIndex = keyboardSelectedSkillIndex;
+
         Clear();
 
         if (currentRuntime == null)
@@ -738,6 +747,52 @@ public class SkillListPanel : MonoBehaviour
         AddSkillSlot(GetEquippedSkillId(2), true);
         AddSkillSlot(GetEquippedSkillId(3), true);
         AddSkillSlot(currentRuntime.UniqueSkillId, true);
+
+        RestoreSelectionAfterRefresh(previouslySelectedSkillId, previouslySelectedSkillIndex);
+    }
+
+    private void RestoreSelectionAfterRefresh(string skillId, int fallbackIndex)
+    {
+        if (string.IsNullOrWhiteSpace(skillId) || skillSlots.Count <= 0)
+            return;
+
+        SkillListSlotUI restoredSlot = null;
+        int restoredIndex = -1;
+
+        for (int i = 0; i < skillSlots.Count; i++)
+        {
+            SkillListSlotUI slot = skillSlots[i];
+
+            if (slot == null || !slot.CanSelectByKeyboard)
+                continue;
+
+            if (slot.SkillId == skillId)
+            {
+                restoredSlot = slot;
+                restoredIndex = i;
+                break;
+            }
+        }
+
+        if (restoredSlot == null && fallbackIndex >= 0 && fallbackIndex < skillSlots.Count)
+        {
+            SkillListSlotUI fallbackSlot = skillSlots[fallbackIndex];
+
+            if (fallbackSlot != null && fallbackSlot.CanSelectByKeyboard)
+            {
+                restoredSlot = fallbackSlot;
+                restoredIndex = fallbackIndex;
+            }
+        }
+
+        if (restoredSlot == null)
+            return;
+
+        selectedSkillSlot = restoredSlot;
+        keyboardSelectedSkillIndex = restoredIndex;
+        ApplySkillSlotSelectionVisuals();
+        ShowSkillDetail(restoredSlot.DetailText, restoredSlot.SlotRectTransform);
+        ShowSkillHoverRangePreview(restoredSlot.SkillData);
     }
 
     private string GetEquippedSkillId(int index)
