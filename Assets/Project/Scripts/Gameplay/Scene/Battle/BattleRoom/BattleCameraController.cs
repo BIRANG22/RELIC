@@ -14,7 +14,7 @@ public class BattleCameraController : MonoBehaviour
     [SerializeField] private Vector2 zoomOffset = new Vector2(0f, 0.35f);
     [SerializeField] private bool usePositionZZoom = true;
     [SerializeField] private bool useFixedZoomZPosition = true;
-    [SerializeField] private float zoomZPosition = -15f;
+    [SerializeField] private float zoomZPosition = -13f;
     [SerializeField] private float zoomZOffset = 5f;
     [SerializeField] private bool useOrthographicSizeZoom = false;
     [SerializeField] private bool clampZoomPosition = false;
@@ -22,6 +22,8 @@ public class BattleCameraController : MonoBehaviour
 
     [Header("Damage Impact")]
     [SerializeField] private bool enableDamageImpact = true;
+    [SerializeField] private bool enableDamageImpactRotation = true;
+    [SerializeField] private float[] damageImpactRotationZPattern = { 0f, -1f, 1f };
     [SerializeField] private float impactZoomAmount = 0f;
     [SerializeField] private float impactZoomZOffset = 0f;
     [SerializeField] private float impactZoomInDuration = 0f;
@@ -37,6 +39,13 @@ public class BattleCameraController : MonoBehaviour
     [SerializeField] private float characterSelectionFocusDuration = 0.55f;
     [SerializeField] private float minimumCharacterSelectionFocusDuration = 0.55f;
     [SerializeField] private Vector2 characterSelectionFocusOffset = new Vector2(0f, 0.25f);
+    [SerializeField] private bool useGridBasedCharacterSelectionFocusOffset = true;
+    [SerializeField] private int characterSelectionFocusGridColumnCount = 7;
+    [SerializeField] private int characterSelectionFocusGridRowCount = 5;
+    [SerializeField] private Vector2 characterSelectionFocusLeftTopOffset = new Vector2(-1f, 0.5f);
+    [SerializeField] private Vector2 characterSelectionFocusLeftBottomOffset = new Vector2(-1f, -1f);
+    [SerializeField] private Vector2 characterSelectionFocusRightTopOffset = new Vector2(1f, 0.5f);
+    [SerializeField] private Vector2 characterSelectionFocusRightBottomOffset = new Vector2(1f, -1f);
     [SerializeField] private bool useCharacterSelectionFocusZ = true;
     [SerializeField] private bool useFixedCharacterSelectionFocusZ = true;
     [SerializeField] private float characterSelectionFocusZPosition = -17.5f;
@@ -92,6 +101,7 @@ public class BattleCameraController : MonoBehaviour
     private Vector3 lastImpactAppliedPosition;
     private bool isImpactHitStopActive;
     private float previousTimeScale = 1f;
+    private int damageImpactRotationIndex;
 
     public bool IsCombatZoomActive => hasActiveCombatZoom;
     public bool IsMonsterInfoFocusActive => hasActiveMonsterInfoFocus;
@@ -156,6 +166,7 @@ public class BattleCameraController : MonoBehaviour
             yield break;
 
         hasActiveCombatZoom = true;
+        ResetDamageImpactRotationSequence();
 
         yield return ZoomToPosition(attacker.position);
     }
@@ -225,6 +236,11 @@ public class BattleCameraController : MonoBehaviour
 
     public void FocusOnCharacterSelection(Transform target)
     {
+        FocusOnCharacterSelection(target, -1);
+    }
+
+    public void FocusOnCharacterSelection(Transform target, int gridIndex)
+    {
         if (!enableCharacterSelectionFocus)
             return;
 
@@ -243,9 +259,25 @@ public class BattleCameraController : MonoBehaviour
 
         ClearImpactOffset();
 
-        Vector3 targetPos = target.position;
-        targetPos.x += characterSelectionFocusOffset.x;
-        targetPos.y += characterSelectionFocusOffset.y;
+        Vector2 gridFocusOffset = GetCharacterSelectionGridFocusOffset(gridIndex);
+
+        // 선택 캐릭터 포커스는 캐릭터의 월드 좌표를 기준으로 잡지 않는다.
+        // 기본 카메라 위치를 기준으로 그리드 번호에 따른 고정 포커스 좌표만 적용한다.
+        // 기본 카메라가 (0, 0, -20)이라면 선택 포커스 좌표는 아래 범위 안에서 움직인다.
+        // X: -1 ~ 1, Y: -1 ~ 0.5, Z: -17.5
+        Vector3 targetPos = defaultPosition;
+
+        if (useGridBasedCharacterSelectionFocusOffset && gridIndex >= 0)
+        {
+            targetPos.x = defaultPosition.x + gridFocusOffset.x;
+            targetPos.y = defaultPosition.y + gridFocusOffset.y;
+        }
+        else
+        {
+            targetPos.x += characterSelectionFocusOffset.x;
+            targetPos.y += characterSelectionFocusOffset.y;
+        }
+
         targetPos.z = useCharacterSelectionFocusZ
             ? GetCharacterSelectionFocusZPosition()
             : targetCamera.transform.position.z;
@@ -380,8 +412,10 @@ public class BattleCameraController : MonoBehaviour
         ClearImpactOffset();
 
         targetCamera.transform.position = defaultPosition;
+        targetCamera.transform.rotation = Quaternion.identity;
         targetCamera.orthographicSize = defaultSize;
         hasActiveCombatZoom = false;
+        ResetDamageImpactRotationSequence();
         hasActiveMonsterInfoFocus = false;
     }
 
@@ -398,9 +432,13 @@ public class BattleCameraController : MonoBehaviour
 
         ClearImpactOffset();
 
+        ApplyCameraRotationZ(0f);
+        ResetDamageImpactRotationSequence();
+
         routine = StartCoroutine(MoveCamera(defaultPosition, defaultSize, returnDuration, false, true));
         yield return routine;
 
+        ApplyCameraRotationZ(0f);
         hasActiveCombatZoom = false;
         hasActiveMonsterInfoFocus = false;
     }
@@ -409,6 +447,8 @@ public class BattleCameraController : MonoBehaviour
     {
         if (targetCamera == null || !enableDamageImpact)
             yield break;
+
+        ApplyNextDamageImpactRotation();
 
         if (routine != null)
             yield return routine;
@@ -431,6 +471,44 @@ public class BattleCameraController : MonoBehaviour
         restoredPosition.z = baseZ;
         targetCamera.transform.position = restoredPosition;
         ClearImpactOffset();
+    }
+
+
+    private void ApplyNextDamageImpactRotation()
+    {
+        if (targetCamera == null || !enableDamageImpactRotation)
+            return;
+
+        float rotationZ = 0f;
+
+        if (damageImpactRotationZPattern != null && damageImpactRotationZPattern.Length > 0)
+        {
+            int patternIndex = Mathf.Clamp(damageImpactRotationIndex, 0, damageImpactRotationZPattern.Length - 1);
+            rotationZ = damageImpactRotationZPattern[patternIndex];
+
+            // 3회 이상 연속 타격이 이어지면 마지막 두 값(-1, 1)을 번갈아 사용한다.
+            if (damageImpactRotationIndex >= damageImpactRotationZPattern.Length && damageImpactRotationZPattern.Length >= 2)
+            {
+                int alternateIndex = damageImpactRotationZPattern.Length - 2 + ((damageImpactRotationIndex - damageImpactRotationZPattern.Length) % 2);
+                rotationZ = damageImpactRotationZPattern[alternateIndex];
+            }
+        }
+
+        ApplyCameraRotationZ(rotationZ);
+        damageImpactRotationIndex++;
+    }
+
+    private void ApplyCameraRotationZ(float rotationZ)
+    {
+        if (targetCamera == null)
+            return;
+
+        targetCamera.transform.rotation = Quaternion.Euler(0f, 0f, rotationZ);
+    }
+
+    private void ResetDamageImpactRotationSequence()
+    {
+        damageImpactRotationIndex = 0;
     }
 
     private IEnumerator MoveCamera(
@@ -659,6 +737,37 @@ public class BattleCameraController : MonoBehaviour
             return characterSelectionFocusZPosition;
 
         return defaultPosition.z + characterSelectionFocusZOffset;
+    }
+
+    private Vector2 GetCharacterSelectionGridFocusOffset(int gridIndex)
+    {
+        if (!useGridBasedCharacterSelectionFocusOffset || gridIndex < 0)
+            return Vector2.zero;
+
+        int columnCount = Mathf.Max(1, characterSelectionFocusGridColumnCount);
+        int rowCount = Mathf.Max(1, characterSelectionFocusGridRowCount);
+        int maxIndex = columnCount * rowCount - 1;
+
+        if (gridIndex > maxIndex)
+            return Vector2.zero;
+
+        int column = gridIndex / rowCount;
+        int row = gridIndex % rowCount;
+
+        float horizontalT = columnCount <= 1 ? 0f : Mathf.Clamp01(column / (float)(columnCount - 1));
+        float verticalT = rowCount <= 1 ? 0f : Mathf.Clamp01(row / (float)(rowCount - 1));
+
+        Vector2 topOffset = Vector2.Lerp(
+            characterSelectionFocusLeftTopOffset,
+            characterSelectionFocusRightTopOffset,
+            horizontalT);
+
+        Vector2 bottomOffset = Vector2.Lerp(
+            characterSelectionFocusLeftBottomOffset,
+            characterSelectionFocusRightBottomOffset,
+            horizontalT);
+
+        return Vector2.Lerp(topOffset, bottomOffset, verticalT);
     }
 
     private float GetMonsterInfoFocusZPosition()
@@ -890,6 +999,8 @@ public class BattleCameraController : MonoBehaviour
         monsterInfoFocusSideOffset = Mathf.Max(0f, monsterInfoFocusSideOffset);
         monsterInfoFocusZOffset = Mathf.Max(0f, monsterInfoFocusZOffset);
         monsterInfoFocusOrthographicSize = Mathf.Max(0.1f, monsterInfoFocusOrthographicSize);
+        characterSelectionFocusGridColumnCount = Mathf.Max(1, characterSelectionFocusGridColumnCount);
+        characterSelectionFocusGridRowCount = Mathf.Max(1, characterSelectionFocusGridRowCount);
     }
 #endif
 }

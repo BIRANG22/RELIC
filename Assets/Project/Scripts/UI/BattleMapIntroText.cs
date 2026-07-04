@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using TMPro;
 using UnityEngine;
 
@@ -29,7 +29,7 @@ public class BattleMapIntroText : MonoBehaviour
 
     [Header("Text")]
     [SerializeField] private TMP_Text introText;
-    [SerializeField, TextArea(2, 5)] private string message = "ÀüÅõ Áö¿ª ÁøÀÔ";
+    [SerializeField, TextArea(2, 5)] private string message = "ì „íˆ¬ ì§€ì—­ ì§„ì…";
 
     [Header("Image")]
     [SerializeField] private GameObject introImage;
@@ -41,7 +41,7 @@ public class BattleMapIntroText : MonoBehaviour
     [SerializeField] private bool ignorePlayOnStart = true;
     [SerializeField] private float startDelay = 0.2f;
     [SerializeField] private float fadeInDuration = 0.25f;
-    [SerializeField] private float stayDuration = 1.2f;
+    [SerializeField] private float stayDuration = 0.5f;
     [SerializeField] private float fadeOutDuration = 0.35f;
 
     [Header("Motion")]
@@ -84,7 +84,7 @@ public class BattleMapIntroText : MonoBehaviour
 
         if (target == null)
         {
-            Debug.LogWarning($"[BattleMapIntroText] BattleMapIntroText¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù. Message: {text}");
+            Debug.LogWarning($"[BattleMapIntroText] BattleMapIntroTextë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤. Message: {text}");
             return;
         }
 
@@ -97,7 +97,7 @@ public class BattleMapIntroText : MonoBehaviour
 
         if (target == null)
         {
-            Debug.LogWarning($"[BattleMapIntroText] BattleMapIntroText¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù. Message: {text}");
+            Debug.LogWarning($"[BattleMapIntroText] BattleMapIntroTextë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤. Message: {text}");
             yield break;
         }
 
@@ -116,7 +116,7 @@ public class BattleMapIntroText : MonoBehaviour
 
         if (introText == null)
         {
-            Debug.LogWarning("[BattleMapIntroText] Intro Text°¡ ¿¬°áµÇ¾î ÀÖÁö ¾Ê½À´Ï´Ù.", this);
+            Debug.LogWarning("[BattleMapIntroText] Intro Textê°€ ì—°ê²°ë˜ì–´ ìˆì§€ ì•ŠìŠµë‹ˆë‹¤.", this);
             return;
         }
 
@@ -134,7 +134,7 @@ public class BattleMapIntroText : MonoBehaviour
 
         if (introText == null)
         {
-            Debug.LogWarning("[BattleMapIntroText] Intro Text°¡ ¿¬°áµÇ¾î ÀÖÁö ¾Ê½À´Ï´Ù.", this);
+            Debug.LogWarning("[BattleMapIntroText] Intro Textê°€ ì—°ê²°ë˜ì–´ ìˆì§€ ì•ŠìŠµë‹ˆë‹¤.", this);
             yield break;
         }
 

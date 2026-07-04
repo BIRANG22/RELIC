@@ -470,16 +470,16 @@ public class BattleTimelineController : MonoBehaviour
         if (cameraController == null)
             return;
 
-        Transform focusTarget = FindBattleCharacterTransform(runtimeData.CharacterId);
+        BattleCharacter focusCharacter = FindBattleCharacter(runtimeData.CharacterId);
 
-        if (focusTarget == null)
+        if (focusCharacter == null)
             return;
 
-        cameraController.FocusOnCharacterSelection(focusTarget);
+        cameraController.FocusOnCharacterSelection(focusCharacter.transform, focusCharacter.CurrentGridIndex);
         lastCameraFocusedCharacterId = runtimeData.CharacterId;
     }
 
-    private Transform FindBattleCharacterTransform(string characterId)
+    private BattleCharacter FindBattleCharacter(string characterId)
     {
         if (string.IsNullOrWhiteSpace(characterId))
             return null;
@@ -499,7 +499,7 @@ public class BattleTimelineController : MonoBehaviour
             if (character.CharacterId != characterId)
                 continue;
 
-            return character.transform;
+            return character;
         }
 
         return null;
