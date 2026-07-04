@@ -16,7 +16,7 @@ public class BattleSceneController : MonoBehaviour
     [SerializeField] private string startRoomIntroMessage = "수상한 자와 조우";
     [SerializeField] private string battleRoomIntroMessage = "전투 시작";
     [SerializeField] private string restRoomIntroMessage = "휴식 구역";
-    [SerializeField] private string eventRoomIntroMessage = "휴식 구역";
+    [SerializeField] private string eventRoomIntroMessage = "낡은 보관함";
     [SerializeField] private bool playMapIntroOnStart = true;
     [SerializeField] private bool playBattleRoomIntroFromSceneController = false;
 

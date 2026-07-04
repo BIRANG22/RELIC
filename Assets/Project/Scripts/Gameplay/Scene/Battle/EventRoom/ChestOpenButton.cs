@@ -15,8 +15,13 @@ public class ChestOpenButton : MonoBehaviour
     }
 
     public event Action Opened;
+    public event Action<string> RewardPointerEntered;
+    public event Action RewardPointerExited;
+    public event Action<string> RewardClaimed;
 
     public bool IsOpened => isOpened;
+    public bool IsRewardGranted => isRewardGranted;
+    public bool IsAwaitingRewardSelection => isOpened && hasSelectedReward && !isRewardGranted;
 
     [Header("상자 등급")]
     [SerializeField] private ChestGrade chestGrade = ChestGrade.Grade1;
@@ -63,12 +68,12 @@ public class ChestOpenButton : MonoBehaviour
 
     [Header("VFX 개별 월드 프록시")]
     [SerializeField] private bool useIndividualWorldVfxProxy = true;
-    [Min(1)] [SerializeField] private int vfxRenderTextureWidth = 512;
-    [Min(1)] [SerializeField] private int vfxRenderTextureHeight = 512;
-    [Min(0.01f)] [SerializeField] private float vfxRenderCameraOrthographicSize = 5f;
-    [Min(0.01f)] [SerializeField] private float vfxProxyWorldHeight = 10f;
+    [Min(1)][SerializeField] private int vfxRenderTextureWidth = 512;
+    [Min(1)][SerializeField] private int vfxRenderTextureHeight = 512;
+    [Min(0.01f)][SerializeField] private float vfxRenderCameraOrthographicSize = 5f;
+    [Min(0.01f)][SerializeField] private float vfxProxyWorldHeight = 10f;
     [SerializeField] private Vector3 vfxProxyWorldOffset = Vector3.zero;
-    [Min(0.01f)] [SerializeField] private float vfxProxyYMultiplier = 100f;
+    [Min(0.01f)][SerializeField] private float vfxProxyYMultiplier = 100f;
 
     [Header("보상 아이템 오브젝트")]
     [Tooltip("레거시용 수동 보상 아이템 오브젝트입니다. 비워두면 선택된 유물 아이콘으로 런타임 생성합니다.")]
@@ -152,6 +157,86 @@ public class ChestOpenButton : MonoBehaviour
 
         StopAndHideAllStepVfx();
         StopAndHideVfx(openCompleteVfx);
+    }
+
+    private void OnEnable()
+    {
+        ResetForNewEventRoomEntry();
+    }
+
+    public void ResetForNewEventRoomEntry()
+    {
+        StopRunningCoroutinesForReset();
+
+        currentClickCount = 0;
+        requiredClickCount = GetRequiredClickCount(chestGrade);
+
+        isOpened = false;
+        isOpening = false;
+        isPreviewPlaying = false;
+        isClickCooling = false;
+        hasSelectedReward = false;
+        isRewardGranted = false;
+        selectedReward = default;
+        RewardPointerExited?.Invoke();
+
+        if (clunkTarget != null)
+        {
+            originalRotation = clunkTarget.localRotation;
+            clunkTarget.localRotation = originalRotation;
+        }
+
+        ResetRewardItemObjectForNewEntry();
+        InitializeChestSprites();
+
+        StopAndHideAllStepVfx();
+        StopAndHideVfx(openCompleteVfx);
+        CleanupSpawnedVfxObjects();
+        CleanupSpawnedVfxHandles();
+    }
+
+    private void StopRunningCoroutinesForReset()
+    {
+        if (clunkCoroutine != null)
+        {
+            StopCoroutine(clunkCoroutine);
+            clunkCoroutine = null;
+        }
+
+        if (clickCooldownCoroutine != null)
+        {
+            StopCoroutine(clickCooldownCoroutine);
+            clickCooldownCoroutine = null;
+        }
+
+        if (rewardItemAnimationCoroutine != null)
+        {
+            StopCoroutine(rewardItemAnimationCoroutine);
+            rewardItemAnimationCoroutine = null;
+        }
+    }
+
+    private void ResetRewardItemObjectForNewEntry()
+    {
+        if (rewardItemWasRuntimeCreated)
+        {
+            if (rewardItemObject != null)
+                Destroy(rewardItemObject);
+
+            rewardItemObject = null;
+            rewardItemTransform = null;
+            rewardItemWasRuntimeCreated = false;
+            return;
+        }
+
+        if (rewardItemObject == null)
+            return;
+
+        rewardItemTransform = rewardItemObject.transform;
+        rewardItemTransform.localPosition = rewardItemOriginalLocalPosition;
+        rewardItemTransform.localScale = rewardItemOriginalLocalScale;
+        SetRewardItemInteractable(false);
+        rewardItemObject.SetActive(false);
     }
 
     private void InitializeChestSprites()
@@ -353,7 +438,6 @@ public class ChestOpenButton : MonoBehaviour
 
         isOpening = true;
 
-        GrantSelectedReward();
         EnsureRewardItemObject();
         PlayOpenCompleteVfx();
 
@@ -363,9 +447,12 @@ public class ChestOpenButton : MonoBehaviour
         StartCoroutine(OpenAnimationRoutine());
     }
 
-    private void GrantSelectedReward()
+    public void ClaimSelectedReward()
     {
-        if (!useRandomRelicReward || !hasSelectedReward || isRewardGranted)
+        if (!isOpened || isOpening)
+            return;
+
+        if (!useRandomRelicReward || !hasSelectedReward || isRewardGranted || !selectedReward.IsValid)
             return;
 
         if (!ChestRelicRewardService.GrantReward(DataManager.Instance, selectedReward))
@@ -375,8 +462,33 @@ public class ChestOpenButton : MonoBehaviour
         }
 
         isRewardGranted = true;
+        SetRewardItemInteractable(false);
+        RewardPointerExited?.Invoke();
+
+        if (rewardItemObject != null)
+            rewardItemObject.SetActive(false);
+
         RelicEquipPanelUI.RefreshAll();
+        RewardClaimed?.Invoke(selectedReward.RelicId);
         Debug.Log($"[ChestOpenButton] 유물 보상 지급 / Relic:{selectedReward.RelicId}");
+    }
+
+    public void NotifyRewardPointerEnter()
+    {
+        if (!isOpened || isRewardGranted || !hasSelectedReward || !selectedReward.IsValid)
+            return;
+
+        RewardPointerEntered?.Invoke(selectedReward.RelicId);
+    }
+
+    public void NotifyRewardPointerExit()
+    {
+        RewardPointerExited?.Invoke();
+    }
+
+    public void NotifyRewardClicked()
+    {
+        ClaimSelectedReward();
     }
 
     private IEnumerator OpenAnimationRoutine()
@@ -447,6 +559,7 @@ public class ChestOpenButton : MonoBehaviour
             rewardItemOriginalLocalScale = rewardItemLocalScale;
         }
 
+        ConfigureRewardItemInteraction();
         return rewardItemTransform != null;
     }
 
@@ -477,6 +590,50 @@ public class ChestOpenButton : MonoBehaviour
         rewardItemOriginalLocalPosition = rewardItemLocalPosition;
         rewardItemOriginalLocalScale = rewardItemLocalScale;
         rewardItemObject.SetActive(false);
+    }
+
+    private void ConfigureRewardItemInteraction()
+    {
+        if (rewardItemObject == null)
+            return;
+
+        if (!hasSelectedReward || !selectedReward.IsValid)
+            return;
+
+        SpriteRenderer spriteRenderer = rewardItemObject.GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null)
+        {
+            BoxCollider2D collider = rewardItemObject.GetComponent<BoxCollider2D>();
+            if (collider == null)
+                collider = rewardItemObject.AddComponent<BoxCollider2D>();
+
+            Bounds bounds = spriteRenderer.sprite != null ? spriteRenderer.sprite.bounds : new Bounds(Vector3.zero, Vector3.one);
+            collider.size = bounds.size;
+            collider.offset = bounds.center;
+            collider.isTrigger = true;
+            collider.enabled = true;
+        }
+
+        EventRoomRelicRewardItem rewardView = rewardItemObject.GetComponent<EventRoomRelicRewardItem>();
+        if (rewardView == null)
+            rewardView = rewardItemObject.AddComponent<EventRoomRelicRewardItem>();
+
+        rewardView.Setup(this, selectedReward.RelicId);
+        SetRewardItemInteractable(true);
+    }
+
+    private void SetRewardItemInteractable(bool interactable)
+    {
+        if (rewardItemObject == null)
+            return;
+
+        EventRoomRelicRewardItem rewardView = rewardItemObject.GetComponent<EventRoomRelicRewardItem>();
+        if (rewardView != null)
+            rewardView.SetInteractable(interactable);
+
+        Collider2D collider = rewardItemObject.GetComponent<Collider2D>();
+        if (collider != null)
+            collider.enabled = interactable;
     }
 
     private Sprite GetSelectedRewardSprite()
@@ -904,6 +1061,7 @@ public class ChestOpenButton : MonoBehaviour
         }
 
         isClickCooling = false;
+        RewardPointerExited?.Invoke();
 
         if (clunkTarget != null)
             clunkTarget.localRotation = originalRotation;
