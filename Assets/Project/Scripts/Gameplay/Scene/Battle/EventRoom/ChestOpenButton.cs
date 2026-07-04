@@ -57,6 +57,9 @@ public class ChestOpenButton : MonoBehaviour
     [Tooltip("상자가 완전히 열릴 때 1회 재생할 VFX 프리팹입니다.")]
     [SerializeField] private GameObject openCompleteVfx;
 
+    [Tooltip("마지막 클릭에서 덜컹 VFX가 나온 뒤 Open Complete VFX가 나오기까지의 지연 시간입니다.")]
+    [SerializeField] private float openCompleteVfxDelay = 0.12f;
+
     [Header("VFX 런타임 스폰")]
     [SerializeField] private Transform vfxSpawnRoot;
     [SerializeField] private Vector3 stepVfxLocalPosition = new(1.79f, 0f, 0f);
@@ -127,6 +130,7 @@ public class ChestOpenButton : MonoBehaviour
     private Coroutine clunkCoroutine;
     private Coroutine clickCooldownCoroutine;
     private Coroutine rewardItemAnimationCoroutine;
+    private Coroutine openCompleteVfxDelayCoroutine;
 
     private Animator chestOpenAnimator;
     private Animation chestOpenAnimation;
@@ -213,6 +217,12 @@ public class ChestOpenButton : MonoBehaviour
         {
             StopCoroutine(rewardItemAnimationCoroutine);
             rewardItemAnimationCoroutine = null;
+        }
+
+        if (openCompleteVfxDelayCoroutine != null)
+        {
+            StopCoroutine(openCompleteVfxDelayCoroutine);
+            openCompleteVfxDelayCoroutine = null;
         }
     }
 
@@ -316,6 +326,8 @@ public class ChestOpenButton : MonoBehaviour
         currentClickCount++;
 
         PlayClunk();
+
+        // 일반 클릭과 마지막 열림 클릭 모두 Step VFX를 재생합니다.
         PlayStepVfxByClickCount();
 
         if (currentClickCount < requiredClickCount)
@@ -439,12 +451,29 @@ public class ChestOpenButton : MonoBehaviour
         isOpening = true;
 
         EnsureRewardItemObject();
-        PlayOpenCompleteVfx();
+
+        // 마지막 클릭에서 Step VFX가 먼저 나오고,
+        // 그 뒤 약간의 딜레이 후 Open Complete VFX가 나오게 합니다.
+        if (openCompleteVfxDelayCoroutine != null)
+            StopCoroutine(openCompleteVfxDelayCoroutine);
+
+        openCompleteVfxDelayCoroutine = StartCoroutine(PlayOpenCompleteVfxDelayedRoutine());
 
         if (!showRewardItemAfterOpenAnimation)
             ShowRewardItem();
 
         StartCoroutine(OpenAnimationRoutine());
+    }
+
+    private IEnumerator PlayOpenCompleteVfxDelayedRoutine()
+    {
+        float delay = Mathf.Max(0f, openCompleteVfxDelay);
+
+        if (delay > 0f)
+            yield return new WaitForSecondsRealtime(delay);
+
+        PlayOpenCompleteVfx();
+        openCompleteVfxDelayCoroutine = null;
     }
 
     public void ClaimSelectedReward()
@@ -735,12 +764,10 @@ public class ChestOpenButton : MonoBehaviour
             return null;
 
         int revealCount = GetActiveRevealCount();
-        if (currentClickCount > revealCount)
-            return null;
 
-        int index = currentClickCount - 1;
-        int maxRevealIndex = revealCount - 1;
-        index = Mathf.Min(index, maxRevealIndex);
+        // 마지막 열림 클릭은 revealCount + 1번째 클릭이므로,
+        // 이때도 마지막 단계 Step VFX가 나오도록 마지막 인덱스로 고정합니다.
+        int index = Mathf.Min(currentClickCount - 1, revealCount - 1);
 
         if (index < 0 || index >= stepVfxList.Length)
             return null;
@@ -1058,6 +1085,12 @@ public class ChestOpenButton : MonoBehaviour
         {
             StopCoroutine(rewardItemAnimationCoroutine);
             rewardItemAnimationCoroutine = null;
+        }
+
+        if (openCompleteVfxDelayCoroutine != null)
+        {
+            StopCoroutine(openCompleteVfxDelayCoroutine);
+            openCompleteVfxDelayCoroutine = null;
         }
 
         isClickCooling = false;
