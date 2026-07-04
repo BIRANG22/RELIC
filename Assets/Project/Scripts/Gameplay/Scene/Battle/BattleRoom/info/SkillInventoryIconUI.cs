@@ -101,6 +101,7 @@ public class SkillInventoryIconUI : MonoBehaviour, IPointerClickHandler, IPointe
 
         iconImage.sprite = icon;
         iconImage.enabled = icon != null;
+        iconImage.color = SkillRarityUtility.GetSkillIconColor(skillId);
     }
 
     private void ApplyScale()

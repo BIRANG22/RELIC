@@ -36,6 +36,10 @@ public class BattleWarningUI : MonoBehaviour
     [SerializeField] private int topSortingOrder = 30000;
     [SerializeField] private bool setAsLastSiblingOnShow = true;
 
+    [Header("Object Toggle")]
+    [Tooltip("BattleWarningUI 루트는 항상 켜둔 상태로 유지하고, 배경 이미지와 텍스트만 켜고 끕니다.")]
+    [SerializeField] private bool keepRootObjectActive = true;
+
     private Canvas sortingCanvas;
     private GraphicRaycaster sortingRaycaster;
     private Vector2 baseAnchoredPosition;
@@ -46,13 +50,7 @@ public class BattleWarningUI : MonoBehaviour
     private void Awake()
     {
         Instance = this;
-
-        if (canvasGroup == null)
-            canvasGroup = GetComponent<CanvasGroup>();
-
-        if (moveTarget == null)
-            moveTarget = transform as RectTransform;
-
+        EnsureReferences();
         EnsureTopSorting();
         CaptureBasePositionIfNeeded();
         HideImmediate();
@@ -66,6 +64,8 @@ public class BattleWarningUI : MonoBehaviour
 
     private void OnEnable()
     {
+        Instance = this;
+        EnsureReferences();
         EnsureTopSorting();
         CaptureBasePositionIfNeeded();
     }
@@ -81,9 +81,14 @@ public class BattleWarningUI : MonoBehaviour
             warningUI = FindFirstObjectByType<BattleWarningUI>(FindObjectsInactive.Include);
 
         if (warningUI != null)
+        {
+            warningUI.EnsureReferences();
             warningUI.Show(message);
+        }
         else
+        {
             Debug.LogWarning($"[BattleWarningUI] {message}");
+        }
     }
 
     public void Show(string message)
@@ -91,8 +96,13 @@ public class BattleWarningUI : MonoBehaviour
         if (string.IsNullOrWhiteSpace(message))
             return;
 
+        if (!gameObject.activeSelf)
+            gameObject.SetActive(true);
+
+        EnsureReferences();
         CaptureBasePositionIfNeeded();
         BringToFront();
+        SetWarningChildrenActive(true);
 
         if (moveTarget != null)
             moveTarget.anchoredPosition = baseAnchoredPosition + endOffset;
@@ -105,8 +115,6 @@ public class BattleWarningUI : MonoBehaviour
 
         if (backgroundImage != null)
             backgroundImage.color = normalBackgroundColor;
-
-        gameObject.SetActive(true);
 
         timer = 0f;
         isShowing = true;
@@ -125,6 +133,8 @@ public class BattleWarningUI : MonoBehaviour
 
     public void HideImmediate()
     {
+        EnsureReferences();
+
         isShowing = false;
         timer = 0f;
 
@@ -138,7 +148,10 @@ public class BattleWarningUI : MonoBehaviour
                 moveTarget.localScale = endScale;
         }
 
-        gameObject.SetActive(false);
+        SetWarningChildrenActive(false);
+
+        if (!keepRootObjectActive)
+            gameObject.SetActive(false);
     }
 
     private void Update()
@@ -156,6 +169,33 @@ public class BattleWarningUI : MonoBehaviour
 
         if (timer >= totalDuration)
             HideImmediate();
+    }
+
+    private void EnsureReferences()
+    {
+        if (canvasGroup == null)
+            canvasGroup = GetComponent<CanvasGroup>();
+
+        if (canvasGroup == null)
+            canvasGroup = gameObject.AddComponent<CanvasGroup>();
+
+        if (moveTarget == null)
+            moveTarget = transform as RectTransform;
+
+        if (messageText == null)
+            messageText = GetComponentInChildren<TMP_Text>(true);
+
+        if (backgroundImage == null)
+            backgroundImage = GetComponentInChildren<Image>(true);
+    }
+
+    private void SetWarningChildrenActive(bool active)
+    {
+        if (backgroundImage != null && backgroundImage.gameObject != gameObject)
+            backgroundImage.gameObject.SetActive(active);
+
+        if (messageText != null && messageText.gameObject != gameObject)
+            messageText.gameObject.SetActive(active);
     }
 
     private void CaptureBasePositionIfNeeded()

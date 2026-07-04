@@ -1,136 +1,172 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 /// <summary>
-/// 오브젝트를 클릭했을 때 지정한 대상 오브젝트를 덜컹거리게 하는 스크립트.
-/// 위치값은 건드리지 않고 회전값만 사용합니다.
+/// NPC를 클릭했을 때 ShopPanel이 닫힌 상태라면 Shop 오브젝트의 Z 회전을
+/// 0 -> +각도 -> -각도 -> 0 순서로 직접 재생합니다.
+///
+/// - 이 스크립트는 Npc_shop에 붙입니다.
+/// - Target Object에는 실제로 회전할 Shop RectTransform을 넣습니다.
+/// - Panel Transform에는 1100 -> 0으로 이동하는 ShopPanel RectTransform을 넣습니다.
+/// - BackButton에는 이 스크립트를 붙이지 않습니다.
 /// </summary>
-public class ButtonClunkAnimation : MonoBehaviour
+public class ButtonClunkAnimation : MonoBehaviour, IPointerClickHandler
 {
     [Header("적용 대상")]
-    [Tooltip("클릭했을 때 덜컹거릴 오브젝트를 넣습니다.")]
-    [SerializeField] private Transform targetObject;
+    [Tooltip("Z 회전이 실제로 변해야 하는 오브젝트입니다. 예: ChoiceCanvas/ShopPanel/Shop")]
+    [SerializeField] private RectTransform targetObject;
 
-    [Tooltip("클릭했을 때 대상 오브젝트를 먼저 켤지 설정합니다.")]
-    [SerializeField] private bool activateTargetOnClick = true;
+    [Header("샵 패널 상태 확인")]
+    [Tooltip("Y 1100에서 0으로 이동하는 패널입니다. 예: ChoiceCanvas/ShopPanel")]
+    [SerializeField] private RectTransform panelTransform;
 
-    [Header("재생 딜레이")]
-    [Tooltip("클릭 후 몇 초 뒤에 애니메이션을 재생할지 설정합니다.")]
+    [Tooltip("체크하면 패널이 닫힌 위치에 있을 때만 재생합니다.")]
+    [SerializeField] private bool playOnlyWhenPanelClosed = true;
+
+    [Tooltip("패널이 열린 Y 위치입니다.")]
+    [SerializeField] private float openY = 0f;
+
+    [Tooltip("패널이 닫힌 Y 위치입니다.")]
+    [SerializeField] private float closedY = 1100f;
+
+    [Tooltip("닫힌 위치로 인정할 오차 범위입니다.")]
+    [SerializeField] private float closedCheckRange = 80f;
+
+    [Header("재생 설정")]
+    [Tooltip("클릭 후 회전이 시작되기 전 대기 시간입니다.")]
     [SerializeField] private float startDelay = 0f;
 
-    [Header("덜컹거림 설정")]
-    [Tooltip("덜컹거림이 진행되는 전체 시간입니다.")]
-    [SerializeField] private float clunkDuration = 0.25f;
+    [Tooltip("0 -> +각도 -> -각도 -> 0까지 걸리는 시간입니다.")]
+    [SerializeField] private float clunkDuration = 0.18f;
 
-    [Tooltip("덜컹거리는 횟수입니다.")]
-    [SerializeField] private int clunkCount = 3;
+    [Header("Z 회전")]
+    [Tooltip("1이면 Z값이 0 -> 1 -> -1 -> 0으로 움직입니다.")]
+    [SerializeField] private float zRotationAngle = 1f;
 
-    [Header("회전 흔들림")]
-    [Tooltip("좌우로 흔들리는 회전 각도입니다.")]
-    [SerializeField] private float rotationPower = 4f;
+    private Coroutine clunkRoutine;
+    private Vector3 baseEuler;
 
-    private Quaternion originalRotation;
-    private Coroutine animationCoroutine;
-
-    private void OnMouseDown()
+    private void Awake()
     {
-        Play();
+        CacheBaseRotation();
     }
 
-    /// <summary>
-    /// 클릭 또는 Button OnClick에서 호출할 수 있습니다.
-    /// </summary>
-    public void Play()
+    private void OnEnable()
     {
-        if (targetObject == null)
-        {
-            Debug.LogWarning($"{nameof(ButtonClunkAnimation)}: Target Object가 지정되지 않았습니다.", this);
-            return;
-        }
-
-        if (activateTargetOnClick)
-        {
-            targetObject.gameObject.SetActive(true);
-        }
-
-        originalRotation = targetObject.localRotation;
-
-        if (animationCoroutine != null)
-        {
-            StopCoroutine(animationCoroutine);
-        }
-
-        animationCoroutine = StartCoroutine(PlayAnimationWithDelay());
-    }
-
-    public void PlayImmediately()
-    {
-        if (targetObject == null)
-        {
-            Debug.LogWarning($"{nameof(ButtonClunkAnimation)}: Target Object가 지정되지 않았습니다.", this);
-            return;
-        }
-
-        if (activateTargetOnClick)
-        {
-            targetObject.gameObject.SetActive(true);
-        }
-
-        originalRotation = targetObject.localRotation;
-
-        if (animationCoroutine != null)
-        {
-            StopCoroutine(animationCoroutine);
-        }
-
-        animationCoroutine = StartCoroutine(PlayAnimation());
-    }
-
-    private IEnumerator PlayAnimationWithDelay()
-    {
-        if (startDelay > 0f)
-        {
-            yield return new WaitForSecondsRealtime(startDelay);
-        }
-
-        yield return PlayAnimation();
-    }
-
-    private IEnumerator PlayAnimation()
-    {
-        float timer = 0f;
-
-        while (timer < clunkDuration)
-        {
-            timer += Time.unscaledDeltaTime;
-
-            float t = Mathf.Clamp01(timer / clunkDuration);
-
-            float shake = Mathf.Sin(t * Mathf.PI * clunkCount * 2f);
-            float fade = 1f - t;
-
-            float zRotation = shake * rotationPower * fade;
-
-            targetObject.localRotation = originalRotation * Quaternion.Euler(0f, 0f, zRotation);
-
-            yield return null;
-        }
-
-        targetObject.localRotation = originalRotation;
-        animationCoroutine = null;
+        CacheBaseRotation();
     }
 
     private void OnDisable()
     {
-        if (animationCoroutine != null)
+        StopCurrentRoutine();
+        RestoreRotation();
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        Play();
+    }
+
+    private void OnMouseDown()
+    {
+        // SpriteRenderer + Collider2D 조합에서도 동작하도록 처리합니다.
+        Play();
+    }
+
+    /// <summary>
+    /// Unity Button / UI Panel Button의 OnClick에서도 직접 연결해서 사용할 수 있습니다.
+    /// </summary>
+    public void Play()
+    {
+        if (targetObject == null)
+            return;
+
+        if (playOnlyWhenPanelClosed && !IsPanelClosed())
+            return;
+
+        if (!targetObject.gameObject.activeInHierarchy)
+            return;
+
+        StopCurrentRoutine();
+        CacheBaseRotation();
+        clunkRoutine = StartCoroutine(PlayRoutine());
+    }
+
+    [ContextMenu("Test Z Clunk")]
+    private void TestZClunk()
+    {
+        bool previousCheck = playOnlyWhenPanelClosed;
+        playOnlyWhenPanelClosed = false;
+        Play();
+        playOnlyWhenPanelClosed = previousCheck;
+    }
+
+    private bool IsPanelClosed()
+    {
+        if (panelTransform == null)
+            return true;
+
+        float y = panelTransform.anchoredPosition.y;
+        float distanceFromClosed = Mathf.Abs(y - closedY);
+        float distanceFromOpen = Mathf.Abs(y - openY);
+
+        return distanceFromClosed <= closedCheckRange && distanceFromClosed <= distanceFromOpen;
+    }
+
+    private IEnumerator PlayRoutine()
+    {
+        if (startDelay > 0f)
+            yield return new WaitForSecondsRealtime(startDelay);
+
+        float totalDuration = Mathf.Max(0.01f, clunkDuration);
+        float stepDuration = totalDuration / 3f;
+        float angle = Mathf.Abs(zRotationAngle);
+
+        yield return RotateZOffset(0f, angle, stepDuration);
+        yield return RotateZOffset(angle, -angle, stepDuration);
+        yield return RotateZOffset(-angle, 0f, stepDuration);
+
+        RestoreRotation();
+        clunkRoutine = null;
+    }
+
+    private IEnumerator RotateZOffset(float fromOffset, float toOffset, float duration)
+    {
+        float elapsed = 0f;
+
+        while (elapsed < duration)
         {
-            StopCoroutine(animationCoroutine);
-            animationCoroutine = null;
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float eased = 1f - Mathf.Pow(1f - t, 3f);
+            float z = baseEuler.z + Mathf.Lerp(fromOffset, toOffset, eased);
+
+            targetObject.localEulerAngles = new Vector3(baseEuler.x, baseEuler.y, z);
+            yield return null;
         }
 
+        targetObject.localEulerAngles = new Vector3(baseEuler.x, baseEuler.y, baseEuler.z + toOffset);
+    }
+
+    private void CacheBaseRotation()
+    {
         if (targetObject != null)
-        {
-            targetObject.localRotation = originalRotation;
-        }
+            baseEuler = targetObject.localEulerAngles;
+    }
+
+    private void RestoreRotation()
+    {
+        if (targetObject != null)
+            targetObject.localEulerAngles = baseEuler;
+    }
+
+    private void StopCurrentRoutine()
+    {
+        if (clunkRoutine == null)
+            return;
+
+        StopCoroutine(clunkRoutine);
+        clunkRoutine = null;
     }
 }

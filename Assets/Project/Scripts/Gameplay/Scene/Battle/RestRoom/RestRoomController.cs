@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 using Relic.Gameplay.Data;
 
 public class RestRoomController : MonoBehaviour
@@ -9,6 +11,18 @@ public class RestRoomController : MonoBehaviour
 
     [Header("Upgrade")]
     [SerializeField] private SkillUpgradePanel upgradePanel;
+    [SerializeField] private GameObject upgradeButtonRoot;
+    [SerializeField] private Image upgradeButtonBackImage;
+    [SerializeField] private TMP_Text upgradeButtonText;
+    [SerializeField] private Color disabledUpgradeButtonColor = new Color32(0x7E, 0x7E, 0x7E, 0xFF);
+
+    [Header("Heal")]
+    [SerializeField, Range(0f, 1f)] private float healHpRatio = 0.3f;
+    [SerializeField] private string healCompleteMessage = "모든 캐릭터의 체력을 30% 회복했습니다";
+    [SerializeField] private GameObject healButtonRoot;
+    [SerializeField] private Image healButtonBackImage;
+    [SerializeField] private TMP_Text healButtonText;
+    [SerializeField] private Color disabledHealButtonColor = new Color32(0x7E, 0x7E, 0x7E, 0xFF);
 
     [Header("Shop")]
     [SerializeField] private RestRoomShopPanel shopPanel;
@@ -26,6 +40,12 @@ public class RestRoomController : MonoBehaviour
     private bool isRestUsed;
     private BattleUnitAnimator[] spawnedAllyAnimators;
     private PlayerHUDSlot[] spawnedPlayerHuds;
+    private Color upgradeButtonBackDefaultColor = Color.white;
+    private Color upgradeButtonTextDefaultColor = Color.white;
+    private bool hasUpgradeButtonDefaultColors;
+    private Color healButtonBackDefaultColor = Color.white;
+    private Color healButtonTextDefaultColor = Color.white;
+    private bool hasHealButtonDefaultColors;
 
     private bool IsRestActionLocked => isRestUsed;
 
@@ -33,6 +53,8 @@ public class RestRoomController : MonoBehaviour
     {
         EnsureShopPanelSpawner();
         EnsureNextButtonRoot();
+        EnsureUpgradeButtonReferences();
+        EnsureHealButtonReferences();
     }
 
     private void OnEnable()
@@ -43,8 +65,12 @@ public class RestRoomController : MonoBehaviour
 
         EnsureShopPanelSpawner();
         EnsureNextButtonRoot();
+        EnsureUpgradeButtonReferences();
+        EnsureHealButtonReferences();
         EnsurePlayerHudReferences();
         SetNextButtonVisible(false);
+        SetUpgradeButtonDisabledFeedback(false);
+        SetHealButtonDisabledFeedback(false);
         SpawnPartyAllies();
         SpawnPlayerHUDs();
     }
@@ -63,9 +89,12 @@ public class RestRoomController : MonoBehaviour
         if (upgradePanel != null)
             upgradePanel.Close();
 
-        RecoverAllPartyHPToMax();
+        RecoverAllPartyHPByRatio(healHpRatio);
         RefreshPlayerHUDs();
         PlayHealVfxOnSpawnedAllies();
+        BattleWarningUI.ShowMessage(healCompleteMessage);
+        SetHealButtonDisabledFeedback(true);
+        SetUpgradeButtonDisabledFeedback(true);
         SetNextButtonVisible(true);
     }
 
@@ -80,21 +109,36 @@ public class RestRoomController : MonoBehaviour
             return;
         }
 
-        isRestUsed = true;
         upgradePanel.Open();
-        RefreshPlayerHUDs();
-        SetNextButtonVisible(true);
+    }
+
+    public void OnUpgradeCancelButtonClicked()
+    {
+        if (upgradePanel != null)
+            upgradePanel.Close();
     }
 
     public void OnTuningButtonClicked()
     {
+        if (IsRestActionLocked)
+            return;
+
         if (upgradePanel == null)
         {
             Debug.LogWarning("[RestRoomController] SkillUpgradePanel 없음");
             return;
         }
 
-        upgradePanel.TuneSelectedSkill();
+        bool upgraded = upgradePanel.TuneSelectedSkill();
+
+        if (!upgraded)
+            return;
+
+        isRestUsed = true;
+        RefreshPlayerHUDs();
+        SetHealButtonDisabledFeedback(true);
+        SetUpgradeButtonDisabledFeedback(true);
+        SetNextButtonVisible(true);
     }
 
     public void OnNextButtonClicked()
@@ -113,12 +157,13 @@ public class RestRoomController : MonoBehaviour
             Debug.LogWarning("[RestRoomController] BattleSceneController not found");
     }
 
-    private void RecoverAllPartyHPToMax()
+    private void RecoverAllPartyHPByRatio(float ratio)
     {
         if (DataManager.Instance == null)
             return;
 
         PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+        float safeRatio = Mathf.Clamp01(ratio);
 
         for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
         {
@@ -134,18 +179,25 @@ public class RestRoomController : MonoBehaviour
                 continue;
             }
 
-            if (!DataManager.Instance.CharacterDatabase.TryGet(
+            int maxHp = Mathf.Max(0, runtimeData.MaxHP);
+
+            if (maxHp <= 0 &&
+                DataManager.Instance.CharacterDatabase.TryGet(
                     characterId,
                     out CharacterMasterData masterData))
             {
-                continue;
+                maxHp = Mathf.Max(0, masterData.MaxHP);
+                runtimeData.MaxHP = maxHp;
             }
 
-            runtimeData.MaxHP = masterData.MaxHP;
-            runtimeData.CurrentHP = masterData.MaxHP;
+            if (maxHp <= 0)
+                continue;
+
+            int healAmount = Mathf.CeilToInt(maxHp * safeRatio);
+            runtimeData.CurrentHP = Mathf.Clamp(runtimeData.CurrentHP + healAmount, 0, maxHp);
         }
 
-        Debug.Log("[RestRoomController] 모든 파티원 HP 회복 완료");
+        Debug.Log($"[RestRoomController] 모든 파티원 HP {Mathf.RoundToInt(safeRatio * 100f)}% 회복 완료");
     }
 
     private void SpawnPartyAllies()
@@ -467,6 +519,217 @@ public class RestRoomController : MonoBehaviour
 
         if (nextButtonRoot != null)
             nextButtonRoot.SetActive(visible);
+    }
+
+    private void EnsureUpgradeButtonReferences()
+    {
+        if (upgradeButtonRoot == null)
+        {
+            Transform upgradeButtonTransform = FindSceneTransformByName("UpgradeButton");
+
+            if (upgradeButtonTransform != null)
+                upgradeButtonRoot = upgradeButtonTransform.gameObject;
+        }
+
+        if (upgradeButtonRoot == null)
+            return;
+
+        if (upgradeButtonBackImage == null)
+        {
+            Transform backTransform = FindChildRecursive(upgradeButtonRoot.transform, "back");
+
+            if (backTransform != null)
+                upgradeButtonBackImage = backTransform.GetComponent<Image>();
+        }
+
+        if (upgradeButtonBackImage == null)
+            upgradeButtonBackImage = upgradeButtonRoot.GetComponentInChildren<Image>(true);
+
+        if (upgradeButtonText == null)
+        {
+            Transform textTransform = FindChildRecursive(upgradeButtonRoot.transform, "Text (TMP)");
+
+            if (textTransform != null)
+                upgradeButtonText = textTransform.GetComponent<TMP_Text>();
+        }
+
+        if (upgradeButtonText == null)
+            upgradeButtonText = upgradeButtonRoot.GetComponentInChildren<TMP_Text>(true);
+
+        CacheUpgradeButtonDefaultColorsIfNeeded();
+    }
+
+    private void CacheUpgradeButtonDefaultColorsIfNeeded()
+    {
+        if (hasUpgradeButtonDefaultColors)
+            return;
+
+        if (upgradeButtonBackImage != null)
+            upgradeButtonBackDefaultColor = upgradeButtonBackImage.color;
+
+        if (upgradeButtonText != null)
+            upgradeButtonTextDefaultColor = upgradeButtonText.color;
+
+        hasUpgradeButtonDefaultColors = true;
+    }
+
+    private void SetUpgradeButtonDisabledFeedback(bool disabled)
+    {
+        EnsureUpgradeButtonReferences();
+
+        if (upgradeButtonRoot == null)
+            return;
+
+        if (upgradeButtonBackImage != null)
+            upgradeButtonBackImage.color = disabled ? disabledUpgradeButtonColor : upgradeButtonBackDefaultColor;
+
+        if (upgradeButtonText != null)
+            upgradeButtonText.color = disabled ? disabledUpgradeButtonColor : upgradeButtonTextDefaultColor;
+
+        Button button = upgradeButtonRoot.GetComponent<Button>();
+
+        if (button != null)
+            button.interactable = !disabled;
+
+        Collider2D collider2d = upgradeButtonRoot.GetComponent<Collider2D>();
+
+        if (collider2d != null)
+            collider2d.enabled = !disabled;
+
+        MonoBehaviour[] behaviours = upgradeButtonRoot.GetComponents<MonoBehaviour>();
+
+        for (int i = 0; i < behaviours.Length; i++)
+        {
+            MonoBehaviour behaviour = behaviours[i];
+
+            if (behaviour == null || behaviour == this)
+                continue;
+
+            string behaviourName = behaviour.GetType().Name;
+
+            if (behaviourName.Contains("Clunk") ||
+                behaviourName.Contains("Animation") ||
+                behaviourName.Contains("Hover") ||
+                behaviourName.Contains("Scale"))
+            {
+                behaviour.enabled = !disabled;
+            }
+        }
+    }
+
+    private void EnsureHealButtonReferences()
+    {
+        if (healButtonRoot == null)
+        {
+            Transform healButtonTransform = FindSceneTransformByName("HealButton");
+
+            if (healButtonTransform != null)
+                healButtonRoot = healButtonTransform.gameObject;
+        }
+
+        if (healButtonRoot == null)
+            return;
+
+        if (healButtonBackImage == null)
+        {
+            Transform backTransform = FindChildRecursive(healButtonRoot.transform, "back");
+
+            if (backTransform != null)
+                healButtonBackImage = backTransform.GetComponent<Image>();
+        }
+
+        if (healButtonBackImage == null)
+            healButtonBackImage = healButtonRoot.GetComponentInChildren<Image>(true);
+
+        if (healButtonText == null)
+        {
+            Transform textTransform = FindChildRecursive(healButtonRoot.transform, "Text (TMP)");
+
+            if (textTransform != null)
+                healButtonText = textTransform.GetComponent<TMP_Text>();
+        }
+
+        if (healButtonText == null)
+            healButtonText = healButtonRoot.GetComponentInChildren<TMP_Text>(true);
+
+        CacheHealButtonDefaultColorsIfNeeded();
+    }
+
+    private void CacheHealButtonDefaultColorsIfNeeded()
+    {
+        if (hasHealButtonDefaultColors)
+            return;
+
+        if (healButtonBackImage != null)
+            healButtonBackDefaultColor = healButtonBackImage.color;
+
+        if (healButtonText != null)
+            healButtonTextDefaultColor = healButtonText.color;
+
+        hasHealButtonDefaultColors = true;
+    }
+
+    private void SetHealButtonDisabledFeedback(bool disabled)
+    {
+        EnsureHealButtonReferences();
+
+        if (healButtonRoot == null)
+            return;
+
+        if (healButtonBackImage != null)
+            healButtonBackImage.color = disabled ? disabledHealButtonColor : healButtonBackDefaultColor;
+
+        if (healButtonText != null)
+            healButtonText.color = disabled ? disabledHealButtonColor : healButtonTextDefaultColor;
+
+        Button button = healButtonRoot.GetComponent<Button>();
+
+        if (button != null)
+            button.interactable = !disabled;
+
+        Collider2D collider2d = healButtonRoot.GetComponent<Collider2D>();
+
+        if (collider2d != null)
+            collider2d.enabled = !disabled;
+
+        MonoBehaviour[] behaviours = healButtonRoot.GetComponents<MonoBehaviour>();
+
+        for (int i = 0; i < behaviours.Length; i++)
+        {
+            MonoBehaviour behaviour = behaviours[i];
+
+            if (behaviour == null || behaviour == this)
+                continue;
+
+            string behaviourName = behaviour.GetType().Name;
+
+            if (behaviourName.Contains("Clunk") ||
+                behaviourName.Contains("Animation") ||
+                behaviourName.Contains("Hover") ||
+                behaviourName.Contains("Scale"))
+            {
+                behaviour.enabled = !disabled;
+            }
+        }
+    }
+
+    private Transform FindChildRecursive(Transform root, string targetName)
+    {
+        if (root == null || string.IsNullOrWhiteSpace(targetName))
+            return null;
+
+        if (string.Equals(root.name, targetName, System.StringComparison.Ordinal))
+            return root;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform result = FindChildRecursive(root.GetChild(i), targetName);
+
+            if (result != null)
+                return result;
+        }
+
+        return null;
     }
 
     private Transform FindSceneTransformByName(string targetName)

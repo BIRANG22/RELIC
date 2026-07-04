@@ -12,19 +12,41 @@ public class SkillUpgradeIconItem : MonoBehaviour, IPointerEnterHandler, IPointe
 
     private SkillUpgradeRequest request;
     private Action<SkillUpgradeRequest, Sprite> onClicked;
-    private RectTransform rectTransform;
+    private Action<SkillUpgradeRequest> onHovered;
+    private Action<SkillUpgradeRequest> onHoverExited;
+    private Color defaultIconColor = Color.white;
+    private bool hasDefaultIconColor;
 
-    private const string CurrentTooltipHeader = "\uD604\uC7AC";
-    private const string UpgradeTooltipHeader = "\uAC15\uD654 \uD6C4";
-
-    private void Awake()
+    public bool Matches(SkillUpgradeRequest compareRequest)
     {
-        rectTransform = GetComponent<RectTransform>();
+        return string.Equals(request.CharacterId, compareRequest.CharacterId, StringComparison.Ordinal) &&
+               string.Equals(request.CurrentSkillId, compareRequest.CurrentSkillId, StringComparison.Ordinal) &&
+               string.Equals(request.UpgradeSkillId, compareRequest.UpgradeSkillId, StringComparison.Ordinal) &&
+               request.SlotType == compareRequest.SlotType &&
+               request.SlotIndex == compareRequest.SlotIndex;
+    }
+
+    public void SetIconColor(Color color)
+    {
+        if (iconImage == null)
+            return;
+
+        CacheDefaultIconColor();
+        iconImage.color = color;
+    }
+
+    public void ResetIconColor()
+    {
+        if (iconImage == null)
+            return;
+
+        CacheDefaultIconColor();
+        iconImage.color = defaultIconColor;
     }
 
     private void OnDisable()
     {
-        TimelineSkillHoverPopupUI.Instance?.Hide(this);
+        onHoverExited?.Invoke(request);
     }
 
     public void Initialize(
@@ -33,7 +55,9 @@ public class SkillUpgradeIconItem : MonoBehaviour, IPointerEnterHandler, IPointe
         string upgradeSkillId,
         SkillSlotType slotType,
         int slotIndex,
-        Action<SkillUpgradeRequest, Sprite> onClicked)
+        Action<SkillUpgradeRequest, Sprite> onClicked,
+        Action<SkillUpgradeRequest> onHovered,
+        Action<SkillUpgradeRequest> onHoverExited)
     {
         request = new SkillUpgradeRequest
         {
@@ -45,6 +69,8 @@ public class SkillUpgradeIconItem : MonoBehaviour, IPointerEnterHandler, IPointe
         };
 
         this.onClicked = onClicked;
+        this.onHovered = onHovered;
+        this.onHoverExited = onHoverExited;
 
         if (button == null)
             button = GetComponent<Button>();
@@ -56,16 +82,17 @@ public class SkillUpgradeIconItem : MonoBehaviour, IPointerEnterHandler, IPointe
         }
 
         RefreshIcon(currentSkillId);
+        ResetIconColor();
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        ShowTooltip();
+        onHovered?.Invoke(request);
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        TimelineSkillHoverPopupUI.Instance?.Hide(this);
+        onHoverExited?.Invoke(request);
     }
 
     private void HandleClick()
@@ -73,53 +100,13 @@ public class SkillUpgradeIconItem : MonoBehaviour, IPointerEnterHandler, IPointe
         onClicked?.Invoke(request, iconImage != null ? iconImage.sprite : null);
     }
 
-    private void ShowTooltip()
+    private void CacheDefaultIconColor()
     {
-        if (DataManager.Instance == null || DataManager.Instance.SkillDatabase == null)
+        if (hasDefaultIconColor || iconImage == null)
             return;
 
-        if (!DataManager.Instance.SkillDatabase.TryGet(request.CurrentSkillId, out SkillMasterData currentSkill))
-            return;
-
-        if (!DataManager.Instance.SkillDatabase.TryGet(request.UpgradeSkillId, out SkillMasterData upgradeSkill))
-            return;
-
-        if (rectTransform == null)
-            rectTransform = GetComponent<RectTransform>();
-
-        CharacterRuntimeData runtime = ResolveCharacterRuntime();
-        string title = $"{GetSkillName(currentSkill)} -> {GetSkillName(upgradeSkill)}";
-        string description =
-            $"{CurrentTooltipHeader}\n{SkillTooltipFormatter.BuildSkillDescription(currentSkill, runtime)}\n\n" +
-            $"{UpgradeTooltipHeader}\n{SkillTooltipFormatter.BuildSkillDescription(upgradeSkill, runtime)}";
-
-        TimelineSkillHoverPopupUI.Instance?.Show(title, description, null, rectTransform, this);
-    }
-
-    private CharacterRuntimeData ResolveCharacterRuntime()
-    {
-        if (string.IsNullOrWhiteSpace(request.CharacterId))
-            return null;
-
-        if (DataManager.Instance == null || DataManager.Instance.CharacterRuntimeStore == null)
-            return null;
-
-        return DataManager.Instance.CharacterRuntimeStore.TryGet(
-            request.CharacterId,
-            out CharacterRuntimeData runtime)
-            ? runtime
-            : null;
-    }
-
-    private string GetSkillName(SkillMasterData skillData)
-    {
-        if (skillData == null)
-            return "";
-
-        if (!string.IsNullOrWhiteSpace(skillData.Name))
-            return skillData.Name;
-
-        return skillData.SkillId;
+        defaultIconColor = iconImage.color;
+        hasDefaultIconColor = true;
     }
 
     private void RefreshIcon(string skillId)
@@ -149,5 +136,6 @@ public class SkillUpgradeIconItem : MonoBehaviour, IPointerEnterHandler, IPointe
 
         iconImage.sprite = icon;
         iconImage.enabled = iconImage.sprite != null;
+        iconImage.color = SkillRarityUtility.GetSkillIconColor(skillId, defaultIconColor);
     }
 }

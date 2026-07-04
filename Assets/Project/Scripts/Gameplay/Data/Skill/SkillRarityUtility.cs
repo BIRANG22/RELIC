@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 namespace Relic.Gameplay.Data
 {
@@ -46,6 +47,18 @@ namespace Relic.Gameplay.Data
         public static bool IsUpgradeSkillVariant(string skillId)
         {
             return TryGetTrailingNumber(skillId, out int number) && number % 2 == 0;
+        }
+
+        public static readonly Color UpgradedSkillIconColor = new Color32(0x7E, 0x93, 0xEC, 0xFF);
+
+        public static Color GetSkillIconColor(string skillId)
+        {
+            return IsUpgradeSkillVariant(skillId) ? UpgradedSkillIconColor : Color.white;
+        }
+
+        public static Color GetSkillIconColor(string skillId, Color normalColor)
+        {
+            return IsUpgradeSkillVariant(skillId) ? UpgradedSkillIconColor : normalColor;
         }
 
         public static bool TryGetPairedVariantId(string skillId, out string pairedSkillId)

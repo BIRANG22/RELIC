@@ -1,4 +1,5 @@
 using System;
+using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -73,6 +74,10 @@ public class BattleRewardSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerE
                 icon = remnantIcon;
 
             iconColor = remnantIconColor;
+        }
+        else if (reward.Type == BattleRewardType.Skill)
+        {
+            iconColor = SkillRarityUtility.GetSkillIconColor(reward.RewardId);
         }
 
         if (iconImage != null)
