@@ -493,12 +493,15 @@ public class BattleUnitAnimator : MonoBehaviour
 
         Transform spawn = GetVfxSpawnTransform();
 
+        if (TrySpawnWorldVfx(entry, spawn, vfxLifeTime))
+            return;
+
+        if (TrySpawnDirectWorldVfx(entry, spawn, vfxLifeTime))
+            return;
+
         GameObject vfx = Instantiate(entry.prefab, spawn, false);
 
-        if (vfxLayer >= 0)
-            SetLayerRecursively(vfx, vfxLayer);
-
-        ApplyVfxFlip(vfx, entry.flipType);
+        ConfigureVfxInstance(vfx, entry);
 
         Destroy(vfx, vfxLifeTime);
     }
@@ -517,17 +520,46 @@ public class BattleUnitAnimator : MonoBehaviour
             vfxLayer = LayerMask.NameToLayer(vfxLayerName);
 
         Transform spawn = GetVfxSpawnTransform();
+        Vector3 startPosition = spawn.position;
+
+        BattleVfxEntry missileEntry = CreateRuntimeVfxEntry(entry.missilePrefab, entry.missileFlipType);
+
+        if (TrySpawnDetachedWorldVfx(
+                missileEntry,
+                startPosition,
+                Mathf.Max(0.01f, entry.travelDuration + 0.5f),
+                out BattleWorldVfxHandle missileHandle))
+        {
+            startPosition += entry.launchOffset;
+            missileHandle.SetWorldPosition(startPosition);
+
+            Vector3 worldImpactPosition = ResolveProjectileImpactPosition(
+                targetWorldPosition,
+                entry.impactOffset,
+                startPosition.z);
+
+            yield return MoveProjectileVfx(
+                missileHandle.transform,
+                startPosition,
+                worldImpactPosition,
+                entry.travelDuration,
+                entry.arrivalDistance);
+
+            if (missileHandle != null)
+                Destroy(missileHandle.gameObject);
+
+            SpawnImpactVfx(entry, worldImpactPosition);
+            yield break;
+        }
+
         GameObject missile = Instantiate(entry.missilePrefab, spawn, false);
         missile.transform.localPosition = Vector3.zero;
 
-        if (vfxLayer >= 0)
-            SetLayerRecursively(missile, vfxLayer);
-
-        ApplyVfxFlip(missile, entry.missileFlipType);
+        ConfigureVfxInstance(missile, missileEntry);
         missile.transform.SetParent(null, true);
         missile.transform.position += entry.launchOffset;
 
-        Vector3 startPosition = missile.transform.position;
+        startPosition = missile.transform.position;
         Vector3 impactPosition = ResolveProjectileImpactPosition(
             targetWorldPosition,
             entry.impactOffset,
@@ -604,18 +636,112 @@ public class BattleUnitAnimator : MonoBehaviour
         if (entry == null || entry.impactPrefab == null)
             return;
 
+        BattleVfxEntry impactEntry = CreateRuntimeVfxEntry(entry.impactPrefab, entry.impactFlipType);
+
+        if (TrySpawnDetachedWorldVfx(
+                impactEntry,
+                impactPosition,
+                Mathf.Max(0.01f, entry.impactLifeTime),
+                out _))
+        {
+            return;
+        }
+
         Transform spawn = GetVfxSpawnTransform();
         GameObject impact = Instantiate(entry.impactPrefab, spawn, false);
         impact.transform.localPosition = Vector3.zero;
 
-        if (vfxLayer >= 0)
-            SetLayerRecursively(impact, vfxLayer);
-
-        ApplyVfxFlip(impact, entry.impactFlipType);
+        ConfigureVfxInstance(impact, impactEntry);
         impact.transform.SetParent(null, true);
         impact.transform.position = impactPosition;
 
         Destroy(impact, Mathf.Max(0.01f, entry.impactLifeTime));
+    }
+
+    private bool TrySpawnWorldVfx(
+        BattleVfxEntry entry,
+        Transform spawn,
+        float lifeTime)
+    {
+        return BattleWorldVfxRenderer.TrySpawn(
+            entry,
+            spawn,
+            vfxLayer,
+            Mathf.Max(0.01f, lifeTime),
+            vfx => ConfigureVfxInstance(vfx, entry));
+    }
+
+    private bool TrySpawnDirectWorldVfx(
+        BattleVfxEntry entry,
+        Transform spawn,
+        float lifeTime)
+    {
+        if (entry.renderMode != BattleVfxRenderMode.DirectWorldRenderer)
+            return false;
+
+        GameObject vfx = Instantiate(entry.prefab, spawn, false);
+        ApplyVfxFlip(vfx, entry.flipType);
+        ApplyDirectWorldVfxSorting(vfx, entry, spawn.position.y);
+        Destroy(vfx, Mathf.Max(0.01f, lifeTime));
+        return true;
+    }
+
+    private bool TrySpawnDetachedWorldVfx(
+        BattleVfxEntry entry,
+        Vector3 position,
+        float lifeTime,
+        out BattleWorldVfxHandle handle)
+    {
+        Transform spawn = GetVfxSpawnTransform();
+        int visibleLayer = spawn != null ? spawn.gameObject.layer : 0;
+
+        return BattleWorldVfxRenderer.TrySpawnDetached(
+            entry,
+            position,
+            vfxLayer,
+            visibleLayer,
+            Mathf.Max(0.01f, lifeTime),
+            vfx => ConfigureVfxInstance(vfx, entry),
+            out handle);
+    }
+
+    private BattleVfxEntry CreateRuntimeVfxEntry(GameObject prefab, VfxFlipType flipType)
+    {
+        return new BattleVfxEntry
+        {
+            prefab = prefab,
+            flipType = flipType
+        };
+    }
+
+    private void ConfigureVfxInstance(GameObject vfx, BattleVfxEntry entry)
+    {
+        if (vfxLayer >= 0)
+            SetLayerRecursively(vfx, vfxLayer);
+
+        ApplyVfxFlip(vfx, entry.flipType);
+    }
+
+    private void ApplyDirectWorldVfxSorting(
+        GameObject vfx,
+        BattleVfxEntry entry,
+        float y)
+    {
+        Renderer[] renderers = vfx.GetComponentsInChildren<Renderer>(true);
+        int baseOrder = BattleWorldVfxSortUtility.CalculateSortingOrder(
+            y + entry.proxySortingWorldYOffset,
+            entry.proxyYMultiplier,
+            entry.proxySortingOrderOffset);
+
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            int prefabOrderOffset = renderers[i].sortingOrder;
+
+            if (!string.IsNullOrWhiteSpace(entry.proxySortingLayerName))
+                renderers[i].sortingLayerName = entry.proxySortingLayerName;
+
+            renderers[i].sortingOrder = baseOrder + prefabOrderOffset;
+        }
     }
 
     private Transform GetVfxSpawnTransform()
