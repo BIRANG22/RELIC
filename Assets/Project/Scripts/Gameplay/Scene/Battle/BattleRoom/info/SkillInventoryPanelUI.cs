@@ -48,6 +48,9 @@ public class SkillInventoryPanelUI : MonoBehaviour
 
     public void SelectEquipSlot(string characterId, int equippedSkillIndex)
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         InventoryPanelSelectionResetter.ResetAllSelectionsExcept(this);
 
         if (CheckSkillEditLocked())
@@ -62,6 +65,9 @@ public class SkillInventoryPanelUI : MonoBehaviour
 
     public void SelectInventorySkillIcon(SkillInventoryIconUI selectedIcon)
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         InventoryPanelSelectionResetter.ResetAllSelectionsExcept(this);
 
         selectedInventorySkillIcon = selectedIcon;
@@ -70,6 +76,9 @@ public class SkillInventoryPanelUI : MonoBehaviour
 
     public void SelectSkill(string skillId)
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         if (string.IsNullOrWhiteSpace(skillId))
             return;
 
@@ -84,6 +93,9 @@ public class SkillInventoryPanelUI : MonoBehaviour
 
     public bool EquipSelectedInventorySkillToSlot(string characterId, int equippedSkillIndex)
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return false;
+
         if (selectedInventorySkillIcon == null)
             return false;
 
@@ -100,6 +112,9 @@ public class SkillInventoryPanelUI : MonoBehaviour
 
     public bool UnequipSkill(string characterId, int equippedSkillIndex)
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return false;
+
         if (CheckSkillEditLocked())
             return false;
 
@@ -136,6 +151,9 @@ public class SkillInventoryPanelUI : MonoBehaviour
 
     public void ShowSkillTooltip(string skillId, RectTransform hoveredSlotRect)
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         ResolveTooltipPanelOwner();
 
         if (tooltipPanelOwner == null ||
@@ -185,6 +203,9 @@ public class SkillInventoryPanelUI : MonoBehaviour
 
     private bool EquipSkill(string characterId, int equippedSkillIndex, string skillId)
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return false;
+
         if (CheckSkillEditLocked())
             return false;
 

@@ -277,6 +277,9 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
 
     private void HandleButtonClick()
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         if (!HasItem)
             return;
 
@@ -285,6 +288,9 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         if (!HasItem)
             return;
 
@@ -309,6 +315,9 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         if (!HasItem)
             return;
 

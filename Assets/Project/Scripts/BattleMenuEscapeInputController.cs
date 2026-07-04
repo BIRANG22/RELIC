@@ -1,7 +1,8 @@
-#if ENABLE_INPUT_SYSTEM
+ï»¿#if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -16,6 +17,13 @@ public class BattleMenuEscapeInputController : MonoBehaviour
     [SerializeField] private Button menuButton;
     [SerializeField] private string menuButtonObjectName = "MenuButton";
     [SerializeField] private bool autoFindMenuButton = true;
+
+    [Header("Menu Panel")]
+    [SerializeField] private GameObject menuPanel;
+    [SerializeField] private string menuPanelObjectName = "MenuPanel";
+    [SerializeField] private bool autoFindMenuPanel = true;
+    [SerializeField] private int menuPanelSortingOrder = 10000;
+    [SerializeField] private bool blockOtherButtonsWhenMenuPanelOpen = true;
 
     [Header("Close")]
     [SerializeField] private bool closeOpenedPanelFirst = true;
@@ -39,29 +47,41 @@ public class BattleMenuEscapeInputController : MonoBehaviour
     [SerializeField] private float fallbackResumeTimeScale = 1f;
 
     private bool isPauseApplied;
+    private bool isOtherButtonBlockApplied;
     private float timeScaleBeforePause = 1f;
     private Coroutine inventoryMoveCoroutine;
+    private readonly List<SelectableState> blockedSelectableStates = new();
+
+    private struct SelectableState
+    {
+        public Selectable Selectable;
+        public bool WasInteractable;
+    }
 
     private void Awake()
     {
         FindMenuButtonIfNeeded();
+        FindMenuPanelIfNeeded();
         FindInventoryPanelIfNeeded();
     }
 
     private void OnEnable()
     {
         FindMenuButtonIfNeeded();
+        FindMenuPanelIfNeeded();
         FindInventoryPanelIfNeeded();
         RefreshPauseState();
     }
 
     private void OnDisable()
     {
+        ReleaseOtherButtonBlockIfNeeded();
         ReleasePauseIfNeeded();
     }
 
     private void OnDestroy()
     {
+        ReleaseOtherButtonBlockIfNeeded();
         ReleasePauseIfNeeded();
     }
 
@@ -69,6 +89,9 @@ public class BattleMenuEscapeInputController : MonoBehaviour
     {
         if (enableInventoryControlKeyToggle && WasControlPressedThisFrame() && !IsTypingInputFieldSelected())
         {
+            if (IsMenuPanelOpen())
+                return;
+
             ToggleInventoryPanelByControlKey();
             RefreshPauseState();
             return;
@@ -85,8 +108,7 @@ public class BattleMenuEscapeInputController : MonoBehaviour
             if (UIManager.Instance != null && UIManager.Instance.TryHideOptionIfOpen(true))
                 return;
 
-            if (!closeOpenedPanelFirst || !UIPanelButton.TryCloseCurrentOpenedPanel())
-                ClickMenuButton();
+            ClickMenuButton();
         }
 
         RefreshPauseState();
@@ -94,7 +116,18 @@ public class BattleMenuEscapeInputController : MonoBehaviour
 
     private void RefreshPauseState()
     {
-        bool shouldPause = pauseGameWhenMenuPanelOpen && UIPanelButton.HasCurrentOpenedPanel;
+        bool menuPanelOpen = IsMenuPanelOpen();
+        bool shouldPause = pauseGameWhenMenuPanelOpen && menuPanelOpen;
+
+        if (menuPanelOpen)
+        {
+            BringMenuPanelToFront();
+            ApplyOtherButtonBlockIfNeeded();
+        }
+        else
+        {
+            ReleaseOtherButtonBlockIfNeeded();
+        }
 
         if (shouldPause)
         {
@@ -104,6 +137,108 @@ public class BattleMenuEscapeInputController : MonoBehaviour
         }
 
         ReleasePauseIfNeeded();
+    }
+
+    private bool IsMenuPanelOpen()
+    {
+        FindMenuPanelIfNeeded();
+        return menuPanel != null && menuPanel.activeInHierarchy;
+    }
+
+    private void BringMenuPanelToFront()
+    {
+        FindMenuPanelIfNeeded();
+
+        if (menuPanel == null)
+            return;
+
+        menuPanel.transform.SetAsLastSibling();
+
+        Canvas canvas = menuPanel.GetComponent<Canvas>();
+        if (canvas == null)
+            canvas = menuPanel.AddComponent<Canvas>();
+
+        canvas.overrideSorting = true;
+        canvas.sortingOrder = menuPanelSortingOrder;
+
+        if (menuPanel.GetComponent<GraphicRaycaster>() == null)
+            menuPanel.AddComponent<GraphicRaycaster>();
+    }
+
+    private void ApplyOtherButtonBlockIfNeeded()
+    {
+        if (!blockOtherButtonsWhenMenuPanelOpen)
+            return;
+
+        if (isOtherButtonBlockApplied)
+            return;
+
+        blockedSelectableStates.Clear();
+
+        Selectable[] selectables = FindObjectsByType<Selectable>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+
+        for (int i = 0; i < selectables.Length; i++)
+        {
+            Selectable selectable = selectables[i];
+
+            if (selectable == null)
+                continue;
+
+            if (ShouldAllowSelectableWhileMenuPanelOpen(selectable))
+                continue;
+
+            blockedSelectableStates.Add(new SelectableState
+            {
+                Selectable = selectable,
+                WasInteractable = selectable.interactable
+            });
+
+            selectable.interactable = false;
+        }
+
+        isOtherButtonBlockApplied = true;
+    }
+
+    private void ReleaseOtherButtonBlockIfNeeded()
+    {
+        if (!isOtherButtonBlockApplied)
+            return;
+
+        for (int i = 0; i < blockedSelectableStates.Count; i++)
+        {
+            SelectableState state = blockedSelectableStates[i];
+
+            if (state.Selectable == null)
+                continue;
+
+            state.Selectable.interactable = state.WasInteractable;
+        }
+
+        blockedSelectableStates.Clear();
+        isOtherButtonBlockApplied = false;
+    }
+
+    private bool ShouldAllowSelectableWhileMenuPanelOpen(Selectable selectable)
+    {
+        if (selectable == null)
+            return false;
+
+        if (menuButton != null && selectable.gameObject == menuButton.gameObject)
+            return true;
+
+        if (selectable.gameObject.name == menuButtonObjectName)
+            return true;
+
+        FindMenuPanelIfNeeded();
+
+        if (menuPanel != null)
+        {
+            Transform selectableTransform = selectable.transform;
+            if (selectableTransform == menuPanel.transform || selectableTransform.IsChildOf(menuPanel.transform))
+                return true;
+        }
+
+        return false;
     }
 
     private void ApplyPauseIfNeeded()
@@ -135,7 +270,7 @@ public class BattleMenuEscapeInputController : MonoBehaviour
 
         if (menuButton == null)
         {
-            Debug.LogWarning("[BattleMenuEscapeInputController] MenuButtonÀ» Ã£Áö ¸øÇß½À´Ï´Ù.");
+            Debug.LogWarning("[BattleMenuEscapeInputController] MenuButtonì„ ì°¾ì§€ ëª»í–ˆìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -143,6 +278,7 @@ public class BattleMenuEscapeInputController : MonoBehaviour
             return;
 
         ExecutePointerClick(menuButton.gameObject);
+        RefreshPauseState();
     }
 
     private void ExecutePointerClick(GameObject target)
@@ -197,7 +333,7 @@ public class BattleMenuEscapeInputController : MonoBehaviour
 
         if (inventoryPanelRect == null)
         {
-            Debug.LogWarning("[BattleMenuEscapeInputController] InventoryPanelÀ» Ã£Áö ¸øÇß½À´Ï´Ù.");
+            Debug.LogWarning("[BattleMenuEscapeInputController] InventoryPanelì„ ì°¾ì§€ ëª»í–ˆìŠµë‹ˆë‹¤.");
             return false;
         }
 
@@ -268,6 +404,28 @@ public class BattleMenuEscapeInputController : MonoBehaviour
 
         inventoryPanelRect.anchoredPosition = targetPosition;
         inventoryMoveCoroutine = null;
+    }
+
+    private void FindMenuPanelIfNeeded()
+    {
+        if (!autoFindMenuPanel || menuPanel != null)
+            return;
+
+        GameObject[] objects = FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+        for (int i = 0; i < objects.Length; i++)
+        {
+            GameObject candidate = objects[i];
+
+            if (candidate == null)
+                continue;
+
+            if (candidate.name != menuPanelObjectName)
+                continue;
+
+            menuPanel = candidate;
+            return;
+        }
     }
 
     private void FindInventoryPanelIfNeeded()

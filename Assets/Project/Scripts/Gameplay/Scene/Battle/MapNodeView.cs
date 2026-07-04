@@ -125,6 +125,13 @@ public class MapNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+        {
+            isPointerInside = false;
+            ResetHoverScale();
+            return;
+        }
+
         isPointerInside = true;
 
         if (!CanPlayHoverBreath())
@@ -139,6 +146,9 @@ public class MapNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public void OnClick()
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         if (nodeData == null)
             return;
 
@@ -246,6 +256,9 @@ public class MapNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     private bool CanPlayHoverBreath()
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return false;
+
         if (!useSelectableHoverBreath)
             return false;
 
@@ -268,6 +281,9 @@ public class MapNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     private void InvokeClick()
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         onClicked?.Invoke(nodeData);
     }
 

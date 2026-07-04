@@ -232,6 +232,9 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         if (skillData == null)
             return;
 
@@ -262,6 +265,9 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         if (!canClick)
             return;
 

@@ -142,6 +142,9 @@ public class RelicIconUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHan
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         if (string.IsNullOrWhiteSpace(relicId))
             return;
 
@@ -159,6 +162,9 @@ public class RelicIconUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHan
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         if (string.IsNullOrWhiteSpace(relicId))
             return;
 

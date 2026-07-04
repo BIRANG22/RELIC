@@ -170,6 +170,9 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (IsMenuPanelOpen())
+            return;
+
         if (!isSetup || owner == null || isClicked)
             return;
 
@@ -187,11 +190,17 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (IsMenuPanelOpen())
+            return;
+
         OnClick();
     }
 
     public void OnClick()
     {
+        if (IsMenuPanelOpen())
+            return;
+
         if (!isSetup || isClicked || string.IsNullOrWhiteSpace(relicId))
             return;
 
@@ -209,5 +218,11 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
     {
         if (scaleTarget != null)
             scaleTarget.localScale = originalScale;
+    }
+
+    private static bool IsMenuPanelOpen()
+    {
+        GameObject menuPanel = GameObject.Find("MenuPanel");
+        return menuPanel != null && menuPanel.activeInHierarchy;
     }
 }

@@ -51,6 +51,9 @@ public class SkillInventoryIconUI : MonoBehaviour, IPointerClickHandler, IPointe
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         if (string.IsNullOrWhiteSpace(skillId))
             return;
 
@@ -60,6 +63,9 @@ public class SkillInventoryIconUI : MonoBehaviour, IPointerClickHandler, IPointe
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         if (string.IsNullOrWhiteSpace(skillId))
             return;
 

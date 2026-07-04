@@ -58,6 +58,9 @@ public class RelicEquipPanelUI : MonoBehaviour
 
     public void SelectEquipSlot(string characterId, int relicSlotIndex)
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         InventoryPanelSelectionResetter.ResetAllSelectionsExcept(this);
 
         selectedCharacterId = characterId;
@@ -69,6 +72,9 @@ public class RelicEquipPanelUI : MonoBehaviour
 
     public void SelectInventoryRelicIcon(RelicIconUI selectedIcon)
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         InventoryPanelSelectionResetter.ResetAllSelectionsExcept(this);
 
         selectedInventoryRelicIcon = selectedIcon;
@@ -86,6 +92,9 @@ public class RelicEquipPanelUI : MonoBehaviour
 
     public void SelectRelic(string relicId)
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         Debug.Log($"[RelicEquipPanelUI] 유물 클릭 / Character:{selectedCharacterId} / RelicSlot:{selectedRelicSlotIndex + 1} / Relic:{relicId}");
 
         if (string.IsNullOrWhiteSpace(relicId))
@@ -108,6 +117,9 @@ public class RelicEquipPanelUI : MonoBehaviour
 
     public bool EquipSelectedInventoryRelicToSlot(string characterId, int relicSlotIndex)
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return false;
+
         if (selectedInventoryRelicIcon == null)
             return false;
 
@@ -126,6 +138,9 @@ public class RelicEquipPanelUI : MonoBehaviour
 
     public void ShowRelicTooltip(string relicId, RectTransform hoveredSlotRect)
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         ResolveTooltipPanelOwner();
 
         if (tooltipPanelOwner == null)
@@ -144,6 +159,9 @@ public class RelicEquipPanelUI : MonoBehaviour
 
     private bool EquipRelic(string characterId, int relicSlotIndex, string relicId)
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return false;
+
         if (CheckRelicEditLocked())
             return false;
 
@@ -434,6 +452,9 @@ public class RelicEquipPanelUI : MonoBehaviour
 
     public void UnequipRelic(string characterId, int relicSlotIndex)
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         if (CheckRelicEditLocked())
             return;
 

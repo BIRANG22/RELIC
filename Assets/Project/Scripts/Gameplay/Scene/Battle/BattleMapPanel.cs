@@ -1,4 +1,4 @@
-using Relic.Gameplay.Data;
+ï»¿using Relic.Gameplay.Data;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -38,7 +38,7 @@ public class BattleMapPanel : MonoBehaviour
     {
         if (runtime == null)
         {
-            Debug.LogWarning("[BattleMapPanel] MapRuntimeData°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("[BattleMapPanel] MapRuntimeDataê°€ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -70,7 +70,7 @@ public class BattleMapPanel : MonoBehaviour
     {
         if (mapViewSpawner == null)
         {
-            Debug.LogWarning("[BattleMapPanel] MapViewSpawner°¡ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù.");
+            Debug.LogWarning("[BattleMapPanel] MapViewSpawnerê°€ ì—°ê²°ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -197,9 +197,12 @@ public class BattleMapPanel : MonoBehaviour
     }
     private void OnNodeClicked(GeneratedMapNodeData nodeData)
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         if (battleSceneController == null)
         {
-            Debug.LogWarning("[BattleMapPanel] BattleSceneController°¡ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù.");
+            Debug.LogWarning("[BattleMapPanel] BattleSceneControllerê°€ ì—°ê²°ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
             return;
         }
 
