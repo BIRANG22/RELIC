@@ -79,6 +79,9 @@ public class ButtonClunkAnimation : MonoBehaviour, IPointerClickHandler
     /// </summary>
     public void Play()
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         if (targetObject == null)
             return;
 

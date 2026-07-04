@@ -103,6 +103,9 @@ public class BattleRoomLoader : MonoBehaviour
 
     private void Update()
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         HandleSkillPanelToggleInput();
         HandleCharacterNumberSelectInput();
     }

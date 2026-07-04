@@ -153,6 +153,9 @@ public class SkillListPanel : MonoBehaviour
         if (!enableKeyboardSkillSelection)
             return;
 
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         if (!IsOpen())
             return;
 

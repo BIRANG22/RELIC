@@ -22,7 +22,7 @@ public class BattleActionRunner
 
     private const float ActionDelay = 0.03f;
     private const float BatchEndDelay = 0.03f;
-    private const float NoInteractionPostDelay = 0.02f;
+    private const float NoInteractionPostDelay = 0.12f;
 
     private const float HitCameraDelay = 0.08f;
     private const float MonsterHUDVisibleDelay = 0.45f;

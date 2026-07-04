@@ -77,6 +77,9 @@ public class BattleCharacter : MonoBehaviour
 
     private void OnMouseDown()
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         if (RuntimeData == null)
             return;
 

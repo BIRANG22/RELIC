@@ -239,6 +239,9 @@ public class BattleTimelineController : MonoBehaviour
         if (!enableKeyboardSlotMoveInput)
             return;
 
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         if (!isActiveAndEnabled)
             return;
 
@@ -261,6 +264,9 @@ public class BattleTimelineController : MonoBehaviour
     private void HandleKeyboardUndoReservationInput()
     {
         if (!isActiveAndEnabled)
+            return;
+
+        if (UIPanelButton.IsMenuPanelOpen)
             return;
 
         if (IsTypingInputFieldSelected())

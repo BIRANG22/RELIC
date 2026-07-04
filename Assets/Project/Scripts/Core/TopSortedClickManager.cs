@@ -17,6 +17,9 @@ public class TopSortedClickManager : Singleton<TopSortedClickManager>
         if (!Input.GetMouseButtonDown(0))
             return;
 
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         Camera cam = Camera.main;
 
         if (cam == null)
