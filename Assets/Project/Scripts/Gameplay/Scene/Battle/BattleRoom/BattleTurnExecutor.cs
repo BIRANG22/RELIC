@@ -137,6 +137,9 @@ public class BattleTurnExecutor : MonoBehaviour
 
     private void Update()
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         if (!enableSpaceEndTurnInput)
             return;
 

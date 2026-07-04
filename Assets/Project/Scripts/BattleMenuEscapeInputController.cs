@@ -25,8 +25,6 @@ public class BattleMenuEscapeInputController : MonoBehaviour
     [SerializeField] private int menuPanelSortingOrder = 10000;
     [SerializeField] private bool blockOtherButtonsWhenMenuPanelOpen = true;
 
-    [Header("Close")]
-    [SerializeField] private bool closeOpenedPanelFirst = true;
 
     [Header("Inventory Panel Toggle")]
     [SerializeField] private bool enableInventoryControlKeyToggle = true;

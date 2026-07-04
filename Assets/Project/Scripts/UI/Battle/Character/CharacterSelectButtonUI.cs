@@ -16,6 +16,9 @@ public class CharacterSelectButtonUI : MonoBehaviour
 
     public void OnClickCharacter()
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         if (battleCharacter == null || battleCharacter.RuntimeData == null)
             return;
 

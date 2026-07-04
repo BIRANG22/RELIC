@@ -270,6 +270,9 @@ namespace Relic.Gameplay.Monster
 
         private void OnMouseDown()
         {
+            if (UIPanelButton.IsMenuPanelOpen)
+                return;
+
             if (reservationVisualActive)
                 return;
 
@@ -285,6 +288,9 @@ namespace Relic.Gameplay.Monster
 
         private void OnMouseEnter()
         {
+            if (UIPanelButton.IsMenuPanelOpen)
+                return;
+
             if (reservationVisualActive)
                 return;
 
@@ -299,6 +305,9 @@ namespace Relic.Gameplay.Monster
 
         private void OnMouseExit()
         {
+            if (UIPanelButton.IsMenuPanelOpen)
+                return;
+
             if (reservationVisualActive)
                 return;
 

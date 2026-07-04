@@ -82,6 +82,9 @@ public class RestRoomController : MonoBehaviour
 
     public void OnRestButtonClicked()
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         if (IsRestActionLocked)
             return;
 
@@ -100,6 +103,9 @@ public class RestRoomController : MonoBehaviour
 
     public void OnUpgradeButtonClicked()
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         if (IsRestActionLocked)
             return;
 
@@ -120,6 +126,9 @@ public class RestRoomController : MonoBehaviour
 
     public void OnTuningButtonClicked()
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         if (IsRestActionLocked)
             return;
 
@@ -143,6 +152,9 @@ public class RestRoomController : MonoBehaviour
 
     public void OnNextButtonClicked()
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         if (!isRestUsed)
             return;
 
