@@ -1,7 +1,9 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 using Relic.Gameplay.Data;
 
 public enum SkillSlotType
@@ -28,6 +30,20 @@ public class SkillUpgradePanel : MonoBehaviour
     [SerializeField] private Transform contentRoot;
     [SerializeField] private SkillUpgradeIconItem iconPrefab;
     [SerializeField] private Image selectedSkillIconImage;
+    [SerializeField] private TMP_Text nameText;
+    [SerializeField] private TMP_Text upgradedNameText;
+    [SerializeField] private TMP_Text effectText;
+    [SerializeField] private TMP_Text upgradedEffectText;
+
+    [Header("Upgrade Complete Animation")]
+    [SerializeField] private Transform gearTransform;
+    [SerializeField] private float gearRotateAnglePerStep = -60f;
+    [SerializeField] private int gearRotateStepCount = 2;
+    [SerializeField] private float gearRotateTickDuration = 0.12f;
+    [SerializeField] private float gearRotateTickInterval = 1f;
+    [SerializeField] private float closeDelayAfterUpgradeComplete = 0.5f;
+    [SerializeField] private string upgradeCompleteMessageFormat = "{0}으로 강화되었습니다.";
+    [SerializeField] private Color upgradedSkillIconColor = new Color32(0x7E, 0x93, 0xEC, 0xFF);
 
     [Header("Layout")]
     [SerializeField] private Vector2 fallbackIconSize = new(80f, 80f);
@@ -42,6 +58,8 @@ public class SkillUpgradePanel : MonoBehaviour
     private bool hasCachedSelectedIconDefault;
     private Sprite selectedIconDefaultSprite;
     private bool selectedIconDefaultEnabled;
+    private Color selectedIconDefaultColor = Color.white;
+    private Coroutine upgradeCompleteCoroutine;
 
     public bool HasUpgradedThisRestRoom => hasUpgradedThisRestRoom;
 
@@ -81,6 +99,7 @@ public class SkillUpgradePanel : MonoBehaviour
             gameObject.SetActive(true);
 
         ClearSelectedUpgradeSelection();
+        ClearSkillInfoTexts();
         ConfigureContentLayout();
         Refresh();
     }
@@ -89,6 +108,7 @@ public class SkillUpgradePanel : MonoBehaviour
     {
         Clear();
         ClearSelectedUpgradeSelection();
+        ClearSkillInfoTexts();
 
         if (panelRoot != null)
             panelRoot.SetActive(false);
@@ -171,7 +191,9 @@ public class SkillUpgradePanel : MonoBehaviour
             upgradeSkillId,
             SkillSlotType.Inventory,
             inventoryIndex,
-            OnSkillItemClicked
+            OnSkillItemClicked,
+            ShowUpgradeSkillInfo,
+            OnSkillItemHoverExit
         );
 
         spawnedItems.Add(item);
@@ -224,7 +246,9 @@ public class SkillUpgradePanel : MonoBehaviour
             upgradeSkillId,
             slotType,
             slotIndex,
-            OnSkillItemClicked
+            OnSkillItemClicked,
+            ShowUpgradeSkillInfo,
+            OnSkillItemHoverExit
         );
 
         spawnedItems.Add(item);
@@ -236,6 +260,7 @@ public class SkillUpgradePanel : MonoBehaviour
             return;
 
         SelectSkillForUpgrade(request, selectedIcon);
+        ShowUpgradeSkillInfo(request);
     }
 
     private void SelectSkillForUpgrade(SkillUpgradeRequest request, Sprite selectedIcon)
@@ -332,7 +357,352 @@ public class SkillUpgradePanel : MonoBehaviour
     private void CompleteUpgrade()
     {
         hasUpgradedThisRestRoom = true;
+
+        if (!isActiveAndEnabled)
+        {
+            Close();
+            return;
+        }
+
+        if (upgradeCompleteCoroutine != null)
+            StopCoroutine(upgradeCompleteCoroutine);
+
+        upgradeCompleteCoroutine = StartCoroutine(PlayUpgradeCompleteSequence());
+    }
+
+    private IEnumerator PlayUpgradeCompleteSequence()
+    {
+        string upgradedSkillName = BuildUpgradeCompleteSkillName(selectedUpgradeRequest);
+
+        yield return PlayGearRotateAnimation();
+
+        TintUpgradedSkillItem(selectedUpgradeRequest);
+        TintSelectedWheelIconAsUpgraded();
+
+        float safeCloseDelay = Mathf.Max(0f, closeDelayAfterUpgradeComplete);
+        if (safeCloseDelay > 0f)
+            yield return new WaitForSecondsRealtime(safeCloseDelay);
+
+        upgradeCompleteCoroutine = null;
         Close();
+        ShowUpgradeCompleteWarning(upgradedSkillName);
+    }
+
+    private IEnumerator PlayGearRotateAnimation()
+    {
+        Transform gear = ResolveGearTransform();
+
+        if (gear == null)
+            yield break;
+
+        int safeCount = Mathf.Max(0, gearRotateStepCount);
+        float safeInterval = Mathf.Max(0f, gearRotateTickInterval);
+
+        for (int i = 0; i < safeCount; i++)
+        {
+            yield return RotateGearOneTick(gear, gearRotateAnglePerStep);
+
+            if (i < safeCount - 1 && safeInterval > 0f)
+                yield return new WaitForSecondsRealtime(safeInterval);
+        }
+    }
+
+    private IEnumerator RotateGearOneTick(Transform gear, float deltaZ)
+    {
+        if (gear == null)
+            yield break;
+
+        Vector3 startEuler = gear.localEulerAngles;
+        float startZ = NormalizeAngle(startEuler.z);
+        float targetZ = startZ + deltaZ;
+        float safeDuration = Mathf.Max(0.01f, gearRotateTickDuration);
+        float elapsed = 0f;
+
+        while (elapsed < safeDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / safeDuration);
+            float z = Mathf.Lerp(startZ, targetZ, t);
+            gear.localRotation = Quaternion.Euler(startEuler.x, startEuler.y, z);
+            yield return null;
+        }
+
+        gear.localRotation = Quaternion.Euler(startEuler.x, startEuler.y, targetZ);
+    }
+
+    private static float NormalizeAngle(float angle)
+    {
+        while (angle > 180f)
+            angle -= 360f;
+
+        while (angle < -180f)
+            angle += 360f;
+
+        return angle;
+    }
+
+    private void TintUpgradedSkillItem(SkillUpgradeRequest request)
+    {
+        for (int i = 0; i < spawnedItems.Count; i++)
+        {
+            SkillUpgradeIconItem item = spawnedItems[i];
+
+            if (item != null && item.Matches(request))
+            {
+                item.SetIconColor(upgradedSkillIconColor);
+                return;
+            }
+        }
+    }
+
+    private void TintSelectedWheelIconAsUpgraded()
+    {
+        Image targetImage = ResolveSelectedSkillIconImage();
+
+        if (targetImage == null)
+            return;
+
+        CacheSelectedSkillIconDefault(targetImage);
+        targetImage.color = upgradedSkillIconColor;
+    }
+
+    private Transform ResolveGearTransform()
+    {
+        if (gearTransform != null)
+            return gearTransform;
+
+        Transform root = panelRoot != null ? panelRoot.transform : transform;
+        Transform found = FindChildByName(root, "Gear");
+
+        if (found != null)
+            gearTransform = found;
+
+        return gearTransform;
+    }
+
+
+    private void ShowUpgradeSkillInfo(SkillUpgradeRequest request)
+    {
+        if (!TryBuildUpgradeSkillInfo(
+                request,
+                out string currentName,
+                out string upgradedName,
+                out string currentEffect,
+                out string upgradeEffect))
+        {
+            return;
+        }
+
+        TMP_Text resolvedNameText = ResolveNameText();
+        TMP_Text resolvedUpgradedNameText = ResolveUpgradedNameText();
+        TMP_Text resolvedEffectText = ResolveEffectText();
+        TMP_Text resolvedUpgradedEffectText = ResolveUpgradedEffectText();
+
+        if (resolvedNameText != null)
+        {
+            resolvedNameText.gameObject.SetActive(true);
+            resolvedNameText.text = currentName;
+        }
+
+        if (resolvedUpgradedNameText != null)
+        {
+            resolvedUpgradedNameText.gameObject.SetActive(true);
+            resolvedUpgradedNameText.text = upgradedName;
+        }
+
+        if (resolvedEffectText != null)
+        {
+            resolvedEffectText.gameObject.SetActive(true);
+            resolvedEffectText.text = currentEffect;
+        }
+
+        if (resolvedUpgradedEffectText != null)
+        {
+            resolvedUpgradedEffectText.gameObject.SetActive(true);
+            resolvedUpgradedEffectText.text = upgradeEffect;
+        }
+    }
+
+    private void OnSkillItemHoverExit(SkillUpgradeRequest request)
+    {
+        // 강화 패널에서는 팝업 프리팹을 닫는 대신, 마지막으로 본 스킬 정보를 텍스트 영역에 유지합니다.
+    }
+
+    private bool TryBuildUpgradeSkillInfo(
+        SkillUpgradeRequest request,
+        out string currentName,
+        out string upgradedName,
+        out string currentEffect,
+        out string upgradeEffect)
+    {
+        currentName = string.Empty;
+        upgradedName = string.Empty;
+        currentEffect = string.Empty;
+        upgradeEffect = string.Empty;
+
+        if (DataManager.Instance == null || DataManager.Instance.SkillDatabase == null)
+            return false;
+
+        if (!DataManager.Instance.SkillDatabase.TryGet(request.CurrentSkillId, out SkillMasterData currentSkill))
+            return false;
+
+        if (!DataManager.Instance.SkillDatabase.TryGet(request.UpgradeSkillId, out SkillMasterData upgradeSkill))
+            return false;
+
+        CharacterRuntimeData runtime = ResolveCharacterRuntime(request.CharacterId);
+        currentName = GetSkillName(currentSkill);
+        upgradedName = GetSkillName(upgradeSkill);
+        currentEffect = SkillTooltipFormatter.BuildSkillDescription(currentSkill, runtime);
+        upgradeEffect = SkillTooltipFormatter.BuildSkillDescription(upgradeSkill, runtime);
+
+        return true;
+    }
+
+    private CharacterRuntimeData ResolveCharacterRuntime(string characterId)
+    {
+        if (string.IsNullOrWhiteSpace(characterId))
+            return null;
+
+        if (DataManager.Instance == null || DataManager.Instance.CharacterRuntimeStore == null)
+            return null;
+
+        return DataManager.Instance.CharacterRuntimeStore.TryGet(
+            characterId,
+            out CharacterRuntimeData runtime)
+            ? runtime
+            : null;
+    }
+
+    private string GetSkillName(SkillMasterData skillData)
+    {
+        if (skillData == null)
+            return string.Empty;
+
+        if (!string.IsNullOrWhiteSpace(skillData.Name))
+            return skillData.Name;
+
+        return skillData.SkillId;
+    }
+
+    private string BuildUpgradeCompleteSkillName(SkillUpgradeRequest request)
+    {
+        if (DataManager.Instance != null &&
+            DataManager.Instance.SkillDatabase != null &&
+            DataManager.Instance.SkillDatabase.TryGet(request.UpgradeSkillId, out SkillMasterData upgradedSkill))
+        {
+            string upgradedName = GetSkillName(upgradedSkill);
+            if (!string.IsNullOrWhiteSpace(upgradedName))
+                return upgradedName;
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.UpgradeSkillId))
+            return request.UpgradeSkillId;
+
+        return "스킬";
+    }
+
+    private void ShowUpgradeCompleteWarning(string upgradedSkillName)
+    {
+        string safeName = string.IsNullOrWhiteSpace(upgradedSkillName) ? "스킬" : upgradedSkillName;
+        string format = string.IsNullOrWhiteSpace(upgradeCompleteMessageFormat)
+            ? "{0}으로 강화되었습니다."
+            : upgradeCompleteMessageFormat;
+
+        BattleWarningUI.ShowMessage(string.Format(format, safeName));
+    }
+
+    private void ClearSkillInfoTexts()
+    {
+        TMP_Text resolvedNameText = ResolveNameText();
+        TMP_Text resolvedUpgradedNameText = ResolveUpgradedNameText();
+        TMP_Text resolvedEffectText = ResolveEffectText();
+        TMP_Text resolvedUpgradedEffectText = ResolveUpgradedEffectText();
+
+        if (resolvedNameText != null)
+        {
+            resolvedNameText.text = string.Empty;
+            resolvedNameText.gameObject.SetActive(false);
+        }
+
+        if (resolvedUpgradedNameText != null)
+        {
+            resolvedUpgradedNameText.text = string.Empty;
+            resolvedUpgradedNameText.gameObject.SetActive(false);
+        }
+
+        if (resolvedEffectText != null)
+        {
+            resolvedEffectText.text = string.Empty;
+            resolvedEffectText.gameObject.SetActive(false);
+        }
+
+        if (resolvedUpgradedEffectText != null)
+        {
+            resolvedUpgradedEffectText.text = string.Empty;
+            resolvedUpgradedEffectText.gameObject.SetActive(false);
+        }
+    }
+
+    private TMP_Text ResolveNameText()
+    {
+        if (nameText != null)
+            return nameText;
+
+        Transform root = panelRoot != null ? panelRoot.transform : transform;
+        Transform found = FindChildByName(root, "NameText") ??
+                          FindChildByName(root, "CurrentNameText");
+
+        if (found != null)
+            nameText = found.GetComponent<TMP_Text>();
+
+        return nameText;
+    }
+
+    private TMP_Text ResolveUpgradedNameText()
+    {
+        if (upgradedNameText != null)
+            return upgradedNameText;
+
+        Transform root = panelRoot != null ? panelRoot.transform : transform;
+        Transform found = FindChildByName(root, "UpgradedNameText") ??
+                          FindChildByName(root, "UpgradeNameText") ??
+                          FindChildByName(root, "AfterNameText");
+
+        if (found != null)
+            upgradedNameText = found.GetComponent<TMP_Text>();
+
+        return upgradedNameText;
+    }
+
+    private TMP_Text ResolveEffectText()
+    {
+        if (effectText != null)
+            return effectText;
+
+        Transform root = panelRoot != null ? panelRoot.transform : transform;
+        Transform found = FindChildByName(root, "EffectText") ??
+                          FindChildByName(root, "CurrentEffectText");
+
+        if (found != null)
+            effectText = found.GetComponent<TMP_Text>();
+
+        return effectText;
+    }
+
+    private TMP_Text ResolveUpgradedEffectText()
+    {
+        if (upgradedEffectText != null)
+            return upgradedEffectText;
+
+        Transform root = panelRoot != null ? panelRoot.transform : transform;
+        Transform found = FindChildByName(root, "UpgradedEffectText") ??
+                          FindChildByName(root, "UpgradeEffectText") ??
+                          FindChildByName(root, "AfterEffectText");
+
+        if (found != null)
+            upgradedEffectText = found.GetComponent<TMP_Text>();
+
+        return upgradedEffectText;
     }
 
     private void SetSelectedSkillIcon(Sprite selectedIcon)
@@ -345,6 +715,7 @@ public class SkillUpgradePanel : MonoBehaviour
         CacheSelectedSkillIconDefault(targetImage);
         targetImage.sprite = selectedIcon;
         targetImage.enabled = selectedIcon != null;
+        targetImage.color = selectedIconDefaultColor;
         targetImage.preserveAspect = true;
     }
 
@@ -361,6 +732,7 @@ public class SkillUpgradePanel : MonoBehaviour
         CacheSelectedSkillIconDefault(targetImage);
         targetImage.sprite = selectedIconDefaultSprite;
         targetImage.enabled = selectedIconDefaultEnabled;
+        targetImage.color = selectedIconDefaultColor;
     }
 
     private Image ResolveSelectedSkillIconImage()
@@ -409,6 +781,7 @@ public class SkillUpgradePanel : MonoBehaviour
 
         selectedIconDefaultSprite = targetImage.sprite;
         selectedIconDefaultEnabled = targetImage.enabled;
+        selectedIconDefaultColor = targetImage.color;
         hasCachedSelectedIconDefault = true;
     }
 
@@ -435,6 +808,12 @@ public class SkillUpgradePanel : MonoBehaviour
 
     private void Clear()
     {
+        if (upgradeCompleteCoroutine != null)
+        {
+            StopCoroutine(upgradeCompleteCoroutine);
+            upgradeCompleteCoroutine = null;
+        }
+
         for (int i = 0; i < spawnedItems.Count; i++)
         {
             if (spawnedItems[i] != null)

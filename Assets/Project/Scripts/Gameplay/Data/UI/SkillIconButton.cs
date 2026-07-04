@@ -88,7 +88,7 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
             iconImage.enabled = icon != null;
             iconImage.sprite = icon;
-            iconImage.color = Color.white;
+            iconImage.color = SkillRarityUtility.GetSkillIconColor(currentSkillData.SkillId);
         }
 
         if (lockObject != null)

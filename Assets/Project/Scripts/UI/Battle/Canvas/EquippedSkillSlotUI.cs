@@ -129,6 +129,9 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         {
             iconImage.sprite = icon;
             iconImage.enabled = icon != null || !hideEmptySlotIcon;
+            iconImage.color = skillData != null
+                ? SkillRarityUtility.GetSkillIconColor(skillData.SkillId)
+                : Color.white;
             iconImage.raycastTarget = true;
         }
 
@@ -165,6 +168,7 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         {
             iconImage.sprite = null;
             iconImage.enabled = !hideEmptySlotIcon;
+            iconImage.color = Color.white;
             iconImage.raycastTarget = true;
         }
 
@@ -191,6 +195,7 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         {
             iconImage.sprite = null;
             iconImage.enabled = !hideEmptySlotIcon;
+            iconImage.color = Color.white;
             iconImage.raycastTarget = true;
         }
 

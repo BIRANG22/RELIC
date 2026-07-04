@@ -49,7 +49,7 @@ public class GoodsIconItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         this.onClicked = onClicked;
         isPurchased = false;
 
-        SetIcon(goods?.Icon);
+        SetIcon(goods?.Icon, goods);
         SetPriceText(goods != null ? goods.Price.ToString() : string.Empty);
         SetInteractable(true);
 
@@ -128,13 +128,18 @@ public class GoodsIconItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         onClicked?.Invoke(this, goods);
     }
 
-    private void SetIcon(Sprite icon)
+    private void SetIcon(Sprite icon, RestRoomShopGoods sourceGoods)
     {
         if (iconImage == null)
             return;
 
         iconImage.sprite = icon;
-        iconImage.color = normalIconColor;
+
+        string skillId = sourceGoods != null && sourceGoods.Kind == RestRoomShopGoodsKind.Skill && sourceGoods.Skill != null
+            ? sourceGoods.Skill.SkillId
+            : null;
+
+        iconImage.color = SkillRarityUtility.GetSkillIconColor(skillId, normalIconColor);
         iconImage.enabled = icon != null || iconImage.gameObject == gameObject;
     }
 

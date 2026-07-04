@@ -368,7 +368,11 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         if (skillCostValueText != null)
             skillCostValueText.color = textColor;
 
-        ApplyImageColor(skillIconImage, imageColor);
+        Color skillIconColor = hasSkill
+            ? SkillRarityUtility.GetSkillIconColor(skillData.SkillId, usableImageColor)
+            : emptyImageColor;
+
+        ApplyImageColor(skillIconImage, skillIconColor);
         ApplyImageColor(skillRangeImage, imageColor);
         ApplyImageColor(skillCostImage, imageColor);
     }
