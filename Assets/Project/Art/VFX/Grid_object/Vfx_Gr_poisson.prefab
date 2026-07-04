@@ -101,7 +101,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   useVirtualYOffset: 1
-  virtualYOffset: -0.1
+  virtualYOffset: 0
   sortingOrderOffset: 0
   yMultiplier: 100
 --- !u!1 &6416350362071025190
@@ -116,6 +116,7 @@ GameObject:
   - component: {fileID: 7852983656410029256}
   - component: {fileID: 2764893236833711709}
   - component: {fileID: 4624903171334701823}
+  - component: {fileID: 1883596238492093184}
   m_Layer: 0
   m_Name: Vfx_Gr_poisson
   m_TagString: Untagged
@@ -5049,6 +5050,34 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1883596238492093184
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6416350362071025190}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: abaa555061994a388d1bcc3f2613b2e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  vfxEntries:
+  - prefab: {fileID: 7460213438850296490}
+    flipType: 2
+    renderMode: 0
+    renderTextureWidth: 512
+    renderTextureHeight: 512
+    renderCameraOrthographicSize: 1.5
+    proxyWorldHeight: 3
+    proxyWorldOffset: {x: 0, y: 0, z: 0}
+    proxySortingLayerName: Unit
+    proxySortingOrderOffset: 0
+    proxySortingWorldYOffset: 0
+    proxyYMultiplier: 100
+  worldOffset: {x: 0, y: 0, z: 0}
+  lifeTime: 9999
+  hideSceneSourceObjects: 1
 --- !u!1 &7460213438850296490
 GameObject:
   m_ObjectHideFlags: 0
