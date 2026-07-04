@@ -17,6 +17,14 @@ public class BattleGridEffectController : MonoBehaviour
     [SerializeField] private string sortingLayerName = "Default";
     [SerializeField] private int sortingOrder = 1;
 
+    [Header("World VFX Proxy")]
+    [SerializeField] private bool playWorldVfxProxies = true;
+    [SerializeField] private string worldVfxLayerName = "VFX";
+    [SerializeField] private string worldVfxSortingLayerName = "Unit";
+    [SerializeField] private int worldVfxSortingOrderOffset;
+    [SerializeField] private float worldVfxYMultiplier = 100f;
+    [SerializeField] private float worldVfxLifeTime = 9999f;
+
     private readonly BattleGridEffectState state = new();
     private readonly Dictionary<int, GameObject> viewsByGridIndex = new();
     private BattleGridEffectService service;
@@ -190,6 +198,7 @@ public class BattleGridEffectController : MonoBehaviour
 
         ApplyRendererSorting(view);
         view.SetActive(true);
+        PlayWorldVfxProxies(view, view.transform.position);
 
         viewsByGridIndex[placement.GridIndex] = view;
     }
@@ -215,6 +224,46 @@ public class BattleGridEffectController : MonoBehaviour
 
             renderer.sortingOrder = sortingOrder + prefabSortingOrder;
         }
+    }
+
+    private void PlayWorldVfxProxies(GameObject view, Vector3 worldPosition)
+    {
+        if (!playWorldVfxProxies || view == null)
+            return;
+
+        GridEffectWorldVfxPresenter[] presenters =
+            view.GetComponentsInChildren<GridEffectWorldVfxPresenter>(true);
+
+        if (presenters.Length == 0)
+            return;
+
+        int renderLayer = LayerMask.NameToLayer(worldVfxLayerName);
+
+        if (renderLayer < 0)
+        {
+            Debug.LogWarning($"[BattleGridEffectController] Missing VFX layer: {worldVfxLayerName}");
+            return;
+        }
+
+        GridEffectWorldVfxSpawnContext context = new(
+            worldPosition,
+            renderLayer,
+            ResolveWorldVfxVisibleLayer(view, renderLayer),
+            worldVfxSortingLayerName,
+            worldVfxSortingOrderOffset,
+            worldVfxYMultiplier,
+            worldVfxLifeTime);
+
+        for (int i = 0; i < presenters.Length; i++)
+            presenters[i].Play(context);
+    }
+
+    private static int ResolveWorldVfxVisibleLayer(GameObject view, int renderLayer)
+    {
+        if (view == null)
+            return 0;
+
+        return view.layer == renderLayer ? 0 : view.layer;
     }
 
     private void PresentAppliedEffects(
@@ -349,12 +398,25 @@ public class BattleGridEffectController : MonoBehaviour
         if (view == null)
             return;
 
+        CleanupWorldVfxProxies(view);
         view.SetActive(false);
 
         if (Application.isPlaying)
             Destroy(view);
         else
             DestroyImmediate(view);
+    }
+
+    private static void CleanupWorldVfxProxies(GameObject view)
+    {
+        if (view == null)
+            return;
+
+        GridEffectWorldVfxPresenter[] presenters =
+            view.GetComponentsInChildren<GridEffectWorldVfxPresenter>(true);
+
+        for (int i = 0; i < presenters.Length; i++)
+            presenters[i].CleanupSpawnedVfx();
     }
 
     private void ClearViews()

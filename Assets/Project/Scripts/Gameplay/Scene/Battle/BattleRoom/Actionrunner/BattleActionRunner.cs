@@ -20,11 +20,12 @@ public class BattleActionRunner
     private readonly float actionRoutineTimeout;
     private BattleGridEffectController gridEffectController;
 
-    private const float ActionDelay = 0.05f;
-    private const float BatchEndDelay = 0.05f;
+    private const float ActionDelay = 0.03f;
+    private const float BatchEndDelay = 0.03f;
+    private const float NoInteractionPostDelay = 0.02f;
 
-    private const float HitCameraDelay = 0.12f;
-    private const float MonsterHUDVisibleDelay = 0.6f;
+    private const float HitCameraDelay = 0.08f;
+    private const float MonsterHUDVisibleDelay = 0.45f;
     private const float DefaultActionRoutineTimeout = 8f;
     private const string MuckProjectileSkillId = "S_Monster_04";
     private static readonly Color ExecutionRangeColor = Color.red;
@@ -88,6 +89,7 @@ public class BattleActionRunner
         if (actionRoutines.Count <= 0)
             yield break;
 
+        bool batchHasInteraction = BatchHasInteractionAction(batch);
         bool batchHasCrossSideHit = BatchHasCrossSideHitAction(batch);
         bool holdCameraDuringBatch = batchHasCrossSideHit &&
             (ShouldHoldCameraUntilBatchEnd(batch) || keepCameraAfterBatch);
@@ -113,7 +115,7 @@ public class BattleActionRunner
 
         IncreaseMonsterTurnCountsOnceInSlot(batch);
 
-        yield return RunPostActionPresentationRoutine();
+        yield return RunPostActionPresentationRoutine(batchHasInteraction);
     }
 
     private List<ActionRoutine> BuildActionRoutines(BattleActionBatch batch)
@@ -176,13 +178,23 @@ public class BattleActionRunner
         actionRoutines.Add(CreateActionRoutine($"PlayerSkill:{command.CharacterId}:{command.SkillId}", ExecutePlayerSkill(command)));
     }
 
-    private IEnumerator RunPostActionPresentationRoutine()
+    private IEnumerator RunPostActionPresentationRoutine(bool hasInteraction = true)
     {
-        yield return new WaitForSeconds(MonsterHUDVisibleDelay);
+        if (hasInteraction)
+        {
+            yield return new WaitForSeconds(MonsterHUDVisibleDelay);
+
+            hudService.HideUnselectedMonsterHUDs();
+
+            yield return new WaitForSeconds(BatchEndDelay);
+
+            hudService.PlayAllAliveIdle();
+            yield break;
+        }
 
         hudService.HideUnselectedMonsterHUDs();
 
-        yield return new WaitForSeconds(BatchEndDelay);
+        yield return new WaitForSeconds(NoInteractionPostDelay);
 
         hudService.PlayAllAliveIdle();
     }
@@ -225,6 +237,96 @@ public class BattleActionRunner
     public bool BatchHasCrossSideHitAction(BattleActionBatch batch)
     {
         return CountCrossSideHitActions(batch) > 0;
+    }
+
+    public bool BatchHasInteractionAction(BattleActionBatch batch)
+    {
+        if (batch == null)
+            return false;
+
+        if (batch.PlayerCommands != null)
+        {
+            for (int i = 0; i < batch.PlayerCommands.Count; i++)
+            {
+                if (PlayerCommandHasInteraction(batch.PlayerCommands[i]))
+                    return true;
+            }
+        }
+
+        if (batch.MonsterCommands != null)
+        {
+            for (int i = 0; i < batch.MonsterCommands.Count; i++)
+            {
+                if (MonsterCommandHasInteraction(batch.MonsterCommands[i]))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool PlayerCommandHasInteraction(PlayerReservedCommand command)
+    {
+        if (command == null || command.SkillData == null)
+            return false;
+
+        if (command.ReservedMoveGridIndex >= 0)
+            return false;
+
+        if (command.SkillData.Target == TargetType.Self)
+            return command.UserRuntime != null && !command.UserRuntime.IsDead;
+
+        if (command.SkillData.Target == TargetType.PlayerParty)
+            return HasPlayerPartyTarget(command);
+
+        return HasMonsterTarget(command);
+    }
+
+    private bool MonsterCommandHasInteraction(MonsterReservedCommand command)
+    {
+        if (command == null || command.SkillData == null)
+            return false;
+
+        if (command.SkillData.TimelineNotation == TimelineActionType.Move)
+            return false;
+
+        if (command.SkillData.Target == TargetType.Self)
+        {
+            MonsterUnit monster = unitFinder.FindMonsterUnit(command.RuntimeId);
+            return monster != null && monster.RuntimeData != null && !monster.RuntimeData.IsDead;
+        }
+
+        if (command.SkillData.Target == TargetType.EnemyParty)
+            return FindFirstAliveMonsterTarget(command, unitFinder.FindMonsterUnit(command.RuntimeId)) != null;
+
+        return HasPlayerTarget(command);
+    }
+
+    private bool HasPlayerPartyTarget(PlayerReservedCommand command)
+    {
+        if (command == null || command.RangeGridIndices == null)
+            return false;
+
+        BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            BattleCharacter character = characters[i];
+
+            if (character == null || character.RuntimeData == null)
+                continue;
+
+            if (character.RuntimeData.IsDead)
+                continue;
+
+            if (command.RangeGridIndices.Contains(character.CurrentGridIndex))
+                return true;
+        }
+
+        return false;
     }
 
     private int CountCrossSideHitActions(BattleActionBatch batch)
