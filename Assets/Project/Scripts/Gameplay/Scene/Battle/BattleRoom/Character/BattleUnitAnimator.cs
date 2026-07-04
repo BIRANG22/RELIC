@@ -729,7 +729,7 @@ public class BattleUnitAnimator : MonoBehaviour
     {
         Renderer[] renderers = vfx.GetComponentsInChildren<Renderer>(true);
         int baseOrder = BattleWorldVfxSortUtility.CalculateSortingOrder(
-            y,
+            y + entry.proxySortingWorldYOffset,
             entry.proxyYMultiplier,
             entry.proxySortingOrderOffset);
 

@@ -8,6 +8,7 @@ namespace Relic.Gameplay.Data
     {
         public string FragmentId;
         public string Name;
+        public string Rarity;
 
         public string EffectIds;
         public string ValueCalcTypes;

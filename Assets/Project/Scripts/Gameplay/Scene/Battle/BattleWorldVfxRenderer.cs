@@ -143,35 +143,79 @@ public sealed class BattleWorldVfxRenderer : MonoBehaviour
 
         EnsureRoots();
 
-        RenderTexture renderTexture = CreateRenderTexture(entry);
-        GameObject renderGroup = CreateRenderGroup();
-        GameObject vfx = Instantiate(entry.prefab, renderGroup.transform, false);
-        configureVfx?.Invoke(vfx);
+        RenderTexture renderTexture = null;
+        GameObject renderGroup = null;
+        Material material = null;
+        GameObject proxy = null;
 
-        CreateRenderCamera(renderGroup.transform, renderTexture, renderLayer, entry);
-
-        Material material = new(shader)
+        try
         {
-            name = $"{entry.prefab.name}_WorldVfxProxy_Material"
-        };
-        material.mainTexture = renderTexture;
+            renderTexture = CreateRenderTexture(entry);
+            renderGroup = CreateRenderGroup();
+            GameObject vfx = Instantiate(entry.prefab, renderGroup.transform, false);
+            configureVfx?.Invoke(vfx);
 
-        GameObject proxy = CreateProxy(entry, material, visibleLayer, initialWorldPosition);
-        MeshRenderer proxyRenderer = proxy.GetComponent<MeshRenderer>();
+            CreateRenderCamera(renderGroup.transform, renderTexture, renderLayer, entry);
 
-        handle = proxy.AddComponent<BattleWorldVfxHandle>();
-        handle.Initialize(
-            followTarget,
-            entry.proxyWorldOffset,
-            proxyRenderer,
-            entry.proxySortingOrderOffset,
-            entry.proxyYMultiplier,
-            renderGroup,
-            renderTexture,
-            material);
+            material = new Material(shader)
+            {
+                name = $"{entry.prefab.name}_WorldVfxProxy_Material"
+            };
+            material.mainTexture = renderTexture;
 
-        StartCoroutine(handle.DestroyAfter(lifeTime));
-        return handle;
+            proxy = CreateProxy(entry, material, visibleLayer, initialWorldPosition);
+            MeshRenderer proxyRenderer = proxy.GetComponent<MeshRenderer>();
+
+            handle = proxy.AddComponent<BattleWorldVfxHandle>();
+            handle.Initialize(
+                followTarget,
+                entry.proxyWorldOffset,
+                proxyRenderer,
+                entry.proxySortingOrderOffset,
+                entry.proxySortingWorldYOffset,
+                entry.proxyYMultiplier,
+                renderGroup,
+                renderTexture,
+                material);
+
+            StartCoroutine(handle.DestroyAfter(lifeTime));
+            return handle;
+        }
+        catch (Exception exception)
+        {
+            Debug.LogWarning(
+                $"[BattleWorldVfxRenderer] Individual VFX proxy spawn failed. Prefab:{entry.prefab.name}\n{exception}");
+
+            handle = null;
+            CleanupFailedSpawn(renderGroup, proxy, renderTexture, material);
+            return null;
+        }
+    }
+
+    private static void CleanupFailedSpawn(
+        GameObject renderGroup,
+        GameObject proxy,
+        RenderTexture renderTexture,
+        Material material)
+    {
+        if (renderTexture != null)
+            renderTexture.Release();
+
+        DestroyUnityObject(proxy);
+        DestroyUnityObject(renderGroup);
+        DestroyUnityObject(material);
+        DestroyUnityObject(renderTexture);
+    }
+
+    private static void DestroyUnityObject(UnityEngine.Object target)
+    {
+        if (target == null)
+            return;
+
+        if (Application.isPlaying)
+            Destroy(target);
+        else
+            DestroyImmediate(target);
     }
 
     private void EnsureRoots()
@@ -299,7 +343,7 @@ public sealed class BattleWorldVfxRenderer : MonoBehaviour
             meshRenderer.sortingLayerName = entry.proxySortingLayerName;
 
         meshRenderer.sortingOrder = BattleWorldVfxSortUtility.CalculateSortingOrder(
-            proxy.transform.position.y,
+            proxy.transform.position.y + entry.proxySortingWorldYOffset,
             entry.proxyYMultiplier,
             entry.proxySortingOrderOffset);
 

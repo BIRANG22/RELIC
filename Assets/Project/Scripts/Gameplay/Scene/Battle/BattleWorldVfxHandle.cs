@@ -7,6 +7,7 @@ public sealed class BattleWorldVfxHandle : MonoBehaviour
     private Vector3 followWorldOffset;
     private Renderer proxyRenderer;
     private int sortingOrderOffset;
+    private float sortingWorldYOffset;
     private float yMultiplier;
     private GameObject renderGroup;
     private RenderTexture renderTexture;
@@ -18,6 +19,7 @@ public sealed class BattleWorldVfxHandle : MonoBehaviour
         Vector3 followWorldOffset,
         Renderer proxyRenderer,
         int sortingOrderOffset,
+        float sortingWorldYOffset,
         float yMultiplier,
         GameObject renderGroup,
         RenderTexture renderTexture,
@@ -27,6 +29,7 @@ public sealed class BattleWorldVfxHandle : MonoBehaviour
         this.followWorldOffset = followWorldOffset;
         this.proxyRenderer = proxyRenderer;
         this.sortingOrderOffset = sortingOrderOffset;
+        this.sortingWorldYOffset = sortingWorldYOffset;
         this.yMultiplier = yMultiplier;
         this.renderGroup = renderGroup;
         this.renderTexture = renderTexture;
@@ -77,7 +80,7 @@ public sealed class BattleWorldVfxHandle : MonoBehaviour
             return;
 
         proxyRenderer.sortingOrder = BattleWorldVfxSortUtility.CalculateSortingOrder(
-            transform.position.y,
+            transform.position.y + sortingWorldYOffset,
             yMultiplier,
             sortingOrderOffset);
     }

@@ -1,4 +1,7 @@
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using Relic.Gameplay.Data;
 using UnityEngine;
 
 public class ChestOpenButton : MonoBehaviour
@@ -11,59 +14,97 @@ public class ChestOpenButton : MonoBehaviour
         Grade4 = 4
     }
 
-    [Header("»óÀÚ µî±Ş")]
+    public event Action Opened;
+
+    public bool IsOpened => isOpened;
+
+    [Header("ìƒì ë“±ê¸‰")]
     [SerializeField] private ChestGrade chestGrade = ChestGrade.Grade1;
 
-    [Header("»óÀÚ ½ºÇÁ¶óÀÌÆ®")]
+    [Header("ë³´ìƒ ìœ ë¬¼ ìŠ¤í°")]
+    [Tooltip("ì²´í¬í•˜ë©´ DataManagerì˜ ìœ ë¬¼ ë°ì´í„°ì—ì„œ Common~Unique ìœ ë¬¼ í•˜ë‚˜ë¥¼ ì²« í´ë¦­ ë•Œ ëœë¤ ì„ íƒí•©ë‹ˆë‹¤.")]
+    [SerializeField] private bool useRandomRelicReward = true;
+
+    [Tooltip("ìœ ë¬¼ ì•„ì´ì½˜ì„ ìƒì„±í•  ë¶€ëª¨ì…ë‹ˆë‹¤. ë¹„ì›Œë‘ë©´ ìƒì Transformì„ ì‚¬ìš©í•©ë‹ˆë‹¤.")]
+    [SerializeField] private Transform rewardItemSpawnRoot;
+
+    [SerializeField] private Vector3 rewardItemLocalPosition = new(2.202f, 0.177f, 0f);
+    [SerializeField] private Vector3 rewardItemLocalScale = new(0.6f, 0.6f, 0.6f);
+    [SerializeField] private string rewardSortingLayerName = "Unit";
+    [SerializeField] private int rewardSortingOrder = 1;
+
+    [Header("ìƒì Y-sort ë³´ì •")]
+    [SerializeField] private int chestUnderSortingOrderOffset = 0;
+    [SerializeField] private int chestOpenSortingOrderOffset = 3;
+
+    [Header("ìƒì ìŠ¤í”„ë¼ì´íŠ¸")]
     [SerializeField] private SpriteRenderer chestUnder;
     [SerializeField] private SpriteRenderer chestOpen;
 
-    [Header("¿­¸² ¾Ö´Ï¸ŞÀÌ¼Ç 16ÇÁ·¹ÀÓ")]
+    [Header("ì—´ë¦¼ ì• ë‹ˆë©”ì´ì…˜ 16í”„ë ˆì„")]
     [SerializeField] private Sprite[] chestOpenFrames;
 
-    [Header("µî±Şº° Å¬¸¯ VFX")]
-    [Tooltip("0¹ø=1´Ü°è Å¬¸¯ VFX, 1¹ø=2´Ü°è Å¬¸¯ VFX, 2¹ø=3´Ü°è Å¬¸¯ VFX, 3¹ø=4´Ü°è Å¬¸¯ VFX")]
+    [Header("ë“±ê¸‰ë³„ í´ë¦­ VFX")]
+    [Tooltip("0ë²ˆ=Common, 1ë²ˆ=Uncommon, 2ë²ˆ=Rare, 3ë²ˆ=Unique í´ë¦­ VFX í”„ë¦¬íŒ¹")]
     [SerializeField] private GameObject[] stepVfxList;
 
-    [Header("¿ÏÀü ¿­¸² VFX")]
-    [Tooltip("»óÀÚ°¡ ¿ÏÀüÈ÷ ¿­¸± ¶§ 1È¸ Àç»ıÇÒ »õ·Î¿î VFXÀÔ´Ï´Ù.")]
+    [Header("ì™„ì „ ì—´ë¦¼ VFX")]
+    [Tooltip("ìƒìê°€ ì™„ì „íˆ ì—´ë¦´ ë•Œ 1íšŒ ì¬ìƒí•  VFX í”„ë¦¬íŒ¹ì…ë‹ˆë‹¤.")]
     [SerializeField] private GameObject openCompleteVfx;
 
-    [Header("º¸»ó ¾ÆÀÌÅÛ ¿ÀºêÁ§Æ®")]
-    [Tooltip("»óÀÚ°¡ ¿ÏÀüÈ÷ ¿­¸± ¶§ ³ªÅ¸³¯ ¾ÆÀÌÅÛ ½ºÇÁ¶óÀÌÆ® ¿ÀºêÁ§Æ®ÀÔ´Ï´Ù.")]
+    [Header("VFX ëŸ°íƒ€ì„ ìŠ¤í°")]
+    [SerializeField] private Transform vfxSpawnRoot;
+    [SerializeField] private Vector3 stepVfxLocalPosition = new(1.79f, 0f, 0f);
+    [SerializeField] private Vector3 openCompleteVfxLocalPosition = new(2.247f, 0.148f, 0f);
+    [SerializeField] private string vfxLayerName = "VFX";
+    [SerializeField] private string vfxSortingLayerName = "Empty";
+    [SerializeField] private int vfxSortingOrder = 2;
+    [SerializeField] private float vfxAutoDestroyDelay = 3f;
+
+    [Header("VFX ê°œë³„ ì›”ë“œ í”„ë¡ì‹œ")]
+    [SerializeField] private bool useIndividualWorldVfxProxy = true;
+    [Min(1)] [SerializeField] private int vfxRenderTextureWidth = 512;
+    [Min(1)] [SerializeField] private int vfxRenderTextureHeight = 512;
+    [Min(0.01f)] [SerializeField] private float vfxRenderCameraOrthographicSize = 5f;
+    [Min(0.01f)] [SerializeField] private float vfxProxyWorldHeight = 10f;
+    [SerializeField] private Vector3 vfxProxyWorldOffset = Vector3.zero;
+    [Min(0.01f)] [SerializeField] private float vfxProxyYMultiplier = 100f;
+
+    [Header("ë³´ìƒ ì•„ì´í…œ ì˜¤ë¸Œì íŠ¸")]
+    [Tooltip("ë ˆê±°ì‹œìš© ìˆ˜ë™ ë³´ìƒ ì•„ì´í…œ ì˜¤ë¸Œì íŠ¸ì…ë‹ˆë‹¤. ë¹„ì›Œë‘ë©´ ì„ íƒëœ ìœ ë¬¼ ì•„ì´ì½˜ìœ¼ë¡œ ëŸ°íƒ€ì„ ìƒì„±í•©ë‹ˆë‹¤.")]
     [SerializeField] private GameObject rewardItemObject;
 
-    [Tooltip("Ã¼Å©ÇÏ¸é »óÀÚ ¿­¸² 16ÇÁ·¹ÀÓ ¾Ö´Ï¸ŞÀÌ¼ÇÀÌ ³¡³­ µÚ ¾ÆÀÌÅÛÀÌ ³ªÅ¸³³´Ï´Ù. Ã¼Å© ÇØÁ¦ÇÏ¸é ¸¶Áö¸· Å¬¸¯ ¼ø°£ ¹Ù·Î ³ªÅ¸³³´Ï´Ù.")]
+    [Tooltip("ì²´í¬í•˜ë©´ ìƒì ì—´ë¦¼ 16í”„ë ˆì„ ì• ë‹ˆë©”ì´ì…˜ì´ ëë‚œ ë’¤ ì•„ì´í…œì´ ë‚˜íƒ€ë‚©ë‹ˆë‹¤. ì²´í¬ í•´ì œí•˜ë©´ ë§ˆì§€ë§‰ í´ë¦­ ìˆœê°„ ë°”ë¡œ ë‚˜íƒ€ë‚©ë‹ˆë‹¤.")]
     [SerializeField] private bool showRewardItemAfterOpenAnimation = true;
 
-    [Header("º¸»ó ¾ÆÀÌÅÛ µîÀå ¾Ö´Ï¸ŞÀÌ¼Ç")]
-    [Tooltip("¾ÆÀÌÅÛÀÌ ¾Æ·¡¿¡¼­ ¿Ã¶ó¿À´Â °Å¸®ÀÔ´Ï´Ù.")]
+    [Header("ë³´ìƒ ì•„ì´í…œ ë“±ì¥ ì• ë‹ˆë©”ì´ì…˜")]
+    [Tooltip("ì•„ì´í…œì´ ì•„ë˜ì—ì„œ ì˜¬ë¼ì˜¤ëŠ” ê±°ë¦¬ì…ë‹ˆë‹¤.")]
     [SerializeField] private float rewardItemRiseDistance = 0.35f;
 
-    [Tooltip("¾ÆÀÌÅÛ µîÀå ¾Ö´Ï¸ŞÀÌ¼Ç ½Ã°£ÀÔ´Ï´Ù.")]
+    [Tooltip("ì•„ì´í…œ ë“±ì¥ ì• ë‹ˆë©”ì´ì…˜ ì‹œê°„ì…ë‹ˆë‹¤.")]
     [SerializeField] private float rewardItemAppearDuration = 0.35f;
 
-    [Tooltip("µîÀå Áß »ìÂ¦ Ä¿Áö´Â ¹èÀ²ÀÔ´Ï´Ù.")]
+    [Tooltip("ë“±ì¥ ì¤‘ ì‚´ì§ ì»¤ì§€ëŠ” ë°°ìœ¨ì…ë‹ˆë‹¤.")]
     [SerializeField] private float rewardItemOvershootScale = 1.15f;
 
-    [Header("´úÄÈ ¾Ö´Ï¸ŞÀÌ¼Ç ´ë»ó")]
-    [Tooltip("´úÄÈ°Å¸± ´ë»óÀÔ´Ï´Ù. º¸Åë Chest ¿ÀºêÁ§Æ® ¶Ç´Â »óÀÚ ÀüÃ¼ ºÎ¸ğ ¿ÀºêÁ§Æ®¸¦ ³Ö½À´Ï´Ù.")]
+    [Header("ëœì»¹ ì• ë‹ˆë©”ì´ì…˜ ëŒ€ìƒ")]
+    [Tooltip("ëœì»¹ê±°ë¦´ ëŒ€ìƒì…ë‹ˆë‹¤. ë³´í†µ Chest ì˜¤ë¸Œì íŠ¸ ë˜ëŠ” ìƒì ì „ì²´ ë¶€ëª¨ ì˜¤ë¸Œì íŠ¸ë¥¼ ë„£ìŠµë‹ˆë‹¤.")]
     [SerializeField] private Transform clunkTarget;
 
-    [Header("´úÄÈ°Å¸² ¼³Á¤")]
+    [Header("ëœì»¹ê±°ë¦¼ ì„¤ì •")]
     [SerializeField] private float clunkDuration = 0.25f;
     [SerializeField] private int clunkCount = 3;
     [SerializeField] private float rotationPower = 4f;
 
-    [Header("Å¬¸¯ Á¦ÇÑ")]
-    [Tooltip("Å¬¸¯ ÈÄ ´ÙÀ½ Å¬¸¯À» ¹ŞÀ» ¶§±îÁöÀÇ ´ë±â ½Ã°£ÀÔ´Ï´Ù.")]
+    [Header("í´ë¦­ ì œí•œ")]
+    [Tooltip("í´ë¦­ í›„ ë‹¤ìŒ í´ë¦­ì„ ë°›ì„ ë•Œê¹Œì§€ì˜ ëŒ€ê¸° ì‹œê°„ì…ë‹ˆë‹¤.")]
     [SerializeField] private float clickCooldown = 0.3f;
 
-    [Header("Å¬¸¯ ½Ã Âª°Ô Àç»ıÇÒ ÇÁ·¹ÀÓ")]
+    [Header("í´ë¦­ ì‹œ ì§§ê²Œ ì¬ìƒí•  í”„ë ˆì„")]
     [SerializeField] private int clickPreviewFrameCount = 4;
     [SerializeField] private float clickPreviewFrameInterval = 0.04f;
 
-    [Header("¿ÏÀü ¿­¸² ¾Ö´Ï¸ŞÀÌ¼Ç")]
+    [Header("ì™„ì „ ì—´ë¦¼ ì• ë‹ˆë©”ì´ì…˜")]
     [SerializeField] private float frameInterval = 0.04f;
 
     private int currentClickCount;
@@ -73,6 +114,9 @@ public class ChestOpenButton : MonoBehaviour
     private bool isOpening;
     private bool isPreviewPlaying;
     private bool isClickCooling;
+    private bool hasSelectedReward;
+    private bool isRewardGranted;
+    private bool rewardItemWasRuntimeCreated;
 
     private Quaternion originalRotation;
     private Coroutine clunkCoroutine;
@@ -85,70 +129,90 @@ public class ChestOpenButton : MonoBehaviour
     private Transform rewardItemTransform;
     private Vector3 rewardItemOriginalLocalPosition;
     private Vector3 rewardItemOriginalLocalScale;
+    private ChestRelicReward selectedReward;
+    private readonly List<GameObject> spawnedVfxObjects = new();
+    private readonly List<BattleWorldVfxHandle> spawnedVfxHandles = new();
 
     private void Awake()
     {
         if (clunkTarget == null)
             clunkTarget = transform;
 
-        originalRotation = clunkTarget.localRotation;
+        if (rewardItemSpawnRoot == null)
+            rewardItemSpawnRoot = transform;
 
+        if (vfxSpawnRoot == null)
+            vfxSpawnRoot = rewardItemSpawnRoot != null ? rewardItemSpawnRoot : transform;
+
+        originalRotation = clunkTarget.localRotation;
         requiredClickCount = GetRequiredClickCount(chestGrade);
 
-        if (chestUnder != null)
-            chestUnder.gameObject.SetActive(true);
-
-        if (chestOpen != null)
-        {
-            chestOpen.gameObject.SetActive(true);
-
-            chestOpenAnimator = chestOpen.GetComponent<Animator>();
-            if (chestOpenAnimator != null)
-                chestOpenAnimator.enabled = false;
-
-            chestOpenAnimation = chestOpen.GetComponent<Animation>();
-            if (chestOpenAnimation != null)
-            {
-                chestOpenAnimation.Stop();
-                chestOpenAnimation.enabled = false;
-            }
-
-            if (chestOpenFrames != null && chestOpenFrames.Length > 0)
-                chestOpen.sprite = chestOpenFrames[0];
-        }
-
-        if (rewardItemObject != null)
-        {
-            rewardItemTransform = rewardItemObject.transform;
-            rewardItemOriginalLocalPosition = rewardItemTransform.localPosition;
-            rewardItemOriginalLocalScale = rewardItemTransform.localScale;
-
-            rewardItemObject.SetActive(false);
-        }
+        InitializeChestSprites();
+        InitializeLegacyRewardItem();
 
         StopAndHideAllStepVfx();
         StopAndHideVfx(openCompleteVfx);
     }
 
+    private void InitializeChestSprites()
+    {
+        if (chestUnder != null)
+        {
+            chestUnder.gameObject.SetActive(true);
+            ApplyYSortOffset(chestUnder, chestUnderSortingOrderOffset);
+        }
+
+        if (chestOpen == null)
+            return;
+
+        chestOpen.gameObject.SetActive(true);
+        ApplyYSortOffset(chestOpen, chestOpenSortingOrderOffset);
+
+        chestOpenAnimator = chestOpen.GetComponent<Animator>();
+        if (chestOpenAnimator != null)
+            chestOpenAnimator.enabled = false;
+
+        chestOpenAnimation = chestOpen.GetComponent<Animation>();
+        if (chestOpenAnimation != null)
+        {
+            chestOpenAnimation.Stop();
+            chestOpenAnimation.enabled = false;
+        }
+
+        if (chestOpenFrames != null && chestOpenFrames.Length > 0)
+            chestOpen.sprite = chestOpenFrames[0];
+    }
+
+    private void ApplyYSortOffset(SpriteRenderer spriteRenderer, int sortingOrderOffset)
+    {
+        if (spriteRenderer == null)
+            return;
+
+        YSortSprite ySort = spriteRenderer.GetComponent<YSortSprite>();
+        if (ySort != null)
+            ySort.sortingOrderOffset = sortingOrderOffset;
+    }
+
+    private void InitializeLegacyRewardItem()
+    {
+        if (rewardItemObject == null)
+            return;
+
+        rewardItemTransform = rewardItemObject.transform;
+        rewardItemOriginalLocalPosition = rewardItemTransform.localPosition;
+        rewardItemOriginalLocalScale = rewardItemTransform.localScale;
+
+        rewardItemObject.SetActive(false);
+    }
+
     private int GetRequiredClickCount(ChestGrade grade)
     {
-        switch (grade)
-        {
-            case ChestGrade.Grade1:
-                return 2;
+        return GetRevealClickCount(grade) + 1;
+    }
 
-            case ChestGrade.Grade2:
-                return 2;
-
-            case ChestGrade.Grade3:
-                return 3;
-
-            case ChestGrade.Grade4:
-                return 4;
-
-            default:
-                return 2;
-        }
+    private int GetRevealClickCount(ChestGrade grade)
+    {
+        return Mathf.Clamp((int)grade, 1, 4);
     }
 
     private void OnMouseDown()
@@ -161,6 +225,7 @@ public class ChestOpenButton : MonoBehaviour
         if (isOpened || isOpening || isClickCooling)
             return;
 
+        EnsureRewardSelected();
         StartClickCooldown();
 
         currentClickCount++;
@@ -177,6 +242,24 @@ public class ChestOpenButton : MonoBehaviour
         }
 
         OpenChest();
+    }
+
+    private void EnsureRewardSelected()
+    {
+        if (!useRandomRelicReward || hasSelectedReward)
+            return;
+
+        if (!ChestRelicRewardService.TryRollReward(DataManager.Instance, out selectedReward))
+        {
+            requiredClickCount = GetRequiredClickCount(chestGrade);
+            Debug.LogWarning("[ChestOpenButton] Common~Unique ìœ ë¬¼ í›„ë³´ê°€ ì—†ì–´ ìƒì ë“±ê¸‰ í´ë¦­ ìˆ˜ë¡œ ë™ì‘í•©ë‹ˆë‹¤.");
+            return;
+        }
+
+        hasSelectedReward = true;
+        requiredClickCount = ChestRelicRewardService.GetOpenClickCount(selectedReward.Rarity);
+
+        Debug.Log($"[ChestOpenButton] ìœ ë¬¼ ë³´ìƒ ì„ íƒ / Relic:{selectedReward.RelicId} / Rarity:{selectedReward.Rarity}");
     }
 
     private void StartClickCooldown()
@@ -270,14 +353,30 @@ public class ChestOpenButton : MonoBehaviour
 
         isOpening = true;
 
+        GrantSelectedReward();
+        EnsureRewardItemObject();
         PlayOpenCompleteVfx();
 
         if (!showRewardItemAfterOpenAnimation)
             ShowRewardItem();
 
         StartCoroutine(OpenAnimationRoutine());
+    }
 
-        GiveRewardByGrade();
+    private void GrantSelectedReward()
+    {
+        if (!useRandomRelicReward || !hasSelectedReward || isRewardGranted)
+            return;
+
+        if (!ChestRelicRewardService.GrantReward(DataManager.Instance, selectedReward))
+        {
+            Debug.LogWarning($"[ChestOpenButton] ìœ ë¬¼ ë³´ìƒ ì§€ê¸‰ ì‹¤íŒ¨ / Relic:{selectedReward.RelicId}");
+            return;
+        }
+
+        isRewardGranted = true;
+        RelicEquipPanelUI.RefreshAll();
+        Debug.Log($"[ChestOpenButton] ìœ ë¬¼ ë³´ìƒ ì§€ê¸‰ / Relic:{selectedReward.RelicId}");
     }
 
     private IEnumerator OpenAnimationRoutine()
@@ -289,6 +388,7 @@ public class ChestOpenButton : MonoBehaviour
 
             isOpened = true;
             isOpening = false;
+            NotifyOpened();
             yield break;
         }
 
@@ -311,17 +411,95 @@ public class ChestOpenButton : MonoBehaviour
 
         isOpened = true;
         isOpening = false;
+        NotifyOpened();
+    }
+
+    private void NotifyOpened()
+    {
+        Opened?.Invoke();
     }
 
     private void ShowRewardItem()
     {
-        if (rewardItemObject == null || rewardItemTransform == null)
+        if (!EnsureRewardItemObject())
             return;
 
         if (rewardItemAnimationCoroutine != null)
             StopCoroutine(rewardItemAnimationCoroutine);
 
         rewardItemAnimationCoroutine = StartCoroutine(RewardItemAppearRoutine());
+    }
+
+    private bool EnsureRewardItemObject()
+    {
+        if (rewardItemObject == null)
+            CreateRewardItemObject();
+
+        if (rewardItemObject == null)
+            return false;
+
+        if (rewardItemTransform == null)
+            rewardItemTransform = rewardItemObject.transform;
+
+        if (rewardItemWasRuntimeCreated)
+        {
+            rewardItemOriginalLocalPosition = rewardItemLocalPosition;
+            rewardItemOriginalLocalScale = rewardItemLocalScale;
+        }
+
+        return rewardItemTransform != null;
+    }
+
+    private void CreateRewardItemObject()
+    {
+        Sprite rewardSprite = GetSelectedRewardSprite();
+        if (rewardSprite == null)
+            return;
+
+        string objectName = string.IsNullOrWhiteSpace(selectedReward.RelicId)
+            ? "RelicReward"
+            : $"RelicReward_{selectedReward.RelicId}";
+
+        rewardItemObject = new GameObject(objectName);
+        rewardItemWasRuntimeCreated = true;
+
+        rewardItemTransform = rewardItemObject.transform;
+        rewardItemTransform.SetParent(rewardItemSpawnRoot != null ? rewardItemSpawnRoot : transform, false);
+        rewardItemTransform.localPosition = rewardItemLocalPosition;
+        rewardItemTransform.localRotation = Quaternion.identity;
+        rewardItemTransform.localScale = rewardItemLocalScale;
+
+        SpriteRenderer spriteRenderer = rewardItemObject.AddComponent<SpriteRenderer>();
+        spriteRenderer.sprite = rewardSprite;
+        spriteRenderer.sortingLayerName = rewardSortingLayerName;
+        spriteRenderer.sortingOrder = rewardSortingOrder;
+
+        rewardItemOriginalLocalPosition = rewardItemLocalPosition;
+        rewardItemOriginalLocalScale = rewardItemLocalScale;
+        rewardItemObject.SetActive(false);
+    }
+
+    private Sprite GetSelectedRewardSprite()
+    {
+        if (!hasSelectedReward || string.IsNullOrWhiteSpace(selectedReward.RelicId))
+        {
+            Debug.LogWarning("[ChestOpenButton] ì„ íƒëœ ìœ ë¬¼ ë³´ìƒì´ ì—†ì–´ ìœ ë¬¼ ì•„ì´ì½˜ì„ ìƒì„±í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
+            return null;
+        }
+
+        if (DataManager.Instance == null || DataManager.Instance.RelicIconDatabase == null)
+        {
+            Debug.LogWarning("[ChestOpenButton] DataManager ë˜ëŠ” RelicIconDatabaseê°€ ì—†ì–´ ìœ ë¬¼ ì•„ì´ì½˜ì„ ìƒì„±í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
+            return null;
+        }
+
+        if (!DataManager.Instance.RelicIconDatabase.TryGetIcon(selectedReward.RelicId, out Sprite icon))
+        {
+            Debug.LogWarning($"[ChestOpenButton] ìœ ë¬¼ ì•„ì´ì½˜ì„ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤. Relic:{selectedReward.RelicId}");
+            return null;
+        }
+
+        return icon;
     }
 
     private IEnumerator RewardItemAppearRoutine()
@@ -339,12 +517,13 @@ public class ChestOpenButton : MonoBehaviour
         rewardItemTransform.localScale = startScale;
 
         float timer = 0f;
+        float safeDuration = Mathf.Max(0.01f, rewardItemAppearDuration);
 
-        while (timer < rewardItemAppearDuration)
+        while (timer < safeDuration)
         {
             timer += Time.unscaledDeltaTime;
 
-            float t = Mathf.Clamp01(timer / rewardItemAppearDuration);
+            float t = Mathf.Clamp01(timer / safeDuration);
             float smoothT = 1f - Mathf.Pow(1f - t, 3f);
 
             rewardItemTransform.localPosition = Vector3.LerpUnclamped(startPosition, endPosition, smoothT);
@@ -390,7 +569,7 @@ public class ChestOpenButton : MonoBehaviour
         if (selectedVfx == null)
             return;
 
-        PlayVfx(selectedVfx);
+        PlayVfx(selectedVfx, stepVfxLocalPosition);
     }
 
     private GameObject GetStepVfxByClickCount()
@@ -398,10 +577,13 @@ public class ChestOpenButton : MonoBehaviour
         if (stepVfxList == null || stepVfxList.Length == 0)
             return null;
 
-        int index = currentClickCount - 1;
+        int revealCount = GetActiveRevealCount();
+        if (currentClickCount > revealCount)
+            return null;
 
-        int maxGradeIndex = (int)chestGrade - 1;
-        index = Mathf.Min(index, maxGradeIndex);
+        int index = currentClickCount - 1;
+        int maxRevealIndex = revealCount - 1;
+        index = Mathf.Min(index, maxRevealIndex);
 
         if (index < 0 || index >= stepVfxList.Length)
             return null;
@@ -409,21 +591,166 @@ public class ChestOpenButton : MonoBehaviour
         return stepVfxList[index];
     }
 
+    private int GetActiveRevealCount()
+    {
+        if (hasSelectedReward)
+            return ChestRelicRewardService.GetRevealClickCount(selectedReward.Rarity);
+
+        return GetRevealClickCount(chestGrade);
+    }
+
     private void PlayOpenCompleteVfx()
     {
         if (openCompleteVfx == null)
             return;
 
-        PlayVfx(openCompleteVfx);
+        PlayVfx(openCompleteVfx, openCompleteVfxLocalPosition);
     }
 
-    private void PlayVfx(GameObject vfxObject)
+    private void PlayVfx(GameObject vfxObject, Vector3 localPosition)
+    {
+        if (vfxObject == null)
+            return;
+
+        try
+        {
+            PlayVfxUnchecked(vfxObject, localPosition);
+        }
+        catch (Exception exception)
+        {
+            Debug.LogWarning(
+                $"[ChestOpenButton] VFX playback failed; chest flow will continue. VFX:{vfxObject.name}\n{exception}");
+        }
+    }
+
+    private void PlayVfxUnchecked(GameObject vfxObject, Vector3 localPosition)
+    {
+        if (TryPlayWorldProxyVfx(vfxObject, localPosition))
+            return;
+
+        GameObject playTarget = PrepareDirectVfxInstance(vfxObject, localPosition);
+        if (playTarget == null)
+            return;
+
+        playTarget.SetActive(true);
+        RestartParticles(playTarget);
+
+        if (!IsSceneObject(vfxObject) && vfxAutoDestroyDelay > 0f)
+            Destroy(playTarget, vfxAutoDestroyDelay);
+    }
+
+    private bool TryPlayWorldProxyVfx(GameObject vfxObject, Vector3 localPosition)
+    {
+        if (!useIndividualWorldVfxProxy || vfxObject == null)
+            return false;
+
+        int renderLayer = ResolveVfxLayer();
+        if (renderLayer < 0)
+            return false;
+
+        BattleVfxEntry entry = CreateWorldVfxEntry(vfxObject, localPosition);
+        bool spawned = BattleWorldVfxRenderer.TrySpawnDetached(
+            entry,
+            GetVfxWorldPosition(localPosition),
+            renderLayer,
+            ResolveVisibleVfxLayer(renderLayer),
+            GetSafeVfxLifeTime(),
+            ConfigureWorldProxyVfxInstance,
+            out BattleWorldVfxHandle handle);
+
+        if (!spawned)
+            return false;
+
+        if (handle != null)
+            spawnedVfxHandles.Add(handle);
+
+        return true;
+    }
+
+    private BattleVfxEntry CreateWorldVfxEntry(GameObject vfxObject, Vector3 localPosition)
+    {
+        return new BattleVfxEntry
+        {
+            prefab = vfxObject,
+            renderMode = BattleVfxRenderMode.IndividualWorldRenderTexture,
+            renderTextureWidth = Mathf.Max(1, vfxRenderTextureWidth),
+            renderTextureHeight = Mathf.Max(1, vfxRenderTextureHeight),
+            renderCameraOrthographicSize = Mathf.Max(0.01f, vfxRenderCameraOrthographicSize),
+            proxyWorldHeight = Mathf.Max(0.01f, vfxProxyWorldHeight),
+            proxyWorldOffset = vfxProxyWorldOffset,
+            proxySortingLayerName = GetVfxSortingLayerName(),
+            proxySortingOrderOffset = vfxSortingOrder,
+            proxySortingWorldYOffset = GetVfxSortingWorldY(localPosition) - GetVfxWorldPosition(localPosition).y,
+            proxyYMultiplier = Mathf.Max(0.01f, vfxProxyYMultiplier)
+        };
+    }
+
+    private void ConfigureWorldProxyVfxInstance(GameObject vfxObject)
     {
         if (vfxObject == null)
             return;
 
         vfxObject.SetActive(true);
 
+        int layer = ResolveVfxLayer();
+        if (layer >= 0)
+            SetLayerRecursively(vfxObject, layer);
+
+        RestartParticles(vfxObject);
+    }
+
+    private GameObject PrepareDirectVfxInstance(GameObject vfxObject, Vector3 localPosition)
+    {
+        if (IsSceneObject(vfxObject))
+        {
+            ApplyVfxLayerAndDirectSorting(vfxObject, GetVfxSortingWorldY(localPosition));
+            return vfxObject;
+        }
+
+        Transform parent = vfxSpawnRoot != null ? vfxSpawnRoot : transform;
+        GameObject instance = Instantiate(vfxObject, parent);
+        instance.transform.localPosition = localPosition;
+        instance.transform.localRotation = Quaternion.identity;
+        instance.transform.localScale = vfxObject.transform.localScale;
+
+        ApplyVfxLayerAndDirectSorting(instance, GetVfxSortingWorldY(localPosition));
+        spawnedVfxObjects.Add(instance);
+        return instance;
+    }
+
+    private void ApplyVfxLayerAndDirectSorting(GameObject vfxObject, float sortingWorldY)
+    {
+        if (vfxObject == null)
+            return;
+
+        int layer = ResolveVfxLayer();
+        if (layer >= 0)
+            SetLayerRecursively(vfxObject, layer);
+
+        ApplyDirectWorldVfxSorting(vfxObject, sortingWorldY);
+    }
+
+    private void ApplyDirectWorldVfxSorting(GameObject vfxObject, float sortingWorldY)
+    {
+        Renderer[] renderers = vfxObject.GetComponentsInChildren<Renderer>(true);
+        int baseOrder = BattleWorldVfxSortUtility.CalculateSortingOrder(
+            sortingWorldY,
+            Mathf.Max(0.01f, vfxProxyYMultiplier),
+            vfxSortingOrder);
+
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            if (renderers[i] == null)
+                continue;
+
+            int prefabOrderOffset = renderers[i].sortingOrder;
+            renderers[i].sortingLayerName = GetVfxSortingLayerName();
+            renderers[i].sortingOrder = baseOrder + prefabOrderOffset;
+        }
+    }
+
+    private void RestartParticles(GameObject vfxObject)
+    {
         ParticleSystem[] particles = vfxObject.GetComponentsInChildren<ParticleSystem>(true);
 
         for (int i = 0; i < particles.Length; i++)
@@ -439,6 +766,85 @@ public class ChestOpenButton : MonoBehaviour
         }
     }
 
+    private Vector3 GetVfxWorldPosition(Vector3 localPosition)
+    {
+        Transform parent = vfxSpawnRoot != null ? vfxSpawnRoot : transform;
+        return parent.TransformPoint(localPosition);
+    }
+
+    private float GetVfxSortingWorldY(Vector3 localPosition)
+    {
+        if (chestUnder != null)
+            return chestUnder.transform.position.y;
+
+        if (chestOpen != null)
+            return chestOpen.transform.position.y;
+
+        return GetVfxWorldPosition(localPosition).y;
+    }
+
+    private string GetVfxSortingLayerName()
+    {
+        if (TryGetChestSortingLayerName(out string chestSortingLayerName))
+            return chestSortingLayerName;
+
+        if (string.IsNullOrWhiteSpace(vfxSortingLayerName) ||
+            string.Equals(vfxSortingLayerName, "Empty", System.StringComparison.OrdinalIgnoreCase))
+        {
+            return "Unit";
+        }
+
+        return vfxSortingLayerName;
+    }
+
+    private bool TryGetChestSortingLayerName(out string sortingLayerName)
+    {
+        sortingLayerName = null;
+
+        if (chestUnder != null && !string.IsNullOrWhiteSpace(chestUnder.sortingLayerName))
+        {
+            sortingLayerName = chestUnder.sortingLayerName;
+            return true;
+        }
+
+        if (chestOpen != null && !string.IsNullOrWhiteSpace(chestOpen.sortingLayerName))
+        {
+            sortingLayerName = chestOpen.sortingLayerName;
+            return true;
+        }
+
+        return false;
+    }
+
+    private int ResolveVfxLayer()
+    {
+        return LayerMask.NameToLayer(vfxLayerName);
+    }
+
+    private int ResolveVisibleVfxLayer(int renderLayer)
+    {
+        Transform parent = vfxSpawnRoot != null ? vfxSpawnRoot : transform;
+        int visibleLayer = parent != null ? parent.gameObject.layer : 0;
+        return visibleLayer == renderLayer ? 0 : visibleLayer;
+    }
+
+    private float GetSafeVfxLifeTime()
+    {
+        return Mathf.Max(0.01f, vfxAutoDestroyDelay);
+    }
+
+    private void SetLayerRecursively(GameObject target, int layer)
+    {
+        if (target == null)
+            return;
+
+        target.layer = layer;
+
+        Transform targetTransform = target.transform;
+        for (int i = 0; i < targetTransform.childCount; i++)
+            SetLayerRecursively(targetTransform.GetChild(i).gameObject, layer);
+    }
+
     private void StopAndHideAllStepVfx()
     {
         if (stepVfxList == null)
@@ -452,7 +858,7 @@ public class ChestOpenButton : MonoBehaviour
 
     private void StopAndHideVfx(GameObject vfxObject)
     {
-        if (vfxObject == null)
+        if (vfxObject == null || !IsSceneObject(vfxObject))
             return;
 
         ParticleSystem[] particles = vfxObject.GetComponentsInChildren<ParticleSystem>(true);
@@ -472,26 +878,9 @@ public class ChestOpenButton : MonoBehaviour
         vfxObject.SetActive(false);
     }
 
-    private void GiveRewardByGrade()
+    private bool IsSceneObject(GameObject target)
     {
-        switch (chestGrade)
-        {
-            case ChestGrade.Grade1:
-                Debug.Log("1´Ü°è »óÀÚ º¸»ó Áö±Ş");
-                break;
-
-            case ChestGrade.Grade2:
-                Debug.Log("2´Ü°è »óÀÚ º¸»ó Áö±Ş");
-                break;
-
-            case ChestGrade.Grade3:
-                Debug.Log("3´Ü°è »óÀÚ º¸»ó Áö±Ş");
-                break;
-
-            case ChestGrade.Grade4:
-                Debug.Log("4´Ü°è »óÀÚ º¸»ó Áö±Ş");
-                break;
-        }
+        return target != null && target.scene.IsValid() && target.scene.isLoaded;
     }
 
     private void OnDisable()
@@ -526,5 +915,31 @@ public class ChestOpenButton : MonoBehaviour
         }
 
         StopAndHideVfx(openCompleteVfx);
+        CleanupSpawnedVfxObjects();
+        CleanupSpawnedVfxHandles();
+    }
+
+    private void CleanupSpawnedVfxObjects()
+    {
+        for (int i = spawnedVfxObjects.Count - 1; i >= 0; i--)
+        {
+            GameObject spawned = spawnedVfxObjects[i];
+            if (spawned != null)
+                Destroy(spawned);
+        }
+
+        spawnedVfxObjects.Clear();
+    }
+
+    private void CleanupSpawnedVfxHandles()
+    {
+        for (int i = spawnedVfxHandles.Count - 1; i >= 0; i--)
+        {
+            BattleWorldVfxHandle handle = spawnedVfxHandles[i];
+            if (handle != null)
+                Destroy(handle.gameObject);
+        }
+
+        spawnedVfxHandles.Clear();
     }
 }
