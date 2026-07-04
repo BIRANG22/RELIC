@@ -24,5 +24,6 @@ public class BattleVfxEntry
     public Vector3 proxyWorldOffset = Vector3.zero;
     public string proxySortingLayerName = "Unit";
     public int proxySortingOrderOffset = 0;
+    public float proxySortingWorldYOffset = 0f;
     [Min(0.01f)] public float proxyYMultiplier = 100f;
 }
