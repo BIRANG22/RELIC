@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using Relic.Gameplay.Data;
 
 public class BattleSceneController : MonoBehaviour
@@ -37,6 +38,12 @@ public class BattleSceneController : MonoBehaviour
     [Header("Boss Demo")]
     [SerializeField] private GameObject bossDemoPanel;
 
+    [Header("Room Change Auto Close")]
+    [SerializeField] private bool closeInventoryAndBagOnRoomActiveChange = true;
+    [SerializeField] private string[] inventoryPanelObjectNames = { "InventoryPanel" };
+    [SerializeField] private string[] bagPanelObjectNames = { "BattleBagPanel", "BagPanel", "BagPanelUI" };
+    [SerializeField] private float inventoryClosedX = -1550f;
+
     private MapRuntimeStore mapRuntimeStore;
     private MapRuntimeData mapRuntime;
     private bool isChangingRoom;
@@ -49,6 +56,9 @@ public class BattleSceneController : MonoBehaviour
     private bool isRestoringExternallyDisabledRoom;
     private GameObject autoReturnRoomToKeepVisible;
     private string pendingRoomIntroMessage;
+    private bool hasRoomPanelAutoCloseState;
+    private bool lastAnyRoomActiveForPanelAutoClose;
+    private GameObject lastActiveRoomForPanelAutoClose;
 
     private void Awake()
     {
@@ -72,6 +82,7 @@ public class BattleSceneController : MonoBehaviour
     private void LateUpdate()
     {
         KeepExternalReturnRoomVisibleIfNeeded();
+        UpdateRoomPanelAutoCloseState();
 
         if (!autoDetectReturnToMap)
         {
@@ -487,6 +498,7 @@ public class BattleSceneController : MonoBehaviour
         if (battleMapPanel != null)
             battleMapPanel.Close();
 
+        CloseInventoryAndBagPanelsImmediate();
         CloseAllRooms();
 
         if (bossDemoPanel != null)
@@ -527,6 +539,7 @@ public class BattleSceneController : MonoBehaviour
         if (battleMapPanel != null)
             battleMapPanel.Close();
 
+        CloseInventoryAndBagPanelsImmediate();
         CloseAllRooms();
 
         if (roomObject == null)
@@ -559,6 +572,8 @@ public class BattleSceneController : MonoBehaviour
 
     private void CloseAllRooms()
     {
+        CloseInventoryAndBagPanelsImmediate();
+
         if (roomRoot != null)
         {
             for (int i = 0; i < roomRoot.childCount; i++)
@@ -572,6 +587,160 @@ public class BattleSceneController : MonoBehaviour
         SetActiveIfNotNull(eventRoom, false);
         SetActiveIfNotNull(restRoom, false);
         SetActiveIfNotNull(bossDemoPanel, false);
+    }
+
+    private void UpdateRoomPanelAutoCloseState()
+    {
+        if (!closeInventoryAndBagOnRoomActiveChange)
+            return;
+
+        GameObject activeRoomObject = FindActiveRoomObject();
+        bool anyRoomActive = activeRoomObject != null;
+
+        if (!hasRoomPanelAutoCloseState)
+        {
+            hasRoomPanelAutoCloseState = true;
+            lastAnyRoomActiveForPanelAutoClose = anyRoomActive;
+            lastActiveRoomForPanelAutoClose = activeRoomObject;
+            return;
+        }
+
+        bool roomStateChanged = anyRoomActive != lastAnyRoomActiveForPanelAutoClose ||
+                                activeRoomObject != lastActiveRoomForPanelAutoClose;
+
+        if (roomStateChanged)
+            CloseInventoryAndBagPanelsImmediate();
+
+        lastAnyRoomActiveForPanelAutoClose = anyRoomActive;
+        lastActiveRoomForPanelAutoClose = activeRoomObject;
+    }
+
+    private void CloseInventoryAndBagPanelsImmediate()
+    {
+        if (!closeInventoryAndBagOnRoomActiveChange)
+            return;
+
+        InventoryPanelSelectionResetter.ResetAllSelectionsExcept(null);
+        CloseInventoryPanelsImmediate();
+        CloseBagPanelsImmediate();
+    }
+
+    private void CloseInventoryPanelsImmediate()
+    {
+        GameObject[] inventoryPanels = FindObjectsByNames(inventoryPanelObjectNames);
+
+        for (int i = 0; i < inventoryPanels.Length; i++)
+        {
+            GameObject inventoryPanel = inventoryPanels[i];
+
+            if (inventoryPanel == null)
+                continue;
+
+            RectTransform rect = inventoryPanel.GetComponent<RectTransform>();
+            if (rect != null)
+                rect.anchoredPosition = new Vector2(inventoryClosedX, rect.anchoredPosition.y);
+
+            ClearSelectedObjectIfChildOf(inventoryPanel);
+        }
+    }
+
+    private void CloseBagPanelsImmediate()
+    {
+        GameObject[] namedBagPanels = FindObjectsByNames(bagPanelObjectNames);
+
+        for (int i = 0; i < namedBagPanels.Length; i++)
+            ClosePanelGameObjectImmediate(namedBagPanels[i]);
+
+        BattleBagPanelUI[] bagPanels = Object.FindObjectsByType<BattleBagPanelUI>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < bagPanels.Length; i++)
+        {
+            if (bagPanels[i] == null)
+                continue;
+
+            ClosePanelGameObjectImmediate(bagPanels[i].gameObject);
+        }
+    }
+
+    private void ClosePanelGameObjectImmediate(GameObject panelObject)
+    {
+        if (panelObject == null)
+            return;
+
+        ClearSelectedObjectIfChildOf(panelObject);
+        UIPanelButton.ClearCurrentOpenedPanelIfPanel(panelObject);
+
+        if (panelObject.activeSelf)
+            panelObject.SetActive(false);
+    }
+
+    private GameObject[] FindObjectsByNames(string[] names)
+    {
+        if (names == null || names.Length == 0)
+            return System.Array.Empty<GameObject>();
+
+        GameObject[] objects = Object.FindObjectsByType<GameObject>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None
+        );
+
+        System.Collections.Generic.List<GameObject> results = new();
+
+        for (int i = 0; i < objects.Length; i++)
+        {
+            GameObject candidate = objects[i];
+
+            if (candidate == null)
+                continue;
+
+            if (IsNameInList(candidate.name, names))
+                results.Add(candidate);
+        }
+
+        return results.ToArray();
+    }
+
+    private bool IsNameInList(string objectName, string[] names)
+    {
+        if (string.IsNullOrWhiteSpace(objectName) || names == null)
+            return false;
+
+        string normalizedObjectName = NormalizeObjectName(objectName);
+
+        for (int i = 0; i < names.Length; i++)
+        {
+            string name = names[i];
+
+            if (string.IsNullOrWhiteSpace(name))
+                continue;
+
+            if (normalizedObjectName == NormalizeObjectName(name))
+                return true;
+        }
+
+        return false;
+    }
+
+    private string NormalizeObjectName(string objectName)
+    {
+        if (string.IsNullOrWhiteSpace(objectName))
+            return string.Empty;
+
+        return objectName.Replace("(Clone)", string.Empty).Trim();
+    }
+
+    private void ClearSelectedObjectIfChildOf(GameObject root)
+    {
+        EventSystem eventSystem = EventSystem.current;
+
+        if (eventSystem == null || eventSystem.currentSelectedGameObject == null || root == null)
+            return;
+
+        if (eventSystem.currentSelectedGameObject.transform.IsChildOf(root.transform))
+            eventSystem.SetSelectedGameObject(null);
     }
 
     private void KeepExternalReturnRoomVisibleIfNeeded()

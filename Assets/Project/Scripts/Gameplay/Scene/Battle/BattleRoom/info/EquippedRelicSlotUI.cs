@@ -128,6 +128,9 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         string characterId = GetCharacterId();
 
         if (string.IsNullOrWhiteSpace(characterId))
@@ -182,6 +185,9 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         isPointerOver = true;
         ApplyBorderState();
         ApplySortingState();

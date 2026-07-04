@@ -312,11 +312,17 @@ public class ChestOpenButton : MonoBehaviour
 
     private void OnMouseDown()
     {
+        if (IsMenuPanelOpen())
+            return;
+
         OnClickChest();
     }
 
     private void OnClickChest()
     {
+        if (IsMenuPanelOpen())
+            return;
+
         if (isOpened || isOpening || isClickCooling)
             return;
 
@@ -339,6 +345,12 @@ public class ChestOpenButton : MonoBehaviour
         }
 
         OpenChest();
+    }
+
+    private static bool IsMenuPanelOpen()
+    {
+        GameObject menuPanel = GameObject.Find("MenuPanel");
+        return menuPanel != null && menuPanel.activeInHierarchy;
     }
 
     private void EnsureRewardSelected()

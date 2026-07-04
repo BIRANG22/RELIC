@@ -544,6 +544,9 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
 
     private void HandleInternalButtonClick()
     {
+        if (IsMenuPanelOpen())
+            return;
+
         if (!enableHudClickSelect)
             return;
 
@@ -554,6 +557,9 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
 
     private void InvokeHudClicked()
     {
+        if (IsMenuPanelOpen())
+            return;
+
         if (boundRuntime == null)
             return;
 
@@ -563,6 +569,9 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (IsMenuPanelOpen())
+            return;
+
         if (!enableHudClickSelect)
             return;
 
@@ -570,6 +579,12 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
             return;
 
         InvokeHudClicked();
+    }
+
+    private static bool IsMenuPanelOpen()
+    {
+        GameObject menuPanel = GameObject.Find("MenuPanel");
+        return menuPanel != null && menuPanel.activeInHierarchy;
     }
 }
 

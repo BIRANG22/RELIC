@@ -176,6 +176,9 @@ public class BattleBagPanelUI : MonoBehaviour
 
     private void OnFocusSlot(BattleBagItemSlotUI slot)
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         if (slot == null || !slot.HasItem)
             return;
 
@@ -201,6 +204,9 @@ public class BattleBagPanelUI : MonoBehaviour
 
     private void OnClickSlot(BattleBagItemSlotUI slot)
     {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
         if (slot == null || !slot.HasItem)
             return;
 

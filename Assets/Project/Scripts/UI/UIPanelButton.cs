@@ -62,9 +62,37 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
     [SerializeField] private bool playClickSound = true;
     [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
 
+    private const string DefaultMenuPanelObjectName = "MenuPanel";
+    private const string DefaultMenuButtonObjectName = "MenuButton";
+
     private static UIPanelButton currentOpenedPanelOwner;
 
     public static bool HasCurrentOpenedPanel => currentOpenedPanelOwner != null;
+    public static bool IsMenuPanelOpen => IsMenuPanelActiveInScene();
+
+    public static bool IsMenuPanelActiveInScene()
+    {
+        GameObject menuPanel = FindMenuPanelInScene();
+        return menuPanel != null && menuPanel.activeInHierarchy;
+    }
+
+    public static GameObject FindMenuPanelInScene()
+    {
+        GameObject[] objects = FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+        for (int i = 0; i < objects.Length; i++)
+        {
+            GameObject candidate = objects[i];
+
+            if (candidate == null)
+                continue;
+
+            if (candidate.name == DefaultMenuPanelObjectName)
+                return candidate;
+        }
+
+        return null;
+    }
 
     private bool isPlayingEffect;
     private bool isMoved;
@@ -126,12 +154,18 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (ShouldBlockInteractionByOpenMenuPanel())
+            return;
+
         CloseCurrentOpenedPanelIfThisIsOtherButton();
         PlayHoverSound();
     }
 
     public void Execute()
     {
+        if (ShouldBlockInteractionByOpenMenuPanel())
+            return;
+
         if (isPlayingEffect)
             return;
 
@@ -166,6 +200,9 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
     public void ExecuteGiveUpConfirm()
     {
+        if (ShouldBlockInteractionByOpenMenuPanel())
+            return;
+
         if (isPlayingEffect)
             return;
 
@@ -182,6 +219,9 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
     public void ExecuteQuitConfirm()
     {
+        if (ShouldBlockInteractionByOpenMenuPanel())
+            return;
+
         if (isPlayingEffect)
             return;
 
@@ -198,6 +238,9 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
     public void ExecuteCloseCurrentPanel()
     {
+        if (ShouldBlockInteractionByOpenMenuPanel())
+            return;
+
         if (isPlayingEffect)
             return;
 
@@ -212,6 +255,9 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
     public void MovePanel()
     {
+        if (ShouldBlockInteractionByOpenMenuPanel())
+            return;
+
         if (panelToMove == null)
         {
             Debug.LogWarning("[UIPanelButton] Panel To Move is not assigned.");
@@ -251,6 +297,41 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         moveCoroutine = StartCoroutine(MoveRoutine(targetPosition));
 
         FadePanelImageTo(willOpen ? openedPanelAlpha : originalPanelAlpha);
+    }
+
+    private bool ShouldBlockInteractionByOpenMenuPanel()
+    {
+        if (!IsMenuPanelActiveInScene())
+            return false;
+
+        if (IsMenuPanelButton())
+            return false;
+
+        if (IsInsideOpenMenuPanel())
+            return false;
+
+        return true;
+    }
+
+    private bool IsMenuPanelButton()
+    {
+        return gameObject != null && gameObject.name == DefaultMenuButtonObjectName;
+    }
+
+    private bool IsInsideOpenMenuPanel()
+    {
+        GameObject menuPanel = FindMenuPanelInScene();
+
+        if (menuPanel == null)
+            return false;
+
+        Transform target = transform;
+        return target == menuPanel.transform || target.IsChildOf(menuPanel.transform);
+    }
+
+    private bool IsMenuPanelTarget()
+    {
+        return panelToOpen != null && panelToOpen.name == DefaultMenuPanelObjectName;
     }
 
     private void CacheOriginalMovePositions()
@@ -478,7 +559,10 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
     private void ExecutePanelTransition()
     {
-        ClosePanels();
+        bool isMenuPanelTarget = IsMenuPanelTarget();
+
+        if (!isMenuPanelTarget)
+            ClosePanels();
 
         if (panelToOpen != null)
         {
@@ -507,7 +591,9 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
             canvas = openedPanel.AddComponent<Canvas>();
 
         canvas.overrideSorting = true;
-        canvas.sortingOrder = openedPanelSortingOrder;
+        canvas.sortingOrder = openedPanel.name == DefaultMenuPanelObjectName
+            ? Mathf.Max(openedPanelSortingOrder, 10000)
+            : openedPanelSortingOrder;
 
         if (!addGraphicRaycasterToOpenedPanel)
             return;
@@ -607,6 +693,9 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
     private void OnMouseUpAsButton()
     {
+        if (ShouldBlockInteractionByOpenMenuPanel())
+            return;
+
         if (!allowSpriteRendererClick)
             return;
 
