@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -35,6 +36,97 @@ public class BattleWorldVfxRendererTests
             offset: 7);
 
         Assert.That(order, Is.EqualTo(-118));
+    }
+
+    [Test]
+    public void VfxHandle_UsesSortingTargetInsteadOfProxyY()
+    {
+        GameObject proxy = new("Proxy");
+        GameObject sortingTarget = new("SpriteRoot");
+        MeshRenderer proxyRenderer = proxy.AddComponent<MeshRenderer>();
+        BattleWorldVfxHandle handle = proxy.AddComponent<BattleWorldVfxHandle>();
+
+        try
+        {
+            proxy.transform.position = new Vector3(0f, 10f, 0f);
+            sortingTarget.transform.position = new Vector3(0f, 2f, 0f);
+
+            handle.Initialize(
+                followTarget: null,
+                followWorldOffset: Vector3.zero,
+                proxyRenderer: proxyRenderer,
+                sortingOrderOffset: 5,
+                sortingWorldYOffset: 0f,
+                yMultiplier: 100f,
+                renderGroup: null,
+                renderTexture: null,
+                runtimeMaterial: null);
+
+            handle.SetSortingTarget(sortingTarget.transform, -0.1f);
+
+            Assert.That(
+                proxyRenderer.sortingOrder,
+                Is.EqualTo(BattleWorldVfxSortUtility.CalculateSortingOrder(1.9f, 100f, 5)));
+
+            handle.SetWorldPosition(new Vector3(0f, 20f, 0f));
+
+            Assert.That(
+                proxyRenderer.sortingOrder,
+                Is.EqualTo(BattleWorldVfxSortUtility.CalculateSortingOrder(1.9f, 100f, 5)));
+        }
+        finally
+        {
+            DestroyObject(sortingTarget);
+            DestroyObject(proxy);
+        }
+    }
+
+    [Test]
+    public void ProxyMaterialTemplate_LoadsFromResourcesWithWorldVfxShader()
+    {
+        Material material = Resources.Load<Material>("BattleWorldVfxProxyMaterial");
+
+        Assert.That(material, Is.Not.Null);
+        Assert.That(material.shader, Is.Not.Null);
+        Assert.That(material.shader.name, Is.EqualTo("Relic/World/VFX RenderTexture Additive"));
+    }
+
+    [Test]
+    public void CreateProxyMaterial_ClonesResourceTemplateAndAssignsRenderTexture()
+    {
+        GameObject rendererRoot = new("Renderer");
+        BattleWorldVfxRenderer renderer = rendererRoot.AddComponent<BattleWorldVfxRenderer>();
+        GameObject prefab = new("VfxPrefab");
+        RenderTexture renderTexture = new(1, 1, 0, RenderTextureFormat.ARGB32);
+        Material template = Resources.Load<Material>("BattleWorldVfxProxyMaterial");
+        Material runtimeMaterial = null;
+
+        try
+        {
+            BattleVfxEntry entry = new()
+            {
+                prefab = prefab
+            };
+
+            MethodInfo method = typeof(BattleWorldVfxRenderer).GetMethod(
+                "CreateProxyMaterial",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+
+            Assert.That(method, Is.Not.Null);
+            runtimeMaterial = (Material)method.Invoke(renderer, new object[] { entry, renderTexture });
+
+            Assert.That(runtimeMaterial, Is.Not.Null);
+            Assert.That(runtimeMaterial, Is.Not.SameAs(template));
+            Assert.That(runtimeMaterial.shader.name, Is.EqualTo("Relic/World/VFX RenderTexture Additive"));
+            Assert.That(runtimeMaterial.mainTexture, Is.SameAs(renderTexture));
+        }
+        finally
+        {
+            DestroyObject(runtimeMaterial);
+            DestroyObject(renderTexture);
+            DestroyObject(prefab);
+            DestroyObject(rendererRoot);
+        }
     }
 
     [Test]

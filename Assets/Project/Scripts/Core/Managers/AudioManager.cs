@@ -14,24 +14,30 @@ public enum SfxType
     Click,
     Cancel,
     Confirm,
+
     Attack,
     Hit,
     Skill,
+
     NormalButtonHover,
     NormalButtonClick,
     MoveButtonHover,
     MoveButtonClick,
+
     SceneTransition,
     LobbyPanelTransition,
+
     BattleActionReserveText,
     BattleProgressText,
-    RelicChoiceAcquire,
-    BattleRewardRemnantAcquire,
-    BattleRewardRelicSkillAcquire,
     BattleTimelineSlotRotate,
     BattleEndButtonHover,
     BattleTimelineSlotSlide,
     BattleMapNodeCheckAnimation,
+
+    RelicChoiceAcquire,
+    BattleRewardRemnantAcquire,
+    BattleRewardRelicSkillAcquire,
+
     SkillListPanelOpen,
     SkillListPanelClose
 }
@@ -60,10 +66,25 @@ public class AudioManager : Singleton<AudioManager>
     [SerializeField] private AudioSource sfxSource;
 
     [Header("BGM List")]
-    [SerializeField] private List<BgmData> bgmList = new List<BgmData>();
+    [SerializeField] private List<BgmData> bgmList = new();
 
-    [Header("SFX List")]
-    [SerializeField] private List<SfxData> sfxList = new List<SfxData>();
+    [Header("Common SFX")]
+    [SerializeField] private List<SfxData> commonSfxList = new();
+
+    [Header("Player SFX")]
+    [SerializeField] private List<SfxData> playerSfxList = new();
+
+    [Header("Monster SFX")]
+    [SerializeField] private List<SfxData> monsterSfxList = new();
+
+    [Header("UI SFX")]
+    [SerializeField] private List<SfxData> uiSfxList = new();
+
+    [Header("Battle SFX")]
+    [SerializeField] private List<SfxData> battleSfxList = new();
+
+    [Header("Reward SFX")]
+    [SerializeField] private List<SfxData> rewardSfxList = new();
 
     private Dictionary<BgmType, AudioClip> bgmDict;
     private Dictionary<SfxType, SfxData> sfxDict;
@@ -97,9 +118,24 @@ public class AudioManager : Singleton<AudioManager>
 
             if (!bgmDict.ContainsKey(data.type))
                 bgmDict.Add(data.type, data.clip);
+            else
+                Debug.LogWarning($"[AudioManager] Duplicate BGM Type: {data.type}");
         }
 
-        foreach (SfxData data in sfxList)
+        RegisterSfxList(commonSfxList);
+        RegisterSfxList(playerSfxList);
+        RegisterSfxList(monsterSfxList);
+        RegisterSfxList(uiSfxList);
+        RegisterSfxList(battleSfxList);
+        RegisterSfxList(rewardSfxList);
+    }
+
+    private void RegisterSfxList(List<SfxData> list)
+    {
+        if (list == null)
+            return;
+
+        foreach (SfxData data in list)
         {
             if (data == null || data.clip == null)
                 continue;
@@ -108,6 +144,8 @@ public class AudioManager : Singleton<AudioManager>
 
             if (!sfxDict.ContainsKey(data.type))
                 sfxDict.Add(data.type, data);
+            else
+                Debug.LogWarning($"[AudioManager] Duplicate SFX Type: {data.type}");
         }
     }
 
@@ -134,7 +172,6 @@ public class AudioManager : Singleton<AudioManager>
 
         ApplyVolumes();
     }
-
 
     public void PlayBgmDelayed(BgmType type, bool loop = true)
     {
