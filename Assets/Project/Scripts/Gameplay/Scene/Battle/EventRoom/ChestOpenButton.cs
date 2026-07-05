@@ -820,6 +820,7 @@ public class ChestOpenButton : MonoBehaviour
 
         playTarget.SetActive(true);
         RestartParticles(playTarget);
+        BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(playTarget, null, this);
 
         if (!IsSceneObject(vfxObject) && vfxAutoDestroyDelay > 0f)
             Destroy(playTarget, vfxAutoDestroyDelay);
@@ -841,7 +842,7 @@ public class ChestOpenButton : MonoBehaviour
             renderLayer,
             ResolveVisibleVfxLayer(renderLayer),
             GetSafeVfxLifeTime(),
-            ConfigureWorldProxyVfxInstance,
+            spawnedVfx => ConfigureWorldProxyVfxInstance(spawnedVfx, entry),
             out BattleWorldVfxHandle handle);
 
         if (!spawned)
@@ -871,7 +872,7 @@ public class ChestOpenButton : MonoBehaviour
         };
     }
 
-    private void ConfigureWorldProxyVfxInstance(GameObject vfxObject)
+    private void ConfigureWorldProxyVfxInstance(GameObject vfxObject, BattleVfxEntry entry)
     {
         if (vfxObject == null)
             return;
@@ -883,6 +884,7 @@ public class ChestOpenButton : MonoBehaviour
             SetLayerRecursively(vfxObject, layer);
 
         RestartParticles(vfxObject);
+        BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(vfxObject, entry.sfx, this);
     }
 
     private GameObject PrepareDirectVfxInstance(GameObject vfxObject, Vector3 localPosition, int sortingOrderOffset)

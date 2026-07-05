@@ -531,7 +531,10 @@ public class BattleUnitAnimator : MonoBehaviour
         Transform spawn = GetVfxSpawnTransform();
         Vector3 startPosition = spawn.position;
 
-        BattleVfxEntry missileEntry = CreateRuntimeVfxEntry(entry.missilePrefab, entry.missileFlipType);
+        BattleVfxEntry missileEntry = CreateRuntimeVfxEntry(
+            entry.missilePrefab,
+            entry.missileFlipType,
+            entry.missileSfx);
 
         if (TrySpawnDetachedWorldVfx(
                 missileEntry,
@@ -646,7 +649,10 @@ public class BattleUnitAnimator : MonoBehaviour
         if (entry == null || entry.impactPrefab == null)
             return;
 
-        BattleVfxEntry impactEntry = CreateRuntimeVfxEntry(entry.impactPrefab, entry.impactFlipType);
+        BattleVfxEntry impactEntry = CreateRuntimeVfxEntry(
+            entry.impactPrefab,
+            entry.impactFlipType,
+            entry.impactSfx);
 
         if (TrySpawnDetachedWorldVfx(
                 impactEntry,
@@ -697,7 +703,7 @@ public class BattleUnitAnimator : MonoBehaviour
             return false;
 
         GameObject vfx = Instantiate(entry.prefab, spawn, false);
-        ApplyVfxFlip(vfx, entry.flipType);
+        ConfigureVfxInstance(vfx, entry);
         ApplyDirectWorldVfxSorting(vfx, entry, GetUnitVfxSortingReferenceY());
         Destroy(vfx, Mathf.Max(0.01f, lifeTime));
         return true;
@@ -729,10 +735,19 @@ public class BattleUnitAnimator : MonoBehaviour
 
     private BattleVfxEntry CreateRuntimeVfxEntry(GameObject prefab, VfxFlipType flipType)
     {
+        return CreateRuntimeVfxEntry(prefab, flipType, null);
+    }
+
+    private BattleVfxEntry CreateRuntimeVfxEntry(
+        GameObject prefab,
+        VfxFlipType flipType,
+        BattleVfxSfxEntry sfx)
+    {
         return new BattleVfxEntry
         {
             prefab = prefab,
-            flipType = flipType
+            flipType = flipType,
+            sfx = BattleVfxSfxEntry.CopyFrom(sfx)
         };
     }
 
@@ -757,6 +772,7 @@ public class BattleUnitAnimator : MonoBehaviour
             SetLayerRecursively(vfx, vfxLayer);
 
         ApplyVfxFlip(vfx, entry.flipType);
+        BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(vfx, entry.sfx, this);
     }
 
     private float GetUnitVfxSortingReferenceY()

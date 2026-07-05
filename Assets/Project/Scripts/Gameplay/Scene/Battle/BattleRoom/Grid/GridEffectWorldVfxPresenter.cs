@@ -141,6 +141,7 @@ public class GridEffectWorldVfxPresenter : MonoBehaviour
         {
             prefab = source.prefab,
             flipType = source.flipType,
+            sfx = BattleVfxSfxEntry.CopyFrom(source.sfx),
             renderMode = BattleVfxRenderMode.IndividualWorldRenderTexture,
             renderTextureWidth = source.renderTextureWidth,
             renderTextureHeight = source.renderTextureHeight,
@@ -193,7 +194,7 @@ public class GridEffectWorldVfxPresenter : MonoBehaviour
         return sourceTransform.IsChildOf(transform);
     }
 
-    private static void ConfigureVfxInstance(
+    private void ConfigureVfxInstance(
         GameObject vfx,
         BattleVfxEntry entry,
         int renderLayer)
@@ -207,6 +208,7 @@ public class GridEffectWorldVfxPresenter : MonoBehaviour
             SetLayerRecursively(vfx, renderLayer);
 
         ApplyVfxFlip(vfx, entry.flipType);
+        BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(vfx, entry.sfx, this);
     }
 
     private static void SetLayerRecursively(GameObject obj, int layer)

@@ -25,6 +25,10 @@ public class BattleWorldVfxRendererTests
         Assert.That(entry.renderTextureHeight, Is.GreaterThan(0));
         Assert.That(entry.proxySortingLayerName, Is.EqualTo("Unit"));
         Assert.That(entry.proxySortingWorldYOffset, Is.EqualTo(0f));
+        Assert.That(entry.sfx, Is.Not.Null);
+        Assert.That(entry.sfx.playSfx, Is.False);
+        Assert.That(entry.sfx.routeEmbeddedAudioSourcesThroughAudioManager, Is.True);
+        Assert.That(entry.sfx.removeEmbeddedAudioSources, Is.True);
     }
 
     [Test]
@@ -79,6 +83,51 @@ public class BattleWorldVfxRendererTests
             DestroyObject(sortingTarget);
             DestroyObject(proxy);
         }
+    }
+
+    [Test]
+    public void BattleVfxAudioUtility_RemovesEmbeddedAudioSourcesFromRuntimeVfx()
+    {
+        GameObject vfx = new("VfxWithEmbeddedAudio");
+        vfx.AddComponent<AudioSource>();
+
+        try
+        {
+            BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(
+                vfx,
+                new BattleVfxSfxEntry(),
+                coroutineHost: null);
+
+            Assert.That(vfx.GetComponentsInChildren<AudioSource>(true), Is.Empty);
+        }
+        finally
+        {
+            DestroyObject(vfx);
+        }
+    }
+
+    [Test]
+    public void BattleVfxSfxEntry_CopyFromKeepsExplicitSfxSettings()
+    {
+        BattleVfxSfxEntry source = new()
+        {
+            playSfx = true,
+            sfxId = "vfx.skill",
+            delay = 0.25f,
+            volumeMultiplier = 0.5f,
+            routeEmbeddedAudioSourcesThroughAudioManager = false,
+            removeEmbeddedAudioSources = true
+        };
+
+        BattleVfxSfxEntry copy = BattleVfxSfxEntry.CopyFrom(source);
+
+        Assert.That(copy, Is.Not.SameAs(source));
+        Assert.That(copy.playSfx, Is.True);
+        Assert.That(copy.sfxId, Is.EqualTo("vfx.skill"));
+        Assert.That(copy.delay, Is.EqualTo(0.25f));
+        Assert.That(copy.volumeMultiplier, Is.EqualTo(0.5f));
+        Assert.That(copy.routeEmbeddedAudioSourcesThroughAudioManager, Is.False);
+        Assert.That(copy.removeEmbeddedAudioSources, Is.True);
     }
 
     [Test]
