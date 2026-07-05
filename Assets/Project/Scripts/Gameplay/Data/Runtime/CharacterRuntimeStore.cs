@@ -30,6 +30,41 @@ namespace Relic.Gameplay.Data
             return map;
         }
 
+        public void ResetUpgradedSkillVariantsToBase()
+        {
+            foreach (CharacterRuntimeData data in map.Values)
+            {
+                if (data == null)
+                    continue;
+
+                data.PassiveSkillId = ConvertUpgradeVariantToBase(data.PassiveSkillId);
+                data.UniqueSkillId = ConvertUpgradeVariantToBase(data.UniqueSkillId);
+                data.AbilitySkillId = ConvertUpgradeVariantToBase(data.AbilitySkillId);
+
+                if (data.EquippedSkillIds != null)
+                {
+                    for (int i = 0; i < data.EquippedSkillIds.Length; i++)
+                        data.EquippedSkillIds[i] = ConvertUpgradeVariantToBase(data.EquippedSkillIds[i]);
+                }
+            }
+        }
+
+        private static string ConvertUpgradeVariantToBase(string skillId)
+        {
+            if (string.IsNullOrWhiteSpace(skillId))
+                return skillId;
+
+            string trimmedSkillId = skillId.Trim();
+
+            if (!SkillRarityUtility.IsUpgradeSkillVariant(trimmedSkillId))
+                return skillId;
+
+            if (!SkillRarityUtility.TryGetPairedVariantId(trimmedSkillId, out string baseSkillId))
+                return skillId;
+
+            return baseSkillId;
+        }
+
         private void LogCharacterRuntime(CharacterRuntimeData data)
         {
             if (data == null)

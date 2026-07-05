@@ -132,8 +132,26 @@ public class BattleTurnExecutor : MonoBehaviour
             timelineController.ResetTimelineBarsForNewBattleRoom();
         }
 
+        ResetBattleEffectPlanesForRoomEnd();
+
         RefreshEndTurnButton();
         RefreshBattlePresentationState();
+    }
+
+    private void ResetBattleEffectPlanesForRoomEnd()
+    {
+        BattleEffectPlaneSlideController[] planeControllers = UnityEngine.Object.FindObjectsByType<BattleEffectPlaneSlideController>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < planeControllers.Length; i++)
+        {
+            if (planeControllers[i] == null)
+                continue;
+
+            planeControllers[i].ForceResetToReservePositionInstant();
+        }
     }
 
     private void Update()

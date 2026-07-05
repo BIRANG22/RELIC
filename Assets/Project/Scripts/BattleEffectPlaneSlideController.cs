@@ -138,6 +138,21 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
         ApplyPlanePositions(slide01);
     }
 
+    public void ForceResetToReservePositionInstant()
+    {
+        if (moveRoutine != null)
+        {
+            StopCoroutine(moveRoutine);
+            moveRoutine = null;
+        }
+
+        if (!cachedPositions)
+            CacheCurrentReservePositions();
+
+        slide01 = 0f;
+        ApplyPlanePositions(slide01);
+    }
+
     private void CacheCurrentReservePositions()
     {
         if (leftPlane != null)
