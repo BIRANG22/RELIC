@@ -10,6 +10,7 @@ using UnityEngine.UI;
 
 public class BattleTurnExecutor : MonoBehaviour
 {
+    public static event Action BattleExecutionStarted;
     public static event Action PlayerTurnReturned;
 
     public bool CanAcceptPlayerInput => !isExecuting && isMonsterPlanReady && isPlayerInputReady;
@@ -211,6 +212,8 @@ public class BattleTurnExecutor : MonoBehaviour
         timelineController.ClearSelectedSlotSelection();
         timelineController.SetSelectedCharacterScaleFeedbackActive(false);
         timelineController.SetSlotSelectionLocked(true);
+
+        BattleExecutionStarted?.Invoke();
 
         executeTurnCoroutine = StartCoroutine(ExecuteTurnRoutine());
     }
