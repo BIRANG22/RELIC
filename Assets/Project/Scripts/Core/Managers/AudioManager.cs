@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 public enum BgmType
@@ -66,6 +67,7 @@ public class AudioManager : Singleton<AudioManager>
 
     private Dictionary<BgmType, AudioClip> bgmDict;
     private Dictionary<SfxType, SfxData> sfxDict;
+    private Coroutine pendingBgmRoutine;
 
     protected override void Awake()
     {
@@ -131,6 +133,29 @@ public class AudioManager : Singleton<AudioManager>
         bgmSource.Play();
 
         ApplyVolumes();
+    }
+
+
+    public void PlayBgmDelayed(BgmType type, bool loop = true)
+    {
+        if (!isActiveAndEnabled)
+        {
+            PlayBgm(type, loop);
+            return;
+        }
+
+        if (pendingBgmRoutine != null)
+            StopCoroutine(pendingBgmRoutine);
+
+        pendingBgmRoutine = StartCoroutine(PlayBgmDelayedRoutine(type, loop));
+    }
+
+    private IEnumerator PlayBgmDelayedRoutine(BgmType type, bool loop)
+    {
+        yield return null;
+
+        pendingBgmRoutine = null;
+        PlayBgm(type, loop);
     }
 
     public void StopBgm()
