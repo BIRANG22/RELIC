@@ -9,6 +9,8 @@ public sealed class BattleWorldVfxHandle : MonoBehaviour
     private int sortingOrderOffset;
     private float sortingWorldYOffset;
     private float yMultiplier;
+    private Transform sortingTarget;
+    private float sortingTargetWorldYOffset;
     private GameObject renderGroup;
     private RenderTexture renderTexture;
     private Material runtimeMaterial;
@@ -36,6 +38,13 @@ public sealed class BattleWorldVfxHandle : MonoBehaviour
         this.runtimeMaterial = runtimeMaterial;
 
         RefreshTransformAndSorting();
+    }
+
+    public void SetSortingTarget(Transform target, float worldYOffset)
+    {
+        sortingTarget = target;
+        sortingTargetWorldYOffset = worldYOffset;
+        RefreshSorting();
     }
 
     public void SetWorldPosition(Vector3 position)
@@ -79,8 +88,13 @@ public sealed class BattleWorldVfxHandle : MonoBehaviour
         if (proxyRenderer == null)
             return;
 
+        float sortingY = transform.position.y + sortingWorldYOffset;
+
+        if (sortingTarget != null)
+            sortingY = sortingTarget.position.y + sortingTargetWorldYOffset;
+
         proxyRenderer.sortingOrder = BattleWorldVfxSortUtility.CalculateSortingOrder(
-            transform.position.y + sortingWorldYOffset,
+            sortingY,
             yMultiplier,
             sortingOrderOffset);
     }
