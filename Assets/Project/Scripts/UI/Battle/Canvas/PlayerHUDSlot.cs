@@ -11,6 +11,12 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
     [Header("Basic")]
     [SerializeField] private Image portraitImage;
 
+    [Header("Keyboard Number")]
+    [SerializeField] private GameObject numberObject;
+    [SerializeField] private TMP_Text numberText;
+    [SerializeField] private bool autoFindNumberObject = true;
+    [SerializeField] private string numberObjectName = "Number";
+
     [Header("Command Selection Highlight")]
     [SerializeField] private GameObject commandSelectedHighlightObject;
     [SerializeField] private Image commandSelectedHighlightImage;
@@ -62,6 +68,7 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
 
     private CharacterRuntimeData boundRuntime;
     private CharacterMasterData boundMaster;
+    private int keyboardNumber;
 
     private readonly List<StatusEffectIcon> spawnedStatusIcons = new();
     private Vector3 defaultLocalScale;
@@ -75,18 +82,22 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
         defaultLocalScale = transform.localScale;
 
         SetupHudClickSelection();
+        ResolveKeyboardNumberReferences();
         ResolveCommandSelectedHighlightReferences();
         ResolveCostSlotReferences();
         ResolveResourceSlotReferences();
         ApplyStatusEffectParentLayout();
+        ApplyKeyboardNumberVisual();
         ApplyCommandSelectedVisual(false);
     }
 
     private void OnEnable()
     {
         SetupHudClickSelection();
+        ResolveKeyboardNumberReferences();
         ResolveCostSlotReferences();
         ResolveResourceSlotReferences();
+        ApplyKeyboardNumberVisual();
 
         if (boundRuntime != null)
             Refresh();
@@ -112,6 +123,12 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
             DataManager.Instance.CharacterDatabase.TryGet(boundRuntime.CharacterId, out boundMaster);
 
         Refresh();
+    }
+
+    public void SetKeyboardNumber(int number)
+    {
+        keyboardNumber = Mathf.Max(0, number);
+        ApplyKeyboardNumberVisual();
     }
 
     public void Refresh()
@@ -141,6 +158,7 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
         RefreshUniqueResource(boundRuntime.PreviewResource, maxResource);
         RefreshArmor(boundRuntime.CurrentShield);
         RefreshStatusEffects(boundRuntime.StatusEffects);
+        ApplyKeyboardNumberVisual();
     }
 
     private void RefreshBar(Image fill, TMP_Text valueText, int current, int max)
@@ -322,6 +340,34 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
             : defaultLocalScale;
     }
 
+    private void ApplyKeyboardNumberVisual()
+    {
+        ResolveKeyboardNumberReferences();
+
+        bool visible = keyboardNumber > 0;
+
+        if (numberObject != null)
+            numberObject.SetActive(visible);
+
+        if (numberText != null)
+        {
+            numberText.gameObject.SetActive(visible);
+            numberText.text = visible ? keyboardNumber.ToString() : string.Empty;
+        }
+    }
+
+    private void ResolveKeyboardNumberReferences()
+    {
+        if (!autoFindNumberObject)
+            return;
+
+        if (numberObject == null)
+            numberObject = FindChildGameObjectByName(numberObjectName);
+
+        if (numberText == null && numberObject != null)
+            numberText = numberObject.GetComponentInChildren<TMP_Text>(true);
+    }
+
     private void ResolveCommandSelectedHighlightReferences()
     {
         if (!autoFindCommandSelectedHighlight)
@@ -499,6 +545,7 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
         RefreshUniqueResource(0, 0);
         RefreshArmor(0);
         ClearStatusEffectIcons();
+        SetKeyboardNumber(0);
         SetCommandSelected(false);
     }
 

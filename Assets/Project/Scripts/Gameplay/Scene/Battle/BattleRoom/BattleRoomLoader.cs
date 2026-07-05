@@ -731,6 +731,7 @@ public class BattleRoomLoader : MonoBehaviour
         PlayerHUDSlot hud = Instantiate(playerHudPrefab, anchor);
         ApplyPlayerHudToAnchor(hud, anchor);
 
+        hud.SetKeyboardNumber(displayIndex + 1);
         hud.Bind(runtimeData);
         hud.OnClicked += OnPlayerHudClicked;
         playerHudSlots.Add(hud);
