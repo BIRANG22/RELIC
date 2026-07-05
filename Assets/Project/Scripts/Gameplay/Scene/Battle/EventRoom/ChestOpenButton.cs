@@ -66,7 +66,13 @@ public class ChestOpenButton : MonoBehaviour
     [SerializeField] private Vector3 openCompleteVfxLocalPosition = new(2.247f, 0.148f, 0f);
     [SerializeField] private string vfxLayerName = "VFX";
     [SerializeField] private string vfxSortingLayerName = "Empty";
-    [SerializeField] private int vfxSortingOrder = 2;
+
+    [Tooltip("일반 클릭 VFX 정렬 오프셋입니다. ChestUnder 0, ChestOpen 3이면 2는 둘 사이에 그려집니다.")]
+    [SerializeField] private int stepVfxSortingOrder = 2;
+
+    [Tooltip("상자 완전 열림 VFX 정렬 오프셋입니다. ChestOpen 3보다 큰 4면 오픈 스프라이트보다 위에 그려집니다.")]
+    [SerializeField] private int openCompleteVfxSortingOrder = 4;
+
     [SerializeField] private float vfxAutoDestroyDelay = 3f;
 
     [Header("VFX 개별 월드 프록시")]
@@ -86,17 +92,11 @@ public class ChestOpenButton : MonoBehaviour
     [SerializeField] private bool showRewardItemAfterOpenAnimation = true;
 
     [Header("보상 아이템 등장 애니메이션")]
-    [Tooltip("아이템이 아래에서 올라오는 거리입니다.")]
     [SerializeField] private float rewardItemRiseDistance = 0.35f;
-
-    [Tooltip("아이템 등장 애니메이션 시간입니다.")]
     [SerializeField] private float rewardItemAppearDuration = 0.35f;
-
-    [Tooltip("등장 중 살짝 커지는 배율입니다.")]
     [SerializeField] private float rewardItemOvershootScale = 1.15f;
 
     [Header("덜컹 애니메이션 대상")]
-    [Tooltip("덜컹거릴 대상입니다. 보통 Chest 오브젝트 또는 상자 전체 부모 오브젝트를 넣습니다.")]
     [SerializeField] private Transform clunkTarget;
 
     [Header("덜컹거림 설정")]
@@ -105,7 +105,6 @@ public class ChestOpenButton : MonoBehaviour
     [SerializeField] private float rotationPower = 4f;
 
     [Header("클릭 제한")]
-    [Tooltip("클릭 후 다음 클릭을 받을 때까지의 대기 시간입니다.")]
     [SerializeField] private float clickCooldown = 0.3f;
 
     [Header("클릭 시 짧게 재생할 프레임")]
@@ -332,8 +331,6 @@ public class ChestOpenButton : MonoBehaviour
         currentClickCount++;
 
         PlayClunk();
-
-        // 일반 클릭과 마지막 열림 클릭 모두 Step VFX를 재생합니다.
         PlayStepVfxByClickCount();
 
         if (currentClickCount < requiredClickCount)
@@ -411,10 +408,8 @@ public class ChestOpenButton : MonoBehaviour
             timer += Time.unscaledDeltaTime;
 
             float t = Mathf.Clamp01(timer / clunkDuration);
-
             float shake = Mathf.Sin(t * Mathf.PI * clunkCount * 2f);
             float fade = 1f - t;
-
             float zRotation = shake * rotationPower * fade;
 
             if (clunkTarget != null)
@@ -464,8 +459,6 @@ public class ChestOpenButton : MonoBehaviour
 
         EnsureRewardItemObject();
 
-        // 마지막 클릭에서 Step VFX가 먼저 나오고,
-        // 그 뒤 약간의 딜레이 후 Open Complete VFX가 나오게 합니다.
         if (openCompleteVfxDelayCoroutine != null)
             StopCoroutine(openCompleteVfxDelayCoroutine);
 
@@ -767,7 +760,7 @@ public class ChestOpenButton : MonoBehaviour
         if (selectedVfx == null)
             return;
 
-        PlayVfx(selectedVfx, stepVfxLocalPosition);
+        PlayVfx(selectedVfx, stepVfxLocalPosition, stepVfxSortingOrder);
     }
 
     private GameObject GetStepVfxByClickCount()
@@ -776,9 +769,6 @@ public class ChestOpenButton : MonoBehaviour
             return null;
 
         int revealCount = GetActiveRevealCount();
-
-        // 마지막 열림 클릭은 revealCount + 1번째 클릭이므로,
-        // 이때도 마지막 단계 Step VFX가 나오도록 마지막 인덱스로 고정합니다.
         int index = Mathf.Min(currentClickCount - 1, revealCount - 1);
 
         if (index < 0 || index >= stepVfxList.Length)
@@ -800,17 +790,17 @@ public class ChestOpenButton : MonoBehaviour
         if (openCompleteVfx == null)
             return;
 
-        PlayVfx(openCompleteVfx, openCompleteVfxLocalPosition);
+        PlayVfx(openCompleteVfx, openCompleteVfxLocalPosition, openCompleteVfxSortingOrder);
     }
 
-    private void PlayVfx(GameObject vfxObject, Vector3 localPosition)
+    private void PlayVfx(GameObject vfxObject, Vector3 localPosition, int sortingOrderOffset)
     {
         if (vfxObject == null)
             return;
 
         try
         {
-            PlayVfxUnchecked(vfxObject, localPosition);
+            PlayVfxUnchecked(vfxObject, localPosition, sortingOrderOffset);
         }
         catch (Exception exception)
         {
@@ -819,12 +809,12 @@ public class ChestOpenButton : MonoBehaviour
         }
     }
 
-    private void PlayVfxUnchecked(GameObject vfxObject, Vector3 localPosition)
+    private void PlayVfxUnchecked(GameObject vfxObject, Vector3 localPosition, int sortingOrderOffset)
     {
-        if (TryPlayWorldProxyVfx(vfxObject, localPosition))
+        if (TryPlayWorldProxyVfx(vfxObject, localPosition, sortingOrderOffset))
             return;
 
-        GameObject playTarget = PrepareDirectVfxInstance(vfxObject, localPosition);
+        GameObject playTarget = PrepareDirectVfxInstance(vfxObject, localPosition, sortingOrderOffset);
         if (playTarget == null)
             return;
 
@@ -835,7 +825,7 @@ public class ChestOpenButton : MonoBehaviour
             Destroy(playTarget, vfxAutoDestroyDelay);
     }
 
-    private bool TryPlayWorldProxyVfx(GameObject vfxObject, Vector3 localPosition)
+    private bool TryPlayWorldProxyVfx(GameObject vfxObject, Vector3 localPosition, int sortingOrderOffset)
     {
         if (!useIndividualWorldVfxProxy || vfxObject == null)
             return false;
@@ -844,7 +834,7 @@ public class ChestOpenButton : MonoBehaviour
         if (renderLayer < 0)
             return false;
 
-        BattleVfxEntry entry = CreateWorldVfxEntry(vfxObject, localPosition);
+        BattleVfxEntry entry = CreateWorldVfxEntry(vfxObject, localPosition, sortingOrderOffset);
         bool spawned = BattleWorldVfxRenderer.TrySpawnDetached(
             entry,
             GetVfxWorldPosition(localPosition),
@@ -863,7 +853,7 @@ public class ChestOpenButton : MonoBehaviour
         return true;
     }
 
-    private BattleVfxEntry CreateWorldVfxEntry(GameObject vfxObject, Vector3 localPosition)
+    private BattleVfxEntry CreateWorldVfxEntry(GameObject vfxObject, Vector3 localPosition, int sortingOrderOffset)
     {
         return new BattleVfxEntry
         {
@@ -875,7 +865,7 @@ public class ChestOpenButton : MonoBehaviour
             proxyWorldHeight = Mathf.Max(0.01f, vfxProxyWorldHeight),
             proxyWorldOffset = vfxProxyWorldOffset,
             proxySortingLayerName = GetVfxSortingLayerName(),
-            proxySortingOrderOffset = vfxSortingOrder,
+            proxySortingOrderOffset = sortingOrderOffset,
             proxySortingWorldYOffset = GetVfxSortingWorldY(localPosition) - GetVfxWorldPosition(localPosition).y,
             proxyYMultiplier = Mathf.Max(0.01f, vfxProxyYMultiplier)
         };
@@ -895,11 +885,11 @@ public class ChestOpenButton : MonoBehaviour
         RestartParticles(vfxObject);
     }
 
-    private GameObject PrepareDirectVfxInstance(GameObject vfxObject, Vector3 localPosition)
+    private GameObject PrepareDirectVfxInstance(GameObject vfxObject, Vector3 localPosition, int sortingOrderOffset)
     {
         if (IsSceneObject(vfxObject))
         {
-            ApplyVfxLayerAndDirectSorting(vfxObject, GetVfxSortingWorldY(localPosition));
+            ApplyVfxLayerAndDirectSorting(vfxObject, GetVfxSortingWorldY(localPosition), sortingOrderOffset);
             return vfxObject;
         }
 
@@ -909,12 +899,12 @@ public class ChestOpenButton : MonoBehaviour
         instance.transform.localRotation = Quaternion.identity;
         instance.transform.localScale = vfxObject.transform.localScale;
 
-        ApplyVfxLayerAndDirectSorting(instance, GetVfxSortingWorldY(localPosition));
+        ApplyVfxLayerAndDirectSorting(instance, GetVfxSortingWorldY(localPosition), sortingOrderOffset);
         spawnedVfxObjects.Add(instance);
         return instance;
     }
 
-    private void ApplyVfxLayerAndDirectSorting(GameObject vfxObject, float sortingWorldY)
+    private void ApplyVfxLayerAndDirectSorting(GameObject vfxObject, float sortingWorldY, int sortingOrderOffset)
     {
         if (vfxObject == null)
             return;
@@ -923,16 +913,16 @@ public class ChestOpenButton : MonoBehaviour
         if (layer >= 0)
             SetLayerRecursively(vfxObject, layer);
 
-        ApplyDirectWorldVfxSorting(vfxObject, sortingWorldY);
+        ApplyDirectWorldVfxSorting(vfxObject, sortingWorldY, sortingOrderOffset);
     }
 
-    private void ApplyDirectWorldVfxSorting(GameObject vfxObject, float sortingWorldY)
+    private void ApplyDirectWorldVfxSorting(GameObject vfxObject, float sortingWorldY, int sortingOrderOffset)
     {
         Renderer[] renderers = vfxObject.GetComponentsInChildren<Renderer>(true);
         int baseOrder = BattleWorldVfxSortUtility.CalculateSortingOrder(
             sortingWorldY,
             Mathf.Max(0.01f, vfxProxyYMultiplier),
-            vfxSortingOrder);
+            sortingOrderOffset);
 
         for (int i = 0; i < renderers.Length; i++)
         {
@@ -985,7 +975,7 @@ public class ChestOpenButton : MonoBehaviour
             return chestSortingLayerName;
 
         if (string.IsNullOrWhiteSpace(vfxSortingLayerName) ||
-            string.Equals(vfxSortingLayerName, "Empty", System.StringComparison.OrdinalIgnoreCase))
+            string.Equals(vfxSortingLayerName, "Empty", StringComparison.OrdinalIgnoreCase))
         {
             return "Unit";
         }
@@ -1047,9 +1037,7 @@ public class ChestOpenButton : MonoBehaviour
             return;
 
         for (int i = 0; i < stepVfxList.Length; i++)
-        {
             StopAndHideVfx(stepVfxList[i]);
-        }
     }
 
     private void StopAndHideVfx(GameObject vfxObject)
