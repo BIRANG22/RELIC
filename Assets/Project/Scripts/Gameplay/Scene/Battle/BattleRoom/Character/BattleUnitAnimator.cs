@@ -11,6 +11,8 @@ public enum VfxFlipType
 
 public class BattleUnitAnimator : MonoBehaviour
 {
+    private const string DefaultVfxSortingReferenceName = "SpriteRoot";
+
     [Header("References")]
     [SerializeField] private Animator animator;
 
@@ -47,6 +49,10 @@ public class BattleUnitAnimator : MonoBehaviour
     [Header("VFX Spawn")]
     [SerializeField] private Transform vfxSpawnPoint;
 
+    [Header("VFX Sorting")]
+    [SerializeField] private string vfxSortingReferenceName = DefaultVfxSortingReferenceName;
+    [SerializeField] private float vfxSortingReferenceYOffset = -0.1f;
+
     [Header("VFX Facing")]
     [SerializeField] private BattleUnitFacing unitFacing;
     [SerializeField] private bool autoFindFacing = true;
@@ -66,6 +72,7 @@ public class BattleUnitAnimator : MonoBehaviour
     private int vfxLayer = -1;
 
     private int currentAttackIndex;
+    private Transform vfxSortingReference;
 
     public float DeadAnimationDuration => Mathf.Max(0f, deadAnimationDuration);
 
@@ -86,6 +93,7 @@ public class BattleUnitAnimator : MonoBehaviour
         EnsurePlayerSkillPresentations();
         EnsureMonsterActionPresentationArray();
         statusVfx ??= new BattleStatusVfxSet();
+        vfxSortingReference = null;
     }
 
     public void PlayIdle()
@@ -502,6 +510,7 @@ public class BattleUnitAnimator : MonoBehaviour
         GameObject vfx = Instantiate(entry.prefab, spawn, false);
 
         ConfigureVfxInstance(vfx, entry);
+        ApplyDirectWorldVfxSorting(vfx, entry, GetUnitVfxSortingReferenceY());
 
         Destroy(vfx, vfxLifeTime);
     }
@@ -556,6 +565,7 @@ public class BattleUnitAnimator : MonoBehaviour
         missile.transform.localPosition = Vector3.zero;
 
         ConfigureVfxInstance(missile, missileEntry);
+        ApplyDirectWorldVfxSorting(missile, missileEntry, GetUnitVfxSortingReferenceY());
         missile.transform.SetParent(null, true);
         missile.transform.position += entry.launchOffset;
 
@@ -652,6 +662,7 @@ public class BattleUnitAnimator : MonoBehaviour
         impact.transform.localPosition = Vector3.zero;
 
         ConfigureVfxInstance(impact, impactEntry);
+        ApplyDirectWorldVfxSorting(impact, impactEntry, GetUnitVfxSortingReferenceY());
         impact.transform.SetParent(null, true);
         impact.transform.position = impactPosition;
 
@@ -663,12 +674,18 @@ public class BattleUnitAnimator : MonoBehaviour
         Transform spawn,
         float lifeTime)
     {
-        return BattleWorldVfxRenderer.TrySpawn(
+        bool spawned = BattleWorldVfxRenderer.TrySpawn(
             entry,
             spawn,
             vfxLayer,
             Mathf.Max(0.01f, lifeTime),
-            vfx => ConfigureVfxInstance(vfx, entry));
+            vfx => ConfigureVfxInstance(vfx, entry),
+            out BattleWorldVfxHandle handle);
+
+        if (spawned)
+            ApplyUnitVfxSortingTarget(handle, entry);
+
+        return spawned;
     }
 
     private bool TrySpawnDirectWorldVfx(
@@ -681,7 +698,7 @@ public class BattleUnitAnimator : MonoBehaviour
 
         GameObject vfx = Instantiate(entry.prefab, spawn, false);
         ApplyVfxFlip(vfx, entry.flipType);
-        ApplyDirectWorldVfxSorting(vfx, entry, spawn.position.y);
+        ApplyDirectWorldVfxSorting(vfx, entry, GetUnitVfxSortingReferenceY());
         Destroy(vfx, Mathf.Max(0.01f, lifeTime));
         return true;
     }
@@ -695,7 +712,7 @@ public class BattleUnitAnimator : MonoBehaviour
         Transform spawn = GetVfxSpawnTransform();
         int visibleLayer = spawn != null ? spawn.gameObject.layer : 0;
 
-        return BattleWorldVfxRenderer.TrySpawnDetached(
+        bool spawned = BattleWorldVfxRenderer.TrySpawnDetached(
             entry,
             position,
             vfxLayer,
@@ -703,6 +720,11 @@ public class BattleUnitAnimator : MonoBehaviour
             Mathf.Max(0.01f, lifeTime),
             vfx => ConfigureVfxInstance(vfx, entry),
             out handle);
+
+        if (spawned)
+            ApplyUnitVfxSortingTarget(handle, entry);
+
+        return spawned;
     }
 
     private BattleVfxEntry CreateRuntimeVfxEntry(GameObject prefab, VfxFlipType flipType)
@@ -714,12 +736,86 @@ public class BattleUnitAnimator : MonoBehaviour
         };
     }
 
+    private void ApplyUnitVfxSortingTarget(BattleWorldVfxHandle handle, BattleVfxEntry entry)
+    {
+        if (handle == null || entry == null)
+            return;
+
+        Transform reference = GetVfxSortingReferenceTransform();
+
+        if (reference == null)
+            return;
+
+        handle.SetSortingTarget(
+            reference,
+            vfxSortingReferenceYOffset + entry.proxySortingWorldYOffset);
+    }
+
     private void ConfigureVfxInstance(GameObject vfx, BattleVfxEntry entry)
     {
         if (vfxLayer >= 0)
             SetLayerRecursively(vfx, vfxLayer);
 
         ApplyVfxFlip(vfx, entry.flipType);
+    }
+
+    private float GetUnitVfxSortingReferenceY()
+    {
+        Transform reference = GetVfxSortingReferenceTransform();
+        float referenceY = reference != null ? reference.position.y : transform.position.y;
+        return referenceY + vfxSortingReferenceYOffset;
+    }
+
+    private Transform GetVfxSortingReferenceTransform()
+    {
+        if (vfxSortingReference != null)
+            return vfxSortingReference;
+
+        if (!string.IsNullOrWhiteSpace(vfxSortingReferenceName))
+            vfxSortingReference = FindVfxSortingReferenceTransform(vfxSortingReferenceName);
+
+        return vfxSortingReference != null ? vfxSortingReference : transform;
+    }
+
+    private Transform FindVfxSortingReferenceTransform(string targetName)
+    {
+        Transform found = FindChildRecursive(transform, targetName);
+
+        if (found != null)
+            return found;
+
+        Transform current = transform.parent;
+
+        while (current != null)
+        {
+            Transform directChild = current.Find(targetName);
+
+            if (directChild != null)
+                return directChild;
+
+            current = current.parent;
+        }
+
+        return null;
+    }
+
+    private static Transform FindChildRecursive(Transform root, string targetName)
+    {
+        if (root == null)
+            return null;
+
+        if (string.Equals(root.name, targetName, System.StringComparison.Ordinal))
+            return root;
+
+        foreach (Transform child in root)
+        {
+            Transform found = FindChildRecursive(child, targetName);
+
+            if (found != null)
+                return found;
+        }
+
+        return null;
     }
 
     private void ApplyDirectWorldVfxSorting(

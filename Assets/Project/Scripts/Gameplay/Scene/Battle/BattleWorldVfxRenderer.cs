@@ -8,8 +8,8 @@ public sealed class BattleWorldVfxRenderer : MonoBehaviour
     private const string RootName = "__BattleWorldVfxRenderer";
     private const string RenderRootName = "RenderSpace";
     private const string ProxyRootName = "WorldProxies";
+    private const string ProxyMaterialResourcePath = "BattleWorldVfxProxyMaterial";
     private const string ProxyShaderName = "Relic/World/VFX RenderTexture Additive";
-    private const string FallbackShaderName = "Sprites/Default";
     private const int VfxRendererIndex = 1;
     private const float RenderSpaceOriginX = 10000f;
     private const float RenderSlotSpacing = 1000f;
@@ -19,8 +19,10 @@ public sealed class BattleWorldVfxRenderer : MonoBehaviour
 
     private Transform renderRoot;
     private Transform proxyRoot;
+    private Material proxyMaterialTemplate;
     private Shader proxyShader;
     private int nextSlot;
+    private bool warnedMissingProxyMaterialTemplate;
     private bool warnedMissingShader;
 
     public static bool TrySpawn(
@@ -30,18 +32,47 @@ public sealed class BattleWorldVfxRenderer : MonoBehaviour
         float lifeTime,
         Action<GameObject> configureVfx)
     {
+        return TrySpawn(
+            entry,
+            followTarget,
+            renderLayer,
+            lifeTime,
+            configureVfx,
+            out _);
+    }
+
+    public static bool TrySpawn(
+        BattleVfxEntry entry,
+        Transform followTarget,
+        int renderLayer,
+        float lifeTime,
+        Action<GameObject> configureVfx,
+        out BattleWorldVfxHandle handle)
+    {
         if (entry == null || entry.prefab == null)
+        {
+            handle = null;
             return false;
+        }
 
         if (entry.renderMode != BattleVfxRenderMode.IndividualWorldRenderTexture)
+        {
+            handle = null;
             return false;
+        }
 
         if (renderLayer < 0)
+        {
+            handle = null;
             return false;
+        }
 
         BattleWorldVfxRenderer renderer = EnsureInstance();
         if (renderer == null)
+        {
+            handle = null;
             return false;
+        }
 
         return renderer.SpawnInternal(
             entry,
@@ -51,7 +82,7 @@ public sealed class BattleWorldVfxRenderer : MonoBehaviour
             ResolveVisibleLayer(followTarget, renderLayer),
             lifeTime,
             configureVfx,
-            out _) != null;
+            out handle) != null;
     }
 
     public static bool TrySpawnDetached(
@@ -138,9 +169,6 @@ public sealed class BattleWorldVfxRenderer : MonoBehaviour
     {
         handle = null;
 
-        if (!TryGetProxyShader(out Shader shader))
-            return null;
-
         EnsureRoots();
 
         RenderTexture renderTexture = null;
@@ -157,11 +185,13 @@ public sealed class BattleWorldVfxRenderer : MonoBehaviour
 
             CreateRenderCamera(renderGroup.transform, renderTexture, renderLayer, entry);
 
-            material = new Material(shader)
+            material = CreateProxyMaterial(entry, renderTexture);
+
+            if (material == null)
             {
-                name = $"{entry.prefab.name}_WorldVfxProxy_Material"
-            };
-            material.mainTexture = renderTexture;
+                CleanupFailedSpawn(renderGroup, proxy, renderTexture, material);
+                return null;
+            }
 
             proxy = CreateProxy(entry, material, visibleLayer, initialWorldPosition);
             MeshRenderer proxyRenderer = proxy.GetComponent<MeshRenderer>();
@@ -190,6 +220,29 @@ public sealed class BattleWorldVfxRenderer : MonoBehaviour
             CleanupFailedSpawn(renderGroup, proxy, renderTexture, material);
             return null;
         }
+    }
+
+    private Material CreateProxyMaterial(BattleVfxEntry entry, RenderTexture renderTexture)
+    {
+        Material material = null;
+        Material template = LoadProxyMaterialTemplate();
+
+        if (template != null)
+        {
+            material = new Material(template);
+        }
+        else if (TryGetProxyShader(out Shader shader))
+        {
+            material = new Material(shader);
+        }
+
+        if (material == null)
+            return null;
+
+        string prefabName = entry?.prefab != null ? entry.prefab.name : "VFX";
+        material.name = $"{prefabName}_WorldVfxProxy_Material";
+        material.mainTexture = renderTexture;
+        return material;
     }
 
     private static void CleanupFailedSpawn(
@@ -235,10 +288,29 @@ public sealed class BattleWorldVfxRenderer : MonoBehaviour
         }
     }
 
+    private Material LoadProxyMaterialTemplate()
+    {
+        if (proxyMaterialTemplate != null)
+            return proxyMaterialTemplate;
+
+        proxyMaterialTemplate = Resources.Load<Material>(ProxyMaterialResourcePath);
+
+        if (proxyMaterialTemplate != null)
+            return proxyMaterialTemplate;
+
+        if (!warnedMissingProxyMaterialTemplate)
+        {
+            warnedMissingProxyMaterialTemplate = true;
+            Debug.LogWarning(
+                $"[BattleWorldVfxRenderer] Missing Resources material: {ProxyMaterialResourcePath}");
+        }
+
+        return null;
+    }
+
     private bool TryGetProxyShader(out Shader shader)
     {
         proxyShader ??= Shader.Find(ProxyShaderName);
-        proxyShader ??= Shader.Find(FallbackShaderName);
 
         shader = proxyShader;
 
