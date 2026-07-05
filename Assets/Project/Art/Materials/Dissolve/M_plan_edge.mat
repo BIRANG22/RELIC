@@ -82,11 +82,11 @@ Material:
     - _boder_2: 0.4
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 0}
-    - _Color: {r: 0.5245282, g: 0.37508717, b: 0.37508717, a: 1}
+    - _Color: {r: 0, g: 0, b: 0, a: 1}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
     - _edgecolor: {r: 1, g: 1, b: 1, a: 0}
-    - _edgecolor_1: {r: 1, g: 0.7150943, b: 0.7150943, a: 0}
-    - _edgecolor_2: {r: 1, g: 0.081131995, b: 0.081131995, a: 0}
+    - _edgecolor_1: {r: 0, g: 0, b: 0, a: 0}
+    - _edgecolor_2: {r: 0, g: 0, b: 0, a: 0}
     - _noiseflow: {r: 0.01, g: 0.01, b: 0, a: 0}
     - _noiseoffset: {r: 0, g: 0, b: 0, a: 0}
     - _noisetiling: {r: 0.5, g: 1, b: 0, a: 0}

@@ -91,18 +91,18 @@ Material:
     - _ZWrite: 1
     - _ZWriteControl: 0
     - _boder: 0.1
-    - _boder_1: 0.2
-    - _boder_2: 0.4
+    - _boder_1: 0.15
+    - _boder_2: 0.3
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
     - _center: {r: 0.5, g: 0.5, b: 0, a: 0}
-    - _color: {r: 0.13207549, g: 0.048593793, b: 0.048593793, a: 0}
-    - _edgecolor: {r: 0.690566, g: 0.20716973, b: 0.20716973, a: 0}
-    - _edgecolor_1: {r: 1, g: 0.4509434, b: 0.4509434, a: 0}
-    - _edgecolor_2: {r: 0.93962264, g: 0.1542399, b: 0.1542399, a: 0}
+    - _color: {r: 0, g: 0, b: 0, a: 0}
+    - _edgecolor: {r: 0.3882353, g: 0.039215688, b: 0.039215688, a: 0}
+    - _edgecolor_1: {r: 0.29411766, g: 0, b: 0, a: 0}
+    - _edgecolor_2: {r: 0.18431373, g: 0, b: 0, a: 0}
     - _noiseflow: {r: 0.01, g: 0.01, b: 0, a: 0}
     - _noiseoffset: {r: 0, g: 0, b: 0, a: 0}
-    - _noisetiling: {r: 0.5, g: 1, b: 0, a: 0}
+    - _noisetiling: {r: 0.3, g: 0.5, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
