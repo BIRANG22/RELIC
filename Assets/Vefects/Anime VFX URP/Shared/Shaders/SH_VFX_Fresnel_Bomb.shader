@@ -468,7 +468,7 @@ Shader "Vefects/SH_VFX_Fresnel_Bomb"
 				half3 NormalWS = normalize( input.normalWS );
 
 				float fresnelNdotV39 = dot( NormalWS, ViewDirWS );
-				float fresnelNode39 = ( _FrColorBias + _FrColorScale * pow( saturate( 1.0 - fresnelNdotV39 ), _FrColorPower ) );
+				float fresnelNode39 = ( _FrColorBias + _FrColorScale * pow( 1.0 - fresnelNdotV39, _FrColorPower ) );
 				float temp_output_43_0 = saturate( fresnelNode39 );
 				float4 lerpResult38 = lerp( _ColorIn , _ColorExt , temp_output_43_0);
 				float4 lerpResult57 = lerp( input.ase_color , lerpResult38 , _CoreColorDifferent);
@@ -479,9 +479,9 @@ Shader "Vefects/SH_VFX_Fresnel_Bomb"
 				float4 lerpResult23 = lerp( tex2DNode16 , ( 1.0 - tex2DNode16 ) , _DissolveInvert);
 				float4 temp_output_30_0 = ( saturate( lerpResult23 ) + ( input.ase_texcoord2.z + _DissolveEro ) );
 				float4 temp_cast_1 = (_CorePower).xxxx;
-				float4 temp_output_52_0 = saturate( ( ( pow( saturate( temp_output_30_0 ) , temp_cast_1 ) * _CoreIntensity ) + ( temp_output_30_0 * _GlowIntensity ) ) );
+				float4 temp_output_52_0 = saturate( ( ( pow( temp_output_30_0 , temp_cast_1 ) * _CoreIntensity ) + ( temp_output_30_0 * _GlowIntensity ) ) );
 				float fresnelNdotV62 = dot( NormalWS, ViewDirWS );
-				float fresnelNode62 = ( _FrBias1 + _FrScale1 * pow( saturate( 1.0 - fresnelNdotV62 ), _FrPower1 ) );
+				float fresnelNode62 = ( _FrBias1 + _FrScale1 * pow( 1.0 - fresnelNdotV62, _FrPower1 ) );
 				float temp_output_78_0 = saturate( fresnelNode62 );
 				float4 temp_cast_2 = (temp_output_78_0).xxxx;
 				float4 temp_cast_3 = (temp_output_43_0).xxxx;
@@ -798,17 +798,17 @@ Shader "Vefects/SH_VFX_Fresnel_Bomb"
 				float4 lerpResult23 = lerp( tex2DNode16 , ( 1.0 - tex2DNode16 ) , _DissolveInvert);
 				float4 temp_output_30_0 = ( saturate( lerpResult23 ) + ( input.ase_texcoord.z + _DissolveEro ) );
 				float4 temp_cast_0 = (_CorePower).xxxx;
-				float4 temp_output_52_0 = saturate( ( ( pow( saturate( temp_output_30_0 ) , temp_cast_0 ) * _CoreIntensity ) + ( temp_output_30_0 * _GlowIntensity ) ) );
+				float4 temp_output_52_0 = saturate( ( ( pow( temp_output_30_0 , temp_cast_0 ) * _CoreIntensity ) + ( temp_output_30_0 * _GlowIntensity ) ) );
 				float3 ase_positionWS = input.ase_texcoord1.xyz;
 				float3 ase_viewVectorWS = ( _WorldSpaceCameraPos.xyz - ase_positionWS );
 				float3 ase_viewDirWS = normalize( ase_viewVectorWS );
 				float3 ase_normalWS = input.ase_texcoord2.xyz;
 				float fresnelNdotV62 = dot( ase_normalWS, ase_viewDirWS );
-				float fresnelNode62 = ( _FrBias1 + _FrScale1 * pow( saturate( 1.0 - fresnelNdotV62 ), _FrPower1 ) );
+				float fresnelNode62 = ( _FrBias1 + _FrScale1 * pow( 1.0 - fresnelNdotV62, _FrPower1 ) );
 				float temp_output_78_0 = saturate( fresnelNode62 );
 				float4 temp_cast_1 = (temp_output_78_0).xxxx;
 				float fresnelNdotV39 = dot( ase_normalWS, ase_viewDirWS );
-				float fresnelNode39 = ( _FrColorBias + _FrColorScale * pow( saturate( 1.0 - fresnelNdotV39 ), _FrColorPower ) );
+				float fresnelNode39 = ( _FrColorBias + _FrColorScale * pow( 1.0 - fresnelNdotV39, _FrColorPower ) );
 				float temp_output_43_0 = saturate( fresnelNode39 );
 				float4 temp_cast_2 = (temp_output_43_0).xxxx;
 				
@@ -1080,17 +1080,17 @@ Shader "Vefects/SH_VFX_Fresnel_Bomb"
 				float4 lerpResult23 = lerp( tex2DNode16 , ( 1.0 - tex2DNode16 ) , _DissolveInvert);
 				float4 temp_output_30_0 = ( saturate( lerpResult23 ) + ( input.ase_texcoord.z + _DissolveEro ) );
 				float4 temp_cast_0 = (_CorePower).xxxx;
-				float4 temp_output_52_0 = saturate( ( ( pow( saturate( temp_output_30_0 ) , temp_cast_0 ) * _CoreIntensity ) + ( temp_output_30_0 * _GlowIntensity ) ) );
+				float4 temp_output_52_0 = saturate( ( ( pow( temp_output_30_0 , temp_cast_0 ) * _CoreIntensity ) + ( temp_output_30_0 * _GlowIntensity ) ) );
 				float3 ase_positionWS = input.ase_texcoord1.xyz;
 				float3 ase_viewVectorWS = ( _WorldSpaceCameraPos.xyz - ase_positionWS );
 				float3 ase_viewDirWS = normalize( ase_viewVectorWS );
 				float3 ase_normalWS = input.ase_texcoord2.xyz;
 				float fresnelNdotV62 = dot( ase_normalWS, ase_viewDirWS );
-				float fresnelNode62 = ( _FrBias1 + _FrScale1 * pow( saturate( 1.0 - fresnelNdotV62 ), _FrPower1 ) );
+				float fresnelNode62 = ( _FrBias1 + _FrScale1 * pow( 1.0 - fresnelNdotV62, _FrPower1 ) );
 				float temp_output_78_0 = saturate( fresnelNode62 );
 				float4 temp_cast_1 = (temp_output_78_0).xxxx;
 				float fresnelNdotV39 = dot( ase_normalWS, ase_viewDirWS );
-				float fresnelNode39 = ( _FrColorBias + _FrColorScale * pow( saturate( 1.0 - fresnelNdotV39 ), _FrColorPower ) );
+				float fresnelNode39 = ( _FrColorBias + _FrColorScale * pow( 1.0 - fresnelNdotV39, _FrColorPower ) );
 				float temp_output_43_0 = saturate( fresnelNode39 );
 				float4 temp_cast_2 = (temp_output_43_0).xxxx;
 				
@@ -1354,17 +1354,17 @@ Shader "Vefects/SH_VFX_Fresnel_Bomb"
 				float4 lerpResult23 = lerp( tex2DNode16 , ( 1.0 - tex2DNode16 ) , _DissolveInvert);
 				float4 temp_output_30_0 = ( saturate( lerpResult23 ) + ( input.ase_texcoord.z + _DissolveEro ) );
 				float4 temp_cast_0 = (_CorePower).xxxx;
-				float4 temp_output_52_0 = saturate( ( ( pow( saturate( temp_output_30_0 ) , temp_cast_0 ) * _CoreIntensity ) + ( temp_output_30_0 * _GlowIntensity ) ) );
+				float4 temp_output_52_0 = saturate( ( ( pow( temp_output_30_0 , temp_cast_0 ) * _CoreIntensity ) + ( temp_output_30_0 * _GlowIntensity ) ) );
 				float3 ase_positionWS = input.ase_texcoord1.xyz;
 				float3 ase_viewVectorWS = ( _WorldSpaceCameraPos.xyz - ase_positionWS );
 				float3 ase_viewDirWS = normalize( ase_viewVectorWS );
 				float3 ase_normalWS = input.ase_texcoord2.xyz;
 				float fresnelNdotV62 = dot( ase_normalWS, ase_viewDirWS );
-				float fresnelNode62 = ( _FrBias1 + _FrScale1 * pow( saturate( 1.0 - fresnelNdotV62 ), _FrPower1 ) );
+				float fresnelNode62 = ( _FrBias1 + _FrScale1 * pow( 1.0 - fresnelNdotV62, _FrPower1 ) );
 				float temp_output_78_0 = saturate( fresnelNode62 );
 				float4 temp_cast_1 = (temp_output_78_0).xxxx;
 				float fresnelNdotV39 = dot( ase_normalWS, ase_viewDirWS );
-				float fresnelNode39 = ( _FrColorBias + _FrColorScale * pow( saturate( 1.0 - fresnelNdotV39 ), _FrColorPower ) );
+				float fresnelNode39 = ( _FrColorBias + _FrColorScale * pow( 1.0 - fresnelNdotV39, _FrColorPower ) );
 				float temp_output_43_0 = saturate( fresnelNode39 );
 				float4 temp_cast_2 = (temp_output_43_0).xxxx;
 				
@@ -1658,16 +1658,16 @@ Shader "Vefects/SH_VFX_Fresnel_Bomb"
 				float4 lerpResult23 = lerp( tex2DNode16 , ( 1.0 - tex2DNode16 ) , _DissolveInvert);
 				float4 temp_output_30_0 = ( saturate( lerpResult23 ) + ( input.ase_texcoord1.z + _DissolveEro ) );
 				float4 temp_cast_0 = (_CorePower).xxxx;
-				float4 temp_output_52_0 = saturate( ( ( pow( saturate( temp_output_30_0 ) , temp_cast_0 ) * _CoreIntensity ) + ( temp_output_30_0 * _GlowIntensity ) ) );
+				float4 temp_output_52_0 = saturate( ( ( pow( temp_output_30_0 , temp_cast_0 ) * _CoreIntensity ) + ( temp_output_30_0 * _GlowIntensity ) ) );
 				float3 ase_positionWS = input.ase_texcoord2.xyz;
 				float3 ase_viewVectorWS = ( _WorldSpaceCameraPos.xyz - ase_positionWS );
 				float3 ase_viewDirWS = normalize( ase_viewVectorWS );
 				float fresnelNdotV62 = dot( NormalWS, ase_viewDirWS );
-				float fresnelNode62 = ( _FrBias1 + _FrScale1 * pow( saturate( 1.0 - fresnelNdotV62 ), _FrPower1 ) );
+				float fresnelNode62 = ( _FrBias1 + _FrScale1 * pow( 1.0 - fresnelNdotV62, _FrPower1 ) );
 				float temp_output_78_0 = saturate( fresnelNode62 );
 				float4 temp_cast_1 = (temp_output_78_0).xxxx;
 				float fresnelNdotV39 = dot( NormalWS, ase_viewDirWS );
-				float fresnelNode39 = ( _FrColorBias + _FrColorScale * pow( saturate( 1.0 - fresnelNdotV39 ), _FrColorPower ) );
+				float fresnelNode39 = ( _FrColorBias + _FrColorScale * pow( 1.0 - fresnelNdotV39, _FrColorPower ) );
 				float temp_output_43_0 = saturate( fresnelNode39 );
 				float4 temp_cast_2 = (temp_output_43_0).xxxx;
 				
