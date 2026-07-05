@@ -107,6 +107,84 @@ public class BattleWorldVfxRendererTests
     }
 
     [Test]
+    public void AudioSourcePlaybackSettings_CopiesEmbeddedVfxAudioSourcePlaybackProperties()
+    {
+        GameObject sourceObject = new("EmbeddedAudioSource");
+        GameObject targetObject = new("RoutedAudioSource");
+        AudioClip clip = AudioClip.Create("VfxClip", 4410, 1, 44100, false);
+        AudioSource source = sourceObject.AddComponent<AudioSource>();
+        AudioSource target = targetObject.AddComponent<AudioSource>();
+        AnimationCurve customRolloff = AnimationCurve.EaseInOut(0f, 1f, 1f, 0f);
+
+        try
+        {
+            source.clip = clip;
+            source.outputAudioMixerGroup = null;
+            source.bypassEffects = true;
+            source.bypassListenerEffects = true;
+            source.bypassReverbZones = true;
+            source.playOnAwake = true;
+            source.loop = true;
+            source.priority = 44;
+            source.volume = 0.42f;
+            source.pitch = 1.35f;
+            source.panStereo = -0.25f;
+            source.spatialBlend = 0.75f;
+            source.reverbZoneMix = 0.62f;
+            source.dopplerLevel = 2.3f;
+            source.spread = 155f;
+            source.rolloffMode = AudioRolloffMode.Custom;
+            source.minDistance = 2f;
+            source.maxDistance = 35f;
+            source.ignoreListenerPause = true;
+            source.ignoreListenerVolume = true;
+            source.spatialize = true;
+            source.spatializePostEffects = true;
+            source.velocityUpdateMode = AudioVelocityUpdateMode.Fixed;
+            source.SetCustomCurve(AudioSourceCurveType.CustomRolloff, customRolloff);
+            sourceObject.transform.position = new Vector3(3f, 4f, 5f);
+            sourceObject.transform.rotation = Quaternion.Euler(10f, 20f, 30f);
+
+            AudioSourcePlaybackSettings settings = AudioSourcePlaybackSettings.From(source);
+            settings.ApplyTo(target, volumeMultiplier: 0.5f);
+
+            Assert.That(settings.WorldPosition, Is.EqualTo(sourceObject.transform.position));
+            Assert.That(settings.WorldRotation.eulerAngles, Is.EqualTo(sourceObject.transform.rotation.eulerAngles));
+            Assert.That(target.clip, Is.SameAs(clip));
+            Assert.That(target.bypassEffects, Is.True);
+            Assert.That(target.bypassListenerEffects, Is.True);
+            Assert.That(target.bypassReverbZones, Is.True);
+            Assert.That(target.playOnAwake, Is.False);
+            Assert.That(target.loop, Is.True);
+            Assert.That(target.priority, Is.EqualTo(44));
+            Assert.That(target.volume, Is.EqualTo(0.21f).Within(0.0001f));
+            Assert.That(target.pitch, Is.EqualTo(1.35f).Within(0.0001f));
+            Assert.That(target.panStereo, Is.EqualTo(-0.25f).Within(0.0001f));
+            Assert.That(target.spatialBlend, Is.EqualTo(0.75f).Within(0.0001f));
+            Assert.That(target.reverbZoneMix, Is.EqualTo(0.62f).Within(0.0001f));
+            Assert.That(target.dopplerLevel, Is.EqualTo(2.3f).Within(0.0001f));
+            Assert.That(target.spread, Is.EqualTo(155f).Within(0.0001f));
+            Assert.That(target.rolloffMode, Is.EqualTo(AudioRolloffMode.Custom));
+            Assert.That(target.minDistance, Is.EqualTo(2f).Within(0.0001f));
+            Assert.That(target.maxDistance, Is.EqualTo(35f).Within(0.0001f));
+            Assert.That(target.ignoreListenerPause, Is.True);
+            Assert.That(target.ignoreListenerVolume, Is.True);
+            Assert.That(target.spatialize, Is.True);
+            Assert.That(target.spatializePostEffects, Is.True);
+            Assert.That(target.velocityUpdateMode, Is.EqualTo(AudioVelocityUpdateMode.Fixed));
+            Assert.That(
+                target.GetCustomCurve(AudioSourceCurveType.CustomRolloff).keys.Length,
+                Is.EqualTo(customRolloff.keys.Length));
+        }
+        finally
+        {
+            DestroyObject(clip);
+            DestroyObject(targetObject);
+            DestroyObject(sourceObject);
+        }
+    }
+
+    [Test]
     public void BattleVfxSfxEntry_CopyFromKeepsExplicitSfxSettings()
     {
         BattleVfxSfxEntry source = new()
