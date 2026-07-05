@@ -2413,11 +2413,14 @@ MonoBehaviour:
   - type: 17
     clip: {fileID: 8300000, guid: 23ffa4d4eed73744eac96aa612ee44d5, type: 3}
     volume: 0.3
-  - type: 14
-    clip: {fileID: 8300000, guid: bf7b5b48727a01e46bd0d073a6d64494, type: 3}
+  - type: 21
+    clip: {fileID: 8300000, guid: 55426547c0ee0324787f7a5db6bcdfcd, type: 3}
     volume: 0.4
   - type: 22
     clip: {fileID: 8300000, guid: a4bd1740484f2064fa0b21baa659acbc, type: 3}
+    volume: 0.4
+  - type: 14
+    clip: {fileID: 8300000, guid: bf7b5b48727a01e46bd0d073a6d64494, type: 3}
     volume: 0.4
   rewardSfxList: []
 --- !u!82 &1960083566
