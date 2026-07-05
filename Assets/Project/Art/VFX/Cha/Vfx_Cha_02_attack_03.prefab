@@ -9759,7 +9759,7 @@ AudioSource:
   m_Resource: {fileID: 8300000, guid: 1aa4c21b174363345ac76e3276e18fa0, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 1
-  m_Pitch: 1
+  m_Pitch: 0.93
   Loop: 0
   Mute: 0
   Spatialize: 0
