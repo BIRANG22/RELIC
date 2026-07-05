@@ -2376,7 +2376,31 @@ MonoBehaviour:
   - type: 11
     clip: {fileID: 8300000, guid: 748ab9133e00d04458c3a6b54f77b212, type: 3}
     volume: 1
-  playerSfxList: []
+  playerSfxList:
+  - type: 5
+    clip: {fileID: 8300000, guid: 98da4d30a51665c4a94f92bf2741bc08, type: 3}
+    volume: 0.5
+  - type: 5
+    clip: {fileID: 8300000, guid: 950364c916b7f6e4e8992668762cb964, type: 3}
+    volume: 0.5
+  - type: 5
+    clip: {fileID: 8300000, guid: d15d6106787687a4ba7eba940af09b3b, type: 3}
+    volume: 0.5
+  - type: 5
+    clip: {fileID: 8300000, guid: 0234512dd4e1ba64b9bd0a351a289108, type: 3}
+    volume: 0.5
+  - type: 5
+    clip: {fileID: 8300000, guid: 3989b987d2b839448a485c420a838652, type: 3}
+    volume: 0.5
+  - type: 5
+    clip: {fileID: 8300000, guid: d703d6f29db7d554cb6952e8c2eeedd7, type: 3}
+    volume: 0.5
+  - type: 5
+    clip: {fileID: 8300000, guid: 4b2d4196af9881b46b18b39f7f78f15f, type: 3}
+    volume: 0.5
+  - type: 5
+    clip: {fileID: 8300000, guid: 0234512dd4e1ba64b9bd0a351a289108, type: 3}
+    volume: 0.5
   monsterSfxList: []
   uiSfxList:
   - type: 8
@@ -2384,6 +2408,12 @@ MonoBehaviour:
     volume: 0.5
   - type: 9
     clip: {fileID: 8300000, guid: b208e34a1afa9e146b104922e77b65dc, type: 3}
+    volume: 0.3
+  - type: 2
+    clip: {fileID: 8300000, guid: cd79944ddc33df841a78f5f3915afa10, type: 3}
+    volume: 0.3
+  - type: 2
+    clip: {fileID: 8300000, guid: 3b21ea75963842c428923e1ed0ad2910, type: 3}
     volume: 0.3
   battleSfxList:
   - type: 12
@@ -2423,6 +2453,7 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: bf7b5b48727a01e46bd0d073a6d64494, type: 3}
     volume: 0.4
   rewardSfxList: []
+  vfxSfxIdList: []
 --- !u!82 &1960083566
 AudioSource:
   m_ObjectHideFlags: 0
