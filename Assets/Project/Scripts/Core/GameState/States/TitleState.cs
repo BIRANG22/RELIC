@@ -10,7 +10,7 @@ public class TitleState : BaseGameState
     public override async Task Enter(GameStateContext context)
     {
         await sceneFlow.LoadSceneAsync(SceneName.Title);
-        AudioManager.Instance.PlayBgm(BgmType.Title);
+        AudioManager.Instance.PlayBgmDelayed(BgmType.Title);
     }
 
     public override Task Exit()
