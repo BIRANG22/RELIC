@@ -543,7 +543,7 @@ Shader "Vefects/SH_VFX_Stylized_Slash_01"
 				float2 rotator129 = mul( uv_Texture - float2( 0.5,0.5 ) , float2x2( cos129 , -sin129 , sin129 , cos129 )) + float2( 0.5,0.5 );
 				float dotResult140 = dot( tex2D( _Texture, ( rotator129 + ( _TimeParameters.x * _TexturePanSpeed ) + CustomUV89 + Disto107 ) ) , _TextureChannel );
 				float temp_output_147_0 = ( ( saturate( lerpResult138 ) + texCoord141.z + _DissolveOffset ) * saturate( dotResult140 ) );
-				float temp_output_261_0 = saturate( ( pow( temp_output_147_0 , _CorePower ) * _CoreIntensity ) );
+				float temp_output_261_0 = saturate( ( pow( saturate( temp_output_147_0 ) , _CorePower ) * _CoreIntensity ) );
 				float2 texCoord248 = input.ase_texcoord2.xy * float2( 1,1 ) + float2( 0,0 );
 				float2 temp_output_266_0 = ( texCoord248 + _CutoutOffset );
 				float cos258 = cos( radians( _CutoutRotation ) );
@@ -941,7 +941,7 @@ Shader "Vefects/SH_VFX_Stylized_Slash_01"
 				float2 rotator129 = mul( uv_Texture - float2( 0.5,0.5 ) , float2x2( cos129 , -sin129 , sin129 , cos129 )) + float2( 0.5,0.5 );
 				float dotResult140 = dot( tex2D( _Texture, ( rotator129 + ( _TimeParameters.x * _TexturePanSpeed ) + CustomUV89 + Disto107 ) ) , _TextureChannel );
 				float temp_output_147_0 = ( ( saturate( lerpResult138 ) + texCoord141.z + _DissolveOffset ) * saturate( dotResult140 ) );
-				float temp_output_261_0 = saturate( ( pow( temp_output_147_0 , _CorePower ) * _CoreIntensity ) );
+				float temp_output_261_0 = saturate( ( pow( saturate( temp_output_147_0 ) , _CorePower ) * _CoreIntensity ) );
 				float2 texCoord248 = input.ase_texcoord.xy * float2( 1,1 ) + float2( 0,0 );
 				float2 temp_output_266_0 = ( texCoord248 + _CutoutOffset );
 				float cos258 = cos( radians( _CutoutRotation ) );
@@ -1291,7 +1291,7 @@ Shader "Vefects/SH_VFX_Stylized_Slash_01"
 				float2 rotator129 = mul( uv_Texture - float2( 0.5,0.5 ) , float2x2( cos129 , -sin129 , sin129 , cos129 )) + float2( 0.5,0.5 );
 				float dotResult140 = dot( tex2D( _Texture, ( rotator129 + ( _TimeParameters.x * _TexturePanSpeed ) + CustomUV89 + Disto107 ) ) , _TextureChannel );
 				float temp_output_147_0 = ( ( saturate( lerpResult138 ) + texCoord141.z + _DissolveOffset ) * saturate( dotResult140 ) );
-				float temp_output_261_0 = saturate( ( pow( temp_output_147_0 , _CorePower ) * _CoreIntensity ) );
+				float temp_output_261_0 = saturate( ( pow( saturate( temp_output_147_0 ) , _CorePower ) * _CoreIntensity ) );
 				float2 texCoord248 = input.ase_texcoord.xy * float2( 1,1 ) + float2( 0,0 );
 				float2 temp_output_266_0 = ( texCoord248 + _CutoutOffset );
 				float cos258 = cos( radians( _CutoutRotation ) );
@@ -1636,7 +1636,7 @@ Shader "Vefects/SH_VFX_Stylized_Slash_01"
 				float2 rotator129 = mul( uv_Texture - float2( 0.5,0.5 ) , float2x2( cos129 , -sin129 , sin129 , cos129 )) + float2( 0.5,0.5 );
 				float dotResult140 = dot( tex2D( _Texture, ( rotator129 + ( _TimeParameters.x * _TexturePanSpeed ) + CustomUV89 + Disto107 ) ) , _TextureChannel );
 				float temp_output_147_0 = ( ( saturate( lerpResult138 ) + texCoord141.z + _DissolveOffset ) * saturate( dotResult140 ) );
-				float temp_output_261_0 = saturate( ( pow( temp_output_147_0 , _CorePower ) * _CoreIntensity ) );
+				float temp_output_261_0 = saturate( ( pow( saturate( temp_output_147_0 ) , _CorePower ) * _CoreIntensity ) );
 				float2 texCoord248 = input.ase_texcoord.xy * float2( 1,1 ) + float2( 0,0 );
 				float2 temp_output_266_0 = ( texCoord248 + _CutoutOffset );
 				float cos258 = cos( radians( _CutoutRotation ) );
@@ -2010,7 +2010,7 @@ Shader "Vefects/SH_VFX_Stylized_Slash_01"
 				float2 rotator129 = mul( uv_Texture - float2( 0.5,0.5 ) , float2x2( cos129 , -sin129 , sin129 , cos129 )) + float2( 0.5,0.5 );
 				float dotResult140 = dot( tex2D( _Texture, ( rotator129 + ( _TimeParameters.x * _TexturePanSpeed ) + CustomUV89 + Disto107 ) ) , _TextureChannel );
 				float temp_output_147_0 = ( ( saturate( lerpResult138 ) + texCoord141.z + _DissolveOffset ) * saturate( dotResult140 ) );
-				float temp_output_261_0 = saturate( ( pow( temp_output_147_0 , _CorePower ) * _CoreIntensity ) );
+				float temp_output_261_0 = saturate( ( pow( saturate( temp_output_147_0 ) , _CorePower ) * _CoreIntensity ) );
 				float2 texCoord248 = input.ase_texcoord1.xy * float2( 1,1 ) + float2( 0,0 );
 				float2 temp_output_266_0 = ( texCoord248 + _CutoutOffset );
 				float cos258 = cos( radians( _CutoutRotation ) );
