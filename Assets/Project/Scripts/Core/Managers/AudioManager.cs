@@ -59,6 +59,16 @@ public class SfxData
     public float volume = 1f;
 }
 
+[System.Serializable]
+public class SfxIdData
+{
+    public string id;
+    public AudioClip clip;
+
+    [Range(0f, 1f)]
+    public float volume = 1f;
+}
+
 public class AudioManager : Singleton<AudioManager>
 {
     [Header("Audio Sources")]
@@ -86,8 +96,12 @@ public class AudioManager : Singleton<AudioManager>
     [Header("Reward SFX")]
     [SerializeField] private List<SfxData> rewardSfxList = new();
 
+    [Header("VFX SFX ID List")]
+    [SerializeField] private List<SfxIdData> vfxSfxIdList = new();
+
     private Dictionary<BgmType, AudioClip> bgmDict;
     private Dictionary<SfxType, SfxData> sfxDict;
+    private Dictionary<string, SfxIdData> sfxIdDict;
     private Coroutine pendingBgmRoutine;
 
     protected override void Awake()
@@ -110,6 +124,7 @@ public class AudioManager : Singleton<AudioManager>
     {
         bgmDict = new Dictionary<BgmType, AudioClip>();
         sfxDict = new Dictionary<SfxType, SfxData>();
+        sfxIdDict = new Dictionary<string, SfxIdData>(System.StringComparer.Ordinal);
 
         foreach (BgmData data in bgmList)
         {
@@ -128,6 +143,7 @@ public class AudioManager : Singleton<AudioManager>
         RegisterSfxList(uiSfxList);
         RegisterSfxList(battleSfxList);
         RegisterSfxList(rewardSfxList);
+        RegisterSfxIdList(vfxSfxIdList);
     }
 
     private void RegisterSfxList(List<SfxData> list)
@@ -146,6 +162,26 @@ public class AudioManager : Singleton<AudioManager>
                 sfxDict.Add(data.type, data);
             else
                 Debug.LogWarning($"[AudioManager] Duplicate SFX Type: {data.type}");
+        }
+    }
+
+    private void RegisterSfxIdList(List<SfxIdData> list)
+    {
+        if (list == null)
+            return;
+
+        foreach (SfxIdData data in list)
+        {
+            if (data == null || string.IsNullOrWhiteSpace(data.id) || data.clip == null)
+                continue;
+
+            string id = data.id.Trim();
+            data.volume = Mathf.Clamp01(data.volume);
+
+            if (!sfxIdDict.ContainsKey(id))
+                sfxIdDict.Add(id, data);
+            else
+                Debug.LogWarning($"[AudioManager] Duplicate SFX ID: {id}");
         }
     }
 
@@ -225,6 +261,55 @@ public class AudioManager : Singleton<AudioManager>
 
         float volume = Mathf.Clamp01(data.volume) * Mathf.Clamp01(volumeMultiplier);
         sfxSource.PlayOneShot(data.clip, volume);
+    }
+
+    public void PlaySfx(string id)
+    {
+        PlaySfx(id, 1f);
+    }
+
+    public void PlaySfx(string id, float volumeMultiplier)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+            return;
+
+        string trimmedId = id.Trim();
+
+        if (sfxIdDict != null &&
+            sfxIdDict.TryGetValue(trimmedId, out SfxIdData data) &&
+            data != null &&
+            data.clip != null)
+        {
+            PlaySfxClip(data.clip, Mathf.Clamp01(data.volume) * Mathf.Clamp01(volumeMultiplier));
+            return;
+        }
+
+        if (System.Enum.TryParse(trimmedId, out SfxType type))
+        {
+            PlaySfx(type, volumeMultiplier);
+            return;
+        }
+
+        Debug.LogWarning($"[AudioManager] SFX ID not found: {trimmedId}");
+    }
+
+    public void PlaySfxClip(AudioClip clip)
+    {
+        PlaySfxClip(clip, 1f);
+    }
+
+    public void PlaySfxClip(AudioClip clip, float volumeMultiplier)
+    {
+        if (clip == null)
+            return;
+
+        if (sfxSource == null)
+        {
+            Debug.LogWarning("[AudioManager] SFX Source is not assigned.");
+            return;
+        }
+
+        sfxSource.PlayOneShot(clip, Mathf.Clamp01(volumeMultiplier));
     }
 
     public void SetMasterVolume(float volume)
