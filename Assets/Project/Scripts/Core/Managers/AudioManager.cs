@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.Audio;
 
 public enum BgmType
 {
@@ -102,6 +103,7 @@ public class AudioManager : Singleton<AudioManager>
     private Dictionary<BgmType, AudioClip> bgmDict;
     private Dictionary<SfxType, SfxData> sfxDict;
     private Dictionary<string, SfxIdData> sfxIdDict;
+    private readonly List<RoutedSfxSource> routedSfxSources = new();
     private Coroutine pendingBgmRoutine;
 
     protected override void Awake()
@@ -312,6 +314,60 @@ public class AudioManager : Singleton<AudioManager>
         sfxSource.PlayOneShot(clip, Mathf.Clamp01(volumeMultiplier));
     }
 
+    public AudioSource PlaySfxClip(AudioSource source)
+    {
+        return PlaySfxClip(source, 1f);
+    }
+
+    public AudioSource PlaySfxClip(AudioSource source, float volumeMultiplier)
+    {
+        AudioSourcePlaybackSettings settings = AudioSourcePlaybackSettings.From(source);
+        return PlaySfxClip(settings, volumeMultiplier);
+    }
+
+    public AudioSource PlaySfxClip(
+        AudioSourcePlaybackSettings sourceSettings,
+        float volumeMultiplier)
+    {
+        if (sourceSettings == null || sourceSettings.Clip == null)
+            return null;
+
+        GameObject sourceObject = new($"{sourceSettings.Clip.name}_RoutedSfx");
+        sourceObject.transform.SetParent(transform, false);
+        sourceObject.transform.SetPositionAndRotation(
+            sourceSettings.WorldPosition,
+            sourceSettings.WorldRotation);
+
+        AudioSource routedSource = sourceObject.AddComponent<AudioSource>();
+        sourceSettings.ApplyTo(routedSource, Mathf.Clamp01(volumeMultiplier));
+
+        float baseVolume = routedSource.volume;
+        RegisterRoutedSfxSource(routedSource, baseVolume);
+        ApplyRoutedSfxVolume(routedSource, baseVolume);
+        routedSource.Play();
+
+        if (!routedSource.loop && isActiveAndEnabled)
+            StartCoroutine(DestroyRoutedSfxWhenFinished(routedSource));
+
+        return routedSource;
+    }
+
+    public void StopRoutedSfxSource(AudioSource routedSource)
+    {
+        if (routedSource == null)
+            return;
+
+        UnregisterRoutedSfxSource(routedSource);
+
+        GameObject sourceObject = routedSource.gameObject;
+        routedSource.Stop();
+
+        if (Application.isPlaying)
+            Destroy(sourceObject);
+        else
+            DestroyImmediate(sourceObject);
+    }
+
     public void SetMasterVolume(float volume)
     {
         Settings.Instance.MasterVolume = Mathf.Clamp01(volume);
@@ -366,14 +422,233 @@ public class AudioManager : Singleton<AudioManager>
 
     private void ApplyVolumes()
     {
-        float master = Settings.Instance.MasterVolume;
-        float bgm = Settings.Instance.BGMVolume;
-        float sfx = Settings.Instance.SFXVolume;
+        float master = GetMasterVolumeOrDefault();
+        float bgm = GetBgmVolumeOrDefault();
+        float sfx = GetSfxVolumeOrDefault();
 
         if (bgmSource != null)
             bgmSource.volume = master * bgm;
 
         if (sfxSource != null)
             sfxSource.volume = master * sfx;
+
+        ApplyRoutedSfxVolumes();
+    }
+
+    private IEnumerator DestroyRoutedSfxWhenFinished(AudioSource routedSource)
+    {
+        if (routedSource == null || routedSource.clip == null)
+            yield break;
+
+        float pitch = Mathf.Abs(routedSource.pitch);
+        float duration = routedSource.clip.length / Mathf.Max(0.01f, pitch);
+        yield return new WaitForSeconds(duration + 0.05f);
+
+        StopRoutedSfxSource(routedSource);
+    }
+
+    private void RegisterRoutedSfxSource(AudioSource source, float baseVolume)
+    {
+        if (source == null)
+            return;
+
+        routedSfxSources.Add(new RoutedSfxSource
+        {
+            source = source,
+            baseVolume = Mathf.Clamp01(baseVolume)
+        });
+    }
+
+    private void UnregisterRoutedSfxSource(AudioSource source)
+    {
+        if (source == null)
+            return;
+
+        for (int i = routedSfxSources.Count - 1; i >= 0; i--)
+        {
+            if (routedSfxSources[i].source == source)
+                routedSfxSources.RemoveAt(i);
+        }
+    }
+
+    private void ApplyRoutedSfxVolumes()
+    {
+        for (int i = routedSfxSources.Count - 1; i >= 0; i--)
+        {
+            RoutedSfxSource routed = routedSfxSources[i];
+
+            if (routed == null || routed.source == null)
+            {
+                routedSfxSources.RemoveAt(i);
+                continue;
+            }
+
+            ApplyRoutedSfxVolume(routed.source, routed.baseVolume);
+        }
+    }
+
+    private void ApplyRoutedSfxVolume(AudioSource source, float baseVolume)
+    {
+        if (source == null)
+            return;
+
+        source.volume = Mathf.Clamp01(baseVolume) * GetSfxOutputVolumeMultiplier();
+    }
+
+    private static float GetSfxOutputVolumeMultiplier()
+    {
+        return GetMasterVolumeOrDefault() * GetSfxVolumeOrDefault();
+    }
+
+    private static float GetMasterVolumeOrDefault()
+    {
+        return Settings.Instance != null ? Mathf.Clamp01(Settings.Instance.MasterVolume) : 1f;
+    }
+
+    private static float GetBgmVolumeOrDefault()
+    {
+        return Settings.Instance != null ? Mathf.Clamp01(Settings.Instance.BGMVolume) : 1f;
+    }
+
+    private static float GetSfxVolumeOrDefault()
+    {
+        return Settings.Instance != null ? Mathf.Clamp01(Settings.Instance.SFXVolume) : 1f;
+    }
+
+    private sealed class RoutedSfxSource
+    {
+        public AudioSource source;
+        public float baseVolume;
+    }
+}
+
+public sealed class AudioSourcePlaybackSettings
+{
+    private AnimationCurve customRolloffCurve;
+    private AnimationCurve spatialBlendCurve;
+    private AnimationCurve reverbZoneMixCurve;
+    private AnimationCurve spreadCurve;
+
+    public AudioClip Clip { get; private set; }
+    public AudioMixerGroup OutputAudioMixerGroup { get; private set; }
+    public Vector3 WorldPosition { get; private set; }
+    public Quaternion WorldRotation { get; private set; }
+    public bool BypassEffects { get; private set; }
+    public bool BypassListenerEffects { get; private set; }
+    public bool BypassReverbZones { get; private set; }
+    public bool Loop { get; private set; }
+    public int Priority { get; private set; }
+    public float Volume { get; private set; }
+    public float Pitch { get; private set; }
+    public float PanStereo { get; private set; }
+    public float SpatialBlend { get; private set; }
+    public float ReverbZoneMix { get; private set; }
+    public float DopplerLevel { get; private set; }
+    public float Spread { get; private set; }
+    public AudioRolloffMode RolloffMode { get; private set; }
+    public float MinDistance { get; private set; }
+    public float MaxDistance { get; private set; }
+    public bool IgnoreListenerPause { get; private set; }
+    public bool IgnoreListenerVolume { get; private set; }
+    public bool Spatialize { get; private set; }
+    public bool SpatializePostEffects { get; private set; }
+    public AudioVelocityUpdateMode VelocityUpdateMode { get; private set; }
+
+    public static AudioSourcePlaybackSettings From(AudioSource source)
+    {
+        if (source == null)
+            return null;
+
+        return new AudioSourcePlaybackSettings
+        {
+            Clip = source.clip,
+            OutputAudioMixerGroup = source.outputAudioMixerGroup,
+            WorldPosition = source.transform.position,
+            WorldRotation = source.transform.rotation,
+            BypassEffects = source.bypassEffects,
+            BypassListenerEffects = source.bypassListenerEffects,
+            BypassReverbZones = source.bypassReverbZones,
+            Loop = source.loop,
+            Priority = source.priority,
+            Volume = source.volume,
+            Pitch = source.pitch,
+            PanStereo = source.panStereo,
+            SpatialBlend = source.spatialBlend,
+            ReverbZoneMix = source.reverbZoneMix,
+            DopplerLevel = source.dopplerLevel,
+            Spread = source.spread,
+            RolloffMode = source.rolloffMode,
+            MinDistance = source.minDistance,
+            MaxDistance = source.maxDistance,
+            IgnoreListenerPause = source.ignoreListenerPause,
+            IgnoreListenerVolume = source.ignoreListenerVolume,
+            Spatialize = source.spatialize,
+            SpatializePostEffects = source.spatializePostEffects,
+            VelocityUpdateMode = source.velocityUpdateMode,
+            customRolloffCurve = CopyCurve(source.GetCustomCurve(AudioSourceCurveType.CustomRolloff)),
+            spatialBlendCurve = CopyCurve(source.GetCustomCurve(AudioSourceCurveType.SpatialBlend)),
+            reverbZoneMixCurve = CopyCurve(source.GetCustomCurve(AudioSourceCurveType.ReverbZoneMix)),
+            spreadCurve = CopyCurve(source.GetCustomCurve(AudioSourceCurveType.Spread))
+        };
+    }
+
+    public void ApplyTo(AudioSource target, float volumeMultiplier)
+    {
+        if (target == null)
+            return;
+
+        target.clip = Clip;
+        target.outputAudioMixerGroup = OutputAudioMixerGroup;
+        target.bypassEffects = BypassEffects;
+        target.bypassListenerEffects = BypassListenerEffects;
+        target.bypassReverbZones = BypassReverbZones;
+        target.playOnAwake = false;
+        target.loop = Loop;
+        target.priority = Priority;
+        target.volume = Mathf.Clamp01(Volume * Mathf.Clamp01(volumeMultiplier));
+        target.pitch = Pitch;
+        target.panStereo = PanStereo;
+        target.spatialBlend = SpatialBlend;
+        target.reverbZoneMix = ReverbZoneMix;
+        target.dopplerLevel = DopplerLevel;
+        target.spread = Spread;
+        target.rolloffMode = RolloffMode;
+        target.minDistance = MinDistance;
+        target.maxDistance = MaxDistance;
+        target.ignoreListenerPause = IgnoreListenerPause;
+        target.ignoreListenerVolume = IgnoreListenerVolume;
+        target.spatialize = Spatialize;
+        target.spatializePostEffects = SpatializePostEffects;
+        target.velocityUpdateMode = VelocityUpdateMode;
+
+        ApplyCurve(target, AudioSourceCurveType.CustomRolloff, customRolloffCurve);
+        ApplyCurve(target, AudioSourceCurveType.SpatialBlend, spatialBlendCurve);
+        ApplyCurve(target, AudioSourceCurveType.ReverbZoneMix, reverbZoneMixCurve);
+        ApplyCurve(target, AudioSourceCurveType.Spread, spreadCurve);
+    }
+
+    private static void ApplyCurve(
+        AudioSource target,
+        AudioSourceCurveType curveType,
+        AnimationCurve curve)
+    {
+        if (target == null || curve == null)
+            return;
+
+        target.SetCustomCurve(curveType, CopyCurve(curve));
+    }
+
+    private static AnimationCurve CopyCurve(AnimationCurve source)
+    {
+        if (source == null)
+            return null;
+
+        AnimationCurve copy = new(source.keys)
+        {
+            preWrapMode = source.preWrapMode,
+            postWrapMode = source.postWrapMode
+        };
+
+        return copy;
     }
 }

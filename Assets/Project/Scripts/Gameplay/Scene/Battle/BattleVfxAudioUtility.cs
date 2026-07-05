@@ -16,7 +16,7 @@ public static class BattleVfxAudioUtility
         AudioSource[] sources = vfx.GetComponentsInChildren<AudioSource>(true);
 
         if (ShouldRouteEmbeddedAudioSources(settings))
-            PlayEmbeddedAudioSources(sources, settings);
+            PlayEmbeddedAudioSources(vfx, sources, settings);
 
         if (ShouldRemoveEmbeddedAudioSources(settings))
             RemoveEmbeddedAudioSources(sources);
@@ -64,6 +64,7 @@ public static class BattleVfxAudioUtility
     }
 
     private static void PlayEmbeddedAudioSources(
+        GameObject vfx,
         AudioSource[] sources,
         BattleVfxSfxEntry settings)
     {
@@ -85,8 +86,25 @@ public static class BattleVfxAudioUtility
                 continue;
             }
 
-            AudioManager.Instance.PlaySfxClip(source.clip, source.volume * entryVolume);
+            AudioSource routedSource = AudioManager.Instance.PlaySfxClip(source, entryVolume);
+
+            if (routedSource != null && routedSource.loop)
+                TrackLoopedRoutedAudioSource(vfx, routedSource);
         }
+    }
+
+    private static void TrackLoopedRoutedAudioSource(GameObject vfx, AudioSource routedSource)
+    {
+        if (vfx == null || routedSource == null)
+            return;
+
+        BattleVfxRoutedAudioCleanup cleanup =
+            vfx.GetComponent<BattleVfxRoutedAudioCleanup>();
+
+        if (cleanup == null)
+            cleanup = vfx.AddComponent<BattleVfxRoutedAudioCleanup>();
+
+        cleanup.Track(routedSource);
     }
 
     private static void RemoveEmbeddedAudioSources(AudioSource[] sources)
@@ -116,5 +134,34 @@ public static class BattleVfxAudioUtility
             Object.Destroy(target);
         else
             Object.DestroyImmediate(target);
+    }
+}
+
+public sealed class BattleVfxRoutedAudioCleanup : MonoBehaviour
+{
+    private readonly System.Collections.Generic.List<AudioSource> routedSources = new();
+
+    public void Track(AudioSource source)
+    {
+        if (source != null && !routedSources.Contains(source))
+            routedSources.Add(source);
+    }
+
+    private void OnDestroy()
+    {
+        for (int i = routedSources.Count - 1; i >= 0; i--)
+        {
+            AudioSource source = routedSources[i];
+
+            if (source == null)
+                continue;
+
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.StopRoutedSfxSource(source);
+            else
+                Destroy(source.gameObject);
+        }
+
+        routedSources.Clear();
     }
 }
