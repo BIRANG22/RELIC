@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,6 +12,10 @@ public class TitleManager : MonoBehaviour
     [Header("Logo")]
     [SerializeField] private GameObject onLogo;
     [SerializeField] private GameObject offLogo;
+
+    [Header("BGM")]
+    [SerializeField] private bool playTitleBgmOnStart = true;
+    [SerializeField] private int titleBgmRetryFrameCount = 2;
 
     [Header("Warning")]
     [SerializeField] private TitleWarningUI warningUI;
@@ -46,6 +51,34 @@ public class TitleManager : MonoBehaviour
     private void Start()
     {
         RefreshLogoDefaultState();
+        StartTitleBgmRetry();
+    }
+
+    private void StartTitleBgmRetry()
+    {
+        if (!playTitleBgmOnStart)
+        {
+            return;
+        }
+
+        StartCoroutine(PlayTitleBgmRetryRoutine());
+    }
+
+    private IEnumerator PlayTitleBgmRetryRoutine()
+    {
+        int waitFrameCount = Mathf.Max(0, titleBgmRetryFrameCount);
+
+        for (int i = 0; i < waitFrameCount; i++)
+        {
+            yield return null;
+        }
+
+        if (AudioManager.Instance == null)
+        {
+            yield break;
+        }
+
+        AudioManager.Instance.PlayBgm(BgmType.Title);
     }
 
     private void OnDestroy()
