@@ -533,7 +533,7 @@ Shader "Vefects/SH_Vefects_VFX_Dissolve_Newest"
 				float2 texCoord59 = input.ase_texcoord5.xy * _MaskMoveUVScale + float2( 0,0 );
 				float2 appendResult57 = (float2(input.ase_texcoord6.z , input.ase_texcoord6.w));
 				float4 tex2DNode68 = tex2D( _MaskMoveTexture, ( texCoord59 + appendResult57 ) );
-				float temp_output_83_0 = ( saturate( ( saturate( pow( saturate( tex2D( _MaskTexture, ( ( Distortion36 * _MaskDistortion ) + panner56 ) ).g ) , _MaskPower ) ) * _MaskMultiply ) ) * saturate( ( pow( saturate( tex2DNode68.g ) , _MaskMovePower ) * _MaskMoveMultiply ) ) );
+				float temp_output_83_0 = ( saturate( ( saturate( pow( tex2D( _MaskTexture, ( ( Distortion36 * _MaskDistortion ) + panner56 ) ).g , _MaskPower ) ) * _MaskMultiply ) ) * saturate( ( pow( tex2DNode68.g , _MaskMovePower ) * _MaskMoveMultiply ) ) );
 				float2 texCoord40 = input.ase_texcoord5.xy * _Noise01UVScale + float2( 0,0 );
 				float2 panner48 = ( global_speed22 * _Noise01PanSpeed + texCoord40);
 				float2 texCoord38 = input.ase_texcoord5.xy * _Noise02UVScale + float2( 0,0 );
@@ -885,7 +885,7 @@ Shader "Vefects/SH_Vefects_VFX_Dissolve_Newest"
 				float2 texCoord59 = input.ase_texcoord4.xy * _MaskMoveUVScale + float2( 0,0 );
 				float2 appendResult57 = (float2(input.ase_texcoord5.z , input.ase_texcoord5.w));
 				float4 tex2DNode68 = tex2D( _MaskMoveTexture, ( texCoord59 + appendResult57 ) );
-				float temp_output_83_0 = ( saturate( ( saturate( pow( saturate( tex2D( _MaskTexture, ( ( Distortion36 * _MaskDistortion ) + panner56 ) ).g ) , _MaskPower ) ) * _MaskMultiply ) ) * saturate( ( pow( saturate( tex2DNode68.g ) , _MaskMovePower ) * _MaskMoveMultiply ) ) );
+				float temp_output_83_0 = ( saturate( ( saturate( pow( tex2D( _MaskTexture, ( ( Distortion36 * _MaskDistortion ) + panner56 ) ).g , _MaskPower ) ) * _MaskMultiply ) ) * saturate( ( pow( tex2DNode68.g , _MaskMovePower ) * _MaskMoveMultiply ) ) );
 				float2 texCoord40 = input.ase_texcoord4.xy * _Noise01UVScale + float2( 0,0 );
 				float2 panner48 = ( global_speed22 * _Noise01PanSpeed + texCoord40);
 				float2 texCoord38 = input.ase_texcoord4.xy * _Noise02UVScale + float2( 0,0 );
@@ -1206,7 +1206,7 @@ Shader "Vefects/SH_Vefects_VFX_Dissolve_Newest"
 				float2 texCoord59 = input.ase_texcoord2.xy * _MaskMoveUVScale + float2( 0,0 );
 				float2 appendResult57 = (float2(input.ase_texcoord3.z , input.ase_texcoord3.w));
 				float4 tex2DNode68 = tex2D( _MaskMoveTexture, ( texCoord59 + appendResult57 ) );
-				float temp_output_83_0 = ( saturate( ( saturate( pow( saturate( tex2D( _MaskTexture, ( ( Distortion36 * _MaskDistortion ) + panner56 ) ).g ) , _MaskPower ) ) * _MaskMultiply ) ) * saturate( ( pow( saturate( tex2DNode68.g ) , _MaskMovePower ) * _MaskMoveMultiply ) ) );
+				float temp_output_83_0 = ( saturate( ( saturate( pow( tex2D( _MaskTexture, ( ( Distortion36 * _MaskDistortion ) + panner56 ) ).g , _MaskPower ) ) * _MaskMultiply ) ) * saturate( ( pow( tex2DNode68.g , _MaskMovePower ) * _MaskMoveMultiply ) ) );
 				float2 texCoord40 = input.ase_texcoord2.xy * _Noise01UVScale + float2( 0,0 );
 				float2 panner48 = ( global_speed22 * _Noise01PanSpeed + texCoord40);
 				float2 texCoord38 = input.ase_texcoord2.xy * _Noise02UVScale + float2( 0,0 );
@@ -1531,7 +1531,7 @@ Shader "Vefects/SH_Vefects_VFX_Dissolve_Newest"
 				float2 texCoord59 = input.ase_texcoord2.xy * _MaskMoveUVScale + float2( 0,0 );
 				float2 appendResult57 = (float2(input.ase_texcoord3.z , input.ase_texcoord3.w));
 				float4 tex2DNode68 = tex2D( _MaskMoveTexture, ( texCoord59 + appendResult57 ) );
-				float temp_output_83_0 = ( saturate( ( saturate( pow( saturate( tex2D( _MaskTexture, ( ( Distortion36 * _MaskDistortion ) + panner56 ) ).g ) , _MaskPower ) ) * _MaskMultiply ) ) * saturate( ( pow( saturate( tex2DNode68.g ) , _MaskMovePower ) * _MaskMoveMultiply ) ) );
+				float temp_output_83_0 = ( saturate( ( saturate( pow( tex2D( _MaskTexture, ( ( Distortion36 * _MaskDistortion ) + panner56 ) ).g , _MaskPower ) ) * _MaskMultiply ) ) * saturate( ( pow( tex2DNode68.g , _MaskMovePower ) * _MaskMoveMultiply ) ) );
 				float2 texCoord40 = input.ase_texcoord2.xy * _Noise01UVScale + float2( 0,0 );
 				float2 panner48 = ( global_speed22 * _Noise01PanSpeed + texCoord40);
 				float2 texCoord38 = input.ase_texcoord2.xy * _Noise02UVScale + float2( 0,0 );
@@ -1865,7 +1865,7 @@ Shader "Vefects/SH_Vefects_VFX_Dissolve_Newest"
 				float2 texCoord59 = input.ase_texcoord3.xy * _MaskMoveUVScale + float2( 0,0 );
 				float2 appendResult57 = (float2(input.ase_texcoord4.z , input.ase_texcoord4.w));
 				float4 tex2DNode68 = tex2D( _MaskMoveTexture, ( texCoord59 + appendResult57 ) );
-				float temp_output_83_0 = ( saturate( ( saturate( pow( saturate( tex2D( _MaskTexture, ( ( Distortion36 * _MaskDistortion ) + panner56 ) ).g ) , _MaskPower ) ) * _MaskMultiply ) ) * saturate( ( pow( saturate( tex2DNode68.g ) , _MaskMovePower ) * _MaskMoveMultiply ) ) );
+				float temp_output_83_0 = ( saturate( ( saturate( pow( tex2D( _MaskTexture, ( ( Distortion36 * _MaskDistortion ) + panner56 ) ).g , _MaskPower ) ) * _MaskMultiply ) ) * saturate( ( pow( tex2DNode68.g , _MaskMovePower ) * _MaskMoveMultiply ) ) );
 				float2 texCoord40 = input.ase_texcoord3.xy * _Noise01UVScale + float2( 0,0 );
 				float2 panner48 = ( global_speed22 * _Noise01PanSpeed + texCoord40);
 				float2 texCoord38 = input.ase_texcoord3.xy * _Noise02UVScale + float2( 0,0 );

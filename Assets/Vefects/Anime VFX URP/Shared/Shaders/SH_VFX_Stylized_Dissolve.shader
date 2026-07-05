@@ -569,7 +569,7 @@ Shader "Vefects/SH_VFX_Stylized_Dissolve"
 				float2 rotator129 = mul( uv_Texture - float2( 0.5,0.5 ) , float2x2( cos129 , -sin129 , sin129 , cos129 )) + float2( 0.5,0.5 );
 				float dotResult140 = dot( tex2D( _Texture, ( rotator129 + ( _TimeParameters.x * _TexturePanSpeed ) + CustomUV89 + Disto107 ) ) , _TextureChannel );
 				float temp_output_147_0 = ( temp_output_145_0 * saturate( dotResult140 ) );
-				float temp_output_153_0 = ( pow( saturate( temp_output_147_0 ) , _CorePower ) * _CoreIntensity );
+				float temp_output_153_0 = ( pow( temp_output_147_0 , _CorePower ) * _CoreIntensity );
 				float4 lerpResult188 = lerp( float4( temp_output_198_0 , 0.0 ) , _CoreColor , saturate( temp_output_153_0 ));
 				float4 lerpResult217 = lerp( float4( temp_output_198_0 , 0.0 ) , saturate( lerpResult188 ) , _DifferentCoreColor);
 				float3 temp_cast_8 = (1.0).xxx;
@@ -963,7 +963,7 @@ Shader "Vefects/SH_VFX_Stylized_Dissolve"
 				float2 rotator129 = mul( uv_Texture - float2( 0.5,0.5 ) , float2x2( cos129 , -sin129 , sin129 , cos129 )) + float2( 0.5,0.5 );
 				float dotResult140 = dot( tex2D( _Texture, ( rotator129 + ( _TimeParameters.x * _TexturePanSpeed ) + CustomUV89 + Disto107 ) ) , _TextureChannel );
 				float temp_output_147_0 = ( temp_output_145_0 * saturate( dotResult140 ) );
-				float temp_output_153_0 = ( pow( saturate( temp_output_147_0 ) , _CorePower ) * _CoreIntensity );
+				float temp_output_153_0 = ( pow( temp_output_147_0 , _CorePower ) * _CoreIntensity );
 				float3 temp_cast_4 = (1.0).xxx;
 				float3 temp_output_157_0 = (input.ase_color).rgb;
 				#ifdef _MESHVERTEXCOLOR_ON
@@ -1309,7 +1309,7 @@ Shader "Vefects/SH_VFX_Stylized_Dissolve"
 				float2 rotator129 = mul( uv_Texture - float2( 0.5,0.5 ) , float2x2( cos129 , -sin129 , sin129 , cos129 )) + float2( 0.5,0.5 );
 				float dotResult140 = dot( tex2D( _Texture, ( rotator129 + ( _TimeParameters.x * _TexturePanSpeed ) + CustomUV89 + Disto107 ) ) , _TextureChannel );
 				float temp_output_147_0 = ( temp_output_145_0 * saturate( dotResult140 ) );
-				float temp_output_153_0 = ( pow( saturate( temp_output_147_0 ) , _CorePower ) * _CoreIntensity );
+				float temp_output_153_0 = ( pow( temp_output_147_0 , _CorePower ) * _CoreIntensity );
 				float3 temp_cast_4 = (1.0).xxx;
 				float3 temp_output_157_0 = (input.ase_color).rgb;
 				#ifdef _MESHVERTEXCOLOR_ON
@@ -1650,7 +1650,7 @@ Shader "Vefects/SH_VFX_Stylized_Dissolve"
 				float2 rotator129 = mul( uv_Texture - float2( 0.5,0.5 ) , float2x2( cos129 , -sin129 , sin129 , cos129 )) + float2( 0.5,0.5 );
 				float dotResult140 = dot( tex2D( _Texture, ( rotator129 + ( _TimeParameters.x * _TexturePanSpeed ) + CustomUV89 + Disto107 ) ) , _TextureChannel );
 				float temp_output_147_0 = ( temp_output_145_0 * saturate( dotResult140 ) );
-				float temp_output_153_0 = ( pow( saturate( temp_output_147_0 ) , _CorePower ) * _CoreIntensity );
+				float temp_output_153_0 = ( pow( temp_output_147_0 , _CorePower ) * _CoreIntensity );
 				float3 temp_cast_4 = (1.0).xxx;
 				float3 temp_output_157_0 = (input.ase_color).rgb;
 				#ifdef _MESHVERTEXCOLOR_ON
@@ -2020,7 +2020,7 @@ Shader "Vefects/SH_VFX_Stylized_Dissolve"
 				float2 rotator129 = mul( uv_Texture - float2( 0.5,0.5 ) , float2x2( cos129 , -sin129 , sin129 , cos129 )) + float2( 0.5,0.5 );
 				float dotResult140 = dot( tex2D( _Texture, ( rotator129 + ( _TimeParameters.x * _TexturePanSpeed ) + CustomUV89 + Disto107 ) ) , _TextureChannel );
 				float temp_output_147_0 = ( temp_output_145_0 * saturate( dotResult140 ) );
-				float temp_output_153_0 = ( pow( saturate( temp_output_147_0 ) , _CorePower ) * _CoreIntensity );
+				float temp_output_153_0 = ( pow( temp_output_147_0 , _CorePower ) * _CoreIntensity );
 				float3 temp_cast_4 = (1.0).xxx;
 				float3 temp_output_157_0 = (input.ase_color).rgb;
 				#ifdef _MESHVERTEXCOLOR_ON

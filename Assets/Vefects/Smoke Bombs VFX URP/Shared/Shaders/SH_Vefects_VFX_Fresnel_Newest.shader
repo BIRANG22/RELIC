@@ -503,14 +503,14 @@ Shader "Vefects/SH_Vefects_VFX_Fresnel_Newest"
 				float Distortion34 = ( ( tex2D( _NoiseDistortion_Texture, panner25 ).r * 0.1 ) * _NoiseDistortion_Intensity );
 				float2 texCoord117 = input.ase_texcoord4.xy * _NoiseColor_Scale + float2( 0,0 );
 				float2 panner106 = ( 1.0 * _Time.y * _NoiseColor_Speed + texCoord117);
-				float clampResult96 = clamp( pow( saturate( tex2D( _Noise_Color_Texture, ( Distortion34 + panner106 ) ).r * _NoiseColor_Intensity ) , _NoiseColor_Power ) , 0.0 , 1.0 );
+				float clampResult96 = clamp( pow( ( tex2D( _Noise_Color_Texture, ( Distortion34 + panner106 ) ).r * _NoiseColor_Intensity ) , _NoiseColor_Power ) , 0.0 , 1.0 );
 				float3 lerpResult97 = lerp( (_Color_1).rgb , (_Color_2).rgb , clampResult96);
 				
 				float3 ase_viewVectorWS = ( _WorldSpaceCameraPos.xyz - WorldPosition );
 				float3 ase_viewDirWS = normalize( ase_viewVectorWS );
 				float3 ase_worldNormal = input.ase_texcoord5.xyz;
 				float fresnelNdotV75 = dot( ase_worldNormal, ase_viewDirWS );
-				float fresnelNode75 = ( input.ase_texcoord4.z + _Fresnel_Scale * pow( saturate( 1.0 - fresnelNdotV75 ), _Fresnel_Power ) );
+				float fresnelNode75 = ( input.ase_texcoord4.z + _Fresnel_Scale * pow( 1.0 - fresnelNdotV75, _Fresnel_Power ) );
 				float4 ase_screenPosNorm = ScreenPos / ScreenPos.w;
 				ase_screenPosNorm.z = ( UNITY_NEAR_CLIP_VALUE >= 0 ) ? ase_screenPosNorm.z : ase_screenPosNorm.z * 0.5 + 0.5;
 				float screenDepth67 = LinearEyeDepth(SHADERGRAPH_SAMPLE_SCENE_DEPTH( ase_screenPosNorm.xy ),_ZBufferParams);
@@ -830,7 +830,7 @@ Shader "Vefects/SH_Vefects_VFX_Fresnel_Newest"
 				float3 ase_viewDirWS = normalize( ase_viewVectorWS );
 				float3 ase_worldNormal = input.ase_texcoord3.xyz;
 				float fresnelNdotV75 = dot( ase_worldNormal, ase_viewDirWS );
-				float fresnelNode75 = ( input.ase_texcoord4.z + _Fresnel_Scale * pow( saturate( 1.0 - fresnelNdotV75 ), _Fresnel_Power ) );
+				float fresnelNode75 = ( input.ase_texcoord4.z + _Fresnel_Scale * pow( 1.0 - fresnelNdotV75, _Fresnel_Power ) );
 				float4 ase_screenPosNorm = ScreenPos / ScreenPos.w;
 				ase_screenPosNorm.z = ( UNITY_NEAR_CLIP_VALUE >= 0 ) ? ase_screenPosNorm.z : ase_screenPosNorm.z * 0.5 + 0.5;
 				float screenDepth67 = LinearEyeDepth(SHADERGRAPH_SAMPLE_SCENE_DEPTH( ase_screenPosNorm.xy ),_ZBufferParams);
@@ -1125,7 +1125,7 @@ Shader "Vefects/SH_Vefects_VFX_Fresnel_Newest"
 				float3 ase_viewDirWS = normalize( ase_viewVectorWS );
 				float3 ase_worldNormal = input.ase_texcoord1.xyz;
 				float fresnelNdotV75 = dot( ase_worldNormal, ase_viewDirWS );
-				float fresnelNode75 = ( input.ase_texcoord2.z + _Fresnel_Scale * pow( saturate( 1.0 - fresnelNdotV75 ), _Fresnel_Power ) );
+				float fresnelNode75 = ( input.ase_texcoord2.z + _Fresnel_Scale * pow( 1.0 - fresnelNdotV75, _Fresnel_Power ) );
 				float4 screenPos = input.ase_texcoord3;
 				float4 ase_screenPosNorm = screenPos / screenPos.w;
 				ase_screenPosNorm.z = ( UNITY_NEAR_CLIP_VALUE >= 0 ) ? ase_screenPosNorm.z : ase_screenPosNorm.z * 0.5 + 0.5;
@@ -1424,7 +1424,7 @@ Shader "Vefects/SH_Vefects_VFX_Fresnel_Newest"
 				float3 ase_viewDirWS = normalize( ase_viewVectorWS );
 				float3 ase_worldNormal = input.ase_texcoord1.xyz;
 				float fresnelNdotV75 = dot( ase_worldNormal, ase_viewDirWS );
-				float fresnelNode75 = ( input.ase_texcoord2.z + _Fresnel_Scale * pow( saturate( 1.0 - fresnelNdotV75 ), _Fresnel_Power ) );
+				float fresnelNode75 = ( input.ase_texcoord2.z + _Fresnel_Scale * pow( 1.0 - fresnelNdotV75, _Fresnel_Power ) );
 				float4 screenPos = input.ase_texcoord3;
 				float4 ase_screenPosNorm = screenPos / screenPos.w;
 				ase_screenPosNorm.z = ( UNITY_NEAR_CLIP_VALUE >= 0 ) ? ase_screenPosNorm.z : ase_screenPosNorm.z * 0.5 + 0.5;
@@ -1732,7 +1732,7 @@ Shader "Vefects/SH_Vefects_VFX_Fresnel_Newest"
 				float3 ase_viewVectorWS = ( _WorldSpaceCameraPos.xyz - ase_worldPos );
 				float3 ase_viewDirWS = normalize( ase_viewVectorWS );
 				float fresnelNdotV75 = dot( input.clipPosV.xyz, ase_viewDirWS );
-				float fresnelNode75 = ( input.ase_texcoord3.z + _Fresnel_Scale * pow( saturate( 1.0 - fresnelNdotV75 ), _Fresnel_Power ) );
+				float fresnelNode75 = ( input.ase_texcoord3.z + _Fresnel_Scale * pow( 1.0 - fresnelNdotV75, _Fresnel_Power ) );
 				float4 ase_screenPosNorm = ScreenPos / ScreenPos.w;
 				ase_screenPosNorm.z = ( UNITY_NEAR_CLIP_VALUE >= 0 ) ? ase_screenPosNorm.z : ase_screenPosNorm.z * 0.5 + 0.5;
 				float screenDepth67 = LinearEyeDepth(SHADERGRAPH_SAMPLE_SCENE_DEPTH( ase_screenPosNorm.xy ),_ZBufferParams);
