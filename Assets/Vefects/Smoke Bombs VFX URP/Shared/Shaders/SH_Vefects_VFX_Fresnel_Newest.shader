@@ -503,7 +503,7 @@ Shader "Vefects/SH_Vefects_VFX_Fresnel_Newest"
 				float Distortion34 = ( ( tex2D( _NoiseDistortion_Texture, panner25 ).r * 0.1 ) * _NoiseDistortion_Intensity );
 				float2 texCoord117 = input.ase_texcoord4.xy * _NoiseColor_Scale + float2( 0,0 );
 				float2 panner106 = ( 1.0 * _Time.y * _NoiseColor_Speed + texCoord117);
-				float clampResult96 = clamp( pow( ( tex2D( _Noise_Color_Texture, ( Distortion34 + panner106 ) ).r * _NoiseColor_Intensity ) , _NoiseColor_Power ) , 0.0 , 1.0 );
+				float clampResult96 = clamp( pow( saturate( tex2D( _Noise_Color_Texture, ( Distortion34 + panner106 ) ).r * _NoiseColor_Intensity ) , _NoiseColor_Power ) , 0.0 , 1.0 );
 				float3 lerpResult97 = lerp( (_Color_1).rgb , (_Color_2).rgb , clampResult96);
 				
 				float3 ase_viewVectorWS = ( _WorldSpaceCameraPos.xyz - WorldPosition );
