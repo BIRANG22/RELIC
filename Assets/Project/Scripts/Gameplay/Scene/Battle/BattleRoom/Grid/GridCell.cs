@@ -20,6 +20,11 @@ public class GridCell : MonoBehaviour
     [SerializeField] private Color selectedColor = Color.green;
     [SerializeField] private Color rangePreviewColor = Color.red;
 
+    [Header("Sorting")]
+    [SerializeField] private bool forceBackSorting = true;
+    [SerializeField] private string backSortingLayerName = "Empty";
+    [SerializeField] private int backSortingOrder = -1000;
+
     private MaterialPropertyBlock highlightPropertyBlock;
     private Renderer[] baseRenderers;
     private bool executionRangeTintActive;
@@ -41,6 +46,7 @@ public class GridCell : MonoBehaviour
 
         AutoFindHighlightIfNeeded();
         CacheBaseRenderers();
+        ApplyBackSorting();
 
         highlightPropertyBlock = new MaterialPropertyBlock();
 
@@ -51,6 +57,7 @@ public class GridCell : MonoBehaviour
     {
         AutoFindHighlightIfNeeded();
         CacheBaseRenderers();
+        ApplyBackSorting();
     }
 
     private void OnMouseDown()
@@ -108,6 +115,7 @@ public class GridCell : MonoBehaviour
     {
         ClearExecutionRangeTint();
         CacheBaseRenderers();
+        ApplyBackSorting();
 
         if (baseRenderers == null || baseRenderers.Length == 0)
             return;
@@ -217,6 +225,7 @@ public class GridCell : MonoBehaviour
         if (highlightRenderer == null)
             return;
 
+        ApplyBackSorting(highlightRenderer);
         color.a = 1f;
 
         if (highlightPropertyBlock == null)
@@ -227,6 +236,28 @@ public class GridCell : MonoBehaviour
         SetTintProperties(highlightPropertyBlock, color);
 
         highlightRenderer.SetPropertyBlock(highlightPropertyBlock);
+    }
+
+    private void ApplyBackSorting()
+    {
+        ApplyBackSorting(highlightRenderer);
+
+        if (baseRenderers == null)
+            return;
+
+        for (int i = 0; i < baseRenderers.Length; i++)
+            ApplyBackSorting(baseRenderers[i]);
+    }
+
+    private void ApplyBackSorting(Renderer renderer)
+    {
+        if (!forceBackSorting || renderer == null)
+            return;
+
+        if (!string.IsNullOrWhiteSpace(backSortingLayerName))
+            renderer.sortingLayerName = backSortingLayerName;
+
+        renderer.sortingOrder = backSortingOrder;
     }
 
     private static void SetTintProperties(MaterialPropertyBlock propertyBlock, Color color)
