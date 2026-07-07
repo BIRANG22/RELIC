@@ -20,6 +20,7 @@ public class Bootstrap : MonoBehaviour
 
         // 4. Data Load
         DataManager.Instance.Initialize();
+        SaveSystem.Instance.TryLoadProgress();
 
         // 5. Audio Init
         AudioManager.Instance.Initialize();

@@ -68,5 +68,23 @@ namespace Relic.Gameplay.Data
         {
             return data.Level >= MaxLevel;
         }
+
+        public void SetData(PlayerRuntimeData source)
+        {
+            if (source == null)
+            {
+                data.Level = MinLevel;
+                data.Exp = 0;
+                data.TotalExp = 0;
+                return;
+            }
+
+            data.Level = Mathf.Clamp(source.Level, MinLevel, MaxLevel);
+            data.Exp = Mathf.Max(0, source.Exp);
+            data.TotalExp = Mathf.Max(0, source.TotalExp);
+
+            if (data.Level >= MaxLevel)
+                data.Exp = 0;
+        }
     }
 }

@@ -30,6 +30,27 @@ namespace Relic.Gameplay.Data
             return map;
         }
 
+        public void Clear()
+        {
+            map.Clear();
+        }
+
+        public void SetAll(IEnumerable<CharacterRuntimeData> characters)
+        {
+            Clear();
+
+            if (characters == null)
+                return;
+
+            foreach (CharacterRuntimeData character in characters)
+            {
+                if (character == null || string.IsNullOrWhiteSpace(character.CharacterId))
+                    continue;
+
+                map[character.CharacterId] = character;
+            }
+        }
+
         public void ResetUpgradedSkillVariantsToBase()
         {
             foreach (CharacterRuntimeData data in map.Values)
