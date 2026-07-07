@@ -31,5 +31,30 @@ namespace Relic.Gameplay.Data
         {
             return map;
         }
+
+        public void Clear()
+        {
+            map.Clear();
+        }
+
+        public void SetAll(IEnumerable<SkillRuntimeData> skills)
+        {
+            Clear();
+
+            if (skills == null)
+                return;
+
+            foreach (SkillRuntimeData skill in skills)
+            {
+                if (skill == null)
+                    continue;
+
+                if (string.IsNullOrWhiteSpace(skill.CharacterId) ||
+                    string.IsNullOrWhiteSpace(skill.SkillId))
+                    continue;
+
+                map[MakeKey(skill.CharacterId, skill.SkillId)] = skill;
+            }
+        }
     }
 }
