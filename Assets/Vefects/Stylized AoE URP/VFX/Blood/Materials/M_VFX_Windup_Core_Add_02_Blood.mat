@@ -44,10 +44,11 @@ Material:
     m_Ints: []
     m_Floats:
     - _AlphaCutoff: 0.5
-    - _Cull: 2
+    - _Cull: 0
     - _Dst: 1
     - _Emission: 1
     - _FresnelBias: 0.3
+    - _FresnelInvert: 0
     - _FresnelPower: 2
     - _FresnelScale: 1
     - _LUTAmplitude: 1
@@ -63,3 +64,4 @@ Material:
     m_Colors:
     - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
+  m_AllowLocking: 1

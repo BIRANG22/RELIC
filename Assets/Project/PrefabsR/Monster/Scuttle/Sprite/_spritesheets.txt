@@ -1,0 +1,2 @@
+Mon_N_05_idle.png,1024,1024,16
+Mon_N_05_idle_die.png,1024,1024,8
