@@ -52,12 +52,13 @@ Material:
     m_Ints: []
     m_Floats:
     - _AlphaCutoff: 0.5
-    - _Cull: 2
+    - _Cull: 0
     - _Dst: 10
     - _Emission: 1
     - _ErosionSmoothness: 1
     - _IsAdd: 0
     - _LUTAmplitude: 1
+    - _LUTErosionSmoothness: 1
     - _LUTOffset: 0
     - _LUTPanSpeed: 0
     - _ParticleColorLUT: 1
@@ -70,3 +71,4 @@ Material:
     m_Colors:
     - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
+  m_AllowLocking: 1
