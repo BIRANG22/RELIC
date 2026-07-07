@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using System.IO;
 using UnityEngine;
 
 public class ResolutionManagerTests
@@ -39,5 +40,13 @@ public class ResolutionManagerTests
         Assert.That(rect.width, Is.EqualTo(1f).Within(0.001f));
         Assert.That(rect.height, Is.EqualTo(0.75f).Within(0.001f));
         Assert.That(rect.y, Is.EqualTo(0.125f).Within(0.001f));
+    }
+
+    [Test]
+    public void PlayerSettings_EnableResizableWindowForLetterboxedResize()
+    {
+        string projectSettings = File.ReadAllText("ProjectSettings/ProjectSettings.asset");
+
+        Assert.That(projectSettings, Does.Contain("resizableWindow: 1"));
     }
 }

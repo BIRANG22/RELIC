@@ -9,6 +9,9 @@ public class SaveSystem : Singleton<SaveSystem>
 {
     private const int CurrentSaveVersion = 1;
     private const string SaveFileName = "relic-save.json";
+    private const int EquippedSkillSlotCount = 4;
+    private const int EquippedRuneSlotCount = 12;
+    private const int EquippedRelicSlotCount = 5;
 
     public string SaveFilePath => Path.Combine(Application.persistentDataPath, SaveFileName);
 
@@ -52,7 +55,9 @@ public class SaveSystem : Singleton<SaveSystem>
         try
         {
             string json = File.ReadAllText(SaveFilePath);
-            return JsonUtility.FromJson<GameSaveData>(json);
+            GameSaveData saveData = JsonUtility.FromJson<GameSaveData>(json);
+            NormalizeSaveData(saveData, saveData?.ActiveSceneName);
+            return saveData;
         }
         catch (Exception ex)
         {
@@ -65,22 +70,49 @@ public class SaveSystem : Singleton<SaveSystem>
     {
         DataManager dataManager = DataManager.Instance;
 
+        IReadOnlyDictionary<string, CharacterRuntimeData> characters =
+            dataManager.CharacterRuntimeStore?.GetAll();
+        IReadOnlyDictionary<string, SkillRuntimeData> skills =
+            dataManager.SkillRuntimeStore?.GetAll();
+
+        return CreateSaveDataSnapshot(
+            dataManager.PlayerRuntimeStore?.Data,
+            dataManager.PartyRuntimeStore,
+            characters?.Values,
+            skills?.Values,
+            dataManager.MapRuntimeStore?.Get(),
+            dataManager.BattleRuntimeStore?.Get(),
+            SceneManager.GetActiveScene().name,
+            GameManager.Instance != null && GameManager.Instance.Context != null
+                ? GameManager.Instance.Context.SelectedGameMode
+                : GameMode.None);
+    }
+
+    public static GameSaveData CreateSaveDataSnapshot(
+        PlayerRuntimeData player,
+        PartyRuntimeStore partyStore,
+        IEnumerable<CharacterRuntimeData> characters,
+        IEnumerable<SkillRuntimeData> skills,
+        MapRuntimeData map,
+        BattleRuntimeData battle,
+        string activeSceneName,
+        GameMode selectedGameMode)
+    {
         var saveData = new GameSaveData
         {
             Version = CurrentSaveVersion,
             SavedAtUtc = DateTime.UtcNow.ToString("O"),
-            ActiveSceneName = SceneManager.GetActiveScene().name,
-            Player = dataManager.PlayerRuntimeStore?.Data,
-            Party = BuildPartyRuntimeData(dataManager.PartyRuntimeStore),
-            Map = dataManager.MapRuntimeStore?.Get(),
-            Battle = dataManager.BattleRuntimeStore?.Get(),
-            SelectedGameMode = GameManager.Instance != null && GameManager.Instance.Context != null
-                ? GameManager.Instance.Context.SelectedGameMode
-                : GameMode.None
+            ActiveSceneName = activeSceneName,
+            SelectedGameMode = selectedGameMode,
+            Player = CloneSerializable(player),
+            Party = BuildPartyRuntimeData(partyStore),
+            Map = CloneSerializable(map),
+            Battle = CloneSerializable(battle)
         };
 
-        AddCharacters(saveData, dataManager.CharacterRuntimeStore);
-        AddSkills(saveData, dataManager.SkillRuntimeStore);
+        AddCharacters(saveData, characters);
+        AddSkills(saveData, skills);
+        NormalizeSaveData(saveData, activeSceneName);
 
         return saveData;
     }
@@ -91,6 +123,7 @@ public class SaveSystem : Singleton<SaveSystem>
         {
             EnsureSaveDirectory();
 
+            NormalizeSaveData(saveData, saveData?.ActiveSceneName);
             string json = JsonUtility.ToJson(saveData, true);
             File.WriteAllText(SaveFilePath, json);
 
@@ -161,31 +194,36 @@ public class SaveSystem : Singleton<SaveSystem>
         return partyData;
     }
 
-    private static void AddCharacters(GameSaveData saveData, CharacterRuntimeStore characterStore)
+    private static void AddCharacters(GameSaveData saveData, IEnumerable<CharacterRuntimeData> characters)
     {
         saveData.Characters.Clear();
 
-        if (characterStore == null)
+        if (characters == null)
             return;
 
-        foreach (CharacterRuntimeData character in characterStore.GetAll().Values)
+        foreach (CharacterRuntimeData character in characters)
         {
-            if (character != null)
-                saveData.Characters.Add(character);
+            CharacterRuntimeData snapshot = CloneSerializable(character);
+            if (snapshot == null)
+                continue;
+
+            NormalizeCharacter(snapshot);
+            saveData.Characters.Add(snapshot);
         }
     }
 
-    private static void AddSkills(GameSaveData saveData, SkillRuntimeStore skillStore)
+    private static void AddSkills(GameSaveData saveData, IEnumerable<SkillRuntimeData> skills)
     {
         saveData.Skills.Clear();
 
-        if (skillStore == null)
+        if (skills == null)
             return;
 
-        foreach (SkillRuntimeData skill in skillStore.GetAll().Values)
+        foreach (SkillRuntimeData skill in skills)
         {
-            if (skill != null)
-                saveData.Skills.Add(skill);
+            SkillRuntimeData snapshot = CloneSerializable(skill);
+            if (snapshot != null)
+                saveData.Skills.Add(snapshot);
         }
     }
 
@@ -219,6 +257,84 @@ public class SaveSystem : Singleton<SaveSystem>
     private static bool IsValidBattleGridIndex(int gridIndex)
     {
         return gridIndex >= 0 && gridIndex < 35;
+    }
+
+    private static T CloneSerializable<T>(T source) where T : class
+    {
+        if (source == null)
+            return null;
+
+        string json = JsonUtility.ToJson(source);
+        return string.IsNullOrEmpty(json) ? null : JsonUtility.FromJson<T>(json);
+    }
+
+    private static void NormalizeSaveData(GameSaveData saveData, string activeSceneName)
+    {
+        if (saveData == null)
+            return;
+
+        saveData.Characters ??= new List<CharacterRuntimeData>();
+        saveData.Skills ??= new List<SkillRuntimeData>();
+        saveData.Party ??= new PartyRuntimeData();
+        saveData.Party.Slots ??= new List<PartySlotRuntimeData>();
+
+        NormalizeMap(saveData.Map, activeSceneName);
+        NormalizeBattle(saveData.Battle);
+
+        for (int i = 0; i < saveData.Characters.Count; i++)
+            NormalizeCharacter(saveData.Characters[i]);
+    }
+
+    private static void NormalizeMap(MapRuntimeData map, string activeSceneName)
+    {
+        if (map == null)
+            return;
+
+        if (string.IsNullOrWhiteSpace(map.CurrentSceneName))
+            map.CurrentSceneName = activeSceneName;
+
+        map.ClearedMapIds ??= new List<string>();
+        map.VisitedMapIds ??= new List<string>();
+        map.GeneratedNodes ??= new List<GeneratedMapNodeData>();
+
+        for (int i = 0; i < map.GeneratedNodes.Count; i++)
+        {
+            if (map.GeneratedNodes[i] != null)
+                map.GeneratedNodes[i].NextNodeIndices ??= new List<int>();
+        }
+    }
+
+    private static void NormalizeBattle(BattleRuntimeData battle)
+    {
+        if (battle == null)
+            return;
+
+        battle.OwnedRelicIds ??= new List<string>();
+        battle.BagItemIds ??= new List<string>();
+        battle.SkillInventoryIds ??= new List<string>();
+    }
+
+    private static void NormalizeCharacter(CharacterRuntimeData character)
+    {
+        if (character == null)
+            return;
+
+        character.StatusEffects ??= new List<StatusEffectRuntimeData>();
+        character.EquippedSkillIds = NormalizeStringArray(character.EquippedSkillIds, EquippedSkillSlotCount);
+        character.EquippedRuneIds = NormalizeStringArray(character.EquippedRuneIds, EquippedRuneSlotCount);
+        character.EquippedRelicIds = NormalizeStringArray(character.EquippedRelicIds, EquippedRelicSlotCount);
+        character.AppliedBattleEquipmentEffectIds ??= new List<string>();
+    }
+
+    private static string[] NormalizeStringArray(string[] source, int length)
+    {
+        var normalized = new string[length];
+
+        if (source == null)
+            return normalized;
+
+        Array.Copy(source, normalized, Mathf.Min(source.Length, length));
+        return normalized;
     }
 }
 
