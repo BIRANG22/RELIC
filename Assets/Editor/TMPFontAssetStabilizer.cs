@@ -11,9 +11,11 @@ using UnityEngine.TextCore.LowLevel;
 public static class TMPFontAssetStabilizer
 {
     private const string MainFontAssetPath = "Assets/Fonts/TMP/DungGeunMo SDF.asset";
+    private const string DynamicMainFallbackAssetPath = "Assets/TextMesh Pro/Fonts/DungGeunMo SDF.asset";
     private const string FallbackFontAssetPath = "Assets/Fonts/TMP/TMP_Font_KR.asset";
     private const string SourceFontPath = "Assets/TextMesh Pro/Fonts/DungGeunMo.otf";
     private const string TmpSettingsPath = "Assets/TextMesh Pro/Resources/TMP Settings.asset";
+    private const string ClearDynamicDataOnBuildPropertyName = "m_ClearDynamicDataOnBuild";
 
     private static readonly string[] CharacterSourceRoots =
     {
@@ -37,21 +39,26 @@ public static class TMPFontAssetStabilizer
     [MenuItem("Tools/Fonts/Configure TMP Static Main + Dynamic Fallback")]
     public static void ConfigureFallbacksOnly()
     {
-        if (!TryLoadFontAssets(out TMP_FontAsset mainFont, out TMP_FontAsset fallbackFont))
+        if (!TryLoadFontAssets(out TMP_FontAsset mainFont, out TMP_FontAsset dynamicMainFallbackFont, out TMP_FontAsset fallbackFont))
             return;
 
-        EnsureDynamicFallbackFont(fallbackFont);
-        ApplyFallback(mainFont, fallbackFont);
-        ApplyGlobalFallback(fallbackFont);
-        SaveFontAssets(mainFont, fallbackFont);
+        Undo.RecordObjects(new UnityEngine.Object[] { mainFont, dynamicMainFallbackFont, fallbackFont }, "Configure TMP Font Assets");
 
-        Debug.Log("[TMPFontAssetStabilizer] Configured DungGeunMo main font fallback to TMP_Font_KR.");
+        EnsureStaticMainFont(mainFont);
+        EnsureDynamicFallbackFont(dynamicMainFallbackFont);
+        EnsureDynamicFallbackFont(fallbackFont);
+        ApplyFallbacks(mainFont, dynamicMainFallbackFont, fallbackFont);
+        ApplyFallbacks(dynamicMainFallbackFont, fallbackFont);
+        ApplyGlobalFallback(fallbackFont);
+        SaveFontAssets(mainFont, dynamicMainFallbackFont, fallbackFont);
+
+        Debug.Log("[TMPFontAssetStabilizer] Configured DungGeunMo static font fallbacks to DungGeunMo Dynamic, then TMP_Font_KR.");
     }
 
     [MenuItem("Tools/Fonts/Rebuild DungGeunMo Static Atlas")]
     public static void RebuildStaticMainFont()
     {
-        if (!TryLoadFontAssets(out TMP_FontAsset mainFont, out TMP_FontAsset fallbackFont))
+        if (!TryLoadFontAssets(out TMP_FontAsset mainFont, out TMP_FontAsset dynamicMainFallbackFont, out TMP_FontAsset fallbackFont))
             return;
 
         Font sourceFont = AssetDatabase.LoadAssetAtPath<Font>(SourceFontPath);
@@ -68,10 +75,12 @@ public static class TMPFontAssetStabilizer
             return;
         }
 
-        Undo.RecordObjects(new UnityEngine.Object[] { mainFont, fallbackFont }, "Rebuild TMP Static Font");
+        Undo.RecordObjects(new UnityEngine.Object[] { mainFont, dynamicMainFallbackFont, fallbackFont }, "Rebuild TMP Static Font");
 
+        EnsureDynamicFallbackFont(dynamicMainFallbackFont);
         EnsureDynamicFallbackFont(fallbackFont);
-        ApplyFallback(mainFont, fallbackFont);
+        ApplyFallbacks(mainFont, dynamicMainFallbackFont, fallbackFont);
+        ApplyFallbacks(dynamicMainFallbackFont, fallbackFont);
         ApplyGlobalFallback(fallbackFont);
 
         mainFont.atlasPopulationMode = AtlasPopulationMode.Dynamic;
@@ -89,9 +98,11 @@ public static class TMPFontAssetStabilizer
 
         bool allAdded = mainFont.TryAddCharacters(characters, out string missingCharacters, false);
         mainFont.atlasPopulationMode = AtlasPopulationMode.Static;
-        ApplyFallback(mainFont, fallbackFont);
+        SetClearDynamicDataOnBuild(mainFont, false);
+        ApplyFallbacks(mainFont, dynamicMainFallbackFont, fallbackFont);
+        ApplyFallbacks(dynamicMainFallbackFont, fallbackFont);
 
-        SaveFontAssets(mainFont, fallbackFont);
+        SaveFontAssets(mainFont, dynamicMainFallbackFont, fallbackFont);
 
         int missingCount = string.IsNullOrEmpty(missingCharacters) ? 0 : missingCharacters.Length;
         string result = allAdded
@@ -104,18 +115,34 @@ public static class TMPFontAssetStabilizer
             mainFont);
     }
 
-    private static bool TryLoadFontAssets(out TMP_FontAsset mainFont, out TMP_FontAsset fallbackFont)
+    private static bool TryLoadFontAssets(out TMP_FontAsset mainFont, out TMP_FontAsset dynamicMainFallbackFont, out TMP_FontAsset fallbackFont)
     {
         mainFont = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(MainFontAssetPath);
+        dynamicMainFallbackFont = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(DynamicMainFallbackAssetPath);
         fallbackFont = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FallbackFontAssetPath);
 
         if (mainFont == null)
             Debug.LogError($"[TMPFontAssetStabilizer] Missing main font asset: {MainFontAssetPath}");
 
+        if (dynamicMainFallbackFont == null)
+            Debug.LogError($"[TMPFontAssetStabilizer] Missing dynamic DungGeunMo fallback font asset: {DynamicMainFallbackAssetPath}");
+
         if (fallbackFont == null)
             Debug.LogError($"[TMPFontAssetStabilizer] Missing fallback font asset: {FallbackFontAssetPath}");
 
-        return mainFont != null && fallbackFont != null;
+        return mainFont != null && dynamicMainFallbackFont != null && fallbackFont != null;
+    }
+
+    private static void EnsureStaticMainFont(TMP_FontAsset mainFont)
+    {
+        if (mainFont == null)
+            return;
+
+        if (mainFont.atlasPopulationMode != AtlasPopulationMode.Static)
+            mainFont.atlasPopulationMode = AtlasPopulationMode.Static;
+
+        SetClearDynamicDataOnBuild(mainFont, false);
+        EditorUtility.SetDirty(mainFont);
     }
 
     private static void EnsureDynamicFallbackFont(TMP_FontAsset fallbackFont)
@@ -123,13 +150,34 @@ public static class TMPFontAssetStabilizer
         if (fallbackFont == null)
             return;
 
-        fallbackFont.atlasPopulationMode = AtlasPopulationMode.Dynamic;
+        if (fallbackFont.atlasPopulationMode != AtlasPopulationMode.Dynamic)
+            fallbackFont.atlasPopulationMode = AtlasPopulationMode.Dynamic;
+
+        SetClearDynamicDataOnBuild(fallbackFont, true);
         EditorUtility.SetDirty(fallbackFont);
     }
 
-    private static void ApplyFallback(TMP_FontAsset mainFont, TMP_FontAsset fallbackFont)
+    private static bool SetClearDynamicDataOnBuild(TMP_FontAsset font, bool value)
     {
-        if (mainFont == null || fallbackFont == null)
+        if (font == null)
+            return false;
+
+        SerializedObject serializedFont = new(font);
+        SerializedProperty property = serializedFont.FindProperty(ClearDynamicDataOnBuildPropertyName);
+        if (property == null)
+            return false;
+
+        if (property.boolValue == value)
+            return false;
+
+        property.boolValue = value;
+        serializedFont.ApplyModifiedProperties();
+        return true;
+    }
+
+    private static void ApplyFallbacks(TMP_FontAsset mainFont, params TMP_FontAsset[] fallbackFonts)
+    {
+        if (mainFont == null)
             return;
 
         if (mainFont.fallbackFontAssetTable == null)
@@ -137,8 +185,15 @@ public static class TMPFontAssetStabilizer
 
         mainFont.fallbackFontAssetTable.RemoveAll(font => font == null || font == mainFont);
 
-        if (!mainFont.fallbackFontAssetTable.Contains(fallbackFont))
+        for (int i = fallbackFonts.Length - 1; i >= 0; i--)
+        {
+            TMP_FontAsset fallbackFont = fallbackFonts[i];
+            if (fallbackFont == null || fallbackFont == mainFont)
+                continue;
+
+            mainFont.fallbackFontAssetTable.Remove(fallbackFont);
             mainFont.fallbackFontAssetTable.Insert(0, fallbackFont);
+        }
 
         EditorUtility.SetDirty(mainFont);
     }
