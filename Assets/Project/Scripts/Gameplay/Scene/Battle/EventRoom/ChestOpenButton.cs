@@ -60,6 +60,14 @@ public class ChestOpenButton : MonoBehaviour
     [Tooltip("마지막 클릭에서 덜컹 VFX가 나온 뒤 Open Complete VFX가 나오기까지의 지연 시간입니다.")]
     [SerializeField] private float openCompleteVfxDelay = 0.12f;
 
+    [Header("Chest SFX")]
+    [SerializeField] private bool playClickSfx = true;
+    [SerializeField] private SfxType clickSfxType = SfxType.Confirm;
+    [Min(0f)][SerializeField] private float clickSfxVolumeMultiplier = 1f;
+    [SerializeField] private bool playOpenSfx = true;
+    [SerializeField] private SfxType openSfxType = SfxType.BoxOpen;
+    [Min(0f)][SerializeField] private float openSfxVolumeMultiplier = 1f;
+
     [Header("VFX 런타임 스폰")]
     [SerializeField] private Transform vfxSpawnRoot;
     [SerializeField] private Vector3 stepVfxLocalPosition = new(1.79f, 0f, 0f);
@@ -330,6 +338,7 @@ public class ChestOpenButton : MonoBehaviour
 
         currentClickCount++;
 
+        PlayChestClickSfx();
         PlayClunk();
         PlayStepVfxByClickCount();
 
@@ -399,6 +408,24 @@ public class ChestOpenButton : MonoBehaviour
         clunkCoroutine = StartCoroutine(ClunkRoutine());
     }
 
+    private void PlayChestClickSfx()
+    {
+        PlayChestSfx(playClickSfx, clickSfxType, clickSfxVolumeMultiplier);
+    }
+
+    private void PlayChestOpenSfx()
+    {
+        PlayChestSfx(playOpenSfx, openSfxType, openSfxVolumeMultiplier);
+    }
+
+    private static void PlayChestSfx(bool play, SfxType sfxType, float volumeMultiplier)
+    {
+        if (!play || AudioManager.Instance == null)
+            return;
+
+        AudioManager.Instance.PlaySfx(sfxType, volumeMultiplier);
+    }
+
     private IEnumerator ClunkRoutine()
     {
         float timer = 0f;
@@ -458,6 +485,7 @@ public class ChestOpenButton : MonoBehaviour
         isOpening = true;
 
         EnsureRewardItemObject();
+        PlayChestOpenSfx();
 
         if (openCompleteVfxDelayCoroutine != null)
             StopCoroutine(openCompleteVfxDelayCoroutine);
@@ -820,7 +848,10 @@ public class ChestOpenButton : MonoBehaviour
 
         playTarget.SetActive(true);
         RestartParticles(playTarget);
-        BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(playTarget, null, this);
+        BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(
+            playTarget,
+            CreateChestVfxAudioSettings(),
+            this);
 
         if (!IsSceneObject(vfxObject) && vfxAutoDestroyDelay > 0f)
             Destroy(playTarget, vfxAutoDestroyDelay);
@@ -868,7 +899,18 @@ public class ChestOpenButton : MonoBehaviour
             proxySortingLayerName = GetVfxSortingLayerName(),
             proxySortingOrderOffset = sortingOrderOffset,
             proxySortingWorldYOffset = GetVfxSortingWorldY(localPosition) - GetVfxWorldPosition(localPosition).y,
-            proxyYMultiplier = Mathf.Max(0.01f, vfxProxyYMultiplier)
+            proxyYMultiplier = Mathf.Max(0.01f, vfxProxyYMultiplier),
+            sfx = CreateChestVfxAudioSettings()
+        };
+    }
+
+    private static BattleVfxSfxEntry CreateChestVfxAudioSettings()
+    {
+        return new BattleVfxSfxEntry
+        {
+            playSfx = false,
+            routeEmbeddedAudioSourcesThroughAudioManager = false,
+            removeEmbeddedAudioSources = true
         };
     }
 

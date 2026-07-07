@@ -40,7 +40,9 @@ public enum SfxType
     BattleRewardRelicSkillAcquire,
 
     SkillListPanelOpen,
-    SkillListPanelClose
+    SkillListPanelClose,
+
+    BoxOpen
 }
 
 [System.Serializable]
@@ -48,6 +50,9 @@ public class BgmData
 {
     public BgmType type;
     public AudioClip clip;
+
+    [Range(0f, 1f)]
+    public float volume = 1f;
 }
 
 [System.Serializable]
@@ -100,10 +105,12 @@ public class AudioManager : Singleton<AudioManager>
     [Header("VFX SFX ID List")]
     [SerializeField] private List<SfxIdData> vfxSfxIdList = new();
 
-    private Dictionary<BgmType, AudioClip> bgmDict;
+    private Dictionary<BgmType, List<BgmData>> bgmDict;
     private Dictionary<SfxType, SfxData> sfxDict;
     private Dictionary<string, SfxIdData> sfxIdDict;
+    private readonly List<AudioSource> bgmLayerSources = new();
     private readonly List<RoutedSfxSource> routedSfxSources = new();
+    private IReadOnlyList<BgmData> activeBgmLayers;
     private Coroutine pendingBgmRoutine;
 
     protected override void Awake()
@@ -124,7 +131,7 @@ public class AudioManager : Singleton<AudioManager>
 
     private void InitializeDictionary()
     {
-        bgmDict = new Dictionary<BgmType, AudioClip>();
+        bgmDict = new Dictionary<BgmType, List<BgmData>>();
         sfxDict = new Dictionary<SfxType, SfxData>();
         sfxIdDict = new Dictionary<string, SfxIdData>(System.StringComparer.Ordinal);
 
@@ -133,10 +140,15 @@ public class AudioManager : Singleton<AudioManager>
             if (data == null || data.clip == null)
                 continue;
 
-            if (!bgmDict.ContainsKey(data.type))
-                bgmDict.Add(data.type, data.clip);
-            else
-                Debug.LogWarning($"[AudioManager] Duplicate BGM Type: {data.type}");
+            data.volume = Mathf.Clamp01(data.volume);
+
+            if (!bgmDict.TryGetValue(data.type, out List<BgmData> layers))
+            {
+                layers = new List<BgmData>();
+                bgmDict.Add(data.type, layers);
+            }
+
+            layers.Add(data);
         }
 
         RegisterSfxList(commonSfxList);
@@ -195,18 +207,31 @@ public class AudioManager : Singleton<AudioManager>
             return;
         }
 
-        if (!bgmDict.TryGetValue(type, out AudioClip clip))
+        if (!bgmDict.TryGetValue(type, out List<BgmData> layers) || layers == null || layers.Count == 0)
         {
             Debug.LogWarning($"[AudioManager] BGM not found: {type}");
             return;
         }
 
-        if (bgmSource.clip == clip && bgmSource.isPlaying)
+        if (IsBgmAlreadyPlaying(layers, loop))
+        {
+            activeBgmLayers = layers;
+            ApplyVolumes();
             return;
+        }
 
-        bgmSource.clip = clip;
-        bgmSource.loop = loop;
-        bgmSource.Play();
+        activeBgmLayers = layers;
+
+        PlayBgmClip(bgmSource, layers[0].clip, loop);
+        EnsureBgmLayerSourceCount(layers.Count - 1);
+
+        for (int i = 1; i < layers.Count; i++)
+        {
+            AudioSource layerSource = bgmLayerSources[i - 1];
+            PlayBgmClip(layerSource, layers[i].clip, loop);
+        }
+
+        StopUnusedBgmLayerSources(layers.Count - 1);
 
         ApplyVolumes();
     }
@@ -240,6 +265,9 @@ public class AudioManager : Singleton<AudioManager>
 
         bgmSource.Stop();
         bgmSource.clip = null;
+        activeBgmLayers = null;
+
+        StopUnusedBgmLayerSources(0);
     }
 
     public void PlaySfx(SfxType type)
@@ -427,12 +455,144 @@ public class AudioManager : Singleton<AudioManager>
         float sfx = GetSfxVolumeOrDefault();
 
         if (bgmSource != null)
-            bgmSource.volume = master * bgm;
+            bgmSource.volume = master * bgm * GetBgmLayerVolume(0);
+
+        ApplyBgmLayerVolumes(master * bgm);
 
         if (sfxSource != null)
             sfxSource.volume = master * sfx;
 
         ApplyRoutedSfxVolumes();
+    }
+
+    private bool IsBgmAlreadyPlaying(IReadOnlyList<BgmData> layers, bool loop)
+    {
+        if (layers == null || layers.Count == 0)
+            return false;
+
+        if (!IsBgmSourcePlayingClip(bgmSource, layers[0].clip, loop))
+            return false;
+
+        for (int i = 1; i < layers.Count; i++)
+        {
+            int layerIndex = i - 1;
+
+            if (layerIndex >= bgmLayerSources.Count)
+                return false;
+
+            if (!IsBgmSourcePlayingClip(bgmLayerSources[layerIndex], layers[i].clip, loop))
+                return false;
+        }
+
+        return true;
+    }
+
+    private static bool IsBgmSourcePlayingClip(AudioSource source, AudioClip clip, bool loop)
+    {
+        return source != null &&
+            source.clip == clip &&
+            source.loop == loop &&
+            source.isPlaying;
+    }
+
+    private static void PlayBgmClip(AudioSource source, AudioClip clip, bool loop)
+    {
+        if (source == null || clip == null)
+            return;
+
+        if (source.clip != clip)
+        {
+            source.Stop();
+            source.clip = clip;
+        }
+
+        source.loop = loop;
+        source.Play();
+    }
+
+    private void EnsureBgmLayerSourceCount(int count)
+    {
+        for (int i = bgmLayerSources.Count - 1; i >= 0; i--)
+        {
+            if (bgmLayerSources[i] == null)
+                bgmLayerSources.RemoveAt(i);
+        }
+
+        while (bgmLayerSources.Count < count)
+        {
+            GameObject layerObject = new($"BGM Layer {bgmLayerSources.Count + 1}");
+            layerObject.transform.SetParent(transform, false);
+
+            AudioSource layerSource = layerObject.AddComponent<AudioSource>();
+            CopyBgmSourceSettings(bgmSource, layerSource);
+            bgmLayerSources.Add(layerSource);
+        }
+    }
+
+    private void StopUnusedBgmLayerSources(int activeCount)
+    {
+        for (int i = 0; i < bgmLayerSources.Count; i++)
+        {
+            AudioSource layerSource = bgmLayerSources[i];
+
+            if (layerSource == null || i < activeCount)
+                continue;
+
+            layerSource.Stop();
+            layerSource.clip = null;
+        }
+    }
+
+    private void ApplyBgmLayerVolumes(float volume)
+    {
+        for (int i = bgmLayerSources.Count - 1; i >= 0; i--)
+        {
+            AudioSource layerSource = bgmLayerSources[i];
+
+            if (layerSource == null)
+            {
+                bgmLayerSources.RemoveAt(i);
+                continue;
+            }
+
+            layerSource.volume = volume * GetBgmLayerVolume(i + 1);
+        }
+    }
+
+    private float GetBgmLayerVolume(int layerIndex)
+    {
+        if (activeBgmLayers == null || layerIndex < 0 || layerIndex >= activeBgmLayers.Count)
+            return 1f;
+
+        BgmData data = activeBgmLayers[layerIndex];
+        return data != null ? Mathf.Clamp01(data.volume) : 1f;
+    }
+
+    private static void CopyBgmSourceSettings(AudioSource source, AudioSource target)
+    {
+        if (source == null || target == null)
+            return;
+
+        target.outputAudioMixerGroup = source.outputAudioMixerGroup;
+        target.bypassEffects = source.bypassEffects;
+        target.bypassListenerEffects = source.bypassListenerEffects;
+        target.bypassReverbZones = source.bypassReverbZones;
+        target.playOnAwake = false;
+        target.priority = source.priority;
+        target.pitch = source.pitch;
+        target.panStereo = source.panStereo;
+        target.spatialBlend = source.spatialBlend;
+        target.reverbZoneMix = source.reverbZoneMix;
+        target.dopplerLevel = source.dopplerLevel;
+        target.spread = source.spread;
+        target.rolloffMode = source.rolloffMode;
+        target.minDistance = source.minDistance;
+        target.maxDistance = source.maxDistance;
+        target.ignoreListenerPause = source.ignoreListenerPause;
+        target.ignoreListenerVolume = source.ignoreListenerVolume;
+        target.spatialize = source.spatialize;
+        target.spatializePostEffects = source.spatializePostEffects;
+        target.velocityUpdateMode = source.velocityUpdateMode;
     }
 
     private IEnumerator DestroyRoutedSfxWhenFinished(AudioSource routedSource)

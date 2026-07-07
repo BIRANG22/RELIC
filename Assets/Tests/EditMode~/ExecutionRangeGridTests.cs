@@ -37,6 +37,39 @@ public class ExecutionRangeGridTests
     }
 
     [Test]
+    public void GridCellInitialization_ForcesBaseAndHighlightRenderersBehindBattleObjects()
+    {
+        GameObject cellObject = new("BackSortedGridCell");
+        GameObject highlightObject = new("Highlight");
+        highlightObject.transform.SetParent(cellObject.transform);
+
+        try
+        {
+            MeshRenderer baseRenderer = cellObject.AddComponent<MeshRenderer>();
+            baseRenderer.sortingLayerName = "Unit";
+            baseRenderer.sortingOrder = 500;
+            cellObject.AddComponent<BoxCollider>();
+
+            MeshRenderer highlightRenderer = highlightObject.AddComponent<MeshRenderer>();
+            highlightRenderer.sortingLayerName = "Unit";
+            highlightRenderer.sortingOrder = 500;
+
+            GridCell cell = cellObject.AddComponent<GridCell>();
+            cell.Initialize(null, 0, 0, 0);
+            cell.SetPreview(Color.green);
+
+            Assert.That(baseRenderer.sortingLayerName, Is.EqualTo("Empty"));
+            Assert.That(baseRenderer.sortingOrder, Is.EqualTo(-1000));
+            Assert.That(highlightRenderer.sortingLayerName, Is.EqualTo("Empty"));
+            Assert.That(highlightRenderer.sortingOrder, Is.EqualTo(-1000));
+        }
+        finally
+        {
+            Object.DestroyImmediate(cellObject);
+        }
+    }
+
+    [Test]
     public void BuildPlayerExecutionRange_UsesReservedMoveRangeForMoveCommand()
     {
         PlayerReservedCommand command = CreatePlayerMoveCommand(

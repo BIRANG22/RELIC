@@ -5,6 +5,37 @@ using UnityEngine;
 public class ChestOpenButtonTests
 {
     [Test]
+    public void DefaultChestSfxTypes_UseConfirmForClickAndBoxOpenForOpen()
+    {
+        GameObject chestObject = new("Chest");
+
+        try
+        {
+            ChestOpenButton chest = chestObject.AddComponent<ChestOpenButton>();
+
+            Assert.That(GetPrivateField<SfxType>(chest, "clickSfxType"), Is.EqualTo(SfxType.Confirm));
+            Assert.That(GetPrivateField<SfxType>(chest, "openSfxType"), Is.EqualTo(SfxType.BoxOpen));
+        }
+        finally
+        {
+            DestroyObject(chestObject);
+        }
+    }
+
+    [Test]
+    public void CreateChestVfxAudioSettings_DisablesEmbeddedAudioRouting()
+    {
+        BattleVfxSfxEntry settings = InvokePrivateStatic<BattleVfxSfxEntry>(
+            typeof(ChestOpenButton),
+            "CreateChestVfxAudioSettings");
+
+        Assert.That(settings, Is.Not.Null);
+        Assert.That(settings.playSfx, Is.False);
+        Assert.That(settings.routeEmbeddedAudioSourcesThroughAudioManager, Is.False);
+        Assert.That(settings.removeEmbeddedAudioSources, Is.True);
+    }
+
+    [Test]
     public void VfxSortingLayer_UsesChestSpriteLayer()
     {
         GameObject chestObject = new("Chest");
@@ -110,6 +141,26 @@ public class ChestOpenButtonTests
 
         Assert.That(method, Is.Not.Null);
         method.Invoke(target, null);
+    }
+
+    private static T GetPrivateField<T>(object target, string fieldName)
+    {
+        FieldInfo field = target.GetType().GetField(
+            fieldName,
+            BindingFlags.Instance | BindingFlags.NonPublic);
+
+        Assert.That(field, Is.Not.Null);
+        return (T)field.GetValue(target);
+    }
+
+    private static T InvokePrivateStatic<T>(System.Type type, string methodName)
+    {
+        MethodInfo method = type.GetMethod(
+            methodName,
+            BindingFlags.Static | BindingFlags.NonPublic);
+
+        Assert.That(method, Is.Not.Null);
+        return (T)method.Invoke(null, null);
     }
 
     private static void DestroyObject(UnityEngine.Object target)
