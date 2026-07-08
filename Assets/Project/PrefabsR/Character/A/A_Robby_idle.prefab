@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 910100000000000001}
   - component: {fileID: 910100000000000002}
   - component: {fileID: 4032521216917055188}
+  - component: {fileID: 8323594003527378305}
   m_Layer: 0
   m_Name: A_Robby_idle
   m_TagString: Untagged
@@ -79,9 +80,9 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1597553239
-  m_SortingLayer: 4
+  m_SortingLayer: 1
   m_SortingOrder: 0
-  m_Sprite: {fileID: 251189844, guid: 9442dc42f100d9642bfed69107536a31, type: 3}
+  m_Sprite: {fileID: 899417585, guid: 3779e3d44fda67d4ba4d74f8855e75cf, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 1
   m_FlipY: 0
@@ -100,7 +101,7 @@ Animator:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4856766094544398864}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: 6e979f829da81504eb11de7d3096017b, type: 2}
   m_CullingMode: 0
@@ -109,7 +110,7 @@ Animator:
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
-  m_WarningMessage:
+  m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
@@ -124,8 +125,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 846a9e67db6820742bed9200ba1f9afb, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   spriteRoot: {fileID: 2480824589227361046}
   linkedFacingRoots: []
   startFacingRight: 1
@@ -140,88 +141,459 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 65329b3ce76752d4b9607a6211627f3d, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   animator: {fileID: 6250047314802340377}
   idleStateName: New Animation
-  moveStateName:
-  guardStateName:
-  hitStateName:
-  healStateName:
-  deadStateName:
+  moveStateName: 
+  guardStateName: 
+  hitStateName: 
+  healStateName: 
+  deadStateName: 
   moveVfx:
     prefab: {fileID: 0}
     flipType: 0
+    sfx:
+      playSfx: 0
+      sfxId: 
+      delay: 0
+      volumeMultiplier: 1
+      routeEmbeddedAudioSourcesThroughAudioManager: 1
+      removeEmbeddedAudioSources: 1
+    renderMode: 0
+    renderTextureWidth: 512
+    renderTextureHeight: 512
+    renderCameraOrthographicSize: 5
+    proxyWorldHeight: 10
+    proxyWorldOffset: {x: 0, y: 0, z: 0}
+    proxySortingLayerName: Unit
+    proxySortingOrderOffset: 0
+    proxySortingWorldYOffset: 0
+    proxyYMultiplier: 100
   guardVfx:
     prefab: {fileID: 0}
     flipType: 0
+    sfx:
+      playSfx: 0
+      sfxId: 
+      delay: 0
+      volumeMultiplier: 1
+      routeEmbeddedAudioSourcesThroughAudioManager: 1
+      removeEmbeddedAudioSources: 1
+    renderMode: 0
+    renderTextureWidth: 512
+    renderTextureHeight: 512
+    renderCameraOrthographicSize: 5
+    proxyWorldHeight: 10
+    proxyWorldOffset: {x: 0, y: 0, z: 0}
+    proxySortingLayerName: Unit
+    proxySortingOrderOffset: 0
+    proxySortingWorldYOffset: 0
+    proxyYMultiplier: 100
   hitVfx:
     prefab: {fileID: 0}
     flipType: 0
+    sfx:
+      playSfx: 0
+      sfxId: 
+      delay: 0
+      volumeMultiplier: 1
+      routeEmbeddedAudioSourcesThroughAudioManager: 1
+      removeEmbeddedAudioSources: 1
+    renderMode: 0
+    renderTextureWidth: 512
+    renderTextureHeight: 512
+    renderCameraOrthographicSize: 5
+    proxyWorldHeight: 10
+    proxyWorldOffset: {x: 0, y: 0, z: 0}
+    proxySortingLayerName: Unit
+    proxySortingOrderOffset: 0
+    proxySortingWorldYOffset: 0
+    proxyYMultiplier: 100
   healVfx:
     prefab: {fileID: 9091916896245564796, guid: 3302b6aa62dc8fb4d8d9a88c6f8e8ac0, type: 3}
     flipType: 0
+    sfx:
+      playSfx: 0
+      sfxId: 
+      delay: 0
+      volumeMultiplier: 1
+      routeEmbeddedAudioSourcesThroughAudioManager: 1
+      removeEmbeddedAudioSources: 1
+    renderMode: 0
+    renderTextureWidth: 512
+    renderTextureHeight: 512
+    renderCameraOrthographicSize: 5
+    proxyWorldHeight: 10
+    proxyWorldOffset: {x: 0, y: 0, z: 0}
+    proxySortingLayerName: Unit
+    proxySortingOrderOffset: 0
+    proxySortingWorldYOffset: 0
+    proxyYMultiplier: 100
   statusVfx:
     aimingVfx:
       prefab: {fileID: 0}
       flipType: 0
+      sfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      renderMode: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     armorVfx:
       prefab: {fileID: 0}
       flipType: 0
+      sfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      renderMode: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     blockVfx:
       prefab: {fileID: 0}
       flipType: 0
+      sfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      renderMode: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     focusVfx:
       prefab: {fileID: 0}
       flipType: 0
+      sfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      renderMode: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     powerVfx:
       prefab: {fileID: 0}
       flipType: 0
+      sfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      renderMode: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     rechargeVfx:
       prefab: {fileID: 0}
       flipType: 0
+      sfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      renderMode: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     recoverVfx:
       prefab: {fileID: 0}
       flipType: 0
+      sfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      renderMode: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     swiftVfx:
       prefab: {fileID: 0}
       flipType: 0
+      sfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      renderMode: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     thornsVfx:
       prefab: {fileID: 0}
       flipType: 0
+      sfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      renderMode: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     addictedVfx:
       prefab: {fileID: 0}
       flipType: 0
+      sfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      renderMode: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     bleedingVfx:
       prefab: {fileID: 0}
       flipType: 0
+      sfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      renderMode: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     burnVfx:
       prefab: {fileID: 0}
       flipType: 0
+      sfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      renderMode: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     corrosionVfx:
       prefab: {fileID: 0}
       flipType: 0
+      sfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      renderMode: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     grudgeVfx:
       prefab: {fileID: 0}
       flipType: 0
+      sfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      renderMode: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     vulnerableVfx:
       prefab: {fileID: 0}
       flipType: 0
+      sfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      renderMode: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     weakenVfx:
       prefab: {fileID: 0}
       flipType: 0
+      sfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      renderMode: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
   playerSkillPresentations:
     power:
-      stateName:
+      stateName: 
       vfx:
         prefab: {fileID: 0}
         flipType: 0
+        sfx:
+          playSfx: 0
+          sfxId: 
+          delay: 0
+          volumeMultiplier: 1
+          routeEmbeddedAudioSourcesThroughAudioManager: 1
+          removeEmbeddedAudioSources: 1
+        renderMode: 0
+        renderTextureWidth: 512
+        renderTextureHeight: 512
+        renderCameraOrthographicSize: 5
+        proxyWorldHeight: 10
+        proxyWorldOffset: {x: 0, y: 0, z: 0}
+        proxySortingLayerName: Unit
+        proxySortingOrderOffset: 0
+        proxySortingWorldYOffset: 0
+        proxyYMultiplier: 100
       projectileVfx:
-        skillId:
+        skillId: 
         missilePrefab: {fileID: 0}
         impactPrefab: {fileID: 0}
         missileFlipType: 2
         impactFlipType: 2
+        missileSfx:
+          playSfx: 0
+          sfxId: 
+          delay: 0
+          volumeMultiplier: 1
+          routeEmbeddedAudioSourcesThroughAudioManager: 1
+          removeEmbeddedAudioSources: 1
+        impactSfx:
+          playSfx: 0
+          sfxId: 
+          delay: 0
+          volumeMultiplier: 1
+          routeEmbeddedAudioSourcesThroughAudioManager: 1
+          removeEmbeddedAudioSources: 1
         launchDelay: 0
         travelDuration: 0.25
         arrivalDistance: 0.05
@@ -229,16 +601,47 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     attack1:
-      stateName:
+      stateName: 
       vfx:
         prefab: {fileID: 0}
         flipType: 0
+        sfx:
+          playSfx: 0
+          sfxId: 
+          delay: 0
+          volumeMultiplier: 1
+          routeEmbeddedAudioSourcesThroughAudioManager: 1
+          removeEmbeddedAudioSources: 1
+        renderMode: 0
+        renderTextureWidth: 512
+        renderTextureHeight: 512
+        renderCameraOrthographicSize: 5
+        proxyWorldHeight: 10
+        proxyWorldOffset: {x: 0, y: 0, z: 0}
+        proxySortingLayerName: Unit
+        proxySortingOrderOffset: 0
+        proxySortingWorldYOffset: 0
+        proxyYMultiplier: 100
       projectileVfx:
-        skillId:
+        skillId: 
         missilePrefab: {fileID: 0}
         impactPrefab: {fileID: 0}
         missileFlipType: 2
         impactFlipType: 2
+        missileSfx:
+          playSfx: 0
+          sfxId: 
+          delay: 0
+          volumeMultiplier: 1
+          routeEmbeddedAudioSourcesThroughAudioManager: 1
+          removeEmbeddedAudioSources: 1
+        impactSfx:
+          playSfx: 0
+          sfxId: 
+          delay: 0
+          volumeMultiplier: 1
+          routeEmbeddedAudioSourcesThroughAudioManager: 1
+          removeEmbeddedAudioSources: 1
         launchDelay: 0
         travelDuration: 0.25
         arrivalDistance: 0.05
@@ -246,16 +649,47 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     attack2:
-      stateName:
+      stateName: 
       vfx:
         prefab: {fileID: 0}
         flipType: 0
+        sfx:
+          playSfx: 0
+          sfxId: 
+          delay: 0
+          volumeMultiplier: 1
+          routeEmbeddedAudioSourcesThroughAudioManager: 1
+          removeEmbeddedAudioSources: 1
+        renderMode: 0
+        renderTextureWidth: 512
+        renderTextureHeight: 512
+        renderCameraOrthographicSize: 5
+        proxyWorldHeight: 10
+        proxyWorldOffset: {x: 0, y: 0, z: 0}
+        proxySortingLayerName: Unit
+        proxySortingOrderOffset: 0
+        proxySortingWorldYOffset: 0
+        proxyYMultiplier: 100
       projectileVfx:
-        skillId:
+        skillId: 
         missilePrefab: {fileID: 0}
         impactPrefab: {fileID: 0}
         missileFlipType: 2
         impactFlipType: 2
+        missileSfx:
+          playSfx: 0
+          sfxId: 
+          delay: 0
+          volumeMultiplier: 1
+          routeEmbeddedAudioSourcesThroughAudioManager: 1
+          removeEmbeddedAudioSources: 1
+        impactSfx:
+          playSfx: 0
+          sfxId: 
+          delay: 0
+          volumeMultiplier: 1
+          routeEmbeddedAudioSourcesThroughAudioManager: 1
+          removeEmbeddedAudioSources: 1
         launchDelay: 0
         travelDuration: 0.25
         arrivalDistance: 0.05
@@ -263,16 +697,47 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     attack3:
-      stateName:
+      stateName: 
       vfx:
         prefab: {fileID: 0}
         flipType: 0
+        sfx:
+          playSfx: 0
+          sfxId: 
+          delay: 0
+          volumeMultiplier: 1
+          routeEmbeddedAudioSourcesThroughAudioManager: 1
+          removeEmbeddedAudioSources: 1
+        renderMode: 0
+        renderTextureWidth: 512
+        renderTextureHeight: 512
+        renderCameraOrthographicSize: 5
+        proxyWorldHeight: 10
+        proxyWorldOffset: {x: 0, y: 0, z: 0}
+        proxySortingLayerName: Unit
+        proxySortingOrderOffset: 0
+        proxySortingWorldYOffset: 0
+        proxyYMultiplier: 100
       projectileVfx:
-        skillId:
+        skillId: 
         missilePrefab: {fileID: 0}
         impactPrefab: {fileID: 0}
         missileFlipType: 2
         impactFlipType: 2
+        missileSfx:
+          playSfx: 0
+          sfxId: 
+          delay: 0
+          volumeMultiplier: 1
+          routeEmbeddedAudioSourcesThroughAudioManager: 1
+          removeEmbeddedAudioSources: 1
+        impactSfx:
+          playSfx: 0
+          sfxId: 
+          delay: 0
+          volumeMultiplier: 1
+          routeEmbeddedAudioSourcesThroughAudioManager: 1
+          removeEmbeddedAudioSources: 1
         launchDelay: 0
         travelDuration: 0.25
         arrivalDistance: 0.05
@@ -280,16 +745,47 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     skill:
-      stateName:
+      stateName: 
       vfx:
         prefab: {fileID: 0}
         flipType: 0
+        sfx:
+          playSfx: 0
+          sfxId: 
+          delay: 0
+          volumeMultiplier: 1
+          routeEmbeddedAudioSourcesThroughAudioManager: 1
+          removeEmbeddedAudioSources: 1
+        renderMode: 0
+        renderTextureWidth: 512
+        renderTextureHeight: 512
+        renderCameraOrthographicSize: 5
+        proxyWorldHeight: 10
+        proxyWorldOffset: {x: 0, y: 0, z: 0}
+        proxySortingLayerName: Unit
+        proxySortingOrderOffset: 0
+        proxySortingWorldYOffset: 0
+        proxyYMultiplier: 100
       projectileVfx:
-        skillId:
+        skillId: 
         missilePrefab: {fileID: 0}
         impactPrefab: {fileID: 0}
         missileFlipType: 2
         impactFlipType: 2
+        missileSfx:
+          playSfx: 0
+          sfxId: 
+          delay: 0
+          volumeMultiplier: 1
+          routeEmbeddedAudioSourcesThroughAudioManager: 1
+          removeEmbeddedAudioSources: 1
+        impactSfx:
+          playSfx: 0
+          sfxId: 
+          delay: 0
+          volumeMultiplier: 1
+          routeEmbeddedAudioSourcesThroughAudioManager: 1
+          removeEmbeddedAudioSources: 1
         launchDelay: 0
         travelDuration: 0.25
         arrivalDistance: 0.05
@@ -297,160 +793,470 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
   monsterActionPresentations:
-  - stateName:
+  - stateName: 
     vfx:
       prefab: {fileID: 0}
       flipType: 0
+      sfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      renderMode: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     projectileVfx:
-      skillId:
+      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
+      missileSfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      impactSfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
       launchDelay: 0
       travelDuration: 0.25
       arrivalDistance: 0.05
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
-  - stateName:
+  - stateName: 
     vfx:
       prefab: {fileID: 0}
       flipType: 0
+      sfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      renderMode: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     projectileVfx:
-      skillId:
+      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
+      missileSfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      impactSfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
       launchDelay: 0
       travelDuration: 0.25
       arrivalDistance: 0.05
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
-  - stateName:
+  - stateName: 
     vfx:
       prefab: {fileID: 0}
       flipType: 0
+      sfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      renderMode: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     projectileVfx:
-      skillId:
+      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
+      missileSfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      impactSfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
       launchDelay: 0
       travelDuration: 0.25
       arrivalDistance: 0.05
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
-  - stateName:
+  - stateName: 
     vfx:
       prefab: {fileID: 0}
       flipType: 0
+      sfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      renderMode: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     projectileVfx:
-      skillId:
+      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
+      missileSfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      impactSfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
       launchDelay: 0
       travelDuration: 0.25
       arrivalDistance: 0.05
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
-  - stateName:
+  - stateName: 
     vfx:
       prefab: {fileID: 0}
       flipType: 0
+      sfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      renderMode: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     projectileVfx:
-      skillId:
+      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
+      missileSfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      impactSfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
       launchDelay: 0
       travelDuration: 0.25
       arrivalDistance: 0.05
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
-  - stateName:
+  - stateName: 
     vfx:
       prefab: {fileID: 0}
       flipType: 0
+      sfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      renderMode: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     projectileVfx:
-      skillId:
+      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
+      missileSfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      impactSfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
       launchDelay: 0
       travelDuration: 0.25
       arrivalDistance: 0.05
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
-  - stateName:
+  - stateName: 
     vfx:
       prefab: {fileID: 0}
       flipType: 0
+      sfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      renderMode: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     projectileVfx:
-      skillId:
+      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
+      missileSfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      impactSfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
       launchDelay: 0
       travelDuration: 0.25
       arrivalDistance: 0.05
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
-  - stateName:
+  - stateName: 
     vfx:
       prefab: {fileID: 0}
       flipType: 0
+      sfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      renderMode: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     projectileVfx:
-      skillId:
+      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
+      missileSfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      impactSfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
       launchDelay: 0
       travelDuration: 0.25
       arrivalDistance: 0.05
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
-  - stateName:
+  - stateName: 
     vfx:
       prefab: {fileID: 0}
       flipType: 0
+      sfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      renderMode: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     projectileVfx:
-      skillId:
+      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
+      missileSfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      impactSfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
       launchDelay: 0
       travelDuration: 0.25
       arrivalDistance: 0.05
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
-  - stateName:
+  - stateName: 
     vfx:
       prefab: {fileID: 0}
       flipType: 0
+      sfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      renderMode: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     projectileVfx:
-      skillId:
+      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
+      missileSfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      impactSfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
       launchDelay: 0
       travelDuration: 0.25
       arrivalDistance: 0.05
@@ -458,6 +1264,8 @@ MonoBehaviour:
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
   vfxSpawnPoint: {fileID: 0}
+  vfxSortingReferenceName: SpriteRoot
+  vfxSortingReferenceYOffset: -0.1
   unitFacing: {fileID: 910100000000000001}
   autoFindFacing: 1
   flipVfxLocalPositionX: 1
@@ -479,10 +1287,132 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 33c392ea8bf721f4f9b83ea336edc598, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
+  useVirtualYOffset: 0
+  virtualYOffset: 0
   sortingOrderOffset: 0
   yMultiplier: 100
+--- !u!114 &8323594003527378305
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4856766094544398864}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cbbf71c4173e8ce4883232d0f1a76bff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetImage: {fileID: 0}
+  targetSpriteRenderer: {fileID: 1223829301973526561}
+  startState: 0
+  normalIdleSprites:
+  - {fileID: 899417585, guid: 3779e3d44fda67d4ba4d74f8855e75cf, type: 3}
+  - {fileID: -926976929, guid: 3779e3d44fda67d4ba4d74f8855e75cf, type: 3}
+  - {fileID: -1156488396, guid: 3779e3d44fda67d4ba4d74f8855e75cf, type: 3}
+  - {fileID: -2093785712, guid: 3779e3d44fda67d4ba4d74f8855e75cf, type: 3}
+  - {fileID: -384342060, guid: 3779e3d44fda67d4ba4d74f8855e75cf, type: 3}
+  - {fileID: 413627860, guid: 3779e3d44fda67d4ba4d74f8855e75cf, type: 3}
+  - {fileID: -927151425, guid: 3779e3d44fda67d4ba4d74f8855e75cf, type: 3}
+  - {fileID: -1986652698, guid: 3779e3d44fda67d4ba4d74f8855e75cf, type: 3}
+  - {fileID: -54461727, guid: 3779e3d44fda67d4ba4d74f8855e75cf, type: 3}
+  - {fileID: -1006992060, guid: 3779e3d44fda67d4ba4d74f8855e75cf, type: 3}
+  - {fileID: -1822687201, guid: 3779e3d44fda67d4ba4d74f8855e75cf, type: 3}
+  - {fileID: 606590634, guid: 3779e3d44fda67d4ba4d74f8855e75cf, type: 3}
+  - {fileID: -235525957, guid: 3779e3d44fda67d4ba4d74f8855e75cf, type: 3}
+  - {fileID: -1150622324, guid: 3779e3d44fda67d4ba4d74f8855e75cf, type: 3}
+  - {fileID: -1771163125, guid: 3779e3d44fda67d4ba4d74f8855e75cf, type: 3}
+  - {fileID: -778334304, guid: 3779e3d44fda67d4ba4d74f8855e75cf, type: 3}
+  skillIdleSprites:
+  - {fileID: -1229334457, guid: aaaadf35646301542aa4acc56fabda2a, type: 3}
+  - {fileID: 313853203, guid: aaaadf35646301542aa4acc56fabda2a, type: 3}
+  - {fileID: 1201852518, guid: aaaadf35646301542aa4acc56fabda2a, type: 3}
+  - {fileID: -238072712, guid: aaaadf35646301542aa4acc56fabda2a, type: 3}
+  - {fileID: -2073148280, guid: aaaadf35646301542aa4acc56fabda2a, type: 3}
+  - {fileID: 298730079, guid: aaaadf35646301542aa4acc56fabda2a, type: 3}
+  - {fileID: 1186659471, guid: aaaadf35646301542aa4acc56fabda2a, type: 3}
+  - {fileID: -1742102474, guid: aaaadf35646301542aa4acc56fabda2a, type: 3}
+  - {fileID: 747643672, guid: aaaadf35646301542aa4acc56fabda2a, type: 3}
+  - {fileID: -1860522649, guid: aaaadf35646301542aa4acc56fabda2a, type: 3}
+  - {fileID: -1330779853, guid: aaaadf35646301542aa4acc56fabda2a, type: 3}
+  - {fileID: -1192643357, guid: aaaadf35646301542aa4acc56fabda2a, type: 3}
+  - {fileID: -1803983948, guid: aaaadf35646301542aa4acc56fabda2a, type: 3}
+  - {fileID: 390191257, guid: aaaadf35646301542aa4acc56fabda2a, type: 3}
+  - {fileID: 1366787420, guid: aaaadf35646301542aa4acc56fabda2a, type: 3}
+  - {fileID: 1972380387, guid: aaaadf35646301542aa4acc56fabda2a, type: 3}
+  runeIdleSprites:
+  - {fileID: 144776851, guid: 49ba00eb615d55743bd527f7146b724d, type: 3}
+  - {fileID: -1883113133, guid: 49ba00eb615d55743bd527f7146b724d, type: 3}
+  - {fileID: -45151016, guid: 49ba00eb615d55743bd527f7146b724d, type: 3}
+  - {fileID: 1828788563, guid: 49ba00eb615d55743bd527f7146b724d, type: 3}
+  - {fileID: -195183784, guid: 49ba00eb615d55743bd527f7146b724d, type: 3}
+  - {fileID: -851961025, guid: 49ba00eb615d55743bd527f7146b724d, type: 3}
+  - {fileID: 87559578, guid: 49ba00eb615d55743bd527f7146b724d, type: 3}
+  - {fileID: -2127327035, guid: 49ba00eb615d55743bd527f7146b724d, type: 3}
+  - {fileID: -1219148502, guid: 49ba00eb615d55743bd527f7146b724d, type: 3}
+  - {fileID: 480272272, guid: 49ba00eb615d55743bd527f7146b724d, type: 3}
+  - {fileID: -2124836939, guid: 49ba00eb615d55743bd527f7146b724d, type: 3}
+  - {fileID: -431657454, guid: 49ba00eb615d55743bd527f7146b724d, type: 3}
+  - {fileID: -1456308092, guid: 49ba00eb615d55743bd527f7146b724d, type: 3}
+  - {fileID: 1789665351, guid: 49ba00eb615d55743bd527f7146b724d, type: 3}
+  - {fileID: 883379195, guid: 49ba00eb615d55743bd527f7146b724d, type: 3}
+  - {fileID: -1081467556, guid: 49ba00eb615d55743bd527f7146b724d, type: 3}
+  normalToSkillSprites:
+  - {fileID: 750009243, guid: ddacfd1ef40444c479cf0cf9fde527be, type: 3}
+  - {fileID: -617327124, guid: ddacfd1ef40444c479cf0cf9fde527be, type: 3}
+  - {fileID: 1517545405, guid: ddacfd1ef40444c479cf0cf9fde527be, type: 3}
+  - {fileID: 972084654, guid: ddacfd1ef40444c479cf0cf9fde527be, type: 3}
+  - {fileID: 186238900, guid: ddacfd1ef40444c479cf0cf9fde527be, type: 3}
+  - {fileID: -1216296202, guid: ddacfd1ef40444c479cf0cf9fde527be, type: 3}
+  - {fileID: 329299012, guid: ddacfd1ef40444c479cf0cf9fde527be, type: 3}
+  - {fileID: -1655324002, guid: ddacfd1ef40444c479cf0cf9fde527be, type: 3}
+  - {fileID: -1581057998, guid: ddacfd1ef40444c479cf0cf9fde527be, type: 3}
+  - {fileID: 1944130752, guid: ddacfd1ef40444c479cf0cf9fde527be, type: 3}
+  - {fileID: 573169490, guid: ddacfd1ef40444c479cf0cf9fde527be, type: 3}
+  - {fileID: -1779680125, guid: ddacfd1ef40444c479cf0cf9fde527be, type: 3}
+  - {fileID: -143804508, guid: ddacfd1ef40444c479cf0cf9fde527be, type: 3}
+  - {fileID: 1679101993, guid: ddacfd1ef40444c479cf0cf9fde527be, type: 3}
+  - {fileID: 400266692, guid: ddacfd1ef40444c479cf0cf9fde527be, type: 3}
+  - {fileID: -890373872, guid: ddacfd1ef40444c479cf0cf9fde527be, type: 3}
+  skillToRuneSprites:
+  - {fileID: 1704897032, guid: a5ac3c14e65f65e4d86b9473ce8932ae, type: 3}
+  - {fileID: -437537032, guid: a5ac3c14e65f65e4d86b9473ce8932ae, type: 3}
+  - {fileID: -2121491459, guid: a5ac3c14e65f65e4d86b9473ce8932ae, type: 3}
+  - {fileID: 2104977435, guid: a5ac3c14e65f65e4d86b9473ce8932ae, type: 3}
+  - {fileID: -130612264, guid: a5ac3c14e65f65e4d86b9473ce8932ae, type: 3}
+  - {fileID: 880049376, guid: a5ac3c14e65f65e4d86b9473ce8932ae, type: 3}
+  - {fileID: -2143254224, guid: a5ac3c14e65f65e4d86b9473ce8932ae, type: 3}
+  - {fileID: -254803233, guid: a5ac3c14e65f65e4d86b9473ce8932ae, type: 3}
+  - {fileID: -187983114, guid: a5ac3c14e65f65e4d86b9473ce8932ae, type: 3}
+  - {fileID: 1567220270, guid: a5ac3c14e65f65e4d86b9473ce8932ae, type: 3}
+  - {fileID: 1916148204, guid: a5ac3c14e65f65e4d86b9473ce8932ae, type: 3}
+  - {fileID: 1192469345, guid: a5ac3c14e65f65e4d86b9473ce8932ae, type: 3}
+  - {fileID: 1035302595, guid: a5ac3c14e65f65e4d86b9473ce8932ae, type: 3}
+  - {fileID: 1591661685, guid: a5ac3c14e65f65e4d86b9473ce8932ae, type: 3}
+  - {fileID: -661050564, guid: a5ac3c14e65f65e4d86b9473ce8932ae, type: 3}
+  - {fileID: 899405491, guid: a5ac3c14e65f65e4d86b9473ce8932ae, type: 3}
+  runeToNormalSprites:
+  - {fileID: -218798563, guid: 82f9f660e680f7f4d945f24a18171af0, type: 3}
+  - {fileID: -472520021, guid: 82f9f660e680f7f4d945f24a18171af0, type: 3}
+  - {fileID: 98942404, guid: 82f9f660e680f7f4d945f24a18171af0, type: 3}
+  - {fileID: 4020593, guid: 82f9f660e680f7f4d945f24a18171af0, type: 3}
+  - {fileID: -1524697393, guid: 82f9f660e680f7f4d945f24a18171af0, type: 3}
+  - {fileID: 815831931, guid: 82f9f660e680f7f4d945f24a18171af0, type: 3}
+  - {fileID: -504825858, guid: 82f9f660e680f7f4d945f24a18171af0, type: 3}
+  - {fileID: -473024344, guid: 82f9f660e680f7f4d945f24a18171af0, type: 3}
+  - {fileID: -1635042041, guid: 82f9f660e680f7f4d945f24a18171af0, type: 3}
+  - {fileID: -1803944618, guid: 82f9f660e680f7f4d945f24a18171af0, type: 3}
+  - {fileID: -755950168, guid: 82f9f660e680f7f4d945f24a18171af0, type: 3}
+  - {fileID: -1293760902, guid: 82f9f660e680f7f4d945f24a18171af0, type: 3}
+  - {fileID: -1411301533, guid: 82f9f660e680f7f4d945f24a18171af0, type: 3}
+  - {fileID: -9301622, guid: 82f9f660e680f7f4d945f24a18171af0, type: 3}
+  - {fileID: -972161873, guid: 82f9f660e680f7f4d945f24a18171af0, type: 3}
+  - {fileID: 1712826966, guid: 82f9f660e680f7f4d945f24a18171af0, type: 3}
+  idleFrameInterval: 0.12
+  transitionFrameInterval: 0.08
+  playOnEnable: 1
 --- !u!1 &8984932051497741162
 GameObject:
   m_ObjectHideFlags: 0
