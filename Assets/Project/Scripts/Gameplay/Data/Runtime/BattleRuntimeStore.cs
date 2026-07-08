@@ -38,6 +38,7 @@ namespace Relic.Gameplay.Data
             currentRun.OwnedRelicIds ??= new List<string>();
             currentRun.BagItemIds ??= new List<string>();
             currentRun.SkillInventoryIds ??= new List<string>();
+            currentRun.LobbyLoadoutSnapshots ??= new List<BattleLobbyLoadoutSnapshotData>();
 
             return currentRun;
         }

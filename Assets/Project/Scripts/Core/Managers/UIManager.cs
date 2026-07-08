@@ -2,6 +2,7 @@
 using UnityEngine.InputSystem;
 #endif
 using System.Threading.Tasks;
+using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -31,10 +32,10 @@ public class UIManager : Singleton<UIManager>
     [SerializeField] private int confirmDialogSortingOrderOffset = 20;
 
     [Header("Confirm Dialog Text")]
-    [SerializeField] private string giveUpConfirmMessage = "Å¸ÀÌÆ²·Î µ¹¾Æ°¡°Ú½À´Ï±î?";
-    [SerializeField] private string quitConfirmMessage = "°ÔÀÓÀ» Á¾·áÇÏ°Ú½À´Ï±î?";
-    [SerializeField] private string confirmYesText = "¿¹";
-    [SerializeField] private string confirmNoText = "¾Æ´Ï¿À";
+    [SerializeField] private string giveUpConfirmMessage = "íƒ€ì´í‹€ë¡œ ëŒì•„ê°€ê² ìŠµë‹ˆê¹Œ?";
+    [SerializeField] private string quitConfirmMessage = "ê²Œì„ì„ ì¢…ë£Œí•˜ê² ìŠµë‹ˆê¹Œ?";
+    [SerializeField] private string confirmYesText = "ì˜ˆ";
+    [SerializeField] private string confirmNoText = "ì•„ë‹ˆì˜¤";
 
     [Header("Input")]
     [SerializeField] private bool closeOptionPanelWithEscape = true;
@@ -285,6 +286,7 @@ public class UIManager : Singleton<UIManager>
         HideOption();
         UIPanelButton.CloseCurrentOpenedPanel();
         Time.timeScale = 1f;
+        AbandonCurrentBattleRunIfPossible();
 
         if (GameManager.Instance != null && GameManager.Instance.StateMachine != null)
         {
@@ -301,6 +303,15 @@ public class UIManager : Singleton<UIManager>
 
         UnityEngine.SceneManagement.SceneManager.LoadScene(SceneName.Title);
         PlayTitleBgmIfPossible();
+    }
+
+    private void AbandonCurrentBattleRunIfPossible()
+    {
+        if (DataManager.Instance != null)
+            BattleRunAbandonService.AbandonCurrentRun(DataManager.Instance);
+
+        if (SaveSystem.Instance != null)
+            SaveSystem.Instance.SaveCurrentProgress();
     }
 
     private void PlayTitleBgmIfPossible()

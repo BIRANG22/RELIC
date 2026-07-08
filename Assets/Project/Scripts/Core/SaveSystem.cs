@@ -312,6 +312,19 @@ public class SaveSystem : Singleton<SaveSystem>
         battle.OwnedRelicIds ??= new List<string>();
         battle.BagItemIds ??= new List<string>();
         battle.SkillInventoryIds ??= new List<string>();
+        battle.LobbyLoadoutSnapshots ??= new List<BattleLobbyLoadoutSnapshotData>();
+
+        for (int i = 0; i < battle.LobbyLoadoutSnapshots.Count; i++)
+            NormalizeLobbyLoadoutSnapshot(battle.LobbyLoadoutSnapshots[i]);
+    }
+
+    private static void NormalizeLobbyLoadoutSnapshot(BattleLobbyLoadoutSnapshotData snapshot)
+    {
+        if (snapshot == null)
+            return;
+
+        snapshot.EquippedSkillIds = NormalizeStringArray(snapshot.EquippedSkillIds, EquippedSkillSlotCount);
+        snapshot.EquippedRuneIds = NormalizeStringArray(snapshot.EquippedRuneIds, EquippedRuneSlotCount);
     }
 
     private static void NormalizeCharacter(CharacterRuntimeData character)

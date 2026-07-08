@@ -8,17 +8,17 @@ public class BattlePlayButton : MonoBehaviour
     [SerializeField] private Button button;
 
     [Header("Stage Carousel")]
-    [Tooltip("½ºÅ×ÀÌÁö ¹öÆ°À» Ä³·¯¼¿ ¹æ½ÄÀ¸·Î »ç¿ëÇÒ ¶§ ¿¬°áÇÕ´Ï´Ù. ºñ¿öµÎ¸é ¾À¿¡¼­ ÀÚµ¿À¸·Î Ã£½À´Ï´Ù.")]
+    [Tooltip("ìŠ¤í…Œì´ì§€ ë²„íŠ¼ì„ ìºëŸ¬ì…€ ë°©ì‹ìœ¼ë¡œ ì‚¬ìš©í•  ë•Œ ì—°ê²°í•©ë‹ˆë‹¤. ë¹„ì›Œë‘ë©´ ì”¬ì—ì„œ ìë™ìœ¼ë¡œ ì°¾ìŠµë‹ˆë‹¤.")]
     [SerializeField] private LobbyStageButtonCarousel stageButtonCarousel;
-    [Tooltip("Áß¾Ó¿¡ ÀÖ´Â ½ºÅ×ÀÌÁö°¡ Àá°Ü ÀÖÀ» ¶§ PlayButtonÀ» ´©¸£¸é ÀÔÀåÀ» ¸·°í °æ°í¸¦ Ç¥½ÃÇÕ´Ï´Ù.")]
+    [Tooltip("ì¤‘ì•™ì— ìˆëŠ” ìŠ¤í…Œì´ì§€ê°€ ì ê²¨ ìˆì„ ë•Œ PlayButtonì„ ëˆ„ë¥´ë©´ ì…ì¥ì„ ë§‰ê³  ê²½ê³ ë¥¼ í‘œì‹œí•©ë‹ˆë‹¤.")]
     [SerializeField] private bool blockLockedCarouselStage = true;
 
     [Header("Erosion Entry Lock")]
-    [Tooltip("Ä§½Äµµ ¼±ÅÃ Ä³·¯¼¿ÀÔ´Ï´Ù. ºñ¿öµÎ¸é ¾À¿¡¼­ ÀÚµ¿À¸·Î Ã£½À´Ï´Ù.")]
+    [Tooltip("ì¹¨ì‹ë„ ì„ íƒ ìºëŸ¬ì…€ì…ë‹ˆë‹¤. ë¹„ì›Œë‘ë©´ ì”¬ì—ì„œ ìë™ìœ¼ë¡œ ì°¾ìŠµë‹ˆë‹¤.")]
     [SerializeField] private ErosionSelectCarousel erosionSelectCarousel;
-    [Tooltip("Ã¼Å©ÇÏ¸é Erosion_0ÀÌ ¾Æ´Ñ Erosion_1~5 ¼±ÅÃ »óÅÂ¿¡¼­´Â °ÔÀÓ ÀÔÀåÀ» ¸·½À´Ï´Ù.")]
+    [Tooltip("ì²´í¬í•˜ë©´ Erosion_0ì´ ì•„ë‹Œ Erosion_1~5 ì„ íƒ ìƒíƒœì—ì„œëŠ” ê²Œì„ ì…ì¥ì„ ë§‰ìŠµë‹ˆë‹¤.")]
     [SerializeField] private bool blockNonZeroErosionEntry = true;
-    [Tooltip("ÀÔÀåÀÌ °¡´ÉÇÑ Ä§½Äµµ ÀÎµ¦½ºÀÔ´Ï´Ù. ±âº»°ª 0Àº Erosion_0ÀÔ´Ï´Ù.")]
+    [Tooltip("ì…ì¥ì´ ê°€ëŠ¥í•œ ì¹¨ì‹ë„ ì¸ë±ìŠ¤ì…ë‹ˆë‹¤. ê¸°ë³¸ê°’ 0ì€ Erosion_0ì…ë‹ˆë‹¤.")]
     [SerializeField] private int allowedErosionIndex = 0;
 
     [Header("Option")]
@@ -28,13 +28,13 @@ public class BattlePlayButton : MonoBehaviour
 
     [Header("Warning UI")]
     [SerializeField] private SettingWarningUI warningUI;
-    [SerializeField] private string lockedStageEnterMessage = "¾ÆÁ÷ ÀÔÀåÇÒ ¼ö ¾ø´Â ±¸¿ªÀÔ´Ï´Ù.";
-    [SerializeField] private string lockedErosionEnterMessage = "ÇöÀç´Â ±âº» ³­ÀÌµµ¸¸ ÀÔÀåÇÒ ¼ö ÀÖ½À´Ï´Ù.";
-    [SerializeField] private string mapNotSelectedMessage = "½ºÅ×ÀÌÁö¸¦ ¼±ÅÃÇØ¾ß ÇÕ´Ï´Ù.";
-    [SerializeField] private string partyEmptyMessage = "Ä³¸¯ÅÍ¸¦ Æí¼ºÇØ¾ß ÇÕ´Ï´Ù.";
-    [SerializeField] private string partyNotFullMessage = "Ä³¸¯ÅÍ 3¸íÀ» ¸ğµÎ Æí¼ºÇØ¾ß ÇÕ´Ï´Ù. ÇöÀç {0}/{1}";
-    [SerializeField] private string dataManagerMissingMessage = "µ¥ÀÌÅÍ ¸Å´ÏÀú°¡ ¾ø½À´Ï´Ù.";
-    [SerializeField] private string gameManagerMissingMessage = "°ÔÀÓ ¸Å´ÏÀú°¡ ¾ø½À´Ï´Ù.";
+    [SerializeField] private string lockedStageEnterMessage = "ì•„ì§ ì…ì¥í•  ìˆ˜ ì—†ëŠ” êµ¬ì—­ì…ë‹ˆë‹¤.";
+    [SerializeField] private string lockedErosionEnterMessage = "í˜„ì¬ëŠ” ê¸°ë³¸ ë‚œì´ë„ë§Œ ì…ì¥í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.";
+    [SerializeField] private string mapNotSelectedMessage = "ìŠ¤í…Œì´ì§€ë¥¼ ì„ íƒí•´ì•¼ í•©ë‹ˆë‹¤.";
+    [SerializeField] private string partyEmptyMessage = "ìºë¦­í„°ë¥¼ í¸ì„±í•´ì•¼ í•©ë‹ˆë‹¤.";
+    [SerializeField] private string partyNotFullMessage = "ìºë¦­í„° 3ëª…ì„ ëª¨ë‘ í¸ì„±í•´ì•¼ í•©ë‹ˆë‹¤. í˜„ì¬ {0}/{1}";
+    [SerializeField] private string dataManagerMissingMessage = "ë°ì´í„° ë§¤ë‹ˆì €ê°€ ì—†ìŠµë‹ˆë‹¤.";
+    [SerializeField] private string gameManagerMissingMessage = "ê²Œì„ ë§¤ë‹ˆì €ê°€ ì—†ìŠµë‹ˆë‹¤.";
 
     [Header("Sound")]
     [SerializeField] private bool playClickSound = true;
@@ -94,7 +94,7 @@ public class BattlePlayButton : MonoBehaviour
             if (checkMapSelected && !IsMapSelected())
             {
                 ShowWarning(mapNotSelectedMessage);
-                Debug.LogWarning("[BattlePlayButton] ¼±ÅÃµÈ Ã©ÅÍ/½ºÅ×ÀÌÁö°¡ ¾ø½À´Ï´Ù.");
+                Debug.LogWarning("[BattlePlayButton] ì„ íƒëœ ì±•í„°/ìŠ¤í…Œì´ì§€ê°€ ì—†ìŠµë‹ˆë‹¤.");
                 return;
             }
 
@@ -108,6 +108,9 @@ public class BattlePlayButton : MonoBehaviour
                 return;
             }
 
+            CommitRuntimeStateContributorsForBattleStart();
+            BattleRunAbandonService.CaptureLobbyLoadoutSnapshot(DataManager.Instance);
+
             await GameManager.Instance.StateMachine.ChangeState(GameStateType.Battle);
         }
         finally
@@ -116,6 +119,28 @@ public class BattlePlayButton : MonoBehaviour
 
             if (button != null)
                 button.interactable = true;
+        }
+    }
+
+    private void CommitRuntimeStateContributorsForBattleStart()
+    {
+        MonoBehaviour[] behaviours = FindObjectsByType<MonoBehaviour>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < behaviours.Length; i++)
+        {
+            if (behaviours[i] is not IRuntimeSaveStateContributor contributor)
+                continue;
+
+            try
+            {
+                contributor.CommitRuntimeStateForSave();
+            }
+            catch (System.Exception exception)
+            {
+                Debug.LogError($"[BattlePlayButton] Failed to commit runtime state before battle start. {exception}");
+            }
         }
     }
 
@@ -175,14 +200,14 @@ public class BattlePlayButton : MonoBehaviour
             if (currentCount < requiredCount)
             {
                 ShowWarning(FormatPartyNotFullMessage(currentCount, requiredCount));
-                Debug.LogWarning($"[BattlePlayButton] ÆÄÆ¼ ÀÎ¿øÀÌ ºÎÁ·ÇÕ´Ï´Ù. Current:{currentCount} / Required:{requiredCount}");
+                Debug.LogWarning($"[BattlePlayButton] íŒŒí‹° ì¸ì›ì´ ë¶€ì¡±í•©ë‹ˆë‹¤. Current:{currentCount} / Required:{requiredCount}");
                 return false;
             }
         }
         else if (currentCount <= 0)
         {
             ShowWarning(partyEmptyMessage);
-            Debug.LogWarning("[BattlePlayButton] ÆÄÆ¼¿¡ Ä³¸¯ÅÍ°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("[BattlePlayButton] íŒŒí‹°ì— ìºë¦­í„°ê°€ ì—†ìŠµë‹ˆë‹¤.");
             return false;
         }
 
@@ -209,7 +234,7 @@ public class BattlePlayButton : MonoBehaviour
     private string FormatPartyNotFullMessage(int currentCount, int requiredCount)
     {
         if (string.IsNullOrWhiteSpace(partyNotFullMessage))
-            return $"Ä³¸¯ÅÍ {requiredCount}¸íÀ» ¸ğµÎ Æí¼ºÇØ¾ß ÇÕ´Ï´Ù. ÇöÀç {currentCount}/{requiredCount}";
+            return $"ìºë¦­í„° {requiredCount}ëª…ì„ ëª¨ë‘ í¸ì„±í•´ì•¼ í•©ë‹ˆë‹¤. í˜„ì¬ {currentCount}/{requiredCount}";
 
         if (partyNotFullMessage.Contains("{0}") || partyNotFullMessage.Contains("{1}"))
             return string.Format(partyNotFullMessage, currentCount, requiredCount);
