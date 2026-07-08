@@ -145,24 +145,6 @@ public class BattleMapPanel : MonoBehaviour
         if (runtime == null || runtime.GeneratedNodes == null)
             return result;
 
-        if (runtime.CurrentNodeIndex < 0)
-        {
-            for (int i = 0; i < runtime.GeneratedNodes.Count; i++)
-            {
-                GeneratedMapNodeData node = runtime.GeneratedNodes[i];
-
-                if (node != null && node.Type == "Start")
-                    result.Add(node);
-            }
-
-            return result;
-        }
-
-        GeneratedMapNodeData currentNode = FindNodeByIndex(runtime.CurrentNodeIndex);
-
-        if (currentNode == null)
-            return result;
-
         for (int i = 0; i < runtime.GeneratedNodes.Count; i++)
         {
             GeneratedMapNodeData node = runtime.GeneratedNodes[i];
@@ -170,7 +152,7 @@ public class BattleMapPanel : MonoBehaviour
             if (node == null)
                 continue;
 
-            if (currentNode.NextNodeIndices.Contains(node.NodeIndex))
+            if (MapRuntimeProgressUtility.IsNodeClickableFromCurrentProgress(runtime, node))
                 result.Add(node);
         }
 

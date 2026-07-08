@@ -94,23 +94,16 @@ public class MapViewSpawner : MonoBehaviour
         if (node == null || runtime == null)
             return false;
 
-        if (runtime.CurrentNodeIndex < 0)
-            return node.Type == "Start";
+        bool canClick = MapRuntimeProgressUtility.IsNodeClickableFromCurrentProgress(runtime, node);
 
-        GeneratedMapNodeData currentNode = GetNodeData(
-            nodes,
-            runtime.CurrentNodeIndex
-        );
-
-        if (currentNode == null)
+        if (!canClick &&
+            runtime.CurrentNodeIndex >= 0 &&
+            MapRuntimeProgressUtility.FindCurrentNode(runtime) == null)
         {
             Debug.LogWarning(
                 $"[MapViewSpawner] CurrentNode not found / CurrentNodeIndex:{runtime.CurrentNodeIndex}"
             );
-            return false;
         }
-
-        bool canClick = currentNode.NextNodeIndices.Contains(node.NodeIndex);
 
         return canClick;
     }

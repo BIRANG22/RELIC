@@ -43,6 +43,38 @@ public class ResolutionManagerTests
     }
 
     [Test]
+    public void CalculateCanvasViewportLayout_WideResize_ScalesTargetScreenIntoViewport()
+    {
+        Rect viewport = ResolutionManager.CalculateLetterboxRect(3440, 1080, 1920, 1080);
+        ResolutionCanvasViewportLayout layout = ResolutionManager.CalculateCanvasViewportLayout(
+            new Vector2(1920f, 603f),
+            viewport,
+            1920,
+            1080);
+
+        Assert.That(layout.Size, Is.EqualTo(new Vector2(1920f, 1080f)));
+        Assert.That(layout.Scale, Is.EqualTo(0.558f).Within(0.001f));
+        Assert.That(layout.Size.x * layout.Scale, Is.EqualTo(viewport.width * 1920f).Within(0.001f));
+        Assert.That(layout.Size.y * layout.Scale, Is.LessThanOrEqualTo(viewport.height * 603f + 0.001f));
+    }
+
+    [Test]
+    public void CalculateCanvasViewportLayout_NarrowResize_ScalesTargetScreenIntoViewport()
+    {
+        Rect viewport = ResolutionManager.CalculateLetterboxRect(1024, 768, 1920, 1080);
+        ResolutionCanvasViewportLayout layout = ResolutionManager.CalculateCanvasViewportLayout(
+            new Vector2(1024f, 768f),
+            viewport,
+            1920,
+            1080);
+
+        Assert.That(layout.Size, Is.EqualTo(new Vector2(1920f, 1080f)));
+        Assert.That(layout.Scale, Is.EqualTo(0.533f).Within(0.001f));
+        Assert.That(layout.Size.x * layout.Scale, Is.EqualTo(viewport.width * 1024f).Within(0.001f));
+        Assert.That(layout.Size.y * layout.Scale, Is.EqualTo(viewport.height * 768f).Within(0.001f));
+    }
+
+    [Test]
     public void PlayerSettings_EnableResizableWindowForLetterboxedResize()
     {
         string projectSettings = File.ReadAllText("ProjectSettings/ProjectSettings.asset");

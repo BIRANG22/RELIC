@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
 
-public class SkillSettingPanel : MonoBehaviour
+public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 {
     [Header("Skill Slots")]
     [SerializeField] private SkillSlotButton[] skillSlotButtons;
@@ -911,6 +911,11 @@ public class SkillSettingPanel : MonoBehaviour
     }
 
     public void SaveBeforeBattle()
+    {
+        SaveCurrentSkillSetting();
+    }
+
+    public void CommitRuntimeStateForSave()
     {
         SaveCurrentSkillSetting();
     }

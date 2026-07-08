@@ -20,12 +20,15 @@ public class ResolutionManager : MonoBehaviour
     };
 
     private static ResolutionManager instance;
+    private static Color letterboxColor = Color.white;//레터박스 색
     private ResolutionLetterboxOverlay letterboxOverlay;
+    private readonly List<ResolutionCanvasViewportFitter> canvasViewportFitters = new();
     private int lastScreenWidth = -1;
     private int lastScreenHeight = -1;
 
     public static int CurrentResolutionIndex { get; private set; } = DefaultResolutionIndex;
     public static ResolutionOption CurrentResolution => SupportedResolutions[CurrentResolutionIndex];
+    public static Color LetterboxColor => letterboxColor;
 
     private void Awake()
     {
@@ -74,6 +77,14 @@ public class ResolutionManager : MonoBehaviour
             labels.Add(SupportedResolutions[i].Label);
 
         return labels;
+    }
+
+    public static void SetLetterboxColor(Color color)
+    {
+        letterboxColor = color;
+
+        if (instance != null && instance.letterboxOverlay != null)
+            instance.letterboxOverlay.SetColor(letterboxColor);
     }
 
     public static void ApplySavedResolution()
@@ -126,6 +137,41 @@ public class ResolutionManager : MonoBehaviour
         float height = screenAspect / targetAspect;
         float y = (1f - height) * 0.5f;
         return new Rect(0f, y, 1f, height);
+    }
+
+    public static ResolutionCanvasViewportLayout CalculateCanvasViewportLayout(
+        Vector2 canvasSize,
+        Rect viewport,
+        int targetWidth,
+        int targetHeight)
+    {
+        return CalculateCanvasViewportLayout(canvasSize, viewport, new Vector2(targetWidth, targetHeight));
+    }
+
+    public static ResolutionCanvasViewportLayout CalculateCanvasViewportLayout(
+        Vector2 canvasSize,
+        Rect viewport,
+        Vector2 targetSize)
+    {
+        if (canvasSize.x <= 0f || canvasSize.y <= 0f || targetSize.x <= 0f || targetSize.y <= 0f)
+            return new ResolutionCanvasViewportLayout(Vector2.zero, Vector2.zero, 1f);
+
+        Vector2 viewportSize = new(
+            Mathf.Max(0f, viewport.width * canvasSize.x),
+            Mathf.Max(0f, viewport.height * canvasSize.y));
+
+        float scale = Mathf.Min(viewportSize.x / targetSize.x, viewportSize.y / targetSize.y);
+        if (float.IsNaN(scale) || float.IsInfinity(scale) || scale <= 0f)
+            scale = 1f;
+
+        Vector2 position = new(
+            (viewport.xMin + viewport.width * 0.5f - 0.5f) * canvasSize.x,
+            (viewport.yMin + viewport.height * 0.5f - 0.5f) * canvasSize.y);
+
+        return new ResolutionCanvasViewportLayout(
+            position,
+            targetSize,
+            scale);
     }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -190,7 +236,8 @@ public class ResolutionManager : MonoBehaviour
             resolution.Height);
 
         ApplyCameraViewport(viewport);
-        EnsureLetterboxOverlay().Apply(viewport);
+        ApplyCanvasViewports(viewport);
+        EnsureLetterboxOverlay().Apply(viewport, letterboxColor);
     }
 
     private static void ApplyCameraViewport(Rect viewport)
@@ -230,6 +277,45 @@ public class ResolutionManager : MonoBehaviour
 
         return letterboxOverlay;
     }
+
+    private void ApplyCanvasViewports(Rect viewport)
+    {
+        Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        canvasViewportFitters.Clear();
+
+        for (int i = 0; i < canvases.Length; i++)
+        {
+            Canvas canvas = canvases[i];
+            if (!ShouldFitCanvas(canvas))
+                continue;
+
+            ResolutionCanvasViewportFitter fitter = canvas.GetComponent<ResolutionCanvasViewportFitter>();
+            if (fitter == null)
+                fitter = canvas.gameObject.AddComponent<ResolutionCanvasViewportFitter>();
+
+            canvasViewportFitters.Add(fitter);
+        }
+
+        for (int i = 0; i < canvasViewportFitters.Count; i++)
+            canvasViewportFitters[i].Apply(viewport, CurrentResolution.Width, CurrentResolution.Height);
+    }
+
+    private static bool ShouldFitCanvas(Canvas canvas)
+    {
+        if (canvas == null)
+            return false;
+
+        if (!canvas.isRootCanvas)
+            return false;
+
+        if (canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+            return false;
+
+        if (canvas.GetComponent<ResolutionLetterboxOverlay>() != null)
+            return false;
+
+        return true;
+    }
 }
 
 public readonly struct ResolutionOption
@@ -243,6 +329,20 @@ public readonly struct ResolutionOption
     {
         Width = width;
         Height = height;
+    }
+}
+
+public readonly struct ResolutionCanvasViewportLayout
+{
+    public readonly Vector2 Position;
+    public readonly Vector2 Size;
+    public readonly float Scale;
+
+    public ResolutionCanvasViewportLayout(Vector2 position, Vector2 size, float scale)
+    {
+        Position = position;
+        Size = size;
+        Scale = scale;
     }
 }
 
@@ -274,15 +374,25 @@ public sealed class ResolutionLetterboxOverlay : MonoBehaviour
         rightBar = EnsureBar("Right");
     }
 
-    public void Apply(Rect viewport)
+    public void Apply(Rect viewport, Color color)
     {
         if (topBar == null)
             Configure(DefaultSortingOrder);
+
+        SetColor(color);
 
         ApplyAnchors(topBar, new Vector2(0f, viewport.yMax), Vector2.one);
         ApplyAnchors(bottomBar, Vector2.zero, new Vector2(1f, viewport.yMin));
         ApplyAnchors(leftBar, new Vector2(0f, viewport.yMin), new Vector2(viewport.xMin, viewport.yMax));
         ApplyAnchors(rightBar, new Vector2(viewport.xMax, viewport.yMin), new Vector2(1f, viewport.yMax));
+    }
+
+    public void SetColor(Color color)
+    {
+        SetBarColor(topBar, color);
+        SetBarColor(bottomBar, color);
+        SetBarColor(leftBar, color);
+        SetBarColor(rightBar, color);
     }
 
     private RectTransform EnsureBar(string barName)
@@ -297,7 +407,7 @@ public sealed class ResolutionLetterboxOverlay : MonoBehaviour
         var rect = barObject.AddComponent<RectTransform>();
         var image = barObject.AddComponent<Image>();
 
-        image.color = Color.black;
+        image.color = ResolutionManager.LetterboxColor;
         image.raycastTarget = true;
 
         return rect;
@@ -309,5 +419,92 @@ public sealed class ResolutionLetterboxOverlay : MonoBehaviour
         rect.anchorMax = anchorMax;
         rect.offsetMin = Vector2.zero;
         rect.offsetMax = Vector2.zero;
+    }
+
+    private static void SetBarColor(RectTransform rect, Color color)
+    {
+        if (rect == null)
+            return;
+
+        Image image = rect.GetComponent<Image>();
+        if (image != null)
+            image.color = color;
+    }
+}
+
+public sealed class ResolutionCanvasViewportFitter : MonoBehaviour
+{
+    private const string ViewportObjectName = "Resolution Viewport";
+
+    private RectTransform viewportRoot;
+
+    public void Apply(Rect viewport, int targetWidth, int targetHeight)
+    {
+        EnsureViewportRoot();
+        MoveDirectChildrenIntoViewport();
+
+        RectTransform canvasRect = transform as RectTransform;
+        Vector2 canvasSize = canvasRect != null
+            ? canvasRect.rect.size
+            : new Vector2(Screen.width, Screen.height);
+        Vector2 targetSize = GetTargetContentSize(targetWidth, targetHeight);
+        ResolutionCanvasViewportLayout layout = ResolutionManager.CalculateCanvasViewportLayout(
+            canvasSize,
+            viewport,
+            targetSize);
+
+        viewportRoot.anchorMin = new Vector2(0.5f, 0.5f);
+        viewportRoot.anchorMax = new Vector2(0.5f, 0.5f);
+        viewportRoot.pivot = new Vector2(0.5f, 0.5f);
+        viewportRoot.anchoredPosition = layout.Position;
+        viewportRoot.sizeDelta = layout.Size;
+        viewportRoot.localScale = Vector3.one * layout.Scale;
+    }
+
+    private Vector2 GetTargetContentSize(int fallbackWidth, int fallbackHeight)
+    {
+        CanvasScaler scaler = GetComponent<CanvasScaler>();
+        if (scaler != null
+            && scaler.uiScaleMode == CanvasScaler.ScaleMode.ScaleWithScreenSize
+            && scaler.referenceResolution.x > 0f
+            && scaler.referenceResolution.y > 0f)
+        {
+            return scaler.referenceResolution;
+        }
+
+        return new Vector2(fallbackWidth, fallbackHeight);
+    }
+
+    private void EnsureViewportRoot()
+    {
+        if (viewportRoot != null)
+            return;
+
+        Transform existing = transform.Find(ViewportObjectName);
+        if (existing != null)
+            viewportRoot = existing as RectTransform;
+
+        if (viewportRoot == null)
+        {
+            var viewportObject = new GameObject(ViewportObjectName, typeof(RectTransform));
+            viewportObject.transform.SetParent(transform, false);
+            viewportRoot = viewportObject.GetComponent<RectTransform>();
+        }
+
+        viewportRoot.SetAsFirstSibling();
+        viewportRoot.localRotation = Quaternion.identity;
+        viewportRoot.anchoredPosition3D = Vector3.zero;
+    }
+
+    private void MoveDirectChildrenIntoViewport()
+    {
+        for (int i = transform.childCount - 1; i >= 0; i--)
+        {
+            Transform child = transform.GetChild(i);
+            if (child == null || child == viewportRoot)
+                continue;
+
+            child.SetParent(viewportRoot, false);
+        }
     }
 }

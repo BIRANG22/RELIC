@@ -379,6 +379,8 @@ public class BattleRewardPanelUI : MonoBehaviour
 
     private void FinishRewardFlow()
     {
+        MarkCurrentBattleNodeCleared();
+
         if (BattleRewardCollector.Instance != null)
             BattleRewardCollector.Instance.Clear();
 
@@ -402,6 +404,18 @@ public class BattleRewardPanelUI : MonoBehaviour
 
         if (mapViewSpawner != null)
             mapViewSpawner.Refresh();
+    }
+
+    private void MarkCurrentBattleNodeCleared()
+    {
+        if (DataManager.Instance == null || DataManager.Instance.MapRuntimeStore == null)
+            return;
+
+        MapRuntimeData runtime = DataManager.Instance.MapRuntimeStore.Get();
+        if (!MapRuntimeProgressUtility.MarkCurrentNodeCleared(runtime))
+            return;
+
+        DataManager.Instance.MapRuntimeStore.Set(runtime);
     }
 
     private void ShowRewardDetail(BattleRewardData reward)
