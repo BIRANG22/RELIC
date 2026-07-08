@@ -144,7 +144,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   animator: {fileID: 6250047314802340377}
-  idleStateName: New Animation
+  idleStateName: hit_select_idle
   moveStateName: 
   guardStateName: 
   hitStateName: 
@@ -1308,6 +1308,21 @@ MonoBehaviour:
   targetImage: {fileID: 0}
   targetSpriteRenderer: {fileID: 1223829301973526561}
   startState: 0
+  useAnimatorStates: 1
+  routeAssetCallsToActiveInstance: 1
+  targetAnimator: {fileID: 6250047314802340377}
+  animatorLayer: 0
+  animatorLayerName: Base Layer
+  selectIdleStateName: hit_select_idle
+  skillIdleStateName: hit_skill_idle
+  runeIdleStateName: hit_rune_idle
+  selectToRuneStateName: hit_select_to_rune
+  selectToRuneReverseStateName: hit_select_to_rune_reverse
+  selectToSkillStateName: hit_select_to_skill
+  selectToSkillReverseStateName: hit_select_to_skill_reverse
+  skillToRuneStateName: hit_skill_to_rune
+  skillToRuneReverseStateName: hit_skill_to_rune_reverse
+  transitionTimeoutSeconds: 3
   normalIdleSprites:
   - {fileID: 899417585, guid: 3779e3d44fda67d4ba4d74f8855e75cf, type: 3}
   - {fileID: -926976929, guid: 3779e3d44fda67d4ba4d74f8855e75cf, type: 3}
