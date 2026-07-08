@@ -27,16 +27,16 @@ public sealed class TMPKoreanGlyphPreloader : MonoBehaviour
     [SerializeField] private bool logResult = false;
 
     [Header("Editor Safety")]
-    [Tooltip("¿¡µğÅÍ ÇÃ·¹ÀÌ Áß ÇÁ·ÎÁ§Æ®¿¡ ÀúÀåµÈ TMP FontAsset(.asset)À» Á÷Á¢ ¼öÁ¤ÇÏÁö ¾Ê½À´Ï´Ù. ÄÑµÎ¸é NativeFormatImporter inconsistent result °æ°í¿Í ¼ø°£ ·ºÀ» ÁÙÀÏ ¼ö ÀÖ½À´Ï´Ù.")]
+    [Tooltip("ì—ë””í„° í”Œë ˆì´ ì¤‘ í”„ë¡œì íŠ¸ì— ì €ì¥ëœ TMP FontAsset(.asset)ì„ ì§ì ‘ ìˆ˜ì •í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. ì¼œë‘ë©´ NativeFormatImporter inconsistent result ê²½ê³ ì™€ ìˆœê°„ ë ‰ì„ ì¤„ì¼ ìˆ˜ ìˆìŠµë‹ˆë‹¤.")]
     [SerializeField] private bool preventEditorAssetModification = true;
 
-    [Tooltip("¿¡µğÅÍ ÇÃ·¹ÀÌ Áß ¾ÀÀÇ TMP_Text°¡ ¿øº» FontAsset ´ë½Å ·±Å¸ÀÓ º¹Á¦º»À» »ç¿ëÇÏ°Ô ÇÕ´Ï´Ù. ¹èÆ²¾À/½ºÅ³ ÅøÆÁÃ³·³ »õ TMP ÅØ½ºÆ®°¡ Ç¥½ÃµÉ ¶§ ¿øº» DungGeunMo SDF.assetÀÌ °»½ÅµÇ´Â ¹®Á¦¸¦ ÁÙÀÔ´Ï´Ù.")]
+    [Tooltip("ì—ë””í„° í”Œë ˆì´ ì¤‘ ì”¬ì˜ TMP_Textê°€ ì›ë³¸ FontAsset ëŒ€ì‹  ëŸ°íƒ€ì„ ë³µì œë³¸ì„ ì‚¬ìš©í•˜ê²Œ í•©ë‹ˆë‹¤. ë°°í‹€ì”¬/ìŠ¤í‚¬ íˆ´íŒì²˜ëŸ¼ ìƒˆ TMP í…ìŠ¤íŠ¸ê°€ í‘œì‹œë  ë•Œ ì›ë³¸ DungGeunMo SDF.assetì´ ê°±ì‹ ë˜ëŠ” ë¬¸ì œë¥¼ ì¤„ì…ë‹ˆë‹¤.")]
     [SerializeField] private bool useRuntimeFontClonesInEditor = true;
 
-    [Tooltip("¾À ·Îµå ÈÄ »õ·Î µîÀåÇÑ TMP_Text¿¡µµ ·±Å¸ÀÓ º¹Á¦ FontAssetÀ» ´Ù½Ã Àû¿ëÇÕ´Ï´Ù.")]
+    [Tooltip("ì”¬ ë¡œë“œ í›„ ìƒˆë¡œ ë“±ì¥í•œ TMP_Textì—ë„ ëŸ°íƒ€ì„ ë³µì œ FontAssetì„ ë‹¤ì‹œ ì ìš©í•©ë‹ˆë‹¤.")]
     [SerializeField] private bool replaceTextFontsOnSceneLoaded = true;
 
-    [Tooltip("½ºÅ³ ÅøÆÁ/ÆË¾÷Ã³·³ ÇÃ·¹ÀÌ Áß »ı¼ºµÇ´Â TMP_Textµµ ÁÖ±âÀûÀ¸·Î °Ë»çÇØ¼­ ¿øº» FontAssetÀ» ·±Å¸ÀÓ º¹Á¦º»À¸·Î ±³Ã¼ÇÕ´Ï´Ù.")]
+    [Tooltip("ìŠ¤í‚¬ íˆ´íŒ/íŒì—…ì²˜ëŸ¼ í”Œë ˆì´ ì¤‘ ìƒì„±ë˜ëŠ” TMP_Textë„ ì£¼ê¸°ì ìœ¼ë¡œ ê²€ì‚¬í•´ì„œ ì›ë³¸ FontAssetì„ ëŸ°íƒ€ì„ ë³µì œë³¸ìœ¼ë¡œ êµì²´í•©ë‹ˆë‹¤.")]
     [SerializeField] private bool scanRuntimeTextsInEditor = true;
 
     [SerializeField, Min(0.05f)] private float runtimeTextScanInterval = 0.25f;
@@ -131,7 +131,7 @@ public sealed class TMPKoreanGlyphPreloader : MonoBehaviour
         if (fontToUse.atlasPopulationMode == AtlasPopulationMode.Static)
         {
             if (logResult)
-                Debug.Log($"[TMPKoreanGlyphPreloader] '{fontToUse.name}'Àº Static Font AssetÀÌ¶ó ·±Å¸ÀÓ ±Û¸®ÇÁ Ãß°¡¸¦ °Ç³Ê¶İ´Ï´Ù.", fontToUse);
+                Debug.Log($"[TMPKoreanGlyphPreloader] '{fontToUse.name}'ì€ Static Font Assetì´ë¼ ëŸ°íƒ€ì„ ê¸€ë¦¬í”„ ì¶”ê°€ë¥¼ ê±´ë„ˆëœë‹ˆë‹¤.", fontToUse);
 
             return;
         }
@@ -142,8 +142,8 @@ public sealed class TMPKoreanGlyphPreloader : MonoBehaviour
             if (logResult)
             {
                 Debug.Log(
-                    $"[TMPKoreanGlyphPreloader] ¿¡µğÅÍ ÇÃ·¹ÀÌ Áß ÇÁ·ÎÁ§Æ® ¿øº» FontAsset '{fontToUse.name}' ¼öÁ¤À» °Ç³Ê¶İ´Ï´Ù. " +
-                    "¿øº» TMP FontAssetÀ» µ¿ÀûÀ¸·Î ¼öÁ¤ÇÏ¸é NativeFormatImporter inconsistent result °æ°í¿Í ¼ø°£ ·ºÀÌ ¹ß»ıÇÒ ¼ö ÀÖ½À´Ï´Ù.",
+                    $"[TMPKoreanGlyphPreloader] ì—ë””í„° í”Œë ˆì´ ì¤‘ í”„ë¡œì íŠ¸ ì›ë³¸ FontAsset '{fontToUse.name}' ìˆ˜ì •ì„ ê±´ë„ˆëœë‹ˆë‹¤. " +
+                    "ì›ë³¸ TMP FontAssetì„ ë™ì ìœ¼ë¡œ ìˆ˜ì •í•˜ë©´ NativeFormatImporter inconsistent result ê²½ê³ ì™€ ìˆœê°„ ë ‰ì´ ë°œìƒí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.",
                     fontToUse);
             }
 
@@ -158,13 +158,13 @@ public sealed class TMPKoreanGlyphPreloader : MonoBehaviour
             if (logResult)
             {
                 int missingCount = string.IsNullOrEmpty(missingCharacters) ? 0 : missingCharacters.Length;
-                Debug.Log($"[TMPKoreanGlyphPreloader] '{fontToUse.name}' ±Û¸®ÇÁ ÇÁ¸®·Îµå ¿Ï·á. Missing Count: {missingCount}", fontToUse);
+                Debug.Log($"[TMPKoreanGlyphPreloader] '{fontToUse.name}' ê¸€ë¦¬í”„ í”„ë¦¬ë¡œë“œ ì™„ë£Œ. Missing Count: {missingCount}", fontToUse);
             }
         }
         catch (System.Exception exception)
         {
             if (logResult)
-                Debug.LogWarning($"[TMPKoreanGlyphPreloader] '{fontToUse.name}' ±Û¸®ÇÁ ÇÁ¸®·Îµå Áß ¿¹¿Ü°¡ ¹ß»ıÇß½À´Ï´Ù. {exception.Message}", fontToUse);
+                Debug.LogWarning($"[TMPKoreanGlyphPreloader] '{fontToUse.name}' ê¸€ë¦¬í”„ í”„ë¦¬ë¡œë“œ ì¤‘ ì˜ˆì™¸ê°€ ë°œìƒí–ˆìŠµë‹ˆë‹¤. {exception.Message}", fontToUse);
         }
     }
 
@@ -250,9 +250,8 @@ public sealed class TMPKoreanGlyphPreloader : MonoBehaviour
             if (!text.gameObject.scene.IsValid())
                 continue;
 
-            TMP_FontAsset originalFont = GetOriginalFontFromRuntimeClone(text.font);
-            if (originalFont != null)
-                text.font = originalFont;
+            if (IsRuntimeFontClone(text.font))
+                continue;
 
             TMP_FontAsset clone = GetOrCreateRuntimeClone(text.font);
             if (clone == null || text.font == clone)
@@ -264,7 +263,12 @@ public sealed class TMPKoreanGlyphPreloader : MonoBehaviour
         }
 
         if (logResult && replacedCount > 0)
-            Debug.Log($"[TMPKoreanGlyphPreloader] TMP_Text {replacedCount}°³ÀÇ FontAssetÀ» ¿¡µğÅÍ ·±Å¸ÀÓ º¹Á¦º»À¸·Î ±³Ã¼Çß½À´Ï´Ù.", this);
+            Debug.Log($"[TMPKoreanGlyphPreloader] TMP_Text {replacedCount}ê°œì˜ FontAssetì„ ì—ë””í„° ëŸ°íƒ€ì„ ë³µì œë³¸ìœ¼ë¡œ êµì²´í–ˆìŠµë‹ˆë‹¤.", this);
+    }
+
+    private bool IsRuntimeFontClone(TMP_FontAsset font)
+    {
+        return GetOriginalFontFromRuntimeClone(font) != null;
     }
 
     private TMP_FontAsset GetOriginalFontFromRuntimeClone(TMP_FontAsset possibleClone)

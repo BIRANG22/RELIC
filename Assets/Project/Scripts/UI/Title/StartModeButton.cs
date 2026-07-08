@@ -1,3 +1,4 @@
+using Relic.Gameplay.Data;
 using UnityEngine;
 
 public class StartModeButton : MonoBehaviour
@@ -24,9 +25,7 @@ public class StartModeButton : MonoBehaviour
         if (DataManager.Instance == null)
             return;
 
-        DataManager.Instance.MapRuntimeStore?.Clear();
-        DataManager.Instance.BattleRuntimeStore?.Clear();
-        DataManager.Instance.CharacterRuntimeStore?.ResetUpgradedSkillVariantsToBase();
+        BattleRunAbandonService.AbandonCurrentRun(DataManager.Instance);
     }
 
     private void PlayClickSound()
