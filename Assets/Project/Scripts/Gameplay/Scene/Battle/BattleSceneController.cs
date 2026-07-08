@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -71,8 +72,12 @@ public class BattleSceneController : MonoBehaviour
     {
         InitializeRuntime();
         CloseAllRooms();
-        OpenMapPanelImmediate();
-        PlayMapIntroTextOnStart();
+
+        if (!TryOpenUnclearedCurrentNodeOnStart())
+        {
+            OpenMapPanelImmediate();
+            PlayMapIntroTextOnStart();
+        }
 
         lastActiveRoomLastFrame = FindActiveRoomObject();
         wasAnyRoomActiveLastFrame = lastActiveRoomLastFrame != null;
@@ -198,6 +203,36 @@ public class BattleSceneController : MonoBehaviour
 
         if (battleMapPanel.gameObject.activeSelf)
             battleMapPanel.gameObject.SetActive(false);
+    }
+
+    private bool TryOpenUnclearedCurrentNodeOnStart()
+    {
+        if (!MapRuntimeProgressUtility.HasUnclearedCurrentNode(mapRuntime))
+            return false;
+
+        GeneratedMapNodeData currentNode = MapRuntimeProgressUtility.FindCurrentNode(mapRuntime);
+        if (currentNode == null)
+            return false;
+
+        mapRuntime.CurrentMapId = currentNode.MapId;
+        mapRuntime.CurrentNodeIndex = currentNode.NodeIndex;
+
+        string nodeKey = currentNode.NodeIndex.ToString();
+        mapRuntime.VisitedMapIds ??= new List<string>();
+        if (!mapRuntime.VisitedMapIds.Contains(nodeKey))
+            mapRuntime.VisitedMapIds.Add(nodeKey);
+
+        mapRuntimeStore.Set(mapRuntime);
+
+        Debug.Log(
+            $"[BattleSceneController] Restore uncleared map node: " +
+            $"{currentNode.MapId} / Node:{currentNode.NodeIndex} / {currentNode.Type}"
+        );
+
+        HideMapPanelImmediate();
+        HandleSelectedMap(currentNode);
+        PlayPendingRoomIntroText();
+        return true;
     }
 
     public async void OnMapNodeSelected(GeneratedMapNodeData nodeData)

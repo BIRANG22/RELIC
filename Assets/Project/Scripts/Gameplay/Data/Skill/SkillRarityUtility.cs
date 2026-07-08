@@ -38,6 +38,9 @@ namespace Relic.Gameplay.Data
 
         public static bool IsBaseSkillVariant(string skillId)
         {
+            if (IsUnpairedNumberedSkill(skillId))
+                return true;
+
             if (!TryGetTrailingNumber(skillId, out int number))
                 return true;
 
@@ -46,6 +49,9 @@ namespace Relic.Gameplay.Data
 
         public static bool IsUpgradeSkillVariant(string skillId)
         {
+            if (IsUnpairedNumberedSkill(skillId))
+                return false;
+
             return TryGetTrailingNumber(skillId, out int number) && number % 2 == 0;
         }
 
@@ -69,6 +75,10 @@ namespace Relic.Gameplay.Data
                 return false;
 
             skillId = skillId.Trim();
+
+            if (IsUnpairedNumberedSkill(skillId))
+                return false;
+
             int underscoreIndex = skillId.LastIndexOf('_');
 
             if (underscoreIndex < 0 || underscoreIndex >= skillId.Length - 1)
@@ -119,6 +129,16 @@ namespace Relic.Gameplay.Data
 
             string numberText = id.Substring(underscoreIndex + 1);
             return int.TryParse(numberText, out number);
+        }
+
+        private static bool IsUnpairedNumberedSkill(string skillId)
+        {
+            if (string.IsNullOrWhiteSpace(skillId))
+                return false;
+
+            string normalizedSkillId = skillId.Trim();
+            return normalizedSkillId.StartsWith("S_Passive_", StringComparison.OrdinalIgnoreCase) ||
+                   normalizedSkillId.StartsWith("S_Unique_", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

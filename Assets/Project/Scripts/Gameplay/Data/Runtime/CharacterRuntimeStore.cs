@@ -58,14 +58,17 @@ namespace Relic.Gameplay.Data
                 if (data == null)
                     continue;
 
-                data.PassiveSkillId = ConvertUpgradeVariantToBase(data.PassiveSkillId);
-                data.UniqueSkillId = ConvertUpgradeVariantToBase(data.UniqueSkillId);
                 data.AbilitySkillId = ConvertUpgradeVariantToBase(data.AbilitySkillId);
 
                 if (data.EquippedSkillIds != null)
                 {
                     for (int i = 0; i < data.EquippedSkillIds.Length; i++)
+                    {
+                        if (i == 0)
+                            continue;
+
                         data.EquippedSkillIds[i] = ConvertUpgradeVariantToBase(data.EquippedSkillIds[i]);
+                    }
                 }
             }
         }

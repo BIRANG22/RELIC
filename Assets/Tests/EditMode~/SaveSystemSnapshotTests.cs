@@ -4,6 +4,37 @@ using Relic.Gameplay.Data;
 public class SaveSystemSnapshotTests
 {
     [Test]
+    public void ResetUpgradedSkillVariantsToBase_KeepsSavedPassiveAndUniqueAlternates()
+    {
+        var store = new CharacterRuntimeStore();
+        var character = new CharacterRuntimeData
+        {
+            CharacterId = "char_a",
+            PassiveSkillId = "S_Passive_02",
+            UniqueSkillId = "S_Unique_02",
+            AbilitySkillId = "S_Ability_04",
+            EquippedSkillIds = new[]
+            {
+                "S_Unique_02",
+                "S_Ability_04",
+                "S_Public_04",
+                ""
+            }
+        };
+
+        store.AddOrUpdate(character);
+
+        store.ResetUpgradedSkillVariantsToBase();
+
+        Assert.That(character.PassiveSkillId, Is.EqualTo("S_Passive_02"));
+        Assert.That(character.UniqueSkillId, Is.EqualTo("S_Unique_02"));
+        Assert.That(character.EquippedSkillIds[0], Is.EqualTo("S_Unique_02"));
+        Assert.That(character.AbilitySkillId, Is.EqualTo("S_Ability_03"));
+        Assert.That(character.EquippedSkillIds[1], Is.EqualTo("S_Ability_03"));
+        Assert.That(character.EquippedSkillIds[2], Is.EqualTo("S_Public_03"));
+    }
+
+    [Test]
     public void CreateSaveDataSnapshot_PreservesPartyLoadoutInventoryRelicsAndMapProgress()
     {
         var partyStore = new PartyRuntimeStore();
@@ -81,5 +112,54 @@ public class SaveSystemSnapshotTests
         Assert.That(saveData.Characters[0].EquippedRelicIds[0], Is.EqualTo("relic_a"));
         Assert.That(saveData.Battle.SkillInventoryIds[0], Is.EqualTo("skill_inventory_a"));
         Assert.That(saveData.Map.CurrentMapId, Is.EqualTo("map_elite_03"));
+    }
+
+    [Test]
+    public void CanContinueBattle_ReturnsTrueWhenSavedMapAndBattleRunsAreInitialized()
+    {
+        GameSaveData saveData = SaveSystem.CreateSaveDataSnapshot(
+            null,
+            new PartyRuntimeStore(),
+            null,
+            null,
+            new MapRuntimeData
+            {
+                SelectedChapterId = "chapter_1",
+                CurrentStage = "stage_2",
+                CurrentMapId = "map_elite_03",
+                CurrentNodeIndex = 8,
+                CurrentSceneName = SceneName.Battle,
+                IsRunInitialized = true
+            },
+            new BattleRuntimeData
+            {
+                IsBattleRunInitialized = true
+            },
+            SceneName.Battle,
+            GameMode.SingleStory);
+
+        Assert.That(SaveSystem.CanContinueBattle(saveData), Is.True);
+    }
+
+    [Test]
+    public void CanContinueBattle_ReturnsFalseWhenSavedBattleRunIsMissing()
+    {
+        GameSaveData saveData = SaveSystem.CreateSaveDataSnapshot(
+            null,
+            new PartyRuntimeStore(),
+            null,
+            null,
+            new MapRuntimeData
+            {
+                SelectedChapterId = "chapter_1",
+                CurrentStage = "stage_2",
+                CurrentSceneName = SceneName.Battle,
+                IsRunInitialized = true
+            },
+            null,
+            SceneName.Battle,
+            GameMode.SingleStory);
+
+        Assert.That(SaveSystem.CanContinueBattle(saveData), Is.False);
     }
 }

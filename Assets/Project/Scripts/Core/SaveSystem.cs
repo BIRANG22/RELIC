@@ -25,6 +25,14 @@ public class SaveSystem : Singleton<SaveSystem>
         return File.Exists(SaveFilePath);
     }
 
+    public bool HasBattleContinueSave()
+    {
+        if (!HasSaveFile())
+            return false;
+
+        return CanContinueBattle(ReadSaveData());
+    }
+
     public bool SaveCurrentProgress()
     {
         if (DataManager.Instance == null)
@@ -32,6 +40,8 @@ public class SaveSystem : Singleton<SaveSystem>
             Debug.LogWarning("[SaveSystem] DataManager is not ready. Progress was not saved.");
             return false;
         }
+
+        CommitRuntimeStateContributorsForSave();
 
         GameSaveData saveData = CreateSaveData();
         return WriteSaveData(saveData);
@@ -44,6 +54,19 @@ public class SaveSystem : Singleton<SaveSystem>
 
         GameSaveData saveData = ReadSaveData();
         if (saveData == null)
+            return false;
+
+        ApplySaveData(saveData);
+        return true;
+    }
+
+    public bool TryLoadBattleContinueProgress()
+    {
+        if (!HasSaveFile())
+            return false;
+
+        GameSaveData saveData = ReadSaveData();
+        if (!CanContinueBattle(saveData))
             return false;
 
         ApplySaveData(saveData);
@@ -117,6 +140,29 @@ public class SaveSystem : Singleton<SaveSystem>
         return saveData;
     }
 
+    public static bool CanContinueBattle(GameSaveData saveData)
+    {
+        if (saveData == null)
+            return false;
+
+        MapRuntimeData map = saveData.Map;
+        BattleRuntimeData battle = saveData.Battle;
+
+        if (map == null || battle == null)
+            return false;
+
+        if (!map.IsRunInitialized || !battle.IsBattleRunInitialized)
+            return false;
+
+        if (string.IsNullOrWhiteSpace(map.SelectedChapterId) ||
+            string.IsNullOrWhiteSpace(map.CurrentStage))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     private bool WriteSaveData(GameSaveData saveData)
     {
         try
@@ -168,6 +214,28 @@ public class SaveSystem : Singleton<SaveSystem>
         string directory = Path.GetDirectoryName(SaveFilePath);
         if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             Directory.CreateDirectory(directory);
+    }
+
+    private static void CommitRuntimeStateContributorsForSave()
+    {
+        MonoBehaviour[] behaviours = FindObjectsByType<MonoBehaviour>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < behaviours.Length; i++)
+        {
+            if (behaviours[i] is not IRuntimeSaveStateContributor contributor)
+                continue;
+
+            try
+            {
+                contributor.CommitRuntimeStateForSave();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[SaveSystem] Failed to commit runtime save state from {behaviours[i].GetType().Name}. {ex}");
+            }
+        }
     }
 
     private static PartyRuntimeData BuildPartyRuntimeData(PartyRuntimeStore partyStore)
@@ -353,4 +421,9 @@ public class GameSaveData
 
     public List<CharacterRuntimeData> Characters = new();
     public List<SkillRuntimeData> Skills = new();
+}
+
+public interface IRuntimeSaveStateContributor
+{
+    void CommitRuntimeStateForSave();
 }
