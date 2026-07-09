@@ -374,7 +374,16 @@ public class BattleTimelineController : MonoBehaviour
 
     public void SelectCharacter(CharacterRuntimeData runtimeData)
     {
+        bool isChangingCharacter =
+            runtimeData != null &&
+            (selectedCharacter == null ||
+             selectedCharacter.CharacterId != runtimeData.CharacterId);
+
         selectedCharacter = runtimeData;
+
+        if (isChangingCharacter)
+            TryAutoSelectSlotForCharacter(runtimeData);
+
         ApplySelectedCharacterScaleFeedback(runtimeData);
         TryFocusCameraOnSelectedCharacter(runtimeData);
     }
@@ -541,6 +550,17 @@ public class BattleTimelineController : MonoBehaviour
             return;
         }
 
+        SetActiveTimelineSlot(slotIndex, true);
+    }
+
+    private bool SetActiveTimelineSlot(int slotIndex, bool tryStartReservation)
+    {
+        if (reserveSlots == null || slotIndex < 0 || slotIndex >= reserveSlots.Length)
+            return false;
+
+        if (reserveSlots[slotIndex] == null)
+            return false;
+
         int previousSlotIndex = activeSlotIndex;
         activeSlotIndex = slotIndex;
 
@@ -548,7 +568,89 @@ public class BattleTimelineController : MonoBehaviour
 
         RefreshSelectedSlotValueText();
         PlaySelectedSlotEffect(previousSlotIndex, activeSlotIndex);
-        TryStartSkillReservation();
+
+        if (tryStartReservation)
+            TryStartSkillReservation();
+
+        return true;
+    }
+
+    private bool TryAutoSelectSlotForCharacter(CharacterRuntimeData runtimeData)
+    {
+        if (runtimeData == null)
+            return false;
+
+        if (!CanAutoSelectSlotForCharacter())
+            return false;
+
+        TimelineAutoSlotState[] slotStates = BuildAutoSlotStates(runtimeData);
+        int targetSlotIndex =
+            TimelineAutoSlotSelectionUtility.FindBestSlot(slotStates, activeSlotIndex);
+
+        if (targetSlotIndex < 0 || targetSlotIndex == activeSlotIndex)
+            return false;
+
+        return SetActiveTimelineSlot(targetSlotIndex, false);
+    }
+
+    private bool CanAutoSelectSlotForCharacter()
+    {
+        if (isSlotSelectionLocked)
+            return false;
+
+        if (reserveSlots == null || reserveSlots.Length <= 0)
+            return false;
+
+        if (turnExecutor == null)
+            turnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
+
+        if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
+            return false;
+
+        return true;
+    }
+
+    private TimelineAutoSlotState[] BuildAutoSlotStates(CharacterRuntimeData runtimeData)
+    {
+        if (reserveSlots == null)
+            return System.Array.Empty<TimelineAutoSlotState>();
+
+        TimelineAutoSlotState[] result = new TimelineAutoSlotState[reserveSlots.Length];
+        string characterId = runtimeData != null ? runtimeData.CharacterId : null;
+
+        for (int i = 0; i < reserveSlots.Length; i++)
+        {
+            ReserveTurnSlotUI slot = reserveSlots[i];
+
+            result[i] = new TimelineAutoSlotState(
+                slot != null,
+                slot != null && slot.CommandCount <= 0,
+                slot != null && slot.CanAcceptCharacter(runtimeData),
+                CanAddPlayerCommandToSlot(i),
+                HasPlayerCommandForCharacter(slot, characterId)
+            );
+        }
+
+        return result;
+    }
+
+    private bool HasPlayerCommandForCharacter(ReserveTurnSlotUI slot, string characterId)
+    {
+        if (slot == null || slot.Commands == null || string.IsNullOrWhiteSpace(characterId))
+            return false;
+
+        for (int i = 0; i < slot.Commands.Count; i++)
+        {
+            PlayerReservedCommand command = slot.Commands[i];
+
+            if (command == null || command.UserRuntime == null)
+                continue;
+
+            if (command.UserRuntime.CharacterId == characterId)
+                return true;
+        }
+
+        return false;
     }
 
     public void ClearSelectedSlotSelection()
@@ -3706,4 +3808,99 @@ public class BattleTimelineController : MonoBehaviour
         public PlayerReservedCommand Command { get; }
     }
 
+}
+
+public readonly struct TimelineAutoSlotState
+{
+    public TimelineAutoSlotState(
+        bool exists,
+        bool isEmpty,
+        bool canAcceptCharacter,
+        bool canAddCommand,
+        bool hasSelectedCharacterCommand)
+    {
+        Exists = exists;
+        IsEmpty = isEmpty;
+        CanAcceptCharacter = canAcceptCharacter;
+        CanAddCommand = canAddCommand;
+        HasSelectedCharacterCommand = hasSelectedCharacterCommand;
+    }
+
+    public bool Exists { get; }
+    public bool IsEmpty { get; }
+    public bool CanAcceptCharacter { get; }
+    public bool CanAddCommand { get; }
+    public bool HasSelectedCharacterCommand { get; }
+
+    public bool CanUseAsEmptySlot =>
+        Exists && IsEmpty && CanAcceptCharacter && CanAddCommand;
+
+    public bool CanUseAsSelectedCharacterSlot =>
+        Exists && !IsEmpty && CanAcceptCharacter && CanAddCommand && HasSelectedCharacterCommand;
+}
+
+public static class TimelineAutoSlotSelectionUtility
+{
+    public static int FindBestSlot(IReadOnlyList<TimelineAutoSlotState> slots, int currentSlotIndex)
+    {
+        if (slots == null || slots.Count <= 0)
+            return -1;
+
+        int safeCurrentSlotIndex = currentSlotIndex >= 0 && currentSlotIndex < slots.Count
+            ? currentSlotIndex
+            : -1;
+
+        int beforeCurrent = FindFirstEmptySlot(slots, 0, safeCurrentSlotIndex - 1);
+        if (beforeCurrent >= 0)
+            return beforeCurrent;
+
+        if (safeCurrentSlotIndex >= 0 && slots[safeCurrentSlotIndex].CanUseAsEmptySlot)
+            return safeCurrentSlotIndex;
+
+        int afterCurrentStart = safeCurrentSlotIndex >= 0
+            ? safeCurrentSlotIndex + 1
+            : 0;
+        int afterCurrent = FindFirstEmptySlot(slots, afterCurrentStart, slots.Count - 1);
+        if (afterCurrent >= 0)
+            return afterCurrent;
+
+        return FindFirstSelectedCharacterSlot(slots);
+    }
+
+    private static int FindFirstEmptySlot(
+        IReadOnlyList<TimelineAutoSlotState> slots,
+        int startIndex,
+        int endIndex)
+    {
+        if (slots == null || slots.Count <= 0)
+            return -1;
+
+        int safeStartIndex = Mathf.Clamp(startIndex, 0, slots.Count - 1);
+        int safeEndIndex = Mathf.Clamp(endIndex, -1, slots.Count - 1);
+
+        if (safeEndIndex < safeStartIndex)
+            return -1;
+
+        for (int i = safeStartIndex; i <= safeEndIndex; i++)
+        {
+            if (slots[i].CanUseAsEmptySlot)
+                return i;
+        }
+
+        return -1;
+    }
+
+    private static int FindFirstSelectedCharacterSlot(IReadOnlyList<TimelineAutoSlotState> slots)
+    {
+        if (slots == null)
+            return -1;
+
+        for (int i = 0; i < slots.Count; i++)
+        {
+            if (slots[i].CanUseAsSelectedCharacterSlot)
+                return i;
+        }
+
+        return -1;
+    }
 }
