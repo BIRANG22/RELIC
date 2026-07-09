@@ -1211,8 +1211,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 33c392ea8bf721f4f9b83ea336edc598, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  useVirtualYOffset: 0
-  virtualYOffset: 0
+  useVirtualYOffset: 1
+  virtualYOffset: -2
   sortingOrderOffset: 0
   yMultiplier: 100
 --- !u!114 &1632123503877066924
