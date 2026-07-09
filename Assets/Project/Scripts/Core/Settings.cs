@@ -21,3 +21,28 @@ public class Settings : Singleton<Settings>
         PlayerPrefs.Save();
     }
 }
+
+public static class TutorialSettings
+{
+    public const string ShowTutorialPrefsKey = "Relic.ShowTutorial";
+
+    private const int ShowTutorialValue = 1;
+    private const int HideTutorialValue = 0;
+
+    public static bool ShouldShowTutorial =>
+        PlayerPrefs.GetInt(ShowTutorialPrefsKey, ShowTutorialValue) == ShowTutorialValue;
+
+    public static void SetShouldShowTutorial(bool shouldShowTutorial)
+    {
+        PlayerPrefs.SetInt(
+            ShowTutorialPrefsKey,
+            shouldShowTutorial ? ShowTutorialValue : HideTutorialValue);
+
+        PlayerPrefs.Save();
+    }
+
+    public static void MarkTutorialShown()
+    {
+        SetShouldShowTutorial(false);
+    }
+}

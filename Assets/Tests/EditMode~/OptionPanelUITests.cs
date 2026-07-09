@@ -11,6 +11,17 @@ using UnityEngine.UI;
 public class OptionPanelUITests
 {
     private readonly List<GameObject> createdObjects = new();
+    private bool hadTutorialPreference;
+    private int originalTutorialPreference;
+
+    [SetUp]
+    public void SetUp()
+    {
+        hadTutorialPreference = PlayerPrefs.HasKey(TutorialSettings.ShowTutorialPrefsKey);
+        originalTutorialPreference = PlayerPrefs.GetInt(TutorialSettings.ShowTutorialPrefsKey, 1);
+        PlayerPrefs.DeleteKey(TutorialSettings.ShowTutorialPrefsKey);
+        PlayerPrefs.Save();
+    }
 
     [TearDown]
     public void TearDown()
@@ -32,6 +43,13 @@ public class OptionPanelUITests
         }
 
         createdObjects.Clear();
+
+        if (hadTutorialPreference)
+            PlayerPrefs.SetInt(TutorialSettings.ShowTutorialPrefsKey, originalTutorialPreference);
+        else
+            PlayerPrefs.DeleteKey(TutorialSettings.ShowTutorialPrefsKey);
+
+        PlayerPrefs.Save();
     }
 
     [UnityTest]
@@ -89,7 +107,67 @@ public class OptionPanelUITests
         Assert.That(toastRect.anchoredPosition, Is.EqualTo(Vector2.zero));
     }
 
+    [UnityTest]
+    public IEnumerator ShowControl_ActivatesControlContentAndSavesTutorialToggle()
+    {
+        TutorialSettings.SetShouldShowTutorial(false);
+        OptionPanelUI panel = CreateOptionPanel(
+            out GameObject soundContent,
+            out GameObject languageContent,
+            out GameObject resolutionContent,
+            out _,
+            out GameObject controlContent,
+            out Toggle tutorialToggle);
+
+        panel.ShowControl();
+
+        Assert.That(soundContent.activeSelf, Is.False);
+        Assert.That(languageContent.activeSelf, Is.False);
+        Assert.That(resolutionContent.activeSelf, Is.False);
+        Assert.That(controlContent.activeSelf, Is.True);
+        Assert.That(tutorialToggle.isOn, Is.False);
+
+        tutorialToggle.isOn = true;
+        yield return null;
+
+        Assert.That(TutorialSettings.ShouldShowTutorial, Is.True);
+    }
+
+    [Test]
+    public void TutorialSettings_DefaultsToShowingTutorialUntilFirstShown()
+    {
+        Assert.That(TutorialSettings.ShouldShowTutorial, Is.True);
+    }
+
+    [Test]
+    public void TutorialSettings_MarkTutorialShownDisablesFutureTutorial()
+    {
+        TutorialSettings.SetShouldShowTutorial(true);
+
+        TutorialSettings.MarkTutorialShown();
+
+        Assert.That(TutorialSettings.ShouldShowTutorial, Is.False);
+        Assert.That(PlayerPrefs.GetInt(TutorialSettings.ShowTutorialPrefsKey), Is.EqualTo(0));
+    }
+
     private OptionPanelUI CreateOptionPanel(out GameObject resolutionContent, out TMP_Dropdown dropdown)
+    {
+        return CreateOptionPanel(
+            out _,
+            out _,
+            out resolutionContent,
+            out dropdown,
+            out _,
+            out _);
+    }
+
+    private OptionPanelUI CreateOptionPanel(
+        out GameObject soundContent,
+        out GameObject languageContent,
+        out GameObject resolutionContent,
+        out TMP_Dropdown dropdown,
+        out GameObject controlContent,
+        out Toggle tutorialToggle)
     {
         GameObject root = Track(new GameObject("OptionPanelRoot"));
         root.SetActive(false);
@@ -104,10 +182,10 @@ public class OptionPanelUITests
 
         root.transform.SetParent(canvasObject.transform, false);
 
-        GameObject soundContent = new("SoundContent");
+        soundContent = new GameObject("SoundContent");
         soundContent.transform.SetParent(root.transform, false);
 
-        GameObject languageContent = new("LanguageContent");
+        languageContent = new GameObject("LanguageContent");
         languageContent.transform.SetParent(root.transform, false);
 
         resolutionContent = new GameObject("ResolutionContent");
@@ -115,11 +193,17 @@ public class OptionPanelUITests
 
         dropdown = CreateDropdown(resolutionContent.transform);
 
+        controlContent = new GameObject("ControlContent");
+        controlContent.transform.SetParent(root.transform, false);
+        tutorialToggle = CreateToggle(controlContent.transform);
+
         OptionPanelUI panel = root.AddComponent<OptionPanelUI>();
         SetPrivateField(panel, "soundContent", soundContent);
         SetPrivateField(panel, "languageContent", languageContent);
         SetPrivateField(panel, "resolutionContent", resolutionContent);
         SetPrivateField(panel, "resolutionDropdown", dropdown);
+        SetPrivateField(panel, "controlContent", controlContent);
+        SetPrivateField(panel, "tutorialToggle", tutorialToggle);
 
         root.SetActive(true);
         return panel;
@@ -173,6 +257,25 @@ public class OptionPanelUITests
         itemTextRect.sizeDelta = Vector2.zero;
 
         return templateRect;
+    }
+
+    private Toggle CreateToggle(Transform parent)
+    {
+        GameObject toggleObject = new("TutorialToggle", typeof(RectTransform), typeof(Toggle));
+        toggleObject.transform.SetParent(parent, false);
+
+        GameObject backgroundObject = new("Background", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        backgroundObject.transform.SetParent(toggleObject.transform, false);
+        Image background = backgroundObject.GetComponent<Image>();
+
+        GameObject checkmarkObject = new("Checkmark", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        checkmarkObject.transform.SetParent(backgroundObject.transform, false);
+        Image checkmark = checkmarkObject.GetComponent<Image>();
+
+        Toggle toggle = toggleObject.GetComponent<Toggle>();
+        toggle.targetGraphic = background;
+        toggle.graphic = checkmark;
+        return toggle;
     }
 
     private TextMeshProUGUI CreateText(string name, Transform parent)
