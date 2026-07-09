@@ -269,6 +269,24 @@ public class CharPick : MonoBehaviour
         ResetPendingSelectionFromRuntime();
     }
 
+    public void ShowCurrentPreviewNormal()
+    {
+        if (TryGetCurrentPreviewAnimator(out ButtonResponsiveSpriteAnimator animator))
+            animator.ShowNormal();
+    }
+
+    public void ShowCurrentPreviewSkill()
+    {
+        if (TryGetCurrentPreviewAnimator(out ButtonResponsiveSpriteAnimator animator))
+            animator.ShowSkill();
+    }
+
+    public void ShowCurrentPreviewRune()
+    {
+        if (TryGetCurrentPreviewAnimator(out ButtonResponsiveSpriteAnimator animator))
+            animator.ShowRune();
+    }
+
     private int GetMaxPartyCount()
     {
         if (DataManager.Instance == null)
@@ -887,12 +905,27 @@ public class CharPick : MonoBehaviour
         if (prefab == null)
             return;
 
-        currentPreview = Instantiate(prefab, previewRoot);
-        currentPreview.transform.localPosition = previewLocalPosition;
-        currentPreview.transform.localRotation = Quaternion.Euler(previewLocalEulerAngles);
-        currentPreview.transform.localScale = Vector3.one * previewScale;
+        currentPreview = new GameObject("Preview_" + characterId);
+        Transform previewAnchor = currentPreview.transform;
+        previewAnchor.SetParent(previewRoot, false);
+        previewAnchor.localPosition = previewLocalPosition;
+        previewAnchor.localRotation = Quaternion.Euler(previewLocalEulerAngles);
+        previewAnchor.localScale = Vector3.one * previewScale;
+
+        Instantiate(prefab, previewAnchor);
 
         PlayPreviewBackgroundAnim();
+    }
+
+    private bool TryGetCurrentPreviewAnimator(out ButtonResponsiveSpriteAnimator animator)
+    {
+        animator = null;
+
+        if (currentPreview == null)
+            return false;
+
+        animator = currentPreview.GetComponentInChildren<ButtonResponsiveSpriteAnimator>(true);
+        return animator != null;
     }
 
     private void CachePreviewBackgroundScale()
