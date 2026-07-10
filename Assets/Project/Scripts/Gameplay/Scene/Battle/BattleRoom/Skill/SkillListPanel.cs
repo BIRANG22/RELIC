@@ -15,6 +15,15 @@ public class SkillListPanel : MonoBehaviour
     [Header("Content")]
     [SerializeField] private Transform contentRoot;
     [SerializeField] private SkillListSlotUI skillSlotPrefab;
+    [SerializeField] private GameObject activeRelicPrefab;
+    [SerializeField] private ActiveRelicTargetingController activeRelicTargetingController;
+    [SerializeField] private bool useFixedActiveRelicRect = true;
+    [SerializeField] private Vector2 activeRelicFixedAnchoredPosition = new(250f, 125f);
+    [SerializeField] private Vector2 activeRelicFixedSize = new(100f, 100f);
+    [SerializeField] private RectTransform activeRelicActionText;
+    [SerializeField] private bool autoFindActiveRelicActionText = true;
+    [SerializeField] private string activeRelicActionTextObjectName = "Text_ACTION";
+    [SerializeField] private Vector2 activeRelicOffsetFromActionText = Vector2.zero;
 
     [Header("Detail")]
     [SerializeField] private GameObject detailsBackground;
@@ -70,6 +79,8 @@ public class SkillListPanel : MonoBehaviour
     private readonly List<RectTransform> runtimeKeepOpenClickRoots = new();
     private readonly List<RectTransform> timelineKeepOpenClickRoots = new();
     private readonly List<SkillListSlotUI> skillSlots = new();
+    private ActiveRelicService activeRelicService;
+    private ActiveRelicButtonUI activeRelicButton;
     private SkillListSlotUI selectedSkillSlot;
 
     private CharacterRuntimeData currentRuntime;
@@ -101,6 +112,7 @@ public class SkillListPanel : MonoBehaviour
 
         EnsureBattleTimelineController();
         EnsureTurnExecutor();
+        EnsureActiveRelicTargetingController();
         EnsureContentCanvasGroup();
 
         HideSkillDetail();
@@ -745,6 +757,7 @@ public class SkillListPanel : MonoBehaviour
         if (currentRuntime == null)
             return;
 
+        AddActiveRelicSlot();
         AddSkillSlot(currentRuntime.MoveSkillId, true);
         AddSkillSlot(currentRuntime.AbilitySkillId, true);
         AddSkillSlot(GetEquippedSkillId(2), true);
@@ -820,6 +833,82 @@ public class SkillListPanel : MonoBehaviour
         SkillListSlotUI slot = Instantiate(skillSlotPrefab, contentRoot);
         skillSlots.Add(slot);
         slot.Setup(this, skillId, interactable, GetPreviewSkillCostValue(skillId), currentRuntime);
+    }
+
+    private void AddActiveRelicSlot()
+    {
+        activeRelicButton = null;
+
+        if (activeRelicPrefab == null ||
+            contentRoot == null ||
+            currentRuntime == null ||
+            !EnsureActiveRelicService())
+        {
+            return;
+        }
+
+        ActiveRelicAvailability availability = activeRelicService.GetAvailability(currentRuntime);
+
+        if (availability == null ||
+            availability.RelicData == null ||
+            !ActiveRelicEffectResolver.IsActiveRelic(availability.RelicData))
+        {
+            return;
+        }
+
+        GameObject instance = Instantiate(activeRelicPrefab, contentRoot);
+        activeRelicButton = instance.GetComponent<ActiveRelicButtonUI>();
+
+        if (activeRelicButton == null)
+            activeRelicButton = instance.AddComponent<ActiveRelicButtonUI>();
+
+        PositionActiveRelicSlot(instance.GetComponent<RectTransform>());
+        activeRelicButton.Setup(this, currentRuntime, availability);
+    }
+
+    private void PositionActiveRelicSlot(RectTransform relicRect)
+    {
+        if (relicRect == null)
+            return;
+
+        LayoutElement layoutElement = relicRect.GetComponent<LayoutElement>();
+        if (layoutElement == null)
+            layoutElement = relicRect.gameObject.AddComponent<LayoutElement>();
+
+        layoutElement.ignoreLayout = true;
+
+        relicRect.anchorMin = new Vector2(0.5f, 0.5f);
+        relicRect.anchorMax = new Vector2(0.5f, 0.5f);
+        relicRect.pivot = new Vector2(0.5f, 0.5f);
+
+        if (useFixedActiveRelicRect)
+        {
+            relicRect.anchoredPosition = activeRelicFixedAnchoredPosition;
+            relicRect.sizeDelta = activeRelicFixedSize;
+            return;
+        }
+
+        if (contentRoot is not RectTransform contentRect)
+        {
+            relicRect.anchoredPosition += activeRelicOffsetFromActionText;
+            return;
+        }
+
+        EnsureActiveRelicActionText();
+
+        if (activeRelicActionText == null)
+        {
+            relicRect.anchoredPosition += activeRelicOffsetFromActionText;
+            return;
+        }
+
+        Vector3[] corners = new Vector3[4];
+        activeRelicActionText.GetWorldCorners(corners);
+        Vector3 actionRightCenter = (corners[2] + corners[3]) * 0.5f;
+        Vector3 localPosition = contentRect.InverseTransformPoint(actionRightCenter);
+
+        relicRect.anchoredPosition =
+            new Vector2(localPosition.x, localPosition.y) + activeRelicOffsetFromActionText;
     }
 
     private void UpdateRenderedTimelinePreviewState()
@@ -938,9 +1027,119 @@ public class SkillListPanel : MonoBehaviour
         battleTimelineController.SelectSkill(skillData);
     }
 
+    public void SelectActiveRelic(ActiveRelicButtonUI selectedButton)
+    {
+        InventoryPanelSelectionResetter.ResetAllSelectionsExcept(this);
+        selectedSkillSlot = null;
+        keyboardSelectedSkillIndex = -1;
+        ApplySkillSlotSelectionVisuals();
+
+        if (currentRuntime == null)
+        {
+            ShowBattleWarning("선택된 캐릭터가 없습니다.");
+            return;
+        }
+
+        EnsureTurnExecutor();
+
+        if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
+        {
+            ShowBattleWarning("지금은 유물을 사용할 수 없습니다.");
+            return;
+        }
+
+        if (!EnsureActiveRelicService())
+        {
+            ShowBattleWarning("유물 데이터를 찾을 수 없습니다.");
+            return;
+        }
+
+        ActiveRelicAvailability availability = activeRelicService.GetAvailability(currentRuntime);
+
+        if (selectedButton != null)
+            selectedButton.Refresh(availability);
+
+        if (availability == null || !availability.CanUse)
+        {
+            ShowBattleWarning(availability != null ? availability.Message : "유물을 사용할 수 없습니다.");
+            return;
+        }
+
+        EnsureBattleTimelineController();
+        battleTimelineController?.CancelSkillReservationPreviewFromSkillList(currentRuntime);
+
+        if (!availability.RequiresTarget)
+        {
+            ActiveRelicUseResult result = activeRelicService.TryUseImmediate(currentRuntime);
+
+            if (!result.Succeeded)
+                ShowBattleWarning(result.Message);
+
+            Refresh();
+            return;
+        }
+
+        EnsureActiveRelicTargetingController();
+
+        if (activeRelicTargetingController == null ||
+            !activeRelicTargetingController.BeginTargeting(
+                this,
+                activeRelicService,
+                currentRuntime,
+                availability))
+        {
+            ShowBattleWarning("대상 선택을 시작할 수 없습니다.");
+        }
+    }
+
     private void ShowBattleWarning(string message)
     {
         BattleWarningUI.ShowMessage(message);
+    }
+
+    private bool EnsureActiveRelicService()
+    {
+        if (activeRelicService != null)
+            return true;
+
+        if (DataManager.Instance == null || DataManager.Instance.RelicDatabase == null)
+            return false;
+
+        activeRelicService = new ActiveRelicService(DataManager.Instance.RelicDatabase);
+        return true;
+    }
+
+    private void EnsureActiveRelicTargetingController()
+    {
+        if (activeRelicTargetingController != null)
+            return;
+
+        activeRelicTargetingController =
+            FindFirstObjectByType<ActiveRelicTargetingController>(FindObjectsInactive.Include);
+
+        if (activeRelicTargetingController != null)
+            return;
+
+        activeRelicTargetingController = GetComponent<ActiveRelicTargetingController>();
+
+        if (activeRelicTargetingController == null)
+            activeRelicTargetingController = gameObject.AddComponent<ActiveRelicTargetingController>();
+    }
+
+    private void EnsureActiveRelicActionText()
+    {
+        if (activeRelicActionText != null)
+            return;
+
+        if (!autoFindActiveRelicActionText ||
+            string.IsNullOrWhiteSpace(activeRelicActionTextObjectName))
+        {
+            return;
+        }
+
+        GameObject found = GameObject.Find(activeRelicActionTextObjectName);
+        if (found != null)
+            activeRelicActionText = found.GetComponent<RectTransform>();
     }
 
     private void CaptureInitialPosition()
@@ -1249,6 +1448,7 @@ public class SkillListPanel : MonoBehaviour
     {
         selectedSkillSlot = null;
         keyboardSelectedSkillIndex = -1;
+        activeRelicButton = null;
         skillSlots.Clear();
 
         if (contentRoot == null)

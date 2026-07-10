@@ -243,7 +243,13 @@ public class CharBtn : MonoBehaviour,
         var runtimeStore = DataManager.Instance.CharacterRuntimeStore;
 
         if (runtimeStore.TryGet(characterId, out var runtime))
+        {
+            CharacterStartingRelicUtility.EnsureStartingRelicEquippedIfEmpty(
+                runtime,
+                master,
+                DataManager.Instance.RelicDatabase);
             return;
+        }
 
         runtime = new CharacterRuntimeData
         {
@@ -271,8 +277,13 @@ public class CharBtn : MonoBehaviour,
                 ""
             },
 
-            EquippedRuneIds = new string[12]
+            EquippedRuneIds = new string[12],
+            EquippedRelicIds = CharacterStartingRelicUtility.CreateStartingRelicSlots(master)
         };
+
+        CharacterStartingRelicUtility.InitializeActiveRelicUses(
+            runtime,
+            DataManager.Instance.RelicDatabase);
 
         runtimeStore.AddOrUpdate(runtime);
     }

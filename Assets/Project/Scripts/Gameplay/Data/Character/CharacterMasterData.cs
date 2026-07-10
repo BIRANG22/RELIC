@@ -60,6 +60,8 @@ namespace Relic.Gameplay.Data
         public string Rune4;
         public string Rune5;
 
+        public string Relic;
+
         [NonSerialized]
         public GameObject BattlePrefab;
 

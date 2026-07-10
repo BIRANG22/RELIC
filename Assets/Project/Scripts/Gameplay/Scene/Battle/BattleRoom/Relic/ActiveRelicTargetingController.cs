@@ -1,0 +1,169 @@
+using System.Collections.Generic;
+using Relic.Gameplay.Data;
+using UnityEngine;
+
+public class ActiveRelicTargetingController : MonoBehaviour
+{
+    [SerializeField] private GridManager gridManager;
+    [SerializeField] private BattleGridEffectController gridEffectController;
+    [SerializeField] private Color targetPreviewColor = new(0.2f, 0.9f, 1f, 1f);
+
+    private ActiveRelicService service;
+    private SkillListPanel owner;
+    private CharacterRuntimeData pendingRuntime;
+    private ActiveRelicAvailability pendingAvailability;
+    private bool isTargeting;
+    private bool previousGridVisible;
+
+    public bool IsTargeting => isTargeting;
+
+    private void Update()
+    {
+        if (!isTargeting)
+            return;
+
+        if (Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(1))
+            CancelTargeting();
+    }
+
+    private void OnDisable()
+    {
+        CancelTargeting();
+    }
+
+    public bool BeginTargeting(
+        SkillListPanel ownerPanel,
+        ActiveRelicService activeRelicService,
+        CharacterRuntimeData runtime,
+        ActiveRelicAvailability availability)
+    {
+        EnsureReferences();
+
+        if (gridManager == null ||
+            activeRelicService == null ||
+            runtime == null ||
+            availability == null ||
+            !availability.RequiresTarget)
+        {
+            return false;
+        }
+
+        CancelTargeting();
+
+        owner = ownerPanel;
+        service = activeRelicService;
+        pendingRuntime = runtime;
+        pendingAvailability = availability;
+        previousGridVisible = gridManager.IsGridVisible;
+        isTargeting = true;
+
+        gridManager.SetGridVisible(true);
+        gridManager.OnCellClicked += HandleCellClicked;
+        gridManager.ShowExecutionRange(BuildPreviewCells(), targetPreviewColor);
+        return true;
+    }
+
+    public void CancelTargeting()
+    {
+        if (!isTargeting && gridManager == null)
+            return;
+
+        if (gridManager != null)
+        {
+            gridManager.OnCellClicked -= HandleCellClicked;
+            gridManager.ClearExecutionRange();
+
+            if (isTargeting)
+                gridManager.SetGridVisible(previousGridVisible);
+        }
+
+        isTargeting = false;
+        owner = null;
+        service = null;
+        pendingRuntime = null;
+        pendingAvailability = null;
+    }
+
+    private void HandleCellClicked(GridCell cell)
+    {
+        if (!isTargeting || cell == null || service == null)
+            return;
+
+        owner?.IgnoreOutsideCloseForFrames(2);
+
+        ActiveRelicUseResult result = service.TryUseTarget(
+            pendingRuntime,
+            cell.Index,
+            gridManager,
+            gridEffectController);
+
+        if (result.Succeeded)
+        {
+            SkillListPanel targetOwner = owner;
+            CancelTargeting();
+            targetOwner?.Refresh();
+            return;
+        }
+
+        BattleWarningUI.ShowMessage(result.Message);
+    }
+
+    private List<int> BuildPreviewCells()
+    {
+        List<int> cells = new();
+
+        if (gridManager == null || pendingAvailability == null)
+            return cells;
+
+        if (pendingAvailability.TargetMode == ActiveRelicTargetMode.AllyGrid)
+        {
+            AddAllyCells(cells);
+            return cells;
+        }
+
+        for (int x = 0; x < gridManager.Width; x++)
+        {
+            for (int y = 0; y < gridManager.Height; y++)
+            {
+                int gridIndex = gridManager.CoordToIndex(new Vector2Int(x, y));
+                cells.Add(gridIndex);
+            }
+        }
+
+        return cells;
+    }
+
+    private void AddAllyCells(List<int> cells)
+    {
+        BattleCharacter[] characters = FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            BattleCharacter character = characters[i];
+
+            if (character == null ||
+                character.RuntimeData == null ||
+                character.RuntimeData.IsDead ||
+                character.CurrentGridIndex < 0)
+            {
+                continue;
+            }
+
+            if (character.CharacterId == pendingRuntime?.CharacterId)
+                continue;
+
+            cells.Add(character.CurrentGridIndex);
+        }
+    }
+
+    private void EnsureReferences()
+    {
+        if (gridManager == null)
+            gridManager = FindFirstObjectByType<GridManager>(FindObjectsInactive.Include);
+
+        if (gridEffectController == null)
+            gridEffectController = FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+    }
+}

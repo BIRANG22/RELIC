@@ -33,3 +33,13 @@ MonoBehaviour:
     Icon: {fileID: 21300000, guid: 96fa88603443c09448cf341716dcd3b0, type: 3}
   - RelicId: Relic_10
     Icon: {fileID: 21300000, guid: b1d8f80328b836a45b14524a1dbeda61, type: 3}
+  - RelicId: Relic_11
+    Icon: {fileID: 21300000, guid: 4c9fd98ad88d16544ba06c96226edaca, type: 3}
+  - RelicId: Relic_12
+    Icon: {fileID: 21300000, guid: 88c76f269e47c40409b1c43c8f6bf220, type: 3}
+  - RelicId: Relic_13
+    Icon: {fileID: 21300000, guid: 2a1fc22a6e4c8bd49b7759aa2b0a7b7c, type: 3}
+  - RelicId: Relic_14
+    Icon: {fileID: 21300000, guid: cdcd21bd35118ca4fbf3d9a4273ce893, type: 3}
+  - RelicId: Relic_15
+    Icon: {fileID: 21300000, guid: ff144d365f808b24d804d9ebf831b833, type: 3}

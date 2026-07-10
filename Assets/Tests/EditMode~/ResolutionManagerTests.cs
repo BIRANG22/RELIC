@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using System.IO;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ResolutionManagerTests
 {
@@ -75,10 +76,44 @@ public class ResolutionManagerTests
     }
 
     [Test]
+    public void ResolutionCanvasViewportFitter_PreservesDirectChildOrder_WhenMovingIntoViewport()
+    {
+        GameObject canvasObject = new("Canvas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler));
+
+        try
+        {
+            CreateRectChild(canvasObject.transform, "Background");
+            CreateRectChild(canvasObject.transform, "Hud");
+            CreateRectChild(canvasObject.transform, "Popup");
+
+            ResolutionCanvasViewportFitter fitter = canvasObject.AddComponent<ResolutionCanvasViewportFitter>();
+            fitter.Apply(new Rect(0f, 0f, 1f, 1f), 1920, 1080);
+
+            Transform viewport = canvasObject.transform.Find("Resolution Viewport");
+
+            Assert.That(viewport, Is.Not.Null);
+            Assert.That(viewport.GetChild(0).name, Is.EqualTo("Background"));
+            Assert.That(viewport.GetChild(1).name, Is.EqualTo("Hud"));
+            Assert.That(viewport.GetChild(2).name, Is.EqualTo("Popup"));
+        }
+        finally
+        {
+            Object.DestroyImmediate(canvasObject);
+        }
+    }
+
+    [Test]
     public void PlayerSettings_EnableResizableWindowForLetterboxedResize()
     {
         string projectSettings = File.ReadAllText("ProjectSettings/ProjectSettings.asset");
 
         Assert.That(projectSettings, Does.Contain("resizableWindow: 1"));
+    }
+
+    private static RectTransform CreateRectChild(Transform parent, string name)
+    {
+        GameObject childObject = new(name, typeof(RectTransform));
+        childObject.transform.SetParent(parent, false);
+        return childObject.GetComponent<RectTransform>();
     }
 }

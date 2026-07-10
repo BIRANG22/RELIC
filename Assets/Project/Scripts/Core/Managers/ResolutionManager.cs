@@ -498,13 +498,22 @@ public sealed class ResolutionCanvasViewportFitter : MonoBehaviour
 
     private void MoveDirectChildrenIntoViewport()
     {
-        for (int i = transform.childCount - 1; i >= 0; i--)
+        List<Transform> childrenToMove = new();
+
+        for (int i = 0; i < transform.childCount; i++)
         {
             Transform child = transform.GetChild(i);
             if (child == null || child == viewportRoot)
                 continue;
 
+            childrenToMove.Add(child);
+        }
+
+        for (int i = 0; i < childrenToMove.Count; i++)
+        {
+            Transform child = childrenToMove[i];
             child.SetParent(viewportRoot, false);
+            child.SetSiblingIndex(viewportRoot.childCount - 1);
         }
     }
 }

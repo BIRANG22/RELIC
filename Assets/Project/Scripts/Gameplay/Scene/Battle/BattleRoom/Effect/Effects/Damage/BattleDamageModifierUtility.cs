@@ -8,6 +8,8 @@ public static class BattleDamageModifierUtility
     private const string CorrosionEffectId = "E_Corrosion";
     private const string VulnerableEffectId = "E_Vulnerable";
     private const string GrudgeEffectId = "E_Grudge";
+    private const string ActiveDamageBoostEffectId = ActiveRelicEffectIds.DamageBoostThisTurn;
+    private const string ActiveDamageReductionEffectId = ActiveRelicEffectIds.DamageReductionThisTurn;
 
     public static int CalculateFinalDamageToPlayer(BattleEffectContext context, int baseDamage)
     {
@@ -48,6 +50,9 @@ public static class BattleDamageModifierUtility
         if (GetStatusStack(statuses, WeakenEffectId) > 0)
             damage *= 0.7f;
 
+        if (GetStatusStack(statuses, ActiveDamageBoostEffectId) > 0)
+            damage *= 2f;
+
         int corrosionStack = GetStatusStack(statuses, CorrosionEffectId);
         if (corrosionStack > 0)
             damage += corrosionStack;
@@ -61,6 +66,9 @@ public static class BattleDamageModifierUtility
     {
         if (GetStatusStack(statuses, VulnerableEffectId) > 0)
             damage *= 1.5f;
+
+        if (GetStatusStack(statuses, ActiveDamageReductionEffectId) > 0)
+            damage *= 0.5f;
 
         int grudgeStack = GetStatusStack(statuses, GrudgeEffectId);
         if (grudgeStack > 0)
