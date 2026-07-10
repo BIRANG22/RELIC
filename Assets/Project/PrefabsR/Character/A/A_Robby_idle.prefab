@@ -11,9 +11,9 @@ GameObject:
   - component: {fileID: 2480824589227361046}
   - component: {fileID: 8665745381712375871}
   - component: {fileID: 6631258642927890505}
+  - component: {fileID: 6450172007132228274}
   - component: {fileID: 366562201314030592}
   - component: {fileID: 5244395537317994716}
-  - component: {fileID: 6450172007132228274}
   - component: {fileID: 1632123503877066924}
   m_Layer: 0
   m_Name: A_Robby_idle
@@ -31,7 +31,7 @@ Transform:
   m_GameObject: {fileID: 4856766094544398864}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalPosition: {x: -1, y: 1, z: -0.1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -114,6 +114,22 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &6450172007132228274
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4856766094544398864}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33c392ea8bf721f4f9b83ea336edc598, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  useVirtualYOffset: 1
+  virtualYOffset: -2
+  sortingOrderOffset: 0
+  yMultiplier: 100
 --- !u!114 &366562201314030592
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1276,22 +1292,6 @@ MonoBehaviour:
   forceAnimatorUpdate: 1
   autoFindAnimatorInChildren: 1
   vfxLayerName: VFX
---- !u!114 &6450172007132228274
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4856766094544398864}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 33c392ea8bf721f4f9b83ea336edc598, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  useVirtualYOffset: 1
-  virtualYOffset: -2
-  sortingOrderOffset: 0
-  yMultiplier: 100
 --- !u!114 &1632123503877066924
 MonoBehaviour:
   m_ObjectHideFlags: 0
