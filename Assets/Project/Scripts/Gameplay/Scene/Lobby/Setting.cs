@@ -42,8 +42,10 @@ public class Setting : MonoBehaviour
     [SerializeField] private Color presetSelectedColor = new Color(1f, 0.78f, 0.25f, 1f);
 
     [Header("Setting Area Tabs")]
+    [SerializeField] private GameObject previewArea;
     [SerializeField] private GameObject skillArea;
     [SerializeField] private GameObject runeArea;
+    [SerializeField] private Button previewButton;
     [SerializeField] private Button skillButton;
     [SerializeField] private Button runeButton;
     [SerializeField] private Color tabNormalColor = Color.white;
@@ -68,9 +70,17 @@ public class Setting : MonoBehaviour
     private CharacterMasterData currentMasterData;
     private CharacterRuntimeData currentRuntimeData;
 
-    private int currentPartyIndex = -1;
-    private bool isSkillTabOpen = true;
+    private enum SettingTab
+    {
+        Preview,
+        Skill,
+        Rune
+    }
 
+    private int currentPartyIndex = -1;
+    private SettingTab currentTab = SettingTab.Skill;
+
+    private CharacterSettingTabButtonScaleEffect previewButtonScaleEffect;
     private CharacterSettingTabButtonScaleEffect skillButtonScaleEffect;
     private CharacterSettingTabButtonScaleEffect runeButtonScaleEffect;
 
@@ -107,6 +117,9 @@ public class Setting : MonoBehaviour
         if (runeSettingPanelScript != null)
             runeSettingPanelScript.OnRuneChanged -= RefreshCharacterInfo;
 
+        if (previewButton != null)
+            previewButton.onClick.RemoveListener(ShowPreviewSetting);
+
         if (skillButton != null)
             skillButton.onClick.RemoveListener(ShowSkillSetting);
 
@@ -136,6 +149,12 @@ public class Setting : MonoBehaviour
 
     private void InitTabButtons()
     {
+        if (previewButton != null)
+        {
+            previewButton.onClick.RemoveListener(ShowPreviewSetting);
+            previewButton.onClick.AddListener(ShowPreviewSetting);
+        }
+
         if (skillButton != null)
         {
             skillButton.onClick.RemoveListener(ShowSkillSetting);
@@ -247,10 +266,18 @@ public class Setting : MonoBehaviour
         if (runeSettingPanelScript != null)
             runeSettingPanelScript.OpenCharacterSetting(currentCharacterId);
 
-        if (isSkillTabOpen)
-            ShowSkillSetting();
-        else
-            ShowRuneSetting();
+        switch (currentTab)
+        {
+            case SettingTab.Preview:
+                ShowPreviewSetting();
+                break;
+            case SettingTab.Rune:
+                ShowRuneSetting();
+                break;
+            default:
+                ShowSkillSetting();
+                break;
+        }
     }
 
     public void SelectPreset(int presetIndex)
@@ -280,15 +307,28 @@ public class Setting : MonoBehaviour
     public void OnClickPresetC() => SelectPreset(2);
     public void OnClickPresetD() => SelectPreset(3);
 
+    public void ShowPreviewSetting()
+    {
+        currentTab = SettingTab.Preview;
+
+        SetAreaActive(previewArea, true);
+        SetAreaActive(skillArea, false);
+        SetAreaActive(runeArea, false);
+
+        if (skillSettingPanelScript != null)
+            skillSettingPanelScript.SetSkillSelectPanelVisible(false);
+
+        SetFixedInfoArea(null);
+        RefreshTabButtons();
+    }
+
     public void ShowSkillSetting()
     {
-        isSkillTabOpen = true;
+        currentTab = SettingTab.Skill;
 
-        if (skillArea != null)
-            skillArea.SetActive(true);
-
-        if (runeArea != null)
-            runeArea.SetActive(false);
+        SetAreaActive(previewArea, false);
+        SetAreaActive(skillArea, true);
+        SetAreaActive(runeArea, false);
 
         if (skillSettingPanelScript != null)
             skillSettingPanelScript.SetSkillSelectPanelVisible(true);
@@ -310,13 +350,14 @@ public class Setting : MonoBehaviour
 
     public void ShowRuneSetting()
     {
-        isSkillTabOpen = false;
+        currentTab = SettingTab.Rune;
 
-        if (skillArea != null)
-            skillArea.SetActive(false);
+        SetAreaActive(previewArea, false);
+        SetAreaActive(skillArea, false);
+        SetAreaActive(runeArea, true);
 
-        if (runeArea != null)
-            runeArea.SetActive(true);
+        if (skillSettingPanelScript != null)
+            skillSettingPanelScript.SetSkillSelectPanelVisible(false);
 
         if (skillInfoArea != null)
             skillInfoArea.gameObject.SetActive(false);
@@ -540,14 +581,16 @@ public class Setting : MonoBehaviour
 
     private void RefreshTabButtons()
     {
-        SetButtonColor(skillButton, isSkillTabOpen ? tabSelectedColor : tabNormalColor);
-        SetButtonColor(runeButton, isSkillTabOpen ? tabNormalColor : tabSelectedColor);
+        SetButtonColor(previewButton, currentTab == SettingTab.Preview ? tabSelectedColor : tabNormalColor);
+        SetButtonColor(skillButton, currentTab == SettingTab.Skill ? tabSelectedColor : tabNormalColor);
+        SetButtonColor(runeButton, currentTab == SettingTab.Rune ? tabSelectedColor : tabNormalColor);
 
         RefreshTabButtonScaleEffects();
     }
 
     private void InitTabButtonScaleEffects()
     {
+        previewButtonScaleEffect = InitTabButtonScaleEffect(previewButton);
         skillButtonScaleEffect = InitTabButtonScaleEffect(skillButton);
         runeButtonScaleEffect = InitTabButtonScaleEffect(runeButton);
 
@@ -577,26 +620,58 @@ public class Setting : MonoBehaviour
 
     private void RefreshTabButtonScaleEffects()
     {
+        if (previewButtonScaleEffect == null && previewButton != null)
+            previewButtonScaleEffect = InitTabButtonScaleEffect(previewButton);
+
         if (skillButtonScaleEffect == null && skillButton != null)
             skillButtonScaleEffect = InitTabButtonScaleEffect(skillButton);
 
         if (runeButtonScaleEffect == null && runeButton != null)
             runeButtonScaleEffect = InitTabButtonScaleEffect(runeButton);
 
+        if (previewButtonScaleEffect != null)
+            previewButtonScaleEffect.SetSelected(currentTab == SettingTab.Preview);
+
         if (skillButtonScaleEffect != null)
-            skillButtonScaleEffect.SetSelected(isSkillTabOpen);
+            skillButtonScaleEffect.SetSelected(currentTab == SettingTab.Skill);
 
         if (runeButtonScaleEffect != null)
-            runeButtonScaleEffect.SetSelected(!isSkillTabOpen);
+            runeButtonScaleEffect.SetSelected(currentTab == SettingTab.Rune);
     }
 
     private void ResetTabButtonScaleEffects()
     {
+        if (previewButtonScaleEffect != null)
+            previewButtonScaleEffect.ResetScaleImmediate();
+
         if (skillButtonScaleEffect != null)
             skillButtonScaleEffect.ResetScaleImmediate();
 
         if (runeButtonScaleEffect != null)
             runeButtonScaleEffect.ResetScaleImmediate();
+    }
+
+    private void SetAreaActive(GameObject area, bool isActive)
+    {
+        if (area != null)
+            area.SetActive(isActive);
+    }
+
+    private void SetFixedInfoArea(RectTransform activeArea)
+    {
+        if (skillInfoArea != null)
+            skillInfoArea.gameObject.SetActive(activeArea == skillInfoArea);
+
+        if (runeInfoArea != null)
+            runeInfoArea.gameObject.SetActive(activeArea == runeInfoArea);
+
+        if (InfoTooltip.Instance != null)
+        {
+            if (activeArea != null)
+                InfoTooltip.Instance.SetFixedRoot(activeArea);
+
+            InfoTooltip.Instance.ClearFixedText();
+        }
     }
 
     private void SetButtonColor(Button button, Color color)
