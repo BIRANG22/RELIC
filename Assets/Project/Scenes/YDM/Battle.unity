@@ -336927,6 +336927,15 @@ MonoBehaviour:
   panelRect: {fileID: 1269980036}
   contentRoot: {fileID: 2047567021}
   skillSlotPrefab: {fileID: 6277710169234168093, guid: 50f824bf44dff6a478a8cdfd3aa79d21, type: 3}
+  activeRelicPrefab: {fileID: 2555769411334268163, guid: 9cf89c802c5089b4f948107904e69cbf, type: 3}
+  activeRelicTargetingController: {fileID: 0}
+  useFixedActiveRelicRect: 1
+  activeRelicFixedAnchoredPosition: {x: 250, y: 125}
+  activeRelicFixedSize: {x: 100, y: 100}
+  activeRelicActionText: {fileID: 658517491}
+  autoFindActiveRelicActionText: 1
+  activeRelicActionTextObjectName: Text_ACTION
+  activeRelicOffsetFromActionText: {x: 0, y: 0}
   detailsBackground: {fileID: 822995941}
   detailsBackgroundRect: {fileID: 822995942}
   detailsText: {fileID: 133664403}

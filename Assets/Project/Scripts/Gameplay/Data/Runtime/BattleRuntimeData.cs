@@ -257,6 +257,8 @@ namespace Relic.Gameplay.Data
             character.StatusEffects.Clear();
 
             character.EquippedRelicIds = new string[EquippedRelicSlotCount];
+            character.ActiveRelicUses ??= new List<ActiveRelicUseRuntimeData>();
+            character.ActiveRelicUses.Clear();
 
             character.AppliedBattleEquipmentEffectIds ??= new List<string>();
             character.AppliedBattleEquipmentEffectIds.Clear();

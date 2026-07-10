@@ -15,6 +15,9 @@ namespace Relic.Gameplay.Data
         public string ValueRate;
         public string CountRate;
 
+        public string Type;
+        public int Durability;
+
         public string EffectDesc;
 
         public List<SkillEffectEntry> EffectEntries = new();

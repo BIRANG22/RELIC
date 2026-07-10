@@ -353,6 +353,7 @@ public class BattleTurnExecutor : MonoBehaviour
 
             yield return runner.ApplyTurnEndEffectsRoutine();
 
+            ClearActiveRelicTurnScopedStatuses();
             ClearAllShield();
             RefreshBattleHUDs();
 
@@ -731,6 +732,22 @@ public class BattleTurnExecutor : MonoBehaviour
                 continue;
 
             monsters[i].RuntimeData.CurrentShield = 0;
+        }
+    }
+
+    private void ClearActiveRelicTurnScopedStatuses()
+    {
+        BattleCharacter[] characters = FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            if (characters[i] == null || characters[i].RuntimeData == null)
+                continue;
+
+            ActiveRelicRuntimeUtility.RemoveTurnScopedStatuses(characters[i].RuntimeData);
         }
     }
 

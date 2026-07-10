@@ -65,6 +65,32 @@ public class BattleGridEffectController : MonoBehaviour
         return service.IsBlocked(state, gridIndex);
     }
 
+    public bool HasEffect(int gridIndex)
+    {
+        return state.TryGetEffectId(gridIndex, out _);
+    }
+
+    public bool TryPlaceEffect(int gridIndex, string gridEffectId)
+    {
+        if (!EnsureDependencies())
+            return false;
+
+        if (gridManager.GetCellByIndex(gridIndex) == null)
+            return false;
+
+        if (DataManager.Instance.GridEffectDatabase == null ||
+            !DataManager.Instance.GridEffectDatabase.TryGet(gridEffectId, out _))
+        {
+            return false;
+        }
+
+        if (!state.Place(gridIndex, gridEffectId))
+            return false;
+
+        SpawnView(new BattleGridEffectPlacement(gridIndex, gridEffectId));
+        return true;
+    }
+
     public BattleGridEffectApplyResult ApplyToPlayer(int gridIndex, BattleCharacter character)
     {
         if (character == null || character.RuntimeData == null)

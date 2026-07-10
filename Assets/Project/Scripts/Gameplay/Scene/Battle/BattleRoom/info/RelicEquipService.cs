@@ -52,6 +52,9 @@ namespace Relic.Gameplay.Data
             character.EquippedRelicIds[slotIndex] = relicId;
             RemoveAllOwnedRelic(relicId);
 
+            if (slotIndex == ActiveRelicRuntimeUtility.ActiveRelicSlotIndex)
+                ResetActiveRelicUsesForEquippedRelic(character, relicId);
+
             return true;
         }
 
@@ -124,24 +127,28 @@ namespace Relic.Gameplay.Data
 
         public static void EnsureRelicSlots(CharacterRuntimeData character)
         {
-            if (character == null)
-                return;
+            ActiveRelicRuntimeUtility.EnsureRelicSlots(character);
+        }
 
-            if (character.EquippedRelicIds != null &&
-                character.EquippedRelicIds.Length == 5)
-                return;
-
-            string[] newSlots = new string[5];
-
-            if (character.EquippedRelicIds != null)
+        private static void ResetActiveRelicUsesForEquippedRelic(
+            CharacterRuntimeData character,
+            string relicId)
+        {
+            if (character == null ||
+                string.IsNullOrWhiteSpace(relicId) ||
+                global::DataManager.Instance == null ||
+                global::DataManager.Instance.RelicDatabase == null)
             {
-                int count = Mathf.Min(character.EquippedRelicIds.Length, newSlots.Length);
-
-                for (int i = 0; i < count; i++)
-                    newSlots[i] = character.EquippedRelicIds[i];
+                return;
             }
 
-            character.EquippedRelicIds = newSlots;
+            if (!global::DataManager.Instance.RelicDatabase.TryGet(relicId, out RelicData relic) ||
+                !ActiveRelicEffectResolver.IsActiveRelic(relic))
+            {
+                return;
+            }
+
+            ActiveRelicRuntimeUtility.ResetUses(character, relic);
         }
     }
 }
