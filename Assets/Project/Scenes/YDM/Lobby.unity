@@ -8836,7 +8836,7 @@ MonoBehaviour:
   - {fileID: 234256141}
   - {fileID: 411751190}
   autoBindCharButtons: 1
-  charButtonRoot: {fileID: 0}
+  charButtonRoot: {fileID: 355389639}
   previewRoot: {fileID: 302548448}
   setting: {fileID: 1880677616}
   previewBackground: {fileID: 0}
@@ -47120,6 +47120,7 @@ MonoBehaviour:
   characterInfoPanel: {fileID: 1108934242}
   runeSettingPanelScript: {fileID: 1943513970}
   skillSettingPanelScript: {fileID: 1083875122}
+  charPick: {fileID: 355389641}
   characterLevelText: {fileID: 1740643824}
   characterExpText: {fileID: 1493379787}
   testExpPerLevel: 1000
@@ -47847,7 +47848,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1880677616}
         m_TargetAssemblyTypeName: Setting, Assembly-CSharp
-        m_MethodName: ShowSkillSetting
+        m_MethodName: ShowPreviewSetting
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
