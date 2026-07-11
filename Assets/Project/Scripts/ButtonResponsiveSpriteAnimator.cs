@@ -180,13 +180,18 @@ public class ButtonResponsiveSpriteAnimator : MonoBehaviour
 
     private void ChangeAnimatorState(IdleState nextState)
     {
+        // 현재 탭 상태를 전환 출발점으로 사용한다.
+        // Animator의 실제 재생 상태를 다시 판정하면 전환 도중 이전 Idle로 오인하여
+        // 잘못된 방향의 애니메이션이 선택될 수 있다.
         IdleState previousState = currentState;
-        currentState = nextState;
 
         StopCurrentRoutine();
 
         if (!isActiveAndEnabled)
+        {
+            currentState = nextState;
             return;
+        }
 
         playRoutine = StartCoroutine(ChangeAnimatorStateRoutine(previousState, nextState));
     }
@@ -198,7 +203,9 @@ public class ButtonResponsiveSpriteAnimator : MonoBehaviour
         if (!string.IsNullOrWhiteSpace(transitionStateName))
             yield return PlayAnimatorTransitionRoutine(transitionStateName);
 
+        currentState = to;
         PlayAnimatorState(GetAnimatorIdleStateName(to), 0f);
+        playRoutine = null;
     }
 
     private IEnumerator PlayAnimatorTransitionRoutine(string stateName)
@@ -415,6 +422,8 @@ public class ButtonResponsiveSpriteAnimator : MonoBehaviour
         if (from == IdleState.Skill && to == IdleState.Normal)
             return selectToSkillReverseStateName;
 
+        // hilt_rune_to_select는 룬 -> 일반 정방향,
+        // hilt_rune_to_select_reverse는 일반 -> 룬 역방향이다.
         if (from == IdleState.Normal && to == IdleState.Rune)
             return selectToRuneReverseStateName;
 

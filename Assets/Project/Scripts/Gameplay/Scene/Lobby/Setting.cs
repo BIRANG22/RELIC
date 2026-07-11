@@ -16,7 +16,6 @@ public class Setting : MonoBehaviour
     [Header("Setting Panel Scripts")]
     [SerializeField] private RuneSettingPanel runeSettingPanelScript;
     [SerializeField] private SkillSettingPanel skillSettingPanelScript;
-    [SerializeField] private CharPick charPick;
 
     [Header("Character Level UI")]
     [SerializeField] private TMP_Text characterLevelText;
@@ -87,9 +86,6 @@ public class Setting : MonoBehaviour
 
     private void Awake()
     {
-        if (charPick == null)
-            charPick = FindFirstObjectByType<CharPick>(FindObjectsInactive.Include);
-
         if (warningUI == null)
             warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
 
@@ -195,7 +191,8 @@ public class Setting : MonoBehaviour
 
     public void OpenCharacterSetting(string characterId)
     {
-        SaveBeforeBattle();
+        // 캐릭터를 전환할 때 이전 캐릭터의 스킬/룬 상태를 다시 저장하지 않는다.
+        // 각 패널에서 변경한 내용은 기존 저장 시점에 처리한다.
 
         // CharacterSettingPanel에 들어올 때마다 항상 프리뷰 탭부터 표시한다.
         currentTab = SettingTab.Preview;
@@ -327,10 +324,6 @@ public class Setting : MonoBehaviour
             skillSettingPanelScript.SetSkillSelectPanelVisible(false);
 
         SetFixedInfoArea(null);
-
-        if (charPick != null)
-            charPick.ShowCurrentPreviewNormal();
-
         RefreshTabButtons();
     }
 
@@ -357,9 +350,6 @@ public class Setting : MonoBehaviour
             InfoTooltip.Instance.ClearFixedText();
         }
 
-        if (charPick != null)
-            charPick.ShowCurrentPreviewSkill();
-
         RefreshTabButtons();
     }
 
@@ -385,9 +375,6 @@ public class Setting : MonoBehaviour
             InfoTooltip.Instance.SetFixedRoot(runeInfoArea);
             InfoTooltip.Instance.ClearFixedText();
         }
-
-        if (charPick != null)
-            charPick.ShowCurrentPreviewRune();
 
         RefreshTabButtons();
     }
