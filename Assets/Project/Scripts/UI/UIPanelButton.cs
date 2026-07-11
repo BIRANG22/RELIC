@@ -157,7 +157,9 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         if (ShouldBlockInteractionByOpenMenuPanel())
             return;
 
-        CloseCurrentOpenedPanelIfThisIsOtherButton();
+        // 마우스 호버는 사운드만 재생합니다.
+        // 패널 안의 새로하기, 이어하기, 방 생성, 입장 버튼에 마우스를 올렸을 때
+        // 열린 모드 패널이 접히는 현상을 막기 위해 호버에서는 패널을 닫지 않습니다.
         PlayHoverSound();
     }
 
@@ -379,15 +381,51 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         if (!currentOpenedPanelOwner.closeOpenedPanelWhenOtherButtonHovered)
             return;
 
+        GameObject openedPanel = currentOpenedPanelOwner.panelToOpen;
+
+        // 현재 열린 패널 안에 있는 버튼에 마우스를 올린 경우에는
+        // 다른 메뉴 버튼으로 취급하지 않습니다.
+        // 튜토리얼, 새로하기, 이어하기, 방 생성, 참여 버튼을
+        // 조작할 때 펼쳐진 버튼들이 다시 접히는 것을 방지합니다.
+        if (openedPanel != null)
+        {
+            Transform openedPanelTransform = openedPanel.transform;
+            Transform hoveredButtonTransform = transform;
+
+            if (hoveredButtonTransform == openedPanelTransform ||
+                hoveredButtonTransform.IsChildOf(openedPanelTransform))
+            {
+                return;
+            }
+        }
+
         currentOpenedPanelOwner.CloseOwnPanel();
     }
 
     private void CloseOwnPanel()
     {
-        ResetButtonAnimationsInClosedPanel();
-
         if (panelToOpen != null)
-            panelToOpen.SetActive(false);
+        {
+            TitleModePanelSpreadAnimator titleModeAnimator =
+                panelToOpen.GetComponent<TitleModePanelSpreadAnimator>();
+
+            if (titleModeAnimator != null)
+            {
+                // 버튼 상태 초기화가 RectTransform 위치를 먼저 바꾸면
+                // 닫힘 애니메이션이 시작되기 전에 버튼이 접힌 위치로 순간 이동합니다.
+                // 따라서 펼침 패널은 닫힘 연출이 끝난 뒤 버튼 상태를 초기화합니다.
+                titleModeAnimator.Close(ResetButtonAnimationsInClosedPanel);
+            }
+            else
+            {
+                ResetButtonAnimationsInClosedPanel();
+                panelToOpen.SetActive(false);
+            }
+        }
+        else
+        {
+            ResetButtonAnimationsInClosedPanel();
+        }
 
         if (currentOpenedPanelOwner == this)
             currentOpenedPanelOwner = null;
@@ -569,6 +607,12 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
             TitleManager.CloseTitleModePanelsExceptInScene(panelToOpen);
 
             panelToOpen.SetActive(true);
+
+            TitleModePanelSpreadAnimator titleModeAnimator =
+                panelToOpen.GetComponent<TitleModePanelSpreadAnimator>();
+            if (titleModeAnimator != null)
+                titleModeAnimator.Open();
+
             ApplyOpenedPanelFrontSorting(panelToOpen);
             currentOpenedPanelOwner = this;
             FadePanelImageTo(openedPanelAlpha);
@@ -610,7 +654,15 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
         for (int i = 0; i < panelsToClose.Length; i++)
         {
-            if (panelsToClose[i] != null)
+            if (panelsToClose[i] == null)
+                continue;
+
+            TitleModePanelSpreadAnimator titleModeAnimator =
+                panelsToClose[i].GetComponent<TitleModePanelSpreadAnimator>();
+
+            if (titleModeAnimator != null)
+                titleModeAnimator.Close();
+            else
                 panelsToClose[i].SetActive(false);
         }
     }
