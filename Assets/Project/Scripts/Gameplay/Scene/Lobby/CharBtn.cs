@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -34,13 +35,22 @@ public class CharBtn : MonoBehaviour,
     [SerializeField] private TMP_Text selectedPartyMarkerText;
     [SerializeField] private string selectedPartyTextFormat = "{0}";
 
-    [Header("UI")]
-    [SerializeField] private Image borderImg;
+    [Header("현재 보고 있는 캐릭터 표시")]
+    [SerializeField] private RectTransform viewedCharacterBorder;
+    [SerializeField] private string viewedCharacterBorderName = "BorderImg1";
+    [SerializeField] private float viewedCharacterRotationZ = -10f;
+    [SerializeField] private float viewedCharacterScale = 1.2f;
+    [SerializeField] private float viewedCharacterTransitionDuration = 0.2f;
 
     private CharPick charPick;
     private RectTransform rect;
     private CanvasGroup canvasGroup;
     private int lastHandledClickFrame = -1;
+
+    private Quaternion viewedCharacterBorderOriginalRotation = Quaternion.identity;
+    private Vector3 viewedCharacterOriginalScale = Vector3.one;
+    private bool hasViewedCharacterOriginalValues;
+    private Coroutine viewedCharacterTransitionCoroutine;
 
     public CharacterType CharacterType => characterType;
     public string CharacterId => characterId;
@@ -56,18 +66,32 @@ public class CharBtn : MonoBehaviour,
             canvasGroup = gameObject.AddComponent<CanvasGroup>();
 
         AutoPrepareSelectedPartyMarkerReferences();
+        AutoPrepareViewedCharacterBorder();
+        CacheViewedCharacterOriginalValues();
         RefreshSelectedPartyMarker();
     }
 
     private void OnEnable()
     {
+        AutoPrepareViewedCharacterBorder();
+        CacheViewedCharacterOriginalValues();
         RefreshSelectedPartyMarker();
+    }
+
+    private void OnDisable()
+    {
+        if (viewedCharacterTransitionCoroutine != null)
+        {
+            StopCoroutine(viewedCharacterTransitionCoroutine);
+            viewedCharacterTransitionCoroutine = null;
+        }
     }
 
 #if UNITY_EDITOR
     private void OnValidate()
     {
         AutoPrepareSelectedPartyMarkerReferences();
+        AutoPrepareViewedCharacterBorder();
     }
 #endif
 
@@ -416,7 +440,6 @@ public class CharBtn : MonoBehaviour,
         if (!showSelectedPartyMarker)
         {
             SetSelectedPartyMarkerActive(false);
-            SetSelectionBorder(false);
             return;
         }
 
@@ -424,7 +447,6 @@ public class CharBtn : MonoBehaviour,
         bool isRegistered = registeredSlot >= 0;
 
         SetSelectedPartyMarkerActive(isRegistered);
-        SetSelectionBorder(isRegistered);
 
         if (!isRegistered)
             return;
@@ -522,17 +544,129 @@ public class CharBtn : MonoBehaviour,
 
     public void SetCenter(bool isCenter)
     {
-        // 중앙 배치 여부는 위치/크기 계산에만 사용하고, 테두리 표시는 선택 상태에서만 켠다.
-        // 예전처럼 중앙에 왔다는 이유만으로 BorderImg1이 켜지지 않도록 여기서는 테두리를 건드리지 않는다.
+        // 고정형 버튼 배치에서는 중앙 정렬 효과를 사용하지 않는다.
     }
 
-    public void SetSelectionBorder(bool selected)
+    /// <summary>
+    /// 현재 정보를 보고 있는 캐릭터인지 표시한다.
+    /// 선택된 버튼은 BorderImg1이 부드럽게 Z -10도까지 회전하고,
+    /// 버튼 전체의 X/Y 스케일이 1.1까지 커진다.
+    /// 다른 버튼은 원래 회전값과 크기로 돌아간다.
+    /// </summary>
+    public void SetViewedCharacter(bool isViewed, bool immediate = false)
     {
-        if (borderImg == null)
+        AutoPrepareViewedCharacterBorder();
+        CacheViewedCharacterOriginalValues();
+
+        if (viewedCharacterBorder == null || rect == null)
             return;
 
-        borderImg.gameObject.SetActive(selected);
-        borderImg.enabled = selected;
+        Quaternion targetRotation = GetViewedCharacterTargetRotation(isViewed);
+        Vector3 targetScale = GetViewedCharacterTargetScale(isViewed);
+
+        if (viewedCharacterTransitionCoroutine != null)
+        {
+            StopCoroutine(viewedCharacterTransitionCoroutine);
+            viewedCharacterTransitionCoroutine = null;
+        }
+
+        if (immediate || !isActiveAndEnabled || !gameObject.activeInHierarchy || viewedCharacterTransitionDuration <= 0f)
+        {
+            viewedCharacterBorder.localRotation = targetRotation;
+            rect.localScale = targetScale;
+            return;
+        }
+
+        viewedCharacterTransitionCoroutine = StartCoroutine(
+            AnimateViewedCharacterRoutine(targetRotation, targetScale));
+    }
+
+    private IEnumerator AnimateViewedCharacterRoutine(Quaternion targetRotation, Vector3 targetScale)
+    {
+        Quaternion startRotation = viewedCharacterBorder.localRotation;
+        Vector3 startScale = rect.localScale;
+        float duration = Mathf.Max(0.01f, viewedCharacterTransitionDuration);
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            t = Mathf.SmoothStep(0f, 1f, t);
+
+            viewedCharacterBorder.localRotation = Quaternion.Slerp(startRotation, targetRotation, t);
+            rect.localScale = Vector3.Lerp(startScale, targetScale, t);
+            yield return null;
+        }
+
+        viewedCharacterBorder.localRotation = targetRotation;
+        rect.localScale = targetScale;
+        viewedCharacterTransitionCoroutine = null;
+    }
+
+    private Quaternion GetViewedCharacterTargetRotation(bool isViewed)
+    {
+        if (!hasViewedCharacterOriginalValues)
+            return Quaternion.identity;
+
+        if (!isViewed)
+            return viewedCharacterBorderOriginalRotation;
+
+        Vector3 originalEuler = viewedCharacterBorderOriginalRotation.eulerAngles;
+        return Quaternion.Euler(originalEuler.x, originalEuler.y, viewedCharacterRotationZ);
+    }
+
+    private Vector3 GetViewedCharacterTargetScale(bool isViewed)
+    {
+        if (!hasViewedCharacterOriginalValues)
+            return Vector3.one;
+
+        if (!isViewed)
+            return viewedCharacterOriginalScale;
+
+        return new Vector3(
+            viewedCharacterOriginalScale.x * viewedCharacterScale,
+            viewedCharacterOriginalScale.y * viewedCharacterScale,
+            viewedCharacterOriginalScale.z);
+    }
+
+    private void AutoPrepareViewedCharacterBorder()
+    {
+        if (viewedCharacterBorder != null)
+            return;
+
+        string targetName = string.IsNullOrWhiteSpace(viewedCharacterBorderName)
+            ? "BorderImg1"
+            : viewedCharacterBorderName;
+
+        Transform found = transform.Find(targetName);
+
+        if (found == null)
+        {
+            Transform[] children = GetComponentsInChildren<Transform>(true);
+
+            for (int i = 0; i < children.Length; i++)
+            {
+                if (children[i] != null && children[i].name == targetName)
+                {
+                    found = children[i];
+                    break;
+                }
+            }
+        }
+
+        if (found != null)
+            viewedCharacterBorder = found as RectTransform;
+    }
+
+    private void CacheViewedCharacterOriginalValues()
+    {
+        if (hasViewedCharacterOriginalValues || viewedCharacterBorder == null || rect == null)
+            return;
+
+        viewedCharacterBorderOriginalRotation = viewedCharacterBorder.localRotation;
+        viewedCharacterOriginalScale = rect.localScale;
+        hasViewedCharacterOriginalValues = true;
     }
 
     public void SetVisible(bool visible)

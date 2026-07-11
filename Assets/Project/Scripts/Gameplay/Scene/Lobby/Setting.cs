@@ -16,6 +16,7 @@ public class Setting : MonoBehaviour
     [Header("Setting Panel Scripts")]
     [SerializeField] private RuneSettingPanel runeSettingPanelScript;
     [SerializeField] private SkillSettingPanel skillSettingPanelScript;
+    [SerializeField] private CharPick charPick;
 
     [Header("Character Level UI")]
     [SerializeField] private TMP_Text characterLevelText;
@@ -78,7 +79,7 @@ public class Setting : MonoBehaviour
     }
 
     private int currentPartyIndex = -1;
-    private SettingTab currentTab = SettingTab.Skill;
+    private SettingTab currentTab = SettingTab.Preview;
 
     private CharacterSettingTabButtonScaleEffect previewButtonScaleEffect;
     private CharacterSettingTabButtonScaleEffect skillButtonScaleEffect;
@@ -86,6 +87,9 @@ public class Setting : MonoBehaviour
 
     private void Awake()
     {
+        if (charPick == null)
+            charPick = FindFirstObjectByType<CharPick>(FindObjectsInactive.Include);
+
         if (warningUI == null)
             warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
 
@@ -99,7 +103,7 @@ public class Setting : MonoBehaviour
 
     private void Start()
     {
-        ShowSkillSetting();
+        ShowPreviewSetting();
     }
 
     private void Update()
@@ -192,6 +196,10 @@ public class Setting : MonoBehaviour
     public void OpenCharacterSetting(string characterId)
     {
         SaveBeforeBattle();
+
+        // CharacterSettingPanel에 들어올 때마다 항상 프리뷰 탭부터 표시한다.
+        currentTab = SettingTab.Preview;
+        ShowPreviewSetting();
 
         currentPartyIndex = -1;
 
@@ -319,6 +327,10 @@ public class Setting : MonoBehaviour
             skillSettingPanelScript.SetSkillSelectPanelVisible(false);
 
         SetFixedInfoArea(null);
+
+        if (charPick != null)
+            charPick.ShowCurrentPreviewNormal();
+
         RefreshTabButtons();
     }
 
@@ -345,6 +357,9 @@ public class Setting : MonoBehaviour
             InfoTooltip.Instance.ClearFixedText();
         }
 
+        if (charPick != null)
+            charPick.ShowCurrentPreviewSkill();
+
         RefreshTabButtons();
     }
 
@@ -370,6 +385,9 @@ public class Setting : MonoBehaviour
             InfoTooltip.Instance.SetFixedRoot(runeInfoArea);
             InfoTooltip.Instance.ClearFixedText();
         }
+
+        if (charPick != null)
+            charPick.ShowCurrentPreviewRune();
 
         RefreshTabButtons();
     }

@@ -18,7 +18,6 @@ public class OptionPanelTransition : MonoBehaviour
     [SerializeField, Min(0.01f)] private float closeDuration = 0.18f;
     [SerializeField, Range(0.5f, 1f)] private float closeEndScale = 0.96f;
 
-
     [Header("전환 중 검정 처리")]
     [Tooltip("열고 닫히는 동안만 검정색으로 보일 배경 이미지를 등록합니다. 전환이 끝나면 원래 색상으로 돌아갑니다.")]
     [SerializeField] private Graphic[] transitionBackgroundGraphics;
@@ -113,8 +112,8 @@ public class OptionPanelTransition : MonoBehaviour
 
     private IEnumerator OpenRoutine()
     {
-        Color[] transitionStartColors = CaptureCurrentTransitionColors();
-        ApplyTransitionColorProgress(0f, true, transitionStartColors);
+        // 열기 전환 중에는 흰색 배경이 번쩍이지 않도록 즉시 검정색으로 변경합니다.
+        SetTransitionBackgroundsBlack();
         float elapsed = 0f;
 
         while (elapsed < openDuration)
@@ -125,7 +124,6 @@ public class OptionPanelTransition : MonoBehaviour
 
             canvasGroup.alpha = progress;
             rectTransform.localScale = Vector3.one * Mathf.Lerp(openStartScale, 1f, progress);
-            ApplyTransitionColorProgress(progress, true, transitionStartColors);
             yield return null;
         }
 
@@ -141,7 +139,8 @@ public class OptionPanelTransition : MonoBehaviour
     {
         float startAlpha = canvasGroup.alpha;
         Vector3 startScale = rectTransform.localScale;
-        Color[] transitionStartColors = CaptureCurrentTransitionColors();
+        // 닫기 전환이 시작되는 즉시 검정색으로 변경하여 흰색 노출을 막습니다.
+        SetTransitionBackgroundsBlack();
         Vector3 targetScale = Vector3.one * closeEndScale;
         float elapsed = 0f;
 
@@ -153,17 +152,17 @@ public class OptionPanelTransition : MonoBehaviour
 
             canvasGroup.alpha = Mathf.Lerp(startAlpha, 0f, progress);
             rectTransform.localScale = Vector3.Lerp(startScale, targetScale, progress);
-            ApplyTransitionColorProgress(progress, false, transitionStartColors);
             yield return null;
         }
 
         canvasGroup.alpha = 0f;
         rectTransform.localScale = targetScale;
-        ApplyTransitionColorProgress(1f, false, transitionStartColors);
-        RestoreTransitionBackgroundColors();
         transitionCoroutine = null;
         isClosing = false;
+
+        // 먼저 패널을 비활성화한 뒤 다음 활성화를 위해 원래 색상으로 되돌립니다.
         onClosed?.Invoke();
+        RestoreTransitionBackgroundColors();
     }
 
     private void CacheReferences()
@@ -223,54 +222,6 @@ public class OptionPanelTransition : MonoBehaviour
             if (graphic != null)
             {
                 originalTransitionColors[i] = graphic.color;
-            }
-        }
-    }
-
-    private Color[] CaptureCurrentTransitionColors()
-    {
-        CacheTransitionBackgroundColorsIfNeeded();
-
-        int count = transitionBackgroundGraphics == null ? 0 : transitionBackgroundGraphics.Length;
-        Color[] colors = new Color[count];
-
-        for (int i = 0; i < count; i++)
-        {
-            Graphic graphic = transitionBackgroundGraphics[i];
-            colors[i] = graphic != null ? graphic.color : Color.white;
-        }
-
-        return colors;
-    }
-
-    /// <summary>
-    /// 열릴 때는 검정에서 원래 색상으로, 닫힐 때는 현재 색상에서 검정으로 자연스럽게 보간합니다.
-    /// </summary>
-    private void ApplyTransitionColorProgress(float progress, bool opening, Color[] startColors)
-    {
-        CacheTransitionBackgroundColorsIfNeeded();
-
-        int count = transitionBackgroundGraphics == null ? 0 : transitionBackgroundGraphics.Length;
-        for (int i = 0; i < count; i++)
-        {
-            Graphic graphic = transitionBackgroundGraphics[i];
-            if (graphic == null)
-            {
-                continue;
-            }
-
-            Color original = originalTransitionColors[i];
-            Color black = new Color(0f, 0f, 0f, original.a);
-
-            if (opening)
-            {
-                graphic.color = Color.Lerp(black, original, progress);
-            }
-            else
-            {
-                Color start = startColors != null && i < startColors.Length ? startColors[i] : original;
-                Color targetBlack = new Color(0f, 0f, 0f, start.a);
-                graphic.color = Color.Lerp(start, targetBlack, progress);
             }
         }
     }

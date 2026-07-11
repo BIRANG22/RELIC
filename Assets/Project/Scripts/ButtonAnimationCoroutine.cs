@@ -65,17 +65,13 @@ public class ButtonAnimationCoroutine : MonoBehaviour, IPointerEnterHandler, IPo
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        // 패널 펼침처럼 외부 스크립트가 버튼 위치를 변경한 경우,
-        // 호버 시작 시점의 현재 위치를 새로운 기준 위치로 사용합니다.
-        RefreshButtonOriginBeforeHover();
-
         if (clearClickedStateWhenAnotherButtonHovered)
         {
             ClearOtherClickedButton();
         }
 
         isPointerInside = true;
-        AnimateToCurrentVisualState();
+        StartVisualAnimationIfNeeded();
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -84,7 +80,7 @@ public class ButtonAnimationCoroutine : MonoBehaviour, IPointerEnterHandler, IPo
 
         if (isClicked && keepClickedStateWhenPointerExit && usePersistentClickedState)
         {
-            ApplyVisualStateImmediately();
+            StartVisualAnimationIfNeeded();
             return;
         }
 
@@ -95,7 +91,7 @@ public class ButtonAnimationCoroutine : MonoBehaviour, IPointerEnterHandler, IPo
             currentClickedButton = null;
         }
 
-        AnimateToCurrentVisualState();
+        StartVisualAnimationIfNeeded();
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -123,7 +119,7 @@ public class ButtonAnimationCoroutine : MonoBehaviour, IPointerEnterHandler, IPo
             currentClickedButton = null;
         }
 
-        AnimateToCurrentVisualState();
+        StartVisualAnimationIfNeeded();
     }
 
     public void ForceClearState(bool animate)
@@ -138,7 +134,7 @@ public class ButtonAnimationCoroutine : MonoBehaviour, IPointerEnterHandler, IPo
 
         if (animate)
         {
-            AnimateToCurrentVisualState();
+            StartVisualAnimationIfNeeded();
         }
         else
         {
@@ -160,7 +156,9 @@ public class ButtonAnimationCoroutine : MonoBehaviour, IPointerEnterHandler, IPo
     private void CacheOriginValuesIfNeeded()
     {
         if (hasCachedOriginValues)
+        {
             return;
+        }
 
         CacheOriginValues();
         hasCachedOriginValues = true;
@@ -186,114 +184,157 @@ public class ButtonAnimationCoroutine : MonoBehaviour, IPointerEnterHandler, IPo
         }
     }
 
-
-    /// <summary>
-    /// 외부 애니메이션이 버튼 위치를 변경한 뒤 현재 값을 기준값으로 다시 저장합니다.
-    /// 패널 펼침 애니메이션이 완료된 후 직접 호출해도 됩니다.
-    /// </summary>
-    public void RefreshOriginValues()
+    private void StartVisualAnimationIfNeeded()
     {
-        StopVisualAnimation();
-        CacheOriginValues();
-        hasCachedOriginValues = true;
-    }
-
-    private void RefreshButtonOriginBeforeHover()
-    {
-        if (buttonContent == null || isPointerInside || isClicked)
-            return;
-
-        // 이동 오프셋이 없는 버튼은 다른 스크립트가 현재 위치를 관리하므로
-        // 현재 위치를 기준 위치로 갱신해 -500 등의 과거 위치로 돌아가지 않게 합니다.
-        originButtonPosition = buttonContent.anchoredPosition;
-        originButtonScale = buttonContent.localScale;
-    }
-
-    private bool ShouldAnimateButtonPosition()
-    {
-        return hoverButtonMoveOffset.sqrMagnitude > 0.000001f;
-    }
-
-    private void AnimateToCurrentVisualState()
-    {
-        StopVisualAnimation();
-
         if (!isActiveAndEnabled || !gameObject.activeInHierarchy)
         {
             ApplyVisualStateImmediately();
             return;
         }
 
-        visualCoroutine = StartCoroutine(AnimateVisualState());
+        // 상태가 빠르게 바뀌어도 기존 코루틴을 중단하고 다시 만들지 않는다.
+        // 실행 중인 하나의 코루틴이 매 프레임 최신 목표 위치를 따라가므로
+        // 호버를 빠르게 반복해도 중간 위치가 새로운 원점처럼 누적되지 않는다.
+        if (visualCoroutine == null)
+        {
+            visualCoroutine = StartCoroutine(AnimateVisualState());
+        }
     }
 
     private void StopVisualAnimation()
     {
-        if (visualCoroutine != null)
+        if (visualCoroutine == null)
         {
-            StopCoroutine(visualCoroutine);
-            visualCoroutine = null;
+            return;
         }
+
+        StopCoroutine(visualCoroutine);
+        visualCoroutine = null;
     }
 
     private IEnumerator AnimateVisualState()
     {
-        Vector3 startButtonPosition = buttonContent != null ? buttonContent.anchoredPosition : Vector3.zero;
-        Vector3 startButtonScale = buttonContent != null ? buttonContent.localScale : Vector3.one;
-        Vector3 startChangingBackgroundPosition = changingBackgroundImage != null ? changingBackgroundImage.anchoredPosition : Vector3.zero;
-        Quaternion startChangingBackgroundRotation = changingBackgroundImage != null ? changingBackgroundImage.localRotation : Quaternion.identity;
-        Color startColor = changingBackgroundGraphic != null ? changingBackgroundGraphic.color : Color.white;
-
-        Vector3 targetButtonPosition = GetTargetButtonPosition();
-        Vector3 targetButtonScale = GetTargetButtonScale();
-        Vector3 targetChangingBackgroundPosition = GetTargetChangingBackgroundPosition();
-        Quaternion targetChangingBackgroundRotation = GetTargetChangingBackgroundRotation();
-        Color targetColor = GetTargetChangingBackgroundColor();
-
-        float safeDuration = Mathf.Max(0.01f, Mathf.Max(hoverDuration, changingBackgroundDuration));
-        float elapsedTime = 0f;
-
-        while (elapsedTime < safeDuration)
+        while (true)
         {
-            elapsedTime += Time.unscaledDeltaTime;
-            float t = Mathf.Clamp01(elapsedTime / safeDuration);
-            t = Mathf.SmoothStep(0f, 1f, t);
+            float buttonT = GetFrameT(hoverDuration);
+            float backgroundT = GetFrameT(changingBackgroundDuration);
 
             if (buttonContent != null)
             {
-                // 이동 오프셋이 0이면 위치는 펼침 애니메이션 등 외부 로직에 맡기고
-                // 이 스크립트에서는 크기 효과만 적용합니다.
-                if (ShouldAnimateButtonPosition())
+                // 이동 오프셋이 0인 버튼은 외부 패널 애니메이션이 정한 위치를 유지합니다.
+                // 싱글/멀티 패널처럼 펼침 스크립트가 위치를 제어하는 경우
+                // 이 스크립트가 저장해 둔 -500 위치로 되돌리지 않도록 합니다.
+                if (UsesButtonPositionAnimation())
                 {
-                    buttonContent.anchoredPosition = Vector3.Lerp(startButtonPosition, targetButtonPosition, t);
+                    buttonContent.anchoredPosition = Vector3.Lerp(
+                        buttonContent.anchoredPosition,
+                        GetTargetButtonPosition(),
+                        buttonT);
                 }
 
-                buttonContent.localScale = Vector3.Lerp(startButtonScale, targetButtonScale, t);
+                buttonContent.localScale = Vector3.Lerp(
+                    buttonContent.localScale,
+                    GetTargetButtonScale(),
+                    buttonT);
             }
 
             if (changingBackgroundImage != null)
             {
-                changingBackgroundImage.anchoredPosition = Vector3.Lerp(startChangingBackgroundPosition, targetChangingBackgroundPosition, t);
-                changingBackgroundImage.localRotation = Quaternion.Slerp(startChangingBackgroundRotation, targetChangingBackgroundRotation, t);
+                if (UsesChangingBackgroundPositionAnimation())
+                {
+                    changingBackgroundImage.anchoredPosition = Vector3.Lerp(
+                        changingBackgroundImage.anchoredPosition,
+                        GetTargetChangingBackgroundPosition(),
+                        backgroundT);
+                }
+
+                changingBackgroundImage.localRotation = Quaternion.Slerp(
+                    changingBackgroundImage.localRotation,
+                    GetTargetChangingBackgroundRotation(),
+                    backgroundT);
             }
 
             if (changingBackgroundGraphic != null)
             {
-                changingBackgroundGraphic.color = Color.Lerp(startColor, targetColor, t);
+                changingBackgroundGraphic.color = Color.Lerp(
+                    changingBackgroundGraphic.color,
+                    GetTargetChangingBackgroundColor(),
+                    backgroundT);
+            }
+
+            if (HasReachedCurrentTarget())
+            {
+                ApplyVisualStateImmediately();
+                visualCoroutine = null;
+                yield break;
             }
 
             yield return null;
         }
+    }
 
-        ApplyVisualStateImmediately();
-        visualCoroutine = null;
+    private static float GetFrameT(float duration)
+    {
+        if (duration <= 0f)
+        {
+            return 1f;
+        }
+
+        return 1f - Mathf.Exp(-8f * Time.unscaledDeltaTime / duration);
+    }
+
+    private bool HasReachedCurrentTarget()
+    {
+        const float positionThreshold = 0.01f;
+        const float scaleThreshold = 0.0001f;
+        const float rotationThreshold = 0.05f;
+        const float colorThreshold = 0.0001f;
+
+        if (buttonContent != null)
+        {
+            if (UsesButtonPositionAnimation() &&
+                (buttonContent.anchoredPosition - (Vector2)GetTargetButtonPosition()).sqrMagnitude > positionThreshold * positionThreshold)
+            {
+                return false;
+            }
+
+            if ((buttonContent.localScale - GetTargetButtonScale()).sqrMagnitude > scaleThreshold)
+            {
+                return false;
+            }
+        }
+
+        if (changingBackgroundImage != null)
+        {
+            if (UsesChangingBackgroundPositionAnimation() &&
+                (changingBackgroundImage.anchoredPosition - (Vector2)GetTargetChangingBackgroundPosition()).sqrMagnitude > positionThreshold * positionThreshold)
+            {
+                return false;
+            }
+
+            if (Quaternion.Angle(changingBackgroundImage.localRotation, GetTargetChangingBackgroundRotation()) > rotationThreshold)
+            {
+                return false;
+            }
+        }
+
+        if (changingBackgroundGraphic != null)
+        {
+            Color difference = changingBackgroundGraphic.color - GetTargetChangingBackgroundColor();
+            if (difference.r * difference.r + difference.g * difference.g + difference.b * difference.b + difference.a * difference.a > colorThreshold)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private void ApplyVisualStateImmediately()
     {
         if (buttonContent != null)
         {
-            if (ShouldAnimateButtonPosition())
+            if (UsesButtonPositionAnimation())
             {
                 buttonContent.anchoredPosition = GetTargetButtonPosition();
             }
@@ -303,7 +344,11 @@ public class ButtonAnimationCoroutine : MonoBehaviour, IPointerEnterHandler, IPo
 
         if (changingBackgroundImage != null)
         {
-            changingBackgroundImage.anchoredPosition = GetTargetChangingBackgroundPosition();
+            if (UsesChangingBackgroundPositionAnimation())
+            {
+                changingBackgroundImage.anchoredPosition = GetTargetChangingBackgroundPosition();
+            }
+
             changingBackgroundImage.localRotation = GetTargetChangingBackgroundRotation();
         }
 
@@ -311,6 +356,24 @@ public class ButtonAnimationCoroutine : MonoBehaviour, IPointerEnterHandler, IPo
         {
             changingBackgroundGraphic.color = GetTargetChangingBackgroundColor();
         }
+    }
+
+
+    /// <summary>
+    /// 버튼 이동 오프셋이 실제로 설정된 경우에만 버튼 위치를 제어합니다.
+    /// 값이 0이면 다른 패널 애니메이션이 관리하는 위치를 건드리지 않습니다.
+    /// </summary>
+    private bool UsesButtonPositionAnimation()
+    {
+        return hoverButtonMoveOffset.sqrMagnitude > 0.000001f;
+    }
+
+    /// <summary>
+    /// 변경 배경의 이동 오프셋이 설정된 경우에만 위치를 제어합니다.
+    /// </summary>
+    private bool UsesChangingBackgroundPositionAnimation()
+    {
+        return hoverChangingBackgroundMoveOffset.sqrMagnitude > 0.000001f;
     }
 
     private Vector3 GetTargetButtonPosition()
