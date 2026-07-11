@@ -1,4 +1,4 @@
-using UnityEngine;
+Ôªøusing UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Relic.Gameplay.Data;
@@ -139,7 +139,7 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
         if (owner != null && owner.EquipSelectedInventoryRelicToSlot(characterId, relicSlotIndex))
         {
             Debug.Log(
-                $"[EquippedRelicSlotUI] º±≈√«— ¿Øπ∞ ¿Â¬¯ / Character:{characterId} / Slot:{relicSlotIndex + 1}"
+                $"[EquippedRelicSlotUI] ÏÑ†ÌÉùÌïú Ïú†Î¨º Ïû•Ï∞© / Character:{characterId} / Slot:{relicSlotIndex + 1}"
             );
 
             return;
@@ -152,7 +152,7 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
             owner?.UnequipRelic(characterId, relicSlotIndex);
 
             Debug.Log(
-                $"[EquippedRelicSlotUI] ¿Øπ∞ «ÿ¡¶ / Character:{characterId} / Slot:{relicSlotIndex + 1} / Relic:{equippedRelicId}"
+                $"[EquippedRelicSlotUI] Ïú†Î¨º Ìï¥Ï†ú / Character:{characterId} / Slot:{relicSlotIndex + 1} / Relic:{equippedRelicId}"
             );
 
             return;
@@ -161,7 +161,7 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
         owner?.SelectEquipSlot(characterId, relicSlotIndex);
 
         Debug.Log(
-            $"[EquippedRelicSlotUI] ∫Û ΩΩ∑‘ º±≈√ / Character:{characterId} / Slot:{relicSlotIndex + 1}"
+            $"[EquippedRelicSlotUI] Îπà Ïä¨Î°Ø ÏÑ†ÌÉù / Character:{characterId} / Slot:{relicSlotIndex + 1}"
         );
     }
 

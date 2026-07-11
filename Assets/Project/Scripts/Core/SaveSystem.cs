@@ -199,10 +199,6 @@ public class SaveSystem : Singleton<SaveSystem>
         dataManager.PlayerRuntimeStore?.SetData(saveData.Player);
         ApplyPartyData(dataManager.PartyRuntimeStore, saveData.Party);
         dataManager.CharacterRuntimeStore?.SetAll(saveData.Characters);
-        CharacterStartingRelicUtility.EnsureAllStartingRelicsEquippedIfEmpty(
-            dataManager.CharacterRuntimeStore,
-            dataManager.CharacterDatabase,
-            dataManager.RelicDatabase);
         dataManager.SkillRuntimeStore?.SetAll(saveData.Skills);
         dataManager.MapRuntimeStore?.Set(saveData.Map);
         dataManager.BattleRuntimeStore?.Set(saveData.Battle);
