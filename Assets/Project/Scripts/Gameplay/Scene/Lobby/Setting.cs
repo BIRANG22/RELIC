@@ -16,6 +16,7 @@ public class Setting : MonoBehaviour
     [Header("Setting Panel Scripts")]
     [SerializeField] private RuneSettingPanel runeSettingPanelScript;
     [SerializeField] private SkillSettingPanel skillSettingPanelScript;
+    [SerializeField] private CharPick charPick;
 
     [Header("Character Level UI")]
     [SerializeField] private TMP_Text characterLevelText;
@@ -88,6 +89,9 @@ public class Setting : MonoBehaviour
     {
         if (warningUI == null)
             warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
+
+        if (charPick == null)
+            charPick = FindFirstObjectByType<CharPick>(FindObjectsInactive.Include);
 
         if (runeSettingPanelScript != null)
             runeSettingPanelScript.OnRuneChanged += RefreshCharacterInfo;
@@ -323,6 +327,9 @@ public class Setting : MonoBehaviour
         if (skillSettingPanelScript != null)
             skillSettingPanelScript.SetSkillSelectPanelVisible(false);
 
+        if (charPick != null)
+            charPick.ShowCurrentPreviewNormal();
+
         SetFixedInfoArea(null);
         RefreshTabButtons();
     }
@@ -337,6 +344,9 @@ public class Setting : MonoBehaviour
 
         if (skillSettingPanelScript != null)
             skillSettingPanelScript.SetSkillSelectPanelVisible(true);
+
+        if (charPick != null)
+            charPick.ShowCurrentPreviewSkill();
 
         if (skillInfoArea != null)
             skillInfoArea.gameObject.SetActive(true);
@@ -363,6 +373,9 @@ public class Setting : MonoBehaviour
 
         if (skillSettingPanelScript != null)
             skillSettingPanelScript.SetSkillSelectPanelVisible(false);
+
+        if (charPick != null)
+            charPick.ShowCurrentPreviewRune();
 
         if (skillInfoArea != null)
             skillInfoArea.gameObject.SetActive(false);
