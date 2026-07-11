@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using UnityEngine;
@@ -24,7 +24,7 @@ public class RelicEquipPanelUI : MonoBehaviour
     private RelicIconUI selectedInventoryRelicIcon;
 
     [SerializeField] private bool lockEditInBattleRoom = true;
-    [SerializeField] private string battleRoomLockMessage = "ÀüÅõ Áß¿¡´Â À¯¹°À» º¯°æÇÒ ¼ö ¾ø½À´Ï´Ù.";
+    [SerializeField] private string battleRoomLockMessage = "ì „íˆ¬ ì¤‘ì—ëŠ” ìœ ë¬¼ì„ ë³€ê²½í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.";
 
     private void Awake()
     {
@@ -67,7 +67,7 @@ public class RelicEquipPanelUI : MonoBehaviour
         selectedRelicSlotIndex = relicSlotIndex;
         UpdateEquippedSlotSelectionVisuals();
 
-        Debug.Log($"[RelicEquipPanelUI] ÀåÂø ½½·Ô ¼±ÅÃ / Character:{selectedCharacterId} / RelicSlot:{selectedRelicSlotIndex + 1}");
+        Debug.Log($"[RelicEquipPanelUI] ì¥ì°© ìŠ¬ë¡¯ ì„ íƒ / Character:{selectedCharacterId} / RelicSlot:{selectedRelicSlotIndex + 1}");
     }
 
     public void SelectInventoryRelicIcon(RelicIconUI selectedIcon)
@@ -95,20 +95,20 @@ public class RelicEquipPanelUI : MonoBehaviour
         if (UIPanelButton.IsMenuPanelOpen)
             return;
 
-        Debug.Log($"[RelicEquipPanelUI] À¯¹° Å¬¸¯ / Character:{selectedCharacterId} / RelicSlot:{selectedRelicSlotIndex + 1} / Relic:{relicId}");
+        Debug.Log($"[RelicEquipPanelUI] ìœ ë¬¼ í´ë¦­ / Character:{selectedCharacterId} / RelicSlot:{selectedRelicSlotIndex + 1} / Relic:{relicId}");
 
         if (string.IsNullOrWhiteSpace(relicId))
             return;
 
         if (string.IsNullOrWhiteSpace(selectedCharacterId))
         {
-            Debug.Log("[RelicEquipPanelUI] À¯¹° ¸ÕÀú ¼±ÅÃµÊ. ÀåÂøÇÒ À¯¹° ½½·ÔÀ» ¼±ÅÃÇÏ¸é ÀåÂøµË´Ï´Ù.");
+            Debug.Log("[RelicEquipPanelUI] ìœ ë¬¼ ë¨¼ì € ì„ íƒë¨. ì¥ì°©í•  ìœ ë¬¼ ìŠ¬ë¡¯ì„ ì„ íƒí•˜ë©´ ì¥ì°©ë©ë‹ˆë‹¤.");
             return;
         }
 
         if (selectedRelicSlotIndex < 0)
         {
-            Debug.Log("[RelicEquipPanelUI] À¯¹° ¸ÕÀú ¼±ÅÃµÊ. ÀåÂøÇÒ À¯¹° ½½·ÔÀ» ¼±ÅÃÇÏ¸é ÀåÂøµË´Ï´Ù.");
+            Debug.Log("[RelicEquipPanelUI] ìœ ë¬¼ ë¨¼ì € ì„ íƒë¨. ì¥ì°©í•  ìœ ë¬¼ ìŠ¬ë¡¯ì„ ì„ íƒí•˜ë©´ ì¥ì°©ë©ë‹ˆë‹¤.");
             return;
         }
 
@@ -173,7 +173,8 @@ public class RelicEquipPanelUI : MonoBehaviour
 
         RelicEquipService service = new RelicEquipService(
             DataManager.Instance.CharacterRuntimeStore,
-            battleRuntimeData
+            battleRuntimeData,
+            DataManager.Instance.RelicDatabase
         );
 
         if (service.EquipRelic(characterId, relicSlotIndex, relicId))
@@ -466,7 +467,8 @@ public class RelicEquipPanelUI : MonoBehaviour
 
         RelicEquipService service = new RelicEquipService(
             DataManager.Instance.CharacterRuntimeStore,
-            battleRuntimeData
+            battleRuntimeData,
+            DataManager.Instance.RelicDatabase
         );
 
         if (service.UnequipRelic(characterId, relicSlotIndex))

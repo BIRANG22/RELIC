@@ -1,4 +1,4 @@
-using UnityEngine;
+Ôªøusing UnityEngine;
 
 namespace Relic.Gameplay.Data
 {
@@ -6,13 +6,16 @@ namespace Relic.Gameplay.Data
     {
         private readonly CharacterRuntimeStore characterStore;
         private readonly BattleRuntimeData battleRuntimeData;
+        private readonly RelicDatabase relicDatabase;
 
         public RelicEquipService(
             CharacterRuntimeStore characterStore,
-            BattleRuntimeData battleRuntimeData)
+            BattleRuntimeData battleRuntimeData,
+            RelicDatabase relicDatabase)
         {
             this.characterStore = characterStore;
             this.battleRuntimeData = battleRuntimeData;
+            this.relicDatabase = relicDatabase;
         }
 
         public bool EquipRelic(string characterId, int slotIndex, string relicId)
@@ -28,17 +31,23 @@ namespace Relic.Gameplay.Data
 
             relicId = relicId.Trim();
 
+            if (!CanEquipRelicInSlot(slotIndex, relicId))
+            {
+                Debug.LogWarning($"[RelicEquipService] Ïä¨Î°Ø ÌÉÄÏûÖ Î∂àÏùºÏπò / Relic:{relicId} / Slot:{slotIndex + 1}");
+                return false;
+            }
+
             if (battleRuntimeData == null ||
                 battleRuntimeData.OwnedRelicIds == null ||
                 !HasOwnedRelic(relicId))
             {
-                Debug.LogWarning($"[RelicEquipService] ∫∏¿Ø«œ¡ˆ æ ¿∫ ¿Øπ∞: {relicId}");
+                Debug.LogWarning($"[RelicEquipService] Î≥¥Ïú†ÌïòÏßÄ ÏïäÏùÄ Ïú†Î¨º: {relicId}");
                 return false;
             }
 
             if (!characterStore.TryGet(characterId, out CharacterRuntimeData character))
             {
-                Debug.LogWarning($"[RelicEquipService] ƒ≥∏Ø≈Õ æ¯¿Ω: {characterId}");
+                Debug.LogWarning($"[RelicEquipService] Ï∫êÎ¶≠ÌÑ∞ ÏóÜÏùå: {characterId}");
                 return false;
             }
 
@@ -56,6 +65,19 @@ namespace Relic.Gameplay.Data
                 ResetActiveRelicUsesForEquippedRelic(character, relicId);
 
             return true;
+        }
+
+        private bool CanEquipRelicInSlot(int slotIndex, string relicId)
+        {
+            if (relicDatabase == null ||
+                !relicDatabase.TryGet(relicId, out RelicData relic))
+            {
+                return false;
+            }
+
+            bool isActiveRelic = ActiveRelicEffectResolver.IsActiveRelic(relic);
+            bool isActiveSlot = slotIndex == ActiveRelicRuntimeUtility.ActiveRelicSlotIndex;
+            return isActiveRelic == isActiveSlot;
         }
 
         public bool UnequipRelic(string characterId, int slotIndex)

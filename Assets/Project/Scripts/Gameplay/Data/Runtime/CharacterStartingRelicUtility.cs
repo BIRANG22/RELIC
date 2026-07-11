@@ -4,13 +4,7 @@ namespace Relic.Gameplay.Data
     {
         public static string[] CreateStartingRelicSlots(CharacterMasterData master)
         {
-            string[] slots = new string[ActiveRelicRuntimeUtility.EquippedRelicSlotCount];
-
-            string relicId = master?.Relic?.Trim();
-            if (!string.IsNullOrWhiteSpace(relicId))
-                slots[ActiveRelicRuntimeUtility.ActiveRelicSlotIndex] = relicId;
-
-            return slots;
+            return new string[ActiveRelicRuntimeUtility.EquippedRelicSlotCount];
         }
 
         public static void ApplyStartingRelic(
@@ -30,27 +24,7 @@ namespace Relic.Gameplay.Data
             CharacterMasterData master,
             RelicDatabase relicDatabase)
         {
-            if (runtime == null || master == null)
-                return false;
-
-            ActiveRelicRuntimeUtility.EnsureRelicSlots(runtime);
-
-            string currentRelicId =
-                runtime.EquippedRelicIds[ActiveRelicRuntimeUtility.ActiveRelicSlotIndex];
-
-            if (!string.IsNullOrWhiteSpace(currentRelicId))
-                return false;
-
-            string startingRelicId = master.Relic?.Trim();
-
-            if (string.IsNullOrWhiteSpace(startingRelicId))
-                return false;
-
-            runtime.EquippedRelicIds[ActiveRelicRuntimeUtility.ActiveRelicSlotIndex] =
-                startingRelicId;
-
-            InitializeActiveRelicUses(runtime, relicDatabase);
-            return true;
+            return false;
         }
 
         public static int EnsureAllStartingRelicsEquippedIfEmpty(
