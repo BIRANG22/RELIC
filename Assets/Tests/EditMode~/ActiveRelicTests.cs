@@ -41,7 +41,7 @@ public class ActiveRelicTests
     }
 
     [Test]
-    public void CharacterStartingRelicUtility_EquipsMasterRelicIntoFirstSlot()
+    public void CharacterStartingRelicUtility_LeavesAllSlotsEmpty()
     {
         CharacterMasterData master = new()
         {
@@ -52,12 +52,12 @@ public class ActiveRelicTests
         string[] slots = CharacterStartingRelicUtility.CreateStartingRelicSlots(master);
 
         Assert.That(slots, Has.Length.EqualTo(5));
-        Assert.That(slots[0], Is.EqualTo("Relic_11"));
+        Assert.That(slots[0], Is.Null.Or.Empty);
         Assert.That(slots[1], Is.Null.Or.Empty);
     }
 
     [Test]
-    public void CharacterStartingRelicUtility_FillsEmptyExistingFirstSlot()
+    public void CharacterStartingRelicUtility_DoesNotFillEmptyExistingFirstSlot()
     {
         CharacterRuntimeData runtime = new()
         {
@@ -75,8 +75,8 @@ public class ActiveRelicTests
             master,
             null);
 
-        Assert.That(changed, Is.True);
-        Assert.That(runtime.EquippedRelicIds[0], Is.EqualTo("Relic_11"));
+        Assert.That(changed, Is.False);
+        Assert.That(runtime.EquippedRelicIds[0], Is.Null.Or.Empty);
     }
 
     [Test]
@@ -136,5 +136,41 @@ public class ActiveRelicTests
         Assert.That(
             ActiveRelicEffectResolver.ResolveEffectId(relic),
             Is.EqualTo(ActiveRelicEffectIds.MoveToGrid));
+    }
+
+    [TestCase("Relic_11", 0, true)]
+    [TestCase("Relic_11", 1, false)]
+    [TestCase("Relic_01", 0, false)]
+    [TestCase("Relic_01", 1, true)]
+    public void RelicEquipService_AllowsRelicsOnlyInMatchingSlotType(
+        string relicId,
+        int slotIndex,
+        bool expected)
+    {
+        CharacterRuntimeStore characterStore = new();
+        characterStore.SetAll(new[]
+        {
+            new CharacterRuntimeData
+            {
+                CharacterId = "Char_01",
+                EquippedRelicIds = new string[5]
+            }
+        });
+
+        BattleRuntimeData battleRuntime = new()
+        {
+            OwnedRelicIds = new List<string> { relicId }
+        };
+
+        RelicDatabase relicDatabase = new();
+        relicDatabase.Initialize(new[]
+        {
+            new RelicData { FragmentId = "Relic_11", Type = "Active" },
+            new RelicData { FragmentId = "Relic_01", Type = "Passive" }
+        });
+
+        RelicEquipService service = new(characterStore, battleRuntime, relicDatabase);
+
+        Assert.That(service.EquipRelic("Char_01", slotIndex, relicId), Is.EqualTo(expected));
     }
 }
