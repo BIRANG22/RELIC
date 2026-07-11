@@ -155,7 +155,16 @@ public class TitleManager : MonoBehaviour
 
             if (panel.activeSelf)
             {
-                panel.SetActive(false);
+                TitleModePanelSpreadAnimator animator = panel.GetComponent<TitleModePanelSpreadAnimator>();
+
+                if (animator != null)
+                {
+                    animator.Close();
+                }
+                else
+                {
+                    panel.SetActive(false);
+                }
             }
         }
     }

@@ -47,6 +47,7 @@ public class UIManager : Singleton<UIManager>
     private static int lastConfirmClosedByEscapeFrame = -1;
 
     private GameObject optionPanelInstance;
+    private OptionPanelTransition optionPanelTransition;
     private GameObject confirmDialogInstance;
     private BootstrapConfirmDialogUI confirmDialogUI;
 
@@ -104,6 +105,10 @@ public class UIManager : Singleton<UIManager>
         }
 
         optionPanelInstance = Instantiate(optionPanelPrefab, mainCanvas.transform, false);
+        optionPanelTransition = optionPanelInstance.GetComponent<OptionPanelTransition>();
+        if (optionPanelTransition == null)
+            optionPanelTransition = optionPanelInstance.AddComponent<OptionPanelTransition>();
+
         ApplyOptionPanelScale();
         BringOptionPanelToFront();
         optionPanelInstance.SetActive(false);
@@ -140,9 +145,17 @@ public class UIManager : Singleton<UIManager>
 
         if (optionPanelInstance != null)
         {
+            if (optionPanelTransition == null)
+            {
+                optionPanelTransition = optionPanelInstance.GetComponent<OptionPanelTransition>();
+                if (optionPanelTransition == null)
+                    optionPanelTransition = optionPanelInstance.AddComponent<OptionPanelTransition>();
+            }
+
             ApplyOptionPanelScale();
             optionPanelInstance.SetActive(true);
             BringOptionPanelToFront();
+            optionPanelTransition.PlayOpen();
         }
     }
 
@@ -338,11 +351,38 @@ public class UIManager : Singleton<UIManager>
 
     public void HideOption()
     {
+        HideOption(false);
+    }
+
+    /// <summary>
+    /// 설정 패널을 닫습니다.
+    /// immediate가 true이면 연출 없이 즉시 비활성화합니다.
+    /// </summary>
+    public void HideOption(bool immediate)
+    {
         if (optionPanelInstance == null)
             return;
 
         ClearSelectedObjectIfInsideOptionPanel();
-        optionPanelInstance.SetActive(false);
+
+        if (immediate || !optionPanelInstance.activeInHierarchy)
+        {
+            optionPanelInstance.SetActive(false);
+            return;
+        }
+
+        if (optionPanelTransition == null)
+        {
+            optionPanelTransition = optionPanelInstance.GetComponent<OptionPanelTransition>();
+            if (optionPanelTransition == null)
+                optionPanelTransition = optionPanelInstance.AddComponent<OptionPanelTransition>();
+        }
+
+        optionPanelTransition.PlayClose(() =>
+        {
+            if (optionPanelInstance != null)
+                optionPanelInstance.SetActive(false);
+        });
     }
 
     public bool TryHideOptionIfOpen(bool closedByEscape = false)
@@ -360,7 +400,7 @@ public class UIManager : Singleton<UIManager>
 
     public void HideAll()
     {
-        HideOption();
+        HideOption(true);
         HideConfirmDialog();
     }
 

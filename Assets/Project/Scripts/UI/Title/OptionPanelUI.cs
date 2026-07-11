@@ -87,10 +87,14 @@ public class OptionPanelUI : MonoBehaviour
 
     public void ShowResolution()
     {
+        CancelScheduledResolutionDropdown();
         SetupResolutionDropdown();
-        ShowContent(resolutionContent);
 
-        ScheduleOpenResolutionDropdown();
+        // 해상도 항목을 열 때 드롭다운 목록은 닫힌 상태로 시작합니다.
+        if (resolutionDropdown != null)
+            resolutionDropdown.Hide();
+
+        ShowContent(resolutionContent);
     }
 
     public void ShowControl()
