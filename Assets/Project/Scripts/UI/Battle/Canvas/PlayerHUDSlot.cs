@@ -36,16 +36,8 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
     [SerializeField] private TMP_Text hpValueText;
 
     [Header("Cost")]
-    [SerializeField] private Transform costSlotRoot;
-    [SerializeField] private GameObject[] costSlots;
-    [SerializeField] private Image[] costSlotImages;
     [SerializeField] private TMP_Text costValueText;
-    [SerializeField] private bool autoFindCostSlots = true;
-    [SerializeField] private string costSlotRootName = "CostBar";
-    [SerializeField] private string costSlotNamePrefix = "Fill_";
-    [SerializeField] private int maxCostSlotCount = 20;
-    [SerializeField] private float oneRowCostScale = 1f;
-    [SerializeField] private float twoRowCostScale = 0.75f;
+    [SerializeField] private bool showMaxCost = true;
 
     [Header("Unique Resource")]
     [SerializeField] private Transform resourceSlotRoot;
@@ -84,7 +76,6 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
         SetupHudClickSelection();
         ResolveKeyboardNumberReferences();
         ResolveCommandSelectedHighlightReferences();
-        ResolveCostSlotReferences();
         ResolveResourceSlotReferences();
         ApplyStatusEffectParentLayout();
         ApplyKeyboardNumberVisual();
@@ -95,7 +86,6 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
     {
         SetupHudClickSelection();
         ResolveKeyboardNumberReferences();
-        ResolveCostSlotReferences();
         ResolveResourceSlotReferences();
         ApplyKeyboardNumberVisual();
 
@@ -109,7 +99,6 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
         boundMaster = null;
 
         ResolveCommandSelectedHighlightReferences();
-        ResolveCostSlotReferences();
         ResolveResourceSlotReferences();
         ApplyStatusEffectParentLayout();
 
@@ -174,39 +163,15 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
 
     private void RefreshCost(int currentCost, int maxCost)
     {
-        ResolveCostSlotReferences();
-
-        maxCost = Mathf.Clamp(maxCost, 0, Mathf.Max(0, maxCostSlotCount));
+        maxCost = Mathf.Max(0, maxCost);
         currentCost = Mathf.Clamp(currentCost, 0, maxCost);
 
-        int slotCount = costSlots != null ? costSlots.Length : 0;
-        float targetScale = maxCost > 10 ? twoRowCostScale : oneRowCostScale;
+        if (costValueText == null)
+            return;
 
-        for (int i = 0; i < slotCount; i++)
-        {
-            bool useSlot = i < maxCost;
-            bool filled = useSlot && i < currentCost;
-
-            if (costSlots[i] != null)
-            {
-                costSlots[i].SetActive(useSlot);
-                costSlots[i].transform.localScale = Vector3.one * Mathf.Max(0.01f, targetScale);
-            }
-
-            if (costSlotImages == null || i >= costSlotImages.Length)
-                continue;
-
-            Image slotImage = costSlotImages[i];
-
-            if (slotImage == null)
-                continue;
-
-            slotImage.enabled = filled;
-            slotImage.gameObject.SetActive(filled);
-        }
-
-        if (costValueText != null)
-            costValueText.text = currentCost.ToString();
+        costValueText.text = showMaxCost
+            ? $"{currentCost} / {maxCost}"
+            : currentCost.ToString();
     }
 
     private void RefreshUniqueResource(int currentResource, int maxResource)
@@ -387,48 +352,6 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
 
         if (commandSelectedHighlightImage == null && commandSelectedHighlightObject != null)
             commandSelectedHighlightImage = commandSelectedHighlightObject.GetComponent<Image>();
-    }
-
-    private void ResolveCostSlotReferences()
-    {
-        if (!autoFindCostSlots)
-            return;
-
-        if (costSlotRoot == null)
-        {
-            GameObject rootObject = FindChildGameObjectByName(costSlotRootName);
-
-            if (rootObject != null)
-                costSlotRoot = rootObject.transform;
-        }
-
-        if (costSlotRoot == null)
-            return;
-
-        int slotCount = Mathf.Max(0, maxCostSlotCount);
-
-        if (costSlots == null || costSlots.Length != slotCount)
-            costSlots = new GameObject[slotCount];
-
-        if (costSlotImages == null || costSlotImages.Length != slotCount)
-            costSlotImages = new Image[slotCount];
-
-        for (int i = 0; i < slotCount; i++)
-        {
-            if (costSlots[i] != null && costSlotImages[i] != null)
-                continue;
-
-            string slotName = costSlotNamePrefix + (i + 1).ToString("00");
-            Transform slotTransform = FindDirectOrNestedChild(costSlotRoot, slotName);
-
-            if (slotTransform == null)
-                continue;
-
-            costSlots[i] = slotTransform.gameObject;
-
-            if (costSlotImages[i] == null)
-                costSlotImages[i] = slotTransform.GetComponent<Image>();
-        }
     }
 
     private void ResolveResourceSlotReferences()
