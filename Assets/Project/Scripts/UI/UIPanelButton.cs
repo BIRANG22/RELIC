@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -157,9 +157,9 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         if (ShouldBlockInteractionByOpenMenuPanel())
             return;
 
-        // ¸¶¿ì½º È£¹ö´Â »ç¿îµå¸¸ Àç»ıÇÕ´Ï´Ù.
-        // ÆĞ³Î ¾ÈÀÇ »õ·ÎÇÏ±â, ÀÌ¾îÇÏ±â, ¹æ »ı¼º, ÀÔÀå ¹öÆ°¿¡ ¸¶¿ì½º¸¦ ¿Ã·ÈÀ» ¶§
-        // ¿­¸° ¸ğµå ÆĞ³ÎÀÌ Á¢È÷´Â Çö»óÀ» ¸·±â À§ÇØ È£¹ö¿¡¼­´Â ÆĞ³ÎÀ» ´İÁö ¾Ê½À´Ï´Ù.
+        // ë§ˆìš°ìŠ¤ í˜¸ë²„ëŠ” ì‚¬ìš´ë“œë§Œ ì¬ìƒí•©ë‹ˆë‹¤.
+        // íŒ¨ë„ ì•ˆì˜ ìƒˆë¡œí•˜ê¸°, ì´ì–´í•˜ê¸°, ë°© ìƒì„±, ì…ì¥ ë²„íŠ¼ì— ë§ˆìš°ìŠ¤ë¥¼ ì˜¬ë ¸ì„ ë•Œ
+        // ì—´ë¦° ëª¨ë“œ íŒ¨ë„ì´ ì ‘íˆëŠ” í˜„ìƒì„ ë§‰ê¸° ìœ„í•´ í˜¸ë²„ì—ì„œëŠ” íŒ¨ë„ì„ ë‹«ì§€ ì•ŠìŠµë‹ˆë‹¤.
         PlayHoverSound();
     }
 
@@ -212,7 +212,7 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
         if (UIManager.Instance == null)
         {
-            Debug.LogWarning("[UIPanelButton] UIManager.Instance¸¦ Ã£Áö ¸øÇß½À´Ï´Ù.");
+            Debug.LogWarning("[UIPanelButton] UIManager.Instanceë¥¼ ì°¾ì§€ ëª»í–ˆìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -231,7 +231,7 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
         if (UIManager.Instance == null)
         {
-            Debug.LogWarning("[UIPanelButton] UIManager.Instance¸¦ Ã£Áö ¸øÇß½À´Ï´Ù.");
+            Debug.LogWarning("[UIPanelButton] UIManager.Instanceë¥¼ ì°¾ì§€ ëª»í–ˆìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -383,10 +383,10 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
         GameObject openedPanel = currentOpenedPanelOwner.panelToOpen;
 
-        // ÇöÀç ¿­¸° ÆĞ³Î ¾È¿¡ ÀÖ´Â ¹öÆ°¿¡ ¸¶¿ì½º¸¦ ¿Ã¸° °æ¿ì¿¡´Â
-        // ´Ù¸¥ ¸Ş´º ¹öÆ°À¸·Î Ãë±ŞÇÏÁö ¾Ê½À´Ï´Ù.
-        // Æ©Åä¸®¾ó, »õ·ÎÇÏ±â, ÀÌ¾îÇÏ±â, ¹æ »ı¼º, Âü¿© ¹öÆ°À»
-        // Á¶ÀÛÇÒ ¶§ ÆîÃÄÁø ¹öÆ°µéÀÌ ´Ù½Ã Á¢È÷´Â °ÍÀ» ¹æÁöÇÕ´Ï´Ù.
+        // í˜„ì¬ ì—´ë¦° íŒ¨ë„ ì•ˆì— ìˆëŠ” ë²„íŠ¼ì— ë§ˆìš°ìŠ¤ë¥¼ ì˜¬ë¦° ê²½ìš°ì—ëŠ”
+        // ë‹¤ë¥¸ ë©”ë‰´ ë²„íŠ¼ìœ¼ë¡œ ì·¨ê¸‰í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+        // íŠœí† ë¦¬ì–¼, ìƒˆë¡œí•˜ê¸°, ì´ì–´í•˜ê¸°, ë°© ìƒì„±, ì°¸ì—¬ ë²„íŠ¼ì„
+        // ì¡°ì‘í•  ë•Œ í¼ì³ì§„ ë²„íŠ¼ë“¤ì´ ë‹¤ì‹œ ì ‘íˆëŠ” ê²ƒì„ ë°©ì§€í•©ë‹ˆë‹¤.
         if (openedPanel != null)
         {
             Transform openedPanelTransform = openedPanel.transform;
@@ -411,9 +411,9 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
             if (titleModeAnimator != null)
             {
-                // ¹öÆ° »óÅÂ ÃÊ±âÈ­°¡ RectTransform À§Ä¡¸¦ ¸ÕÀú ¹Ù²Ù¸é
-                // ´İÈû ¾Ö´Ï¸ŞÀÌ¼ÇÀÌ ½ÃÀÛµÇ±â Àü¿¡ ¹öÆ°ÀÌ Á¢Èù À§Ä¡·Î ¼ø°£ ÀÌµ¿ÇÕ´Ï´Ù.
-                // µû¶ó¼­ ÆîÄ§ ÆĞ³ÎÀº ´İÈû ¿¬ÃâÀÌ ³¡³­ µÚ ¹öÆ° »óÅÂ¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+                // ë²„íŠ¼ ìƒíƒœ ì´ˆê¸°í™”ê°€ RectTransform ìœ„ì¹˜ë¥¼ ë¨¼ì € ë°”ê¾¸ë©´
+                // ë‹«í˜ ì• ë‹ˆë©”ì´ì…˜ì´ ì‹œì‘ë˜ê¸° ì „ì— ë²„íŠ¼ì´ ì ‘íŒ ìœ„ì¹˜ë¡œ ìˆœê°„ ì´ë™í•©ë‹ˆë‹¤.
+                // ë”°ë¼ì„œ í¼ì¹¨ íŒ¨ë„ì€ ë‹«í˜ ì—°ì¶œì´ ëë‚œ ë’¤ ë²„íŠ¼ ìƒíƒœë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
                 titleModeAnimator.Close(ResetButtonAnimationsInClosedPanel);
             }
             else

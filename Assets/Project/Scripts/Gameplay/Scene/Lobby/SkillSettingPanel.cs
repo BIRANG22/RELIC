@@ -1,32 +1,31 @@
 using Relic.Gameplay.Data;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.Serialization;
 
 public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 {
     [Header("Skill Slots")]
     [SerializeField] private SkillSlotButton[] skillSlotButtons;
 
-    [Header("Skill Select Panel")]
-    [SerializeField] private GameObject skillIconSelectPanel;
-    [SerializeField] private SkillIconButton[] skillIconButtons;
+    [Header("Skill Select Panels")]
+    [SerializeField] private GameObject[] skillIconSelectPanels = new GameObject[4];
+    [SerializeField] private float skillSelectPanelHiddenX = 235f;
+    [SerializeField] private float skillSelectPanelVisibleX = -15f;
+    [SerializeField, Min(0.01f)] private float skillSelectPanelMoveDuration = 0.2f;
 
     [Header("Skill Select Button Count")]
     [SerializeField] private int maxVisibleSkillIconButtonCount = 2;
     [SerializeField] private bool autoBindSkillIconButtons = true;
 
-    [Header("Select Panel")]
-    [SerializeField] private bool moveSelectPanelToSlot = false;
-    [SerializeField] private Vector2[] selectPanelPositions;
-
-    [Header("Always Visible")]
-    [SerializeField] private bool keepSkillSelectPanelVisible = true;
-
-    [Header("Skill Info Area")]
-    [SerializeField] private GameObject skillInfoArea;
+    [Header("Shared Info Area")]
+    [FormerlySerializedAs("skillInfoArea")]
+    [SerializeField] private GameObject sharedInfoArea;
     [SerializeField] private TMP_Text skillInfoTitleText;
     [SerializeField] private TMP_Text skillInfoEffectText;
     [SerializeField] private string emptySkillInfoTitle = "스킬명";
@@ -37,6 +36,10 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
     [SerializeField] private SettingWarningUI warningUI;
 
     private SkillSlotButton currentSelectedSlot;
+    private int openedSkillSelectPanelIndex = -1;
+    private Coroutine[] skillSelectPanelMoveCoroutines = new Coroutine[4];
+
+    private bool skillSelectPanelAllowed = true;
 
     private string currentCharacterId;
     private CharacterMasterData currentMasterData;
@@ -54,7 +57,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
         ClearSkillIconButtons();
         ClearSkillInfo();
-        SetSkillSelectPanelVisible(false);
+        SetSkillSelectPanelVisible(false, true);
     }
 
     private void OnEnable()
@@ -69,7 +72,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         SetSelectedSkillSlot(null);
         ClearSkillIconButtons();
         ClearSkillInfo();
-        SetSkillSelectPanelVisible(false);
+        SetSkillSelectPanelVisible(false, true);
     }
 
 #if UNITY_EDITOR
@@ -108,13 +111,20 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
     private void InitSkillIconButtons()
     {
-        if (skillIconButtons == null)
+        BindSkillIconButtonsIfNeeded();
+
+        if (skillIconSelectPanels == null)
             return;
 
-        for (int i = 0; i < skillIconButtons.Length; i++)
+        for (int panelIndex = 0; panelIndex < skillIconSelectPanels.Length; panelIndex++)
         {
-            if (skillIconButtons[i] != null)
-                skillIconButtons[i].Init(this);
+            SkillIconButton[] buttons = GetSkillIconButtons(panelIndex);
+
+            for (int i = 0; i < buttons.Length; i++)
+            {
+                if (buttons[i] != null)
+                    buttons[i].Init(this);
+            }
         }
     }
 
@@ -123,36 +133,36 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (!autoBindSkillIconButtons)
             return;
 
-        if (!NeedsSkillIconButtonBinding())
-            return;
+        if (skillIconSelectPanels == null || skillIconSelectPanels.Length != 4)
+            skillIconSelectPanels = new GameObject[4];
 
-        Transform searchRoot = null;
+        for (int i = 0; i < skillIconSelectPanels.Length; i++)
+        {
+            if (skillIconSelectPanels[i] != null)
+                continue;
 
-        if (skillIconSelectPanel != null)
-            searchRoot = skillIconSelectPanel.transform;
-        else
-            searchRoot = transform.Find("SkillIconSelectPanel");
+            Transform panel = transform.Find("SkillIconSelectPanel_" + i);
 
-        if (searchRoot == null)
-            return;
+            if (panel == null)
+                panel = FindChildByName(transform, "SkillIconSelectPanel_" + i);
 
-        Transform buttonRoot = searchRoot.Find("ButtonRoot");
-        Transform root = buttonRoot != null ? buttonRoot : searchRoot;
-        skillIconButtons = root.GetComponentsInChildren<SkillIconButton>(true);
+            if (panel != null)
+                skillIconSelectPanels[i] = panel.gameObject;
+        }
     }
 
-    private bool NeedsSkillIconButtonBinding()
+    private SkillIconButton[] GetSkillIconButtons(int panelIndex)
     {
-        if (skillIconButtons == null || skillIconButtons.Length == 0)
-            return true;
+        if (skillIconSelectPanels == null ||
+            panelIndex < 0 ||
+            panelIndex >= skillIconSelectPanels.Length ||
+            skillIconSelectPanels[panelIndex] == null)
+            return new SkillIconButton[0];
 
-        for (int i = 0; i < skillIconButtons.Length; i++)
-        {
-            if (skillIconButtons[i] != null)
-                return false;
-        }
-
-        return true;
+        Transform panel = skillIconSelectPanels[panelIndex].transform;
+        Transform buttonRoot = panel.Find("ButtonRoot");
+        Transform root = buttonRoot != null ? buttonRoot : panel;
+        return root.GetComponentsInChildren<SkillIconButton>(true);
     }
 
 
@@ -164,30 +174,15 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (skillInfoTitleText != null && skillInfoEffectText != null)
             return;
 
-        Transform area = skillInfoArea != null ? skillInfoArea.transform : null;
+        Transform area = sharedInfoArea != null ? sharedInfoArea.transform : null;
 
         if (area == null)
-            area = transform.Find("SkillInfoArea");
-
-        if (area == null)
-            area = transform.Find("SkillInfo_Area");
-
-        if (area == null && transform.parent != null)
-            area = transform.parent.Find("SkillInfoArea");
-
-        if (area == null && transform.parent != null)
-            area = transform.parent.Find("SkillInfo_Area");
-
-        if (area == null)
-            area = FindChildByName(transform.root, "SkillInfoArea");
-
-        if (area == null)
-            area = FindChildByName(transform.root, "SkillInfo_Area");
+            area = FindChildByName(transform.root, "InfoArea");
 
         if (area == null)
             return;
 
-        skillInfoArea = area.gameObject;
+        sharedInfoArea = area.gameObject;
 
         if (skillInfoTitleText == null)
         {
@@ -230,14 +225,127 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         return null;
     }
 
+    public void SetSkillSelectPanelEnabledForTab(bool enabled)
+    {
+        skillSelectPanelAllowed = enabled;
+
+        if (!enabled)
+        {
+            SetSelectedSkillSlot(null);
+            ClearSkillInfo();
+            SetSkillSelectPanelVisible(false);
+            return;
+        }
+
+        // 스킬 탭으로 들어온 직후에는 슬롯을 선택하기 전까지 선택 패널을 열지 않는다.
+        SetSkillSelectPanelVisible(currentSelectedSlot != null);
+    }
+
     public void SetSkillSelectPanelVisible(bool visible)
     {
-        if (skillIconSelectPanel == null)
+        SetSkillSelectPanelVisible(visible, false);
+    }
+
+    private void SetSkillSelectPanelVisible(bool visible, bool immediate)
+    {
+        BindSkillIconButtonsIfNeeded();
+
+        if (skillIconSelectPanels == null)
             return;
 
-        bool shouldKeepVisibleAfterSelection = keepSkillSelectPanelVisible;
-        bool canShow = visible && currentSelectedSlot != null;
-        skillIconSelectPanel.SetActive(canShow || (shouldKeepVisibleAfterSelection && canShow));
+        EnsureMoveCoroutineArray();
+
+        int selectedIndex = currentSelectedSlot != null ? currentSelectedSlot.SlotIndex : -1;
+        bool canShow = skillSelectPanelAllowed && visible && selectedIndex >= 0;
+        openedSkillSelectPanelIndex = canShow ? selectedIndex : -1;
+
+        for (int i = 0; i < skillIconSelectPanels.Length; i++)
+        {
+            GameObject panelObject = skillIconSelectPanels[i];
+            if (panelObject == null)
+                continue;
+
+            // 선택 패널은 비활성화하지 않고 X 좌표 이동으로 화면 안팎을 전환한다.
+            if (!panelObject.activeSelf)
+                panelObject.SetActive(true);
+
+            float targetX = canShow && i == selectedIndex
+                ? skillSelectPanelVisibleX
+                : skillSelectPanelHiddenX;
+
+            MoveSkillSelectPanelX(i, panelObject, targetX, immediate);
+        }
+    }
+
+    private void EnsureMoveCoroutineArray()
+    {
+        int panelCount = skillIconSelectPanels != null ? skillIconSelectPanels.Length : 0;
+
+        if (skillSelectPanelMoveCoroutines == null || skillSelectPanelMoveCoroutines.Length != panelCount)
+            skillSelectPanelMoveCoroutines = new Coroutine[panelCount];
+    }
+
+    private void MoveSkillSelectPanelX(int panelIndex, GameObject panelObject, float targetX, bool immediate)
+    {
+        if (panelObject == null)
+            return;
+
+        RectTransform rectTransform = panelObject.GetComponent<RectTransform>();
+        if (rectTransform == null)
+            return;
+
+        if (panelIndex >= 0 &&
+            skillSelectPanelMoveCoroutines != null &&
+            panelIndex < skillSelectPanelMoveCoroutines.Length &&
+            skillSelectPanelMoveCoroutines[panelIndex] != null)
+        {
+            StopCoroutine(skillSelectPanelMoveCoroutines[panelIndex]);
+            skillSelectPanelMoveCoroutines[panelIndex] = null;
+        }
+
+        if (immediate || skillSelectPanelMoveDuration <= 0f || !isActiveAndEnabled)
+        {
+            Vector2 position = rectTransform.anchoredPosition;
+            position.x = targetX;
+            rectTransform.anchoredPosition = position;
+            return;
+        }
+
+        skillSelectPanelMoveCoroutines[panelIndex] = StartCoroutine(
+            MoveSkillSelectPanelXCoroutine(panelIndex, rectTransform, targetX));
+    }
+
+    private IEnumerator MoveSkillSelectPanelXCoroutine(
+        int panelIndex,
+        RectTransform rectTransform,
+        float targetX)
+    {
+        float startX = rectTransform.anchoredPosition.x;
+        float elapsed = 0f;
+
+        while (elapsed < skillSelectPanelMoveDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float progress = Mathf.Clamp01(elapsed / skillSelectPanelMoveDuration);
+            float easedProgress = progress * progress * (3f - 2f * progress);
+
+            Vector2 position = rectTransform.anchoredPosition;
+            position.x = Mathf.LerpUnclamped(startX, targetX, easedProgress);
+            rectTransform.anchoredPosition = position;
+
+            yield return null;
+        }
+
+        Vector2 finalPosition = rectTransform.anchoredPosition;
+        finalPosition.x = targetX;
+        rectTransform.anchoredPosition = finalPosition;
+
+        if (skillSelectPanelMoveCoroutines != null &&
+            panelIndex >= 0 &&
+            panelIndex < skillSelectPanelMoveCoroutines.Length)
+        {
+            skillSelectPanelMoveCoroutines[panelIndex] = null;
+        }
     }
 
     public void OpenCharacterSetting(string characterId)
@@ -404,15 +512,23 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             return;
         }
 
+        int slotIndex = slotButton.SlotIndex;
+
+        // 이미 열려 있는 같은 스킬 버튼을 다시 누르면 선택 패널을 닫는다.
+        if (openedSkillSelectPanelIndex == slotIndex)
+        {
+            SetSelectedSkillSlot(null);
+            SetSkillSelectPanelVisible(false);
+            return;
+        }
+
         SetSelectedSkillSlot(slotButton);
         ShowSkillInfo(slotButton.EquippedSkill);
 
-        List<SkillMasterData> candidates = GetSkillCandidates(slotButton.SlotIndex);
-        RefreshSkillIconButtons(candidates, slotButton.SlotIndex);
+        List<SkillMasterData> candidates = GetSkillCandidates(slotIndex);
+        RefreshSkillIconButtons(candidates, slotIndex);
 
-        if (moveSelectPanelToSlot)
-            MoveSelectPanel(slotButton.SlotIndex);
-
+        // 다른 패널은 X 230으로 복귀하고 선택한 패널만 X -15로 이동한다.
         SetSkillSelectPanelVisible(true);
     }
 
@@ -672,15 +788,16 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         BindSkillIconButtonsIfNeeded();
 
         int characterLevel = currentRuntimeData != null ? currentRuntimeData.Level : 1;
+        SkillIconButton[] buttons = GetSkillIconButtons(slotIndex);
 
-        if (skillIconButtons == null)
+        if (buttons.Length == 0)
             return;
 
-        int visibleCount = Mathf.Clamp(maxVisibleSkillIconButtonCount, 1, skillIconButtons.Length);
+        int visibleCount = Mathf.Clamp(maxVisibleSkillIconButtonCount, 1, buttons.Length);
 
-        for (int i = 0; i < skillIconButtons.Length; i++)
+        for (int i = 0; i < buttons.Length; i++)
         {
-            if (skillIconButtons[i] == null)
+            if (buttons[i] == null)
                 continue;
 
             bool canUseButton = i < visibleCount;
@@ -691,36 +808,19 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
                 int requiredLevel = GetRequiredLevelForSkill(skill, slotIndex);
                 bool locked = characterLevel < requiredLevel;
 
-                skillIconButtons[i].SetSkillData(skill, locked, requiredLevel);
+                buttons[i].SetSkillData(skill, locked, requiredLevel);
             }
             else
             {
-                skillIconButtons[i].SetSkillData(null, false, 0);
+                buttons[i].SetSkillData(null, false, 0);
             }
-        }
-    }
-
-    private void MoveSelectPanel(int slotIndex)
-    {
-        if (skillIconSelectPanel == null)
-            return;
-
-        RectTransform rect = skillIconSelectPanel.GetComponent<RectTransform>();
-
-        if (rect == null)
-            return;
-
-        if (selectPanelPositions != null &&
-            slotIndex >= 0 &&
-            slotIndex < selectPanelPositions.Length)
-        {
-            rect.anchoredPosition = selectPanelPositions[slotIndex];
         }
     }
 
 
     public void ShowSkillInfo(SkillMasterData skill)
     {
+        LobbyInfoHoverState.NotifyInfoShown();
         BindSkillInfoAreaIfNeeded();
         ConfigureSkillInfoTextComponents();
 
@@ -730,11 +830,32 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             return;
         }
 
-        if (skillInfoArea != null)
-            skillInfoArea.SetActive(true);
+        if (sharedInfoArea != null)
+            sharedInfoArea.SetActive(true);
 
         SetPlainTmpText(skillInfoTitleText, skill.Name);
         SetRichTmpText(skillInfoEffectText, BuildSkillDetailsText(skill));
+    }
+
+    public void ClearSkillInfoFromHover()
+    {
+        int hoverVersion = LobbyInfoHoverState.CurrentVersion;
+        StartCoroutine(ClearSkillInfoAfterHoverDelay(hoverVersion));
+    }
+
+    private IEnumerator ClearSkillInfoAfterHoverDelay(int hoverVersion)
+    {
+        yield return new WaitForSecondsRealtime(LobbyInfoHoverState.ClearDelaySeconds);
+
+        if (LobbyInfoHoverState.IsCurrent(hoverVersion))
+            ClearSkillInfo();
+    }
+
+    public void SetEmptyInfoText(string title, string effect)
+    {
+        emptySkillInfoTitle = title ?? string.Empty;
+        emptySkillInfoEffect = effect ?? string.Empty;
+        ClearSkillInfo();
     }
 
     public void ClearSkillInfo()
@@ -742,8 +863,8 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         BindSkillInfoAreaIfNeeded();
         ConfigureSkillInfoTextComponents();
 
-        if (skillInfoArea != null)
-            skillInfoArea.SetActive(true);
+        if (sharedInfoArea != null)
+            sharedInfoArea.SetActive(true);
 
         SetPlainTmpText(skillInfoTitleText, emptySkillInfoTitle);
         SetRichTmpText(skillInfoEffectText, emptySkillInfoEffect);
@@ -907,7 +1028,9 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         currentSelectedSlot.SetSkill(skill);
         ShowSkillInfo(skill);
         SaveCurrentSkillSetting();
-        SetSkillSelectPanelVisible(true);
+
+        // 패널 안의 스킬 버튼을 선택하면 선택 패널을 다시 숨김 위치로 돌린다.
+        SetSkillSelectPanelVisible(false);
     }
 
     public void SaveBeforeBattle()
@@ -1050,13 +1173,18 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
     {
         BindSkillIconButtonsIfNeeded();
 
-        if (skillIconButtons == null)
+        if (skillIconSelectPanels == null)
             return;
 
-        for (int i = 0; i < skillIconButtons.Length; i++)
+        for (int panelIndex = 0; panelIndex < skillIconSelectPanels.Length; panelIndex++)
         {
-            if (skillIconButtons[i] != null)
-                skillIconButtons[i].SetSkillData(null, false, 0);
+            SkillIconButton[] buttons = GetSkillIconButtons(panelIndex);
+
+            for (int i = 0; i < buttons.Length; i++)
+            {
+                if (buttons[i] != null)
+                    buttons[i].SetSkillData(null, false, 0);
+            }
         }
     }
 

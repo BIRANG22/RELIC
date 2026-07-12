@@ -1,16 +1,16 @@
 using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class RuneSlotButton : MonoBehaviour
+public class RuneSlotButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [Header("UI")]
     [SerializeField] private Button button;
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private Image iconImage;
     [SerializeField] private Image borderImage;
-    [SerializeField] private GameObject lockObject;
 
     [Header("Border Color")]
     [SerializeField] private string equippedBorderColorHex = "#4E66DF";
@@ -57,6 +57,18 @@ public class RuneSlotButton : MonoBehaviour
         }
     }
 
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (owner != null)
+            owner.ShowRuneSlotInfo(slotIndex, equippedRune, isLocked);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (owner != null)
+            owner.ClearRuneInfoFromHover();
+    }
+
     public void Execute()
     {
         if (owner == null)
@@ -87,9 +99,6 @@ public class RuneSlotButton : MonoBehaviour
     public void SetLocked(bool locked)
     {
         isLocked = locked;
-
-        if (lockObject != null)
-            lockObject.SetActive(isLocked);
 
         if (button != null)
             button.interactable = !isLocked;
