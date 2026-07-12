@@ -6982,7 +6982,7 @@ MonoBehaviour:
   backgroundGraphic: {fileID: 632276731}
   titleRect: {fileID: 392488100}
   pressAnyKeyObject: {fileID: 229942227}
-  mainMenuPanel: {fileID: 1403583729}
+  mainMenuPanel: {fileID: 0}
   inputDelay: 1
   allowMouseInput: 1
   allowGamepadInput: 1

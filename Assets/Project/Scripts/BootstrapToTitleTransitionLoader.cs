@@ -84,29 +84,25 @@ public class BootstrapToTitleTransitionLoader : MonoBehaviour
             yield return new WaitForSecondsRealtime(startDelay);
         }
 
-        if (fadeImage == null)
+        if (fadeImage != null)
         {
-            Debug.LogError("[BootstrapToTitleTransitionLoader] Fade Image가 연결되지 않았습니다.");
-            yield break;
-        }
+            float elapsed = 0f;
 
-        float elapsed = 0f;
+            while (elapsed < fadeDuration)
+            {
+                elapsed += Time.unscaledDeltaTime;
 
-        while (elapsed < fadeDuration)
-        {
-            elapsed += Time.unscaledDeltaTime;
+                float t = fadeDuration > 0f ? Mathf.Clamp01(elapsed / fadeDuration) : 1f;
+                float curveValue = fadeCurve != null ? fadeCurve.Evaluate(t) : t;
 
-            float t = fadeDuration > 0f ? Mathf.Clamp01(elapsed / fadeDuration) : 1f;
-            float curveValue = fadeCurve != null ? fadeCurve.Evaluate(t) : t;
+                SetImageAlpha(fadeImage, 1f - curveValue);
 
-            SetImageAlpha(fadeImage, 1f - curveValue);
+                yield return null;
+            }
 
+            SetImageAlpha(fadeImage, 0f);
             yield return null;
         }
-
-        SetImageAlpha(fadeImage, 0f);
-
-        yield return null;
 
         if (disableCanvasBeforeLoad && transitionCanvas != null)
         {
