@@ -107,20 +107,76 @@ public class PressAnyKeyIntro : MonoBehaviour
     private string alphaClipThresholdProperty = "_Alpha_Clip_Threshold";
 
 
+    // 실행 중 한 번 시작 연출을 완료했다면, 이후 타이틀 진입에서는 StartImage를 다시 표시하지 않습니다.
+    private static bool introCompletedInThisRun;
+    private static bool skipIntroOnNextTitleLoad;
+
+    private static readonly Vector2 completedTitlePosition =
+        new Vector2(-526f, 258f);
+
+    private static readonly Vector3 completedTitleScale =
+        new Vector3(0.7f, 0.7f, 1f);
+
     private Material runtimeMaterial;
 
     private bool canReceiveInput;
     private bool isPlaying;
 
 
+    /// <summary>
+    /// 게임 중 타이틀로 돌아갈 때 다음 타이틀 진입의 시작 연출을 생략합니다.
+    /// </summary>
+    public static void SkipIntroOnNextTitleLoad()
+    {
+        introCompletedInThisRun = true;
+        skipIntroOnNextTitleLoad = true;
+    }
+
+
     private void Awake()
     {
+        // 타이틀의 최종 위치와 크기는 항상 동일한 값으로 사용합니다.
+        targetTitlePosition = completedTitlePosition;
+        targetTitleScale = completedTitleScale;
+
+        if (introCompletedInThisRun || skipIntroOnNextTitleLoad)
+        {
+            skipIntroOnNextTitleLoad = false;
+            ApplyCompletedIntroState();
+            return;
+        }
+
         CreateRuntimeMaterial();
 
         if (mainMenuPanel != null)
         {
             mainMenuPanel.SetActive(false);
         }
+    }
+
+
+    /// <summary>
+    /// 시작 연출이 완료된 상태를 즉시 적용합니다.
+    /// </summary>
+    private void ApplyCompletedIntroState()
+    {
+        if (titleRect != null)
+        {
+            titleRect.anchoredPosition = completedTitlePosition;
+            titleRect.localScale = completedTitleScale;
+        }
+
+        if (pressAnyKeyObject != null)
+        {
+            pressAnyKeyObject.SetActive(false);
+        }
+
+        if (mainMenuPanel != null)
+        {
+            mainMenuPanel.SetActive(true);
+        }
+
+        gameObject.SetActive(false);
     }
 
 
@@ -337,6 +393,10 @@ public class PressAnyKeyIntro : MonoBehaviour
         {
             mainMenuPanel.SetActive(true);
         }
+
+        // 이번 실행에서 시작 연출이 완료되었음을 저장합니다.
+        // 이후 로비나 배틀에서 타이틀로 돌아와도 StartImage는 다시 표시되지 않습니다.
+        introCompletedInThisRun = true;
 
         // 모든 연출이 끝난 뒤 StartImage 자체를 비활성화합니다.
         gameObject.SetActive(false);

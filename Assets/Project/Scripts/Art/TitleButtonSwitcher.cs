@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -35,15 +35,15 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
         public MoveTarget[] moveTargets;
 
         [Header("Particle Colors")]
-        [Tooltip("ÀÌ Ç×¸ñÀÌ ¼±ÅÃµÇ¾úÀ» ¶§ PS_VFX_Sparkles_01¿¡ Àû¿ëÇÒ »ö»óÀÔ´Ï´Ù.")]
+        [Tooltip("ì´ í•­ëª©ì´ ì„ íƒë˜ì—ˆì„ ë•Œ PS_VFX_Sparkles_01ì— ì ìš©í•  ìƒ‰ìƒì…ë‹ˆë‹¤.")]
         public Color sparklesColor = Color.white;
 
-        [Tooltip("ÀÌ Ç×¸ñÀÌ ¼±ÅÃµÇ¾úÀ» ¶§ PS_VFX_GlowSmoke_01¿¡ Àû¿ëÇÒ »ö»óÀÔ´Ï´Ù.")]
+        [Tooltip("ì´ í•­ëª©ì´ ì„ íƒë˜ì—ˆì„ ë•Œ PS_VFX_GlowSmoke_01ì— ì ìš©í•  ìƒ‰ìƒì…ë‹ˆë‹¤.")]
         public Color glowSmokeColor = Color.white;
     }
 
-    [Header("½ÃÀÛ È­¸é")]
-    [Tooltip("È°¼ºÈ­µÇ¾î ÀÖ´Â µ¿¾È ÀÌ ½ºÅ©¸³Æ®ÀÇ ¸ğµç ±â´ÉÀ» ¸·À» StartImageÀÔ´Ï´Ù.")]
+    [Header("ì‹œì‘ í™”ë©´")]
+    [Tooltip("í™œì„±í™”ë˜ì–´ ìˆëŠ” ë™ì•ˆ ì´ ìŠ¤í¬ë¦½íŠ¸ì˜ ëª¨ë“  ê¸°ëŠ¥ì„ ë§‰ì„ StartImageì…ë‹ˆë‹¤.")]
     [SerializeField] private GameObject startImageObject;
 
     [Header("Button")]
@@ -56,13 +56,13 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
     [SerializeField] private SwitchObject[] objects = new SwitchObject[3];
 
     [Header("Particle Systems")]
-    [Tooltip("PS_VFX_Sparkles_01 ÆÄÆ¼Å¬ ½Ã½ºÅÛÀ» ¿¬°áÇÕ´Ï´Ù.")]
+    [Tooltip("PS_VFX_Sparkles_01 íŒŒí‹°í´ ì‹œìŠ¤í…œì„ ì—°ê²°í•©ë‹ˆë‹¤.")]
     [SerializeField] private ParticleSystem sparklesParticle;
 
-    [Tooltip("PS_VFX_GlowSmoke_01 ÆÄÆ¼Å¬ ½Ã½ºÅÛÀ» ¿¬°áÇÕ´Ï´Ù.")]
+    [Tooltip("PS_VFX_GlowSmoke_01 íŒŒí‹°í´ ì‹œìŠ¤í…œì„ ì—°ê²°í•©ë‹ˆë‹¤.")]
     [SerializeField] private ParticleSystem glowSmokeParticle;
 
-    [Tooltip("»ö»ó º¯°æ ½Ã ±âÁ¸ ÆÄÆ¼Å¬À» Áö¿ì°í »õ »ö»óÀ¸·Î ´Ù½Ã Àç»ıÇÕ´Ï´Ù.")]
+    [Tooltip("ìƒ‰ìƒ ë³€ê²½ ì‹œ ê¸°ì¡´ íŒŒí‹°í´ì„ ì§€ìš°ê³  ìƒˆ ìƒ‰ìƒìœ¼ë¡œ ë‹¤ì‹œ ì¬ìƒí•©ë‹ˆë‹¤.")]
     [SerializeField] private bool restartParticlesOnColorChange = true;
 
     [Header("Sound")]
@@ -74,10 +74,10 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
 
     private Coroutine moveCoroutine;
 
-    // StartImage°¡ ²¨Áø ÈÄ ÃÊ±â ¼³Á¤ÀÌ ÇÑ ¹ø¸¸ ½ÇÇàµÇµµ·Ï »ç¿ëÇÕ´Ï´Ù.
+    // StartImageê°€ êº¼ì§„ í›„ ì´ˆê¸° ì„¤ì •ì´ í•œ ë²ˆë§Œ ì‹¤í–‰ë˜ë„ë¡ ì‚¬ìš©í•©ë‹ˆë‹¤.
     private bool hasInitialized;
 
-    // StartImageÀÇ ÀÌÀü È°¼º »óÅÂÀÔ´Ï´Ù.
+    // StartImageì˜ ì´ì „ í™œì„± ìƒíƒœì…ë‹ˆë‹¤.
     private bool previousBlockedState;
 
 
@@ -106,7 +106,7 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
 
     private void Start()
     {
-        // StartImage°¡ Ã³À½ºÎÅÍ ²¨Á® ÀÖ´Ù¸é ¹Ù·Î ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        // StartImageê°€ ì²˜ìŒë¶€í„° êº¼ì ¸ ìˆë‹¤ë©´ ë°”ë¡œ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         if (!IsBlockedByStartImage())
         {
             InitializeSwitcher();
@@ -129,7 +129,7 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
             return;
         }
 
-        // StartImage°¡ ²¨Áø Á÷ÈÄ ÃÖÃÊ ÇÑ ¹ø¸¸ ÃÊ±â ¼³Á¤ÇÕ´Ï´Ù.
+        // StartImageê°€ êº¼ì§„ ì§í›„ ìµœì´ˆ í•œ ë²ˆë§Œ ì´ˆê¸° ì„¤ì •í•©ë‹ˆë‹¤.
         if (!hasInitialized)
         {
             InitializeSwitcher();
@@ -157,7 +157,7 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
 
 
     /// <summary>
-    /// StartImage°¡ È°¼ºÈ­µÇ¾î ÀÖ´ÂÁö È®ÀÎÇÕ´Ï´Ù.
+    /// StartImageê°€ í™œì„±í™”ë˜ì–´ ìˆëŠ”ì§€ í™•ì¸í•©ë‹ˆë‹¤.
     /// </summary>
     private bool IsBlockedByStartImage()
     {
@@ -167,7 +167,7 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
 
 
     /// <summary>
-    /// StartImage »óÅÂ¿¡ µû¶ó ¹öÆ° Å¬¸¯ °¡´É ¿©ºÎ¸¦ º¯°æÇÕ´Ï´Ù.
+    /// StartImage ìƒíƒœì— ë”°ë¼ ë²„íŠ¼ í´ë¦­ ê°€ëŠ¥ ì—¬ë¶€ë¥¼ ë³€ê²½í•©ë‹ˆë‹¤.
     /// </summary>
     private void UpdateButtonInteractable()
     {
@@ -181,7 +181,7 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
 
 
     /// <summary>
-    /// ÇöÀç È°¼ºÈ­µÈ ¿ÀºêÁ§Æ®¸¦ ±âÁØÀ¸·Î Ã³À½ »óÅÂ¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+    /// í˜„ì¬ í™œì„±í™”ëœ ì˜¤ë¸Œì íŠ¸ë¥¼ ê¸°ì¤€ìœ¼ë¡œ ì²˜ìŒ ìƒíƒœë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
     /// </summary>
     private void InitializeSwitcher()
     {
@@ -493,7 +493,7 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
             }
         }
 
-        // ¼±ÅÃµÈ Ç×¸ñ¿¡ ¼³Á¤µÈ »ö»óÀ¸·Î ÆÄÆ¼Å¬ »ö»óÀ» º¯°æÇÕ´Ï´Ù.
+        // ì„ íƒëœ í•­ëª©ì— ì„¤ì •ëœ ìƒ‰ìƒìœ¼ë¡œ íŒŒí‹°í´ ìƒ‰ìƒì„ ë³€ê²½í•©ë‹ˆë‹¤.
         ApplyParticleColors(objects[index]);
 
         moveCoroutine = StartCoroutine(
@@ -503,7 +503,7 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
 
 
     /// <summary>
-    /// ¼±ÅÃµÈ ¿ÀºêÁ§Æ®¿¡ ¼³Á¤µÈ »ö»óÀ» µÎ ÆÄÆ¼Å¬¿¡ Àû¿ëÇÕ´Ï´Ù.
+    /// ì„ íƒëœ ì˜¤ë¸Œì íŠ¸ì— ì„¤ì •ëœ ìƒ‰ìƒì„ ë‘ íŒŒí‹°í´ì— ì ìš©í•©ë‹ˆë‹¤.
     /// </summary>
     private void ApplyParticleColors(SwitchObject switchObject)
     {
@@ -525,7 +525,7 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
 
 
     /// <summary>
-    /// ÆÄÆ¼Å¬ ½Ã½ºÅÛÀÇ Start Color¸¦ º¯°æÇÕ´Ï´Ù.
+    /// íŒŒí‹°í´ ì‹œìŠ¤í…œì˜ Start Colorë¥¼ ë³€ê²½í•©ë‹ˆë‹¤.
     /// </summary>
     private void SetParticleColor(
         ParticleSystem particleSystem,
@@ -554,7 +554,7 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
             ParticleSystemStopBehavior.StopEmittingAndClear
         );
 
-        if (wasPlaying || particleSystem.playOnAwake)
+        if (wasPlaying || particleSystem.main.playOnAwake)
         {
             particleSystem.Play(true);
         }
