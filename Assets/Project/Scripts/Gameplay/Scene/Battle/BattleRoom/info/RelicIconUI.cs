@@ -11,14 +11,13 @@ public class RelicIconUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHan
     [Header("Hover Breath Effect")]
     [SerializeField] private RectTransform scaleTarget;
     [SerializeField] private bool useHoverBreathEffect = true;
-    [SerializeField] private float hoverBaseScale = 1.08f;
-    [SerializeField] private float breathAmount = 0.04f;
-    [SerializeField] private float breathSpeed = 4f;
+    [SerializeField] private float hoverMaxScale = 1.1f;
+    [SerializeField] private float breathSpeed = 2f;
     [SerializeField] private float scaleLerpSpeed = 14f;
 
     [Header("Selected Effect")]
     [SerializeField] private bool useSelectedScale = true;
-    [SerializeField] private float selectedScale = 1.08f;
+    [SerializeField] private float selectedScale = 1.2f;
     [SerializeField] private bool boostSortingOnHoverOrSelected = true;
     [SerializeField] private int sortingOrderBoost = 2000;
 
@@ -202,7 +201,9 @@ public class RelicIconUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHan
         }
         else if (useHoverBreathEffect && isPointerOver && !string.IsNullOrWhiteSpace(relicId))
         {
-            scaleMultiplier = hoverBaseScale + Mathf.Sin(Time.unscaledTime * breathSpeed) * breathAmount;
+            // 1.0과 1.1 사이를 반복합니다.
+            float breathT = (Mathf.Sin(Time.unscaledTime * breathSpeed) + 1f) * 0.5f;
+            scaleMultiplier = Mathf.Lerp(1f, hoverMaxScale, breathT);
         }
 
         Vector3 targetScale = baseScale * scaleMultiplier;

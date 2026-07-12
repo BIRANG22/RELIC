@@ -23,6 +23,13 @@ public class MapViewSpawner : MonoBehaviour
         lastNodes = nodes;
         lastOnNodeClicked = onNodeClicked;
 
+        // 방 클리어 후 맵으로 돌아왔을 때 이전 카테고리 버튼 색상이 남지 않도록 초기화합니다.
+        MapCategoryHighlightController categoryHighlightController =
+            FindFirstObjectByType<MapCategoryHighlightController>();
+
+        if (categoryHighlightController != null)
+            categoryHighlightController.ResetHighlightForMapRefresh();
+
         Clear();
 
         if (nodes == null || nodes.Count == 0)
@@ -139,6 +146,35 @@ public class MapViewSpawner : MonoBehaviour
         {
             for (int i = lineRoot.childCount - 1; i >= 0; i--)
                 Destroy(lineRoot.GetChild(i).gameObject);
+        }
+    }
+
+    public void HighlightCategory(string nodeType)
+    {
+        if (lastNodes == null)
+            return;
+
+        foreach (KeyValuePair<int, MapNodeView> pair in spawnedNodes)
+        {
+            MapNodeView nodeView = pair.Value;
+
+            if (nodeView == null)
+                continue;
+
+            GeneratedMapNodeData data = GetNodeData(lastNodes, pair.Key);
+            bool isMatch = data != null &&
+                           string.Equals(data.Type, nodeType, StringComparison.OrdinalIgnoreCase);
+
+            nodeView.SetCategoryHighlighted(isMatch);
+        }
+    }
+
+    public void ClearCategoryHighlight()
+    {
+        foreach (MapNodeView nodeView in spawnedNodes.Values)
+        {
+            if (nodeView != null)
+                nodeView.SetCategoryHighlighted(false);
         }
     }
 

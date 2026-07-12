@@ -3,9 +3,8 @@ using System.Collections;
 using Relic.Gameplay.Data;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.EventSystems;
 
-public class MapNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class MapNodeView : MonoBehaviour
 {
     [Header("Base")]
     [SerializeField] private Image iconImage;
@@ -43,9 +42,11 @@ public class MapNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     private Coroutine clickRoutine;
     private bool isClickProcessing;
     private bool currentCanClick;
-    private bool isPointerInside;
+    private bool isCategoryHighlighted;
     private RectTransform rectTransform;
     private Vector3 baseScale = Vector3.one;
+    private Color baseIconColor = Color.white;
+    private bool hasCapturedBaseIconColor;
 
     private void Awake()
     {
@@ -55,18 +56,21 @@ public class MapNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         if (button == null)
             button = GetComponent<Button>();
 
+        CaptureBaseIconColor();
         EnsureCheckAnimationImage();
     }
 
     private void OnDisable()
     {
-        isPointerInside = false;
         ResetHoverScale();
     }
 
     private void Update()
     {
-        UpdateSelectableHoverBreath();
+        if (CanPlayHoverBreath())
+            UpdateSelectableHoverBreath();
+        else
+            ResetHoverScale();
     }
 
     public void Setup(
@@ -78,8 +82,8 @@ public class MapNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         nodeData = data;
         onClicked = clickCallback;
         currentCanClick = canClick;
+        isCategoryHighlighted = false;
         isClickProcessing = false;
-        isPointerInside = false;
         CaptureBaseScale();
         ResetHoverScale();
 
@@ -112,36 +116,53 @@ public class MapNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         if (button != null)
             button.interactable = canClick && !isClickProcessing;
 
-        if (iconImage != null)
-        {
-            Color color = iconImage.color;
-            color.a = canClick ? 1f : 0.45f;
-            iconImage.color = color;
-        }
+        ApplyNodeAlpha();
 
         if (!CanPlayHoverBreath())
             ResetHoverScale();
     }
 
-    public void OnPointerEnter(PointerEventData eventData)
+    public void SetCategoryHighlighted(bool highlighted)
     {
-        if (UIPanelButton.IsMenuPanelOpen)
-        {
-            isPointerInside = false;
-            ResetHoverScale();
+        isCategoryHighlighted = highlighted;
+        ApplyNodeAlpha();
+    }
+
+    private void ApplyNodeAlpha()
+    {
+        if (iconImage == null)
             return;
+
+        const float clickableAlpha = 1f;
+        const float categoryHighlightedAlpha = 200f / 255f;
+        const float unavailableAlpha = 115f / 255f;
+        Color categoryHighlightedColor = new Color32(0x4D, 0x68, 0xDF, 0xC8);
+
+        CaptureBaseIconColor();
+        Color color = baseIconColor;
+
+        if (isCategoryHighlighted)
+        {
+            // 선택한 카테고리의 노드는 이동 가능 여부와 관계없이 강조 색상을 사용합니다.
+            color = categoryHighlightedColor;
+            color.a = currentCanClick ? clickableAlpha : categoryHighlightedAlpha;
+        }
+        else
+        {
+            color.a = currentCanClick ? clickableAlpha : unavailableAlpha;
         }
 
-        isPointerInside = true;
-
-        if (!CanPlayHoverBreath())
-            ResetHoverScale();
+        iconImage.color = color;
     }
 
-    public void OnPointerExit(PointerEventData eventData)
+    private void CaptureBaseIconColor()
     {
-        isPointerInside = false;
-        ResetHoverScale();
+        if (iconImage == null || hasCapturedBaseIconColor)
+            return;
+
+        baseIconColor = iconImage.color;
+        baseIconColor.a = 1f;
+        hasCapturedBaseIconColor = true;
     }
 
     public void OnClick()
@@ -260,9 +281,6 @@ public class MapNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             return false;
 
         if (!useSelectableHoverBreath)
-            return false;
-
-        if (!isPointerInside)
             return false;
 
         if (!currentCanClick || isClickProcessing)

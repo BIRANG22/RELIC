@@ -72,6 +72,7 @@ public class SkillInventoryPanelUI : MonoBehaviour
 
         selectedInventorySkillIcon = selectedIcon;
         UpdateInventorySelectionVisuals();
+        UpdateEmptyEquipSlotHighlights();
     }
 
     public void SelectSkill(string skillId)
@@ -147,6 +148,22 @@ public class SkillInventoryPanelUI : MonoBehaviour
         selectedEquippedSkillIndex = -1;
         selectedInventorySkillIcon = null;
         UpdateInventorySelectionVisuals();
+        UpdateEmptyEquipSlotHighlights();
+    }
+
+    private void UpdateEmptyEquipSlotHighlights()
+    {
+        bool shouldHighlight = selectedInventorySkillIcon != null;
+
+        EquippedSkillSlotUI[] slots = Object.FindObjectsByType<EquippedSkillSlotUI>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < slots.Length; i++)
+        {
+            if (slots[i] != null)
+                slots[i].SetEquipAvailableHighlight(shouldHighlight);
+        }
     }
 
     public void ShowSkillTooltip(string skillId, RectTransform hoveredSlotRect)
@@ -278,6 +295,7 @@ public class SkillInventoryPanelUI : MonoBehaviour
 
         EnsureInventoryVerticalLayout();
         selectedInventorySkillIcon = null;
+        UpdateEmptyEquipSlotHighlights();
         ClearInventoryIcons();
 
         if (DataManager.Instance == null)

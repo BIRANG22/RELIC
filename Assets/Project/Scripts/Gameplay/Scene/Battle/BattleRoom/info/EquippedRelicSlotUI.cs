@@ -20,6 +20,11 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
     [SerializeField] private Color hoverBorderColor = new Color(1f, 0.86f, 0.35f, 1f);
     [SerializeField] private Color selectedBorderColor = new Color(1f, 0.58f, 0.12f, 1f);
 
+    [Header("Equip Available Highlight")]
+    [SerializeField] private Color passiveEquipAvailableColor = new Color32(78, 103, 223, 255);
+    [SerializeField] private Color equipAvailableBreathColor = Color.white;
+    private const float EquipAvailableBreathSpeed = 0.5f;
+
     [Header("Selected Effect")]
     [SerializeField] private RectTransform scaleTarget;
     [SerializeField] private bool useSelectedScale = true;
@@ -39,6 +44,8 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
     private bool hasCapturedBaseScale;
     private bool isPointerOver;
     private bool isSelected;
+    private bool isEquipAvailableHighlighted;
+    private float equipAvailableHighlightStartTime;
     private Canvas sortingCanvas;
     private bool hadSortingCanvas;
     private bool originalOverrideSorting;
@@ -77,12 +84,16 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
     private void Update()
     {
         ApplyScale(false);
+
+        if (isEquipAvailableHighlighted)
+            ApplyBorderState();
     }
 
     private void OnDisable()
     {
         isPointerOver = false;
         isSelected = false;
+        isEquipAvailableHighlighted = false;
         ApplyBorderState();
         ResetScale();
         ApplySortingState();
@@ -116,6 +127,21 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
 
         string relicId = character.EquippedRelicIds[relicSlotIndex];
         SetIcon(relicId);
+    }
+
+    public bool IsEmptyEquipSlot =>
+        !string.IsNullOrWhiteSpace(GetCharacterId()) &&
+        string.IsNullOrWhiteSpace(currentRelicId);
+
+    public void SetEquipAvailableHighlight(bool highlighted)
+    {
+        bool shouldHighlight = highlighted && IsEmptyEquipSlot;
+
+        if (shouldHighlight && !isEquipAvailableHighlighted)
+            equipAvailableHighlightStartTime = Time.unscaledTime;
+
+        isEquipAvailableHighlighted = shouldHighlight;
+        ApplyBorderState();
     }
 
     public void SetSelected(bool selected)
@@ -242,6 +268,7 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
     private void SetIcon(string relicId)
     {
         currentRelicId = relicId;
+        isEquipAvailableHighlighted = false;
 
         if (clickTargetGraphic == null)
             clickTargetGraphic = GetComponent<Graphic>();
@@ -275,6 +302,7 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
     {
         currentRelicId = null;
         isPointerOver = false;
+        isEquipAvailableHighlighted = false;
         isSelected = false;
 
         if (clickTargetGraphic == null)
@@ -308,12 +336,25 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
 
         bool hasCharacter = !string.IsNullOrWhiteSpace(GetCharacterId());
 
-        if (isSelected && hasCharacter)
+        if (isEquipAvailableHighlighted && IsEmptyEquipSlot)
+            borderImage.color = GetEquipAvailableBreathColor();
+        else if (isSelected && hasCharacter)
             borderImage.color = selectedBorderColor;
         else if (isPointerOver && hasCharacter)
             borderImage.color = hoverBorderColor;
         else
             borderImage.color = normalBorderColor;
+    }
+
+
+    private Color GetEquipAvailableBreathColor()
+    {
+        float speed = Mathf.Max(0.01f, EquipAvailableBreathSpeed);
+        float elapsed = Time.unscaledTime - equipAvailableHighlightStartTime;
+        float t = (Mathf.Sin(elapsed * speed * Mathf.PI * 2f - Mathf.PI * 0.5f) + 1f) * 0.5f;
+
+        // 액티브와 패시브 유물 슬롯 모두 흰색에서 시작해 파란색으로 숨쉽니다.
+        return Color.Lerp(equipAvailableBreathColor, passiveEquipAvailableColor, t);
     }
 
     private void ApplyScale(bool instant)
