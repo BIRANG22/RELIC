@@ -869,7 +869,6 @@ public class BattleRoomLoader : MonoBehaviour
         if (selectedIndex < 0)
             return;
 
-        RotatePlayerHudOrder(selectedIndex);
         RefreshPlayerHudSelectionVisuals();
     }
 
@@ -937,6 +936,8 @@ public class BattleRoomLoader : MonoBehaviour
 
     private void RefreshPlayerHudSelectionVisuals()
     {
+        ApplyPlayerHudAnchorOrder();
+
         for (int i = 0; i < playerHudSlots.Count; i++)
         {
             PlayerHUDSlot hud = playerHudSlots[i];
@@ -949,7 +950,7 @@ public class BattleRoomLoader : MonoBehaviour
             ApplyPlayerHudCanvasSorting(hud, selected);
         }
 
-        ApplyPlayerHudAnchorOrder();
+        
         EnsurePlayerHudLayerOrder();
     }
 
