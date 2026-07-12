@@ -43,7 +43,8 @@ public class BattleUnitAnimator : MonoBehaviour
     [SerializeField] private BattleUnitPlayerSkillPresentations playerSkillPresentations = new();
 
     [Header("Monster Action Presentations")]
-    [SerializeField] private BattleUnitActionPresentation[] monsterActionPresentations =
+    [SerializeField]
+    private BattleUnitActionPresentation[] monsterActionPresentations =
         BattleUnitActionPresentation.CreateArray(10);
 
     [Header("VFX Spawn")]
@@ -936,28 +937,34 @@ public class BattleUnitAnimator : MonoBehaviour
     }
     private void PlayState(string stateName)
     {
-        if (!EnsureAnimator())
+        if (!TryResolveAnimatorStateName(stateName, out string resolvedStateName))
             return;
 
-        if (string.IsNullOrWhiteSpace(stateName))
-            return;
-
-        if (animator.runtimeAnimatorController == null)
-            return;
-
-        PlayAnimatorState(stateName);
+        PlayAnimatorState(resolvedStateName);
     }
 
     private void PlayOptionalState(string stateName)
     {
-        if (!CanPlayOptionalState(stateName))
+        if (!TryResolveAnimatorStateName(stateName, out string resolvedStateName))
             return;
 
-        PlayAnimatorState(stateName);
+        PlayAnimatorState(resolvedStateName);
     }
 
     private bool CanPlayOptionalState(string stateName)
     {
+        return TryResolveAnimatorStateName(stateName, out _);
+    }
+
+    /// <summary>
+    /// 지정한 애니메이터 상태가 실제 컨트롤러에 존재하는지 확인합니다.
+    /// 로비 프리뷰처럼 전투용 상태가 없는 Animator에서는 재생을 건너뛰어
+    /// Animator.GotoState 경고가 발생하지 않도록 합니다.
+    /// </summary>
+    private bool TryResolveAnimatorStateName(string stateName, out string resolvedStateName)
+    {
+        resolvedStateName = null;
+
         if (!EnsureAnimator())
             return false;
 
@@ -970,18 +977,24 @@ public class BattleUnitAnimator : MonoBehaviour
         if (animatorLayer < 0 || animatorLayer >= animator.layerCount)
             return false;
 
-        if (animator.HasState(animatorLayer, Animator.StringToHash(stateName)))
+        int shortStateHash = Animator.StringToHash(stateName);
+        if (animator.HasState(animatorLayer, shortStateHash))
+        {
+            resolvedStateName = stateName;
             return true;
+        }
 
         string layerName = animator.GetLayerName(animatorLayer);
-
         if (string.IsNullOrWhiteSpace(layerName))
             return false;
 
-        return animator.HasState(
-            animatorLayer,
-            Animator.StringToHash($"{layerName}.{stateName}")
-        );
+        string fullStateName = $"{layerName}.{stateName}";
+        int fullStateHash = Animator.StringToHash(fullStateName);
+        if (!animator.HasState(animatorLayer, fullStateHash))
+            return false;
+
+        resolvedStateName = fullStateName;
+        return true;
     }
 
     private void PlayAnimatorState(string stateName)

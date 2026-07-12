@@ -39,10 +39,14 @@ public enum SfxType
     BattleRewardRemnantAcquire,
     BattleRewardRelicSkillAcquire,
 
-    SkillListPanelOpen,
-    SkillListPanelClose,
+    SkillListPanelOpen = 21,
+    SkillListPanelClose = 22,
 
-    BoxOpen
+    // 기존 프로젝트에 저장된 enum 번호를 유지한다.
+    BoxOpen = 23,
+
+    CharacterSettingAreaAppear = 24,
+    CharacterSettingAreaExit = 25
 }
 
 [System.Serializable]
