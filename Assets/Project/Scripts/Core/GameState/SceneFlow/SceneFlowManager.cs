@@ -138,7 +138,12 @@ public class SceneFlowManager : Singleton<SceneFlowManager>
             return false;
         }
 
-        if (!hasLoadedSceneOnce && !playTransitionOnFirstLoad)
+        // Bootstrap에서 Title 씬을 직접 불러오기 때문에
+        // Title -> Lobby 이동은 SceneFlowManager 기준 첫 로드로 판정됩니다.
+        // 타이틀에서 시작하는 첫 씬 이동은 설정값과 관계없이 전환 효과를 재생합니다.
+        if (!hasLoadedSceneOnce &&
+            !playTransitionOnFirstLoad &&
+            CurrentScene != SceneName.Title)
         {
             return false;
         }

@@ -83,6 +83,17 @@ public class ButtonAnimationCoroutine :
     private bool clearClickedStateWhenAnotherButtonHovered = true;
 
 
+    [Header("Hover Hit Area")]
+
+    [Tooltip("버튼 내용이 움직여도 고정되어 있는 포인터 판정 영역입니다. 비어 있으면 Protected Background Image 또는 현재 오브젝트를 사용합니다.")]
+    [SerializeField]
+    private RectTransform hoverHitArea;
+
+    [Tooltip("버튼 모서리에서 호버가 반복되지 않도록 고정 판정 영역에 추가하는 여유 픽셀입니다.")]
+    [SerializeField]
+    private float hoverExitPadding = 4f;
+
+
     private static ButtonAnimationCoroutine currentClickedButton;
 
     private Vector3 originButtonPosition;
@@ -99,9 +110,13 @@ public class ButtonAnimationCoroutine :
 
     private Coroutine visualCoroutine;
 
+    private Rect cachedHoverScreenRect;
+    private bool hasCachedHoverScreenRect;
+
 
     private void Awake()
     {
+        ResolveHoverHitArea();
         CacheOriginValuesIfNeeded();
 
         wasBlocked = IsBlockedByStartImage();
@@ -112,6 +127,7 @@ public class ButtonAnimationCoroutine :
 
     private void OnEnable()
     {
+        ResolveHoverHitArea();
         CacheOriginValuesIfNeeded();
 
         wasBlocked = IsBlockedByStartImage();
@@ -131,6 +147,16 @@ public class ButtonAnimationCoroutine :
         }
 
         wasBlocked = isBlocked;
+
+        // 버튼 내용이 움직이더라도, 포인터가 들어왔을 때 저장한 고정 영역을
+        // 완전히 벗어나기 전까지는 호버 상태를 유지합니다.
+        if (!isBlocked &&
+            isPointerInside &&
+            hasCachedHoverScreenRect &&
+            !cachedHoverScreenRect.Contains(Input.mousePosition))
+        {
+            ApplyPointerExitState();
+        }
     }
 
 
@@ -158,6 +184,8 @@ public class ButtonAnimationCoroutine :
             return;
         }
 
+        CacheHoverScreenRect(eventData);
+
         if (clearClickedStateWhenAnotherButtonHovered)
         {
             ClearOtherClickedButton();
@@ -171,13 +199,85 @@ public class ButtonAnimationCoroutine :
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        // StartImage가 켜져 있으면 포인터 입력을 무시합니다.
         if (IsBlockedByStartImage())
         {
             return;
         }
 
+        // 움직인 버튼 그래픽이 포인터에서 빠졌다는 이벤트는 무시하고,
+        // 포인터가 처음 진입했을 때 저장한 고정 영역을 벗어난 경우에만 해제합니다.
+        Vector2 pointerPosition = eventData != null
+            ? eventData.position
+            : (Vector2)Input.mousePosition;
+
+        if (hasCachedHoverScreenRect &&
+            cachedHoverScreenRect.Contains(pointerPosition))
+        {
+            return;
+        }
+
+        ApplyPointerExitState();
+    }
+
+
+    private void CacheHoverScreenRect(PointerEventData eventData)
+    {
+        RectTransform hitArea = GetHoverHitArea();
+
+        if (hitArea == null)
+        {
+            hasCachedHoverScreenRect = false;
+            return;
+        }
+
+        Camera eventCamera = eventData != null
+            ? eventData.enterEventCamera
+            : null;
+
+        Vector3[] corners = new Vector3[4];
+        hitArea.GetWorldCorners(corners);
+
+        Vector2 first = RectTransformUtility.WorldToScreenPoint(
+            eventCamera,
+            corners[0]
+        );
+
+        float minX = first.x;
+        float maxX = first.x;
+        float minY = first.y;
+        float maxY = first.y;
+
+        for (int i = 1; i < corners.Length; i++)
+        {
+            Vector2 screenPoint =
+                RectTransformUtility.WorldToScreenPoint(
+                    eventCamera,
+                    corners[i]
+                );
+
+            minX = Mathf.Min(minX, screenPoint.x);
+            maxX = Mathf.Max(maxX, screenPoint.x);
+            minY = Mathf.Min(minY, screenPoint.y);
+            maxY = Mathf.Max(maxY, screenPoint.y);
+        }
+
+        float padding = Mathf.Max(0f, hoverExitPadding);
+
+        cachedHoverScreenRect = Rect.MinMaxRect(
+            minX - padding,
+            minY - padding,
+            maxX + padding,
+            maxY + padding
+        );
+
+        hasCachedHoverScreenRect = true;
+    }
+
+
+    private void ApplyPointerExitState()
+    {
         isPointerInside = false;
+        hasCachedHoverScreenRect = false;
 
         if (isClicked &&
             keepClickedStateWhenPointerExit &&
@@ -195,6 +295,30 @@ public class ButtonAnimationCoroutine :
         }
 
         StartVisualAnimationIfNeeded();
+    }
+
+
+    private void ResolveHoverHitArea()
+    {
+        if (hoverHitArea != null)
+        {
+            return;
+        }
+
+        if (protectedBackgroundImage != null)
+        {
+            hoverHitArea = protectedBackgroundImage.rectTransform;
+            return;
+        }
+
+        hoverHitArea = transform as RectTransform;
+    }
+
+
+    private RectTransform GetHoverHitArea()
+    {
+        ResolveHoverHitArea();
+        return hoverHitArea;
     }
 
 
@@ -238,6 +362,7 @@ public class ButtonAnimationCoroutine :
     {
         isClicked = false;
         isPointerInside = false;
+        hasCachedHoverScreenRect = false;
 
         if (currentClickedButton == this)
         {

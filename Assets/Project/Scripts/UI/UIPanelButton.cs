@@ -64,6 +64,7 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
     private const string DefaultMenuPanelObjectName = "MenuPanel";
     private const string DefaultMenuButtonObjectName = "MenuButton";
+    private const string DefaultBattlePlayerHudRootName = "PlayerHUD_Root";
 
     private static UIPanelButton currentOpenedPanelOwner;
 
@@ -102,6 +103,7 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
     private Coroutine panelImageFadeCoroutine;
     private int lastClickSoundFrame = -1;
     private float originalPanelAlpha = 1f;
+    private bool usesBattlePlayerHudOpenOrigin;
 
     public static void CloseCurrentOpenedPanel()
     {
@@ -138,6 +140,7 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
     private void Awake()
     {
         CacheOriginalMovePositions();
+        ApplyBattlePlayerHudInitialOpenState();
 
         if (flipTarget == null)
             flipTarget = GetComponent<RectTransform>();
@@ -281,8 +284,8 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
             willOpen = !isMoved;
 
             targetPosition = willOpen
-                ? originalPosition + moveOffset
-                : originalPosition;
+                ? GetOpenedPosition()
+                : GetClosedPosition();
 
             isMoved = willOpen;
         }
@@ -339,7 +342,14 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
     private void CacheOriginalMovePositions()
     {
         if (panelToMove != null)
+        {
             originalPosition = panelToMove.anchoredPosition;
+            usesBattlePlayerHudOpenOrigin = string.Equals(
+                panelToMove.name,
+                DefaultBattlePlayerHudRootName,
+                System.StringComparison.Ordinal
+            );
+        }
 
         if (moveTogetherTargets == null)
         {
@@ -356,15 +366,75 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         }
     }
 
+    /// <summary>
+    /// 전투방의 PlayerHUD_Root는 프리팹에 저장된 위치를 열린 위치로 사용합니다.
+    /// 따라서 입장 시 위치를 이동하지 않고 열린 상태로만 초기화합니다.
+    /// </summary>
+    private void ApplyBattlePlayerHudInitialOpenState()
+    {
+        if (panelToMove == null || !usesBattlePlayerHudOpenOrigin)
+            return;
+
+        panelToMove.anchoredPosition = GetOpenedPosition();
+
+        if (moveTogetherTargets != null && originalTogetherPositions != null)
+        {
+            for (int i = 0; i < moveTogetherTargets.Length; i++)
+            {
+                if (moveTogetherTargets[i] == null ||
+                    i >= originalTogetherPositions.Length)
+                {
+                    continue;
+                }
+
+                moveTogetherTargets[i].anchoredPosition =
+                    GetOpenedTogetherPosition(i);
+            }
+        }
+
+        isMoved = true;
+    }
+
+    private Vector2 GetClosedPosition()
+    {
+        return usesBattlePlayerHudOpenOrigin
+            ? originalPosition + moveOffset
+            : originalPosition;
+    }
+
+    private Vector2 GetOpenedPosition()
+    {
+        return usesBattlePlayerHudOpenOrigin
+            ? originalPosition
+            : originalPosition + moveOffset;
+    }
+
+    private Vector2 GetClosedTogetherPosition(int index)
+    {
+        Vector2 position = originalTogetherPositions[index];
+        return usesBattlePlayerHudOpenOrigin
+            ? position + moveOffset
+            : position;
+    }
+
+    private Vector2 GetOpenedTogetherPosition(int index)
+    {
+        Vector2 position = originalTogetherPositions[index];
+        return usesBattlePlayerHudOpenOrigin
+            ? position
+            : position + moveOffset;
+    }
+
     private void SyncMoveStateFromCurrentPosition()
     {
         if (panelToMove == null)
             return;
 
-        Vector2 openedPosition = originalPosition + moveOffset;
+        Vector2 closedPosition = GetClosedPosition();
+        Vector2 openedPosition = GetOpenedPosition();
         Vector2 currentPosition = panelToMove.anchoredPosition;
 
-        float distanceToClosed = Vector2.SqrMagnitude(currentPosition - originalPosition);
+        float distanceToClosed = Vector2.SqrMagnitude(currentPosition - closedPosition);
         float distanceToOpened = Vector2.SqrMagnitude(currentPosition - openedPosition);
 
         isMoved = distanceToOpened < distanceToClosed;
@@ -468,7 +538,7 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         }
 
         if (panelToMove != null)
-            panelToMove.anchoredPosition = originalPosition;
+            panelToMove.anchoredPosition = GetClosedPosition();
 
         if (moveTogetherTargets != null && originalTogetherPositions != null)
         {
@@ -477,7 +547,8 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
                 if (moveTogetherTargets[i] == null || i >= originalTogetherPositions.Length)
                     continue;
 
-                moveTogetherTargets[i].anchoredPosition = originalTogetherPositions[i];
+                moveTogetherTargets[i].anchoredPosition =
+                    GetClosedTogetherPosition(i);
             }
         }
 

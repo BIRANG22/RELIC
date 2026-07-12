@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -22,9 +23,11 @@ public class ResolutionManager : MonoBehaviour
     private static ResolutionManager instance;
     private static Color letterboxColor = Color.white;//레터박스 색
     private ResolutionLetterboxOverlay letterboxOverlay;
+    private Coroutine resolutionRefreshCoroutine;
     private readonly List<ResolutionCanvasViewportFitter> canvasViewportFitters = new();
     private int lastScreenWidth = -1;
     private int lastScreenHeight = -1;
+    private FullScreenMode lastFullScreenMode = (FullScreenMode)(-1);
 
     public static int CurrentResolutionIndex { get; private set; } = DefaultResolutionIndex;
     public static ResolutionOption CurrentResolution => SupportedResolutions[CurrentResolutionIndex];
@@ -58,10 +61,18 @@ public class ResolutionManager : MonoBehaviour
 
     private void Update()
     {
-        if (lastScreenWidth == Screen.width && lastScreenHeight == Screen.height)
+        bool screenSizeChanged = lastScreenWidth != Screen.width || lastScreenHeight != Screen.height;
+        bool fullScreenModeChanged = lastFullScreenMode != Screen.fullScreenMode;
+
+        if (!screenSizeChanged && !fullScreenModeChanged)
             return;
 
         ApplyLetterbox();
+
+        // 창모드와 전체화면 전환은 실제 화면 크기 적용이 여러 프레임 늦을 수 있습니다.
+        // 전환이 감지되면 해상도 변경과 동일하게 화면 배치를 반복 갱신합니다.
+        if (fullScreenModeChanged)
+            StartResolutionRefresh();
     }
 
     public static IReadOnlyList<ResolutionOption> GetSupportedResolutions()
@@ -109,7 +120,31 @@ public class ResolutionManager : MonoBehaviour
         Screen.SetResolution(resolution.Width, resolution.Height, FullScreenMode.Windowed);
 
         if (instance != null)
-            instance.ApplyLetterbox();
+            instance.StartResolutionRefresh();
+    }
+
+    private void StartResolutionRefresh()
+    {
+        if (resolutionRefreshCoroutine != null)
+            StopCoroutine(resolutionRefreshCoroutine);
+
+        // Screen.SetResolution은 실제 창 크기를 다음 프레임부터 반영합니다.
+        // 창과 Canvas 크기가 완전히 갱신될 때까지 몇 프레임 동안 화면 배치를 다시 맞춥니다.
+        resolutionRefreshCoroutine = StartCoroutine(RefreshResolutionLayoutRoutine());
+    }
+
+    private IEnumerator RefreshResolutionLayoutRoutine()
+    {
+        const int refreshFrameCount = 5;
+
+        for (int i = 0; i < refreshFrameCount; i++)
+        {
+            yield return null;
+            Canvas.ForceUpdateCanvases();
+            ApplyLetterbox();
+        }
+
+        resolutionRefreshCoroutine = null;
     }
 
     public static Rect CalculateLetterboxRect(
@@ -227,6 +262,7 @@ public class ResolutionManager : MonoBehaviour
     {
         lastScreenWidth = Screen.width;
         lastScreenHeight = Screen.height;
+        lastFullScreenMode = Screen.fullScreenMode;
 
         ResolutionOption resolution = CurrentResolution;
         Rect viewport = CalculateLetterboxRect(
