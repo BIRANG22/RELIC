@@ -79,6 +79,7 @@ public class RelicEquipPanelUI : MonoBehaviour
 
         selectedInventoryRelicIcon = selectedIcon;
         UpdateInventorySelectionVisuals();
+        UpdateEmptyEquipSlotHighlights();
     }
 
     public void ResetSelectionState()
@@ -88,6 +89,7 @@ public class RelicEquipPanelUI : MonoBehaviour
         selectedInventoryRelicIcon = null;
         UpdateEquippedSlotSelectionVisuals();
         UpdateInventorySelectionVisuals();
+        UpdateEmptyEquipSlotHighlights();
     }
 
     public void SelectRelic(string relicId)
@@ -200,6 +202,7 @@ public class RelicEquipPanelUI : MonoBehaviour
 
         EnsureInventoryVerticalLayout();
         selectedInventoryRelicIcon = null;
+        UpdateEmptyEquipSlotHighlights();
 
         ClearInventoryIcons();
 
@@ -411,6 +414,51 @@ public class RelicEquipPanelUI : MonoBehaviour
             if (icon != null)
                 icon.SetSelected(icon == selectedInventoryRelicIcon);
         }
+    }
+
+    private void UpdateEmptyEquipSlotHighlights()
+    {
+        if (equippedSlots == null)
+            return;
+
+        bool hasSelectedRelic = TryGetSelectedRelicType(out bool isActiveRelic);
+
+        for (int i = 0; i < equippedSlots.Length; i++)
+        {
+            EquippedRelicSlotUI slot = equippedSlots[i];
+            if (slot == null)
+                continue;
+
+            bool isActiveSlot =
+                slot.RelicSlotIndex == ActiveRelicRuntimeUtility.ActiveRelicSlotIndex;
+
+            bool isCompatibleSlot =
+                hasSelectedRelic && isActiveRelic == isActiveSlot;
+
+            slot.SetEquipAvailableHighlight(isCompatibleSlot);
+        }
+    }
+
+    private bool TryGetSelectedRelicType(out bool isActiveRelic)
+    {
+        isActiveRelic = false;
+
+        if (selectedInventoryRelicIcon == null ||
+            DataManager.Instance == null ||
+            DataManager.Instance.RelicDatabase == null)
+        {
+            return false;
+        }
+
+        string relicId = selectedInventoryRelicIcon.RelicId;
+        if (string.IsNullOrWhiteSpace(relicId) ||
+            !DataManager.Instance.RelicDatabase.TryGet(relicId, out RelicData relic))
+        {
+            return false;
+        }
+
+        isActiveRelic = ActiveRelicEffectResolver.IsActiveRelic(relic);
+        return true;
     }
 
     private void UpdateEquippedSlotSelectionVisuals()

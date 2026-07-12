@@ -91,12 +91,11 @@ MonoBehaviour:
   iconImage: {fileID: 2679557058206997311}
   scaleTarget: {fileID: 0}
   useHoverBreathEffect: 1
-  hoverBaseScale: 1.08
-  breathAmount: 0.04
+  hoverMaxScale: 1.1
   breathSpeed: 4
   scaleLerpSpeed: 14
   useSelectedScale: 1
-  selectedScale: 1.08
+  selectedScale: 1.2
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
