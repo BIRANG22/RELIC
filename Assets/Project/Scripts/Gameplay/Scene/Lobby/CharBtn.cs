@@ -45,6 +45,12 @@ public class CharBtn : MonoBehaviour,
     private CharPick charPick;
     private RectTransform rect;
     private CanvasGroup canvasGroup;
+    private Button characterButton;
+    private static readonly Color ViewedCharacterSelectedColor = new Color32(0x4E, 0x66, 0xDF, 0xFF);
+
+    private ColorBlock originalButtonColors;
+    private bool hasOriginalButtonColors;
+    private bool isViewedCharacter;
     private int lastHandledClickFrame = -1;
 
     private Quaternion viewedCharacterBorderOriginalRotation = Quaternion.identity;
@@ -61,6 +67,13 @@ public class CharBtn : MonoBehaviour,
     {
         rect = GetComponent<RectTransform>();
         canvasGroup = GetComponent<CanvasGroup>();
+        characterButton = GetComponent<Button>();
+
+        if (characterButton != null)
+        {
+            originalButtonColors = characterButton.colors;
+            hasOriginalButtonColors = true;
+        }
 
         if (canvasGroup == null)
             canvasGroup = gameObject.AddComponent<CanvasGroup>();
@@ -76,6 +89,7 @@ public class CharBtn : MonoBehaviour,
         AutoPrepareViewedCharacterBorder();
         CacheViewedCharacterOriginalValues();
         RefreshSelectedPartyMarker();
+        ApplyViewedCharacterButtonColor(isViewedCharacter);
     }
 
     private void OnDisable()
@@ -555,6 +569,9 @@ public class CharBtn : MonoBehaviour,
     /// </summary>
     public void SetViewedCharacter(bool isViewed, bool immediate = false)
     {
+        isViewedCharacter = isViewed;
+        ApplyViewedCharacterButtonColor(isViewed);
+
         AutoPrepareViewedCharacterBorder();
         CacheViewedCharacterOriginalValues();
 
@@ -579,6 +596,44 @@ public class CharBtn : MonoBehaviour,
 
         viewedCharacterTransitionCoroutine = StartCoroutine(
             AnimateViewedCharacterRoutine(targetRotation, targetScale));
+    }
+
+
+    /// <summary>
+    /// 현재 보고 있는 캐릭터 버튼의 선택 색상을 EventSystem과 별개로 유지한다.
+    /// 선택된 버튼은 Normal Color를 기존 Selected Color로 사용하므로,
+    /// 다른 UI를 눌러도 선택 색상이 꺼지지 않는다.
+    /// </summary>
+    private void ApplyViewedCharacterButtonColor(bool isViewed)
+    {
+        if (characterButton == null)
+            characterButton = GetComponent<Button>();
+
+        if (characterButton == null)
+            return;
+
+        if (!hasOriginalButtonColors)
+        {
+            originalButtonColors = characterButton.colors;
+            hasOriginalButtonColors = true;
+        }
+
+        ColorBlock colors = originalButtonColors;
+
+        if (isViewed)
+            colors.normalColor = ViewedCharacterSelectedColor;
+
+        characterButton.colors = colors;
+
+        Graphic targetGraphic = characterButton.targetGraphic;
+
+        if (targetGraphic == null)
+            targetGraphic = characterButton.GetComponent<Graphic>();
+
+        if (targetGraphic != null)
+            targetGraphic.color = isViewed
+                ? ViewedCharacterSelectedColor
+                : originalButtonColors.normalColor;
     }
 
     private IEnumerator AnimateViewedCharacterRoutine(Quaternion targetRotation, Vector3 targetScale)
