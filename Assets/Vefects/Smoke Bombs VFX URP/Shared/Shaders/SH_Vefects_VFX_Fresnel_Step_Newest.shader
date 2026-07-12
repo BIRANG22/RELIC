@@ -485,7 +485,7 @@ Shader "Vefects/SH_Vefects_VFX_Fresnel_Step_Newest"
 				float3 ase_viewDirWS = normalize( ase_viewVectorWS );
 				float3 ase_worldNormal = input.ase_texcoord4.xyz;
 				float fresnelNdotV54 = dot( ase_worldNormal, ase_viewDirWS );
-				float fresnelNode54 = ( input.ase_texcoord5.z + _Fresnel_Scale * pow( 1.0 - fresnelNdotV54, _Fresnel_Power ) );
+				float fresnelNode54 = ( input.ase_texcoord5.z + _Fresnel_Scale * pow( max( 1.0 - fresnelNdotV54, 0.0001 ), _Fresnel_Power ) );
 				float4 ase_screenPosNorm = ScreenPos / ScreenPos.w;
 				ase_screenPosNorm.z = ( UNITY_NEAR_CLIP_VALUE >= 0 ) ? ase_screenPosNorm.z : ase_screenPosNorm.z * 0.5 + 0.5;
 				float screenDepth47 = LinearEyeDepth(SHADERGRAPH_SAMPLE_SCENE_DEPTH( ase_screenPosNorm.xy ),_ZBufferParams);
@@ -498,7 +498,7 @@ Shader "Vefects/SH_Vefects_VFX_Fresnel_Step_Newest"
 				float2 panner41 = ( global_speed21 * _Noise_01_Speed + texCoord34);
 				float2 texCoord33 = input.ase_texcoord5.xy * _Noise_02_Scale + float2( 0,0 );
 				float2 panner42 = ( global_speed21 * _Noise_02_Speed + texCoord33);
-				float temp_output_95_0 = saturate( ( saturate( ( fresnelNode54 + saturate( ( 1.0 - distanceDepth47 ) ) ) ) * pow( ( tex2D( _Noise_01_Texture, ( Distortion37 + panner41 ) ).r * tex2D( _Noise_02_Texture, ( Distortion37 + panner42 ) ).r ) , _Opacity_Power ) ) );
+				float temp_output_95_0 = saturate( ( saturate( ( fresnelNode54 + saturate( ( 1.0 - distanceDepth47 ) ) ) ) * pow( max( ( tex2D( _Noise_01_Texture, ( Distortion37 + panner41 ) ).r * tex2D( _Noise_02_Texture, ( Distortion37 + panner42 ) ).r ), 0.0001 ) , _Opacity_Power ) ) );
 				float smoothstepResult78 = smoothstep( _Color_StepMin , ( _Color_StepMin + _Color_Step ) , temp_output_95_0);
 				float clampResult76 = clamp( smoothstepResult78 , _Color_Min , 1.0 );
 				
@@ -807,7 +807,7 @@ Shader "Vefects/SH_Vefects_VFX_Fresnel_Step_Newest"
 				float3 ase_viewDirWS = normalize( ase_viewVectorWS );
 				float3 ase_worldNormal = input.ase_texcoord4.xyz;
 				float fresnelNdotV54 = dot( ase_worldNormal, ase_viewDirWS );
-				float fresnelNode54 = ( input.ase_texcoord5.z + _Fresnel_Scale * pow( 1.0 - fresnelNdotV54, _Fresnel_Power ) );
+				float fresnelNode54 = ( input.ase_texcoord5.z + _Fresnel_Scale * pow( max( 1.0 - fresnelNdotV54, 0.0001 ), _Fresnel_Power ) );
 				float4 ase_screenPosNorm = ScreenPos / ScreenPos.w;
 				ase_screenPosNorm.z = ( UNITY_NEAR_CLIP_VALUE >= 0 ) ? ase_screenPosNorm.z : ase_screenPosNorm.z * 0.5 + 0.5;
 				float screenDepth47 = LinearEyeDepth(SHADERGRAPH_SAMPLE_SCENE_DEPTH( ase_screenPosNorm.xy ),_ZBufferParams);
@@ -820,7 +820,7 @@ Shader "Vefects/SH_Vefects_VFX_Fresnel_Step_Newest"
 				float2 panner41 = ( global_speed21 * _Noise_01_Speed + texCoord34);
 				float2 texCoord33 = input.ase_texcoord5.xy * _Noise_02_Scale + float2( 0,0 );
 				float2 panner42 = ( global_speed21 * _Noise_02_Speed + texCoord33);
-				float temp_output_95_0 = saturate( ( saturate( ( fresnelNode54 + saturate( ( 1.0 - distanceDepth47 ) ) ) ) * pow( ( tex2D( _Noise_01_Texture, ( Distortion37 + panner41 ) ).r * tex2D( _Noise_02_Texture, ( Distortion37 + panner42 ) ).r ) , _Opacity_Power ) ) );
+				float temp_output_95_0 = saturate( ( saturate( ( fresnelNode54 + saturate( ( 1.0 - distanceDepth47 ) ) ) ) * pow( max( ( tex2D( _Noise_01_Texture, ( Distortion37 + panner41 ) ).r * tex2D( _Noise_02_Texture, ( Distortion37 + panner42 ) ).r ), 0.0001 ) , _Opacity_Power ) ) );
 				float smoothstepResult69 = smoothstep( input.ase_texcoord3.x , ( input.ase_texcoord3.x + input.ase_texcoord3.y ) , saturate( ( temp_output_95_0 * _Opacity_Boost ) ));
 				float screenDepth65 = LinearEyeDepth(SHADERGRAPH_SAMPLE_SCENE_DEPTH( ase_screenPosNorm.xy ),_ZBufferParams);
 				float distanceDepth65 = saturate( ( screenDepth65 - LinearEyeDepth( ase_screenPosNorm.z,_ZBufferParams ) ) / ( _Opacity_DepthFade_Intensity ) );
@@ -1097,7 +1097,7 @@ Shader "Vefects/SH_Vefects_VFX_Fresnel_Step_Newest"
 				float3 ase_viewDirWS = normalize( ase_viewVectorWS );
 				float3 ase_worldNormal = input.ase_texcoord2.xyz;
 				float fresnelNdotV54 = dot( ase_worldNormal, ase_viewDirWS );
-				float fresnelNode54 = ( input.ase_texcoord3.z + _Fresnel_Scale * pow( 1.0 - fresnelNdotV54, _Fresnel_Power ) );
+				float fresnelNode54 = ( input.ase_texcoord3.z + _Fresnel_Scale * pow( max( 1.0 - fresnelNdotV54, 0.0001 ), _Fresnel_Power ) );
 				float4 screenPos = input.ase_texcoord4;
 				float4 ase_screenPosNorm = screenPos / screenPos.w;
 				ase_screenPosNorm.z = ( UNITY_NEAR_CLIP_VALUE >= 0 ) ? ase_screenPosNorm.z : ase_screenPosNorm.z * 0.5 + 0.5;
@@ -1111,7 +1111,7 @@ Shader "Vefects/SH_Vefects_VFX_Fresnel_Step_Newest"
 				float2 panner41 = ( global_speed21 * _Noise_01_Speed + texCoord34);
 				float2 texCoord33 = input.ase_texcoord3.xy * _Noise_02_Scale + float2( 0,0 );
 				float2 panner42 = ( global_speed21 * _Noise_02_Speed + texCoord33);
-				float temp_output_95_0 = saturate( ( saturate( ( fresnelNode54 + saturate( ( 1.0 - distanceDepth47 ) ) ) ) * pow( ( tex2D( _Noise_01_Texture, ( Distortion37 + panner41 ) ).r * tex2D( _Noise_02_Texture, ( Distortion37 + panner42 ) ).r ) , _Opacity_Power ) ) );
+				float temp_output_95_0 = saturate( ( saturate( ( fresnelNode54 + saturate( ( 1.0 - distanceDepth47 ) ) ) ) * pow( max( ( tex2D( _Noise_01_Texture, ( Distortion37 + panner41 ) ).r * tex2D( _Noise_02_Texture, ( Distortion37 + panner42 ) ).r ), 0.0001 ) , _Opacity_Power ) ) );
 				float smoothstepResult69 = smoothstep( input.ase_texcoord.x , ( input.ase_texcoord.x + input.ase_texcoord.y ) , saturate( ( temp_output_95_0 * _Opacity_Boost ) ));
 				float screenDepth65 = LinearEyeDepth(SHADERGRAPH_SAMPLE_SCENE_DEPTH( ase_screenPosNorm.xy ),_ZBufferParams);
 				float distanceDepth65 = saturate( ( screenDepth65 - LinearEyeDepth( ase_screenPosNorm.z,_ZBufferParams ) ) / ( _Opacity_DepthFade_Intensity ) );
@@ -1391,7 +1391,7 @@ Shader "Vefects/SH_Vefects_VFX_Fresnel_Step_Newest"
 				float3 ase_viewDirWS = normalize( ase_viewVectorWS );
 				float3 ase_worldNormal = input.ase_texcoord2.xyz;
 				float fresnelNdotV54 = dot( ase_worldNormal, ase_viewDirWS );
-				float fresnelNode54 = ( input.ase_texcoord3.z + _Fresnel_Scale * pow( 1.0 - fresnelNdotV54, _Fresnel_Power ) );
+				float fresnelNode54 = ( input.ase_texcoord3.z + _Fresnel_Scale * pow( max( 1.0 - fresnelNdotV54, 0.0001 ), _Fresnel_Power ) );
 				float4 screenPos = input.ase_texcoord4;
 				float4 ase_screenPosNorm = screenPos / screenPos.w;
 				ase_screenPosNorm.z = ( UNITY_NEAR_CLIP_VALUE >= 0 ) ? ase_screenPosNorm.z : ase_screenPosNorm.z * 0.5 + 0.5;
@@ -1405,7 +1405,7 @@ Shader "Vefects/SH_Vefects_VFX_Fresnel_Step_Newest"
 				float2 panner41 = ( global_speed21 * _Noise_01_Speed + texCoord34);
 				float2 texCoord33 = input.ase_texcoord3.xy * _Noise_02_Scale + float2( 0,0 );
 				float2 panner42 = ( global_speed21 * _Noise_02_Speed + texCoord33);
-				float temp_output_95_0 = saturate( ( saturate( ( fresnelNode54 + saturate( ( 1.0 - distanceDepth47 ) ) ) ) * pow( ( tex2D( _Noise_01_Texture, ( Distortion37 + panner41 ) ).r * tex2D( _Noise_02_Texture, ( Distortion37 + panner42 ) ).r ) , _Opacity_Power ) ) );
+				float temp_output_95_0 = saturate( ( saturate( ( fresnelNode54 + saturate( ( 1.0 - distanceDepth47 ) ) ) ) * pow( max( ( tex2D( _Noise_01_Texture, ( Distortion37 + panner41 ) ).r * tex2D( _Noise_02_Texture, ( Distortion37 + panner42 ) ).r ), 0.0001 ) , _Opacity_Power ) ) );
 				float smoothstepResult69 = smoothstep( input.ase_texcoord.x , ( input.ase_texcoord.x + input.ase_texcoord.y ) , saturate( ( temp_output_95_0 * _Opacity_Boost ) ));
 				float screenDepth65 = LinearEyeDepth(SHADERGRAPH_SAMPLE_SCENE_DEPTH( ase_screenPosNorm.xy ),_ZBufferParams);
 				float distanceDepth65 = saturate( ( screenDepth65 - LinearEyeDepth( ase_screenPosNorm.z,_ZBufferParams ) ) / ( _Opacity_DepthFade_Intensity ) );
@@ -1694,7 +1694,7 @@ Shader "Vefects/SH_Vefects_VFX_Fresnel_Step_Newest"
 				float3 ase_viewVectorWS = ( _WorldSpaceCameraPos.xyz - ase_worldPos );
 				float3 ase_viewDirWS = normalize( ase_viewVectorWS );
 				float fresnelNdotV54 = dot( input.clipPosV.xyz, ase_viewDirWS );
-				float fresnelNode54 = ( input.ase_texcoord4.z + _Fresnel_Scale * pow( 1.0 - fresnelNdotV54, _Fresnel_Power ) );
+				float fresnelNode54 = ( input.ase_texcoord4.z + _Fresnel_Scale * pow( max( 1.0 - fresnelNdotV54, 0.0001 ), _Fresnel_Power ) );
 				float4 ase_screenPosNorm = ScreenPos / ScreenPos.w;
 				ase_screenPosNorm.z = ( UNITY_NEAR_CLIP_VALUE >= 0 ) ? ase_screenPosNorm.z : ase_screenPosNorm.z * 0.5 + 0.5;
 				float screenDepth47 = LinearEyeDepth(SHADERGRAPH_SAMPLE_SCENE_DEPTH( ase_screenPosNorm.xy ),_ZBufferParams);
@@ -1707,7 +1707,7 @@ Shader "Vefects/SH_Vefects_VFX_Fresnel_Step_Newest"
 				float2 panner41 = ( global_speed21 * _Noise_01_Speed + texCoord34);
 				float2 texCoord33 = input.ase_texcoord4.xy * _Noise_02_Scale + float2( 0,0 );
 				float2 panner42 = ( global_speed21 * _Noise_02_Speed + texCoord33);
-				float temp_output_95_0 = saturate( ( saturate( ( fresnelNode54 + saturate( ( 1.0 - distanceDepth47 ) ) ) ) * pow( ( tex2D( _Noise_01_Texture, ( Distortion37 + panner41 ) ).r * tex2D( _Noise_02_Texture, ( Distortion37 + panner42 ) ).r ) , _Opacity_Power ) ) );
+				float temp_output_95_0 = saturate( ( saturate( ( fresnelNode54 + saturate( ( 1.0 - distanceDepth47 ) ) ) ) * pow( max( ( tex2D( _Noise_01_Texture, ( Distortion37 + panner41 ) ).r * tex2D( _Noise_02_Texture, ( Distortion37 + panner42 ) ).r ), 0.0001 ) , _Opacity_Power ) ) );
 				float smoothstepResult69 = smoothstep( input.ase_texcoord2.x , ( input.ase_texcoord2.x + input.ase_texcoord2.y ) , saturate( ( temp_output_95_0 * _Opacity_Boost ) ));
 				float screenDepth65 = LinearEyeDepth(SHADERGRAPH_SAMPLE_SCENE_DEPTH( ase_screenPosNorm.xy ),_ZBufferParams);
 				float distanceDepth65 = saturate( ( screenDepth65 - LinearEyeDepth( ase_screenPosNorm.z,_ZBufferParams ) ) / ( _Opacity_DepthFade_Intensity ) );
