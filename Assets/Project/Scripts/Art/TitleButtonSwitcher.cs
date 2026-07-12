@@ -33,7 +33,18 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
 
         [Header("Move Targets")]
         public MoveTarget[] moveTargets;
+
+        [Header("Particle Colors")]
+        [Tooltip("이 항목이 선택되었을 때 PS_VFX_Sparkles_01에 적용할 색상입니다.")]
+        public Color sparklesColor = Color.white;
+
+        [Tooltip("이 항목이 선택되었을 때 PS_VFX_GlowSmoke_01에 적용할 색상입니다.")]
+        public Color glowSmokeColor = Color.white;
     }
+
+    [Header("시작 화면")]
+    [Tooltip("활성화되어 있는 동안 이 스크립트의 모든 기능을 막을 StartImage입니다.")]
+    [SerializeField] private GameObject startImageObject;
 
     [Header("Button")]
     [SerializeField] private Button titleButton;
@@ -41,21 +52,41 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
     [Header("Objects")]
     [Min(1)]
     [SerializeField] private int objectCount = 3;
+
     [SerializeField] private SwitchObject[] objects = new SwitchObject[3];
+
+    [Header("Particle Systems")]
+    [Tooltip("PS_VFX_Sparkles_01 파티클 시스템을 연결합니다.")]
+    [SerializeField] private ParticleSystem sparklesParticle;
+
+    [Tooltip("PS_VFX_GlowSmoke_01 파티클 시스템을 연결합니다.")]
+    [SerializeField] private ParticleSystem glowSmokeParticle;
+
+    [Tooltip("색상 변경 시 기존 파티클을 지우고 새 색상으로 다시 재생합니다.")]
+    [SerializeField] private bool restartParticlesOnColorChange = true;
 
     [Header("Sound")]
     [SerializeField] private bool playHoverSound = true;
     [SerializeField] private SfxType hoverSfx = SfxType.MoveButtonHover;
+
     [SerializeField] private bool playClickSound = true;
     [SerializeField] private SfxType clickSfx = SfxType.MoveButtonClick;
 
     private Coroutine moveCoroutine;
+
+    // StartImage가 꺼진 후 초기 설정이 한 번만 실행되도록 사용합니다.
+    private bool hasInitialized;
+
+    // StartImage의 이전 활성 상태입니다.
+    private bool previousBlockedState;
+
 
     private void OnValidate()
     {
         objectCount = Mathf.Max(1, objectCount);
         ResizeObjectsArray();
     }
+
 
     private void Awake()
     {
@@ -66,10 +97,101 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
             titleButton.onClick.RemoveListener(OnClickTitleButton);
             titleButton.onClick.AddListener(OnClickTitleButton);
         }
+
+        previousBlockedState = IsBlockedByStartImage();
+
+        UpdateButtonInteractable();
     }
+
 
     private void Start()
     {
+        // StartImage가 처음부터 꺼져 있다면 바로 초기화합니다.
+        if (!IsBlockedByStartImage())
+        {
+            InitializeSwitcher();
+        }
+    }
+
+
+    private void Update()
+    {
+        bool isBlocked = IsBlockedByStartImage();
+
+        if (isBlocked != previousBlockedState)
+        {
+            previousBlockedState = isBlocked;
+            UpdateButtonInteractable();
+        }
+
+        if (isBlocked)
+        {
+            return;
+        }
+
+        // StartImage가 꺼진 직후 최초 한 번만 초기 설정합니다.
+        if (!hasInitialized)
+        {
+            InitializeSwitcher();
+        }
+    }
+
+
+    private void OnDisable()
+    {
+        if (moveCoroutine != null)
+        {
+            StopCoroutine(moveCoroutine);
+            moveCoroutine = null;
+        }
+    }
+
+
+    private void OnDestroy()
+    {
+        if (titleButton != null)
+        {
+            titleButton.onClick.RemoveListener(OnClickTitleButton);
+        }
+    }
+
+
+    /// <summary>
+    /// StartImage가 활성화되어 있는지 확인합니다.
+    /// </summary>
+    private bool IsBlockedByStartImage()
+    {
+        return startImageObject != null &&
+               startImageObject.activeInHierarchy;
+    }
+
+
+    /// <summary>
+    /// StartImage 상태에 따라 버튼 클릭 가능 여부를 변경합니다.
+    /// </summary>
+    private void UpdateButtonInteractable()
+    {
+        if (titleButton == null)
+        {
+            return;
+        }
+
+        titleButton.interactable = !IsBlockedByStartImage();
+    }
+
+
+    /// <summary>
+    /// 현재 활성화된 오브젝트를 기준으로 처음 상태를 설정합니다.
+    /// </summary>
+    private void InitializeSwitcher()
+    {
+        if (hasInitialized)
+        {
+            return;
+        }
+
+        hasInitialized = true;
+
         int currentIndex = GetCurrentActiveIndex();
 
         if (currentIndex < 0)
@@ -87,21 +209,30 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
         }
     }
 
-    private void OnDestroy()
-    {
-        if (titleButton != null)
-        {
-            titleButton.onClick.RemoveListener(OnClickTitleButton);
-        }
-    }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (IsBlockedByStartImage())
+        {
+            return;
+        }
+
         PlayHoverSound();
     }
 
+
     private void OnClickTitleButton()
     {
+        if (IsBlockedByStartImage())
+        {
+            return;
+        }
+
+        if (!hasInitialized)
+        {
+            InitializeSwitcher();
+        }
+
         PlayClickSound();
 
         int currentIndex = GetCurrentActiveIndex();
@@ -110,9 +241,10 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
         SetActiveObject(nextIndex);
     }
 
+
     private void PlayHoverSound()
     {
-        if (!playHoverSound)
+        if (IsBlockedByStartImage() || !playHoverSound)
         {
             return;
         }
@@ -125,9 +257,10 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
         AudioManager.Instance.PlaySfx(hoverSfx);
     }
 
+
     private void PlayClickSound()
     {
-        if (!playClickSound)
+        if (IsBlockedByStartImage() || !playClickSound)
         {
             return;
         }
@@ -139,6 +272,7 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
 
         AudioManager.Instance.PlaySfx(clickSfx);
     }
+
 
     private void ResizeObjectsArray()
     {
@@ -167,9 +301,11 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
             return;
         }
 
-        SwitchObject[] resizedObjects = new SwitchObject[objectCount];
+        SwitchObject[] resizedObjects =
+            new SwitchObject[objectCount];
 
-        int copyCount = Mathf.Min(objects.Length, resizedObjects.Length);
+        int copyCount =
+            Mathf.Min(objects.Length, resizedObjects.Length);
 
         for (int i = 0; i < copyCount; i++)
         {
@@ -187,6 +323,7 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
         objects = resizedObjects;
     }
 
+
     private int GetCurrentActiveIndex()
     {
         if (objects == null)
@@ -196,12 +333,8 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
 
         for (int i = 0; i < objects.Length; i++)
         {
-            if (objects[i] == null)
-            {
-                continue;
-            }
-
-            if (objects[i].targetObject == null)
+            if (objects[i] == null ||
+                objects[i].targetObject == null)
             {
                 continue;
             }
@@ -214,6 +347,7 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
 
         return -1;
     }
+
 
     private int GetRandomNextIndex(int currentIndex)
     {
@@ -239,6 +373,7 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
         return nextIndex;
     }
 
+
     private int GetValidObjectCount()
     {
         int validCount = 0;
@@ -250,12 +385,8 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
 
         for (int i = 0; i < objects.Length; i++)
         {
-            if (objects[i] == null)
-            {
-                continue;
-            }
-
-            if (objects[i].targetObject == null)
+            if (objects[i] == null ||
+                objects[i].targetObject == null)
             {
                 continue;
             }
@@ -266,6 +397,7 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
         return validCount;
     }
 
+
     private int GetFirstValidObjectIndex()
     {
         if (objects == null)
@@ -275,12 +407,8 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
 
         for (int i = 0; i < objects.Length; i++)
         {
-            if (objects[i] == null)
-            {
-                continue;
-            }
-
-            if (objects[i].targetObject == null)
+            if (objects[i] == null ||
+                objects[i].targetObject == null)
             {
                 continue;
             }
@@ -290,6 +418,7 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
 
         return -1;
     }
+
 
     private int GetRandomValidObjectIndex()
     {
@@ -305,12 +434,8 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
 
         for (int i = 0; i < objects.Length; i++)
         {
-            if (objects[i] == null)
-            {
-                continue;
-            }
-
-            if (objects[i].targetObject == null)
+            if (objects[i] == null ||
+                objects[i].targetObject == null)
             {
                 continue;
             }
@@ -326,19 +451,18 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
         return -1;
     }
 
+
     private void SetActiveObject(int index)
     {
-        if (index < 0)
+        if (IsBlockedByStartImage())
         {
             return;
         }
 
-        if (objects == null)
-        {
-            return;
-        }
-
-        if (index >= objects.Length)
+        if (index < 0 ||
+            objects == null ||
+            index >= objects.Length ||
+            objects[index] == null)
         {
             return;
         }
@@ -369,16 +493,81 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
             }
         }
 
-        if (objects[index] != null)
+        // 선택된 항목에 설정된 색상으로 파티클 색상을 변경합니다.
+        ApplyParticleColors(objects[index]);
+
+        moveCoroutine = StartCoroutine(
+            MoveTargetsCoroutine(objects[index].moveTargets)
+        );
+    }
+
+
+    /// <summary>
+    /// 선택된 오브젝트에 설정된 색상을 두 파티클에 적용합니다.
+    /// </summary>
+    private void ApplyParticleColors(SwitchObject switchObject)
+    {
+        if (switchObject == null)
         {
-            moveCoroutine = StartCoroutine(MoveTargetsCoroutine(objects[index].moveTargets));
+            return;
+        }
+
+        SetParticleColor(
+            sparklesParticle,
+            switchObject.sparklesColor
+        );
+
+        SetParticleColor(
+            glowSmokeParticle,
+            switchObject.glowSmokeColor
+        );
+    }
+
+
+    /// <summary>
+    /// 파티클 시스템의 Start Color를 변경합니다.
+    /// </summary>
+    private void SetParticleColor(
+        ParticleSystem particleSystem,
+        Color color
+    )
+    {
+        if (particleSystem == null)
+        {
+            return;
+        }
+
+        ParticleSystem.MainModule main =
+            particleSystem.main;
+
+        main.startColor = color;
+
+        if (!restartParticlesOnColorChange)
+        {
+            return;
+        }
+
+        bool wasPlaying = particleSystem.isPlaying;
+
+        particleSystem.Stop(
+            true,
+            ParticleSystemStopBehavior.StopEmittingAndClear
+        );
+
+        if (wasPlaying || particleSystem.playOnAwake)
+        {
+            particleSystem.Play(true);
         }
     }
 
-    private IEnumerator MoveTargetsCoroutine(MoveTarget[] moveTargets)
+
+    private IEnumerator MoveTargetsCoroutine(
+        MoveTarget[] moveTargets
+    )
     {
         if (moveTargets == null)
         {
+            moveCoroutine = null;
             yield break;
         }
 
@@ -386,18 +575,19 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
         {
             MoveTarget moveTarget = moveTargets[i];
 
-            if (moveTarget == null)
+            if (moveTarget == null ||
+                moveTarget.target == null)
             {
                 continue;
             }
 
-            if (moveTarget.target == null)
-            {
-                continue;
-            }
+            moveTarget.target.localPosition =
+                moveTarget.startLocalPosition;
 
-            moveTarget.target.localPosition = moveTarget.startLocalPosition;
-            moveTarget.target.localRotation = Quaternion.Euler(moveTarget.startLocalEulerAngles);
+            moveTarget.target.localRotation =
+                Quaternion.Euler(
+                    moveTarget.startLocalEulerAngles
+                );
         }
 
         float maxDuration = GetMaxDuration(moveTargets);
@@ -405,36 +595,47 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
 
         while (elapsedTime < maxDuration)
         {
+            if (IsBlockedByStartImage())
+            {
+                moveCoroutine = null;
+                yield break;
+            }
+
             elapsedTime += Time.deltaTime;
 
             for (int i = 0; i < moveTargets.Length; i++)
             {
                 MoveTarget moveTarget = moveTargets[i];
 
-                if (moveTarget == null)
+                if (moveTarget == null ||
+                    moveTarget.target == null)
                 {
                     continue;
                 }
 
-                if (moveTarget.target == null)
-                {
-                    continue;
-                }
+                float duration =
+                    Mathf.Max(0.01f, moveTarget.moveDuration);
 
-                float duration = Mathf.Max(0.01f, moveTarget.moveDuration);
-                float t = Mathf.Clamp01(elapsedTime / duration);
+                float t =
+                    Mathf.Clamp01(elapsedTime / duration);
 
-                moveTarget.target.localPosition = Vector3.Lerp(
-                    moveTarget.startLocalPosition,
-                    moveTarget.endLocalPosition,
-                    t
-                );
+                moveTarget.target.localPosition =
+                    Vector3.Lerp(
+                        moveTarget.startLocalPosition,
+                        moveTarget.endLocalPosition,
+                        t
+                    );
 
-                moveTarget.target.localRotation = Quaternion.Lerp(
-                    Quaternion.Euler(moveTarget.startLocalEulerAngles),
-                    Quaternion.Euler(moveTarget.endLocalEulerAngles),
-                    t
-                );
+                moveTarget.target.localRotation =
+                    Quaternion.Lerp(
+                        Quaternion.Euler(
+                            moveTarget.startLocalEulerAngles
+                        ),
+                        Quaternion.Euler(
+                            moveTarget.endLocalEulerAngles
+                        ),
+                        t
+                    );
             }
 
             yield return null;
@@ -444,22 +645,24 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
         {
             MoveTarget moveTarget = moveTargets[i];
 
-            if (moveTarget == null)
+            if (moveTarget == null ||
+                moveTarget.target == null)
             {
                 continue;
             }
 
-            if (moveTarget.target == null)
-            {
-                continue;
-            }
+            moveTarget.target.localPosition =
+                moveTarget.endLocalPosition;
 
-            moveTarget.target.localPosition = moveTarget.endLocalPosition;
-            moveTarget.target.localRotation = Quaternion.Euler(moveTarget.endLocalEulerAngles);
+            moveTarget.target.localRotation =
+                Quaternion.Euler(
+                    moveTarget.endLocalEulerAngles
+                );
         }
 
         moveCoroutine = null;
     }
+
 
     private float GetMaxDuration(MoveTarget[] moveTargets)
     {
@@ -467,7 +670,7 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
 
         if (moveTargets == null)
         {
-            return maxDuration;
+            return Mathf.Max(0.01f, maxDuration);
         }
 
         for (int i = 0; i < moveTargets.Length; i++)
@@ -479,7 +682,8 @@ public class TitleButtonSwitcher : MonoBehaviour, IPointerEnterHandler
 
             if (moveTargets[i].moveDuration > maxDuration)
             {
-                maxDuration = moveTargets[i].moveDuration;
+                maxDuration =
+                    moveTargets[i].moveDuration;
             }
         }
 
