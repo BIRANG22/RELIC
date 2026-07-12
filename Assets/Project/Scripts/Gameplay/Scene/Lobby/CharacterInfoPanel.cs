@@ -119,20 +119,22 @@ public class CharacterInfoPanel : MonoBehaviour
 
         ApplyCostLabels();
 
+        // 캐릭터 정보가 없을 때도 스탯 영역이 빈칸으로 남지 않도록
+        // 모든 수치를 0으로 표시한다.
         if (hpValueText != null)
-            hpValueText.text = "";
+            hpValueText.text = "0";
 
         if (costValueText != null)
-            costValueText.text = "";
+            costValueText.text = "0";
 
         if (recoveryValueText != null)
-            recoveryValueText.text = "";
+            recoveryValueText.text = "0";
 
         if (moveValueText != null)
-            moveValueText.text = "";
+            moveValueText.text = "0";
 
         ClearCharacterMark();
-        ApplyStoryText("");
+        ApplyStoryText("설명 없음");
     }
 
     public void ShowStatTooltipInStory(Component owner, string statName, string description, string valueLine)

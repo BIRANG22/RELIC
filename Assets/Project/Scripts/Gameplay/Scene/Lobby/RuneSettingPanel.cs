@@ -1,10 +1,12 @@
 ﻿using Relic.Gameplay.Data;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class RuneSettingPanel : MonoBehaviour
 {
@@ -12,14 +14,30 @@ public class RuneSettingPanel : MonoBehaviour
     [SerializeField] private RuneSlotButton[] runeSlotButtons;
 
     [Header("Rune Slot Unlock Settings")]
-    [SerializeField] private int defaultUnlockedRuneSlotCount = 4;
-    [SerializeField] private int levelUpsPerRuneSlotUnlock = 2;
+    [SerializeField] private int[] runeSlotUnlockLevels = { 1, 1, 3, 5, 7, 10 };
+
+    [Header("Locked Rune Slot Visual")]
+    [Tooltip("잠긴 룬 슬롯에 표시할 자물쇠 스프라이트입니다.")]
+    [SerializeField] private Sprite lockedRuneSlotSprite;
+    [Tooltip("룬 슬롯의 아이콘 Image를 순서대로 연결합니다. 비어 있으면 자동으로 찾습니다.")]
+    [SerializeField] private Image[] runeSlotIconImages;
+    [Tooltip("잠긴 룬 슬롯 자물쇠 이미지의 알파값입니다. 0~255 기준입니다.")]
+    [SerializeField, Range(0, 255)] private int lockedRuneSlotAlpha = 150;
 
     [Header("Rune Icon List Panel")]
     [SerializeField] private GameObject runeIconSelectPanel;
     [SerializeField] private RuneIconButton[] runeIconButtons;
 
-    [Header("Rune Info Area")]
+    [Header("Rune Icon Select Panel Move Effect")]
+    [Tooltip("룬 선택 패널이 닫혀 있을 때의 X 좌표입니다.")]
+    [SerializeField] private float runeSelectPanelHiddenX = 1200f;
+    [Tooltip("룬 탭에서 표시될 때의 X 좌표입니다.")]
+    [SerializeField] private float runeSelectPanelShownX = 790f;
+    [Tooltip("룬 선택 패널이 목표 위치까지 이동하는 시간입니다.")]
+    [SerializeField] private float runeSelectPanelMoveDuration = 0.25f;
+
+    [Header("Shared Info Area")]
+    [SerializeField] private GameObject sharedInfoArea;
     [SerializeField] private TMP_Text runeInfoTitleText;
     [SerializeField] private TMP_Text runeInfoEffectText;
     [SerializeField] private string emptyRuneInfoTitle = "룬 정보";
@@ -32,6 +50,12 @@ public class RuneSettingPanel : MonoBehaviour
     private CharacterMasterData currentMasterData;
     private CharacterRuntimeData currentRuntimeData;
 
+    private bool runeSelectPanelAllowed = true;
+    private RectTransform runeIconSelectPanelRect;
+    private Coroutine runeSelectPanelMoveCoroutine;
+
+    public bool IsRuneInteractionEnabled => runeSelectPanelAllowed;
+
     public event Action OnRuneChanged;
 
     private void Awake()
@@ -40,14 +64,17 @@ public class RuneSettingPanel : MonoBehaviour
             warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
 
         AutoBindRuneInfoTexts();
+        BindRuneSelectPanelRect();
         ClearRuneInfo();
 
         InitRuneSlots();
+        AutoBindRuneSlotIconImages();
         InitRuneIconButtons();
         ApplyDefaultLockedState();
 
-        if (runeIconSelectPanel != null)
-            runeIconSelectPanel.SetActive(true);
+        // 탭 전환 시 활성화/비활성화하지 않고 X 좌표 이동만 사용한다.
+        SetRuneSelectPanelActive();
+        SetRuneSelectPanelXImmediate(runeSelectPanelHiddenX);
     }
 
     private void OnEnable()
@@ -56,14 +83,25 @@ public class RuneSettingPanel : MonoBehaviour
             warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
 
         AutoBindRuneInfoTexts();
-
-        if (runeIconSelectPanel != null)
-            runeIconSelectPanel.SetActive(true);
+        BindRuneSelectPanelRect();
+        SetRuneSelectPanelActive();
+        MoveRuneSelectPanel(runeSelectPanelAllowed);
 
         if (currentRuntimeData != null)
             RefreshCurrentRuneView();
         else
             ApplyDefaultLockedState();
+
+    }
+
+
+    private void OnDisable()
+    {
+        if (runeSelectPanelMoveCoroutine != null)
+        {
+            StopCoroutine(runeSelectPanelMoveCoroutine);
+            runeSelectPanelMoveCoroutine = null;
+        }
     }
 
     private void InitRuneSlots()
@@ -78,6 +116,84 @@ public class RuneSettingPanel : MonoBehaviour
         }
     }
 
+
+    private void AutoBindRuneSlotIconImages()
+    {
+        int slotCount = runeSlotButtons != null ? runeSlotButtons.Length : 0;
+
+        if (slotCount <= 0)
+            return;
+
+        if (runeSlotIconImages == null || runeSlotIconImages.Length != slotCount)
+            Array.Resize(ref runeSlotIconImages, slotCount);
+
+        for (int i = 0; i < slotCount; i++)
+        {
+            if (runeSlotIconImages[i] != null || runeSlotButtons[i] == null)
+                continue;
+
+            Transform iconTransform = FindDeepChild(runeSlotButtons[i].transform, "RuneImg");
+
+            if (iconTransform == null)
+                iconTransform = FindDeepChild(runeSlotButtons[i].transform, "IconImg");
+
+            if (iconTransform == null)
+                iconTransform = FindDeepChild(runeSlotButtons[i].transform, "Icon");
+
+            if (iconTransform != null)
+                runeSlotIconImages[i] = iconTransform.GetComponent<Image>();
+        }
+    }
+
+    private void RefreshLockedRuneSlotVisuals()
+    {
+        AutoBindRuneSlotIconImages();
+
+        if (runeSlotButtons == null)
+            return;
+
+        for (int i = 0; i < runeSlotButtons.Length; i++)
+        {
+            bool locked = runeSlotButtons[i] != null && runeSlotButtons[i].IsLocked;
+            ApplyLockedRuneSlotVisual(i, locked);
+        }
+    }
+
+    private void ApplyLockedRuneSlotVisual(int slotIndex, bool locked)
+    {
+        if (runeSlotIconImages == null || slotIndex < 0 || slotIndex >= runeSlotIconImages.Length)
+            return;
+
+        Image iconImage = runeSlotIconImages[slotIndex];
+
+        if (iconImage == null)
+            return;
+
+        if (!locked)
+        {
+            RuneData equippedRune = null;
+
+            if (runeSlotButtons != null && slotIndex < runeSlotButtons.Length && runeSlotButtons[slotIndex] != null)
+                equippedRune = runeSlotButtons[slotIndex].EquippedRune;
+
+            if (equippedRune == null)
+            {
+                iconImage.sprite = null;
+                iconImage.enabled = false;
+                iconImage.color = Color.white;
+            }
+
+            return;
+        }
+
+        iconImage.sprite = lockedRuneSlotSprite;
+        iconImage.enabled = lockedRuneSlotSprite != null;
+
+        Color color = Color.white;
+        color.a = Mathf.Clamp01(lockedRuneSlotAlpha / 255f);
+        iconImage.color = color;
+    }
+
     private void InitRuneIconButtons()
     {
         if (runeIconButtons == null)
@@ -88,6 +204,91 @@ public class RuneSettingPanel : MonoBehaviour
             if (runeIconButtons[i] != null)
                 runeIconButtons[i].Init(this);
         }
+    }
+
+    public void SetRuneSelectPanelEnabledForTab(bool enabled)
+    {
+        runeSelectPanelAllowed = enabled;
+
+        if (!enabled)
+        {
+            ClearRuneInfo();
+            SetRuneSelectPanelVisible(false);
+            return;
+        }
+
+        // 룬 탭에서는 기존처럼 룬 선택 목록을 표시한다.
+        SetRuneSelectPanelVisible(true);
+    }
+
+    public void SetRuneSelectPanelVisible(bool visible)
+    {
+        MoveRuneSelectPanel(runeSelectPanelAllowed && visible);
+    }
+
+    private void BindRuneSelectPanelRect()
+    {
+        if (runeIconSelectPanelRect != null)
+            return;
+
+        if (runeIconSelectPanel != null)
+            runeIconSelectPanelRect = runeIconSelectPanel.transform as RectTransform;
+    }
+
+    private void SetRuneSelectPanelActive()
+    {
+        if (runeIconSelectPanel != null && !runeIconSelectPanel.activeSelf)
+            runeIconSelectPanel.SetActive(true);
+    }
+
+    private void MoveRuneSelectPanel(bool show)
+    {
+        BindRuneSelectPanelRect();
+        SetRuneSelectPanelActive();
+
+        if (runeIconSelectPanelRect == null)
+            return;
+
+        if (runeSelectPanelMoveCoroutine != null)
+            StopCoroutine(runeSelectPanelMoveCoroutine);
+
+        float targetX = show ? runeSelectPanelShownX : runeSelectPanelHiddenX;
+        runeSelectPanelMoveCoroutine = StartCoroutine(MoveRuneSelectPanelRoutine(targetX));
+    }
+
+    private IEnumerator MoveRuneSelectPanelRoutine(float targetX)
+    {
+        Vector2 startPosition = runeIconSelectPanelRect.anchoredPosition;
+        float duration = Mathf.Max(0.01f, runeSelectPanelMoveDuration);
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float easedT = 1f - Mathf.Pow(1f - t, 3f);
+
+            Vector2 position = runeIconSelectPanelRect.anchoredPosition;
+            position.x = Mathf.Lerp(startPosition.x, targetX, easedT);
+            runeIconSelectPanelRect.anchoredPosition = position;
+
+            yield return null;
+        }
+
+        SetRuneSelectPanelXImmediate(targetX);
+        runeSelectPanelMoveCoroutine = null;
+    }
+
+    private void SetRuneSelectPanelXImmediate(float x)
+    {
+        BindRuneSelectPanelRect();
+
+        if (runeIconSelectPanelRect == null)
+            return;
+
+        Vector2 position = runeIconSelectPanelRect.anchoredPosition;
+        position.x = x;
+        runeIconSelectPanelRect.anchoredPosition = position;
     }
 
     public void OpenCharacterSetting(string characterId)
@@ -142,8 +343,7 @@ public class RuneSettingPanel : MonoBehaviour
 
         RefreshCurrentRuneView();
 
-        if (runeIconSelectPanel != null)
-            runeIconSelectPanel.SetActive(true);
+        SetRuneSelectPanelVisible(true);
     }
 
     public void RefreshByCurrentLevel()
@@ -160,6 +360,7 @@ public class RuneSettingPanel : MonoBehaviour
     {
         ApplyRuneSlotUnlockState();
         LoadCurrentRuneSetting();
+        RefreshLockedRuneSlotVisuals();
         RefreshRuneIconButtons();
     }
 
@@ -202,6 +403,7 @@ public class RuneSettingPanel : MonoBehaviour
             SaveCurrentRuneSetting();
             OnRuneChanged?.Invoke();
         }
+
     }
 
     private void ApplyRuneSlotUnlockState()
@@ -240,18 +442,29 @@ public class RuneSettingPanel : MonoBehaviour
         {
             if (runeSlotButtons[i] != null)
                 runeSlotButtons[i].SetLocked(true);
+
+            ApplyLockedRuneSlotVisual(i, true);
         }
     }
 
     private int GetUnlockedRuneSlotCount(int level)
     {
-        int totalSlotCount = runeSlotButtons != null ? runeSlotButtons.Length : 0;
-        int safeBaseSlotCount = Mathf.Max(0, defaultUnlockedRuneSlotCount);
-        int safeUnlockInterval = Mathf.Max(1, levelUpsPerRuneSlotUnlock);
-        int safeLevel = Mathf.Max(1, level);
-        int extraUnlockedSlotCount = (safeLevel - 1) / safeUnlockInterval;
+        int totalSlotCount = Mathf.Min(
+            runeSlotButtons != null ? runeSlotButtons.Length : 0,
+            runeSlotUnlockLevels != null ? runeSlotUnlockLevels.Length : 0);
 
-        return Mathf.Clamp(safeBaseSlotCount + extraUnlockedSlotCount, 0, totalSlotCount);
+        int safeLevel = Mathf.Max(1, level);
+        int unlockedSlotCount = 0;
+
+        for (int i = 0; i < totalSlotCount; i++)
+        {
+            int requiredLevel = Mathf.Max(1, runeSlotUnlockLevels[i]);
+
+            if (safeLevel >= requiredLevel)
+                unlockedSlotCount++;
+        }
+
+        return unlockedSlotCount;
     }
 
     private void SaveCurrentRuneSetting()
@@ -308,8 +521,7 @@ public class RuneSettingPanel : MonoBehaviour
             }
         }
 
-        if (runeIconSelectPanel != null)
-            runeIconSelectPanel.SetActive(true);
+        SetRuneSelectPanelVisible(true);
 
         RefreshRuneIconEquippedStates();
     }
@@ -596,6 +808,10 @@ public class RuneSettingPanel : MonoBehaviour
 
     public void UnequipRuneFromSlot(RuneSlotButton slotButton)
     {
+        // 프리뷰 탭에서는 장착 룬 정보만 확인하며 클릭 동작은 막는다.
+        if (!runeSelectPanelAllowed)
+            return;
+
         if (slotButton == null)
         {
             ShowWarning("룬 슬롯이 연결되지 않았습니다.");
@@ -757,7 +973,9 @@ public class RuneSettingPanel : MonoBehaviour
         if (currentRuntimeData == null)
             return;
 
-        int requiredLength = Mathf.Max(12, runeSlotButtons != null ? runeSlotButtons.Length : 0);
+        const int maxRuneSlotCount = 6;
+        int connectedSlotCount = runeSlotButtons != null ? runeSlotButtons.Length : 0;
+        int requiredLength = Mathf.Min(maxRuneSlotCount, connectedSlotCount > 0 ? connectedSlotCount : maxRuneSlotCount);
 
         if (currentRuntimeData.EquippedRuneIds != null &&
             currentRuntimeData.EquippedRuneIds.Length >= requiredLength)
@@ -791,8 +1009,8 @@ public class RuneSettingPanel : MonoBehaviour
             }
         }
 
-        if (runeIconSelectPanel != null)
-            runeIconSelectPanel.SetActive(true);
+        SetRuneSelectPanelVisible(true);
+
     }
 
     private void ClearRuneSlotsAndLockAll()
@@ -806,11 +1024,12 @@ public class RuneSettingPanel : MonoBehaviour
 
                 runeSlotButtons[i].SetLocked(true);
                 runeSlotButtons[i].SetRune(null);
+                ApplyLockedRuneSlotVisual(i, true);
             }
         }
 
-        if (runeIconSelectPanel != null)
-            runeIconSelectPanel.SetActive(true);
+        SetRuneSelectPanelVisible(true);
+
     }
 
     private void ClearRuneIconButtons()
@@ -825,8 +1044,7 @@ public class RuneSettingPanel : MonoBehaviour
             }
         }
 
-        if (runeIconSelectPanel != null)
-            runeIconSelectPanel.SetActive(true);
+        SetRuneSelectPanelVisible(true);
     }
 
     public void ClearForEmptyCharacter()
@@ -839,12 +1057,43 @@ public class RuneSettingPanel : MonoBehaviour
         ClearRuneIconButtons();
         ClearRuneInfo();
 
-        if (runeIconSelectPanel != null)
-            runeIconSelectPanel.SetActive(true);
+        SetRuneSelectPanelVisible(true);
+    }
+
+    public void ShowRuneSlotInfo(int slotIndex, RuneData runeData, bool isLocked)
+    {
+        LobbyInfoHoverState.NotifyInfoShown();
+        AutoBindRuneInfoTexts();
+
+        if (isLocked)
+        {
+            int requiredLevel = GetRuneSlotRequiredLevel(slotIndex);
+
+            if (runeInfoTitleText != null)
+                runeInfoTitleText.text = string.Empty;
+
+            if (runeInfoEffectText != null)
+                runeInfoEffectText.text = requiredLevel > 0
+                    ? $"캐릭터 {requiredLevel}레벨에 오픈됩니다."
+                    : "잠긴 룬 슬롯입니다.";
+
+            return;
+        }
+
+        ShowRuneInfo(runeData);
+    }
+
+    private int GetRuneSlotRequiredLevel(int slotIndex)
+    {
+        if (runeSlotUnlockLevels == null || slotIndex < 0 || slotIndex >= runeSlotUnlockLevels.Length)
+            return 0;
+
+        return Mathf.Max(1, runeSlotUnlockLevels[slotIndex]);
     }
 
     public void ShowRuneInfo(RuneData runeData)
     {
+        LobbyInfoHoverState.NotifyInfoShown();
         AutoBindRuneInfoTexts();
 
         if (runeData == null)
@@ -858,6 +1107,27 @@ public class RuneSettingPanel : MonoBehaviour
 
         if (runeInfoEffectText != null)
             runeInfoEffectText.text = BuildRuneEffectText(runeData);
+    }
+
+    public void ClearRuneInfoFromHover()
+    {
+        int hoverVersion = LobbyInfoHoverState.CurrentVersion;
+        StartCoroutine(ClearRuneInfoAfterHoverDelay(hoverVersion));
+    }
+
+    private IEnumerator ClearRuneInfoAfterHoverDelay(int hoverVersion)
+    {
+        yield return new WaitForSecondsRealtime(LobbyInfoHoverState.ClearDelaySeconds);
+
+        if (LobbyInfoHoverState.IsCurrent(hoverVersion))
+            ClearRuneInfo();
+    }
+
+    public void SetEmptyInfoText(string title, string effect)
+    {
+        emptyRuneInfoTitle = title ?? string.Empty;
+        emptyRuneInfoEffect = effect ?? string.Empty;
+        ClearRuneInfo();
     }
 
     private void ClearRuneInfo()
@@ -876,13 +1146,15 @@ public class RuneSettingPanel : MonoBehaviour
         if (runeInfoTitleText != null && runeInfoEffectText != null)
             return;
 
-        Transform infoArea = FindDeepChild(transform, "RuneInfoArea");
+        Transform infoAreaTransform = sharedInfoArea != null
+            ? sharedInfoArea.transform
+            : FindDeepChild(transform.root, "InfoArea");
 
-        if (infoArea == null)
-            infoArea = FindDeepChild(transform, "RuenInfoArea");
+        if (sharedInfoArea == null && infoAreaTransform != null)
+            sharedInfoArea = infoAreaTransform.gameObject;
 
-        TMP_Text[] texts = infoArea != null
-            ? infoArea.GetComponentsInChildren<TMP_Text>(true)
+        TMP_Text[] texts = infoAreaTransform != null
+            ? infoAreaTransform.GetComponentsInChildren<TMP_Text>(true)
             : GetComponentsInChildren<TMP_Text>(true);
 
         for (int i = 0; i < texts.Length; i++)
