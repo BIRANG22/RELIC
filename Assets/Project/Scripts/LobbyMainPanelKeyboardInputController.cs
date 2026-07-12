@@ -77,6 +77,8 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
     [SerializeField] private CharacterSubPanelOpenButton runeOpenButton;
     [SerializeField] private GameObject skillArea;
     [SerializeField] private GameObject runeArea;
+    [Tooltip("CharacterSettingPanel의 프리뷰/룬/스킬 탭 전환을 담당하는 Setting 컴포넌트입니다.")]
+    [SerializeField] private Setting characterSettingController;
 
     [Header("Skill Rune Toggle Keyboard SFX")]
     [Tooltip("CharacterSettingPanel에서 Tab 키로 SkillArea/RuneArea를 전환할 때 마우스 호버와 같은 효과음을 재생합니다.")]
@@ -710,18 +712,15 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
 
     private void HandleSkillRuneTabInput()
     {
-        bool skillOpen = IsPanelActive(skillArea);
-        bool runeOpen = IsPanelActive(runeArea);
+        if (characterSettingController == null)
+            characterSettingController = FindFirstObjectByType<Setting>(FindObjectsInactive.Include);
 
-        if (skillOpen && !runeOpen)
-        {
-            OpenRuneArea();
-            PlaySkillRuneKeyboardHoverSfx();
+        if (characterSettingController == null)
             return;
-        }
 
-        OpenSkillArea();
-        PlaySkillRuneKeyboardHoverSfx();
+        // 탭 전환은 Setting 한 곳에서만 처리한다.
+        // 영역을 비활성화하지 않으므로 이동 코루틴도 안전하게 실행된다.
+        characterSettingController.CycleTabByKeyboard();
     }
 
     private void OpenSkillArea()

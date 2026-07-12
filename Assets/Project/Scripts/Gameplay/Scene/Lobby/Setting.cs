@@ -2,9 +2,9 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class Setting : MonoBehaviour
 {
@@ -129,7 +129,34 @@ public class Setting : MonoBehaviour
 
         InitPresetButtons();
         InitTabButtons();
+        DisableTabButtonNavigation();
         InitTestLevelHoldButtons();
+    }
+
+    /// <summary>
+    /// A/D 입력이 탭 버튼 사이의 Unity UI 자동 네비게이션으로 처리되지 않도록 한다.
+    /// 탭 전환은 Tab 키와 직접 클릭으로만 처리한다.
+    /// </summary>
+    private void DisableTabButtonNavigation()
+    {
+        SetButtonNavigationNone(previewButton);
+        SetButtonNavigationNone(skillButton);
+        SetButtonNavigationNone(runeButton);
+    }
+
+    private static void SetButtonNavigationNone(Button button)
+    {
+        if (button == null)
+            return;
+
+        Navigation navigation = button.navigation;
+        navigation.mode = Navigation.Mode.None;
+        button.navigation = navigation;
+
+        // 현재 탭 색상은 Setting에서 직접 관리한다.
+        // EventSystem 선택 상태가 CharacterSelect로 이동해도 탭 색상이 깜빡이지 않도록
+        // Button의 Color Tint 전환이 Target Graphic 색상을 덮어쓰지 않게 한다.
+        button.transition = Selectable.Transition.None;
     }
 
     private void Start()
@@ -143,6 +170,52 @@ public class Setting : MonoBehaviour
     private void Update()
     {
         HandleTestLevelCheatKeys();
+    }
+
+    /// <summary>
+    /// 외부 키보드 입력 컨트롤러에서 호출한다.
+    /// 프리뷰 → 룬 → 스킬 → 프리뷰 순서로 한 단계만 전환하며,
+    /// 버튼 클릭과 같은 등장/퇴장 효과음을 재생한다.
+    /// </summary>
+    public void CycleTabByKeyboard()
+    {
+        if (!isActiveAndEnabled || !gameObject.activeInHierarchy)
+            return;
+
+        SettingTab targetTab;
+
+        switch (currentTab)
+        {
+            case SettingTab.Preview:
+                targetTab = SettingTab.Rune;
+                break;
+
+            case SettingTab.Rune:
+                targetTab = SettingTab.Skill;
+                break;
+
+            default:
+                targetTab = SettingTab.Preview;
+                break;
+        }
+
+        PlayUserTabTransitionSound(targetTab);
+
+        switch (targetTab)
+        {
+            case SettingTab.Rune:
+                ShowRuneSetting();
+                break;
+
+            case SettingTab.Skill:
+                ShowSkillSetting();
+                break;
+
+            default:
+                ShowPreviewSetting();
+                break;
+        }
+
     }
 
     private void OnDisable()
@@ -419,7 +492,10 @@ public class Setting : MonoBehaviour
     public void ShowPreviewSetting()
     {
         if (currentTab == SettingTab.Preview)
+        {
+            RefreshTabButtons();
             return;
+        }
 
         currentTab = SettingTab.Preview;
 
@@ -922,10 +998,13 @@ public class Setting : MonoBehaviour
         if (button == null)
             return;
 
-        Image image = button.GetComponent<Image>();
+        Graphic targetGraphic = button.targetGraphic;
 
-        if (image != null)
-            image.color = color;
+        if (targetGraphic == null)
+            targetGraphic = button.GetComponent<Graphic>();
+
+        if (targetGraphic != null)
+            targetGraphic.color = color;
     }
 
     private void ShowWarning(string message)
