@@ -27,6 +27,25 @@ public class PressAnyKeyIntro : MonoBehaviour
     [SerializeField] private GameObject mainMenuPanel;
 
 
+    [Header("PRESS ANY KEY 등장 연출")]
+
+    [Tooltip("씬이 시작된 뒤 PRESS ANY KEY가 나타나기 전 대기시간입니다.")]
+    [Min(0f)]
+    [SerializeField] private float pressAnyKeyAppearDelay = 1f;
+
+    [Tooltip("PRESS ANY KEY가 서서히 나타나는 시간입니다.")]
+    [Min(0f)]
+    [SerializeField] private float pressAnyKeyFadeDuration = 0.5f;
+
+    [Tooltip("PRESS ANY KEY 등장에 사용할 움직임 곡선입니다.")]
+    [SerializeField]
+    private AnimationCurve pressAnyKeyFadeCurve =
+        AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
+    [Tooltip("페이드 인이 끝난 뒤 실행할 깜빡임 스크립트입니다. 비어 있으면 자동으로 찾습니다.")]
+    [SerializeField] private ObjectBlink pressAnyKeyBlink;
+
+
     [Header("입력 설정")]
 
     [Tooltip("씬 진입 직후 입력을 무시할 시간입니다.")]
@@ -141,7 +160,8 @@ public class PressAnyKeyIntro : MonoBehaviour
     private string alphaClipThresholdProperty = "_Alpha_Clip_Threshold";
 
 
-    // 실행 중 한 번 시작 연출을 완료했다면, 이후 타이틀 진입에서는 StartImage를 다시 표시하지 않습니다.
+    // 실행 중 한 번 시작 연출을 완료했다면,
+    // 이후 타이틀 진입에서는 StartImage를 다시 표시하지 않습니다.
     private static bool introCompletedInThisRun;
     private static bool skipIntroOnNextTitleLoad;
 
@@ -151,7 +171,11 @@ public class PressAnyKeyIntro : MonoBehaviour
     private static readonly Vector3 completedTitleScale =
         new Vector3(0.7f, 0.7f, 1f);
 
+
     private Material runtimeMaterial;
+    private CanvasGroup pressAnyKeyCanvasGroup;
+
+    private Coroutine pressAnyKeyFadeCoroutine;
 
     private bool canReceiveInput;
     private bool isPlaying;
@@ -181,11 +205,53 @@ public class PressAnyKeyIntro : MonoBehaviour
         }
 
         CreateRuntimeMaterial();
+        PreparePressAnyKeyObject();
 
         if (mainMenuPanel != null)
         {
             mainMenuPanel.SetActive(false);
         }
+    }
+
+
+    /// <summary>
+    /// PRESS ANY KEY에 CanvasGroup이 없으면 자동으로 추가하고
+    /// 시작할 때 완전히 투명한 상태로 만듭니다.
+    /// ObjectBlink는 페이드 완료 전까지 비활성화합니다.
+    /// </summary>
+    private void PreparePressAnyKeyObject()
+    {
+        if (pressAnyKeyObject == null)
+        {
+            return;
+        }
+
+        pressAnyKeyObject.SetActive(true);
+
+        pressAnyKeyCanvasGroup =
+            pressAnyKeyObject.GetComponent<CanvasGroup>();
+
+        if (pressAnyKeyCanvasGroup == null)
+        {
+            pressAnyKeyCanvasGroup =
+                pressAnyKeyObject.AddComponent<CanvasGroup>();
+        }
+
+        if (pressAnyKeyBlink == null)
+        {
+            pressAnyKeyBlink =
+                pressAnyKeyObject.GetComponent<ObjectBlink>();
+        }
+
+        // 페이드 중에 ObjectBlink가 CanvasGroup 알파를 덮어쓰지 않도록 막습니다.
+        if (pressAnyKeyBlink != null)
+        {
+            pressAnyKeyBlink.enabled = false;
+        }
+
+        pressAnyKeyCanvasGroup.alpha = 0f;
+        pressAnyKeyCanvasGroup.interactable = false;
+        pressAnyKeyCanvasGroup.blocksRaycasts = false;
     }
 
 
@@ -201,6 +267,11 @@ public class PressAnyKeyIntro : MonoBehaviour
         }
 
         ApplyLogoPartCompletedState();
+
+        if (pressAnyKeyBlink != null)
+        {
+            pressAnyKeyBlink.enabled = false;
+        }
 
         if (pressAnyKeyObject != null)
         {
@@ -223,6 +294,12 @@ public class PressAnyKeyIntro : MonoBehaviour
 
         StartCoroutine(EnableInputAfterDelay());
         StartCoroutine(PlayLogoPartStartAnimation());
+
+        if (!introCompletedInThisRun &&
+            !skipIntroOnNextTitleLoad)
+        {
+            StartPressAnyKeyFade();
+        }
     }
 
 
@@ -238,10 +315,24 @@ public class PressAnyKeyIntro : MonoBehaviour
             isPlaying = true;
             canReceiveInput = false;
 
-            // Any Key 입력과 동시에 효과음을 재생합니다.
             PlayAnyKeySound();
 
             StartCoroutine(PlayIntroSequence());
+        }
+    }
+
+
+    private void OnDisable()
+    {
+        if (pressAnyKeyFadeCoroutine != null)
+        {
+            StopCoroutine(pressAnyKeyFadeCoroutine);
+            pressAnyKeyFadeCoroutine = null;
+        }
+
+        if (pressAnyKeyBlink != null)
+        {
+            pressAnyKeyBlink.enabled = false;
         }
     }
 
@@ -251,6 +342,135 @@ public class PressAnyKeyIntro : MonoBehaviour
         if (runtimeMaterial != null)
         {
             Destroy(runtimeMaterial);
+        }
+    }
+
+
+    /// <summary>
+    /// PRESS ANY KEY 등장 연출을 시작합니다.
+    /// </summary>
+    private void StartPressAnyKeyFade()
+    {
+        if (pressAnyKeyObject == null)
+        {
+            return;
+        }
+
+        if (pressAnyKeyCanvasGroup == null)
+        {
+            PreparePressAnyKeyObject();
+        }
+
+        if (pressAnyKeyFadeCoroutine != null)
+        {
+            StopCoroutine(pressAnyKeyFadeCoroutine);
+        }
+
+        pressAnyKeyFadeCoroutine =
+            StartCoroutine(PlayPressAnyKeyFade());
+    }
+
+
+    /// <summary>
+    /// 지정한 시간만큼 대기한 뒤 PRESS ANY KEY를 서서히 표시합니다.
+    /// 페이드가 끝나면 ObjectBlink를 활성화합니다.
+    /// </summary>
+    private IEnumerator PlayPressAnyKeyFade()
+    {
+        if (pressAnyKeyCanvasGroup == null)
+        {
+            pressAnyKeyFadeCoroutine = null;
+            yield break;
+        }
+
+        if (pressAnyKeyBlink != null)
+        {
+            pressAnyKeyBlink.enabled = false;
+        }
+
+        pressAnyKeyCanvasGroup.alpha = 0f;
+
+        if (pressAnyKeyAppearDelay > 0f)
+        {
+            yield return new WaitForSecondsRealtime(
+                pressAnyKeyAppearDelay
+            );
+        }
+
+        if (isPlaying)
+        {
+            pressAnyKeyFadeCoroutine = null;
+            yield break;
+        }
+
+        if (pressAnyKeyFadeDuration <= 0f)
+        {
+            pressAnyKeyCanvasGroup.alpha = 1f;
+
+            EnablePressAnyKeyBlink();
+
+            pressAnyKeyFadeCoroutine = null;
+            yield break;
+        }
+
+        float elapsed = 0f;
+
+        while (elapsed < pressAnyKeyFadeDuration)
+        {
+            if (isPlaying)
+            {
+                pressAnyKeyFadeCoroutine = null;
+                yield break;
+            }
+
+            elapsed += Time.unscaledDeltaTime;
+
+            float normalizedTime =
+                Mathf.Clamp01(
+                    elapsed / pressAnyKeyFadeDuration
+                );
+
+            float curvedTime =
+                pressAnyKeyFadeCurve.Evaluate(normalizedTime);
+
+            pressAnyKeyCanvasGroup.alpha =
+                Mathf.LerpUnclamped(
+                    0f,
+                    1f,
+                    curvedTime
+                );
+
+            yield return null;
+        }
+
+        pressAnyKeyCanvasGroup.alpha = 1f;
+
+        EnablePressAnyKeyBlink();
+
+        pressAnyKeyFadeCoroutine = null;
+    }
+
+
+    /// <summary>
+    /// PRESS ANY KEY 페이드 완료 후 깜빡임을 시작합니다.
+    /// </summary>
+    private void EnablePressAnyKeyBlink()
+    {
+        if (isPlaying)
+        {
+            return;
+        }
+
+        if (pressAnyKeyBlink == null &&
+            pressAnyKeyObject != null)
+        {
+            pressAnyKeyBlink =
+                pressAnyKeyObject.GetComponent<ObjectBlink>();
+        }
+
+        if (pressAnyKeyBlink != null)
+        {
+            pressAnyKeyBlink.enabled = true;
         }
     }
 
@@ -304,7 +524,8 @@ public class PressAnyKeyIntro : MonoBehaviour
             return;
         }
 
-        runtimeMaterial = new Material(backgroundGraphic.material);
+        runtimeMaterial =
+            new Material(backgroundGraphic.material);
 
         runtimeMaterial.name =
             backgroundGraphic.material.name + " (Runtime)";
@@ -370,6 +591,19 @@ public class PressAnyKeyIntro : MonoBehaviour
     /// </summary>
     private IEnumerator PlayIntroSequence()
     {
+        if (pressAnyKeyFadeCoroutine != null)
+        {
+            StopCoroutine(pressAnyKeyFadeCoroutine);
+            pressAnyKeyFadeCoroutine = null;
+        }
+
+        // ObjectBlink가 비활성화되면서 원래 알파값을 복원할 수 있으므로
+        // 오브젝트를 숨기기 직전에 깜빡임부터 중지합니다.
+        if (pressAnyKeyBlink != null)
+        {
+            pressAnyKeyBlink.enabled = false;
+        }
+
         if (pressAnyKeyObject != null)
         {
             pressAnyKeyObject.SetActive(false);
@@ -391,7 +625,9 @@ public class PressAnyKeyIntro : MonoBehaviour
         if (titleRect != null)
         {
             titleRoutine =
-                StartCoroutine(AnimateTitle(resolvedTitleDuration));
+                StartCoroutine(
+                    AnimateTitle(resolvedTitleDuration)
+                );
         }
 
         if (runtimeMaterial != null)
@@ -432,7 +668,6 @@ public class PressAnyKeyIntro : MonoBehaviour
         }
 
         // 이번 실행에서 시작 연출이 완료되었음을 저장합니다.
-        // 이후 로비나 배틀에서 타이틀로 돌아와도 StartImage는 다시 표시되지 않습니다.
         introCompletedInThisRun = true;
 
         // 모든 연출이 끝난 뒤 StartImage 자체를 비활성화합니다.
@@ -601,8 +836,12 @@ public class PressAnyKeyIntro : MonoBehaviour
             return;
         }
 
-        if (!string.IsNullOrWhiteSpace(alphaClipThresholdProperty) &&
-            runtimeMaterial.HasProperty(alphaClipThresholdProperty))
+        if (!string.IsNullOrWhiteSpace(
+                alphaClipThresholdProperty
+            ) &&
+            runtimeMaterial.HasProperty(
+                alphaClipThresholdProperty
+            ))
         {
             runtimeMaterial.SetFloat(
                 alphaClipThresholdProperty,
@@ -623,6 +862,7 @@ public class PressAnyKeyIntro : MonoBehaviour
         backgroundGraphic.SetMaterialDirty();
     }
 
+
     /// <summary>
     /// 게임 시작 시 DUS와 IUM을 각각 지정된 시작 위치에서 목표 위치로 이동시킵니다.
     /// </summary>
@@ -635,17 +875,21 @@ public class PressAnyKeyIntro : MonoBehaviour
 
         if (dusRect != null)
         {
-            dusRect.anchoredPosition = dusStartPosition;
+            dusRect.anchoredPosition =
+                dusStartPosition;
         }
 
         if (iumRect != null)
         {
-            iumRect.anchoredPosition = iumStartPosition;
+            iumRect.anchoredPosition =
+                iumStartPosition;
         }
 
         if (logoPartStartDelay > 0f)
         {
-            yield return new WaitForSecondsRealtime(logoPartStartDelay);
+            yield return new WaitForSecondsRealtime(
+                logoPartStartDelay
+            );
         }
 
         if (logoPartMoveDuration <= 0f)
@@ -661,7 +905,9 @@ public class PressAnyKeyIntro : MonoBehaviour
             elapsed += Time.unscaledDeltaTime;
 
             float normalizedTime =
-                Mathf.Clamp01(elapsed / logoPartMoveDuration);
+                Mathf.Clamp01(
+                    elapsed / logoPartMoveDuration
+                );
 
             float curvedTime =
                 logoPartMoveCurve.Evaluate(normalizedTime);
@@ -700,13 +946,14 @@ public class PressAnyKeyIntro : MonoBehaviour
     {
         if (dusRect != null)
         {
-            dusRect.anchoredPosition = dusTargetPosition;
+            dusRect.anchoredPosition =
+                dusTargetPosition;
         }
 
         if (iumRect != null)
         {
-            iumRect.anchoredPosition = iumTargetPosition;
+            iumRect.anchoredPosition =
+                iumTargetPosition;
         }
     }
-
 }
