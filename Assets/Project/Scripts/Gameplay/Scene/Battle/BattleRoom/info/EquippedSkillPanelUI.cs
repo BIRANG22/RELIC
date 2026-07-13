@@ -234,22 +234,10 @@ public class EquippedSkillPanelUI : MonoBehaviour
         if (skillData == null)
             return string.Empty;
 
-        string text = "";
-
-        if (!string.IsNullOrWhiteSpace(skillData.ToolTip))
-            text = skillData.ToolTip;
-        else if (!string.IsNullOrWhiteSpace(skillData.Details))
-            text = skillData.Details;
-
-        if (!string.IsNullOrWhiteSpace(text))
-        {
-            int payAmount = skillData.ResourceCostValue;
-
-            if (SkillCostCalculator.TryGetPreviewPayAmount(runtimeData, skillData, out int previewPayAmount))
-                payAmount = previewPayAmount;
-
-            return SkillTooltipFormatter.Format(skillData, text, runtimeData, payAmount);
-        }
+        // 인벤토리 툴팁에는 스킬 마스터의 Details만 그대로 표시합니다.
+        // ValueRate를 설명 앞에 자동으로 붙이지 않습니다.
+        if (!string.IsNullOrWhiteSpace(skillData.Details))
+            return skillData.Details;
 
         return "효과 설명이 없습니다.";
     }
