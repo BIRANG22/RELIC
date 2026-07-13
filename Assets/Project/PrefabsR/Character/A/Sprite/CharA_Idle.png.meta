@@ -97,13 +97,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Cha_01_idle_battle_0
+      name: CharA_Idle_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 2048
-        width: 2048
-        height: 2048
+        y: 3240
+        width: 1920
+        height: 1080
       alignment: 9
       pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -112,20 +112,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 1f80e4ab5f285f74cb567e11382b97ec
-      internalID: -470243193
+      spriteID: 15bd629616288904d88c36bc1a52bee2
+      internalID: 196345196
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_01_idle_battle_1
+      name: CharA_Idle_1
       rect:
         serializedVersion: 2
-        x: 2048
-        y: 2048
-        width: 2048
-        height: 2048
+        x: 1920
+        y: 3240
+        width: 1920
+        height: 1080
       alignment: 9
       pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -134,20 +134,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 364f08f913804424895b719e0ffa5f2d
-      internalID: 339609758
+      spriteID: 57cc05adaa32cad4a8fe593feca32d0f
+      internalID: -219049889
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_01_idle_battle_2
+      name: CharA_Idle_2
       rect:
         serializedVersion: 2
-        x: 4096
-        y: 2048
-        width: 2048
-        height: 2048
+        x: 3840
+        y: 3240
+        width: 1920
+        height: 1080
       alignment: 9
       pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -156,20 +156,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ac2174372cd7ef644935902382cc98b9
-      internalID: -723042772
+      spriteID: 172339e31e9580b44b78ed2d8df70358
+      internalID: 1467058784
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_01_idle_battle_3
+      name: CharA_Idle_3
       rect:
         serializedVersion: 2
-        x: 6144
-        y: 2048
-        width: 2048
-        height: 2048
+        x: 5760
+        y: 3240
+        width: 1920
+        height: 1080
       alignment: 9
       pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -178,20 +178,196 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: bff15973857b1f44693577881fd57ae2
-      internalID: 1690844984
+      spriteID: e3891d6eab52ed842a9a40e7d8a05570
+      internalID: -822495877
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_01_idle_battle_4
+      name: CharA_Idle_4
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 2160
+        width: 1920
+        height: 1080
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b59dc60841162314ea58b6255ba37d4c
+      internalID: 1437710360
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CharA_Idle_5
+      rect:
+        serializedVersion: 2
+        x: 1920
+        y: 2160
+        width: 1920
+        height: 1080
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6e264051334c81c4f9ea6a9647eccb37
+      internalID: -1466918
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CharA_Idle_6
+      rect:
+        serializedVersion: 2
+        x: 3840
+        y: 2160
+        width: 1920
+        height: 1080
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 639f595209b5f384dbbe85b26af020f7
+      internalID: -347995447
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CharA_Idle_7
+      rect:
+        serializedVersion: 2
+        x: 5760
+        y: 2160
+        width: 1920
+        height: 1080
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 006d13aa57991fd41bc55c4d6d26a346
+      internalID: -163436778
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CharA_Idle_8
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1080
+        width: 1920
+        height: 1080
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3e6c75d5aec261546bf7fdf5bc3f2615
+      internalID: 337865848
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CharA_Idle_9
+      rect:
+        serializedVersion: 2
+        x: 1920
+        y: 1080
+        width: 1920
+        height: 1080
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7253f70c5bbb89142930a21ab0bee88a
+      internalID: 1709509791
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CharA_Idle_10
+      rect:
+        serializedVersion: 2
+        x: 3840
+        y: 1080
+        width: 1920
+        height: 1080
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: db456920ec49be949b423b050ef618d1
+      internalID: 1801695306
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CharA_Idle_11
+      rect:
+        serializedVersion: 2
+        x: 5760
+        y: 1080
+        width: 1920
+        height: 1080
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 76d9c788c382dc044ac34364e5a567b0
+      internalID: -185254355
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CharA_Idle_12
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 2048
-        height: 2048
+        width: 1920
+        height: 1080
       alignment: 9
       pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -200,42 +376,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 4627c8d4c2280024597c2573dcbe30ea
-      internalID: 998063780
+      spriteID: 69f7efba6e96bf04290f2d2fec9f2bdf
+      internalID: 1887273932
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_01_idle_battle_5
+      name: CharA_Idle_13
       rect:
         serializedVersion: 2
-        x: 2048
-        y: 4
-        width: 2048
-        height: 2048
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 0cf74d69ac0213141b04119938995fb7
-      internalID: 386135956
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Cha_01_idle_battle_6
-      rect:
-        serializedVersion: 2
-        x: 4096
+        x: 1920
         y: 0
-        width: 2048
-        height: 2048
+        width: 1920
+        height: 1080
       alignment: 9
       pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -244,20 +398,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 1c70464836164bc47b7cba9e3cec3519
-      internalID: 1671828270
+      spriteID: 029ce6a2513fe8548a710d82e8c771b4
+      internalID: 587837515
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_01_idle_battle_7
+      name: CharA_Idle_14
       rect:
         serializedVersion: 2
-        x: 6144
+        x: 3840
         y: 0
-        width: 2048
-        height: 2048
+        width: 1920
+        height: 1080
       alignment: 9
       pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -266,8 +420,30 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 646a7adc18b705740b5b88cc9ff48258
-      internalID: 1482816046
+      spriteID: 1c27d80442378c542a5c43098aad24bf
+      internalID: -2138197213
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CharA_Idle_15
+      rect:
+        serializedVersion: 2
+        x: 5760
+        y: 0
+        width: 1920
+        height: 1080
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7ed012d526932444f9f516fc036b6b19
+      internalID: 1545383906
       vertices: []
       indices: 
       edges: []
@@ -286,14 +462,22 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Cha_01_idle_battle_0: -470243193
-      Cha_01_idle_battle_1: 339609758
-      Cha_01_idle_battle_2: -723042772
-      Cha_01_idle_battle_3: 1690844984
-      Cha_01_idle_battle_4: 998063780
-      Cha_01_idle_battle_5: 386135956
-      Cha_01_idle_battle_6: 1671828270
-      Cha_01_idle_battle_7: 1482816046
+      CharA_Idle_0: 196345196
+      CharA_Idle_1: -219049889
+      CharA_Idle_10: 1801695306
+      CharA_Idle_11: -185254355
+      CharA_Idle_12: 1887273932
+      CharA_Idle_13: 587837515
+      CharA_Idle_14: -2138197213
+      CharA_Idle_15: 1545383906
+      CharA_Idle_2: 1467058784
+      CharA_Idle_3: -822495877
+      CharA_Idle_4: 1437710360
+      CharA_Idle_5: -1466918
+      CharA_Idle_6: -347995447
+      CharA_Idle_7: -163436778
+      CharA_Idle_8: 337865848
+      CharA_Idle_9: 1709509791
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
