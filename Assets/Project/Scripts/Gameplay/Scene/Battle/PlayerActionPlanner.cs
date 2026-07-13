@@ -218,15 +218,6 @@ namespace Relic.Gameplay.Battle
                 }
             }
 
-            if (currentSkillData.ResourceCostType == ResourceCostType.AllCurrent && previewCost <= 0)
-            {
-                Debug.LogWarning(
-                    $"[ConfirmAction] AllCurrent 자원 부족 / " +
-                    $"Skill:{currentSkillData.SkillId} / PreviewCost:{previewCost}"
-                );
-                return;
-            }
-
             bool added = currentSlot.AddSkill(SkillIconUtility.GetSkillIcon(currentSkillData.SkillId));
 
             if (!added)

@@ -3,7 +3,7 @@ namespace Relic.Gameplay.Data
     public enum EndTurn
     {
         None,
-        ReMove,
+        Remove,
         Decrease,
         Maintain,
     }
@@ -14,7 +14,7 @@ namespace Relic.Gameplay.Data
         public string EffectId;
         public string Name;
 
-        public bool Nesting;
+
         public EndTurn EndTurn;
 
         public string ToolTip;

@@ -1,35 +1,31 @@
-using UnityEngine;
-
-public class DrainEffect : BattleEffectBase
+public class LifestealEffect : BattleEffectBase
 {
-    public override string EffectId => "E_Drain";
+    public override string EffectId => "E_Lifesteal";
 
     protected override void Apply(BattleEffectContext context)
     {
         if (context == null)
             return;
 
-        int damage = Mathf.Max(0, context.Value);
-
         if (context.PlayerTarget != null)
         {
-            BattleEffectUtility.DamagePlayer(context.PlayerTarget, damage);
+            BattleEffectUtility.AddStatusToPlayer(context.PlayerTarget, EffectId, context.Value, context.Count);
+            return;
+        }
 
-            if (context.MonsterCaster != null)
-                BattleEffectUtility.HealMonster(context.MonsterCaster, damage);
-
-            Debug.Log($"[Effect] E_Drain Player / Damage:{damage}");
+        if (context.PlayerCaster != null)
+        {
+            BattleEffectUtility.AddStatusToPlayer(context.PlayerCaster, EffectId, context.Value, context.Count);
             return;
         }
 
         if (context.MonsterTarget != null)
         {
-            BattleEffectUtility.DamageMonster(context.MonsterTarget, damage);
-
-            if (context.PlayerCaster != null)
-                BattleEffectUtility.HealPlayer(context.PlayerCaster, damage);
-
-            Debug.Log($"[Effect] E_Drain Monster / Damage:{damage}");
+            BattleEffectUtility.AddStatusToMonster(context.MonsterTarget, EffectId, context.Value, context.Count);
+            return;
         }
+
+        if (context.MonsterCaster != null)
+            BattleEffectUtility.AddStatusToMonster(context.MonsterCaster, EffectId, context.Value, context.Count);
     }
 }

@@ -885,7 +885,7 @@ public class BattleActionRunner
             character.SetGridIndex(targetGridIndex);
             UpdatePartyGridIndex(command.CharacterId, targetGridIndex);
             ApplyGridEffectsToPlayer(enteredGridIndices, character);
-            statusEffectService.ApplyBurnDamageToPlayerOnMove(character);
+            statusEffectService.ApplyBleedDamageToPlayerOnMove(character);
 
             hudService.RefreshHUDs();
 
@@ -966,7 +966,7 @@ public class BattleActionRunner
         ApplyBlockedPlayerMoveCostRefund(command);
 
         if (currentGridIndex != startGridIndex)
-            statusEffectService.ApplyBurnDamageToPlayerOnMove(character);
+            statusEffectService.ApplyBleedDamageToPlayerOnMove(character);
 
         hudService.RefreshHUDs();
         yield return new WaitForSeconds(ActionDelay);
@@ -1352,7 +1352,6 @@ public class BattleActionRunner
                 if (attackerAnimator != null)
                     attackerAnimator.PlaySkillAction(command.SkillData);
 
-                statusEffectService.ApplyBleedingDamageToPlayerOnAttack(attacker);
 
                 if (attacker.RuntimeData == null || attacker.RuntimeData.IsDead)
                 {
@@ -1391,7 +1390,6 @@ public class BattleActionRunner
                 if (attackerAnimator != null)
                     attackerAnimator.PlaySkillAction(command.SkillData);
 
-                statusEffectService.ApplyBleedingDamageToPlayerOnAttack(attacker);
 
                 if (attacker.RuntimeData == null || attacker.RuntimeData.IsDead)
                 {
@@ -1430,7 +1428,6 @@ public class BattleActionRunner
             if (hitTargets.Count > 0 && BattleCameraController.Instance != null)
                 yield return BattleCameraController.Instance.ZoomToAttacker(attacker.transform);
 
-            statusEffectService.ApplyBleedingDamageToPlayerOnAttack(attacker);
 
             if (attacker.RuntimeData == null || attacker.RuntimeData.IsDead)
             {
@@ -1511,19 +1508,33 @@ public class BattleActionRunner
 
         if (command.SkillData.RangeType == RangeType.Selection)
         {
+            if (IsMoveSkill(command.SkillData) || command.SelectedGridIndex < 0)
+                return;
+
             rangeGridIndices = BattleRangeCalculator.GetSelectionRangeIndices(
-                attacker.CurrentGridIndex,
+                command.SelectedGridIndex,
                 rangeId,
                 DataManager.Instance.RangeDatabase,
                 gridManager
             );
 
-            command.SetDirectionResult(
+            command.SetSelectionAreaResult(
                 direction,
-                rangeGridIndices,
+                command.SelectedGridIndex,
                 rangeGridIndices
             );
         }
+    }
+
+    private static bool IsMoveSkill(SkillMasterData skillData)
+    {
+        if (skillData == null)
+            return false;
+
+        return skillData.Category == Category.Move ||
+               skillData.TimelineNotation == TimelineActionType.Move ||
+               skillData.SkillId == "S_Move_1" ||
+               skillData.SkillId == "S_Move_2";
     }
 
     private IEnumerator ExecutePlayerSkillEffectsToMonsters(
@@ -1999,7 +2010,7 @@ public class BattleActionRunner
 
             monster.MoveOccupiedCells(moveOffset, gridManager);
             ApplyGridEffectsToMonster(enteredGridIndices, monster);
-            statusEffectService.ApplyBurnDamageToMonsterOnMove(monster);
+            statusEffectService.ApplyBleedDamageToMonsterOnMove(monster);
 
             hudService.RefreshHUDs();
 
@@ -2197,7 +2208,6 @@ public class BattleActionRunner
             if (firstPlayerTarget != null && BattleCameraController.Instance != null)
                 yield return BattleCameraController.Instance.ZoomToAttacker(monster.transform);
 
-            statusEffectService.ApplyBleedingDamageToMonsterOnAttack(monster);
 
             bool hasDamageHitEffect = monsterSkillEffectService.HasDamageHitEffect(command);
 

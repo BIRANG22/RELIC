@@ -261,11 +261,10 @@ public class BattleTimelinePreviewEntry
         {
             case "E_Strike":
             case "E_Pierce":
-            case "E_Addicted":
-            case "E_Bleeding":
-            case "E_Burn":
-            case "E_Thorns":
-            case "E_Power":
+            case "E_Poison":
+            case "E_Bleed":
+            case "E_Ward":
+            case "E_Boost":
             case "E_Armor":
                 return true;
 

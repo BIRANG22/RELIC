@@ -298,7 +298,7 @@ public class CharBtn : MonoBehaviour,
             CurrentHP = master.MaxHP,
             CurrentCost = master.MaxCost,
             CurrentResource = 0,
-            CurrentMoveLevel = 1,
+            CurrentMoveLevel = 0,
 
             IsUnlocked = master.IsDefaultProvided,
 

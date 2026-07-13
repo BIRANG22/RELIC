@@ -371,7 +371,7 @@ public class BattleTimelineBarUI : MonoBehaviour
         else if (command.SkillData.RangeType == RangeType.Selection)
         {
             rangeIndices = BattleRangeCalculator.GetSelectionRangeIndices(
-                casterGridIndex,
+                command.SelectedGridIndex >= 0 ? command.SelectedGridIndex : casterGridIndex,
                 BattleEquipmentEffectService.GetEffectiveRangeId(command.UserRuntime, command.SkillData),
                 DataManager.Instance.RangeDatabase,
                 gridManager

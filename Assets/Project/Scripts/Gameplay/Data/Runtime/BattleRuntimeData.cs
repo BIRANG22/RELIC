@@ -240,7 +240,8 @@ namespace Relic.Gameplay.Data
             character.CurrentHP = character.MaxHP;
             character.CurrentCost = character.MaxCost;
             character.CurrentResource = 0;
-            character.CurrentMoveLevel = Mathf.Max(0, master.MoveValue);
+            // 이동값은 캐릭터 데이터가 아니라 이동 관련 효과에서 결정합니다.
+            character.CurrentMoveLevel = 0;
             character.MoveSkillId = "S_Move_1";
             character.Direction = BattleDirection.Right;
         }

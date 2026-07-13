@@ -55,11 +55,11 @@ public class BattleStatusEffectService
                 caster.RuntimeData.CurrentShield += Mathf.Max(0, value);
                 applied = true;
             }
-            else if (effectId == "E_Power")
+            else if (effectId == "E_Boost")
             {
                 AddOrStackStatusEffect(
                     caster.RuntimeData.StatusEffects,
-                    "E_Power",
+                    "E_Boost",
                     Mathf.Max(1, value),
                     Mathf.Max(1, count)
                 );
@@ -101,17 +101,17 @@ public class BattleStatusEffectService
         });
     }
 
-    public void ApplyBurnDamageToPlayerOnMove(BattleCharacter character)
+    public void ApplyBleedDamageToPlayerOnMove(BattleCharacter character)
     {
         if (character == null || character.RuntimeData == null || character.RuntimeData.IsDead)
             return;
 
-        int burnStack = damageService.GetStatusStack(character.RuntimeData.StatusEffects, "E_Burn");
+        int bleedStack = damageService.GetStatusStack(character.RuntimeData.StatusEffects, "E_Bleed");
 
-        if (burnStack <= 0)
+        if (bleedStack <= 0)
             return;
 
-        BattleEffectUtility.StatusDamagePlayer(character, burnStack);
+        BattleEffectUtility.StatusDamagePlayer(character, bleedStack);
 
         BattleUnitAnimator animator = character.GetComponent<BattleUnitAnimator>();
 
@@ -124,17 +124,17 @@ public class BattleStatusEffectService
         }
     }
 
-    public void ApplyBurnDamageToMonsterOnMove(MonsterUnit monster)
+    public void ApplyBleedDamageToMonsterOnMove(MonsterUnit monster)
     {
         if (monster == null || monster.RuntimeData == null)
             return;
 
-        int burnStack = damageService.GetStatusStack(monster.RuntimeData.StatusEffects, "E_Burn");
+        int bleedStack = damageService.GetStatusStack(monster.RuntimeData.StatusEffects, "E_Bleed");
 
-        if (burnStack <= 0)
+        if (bleedStack <= 0)
             return;
 
-        BattleEffectUtility.StatusDamageMonster(monster, burnStack);
+        BattleEffectUtility.StatusDamageMonster(monster, bleedStack);
 
         if (monster.RuntimeData.IsDead)
             deathService.HandleMonsterDead(monster);
@@ -213,7 +213,7 @@ public class BattleStatusEffectService
             if (status == null)
                 continue;
 
-            if (status.EffectId == "E_Addicted")
+            if (status.EffectId == "E_Poison")
             {
                 BattleEffectUtility.StatusDamagePlayer(character, status.Stack);
                 playedPresentation = true;
@@ -222,16 +222,22 @@ public class BattleStatusEffectService
                     return playedPresentation;
             }
 
-            if (status.EffectId == "E_Recover")
-                character.RuntimeData.CurrentResource += 1;
-
-            if (status.EffectId == "E_Recharge")
+            if (status.EffectId == "E_Focus")
             {
-                character.RuntimeData.CurrentCost =
-                    Mathf.Min(
-                        character.RuntimeData.MaxCost,
-                        character.RuntimeData.CurrentCost + 1
-                    );
+                CharacterMasterData masterData = DataManager.Instance?.CharacterDatabase?.Get(character.RuntimeData.CharacterId);
+                int maxResource = masterData != null ? Mathf.Max(0, masterData.MaxResource) : int.MaxValue;
+                character.RuntimeData.CurrentResource = Mathf.Min(
+                    maxResource,
+                    character.RuntimeData.CurrentResource + Mathf.Max(0, status.Stack)
+                );
+            }
+
+            if (status.EffectId == "E_Charge")
+            {
+                character.RuntimeData.CurrentCost = Mathf.Min(
+                    character.RuntimeData.MaxCost,
+                    character.RuntimeData.CurrentCost + Mathf.Max(0, status.Stack)
+                );
             }
 
             ApplyEndTurnRule(statuses, i, status);
@@ -256,7 +262,7 @@ public class BattleStatusEffectService
             if (status == null)
                 continue;
 
-            if (status.EffectId == "E_Addicted")
+            if (status.EffectId == "E_Poison")
             {
                 BattleEffectUtility.StatusDamageMonster(monster, status.Stack);
                 playedPresentation = true;
@@ -298,7 +304,7 @@ public class BattleStatusEffectService
             case EndTurn.None:
                 break;
 
-            case EndTurn.ReMove:
+            case EndTurn.Remove:
                 statuses.RemoveAt(index);
                 break;
 
@@ -313,40 +319,5 @@ public class BattleStatusEffectService
             case EndTurn.Maintain:
                 break;
         }
-    }
-
-    public void ApplyBleedingDamageToPlayerOnAttack(BattleCharacter character)
-    {
-        if (character == null || character.RuntimeData == null || character.RuntimeData.IsDead)
-            return;
-
-        int bleedingStack = damageService.GetStatusStack(
-            character.RuntimeData.StatusEffects,
-            "E_Bleeding"
-        );
-
-        if (bleedingStack <= 0)
-            return;
-
-        BattleEffectUtility.StatusDamagePlayer(character, bleedingStack);
-    }
-
-    public void ApplyBleedingDamageToMonsterOnAttack(MonsterUnit monster)
-    {
-        if (monster == null || monster.RuntimeData == null)
-            return;
-
-        int bleedingStack = damageService.GetStatusStack(
-            monster.RuntimeData.StatusEffects,
-            "E_Bleeding"
-        );
-
-        if (bleedingStack <= 0)
-            return;
-
-        BattleEffectUtility.StatusDamageMonster(monster, bleedingStack);
-
-        if (monster.RuntimeData.IsDead)
-            deathService.HandleMonsterDead(monster);
     }
 }

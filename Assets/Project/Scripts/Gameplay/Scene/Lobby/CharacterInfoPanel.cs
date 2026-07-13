@@ -83,7 +83,8 @@ public class CharacterInfoPanel : MonoBehaviour
         int baseHP = Mathf.Max(1, currentMasterData.MaxHP);
         int baseCost = Mathf.Max(0, currentMasterData.MaxCost);
         int baseRecovery = Mathf.Max(0, currentMasterData.CostRecovery);
-        int baseMove = Mathf.Max(0, currentMasterData.MoveValue);
+        // 캐릭터 데이터에는 기본 이동값이 없으며, 이동값은 장비/룬 효과로만 계산합니다.
+        int baseMove = 0;
 
         int effectiveHP = BattleEquipmentEffectService.GetEffectiveMaxHP(currentRuntimeData, currentMasterData);
         int effectiveCost = BattleEquipmentEffectService.GetEffectiveMaxCost(currentRuntimeData, currentMasterData);

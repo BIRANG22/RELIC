@@ -44,28 +44,7 @@ public static class SkillCostCalculator
             return false;
 
         int available = GetPreviewResource(caster, skill.ReferenceResource);
-        int costValue = Mathf.Max(0, skill.ResourceCostValue);
-
-        switch (skill.ResourceCostType)
-        {
-            case ResourceCostType.None:
-                payAmount = 0;
-                return true;
-
-            case ResourceCostType.Fixed:
-                payAmount = costValue;
-                return available >= payAmount;
-
-            case ResourceCostType.AllCurrent:
-                payAmount = available;
-                int minimum = BattleEquipmentEffectService.GetAllCurrentMinimumCost(
-                    caster,
-                    skill,
-                    costValue);
-                return available >= minimum;
-
-            default:
-                return false;
-        }
+        payAmount = Mathf.Max(0, skill.ResourceCostValue);
+        return available >= payAmount;
     }
 }

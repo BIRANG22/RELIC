@@ -131,11 +131,9 @@ public static class BattleEquipmentEffectService
         CharacterRuntimeData runtime,
         CharacterMasterData masterData)
     {
-        int baseMoveValue = masterData != null
-            ? Mathf.Max(0, masterData.MoveValue)
-            : runtime != null ? Mathf.Max(0, runtime.CurrentMoveLevel) : 0;
-
-        return Mathf.Max(0, baseMoveValue + GetMoveValueBonus(runtime));
+        // 캐릭터 마스터의 기본 이동값은 더 이상 사용하지 않습니다.
+        // 이동 단계는 장비/룬 등 E_Move_Value 효과의 합계로만 결정합니다.
+        return Mathf.Max(0, GetMoveValueBonus(runtime));
     }
 
     public static int ModifyUniqueResourceGain(
@@ -155,34 +153,6 @@ public static class BattleEquipmentEffectService
         }
 
         return safeAmount;
-    }
-
-    public static int GetAllCurrentMinimumCost(
-        CharacterRuntimeData runtime,
-        SkillMasterData skillData,
-        int defaultMinimum)
-    {
-        int minimum = Mathf.Max(1, defaultMinimum);
-
-        if (runtime == null || skillData == null)
-            return minimum;
-
-        if (skillData.ReferenceResource != ReferenceResource.UniqueResource ||
-            skillData.ResourceCostType != ResourceCostType.AllCurrent)
-        {
-            return minimum;
-        }
-
-        if (IsCharacter(runtime, "Char_01") && HasRune(runtime, "Rune_05"))
-            return 1;
-
-        if (IsCharacter(runtime, "Char_02") && HasRune(runtime, "Rune_10"))
-            return 1;
-
-        if (IsCharacter(runtime, "Char_03") && HasRune(runtime, "Rune_15"))
-            return 1;
-
-        return minimum;
     }
 
     public static void ApplyReservationCostModifiers(
@@ -261,14 +231,14 @@ public static class BattleEquipmentEffectService
             HasRune(runtime, "Rune_02") &&
             resource >= 3)
         {
-            AddPassiveStatus(runtime, "E_Power", 1, "Rune_02");
+            AddPassiveStatus(runtime, "E_Boost", 1, "Rune_02");
         }
 
         if (IsCharacter(runtime, "Char_02") &&
             HasRune(runtime, "Rune_08") &&
             resource >= 5)
         {
-            AddPassiveStatus(runtime, "E_Power", 1, "Rune_08");
+            AddPassiveStatus(runtime, "E_Boost", 1, "Rune_08");
         }
 
         if (IsCharacter(runtime, "Char_03") &&
@@ -282,7 +252,7 @@ public static class BattleEquipmentEffectService
             HasRune(runtime, "Rune_13") &&
             resource >= 3)
         {
-            AddPassiveStatus(runtime, "E_Power", 1, "Rune_13");
+            AddPassiveStatus(runtime, "E_Boost", 1, "Rune_13");
         }
     }
 
@@ -318,7 +288,7 @@ public static class BattleEquipmentEffectService
         if (command.TimelineSlotIndex == 0 &&
             HasRelic(runtime, "Relic_04") &&
             command.SkillData != null &&
-            command.SkillData.SkillType == SkillType.Skill)
+            command.SkillData.SkillType == SkillType.Debuff)
         {
             value += 1;
         }

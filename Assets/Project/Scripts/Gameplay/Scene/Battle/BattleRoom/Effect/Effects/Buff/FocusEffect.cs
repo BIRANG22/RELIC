@@ -9,7 +9,7 @@ public class FocusEffect : BattleEffectBase
 
         if (context.PlayerTarget != null)
         {
-            BattleEffectUtility.AddStatusToPlayer(context.PlayerTarget, EffectId, context.Value, context.Count);
+            BattleEffectUtility.AddStatusToPlayer(context.PlayerCaster, EffectId, context.Value, context.Count);
             return;
         }
 
@@ -21,7 +21,7 @@ public class FocusEffect : BattleEffectBase
 
         if (context.MonsterTarget != null)
         {
-            BattleEffectUtility.AddStatusToMonster(context.MonsterTarget, EffectId, context.Value, context.Count);
+            BattleEffectUtility.AddStatusToMonster(context.MonsterCaster, EffectId, context.Value, context.Count);
             return;
         }
 

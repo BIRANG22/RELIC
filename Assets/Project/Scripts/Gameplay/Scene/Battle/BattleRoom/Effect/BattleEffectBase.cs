@@ -13,6 +13,17 @@ public abstract class BattleEffectBase
             return;
 
         Apply(context);
+
+        if (context.PlayerSkillData != null &&
+            context.PlayerSkillData.SkillType == Relic.Gameplay.Data.SkillType.Buff)
+        {
+            BattleCharacter buffTarget = context.PlayerTarget != null
+                ? context.PlayerTarget
+                : context.PlayerCaster;
+
+            if (buffTarget != null)
+                BattleEffectUtility.OnPlayerBuffApplied?.Invoke(buffTarget);
+        }
     }
 
     protected abstract void Apply(BattleEffectContext context);

@@ -1,6 +1,6 @@
-public class PoisonEffect : BattleEffectBase
+public class BarrierEffect : BattleEffectBase
 {
-    public override string EffectId => "E_Poison";
+    public override string EffectId => "E_Barrier";
 
     protected override void Apply(BattleEffectContext context)
     {
@@ -13,9 +13,19 @@ public class PoisonEffect : BattleEffectBase
             return;
         }
 
+        if (context.PlayerCaster != null)
+        {
+            BattleEffectUtility.AddStatusToPlayer(context.PlayerCaster, EffectId, context.Value, context.Count);
+            return;
+        }
+
         if (context.MonsterTarget != null)
         {
             BattleEffectUtility.AddStatusToMonster(context.MonsterTarget, EffectId, context.Value, context.Count);
+            return;
         }
+
+        if (context.MonsterCaster != null)
+            BattleEffectUtility.AddStatusToMonster(context.MonsterCaster, EffectId, context.Value, context.Count);
     }
 }

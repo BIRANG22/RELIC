@@ -42,7 +42,11 @@ public class PlayerSkillReservationController : MonoBehaviour
     private void OnEnable()
     {
         if (gridManager != null)
+        {
             gridManager.OnCellClicked += HandleCellClicked;
+            gridManager.OnCellHovered += HandleCellHovered;
+            gridManager.OnCellHoverExited += HandleCellHoverExited;
+        }
     }
 
     private void OnDisable()
@@ -50,7 +54,11 @@ public class PlayerSkillReservationController : MonoBehaviour
         SetMoveTargetMonsterVisualActive(false);
 
         if (gridManager != null)
+        {
             gridManager.OnCellClicked -= HandleCellClicked;
+            gridManager.OnCellHovered -= HandleCellHovered;
+            gridManager.OnCellHoverExited -= HandleCellHoverExited;
+        }
     }
 
     private void EnsureSkillListPanel()
@@ -226,8 +234,14 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         if (currentSkillData.RangeType == RangeType.Selection)
         {
-            SetMoveTargetMonsterVisualActive(IsMoveSkill(currentSkillData));
-            PreviewMoveSelectableCells();
+            bool isMoveSkill = IsMoveSkill(currentSkillData);
+            SetMoveTargetMonsterVisualActive(isMoveSkill);
+
+            if (isMoveSkill)
+                PreviewMoveSelectableCells();
+            else if (!CanUseRangeData())
+                ShowBattleWarning("스킬 범위 정보를 찾을 수 없습니다.");
+
             return;
         }
 
@@ -384,6 +398,49 @@ public class PlayerSkillReservationController : MonoBehaviour
         };
     }
 
+    private void HandleCellHovered(GridCell cell)
+    {
+        if (cell == null || !IsGeneralSelectionSkillActive())
+            return;
+
+        ShowSelectionRangeAt(cell.Index);
+    }
+
+    private void HandleCellHoverExited(GridCell cell)
+    {
+        if (!IsGeneralSelectionSkillActive())
+            return;
+
+        if (rangePreview != null)
+            rangePreview.ClearRangeOnly();
+    }
+
+    private bool IsGeneralSelectionSkillActive()
+    {
+        return currentSkillData != null &&
+               currentSkillData.RangeType == RangeType.Selection &&
+               !IsMoveSkill(currentSkillData);
+    }
+
+    private void ShowSelectionRangeAt(int selectedGridIndex)
+    {
+        if (!IsGeneralSelectionSkillActive() || !CanUseRangeData())
+            return;
+
+        List<int> rangeIndices = BattleRangeCalculator.GetSelectionRangeIndices(
+            selectedGridIndex,
+            BattleEquipmentEffectService.GetEffectiveRangeId(currentUserRuntime, currentSkillData),
+            DataManager.Instance.RangeDatabase,
+            gridManager
+        );
+
+        if (ShouldExcludeCasterGridFromPreview(currentSkillData))
+            rangeIndices.RemoveAll(index => index == currentCasterGridIndex);
+
+        if (rangePreview != null)
+            rangePreview.ShowRangeCells(rangeIndices, GetHighlightColor(currentSkillData));
+    }
+
     private void HandleCellClicked(GridCell cell)
     {
         if (cell == null || currentSkillData == null)
@@ -391,6 +448,12 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         if (currentSkillData.RangeType != RangeType.Selection)
             return;
+
+        if (!IsMoveSkill(currentSkillData))
+        {
+            ConfirmSelectionReservation(cell.Index);
+            return;
+        }
 
         if (!currentMoveSelectableIndices.Contains(cell.Index))
         {
@@ -400,6 +463,33 @@ public class PlayerSkillReservationController : MonoBehaviour
         }
 
         ConfirmMoveReservation(cell.Index);
+    }
+
+    private void ConfirmSelectionReservation(int selectedGridIndex)
+    {
+        if (!CanConfirmReservation() || !CanUseRangeData())
+            return;
+
+        List<int> rangeIndices = BattleRangeCalculator.GetSelectionRangeIndices(
+            selectedGridIndex,
+            BattleEquipmentEffectService.GetEffectiveRangeId(currentUserRuntime, currentSkillData),
+            DataManager.Instance.RangeDatabase,
+            gridManager
+        );
+
+        if (ShouldExcludeCasterGridFromPreview(currentSkillData))
+            rangeIndices.RemoveAll(index => index == currentCasterGridIndex);
+
+        PlayerReservedCommand command = new PlayerReservedCommand(currentUserRuntime, currentSkillData);
+        command.SetSelectionAreaResult(
+            currentCasterDirection,
+            selectedGridIndex,
+            rangeIndices
+        );
+
+        ConfirmCommand(command);
+        KeepSkillListOpenForThisClick();
+        ClearPreview();
     }
 
     private void ConfirmDirectionReservation(BattleDirection direction)
@@ -1889,7 +1979,7 @@ public class PlayerSkillReservationController : MonoBehaviour
             return false;
 
         return skillData.SkillType == SkillType.Attack ||
-               skillData.SkillType == SkillType.Skill;
+               skillData.SkillType == SkillType.Debuff;
     }
 
     private Color GetHighlightColor(SkillMasterData skillData)
@@ -1902,13 +1992,13 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         switch (skillData.SkillType)
         {
-            case SkillType.Power:
+            case SkillType.Buff:
                 return powerHighlightColor;
 
             case SkillType.Attack:
                 return attackHighlightColor;
 
-            case SkillType.Skill:
+            case SkillType.Debuff:
                 return skillHighlightColor;
 
             default:

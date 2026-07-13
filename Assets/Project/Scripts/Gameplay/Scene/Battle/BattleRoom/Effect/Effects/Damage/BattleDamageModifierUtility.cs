@@ -48,14 +48,14 @@ public static class BattleDamageModifierUtility
         List<StatusEffectRuntimeData> statuses)
     {
         if (GetStatusStack(statuses, WeakenEffectId) > 0)
-            damage *= 0.7f;
+            damage *= 0.85f;
 
         if (GetStatusStack(statuses, ActiveDamageBoostEffectId) > 0)
             damage *= 2f;
 
-        int corrosionStack = GetStatusStack(statuses, CorrosionEffectId);
-        if (corrosionStack > 0)
-            damage += corrosionStack;
+        int grudgeStack = GetStatusStack(statuses, GrudgeEffectId);
+        if (grudgeStack > 0)
+            damage += grudgeStack;
 
         return damage;
     }
@@ -65,14 +65,14 @@ public static class BattleDamageModifierUtility
         List<StatusEffectRuntimeData> statuses)
     {
         if (GetStatusStack(statuses, VulnerableEffectId) > 0)
-            damage *= 1.5f;
+            damage *= 1.3f;
 
         if (GetStatusStack(statuses, ActiveDamageReductionEffectId) > 0)
             damage *= 0.5f;
 
-        int grudgeStack = GetStatusStack(statuses, GrudgeEffectId);
-        if (grudgeStack > 0)
-            damage += grudgeStack;
+        int corrosionStack = GetStatusStack(statuses, CorrosionEffectId);
+        if (corrosionStack > 0)
+            damage += corrosionStack;
 
         return damage;
     }

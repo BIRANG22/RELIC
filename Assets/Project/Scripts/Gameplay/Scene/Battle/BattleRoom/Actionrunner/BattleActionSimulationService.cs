@@ -552,8 +552,12 @@ public class BattleActionSimulationService
         }
         else if (command.SkillData.RangeType == RangeType.Selection)
         {
+            int selectionCenter = command.SelectedGridIndex >= 0
+                ? command.SelectedGridIndex
+                : casterGrid;
+
             range = BattleRangeCalculator.GetSelectionRangeIndices(
-                casterGrid,
+                selectionCenter,
                 rangeId,
                 DataManager.Instance.RangeDatabase,
                 gridManager
