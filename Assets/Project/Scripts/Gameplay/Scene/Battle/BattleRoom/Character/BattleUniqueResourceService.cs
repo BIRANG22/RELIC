@@ -4,136 +4,164 @@ using UnityEngine;
 
 public class BattleUniqueResourceService
 {
-    private const int DamagedGainAmount = 1;
-    private const int SameSlotActionRequiredCount = 2;
-    private const int SameSlotGainAmount = 1;
-    private const int CostRequiredInSlot = 6;
-    private const int CostGainAmount = 1;
+    private const int ResourceGainAmount = 1;
+    private const int SameSlotActionRequiredCount = 3;
+    private const int CostRequiredInTurn = 8;
 
-    public void ApplyTimelineSlotResourceGain(BattleTimelineController timelineController)
+    public void ApplyTimelineResourceGain(BattleTimelineController timelineController)
     {
         if (timelineController == null)
             return;
 
+        CheckThreeActionsInSameSlot(timelineController);
+        CheckSpendEightCostInTurn(timelineController);
+    }
+
+    public void OnAnyPlayerDamaged(BattleCharacter damagedCharacter)
+    {
+        if (damagedCharacter == null || damagedCharacter.RuntimeData == null)
+            return;
+
+        AddResourceToTriggerOwners(ResourceTrigger.OnAnyAllyDamaged);
+    }
+
+    public void OnPlayerBuffApplied(BattleCharacter buffedCharacter)
+    {
+        if (buffedCharacter == null || buffedCharacter.RuntimeData == null)
+            return;
+
+        AddResourceToTriggerOwners(ResourceTrigger.OnAllyBuffApplied);
+    }
+
+    public void OnPlayerDamagedEnemy(BattleCharacter attacker)
+    {
+        if (attacker == null || attacker.RuntimeData == null || attacker.RuntimeData.IsDead)
+            return;
+
+        CharacterMasterData masterData = GetMasterData(attacker.RuntimeData.CharacterId);
+
+        if (masterData == null || masterData.ResourceTrigger != ResourceTrigger.OnDamageEnemy)
+            return;
+
+        AddUniqueResource(attacker.RuntimeData, ResourceGainAmount);
+    }
+
+    private void CheckThreeActionsInSameSlot(BattleTimelineController timelineController)
+    {
         for (int slotIndex = 0; slotIndex < timelineController.SlotCount; slotIndex++)
         {
-            IReadOnlyList<PlayerReservedCommand> commands =
-                timelineController.GetPlayerCommands(slotIndex);
+            IReadOnlyList<PlayerReservedCommand> commands = timelineController.GetPlayerCommands(slotIndex);
 
             if (commands == null || commands.Count <= 0)
                 continue;
 
-            CheckSameSlotActionTwice(commands, slotIndex);
-            CheckSpendCostInSlot(commands, slotIndex);
+            Dictionary<string, int> actionCounts = new();
+            Dictionary<string, CharacterRuntimeData> runtimes = new();
+
+            for (int i = 0; i < commands.Count; i++)
+            {
+                PlayerReservedCommand command = commands[i];
+
+                if (command == null || command.UserRuntime == null || command.SkillData == null)
+                    continue;
+
+                // 이동 예약은 특정 행동 횟수에서 제외합니다.
+                if (command.ReservedMoveGridIndex >= 0)
+                    continue;
+
+                string characterId = command.UserRuntime.CharacterId;
+
+                if (!actionCounts.ContainsKey(characterId))
+                    actionCounts[characterId] = 0;
+
+                actionCounts[characterId]++;
+                runtimes[characterId] = command.UserRuntime;
+            }
+
+            foreach (KeyValuePair<string, int> pair in actionCounts)
+            {
+                CharacterMasterData masterData = GetMasterData(pair.Key);
+
+                if (masterData == null ||
+                    masterData.ResourceTrigger != ResourceTrigger.OnThreeActionsInSameSlot ||
+                    pair.Value < SameSlotActionRequiredCount)
+                {
+                    continue;
+                }
+
+                AddUniqueResource(runtimes[pair.Key], ResourceGainAmount);
+
+                Debug.Log($"[UniqueResource] ThreeActionsInSameSlot / Slot:{slotIndex} / Character:{pair.Key}");
+            }
         }
     }
 
-    public void OnPlayerDamaged(BattleCharacter character)
-    {
-        if (character == null || character.RuntimeData == null)
-            return;
-
-        CharacterMasterData masterData = GetMasterData(character.RuntimeData.CharacterId);
-
-        if (masterData == null)
-            return;
-
-        if (masterData.ResourceTrigger != ResourceTrigger.OnDamaged)
-            return;
-
-        AddUniqueResource(character.RuntimeData, DamagedGainAmount);
-    }
-
-    private void CheckSameSlotActionTwice(
-        IReadOnlyList<PlayerReservedCommand> commands,
-        int slotIndex)
-    {
-        Dictionary<string, int> actionCounts = new();
-        Dictionary<string, CharacterRuntimeData> runtimes = new();
-
-        for (int i = 0; i < commands.Count; i++)
-        {
-            PlayerReservedCommand command = commands[i];
-
-            if (command == null || command.UserRuntime == null || command.SkillData == null)
-                continue;
-
-            if (command.ReservedMoveGridIndex >= 0)
-                continue;
-
-            string characterId = command.UserRuntime.CharacterId;
-
-            if (!actionCounts.ContainsKey(characterId))
-                actionCounts[characterId] = 0;
-
-            actionCounts[characterId]++;
-            runtimes[characterId] = command.UserRuntime;
-        }
-
-        foreach (var pair in actionCounts)
-        {
-            string characterId = pair.Key;
-            int count = pair.Value;
-
-            CharacterMasterData masterData = GetMasterData(characterId);
-
-            if (masterData == null)
-                continue;
-
-            if (masterData.ResourceTrigger != ResourceTrigger.OnUseSameSlotTwice)
-                continue;
-
-            if (count < SameSlotActionRequiredCount)
-                continue;
-
-            AddUniqueResource(runtimes[characterId], SameSlotGainAmount);
-
-            Debug.Log($"[UniqueResource] SameSlotTwice / Slot:{slotIndex} / Character:{characterId}");
-        }
-    }
-
-    private void CheckSpendCostInSlot(
-        IReadOnlyList<PlayerReservedCommand> commands,
-        int slotIndex)
+    private void CheckSpendEightCostInTurn(BattleTimelineController timelineController)
     {
         Dictionary<string, int> costSpent = new();
         Dictionary<string, CharacterRuntimeData> runtimes = new();
 
-        for (int i = 0; i < commands.Count; i++)
+        for (int slotIndex = 0; slotIndex < timelineController.SlotCount; slotIndex++)
         {
-            PlayerReservedCommand command = commands[i];
+            IReadOnlyList<PlayerReservedCommand> commands = timelineController.GetPlayerCommands(slotIndex);
 
-            if (command == null || command.UserRuntime == null)
+            if (commands == null)
                 continue;
 
-            string characterId = command.UserRuntime.CharacterId;
+            for (int i = 0; i < commands.Count; i++)
+            {
+                PlayerReservedCommand command = commands[i];
 
-            if (!costSpent.ContainsKey(characterId))
-                costSpent[characterId] = 0;
+                if (command == null || command.UserRuntime == null)
+                    continue;
 
-            costSpent[characterId] += command.Cost;
-            runtimes[characterId] = command.UserRuntime;
+                string characterId = command.UserRuntime.CharacterId;
+
+                if (!costSpent.ContainsKey(characterId))
+                    costSpent[characterId] = 0;
+
+                costSpent[characterId] += Mathf.Max(0, command.Cost);
+                runtimes[characterId] = command.UserRuntime;
+            }
         }
 
-        foreach (var pair in costSpent)
+        foreach (KeyValuePair<string, int> pair in costSpent)
         {
-            string characterId = pair.Key;
-            int spent = pair.Value;
+            CharacterMasterData masterData = GetMasterData(pair.Key);
 
-            CharacterMasterData masterData = GetMasterData(characterId);
+            if (masterData == null ||
+                masterData.ResourceTrigger != ResourceTrigger.OnSpendEightCostInTurn ||
+                pair.Value < CostRequiredInTurn)
+            {
+                continue;
+            }
 
-            if (masterData == null)
+            AddUniqueResource(runtimes[pair.Key], ResourceGainAmount);
+
+            Debug.Log($"[UniqueResource] SpendEightCostInTurn / Character:{pair.Key} / Spent:{pair.Value}");
+        }
+    }
+
+    private void AddResourceToTriggerOwners(ResourceTrigger trigger)
+    {
+        BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            BattleCharacter character = characters[i];
+
+            if (character == null || character.RuntimeData == null || character.RuntimeData.IsDead)
                 continue;
 
-            if (masterData.ResourceTrigger != ResourceTrigger.OnSpendCostInSlot)
+            CharacterMasterData masterData = GetMasterData(character.RuntimeData.CharacterId);
+
+            if (masterData == null || masterData.ResourceTrigger != trigger)
                 continue;
 
-            if (spent < CostRequiredInSlot)
-                continue;
-
-            AddUniqueResource(runtimes[characterId], CostGainAmount);
-
-            Debug.Log($"[UniqueResource] SpendCost / Slot:{slotIndex} / Character:{characterId} / Spent:{spent}");
+            AddUniqueResource(character.RuntimeData, ResourceGainAmount);
         }
     }
 
@@ -148,18 +176,13 @@ public class BattleUniqueResourceService
             ? Mathf.Max(0, masterData.MaxResource)
             : 999;
 
-        int finalAmount =
-            BattleEquipmentEffectService.ModifyUniqueResourceGain(runtime, amount);
+        int finalAmount = BattleEquipmentEffectService.ModifyUniqueResourceGain(runtime, amount);
 
-        runtime.CurrentResource =
-            Mathf.Min(maxResource, runtime.CurrentResource + finalAmount);
+        runtime.CurrentResource = Mathf.Min(maxResource, runtime.CurrentResource + finalAmount);
 
         RefreshPlayerHUDs();
 
-        Debug.Log(
-            $"[UniqueResource] {runtime.CharacterId} +{finalAmount} / " +
-            $"{runtime.CurrentResource}/{maxResource}"
-        );
+        Debug.Log($"[UniqueResource] {runtime.CharacterId} +{finalAmount} / {runtime.CurrentResource}/{maxResource}");
     }
 
     private CharacterMasterData GetMasterData(string characterId)

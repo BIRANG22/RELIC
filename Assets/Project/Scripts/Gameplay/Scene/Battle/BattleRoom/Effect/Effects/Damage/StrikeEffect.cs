@@ -22,7 +22,10 @@ public class StrikeEffect : BattleEffectBase
         {
             int finalDamage = CalculateFinalDamageToMonster(context, damage);
 
-            BattleEffectUtility.DamageMonster(context.MonsterTarget, finalDamage);
+            int dealtDamage = BattleEffectUtility.DamageMonster(context.MonsterTarget, finalDamage);
+
+            if (dealtDamage > 0 && context.PlayerCaster != null)
+                BattleEffectUtility.OnPlayerDamagedEnemy?.Invoke(context.PlayerCaster);
         }
     }
 

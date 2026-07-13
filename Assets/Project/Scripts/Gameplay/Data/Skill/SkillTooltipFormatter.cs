@@ -6,7 +6,7 @@ namespace Relic.Gameplay.Data
     public static class SkillTooltipFormatter
     {
         private const string FocusEffectId = "E_Focus";
-        private const string PowerEffectId = "E_Power";
+        private const string PowerEffectId = "E_Boost";
         private const string ValueToken = "\uC218\uCE58";
 
         private static readonly Regex FocusCostFormulaRegex = new(
@@ -115,11 +115,10 @@ namespace Relic.Gameplay.Data
             {
                 "E_Strike" => true,
                 "E_Pierce" => true,
-                "E_Addicted" => true,
-                "E_Bleeding" => true,
-                "E_Burn" => true,
-                "E_Thorns" => true,
-                "E_Power" => true,
+                "E_Poison" => true,
+                "E_Bleed" => true,
+                "E_Ward" => true,
+                "E_Boost" => true,
                 "E_Armor" => true,
                 _ => false
             };

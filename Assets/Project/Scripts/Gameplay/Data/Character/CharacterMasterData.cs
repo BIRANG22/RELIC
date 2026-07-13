@@ -9,16 +9,19 @@ namespace Relic.Gameplay.Data
         None,
         Rage,
         Momentum,
-        Aether
+        Aether,
+        Faith,
+        Blood
     }
     public enum ResourceTrigger
     {
         None,
 
-        OnDamaged,              // 피격 시
-        OnUseSameSlotTwice,     // 슬롯 하나에 특정 행동 2회
-        OnSpendCostInSlot,      // 슬롯 하나에 Cost 일정량 소모
-        OnSpendStaminaInSlot = OnSpendCostInSlot
+        OnAnyAllyDamaged,          // 아군 또는 자신이 피해를 받았을 때
+        OnThreeActionsInSameSlot,  // 한 슬롯에서 이동을 제외한 행동을 3회 했을 때
+        OnSpendEightCostInTurn,    // 한 턴 동안 코스트를 8 이상 소모했을 때
+        OnAllyBuffApplied,         // 아군 또는 자신이 이로운 효과를 받았을 때
+        OnDamageEnemy              // 공격으로 적에게 피해를 주었을 때
     }
 
     [Serializable]
@@ -37,7 +40,6 @@ namespace Relic.Gameplay.Data
         public int MaxResource;
         public ResourceType ResourceType;
         public ResourceTrigger ResourceTrigger;
-        public int MoveValue;
 
         public bool IsDefaultProvided;
         public string UnlockCondition;
@@ -59,9 +61,6 @@ namespace Relic.Gameplay.Data
         public string Rune3;
         public string Rune4;
         public string Rune5;
-
-        public string Relic;
-
         [NonSerialized]
         public GameObject BattlePrefab;
 

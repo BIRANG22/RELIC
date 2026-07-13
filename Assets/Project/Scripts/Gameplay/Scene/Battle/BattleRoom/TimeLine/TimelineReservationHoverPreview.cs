@@ -98,7 +98,7 @@ public class TimelineReservationHoverPreview : MonoBehaviour
         if (command.SkillData.RangeType == RangeType.Selection)
         {
             return BattleRangeCalculator.GetSelectionRangeIndices(
-                casterGridIndex,
+                command.SelectedGridIndex >= 0 ? command.SelectedGridIndex : casterGridIndex,
                 BattleEquipmentEffectService.GetEffectiveRangeId(command.UserRuntime, command.SkillData),
                 DataManager.Instance.RangeDatabase,
                 gridManager

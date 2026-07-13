@@ -1,6 +1,6 @@
-public class PowerEffect : BattleEffectBase
+public class BoostEffect : BattleEffectBase
 {
-    public override string EffectId => "E_Power";
+    public override string EffectId => "E_Boost";
 
     protected override void Apply(BattleEffectContext context)
     {

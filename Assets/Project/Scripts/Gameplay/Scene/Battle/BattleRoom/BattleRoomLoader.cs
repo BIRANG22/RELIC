@@ -605,7 +605,7 @@ public class BattleRoomLoader : MonoBehaviour
 
             DataManager.Instance.CharacterDatabase.TryGet(characterId, out CharacterMasterData masterData);
 
-            int rechargeBonus = GetStatusStack(runtimeData.StatusEffects, "E_Recharge") * 2;
+            int rechargeBonus = GetStatusStack(runtimeData.StatusEffects, "E_Charge");
 
             int maxCost = runtimeData.MaxCost > 0
                 ? runtimeData.MaxCost
@@ -950,7 +950,7 @@ public class BattleRoomLoader : MonoBehaviour
             ApplyPlayerHudCanvasSorting(hud, selected);
         }
 
-        
+
         EnsurePlayerHudLayerOrder();
     }
 

@@ -24,7 +24,7 @@ MonoBehaviour:
   - monsterId: Mon_05
     prefab: {fileID: 5574107069964105487, guid: 457cee0b1eb54f847a1c291219c9813a, type: 3}
   - monsterId: Mon_06
-    prefab: {fileID: 3028140045280855347, guid: 16076f76205d189459d9a564653c7b96, type: 3}
+    prefab: {fileID: 5089267951778699808, guid: e0b5f7fcaa5e49c4fa1bbadd87e56e29, type: 3}
   - monsterId: Mon_07
     prefab: {fileID: 7212625001059380839, guid: af34001a803d25c4989ab3dc4d3b7694, type: 3}
   - monsterId: Mon_08

@@ -1,6 +1,6 @@
-public class AddictedEffect : BattleEffectBase
+public class PoisonEffect : BattleEffectBase
 {
-    public override string EffectId => "E_Addicted";
+    public override string EffectId => "E_Poison";
 
     protected override void Apply(BattleEffectContext context)
     {

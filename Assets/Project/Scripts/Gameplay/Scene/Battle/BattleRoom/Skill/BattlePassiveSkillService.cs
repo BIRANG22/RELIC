@@ -31,36 +31,29 @@ public class BattlePassiveSkillService
 
         SkillMasterData passiveSkill = GetPassiveSkill(runtime);
 
-        if (passiveSkill == null)
+        if (passiveSkill == null || !IsPassiveConditionMet(runtime))
         {
             BattleEquipmentEffectService.ApplyPassiveExtras(runtime);
             return;
         }
 
-        int stack = CalculatePassiveStack(runtime, passiveSkill);
-
-        if (stack <= 0)
+        if (passiveSkill.EffectEntries == null || passiveSkill.EffectEntries.Count == 0)
         {
             BattleEquipmentEffectService.ApplyPassiveExtras(runtime);
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(passiveSkill.EffectIds))
+        for (int i = 0; i < passiveSkill.EffectEntries.Count; i++)
         {
-            BattleEquipmentEffectService.ApplyPassiveExtras(runtime);
-            return;
-        }
+            SkillEffectEntry entry = passiveSkill.EffectEntries[i];
 
-        string[] effectIds = passiveSkill.EffectIds.Split(';');
-
-        for (int i = 0; i < effectIds.Length; i++)
-        {
-            string effectId = effectIds[i].Trim();
-
-            if (string.IsNullOrWhiteSpace(effectId))
+            if (entry == null || string.IsNullOrWhiteSpace(entry.EffectId))
                 continue;
 
-            ApplyPassiveEffect(runtime, passiveSkill, effectId, stack);
+            int value = Mathf.Max(0, entry.ValueAmount);
+            int count = Mathf.Max(1, entry.CountAmount);
+
+            ApplyPassiveEffect(runtime, passiveSkill, entry.EffectId, value, count);
         }
 
         BattleEquipmentEffectService.ApplyPassiveExtras(runtime);
@@ -70,33 +63,38 @@ public class BattlePassiveSkillService
         CharacterRuntimeData runtime,
         SkillMasterData passiveSkill,
         string effectId,
-        int stack)
+        int value,
+        int count)
     {
         if (effectId == "E_Armor")
         {
-            int finalStack =
-                BattleEquipmentEffectService.ModifyPassiveEffectStack(runtime, effectId, stack);
+            int finalValue =
+                BattleEquipmentEffectService.ModifyPassiveEffectStack(runtime, effectId, value);
 
-            runtime.CurrentShield += finalStack;
+            if (finalValue <= 0)
+                return;
+
+            runtime.CurrentShield += finalValue;
 
             Debug.Log(
                 $"[Passive] Armor / Character:{runtime.CharacterId} / " +
-                $"Skill:{passiveSkill.SkillId} / Shield:+{finalStack} / CurrentShield:{runtime.CurrentShield}"
+                $"Skill:{passiveSkill.SkillId} / Shield:+{finalValue} / CurrentShield:{runtime.CurrentShield}"
             );
 
             return;
         }
 
-        stack = BattleEquipmentEffectService.ModifyPassiveEffectStack(runtime, effectId, stack);
+        int finalStack =
+            BattleEquipmentEffectService.ModifyPassiveEffectStack(runtime, effectId, value);
 
-        if (stack <= 0)
+        if (finalStack <= 0)
             return;
 
         StatusEffectRuntimeData status = new StatusEffectRuntimeData
         {
             EffectId = effectId,
-            Stack = stack,
-            TurnCount = 1,
+            Stack = finalStack,
+            TurnCount = count,
             IsPassive = true,
             SourceSkillId = passiveSkill.SkillId
         };
@@ -108,8 +106,25 @@ public class BattlePassiveSkillService
 
         Debug.Log(
             $"[Passive] Status / Character:{runtime.CharacterId} / " +
-            $"Skill:{passiveSkill.SkillId} / Effect:{effectId} / Stack:{stack}"
+            $"Skill:{passiveSkill.SkillId} / Effect:{effectId} / " +
+            $"Stack:{finalStack} / Turn:{count}"
         );
+    }
+
+    private static bool IsPassiveConditionMet(CharacterRuntimeData runtime)
+    {
+        if (runtime == null || DataManager.Instance == null)
+            return false;
+
+        CharacterMasterData characterData =
+            DataManager.Instance.CharacterDatabase.Get(runtime.CharacterId);
+
+        if (characterData == null)
+            return false;
+
+        int maxResource = Mathf.Max(0, characterData.MaxResource);
+
+        return maxResource > 0 && runtime.CurrentResource >= maxResource;
     }
 
     private static SkillMasterData GetPassiveSkill(CharacterRuntimeData runtime)
@@ -135,40 +150,6 @@ public class BattlePassiveSkillService
             return null;
 
         return skillData;
-    }
-
-    private static int CalculatePassiveStack(
-        CharacterRuntimeData runtime,
-        SkillMasterData passiveSkill)
-    {
-        if (runtime == null || passiveSkill == null)
-            return 0;
-
-        int resource = Mathf.Max(0, runtime.CurrentResource);
-
-        switch (passiveSkill.SkillId)
-        {
-            case "S_Passive_01":
-                return resource;
-
-            case "S_Passive_02":
-                return resource >= 2 ? 2 : 0;
-
-            case "S_Passive_03":
-                return resource >= 3 ? 1 : 0;
-
-            case "S_Passive_04":
-                return resource >= 5 ? 1 : 0;
-
-            case "S_Passive_05":
-                return resource >= 2 ? 1 : 0;
-
-            case "S_Passive_06":
-                return resource >= 3 ? 1 : 0;
-
-            default:
-                return 0;
-        }
     }
 
     private static void ClearPassiveStatusEffects(CharacterRuntimeData runtime)

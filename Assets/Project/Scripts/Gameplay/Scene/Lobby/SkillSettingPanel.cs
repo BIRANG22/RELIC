@@ -28,6 +28,8 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
     [SerializeField] private GameObject sharedInfoArea;
     [SerializeField] private TMP_Text skillInfoTitleText;
     [SerializeField] private TMP_Text skillInfoEffectText;
+    [SerializeField] private Image skillInfoRangeImage;
+    [SerializeField] private TMP_Text skillInfoCostText;
     [SerializeField] private string emptySkillInfoTitle = "스킬명";
     [SerializeField, TextArea] private string emptySkillInfoEffect = "스킬을 선택하면 정보가 표시됩니다.";
     [SerializeField] private bool autoBindSkillInfoArea = true;
@@ -171,8 +173,13 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (!autoBindSkillInfoArea)
             return;
 
-        if (skillInfoTitleText != null && skillInfoEffectText != null)
+        if (skillInfoTitleText != null &&
+            skillInfoEffectText != null &&
+            skillInfoRangeImage != null &&
+            skillInfoCostText != null)
+        {
             return;
+        }
 
         Transform area = sharedInfoArea != null ? sharedInfoArea.transform : null;
 
@@ -204,6 +211,26 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
                 effect = area.Find("SkillEffectText");
             if (effect != null)
                 skillInfoEffectText = effect.GetComponent<TMP_Text>();
+        }
+
+        if (skillInfoRangeImage == null)
+        {
+            Transform range = area.Find("RangeImg");
+            if (range == null)
+                range = area.Find("RangeImage");
+            if (range == null)
+                range = area.Find("RangeIcon");
+            if (range != null)
+                skillInfoRangeImage = range.GetComponent<Image>();
+        }
+
+        if (skillInfoCostText == null)
+        {
+            Transform cost = area.Find("CostText");
+            if (cost == null)
+                cost = area.Find("ResourceCostText");
+            if (cost != null)
+                skillInfoCostText = cost.GetComponent<TMP_Text>();
         }
     }
 
@@ -835,6 +862,8 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
         SetPlainTmpText(skillInfoTitleText, skill.Name);
         SetRichTmpText(skillInfoEffectText, BuildSkillDetailsText(skill));
+        SetSkillRangeImage(skill);
+        SetPlainTmpText(skillInfoCostText, BuildSkillCostText(skill));
     }
 
     public void ClearSkillInfoFromHover()
@@ -868,6 +897,8 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
         SetPlainTmpText(skillInfoTitleText, emptySkillInfoTitle);
         SetRichTmpText(skillInfoEffectText, emptySkillInfoEffect);
+        ClearSkillRangeImage();
+        SetPlainTmpText(skillInfoCostText, string.Empty);
     }
 
     private void ConfigureSkillInfoTextComponents()
@@ -883,6 +914,68 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             skillInfoEffectText.richText = true;
             skillInfoEffectText.parseCtrlCharacters = true;
         }
+
+        if (skillInfoCostText != null)
+        {
+            skillInfoCostText.richText = false;
+            skillInfoCostText.parseCtrlCharacters = true;
+        }
+    }
+
+    private void SetSkillRangeImage(SkillMasterData skill)
+    {
+        if (skillInfoRangeImage == null)
+            return;
+
+        Sprite rangeSprite = null;
+
+        if (skill != null &&
+            !string.IsNullOrWhiteSpace(skill.RangeId) &&
+            DataManager.Instance != null &&
+            DataManager.Instance.SkillRangeIconDatabase != null)
+        {
+            DataManager.Instance.SkillRangeIconDatabase.TryGetIcon(skill.RangeId, out rangeSprite);
+        }
+
+        skillInfoRangeImage.sprite = rangeSprite;
+        skillInfoRangeImage.enabled = rangeSprite != null;
+    }
+
+    private void ClearSkillRangeImage()
+    {
+        if (skillInfoRangeImage == null)
+            return;
+
+        skillInfoRangeImage.sprite = null;
+        skillInfoRangeImage.enabled = false;
+    }
+
+    private string BuildSkillCostText(SkillMasterData skill)
+    {
+        if (skill == null)
+            return string.Empty;
+
+        string resourceName;
+
+        switch (skill.ReferenceResource)
+        {
+            case ReferenceResource.HP:
+                resourceName = "HP";
+                break;
+
+            case ReferenceResource.Cost:
+                resourceName = "Cost";
+                break;
+
+            case ReferenceResource.UniqueResource:
+                resourceName = "Ulit";
+                break;
+
+            default:
+                return string.Empty;
+        }
+
+        return $"{resourceName} {Mathf.Max(0, skill.ResourceCostValue)}소모";
     }
 
     private void SetPlainTmpText(TMP_Text targetText, string rawText)

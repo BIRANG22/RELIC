@@ -1,6 +1,6 @@
-public class BleedingEffect : BattleEffectBase
+public class BleedEffect : BattleEffectBase
 {
-    public override string EffectId => "E_Bleeding";
+    public override string EffectId => "E_Bleed";
 
     protected override void Apply(BattleEffectContext context)
     {

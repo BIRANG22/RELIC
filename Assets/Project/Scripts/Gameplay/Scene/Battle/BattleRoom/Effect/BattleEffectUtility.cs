@@ -6,6 +6,8 @@ using Relic.Gameplay.Monster;
 public static class BattleEffectUtility
 {
     public static System.Action<BattleCharacter> OnPlayerDamaged;
+    public static System.Action<BattleCharacter> OnPlayerBuffApplied;
+    public static System.Action<BattleCharacter> OnPlayerDamagedEnemy;
 
     public static BattleCharacter GetPlayerTargetOrCaster(BattleEffectContext context)
     {
@@ -56,13 +58,6 @@ public static class BattleEffectUtility
         stack = Mathf.Max(1, stack);
         turnCount = Mathf.Max(0, turnCount);
 
-        EffectMasterData effectData = null;
-
-        if (DataManager.Instance != null && DataManager.Instance.EffectDatabase != null)
-            DataManager.Instance.EffectDatabase.TryGet(effectId, out effectData);
-
-        bool canNest = effectData == null || effectData.Nesting == true;
-
         for (int i = 0; i < statusEffects.Count; i++)
         {
             StatusEffectRuntimeData status = statusEffects[i];
@@ -73,10 +68,7 @@ public static class BattleEffectUtility
             if (status.EffectId != effectId)
                 continue;
 
-            if (canNest)
-                status.Stack += stack;
-            else
-                status.Stack = Mathf.Max(status.Stack, stack);
+            status.Stack += stack;
 
             status.TurnCount = Mathf.Max(status.TurnCount, turnCount);
             return true;
@@ -193,10 +185,10 @@ public static class BattleEffectUtility
         }
     }
 
-    public static void DamageMonster(MonsterUnit target, int damage)
+    public static int DamageMonster(MonsterUnit target, int damage)
     {
         if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
-            return;
+            return 0;
 
         damage = Mathf.Max(0, damage);
 
@@ -226,6 +218,7 @@ public static class BattleEffectUtility
         }
 
         target.ShowAndRefreshHUD();
+        return shownDamage;
     }
 
     public static void PierceDamagePlayer(BattleCharacter target, int damage)
@@ -255,10 +248,10 @@ public static class BattleEffectUtility
         }
     }
 
-    public static void PierceDamageMonster(MonsterUnit target, int damage)
+    public static int PierceDamageMonster(MonsterUnit target, int damage)
     {
         if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
-            return;
+            return 0;
 
         damage = Mathf.Max(0, damage);
 
@@ -280,6 +273,7 @@ public static class BattleEffectUtility
         }
 
         target.ShowAndRefreshHUD();
+        return shownDamage;
     }
 
     public static void StatusDamagePlayer(BattleCharacter target, int damage)
