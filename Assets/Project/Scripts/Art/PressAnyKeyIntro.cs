@@ -91,6 +91,40 @@ public class PressAnyKeyIntro : MonoBehaviour
         AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
 
+    [Header("DUS / IUM 시작 연출")]
+
+    [Tooltip("게임 시작 시 이동시킬 dus 오브젝트입니다.")]
+    [SerializeField] private RectTransform dusRect;
+
+    [Tooltip("게임 시작 시 이동시킬 ium 오브젝트입니다.")]
+    [SerializeField] private RectTransform iumRect;
+
+    [Tooltip("게임 시작 시 dus가 출발할 Anchored Position입니다.")]
+    [SerializeField] private Vector2 dusStartPosition;
+
+    [Tooltip("게임 시작 시 dus가 도착할 Anchored Position입니다.")]
+    [SerializeField] private Vector2 dusTargetPosition;
+
+    [Tooltip("게임 시작 시 ium이 출발할 Anchored Position입니다.")]
+    [SerializeField] private Vector2 iumStartPosition;
+
+    [Tooltip("게임 시작 시 ium이 도착할 Anchored Position입니다.")]
+    [SerializeField] private Vector2 iumTargetPosition;
+
+    [Tooltip("씬이 켜진 뒤 DUS / IUM 이동을 시작하기 전 대기시간입니다.")]
+    [Min(0f)]
+    [SerializeField] private float logoPartStartDelay = 0f;
+
+    [Tooltip("DUS / IUM이 지정된 위치로 이동하는 시간입니다.")]
+    [Min(0f)]
+    [SerializeField] private float logoPartMoveDuration = 0.6f;
+
+    [Tooltip("DUS / IUM 이동에 사용할 움직임 곡선입니다.")]
+    [SerializeField]
+    private AnimationCurve logoPartMoveCurve =
+        AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
+
     [Header("쉐이더 프로퍼티")]
 
     [Tooltip("첫 번째 boder 프로퍼티 이름입니다.")]
@@ -166,6 +200,8 @@ public class PressAnyKeyIntro : MonoBehaviour
             titleRect.localScale = completedTitleScale;
         }
 
+        ApplyLogoPartCompletedState();
+
         if (pressAnyKeyObject != null)
         {
             pressAnyKeyObject.SetActive(false);
@@ -186,6 +222,7 @@ public class PressAnyKeyIntro : MonoBehaviour
         isPlaying = false;
 
         StartCoroutine(EnableInputAfterDelay());
+        StartCoroutine(PlayLogoPartStartAnimation());
     }
 
 
@@ -585,4 +622,91 @@ public class PressAnyKeyIntro : MonoBehaviour
 
         backgroundGraphic.SetMaterialDirty();
     }
+
+    /// <summary>
+    /// 게임 시작 시 DUS와 IUM을 각각 지정된 시작 위치에서 목표 위치로 이동시킵니다.
+    /// </summary>
+    private IEnumerator PlayLogoPartStartAnimation()
+    {
+        if (dusRect == null && iumRect == null)
+        {
+            yield break;
+        }
+
+        if (dusRect != null)
+        {
+            dusRect.anchoredPosition = dusStartPosition;
+        }
+
+        if (iumRect != null)
+        {
+            iumRect.anchoredPosition = iumStartPosition;
+        }
+
+        if (logoPartStartDelay > 0f)
+        {
+            yield return new WaitForSecondsRealtime(logoPartStartDelay);
+        }
+
+        if (logoPartMoveDuration <= 0f)
+        {
+            ApplyLogoPartCompletedState();
+            yield break;
+        }
+
+        float elapsed = 0f;
+
+        while (elapsed < logoPartMoveDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+
+            float normalizedTime =
+                Mathf.Clamp01(elapsed / logoPartMoveDuration);
+
+            float curvedTime =
+                logoPartMoveCurve.Evaluate(normalizedTime);
+
+            if (dusRect != null)
+            {
+                dusRect.anchoredPosition =
+                    Vector2.LerpUnclamped(
+                        dusStartPosition,
+                        dusTargetPosition,
+                        curvedTime
+                    );
+            }
+
+            if (iumRect != null)
+            {
+                iumRect.anchoredPosition =
+                    Vector2.LerpUnclamped(
+                        iumStartPosition,
+                        iumTargetPosition,
+                        curvedTime
+                    );
+            }
+
+            yield return null;
+        }
+
+        ApplyLogoPartCompletedState();
+    }
+
+
+    /// <summary>
+    /// DUS와 IUM을 시작 연출이 끝난 최종 위치로 즉시 배치합니다.
+    /// </summary>
+    private void ApplyLogoPartCompletedState()
+    {
+        if (dusRect != null)
+        {
+            dusRect.anchoredPosition = dusTargetPosition;
+        }
+
+        if (iumRect != null)
+        {
+            iumRect.anchoredPosition = iumTargetPosition;
+        }
+    }
+
 }
