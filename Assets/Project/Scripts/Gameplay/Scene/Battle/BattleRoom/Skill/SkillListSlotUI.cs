@@ -542,11 +542,11 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         if (data == null)
             return "";
 
-        string text = !string.IsNullOrWhiteSpace(data.ToolTip)
-            ? data.ToolTip
-            : data.Details;
-
-        return SkillTooltipFormatter.Format(data, text, runtimeData, payAmount);
+        // SkillListPanel의 detailsBackground에는 Details만 그대로 표시합니다.
+        // ValueRate를 설명 앞에 자동으로 붙이지 않습니다.
+        return !string.IsNullOrWhiteSpace(data.Details)
+            ? data.Details
+            : "효과 설명이 없습니다.";
     }
 
     private void BindMissingReferences()
