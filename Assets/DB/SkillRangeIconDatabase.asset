@@ -55,5 +55,57 @@ MonoBehaviour:
     Icon: {fileID: 21300000, guid: aa502f0d984723f4d97f614c4a033ec2, type: 3}
   - RangeId: Range_21
     Icon: {fileID: 21300000, guid: a7dd181c3f9a4c74facb0603d3d10907, type: 3}
+  - RangeId: Range_22
+    Icon: {fileID: 21300000, guid: d85bcd3df82121c4fbcd4b191fcb1911, type: 3}
+  - RangeId: Range_23
+    Icon: {fileID: 21300000, guid: 5fc0be0ddacc3da4db1ecb70d06faab5, type: 3}
   - RangeId: Range_All
     Icon: {fileID: 21300000, guid: fcbe972d3cbe4574fbaf14237b82626d, type: 3}
+  - RangeId: Range_Party
+    Icon: {fileID: 21300000, guid: 1a18827a62905794c9b598c19e165864, type: 3}
+  - RangeId: Range_Self
+    Icon: {fileID: 21300000, guid: 1ceb6d5346f7ba04fac2fa4de1aba721, type: 3}
+  - RangeId: Range_b_01
+    Icon: {fileID: 21300000, guid: 3e0e9440cfa507645a8b6152c0086c5c, type: 3}
+  - RangeId: Range_b_02
+    Icon: {fileID: 21300000, guid: dbf73734e3082dd4299de00d32fea50a, type: 3}
+  - RangeId: Range_b_03
+    Icon: {fileID: 21300000, guid: ec49499e258d7e34f9a537b815d739bf, type: 3}
+  - RangeId: Range_b_04
+    Icon: {fileID: 21300000, guid: caa420874b20ae04f8e4fbc6db160347, type: 3}
+  - RangeId: Range_b_05
+    Icon: {fileID: 21300000, guid: ce4996fc10e0c50439b93a1d3fcf76c7, type: 3}
+  - RangeId: Range_b_06
+    Icon: {fileID: 21300000, guid: 14c335fff4f4a684a9aed8c0932668ce, type: 3}
+  - RangeId: Range_b_07
+    Icon: {fileID: 21300000, guid: d1134878a230d78419bef13977995506, type: 3}
+  - RangeId: Range_b_09
+    Icon: {fileID: 21300000, guid: a2dd7d0c345648c4589ab326c4f2a839, type: 3}
+  - RangeId: Range_b_10
+    Icon: {fileID: 21300000, guid: 8fcffb819b7564a47aba134535c81202, type: 3}
+  - RangeId: Range_b_11
+    Icon: {fileID: 21300000, guid: 5f5d52b7173f71647b079f217b9ab141, type: 3}
+  - RangeId: Range_b_12
+    Icon: {fileID: 21300000, guid: dfb417bb3d0eff44fb5df2977611d1b8, type: 3}
+  - RangeId: Range_b_13
+    Icon: {fileID: 21300000, guid: bfd2fe32cf84e6c46bb595b34775aad8, type: 3}
+  - RangeId: Range_b_14
+    Icon: {fileID: 21300000, guid: 34237622ed76f7a40bbe01094c8886d5, type: 3}
+  - RangeId: Range_b_15
+    Icon: {fileID: 21300000, guid: 5b2ec355a9f67f3418fcd2a6ef173d02, type: 3}
+  - RangeId: Range_b_16
+    Icon: {fileID: 21300000, guid: 95610c3a539edd047a3a581e66c21a7d, type: 3}
+  - RangeId: Range_b_17
+    Icon: {fileID: 21300000, guid: 10578edce0ff5524191193e003080741, type: 3}
+  - RangeId: Range_b_18
+    Icon: {fileID: 21300000, guid: 61ff9372b7577a04ca97f1ef4a1e42d5, type: 3}
+  - RangeId: Range_b_19
+    Icon: {fileID: 21300000, guid: 427c481c4f1f62a4abc03718b5c04083, type: 3}
+  - RangeId: Range_b_20
+    Icon: {fileID: 21300000, guid: 46d3441ae18f72643a4e82e327b579fd, type: 3}
+  - RangeId: Range_b_21
+    Icon: {fileID: 21300000, guid: c91cb77cd7eb71341b18310c88a86602, type: 3}
+  - RangeId: Range_b_22
+    Icon: {fileID: 21300000, guid: 68fc02b1c6b23f743b486432cf226b26, type: 3}
+  - RangeId: Range_b_23
+    Icon: {fileID: 21300000, guid: 07a43f5ec412cf34fad224d64d9640ff, type: 3}
