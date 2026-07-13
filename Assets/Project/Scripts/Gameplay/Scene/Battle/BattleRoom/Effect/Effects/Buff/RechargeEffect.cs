@@ -1,6 +1,6 @@
-public class RechargeEffect : BattleEffectBase
+public class ChargeEffect : BattleEffectBase
 {
-    public override string EffectId => "E_Recharge";
+    public override string EffectId => "E_Charge";
 
     protected override void Apply(BattleEffectContext context)
     {

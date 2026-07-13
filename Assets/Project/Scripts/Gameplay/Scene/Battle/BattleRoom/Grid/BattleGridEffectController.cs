@@ -401,7 +401,7 @@ public class BattleGridEffectController : MonoBehaviour
             return false;
 
         string normalized = effectId.Trim();
-        return normalized == "E_Recover" ||
+        return normalized == "E_Focus" ||
                normalized.IndexOf("Heal", System.StringComparison.OrdinalIgnoreCase) >= 0 ||
                normalized.IndexOf("Recover", System.StringComparison.OrdinalIgnoreCase) >= 0;
     }

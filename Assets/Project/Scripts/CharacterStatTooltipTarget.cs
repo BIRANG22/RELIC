@@ -101,7 +101,8 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
             case StatType.CostRecovery:
                 return Mathf.Max(0, masterData.CostRecovery);
             case StatType.Move:
-                return Mathf.Max(0, masterData.MoveValue);
+                // 캐릭터 데이터에는 기본 이동값이 없습니다.
+                return 0;
             default:
                 return 0;
         }

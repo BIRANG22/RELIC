@@ -39,7 +39,7 @@ public sealed class TestVfxWorkbench : MonoBehaviour
     [SerializeField] private bool followTarget = true;
     [SerializeField] private bool repeat;
     [SerializeField] private float repeatInterval = 1f;
-    [SerializeField] private string statusEffectId = "E_Burn";
+    [SerializeField] private string statusEffectId = "E_Poison";
 
     [Header("Shortcuts")]
     [SerializeField] private KeyCode togglePanelKey = KeyCode.BackQuote;

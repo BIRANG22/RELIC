@@ -432,6 +432,23 @@ public class PlayerReservedCommand
         TargetGridIndices = new List<int> { selectedGridIndex };
     }
 
+    public void SetSelectionAreaResult(
+        BattleDirection direction,
+        int selectedGridIndex,
+        List<int> rangeGridIndices)
+    {
+        Direction = direction;
+        SelectedGridIndex = selectedGridIndex;
+        ReservedMoveGridIndex = -1;
+        MoveOffset = Vector2Int.zero;
+        ClearVisualMoveResult();
+
+        RangeGridIndices = rangeGridIndices != null
+            ? new List<int>(rangeGridIndices)
+            : new List<int>();
+        TargetGridIndices = new List<int>(RangeGridIndices);
+    }
+
     private void ClearVisualMoveResult()
     {
         VisualMoveGridIndex = -1;
@@ -480,41 +497,8 @@ public class PlayerReservedCommand
 
     private int GetCostValue(SkillMasterData skillData)
     {
-        if (skillData == null)
-            return 0;
-
-        switch (skillData.ResourceCostType)
-        {
-            case ResourceCostType.Fixed:
-                return Mathf.Max(0, skillData.ResourceCostValue);
-
-            case ResourceCostType.AllCurrent:
-                return GetAllCurrentCost(skillData.ReferenceResource);
-
-            default:
-                return 0;
-        }
-    }
-
-    private int GetAllCurrentCost(ReferenceResource resource)
-    {
-        if (UserRuntime == null)
-            return 0;
-
-        switch (resource)
-        {
-            case ReferenceResource.HP:
-                return Mathf.Max(0, UserRuntime.PreviewHP);
-
-            case ReferenceResource.Cost:
-            case ReferenceResource.MovePoint:
-                return Mathf.Max(0, UserRuntime.PreviewCost);
-
-            case ReferenceResource.UniqueResource:
-                return Mathf.Max(0, UserRuntime.PreviewResource);
-
-            default:
-                return 0;
-        }
+        return skillData == null
+            ? 0
+            : Mathf.Max(0, skillData.ResourceCostValue);
     }
 }

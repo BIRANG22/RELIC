@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using Relic.Gameplay.Data;
 using UnityEngine;
 
@@ -166,12 +166,12 @@ public class BattleUnitAnimator : MonoBehaviour
 
         switch (skillData.SkillType)
         {
-            case SkillType.Power:
+            case SkillType.Buff:
                 EnsurePlayerSkillPresentations();
                 PlayPresentation(playerSkillPresentations.power);
                 break;
 
-            case SkillType.Skill:
+            case SkillType.Debuff:
                 EnsurePlayerSkillPresentations();
                 PlayPresentation(playerSkillPresentations.skill);
                 break;
@@ -957,9 +957,9 @@ public class BattleUnitAnimator : MonoBehaviour
     }
 
     /// <summary>
-    /// ÁöÁ¤ÇÑ ¾Ö´Ï¸ŞÀÌÅÍ »óÅÂ°¡ ½ÇÁ¦ ÄÁÆ®·Ñ·¯¿¡ Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÕ´Ï´Ù.
-    /// ·Îºñ ÇÁ¸®ºäÃ³·³ ÀüÅõ¿ë »óÅÂ°¡ ¾ø´Â Animator¿¡¼­´Â Àç»ıÀ» °Ç³Ê¶Ù¾î
-    /// Animator.GotoState °æ°í°¡ ¹ß»ıÇÏÁö ¾Êµµ·Ï ÇÕ´Ï´Ù.
+    /// ì§€ì •í•œ ì• ë‹ˆë©”ì´í„° ìƒíƒœê°€ ì‹¤ì œ ì»¨íŠ¸ë¡¤ëŸ¬ì— ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸í•©ë‹ˆë‹¤.
+    /// ë¡œë¹„ í”„ë¦¬ë·°ì²˜ëŸ¼ ì „íˆ¬ìš© ìƒíƒœê°€ ì—†ëŠ” Animatorì—ì„œëŠ” ì¬ìƒì„ ê±´ë„ˆë›°ì–´
+    /// Animator.GotoState ê²½ê³ ê°€ ë°œìƒí•˜ì§€ ì•Šë„ë¡ í•©ë‹ˆë‹¤.
     /// </summary>
     private bool TryResolveAnimatorStateName(string stateName, out string resolvedStateName)
     {

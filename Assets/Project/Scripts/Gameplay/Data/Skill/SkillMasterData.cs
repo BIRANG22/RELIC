@@ -6,9 +6,9 @@ namespace Relic.Gameplay.Data
     public enum SkillType
     {
         None,
-        Power,
-        Attack,
-        Skill
+        Buff,
+        Debuff,
+        Attack
     }
 
     public enum TimelineActionType
@@ -66,20 +66,6 @@ namespace Relic.Gameplay.Data
         Direction
     }
 
-    public enum ResourceCostType
-    {
-        None,
-        Fixed,
-        AllCurrent
-    }
-
-    public enum PassiveFormulaType
-    {
-        None,
-        ResourceStack,      // 자원 N마다 스택 M
-        MinResourceStack    // 자원 N 이상이면 스택 M
-    }
-
     public enum TargetType
     {
         Self,
@@ -113,12 +99,7 @@ namespace Relic.Gameplay.Data
         public string ValueRate;
         public string CountRate;
 
-        // 패시브
-        public PassiveFormulaType PassiveFormulaType;
-        public int PassiveMinResource;
-
-        // 자원 소모
-        public ResourceCostType ResourceCostType;
+        // 스킬이 사용하는 자원의 고정 소모량
         public int ResourceCostValue;
 
         public int GridMove;

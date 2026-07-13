@@ -23,7 +23,7 @@ public class BattleDamageService
         BattleCharacter attacker = unitFinder.FindBattleCharacter(command.CharacterId);
 
         if (attacker != null && attacker.RuntimeData != null)
-            value += GetStatusStack(attacker.RuntimeData.StatusEffects, "E_Power");
+            value += GetStatusStack(attacker.RuntimeData.StatusEffects, "E_Boost");
 
         return Mathf.Max(1, value);
     }

@@ -75,13 +75,19 @@ public class BattleTurnExecutor : MonoBehaviour
 
     private void OnEnable()
     {
-        BattleEffectUtility.OnPlayerDamaged -= uniqueResourceService.OnPlayerDamaged;
-        BattleEffectUtility.OnPlayerDamaged += uniqueResourceService.OnPlayerDamaged;
+        BattleEffectUtility.OnPlayerDamaged -= uniqueResourceService.OnAnyPlayerDamaged;
+        BattleEffectUtility.OnPlayerDamaged += uniqueResourceService.OnAnyPlayerDamaged;
+        BattleEffectUtility.OnPlayerBuffApplied -= uniqueResourceService.OnPlayerBuffApplied;
+        BattleEffectUtility.OnPlayerBuffApplied += uniqueResourceService.OnPlayerBuffApplied;
+        BattleEffectUtility.OnPlayerDamagedEnemy -= uniqueResourceService.OnPlayerDamagedEnemy;
+        BattleEffectUtility.OnPlayerDamagedEnemy += uniqueResourceService.OnPlayerDamagedEnemy;
     }
 
     private void OnDisable()
     {
-        BattleEffectUtility.OnPlayerDamaged -= uniqueResourceService.OnPlayerDamaged;
+        BattleEffectUtility.OnPlayerDamaged -= uniqueResourceService.OnAnyPlayerDamaged;
+        BattleEffectUtility.OnPlayerBuffApplied -= uniqueResourceService.OnPlayerBuffApplied;
+        BattleEffectUtility.OnPlayerDamagedEnemy -= uniqueResourceService.OnPlayerDamagedEnemy;
     }
 
     public void SetBattleInputReady(bool ready)
@@ -255,7 +261,7 @@ public class BattleTurnExecutor : MonoBehaviour
             );
             BattleActionSimulationService simulator = new(gridManager);
 
-            uniqueResourceService.ApplyTimelineSlotResourceGain(timelineController);
+            uniqueResourceService.ApplyTimelineResourceGain(timelineController);
 
             simulator.Simulate(timelineController);
 
