@@ -61,10 +61,10 @@ MonoBehaviour:
     Icon: {fileID: 21300000, guid: 5fc0be0ddacc3da4db1ecb70d06faab5, type: 3}
   - RangeId: Range_All
     Icon: {fileID: 21300000, guid: fcbe972d3cbe4574fbaf14237b82626d, type: 3}
-  - RangeId: Range_Party
-    Icon: {fileID: 21300000, guid: 1a18827a62905794c9b598c19e165864, type: 3}
   - RangeId: Range_Self
     Icon: {fileID: 21300000, guid: 1ceb6d5346f7ba04fac2fa4de1aba721, type: 3}
+  - RangeId: Range_Party
+    Icon: {fileID: 21300000, guid: 1a18827a62905794c9b598c19e165864, type: 3}
   - RangeId: Range_b_01
     Icon: {fileID: 21300000, guid: 3e0e9440cfa507645a8b6152c0086c5c, type: 3}
   - RangeId: Range_b_02
@@ -108,4 +108,4 @@ MonoBehaviour:
   - RangeId: Range_b_22
     Icon: {fileID: 21300000, guid: 68fc02b1c6b23f743b486432cf226b26, type: 3}
   - RangeId: Range_b_23
-    Icon: {fileID: 21300000, guid: 07a43f5ec412cf34fad224d64d9640ff, type: 3}
+    Icon: {fileID: 21300000, guid: 5fc0be0ddacc3da4db1ecb70d06faab5, type: 3}
