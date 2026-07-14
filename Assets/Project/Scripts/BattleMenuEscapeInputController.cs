@@ -34,8 +34,8 @@ public class BattleMenuEscapeInputController : MonoBehaviour
     [SerializeField] private RectTransform inventoryPanelRect;
     [SerializeField] private string inventoryPanelObjectName = "InventoryPanel";
     [SerializeField] private bool autoFindInventoryPanel = true;
-    [SerializeField] private float inventoryClosedX = -1550f;
-    [SerializeField] private float inventoryOpenedX = 0f;
+    [SerializeField] private float inventoryClosedY = 1080f;
+    [SerializeField] private float inventoryOpenedY = 0f;
     [SerializeField] private float inventoryCloseDuration = 0.2f;
     [SerializeField] private float inventoryOpenCheckTolerance = 5f;
 
@@ -355,25 +355,25 @@ public class BattleMenuEscapeInputController : MonoBehaviour
         if (inventoryPanelRect == null)
             return false;
 
-        float currentX = inventoryPanelRect.anchoredPosition.x;
+        float currentY = inventoryPanelRect.anchoredPosition.y;
 
-        if (Mathf.Abs(currentX - inventoryOpenedX) <= inventoryOpenCheckTolerance)
+        if (Mathf.Abs(currentY - inventoryOpenedY) <= inventoryOpenCheckTolerance)
             return true;
 
-        return currentX > inventoryClosedX + inventoryOpenCheckTolerance;
+        return currentY < inventoryClosedY - inventoryOpenCheckTolerance;
     }
 
     private void StartMoveInventoryPanelToClosedPosition()
     {
-        StartMoveInventoryPanelToTargetPosition(inventoryClosedX);
+        StartMoveInventoryPanelToTargetPosition(inventoryClosedY);
     }
 
     private void StartMoveInventoryPanelToOpenedPosition()
     {
-        StartMoveInventoryPanelToTargetPosition(inventoryOpenedX);
+        StartMoveInventoryPanelToTargetPosition(inventoryOpenedY);
     }
 
-    private void StartMoveInventoryPanelToTargetPosition(float targetX)
+    private void StartMoveInventoryPanelToTargetPosition(float targetY)
     {
         if (inventoryPanelRect == null)
             return;
@@ -381,13 +381,13 @@ public class BattleMenuEscapeInputController : MonoBehaviour
         if (inventoryMoveCoroutine != null)
             StopCoroutine(inventoryMoveCoroutine);
 
-        inventoryMoveCoroutine = StartCoroutine(MoveInventoryPanelRoutine(targetX));
+        inventoryMoveCoroutine = StartCoroutine(MoveInventoryPanelRoutine(targetY));
     }
 
-    private IEnumerator MoveInventoryPanelRoutine(float targetX)
+    private IEnumerator MoveInventoryPanelRoutine(float targetY)
     {
         Vector2 startPosition = inventoryPanelRect.anchoredPosition;
-        Vector2 targetPosition = new Vector2(targetX, startPosition.y);
+        Vector2 targetPosition = new Vector2(0f, targetY);
 
         float time = 0f;
         float duration = Mathf.Max(0.01f, inventoryCloseDuration);

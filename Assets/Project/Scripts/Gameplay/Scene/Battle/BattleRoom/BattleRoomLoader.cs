@@ -188,6 +188,24 @@ public class BattleRoomLoader : MonoBehaviour
         OpenSkillListForPlayer(hud.BoundRuntime, hudRect);
     }
 
+    /// <summary>
+    /// SkillButton의 OnClick에서 호출합니다.
+    /// Tab 키와 동일하게 현재 선택된 캐릭터의 스킬 목록을 열거나 닫습니다.
+    /// </summary>
+    public void ToggleSkillListPanelFromButton()
+    {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
+        if (turnExecutor == null)
+            EnsureTurnExecutor();
+
+        if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
+            return;
+
+        ToggleSkillListForSelectedPlayer();
+    }
+
     private void ToggleSkillListForSelectedPlayer()
     {
         EnsureSkillListPanel();

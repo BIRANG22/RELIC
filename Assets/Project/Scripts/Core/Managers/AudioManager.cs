@@ -46,7 +46,12 @@ public enum SfxType
     BoxOpen = 23,
 
     CharacterSettingAreaAppear = 24,
-    CharacterSettingAreaExit = 25
+    CharacterSettingAreaExit = 25,
+
+    BagOpen = 26,
+    BagClose = 27,
+    InventoryOpen = 28,
+    InventoryClose = 29
 }
 
 [System.Serializable]

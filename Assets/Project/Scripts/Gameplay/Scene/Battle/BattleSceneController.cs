@@ -12,6 +12,10 @@ public class BattleSceneController : MonoBehaviour
     [Header("Battle Scene Transition")]
     [SerializeField] private BattleDiagonalSceneTransition battleTransition;
 
+    [Header("Battle Only Tab")]
+    [Tooltip("전투방에서만 표시할 TapButton/Battle 오브젝트입니다.")]
+    [SerializeField] private GameObject battleOnlyTabRoot;
+
     [Header("Battle Map Intro Text")]
     [SerializeField] private BattleMapIntroText battleMapIntroText;
     [SerializeField] private string mapIntroMessage = "제1구역 폐허";
@@ -43,7 +47,8 @@ public class BattleSceneController : MonoBehaviour
     [SerializeField] private bool closeInventoryAndBagOnRoomActiveChange = true;
     [SerializeField] private string[] inventoryPanelObjectNames = { "InventoryPanel" };
     [SerializeField] private string[] bagPanelObjectNames = { "BattleBagPanel", "BagPanel", "BagPanelUI" };
-    [SerializeField] private float inventoryClosedX = -1550f;
+    [SerializeField] private float inventoryClosedY = 1080f;
+    [SerializeField] private float bagClosedX = 1100f;
 
     private MapRuntimeStore mapRuntimeStore;
     private MapRuntimeData mapRuntime;
@@ -66,6 +71,7 @@ public class BattleSceneController : MonoBehaviour
         AutoFindRoomRootIfNeeded();
         AutoFindBattleMapIntroTextIfNeeded();
         InstallMapPanelAutoReturnWatcher();
+        SetBattleOnlyTabActive(false);
     }
 
     private void Start()
@@ -585,7 +591,10 @@ public class BattleSceneController : MonoBehaviour
 
         roomObject.SetActive(true);
 
-        if (roomObject == battleRoom)
+        bool isBattleRoom = roomObject == battleRoom;
+        SetBattleOnlyTabActive(isBattleRoom);
+
+        if (isBattleRoom)
             RequestBattleRoomLoadOnce();
     }
 
@@ -607,6 +616,7 @@ public class BattleSceneController : MonoBehaviour
 
     private void CloseAllRooms()
     {
+        SetBattleOnlyTabActive(false);
         CloseInventoryAndBagPanelsImmediate();
 
         if (roomRoot != null)
@@ -622,6 +632,15 @@ public class BattleSceneController : MonoBehaviour
         SetActiveIfNotNull(eventRoom, false);
         SetActiveIfNotNull(restRoom, false);
         SetActiveIfNotNull(bossDemoPanel, false);
+    }
+
+    private void SetBattleOnlyTabActive(bool isActive)
+    {
+        if (battleOnlyTabRoot == null)
+            return;
+
+        if (battleOnlyTabRoot.activeSelf != isActive)
+            battleOnlyTabRoot.SetActive(isActive);
     }
 
     private void UpdateRoomPanelAutoCloseState()
@@ -673,7 +692,7 @@ public class BattleSceneController : MonoBehaviour
 
             RectTransform rect = inventoryPanel.GetComponent<RectTransform>();
             if (rect != null)
-                rect.anchoredPosition = new Vector2(inventoryClosedX, rect.anchoredPosition.y);
+                rect.anchoredPosition = new Vector2(0f, inventoryClosedY);
 
             ClearSelectedObjectIfChildOf(inventoryPanel);
         }
@@ -684,7 +703,7 @@ public class BattleSceneController : MonoBehaviour
         GameObject[] namedBagPanels = FindObjectsByNames(bagPanelObjectNames);
 
         for (int i = 0; i < namedBagPanels.Length; i++)
-            ClosePanelGameObjectImmediate(namedBagPanels[i]);
+            CloseBagPanelImmediate(namedBagPanels[i]);
 
         BattleBagPanelUI[] bagPanels = Object.FindObjectsByType<BattleBagPanelUI>(
             FindObjectsInactive.Include,
@@ -696,8 +715,23 @@ public class BattleSceneController : MonoBehaviour
             if (bagPanels[i] == null)
                 continue;
 
-            ClosePanelGameObjectImmediate(bagPanels[i].gameObject);
+            CloseBagPanelImmediate(bagPanels[i].gameObject);
         }
+    }
+
+    private void CloseBagPanelImmediate(GameObject panelObject)
+    {
+        if (panelObject == null)
+            return;
+
+        ClearSelectedObjectIfChildOf(panelObject);
+
+        if (!panelObject.activeSelf)
+            panelObject.SetActive(true);
+
+        RectTransform rect = panelObject.GetComponent<RectTransform>();
+        if (rect != null)
+            rect.anchoredPosition = new Vector2(bagClosedX, rect.anchoredPosition.y);
     }
 
     private void ClosePanelGameObjectImmediate(GameObject panelObject)

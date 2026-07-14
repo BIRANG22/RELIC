@@ -11,7 +11,7 @@ public class InventoryPanelCloseButton : MonoBehaviour
     [SerializeField] private bool autoFindInventoryPanel = true;
 
     [Header("Move")]
-    [SerializeField] private float closedX = -1550f;
+    [SerializeField] private float closedY = 1080f;
     [SerializeField] private float closeDuration = 0.2f;
 
     [Header("Sound")]
@@ -54,7 +54,7 @@ public class InventoryPanelCloseButton : MonoBehaviour
     private IEnumerator CloseRoutine()
     {
         Vector2 startPosition = inventoryPanelRect.anchoredPosition;
-        Vector2 targetPosition = new Vector2(closedX, startPosition.y);
+        Vector2 targetPosition = new Vector2(0f, closedY);
 
         float time = 0f;
         float duration = Mathf.Max(0.01f, closeDuration);
