@@ -81,7 +81,7 @@ public class BattleBagPanelUI : MonoBehaviour
                 detailIconImage = FindChildImage(detailPanel.transform, "DetailIconImage", "IconImage", "ItemIconImage", "Icon", "ItemIcon");
 
             if (detailNameText == null)
-                detailNameText = FindChildText(detailPanel.transform, "Name", "ItemName", "Title", "Text", "Text (TMP)");
+                detailNameText = FindChildText(detailPanel.transform, "DetailNameText", "Name", "ItemName", "Title", "Text", "Text (TMP)");
 
             if (detailDescriptionText == null)
                 detailDescriptionText = FindChildText(detailPanel.transform, "Description", "Desc", "Details", "DetailText", "DetailDescriptionText");
@@ -327,8 +327,14 @@ public class BattleBagPanelUI : MonoBehaviour
 
         // 가방 툴팁은 아이템 이름과 설명만 표시합니다.
         // 판매 가격 문구는 GameData Item 시트의 설명(Desc)에 직접 작성해서 사용합니다.
-        if (detailValueText != null)
+        // DetailValueText가 이름 또는 설명 텍스트와 같은 오브젝트로 잘못 연결되어 있어도
+        // 이미 출력한 아이템 이름/설명을 빈 문자열로 덮어쓰지 않습니다.
+        if (detailValueText != null &&
+            detailValueText != detailNameText &&
+            detailValueText != detailDescriptionText)
+        {
             detailValueText.text = "";
+        }
     }
 
     private void MoveDetailPanelToRightOfSlot(BattleBagItemSlotUI slot)
