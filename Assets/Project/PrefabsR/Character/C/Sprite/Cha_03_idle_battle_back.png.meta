@@ -69,7 +69,7 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 8192
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -101,11 +101,11 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 2048
-        width: 2048
-        height: 2048
+        y: 3240
+        width: 1920
+        height: 1080
       alignment: 9
-      pivot: {x: 0.51, y: 0.15}
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -122,12 +122,12 @@ TextureImporter:
       name: Cha_03_idle_battle_back_1
       rect:
         serializedVersion: 2
-        x: 2048
-        y: 2048
-        width: 2048
-        height: 2048
+        x: 1920
+        y: 3240
+        width: 1920
+        height: 1080
       alignment: 9
-      pivot: {x: 0.51, y: 0.15}
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -144,12 +144,12 @@ TextureImporter:
       name: Cha_03_idle_battle_back_2
       rect:
         serializedVersion: 2
-        x: 4096
-        y: 2048
-        width: 2048
-        height: 2048
+        x: 3840
+        y: 3240
+        width: 1920
+        height: 1080
       alignment: 9
-      pivot: {x: 0.51, y: 0.15}
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -166,12 +166,12 @@ TextureImporter:
       name: Cha_03_idle_battle_back_3
       rect:
         serializedVersion: 2
-        x: 6144
-        y: 2048
-        width: 2048
-        height: 2048
+        x: 5760
+        y: 3240
+        width: 1920
+        height: 1080
       alignment: 9
-      pivot: {x: 0.51, y: 0.15}
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -189,11 +189,11 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 0
-        width: 2048
-        height: 2048
+        y: 2160
+        width: 1920
+        height: 1080
       alignment: 9
-      pivot: {x: 0.51, y: 0.15}
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -210,12 +210,12 @@ TextureImporter:
       name: Cha_03_idle_battle_back_5
       rect:
         serializedVersion: 2
-        x: 2048
-        y: 0
-        width: 2048
-        height: 2048
+        x: 1920
+        y: 2160
+        width: 1920
+        height: 1080
       alignment: 9
-      pivot: {x: 0.51, y: 0.15}
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -232,12 +232,12 @@ TextureImporter:
       name: Cha_03_idle_battle_back_6
       rect:
         serializedVersion: 2
-        x: 4096
-        y: 0
-        width: 2048
-        height: 2048
+        x: 3840
+        y: 2160
+        width: 1920
+        height: 1080
       alignment: 9
-      pivot: {x: 0.51, y: 0.15}
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -254,12 +254,12 @@ TextureImporter:
       name: Cha_03_idle_battle_back_7
       rect:
         serializedVersion: 2
-        x: 6144
-        y: 0
-        width: 2048
-        height: 2048
+        x: 5760
+        y: 2160
+        width: 1920
+        height: 1080
       alignment: 9
-      pivot: {x: 0.51, y: 0.15}
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -268,6 +268,182 @@ TextureImporter:
       bones: []
       spriteID: 6f45610b0a3260046adc7fc04b6eccc3
       internalID: -88700716
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cha_03_idle_battle_back_8
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1080
+        width: 1920
+        height: 1080
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d1c8e83f3e4d08943900bbb116bd6c20
+      internalID: 1393620012
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cha_03_idle_battle_back_9
+      rect:
+        serializedVersion: 2
+        x: 1920
+        y: 1080
+        width: 1920
+        height: 1080
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 58b272a108791e1489388d2d7b811fc7
+      internalID: -580282138
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cha_03_idle_battle_back_10
+      rect:
+        serializedVersion: 2
+        x: 3840
+        y: 1080
+        width: 1920
+        height: 1080
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: aa9147ac8e4de47409395bb73e26ca7b
+      internalID: 1826850505
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cha_03_idle_battle_back_11
+      rect:
+        serializedVersion: 2
+        x: 5760
+        y: 1080
+        width: 1920
+        height: 1080
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1715fd39f87f795468059e7d9c1c22f3
+      internalID: -851312171
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cha_03_idle_battle_back_12
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 1920
+        height: 1080
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2239f6253bc325b42a8dd789ab5b3ddd
+      internalID: 1037685585
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cha_03_idle_battle_back_13
+      rect:
+        serializedVersion: 2
+        x: 1920
+        y: 0
+        width: 1920
+        height: 1080
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 126ef5e73b259a84688914df719af50f
+      internalID: -1165532265
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cha_03_idle_battle_back_14
+      rect:
+        serializedVersion: 2
+        x: 3840
+        y: 0
+        width: 1920
+        height: 1080
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: be42b95f591c22340bb69a9097ad4fbd
+      internalID: -702834589
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cha_03_idle_battle_back_15
+      rect:
+        serializedVersion: 2
+        x: 5760
+        y: 0
+        width: 1920
+        height: 1080
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ab52a4c927d8e484baccc8f2af3e571b
+      internalID: 1773730517
       vertices: []
       indices: 
       edges: []
@@ -288,12 +464,20 @@ TextureImporter:
     nameFileIdTable:
       Cha_03_idle_battle_back_0: -266922743
       Cha_03_idle_battle_back_1: -214670001
+      Cha_03_idle_battle_back_10: 1826850505
+      Cha_03_idle_battle_back_11: -851312171
+      Cha_03_idle_battle_back_12: 1037685585
+      Cha_03_idle_battle_back_13: -1165532265
+      Cha_03_idle_battle_back_14: -702834589
+      Cha_03_idle_battle_back_15: 1773730517
       Cha_03_idle_battle_back_2: -2093528391
       Cha_03_idle_battle_back_3: 1668746079
       Cha_03_idle_battle_back_4: 1865893472
       Cha_03_idle_battle_back_5: -725361579
       Cha_03_idle_battle_back_6: -1089463895
       Cha_03_idle_battle_back_7: -88700716
+      Cha_03_idle_battle_back_8: 1393620012
+      Cha_03_idle_battle_back_9: -580282138
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
