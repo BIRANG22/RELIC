@@ -8,7 +8,9 @@ using UnityEngine.UI;
 public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 {
     [Header("Turn Mark")]
+    [SerializeField] private Image playerIconRootImage;
     [SerializeField] private Image playerIconImage;
+    [SerializeField] private Image enemyIconRootImage;
     [SerializeField] private Image enemyIconImage;
 
     [Header("Order Slots")]
@@ -137,8 +139,8 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             visibleIndex++;
         }
 
-        SetOwnerIconImage(playerIconImage, firstPlayerIcon, firstPlayerIcon != null, playerReservedColor);
-        SetOwnerIconImage(enemyIconImage, firstEnemyIcon, firstEnemyIcon != null, enemyReservedColor);
+        SetOwnerIconImage(playerIconRootImage, playerIconImage, firstPlayerIcon, firstPlayerIcon != null, playerReservedColor);
+        SetOwnerIconImage(enemyIconRootImage, enemyIconImage, firstEnemyIcon, firstEnemyIcon != null, enemyReservedColor);
         SetupEnemyOwnerIconHudHoverTarget(enemyIconImage, firstEnemyRuntimeId);
     }
 
@@ -146,8 +148,8 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     {
         currentEntries.Clear();
 
-        SetOwnerIconImage(playerIconImage, null, false, Color.white);
-        SetOwnerIconImage(enemyIconImage, null, false, Color.white);
+        SetOwnerIconImage(playerIconRootImage, playerIconImage, null, false, playerReservedColor);
+        SetOwnerIconImage(enemyIconRootImage, enemyIconImage, null, false, enemyReservedColor);
         ClearEnemyOwnerIconHudHoverTarget();
 
         if (useSkillIconImages != null)
@@ -495,8 +497,14 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         if (turnMarkImage == null && turnMarkTransform != null)
             turnMarkImage = turnMarkTransform.GetComponent<Image>();
 
+        if (playerIconRootImage == null)
+            playerIconRootImage = FindRootImage("Player_Icon");
+
         if (playerIconImage == null)
             playerIconImage = FindImage("Player_Icon", "image");
+
+        if (enemyIconRootImage == null)
+            enemyIconRootImage = FindRootImage("Enemy_Icon");
 
         if (enemyIconImage == null)
             enemyIconImage = FindImage("Enemy_Icon", "image");
@@ -730,6 +738,16 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         return textTransform.GetComponent<TMP_Text>();
     }
 
+    private Image FindRootImage(string rootName)
+    {
+        Transform root = FindChildRecursive(transform, rootName);
+
+        if (root == null)
+            return null;
+
+        return root.GetComponent<Image>();
+    }
+
     private Image FindImage(string rootName, string imageName)
     {
         Transform root = FindChildRecursive(transform, rootName);
@@ -764,25 +782,31 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         image.raycastTarget = false;
     }
 
-    private void SetOwnerIconImage(Image image, Sprite sprite, bool visible, Color borderColor)
+    private void SetOwnerIconImage(
+        Image rootImage,
+        Image contentImage,
+        Sprite sprite,
+        bool visible,
+        Color reservedColor)
     {
-        if (image == null)
-            return;
-
         bool show = visible && sprite != null;
-        Transform parent = image.transform.parent;
 
-        if (parent != null)
+        // 예약 색상은 Player_Icon / Enemy_Icon 루트에만 적용한다.
+        // Mask와 실제 초상화 image의 색상은 프리팹 기본값을 그대로 유지한다.
+        if (rootImage != null)
         {
-            SetRootImageColor(parent.gameObject, show ? borderColor : Color.white);
-            parent.gameObject.SetActive(show);
+            rootImage.color = reservedColor;
+            rootImage.enabled = true;
+            rootImage.gameObject.SetActive(show);
         }
 
-        image.sprite = sprite;
-        image.color = Color.white;
-        image.enabled = show;
-        image.gameObject.SetActive(show);
-        image.raycastTarget = false;
+        if (contentImage == null)
+            return;
+
+        contentImage.sprite = sprite;
+        contentImage.enabled = show;
+        contentImage.gameObject.SetActive(show);
+        contentImage.raycastTarget = false;
     }
 
     private void SetSkillImage(Image image, Sprite sprite, bool visible, Color borderColor)
