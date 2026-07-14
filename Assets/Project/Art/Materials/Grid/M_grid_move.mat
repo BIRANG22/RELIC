@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: M_grid1
+  m_Name: M_grid_move
   m_Shader: {fileID: -6465566751694194690, guid: 895f76386534de8479b50af86b91fd5d, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -43,7 +43,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Texture2D:
-        m_Texture: {fileID: 2800000, guid: c845c461cf2b771489842d06b4528f43, type: 3}
+        m_Texture: {fileID: 2800000, guid: fb93520c6f5f33e4881f20433356d1fe, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _noisetexture:
