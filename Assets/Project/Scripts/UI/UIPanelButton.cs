@@ -62,6 +62,12 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
     [SerializeField] private bool playClickSound = true;
     [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
 
+    [Header("Panel Open Close Sound")]
+    [SerializeField] private bool playPanelOpenCloseSound = false;
+    [SerializeField] private SfxType panelOpenSfx = SfxType.BagOpen;
+    [SerializeField] private SfxType panelCloseSfx = SfxType.BagClose;
+    [SerializeField, Range(0f, 1f)] private float panelOpenCloseSfxVolume = 1f;
+
     private const string DefaultMenuPanelObjectName = "MenuPanel";
     private const string DefaultMenuButtonObjectName = "MenuButton";
     private const string DefaultBattlePlayerHudRootName = "PlayerHUD_Root";
@@ -174,7 +180,12 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         if (isPlayingEffect)
             return;
 
-        PlayClickSound();
+        bool willOpen = panelToOpen == null || !panelToOpen.activeSelf;
+
+        if (playPanelOpenCloseSound)
+            PlayPanelOpenCloseSound(willOpen);
+        else
+            PlayClickSound();
 
         if (toggleIfAlreadyOpen &&
             panelToOpen != null &&
@@ -272,8 +283,6 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         if (isPlayingEffect)
             return;
 
-        PlayClickSound();
-
         Vector2 targetPosition;
         bool willOpen = true;
 
@@ -293,6 +302,11 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         {
             targetPosition = panelToMove.anchoredPosition + moveOffset;
         }
+
+        if (playPanelOpenCloseSound)
+            PlayPanelOpenCloseSound(willOpen);
+        else
+            PlayClickSound();
 
         ApplyButtonFlip();
 
@@ -586,6 +600,18 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
         lastClickSoundFrame = Time.frameCount;
         AudioManager.Instance.PlaySfx(clickSfx);
+    }
+
+    private void PlayPanelOpenCloseSound(bool willOpen)
+    {
+        if (!playPanelOpenCloseSound)
+            return;
+
+        if (AudioManager.Instance == null)
+            return;
+
+        SfxType targetSfx = willOpen ? panelOpenSfx : panelCloseSfx;
+        AudioManager.Instance.PlaySfx(targetSfx, panelOpenCloseSfxVolume);
     }
 
     private void ApplyButtonFlip()

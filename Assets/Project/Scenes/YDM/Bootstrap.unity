@@ -2326,6 +2326,18 @@ MonoBehaviour:
   - type: 25
     clip: {fileID: 8300000, guid: a4bd1740484f2064fa0b21baa659acbc, type: 3}
     volume: 0.3
+  - type: 26
+    clip: {fileID: 8300000, guid: 06acbeced7196f645a9b15035a1459e4, type: 3}
+    volume: 0.3
+  - type: 27
+    clip: {fileID: 8300000, guid: 20f1d29a124a32b41bbc0c013badd20c, type: 3}
+    volume: 0.3
+  - type: 28
+    clip: {fileID: 8300000, guid: 55426547c0ee0324787f7a5db6bcdfcd, type: 3}
+    volume: 0.3
+  - type: 29
+    clip: {fileID: 8300000, guid: a4bd1740484f2064fa0b21baa659acbc, type: 3}
+    volume: 0.3
   battleSfxList:
   - type: 12
     clip: {fileID: 8300000, guid: 97920063d95b7e94c8098f16e03d9bf8, type: 3}
