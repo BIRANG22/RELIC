@@ -1309,7 +1309,7 @@ MonoBehaviour:
   nameText: {fileID: 0}
   iconImage: {fileID: 821584892}
   borderImage: {fileID: 0}
-  equippedBorderColorHex: '#4E66DF'
+  equippedBorderColorHex: '#FFFFFF'
 --- !u!114 &86989399
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2692,7 +2692,7 @@ MonoBehaviour:
   nameText: {fileID: 0}
   iconImage: {fileID: 2063888666}
   borderImage: {fileID: 0}
-  equippedBorderColorHex: '#4E66DF'
+  equippedBorderColorHex: '#FFFFFF'
 --- !u!114 &135277112
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4142,7 +4142,7 @@ MonoBehaviour:
   nameText: {fileID: 0}
   iconImage: {fileID: 179010590}
   borderImage: {fileID: 0}
-  equippedBorderColorHex: '#4E66DF'
+  equippedBorderColorHex: '#FFFFFF'
 --- !u!114 &179520015
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5352,9 +5352,6 @@ MonoBehaviour:
   scaleInDuration: 0.08
   breathSpeed: 4
   useUnscaledTime: 1
-  useIconAlphaForEquipped: 1
-  equippedIconAlpha: 0.35
-  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 1570734847}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -5962,9 +5959,6 @@ MonoBehaviour:
   scaleInDuration: 0.08
   breathSpeed: 4
   useUnscaledTime: 1
-  useIconAlphaForEquipped: 1
-  equippedIconAlpha: 0.35
-  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 779209976}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -6140,9 +6134,6 @@ MonoBehaviour:
   scaleInDuration: 0.08
   breathSpeed: 4
   useUnscaledTime: 1
-  useIconAlphaForEquipped: 1
-  equippedIconAlpha: 0.35
-  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 901942980}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -14261,9 +14252,6 @@ MonoBehaviour:
   scaleInDuration: 0.08
   breathSpeed: 4
   useUnscaledTime: 1
-  useIconAlphaForEquipped: 1
-  equippedIconAlpha: 0.35
-  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 1539171414}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -17000,9 +16988,6 @@ MonoBehaviour:
   scaleInDuration: 0.08
   breathSpeed: 4
   useUnscaledTime: 1
-  useIconAlphaForEquipped: 1
-  equippedIconAlpha: 0.35
-  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 841494690}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -17838,9 +17823,6 @@ MonoBehaviour:
   scaleInDuration: 0.08
   breathSpeed: 4
   useUnscaledTime: 1
-  useIconAlphaForEquipped: 1
-  equippedIconAlpha: 0.35
-  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 1288001406}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -18135,7 +18117,7 @@ MonoBehaviour:
   nameText: {fileID: 0}
   iconImage: {fileID: 1402738384}
   borderImage: {fileID: 0}
-  equippedBorderColorHex: '#4E66DF'
+  equippedBorderColorHex: '#FFFFFF'
 --- !u!114 &689335319
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19382,9 +19364,6 @@ MonoBehaviour:
   scaleInDuration: 0.08
   breathSpeed: 4
   useUnscaledTime: 1
-  useIconAlphaForEquipped: 1
-  equippedIconAlpha: 0.35
-  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 1095159848}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -22349,9 +22328,6 @@ MonoBehaviour:
   scaleInDuration: 0.08
   breathSpeed: 4
   useUnscaledTime: 1
-  useIconAlphaForEquipped: 1
-  equippedIconAlpha: 0.35
-  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 1111764090}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -23005,9 +22981,6 @@ MonoBehaviour:
   scaleInDuration: 0.08
   breathSpeed: 4
   useUnscaledTime: 1
-  useIconAlphaForEquipped: 1
-  equippedIconAlpha: 0.35
-  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 1498544883}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -24292,9 +24265,6 @@ MonoBehaviour:
   scaleInDuration: 0.08
   breathSpeed: 4
   useUnscaledTime: 1
-  useIconAlphaForEquipped: 1
-  equippedIconAlpha: 0.35
-  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 650973628}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -26964,9 +26934,6 @@ MonoBehaviour:
   scaleInDuration: 0.08
   breathSpeed: 4
   useUnscaledTime: 1
-  useIconAlphaForEquipped: 1
-  equippedIconAlpha: 0.35
-  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 782082078}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -27331,9 +27298,6 @@ MonoBehaviour:
   scaleInDuration: 0.08
   breathSpeed: 4
   useUnscaledTime: 1
-  useIconAlphaForEquipped: 1
-  equippedIconAlpha: 0.35
-  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 1219044165}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -28263,6 +28227,7 @@ MonoBehaviour:
   sharedInfoArea: {fileID: 1687239344}
   skillInfoTitleText: {fileID: 1260823026}
   skillInfoEffectText: {fileID: 1169981078}
+  skillInfoRangeRoot: {fileID: 0}
   skillInfoRangeImage: {fileID: 360758240}
   skillInfoCostText: {fileID: 129666089}
   skillInfoTypeText: {fileID: 2040703524}
@@ -28756,9 +28721,6 @@ MonoBehaviour:
   scaleInDuration: 0.08
   breathSpeed: 4
   useUnscaledTime: 1
-  useIconAlphaForEquipped: 1
-  equippedIconAlpha: 0.35
-  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 1961740766}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -29163,9 +29125,6 @@ MonoBehaviour:
   scaleInDuration: 0.08
   breathSpeed: 4
   useUnscaledTime: 1
-  useIconAlphaForEquipped: 1
-  equippedIconAlpha: 0.35
-  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 1163532398}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -30338,9 +30297,6 @@ MonoBehaviour:
   scaleInDuration: 0.08
   breathSpeed: 4
   useUnscaledTime: 1
-  useIconAlphaForEquipped: 1
-  equippedIconAlpha: 0.35
-  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 155929692}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -32371,9 +32327,6 @@ MonoBehaviour:
   scaleInDuration: 0.08
   breathSpeed: 4
   useUnscaledTime: 1
-  useIconAlphaForEquipped: 1
-  equippedIconAlpha: 0.35
-  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 449995420}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -33562,9 +33515,6 @@ MonoBehaviour:
   scaleInDuration: 0.08
   breathSpeed: 4
   useUnscaledTime: 1
-  useIconAlphaForEquipped: 1
-  equippedIconAlpha: 0.35
-  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 1009527793}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -34089,9 +34039,6 @@ MonoBehaviour:
   scaleInDuration: 0.08
   breathSpeed: 4
   useUnscaledTime: 1
-  useIconAlphaForEquipped: 1
-  equippedIconAlpha: 0.35
-  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 1507683850}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -36020,9 +35967,6 @@ MonoBehaviour:
   scaleInDuration: 0.08
   breathSpeed: 4
   useUnscaledTime: 1
-  useIconAlphaForEquipped: 1
-  equippedIconAlpha: 0.35
-  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 907841824}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -36309,9 +36253,6 @@ MonoBehaviour:
   scaleInDuration: 0.08
   breathSpeed: 4
   useUnscaledTime: 1
-  useIconAlphaForEquipped: 1
-  equippedIconAlpha: 0.35
-  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 639041934}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -37435,9 +37376,6 @@ MonoBehaviour:
   scaleInDuration: 0.08
   breathSpeed: 4
   useUnscaledTime: 1
-  useIconAlphaForEquipped: 1
-  equippedIconAlpha: 0.35
-  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 970927898}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -37844,9 +37782,6 @@ MonoBehaviour:
   scaleInDuration: 0.08
   breathSpeed: 4
   useUnscaledTime: 1
-  useIconAlphaForEquipped: 1
-  equippedIconAlpha: 0.35
-  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 1845124780}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -38876,9 +38811,6 @@ MonoBehaviour:
   scaleInDuration: 0.08
   breathSpeed: 4
   useUnscaledTime: 1
-  useIconAlphaForEquipped: 1
-  equippedIconAlpha: 0.35
-  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 1573563172}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -42048,7 +41980,7 @@ MonoBehaviour:
   nameText: {fileID: 0}
   iconImage: {fileID: 1009227752}
   borderImage: {fileID: 0}
-  equippedBorderColorHex: '#4E66DF'
+  equippedBorderColorHex: '#FFFFFF'
 --- !u!114 &1693695442
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -45434,7 +45366,7 @@ MonoBehaviour:
   nameText: {fileID: 0}
   iconImage: {fileID: 1569529322}
   borderImage: {fileID: 0}
-  equippedBorderColorHex: '#4E66DF'
+  equippedBorderColorHex: '#FFFFFF'
 --- !u!114 &1855212280
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -45587,9 +45519,6 @@ MonoBehaviour:
   scaleInDuration: 0.08
   breathSpeed: 4
   useUnscaledTime: 1
-  useIconAlphaForEquipped: 1
-  equippedIconAlpha: 0.35
-  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 1892482068}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
@@ -48050,6 +47979,7 @@ MonoBehaviour:
   sharedInfoArea: {fileID: 0}
   runeInfoTitleText: {fileID: 0}
   runeInfoEffectText: {fileID: 0}
+  sharedSkillSettingPanel: {fileID: 0}
   emptyRuneInfoTitle: "\uB8EC \uC815\uBCF4"
   emptyRuneInfoEffect: "\uB8EC\uC744 \uC120\uD0DD\uD558\uBA74 \uC815\uBCF4\uAC00
     \uD45C\uC2DC\uB429\uB2C8\uB2E4."
@@ -53536,9 +53466,6 @@ MonoBehaviour:
   scaleInDuration: 0.08
   breathSpeed: 4
   useUnscaledTime: 1
-  useIconAlphaForEquipped: 1
-  equippedIconAlpha: 0.35
-  equippedIconColor: {r: 0.50980395, g: 0.50980395, b: 0.50980395, a: 1}
   equippedObject: {fileID: 692025214}
   useEquippedObject: 0
   lockedObject: {fileID: 0}
