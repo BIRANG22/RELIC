@@ -23,16 +23,32 @@ public class BattleDeathService
 
     public void HandleMonsterDead(MonsterUnit monster)
     {
+        HandleMonsterDead(monster, true);
+    }
+
+    /// <summary>
+    /// 일반 처치 보상을 지급하지 않고 몬스터의 사망 연출과 제거만 처리합니다.
+    /// 신더의 자폭처럼 플레이어가 처치한 것으로 취급하지 않는 경우에 사용합니다.
+    /// </summary>
+    public void HandleMonsterDeadWithoutReward(MonsterUnit monster)
+    {
+        HandleMonsterDead(monster, false);
+    }
+
+    private void HandleMonsterDead(MonsterUnit monster, bool collectReward)
+    {
         if (monster == null || monster.RuntimeData == null)
             return;
 
         if (CoroutineHost.Instance != null && Application.isPlaying)
         {
-            CoroutineHost.Instance.StartCoroutine(HandleMonsterDeadRoutine(monster));
+            CoroutineHost.Instance.StartCoroutine(
+                HandleMonsterDeadRoutine(monster, collectReward)
+            );
             return;
         }
 
-        if (!TryBeginMonsterDeath(monster))
+        if (!TryBeginMonsterDeath(monster, collectReward))
             return;
 
         RemoveDeadMonster(monster);
@@ -40,7 +56,12 @@ public class BattleDeathService
 
     public IEnumerator HandleMonsterDeadRoutine(MonsterUnit monster)
     {
-        if (!TryBeginMonsterDeath(monster))
+        yield return HandleMonsterDeadRoutine(monster, true);
+    }
+
+    private IEnumerator HandleMonsterDeadRoutine(MonsterUnit monster, bool collectReward)
+    {
+        if (!TryBeginMonsterDeath(monster, collectReward))
             yield break;
 
         yield return new WaitForSeconds(GetMonsterDeathDestroyDelay(monster));
@@ -48,7 +69,7 @@ public class BattleDeathService
         RemoveDeadMonster(monster);
     }
 
-    private bool TryBeginMonsterDeath(MonsterUnit monster)
+    private bool TryBeginMonsterDeath(MonsterUnit monster, bool collectReward)
     {
         if (monster == null || monster.RuntimeData == null)
             return false;
@@ -69,7 +90,8 @@ public class BattleDeathService
         if (monster.RuntimeData.MonsterId == "Mon_01")
             SpawnBlobsFromMuck(monster);
 
-        CollectMonsterReward(monster);
+        if (collectReward)
+            CollectMonsterReward(monster);
 
         if (roomLoader != null)
             roomLoader.UnregisterRuntimeMonster(monster);
