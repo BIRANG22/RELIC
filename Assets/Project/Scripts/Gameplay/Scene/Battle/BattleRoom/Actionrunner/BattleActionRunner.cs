@@ -2234,6 +2234,16 @@ public class BattleActionRunner
                     yield return new WaitForSeconds(ActionDelay);
             }
 
+            // 신더의 자폭은 공격 효과 적용이 끝난 뒤 자신을 제거합니다.
+            // 일반 처치가 아니므로 렘넌트, 고유 아이템, 유물 등의 사망 보상은 수집하지 않습니다.
+            if (monster.RuntimeData != null &&
+                monster.RuntimeData.MonsterId == "Mon_06" &&
+                command.SkillData.SkillId == "S_Monster_14")
+            {
+                monster.RuntimeData.CurrentHP = 0;
+                deathService.HandleMonsterDeadWithoutReward(monster);
+            }
+
             if (BattleCameraController.Instance != null)
                 yield return BattleCameraController.Instance.ReturnDefaultIfNotHeld();
         }
