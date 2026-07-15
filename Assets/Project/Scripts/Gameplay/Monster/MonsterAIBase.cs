@@ -633,6 +633,13 @@ namespace Relic.Gameplay.Monster
                     if (BattleOccupancyService.IsOccupiedByAnyUnit(targetIndex, null, monsterUnit))
                         return false;
 
+                    BattleGridEffectController gridEffectController =
+                        Object.FindFirstObjectByType<BattleGridEffectController>(
+                            FindObjectsInactive.Include);
+
+                    if (gridEffectController != null && gridEffectController.IsBlocked(targetIndex))
+                        return false;
+
                     nextCoords.Add(nextCoord);
                 }
 

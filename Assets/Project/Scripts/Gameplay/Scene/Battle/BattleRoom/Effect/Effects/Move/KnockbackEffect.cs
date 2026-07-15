@@ -12,33 +12,79 @@ public class KnockbackEffect : BattleEffectBase
             return;
 
         Vector2Int offset = GetDirectionOffset(context.Direction);
-
         int moveCount = Mathf.Max(1, context.Value);
 
         for (int i = 0; i < moveCount; i++)
         {
             if (context.PlayerTarget != null)
             {
-                if (!TryMovePlayer(context.PlayerTarget, offset, context.GridManager))
+                if (WouldMovePlayerOutsideGrid(context.PlayerTarget, offset, context.GridManager))
                     break;
+
+                if (!TryMovePlayer(context.PlayerTarget, offset, context.GridManager))
+                {
+                    ApplyCrashEffect(context, context.PlayerTarget);
+                    break;
+                }
             }
             else if (context.MonsterTarget != null)
             {
-                if (!TryMoveMonster(context.MonsterTarget, offset, context.GridManager))
+                if (WouldMoveMonsterOutsideGrid(context.MonsterTarget, offset, context.GridManager))
                     break;
+
+                if (!TryMoveMonster(context.MonsterTarget, offset, context.GridManager))
+                {
+                    ApplyCrashEffect(context, context.MonsterTarget);
+                    break;
+                }
             }
         }
     }
 
-    private Vector2Int GetDirectionOffset(BattleDirection direction)
-    {
-        if (direction == BattleDirection.Left)
-            return Vector2Int.left;
 
-        return Vector2Int.right;
+    private static bool WouldMovePlayerOutsideGrid(
+        BattleCharacter target,
+        Vector2Int offset,
+        GridManager gridManager)
+    {
+        if (target == null || gridManager == null || target.CurrentGridIndex < 0)
+            return true;
+
+        Vector2Int targetCoord = gridManager.IndexToCoord(target.CurrentGridIndex) + offset;
+        return !gridManager.IsValidCoord(targetCoord);
     }
 
-    private bool TryMovePlayer(BattleCharacter target, Vector2Int offset, GridManager gridManager)
+    private static bool WouldMoveMonsterOutsideGrid(
+        MonsterUnit target,
+        Vector2Int offset,
+        GridManager gridManager)
+    {
+        if (target == null || gridManager == null || target.OccupiedGridIndices == null)
+            return true;
+
+        for (int i = 0; i < target.OccupiedGridIndices.Count; i++)
+        {
+            Vector2Int targetCoord =
+                gridManager.IndexToCoord(target.OccupiedGridIndices[i]) + offset;
+
+            if (!gridManager.IsValidCoord(targetCoord))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static Vector2Int GetDirectionOffset(BattleDirection direction)
+    {
+        return direction == BattleDirection.Left
+            ? Vector2Int.left
+            : Vector2Int.right;
+    }
+
+    private static bool TryMovePlayer(
+        BattleCharacter target,
+        Vector2Int offset,
+        GridManager gridManager)
     {
         if (target == null || target.RuntimeData == null)
             return false;
@@ -48,32 +94,31 @@ public class KnockbackEffect : BattleEffectBase
         if (currentIndex < 0)
             return false;
 
-        Vector2Int currentCoord = gridManager.IndexToCoord(currentIndex);
-        Vector2Int targetCoord = currentCoord + offset;
+        Vector2Int targetCoord = gridManager.IndexToCoord(currentIndex) + offset;
 
         if (!gridManager.IsValidCoord(targetCoord))
-        {
-            Debug.Log("[KnockbackEffect] 플레이어 이동 실패: 그리드 밖");
             return false;
-        }
 
         int targetIndex = gridManager.CoordToIndex(targetCoord);
 
         if (BattleOccupancyService.IsOccupiedByAnyUnit(targetIndex, target.CharacterId))
-        {
-            Debug.Log($"[KnockbackEffect] 플레이어 이동 실패: 점유칸 {targetIndex}");
             return false;
-        }
+
+        BattleGridEffectController gridEffectController =
+            Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+
+        if (gridEffectController != null && gridEffectController.IsBlocked(targetIndex))
+            return false;
 
         target.SetGridIndex(targetIndex);
         target.transform.position = gridManager.GetWorldPositionByIndex(targetIndex);
-
-        Debug.Log($"[KnockbackEffect] 플레이어 이동 성공: {targetIndex}");
-
         return true;
     }
 
-    private bool TryMoveMonster(MonsterUnit target, Vector2Int offset, GridManager gridManager)
+    private static bool TryMoveMonster(
+        MonsterUnit target,
+        Vector2Int offset,
+        GridManager gridManager)
     {
         if (target == null || target.RuntimeData == null)
             return false;
@@ -81,37 +126,24 @@ public class KnockbackEffect : BattleEffectBase
         if (target.OccupiedGridIndices == null || target.OccupiedGridIndices.Count <= 0)
             return false;
 
-        Debug.Log(
-    $"[KnockbackEffect] Target:{target.RuntimeData.Name} / " +
-    $"RuntimeId:{target.RuntimeData.RuntimeId} / " +
-    $"Cells:{string.Join(",", target.OccupiedGridIndices)} / " +
-    $"Main:{target.MainGridIndex}"
-);
-
-        List<int> currentCells = new List<int>(target.OccupiedGridIndices);
+        List<int> currentCells = new(target.OccupiedGridIndices);
         List<int> movedCells = new();
+        BattleGridEffectController gridEffectController =
+            Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
 
         for (int i = 0; i < currentCells.Count; i++)
         {
-            Vector2Int currentCoord = gridManager.IndexToCoord(currentCells[i]);
-            Vector2Int targetCoord = currentCoord + offset;
+            Vector2Int targetCoord = gridManager.IndexToCoord(currentCells[i]) + offset;
 
             if (!gridManager.IsValidCoord(targetCoord))
-            {
-                Debug.Log("[KnockbackEffect] 몬스터 이동 실패: 그리드 밖");
                 return false;
-            }
 
-            movedCells.Add(gridManager.CoordToIndex(targetCoord));
+            int targetIndex = gridManager.CoordToIndex(targetCoord);
 
-            Debug.Log(
-    $"[KnockbackEffect] CellMove / " +
-    $"CurrentIndex:{currentCells[i]} / " +
-    $"CurrentCoord:{currentCoord} / " +
-    $"TargetCoord:{targetCoord} / " +
-    $"TargetIndex:{gridManager.CoordToIndex(targetCoord)} / " +
-    $"Offset:{offset}"
-);
+            if (gridEffectController != null && gridEffectController.IsBlocked(targetIndex))
+                return false;
+
+            movedCells.Add(targetIndex);
         }
 
         for (int i = 0; i < movedCells.Count; i++)
@@ -122,10 +154,7 @@ public class KnockbackEffect : BattleEffectBase
                 continue;
 
             if (BattleOccupancyService.IsOccupiedByAnyUnit(targetIndex, null, target))
-            {
-                Debug.Log($"[KnockbackEffect] 몬스터 이동 실패: 점유칸 {targetIndex}");
                 return false;
-            }
         }
 
         if (movedCells.Count <= 0)
@@ -133,22 +162,52 @@ public class KnockbackEffect : BattleEffectBase
 
         int oldMainIndex = target.MainGridIndex;
         int newMainIndex = movedCells[0];
-
-        Vector3 oldWorldPos = target.transform.position;
-        Vector3 oldCellWorldPos = gridManager.GetWorldPositionByIndex(oldMainIndex);
-        Vector3 newCellWorldPos = gridManager.GetWorldPositionByIndex(newMainIndex);
-        Vector3 delta = newCellWorldPos - oldCellWorldPos;
+        Vector3 oldWorldPosition = target.transform.position;
+        Vector3 oldCellWorldPosition = gridManager.GetWorldPositionByIndex(oldMainIndex);
+        Vector3 newCellWorldPosition = gridManager.GetWorldPositionByIndex(newMainIndex);
 
         target.SetOccupiedCells(movedCells);
-        target.transform.position = oldWorldPos + delta;
-
-        Debug.Log(
-            $"[KnockbackEffect] MonsterMoveSuccess / " +
-            $"OldMain:{oldMainIndex} / NewMain:{newMainIndex} / " +
-            $"OldCellPos:{oldCellWorldPos} / NewCellPos:{newCellWorldPos} / " +
-            $"Delta:{delta} / " +
-            $"OldWorld:{oldWorldPos} / NewWorld:{target.transform.position}"
-            );
+        target.transform.position = oldWorldPosition + (newCellWorldPosition - oldCellWorldPosition);
         return true;
+    }
+
+    private static void ApplyCrashEffect(
+        BattleEffectContext sourceContext,
+        BattleCharacter target)
+    {
+        if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
+            return;
+
+        new CrashEffect().Execute(new BattleEffectContext
+        {
+            PlayerCaster = sourceContext?.PlayerCaster,
+            MonsterCaster = sourceContext?.MonsterCaster,
+            PlayerTarget = target,
+            Direction = sourceContext != null ? sourceContext.Direction : BattleDirection.Right,
+            GridManager = sourceContext?.GridManager,
+            EffectId = "E_Crash",
+            Value = 2,
+            Count = 1
+        });
+    }
+
+    private static void ApplyCrashEffect(
+        BattleEffectContext sourceContext,
+        Relic.Gameplay.Monster.MonsterUnit target)
+    {
+        if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
+            return;
+
+        new CrashEffect().Execute(new BattleEffectContext
+        {
+            PlayerCaster = sourceContext?.PlayerCaster,
+            MonsterCaster = sourceContext?.MonsterCaster,
+            MonsterTarget = target,
+            Direction = sourceContext != null ? sourceContext.Direction : BattleDirection.Right,
+            GridManager = sourceContext?.GridManager,
+            EffectId = "E_Crash",
+            Value = 2,
+            Count = 1
+        });
     }
 }

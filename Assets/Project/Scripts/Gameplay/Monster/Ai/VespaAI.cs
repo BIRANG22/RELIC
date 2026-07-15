@@ -10,9 +10,6 @@ namespace Relic.Gameplay.Monster
         private const string MoveSkillId = "S_Monster_03";
         private const string AttackSkillId = "S_Monster_07";
 
-        private static readonly List<ReservedDashLine> reservedDashLines = new();
-        private static int reservedDashFrame = -1;
-
         public override string SelectSkill(MonsterRuntimeData monster, BattleContext context)
         {
             return AttackSkillId;
@@ -24,311 +21,295 @@ namespace Relic.Gameplay.Monster
             GridManager gridManager)
         {
             MonsterAIPlan plan = new();
-            PrepareReservedDashLinesForCurrentFrame();
 
             if (monsterUnit == null || monsterUnit.RuntimeData == null || gridManager == null)
                 return plan;
 
-            List<Vector2Int> candidates = GetVespaMoveCandidates();
+            if (monsterUnit.MainGridIndex < 0)
+                return plan;
 
-            Vector2Int moveOffset = GetMoveOffsetForReachableLineTarget(
+            Vector2Int monsterCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
+            BattleCharacter target = FindBestTargetAndMoveSteps(
                 monsterUnit,
                 gridManager,
-                candidates,
-                out BattleDirection attackDirection);
+                monsterCoord,
+                out List<Vector2Int> moveSteps);
 
-            bool canAttackAfterMove = HasPlayerInDashLine(
-                monsterUnit,
-                gridManager,
-                moveOffset,
-                out attackDirection);
+            if (target == null || target.CurrentGridIndex < 0)
+                return plan;
 
-            if (!canAttackAfterMove)
-            {
-                moveOffset = GetAttackableMoveOffset(
-                    monsterUnit,
-                    gridManager,
-                    candidates,
-                    out attackDirection);
-
-                canAttackAfterMove = HasPlayerInDashLine(
-                    monsterUnit,
-                    gridManager,
-                    moveOffset,
-                    out attackDirection);
-            }
-
-            if (!canAttackAfterMove)
-                moveOffset = GetApproachMoveOffset(monsterUnit, gridManager, candidates);
-
-            bool hasMove = moveOffset != Vector2Int.zero &&
-                           CanMonsterMove(monsterUnit, gridManager, moveOffset);
-
+            Vector2Int targetCoord = gridManager.IndexToCoord(target.CurrentGridIndex);
+            Vector2Int totalMoveOffset = Vector2Int.zero;
             int group = 1;
 
-            if (hasMove)
+            for (int i = 0; i < moveSteps.Count; i++)
             {
+                Vector2Int moveOffset = moveSteps[i];
+                totalMoveOffset += moveOffset;
+
                 plan.Add(new MonsterAIAction(
                     MoveSkillId,
                     moveOffset,
-                    MonsterAISlotPreference.Front,
+                    i == 0
+                        ? MonsterAISlotPreference.Front
+                        : MonsterAISlotPreference.NextSlot,
                     group,
-                    0
-                ));
+                    i));
             }
 
-            if (!canAttackAfterMove)
-            {
-                canAttackAfterMove = HasPlayerInDashLine(
-                    monsterUnit,
-                    gridManager,
-                    hasMove ? moveOffset : Vector2Int.zero,
-                    out attackDirection);
-            }
+            Vector2Int projectedCoord = monsterCoord + totalMoveOffset;
+            BattleCharacter dashTarget = FindBestHorizontalDashTarget(
+                gridManager,
+                projectedCoord);
 
-            if (canAttackAfterMove)
-            {
-                int projectedGridIndex = GetProjectedMainGridIndex(
-                    monsterUnit,
-                    gridManager,
-                    hasMove ? moveOffset : Vector2Int.zero);
+            // 이동 후 가로 돌진 경로에 장애물이나 다른 유닛이 있다면 공격을 예약하지 않습니다.
+            // 장애물 뒤의 캐릭터를 계속 공격 대상으로 잡는 현상을 방지합니다.
+            if (dashTarget == null || dashTarget.CurrentGridIndex < 0)
+                return plan;
 
-                plan.Add(new MonsterAIAction(
-                    AttackSkillId,
-                    Vector2Int.zero,
-                    hasMove ? MonsterAISlotPreference.NextSlot : MonsterAISlotPreference.Front,
-                    group,
-                    hasMove ? 1 : 0,
-                    projectedGridIndex,
-                    true,
-                    attackDirection
-                ));
+            Vector2Int dashTargetCoord = gridManager.IndexToCoord(dashTarget.CurrentGridIndex);
+            BattleDirection attackDirection = GetHorizontalAttackDirection(
+                projectedCoord,
+                dashTargetCoord,
+                monsterUnit.RuntimeData.Direction);
 
-                ReserveDashLine(monsterUnit, gridManager, hasMove ? moveOffset : Vector2Int.zero, attackDirection);
-            }
+            int projectedGridIndex = gridManager.IsValidCoord(projectedCoord)
+                ? gridManager.CoordToIndex(projectedCoord)
+                : monsterUnit.MainGridIndex;
+
+            plan.Add(new MonsterAIAction(
+                AttackSkillId,
+                Vector2Int.zero,
+                moveSteps.Count > 0
+                    ? MonsterAISlotPreference.NextSlot
+                    : MonsterAISlotPreference.Front,
+                group,
+                moveSteps.Count,
+                projectedGridIndex,
+                true,
+                attackDirection));
 
             return plan;
         }
 
-
-        private Vector2Int GetMoveOffsetForReachableLineTarget(
+        /// <summary>
+        /// 베스파는 가로 돌진만 사용하므로, 다른 가로 라인에 있는 캐릭터를 노릴 때는
+        /// 먼저 가로로 자리를 벌린 뒤 세로로 이동하여 같은 가로 라인을 맞춥니다.
+        /// </summary>
+        private BattleCharacter FindBestTargetAndMoveSteps(
             MonsterUnit monsterUnit,
             GridManager gridManager,
-            List<Vector2Int> candidates,
-            out BattleDirection attackDirection)
+            Vector2Int monsterCoord,
+            out List<Vector2Int> bestMoveSteps)
         {
-            attackDirection = BattleDirection.Left;
-
-            if (monsterUnit == null || gridManager == null || candidates == null || monsterUnit.MainGridIndex < 0)
-                return Vector2Int.zero;
-
+            bestMoveSteps = new List<Vector2Int>();
             BattleCharacter[] players = FindPlayers();
-            Vector2Int monsterCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
 
-            Vector2Int bestOffset = Vector2Int.zero;
-            int bestScore = int.MaxValue;
+            BattleCharacter bestTarget = null;
+            int bestMoveCount = int.MaxValue;
+            int bestAttackDistance = int.MaxValue;
 
-            for (int i = 0; i < candidates.Count; i++)
+            // 정확히 같은 가로 라인을 만들 수 있는 대상을 먼저 찾습니다.
+            for (int i = 0; i < players.Length; i++)
             {
-                Vector2Int offset = candidates[i];
+                BattleCharacter player = players[i];
 
-                if (offset != Vector2Int.zero && !CanMonsterMove(monsterUnit, gridManager, offset))
+                if (!IsAlivePlayer(player) || player.CurrentGridIndex < 0)
                     continue;
 
-                Vector2Int projectedCoord = monsterCoord + offset;
+                Vector2Int playerCoord = gridManager.IndexToCoord(player.CurrentGridIndex);
+                List<Vector2Int> candidateSteps = BuildExactAlignmentSteps(
+                    monsterUnit,
+                    gridManager,
+                    monsterCoord,
+                    playerCoord);
 
-                for (int j = 0; j < players.Length; j++)
+                if (candidateSteps == null)
+                    continue;
+
+                Vector2Int projectedCoord = monsterCoord;
+                for (int stepIndex = 0; stepIndex < candidateSteps.Count; stepIndex++)
+                    projectedCoord += candidateSteps[stepIndex];
+
+                if (!IsHorizontalDashPathClear(gridManager, projectedCoord, playerCoord))
+                    continue;
+
+                int attackDistance = Mathf.Abs(playerCoord.x - projectedCoord.x);
+
+                if (candidateSteps.Count < bestMoveCount ||
+                    (candidateSteps.Count == bestMoveCount && attackDistance < bestAttackDistance))
                 {
-                    BattleCharacter player = players[j];
-
-                    if (!IsAlivePlayer(player) || player.CurrentGridIndex < 0)
-                        continue;
-
-                    Vector2Int playerCoord = gridManager.IndexToCoord(player.CurrentGridIndex);
-
-                    if (playerCoord.y != projectedCoord.y)
-                        continue;
-
-                    int dx = playerCoord.x - projectedCoord.x;
-
-                    if (dx == 0)
-                        continue;
-
-                    if (ConflictsWithReservedDashLines(monsterUnit, projectedCoord, playerCoord))
-                        continue;
-
-                    int lineMovePriority = monsterCoord.y == playerCoord.y ? 1 : 0;
-                    int targetDistance = Mathf.Abs(dx);
-                    int moveDistance = Mathf.Abs(offset.x) + Mathf.Abs(offset.y);
-                    int score = lineMovePriority * 10000 + targetDistance * 100 + moveDistance;
-
-                    if (score >= bestScore)
-                        continue;
-
-                    bestScore = score;
-                    bestOffset = offset;
-                    attackDirection = dx > 0 ? BattleDirection.Right : BattleDirection.Left;
+                    bestTarget = player;
+                    bestMoveSteps = candidateSteps;
+                    bestMoveCount = candidateSteps.Count;
+                    bestAttackDistance = attackDistance;
                 }
             }
 
-            if (bestScore == int.MaxValue)
-            {
-                attackDirection = BattleDirection.Left;
-                return Vector2Int.zero;
-            }
+            if (bestTarget != null)
+                return bestTarget;
 
-            return bestOffset;
+            // 두 번의 이동으로 라인을 맞출 수 없다면 가장 가까운 캐릭터를 향해
+            // 가로 이동 후 세로 이동 순서로 최대한 접근합니다.
+            BattleCharacter fallbackTarget = FindNearestPlayer(monsterUnit, gridManager);
+
+            if (fallbackTarget == null || fallbackTarget.CurrentGridIndex < 0)
+                return null;
+
+            Vector2Int fallbackCoord = gridManager.IndexToCoord(fallbackTarget.CurrentGridIndex);
+            bestMoveSteps = BuildFallbackSteps(
+                monsterUnit,
+                gridManager,
+                monsterCoord,
+                fallbackCoord);
+
+            return fallbackTarget;
         }
 
-        private Vector2Int GetAttackableMoveOffset(
+        private List<Vector2Int> BuildExactAlignmentSteps(
             MonsterUnit monsterUnit,
             GridManager gridManager,
-            List<Vector2Int> candidates,
-            out BattleDirection attackDirection)
+            Vector2Int monsterCoord,
+            Vector2Int targetCoord)
         {
-            attackDirection = BattleDirection.Left;
-
-            if (monsterUnit == null || gridManager == null || candidates == null)
-                return Vector2Int.zero;
-
-            Vector2Int bestOffset = Vector2Int.zero;
-            int bestScore = int.MaxValue;
-            int bestMoveDistance = int.MaxValue;
-
-            for (int i = 0; i < candidates.Count; i++)
+            // 이미 같은 가로 라인이라면 기존 규칙대로 50% 확률로만 가로 이동합니다.
+            if (monsterCoord.y == targetCoord.y)
             {
-                Vector2Int offset = candidates[i];
+                List<Vector2Int> sameLineSteps = new();
 
-                if (offset != Vector2Int.zero && !CanMonsterMove(monsterUnit, gridManager, offset))
-                    continue;
+                if (BattleRandom.Value() >= 0.5f)
+                    return sameLineSteps;
 
-                if (!TryFindDashTargetAfterMove(
-                        monsterUnit,
-                        gridManager,
-                        offset,
-                        out BattleDirection candidateDirection,
-                        out int targetDistance))
+                Vector2Int horizontalMove = FindBestHorizontalMove(
+                    monsterUnit,
+                    gridManager,
+                    monsterCoord,
+                    targetCoord,
+                    requireDifferentTargetX: false);
+
+                if (horizontalMove != Vector2Int.zero)
+                    sameLineSteps.Add(horizontalMove);
+
+                return sameLineSteps;
+            }
+
+            int verticalDifference = targetCoord.y - monsterCoord.y;
+
+            // 첫 이동을 가로로 사용하므로 두 번째 이동 한 번으로 라인을 맞출 수 있어야 합니다.
+            if (Mathf.Abs(verticalDifference) > 2)
+                return null;
+
+            Vector2Int horizontalStep = FindBestHorizontalMove(
+                monsterUnit,
+                gridManager,
+                monsterCoord,
+                targetCoord,
+                requireDifferentTargetX: true,
+                verticalDifference);
+
+            if (horizontalStep == Vector2Int.zero)
+                return null;
+
+            Vector2Int verticalStep = new(0, verticalDifference);
+            Vector2Int totalOffset = horizontalStep + verticalStep;
+
+            // 두 행동을 가로 → 세로 순서로 실행했을 때 전체 경로가 유효한지 확인합니다.
+            if (!CanMonsterMove(monsterUnit, gridManager, totalOffset))
+                return null;
+
+            return new List<Vector2Int>
+            {
+                horizontalStep,
+                verticalStep
+            };
+        }
+
+        private List<Vector2Int> BuildFallbackSteps(
+            MonsterUnit monsterUnit,
+            GridManager gridManager,
+            Vector2Int monsterCoord,
+            Vector2Int targetCoord)
+        {
+            List<Vector2Int> result = new();
+
+            Vector2Int horizontalStep = FindBestHorizontalMove(
+                monsterUnit,
+                gridManager,
+                monsterCoord,
+                targetCoord,
+                requireDifferentTargetX: true);
+
+            if (horizontalStep != Vector2Int.zero)
+                result.Add(horizontalStep);
+
+            int verticalDifference = targetCoord.y - monsterCoord.y;
+            int verticalAmount = Mathf.Clamp(verticalDifference, -2, 2);
+
+            if (verticalAmount == 0)
+                return result;
+
+            Vector2Int verticalStep = new(0, verticalAmount);
+            Vector2Int totalOffset = horizontalStep + verticalStep;
+
+            if (CanMonsterMove(monsterUnit, gridManager, totalOffset))
+                result.Add(verticalStep);
+
+            return result;
+        }
+
+        private Vector2Int FindBestHorizontalMove(
+            MonsterUnit monsterUnit,
+            GridManager gridManager,
+            Vector2Int monsterCoord,
+            Vector2Int targetCoord,
+            bool requireDifferentTargetX,
+            int followingVerticalAmount = 0)
+        {
+            Vector2Int bestMove = Vector2Int.zero;
+            int bestDistance = int.MaxValue;
+
+            int[] directions = { -1, 1 };
+            int[] distances = { 1, 2 };
+
+            for (int directionIndex = 0; directionIndex < directions.Length; directionIndex++)
+            {
+                for (int distanceIndex = 0; distanceIndex < distances.Length; distanceIndex++)
                 {
-                    continue;
+                    Vector2Int horizontalMove = new(
+                        directions[directionIndex] * distances[distanceIndex],
+                        0);
+
+                    Vector2Int projectedCoord = monsterCoord + horizontalMove;
+
+                    if (requireDifferentTargetX && projectedCoord.x == targetCoord.x)
+                        continue;
+
+                    Vector2Int totalOffset = horizontalMove + new Vector2Int(0, followingVerticalAmount);
+
+                    if (!CanMonsterMove(monsterUnit, gridManager, totalOffset))
+                        continue;
+
+                    int horizontalDistance = Mathf.Abs(targetCoord.x - projectedCoord.x);
+
+                    if (horizontalDistance < bestDistance)
+                    {
+                        bestDistance = horizontalDistance;
+                        bestMove = horizontalMove;
+                    }
                 }
-
-                int moveDistance = Mathf.Abs(offset.x) + Mathf.Abs(offset.y);
-                int score = targetDistance * 10 + moveDistance;
-
-                if (score >= bestScore)
-                    continue;
-
-                bestScore = score;
-                bestMoveDistance = moveDistance;
-                bestOffset = offset;
-                attackDirection = candidateDirection;
             }
 
-            if (bestScore == int.MaxValue)
-            {
-                attackDirection = BattleDirection.Left;
-                return Vector2Int.zero;
-            }
-
-            return bestOffset;
+            return bestMove;
         }
 
-        private Vector2Int GetApproachMoveOffset(
-            MonsterUnit monsterUnit,
+
+        private BattleCharacter FindBestHorizontalDashTarget(
             GridManager gridManager,
-            List<Vector2Int> candidates)
+            Vector2Int originCoord)
         {
-            BattleCharacter target = FindFarthestPlayer(monsterUnit, gridManager);
-
-            if (monsterUnit == null || target == null || gridManager == null || candidates == null)
-                return Vector2Int.zero;
-
-            Vector2Int monsterCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
-            Vector2Int targetCoord = gridManager.IndexToCoord(target.CurrentGridIndex);
-
-            Vector2Int bestOffset = Vector2Int.zero;
-            int bestScore = int.MaxValue;
-            int bestMoveDistance = -1;
-
-            for (int i = 0; i < candidates.Count; i++)
-            {
-                Vector2Int offset = candidates[i];
-
-                if (offset == Vector2Int.zero)
-                    continue;
-
-                if (!CanMonsterMove(monsterUnit, gridManager, offset))
-                    continue;
-
-                Vector2Int projectedCoord = monsterCoord + offset;
-                int verticalDistance = Mathf.Abs(targetCoord.y - projectedCoord.y);
-                int horizontalDistance = Mathf.Abs(targetCoord.x - projectedCoord.x);
-                int moveDistance = Mathf.Abs(offset.x) + Mathf.Abs(offset.y);
-
-                int score = verticalDistance * 100 + horizontalDistance;
-
-                if (score > bestScore)
-                    continue;
-
-                if (score == bestScore && moveDistance <= bestMoveDistance)
-                    continue;
-
-                bestScore = score;
-                bestMoveDistance = moveDistance;
-                bestOffset = offset;
-            }
-
-            return bestOffset;
-        }
-
-        private bool HasPlayerInDashLine(
-            MonsterUnit monsterUnit,
-            GridManager gridManager,
-            Vector2Int moveOffset,
-            out BattleDirection attackDirection)
-        {
-            return TryFindDashTargetAfterMove(
-                monsterUnit,
-                gridManager,
-                moveOffset,
-                out attackDirection,
-                out _);
-        }
-
-        private bool TryFindDashTargetAfterMove(
-            MonsterUnit monsterUnit,
-            GridManager gridManager,
-            Vector2Int moveOffset,
-            out BattleDirection attackDirection,
-            out int targetDistance)
-        {
-            return TryFindDashTargetAfterMove(
-                monsterUnit,
-                gridManager,
-                moveOffset,
-                out attackDirection,
-                out targetDistance,
-                out _);
-        }
-
-        private bool TryFindDashTargetAfterMove(
-            MonsterUnit monsterUnit,
-            GridManager gridManager,
-            Vector2Int moveOffset,
-            out BattleDirection attackDirection,
-            out int targetDistance,
-            out Vector2Int targetCoord)
-        {
-            attackDirection = BattleDirection.Left;
-            targetDistance = int.MaxValue;
-            targetCoord = Vector2Int.zero;
-
-            if (monsterUnit == null || gridManager == null || monsterUnit.MainGridIndex < 0)
-                return false;
-
-            Vector2Int originCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex) + moveOffset;
             BattleCharacter[] players = FindPlayers();
-            bool found = false;
+            BattleCharacter bestTarget = null;
+            int bestDistance = int.MaxValue;
 
             for (int i = 0; i < players.Length; i++)
             {
@@ -339,181 +320,66 @@ namespace Relic.Gameplay.Monster
 
                 Vector2Int playerCoord = gridManager.IndexToCoord(player.CurrentGridIndex);
 
-                if (playerCoord.y != originCoord.y)
+                if (!IsHorizontalDashPathClear(gridManager, originCoord, playerCoord))
                     continue;
 
-                int dx = playerCoord.x - originCoord.x;
+                int distance = Mathf.Abs(playerCoord.x - originCoord.x);
 
-                if (dx == 0)
-                    continue;
-
-                if (ConflictsWithReservedDashLines(monsterUnit, originCoord, playerCoord))
-                    continue;
-
-                int distance = Mathf.Abs(dx);
-
-                if (distance >= targetDistance)
-                    continue;
-
-                targetDistance = distance;
-                targetCoord = playerCoord;
-                attackDirection = dx > 0 ? BattleDirection.Right : BattleDirection.Left;
-                found = true;
+                if (distance < bestDistance)
+                {
+                    bestDistance = distance;
+                    bestTarget = player;
+                }
             }
 
-            return found;
+            return bestTarget;
         }
 
-
-        private void ReserveDashLine(
-            MonsterUnit monsterUnit,
+        private bool IsHorizontalDashPathClear(
             GridManager gridManager,
-            Vector2Int moveOffset,
-            BattleDirection attackDirection)
-        {
-            if (monsterUnit == null || gridManager == null || monsterUnit.MainGridIndex < 0)
-                return;
-
-            if (!TryFindDashTargetAfterMove(
-                    monsterUnit,
-                    gridManager,
-                    moveOffset,
-                    out _,
-                    out _,
-                    out Vector2Int targetCoord))
-            {
-                return;
-            }
-
-            Vector2Int originCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex) + moveOffset;
-
-            for (int i = reservedDashLines.Count - 1; i >= 0; i--)
-            {
-                if (reservedDashLines[i].RuntimeId == monsterUnit.RuntimeData.RuntimeId)
-                    reservedDashLines.RemoveAt(i);
-            }
-
-            reservedDashLines.Add(new ReservedDashLine(
-                monsterUnit.RuntimeData.RuntimeId,
-                originCoord,
-                targetCoord,
-                attackDirection));
-        }
-
-        private static void PrepareReservedDashLinesForCurrentFrame()
-        {
-            if (reservedDashFrame == Time.frameCount)
-                return;
-
-            reservedDashFrame = Time.frameCount;
-            reservedDashLines.Clear();
-        }
-
-        private bool ConflictsWithReservedDashLines(
-            MonsterUnit monsterUnit,
             Vector2Int originCoord,
             Vector2Int targetCoord)
         {
-            if (monsterUnit == null || monsterUnit.RuntimeData == null)
-                return true;
-
-            for (int i = 0; i < reservedDashLines.Count; i++)
-            {
-                ReservedDashLine reserved = reservedDashLines[i];
-
-                if (reserved.RuntimeId == monsterUnit.RuntimeData.RuntimeId)
-                    continue;
-
-                if (IsCoordOnDashSegment(originCoord, reserved.OriginCoord, reserved.TargetCoord))
-                    return true;
-
-                if (IsCoordOnDashSegment(reserved.OriginCoord, originCoord, targetCoord))
-                    return true;
-            }
-
-            return false;
-        }
-
-        private bool IsCoordOnDashSegment(
-            Vector2Int coord,
-            Vector2Int originCoord,
-            Vector2Int targetCoord)
-        {
-            if (coord.y != originCoord.y || coord.y != targetCoord.y)
+            if (gridManager == null || originCoord.y != targetCoord.y || originCoord.x == targetCoord.x)
                 return false;
 
-            int minX = Mathf.Min(originCoord.x, targetCoord.x);
-            int maxX = Mathf.Max(originCoord.x, targetCoord.x);
+            int direction = targetCoord.x > originCoord.x ? 1 : -1;
+            BattleGridEffectController gridEffectController =
+                Object.FindFirstObjectByType<BattleGridEffectController>(
+                    FindObjectsInactive.Include);
 
-            return coord.x > minX && coord.x < maxX;
-        }
-
-        private List<Vector2Int> GetVespaMoveCandidates()
-        {
-            MonsterSkillData moveSkill =
-                DataManager.Instance?.MonsterSkillDatabase.Get(MoveSkillId);
-
-            List<Vector2Int> source = moveSkill != null
-                ? MonsterMoveRangeService.GetMoveOffsets(moveSkill.RangeId)
-                : new List<Vector2Int>();
-
-            return BuildOneOrTwoCellStraightMoveCandidates(source);
-        }
-
-        private List<Vector2Int> BuildOneOrTwoCellStraightMoveCandidates(List<Vector2Int> source)
-        {
-            List<Vector2Int> result = new();
-
-            AddCandidate(result, Vector2Int.zero);
-
-            if (source == null)
-                return result;
-
-            for (int i = 0; i < source.Count; i++)
+            // 대상 칸 직전까지만 검사합니다. 대상 캐릭터가 있는 칸은 돌진 충돌 지점입니다.
+            for (int x = originCoord.x + direction; x != targetCoord.x; x += direction)
             {
-                Vector2Int offset = source[i];
+                Vector2Int checkCoord = new(x, originCoord.y);
 
-                AddCandidate(result, offset);
+                if (!gridManager.IsValidCoord(checkCoord))
+                    return false;
 
-                if (offset.x != 0 && offset.y == 0 && Mathf.Abs(offset.x) >= 2)
-                    AddCandidate(result, new Vector2Int(offset.x > 0 ? 1 : -1, 0));
+                int checkIndex = gridManager.CoordToIndex(checkCoord);
 
-                if (offset.y != 0 && offset.x == 0 && Mathf.Abs(offset.y) >= 2)
-                    AddCandidate(result, new Vector2Int(0, offset.y > 0 ? 1 : -1));
+                if (BattleOccupancyService.IsOccupiedByAnyUnit(checkIndex))
+                    return false;
+
+                if (gridEffectController != null && gridEffectController.IsBlocked(checkIndex))
+                    return false;
             }
 
-            return result;
+            return true;
         }
 
-        private void AddCandidate(List<Vector2Int> candidates, Vector2Int offset)
+        private static BattleDirection GetHorizontalAttackDirection(
+            Vector2Int originCoord,
+            Vector2Int targetCoord,
+            BattleDirection fallback)
         {
-            if (candidates == null)
-                return;
+            if (targetCoord.x > originCoord.x)
+                return BattleDirection.Right;
 
-            if (candidates.Contains(offset))
-                return;
+            if (targetCoord.x < originCoord.x)
+                return BattleDirection.Left;
 
-            candidates.Add(offset);
-        }
-
-        private readonly struct ReservedDashLine
-        {
-            public readonly string RuntimeId;
-            public readonly Vector2Int OriginCoord;
-            public readonly Vector2Int TargetCoord;
-            public readonly BattleDirection Direction;
-
-            public ReservedDashLine(
-                string runtimeId,
-                Vector2Int originCoord,
-                Vector2Int targetCoord,
-                BattleDirection direction)
-            {
-                RuntimeId = runtimeId;
-                OriginCoord = originCoord;
-                TargetCoord = targetCoord;
-                Direction = direction;
-            }
+            return fallback;
         }
     }
 }

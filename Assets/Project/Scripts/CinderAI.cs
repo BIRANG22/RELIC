@@ -105,6 +105,11 @@ namespace Relic.Gameplay.Monster
                     continue;
 
                 Vector2Int projectedCoord = currentCoord + offset;
+
+                // 신더는 폭발 범위가 줄어들지 않도록 맵의 가장자리 칸으로 이동하지 않습니다.
+                if (IsOuterGrid(projectedCoord, gridManager))
+                    continue;
+
                 int deltaX = Mathf.Abs(targetCoord.x - projectedCoord.x);
                 int deltaY = Mathf.Abs(targetCoord.y - projectedCoord.y);
                 int chebyshevDistance = Mathf.Max(deltaX, deltaY);
@@ -126,5 +131,16 @@ namespace Relic.Gameplay.Monster
 
             return bestOffset;
         }
+        private bool IsOuterGrid(Vector2Int coord, GridManager gridManager)
+        {
+            if (gridManager == null)
+                return true;
+
+            return coord.x <= 0 ||
+                   coord.y <= 0 ||
+                   coord.x >= gridManager.Width - 1 ||
+                   coord.y >= gridManager.Height - 1;
+        }
+
     }
 }

@@ -79,16 +79,28 @@ public class BattleGridEffectController : MonoBehaviour
             return false;
 
         if (DataManager.Instance.GridEffectDatabase == null ||
-            !DataManager.Instance.GridEffectDatabase.TryGet(gridEffectId, out _))
+            !DataManager.Instance.GridEffectDatabase.TryGet(gridEffectId, out GridEffectData data) ||
+            data == null)
         {
             return false;
         }
 
-        if (!state.Place(gridIndex, gridEffectId))
+        if (!state.Place(gridIndex, gridEffectId, data.Duration))
             return false;
 
         SpawnView(new BattleGridEffectPlacement(gridIndex, gridEffectId));
         return true;
+    }
+
+    public void AdvanceTurnDurations()
+    {
+        if (!EnsureDependencies())
+            return;
+
+        IReadOnlyList<int> expiredGridIndices = state.AdvanceDurations();
+
+        for (int i = 0; i < expiredGridIndices.Count; i++)
+            RemoveView(expiredGridIndices[i]);
     }
 
     public BattleGridEffectApplyResult ApplyToPlayer(int gridIndex, BattleCharacter character)
@@ -100,8 +112,17 @@ public class BattleGridEffectController : MonoBehaviour
             return BattleGridEffectApplyResult.None;
 
         int hpBefore = character.RuntimeData.CurrentHP;
+        int shieldBefore = character.RuntimeData.CurrentShield;
         BattleGridEffectApplyResult result =
             service.ApplyToPlayer(state, gridIndex, character.RuntimeData);
+
+        int hpDamage = Mathf.Max(0, hpBefore - character.RuntimeData.CurrentHP);
+        int shieldDamage = Mathf.Max(0, shieldBefore - character.RuntimeData.CurrentShield);
+        int shownDamage = hpDamage + shieldDamage;
+
+        // 그리드 효과 피해는 스킬 피해와 합산하지 않고 별도의 피해 숫자로 표시합니다.
+        if (shownDamage > 0)
+            BattleDamageTextPopupUI.Show(character.transform, shownDamage);
 
         PresentAppliedEffects(character, result, character.RuntimeData.CurrentHP > hpBefore);
         RemoveViewIfConsumed(result);
