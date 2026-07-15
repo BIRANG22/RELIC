@@ -22,6 +22,8 @@ public class RuneSlotButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
     private Color normalBorderColor = Color.white;
     private bool isNormalBorderColorCached;
+    private int shownInfoVersion = -1;
+    private bool isPointerInside;
 
     public int SlotIndex => slotIndex;
     public RuneData EquippedRune => equippedRune;
@@ -39,6 +41,15 @@ public class RuneSlotButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         CacheBorderImage();
         CacheNormalBorderColor();
         ApplyBorderVisualState();
+    }
+
+    private void OnDisable()
+    {
+        if (isPointerInside)
+        {
+            LobbyInfoHoverState.EndRuneHover();
+            isPointerInside = false;
+        }
     }
 
     public void Init(RuneSettingPanel panel, int index)
@@ -59,14 +70,33 @@ public class RuneSlotButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (!isPointerInside)
+        {
+            LobbyInfoHoverState.BeginRuneHover();
+            isPointerInside = true;
+        }
+
         if (owner != null)
+        {
             owner.ShowRuneSlotInfo(slotIndex, equippedRune, isLocked);
+            shownInfoVersion = LobbyInfoHoverState.CurrentVersion;
+        }
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (owner != null)
-            owner.ClearRuneInfoFromHover();
+        if (isPointerInside)
+        {
+            LobbyInfoHoverState.EndRuneHover();
+            isPointerInside = false;
+        }
+
+        // 프리뷰에서는 기본 안내 정보로 돌아가고,
+        // 룬 세팅에서는 마지막으로 확인한 정보를 유지합니다.
+        if (owner != null && owner.ShouldClearInfoOnHoverExit && shownInfoVersion >= 0)
+            owner.ClearRuneInfoFromHover(shownInfoVersion);
+
+        shownInfoVersion = -1;
     }
 
     public void Execute()

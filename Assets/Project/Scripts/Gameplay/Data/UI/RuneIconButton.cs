@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
@@ -21,9 +21,6 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     [SerializeField] private bool useUnscaledTime = true;
 
     [Header("Equipped UI")]
-    [SerializeField] private bool useIconAlphaForEquipped = true;
-    [SerializeField, Range(0f, 1f)] private float equippedIconAlpha = 0.35f;
-    [SerializeField] private Color equippedIconColor = new Color32(0x82, 0x82, 0x82, 0xFF);
     [SerializeField] private GameObject equippedObject;
     [SerializeField] private bool useEquippedObject = false;
 
@@ -41,21 +38,33 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     private Vector3 originalScale = Vector3.one;
     private bool isScaleCached;
     private Coroutine hoverScaleCoroutine;
+    private int shownInfoVersion = -1;
+    private bool isPointerInside;
+    private Color originalIconColor = Color.white;
+    private bool isIconColorCached;
 
     public RuneData CurrentRuneData => currentRuneData;
 
     private void Awake()
     {
         CacheOriginalScale();
+        CacheOriginalIconColor();
     }
 
     private void OnEnable()
     {
         CacheOriginalScale();
+        CacheOriginalIconColor();
     }
 
     private void OnDisable()
     {
+        if (isPointerInside)
+        {
+            LobbyInfoHoverState.EndRuneHover();
+            isPointerInside = false;
+        }
+
         StopHoverScaleEffect(true);
     }
 
@@ -146,26 +155,9 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
             return;
         }
 
-        Color baseColor = GetRuneDisplayColor(currentRuneData);
-
-        if (isEquipped)
-        {
-            Color color = baseColor;
-
-            if (useIconAlphaForEquipped)
-            {
-                color.a = equippedIconAlpha;
-            }
-            else if (equippedIconColor.a < 1f)
-            {
-                color.a = equippedIconColor.a;
-            }
-
-            iconImage.color = color;
-            return;
-        }
-
-        iconImage.color = baseColor;
+        // 장착 여부와 관계없이 룬 아이콘은 데이터베이스에 연결된 원본 색상을 유지합니다.
+        // 장착 상태는 equippedObject 같은 별도 표시 오브젝트로만 표현합니다.
+        iconImage.color = GetRuneDisplayColor(currentRuneData);
     }
 
     public void Execute()
@@ -185,13 +177,31 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (!isPointerInside)
+        {
+            LobbyInfoHoverState.BeginRuneHover();
+            isPointerInside = true;
+        }
         ShowCurrentRuneInfo();
+        shownInfoVersion = LobbyInfoHoverState.CurrentVersion;
         StartHoverScaleEffect();
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
+        if (isPointerInside)
+        {
+            LobbyInfoHoverState.EndRuneHover();
+            isPointerInside = false;
+        }
         StopHoverScaleEffect(true);
+
+        // �����信���� ȣ���� ������ �⺻ �ȳ� ������ ���ư��ϴ�.
+        // �� ���ÿ����� ���������� Ȯ���� ������ �����մϴ�.
+        if (owner != null && owner.ShouldClearInfoOnHoverExit && shownInfoVersion >= 0)
+            owner.ClearRuneInfoFromHover(shownInfoVersion);
+
+        shownInfoVersion = -1;
     }
 
     public void OnSelect(BaseEventData eventData)
@@ -292,21 +302,17 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
     private Color GetRuneDisplayColor(RuneData runeData)
     {
-        if (runeData == null)
-            return Color.white;
+        CacheOriginalIconColor();
+        return originalIconColor;
+    }
 
-        string runeId = runeData.RuneId;
+    private void CacheOriginalIconColor()
+    {
+        if (isIconColorCached || iconImage == null)
+            return;
 
-        if (IsRuneNumberInRange(runeId, 1, 5))
-            return ParseColorOrWhite("#576DB2");
-
-        if (IsRuneNumberInRange(runeId, 6, 10))
-            return ParseColorOrWhite("#4A5681");
-
-        if (IsRuneNumberInRange(runeId, 11, 15))
-            return ParseColorOrWhite("#393B6A");
-
-        return Color.white;
+        originalIconColor = iconImage.color;
+        isIconColorCached = true;
     }
 
     private bool IsRuneNumberInRange(string runeId, int min, int max)

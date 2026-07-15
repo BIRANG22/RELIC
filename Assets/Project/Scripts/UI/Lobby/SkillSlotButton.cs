@@ -25,6 +25,7 @@ public class SkillSlotButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
     private Color defaultBorderColor = Color.white;
     private bool hasDefaultBorderColor;
     private bool isSelected;
+    private int shownInfoVersion = -1;
 
     public int SlotIndex => slotIndex;
     public SkillMasterData EquippedSkill => equippedSkill;
@@ -79,7 +80,10 @@ public class SkillSlotButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
     public void OnPointerEnter(PointerEventData eventData)
     {
         if (owner != null && equippedSkill != null)
+        {
             owner.ShowSkillInfo(equippedSkill);
+            shownInfoVersion = LobbyInfoHoverState.CurrentVersion;
+        }
 
         if (!isSelected)
             SetBorderColor(selectedBorderColor);
@@ -87,11 +91,15 @@ public class SkillSlotButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (owner != null)
-            owner.ClearSkillInfoFromHover();
-
         if (!isSelected)
             RestoreDefaultBorderColor();
+
+        // 프리뷰에서는 기본 안내 정보로 돌아가고,
+        // 스킬 세팅에서는 마지막으로 확인한 정보를 유지합니다.
+        if (owner != null && owner.ShouldClearInfoOnHoverExit && shownInfoVersion >= 0)
+            owner.ClearSkillInfoFromHover(shownInfoVersion);
+
+        shownInfoVersion = -1;
     }
 
     public void Execute()
