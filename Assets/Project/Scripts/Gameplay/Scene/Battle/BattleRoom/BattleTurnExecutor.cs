@@ -359,6 +359,7 @@ public class BattleTurnExecutor : MonoBehaviour
 
             yield return runner.ApplyTurnEndEffectsRoutine();
 
+            AdvanceGridEffectDurations();
             ClearActiveRelicTurnScopedStatuses();
             ClearAllShield();
             RefreshBattleHUDs();
@@ -423,6 +424,15 @@ public class BattleTurnExecutor : MonoBehaviour
 
             PlayerTurnReturned?.Invoke();
         }
+    }
+
+    private static void AdvanceGridEffectDurations()
+    {
+        BattleGridEffectController controller =
+            FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+
+        if (controller != null)
+            controller.AdvanceTurnDurations();
     }
 
     private IEnumerator ReturnCameraDefaultRoutine()

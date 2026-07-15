@@ -36,7 +36,7 @@ public class BattleEffectRegistry
         Register(new KnockbackEffect());
         Register(new GrabEffect());
         Register(new LogOnlyEffect("E_Rush"));
-        Register(new LogOnlyEffect("E_Crash"));
+        Register(new CrashEffect());
     }
 
     private void Register(BattleEffectBase effect)

@@ -8,6 +8,15 @@ namespace Relic.Gameplay.Data
     {
         private int nextNodeIndex;
 
+        // Common 맵은 한 번 등장하면 이후 선택 가중치를 낮춥니다.
+        // 같은 Common 맵이 2회 연속 등장한 경우에는 더 크게 낮춥니다.
+        private readonly Dictionary<string, int> commonMapAppearCounts = new();
+        private string lastCommonMapId = string.Empty;
+        private int consecutiveCommonMapCount;
+
+        private const float CommonRepeatWeightMultiplier = 0.5f;
+        private const float CommonDoubleRepeatWeightMultiplier = 0.2f;
+
         private const int TotalLayerCount = 10;
         private const int MaxColumnCount = 5;
 
@@ -35,6 +44,9 @@ namespace Relic.Gameplay.Data
             string stage)
         {
             nextNodeIndex = 0;
+            commonMapAppearCounts.Clear();
+            lastCommonMapId = string.Empty;
+            consecutiveCommonMapCount = 0;
 
             List<GeneratedMapNodeData> result = new();
 
@@ -55,35 +67,35 @@ namespace Relic.Gameplay.Data
                 int nodeCount = layerNodeCounts[layer];
                 int[] columns = DecideColumns(layer, nodeCount);
 
-              List<string> layerTypes = DecideLayerTypes(layer, nodeCount, layers);
+                List<string> layerTypes = DecideLayerTypes(layer, nodeCount, layers);
 
-for (int i = 0; i < nodeCount; i++)
-{
-    string type = layerTypes[i];
+                for (int i = 0; i < nodeCount; i++)
+                {
+                    string type = layerTypes[i];
 
-    MapData mapData = PickMapDataForLayer(
-        mapPool,
-        chapter,
-        stage,
-        layer,
-        type
-    );
+                    MapData mapData = PickMapDataForLayer(
+                        mapPool,
+                        chapter,
+                        stage,
+                        layer,
+                        type
+                    );
 
-    if (mapData == null)
-        continue;
+                    if (mapData == null)
+                        continue;
 
-    Vector2 position = CalculatePosition(layer, columns[i]);
+                    Vector2 position = CalculatePosition(layer, columns[i]);
 
-    GeneratedMapNodeData node = CreateNode(
-        mapData.MapId,
-        mapData.Type,
-        position,
-        layer
-    );
+                    GeneratedMapNodeData node = CreateNode(
+                        mapData.MapId,
+                        mapData.Type,
+                        position,
+                        layer
+                    );
 
-    currentLayer.Add(node);
-    result.Add(node);
-}
+                    currentLayer.Add(node);
+                    result.Add(node);
+                }
 
                 FixLayerNodeOverlap(currentLayer);
                 layers.Add(currentLayer);
@@ -96,6 +108,15 @@ for (int i = 0; i < nodeCount; i++)
                     layers[layer + 1]
                 );
             }
+
+            // 서로 직접 연결된 Common 노드는 같은 맵을 사용하지 않습니다.
+            // 연결 정보가 완성된 뒤 부모 노드의 맵 ID를 제외하고 다시 선택합니다.
+            EnforceConnectedCommonMapUniqueness(
+                layers,
+                mapPool,
+                chapter,
+                stage
+            );
 
             return result;
         }
@@ -115,7 +136,7 @@ for (int i = 0; i < nodeCount; i++)
                     {
                         counts[layer] = 2;
                     }
-                    else if(layer == 2)
+                    else if (layer == 2)
                     {
                         counts[layer] = 3;
                     }
@@ -434,7 +455,7 @@ for (int i = 0; i < nodeCount; i++)
             }
 
             return bestIndex;
-        }        
+        }
 
         private void AddLimitedConnection(
             GeneratedMapNodeData from,
@@ -490,6 +511,109 @@ for (int i = 0; i < nodeCount; i++)
                 position.x = Mathf.Clamp(position.x, minParentX, maxParentX);
                 current.Position = position;
             }
+        }
+
+
+        private void EnforceConnectedCommonMapUniqueness(
+            List<List<GeneratedMapNodeData>> layers,
+            List<MapData> mapPool,
+            string chapter,
+            string stage)
+        {
+            if (layers == null || mapPool == null)
+                return;
+
+            for (int layerIndex = 1; layerIndex < layers.Count; layerIndex++)
+            {
+                List<GeneratedMapNodeData> previousLayer = layers[layerIndex - 1];
+                List<GeneratedMapNodeData> currentLayer = layers[layerIndex];
+
+                if (previousLayer == null || currentLayer == null)
+                    continue;
+
+                for (int nodeIndex = 0; nodeIndex < currentLayer.Count; nodeIndex++)
+                {
+                    GeneratedMapNodeData currentNode = currentLayer[nodeIndex];
+
+                    if (currentNode == null || currentNode.Type != "Common")
+                        continue;
+
+                    HashSet<string> connectedParentCommonMapIds = new();
+
+                    for (int parentIndex = 0; parentIndex < previousLayer.Count; parentIndex++)
+                    {
+                        GeneratedMapNodeData parentNode = previousLayer[parentIndex];
+
+                        if (parentNode == null || parentNode.Type != "Common")
+                            continue;
+
+                        if (!parentNode.NextNodeIndices.Contains(currentNode.NodeIndex))
+                            continue;
+
+                        if (!string.IsNullOrEmpty(parentNode.MapId))
+                            connectedParentCommonMapIds.Add(parentNode.MapId);
+                    }
+
+                    if (!connectedParentCommonMapIds.Contains(currentNode.MapId))
+                        continue;
+
+                    List<MapData> alternatives = new();
+
+                    for (int mapIndex = 0; mapIndex < mapPool.Count; mapIndex++)
+                    {
+                        MapData candidate = mapPool[mapIndex];
+
+                        if (candidate == null)
+                            continue;
+
+                        if (candidate.Chapter != chapter || candidate.Stage != stage)
+                            continue;
+
+                        if (candidate.Type != "Common")
+                            continue;
+
+                        if (candidate.FixedPosition != FixedPosition.None)
+                            continue;
+
+                        if (connectedParentCommonMapIds.Contains(candidate.MapId))
+                            continue;
+
+                        alternatives.Add(candidate);
+                    }
+
+                    // 대체 가능한 Common 맵이 하나도 없다면 기존 맵을 유지합니다.
+                    if (alternatives.Count == 0)
+                        continue;
+
+                    DecreaseCommonMapAppearCount(currentNode.MapId);
+
+                    MapData replacement = PickCommonMapByWeight(alternatives);
+
+                    if (replacement == null)
+                        continue;
+
+                    currentNode.MapId = replacement.MapId;
+                    currentNode.Type = replacement.Type;
+                    RecordCommonMapSelection(replacement);
+                }
+            }
+        }
+
+        private void DecreaseCommonMapAppearCount(string mapId)
+        {
+            if (string.IsNullOrEmpty(mapId))
+                return;
+
+            if (!commonMapAppearCounts.TryGetValue(mapId, out int appearCount))
+                return;
+
+            if (appearCount <= 1)
+            {
+                commonMapAppearCounts.Remove(mapId);
+                return;
+            }
+
+            commonMapAppearCounts[mapId] = appearCount - 1;
         }
 
         private MapData PickMapDataForLayer(
@@ -597,6 +721,13 @@ for (int i = 0; i < nodeCount; i++)
             if (candidates.Count == 0)
                 return PickAnyNormalMap(mapPool, chapter, stage);
 
+            if (type == "Common")
+            {
+                MapData selectedCommonMap = PickCommonMapByWeight(candidates);
+                RecordCommonMapSelection(selectedCommonMap);
+                return selectedCommonMap;
+            }
+
             return PickByWeight(candidates);
         }
 
@@ -657,6 +788,70 @@ for (int i = 0; i < nodeCount; i++)
                 return null;
 
             return PickByWeight(candidates);
+        }
+
+
+        private MapData PickCommonMapByWeight(List<MapData> candidates)
+        {
+            if (candidates == null || candidates.Count == 0)
+                return null;
+
+            float totalWeight = 0f;
+
+            for (int i = 0; i < candidates.Count; i++)
+                totalWeight += GetCommonMapAdjustedWeight(candidates[i]);
+
+            if (totalWeight <= 0f)
+                return candidates[BattleRandom.Range(0, candidates.Count)];
+
+            float random = BattleRandom.Range(0f, totalWeight);
+            float current = 0f;
+
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                current += GetCommonMapAdjustedWeight(candidates[i]);
+
+                if (random < current)
+                    return candidates[i];
+            }
+
+            return candidates[candidates.Count - 1];
+        }
+
+        private float GetCommonMapAdjustedWeight(MapData candidate)
+        {
+            if (candidate == null)
+                return 0f;
+
+            float weight = Mathf.Max(0, candidate.SpawnWeight);
+
+            if (commonMapAppearCounts.TryGetValue(candidate.MapId, out int appearCount) && appearCount > 0)
+                weight *= CommonRepeatWeightMultiplier;
+
+            if (candidate.MapId == lastCommonMapId && consecutiveCommonMapCount >= 2)
+                weight *= CommonDoubleRepeatWeightMultiplier / CommonRepeatWeightMultiplier;
+
+            return weight;
+        }
+
+        private void RecordCommonMapSelection(MapData selectedMap)
+        {
+            if (selectedMap == null || string.IsNullOrEmpty(selectedMap.MapId))
+                return;
+
+            if (commonMapAppearCounts.TryGetValue(selectedMap.MapId, out int appearCount))
+                commonMapAppearCounts[selectedMap.MapId] = appearCount + 1;
+            else
+                commonMapAppearCounts[selectedMap.MapId] = 1;
+
+            if (lastCommonMapId == selectedMap.MapId)
+            {
+                consecutiveCommonMapCount++;
+                return;
+            }
+
+            lastCommonMapId = selectedMap.MapId;
+            consecutiveCommonMapCount = 1;
         }
 
         private MapData PickByWeight(List<MapData> candidates)

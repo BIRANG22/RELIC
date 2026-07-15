@@ -28,6 +28,8 @@ public class BattleActionRunner
     private const float MonsterHUDVisibleDelay = 0.45f;
     private const float DefaultActionRoutineTimeout = 8f;
     private const string MuckProjectileSkillId = "S_Monster_04";
+    private const string BlobMonsterId = "Mon_02";
+    private const string ResidueGridEffectId = "GR_Residue";
     private static readonly Color ExecutionRangeColor = Color.red;
     public const float MoveAnimationDuration = 0.15f;
 
@@ -718,6 +720,42 @@ public class BattleActionRunner
             target.Add(index);
     }
 
+    private void TryPlaceMuckProjectileResidue(MonsterReservedCommand command)
+    {
+        if (command == null)
+            return;
+
+        int targetGridIndex = command.RangeOriginGridIndex;
+
+        if (targetGridIndex < 0 && command.TargetGridIndices != null && command.TargetGridIndices.Count > 0)
+            targetGridIndex = command.TargetGridIndices[0];
+
+        BattleGridEffectController controller = ResolveGridEffectController();
+
+        if (controller == null || !controller.TryPlaceEffect(targetGridIndex, ResidueGridEffectId))
+            return;
+
+        // 머크의 투사체 피해와 잔여물 피해는 별도의 타격으로 처리합니다.
+        // 목표 그리드에 캐릭터가 있다면 잔여물 생성 직후 GR_Residue 피해를 따로 적용합니다.
+        BattleCharacter character = FindPlayerAtGrid(targetGridIndex);
+
+        if (character != null)
+            controller.ApplyToPlayer(targetGridIndex, character);
+    }
+
+    private void TryPlaceResidue(int gridIndex)
+    {
+        if (gridIndex < 0)
+            return;
+
+        BattleGridEffectController controller = ResolveGridEffectController();
+
+        if (controller == null)
+            return;
+
+        controller.TryPlaceEffect(gridIndex, ResidueGridEffectId);
+    }
+
     private bool IsGridEffectBlocked(int gridIndex)
     {
         BattleGridEffectController controller = ResolveGridEffectController();
@@ -861,8 +899,16 @@ public class BattleActionRunner
 
             RecordPlayerMoveExecutionDistance(command, currentGridIndex, targetGridIndex);
 
+            Vector2Int startCoord = gridManager.IndexToCoord(currentGridIndex);
+            Vector2Int resolvedCoord = gridManager.IndexToCoord(targetGridIndex);
+            Vector2Int actualMoveOffset = resolvedCoord - startCoord;
+            bool wasBlockedDuringMove = actualMoveOffset != moveOffset;
+
             if (targetGridIndex == currentGridIndex)
             {
+                if (wasBlockedDuringMove)
+                    ApplyCrashToPlayer(character);
+
                 hudService.RefreshHUDs();
                 yield return new WaitForSeconds(ActionDelay);
                 yield break;
@@ -886,6 +932,9 @@ public class BattleActionRunner
             UpdatePartyGridIndex(command.CharacterId, targetGridIndex);
             ApplyGridEffectsToPlayer(enteredGridIndices, character);
             statusEffectService.ApplyBleedDamageToPlayerOnMove(character);
+
+            if (wasBlockedDuringMove && character.RuntimeData != null && !character.RuntimeData.IsDead)
+                ApplyCrashToPlayer(character);
 
             hudService.RefreshHUDs();
 
@@ -931,12 +980,18 @@ public class BattleActionRunner
                 break;
             }
 
-            if (targetGridIndex == currentGridIndex)
-                break;
-
             Vector2Int currentCoord = gridManager.IndexToCoord(currentGridIndex);
             Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
             Vector2Int actualOffset = targetCoord - currentCoord;
+            bool wasBlockedDuringStep = actualOffset != stepOffset;
+
+            if (targetGridIndex == currentGridIndex)
+            {
+                if (wasBlockedDuringStep)
+                    ApplyCrashToPlayer(character);
+
+                break;
+            }
 
             ApplyPlayerMoveFacing(character, command.Direction, actualOffset);
 
@@ -958,7 +1013,10 @@ public class BattleActionRunner
             currentGridIndex = targetGridIndex;
             executedDistance += GetMoveDistance(actualOffset);
 
-            if (character.RuntimeData == null || character.RuntimeData.IsDead)
+            if (wasBlockedDuringStep && character.RuntimeData != null && !character.RuntimeData.IsDead)
+                ApplyCrashToPlayer(character);
+
+            if (character.RuntimeData == null || character.RuntimeData.IsDead || wasBlockedDuringStep)
                 break;
         }
 
@@ -1219,7 +1277,10 @@ public class BattleActionRunner
             int gridIndex = gridManager.CoordToIndex(nextCoord);
 
             if (BattleOccupancyService.IsOccupiedByAnyUnit(gridIndex, characterId))
+            {
+                ApplyCrashToBlockingUnitAtGrid(gridIndex, characterId, null);
                 return false;
+            }
 
             if (IsGridEffectBlocked(gridIndex))
                 return false;
@@ -2004,13 +2065,31 @@ public class BattleActionRunner
             if (facing != null)
                 facing.FaceByMoveOffset(moveOffset);
 
-            if (!CanApplyMonsterMove(monster, moveOffset))
+            // 첫 이동 칸이 이미 다른 유닛에게 점유되어 있다면 한 칸도 이동하지 않고 즉시 충돌합니다.
+            // 이동자와 해당 칸을 점유한 유닛 모두 충돌 고정 피해를 받습니다.
+            if (TryHandleImmediateMonsterUnitCollision(monster, moveOffset))
+            {
+                hudService.RefreshHUDs();
+                yield return new WaitForSeconds(ActionDelay);
                 yield break;
+            }
 
-            List<int> enteredGridIndices = BuildMonsterEnteredGridIndices(monster, moveOffset);
+            MonsterMoveResolution moveResolution = ResolveMonsterMove(monster, moveOffset);
+
+            if (moveResolution.ActualOffset == Vector2Int.zero)
+            {
+                if (moveResolution.WasBlocked)
+                    ApplyCrashToMonster(monster);
+
+                hudService.RefreshHUDs();
+                yield return new WaitForSeconds(ActionDelay);
+                yield break;
+            }
+
+            List<int> enteredGridIndices = moveResolution.EnteredGridIndices;
 
             Vector2Int mainCoord = gridManager.IndexToCoord(currentGridIndex);
-            Vector2Int movedMainCoord = mainCoord + moveOffset;
+            Vector2Int movedMainCoord = mainCoord + moveResolution.ActualOffset;
             int movedMainIndex = gridManager.CoordToIndex(movedMainCoord);
 
             Vector3 pos = gridManager.GetWorldPositionByIndex(movedMainIndex);
@@ -2027,9 +2106,21 @@ public class BattleActionRunner
                 MoveAnimationDuration
             );
 
-            monster.MoveOccupiedCells(moveOffset, gridManager);
+            monster.MoveOccupiedCells(moveResolution.ActualOffset, gridManager);
+
+            // 블롭은 이동을 완료한 뒤 이동 전 그리드에 잔여물을 남깁니다.
+            // 잔여물의 피해는 이동 공격과 별개로 GridEffect 데이터에 따라 적용됩니다.
+            if (monster.RuntimeData != null &&
+                string.Equals(monster.RuntimeData.MonsterId, BlobMonsterId, System.StringComparison.Ordinal))
+            {
+                TryPlaceResidue(currentGridIndex);
+            }
+
             ApplyGridEffectsToMonster(enteredGridIndices, monster);
             statusEffectService.ApplyBleedDamageToMonsterOnMove(monster);
+
+            if (moveResolution.WasBlocked && monster.RuntimeData != null && !monster.RuntimeData.IsDead)
+                ApplyCrashToMonster(monster);
 
             hudService.RefreshHUDs();
 
@@ -2039,6 +2130,78 @@ public class BattleActionRunner
         {
             ClearExecutionRange();
         }
+    }
+
+    private sealed class MonsterMoveResolution
+    {
+        public Vector2Int ActualOffset;
+        public bool WasBlocked;
+        public List<int> EnteredGridIndices = new();
+    }
+
+    private MonsterMoveResolution ResolveMonsterMove(MonsterUnit monster, Vector2Int requestedOffset)
+    {
+        if (monster == null || gridManager == null || requestedOffset == Vector2Int.zero)
+            return new MonsterMoveResolution();
+
+        if (requestedOffset.x != 0 && requestedOffset.y != 0)
+        {
+            MonsterMoveResolution horizontalFirst =
+                ResolveMonsterMoveAxisOrder(monster, requestedOffset, true, false);
+            MonsterMoveResolution verticalFirst =
+                ResolveMonsterMoveAxisOrder(monster, requestedOffset, false, false);
+
+            bool useVerticalFirst =
+                GetMoveDistance(verticalFirst.ActualOffset) >
+                GetMoveDistance(horizontalFirst.ActualOffset);
+
+            return ResolveMonsterMoveAxisOrder(
+                monster,
+                requestedOffset,
+                !useVerticalFirst,
+                true);
+        }
+
+        return ResolveMonsterMoveAxisOrder(
+            monster,
+            requestedOffset,
+            requestedOffset.x != 0,
+            true);
+    }
+
+    private MonsterMoveResolution ResolveMonsterMoveAxisOrder(
+        MonsterUnit monster,
+        Vector2Int requestedOffset,
+        bool horizontalFirst,
+        bool applyCrashToBlockingUnit)
+    {
+        MonsterMoveResolution result = new();
+        List<Vector2Int> currentCoords = new();
+
+        for (int i = 0; i < monster.OccupiedGridIndices.Count; i++)
+            currentCoords.Add(gridManager.IndexToCoord(monster.OccupiedGridIndices[i]));
+
+        Vector2Int startMainCoord = gridManager.IndexToCoord(monster.MainGridIndex);
+        bool completed;
+
+        if (horizontalFirst)
+        {
+            completed = TryApplyMonsterMoveAxisSteps(currentCoords, requestedOffset.x, true, monster, result.EnteredGridIndices, applyCrashToBlockingUnit);
+            if (completed)
+                completed = TryApplyMonsterMoveAxisSteps(currentCoords, requestedOffset.y, false, monster, result.EnteredGridIndices, applyCrashToBlockingUnit);
+        }
+        else
+        {
+            completed = TryApplyMonsterMoveAxisSteps(currentCoords, requestedOffset.y, false, monster, result.EnteredGridIndices, applyCrashToBlockingUnit);
+            if (completed)
+                completed = TryApplyMonsterMoveAxisSteps(currentCoords, requestedOffset.x, true, monster, result.EnteredGridIndices, applyCrashToBlockingUnit);
+        }
+
+        if (currentCoords.Count > 0)
+            result.ActualOffset = currentCoords[0] - startMainCoord;
+
+        result.WasBlocked = !completed || result.ActualOffset != requestedOffset;
+        return result;
     }
 
     private bool CanApplyMonsterMove(MonsterUnit monster, Vector2Int moveOffset)
@@ -2083,7 +2246,8 @@ public class BattleActionRunner
         int amount,
         bool horizontal,
         MonsterUnit monster,
-        List<int> enteredGridIndices = null)
+        List<int> enteredGridIndices = null,
+        bool applyCrashToBlockingUnit = false)
     {
         int remaining = amount;
 
@@ -2104,7 +2268,12 @@ public class BattleActionRunner
                 int targetIndex = gridManager.CoordToIndex(nextCoord);
 
                 if (BattleOccupancyService.IsOccupiedByAnyUnit(targetIndex, null, monster))
+                {
+                    if (applyCrashToBlockingUnit)
+                        ApplyCrashToBlockingUnitAtGrid(targetIndex, null, monster);
+
                     return false;
+                }
 
                 if (IsGridEffectBlocked(targetIndex))
                     return false;
@@ -2168,6 +2337,95 @@ public class BattleActionRunner
 
         return TryApplyMonsterMoveAxisSteps(currentCoords, moveOffset.y, false, monster, enteredGridIndices) &&
                TryApplyMonsterMoveAxisSteps(currentCoords, moveOffset.x, true, monster, enteredGridIndices);
+    }
+
+    private bool TryHandleImmediateMonsterUnitCollision(
+        MonsterUnit monster,
+        Vector2Int requestedOffset)
+    {
+        if (monster == null || gridManager == null || requestedOffset == Vector2Int.zero)
+            return false;
+
+        Vector2Int firstStep;
+
+        if (requestedOffset.x != 0)
+            firstStep = new Vector2Int(requestedOffset.x > 0 ? 1 : -1, 0);
+        else
+            firstStep = new Vector2Int(0, requestedOffset.y > 0 ? 1 : -1);
+
+        for (int i = 0; i < monster.OccupiedGridIndices.Count; i++)
+        {
+            Vector2Int occupiedCoord = gridManager.IndexToCoord(monster.OccupiedGridIndices[i]);
+            Vector2Int nextCoord = occupiedCoord + firstStep;
+
+            // 맵 외곽은 충돌 피해 대상이 아닙니다.
+            if (!gridManager.IsValidCoord(nextCoord))
+                return false;
+
+            int nextGridIndex = gridManager.CoordToIndex(nextCoord);
+
+            if (!BattleOccupancyService.IsOccupiedByAnyUnit(nextGridIndex, null, monster))
+                continue;
+
+            ApplyCrashToMonster(monster);
+            ApplyCrashToBlockingUnitAtGrid(nextGridIndex, null, monster);
+            return true;
+        }
+
+        return false;
+    }
+
+    private void ApplyCrashToBlockingUnitAtGrid(
+        int gridIndex,
+        string movingCharacterId,
+        MonsterUnit movingMonster)
+    {
+        if (BattleOccupancyService.TryGetCharacterAtGrid(
+                gridIndex,
+                out BattleCharacter blockingCharacter,
+                movingCharacterId))
+        {
+            ApplyCrashToPlayer(blockingCharacter);
+            return;
+        }
+
+        if (BattleOccupancyService.TryGetMonsterAtGrid(
+                gridIndex,
+                out MonsterUnit blockingMonster,
+                movingMonster))
+        {
+            ApplyCrashToMonster(blockingMonster);
+        }
+    }
+
+    private void ApplyCrashToPlayer(BattleCharacter target)
+    {
+        if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
+            return;
+
+        new CrashEffect().Execute(new BattleEffectContext
+        {
+            PlayerTarget = target,
+            GridManager = gridManager,
+            EffectId = "E_Crash",
+            Value = 2,
+            Count = 1
+        });
+    }
+
+    private void ApplyCrashToMonster(MonsterUnit target)
+    {
+        if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
+            return;
+
+        new CrashEffect().Execute(new BattleEffectContext
+        {
+            MonsterTarget = target,
+            GridManager = gridManager,
+            EffectId = "E_Crash",
+            Value = 2,
+            Count = 1
+        });
     }
 
     private IEnumerator ExecuteMonsterSkill(MonsterReservedCommand command)
@@ -2252,6 +2510,11 @@ public class BattleActionRunner
                 else
                     yield return new WaitForSeconds(ActionDelay);
             }
+
+            // 머크의 투사체는 명중 여부와 관계없이 예약된 목표 그리드에 잔여물을 생성합니다.
+            // 투사체 피해와 잔여물 피해는 분리하며, 생성 순간에는 잔여물 피해를 즉시 적용하지 않습니다.
+            if (string.Equals(command.SkillData.SkillId, MuckProjectileSkillId, System.StringComparison.Ordinal))
+                TryPlaceMuckProjectileResidue(command);
 
             // 신더의 자폭은 공격 효과 적용이 끝난 뒤 자신을 제거합니다.
             // 일반 처치가 아니므로 렘넌트, 고유 아이템, 유물 등의 사망 보상은 수집하지 않습니다.
@@ -2695,13 +2958,24 @@ public class BattleActionRunner
 
         Vector2Int finalOffset = Vector2Int.zero;
         BattleCharacter hitPlayer = null;
+        bool wasBlockedByCollision = false;
 
         for (int step = 1; step <= maxMove; step++)
         {
             Vector2Int testOffset = new Vector2Int(dirX * step, 0);
 
-            if (!CanMonsterDashToOffset(monster, testOffset, out BattleCharacter blockingPlayer))
+            if (IsMonsterDashOutsideGrid(monster, testOffset))
+            {
+                // 그리드 외곽은 충돌 대상이 아니므로, 맵 밖으로 나가지 않고 멈추기만 합니다.
                 break;
+            }
+
+            if (!CanMonsterDashToOffset(monster, testOffset, out BattleCharacter blockingPlayer))
+            {
+                // 장애물이나 다른 유닛에 막힌 경우에만 충돌로 처리합니다.
+                wasBlockedByCollision = true;
+                break;
+            }
 
             if (blockingPlayer != null)
             {
@@ -2749,6 +3023,7 @@ public class BattleActionRunner
         if (hitPlayer != null)
         {
             ApplyMonsterDashDamage(command, monster, hitPlayer);
+            ApplyMonsterDashKnockback(command, monster, hitPlayer);
 
             if (BattleCameraController.Instance != null)
                 yield return BattleCameraController.Instance.PlayDamageImpact();
@@ -2760,10 +3035,31 @@ public class BattleActionRunner
         }
         else
         {
+            if (wasBlockedByCollision && monster.RuntimeData != null && !monster.RuntimeData.IsDead)
+                ApplyCrashToMonster(monster);
+
             yield return new WaitForSeconds(ActionDelay);
         }
 
         hudService.RefreshHUDs();
+    }
+
+
+    private bool IsMonsterDashOutsideGrid(MonsterUnit monster, Vector2Int moveOffset)
+    {
+        if (monster == null || gridManager == null)
+            return true;
+
+        for (int i = 0; i < monster.OccupiedGridIndices.Count; i++)
+        {
+            Vector2Int currentCoord = gridManager.IndexToCoord(monster.OccupiedGridIndices[i]);
+            Vector2Int targetCoord = currentCoord + moveOffset;
+
+            if (!gridManager.IsValidCoord(targetCoord))
+                return true;
+        }
+
+        return false;
     }
 
     private bool CanMonsterDashToOffset(
@@ -2828,6 +3124,75 @@ public class BattleActionRunner
         }
 
         return null;
+    }
+
+
+    private void ApplyMonsterDashKnockback(
+        MonsterReservedCommand command,
+        MonsterUnit monster,
+        BattleCharacter target)
+    {
+        if (command == null || command.SkillData == null || monster == null || target == null)
+            return;
+
+        if (target.RuntimeData == null || target.RuntimeData.IsDead)
+            return;
+
+        if (!TryGetMonsterSkillEffectValue(command.SkillData, "E_Knockback", out int knockbackValue))
+            return;
+
+        Vector2Int monsterCoord = gridManager.IndexToCoord(monster.MainGridIndex);
+        Vector2Int targetCoord = gridManager.IndexToCoord(target.CurrentGridIndex);
+        BattleDirection knockbackDirection = targetCoord.x < monsterCoord.x
+            ? BattleDirection.Left
+            : BattleDirection.Right;
+
+        new KnockbackEffect().Execute(new BattleEffectContext
+        {
+            MonsterCaster = monster,
+            PlayerTarget = target,
+            Direction = knockbackDirection,
+            GridManager = gridManager,
+            EffectId = "E_Knockback",
+            Value = Mathf.Max(1, knockbackValue),
+            Count = 1
+        });
+    }
+
+    private static bool TryGetMonsterSkillEffectValue(
+        Relic.Gameplay.Data.MonsterSkillData skillData,
+        string targetEffectId,
+        out int value)
+    {
+        value = 0;
+
+        if (skillData == null || string.IsNullOrWhiteSpace(skillData.EffectIds))
+            return false;
+
+        string[] effectIds = skillData.EffectIds.Split(';');
+        string[] valueRates = string.IsNullOrWhiteSpace(skillData.ValueRate)
+            ? System.Array.Empty<string>()
+            : skillData.ValueRate.Split(';');
+
+        for (int i = 0; i < effectIds.Length; i++)
+        {
+            if (!string.Equals(
+                    effectIds[i].Trim(),
+                    targetEffectId,
+                    System.StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            if (i < valueRates.Length && int.TryParse(valueRates[i].Trim(), out int parsed))
+                value = parsed;
+            else
+                value = 1;
+
+            return true;
+        }
+
+        return false;
     }
 
     private void ApplyMonsterDashDamage(

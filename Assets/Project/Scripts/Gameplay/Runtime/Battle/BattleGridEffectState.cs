@@ -17,15 +17,17 @@ namespace Relic.Gameplay.Battle
     public sealed class BattleGridEffectState
     {
         private readonly Dictionary<int, string> effectIdsByGridIndex = new();
+        private readonly Dictionary<int, int> remainingDurationByGridIndex = new();
 
         public int Count => effectIdsByGridIndex.Count;
 
         public void Clear()
         {
             effectIdsByGridIndex.Clear();
+            remainingDurationByGridIndex.Clear();
         }
 
-        public bool Place(int gridIndex, string gridEffectId)
+        public bool Place(int gridIndex, string gridEffectId, int duration = 0)
         {
             if (gridIndex < 0 || string.IsNullOrWhiteSpace(gridEffectId))
                 return false;
@@ -34,17 +36,52 @@ namespace Relic.Gameplay.Battle
                 return false;
 
             effectIdsByGridIndex.Add(gridIndex, gridEffectId.Trim());
+
+            int safeDuration = System.Math.Max(0, duration);
+            if (safeDuration > 0)
+                remainingDurationByGridIndex[gridIndex] = safeDuration;
+
             return true;
         }
 
         public bool Remove(int gridIndex)
         {
+            remainingDurationByGridIndex.Remove(gridIndex);
             return effectIdsByGridIndex.Remove(gridIndex);
         }
 
         public bool TryGetEffectId(int gridIndex, out string gridEffectId)
         {
             return effectIdsByGridIndex.TryGetValue(gridIndex, out gridEffectId);
+        }
+
+        public IReadOnlyList<int> AdvanceDurations()
+        {
+            List<int> expiredGridIndices = new();
+            List<int> trackedGridIndices = new(remainingDurationByGridIndex.Keys);
+
+            for (int i = 0; i < trackedGridIndices.Count; i++)
+            {
+                int gridIndex = trackedGridIndices[i];
+
+                if (!remainingDurationByGridIndex.TryGetValue(gridIndex, out int remaining))
+                    continue;
+
+                remaining--;
+
+                if (remaining > 0)
+                {
+                    remainingDurationByGridIndex[gridIndex] = remaining;
+                    continue;
+                }
+
+                remainingDurationByGridIndex.Remove(gridIndex);
+
+                if (effectIdsByGridIndex.Remove(gridIndex))
+                    expiredGridIndices.Add(gridIndex);
+            }
+
+            return expiredGridIndices;
         }
 
         public IReadOnlyList<BattleGridEffectPlacement> GetPlacements()

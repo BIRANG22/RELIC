@@ -21,3 +21,5 @@ MonoBehaviour:
     prefab: {fileID: 7510714500437303365, guid: efb8cd38b41997c4c85ee3ae2f44b868, type: 3}
   - gridEffectId: GR_Poisson
     prefab: {fileID: 6416350362071025190, guid: 856df3037918ae9458bc104242ac020a, type: 3}
+  - gridEffectId: GR_Residue
+    prefab: {fileID: 6416350362071025190, guid: 29e413fcd251b764daf2b40f112d6b53, type: 3}

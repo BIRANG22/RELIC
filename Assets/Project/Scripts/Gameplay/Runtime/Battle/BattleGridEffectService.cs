@@ -92,8 +92,12 @@ namespace Relic.Gameplay.Battle
 
                 string gridEffectId = BattleRandom.Pick(effectIds);
 
-                if (!state.Place(gridIndex, gridEffectId))
+                if (!database.TryGet(gridEffectId, out GridEffectData gridEffectData) ||
+                    gridEffectData == null ||
+                    !state.Place(gridIndex, gridEffectId, gridEffectData.Duration))
+                {
                     continue;
+                }
 
                 placements.Add(new BattleGridEffectPlacement(gridIndex, gridEffectId));
             }
@@ -136,6 +140,14 @@ namespace Relic.Gameplay.Battle
         {
             if (runtimeData == null || runtimeData.IsDead)
                 return BattleGridEffectApplyResult.None;
+
+            // 잔여물은 머크와 블롭이 생성하는 몬스터 전용 지형입니다.
+            // 몬스터는 잔여물 위를 지나거나 해당 위치에서 행동해도 피해를 받지 않습니다.
+            if (TryGetGridEffectData(state, gridIndex, out GridEffectData gridEffectData) &&
+                string.Equals(gridEffectData.GridEffectID, "GR_Residue", StringComparison.OrdinalIgnoreCase))
+            {
+                return BattleGridEffectApplyResult.None;
+            }
 
             return ApplyToRuntime(
                 state,
@@ -369,8 +381,18 @@ namespace Relic.Gameplay.Battle
 
             foreach (KeyValuePair<string, GridEffectData> pair in all)
             {
-                if (!string.IsNullOrWhiteSpace(pair.Key) && pair.Value != null)
-                    effectIds.Add(pair.Key);
+                if (string.IsNullOrWhiteSpace(pair.Key) || pair.Value == null)
+                    continue;
+
+                if (!string.Equals(
+                        pair.Value.SpawnType?.Trim(),
+                        "BattleStart",
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                effectIds.Add(pair.Key);
             }
 
             return effectIds;
