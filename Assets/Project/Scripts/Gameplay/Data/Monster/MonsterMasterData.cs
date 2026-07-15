@@ -15,6 +15,7 @@ namespace Relic.Gameplay.Data
         public string Grade;
         [FormerlySerializedAs("Health")]
         public int HP;
+        public int Armor;
 
         public int MinRemnant;
         public int MaxRemnant;

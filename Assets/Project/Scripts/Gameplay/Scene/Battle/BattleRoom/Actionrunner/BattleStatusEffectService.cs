@@ -5,6 +5,9 @@ using UnityEngine;
 
 public class BattleStatusEffectService
 {
+    private const string SplitEffectId = "E_Split";
+    private const string ExplodeEffectId = "E_Explode";
+
     private readonly BattleDamageService damageService;
     private readonly BattleDeathService deathService;
 
@@ -14,6 +17,43 @@ public class BattleStatusEffectService
     {
         this.damageService = damageService;
         this.deathService = deathService;
+    }
+
+    /// <summary>
+    /// 몬스터가 실제 피해 타격을 받을 때 분열 수치를 1 감소시킵니다.
+    /// 수치가 0이 되었을 때 살아 있다면 true를 반환합니다.
+    /// </summary>
+    public bool ApplySplitHitAndCheckTrigger(MonsterUnit monster)
+    {
+        if (monster == null || monster.RuntimeData == null)
+            return false;
+
+        List<StatusEffectRuntimeData> statuses = monster.RuntimeData.StatusEffects;
+
+        if (statuses == null)
+            return false;
+
+        for (int i = statuses.Count - 1; i >= 0; i--)
+        {
+            StatusEffectRuntimeData status = statuses[i];
+
+            if (status == null || status.EffectId != SplitEffectId)
+                continue;
+
+            status.Stack = Mathf.Max(0, status.Stack - 1);
+
+            if (status.Stack > 0)
+            {
+                monster.ShowAndRefreshHUD();
+                return false;
+            }
+
+            statuses.RemoveAt(i);
+            monster.ShowAndRefreshHUD();
+            return !monster.RuntimeData.IsDead;
+        }
+
+        return false;
     }
 
     public bool TryApplyPlayerSelfEffect(PlayerReservedCommand command, BattleCharacter caster)
@@ -142,6 +182,7 @@ public class BattleStatusEffectService
 
     public bool ApplyTurnEndEffects()
     {
+
         bool playedPresentation = false;
 
         playedPresentation |= ApplyTurnEndEffectsToPlayers();
@@ -268,7 +309,27 @@ public class BattleStatusEffectService
                 playedPresentation = true;
 
                 if (monster.RuntimeData.IsDead)
+                {
                     deathService.HandleMonsterDead(monster);
+                    continue;
+                }
+            }
+
+            if (status.EffectId == ExplodeEffectId)
+            {
+                status.Stack = Mathf.Max(0, status.Stack - 1);
+                playedPresentation = true;
+
+                if (status.Stack <= 0)
+                {
+                    statuses.RemoveAt(i);
+
+                    if (!monster.RuntimeData.IsDead)
+                        monster.RuntimeData.IsExplodeReady = true;
+                }
+
+                monster.ShowAndRefreshHUD();
+                continue;
             }
 
             ApplyEndTurnRule(statuses, i, status);

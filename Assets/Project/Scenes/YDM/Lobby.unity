@@ -50753,7 +50753,6 @@ GameObject:
   m_Component:
   - component: {fileID: 2051864327}
   - component: {fileID: 2051864328}
-  - component: {fileID: 2051864329}
   m_Layer: 0
   m_Name: PartyPanel
   m_TagString: Untagged
@@ -50792,25 +50791,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2051864326}
   m_CullTransparentMesh: 1
---- !u!114 &2051864329
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2051864326}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ab94aa99d74e01d4aab62ca89bf93848, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  target: {fileID: 2051864327}
-  moveDirection: 0
-  moveAmount: 5
-  moveSpeed: 1.5
-  useUnscaledTime: 1
-  restorePositionOnDisable: 1
-  spriteMoveMultiplier: 0.01
 --- !u!1 &2056474035
 GameObject:
   m_ObjectHideFlags: 0

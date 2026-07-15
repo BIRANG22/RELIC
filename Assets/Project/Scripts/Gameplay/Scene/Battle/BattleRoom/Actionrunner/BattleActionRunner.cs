@@ -1653,8 +1653,27 @@ public class BattleActionRunner
                     value,
                     1);
 
+                int hpBeforeHit = monster.RuntimeData != null
+                    ? monster.RuntimeData.CurrentHP
+                    : 0;
+                int shieldBeforeHit = monster.RuntimeData != null
+                    ? monster.RuntimeData.CurrentShield
+                    : 0;
+
                 ExecutePlayerEffectSafely(effectId, context, command.SkillData.SkillId);
                 appliedAnyHit = true;
+
+                bool receivedDamage = monster.RuntimeData != null &&
+                    (monster.RuntimeData.CurrentHP < hpBeforeHit ||
+                     monster.RuntimeData.CurrentShield < shieldBeforeHit);
+                bool shouldSplit = receivedDamage &&
+                    statusEffectService.ApplySplitHitAndCheckTrigger(monster);
+
+                if (shouldSplit)
+                {
+                    deathService.HandleMuckSplit(monster);
+                    continue;
+                }
 
                 if (monster.RuntimeData != null && monster.RuntimeData.IsDead)
                     deathService.HandleMonsterDead(monster);
@@ -2240,6 +2259,7 @@ public class BattleActionRunner
                 monster.RuntimeData.MonsterId == "Mon_06" &&
                 command.SkillData.SkillId == "S_Monster_14")
             {
+                monster.RuntimeData.IsExplodeReady = false;
                 monster.RuntimeData.CurrentHP = 0;
                 deathService.HandleMonsterDeadWithoutReward(monster);
             }
