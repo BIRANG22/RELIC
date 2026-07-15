@@ -31,6 +31,8 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
     private Vector3 originalScale = Vector3.one;
     private bool isScaleCached;
     private Coroutine hoverScaleCoroutine;
+    private int shownInfoVersion = -1;
+    private bool isPointerInside;
 
     public SkillMasterData CurrentSkillData => currentSkillData;
 
@@ -46,6 +48,12 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private void OnDisable()
     {
+        if (isPointerInside)
+        {
+            LobbyInfoHoverState.EndSkillHover();
+            isPointerInside = false;
+        }
+
         StopHoverScaleEffect(true);
     }
 
@@ -102,15 +110,39 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (owner != null && currentSkillData != null)
+        if (!isPointerInside)
+        {
+            LobbyInfoHoverState.BeginSkillHover();
+            isPointerInside = true;
+        }
+
+        // 룬 버튼 위에 마우스가 있으면 룬 정보가 항상 우선입니다.
+        if (!LobbyInfoHoverState.IsRuneHovered &&
+            owner != null && currentSkillData != null && owner.CanPreviewSkillIconHover)
+        {
             owner.ShowSkillInfo(currentSkillData);
+            shownInfoVersion = LobbyInfoHoverState.CurrentVersion;
+        }
 
         StartHoverScaleEffect();
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
+        if (isPointerInside)
+        {
+            LobbyInfoHoverState.EndSkillHover();
+            isPointerInside = false;
+        }
+
         StopHoverScaleEffect(true);
+
+        // 프리뷰에서는 호버가 끝나면 기본 안내 정보로 돌아갑니다.
+        // 스킬 세팅에서는 마지막으로 확인한 정보를 유지합니다.
+        if (owner != null && owner.ShouldClearInfoOnHoverExit && shownInfoVersion >= 0)
+            owner.ClearSkillInfoFromHover(shownInfoVersion);
+
+        shownInfoVersion = -1;
     }
 
     public void Execute()

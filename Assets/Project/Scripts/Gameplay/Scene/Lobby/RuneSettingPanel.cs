@@ -40,6 +40,8 @@ public class RuneSettingPanel : MonoBehaviour
     [SerializeField] private GameObject sharedInfoArea;
     [SerializeField] private TMP_Text runeInfoTitleText;
     [SerializeField] private TMP_Text runeInfoEffectText;
+    [Tooltip("같은 InfoArea를 사용하는 SkillSettingPanel입니다. 비어 있으면 자동으로 찾습니다.")]
+    [SerializeField] private SkillSettingPanel sharedSkillSettingPanel;
     [SerializeField] private string emptyRuneInfoTitle = "룬 정보";
     [SerializeField, TextArea] private string emptyRuneInfoEffect = "룬을 선택하면 정보가 표시됩니다.";
 
@@ -55,6 +57,7 @@ public class RuneSettingPanel : MonoBehaviour
     private Coroutine runeSelectPanelMoveCoroutine;
 
     public bool IsRuneInteractionEnabled => runeSelectPanelAllowed;
+    public bool ShouldClearInfoOnHoverExit => !runeSelectPanelAllowed;
 
     public event Action OnRuneChanged;
 
@@ -64,6 +67,7 @@ public class RuneSettingPanel : MonoBehaviour
             warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
 
         AutoBindRuneInfoTexts();
+        BindSharedSkillSettingPanel();
         BindRuneSelectPanelRect();
         ClearRuneInfo();
 
@@ -83,6 +87,7 @@ public class RuneSettingPanel : MonoBehaviour
             warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
 
         AutoBindRuneInfoTexts();
+        BindSharedSkillSettingPanel();
         BindRuneSelectPanelRect();
         SetRuneSelectPanelActive();
         MoveRuneSelectPanel(runeSelectPanelAllowed);
@@ -102,6 +107,15 @@ public class RuneSettingPanel : MonoBehaviour
             StopCoroutine(runeSelectPanelMoveCoroutine);
             runeSelectPanelMoveCoroutine = null;
         }
+    }
+
+    private void LateUpdate()
+    {
+        // 스킬에서 룬으로 빠르게 이동할 때 늦게 실행된 스킬 호버가
+        // TypeText 같은 스킬 전용 오브젝트를 다시 켜는 경우가 있습니다.
+        // 룬을 호버하는 동안에는 매 프레임 룬 전용 표시 상태를 유지합니다.
+        if (LobbyInfoHoverState.IsRuneHovered)
+            HideSkillOnlyInfoObjects();
     }
 
     private void InitRuneSlots()
@@ -628,17 +642,21 @@ public class RuneSettingPanel : MonoBehaviour
 
     private bool IsCommonRuneNumber(int runeNumber)
     {
-        return runeNumber >= 16 && runeNumber <= 25;
+        // Rune_01 ~ Rune_20은 모든 캐릭터가 사용하는 공용룬입니다.
+        return runeNumber >= 1 && runeNumber <= 20;
     }
 
     private bool IsCurrentCharacterRuneNumber(int runeNumber)
     {
         int characterNumber = GetCurrentCharacterNumber();
 
-        if (characterNumber < 1 || characterNumber > 3)
+        // 캐릭터 전용룬은 Rune_51부터 캐릭터 순서대로 5개씩 배정됩니다.
+        // 1: 힐트(51~55), 2: 카야(56~60), 3: 헤이즈(61~65),
+        // 4: 이네스(66~70), 5: 레이나(71~75)
+        if (characterNumber < 1 || characterNumber > 5)
             return false;
 
-        int start = ((characterNumber - 1) * 5) + 1;
+        int start = 51 + ((characterNumber - 1) * 5);
         int end = start + 4;
 
         return runeNumber >= start && runeNumber <= end;
@@ -1062,8 +1080,9 @@ public class RuneSettingPanel : MonoBehaviour
 
     public void ShowRuneSlotInfo(int slotIndex, RuneData runeData, bool isLocked)
     {
-        LobbyInfoHoverState.NotifyInfoShown();
+        LobbyInfoHoverState.NotifyRuneInfoShown();
         AutoBindRuneInfoTexts();
+        HideSkillOnlyInfoObjects();
 
         if (isLocked)
         {
@@ -1093,8 +1112,9 @@ public class RuneSettingPanel : MonoBehaviour
 
     public void ShowRuneInfo(RuneData runeData)
     {
-        LobbyInfoHoverState.NotifyInfoShown();
+        LobbyInfoHoverState.NotifyRuneInfoShown();
         AutoBindRuneInfoTexts();
+        HideSkillOnlyInfoObjects();
 
         if (runeData == null)
         {
@@ -1111,7 +1131,11 @@ public class RuneSettingPanel : MonoBehaviour
 
     public void ClearRuneInfoFromHover()
     {
-        int hoverVersion = LobbyInfoHoverState.CurrentVersion;
+        ClearRuneInfoFromHover(LobbyInfoHoverState.CurrentVersion);
+    }
+
+    public void ClearRuneInfoFromHover(int hoverVersion)
+    {
         StartCoroutine(ClearRuneInfoAfterHoverDelay(hoverVersion));
     }
 
@@ -1119,7 +1143,7 @@ public class RuneSettingPanel : MonoBehaviour
     {
         yield return new WaitForSecondsRealtime(LobbyInfoHoverState.ClearDelaySeconds);
 
-        if (LobbyInfoHoverState.IsCurrent(hoverVersion))
+        if (LobbyInfoHoverState.CanClearRuneInfo(hoverVersion))
             ClearRuneInfo();
     }
 
@@ -1133,6 +1157,7 @@ public class RuneSettingPanel : MonoBehaviour
     private void ClearRuneInfo()
     {
         AutoBindRuneInfoTexts();
+        HideSkillOnlyInfoObjects();
 
         if (runeInfoTitleText != null)
             runeInfoTitleText.text = emptyRuneInfoTitle;
@@ -1171,6 +1196,88 @@ public class RuneSettingPanel : MonoBehaviour
         }
     }
 
+    private void BindSharedSkillSettingPanel()
+    {
+        if (sharedSkillSettingPanel == null)
+            sharedSkillSettingPanel = FindFirstObjectByType<SkillSettingPanel>(FindObjectsInactive.Include);
+    }
+
+    private void HideSkillOnlyInfoObjects()
+    {
+        // SkillSettingPanel이 실제로 참조하는 TypeText, Range, CostText, ValueText를 먼저 숨깁니다.
+        // 동일한 이름의 오브젝트가 여러 개 있어도 잘못된 대상을 끄지 않도록 합니다.
+        BindSharedSkillSettingPanel();
+        if (sharedSkillSettingPanel != null)
+            sharedSkillSettingPanel.SetSkillInfoExtrasVisible(false);
+
+        Transform infoArea = sharedInfoArea != null
+            ? sharedInfoArea.transform
+            : FindDeepChild(transform.root, "InfoArea");
+
+        if (infoArea == null)
+            return;
+
+        // 룬 정보에는 스킬 전용 라벨과 값 오브젝트를 모두 표시하지 않습니다.
+        SetChildActive(infoArea, "Infotext_1", false);
+        SetChildActive(infoArea, "Infotext_2", false);
+        SetChildActive(infoArea, "Infotext_3", false);
+        SetChildActive(infoArea, "Infotext_4", false);
+
+        SetChildActive(infoArea, "CostText", false);
+        SetChildActive(infoArea, "TypeText", false);
+        SetChildActive(infoArea, "ValueText", false);
+
+        // 실제 구조: InfoArea/Range/RangeImg
+        Transform rangeRoot = FindDeepChild(infoArea, "Range");
+        Transform rangeImageTransform = rangeRoot != null
+            ? FindDeepChild(rangeRoot, "RangeImg")
+            : FindDeepChild(infoArea, "RangeImg");
+
+        if (rangeImageTransform == null)
+            rangeImageTransform = FindDeepChild(infoArea, "RangeImage");
+
+        if (rangeImageTransform != null)
+        {
+            Image image = rangeImageTransform.GetComponent<Image>();
+            if (image != null)
+            {
+                image.sprite = null;
+                image.enabled = false;
+            }
+
+            rangeImageTransform.gameObject.SetActive(false);
+        }
+
+        if (rangeRoot != null)
+            rangeRoot.gameObject.SetActive(false);
+    }
+
+    private void SetChildActive(Transform root, string childName, bool active)
+    {
+        Transform child = FindDeepChild(root, childName);
+        if (child != null)
+            child.gameObject.SetActive(active);
+    }
+
+    private void ClearChildText(Transform root, string childName)
+    {
+        Transform child = FindDeepChild(root, childName);
+        if (child == null)
+            return;
+
+        TMP_Text text = child.GetComponent<TMP_Text>();
+        if (text != null)
+            text.text = string.Empty;
+    }
+
+    private string StripRichTextTags(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+            return string.Empty;
+
+        return Regex.Replace(text, "<[^>]+>", string.Empty);
+    }
+
     private Transform FindDeepChild(Transform parent, string childName)
     {
         if (parent == null || string.IsNullOrWhiteSpace(childName))
@@ -1201,7 +1308,7 @@ public class RuneSettingPanel : MonoBehaviour
             return string.Empty;
 
         if (!string.IsNullOrWhiteSpace(runeData.EffectDesc))
-            return ColorizeRuneEffectDesc(NormalizeRuneEffectDesc(runeData.EffectDesc));
+            return StripRichTextTags(NormalizeRuneEffectDesc(runeData.EffectDesc));
 
         StringBuilder builder = new StringBuilder();
 
@@ -1214,7 +1321,7 @@ public class RuneSettingPanel : MonoBehaviour
         if (builder.Length <= 0)
             builder.Append("등록된 효과 설명이 없습니다.");
 
-        return ColorizeRuneEffectDesc(builder.ToString());
+        return StripRichTextTags(builder.ToString());
     }
 
     private string NormalizeRuneEffectDesc(string effectDesc)

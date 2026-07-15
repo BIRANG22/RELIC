@@ -28,8 +28,18 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
     [SerializeField] private GameObject sharedInfoArea;
     [SerializeField] private TMP_Text skillInfoTitleText;
     [SerializeField] private TMP_Text skillInfoEffectText;
+    [SerializeField] private GameObject skillInfoRangeRoot;
     [SerializeField] private Image skillInfoRangeImage;
     [SerializeField] private TMP_Text skillInfoCostText;
+    [SerializeField] private TMP_Text skillInfoTypeText;
+    [SerializeField] private TMP_Text skillInfoValueText;
+
+    [Header("Shared Info Labels")]
+    [SerializeField] private GameObject skillInfoRangeLabel;
+    [SerializeField] private GameObject skillInfoTypeLabel;
+    [SerializeField] private GameObject skillInfoCostLabel;
+    [SerializeField] private GameObject skillInfoValueLabel;
+
     [SerializeField] private string emptySkillInfoTitle = "스킬명";
     [SerializeField, TextArea] private string emptySkillInfoEffect = "스킬을 선택하면 정보가 표시됩니다.";
     [SerializeField] private bool autoBindSkillInfoArea = true;
@@ -39,6 +49,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
     private SkillSlotButton currentSelectedSlot;
     private int openedSkillSelectPanelIndex = -1;
+    private bool suppressSkillIconHover;
     private Coroutine[] skillSelectPanelMoveCoroutines = new Coroutine[4];
 
     private bool skillSelectPanelAllowed = true;
@@ -176,7 +187,13 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (skillInfoTitleText != null &&
             skillInfoEffectText != null &&
             skillInfoRangeImage != null &&
-            skillInfoCostText != null)
+            skillInfoCostText != null &&
+            skillInfoTypeText != null &&
+            skillInfoValueText != null &&
+            skillInfoRangeLabel != null &&
+            skillInfoTypeLabel != null &&
+            skillInfoCostLabel != null &&
+            skillInfoValueLabel != null)
         {
             return;
         }
@@ -213,15 +230,38 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
                 skillInfoEffectText = effect.GetComponent<TMP_Text>();
         }
 
+        if (skillInfoRangeRoot == null)
+        {
+            Transform rangeRoot = area.Find("Range");
+            if (rangeRoot != null)
+                skillInfoRangeRoot = rangeRoot.gameObject;
+        }
+
         if (skillInfoRangeImage == null)
         {
-            Transform range = area.Find("RangeImg");
-            if (range == null)
-                range = area.Find("RangeImage");
-            if (range == null)
-                range = area.Find("RangeIcon");
-            if (range != null)
-                skillInfoRangeImage = range.GetComponent<Image>();
+            Transform rangeImage = null;
+
+            if (skillInfoRangeRoot != null)
+            {
+                rangeImage = skillInfoRangeRoot.transform.Find("RangeImg");
+                if (rangeImage == null)
+                    rangeImage = skillInfoRangeRoot.transform.Find("RangeImage");
+                if (rangeImage == null)
+                    rangeImage = skillInfoRangeRoot.transform.Find("RangeIcon");
+            }
+
+            if (rangeImage == null)
+                rangeImage = area.Find("RangeImg");
+            if (rangeImage == null)
+                rangeImage = area.Find("RangeImage");
+            if (rangeImage == null)
+                rangeImage = area.Find("RangeIcon");
+
+            if (rangeImage != null)
+                skillInfoRangeImage = rangeImage.GetComponent<Image>();
+
+            if (skillInfoRangeImage == null && skillInfoRangeRoot != null)
+                skillInfoRangeImage = skillInfoRangeRoot.GetComponentInChildren<Image>(true);
         }
 
         if (skillInfoCostText == null)
@@ -231,6 +271,52 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
                 cost = area.Find("ResourceCostText");
             if (cost != null)
                 skillInfoCostText = cost.GetComponent<TMP_Text>();
+        }
+
+        if (skillInfoTypeText == null)
+        {
+            Transform type = area.Find("TypeText");
+            if (type == null)
+                type = area.Find("RangeTypeText");
+            if (type != null)
+                skillInfoTypeText = type.GetComponent<TMP_Text>();
+        }
+
+        if (skillInfoValueText == null)
+        {
+            Transform value = area.Find("ValueText");
+            if (value == null)
+                value = area.Find("EffectValueText");
+            if (value != null)
+                skillInfoValueText = value.GetComponent<TMP_Text>();
+        }
+
+        if (skillInfoRangeLabel == null)
+        {
+            Transform label = area.Find("Infotext_1");
+            if (label != null)
+                skillInfoRangeLabel = label.gameObject;
+        }
+
+        if (skillInfoTypeLabel == null)
+        {
+            Transform label = area.Find("Infotext_2");
+            if (label != null)
+                skillInfoTypeLabel = label.gameObject;
+        }
+
+        if (skillInfoCostLabel == null)
+        {
+            Transform label = area.Find("Infotext_3");
+            if (label != null)
+                skillInfoCostLabel = label.gameObject;
+        }
+
+        if (skillInfoValueLabel == null)
+        {
+            Transform label = area.Find("Infotext_4");
+            if (label != null)
+                skillInfoValueLabel = label.gameObject;
         }
     }
 
@@ -251,6 +337,11 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
         return null;
     }
+
+    public bool ShouldClearInfoOnHoverExit => !skillSelectPanelAllowed;
+
+    // 스킬 선택 패널이 이동하는 동안에는 지나가는 아이콘의 호버 정보를 반영하지 않습니다.
+    public bool CanPreviewSkillIconHover => !suppressSkillIconHover;
 
     public void SetSkillSelectPanelEnabledForTab(bool enabled)
     {
@@ -285,6 +376,9 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         int selectedIndex = currentSelectedSlot != null ? currentSelectedSlot.SlotIndex : -1;
         bool canShow = skillSelectPanelAllowed && visible && selectedIndex >= 0;
         openedSkillSelectPanelIndex = canShow ? selectedIndex : -1;
+
+        if (canShow)
+            suppressSkillIconHover = false;
 
         for (int i = 0; i < skillIconSelectPanels.Length; i++)
         {
@@ -847,6 +941,10 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
     public void ShowSkillInfo(SkillMasterData skill)
     {
+        // 룬 위에 마우스가 있는 동안에는 뒤늦게 들어온 스킬 호버가 룬 정보를 덮어쓰지 않습니다.
+        if (LobbyInfoHoverState.IsRuneHovered)
+            return;
+
         LobbyInfoHoverState.NotifyInfoShown();
         BindSkillInfoAreaIfNeeded();
         ConfigureSkillInfoTextComponents();
@@ -860,15 +958,24 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (sharedInfoArea != null)
             sharedInfoArea.SetActive(true);
 
+        SetSkillInfoLabelsVisible(true);
+        SetSkillInfoValueObjectsVisible(true);
+
         SetPlainTmpText(skillInfoTitleText, skill.Name);
         SetRichTmpText(skillInfoEffectText, BuildSkillDetailsText(skill));
         SetSkillRangeImage(skill);
         SetPlainTmpText(skillInfoCostText, BuildSkillCostText(skill));
+        SetPlainTmpText(skillInfoTypeText, BuildSkillRangeTypeText(skill));
+        SetPlainTmpText(skillInfoValueText, BuildSkillValueText(skill));
     }
 
     public void ClearSkillInfoFromHover()
     {
-        int hoverVersion = LobbyInfoHoverState.CurrentVersion;
+        ClearSkillInfoFromHover(LobbyInfoHoverState.CurrentVersion);
+    }
+
+    public void ClearSkillInfoFromHover(int hoverVersion)
+    {
         StartCoroutine(ClearSkillInfoAfterHoverDelay(hoverVersion));
     }
 
@@ -895,10 +1002,66 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (sharedInfoArea != null)
             sharedInfoArea.SetActive(true);
 
+        SetSkillInfoLabelsVisible(false);
+        SetSkillInfoValueObjectsVisible(false);
+
         SetPlainTmpText(skillInfoTitleText, emptySkillInfoTitle);
         SetRichTmpText(skillInfoEffectText, emptySkillInfoEffect);
         ClearSkillRangeImage();
         SetPlainTmpText(skillInfoCostText, string.Empty);
+        SetPlainTmpText(skillInfoTypeText, string.Empty);
+        SetPlainTmpText(skillInfoValueText, string.Empty);
+    }
+
+    private void SetSkillInfoLabelsVisible(bool visible)
+    {
+        if (skillInfoRangeLabel != null)
+            skillInfoRangeLabel.SetActive(visible);
+
+        if (skillInfoTypeLabel != null)
+            skillInfoTypeLabel.SetActive(visible);
+
+        if (skillInfoCostLabel != null)
+            skillInfoCostLabel.SetActive(visible);
+
+        if (skillInfoValueLabel != null)
+            skillInfoValueLabel.SetActive(visible);
+    }
+
+    /// <summary>
+    /// 룬 정보가 표시될 때 스킬 전용 정보 오브젝트를 정확한 참조로 숨깁니다.
+    /// 이름 검색이 아니라 현재 SkillSettingPanel이 사용하는 실제 오브젝트를 제어합니다.
+    /// </summary>
+    public void SetSkillInfoExtrasVisible(bool visible)
+    {
+        BindSkillInfoAreaIfNeeded();
+        SetSkillInfoLabelsVisible(visible);
+        SetSkillInfoValueObjectsVisible(visible);
+
+        if (!visible)
+        {
+            ClearSkillRangeImage();
+            SetPlainTmpText(skillInfoCostText, string.Empty);
+            SetPlainTmpText(skillInfoTypeText, string.Empty);
+            SetPlainTmpText(skillInfoValueText, string.Empty);
+        }
+    }
+
+    private void SetSkillInfoValueObjectsVisible(bool visible)
+    {
+        if (skillInfoRangeRoot != null)
+            skillInfoRangeRoot.SetActive(visible);
+        else if (skillInfoRangeImage != null)
+            skillInfoRangeImage.gameObject.SetActive(visible);
+
+        if (skillInfoTypeText != null)
+            skillInfoTypeText.gameObject.SetActive(visible);
+
+        if (skillInfoCostText != null)
+            skillInfoCostText.gameObject.SetActive(visible);
+
+        if (skillInfoValueText != null)
+            skillInfoValueText.gameObject.SetActive(visible);
     }
 
     private void ConfigureSkillInfoTextComponents()
@@ -911,7 +1074,8 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
         if (skillInfoEffectText != null)
         {
-            skillInfoEffectText.richText = true;
+            // 스킬 설명의 숫자에 별도 색상을 적용하지 않고 CSV 원문 그대로 표시합니다.
+            skillInfoEffectText.richText = false;
             skillInfoEffectText.parseCtrlCharacters = true;
         }
 
@@ -919,6 +1083,18 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         {
             skillInfoCostText.richText = false;
             skillInfoCostText.parseCtrlCharacters = true;
+        }
+
+        if (skillInfoTypeText != null)
+        {
+            skillInfoTypeText.richText = false;
+            skillInfoTypeText.parseCtrlCharacters = true;
+        }
+
+        if (skillInfoValueText != null)
+        {
+            skillInfoValueText.richText = false;
+            skillInfoValueText.parseCtrlCharacters = true;
         }
     }
 
@@ -937,8 +1113,14 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             DataManager.Instance.SkillRangeIconDatabase.TryGetIcon(skill.RangeId, out rangeSprite);
         }
 
+        bool hasRangeSprite = rangeSprite != null;
+
+        if (skillInfoRangeRoot != null)
+            skillInfoRangeRoot.SetActive(hasRangeSprite);
+
+        skillInfoRangeImage.gameObject.SetActive(hasRangeSprite);
         skillInfoRangeImage.sprite = rangeSprite;
-        skillInfoRangeImage.enabled = rangeSprite != null;
+        skillInfoRangeImage.enabled = hasRangeSprite;
     }
 
     private void ClearSkillRangeImage()
@@ -948,6 +1130,10 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
         skillInfoRangeImage.sprite = null;
         skillInfoRangeImage.enabled = false;
+        skillInfoRangeImage.gameObject.SetActive(false);
+
+        if (skillInfoRangeRoot != null)
+            skillInfoRangeRoot.SetActive(false);
     }
 
     private string BuildSkillCostText(SkillMasterData skill)
@@ -955,27 +1141,189 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (skill == null)
             return string.Empty;
 
+        int costValue = Mathf.Max(0, skill.ResourceCostValue);
+        if (costValue <= 0)
+            return "소모 없음";
+
         string resourceName;
 
         switch (skill.ReferenceResource)
         {
             case ReferenceResource.HP:
-                resourceName = "HP";
+                resourceName = "체력";
                 break;
 
             case ReferenceResource.Cost:
-                resourceName = "Cost";
+                resourceName = "코스트";
                 break;
 
             case ReferenceResource.UniqueResource:
-                resourceName = "Ulit";
+                resourceName = GetCurrentUniqueResourceName();
+                break;
+
+            case ReferenceResource.MovePoint:
+                resourceName = "이동력";
                 break;
 
             default:
                 return string.Empty;
         }
 
-        return $"{resourceName} {Mathf.Max(0, skill.ResourceCostValue)}소모";
+        return $"{resourceName} {costValue}";
+    }
+
+    private string GetCurrentUniqueResourceName()
+    {
+        switch (GetCurrentCharacterNumber())
+        {
+            case 1:
+                return "분노";
+
+            case 2:
+                return "기세";
+
+            case 3:
+                return "에테르";
+
+            case 4:
+                return "신앙";
+
+            case 5:
+                return "혈기";
+
+            default:
+                return "고유자원";
+        }
+    }
+
+    private string BuildSkillRangeTypeText(SkillMasterData skill)
+    {
+        if (skill == null)
+            return string.Empty;
+
+        // 패시브 스킬은 범위 사용 방식 대신 고유자원 유지 조건을 표시합니다.
+        if (skill.Category == Category.Passive)
+            return BuildPassiveActivationTypeText();
+
+        switch (skill.RangeType)
+        {
+            case RangeType.Selection:
+                return "그리드 선택";
+
+            case RangeType.Direction:
+                return "시전자 위치";
+
+            default:
+                return string.Empty;
+        }
+    }
+
+    private string BuildPassiveActivationTypeText()
+    {
+        switch (GetCurrentCharacterNumber())
+        {
+            case 1:
+                return "분노 3 유지 시 지속";
+
+            case 2:
+                return "기세 5 유지 시 지속";
+
+            case 3:
+                return "에테르 3 유지 시 지속";
+
+            case 4:
+                return "신앙 3 유지 시 지속";
+
+            case 5:
+                return "혈기 5 유지 시 지속";
+
+            default:
+                return "고유자원 최대치 유지 시 지속";
+        }
+    }
+
+    private string BuildSkillValueText(SkillMasterData skill)
+    {
+        if (skill == null)
+            return string.Empty;
+
+        List<SkillEffectEntry> entries = skill.EffectEntries;
+
+        if ((entries == null || entries.Count == 0) &&
+            DataManager.Instance != null &&
+            DataManager.Instance.EffectDatabase != null)
+        {
+            entries = SkillEffectParser.Parse(skill, DataManager.Instance.EffectDatabase);
+        }
+
+        if (entries == null || entries.Count == 0)
+            return string.Empty;
+
+        StringBuilder builder = new StringBuilder();
+
+        for (int i = 0; i < entries.Count; i++)
+        {
+            SkillEffectEntry entry = entries[i];
+            if (entry == null)
+                continue;
+
+            string effectName = entry.EffectData != null &&
+                                !string.IsNullOrWhiteSpace(entry.EffectData.Name)
+                ? entry.EffectData.Name
+                : entry.EffectId;
+
+            effectName = GetEffectDisplayName(effectName, entry.EffectId);
+
+            if (string.IsNullOrWhiteSpace(effectName))
+                continue;
+
+            int value = SkillValueCalculator.GetValue(entry, Mathf.Max(0, skill.ResourceCostValue));
+            int count = Mathf.Max(0, SkillValueCalculator.GetCount(entry));
+
+            if (builder.Length > 0)
+                builder.AppendLine();
+
+            builder.Append(effectName);
+
+            if (entry.ValueCalcType != ValueCalcType.None)
+            {
+                builder.Append(' ');
+                builder.Append(value);
+            }
+
+            if (count > 1)
+            {
+                builder.Append(" × ");
+                builder.Append(count);
+            }
+        }
+
+        return builder.ToString();
+    }
+
+    private string GetEffectDisplayName(string effectName, string effectId)
+    {
+        string source = !string.IsNullOrWhiteSpace(effectName)
+            ? effectName.Trim()
+            : string.Empty;
+
+        string id = !string.IsNullOrWhiteSpace(effectId)
+            ? effectId.Trim()
+            : string.Empty;
+
+        if (string.Equals(source, "타격", System.StringComparison.OrdinalIgnoreCase))
+            return "피해";
+
+        if (string.Equals(source, "관통", System.StringComparison.OrdinalIgnoreCase))
+            return "관통피해";
+
+        if (string.Equals(source, "E_Move", System.StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(id, "E_Move", System.StringComparison.OrdinalIgnoreCase))
+        {
+            return "이동";
+        }
+
+        return source;
     }
 
     private void SetPlainTmpText(TMP_Text targetText, string rawText)
@@ -1020,8 +1368,8 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (string.IsNullOrWhiteSpace(details))
             return "";
 
-        string normalizedDetails = NormalizeSkillInfoText(details);
-        return ColorizeSkillDetailNumbersOutsideRichTags(normalizedDetails);
+        // 설명에 포함된 숫자를 색상 태그로 감싸지 않고 원문 그대로 표시합니다.
+        return NormalizeSkillInfoText(details);
     }
 
     private string ColorizeSkillDetailNumbersOutsideRichTags(string text)
@@ -1122,8 +1470,33 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         ShowSkillInfo(skill);
         SaveCurrentSkillSetting();
 
+        // 패널이 닫히며 다른 아이콘 위를 지나갈 때 발생하는 PointerEnter를 무시합니다.
+        suppressSkillIconHover = true;
+
         // 패널 안의 스킬 버튼을 선택하면 선택 패널을 다시 숨김 위치로 돌린다.
         SetSkillSelectPanelVisible(false);
+
+        // 패널이 이동하며 다른 아이콘의 PointerEnter가 발생해도
+        // 최종적으로 실제 선택한 스킬 정보가 남도록 다시 고정합니다.
+        StartCoroutine(RestoreSelectedSkillInfoAfterPanelClose(skill));
+    }
+
+    private IEnumerator RestoreSelectedSkillInfoAfterPanelClose(SkillMasterData selectedSkill)
+    {
+        float waitTime = Mathf.Max(0f, skillSelectPanelMoveDuration) + 0.02f;
+
+        if (waitTime > 0f)
+            yield return new WaitForSecondsRealtime(waitTime);
+        else
+            yield return null;
+
+        if (selectedSkill != null && currentSelectedSlot != null &&
+            IsSameSkill(currentSelectedSlot.EquippedSkill, selectedSkill))
+        {
+            ShowSkillInfo(selectedSkill);
+        }
+
+        suppressSkillIconHover = false;
     }
 
     public void SaveBeforeBattle()
