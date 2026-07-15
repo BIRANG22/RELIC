@@ -37,3 +37,7 @@ MonoBehaviour:
     Icon: {fileID: 21300000, guid: aa7838dcb9f103e458ace51355d286c9, type: 3}
   - EffectId: E_Corrosion
     Icon: {fileID: 21300000, guid: f943f0cf97295a44183e84137985a2b0, type: 3}
+  - EffectId: E_Split
+    Icon: {fileID: 21300000, guid: fc63e66c45b3b464fbe71e172967899e, type: 3}
+  - EffectId: E_Explode
+    Icon: {fileID: 21300000, guid: c855d9f0ac8918e438224242d2dbd718, type: 3}

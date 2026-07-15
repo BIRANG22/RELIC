@@ -1,20 +1,18 @@
 using Relic.Gameplay.Battle;
 using Relic.Gameplay.Data;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Relic.Gameplay.Monster
 {
     /// <summary>
     /// 신더 AI
-    /// - 행동 범위 안에 캐릭터가 있으면 자폭 공격을 사용합니다.
-    /// - 행동 범위 안에 캐릭터가 없으면 가장 가까운 캐릭터를 향해 1칸 이동합니다.
-    /// - 이동 후 새 위치에서 행동 범위를 다시 확인하고, 캐릭터가 들어왔다면 자폭합니다.
+    /// - 폭발 준비 상태가 아니라면 행동 범위 안에 캐릭터가 있어도 계속 가까운 캐릭터를 향해 1칸 이동합니다.
+    /// - E_Explode 수치가 0이 되면 다음 턴 타임라인에 자폭 공격을 등록합니다.
     /// </summary>
     public class CinderAI : MonsterAIBase
     {
         private const string MoveSkillId = "S_Monster_01";
-        private const string AttackSkillId = "S_Monster_14";
+        private const string ExplodeSkillId = "S_Monster_14";
 
         private static readonly Vector2Int[] MoveDirections =
         {
@@ -30,7 +28,9 @@ namespace Relic.Gameplay.Monster
 
         public override string SelectSkill(MonsterRuntimeData monster, BattleContext context)
         {
-            return AttackSkillId;
+            return monster != null && monster.IsExplodeReady
+                ? ExplodeSkillId
+                : MoveSkillId;
         }
 
         public override MonsterAIPlan CreatePlan(
@@ -43,19 +43,22 @@ namespace Relic.Gameplay.Monster
             if (monsterUnit == null || monsterUnit.RuntimeData == null || gridManager == null)
                 return plan;
 
-            string actionRangeId = monsterUnit.RuntimeData.AttackRangeId;
-
-            // 현재 위치에서 행동 범위 안에 캐릭터가 있다면 이동하지 않고 바로 자폭합니다.
-            if (HasPlayerInActionRange(
-                    monsterUnit.MainGridIndex,
-                    actionRangeId,
-                    gridManager))
+            // 폭발 수치가 0이 된 다음 턴에는 이동하지 않고 자폭 공격을 등록합니다.
+            if (monsterUnit.RuntimeData.IsExplodeReady)
             {
-                AddAttack(plan, monsterUnit.MainGridIndex, MonsterAISlotPreference.Front, 0);
+                plan.Add(new MonsterAIAction(
+                    ExplodeSkillId,
+                    Vector2Int.zero,
+                    MonsterAISlotPreference.Front,
+                    1,
+                    0,
+                    monsterUnit.MainGridIndex
+                ));
+
                 return plan;
             }
 
-            // 현재 위치에서 공격할 수 없다면 가장 가까운 캐릭터를 향해 1칸 이동합니다.
+            // 행동 범위 안에 캐릭터가 있더라도 계속 가장 가까운 캐릭터 쪽으로 이동합니다.
             Vector2Int moveOffset = GetBestOneTileMoveTowardNearestPlayer(monsterUnit, gridManager);
             bool canMove = moveOffset != Vector2Int.zero &&
                            CanMonsterMove(monsterUnit, gridManager, moveOffset);
@@ -63,99 +66,15 @@ namespace Relic.Gameplay.Monster
             if (!canMove)
                 return plan;
 
-            const int group = 1;
-
             plan.Add(new MonsterAIAction(
                 MoveSkillId,
                 moveOffset,
                 MonsterAISlotPreference.Front,
-                group,
+                1,
                 0
             ));
 
-            // 이동을 마친 위치에서 행동 범위를 다시 판정합니다.
-            int projectedGridIndex = GetProjectedMainGridIndex(
-                monsterUnit,
-                gridManager,
-                moveOffset);
-
-            if (HasPlayerInActionRange(
-                    projectedGridIndex,
-                    actionRangeId,
-                    gridManager))
-            {
-                AddAttack(
-                    plan,
-                    projectedGridIndex,
-                    MonsterAISlotPreference.SameSlot,
-                    1,
-                    group);
-            }
-
             return plan;
-        }
-
-        private void AddAttack(
-            MonsterAIPlan plan,
-            int rangeOriginGridIndex,
-            MonsterAISlotPreference slotPreference,
-            int priority,
-            int group = -1)
-        {
-            if (plan == null)
-                return;
-
-            plan.Add(new MonsterAIAction(
-                AttackSkillId,
-                Vector2Int.zero,
-                slotPreference,
-                group,
-                priority,
-                rangeOriginGridIndex
-            ));
-        }
-
-        private bool HasPlayerInActionRange(
-            int originGridIndex,
-            string actionRangeId,
-            GridManager gridManager)
-        {
-            if (originGridIndex < 0 ||
-                gridManager == null ||
-                string.IsNullOrWhiteSpace(actionRangeId) ||
-                actionRangeId.Trim() == "0")
-            {
-                return false;
-            }
-
-            RangeDatabase rangeDatabase = DataManager.Instance?.RangeDatabase;
-
-            if (rangeDatabase == null)
-                return false;
-
-            List<int> actionRangeGridIndices = BattleRangeCalculator.GetSelectionRangeIndices(
-                originGridIndex,
-                actionRangeId,
-                rangeDatabase,
-                gridManager);
-
-            if (actionRangeGridIndices == null || actionRangeGridIndices.Count <= 0)
-                return false;
-
-            BattleCharacter[] players = FindPlayers();
-
-            for (int i = 0; i < players.Length; i++)
-            {
-                BattleCharacter player = players[i];
-
-                if (!IsAlivePlayer(player) || player.CurrentGridIndex < 0)
-                    continue;
-
-                if (actionRangeGridIndices.Contains(player.CurrentGridIndex))
-                    return true;
-            }
-
-            return false;
         }
 
         private Vector2Int GetBestOneTileMoveTowardNearestPlayer(

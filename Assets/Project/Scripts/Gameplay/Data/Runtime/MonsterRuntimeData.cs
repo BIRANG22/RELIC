@@ -33,6 +33,7 @@ namespace Relic.Gameplay.Data
         public List<StatusEffectRuntimeData> StatusEffects = new();
 
         public bool IsDeathHandled;
+        public bool IsExplodeReady;
 
         public BattleDirection Direction = BattleDirection.Left;
 
@@ -54,6 +55,7 @@ namespace Relic.Gameplay.Data
 
             MaxHP = masterData.HP;
             CurrentHP = masterData.HP;
+            CurrentShield = Math.Max(0, masterData.Armor);
 
             MinRemnant = masterData.MinRemnant;
             MaxRemnant = masterData.MaxRemnant;
@@ -64,6 +66,7 @@ namespace Relic.Gameplay.Data
 
             TurnCount = 0;
             InitializePossibleSkills(masterData);
+            InitializeMonsterTraits();
         }
 
 
@@ -145,6 +148,22 @@ namespace Relic.Gameplay.Data
                 return 0f;
 
             return (float)CurrentHP / MaxHP;
+        }
+
+
+        private void InitializeMonsterTraits()
+        {
+            if (StatusEffects == null)
+                StatusEffects = new List<StatusEffectRuntimeData>();
+
+            if (MonsterId == "Mon_01")
+            {
+                StatusEffects.Add(new StatusEffectRuntimeData("E_Split", 5));
+            }
+            else if (MonsterId == "Mon_06")
+            {
+                StatusEffects.Add(new StatusEffectRuntimeData("E_Explode", 3));
+            }
         }
 
         private void InitializePossibleSkills(MonsterMasterData masterData)
