@@ -94,7 +94,10 @@ public static class BattleEffectUtility
             return;
 
         if (AddOrStackStatus(target.RuntimeData.StatusEffects, effectId, stack, turnCount))
+        {
             PlayStatusVfx(ResolveUnitAnimator(target), effectId);
+            BattleHitImpactFeedback.PlayStatusHitFeedback(target.transform);
+        }
     }
 
     public static void AddStatusToMonster(
@@ -107,7 +110,10 @@ public static class BattleEffectUtility
             return;
 
         if (AddOrStackStatus(target.RuntimeData.StatusEffects, effectId, stack, turnCount))
+        {
             PlayStatusVfx(ResolveUnitAnimator(target), effectId);
+            BattleHitImpactFeedback.PlayStatusHitFeedback(target.transform);
+        }
 
         target.ShowAndRefreshHUD();
     }
@@ -178,7 +184,9 @@ public static class BattleEffectUtility
         {
             if (target.RuntimeData.IsDead)
                 animator.PlayDead();
-            else if (target.RuntimeData.CurrentHP == hpBefore)
+            else if (hpDamage > 0)
+                animator.PlayHit();
+            else if (shieldDamage > 0)
                 animator.PlayGuard();
             else
                 animator.PlayHit();
@@ -211,7 +219,9 @@ public static class BattleEffectUtility
         {
             if (target.RuntimeData.IsDead)
                 animator.PlayDead();
-            else if (target.RuntimeData.CurrentHP == hpBefore)
+            else if (hpDamage > 0)
+                animator.PlayHit();
+            else if (shieldDamage > 0)
                 animator.PlayGuard();
             else
                 animator.PlayHit();
@@ -386,6 +396,7 @@ public static class BattleEffectUtility
 
         target.RuntimeData.CurrentShield += shieldValue;
         PlayStatusVfx(ResolveUnitAnimator(target), "E_Armor");
+        BattleHitImpactFeedback.PlayStatusHitFeedback(target.transform);
     }
 
     public static void AddShieldToMonster(MonsterUnit target, int value)
@@ -400,6 +411,7 @@ public static class BattleEffectUtility
 
         target.RuntimeData.CurrentShield += shieldValue;
         PlayStatusVfx(ResolveUnitAnimator(target), "E_Armor");
+        BattleHitImpactFeedback.PlayStatusHitFeedback(target.transform);
         target.ShowAndRefreshHUD();
     }
 }

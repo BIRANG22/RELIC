@@ -70,6 +70,46 @@ public class ExecutionRangeGridTests
     }
 
     [Test]
+    public void RangePreview_ForcesHighlightMaterialBehindGridEffects()
+    {
+        GameObject cellObject = new("BackQueuedGridCell");
+        GameObject highlightObject = new("Highlight");
+        highlightObject.transform.SetParent(cellObject.transform);
+        Material originalMaterial = null;
+
+        try
+        {
+            cellObject.AddComponent<MeshRenderer>();
+            cellObject.AddComponent<BoxCollider>();
+
+            MeshRenderer highlightRenderer = highlightObject.AddComponent<MeshRenderer>();
+            originalMaterial = CreateQueueTestMaterial();
+            originalMaterial.renderQueue = 2450;
+            highlightRenderer.sharedMaterial = originalMaterial;
+
+            GridCell cell = cellObject.AddComponent<GridCell>();
+            cell.Initialize(null, 0, 0, 0);
+            cell.SetRangePreview(Color.red);
+
+            Material appliedMaterial = highlightRenderer.sharedMaterial;
+
+            Assert.That(appliedMaterial, Is.Not.Null);
+            Assert.That(appliedMaterial, Is.Not.SameAs(originalMaterial));
+            Assert.That(appliedMaterial.renderQueue, Is.EqualTo(2400));
+            Assert.That(appliedMaterial.GetFloat("_ZWrite"), Is.EqualTo(0f).Within(0.001f));
+            Assert.That(highlightRenderer.sortingLayerName, Is.EqualTo("Empty"));
+            Assert.That(highlightRenderer.sortingOrder, Is.EqualTo(-1000));
+        }
+        finally
+        {
+            Object.DestroyImmediate(cellObject);
+
+            if (originalMaterial != null)
+                Object.DestroyImmediate(originalMaterial);
+        }
+    }
+
+    [Test]
     public void BuildPlayerExecutionRange_UsesReservedMoveRangeForMoveCommand()
     {
         PlayerReservedCommand command = CreatePlayerMoveCommand(
@@ -175,6 +215,23 @@ public class ExecutionRangeGridTests
         Assert.That(actual.g, Is.EqualTo(expected.g).Within(0.001f));
         Assert.That(actual.b, Is.EqualTo(expected.b).Within(0.001f));
         Assert.That(actual.a, Is.EqualTo(1f).Within(0.001f));
+    }
+
+    private static Material CreateQueueTestMaterial()
+    {
+        Shader shader = Shader.Find("Universal Render Pipeline/Unlit");
+
+        if (shader == null)
+            shader = Shader.Find("Universal Render Pipeline/Lit");
+
+        if (shader == null)
+            shader = Shader.Find("Standard");
+
+        Assert.That(shader, Is.Not.Null, "A shader with _ZWrite support is required for this test.");
+
+        Material material = new(shader);
+        material.SetFloat("_ZWrite", 1f);
+        return material;
     }
 
     private static PlayerReservedCommand CreatePlayerMoveCommand(

@@ -32,6 +32,7 @@ public class BattleCameraController : MonoBehaviour
     [SerializeField] private float impactShakeStrength = 0.1f;
     [SerializeField] private float impactShakeFrequency = 20f;
     [SerializeField] private float impactHitStopDuration = 0.1f;
+    [SerializeField, Range(0f, 1f)] private float impactHitStopTimeScale = 0.08f;
     [SerializeField] private bool useUnscaledTimeForImpact = true;
 
     [Header("Character Selection Focus")]
@@ -654,7 +655,7 @@ public class BattleCameraController : MonoBehaviour
         if (hitStopRunning)
         {
             previousTimeScale = Time.timeScale;
-            Time.timeScale = 0f;
+            Time.timeScale = Mathf.Min(previousTimeScale, Mathf.Clamp01(impactHitStopTimeScale));
             isImpactHitStopActive = true;
         }
 
@@ -994,6 +995,7 @@ public class BattleCameraController : MonoBehaviour
         impactShakeStrength = Mathf.Max(0f, impactShakeStrength);
         impactShakeFrequency = Mathf.Max(1f, impactShakeFrequency);
         impactHitStopDuration = Mathf.Max(0f, impactHitStopDuration);
+        impactHitStopTimeScale = Mathf.Clamp01(impactHitStopTimeScale);
         monsterInfoFocusDuration = Mathf.Max(0f, monsterInfoFocusDuration);
         monsterInfoReturnDuration = Mathf.Max(0f, monsterInfoReturnDuration);
         monsterInfoFocusSideOffset = Mathf.Max(0f, monsterInfoFocusSideOffset);
