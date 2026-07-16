@@ -13,9 +13,9 @@ public class BattleHitImpactFeedback : MonoBehaviour
     [SerializeField] private float damageHitPushDistance = 0.18f;
     [SerializeField] private float attackerPushMultiplier = 0.65f;
     [SerializeField] private float targetPushMultiplier = 1f;
-    [SerializeField] private float damageHitPushOutDuration = 0.045f;
+    [SerializeField] private float damageHitPushOutDuration = 0.12f;
     [SerializeField] private float damageHitPushHoldDuration = 0.5f;
-    [SerializeField] private float damageHitPushReturnDuration = 0.09f;
+    [SerializeField] private float damageHitPushReturnDuration = 0.16f;
     [SerializeField] private AnimationCurve damageHitPushCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
     [Header("Buff Debuff Pulse")]
