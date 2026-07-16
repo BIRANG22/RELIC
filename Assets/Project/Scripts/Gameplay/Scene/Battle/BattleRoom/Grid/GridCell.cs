@@ -26,6 +26,7 @@ public class GridCell : MonoBehaviour
     [SerializeField] private int backSortingOrder = -1000;
 
     private MaterialPropertyBlock highlightPropertyBlock;
+    private Material defaultHighlightMaterial;
     private Renderer[] baseRenderers;
     private bool executionRangeTintActive;
     private readonly List<ExecutionRendererState> executionRendererStates = new();
@@ -49,6 +50,7 @@ public class GridCell : MonoBehaviour
         ApplyBackSorting();
 
         highlightPropertyBlock = new MaterialPropertyBlock();
+        CacheDefaultHighlightMaterial();
 
         SetNormal();
     }
@@ -58,6 +60,7 @@ public class GridCell : MonoBehaviour
         AutoFindHighlightIfNeeded();
         CacheBaseRenderers();
         ApplyBackSorting();
+        CacheDefaultHighlightMaterial();
     }
 
     private void OnMouseDown()
@@ -80,6 +83,7 @@ public class GridCell : MonoBehaviour
 
     public void SetNormal()
     {
+        RestoreDefaultHighlightMaterial();
         SetHighlightActive(false);
     }
 
@@ -90,12 +94,19 @@ public class GridCell : MonoBehaviour
 
     public void SetPreview(Color color)
     {
+        SetPreview(color, null);
+    }
+
+    public void SetPreview(Color color, Material materialOverride)
+    {
+        SetHighlightMaterial(materialOverride);
         SetHighlightColor(color);
         SetHighlightActive(true);
     }
 
     public void SetSelected()
     {
+        SetHighlightMaterial(null);
         SetHighlightColor(selectedColor);
         SetHighlightActive(true);
     }
@@ -107,6 +118,7 @@ public class GridCell : MonoBehaviour
 
     public void SetRangePreview(Color color)
     {
+        SetHighlightMaterial(null);
         SetHighlightColor(color);
         SetHighlightActive(true);
     }
@@ -209,6 +221,40 @@ public class GridCell : MonoBehaviour
         }
 
         baseRenderers = filteredRenderers.ToArray();
+    }
+
+
+    private void CacheDefaultHighlightMaterial()
+    {
+        if (highlightRenderer == null || defaultHighlightMaterial != null)
+            return;
+
+        defaultHighlightMaterial = highlightRenderer.sharedMaterial;
+    }
+
+    private void SetHighlightMaterial(Material materialOverride)
+    {
+        if (highlightRenderer == null)
+            return;
+
+        CacheDefaultHighlightMaterial();
+        highlightRenderer.sharedMaterial = materialOverride != null
+            ? materialOverride
+            : defaultHighlightMaterial;
+    }
+
+    private void RestoreDefaultHighlightMaterial()
+    {
+        if (highlightRenderer == null)
+            return;
+
+        CacheDefaultHighlightMaterial();
+
+        if (defaultHighlightMaterial != null &&
+            highlightRenderer.sharedMaterial != defaultHighlightMaterial)
+        {
+            highlightRenderer.sharedMaterial = defaultHighlightMaterial;
+        }
     }
 
     private void SetHighlightActive(bool active)
