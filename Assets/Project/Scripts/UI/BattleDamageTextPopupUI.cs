@@ -63,7 +63,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
 
     public static void Show(Transform target, int damage)
     {
-        if (target == null || damage <= 0)
+        if (target == null || damage < 0)
             return;
 
         BattleDamageTextPopupUI popup = GetOrCreateInstance();

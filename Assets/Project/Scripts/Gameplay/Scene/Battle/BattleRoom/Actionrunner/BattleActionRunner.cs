@@ -1690,6 +1690,8 @@ public class BattleActionRunner
             if (!HasAliveMonsterTarget(monsterTargets))
                 yield break;
 
+            List<Transform> feedbackTargets = new();
+
             if (attackerAnimator != null)
                 attackerAnimator.PlaySkillAction(command.SkillData);
 
@@ -1723,6 +1725,7 @@ public class BattleActionRunner
 
                 ExecutePlayerEffectSafely(effectId, context, command.SkillData.SkillId);
                 appliedAnyHit = true;
+                AddFeedbackTarget(feedbackTargets, monster.transform);
 
                 bool receivedDamage = monster.RuntimeData != null &&
                     (monster.RuntimeData.CurrentHP < hpBeforeHit ||
@@ -1745,8 +1748,10 @@ public class BattleActionRunner
             if (!appliedAnyHit)
                 yield break;
 
-            if (BattleCameraController.Instance != null)
-                yield return BattleCameraController.Instance.PlayDamageImpact();
+            yield return PlayDamageHitFeedback(
+                caster != null ? caster.transform : null,
+                feedbackTargets,
+                command.Direction);
 
             yield return new WaitForSeconds(HitCameraDelay);
         }
@@ -2502,9 +2507,6 @@ public class BattleActionRunner
 
                 monsterSkillEffectService.ApplyMonsterSkill(monster, command);
 
-                if (firstPlayerTarget != null && BattleCameraController.Instance != null)
-                    yield return BattleCameraController.Instance.PlayDamageImpact();
-
                 if (firstPlayerTarget != null)
                     yield return new WaitForSeconds(HitCameraDelay);
                 else
@@ -2569,11 +2571,17 @@ public class BattleActionRunner
             }
 
             bool hadCameraTarget = HasMonsterSkillCameraTarget(command);
+            List<Transform> feedbackTargets = BuildMonsterSkillFeedbackTargets(monster, command);
 
             monsterSkillEffectService.ApplyMonsterSkillDamageHit(monster, command, hitIndex);
 
-            if (BattleCameraController.Instance != null && hadCameraTarget)
-                yield return BattleCameraController.Instance.PlayDamageImpact();
+            if (hadCameraTarget)
+            {
+                yield return PlayDamageHitFeedback(
+                    monster != null ? monster.transform : null,
+                    feedbackTargets,
+                    GetMonsterImpactFallbackDirection(monster));
+            }
 
             yield return new WaitForSeconds(HitCameraDelay);
         }
@@ -2712,6 +2720,168 @@ public class BattleActionRunner
     private bool HasMonsterSkillCameraTarget(MonsterReservedCommand command)
     {
         return FindFirstAlivePlayerTarget(command) != null;
+    }
+
+    private IEnumerator PlayDamageHitFeedback(
+        Transform attacker,
+        IReadOnlyList<Transform> targets,
+        BattleDirection fallbackDirection)
+    {
+        yield return PlayDamageHitFeedback(
+            attacker,
+            targets,
+            BattleDirectionToHorizontal(fallbackDirection));
+    }
+
+    private IEnumerator PlayDamageHitFeedback(
+        Transform attacker,
+        IReadOnlyList<Transform> targets,
+        int fallbackHorizontalDirection)
+    {
+        yield return BattleHitImpactFeedback.PlayDamageHitFeedback(
+            attacker,
+            targets,
+            fallbackHorizontalDirection);
+    }
+
+    private static int BattleDirectionToHorizontal(BattleDirection direction)
+    {
+        return direction == BattleDirection.Left ? -1 : 1;
+    }
+
+    private static void AddFeedbackTarget(List<Transform> targets, Transform target)
+    {
+        if (targets == null || target == null)
+            return;
+
+        if (!targets.Contains(target))
+            targets.Add(target);
+    }
+
+    private int GetMonsterImpactFallbackDirection(MonsterUnit monster)
+    {
+        if (monster == null)
+            return 1;
+
+        BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
+
+        if (facing != null)
+            return facing.IsFacingRight ? 1 : -1;
+
+        if (monster.RuntimeData != null)
+            return BattleDirectionToHorizontal(monster.RuntimeData.Direction);
+
+        return 1;
+    }
+
+    private List<Transform> BuildMonsterSkillFeedbackTargets(
+        MonsterUnit caster,
+        MonsterReservedCommand command)
+    {
+        List<Transform> targets = new();
+
+        if (command == null || command.SkillData == null)
+            return targets;
+
+        switch (command.SkillData.Target)
+        {
+            case TargetType.PlayerParty:
+                AddPlayerFeedbackTargets(command, targets);
+                break;
+
+            case TargetType.EnemyParty:
+                AddMonsterFeedbackTargets(caster, command, targets);
+                break;
+
+            case TargetType.Self:
+                AddFeedbackTarget(targets, caster != null ? caster.transform : null);
+                break;
+        }
+
+        return targets;
+    }
+
+    private void AddPlayerFeedbackTargets(MonsterReservedCommand command, List<Transform> targets)
+    {
+        if (command == null || command.TargetGridIndices == null)
+            return;
+
+        BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            BattleCharacter character = characters[i];
+
+            if (character == null || character.RuntimeData == null)
+                continue;
+
+            if (character.RuntimeData.CurrentHP <= 0)
+                continue;
+
+            if (command.TargetGridIndices.Contains(character.CurrentGridIndex))
+                AddFeedbackTarget(targets, character.transform);
+        }
+    }
+
+    private void AddMonsterFeedbackTargets(
+        MonsterUnit caster,
+        MonsterReservedCommand command,
+        List<Transform> targets)
+    {
+        if (command == null || command.TargetGridIndices == null)
+            return;
+
+        MonsterUnit[] monsters = Object.FindObjectsByType<MonsterUnit>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < monsters.Length; i++)
+        {
+            MonsterUnit monster = monsters[i];
+
+            if (monster == null || monster == caster || monster.RuntimeData == null)
+                continue;
+
+            if (monster.RuntimeData.IsDead)
+                continue;
+
+            if (IsMonsterInTargetGridIndices(monster, command.TargetGridIndices))
+                AddFeedbackTarget(targets, monster.transform);
+        }
+    }
+
+    private static bool IsMonsterInTargetGridIndices(
+        MonsterUnit monster,
+        IReadOnlyCollection<int> targetGridIndices)
+    {
+        if (monster == null || targetGridIndices == null)
+            return false;
+
+        for (int i = 0; i < monster.OccupiedGridIndices.Count; i++)
+        {
+            if (ContainsGridIndex(targetGridIndices, monster.OccupiedGridIndices[i]))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool ContainsGridIndex(IReadOnlyCollection<int> gridIndices, int gridIndex)
+    {
+        if (gridIndices == null)
+            return false;
+
+        foreach (int candidate in gridIndices)
+        {
+            if (candidate == gridIndex)
+                return true;
+        }
+
+        return false;
     }
 
     private BattleCharacter FindFirstAlivePlayerTarget(MonsterReservedCommand command)
@@ -3025,8 +3195,10 @@ public class BattleActionRunner
             ApplyMonsterDashDamage(command, monster, hitPlayer);
             ApplyMonsterDashKnockback(command, monster, hitPlayer);
 
-            if (BattleCameraController.Instance != null)
-                yield return BattleCameraController.Instance.PlayDamageImpact();
+            yield return PlayDamageHitFeedback(
+                monster != null ? monster.transform : null,
+                new List<Transform> { hitPlayer.transform },
+                GetMonsterImpactFallbackDirection(monster));
 
             yield return new WaitForSeconds(HitCameraDelay);
 
