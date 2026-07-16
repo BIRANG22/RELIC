@@ -27,15 +27,37 @@ public static class MonsterSkillRangeService
         if (monster == null || skillData == null || gridManager == null)
             return result;
 
-        RangeDatabase resolvedRangeDatabase = rangeDatabase ?? DataManager.Instance?.RangeDatabase;
-
         if (skillData.RangeId == "Range_All")
             return GetAllTargetGridIndices(skillData.Target);
 
-        if (skillData.RangeId == "Range_X-axis")
+        return BuildRangeGridIndices(
+            monster,
+            skillData.RangeId,
+            gridManager,
+            facingRight,
+            explicitOriginGridIndex,
+            rangeDatabase);
+    }
+
+    public static List<int> BuildRangeGridIndices(
+        MonsterUnit monster,
+        string rangeId,
+        GridManager gridManager,
+        bool facingRight,
+        int explicitOriginGridIndex = -1,
+        RangeDatabase rangeDatabase = null)
+    {
+        List<int> result = new();
+
+        if (monster == null || string.IsNullOrWhiteSpace(rangeId) || gridManager == null)
+            return result;
+
+        RangeDatabase resolvedRangeDatabase = rangeDatabase ?? DataManager.Instance?.RangeDatabase;
+
+        if (rangeId == "Range_X-axis")
             return GetXAxisRange(GetOriginGridIndex(monster, explicitOriginGridIndex), gridManager, facingRight);
 
-        SkillRangeData rangeData = resolvedRangeDatabase?.Get(skillData.RangeId);
+        SkillRangeData rangeData = resolvedRangeDatabase?.Get(rangeId);
 
         if (rangeData == null || rangeData.Positions == null)
             return result;

@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
+using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class PlayerSkillReservationController : MonoBehaviour
 {
@@ -15,6 +17,46 @@ public class PlayerSkillReservationController : MonoBehaviour
     [SerializeField] private SkillListPanel skillListPanel;
     [SerializeField] private bool keepSkillListOpenAfterReservationClick = true;
     [SerializeField] private int keepSkillListOpenIgnoreFrames = 1;
+
+    [Header("Range Highlight Material")]
+    [Tooltip("이동 스킬의 선택 가능 그리드에만 사용하는 머테리얼입니다. 비워두면 기존 하이라이트 머테리얼을 사용합니다.")]
+    [SerializeField] private Material moveHighlightMaterial;
+
+    [Header("Move Hover Ping")]
+    [Tooltip("이동 가능한 그리드에 마우스를 올렸을 때 고정해서 표시할 기본 핑 이미지입니다.")]
+    [FormerlySerializedAs("moveHoverPingSprite")]
+    [SerializeField] private Sprite moveHoverPingBaseSprite;
+    [FormerlySerializedAs("moveHoverPingOffset")]
+    [SerializeField] private Vector3 moveHoverPingBaseOffset = Vector3.zero;
+    [Tooltip("기본 핑 이미지의 크기입니다. 1은 원본 크기입니다.")]
+    [FormerlySerializedAs("moveHoverPingScale")]
+    [Min(0f)]
+    [SerializeField] private float moveHoverPingBaseScale = 0.5f;
+    [FormerlySerializedAs("moveHoverPingSortingOrder")]
+    [SerializeField] private int moveHoverPingBaseSortingOrder = 10;
+
+    [Tooltip("기본 핑과 함께 표시되며 위아래로 둥둥 움직이는 보조 핑 이미지입니다.")]
+    [SerializeField] private Sprite moveHoverPingFloatingSprite;
+    [SerializeField] private Vector3 moveHoverPingFloatingOffset = Vector3.zero;
+    [Tooltip("보조 핑 이미지의 크기입니다. 1은 원본 크기입니다.")]
+    [Min(0f)]
+    [SerializeField] private float moveHoverPingFloatingScale = 0.5f;
+    [SerializeField] private int moveHoverPingFloatingSortingOrder = 11;
+    [Tooltip("보조 핑이 기준 위치에서 위아래로 움직이는 거리입니다.")]
+    [Min(0f)]
+    [SerializeField] private float moveHoverPingFloatHeight = 0.15f;
+    [Tooltip("보조 핑이 위아래로 움직이는 속도입니다.")]
+    [Min(0f)]
+    [SerializeField] private float moveHoverPingFloatSpeed = 2f;
+
+    [Header("Move Hover Cost Text")]
+    [Tooltip("이동 코스트 텍스트에 사용할 TMP 폰트입니다. 비워두면 TMP 기본 폰트를 사용합니다.")]
+    [SerializeField] private TMP_FontAsset moveHoverCostFont;
+    [SerializeField] private Vector3 moveHoverCostTextOffset = new Vector3(0f, 0.35f, 0f);
+    [Min(0f)]
+    [SerializeField] private float moveHoverCostFontSize = 4f;
+    [SerializeField] private Color moveHoverCostTextColor = Color.white;
+    [SerializeField] private int moveHoverCostSortingOrder = 12;
 
     [Header("Range Highlight Colors")]
     [SerializeField] private Color moveHighlightColor = new Color(0.698f, 0.698f, 0.243f, 1f);
@@ -32,6 +74,12 @@ public class PlayerSkillReservationController : MonoBehaviour
     private readonly List<int> currentMoveSelectableIndices = new();
     private readonly Dictionary<int, List<List<Vector2Int>>> currentMovePathCandidatesByTargetIndex = new();
     private bool isMoveTargetMonsterVisualActive;
+    private SpriteRenderer moveHoverPingBaseInstance;
+    private SpriteRenderer moveHoverPingFloatingInstance;
+    private TextMeshPro moveHoverCostTextInstance;
+    private int moveHoverPingGridIndex = -1;
+    private Vector3 moveHoverPingFloatingBasePosition;
+    private float moveHoverPingFloatStartTime;
 
     private int currentMoveDistancePerCommand = 1;
     private int currentMoveReservationCapacity = 1;
@@ -51,6 +99,7 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     private void OnDisable()
     {
+        HideMoveHoverPing();
         SetMoveTargetMonsterVisualActive(false);
 
         if (gridManager != null)
@@ -59,6 +108,27 @@ public class PlayerSkillReservationController : MonoBehaviour
             gridManager.OnCellHovered -= HandleCellHovered;
             gridManager.OnCellHoverExited -= HandleCellHoverExited;
         }
+    }
+
+    private void Update()
+    {
+        UpdateMoveHoverPingFloatingAnimation();
+    }
+
+    private void UpdateMoveHoverPingFloatingAnimation()
+    {
+        if (moveHoverPingFloatingInstance == null ||
+            !moveHoverPingFloatingInstance.gameObject.activeSelf)
+        {
+            return;
+        }
+
+        float elapsedTime = Time.unscaledTime - moveHoverPingFloatStartTime;
+        float floatingOffsetY = Mathf.Sin(elapsedTime * Mathf.Max(0f, moveHoverPingFloatSpeed)) *
+                                Mathf.Max(0f, moveHoverPingFloatHeight);
+
+        moveHoverPingFloatingInstance.transform.position =
+            moveHoverPingFloatingBasePosition + Vector3.up * floatingOffsetY;
     }
 
     private void EnsureSkillListPanel()
@@ -312,7 +382,10 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (currentMoveReservationCapacity <= 0)
         {
             if (currentMoveSelectableIndices.Count > 0 && rangePreview != null)
-                rangePreview.ShowDirectionCells(currentMoveSelectableIndices, GetHighlightColor(currentSkillData));
+                rangePreview.ShowDirectionCells(
+                    currentMoveSelectableIndices,
+                    GetHighlightColor(currentSkillData),
+                    moveHighlightMaterial);
 
             if (currentMoveSelectableIndices.Count > 0)
                 return;
@@ -356,7 +429,10 @@ public class PlayerSkillReservationController : MonoBehaviour
             ShowBattleWarning("선택 가능한 칸이 없습니다.");
 
         if (rangePreview != null)
-            rangePreview.ShowDirectionCells(currentMoveSelectableIndices, GetHighlightColor(currentSkillData));
+            rangePreview.ShowDirectionCells(
+                currentMoveSelectableIndices,
+                GetHighlightColor(currentSkillData),
+                moveHighlightMaterial);
     }
 
     private void AddCurrentCasterSelfFlipCandidate(ISet<int> blockedDestinationGridIndices)
@@ -400,7 +476,20 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     private void HandleCellHovered(GridCell cell)
     {
-        if (cell == null || !IsGeneralSelectionSkillActive())
+        if (cell == null)
+            return;
+
+        if (IsMoveSkillSelectionActive())
+        {
+            if (currentMoveSelectableIndices.Contains(cell.Index))
+                ShowMoveHoverPing(cell.Index);
+            else
+                HideMoveHoverPing();
+
+            return;
+        }
+
+        if (!IsGeneralSelectionSkillActive())
             return;
 
         ShowSelectionRangeAt(cell.Index);
@@ -408,11 +497,156 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     private void HandleCellHoverExited(GridCell cell)
     {
+        if (IsMoveSkillSelectionActive())
+        {
+            if (cell == null || cell.Index == moveHoverPingGridIndex)
+                HideMoveHoverPing();
+
+            return;
+        }
+
         if (!IsGeneralSelectionSkillActive())
             return;
 
         if (rangePreview != null)
             rangePreview.ClearRangeOnly();
+    }
+
+    private void ShowMoveHoverPing(int gridIndex)
+    {
+        if (gridManager == null ||
+            (moveHoverPingBaseSprite == null && moveHoverPingFloatingSprite == null))
+        {
+            HideMoveHoverPing();
+            return;
+        }
+
+        if (!currentMoveSelectableIndices.Contains(gridIndex))
+        {
+            HideMoveHoverPing();
+            return;
+        }
+
+        Vector3 gridWorldPosition = gridManager.GetWorldPositionByIndex(gridIndex);
+
+        if (moveHoverPingBaseSprite != null)
+        {
+            moveHoverPingBaseInstance = EnsureMoveHoverPingRenderer(
+                moveHoverPingBaseInstance,
+                "Move Hover Ping Base");
+
+            moveHoverPingBaseInstance.sprite = moveHoverPingBaseSprite;
+            moveHoverPingBaseInstance.sortingOrder = moveHoverPingBaseSortingOrder;
+            moveHoverPingBaseInstance.transform.position = gridWorldPosition + moveHoverPingBaseOffset;
+            moveHoverPingBaseInstance.transform.localScale =
+                Vector3.one * Mathf.Max(0f, moveHoverPingBaseScale);
+            moveHoverPingBaseInstance.gameObject.SetActive(true);
+        }
+        else if (moveHoverPingBaseInstance != null)
+        {
+            moveHoverPingBaseInstance.gameObject.SetActive(false);
+        }
+
+        if (moveHoverPingFloatingSprite != null)
+        {
+            moveHoverPingFloatingInstance = EnsureMoveHoverPingRenderer(
+                moveHoverPingFloatingInstance,
+                "Move Hover Ping Floating");
+
+            moveHoverPingFloatingInstance.sprite = moveHoverPingFloatingSprite;
+            moveHoverPingFloatingInstance.sortingOrder = moveHoverPingFloatingSortingOrder;
+            moveHoverPingFloatingInstance.transform.localScale =
+                Vector3.one * Mathf.Max(0f, moveHoverPingFloatingScale);
+
+            moveHoverPingFloatingBasePosition = gridWorldPosition + moveHoverPingFloatingOffset;
+            moveHoverPingFloatingInstance.transform.position = moveHoverPingFloatingBasePosition;
+            moveHoverPingFloatStartTime = Time.unscaledTime;
+            moveHoverPingFloatingInstance.gameObject.SetActive(true);
+        }
+        else if (moveHoverPingFloatingInstance != null)
+        {
+            moveHoverPingFloatingInstance.gameObject.SetActive(false);
+        }
+
+        ShowMoveHoverCostText(gridIndex, gridWorldPosition);
+        moveHoverPingGridIndex = gridIndex;
+    }
+
+    private void ShowMoveHoverCostText(int gridIndex, Vector3 gridWorldPosition)
+    {
+        int moveCost = GetMoveHoverCost(gridIndex);
+
+        if (moveCost < 0)
+        {
+            if (moveHoverCostTextInstance != null)
+                moveHoverCostTextInstance.gameObject.SetActive(false);
+
+            return;
+        }
+
+        moveHoverCostTextInstance = EnsureMoveHoverCostText();
+        moveHoverCostTextInstance.text = moveCost.ToString();
+        moveHoverCostTextInstance.fontSize = Mathf.Max(0f, moveHoverCostFontSize);
+        moveHoverCostTextInstance.color = moveHoverCostTextColor;
+        moveHoverCostTextInstance.transform.position = gridWorldPosition + moveHoverCostTextOffset;
+        moveHoverCostTextInstance.renderer.sortingOrder = moveHoverCostSortingOrder;
+        moveHoverCostTextInstance.gameObject.SetActive(true);
+    }
+
+    private int GetMoveHoverCost(int gridIndex)
+    {
+        if (gridIndex == currentCasterGridIndex)
+            return 0;
+
+        if (!currentMovePathCandidatesByTargetIndex.TryGetValue(gridIndex, out List<List<Vector2Int>> pathCandidates))
+            pathCandidates = BuildPreferredMovePathCandidates(gridIndex);
+
+        List<Vector2Int> movePath = GetFirstReservableMovePath(pathCandidates);
+        return movePath == null ? -1 : GetEffectiveMoveReservationCost(movePath);
+    }
+
+    private TextMeshPro EnsureMoveHoverCostText()
+    {
+        if (moveHoverCostTextInstance != null)
+            return moveHoverCostTextInstance;
+
+        GameObject textObject = new GameObject("Move Hover Cost Text");
+        textObject.transform.SetParent(transform, false);
+
+        moveHoverCostTextInstance = textObject.AddComponent<TextMeshPro>();
+        moveHoverCostTextInstance.alignment = TextAlignmentOptions.Center;
+        moveHoverCostTextInstance.textWrappingMode = TextWrappingModes.NoWrap;
+
+        if (moveHoverCostFont != null)
+            moveHoverCostTextInstance.font = moveHoverCostFont;
+
+        return moveHoverCostTextInstance;
+    }
+
+    private SpriteRenderer EnsureMoveHoverPingRenderer(
+        SpriteRenderer currentRenderer,
+        string objectName)
+    {
+        if (currentRenderer != null)
+            return currentRenderer;
+
+        GameObject pingObject = new GameObject(objectName);
+        pingObject.transform.SetParent(transform, false);
+        return pingObject.AddComponent<SpriteRenderer>();
+    }
+
+    private void HideMoveHoverPing()
+    {
+        moveHoverPingGridIndex = -1;
+
+        if (moveHoverPingBaseInstance != null)
+            moveHoverPingBaseInstance.gameObject.SetActive(false);
+
+        if (moveHoverPingFloatingInstance != null)
+            moveHoverPingFloatingInstance.gameObject.SetActive(false);
+
+        if (moveHoverCostTextInstance != null)
+            moveHoverCostTextInstance.gameObject.SetActive(false);
     }
 
     private bool IsGeneralSelectionSkillActive()
@@ -1963,6 +2197,11 @@ public class PlayerSkillReservationController : MonoBehaviour
     }
 
 
+    public bool IsSkillSelectionActive()
+    {
+        return currentSkillData != null;
+    }
+
     public bool IsMoveSkillSelectionActive()
     {
         return currentSkillData != null && IsMoveSkill(currentSkillData);
@@ -2013,6 +2252,7 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     public void ClearPreview()
     {
+        HideMoveHoverPing();
         SetMoveTargetMonsterVisualActive(false);
 
         currentUserRuntime = null;

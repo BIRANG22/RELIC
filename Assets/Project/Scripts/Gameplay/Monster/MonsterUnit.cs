@@ -15,6 +15,10 @@ namespace Relic.Gameplay.Monster
         [Header("Timeline Hover Highlight")]
         [SerializeField] private GameObject timelineHoverHighlightObject;
 
+        [Header("Mouse Hover Attack Range")]
+        [SerializeField] private bool showAttackRangeOnHover = true;
+        [SerializeField] private Color attackRangeHoverColor = new Color32(178, 62, 69, 255);
+
         [Header("Reservation Visual")]
         [SerializeField] private bool dimMonsterDuringMoveTargetSelection = true;
         [SerializeField, Range(0f, 1f)] private float reservationAlpha = 0.45f;
@@ -33,6 +37,10 @@ namespace Relic.Gameplay.Monster
         private bool isTemporaryHUDVisible;
         private MaterialPropertyBlock reservationPropertyBlock;
         private bool reservationVisualActive;
+        private RangePreview hoverRangePreview;
+        private GridManager hoverGridManager;
+        private PlayerSkillReservationController reservationController;
+        private bool isAttackRangePreviewVisible;
 
         private static MonsterUnit selectedMonster;
         private static int selectedMonsterClickFrame = -1000;
@@ -166,6 +174,7 @@ namespace Relic.Gameplay.Monster
 
         private void OnDisable()
         {
+            HideAttackRangePreview();
             HideTemporaryHUD();
 
             if (selectedMonster == this)
@@ -179,6 +188,7 @@ namespace Relic.Gameplay.Monster
 
         private void OnDestroy()
         {
+            HideAttackRangePreview();
             HideTemporaryHUD();
 
             if (selectedMonster == this)
@@ -301,10 +311,13 @@ namespace Relic.Gameplay.Monster
                 return;
 
             SelectThisMonster();
+            ShowAttackRangePreview();
         }
 
         private void OnMouseExit()
         {
+            HideAttackRangePreview();
+
             if (UIPanelButton.IsMenuPanelOpen)
                 return;
 
@@ -315,6 +328,70 @@ namespace Relic.Gameplay.Monster
                 return;
 
             DeselectCurrentMonster();
+        }
+
+
+        private void ShowAttackRangePreview()
+        {
+            HideAttackRangePreview();
+
+            if (!showAttackRangeOnHover || RuntimeData == null || RuntimeData.IsDead)
+                return;
+
+            if (string.IsNullOrWhiteSpace(RuntimeData.AttackRangeId))
+                return;
+
+            FindHoverRangeReferences();
+
+            if (hoverRangePreview == null || hoverGridManager == null)
+                return;
+
+            if (reservationController != null && reservationController.IsSkillSelectionActive())
+                return;
+
+            if (DataManager.Instance == null || DataManager.Instance.RangeDatabase == null)
+                return;
+
+            bool facingRight = RuntimeData.Direction == BattleDirection.Right;
+            List<int> rangeIndices = MonsterSkillRangeService.BuildRangeGridIndices(
+                this,
+                RuntimeData.AttackRangeId,
+                hoverGridManager,
+                facingRight,
+                MainGridIndex,
+                DataManager.Instance.RangeDatabase);
+
+            if (rangeIndices.Count <= 0)
+                return;
+
+            hoverRangePreview.ShowRangeCells(rangeIndices, attackRangeHoverColor);
+            isAttackRangePreviewVisible = true;
+        }
+
+        private void HideAttackRangePreview()
+        {
+            if (!isAttackRangePreviewVisible)
+                return;
+
+            if (hoverRangePreview != null)
+                hoverRangePreview.ClearRangeOnly();
+
+            isAttackRangePreviewVisible = false;
+        }
+
+        private void FindHoverRangeReferences()
+        {
+            if (hoverRangePreview == null)
+                hoverRangePreview = Object.FindFirstObjectByType<RangePreview>(FindObjectsInactive.Include);
+
+            if (hoverGridManager == null)
+                hoverGridManager = Object.FindFirstObjectByType<GridManager>(FindObjectsInactive.Include);
+
+            if (reservationController == null)
+            {
+                reservationController = Object.FindFirstObjectByType<PlayerSkillReservationController>(
+                    FindObjectsInactive.Include);
+            }
         }
 
         private bool IsPointerOverUI()
