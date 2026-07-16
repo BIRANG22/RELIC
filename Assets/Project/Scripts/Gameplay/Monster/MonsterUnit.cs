@@ -17,7 +17,6 @@ namespace Relic.Gameplay.Monster
 
         [Header("Mouse Hover Attack Range")]
         [SerializeField] private bool showAttackRangeOnHover = true;
-        [SerializeField] private Color attackRangeHoverColor = new Color32(178, 62, 69, 255);
 
         [Header("Reservation Visual")]
         [SerializeField] private bool dimMonsterDuringMoveTargetSelection = true;
@@ -37,6 +36,7 @@ namespace Relic.Gameplay.Monster
         private bool isTemporaryHUDVisible;
         private MaterialPropertyBlock reservationPropertyBlock;
         private bool reservationVisualActive;
+        private readonly Dictionary<SpriteRenderer, float> originalSpriteRendererAlphas = new();
         private RangePreview hoverRangePreview;
         private GridManager hoverGridManager;
         private PlayerSkillReservationController reservationController;
@@ -364,7 +364,7 @@ namespace Relic.Gameplay.Monster
             if (rangeIndices.Count <= 0)
                 return;
 
-            hoverRangePreview.ShowRangeCells(rangeIndices, attackRangeHoverColor);
+            hoverRangePreview.ShowRangeCells(rangeIndices);
             isAttackRangePreviewVisible = true;
         }
 
@@ -568,8 +568,16 @@ namespace Relic.Gameplay.Monster
                 if (spriteRenderer == null)
                     continue;
 
+                if (!originalSpriteRendererAlphas.TryGetValue(spriteRenderer, out float originalAlpha))
+                {
+                    originalAlpha = spriteRenderer.color.a;
+                    originalSpriteRendererAlphas.Add(spriteRenderer, originalAlpha);
+                }
+
                 Color color = spriteRenderer.color;
-                color.a = alpha;
+                color.a = reservation && dimMonsterDuringMoveTargetSelection
+                    ? originalAlpha * reservationAlpha
+                    : originalAlpha;
                 spriteRenderer.color = color;
             }
 
