@@ -86,6 +86,10 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     private const string MoveSkillLevelOneId = "S_Move_1";
     private const string MoveSkillLevelTwoId = "S_Move_2";
+    private const string MoveHoverPingSortingLayerName = "Unit";
+    private const float MoveHoverPingYSortMultiplier = 100f;
+    private const int MoveHoverPingDefaultSortingOffset = 10;
+    private const int MoveHoverPingLegacyFrontSortingOrderThreshold = 1000;
 
     private void OnEnable()
     {
@@ -536,7 +540,11 @@ public class PlayerSkillReservationController : MonoBehaviour
                 "Move Hover Ping Base");
 
             moveHoverPingBaseInstance.sprite = moveHoverPingBaseSprite;
-            moveHoverPingBaseInstance.sortingOrder = moveHoverPingBaseSortingOrder;
+            ApplyMoveHoverYSort(
+                moveHoverPingBaseInstance,
+                gridWorldPosition.y,
+                moveHoverPingBaseSortingOrder,
+                0);
             moveHoverPingBaseInstance.transform.position = gridWorldPosition + moveHoverPingBaseOffset;
             moveHoverPingBaseInstance.transform.localScale =
                 Vector3.one * Mathf.Max(0f, moveHoverPingBaseScale);
@@ -554,7 +562,11 @@ public class PlayerSkillReservationController : MonoBehaviour
                 "Move Hover Ping Floating");
 
             moveHoverPingFloatingInstance.sprite = moveHoverPingFloatingSprite;
-            moveHoverPingFloatingInstance.sortingOrder = moveHoverPingFloatingSortingOrder;
+            ApplyMoveHoverYSort(
+                moveHoverPingFloatingInstance,
+                gridWorldPosition.y,
+                moveHoverPingFloatingSortingOrder,
+                1);
             moveHoverPingFloatingInstance.transform.localScale =
                 Vector3.one * Mathf.Max(0f, moveHoverPingFloatingScale);
 
@@ -589,7 +601,11 @@ public class PlayerSkillReservationController : MonoBehaviour
         moveHoverCostTextInstance.fontSize = Mathf.Max(0f, moveHoverCostFontSize);
         moveHoverCostTextInstance.color = moveHoverCostTextColor;
         moveHoverCostTextInstance.transform.position = gridWorldPosition + moveHoverCostTextOffset;
-        moveHoverCostTextInstance.renderer.sortingOrder = moveHoverCostSortingOrder;
+        ApplyMoveHoverYSort(
+            moveHoverCostTextInstance.renderer,
+            gridWorldPosition.y,
+            moveHoverCostSortingOrder,
+            2);
         moveHoverCostTextInstance.gameObject.SetActive(true);
     }
 
@@ -633,6 +649,32 @@ public class PlayerSkillReservationController : MonoBehaviour
         GameObject pingObject = new GameObject(objectName);
         pingObject.transform.SetParent(transform, false);
         return pingObject.AddComponent<SpriteRenderer>();
+    }
+
+    private static void ApplyMoveHoverYSort(
+        Renderer renderer,
+        float sortingWorldY,
+        int configuredSortingOffset,
+        int fallbackOffset)
+    {
+        if (renderer == null)
+            return;
+
+        renderer.sortingLayerName = MoveHoverPingSortingLayerName;
+        renderer.sortingOrder = BattleWorldVfxSortUtility.CalculateSortingOrder(
+            sortingWorldY,
+            MoveHoverPingYSortMultiplier,
+            ResolveMoveHoverSortingOffset(configuredSortingOffset, fallbackOffset));
+    }
+
+    private static int ResolveMoveHoverSortingOffset(
+        int configuredSortingOffset,
+        int fallbackOffset)
+    {
+        if (Mathf.Abs(configuredSortingOffset) >= MoveHoverPingLegacyFrontSortingOrderThreshold)
+            return MoveHoverPingDefaultSortingOffset + Mathf.Max(0, fallbackOffset);
+
+        return configuredSortingOffset;
     }
 
     private void HideMoveHoverPing()

@@ -6,20 +6,27 @@ using UnityEngine.Rendering;
 
 public class GridHighlightMaterialTests
 {
-    private const string HighlightMaterialPath = "Assets/Project/Art/Materials/grid/M_grid1.mat";
+    private static readonly string[] RangePreviewMaterialPaths =
+    {
+        "Assets/Project/Art/Materials/Grid/M_grid_range.mat",
+        "Assets/Project/Art/Materials/Grid/M_grid_move.mat"
+    };
 
     [Test]
-    public void GridHighlightMaterial_IsOpaqueAndRendersBeforeTransparentUnits()
+    public void RangePreviewMaterials_RenderBehindBattleObjectsWithoutWritingDepth()
     {
-        Material material = AssetDatabase.LoadAssetAtPath<Material>(HighlightMaterialPath);
+        for (int i = 0; i < RangePreviewMaterialPaths.Length; i++)
+        {
+            Material material = AssetDatabase.LoadAssetAtPath<Material>(RangePreviewMaterialPaths[i]);
 
-        Assert.That(material, Is.Not.Null);
-        Assert.That(material.renderQueue, Is.EqualTo(2499));
-        Assert.That(material.GetFloat("_Surface"), Is.EqualTo(0f).Within(0.001f));
-        Assert.That(material.GetFloat("_ZWrite"), Is.EqualTo(0f).Within(0.001f));
-        Assert.That(material.GetFloat("_alpha"), Is.EqualTo(1f).Within(0.001f));
-        Assert.That(material.GetFloat("_SrcBlend"), Is.EqualTo((float)BlendMode.One).Within(0.001f));
-        Assert.That(material.GetFloat("_DstBlend"), Is.EqualTo((float)BlendMode.Zero).Within(0.001f));
+            Assert.That(material, Is.Not.Null, RangePreviewMaterialPaths[i]);
+            Assert.That(material.renderQueue, Is.EqualTo(2400), RangePreviewMaterialPaths[i]);
+            Assert.That(material.GetFloat("_Surface"), Is.EqualTo(0f).Within(0.001f), RangePreviewMaterialPaths[i]);
+            Assert.That(material.GetFloat("_ZWrite"), Is.EqualTo(0f).Within(0.001f), RangePreviewMaterialPaths[i]);
+            Assert.That(material.GetFloat("_alpha"), Is.EqualTo(1f).Within(0.001f), RangePreviewMaterialPaths[i]);
+            Assert.That(material.GetFloat("_SrcBlend"), Is.EqualTo((float)BlendMode.One).Within(0.001f), RangePreviewMaterialPaths[i]);
+            Assert.That(material.GetFloat("_DstBlend"), Is.EqualTo((float)BlendMode.Zero).Within(0.001f), RangePreviewMaterialPaths[i]);
+        }
     }
 }
 #endif
