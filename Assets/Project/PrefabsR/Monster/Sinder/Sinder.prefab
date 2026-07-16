@@ -347,7 +347,7 @@ GameObject:
   - component: {fileID: 1718523480768826163}
   - component: {fileID: 2423722508837748408}
   m_Layer: 5
-  m_Name: Scuttle
+  m_Name: Sinder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
