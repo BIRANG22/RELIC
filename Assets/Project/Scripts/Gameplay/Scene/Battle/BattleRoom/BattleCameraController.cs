@@ -655,6 +655,7 @@ public class BattleCameraController : MonoBehaviour
         if (hitStopRunning)
         {
             previousTimeScale = Time.timeScale;
+            BattleVfxPlaybackPauseController.PauseAll();
             Time.timeScale = Mathf.Min(previousTimeScale, Mathf.Clamp01(impactHitStopTimeScale));
             isImpactHitStopActive = true;
         }
@@ -798,6 +799,7 @@ public class BattleCameraController : MonoBehaviour
             return;
 
         Time.timeScale = previousTimeScale;
+        BattleVfxPlaybackPauseController.ResumeAll();
         isImpactHitStopActive = false;
     }
 
