@@ -218,42 +218,42 @@ MonoBehaviour:
   - SkillId: S_Core_40
     Icon: {fileID: 21300000, guid: 7b77a9d5610c0104ca705ddee7e8694e, type: 3}
   - SkillId: S_Core_41
-    Icon: {fileID: 21300000, guid: e8e656be28ec582468e282fc966e185b, type: 3}
+    Icon: {fileID: 21300000, guid: 46a1d1faadf219d47b439b416f9cafb9, type: 3}
   - SkillId: S_Core_42
-    Icon: {fileID: 21300000, guid: e8e656be28ec582468e282fc966e185b, type: 3}
+    Icon: {fileID: 21300000, guid: 46a1d1faadf219d47b439b416f9cafb9, type: 3}
   - SkillId: S_Core_43
-    Icon: {fileID: 21300000, guid: e8e656be28ec582468e282fc966e185b, type: 3}
+    Icon: {fileID: 21300000, guid: 34ce16744a97d474eab9aff657b3aff9, type: 3}
   - SkillId: S_Core_44
-    Icon: {fileID: 21300000, guid: e8e656be28ec582468e282fc966e185b, type: 3}
+    Icon: {fileID: 21300000, guid: 34ce16744a97d474eab9aff657b3aff9, type: 3}
   - SkillId: S_Core_45
-    Icon: {fileID: 21300000, guid: e8e656be28ec582468e282fc966e185b, type: 3}
+    Icon: {fileID: 21300000, guid: f9349f66c07555a4b95d257f571bdc47, type: 3}
   - SkillId: S_Core_46
-    Icon: {fileID: 21300000, guid: e8e656be28ec582468e282fc966e185b, type: 3}
+    Icon: {fileID: 21300000, guid: f9349f66c07555a4b95d257f571bdc47, type: 3}
   - SkillId: S_Core_47
-    Icon: {fileID: 21300000, guid: e8e656be28ec582468e282fc966e185b, type: 3}
+    Icon: {fileID: 21300000, guid: 0e4dc7023188f974792df434224dbc2c, type: 3}
   - SkillId: S_Core_48
-    Icon: {fileID: 21300000, guid: e8e656be28ec582468e282fc966e185b, type: 3}
+    Icon: {fileID: 21300000, guid: 0e4dc7023188f974792df434224dbc2c, type: 3}
   - SkillId: S_Core_49
-    Icon: {fileID: 21300000, guid: e8e656be28ec582468e282fc966e185b, type: 3}
+    Icon: {fileID: 21300000, guid: 43186ecb71af3564394cf2286f1d86ca, type: 3}
   - SkillId: S_Core_50
-    Icon: {fileID: 21300000, guid: e8e656be28ec582468e282fc966e185b, type: 3}
+    Icon: {fileID: 21300000, guid: 43186ecb71af3564394cf2286f1d86ca, type: 3}
   - SkillId: S_Core_51
-    Icon: {fileID: 21300000, guid: e8e656be28ec582468e282fc966e185b, type: 3}
+    Icon: {fileID: 21300000, guid: 93ac9ea15b69d274da320267c4e199c2, type: 3}
   - SkillId: S_Core_52
-    Icon: {fileID: 21300000, guid: e8e656be28ec582468e282fc966e185b, type: 3}
+    Icon: {fileID: 21300000, guid: 93ac9ea15b69d274da320267c4e199c2, type: 3}
   - SkillId: S_Core_53
-    Icon: {fileID: 21300000, guid: e8e656be28ec582468e282fc966e185b, type: 3}
+    Icon: {fileID: 21300000, guid: 40e8befbe13e63b4aa5584c5cc2d7ee8, type: 3}
   - SkillId: S_Core_54
-    Icon: {fileID: 21300000, guid: e8e656be28ec582468e282fc966e185b, type: 3}
+    Icon: {fileID: 21300000, guid: 40e8befbe13e63b4aa5584c5cc2d7ee8, type: 3}
   - SkillId: S_Core_55
-    Icon: {fileID: 21300000, guid: e8e656be28ec582468e282fc966e185b, type: 3}
+    Icon: {fileID: 21300000, guid: c80e2d879f2153b408dfbe7cc653c083, type: 3}
   - SkillId: S_Core_56
-    Icon: {fileID: 21300000, guid: e8e656be28ec582468e282fc966e185b, type: 3}
+    Icon: {fileID: 21300000, guid: c80e2d879f2153b408dfbe7cc653c083, type: 3}
   - SkillId: S_Core_57
-    Icon: {fileID: 21300000, guid: e8e656be28ec582468e282fc966e185b, type: 3}
+    Icon: {fileID: 21300000, guid: 1ff57fb3831a3a64e9b701f495327112, type: 3}
   - SkillId: S_Core_58
-    Icon: {fileID: 21300000, guid: e8e656be28ec582468e282fc966e185b, type: 3}
+    Icon: {fileID: 21300000, guid: 1ff57fb3831a3a64e9b701f495327112, type: 3}
   - SkillId: S_Core_59
-    Icon: {fileID: 21300000, guid: e8e656be28ec582468e282fc966e185b, type: 3}
+    Icon: {fileID: 21300000, guid: 29a55655e0fb0c04da30d5d37b732b6c, type: 3}
   - SkillId: S_Core_60
-    Icon: {fileID: 21300000, guid: e8e656be28ec582468e282fc966e185b, type: 3}
+    Icon: {fileID: 21300000, guid: 29a55655e0fb0c04da30d5d37b732b6c, type: 3}
