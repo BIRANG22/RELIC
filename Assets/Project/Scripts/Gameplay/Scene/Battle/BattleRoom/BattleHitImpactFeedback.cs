@@ -251,7 +251,7 @@ public class BattleHitImpactFeedback : MonoBehaviour
     private IEnumerator AnimateDamagePush(List<MoveEntry> entries)
     {
         yield return AnimatePositions(entries, 0f, 1f, damageHitPushOutDuration);
-        yield return WaitUnscaled(damageHitPushHoldDuration);
+        yield return WaitUnscaledWithVfxPause(damageHitPushHoldDuration);
         yield return AnimatePositions(entries, 1f, 0f, damageHitPushReturnDuration);
     }
 
@@ -328,7 +328,7 @@ public class BattleHitImpactFeedback : MonoBehaviour
         try
         {
             yield return AnimateScale(target, originalScale, peakScale, statusPulseOutDuration);
-            yield return WaitUnscaled(statusPulseHoldDuration);
+            yield return WaitUnscaledWithVfxPause(statusPulseHoldDuration);
             yield return AnimateScale(target, peakScale, originalScale, statusPulseReturnDuration);
         }
         finally
@@ -378,6 +378,23 @@ public class BattleHitImpactFeedback : MonoBehaviour
         {
             elapsed += Time.unscaledDeltaTime;
             yield return null;
+        }
+    }
+
+    private static IEnumerator WaitUnscaledWithVfxPause(float duration)
+    {
+        if (duration <= 0f)
+            yield break;
+
+        BattleVfxPlaybackPauseController.PauseAll();
+
+        try
+        {
+            yield return WaitUnscaled(duration);
+        }
+        finally
+        {
+            BattleVfxPlaybackPauseController.ResumeAll();
         }
     }
 

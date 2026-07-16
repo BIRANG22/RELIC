@@ -207,8 +207,18 @@ public class GridEffectWorldVfxPresenter : MonoBehaviour
         if (renderLayer >= 0)
             SetLayerRecursively(vfx, renderLayer);
 
+        EnsureVfxPauseController(vfx);
         ApplyVfxFlip(vfx, entry.flipType);
         BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(vfx, entry.sfx, this);
+    }
+
+    private static void EnsureVfxPauseController(GameObject vfx)
+    {
+        if (vfx == null)
+            return;
+
+        if (vfx.GetComponent<BattleVfxPlaybackPauseController>() == null)
+            vfx.AddComponent<BattleVfxPlaybackPauseController>();
     }
 
     private static void SetLayerRecursively(GameObject obj, int layer)

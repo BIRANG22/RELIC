@@ -524,7 +524,7 @@ public class BattleUnitAnimator : MonoBehaviour
             yield break;
 
         if (entry.launchDelay > 0f)
-            yield return new WaitForSeconds(entry.launchDelay);
+            yield return WaitForVfxPlaybackDelay(entry.launchDelay);
 
         if (vfxLayer < 0)
             vfxLayer = LayerMask.NameToLayer(vfxLayerName);
@@ -627,7 +627,7 @@ public class BattleUnitAnimator : MonoBehaviour
             if (projectile == null)
                 yield break;
 
-            elapsed += Time.deltaTime;
+            elapsed += GetVfxPlaybackDeltaTime();
 
             float t = Mathf.Clamp01(elapsed / duration);
             projectile.position = Vector3.Lerp(startPosition, targetPosition, t);
@@ -643,6 +643,30 @@ public class BattleUnitAnimator : MonoBehaviour
 
         if (projectile != null)
             projectile.position = targetPosition;
+    }
+
+    private static IEnumerator WaitForVfxPlaybackDelay(float delay)
+    {
+        if (delay <= 0f)
+            yield break;
+
+        float elapsed = 0f;
+
+        while (elapsed < delay)
+        {
+            elapsed += GetVfxPlaybackDeltaTime();
+
+            yield return null;
+        }
+    }
+
+    private static float GetVfxPlaybackDeltaTime()
+    {
+        float deltaTime = Time.deltaTime;
+
+        return BattleVfxPlaybackPauseController.IsGlobalPauseActive
+            ? deltaTime * BattleVfxPlaybackPauseController.ActiveSpeedMultiplier
+            : deltaTime;
     }
 
     private void SpawnImpactVfx(BattleProjectileVfxEntry entry, Vector3 impactPosition)
@@ -772,8 +796,18 @@ public class BattleUnitAnimator : MonoBehaviour
         if (vfxLayer >= 0)
             SetLayerRecursively(vfx, vfxLayer);
 
+        EnsureVfxPauseController(vfx);
         ApplyVfxFlip(vfx, entry.flipType);
         BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(vfx, entry.sfx, this);
+    }
+
+    private static void EnsureVfxPauseController(GameObject vfx)
+    {
+        if (vfx == null)
+            return;
+
+        if (vfx.GetComponent<BattleVfxPlaybackPauseController>() == null)
+            vfx.AddComponent<BattleVfxPlaybackPauseController>();
     }
 
     private float GetUnitVfxSortingReferenceY()

@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using Relic.Gameplay.Data;
+using System.Collections;
 using System.Reflection;
 using UnityEngine;
 
@@ -112,6 +113,28 @@ public class BattleHitImpactFeedbackTests
         }
     }
 
+    [Test]
+    public void HoldPauseRoutine_SlowsVfxUntilRoutineEnds()
+    {
+        IEnumerator routine = InvokePrivateHoldPauseRoutine(0.1f);
+
+        try
+        {
+            Assert.That(BattleVfxPlaybackPauseController.IsGlobalPauseActive, Is.False);
+
+            Assert.That(routine.MoveNext(), Is.True);
+
+            Assert.That(BattleVfxPlaybackPauseController.IsGlobalPauseActive, Is.True);
+        }
+        finally
+        {
+            (routine as System.IDisposable)?.Dispose();
+            BattleVfxPlaybackPauseController.ResumeAll();
+        }
+
+        Assert.That(BattleVfxPlaybackPauseController.IsGlobalPauseActive, Is.False);
+    }
+
     private static void DestroyIfExists(string objectName)
     {
         GameObject gameObject = GameObject.Find(objectName);
@@ -128,5 +151,15 @@ public class BattleHitImpactFeedbackTests
 
         Assert.That(field, Is.Not.Null, $"{fieldName} field is missing.");
         return (float)field.GetValue(target);
+    }
+
+    private static IEnumerator InvokePrivateHoldPauseRoutine(float duration)
+    {
+        MethodInfo method = typeof(BattleHitImpactFeedback).GetMethod(
+            "WaitUnscaledWithVfxPause",
+            BindingFlags.Static | BindingFlags.NonPublic);
+
+        Assert.That(method, Is.Not.Null, "WaitUnscaledWithVfxPause method is missing.");
+        return (IEnumerator)method.Invoke(null, new object[] { duration });
     }
 }
