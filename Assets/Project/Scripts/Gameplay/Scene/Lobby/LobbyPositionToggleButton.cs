@@ -17,6 +17,10 @@ public class LobbyPositionToggleButton : MonoBehaviour
     [SerializeField] private GameObject position;
     [SerializeField] private GameObject positionPanel;
 
+    [Header("Position Lighting")]
+    [SerializeField] private GameObject lobbyDirectionalLight;
+    [SerializeField] private GameObject positionDirectionalLight;
+
     private bool positionModeActive;
     private bool statesCaptured;
     private bool backMainWasActive;
@@ -24,6 +28,8 @@ public class LobbyPositionToggleButton : MonoBehaviour
     private bool effectCharacterWasActive;
     private bool lobbyMainPanelWasActive;
     private bool characterSettingPanelWasActive;
+    private bool lobbyDirectionalLightWasActive;
+    private bool positionDirectionalLightWasActive;
 
     private void Awake()
     {
@@ -60,6 +66,8 @@ public class LobbyPositionToggleButton : MonoBehaviour
         SetActive(characterSettingPanel, false);
         SetActive(position, true);
         SetActive(positionPanel, true);
+        SetActive(lobbyDirectionalLight, false);
+        SetActive(positionDirectionalLight, true);
 
         positionModeActive = true;
     }
@@ -73,6 +81,8 @@ public class LobbyPositionToggleButton : MonoBehaviour
             SetActive(effectCharacter, effectCharacterWasActive);
             SetActive(lobbyMainPanel, lobbyMainPanelWasActive);
             SetActive(characterSettingPanel, characterSettingPanelWasActive);
+            SetActive(lobbyDirectionalLight, lobbyDirectionalLightWasActive);
+            SetActive(positionDirectionalLight, positionDirectionalLightWasActive);
         }
 
         SetActive(position, false);
@@ -89,6 +99,8 @@ public class LobbyPositionToggleButton : MonoBehaviour
         effectCharacterWasActive = IsActive(effectCharacter);
         lobbyMainPanelWasActive = IsActive(lobbyMainPanel);
         characterSettingPanelWasActive = IsActive(characterSettingPanel);
+        lobbyDirectionalLightWasActive = IsActive(lobbyDirectionalLight);
+        positionDirectionalLightWasActive = IsActive(positionDirectionalLight);
         statesCaptured = true;
     }
 
@@ -101,6 +113,8 @@ public class LobbyPositionToggleButton : MonoBehaviour
         characterSettingPanel ??= FindSceneObject("CharacterSettingPanel");
         position ??= FindSceneObject("Position");
         positionPanel ??= FindSceneObject("PositionPanel");
+        lobbyDirectionalLight ??= FindSceneObject("Directional Light");
+        positionDirectionalLight ??= FindSceneObject("Postion Directional Light");
     }
 
     private GameObject FindSceneObject(string objectName)
