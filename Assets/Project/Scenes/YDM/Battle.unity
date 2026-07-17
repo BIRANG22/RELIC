@@ -445165,9 +445165,9 @@ MonoBehaviour:
   - -0.5
   - 0.5
   impactZoomAmount: 0
-  impactZoomZOffset: 0
-  impactZoomInDuration: 0
-  impactZoomOutDuration: 0
+  impactZoomZOffset: 1.5
+  impactZoomInDuration: 0.08
+  impactZoomOutDuration: 0.12
   impactShakeDuration: 0.08
   impactShakeStrength: 0.1
   impactShakeFrequency: 20
