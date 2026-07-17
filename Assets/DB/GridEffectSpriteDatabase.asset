@@ -17,8 +17,6 @@ MonoBehaviour:
     prefab: {fileID: 7292564715269318754, guid: 55c1deb426eceda4da41cc3e14d447cd, type: 3}
   - gridEffectId: GR_thorn
     prefab: {fileID: 7510714500437303365, guid: 2ef70dbb844adfd43bd31b97818a7fe5, type: 3}
-  - gridEffectId: GR_helmet
-    prefab: {fileID: 7510714500437303365, guid: efb8cd38b41997c4c85ee3ae2f44b868, type: 3}
   - gridEffectId: GR_Poisson
     prefab: {fileID: 6416350362071025190, guid: 856df3037918ae9458bc104242ac020a, type: 3}
   - gridEffectId: GR_Residue
