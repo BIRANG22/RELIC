@@ -12,6 +12,7 @@ public class TestVfxSpawnSettings
     [Header("VFX Entry")]
     public VfxFlipType FlipType = VfxFlipType.None;
     public BattleVfxRenderMode RenderMode = BattleVfxRenderMode.IndividualWorldRenderTexture;
+    public BattleVfxProxyBlendMode ProxyBlendMode = BattleVfxProxyBlendMode.Additive;
 
     [Header("SFX")]
     public bool PlaySfx;
@@ -46,6 +47,7 @@ public class TestVfxSpawnSettings
             prefab = prefab,
             flipType = FlipType,
             renderMode = RenderMode,
+            proxyBlendMode = ProxyBlendMode,
             sfx = new BattleVfxSfxEntry
             {
                 playSfx = PlaySfx,

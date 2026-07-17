@@ -25,9 +25,9 @@ public class BattleCameraController : MonoBehaviour
     [SerializeField] private bool enableDamageImpactRotation = true;
     [SerializeField] private float[] damageImpactRotationZPattern = { 0f, -1f, 1f };
     [SerializeField] private float impactZoomAmount = 0f;
-    [SerializeField] private float impactZoomZOffset = 0f;
-    [SerializeField] private float impactZoomInDuration = 0f;
-    [SerializeField] private float impactZoomOutDuration = 0f;
+    [SerializeField] private float impactZoomZOffset = 1.5f;
+    [SerializeField] private float impactZoomInDuration = 0.08f;
+    [SerializeField] private float impactZoomOutDuration = 0.12f;
     [SerializeField] private float impactShakeDuration = 0.08f;
     [SerializeField] private float impactShakeStrength = 0.1f;
     [SerializeField] private float impactShakeFrequency = 20f;

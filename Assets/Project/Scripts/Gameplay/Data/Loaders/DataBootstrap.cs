@@ -6,7 +6,7 @@ namespace Relic.Gameplay.Data
     public class DataBootstrap
     {
         private TextAsset excelWorkbook;
-        private string resourcesWorkbookPath = "Data/GameData";
+        private string resourcesWorkbookPath = "Data/GameDataRuntime";
 
         private CharacterPrefabDatabase characterPrefabDatabase;
         private SkillIconDatabase skillIconDatabase;
@@ -67,7 +67,7 @@ namespace Relic.Gameplay.Data
 
             if (excelWorkbook == null)
             {
-                Debug.LogError("[DataBootstrap] GameData가 비어 있습니다. Resources/Data/GameData.csv 또는 Resources/Data/GameData.bytes 경로를 확인하세요.");
+                Debug.LogError("[DataBootstrap] GameData가 비어 있습니다. Resources/Data/GameDataRuntime.csv 경로를 확인하세요.");
                 return;
             }
 

@@ -7,6 +7,12 @@ public enum BattleVfxRenderMode
     DirectWorldRenderer
 }
 
+public enum BattleVfxProxyBlendMode
+{
+    Additive,
+    Alpha
+}
+
 [System.Serializable]
 public class BattleVfxSfxEntry
 {
@@ -49,6 +55,7 @@ public class BattleVfxEntry
 
     [Header("Render Routing")]
     public BattleVfxRenderMode renderMode = BattleVfxRenderMode.IndividualWorldRenderTexture;
+    public BattleVfxProxyBlendMode proxyBlendMode = BattleVfxProxyBlendMode.Additive;
 
     [Header("Individual World RenderTexture")]
     [Min(1)] public int renderTextureWidth = 512;

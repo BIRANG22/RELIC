@@ -110,11 +110,8 @@ namespace Relic.Gameplay.Data
             var sectionRows = new Dictionary<string, List<List<string>>>(StringComparer.OrdinalIgnoreCase);
             string currentSectionName = null;
 
-            using var reader = new StringReader(text);
-            string line;
-            while ((line = reader.ReadLine()) != null)
+            foreach (var values in ParseCsvRecords(text))
             {
-                var values = ParseCsvLine(line);
                 if (values.Count == 0 || values.All(string.IsNullOrWhiteSpace))
                     continue;
 
@@ -138,6 +135,72 @@ namespace Relic.Gameplay.Data
                 result[pair.Key] = ConvertCsvRowsToDictionaries(pair.Value);
 
             return result;
+        }
+
+        private static List<List<string>> ParseCsvRecords(string text)
+        {
+            var records = new List<List<string>>();
+            var values = new List<string>();
+            var current = new StringBuilder();
+            var inQuotes = false;
+
+            for (var i = 0; i < text.Length; i++)
+            {
+                var c = text[i];
+
+                if (c == '"')
+                {
+                    if (inQuotes && i + 1 < text.Length && text[i + 1] == '"')
+                    {
+                        current.Append('"');
+                        i++;
+                    }
+                    else
+                    {
+                        inQuotes = !inQuotes;
+                    }
+
+                    continue;
+                }
+
+                if (c == ',' && !inQuotes)
+                {
+                    values.Add(current.ToString());
+                    current.Clear();
+                    continue;
+                }
+
+                if ((c == '\r' || c == '\n') && !inQuotes)
+                {
+                    if (c == '\r' && i + 1 < text.Length && text[i + 1] == '\n')
+                        i++;
+
+                    values.Add(current.ToString());
+                    current.Clear();
+                    records.Add(values);
+                    values = new List<string>();
+                    continue;
+                }
+
+                if (c == '\r' && inQuotes)
+                {
+                    if (i + 1 < text.Length && text[i + 1] == '\n')
+                        i++;
+
+                    current.Append('\n');
+                    continue;
+                }
+
+                current.Append(c);
+            }
+
+            if (current.Length > 0 || values.Count > 0)
+            {
+                values.Add(current.ToString());
+                records.Add(values);
+            }
+
+            return records;
         }
 
         private static string DecodeCsvText(byte[] csvBytes)
