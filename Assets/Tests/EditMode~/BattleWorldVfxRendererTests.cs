@@ -21,6 +21,7 @@ public class BattleWorldVfxRendererTests
         BattleVfxEntry entry = new();
 
         Assert.That(entry.renderMode, Is.EqualTo(BattleVfxRenderMode.IndividualWorldRenderTexture));
+        Assert.That(entry.proxyBlendMode, Is.EqualTo(BattleVfxProxyBlendMode.Additive));
         Assert.That(entry.renderTextureWidth, Is.GreaterThan(0));
         Assert.That(entry.renderTextureHeight, Is.GreaterThan(0));
         Assert.That(entry.proxySortingLayerName, Is.EqualTo("Unit"));
@@ -245,6 +246,43 @@ public class BattleWorldVfxRendererTests
             Assert.That(runtimeMaterial, Is.Not.Null);
             Assert.That(runtimeMaterial, Is.Not.SameAs(template));
             Assert.That(runtimeMaterial.shader.name, Is.EqualTo("Relic/World/VFX RenderTexture Additive"));
+            Assert.That(runtimeMaterial.mainTexture, Is.SameAs(renderTexture));
+        }
+        finally
+        {
+            DestroyObject(runtimeMaterial);
+            DestroyObject(renderTexture);
+            DestroyObject(prefab);
+            DestroyObject(rendererRoot);
+        }
+    }
+
+    [Test]
+    public void CreateProxyMaterial_UsesAlphaTemplateWhenEntryRequestsAlphaBlend()
+    {
+        GameObject rendererRoot = new("Renderer");
+        BattleWorldVfxRenderer renderer = rendererRoot.AddComponent<BattleWorldVfxRenderer>();
+        GameObject prefab = new("BlackVfxPrefab");
+        RenderTexture renderTexture = new(1, 1, 0, RenderTextureFormat.ARGB32);
+        Material runtimeMaterial = null;
+
+        try
+        {
+            BattleVfxEntry entry = new()
+            {
+                prefab = prefab,
+                proxyBlendMode = BattleVfxProxyBlendMode.Alpha
+            };
+
+            MethodInfo method = typeof(BattleWorldVfxRenderer).GetMethod(
+                "CreateProxyMaterial",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+
+            Assert.That(method, Is.Not.Null);
+            runtimeMaterial = (Material)method.Invoke(renderer, new object[] { entry, renderTexture });
+
+            Assert.That(runtimeMaterial, Is.Not.Null);
+            Assert.That(runtimeMaterial.shader.name, Is.EqualTo("Relic/World/VFX RenderTexture Alpha"));
             Assert.That(runtimeMaterial.mainTexture, Is.SameAs(renderTexture));
         }
         finally

@@ -8,7 +8,8 @@ public sealed class BattleWorldVfxRenderer : MonoBehaviour
     private const string RootName = "__BattleWorldVfxRenderer";
     private const string RenderRootName = "RenderSpace";
     private const string ProxyRootName = "WorldProxies";
-    private const string ProxyMaterialResourcePath = "BattleWorldVfxProxyMaterial";
+    private const string AdditiveProxyMaterialResourcePath = "BattleWorldVfxProxyMaterial";
+    private const string AlphaProxyMaterialResourcePath = "BattleWorldVfxProxyAlphaMaterial";
     private const int VfxRendererIndex = 1;
     private const float RenderSpaceOriginX = 10000f;
     private const float RenderSlotSpacing = 1000f;
@@ -18,7 +19,8 @@ public sealed class BattleWorldVfxRenderer : MonoBehaviour
 
     private Transform renderRoot;
     private Transform proxyRoot;
-    private Material proxyMaterialTemplate;
+    private Material additiveProxyMaterialTemplate;
+    private Material alphaProxyMaterialTemplate;
     private int nextSlot;
     private bool warnedMissingProxyMaterialTemplate;
 
@@ -222,7 +224,7 @@ public sealed class BattleWorldVfxRenderer : MonoBehaviour
     private Material CreateProxyMaterial(BattleVfxEntry entry, RenderTexture renderTexture)
     {
         Material material = null;
-        Material template = LoadProxyMaterialTemplate();
+        Material template = LoadProxyMaterialTemplate(entry.proxyBlendMode);
 
         if (template != null)
             material = new Material(template);
@@ -279,21 +281,35 @@ public sealed class BattleWorldVfxRenderer : MonoBehaviour
         }
     }
 
-    private Material LoadProxyMaterialTemplate()
+    private Material LoadProxyMaterialTemplate(BattleVfxProxyBlendMode blendMode)
     {
-        if (proxyMaterialTemplate != null)
-            return proxyMaterialTemplate;
+        bool useAlpha = blendMode == BattleVfxProxyBlendMode.Alpha;
+        Material cachedTemplate = useAlpha
+            ? alphaProxyMaterialTemplate
+            : additiveProxyMaterialTemplate;
 
-        proxyMaterialTemplate = Resources.Load<Material>(ProxyMaterialResourcePath);
+        if (cachedTemplate != null)
+            return cachedTemplate;
 
-        if (proxyMaterialTemplate != null)
-            return proxyMaterialTemplate;
+        string resourcePath = useAlpha
+            ? AlphaProxyMaterialResourcePath
+            : AdditiveProxyMaterialResourcePath;
+
+        Material loadedTemplate = Resources.Load<Material>(resourcePath);
+
+        if (useAlpha)
+            alphaProxyMaterialTemplate = loadedTemplate;
+        else
+            additiveProxyMaterialTemplate = loadedTemplate;
+
+        if (loadedTemplate != null)
+            return loadedTemplate;
 
         if (!warnedMissingProxyMaterialTemplate)
         {
             warnedMissingProxyMaterialTemplate = true;
             Debug.LogWarning(
-                $"[BattleWorldVfxRenderer] Missing Resources material: {ProxyMaterialResourcePath}");
+                $"[BattleWorldVfxRenderer] Missing Resources material: {resourcePath}");
         }
 
         return null;
