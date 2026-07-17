@@ -18,6 +18,10 @@ public class LobbyPositionToggleButtonTests
         GameObject characterSettingPanel = CreateChild(root, "CharacterSettingPanel", false);
         GameObject position = CreateChild(root, "Position", false);
         GameObject positionPanel = CreateChild(root, "PositionPanel", false);
+        GameObject lobbyDirectionalLight = CreateChild(root, "Directional Light", true);
+        GameObject mainCamera = CreateChild(root, "Main Camera", true);
+        GameObject positionDirectionalLight =
+            CreateChild(mainCamera, "Postion Directional Light", false);
         LobbyPositionToggleButton toggle = buttonObject.AddComponent<LobbyPositionToggleButton>();
 
         try
@@ -31,6 +35,8 @@ public class LobbyPositionToggleButtonTests
             Assert.That(characterSettingPanel.activeSelf, Is.False);
             Assert.That(position.activeSelf, Is.True);
             Assert.That(positionPanel.activeSelf, Is.True);
+            Assert.That(lobbyDirectionalLight.activeSelf, Is.False);
+            Assert.That(positionDirectionalLight.activeSelf, Is.True);
 
             toggle.TogglePositionMode();
 
@@ -41,6 +47,8 @@ public class LobbyPositionToggleButtonTests
             Assert.That(characterSettingPanel.activeSelf, Is.False);
             Assert.That(position.activeSelf, Is.False);
             Assert.That(positionPanel.activeSelf, Is.False);
+            Assert.That(lobbyDirectionalLight.activeSelf, Is.True);
+            Assert.That(positionDirectionalLight.activeSelf, Is.False);
         }
         finally
         {
