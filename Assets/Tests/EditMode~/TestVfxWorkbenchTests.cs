@@ -14,6 +14,7 @@ public class TestVfxWorkbenchTests
             {
                 FlipType = VfxFlipType.ParticleRendererFlipY,
                 RenderMode = BattleVfxRenderMode.DirectWorldRenderer,
+                ProxyBlendMode = BattleVfxProxyBlendMode.Alpha,
                 PlaySfx = true,
                 SfxId = "Hit_01",
                 SfxDelay = -0.5f,
@@ -36,6 +37,7 @@ public class TestVfxWorkbenchTests
             Assert.That(entry.prefab, Is.SameAs(prefab));
             Assert.That(entry.flipType, Is.EqualTo(VfxFlipType.ParticleRendererFlipY));
             Assert.That(entry.renderMode, Is.EqualTo(BattleVfxRenderMode.DirectWorldRenderer));
+            Assert.That(entry.proxyBlendMode, Is.EqualTo(BattleVfxProxyBlendMode.Alpha));
             Assert.That(entry.sfx.playSfx, Is.True);
             Assert.That(entry.sfx.sfxId, Is.EqualTo("Hit_01"));
             Assert.That(entry.sfx.delay, Is.EqualTo(0f));

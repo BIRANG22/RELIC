@@ -143,6 +143,7 @@ public class GridEffectWorldVfxPresenter : MonoBehaviour
             flipType = source.flipType,
             sfx = BattleVfxSfxEntry.CopyFrom(source.sfx),
             renderMode = BattleVfxRenderMode.IndividualWorldRenderTexture,
+            proxyBlendMode = source.proxyBlendMode,
             renderTextureWidth = source.renderTextureWidth,
             renderTextureHeight = source.renderTextureHeight,
             renderCameraOrthographicSize = source.renderCameraOrthographicSize,
