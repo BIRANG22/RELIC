@@ -85,9 +85,9 @@ Material:
     - _ZTest: 4
     - _ZWrite: 1
     - _ZWriteControl: 0
-    - _boder: 0.08
-    - _boder_1: 0.2
-    - _boder_2: 0.4
+    - _boder: 0.005
+    - _boder_1: 0
+    - _boder_2: 0
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 0}
     - _ClipRect: {r: 0, g: 0, b: 0, a: 0}
@@ -98,7 +98,7 @@ Material:
     - _edgecolor_2: {r: 0, g: 0, b: 0, a: 0}
     - _noiseflow: {r: 0.01, g: 0.01, b: 0, a: 0}
     - _noiseoffset: {r: 0, g: 0, b: 0, a: 0}
-    - _noisetiling: {r: 0.2, g: 0.5, b: 0, a: 0}
+    - _noisetiling: {r: 1, g: 0.5, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &660183257493829332

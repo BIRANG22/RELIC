@@ -122,20 +122,30 @@ public class BattleHitImpactFeedback : MonoBehaviour
     }
 
     private IEnumerator PlayDamageHitInternal(
-        Transform attacker,
-        IReadOnlyList<Transform> targets,
-        int fallbackHorizontalDirection)
+    Transform attacker,
+    IReadOnlyList<Transform> targets,
+    int fallbackHorizontalDirection)
     {
+        // 실제 피해 적중 시 BattleEffect의 두 Plane 회전 연출을 실행합니다.
+        BattleEffectPlaneRotation.PlayHitRotationFeedback();
+
         IEnumerator cameraRoutine =
             playDamageCameraImpact && BattleCameraController.Instance != null
                 ? BattleCameraController.Instance.PlayDamageImpact()
                 : null;
 
         IEnumerator pushRoutine = enableDamageHitPush
-            ? PlayDamagePush(attacker, targets, fallbackHorizontalDirection)
+            ? PlayDamagePush(
+                attacker,
+                targets,
+                fallbackHorizontalDirection
+            )
             : null;
 
-        yield return RunTogether(cameraRoutine, pushRoutine);
+        yield return RunTogether(
+            cameraRoutine,
+            pushRoutine
+        );
     }
 
     private IEnumerator RunTogether(params IEnumerator[] routines)
