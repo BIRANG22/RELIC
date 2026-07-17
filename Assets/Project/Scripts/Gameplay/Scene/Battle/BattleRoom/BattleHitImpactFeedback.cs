@@ -10,12 +10,12 @@ public class BattleHitImpactFeedback : MonoBehaviour
 
     [Header("Damage Hit Push")]
     [SerializeField] private bool enableDamageHitPush = true;
-    [SerializeField] private float damageHitPushDistance = 0.45f;           //밀리는거리
+    [SerializeField] private float damageHitPushDistance = 0.5f;           //밀리는거리
     [SerializeField] private float attackerPushMultiplier = 0.65f;
     [SerializeField] private float targetPushMultiplier = 1f;
-    [SerializeField] private float damageHitPushOutDuration = 0.12f;        //밀리는시간
-    [SerializeField] private float damageHitPushHoldDuration = 0.5f;        //정지시간
-    [SerializeField] private float damageHitPushReturnDuration = 0.16f;     //돌아오는 시간
+    [SerializeField] private float damageHitPushOutDuration = 0.8f;        //밀리는시간
+    [SerializeField] private float damageHitPushHoldDuration = 0.1f;        //정지시간
+    [SerializeField] private float damageHitPushReturnDuration = 0.06f;     //돌아오는 시간
     [SerializeField] private AnimationCurve damageHitPushCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
     [Header("Buff Debuff Pulse")]
@@ -122,20 +122,30 @@ public class BattleHitImpactFeedback : MonoBehaviour
     }
 
     private IEnumerator PlayDamageHitInternal(
-        Transform attacker,
-        IReadOnlyList<Transform> targets,
-        int fallbackHorizontalDirection)
+    Transform attacker,
+    IReadOnlyList<Transform> targets,
+    int fallbackHorizontalDirection)
     {
+        // 실제 피해 적중 시 BattleEffect의 두 Plane 회전 연출을 실행합니다.
+        BattleEffectPlaneRotation.PlayHitRotationFeedback();
+
         IEnumerator cameraRoutine =
             playDamageCameraImpact && BattleCameraController.Instance != null
                 ? BattleCameraController.Instance.PlayDamageImpact()
                 : null;
 
         IEnumerator pushRoutine = enableDamageHitPush
-            ? PlayDamagePush(attacker, targets, fallbackHorizontalDirection)
+            ? PlayDamagePush(
+                attacker,
+                targets,
+                fallbackHorizontalDirection
+            )
             : null;
 
-        yield return RunTogether(cameraRoutine, pushRoutine);
+        yield return RunTogether(
+            cameraRoutine,
+            pushRoutine
+        );
     }
 
     private IEnumerator RunTogether(params IEnumerator[] routines)

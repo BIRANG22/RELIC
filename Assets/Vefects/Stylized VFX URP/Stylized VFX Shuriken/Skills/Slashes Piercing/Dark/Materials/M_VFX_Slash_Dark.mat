@@ -211,8 +211,8 @@ Material:
     - _ColorNoiseSpeed: {r: 1, g: 1, b: 0, a: 0}
     - _ColorNoise_Scale: {r: 1.8, g: 0.8, b: 0, a: 0}
     - _ColorNoise_Speed: {r: -0.4, g: 0.1, b: 0, a: 0}
-    - _Color_1: {r: 0.3, g: 0.079672135, b: 0.06, a: 0}
-    - _Color_2: {r: 0.7, g: 0.21765627, b: 0.21000001, a: 0}
+    - _Color_1: {r: 0.29803923, g: 0.058823522, b: 0.22221322, a: 0}
+    - _Color_2: {r: 0.5117356, g: 0.21176471, b: 0.69803923, a: 0}
     - _CutoutOffset: {r: 0, g: 0, b: 0, a: 0}
     - _DistortionNoiseScale: {r: 1, g: 1, b: 0, a: 0}
     - _DistortionNoiseSpeed: {r: 1, g: 1, b: 0, a: 0}
@@ -224,7 +224,7 @@ Material:
     - _EmissiveDissolveSpeed: {r: 1, g: 1, b: 0, a: 0}
     - _EmissiveDissolve_Scale: {r: 3.8, g: 1.8, b: 0, a: 0}
     - _EmissiveDissolve_Speed: {r: 0.3, g: 0.4, b: 0, a: 0}
-    - _Emissive_Color: {r: 1, g: 0.26102942, b: 0.25, a: 0}
+    - _Emissive_Color: {r: 0.851177, g: 0.25098038, b: 1, a: 0}
     - _Emissive_Dissolve_Scale: {r: 3.8, g: 1.8, b: 0, a: 0}
     - _Emissive_Dissolve_Speed: {r: 0.3, g: 0.4, b: 0, a: 0}
     - _SlashNoiseScale: {r: 1, g: 1, b: 0, a: 0}
@@ -232,3 +232,4 @@ Material:
     - _Slash_Noise_Scale: {r: 2.8, g: 1.3, b: 0, a: 0}
     - _Slash_Noise_Speed: {r: 0.4, g: -0.1, b: 0, a: 0}
   m_BuildTextureStacks: []
+  m_AllowLocking: 1
