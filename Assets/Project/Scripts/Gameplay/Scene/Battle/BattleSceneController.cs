@@ -40,8 +40,11 @@ public class BattleSceneController : MonoBehaviour
     [SerializeField] private GameObject eventRoom;
     [SerializeField] private GameObject restRoom;
 
-    [Header("Boss Demo")]
-    [SerializeField] private GameObject bossDemoPanel;
+    [Header("Battle Background")]
+    [Tooltip("일반 전투에서 사용할 BattleRoom/Background/Stage_01/St1_01 오브젝트입니다.")]
+    [SerializeField] private GameObject normalBattleBackground;
+    [Tooltip("보스 전투에서 사용할 BattleRoom/Background/Boss 오브젝트입니다.")]
+    [SerializeField] private GameObject bossBattleBackground;
 
     [Header("Room Change Auto Close")]
     [SerializeField] private bool closeInventoryAndBagOnRoomActiveChange = true;
@@ -70,6 +73,7 @@ public class BattleSceneController : MonoBehaviour
     {
         AutoFindRoomRootIfNeeded();
         AutoFindBattleMapIntroTextIfNeeded();
+        AutoFindBattleBackgroundsIfNeeded();
         InstallMapPanelAutoReturnWatcher();
         SetBattleOnlyTabActive(false);
     }
@@ -175,6 +179,52 @@ public class BattleSceneController : MonoBehaviour
             return;
 
         battleMapIntroText = Object.FindFirstObjectByType<BattleMapIntroText>(FindObjectsInactive.Include);
+    }
+
+    private void AutoFindBattleBackgroundsIfNeeded()
+    {
+        if (battleRoom == null)
+            return;
+
+        Transform battleRoomTransform = battleRoom.transform;
+
+        if (normalBattleBackground == null)
+        {
+            Transform normalBackground = battleRoomTransform.Find("Background/Stage_01/St1_01");
+            if (normalBackground != null)
+                normalBattleBackground = normalBackground.gameObject;
+        }
+
+        if (bossBattleBackground == null)
+        {
+            Transform bossBackground = battleRoomTransform.Find("Background/Boss");
+            if (bossBackground != null)
+                bossBattleBackground = bossBackground.gameObject;
+        }
+    }
+
+    private void SetBattleBackground(bool useBossBackground)
+    {
+        AutoFindBattleBackgroundsIfNeeded();
+
+        SetActiveIfNotNull(normalBattleBackground, !useBossBackground);
+        SetActiveIfNotNull(bossBattleBackground, useBossBackground);
+
+        if (normalBattleBackground == null)
+        {
+            Debug.LogWarning(
+                "[BattleSceneController] 일반 전투 배경을 찾지 못했습니다. " +
+                "BattleRoom/Background/Stage_01/St1_01을 확인하세요."
+            );
+        }
+
+        if (bossBattleBackground == null)
+        {
+            Debug.LogWarning(
+                "[BattleSceneController] 보스 전투 배경을 찾지 못했습니다. " +
+                "BattleRoom/Background/Boss를 확인하세요."
+            );
+        }
     }
 
     private void InstallMapPanelAutoReturnWatcher()
@@ -484,7 +534,7 @@ public class BattleSceneController : MonoBehaviour
                 break;
 
             case "Boss":
-                OpenBossDemo(nodeData);
+                OpenBossBattle(nodeData);
                 break;
 
             case "Rest":
@@ -511,6 +561,15 @@ public class BattleSceneController : MonoBehaviour
     {
         Debug.Log($"[BattleSceneController] Battle room start: {nodeData.MapId}");
         pendingRoomIntroMessage = playBattleRoomIntroFromSceneController ? battleRoomIntroMessage : null;
+        SetBattleBackground(false);
+        OpenRoom(battleRoom, "BattleRoom");
+    }
+
+    private void OpenBossBattle(GeneratedMapNodeData nodeData)
+    {
+        Debug.Log($"[BattleSceneController] Boss battle start: {nodeData.MapId}");
+        pendingRoomIntroMessage = playBattleRoomIntroFromSceneController ? battleRoomIntroMessage : null;
+        SetBattleBackground(true);
         OpenRoom(battleRoom, "BattleRoom");
     }
 
@@ -530,20 +589,6 @@ public class BattleSceneController : MonoBehaviour
         // 나중에 실제 EventRoom을 추가하면 인스펙터에서 문구만 바꾸면 된다.
         pendingRoomIntroMessage = eventRoomIntroMessage;
         OpenRoom(eventRoom, "EventRoom");
-    }
-
-    private void OpenBossDemo(GeneratedMapNodeData nodeData)
-    {
-        Debug.Log($"[BattleSceneController] Boss Demo Open : {nodeData.MapId}");
-
-        if (battleMapPanel != null)
-            battleMapPanel.Close();
-
-        CloseInventoryAndBagPanelsImmediate();
-        CloseAllRooms();
-
-        if (bossDemoPanel != null)
-            bossDemoPanel.SetActive(true);
     }
 
     private void PlayMapIntroTextOnStart()
@@ -631,7 +676,6 @@ public class BattleSceneController : MonoBehaviour
         SetActiveIfNotNull(battleRoom, false);
         SetActiveIfNotNull(eventRoom, false);
         SetActiveIfNotNull(restRoom, false);
-        SetActiveIfNotNull(bossDemoPanel, false);
     }
 
     private void SetBattleOnlyTabActive(bool isActive)
