@@ -7,6 +7,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 {
     [SerializeField] private Transform[] worldAnchors = new Transform[3];
     [SerializeField] private LobbyBlueDustiumHudUI blueDustiumHud;
+    [SerializeField] private Vector2 skillUpgradeButtonStartPosition = new(2400f, 200f);
 
     private readonly List<LobbyRelicOfferButtonUI> buttons = new();
     private Canvas ownerCanvas;
@@ -125,6 +126,28 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             follower.Initialize(worldAnchors[i], ownerCanvas, camera);
             buttons.Add(button);
         }
+
+        InitializeSkillUpgradeButton(camera);
+    }
+
+    private void InitializeSkillUpgradeButton(Camera camera)
+    {
+        Transform upgradeButton = transform.Find("SkillUpgradeOpenButton");
+        if (upgradeButton == null || ownerCanvas == null || camera == null)
+            return;
+
+        WorldAnchorCanvasFollower follower = upgradeButton.GetComponent<WorldAnchorCanvasFollower>();
+        if (follower == null)
+            follower = upgradeButton.gameObject.AddComponent<WorldAnchorCanvasFollower>();
+
+        Transform depthAnchor = worldAnchors != null && worldAnchors.Length > 0
+            ? worldAnchors[worldAnchors.Length - 1]
+            : null;
+        follower.InitializeAtCanvasPosition(
+            skillUpgradeButtonStartPosition,
+            depthAnchor,
+            ownerCanvas,
+            camera);
     }
 
     private void ShowAllEmpty()

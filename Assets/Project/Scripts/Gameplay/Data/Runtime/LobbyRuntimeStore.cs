@@ -33,6 +33,7 @@ namespace Relic.Gameplay.Data
             value.SkillInventoryIds ??= new List<string>();
             value.BagItemIds ??= new List<string>();
             value.CharacterLoadouts ??= new List<LobbyCharacterLoadoutData>();
+            value.CharacterSkillUpgrades ??= new List<LobbySkillUpgradeRecordData>();
             value.RelicOfferIds ??= new List<string>();
         }
     }

@@ -8,6 +8,8 @@ public sealed class WorldAnchorCanvasFollower : MonoBehaviour
     private Transform worldAnchor;
     private Camera worldCamera;
     private CanvasGroup canvasGroup;
+    private Vector3 fixedWorldPosition;
+    private bool useFixedWorldPosition;
 
     public void Initialize(Transform anchor, Canvas ownerCanvas, Camera camera)
     {
@@ -21,12 +23,37 @@ public sealed class WorldAnchorCanvasFollower : MonoBehaviour
             canvasGroup = gameObject.AddComponent<CanvasGroup>();
     }
 
-    private void LateUpdate()
+    public void InitializeAtCanvasPosition(
+        Vector2 canvasPosition,
+        Transform referenceDepthAnchor,
+        Canvas ownerCanvas,
+        Camera camera)
     {
-        if (rectTransform == null || canvasRect == null || worldAnchor == null || worldCamera == null)
+        Initialize(null, ownerCanvas, camera);
+        if (rectTransform == null || canvasRect == null || worldCamera == null)
             return;
 
-        Vector3 screen = worldCamera.WorldToScreenPoint(worldAnchor.position);
+        rectTransform.anchoredPosition = canvasPosition;
+        Vector3 canvasWorldPoint = canvasRect.TransformPoint(canvasPosition);
+        Camera canvasCamera = ownerCanvas.renderMode == RenderMode.ScreenSpaceOverlay
+            ? null
+            : ownerCanvas.worldCamera;
+        Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(canvasCamera, canvasWorldPoint);
+        float depth = referenceDepthAnchor != null
+            ? worldCamera.WorldToScreenPoint(referenceDepthAnchor.position).z
+            : Mathf.Max(1f, worldCamera.nearClipPlane + 1f);
+        fixedWorldPosition = worldCamera.ScreenToWorldPoint(new Vector3(screenPoint.x, screenPoint.y, depth));
+        useFixedWorldPosition = true;
+    }
+
+    private void LateUpdate()
+    {
+        if (rectTransform == null || canvasRect == null || worldCamera == null ||
+            (!useFixedWorldPosition && worldAnchor == null))
+            return;
+
+        Vector3 worldPosition = useFixedWorldPosition ? fixedWorldPosition : worldAnchor.position;
+        Vector3 screen = worldCamera.WorldToScreenPoint(worldPosition);
         Vector2 localPoint = rectTransform.anchoredPosition;
         bool visible = screen.z > 0f &&
                        RectTransformUtility.ScreenPointToLocalPointInRectangle(
