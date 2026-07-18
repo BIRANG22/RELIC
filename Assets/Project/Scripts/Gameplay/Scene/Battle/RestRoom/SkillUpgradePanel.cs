@@ -63,6 +63,44 @@ public class SkillUpgradePanel : MonoBehaviour
 
     public bool HasUpgradedThisRestRoom => hasUpgradedThisRestRoom;
 
+    /// <summary>
+    /// 강화 패널의 실제 표시 오브젝트가 현재 열려 있는지 반환합니다.
+    /// </summary>
+    public bool IsOpen
+    {
+        get
+        {
+            GameObject activePanelRoot = panelRoot != null
+                ? panelRoot
+                : gameObject;
+
+            return activePanelRoot != null && activePanelRoot.activeInHierarchy;
+        }
+    }
+
+    /// <summary>
+    /// 씬 안에 열려 있는 강화 패널이 하나라도 있는지 확인합니다.
+    /// 월드 오브젝트 클릭을 막을 때 사용합니다.
+    /// </summary>
+    public static bool IsAnyPanelOpen
+    {
+        get
+        {
+            SkillUpgradePanel[] panels = FindObjectsByType<SkillUpgradePanel>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None
+            );
+
+            for (int i = 0; i < panels.Length; i++)
+            {
+                if (panels[i] != null && panels[i].IsOpen)
+                    return true;
+            }
+
+            return false;
+        }
+    }
+
     private void Awake()
     {
         ConfigureContentLayout();
@@ -93,15 +131,49 @@ public class SkillUpgradePanel : MonoBehaviour
             return;
         }
 
-        if (panelRoot != null)
-            panelRoot.SetActive(true);
-        else
-            gameObject.SetActive(true);
+        GameObject activePanelRoot = panelRoot != null
+            ? panelRoot
+            : gameObject;
+
+        activePanelRoot.SetActive(true);
+
+        // 다른 패널이 열렸다 닫힌 뒤에도 투명한 UI가 입력을 가로채지 않도록
+        // 강화 패널을 현재 Canvas의 가장 앞쪽 형제로 올립니다.
+        activePanelRoot.transform.SetAsLastSibling();
+
+        RestorePanelInteractionState(activePanelRoot);
 
         ClearSelectedUpgradeSelection();
         ClearSkillInfoTexts();
         ConfigureContentLayout();
         Refresh();
+    }
+
+
+    /// <summary>
+    /// 다른 패널을 열고 닫은 뒤 남을 수 있는 UI 입력 상태를 초기화합니다.
+    /// </summary>
+    private static void RestorePanelInteractionState(GameObject activePanelRoot)
+    {
+        if (activePanelRoot == null)
+            return;
+
+        CanvasGroup rootCanvasGroup = activePanelRoot.GetComponent<CanvasGroup>();
+
+        if (rootCanvasGroup != null)
+        {
+            rootCanvasGroup.interactable = true;
+            rootCanvasGroup.blocksRaycasts = true;
+        }
+
+        ButtonAnimationCoroutine[] buttonAnimations =
+            activePanelRoot.GetComponentsInChildren<ButtonAnimationCoroutine>(true);
+
+        for (int i = 0; i < buttonAnimations.Length; i++)
+        {
+            if (buttonAnimations[i] != null)
+                buttonAnimations[i].ForceClearState(false);
+        }
     }
 
     public void Close()

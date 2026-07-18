@@ -25,6 +25,11 @@ public class BattleMenuEscapeInputController : MonoBehaviour
     [SerializeField] private int menuPanelSortingOrder = 10000;
     [SerializeField] private bool blockOtherButtonsWhenMenuPanelOpen = true;
 
+    [Header("Menu Root Input Blocker")]
+    [SerializeField] private string menuRootObjectName = "MenuRoot";
+    [SerializeField] private string menuRootBlockerObjectName = "Image";
+    [SerializeField] private Graphic menuRootBlockerGraphic;
+
 
     [Header("Inventory Panel Toggle")]
     [SerializeField] private bool enableInventoryControlKeyToggle = true;
@@ -60,6 +65,7 @@ public class BattleMenuEscapeInputController : MonoBehaviour
     {
         FindMenuButtonIfNeeded();
         FindMenuPanelIfNeeded();
+        FindMenuRootBlockerIfNeeded();
         FindInventoryPanelIfNeeded();
     }
 
@@ -67,12 +73,14 @@ public class BattleMenuEscapeInputController : MonoBehaviour
     {
         FindMenuButtonIfNeeded();
         FindMenuPanelIfNeeded();
+        FindMenuRootBlockerIfNeeded();
         FindInventoryPanelIfNeeded();
         RefreshPauseState();
     }
 
     private void OnDisable()
     {
+        SetMenuRootBlockerRaycast(false);
         ReleaseOtherButtonBlockIfNeeded();
         ReleasePauseIfNeeded();
     }
@@ -116,6 +124,11 @@ public class BattleMenuEscapeInputController : MonoBehaviour
     {
         bool menuPanelOpen = IsMenuPanelOpen();
         bool shouldPause = pauseGameWhenMenuPanelOpen && menuPanelOpen;
+
+        // MenuPanel의 바깥 배경인 MenuRoot/Image는 메뉴가 열려 있을 때만
+        // Raycast를 받아야 합니다. 메뉴가 닫힌 뒤에도 활성화되어 있으면
+        // 강화 패널의 Cancel 같은 뒤쪽 버튼의 호버와 클릭을 가로챕니다.
+        SetMenuRootBlockerRaycast(menuPanelOpen);
 
         if (menuPanelOpen)
         {
@@ -275,32 +288,22 @@ public class BattleMenuEscapeInputController : MonoBehaviour
         if (!menuButton.gameObject.activeInHierarchy || !menuButton.interactable)
             return;
 
-        ExecutePointerClick(menuButton.gameObject);
-        RefreshPauseState();
-    }
+        bool wasMenuPanelOpen = IsMenuPanelOpen();
 
-    private void ExecutePointerClick(GameObject target)
-    {
-        if (target == null)
-            return;
+        // ESC 키 입력은 마우스 포인터 이벤트를 강제로 만들지 않고
+        // 버튼의 클릭 동작만 직접 실행합니다.
+        // 현재 마우스가 다른 버튼 위에 있을 때 PointerDown/Up/Click을
+        // MenuButton으로 강제 전송하면 EventSystem의 호버 상태가 꼬일 수 있습니다.
+        menuButton.onClick.Invoke();
 
-        EventSystem eventSystem = EventSystem.current;
-
-        if (eventSystem == null)
+        if (wasMenuPanelOpen && !IsMenuPanelOpen())
         {
-            menuButton.onClick.Invoke();
-            return;
+            EventSystem eventSystem = EventSystem.current;
+            if (eventSystem != null)
+                eventSystem.SetSelectedGameObject(null);
         }
 
-        PointerEventData eventData = new PointerEventData(eventSystem)
-        {
-            button = PointerEventData.InputButton.Left,
-            position = GetPointerPosition()
-        };
-
-        ExecuteEvents.Execute(target, eventData, ExecuteEvents.pointerDownHandler);
-        ExecuteEvents.Execute(target, eventData, ExecuteEvents.pointerUpHandler);
-        ExecuteEvents.Execute(target, eventData, ExecuteEvents.pointerClickHandler);
+        RefreshPauseState();
     }
 
     private void FindMenuButtonIfNeeded()
@@ -424,6 +427,83 @@ public class BattleMenuEscapeInputController : MonoBehaviour
             menuPanel = candidate;
             return;
         }
+    }
+
+    private void FindMenuRootBlockerIfNeeded()
+    {
+        if (menuRootBlockerGraphic != null)
+            return;
+
+        FindMenuPanelIfNeeded();
+
+        Transform menuRoot = null;
+
+        if (menuPanel != null)
+        {
+            Transform current = menuPanel.transform;
+
+            while (current != null)
+            {
+                if (current.name == menuRootObjectName)
+                {
+                    menuRoot = current;
+                    break;
+                }
+
+                current = current.parent;
+            }
+        }
+
+        if (menuRoot == null)
+        {
+            GameObject[] objects = FindObjectsByType<GameObject>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None
+            );
+
+            for (int i = 0; i < objects.Length; i++)
+            {
+                GameObject candidate = objects[i];
+
+                if (candidate != null && candidate.name == menuRootObjectName)
+                {
+                    menuRoot = candidate.transform;
+                    break;
+                }
+            }
+        }
+
+        if (menuRoot == null)
+            return;
+
+        Transform blocker = menuRoot.Find(menuRootBlockerObjectName);
+
+        if (blocker == null)
+        {
+            for (int i = 0; i < menuRoot.childCount; i++)
+            {
+                Transform child = menuRoot.GetChild(i);
+
+                if (child != null && child.name == menuRootBlockerObjectName)
+                {
+                    blocker = child;
+                    break;
+                }
+            }
+        }
+
+        if (blocker != null)
+            menuRootBlockerGraphic = blocker.GetComponent<Graphic>();
+    }
+
+    private void SetMenuRootBlockerRaycast(bool enabled)
+    {
+        FindMenuRootBlockerIfNeeded();
+
+        if (menuRootBlockerGraphic == null)
+            return;
+
+        menuRootBlockerGraphic.raycastTarget = enabled;
     }
 
     private void FindInventoryPanelIfNeeded()
