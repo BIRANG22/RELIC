@@ -299,6 +299,10 @@ MonoBehaviour:
   hoverSfx: 8
   playClickSound: 1
   clickSfx: 9
+  playPanelOpenCloseSound: 0
+  panelOpenSfx: 26
+  panelCloseSfx: 27
+  panelOpenCloseSfxVolume: 1
 --- !u!1 &79558551
 GameObject:
   m_ObjectHideFlags: 0
@@ -772,6 +776,10 @@ MonoBehaviour:
   hoverSfx: 8
   playClickSound: 1
   clickSfx: 9
+  playPanelOpenCloseSound: 0
+  panelOpenSfx: 26
+  panelCloseSfx: 27
+  panelOpenCloseSfxVolume: 1
 --- !u!1 &141494590
 GameObject:
   m_ObjectHideFlags: 0
@@ -855,6 +863,10 @@ MonoBehaviour:
   hoverSfx: 8
   playClickSound: 1
   clickSfx: 9
+  playPanelOpenCloseSound: 0
+  panelOpenSfx: 26
+  panelCloseSfx: 27
+  panelOpenCloseSfxVolume: 1
 --- !u!114 &141494593
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1415,6 +1427,7 @@ MonoBehaviour:
   moveSpeed: 2.5
   useUnscaledTime: 0
   restorePositionOnDisable: 1
+  spriteMoveMultiplier: 0.01
 --- !u!1 &328759114
 GameObject:
   m_ObjectHideFlags: 0
@@ -2127,6 +2140,10 @@ MonoBehaviour:
   hoverSfx: 8
   playClickSound: 1
   clickSfx: 9
+  playPanelOpenCloseSound: 0
+  panelOpenSfx: 26
+  panelCloseSfx: 27
+  panelOpenCloseSfxVolume: 1
 --- !u!114 &421119025
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2881,6 +2898,10 @@ MonoBehaviour:
   hoverSfx: 8
   playClickSound: 1
   clickSfx: 9
+  playPanelOpenCloseSound: 0
+  panelOpenSfx: 26
+  panelCloseSfx: 27
+  panelOpenCloseSfxVolume: 1
 --- !u!114 &533083740
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3197,6 +3218,7 @@ MonoBehaviour:
   moveSpeed: 1.5
   useUnscaledTime: 1
   restorePositionOnDisable: 1
+  spriteMoveMultiplier: 0.01
 --- !u!1 &570449836
 GameObject:
   m_ObjectHideFlags: 0
@@ -4079,6 +4101,10 @@ MonoBehaviour:
   hoverSfx: 8
   playClickSound: 1
   clickSfx: 9
+  playPanelOpenCloseSound: 0
+  panelOpenSfx: 26
+  panelCloseSfx: 27
+  panelOpenCloseSfxVolume: 1
 --- !u!1 &740221744
 GameObject:
   m_ObjectHideFlags: 0
@@ -6561,6 +6587,10 @@ MonoBehaviour:
   hoverSfx: 8
   playClickSound: 1
   clickSfx: 9
+  playPanelOpenCloseSound: 0
+  panelOpenSfx: 26
+  panelCloseSfx: 27
+  panelOpenCloseSfxVolume: 1
 --- !u!114 &1338491547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6852,6 +6882,10 @@ MonoBehaviour:
   hoverSfx: 8
   playClickSound: 1
   clickSfx: 9
+  playPanelOpenCloseSound: 0
+  panelOpenSfx: 26
+  panelCloseSfx: 27
+  panelOpenCloseSfxVolume: 1
 --- !u!114 &1375075856
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7268,6 +7302,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  pressAnyKeyBlink: {fileID: 0}
   inputDelay: 1.5
   allowMouseInput: 1
   allowGamepadInput: 1
@@ -7303,7 +7338,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   targetTitlePosition: {x: -526, y: 258}
   targetTitleScale: {x: 0.7, y: 0.7, z: 0}
-  titleDuration: 0.5
+  titleDuration: 0.3
   titleCurve:
     serializedVersion: 2
     m_Curve:
@@ -9406,6 +9441,10 @@ MonoBehaviour:
   hoverSfx: 8
   playClickSound: 0
   clickSfx: 9
+  playPanelOpenCloseSound: 0
+  panelOpenSfx: 26
+  panelCloseSfx: 27
+  panelOpenCloseSfxVolume: 1
 --- !u!1 &1943630877
 GameObject:
   m_ObjectHideFlags: 0
@@ -9988,6 +10027,10 @@ MonoBehaviour:
   hoverSfx: 8
   playClickSound: 1
   clickSfx: 9
+  playPanelOpenCloseSound: 0
+  panelOpenSfx: 26
+  panelCloseSfx: 27
+  panelOpenCloseSfxVolume: 1
 --- !u!1 &2080549554
 GameObject:
   m_ObjectHideFlags: 0
@@ -10157,6 +10200,7 @@ MonoBehaviour:
   moveSpeed: 1.5
   useUnscaledTime: 1
   restorePositionOnDisable: 1
+  spriteMoveMultiplier: 0.01
 --- !u!1 &2139877485
 GameObject:
   m_ObjectHideFlags: 0
