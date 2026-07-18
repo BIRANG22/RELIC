@@ -9,7 +9,7 @@ public class SkillInventoryEquipService
     private const int LastFreeSkillSlotIndex = 3;
 
     private readonly CharacterRuntimeStore characterStore;
-    private readonly BattleRuntimeData battleRuntimeData;
+    private readonly IList<string> skillInventoryIds;
     private readonly Func<string, SkillMasterData> skillResolver;
 
     public SkillInventoryEquipService(
@@ -18,7 +18,17 @@ public class SkillInventoryEquipService
         Func<string, SkillMasterData> skillResolver)
     {
         this.characterStore = characterStore;
-        this.battleRuntimeData = battleRuntimeData;
+        skillInventoryIds = battleRuntimeData?.SkillInventoryIds;
+        this.skillResolver = skillResolver;
+    }
+
+    public SkillInventoryEquipService(
+        CharacterRuntimeStore characterStore,
+        IList<string> skillInventoryIds,
+        Func<string, SkillMasterData> skillResolver)
+    {
+        this.characterStore = characterStore;
+        this.skillInventoryIds = skillInventoryIds;
         this.skillResolver = skillResolver;
     }
 
@@ -145,23 +155,20 @@ public class SkillInventoryEquipService
 
     private void EnsureInventory()
     {
-        if (battleRuntimeData == null)
-            return;
-
-        battleRuntimeData.SkillInventoryIds ??= new List<string>();
+        // Runtime stores normalize the injected list before constructing this service.
     }
 
     private bool HasInventorySkill(string skillId)
     {
-        if (battleRuntimeData?.SkillInventoryIds == null || string.IsNullOrWhiteSpace(skillId))
+        if (skillInventoryIds == null || string.IsNullOrWhiteSpace(skillId))
             return false;
 
         string targetId = skillId.Trim();
 
-        for (int i = 0; i < battleRuntimeData.SkillInventoryIds.Count; i++)
+        for (int i = 0; i < skillInventoryIds.Count; i++)
         {
             if (string.Equals(
-                    battleRuntimeData.SkillInventoryIds[i]?.Trim(),
+                    skillInventoryIds[i]?.Trim(),
                     targetId,
                     StringComparison.Ordinal))
             {
@@ -174,7 +181,7 @@ public class SkillInventoryEquipService
 
     private void AddInventorySkillIfMissing(string skillId)
     {
-        if (battleRuntimeData == null || string.IsNullOrWhiteSpace(skillId))
+        if (skillInventoryIds == null || string.IsNullOrWhiteSpace(skillId))
             return;
 
         EnsureInventory();
@@ -182,27 +189,27 @@ public class SkillInventoryEquipService
         skillId = skillId.Trim();
 
         if (!HasInventorySkill(skillId))
-            battleRuntimeData.SkillInventoryIds.Add(skillId);
+            skillInventoryIds.Add(skillId);
     }
 
     private void RemoveOneInventorySkill(string skillId)
     {
-        if (battleRuntimeData?.SkillInventoryIds == null || string.IsNullOrWhiteSpace(skillId))
+        if (skillInventoryIds == null || string.IsNullOrWhiteSpace(skillId))
             return;
 
         string targetId = skillId.Trim();
 
-        for (int i = 0; i < battleRuntimeData.SkillInventoryIds.Count; i++)
+        for (int i = 0; i < skillInventoryIds.Count; i++)
         {
             if (!string.Equals(
-                    battleRuntimeData.SkillInventoryIds[i]?.Trim(),
+                    skillInventoryIds[i]?.Trim(),
                     targetId,
                     StringComparison.Ordinal))
             {
                 continue;
             }
 
-            battleRuntimeData.SkillInventoryIds.RemoveAt(i);
+            skillInventoryIds.RemoveAt(i);
             return;
         }
     }

@@ -28,11 +28,6 @@ public class CharPick : MonoBehaviour
     [SerializeField] private bool resetPendingSelectionOnEnable = true;
     [SerializeField] private bool resetPendingSelectionOnDisable = true;
 
-    [Header("World Preview Transform")]
-    [SerializeField] private Vector3 previewLocalPosition = Vector3.zero;
-    [SerializeField] private Vector3 previewLocalEulerAngles = Vector3.zero;
-    [SerializeField] private float previewScale = 1f;
-
     private readonly List<string> pendingCharacterIds = new();
     private readonly List<string> runtimeCharacterIdsSnapshot = new();
 
@@ -884,23 +879,17 @@ public class CharPick : MonoBehaviour
             return;
         }
 
-        if (!DataManager.Instance.CharacterPrefabDatabase.TryGetPreviewWorldPrefab(characterId, out var prefab))
+        if (!DataManager.Instance.CharacterPrefabDatabase.TryGetPreviewUIPrefab(characterId, out var prefab))
         {
-            Debug.LogWarning("[CharPick] PreviewWorldPrefab not found: " + characterId);
+            Debug.LogWarning("[CharPick] PreviewUIPrefab not found: " + characterId);
             return;
         }
 
         if (prefab == null)
             return;
 
-        currentPreview = new GameObject("Preview_" + characterId);
-        Transform previewAnchor = currentPreview.transform;
-        previewAnchor.SetParent(previewRoot, false);
-        previewAnchor.localPosition = previewLocalPosition;
-        previewAnchor.localRotation = Quaternion.Euler(previewLocalEulerAngles);
-        previewAnchor.localScale = Vector3.one * previewScale;
-
-        Instantiate(prefab, previewAnchor);
+        currentPreview = Instantiate(prefab, previewRoot, false);
+        currentPreview.name = "Preview_" + characterId;
 
         PlayPreviewBackgroundAnim();
     }

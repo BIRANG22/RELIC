@@ -18,6 +18,7 @@ public class RelicEquipPanelUI : MonoBehaviour
 
     [Header("Tooltip")]
     [SerializeField] private EquippedSkillPanelUI tooltipPanelOwner;
+    [SerializeField] private InventoryRuntimeContextProvider runtimeContextProvider;
 
     private string selectedCharacterId;
     private int selectedRelicSlotIndex = -1;
@@ -170,12 +171,13 @@ public class RelicEquipPanelUI : MonoBehaviour
         if (DataManager.Instance == null)
             return false;
 
-        BattleRuntimeData battleRuntimeData =
-            DataManager.Instance.BattleRuntimeStore.GetOrCreate();
+        IInventoryRuntimeContext context = ResolveRuntimeContext();
+        if (context == null)
+            return false;
 
         RelicEquipService service = new RelicEquipService(
             DataManager.Instance.CharacterRuntimeStore,
-            battleRuntimeData,
+            context.OwnedRelicIds,
             DataManager.Instance.RelicDatabase
         );
 
@@ -209,19 +211,17 @@ public class RelicEquipPanelUI : MonoBehaviour
         if (DataManager.Instance == null)
             return;
 
-        BattleRuntimeData runtime =
-            DataManager.Instance.BattleRuntimeStore.GetOrCreate();
-
-        NormalizeOwnedRelicIds(runtime);
-
-        if (runtime.OwnedRelicIds == null)
+        IInventoryRuntimeContext context = ResolveRuntimeContext();
+        if (context == null)
             return;
+
+        NormalizeOwnedRelicIds(context.OwnedRelicIds);
 
         HashSet<string> displayedRelicIds = new();
 
-        for (int i = 0; i < runtime.OwnedRelicIds.Count; i++)
+        for (int i = 0; i < context.OwnedRelicIds.Count; i++)
         {
-            string relicId = runtime.OwnedRelicIds[i];
+            string relicId = context.OwnedRelicIds[i];
 
             if (string.IsNullOrWhiteSpace(relicId))
                 continue;
@@ -349,21 +349,20 @@ public class RelicEquipPanelUI : MonoBehaviour
         RebuildInventoryLayout();
     }
 
-    private void NormalizeOwnedRelicIds(BattleRuntimeData runtime)
+    private static void NormalizeOwnedRelicIds(IList<string> ownedRelicIds)
     {
-        if (runtime == null)
+        if (ownedRelicIds == null)
             return;
 
-        runtime.OwnedRelicIds ??= new List<string>();
         HashSet<string> uniqueIds = new();
 
-        for (int i = runtime.OwnedRelicIds.Count - 1; i >= 0; i--)
+        for (int i = ownedRelicIds.Count - 1; i >= 0; i--)
         {
-            string relicId = runtime.OwnedRelicIds[i];
+            string relicId = ownedRelicIds[i];
 
             if (string.IsNullOrWhiteSpace(relicId))
             {
-                runtime.OwnedRelicIds.RemoveAt(i);
+                ownedRelicIds.RemoveAt(i);
                 continue;
             }
 
@@ -371,14 +370,12 @@ public class RelicEquipPanelUI : MonoBehaviour
 
             if (!uniqueIds.Add(relicId))
             {
-                runtime.OwnedRelicIds.RemoveAt(i);
+                ownedRelicIds.RemoveAt(i);
                 continue;
             }
 
-            runtime.OwnedRelicIds[i] = relicId;
+            ownedRelicIds[i] = relicId;
         }
-
-        DataManager.Instance?.BattleRuntimeStore?.Set(runtime);
     }
 
     public static void RefreshAll()
@@ -510,12 +507,13 @@ public class RelicEquipPanelUI : MonoBehaviour
         if (DataManager.Instance == null)
             return;
 
-        BattleRuntimeData battleRuntimeData =
-            DataManager.Instance.BattleRuntimeStore.GetOrCreate();
+        IInventoryRuntimeContext context = ResolveRuntimeContext();
+        if (context == null)
+            return;
 
         RelicEquipService service = new RelicEquipService(
             DataManager.Instance.CharacterRuntimeStore,
-            battleRuntimeData,
+            context.OwnedRelicIds,
             DataManager.Instance.RelicDatabase
         );
 
@@ -545,5 +543,19 @@ public class RelicEquipPanelUI : MonoBehaviour
 
         BattleWarningUI.ShowMessage(battleRoomLockMessage);
         return true;
+    }
+
+    private IInventoryRuntimeContext ResolveRuntimeContext()
+    {
+        if (runtimeContextProvider == null)
+            runtimeContextProvider = GetComponentInParent<InventoryRuntimeContextProvider>(true);
+
+        if (runtimeContextProvider != null)
+            return runtimeContextProvider.GetContext();
+
+        if (DataManager.Instance == null)
+            return null;
+
+        return InventoryRuntimeContext.ForBattle(DataManager.Instance.BattleRuntimeStore.GetOrCreate());
     }
 }

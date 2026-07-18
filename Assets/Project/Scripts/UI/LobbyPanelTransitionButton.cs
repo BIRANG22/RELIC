@@ -138,6 +138,17 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
     {
         if (afterPanelChange != null)
             afterPanelChange.Invoke();
+
+        LobbyViewStateController viewStateController =
+            FindFirstObjectByType<LobbyViewStateController>();
+
+        if (viewStateController == null)
+            return;
+
+        if (transitionMode == PanelTransitionMode.LobbyToCharacter)
+            viewStateController.ShowCharacterSelection();
+        else if (transitionMode == PanelTransitionMode.CharacterToLobby)
+            viewStateController.ShowLobby();
     }
 
 

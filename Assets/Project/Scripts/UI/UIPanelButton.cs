@@ -143,6 +143,16 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         }
     }
 
+    public void ConfigurePanelMove(RectTransform targetPanel, Vector2 offset)
+    {
+        panelToOpen = null;
+        panelsToClose = System.Array.Empty<GameObject>();
+        panelToMove = targetPanel;
+        moveOffset = offset;
+        toggleMove = true;
+        moveTogetherTargets = System.Array.Empty<RectTransform>();
+    }
+
     private void Awake()
     {
         CacheOriginalMovePositions();

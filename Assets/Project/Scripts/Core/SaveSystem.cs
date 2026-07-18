@@ -108,7 +108,8 @@ public class SaveSystem : Singleton<SaveSystem>
             SceneManager.GetActiveScene().name,
             GameManager.Instance != null && GameManager.Instance.Context != null
                 ? GameManager.Instance.Context.SelectedGameMode
-                : GameMode.None);
+                : GameMode.None,
+            dataManager.LobbyRuntimeStore?.GetOrCreate());
     }
 
     public static GameSaveData CreateSaveDataSnapshot(
@@ -119,7 +120,8 @@ public class SaveSystem : Singleton<SaveSystem>
         MapRuntimeData map,
         BattleRuntimeData battle,
         string activeSceneName,
-        GameMode selectedGameMode)
+        GameMode selectedGameMode,
+        LobbyRuntimeData lobby = null)
     {
         var saveData = new GameSaveData
         {
@@ -130,7 +132,8 @@ public class SaveSystem : Singleton<SaveSystem>
             Player = CloneSerializable(player),
             Party = BuildPartyRuntimeData(partyStore),
             Map = CloneSerializable(map),
-            Battle = CloneSerializable(battle)
+            Battle = CloneSerializable(battle),
+            Lobby = CloneSerializable(lobby)
         };
 
         AddCharacters(saveData, characters);
@@ -202,6 +205,7 @@ public class SaveSystem : Singleton<SaveSystem>
         dataManager.SkillRuntimeStore?.SetAll(saveData.Skills);
         dataManager.MapRuntimeStore?.Set(saveData.Map);
         dataManager.BattleRuntimeStore?.Set(saveData.Battle);
+        dataManager.LobbyRuntimeStore?.Set(saveData.Lobby);
 
         if (GameManager.Instance != null && GameManager.Instance.Context != null)
             GameManager.Instance.Context.SelectedGameMode = saveData.SelectedGameMode;
@@ -345,6 +349,9 @@ public class SaveSystem : Singleton<SaveSystem>
         saveData.Skills ??= new List<SkillRuntimeData>();
         saveData.Party ??= new PartyRuntimeData();
         saveData.Party.Slots ??= new List<PartySlotRuntimeData>();
+        saveData.Lobby ??= new LobbyRuntimeData();
+
+        NormalizeLobby(saveData.Lobby);
 
         NormalizeMap(saveData.Map, activeSceneName);
         NormalizeBattle(saveData.Battle);
@@ -384,6 +391,28 @@ public class SaveSystem : Singleton<SaveSystem>
 
         for (int i = 0; i < battle.LobbyLoadoutSnapshots.Count; i++)
             NormalizeLobbyLoadoutSnapshot(battle.LobbyLoadoutSnapshots[i]);
+    }
+
+    private static void NormalizeLobby(LobbyRuntimeData lobby)
+    {
+        if (lobby == null)
+            return;
+
+        lobby.OwnedRelicIds ??= new List<string>();
+        lobby.SkillInventoryIds ??= new List<string>();
+        lobby.BagItemIds ??= new List<string>();
+        lobby.CharacterLoadouts ??= new List<LobbyCharacterLoadoutData>();
+        lobby.RelicOfferIds ??= new List<string>();
+
+        for (int i = 0; i < lobby.CharacterLoadouts.Count; i++)
+        {
+            LobbyCharacterLoadoutData loadout = lobby.CharacterLoadouts[i];
+            if (loadout == null)
+                continue;
+
+            loadout.EquippedRelicIds = NormalizeStringArray(loadout.EquippedRelicIds, EquippedRelicSlotCount);
+            loadout.EquippedSkillIds = NormalizeStringArray(loadout.EquippedSkillIds, EquippedSkillSlotCount);
+        }
     }
 
     private static void NormalizeLobbyLoadoutSnapshot(BattleLobbyLoadoutSnapshotData snapshot)
@@ -432,6 +461,7 @@ public class GameSaveData
     public PartyRuntimeData Party;
     public MapRuntimeData Map;
     public BattleRuntimeData Battle;
+    public LobbyRuntimeData Lobby;
 
     public List<CharacterRuntimeData> Characters = new();
     public List<SkillRuntimeData> Skills = new();
