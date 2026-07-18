@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using UnityEngine;
 
@@ -104,8 +105,43 @@ public class BattleUnitAnimator : MonoBehaviour
 
     public void PlayMove()
     {
+        if (EnsureAnimator())
+            animator.speed = 1f;
+
         PlayState(moveStateName);
         SpawnVfx(moveVfx);
+    }
+
+    /// <summary>
+    /// Move 상태를 마지막 프레임부터 역방향으로 재생합니다.
+    /// 포탈 도착 연출처럼 같은 이동 애니메이션을 반대로 보여줄 때 사용합니다.
+    /// </summary>
+    public void PlayMoveReverse()
+    {
+        if (!TryResolveAnimatorStateName(moveStateName, out string resolvedStateName))
+            return;
+
+        animator.speed = -1f;
+        animator.Play(resolvedStateName, animatorLayer, 1f);
+
+        if (forceAnimatorUpdate)
+            animator.Update(0f);
+    }
+
+    /// <summary>
+    /// 현재 애니메이터의 재생 속도를 변경합니다.
+    /// 다단 공격처럼 같은 행동 안에서 여러 모션을 빠르게 이어갈 때 사용합니다.
+    /// </summary>
+    public void SetPlaybackSpeed(float speed)
+    {
+        if (EnsureAnimator())
+            animator.speed = Mathf.Max(0.01f, speed);
+    }
+
+    public void RestorePlaybackSpeed()
+    {
+        if (EnsureAnimator())
+            animator.speed = 1f;
     }
 
     public void PlayGuard()
@@ -186,6 +222,30 @@ public class BattleUnitAnimator : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 다단 공격의 타격 순서에 맞춰 서로 다른 공격 모션을 재생합니다.
+    /// Attack 1~3 중 실제로 등록된 모션만 순서대로 순환합니다.
+    /// </summary>
+    public void PlaySkillAction(SkillMasterData skillData, int hitIndex)
+    {
+        if (skillData == null || skillData.SkillType != SkillType.Attack)
+        {
+            PlaySkillAction(skillData);
+            return;
+        }
+
+        List<int> assignedAttackIndices = GetAssignedAttackIndices();
+
+        if (assignedAttackIndices.Count <= 0)
+        {
+            PlayRandomAttackAction();
+            return;
+        }
+
+        int sequenceIndex = Mathf.Abs(hitIndex) % assignedAttackIndices.Count;
+        PlayAttackAction(assignedAttackIndices[sequenceIndex]);
+    }
+
     public void PlayMonsterSkillReady(MonsterReservedCommand command)
     {
     }
@@ -202,10 +262,26 @@ public class BattleUnitAnimator : MonoBehaviour
             return;
         }
 
-        if (command.SkillData.TimelineNotation == TimelineActionType.Move)
+        if (IsActualMonsterMove(command))
         {
             PlayMove();
             return;
+        }
+
+        // 공격 행동은 GameData의 Attack 순번을 Player Skill Presentations의
+        // Attack 1~3에 연결합니다. 몬스터별 스킬 ID 고정 매핑은 사용하지 않습니다.
+        if (command.SkillData.TimelineNotation == TimelineActionType.Attack &&
+            command.ActionIndex >= 1 && command.ActionIndex <= 3)
+        {
+            EnsurePlayerSkillPresentations();
+            BattleUnitActionPresentation attackPresentation =
+                playerSkillPresentations.GetAttack(command.ActionIndex);
+
+            if (HasPresentation(attackPresentation))
+            {
+                PlayPresentation(attackPresentation);
+                return;
+            }
         }
 
         if (!IsValidMonsterActionIndex(command.ActionIndex))
@@ -215,6 +291,32 @@ public class BattleUnitAnimator : MonoBehaviour
         }
 
         PlayPresentation(GetMonsterActionPresentation(command.ActionIndex));
+    }
+
+
+    private static bool IsActualMonsterMove(MonsterReservedCommand command)
+    {
+        if (command == null || command.SkillData == null)
+            return false;
+
+        if (command.IsPortalMove ||
+            command.SkillData.TimelineNotation == TimelineActionType.Move)
+        {
+            return true;
+        }
+
+        string effectIds = command.SkillData.EffectIds;
+        if (string.IsNullOrWhiteSpace(effectIds))
+            return false;
+
+        string[] splitEffectIds = effectIds.Split(',', ';');
+        for (int i = 0; i < splitEffectIds.Length; i++)
+        {
+            if (string.Equals(splitEffectIds[i].Trim(), "E_Move", System.StringComparison.Ordinal))
+                return true;
+        }
+
+        return false;
     }
 
     public bool HasMonsterProjectileVfx(MonsterReservedCommand command)
@@ -386,6 +488,24 @@ public class BattleUnitAnimator : MonoBehaviour
             if (monsterActionPresentations[i] == null)
                 monsterActionPresentations[i] = new BattleUnitActionPresentation();
         }
+    }
+
+    private List<int> GetAssignedAttackIndices()
+    {
+        EnsurePlayerSkillPresentations();
+
+        List<int> result = new();
+
+        if (HasPresentation(playerSkillPresentations.attack1))
+            result.Add(1);
+
+        if (HasPresentation(playerSkillPresentations.attack2))
+            result.Add(2);
+
+        if (HasPresentation(playerSkillPresentations.attack3))
+            result.Add(3);
+
+        return result;
     }
 
     private int GetRandomAssignedAttackIndex()

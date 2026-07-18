@@ -6,13 +6,13 @@ Char_01,힐트,105,10,4,3,Rage,OnAnyAllyDamaged,1,1,S_Passive_01,S_Passive_02,S_
 호전적이고 거침없이 돌격하는 탐사자입니다.
 전투를 통해 자신의 한계를 시험하고 강함을 증명하고자 합니다.
 
-자신 또는 아군이 피해를 받으면 턴 종료 시 분노를 1 획득합니다.",,,,,
+피해를 받으면 턴 종료 시 분노를 1 획득합니다.",,,,,
 Char_02,카야,98,11,4,5,Momentum,OnThreeActionsInSameSlot,1,1,S_Passive_03,S_Passive_04,S_Unique_03,S_Unique_04,S_Ability_05,S_Ability_07,S_Public_05,S_Public_07,Rune_56,Rune_57,Rune_58,Rune_59,Rune_60,"""흔들리는 검 끝은 죽음을 부를 뿐.""
 
 침착하고 냉철한 탐사자입니다.
 모든 전투 기술을 끊임없이 배우고 검술의 극의에 닿고자 합니다.
 
-한 슬롯에서 3회 이상 행동하면 턴 종료 시 기세를 1 획득합니다.",,,,,
+한 슬롯에서 2회  행동 할때 턴 종료 시 기세를 1 획득합니다.",,,,,
 Char_03,헤이즈,84,14,4,3,Aether,OnSpendEightCostInTurn,1,1,S_Passive_05,S_Passive_06,S_Unique_05,S_Unique_06,S_Ability_09,S_Ability_11,S_Public_09,S_Public_11,Rune_61,Rune_62,Rune_63,Rune_64,Rune_65,"""니아, 제발 내 곁에서 떨어지지 마!""
 
 겁이 많고 소심한 탐사자입니다.
@@ -47,18 +47,18 @@ Char_05,레이나,90,12,4,5,Blood,OnDamageEnemy,2,2,S_Passive_09,S_Passive_10,S_
 # Monster
 몬스터ID,이름,등급,HP,방어도,최소 렘넌트,최대 렘넌트,고유아이템,고유 아이템 확률,유물확률,공격범위,보유스킬1 ID,보유스킬2 ID,보유스킬3 ID,보유스킬4 ID,보유스킬5 ID,보유스킬6 ID,보유스킬7 ID,보유스킬8 ID,보유스킬9 ID,보유스킬10 ID
 MonsterId,Name,Grade,HP,Armor,MinRemnant,MaxRemnant,UniqueItemId ,UniqueItemChance,RelicChance,AttackRange,PossSkillId01,PossSkillId02,PossSkillId03,PossSkillId04,PossSkillId05,PossSkillId06,PossSkillId07,PossSkillId08,PossSkillId09,PossSkillId10
-Mon_01,머크,Common,32,0,8,16,Item_001,0.2,0.1,Range_19,S_Monster_01,S_Monster_04,0,0,0,0,0,0,0,0
+Mon_01,머크,Common,32,0,8,16,Item_001,0.1,0.02,Range_19,S_Monster_01,S_Monster_04,0,0,0,0,0,0,0,0
 Mon_02,블롭,Common,15,0,5,10,Item_002,0.1,0.02,Range_20,S_Monster_02,S_Monster_05,0,0,0,0,0,0,0,0
 Mon_03,랜서,Common,18,0,12,18,Item_003,0.1,0.02,Range_19,S_Monster_03,S_Monster_06,S_Monster_10,0,0,0,0,0,0,0
 Mon_04,블라이트,Common,20,0,12,18,Item_004,0.1,0.02,Range_19,S_Monster_03,S_Monster_06,S_Monster_12,0,0,0,0,0,0,0
 Mon_05,베스파,Common,35,0,18,25,Item_005,0.1,0.02,Range_20,S_Monster_03,S_Monster_07,0,0,0,0,0,0,0,0
-Mon_06,신더,Common,16,20,15,22,Item_006,0.15,0.05,Range_24,S_Monster_01,S_Monster_14,0,0,0,0,0,0,0,0
+Mon_06,신더,Common,16,20,15,22,Item_006,0.1,0.02,Range_24,S_Monster_01,S_Monster_14,0,0,0,0,0,0,0,0
 Mon_07,Mon_07,Common,,,,,,,,0,0,0,0,0,0,0,0,0,0,0
 Mon_08,Mon_08,Common,,,,,,,,0,0,0,0,0,0,0,0,0,0,0
 Mon_09,Mon_09,Common,,,,,,,,0,0,0,0,0,0,0,0,0,0,0
-Mon_10,Mon_10,Elite,,,,,,,,0,0,0,0,0,0,0,0,0,0,0
+Mon_10,녹턴,Elite,94,0,36,48,Item_010,0.2,0.1,Range_24,S_Monster_01,S_Monster_18,S_Monster_15,S_Monster_16,S_Monster_17,0,0,0,0,0
 Mon_11,Mon_11,Elite,,,,,,,,0,0,0,0,0,0,0,0,0,0,0
-Mon_12,엘리스,Boss,142,0,36,48,Item_012,0.7,1,0,0,0,0,0,0,0,0,0,0,0
+Mon_12,엘리스,Boss,142,0,45,55,Item_012,0.7,1,0,0,0,0,0,0,0,0,0,0,0
 ,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,
 
@@ -211,10 +211,10 @@ S_Monster_11,버프,Self,E_Block,Fixed,1,1,0,Range_16,Buff,이로운 효과를 �
 S_Monster_12,디버프,PlayerParty,E_Corrosion,Fixed,1,1,0,Range_All,Debuff,해로운 효과를 부여합니다.,0
 S_Monster_13,디버프,PlayerParty,E_Burn,Fixed,2,1,0,Range_All,Debuff,해로운 효과를 부여합니다.,0
 S_Monster_14,공격,PlayerParty,E_Strike,Fixed,25,1,0,Range_24,Attack,"범위를 공격하며 ""수치""의 피해를 줍니다.",0
-,,,,,,,,,,,
-,,,,,,,,,,,
-,,,,,,,,,,,
-,,,,,,,,,,,
+S_Monster_15,공격,PlayerParty,E_Strike,Fixed,12,1,0,Range_03,Attack,"범위를 공격하며 ""수치""의 피해를 줍니다.",1
+S_Monster_16,공격,PlayerParty,E_Strike,Fixed,10,1,0,Range_14,Attack,"범위를 공격하며 ""수치""의 피해를 줍니다.",2
+S_Monster_17,공격,PlayerParty,E_Grab,Fixed,1,1,0,Range_12,Attack,"범위의 대상을 ""수치""만큼 당겨옵니다.",0
+S_Monster_18,이동,Self,E_Move,None,0,1,0,Range_24,Move,이동하려고 합니다.,0
 ,,,,,,,,,,,
 ,,,,,,,,,,,
 ,,,,,,,,,,,
@@ -370,6 +370,7 @@ E_Corrosion,침식,Maintain,받는 모든 피해가 수치만큼 증가한다. �
 E_Block,차단,Maintain,이로운 효과를 1회 무효화한다. 발동 시 사라진다.
 E_Split,분열,Maintain,피해횟수에 따라 수치가 1 감소한다.  0이 되었을 때 살아 있다면 블롭 2마리로 분열한다.
 E_Explode,폭발,Decrease,턴 종료 시 수치가 1 감소합니다. 수치가 0이 되면 자폭을 시전하고 사망한다.
+E_Flank,기습,Maintain,뒤를 공격할 때 피해가 50% 증가한다.
 
 # Map
 맵ID,이름,타입,전투맵ID,이벤트ID,챕터,스테이지 맵,등장가중치,고정위치,드랍스킬분류
@@ -396,21 +397,21 @@ Map_18,Special6,Special,0,Event_09,Chapter1,Stage1,1,0,
 # BattleMap
 전투맵ID,몬스터ID,점유칸1,점유칸2,점유칸3,점유칸4,설명,스킬드랍확률,코어일반확률,코어희귀확률,코어영웅확률
 BattleMapId,MonsterId,OccupiedCell1,OccupiedCell2,OccupiedCell3,OccupiedCell4,Description,SkillDropChance,CoreCommonChance,CoreRareChance,CoreEpicChance
-Battlemap_01,Mon_02,26,-1,-1,-1,Blob*2,1,60,30,10
-Battlemap_01,Mon_02,28,-1,-1,-1,,,,,
-Battlemap_02,Mon_06,21,-1,-1,-1,"Cinder*1, Vespa*1",1,60,30,10
-Battlemap_02,Mon_05,29,-1,-1,-1,,,,,
-Battlemap_03,Mon_01,22,-1,-1,-1,"Muck*1,  Rancor*1",1,60,30,10
-Battlemap_03,Mon_03,24,-1,-1,-1,,,,,
-Battlemap_04,Mon_01,30,-1,-1,-1,"Muck*1, Blight*1",1,60,30,10
-Battlemap_04,Mon_04,29,-1,-1,-1,,,,,
-Battlemap_05,Mon_02,25,-1,-1,-1,"Cinder*1, Blob*2",1,60,30,10
-Battlemap_05,Mon_02,34,-1,-1,-1,,,,,
-Battlemap_05,Mon_06,22,-1,-1,-1,,,,,
-Battlemap_06,Mon_02,20,-1,-1,-1,"Blob*1, Vespa*1, Rancor*1",1,60,30,10
-Battlemap_06,Mon_05,31,-1,-1,-1,,,,,
-Battlemap_06,Mon_03,28,-1,-1,-1,,,,,
-Battlemap_07,Mon_10,27,-1,-1,-1,Elise*1,1,60,30,10
+Battlemap_01,Mon_02,21,-1,-1,-1,Blob*2,1,60,30,10
+Battlemap_01,Mon_02,23,-1,-1,-1,,,,,
+Battlemap_02,Mon_06,27,-1,-1,-1,"Cinder*1, Vespa*1",1,60,30,10
+Battlemap_02,Mon_05,33,-1,-1,-1,,,,,
+Battlemap_03,Mon_01,26,-1,-1,-1,"Muck*1,  Rancor*1",1,60,30,10
+Battlemap_03,Mon_03,23,-1,-1,-1,,,,,
+Battlemap_04,Mon_05,25,-1,-1,-1,"Vespa*1, Blight*1",1,60,30,10
+Battlemap_04,Mon_04,22,-1,-1,-1,,,,,
+Battlemap_05,Mon_02,26,-1,-1,-1,"Cinder*1, Blob*1",1,60,30,10
+Battlemap_05,Mon_06,23,-1,-1,-1,,,,,
+Battlemap_06,Mon_10,22,-1,-1,-1,Nocturne*1,1,60,30,10
+Battlemap_07,Mon_12,27,-1,-1,-1,Elise*1,1,60,30,10
+
+
+
 ,,,,,,,,,,,,,,,15,20,25,30
 ,,,,,,,,,,,,,,,16,21,26,31
 ,,,,,,,,,,,,,,,17,22,27,32
@@ -528,7 +529,7 @@ Item_007,부패한 뼈,25,부패한 기운이 남아 있는 뼈다. 판매 시 2
 Item_008,다크 크리스탈,25,어두운 기운을 품은 결정이다. 판매 시 25 더스티움을 얻는다.
 Item_009,고대 조각,30,"오래된 문명의 흔적이 남은 조각이다. 판매 시 30 더스티움을 얻는다.
 "
-Item_010,엘리스의 경절,50,엘리스에게서 떨어져 나온 단단한 경절이다. 판매 시 50 더스티움을 얻는다.
-Item_011,Elite_Heart,60,정예 개체의 힘이 응축된 심장이다. 판매 시 60 더스티움을 얻는다.
-Item_012,Boss_Trophy,100,강대한 존재를 쓰러뜨린 증표다. 판매 시 100 더스티움을 얻는다.
+Item_010,녹슨 칼날,50,엘리스에게서 떨어져 나온 단단한 경절이다. 판매 시 50 더스티움을 얻는다.
+Item_011,11,60,정예 개체의 힘이 응축된 심장이다. 판매 시 60 더스티움을 얻는다.
+Item_012,엘리스의 경절,100,강대한 존재를 쓰러뜨린 증표다. 판매 시 100 더스티움을 얻는다.
 

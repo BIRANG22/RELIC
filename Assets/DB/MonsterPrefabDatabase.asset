@@ -32,7 +32,7 @@ MonoBehaviour:
   - monsterId: Mon_09
     prefab: {fileID: 9021640511591303100, guid: c3ba04f2252b3aa47b299ac1f308e9a3, type: 3}
   - monsterId: Mon_10
-    prefab: {fileID: 3926521244080933046, guid: 0b3a7cd1957ac9246b3b6b34a00e6b28, type: 3}
+    prefab: {fileID: 1910251976348132752, guid: 69f02f80bdce5664b89b099b867d6b4e, type: 3}
   - monsterId: Mon_11
     prefab: {fileID: 325311907647569197, guid: 251169e79f3b8064f8ad148309d74199, type: 3}
   - monsterId: Mon_12

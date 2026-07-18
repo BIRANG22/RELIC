@@ -123,7 +123,9 @@ public static class BattleEquipmentEffectService
             HasRelic(runtime, "Relic_06") &&
             TryMarkBattleEffectApplied(runtime, Relic06Turn2ArmorAppliedId))
         {
-            runtime.CurrentShield += ModifyArmorGain(runtime, 10);
+            int gainedArmor = ModifyArmorGain(runtime, 10);
+            runtime.CurrentShield += gainedArmor;
+            BattleDamageTextPopupUI.ShowArmorGain(runtime.CharacterId, gainedArmor);
         }
     }
 
@@ -245,7 +247,9 @@ public static class BattleEquipmentEffectService
             HasRune(runtime, "Rune_12") &&
             resource >= 3)
         {
-            runtime.CurrentShield += ModifyArmorGain(runtime, 2);
+            int gainedArmor = ModifyArmorGain(runtime, 2);
+            runtime.CurrentShield += gainedArmor;
+            BattleDamageTextPopupUI.ShowArmorGain(runtime.CharacterId, gainedArmor);
         }
 
         if (IsCharacter(runtime, "Char_03") &&

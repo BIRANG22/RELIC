@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
+using Relic.Gameplay.Monster;
 using UnityEngine;
 
 public static class BattleDamageModifierUtility
@@ -8,6 +9,7 @@ public static class BattleDamageModifierUtility
     private const string CorrosionEffectId = "E_Corrosion";
     private const string VulnerableEffectId = "E_Vulnerable";
     private const string GrudgeEffectId = "E_Grudge";
+    private const string FlankEffectId = "E_Flank";
     private const string ActiveDamageBoostEffectId = ActiveRelicEffectIds.DamageBoostThisTurn;
     private const string ActiveDamageReductionEffectId = ActiveRelicEffectIds.DamageReductionThisTurn;
 
@@ -20,6 +22,14 @@ public static class BattleDamageModifierUtility
 
         if (context?.MonsterCaster != null)
             damage = ApplyAttackerModifiers(damage, context.MonsterCaster.RuntimeData.StatusEffects);
+
+        if (context?.MonsterCaster != null &&
+            context.PlayerTarget != null &&
+            HasStatus(context.MonsterCaster.RuntimeData.StatusEffects, FlankEffectId) &&
+            IsAttackingPlayerFromBehind(context.MonsterCaster, context.PlayerTarget))
+        {
+            damage *= 1.5f;
+        }
 
         if (context?.PlayerTarget != null)
             damage = ApplyTargetModifiers(damage, context.PlayerTarget.RuntimeData.StatusEffects);
@@ -75,6 +85,44 @@ public static class BattleDamageModifierUtility
             damage += corrosionStack;
 
         return damage;
+    }
+
+
+    private static bool IsAttackingPlayerFromBehind(
+        MonsterUnit attacker,
+        BattleCharacter target)
+    {
+        if (attacker == null ||
+            attacker.RuntimeData == null ||
+            target == null ||
+            target.RuntimeData == null ||
+            attacker.MainGridIndex < 0 ||
+            target.CurrentGridIndex < 0)
+        {
+            return false;
+        }
+
+        GridManager gridManager = Object.FindFirstObjectByType<GridManager>();
+
+        if (gridManager == null)
+            return false;
+
+        Vector2Int attackerCoord = gridManager.IndexToCoord(attacker.MainGridIndex);
+        Vector2Int targetCoord = gridManager.IndexToCoord(target.CurrentGridIndex);
+
+        if (attackerCoord.x == targetCoord.x)
+            return false;
+
+        return target.RuntimeData.Direction == BattleDirection.Right
+            ? attackerCoord.x < targetCoord.x
+            : attackerCoord.x > targetCoord.x;
+    }
+
+    private static bool HasStatus(
+        List<StatusEffectRuntimeData> statuses,
+        string effectId)
+    {
+        return GetStatusStack(statuses, effectId) > 0;
     }
 
     private static int GetStatusStack(

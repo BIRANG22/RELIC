@@ -19,6 +19,7 @@ public class MonsterReservedCommand
     public int RangeOriginGridIndex { get; private set; } = -1;
     public bool HasForcedDirection { get; private set; }
     public BattleDirection ForcedDirection { get; private set; } = BattleDirection.Right;
+    public bool IsPortalMove { get; private set; }
 
     public List<int> RangeGridIndices { get; private set; } = new();
     public List<int> TargetGridIndices { get; private set; } = new();
@@ -28,7 +29,7 @@ public class MonsterReservedCommand
         UserRuntime = userRuntime;
         SkillData = skillData;
         SetActionIndex(userRuntime != null && skillData != null
-            ? userRuntime.GetActionIndexForSkill(skillData.SkillId)
+            ? userRuntime.GetPresentationActionIndexForSkill(skillData.SkillId)
             : 0);
         ReserveDamage();
     }
@@ -65,6 +66,16 @@ public class MonsterReservedCommand
     {
         HasForcedDirection = true;
         ForcedDirection = direction;
+    }
+
+    public void ClearForcedDirection()
+    {
+        HasForcedDirection = false;
+    }
+
+    public void SetPortalMove(bool isPortalMove)
+    {
+        IsPortalMove = isPortalMove;
     }
 
     public int EnsureReservedDamage()

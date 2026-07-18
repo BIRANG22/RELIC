@@ -5,6 +5,14 @@ using UnityEngine.UI;
 
 public class BattleDamageTextPopupUI : MonoBehaviour
 {
+    public enum PopupType
+    {
+        Damage,
+        CostRecovery,
+        ArmorGain,
+        PoisonDamage,
+        UniqueResource
+    }
     private const string AutoInstanceName = "BattleDamageTextPopupUI_Auto";
 
     [Header("Canvas")]
@@ -42,6 +50,13 @@ public class BattleDamageTextPopupUI : MonoBehaviour
     [SerializeField] private float startFontSize = 72f;
     [SerializeField] private float endFontSize = 38f;
     [SerializeField] private Color damageColor = new Color(1f, 0.06f, 0.04f, 1f);
+    [SerializeField] private Color costRecoveryColor = new Color(0.15f, 0.65f, 1f, 1f);
+    [SerializeField] private Color armorGainColor = Color.white;
+    [SerializeField] private Color poisonDamageColor = new Color(0.2f, 1f, 0.25f, 1f);
+    [SerializeField] private Color uniqueResourceColor = Color.white;
+    [SerializeField] private float straightUpCanvasMove = 30f;
+    [SerializeField] private float armorUpCanvasMove = 16f;
+    [SerializeField] private float poisonDownCanvasMove = 28f;
     [SerializeField] private bool useBoldText = true;
 
     private static BattleDamageTextPopupUI instance;
@@ -71,7 +86,77 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         if (popup == null)
             return;
 
-        popup.ShowInternal(target, damage);
+        popup.ShowInternal(target, damage, PopupType.Damage);
+    }
+
+    public static void ShowCostRecovery(Transform target, int value)
+    {
+        ShowTyped(target, value, PopupType.CostRecovery);
+    }
+
+    public static void ShowArmorGain(Transform target, int value)
+    {
+        ShowTyped(target, value, PopupType.ArmorGain);
+    }
+
+    public static void ShowArmorGain(string characterId, int value)
+    {
+        if (string.IsNullOrWhiteSpace(characterId) || value <= 0)
+            return;
+
+        BattleCharacter[] characters = FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            BattleCharacter character = characters[i];
+            if (character != null && character.CharacterId == characterId)
+            {
+                ShowArmorGain(character.transform, value);
+                return;
+            }
+        }
+    }
+
+    public static void ShowPoisonDamage(Transform target, int value)
+    {
+        ShowTyped(target, value, PopupType.PoisonDamage);
+    }
+
+    public static void ShowUniqueResource(Transform target, string resourceName, int value)
+    {
+        if (target == null || string.IsNullOrWhiteSpace(resourceName) || value <= 0)
+            return;
+
+        BattleDamageTextPopupUI popup = GetOrCreateInstance();
+        if (popup != null)
+            popup.ShowCustomTextInternal(target, $"{resourceName} +{value}", PopupType.UniqueResource);
+    }
+
+    private static void ShowTyped(Transform target, int value, PopupType popupType)
+    {
+        if (target == null || value <= 0)
+            return;
+
+        BattleDamageTextPopupUI popup = GetOrCreateInstance();
+        if (popup != null)
+            popup.ShowInternal(target, value, popupType);
+    }
+
+
+    private void ShowCustomTextInternal(Transform target, string message, PopupType popupType)
+    {
+        EnsureReferences();
+
+        if (targetCanvas == null || canvasRect == null || string.IsNullOrWhiteSpace(message))
+            return;
+
+        if (!TryGetCanvasPosition(target, out Vector2 anchoredPosition))
+            return;
+
+        ShowCustomTextPopup(anchoredPosition, message, popupType);
     }
 
     private static BattleDamageTextPopupUI GetOrCreateInstance()
@@ -157,7 +242,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         return canvas;
     }
 
-    private void ShowInternal(Transform target, int damage)
+    private void ShowInternal(Transform target, int damage, PopupType popupType)
     {
         EnsureReferences();
 
@@ -170,9 +255,9 @@ public class BattleDamageTextPopupUI : MonoBehaviour
             return;
 
         if (CanUseDigitSprites(damage))
-            ShowDigitPopup(anchoredPosition, damage);
+            ShowDigitPopup(anchoredPosition, damage, popupType);
         else if (useTextFallbackWhenDigitMissing)
-            ShowTextFallbackPopup(anchoredPosition, damage);
+            ShowTextFallbackPopup(anchoredPosition, damage, popupType);
     }
 
     private bool CanUseDigitSprites(int damage)
@@ -196,7 +281,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         return true;
     }
 
-    private void ShowDigitPopup(Vector2 anchoredPosition, int damage)
+    private void ShowDigitPopup(Vector2 anchoredPosition, int damage, PopupType popupType)
     {
         string value = damage.ToString();
 
@@ -223,7 +308,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         for (int i = 0; i < value.Length; i++)
         {
             int digit = value[i] - '0';
-            CreateDigitImage(rect, digit, i);
+            CreateDigitImage(rect, digit, i, GetPopupColor(popupType));
         }
 
         CanvasGroup canvasGroup = rootObject.AddComponent<CanvasGroup>();
@@ -231,7 +316,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         canvasGroup.interactable = false;
         canvasGroup.blocksRaycasts = false;
 
-        StartCoroutine(AnimateAndDestroy(rect, canvasGroup));
+        StartCoroutine(AnimateAndDestroy(rect, canvasGroup, popupType));
     }
 
     private Vector2 GetEffectiveDigitSize()
@@ -251,7 +336,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         return new Vector2(width, effectiveDigitSize.y);
     }
 
-    private void CreateDigitImage(RectTransform parent, int digit, int order)
+    private void CreateDigitImage(RectTransform parent, int digit, int order, Color popupColor)
     {
         GameObject imageObject = new GameObject("Digit_" + digit);
         imageObject.transform.SetParent(parent, false);
@@ -259,7 +344,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         Image image = imageObject.AddComponent<Image>();
         image.raycastTarget = false;
         image.sprite = digitSprites[digit];
-        image.color = digitColor;
+        image.color = popupColor;
         image.preserveAspect = preserveDigitAspect;
 
         RectTransform imageRect = image.GetComponent<RectTransform>();
@@ -309,7 +394,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         return endFontSize * Mathf.Max(0.01f, digitVisualScaleMultiplier);
     }
 
-    private void ShowTextFallbackPopup(Vector2 anchoredPosition, int damage)
+    private void ShowTextFallbackPopup(Vector2 anchoredPosition, int damage, PopupType popupType)
     {
         GameObject textObject = new GameObject("DamageText_" + damage);
         textObject.transform.SetParent(canvasRect, false);
@@ -325,7 +410,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         TextMeshProUGUI text = textObject.AddComponent<TextMeshProUGUI>();
         text.raycastTarget = false;
         text.alignment = TextAlignmentOptions.Center;
-        text.color = damageColor;
+        text.color = GetPopupColor(popupType);
         text.fontSize = GetEffectiveStartFontSize();
         text.text = damage.ToString();
 
@@ -337,7 +422,39 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         canvasGroup.interactable = false;
         canvasGroup.blocksRaycasts = false;
 
-        StartCoroutine(AnimateTextFallbackAndDestroy(rect, text, canvasGroup));
+        StartCoroutine(AnimateTextFallbackAndDestroy(rect, text, canvasGroup, popupType));
+    }
+
+
+    private void ShowCustomTextPopup(Vector2 anchoredPosition, string message, PopupType popupType)
+    {
+        GameObject textObject = new GameObject("BattlePopupText_" + message);
+        textObject.transform.SetParent(canvasRect, false);
+
+        RectTransform rect = textObject.AddComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.sizeDelta = new Vector2(420f, 165f);
+        rect.anchoredPosition = anchoredPosition;
+        rect.localScale = Vector3.one;
+
+        TextMeshProUGUI text = textObject.AddComponent<TextMeshProUGUI>();
+        text.raycastTarget = false;
+        text.alignment = TextAlignmentOptions.Center;
+        text.color = GetPopupColor(popupType);
+        text.fontSize = GetEffectiveStartFontSize();
+        text.text = message;
+
+        if (useBoldText)
+            text.fontStyle = FontStyles.Bold;
+
+        CanvasGroup canvasGroup = textObject.AddComponent<CanvasGroup>();
+        canvasGroup.alpha = 1f;
+        canvasGroup.interactable = false;
+        canvasGroup.blocksRaycasts = false;
+
+        StartCoroutine(AnimateTextFallbackAndDestroy(rect, text, canvasGroup, popupType));
     }
 
     private bool TryGetCanvasPosition(Transform target, out Vector2 anchoredPosition)
@@ -407,14 +524,46 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         return position + Vector2.up * arc;
     }
 
-    private IEnumerator AnimateAndDestroy(RectTransform rect, CanvasGroup canvasGroup)
+
+    private Color GetPopupColor(PopupType popupType)
+    {
+        return popupType switch
+        {
+            PopupType.CostRecovery => costRecoveryColor,
+            PopupType.ArmorGain => armorGainColor,
+            PopupType.PoisonDamage => poisonDamageColor,
+            PopupType.UniqueResource => uniqueResourceColor,
+            _ => digitColor
+        };
+    }
+
+    private Vector2 GetEndPosition(Vector2 startPos, PopupType popupType)
+    {
+        return popupType switch
+        {
+            PopupType.CostRecovery => startPos + Vector2.up * straightUpCanvasMove,
+            PopupType.ArmorGain => startPos + Vector2.up * armorUpCanvasMove,
+            PopupType.PoisonDamage => startPos + Vector2.down * poisonDownCanvasMove,
+            PopupType.UniqueResource => startPos + Vector2.up * armorUpCanvasMove,
+            _ => GetDisappearEndPosition(startPos)
+        };
+    }
+
+    private Vector2 GetAnimatedPosition(Vector2 startPos, Vector2 endPos, float t, PopupType popupType)
+    {
+        return popupType == PopupType.Damage
+            ? GetCurvedPosition(startPos, endPos, t)
+            : Vector2.Lerp(startPos, endPos, t);
+    }
+
+    private IEnumerator AnimateAndDestroy(RectTransform rect, CanvasGroup canvasGroup, PopupType popupType)
     {
         if (rect == null || canvasGroup == null)
             yield break;
 
         float holdElapsed = 0f;
         Vector2 startPos = rect.anchoredPosition;
-        Vector2 endPos = GetDisappearEndPosition(startPos);
+        Vector2 endPos = GetEndPosition(startPos, popupType);
         Vector3 startScaleVector = Vector3.one * startScale;
         Vector3 endScaleVector = Vector3.one * endScale;
 
@@ -437,7 +586,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
             float eased = 1f - Mathf.Pow(1f - t, 3f);
 
             rect.localScale = Vector3.Lerp(startScaleVector, endScaleVector, eased);
-            rect.anchoredPosition = GetCurvedPosition(startPos, endPos, eased);
+            rect.anchoredPosition = GetAnimatedPosition(startPos, endPos, eased, popupType);
             canvasGroup.alpha = Mathf.Lerp(1f, 0f, t);
 
             yield return null;
@@ -446,14 +595,14 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         Destroy(rect.gameObject);
     }
 
-    private IEnumerator AnimateTextFallbackAndDestroy(RectTransform rect, TMP_Text text, CanvasGroup canvasGroup)
+    private IEnumerator AnimateTextFallbackAndDestroy(RectTransform rect, TMP_Text text, CanvasGroup canvasGroup, PopupType popupType)
     {
         if (rect == null || text == null || canvasGroup == null)
             yield break;
 
         float holdElapsed = 0f;
         Vector2 startPos = rect.anchoredPosition;
-        Vector2 endPos = GetDisappearEndPosition(startPos);
+        Vector2 endPos = GetEndPosition(startPos, popupType);
 
         text.fontSize = GetEffectiveStartFontSize();
         rect.anchoredPosition = startPos;
@@ -474,7 +623,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
             float eased = 1f - Mathf.Pow(1f - t, 3f);
 
             text.fontSize = Mathf.Lerp(GetEffectiveStartFontSize(), GetEffectiveEndFontSize(), eased);
-            rect.anchoredPosition = GetCurvedPosition(startPos, endPos, eased);
+            rect.anchoredPosition = GetAnimatedPosition(startPos, endPos, eased, popupType);
             canvasGroup.alpha = Mathf.Lerp(1f, 0f, t);
 
             yield return null;

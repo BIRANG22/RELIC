@@ -92,7 +92,9 @@ public class BattleStatusEffectService
 
             if (effectId == "E_Armor")
             {
-                caster.RuntimeData.CurrentShield += Mathf.Max(0, value);
+                int gainedArmor = Mathf.Max(0, value);
+                caster.RuntimeData.CurrentShield += gainedArmor;
+                BattleDamageTextPopupUI.ShowArmorGain(caster.transform, gainedArmor);
                 applied = true;
             }
             else if (effectId == "E_Boost")
@@ -256,7 +258,7 @@ public class BattleStatusEffectService
 
             if (status.EffectId == "E_Poison")
             {
-                BattleEffectUtility.StatusDamagePlayer(character, status.Stack);
+                BattleEffectUtility.PoisonDamagePlayer(character, status.Stack);
                 playedPresentation = true;
 
                 if (character.RuntimeData.IsDead)
@@ -305,7 +307,7 @@ public class BattleStatusEffectService
 
             if (status.EffectId == "E_Poison")
             {
-                BattleEffectUtility.StatusDamageMonster(monster, status.Stack);
+                BattleEffectUtility.PoisonDamageMonster(monster, status.Stack);
                 playedPresentation = true;
 
                 if (monster.RuntimeData.IsDead)
