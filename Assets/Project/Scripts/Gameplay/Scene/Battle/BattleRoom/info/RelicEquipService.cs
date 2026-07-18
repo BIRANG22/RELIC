@@ -5,7 +5,7 @@ namespace Relic.Gameplay.Data
     public class RelicEquipService
     {
         private readonly CharacterRuntimeStore characterStore;
-        private readonly BattleRuntimeData battleRuntimeData;
+        private readonly System.Collections.Generic.IList<string> ownedRelicIds;
         private readonly RelicDatabase relicDatabase;
 
         public RelicEquipService(
@@ -14,7 +14,17 @@ namespace Relic.Gameplay.Data
             RelicDatabase relicDatabase)
         {
             this.characterStore = characterStore;
-            this.battleRuntimeData = battleRuntimeData;
+            ownedRelicIds = battleRuntimeData?.OwnedRelicIds;
+            this.relicDatabase = relicDatabase;
+        }
+
+        public RelicEquipService(
+            CharacterRuntimeStore characterStore,
+            System.Collections.Generic.IList<string> ownedRelicIds,
+            RelicDatabase relicDatabase)
+        {
+            this.characterStore = characterStore;
+            this.ownedRelicIds = ownedRelicIds;
             this.relicDatabase = relicDatabase;
         }
 
@@ -37,8 +47,7 @@ namespace Relic.Gameplay.Data
                 return false;
             }
 
-            if (battleRuntimeData == null ||
-                battleRuntimeData.OwnedRelicIds == null ||
+            if (ownedRelicIds == null ||
                 !HasOwnedRelic(relicId))
             {
                 Debug.LogWarning($"[RelicEquipService] 보유하지 않은 유물: {relicId}");
@@ -107,26 +116,25 @@ namespace Relic.Gameplay.Data
 
         private void AddOwnedRelicIfMissing(string relicId)
         {
-            if (battleRuntimeData == null || string.IsNullOrWhiteSpace(relicId))
+            if (ownedRelicIds == null || string.IsNullOrWhiteSpace(relicId))
                 return;
 
             relicId = relicId.Trim();
-            battleRuntimeData.OwnedRelicIds ??= new System.Collections.Generic.List<string>();
 
             if (!HasOwnedRelic(relicId))
-                battleRuntimeData.OwnedRelicIds.Add(relicId);
+                ownedRelicIds.Add(relicId);
         }
 
         private bool HasOwnedRelic(string relicId)
         {
-            if (battleRuntimeData == null || battleRuntimeData.OwnedRelicIds == null || string.IsNullOrWhiteSpace(relicId))
+            if (ownedRelicIds == null || string.IsNullOrWhiteSpace(relicId))
                 return false;
 
             string targetId = relicId.Trim();
 
-            for (int i = 0; i < battleRuntimeData.OwnedRelicIds.Count; i++)
+            for (int i = 0; i < ownedRelicIds.Count; i++)
             {
-                if (string.Equals(battleRuntimeData.OwnedRelicIds[i]?.Trim(), targetId, System.StringComparison.Ordinal))
+                if (string.Equals(ownedRelicIds[i]?.Trim(), targetId, System.StringComparison.Ordinal))
                     return true;
             }
 
@@ -135,15 +143,15 @@ namespace Relic.Gameplay.Data
 
         private void RemoveAllOwnedRelic(string relicId)
         {
-            if (battleRuntimeData == null || battleRuntimeData.OwnedRelicIds == null || string.IsNullOrWhiteSpace(relicId))
+            if (ownedRelicIds == null || string.IsNullOrWhiteSpace(relicId))
                 return;
 
             string targetId = relicId.Trim();
 
-            for (int i = battleRuntimeData.OwnedRelicIds.Count - 1; i >= 0; i--)
+            for (int i = ownedRelicIds.Count - 1; i >= 0; i--)
             {
-                if (string.Equals(battleRuntimeData.OwnedRelicIds[i]?.Trim(), targetId, System.StringComparison.Ordinal))
-                    battleRuntimeData.OwnedRelicIds.RemoveAt(i);
+                if (string.Equals(ownedRelicIds[i]?.Trim(), targetId, System.StringComparison.Ordinal))
+                    ownedRelicIds.RemoveAt(i);
             }
         }
 

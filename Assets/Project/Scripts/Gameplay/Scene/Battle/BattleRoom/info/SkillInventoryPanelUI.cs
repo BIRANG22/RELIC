@@ -15,6 +15,7 @@ public class SkillInventoryPanelUI : MonoBehaviour
 
     [Header("Tooltip")]
     [SerializeField] private EquippedSkillPanelUI tooltipPanelOwner;
+    [SerializeField] private InventoryRuntimeContextProvider runtimeContextProvider;
 
     [Header("Battle Room Lock")]
     [SerializeField] private bool lockEditInBattleRoom = true;
@@ -122,15 +123,15 @@ public class SkillInventoryPanelUI : MonoBehaviour
         if (DataManager.Instance == null)
             return false;
 
-        BattleRuntimeData battleRuntimeData =
-            DataManager.Instance.BattleRuntimeStore.GetOrCreate();
+        IInventoryRuntimeContext context = ResolveRuntimeContext();
+        if (context == null)
+            return false;
 
-        SkillInventoryEquipService service = CreateEquipService(battleRuntimeData);
+        SkillInventoryEquipService service = CreateEquipService(context.SkillInventoryIds);
 
         if (!service.UnequipSkillFromSlot(characterId, equippedSkillIndex))
             return false;
 
-        DataManager.Instance.BattleRuntimeStore.Set(battleRuntimeData);
         ResetSelectionState();
         RefreshAll();
         EquippedSkillPanelUI.RefreshAll();
@@ -229,26 +230,26 @@ public class SkillInventoryPanelUI : MonoBehaviour
         if (DataManager.Instance == null)
             return false;
 
-        BattleRuntimeData battleRuntimeData =
-            DataManager.Instance.BattleRuntimeStore.GetOrCreate();
+        IInventoryRuntimeContext context = ResolveRuntimeContext();
+        if (context == null)
+            return false;
 
-        SkillInventoryEquipService service = CreateEquipService(battleRuntimeData);
+        SkillInventoryEquipService service = CreateEquipService(context.SkillInventoryIds);
 
         if (!service.EquipInventorySkillToSlot(characterId, equippedSkillIndex, skillId))
             return false;
 
-        DataManager.Instance.BattleRuntimeStore.Set(battleRuntimeData);
         ResetSelectionState();
         RefreshAll();
         EquippedSkillPanelUI.RefreshAll();
         return true;
     }
 
-    private SkillInventoryEquipService CreateEquipService(BattleRuntimeData battleRuntimeData)
+    private SkillInventoryEquipService CreateEquipService(IList<string> skillInventoryIds)
     {
         return new SkillInventoryEquipService(
             DataManager.Instance.CharacterRuntimeStore,
-            battleRuntimeData,
+            skillInventoryIds,
             ResolveSkill);
     }
 
@@ -301,14 +302,13 @@ public class SkillInventoryPanelUI : MonoBehaviour
         if (DataManager.Instance == null)
             return;
 
-        BattleRuntimeData runtime =
-            DataManager.Instance.BattleRuntimeStore.GetOrCreate();
+        IInventoryRuntimeContext context = ResolveRuntimeContext();
+        if (context == null)
+            return;
 
-        runtime.SkillInventoryIds ??= new List<string>();
-
-        for (int i = 0; i < runtime.SkillInventoryIds.Count; i++)
+        for (int i = 0; i < context.SkillInventoryIds.Count; i++)
         {
-            string skillId = runtime.SkillInventoryIds[i];
+            string skillId = context.SkillInventoryIds[i];
 
             if (string.IsNullOrWhiteSpace(skillId))
                 continue;
@@ -558,5 +558,19 @@ public class SkillInventoryPanelUI : MonoBehaviour
             panel = root.AddComponent<SkillInventoryPanelUI>();
 
         return panel;
+    }
+
+    private IInventoryRuntimeContext ResolveRuntimeContext()
+    {
+        if (runtimeContextProvider == null)
+            runtimeContextProvider = GetComponentInParent<InventoryRuntimeContextProvider>(true);
+
+        if (runtimeContextProvider != null)
+            return runtimeContextProvider.GetContext();
+
+        if (DataManager.Instance == null)
+            return null;
+
+        return InventoryRuntimeContext.ForBattle(DataManager.Instance.BattleRuntimeStore.GetOrCreate());
     }
 }

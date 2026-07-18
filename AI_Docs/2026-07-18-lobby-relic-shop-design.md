@@ -12,7 +12,7 @@
 - 로비 Canvas에 Position 상태 전용 `PositionPanel`을 추가한다.
 - 월드의 `Position/LightBase/StartRelicSpawnRoot`와 그 자식 3개는 UI 배치 기준점으로 유지한다.
 - 보유하지 않은 액티브 유물 중 서로 다른 최대 3개를 진열한다.
-- 로비에 배틀씬 `InventoryPanel` 전체 구성인 캐릭터 장착 영역, 스킬 인벤토리, 유물 인벤토리를 재사용한다.
+- 로비에 배틀씬 `InventoryPanel`과 같은 배치의 로비 전용 패널을 새로 구성하고 로비 런타임 데이터로 연결한다.
 - 별도 `BagPanel` UI는 이번 범위에 포함하지 않는다.
 - 배틀 시작 직전에 로비의 전투용 보유 및 장착 데이터를 배틀 런타임으로 복사한다.
 - BlueDustium은 배틀 런타임으로 복사하지 않는다.
@@ -91,7 +91,11 @@
 
 ## 로비 InventoryPanel
 
-배틀씬의 `InventoryPanel` 계층을 재사용 가능한 Prefab으로 분리해 로비와 배틀 양쪽에서 사용한다. 외형, 버튼 배치, 캐릭터 장착 영역, 스킬 인벤토리, 유물 인벤토리는 동일하게 유지한다.
+배틀씬의 `InventoryPanel` RectTransform, 이미지, 색상과 버튼 배치를 기준으로 로비 전용 패널을 새로 구성한다. Battle씬의 씬 오브젝트 참조는 복사하지 않는다.
+
+캐릭터별 `Skill_List`는 패시브 1칸, 고유 1칸, 전용 1칸, 공유 2칸의 총 5칸이다. 기본 장착 상태에서는 공유 스킬이 1개이므로 아이콘 4개와 빈 공유 스킬 슬롯 1개가 표시된다.
+
+`RelicInventory`에서 유물을 선택한 뒤 캐릭터의 `Relic_List` 슬롯을 클릭하면 장착한다. 장착된 슬롯을 클릭하면 유물을 해제해 인벤토리로 돌려보낸다.
 
 패널 내부 로직이 `DataManager.Instance.BattleRuntimeStore`를 직접 읽는 부분에는 인벤토리 데이터 공급 경계를 둔다.
 
