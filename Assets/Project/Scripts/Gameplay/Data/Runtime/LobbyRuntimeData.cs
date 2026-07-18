@@ -7,10 +7,12 @@ namespace Relic.Gameplay.Data
     public sealed class LobbyRuntimeData
     {
         public int BlueDustium = LobbyRuntimeStore.StartingBlueDustium;
+        public int LobbySkillUpgradeCount;
         public List<string> OwnedRelicIds = new();
         public List<string> SkillInventoryIds = new();
         public List<string> BagItemIds = new();
         public List<LobbyCharacterLoadoutData> CharacterLoadouts = new();
+        public List<LobbySkillUpgradeRecordData> CharacterSkillUpgrades = new();
         public int RelicOfferSeed;
         public List<string> RelicOfferIds = new();
     }
@@ -21,5 +23,14 @@ namespace Relic.Gameplay.Data
         public string CharacterId;
         public string[] EquippedRelicIds = new string[5];
         public string[] EquippedSkillIds = new string[4];
+    }
+
+    [Serializable]
+    public sealed class LobbySkillUpgradeRecordData
+    {
+        public string CharacterId;
+        public int SlotType;
+        public int SlotIndex;
+        public string SkillId;
     }
 }

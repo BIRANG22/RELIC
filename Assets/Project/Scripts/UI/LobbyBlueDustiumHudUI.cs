@@ -1,9 +1,12 @@
 using TMPro;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public sealed class LobbyBlueDustiumHudUI : MonoBehaviour
 {
+    private static readonly HashSet<LobbyBlueDustiumHudUI> Instances = new();
+
     [SerializeField] private Sprite blueDustiumIcon;
     private TMP_Text valueText;
 
@@ -14,7 +17,22 @@ public sealed class LobbyBlueDustiumHudUI : MonoBehaviour
 
     private void OnEnable()
     {
+        Instances.Add(this);
         Refresh();
+    }
+
+    private void OnDisable()
+    {
+        Instances.Remove(this);
+    }
+
+    public static void RefreshAll()
+    {
+        foreach (LobbyBlueDustiumHudUI instance in Instances)
+        {
+            if (instance != null)
+                instance.Refresh();
+        }
     }
 
     public void Refresh()

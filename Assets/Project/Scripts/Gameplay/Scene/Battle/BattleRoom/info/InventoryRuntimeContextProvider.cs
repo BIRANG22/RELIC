@@ -69,6 +69,13 @@ public sealed class InventoryRuntimeContextProvider : MonoBehaviour, IRuntimeSav
             return;
         }
 
+        if (ResolveSource() == RuntimeSource.Lobby)
+        {
+            force |= LobbySkillUpgradePersistence.ApplyAll(
+                DataManager.Instance.LobbyRuntimeStore.GetOrCreate(),
+                DataManager.Instance.CharacterRuntimeStore);
+        }
+
         PartyRuntimeStore party = DataManager.Instance.PartyRuntimeStore;
         string signature = BuildPartySignature(party);
         if (!force && string.Equals(signature, lastPartySignature, StringComparison.Ordinal))
