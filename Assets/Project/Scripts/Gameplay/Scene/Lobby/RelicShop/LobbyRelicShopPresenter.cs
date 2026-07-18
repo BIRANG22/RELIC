@@ -8,9 +8,11 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
     [SerializeField] private Transform[] worldAnchors = new Transform[3];
     [SerializeField] private LobbyBlueDustiumHudUI blueDustiumHud;
     [SerializeField] private Vector2 skillUpgradeButtonStartPosition = new(2400f, 200f);
+    [SerializeField] private Sprite relicRefreshIcon;
 
     private readonly List<LobbyRelicOfferButtonUI> buttons = new();
     private Canvas ownerCanvas;
+    private LobbyRelicRefreshButtonUI refreshButton;
 
     private void Awake()
     {
@@ -54,6 +56,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         }
 
         blueDustiumHud?.Refresh();
+        RefreshRefreshButton(runtime);
     }
 
     private IReadOnlyList<LobbyRelicOffer> ResolveOffers(LobbyRuntimeData runtime)
@@ -111,6 +114,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         }
 
         RelicEquipPanelUI.RefreshAll();
+        RefreshRefreshButton(runtime);
     }
 
     private void CreateButtonsIfNeeded()
@@ -128,6 +132,57 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         }
 
         InitializeSkillUpgradeButton(camera);
+        InitializeRelicRefreshButton(camera);
+    }
+
+    private void InitializeRelicRefreshButton(Camera camera)
+    {
+        if (refreshButton != null || ownerCanvas == null || camera == null ||
+            worldAnchors == null || worldAnchors.Length == 0)
+            return;
+
+        Transform rightmost = worldAnchors[worldAnchors.Length - 1];
+        if (rightmost == null)
+            return;
+        Vector3 spacing = Vector3.right * 2f;
+        if (worldAnchors.Length > 1 && worldAnchors[worldAnchors.Length - 2] != null)
+            spacing = rightmost.position - worldAnchors[worldAnchors.Length - 2].position;
+
+        GameObject anchorObject = new("RelicRefreshAnchor");
+        anchorObject.transform.SetParent(rightmost.parent, true);
+        anchorObject.transform.position = rightmost.position + spacing;
+
+        refreshButton = LobbyRelicRefreshButtonUI.Create(transform, relicRefreshIcon, RefreshRelicOffers);
+        WorldAnchorCanvasFollower follower = refreshButton.gameObject.AddComponent<WorldAnchorCanvasFollower>();
+        follower.Initialize(anchorObject.transform, ownerCanvas, camera);
+    }
+
+    private void RefreshRelicOffers()
+    {
+        LobbyRuntimeData runtime = DataManager.Instance?.LobbyRuntimeStore?.GetOrCreate();
+        if (runtime == null || DataManager.Instance.RelicDatabase == null)
+            return;
+
+        int nextSeed = unchecked(runtime.RelicOfferSeed * 1664525 + 1013904223 + runtime.RelicRefreshCount);
+        LobbyRelicRefreshResult result = new LobbyRelicRefreshService(
+            DataManager.Instance.RelicDatabase,
+            new SeededLobbyRelicShopRandom(nextSeed)).Execute(runtime, nextSeed);
+        if (!result.Succeeded)
+        {
+            Debug.LogWarning($"[LobbyRelicShopPresenter] 유물 새로고침 실패: {result.Failure}");
+            RefreshRefreshButton(runtime);
+            return;
+        }
+
+        RefreshOffers();
+    }
+
+    private void RefreshRefreshButton(LobbyRuntimeData runtime)
+    {
+        if (refreshButton == null || runtime == null)
+            return;
+        int price = LobbyRelicRefreshPricePolicy.GetPrice(runtime.RelicRefreshCount);
+        refreshButton.SetState(price, !LobbyRelicRefreshService.AreAllOffersPurchased(runtime));
     }
 
     private void InitializeSkillUpgradeButton(Camera camera)
