@@ -323,8 +323,6 @@ public class UIManager : Singleton<UIManager>
         if (DataManager.Instance != null)
             BattleRunAbandonService.AbandonCurrentRun(DataManager.Instance);
 
-        if (SaveSystem.Instance != null)
-            SaveSystem.Instance.SaveCurrentProgress();
     }
 
     private void PlayTitleBgmIfPossible()

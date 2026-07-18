@@ -11,13 +11,13 @@ public class LobbyViewStateControllerTests
         using TestContext context = new();
 
         context.Controller.ShowLobby();
-        context.AssertState(LobbyViewState.Lobby, true, true, false, true, false, false);
+        context.AssertState(LobbyViewState.Lobby, true, true, false, true, false, false, false);
 
         context.Controller.ShowCharacterSelection();
-        context.AssertState(LobbyViewState.CharacterSelection, true, false, true, false, true, false);
+        context.AssertState(LobbyViewState.CharacterSelection, true, false, true, false, true, true, false);
 
         context.Controller.ShowPosition();
-        context.AssertState(LobbyViewState.Position, false, false, false, false, false, true);
+        context.AssertState(LobbyViewState.Position, false, false, false, false, false, false, true);
     }
 
     [Test]
@@ -97,6 +97,7 @@ public class LobbyViewStateControllerTests
         private readonly GameObject effectCharacter;
         private readonly GameObject lobbyMainPanel;
         private readonly GameObject characterSettingPanel;
+        private readonly GameObject characterPreviewSpawnRoot;
         private readonly GameObject position;
         private readonly GameObject positionPanel;
         private readonly GameObject lobbyDirectionalLight;
@@ -112,6 +113,7 @@ public class LobbyViewStateControllerTests
             effectCharacter = CreateChild("Effect_Char");
             lobbyMainPanel = CreateChild("LobbyMainPanel");
             characterSettingPanel = CreateChild("CharacterSettingPanel");
+            characterPreviewSpawnRoot = CreateChild("CharacterPreviewSpawnRoot");
             position = CreateChild("Position");
             positionPanel = CreateChild("PositionPanel");
             lobbyDirectionalLight = CreateChild("Directional Light");
@@ -128,6 +130,7 @@ public class LobbyViewStateControllerTests
             SetReference(serializedController, "effectCharacter", effectCharacter);
             SetReference(serializedController, "lobbyMainPanel", lobbyMainPanel);
             SetReference(serializedController, "characterSettingPanel", characterSettingPanel);
+            SetReference(serializedController, "characterPreviewSpawnRoot", characterPreviewSpawnRoot);
             SetReference(serializedController, "position", position);
             SetReference(serializedController, "positionPanel", positionPanel);
             SetReference(serializedController, "lobbyDirectionalLight", lobbyDirectionalLight);
@@ -143,6 +146,7 @@ public class LobbyViewStateControllerTests
             bool expectedEffectCharacter,
             bool expectedLobbyPanel,
             bool expectedCharacterPanel,
+            bool expectedCharacterPreview,
             bool expectedPosition)
         {
             Assert.Multiple(() =>
@@ -153,6 +157,7 @@ public class LobbyViewStateControllerTests
                 Assert.That(effectCharacter.activeSelf, Is.EqualTo(expectedEffectCharacter));
                 Assert.That(lobbyMainPanel.activeSelf, Is.EqualTo(expectedLobbyPanel));
                 Assert.That(characterSettingPanel.activeSelf, Is.EqualTo(expectedCharacterPanel));
+                Assert.That(characterPreviewSpawnRoot.activeSelf, Is.EqualTo(expectedCharacterPreview));
                 Assert.That(position.activeSelf, Is.EqualTo(expectedPosition));
                 Assert.That(positionPanel.activeSelf, Is.EqualTo(expectedPosition));
                 Assert.That(lobbyDirectionalLight.activeSelf, Is.EqualTo(!expectedPosition));

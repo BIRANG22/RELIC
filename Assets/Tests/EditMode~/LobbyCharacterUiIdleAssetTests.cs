@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using UnityEditor;
@@ -185,6 +186,23 @@ public class LobbyCharacterUiIdleAssetTests
         Assert.That(rectTransform.sizeDelta, Is.EqualTo(testCase.expectedSize));
         Assert.That(image, Is.Not.Null);
         Assert.That(image.preserveAspect, Is.True);
+    }
+
+    [Test]
+    public void LobbyScene_SpawnsCharacterBetweenBackMainAndEffectLobby()
+    {
+        const string scenePath = "Assets/Project/Scenes/YDM/Lobby.unity";
+        string sceneYaml = File.ReadAllText(scenePath);
+
+        const string expectedChildren =
+            "  - {fileID: 2200000012}\n" +
+            "  - {fileID: 2200000401}\n" +
+            "  - {fileID: 2200000032}\n" +
+            "  - {fileID: 2200000022}";
+
+        Assert.That(sceneYaml, Does.Contain("m_Name: CharacterPreviewSpawnRoot"));
+        Assert.That(sceneYaml, Does.Contain(expectedChildren));
+        Assert.That(sceneYaml, Does.Contain("previewRoot: {fileID: 2200000401}"));
     }
 
     private static AnimationClip LoadClip(string assetPath)

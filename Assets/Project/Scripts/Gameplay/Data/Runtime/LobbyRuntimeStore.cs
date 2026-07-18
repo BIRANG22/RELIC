@@ -1,0 +1,39 @@
+using System.Collections.Generic;
+
+namespace Relic.Gameplay.Data
+{
+    public sealed class LobbyRuntimeStore
+    {
+        public const int StartingBlueDustium = 999;
+
+        private LobbyRuntimeData data;
+
+        public LobbyRuntimeData Get()
+        {
+            return data;
+        }
+
+        public LobbyRuntimeData GetOrCreate()
+        {
+            data ??= new LobbyRuntimeData();
+            Normalize(data);
+            return data;
+        }
+
+        public void Set(LobbyRuntimeData value)
+        {
+            data = value;
+            if (data != null)
+                Normalize(data);
+        }
+
+        private static void Normalize(LobbyRuntimeData value)
+        {
+            value.OwnedRelicIds ??= new List<string>();
+            value.SkillInventoryIds ??= new List<string>();
+            value.BagItemIds ??= new List<string>();
+            value.CharacterLoadouts ??= new List<LobbyCharacterLoadoutData>();
+            value.RelicOfferIds ??= new List<string>();
+        }
+    }
+}

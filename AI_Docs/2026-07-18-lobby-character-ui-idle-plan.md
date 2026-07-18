@@ -108,3 +108,19 @@
 - [ ] 현재 세 프리팹이 `500×500`, Preserve Aspect 비활성이라 검증 조건을 만족하지 않음을 확인한다.
 - [ ] A/B/C 프리팹의 Size Delta와 Preserve Aspect만 수정하고 anchored position, pivot, Animator 연결은 유지한다.
 - [ ] 정적 에셋 검사, Runtime/Editor 순차 빌드, 작업 범위 `git diff --check`를 실행한다.
+
+### Task 7: Background 내부 캐릭터 스폰 순서 고정
+
+**Files:**
+- Modify: `Assets/Project/Scenes/YDM/Lobby.unity`
+- Modify: `Assets/Tests/EditMode~/LobbyCharacterUiIdleAssetTests.cs`
+
+**Interfaces:**
+- Consumes: Canvas `Background` RectTransform, `Back_Main`, `Effect_Lobby`, `Effect_Char`, `CharPick.previewRoot`
+- Produces: 캐릭터 UI가 Back_Main과 Effect_Lobby 사이에 렌더링되는 씬 계층
+
+- [ ] 씬에 `CharacterPreviewSpawnRoot`가 없고 `CharPick.previewRoot`가 CharacterSettingPanel을 가리키는 실패 조건을 확인한다.
+- [ ] `Background` 아래에 화면 전체 Stretch RectTransform `CharacterPreviewSpawnRoot`를 추가한다.
+- [ ] 자식 순서를 `Back_Main → CharacterPreviewSpawnRoot → Effect_Lobby → Effect_Char`로 설정한다.
+- [ ] `CharPick.previewRoot`를 새 RectTransform으로 변경한다.
+- [ ] 씬 FileID 중복, 부모·자식 참조, Runtime/Editor 순차 빌드와 작업 범위 `git diff --check`를 확인한다.

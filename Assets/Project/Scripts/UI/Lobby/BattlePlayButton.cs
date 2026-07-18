@@ -109,6 +109,22 @@ public class BattlePlayButton : MonoBehaviour
             }
 
             CommitRuntimeStateContributorsForBattleStart();
+
+            LobbyRuntimeData lobbyRuntime = DataManager.Instance.LobbyRuntimeStore?.GetOrCreate();
+            BattleRuntimeData battleRuntime = DataManager.Instance.BattleRuntimeStore?.GetOrCreate();
+            LobbyBattleRuntimeTransferResult transferResult =
+                new LobbyBattleRuntimeTransferService().Transfer(
+                    lobbyRuntime,
+                    battleRuntime,
+                    DataManager.Instance.CharacterRuntimeStore);
+
+            if (!transferResult.Succeeded)
+            {
+                Debug.LogWarning($"[BattlePlayButton] Failed to transfer lobby inventory. {transferResult.Error}");
+                return;
+            }
+
+            DataManager.Instance.BattleRuntimeStore.Set(battleRuntime);
             BattleRunAbandonService.CaptureLobbyLoadoutSnapshot(DataManager.Instance);
 
             await GameManager.Instance.StateMachine.ChangeState(GameStateType.Battle);

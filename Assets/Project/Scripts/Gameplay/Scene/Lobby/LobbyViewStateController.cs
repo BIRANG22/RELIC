@@ -15,6 +15,7 @@ public sealed class LobbyViewStateController : MonoBehaviour
     [SerializeField] private GameObject effectCharacter;
     [SerializeField] private GameObject lobbyMainPanel;
     [SerializeField] private GameObject characterSettingPanel;
+    [SerializeField] private GameObject characterPreviewSpawnRoot;
 
     [Header("Position Objects")]
     [SerializeField] private GameObject position;
@@ -69,6 +70,7 @@ public sealed class LobbyViewStateController : MonoBehaviour
         SetActive(effectCharacter, isCharacterSelection);
         SetActive(lobbyMainPanel, isLobby);
         SetActive(characterSettingPanel, isCharacterSelection);
+        SetActive(characterPreviewSpawnRoot, isCharacterSelection);
         SetActive(position, isPosition);
         SetActive(positionPanel, isPosition);
         SetActive(lobbyDirectionalLight, !isPosition);

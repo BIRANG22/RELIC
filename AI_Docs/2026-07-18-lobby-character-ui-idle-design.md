@@ -73,6 +73,17 @@
 3. 룬·스킬 버튼 이동 시 기존 호출 흐름이 대응 Animator 상태를 재생한다.
 4. UI용 클립이 원본과 같은 Sprite 프레임을 `Image.m_Sprite`에 적용한다.
 
+## Canvas 렌더링 순서
+
+로비 Canvas의 `Background` 아래에 화면 전체 Stretch `CharacterPreviewSpawnRoot` RectTransform을 추가한다. 자식 순서는 다음과 같이 고정한다.
+
+1. `Back_Main`
+2. `CharacterPreviewSpawnRoot`
+3. `Effect_Lobby`
+4. `Effect_Char`
+
+`CharPick.previewRoot`는 `CharacterSettingPanel` 대신 `CharacterPreviewSpawnRoot`를 참조한다. 따라서 런타임에 생성되는 A/B/C UI 프리팹은 항상 `Back_Main` 위, `Effect_Lobby` 아래에 렌더링된다. 캐릭터 프리팹의 anchored position, size, pivot과 Animator 설정은 변경하지 않는다.
+
 ## 검증
 
 - 캐릭터별 UI Controller의 상태명, State Speed, Cycle Offset이 원본과 일치하는지 비교한다.
@@ -81,6 +92,8 @@
 - 모든 UI용 클립이 `Image.m_Sprite` 바인딩인지 확인한다.
 - UI 프리팹의 `ButtonResponsiveSpriteAnimator` 참조와 상태명을 확인한다.
 - A/B UI 프리팹 크기가 `2275×1280`, C가 `2502×1408`이며 Preserve Aspect가 활성화됐는지 확인한다.
+- `Background` 자식 순서가 `Back_Main → CharacterPreviewSpawnRoot → Effect_Lobby → Effect_Char`인지 확인한다.
+- `CharPick.previewRoot`가 `CharacterPreviewSpawnRoot` RectTransform을 참조하는지 확인한다.
 - Runtime 및 Editor 프로젝트 빌드를 실행한다.
 - Unity 에디터가 열린 상태이므로 batchmode 테스트는 실행하지 않는다.
 

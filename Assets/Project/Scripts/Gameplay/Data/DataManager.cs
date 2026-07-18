@@ -53,6 +53,7 @@ public class DataManager : Singleton<DataManager>
     public MapRuntimeStore MapRuntimeStore { get; private set; } = new();
     public PlayerRuntimeStore PlayerRuntimeStore { get; private set; } = new();
     public BattleRuntimeStore BattleRuntimeStore { get; private set; } = new();
+    public LobbyRuntimeStore LobbyRuntimeStore { get; private set; } = new();
     protected override void Awake()
     {
         base.Awake();
