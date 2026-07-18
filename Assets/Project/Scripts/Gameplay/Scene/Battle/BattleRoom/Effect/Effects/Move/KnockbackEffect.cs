@@ -1,9 +1,11 @@
 using Relic.Gameplay.Monster;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class KnockbackEffect : BattleEffectBase
 {
+    private const float ForcedMoveAnimationDuration = 0.18f;
     public override string EffectId => "E_Knockback";
 
     protected override void Apply(BattleEffectContext context)
@@ -110,8 +112,12 @@ public class KnockbackEffect : BattleEffectBase
         if (gridEffectController != null && gridEffectController.IsBlocked(targetIndex))
             return false;
 
+        Vector3 startPosition = target.transform.position;
+        Vector3 targetPosition = gridManager.GetWorldPositionByIndex(targetIndex);
+
+        // 판정용 그리드 위치는 즉시 갱신하고 화면에서는 밀려나는 과정을 보여줍니다.
         target.SetGridIndex(targetIndex);
-        target.transform.position = gridManager.GetWorldPositionByIndex(targetIndex);
+        target.StartCoroutine(MoveTransformSmooth(target.transform, startPosition, targetPosition));
         return true;
     }
 
@@ -166,8 +172,15 @@ public class KnockbackEffect : BattleEffectBase
         Vector3 oldCellWorldPosition = gridManager.GetWorldPositionByIndex(oldMainIndex);
         Vector3 newCellWorldPosition = gridManager.GetWorldPositionByIndex(newMainIndex);
 
+        Vector3 targetWorldPosition =
+            oldWorldPosition + (newCellWorldPosition - oldCellWorldPosition);
+
+        // 점유 그리드는 즉시 갱신하되 몬스터 오브젝트는 부드럽게 밀려나게 합니다.
         target.SetOccupiedCells(movedCells);
-        target.transform.position = oldWorldPosition + (newCellWorldPosition - oldCellWorldPosition);
+        target.StartCoroutine(MoveTransformSmooth(
+            target.transform,
+            oldWorldPosition,
+            targetWorldPosition));
         return true;
     }
 
@@ -209,5 +222,26 @@ public class KnockbackEffect : BattleEffectBase
             Value = 2,
             Count = 1
         });
+    }
+
+    private static IEnumerator MoveTransformSmooth(
+        Transform target,
+        Vector3 startPosition,
+        Vector3 targetPosition)
+    {
+        if (target == null)
+            yield break;
+
+        float elapsed = 0f;
+
+        while (elapsed < ForcedMoveAnimationDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / ForcedMoveAnimationDuration);
+            target.position = Vector3.Lerp(startPosition, targetPosition, t);
+            yield return null;
+        }
+
+        target.position = targetPosition;
     }
 }

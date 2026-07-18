@@ -640,11 +640,31 @@ public class BattleRoomLoader : MonoBehaviour
 
             runtimeData.CostRecovery = baseRecovery;
 
+            int costBefore = runtimeData.CurrentCost;
             runtimeData.CurrentCost =
                 Mathf.Min(
                     maxCost,
                     runtimeData.CurrentCost + totalRecovery
                 );
+
+            int recoveredCost = Mathf.Max(0, runtimeData.CurrentCost - costBefore);
+            if (recoveredCost > 0)
+            {
+                BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
+                    FindObjectsInactive.Exclude,
+                    FindObjectsSortMode.None
+                );
+
+                for (int characterIndex = 0; characterIndex < characters.Length; characterIndex++)
+                {
+                    BattleCharacter character = characters[characterIndex];
+                    if (character != null && character.CharacterId == characterId)
+                    {
+                        BattleDamageTextPopupUI.ShowCostRecovery(character.transform, recoveredCost);
+                        break;
+                    }
+                }
+            }
         }
 
         RefreshPlayerHUDs();

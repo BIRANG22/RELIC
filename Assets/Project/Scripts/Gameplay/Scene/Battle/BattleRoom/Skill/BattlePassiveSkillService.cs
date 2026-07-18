@@ -75,6 +75,7 @@ public class BattlePassiveSkillService
                 return;
 
             runtime.CurrentShield += finalValue;
+            BattleDamageTextPopupUI.ShowArmorGain(runtime.CharacterId, finalValue);
 
             Debug.Log(
                 $"[Passive] Armor / Character:{runtime.CharacterId} / " +
