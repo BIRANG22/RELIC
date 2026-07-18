@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 508210907185433338}
   - component: {fileID: 3218656514879266196}
   - component: {fileID: 7223685703516793400}
+  - component: {fileID: 910400000000000001}
   m_Layer: 0
   m_Name: A_UI_idle
   m_TagString: Untagged
@@ -36,7 +37,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 500, y: 500}
+  m_SizeDelta: {x: 2275, y: 1280}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &508210907185433338
 CanvasRenderer:
@@ -56,19 +57,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 899417585, guid: 0904377b3ebbe004c916fa7159b80c85, type: 3}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -93,8 +94,47 @@ Animator:
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
-  m_WarningMessage: 
+  m_WarningMessage:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &910400000000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4264537240060521113}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cbbf71c4173e8ce4883232d0f1a76bff, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  targetImage: {fileID: 3218656514879266196}
+  targetSpriteRenderer: {fileID: 0}
+  startState: 0
+  useAnimatorStates: 1
+  routeAssetCallsToActiveInstance: 1
+  targetAnimator: {fileID: 7223685703516793400}
+  animatorLayer: 0
+  animatorLayerName: Base Layer
+  selectIdleStateName: hilt_select_idle
+  skillIdleStateName: hilt_skill_idle
+  runeIdleStateName: hilt_rune_idle
+  selectToRuneStateName: hilt_rune_to_select
+  selectToRuneReverseStateName: hilt_rune_to_select_reverse
+  selectToSkillStateName: hilt_select_to_skill
+  selectToSkillReverseStateName: hilt_select_to_skill_reverse
+  skillToRuneStateName: hilt_skill_to_rune
+  skillToRuneReverseStateName: hilt_skill_to_rune_reverse
+  transitionTimeoutSeconds: 3
+  normalIdleSprites: []
+  skillIdleSprites: []
+  runeIdleSprites: []
+  normalToSkillSprites: []
+  skillToRuneSprites: []
+  runeToNormalSprites: []
+  idleFrameInterval: 0.01
+  transitionFrameInterval: 0.01
+  playOnEnable: 1

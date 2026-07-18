@@ -50,6 +50,12 @@ public class HorizontalHubCameraDrag : MonoBehaviour
         SetCameraX(targetX);
     }
 
+    private void OnDisable()
+    {
+        isDragging = false;
+        snapVelocity = 0f;
+    }
+
     private void Update()
     {
         if (snapPoints == null || snapPoints.Length == 0)
