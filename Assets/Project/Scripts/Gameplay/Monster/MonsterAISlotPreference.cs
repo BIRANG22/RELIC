@@ -23,6 +23,8 @@ namespace Relic.Gameplay.Monster
         public int RangeOriginGridIndex;
         public bool HasForcedDirection;
         public BattleDirection ForcedDirection;
+        public bool IsPortalMove;
+        public int SlotOffset;
 
         public MonsterAIAction(
             string skillId,
@@ -32,7 +34,9 @@ namespace Relic.Gameplay.Monster
             int priority = 0,
             int rangeOriginGridIndex = -1,
             bool hasForcedDirection = false,
-            BattleDirection forcedDirection = BattleDirection.Right)
+            BattleDirection forcedDirection = BattleDirection.Right,
+            bool isPortalMove = false,
+            int slotOffset = 0)
         {
             SkillId = skillId;
             MoveOffset = moveOffset;
@@ -42,6 +46,8 @@ namespace Relic.Gameplay.Monster
             RangeOriginGridIndex = Mathf.Max(-1, rangeOriginGridIndex);
             HasForcedDirection = hasForcedDirection;
             ForcedDirection = forcedDirection;
+            IsPortalMove = isPortalMove;
+            SlotOffset = slotOffset;
         }
     }
 

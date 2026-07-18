@@ -1,8 +1,10 @@
 using Relic.Gameplay.Monster;
+using System.Collections;
 using UnityEngine;
 
 public class GrabEffect : BattleEffectBase
 {
+    private const float ForcedMoveAnimationDuration = 0.18f;
     public override string EffectId => "E_Grab";
 
     protected override void Apply(BattleEffectContext context)
@@ -57,8 +59,20 @@ public class GrabEffect : BattleEffectBase
         if (BattleOccupancyService.IsOccupiedByAnyUnit(targetIndex, target.CharacterId))
             return false;
 
+        // 잔해처럼 이동 불가로 등록된 그리드는 강제이동으로도 들어갈 수 없습니다.
+        // 그랩 대상이 해당 칸에 부딪히면 이동하지 않고 충돌 고정 피해를 받습니다.
+        if (IsGridEffectBlocked(targetIndex))
+        {
+            ApplyCrashToPlayer(target, gridManager);
+            return false;
+        }
+
+        Vector3 startPosition = target.transform.position;
+        Vector3 targetPosition = gridManager.GetWorldPositionByIndex(targetIndex);
+
+        // 논리 그리드 위치를 먼저 갱신하고 화면에서는 부드럽게 이동하는 연출을 재생합니다.
         target.SetGridIndex(targetIndex);
-        target.transform.position = gridManager.GetWorldPositionByIndex(targetIndex);
+        target.StartCoroutine(MoveTransformSmooth(target.transform, startPosition, targetPosition));
 
         return true;
     }
@@ -87,6 +101,12 @@ public class GrabEffect : BattleEffectBase
 
             if (BattleOccupancyService.IsOccupiedByAnyUnit(targetIndex, null, target))
                 return false;
+
+            if (IsGridEffectBlocked(targetIndex))
+            {
+                ApplyCrashToMonster(target, gridManager);
+                return false;
+            }
         }
 
         int mainIndex = target.MainGridIndex;
@@ -94,9 +114,73 @@ public class GrabEffect : BattleEffectBase
         Vector2Int movedMainCoord = mainCoord + offset;
         int movedMainIndex = gridManager.CoordToIndex(movedMainCoord);
 
+        Vector3 startPosition = target.transform.position;
+        Vector3 targetPosition = gridManager.GetWorldPositionByIndex(movedMainIndex);
+
+        // 점유 그리드를 먼저 갱신한 뒤 몬스터 오브젝트를 부드럽게 이동시킵니다.
         target.MoveOccupiedCells(offset, gridManager);
-        target.transform.position = gridManager.GetWorldPositionByIndex(movedMainIndex);
+        target.StartCoroutine(MoveTransformSmooth(target.transform, startPosition, targetPosition));
 
         return true;
+    }
+
+
+    private static bool IsGridEffectBlocked(int gridIndex)
+    {
+        BattleGridEffectController controller =
+            Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+
+        return controller != null && controller.IsBlocked(gridIndex);
+    }
+
+    private static void ApplyCrashToPlayer(BattleCharacter target, GridManager gridManager)
+    {
+        if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
+            return;
+
+        new CrashEffect().Execute(new BattleEffectContext
+        {
+            PlayerTarget = target,
+            GridManager = gridManager,
+            EffectId = "E_Crash",
+            Value = 2,
+            Count = 1
+        });
+    }
+
+    private static void ApplyCrashToMonster(MonsterUnit target, GridManager gridManager)
+    {
+        if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
+            return;
+
+        new CrashEffect().Execute(new BattleEffectContext
+        {
+            MonsterTarget = target,
+            GridManager = gridManager,
+            EffectId = "E_Crash",
+            Value = 2,
+            Count = 1
+        });
+    }
+
+    private static IEnumerator MoveTransformSmooth(
+        Transform target,
+        Vector3 startPosition,
+        Vector3 targetPosition)
+    {
+        if (target == null)
+            yield break;
+
+        float elapsed = 0f;
+
+        while (elapsed < ForcedMoveAnimationDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / ForcedMoveAnimationDuration);
+            target.position = Vector3.Lerp(startPosition, targetPosition, t);
+            yield return null;
+        }
+
+        target.position = targetPosition;
     }
 }

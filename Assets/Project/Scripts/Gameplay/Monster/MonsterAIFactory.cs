@@ -25,6 +25,9 @@ namespace Relic.Gameplay.Monster
                     return new CinderAI();
 
                 case "Mon_10":
+                    return new NocturnAI();
+
+                case "Mon_12":
                     return new EliseAI();
 
                 default:

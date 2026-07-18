@@ -3,6 +3,8 @@ using Relic.Gameplay.Battle;
 using Relic.Gameplay.Monster;
 using System.Collections;
 using System.Collections.Generic;
+using System;
+using Object = UnityEngine.Object;
 using UnityEngine;
 
 public class BattleActionRunner
@@ -18,9 +20,12 @@ public class BattleActionRunner
     private readonly BattleEffectExecutor effectExecutor = new();
     private readonly bool useSafeSequentialExecution;
     private readonly float actionRoutineTimeout;
+    private readonly Action<PlayerReservedCommand, int> onPlayerCommandExecuted;
     private BattleGridEffectController gridEffectController;
+    private readonly HashSet<string> nocturnPortalFailedRuntimeIds = new();
 
     private const float ActionDelay = 0.03f;
+    private const float MultiHitAnimationSpeed = 1.35f;
     private const float BatchEndDelay = 0.03f;
     private const float NoInteractionPostDelay = 0.12f;
 
@@ -52,11 +57,13 @@ public class BattleActionRunner
       BattleMonsterSpawner monsterSpawner,
       BattleRoomLoader roomLoader,
       bool useSafeSequentialExecution,
-      float actionRoutineTimeout)
+      float actionRoutineTimeout,
+      Action<PlayerReservedCommand, int> onPlayerCommandExecuted = null)
     {
         this.gridManager = gridManager;
         this.useSafeSequentialExecution = useSafeSequentialExecution;
         this.actionRoutineTimeout = Mathf.Max(0.1f, actionRoutineTimeout);
+        this.onPlayerCommandExecuted = onPlayerCommandExecuted;
 
         unitFinder = new BattleUnitFinder();
         hudService = new BattleHUDService();
@@ -134,7 +141,7 @@ public class BattleActionRunner
             if (!BattleActionOrderUtility.HasSwift(command))
                 continue;
 
-            AddPlayerActionRoutine(actionRoutines, command);
+            AddPlayerActionRoutine(actionRoutines, command, batch.TimelineSlotIndex);
         }
 
         for (int i = 0; i < batch.MonsterCommands.Count; i++)
@@ -154,13 +161,16 @@ public class BattleActionRunner
             if (BattleActionOrderUtility.HasSwift(command))
                 continue;
 
-            AddPlayerActionRoutine(actionRoutines, command);
+            AddPlayerActionRoutine(actionRoutines, command, batch.TimelineSlotIndex);
         }
 
         return actionRoutines;
     }
 
-    private void AddPlayerActionRoutine(List<ActionRoutine> actionRoutines, PlayerReservedCommand command)
+    private void AddPlayerActionRoutine(
+        List<ActionRoutine> actionRoutines,
+        PlayerReservedCommand command,
+        int timelineSlotIndex)
     {
         if (actionRoutines == null || command == null)
             return;
@@ -173,11 +183,30 @@ public class BattleActionRunner
             if (IsConsumedVisualSkipMove(command))
                 return;
 
-            actionRoutines.Add(CreateActionRoutine($"PlayerMove:{command.CharacterId}", ExecutePlayerMove(command)));
+            actionRoutines.Add(CreateActionRoutine(
+                $"PlayerMove:{command.CharacterId}",
+                ExecutePlayerCommandAndNotify(command, timelineSlotIndex, ExecutePlayerMove(command))));
             return;
         }
 
-        actionRoutines.Add(CreateActionRoutine($"PlayerSkill:{command.CharacterId}:{command.SkillId}", ExecutePlayerSkill(command)));
+        actionRoutines.Add(CreateActionRoutine(
+            $"PlayerSkill:{command.CharacterId}:{command.SkillId}",
+            ExecutePlayerCommandAndNotify(command, timelineSlotIndex, ExecutePlayerSkill(command))));
+    }
+
+    private IEnumerator ExecutePlayerCommandAndNotify(
+        PlayerReservedCommand command,
+        int timelineSlotIndex,
+        IEnumerator actionRoutine)
+    {
+        if (actionRoutine != null)
+        {
+            while (actionRoutine.MoveNext())
+                yield return actionRoutine.Current;
+        }
+
+        if (command != null && command.UserRuntime != null && !command.UserRuntime.IsDead)
+            onPlayerCommandExecuted?.Invoke(command, timelineSlotIndex);
     }
 
     private IEnumerator RunPostActionPresentationRoutine(bool hasInteraction = true)
@@ -1684,19 +1713,32 @@ public class BattleActionRunner
         BattleUnitAnimator attackerAnimator)
     {
         int hitCount = Mathf.Max(1, count);
+        bool isMultiHit = hitCount > 1;
+
+        // 다단 공격은 타격 횟수만큼 서로 다른 공격 모션을 빠르게 이어서 재생한다.
+        // 1회 공격보다 각 모션의 재생 속도를 높여 전체 행동 시간이 과도하게 길어지지 않도록 한다.
+        if (isMultiHit && attackerAnimator != null)
+            attackerAnimator.SetPlaybackSpeed(MultiHitAnimationSpeed);
 
         for (int hitIndex = 0; hitIndex < hitCount; hitIndex++)
         {
             if (!HasAliveMonsterTarget(monsterTargets))
-                yield break;
+            {
+                if (isMultiHit && attackerAnimator != null)
+                    attackerAnimator.RestorePlaybackSpeed();
 
-            List<Transform> feedbackTargets = new();
+                yield break;
+            }
 
             if (attackerAnimator != null)
-                attackerAnimator.PlaySkillAction(command.SkillData);
+                attackerAnimator.PlaySkillAction(command.SkillData, hitIndex);
 
-            yield return new WaitForSeconds(ActionDelay);
+            float hitActionDelay = isMultiHit
+                ? ActionDelay / MultiHitAnimationSpeed
+                : ActionDelay;
+            yield return new WaitForSeconds(hitActionDelay);
 
+            List<Transform> feedbackTargets = new();
             bool appliedAnyHit = false;
 
             for (int i = 0; i < monsterTargets.Count; i++)
@@ -1746,15 +1788,24 @@ public class BattleActionRunner
             hudService.RefreshHUDs();
 
             if (!appliedAnyHit)
+            {
+                if (isMultiHit && attackerAnimator != null)
+                    attackerAnimator.RestorePlaybackSpeed();
+
                 yield break;
+            }
 
             yield return PlayDamageHitFeedback(
                 caster != null ? caster.transform : null,
                 feedbackTargets,
                 command.Direction);
 
-            yield return new WaitForSeconds(HitCameraDelay);
+            if (hitIndex >= hitCount - 1)
+                yield return new WaitForSeconds(HitCameraDelay);
         }
+
+        if (isMultiHit && attackerAnimator != null)
+            attackerAnimator.RestorePlaybackSpeed();
     }
 
     private void ExecutePlayerNonDamageEffectToMonsters(
@@ -2034,7 +2085,12 @@ public class BattleActionRunner
         if (command == null || command.SkillData == null)
             yield break;
 
-        if (command.SkillData.TimelineNotation == TimelineActionType.Move)
+        // 포탈 이동은 스킬 데이터의 타임라인 표기와 관계없이 이동 처리로 보냅니다.
+        if (IsNocturnPortalMove(command))
+        {
+            yield return ExecuteMonsterMove(command);
+        }
+        else if (command.SkillData.TimelineNotation == TimelineActionType.Move)
         {
             yield return ExecuteMonsterMove(command);
         }
@@ -2058,6 +2114,23 @@ public class BattleActionRunner
 
         Vector2Int moveOffset = GetMonsterMoveOffset(command);
 
+        // 포탈 이동은 예약된 절대 목적지를 사용할 수 있으므로 일반 이동의 0 오프셋 검사보다 먼저 처리합니다.
+        if (IsNocturnPortalMove(command))
+        {
+            ShowExecutionRange(BuildMonsterMoveExecutionRange(monster, command));
+
+            try
+            {
+                yield return ExecuteNocturnPortalMove(monster, command, moveOffset);
+            }
+            finally
+            {
+                ClearExecutionRange();
+            }
+
+            yield break;
+        }
+
         if (moveOffset == Vector2Int.zero)
             yield break;
 
@@ -2065,6 +2138,7 @@ public class BattleActionRunner
 
         try
         {
+
             BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
 
             if (facing != null)
@@ -2135,6 +2209,159 @@ public class BattleActionRunner
         {
             ClearExecutionRange();
         }
+    }
+
+
+
+    private static void HideNocturnPortalDestinationIndicator(MonsterReservedCommand command)
+    {
+        if (command == null || command.RangeOriginGridIndex < 0)
+            return;
+
+        PlayerSkillReservationController reservationController =
+            Object.FindFirstObjectByType<PlayerSkillReservationController>(
+                FindObjectsInactive.Include);
+
+        if (reservationController != null)
+        {
+            reservationController.HideNocturnPortalDestinationIndicator(
+                command.RuntimeId,
+                command.RangeOriginGridIndex);
+        }
+    }
+
+    private void MarkNocturnPortalFailed(MonsterReservedCommand command)
+    {
+        if (command == null || string.IsNullOrEmpty(command.RuntimeId))
+            return;
+
+        nocturnPortalFailedRuntimeIds.Add(command.RuntimeId);
+    }
+
+    private void ClearNocturnPortalFailed(MonsterReservedCommand command)
+    {
+        if (command == null || string.IsNullOrEmpty(command.RuntimeId))
+            return;
+
+        nocturnPortalFailedRuntimeIds.Remove(command.RuntimeId);
+    }
+
+    private bool ConsumeNocturnPortalFailure(MonsterReservedCommand command)
+    {
+        if (command == null || string.IsNullOrEmpty(command.RuntimeId))
+            return false;
+
+        return nocturnPortalFailedRuntimeIds.Remove(command.RuntimeId);
+    }
+
+    private static bool IsNocturnPortalMove(MonsterReservedCommand command)
+    {
+        return command != null && command.IsPortalMove;
+    }
+
+    private IEnumerator ExecuteNocturnPortalMove(
+        MonsterUnit monster,
+        MonsterReservedCommand command,
+        Vector2Int moveOffset)
+    {
+        if (monster == null || gridManager == null)
+            yield break;
+
+        // 포탈은 예약된 절대 목적지를 우선 사용합니다.
+        // 앞선 행동으로 현재 위치가 달라지면 예약 당시의 상대 오프셋이 0이 될 수도 있으므로,
+        // 절대 목적지가 있는 명령은 MoveOffset이 0이어도 취소하지 않습니다.
+        bool hasReservedDestination = command != null && command.RangeOriginGridIndex >= 0;
+
+        if (!hasReservedDestination && moveOffset == Vector2Int.zero)
+            yield break;
+
+        int currentGridIndex = monster.MainGridIndex;
+
+        if (currentGridIndex < 0)
+            yield break;
+
+        Vector2Int currentCoord = gridManager.IndexToCoord(currentGridIndex);
+
+        // 예약 당시의 절대 목적지가 있으면 그것을 우선 사용합니다.
+        // 앞선 이동이나 그랩 때문에 녹턴의 현재 위치가 달라져도 포탈 목적지가 틀어지지 않습니다.
+        int destinationGridIndex = hasReservedDestination
+            ? command.RangeOriginGridIndex
+            : -1;
+
+        Vector2Int destinationCoord;
+
+        if (destinationGridIndex >= 0)
+        {
+            destinationCoord = gridManager.IndexToCoord(destinationGridIndex);
+            moveOffset = destinationCoord - currentCoord;
+        }
+        else
+        {
+            destinationCoord = currentCoord + moveOffset;
+
+            if (!gridManager.IsValidCoord(destinationCoord))
+                yield break;
+
+            destinationGridIndex = gridManager.CoordToIndex(destinationCoord);
+        }
+
+        // 실행 직전까지 목적지 칸이 비어 있어야 합니다.
+        // 캐릭터나 다른 몬스터가 해당 칸을 차지했다면 포탈 이동을 취소합니다.
+        if (BattleOccupancyService.IsOccupiedByAnyUnit(destinationGridIndex, null, monster))
+        {
+            MarkNocturnPortalFailed(command);
+            HideNocturnPortalDestinationIndicator(command);
+            yield break;
+        }
+
+        BattleGridEffectController gridEffectController =
+            Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+
+        if (gridEffectController != null && gridEffectController.IsBlocked(destinationGridIndex))
+        {
+            MarkNocturnPortalFailed(command);
+            HideNocturnPortalDestinationIndicator(command);
+            yield break;
+        }
+
+        // 목적지 검사를 통과했으므로 이번 포탈은 성공 상태로 기록합니다.
+        ClearNocturnPortalFailed(command);
+
+        // 이동 연출이 시작되는 순간 목적지 예고 이미지를 제거합니다.
+        HideNocturnPortalDestinationIndicator(command);
+
+        BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
+
+        if (facing != null)
+            facing.FaceByMoveOffset(moveOffset);
+
+        Vector3 destinationPosition = gridManager.GetWorldPositionByIndex(destinationGridIndex);
+
+        // 포탈 이동도 이동 상태임을 보여주기 위해 Move 애니메이션을 재생합니다.
+        // 위치 보간은 사용하지 않고 목적지에는 즉시 나타납니다.
+        BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
+
+        if (animator != null)
+        {
+            animator.PlayMove();
+            yield return new WaitForSeconds(MoveAnimationDuration);
+        }
+
+        // 논리 그리드와 화면 위치를 함께 갱신해 실제 점유 위치도 후방 칸으로 이동시킵니다.
+        monster.MoveOccupiedCells(moveOffset, gridManager);
+        monster.transform.position = destinationPosition;
+
+        if (animator != null)
+        {
+            animator.PlayMoveReverse();
+            yield return new WaitForSeconds(MoveAnimationDuration);
+            animator.RestorePlaybackSpeed();
+        }
+
+        ApplyGridEffectsToMonster(new List<int> { destinationGridIndex }, monster);
+        statusEffectService.ApplyBleedDamageToMonsterOnMove(monster);
+        hudService.RefreshHUDs();
+        yield return new WaitForSeconds(ActionDelay);
     }
 
     private sealed class MonsterMoveResolution
@@ -2443,6 +2670,14 @@ public class BattleActionRunner
         if (monster == null)
             yield break;
 
+        // 직전 포탈이 점유 또는 이동 불가로 취소됐다면 예약된 포탈 위치를 공격 원점으로 사용하지 않습니다.
+        // 녹턴의 실제 현재 위치를 원점으로 바꾸고, 현재 위치에서 실제 대상을 향해 방향을 다시 정합니다.
+        if (ConsumeNocturnPortalFailure(command))
+        {
+            command.SetRangeOriginGridIndex(monster.MainGridIndex);
+            command.ClearForcedDirection();
+        }
+
         if (command.SkillData.SkillId == "S_Monster_07")
         {
             ShowExecutionRange(BuildMonsterSkillExecutionRange(command, monster.MainGridIndex));
@@ -2459,28 +2694,37 @@ public class BattleActionRunner
             yield break;
         }
 
-        // 현재 방향 기준으로 먼저 범위 재계산
+        BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
+
+        // AI가 공격 방향을 지정한 경우 예약된 방향을 실행 시점에도 그대로 사용합니다.
+        // 범위는 오른쪽인데 애니메이션만 왼쪽을 향하는 현상을 방지합니다.
+        if (command.HasForcedDirection)
+        {
+            if (facing != null)
+                facing.FaceRight(command.ForcedDirection == BattleDirection.Right);
+
+            if (monster.RuntimeData != null)
+                monster.RuntimeData.Direction = command.ForcedDirection;
+        }
+
+        // 확정된 방향을 기준으로 공격 범위를 계산합니다.
         RecalculateMonsterSkillRangeAtExecution(monster, command);
 
         BattleCharacter firstPlayerTarget = FindFirstPlayerTarget(command);
 
         BattleUnitAnimator monsterAnimator = monster.GetComponent<BattleUnitAnimator>();
 
-        // 타겟이 있으면 바라보고, 바라본 방향으로 다시 범위 재계산
-        if (firstPlayerTarget != null)
+        // 강제 방향이 없는 일반 AI 행동만 실제 명중 대상 쪽으로 회전합니다.
+        // 포탈 후속 공격처럼 방향이 예약된 행동은 위에서 지정한 방향을 유지합니다.
+        if (!command.HasForcedDirection && firstPlayerTarget != null && facing != null)
         {
-            BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
+            facing.FaceByWorldTarget(firstPlayerTarget.transform.position);
 
-            if (facing != null)
-            {
-                facing.FaceByWorldTarget(firstPlayerTarget.transform.position);
+            if (monster.RuntimeData != null)
+                monster.RuntimeData.Direction = facing.GetBattleDirection();
 
-                if (monster.RuntimeData != null)
-                    monster.RuntimeData.Direction = facing.GetBattleDirection();
-
-                RecalculateMonsterSkillRangeAtExecution(monster, command);
-                firstPlayerTarget = FindFirstPlayerTarget(command);
-            }
+            RecalculateMonsterSkillRangeAtExecution(monster, command);
+            firstPlayerTarget = FindFirstPlayerTarget(command);
         }
 
         ShowExecutionRange(BuildMonsterSkillExecutionRange(command, monster.MainGridIndex));
@@ -2553,9 +2797,8 @@ public class BattleActionRunner
             bool hasAliveTarget = HasAliveMonsterSkillTarget(monster, command);
             bool canPlayProjectileVfx = ShouldPlayMonsterProjectileVfx(monster, command, monsterAnimator);
 
-            if (!hasAliveTarget && !canPlayProjectileVfx)
-                yield break;
-
+            // 명중 대상이 없어도 몬스터의 공격 모션은 반드시 재생합니다.
+            // 대상 부재는 피해 적용만 건너뛰며, 공격 시도 자체를 취소하지 않습니다.
             if (monsterAnimator != null)
                 monsterAnimator.PlayMonsterSkillAction(command);
 

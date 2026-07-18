@@ -31,3 +31,6 @@ MonoBehaviour:
   - MonsterId: Mon_06
     Icon: {fileID: 21300000, guid: 1de298cbd4a0b5f4eab50bf9d0ae5eb9, type: 3}
     TimelineIcon: {fileID: 21300000, guid: 1de298cbd4a0b5f4eab50bf9d0ae5eb9, type: 3}
+  - MonsterId: Mon_10
+    Icon: {fileID: 21300000, guid: 9a22aa2d3402447429373062109e2a2d, type: 3}
+    TimelineIcon: {fileID: 21300000, guid: 9a22aa2d3402447429373062109e2a2d, type: 3}

@@ -75,8 +75,8 @@ public class BattleTurnExecutor : MonoBehaviour
 
     private void OnEnable()
     {
-        BattleEffectUtility.OnPlayerDamaged -= uniqueResourceService.OnAnyPlayerDamaged;
-        BattleEffectUtility.OnPlayerDamaged += uniqueResourceService.OnAnyPlayerDamaged;
+        BattleEffectUtility.OnPlayerHit -= uniqueResourceService.OnAnyPlayerDamaged;
+        BattleEffectUtility.OnPlayerHit += uniqueResourceService.OnAnyPlayerDamaged;
         BattleEffectUtility.OnPlayerBuffApplied -= uniqueResourceService.OnPlayerBuffApplied;
         BattleEffectUtility.OnPlayerBuffApplied += uniqueResourceService.OnPlayerBuffApplied;
         BattleEffectUtility.OnPlayerDamagedEnemy -= uniqueResourceService.OnPlayerDamagedEnemy;
@@ -85,7 +85,7 @@ public class BattleTurnExecutor : MonoBehaviour
 
     private void OnDisable()
     {
-        BattleEffectUtility.OnPlayerDamaged -= uniqueResourceService.OnAnyPlayerDamaged;
+        BattleEffectUtility.OnPlayerHit -= uniqueResourceService.OnAnyPlayerDamaged;
         BattleEffectUtility.OnPlayerBuffApplied -= uniqueResourceService.OnPlayerBuffApplied;
         BattleEffectUtility.OnPlayerDamagedEnemy -= uniqueResourceService.OnPlayerDamagedEnemy;
     }
@@ -257,11 +257,12 @@ public class BattleTurnExecutor : MonoBehaviour
                 monsterSpawner,
                 roomLoader,
                 useSafeSequentialExecution,
-                actionRoutineTimeout
+                actionRoutineTimeout,
+                uniqueResourceService.OnPlayerCommandExecuted
             );
             BattleActionSimulationService simulator = new(gridManager);
 
-            uniqueResourceService.ApplyTimelineResourceGain(timelineController);
+            uniqueResourceService.BeginTurnExecution();
 
             simulator.Simulate(timelineController);
 
