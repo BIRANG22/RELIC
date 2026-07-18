@@ -57359,6 +57359,7 @@ MonoBehaviour:
   - {fileID: 461552127}
   - {fileID: 1393047474}
   blueDustiumHud: {fileID: 2200000512}
+  skillUpgradeButtonStartPosition: {x: 2400, y: 200}
 --- !u!1 &2200000510
 GameObject:
   m_ObjectHideFlags: 0
@@ -57418,7 +57419,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 154260845824143328, guid: 5a8cf968d248bfd468a88071d2524a0b, type: 3}
       propertyPath: m_Name
-      value: LobbySkillUpgradePanel
+      value: UpgradePanel
       objectReference: {fileID: 0}
     - target: {fileID: 154260845824143328, guid: 5a8cf968d248bfd468a88071d2524a0b, type: 3}
       propertyPath: m_IsActive
