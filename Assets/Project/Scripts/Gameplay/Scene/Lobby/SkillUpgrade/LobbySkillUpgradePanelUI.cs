@@ -46,8 +46,15 @@ public sealed class LobbySkillUpgradePanelUI : MonoBehaviour
     public void Open()
     {
         (panelRoot != null ? panelRoot : gameObject).SetActive(true);
+        GetComponent<SkillUpgradePanelContextSelector>()?.RefreshContext();
         ClearSelection();
         Refresh();
+    }
+
+    public void ActivateForContext()
+    {
+        enabled = true;
+        BindPanelButtons();
     }
 
     public void Close()

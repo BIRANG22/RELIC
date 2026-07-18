@@ -104,11 +104,13 @@ public class SkillUpgradePanel : MonoBehaviour
     private void Awake()
     {
         ConfigureContentLayout();
+        BindBattleButtons();
     }
 
     private void OnEnable()
     {
         ConfigureContentLayout();
+        BindBattleButtons();
     }
 
     private void OnRectTransformDimensionsChange()
@@ -136,6 +138,7 @@ public class SkillUpgradePanel : MonoBehaviour
             : gameObject;
 
         activePanelRoot.SetActive(true);
+        GetComponent<SkillUpgradePanelContextSelector>()?.RefreshContext();
 
         // 다른 패널이 열렸다 닫힌 뒤에도 투명한 UI가 입력을 가로채지 않도록
         // 강화 패널을 현재 Canvas의 가장 앞쪽 형제로 올립니다.
@@ -147,6 +150,12 @@ public class SkillUpgradePanel : MonoBehaviour
         ClearSkillInfoTexts();
         ConfigureContentLayout();
         Refresh();
+    }
+
+    public void ActivateForContext()
+    {
+        enabled = true;
+        BindBattleButtons();
     }
 
 
@@ -1031,6 +1040,32 @@ public class SkillUpgradePanel : MonoBehaviour
         layoutElement.preferredHeight = iconSize.y;
         layoutElement.flexibleWidth = 0f;
         layoutElement.flexibleHeight = 0f;
+    }
+
+    private void BindBattleButtons()
+    {
+        Transform root = panelRoot != null ? panelRoot.transform : transform;
+        Transform tuningTransform = FindChildByName(root, "TuningButton");
+        Transform cancelTransform = FindChildByName(root, "Cancel");
+        Button tuningButton = tuningTransform != null ? tuningTransform.GetComponent<Button>() : null;
+        Button cancelButton = cancelTransform != null ? cancelTransform.GetComponent<Button>() : null;
+        RestRoomController controller = FindFirstObjectByType<RestRoomController>(FindObjectsInactive.Include);
+
+        if (tuningButton != null)
+        {
+            tuningButton.onClick = new Button.ButtonClickedEvent();
+            if (controller != null)
+                tuningButton.onClick.AddListener(controller.OnTuningButtonClicked);
+        }
+
+        if (cancelButton != null)
+        {
+            cancelButton.onClick = new Button.ButtonClickedEvent();
+            if (controller != null)
+                cancelButton.onClick.AddListener(controller.OnUpgradeCancelButtonClicked);
+            else
+                cancelButton.onClick.AddListener(Close);
+        }
     }
 
     private void RebuildContentLayout()
