@@ -57360,6 +57360,7 @@ MonoBehaviour:
   - {fileID: 1393047474}
   blueDustiumHud: {fileID: 2200000512}
   skillUpgradeButtonStartPosition: {x: 2400, y: 200}
+  relicRefreshIcon: {fileID: 21300000, guid: e6d00ecee490ed1409b7d5b752b78f25, type: 3}
 --- !u!1 &2200000510
 GameObject:
   m_ObjectHideFlags: 0

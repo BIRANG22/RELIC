@@ -14,6 +14,7 @@ namespace Relic.Gameplay.Data
         public List<LobbyCharacterLoadoutData> CharacterLoadouts = new();
         public List<LobbySkillUpgradeRecordData> CharacterSkillUpgrades = new();
         public int RelicOfferSeed;
+        public int RelicRefreshCount;
         public List<string> RelicOfferIds = new();
     }
 
