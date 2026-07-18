@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class MonsterSkillEffectService
 {
+    private const string NocturnGrabSkillId = "S_Monster_17";
     private enum EffectExecutionMode
     {
         All,
@@ -40,6 +41,9 @@ public class MonsterSkillEffectService
         if (command == null || command.SkillData == null)
             return false;
 
+        if (string.Equals(command.SkillData.SkillId, NocturnGrabSkillId, System.StringComparison.Ordinal))
+            return false;
+
         if (string.IsNullOrWhiteSpace(command.SkillData.EffectIds))
             return false;
 
@@ -57,6 +61,9 @@ public class MonsterSkillEffectService
     public int GetDamageHitCount(MonsterReservedCommand command)
     {
         if (command == null || command.SkillData == null)
+            return 1;
+
+        if (string.Equals(command.SkillData.SkillId, NocturnGrabSkillId, System.StringComparison.Ordinal))
             return 1;
 
         if (string.IsNullOrWhiteSpace(command.SkillData.EffectIds))
@@ -240,6 +247,15 @@ public class MonsterSkillEffectService
 
             int count = ParseIndexedValue(command.SkillData.CountRate, i);
             bool isDamageHitEffect = IsDamageHitEffect(effectId);
+
+            // 녹턴의 끌어당기기 스킬은 ValueRate 1을 이동 칸 수로만 사용합니다.
+            // 데이터에 공격 효과가 포함되어 있어도 피해는 실행하지 않습니다.
+            if (string.Equals(command.SkillData.SkillId, NocturnGrabSkillId, System.StringComparison.Ordinal) &&
+                isDamageHitEffect)
+            {
+                continue;
+            }
+
             int value = ResolveEffectValue(command, effectId, i);
 
             if (mode == EffectExecutionMode.DamageHit && !isDamageHitEffect)
@@ -305,7 +321,33 @@ public class MonsterSkillEffectService
                 );
                 Debug.LogException(e);
             }
+
+            // 기습 판정은 피격 직전의 방향을 사용해야 합니다.
+            // 피해 적용이 끝난 뒤에만 피격 캐릭터가 공격자를 바라보도록 전환합니다.
+            if (playerTarget != null && isDamageHitEffect &&
+                playerTarget.RuntimeData != null && !playerTarget.RuntimeData.IsDead)
+            {
+                FacePlayerToAttacker(playerTarget, caster);
+            }
         }
+    }
+
+    private static void FacePlayerToAttacker(
+        BattleCharacter target,
+        MonsterUnit attacker)
+    {
+        if (target == null || attacker == null)
+            return;
+
+        BattleUnitFacing targetFacing = target.GetComponent<BattleUnitFacing>();
+
+        if (targetFacing == null)
+            return;
+
+        targetFacing.FaceByWorldTarget(attacker.transform.position);
+
+        if (target.RuntimeData != null)
+            target.RuntimeData.Direction = targetFacing.GetBattleDirection();
     }
 
     private int ParseIndexedValue(string text, int index)

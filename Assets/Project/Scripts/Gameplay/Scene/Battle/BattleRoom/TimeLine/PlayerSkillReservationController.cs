@@ -58,6 +58,18 @@ public class PlayerSkillReservationController : MonoBehaviour
     [SerializeField] private Color moveHoverCostTextColor = Color.white;
     [SerializeField] private int moveHoverCostSortingOrder = 12;
 
+
+    [Header("Nocturn Portal Preview")]
+    [Tooltip("녹턴이 포탈로 이동할 그리드에 표시할 이미지입니다.")]
+    [SerializeField] private Sprite nocturnPortalIndicatorSprite;
+    [Tooltip("그리드 중심에서 포탈 예고 이미지에 추가할 위치 오프셋입니다.")]
+    [SerializeField] private Vector3 nocturnPortalIndicatorOffset = Vector3.zero;
+    [Tooltip("포탈 예고 이미지의 크기입니다. 1은 원본 크기입니다.")]
+    [Min(0f)]
+    [SerializeField] private float nocturnPortalIndicatorScale = 1f;
+    [Tooltip("포탈 예고 이미지의 정렬 순서 오프셋입니다.")]
+    [SerializeField] private int nocturnPortalIndicatorSortingOrder = 13;
+
     [Header("Range Highlight Colors")]
     [SerializeField] private Color moveHighlightColor = new Color(0.698f, 0.698f, 0.243f, 1f);
     [SerializeField] private Color powerHighlightColor = new Color(0.243f, 0.318f, 0.698f, 1f);
@@ -81,6 +93,15 @@ public class PlayerSkillReservationController : MonoBehaviour
     private Vector3 moveHoverPingFloatingBasePosition;
     private float moveHoverPingFloatStartTime;
 
+
+    private sealed class NocturnPortalIndicatorEntry
+    {
+        public SpriteRenderer Renderer;
+        public int ReferenceCount;
+    }
+
+    private readonly Dictionary<string, NocturnPortalIndicatorEntry> nocturnPortalIndicators = new();
+
     private int currentMoveDistancePerCommand = 1;
     private int currentMoveReservationCapacity = 1;
 
@@ -103,6 +124,7 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     private void OnDisable()
     {
+        ClearNocturnPortalDestinationIndicators();
         HideMoveHoverPing();
         SetMoveTargetMonsterVisualActive(false);
 
@@ -689,6 +711,95 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         if (moveHoverCostTextInstance != null)
             moveHoverCostTextInstance.gameObject.SetActive(false);
+    }
+
+
+    public void ShowNocturnPortalDestinationIndicator(string runtimeId, int destinationGridIndex)
+    {
+        if (gridManager == null || nocturnPortalIndicatorSprite == null || destinationGridIndex < 0)
+            return;
+
+        string key = BuildNocturnPortalIndicatorKey(runtimeId, destinationGridIndex);
+
+        if (nocturnPortalIndicators.TryGetValue(key, out NocturnPortalIndicatorEntry existing) &&
+            existing != null && existing.Renderer != null)
+        {
+            existing.ReferenceCount++;
+            ApplyNocturnPortalIndicatorTransform(existing.Renderer, destinationGridIndex);
+            existing.Renderer.gameObject.SetActive(true);
+            return;
+        }
+
+        GameObject indicatorObject = new GameObject(
+            $"Nocturn Portal Destination {runtimeId}_{destinationGridIndex}");
+        indicatorObject.transform.SetParent(transform, false);
+
+        SpriteRenderer renderer = indicatorObject.AddComponent<SpriteRenderer>();
+        renderer.sprite = nocturnPortalIndicatorSprite;
+        ApplyNocturnPortalIndicatorTransform(renderer, destinationGridIndex);
+
+        nocturnPortalIndicators[key] = new NocturnPortalIndicatorEntry
+        {
+            Renderer = renderer,
+            ReferenceCount = 1
+        };
+    }
+
+    public void HideNocturnPortalDestinationIndicator(string runtimeId, int destinationGridIndex)
+    {
+        string key = BuildNocturnPortalIndicatorKey(runtimeId, destinationGridIndex);
+
+        if (!nocturnPortalIndicators.TryGetValue(key, out NocturnPortalIndicatorEntry entry) ||
+            entry == null)
+        {
+            return;
+        }
+
+        entry.ReferenceCount--;
+
+        if (entry.ReferenceCount > 0)
+            return;
+
+        nocturnPortalIndicators.Remove(key);
+
+        if (entry.Renderer != null)
+            Destroy(entry.Renderer.gameObject);
+    }
+
+    public void ClearNocturnPortalDestinationIndicators()
+    {
+        foreach (KeyValuePair<string, NocturnPortalIndicatorEntry> pair in nocturnPortalIndicators)
+        {
+            if (pair.Value != null && pair.Value.Renderer != null)
+                Destroy(pair.Value.Renderer.gameObject);
+        }
+
+        nocturnPortalIndicators.Clear();
+    }
+
+    private void ApplyNocturnPortalIndicatorTransform(
+        SpriteRenderer renderer,
+        int destinationGridIndex)
+    {
+        if (renderer == null || gridManager == null)
+            return;
+
+        Vector3 gridWorldPosition = gridManager.GetWorldPositionByIndex(destinationGridIndex);
+        renderer.sprite = nocturnPortalIndicatorSprite;
+        renderer.transform.position = gridWorldPosition + nocturnPortalIndicatorOffset;
+        renderer.transform.localScale = Vector3.one * Mathf.Max(0f, nocturnPortalIndicatorScale);
+        ApplyMoveHoverYSort(
+            renderer,
+            gridWorldPosition.y,
+            nocturnPortalIndicatorSortingOrder,
+            3);
+    }
+
+    private static string BuildNocturnPortalIndicatorKey(
+        string runtimeId,
+        int destinationGridIndex)
+    {
+        return $"{runtimeId ?? string.Empty}:{destinationGridIndex}";
     }
 
     private bool IsGeneralSelectionSkillActive()

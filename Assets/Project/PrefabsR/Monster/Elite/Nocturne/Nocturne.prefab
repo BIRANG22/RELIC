@@ -127,7 +127,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 1.7}
+  m_Offset: {x: 0, y: 6}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -137,7 +137,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 6, y: 4}
+  m_Size: {x: 6, y: 12}
   m_EdgeRadius: 0
 --- !u!114 &8538534029465631251
 MonoBehaviour:
@@ -920,10 +920,10 @@ MonoBehaviour:
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
-  - stateName: AttackAction2
+  - stateName: 
     vfx:
-      prefab: {fileID: 3362751810309854143, guid: 10bad5f4be8c97b4fa38a4fb131738e7, type: 3}
-      flipType: 1
+      prefab: {fileID: 0}
+      flipType: 0
       sfx:
         playSfx: 0
         sfxId: 
@@ -943,11 +943,11 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
-      skillId: S_Monster_04
-      missilePrefab: {fileID: 1554735761749976267, guid: c9eb4dfd9497ee14790a1f27d664d476, type: 3}
-      impactPrefab: {fileID: 7625895887722065679, guid: 46f6c725fd762724d94b566b0d4f508e, type: 3}
-      missileFlipType: 1
-      impactFlipType: 1
+      skillId: 
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
+      missileFlipType: 2
+      impactFlipType: 2
       missileSfx:
         playSfx: 0
         sfxId: 

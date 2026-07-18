@@ -222,7 +222,7 @@ public class BattleTimelinePreviewEntry
             if (monsterCommand != null &&
                 BattleDamageService.IsMonsterDamageHitEffect(entry.EffectId))
             {
-                string damageText = BattleDamageService.GetMonsterDamageText(monsterCommand);
+                string damageText = BattleDamageService.GetMonsterDamageTotalText(monsterCommand);
 
                 if (!string.IsNullOrWhiteSpace(damageText))
                     return damageText;
@@ -252,7 +252,7 @@ public class BattleTimelinePreviewEntry
         if (!BattleDamageService.ShouldReserveMonsterDamage(command.SkillData))
             return "";
 
-        return BattleDamageService.GetMonsterDamageText(command);
+        return BattleDamageService.GetMonsterDamageTotalText(command);
     }
 
     private static bool ShouldShowValueText(string effectId)

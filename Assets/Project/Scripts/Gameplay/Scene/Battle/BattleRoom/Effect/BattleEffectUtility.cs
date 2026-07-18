@@ -6,6 +6,7 @@ using Relic.Gameplay.Monster;
 public static class BattleEffectUtility
 {
     public static System.Action<BattleCharacter> OnPlayerDamaged;
+    public static System.Action<BattleCharacter> OnPlayerHit;
     public static System.Action<BattleCharacter> OnPlayerBuffApplied;
     public static System.Action<BattleCharacter> OnPlayerDamagedEnemy;
 
@@ -177,6 +178,7 @@ public static class BattleEffectUtility
         BattleDamageTextPopupUI.Show(target.transform, shownDamage);
 
         OnPlayerDamaged?.Invoke(target);
+        OnPlayerHit?.Invoke(target);
 
         BattleUnitAnimator animator = target.GetComponent<BattleUnitAnimator>();
 
@@ -286,7 +288,17 @@ public static class BattleEffectUtility
         return shownDamage;
     }
 
+    public static void PoisonDamagePlayer(BattleCharacter target, int damage)
+    {
+        StatusDamagePlayerInternal(target, damage, true);
+    }
+
     public static void StatusDamagePlayer(BattleCharacter target, int damage)
+    {
+        StatusDamagePlayerInternal(target, damage, false);
+    }
+
+    private static void StatusDamagePlayerInternal(BattleCharacter target, int damage, bool isPoison)
     {
         if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return;
@@ -300,7 +312,10 @@ public static class BattleEffectUtility
 
         int shownDamage = Mathf.Max(0, hpBefore - target.RuntimeData.CurrentHP);
         HandlePlayerDeathIfNeeded(target);
-        BattleDamageTextPopupUI.Show(target.transform, shownDamage);
+        if (isPoison)
+            BattleDamageTextPopupUI.ShowPoisonDamage(target.transform, shownDamage);
+        else
+            BattleDamageTextPopupUI.Show(target.transform, shownDamage);
 
         OnPlayerDamaged?.Invoke(target);
 
@@ -315,7 +330,17 @@ public static class BattleEffectUtility
         }
     }
 
+    public static void PoisonDamageMonster(MonsterUnit target, int damage)
+    {
+        StatusDamageMonsterInternal(target, damage, true);
+    }
+
     public static void StatusDamageMonster(MonsterUnit target, int damage)
+    {
+        StatusDamageMonsterInternal(target, damage, false);
+    }
+
+    private static void StatusDamageMonsterInternal(MonsterUnit target, int damage, bool isPoison)
     {
         if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return;
@@ -327,7 +352,10 @@ public static class BattleEffectUtility
         target.RuntimeData.TakeDamage(damage);
 
         int shownDamage = Mathf.Max(0, hpBefore - target.RuntimeData.CurrentHP);
-        BattleDamageTextPopupUI.Show(target.transform, shownDamage);
+        if (isPoison)
+            BattleDamageTextPopupUI.ShowPoisonDamage(target.transform, shownDamage);
+        else
+            BattleDamageTextPopupUI.Show(target.transform, shownDamage);
 
         BattleUnitAnimator animator = target.GetComponent<BattleUnitAnimator>();
 
@@ -395,6 +423,7 @@ public static class BattleEffectUtility
             return;
 
         target.RuntimeData.CurrentShield += shieldValue;
+        BattleDamageTextPopupUI.ShowArmorGain(target.transform, shieldValue);
         PlayStatusVfx(ResolveUnitAnimator(target), "E_Armor");
         BattleHitImpactFeedback.PlayStatusHitFeedback(target.transform);
     }
@@ -410,6 +439,7 @@ public static class BattleEffectUtility
             return;
 
         target.RuntimeData.CurrentShield += shieldValue;
+        BattleDamageTextPopupUI.ShowArmorGain(target.transform, shieldValue);
         PlayStatusVfx(ResolveUnitAnimator(target), "E_Armor");
         BattleHitImpactFeedback.PlayStatusHitFeedback(target.transform);
         target.ShowAndRefreshHUD();

@@ -142,6 +142,73 @@ namespace Relic.Gameplay.Data
             return 0;
         }
 
+        public int GetPresentationActionIndexForSkill(string skillId)
+        {
+            int originalActionIndex = GetActionIndexForSkill(skillId);
+
+            if (originalActionIndex <= 0 || DataManager.Instance?.MonsterSkillDatabase == null)
+                return originalActionIndex;
+
+            string normalizedSkillId = skillId.Trim();
+            MonsterSkillData selectedSkillData =
+                DataManager.Instance.MonsterSkillDatabase.Get(normalizedSkillId);
+
+            // 이동은 Move 상태를 사용하고, 공격이 아닌 행동은 기존 프레젠테이션 번호를 유지합니다.
+            if (selectedSkillData == null ||
+                selectedSkillData.TimelineNotation != TimelineActionType.Attack)
+            {
+                return IsActualMoveSkill(selectedSkillData) ? 0 : originalActionIndex;
+            }
+
+            // 공격 스킬만 보유 순서대로 세어 AttackAction1, 2, 3에 연결합니다.
+            int attackActionIndex = 0;
+
+            for (int i = 0; i < PossibleSkillIdsByActionIndex.Length; i++)
+            {
+                string possibleSkillId = PossibleSkillIdsByActionIndex[i];
+
+                if (string.IsNullOrWhiteSpace(possibleSkillId))
+                    continue;
+
+                MonsterSkillData possibleSkillData =
+                    DataManager.Instance.MonsterSkillDatabase.Get(possibleSkillId);
+
+                if (possibleSkillData != null &&
+                    possibleSkillData.TimelineNotation == TimelineActionType.Attack)
+                {
+                    attackActionIndex++;
+                }
+
+                if (string.Equals(possibleSkillId, normalizedSkillId, StringComparison.Ordinal))
+                    return attackActionIndex;
+            }
+
+            return originalActionIndex;
+        }
+
+
+        private static bool IsActualMoveSkill(MonsterSkillData skillData)
+        {
+            if (skillData == null)
+                return false;
+
+            if (skillData.TimelineNotation == TimelineActionType.Move)
+                return true;
+
+            if (string.IsNullOrWhiteSpace(skillData.EffectIds))
+                return false;
+
+            string[] effectIds = skillData.EffectIds.Split(',', ';');
+
+            for (int i = 0; i < effectIds.Length; i++)
+            {
+                if (string.Equals(effectIds[i].Trim(), "E_Move", StringComparison.Ordinal))
+                    return true;
+            }
+
+            return false;
+        }
+
         public float GetHPPercent()
         {
             if (MaxHP <= 0)
@@ -163,6 +230,11 @@ namespace Relic.Gameplay.Data
             else if (MonsterId == "Mon_06")
             {
                 StatusEffects.Add(new StatusEffectRuntimeData("E_Explode", 3));
+            }
+            else if (MonsterId == "Mon_10")
+            {
+                // 녹턴은 전투 내내 유지되는 기습 효과를 기본 특성으로 가집니다.
+                StatusEffects.Add(new StatusEffectRuntimeData("E_Flank", 1));
             }
         }
 

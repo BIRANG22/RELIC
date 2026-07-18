@@ -13,6 +13,10 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
     [Header("Grid")]
     [SerializeField] private GridManager gridManager;
 
+    [Header("Nocturn Portal Preview")]
+    [Tooltip("같은 BattleReservationSystem 오브젝트의 예약 컨트롤러를 사용합니다. 비어 있으면 자동으로 찾습니다.")]
+    [SerializeField] private PlayerSkillReservationController playerSkillReservationController;
+
     [Header("Intro Text")]
     [SerializeField] private BattleMapIntroText battleMapIntroText;
     [SerializeField] private string battleStartMessage = "전투 시작";
@@ -115,6 +119,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             yield break;
         }
 
+        ClearNocturnPortalDestinationIndicators();
         timelineController.ClearMonsterCommands();
 
         if (showBattleStart)
@@ -131,6 +136,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                 continue;
 
             timelineController.AddMonsterCommand(plans[i].SlotIndex, plans[i].Command);
+            ShowNocturnPortalDestinationIndicator(plans[i].Command);
 
             if (monsterCommandInterval > 0f && i < plans.Count - 1)
                 yield return new WaitForSeconds(monsterCommandInterval);
@@ -160,6 +166,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             return;
         }
 
+        ClearNocturnPortalDestinationIndicators();
         timelineController.ClearMonsterCommands();
 
         if (showBattleStart)
@@ -173,10 +180,50 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                 continue;
 
             timelineController.AddMonsterCommand(plans[i].SlotIndex, plans[i].Command);
+            ShowNocturnPortalDestinationIndicator(plans[i].Command);
         }
 
         if (showActionReserve)
             ShowActionReserveIntroText();
+    }
+
+
+    private void ShowNocturnPortalDestinationIndicator(MonsterReservedCommand command)
+    {
+        if (command == null || !command.IsPortalMove || command.RangeOriginGridIndex < 0)
+            return;
+
+        ResolvePlayerSkillReservationController();
+
+        if (playerSkillReservationController == null)
+            return;
+
+        playerSkillReservationController.ShowNocturnPortalDestinationIndicator(
+            command.RuntimeId,
+            command.RangeOriginGridIndex);
+    }
+
+    private void ClearNocturnPortalDestinationIndicators()
+    {
+        ResolvePlayerSkillReservationController();
+
+        if (playerSkillReservationController != null)
+            playerSkillReservationController.ClearNocturnPortalDestinationIndicators();
+    }
+
+    private void ResolvePlayerSkillReservationController()
+    {
+        if (playerSkillReservationController != null)
+            return;
+
+        playerSkillReservationController = GetComponent<PlayerSkillReservationController>();
+
+        if (playerSkillReservationController == null)
+        {
+            playerSkillReservationController =
+                Object.FindFirstObjectByType<PlayerSkillReservationController>(
+                    FindObjectsInactive.Include);
+        }
     }
 
     private List<MonsterReservedCommandPlan> BuildMonsterCommandPlans(List<MonsterUnit> monsterUnits)
@@ -207,7 +254,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
             plan.Actions.Sort((a, b) => a.Priority.CompareTo(b.Priority));
 
-            int baseSlotIndex = FindAvailableMonsterSlot(runtime, plans);
+            int baseSlotIndex = FindAvailableMonsterSlot(runtime, plans, plan.Actions);
 
             if (baseSlotIndex < 0)
                 continue;
@@ -231,11 +278,15 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                 MonsterReservedCommand command = new MonsterReservedCommand(runtime, skillData);
                 command.SetMoveOffset(action.MoveOffset);
                 command.SetRangeOriginGridIndex(action.RangeOriginGridIndex);
+                command.SetPortalMove(action.IsPortalMove);
 
                 if (action.HasForcedDirection)
                     command.SetForcedDirection(action.ForcedDirection);
 
-                if (!IsMoveSkill(skillData))
+                // 포탈 명령의 RangeOriginGridIndex에는 실제 순간이동 목적지가 저장되어 있습니다.
+                // 일반 공격 범위 계산으로 이 값을 덮어쓰면 포탈 목적지가 엉뚱한 칸으로 바뀔 수 있으므로
+                // 포탈 이동은 공격 범위 계산에서 제외합니다.
+                if (!action.IsPortalMove && !IsMoveSkill(skillData))
                     SetMonsterRange(monsterUnit, skillData, command);
 
                 int slotIndex = ResolveMonsterActionSlot(baseSlotIndex, action, plans);
@@ -263,13 +314,15 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         if (slotCount <= 0)
             return -1;
 
+        int offsetBaseSlot = baseSlotIndex + action.SlotOffset;
+
         switch (action.SlotPreference)
         {
             case MonsterAISlotPreference.NextSlot:
-                return Mathf.Clamp(baseSlotIndex + 1, 0, slotCount - 1);
+                return offsetBaseSlot + 1;
 
             case MonsterAISlotPreference.SameSlot:
-                return baseSlotIndex;
+                return offsetBaseSlot;
 
             case MonsterAISlotPreference.Back:
                 return FindBackSlot(pendingPlans);
@@ -282,7 +335,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
             case MonsterAISlotPreference.Front:
             default:
-                return baseSlotIndex;
+                return offsetBaseSlot;
         }
     }
 
@@ -315,7 +368,8 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
     private int FindAvailableMonsterSlot(
         MonsterRuntimeData runtime,
-        List<MonsterReservedCommandPlan> pendingPlans)
+        List<MonsterReservedCommandPlan> pendingPlans,
+        List<MonsterAIAction> actions)
     {
         if (runtime == null)
             return -1;
@@ -324,6 +378,9 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
         for (int i = 0; i < timelineController.SlotCount; i++)
         {
+
+            if (!CanPlacePlanAtBaseSlot(runtime, i, pendingPlans, actions))
+                continue;
             bool hasCommand = false;
             bool sameMonsterOnly = true;
 
@@ -371,6 +428,83 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
         int randomIndex = BattleRandom.Range(0, candidates.Count);
         return candidates[randomIndex];
+    }
+
+    private bool CanPlacePlanAtBaseSlot(
+        MonsterRuntimeData runtime,
+        int baseSlotIndex,
+        List<MonsterReservedCommandPlan> pendingPlans,
+        List<MonsterAIAction> actions)
+    {
+        if (runtime == null || timelineController == null)
+            return false;
+
+        if (actions == null || actions.Count <= 0)
+            return true;
+
+        for (int i = 0; i < actions.Count; i++)
+        {
+            MonsterAIAction action = actions[i];
+
+            if (action == null)
+                continue;
+
+            if (action.SlotPreference == MonsterAISlotPreference.Back ||
+                action.SlotPreference == MonsterAISlotPreference.Last ||
+                action.SlotPreference == MonsterAISlotPreference.Center)
+            {
+                continue;
+            }
+
+            int requiredSlot = baseSlotIndex + action.SlotOffset;
+
+            if (action.SlotPreference == MonsterAISlotPreference.NextSlot)
+                requiredSlot += 1;
+
+            if (requiredSlot < 0 || requiredSlot >= timelineController.SlotCount)
+                return false;
+
+            if (!IsSlotAvailableForMonster(runtime, requiredSlot, pendingPlans))
+                return false;
+        }
+
+        return true;
+    }
+
+    private bool IsSlotAvailableForMonster(
+        MonsterRuntimeData runtime,
+        int slotIndex,
+        List<MonsterReservedCommandPlan> pendingPlans)
+    {
+        if (runtime == null || timelineController == null)
+            return false;
+
+        var commands = timelineController.GetMonsterCommands(slotIndex);
+
+        if (commands != null)
+        {
+            for (int i = 0; i < commands.Count; i++)
+            {
+                if (commands[i] == null || commands[i].RuntimeId != runtime.RuntimeId)
+                    return false;
+            }
+        }
+
+        if (pendingPlans != null)
+        {
+            for (int i = 0; i < pendingPlans.Count; i++)
+            {
+                MonsterReservedCommandPlan pending = pendingPlans[i];
+
+                if (pending.SlotIndex != slotIndex)
+                    continue;
+
+                if (pending.Command == null || pending.Command.RuntimeId != runtime.RuntimeId)
+                    return false;
+            }
+        }
+
+        return true;
     }
 
     private void ShowActionReserveIntroText()

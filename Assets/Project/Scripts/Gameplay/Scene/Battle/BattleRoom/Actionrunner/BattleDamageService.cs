@@ -6,6 +6,7 @@ using UnityEngine;
 
 public class BattleDamageService
 {
+    private const string NocturnGrabSkillId = "S_Monster_17";
     private readonly BattleUnitFinder unitFinder;
 
     public BattleDamageService(BattleUnitFinder unitFinder)
@@ -78,20 +79,24 @@ public class BattleDamageService
 
     public static string GetMonsterDamageText(MonsterReservedCommand command)
     {
-        if (command == null || !ShouldReserveMonsterDamage(command.SkillData))
+        if (!TryGetMonsterDamageDisplayValues(command, out int baseDamage, out int additiveDamage))
             return "";
 
-        int baseDamage = command.EnsureReservedDamage();
+        // 팝업 설명에는 기본 피해와 확정 정수 추가 피해를 분리해 표시합니다.
+        // 취약, 약화, 기습처럼 실행 결과에 따라 달라지는 배율형 효과는 포함하지 않습니다.
+        if (additiveDamage > 0)
+            return $"{baseDamage}(+{additiveDamage})";
 
-        if (baseDamage <= 0)
+        return baseDamage.ToString();
+    }
+
+    public static string GetMonsterDamageTotalText(MonsterReservedCommand command)
+    {
+        if (!TryGetMonsterDamageDisplayValues(command, out int baseDamage, out int additiveDamage))
             return "";
 
-        if (TryGetMonsterModifiedDamageText(command, baseDamage, out string modifiedText))
-            return modifiedText;
-
-        return baseDamage > 0
-            ? baseDamage.ToString()
-            : "";
+        // 타임라인 슬롯의 짧은 수치 표시는 확정된 정수 피해를 합산해 표시합니다.
+        return (baseDamage + additiveDamage).ToString();
     }
 
     public static int CalculateFinalMonsterDamageToPlayer(
@@ -131,6 +136,9 @@ public class BattleDamageService
         if (skillData == null)
             return false;
 
+        if (string.Equals(skillData.SkillId, NocturnGrabSkillId, System.StringComparison.Ordinal))
+            return false;
+
         if (HasMonsterDamageHitEffect(skillData))
             return true;
 
@@ -140,6 +148,9 @@ public class BattleDamageService
     public static bool HasMonsterDamageHitEffect(MonsterSkillData skillData)
     {
         if (skillData == null || string.IsNullOrWhiteSpace(skillData.EffectIds))
+            return false;
+
+        if (string.Equals(skillData.SkillId, NocturnGrabSkillId, System.StringComparison.Ordinal))
             return false;
 
         string[] effectIds = skillData.EffectIds.Split(';');
@@ -173,34 +184,114 @@ public class BattleDamageService
         return $"{minDamage}-{maxDamage}";
     }
 
-    private static bool TryGetMonsterModifiedDamageText(
+    private static bool TryGetMonsterDamageDisplayValues(
         MonsterReservedCommand command,
-        int baseDamage,
-        out string damageText)
+        out int baseDamage,
+        out int additiveDamage)
     {
-        damageText = "";
+        baseDamage = 0;
+        additiveDamage = 0;
 
-        if (command == null || command.SkillData == null)
+        if (command == null || !ShouldReserveMonsterDamage(command.SkillData))
+            return false;
+
+        baseDamage = command.EnsureReservedDamage();
+
+        if (baseDamage <= 0)
             return false;
 
         MonsterUnit caster = FindMonsterUnit(command.RuntimeId);
-        List<int> damageValues = new();
+        additiveDamage = caster != null && caster.RuntimeData != null
+            ? GetStatusStackValue(caster.RuntimeData.StatusEffects, "E_Grudge")
+            : 0;
 
-        if (command.SkillData.Target == TargetType.PlayerParty)
-            AddPlayerTargetDamageValues(command, caster, baseDamage, damageValues);
-        else if (command.SkillData.Target == TargetType.EnemyParty)
-            AddMonsterTargetDamageValues(command, caster, baseDamage, damageValues);
-        else if (command.SkillData.Target == TargetType.Self && caster != null)
-            damageValues.Add(CalculateFinalMonsterDamageToMonster(command, caster, caster, baseDamage));
+        additiveDamage = Mathf.Max(0, additiveDamage);
+        return true;
+    }
 
-        if (damageValues.Count <= 0 && caster != null)
-            damageValues.Add(CalculateFinalMonsterDamageToPlayer(command, caster, null, baseDamage));
+    private static void AddPlayerTargetAdditiveValues(
+        MonsterReservedCommand command,
+        int attackerAddition,
+        List<int> additions)
+    {
+        if (command == null || additions == null)
+            return;
 
-        if (damageValues.Count <= 0)
-            return false;
+        BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
 
-        damageText = FormatDamageValues(damageValues);
-        return !string.IsNullOrWhiteSpace(damageText);
+        for (int i = 0; i < characters.Length; i++)
+        {
+            BattleCharacter character = characters[i];
+
+            if (character == null || character.RuntimeData == null || character.RuntimeData.IsDead)
+                continue;
+
+            if (command.TargetGridIndices == null ||
+                !command.TargetGridIndices.Contains(character.CurrentGridIndex))
+            {
+                continue;
+            }
+
+            int targetAddition = GetStatusStackValue(
+                character.RuntimeData.StatusEffects,
+                "E_Corrosion");
+
+            additions.Add(attackerAddition + targetAddition);
+        }
+    }
+
+    private static void AddMonsterTargetAdditiveValues(
+        MonsterReservedCommand command,
+        MonsterUnit caster,
+        int attackerAddition,
+        List<int> additions)
+    {
+        if (command == null || additions == null)
+            return;
+
+        MonsterUnit[] monsters = Object.FindObjectsByType<MonsterUnit>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < monsters.Length; i++)
+        {
+            MonsterUnit monster = monsters[i];
+
+            if (monster == null || monster == caster ||
+                monster.RuntimeData == null || monster.RuntimeData.IsDead)
+            {
+                continue;
+            }
+
+            if (!OccupiesAnyTargetGrid(command, monster))
+                continue;
+
+            int targetAddition = GetStatusStackValue(
+                monster.RuntimeData.StatusEffects,
+                "E_Corrosion");
+
+            additions.Add(attackerAddition + targetAddition);
+        }
+    }
+
+    private static int GetStatusStackValue(
+        List<StatusEffectRuntimeData> statusEffects,
+        string effectId)
+    {
+        if (statusEffects == null || string.IsNullOrWhiteSpace(effectId))
+            return 0;
+
+        for (int i = 0; i < statusEffects.Count; i++)
+        {
+            StatusEffectRuntimeData status = statusEffects[i];
+
+            if (status != null && status.EffectId == effectId)
+                return Mathf.Max(0, status.Stack);
+        }
+
+        return 0;
     }
 
     private static void AddPlayerTargetDamageValues(
