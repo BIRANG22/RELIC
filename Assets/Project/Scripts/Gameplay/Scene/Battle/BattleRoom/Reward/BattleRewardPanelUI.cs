@@ -191,7 +191,11 @@ public class BattleRewardPanelUI : MonoBehaviour
             case BattleRewardType.Skill:
                 if (!string.IsNullOrWhiteSpace(reward.RewardId) && !HasSkill(runtime, reward.RewardId))
                 {
-                    runtime.SkillInventoryIds.Add(reward.RewardId.Trim());
+                    string skillId = reward.RewardId.Trim();
+                    runtime.SkillInventoryIds.Add(skillId);
+                    runtime.AcquiredSkillIds ??= new List<string>();
+                    if (!runtime.AcquiredSkillIds.Contains(skillId))
+                        runtime.AcquiredSkillIds.Add(skillId);
                     SkillInventoryNotificationUI.ShowNewSkillNotice();
                     SkillInventoryPanelUI.RefreshAll();
                 }

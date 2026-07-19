@@ -32,6 +32,9 @@ public sealed class LobbyBattleRuntimeTransferService
 
         battle.OwnedRelicIds = CopyIds(lobby.OwnedRelicIds);
         battle.SkillInventoryIds = CopyIds(lobby.SkillInventoryIds);
+        battle.StartingSkillInventoryIds = CopyIds(lobby.SkillInventoryIds);
+        battle.AcquiredSkillIds = new List<string>();
+        battle.CharacterStatistics = new List<BattleRunCharacterStatisticsData>();
         battle.BagItemIds = CopyIds(lobby.BagItemIds);
 
         if (characters != null && lobby.CharacterLoadouts != null)

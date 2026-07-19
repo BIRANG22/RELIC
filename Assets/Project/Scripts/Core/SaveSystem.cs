@@ -387,6 +387,9 @@ public class SaveSystem : Singleton<SaveSystem>
         battle.OwnedRelicIds ??= new List<string>();
         battle.BagItemIds ??= new List<string>();
         battle.SkillInventoryIds ??= new List<string>();
+        battle.StartingSkillInventoryIds ??= new List<string>();
+        battle.AcquiredSkillIds ??= new List<string>();
+        battle.CharacterStatistics ??= new List<BattleRunCharacterStatisticsData>();
         battle.LobbyLoadoutSnapshots ??= new List<BattleLobbyLoadoutSnapshotData>();
 
         for (int i = 0; i < battle.LobbyLoadoutSnapshots.Count; i++)
