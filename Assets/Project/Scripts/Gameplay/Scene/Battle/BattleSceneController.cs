@@ -40,12 +40,6 @@ public class BattleSceneController : MonoBehaviour
     [SerializeField] private GameObject eventRoom;
     [SerializeField] private GameObject restRoom;
 
-    [Header("Battle Background")]
-    [Tooltip("일반 전투에서 사용할 BattleRoom/Background/Stage_01/St1_01 오브젝트입니다.")]
-    [SerializeField] private GameObject normalBattleBackground;
-    [Tooltip("보스 전투에서 사용할 BattleRoom/Background/Boss 오브젝트입니다.")]
-    [SerializeField] private GameObject bossBattleBackground;
-
     [Header("Room Change Auto Close")]
     [SerializeField] private bool closeInventoryAndBagOnRoomActiveChange = true;
     [SerializeField] private string[] inventoryPanelObjectNames = { "InventoryPanel" };
@@ -73,7 +67,6 @@ public class BattleSceneController : MonoBehaviour
     {
         AutoFindRoomRootIfNeeded();
         AutoFindBattleMapIntroTextIfNeeded();
-        AutoFindBattleBackgroundsIfNeeded();
         InstallMapPanelAutoReturnWatcher();
         SetBattleOnlyTabActive(false);
     }
@@ -181,50 +174,20 @@ public class BattleSceneController : MonoBehaviour
         battleMapIntroText = Object.FindFirstObjectByType<BattleMapIntroText>(FindObjectsInactive.Include);
     }
 
-    private void AutoFindBattleBackgroundsIfNeeded()
+    private void ShowRoomBackground(GameObject room, GeneratedMapNodeData nodeData)
     {
-        if (battleRoom == null)
+        StageBackgroundController controller = room != null
+            ? room.GetComponentInChildren<StageBackgroundController>(true)
+            : null;
+
+        if (controller == null)
+        {
+            string roomName = room != null ? room.name : "null";
+            Debug.LogWarning($"[BattleSceneController] StageBackgroundController is missing in {roomName}.");
             return;
-
-        Transform battleRoomTransform = battleRoom.transform;
-
-        if (normalBattleBackground == null)
-        {
-            Transform normalBackground = battleRoomTransform.Find("Background/Stage_01/St1_01");
-            if (normalBackground != null)
-                normalBattleBackground = normalBackground.gameObject;
         }
 
-        if (bossBattleBackground == null)
-        {
-            Transform bossBackground = battleRoomTransform.Find("Background/Boss");
-            if (bossBackground != null)
-                bossBattleBackground = bossBackground.gameObject;
-        }
-    }
-
-    private void SetBattleBackground(bool useBossBackground)
-    {
-        AutoFindBattleBackgroundsIfNeeded();
-
-        SetActiveIfNotNull(normalBattleBackground, !useBossBackground);
-        SetActiveIfNotNull(bossBattleBackground, useBossBackground);
-
-        if (normalBattleBackground == null)
-        {
-            Debug.LogWarning(
-                "[BattleSceneController] 일반 전투 배경을 찾지 못했습니다. " +
-                "BattleRoom/Background/Stage_01/St1_01을 확인하세요."
-            );
-        }
-
-        if (bossBattleBackground == null)
-        {
-            Debug.LogWarning(
-                "[BattleSceneController] 보스 전투 배경을 찾지 못했습니다. " +
-                "BattleRoom/Background/Boss를 확인하세요."
-            );
-        }
+        controller.ShowForLayer(nodeData.LayerIndex);
     }
 
     private void InstallMapPanelAutoReturnWatcher()
@@ -554,6 +517,7 @@ public class BattleSceneController : MonoBehaviour
     private void OpenStartEvent(GeneratedMapNodeData nodeData)
     {
         pendingRoomIntroMessage = startRoomIntroMessage;
+        ShowRoomBackground(startRoom, nodeData);
         OpenRoom(startRoom, "StartRoom");
     }
 
@@ -561,7 +525,7 @@ public class BattleSceneController : MonoBehaviour
     {
         Debug.Log($"[BattleSceneController] Battle room start: {nodeData.MapId}");
         pendingRoomIntroMessage = playBattleRoomIntroFromSceneController ? battleRoomIntroMessage : null;
-        SetBattleBackground(false);
+        ShowRoomBackground(battleRoom, nodeData);
         OpenRoom(battleRoom, "BattleRoom");
     }
 
@@ -569,7 +533,7 @@ public class BattleSceneController : MonoBehaviour
     {
         Debug.Log($"[BattleSceneController] Boss battle start: {nodeData.MapId}");
         pendingRoomIntroMessage = playBattleRoomIntroFromSceneController ? battleRoomIntroMessage : null;
-        SetBattleBackground(true);
+        ShowRoomBackground(battleRoom, nodeData);
         OpenRoom(battleRoom, "BattleRoom");
     }
 
@@ -577,6 +541,7 @@ public class BattleSceneController : MonoBehaviour
     {
         Debug.Log($"[BattleSceneController] Rest event start: {nodeData.MapId}");
         pendingRoomIntroMessage = restRoomIntroMessage;
+        ShowRoomBackground(restRoom, nodeData);
         OpenRoom(restRoom, "RestRoom");
     }
 
