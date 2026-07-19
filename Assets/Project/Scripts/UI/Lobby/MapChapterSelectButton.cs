@@ -2,6 +2,7 @@ using System.Collections;
 using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 public class MapChapterSelectButton : MonoBehaviour
@@ -19,7 +20,7 @@ public class MapChapterSelectButton : MonoBehaviour
 
     [Header("Locked Warning")]
     [SerializeField] private SettingWarningUI warningUI;
-    [SerializeField] private string lockedMessage = "¾ÆÁ÷ Àá°ÜÀÖ´Â ½ºÅ×ÀÌÁöÀÔ´Ï´Ù.";
+    [SerializeField] private string lockedMessage = "ì•„ì§ ì ê²¨ìˆëŠ” ìŠ¤í…Œì´ì§€ì…ë‹ˆë‹¤.";
 
     [Header("Button")]
     [SerializeField] private Button button;
@@ -36,8 +37,12 @@ public class MapChapterSelectButton : MonoBehaviour
     [Header("Delay")]
     [SerializeField] private float clickActionDelay = 0.2f;
 
+    [Header("Direct Selection")]
+    [SerializeField] private bool enterBattleOnDirectSelect;
+    [SerializeField] private UnityEvent directSelectionSucceeded;
+
     [Header("Data Manager")]
-    [Tooltip("DataManager°¡ ¾ø´Â »óÅÂ¿¡¼­ ½ºÅ×ÀÌÁö ¼±ÅÃ ÀúÀåÀ» ½ÃµµÇßÀ» ¶§ °æ°í ·Î±×¸¦ Ãâ·ÂÇÕ´Ï´Ù. ·Îºñ¾À ´Üµ¶ Å×½ºÆ® Áß ·Î±×°¡ ¹İº¹µÇ¸é ²¨µÑ ¼ö ÀÖ½À´Ï´Ù.")]
+    [Tooltip("DataManagerê°€ ì—†ëŠ” ìƒíƒœì—ì„œ ìŠ¤í…Œì´ì§€ ì„ íƒ ì €ì¥ì„ ì‹œë„í–ˆì„ ë•Œ ê²½ê³  ë¡œê·¸ë¥¼ ì¶œë ¥í•©ë‹ˆë‹¤. ë¡œë¹„ì”¬ ë‹¨ë… í…ŒìŠ¤íŠ¸ ì¤‘ ë¡œê·¸ê°€ ë°˜ë³µë˜ë©´ êº¼ë‘˜ ìˆ˜ ìˆìŠµë‹ˆë‹¤.")]
     [SerializeField] private bool logDataManagerMissingWarning = false;
 
     private Coroutine selectCoroutine;
@@ -85,6 +90,14 @@ public class MapChapterSelectButton : MonoBehaviour
 
             if (carousel.HandleStageButtonClick(button))
                 return;
+        }
+
+        if (enterBattleOnDirectSelect)
+        {
+            if (TrySelectChapter(true, false, 0f))
+                directSelectionSucceeded?.Invoke();
+
+            return;
         }
 
         TrySelectChapter(true, closePanelAfterSelect, clickActionDelay);
@@ -192,7 +205,7 @@ public class MapChapterSelectButton : MonoBehaviour
         if (DataManager.Instance == null)
         {
             if (logDataManagerMissingWarning)
-                Debug.LogWarning("[MapChapterSelectButton] DataManager°¡ ¾ø¾î¼­ ½ºÅ×ÀÌÁö ¼±ÅÃ°ªÀ» ÀúÀåÇÏÁö ¸øÇß½À´Ï´Ù. ·Îºñ¾ÀÀ» ´Üµ¶ ½ÇÇà ÁßÀÌ¶ó¸é Bootstrap ¾À¿¡¼­ ½ÃÀÛÇÏ°Å³ª DataManager°¡ Æ÷ÇÔµÈ Bootstrap ¿ÀºêÁ§Æ®¸¦ ¸ÕÀú ·ÎµåÇØ¾ß ÇÕ´Ï´Ù.");
+                Debug.LogWarning("[MapChapterSelectButton] DataManagerê°€ ì—†ì–´ì„œ ìŠ¤í…Œì´ì§€ ì„ íƒê°’ì„ ì €ì¥í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. ë¡œë¹„ì”¬ì„ ë‹¨ë… ì‹¤í–‰ ì¤‘ì´ë¼ë©´ Bootstrap ì”¬ì—ì„œ ì‹œì‘í•˜ê±°ë‚˜ DataManagerê°€ í¬í•¨ëœ Bootstrap ì˜¤ë¸Œì íŠ¸ë¥¼ ë¨¼ì € ë¡œë“œí•´ì•¼ í•©ë‹ˆë‹¤.");
 
             return;
         }
@@ -200,7 +213,7 @@ public class MapChapterSelectButton : MonoBehaviour
         if (DataManager.Instance.MapRuntimeStore == null)
         {
             if (logDataManagerMissingWarning)
-                Debug.LogWarning("[MapChapterSelectButton] MapRuntimeStore°¡ ¾ø¾î¼­ ½ºÅ×ÀÌÁö ¼±ÅÃ°ªÀ» ÀúÀåÇÏÁö ¸øÇß½À´Ï´Ù.");
+                Debug.LogWarning("[MapChapterSelectButton] MapRuntimeStoreê°€ ì—†ì–´ì„œ ìŠ¤í…Œì´ì§€ ì„ íƒê°’ì„ ì €ì¥í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤.");
 
             return;
         }
