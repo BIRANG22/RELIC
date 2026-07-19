@@ -60,10 +60,26 @@ public class BossExplorationResultTests
     public void PendingResearch_ApplyCreditsBlueOnlyOnce()
     {
         LobbyRuntimeData lobby = new() { BlueDustium = 100 };
+        lobby.HasPendingResearchResult = true;
         lobby.PendingResearchResult = new PendingResearchResultData { TotalBlue = 75 };
 
         Assert.That(PendingResearchSettlementService.ApplyOnce(lobby), Is.True);
         Assert.That(PendingResearchSettlementService.ApplyOnce(lobby), Is.False);
         Assert.That(lobby.BlueDustium, Is.EqualTo(175));
+    }
+
+    [Test]
+    public void PendingResearch_EmptyDeserializedObjectWithoutPendingFlagIsIgnored()
+    {
+        LobbyRuntimeData lobby = new()
+        {
+            BlueDustium = 100,
+            HasPendingResearchResult = false,
+            PendingResearchResult = new PendingResearchResultData()
+        };
+
+        Assert.That(PendingResearchSettlementService.HasPending(lobby), Is.False);
+        Assert.That(PendingResearchSettlementService.ApplyOnce(lobby), Is.False);
+        Assert.That(lobby.BlueDustium, Is.EqualTo(100));
     }
 }

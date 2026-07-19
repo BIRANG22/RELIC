@@ -14,12 +14,13 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
             confirmButton.onClick.AddListener(Confirm);
 
         LobbyRuntimeData lobby = DataManager.Instance?.LobbyRuntimeStore?.GetOrCreate();
-        PendingResearchResultData pending = lobby?.PendingResearchResult;
-        if (pending == null)
+        if (!PendingResearchSettlementService.HasPending(lobby))
         {
             gameObject.SetActive(false);
             return;
         }
+
+        PendingResearchResultData pending = lobby.PendingResearchResult;
 
         PendingResearchSettlementService.ApplyOnce(lobby);
         DataManager.Instance.LobbyRuntimeStore.Set(lobby);
@@ -48,7 +49,7 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
         LobbyRuntimeData lobby = DataManager.Instance?.LobbyRuntimeStore?.GetOrCreate();
         if (lobby != null)
         {
-            lobby.PendingResearchResult = null;
+            PendingResearchSettlementService.Clear(lobby);
             DataManager.Instance.LobbyRuntimeStore.Set(lobby);
             SaveSystem.Instance?.SaveCurrentProgress();
         }
