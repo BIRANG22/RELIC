@@ -48,8 +48,8 @@ namespace Relic.Gameplay.Monster
                 out BattleCharacter pullTarget,
                 out BattleDirection pullDirection);
 
-            // 녹턴의 핵심 성향은 배후 기습입니다.
-            // 유효한 후방 포탈 위치가 있다면 다른 랜덤 행동보다 먼저 높은 확률로 선택합니다.
+            // 당기기와 포탈은 녹턴의 핵심 연계 행동입니다.
+            // 둘 다 가능하면 동일한 확률로 하나를 선택하고, 하나만 가능하면 해당 행동을 우선합니다.
             bool hasRearPortalTarget = TryFindPortalTarget(
                 monsterUnit,
                 playersInActionRange,
@@ -59,7 +59,69 @@ namespace Relic.Gameplay.Monster
                 out int preferredRearPortalGridIndex,
                 out BattleDirection preferredRearAttackDirection);
 
-            if (hasRearPortalTarget && BattleRandom.Range(0, 3) < 2)
+            bool usePullFirst = canUsePull &&
+                                (!hasRearPortalTarget || BattleRandom.Range(0, 2) == 0);
+
+            if (usePullFirst)
+            {
+                AddPullCombo(plan, pullDirection, 0, 0);
+
+                int laterSlotOffset = BattleRandom.Range(1, 3);
+
+                // 당기기로 대상이 이동한 뒤 새 위치를 기준으로 후방 포탈을 다시 계산합니다.
+                if (TryFindPortalTargetAfterPull(
+                        monsterUnit,
+                        pullTarget,
+                        pullDirection,
+                        gridManager,
+                        out Vector2Int pulledPortalOffset,
+                        out int pulledPortalGridIndex,
+                        out BattleDirection pulledPortalAttackDirection))
+                {
+                    AddPortalCombo(
+                        plan,
+                        pulledPortalOffset,
+                        pulledPortalGridIndex,
+                        pulledPortalAttackDirection,
+                        laterSlotOffset,
+                        2,
+                        true);
+                    return plan;
+                }
+
+                // 당긴 대상과 연계할 수 없어도 다른 대상의 후방이 열려 있으면 포탈 공격을 예약합니다.
+                if (TryFindPortalTarget(
+                        monsterUnit,
+                        playersInActionRange,
+                        gridManager,
+                        out _,
+                        out Vector2Int laterPortalOffset,
+                        out int laterPortalGridIndex,
+                        out BattleDirection laterPortalAttackDirection))
+                {
+                    AddPortalCombo(
+                        plan,
+                        laterPortalOffset,
+                        laterPortalGridIndex,
+                        laterPortalAttackDirection,
+                        laterSlotOffset,
+                        2);
+                }
+                else
+                {
+                    AddAdditionalAttack(
+                        plan,
+                        monsterUnit.MainGridIndex,
+                        gridManager,
+                        21,
+                        laterSlotOffset,
+                        pullDirection);
+                }
+
+                return plan;
+            }
+
+            if (hasRearPortalTarget)
             {
                 AddPortalCombo(
                     plan,
@@ -80,103 +142,10 @@ namespace Relic.Gameplay.Monster
                 return plan;
             }
 
-            // 일반 이동은 단순 접근용이 아니라 전술적 재배치로도 사용합니다.
-            // 현재 위치에서 공격할 수 있어도 유효한 인접 칸이 있으면 이동 연계를 선택할 수 있습니다.
+            // 당기기와 포탈을 사용할 수 없을 때만 일반 이동을 전술적 재배치로 사용합니다.
             if (BattleRandom.Range(0, 2) == 0 &&
                 TryAddRegularMoveCombo(plan, monsterUnit, gridManager))
             {
-                return plan;
-            }
-
-            // 현재 위치에서 바로 공격할 수 있다면 그랩만 반복하지 않고 일반 공격도 선택합니다.
-            // 그랩이 가능한 상황에서도 절반 확률로 현재 위치 공격을 우선합니다.
-            if (canUsePull &&
-                TryPickAttackFromOrigin(
-                    monsterUnit.MainGridIndex,
-                    gridManager,
-                    out string directAttackSkill,
-                    out BattleDirection directAttackDirection) &&
-                BattleRandom.Range(0, 2) == 0)
-            {
-                plan.Add(new MonsterAIAction(
-                    directAttackSkill,
-                    Vector2Int.zero,
-                    MonsterAISlotPreference.Front,
-                    45,
-                    0,
-                    monsterUnit.MainGridIndex,
-                    true,
-                    directAttackDirection));
-
-                AddAdditionalAttack(
-                    plan,
-                    monsterUnit.MainGridIndex,
-                    gridManager,
-                    46,
-                    BattleRandom.Range(1, 4),
-                    directAttackDirection);
-
-                return plan;
-            }
-
-            // 행동 범위 밖이어도 그랩 스킬 범위에 대상이 있다면 이동보다 그랩을 우선합니다.
-            if (canUsePull)
-            {
-                AddPullCombo(plan, pullDirection, 0, 0);
-
-                int laterSlotOffset = BattleRandom.Range(1, 3);
-
-                // 그랩으로 대상이 이동한 뒤 새 위치를 기준으로 후방 포탈을 다시 계산합니다.
-                if (TryFindPortalTargetAfterPull(
-                        monsterUnit,
-                        pullTarget,
-                        pullDirection,
-                        gridManager,
-                        out Vector2Int pulledPortalOffset,
-                        out int pulledPortalGridIndex,
-                        out BattleDirection pulledPortalAttackDirection))
-                {
-                    AddPortalCombo(
-                        plan,
-                        pulledPortalOffset,
-                        pulledPortalGridIndex,
-                        pulledPortalAttackDirection,
-                        laterSlotOffset,
-                        2);
-                    return plan;
-                }
-
-                // 그랩 후 연계가 불가능해도 현재 상태에서 다른 대상의 후방이 열려 있으면
-                // 뒤쪽 슬롯에 포탈 공격을 한 번 더 예약합니다.
-                if (TryFindPortalTarget(
-                        monsterUnit,
-                        playersInActionRange,
-                        gridManager,
-                        out _,
-                        out Vector2Int laterPortalOffset,
-                        out int laterPortalGridIndex,
-                        out BattleDirection laterPortalAttackDirection))
-                {
-                    AddPortalCombo(
-                        plan,
-                        laterPortalOffset,
-                        laterPortalGridIndex,
-                        laterPortalAttackDirection,
-                        laterSlotOffset,
-                        2);
-                }
-                else
-                {
-                    // 포탈 연계가 없어도 엘리트 몬스터가 공격 한 번으로 턴을 끝내지 않습니다.
-                    AddAdditionalAttack(
-                        plan,
-                        monsterUnit.MainGridIndex,
-                        gridManager,
-                        21,
-                        laterSlotOffset,
-                        pullDirection);
-                }
-
                 return plan;
             }
 
@@ -412,27 +381,32 @@ namespace Relic.Gameplay.Monster
                 moveGroup,
                 0));
 
-            BattleDirection fallbackDirection = GetDirectionTowardNearestPlayer(
-                destinationGridIndex,
-                gridManager);
+            // 이동 방향을 공격 방향으로 재사용하지 않습니다.
+            // 이동 완료 위치에서 실제로 맞힐 수 있는 대상을 다시 찾고, 그 대상이 있는 방향으로만 공격합니다.
+            if (TryPickAttackFromOrigin(
+                    destinationGridIndex,
+                    gridManager,
+                    out string movedAttackSkillId,
+                    out BattleDirection movedAttackDirection))
+            {
+                plan.Add(new MonsterAIAction(
+                    movedAttackSkillId,
+                    Vector2Int.zero,
+                    MonsterAISlotPreference.SameSlot,
+                    moveGroup,
+                    1,
+                    destinationGridIndex,
+                    true,
+                    movedAttackDirection));
 
-            AddAdditionalAttack(
-                plan,
-                destinationGridIndex,
-                gridManager,
-                moveGroup,
-                0,
-                fallbackDirection,
-                MonsterAISlotPreference.SameSlot,
-                1);
-
-            AddAdditionalAttack(
-                plan,
-                destinationGridIndex,
-                gridManager,
-                moveGroup + 1,
-                BattleRandom.Range(1, 4),
-                fallbackDirection);
+                AddAdditionalAttack(
+                    plan,
+                    destinationGridIndex,
+                    gridManager,
+                    moveGroup + 1,
+                    BattleRandom.Range(1, 4),
+                    movedAttackDirection);
+            }
 
             return true;
         }
@@ -571,7 +545,8 @@ namespace Relic.Gameplay.Monster
             int portalGridIndex,
             BattleDirection attackDirection,
             int slotOffset,
-            int priorityBase)
+            int priorityBase,
+            bool keepPredictedAttackDirection = false)
         {
             if (plan == null)
                 return;
@@ -590,17 +565,22 @@ namespace Relic.Gameplay.Monster
                 true,
                 slotOffset));
 
-            string portalAttackSkill = TryPickAttackFromOrigin(
-                portalGridIndex,
-                Object.FindFirstObjectByType<GridManager>(),
-                out string selectedPortalAttack,
-                out BattleDirection selectedPortalDirection)
-                ? selectedPortalAttack
-                : PickFollowUpAttack();
+            string portalAttackSkill = PickFollowUpAttack();
+            BattleDirection finalPortalDirection = attackDirection;
 
-            BattleDirection finalPortalDirection = string.IsNullOrEmpty(selectedPortalAttack)
-                ? attackDirection
-                : selectedPortalDirection;
+            // 일반 포탈은 현재 배치에서 공격 가능한 대상을 다시 확인합니다.
+            // 당기기 후 포탈은 아직 실행되지 않은 당기기의 예상 위치를 기준으로 계산했으므로,
+            // 현재 배치를 다시 탐색하지 않고 미리 계산한 공격 방향을 그대로 유지합니다.
+            if (!keepPredictedAttackDirection &&
+                TryPickAttackFromOrigin(
+                    portalGridIndex,
+                    Object.FindFirstObjectByType<GridManager>(),
+                    out string selectedPortalAttack,
+                    out BattleDirection selectedPortalDirection))
+            {
+                portalAttackSkill = selectedPortalAttack;
+                finalPortalDirection = selectedPortalDirection;
+            }
 
             plan.Add(new MonsterAIAction(
                 portalAttackSkill,

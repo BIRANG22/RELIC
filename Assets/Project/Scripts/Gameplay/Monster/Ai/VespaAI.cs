@@ -195,10 +195,25 @@ namespace Relic.Gameplay.Monster
 
             int verticalDifference = targetCoord.y - monsterCoord.y;
 
-            // 첫 이동을 가로로 사용하므로 두 번째 이동 한 번으로 라인을 맞출 수 있어야 합니다.
+            // 한 번의 세로 이동으로 같은 가로 라인을 맞출 수 있어야 합니다.
             if (Mathf.Abs(verticalDifference) > 2)
                 return null;
 
+            Vector2Int verticalStep = new(0, verticalDifference);
+
+            // 현재 X 위치에서도 대상과 서로 다른 열을 유지할 수 있다면
+            // 불필요한 가로 이동 없이 세로 이동만으로 같은 가로 라인을 맞춥니다.
+            if (monsterCoord.x != targetCoord.x &&
+                CanMonsterMove(monsterUnit, gridManager, verticalStep))
+            {
+                return new List<Vector2Int>
+                {
+                    verticalStep
+                };
+            }
+
+            // 대상과 같은 열에 있어 세로 이동만 하면 돌진 방향이 만들어지지 않는 경우에만
+            // 먼저 가로로 자리를 옮긴 뒤 세로 이동합니다.
             Vector2Int horizontalStep = FindBestHorizontalMove(
                 monsterUnit,
                 gridManager,
@@ -210,7 +225,6 @@ namespace Relic.Gameplay.Monster
             if (horizontalStep == Vector2Int.zero)
                 return null;
 
-            Vector2Int verticalStep = new(0, verticalDifference);
             Vector2Int totalOffset = horizontalStep + verticalStep;
 
             // 두 행동을 가로 → 세로 순서로 실행했을 때 전체 경로가 유효한지 확인합니다.
@@ -231,7 +245,25 @@ namespace Relic.Gameplay.Monster
             Vector2Int targetCoord)
         {
             List<Vector2Int> result = new();
+            int verticalDifference = targetCoord.y - monsterCoord.y;
+            int verticalAmount = Mathf.Clamp(verticalDifference, -2, 2);
 
+            // 대상과 다른 열에 있다면 가로 이동 없이 세로로만 접근합니다.
+            // 같은 가로 라인이 되었을 때 바로 좌우 돌진 방향을 만들 수 있기 때문입니다.
+            if (monsterCoord.x != targetCoord.x)
+            {
+                if (verticalAmount == 0)
+                    return result;
+
+                Vector2Int verticalOnlyStep = new(0, verticalAmount);
+
+                if (CanMonsterMove(monsterUnit, gridManager, verticalOnlyStep))
+                    result.Add(verticalOnlyStep);
+
+                return result;
+            }
+
+            // 대상과 같은 열에 있을 때만 가로로 자리를 벌려 돌진 방향을 만듭니다.
             Vector2Int horizontalStep = FindBestHorizontalMove(
                 monsterUnit,
                 gridManager,
@@ -241,9 +273,6 @@ namespace Relic.Gameplay.Monster
 
             if (horizontalStep != Vector2Int.zero)
                 result.Add(horizontalStep);
-
-            int verticalDifference = targetCoord.y - monsterCoord.y;
-            int verticalAmount = Mathf.Clamp(verticalDifference, -2, 2);
 
             if (verticalAmount == 0)
                 return result;
