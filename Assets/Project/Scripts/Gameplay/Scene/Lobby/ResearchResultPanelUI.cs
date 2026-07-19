@@ -1,0 +1,58 @@
+using Relic.Gameplay.Data;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+
+public sealed class ResearchResultPanelUI : MonoBehaviour
+{
+    [SerializeField] private TMP_Text resultText;
+    [SerializeField] private Button confirmButton;
+
+    private void Start()
+    {
+        if (confirmButton != null)
+            confirmButton.onClick.AddListener(Confirm);
+
+        LobbyRuntimeData lobby = DataManager.Instance?.LobbyRuntimeStore?.GetOrCreate();
+        PendingResearchResultData pending = lobby?.PendingResearchResult;
+        if (pending == null)
+        {
+            gameObject.SetActive(false);
+            return;
+        }
+
+        PendingResearchSettlementService.ApplyOnce(lobby);
+        DataManager.Instance.LobbyRuntimeStore.Set(lobby);
+        SaveSystem.Instance?.SaveCurrentProgress();
+
+        if (resultText != null)
+            resultText.text = BuildText(pending);
+        gameObject.SetActive(true);
+    }
+
+    private static string BuildText(PendingResearchResultData pending)
+    {
+        return
+            "━━━━━━━━━━━━━━━━━\n" +
+            "연구 진행...\n" +
+            "━━━━━━━━━━━━━━━━━\n\n" +
+            $"[레드 더스티움 정화]\n{pending.ExplorationResult.Remnant} → {pending.RemnantBlue} 블루\n\n" +
+            $"[유물 분해]\n희귀 금속 회수\n+{pending.RelicBlue} 블루\n\n" +
+            $"[기억 분석]\n전투 기술 추출\n+{pending.SkillBlue} 블루\n\n" +
+            "━━━━━━━━━━━━━━━━━\n\n" +
+            $"총 획득\n\n블루 더스티움\n{pending.TotalBlue}";
+    }
+
+    private void Confirm()
+    {
+        LobbyRuntimeData lobby = DataManager.Instance?.LobbyRuntimeStore?.GetOrCreate();
+        if (lobby != null)
+        {
+            lobby.PendingResearchResult = null;
+            DataManager.Instance.LobbyRuntimeStore.Set(lobby);
+            SaveSystem.Instance?.SaveCurrentProgress();
+        }
+
+        gameObject.SetActive(false);
+    }
+}

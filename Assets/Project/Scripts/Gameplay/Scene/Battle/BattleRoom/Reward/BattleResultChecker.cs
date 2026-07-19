@@ -9,6 +9,7 @@ public class BattleResultChecker : MonoBehaviour
 
     [SerializeField] private BattleRewardResolver rewardResolver;
     [SerializeField] private BattleRewardPanelUI rewardPanel;
+    [SerializeField] private ExplorationResultPanelUI explorationResultPanel;
 
     private bool battleEnded;
 
@@ -42,11 +43,41 @@ public class BattleResultChecker : MonoBehaviour
             battleEnded = true;
             Debug.Log("[BattleResultChecker] Battle Win");
 
-            OpenRewardPanel();
+            if (IsCurrentNodeBoss())
+                OpenExplorationResultPanel();
+            else
+                OpenRewardPanel();
             return true;
         }
 
         return false;
+    }
+
+    private void OpenExplorationResultPanel()
+    {
+        if (explorationResultPanel == null)
+        {
+            explorationResultPanel = Object.FindFirstObjectByType<ExplorationResultPanelUI>(
+                FindObjectsInactive.Include);
+        }
+
+        if (explorationResultPanel == null)
+        {
+            Debug.LogError("[BattleResultChecker] ExplorationResultPanelUI is missing.");
+            return;
+        }
+
+        if (BattleRewardCollector.Instance != null)
+            BattleRewardCollector.Instance.Clear();
+
+        explorationResultPanel.Open();
+    }
+
+    private static bool IsCurrentNodeBoss()
+    {
+        MapRuntimeData runtime = DataManager.Instance?.MapRuntimeStore?.Get();
+        GeneratedMapNodeData node = MapRuntimeProgressUtility.FindCurrentNode(runtime);
+        return node != null && string.Equals(node.Type, "Boss", System.StringComparison.OrdinalIgnoreCase);
     }
 
     private void OpenRewardPanel()

@@ -174,6 +174,10 @@ public static class BattleEffectUtility
 
         int hpDamage = Mathf.Max(0, hpBefore - target.RuntimeData.CurrentHP);
         int shownDamage = shieldDamage + hpDamage;
+        BattleRunStatisticsRecorder.RecordDamageTaken(
+            target.RuntimeData.CharacterId,
+            shownDamage,
+            hpBefore > 0 && target.RuntimeData.CurrentHP <= 0);
         HandlePlayerDeathIfNeeded(target);
         BattleDamageTextPopupUI.Show(target.transform, shownDamage);
 
@@ -246,6 +250,10 @@ public static class BattleEffectUtility
             Mathf.Max(0, target.RuntimeData.CurrentHP - damage);
 
         int shownDamage = Mathf.Max(0, hpBefore - target.RuntimeData.CurrentHP);
+        BattleRunStatisticsRecorder.RecordDamageTaken(
+            target.RuntimeData.CharacterId,
+            shownDamage,
+            hpBefore > 0 && target.RuntimeData.CurrentHP <= 0);
         HandlePlayerDeathIfNeeded(target);
         BattleDamageTextPopupUI.Show(target.transform, shownDamage);
 
@@ -311,6 +319,10 @@ public static class BattleEffectUtility
             Mathf.Max(0, target.RuntimeData.CurrentHP - damage);
 
         int shownDamage = Mathf.Max(0, hpBefore - target.RuntimeData.CurrentHP);
+        BattleRunStatisticsRecorder.RecordDamageTaken(
+            target.RuntimeData.CharacterId,
+            shownDamage,
+            hpBefore > 0 && target.RuntimeData.CurrentHP <= 0);
         HandlePlayerDeathIfNeeded(target);
         if (isPoison)
             BattleDamageTextPopupUI.ShowPoisonDamage(target.transform, shownDamage);

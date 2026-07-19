@@ -19,6 +19,10 @@ namespace Relic.Gameplay.Data
         // 스킬 인벤토리 내부 스킬
         public List<string> SkillInventoryIds = new();
 
+        public List<string> StartingSkillInventoryIds = new();
+        public List<string> AcquiredSkillIds = new();
+        public List<BattleRunCharacterStatisticsData> CharacterStatistics = new();
+
         // 전투 진입 직전 로비 파티/스킬/룬 세팅 복구용 스냅샷
         public List<BattleLobbyLoadoutSnapshotData> LobbyLoadoutSnapshots = new();
 

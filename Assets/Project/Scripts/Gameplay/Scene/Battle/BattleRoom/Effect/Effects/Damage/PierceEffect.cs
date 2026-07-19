@@ -20,12 +20,19 @@ public class PierceEffect : BattleEffectBase
 
         if (context.MonsterTarget != null)
         {
+            bool wasAlive = !context.MonsterTarget.RuntimeData.IsDead;
             int finalDamage = BattleDamageModifierUtility.CalculateFinalDamageToMonster(context, damage);
 
             int dealtDamage = BattleEffectUtility.PierceDamageMonster(context.MonsterTarget, finalDamage);
 
             if (dealtDamage > 0 && context.PlayerCaster != null)
+            {
+                BattleRunStatisticsRecorder.RecordDamageDealt(
+                    context.PlayerCaster.RuntimeData.CharacterId,
+                    dealtDamage,
+                    wasAlive && context.MonsterTarget.RuntimeData.IsDead);
                 BattleEffectUtility.OnPlayerDamagedEnemy?.Invoke(context.PlayerCaster);
+            }
         }
     }
 }
