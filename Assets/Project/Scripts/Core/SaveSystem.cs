@@ -407,6 +407,12 @@ public class SaveSystem : Singleton<SaveSystem>
         lobby.CharacterLoadouts ??= new List<LobbyCharacterLoadoutData>();
         lobby.RelicOfferIds ??= new List<string>();
 
+        if (!lobby.HasPendingResearchResult || lobby.PendingResearchResult == null)
+        {
+            lobby.HasPendingResearchResult = false;
+            lobby.PendingResearchResult = null;
+        }
+
         for (int i = 0; i < lobby.CharacterLoadouts.Count; i++)
         {
             LobbyCharacterLoadoutData loadout = lobby.CharacterLoadouts[i];

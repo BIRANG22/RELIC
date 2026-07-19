@@ -109,6 +109,7 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
 
         LobbyRuntimeData lobby = DataManager.Instance.LobbyRuntimeStore.GetOrCreate();
         lobby.PendingResearchResult = ExplorationResearchService.CreatePending(result, DataManager.Instance);
+        lobby.HasPendingResearchResult = true;
         lobby.OwnedRelicIds.Clear();
         ClearLobbyEquippedRelics(lobby);
         DataManager.Instance.LobbyRuntimeStore.Set(lobby);

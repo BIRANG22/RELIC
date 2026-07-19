@@ -208,15 +208,34 @@ namespace Relic.Gameplay.Data
 
     public static class PendingResearchSettlementService
     {
+        public static bool HasPending(LobbyRuntimeData lobby)
+        {
+            return lobby != null &&
+                   lobby.HasPendingResearchResult &&
+                   lobby.PendingResearchResult != null;
+        }
+
         public static bool ApplyOnce(LobbyRuntimeData lobby)
         {
-            PendingResearchResultData pending = lobby?.PendingResearchResult;
-            if (pending == null || pending.IsApplied)
+            if (!HasPending(lobby))
+                return false;
+
+            PendingResearchResultData pending = lobby.PendingResearchResult;
+            if (pending.IsApplied)
                 return false;
 
             lobby.BlueDustium += Mathf.Max(0, pending.TotalBlue);
             pending.IsApplied = true;
             return true;
+        }
+
+        public static void Clear(LobbyRuntimeData lobby)
+        {
+            if (lobby == null)
+                return;
+
+            lobby.HasPendingResearchResult = false;
+            lobby.PendingResearchResult = null;
         }
     }
 }

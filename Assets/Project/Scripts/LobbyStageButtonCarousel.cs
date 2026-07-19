@@ -11,27 +11,27 @@ public class LobbyStageButtonCarousel : MonoBehaviour, IBeginDragHandler, IDragH
     [SerializeField] private bool autoBindStageButtons = true;
     [SerializeField] private Transform stageButtonRoot;
     [SerializeField] private bool selectFirstAvailableOnEnable = true;
-    [Tooltip("³¡ ½ºÅ×ÀÌÁö¿¡¼­ °°Àº ¹æÇâÀ¸·Î ÇÑ ¹ø ´õ ³Ñ±â¸é ¹İ´ëÂÊ ½ºÅ×ÀÌÁö·Î ÀÌ¾îÁö°Ô ÇÕ´Ï´Ù.")]
+    [Tooltip("ë ìŠ¤í…Œì´ì§€ì—ì„œ ê°™ì€ ë°©í–¥ìœ¼ë¡œ í•œ ë²ˆ ë” ë„˜ê¸°ë©´ ë°˜ëŒ€ìª½ ìŠ¤í…Œì´ì§€ë¡œ ì´ì–´ì§€ê²Œ í•©ë‹ˆë‹¤.")]
     [SerializeField] private bool wrapSelection = true;
 
     [Header("Navigation Buttons")]
-    [Tooltip("ÀÌÀü ½ºÅ×ÀÌÁö¸¦ Áß¾ÓÀ¸·Î ºÒ·¯¿À´Â ¹öÆ°ÀÔ´Ï´Ù. ºñ¿öµÎ¸é »ç¿ëÇÏÁö ¾Ê½À´Ï´Ù.")]
+    [Tooltip("ì´ì „ ìŠ¤í…Œì´ì§€ë¥¼ ì¤‘ì•™ìœ¼ë¡œ ë¶ˆëŸ¬ì˜¤ëŠ” ë²„íŠ¼ì…ë‹ˆë‹¤. ë¹„ì›Œë‘ë©´ ì‚¬ìš©í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.")]
     [SerializeField] private Button previousStageNavigationButton;
-    [Tooltip("´ÙÀ½ ½ºÅ×ÀÌÁö¸¦ Áß¾ÓÀ¸·Î ºÒ·¯¿À´Â ¹öÆ°ÀÔ´Ï´Ù. ºñ¿öµÎ¸é »ç¿ëÇÏÁö ¾Ê½À´Ï´Ù.")]
+    [Tooltip("ë‹¤ìŒ ìŠ¤í…Œì´ì§€ë¥¼ ì¤‘ì•™ìœ¼ë¡œ ë¶ˆëŸ¬ì˜¤ëŠ” ë²„íŠ¼ì…ë‹ˆë‹¤. ë¹„ì›Œë‘ë©´ ì‚¬ìš©í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.")]
     [SerializeField] private Button nextStageNavigationButton;
-    [Tooltip("¿¬°áµÈ ÀÌÀü/´ÙÀ½ ¹öÆ°¿¡ Å¬¸¯ ÀÌº¥Æ®¸¦ ÀÚµ¿À¸·Î µî·ÏÇÕ´Ï´Ù.")]
+    [Tooltip("ì—°ê²°ëœ ì´ì „/ë‹¤ìŒ ë²„íŠ¼ì— í´ë¦­ ì´ë²¤íŠ¸ë¥¼ ìë™ìœ¼ë¡œ ë“±ë¡í•©ë‹ˆë‹¤.")]
     [SerializeField] private bool bindNavigationButtonClicks = true;
 
     [Header("Layout")]
-    [Tooltip("¼±ÅÃµÈ ½ºÅ×ÀÌÁö ¹öÆ°ÀÌ À§Ä¡ÇÒ Áß¾Ó ÁÂÇ¥ÀÔ´Ï´Ù.")]
+    [Tooltip("ì„ íƒëœ ìŠ¤í…Œì´ì§€ ë²„íŠ¼ì´ ìœ„ì¹˜í•  ì¤‘ì•™ ì¢Œí‘œì…ë‹ˆë‹¤.")]
     [SerializeField] private Vector2 centerPosition = Vector2.zero;
-    [Tooltip("¼±ÅÃµÈ ¹öÆ°ÀÇ ÀÌÀü ½ºÅ×ÀÌÁö°¡ ÀÛ¾ÆÁ®¼­ ¿ŞÂÊ µÚ¿¡ º¸ÀÌ´Â À§Ä¡ÀÔ´Ï´Ù.")]
+    [Tooltip("ì„ íƒëœ ë²„íŠ¼ì˜ ì´ì „ ìŠ¤í…Œì´ì§€ê°€ ì‘ì•„ì ¸ì„œ ì™¼ìª½ ë’¤ì— ë³´ì´ëŠ” ìœ„ì¹˜ì…ë‹ˆë‹¤.")]
     [SerializeField] private Vector2 previousPosition = new Vector2(-210f, 0f);
-    [Tooltip("¼±ÅÃµÈ ¹öÆ°ÀÇ ´ÙÀ½ ½ºÅ×ÀÌÁö°¡ ÀÛ¾ÆÁ®¼­ ¿À¸¥ÂÊ µÚ¿¡ º¸ÀÌ´Â À§Ä¡ÀÔ´Ï´Ù.")]
+    [Tooltip("ì„ íƒëœ ë²„íŠ¼ì˜ ë‹¤ìŒ ìŠ¤í…Œì´ì§€ê°€ ì‘ì•„ì ¸ì„œ ì˜¤ë¥¸ìª½ ë’¤ì— ë³´ì´ëŠ” ìœ„ì¹˜ì…ë‹ˆë‹¤.")]
     [SerializeField] private Vector2 nextPosition = new Vector2(210f, 0f);
-    [Tooltip("Áß¾Ó¿¡ ÀÖ´Â ¼±ÅÃ ¹öÆ°ÀÇ ½ºÄÉÀÏÀÔ´Ï´Ù.")]
+    [Tooltip("ì¤‘ì•™ì— ìˆëŠ” ì„ íƒ ë²„íŠ¼ì˜ ìŠ¤ì¼€ì¼ì…ë‹ˆë‹¤.")]
     [SerializeField] private float centerScale = 0.9f;
-    [Tooltip("¾çÂÊ µÚ¿¡ º¸ÀÌ´Â ¹öÆ°ÀÇ ½ºÄÉÀÏÀÔ´Ï´Ù.")]
+    [Tooltip("ì–‘ìª½ ë’¤ì— ë³´ì´ëŠ” ë²„íŠ¼ì˜ ìŠ¤ì¼€ì¼ì…ë‹ˆë‹¤.")]
     [SerializeField] private float sideScale = 0.7f;
     [SerializeField] private float hiddenScale = 0.45f;
     [SerializeField] private float centerRotation = 0f;
@@ -40,26 +40,26 @@ public class LobbyStageButtonCarousel : MonoBehaviour, IBeginDragHandler, IDragH
 
 
     [Header("Centered Text")]
-    [Tooltip("°¢ ½ºÅ×ÀÌÁö ¹öÆ°¿¡ Ç¥½ÃÇÒ ÅØ½ºÆ®ÀÔ´Ï´Ù. ºñ¿öµÎ¸é ½ºÅ×ÀÌÁö ¹öÆ° ÀÚ½Ä¿¡¼­ TMP_Text¸¦ ÀÚµ¿À¸·Î Ã£½À´Ï´Ù.")]
+    [Tooltip("ê° ìŠ¤í…Œì´ì§€ ë²„íŠ¼ì— í‘œì‹œí•  í…ìŠ¤íŠ¸ì…ë‹ˆë‹¤. ë¹„ì›Œë‘ë©´ ìŠ¤í…Œì´ì§€ ë²„íŠ¼ ìì‹ì—ì„œ TMP_Textë¥¼ ìë™ìœ¼ë¡œ ì°¾ìŠµë‹ˆë‹¤.")]
     [SerializeField] private TMP_Text[] stageTexts = new TMP_Text[3];
-    [Tooltip("½ºÅ×ÀÌÁöº° Ç¥½Ã ÀÌ¸§ÀÔ´Ï´Ù. ±âº»°ªÀº ÆóÇã, ¼ö·Î, ¼º¿ªÀÔ´Ï´Ù.")]
-    [SerializeField] private string[] stageDisplayNames = { "ÆóÇã", "¼ö·Î", "¼º¿ª" };
-    [Tooltip("Áß¾Ó¿¡ ¿Â ½ºÅ×ÀÌÁö ¹öÆ°ÀÇ ÅØ½ºÆ®¸¸ ÄÑ°í, ¾çÂÊ ¹öÆ°ÀÇ ÅØ½ºÆ®´Â ²ü´Ï´Ù.")]
+    [Tooltip("ìŠ¤í…Œì´ì§€ë³„ í‘œì‹œ ì´ë¦„ì…ë‹ˆë‹¤. ê¸°ë³¸ê°’ì€ íí—ˆ, ìˆ˜ë¡œ, ì„±ì—­ì…ë‹ˆë‹¤.")]
+    [SerializeField] private string[] stageDisplayNames = { "íí—ˆ", "ìˆ˜ë¡œ", "ì„±ì—­" };
+    [Tooltip("ì¤‘ì•™ì— ì˜¨ ìŠ¤í…Œì´ì§€ ë²„íŠ¼ì˜ í…ìŠ¤íŠ¸ë§Œ ì¼œê³ , ì–‘ìª½ ë²„íŠ¼ì˜ í…ìŠ¤íŠ¸ëŠ” ë•ë‹ˆë‹¤.")]
     [SerializeField] private bool showTextOnlyOnCenteredButton = true;
-    [Tooltip("½ÃÀÛ ½Ã Stage Display Names °ªÀ» ÅØ½ºÆ® ÄÄÆ÷³ÍÆ®¿¡ ÀÚµ¿À¸·Î ³Ö½À´Ï´Ù.")]
+    [Tooltip("ì‹œì‘ ì‹œ Stage Display Names ê°’ì„ í…ìŠ¤íŠ¸ ì»´í¬ë„ŒíŠ¸ì— ìë™ìœ¼ë¡œ ë„£ìŠµë‹ˆë‹¤.")]
     [SerializeField] private bool applyStageDisplayNamesToTexts = true;
-    [Tooltip("Stage Texts°¡ ºñ¾î ÀÖÀ» ¶§ °¢ ½ºÅ×ÀÌÁö ¹öÆ°ÀÇ ÀÚ½Ä TMP_Text¸¦ ÀÚµ¿À¸·Î Ã£¾Æ ¿¬°áÇÕ´Ï´Ù.")]
+    [Tooltip("Stage Textsê°€ ë¹„ì–´ ìˆì„ ë•Œ ê° ìŠ¤í…Œì´ì§€ ë²„íŠ¼ì˜ ìì‹ TMP_Textë¥¼ ìë™ìœ¼ë¡œ ì°¾ì•„ ì—°ê²°í•©ë‹ˆë‹¤.")]
     [SerializeField] private bool autoBindStageTexts = true;
 
 
     [Header("Stage Front Image Color")]
-    [Tooltip("°¢ ½ºÅ×ÀÌÁö ¹öÆ°ÀÇ Button_Front ÀÚ½Ä ÀÌ¹ÌÁöÀÔ´Ï´Ù. ºñ¿öµÎ¸é Button_Front ÀÌ¸§ÀÇ ÀÚ½Ä¿¡¼­ Image¸¦ ÀÚµ¿À¸·Î Ã£½À´Ï´Ù.")]
+    [Tooltip("ê° ìŠ¤í…Œì´ì§€ ë²„íŠ¼ì˜ Button_Front ìì‹ ì´ë¯¸ì§€ì…ë‹ˆë‹¤. ë¹„ì›Œë‘ë©´ Button_Front ì´ë¦„ì˜ ìì‹ì—ì„œ Imageë¥¼ ìë™ìœ¼ë¡œ ì°¾ìŠµë‹ˆë‹¤.")]
     [SerializeField] private Image[] stageFrontImages = new Image[3];
-    [Tooltip("Áß¾Ó¿¡ ¿Â ¹öÆ°ÀÇ Button_Front ÀÌ¹ÌÁö »ö»óÀÔ´Ï´Ù.")]
+    [Tooltip("ì¤‘ì•™ì— ì˜¨ ë²„íŠ¼ì˜ Button_Front ì´ë¯¸ì§€ ìƒ‰ìƒì…ë‹ˆë‹¤.")]
     [SerializeField] private Color centeredFrontImageColor = Color.white;
-    [Tooltip("Áß¾ÓÀÌ ¾Æ´Ñ ¹öÆ°ÀÇ Button_Front ÀÌ¹ÌÁö »ö»óÀÔ´Ï´Ù.")]
+    [Tooltip("ì¤‘ì•™ì´ ì•„ë‹Œ ë²„íŠ¼ì˜ Button_Front ì´ë¯¸ì§€ ìƒ‰ìƒì…ë‹ˆë‹¤.")]
     [SerializeField] private Color sideFrontImageColor = new Color32(0x52, 0x52, 0x52, 0xFF);
-    [Tooltip("Stage Front Images°¡ ºñ¾î ÀÖÀ» ¶§ °¢ ½ºÅ×ÀÌÁö ¹öÆ°¿¡¼­ Button_Front ÀÌ¹ÌÁö¸¦ ÀÚµ¿À¸·Î Ã£½À´Ï´Ù.")]
+    [Tooltip("Stage Front Imagesê°€ ë¹„ì–´ ìˆì„ ë•Œ ê° ìŠ¤í…Œì´ì§€ ë²„íŠ¼ì—ì„œ Button_Front ì´ë¯¸ì§€ë¥¼ ìë™ìœ¼ë¡œ ì°¾ìŠµë‹ˆë‹¤.")]
     [SerializeField] private bool autoBindStageFrontImages = true;
 
     [Header("Animation")]
@@ -74,21 +74,21 @@ public class LobbyStageButtonCarousel : MonoBehaviour, IBeginDragHandler, IDragH
     [SerializeField] private float selectionMoveSfxVolume = 1f;
 
     [Header("Navigation Button Press Feedback")]
-    [Tooltip("¹öÆ°À» Á÷Á¢ ´©¸£Áö ¾Ê°í Å°º¸µå³ª µå·¡±×·Î Áß¾Ó ¼±ÅÃÀÌ ÀÌµ¿ÇØµµ ÀÌÀü/´ÙÀ½ ¹öÆ°ÀÌ ´­¸° °ÍÃ³·³ º¸ÀÌ°Ô ÇÕ´Ï´Ù.")]
+    [Tooltip("ë²„íŠ¼ì„ ì§ì ‘ ëˆ„ë¥´ì§€ ì•Šê³  í‚¤ë³´ë“œë‚˜ ë“œë˜ê·¸ë¡œ ì¤‘ì•™ ì„ íƒì´ ì´ë™í•´ë„ ì´ì „/ë‹¤ìŒ ë²„íŠ¼ì´ ëˆŒë¦° ê²ƒì²˜ëŸ¼ ë³´ì´ê²Œ í•©ë‹ˆë‹¤.")]
     [SerializeField] private bool playNavigationButtonPressFeedback = true;
-    [Tooltip("Å°º¸µå ÀÌµ¿ ½Ã ¹öÆ°ÀÌ ´­¸° »óÅÂ·Î À¯ÁöµÇ´Â ½Ã°£ÀÔ´Ï´Ù.")]
+    [Tooltip("í‚¤ë³´ë“œ ì´ë™ ì‹œ ë²„íŠ¼ì´ ëˆŒë¦° ìƒíƒœë¡œ ìœ ì§€ë˜ëŠ” ì‹œê°„ì…ë‹ˆë‹¤.")]
     [SerializeField] private float navigationButtonPressDuration = 0.08f;
 
     [Header("Selection")]
-    [Tooltip("Áß¾ÓÀ¸·Î ¿Â ½ºÅ×ÀÌÁö¸¦ Áï½Ã ¼±ÅÃ »óÅÂ·Î ÀúÀåÇÕ´Ï´Ù. PlayButtonÀ» ´©¸£¸é ÀÌ ½ºÅ×ÀÌÁö·Î ½ÃÀÛµË´Ï´Ù.")]
+    [Tooltip("ì¤‘ì•™ìœ¼ë¡œ ì˜¨ ìŠ¤í…Œì´ì§€ë¥¼ ì¦‰ì‹œ ì„ íƒ ìƒíƒœë¡œ ì €ì¥í•©ë‹ˆë‹¤. PlayButtonì„ ëˆ„ë¥´ë©´ ì´ ìŠ¤í…Œì´ì§€ë¡œ ì‹œì‘ë©ë‹ˆë‹¤.")]
     [SerializeField] private bool applyStageSelectionWhenCentered = true;
     [SerializeField] private bool sendPointerHoverToCenteredButton = true;
     [SerializeField] private bool onlyCenteredButtonInteractable = false;
-    [Tooltip("Àá°ÜÀÖ´Â ½ºÅ×ÀÌÁö ¹öÆ°µµ Ä³·¯¼¿ À§Ä¡ ÀÌµ¿°ú Áß¾Ó ÀÌµ¿ ´ë»ó¿¡ Æ÷ÇÔÇÕ´Ï´Ù. Àá±İ ¿©ºÎ´Â ½ÇÁ¦ ¼±ÅÃ ÀúÀå ´Ü°è¿¡¼­ Ã³¸®ÇÕ´Ï´Ù.")]
+    [Tooltip("ì ê²¨ìˆëŠ” ìŠ¤í…Œì´ì§€ ë²„íŠ¼ë„ ìºëŸ¬ì…€ ìœ„ì¹˜ ì´ë™ê³¼ ì¤‘ì•™ ì´ë™ ëŒ€ìƒì— í¬í•¨í•©ë‹ˆë‹¤. ì ê¸ˆ ì—¬ë¶€ëŠ” ì‹¤ì œ ì„ íƒ ì €ì¥ ë‹¨ê³„ì—ì„œ ì²˜ë¦¬í•©ë‹ˆë‹¤.")]
     [SerializeField] private bool includeLockedButtonsInCarousel = true;
 
     [Header("Mouse Drag")]
-    [Tooltip("¸¶¿ì½º¸¦ ´©¸¥ »óÅÂ·Î ÁÂ¿ì·Î ²ø¾úÀ» ¶§ ½ºÅ×ÀÌÁö¸¦ ³Ñ±é´Ï´Ù.")]
+    [Tooltip("ë§ˆìš°ìŠ¤ë¥¼ ëˆ„ë¥¸ ìƒíƒœë¡œ ì¢Œìš°ë¡œ ëŒì—ˆì„ ë•Œ ìŠ¤í…Œì´ì§€ë¥¼ ë„˜ê¹ë‹ˆë‹¤.")]
     [SerializeField] private bool enableMouseDrag = true;
     [SerializeField] private float dragThreshold = 70f;
     [SerializeField] private bool invertDragDirection = false;
@@ -235,6 +235,9 @@ public class LobbyStageButtonCarousel : MonoBehaviour, IBeginDragHandler, IDragH
         int index = GetButtonIndex(clickedButton);
 
         if (!IsButtonUsable(index))
+            return false;
+
+        if (index == currentIndex)
             return false;
 
         SetSelection(index, false);
