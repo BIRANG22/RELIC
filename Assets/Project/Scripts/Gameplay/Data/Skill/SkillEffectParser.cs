@@ -13,7 +13,6 @@ public static class SkillEffectParser
 
         return ParseInternal(
             skill.EffectIds,
-            skill.ValueCalcTypes,
             skill.ValueRate,
             skill.CountRate,
             effectDatabase
@@ -29,7 +28,6 @@ public static class SkillEffectParser
 
         return ParseInternal(
             data.EffectIds,
-            data.ValueCalcTypes,
             data.ValueRate,
             data.CountRate,
             effectDatabase
@@ -45,7 +43,6 @@ public static class SkillEffectParser
 
         return ParseInternal(
             data.EffectIds,
-            data.ValueCalcTypes,
             data.ValueRate,
             data.CountRate,
             effectDatabase
@@ -61,7 +58,6 @@ public static class SkillEffectParser
 
         return ParseInternal(
             relic.EffectIds,
-            relic.ValueCalcTypes,
             relic.ValueRate,
             relic.CountRate,
             effectDatabase
@@ -70,7 +66,6 @@ public static class SkillEffectParser
 
     private static List<SkillEffectEntry> ParseInternal(
         string effectIdsStr,
-        string valueTypesStr,
         string valuesStr,
         string countsStr,
         EffectDatabase effectDatabase)
@@ -81,7 +76,6 @@ public static class SkillEffectParser
             return result;
 
         string[] effectIds = Split(effectIdsStr);
-        string[] valueTypes = Split(valueTypesStr);
         string[] values = Split(valuesStr);
         string[] counts = Split(countsStr);
 
@@ -91,11 +85,6 @@ public static class SkillEffectParser
 
             if (string.IsNullOrWhiteSpace(effectId))
                 continue;
-
-            ValueCalcType valueCalcType = ParseEnum(
-                GetByIndexOrFirst(valueTypes, i, "None"),
-                ValueCalcType.None
-            );
 
             int valueAmount = ParseInt(
                 GetByIndexOrFirst(values, i, "0"),
@@ -107,14 +96,9 @@ public static class SkillEffectParser
                 1
             );
 
-            // None 타입이면 수치는 무조건 0으로 보정
-            if (valueCalcType == ValueCalcType.None)
-                valueAmount = 0;
-
             SkillEffectEntry entry = new SkillEffectEntry
             {
                 EffectId = effectId,
-                ValueCalcType = valueCalcType,
                 ValueAmount = valueAmount,
                 CountAmount = countAmount,
                 EffectData = effectDatabase != null ? effectDatabase.Get(effectId) : null
@@ -157,17 +141,6 @@ public static class SkillEffectParser
 
         return defaultValue;
     }
-
-    private static ValueCalcType ParseEnum(string text, ValueCalcType defaultValue)
-    {
-        if (string.IsNullOrWhiteSpace(text))
-            return defaultValue;
-
-        return Enum.TryParse(text.Trim(), true, out ValueCalcType value)
-            ? value
-            : defaultValue;
-    }
-
     private static int ParseInt(string text, int defaultValue)
     {
         if (string.IsNullOrWhiteSpace(text))

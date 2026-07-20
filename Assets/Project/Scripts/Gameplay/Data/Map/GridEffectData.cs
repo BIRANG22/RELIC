@@ -8,7 +8,6 @@ namespace Relic.Gameplay.Data
         public int Passed;
         public int Consumable;
         public string EffectIds;
-        public string ValueCalcTypes;
         public int ValueRate;
         public int CountRate;
         public int Duration;

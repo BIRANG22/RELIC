@@ -1277,7 +1277,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             if (string.IsNullOrWhiteSpace(effectName))
                 continue;
 
-            int value = SkillValueCalculator.GetValue(entry, Mathf.Max(0, skill.ResourceCostValue));
+            int value = SkillValueCalculator.GetValue(entry);
             int count = Mathf.Max(0, SkillValueCalculator.GetCount(entry));
 
             if (builder.Length > 0)
@@ -1285,7 +1285,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
             builder.Append(effectName);
 
-            if (entry.ValueCalcType != ValueCalcType.None)
+            if (value != 0)
             {
                 builder.Append(' ');
                 builder.Append(value);

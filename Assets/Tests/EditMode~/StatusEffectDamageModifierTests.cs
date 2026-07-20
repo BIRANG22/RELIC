@@ -223,7 +223,6 @@ public class StatusEffectDamageModifierTests
             SkillId = skillId,
             Target = TargetType.PlayerParty,
             EffectIds = "E_Strike",
-            ValueCalcTypes = "Fixed",
             ValueRate = value.ToString(),
             CountRate = "1",
             TimelineNotation = TimelineActionType.Attack
@@ -232,7 +231,6 @@ public class StatusEffectDamageModifierTests
         skill.EffectEntries.Add(new SkillEffectEntry
         {
             EffectId = "E_Strike",
-            ValueCalcType = ValueCalcType.Fixed,
             ValueAmount = value,
             CountAmount = 1
         });

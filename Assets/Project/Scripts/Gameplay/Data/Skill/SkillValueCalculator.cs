@@ -2,12 +2,12 @@ using Relic.Gameplay.Data;
 
 public static class SkillValueCalculator
 {
-    public static int GetValue(SkillEffectEntry entry, int payAmount)
+    public static int GetValue(SkillEffectEntry entry)
     {
         if (entry == null)
             return 0;
 
-        return Calculate(entry.ValueCalcType, entry.ValueAmount, payAmount);
+        return entry.ValueAmount;
     }
 
     public static int GetCount(SkillEffectEntry entry)
@@ -16,19 +16,5 @@ public static class SkillValueCalculator
             return 0;
 
         return entry.CountAmount;
-    }
-
-    private static int Calculate(
-        ValueCalcType type,
-        int amount,
-        int payAmount)
-    {
-        return type switch
-        {
-            ValueCalcType.None => 0,
-            ValueCalcType.Fixed => amount,
-            ValueCalcType.PerCost => amount * payAmount,
-            _ => 0
-        };
     }
 }

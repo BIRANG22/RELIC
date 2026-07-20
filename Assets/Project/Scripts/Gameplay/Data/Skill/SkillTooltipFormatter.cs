@@ -30,7 +30,7 @@ namespace Relic.Gameplay.Data
                 match => CalculateFocusCostFormula(runtime, payAmount, match).ToString()
             );
 
-            return FormatValueText(skill, formatted, payAmount);
+            return FormatValueText(skill, formatted);
         }
 
         public static string BuildSkillDescription(
@@ -59,13 +59,12 @@ namespace Relic.Gameplay.Data
 
         private static string FormatValueText(
             SkillMasterData skill,
-            string text,
-            int payAmount)
+            string text)
         {
             if (string.IsNullOrWhiteSpace(text))
                 return "";
 
-            if (!TryGetDisplayValue(skill, payAmount, out int value))
+            if (!TryGetDisplayValue(skill, out int value))
                 return RemoveValueToken(text);
 
             string valueText = value.ToString();
@@ -81,7 +80,6 @@ namespace Relic.Gameplay.Data
 
         private static bool TryGetDisplayValue(
             SkillMasterData skill,
-            int payAmount,
             out int value)
         {
             value = 0;
@@ -99,10 +97,10 @@ namespace Relic.Gameplay.Data
                 if (!ShouldDisplayValue(entry.EffectId))
                     continue;
 
-                if (entry.ValueCalcType == ValueCalcType.None || entry.ValueAmount == 0)
+                if (entry.ValueAmount == 0)
                     continue;
 
-                value = global::SkillValueCalculator.GetValue(entry, payAmount);
+                value = global::SkillValueCalculator.GetValue(entry);
                 return true;
             }
 

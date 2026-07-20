@@ -11,7 +11,6 @@ namespace Relic.Gameplay.Data
         public string Rarity;
 
         public string EffectIds;
-        public string ValueCalcTypes;
         public string ValueRate;
         public string CountRate;
 
