@@ -5410,6 +5410,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5371138745502945057}
+  - component: {fileID: 7797111047531795283}
   m_Layer: 0
   m_Name: St1_boss
   m_TagString: Untagged
@@ -5434,6 +5435,22 @@ Transform:
   - {fileID: 3606318107395055930}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7797111047531795283
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1095735511783889823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 678ca7f14c1a59041bf03a63f54ef04b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetPosition: {x: 0, y: 0, z: 0}
+  targetRotation: {x: 0, y: 0, z: 0}
+  startDelay: 0
+  moveTime: 1
 --- !u!1 &1403649379357896092
 GameObject:
   m_ObjectHideFlags: 0
@@ -6423,6 +6440,7 @@ GameObject:
   - component: {fileID: 2919313487071757941}
   - component: {fileID: 6212488385823877373}
   - component: {fileID: 2769384891784108828}
+  - component: {fileID: 8328505879417687490}
   m_Layer: 0
   m_Name: appear
   m_TagString: Untagged
@@ -6522,6 +6540,24 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &8328505879417687490
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4856493311832026969}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2a59db48c1030841a54f59443c0c514, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: 2769384891784108828}
+  idleState: appear_idle
+  idleRepeatCount: 4
+  state1: 1
+  state2: 2
+  state3: 3
 --- !u!1 &5215024372422661749
 GameObject:
   m_ObjectHideFlags: 0
