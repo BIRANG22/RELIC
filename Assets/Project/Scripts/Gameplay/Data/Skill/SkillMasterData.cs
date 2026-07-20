@@ -73,13 +73,6 @@ namespace Relic.Gameplay.Data
         EnemyParty
     }
 
-    public enum ValueCalcType
-    {
-        None,
-        Fixed,   // 고정값
-        PerCost  // 실제 소모량 * 값
-    }
-
     [System.Serializable]
     public class SkillMasterData
     {
@@ -95,7 +88,6 @@ namespace Relic.Gameplay.Data
 
         // 엑셀 원본 문자열: 세미콜론 구분
         public string EffectIds;
-        public string ValueCalcTypes;
         public string ValueRate;
         public string CountRate;
 

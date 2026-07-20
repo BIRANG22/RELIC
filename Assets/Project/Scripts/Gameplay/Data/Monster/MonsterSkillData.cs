@@ -12,7 +12,6 @@ namespace Relic.Gameplay.Data
         public TargetType Target;
 
         public string EffectIds;
-        public string ValueCalcTypes;
         public string ValueRate;
         public string CountCalcTypes;
         public string CountRate;

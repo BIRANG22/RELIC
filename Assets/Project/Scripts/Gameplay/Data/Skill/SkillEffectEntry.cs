@@ -7,7 +7,6 @@ namespace Relic.Gameplay.Data
     {
         public string EffectId;
 
-        public ValueCalcType ValueCalcType;
         public int ValueAmount;
 
         public int CountAmount;

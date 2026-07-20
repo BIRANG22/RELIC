@@ -85,7 +85,7 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     private readonly List<int> currentMoveSelectableIndices = new();
     private readonly Dictionary<int, List<List<Vector2Int>>> currentMovePathCandidatesByTargetIndex = new();
-    private bool isMoveTargetMonsterVisualActive;
+    private bool isGridTargetMonsterVisualActive;
     private SpriteRenderer moveHoverPingBaseInstance;
     private SpriteRenderer moveHoverPingFloatingInstance;
     private TextMeshPro moveHoverCostTextInstance;
@@ -126,7 +126,7 @@ public class PlayerSkillReservationController : MonoBehaviour
     {
         ClearNocturnPortalDestinationIndicators();
         HideMoveHoverPing();
-        SetMoveTargetMonsterVisualActive(false);
+        SetGridTargetMonsterVisualActive(false);
 
         if (gridManager != null)
         {
@@ -323,7 +323,7 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         if (currentSkillData.RangeType == RangeType.Direction)
         {
-            SetMoveTargetMonsterVisualActive(false);
+            SetGridTargetMonsterVisualActive(false);
             ConfirmDirectionReservation(currentCasterDirection);
             return;
         }
@@ -331,7 +331,7 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (currentSkillData.RangeType == RangeType.Selection)
         {
             bool isMoveSkill = IsMoveSkill(currentSkillData);
-            SetMoveTargetMonsterVisualActive(isMoveSkill);
+            SetGridTargetMonsterVisualActive(true);
 
             if (isMoveSkill)
                 PreviewMoveSelectableCells();
@@ -341,7 +341,7 @@ public class PlayerSkillReservationController : MonoBehaviour
             return;
         }
 
-        SetMoveTargetMonsterVisualActive(false);
+        SetGridTargetMonsterVisualActive(false);
         ConfirmDirectReservation();
     }
 
@@ -2299,12 +2299,12 @@ public class PlayerSkillReservationController : MonoBehaviour
         return true;
     }
 
-    private void SetMoveTargetMonsterVisualActive(bool active)
+    private void SetGridTargetMonsterVisualActive(bool active)
     {
-        if (isMoveTargetMonsterVisualActive == active)
+        if (isGridTargetMonsterVisualActive == active)
             return;
 
-        isMoveTargetMonsterVisualActive = active;
+        isGridTargetMonsterVisualActive = active;
         MonsterUnit.SetAllReservationVisualState(active);
     }
 
@@ -2406,7 +2406,7 @@ public class PlayerSkillReservationController : MonoBehaviour
     public void ClearPreview()
     {
         HideMoveHoverPing();
-        SetMoveTargetMonsterVisualActive(false);
+        SetGridTargetMonsterVisualActive(false);
 
         currentUserRuntime = null;
         currentSkillData = null;

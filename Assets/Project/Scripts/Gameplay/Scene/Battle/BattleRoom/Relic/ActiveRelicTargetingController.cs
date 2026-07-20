@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
+using Relic.Gameplay.Monster;
 using UnityEngine;
 
 public class ActiveRelicTargetingController : MonoBehaviour
@@ -60,6 +61,7 @@ public class ActiveRelicTargetingController : MonoBehaviour
         gridManager.SetGridVisible(true);
         gridManager.OnCellClicked += HandleCellClicked;
         gridManager.ShowExecutionRange(BuildPreviewCells(), targetPreviewColor);
+        MonsterUnit.SetAllReservationVisualState(true);
         return true;
     }
 
@@ -67,6 +69,8 @@ public class ActiveRelicTargetingController : MonoBehaviour
     {
         if (!isTargeting && gridManager == null)
             return;
+
+        bool wasTargeting = isTargeting;
 
         if (gridManager != null)
         {
@@ -76,6 +80,9 @@ public class ActiveRelicTargetingController : MonoBehaviour
             if (isTargeting)
                 gridManager.SetGridVisible(previousGridVisible);
         }
+
+        if (wasTargeting)
+            MonsterUnit.SetAllReservationVisualState(false);
 
         isTargeting = false;
         owner = null;

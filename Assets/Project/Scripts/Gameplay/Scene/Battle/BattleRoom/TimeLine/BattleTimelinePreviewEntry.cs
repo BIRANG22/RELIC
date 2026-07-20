@@ -228,7 +228,7 @@ public class BattleTimelinePreviewEntry
                     return damageText;
             }
 
-            int value = SkillValueCalculator.GetValue(entry, payAmount);
+            int value = SkillValueCalculator.GetValue(entry);
 
             if (value <= 0)
                 value = entry.ValueAmount;
@@ -340,13 +340,13 @@ public class BattleTimelinePreviewEntry
     {
         if (DataManager.Instance == null)
         {
-            Debug.LogWarning("[TimelineIcon] DataManager°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("[TimelineIcon] DataManager°¡ ¾ø½?´Ï´Ù.");
             return null;
         }
 
         if (DataManager.Instance.ActionTypeIconDatabase == null)
         {
-            Debug.LogWarning("[TimelineIcon] ActionTypeIconDatabase°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("[TimelineIcon] ActionTypeIconDatabase°¡ ¾ø½?´Ï´Ù.");
             return null;
         }
 

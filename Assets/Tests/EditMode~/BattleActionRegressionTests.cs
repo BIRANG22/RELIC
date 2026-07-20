@@ -1751,7 +1751,6 @@
 //                    ["Name"] = "Attack",
 //                    ["Target"] = "PlayerParty",
 //                    ["EffectIds"] = "E_Strike",
-//                    ["ValueCalcTypes"] = "Fixed",
 //                    ["ValueRate"] = "6",
 //                    ["CountRate"] = "1",
 //                    ["RangeId"] = "Range_17",
@@ -1844,7 +1843,6 @@
 //                new()
 //                {
 //                    EffectId = "E_Armor",
-//                    ValueCalcType = ValueCalcType.Fixed,
 //                    ValueAmount = 3,
 //                    CountAmount = 1
 //                }
