@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Object = UnityEngine.Object;
 
 public class BattleRewardPanelUI : MonoBehaviour
 {
@@ -32,6 +34,7 @@ public class BattleRewardPanelUI : MonoBehaviour
     private readonly List<BattleRewardData> claimedRewards = new();
     private readonly List<BattleRewardSlotUI> activeSlots = new();
     private BattleRewardSlotUI focusedSlot;
+    private Action onRewardFlowCompleted;
 
     private void Awake()
     {
@@ -42,11 +45,12 @@ public class BattleRewardPanelUI : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    public void Open(List<BattleRewardData> rewards)
+    public void Open(List<BattleRewardData> rewards, Action completedCallback = null)
     {
         currentRewards.Clear();
         claimedRewards.Clear();
         activeSlots.Clear();
+        onRewardFlowCompleted = completedCallback;
 
         if (rewards != null)
             currentRewards.AddRange(rewards);
@@ -396,6 +400,14 @@ public class BattleRewardPanelUI : MonoBehaviour
 
         HideDetailPanel();
         gameObject.SetActive(false);
+
+        Action completedCallback = onRewardFlowCompleted;
+        onRewardFlowCompleted = null;
+        if (completedCallback != null)
+        {
+            completedCallback.Invoke();
+            return;
+        }
 
         if (battlePanel != null)
             battlePanel.SetActive(false);

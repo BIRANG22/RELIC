@@ -69,6 +69,36 @@ public class PositionCharacterSettingButtonTests
             Is.EqualTo(LobbyViewState.CharacterSelection));
     }
 
+    [Test]
+    public void WorldSpriteClick_DoesNotOpenCharacterSelection_WhenPositionModalBlocksInput()
+    {
+        controllerObject = new GameObject("LobbyViewStateController");
+        LobbyViewStateController viewStateController =
+            controllerObject.AddComponent<LobbyViewStateController>();
+        viewStateController.ShowPosition();
+
+        buttonObject = new GameObject("Cha1");
+        buttonObject.AddComponent<SpriteRenderer>();
+        PositionCharacterSettingButton button =
+            buttonObject.AddComponent<PositionCharacterSettingButton>();
+
+        try
+        {
+            LobbyPositionModalInputBlocker.Block(button);
+
+            InvokeNonPublic(button, "Awake");
+            InvokeNonPublic(button, "OnMouseUpAsButton");
+
+            Assert.That(
+                viewStateController.CurrentState,
+                Is.EqualTo(LobbyViewState.Position));
+        }
+        finally
+        {
+            LobbyPositionModalInputBlocker.Unblock(button);
+        }
+    }
+
     private static void InvokeNonPublic(object target, string methodName)
     {
         MethodInfo method = target.GetType().GetMethod(

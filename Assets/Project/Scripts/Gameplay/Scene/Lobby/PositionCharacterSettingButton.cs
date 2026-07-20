@@ -12,6 +12,9 @@ public sealed class PositionCharacterSettingButton : MonoBehaviour
 
     private void OnMouseUpAsButton()
     {
+        if (LobbyPositionModalInputBlocker.IsBlocked)
+            return;
+
         Execute();
     }
 
