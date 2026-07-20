@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class AnimationSequence : MonoBehaviour
+public class AnimationSequence : BattleRoomIntroSequence
 {
     [SerializeField] private Animator animator;
 
@@ -14,9 +14,36 @@ public class AnimationSequence : MonoBehaviour
     [SerializeField] private string state2 = "2";
     [SerializeField] private string state3 = "3";
 
-    private void Start()
+    [Header("Completion")]
+    [Min(0f)] [SerializeField] private float postSequenceDelay = 1f;
+
+    private Coroutine sequenceRoutine;
+
+    public float PostSequenceDelay => postSequenceDelay;
+
+    private void OnEnable()
     {
-        StartCoroutine(PlaySequence());
+        ResetCompletion();
+
+        if (animator == null)
+        {
+            Debug.LogWarning("[AnimationSequence] Animator is missing. The intro sequence will be skipped.", this);
+            MarkCompleted();
+            return;
+        }
+
+        sequenceRoutine = StartCoroutine(PlaySequence());
+    }
+
+    private void OnDisable()
+    {
+        if (sequenceRoutine != null)
+        {
+            StopCoroutine(sequenceRoutine);
+            sequenceRoutine = null;
+        }
+
+        ResetCompletion();
     }
 
     IEnumerator PlaySequence()
@@ -31,6 +58,13 @@ public class AnimationSequence : MonoBehaviour
         yield return PlayAnimation(state1);
         yield return PlayAnimation(state2);
         yield return PlayAnimation(state3);
+
+        float delay = Mathf.Max(0f, postSequenceDelay);
+        if (delay > 0f)
+            yield return new WaitForSeconds(delay);
+
+        sequenceRoutine = null;
+        MarkCompleted();
     }
 
     IEnumerator PlayAnimation(string stateName)

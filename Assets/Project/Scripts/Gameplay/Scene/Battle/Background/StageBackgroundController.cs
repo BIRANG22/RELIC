@@ -77,7 +77,10 @@ public class StageBackgroundController : MonoBehaviour
         if (currentInstance != null)
         {
             if (Application.isPlaying)
+            {
+                currentInstance.SetActive(false);
                 Destroy(currentInstance);
+            }
             else
                 DestroyImmediate(currentInstance);
         }
