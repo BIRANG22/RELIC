@@ -3,11 +3,16 @@ using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class BattleBagPanelUI : MonoBehaviour
 {
     private const int MaxBagItemCount = 8;
+
+    [Header("Runtime")]
+    [SerializeField] private InventoryRuntimeContextProvider runtimeContextProvider;
+    [SerializeField] private bool allowDiscardInLobby = false;
 
     [Header("Slot List")]
     [SerializeField] private Transform slotRoot;
@@ -162,16 +167,41 @@ public class BattleBagPanelUI : MonoBehaviour
 
     private IReadOnlyList<string> GetBagItemIds()
     {
-        if (DataManager.Instance == null || DataManager.Instance.BattleRuntimeStore == null)
+        IInventoryRuntimeContext context = ResolveRuntimeContext();
+
+        if (context == null)
             return null;
 
-        BattleRuntimeData runtime = DataManager.Instance.BattleRuntimeStore.Get();
+        return context.BagItemIds;
+    }
 
-        if (runtime == null)
+    private IInventoryRuntimeContext ResolveRuntimeContext()
+    {
+        if (runtimeContextProvider == null)
+            runtimeContextProvider = GetComponentInParent<InventoryRuntimeContextProvider>(true);
+
+        IInventoryRuntimeContext context = runtimeContextProvider != null
+            ? runtimeContextProvider.GetContext()
+            : null;
+
+        if (context != null)
+            return context;
+
+        if (DataManager.Instance == null)
             return null;
 
-        runtime.BagItemIds ??= new List<string>();
-        return runtime.BagItemIds;
+        bool isLobbyScene = string.Equals(
+            SceneManager.GetActiveScene().name,
+            "Lobby",
+            System.StringComparison.OrdinalIgnoreCase);
+
+        if (isLobbyScene && DataManager.Instance.LobbyRuntimeStore != null)
+            return InventoryRuntimeContext.ForLobby(DataManager.Instance.LobbyRuntimeStore.GetOrCreate());
+
+        if (DataManager.Instance.BattleRuntimeStore != null)
+            return InventoryRuntimeContext.ForBattle(DataManager.Instance.BattleRuntimeStore.GetOrCreate());
+
+        return null;
     }
 
     private void OnFocusSlot(BattleBagItemSlotUI slot)
@@ -391,11 +421,16 @@ public class BattleBagPanelUI : MonoBehaviour
     private void RefreshDiscardButtonState()
     {
         if (discardButton != null)
-            discardButton.interactable = selectedSlot != null && selectedSlot.HasItem;
+            discardButton.interactable = IsDiscardAllowed() && selectedSlot != null && selectedSlot.HasItem;
     }
 
     private void OnClickDiscardButton()
     {
+        IInventoryRuntimeContext context = ResolveRuntimeContext();
+
+        if (!IsDiscardAllowed(context))
+            return;
+
         if (selectedSlot == null || !selectedSlot.HasItem)
         {
             BattleWarningUI.ShowMessage("버릴 고유아이템을 먼저 선택해주세요.");
@@ -411,19 +446,17 @@ public class BattleBagPanelUI : MonoBehaviour
             return;
         }
 
-        if (DataManager.Instance == null || DataManager.Instance.BattleRuntimeStore == null)
+        if (context == null)
             return;
 
-        BattleRuntimeData runtime = DataManager.Instance.BattleRuntimeStore.GetOrCreate();
-        runtime.BagItemIds ??= new List<string>();
 
-        if (slotIndex >= runtime.BagItemIds.Count)
+        if (slotIndex >= context.BagItemIds.Count)
         {
             Refresh();
             return;
         }
 
-        string removedItemId = runtime.BagItemIds[slotIndex];
+        string removedItemId = context.BagItemIds[slotIndex];
 
         if (selectedSlot != null)
             selectedSlot.ResetVisualState();
@@ -433,8 +466,8 @@ public class BattleBagPanelUI : MonoBehaviour
 
         ClearAllSlotVisualStates();
 
-        runtime.BagItemIds.RemoveAt(slotIndex);
-        DataManager.Instance.BattleRuntimeStore.Set(runtime);
+        context.BagItemIds.RemoveAt(slotIndex);
+        SaveRuntimeContext(context);
 
         selectedSlot = null;
         hoveredSlot = null;
@@ -442,6 +475,34 @@ public class BattleBagPanelUI : MonoBehaviour
         Refresh();
 
         Debug.Log($"[BattleBagPanelUI] 고유아이템을 버렸습니다. Item:{removedItemId}");
+    }
+
+    private bool IsDiscardAllowed()
+    {
+        return IsDiscardAllowed(ResolveRuntimeContext());
+    }
+
+    private bool IsDiscardAllowed(IInventoryRuntimeContext context)
+    {
+        return context == null || !context.IsLobby || allowDiscardInLobby;
+    }
+
+    private void SaveRuntimeContext(IInventoryRuntimeContext context)
+    {
+        if (context == null || DataManager.Instance == null)
+            return;
+
+        if (context.IsLobby)
+        {
+            LobbyRuntimeData lobby = DataManager.Instance.LobbyRuntimeStore?.GetOrCreate();
+            if (lobby != null)
+                DataManager.Instance.LobbyRuntimeStore.Set(lobby);
+            return;
+        }
+
+        BattleRuntimeData runtime = DataManager.Instance.BattleRuntimeStore?.GetOrCreate();
+        if (runtime != null)
+            DataManager.Instance.BattleRuntimeStore.Set(runtime);
     }
 
     private Image FindChildImage(Transform root, params string[] names)

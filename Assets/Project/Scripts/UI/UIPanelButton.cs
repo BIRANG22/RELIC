@@ -852,6 +852,9 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
     private void OnMouseUpAsButton()
     {
+        if (LobbyPositionModalInputBlocker.IsBlocked)
+            return;
+
         // 강화 패널이 열려 있는 동안에는 월드 스프라이트 오브젝트의 클릭만 막습니다.
         // UI Button.onClick으로 실행되는 Execute/MovePanel 동작에는 영향을 주지 않습니다.
         if (SkillUpgradePanel.IsAnyPanelOpen)
