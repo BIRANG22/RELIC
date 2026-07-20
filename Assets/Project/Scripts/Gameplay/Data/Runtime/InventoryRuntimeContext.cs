@@ -6,6 +6,7 @@ namespace Relic.Gameplay.Data
     {
         List<string> OwnedRelicIds { get; }
         List<string> SkillInventoryIds { get; }
+        List<string> BagItemIds { get; }
         bool IsLobby { get; }
     }
 
@@ -23,6 +24,7 @@ namespace Relic.Gameplay.Data
 
         public List<string> OwnedRelicIds => IsLobby ? lobby.OwnedRelicIds : battle.OwnedRelicIds;
         public List<string> SkillInventoryIds => IsLobby ? lobby.SkillInventoryIds : battle.SkillInventoryIds;
+        public List<string> BagItemIds => IsLobby ? lobby.BagItemIds : battle.BagItemIds;
         public bool IsLobby => lobby != null;
 
         public static IInventoryRuntimeContext ForLobby(LobbyRuntimeData data)
@@ -41,11 +43,13 @@ namespace Relic.Gameplay.Data
             {
                 lobby.OwnedRelicIds ??= new List<string>();
                 lobby.SkillInventoryIds ??= new List<string>();
+                lobby.BagItemIds ??= new List<string>();
                 return;
             }
 
             battle.OwnedRelicIds ??= new List<string>();
             battle.SkillInventoryIds ??= new List<string>();
+            battle.BagItemIds ??= new List<string>();
         }
     }
 }

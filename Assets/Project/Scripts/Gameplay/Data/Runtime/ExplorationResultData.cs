@@ -20,6 +20,7 @@ namespace Relic.Gameplay.Data
         public int Remnant;
         public List<string> RelicIds = new();
         public List<string> NewSkillIds = new();
+        public List<string> BagItemIds = new();
         public List<BattleRunCharacterStatisticsData> CharacterStatistics = new();
     }
 
@@ -108,6 +109,7 @@ namespace Relic.Gameplay.Data
             HashSet<string> startingSkills = ToSet(runtime.StartingSkillInventoryIds);
             CopyUnique(runtime.SkillInventoryIds, result.NewSkillIds, startingSkills);
             CopyUnique(runtime.AcquiredSkillIds, result.NewSkillIds, startingSkills);
+            CopyUnique(runtime.BagItemIds, result.BagItemIds, null);
 
             if (runtime.CharacterStatistics != null)
             {
@@ -225,6 +227,8 @@ namespace Relic.Gameplay.Data
                 return false;
 
             lobby.BlueDustium += Mathf.Max(0, pending.TotalBlue);
+            lobby.BagItemIds ??= new List<string>();
+            CopyUnique(pending.ExplorationResult?.BagItemIds, lobby.BagItemIds);
             pending.IsApplied = true;
             return true;
         }
@@ -236,6 +240,25 @@ namespace Relic.Gameplay.Data
 
             lobby.HasPendingResearchResult = false;
             lobby.PendingResearchResult = null;
+        }
+
+        private static void CopyUnique(List<string> source, List<string> destination)
+        {
+            if (source == null)
+                return;
+
+            destination ??= new List<string>();
+            HashSet<string> added = new(destination, StringComparer.Ordinal);
+
+            for (int i = 0; i < source.Count; i++)
+            {
+                if (string.IsNullOrWhiteSpace(source[i]))
+                    continue;
+
+                string id = source[i].Trim();
+                if (added.Add(id))
+                    destination.Add(id);
+            }
         }
     }
 }

@@ -44,9 +44,14 @@ public class BattleResultChecker : MonoBehaviour
             Debug.Log("[BattleResultChecker] Battle Win");
 
             if (IsCurrentNodeBoss())
-                OpenExplorationResultPanel();
+            {
+                if (!OpenRewardPanel(OpenExplorationResultPanel))
+                    OpenExplorationResultPanel();
+            }
             else
+            {
                 OpenRewardPanel();
+            }
             return true;
         }
 
@@ -80,10 +85,13 @@ public class BattleResultChecker : MonoBehaviour
         return node != null && string.Equals(node.Type, "Boss", System.StringComparison.OrdinalIgnoreCase);
     }
 
-    private void OpenRewardPanel()
+    private bool OpenRewardPanel(System.Action onRewardFlowCompleted = null)
     {
         if (rewardResolver == null || rewardPanel == null)
-            return;
+        {
+            Debug.LogError("[BattleResultChecker] RewardResolver or RewardPanel is missing.");
+            return false;
+        }
 
         IReadOnlyList<MonsterRuntimeData> monsters =
             BattleRewardCollector.Instance != null
@@ -92,11 +100,12 @@ public class BattleResultChecker : MonoBehaviour
 
         Debug.Log($"[BattleResultChecker] RewardMonsterCount:{monsters?.Count ?? 0}");
 
-        List<BattleRewardData> rewards = rewardResolver.Resolve(monsters);
+        List<BattleRewardData> rewards = rewardResolver.Resolve(monsters) ?? new List<BattleRewardData>();
 
         Debug.Log($"[BattleResultChecker] ResolvedRewardCount:{rewards.Count}");
 
-        rewardPanel.Open(rewards);
+        rewardPanel.Open(rewards, onRewardFlowCompleted);
+        return true;
     }
 
     private bool IsAllMonstersDead()

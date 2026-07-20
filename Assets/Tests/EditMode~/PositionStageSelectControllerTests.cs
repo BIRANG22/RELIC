@@ -49,6 +49,36 @@ public class PositionStageSelectControllerTests
         Assert.That(panelObject.transform.parent.gameObject.activeSelf, Is.False);
     }
 
+    [Test]
+    public void OpenStageSelect_DoesNotOpen_WhenPositionModalBlocksInput()
+    {
+        canvasObject = new GameObject(
+            "PositionPanel",
+            typeof(RectTransform),
+            typeof(Canvas));
+        panelObject = new GameObject("StageSelectPanel", typeof(RectTransform));
+        panelObject.SetActive(false);
+        playObject = new GameObject("Play", typeof(SpriteRenderer));
+        PositionStageSelectController controller =
+            playObject.AddComponent<PositionStageSelectController>();
+        SetPrivateField(controller, "positionPanel", canvasObject.GetComponent<RectTransform>());
+        SetPrivateField(controller, "stageSelectPanel", panelObject);
+
+        try
+        {
+            LobbyPositionModalInputBlocker.Block(controller);
+
+            controller.OpenStageSelect();
+
+            Assert.That(panelObject.activeSelf, Is.False);
+            Assert.That(panelObject.transform.parent, Is.Null);
+        }
+        finally
+        {
+            LobbyPositionModalInputBlocker.Unblock(controller);
+        }
+    }
+
     private static void SetPrivateField(object target, string fieldName, object value)
     {
         FieldInfo field = target.GetType().GetField(

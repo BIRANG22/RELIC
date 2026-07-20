@@ -47,18 +47,18 @@ Char_05,레이나,90,12,4,5,Blood,OnDamageEnemy,2,2,S_Passive_09,S_Passive_10,S_
 # Monster
 몬스터ID,이름,등급,HP,방어도,최소 렘넌트,최대 렘넌트,고유아이템,고유 아이템 확률,유물확률,공격범위,보유스킬1 ID,보유스킬2 ID,보유스킬3 ID,보유스킬4 ID,보유스킬5 ID,보유스킬6 ID,보유스킬7 ID,보유스킬8 ID,보유스킬9 ID,보유스킬10 ID
 MonsterId,Name,Grade,HP,Armor,MinRemnant,MaxRemnant,UniqueItemId ,UniqueItemChance,RelicChance,AttackRange,PossSkillId01,PossSkillId02,PossSkillId03,PossSkillId04,PossSkillId05,PossSkillId06,PossSkillId07,PossSkillId08,PossSkillId09,PossSkillId10
-Mon_01,머크,Common,32,0,8,16,Item_001,0.1,0.02,Range_19,S_Monster_01,S_Monster_04,0,0,0,0,0,0,0,0
-Mon_02,블롭,Common,15,0,5,10,Item_002,0.1,0.02,Range_20,S_Monster_02,S_Monster_05,0,0,0,0,0,0,0,0
-Mon_03,랜서,Common,18,0,12,18,Item_003,0.1,0.02,Range_19,S_Monster_03,S_Monster_06,S_Monster_10,0,0,0,0,0,0,0
-Mon_04,블라이트,Common,20,0,12,18,Item_004,0.1,0.02,Range_19,S_Monster_03,S_Monster_06,S_Monster_12,0,0,0,0,0,0,0
-Mon_05,베스파,Common,35,0,18,25,Item_005,0.1,0.02,Range_20,S_Monster_03,S_Monster_07,0,0,0,0,0,0,0,0
-Mon_06,신더,Common,16,20,15,22,Item_006,0.1,0.02,Range_24,S_Monster_01,S_Monster_14,0,0,0,0,0,0,0,0
+Mon_01,머크,Common,32,0,8,16,Item_001,0.5,0.02,Range_19,S_Monster_01,S_Monster_04,0,0,0,0,0,0,0,0
+Mon_02,블롭,Common,15,0,5,10,Item_002,0.5,0.02,Range_20,S_Monster_02,S_Monster_05,0,0,0,0,0,0,0,0
+Mon_03,랜서,Common,18,0,12,18,Item_003,0.5,0.02,Range_19,S_Monster_03,S_Monster_06,S_Monster_10,0,0,0,0,0,0,0
+Mon_04,블라이트,Common,20,0,12,18,Item_004,0.5,0.02,Range_19,S_Monster_03,S_Monster_06,S_Monster_12,0,0,0,0,0,0,0
+Mon_05,베스파,Common,35,0,18,25,Item_005,0.5,0.02,Range_20,S_Monster_03,S_Monster_07,0,0,0,0,0,0,0,0
+Mon_06,신더,Common,16,20,15,22,Item_006,0.5,0.02,Range_24,S_Monster_01,S_Monster_14,0,0,0,0,0,0,0,0
 Mon_07,Mon_07,Common,,,,,,,,0,0,0,0,0,0,0,0,0,0,0
 Mon_08,Mon_08,Common,,,,,,,,0,0,0,0,0,0,0,0,0,0,0
 Mon_09,Mon_09,Common,,,,,,,,0,0,0,0,0,0,0,0,0,0,0
-Mon_10,녹턴,Elite,94,0,36,48,Item_010,0.2,0.1,Range_24,S_Monster_01,S_Monster_18,S_Monster_15,S_Monster_16,S_Monster_17,0,0,0,0,0
+Mon_10,녹턴,Elite,94,0,36,48,Item_010,0.7,0.1,Range_24,S_Monster_01,S_Monster_18,S_Monster_15,S_Monster_16,S_Monster_17,0,0,0,0,0
 Mon_11,Mon_11,Elite,,,,,,,,0,0,0,0,0,0,0,0,0,0,0
-Mon_12,엘리스,Boss,142,0,45,55,Item_012,0.7,1,0,0,0,0,0,0,0,0,0,0,0
+Mon_12,엘리스,Boss,142,0,45,55,Item_012,1,0,0,0,0,0,0,0,0,0,0,0,0
 ,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,
 
@@ -408,7 +408,7 @@ Battlemap_04,Mon_04,22,-1,-1,-1,,,,,
 Battlemap_05,Mon_02,26,-1,-1,-1,"Cinder*1, Blob*1",1,60,30,10
 Battlemap_05,Mon_06,23,-1,-1,-1,,,,,
 Battlemap_06,Mon_10,22,-1,-1,-1,Nocturne*1,1,60,30,10
-Battlemap_07,Mon_12,27,-1,-1,-1,Elise*1,1,60,30,10
+Battlemap_07,Mon_12,27,-1,-1,-1,Elise*1,0,60,30,10
 
 
 

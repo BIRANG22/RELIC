@@ -24,11 +24,17 @@ public sealed class PositionStageSelectController : MonoBehaviour
 
     private void OnMouseUpAsButton()
     {
+        if (LobbyPositionModalInputBlocker.IsBlocked)
+            return;
+
         OpenStageSelect();
     }
 
     public void OpenStageSelect()
     {
+        if (LobbyPositionModalInputBlocker.IsBlocked)
+            return;
+
         EnsureWorldSpriteCollider();
 
         if (!ResolveReferences())
