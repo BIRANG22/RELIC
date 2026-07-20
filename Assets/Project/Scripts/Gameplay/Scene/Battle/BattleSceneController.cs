@@ -62,6 +62,7 @@ public class BattleSceneController : MonoBehaviour
     private bool hasRoomPanelAutoCloseState;
     private bool lastAnyRoomActiveForPanelAutoClose;
     private GameObject lastActiveRoomForPanelAutoClose;
+    private readonly BattleRoomIntroLoadGate battleRoomIntroLoadGate = new();
 
     private void Awake()
     {
@@ -85,6 +86,17 @@ public class BattleSceneController : MonoBehaviour
         lastActiveRoomLastFrame = FindActiveRoomObject();
         wasAnyRoomActiveLastFrame = lastActiveRoomLastFrame != null;
         isStarted = true;
+    }
+
+    private void OnDisable()
+    {
+        CancelPendingBattleRoomIntro();
+    }
+
+    private void OnEnable()
+    {
+        if (isStarted && battleRoom != null && battleRoom.activeInHierarchy)
+            RequestBattleRoomLoadOnce();
     }
 
     private void LateUpdate()
@@ -613,6 +625,23 @@ public class BattleSceneController : MonoBehaviour
         if (battleRoom == null)
             return;
 
+        CancelPendingBattleRoomIntro();
+
+        IBattleRoomIntroSequence introSequence =
+            BattleRoomIntroSequenceUtility.FindFirst(battleRoom);
+        battleRoomIntroLoadGate.Request(introSequence, LoadBattleRoomNow);
+    }
+
+    private void CancelPendingBattleRoomIntro()
+    {
+        battleRoomIntroLoadGate.Cancel();
+    }
+
+    private void LoadBattleRoomNow()
+    {
+        if (battleRoom == null || !battleRoom.activeInHierarchy)
+            return;
+
         BattleRoomLoader loader = battleRoom.GetComponentInChildren<BattleRoomLoader>(true);
 
         if (loader == null)
@@ -626,6 +655,7 @@ public class BattleSceneController : MonoBehaviour
 
     private void CloseAllRooms()
     {
+        CancelPendingBattleRoomIntro();
         SetBattleOnlyTabActive(false);
         CloseInventoryAndBagPanelsImmediate();
 
