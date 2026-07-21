@@ -18412,16 +18412,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8590e0351265a734fbeda7d27c2ac8aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  snapPoints:
-  - {fileID: 2009317972}
-  - {fileID: 1809746444}
-  - {fileID: 1928741817}
-  startIndex: 1
   dragSpeed: 1
   invertDrag: 1
   blockDragOverUI: 1
-  snapSmoothTime: 0.25
-  snapStopDistance: 0.01
+  minimumX: -12.5
+  maximumX: 11
 --- !u!1 &643678573
 GameObject:
   m_ObjectHideFlags: 0
