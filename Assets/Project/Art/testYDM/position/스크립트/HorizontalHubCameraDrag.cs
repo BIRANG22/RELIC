@@ -4,67 +4,36 @@ using UnityEngine.EventSystems;
 [RequireComponent(typeof(Camera))]
 public class HorizontalHubCameraDrag : MonoBehaviour
 {
-    [Header("½º³À À§Ä¡")]
-    [Tooltip("¿ŞÂÊºÎÅÍ ³óÀå, Áß¾Ó, °øÀå ¼ø¼­·Î µî·Ï")]
-    [SerializeField] private Transform[] snapPoints;
-
-    [Tooltip("°ÔÀÓ ½ÃÀÛ ½Ã À§Ä¡. ³óÀå 0, Áß¾Ó 1, °øÀå 2")]
-    [SerializeField] private int startIndex = 1;
-
-    [Header("µå·¡±×")]
+    [Header("ë“œë˜ê·¸")]
     [SerializeField] private float dragSpeed = 1f;
 
-    [Tooltip("Ã¼Å©ÇÏ¸é ¸¶¿ì½º¸¦ ¿òÁ÷ÀÌ´Â ¹æÇâ°ú ¹İ´ë·Î Ä«¸Ş¶ó°¡ ÀÌµ¿")]
+    [Tooltip("ì²´í¬í•˜ë©´ ë§ˆìš°ìŠ¤ë¥¼ ì›€ì§ì´ëŠ” ë°©í–¥ê³¼ ë°˜ëŒ€ë¡œ ì¹´ë©”ë¼ê°€ ì´ë™")]
     [SerializeField] private bool invertDrag = true;
 
-    [Tooltip("UI À§¿¡¼­ Å¬¸¯ÇßÀ» ¶§ Ä«¸Ş¶ó µå·¡±×¸¦ ¸·À½")]
+    [Tooltip("UI ìœ„ì—ì„œ í´ë¦­í–ˆì„ ë•Œ ì¹´ë©”ë¼ ë“œë˜ê·¸ë¥¼ ë§‰ìŒ")]
     [SerializeField] private bool blockDragOverUI = true;
 
-    [Header("ÀÚµ¿ ½º³À")]
-    [SerializeField] private float snapSmoothTime = 0.25f;
-    [SerializeField] private float snapStopDistance = 0.01f;
+    [Header("ì´ë™ ë²”ìœ„")]
+    [SerializeField] private float minimumX = -12.5f;
+    [SerializeField] private float maximumX = 11f;
 
     private Camera targetCamera;
-
     private bool isDragging;
     private Vector3 previousMousePosition;
-
-    private float targetX;
-    private float snapVelocity;
-
-    private int currentIndex;
 
     private void Awake()
     {
         targetCamera = GetComponent<Camera>();
     }
 
-    private void Start()
-    {
-        if (snapPoints == null || snapPoints.Length == 0)
-            return;
-
-        currentIndex = Mathf.Clamp(startIndex, 0, snapPoints.Length - 1);
-        targetX = snapPoints[currentIndex].position.x;
-
-        SetCameraX(targetX);
-    }
-
     private void OnDisable()
     {
         isDragging = false;
-        snapVelocity = 0f;
     }
 
     private void Update()
     {
-        if (snapPoints == null || snapPoints.Length == 0)
-            return;
-
         HandleMouseInput();
-
-        if (!isDragging)
-            UpdateSnapMovement();
     }
 
     private void HandleMouseInput()
@@ -79,7 +48,6 @@ public class HorizontalHubCameraDrag : MonoBehaviour
             }
 
             isDragging = true;
-            snapVelocity = 0f;
             previousMousePosition = Input.mousePosition;
         }
 
@@ -88,7 +56,7 @@ public class HorizontalHubCameraDrag : MonoBehaviour
             Vector3 currentMousePosition = Input.mousePosition;
             float mouseDeltaX = currentMousePosition.x - previousMousePosition.x;
 
-            // È­¸é ÇÈ¼¿ ÀÌµ¿·®À» ¿ùµå ÁÂÇ¥ ÀÌµ¿·®À¸·Î º¯È¯
+            // í™”ë©´ í”½ì…€ ì´ë™ëŸ‰ì„ ì›”ë“œ ì¢Œí‘œ ì´ë™ëŸ‰ìœ¼ë¡œ ë³€í™˜
             float worldUnitsPerPixel =
                 (targetCamera.orthographicSize * 2f) / Screen.height;
 
@@ -98,62 +66,14 @@ public class HorizontalHubCameraDrag : MonoBehaviour
                 moveAmount *= -1f;
 
             float newX = transform.position.x + moveAmount;
-            newX = Mathf.Clamp(newX, GetMinimumX(), GetMaximumX());
+            newX = Mathf.Clamp(newX, minimumX, maximumX);
 
             SetCameraX(newX);
-
             previousMousePosition = currentMousePosition;
         }
 
         if (isDragging && Input.GetMouseButtonUp(0))
-        {
             isDragging = false;
-            SelectNearestSnapPoint();
-        }
-    }
-
-    private void SelectNearestSnapPoint()
-    {
-        float currentX = transform.position.x;
-        float nearestDistance = float.MaxValue;
-        int nearestIndex = 0;
-
-        for (int i = 0; i < snapPoints.Length; i++)
-        {
-            if (snapPoints[i] == null)
-                continue;
-
-            float distance = Mathf.Abs(currentX - snapPoints[i].position.x);
-
-            if (distance < nearestDistance)
-            {
-                nearestDistance = distance;
-                nearestIndex = i;
-            }
-        }
-
-        currentIndex = nearestIndex;
-        targetX = snapPoints[currentIndex].position.x;
-    }
-
-    private void UpdateSnapMovement()
-    {
-        float currentX = transform.position.x;
-
-        float newX = Mathf.SmoothDamp(
-            currentX,
-            targetX,
-            ref snapVelocity,
-            snapSmoothTime
-        );
-
-        if (Mathf.Abs(newX - targetX) <= snapStopDistance)
-        {
-            newX = targetX;
-            snapVelocity = 0f;
-        }
-
-        SetCameraX(newX);
     }
 
     private void SetCameraX(float x)
@@ -161,41 +81,5 @@ public class HorizontalHubCameraDrag : MonoBehaviour
         Vector3 position = transform.position;
         position.x = x;
         transform.position = position;
-    }
-
-    private float GetMinimumX()
-    {
-        float minimum = float.MaxValue;
-
-        foreach (Transform point in snapPoints)
-        {
-            if (point != null)
-                minimum = Mathf.Min(minimum, point.position.x);
-        }
-
-        return minimum;
-    }
-
-    private float GetMaximumX()
-    {
-        float maximum = float.MinValue;
-
-        foreach (Transform point in snapPoints)
-        {
-            if (point != null)
-                maximum = Mathf.Max(maximum, point.position.x);
-        }
-
-        return maximum;
-    }
-
-    public void MoveToArea(int index)
-    {
-        if (snapPoints == null || snapPoints.Length == 0)
-            return;
-
-        currentIndex = Mathf.Clamp(index, 0, snapPoints.Length - 1);
-        targetX = snapPoints[currentIndex].position.x;
-        isDragging = false;
     }
 }
