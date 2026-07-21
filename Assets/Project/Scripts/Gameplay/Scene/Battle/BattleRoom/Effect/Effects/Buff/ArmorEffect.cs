@@ -7,27 +7,29 @@ public class ArmorEffect : BattleEffectBase
         if (context == null)
             return;
 
+        int value = BattleEffectUtility.GetRepeatedValue(context);
+
         if (context.PlayerTarget != null)
         {
-            BattleEffectUtility.AddShieldToPlayer(context.PlayerTarget, context.Value);
+            BattleEffectUtility.AddShieldToPlayer(context.PlayerTarget, value);
             return;
         }
 
         if (context.PlayerCaster != null)
         {
-            BattleEffectUtility.AddShieldToPlayer(context.PlayerCaster, context.Value);
+            BattleEffectUtility.AddShieldToPlayer(context.PlayerCaster, value);
             return;
         }
 
         if (context.MonsterTarget != null)
         {
-            BattleEffectUtility.AddShieldToMonster(context.MonsterTarget, context.Value);
+            BattleEffectUtility.AddShieldToMonster(context.MonsterTarget, value);
             return;
         }
 
         if (context.MonsterCaster != null)
         {
-            BattleEffectUtility.AddShieldToMonster(context.MonsterCaster, context.Value);
+            BattleEffectUtility.AddShieldToMonster(context.MonsterCaster, value);
         }
     }
 }

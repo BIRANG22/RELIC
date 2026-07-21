@@ -43,3 +43,21 @@ MonoBehaviour:
     Icon: {fileID: 21300000, guid: 01261e3bf0e77994d8f7976d499f2ab8, type: 3}
   - EffectId: E_Flank
     Icon: {fileID: 21300000, guid: 7396eb8e948397547b324805fe9a1d71, type: 3}
+  - EffectId: E_Move_First_Attack_Power
+    Icon: {fileID: 21300000, guid: 63f5284398de7d643b5e6f0fc7193fd1, type: 3}
+  - EffectId: E_Poison_Apply_Double
+    Icon: {fileID: 21300000, guid: 7a24377781daf714c86a076c75d03b38, type: 3}
+  - EffectId: E_Bleeding_Apply_Double
+    Icon: {fileID: 21300000, guid: 9dcdaf1a09bcf0d4b856f95bd215fcb0, type: 3}
+  - EffectId: E_Max_HP_Up
+    Icon: {fileID: 21300000, guid: 7700a3c836910b743aa2f42fe6bba348, type: 3}
+  - EffectId: E_Kill_Heal
+    Icon: {fileID: 21300000, guid: 89d182913c0f168428fd89f334bb31f4, type: 3}
+  - EffectId: E_Skill_Resource_Gain_Up
+    Icon: {fileID: 21300000, guid: 591a5173ec98cc24a9eba5acf4b7da9a, type: 3}
+  - EffectId: E_Buff_Apply_Double
+    Icon: {fileID: 21300000, guid: c9792c02f9d11f84dab646190995677a, type: 3}
+  - EffectId: E_Low_HP_Power
+    Icon: {fileID: 21300000, guid: 4be84d2887890714a92259dc51287315, type: 3}
+  - EffectId: E_Move_Point_Up
+    Icon: {fileID: 21300000, guid: 8283ad43f1939a74ca7d89dcd54229e7, type: 3}

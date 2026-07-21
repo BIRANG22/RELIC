@@ -21,6 +21,16 @@ public class LobbyViewStateControllerTests
     }
 
     [Test]
+    public void Start_InitializesLobbySceneInPositionState()
+    {
+        using TestContext context = new();
+
+        InvokeNonPublic(context.Controller, "Start");
+
+        context.AssertState(LobbyViewState.Position, false, false, false, false, false, false, true);
+    }
+
+    [Test]
     public void TogglePosition_TransitionsLobbyToPositionAndBackToLobby()
     {
         using TestContext context = new();
@@ -87,6 +97,15 @@ public class LobbyViewStateControllerTests
         return (T)target.GetType()
             .GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic)
             .GetValue(target);
+    }
+
+    private static void InvokeNonPublic(object target, string methodName)
+    {
+        MethodInfo method = target.GetType()
+            .GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic);
+
+        Assert.That(method, Is.Not.Null, $"Missing method: {methodName}");
+        method.Invoke(target, null);
     }
 
     private sealed class TestContext : System.IDisposable

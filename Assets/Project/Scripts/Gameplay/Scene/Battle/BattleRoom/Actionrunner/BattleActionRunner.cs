@@ -488,7 +488,7 @@ public class BattleActionRunner
 
         if (CoroutineHost.Instance == null)
         {
-            Debug.LogError($"[BattleActionRunner] CoroutineHost 없음 / Action:{actionRoutine.Label}");
+            Debug.LogError($"[BattleActionRunner] CoroutineHost ?�음 / Action:{actionRoutine.Label}");
             yield break;
         }
 
@@ -530,7 +530,7 @@ public class BattleActionRunner
 
         if (CoroutineHost.Instance == null)
         {
-            Debug.LogError("[BattleActionRunner] CoroutineHost 없음");
+            Debug.LogError("[BattleActionRunner] CoroutineHost ?�음");
             yield break;
         }
 
@@ -764,8 +764,8 @@ public class BattleActionRunner
         if (controller == null || !controller.TryPlaceEffect(targetGridIndex, ResidueGridEffectId))
             return;
 
-        // 머크의 투사체 피해와 잔여물 피해는 별도의 타격으로 처리합니다.
-        // 목표 그리드에 캐릭터가 있다면 잔여물 생성 직후 GR_Residue 피해를 따로 적용합니다.
+        // 머크???�사�??�해?� ?�여�??�해??별도???�격으�?처리?�니??
+        // 목표 그리?�에 캐릭?��? ?�다�??�여�??�성 직후 GR_Residue ?�해�??�로 ?�용?�니??
         BattleCharacter character = FindPlayerAtGrid(targetGridIndex);
 
         if (character != null)
@@ -958,6 +958,7 @@ public class BattleActionRunner
             );
 
             character.SetGridIndex(targetGridIndex);
+            BattleEquipmentEffectService.MarkMovedBeforeNextAttack(character.RuntimeData);
             UpdatePartyGridIndex(command.CharacterId, targetGridIndex);
             ApplyGridEffectsToPlayer(enteredGridIndices, character);
             statusEffectService.ApplyBleedDamageToPlayerOnMove(character);
@@ -1037,6 +1038,7 @@ public class BattleActionRunner
             );
 
             character.SetGridIndex(targetGridIndex);
+            BattleEquipmentEffectService.MarkMovedBeforeNextAttack(character.RuntimeData);
             UpdatePartyGridIndex(command.CharacterId, targetGridIndex);
             ApplyGridEffectsToPlayer(enteredGridIndices, character);
             currentGridIndex = targetGridIndex;
@@ -1548,6 +1550,9 @@ public class BattleActionRunner
         }
         finally
         {
+            BattleEquipmentEffectService.ClearMoveFirstAttackPowerIfAttack(
+                attacker != null ? attacker.RuntimeData : command.UserRuntime,
+                command.SkillData);
             ClearExecutionRange();
         }
     }
@@ -1638,7 +1643,7 @@ public class BattleActionRunner
 
         if (command.SkillData.EffectEntries == null || command.SkillData.EffectEntries.Count == 0)
         {
-            Debug.LogWarning($"[PlayerSkillEffect] EffectEntries 없음 / Skill:{command.SkillData.SkillId}");
+            Debug.LogWarning($"[PlayerSkillEffect] EffectEntries ?�음 / Skill:{command.SkillData.SkillId}");
 
             if (attackerAnimator != null)
                 attackerAnimator.PlaySkillAction(command.SkillData);
@@ -1715,8 +1720,8 @@ public class BattleActionRunner
         int hitCount = Mathf.Max(1, count);
         bool isMultiHit = hitCount > 1;
 
-        // 다단 공격은 타격 횟수만큼 서로 다른 공격 모션을 빠르게 이어서 재생한다.
-        // 1회 공격보다 각 모션의 재생 속도를 높여 전체 행동 시간이 과도하게 길어지지 않도록 한다.
+        // ?�단 공격?� ?��??�수만큼 ?�로 ?�른 공격 모션??빠르�??�어???�생?�다.
+        // 1??공격보다 �?모션???�생 ?�도�??�여 ?�체 ?�동 ?�간??과도?�게 길어지지 ?�도�??�다.
         if (isMultiHit && attackerAnimator != null)
             attackerAnimator.SetPlaybackSpeed(MultiHitAnimationSpeed);
 
@@ -1915,7 +1920,7 @@ public class BattleActionRunner
 
         if (command.SkillData.EffectEntries == null || command.SkillData.EffectEntries.Count == 0)
         {
-            Debug.LogWarning($"[PlayerSkillEffect] EffectEntries 없음 / Skill:{command.SkillData.SkillId}");
+            Debug.LogWarning($"[PlayerSkillEffect] EffectEntries ?�음 / Skill:{command.SkillData.SkillId}");
             return;
         }
 
@@ -2036,7 +2041,7 @@ public class BattleActionRunner
         catch (System.Exception e)
         {
             Debug.LogError(
-                $"[PlayerSkillEffect] Effect 실행 중 에러 / " +
+                $"[PlayerSkillEffect] Effect ?�행 �??�러 / " +
                 $"Skill:{skillId} / Effect:{effectId}"
             );
             Debug.LogException(e);
@@ -2085,7 +2090,7 @@ public class BattleActionRunner
         if (command == null || command.SkillData == null)
             yield break;
 
-        // 포탈 이동은 스킬 데이터의 타임라인 표기와 관계없이 이동 처리로 보냅니다.
+        // ?�탈 ?�동?� ?�킬 ?�이?�의 ?�?�라???�기?� 관계없???�동 처리�?보냅?�다.
         if (IsNocturnPortalMove(command))
         {
             yield return ExecuteMonsterMove(command);
@@ -2114,7 +2119,7 @@ public class BattleActionRunner
 
         Vector2Int moveOffset = GetMonsterMoveOffset(command);
 
-        // 포탈 이동은 예약된 절대 목적지를 사용할 수 있으므로 일반 이동의 0 오프셋 검사보다 먼저 처리합니다.
+        // ?�탈 ?�동?� ?�약???��? 목적지�??�용?????�으므�??�반 ?�동??0 ?�프??검?�보??먼�? 처리?�니??
         if (IsNocturnPortalMove(command))
         {
             ShowExecutionRange(BuildMonsterMoveExecutionRange(monster, command));
@@ -2144,8 +2149,8 @@ public class BattleActionRunner
             if (facing != null)
                 facing.FaceByMoveOffset(moveOffset);
 
-            // 첫 이동 칸이 이미 다른 유닛에게 점유되어 있다면 한 칸도 이동하지 않고 즉시 충돌합니다.
-            // 이동자와 해당 칸을 점유한 유닛 모두 충돌 고정 피해를 받습니다.
+            // �??�동 칸이 ?��? ?�른 ?�닛?�게 ?�유?�어 ?�다�???칸도 ?�동?��? ?�고 즉시 충돌?�니??
+            // ?�동?��? ?�당 칸을 ?�유???�닛 모두 충돌 고정 ?�해�?받습?�다.
             if (TryHandleImmediateMonsterUnitCollision(monster, moveOffset))
             {
                 hudService.RefreshHUDs();
@@ -2187,8 +2192,8 @@ public class BattleActionRunner
 
             monster.MoveOccupiedCells(moveResolution.ActualOffset, gridManager);
 
-            // 블롭은 이동을 완료한 뒤 이동 전 그리드에 잔여물을 남깁니다.
-            // 잔여물의 피해는 이동 공격과 별개로 GridEffect 데이터에 따라 적용됩니다.
+            // 블롭?� ?�동???�료?????�동 ??그리?�에 ?�여물을 ?�깁?�다.
+            // ?�여물의 ?�해???�동 공격�?별개�?GridEffect ?�이?�에 ?�라 ?�용?�니??
             if (monster.RuntimeData != null &&
                 string.Equals(monster.RuntimeData.MonsterId, BlobMonsterId, System.StringComparison.Ordinal))
             {
@@ -2267,9 +2272,9 @@ public class BattleActionRunner
         if (monster == null || gridManager == null)
             yield break;
 
-        // 포탈은 예약된 절대 목적지를 우선 사용합니다.
-        // 앞선 행동으로 현재 위치가 달라지면 예약 당시의 상대 오프셋이 0이 될 수도 있으므로,
-        // 절대 목적지가 있는 명령은 MoveOffset이 0이어도 취소하지 않습니다.
+        // ?�탈?� ?�약???��? 목적지�??�선 ?�용?�니??
+        // ?�선 ?�동?�로 ?�재 ?�치가 ?�라지�??�약 ?�시???��? ?�프?�이 0?????�도 ?�으므�?
+        // ?��? 목적지가 ?�는 명령?� MoveOffset??0?�어??취소?��? ?�습?�다.
         bool hasReservedDestination = command != null && command.RangeOriginGridIndex >= 0;
 
         if (!hasReservedDestination && moveOffset == Vector2Int.zero)
@@ -2282,8 +2287,8 @@ public class BattleActionRunner
 
         Vector2Int currentCoord = gridManager.IndexToCoord(currentGridIndex);
 
-        // 예약 당시의 절대 목적지가 있으면 그것을 우선 사용합니다.
-        // 앞선 이동이나 그랩 때문에 녹턴의 현재 위치가 달라져도 포탈 목적지가 틀어지지 않습니다.
+        // ?�약 ?�시???��? 목적지가 ?�으�?그것???�선 ?�용?�니??
+        // ?�선 ?�동?�나 그랩 ?�문???�턴???�재 ?�치가 ?�라?�도 ?�탈 목적지가 ?�?��?지 ?�습?�다.
         int destinationGridIndex = hasReservedDestination
             ? command.RangeOriginGridIndex
             : -1;
@@ -2305,8 +2310,8 @@ public class BattleActionRunner
             destinationGridIndex = gridManager.CoordToIndex(destinationCoord);
         }
 
-        // 실행 직전까지 목적지 칸이 비어 있어야 합니다.
-        // 캐릭터나 다른 몬스터가 해당 칸을 차지했다면 포탈 이동을 취소합니다.
+        // ?�행 직전까�? 목적지 칸이 비어 ?�어???�니??
+        // 캐릭?�나 ?�른 몬스?��? ?�당 칸을 차�??�다�??�탈 ?�동??취소?�니??
         if (BattleOccupancyService.IsOccupiedByAnyUnit(destinationGridIndex, null, monster))
         {
             MarkNocturnPortalFailed(command);
@@ -2324,10 +2329,10 @@ public class BattleActionRunner
             yield break;
         }
 
-        // 목적지 검사를 통과했으므로 이번 포탈은 성공 상태로 기록합니다.
+        // 목적지 검?��? ?�과?�으므�??�번 ?�탈?� ?�공 ?�태�?기록?�니??
         ClearNocturnPortalFailed(command);
 
-        // 이동 연출이 시작되는 순간 목적지 예고 이미지를 제거합니다.
+        // ?�동 ?�출???�작?�는 ?�간 목적지 ?�고 ?��?지�??�거?�니??
         HideNocturnPortalDestinationIndicator(command);
 
         BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
@@ -2337,8 +2342,8 @@ public class BattleActionRunner
 
         Vector3 destinationPosition = gridManager.GetWorldPositionByIndex(destinationGridIndex);
 
-        // 포탈 이동도 이동 상태임을 보여주기 위해 Move 애니메이션을 재생합니다.
-        // 위치 보간은 사용하지 않고 목적지에는 즉시 나타납니다.
+        // ?�탈 ?�동???�동 ?�태?�을 보여주기 ?�해 Move ?�니메이?�을 ?�생?�니??
+        // ?�치 보간?� ?�용?��? ?�고 목적지?�는 즉시 ?��??�니??
         BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
 
         if (animator != null)
@@ -2347,7 +2352,7 @@ public class BattleActionRunner
             yield return new WaitForSeconds(MoveAnimationDuration);
         }
 
-        // 논리 그리드와 화면 위치를 함께 갱신해 실제 점유 위치도 후방 칸으로 이동시킵니다.
+        // ?�리 그리?��? ?�면 ?�치�??�께 갱신???�제 ?�유 ?�치???�방 칸으�??�동?�킵?�다.
         monster.MoveOccupiedCells(moveOffset, gridManager);
         monster.transform.position = destinationPosition;
 
@@ -2590,7 +2595,7 @@ public class BattleActionRunner
             Vector2Int occupiedCoord = gridManager.IndexToCoord(monster.OccupiedGridIndices[i]);
             Vector2Int nextCoord = occupiedCoord + firstStep;
 
-            // 맵 외곽은 충돌 피해 대상이 아닙니다.
+            // �??�곽?� 충돌 ?�해 ?�?�이 ?�닙?�다.
             if (!gridManager.IsValidCoord(nextCoord))
                 return false;
 
@@ -2670,8 +2675,8 @@ public class BattleActionRunner
         if (monster == null)
             yield break;
 
-        // 직전 포탈이 점유 또는 이동 불가로 취소됐다면 예약된 포탈 위치를 공격 원점으로 사용하지 않습니다.
-        // 녹턴의 실제 현재 위치를 원점으로 바꾸고, 현재 위치에서 실제 대상을 향해 방향을 다시 정합니다.
+        // 직전 ?�탈???�유 ?�는 ?�동 불�?�?취소?�다�??�약???�탈 ?�치�?공격 ?�점?�로 ?�용?��? ?�습?�다.
+        // ?�턴???�제 ?�재 ?�치�??�점?�로 바꾸�? ?�재 ?�치?�서 ?�제 ?�?�을 ?�해 방향???�시 ?�합?�다.
         if (ConsumeNocturnPortalFailure(command))
         {
             command.SetRangeOriginGridIndex(monster.MainGridIndex);
@@ -2696,8 +2701,8 @@ public class BattleActionRunner
 
         BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
 
-        // AI가 공격 방향을 지정한 경우 예약된 방향을 실행 시점에도 그대로 사용합니다.
-        // 범위는 오른쪽인데 애니메이션만 왼쪽을 향하는 현상을 방지합니다.
+        // AI가 공격 방향??지?�한 경우 ?�약??방향???�행 ?�점?�도 그�?�??�용?�니??
+        // 범위???�른쪽인???�니메이?�만 ?�쪽???�하???�상??방�??�니??
         if (command.HasForcedDirection)
         {
             if (facing != null)
@@ -2707,15 +2712,15 @@ public class BattleActionRunner
                 monster.RuntimeData.Direction = command.ForcedDirection;
         }
 
-        // 확정된 방향을 기준으로 공격 범위를 계산합니다.
+        // ?�정??방향??기�??�로 공격 범위�?계산?�니??
         RecalculateMonsterSkillRangeAtExecution(monster, command);
 
         BattleCharacter firstPlayerTarget = FindFirstPlayerTarget(command);
 
         BattleUnitAnimator monsterAnimator = monster.GetComponent<BattleUnitAnimator>();
 
-        // 강제 방향이 없는 일반 AI 행동만 실제 명중 대상 쪽으로 회전합니다.
-        // 포탈 후속 공격처럼 방향이 예약된 행동은 위에서 지정한 방향을 유지합니다.
+        // 강제 방향???�는 ?�반 AI ?�동�??�제 명중 ?�??쪽으�??�전?�니??
+        // ?�탈 ?�속 공격처럼 방향???�약???�동?� ?�에??지?�한 방향???��??�니??
         if (!command.HasForcedDirection && firstPlayerTarget != null && facing != null)
         {
             facing.FaceByWorldTarget(firstPlayerTarget.transform.position);
@@ -2757,13 +2762,13 @@ public class BattleActionRunner
                     yield return new WaitForSeconds(ActionDelay);
             }
 
-            // 머크의 투사체는 명중 여부와 관계없이 예약된 목표 그리드에 잔여물을 생성합니다.
-            // 투사체 피해와 잔여물 피해는 분리하며, 생성 순간에는 잔여물 피해를 즉시 적용하지 않습니다.
+            // 머크???�사체는 명중 ?��??� 관계없???�약??목표 그리?�에 ?�여물을 ?�성?�니??
+            // ?�사�??�해?� ?�여�??�해??분리?�며, ?�성 ?�간?�는 ?�여�??�해�?즉시 ?�용?��? ?�습?�다.
             if (string.Equals(command.SkillData.SkillId, MuckProjectileSkillId, System.StringComparison.Ordinal))
                 TryPlaceMuckProjectileResidue(command);
 
-            // 신더의 자폭은 공격 효과 적용이 끝난 뒤 자신을 제거합니다.
-            // 일반 처치가 아니므로 렘넌트, 고유 아이템, 유물 등의 사망 보상은 수집하지 않습니다.
+            // ?�더???�폭?� 공격 ?�과 ?�용???�난 ???�신???�거?�니??
+            // ?�반 처치가 ?�니므�??�넌?? 고유 ?�이?? ?�물 ?�의 ?�망 보상?� ?�집?��? ?�습?�다.
             if (monster.RuntimeData != null &&
                 monster.RuntimeData.MonsterId == "Mon_06" &&
                 command.SkillData.SkillId == "S_Monster_14")
@@ -2797,8 +2802,8 @@ public class BattleActionRunner
             bool hasAliveTarget = HasAliveMonsterSkillTarget(monster, command);
             bool canPlayProjectileVfx = ShouldPlayMonsterProjectileVfx(monster, command, monsterAnimator);
 
-            // 명중 대상이 없어도 몬스터의 공격 모션은 반드시 재생합니다.
-            // 대상 부재는 피해 적용만 건너뛰며, 공격 시도 자체를 취소하지 않습니다.
+            // 명중 ?�?�이 ?�어??몬스?�의 공격 모션?� 반드???�생?�니??
+            // ?�??부?�는 ?�해 ?�용�?건너?�며, 공격 ?�도 ?�체�?취소?��? ?�습?�다.
             if (monsterAnimator != null)
                 monsterAnimator.PlayMonsterSkillAction(command);
 
@@ -3379,13 +3384,13 @@ public class BattleActionRunner
 
             if (IsMonsterDashOutsideGrid(monster, testOffset))
             {
-                // 그리드 외곽은 충돌 대상이 아니므로, 맵 밖으로 나가지 않고 멈추기만 합니다.
+                // 그리???�곽?� 충돌 ?�?�이 ?�니므�? �?밖으�??��?지 ?�고 멈추기만 ?�니??
                 break;
             }
 
             if (!CanMonsterDashToOffset(monster, testOffset, out BattleCharacter blockingPlayer))
             {
-                // 장애물이나 다른 유닛에 막힌 경우에만 충돌로 처리합니다.
+                // ?�애물이???�른 ?�닛??막힌 경우?�만 충돌�?처리?�니??
                 wasBlockedByCollision = true;
                 break;
             }

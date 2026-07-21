@@ -42,6 +42,7 @@ namespace Relic.Gameplay.Data
             currentRun.AcquiredSkillIds ??= new List<string>();
             currentRun.CharacterStatistics ??= new List<BattleRunCharacterStatisticsData>();
             currentRun.LobbyLoadoutSnapshots ??= new List<BattleLobbyLoadoutSnapshotData>();
+            CultureTankBattleStartEffectService.Normalize(currentRun);
 
             return currentRun;
         }

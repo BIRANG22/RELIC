@@ -9,6 +9,15 @@ public static class BattleEquipmentEffectService
     private const string MoveSkillLevelOneId = "S_Move_1";
     private const string MoveSkillLevelTwoId = "S_Move_2";
     private const string Relic06Turn2ArmorAppliedId = "Relic_06_Turn2Armor";
+    private const string MoveFirstAttackPowerEffectId = "E_Move_First_Attack_Power";
+    private const string PoisonApplyDoubleEffectId = "E_Poison_Apply_Double";
+    private const string BleedingApplyDoubleEffectId = "E_Bleeding_Apply_Double";
+    private const string MaxHpUpEffectId = "E_Max_HP_Up";
+    private const string KillHealEffectId = "E_Kill_Heal";
+    private const string SkillResourceGainUpEffectId = "E_Skill_Resource_Gain_Up";
+    private const string BuffApplyDoubleEffectId = "E_Buff_Apply_Double";
+    private const string MovePointUpEffectId = "E_Move_Point_Up";
+    private const string MoveFirstAttackReadyStateId = "State_MoveFirstAttackPowerReady";
 
     public static void ApplyBattleStartEffects(
         CharacterRuntimeData runtime,
@@ -30,7 +39,7 @@ public static class BattleEquipmentEffectService
         bool wasDead = runtime.CurrentHP <= 0;
         bool shouldFillHP = !wasDead && runtime.CurrentHP >= previousMaxHP;
 
-        runtime.MaxHP = Mathf.Max(1, baseMaxHP + GetMaxHPBonus(runtime));
+        runtime.MaxHP = Mathf.Max(1, baseMaxHP + GetMaxHPBonus(runtime, baseMaxHP));
 
         if (wasDead)
             runtime.CurrentHP = 1;
@@ -74,7 +83,7 @@ public static class BattleEquipmentEffectService
             ? Mathf.Max(1, masterData.MaxHP)
             : runtime != null ? Mathf.Max(1, runtime.MaxHP) : 1;
 
-        return Mathf.Max(1, baseMaxHP + GetMaxHPBonus(runtime));
+        return Mathf.Max(1, baseMaxHP + GetMaxHPBonus(runtime, baseMaxHP));
     }
 
     public static int GetEffectiveMaxCost(
@@ -110,6 +119,50 @@ public static class BattleEquipmentEffectService
             runtime.AppliedBattleEquipmentEffectIds = new List<string>();
         else
             runtime.AppliedBattleEquipmentEffectIds.Clear();
+    }
+
+    public static void MarkMovedBeforeNextAttack(CharacterRuntimeData runtime)
+    {
+        if (GetStatusStack(runtime, MoveFirstAttackPowerEffectId) <= 0)
+            return;
+
+        TryMarkBattleEffectApplied(runtime, MoveFirstAttackReadyStateId);
+    }
+
+    public static bool IsMoveFirstAttackPowerReady(CharacterRuntimeData runtime)
+    {
+        if (GetStatusStack(runtime, MoveFirstAttackPowerEffectId) <= 0)
+            return false;
+
+        return HasBattleEffectApplied(runtime, MoveFirstAttackReadyStateId);
+    }
+
+    public static void ClearMoveFirstAttackPowerIfAttack(
+        CharacterRuntimeData runtime,
+        SkillMasterData skillData)
+    {
+        if (runtime == null || skillData == null)
+            return;
+
+        if (skillData.SkillType != SkillType.Attack)
+            return;
+
+        RemoveBattleEffectApplied(runtime, MoveFirstAttackReadyStateId);
+    }
+
+    public static int GetKillHealAmount(CharacterRuntimeData runtime)
+    {
+        int stack = GetStatusStack(runtime, KillHealEffectId);
+
+        if (runtime == null || stack <= 0)
+            return 0;
+
+        int maxHP = Mathf.Max(0, runtime.MaxHP);
+
+        if (maxHP <= 0)
+            return 0;
+
+        return Mathf.Max(1, Mathf.CeilToInt(maxHP * 0.05f * stack));
     }
 
     public static void ApplyPlayerTurnStartEffects(
@@ -274,6 +327,21 @@ public static class BattleEquipmentEffectService
         if (entry.EffectId == "E_Armor")
             value = ModifyArmorGain(runtime, value);
 
+        if (entry.EffectId == "E_Poison" &&
+            GetStatusStack(runtime, PoisonApplyDoubleEffectId) > 0)
+        {
+            value *= 2;
+        }
+
+        if (entry.EffectId == "E_Bleed" &&
+            GetStatusStack(runtime, BleedingApplyDoubleEffectId) > 0)
+        {
+            value *= 2;
+        }
+
+        if (ShouldDoubleBuffApplication(runtime, command, entry))
+            value *= 2;
+
         if (IsDamageEffect(entry.EffectId) &&
             IsCharacter(runtime, "Char_02") &&
             HasRune(runtime, "Rune_09"))
@@ -387,7 +455,7 @@ public static class BattleEquipmentEffectService
         return skillData.Category == Category.Move;
     }
 
-    private static int GetMaxHPBonus(CharacterRuntimeData runtime)
+    private static int GetMaxHPBonus(CharacterRuntimeData runtime, int baseMaxHP)
     {
         int bonus = 0;
 
@@ -405,6 +473,10 @@ public static class BattleEquipmentEffectService
 
         if (HasRelic(runtime, "Relic_09"))
             bonus += 5;
+
+        int maxHpUpStack = GetStatusStack(runtime, MaxHpUpEffectId);
+        if (maxHpUpStack > 0 && baseMaxHP > 0)
+            bonus += Mathf.CeilToInt(baseMaxHP * 0.1f * maxHpUpStack);
 
         return bonus;
     }
@@ -430,7 +502,7 @@ public static class BattleEquipmentEffectService
 
     private static int GetCostRecoveryBonus(CharacterRuntimeData runtime)
     {
-        return 0;
+        return GetStatusStack(runtime, SkillResourceGainUpEffectId);
     }
 
     private static int GetMoveValueBonus(CharacterRuntimeData runtime)
@@ -451,6 +523,8 @@ public static class BattleEquipmentEffectService
 
         if (HasRelic(runtime, "Relic_10"))
             bonus += 8;
+
+        bonus += GetStatusStack(runtime, MovePointUpEffectId);
 
         return bonus;
     }
@@ -589,6 +663,23 @@ public static class BattleEquipmentEffectService
         return effectId == "E_Strike" || effectId == "E_Pierce";
     }
 
+    private static bool ShouldDoubleBuffApplication(
+        CharacterRuntimeData runtime,
+        PlayerReservedCommand command,
+        SkillEffectEntry entry)
+    {
+        if (GetStatusStack(runtime, BuffApplyDoubleEffectId) <= 0)
+            return false;
+
+        if (command == null || command.SkillData == null || entry == null)
+            return false;
+
+        if (command.SkillData.SkillType != SkillType.Buff)
+            return false;
+
+        return !IsDamageEffect(entry.EffectId);
+    }
+
     private static bool IsLastTimelineSlot(PlayerReservedCommand command)
     {
         return command != null && command.TimelineSlotIndex == LastTimelineSlotIndex;
@@ -614,6 +705,59 @@ public static class BattleEquipmentEffectService
 
         runtime.AppliedBattleEquipmentEffectIds.Add(effectId);
         return true;
+    }
+
+    private static bool HasBattleEffectApplied(
+        CharacterRuntimeData runtime,
+        string effectId)
+    {
+        if (runtime == null ||
+            runtime.AppliedBattleEquipmentEffectIds == null ||
+            string.IsNullOrWhiteSpace(effectId))
+        {
+            return false;
+        }
+
+        return runtime.AppliedBattleEquipmentEffectIds.Contains(effectId);
+    }
+
+    private static void RemoveBattleEffectApplied(
+        CharacterRuntimeData runtime,
+        string effectId)
+    {
+        if (runtime == null ||
+            runtime.AppliedBattleEquipmentEffectIds == null ||
+            string.IsNullOrWhiteSpace(effectId))
+        {
+            return;
+        }
+
+        runtime.AppliedBattleEquipmentEffectIds.Remove(effectId);
+    }
+
+    private static int GetStatusStack(
+        CharacterRuntimeData runtime,
+        string effectId)
+    {
+        if (runtime == null ||
+            runtime.StatusEffects == null ||
+            string.IsNullOrWhiteSpace(effectId))
+        {
+            return 0;
+        }
+
+        for (int i = 0; i < runtime.StatusEffects.Count; i++)
+        {
+            StatusEffectRuntimeData status = runtime.StatusEffects[i];
+
+            if (status == null)
+                continue;
+
+            if (status.EffectId == effectId)
+                return Mathf.Max(0, status.Stack);
+        }
+
+        return 0;
     }
 
     private static void ReduceFirstPositiveCost(

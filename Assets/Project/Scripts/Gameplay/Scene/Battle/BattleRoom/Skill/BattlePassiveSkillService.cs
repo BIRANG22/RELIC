@@ -66,10 +66,12 @@ public class BattlePassiveSkillService
         int value,
         int count)
     {
+        int appliedValue = BattleEffectUtility.GetRepeatedValue(value, count);
+
         if (effectId == "E_Armor")
         {
             int finalValue =
-                BattleEquipmentEffectService.ModifyPassiveEffectStack(runtime, effectId, value);
+                BattleEquipmentEffectService.ModifyPassiveEffectStack(runtime, effectId, appliedValue);
 
             if (finalValue <= 0)
                 return;
@@ -86,7 +88,7 @@ public class BattlePassiveSkillService
         }
 
         int finalStack =
-            BattleEquipmentEffectService.ModifyPassiveEffectStack(runtime, effectId, value);
+            BattleEquipmentEffectService.ModifyPassiveEffectStack(runtime, effectId, appliedValue);
 
         if (finalStack <= 0)
             return;
@@ -95,7 +97,7 @@ public class BattlePassiveSkillService
         {
             EffectId = effectId,
             Stack = finalStack,
-            TurnCount = count,
+            TurnCount = 1,
             IsPassive = true,
             SourceSkillId = passiveSkill.SkillId
         };
@@ -108,7 +110,7 @@ public class BattlePassiveSkillService
         Debug.Log(
             $"[Passive] Status / Character:{runtime.CharacterId} / " +
             $"Skill:{passiveSkill.SkillId} / Effect:{effectId} / " +
-            $"Stack:{finalStack} / Turn:{count}"
+            $"Stack:{finalStack} / Turn:1"
         );
     }
 

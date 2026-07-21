@@ -151,6 +151,69 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         moveOffset = offset;
         toggleMove = true;
         moveTogetherTargets = System.Array.Empty<RectTransform>();
+        CacheOriginalMovePositions();
+        SyncMoveStateFromCurrentPosition();
+    }
+
+    public bool ControlsMovePanel(RectTransform targetPanel)
+    {
+        return panelToMove != null && panelToMove == targetPanel;
+    }
+
+    public bool IsMovePanelOpen()
+    {
+        if (panelToMove == null)
+            return false;
+
+        SyncMoveStateFromCurrentPosition();
+        return isMoved;
+    }
+
+    public void SetMovePanelOpen(bool open, bool instant = false)
+    {
+        if (panelToMove == null)
+        {
+            Debug.LogWarning("[UIPanelButton] Panel To Move is not assigned.");
+            return;
+        }
+
+        SyncMoveStateFromCurrentPosition();
+
+        Vector2 targetPosition = open
+            ? GetOpenedPosition()
+            : GetClosedPosition();
+
+        if (Vector2.SqrMagnitude(panelToMove.anchoredPosition - targetPosition) < 0.01f)
+        {
+            isMoved = open;
+            return;
+        }
+
+        if (playPanelOpenCloseSound)
+            PlayPanelOpenCloseSound(open);
+        else
+            PlayClickSound();
+
+        ApplyButtonFlip();
+
+        if (moveCoroutine != null)
+        {
+            StopCoroutine(moveCoroutine);
+            moveCoroutine = null;
+        }
+
+        isPlayingEffect = false;
+        isMoved = open;
+
+        if (instant)
+        {
+            ApplyMovePanelPosition(open);
+            FadePanelImageTo(open ? openedPanelAlpha : originalPanelAlpha);
+            return;
+        }
+
+        moveCoroutine = StartCoroutine(MoveRoutine(targetPosition));
+        FadePanelImageTo(open ? openedPanelAlpha : originalPanelAlpha);
     }
 
     private void Awake()
@@ -447,6 +510,34 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         return usesBattlePlayerHudOpenOrigin
             ? position
             : position + moveOffset;
+    }
+
+    private void ApplyMovePanelPosition(bool open)
+    {
+        if (panelToMove == null)
+            return;
+
+        panelToMove.anchoredPosition = open
+            ? GetOpenedPosition()
+            : GetClosedPosition();
+
+        if (moveTogetherTargets != null && originalTogetherPositions != null)
+        {
+            for (int i = 0; i < moveTogetherTargets.Length; i++)
+            {
+                if (moveTogetherTargets[i] == null ||
+                    i >= originalTogetherPositions.Length)
+                {
+                    continue;
+                }
+
+                moveTogetherTargets[i].anchoredPosition = open
+                    ? GetOpenedTogetherPosition(i)
+                    : GetClosedTogetherPosition(i);
+            }
+        }
+
+        isMoved = open;
     }
 
     private void SyncMoveStateFromCurrentPosition()

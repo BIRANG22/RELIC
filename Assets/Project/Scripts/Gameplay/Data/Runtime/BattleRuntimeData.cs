@@ -25,6 +25,7 @@ namespace Relic.Gameplay.Data
 
         // 전투 진입 직전 로비 파티/스킬/룬 세팅 복구용 스냅샷
         public List<BattleLobbyLoadoutSnapshotData> LobbyLoadoutSnapshots = new();
+        public List<CultureTankBattleStartEffectRuntimeData> CultureTankBattleStartEffects = new();
 
         // 진행 상태
         public int CurrentBattleCount;

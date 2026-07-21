@@ -10,6 +10,8 @@ public static class BattleDamageModifierUtility
     private const string VulnerableEffectId = "E_Vulnerable";
     private const string GrudgeEffectId = "E_Grudge";
     private const string FlankEffectId = "E_Flank";
+    private const string MoveFirstAttackPowerEffectId = "E_Move_First_Attack_Power";
+    private const string LowHpPowerEffectId = "E_Low_HP_Power";
     private const string ActiveDamageBoostEffectId = ActiveRelicEffectIds.DamageBoostThisTurn;
     private const string ActiveDamageReductionEffectId = ActiveRelicEffectIds.DamageReductionThisTurn;
 
@@ -18,10 +20,10 @@ public static class BattleDamageModifierUtility
         float damage = Mathf.Max(0, baseDamage);
 
         if (context?.PlayerCaster != null)
-            damage = ApplyAttackerModifiers(damage, context.PlayerCaster.RuntimeData.StatusEffects);
+            damage = ApplyPlayerAttackerModifiers(damage, context.PlayerCaster.RuntimeData);
 
         if (context?.MonsterCaster != null)
-            damage = ApplyAttackerModifiers(damage, context.MonsterCaster.RuntimeData.StatusEffects);
+            damage = ApplyMonsterAttackerModifiers(damage, context.MonsterCaster.RuntimeData);
 
         if (context?.MonsterCaster != null &&
             context.PlayerTarget != null &&
@@ -42,10 +44,10 @@ public static class BattleDamageModifierUtility
         float damage = Mathf.Max(0, baseDamage);
 
         if (context?.PlayerCaster != null)
-            damage = ApplyAttackerModifiers(damage, context.PlayerCaster.RuntimeData.StatusEffects);
+            damage = ApplyPlayerAttackerModifiers(damage, context.PlayerCaster.RuntimeData);
 
         if (context?.MonsterCaster != null)
-            damage = ApplyAttackerModifiers(damage, context.MonsterCaster.RuntimeData.StatusEffects);
+            damage = ApplyMonsterAttackerModifiers(damage, context.MonsterCaster.RuntimeData);
 
         if (context?.MonsterTarget != null)
             damage = ApplyTargetModifiers(damage, context.MonsterTarget.RuntimeData.StatusEffects);
@@ -53,15 +55,62 @@ public static class BattleDamageModifierUtility
         return Mathf.Max(1, Mathf.CeilToInt(damage));
     }
 
+    private static float ApplyPlayerAttackerModifiers(
+        float damage,
+        CharacterRuntimeData runtime)
+    {
+        if (runtime == null)
+            return damage;
+
+        return ApplyAttackerModifiers(
+            damage,
+            runtime.StatusEffects,
+            runtime.CurrentHP,
+            runtime.MaxHP,
+            BattleEquipmentEffectService.IsMoveFirstAttackPowerReady(runtime));
+    }
+
+    private static float ApplyMonsterAttackerModifiers(
+        float damage,
+        MonsterRuntimeData runtime)
+    {
+        if (runtime == null)
+            return damage;
+
+        return ApplyAttackerModifiers(
+            damage,
+            runtime.StatusEffects,
+            runtime.CurrentHP,
+            runtime.MaxHP,
+            false);
+    }
+
     private static float ApplyAttackerModifiers(
         float damage,
-        List<StatusEffectRuntimeData> statuses)
+        List<StatusEffectRuntimeData> statuses,
+        int currentHP,
+        int maxHP,
+        bool isMoveFirstAttackReady)
     {
         if (GetStatusStack(statuses, WeakenEffectId) > 0)
             damage *= 0.85f;
 
         if (GetStatusStack(statuses, ActiveDamageBoostEffectId) > 0)
             damage *= 2f;
+
+        if (isMoveFirstAttackReady &&
+            GetStatusStack(statuses, MoveFirstAttackPowerEffectId) > 0)
+        {
+            damage *= 1.2f;
+        }
+
+        int lowHpPowerStack = GetStatusStack(statuses, LowHpPowerEffectId);
+        if (lowHpPowerStack > 0 && maxHP > 0)
+        {
+            float hpRatio = Mathf.Clamp01(currentHP / (float)maxHP);
+            float missingHpRatio = 1f - hpRatio;
+            damage *= 1f + (missingHpRatio * lowHpPowerStack * 0.01f);
+        }
 
         int grudgeStack = GetStatusStack(statuses, GrudgeEffectId);
         if (grudgeStack > 0)

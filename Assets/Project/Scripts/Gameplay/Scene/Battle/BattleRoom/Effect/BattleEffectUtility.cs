@@ -47,8 +47,8 @@ public static class BattleEffectUtility
     public static bool AddOrStackStatus(
         List<StatusEffectRuntimeData> statusEffects,
         string effectId,
-        int stack,
-        int turnCount = 1)
+        int value,
+        int count = 1)
     {
         if (statusEffects == null)
             return false;
@@ -56,8 +56,10 @@ public static class BattleEffectUtility
         if (string.IsNullOrWhiteSpace(effectId))
             return false;
 
-        stack = Mathf.Max(1, stack);
-        turnCount = Mathf.Max(0, turnCount);
+        int stack = GetRepeatedValue(value, count);
+
+        if (stack <= 0)
+            return false;
 
         for (int i = 0; i < statusEffects.Count; i++)
         {
@@ -70,8 +72,7 @@ public static class BattleEffectUtility
                 continue;
 
             status.Stack += stack;
-
-            status.TurnCount = Mathf.Max(status.TurnCount, turnCount);
+            status.TurnCount = Mathf.Max(status.TurnCount, 1);
             return true;
         }
 
@@ -79,44 +80,91 @@ public static class BattleEffectUtility
         {
             EffectId = effectId,
             Stack = stack,
-            TurnCount = turnCount
+            TurnCount = 1
         });
 
         return true;
     }
 
-    public static void AddStatusToPlayer(
+    public static int GetRepeatedValue(int value, int count)
+    {
+        value = Mathf.Max(0, value);
+        count = Mathf.Max(0, count);
+
+        if (value <= 0 || count <= 0)
+            return 0;
+
+        return value * count;
+    }
+
+    public static int GetRepeatedValue(BattleEffectContext context)
+    {
+        if (context == null)
+            return 0;
+
+        return GetRepeatedValue(context.Value, context.Count);
+    }
+
+    public static bool AddStatusToDefaultTarget(
+        BattleEffectContext context,
+        string effectId)
+    {
+        if (context == null)
+            return false;
+
+        if (context.PlayerTarget != null)
+            return AddStatusToPlayer(context.PlayerTarget, effectId, context.Value, context.Count);
+
+        if (context.PlayerCaster != null)
+            return AddStatusToPlayer(context.PlayerCaster, effectId, context.Value, context.Count);
+
+        if (context.MonsterTarget != null)
+            return AddStatusToMonster(context.MonsterTarget, effectId, context.Value, context.Count);
+
+        if (context.MonsterCaster != null)
+            return AddStatusToMonster(context.MonsterCaster, effectId, context.Value, context.Count);
+
+        return false;
+    }
+
+    public static bool AddStatusToPlayer(
         BattleCharacter target,
         string effectId,
         int stack,
-        int turnCount = 1)
+        int count = 1)
     {
         if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
-            return;
+            return false;
 
-        if (AddOrStackStatus(target.RuntimeData.StatusEffects, effectId, stack, turnCount))
+        if (AddOrStackStatus(target.RuntimeData.StatusEffects, effectId, stack, count))
         {
             PlayStatusVfx(ResolveUnitAnimator(target), effectId);
             BattleHitImpactFeedback.PlayStatusHitFeedback(target.transform);
+            return true;
         }
+
+        return false;
     }
 
-    public static void AddStatusToMonster(
+    public static bool AddStatusToMonster(
         MonsterUnit target,
         string effectId,
         int stack,
-        int turnCount = 1)
+        int count = 1)
     {
         if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
-            return;
+            return false;
 
-        if (AddOrStackStatus(target.RuntimeData.StatusEffects, effectId, stack, turnCount))
+        bool applied = AddOrStackStatus(target.RuntimeData.StatusEffects, effectId, stack, count);
+
+        if (applied)
         {
             PlayStatusVfx(ResolveUnitAnimator(target), effectId);
             BattleHitImpactFeedback.PlayStatusHitFeedback(target.transform);
         }
 
         target.ShowAndRefreshHUD();
+        return applied;
     }
 
     private static BattleUnitAnimator ResolveUnitAnimator(Component target)

@@ -92,7 +92,7 @@ public class BattleStatusEffectService
 
             if (effectId == "E_Armor")
             {
-                int gainedArmor = Mathf.Max(0, value);
+                int gainedArmor = BattleEffectUtility.GetRepeatedValue(value, count);
                 caster.RuntimeData.CurrentShield += gainedArmor;
                 BattleDamageTextPopupUI.ShowArmorGain(caster.transform, gainedArmor);
                 applied = true;
@@ -102,8 +102,8 @@ public class BattleStatusEffectService
                 AddOrStackStatusEffect(
                     caster.RuntimeData.StatusEffects,
                     "E_Boost",
-                    Mathf.Max(1, value),
-                    Mathf.Max(1, count)
+                    value,
+                    count
                 );
 
                 applied = true;
@@ -117,9 +117,14 @@ public class BattleStatusEffectService
         List<StatusEffectRuntimeData> statusEffects,
         string effectId,
         int stack,
-        int turnCount)
+        int count)
     {
         if (statusEffects == null)
+            return;
+
+        int appliedStack = BattleEffectUtility.GetRepeatedValue(stack, count);
+
+        if (appliedStack <= 0)
             return;
 
         for (int i = 0; i < statusEffects.Count; i++)
@@ -130,16 +135,16 @@ public class BattleStatusEffectService
             if (statusEffects[i].EffectId != effectId)
                 continue;
 
-            statusEffects[i].Stack += stack;
-            statusEffects[i].TurnCount = Mathf.Max(statusEffects[i].TurnCount, turnCount);
+            statusEffects[i].Stack += appliedStack;
+            statusEffects[i].TurnCount = Mathf.Max(statusEffects[i].TurnCount, 1);
             return;
         }
 
         statusEffects.Add(new StatusEffectRuntimeData
         {
             EffectId = effectId,
-            Stack = stack,
-            TurnCount = turnCount
+            Stack = appliedStack,
+            TurnCount = 1
         });
     }
 

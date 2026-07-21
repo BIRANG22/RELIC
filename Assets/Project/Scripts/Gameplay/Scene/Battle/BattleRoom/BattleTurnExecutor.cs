@@ -22,6 +22,13 @@ public class BattleTurnExecutor : MonoBehaviour
     [SerializeField] private BattleMonsterSpawner monsterSpawner;
     [SerializeField] private SkillListPanel skillListPanel;
 
+    [Header("Battle Execution UI Roots")]
+    [SerializeField] private GameObject playerHudRoot;
+    [SerializeField] private GameObject menuRoot;
+    [SerializeField] private bool autoFindBattleExecutionUiRoots = true;
+    [SerializeField] private string playerHudRootObjectName = "PlayerHUD_Root";
+    [SerializeField] private string menuRootObjectName = "MenuRoot";
+
     [Header("End Turn")]
     [SerializeField] private Button endTurnButton;
 
@@ -50,6 +57,7 @@ public class BattleTurnExecutor : MonoBehaviour
     private bool isMonsterPlanReady;
     private bool isPlayerInputReady;
     private bool isExecuting;
+    private bool battleExecutionUiSuppressed;
     private Coroutine executeTurnCoroutine;
     private int playerTurnNumber = 1;
 
@@ -100,6 +108,7 @@ public class BattleTurnExecutor : MonoBehaviour
 
         RefreshEndTurnButton();
         RefreshBattlePresentationState();
+        RefreshBattleExecutionUiVisibility();
 
         if (ready && timelineController != null)
             timelineController.SelectDefaultSlotWhenInputReady();
@@ -142,6 +151,7 @@ public class BattleTurnExecutor : MonoBehaviour
 
         RefreshEndTurnButton();
         RefreshBattlePresentationState();
+        RefreshBattleExecutionUiVisibility();
     }
 
     private void ResetBattleEffectPlanesForRoomEnd()
@@ -185,6 +195,7 @@ public class BattleTurnExecutor : MonoBehaviour
         isMonsterPlanReady = ready;
         RefreshEndTurnButton();
         RefreshBattlePresentationState();
+        RefreshBattleExecutionUiVisibility();
     }
 
     public void SetPlayerInputReady(bool ready)
@@ -192,6 +203,7 @@ public class BattleTurnExecutor : MonoBehaviour
         isPlayerInputReady = ready;
         RefreshEndTurnButton();
         RefreshBattlePresentationState();
+        RefreshBattleExecutionUiVisibility();
     }
 
     public void ExecuteTurn()
@@ -222,6 +234,8 @@ public class BattleTurnExecutor : MonoBehaviour
         EnsureSkillListPanel();
         if (skillListPanel != null)
             skillListPanel.CloseForBattleExecution();
+
+        HideBattleExecutionUiUntilPlayerTurn();
 
         isExecuting = true;
 
@@ -411,6 +425,7 @@ public class BattleTurnExecutor : MonoBehaviour
 
             RefreshEndTurnButton();
             RefreshBattlePresentationState();
+            RefreshBattleExecutionUiVisibility();
 
             if (CanAcceptPlayerInput && timelineController != null)
             {
@@ -514,6 +529,102 @@ public class BattleTurnExecutor : MonoBehaviour
             gridManager.SetGridVisible(isReservationState);
 
         MonsterUnit.SetAllReservationVisualState(false);
+    }
+
+    private void HideBattleExecutionUiUntilPlayerTurn()
+    {
+        battleExecutionUiSuppressed = true;
+        SetBattleExecutionUiVisible(false);
+    }
+
+    private void RefreshBattleExecutionUiVisibility()
+    {
+        if (!battleExecutionUiSuppressed)
+            return;
+
+        if (!CanAcceptPlayerInput)
+        {
+            SetBattleExecutionUiVisible(false);
+            return;
+        }
+
+        battleExecutionUiSuppressed = false;
+        SetBattleExecutionUiVisible(true);
+    }
+
+    private void SetBattleExecutionUiVisible(bool visible)
+    {
+        EnsureBattleExecutionUiRoots();
+
+        SetRootActive(playerHudRoot, visible);
+        SetRootActive(menuRoot, visible);
+
+        if (!autoFindBattleExecutionUiRoots)
+            return;
+
+        SetNamedBattleExecutionUiRootsVisible(playerHudRootObjectName, visible, playerHudRoot);
+        SetNamedBattleExecutionUiRootsVisible(menuRootObjectName, visible, menuRoot);
+    }
+
+    private void EnsureBattleExecutionUiRoots()
+    {
+        if (!autoFindBattleExecutionUiRoots)
+            return;
+
+        if (playerHudRoot == null && !string.IsNullOrWhiteSpace(playerHudRootObjectName))
+            playerHudRoot = FindFirstBattleExecutionUiRoot(playerHudRootObjectName);
+
+        if (menuRoot == null && !string.IsNullOrWhiteSpace(menuRootObjectName))
+            menuRoot = FindFirstBattleExecutionUiRoot(menuRootObjectName);
+    }
+
+    private static GameObject FindFirstBattleExecutionUiRoot(string objectName)
+    {
+        Transform[] transforms = UnityEngine.Object.FindObjectsByType<Transform>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < transforms.Length; i++)
+        {
+            Transform root = transforms[i];
+
+            if (root != null && root.gameObject.name == objectName)
+                return root.gameObject;
+        }
+
+        return null;
+    }
+
+    private static void SetNamedBattleExecutionUiRootsVisible(
+        string objectName,
+        bool visible,
+        GameObject configuredRoot)
+    {
+        if (string.IsNullOrWhiteSpace(objectName))
+            return;
+
+        Transform[] transforms = UnityEngine.Object.FindObjectsByType<Transform>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < transforms.Length; i++)
+        {
+            Transform root = transforms[i];
+
+            if (root == null || root.gameObject.name != objectName)
+                continue;
+
+            if (configuredRoot != null && root.gameObject == configuredRoot)
+                continue;
+
+            SetRootActive(root.gameObject, visible);
+        }
+    }
+
+    private static void SetRootActive(GameObject root, bool active)
+    {
+        if (root != null && root.activeSelf != active)
+            root.SetActive(active);
     }
 
     private void ApplyPlayerTurnStartEquipmentEffects()

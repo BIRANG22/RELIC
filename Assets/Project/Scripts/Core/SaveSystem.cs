@@ -391,6 +391,7 @@ public class SaveSystem : Singleton<SaveSystem>
         battle.AcquiredSkillIds ??= new List<string>();
         battle.CharacterStatistics ??= new List<BattleRunCharacterStatisticsData>();
         battle.LobbyLoadoutSnapshots ??= new List<BattleLobbyLoadoutSnapshotData>();
+        CultureTankBattleStartEffectService.Normalize(battle);
 
         for (int i = 0; i < battle.LobbyLoadoutSnapshots.Count; i++)
             NormalizeLobbyLoadoutSnapshot(battle.LobbyLoadoutSnapshots[i]);
@@ -406,6 +407,7 @@ public class SaveSystem : Singleton<SaveSystem>
         lobby.BagItemIds ??= new List<string>();
         lobby.CharacterLoadouts ??= new List<LobbyCharacterLoadoutData>();
         lobby.RelicOfferIds ??= new List<string>();
+        CultureTankResearchService.Normalize(lobby);
 
         if (!lobby.HasPendingResearchResult || lobby.PendingResearchResult == null)
         {

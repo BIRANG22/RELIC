@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System;
 using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
@@ -32,6 +33,9 @@ public class BattleBagPanelUI : MonoBehaviour
     private BattleBagItemSlotUI selectedSlot;
     private BattleBagItemSlotUI hoveredSlot;
     private readonly List<RaycastResult> pointerRaycastResults = new();
+    private bool isItemSelectionMode;
+    private Action<string> itemSelectionCallback;
+    private Action itemSelectionClosedCallback;
 
     private void Awake()
     {
@@ -42,6 +46,11 @@ public class BattleBagPanelUI : MonoBehaviour
     private void OnEnable()
     {
         Refresh();
+    }
+
+    private void OnDisable()
+    {
+        EndItemSelectionMode(false, true);
     }
 
     private void Update()
@@ -165,6 +174,24 @@ public class BattleBagPanelUI : MonoBehaviour
         RefreshDiscardButtonState();
     }
 
+    public void OpenForItemSelection(
+        Action<string> onItemSelected,
+        Action onSelectionClosed = null)
+    {
+        if (onItemSelected == null)
+            return;
+
+        isItemSelectionMode = true;
+        itemSelectionCallback = onItemSelected;
+        itemSelectionClosedCallback = onSelectionClosed;
+        gameObject.SetActive(true);
+        Refresh();
+    }
+
+    public void CancelItemSelection()
+    {
+        EndItemSelectionMode(false, true);
+    }
     private IReadOnlyList<string> GetBagItemIds()
     {
         IInventoryRuntimeContext context = ResolveRuntimeContext();
@@ -239,6 +266,15 @@ public class BattleBagPanelUI : MonoBehaviour
 
         if (slot == null || !slot.HasItem)
             return;
+
+        if (isItemSelectionMode)
+        {
+            string selectedItemId = slot.ItemId;
+            Action<string> callback = itemSelectionCallback;
+            EndItemSelectionMode(false, true);
+            callback?.Invoke(selectedItemId);
+            return;
+        }
 
         if (selectedSlot != null && selectedSlot != slot)
             selectedSlot.SetSelected(false);
@@ -421,9 +457,31 @@ public class BattleBagPanelUI : MonoBehaviour
     private void RefreshDiscardButtonState()
     {
         if (discardButton != null)
-            discardButton.interactable = IsDiscardAllowed() && selectedSlot != null && selectedSlot.HasItem;
+            discardButton.interactable = !isItemSelectionMode && IsDiscardAllowed() && selectedSlot != null && selectedSlot.HasItem;
     }
 
+    private void EndItemSelectionMode(bool hidePanel, bool notifyClosed)
+    {
+        if (!isItemSelectionMode)
+            return;
+
+        isItemSelectionMode = false;
+        itemSelectionCallback = null;
+        Action closedCallback = itemSelectionClosedCallback;
+        itemSelectionClosedCallback = null;
+
+        ClearAllSlotVisualStates();
+        selectedSlot = null;
+        hoveredSlot = null;
+        HideDetail();
+        RefreshDiscardButtonState();
+
+        if (notifyClosed)
+            closedCallback?.Invoke();
+
+        if (hidePanel && gameObject.activeSelf)
+            gameObject.SetActive(false);
+    }
     private void OnClickDiscardButton()
     {
         IInventoryRuntimeContext context = ResolveRuntimeContext();
@@ -566,7 +624,7 @@ public class BattleBagPanelUI : MonoBehaviour
 
     public static void RefreshAll()
     {
-        BattleBagPanelUI[] panels = Object.FindObjectsByType<BattleBagPanelUI>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        BattleBagPanelUI[] panels = UnityEngine.Object.FindObjectsByType<BattleBagPanelUI>(FindObjectsInactive.Include, FindObjectsSortMode.None);
 
         for (int i = 0; i < panels.Length; i++)
         {
