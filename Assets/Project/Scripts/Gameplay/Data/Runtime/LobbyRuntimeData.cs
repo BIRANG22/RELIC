@@ -16,6 +16,8 @@ namespace Relic.Gameplay.Data
         public int RelicOfferSeed;
         public int RelicRefreshCount;
         public List<string> RelicOfferIds = new();
+        public List<CultureTankResearchRuntimeData> CultureTankResearches = new();
+        public List<CultureTankBattleStartEffectRuntimeData> PendingCultureTankBattleStartEffects = new();
         public bool HasPendingResearchResult;
         public PendingResearchResultData PendingResearchResult;
     }

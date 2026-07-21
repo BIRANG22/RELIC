@@ -582,6 +582,24 @@ public class BattleRoomLoader : MonoBehaviour
             return;
 
         PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+        var battleStartCharacters = new List<CharacterRuntimeData>();
+
+        for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
+        {
+            string characterId = partyStore.GetCharacterId(i);
+
+            if (string.IsNullOrWhiteSpace(characterId))
+                continue;
+
+            if (!DataManager.Instance.CharacterRuntimeStore.TryGet(characterId, out CharacterRuntimeData runtimeData))
+                continue;
+
+            battleStartCharacters.Add(runtimeData);
+        }
+
+        CultureTankBattleStartEffectService.ApplyToPartyAndConsume(
+            DataManager.Instance.BattleRuntimeStore?.GetOrCreate(),
+            battleStartCharacters);
 
         for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
         {
@@ -633,9 +651,13 @@ public class BattleRoomLoader : MonoBehaviour
                 ? runtimeData.CostRecovery
                 : masterData != null ? Mathf.Max(0, masterData.CostRecovery) : 0;
 
+            int equipmentRecovery = BattleEquipmentEffectService.GetEffectiveCostRecovery(
+                runtimeData,
+                masterData);
+
             int totalRecovery = Mathf.Max(
                 0,
-                baseRecovery + runtimeData.BonusCostRecovery + rechargeBonus
+                equipmentRecovery + rechargeBonus
             );
 
             runtimeData.CostRecovery = baseRecovery;

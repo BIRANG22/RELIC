@@ -5,7 +5,7 @@ using Relic.Gameplay.Data;
 public class LobbyBattleRuntimeTransferServiceTests
 {
     [Test]
-    public void Transfer_CopiesCombatInventoryWithoutSharingLists()
+    public void Transfer_CopiesCombatInventoryAndStartsWithEmptyBattleBag()
     {
         var lobby = new LobbyRuntimeData
         {
@@ -24,8 +24,9 @@ public class LobbyBattleRuntimeTransferServiceTests
             Assert.That(result.Succeeded, Is.True);
             Assert.That(battle.OwnedRelicIds, Is.EquivalentTo(lobby.OwnedRelicIds));
             Assert.That(battle.SkillInventoryIds, Is.EquivalentTo(lobby.SkillInventoryIds));
-            Assert.That(battle.BagItemIds, Is.EquivalentTo(lobby.BagItemIds));
+            Assert.That(battle.BagItemIds, Is.Empty);
             Assert.That(battle.OwnedRelicIds, Is.Not.SameAs(lobby.OwnedRelicIds));
+            Assert.That(battle.BagItemIds, Is.Not.SameAs(lobby.BagItemIds));
             Assert.That(lobby.BlueDustium, Is.EqualTo(432));
         });
     }

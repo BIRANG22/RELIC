@@ -30,12 +30,17 @@ public sealed class LobbyBattleRuntimeTransferService
         if (battle == null)
             return new LobbyBattleRuntimeTransferResult(false, "Battle runtime is missing.");
 
+        CultureTankResearchService.Normalize(lobby);
+
         battle.OwnedRelicIds = CopyIds(lobby.OwnedRelicIds);
         battle.SkillInventoryIds = CopyIds(lobby.SkillInventoryIds);
         battle.StartingSkillInventoryIds = CopyIds(lobby.SkillInventoryIds);
         battle.AcquiredSkillIds = new List<string>();
         battle.CharacterStatistics = new List<BattleRunCharacterStatisticsData>();
-        battle.BagItemIds = CopyIds(lobby.BagItemIds);
+        battle.BagItemIds = new List<string>();
+        battle.CultureTankBattleStartEffects =
+            CultureTankResearchService.CopyPendingBattleStartEffects(lobby);
+        lobby.PendingCultureTankBattleStartEffects.Clear();
 
         if (characters != null && lobby.CharacterLoadouts != null)
         {

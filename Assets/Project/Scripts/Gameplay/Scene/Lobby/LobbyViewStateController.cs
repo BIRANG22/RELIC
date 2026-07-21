@@ -32,7 +32,7 @@ public sealed class LobbyViewStateController : MonoBehaviour
 
     private void Start()
     {
-        ShowLobby();
+        ShowPosition();
     }
 
     public void ShowLobby()

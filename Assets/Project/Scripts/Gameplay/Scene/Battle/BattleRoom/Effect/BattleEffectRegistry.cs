@@ -23,6 +23,15 @@ public class BattleEffectRegistry
         Register(new SwiftEffect());
         Register(new SmiteEffect());
         Register(new BarrierEffect());
+        Register(new MoveFirstAttackPowerEffect());
+        Register(new PoisonApplyDoubleEffect());
+        Register(new BleedingApplyDoubleEffect());
+        Register(new MaxHpUpEffect());
+        Register(new KillHealEffect());
+        Register(new SkillResourceGainUpEffect());
+        Register(new BuffApplyDoubleEffect());
+        Register(new LowHpPowerEffect());
+        Register(new MovePointUpEffect());
 
         Register(new VulnerableEffect());
         Register(new WeakenEffect());

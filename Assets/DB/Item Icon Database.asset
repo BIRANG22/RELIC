@@ -15,25 +15,37 @@ MonoBehaviour:
   entries:
   - ItemId: Item_001
     Icon: {fileID: 21300000, guid: 106fbeecde8519b42a51e6066533dc37, type: 3}
+    ResearchResultIcon: {fileID: 21300000, guid: dc678e16ce6a8684cb0622c503b35fe9, type: 3}
   - ItemId: Item_002
     Icon: {fileID: 21300000, guid: 5d22acf1836bdab4aa488b2502ea9876, type: 3}
+    ResearchResultIcon: {fileID: 21300000, guid: 0e49ef9082429ef4e80ebf19dfe1195c, type: 3}
   - ItemId: Item_003
     Icon: {fileID: 21300000, guid: 2eb3bf48ebb430d439ea6d0948f5969f, type: 3}
+    ResearchResultIcon: {fileID: 21300000, guid: 423109f8614dd784a969f1c1246979de, type: 3}
   - ItemId: Item_004
     Icon: {fileID: 21300000, guid: 299d2a3b7fe12024da266c5280b3d901, type: 3}
+    ResearchResultIcon: {fileID: 21300000, guid: fe50fe15785b62a44b32c2131ff16208, type: 3}
   - ItemId: Item_005
     Icon: {fileID: 21300000, guid: 4468924fa61f51c4f961a5867b0be9a0, type: 3}
+    ResearchResultIcon: {fileID: 21300000, guid: 6fae272c651e39449a6de3af99555a20, type: 3}
   - ItemId: Item_006
-    Icon: {fileID: 21300000, guid: 0dfe508e3f552a14b837e34407fa3bfb, type: 3}
+    Icon: {fileID: 21300000, guid: 7f0f6c269c152a0449b66463e58a9d9f, type: 3}
+    ResearchResultIcon: {fileID: 21300000, guid: 3f53a25558e61cd4faff1af051ee3827, type: 3}
   - ItemId: Item_007
-    Icon: {fileID: 21300000, guid: b7a5e12e2590d354b9b4bc8ccb89b68f, type: 3}
+    Icon: {fileID: 21300000, guid: 63ddfb2c3d0678548baddc1e7a94a216, type: 3}
+    ResearchResultIcon: {fileID: 21300000, guid: 627676264c5080f40b76630b6a0302c9, type: 3}
   - ItemId: Item_008
-    Icon: {fileID: 21300000, guid: c2468ae629381784ca2475e2e12b59a4, type: 3}
+    Icon: {fileID: 21300000, guid: aa21d67aea0982f4da3228e402b06b9f, type: 3}
+    ResearchResultIcon: {fileID: 21300000, guid: 45b0411861b72844db076dfcd5924f0f, type: 3}
   - ItemId: Item_009
-    Icon: {fileID: 21300000, guid: fa3bfd242a9cf064f86a59d676550ea0, type: 3}
+    Icon: {fileID: 21300000, guid: b1881ff13f72a4e4babf796080356c7b, type: 3}
+    ResearchResultIcon: {fileID: 21300000, guid: 4415121ae9b61da4598d06caffd521a5, type: 3}
   - ItemId: Item_010
-    Icon: {fileID: 21300000, guid: a24adccb7c49fc241b862c558587afa5, type: 3}
+    Icon: {fileID: 21300000, guid: 87c204e9ea4ab8242b2a7eb3df30deb8, type: 3}
+    ResearchResultIcon: {fileID: 21300000, guid: 28470202b66fc1e47beb35d5f1ecacc3, type: 3}
   - ItemId: Item_011
-    Icon: {fileID: 21300000, guid: f00cccde860c42c4cb483a1e34190a5d, type: 3}
+    Icon: {fileID: 21300000, guid: 49ec576650504db4993d885589426ccf, type: 3}
+    ResearchResultIcon: {fileID: 21300000, guid: d2eb1a9d1627e97469460faf54b21979, type: 3}
   - ItemId: Item_012
-    Icon: {fileID: 21300000, guid: 8416a89d062f3c0498577ebd546126cd, type: 3}
+    Icon: {fileID: 21300000, guid: c8e539093c8c01040a89d29df494953b, type: 3}
+    ResearchResultIcon: {fileID: 21300000, guid: e5d12ab5693ade14bbc7dc36b40dd5b2, type: 3}

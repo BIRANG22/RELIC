@@ -7,6 +7,7 @@ public class CostRecoveryEffect : BattleEffectBase
     {
         BattleCharacter target = context?.PlayerTarget != null ? context.PlayerTarget : context?.PlayerCaster;
         if (target?.RuntimeData == null) return;
-        target.RuntimeData.CurrentCost = Mathf.Min(target.RuntimeData.MaxCost, target.RuntimeData.CurrentCost + Mathf.Max(0, context.Value));
+        int value = BattleEffectUtility.GetRepeatedValue(context);
+        target.RuntimeData.CurrentCost = Mathf.Min(target.RuntimeData.MaxCost, target.RuntimeData.CurrentCost + value);
     }
 }
