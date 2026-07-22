@@ -3,23 +3,22 @@ using NUnit.Framework;
 
 public class StartRoomActiveRelicConfigurationTests
 {
-    private const string BattleScenePath = "Assets/Project/Scenes/YDM/Battle.unity";
-
-    [Test]
-    public void StartRoomRelicRangesCoverAllFiveActiveRelics()
+    [TestCase("Assets/Project/Scenes/YDM/Battle.unity")]
+    [TestCase("Assets/Project/Scenes/YDM/DebugBattle.unity")]
+    public void StartRoomRelicChoicesDoNotSerializeNumberRanges(string scenePath)
     {
-        string sceneText = File.ReadAllText(BattleScenePath).Replace("\r\n", "\n");
+        string sceneText = File.ReadAllText(scenePath);
 
-        Assert.That(sceneText, Does.Not.Contain("minRelicNumber: 1\n  maxRelicNumber: 10"));
-        Assert.That(
-            CountOccurrences(sceneText, "minRelicNumber: 11\n  maxRelicNumber: 15"),
-            Is.EqualTo(2));
+        Assert.That(sceneText, Does.Not.Contain("useRelicNumberRange:"));
+        Assert.That(sceneText, Does.Not.Contain("minRelicNumber:"));
+        Assert.That(sceneText, Does.Not.Contain("maxRelicNumber:"));
+        Assert.That(sceneText, Does.Not.Contain("relicIdPrefix:"));
     }
 
     [Test]
     public void FirstRelicSlotImagesUseActiveOrangeColor()
     {
-        string sceneText = File.ReadAllText(BattleScenePath);
+        string sceneText = File.ReadAllText("Assets/Project/Scenes/YDM/Battle.unity");
         const string activeOrange =
             "m_Color: {r: 1, g: 0.6392157, b: 0.24313726, a: 1}";
         const string activeNormalBorder =

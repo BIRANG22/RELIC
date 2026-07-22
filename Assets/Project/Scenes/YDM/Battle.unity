@@ -56769,10 +56769,6 @@ MonoBehaviour:
   relicHoverNameText: {fileID: 1465539689}
   relicHoverDescText: {fileID: 55941466}
   choiceCount: 3
-  useRelicNumberRange: 1
-  minRelicNumber: 11
-  maxRelicNumber: 15
-  relicIdPrefix: Relic_
   battleMapController: {fileID: 176009269}
   startRoomController: {fileID: 1137359715}
   playAcquireSfx: 1
@@ -76067,10 +76063,6 @@ MonoBehaviour:
   relicHoverNameText: {fileID: 96935349}
   relicHoverDescText: {fileID: 1736720519}
   choiceCount: 3
-  useRelicNumberRange: 1
-  minRelicNumber: 11
-  maxRelicNumber: 15
-  relicIdPrefix: Relic_
   battleMapController: {fileID: 176009269}
   startRoomController: {fileID: 1137359715}
   playAcquireSfx: 1
