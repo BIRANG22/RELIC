@@ -45,7 +45,7 @@ public class BattleUniqueResourceService
             return;
         }
 
-        // ÈúÆ®´Â Ã¼·Â °¨¼Ò ¿©ºÎ¿Í °ü°è¾øÀÌ Á÷Á¢ ÇÇ°ÝµÈ ¼ø°£¿¡ ºÐ³ë¸¦ È¹µæÇÕ´Ï´Ù.
+        // ížíŠ¸ëŠ” ì²´ë ¥ ê°ì†Œ ì—¬ë¶€ì™€ ê´€ê³„ì—†ì´ ì§ì ‘ í”¼ê²©ëœ ìˆœê°„ì— ë¶„ë…¸ë¥¼ íšë“í•©ë‹ˆë‹¤.
         AddUniqueResource(damagedCharacter.RuntimeData, ResourceGainAmount);
     }
 
@@ -83,7 +83,7 @@ public class BattleUniqueResourceService
             return;
         }
 
-        // ÀÌµ¿ ¿¹¾àÀº Ä«¾ßÀÇ °°Àº ½½·Ô Çàµ¿ È½¼ö¿¡¼­ Á¦¿ÜÇÕ´Ï´Ù.
+        // ì´ë™ ì˜ˆì•½ì€ ì¹´ì•¼ì˜ ê°™ì€ ìŠ¬ë¡¯ í–‰ë™ íšŸìˆ˜ì—ì„œ ì œì™¸í•©ë‹ˆë‹¤.
         if (command.ReservedMoveGridIndex >= 0)
             return;
 
@@ -175,6 +175,12 @@ public class BattleUniqueResourceService
         int finalAmount = BattleEquipmentEffectService.ModifyUniqueResourceGain(runtime, amount);
         int previousResource = runtime.CurrentResource;
 
+        BattleEquipmentEffectService.ApplyUniqueResourceGainSideEffects(
+            runtime,
+            finalAmount,
+            previousResource,
+            maxResource);
+
         runtime.CurrentResource = Mathf.Min(maxResource, runtime.CurrentResource + finalAmount);
 
         int gainedAmount = Mathf.Max(0, runtime.CurrentResource - previousResource);
@@ -221,12 +227,12 @@ public class BattleUniqueResourceService
     {
         return resourceType switch
         {
-            ResourceType.Rage => "ºÐ³ë",
-            ResourceType.Momentum => "±â¼¼",
-            ResourceType.Aether => "¿¡Å×¸£",
-            ResourceType.Faith => "½Å¾Ó",
-            ResourceType.Blood => "Ç÷±â",
-            _ => "°íÀ¯ÀÚ¿ø"
+            ResourceType.Rage => "ë¶„ë…¸",
+            ResourceType.Momentum => "ê¸°ì„¸",
+            ResourceType.Aether => "ì—í…Œë¥´",
+            ResourceType.Faith => "ì‹ ì•™",
+            ResourceType.Blood => "í˜ˆê¸°",
+            _ => "ê³ ìœ ìžì›"
         };
     }
 

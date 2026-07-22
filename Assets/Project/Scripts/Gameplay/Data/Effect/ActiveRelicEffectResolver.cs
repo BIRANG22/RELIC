@@ -7,7 +7,8 @@ namespace Relic.Gameplay.Data
         None,
         Self,
         Grid,
-        AllyGrid
+        AllyGrid,
+        EnemyGrid
     }
 
     public static class ActiveRelicEffectResolver
@@ -44,7 +45,7 @@ namespace Relic.Gameplay.Data
                 "Relic_12" => ActiveRelicEffectIds.DamageReductionThisTurn,
                 "Relic_13" => ActiveRelicEffectIds.MoveToGrid,
                 "Relic_14" => ActiveRelicEffectIds.SwapAlly,
-                "Relic_15" => ActiveRelicEffectIds.SpawnGridEffect,
+                "Relic_15" => ActiveRelicEffectIds.SpawnPoisonGridEffect,
                 _ => explicitEffectId ?? string.Empty
             };
         }
@@ -60,10 +61,40 @@ namespace Relic.Gameplay.Data
             {
                 ActiveRelicEffectIds.DamageBoostThisTurn => ActiveRelicTargetMode.Self,
                 ActiveRelicEffectIds.DamageReductionThisTurn => ActiveRelicTargetMode.Self,
+                ActiveRelicEffectIds.RecoverUniqueResourceToMax => ActiveRelicTargetMode.Self,
+                ActiveRelicEffectIds.RecoverCostToMax => ActiveRelicTargetMode.Self,
+                ActiveRelicEffectIds.GrantSwift => ActiveRelicTargetMode.Self,
+                ActiveRelicEffectIds.CleanseDebuffs => ActiveRelicTargetMode.Self,
                 ActiveRelicEffectIds.MoveToGrid => ActiveRelicTargetMode.Grid,
                 ActiveRelicEffectIds.SwapAlly => ActiveRelicTargetMode.AllyGrid,
+                ActiveRelicEffectIds.TargetOutgoingDamageReductionThisTurn => ActiveRelicTargetMode.EnemyGrid,
+                ActiveRelicEffectIds.RemoveGridEffect => ActiveRelicTargetMode.Grid,
                 ActiveRelicEffectIds.SpawnGridEffect => ActiveRelicTargetMode.Grid,
+                ActiveRelicEffectIds.SpawnPoisonGridEffect => ActiveRelicTargetMode.Grid,
+                ActiveRelicEffectIds.SpawnThornGridEffect => ActiveRelicTargetMode.Grid,
+                ActiveRelicEffectIds.SpawnObstacleGridEffect => ActiveRelicTargetMode.Grid,
+                ActiveRelicEffectIds.SpawnDummyGridEffect => ActiveRelicTargetMode.Grid,
+                ActiveRelicEffectIds.SpawnExplosiveDollGridEffect => ActiveRelicTargetMode.Grid,
                 _ => ActiveRelicTargetMode.None
+            };
+        }
+
+        public static string ResolveGridEffectId(RelicData relic)
+        {
+            return ResolveGridEffectId(ResolveEffectId(relic));
+        }
+
+        public static string ResolveGridEffectId(string effectId)
+        {
+            return effectId?.Trim() switch
+            {
+                ActiveRelicEffectIds.SpawnGridEffect => ActiveRelicEffectIds.PoisonGridEffectId,
+                ActiveRelicEffectIds.SpawnPoisonGridEffect => ActiveRelicEffectIds.PoisonGridEffectId,
+                ActiveRelicEffectIds.SpawnThornGridEffect => ActiveRelicEffectIds.ThornGridEffectId,
+                ActiveRelicEffectIds.SpawnObstacleGridEffect => ActiveRelicEffectIds.ObstacleGridEffectId,
+                ActiveRelicEffectIds.SpawnDummyGridEffect => ActiveRelicEffectIds.DummyGridEffectId,
+                ActiveRelicEffectIds.SpawnExplosiveDollGridEffect => ActiveRelicEffectIds.ExplosiveDollGridEffectId,
+                _ => string.Empty
             };
         }
 

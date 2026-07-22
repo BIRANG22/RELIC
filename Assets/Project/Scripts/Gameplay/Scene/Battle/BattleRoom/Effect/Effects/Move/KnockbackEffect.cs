@@ -20,6 +20,9 @@ public class KnockbackEffect : BattleEffectBase
         {
             if (context.PlayerTarget != null)
             {
+                if (BattleEquipmentEffectService.IsForcedMoveImmune(context.PlayerTarget.RuntimeData))
+                    break;
+
                 if (WouldMovePlayerOutsideGrid(context.PlayerTarget, offset, context.GridManager))
                     break;
 
@@ -115,7 +118,7 @@ public class KnockbackEffect : BattleEffectBase
         Vector3 startPosition = target.transform.position;
         Vector3 targetPosition = gridManager.GetWorldPositionByIndex(targetIndex);
 
-        // ÆÇÁ¤¿ë ±×¸®µå À§Ä¡´Â Áï½Ã °»½ÅÇÏ°í È­¸é¿¡¼­´Â ¹Ğ·Á³ª´Â °úÁ¤À» º¸¿©Áİ´Ï´Ù.
+        // íŒì •ìš© ê·¸ë¦¬ë“œ ìœ„ì¹˜ëŠ” ì¦‰ì‹œ ê°±ì‹ í•˜ê³  í™”ë©´ì—ì„œëŠ” ë°€ë ¤ë‚˜ëŠ” ê³¼ì •ì„ ë³´ì—¬ì¤ë‹ˆë‹¤.
         target.SetGridIndex(targetIndex);
         target.StartCoroutine(MoveTransformSmooth(target.transform, startPosition, targetPosition));
         return true;
@@ -175,7 +178,7 @@ public class KnockbackEffect : BattleEffectBase
         Vector3 targetWorldPosition =
             oldWorldPosition + (newCellWorldPosition - oldCellWorldPosition);
 
-        // Á¡À¯ ±×¸®µå´Â Áï½Ã °»½ÅÇÏµÇ ¸ó½ºÅÍ ¿ÀºêÁ§Æ®´Â ºÎµå·´°Ô ¹Ğ·Á³ª°Ô ÇÕ´Ï´Ù.
+        // ì ìœ  ê·¸ë¦¬ë“œëŠ” ì¦‰ì‹œ ê°±ì‹ í•˜ë˜ ëª¬ìŠ¤í„° ì˜¤ë¸Œì íŠ¸ëŠ” ë¶€ë“œëŸ½ê²Œ ë°€ë ¤ë‚˜ê²Œ í•©ë‹ˆë‹¤.
         target.SetOccupiedCells(movedCells);
         target.StartCoroutine(MoveTransformSmooth(
             target.transform,

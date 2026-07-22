@@ -488,7 +488,7 @@ public class BattleActionRunner
 
         if (CoroutineHost.Instance == null)
         {
-            Debug.LogError($"[BattleActionRunner] CoroutineHost ?�음 / Action:{actionRoutine.Label}");
+            Debug.LogError($"[BattleActionRunner] CoroutineHost ?놁쓬 / Action:{actionRoutine.Label}");
             yield break;
         }
 
@@ -530,7 +530,7 @@ public class BattleActionRunner
 
         if (CoroutineHost.Instance == null)
         {
-            Debug.LogError("[BattleActionRunner] CoroutineHost ?�음");
+            Debug.LogError("[BattleActionRunner] CoroutineHost ?놁쓬");
             yield break;
         }
 
@@ -764,8 +764,8 @@ public class BattleActionRunner
         if (controller == null || !controller.TryPlaceEffect(targetGridIndex, ResidueGridEffectId))
             return;
 
-        // 머크???�사�??�해?� ?�여�??�해??별도???�격으�?처리?�니??
-        // 목표 그리?�에 캐릭?��? ?�다�??�여�??�성 직후 GR_Residue ?�해�??�로 ?�용?�니??
+        // 癒명겕???ъ궗泥??쇳빐? ?붿뿬臾??쇳빐??蹂꾨룄???寃⑹쑝濡?泥섎━?⑸땲??
+        // 紐⑺몴 洹몃━?쒖뿉 罹먮┃?곌? ?덈떎硫??붿뿬臾??앹꽦 吏곹썑 GR_Residue ?쇳빐瑜??곕줈 ?곸슜?⑸땲??
         BattleCharacter character = FindPlayerAtGrid(targetGridIndex);
 
         if (character != null)
@@ -1643,7 +1643,7 @@ public class BattleActionRunner
 
         if (command.SkillData.EffectEntries == null || command.SkillData.EffectEntries.Count == 0)
         {
-            Debug.LogWarning($"[PlayerSkillEffect] EffectEntries ?�음 / Skill:{command.SkillData.SkillId}");
+            Debug.LogWarning($"[PlayerSkillEffect] EffectEntries ?놁쓬 / Skill:{command.SkillData.SkillId}");
 
             if (attackerAnimator != null)
                 attackerAnimator.PlaySkillAction(command.SkillData);
@@ -1662,10 +1662,14 @@ public class BattleActionRunner
             if (entry == null || string.IsNullOrWhiteSpace(entry.EffectId))
                 continue;
 
+            string effectId = BattleEquipmentEffectService.GetEffectivePlayerDamageEffectId(
+                command.UserRuntime,
+                command,
+                entry.EffectId);
             int value = GetPlayerEffectValue(command, entry);
             int count = GetPlayerEffectCount(command, entry);
 
-            if (IsDamageHitEffect(entry.EffectId))
+            if (IsDamageHitEffect(effectId))
             {
                 playedDamageSequence = true;
 
@@ -1673,7 +1677,7 @@ public class BattleActionRunner
                     caster,
                     monsterTargets,
                     command,
-                    entry.EffectId,
+                    effectId,
                     value,
                     count,
                     attackerAnimator);
@@ -1694,7 +1698,7 @@ public class BattleActionRunner
                 caster,
                 monsterTargets,
                 command,
-                entry.EffectId,
+                effectId,
                 value,
                 count);
         }
@@ -1720,8 +1724,8 @@ public class BattleActionRunner
         int hitCount = Mathf.Max(1, count);
         bool isMultiHit = hitCount > 1;
 
-        // ?�단 공격?� ?��??�수만큼 ?�로 ?�른 공격 모션??빠르�??�어???�생?�다.
-        // 1??공격보다 �?모션???�생 ?�도�??�여 ?�체 ?�동 ?�간??과도?�게 길어지지 ?�도�??�다.
+        // ?ㅻ떒 怨듦꺽? ?寃??잛닔留뚰겮 ?쒕줈 ?ㅻⅨ 怨듦꺽 紐⑥뀡??鍮좊Ⅴ寃??댁뼱???ъ깮?쒕떎.
+        // 1??怨듦꺽蹂대떎 媛?紐⑥뀡???ъ깮 ?띾룄瑜??믪뿬 ?꾩껜 ?됰룞 ?쒓컙??怨쇰룄?섍쾶 湲몄뼱吏吏 ?딅룄濡??쒕떎.
         if (isMultiHit && attackerAnimator != null)
             attackerAnimator.SetPlaybackSpeed(MultiHitAnimationSpeed);
 
@@ -1729,6 +1733,8 @@ public class BattleActionRunner
         {
             if (!HasAliveMonsterTarget(monsterTargets))
             {
+                BattleEquipmentEffectService.TryApplyAttackMissCharge(command.UserRuntime);
+
                 if (isMultiHit && attackerAnimator != null)
                     attackerAnimator.RestorePlaybackSpeed();
 
@@ -1794,6 +1800,8 @@ public class BattleActionRunner
 
             if (!appliedAnyHit)
             {
+                BattleEquipmentEffectService.TryApplyAttackMissCharge(command.UserRuntime);
+
                 if (isMultiHit && attackerAnimator != null)
                     attackerAnimator.RestorePlaybackSpeed();
 
@@ -1858,6 +1866,7 @@ public class BattleActionRunner
             PlayerCaster = caster,
             MonsterTarget = monsterTarget,
             PlayerSkillData = command.SkillData,
+            PlayerCommand = command,
 
             Direction = command.Direction,
             GridManager = gridManager,
@@ -1920,7 +1929,7 @@ public class BattleActionRunner
 
         if (command.SkillData.EffectEntries == null || command.SkillData.EffectEntries.Count == 0)
         {
-            Debug.LogWarning($"[PlayerSkillEffect] EffectEntries ?�음 / Skill:{command.SkillData.SkillId}");
+            Debug.LogWarning($"[PlayerSkillEffect] EffectEntries ?놁쓬 / Skill:{command.SkillData.SkillId}");
             return;
         }
 
@@ -1934,21 +1943,26 @@ public class BattleActionRunner
             if (string.IsNullOrWhiteSpace(entry.EffectId))
                 continue;
 
+            string effectId = BattleEquipmentEffectService.GetEffectivePlayerDamageEffectId(
+                command.UserRuntime,
+                command,
+                entry.EffectId);
             BattleEffectContext context = new BattleEffectContext
             {
                 PlayerCaster = caster,
                 MonsterTarget = monsterTarget,
                 PlayerSkillData = command.SkillData,
+                PlayerCommand = command,
 
                 Direction = command.Direction,
                 GridManager = gridManager,
 
-                EffectId = entry.EffectId,
+                EffectId = effectId,
                 Value = GetPlayerEffectValue(command, entry),
                 Count = GetPlayerEffectCount(command, entry)
             };
 
-            if (IsDamageHitEffect(entry.EffectId))
+            if (IsDamageHitEffect(effectId))
             {
                 int hitCount = Mathf.Max(1, context.Count);
 
@@ -1958,12 +1972,12 @@ public class BattleActionRunner
                         break;
 
                     context.Count = 1;
-                    ExecutePlayerEffectSafely(entry.EffectId, context, command.SkillData.SkillId);
+                    ExecutePlayerEffectSafely(effectId, context, command.SkillData.SkillId);
                 }
             }
             else
             {
-                ExecutePlayerEffectSafely(entry.EffectId, context, command.SkillData.SkillId);
+                ExecutePlayerEffectSafely(effectId, context, command.SkillData.SkillId);
             }
         }
     }
@@ -1995,21 +2009,26 @@ public class BattleActionRunner
             if (string.IsNullOrWhiteSpace(entry.EffectId))
                 continue;
 
+            string effectId = BattleEquipmentEffectService.GetEffectivePlayerDamageEffectId(
+                command.UserRuntime,
+                command,
+                entry.EffectId);
             BattleEffectContext context = new BattleEffectContext
             {
                 PlayerCaster = caster,
                 PlayerTarget = playerTarget,
                 PlayerSkillData = command.SkillData,
+                PlayerCommand = command,
 
                 Direction = command.Direction,
                 GridManager = gridManager,
 
-                EffectId = entry.EffectId,
+                EffectId = effectId,
                 Value = GetPlayerEffectValue(command, entry),
                 Count = GetPlayerEffectCount(command, entry)
             };
 
-            if (IsDamageHitEffect(entry.EffectId))
+            if (IsDamageHitEffect(effectId))
             {
                 int hitCount = Mathf.Max(1, context.Count);
 
@@ -2019,12 +2038,12 @@ public class BattleActionRunner
                         break;
 
                     context.Count = 1;
-                    ExecutePlayerEffectSafely(entry.EffectId, context, command.SkillData.SkillId);
+                    ExecutePlayerEffectSafely(effectId, context, command.SkillData.SkillId);
                 }
             }
             else
             {
-                ExecutePlayerEffectSafely(entry.EffectId, context, command.SkillData.SkillId);
+                ExecutePlayerEffectSafely(effectId, context, command.SkillData.SkillId);
             }
         }
     }
@@ -2041,7 +2060,7 @@ public class BattleActionRunner
         catch (System.Exception e)
         {
             Debug.LogError(
-                $"[PlayerSkillEffect] Effect ?�행 �??�러 / " +
+                $"[PlayerSkillEffect] Effect ?ㅽ뻾 以??먮윭 / " +
                 $"Skill:{skillId} / Effect:{effectId}"
             );
             Debug.LogException(e);
@@ -2090,7 +2109,7 @@ public class BattleActionRunner
         if (command == null || command.SkillData == null)
             yield break;
 
-        // ?�탈 ?�동?� ?�킬 ?�이?�의 ?�?�라???�기?� 관계없???�동 처리�?보냅?�다.
+        // ?ы깉 ?대룞? ?ㅽ궗 ?곗씠?곗쓽 ??꾨씪???쒓린? 愿怨꾩뾾???대룞 泥섎━濡?蹂대깄?덈떎.
         if (IsNocturnPortalMove(command))
         {
             yield return ExecuteMonsterMove(command);
@@ -2119,7 +2138,7 @@ public class BattleActionRunner
 
         Vector2Int moveOffset = GetMonsterMoveOffset(command);
 
-        // ?�탈 ?�동?� ?�약???��? 목적지�??�용?????�으므�??�반 ?�동??0 ?�프??검?�보??먼�? 처리?�니??
+        // ?ы깉 ?대룞? ?덉빟???덈? 紐⑹쟻吏瑜??ъ슜?????덉쑝誘濡??쇰컲 ?대룞??0 ?ㅽ봽??寃?щ낫??癒쇱? 泥섎━?⑸땲??
         if (IsNocturnPortalMove(command))
         {
             ShowExecutionRange(BuildMonsterMoveExecutionRange(monster, command));
@@ -2149,8 +2168,8 @@ public class BattleActionRunner
             if (facing != null)
                 facing.FaceByMoveOffset(moveOffset);
 
-            // �??�동 칸이 ?��? ?�른 ?�닛?�게 ?�유?�어 ?�다�???칸도 ?�동?��? ?�고 즉시 충돌?�니??
-            // ?�동?��? ?�당 칸을 ?�유???�닛 모두 충돌 고정 ?�해�?받습?�다.
+            // 泥??대룞 移몄씠 ?대? ?ㅻⅨ ?좊떅?먭쾶 ?먯쑀?섏뼱 ?덈떎硫???移몃룄 ?대룞?섏? ?딄퀬 利됱떆 異⑸룎?⑸땲??
+            // ?대룞?먯? ?대떦 移몄쓣 ?먯쑀???좊떅 紐⑤몢 異⑸룎 怨좎젙 ?쇳빐瑜?諛쏆뒿?덈떎.
             if (TryHandleImmediateMonsterUnitCollision(monster, moveOffset))
             {
                 hudService.RefreshHUDs();
@@ -2192,8 +2211,8 @@ public class BattleActionRunner
 
             monster.MoveOccupiedCells(moveResolution.ActualOffset, gridManager);
 
-            // 블롭?� ?�동???�료?????�동 ??그리?�에 ?�여물을 ?�깁?�다.
-            // ?�여물의 ?�해???�동 공격�?별개�?GridEffect ?�이?�에 ?�라 ?�용?�니??
+            // 釉붾∼? ?대룞???꾨즺?????대룞 ??洹몃━?쒖뿉 ?붿뿬臾쇱쓣 ?④퉩?덈떎.
+            // ?붿뿬臾쇱쓽 ?쇳빐???대룞 怨듦꺽怨?蹂꾧컻濡?GridEffect ?곗씠?곗뿉 ?곕씪 ?곸슜?⑸땲??
             if (monster.RuntimeData != null &&
                 string.Equals(monster.RuntimeData.MonsterId, BlobMonsterId, System.StringComparison.Ordinal))
             {
@@ -2272,9 +2291,9 @@ public class BattleActionRunner
         if (monster == null || gridManager == null)
             yield break;
 
-        // ?�탈?� ?�약???��? 목적지�??�선 ?�용?�니??
-        // ?�선 ?�동?�로 ?�재 ?�치가 ?�라지�??�약 ?�시???��? ?�프?�이 0?????�도 ?�으므�?
-        // ?��? 목적지가 ?�는 명령?� MoveOffset??0?�어??취소?��? ?�습?�다.
+        // ?ы깉? ?덉빟???덈? 紐⑹쟻吏瑜??곗꽑 ?ъ슜?⑸땲??
+        // ?욎꽑 ?됰룞?쇰줈 ?꾩옱 ?꾩튂媛 ?щ씪吏硫??덉빟 ?뱀떆???곷? ?ㅽ봽?뗭씠 0?????섎룄 ?덉쑝誘濡?
+        // ?덈? 紐⑹쟻吏媛 ?덈뒗 紐낅졊? MoveOffset??0?댁뼱??痍⑥냼?섏? ?딆뒿?덈떎.
         bool hasReservedDestination = command != null && command.RangeOriginGridIndex >= 0;
 
         if (!hasReservedDestination && moveOffset == Vector2Int.zero)
@@ -2287,8 +2306,8 @@ public class BattleActionRunner
 
         Vector2Int currentCoord = gridManager.IndexToCoord(currentGridIndex);
 
-        // ?�약 ?�시???��? 목적지가 ?�으�?그것???�선 ?�용?�니??
-        // ?�선 ?�동?�나 그랩 ?�문???�턴???�재 ?�치가 ?�라?�도 ?�탈 목적지가 ?�?��?지 ?�습?�다.
+        // ?덉빟 ?뱀떆???덈? 紐⑹쟻吏媛 ?덉쑝硫?洹멸쾬???곗꽑 ?ъ슜?⑸땲??
+        // ?욎꽑 ?대룞?대굹 洹몃옪 ?뚮Ц???뱁꽩???꾩옱 ?꾩튂媛 ?щ씪?몃룄 ?ы깉 紐⑹쟻吏媛 ??댁?吏 ?딆뒿?덈떎.
         int destinationGridIndex = hasReservedDestination
             ? command.RangeOriginGridIndex
             : -1;
@@ -2310,8 +2329,8 @@ public class BattleActionRunner
             destinationGridIndex = gridManager.CoordToIndex(destinationCoord);
         }
 
-        // ?�행 직전까�? 목적지 칸이 비어 ?�어???�니??
-        // 캐릭?�나 ?�른 몬스?��? ?�당 칸을 차�??�다�??�탈 ?�동??취소?�니??
+        // ?ㅽ뻾 吏곸쟾源뚯? 紐⑹쟻吏 移몄씠 鍮꾩뼱 ?덉뼱???⑸땲??
+        // 罹먮┃?곕굹 ?ㅻⅨ 紐ъ뒪?곌? ?대떦 移몄쓣 李⑥??덈떎硫??ы깉 ?대룞??痍⑥냼?⑸땲??
         if (BattleOccupancyService.IsOccupiedByAnyUnit(destinationGridIndex, null, monster))
         {
             MarkNocturnPortalFailed(command);
@@ -2329,10 +2348,10 @@ public class BattleActionRunner
             yield break;
         }
 
-        // 목적지 검?��? ?�과?�으므�??�번 ?�탈?� ?�공 ?�태�?기록?�니??
+        // 紐⑹쟻吏 寃?щ? ?듦낵?덉쑝誘濡??대쾲 ?ы깉? ?깃났 ?곹깭濡?湲곕줉?⑸땲??
         ClearNocturnPortalFailed(command);
 
-        // ?�동 ?�출???�작?�는 ?�간 목적지 ?�고 ?��?지�??�거?�니??
+        // ?대룞 ?곗텧???쒖옉?섎뒗 ?쒓컙 紐⑹쟻吏 ?덇퀬 ?대?吏瑜??쒓굅?⑸땲??
         HideNocturnPortalDestinationIndicator(command);
 
         BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
@@ -2342,8 +2361,8 @@ public class BattleActionRunner
 
         Vector3 destinationPosition = gridManager.GetWorldPositionByIndex(destinationGridIndex);
 
-        // ?�탈 ?�동???�동 ?�태?�을 보여주기 ?�해 Move ?�니메이?�을 ?�생?�니??
-        // ?�치 보간?� ?�용?��? ?�고 목적지?�는 즉시 ?��??�니??
+        // ?ы깉 ?대룞???대룞 ?곹깭?꾩쓣 蹂댁뿬二쇨린 ?꾪빐 Move ?좊땲硫붿씠?섏쓣 ?ъ깮?⑸땲??
+        // ?꾩튂 蹂닿컙? ?ъ슜?섏? ?딄퀬 紐⑹쟻吏?먮뒗 利됱떆 ?섑??⑸땲??
         BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
 
         if (animator != null)
@@ -2352,7 +2371,7 @@ public class BattleActionRunner
             yield return new WaitForSeconds(MoveAnimationDuration);
         }
 
-        // ?�리 그리?��? ?�면 ?�치�??�께 갱신???�제 ?�유 ?�치???�방 칸으�??�동?�킵?�다.
+        // ?쇰━ 洹몃━?쒖? ?붾㈃ ?꾩튂瑜??④퍡 媛깆떊???ㅼ젣 ?먯쑀 ?꾩튂???꾨갑 移몄쑝濡??대룞?쒗궢?덈떎.
         monster.MoveOccupiedCells(moveOffset, gridManager);
         monster.transform.position = destinationPosition;
 
@@ -2595,7 +2614,7 @@ public class BattleActionRunner
             Vector2Int occupiedCoord = gridManager.IndexToCoord(monster.OccupiedGridIndices[i]);
             Vector2Int nextCoord = occupiedCoord + firstStep;
 
-            // �??�곽?� 충돌 ?�해 ?�?�이 ?�닙?�다.
+            // 留??멸낸? 異⑸룎 ?쇳빐 ??곸씠 ?꾨떃?덈떎.
             if (!gridManager.IsValidCoord(nextCoord))
                 return false;
 
@@ -2617,12 +2636,24 @@ public class BattleActionRunner
         string movingCharacterId,
         MonsterUnit movingMonster)
     {
+        BattleCharacter movingCharacter = !string.IsNullOrWhiteSpace(movingCharacterId)
+            ? unitFinder.FindBattleCharacter(movingCharacterId)
+            : null;
+
         if (BattleOccupancyService.TryGetCharacterAtGrid(
                 gridIndex,
                 out BattleCharacter blockingCharacter,
                 movingCharacterId))
         {
             ApplyCrashToPlayer(blockingCharacter);
+            BattleEquipmentEffectService.ApplyPlayerCollisionEffects(
+                movingCharacter,
+                blockingCharacter,
+                null);
+            BattleEquipmentEffectService.ApplyPlayerCollisionEffects(
+                blockingCharacter,
+                movingCharacter,
+                movingMonster);
             return;
         }
 
@@ -2632,6 +2663,10 @@ public class BattleActionRunner
                 movingMonster))
         {
             ApplyCrashToMonster(blockingMonster);
+            BattleEquipmentEffectService.ApplyPlayerCollisionEffects(
+                movingCharacter,
+                null,
+                blockingMonster);
         }
     }
 
@@ -2675,8 +2710,8 @@ public class BattleActionRunner
         if (monster == null)
             yield break;
 
-        // 직전 ?�탈???�유 ?�는 ?�동 불�?�?취소?�다�??�약???�탈 ?�치�?공격 ?�점?�로 ?�용?��? ?�습?�다.
-        // ?�턴???�제 ?�재 ?�치�??�점?�로 바꾸�? ?�재 ?�치?�서 ?�제 ?�?�을 ?�해 방향???�시 ?�합?�다.
+        // 吏곸쟾 ?ы깉???먯쑀 ?먮뒗 ?대룞 遺덇?濡?痍⑥냼?먮떎硫??덉빟???ы깉 ?꾩튂瑜?怨듦꺽 ?먯젏?쇰줈 ?ъ슜?섏? ?딆뒿?덈떎.
+        // ?뱁꽩???ㅼ젣 ?꾩옱 ?꾩튂瑜??먯젏?쇰줈 諛붽씀怨? ?꾩옱 ?꾩튂?먯꽌 ?ㅼ젣 ??곸쓣 ?ν빐 諛⑺뼢???ㅼ떆 ?뺥빀?덈떎.
         if (ConsumeNocturnPortalFailure(command))
         {
             command.SetRangeOriginGridIndex(monster.MainGridIndex);
@@ -2701,8 +2736,8 @@ public class BattleActionRunner
 
         BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
 
-        // AI가 공격 방향??지?�한 경우 ?�약??방향???�행 ?�점?�도 그�?�??�용?�니??
-        // 범위???�른쪽인???�니메이?�만 ?�쪽???�하???�상??방�??�니??
+        // AI媛 怨듦꺽 諛⑺뼢??吏?뺥븳 寃쎌슦 ?덉빟??諛⑺뼢???ㅽ뻾 ?쒖젏?먮룄 洹몃?濡??ъ슜?⑸땲??
+        // 踰붿쐞???ㅻⅨ履쎌씤???좊땲硫붿씠?섎쭔 ?쇱そ???ν븯???꾩긽??諛⑹??⑸땲??
         if (command.HasForcedDirection)
         {
             if (facing != null)
@@ -2712,15 +2747,15 @@ public class BattleActionRunner
                 monster.RuntimeData.Direction = command.ForcedDirection;
         }
 
-        // ?�정??방향??기�??�로 공격 범위�?계산?�니??
+        // ?뺤젙??諛⑺뼢??湲곗??쇰줈 怨듦꺽 踰붿쐞瑜?怨꾩궛?⑸땲??
         RecalculateMonsterSkillRangeAtExecution(monster, command);
 
         BattleCharacter firstPlayerTarget = FindFirstPlayerTarget(command);
 
         BattleUnitAnimator monsterAnimator = monster.GetComponent<BattleUnitAnimator>();
 
-        // 강제 방향???�는 ?�반 AI ?�동�??�제 명중 ?�??쪽으�??�전?�니??
-        // ?�탈 ?�속 공격처럼 방향???�약???�동?� ?�에??지?�한 방향???��??�니??
+        // 媛뺤젣 諛⑺뼢???녿뒗 ?쇰컲 AI ?됰룞留??ㅼ젣 紐낆쨷 ???履쎌쑝濡??뚯쟾?⑸땲??
+        // ?ы깉 ?꾩냽 怨듦꺽泥섎읆 諛⑺뼢???덉빟???됰룞? ?꾩뿉??吏?뺥븳 諛⑺뼢???좎??⑸땲??
         if (!command.HasForcedDirection && firstPlayerTarget != null && facing != null)
         {
             facing.FaceByWorldTarget(firstPlayerTarget.transform.position);
@@ -2762,13 +2797,13 @@ public class BattleActionRunner
                     yield return new WaitForSeconds(ActionDelay);
             }
 
-            // 머크???�사체는 명중 ?��??� 관계없???�약??목표 그리?�에 ?�여물을 ?�성?�니??
-            // ?�사�??�해?� ?�여�??�해??분리?�며, ?�성 ?�간?�는 ?�여�??�해�?즉시 ?�용?��? ?�습?�다.
+            // 癒명겕???ъ궗泥대뒗 紐낆쨷 ?щ?? 愿怨꾩뾾???덉빟??紐⑺몴 洹몃━?쒖뿉 ?붿뿬臾쇱쓣 ?앹꽦?⑸땲??
+            // ?ъ궗泥??쇳빐? ?붿뿬臾??쇳빐??遺꾨━?섎ŉ, ?앹꽦 ?쒓컙?먮뒗 ?붿뿬臾??쇳빐瑜?利됱떆 ?곸슜?섏? ?딆뒿?덈떎.
             if (string.Equals(command.SkillData.SkillId, MuckProjectileSkillId, System.StringComparison.Ordinal))
                 TryPlaceMuckProjectileResidue(command);
 
-            // ?�더???�폭?� 공격 ?�과 ?�용???�난 ???�신???�거?�니??
-            // ?�반 처치가 ?�니므�??�넌?? 고유 ?�이?? ?�물 ?�의 ?�망 보상?� ?�집?��? ?�습?�다.
+            // ?좊뜑???먰룺? 怨듦꺽 ?④낵 ?곸슜???앸궃 ???먯떊???쒓굅?⑸땲??
+            // ?쇰컲 泥섏튂媛 ?꾨땲誘濡??섎꼳?? 怨좎쑀 ?꾩씠?? ?좊Ъ ?깆쓽 ?щ쭩 蹂댁긽? ?섏쭛?섏? ?딆뒿?덈떎.
             if (monster.RuntimeData != null &&
                 monster.RuntimeData.MonsterId == "Mon_06" &&
                 command.SkillData.SkillId == "S_Monster_14")
@@ -2802,8 +2837,8 @@ public class BattleActionRunner
             bool hasAliveTarget = HasAliveMonsterSkillTarget(monster, command);
             bool canPlayProjectileVfx = ShouldPlayMonsterProjectileVfx(monster, command, monsterAnimator);
 
-            // 명중 ?�?�이 ?�어??몬스?�의 공격 모션?� 반드???�생?�니??
-            // ?�??부?�는 ?�해 ?�용�?건너?�며, 공격 ?�도 ?�체�?취소?��? ?�습?�다.
+            // 紐낆쨷 ??곸씠 ?놁뼱??紐ъ뒪?곗쓽 怨듦꺽 紐⑥뀡? 諛섎뱶???ъ깮?⑸땲??
+            // ???遺?щ뒗 ?쇳빐 ?곸슜留?嫄대꼫?곕ŉ, 怨듦꺽 ?쒕룄 ?먯껜瑜?痍⑥냼?섏? ?딆뒿?덈떎.
             if (monsterAnimator != null)
                 monsterAnimator.PlayMonsterSkillAction(command);
 
@@ -3384,13 +3419,13 @@ public class BattleActionRunner
 
             if (IsMonsterDashOutsideGrid(monster, testOffset))
             {
-                // 그리???�곽?� 충돌 ?�?�이 ?�니므�? �?밖으�??��?지 ?�고 멈추기만 ?�니??
+                // 洹몃━???멸낸? 異⑸룎 ??곸씠 ?꾨땲誘濡? 留?諛뽰쑝濡??섍?吏 ?딄퀬 硫덉텛湲곕쭔 ?⑸땲??
                 break;
             }
 
             if (!CanMonsterDashToOffset(monster, testOffset, out BattleCharacter blockingPlayer))
             {
-                // ?�애물이???�른 ?�닛??막힌 경우?�만 충돌�?처리?�니??
+                // ?μ븷臾쇱씠???ㅻⅨ ?좊떅??留됲엺 寃쎌슦?먮쭔 異⑸룎濡?泥섎━?⑸땲??
                 wasBlockedByCollision = true;
                 break;
             }

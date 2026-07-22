@@ -141,8 +141,8 @@ namespace Relic.Gameplay.Battle
             if (runtimeData == null || runtimeData.IsDead)
                 return BattleGridEffectApplyResult.None;
 
-            // ÀÜ¿©¹°Àº ¸ÓÅ©¿Í ºí·ÓÀÌ »ı¼ºÇÏ´Â ¸ó½ºÅÍ Àü¿ë ÁöÇüÀÔ´Ï´Ù.
-            // ¸ó½ºÅÍ´Â ÀÜ¿©¹° À§¸¦ Áö³ª°Å³ª ÇØ´ç À§Ä¡¿¡¼­ Çàµ¿ÇØµµ ÇÇÇØ¸¦ ¹ŞÁö ¾Ê½À´Ï´Ù.
+            // ì”ì—¬ë¬¼ì€ ë¨¸í¬ì™€ ë¸”ë¡­ì´ ìƒì„±í•˜ëŠ” ëª¬ìŠ¤í„° ì „ìš© ì§€í˜•ì…ë‹ˆë‹¤.
+            // ëª¬ìŠ¤í„°ëŠ” ì”ì—¬ë¬¼ ìœ„ë¥¼ ì§€ë‚˜ê±°ë‚˜ í•´ë‹¹ ìœ„ì¹˜ì—ì„œ í–‰ë™í•´ë„ í”¼í•´ë¥¼ ë°›ì§€ ì•ŠìŠµë‹ˆë‹¤.
             if (TryGetGridEffectData(state, gridIndex, out GridEffectData gridEffectData) &&
                 string.Equals(gridEffectData.GridEffectID, "GR_Residue", StringComparison.OrdinalIgnoreCase))
             {
@@ -280,7 +280,9 @@ namespace Relic.Gameplay.Battle
             if (!IsArmorEffect(effectId))
                 return false;
 
-            int shield = Mathf.Max(0, value);
+            int shield = BattleEquipmentEffectService.ModifyArmorGainForPlayer(
+                runtimeData,
+                Mathf.Max(0, value));
 
             if (shield <= 0)
                 return false;
@@ -312,6 +314,21 @@ namespace Relic.Gameplay.Battle
 
             if (heal <= 0)
                 return false;
+
+            if (BattleEquipmentEffectService.ShouldBlockPlayerHealing(runtimeData))
+                return false;
+
+            int overhealArmor = BattleEquipmentEffectService.GetOverhealArmorAmount(
+                runtimeData,
+                heal);
+
+            if (overhealArmor > 0)
+            {
+                runtimeData.CurrentShield += BattleEquipmentEffectService.ModifyArmorGainForPlayer(
+                    runtimeData,
+                    overhealArmor);
+                return true;
+            }
 
             if (runtimeData.MaxHP > 0)
                 runtimeData.CurrentHP = Mathf.Min(runtimeData.MaxHP, runtimeData.CurrentHP + heal);

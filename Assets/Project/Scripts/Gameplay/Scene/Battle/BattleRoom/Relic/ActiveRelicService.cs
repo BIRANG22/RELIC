@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using Relic.Gameplay.Data;
+using Relic.Gameplay.Monster;
 using UnityEngine;
 
 public sealed class ActiveRelicAvailability
@@ -14,7 +16,8 @@ public sealed class ActiveRelicAvailability
 
     public bool RequiresTarget =>
         TargetMode == ActiveRelicTargetMode.Grid ||
-        TargetMode == ActiveRelicTargetMode.AllyGrid;
+        TargetMode == ActiveRelicTargetMode.AllyGrid ||
+        TargetMode == ActiveRelicTargetMode.EnemyGrid;
 }
 
 public sealed class ActiveRelicUseResult
@@ -145,8 +148,8 @@ public sealed class ActiveRelicService
         if (availability.TargetMode != ActiveRelicTargetMode.Self)
             return ActiveRelicUseResult.Fail(availability, "Relic requires a target.");
 
-        if (!ActiveRelicRuntimeUtility.TryAddTurnScopedStatus(runtime, availability.EffectId))
-            return ActiveRelicUseResult.Fail(availability, "Relic effect is already active.");
+        if (!TryApplyImmediateSelfEffect(runtime, availability, out string message))
+            return ActiveRelicUseResult.Fail(availability, message);
 
         if (!ActiveRelicRuntimeUtility.TryConsumeUse(runtime, availability.RelicData))
             return ActiveRelicUseResult.Fail(availability, "No relic uses remain.");
@@ -195,8 +198,30 @@ public sealed class ActiveRelicService
                     out targetMessage);
                 break;
 
+            case ActiveRelicEffectIds.TargetOutgoingDamageReductionThisTurn:
+                succeeded = TryApplyTargetOutgoingDamageReduction(
+                    availability.RelicData,
+                    gridIndex,
+                    gridManager,
+                    out targetMessage);
+                break;
+
+            case ActiveRelicEffectIds.RemoveGridEffect:
+                succeeded = TryRemoveGridEffect(
+                    gridIndex,
+                    gridManager,
+                    gridEffectController,
+                    out targetMessage);
+                break;
+
             case ActiveRelicEffectIds.SpawnGridEffect:
+            case ActiveRelicEffectIds.SpawnPoisonGridEffect:
+            case ActiveRelicEffectIds.SpawnThornGridEffect:
+            case ActiveRelicEffectIds.SpawnObstacleGridEffect:
+            case ActiveRelicEffectIds.SpawnDummyGridEffect:
+            case ActiveRelicEffectIds.SpawnExplosiveDollGridEffect:
                 succeeded = TrySpawnGridEffect(
+                    availability.RelicData,
                     gridIndex,
                     gridManager,
                     gridEffectController,
@@ -299,7 +324,55 @@ public sealed class ActiveRelicService
         return true;
     }
 
+    private static bool TryApplyImmediateSelfEffect(
+        CharacterRuntimeData runtime,
+        ActiveRelicAvailability availability,
+        out string message)
+    {
+        message = string.Empty;
+
+        if (runtime == null || availability == null)
+        {
+            message = "Character is missing.";
+            return false;
+        }
+
+        switch (availability.EffectId)
+        {
+            case ActiveRelicEffectIds.DamageBoostThisTurn:
+            case ActiveRelicEffectIds.DamageReductionThisTurn:
+                if (!ActiveRelicRuntimeUtility.TryAddTurnScopedStatus(runtime, availability.EffectId))
+                {
+                    message = "Relic effect is already active.";
+                    return false;
+                }
+
+                return true;
+
+            case ActiveRelicEffectIds.RecoverCostToMax:
+                runtime.CurrentCost = Mathf.Max(runtime.CurrentCost, runtime.MaxCost);
+                return true;
+
+            case ActiveRelicEffectIds.RecoverUniqueResourceToMax:
+                runtime.CurrentResource = ResolveMaxUniqueResource(runtime);
+                return true;
+
+            case ActiveRelicEffectIds.GrantSwift:
+                AddOrStackStatus(runtime, "E_Swift", GetRelicValue(availability.RelicData, 2));
+                return true;
+
+            case ActiveRelicEffectIds.CleanseDebuffs:
+                RemoveDebuffs(runtime);
+                return true;
+
+            default:
+                message = "Relic effect is not supported.";
+                return false;
+        }
+    }
+
     private static bool TrySpawnGridEffect(
+        RelicData relic,
         int gridIndex,
         GridManager gridManager,
         BattleGridEffectController gridEffectController,
@@ -331,13 +404,177 @@ public sealed class ActiveRelicService
             return false;
         }
 
-        if (!gridEffectController.TryPlaceEffect(gridIndex, ActiveRelicEffectIds.SpawnGridEffectId))
+        string gridEffectId = ActiveRelicEffectResolver.ResolveGridEffectId(relic);
+
+        if (string.IsNullOrWhiteSpace(gridEffectId))
+        {
+            message = "Relic grid effect is missing.";
+            return false;
+        }
+
+        if (!gridEffectController.TryPlaceEffect(gridIndex, gridEffectId))
         {
             message = "Failed to place grid effect.";
             return false;
         }
 
         return true;
+    }
+
+    private static bool TryApplyTargetOutgoingDamageReduction(
+        RelicData relic,
+        int gridIndex,
+        GridManager gridManager,
+        out string message)
+    {
+        message = string.Empty;
+
+        if (!TryGetValidTargetCell(gridManager, gridIndex, out _))
+        {
+            message = "Invalid target cell.";
+            return false;
+        }
+
+        if (!TryFindMonsterAtGrid(gridIndex, out MonsterUnit monster))
+        {
+            message = "No enemy at target cell.";
+            return false;
+        }
+
+        int stack = GetRelicValue(relic, 1);
+        AddOrStackStatus(
+            monster.RuntimeData.StatusEffects,
+            ActiveRelicEffectIds.TargetOutgoingDamageReductionThisTurn,
+            stack);
+        monster.ShowAndRefreshHUD();
+        return true;
+    }
+
+    private static bool TryRemoveGridEffect(
+        int gridIndex,
+        GridManager gridManager,
+        BattleGridEffectController gridEffectController,
+        out string message)
+    {
+        message = string.Empty;
+
+        if (gridEffectController == null)
+        {
+            message = "Grid effect controller is missing.";
+            return false;
+        }
+
+        if (!TryGetValidTargetCell(gridManager, gridIndex, out _))
+        {
+            message = "Invalid target cell.";
+            return false;
+        }
+
+        if (!gridEffectController.HasEffect(gridIndex))
+        {
+            message = "Target cell has no grid effect.";
+            return false;
+        }
+
+        if (!gridEffectController.TryRemoveEffect(gridIndex))
+        {
+            message = "Failed to remove grid effect.";
+            return false;
+        }
+
+        return true;
+    }
+
+    private static int ResolveMaxUniqueResource(CharacterRuntimeData runtime)
+    {
+        if (runtime == null)
+            return 0;
+
+        CharacterMasterData masterData =
+            DataManager.Instance?.CharacterDatabase?.Get(runtime.CharacterId);
+
+        if (masterData != null)
+            return Mathf.Max(0, masterData.MaxResource);
+
+        return Mathf.Max(0, runtime.CurrentResource);
+    }
+
+    private static int GetRelicValue(RelicData relic, int fallback)
+    {
+        if (relic != null && int.TryParse(relic.ValueRate, out int value))
+            return Mathf.Max(0, value);
+
+        if (relic?.EffectEntries != null && relic.EffectEntries.Count > 0)
+            return Mathf.Max(0, relic.EffectEntries[0].ValueAmount);
+
+        return Mathf.Max(0, fallback);
+    }
+
+    private static void AddOrStackStatus(
+        CharacterRuntimeData runtime,
+        string effectId,
+        int stack)
+    {
+        if (runtime == null || string.IsNullOrWhiteSpace(effectId) || stack <= 0)
+            return;
+
+        runtime.StatusEffects ??= new System.Collections.Generic.List<StatusEffectRuntimeData>();
+        AddOrStackStatus(runtime.StatusEffects, effectId, stack);
+    }
+
+    private static void AddOrStackStatus(
+        System.Collections.Generic.List<StatusEffectRuntimeData> statuses,
+        string effectId,
+        int stack)
+    {
+        if (statuses == null || string.IsNullOrWhiteSpace(effectId) || stack <= 0)
+            return;
+
+        for (int i = 0; i < statuses.Count; i++)
+        {
+            StatusEffectRuntimeData status = statuses[i];
+
+            if (status == null || status.EffectId != effectId)
+                continue;
+
+            status.Stack += stack;
+            status.TurnCount = Mathf.Max(status.TurnCount, 1);
+            return;
+        }
+
+        statuses.Add(new StatusEffectRuntimeData
+        {
+            EffectId = effectId,
+            Stack = stack,
+            TurnCount = 1
+        });
+    }
+
+    private static void RemoveDebuffs(CharacterRuntimeData runtime)
+    {
+        if (runtime?.StatusEffects == null)
+            return;
+
+        for (int i = runtime.StatusEffects.Count - 1; i >= 0; i--)
+        {
+            StatusEffectRuntimeData status = runtime.StatusEffects[i];
+
+            if (status == null)
+                continue;
+
+            if (IsDebuff(status.EffectId))
+                runtime.StatusEffects.RemoveAt(i);
+        }
+    }
+
+    private static bool IsDebuff(string effectId)
+    {
+        return effectId == "E_Poison" ||
+               effectId == "E_Bleed" ||
+               effectId == "E_Vulnerable" ||
+               effectId == "E_Weaken" ||
+               effectId == "E_Corrosion" ||
+               effectId == "E_Burn";
     }
 
     private static bool TryGetValidTargetCell(
@@ -416,6 +653,51 @@ public sealed class ActiveRelicService
 
             ally = candidate;
             return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryFindMonsterAtGrid(
+        int gridIndex,
+        out MonsterUnit monster)
+    {
+        monster = null;
+
+        MonsterUnit[] monsters = Object.FindObjectsByType<MonsterUnit>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < monsters.Length; i++)
+        {
+            MonsterUnit candidate = monsters[i];
+
+            if (candidate == null ||
+                candidate.RuntimeData == null ||
+                candidate.RuntimeData.IsDead)
+            {
+                continue;
+            }
+
+            if (candidate.MainGridIndex == gridIndex)
+            {
+                monster = candidate;
+                return true;
+            }
+
+            IReadOnlyList<int> occupiedGridIndices = candidate.OccupiedGridIndices;
+
+            if (occupiedGridIndices == null)
+                continue;
+
+            for (int j = 0; j < occupiedGridIndices.Count; j++)
+            {
+                if (occupiedGridIndices[j] != gridIndex)
+                    continue;
+
+                monster = candidate;
+                return true;
+            }
         }
 
         return false;

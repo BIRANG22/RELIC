@@ -24,6 +24,12 @@ public class PierceEffect : BattleEffectBase
             int finalDamage = BattleDamageModifierUtility.CalculateFinalDamageToMonster(context, damage);
 
             int dealtDamage = BattleEffectUtility.PierceDamageMonster(context.MonsterTarget, finalDamage);
+
+            BattleEquipmentEffectService.ApplyPlayerDamageDealtEffects(
+                context,
+                dealtDamage,
+                wasAlive && context.MonsterTarget.RuntimeData.IsDead);
+
             bool killedTarget = wasAlive && context.MonsterTarget.RuntimeData.IsDead;
 
             if (dealtDamage > 0 && context.PlayerCaster != null)

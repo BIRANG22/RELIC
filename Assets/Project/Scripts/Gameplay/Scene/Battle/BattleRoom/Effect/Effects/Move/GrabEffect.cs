@@ -20,6 +20,9 @@ public class GrabEffect : BattleEffectBase
         {
             if (context.PlayerTarget != null)
             {
+                if (BattleEquipmentEffectService.IsForcedMoveImmune(context.PlayerTarget.RuntimeData))
+                    break;
+
                 if (!TryMovePlayer(context.PlayerTarget, offset, context.GridManager))
                     break;
             }
@@ -59,8 +62,8 @@ public class GrabEffect : BattleEffectBase
         if (BattleOccupancyService.IsOccupiedByAnyUnit(targetIndex, target.CharacterId))
             return false;
 
-        // ÀÜÇØÃ³·³ ÀÌµ¿ ºÒ°¡·Î µî·ÏµÈ ±×¸®µå´Â °­Á¦ÀÌµ¿À¸·Îµµ µé¾î°¥ ¼ö ¾ø½À´Ï´Ù.
-        // ±×·¦ ´ë»óÀÌ ÇØ´ç Ä­¿¡ ºÎµúÈ÷¸é ÀÌµ¿ÇÏÁö ¾Ê°í Ãæµ¹ °íÁ¤ ÇÇÇØ¸¦ ¹Ş½À´Ï´Ù.
+        // ì”í•´ì²˜ëŸ¼ ì´ë™ ë¶ˆê°€ë¡œ ë“±ë¡ëœ ê·¸ë¦¬ë“œëŠ” ê°•ì œì´ë™ìœ¼ë¡œë„ ë“¤ì–´ê°ˆ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.
+        // ê·¸ë© ëŒ€ìƒì´ í•´ë‹¹ ì¹¸ì— ë¶€ë”ªíˆë©´ ì´ë™í•˜ì§€ ì•Šê³  ì¶©ëŒ ê³ ì • í”¼í•´ë¥¼ ë°›ìŠµë‹ˆë‹¤.
         if (IsGridEffectBlocked(targetIndex))
         {
             ApplyCrashToPlayer(target, gridManager);
@@ -70,7 +73,7 @@ public class GrabEffect : BattleEffectBase
         Vector3 startPosition = target.transform.position;
         Vector3 targetPosition = gridManager.GetWorldPositionByIndex(targetIndex);
 
-        // ³í¸® ±×¸®µå À§Ä¡¸¦ ¸ÕÀú °»½ÅÇÏ°í È­¸é¿¡¼­´Â ºÎµå·´°Ô ÀÌµ¿ÇÏ´Â ¿¬ÃâÀ» Àç»ıÇÕ´Ï´Ù.
+        // ë…¼ë¦¬ ê·¸ë¦¬ë“œ ìœ„ì¹˜ë¥¼ ë¨¼ì € ê°±ì‹ í•˜ê³  í™”ë©´ì—ì„œëŠ” ë¶€ë“œëŸ½ê²Œ ì´ë™í•˜ëŠ” ì—°ì¶œì„ ì¬ìƒí•©ë‹ˆë‹¤.
         target.SetGridIndex(targetIndex);
         target.StartCoroutine(MoveTransformSmooth(target.transform, startPosition, targetPosition));
 
@@ -117,7 +120,7 @@ public class GrabEffect : BattleEffectBase
         Vector3 startPosition = target.transform.position;
         Vector3 targetPosition = gridManager.GetWorldPositionByIndex(movedMainIndex);
 
-        // Á¡À¯ ±×¸®µå¸¦ ¸ÕÀú °»½ÅÇÑ µÚ ¸ó½ºÅÍ ¿ÀºêÁ§Æ®¸¦ ºÎµå·´°Ô ÀÌµ¿½ÃÅµ´Ï´Ù.
+        // ì ìœ  ê·¸ë¦¬ë“œë¥¼ ë¨¼ì € ê°±ì‹ í•œ ë’¤ ëª¬ìŠ¤í„° ì˜¤ë¸Œì íŠ¸ë¥¼ ë¶€ë“œëŸ½ê²Œ ì´ë™ì‹œí‚µë‹ˆë‹¤.
         target.MoveOccupiedCells(offset, gridManager);
         target.StartCoroutine(MoveTransformSmooth(target.transform, startPosition, targetPosition));
 

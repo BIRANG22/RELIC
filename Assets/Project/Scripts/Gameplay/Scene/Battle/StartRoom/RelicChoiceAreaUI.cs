@@ -15,12 +15,6 @@ public class RelicChoiceAreaUI : MonoBehaviour
 
     [Header("Choice Setting")]
     [SerializeField, Min(1)] private int choiceCount = 3;
-    [SerializeField] private bool useRelicNumberRange = true;
-
-    [Header("Relic Id Range")]
-    [SerializeField] private int minRelicNumber = 1;
-    [SerializeField] private int maxRelicNumber = 20;
-    [SerializeField] private string relicIdPrefix = "Relic_";
 
     [Header("Complete")]
     [SerializeField] private BattleMapController battleMapController;
@@ -123,18 +117,14 @@ public class RelicChoiceAreaUI : MonoBehaviour
 
     private List<string> PickRandomRelicIds()
     {
-        List<string> candidates = new();
-
         if (DataManager.Instance == null || DataManager.Instance.RelicDatabase == null)
         {
             Debug.LogWarning("[RelicChoiceAreaUI] DataManager or RelicDatabase is null.");
-            return candidates;
+            return new List<string>();
         }
 
-        if (useRelicNumberRange)
-            AddRelicsFromNumberRange(candidates);
-        else
-            AddAllRelics(candidates);
+        List<string> candidates = StartRoomRelicSelectionUtility.CollectActiveRelicIds(
+            DataManager.Instance.RelicDatabase.GetAll());
 
         RemoveAlreadyOwnedRelics(candidates);
         Shuffle(candidates);
@@ -144,36 +134,6 @@ public class RelicChoiceAreaUI : MonoBehaviour
             return new List<string>();
 
         return candidates.GetRange(0, count);
-    }
-
-    private void AddRelicsFromNumberRange(List<string> candidates)
-    {
-        int start = Mathf.Min(minRelicNumber, maxRelicNumber);
-        int end = Mathf.Max(minRelicNumber, maxRelicNumber);
-        string prefix = string.IsNullOrWhiteSpace(relicIdPrefix) ? "Relic_" : relicIdPrefix;
-
-        for (int i = start; i <= end; i++)
-        {
-            string id = prefix + i.ToString("00");
-            if (DataManager.Instance.RelicDatabase.TryGet(id, out _))
-                candidates.Add(id);
-        }
-    }
-
-    private void AddAllRelics(List<string> candidates)
-    {
-        IReadOnlyList<RelicData> allRelics = DataManager.Instance.RelicDatabase.GetAll();
-        if (allRelics == null)
-            return;
-
-        for (int i = 0; i < allRelics.Count; i++)
-        {
-            RelicData relicData = allRelics[i];
-            if (relicData == null || string.IsNullOrWhiteSpace(relicData.FragmentId))
-                continue;
-
-            candidates.Add(relicData.FragmentId.Trim());
-        }
     }
 
     private void RemoveAlreadyOwnedRelics(List<string> candidates)
@@ -246,7 +206,7 @@ public class RelicChoiceAreaUI : MonoBehaviour
 
         if (HasRelicAnywhere(relicId))
         {
-            Debug.LogWarning($"[RelicChoiceAreaUI] ¿ÃπÃ ∫∏¿Ø ¡ﬂ¿Œ ¿Øπ∞¿‘¥œ¥Ÿ. Relic:{relicId}");
+            Debug.LogWarning($"[RelicChoiceAreaUI] Ïù¥ÎØ∏ Î≥¥Ïú† Ï§ëÏù∏ Ïú†Î¨ºÏûÖÎãàÎã§. Relic:{relicId}");
             SetupChoices();
             return;
         }
@@ -398,5 +358,31 @@ public class RelicChoiceAreaUI : MonoBehaviour
             int randomIndex = Random.Range(i, list.Count);
             (list[i], list[randomIndex]) = (list[randomIndex], list[i]);
         }
+    }
+}
+
+public static class StartRoomRelicSelectionUtility
+{
+    private const string ActiveRelicIdPrefix = "Relic_A_";
+
+    public static List<string> CollectActiveRelicIds(IReadOnlyList<RelicData> relics)
+    {
+        List<string> result = new();
+
+        if (relics == null)
+            return result;
+
+        for (int i = 0; i < relics.Count; i++)
+        {
+            string id = relics[i]?.FragmentId?.Trim();
+
+            if (!string.IsNullOrWhiteSpace(id) &&
+                id.StartsWith(ActiveRelicIdPrefix, System.StringComparison.Ordinal))
+            {
+                result.Add(id);
+            }
+        }
+
+        return result;
     }
 }

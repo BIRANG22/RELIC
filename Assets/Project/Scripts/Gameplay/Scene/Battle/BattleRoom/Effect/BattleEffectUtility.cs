@@ -226,6 +226,10 @@ public static class BattleEffectUtility
             target.RuntimeData.CharacterId,
             shownDamage,
             hpBefore > 0 && target.RuntimeData.CurrentHP <= 0);
+
+        if (shownDamage > 0)
+            BattleEquipmentEffectService.MarkPlayerDamagedThisTurn(target.RuntimeData);
+
         HandlePlayerDeathIfNeeded(target);
         BattleDamageTextPopupUI.Show(target.transform, shownDamage);
 
@@ -302,6 +306,10 @@ public static class BattleEffectUtility
             target.RuntimeData.CharacterId,
             shownDamage,
             hpBefore > 0 && target.RuntimeData.CurrentHP <= 0);
+
+        if (shownDamage > 0)
+            BattleEquipmentEffectService.MarkPlayerDamagedThisTurn(target.RuntimeData);
+
         HandlePlayerDeathIfNeeded(target);
         BattleDamageTextPopupUI.Show(target.transform, shownDamage);
 
@@ -371,6 +379,10 @@ public static class BattleEffectUtility
             target.RuntimeData.CharacterId,
             shownDamage,
             hpBefore > 0 && target.RuntimeData.CurrentHP <= 0);
+
+        if (shownDamage > 0)
+            BattleEquipmentEffectService.MarkPlayerDamagedThisTurn(target.RuntimeData);
+
         HandlePlayerDeathIfNeeded(target);
         if (isPoison)
             BattleDamageTextPopupUI.ShowPoisonDamage(target.transform, shownDamage);
@@ -436,6 +448,20 @@ public static class BattleEffectUtility
             return;
 
         value = Mathf.Max(0, value);
+
+        if (BattleEquipmentEffectService.ShouldBlockPlayerHealing(target.RuntimeData))
+            return;
+
+        int overhealArmor = BattleEquipmentEffectService.GetOverhealArmorAmount(
+            target.RuntimeData,
+            value);
+
+        if (overhealArmor > 0)
+        {
+            AddShieldToPlayer(target, overhealArmor);
+            return;
+        }
+
         int hpBefore = target.RuntimeData.CurrentHP;
 
         int maxHP = target.RuntimeData.MaxHP;
@@ -477,7 +503,9 @@ public static class BattleEffectUtility
         if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return;
 
-        int shieldValue = Mathf.Max(0, value);
+        int shieldValue = BattleEquipmentEffectService.ModifyArmorGainForPlayer(
+            target.RuntimeData,
+            Mathf.Max(0, value));
 
         if (shieldValue <= 0)
             return;

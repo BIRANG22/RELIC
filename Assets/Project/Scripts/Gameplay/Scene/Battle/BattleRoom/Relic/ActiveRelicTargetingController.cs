@@ -128,6 +128,12 @@ public class ActiveRelicTargetingController : MonoBehaviour
             return cells;
         }
 
+        if (pendingAvailability.TargetMode == ActiveRelicTargetMode.EnemyGrid)
+        {
+            AddEnemyCells(cells);
+            return cells;
+        }
+
         for (int x = 0; x < gridManager.Width; x++)
         {
             for (int y = 0; y < gridManager.Height; y++)
@@ -162,6 +168,29 @@ public class ActiveRelicTargetingController : MonoBehaviour
                 continue;
 
             cells.Add(character.CurrentGridIndex);
+        }
+    }
+
+    private void AddEnemyCells(List<int> cells)
+    {
+        MonsterUnit[] monsters = FindObjectsByType<MonsterUnit>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < monsters.Length; i++)
+        {
+            MonsterUnit monster = monsters[i];
+
+            if (monster == null ||
+                monster.RuntimeData == null ||
+                monster.RuntimeData.IsDead ||
+                monster.OccupiedGridIndices == null)
+            {
+                continue;
+            }
+
+            for (int j = 0; j < monster.OccupiedGridIndices.Count; j++)
+                cells.Add(monster.OccupiedGridIndices[j]);
         }
     }
 
