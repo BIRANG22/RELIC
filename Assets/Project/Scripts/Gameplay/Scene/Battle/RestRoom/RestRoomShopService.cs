@@ -206,7 +206,7 @@ public static class RestRoomShopService
             skill.SkillId,
             string.IsNullOrWhiteSpace(skill.Name) ? skill.SkillId : skill.Name,
             description,
-            RollSkillPrice(skill.Rarity, random),
+            BattleEquipmentEffectService.ModifyShopPrice(RollSkillPrice(skill.Rarity, random)),
             skill.Rarity,
             skill,
             null,
@@ -220,7 +220,7 @@ public static class RestRoomShopService
             relic.FragmentId,
             string.IsNullOrWhiteSpace(relic.Name) ? relic.FragmentId : relic.Name,
             relic.EffectDesc,
-            RollRelicPrice(random),
+            BattleEquipmentEffectService.ModifyShopPrice(RollRelicPrice(random)),
             SkillRarity.None,
             null,
             relic);

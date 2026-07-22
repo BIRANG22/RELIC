@@ -42,6 +42,7 @@ public class BattleResultChecker : MonoBehaviour
         {
             battleEnded = true;
             Debug.Log("[BattleResultChecker] Battle Win");
+            BattleEquipmentEffectService.ApplyBattleEndHealToParty();
 
             if (IsCurrentNodeBoss())
             {

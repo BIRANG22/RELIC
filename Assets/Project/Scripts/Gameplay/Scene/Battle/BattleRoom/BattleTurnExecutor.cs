@@ -251,6 +251,10 @@ public class BattleTurnExecutor : MonoBehaviour
         timelineController.SetSelectedCharacterScaleFeedbackActive(false);
         timelineController.SetSlotSelectionLocked(true);
 
+        ApplyPlayerEndTurnTriggeredEquipmentEffects();
+        ApplyPlayerReservationTurnStartEquipmentEffects();
+        RefreshBattleHUDs();
+
         BattleExecutionStarted?.Invoke();
 
         executeTurnCoroutine = StartCoroutine(ExecuteTurnRoutine());
@@ -655,6 +659,71 @@ public class BattleTurnExecutor : MonoBehaviour
             BattleEquipmentEffectService.ApplyPlayerTurnStartEffects(
                 runtime,
                 playerTurnNumber);
+        }
+    }
+
+    private void ApplyPlayerEndTurnTriggeredEquipmentEffects()
+    {
+        if (DataManager.Instance == null ||
+            DataManager.Instance.PartyRuntimeStore == null ||
+            DataManager.Instance.CharacterRuntimeStore == null)
+        {
+            return;
+        }
+
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+
+        for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
+        {
+            string characterId = partyStore.GetCharacterId(i);
+
+            if (string.IsNullOrWhiteSpace(characterId))
+                continue;
+
+            if (!DataManager.Instance.CharacterRuntimeStore.TryGet(
+                    characterId,
+                    out CharacterRuntimeData runtime))
+            {
+                continue;
+            }
+
+            BattleEquipmentEffectService.ApplyEndTurnTriggeredEffects(runtime);
+        }
+    }
+
+    private void ApplyPlayerReservationTurnStartEquipmentEffects()
+    {
+        if (timelineController == null ||
+            DataManager.Instance == null ||
+            DataManager.Instance.PartyRuntimeStore == null ||
+            DataManager.Instance.CharacterRuntimeStore == null)
+        {
+            return;
+        }
+
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+
+        for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
+        {
+            string characterId = partyStore.GetCharacterId(i);
+
+            if (string.IsNullOrWhiteSpace(characterId))
+                continue;
+
+            if (!DataManager.Instance.CharacterRuntimeStore.TryGet(
+                    characterId,
+                    out CharacterRuntimeData runtime))
+            {
+                continue;
+            }
+
+            BattleEquipmentEffectService.ApplyReservationTurnStartEffects(
+                runtime,
+                playerTurnNumber,
+                timelineController.CountPlayerOccupiedSlots(characterId),
+                timelineController.CountPlayerEmptySlots(characterId),
+                timelineController.GetPlayerEmptySlotMask(characterId),
+                timelineController.CountPlayerAttackSkillCommands(characterId));
         }
     }
 

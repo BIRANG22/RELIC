@@ -12,6 +12,9 @@ public abstract class BattleEffectBase
         if (!CanApply(context))
             return;
 
+        if (BattleEquipmentEffectService.ShouldBlockSelfBuff(context))
+            return;
+
         Apply(context);
 
         if (context.PlayerSkillData != null &&
@@ -22,7 +25,10 @@ public abstract class BattleEffectBase
                 : context.PlayerCaster;
 
             if (buffTarget != null)
+            {
                 BattleEffectUtility.OnPlayerBuffApplied?.Invoke(buffTarget);
+                BattleEquipmentEffectService.HandlePlayerBuffApplied(context, buffTarget);
+            }
         }
     }
 

@@ -1,8 +1,8 @@
 using UnityEngine;
 
 /// <summary>
-/// °­Á¦ ÀÌµ¿ÀÌ À¯´Ö, Àå¾Ö¹° ¶Ç´Â ÀÌµ¿ ºÒ°¡ À§Ä¡¿¡ ¸·ÇûÀ» ¶§ Àû¿ëµÇ´Â °íÁ¤ ÇÇÇØ È¿°úÀÔ´Ï´Ù.
-/// ¹æ¾îµµ¿Í ÇÇÇØ Áõ°¨ È¿°úÀÇ ¿µÇâÀ» ¹ŞÁö ¾Ê½À´Ï´Ù.
+/// ê°•ì œ ì´ë™ì´ ìœ ë‹›, ì¥ì• ë¬¼ ë˜ëŠ” ì´ë™ ë¶ˆê°€ ìœ„ì¹˜ì— ë§‰í˜”ì„ ë•Œ ì ìš©ë˜ëŠ” ê³ ì • í”¼í•´ íš¨ê³¼ì…ë‹ˆë‹¤.
+/// ë°©ì–´ë„ì™€ í”¼í•´ ì¦ê° íš¨ê³¼ì˜ ì˜í–¥ì„ ë°›ì§€ ì•ŠìŠµë‹ˆë‹¤.
 /// </summary>
 public class CrashEffect : BattleEffectBase
 {
@@ -23,6 +23,9 @@ public class CrashEffect : BattleEffectBase
 
         if (context.PlayerTarget != null)
         {
+            if (BattleEquipmentEffectService.IsCrashDamageImmune(context.PlayerTarget.RuntimeData))
+                return;
+
             BattleEffectUtility.StatusDamagePlayer(context.PlayerTarget, damage);
             return;
         }

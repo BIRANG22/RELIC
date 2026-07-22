@@ -206,6 +206,7 @@ public class RestRoomController : MonoBehaviour
                 continue;
 
             int healAmount = Mathf.CeilToInt(maxHp * safeRatio);
+            healAmount = BattleEquipmentEffectService.ModifyRestHealAmountForParty(healAmount);
             runtimeData.CurrentHP = Mathf.Clamp(runtimeData.CurrentHP + healAmount, 0, maxHp);
         }
 

@@ -14,6 +14,8 @@ public static class BattleDamageModifierUtility
     private const string LowHpPowerEffectId = "E_Low_HP_Power";
     private const string ActiveDamageBoostEffectId = ActiveRelicEffectIds.DamageBoostThisTurn;
     private const string ActiveDamageReductionEffectId = ActiveRelicEffectIds.DamageReductionThisTurn;
+    private const string TargetOutgoingDamageReductionEffectId =
+        ActiveRelicEffectIds.TargetOutgoingDamageReductionThisTurn;
 
     public static int CalculateFinalDamageToPlayer(BattleEffectContext context, int baseDamage)
     {
@@ -34,7 +36,12 @@ public static class BattleDamageModifierUtility
         }
 
         if (context?.PlayerTarget != null)
+        {
             damage = ApplyTargetModifiers(damage, context.PlayerTarget.RuntimeData.StatusEffects);
+            damage = BattleEquipmentEffectService.ModifyIncomingDamageToPlayer(
+                context.PlayerTarget.RuntimeData,
+                damage);
+        }
 
         return Mathf.Max(1, Mathf.CeilToInt(damage));
     }
@@ -48,6 +55,8 @@ public static class BattleDamageModifierUtility
 
         if (context?.MonsterCaster != null)
             damage = ApplyMonsterAttackerModifiers(damage, context.MonsterCaster.RuntimeData);
+
+        damage = BattleEquipmentEffectService.ModifyPlayerDamageToMonster(context, damage);
 
         if (context?.MonsterTarget != null)
             damage = ApplyTargetModifiers(damage, context.MonsterTarget.RuntimeData.StatusEffects);
@@ -97,6 +106,9 @@ public static class BattleDamageModifierUtility
 
         if (GetStatusStack(statuses, ActiveDamageBoostEffectId) > 0)
             damage *= 2f;
+
+        if (GetStatusStack(statuses, TargetOutgoingDamageReductionEffectId) > 0)
+            damage *= 0.5f;
 
         if (isMoveFirstAttackReady &&
             GetStatusStack(statuses, MoveFirstAttackPowerEffectId) > 0)

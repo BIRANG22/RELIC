@@ -9,11 +9,11 @@ using UnityEngine.UI;
 public class BattleTimelineController : MonoBehaviour
 {
     [Header("Timeline")]
-    [Tooltip("이전 구조 호환용입니다. 비어 있지 않으면 TimelineBar1로 사용합니다.")]
+    [Tooltip("?댁쟾 援ъ“ ?명솚?⑹엯?덈떎. 鍮꾩뼱 ?덉? ?딆쑝硫?TimelineBar1濡??ъ슜?⑸땲??")]
     [SerializeField] private BattleTimelineBarUI timelineBarUI;
-    [Tooltip("홀수 턴에 예약 표시를 담당하는 TimelineBar입니다.")]
+    [Tooltip("????댁뿉 ?덉빟 ?쒖떆瑜??대떦?섎뒗 TimelineBar?낅땲??")]
     [SerializeField] private BattleTimelineBarUI timelineBarUI1;
-    [Tooltip("짝수 턴에 예약 표시를 담당하는 TimelineBar입니다.")]
+    [Tooltip("吏앹닔 ?댁뿉 ?덉빟 ?쒖떆瑜??대떦?섎뒗 TimelineBar?낅땲??")]
     [SerializeField] private BattleTimelineBarUI timelineBarUI2;
     [SerializeField] private ReserveTurnSlotUI[] reserveSlots;
 
@@ -56,7 +56,7 @@ public class BattleTimelineController : MonoBehaviour
 
     [Header("Slot Selection Lock")]
     [SerializeField] private bool showWarningWhenSlotSelectionLocked = false;
-    [SerializeField] private string slotSelectionLockedMessage = "턴 진행 중에는 슬롯을 선택할 수 없습니다.";
+    [SerializeField] private string slotSelectionLockedMessage = "??吏꾪뻾 以묒뿉???щ’???좏깮?????놁뒿?덈떎.";
 
     [Header("Auto Slot Selection")]
     [SerializeField] private bool autoSelectFirstSlotWhenInputReady = true;
@@ -73,31 +73,31 @@ public class BattleTimelineController : MonoBehaviour
 
     [Header("Timeline Bar Slide")]
     [SerializeField] private bool playTimelineSlotSlide = true;
-    [Tooltip("이전 구조 호환용입니다. 비어 있지 않으면 TimelineBar1 이동 대상으로 사용합니다.")]
+    [Tooltip("?댁쟾 援ъ“ ?명솚?⑹엯?덈떎. 鍮꾩뼱 ?덉? ?딆쑝硫?TimelineBar1 ?대룞 ??곸쑝濡??ъ슜?⑸땲??")]
     [SerializeField] private RectTransform timelineBarSlideTarget;
-    [Tooltip("홀수 턴에 사용하는 TimelineBar1 이동 대상입니다.")]
+    [Tooltip("????댁뿉 ?ъ슜?섎뒗 TimelineBar1 ?대룞 ??곸엯?덈떎.")]
     [SerializeField] private RectTransform timelineBarSlideTarget1;
-    [Tooltip("짝수 턴에 사용하는 TimelineBar2 이동 대상입니다.")]
+    [Tooltip("吏앹닔 ?댁뿉 ?ъ슜?섎뒗 TimelineBar2 ?대룞 ??곸엯?덈떎.")]
     [SerializeField] private RectTransform timelineBarSlideTarget2;
-    [Tooltip("대기 중인 TimelineBar를 현재 TimelineBar 오른쪽에 이어붙일 X 거리입니다.")]
+    [Tooltip("?湲?以묒씤 TimelineBar瑜??꾩옱 TimelineBar ?ㅻⅨ履쎌뿉 ?댁뼱遺숈씪 X 嫄곕━?낅땲??")]
     [SerializeField] private float standbyTimelineBarOffsetX = 1420f;
-    [Tooltip("5슬롯까지 모두 진행된 뒤 현재 TimelineBar가 도착해야 하는 X 위치입니다. 기본 위치 X=0 기준입니다. 5슬롯 종료 위치에서 이 값까지 추가 이동합니다.")]
+    [Tooltip("5?щ’源뚯? 紐⑤몢 吏꾪뻾?????꾩옱 TimelineBar媛 ?꾩갑?댁빞 ?섎뒗 X ?꾩튂?낅땲?? 湲곕낯 ?꾩튂 X=0 湲곗??낅땲?? 5?щ’ 醫낅즺 ?꾩튂?먯꽌 ??媛믨퉴吏 異붽? ?대룞?⑸땲??")]
     [SerializeField] private float completedTurnTimelineBarPositionX = -1420f;
-    [Tooltip("턴엔드 버튼을 누른 직후, 1번 슬롯이 시작되기 전에 TimelineBar가 먼저 왼쪽으로 이동하는 거리입니다. 1번 슬롯에서만 한 번 적용됩니다.")]
+    [Tooltip("?댁뿏??踰꾪듉???꾨Ⅸ 吏곹썑, 1踰??щ’???쒖옉?섍린 ?꾩뿉 TimelineBar媛 癒쇱? ?쇱そ?쇰줈 ?대룞?섎뒗 嫄곕━?낅땲?? 1踰??щ’?먯꽌留???踰??곸슜?⑸땲??")]
     [SerializeField] private float firstSlotEndTurnTimelineLineSlideAmountX = -60f;
     [SerializeField] private float timelineSlotSlideDuration = 0.18f;
-    [Tooltip("TurnMark와 Use_skill의 4프레임 갈림 애니메이션이 눈에 보이도록, 갈림 연출과 함께 이동할 때 사용하는 최소 이동 시간입니다.")]
+    [Tooltip("TurnMark? Use_skill??4?꾨젅??媛덈┝ ?좊땲硫붿씠?섏씠 ?덉뿉 蹂댁씠?꾨줉, 媛덈┝ ?곗텧怨??④퍡 ?대룞?????ъ슜?섎뒗 理쒖냼 ?대룞 ?쒓컙?낅땲??")]
     [SerializeField] private float grindTimelineSlideDuration = 0.32f;
     [SerializeField] private bool useUnscaledTimeForTimelineSlotSlide = false;
 
     [Header("Timeline Sprite Grind Animation")]
     [SerializeField] private BattleTimelineSpriteAnimationController timelineSpriteAnimationController;
     [SerializeField] private bool autoFindTimelineSpriteAnimationController = true;
-    [Tooltip("각 슬롯이 시작될 때 TurnMark가 갈리면서 TimelineBar 전체가 왼쪽으로 이동하는 거리입니다.")]
+    [Tooltip("媛??щ’???쒖옉????TurnMark媛 媛덈━硫댁꽌 TimelineBar ?꾩껜媛 ?쇱そ?쇰줈 ?대룞?섎뒗 嫄곕━?낅땲??")]
     [SerializeField] private float slotStartTimelineLineSlideAmountX = -50f;
-    [Tooltip("해당 슬롯의 첫 번째 Use_skill이 갈릴 때 전체 타임라인 라인이 왼쪽으로 이동하는 거리입니다.")]
+    [Tooltip("?대떦 ?щ’??泥?踰덉㎏ Use_skill??媛덈┫ ???꾩껜 ??꾨씪???쇱씤???쇱そ?쇰줈 ?대룞?섎뒗 嫄곕━?낅땲??")]
     [SerializeField] private float firstUseSkillTimelineLineSlideAmountX = -45f;
-    [Tooltip("해당 슬롯의 두 번째 이후 Use_skill이 갈릴 때 전체 타임라인 라인이 왼쪽으로 이동하는 거리입니다.")]
+    [Tooltip("?대떦 ?щ’????踰덉㎏ ?댄썑 Use_skill??媛덈┫ ???꾩껜 ??꾨씪???쇱씤???쇱そ?쇰줈 ?대룞?섎뒗 嫄곕━?낅땲??")]
     [SerializeField] private float additionalUseSkillTimelineLineSlideAmountX = -40f;
 
     [Header("Timeline Grind VFX")]
@@ -176,8 +176,8 @@ public class BattleTimelineController : MonoBehaviour
 
     private void OnValidate()
     {
-        // Unity는 스크립트 기본값이 바뀌어도 이미 씬/프리팹에 저장된 Inspector 값을 유지합니다.
-        // 이전 수정본에서 남은 1335 / -1440 값은 현재 구조의 기준값인 1420 / -1420으로 자동 보정합니다.
+        // Unity???ㅽ겕由쏀듃 湲곕낯媛믪씠 諛붾뚯뼱???대? ???꾨━?뱀뿉 ??λ맂 Inspector 媛믪쓣 ?좎??⑸땲??
+        // ?댁쟾 ?섏젙蹂몄뿉???⑥? 1335 / -1440 媛믪? ?꾩옱 援ъ“??湲곗?媛믪씤 1420 / -1420?쇰줈 ?먮룞 蹂댁젙?⑸땲??
         if (Mathf.Approximately(standbyTimelineBarOffsetX, 1335f) || standbyTimelineBarOffsetX <= 0f)
             standbyTimelineBarOffsetX = 1420f;
 
@@ -293,7 +293,7 @@ public class BattleTimelineController : MonoBehaviour
 
         if (playerReservationHistory.Count <= 0)
         {
-            ShowBattleWarning("되돌릴 예약이 없습니다.");
+            ShowBattleWarning("?섎룎由??덉빟???놁뒿?덈떎.");
             return;
         }
 
@@ -746,9 +746,9 @@ public class BattleTimelineController : MonoBehaviour
 
         timelineSlotSlideStepIndex = Mathf.Clamp(endSlotIndex + 1, 0, slideSlotCount);
 
-        // 5번 슬롯의 TurnMark가 갈렸다고 해서 턴 라인을 바로 완료 위치로 보내면,
-        // 5번 슬롯에 등록된 Use_skill들이 개별적으로 갈리기 전에 한 번에 이동해 보입니다.
-        // 완료 위치 보정은 BattleTurnExecutor가 모든 슬롯/스킬 처리를 끝낸 뒤 호출합니다.
+        // 5踰??щ’??TurnMark媛 媛덈졇?ㅺ퀬 ?댁꽌 ???쇱씤??諛붾줈 ?꾨즺 ?꾩튂濡?蹂대궡硫?
+        // 5踰??щ’???깅줉??Use_skill?ㅼ씠 媛쒕퀎?곸쑝濡?媛덈━湲??꾩뿉 ??踰덉뿉 ?대룞??蹂댁엯?덈떎.
+        // ?꾨즺 ?꾩튂 蹂댁젙? BattleTurnExecutor媛 紐⑤뱺 ?щ’/?ㅽ궗 泥섎━瑜??앸궦 ???몄텧?⑸땲??
     }
 
     public IEnumerator PlayTimelineTurnMarkAnimationRoutine(int slotIndex)
@@ -759,7 +759,7 @@ public class BattleTimelineController : MonoBehaviour
         if (timelineSpriteAnimationController == null)
             yield break;
 
-        // TurnMark 프레임만 재생합니다. 실제 라인 이동은 PlayTimelineTurnMarkAnimationAndLineSlideRoutine에서 함께 처리합니다.
+        // TurnMark ?꾨젅?꾨쭔 ?ъ깮?⑸땲?? ?ㅼ젣 ?쇱씤 ?대룞? PlayTimelineTurnMarkAnimationAndLineSlideRoutine?먯꽌 ?④퍡 泥섎━?⑸땲??
         PlayTimelineSlideGearRotation(1);
         SpawnTimelineGrindVfx();
         yield return timelineSpriteAnimationController.PlayTurnMarkRoutine(slotIndex);
@@ -770,16 +770,16 @@ public class BattleTimelineController : MonoBehaviour
         AutoFindTimelineSpriteAnimationControllerIfNeeded();
         ConfigureTimelineSpriteAnimationRootForActiveBar();
 
-        // 턴 엔드 직후 1번 슬롯이 진행될 때만 라인을 먼저 -60 이동합니다.
-        // 2번 슬롯부터는 이 선행 이동 없이 슬롯 시작 이동만 진행합니다.
+        // ???붾뱶 吏곹썑 1踰??щ’??吏꾪뻾???뚮쭔 ?쇱씤??癒쇱? -60 ?대룞?⑸땲??
+        // 2踰??щ’遺?곕뒗 ???좏뻾 ?대룞 ?놁씠 ?щ’ ?쒖옉 ?대룞留?吏꾪뻾?⑸땲??
         if (slotIndex == 0 && !Mathf.Approximately(firstSlotEndTurnTimelineLineSlideAmountX, 0f))
         {
             PlayTimelineSlideGearRotation(1);
             yield return MoveAllTimelineSlotSlideTargetsByOffsetRoutine(firstSlotEndTurnTimelineLineSlideAmountX);
         }
 
-        // 슬롯 시작 시 TurnMark 애니메이션을 먼저 보여주고, 그 다음 TimelineBar 전체를 이동합니다.
-        // 스킬이 없는 슬롯은 Use_skill 1~5칸까지 한 번에 이동해서 다음 슬롯 직전까지 보냅니다.
+        // ?щ’ ?쒖옉 ??TurnMark ?좊땲硫붿씠?섏쓣 癒쇱? 蹂댁뿬二쇨퀬, 洹??ㅼ쓬 TimelineBar ?꾩껜瑜??대룞?⑸땲??
+        // ?ㅽ궗???녿뒗 ?щ’? Use_skill 1~5移멸퉴吏 ??踰덉뿉 ?대룞?댁꽌 ?ㅼ쓬 ?щ’ 吏곸쟾源뚯? 蹂대깄?덈떎.
         float animationDuration = GetTurnMarkGrindDuration();
 
         if (timelineSpriteAnimationController != null)
@@ -812,8 +812,8 @@ public class BattleTimelineController : MonoBehaviour
         float standbyX = basePosition.x;
         float offsetX = completedX - activeTarget.anchoredPosition.x;
 
-        // 이미 완료 위치에 도착했거나 지나친 경우에는 추가 이동을 재생하지 않습니다.
-        // active는 -1420, standby는 0으로 위치만 보정합니다.
+        // ?대? ?꾨즺 ?꾩튂???꾩갑?덇굅??吏?섏튇 寃쎌슦?먮뒗 異붽? ?대룞???ъ깮?섏? ?딆뒿?덈떎.
+        // active??-1420, standby??0?쇰줈 ?꾩튂留?蹂댁젙?⑸땲??
         bool alreadyAtOrPastCompletedPosition = completedTurnTimelineBarPositionX < 0f
             ? activeTarget.anchoredPosition.x <= completedX + 0.01f
             : activeTarget.anchoredPosition.x >= completedX - 0.01f;
@@ -867,7 +867,7 @@ public class BattleTimelineController : MonoBehaviour
             if (orderIndex < 0 || orderIndex >= 5)
                 yield break;
 
-            // Use_skill 애니메이션을 먼저 보여주고, 그 다음 TimelineBar 전체를 이동합니다.
+            // Use_skill ?좊땲硫붿씠?섏쓣 癒쇱? 蹂댁뿬二쇨퀬, 洹??ㅼ쓬 TimelineBar ?꾩껜瑜??대룞?⑸땲??
             float animationDuration = GetUseSkillGrindDuration();
 
             if (timelineSpriteAnimationController != null)
@@ -1755,9 +1755,9 @@ public class BattleTimelineController : MonoBehaviour
         else if (timelineBarSlideTarget1 != null)
             timelineBar2OriginalAnchoredPosition = timelineBar1OriginalAnchoredPosition + new Vector2(standbyTimelineBarOffsetX, 0f);
 
-        // 두 TimelineBar의 실제 RectTransform width나 현재 배치값을 기준으로 간격을 다시 계산하지 않습니다.
-        // Inspector에서 지정한 Standby Timeline Bar Offset X 값만 사용해야
-        // 0 / 1420 위치를 번갈아 쓰는 구조가 흔들리지 않습니다.
+        // ??TimelineBar???ㅼ젣 RectTransform width???꾩옱 諛곗튂媛믪쓣 湲곗??쇰줈 媛꾧꺽???ㅼ떆 怨꾩궛?섏? ?딆뒿?덈떎.
+        // Inspector?먯꽌 吏?뺥븳 Standby Timeline Bar Offset X 媛믩쭔 ?ъ슜?댁빞
+        // 0 / 1420 ?꾩튂瑜?踰덇컝???곕뒗 援ъ“媛 ?붾뱾由ъ? ?딆뒿?덈떎.
         resolvedStandbyTimelineBarOffsetX = Mathf.Abs(standbyTimelineBarOffsetX);
 
         if (resolvedStandbyTimelineBarOffsetX <= 0.01f)
@@ -1890,9 +1890,9 @@ public class BattleTimelineController : MonoBehaviour
         if (targets == null || targets.Length <= 0 || Mathf.Approximately(offsetX, 0f))
             yield break;
 
-        // 두 개의 TimelineBar가 0 / 1420 위치를 번갈아 쓰는 구조에서는
-        // 진행 중인 바가 완료 위치(-1420)에 도착한 뒤 추가 보정 이동이 들어가면 안 됩니다.
-        // 그래서 모든 라인 이동 요청은 완료 위치를 넘지 않도록 항상 한 번 클램프합니다.
+        // ??媛쒖쓽 TimelineBar媛 0 / 1420 ?꾩튂瑜?踰덇컝???곕뒗 援ъ“?먯꽌??
+        // 吏꾪뻾 以묒씤 諛붽? ?꾨즺 ?꾩튂(-1420)???꾩갑????異붽? 蹂댁젙 ?대룞???ㅼ뼱媛硫????⑸땲??
+        // 洹몃옒??紐⑤뱺 ?쇱씤 ?대룞 ?붿껌? ?꾨즺 ?꾩튂瑜??섏? ?딅룄濡???긽 ??踰??대옩?꾪빀?덈떎.
         float appliedOffsetX = ClampTimelineBarOffsetToCompletedPosition(offsetX);
 
         if (Mathf.Approximately(appliedOffsetX, 0f))
@@ -2222,20 +2222,20 @@ public class BattleTimelineController : MonoBehaviour
         if (activeSlotIndex < 0)
         {
             if (selectedSkill != null)
-                ShowBattleWarning("타임라인 슬롯을 먼저 선택해주세요.");
+                ShowBattleWarning("??꾨씪???щ’??癒쇱? ?좏깮?댁＜?몄슂.");
 
             return;
         }
 
         if (selectedCharacter == null && selectedSkill == null)
         {
-            ShowBattleWarning("캐릭터와 스킬을 먼저 선택해주세요.");
+            ShowBattleWarning("罹먮┃?곗? ?ㅽ궗??癒쇱? ?좏깮?댁＜?몄슂.");
             return;
         }
 
         if (selectedCharacter == null)
         {
-            ShowBattleWarning("캐릭터를 먼저 선택해주세요.");
+            ShowBattleWarning("罹먮┃?곕? 癒쇱? ?좏깮?댁＜?몄슂.");
             return;
         }
 
@@ -2244,14 +2244,14 @@ public class BattleTimelineController : MonoBehaviour
 
         if (reserveSlots == null || reserveSlots.Length <= 0)
         {
-            ShowBattleWarning("타임라인 슬롯이 없습니다.");
+            ShowBattleWarning("??꾨씪???щ’???놁뒿?덈떎.");
             selectedSkill = null;
             return;
         }
 
         if (activeSlotIndex >= reserveSlots.Length)
         {
-            ShowBattleWarning("선택한 타임라인 슬롯을 사용할 수 없습니다.");
+            ShowBattleWarning("?좏깮????꾨씪???щ’???ъ슜?????놁뒿?덈떎.");
             selectedSkill = null;
             return;
         }
@@ -2260,7 +2260,7 @@ public class BattleTimelineController : MonoBehaviour
 
         if (slot == null)
         {
-            ShowBattleWarning("선택한 타임라인 슬롯을 사용할 수 없습니다.");
+            ShowBattleWarning("?좏깮????꾨씪???щ’???ъ슜?????놁뒿?덈떎.");
             selectedSkill = null;
             return;
         }
@@ -2285,8 +2285,8 @@ public class BattleTimelineController : MonoBehaviour
 
         if (!slot.CanAcceptCharacter(selectedCharacter))
         {
-            ShowBattleWarning("이 슬롯에는 이미 다른 캐릭터의 행동이 예약되어 있습니다.");
-            Debug.LogWarning("[BattleTimelineController] 이 타임라인 슬롯에는 이미 다른 캐릭터의 행동이 예약되어 있습니다.");
+            ShowBattleWarning("???щ’?먮뒗 ?대? ?ㅻⅨ 罹먮┃?곗쓽 ?됰룞???덉빟?섏뼱 ?덉뒿?덈떎.");
+            Debug.LogWarning("[BattleTimelineController] ????꾨씪???щ’?먮뒗 ?대? ?ㅻⅨ 罹먮┃?곗쓽 ?됰룞???덉빟?섏뼱 ?덉뒿?덈떎.");
             selectedSkill = null;
             return;
         }
@@ -2302,8 +2302,8 @@ public class BattleTimelineController : MonoBehaviour
 
         if (casterGridIndex < 0)
         {
-            ShowBattleWarning("캐릭터 위치를 찾을 수 없습니다.");
-            Debug.LogWarning($"[BattleTimelineController] 캐릭터 위치를 찾을 수 없습니다: {selectedCharacter.CharacterId}");
+            ShowBattleWarning("罹먮┃???꾩튂瑜?李얠쓣 ???놁뒿?덈떎.");
+            Debug.LogWarning($"[BattleTimelineController] 罹먮┃???꾩튂瑜?李얠쓣 ???놁뒿?덈떎: {selectedCharacter.CharacterId}");
             selectedSkill = null;
             return;
         }
@@ -2313,8 +2313,8 @@ public class BattleTimelineController : MonoBehaviour
 
         if (playerSkillReservationController == null)
         {
-            ShowBattleWarning("스킬 예약 컨트롤러를 찾을 수 없습니다.");
-            Debug.LogWarning("[BattleTimelineController] PlayerSkillReservationController가 없습니다.");
+            ShowBattleWarning("?ㅽ궗 ?덉빟 而⑦듃濡ㅻ윭瑜?李얠쓣 ???놁뒿?덈떎.");
+            Debug.LogWarning("[BattleTimelineController] PlayerSkillReservationController媛 ?놁뒿?덈떎.");
             selectedSkill = null;
             return;
         }
@@ -2335,19 +2335,19 @@ public class BattleTimelineController : MonoBehaviour
     {
         if (command == null)
         {
-            ShowBattleWarning("예약할 스킬 정보가 없습니다.");
+            ShowBattleWarning("?덉빟???ㅽ궗 ?뺣낫媛 ?놁뒿?덈떎.");
             return false;
         }
 
         if (reserveSlots == null || reserveSlots.Length <= 0)
         {
-            ShowBattleWarning("타임라인 슬롯이 없습니다.");
+            ShowBattleWarning("??꾨씪???щ’???놁뒿?덈떎.");
             return false;
         }
 
         if (slotIndex < 0 || slotIndex >= reserveSlots.Length)
         {
-            ShowBattleWarning("선택한 타임라인 슬롯을 사용할 수 없습니다.");
+            ShowBattleWarning("?좏깮????꾨씪???щ’???ъ슜?????놁뒿?덈떎.");
             return false;
         }
 
@@ -2355,14 +2355,21 @@ public class BattleTimelineController : MonoBehaviour
 
         if (slot == null)
         {
-            ShowBattleWarning("선택한 타임라인 슬롯을 사용할 수 없습니다.");
+            ShowBattleWarning("?좏깮????꾨씪???щ’???ъ슜?????놁뒿?덈떎.");
             return false;
         }
 
         if (!slot.CanAcceptCharacter(command.UserRuntime))
         {
-            ShowBattleWarning("이 슬롯에는 이미 다른 캐릭터의 행동이 예약되어 있습니다.");
-            Debug.LogWarning("[BattleTimelineController] 이 타임라인 슬롯에는 이미 다른 캐릭터의 행동이 예약되어 있습니다.");
+            ShowBattleWarning("???щ’?먮뒗 ?대? ?ㅻⅨ 罹먮┃?곗쓽 ?됰룞???덉빟?섏뼱 ?덉뒿?덈떎.");
+            Debug.LogWarning("[BattleTimelineController] ????꾨씪???щ’?먮뒗 ?대? ?ㅻⅨ 罹먮┃?곗쓽 ?됰룞???덉빟?섏뼱 ?덉뒿?덈떎.");
+            return false;
+        }
+
+        string equipmentBlockReason = GetEquipmentReservationBlockReason(command, slotIndex);
+        if (!string.IsNullOrEmpty(equipmentBlockReason))
+        {
+            ShowBattleWarning(equipmentBlockReason);
             return false;
         }
 
@@ -2393,8 +2400,8 @@ public class BattleTimelineController : MonoBehaviour
 
         if (!added)
         {
-            ShowBattleWarning("스킬을 예약할 수 없습니다.");
-            Debug.LogWarning("[BattleTimelineController] 예약 슬롯이 가득 찼습니다.");
+            ShowBattleWarning("?ㅽ궗???덉빟?????놁뒿?덈떎.");
+            Debug.LogWarning("[BattleTimelineController] ?덉빟 ?щ’??媛??李쇱뒿?덈떎.");
             return false;
         }
 
@@ -2409,6 +2416,34 @@ public class BattleTimelineController : MonoBehaviour
         selectedSkill = null;
 
         return true;
+    }
+
+    private string GetEquipmentReservationBlockReason(
+        PlayerReservedCommand command,
+        int slotIndex)
+    {
+        CharacterRuntimeData runtime = command?.UserRuntime;
+
+        if (runtime == null)
+            return string.Empty;
+
+        if (BattleEquipmentEffectService.IsSlotBlockedByEquipment(runtime, slotIndex))
+            return "이 슬롯에는 스킬을 등록할 수 없습니다.";
+
+        int maxSlotCount = BattleEquipmentEffectService.GetMaxRegistrableSlotCount(runtime);
+
+        if (maxSlotCount == int.MaxValue)
+            return string.Empty;
+
+        int occupiedSlotCount = CountPlayerOccupiedSlots(runtime.CharacterId, command);
+        bool targetSlotAlreadyOccupied = HasPlayerCommandInSlot(runtime.CharacterId, slotIndex, command);
+
+        if (!targetSlotAlreadyOccupied)
+            occupiedSlotCount++;
+
+        return occupiedSlotCount > maxSlotCount
+            ? $"스킬을 등록할 수 있는 슬롯은 {maxSlotCount}개까지입니다."
+            : string.Empty;
     }
 
     private bool TryHandleMoveCommandMerge(
@@ -2536,7 +2571,7 @@ public class BattleTimelineController : MonoBehaviour
     {
         if (commands == null || commands.Count <= 0)
         {
-            ShowBattleWarning("예약할 스킬 정보가 없습니다.");
+            ShowBattleWarning("?덉빟???ㅽ궗 ?뺣낫媛 ?놁뒿?덈떎.");
             return false;
         }
 
@@ -2701,7 +2736,7 @@ public class BattleTimelineController : MonoBehaviour
             RefreshMoveGhostPreview();
 
             if (showLog)
-                Debug.Log($"[BattleTimelineController] 마지막 예약 되돌림 / Slot:{entry.SlotIndex} / Order:{i}");
+                Debug.Log($"[BattleTimelineController] 留덉?留??덉빟 ?섎룎由?/ Slot:{entry.SlotIndex} / Order:{i}");
 
             return true;
         }
@@ -2773,7 +2808,7 @@ public class BattleTimelineController : MonoBehaviour
 
     private void ShowCombinedSlotCapacityWarning()
     {
-        ShowBattleWarning("한 슬롯에는 몬스터 행동과 캐릭터 행동을 합쳐 최대 5개만 예약할 수 있습니다.");
+        ShowBattleWarning("???щ’?먮뒗 紐ъ뒪???됰룞怨?罹먮┃???됰룞???⑹퀜 理쒕? 5媛쒕쭔 ?덉빟?????덉뒿?덈떎.");
     }
 
     public int GetPreviewReservationCostValue(
@@ -2836,6 +2871,64 @@ public class BattleTimelineController : MonoBehaviour
         return reserveSlots[slotIndex].Commands;
     }
 
+    public int CountPlayerOccupiedSlots(string characterId)
+    {
+        return CountPlayerOccupiedSlots(characterId, null);
+    }
+
+    public int CountPlayerEmptySlots(string characterId)
+    {
+        if (reserveSlots == null || reserveSlots.Length <= 0)
+            return 0;
+
+        return Mathf.Max(0, reserveSlots.Length - CountPlayerOccupiedSlots(characterId));
+    }
+
+    public int GetPlayerEmptySlotMask(string characterId)
+    {
+        if (reserveSlots == null || reserveSlots.Length <= 0)
+            return 0;
+
+        int mask = 0;
+
+        for (int slotIndex = 0; slotIndex < reserveSlots.Length; slotIndex++)
+        {
+            if (!HasPlayerCommandInSlot(characterId, slotIndex, null))
+                mask |= 1 << slotIndex;
+        }
+
+        return mask;
+    }
+
+    public int CountPlayerAttackSkillCommands(string characterId)
+    {
+        if (reserveSlots == null || reserveSlots.Length <= 0)
+            return 0;
+
+        int count = 0;
+
+        for (int slotIndex = 0; slotIndex < reserveSlots.Length; slotIndex++)
+        {
+            ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+
+            if (slot == null || slot.Commands == null)
+                continue;
+
+            for (int i = 0; i < slot.Commands.Count; i++)
+            {
+                PlayerReservedCommand command = slot.Commands[i];
+
+                if (!IsPlayerCommandForCharacter(command, characterId, null))
+                    continue;
+
+                if (command.SkillData != null && command.SkillData.SkillType == SkillType.Attack)
+                    count++;
+            }
+        }
+
+        return count;
+    }
+
     public IReadOnlyList<MonsterReservedCommand> GetMonsterCommands(int slotIndex)
     {
         InitializeMonsterCommandSlots();
@@ -2876,12 +2969,27 @@ public class BattleTimelineController : MonoBehaviour
         bool isLastTimelineSlot =
             reserveSlots != null &&
             slotIndex == reserveSlots.Length - 1;
+        bool isFirstSkillInSlot = !HasEarlierCommandInSlot(
+            command.UserRuntime,
+            slotIndex,
+            command);
+        bool hadEarlierMoveInSlot = HasEarlierMoveCommandInSlot(
+            command.UserRuntime,
+            slotIndex,
+            command);
+        int sameSlotMoveCostBeforeCommand = GetEarlierMoveCostInSlot(
+            command.UserRuntime,
+            slotIndex,
+            command);
 
         BattleEquipmentEffectService.ApplyReservationCostModifiers(
             command,
             slotIndex,
             isFirstMoveCommand,
-            isLastTimelineSlot);
+            isLastTimelineSlot,
+            isFirstSkillInSlot,
+            hadEarlierMoveInSlot,
+            sameSlotMoveCostBeforeCommand);
     }
 
     private bool HasEarlierMoveCommand(CharacterRuntimeData runtime, int targetSlotIndex)
@@ -2914,6 +3022,162 @@ public class BattleTimelineController : MonoBehaviour
         }
 
         return false;
+    }
+
+    private bool HasEarlierCommandInSlot(
+        CharacterRuntimeData runtime,
+        int slotIndex,
+        PlayerReservedCommand currentCommand)
+    {
+        return FindEarlierCommandInSlot(runtime, slotIndex, currentCommand, _ => true) != null;
+    }
+
+    private bool HasEarlierMoveCommandInSlot(
+        CharacterRuntimeData runtime,
+        int slotIndex,
+        PlayerReservedCommand currentCommand)
+    {
+        return FindEarlierCommandInSlot(
+            runtime,
+            slotIndex,
+            currentCommand,
+            BattleEquipmentEffectService.IsMoveCommand) != null;
+    }
+
+    private int GetEarlierMoveCostInSlot(
+        CharacterRuntimeData runtime,
+        int slotIndex,
+        PlayerReservedCommand currentCommand)
+    {
+        if (runtime == null || reserveSlots == null || slotIndex < 0 || slotIndex >= reserveSlots.Length)
+            return 0;
+
+        ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+
+        if (slot == null || slot.Commands == null)
+            return 0;
+
+        int totalCost = 0;
+
+        for (int i = 0; i < slot.Commands.Count; i++)
+        {
+            PlayerReservedCommand candidate = slot.Commands[i];
+
+            if (candidate == currentCommand)
+                break;
+
+            if (!IsSameRuntimeCommand(runtime, candidate))
+                continue;
+
+            if (!BattleEquipmentEffectService.IsMoveCommand(candidate))
+                continue;
+
+            totalCost += Mathf.Max(0, candidate.Cost);
+        }
+
+        return totalCost;
+    }
+
+    private PlayerReservedCommand FindEarlierCommandInSlot(
+        CharacterRuntimeData runtime,
+        int slotIndex,
+        PlayerReservedCommand currentCommand,
+        System.Predicate<PlayerReservedCommand> predicate)
+    {
+        if (runtime == null ||
+            reserveSlots == null ||
+            slotIndex < 0 ||
+            slotIndex >= reserveSlots.Length)
+        {
+            return null;
+        }
+
+        ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+
+        if (slot == null || slot.Commands == null)
+            return null;
+
+        for (int i = 0; i < slot.Commands.Count; i++)
+        {
+            PlayerReservedCommand candidate = slot.Commands[i];
+
+            if (candidate == currentCommand)
+                return null;
+
+            if (!IsSameRuntimeCommand(runtime, candidate))
+                continue;
+
+            if (predicate == null || predicate(candidate))
+                return candidate;
+        }
+
+        return null;
+    }
+
+    private static bool IsSameRuntimeCommand(
+        CharacterRuntimeData runtime,
+        PlayerReservedCommand command)
+    {
+        if (runtime == null || command == null || command.UserRuntime == null)
+            return false;
+
+        return command.UserRuntime.CharacterId == runtime.CharacterId;
+    }
+
+    private int CountPlayerOccupiedSlots(
+        string characterId,
+        PlayerReservedCommand ignoreCommand)
+    {
+        if (reserveSlots == null || reserveSlots.Length <= 0)
+            return 0;
+
+        int count = 0;
+
+        for (int slotIndex = 0; slotIndex < reserveSlots.Length; slotIndex++)
+        {
+            if (HasPlayerCommandInSlot(characterId, slotIndex, ignoreCommand))
+                count++;
+        }
+
+        return count;
+    }
+
+    private bool HasPlayerCommandInSlot(
+        string characterId,
+        int slotIndex,
+        PlayerReservedCommand ignoreCommand)
+    {
+        if (reserveSlots == null ||
+            slotIndex < 0 ||
+            slotIndex >= reserveSlots.Length ||
+            string.IsNullOrWhiteSpace(characterId))
+        {
+            return false;
+        }
+
+        ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+
+        if (slot == null || slot.Commands == null)
+            return false;
+
+        for (int i = 0; i < slot.Commands.Count; i++)
+        {
+            if (IsPlayerCommandForCharacter(slot.Commands[i], characterId, ignoreCommand))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsPlayerCommandForCharacter(
+        PlayerReservedCommand command,
+        string characterId,
+        PlayerReservedCommand ignoreCommand)
+    {
+        if (command == null || command == ignoreCommand || command.UserRuntime == null)
+            return false;
+
+        return command.UserRuntime.CharacterId == characterId;
     }
 
     private void RecalculateAllReservedCosts()
@@ -2952,12 +3216,27 @@ public class BattleTimelineController : MonoBehaviour
                     isMoveCommand &&
                     !isMoveContinuationCommand &&
                     !firstMoveAppliedCharacterIds.Contains(command.CharacterId);
+                bool isFirstSkillInSlot = !HasEarlierCommandInSlot(
+                    command.UserRuntime,
+                    slotIndex,
+                    command);
+                bool hadEarlierMoveInSlot = HasEarlierMoveCommandInSlot(
+                    command.UserRuntime,
+                    slotIndex,
+                    command);
+                int sameSlotMoveCostBeforeCommand = GetEarlierMoveCostInSlot(
+                    command.UserRuntime,
+                    slotIndex,
+                    command);
 
                 BattleEquipmentEffectService.ApplyReservationCostModifiers(
                     command,
                     slotIndex,
                     isFirstMoveCommand,
-                    isLastTimelineSlot);
+                    isLastTimelineSlot,
+                    isFirstSkillInSlot,
+                    hadEarlierMoveInSlot,
+                    sameSlotMoveCostBeforeCommand);
 
                 AddReservedCosts(command);
 
@@ -3025,10 +3304,10 @@ public class BattleTimelineController : MonoBehaviour
     private string GetReserveBlockReason(PlayerReservedCommand command)
     {
         if (command == null)
-            return "예약할 스킬 정보가 없습니다.";
+            return "?덉빟???ㅽ궗 ?뺣낫媛 ?놁뒿?덈떎.";
 
         if (command.UserRuntime == null)
-            return "선택된 캐릭터가 없습니다.";
+            return "?좏깮??罹먮┃?곌? ?놁뒿?덈떎.";
 
         CharacterRuntimeData runtime = command.UserRuntime;
 
@@ -3062,7 +3341,7 @@ public class BattleTimelineController : MonoBehaviour
     private string BuildShortageMessage(string label, int required, int available)
     {
         int safeAvailable = Mathf.Max(0, available);
-        return $"{label}이 부족합니다. 필요:{required} / 보유:{safeAvailable}";
+        return $"{label}가 부족합니다. 필요:{required} / 보유:{safeAvailable}";
     }
 
     private string GetCostLabel(ReferenceResource resource)
@@ -3077,10 +3356,10 @@ public class BattleTimelineController : MonoBehaviour
                 return "Cost";
 
             case ReferenceResource.UniqueResource:
-                return "고유자원";
+                return "怨좎쑀?먯썝";
 
             default:
-                return "자원";
+                return "?먯썝";
         }
     }
 
@@ -3302,7 +3581,7 @@ public class BattleTimelineController : MonoBehaviour
         if (resolvedSlotIndex < 0)
         {
             Debug.LogWarning(
-                $"[BattleTimelineController] 몬스터 행동을 넣을 슬롯이 없습니다. " +
+                $"[BattleTimelineController] 紐ъ뒪???됰룞???ｌ쓣 ?щ’???놁뒿?덈떎. " +
                 $"Monster:{command.RuntimeId} / Skill:{command.SkillId}"
             );
             return;
@@ -3428,7 +3707,7 @@ public class BattleTimelineController : MonoBehaviour
         RefreshPlayerHUDs();
         RefreshMoveGhostPreview();
 
-        Debug.Log($"[BattleTimelineController] 예약 취소 / Slot:{slotIndex} / Order:{orderIndex}");
+        Debug.Log($"[BattleTimelineController] ?덉빟 痍⑥냼 / Slot:{slotIndex} / Order:{orderIndex}");
     }
 
     private bool IsMoveCommand(PlayerReservedCommand command)
@@ -3588,8 +3867,8 @@ public class BattleTimelineController : MonoBehaviour
             activeBar.Refresh(reserveSlots, monsterCommandsBySlot);
         else
         {
-            ShowBattleWarning("타임라인 UI를 찾을 수 없습니다.");
-            Debug.LogWarning("[BattleTimelineController] active timelineBarUI가 없습니다.");
+            ShowBattleWarning("??꾨씪??UI瑜?李얠쓣 ???놁뒿?덈떎.");
+            Debug.LogWarning("[BattleTimelineController] active timelineBarUI媛 ?놁뒿?덈떎.");
         }
 
         if (standbyBar != null && standbyBar != activeBar)

@@ -11,6 +11,7 @@ public class BattleEffectContext
 
     public SkillMasterData PlayerSkillData;
     public MonsterSkillData MonsterSkillData;
+    public PlayerReservedCommand PlayerCommand;
 
     public BattleDirection Direction;
     public GridManager GridManager;

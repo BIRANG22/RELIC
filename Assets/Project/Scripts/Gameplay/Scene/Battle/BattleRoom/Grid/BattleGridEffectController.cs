@@ -92,6 +92,18 @@ public class BattleGridEffectController : MonoBehaviour
         return true;
     }
 
+    public bool TryRemoveEffect(int gridIndex)
+    {
+        if (!EnsureDependencies())
+            return false;
+
+        if (!state.Remove(gridIndex))
+            return false;
+
+        RemoveView(gridIndex);
+        return true;
+    }
+
     public void AdvanceTurnDurations()
     {
         if (!EnsureDependencies())
@@ -108,6 +120,9 @@ public class BattleGridEffectController : MonoBehaviour
         if (character == null || character.RuntimeData == null)
             return BattleGridEffectApplyResult.None;
 
+        if (BattleEquipmentEffectService.IgnoresGridEffects(character.RuntimeData))
+            return BattleGridEffectApplyResult.None;
+
         if (!EnsureDependencies())
             return BattleGridEffectApplyResult.None;
 
@@ -120,7 +135,7 @@ public class BattleGridEffectController : MonoBehaviour
         int shieldDamage = Mathf.Max(0, shieldBefore - character.RuntimeData.CurrentShield);
         int shownDamage = hpDamage + shieldDamage;
 
-        // ±×¸®µå È¿°ú ÇÇÇØ´Â ½ºÅ³ ÇÇÇØ¿Í ÇÕ»êÇÏÁö ¾Ê°í º°µµÀÇ ÇÇÇØ ¼ýÀÚ·Î Ç¥½ÃÇÕ´Ï´Ù.
+        // ê·¸ë¦¬ë“œ íš¨ê³¼ í”¼í•´ëŠ” ìŠ¤í‚¬ í”¼í•´ì™€ í•©ì‚°í•˜ì§€ ì•Šê³  ë³„ë„ì˜ í”¼í•´ ìˆ«ìžë¡œ í‘œì‹œí•©ë‹ˆë‹¤.
         if (shownDamage > 0)
             BattleDamageTextPopupUI.Show(character.transform, shownDamage);
 

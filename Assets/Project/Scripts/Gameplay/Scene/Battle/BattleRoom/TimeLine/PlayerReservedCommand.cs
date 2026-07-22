@@ -26,6 +26,10 @@ public class PlayerReservedCommand
     public int TimelineSlotIndex { get; private set; } = -1;
     public bool ReservationCostModifiersApplied { get; private set; }
     public bool IsMoveContinuationCommand { get; private set; }
+    public bool IsFirstSkillInSlot { get; private set; } = true;
+    public bool HadEarlierMoveInSlot { get; private set; }
+    public int SameSlotMoveCostBeforeCommand { get; private set; }
+    public bool AllyBuffChargeApplied { get; private set; }
 
     public BattleDirection Direction { get; private set; } = BattleDirection.Right;
     public int SelectedGridIndex { get; private set; } = -1;
@@ -205,6 +209,25 @@ public class PlayerReservedCommand
     public void SetTimelineSlotIndex(int slotIndex)
     {
         TimelineSlotIndex = slotIndex;
+    }
+
+    public void SetSlotReservationContext(
+        bool isFirstSkillInSlot,
+        bool hadEarlierMoveInSlot,
+        int sameSlotMoveCostBeforeCommand)
+    {
+        IsFirstSkillInSlot = isFirstSkillInSlot;
+        HadEarlierMoveInSlot = hadEarlierMoveInSlot;
+        SameSlotMoveCostBeforeCommand = Mathf.Max(0, sameSlotMoveCostBeforeCommand);
+    }
+
+    public bool TryMarkAllyBuffChargeApplied()
+    {
+        if (AllyBuffChargeApplied)
+            return false;
+
+        AllyBuffChargeApplied = true;
+        return true;
     }
 
     public void MarkReservationCostModifiersApplied()

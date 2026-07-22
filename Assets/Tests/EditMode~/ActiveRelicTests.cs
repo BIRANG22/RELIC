@@ -13,7 +13,7 @@ public class ActiveRelicTests
             ["Name"] = "Adrenaline",
             ["Type"] = "Active",
             ["Durability"] = "3",
-            ["EffectIds"] = "E_Value",
+            ["EffectIds"] = ActiveRelicEffectIds.DamageBoostThisTurn,
             ["EffectDesc"] = "Damage boost"
         };
 

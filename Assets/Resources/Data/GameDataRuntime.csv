@@ -280,21 +280,21 @@ PatternInfo_Vespa_02,Mon_05,2,S_Monster_07,돌진하여 충돌한 캐릭터에�
 # Rune
 룬ID,이름,대상캐릭터ID,대상스킬ID,효과ID,수치계수,횟수계수,자원소모량,강화레벨,범위타입,범위ID,효과설명
 RuneId,Name,TargetCharacterId,TargetSkillId,EffectIds,ValueRate,CountRate,Consumption,EnhancementLevel,RangeType,RangeId,EffectDesc
-Rune_51,격노,Char_01,0,E_Value,1,1,0,0,0,0,전투 첫 시작 때 분노 3 획득
-Rune_52,고양,Char_01,0,E_Value,2,1,0,0,0,0,분노가 3 이상일 때 힘 1 추가획득
-Rune_53,불씨,Char_01,0,E_Value,2,1,0,0,0,0,분노가 0일때 분노를 획득하면 1 추가획득
-Rune_54,철벽,Char_01,0,E_Value,3,1,0,0,0,0,방어도 획득량 1 추가
-Rune_55,여진,Char_01,0,E_Value,1,1,0,0,0,0,분노 1에서도 사용가능
-Rune_56,발단,Char_02,0,E_Value,2,1,0,0,0,0,전투 첫 시작 때 기세3 획득
-Rune_57,기류,Char_02,0,E_Value,2,1,0,0,0,0,기세 3부터 조준 획득가능
-Rune_58,맹습,Char_02,0,E_Value,3,1,0,0,0,0,기세 5이상일 때 힘 1 추가획득
-Rune_59,첨예,Char_02,0,E_Value,1,1,0,0,0,0,피해 계산식 마지막에 +2
-Rune_60,돌파,Char_02,0,E_Value,0,1,-3,0,0,0,"기세 1,2에서도 사용가능"
-Rune_61,근원,Char_03,0,E_Value,0,1,0,0,0,0,전투 첫 시작 때 에테르 3 획득
-Rune_62,잔막,Char_03,0,E_Value,0,1,0,1,0,0,에테르 3 이상일 때 방어도 2 추가획득
-Rune_63,과류,Char_03,0,E_Value,0,1,0,0,0,0,에테르 3 이상일 때 힘 1 추가획득
-Rune_64,전조,Char_03,0,E_Value,1,1,0,0,0,0,스킬 범위 2칸 증가
-Rune_65,잔류,Char_03,0,E_Value,0,1,-3,0,0,0,에테르 1에서도 사용가능
+Rune_51,격노,Char_01,0,E_Battle_Start_UniqueResource,3,1,0,0,0,0,전투 첫 시작 때 분노 3 획득
+Rune_52,고양,Char_01,0,E_UniqueResource3_Turn_Start_Boost,1,0,0,0,0,0,분노가 3 이상일 때 힘 1 추가획득
+Rune_53,불씨,Char_01,0,E_UniqueResource_Gain_If_Empty_Delta,1,1,0,0,0,0,분노가 0일때 분노를 획득하면 1 추가획득
+Rune_54,철벽,Char_01,0,E_Armor_Gain_Delta,1,1,0,0,0,0,방어도 획득량 1 추가
+Rune_55,여진,Char_01,0,E_UniqueResource_Min_Use_Delta,-2,1,0,0,0,0,분노 1에서도 사용가능
+Rune_56,발단,Char_02,0,E_Battle_Start_UniqueResource,3,1,0,0,0,0,전투 첫 시작 때 기세3 획득
+Rune_57,기류,Char_02,0,E_UniqueResource3_Turn_Start_Aiming,1,0,0,0,0,0,기세 3부터 조준 획득가능
+Rune_58,맹습,Char_02,0,E_UniqueResource5_Turn_Start_Boost,1,0,0,0,0,0,기세 5이상일 때 힘 1 추가획득
+Rune_59,첨예,Char_02,0,E_Attack_Value_Delta,2,1,0,0,0,0,피해 계산식 마지막에 +2
+Rune_60,돌파,Char_02,0,E_UniqueResource_Min_Use_Delta,-3,1,-3,0,0,0,"기세 1,2에서도 사용가능"
+Rune_61,근원,Char_03,0,E_Battle_Start_UniqueResource,3,1,0,0,0,0,전투 첫 시작 때 에테르 3 획득
+Rune_62,잔막,Char_03,0,E_UniqueResource3_Turn_Start_Armor,2,0,0,1,0,0,에테르 3 이상일 때 방어도 2 추가획득
+Rune_63,과류,Char_03,0,E_UniqueResource3_Turn_Start_Boost,1,0,0,0,0,0,에테르 3 이상일 때 힘 1 추가획득
+Rune_64,전조,Char_03,0,E_Range_Delta,2,1,0,0,0,0,스킬 범위 2칸 증가
+Rune_65,잔류,Char_03,0,E_UniqueResource_Min_Use_Delta,-2,1,-3,0,0,0,에테르 1에서도 사용가능
 Rune_66,66,Char_04,0,,,,,,,,
 Rune_67,67,Char_04,0,,,,,,,,
 Rune_68,68,Char_04,0,,,,,,,,
@@ -305,16 +305,16 @@ Rune_72,72,Char_05,0,,,,,,,,
 Rune_73,73,Char_05,0,,,,,,,,
 Rune_74,74,Char_05,0,,,,,,,,
 Rune_75,75,Char_05,0,,,,,,,,
-Rune_01,생기,All,0,E_Value,0,1,0,0,0,0,최대 HP +3
-Rune_02,잔보,All,0,E_Value,0,1,0,1,0,0,이동수치 +3
-Rune_03,활력,All,0,E_Value,0,1,0,0,0,0,최대 HP +5
-Rune_04,잔풍,All,0,E_Value,1,1,0,0,0,0,이동수치 +5
-Rune_05,원천,All,0,E_Value,0,1,-3,0,0,0,코스트 +1
-Rune_06,범람,All,0,E_Value,0,1,0,0,0,0,코스트 +2
-Rune_07,맥동,All,0,E_Value,0,1,0,1,0,0,최대 HP +7
-Rune_08,질풍,All,0,E_Value,0,1,0,0,0,0,이동수치 +7
-Rune_09,첫걸음,All,0,E_Value,0,0,0,0,0,0,이동 스킬 사용 시  코스트 -1
-Rune_10,균형,All,0,E_Value,0,0,0,0,0,0,"최대 HP +3, 이동수치 +3, 코스트 +1"
+Rune_01,생기,All,0,E_Max_HP,3,1,0,0,0,0,최대 HP +3
+Rune_02,잔보,All,0,E_Move_Value,3,1,0,1,0,0,이동수치 +3
+Rune_03,활력,All,0,E_Max_HP,5,1,0,0,0,0,최대 HP +5
+Rune_04,잔풍,All,0,E_Move_Value,5,1,0,0,0,0,이동수치 +5
+Rune_05,원천,All,0,E_Max_Cost,1,1,-3,0,0,0,코스트 +1
+Rune_06,범람,All,0,E_Max_Cost,2,1,0,0,0,0,코스트 +2
+Rune_07,맥동,All,0,E_Max_HP,7,1,0,1,0,0,최대 HP +7
+Rune_08,질풍,All,0,E_Move_Value,7,1,0,0,0,0,이동수치 +7
+Rune_09,첫걸음,All,0,E_Move_Cost_Delta,-1,1,0,0,0,0,이동 스킬 사용 시  코스트 -1
+Rune_10,균형,All,0,E_Max_HP;E_Move_Value;E_Max_Cost,3;3;1,1;1;1,0,0,0,0,"최대 HP +3, 이동수치 +3, 코스트 +1"
 Rune_11,11,All,0,,,,,,,,
 Rune_12,12,All,0,,,,,,,,
 Rune_13,13,All,0,,,,,,,,
@@ -335,6 +335,8 @@ GR_helmet,투구,1,1,E_Armor,3,1,0,BattleStart,
 GR_bandage,붕대,1,1,E_Heal,10,1,0,BattleStart,
 GR_Poisson,독,1,1,E_Poison,4,1,0,BattleStart,
 GR_Residue,잔여물,1,0,E_Strike,2,1,2,Monster,
+GR_dummy,허수아비,0,0,-1,0,1,0,Summon,적의 공격 대상이 되는 소환물입니다.
+GR_explosive_doll,폭발 인형,0,0,-1,4,1,0,Summon,5번 슬롯 행동이 끝나면 주변 적에게 고정피해를 주는 소환물입니다.
 ,
 
 # Effect
@@ -342,10 +344,8 @@ GR_Residue,잔여물,1,0,E_Strike,2,1,2,Monster,
 EffectId,Name,EndTurn,ToolTip
 E_Max_HP,최대 HP,0,유닛의 생명력 자원
 E_Max_Cost,최대 Cost,0,유닛의 스킬사용에 필요한 자원
-E_Move_Value,이동 수치,0,1~49.99 = 1레벨 / 50~ = 2레벨
 E_Strike,타격,0,일반적인 피해를 준다. 대상의 방어도가 있으면 방어도부터 감소시킨다.
 E_Pierce,관통,0,방어도를 무시하고 대상의 체력에 직접 피해를 준다.
-E_Rush,돌진,,대상 방향으로 이동하며 충돌한 대상에게 피해를 준다.
 E_Knockback,넉백,0,대상을 시전자와 멀어지는 방향으로 밀어낸다.
 E_Grab,그랩,0,대상을 시전자와 가까워지는 방향으로 당겨온다.
 E_Crash,충돌,0,이동 중 유닛 또는 장애물에 막히면 2의 고정 피해를 받는다.
@@ -373,17 +373,123 @@ E_Explode,폭발,Decrease,턴 종료 시 수치가 1 감소합니다. 수치가 
 E_Flank,기습,Maintain,뒤를 공격할 때 피해가 50% 증가한다.
 E_Move_First_Attack_Power,돌격 강화,Decrease,이동 후 처음 사용하는 공격의 피해가 20% 증가합니다.
 E_Poison_Apply_Double,맹독 강화,Decrease,중독을 부여할 때 중독 부여량이 2배로 증가합니다.
-E_Bleeding_Apply_Double,출혈 강화,Decrease,출혈을 부여할 때 출혈 부여량이 2배로 증가합니다.
+E_Bleeding_Apply_Double,출혈 강화,Decrease,출혈을 부여할 때 출혈 부여량이 2배로 증가합니다.,,
 E_Max_HP_Up,생명력 강화,Maintain,최대 HP가 10% 증가합니다.
 E_Kill_Heal,생명 흡수,Maintain,적을 처치하면 최대 HP의 5%만큼 체력을 회복합니다.
 E_Skill_Resource_Gain_Up,자원 순환,Maintain,코스트 획득량이 증가합니다.
 E_Buff_Apply_Double,증폭,Decrease,아군에게 버프를 부여할 때 버프 부여량이 2배로 증가합니다.
 E_Low_HP_Power,최후의 저항,Maintain,현재 체력이 낮을수록 공격력이 증가합니다.
 E_Move_Point_Up,기동력 강화,Maintain,이동력이 1 증가합니다.
-
-
-
-
+E_Aiming,조준,Decrease,조준 상태입니다.
+E_Move_Value,이동 수치 변화,0,이동 수치를 수치만큼 변화시킨다.
+E_Cost_Recovery_Delta,코스트 회복량 변화,0,코스트 회복량을 수치만큼 변화시킨다.
+E_Battle_Start_Cost,전투 시작 코스트 변화,0,전투 시작 시 코스트를 수치만큼 추가한다.
+E_Battle_Start_UniqueResource,전투 시작 고유자원,0,전투 시작 시 고유자원을 수치만큼 확보한다.
+E_UniqueResource_Gain_If_Empty_Delta,고유자원 공백 획득 보정,0,고유자원이 0일 때 고유자원 획득량을 수치만큼 증가시킨다.
+E_UniqueResource_Min_Use_Delta,고유자원 사용 최소치 변화,0,고유스킬 사용 가능 최소 고유자원 기준을 수치만큼 변화시킨다.
+E_UniqueResource_Overflow_To_Cost,고유자원 초과 코스트 회복,0,고유자원이 최대일 때 고유자원을 얻으면 수치 배율만큼 코스트를 회복한다.
+E_UniqueResource_Max_Skill_Cost_Delta,고유자원 최대 스킬 코스트 변화,0,고유자원이 최대일 때 모든 스킬 코스트를 수치만큼 변화시킨다.
+E_UniqueResource3_Turn_Start_Aiming,고유자원 3 조준,0,고유자원이 3 이상이면 턴 시작 시 조준을 수치만큼 얻는다.
+E_UniqueResource3_Turn_Start_Armor,고유자원 3 방어도,0,고유자원이 3 이상이면 턴 시작 시 방어도를 수치만큼 얻는다.
+E_UniqueResource3_Turn_Start_Boost,고유자원 3 증폭,0,고유자원이 3 이상이면 턴 시작 시 증폭을 수치만큼 얻는다.
+E_UniqueResource5_Turn_Start_Boost,고유자원 5 증폭,0,고유자원이 5 이상이면 턴 시작 시 증폭을 수치만큼 얻는다.
+E_Range_Delta,스킬 범위 변화,0,스킬 범위를 수치만큼 변화시킨다.
+E_First_Move_Cost_Delta,첫 이동 코스트 변화,0,첫 이동 스킬 코스트를 수치만큼 변화시킨다.
+E_Move_Cost_Delta,이동 코스트 변화,0,이동 스킬 코스트를 수치만큼 변화시킨다.
+E_Armor_Gain_Delta,방어도 획득량 변화,0,방어도 획득량을 수치만큼 변화시킨다.
+E_Armor_Gain_Percent,방어도 획득량 퍼센트 변화,0,방어도 획득량을 퍼센트로 변화시킨다.
+E_Attack_Cost_Delta,공격 스킬 코스트 변화,0,공격타입 스킬 코스트를 수치만큼 변화시킨다.
+E_Buff_Cost_Delta,버프 스킬 코스트 변화,0,버프타입 스킬 코스트를 수치만큼 변화시킨다.
+E_Debuff_Cost_Delta,디버프 스킬 코스트 변화,0,디버프타입 스킬 코스트를 수치만큼 변화시킨다.
+E_Move_Cost_Zero,이동 코스트 제거,0,이동 스킬이 코스트를 소모하지 않는다.
+E_Blocked_Slot_Mask,등록 금지 슬롯 마스크,0,마스크에 포함된 슬롯에 스킬을 등록할 수 없다.
+E_Max_Registrable_Slot_Count,등록 가능 슬롯 수 제한,0,스킬을 등록할 수 있는 슬롯 수를 수치로 제한한다.
+E_No_Move_In_Slot_Buff_Cost_Delta,이동 없음 슬롯 버프 코스트 변화,0,해당 슬롯에서 이동스킬을 사용하지 않았다면 버프 스킬 코스트를 수치만큼 변화시킨다.
+E_After_Move_Debuff_Cost_Delta,이동 후 디버프 코스트 변화,0,해당 슬롯에서 이동스킬을 사용한 뒤 등록하는 디버프 스킬 코스트를 수치만큼 변화시킨다.
+E_Slot1_Skill_Cost_Delta,1번 슬롯 스킬 코스트 변화,0,1번 슬롯에 등록하는 모든 스킬 코스트를 수치만큼 변화시킨다.
+E_Slot1_First_Skill_Cost_Delta,1번 슬롯 첫 스킬 코스트 변화,0,1번 슬롯에 등록하는 첫 스킬 코스트를 수치만큼 변화시킨다.
+E_Slot5_Skill_Cost_Delta,5번 슬롯 스킬 코스트 변화,0,5번 슬롯에 등록하는 모든 스킬 코스트를 수치만큼 변화시킨다.
+E_Last_Slot_Duplicate_Cost_Ignore,마지막 슬롯 중복 코스트 무시,0,마지막 슬롯 중복 예약 코스트를 무시한다.
+E_Low_HP_Skill_Cost_Delta,낮은 체력 스킬 코스트 변화,0,현재 체력이 30% 이하라면 스킬 코스트를 수치만큼 변화시킨다.
+E_High_HP_Cost_Recovery_Delta,높은 체력 코스트 회복 변화,0,현재 체력이 90% 이상이라면 코스트 회복량을 수치만큼 변화시킨다.
+E_High_HP_Buff_Cost_Delta,높은 체력 버프 코스트 변화,0,현재 체력이 90% 이상이라면 버프 스킬 코스트를 수치만큼 변화시킨다.
+E_Attack_Value_Delta,공격 스킬 피해량 변화,0,공격타입 스킬 피해량을 수치만큼 변화시킨다.
+E_Attack_Count_Delta,공격 스킬 횟수 변화,0,공격타입 스킬 피해 횟수를 수치만큼 변화시킨다.
+E_Random_Attack_Count_Delta,무작위 공격 횟수 변화,0,선택된 공격 스킬의 횟수를 수치만큼 변화시킨다.
+E_Buff_Value_Delta,버프 스킬 수치 변화,0,버프타입 스킬 수치를 수치만큼 변화시킨다.
+E_Debuff_Value_Delta,디버프 스킬 수치 변화,0,디버프타입 스킬 수치를 수치만큼 변화시킨다.
+E_After_Move_Debuff_Value_Delta,이동 후 디버프 수치 변화,0,해당 슬롯에서 이동스킬을 사용한 뒤 등록하는 디버프 스킬 수치를 수치만큼 변화시킨다.
+E_After_Move_Attack_Value_Per_Cost,이동 후 공격 소모 코스트 비례 피해,0,해당 슬롯에서 이동에 소모한 코스트만큼 공격 피해량을 증가시킨다.
+E_Slot1_Attack_Value_Delta,1번 슬롯 공격 수치 변화,0,1번 슬롯 공격타입 스킬 피해량을 수치만큼 변화시킨다.
+E_Slot1_Buff_Value_Delta,1번 슬롯 버프 수치 변화,0,1번 슬롯 버프타입 스킬 수치를 수치만큼 변화시킨다.
+E_Slot1_Debuff_Value_Delta,1번 슬롯 디버프 수치 변화,0,1번 슬롯 디버프타입 스킬 수치를 수치만큼 변화시킨다.
+E_Slot5_Attack_Value_Delta,5번 슬롯 공격 수치 변화,0,5번 슬롯 공격타입 스킬 피해량을 수치만큼 변화시킨다.
+E_Low_HP_Attack_Value_Delta,낮은 체력 공격 피해 변화,0,현재 체력이 30% 이하라면 공격타입 스킬 피해량을 수치만큼 변화시킨다.
+E_Self_Buff_Blocked_Buff_Value_Delta,자신 버프 차단 버프 수치 변화,0,자신에게 버프를 부여할 수 없는 대신 버프 수치를 수치만큼 증가시킨다.
+E_Full_HP_Buff_Value_Delta,최대 체력 버프 수치 변화,0,체력이 최대라면 버프타입 스킬 수치를 수치만큼 변화시킨다.
+E_Unique_Skill_Value_Percent,고유스킬 수치 퍼센트 변화,0,고유스킬 수치를 퍼센트로 변화시킨다.
+E_Unique_Skill_Count_Delta,고유스킬 횟수 변화,0,고유스킬 횟수를 수치만큼 변화시킨다.
+E_Slot5_Attack_Pierce,5번 슬롯 공격 관통 변경,0,5번 슬롯 공격 스킬의 타격 피해를 관통 피해로 변경한다.
+E_Slot1_Attack_Kill_Focus,1번 슬롯 공격 처치 집중,0,1번 슬롯 공격 스킬로 적 처치 시 집중을 수치만큼 얻는다.
+E_Slot5_Attack_Kill_Cost_Refund,5번 슬롯 공격 처치 코스트 반환,0,5번 슬롯 공격 스킬로 적 처치 시 해당 스킬 코스트를 돌려받는다.
+E_Unique_Skill_Kill_Focus,고유스킬 처치 집중,0,고유스킬로 적 처치 시 집중을 수치만큼 얻는다.
+E_Damage_Poisoned_Fixed,중독 대상 추가 고정피해,0,중독이 부여된 적에게 피해를 주면 고정피해를 수치만큼 준다.
+E_Damage_Bleeding_Fixed,출혈 대상 추가 고정피해,0,출혈이 부여된 적에게 피해를 주면 고정피해를 수치만큼 준다.
+E_Damage_Vulnerable_Armor,취약 대상 피해 방어도 획득,0,취약이 부여된 적에게 피해를 주면 방어도를 수치만큼 얻는다.
+E_Damage_Weakened_Armor,약화 대상 피해 방어도 획득,0,약화가 부여된 적에게 피해를 주면 방어도를 수치만큼 얻는다.
+E_Damage_Non_Poisoned_Apply_Poison,비중독 대상 피해 중독 부여,0,중독이 부여되지 않은 적에게 피해를 주면 중독을 수치만큼 부여한다.
+E_Ally_Buff_Charge,아군 버프 충전 획득,0,자신을 제외한 아군에게 버프를 부여하면 충전을 수치만큼 얻는다.
+E_Low_HP_Damage_Reduction_Percent,낮은 체력 피해 감소,0,현재 체력이 30% 이하라면 받는 피해를 퍼센트로 감소시킨다.
+E_Forced_Move_Immune,강제이동 면역,0,넉백과 그랩으로 이동하지 않는다.
+E_Crash_Damage_Immune,충돌 피해 면역,0,충돌로 인한 피해를 받지 않는다.
+E_Grid_Effect_Immune,그리드 효과 면역,0,그리드 효과를 받지 않는다.
+E_Overheal_To_Armor,최대 체력 회복 방어도 전환,0,최대 체력에서 회복되면 회복량에 비례해 방어도를 얻는다.
+E_Healing_Blocked,회복 차단,0,체력을 회복할 수 없다.
+E_No_Damage_Previous_Turn_Smite,피해 없음 다음 턴 강타,0,이전 턴 동안 피해를 받지 않았다면 턴 시작 시 강타를 수치만큼 얻는다.
+E_Once_Battle_End_Turn_Zero_Cost_Charge,전투당 1회 코스트 0 종료 충전,0,턴 종료 시 남은 코스트가 0이면 전투당 1회 충전을 수치만큼 얻는다.
+E_Once_Battle_Attack_Miss_Charge,전투당 1회 공격 실패 충전,0,공격이 적중하지 않았을 때 전투당 1회 충전을 수치만큼 얻는다.
+E_Once_Battle_Full_HP_Target_Damage_Percent,전투당 1회 최대 체력 대상 피해 증가,0,체력이 최대인 적에게 피해를 줄 때 전투당 1회 피해량을 퍼센트로 증가시킨다.
+E_Turn_Start_Armor,지정 턴 방어도,0,지정 턴 시작 시 방어도를 수치만큼 얻는다.
+E_Turn_Start_Armor_Per_Used_Slot,등록 슬롯 비례 방어도,0,등록된 슬롯 수에 비례해 방어도를 얻는다.
+E_Turn_Start_Armor_Per_Empty_Slot,빈 슬롯 비례 방어도,0,비어 있는 슬롯 수에 비례해 방어도를 얻는다.
+E_Turn_Start_Charge,지정 턴 충전,0,지정 턴 시작 시 충전을 수치만큼 얻는다.
+E_Turn_Start_Focus,지정 턴 집중,0,지정 턴 시작 시 집중을 수치만큼 얻는다.
+E_Turn_Start_Swift,지정 턴 신속,0,지정 턴 시작 시 신속을 수치만큼 얻는다.
+E_Turn_Start_Boost,지정 턴 증폭,0,지정 턴 시작 시 증폭을 수치만큼 얻는다.
+E_Turn_Start_Smite,지정 턴 강타,0,지정 턴 시작 시 강타를 수치만큼 얻는다.
+E_Turn_Start_Lifesteal,지정 턴 흡혈,0,지정 턴 시작 시 흡혈을 수치만큼 얻는다.
+E_Turn_Start_Smite_If_Slots_Empty_Mask,빈 슬롯 조건 강타,0,마스크에 포함된 슬롯이 모두 비어 있으면 강타를 수치만큼 얻는다.
+E_Turn_Start_Boost_If_Slots_Empty_Mask,빈 슬롯 조건 증폭,0,마스크에 포함된 슬롯이 모두 비어 있으면 증폭을 수치만큼 얻는다.
+E_Turn_Start_Boost_If_One_Attack_Command,공격 하나 조건 증폭,0,등록한 공격 스킬이 하나뿐이면 증폭을 수치만큼 얻는다.
+E_Turn_Start_Boost_If_Attack_Command_Count_At_Least,공격 수 조건 증폭,0,등록한 공격 스킬 수가 기준 이상이면 증폭을 수치만큼 얻는다.
+E_Turn_Start_All_Enemy_Vulnerable,지정 턴 전체 적 취약,0,지정 턴 시작 시 모든 적에게 취약을 수치만큼 부여한다.
+E_Turn_Start_All_Enemy_Weaken,지정 턴 전체 적 약화,0,지정 턴 시작 시 모든 적에게 약화를 수치만큼 부여한다.
+E_Turn_Start_All_Enemy_Poison,지정 턴 전체 적 중독,0,지정 턴 시작 시 모든 적에게 중독을 수치만큼 부여한다.
+E_Turn_Start_All_Enemy_Bleed,지정 턴 전체 적 출혈,0,지정 턴 시작 시 모든 적에게 출혈을 수치만큼 부여한다.
+E_Collision_Target_Damage_Delta,충돌 상대 피해 변화,0,자신과 충돌한 상대가 받는 피해를 수치만큼 변화시킨다.
+E_Collision_Charge,충돌 충전 획득,0,자신과 충돌이 발생하면 충전을 수치만큼 얻는다.
+E_Collision_Kill_Focus,충돌 처치 집중,0,자신과 충돌한 상대가 사망하면 집중을 수치만큼 얻는다.
+E_Rest_Heal_Percent_Bonus,휴식 회복량 증가,0,휴식으로 회복하는 회복량을 퍼센트로 증가시킨다.
+E_Shop_Price_Discount_Percent,상점 가격 할인,0,상점 판매 가격을 퍼센트로 감소시킨다.
+E_Battle_Reward_Currency_Percent,전투 보상 재화 증가,0,전투 보상 재화 획득량을 퍼센트로 증가시킨다.
+E_Battle_End_Heal,전투 종료 회복,0,전투 종료 후 체력을 수치만큼 회복한다.
+AR_DamageBoostThisTurn,피해 증가,Remove,이번 턴 동안 주는 피해가 증가한다.
+AR_DamageReductionThisTurn,피해 감소,Remove,이번 턴 동안 받는 피해가 감소한다.
+AR_RecoverUniqueResourceToMax,고유자원 최대 회복,0,고유자원을 최대치까지 회복한다.
+AR_RecoverCostToMax,코스트 최대 회복,0,코스트를 최대치까지 회복한다.
+AR_GrantSwift,신속 부여,0,신속을 부여한다.
+AR_CleanseDebuffs,디버프 제거,0,모든 디버프를 제거한다.
+AR_MoveToGrid,선택 그리드 이동,0,선택한 빈 그리드로 이동한다.
+AR_SwapAlly,아군 위치 교환,0,선택한 그리드의 아군과 위치를 교환한다.
+AR_TargetOutgoingDamageReductionThisTurn,대상 피해 감소,Remove,선택한 그리드의 적이 이번 턴 동안 주는 피해를 감소시킨다.
+AR_RemoveGridEffect,그리드 효과 제거,0,선택한 그리드의 장애물을 포함한 그리드 효과를 제거한다.
+AR_SpawnPoisonGridEffect,독 장판 생성,0,선택한 빈 그리드에 독 장판을 생성한다.
+AR_SpawnThornGridEffect,가시 장판 생성,0,선택한 빈 그리드에 가시 장판을 생성한다.
+AR_SpawnObstacleGridEffect,장애물 생성,0,선택한 빈 그리드에 장애물을 생성한다.
+AR_SpawnDummyGridEffect,허수아비 생성,0,선택한 빈 그리드에 허수아비를 생성한다.
+AR_SpawnExplosiveDollGridEffect,폭발 인형 생성,0,선택한 빈 그리드에 폭발 인형을 생성한다.
+E_Move,이동,0,이동 효과입니다.
+E_Burn,화상,Decrease,화상 상태입니다.
 
 # Map
 맵ID,이름,타입,전투맵ID,이벤트ID,챕터,스테이지 맵,등장가중치,고정위치,드랍스킬분류
@@ -487,21 +593,107 @@ Range_b_24,Range_Explosion,0;0,-2;2,-1;2,0;2,1;2,2;2,-2;1,-1;1,0;1,1;1,2;1,-2;0,
 # Relic
 유물 ID,이름,효과ID,수치계수,횟수계수,타입,내구도,효과설명,레어도
 FragmentId,Name,EffectIds,ValueRate,CountRate,Type,Durability,EffectDesc,Rarity
-Relic_01,선봉의 날개,E_Value,1,1,Passive,0,첫 번째 턴 시작시 코스트 +2,Start
-Relic_02,흑요석 반지,E_Value,2,1,Passive,0,마지막 슬롯에 중복사용으로 증가하는 코스트 증가량 제거,Shop
-Relic_03,붉은 서약검,E_Value,-1,1,Passive,0,마지막 슬롯에 사용하는 공격타입 수치 +1,Common
-Relic_04,선각자의 부적,E_Value,-2,1,Passive,0,첫 슬롯에 사용하는 스킬타입 수치 +1,Common
-Relic_05,도약의 뿔조각,E_Value,2,1,Passive,0,첫 슬롯에 사용하는 행동의 코스트 사용량 -1,Uncommon
-Relic_06,심연의 비늘,E_Value,1,1,Passive,0,두 번째 턴 시작시 방어도 +10,Uncommon
-Relic_07,굶주린 송곳니,E_Value,1,1,Passive,0,장착 시 해당 캐릭터가 사용하는 공격 행동 중 랜덤 하나 횟수 +1,Rare
-Relic_08,에테르 조각,E_Value,1,1,Passive,0,장착 시 해당 캐릭터의 코스트 +1,Rare
-Relic_09,피의 성배,E_Value,1,1,Passive,0,장착 시 해당 캐릭터의 최대 HP +5,Unique
-Relic_10,까마귀의 깃,E_Value,1,1,Passive,0,장착 시 해당 캐릭터의 이동 수치 +8,Unique
-Relic_11,아드레날린,E_Value,1,1,Active,1,이번 턴 주는 피해 100%증가,Uncommon
-Relic_12,수호자의 비늘,E_Value,1,1,Active,2,이번 턴 받는 피해 50%감소,Uncommon
-Relic_13,차원의 깃털,E_Value,1,1,Active,3,선택 위치로 이동,Rare
-Relic_14,쌍둥이의 반지,E_Value,1,1,Active,5,선택 아군 캐릭터와 위치 변경,Rare
-Relic_15,역병의 향로,E_Value,1,1,Active,10,선택 위치에 독장판 생성,Unique
+Relic_P_01,생명의 뿌리,E_Max_HP,5,1,Passive,0,최대 체력이 5 증가한다,Start
+Relic_P_02,에테르 조각,E_Max_Cost,1,1,Passive,0,최대 코스트가 1 증가한다,Shop
+Relic_P_03,은빛 태엽,E_Cost_Recovery_Delta,1,1,Passive,0,코스트 회복량이 1 증가한다,Common
+Relic_P_04,메마른 그릇,E_Max_HP;E_Max_Cost,-8;2,1;1,Passive,0,최대 체력이 8 감소하고 최대 코스트가 2 증가한다,Common
+Relic_P_05,영혼 기생충,E_Max_HP;E_Cost_Recovery_Delta,-5;1,1;1,Passive,0,최대 체력이 5 감소하고 코스트 회복량이 1 증가한다,Uncommon
+Relic_P_06,붉은 서약검,E_Attack_Cost_Delta;E_Attack_Value_Delta,1;2,1;1,Passive,0,"공격타입 스킬의 코스트가 1 증가하고, 피해량이 2 증가한다",Uncommon
+Relic_P_07,날카로운 파편,E_Attack_Value_Delta;E_Attack_Count_Delta,-2;1,1;1,Passive,0,"공격타입 스킬의 피해량이 2 감소하고, 횟수가 1 증가한다",Rare
+Relic_P_08,증류기,E_Debuff_Cost_Delta;E_Debuff_Value_Delta,2;2,1;1,Passive,0,"디버프타입 스킬의 코스트가 2 증가하고, 수치가 2 증가한다",Rare
+Relic_P_09,선봉의 날개,E_Slot1_First_Skill_Cost_Delta,-1,1,Passive,0,1번 슬롯에 등록하는 첫 스킬의 코스트가 1 감소한다,Unique
+Relic_P_10,돌격대의 휘장,E_Slot1_Attack_Value_Delta,1,1,Passive,0,1번 슬롯에 등록하는 공격타입 스킬의 수치 1 증가한다,Unique
+Relic_P_11,굶주린 송곳니,E_Slot1_Attack_Kill_Focus,1,1,Passive,0,1번 슬롯에 등록하는 공격타입 스킬로 적 처치 시 집중을 1 얻는다,Uncommon
+Relic_P_12,여명의 향로,E_Slot1_Buff_Value_Delta,1,1,Passive,0,1번 슬롯에 등록하는 버프타입 스킬의 수치가 1 증가한다,Uncommon
+Relic_P_13,굳은 모래시계,E_Slot5_Skill_Cost_Delta,-1,1,Passive,0,5번 슬롯에 등록하는 모든 스킬의 코스트가 1 감소한다,Rare
+Relic_P_14,부서진 칼날,E_Slot5_Attack_Value_Delta,2,1,Passive,0,5번 슬롯에 등록하는 공격타입 스킬의 수치 2 증가한다,Rare
+Relic_P_15,뾰족한 갈고리,E_Slot5_Attack_Kill_Cost_Refund,1,1,Passive,0,5번 슬롯에 등록하는 공격타입 스킬로 적 처치 시 해당 스킬의 코스트를 돌려받는다,Unique
+Relic_P_16,흑요석 반지,E_Slot5_Attack_Pierce,1,1,Passive,0,5번 슬롯에 등록하는 공격타입 스킬의 피해가 관통피해로 변경된다,Uncommon
+Relic_P_17,봉인된 팔찌,E_Blocked_Slot_Mask;E_Cost_Recovery_Delta,3;2,1;1,Passive,0,"1,2번 슬롯에 스킬을 등록할 수 없다. 코스트 회복량이 2 증가한다",Uncommon
+Relic_P_18,부서진 나침반,E_Max_Registrable_Slot_Count;E_Move_Cost_Zero,1;1,1;1,Passive,0,하나의 슬롯에만 스킬을 등록할 수 있다. 이동스킬이 코스트를 소모하지 않는다,Uncommon
+Relic_P_19,어깨 보호대,E_Turn_Start_Armor_Per_Used_Slot,2,0,Passive,0,턴 시작 시 (자신의 스킬이 등록된 슬롯의 수 x2) 만큼 방어도를 얻는다,Uncommon
+Relic_P_20,단단한 투구,E_Turn_Start_Armor_Per_Empty_Slot,2,0,Passive,0,턴 시작 시 (자신의 스킬이 등록되지 않은 슬롯의 수 x2) 만큼 방어도를 얻는다,Uncommon
+Relic_P_21,예지의 단안경,E_Turn_Start_Smite_If_Slots_Empty_Mask,1,7,Passive,0,"턴 시작 시 1,2,3번 슬롯에 자신의 스킬이 없다면 강타를 1 얻는다",Uncommon
+Relic_P_22,망원경,E_Turn_Start_Boost_If_Slots_Empty_Mask,1,28,Passive,0,"턴 시작 시 3,4,5번 슬롯에 자신의 스킬이 없다면 증폭을 1 얻는다",Uncommon
+Relic_P_23,식칼,E_Turn_Start_Boost_If_One_Attack_Command,3,0,Passive,0,턴 시작 시 자신이 등록한 스킬이 공격타입 스킬 하나뿐이라면 스킬의 피해량이 3 증가한다,Uncommon
+Relic_P_24,삼지창,E_Turn_Start_Boost_If_Attack_Command_Count_At_Least,1,3,Passive,0,턴 시작 시 자신이 공격타입 스킬을 3개 이상 등록했다면 모든 스킬의 피해량이 1 증가한다,Uncommon
+Relic_P_25,선각자의 부적,E_Turn_Start_All_Enemy_Vulnerable;E_Turn_Start_All_Enemy_Weaken,1;1,1;1,Passive,0,1턴 시작 시 모든 적에게 취약과 약화를 1 부여한다,Uncommon
+Relic_P_26,역병의 향로,E_Turn_Start_All_Enemy_Poison;E_Turn_Start_All_Enemy_Bleed,1;1,1;1,Passive,0,1턴 시작 시 모든 적에게 중독과 출혈을 1 부여한다,Uncommon
+Relic_P_27,회중시계,E_Turn_Start_Armor,10,2,Passive,0,2턴 시작 시 방어도를 10 얻는다,Uncommon
+Relic_P_28,두 갈래 촛대,E_Turn_Start_Charge;E_Turn_Start_Focus,1;1,2;2,Passive,0,2턴 시작 시 충전과 집중을 1 얻는다,Uncommon
+Relic_P_29,막대자석,E_Turn_Start_Swift;E_Turn_Start_Boost,1;1,3;3,Passive,0,3턴 시작 시 신속과 증폭을 1 얻는다,Uncommon
+Relic_P_30,핏빛 성유함,E_Turn_Start_Lifesteal;E_Turn_Start_Smite,1;1,3;3,Passive,0,3턴 시작 시 흡혈과 강타를 1 얻는다,Uncommon
+Relic_P_31,고요한 발찌,E_No_Move_In_Slot_Buff_Cost_Delta,-1,1,Passive,0,해당 슬롯에서 이동스킬을 사용하지 않았다면 버프타입 스킬의 코스트가 1 감소한다,Uncommon
+Relic_P_32,도약의 뿔조각,E_After_Move_Debuff_Cost_Delta,-1,1,Passive,0,해당 슬롯에서 이동스킬을 사용한 뒤 등록하는 디버프 스킬은 코스트가 1 감소한다,Uncommon
+Relic_P_33,독사의 송곳니,E_After_Move_Debuff_Value_Delta,1,1,Passive,0,해당 슬롯에서 이동스킬을 사용한 뒤 등록하는 디버프 스킬은 수치가 1 증가한다,Uncommon
+Relic_P_34,질주의 편자,E_After_Move_Attack_Value_Per_Cost,1,1,Passive,0,해당 슬롯에서 이동스킬을 사용한 뒤 등록하는 공격타입 스킬의 피해량이 (이동에 소모한 코스트)만큼 증가한다,Uncommon
+Relic_P_35,강철 닻,E_Forced_Move_Immune,1,1,Passive,0,전투 중 넉백과 그랩으로 이동하지 않는다,Uncommon
+Relic_P_36,심연의 비늘,E_Crash_Damage_Immune,1,1,Passive,0,전투 중 충돌로 인한 피해를 받지 않는다,Uncommon
+Relic_P_37,무쇠 장화,E_Grid_Effect_Immune,1,1,Passive,0,전투 중 장애물로 인한 효과를 받지 않는다,Uncommon
+Relic_P_38,가득 찬 주전자,E_Overheal_To_Armor,1,1,Passive,0,전투 중 체력이 최대일 때 체력이 회복되면 수치만큼 방어도를 얻는다,Uncommon
+Relic_P_39,단단한 얼음,E_No_Damage_Previous_Turn_Smite,1,1,Passive,0,전투 중 이번 턴 동안 받은 피해가 없다면 다음 턴 시작 시 강타를 1 얻는다,Uncommon
+Relic_P_40,피의 성배,E_Healing_Blocked;E_Armor_Gain_Percent,1;50,1;1,Passive,0,전투 중 체력을 회복할 수 없다 대신 자신이 얻는 방어도가 50% 증가한다,Uncommon
+Relic_P_41,날이 선 톱,E_Collision_Target_Damage_Delta,2,1,Passive,0,자신과 충돌이 발생할 때 상대가 받는 피해가 2 증가한다,Uncommon
+Relic_P_42,텅 빈 축전지,E_Collision_Charge,1,1,Passive,0,자신과 충돌이 발생할 때 충전 1을 얻는다,Uncommon
+Relic_P_43,신수의 뿔,E_Collision_Kill_Focus,2,1,Passive,0,자신과 충돌이 발생할 때 상대가 체력이 0이 되었다면 집중을 2 얻는다,Uncommon
+Relic_P_44,낡은 허리띠,E_Low_HP_Skill_Cost_Delta,-1,1,Passive,0,현재 체력이 30% 이하라면 자신의 스킬 코스트가 1 감소한다,Uncommon
+Relic_P_45,피 묻은 발톱,E_Low_HP_Attack_Value_Delta,1,1,Passive,0,현재 체력이 30% 이하라면 자신의 공격타입 스킬의 피해량이 1 증가한다,Uncommon
+Relic_P_46,두꺼운 가죽,E_Low_HP_Damage_Reduction_Percent,20,1,Passive,0,현재 체력이 30% 이하라면 받는 피해가 20% 감소한다,Uncommon
+Relic_P_47,맑은 물병,E_High_HP_Cost_Recovery_Delta,1,1,Passive,0,현재 체력이 90% 이상이라면 코스트 회복량이 1 증가한다,Uncommon
+Relic_P_48,고결한 지팡이,E_High_HP_Buff_Cost_Delta,-1,1,Passive,0,현재 체력이 90% 이상이라면 자신의 버프타입 스킬의 코스트가 1 감소한다,Uncommon
+Relic_P_49,맹독 이빨,E_Damage_Poisoned_Fixed,1,1,Passive,0,중독이 부여된 적에게 피해를 준다면 고정피해를 1 준다,Uncommon
+Relic_P_50,톱니 단검,E_Damage_Bleeding_Fixed,1,1,Passive,0,출혈이 부여된 적에게 피해를 준다면 고정피해를 1 준다,Uncommon
+Relic_P_51,금이 간 완갑,E_Damage_Vulnerable_Armor,2,1,Passive,0,취약이 부여된 적에게 피해를 준다면 방어도를 2 얻는다,Uncommon
+Relic_P_52,무거운 방패,E_Damage_Weakened_Armor,2,1,Passive,0,약화가 부여된 적에게 피해를 준다면 방어도를 2 얻는다,Uncommon
+Relic_P_53,감염된 바늘,E_Damage_Non_Poisoned_Apply_Poison,1,1,Passive,0,중독이 부여되지 않은 적에게 피해를 준다면 중독을 1 부여한다,Uncommon
+Relic_P_54,희생자의 관,E_Self_Buff_Blocked_Buff_Value_Delta,1,1,Passive,0,자신에게 버프를 부여할 수 없다 대신 버프타입 스킬의 수치가 1 증가한다,Uncommon
+Relic_P_55,순백의 왕관,E_Full_HP_Buff_Value_Delta,1,1,Passive,0,자신의 체력이 최대라면 버프타입 스킬의 수치가 1 증가한다,Uncommon
+Relic_P_56,까마귀의 깃,E_Ally_Buff_Charge,1,1,Passive,0,자신을 제외한 아군 한명 이상에게 버프를 부여하면 충전을 1 얻는다,Uncommon
+Relic_P_57,빛나는 수정구,E_UniqueResource_Overflow_To_Cost,1,1,Passive,0,고유자원이 최대인 동안 고유자원을 얻으면 수치만큼 코스트를 회복한다,Uncommon
+Relic_P_58,비단 초커,E_UniqueResource_Max_Skill_Cost_Delta,-1,1,Passive,0,고유자원이 최대인 동안 모든 스킬의 코스트가 1 감소한다,Uncommon
+Relic_P_59,사슬낫,E_Unique_Skill_Kill_Focus,1,1,Passive,0,고유스킬로 적을 처치하면 집중을 1 얻는다,Uncommon
+Relic_P_60,마력 렌즈,E_Unique_Skill_Value_Percent,50,1,Passive,0,고유스킬의 수치가 50% 증가한다,Uncommon
+Relic_P_61,메아리 수정,E_Unique_Skill_Count_Delta,1,1,Passive,0,고유스킬의 횟수가 1회 증가한다,Uncommon
+Relic_P_62,일회용 라이터,E_Once_Battle_End_Turn_Zero_Cost_Charge,10,1,Passive,0,"전투당 1회, 턴을 종료할 때 코스트가 0이라면 충전을 10 얻는다",Uncommon
+Relic_P_63,불발탄,E_Once_Battle_Attack_Miss_Charge,5,1,Passive,0,"전투당 1회, 공격이 적중하지 않았을 때 충전을 5 얻는다",Uncommon
+Relic_P_64,처형인의 안경,E_Once_Battle_Full_HP_Target_Damage_Percent,100,1,Passive,0,"전투당 1회, 체력이 최대인 적에게 피해를 줄 때 피해량이 2배로 적용된다",Uncommon
+Relic_P_65,에테르 약병,E_Rest_Heal_Percent_Bonus,50,1,Passive,0,휴식으로 회복하는 회복량이 50% 증가한다,Uncommon
+Relic_P_66,상인의 금인장,E_Shop_Price_Discount_Percent,30,1,Passive,0,상점에서 판매하는 모든 물품의 가격이 30% 감소한다,Uncommon
+Relic_P_67,구슬 주머니,E_Battle_Reward_Currency_Percent,20,1,Passive,0,전투 보상으로 획득하는 재화의 양이 20% 증가한다,Uncommon
+Relic_P_68,붕대,E_Battle_End_Heal,2,1,Passive,0,전투 종료 후 체력을 2 회복한다,Uncommon
+Relic_A_01,아드레날린 주사기,AR_DamageBoostThisTurn,100,1,Active,1,이번 턴 동안 자신의 공격타입 스킬 피해량이 100% 증가합니다.,Uncommon
+Relic_A_02,경화제 앰플,AR_DamageReductionThisTurn,50,1,Active,1,이번 턴 동안 자신이 받는 피해가 50% 감소합니다.,Uncommon
+Relic_A_03,응축 에테르 약병,AR_RecoverUniqueResourceToMax,1,1,Active,1,자신의 고유자원을 최대치까지 회복합니다.,Uncommon
+Relic_A_04,에너지 드링크,AR_RecoverCostToMax,1,1,Active,1,자신의 코스트를 최대치까지 회복합니다.,Uncommon
+Relic_A_05,각성제,AR_GrantSwift,2,1,Active,1,자신에게 신속 2를 부여합니다.,Uncommon
+Relic_A_06,순백의 성수,AR_CleanseDebuffs,1,1,Active,1,자신에게 부여된 모든 디버프를 제거합니다.,Uncommon
+Relic_A_07,차원의 깃털,AR_MoveToGrid,3,1,Active,3,선택한 빈 그리드로 이동합니다.,Uncommon
+Relic_A_08,쌍둥이 반지,AR_SwapAlly,3,1,Active,3,선택한 그리드의 아군과 위치를 변경합니다.,Uncommon
+Relic_A_09,독주머니,AR_SpawnPoisonGridEffect,3,1,Active,3,선택한 그리드에 독 장판을 생성합니다. 독 장판 위를 이동하면 중독 2를 부여하고 사라집니다.,Uncommon
+Relic_A_10,접이식 가시판,AR_SpawnThornGridEffect,3,1,Active,3,"선택한 그리드에 가시 장판을 생성합니다. 가시 장판 위를 이동하면 피해 3을 받으며, 전투가 종료될 때까지 유지됩니다.",Uncommon
+Relic_A_11,합금 수갑,AR_TargetOutgoingDamageReductionThisTurn,50,1,Active,3,선택한 그리드의 적은 이번 턴 동안 주는 피해가 50% 감소합니다.,Uncommon
+Relic_A_12,강철 말뚝,AR_SpawnObstacleGridEffect,3,1,Active,3,선택한 빈 그리드에 장애물을 생성합니다. 전투가 종료될 때까지 유지됩니다.,Uncommon
+Relic_A_13,해체 도구,AR_RemoveGridEffect,3,1,Active,3,선택한 그리드의 장애물을 제거합니다.,Uncommon
+Relic_A_14,밀짚 허수아비,AR_SpawnDummyGridEffect,3,1,Active,3,"선택한 빈 그리드에 허수아비를 소환합니다. 허수아비는 적의 공격 대상이 되며, 피해를 받으면 파괴됩니다.",Uncommon
+Relic_A_15,태엽 폭탄 인형,AR_SpawnExplosiveDollGridEffect,3,1,Active,3,선택한 빈 그리드에 폭발 인형을 소환합니다. 폭발 인형은 5번 슬롯의 행동이 끝나면 폭발하여 주변 적에게 고정피해 4를 줍니다.,Uncommon
+
+# Item
+아이템ID,이름,가치,연구 결과,효과ID,수치계수,횟수계수,설명
+ItemId,Name,Value,ResearchResult,EffectId,ValueRate,CountRate,Desc
+Item_001,머크의 젤,15,활성 점액질,E_Barrier,1,1,끈적한 머크의 젤이다. 판매 시 15 더스티움을 얻는다.
+Item_002,블록의 점액,7,경화 점액막,E_Armor,5,1,말랑한 블록의 점액이다. 판매 시 7 더스티움을 얻는다.
+Item_003,랜서의 코어,12,안정화된 돌격핵,E_Move_First_Attack_Power,1,1,랜서의 힘이 남아 있는 코어다. 판매 시 12 더스티움을 얻는다.
+Item_004,블라이트의 코어,10,농축 부패핵,E_Poison_Apply_Double,1,1,블라이트의 기운이 남아 있는 코어다. 판매 시 10 더스티움을 얻는다.
+Item_005,베스파의 독침,24,정제된 독침 추출물,E_Bleeding_Apply_Double,1,1,베스파의 독이 스며든 침이다. 판매 시 24 더스티움을 얻는다.
+Item_006,돌 조각,20,고밀도 암석편,E_Max_HP_Up,1,1,단단하지만 평범한 돌 조각이다. 판매 시 20 더스티움을 얻는다.
+Item_007,부패한 뼈,25,침식 골수,E_Kill_Heal,1,1,부패한 기운이 남아 있는 뼈다. 판매 시 25 더스티움을 얻는다.
+Item_008,다크 크리스탈,25,공명 암흑결정,E_Skill_Resource_Gain_Up,1,1,어두운 기운을 품은 결정이다. 판매 시 25 더스티움을 얻는다.
+Item_009,고대 조각,30,복원된 고대 문양,E_Buff_Apply_Double,1,1,"오래된 문명의 흔적이 남은 조각이다. 판매 시 30 더스티움을 얻는다.
+"
+Item_010,녹슨 칼날,50,연마된 고대 검편,E_Low_HP_Power,1,1,엘리스에게서 떨어져 나온 단단한 경절이다. 판매 시 50 더스티움을 얻는다.
+Item_011,11,60,(미정),,1,1,정예 개체의 힘이 응축된 심장이다. 판매 시 60 더스티움을 얻는다.
+Item_012,엘리스의 경절,100,강화 외골격,E_Move_Point_Up,1,1,강대한 존재를 쓰러뜨린 증표다. 판매 시 100 더스티움을 얻는다.
+,,,,
 
 # EventMaster
 이벤트 ID,이벤트 이름,제목,설명,발생 조건
@@ -528,22 +720,4 @@ QUEST_002,고블린 토벌,고블린을 10마리 처치하라,KillMonster,MON_00
 QUEST_003,보스 격파,드래곤을 처치하라,KillMonster,MON_005,1,Gem,50
 QUEST_004,아이템 수집,포션을 3개 획득하라,CollectItem,ITEM_POTION,3,Gold,150
 QUEST_005,스테이지 클리어,Stage_01을 클리어하라,ClearStage,Stage_01,1,Gem,30
-
-# Item
-아이템ID,이름,가치,연구 결과,효과ID,수치계수,횟수계수,설명
-ItemId,Name,Value,ResearchResult,EffectId,ValueRate,CountRate,Desc
-Item_001,머크의 젤,15,활성 점액질,E_Barrier,1,1,끈적한 머크의 젤이다. 판매 시 15 더스티움을 얻는다.
-Item_002,블록의 점액,7,경화 점액막,E_Armor,5,1,말랑한 블록의 점액이다. 판매 시 7 더스티움을 얻는다.
-Item_003,랜서의 코어,12,안정화된 돌격핵,E_Move_First_Attack_Power,1,1,랜서의 힘이 남아 있는 코어다. 판매 시 12 더스티움을 얻는다.
-Item_004,블라이트의 코어,10,농축 부패핵,E_Poison_Apply_Double,1,1,블라이트의 기운이 남아 있는 코어다. 판매 시 10 더스티움을 얻는다.
-Item_005,베스파의 독침,24,정제된 독침 추출물,E_Bleeding_Apply_Double,1,1,베스파의 독이 스며든 침이다. 판매 시 24 더스티움을 얻는다.
-Item_006,돌 조각,20,고밀도 암석편,E_Max_HP_Up,1,1,단단하지만 평범한 돌 조각이다. 판매 시 20 더스티움을 얻는다.
-Item_007,부패한 뼈,25,침식 골수,E_Kill_Heal,1,1,부패한 기운이 남아 있는 뼈다. 판매 시 25 더스티움을 얻는다.
-Item_008,다크 크리스탈,25,공명 암흑결정,E_Skill_Resource_Gain_Up,1,1,어두운 기운을 품은 결정이다. 판매 시 25 더스티움을 얻는다.
-Item_009,고대 조각,30,복원된 고대 문양,E_Buff_Apply_Double,1,1,"오래된 문명의 흔적이 남은 조각이다. 판매 시 30 더스티움을 얻는다.
-"
-Item_010,녹슨 칼날,50,연마된 고대 검편,E_Low_HP_Power,1,1,엘리스에게서 떨어져 나온 단단한 경절이다. 판매 시 50 더스티움을 얻는다.
-Item_011,11,60,(미정),,1,1,정예 개체의 힘이 응축된 심장이다. 판매 시 60 더스티움을 얻는다.
-Item_012,엘리스의 경절,100,강화 외골격,E_Move_Point_Up,1,1,강대한 존재를 쓰러뜨린 증표다. 판매 시 100 더스티움을 얻는다.
-,,,,
 

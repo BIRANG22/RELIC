@@ -158,6 +158,7 @@ public class BattleRewardResolver : MonoBehaviour
             return;
 
         int amount = BattleRandom.Range(min, max + 1);
+        amount = BattleEquipmentEffectService.ModifyBattleRewardCurrencyAmount(amount);
 
         if (amount <= 0)
             return;
