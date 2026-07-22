@@ -68,8 +68,16 @@ public class BattleRoomLoader : MonoBehaviour
     private bool isLoaded;
     private bool isLoading;
     private string loadedMapId;
+    private string debugTargetMonsterId;
+    private int debugTargetGridIndex = -1;
 
     private readonly BattlePassiveSkillService passiveSkillService = new();
+
+    public void ConfigureDebugTargetMonster(string monsterId, int gridIndex)
+    {
+        debugTargetMonsterId = string.IsNullOrWhiteSpace(monsterId) ? null : monsterId.Trim();
+        debugTargetGridIndex = gridIndex;
+    }
 
     private void EnsureTimelineController()
     {
@@ -1069,6 +1077,56 @@ public class BattleRoomLoader : MonoBehaviour
             return;
         }
 
+        if (!string.IsNullOrWhiteSpace(debugTargetMonsterId))
+        {
+            SpawnDebugTargetMonster();
+        }
+        else
+        {
+            SpawnMapMonsters();
+        }
+
+        RefreshMonsterDisplayNames();
+
+        if (!planMonsterTurns)
+            return;
+
+        if (monsterTurnPlanner != null)
+        {
+            monsterTurnPlanner.PlanMonsterTurns(spawnedMonsterUnits, true);
+        }
+        else
+        {
+            Debug.LogWarning("[BattleRoomLoader] MonsterTurnPlanner is missing.");
+        }
+    }
+
+    private void SpawnDebugTargetMonster()
+    {
+        SpawnedMonsterResult result = monsterSpawner.SpawnRuntimeMonster(
+            debugTargetMonsterId,
+            new List<int> { debugTargetGridIndex });
+
+        if (result == null || result.RuntimeData == null || result.MonsterTransform == null)
+        {
+            Debug.LogError($"[BattleRoomLoader] Failed to spawn debug target: {debugTargetMonsterId}");
+            return;
+        }
+
+        DebugBattleTargetRules.Configure(result.RuntimeData);
+
+        MonsterUnit monsterUnit = result.MonsterTransform.GetComponent<MonsterUnit>();
+        if (monsterUnit != null)
+        {
+            monsterUnit.SetAIEnabled(false);
+            monsterUnit.RefreshRuntimeDisplayName();
+        }
+
+        RegisterRuntimeMonster(result);
+    }
+
+    private void SpawnMapMonsters()
+    {
         MapRuntimeData mapRuntime = DataManager.Instance.MapRuntimeStore.Get();
 
         if (mapRuntime == null || string.IsNullOrWhiteSpace(mapRuntime.CurrentMapId))
@@ -1105,20 +1163,6 @@ public class BattleRoomLoader : MonoBehaviour
                 monsterUnit.BindHUD(hud);
                 spawnedMonsterUnits.Add(monsterUnit);
             }
-        }
-
-        RefreshMonsterDisplayNames();
-
-        if (!planMonsterTurns)
-            return;
-
-        if (monsterTurnPlanner != null)
-        {
-            monsterTurnPlanner.PlanMonsterTurns(spawnedMonsterUnits, true);
-        }
-        else
-        {
-            Debug.LogWarning("[BattleRoomLoader] MonsterTurnPlanner is missing.");
         }
     }
 

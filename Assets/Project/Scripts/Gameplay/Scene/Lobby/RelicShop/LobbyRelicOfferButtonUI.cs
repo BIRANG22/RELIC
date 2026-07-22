@@ -19,7 +19,7 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour
         rect.sizeDelta = new Vector2(150f, 180f);
 
         Image background = root.GetComponent<Image>();
-        background.color = new Color(0.08f, 0.1f, 0.14f, 0f);
+        background.color = new Color(0.08f, 0.1f, 0.14f, 0.72f);
 
         var iconObject = new GameObject("RelicIcon", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
         var iconRect = (RectTransform)iconObject.transform;

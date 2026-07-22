@@ -6,6 +6,8 @@ public static class DebugBattleSceneBootstrap
 {
     private const string DebugBattleSceneName = "DebugBattle";
     private const string DebugWindowObjectName = "BattleEffectDebugWindow";
+    internal const string DebugTargetMonsterId = "Mon_02";
+    internal const int DebugTargetGridIndex = 23;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Initialize()
@@ -34,6 +36,7 @@ public static class DebugBattleSceneBootstrap
         GameObject windowObject = new(DebugWindowObjectName);
         windowObject.AddComponent<BattleEffectDebugWindow>();
         windowObject.AddComponent<BattleDebugKillAllMonsters>();
+        windowObject.AddComponent<DebugBattleTargetController>();
         windowObject.AddComponent<DebugBattleSceneRunner>();
 
         Debug.Log("[DebugBattleSceneBootstrap] Debug battle window created.");
@@ -77,6 +80,9 @@ public sealed class DebugBattleSceneRunner : MonoBehaviour
         if (battleRoomRoot != null && !battleRoomRoot.activeSelf)
             battleRoomRoot.SetActive(true);
 
+        loader.ConfigureDebugTargetMonster(
+            DebugBattleSceneBootstrap.DebugTargetMonsterId,
+            DebugBattleSceneBootstrap.DebugTargetGridIndex);
         loader.ResetLoadedStateForNextBattle(true);
         loader.RequestLoadBattle();
     }

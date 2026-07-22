@@ -15,7 +15,7 @@ public class LobbyRelicShopServiceTests
     }
 
     [Test]
-    public void BuildOffers_ExcludesPassiveOwnedAndDuplicateRelics()
+    public void BuildOffers_IncludesActiveAndPassiveRelics_WhileExcludingOwnedRelics()
     {
         RelicData owned = CreateRelic("Owned", "Active", "Common");
         RelicData activeA = CreateRelic("A", "Active", "Common");
@@ -29,9 +29,10 @@ public class LobbyRelicShopServiceTests
             new[] { "Owned" },
             3);
 
-        Assert.That(offers, Has.Count.EqualTo(2));
+        Assert.That(offers, Has.Count.EqualTo(3));
         Assert.That(offers[0].RelicId, Is.EqualTo("A"));
         Assert.That(offers[1].RelicId, Is.EqualTo("B"));
+        Assert.That(offers[2].RelicId, Is.EqualTo("Passive"));
     }
 
     [Test]
@@ -47,6 +48,21 @@ public class LobbyRelicShopServiceTests
         Assert.That(result.Succeeded, Is.True);
         Assert.That(runtime.BlueDustium, Is.EqualTo(899));
         Assert.That(runtime.OwnedRelicIds, Does.Contain("A"));
+    }
+
+    [Test]
+    public void Purchase_PassiveRelic_DeductsCurrencyAndAddsOwnedRelic()
+    {
+        RelicDatabase database = CreateDatabase(CreateRelic("Passive", "Passive", "Uncommon"));
+        var runtime = new LobbyRuntimeData { BlueDustium = 999 };
+        var service = new LobbyRelicPurchaseService(database);
+
+        LobbyRelicPurchaseResult result = service.Execute(
+            new LobbyRelicPurchaseCommand("Passive"), runtime);
+
+        Assert.That(result.Succeeded, Is.True);
+        Assert.That(runtime.BlueDustium, Is.EqualTo(799));
+        Assert.That(runtime.OwnedRelicIds, Does.Contain("Passive"));
     }
 
     [Test]

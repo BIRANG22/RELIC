@@ -63,9 +63,6 @@ public sealed class LobbyRelicPurchaseService
         if (relicDatabase == null || !relicDatabase.TryGet(relicId, out RelicData relic))
             return Fail(relicId, LobbyRelicPurchaseFailure.RelicNotFound);
 
-        if (!ActiveRelicEffectResolver.IsActiveRelic(relic))
-            return Fail(relicId, LobbyRelicPurchaseFailure.NotActiveRelic);
-
         if (!LobbyRelicPricePolicy.TryGetPrice(relic.Rarity, out int price))
             return Fail(relicId, LobbyRelicPurchaseFailure.UnknownRarity);
 
