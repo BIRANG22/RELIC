@@ -49,8 +49,7 @@ public sealed class LobbyRelicOfferService
                 if (string.IsNullOrEmpty(id) || owned.Contains(id) || !candidateIds.Add(id))
                     continue;
 
-                if (!ActiveRelicEffectResolver.IsActiveRelic(relic) ||
-                    !LobbyRelicPricePolicy.TryGetPrice(relic.Rarity, out int price))
+                if (!LobbyRelicPricePolicy.TryGetPrice(relic.Rarity, out int price))
                 {
                     continue;
                 }

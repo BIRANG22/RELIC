@@ -30,6 +30,7 @@ namespace Relic.Gameplay.Monster
         public MonsterRuntimeData RuntimeData { get; private set; }
 
         private MonsterAIBase ai;
+        private bool aiEnabled = true;
         private MonsterHUDSlot hud;
         private Collider2D clickCollider2D;
         private Coroutine temporaryHUDRoutine;
@@ -93,6 +94,9 @@ namespace Relic.Gameplay.Monster
             BattleContext context,
             GridManager gridManager)
         {
+            if (!aiEnabled)
+                return new MonsterAIPlan();
+
             if (ai == null)
             {
                 Debug.LogWarning($"[MonsterUnit] AI 없음: {RuntimeData?.MonsterId}");
@@ -100,6 +104,11 @@ namespace Relic.Gameplay.Monster
             }
 
             return ai.CreatePlan(this, context, gridManager);
+        }
+
+        public void SetAIEnabled(bool enabled)
+        {
+            aiEnabled = enabled;
         }
 
         public string SelectSkill(BattleContext context)

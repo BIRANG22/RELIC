@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public sealed class LobbyRelicShopPresenter : MonoBehaviour
 {
@@ -12,22 +14,33 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
     private readonly List<LobbyRelicOfferButtonUI> buttons = new();
     private Canvas ownerCanvas;
+    private GameObject panelRoot;
     private LobbyRelicRefreshButtonUI refreshButton;
 
     private void Awake()
     {
         ownerCanvas = GetComponentInParent<Canvas>();
-        CreateButtonsIfNeeded();
+        CreateShopPanelIfNeeded();
+        InitializeSkillUpgradeButton(Camera.main);
     }
 
-    private void OnEnable()
+    public void Open()
     {
+        CreateShopPanelIfNeeded();
+        panelRoot.SetActive(true);
+        panelRoot.transform.SetAsLastSibling();
         RefreshOffers();
+    }
+
+    public void Close()
+    {
+        if (panelRoot != null)
+            panelRoot.SetActive(false);
     }
 
     public void RefreshOffers()
     {
-        CreateButtonsIfNeeded();
+        CreateShopPanelIfNeeded();
 
         if (DataManager.Instance == null || DataManager.Instance.RelicDatabase == null)
         {
@@ -117,44 +130,60 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         RefreshRefreshButton(runtime);
     }
 
-    private void CreateButtonsIfNeeded()
+    private void CreateShopPanelIfNeeded()
     {
-        if (buttons.Count > 0)
+        if (panelRoot != null || ownerCanvas == null)
             return;
 
-        Camera camera = Camera.main;
-        for (int i = 0; i < worldAnchors.Length; i++)
+        panelRoot = new GameObject("RelicShopPanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        RectTransform panelRect = (RectTransform)panelRoot.transform;
+        panelRect.SetParent(ownerCanvas.transform, false);
+        panelRect.anchorMin = panelRect.anchorMax = panelRect.pivot = new Vector2(0.5f, 0.5f);
+        panelRect.sizeDelta = new Vector2(660f, 390f);
+        panelRoot.GetComponent<Image>().color = new Color(0.035f, 0.045f, 0.065f, 0.94f);
+
+        for (int i = 0; i < 3; i++)
         {
-            LobbyRelicOfferButtonUI button = LobbyRelicOfferButtonUI.Create(transform, $"RelicOffer_{i + 1}");
-            WorldAnchorCanvasFollower follower = button.gameObject.AddComponent<WorldAnchorCanvasFollower>();
-            follower.Initialize(worldAnchors[i], ownerCanvas, camera);
+            LobbyRelicOfferButtonUI button = LobbyRelicOfferButtonUI.Create(panelRect, $"RelicOffer_{i + 1}");
+            RectTransform buttonRect = (RectTransform)button.transform;
+            buttonRect.anchorMin = buttonRect.anchorMax = buttonRect.pivot = new Vector2(0.5f, 0.5f);
+            buttonRect.anchoredPosition = new Vector2((i - 1) * 190f, 35f);
             buttons.Add(button);
         }
 
-        InitializeSkillUpgradeButton(camera);
-        InitializeRelicRefreshButton(camera);
+        refreshButton = LobbyRelicRefreshButtonUI.Create(panelRect, relicRefreshIcon, RefreshRelicOffers);
+        RectTransform refreshRect = (RectTransform)refreshButton.transform;
+        refreshRect.anchorMin = refreshRect.anchorMax = refreshRect.pivot = new Vector2(0.5f, 0.5f);
+        refreshRect.sizeDelta = new Vector2(130f, 110f);
+        refreshRect.anchoredPosition = new Vector2(0f, -125f);
+
+        CreateCloseButton(panelRect);
+        panelRoot.SetActive(false);
     }
 
-    private void InitializeRelicRefreshButton(Camera camera)
+    private void CreateCloseButton(RectTransform panelRect)
     {
-        if (refreshButton != null || ownerCanvas == null || camera == null ||
-            worldAnchors == null || worldAnchors.Length == 0)
-            return;
+        var closeObject = new GameObject("CloseButton", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+        RectTransform closeRect = (RectTransform)closeObject.transform;
+        closeRect.SetParent(panelRect, false);
+        closeRect.anchorMin = closeRect.anchorMax = closeRect.pivot = Vector2.one;
+        closeRect.anchoredPosition = new Vector2(-14f, -14f);
+        closeRect.sizeDelta = new Vector2(46f, 46f);
+        closeObject.GetComponent<Image>().color = Color.white;
+        closeObject.GetComponent<Button>().onClick.AddListener(Close);
 
-        Transform rightmost = worldAnchors[worldAnchors.Length - 1];
-        if (rightmost == null)
-            return;
-        Vector3 spacing = Vector3.right * 2f;
-        if (worldAnchors.Length > 1 && worldAnchors[worldAnchors.Length - 2] != null)
-            spacing = rightmost.position - worldAnchors[worldAnchors.Length - 2].position;
-
-        GameObject anchorObject = new("RelicRefreshAnchor");
-        anchorObject.transform.SetParent(rightmost.parent, true);
-        anchorObject.transform.position = rightmost.position + spacing;
-
-        refreshButton = LobbyRelicRefreshButtonUI.Create(transform, relicRefreshIcon, RefreshRelicOffers);
-        WorldAnchorCanvasFollower follower = refreshButton.gameObject.AddComponent<WorldAnchorCanvasFollower>();
-        follower.Initialize(anchorObject.transform, ownerCanvas, camera);
+        var labelObject = new GameObject("Label", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
+        RectTransform labelRect = (RectTransform)labelObject.transform;
+        labelRect.SetParent(closeRect, false);
+        labelRect.anchorMin = Vector2.zero;
+        labelRect.anchorMax = Vector2.one;
+        labelRect.offsetMin = labelRect.offsetMax = Vector2.zero;
+        TMP_Text label = labelObject.GetComponent<TMP_Text>();
+        label.text = "X";
+        label.color = Color.black;
+        label.fontSize = 27f;
+        label.alignment = TextAlignmentOptions.Center;
+        label.raycastTarget = false;
     }
 
     private void RefreshRelicOffers()
