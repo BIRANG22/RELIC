@@ -150,6 +150,7 @@ public class BattleTimelineController : MonoBehaviour
     private Coroutine timelineSlideGearRotationRoutine;
     private Coroutine endButtonHoverRotationRoutine;
     private bool isSlotSelectionLocked;
+    private int playerLockedSlotIndex = -1;
     private bool isEndButtonHovering;
     private float endButtonRotationBeforeHoverZ;
     private float endButtonSmallGearRotationBeforeHoverZ;
@@ -172,6 +173,8 @@ public class BattleTimelineController : MonoBehaviour
     public int ActiveSlotIndex => activeSlotIndex;
     public int ReservationVersion => reservationVersion;
     public CharacterRuntimeData SelectedCharacter => selectedCharacter;
+    public int PlayerLockedSlotIndex => playerLockedSlotIndex;
+    public bool HasPlayerLockedSlot => playerLockedSlotIndex >= 0;
 
 
     private void OnValidate()
@@ -334,7 +337,7 @@ public class BattleTimelineController : MonoBehaviour
             nextIndex -= slotCount;
 
         int safety = 0;
-        while (safety < slotCount && reserveSlots[nextIndex] == null)
+        while (safety < slotCount && !IsTimelineSlotSelectable(nextIndex))
         {
             nextIndex += direction;
 
@@ -347,7 +350,7 @@ public class BattleTimelineController : MonoBehaviour
             safety++;
         }
 
-        if (reserveSlots[nextIndex] == null)
+        if (!IsTimelineSlotSelectable(nextIndex))
             return;
 
         OnTimelineSlotClicked(nextIndex);
@@ -550,12 +553,21 @@ public class BattleTimelineController : MonoBehaviour
             return;
         }
 
+        if (IsPlayerSlotLocked(slotIndex))
+        {
+            ShowPlayerLockedSlotWarning();
+            return;
+        }
+
         SetActiveTimelineSlot(slotIndex, true);
     }
 
     private bool SetActiveTimelineSlot(int slotIndex, bool tryStartReservation)
     {
         if (reserveSlots == null || slotIndex < 0 || slotIndex >= reserveSlots.Length)
+            return false;
+
+        if (IsPlayerSlotLocked(slotIndex))
             return false;
 
         if (reserveSlots[slotIndex] == null)
@@ -622,12 +634,14 @@ public class BattleTimelineController : MonoBehaviour
         {
             ReserveTurnSlotUI slot = reserveSlots[i];
 
+            bool isSelectable = IsTimelineSlotSelectable(i);
+
             result[i] = new TimelineAutoSlotState(
-                slot != null,
-                slot != null && slot.CommandCount <= 0,
-                slot != null && slot.CanAcceptCharacter(runtimeData),
-                CanAddPlayerCommandToSlot(i),
-                HasPlayerCommandForCharacter(slot, characterId)
+                isSelectable,
+                isSelectable && slot.CommandCount <= 0,
+                isSelectable && slot.CanAcceptCharacter(runtimeData),
+                isSelectable && CanAddPlayerCommandToSlot(i),
+                isSelectable && HasPlayerCommandForCharacter(slot, characterId)
             );
         }
 
@@ -671,6 +685,91 @@ public class BattleTimelineController : MonoBehaviour
             CancelEndButtonHoverRotationIfNeeded();
     }
 
+    public void SetPlayerLockedSlot(int slotIndex)
+    {
+        int normalizedSlotIndex = IsValidReserveSlotIndex(slotIndex) ? slotIndex : -1;
+
+        if (playerLockedSlotIndex == normalizedSlotIndex)
+        {
+            RefreshPlayerLockedSlotVisuals();
+            return;
+        }
+
+        playerLockedSlotIndex = normalizedSlotIndex;
+
+        if (IsPlayerSlotLocked(activeSlotIndex))
+        {
+            activeSlotIndex = FindFirstSelectableTimelineSlot(activeSlotIndex);
+            selectedSkill = null;
+
+            if (playerSkillReservationController != null)
+                playerSkillReservationController.ClearPreview();
+
+            SetActiveTimelineSlotVisual(activeSlotIndex);
+            RefreshSelectedSlotValueText();
+        }
+
+        RefreshPlayerLockedSlotVisuals();
+    }
+
+    public void ClearPlayerLockedSlot()
+    {
+        SetPlayerLockedSlot(-1);
+    }
+
+    public bool IsPlayerSlotLocked(int slotIndex)
+    {
+        return playerLockedSlotIndex >= 0 && slotIndex == playerLockedSlotIndex;
+    }
+
+    private bool IsValidReserveSlotIndex(int slotIndex)
+    {
+        return reserveSlots != null && slotIndex >= 0 && slotIndex < reserveSlots.Length;
+    }
+
+    private bool IsTimelineSlotSelectable(int slotIndex)
+    {
+        return IsValidReserveSlotIndex(slotIndex) &&
+               reserveSlots[slotIndex] != null &&
+               !IsPlayerSlotLocked(slotIndex);
+    }
+
+    private int FindFirstSelectableTimelineSlot(int preferredSlotIndex)
+    {
+        if (reserveSlots == null || reserveSlots.Length <= 0)
+            return -1;
+
+        int startIndex = preferredSlotIndex >= 0 && preferredSlotIndex < reserveSlots.Length
+            ? preferredSlotIndex
+            : Mathf.Clamp(defaultSlotIndex, 0, reserveSlots.Length - 1);
+
+        for (int offset = 0; offset < reserveSlots.Length; offset++)
+        {
+            int slotIndex = (startIndex + offset) % reserveSlots.Length;
+
+            if (IsTimelineSlotSelectable(slotIndex))
+                return slotIndex;
+        }
+
+        return -1;
+    }
+
+    private void RefreshPlayerLockedSlotVisuals()
+    {
+        BattleTimelineBarUI activeBar = GetActiveTimelineBarUI();
+        BattleTimelineBarUI standbyBar = GetStandbyTimelineBarUI();
+
+        if (activeBar != null)
+            activeBar.SetPlayerLockedSlot(playerLockedSlotIndex);
+
+        if (standbyBar != null && standbyBar != activeBar)
+            standbyBar.SetPlayerLockedSlot(-1);
+    }
+
+    private void ShowPlayerLockedSlotWarning()
+    {
+        ShowBattleWarning("\uAC70\uBBF8\uC904\uC5D0 \uC7A0\uAE34 \uC2AC\uB86F\uC785\uB2C8\uB2E4.");
+    }
     public void SelectDefaultSlotWhenInputReady()
     {
         if (!autoSelectFirstSlotWhenInputReady)
@@ -682,9 +781,10 @@ public class BattleTimelineController : MonoBehaviour
         if (reserveSlots == null || reserveSlots.Length <= 0)
             return;
 
-        int slotIndex = Mathf.Clamp(defaultSlotIndex, 0, reserveSlots.Length - 1);
+        int slotIndex = FindFirstSelectableTimelineSlot(
+            Mathf.Clamp(defaultSlotIndex, 0, reserveSlots.Length - 1));
 
-        if (reserveSlots[slotIndex] == null)
+        if (slotIndex < 0)
             return;
 
         int previousSlotIndex = activeSlotIndex;
@@ -1825,6 +1925,7 @@ public class BattleTimelineController : MonoBehaviour
         if (standbyBar != null && standbyBar != activeBar)
         {
             standbyBar.Clear();
+            standbyBar.SetPlayerLockedSlot(-1);
             standbyBar.SetActiveTimelineSlot(-1);
             standbyBar.SetTurnMarkChildrenVisible(false);
             standbyBar.SetEmptyUseSkillSlotsVisible(false);
@@ -2351,6 +2452,12 @@ public class BattleTimelineController : MonoBehaviour
             return false;
         }
 
+        if (IsPlayerSlotLocked(slotIndex))
+        {
+            ShowPlayerLockedSlotWarning();
+            return false;
+        }
+
         ReserveTurnSlotUI slot = reserveSlots[slotIndex];
 
         if (slot == null)
@@ -2405,6 +2512,7 @@ public class BattleTimelineController : MonoBehaviour
             return false;
         }
 
+        BattleEquipmentEffectService.TryApplyAndConsumeSpiderWebMoveCostPenalty(command);
         RecordPlayerReservation(slotIndex, command);
 
         RecalculateAllReservedCosts();
@@ -2749,6 +2857,9 @@ public class BattleTimelineController : MonoBehaviour
         if (reserveSlots == null || slotIndex < 0 || slotIndex >= reserveSlots.Length)
             return 0;
 
+        if (IsPlayerSlotLocked(slotIndex))
+            return 0;
+
         if (reserveSlots[slotIndex] == null)
             return 0;
 
@@ -2761,6 +2872,9 @@ public class BattleTimelineController : MonoBehaviour
             return false;
 
         if (slotIndex < 0 || slotIndex >= reserveSlots.Length)
+            return false;
+
+        if (IsPlayerSlotLocked(slotIndex))
             return false;
 
         ReserveTurnSlotUI slot = reserveSlots[slotIndex];
@@ -3747,6 +3861,7 @@ public class BattleTimelineController : MonoBehaviour
     public void ClearAllReservations()
     {
         ClearSelectedSlotSelection();
+        ClearPlayerLockedSlot();
         playerReservationHistory.Clear();
         reservationVersion++;
 
@@ -3864,7 +3979,10 @@ public class BattleTimelineController : MonoBehaviour
         BattleTimelineBarUI standbyBar = GetStandbyTimelineBarUI();
 
         if (activeBar != null)
+        {
             activeBar.Refresh(reserveSlots, monsterCommandsBySlot);
+            activeBar.SetPlayerLockedSlot(playerLockedSlotIndex);
+        }
         else
         {
             ShowBattleWarning("??꾨씪??UI瑜?李얠쓣 ???놁뒿?덈떎.");
@@ -3874,6 +3992,7 @@ public class BattleTimelineController : MonoBehaviour
         if (standbyBar != null && standbyBar != activeBar)
         {
             standbyBar.Clear();
+            standbyBar.SetPlayerLockedSlot(-1);
             standbyBar.SetTurnMarkChildrenVisible(false);
             standbyBar.SetEmptyUseSkillSlotsVisible(false);
         }

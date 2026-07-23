@@ -314,6 +314,44 @@ public class MonsterRangedAttackAITests
         Assert.That(plan.Actions[1].ForcedDirection, Is.EqualTo(BattleDirection.Right));
     }
 
+    [Test]
+    public void EliseAI_PositionPressureUsesOneActionWithAllAlivePlayerGrids()
+    {
+        GridManager gridManager = CreateObject("Grid_Elise_PositionPressure").AddComponent<GridManager>();
+        MonsterUnit elise = CreateMonster("Mon_12", "Elise", "Elise_PositionPressure", gridManager, new Vector2Int(2, 2));
+        BattleCharacter playerA = CreatePlayer("Player_Elise_Pressure_A", gridManager, new Vector2Int(0, 1));
+        BattleCharacter playerB = CreatePlayer("Player_Elise_Pressure_B", gridManager, new Vector2Int(4, 1));
+        BattleCharacter playerC = CreatePlayer("Player_Elise_Pressure_C", gridManager, new Vector2Int(1, 4));
+
+        MonsterAIPlan plan = new EliseAI().CreatePlan(elise, new BattleContext(), gridManager);
+        List<MonsterAIAction> pressureActions =
+            plan.Actions.FindAll(action => action.SkillId == "S_Monster_21");
+
+        Assert.That(pressureActions, Has.Count.EqualTo(1));
+        Assert.That(pressureActions[0].ExplicitRangeGridIndices, Is.EquivalentTo(new[]
+        {
+            playerA.CurrentGridIndex,
+            playerB.CurrentGridIndex,
+            playerC.CurrentGridIndex
+        }));
+    }
+
+    [Test]
+    public void EliseAI_AttacksBeforeMovingWhenPlayerIsInMeleeRange()
+    {
+        GridManager gridManager = CreateObject("Grid_Elise_Attack_Before_Move").AddComponent<GridManager>();
+        MonsterUnit elise = CreateMonster("Mon_12", "Elise", "Elise_Attack_Before_Move", gridManager, new Vector2Int(2, 2));
+        CreatePlayer("Player_Elise_Melee", gridManager, new Vector2Int(2, 3));
+
+        MonsterAIPlan plan = new EliseAI().CreatePlan(elise, new BattleContext(), gridManager);
+        int meleeIndex = plan.Actions.FindIndex(action => action.SkillId == "S_Monster_20");
+        int moveIndex = plan.Actions.FindIndex(action => action.SkillId == "S_Monster_19");
+
+        Assert.That(meleeIndex, Is.GreaterThanOrEqualTo(0));
+        Assert.That(moveIndex, Is.GreaterThanOrEqualTo(0));
+        Assert.That(meleeIndex, Is.LessThan(moveIndex));
+    }
+
     private GameObject CreateObject(string objectName)
     {
         GameObject go = new(objectName);

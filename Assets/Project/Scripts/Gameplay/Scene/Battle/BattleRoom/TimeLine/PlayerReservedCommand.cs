@@ -30,6 +30,7 @@ public class PlayerReservedCommand
     public bool HadEarlierMoveInSlot { get; private set; }
     public int SameSlotMoveCostBeforeCommand { get; private set; }
     public bool AllyBuffChargeApplied { get; private set; }
+    public int MoveReservationCostMultiplier { get; private set; } = 1;
 
     public BattleDirection Direction { get; private set; } = BattleDirection.Right;
     public int SelectedGridIndex { get; private set; } = -1;
@@ -268,6 +269,11 @@ public class PlayerReservedCommand
         Cost = Mathf.Max(0, cost);
         ResourceCost = Mathf.Max(0, resourceCost);
         ShieldCost = Mathf.Max(0, shieldCost);
+    }
+
+    public void SetMoveReservationCostMultiplier(int multiplier)
+    {
+        MoveReservationCostMultiplier = Mathf.Max(1, multiplier);
     }
 
     public void SetMoveReservationCost(

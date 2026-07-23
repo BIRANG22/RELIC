@@ -58,7 +58,7 @@ Mon_08,Mon_08,Common,,,,,,,,0,0,0,0,0,0,0,0,0,0,0
 Mon_09,Mon_09,Common,,,,,,,,0,0,0,0,0,0,0,0,0,0,0
 Mon_10,녹턴,Elite,94,0,36,48,Item_010,0.7,0.1,Range_24,S_Monster_01,S_Monster_18,S_Monster_15,S_Monster_16,S_Monster_17,0,0,0,0,0
 Mon_11,Mon_11,Elite,,,,,,,,0,0,0,0,0,0,0,0,0,0,0
-Mon_12,엘리스,Boss,142,0,45,55,Item_012,1,0,0,0,0,0,0,0,0,0,0,0,0
+Mon_12,엘리스,Boss,142,0,45,55,Item_012,1,0,Range_All,S_Monster_19,S_Monster_20,S_Monster_21,S_Monster_22,S_Monster_23,S_Monster_24,0,0,0,0
 ,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,
 
@@ -209,6 +209,12 @@ S_Monster_15,공격,PlayerParty,E_Strike,12,1,0,Range_03,Attack,"범위를 공�
 S_Monster_16,공격,PlayerParty,E_Strike,10,1,0,Range_14,Attack,"범위를 공격하며 ""수치""의 피해를 줍니다.",2
 S_Monster_17,공격,PlayerParty,E_Grab,1,1,0,Range_12,Attack,"범위의 대상을 ""수치""만큼 당겨옵니다.",0
 S_Monster_18,이동,Self,E_Move,0,1,0,Range_24,Move,이동하려고 합니다.,0
+S_Monster_19,이동,Self,E_Move,0,1,0,Range_02,Move,이동하려고 합니다.,0
+S_Monster_20,근거리공격,PlayerParty,E_Strike,10,1,0,Range_02,Attack,가까운 범위의 캐릭터에게 피해를 줍니다.,2
+S_Monster_21,위치압박,PlayerParty,E_Strike,8,1,0,Range_Self,Attack,예약된 위치를 공격합니다.,1
+S_Monster_22,거미알생성,Self,E_Spawn_Spider_Egg,1,1,0,Range_Self,Debuff,거미알을 생성합니다.,0
+S_Monster_23,거미줄생성,Self,E_Spawn_Spider_Web,1,1,0,Range_Self,Debuff,거미줄을 생성합니다.,0
+S_Monster_24,장막,Self,E_Barrier,1,1,0,Range_Self,Buff,자신에게 장막 1을 부여합니다.,0
 ,,,,,,,,,,
 ,,,,,,,,,,
 ,,,,,,,,,,
@@ -331,6 +337,8 @@ GR_Poisson,독,1,1,E_Poison,4,1,0,BattleStart,
 GR_Residue,잔여물,1,0,E_Strike,2,1,2,Monster,
 GR_dummy,허수아비,0,0,-1,0,1,0,Summon,적의 공격 대상이 되는 소환물입니다.
 GR_explosive_doll,폭발 인형,0,0,-1,4,1,0,Summon,5번 슬롯 행동이 끝나면 주변 적에게 고정피해를 주는 소환물입니다.
+GR_spider_egg,거미알,0,0,-1,10,5,2,Summon,2턴 후 신더로 부화합니다. 피해를 받아 HP가 0이 되면 파괴됩니다.
+GR_spider_web,거미줄,1,0,E_Spider_Web,2,1,2,Monster,진입한 캐릭터의 다음 이동 예약 사용 코스트가 2배가 됩니다.
 ,
 
 # Effect
@@ -484,6 +492,9 @@ AR_SpawnDummyGridEffect,허수아비 생성,0,선택한 빈 그리드에 허수�
 AR_SpawnExplosiveDollGridEffect,폭발 인형 생성,0,선택한 빈 그리드에 폭발 인형을 생성한다.
 E_Move,이동,0,이동 효과입니다.
 E_Burn,화상,Decrease,화상 상태입니다.
+E_Spawn_Spider_Egg,거미알 생성,None,선택한 그리드에 거미알을 생성한다.
+E_Spawn_Spider_Web,거미줄 생성,None,선택한 그리드에 거미줄을 생성한다.
+E_Spider_Web,거미줄,Maintain,다음 이동 예약 사용 코스트가 2배가 된다. 이동 예약 성공 시 사라진다.
 
 # Map
 맵ID,이름,타입,전투맵ID,이벤트ID,챕터,스테이지 맵,등장가중치,고정위치,드랍스킬분류

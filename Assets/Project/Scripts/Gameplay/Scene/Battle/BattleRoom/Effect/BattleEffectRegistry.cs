@@ -44,6 +44,8 @@ public class BattleEffectRegistry
 
         Register(new KnockbackEffect());
         Register(new GrabEffect());
+        Register(new SpawnSpiderEggEffect());
+        Register(new SpawnSpiderWebEffect());
         Register(new LogOnlyEffect("E_Rush"));
         Register(new CrashEffect());
     }

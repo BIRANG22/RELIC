@@ -136,6 +136,43 @@ public class BattleGridEffectServiceTests
         Assert.That(state.TryGetEffectId(4, out _), Is.False);
     }
 
+    [Test]
+    public void State_TracksHitPointsAndReturnsExpiredPlacements()
+    {
+        BattleGridEffectState state = new();
+
+        Assert.That(state.Place(7, "GR_spider_egg", 2, 10), Is.True);
+        Assert.That(state.TryGetHitPoints(7, out int hitPoints), Is.True);
+        Assert.That(hitPoints, Is.EqualTo(10));
+
+        Assert.That(state.DamageHitPoints(7, 4, out bool destroyed), Is.True);
+        Assert.That(destroyed, Is.False);
+        Assert.That(state.TryGetHitPoints(7, out hitPoints), Is.True);
+        Assert.That(hitPoints, Is.EqualTo(6));
+
+        IReadOnlyList<BattleGridEffectPlacement> firstAdvance = state.AdvanceDurationsDetailed();
+        Assert.That(firstAdvance, Is.Empty);
+
+        IReadOnlyList<BattleGridEffectPlacement> expired = state.AdvanceDurationsDetailed();
+        Assert.That(expired, Has.Count.EqualTo(1));
+        Assert.That(expired[0].GridIndex, Is.EqualTo(7));
+        Assert.That(expired[0].GridEffectId, Is.EqualTo("GR_spider_egg"));
+        Assert.That(state.TryGetEffectId(7, out _), Is.False);
+        Assert.That(state.TryGetHitPoints(7, out _), Is.False);
+    }
+
+    [Test]
+    public void State_RemovesPlacementWhenHitPointsAreDestroyed()
+    {
+        BattleGridEffectState state = new();
+        state.Place(4, "GR_spider_egg", 2, 10);
+
+        Assert.That(state.DamageHitPoints(4, 10, out bool destroyed), Is.True);
+        Assert.That(destroyed, Is.True);
+        Assert.That(state.TryGetEffectId(4, out _), Is.False);
+        Assert.That(state.TryGetHitPoints(4, out _), Is.False);
+    }
+
     private static GridEffectDatabase CreateDatabase(params GridEffectData[] effects)
     {
         GridEffectDatabase database = new();

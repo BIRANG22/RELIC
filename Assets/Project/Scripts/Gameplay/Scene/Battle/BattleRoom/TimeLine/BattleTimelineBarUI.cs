@@ -1,6 +1,7 @@
 using Relic.Gameplay.Data;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class BattleTimelineBarUI : MonoBehaviour
 {
@@ -54,6 +55,29 @@ public class BattleTimelineBarUI : MonoBehaviour
         }
     }
 
+    public void SetPlayerLockedSlot(int lockedSlotIndex)
+    {
+        AutoFindGroupsIfNeeded();
+
+        if (timelineGroups == null)
+            return;
+
+        for (int i = 0; i < timelineGroups.Length; i++)
+        {
+            BattleTimelineGroupUI group = timelineGroups[i];
+
+            if (group == null)
+                continue;
+
+            BattleTimelineLockedSlotOverlay overlay =
+                group.GetComponent<BattleTimelineLockedSlotOverlay>();
+
+            if (overlay == null)
+                overlay = group.gameObject.AddComponent<BattleTimelineLockedSlotOverlay>();
+
+            overlay.SetLocked(i == lockedSlotIndex);
+        }
+    }
     public void Refresh(
         ReserveTurnSlotUI[] reserveSlots,
         IReadOnlyList<MonsterReservedCommand>[] monsterCommandsBySlot)
@@ -237,11 +261,30 @@ public class BattleTimelineBarUI : MonoBehaviour
             if (timelineGroups[i] != null)
             {
                 timelineGroups[i].Clear();
+                SetGroupPlayerLocked(timelineGroups[i], false);
                 SetTurnMarkChildrenVisible(timelineGroups[i], false);
             }
         }
     }
 
+    private void SetGroupPlayerLocked(BattleTimelineGroupUI group, bool locked)
+    {
+        if (group == null)
+            return;
+
+        BattleTimelineLockedSlotOverlay overlay =
+            group.GetComponent<BattleTimelineLockedSlotOverlay>();
+
+        if (overlay == null)
+        {
+            if (!locked)
+                return;
+
+            overlay = group.gameObject.AddComponent<BattleTimelineLockedSlotOverlay>();
+        }
+
+        overlay.SetLocked(locked);
+    }
     private void InitGroups()
     {
         if (timelineGroups == null)
@@ -389,5 +432,114 @@ public class BattleTimelineBarUI : MonoBehaviour
     {
         if (rangePreview != null)
             rangePreview.Clear();
+    }
+}
+public class BattleTimelineLockedSlotOverlay : MonoBehaviour
+{
+    private const string DefaultOverlayObjectName = "CobwebSlotLock";
+    private const string DefaultEditorSpritePath = "Assets/Project/Art/Image/UI/Battle/CobwebUI.png";
+
+    [SerializeField] private Image overlayImage;
+    [SerializeField] private Sprite overlaySprite;
+    [SerializeField, Range(0f, 1f)] private float overlayAlpha = 0.55f;
+    [SerializeField] private bool preserveAspect = true;
+
+    public bool IsLocked { get; private set; }
+
+    private void Awake()
+    {
+        Refresh();
+    }
+
+    public void SetLocked(bool locked)
+    {
+        IsLocked = locked;
+        Refresh();
+    }
+
+    private void Refresh()
+    {
+        EnsureOverlayImage();
+
+        if (overlayImage == null)
+            return;
+
+        bool visible = IsLocked && overlaySprite != null;
+        overlayImage.sprite = overlaySprite;
+        overlayImage.preserveAspect = preserveAspect;
+        overlayImage.raycastTarget = false;
+        overlayImage.color = new Color(1f, 1f, 1f, overlayAlpha);
+        overlayImage.enabled = visible;
+        overlayImage.gameObject.SetActive(visible);
+        overlayImage.transform.SetAsLastSibling();
+    }
+
+    private void EnsureOverlayImage()
+    {
+        ResolveOverlaySpriteIfNeeded();
+
+        if (overlayImage == null)
+        {
+            Transform found = FindChildRecursive(transform, DefaultOverlayObjectName);
+
+            if (found != null)
+                overlayImage = found.GetComponent<Image>();
+        }
+
+        if (overlayImage != null)
+            return;
+
+        RectTransform parentRect = transform as RectTransform;
+
+        if (parentRect == null)
+            return;
+
+        GameObject overlayObject = new GameObject(
+            DefaultOverlayObjectName,
+            typeof(RectTransform),
+            typeof(CanvasRenderer),
+            typeof(Image));
+        overlayObject.layer = gameObject.layer;
+        overlayObject.transform.SetParent(transform, false);
+
+        RectTransform overlayRect = overlayObject.GetComponent<RectTransform>();
+        overlayRect.anchorMin = Vector2.zero;
+        overlayRect.anchorMax = Vector2.one;
+        overlayRect.offsetMin = Vector2.zero;
+        overlayRect.offsetMax = Vector2.zero;
+        overlayRect.pivot = new Vector2(0.5f, 0.5f);
+
+        overlayImage = overlayObject.GetComponent<Image>();
+    }
+
+    private void ResolveOverlaySpriteIfNeeded()
+    {
+        if (overlaySprite != null)
+            return;
+
+#if UNITY_EDITOR
+        overlaySprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(DefaultEditorSpritePath);
+#endif
+    }
+
+    private static Transform FindChildRecursive(Transform root, string childName)
+    {
+        if (root == null || string.IsNullOrWhiteSpace(childName))
+            return null;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform child = root.GetChild(i);
+
+            if (child.name == childName)
+                return child;
+
+            Transform found = FindChildRecursive(child, childName);
+
+            if (found != null)
+                return found;
+        }
+
+        return null;
     }
 }

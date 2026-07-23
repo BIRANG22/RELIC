@@ -25,6 +25,7 @@ namespace Relic.Gameplay.Monster
         public BattleDirection ForcedDirection;
         public bool IsPortalMove;
         public int SlotOffset;
+        public List<int> ExplicitRangeGridIndices;
 
         public MonsterAIAction(
             string skillId,
@@ -36,7 +37,8 @@ namespace Relic.Gameplay.Monster
             bool hasForcedDirection = false,
             BattleDirection forcedDirection = BattleDirection.Right,
             bool isPortalMove = false,
-            int slotOffset = 0)
+            int slotOffset = 0,
+            List<int> explicitRangeGridIndices = null)
         {
             SkillId = skillId;
             MoveOffset = moveOffset;
@@ -48,6 +50,9 @@ namespace Relic.Gameplay.Monster
             ForcedDirection = forcedDirection;
             IsPortalMove = isPortalMove;
             SlotOffset = slotOffset;
+            ExplicitRangeGridIndices = explicitRangeGridIndices != null
+                ? new List<int>(explicitRangeGridIndices)
+                : null;
         }
     }
 
