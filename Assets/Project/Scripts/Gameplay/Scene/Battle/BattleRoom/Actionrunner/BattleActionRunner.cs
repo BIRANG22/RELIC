@@ -958,6 +958,7 @@ public class BattleActionRunner
             );
 
             character.SetGridIndex(targetGridIndex);
+            character.RuntimeData.SetLastMoveOffset(actualMoveOffset);
             BattleEquipmentEffectService.MarkMovedBeforeNextAttack(character.RuntimeData);
             UpdatePartyGridIndex(command.CharacterId, targetGridIndex);
             ApplyGridEffectsToPlayer(enteredGridIndices, character);
@@ -1038,6 +1039,7 @@ public class BattleActionRunner
             );
 
             character.SetGridIndex(targetGridIndex);
+            character.RuntimeData.SetLastMoveOffset(actualOffset);
             BattleEquipmentEffectService.MarkMovedBeforeNextAttack(character.RuntimeData);
             UpdatePartyGridIndex(command.CharacterId, targetGridIndex);
             ApplyGridEffectsToPlayer(enteredGridIndices, character);
@@ -1517,6 +1519,8 @@ public class BattleActionRunner
                 hitTargets.Add(monster);
             }
 
+            List<int> gridEffectTargets = BuildDamageableGridEffectTargets(command);
+
             if (hitTargets.Count > 0 && BattleCameraController.Instance != null)
                 yield return BattleCameraController.Instance.ZoomToAttacker(attacker.transform);
 
@@ -1527,7 +1531,7 @@ public class BattleActionRunner
                 yield break;
             }
 
-            if (hitTargets.Count <= 0)
+            if (hitTargets.Count <= 0 && gridEffectTargets.Count <= 0)
             {
                 if (attackerAnimator != null)
                     attackerAnimator.PlaySkillAction(command.SkillData);
@@ -1540,6 +1544,7 @@ public class BattleActionRunner
             yield return ExecutePlayerSkillEffectsToMonsters(
                 attacker,
                 hitTargets,
+                gridEffectTargets,
                 command,
                 attackerAnimator);
 
@@ -1635,6 +1640,7 @@ public class BattleActionRunner
     private IEnumerator ExecutePlayerSkillEffectsToMonsters(
         BattleCharacter caster,
         List<MonsterUnit> monsterTargets,
+        List<int> gridEffectTargets,
         PlayerReservedCommand command,
         BattleUnitAnimator attackerAnimator)
     {
@@ -1676,6 +1682,7 @@ public class BattleActionRunner
                 yield return ExecutePlayerDamageHitSequence(
                     caster,
                     monsterTargets,
+                    gridEffectTargets,
                     command,
                     effectId,
                     value,
@@ -1715,6 +1722,7 @@ public class BattleActionRunner
     private IEnumerator ExecutePlayerDamageHitSequence(
         BattleCharacter caster,
         List<MonsterUnit> monsterTargets,
+        List<int> gridEffectTargets,
         PlayerReservedCommand command,
         string effectId,
         int value,
@@ -1731,7 +1739,8 @@ public class BattleActionRunner
 
         for (int hitIndex = 0; hitIndex < hitCount; hitIndex++)
         {
-            if (!HasAliveMonsterTarget(monsterTargets))
+            if (!HasAliveMonsterTarget(monsterTargets) &&
+                !HasDamageableGridEffectTarget(gridEffectTargets))
             {
                 BattleEquipmentEffectService.TryApplyAttackMissCharge(command.UserRuntime);
 
@@ -1795,6 +1804,10 @@ public class BattleActionRunner
                 if (monster.RuntimeData != null && monster.RuntimeData.IsDead)
                     deathService.HandleMonsterDead(monster);
             }
+
+            appliedAnyHit |= ApplyPlayerDamageHitToGridEffects(
+                gridEffectTargets,
+                Mathf.Max(0, value));
 
             hudService.RefreshHUDs();
 
@@ -1880,6 +1893,127 @@ public class BattleActionRunner
     private bool IsDamageHitEffect(string effectId)
     {
         return effectId == "E_Strike" || effectId == "E_Pierce";
+    }
+
+    private List<int> BuildDamageableGridEffectTargets(PlayerReservedCommand command)
+    {
+        List<int> targets = new();
+
+        if (command == null || !HasPlayerDamageHitEffect(command))
+            return targets;
+
+        BattleGridEffectController controller = ResolveGridEffectController();
+
+        if (controller == null || command.RangeGridIndices == null)
+            return targets;
+
+        for (int i = 0; i < command.RangeGridIndices.Count; i++)
+        {
+            int gridIndex = command.RangeGridIndices[i];
+
+            if (!controller.HasDamageableEffect(gridIndex))
+                continue;
+
+            AddUnique(targets, gridIndex);
+        }
+
+        return targets;
+    }
+
+    private bool HasPlayerDamageHitEffect(PlayerReservedCommand command)
+    {
+        if (command == null || command.SkillData == null)
+            return false;
+
+        if (command.SkillData.EffectEntries != null && command.SkillData.EffectEntries.Count > 0)
+        {
+            for (int i = 0; i < command.SkillData.EffectEntries.Count; i++)
+            {
+                SkillEffectEntry entry = command.SkillData.EffectEntries[i];
+
+                if (entry == null || string.IsNullOrWhiteSpace(entry.EffectId))
+                    continue;
+
+                string effectId = BattleEquipmentEffectService.GetEffectivePlayerDamageEffectId(
+                    command.UserRuntime,
+                    command,
+                    entry.EffectId);
+
+                if (IsDamageHitEffect(effectId))
+                    return true;
+            }
+
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(command.SkillData.EffectIds))
+            return false;
+
+        string[] effectIds = command.SkillData.EffectIds.Split(';');
+
+        for (int i = 0; i < effectIds.Length; i++)
+        {
+            if (IsDamageHitEffect(effectIds[i].Trim()))
+                return true;
+        }
+
+        return false;
+    }
+
+    private bool HasDamageableGridEffectTarget(List<int> gridEffectTargets)
+    {
+        if (gridEffectTargets == null || gridEffectTargets.Count <= 0)
+            return false;
+
+        BattleGridEffectController controller = ResolveGridEffectController();
+
+        if (controller == null)
+            return false;
+
+        for (int i = gridEffectTargets.Count - 1; i >= 0; i--)
+        {
+            int gridIndex = gridEffectTargets[i];
+
+            if (controller.HasDamageableEffect(gridIndex))
+                return true;
+
+            gridEffectTargets.RemoveAt(i);
+        }
+
+        return false;
+    }
+
+    private bool ApplyPlayerDamageHitToGridEffects(
+        List<int> gridEffectTargets,
+        int damage)
+    {
+        if (gridEffectTargets == null || gridEffectTargets.Count <= 0 || damage <= 0)
+            return false;
+
+        BattleGridEffectController controller = ResolveGridEffectController();
+
+        if (controller == null)
+            return false;
+
+        bool applied = false;
+
+        for (int i = gridEffectTargets.Count - 1; i >= 0; i--)
+        {
+            int gridIndex = gridEffectTargets[i];
+
+            if (!controller.TryDamageEffect(gridIndex, damage, out bool destroyed))
+            {
+                gridEffectTargets.RemoveAt(i);
+                continue;
+            }
+
+            applied = true;
+
+            if (destroyed)
+                gridEffectTargets.RemoveAt(i);
+        }
+
+        return applied;
     }
 
     private bool HasAliveMonsterTarget(List<MonsterUnit> monsterTargets)
@@ -2875,6 +3009,9 @@ public class BattleActionRunner
     MonsterReservedCommand command)
     {
         if (monster == null || command == null || command.SkillData == null)
+            return;
+
+        if (command.HasExplicitRangeResult)
             return;
 
         BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();

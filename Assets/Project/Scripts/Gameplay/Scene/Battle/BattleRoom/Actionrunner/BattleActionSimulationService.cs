@@ -924,6 +924,9 @@ public class BattleActionSimulationService
         MonsterReservedCommand command,
         List<int> currentCells)
     {
+        if (command != null && command.HasExplicitRangeResult)
+            return;
+
         if (currentCells == null || currentCells.Count <= 0)
             return;
 

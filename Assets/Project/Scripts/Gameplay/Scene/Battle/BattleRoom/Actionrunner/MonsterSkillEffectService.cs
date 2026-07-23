@@ -282,6 +282,7 @@ public class MonsterSkillEffectService
                 PlayerTarget = playerTarget,
                 MonsterTarget = monsterTarget,
                 MonsterSkillData = command.SkillData,
+                MonsterCommand = command,
 
                 Direction = direction,
                 GridManager = gridManager,

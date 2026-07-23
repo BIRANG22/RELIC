@@ -114,6 +114,7 @@ public static class BattleEquipmentEffectService
     private const string BuffApplyDoubleEffectId = "E_Buff_Apply_Double";
     private const string MovePointUpEffectId = "E_Move_Point_Up";
     private const string MoveFirstAttackReadyStateId = "State_MoveFirstAttackPowerReady";
+    private const string SpiderWebMoveCostPenaltyEffectId = "E_Spider_Web";
 
     private readonly struct EquipmentEffectEntry
     {
@@ -434,12 +435,65 @@ public static class BattleEquipmentEffectService
                 cost += lowHpCostDelta;
         }
 
+        if (IsMoveCommand(command))
+        {
+            int multiplier = Mathf.Max(
+                command.MoveReservationCostMultiplier,
+                GetSpiderWebMoveCostMultiplier(command.UserRuntime));
+
+            if (multiplier > 1)
+                cost *= multiplier;
+        }
+
         command.SetCosts(
             hpCost,
             cost,
             resourceCost,
             shieldCost);
         command.MarkReservationCostModifiersApplied();
+    }
+
+    public static int GetSpiderWebMoveCostMultiplier(CharacterRuntimeData runtime)
+    {
+        int stack = GetStatusStack(runtime, SpiderWebMoveCostPenaltyEffectId);
+        return stack > 1 ? stack : 1;
+    }
+
+    public static bool TryApplyAndConsumeSpiderWebMoveCostPenalty(PlayerReservedCommand command)
+    {
+        if (command == null || !IsMoveCommand(command))
+            return false;
+
+        if (command.MoveReservationCostMultiplier > 1)
+            return false;
+
+        int multiplier = GetSpiderWebMoveCostMultiplier(command.UserRuntime);
+
+        if (multiplier <= 1)
+            return false;
+
+        command.SetMoveReservationCostMultiplier(multiplier);
+        TryConsumeSpiderWebMoveCostPenalty(command.UserRuntime);
+        return true;
+    }
+
+    public static bool TryConsumeSpiderWebMoveCostPenalty(CharacterRuntimeData runtime)
+    {
+        if (runtime == null || runtime.StatusEffects == null)
+            return false;
+
+        for (int i = runtime.StatusEffects.Count - 1; i >= 0; i--)
+        {
+            StatusEffectRuntimeData status = runtime.StatusEffects[i];
+
+            if (status == null || status.EffectId != SpiderWebMoveCostPenaltyEffectId)
+                continue;
+
+            runtime.StatusEffects.RemoveAt(i);
+            return true;
+        }
+
+        return false;
     }
 
     public static int ModifyPassiveEffectStack(

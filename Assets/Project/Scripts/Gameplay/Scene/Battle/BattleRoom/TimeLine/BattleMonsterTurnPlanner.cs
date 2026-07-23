@@ -121,6 +121,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
         ClearNocturnPortalDestinationIndicators();
         timelineController.ClearMonsterCommands();
+        ApplyElisePlayerSlotLock(monsterUnits);
 
         if (showBattleStart)
             battleStartTextRoutine = StartCoroutine(ShowIntroTextAndWaitRoutine(battleStartMessage));
@@ -168,6 +169,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
         ClearNocturnPortalDestinationIndicators();
         timelineController.ClearMonsterCommands();
+        ApplyElisePlayerSlotLock(monsterUnits);
 
         if (showBattleStart)
             ShowIntroText(battleStartMessage);
@@ -226,6 +228,16 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         }
     }
 
+    private void ApplyElisePlayerSlotLock(List<MonsterUnit> monsterUnits)
+    {
+        if (timelineController == null)
+            return;
+
+        int lockedSlotIndex = EliseSlotLockService.RollLockedSlotIndex(
+            monsterUnits,
+            timelineController.SlotCount);
+        timelineController.SetPlayerLockedSlot(lockedSlotIndex);
+    }
     private List<MonsterReservedCommandPlan> BuildMonsterCommandPlans(List<MonsterUnit> monsterUnits)
     {
         List<MonsterReservedCommandPlan> plans = new List<MonsterReservedCommandPlan>();
@@ -283,11 +295,19 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                 if (action.HasForcedDirection)
                     command.SetForcedDirection(action.ForcedDirection);
 
+                if (action.ExplicitRangeGridIndices != null && action.ExplicitRangeGridIndices.Count > 0)
+                {
+                    command.SetExplicitRangeResult(
+                        action.ExplicitRangeGridIndices,
+                        action.ExplicitRangeGridIndices);
+                }
                 // 포탈 명령의 RangeOriginGridIndex에는 실제 순간이동 목적지가 저장되어 있습니다.
                 // 일반 공격 범위 계산으로 이 값을 덮어쓰면 포탈 목적지가 엉뚱한 칸으로 바뀔 수 있으므로
                 // 포탈 이동은 공격 범위 계산에서 제외합니다.
-                if (!action.IsPortalMove && !IsMoveSkill(skillData))
+                else if (!action.IsPortalMove && !IsMoveSkill(skillData))
+                {
                     SetMonsterRange(monsterUnit, skillData, command);
+                }
 
                 int slotIndex = ResolveMonsterActionSlot(baseSlotIndex, action, plans);
 

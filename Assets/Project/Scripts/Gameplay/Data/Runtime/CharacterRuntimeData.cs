@@ -37,6 +37,8 @@ namespace Relic.Gameplay.Data
         public int ReservedShieldCost;
 
         public BattleDirection Direction = BattleDirection.Right;
+        public int LastMoveOffsetX;
+        public int LastMoveOffsetY;
 
         public List<StatusEffectRuntimeData> StatusEffects = new();
 
@@ -54,12 +56,39 @@ namespace Relic.Gameplay.Data
 
         public bool IsUnlocked;
 
+        public Vector2Int LastMoveOffset => new(LastMoveOffsetX, LastMoveOffsetY);
+
         public int TotalCostRecovery => Mathf.Max(0, CostRecovery + BonusCostRecovery);
         public bool IsDead => CurrentHP <= 0;
         public int PreviewHP => Mathf.Max(0, CurrentHP - ReservedHPCost);
         public int PreviewCost => Mathf.Max(0, CurrentCost - ReservedCost);
         public int PreviewResource => Mathf.Max(0, CurrentResource - ReservedResourceCost);
         public int PreviewShield => Mathf.Max(0, CurrentShield - ReservedShieldCost);
+
+        public void SetLastMoveOffset(Vector2Int offset)
+        {
+            LastMoveOffsetX = NormalizeMoveAxis(offset.x);
+            LastMoveOffsetY = NormalizeMoveAxis(offset.y);
+
+            if (LastMoveOffsetX != 0 && LastMoveOffsetY != 0)
+            {
+                if (Mathf.Abs(offset.x) >= Mathf.Abs(offset.y))
+                    LastMoveOffsetY = 0;
+                else
+                    LastMoveOffsetX = 0;
+            }
+        }
+
+        private static int NormalizeMoveAxis(int value)
+        {
+            if (value > 0)
+                return 1;
+
+            if (value < 0)
+                return -1;
+
+            return 0;
+        }
 
         public bool CanReserveHP(int cost)
         {

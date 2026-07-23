@@ -20,6 +20,7 @@ public class MonsterReservedCommand
     public bool HasForcedDirection { get; private set; }
     public BattleDirection ForcedDirection { get; private set; } = BattleDirection.Right;
     public bool IsPortalMove { get; private set; }
+    public bool HasExplicitRangeResult { get; private set; }
 
     public List<int> RangeGridIndices { get; private set; } = new();
     public List<int> TargetGridIndices { get; private set; } = new();
@@ -114,5 +115,11 @@ public class MonsterReservedCommand
         TargetGridIndices = targetGridIndices != null
             ? new List<int>(targetGridIndices)
             : new List<int>(RangeGridIndices);
+    }
+
+    public void SetExplicitRangeResult(List<int> rangeGridIndices, List<int> targetGridIndices = null)
+    {
+        HasExplicitRangeResult = true;
+        SetRangeResult(rangeGridIndices, targetGridIndices);
     }
 }

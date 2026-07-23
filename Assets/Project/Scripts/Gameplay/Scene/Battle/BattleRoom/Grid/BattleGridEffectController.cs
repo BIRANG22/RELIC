@@ -6,6 +6,9 @@ using UnityEngine;
 
 public class BattleGridEffectController : MonoBehaviour
 {
+    private const string SpiderEggGridEffectId = "GR_spider_egg";
+    private const string CinderMonsterId = "Mon_06";
+
     [Header("References")]
     [SerializeField] private GridManager gridManager;
     [SerializeField] private Transform effectRoot;
@@ -85,7 +88,7 @@ public class BattleGridEffectController : MonoBehaviour
             return false;
         }
 
-        if (!state.Place(gridIndex, gridEffectId, data.Duration))
+        if (!state.Place(gridIndex, gridEffectId, data.Duration, GetInitialHitPoints(data)))
             return false;
 
         SpawnView(new BattleGridEffectPlacement(gridIndex, gridEffectId));
@@ -104,15 +107,45 @@ public class BattleGridEffectController : MonoBehaviour
         return true;
     }
 
+    public bool HasDamageableEffect(int gridIndex)
+    {
+        return state.TryGetHitPoints(gridIndex, out int hitPoints) && hitPoints > 0;
+    }
+
+    public bool TryDamageEffect(int gridIndex, int damage, out bool destroyed)
+    {
+        destroyed = false;
+
+        if (!EnsureDependencies())
+            return false;
+
+        if (damage <= 0)
+            return false;
+
+        if (!state.DamageHitPoints(gridIndex, damage, out destroyed))
+            return false;
+
+        if (destroyed)
+            RemoveView(gridIndex);
+
+        return true;
+    }
+
     public void AdvanceTurnDurations()
     {
         if (!EnsureDependencies())
             return;
 
-        IReadOnlyList<int> expiredGridIndices = state.AdvanceDurations();
+        IReadOnlyList<BattleGridEffectPlacement> expiredPlacements = state.AdvanceDurationsDetailed();
 
-        for (int i = 0; i < expiredGridIndices.Count; i++)
-            RemoveView(expiredGridIndices[i]);
+        for (int i = 0; i < expiredPlacements.Count; i++)
+        {
+            BattleGridEffectPlacement placement = expiredPlacements[i];
+            RemoveView(placement.GridIndex);
+
+            if (placement.GridEffectId == SpiderEggGridEffectId)
+                SpawnCinderFromExpiredEgg(placement.GridIndex);
+        }
     }
 
     public BattleGridEffectApplyResult ApplyToPlayer(int gridIndex, BattleCharacter character)
@@ -239,6 +272,111 @@ public class BattleGridEffectController : MonoBehaviour
         }
 
         return occupied;
+    }
+
+    private static int GetInitialHitPoints(GridEffectData data)
+    {
+        if (data == null)
+            return 0;
+
+        return data.GridEffectID == SpiderEggGridEffectId
+            ? Mathf.Max(0, data.ValueRate)
+            : 0;
+    }
+
+    private void SpawnCinderFromExpiredEgg(int eggGridIndex)
+    {
+        int spawnGridIndex = FindAvailableCinderSpawnGrid(eggGridIndex);
+
+        if (spawnGridIndex < 0)
+            return;
+
+        BattleMonsterSpawner spawner =
+            FindFirstObjectByType<BattleMonsterSpawner>(FindObjectsInactive.Include);
+
+        if (spawner == null)
+            return;
+
+        SpawnedMonsterResult result =
+            spawner.SpawnRuntimeMonster(CinderMonsterId, new List<int> { spawnGridIndex });
+
+        if (result == null || result.RuntimeData == null || result.MonsterTransform == null)
+            return;
+
+        BattleRoomLoader roomLoader =
+            FindFirstObjectByType<BattleRoomLoader>(FindObjectsInactive.Include);
+
+        if (roomLoader != null)
+            roomLoader.RegisterRuntimeMonster(result);
+    }
+
+    private int FindAvailableCinderSpawnGrid(int preferredGridIndex)
+    {
+        if (IsSpawnGridAvailable(preferredGridIndex))
+            return preferredGridIndex;
+
+        if (gridManager == null)
+            return -1;
+
+        Vector2Int originCoord = gridManager.IndexToCoord(preferredGridIndex);
+        Vector2Int[] offsets =
+        {
+            Vector2Int.right,
+            Vector2Int.left,
+            Vector2Int.up,
+            Vector2Int.down
+        };
+
+        for (int i = 0; i < offsets.Length; i++)
+        {
+            Vector2Int coord = originCoord + offsets[i];
+
+            if (!gridManager.IsValidCoord(coord))
+                continue;
+
+            int gridIndex = gridManager.CoordToIndex(coord);
+
+            if (IsSpawnGridAvailable(gridIndex))
+                return gridIndex;
+        }
+
+        int cellCount = gridManager.Width * gridManager.Height;
+        int bestGridIndex = -1;
+        int bestDistance = int.MaxValue;
+
+        for (int gridIndex = 0; gridIndex < cellCount; gridIndex++)
+        {
+            if (!IsSpawnGridAvailable(gridIndex))
+                continue;
+
+            Vector2Int coord = gridManager.IndexToCoord(gridIndex);
+            int distance = Mathf.Abs(coord.x - originCoord.x) + Mathf.Abs(coord.y - originCoord.y);
+
+            if (distance >= bestDistance)
+                continue;
+
+            bestDistance = distance;
+            bestGridIndex = gridIndex;
+        }
+
+        return bestGridIndex;
+    }
+
+    private bool IsSpawnGridAvailable(int gridIndex)
+    {
+        if (gridIndex < 0 || gridManager == null)
+            return false;
+
+        if (gridManager.GetCellByIndex(gridIndex) == null)
+            return false;
+
+        if (BattleOccupancyService.IsOccupiedByAnyUnit(gridIndex))
+            return false;
+
+        if (HasEffect(gridIndex) || IsBlocked(gridIndex))
+            return false;
+
+        return true;
     }
 
     private void SpawnView(BattleGridEffectPlacement placement)

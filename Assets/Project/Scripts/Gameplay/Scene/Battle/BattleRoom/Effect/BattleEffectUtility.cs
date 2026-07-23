@@ -5,6 +5,8 @@ using Relic.Gameplay.Monster;
 
 public static class BattleEffectUtility
 {
+    private const string BarrierEffectId = "E_Barrier";
+
     public static System.Action<BattleCharacter> OnPlayerDamaged;
     public static System.Action<BattleCharacter> OnPlayerHit;
     public static System.Action<BattleCharacter> OnPlayerBuffApplied;
@@ -208,6 +210,9 @@ public static class BattleEffectUtility
 
         damage = Mathf.Max(0, damage);
 
+        if (damage > 0 && TryBlockDamageWithBarrier(target))
+            return;
+
         int hpBefore = target.RuntimeData.CurrentHP;
 
         int shieldDamage = Mathf.Min(target.RuntimeData.CurrentShield, damage);
@@ -258,6 +263,9 @@ public static class BattleEffectUtility
 
         damage = Mathf.Max(0, damage);
 
+        if (damage > 0 && TryBlockDamageWithBarrier(target))
+            return 0;
+
         int hpBefore = target.RuntimeData.CurrentHP;
 
         int shieldDamage = Mathf.Min(target.RuntimeData.CurrentShield, damage);
@@ -296,6 +304,9 @@ public static class BattleEffectUtility
 
         damage = Mathf.Max(0, damage);
 
+        if (damage > 0 && TryBlockDamageWithBarrier(target))
+            return;
+
         int hpBefore = target.RuntimeData.CurrentHP;
 
         target.RuntimeData.CurrentHP =
@@ -331,6 +342,9 @@ public static class BattleEffectUtility
 
         damage = Mathf.Max(0, damage);
 
+        if (damage > 0 && TryBlockDamageWithBarrier(target))
+            return 0;
+
         int hpBefore = target.RuntimeData.CurrentHP;
 
         target.RuntimeData.TakeDamage(damage);
@@ -350,6 +364,69 @@ public static class BattleEffectUtility
 
         target.ShowAndRefreshHUD();
         return shownDamage;
+    }
+
+    private static bool TryBlockDamageWithBarrier(BattleCharacter target)
+    {
+        if (target == null || target.RuntimeData == null)
+            return false;
+
+        if (!TryConsumeStatusStack(target.RuntimeData.StatusEffects, BarrierEffectId))
+            return false;
+
+        BattleUnitAnimator animator = target.GetComponent<BattleUnitAnimator>();
+
+        if (animator != null)
+            animator.PlayGuard();
+
+        return true;
+    }
+
+    private static bool TryBlockDamageWithBarrier(MonsterUnit target)
+    {
+        if (target == null || target.RuntimeData == null)
+            return false;
+
+        if (!TryConsumeStatusStack(target.RuntimeData.StatusEffects, BarrierEffectId))
+            return false;
+
+        BattleUnitAnimator animator = target.GetComponent<BattleUnitAnimator>();
+
+        if (animator != null)
+            animator.PlayGuard();
+
+        target.ShowAndRefreshHUD();
+        return true;
+    }
+
+    private static bool TryConsumeStatusStack(
+        List<StatusEffectRuntimeData> statuses,
+        string effectId)
+    {
+        if (statuses == null || string.IsNullOrWhiteSpace(effectId))
+            return false;
+
+        for (int i = statuses.Count - 1; i >= 0; i--)
+        {
+            StatusEffectRuntimeData status = statuses[i];
+
+            if (status == null || status.EffectId != effectId)
+                continue;
+
+            if (status.Stack > 1)
+            {
+                status.Stack--;
+                status.TurnCount = Mathf.Max(status.TurnCount, 1);
+            }
+            else
+            {
+                statuses.RemoveAt(i);
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     public static void PoisonDamagePlayer(BattleCharacter target, int damage)
