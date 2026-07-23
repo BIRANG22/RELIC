@@ -568,6 +568,10 @@ MonoBehaviour:
   hoverSfx: 6
   playClickSound: 1
   clickSfx: 7
+  playPanelOpenCloseSound: 0
+  panelOpenSfx: 26
+  panelCloseSfx: 27
+  panelOpenCloseSfxVolume: 1
 --- !u!114 &4784517895265474062
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -580,6 +584,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa9b19d30445e9c4f952d5b21bbf6629, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  startImageObject: {fileID: 0}
   buttonContent: {fileID: 3036900425688549031}
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1.1}
@@ -598,6 +603,8 @@ MonoBehaviour:
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
+  hoverHitArea: {fileID: 0}
+  hoverExitPadding: 4
 --- !u!1 &1371720439001538397
 GameObject:
   m_ObjectHideFlags: 0
@@ -2023,6 +2030,10 @@ MonoBehaviour:
   hoverSfx: 6
   playClickSound: 1
   clickSfx: 7
+  playPanelOpenCloseSound: 0
+  panelOpenSfx: 26
+  panelCloseSfx: 27
+  panelOpenCloseSfxVolume: 1
 --- !u!114 &1980776962597213570
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2055,6 +2066,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa9b19d30445e9c4f952d5b21bbf6629, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  startImageObject: {fileID: 0}
   buttonContent: {fileID: 7003935788691167843}
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1.1}
@@ -2073,6 +2085,8 @@ MonoBehaviour:
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
+  hoverHitArea: {fileID: 0}
+  hoverExitPadding: 4
 --- !u!1 &2607833970876439925
 GameObject:
   m_ObjectHideFlags: 0
@@ -3416,6 +3430,10 @@ MonoBehaviour:
   hoverSfx: 6
   playClickSound: 1
   clickSfx: 7
+  playPanelOpenCloseSound: 0
+  panelOpenSfx: 26
+  panelCloseSfx: 27
+  panelOpenCloseSfxVolume: 1
 --- !u!114 &1194725454226782042
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3428,6 +3446,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa9b19d30445e9c4f952d5b21bbf6629, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  startImageObject: {fileID: 0}
   buttonContent: {fileID: 1065010053370292315}
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1.1}
@@ -3446,6 +3465,8 @@ MonoBehaviour:
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
+  hoverHitArea: {fileID: 0}
+  hoverExitPadding: 4
 --- !u!1 &4873394091088940384
 GameObject:
   m_ObjectHideFlags: 0
@@ -3980,6 +4001,10 @@ MonoBehaviour:
   hoverSfx: 6
   playClickSound: 1
   clickSfx: 7
+  playPanelOpenCloseSound: 0
+  panelOpenSfx: 26
+  panelCloseSfx: 27
+  panelOpenCloseSfxVolume: 1
 --- !u!114 &2472321077637602982
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3992,6 +4017,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa9b19d30445e9c4f952d5b21bbf6629, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  startImageObject: {fileID: 0}
   buttonContent: {fileID: 1832727471251452069}
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1.1}
@@ -4010,6 +4036,8 @@ MonoBehaviour:
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
+  hoverHitArea: {fileID: 0}
+  hoverExitPadding: 4
 --- !u!1 &5803589965253307894
 GameObject:
   m_ObjectHideFlags: 0
@@ -5286,6 +5314,10 @@ MonoBehaviour:
   hoverSfx: 6
   playClickSound: 1
   clickSfx: 7
+  playPanelOpenCloseSound: 0
+  panelOpenSfx: 26
+  panelCloseSfx: 27
+  panelOpenCloseSfxVolume: 1
 --- !u!114 &929960378254490458
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5298,6 +5330,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa9b19d30445e9c4f952d5b21bbf6629, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  startImageObject: {fileID: 0}
   buttonContent: {fileID: 1970449981613897670}
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1.1}
@@ -5316,6 +5349,8 @@ MonoBehaviour:
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
+  hoverHitArea: {fileID: 0}
+  hoverExitPadding: 4
 --- !u!1 &6721388583075255112
 GameObject:
   m_ObjectHideFlags: 0
@@ -5996,6 +6031,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa9b19d30445e9c4f952d5b21bbf6629, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  startImageObject: {fileID: 0}
   buttonContent: {fileID: 2661222099118351075}
   hoverButtonMoveOffset: {x: 3, y: 3, z: 0}
   hoverButtonScale: {x: 0.8, y: 0.8, z: 1}
@@ -6014,6 +6050,8 @@ MonoBehaviour:
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
+  hoverHitArea: {fileID: 0}
+  hoverExitPadding: 4
 --- !u!1 &7396985696605463124
 GameObject:
   m_ObjectHideFlags: 0
