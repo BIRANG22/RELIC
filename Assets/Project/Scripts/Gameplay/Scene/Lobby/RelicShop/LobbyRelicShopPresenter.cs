@@ -11,22 +11,26 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
     [SerializeField] private LobbyBlueDustiumHudUI blueDustiumHud;
     [SerializeField] private Vector2 skillUpgradeButtonStartPosition = new(2400f, 200f);
     [SerializeField] private Sprite relicRefreshIcon;
+    [SerializeField] private GameObject panelRoot;
+    [SerializeField] private LobbyRelicOfferButtonUI[] offerButtons = new LobbyRelicOfferButtonUI[3];
+    [SerializeField] private LobbyRelicRefreshButtonUI refreshButton;
 
     private readonly List<LobbyRelicOfferButtonUI> buttons = new();
     private Canvas ownerCanvas;
-    private GameObject panelRoot;
-    private LobbyRelicRefreshButtonUI refreshButton;
 
     private void Awake()
     {
         ownerCanvas = GetComponentInParent<Canvas>();
-        CreateShopPanelIfNeeded();
+        EnsureShopPanelReady();
         InitializeSkillUpgradeButton(Camera.main);
     }
 
     public void Open()
     {
-        CreateShopPanelIfNeeded();
+        EnsureShopPanelReady();
+        if (panelRoot == null)
+            return;
+
         panelRoot.SetActive(true);
         panelRoot.transform.SetAsLastSibling();
         RefreshOffers();
@@ -40,7 +44,9 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
     public void RefreshOffers()
     {
-        CreateShopPanelIfNeeded();
+        EnsureShopPanelReady();
+        if (buttons.Count == 0)
+            return;
 
         if (DataManager.Instance == null || DataManager.Instance.RelicDatabase == null)
         {
@@ -130,7 +136,65 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         RefreshRefreshButton(runtime);
     }
 
-    private void CreateShopPanelIfNeeded()
+    private void EnsureShopPanelReady()
+    {
+        if (panelRoot == null)
+            panelRoot = FindScenePanelRoot();
+
+        if (panelRoot == null)
+            CreateRuntimeShopPanelIfNeeded();
+
+        BindOfferButtons();
+
+        if (refreshButton == null && panelRoot != null)
+            refreshButton = panelRoot.GetComponentInChildren<LobbyRelicRefreshButtonUI>(true);
+
+        refreshButton?.Initialize(relicRefreshIcon, RefreshRelicOffers);
+        BindCloseButton();
+    }
+
+    private GameObject FindScenePanelRoot()
+    {
+        Transform localPanel = transform.Find("RelicShopPanel");
+        if (localPanel != null)
+            return localPanel.gameObject;
+
+        if (ownerCanvas == null)
+            return null;
+
+        Transform[] children = ownerCanvas.GetComponentsInChildren<Transform>(true);
+        for (int i = 0; i < children.Length; i++)
+        {
+            if (children[i] != null && children[i].name == "RelicShopPanel")
+                return children[i].gameObject;
+        }
+
+        return null;
+    }
+
+    private void BindOfferButtons()
+    {
+        buttons.Clear();
+
+        if (offerButtons != null)
+        {
+            for (int i = 0; i < offerButtons.Length; i++)
+            {
+                if (offerButtons[i] != null)
+                    buttons.Add(offerButtons[i]);
+            }
+        }
+
+        if (buttons.Count > 0 || panelRoot == null)
+            return;
+
+        LobbyRelicOfferButtonUI[] sceneButtons =
+            panelRoot.GetComponentsInChildren<LobbyRelicOfferButtonUI>(true);
+        for (int i = 0; i < sceneButtons.Length; i++)
+            buttons.Add(sceneButtons[i]);
+    }
+
+    private void CreateRuntimeShopPanelIfNeeded()
     {
         if (panelRoot != null || ownerCanvas == null)
             return;
@@ -148,7 +212,6 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             RectTransform buttonRect = (RectTransform)button.transform;
             buttonRect.anchorMin = buttonRect.anchorMax = buttonRect.pivot = new Vector2(0.5f, 0.5f);
             buttonRect.anchoredPosition = new Vector2((i - 1) * 190f, 35f);
-            buttons.Add(button);
         }
 
         refreshButton = LobbyRelicRefreshButtonUI.Create(panelRect, relicRefreshIcon, RefreshRelicOffers);
@@ -161,7 +224,26 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         panelRoot.SetActive(false);
     }
 
-    private void CreateCloseButton(RectTransform panelRect)
+    private void BindCloseButton()
+    {
+        if (panelRoot == null)
+            return;
+
+        Button closeButton = panelRoot.transform.Find("CloseButton")?.GetComponent<Button>();
+        if (closeButton == null && panelRoot.transform is RectTransform panelRect)
+            closeButton = CreateCloseButton(panelRect);
+
+        if (closeButton == null)
+            return;
+
+        if (closeButton.transform.Find("Label") == null && closeButton.transform is RectTransform closeRect)
+            CreateCloseButtonLabel(closeRect);
+
+        closeButton.onClick.RemoveListener(Close);
+        closeButton.onClick.AddListener(Close);
+    }
+
+    private Button CreateCloseButton(RectTransform panelRect)
     {
         var closeObject = new GameObject("CloseButton", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
         RectTransform closeRect = (RectTransform)closeObject.transform;
@@ -170,8 +252,13 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         closeRect.anchoredPosition = new Vector2(-14f, -14f);
         closeRect.sizeDelta = new Vector2(46f, 46f);
         closeObject.GetComponent<Image>().color = Color.white;
-        closeObject.GetComponent<Button>().onClick.AddListener(Close);
 
+        CreateCloseButtonLabel(closeRect);
+        return closeObject.GetComponent<Button>();
+    }
+
+    private static void CreateCloseButtonLabel(RectTransform closeRect)
+    {
         var labelObject = new GameObject("Label", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
         RectTransform labelRect = (RectTransform)labelObject.transform;
         labelRect.SetParent(closeRect, false);
@@ -198,7 +285,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             new SeededLobbyRelicShopRandom(nextSeed)).Execute(runtime, nextSeed);
         if (!result.Succeeded)
         {
-            Debug.LogWarning($"[LobbyRelicShopPresenter] 유물 새로고침 실패: {result.Failure}");
+            Debug.LogWarning($"[LobbyRelicShopPresenter] Relic offer refresh failed: {result.Failure}");
             RefreshRefreshButton(runtime);
             return;
         }
@@ -210,6 +297,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
     {
         if (refreshButton == null || runtime == null)
             return;
+
         int price = LobbyRelicRefreshPricePolicy.GetPrice(runtime.RelicRefreshCount);
         refreshButton.SetState(price, !LobbyRelicRefreshService.AreAllOffersPurchased(runtime));
     }
