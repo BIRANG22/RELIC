@@ -27,10 +27,15 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
     public void Open()
     {
+        // 다른 위치 모달이 열려 있으면 유물 상점을 중복으로 열지 않는다.
+        if (LobbyPositionModalInputBlocker.IsBlockedByAnother(this))
+            return;
+
         EnsureShopPanelReady();
         if (panelRoot == null)
             return;
 
+        LobbyPositionModalInputBlocker.Block(this);
         panelRoot.SetActive(true);
         panelRoot.transform.SetAsLastSibling();
         RefreshOffers();
@@ -40,6 +45,22 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
     {
         if (panelRoot != null)
             panelRoot.SetActive(false);
+
+        // ESC와 닫기 버튼 모두 같은 Close()를 사용하므로
+        // 상점이 닫힐 때 월드 오브젝트 입력 차단도 반드시 해제한다.
+        LobbyPositionModalInputBlocker.Unblock(this);
+    }
+
+    private void OnDisable()
+    {
+        // 씬 전환이나 오브젝트 비활성화로 닫히는 경우에도
+        // 정적 입력 차단 상태가 남지 않게 정리한다.
+        LobbyPositionModalInputBlocker.Unblock(this);
+    }
+
+    private void OnDestroy()
+    {
+        LobbyPositionModalInputBlocker.Unblock(this);
     }
 
     public void RefreshOffers()

@@ -3,12 +3,15 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityEngine.Serialization;
 
 public class LobbyMainPanelKeyboardInputController : MonoBehaviour
 {
-    [Header("Lobby Main Panel")]
-    [SerializeField] private GameObject lobbyMainPanel;
-    [SerializeField] private bool requireLobbyMainPanelActive = true;
+    [Header("Position Panel")]
+    [FormerlySerializedAs("lobbyMainPanel")]
+    [Tooltip("다른 팝업이 열려 있지 않을 때 ESC로 MenuPanel을 열 수 있는 기본 로비 패널입니다.")]
+    [SerializeField] private GameObject positionPanel;
+    [SerializeField] private bool requirePositionPanelActive = true;
 
     [Header("Character Setting Panel")]
     [SerializeField] private GameObject characterSettingPanel;
@@ -33,6 +36,16 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
     [SerializeField] private GameObject menuPanel;
     [Tooltip("MenuPanel이 열려 있으면 로비 메인 키보드 입력을 막습니다.")]
     [SerializeField] private bool blockMainInputWhenMenuPanelOpen = true;
+
+    [Header("ESC 우선 닫기 패널")]
+    [Tooltip("열려 있으면 ESC 입력 시 메뉴보다 먼저 닫히는 유물 상점 패널입니다.")]
+    [SerializeField] private GameObject relicShopPanel;
+    [Tooltip("유물 상점 패널을 닫을 때 사용할 프레젠터입니다. 비워두면 자동으로 찾습니다.")]
+    [SerializeField] private LobbyRelicShopPresenter relicShopPresenter;
+    [Tooltip("열려 있으면 ESC 입력 시 메뉴보다 먼저 닫히는 침식도 선택 패널입니다.")]
+    [SerializeField] private GameObject erosionSelectPanel;
+    [Tooltip("침식도 선택창을 정상적으로 닫아 월드 입력 차단까지 해제하는 버튼 컨트롤러입니다. 비워두면 자동으로 찾습니다.")]
+    [SerializeField] private LobbyErosionMirrorButton erosionMirrorButton;
 
     [Header("Lobby Main Party Slots")]
     [SerializeField] private GameObject partySlot0;
@@ -126,17 +139,21 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
 
     private void Awake()
     {
+        AutoBindPositionPanelIfNeeded();
         AutoBindCharacterReferencesIfNeeded();
         AutoBindStageCarouselIfNeeded();
         AutoBindLobbyMenuControllerIfNeeded();
+        AutoBindEscapePriorityPanelsIfNeeded();
         OpenStagePanelIfNeeded();
     }
 
     private void OnEnable()
     {
+        AutoBindPositionPanelIfNeeded();
         AutoBindCharacterReferencesIfNeeded();
         AutoBindStageCarouselIfNeeded();
         AutoBindLobbyMenuControllerIfNeeded();
+        AutoBindEscapePriorityPanelsIfNeeded();
         SyncCurrentCharacterIndex();
         OpenStagePanelIfNeeded();
     }
@@ -163,6 +180,28 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
             return;
         }
 
+        if (Input.GetKeyDown(backKey) && CanHandleSharedInput())
+        {
+            // ESC 우선순위:
+            // 1. 유물 상점 닫기
+            // 2. 침식도 선택 패널 닫기
+            // 3. CharacterSettingPanel 닫기
+            // 4. PositionPanel만 열려 있을 때 메뉴 열기
+            if (TryCloseEscapePriorityPanel())
+            {
+                BlockInputForCooldown();
+                return;
+            }
+
+            if (CanOpenMenuFromPositionPanel())
+            {
+                ToggleMenuPanel();
+                BlockInputForCooldown();
+            }
+
+            return;
+        }
+
         if (CanHandleCharacterSettingInput())
         {
             HandleCharacterSettingInput();
@@ -182,13 +221,6 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
     {
         if (!CanHandleMainInput())
             return;
-
-        if (Input.GetKeyDown(backKey))
-        {
-            ToggleMenuPanel();
-            BlockInputForCooldown();
-            return;
-        }
 
         if (Input.GetKeyDown(partySlot0Key) || Input.GetKeyDown(KeyCode.Keypad1))
         {
@@ -251,6 +283,135 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
         }
     }
 
+
+    private void AutoBindPositionPanelIfNeeded()
+    {
+        if (positionPanel != null)
+            return;
+
+        positionPanel = FindSceneObjectByName("PositionPanel");
+    }
+
+    private void AutoBindEscapePriorityPanelsIfNeeded()
+    {
+        if (relicShopPresenter == null)
+            relicShopPresenter = FindFirstObjectByType<LobbyRelicShopPresenter>(FindObjectsInactive.Include);
+
+        if (relicShopPanel == null)
+            relicShopPanel = FindSceneObjectByName("RelicShopPanel");
+
+        if (erosionSelectPanel == null)
+            erosionSelectPanel = FindSceneObjectByName("ErosionSelectPanel");
+
+        if (erosionMirrorButton == null ||
+            !erosionMirrorButton.ControlsPanel(erosionSelectPanel))
+        {
+            erosionMirrorButton = FindErosionMirrorButtonForPanel(erosionSelectPanel);
+        }
+    }
+
+    private bool TryCloseEscapePriorityPanel()
+    {
+        AutoBindEscapePriorityPanelsIfNeeded();
+
+        if (IsPanelActive(relicShopPanel))
+        {
+            if (relicShopPresenter != null)
+                relicShopPresenter.Close();
+            else
+                relicShopPanel.SetActive(false);
+
+            return true;
+        }
+
+        if (IsPanelActive(erosionSelectPanel))
+        {
+            // 씬에 같은 컴포넌트가 여러 개 있을 수 있으므로,
+            // 현재 열린 패널을 실제로 관리하는 인스턴스를 다시 찾습니다.
+            LobbyErosionMirrorButton controller =
+                FindErosionMirrorButtonForPanel(erosionSelectPanel);
+
+            if (controller != null)
+            {
+                erosionMirrorButton = controller;
+                controller.CloseErosionSelectPanel();
+            }
+            else
+            {
+                erosionSelectPanel.SetActive(false);
+                LobbyPositionModalInputBlocker.Unblock(null);
+                Debug.LogWarning(
+                    "[LobbyMainPanelKeyboardInputController] ErosionSelectPanel을 관리하는 " +
+                    "LobbyErosionMirrorButton을 찾지 못해 입력 차단을 강제로 해제했습니다.",
+                    this);
+            }
+
+            return true;
+        }
+
+        if (IsPanelActive(characterSettingPanel))
+        {
+            InvokeButton(characterBackButton);
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool CanOpenMenuFromPositionPanel()
+    {
+        AutoBindPositionPanelIfNeeded();
+
+        if (!IsPanelActive(positionPanel))
+            return false;
+
+        if (IsPanelActive(characterSettingPanel))
+            return false;
+
+        if (HasActiveBlockingPanel(blockingPanels))
+            return false;
+
+        return true;
+    }
+
+
+    private static LobbyErosionMirrorButton FindErosionMirrorButtonForPanel(
+        GameObject targetPanel)
+    {
+        if (targetPanel == null)
+            return null;
+
+        LobbyErosionMirrorButton[] buttons =
+            FindObjectsByType<LobbyErosionMirrorButton>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None);
+
+        for (int i = 0; i < buttons.Length; i++)
+        {
+            LobbyErosionMirrorButton button = buttons[i];
+
+            if (button != null && button.ControlsPanel(targetPanel))
+                return button;
+        }
+
+        return null;
+    }
+
+    private static GameObject FindSceneObjectByName(string objectName)
+    {
+        Transform[] transforms = FindObjectsByType<Transform>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < transforms.Length; i++)
+        {
+            Transform item = transforms[i];
+            if (item != null && item.gameObject.scene.IsValid() && item.name == objectName)
+                return item.gameObject;
+        }
+
+        return null;
+    }
 
     private void AutoBindLobbyMenuControllerIfNeeded()
     {
@@ -447,7 +608,9 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
         if (!CanHandleSharedInput())
             return false;
 
-        if (requireLobbyMainPanelActive && !IsPanelActive(lobbyMainPanel))
+        AutoBindPositionPanelIfNeeded();
+
+        if (requirePositionPanelActive && !IsPanelActive(positionPanel))
             return false;
 
         if (blockMainInputWhenMenuPanelOpen && IsLobbyMenuOpen())

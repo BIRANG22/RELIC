@@ -100,8 +100,11 @@ public class UIManager : Singleton<UIManager>
         if (closeRecordPanelWithEscape && TryHideRecordIfOpen(true))
             return;
 
-        if (closeOptionPanelWithEscape)
-            TryHideOptionIfOpen(true);
+        if (closeOptionPanelWithEscape && TryHideOptionIfOpen(true))
+            return;
+
+        if (IsTitleScene())
+            ShowQuitConfirm();
     }
 
     private void CreateRecordPanel()
@@ -578,6 +581,15 @@ public class UIManager : Singleton<UIManager>
 
         if (eventSystem.currentSelectedGameObject.transform.IsChildOf(confirmDialogInstance.transform))
             eventSystem.SetSelectedGameObject(null);
+    }
+
+
+    private static bool IsTitleScene()
+    {
+        return string.Equals(
+            UnityEngine.SceneManagement.SceneManager.GetActiveScene().name,
+            SceneName.Title,
+            System.StringComparison.OrdinalIgnoreCase);
     }
 
     private bool WasEscapePressedThisFrame()
