@@ -19,12 +19,18 @@ public class UIManager : Singleton<UIManager>
 
     [Header("UI Prefabs")]
     [SerializeField] private GameObject optionPanelPrefab;
+    [SerializeField] private GameObject recordPanelPrefab;
     [SerializeField] private GameObject confirmDialogPrefab;
 
     [Header("Option Panel Sorting")]
     [SerializeField] private bool bringOptionPanelToFront = true;
     [SerializeField] private bool overrideOptionPanelSorting = true;
     [SerializeField] private int optionPanelSortingOrderOffset = 10;
+
+    [Header("Record Panel Sorting")]
+    [SerializeField] private bool bringRecordPanelToFront = true;
+    [SerializeField] private bool overrideRecordPanelSorting = true;
+    [SerializeField] private int recordPanelSortingOrderOffset = 15;
 
     [Header("Confirm Dialog Sorting")]
     [SerializeField] private bool bringConfirmDialogToFront = true;
@@ -39,22 +45,29 @@ public class UIManager : Singleton<UIManager>
 
     [Header("Input")]
     [SerializeField] private bool closeOptionPanelWithEscape = true;
+    [SerializeField] private bool closeRecordPanelWithEscape = true;
     [SerializeField] private bool closeConfirmDialogWithEscape = true;
 
     private static readonly Vector3 OptionPanelDefaultScale = Vector3.one;
 
     private static int lastOptionClosedByEscapeFrame = -1;
+    private static int lastRecordClosedByEscapeFrame = -1;
     private static int lastConfirmClosedByEscapeFrame = -1;
 
     private GameObject optionPanelInstance;
     private OptionPanelTransition optionPanelTransition;
+    private GameObject recordPanelInstance;
+    private RecordPanelUI recordPanelUI;
+    private OptionPanelTransition recordPanelTransition;
     private GameObject confirmDialogInstance;
     private BootstrapConfirmDialogUI confirmDialogUI;
 
     public static bool WasOptionPanelClosedByEscapeThisFrame => lastOptionClosedByEscapeFrame == Time.frameCount;
+    public static bool WasRecordPanelClosedByEscapeThisFrame => lastRecordClosedByEscapeFrame == Time.frameCount;
     public static bool WasConfirmDialogClosedByEscapeThisFrame => lastConfirmClosedByEscapeFrame == Time.frameCount;
 
     public bool IsOptionPanelOpen => optionPanelInstance != null && optionPanelInstance.activeInHierarchy;
+    public bool IsRecordPanelOpen => recordPanelInstance != null && recordPanelInstance.activeInHierarchy;
     public bool IsConfirmDialogOpen => confirmDialogInstance != null && confirmDialogInstance.activeInHierarchy;
 
     protected override void Awake()
@@ -68,6 +81,7 @@ public class UIManager : Singleton<UIManager>
     private void Start()
     {
         CreateOptionPanel();
+        CreateRecordPanel();
         CreateConfirmDialog();
         HideAll();
     }
@@ -83,8 +97,38 @@ public class UIManager : Singleton<UIManager>
         if (closeConfirmDialogWithEscape && TryHideConfirmDialogIfOpen(true))
             return;
 
+        if (closeRecordPanelWithEscape && TryHideRecordIfOpen(true))
+            return;
+
         if (closeOptionPanelWithEscape)
             TryHideOptionIfOpen(true);
+    }
+
+    private void CreateRecordPanel()
+    {
+        if (recordPanelInstance != null)
+            return;
+
+        if (recordPanelPrefab == null)
+            return;
+
+        if (mainCanvas == null)
+        {
+            Debug.LogError("[UIManager] MainCanvas is not assigned.");
+            return;
+        }
+
+        recordPanelInstance = Instantiate(recordPanelPrefab, mainCanvas.transform, false);
+        recordPanelUI = recordPanelInstance.GetComponent<RecordPanelUI>();
+        recordPanelTransition = recordPanelInstance.GetComponent<OptionPanelTransition>();
+        if (recordPanelTransition == null)
+            recordPanelTransition = recordPanelInstance.AddComponent<OptionPanelTransition>();
+
+        if (recordPanelUI == null)
+            Debug.LogError("[UIManager] RecordPanelPrefab에 RecordPanelUI 컴포넌트가 없습니다.");
+
+        BringRecordPanelToFront();
+        recordPanelInstance.SetActive(false);
     }
 
     private void CreateOptionPanel()
@@ -159,6 +203,79 @@ public class UIManager : Singleton<UIManager>
         }
     }
 
+    public void ShowRecord()
+    {
+        if (recordPanelInstance == null)
+            CreateRecordPanel();
+
+        if (recordPanelInstance == null)
+        {
+            Debug.LogWarning("[UIManager] RecordPanelPrefab is not assigned.");
+            return;
+        }
+
+        if (recordPanelTransition == null)
+        {
+            recordPanelTransition = recordPanelInstance.GetComponent<OptionPanelTransition>();
+            if (recordPanelTransition == null)
+                recordPanelTransition = recordPanelInstance.AddComponent<OptionPanelTransition>();
+        }
+
+        recordPanelInstance.transform.localScale = Vector3.one;
+        recordPanelInstance.SetActive(true);
+        BringRecordPanelToFront();
+        recordPanelTransition.PlayOpen();
+    }
+
+    public void HideRecord()
+    {
+        HideRecord(false);
+    }
+
+    /// <summary>
+    /// 도감 패널을 닫습니다.
+    /// immediate가 true이면 전환 연출 없이 즉시 비활성화합니다.
+    /// </summary>
+    public void HideRecord(bool immediate)
+    {
+        if (recordPanelInstance == null)
+            return;
+
+        ClearSelectedObjectIfInsideRecordPanel();
+
+        if (immediate || !recordPanelInstance.activeInHierarchy)
+        {
+            recordPanelInstance.SetActive(false);
+            return;
+        }
+
+        if (recordPanelTransition == null)
+        {
+            recordPanelTransition = recordPanelInstance.GetComponent<OptionPanelTransition>();
+            if (recordPanelTransition == null)
+                recordPanelTransition = recordPanelInstance.AddComponent<OptionPanelTransition>();
+        }
+
+        recordPanelTransition.PlayClose(() =>
+        {
+            if (recordPanelInstance != null)
+                recordPanelInstance.SetActive(false);
+        });
+    }
+
+    public bool TryHideRecordIfOpen(bool closedByEscape = false)
+    {
+        if (!IsRecordPanelOpen)
+            return false;
+
+        HideRecord();
+
+        if (closedByEscape)
+            lastRecordClosedByEscapeFrame = Time.frameCount;
+
+        return true;
+    }
+
     private void ApplyOptionPanelScale()
     {
         if (optionPanelInstance == null)
@@ -193,6 +310,27 @@ public class UIManager : Singleton<UIManager>
 
         if (optionPanelInstance.GetComponent<GraphicRaycaster>() == null)
             optionPanelInstance.AddComponent<GraphicRaycaster>();
+    }
+
+    private void BringRecordPanelToFront()
+    {
+        if (!bringRecordPanelToFront || recordPanelInstance == null)
+            return;
+
+        recordPanelInstance.transform.SetAsLastSibling();
+
+        if (!overrideRecordPanelSorting)
+            return;
+
+        Canvas recordCanvas = recordPanelInstance.GetComponent<Canvas>();
+        if (recordCanvas == null)
+            recordCanvas = recordPanelInstance.AddComponent<Canvas>();
+
+        recordCanvas.overrideSorting = true;
+        recordCanvas.sortingOrder = GetHighestCanvasSortingOrder(recordCanvas) + Mathf.Max(1, recordPanelSortingOrderOffset);
+
+        if (recordPanelInstance.GetComponent<GraphicRaycaster>() == null)
+            recordPanelInstance.AddComponent<GraphicRaycaster>();
     }
 
     private void BringConfirmDialogToFront()
@@ -398,6 +536,7 @@ public class UIManager : Singleton<UIManager>
 
     public void HideAll()
     {
+        HideRecord(true);
         HideOption(true);
         HideConfirmDialog();
     }
@@ -412,6 +551,19 @@ public class UIManager : Singleton<UIManager>
             return;
 
         if (eventSystem.currentSelectedGameObject.transform.IsChildOf(optionPanelInstance.transform))
+            eventSystem.SetSelectedGameObject(null);
+    }
+
+    private void ClearSelectedObjectIfInsideRecordPanel()
+    {
+        if (recordPanelInstance == null)
+            return;
+
+        EventSystem eventSystem = EventSystem.current;
+        if (eventSystem == null || eventSystem.currentSelectedGameObject == null)
+            return;
+
+        if (eventSystem.currentSelectedGameObject.transform.IsChildOf(recordPanelInstance.transform))
             eventSystem.SetSelectedGameObject(null);
     }
 

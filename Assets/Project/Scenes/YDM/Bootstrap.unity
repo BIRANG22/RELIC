@@ -1926,10 +1926,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mainCanvas: {fileID: 142019126}
   optionPanelPrefab: {fileID: 4058710123885056422, guid: 999fd8f12d24e814bb5b05d877821511, type: 3}
+  recordPanelPrefab: {fileID: 508730639543615577, guid: 166bb5f986a5f6148b3bf54d49659950, type: 3}
   confirmDialogPrefab: {fileID: 4344066926318577350, guid: 206cfc55405435f489546356113e5908, type: 3}
   bringOptionPanelToFront: 1
   overrideOptionPanelSorting: 1
   optionPanelSortingOrderOffset: 10
+  bringRecordPanelToFront: 1
+  overrideRecordPanelSorting: 1
+  recordPanelSortingOrderOffset: 15
   bringConfirmDialogToFront: 1
   overrideConfirmDialogSorting: 1
   confirmDialogSortingOrderOffset: 20
@@ -1938,6 +1942,7 @@ MonoBehaviour:
   confirmYesText: "\uC608"
   confirmNoText: "\uC544\uB2C8\uC624"
   closeOptionPanelWithEscape: 1
+  closeRecordPanelWithEscape: 1
   closeConfirmDialogWithEscape: 1
 --- !u!4 &1558849450
 Transform:
