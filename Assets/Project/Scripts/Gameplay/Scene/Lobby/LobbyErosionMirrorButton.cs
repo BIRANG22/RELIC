@@ -5,21 +5,12 @@ using UnityEngine.UI;
 [DisallowMultipleComponent]
 public sealed class LobbyErosionMirrorButton : MonoBehaviour
 {
-    private const string DefaultPositionPanelObjectName = "PositionPanel";
     private const string DefaultPanelObjectName = "ErosionSelectPanel";
-    private const string DefaultOverlayObjectName = "ErosionSelectOverlay";
 
     [Header("Panel")]
-    [SerializeField] private RectTransform positionPanel;
     [SerializeField] private GameObject erosionSelectPanel;
-    [SerializeField] private string positionPanelName = DefaultPositionPanelObjectName;
     [SerializeField] private string erosionSelectPanelName = DefaultPanelObjectName;
     [SerializeField] private bool autoFindPanel = true;
-    [SerializeField] private bool movePanelOutOfInactiveParents = true;
-
-    [Header("Overlay")]
-    [SerializeField] private string overlayName = DefaultOverlayObjectName;
-    [SerializeField] private Color blockerColor = new(0f, 0f, 0f, 0.35f);
 
     [Header("Close Button")]
     [SerializeField] private string closeButtonText = "X";
@@ -40,8 +31,6 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
     [SerializeField] private bool playClickSound = true;
     [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
     [SerializeField, Range(0f, 1f)] private float clickSfxVolume = 1f;
-
-    private GameObject overlayRoot;
 
     private void Awake()
     {
@@ -71,22 +60,17 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
             return;
         }
 
-        EnsureOverlay();
-
-        if (overlayRoot == null)
-            return;
-
         PlayClickSfx();
-        TitleManager.CloseTitleModePanelsExceptInScene(overlayRoot);
+        TitleManager.CloseTitleModePanelsExceptInScene(erosionSelectPanel);
 
-        overlayRoot.SetActive(true);
-        overlayRoot.transform.SetAsLastSibling();
+        RectTransform panelRect = erosionSelectPanel.transform as RectTransform;
+        CreateCloseButton(panelRect);
         erosionSelectPanel.SetActive(true);
 
         if (bringPanelToFront)
             erosionSelectPanel.transform.SetAsLastSibling();
 
-        ApplyOpenedPanelSorting(overlayRoot);
+        ApplyOpenedPanelSorting(erosionSelectPanel);
         LobbyPositionModalInputBlocker.Block(this);
     }
 
@@ -95,10 +79,20 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
         if (erosionSelectPanel != null)
             erosionSelectPanel.SetActive(false);
 
-        if (overlayRoot != null)
-            overlayRoot.SetActive(false);
-
         LobbyPositionModalInputBlocker.Unblock(this);
+    }
+
+    /// <summary>
+    /// 이 버튼이 지정된 침식도 선택 패널을 관리하는지 확인합니다.
+    /// ESC 입력에서 동일한 패널을 관리하는 정확한 인스턴스를 찾는 데 사용합니다.
+    /// </summary>
+    public bool ControlsPanel(GameObject panel)
+    {
+        if (panel == null)
+            return false;
+
+        GameObject resolvedPanel = ResolvePanel();
+        return resolvedPanel == panel;
     }
 
     private bool ShouldBlockClick()
@@ -114,19 +108,11 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
 
     private bool ResolveReferences()
     {
-        if (positionPanel == null)
-        {
-            GameObject found = FindSceneObject(positionPanelName);
-
-            if (found != null)
-                positionPanel = found.GetComponent<RectTransform>();
-        }
-
         GameObject panel = ResolvePanel();
-        if (positionPanel != null && panel != null)
+        if (panel != null)
             return true;
 
-        Debug.LogWarning("[LobbyErosionMirrorButton] PositionPanel or ErosionSelectPanel is missing.", this);
+        Debug.LogWarning("[LobbyErosionMirrorButton] ErosionSelectPanel is missing.", this);
         return false;
     }
 
@@ -140,73 +126,6 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
 
         erosionSelectPanel = FindSceneObject(erosionSelectPanelName);
         return erosionSelectPanel;
-    }
-
-    private void EnsureOverlay()
-    {
-        if (overlayRoot != null)
-        {
-            EnsurePanelInOverlay();
-            return;
-        }
-
-        Transform existingOverlay = positionPanel != null
-            ? positionPanel.Find(overlayName)
-            : null;
-
-        if (existingOverlay != null)
-        {
-            overlayRoot = existingOverlay.gameObject;
-            EnsurePanelInOverlay();
-            return;
-        }
-
-        overlayRoot = new GameObject(
-            overlayName,
-            typeof(RectTransform),
-            typeof(CanvasRenderer),
-            typeof(Image));
-
-        RectTransform overlayRect = overlayRoot.GetComponent<RectTransform>();
-        overlayRect.SetParent(positionPanel, false);
-        overlayRect.anchorMin = Vector2.zero;
-        overlayRect.anchorMax = Vector2.one;
-        overlayRect.offsetMin = Vector2.zero;
-        overlayRect.offsetMax = Vector2.zero;
-        overlayRect.localScale = Vector3.one;
-
-        Image blocker = overlayRoot.GetComponent<Image>();
-        blocker.color = blockerColor;
-        blocker.raycastTarget = true;
-
-        EnsurePanelInOverlay();
-        overlayRoot.SetActive(false);
-    }
-
-    private void EnsurePanelInOverlay()
-    {
-        if (overlayRoot == null || erosionSelectPanel == null)
-            return;
-
-        RectTransform overlayRect = overlayRoot.transform as RectTransform;
-        RectTransform panelRect = erosionSelectPanel.transform as RectTransform;
-
-        if (erosionSelectPanel.transform.parent != overlayRoot.transform)
-            erosionSelectPanel.transform.SetParent(overlayRoot.transform, false);
-
-        if (movePanelOutOfInactiveParents && panelRect != null)
-            panelRect.localScale = Vector3.one;
-
-        if (overlayRect != null)
-        {
-            overlayRect.anchorMin = Vector2.zero;
-            overlayRect.anchorMax = Vector2.one;
-            overlayRect.offsetMin = Vector2.zero;
-            overlayRect.offsetMax = Vector2.zero;
-        }
-
-        CreateCloseButton(panelRect);
-        erosionSelectPanel.SetActive(false);
     }
 
     private void CreateCloseButton(RectTransform panelRect)

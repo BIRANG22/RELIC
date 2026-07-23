@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 
+[DisallowMultipleComponent]
 public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 {
     public enum PanelTransitionMode
@@ -19,15 +20,30 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
     [SerializeField] private bool closeCurrentUIPanelButtonPanelOnExecute = true;
     [SerializeField] private GameObject[] extraPanelsToCloseOnExecute;
 
+    [Header("World Object Click")]
+    [Tooltip("체크하면 이 스크립트가 붙은 월드 오브젝트를 마우스 좌클릭했을 때 Execute를 실행합니다.")]
+    [SerializeField] private bool executeOnWorldClick = true;
+
+    [Tooltip("UI 위에서 클릭했을 때 월드 오브젝트 클릭을 막습니다.")]
+    [SerializeField] private bool blockWorldClickOverUI = true;
+
+    [Tooltip("Collider2D가 없을 때 SpriteRenderer 기준으로 PolygonCollider2D를 자동 추가합니다.")]
+    [SerializeField] private bool addColliderAutomatically = true;
+
     [Header("World Object Change")]
     [SerializeField] private GameObject[] worldObjectsToClose;
     [SerializeField] private GameObject[] worldObjectsToOpen;
 
     [Header("Transition")]
     [SerializeField] private LobbyPanelTransition lobbyPanelTransition;
+
+    [Header("Camera Reset")]
+    [Tooltip("전환 화면이 완전히 닫힌 뒤, 패널이 교체되기 직전에 메인 카메라를 기본 위치로 되돌립니다.")]
+    [SerializeField] private bool resetCameraBeforeTransition = true;
+
+    [Tooltip("위치를 되돌릴 메인 카메라의 HorizontalHubCameraDrag입니다. 비어 있으면 자동으로 찾습니다.")]
+    [SerializeField] private HorizontalHubCameraDrag hubCameraDrag;
     [SerializeField] private PanelTransitionMode transitionMode = PanelTransitionMode.LobbyToCharacter;
-    [SerializeField] private LobbyPanelTransition.TransitionDirection customCloseDirection = LobbyPanelTransition.TransitionDirection.Vertical;
-    [SerializeField] private LobbyPanelTransition.TransitionDirection customOpenDirection = LobbyPanelTransition.TransitionDirection.Horizontal;
     [SerializeField] private float clickActionDelay = 0f;
 
     [Header("Middle Actions")]
@@ -44,8 +60,38 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 
     private bool isProcessing;
 
+    private void Awake()
+    {
+        if (executeOnWorldClick && addColliderAutomatically)
+            EnsureWorldCollider();
+    }
+
+    private void OnMouseUpAsButton()
+    {
+        if (!executeOnWorldClick)
+            return;
+
+        if (ShouldBlockInteractionByOpenMenuPanel())
+            return;
+
+        if (LobbyPositionModalInputBlocker.IsBlocked)
+            return;
+
+        if (blockWorldClickOverUI &&
+            EventSystem.current != null &&
+            EventSystem.current.IsPointerOverGameObject())
+        {
+            return;
+        }
+
+        Execute();
+    }
+
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (ShouldBlockInteractionByOpenMenuPanel())
+            return;
+
         if (!playHoverSound)
             return;
 
@@ -55,6 +101,9 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 
     public void Execute()
     {
+        if (ShouldBlockInteractionByOpenMenuPanel())
+            return;
+
         if (isProcessing)
             return;
 
@@ -65,8 +114,9 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 
         if (lobbyPanelTransition == null)
         {
-            Debug.LogWarning("[LobbyPanelTransitionButton] Lobby Panel Transition is not assigned.");
+            Debug.LogWarning("[LobbyPanelTransitionButton] Lobby Panel Transition is not assigned.", this);
             InvokeBeforePanelChange();
+            ApplyWorldObjectChangeImmediately();
             ApplyPanelChangeImmediately();
             InvokeAfterPanelChange();
             return;
@@ -75,7 +125,9 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
         if (lobbyPanelTransition.IsPlaying)
             return;
 
-        GetDirections(out LobbyPanelTransition.TransitionDirection closeDirection, out LobbyPanelTransition.TransitionDirection openDirection);
+        GetDirections(
+            out LobbyPanelTransition.TransitionDirection closeDirection,
+            out LobbyPanelTransition.TransitionDirection openDirection);
 
         isProcessing = true;
 
@@ -90,27 +142,52 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
             InvokeBeforePanelChange,
             InvokeAfterPanelChange);
 
-        Invoke(nameof(ClearProcessing), Mathf.Max(0.01f, clickActionDelay + lobbyPanelTransition.EstimatedTransitionTime + 0.1f));
+        Invoke(
+            nameof(ClearProcessing),
+            Mathf.Max(0.01f, clickActionDelay + lobbyPanelTransition.EstimatedTransitionTime + 0.1f));
     }
 
-    private void GetDirections(out LobbyPanelTransition.TransitionDirection closeDirection, out LobbyPanelTransition.TransitionDirection openDirection)
+
+    /// <summary>
+    /// MenuPanel이 열려 있으면 메뉴 바깥의 로비 월드 오브젝트 입력을 차단합니다.
+    /// MenuPanel 자신과 그 자식 버튼은 계속 사용할 수 있습니다.
+    /// </summary>
+    private bool ShouldBlockInteractionByOpenMenuPanel()
     {
-        if (transitionMode == PanelTransitionMode.LobbyToCharacter)
-        {
-            closeDirection = LobbyPanelTransition.TransitionDirection.Vertical;
-            openDirection = LobbyPanelTransition.TransitionDirection.Horizontal;
+        if (!UIPanelButton.IsMenuPanelOpen)
+            return false;
+
+        GameObject menuPanel = UIPanelButton.FindMenuPanelInScene();
+        if (menuPanel == null)
+            return true;
+
+        Transform currentTransform = transform;
+        return currentTransform != menuPanel.transform &&
+               !currentTransform.IsChildOf(menuPanel.transform);
+    }
+
+    private void ResetCameraBeforeTransition()
+    {
+        if (!resetCameraBeforeTransition)
             return;
+
+        if (hubCameraDrag == null)
+        {
+            hubCameraDrag = FindFirstObjectByType<HorizontalHubCameraDrag>(
+                FindObjectsInactive.Include);
         }
 
-        if (transitionMode == PanelTransitionMode.CharacterToLobby)
-        {
-            closeDirection = LobbyPanelTransition.TransitionDirection.Horizontal;
-            openDirection = LobbyPanelTransition.TransitionDirection.Vertical;
-            return;
-        }
+        if (hubCameraDrag != null)
+            hubCameraDrag.ResetToDefaultPositionImmediate();
+    }
 
-        closeDirection = customCloseDirection;
-        openDirection = customOpenDirection;
+    private void GetDirections(
+        out LobbyPanelTransition.TransitionDirection closeDirection,
+        out LobbyPanelTransition.TransitionDirection openDirection)
+    {
+        // 현재 로비 전환은 HorizontalTransition만 사용합니다.
+        closeDirection = LobbyPanelTransition.TransitionDirection.Horizontal;
+        openDirection = LobbyPanelTransition.TransitionDirection.Horizontal;
     }
 
     private void CloseOpenedPopupPanels()
@@ -130,14 +207,17 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 
     private void InvokeBeforePanelChange()
     {
-        if (beforePanelChange != null)
-            beforePanelChange.Invoke();
+        // 전환 화면이 완전히 닫힌 상태에서 카메라를 초기화합니다.
+        // 따라서 카메라 이동 과정은 플레이어에게 보이지 않습니다.
+        if (transitionMode == PanelTransitionMode.LobbyToCharacter)
+            ResetCameraBeforeTransition();
+
+        beforePanelChange?.Invoke();
     }
 
     private void InvokeAfterPanelChange()
     {
-        if (afterPanelChange != null)
-            afterPanelChange.Invoke();
+        afterPanelChange?.Invoke();
 
         LobbyViewStateController viewStateController =
             FindFirstObjectByType<LobbyViewStateController>();
@@ -150,7 +230,6 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
         else if (transitionMode == PanelTransitionMode.CharacterToLobby)
             viewStateController.ShowPosition();
     }
-
 
     private void ApplyWorldObjectChangeImmediately()
     {
@@ -186,6 +265,23 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 
         if (panelToOpen != null)
             panelToOpen.SetActive(true);
+    }
+
+    private void EnsureWorldCollider()
+    {
+        if (GetComponent<Collider2D>() != null || GetComponent<Collider>() != null)
+            return;
+
+        if (GetComponent<SpriteRenderer>() == null)
+        {
+            Debug.LogWarning(
+                "[LobbyPanelTransitionButton] 월드 클릭을 사용하지만 Collider와 SpriteRenderer가 없습니다. " +
+                "Anchor 오브젝트에 Collider2D를 직접 추가하세요.",
+                this);
+            return;
+        }
+
+        gameObject.AddComponent<PolygonCollider2D>();
     }
 
     private void ClearProcessing()

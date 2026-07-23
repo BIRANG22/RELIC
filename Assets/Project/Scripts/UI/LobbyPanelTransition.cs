@@ -7,7 +7,7 @@ public class LobbyPanelTransition : MonoBehaviour
     public enum TransitionDirection
     {
         Horizontal,
-        Vertical
+        Vertical // 기존 호출 호환용. 실제 연출은 HorizontalTransition만 사용합니다.
     }
 
     [System.Serializable]
@@ -115,28 +115,13 @@ public class LobbyPanelTransition : MonoBehaviour
         secondClosedLocalPosition = new Vector3(500f, 0f, 0f)
     };
 
-    [Header("Vertical Transition")]
-    [SerializeField]
-    private TransitionImageSet verticalTransition = new TransitionImageSet
-    {
-        firstOpenedLocalPosition = new Vector3(0f, 1500f, 0f),
-        firstClosedLocalPosition = new Vector3(0f, 500f, 0f),
-        secondOpenedLocalPosition = new Vector3(0f, -1500f, 0f),
-        secondClosedLocalPosition = new Vector3(0f, -500f, 0f)
-    };
-
     [Header("Timing")]
     [SerializeField] private float closeDuration = 0.35f;
-    [SerializeField] private float rotationDuration = 0.2f;
     [SerializeField] private float openDuration = 0.35f;
     [SerializeField] private float closedHoldDuration = 0.05f;
 
-    [Header("Rotation")]
-    [SerializeField] private float directionChangeRotationAngle = 90f;
-
     [Header("Curve")]
     [SerializeField] private AnimationCurve closeCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
-    [SerializeField] private AnimationCurve rotationCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
     [SerializeField] private AnimationCurve openCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
     [Header("Transition Sound")]
@@ -153,7 +138,6 @@ public class LobbyPanelTransition : MonoBehaviour
         get
         {
             return Mathf.Max(0f, closeDuration)
-                + Mathf.Max(0f, rotationDuration)
                 + Mathf.Max(0f, openDuration)
                 + Mathf.Max(0f, closedHoldDuration);
         }
@@ -219,9 +203,6 @@ public class LobbyPanelTransition : MonoBehaviour
     {
         horizontalTransition.SetRootRotationZ(0f);
         horizontalTransition.SetOpenedImmediate();
-
-        verticalTransition.SetRootRotationZ(0f);
-        verticalTransition.SetOpenedImmediate();
     }
 
     private IEnumerator PanelChangeRoutine(
@@ -237,9 +218,9 @@ public class LobbyPanelTransition : MonoBehaviour
     {
         isPlaying = true;
 
-        TransitionImageSet activeSet = GetSet(closeDirection);
-        bool shouldRotateForOpen = closeDirection != openDirection;
-        float openRotationZ = shouldRotateForOpen ? directionChangeRotationAngle : 0f;
+        // CharacterSettingPanel을 포함한 모든 로비 패널 전환은
+        // HorizontalTransition 하나만 사용합니다.
+        TransitionImageSet activeSet = horizontalTransition;
 
         HideInactiveSet(activeSet);
         activeSet.Show();
@@ -262,11 +243,7 @@ public class LobbyPanelTransition : MonoBehaviour
         if (closedHoldDuration > 0f)
             yield return new WaitForSecondsRealtime(closedHoldDuration);
 
-        if (shouldRotateForOpen)
-            yield return AnimateRootRotation(activeSet, 0f, openRotationZ, rotationDuration, rotationCurve);
-        else
-            activeSet.SetRootRotationZ(0f);
-
+        activeSet.SetRootRotationZ(0f);
         activeSet.SetClosedImmediate();
 
         yield return AnimatePosition(activeSet, false, openDuration, openCurve);
@@ -319,29 +296,6 @@ public class LobbyPanelTransition : MonoBehaviour
             set.secondImage.localPosition = secondEnd;
     }
 
-    private IEnumerator AnimateRootRotation(TransitionImageSet set, float startZ, float endZ, float duration, AnimationCurve curve)
-    {
-        if (set == null)
-            yield break;
-
-        float safeDuration = Mathf.Max(0.01f, duration);
-        float elapsedTime = 0f;
-
-        while (elapsedTime < safeDuration)
-        {
-            elapsedTime += Time.unscaledDeltaTime;
-            float normalizedTime = Mathf.Clamp01(elapsedTime / safeDuration);
-            float t = curve != null ? curve.Evaluate(normalizedTime) : normalizedTime;
-            float currentZ = Mathf.LerpUnclamped(startZ, endZ, t);
-
-            set.SetRootRotationZ(currentZ);
-
-            yield return null;
-        }
-
-        set.SetRootRotationZ(endZ);
-    }
-
     private void PlayTransitionSound()
     {
         if (!playTransitionSound)
@@ -353,28 +307,17 @@ public class LobbyPanelTransition : MonoBehaviour
 
     private TransitionImageSet GetSet(TransitionDirection direction)
     {
-        return direction == TransitionDirection.Vertical ? verticalTransition : horizontalTransition;
+        return horizontalTransition;
     }
 
     private void HideInactiveSet(TransitionImageSet activeSet)
     {
-        if (horizontalTransition != activeSet)
-        {
-            horizontalTransition.SetRootRotationZ(0f);
-            horizontalTransition.Hide();
-        }
-
-        if (verticalTransition != activeSet)
-        {
-            verticalTransition.SetRootRotationZ(0f);
-            verticalTransition.Hide();
-        }
+        // HorizontalTransition만 사용하므로 비활성 전환 세트가 없습니다.
     }
 
     private void HideAllRoots()
     {
         horizontalTransition.Hide();
-        verticalTransition.Hide();
     }
 
     private void ApplyWorldObjectChange(GameObject[] worldObjectsToClose, GameObject[] worldObjectsToOpen)
