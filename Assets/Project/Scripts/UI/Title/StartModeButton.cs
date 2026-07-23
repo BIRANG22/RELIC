@@ -26,6 +26,13 @@ public class StartModeButton : MonoBehaviour
             return;
 
         BattleRunAbandonService.AbandonCurrentRun(DataManager.Instance);
+
+        LobbyRuntimeData lobbyRuntime = DataManager.Instance.LobbyRuntimeStore?.Get();
+        if (lobbyRuntime == null)
+            return;
+
+        LobbyBattleRuntimeTransferService.ClearTransferredLobbyState(lobbyRuntime);
+        DataManager.Instance.LobbyRuntimeStore?.Set(lobbyRuntime);
     }
 
     private void PlayClickSound()

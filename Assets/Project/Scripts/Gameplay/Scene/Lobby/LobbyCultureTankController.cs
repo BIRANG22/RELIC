@@ -5,6 +5,14 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 
+public enum LobbyCultureTankPanelState
+{
+    MissingData,
+    Empty,
+    Running,
+    Completed
+}
+
 [DisallowMultipleComponent]
 public sealed class LobbyCultureTankController : MonoBehaviour
 {
@@ -12,6 +20,7 @@ public sealed class LobbyCultureTankController : MonoBehaviour
     private static readonly Color RunningLightEndColor = new(100f / 255f, 250f / 255f, 150f / 255f, 1f);
 
     [SerializeField] private string tankId;
+    [SerializeField] private bool allowWorldInteraction;
     [SerializeField] private SpriteRenderer itemRenderer;
     [SerializeField] private Light2D tankLight;
     [SerializeField] private GameObject researchVfxRoot;
@@ -64,7 +73,101 @@ public sealed class LobbyCultureTankController : MonoBehaviour
             claimFeedbackText.gameObject.SetActive(false);
     }
 
+    public string TankId
+    {
+        get
+        {
+            AutoBind();
+            return tankId;
+        }
+    }
+
+    public void Interact()
+    {
+        if (ShouldBlockClick())
+            return;
+
+        HandleInteraction();
+    }
+
+    public string GetPanelLabel()
+    {
+        AutoBind();
+
+        string title = FormatPanelTankName(tankId);
+        LobbyCultureTankPanelState state = GetPanelState();
+
+        return state switch
+        {
+            LobbyCultureTankPanelState.Completed => $"{title}\n완료",
+            LobbyCultureTankPanelState.Running => $"{title}\n배양중 {GetPanelRemainingSeconds()}s",
+            LobbyCultureTankPanelState.MissingData => $"{title}\n데이터 없음",
+            _ => $"{title}\n비어 있음"
+        };
+    }
+
+    public LobbyCultureTankPanelState GetPanelState()
+    {
+        AutoBind();
+
+        if (DataManager.Instance == null)
+            return LobbyCultureTankPanelState.MissingData;
+
+        LobbyRuntimeData lobby = DataManager.Instance.LobbyRuntimeStore?.GetOrCreate();
+        if (lobby == null)
+            return LobbyCultureTankPanelState.MissingData;
+
+        if (!CultureTankResearchService.TryGetTank(lobby, tankId, out CultureTankResearchRuntimeData tank))
+            return LobbyCultureTankPanelState.Empty;
+
+        if (tank.IsCompleted || CultureTankResearchService.GetRemainingSeconds(tank, DateTime.UtcNow.Ticks) <= 0)
+            return LobbyCultureTankPanelState.Completed;
+
+        return LobbyCultureTankPanelState.Running;
+    }
+
+    public void RefreshNow()
+    {
+        RefreshVisuals(true);
+    }
+
+    private int GetPanelRemainingSeconds()
+    {
+        LobbyRuntimeData lobby = DataManager.Instance != null
+            ? DataManager.Instance.LobbyRuntimeStore?.GetOrCreate()
+            : null;
+
+        if (!CultureTankResearchService.TryGetTank(lobby, tankId, out CultureTankResearchRuntimeData tank))
+            return 0;
+
+        return CultureTankResearchService.GetRemainingSeconds(tank, DateTime.UtcNow.Ticks);
+    }
+
+    private static string FormatPanelTankName(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return "배양조";
+
+        string trimmed = value.Trim();
+        const string prefix = "CultureTank";
+        if (trimmed.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+        {
+            string suffix = trimmed[prefix.Length..].Trim();
+            return string.IsNullOrWhiteSpace(suffix) ? "배양조" : $"배양조 {suffix}";
+        }
+
+        return trimmed;
+    }
+
     private void OnMouseUpAsButton()
+    {
+        if (!allowWorldInteraction)
+            return;
+
+        Interact();
+    }
+
+    private void HandleInteraction()
     {
         if (ShouldBlockClick())
             return;

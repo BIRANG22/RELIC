@@ -40,7 +40,6 @@ public sealed class LobbyBattleRuntimeTransferService
         battle.BagItemIds = new List<string>();
         battle.CultureTankBattleStartEffects =
             CultureTankResearchService.CopyPendingBattleStartEffects(lobby);
-        lobby.PendingCultureTankBattleStartEffects.Clear();
 
         if (characters != null && lobby.CharacterLoadouts != null)
         {
@@ -56,7 +55,26 @@ public sealed class LobbyBattleRuntimeTransferService
             }
         }
 
+        ClearTransferredLobbyState(lobby);
+
         return new LobbyBattleRuntimeTransferResult(true, string.Empty);
+    }
+
+    public static void ClearTransferredLobbyState(LobbyRuntimeData lobby)
+    {
+        if (lobby == null)
+            return;
+
+        CultureTankResearchService.Normalize(lobby);
+
+        lobby.OwnedRelicIds ??= new List<string>();
+        lobby.SkillInventoryIds ??= new List<string>();
+        lobby.PendingCultureTankBattleStartEffects ??= new List<CultureTankBattleStartEffectRuntimeData>();
+
+        lobby.OwnedRelicIds.Clear();
+        lobby.SkillInventoryIds.Clear();
+        lobby.PendingCultureTankBattleStartEffects.Clear();
+        ClearLobbyEquippedRelics(lobby.CharacterLoadouts);
     }
 
     private static List<string> CopyIds(IEnumerable<string> source)
@@ -82,5 +100,20 @@ public sealed class LobbyBattleRuntimeTransferService
         if (source != null)
             Array.Copy(source, copy, Math.Min(source.Length, length));
         return copy;
+    }
+
+    private static void ClearLobbyEquippedRelics(IReadOnlyList<LobbyCharacterLoadoutData> loadouts)
+    {
+        if (loadouts == null)
+            return;
+
+        for (int i = 0; i < loadouts.Count; i++)
+        {
+            LobbyCharacterLoadoutData loadout = loadouts[i];
+            if (loadout == null)
+                continue;
+
+            loadout.EquippedRelicIds = new string[RelicSlotCount];
+        }
     }
 }
