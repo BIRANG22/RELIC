@@ -32,8 +32,8 @@ public class SpriteHoverScale : MonoBehaviour
         AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
     [Header("호버 표시 오브젝트")]
-    [Tooltip("평소에는 꺼져 있다가 호버 중에만 켜질 오브젝트입니다.")]
-    [SerializeField] private GameObject hoverOnlyObject;
+    [Tooltip("평소에는 꺼져 있다가 호버 중에만 켜질 오브젝트들입니다. Size를 늘려 여러 개를 등록할 수 있습니다.")]
+    [SerializeField] private GameObject[] hoverOnlyObjects;
 
     [Header("복구 설정")]
     [Tooltip("이 컴포넌트가 비활성화될 때 원래 상태로 복구합니다.")]
@@ -51,8 +51,7 @@ public class SpriteHoverScale : MonoBehaviour
     {
         Initialize();
 
-        if (hoverOnlyObject != null)
-            hoverOnlyObject.SetActive(false);
+        SetHoverOnlyObjectsActive(false);
     }
 
     /// <summary>
@@ -93,8 +92,7 @@ public class SpriteHoverScale : MonoBehaviour
 
         StartTransition(hoverTargetPosition, hoverTargetScale);
 
-        if (hoverOnlyObject != null)
-            hoverOnlyObject.SetActive(true);
+        SetHoverOnlyObjectsActive(true);
     }
 
     private void Update()
@@ -113,8 +111,7 @@ public class SpriteHoverScale : MonoBehaviour
 
         StartTransition(originalLocalPosition, originalLocalScale);
 
-        if (hoverOnlyObject != null)
-            hoverOnlyObject.SetActive(false);
+        SetHoverOnlyObjectsActive(false);
     }
 
     private void StartTransition(
@@ -179,6 +176,24 @@ public class SpriteHoverScale : MonoBehaviour
     }
 
     /// <summary>
+    /// 등록된 모든 호버 표시 오브젝트의 활성 상태를 변경합니다.
+    /// 배열 안에 비어 있는 항목이 있어도 안전하게 무시합니다.
+    /// </summary>
+    private void SetHoverOnlyObjectsActive(bool active)
+    {
+        if (hoverOnlyObjects == null)
+            return;
+
+        for (int i = 0; i < hoverOnlyObjects.Length; i++)
+        {
+            GameObject hoverObject = hoverOnlyObjects[i];
+
+            if (hoverObject != null)
+                hoverObject.SetActive(active);
+        }
+    }
+
+    /// <summary>
     /// 진행 중인 호버 전환을 중지하고 저장된 기본 위치와 스케일로 즉시 복구합니다.
     /// </summary>
     private void ResetHoverImmediate()
@@ -195,8 +210,7 @@ public class SpriteHoverScale : MonoBehaviour
             targetImage.localScale = originalLocalScale;
         }
 
-        if (hoverOnlyObject != null)
-            hoverOnlyObject.SetActive(false);
+        SetHoverOnlyObjectsActive(false);
 
         isHovering = false;
     }
@@ -215,8 +229,7 @@ public class SpriteHoverScale : MonoBehaviour
             transitionCoroutine = null;
         }
 
-        if (hoverOnlyObject != null)
-            hoverOnlyObject.SetActive(false);
+        SetHoverOnlyObjectsActive(false);
 
         isHovering = false;
     }
