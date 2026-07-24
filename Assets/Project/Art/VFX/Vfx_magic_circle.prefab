@@ -4911,6 +4911,7 @@ GameObject:
   - component: {fileID: 2793449712208706624}
   - component: {fileID: 1023008379845916366}
   - component: {fileID: 1020942474148388796}
+  - component: {fileID: 5942553664509600101}
   m_Layer: 0
   m_Name: Vfx_magic_circle
   m_TagString: Untagged
@@ -5127,7 +5128,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 0.33490568, g: 0.4935276, b: 1, a: 0.41960785}
+      maxColor: {r: 0.003921569, g: 0.003921569, b: 0.003921569, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -6270,24 +6271,24 @@ ParticleSystem:
       maxColor: {r: 1, g: 1, b: 1, a: 1}
       maxGradient:
         serializedVersion: 2
-        key0: {r: 1, g: 1, b: 1, a: 0}
-        key1: {r: 1, g: 1, b: 1, a: 1}
-        key2: {r: 0, g: 0, b: 0, a: 0}
+        key0: {r: 0.3921569, g: 0.3921569, b: 0.3921569, a: 0.5882353}
+        key1: {r: 0.3921569, g: 0.3921569, b: 0.3921569, a: 0.5882353}
+        key2: {r: 0.3921569, g: 0.3921569, b: 0.3921569, a: 0.5882353}
         key3: {r: 0, g: 0, b: 0, a: 0}
         key4: {r: 0, g: 0, b: 0, a: 0}
         key5: {r: 0, g: 0, b: 0, a: 0}
         key6: {r: 0, g: 0, b: 0, a: 0}
         key7: {r: 0, g: 0, b: 0, a: 0}
         ctime0: 0
-        ctime1: 65535
-        ctime2: 0
+        ctime1: 26746
+        ctime2: 65535
         ctime3: 0
         ctime4: 0
         ctime5: 0
         ctime6: 0
         ctime7: 0
         atime0: 0
-        atime1: 26754
+        atime1: 26746
         atime2: 65535
         atime3: 0
         atime4: 0
@@ -6296,7 +6297,7 @@ ParticleSystem:
         atime7: 0
         m_Mode: 0
         m_ColorSpace: 0
-        m_NumColorKeys: 2
+        m_NumColorKeys: 3
         m_NumAlphaKeys: 3
       minGradient:
         serializedVersion: 2
@@ -9795,6 +9796,32 @@ ParticleSystemRenderer:
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
   m_MaskInteraction: 0
+--- !u!114 &5942553664509600101
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5997636969157186472}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5ec8c1e9ba04b6f80f677996e39d394, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetParticleSystem: {fileID: 1023008379845916366}
+  hoverSourceObject: {fileID: 9093727058551169370}
+  hoverSourceObjects: []
+  baseAlphaByte: 150
+  hoverAlphaByte: 250
+  baseRedByte: 100
+  baseGreenByte: 100
+  baseBlueByte: 100
+  hoverRedByte: 100
+  hoverGreenByte: 150
+  hoverBlueByte: 200
+  hoverAlphaChangeSpeed: 220
+  hoverColorChangeSpeed: 220
+  middleKeyTime: 0.40811878
 --- !u!1 &6961089786611318126
 GameObject:
   m_ObjectHideFlags: 0
