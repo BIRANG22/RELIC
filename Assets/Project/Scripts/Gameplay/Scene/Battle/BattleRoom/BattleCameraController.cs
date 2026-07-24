@@ -830,7 +830,7 @@ public class BattleCameraController : MonoBehaviour
 
         if (suppressDragUntilMouseReleased)
         {
-            if (!Input.GetMouseButton(2) && !Input.GetMouseButton(1))
+            if (!Input.GetMouseButton(0))
                 suppressDragUntilMouseReleased = false;
             else
                 return;
@@ -842,13 +842,13 @@ public class BattleCameraController : MonoBehaviour
             return;
         }
 
-        if (isDragging && !Input.GetMouseButton(2) && !Input.GetMouseButton(1))
+        if (isDragging && !Input.GetMouseButton(0))
         {
             EndDrag(true);
             return;
         }
 
-        if (Input.GetMouseButtonDown(2) || Input.GetMouseButtonDown(1))
+        if (Input.GetMouseButtonDown(0))
         {
             isDragging = true;
             hasDragTarget = true;
@@ -857,7 +857,7 @@ public class BattleCameraController : MonoBehaviour
             lastMouseWorldPosition = GetMouseWorldPosition();
         }
 
-        if (Input.GetMouseButtonUp(2) || Input.GetMouseButtonUp(1))
+        if (Input.GetMouseButtonUp(0))
         {
             EndDrag(true);
             return;
@@ -891,7 +891,7 @@ public class BattleCameraController : MonoBehaviour
     {
         if (!isDragging && !hasDragTarget)
         {
-            if (Input.GetMouseButton(2) || Input.GetMouseButton(1))
+            if (Input.GetMouseButton(0))
                 suppressDragUntilMouseReleased = true;
 
             return;
@@ -901,7 +901,7 @@ public class BattleCameraController : MonoBehaviour
         hasDragTarget = false;
         dragSmoothVelocity = Vector3.zero;
 
-        if (Input.GetMouseButton(2) || Input.GetMouseButton(1))
+        if (Input.GetMouseButton(0))
             suppressDragUntilMouseReleased = true;
     }
 
