@@ -1,4 +1,3 @@
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -6,6 +5,7 @@ using UnityEngine.UI;
 public sealed class LobbyErosionMirrorButton : MonoBehaviour
 {
     private const string DefaultPanelObjectName = "ErosionSelectPanel";
+    private const string DefaultCloseButtonObjectName = "CloseButton";
 
     [Header("Panel")]
     [SerializeField] private GameObject erosionSelectPanel;
@@ -13,9 +13,9 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
     [SerializeField] private bool autoFindPanel = true;
 
     [Header("Close Button")]
-    [SerializeField] private string closeButtonText = "X";
-    [SerializeField] private Vector2 closeButtonSize = new(60f, 60f);
-    [SerializeField] private Vector2 closeButtonOffset = new(-20f, -20f);
+    [SerializeField] private Button closeButton;
+    [SerializeField] private string closeButtonObjectName = DefaultCloseButtonObjectName;
+    [SerializeField] private bool autoFindCloseButton = true;
 
     [Header("Opened Panel Sorting")]
     [SerializeField] private bool bringPanelToFront = true;
@@ -34,7 +34,24 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
 
     private void Awake()
     {
-        EnsureWorldSpriteCollider();
+        BindCloseButton();
+    }
+
+    private void OnEnable()
+    {
+        BindCloseButton();
+    }
+
+    private void LateUpdate()
+    {
+        // ESC 등 다른 스크립트가 패널만 비활성화했을 때도
+        // 월드 오브젝트 입력 차단이 남지 않도록 자동으로 해제합니다.
+        if (!LobbyPositionModalInputBlocker.IsBlockedBy(this))
+            return;
+
+        GameObject panel = ResolvePanel();
+        if (panel == null || !panel.activeInHierarchy)
+            LobbyPositionModalInputBlocker.Unblock(this);
     }
 
     private void OnDisable()
@@ -43,7 +60,13 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
             CloseErosionSelectPanel();
     }
 
-    private void OnMouseUpAsButton()
+    private void OnDestroy()
+    {
+        UnbindCloseButton();
+        LobbyPositionModalInputBlocker.Unblock(this);
+    }
+
+    private void OnMouseUp()
     {
         OpenErosionSelectPanel();
     }
@@ -53,18 +76,13 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
         if (ShouldBlockClick())
             return;
 
-        EnsureWorldSpriteCollider();
-
         if (!ResolveReferences())
-        {
             return;
-        }
 
+        BindCloseButton();
         PlayClickSfx();
         TitleManager.CloseTitleModePanelsExceptInScene(erosionSelectPanel);
 
-        RectTransform panelRect = erosionSelectPanel.transform as RectTransform;
-        CreateCloseButton(panelRect);
         erosionSelectPanel.SetActive(true);
 
         if (bringPanelToFront)
@@ -76,8 +94,9 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
 
     public void CloseErosionSelectPanel()
     {
-        if (erosionSelectPanel != null)
-            erosionSelectPanel.SetActive(false);
+        GameObject panel = ResolvePanel();
+        if (panel != null)
+            panel.SetActive(false);
 
         LobbyPositionModalInputBlocker.Unblock(this);
     }
@@ -128,61 +147,40 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
         return erosionSelectPanel;
     }
 
-    private void CreateCloseButton(RectTransform panelRect)
+    private void BindCloseButton()
     {
-        if (panelRect == null)
+        Button resolvedButton = ResolveCloseButton();
+        if (resolvedButton == null)
             return;
 
-        Transform existing = panelRect.Find("CloseButton");
-        if (existing != null)
-        {
-            Button existingButton = existing.GetComponent<Button>();
-            if (existingButton != null)
-            {
-                existingButton.onClick.RemoveListener(CloseErosionSelectPanel);
-                existingButton.onClick.AddListener(CloseErosionSelectPanel);
-            }
+        resolvedButton.onClick.RemoveListener(CloseErosionSelectPanel);
+        resolvedButton.onClick.AddListener(CloseErosionSelectPanel);
+    }
 
-            return;
-        }
+    private void UnbindCloseButton()
+    {
+        if (closeButton != null)
+            closeButton.onClick.RemoveListener(CloseErosionSelectPanel);
+    }
 
-        GameObject buttonObject = new(
-            "CloseButton",
-            typeof(RectTransform),
-            typeof(CanvasRenderer),
-            typeof(Image),
-            typeof(Button));
-        RectTransform buttonRect = buttonObject.GetComponent<RectTransform>();
-        buttonRect.SetParent(panelRect, false);
-        buttonRect.anchorMin = Vector2.one;
-        buttonRect.anchorMax = Vector2.one;
-        buttonRect.pivot = Vector2.one;
-        buttonRect.anchoredPosition = closeButtonOffset;
-        buttonRect.sizeDelta = closeButtonSize;
+    private Button ResolveCloseButton()
+    {
+        if (closeButton != null)
+            return closeButton;
 
-        Image buttonImage = buttonObject.GetComponent<Image>();
-        buttonImage.color = new Color(0.12f, 0.12f, 0.12f, 0.9f);
+        if (!autoFindCloseButton)
+            return null;
 
-        Button button = buttonObject.GetComponent<Button>();
-        button.onClick.AddListener(CloseErosionSelectPanel);
+        GameObject panel = ResolvePanel();
+        if (panel == null)
+            return null;
 
-        GameObject labelObject = new(
-            "Label",
-            typeof(RectTransform),
-            typeof(CanvasRenderer),
-            typeof(TextMeshProUGUI));
-        RectTransform labelRect = labelObject.GetComponent<RectTransform>();
-        labelRect.SetParent(buttonRect, false);
-        labelRect.anchorMin = Vector2.zero;
-        labelRect.anchorMax = Vector2.one;
-        labelRect.offsetMin = Vector2.zero;
-        labelRect.offsetMax = Vector2.zero;
+        Transform buttonTransform = FindChildRecursive(panel.transform, closeButtonObjectName);
+        if (buttonTransform == null)
+            return null;
 
-        TextMeshProUGUI label = labelObject.GetComponent<TextMeshProUGUI>();
-        label.text = closeButtonText;
-        label.fontSize = 34f;
-        label.alignment = TextAlignmentOptions.Center;
-        label.raycastTarget = false;
+        closeButton = buttonTransform.GetComponent<Button>();
+        return closeButton;
     }
 
     private void ApplyOpenedPanelSorting(GameObject panel)
@@ -205,23 +203,30 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
             panel.AddComponent<GraphicRaycaster>();
     }
 
-    private void EnsureWorldSpriteCollider()
-    {
-        if (GetComponent<Collider2D>() != null)
-            return;
-
-        if (GetComponent<SpriteRenderer>() == null)
-            return;
-
-        gameObject.AddComponent<PolygonCollider2D>();
-    }
-
     private void PlayClickSfx()
     {
         if (!playClickSound || AudioManager.Instance == null)
             return;
 
         AudioManager.Instance.PlaySfx(clickSfx, clickSfxVolume);
+    }
+
+    private static Transform FindChildRecursive(Transform root, string targetName)
+    {
+        if (root == null || string.IsNullOrWhiteSpace(targetName))
+            return null;
+
+        if (root.name == targetName)
+            return root;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform found = FindChildRecursive(root.GetChild(i), targetName);
+            if (found != null)
+                return found;
+        }
+
+        return null;
     }
 
     private static GameObject FindSceneObject(string objectName)
