@@ -1,7 +1,6 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -27,7 +26,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
     public void Open()
     {
-        // ´Ù¸¥ À§Ä¡ ¸ğ´ŞÀÌ ¿­·Á ÀÖÀ¸¸é À¯¹° »óÁ¡À» Áßº¹À¸·Î ¿­Áö ¾Ê´Â´Ù.
+        // ë‹¤ë¥¸ ìœ„ì¹˜ ëª¨ë‹¬ì´ ì—´ë ¤ ìˆìœ¼ë©´ ìœ ë¬¼ ìƒì ì„ ì¤‘ë³µìœ¼ë¡œ ì—´ì§€ ì•ŠëŠ”ë‹¤.
         if (LobbyPositionModalInputBlocker.IsBlockedByAnother(this))
             return;
 
@@ -46,15 +45,15 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         if (panelRoot != null)
             panelRoot.SetActive(false);
 
-        // ESC¿Í ´İ±â ¹öÆ° ¸ğµÎ °°Àº Close()¸¦ »ç¿ëÇÏ¹Ç·Î
-        // »óÁ¡ÀÌ ´İÈú ¶§ ¿ùµå ¿ÀºêÁ§Æ® ÀÔ·Â Â÷´Üµµ ¹İµå½Ã ÇØÁ¦ÇÑ´Ù.
+        // ESCì™€ ë‹«ê¸° ë²„íŠ¼ ëª¨ë‘ ê°™ì€ Close()ë¥¼ ì‚¬ìš©í•˜ë¯€ë¡œ
+        // ìƒì ì´ ë‹«í ë•Œ ì›”ë“œ ì˜¤ë¸Œì íŠ¸ ì…ë ¥ ì°¨ë‹¨ë„ ë°˜ë“œì‹œ í•´ì œí•œë‹¤.
         LobbyPositionModalInputBlocker.Unblock(this);
     }
 
     private void OnDisable()
     {
-        // ¾À ÀüÈ¯ÀÌ³ª ¿ÀºêÁ§Æ® ºñÈ°¼ºÈ­·Î ´İÈ÷´Â °æ¿ì¿¡µµ
-        // Á¤Àû ÀÔ·Â Â÷´Ü »óÅÂ°¡ ³²Áö ¾Ê°Ô Á¤¸®ÇÑ´Ù.
+        // ì”¬ ì „í™˜ì´ë‚˜ ì˜¤ë¸Œì íŠ¸ ë¹„í™œì„±í™”ë¡œ ë‹«íˆëŠ” ê²½ìš°ì—ë„
+        // ì •ì  ì…ë ¥ ì°¨ë‹¨ ìƒíƒœê°€ ë‚¨ì§€ ì•Šê²Œ ì •ë¦¬í•œë‹¤.
         LobbyPositionModalInputBlocker.Unblock(this);
     }
 
@@ -241,7 +240,6 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         refreshRect.sizeDelta = new Vector2(130f, 110f);
         refreshRect.anchoredPosition = new Vector2(0f, -125f);
 
-        CreateCloseButton(panelRect);
         panelRoot.SetActive(false);
     }
 
@@ -250,48 +248,14 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         if (panelRoot == null)
             return;
 
+        // íŒ¨ë„ ì•ˆì— ì§ì ‘ ë§Œë“  CloseButtonë§Œ ì°¾ì•„ ë‹«ê¸° ê¸°ëŠ¥ì„ ì—°ê²°í•œë‹¤.
+        // ë²„íŠ¼ì´ë‚˜ í…ìŠ¤íŠ¸ë¥¼ ëŸ°íƒ€ì„ì— ìë™ ìƒì„±í•˜ì§€ ì•ŠëŠ”ë‹¤.
         Button closeButton = panelRoot.transform.Find("CloseButton")?.GetComponent<Button>();
-        if (closeButton == null && panelRoot.transform is RectTransform panelRect)
-            closeButton = CreateCloseButton(panelRect);
-
         if (closeButton == null)
             return;
 
-        if (closeButton.transform.Find("Label") == null && closeButton.transform is RectTransform closeRect)
-            CreateCloseButtonLabel(closeRect);
-
         closeButton.onClick.RemoveListener(Close);
         closeButton.onClick.AddListener(Close);
-    }
-
-    private Button CreateCloseButton(RectTransform panelRect)
-    {
-        var closeObject = new GameObject("CloseButton", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
-        RectTransform closeRect = (RectTransform)closeObject.transform;
-        closeRect.SetParent(panelRect, false);
-        closeRect.anchorMin = closeRect.anchorMax = closeRect.pivot = Vector2.one;
-        closeRect.anchoredPosition = new Vector2(-14f, -14f);
-        closeRect.sizeDelta = new Vector2(46f, 46f);
-        closeObject.GetComponent<Image>().color = Color.white;
-
-        CreateCloseButtonLabel(closeRect);
-        return closeObject.GetComponent<Button>();
-    }
-
-    private static void CreateCloseButtonLabel(RectTransform closeRect)
-    {
-        var labelObject = new GameObject("Label", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
-        RectTransform labelRect = (RectTransform)labelObject.transform;
-        labelRect.SetParent(closeRect, false);
-        labelRect.anchorMin = Vector2.zero;
-        labelRect.anchorMax = Vector2.one;
-        labelRect.offsetMin = labelRect.offsetMax = Vector2.zero;
-        TMP_Text label = labelObject.GetComponent<TMP_Text>();
-        label.text = "X";
-        label.color = Color.black;
-        label.fontSize = 27f;
-        label.alignment = TextAlignmentOptions.Center;
-        label.raycastTarget = false;
     }
 
     private void RefreshRelicOffers()

@@ -2,7 +2,13 @@ using UnityEngine;
 
 public sealed class LobbyRelicShopNpcInteraction : MonoBehaviour
 {
+    [Header("Presenter")]
     [SerializeField] private LobbyRelicShopPresenter presenter;
+
+    [Header("Sound")]
+    [SerializeField] private bool playClickSound = true;
+    [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
+    [SerializeField, Range(0f, 1f)] private float clickSfxVolume = 1f;
 
     private void OnMouseDown()
     {
@@ -18,6 +24,18 @@ public sealed class LobbyRelicShopNpcInteraction : MonoBehaviour
             return;
         }
 
-        presenter?.Open();
+        if (presenter == null)
+            return;
+
+        PlayClickSfx();
+        presenter.Open();
     }
+    private void PlayClickSfx()
+    {
+        if (!playClickSound || AudioManager.Instance == null)
+            return;
+
+        AudioManager.Instance.PlaySfx(clickSfx, clickSfxVolume);
+    }
+
 }

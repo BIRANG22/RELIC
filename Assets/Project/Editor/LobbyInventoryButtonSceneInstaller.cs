@@ -14,8 +14,8 @@ public static class LobbyInventoryButtonSceneInstaller
 {
     private const string LobbyScenePath = "Assets/Project/Scenes/YDM/Lobby.unity";
     private const string InventoryPanelName = "InventoryPanel";
-    private const string InventoryButtonName = "InventoryButton";
-    private const float ClosedPanelY = 1080f;
+    private const string InventoryButtonName = "Inventory";
+    private const string PositionButtonName = "TestPosition";
 
     static LobbyInventoryButtonSceneInstaller()
     {
@@ -41,43 +41,63 @@ public static class LobbyInventoryButtonSceneInstaller
                 .Select(item => item.gameObject)
                 .ToArray();
 
+            if (objects.Any(item =>
+                    item.name == InventoryButtonName &&
+                    item.GetComponentInChildren<Button>(true) != null))
+            {
+                return;
+            }
+
             GameObject panel = objects.FirstOrDefault(item => item.name == InventoryPanelName);
-            GameObject inventoryButtonObject = objects.FirstOrDefault(item =>
-                item.name == InventoryButtonName &&
+            GameObject positionButton = objects.FirstOrDefault(item =>
+                item.name == PositionButtonName &&
                 item.GetComponentInChildren<Button>(true) != null);
 
-            if (panel == null)
-                throw new InvalidOperationException("InventoryPanel을 찾지 못했습니다.");
+            // 해당 씬 구성이 아직 준비되지 않았거나 이름이 변경된 경우에는
+            // 자동 설치를 시도하지 않고 조용히 종료합니다.
+            if (panel == null || positionButton == null)
+                return;
 
-            if (inventoryButtonObject == null)
-                throw new InvalidOperationException("InventoryButton을 찾지 못했습니다.");
+            GameObject inventoryButton = UnityEngine.Object.Instantiate(
+                positionButton,
+                positionButton.transform.parent);
+            inventoryButton.name = InventoryButtonName;
 
-            Button button = inventoryButtonObject.GetComponentInChildren<Button>(true);
+            RectTransform buttonRect = inventoryButton.GetComponent<RectTransform>();
+            if (buttonRect != null)
+                buttonRect.anchoredPosition += Vector2.right * (Mathf.Max(80f, buttonRect.rect.width) + 20f);
+
+            MonoBehaviour[] behaviours = inventoryButton.GetComponentsInChildren<MonoBehaviour>(true);
+            for (int i = 0; i < behaviours.Length; i++)
+            {
+                MonoBehaviour behaviour = behaviours[i];
+                if (behaviour == null || behaviour is UIBehaviour || behaviour is UIPanelButton)
+                    continue;
+
+                UnityEngine.Object.DestroyImmediate(behaviour);
+            }
+
+            Button button = inventoryButton.GetComponentInChildren<Button>(true);
             UIPanelButton panelButton = button.GetComponent<UIPanelButton>();
             if (panelButton == null)
                 panelButton = button.gameObject.AddComponent<UIPanelButton>();
 
             RectTransform panelRect = panel.GetComponent<RectTransform>();
-            if (panelRect == null)
-                throw new InvalidOperationException("InventoryPanel에 RectTransform이 없습니다.");
-
-            // 자동 설치가 여러 번 실행돼도 위치가 누적되지 않도록 절대값으로 지정합니다.
-            Vector2 closedPosition = panelRect.anchoredPosition;
-            closedPosition.y = ClosedPanelY;
-            panelRect.anchoredPosition = closedPosition;
-
             panel.SetActive(true);
-            panelButton.ConfigurePanelMove(panelRect, new Vector2(0f, -ClosedPanelY));
+            panelRect.anchoredPosition += new Vector2(0f, 1080f);
+            panelButton.ConfigurePanelMove(panelRect, new Vector2(0f, -1080f));
 
             button.onClick = new Button.ButtonClickedEvent();
             UnityEventTools.AddPersistentListener(button.onClick, panelButton.MovePanel);
 
-            EditorUtility.SetDirty(inventoryButtonObject);
+            TMPro.TMP_Text[] labels = inventoryButton.GetComponentsInChildren<TMPro.TMP_Text>(true);
+            for (int i = 0; i < labels.Length; i++)
+                labels[i].text = "Inventory";
+
+            EditorUtility.SetDirty(inventoryButton);
             EditorUtility.SetDirty(panel);
             EditorSceneManager.MarkSceneDirty(lobby);
             EditorSceneManager.SaveScene(lobby);
-
-            Debug.Log("[LobbyInventoryButtonSceneInstaller] InventoryButton과 InventoryPanel 연결을 갱신했습니다.");
         }
         catch (Exception exception)
         {
