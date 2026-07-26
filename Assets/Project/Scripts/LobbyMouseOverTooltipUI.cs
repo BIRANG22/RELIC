@@ -7,6 +7,14 @@ using UnityEngine;
 /// </summary>
 public sealed class LobbyMouseOverTooltipUI : MonoBehaviour
 {
+    private static readonly string[] DefaultBlockingPanelNames =
+    {
+        "CharacterSettingPanel",
+        "RelicShopPanel",
+        "CultureTankPanel",
+        "ErosionSelectPanel"
+    };
+
     private static LobbyMouseOverTooltipUI instance;
 
     [Header("UI 연결")]
@@ -18,6 +26,10 @@ public sealed class LobbyMouseOverTooltipUI : MonoBehaviour
 
     [Tooltip("툴팁이 배치된 Canvas입니다. 비워두면 부모에서 자동으로 찾습니다.")]
     [SerializeField] private Canvas targetCanvas;
+
+    [Header("패널 표시 중 차단")]
+    [Tooltip("이 패널 중 하나라도 활성화되어 있으면 월드 오브젝트 툴팁을 표시하지 않습니다. 비워두면 이름으로 자동 탐색합니다.")]
+    [SerializeField] private GameObject[] blockingPanels;
 
     [Header("마우스 위치")]
     [Tooltip("마우스 커서의 우측 아래에서 떨어질 거리입니다.")]
@@ -53,12 +65,14 @@ public sealed class LobbyMouseOverTooltipUI : MonoBehaviour
 
         instance = this;
         ResolveReferences();
+        ResolveBlockingPanels();
         SetVisible(false);
     }
 
     private void OnEnable()
     {
         ResolveReferences();
+        ResolveBlockingPanels();
         SetVisible(false);
     }
 
@@ -78,6 +92,16 @@ public sealed class LobbyMouseOverTooltipUI : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (IsBlockedByOpenPanel())
+        {
+            if (isVisible || currentOwner != null)
+            {
+                HideImmediately();
+            }
+
+            return;
+        }
+
         if (!isVisible)
         {
             return;
@@ -88,6 +112,12 @@ public sealed class LobbyMouseOverTooltipUI : MonoBehaviour
 
     public void Show(Object owner, string message)
     {
+        if (IsBlockedByOpenPanel())
+        {
+            HideImmediately();
+            return;
+        }
+
         if (owner == null || string.IsNullOrWhiteSpace(message))
         {
             Hide(owner);
@@ -125,6 +155,57 @@ public sealed class LobbyMouseOverTooltipUI : MonoBehaviour
     {
         currentOwner = null;
         SetVisible(false);
+    }
+
+    private bool IsBlockedByOpenPanel()
+    {
+        ResolveBlockingPanels();
+
+        if (blockingPanels == null)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < blockingPanels.Length; i++)
+        {
+            GameObject panel = blockingPanels[i];
+            if (panel != null && panel.activeInHierarchy)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void ResolveBlockingPanels()
+    {
+        if (blockingPanels != null && blockingPanels.Length > 0)
+        {
+            return;
+        }
+
+        GameObject[] sceneObjects = FindObjectsByType<GameObject>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None
+        );
+
+        blockingPanels = new GameObject[DefaultBlockingPanelNames.Length];
+
+        for (int nameIndex = 0; nameIndex < DefaultBlockingPanelNames.Length; nameIndex++)
+        {
+            string targetName = DefaultBlockingPanelNames[nameIndex];
+
+            for (int objectIndex = 0; objectIndex < sceneObjects.Length; objectIndex++)
+            {
+                GameObject candidate = sceneObjects[objectIndex];
+                if (candidate != null && candidate.name == targetName)
+                {
+                    blockingPanels[nameIndex] = candidate;
+                    break;
+                }
+            }
+        }
     }
 
     private void ResolveReferences()
