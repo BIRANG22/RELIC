@@ -24,7 +24,14 @@ public sealed class LobbyResearcherCultureTankInteraction : MonoBehaviour
     public void OpenPanel()
     {
         AutoBind();
-        presenter?.Open();
+
+        if (presenter == null)
+        {
+            Debug.LogWarning("[LobbyResearcherCultureTankInteraction] PositionPanel 안의 CultureTankPanel Presenter를 찾지 못했습니다.");
+            return;
+        }
+
+        presenter.Open();
     }
 
     private bool ShouldBlockClick()
@@ -47,11 +54,16 @@ public sealed class LobbyResearcherCultureTankInteraction : MonoBehaviour
 
     private void AutoBind()
     {
-        if (presenter == null)
-            presenter = GetComponent<LobbyCultureTankPanelPresenter>();
+        if (presenter != null)
+            return;
 
-        if (presenter == null)
-            presenter = gameObject.AddComponent<LobbyCultureTankPanelPresenter>();
+        LobbyCultureTankPanelPresenter[] presenters =
+            FindObjectsByType<LobbyCultureTankPanelPresenter>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None);
+
+        if (presenters.Length > 0)
+            presenter = presenters[0];
     }
 
     private void EnsureWorldCollider()
