@@ -9,25 +9,43 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
 {
     private const float RefreshIntervalSeconds = 0.25f;
 
-    [SerializeField] private Canvas ownerCanvas;
-    [SerializeField] private string tankNamePrefix = "CultureTank";
-    [SerializeField] private Vector2 panelSize = new(560f, 420f);
-    [SerializeField] private int panelSortingOrder = 1100;
+    [Header("Panel")]
+    [Tooltip("PositionPanel 안에 미리 배치한 CultureTankPanel입니다. 비어 있으면 이 컴포넌트가 붙은 오브젝트를 사용합니다.")]
+    [SerializeField] private GameObject panelRoot;
 
-    private readonly List<TankRow> rows = new();
-    private GameObject panelRoot;
-    private RectTransform contentRoot;
-    private TMP_Text emptyText;
+    [Tooltip("CultureTankPanel의 BackButton입니다.")]
+    [SerializeField] private Button backButton;
+
+    [Tooltip("배양조 행들이 들어 있는 Content입니다.")]
+    [SerializeField] private RectTransform contentRoot;
+
+    [Tooltip("배양조가 없을 때 표시할 텍스트입니다. 사용하지 않으면 비워도 됩니다.")]
+    [SerializeField] private TMP_Text emptyText;
+
+    [Header("Rows")]
+    [Tooltip("Content 아래에 미리 만들어 둔 CultureTankRow_1~3을 순서대로 연결합니다.")]
+    [SerializeField] private TankRow[] rows = new TankRow[3];
+
+    [Header("Search")]
+    [SerializeField] private string tankNamePrefix = "CultureTank";
+
     private float nextRefreshAt;
-    private bool missingCanvasWarned;
+    private bool backButtonBound;
 
     public bool IsOpen => panelRoot != null && panelRoot.activeSelf;
 
     private void Awake()
     {
-        AutoBind();
-        CreatePanelIfNeeded();
-        Close();
+        BindSceneObjects();
+        BindBackButton();
+    }
+
+    private void OnEnable()
+    {
+        BindSceneObjects();
+        BindBackButton();
+        RefreshRows();
+        nextRefreshAt = Time.unscaledTime + RefreshIntervalSeconds;
     }
 
     private void Update()
@@ -41,11 +59,14 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
 
     public void Open()
     {
-        AutoBind();
-        CreatePanelIfNeeded();
+        BindSceneObjects();
+        BindBackButton();
 
         if (panelRoot == null)
+        {
+            Debug.LogWarning("[LobbyCultureTankPanelPresenter] CultureTankPanel이 연결되지 않았습니다.");
             return;
+        }
 
         panelRoot.SetActive(true);
         panelRoot.transform.SetAsLastSibling();
@@ -61,26 +82,49 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
 
     private void RefreshRows()
     {
-        List<LobbyCultureTankController> tanks = FindCultureTanks();
-        EnsureRowCount(tanks.Count);
+        BindSceneObjects();
 
+        List<LobbyCultureTankController> tanks = FindCultureTanks();
         bool hasTanks = tanks.Count > 0;
+
         if (emptyText != null)
             emptyText.gameObject.SetActive(!hasTanks);
 
-        for (int i = 0; i < rows.Count; i++)
+        if (rows == null)
+            return;
+
+        for (int i = 0; i < rows.Length; i++)
         {
             TankRow row = rows[i];
+            if (row == null || row.Root == null)
+                continue;
+
+            bool hasTank = i < tanks.Count;
+            row.Root.SetActive(hasTank);
+
+            if (!hasTank)
+            {
+                row.Controller = null;
+                if (row.Button != null)
+                    row.Button.onClick.RemoveAllListeners();
+                continue;
+            }
+
             LobbyCultureTankController tank = tanks[i];
-
             row.Controller = tank;
-            row.Root.SetActive(true);
-            row.Label.text = tank.GetPanelLabel();
-            row.Background.color = GetRowColor(tank.GetPanelState());
-            row.Button.onClick.RemoveAllListeners();
 
-            LobbyCultureTankController clickedTank = tank;
-            row.Button.onClick.AddListener(() => InteractWithTank(clickedTank));
+            if (row.Label != null)
+                row.Label.text = tank.GetPanelLabel();
+
+            if (row.Background != null)
+                row.Background.color = GetRowColor(tank.GetPanelState());
+
+            if (row.Button != null)
+            {
+                row.Button.onClick.RemoveAllListeners();
+                LobbyCultureTankController clickedTank = tank;
+                row.Button.onClick.AddListener(() => InteractWithTank(clickedTank));
+            }
         }
     }
 
@@ -131,203 +175,75 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         return value.Trim().StartsWith(prefix, StringComparison.OrdinalIgnoreCase);
     }
 
-    private void EnsureRowCount(int count)
+    private void BindSceneObjects()
     {
-        while (rows.Count < count)
-            rows.Add(CreateRow(rows.Count));
+        if (panelRoot == null)
+            panelRoot = gameObject;
 
-        while (rows.Count > count)
+        Transform panelTransform = panelRoot.transform;
+
+        if (backButton == null)
         {
-            int lastIndex = rows.Count - 1;
-            TankRow row = rows[lastIndex];
-            rows.RemoveAt(lastIndex);
-
-            if (row.Root != null)
-                Destroy(row.Root);
+            Transform target = FindDirectOrNestedChild(panelTransform, "BackButton");
+            if (target != null)
+                backButton = target.GetComponent<Button>();
         }
-    }
 
-    private TankRow CreateRow(int index)
-    {
-        const float rowHeight = 78f;
-        const float rowSpacing = 12f;
-
-        GameObject rowObject = new(
-            $"CultureTankRow_{index + 1}",
-            typeof(RectTransform),
-            typeof(CanvasRenderer),
-            typeof(Image),
-            typeof(Button));
-        RectTransform rowRect = (RectTransform)rowObject.transform;
-        rowRect.SetParent(contentRoot, false);
-        rowRect.anchorMin = new Vector2(0.5f, 1f);
-        rowRect.anchorMax = new Vector2(0.5f, 1f);
-        rowRect.pivot = new Vector2(0.5f, 1f);
-        rowRect.sizeDelta = new Vector2(460f, rowHeight);
-        rowRect.anchoredPosition = new Vector2(0f, -index * (rowHeight + rowSpacing));
-
-        Image background = rowObject.GetComponent<Image>();
-        background.color = new Color(0.16f, 0.18f, 0.22f, 0.96f);
-
-        Button button = rowObject.GetComponent<Button>();
-        button.targetGraphic = background;
-
-        TMP_Text label = CreateText(rowRect, "Label", 24f, TextAlignmentOptions.Center);
-        label.rectTransform.anchorMin = Vector2.zero;
-        label.rectTransform.anchorMax = Vector2.one;
-        label.rectTransform.offsetMin = new Vector2(16f, 6f);
-        label.rectTransform.offsetMax = new Vector2(-16f, -6f);
-
-        return new TankRow
+        if (contentRoot == null)
         {
-            Root = rowObject,
-            Background = background,
-            Button = button,
-            Label = label
-        };
-    }
+            Transform target = FindDirectOrNestedChild(panelTransform, "Content");
+            if (target != null)
+                contentRoot = target as RectTransform;
+        }
 
-    private void CreatePanelIfNeeded()
-    {
-        if (panelRoot != null)
+        if (rows == null || rows.Length != 3)
+            rows = new TankRow[3];
+
+        if (contentRoot == null)
             return;
 
-        if (ownerCanvas == null)
+        for (int i = 0; i < rows.Length; i++)
         {
-            if (!missingCanvasWarned)
+            rows[i] ??= new TankRow();
+            if (rows[i].Root != null)
             {
-                Debug.LogWarning("[LobbyCultureTankPanelPresenter] Canvas not found.");
-                missingCanvasWarned = true;
+                rows[i].BindMissingComponents();
+                continue;
             }
 
-            return;
+            Transform rowTransform = FindDirectOrNestedChild(contentRoot, $"CultureTankRow_{i + 1}");
+            if (rowTransform == null)
+                continue;
+
+            rows[i].Root = rowTransform.gameObject;
+            rows[i].BindMissingComponents();
         }
-
-        if (ownerCanvas.GetComponent<GraphicRaycaster>() == null)
-            ownerCanvas.gameObject.AddComponent<GraphicRaycaster>();
-
-        panelRoot = new GameObject(
-            "CultureTankPanel",
-            typeof(RectTransform),
-            typeof(Canvas),
-            typeof(GraphicRaycaster),
-            typeof(CanvasRenderer),
-            typeof(Image));
-        RectTransform panelRect = (RectTransform)panelRoot.transform;
-        panelRect.SetParent(ownerCanvas.transform, false);
-        panelRect.anchorMin = panelRect.anchorMax = panelRect.pivot = new Vector2(0.5f, 0.5f);
-        panelRect.sizeDelta = panelSize;
-
-        Canvas panelCanvas = panelRoot.GetComponent<Canvas>();
-        panelCanvas.overrideSorting = true;
-        panelCanvas.sortingOrder = panelSortingOrder;
-
-        Image panelImage = panelRoot.GetComponent<Image>();
-        panelImage.color = new Color(0.035f, 0.045f, 0.06f, 0.95f);
-
-        TMP_Text title = CreateText(panelRect, "Title", 32f, TextAlignmentOptions.Center);
-        title.text = "배양 연구";
-        title.rectTransform.anchorMin = title.rectTransform.anchorMax = new Vector2(0.5f, 1f);
-        title.rectTransform.pivot = new Vector2(0.5f, 1f);
-        title.rectTransform.anchoredPosition = new Vector2(0f, -26f);
-        title.rectTransform.sizeDelta = new Vector2(360f, 54f);
-
-        CreateCloseButton(panelRect);
-        CreateContentRoot(panelRect);
-
-        emptyText = CreateText(panelRect, "EmptyText", 24f, TextAlignmentOptions.Center);
-        emptyText.text = "배양조를 찾을 수 없습니다.";
-        emptyText.rectTransform.anchorMin = emptyText.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
-        emptyText.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-        emptyText.rectTransform.anchoredPosition = new Vector2(0f, -10f);
-        emptyText.rectTransform.sizeDelta = new Vector2(440f, 80f);
     }
 
-    private void CreateCloseButton(RectTransform panelRect)
+    private void BindBackButton()
     {
-        GameObject closeObject = new(
-            "CloseButton",
-            typeof(RectTransform),
-            typeof(CanvasRenderer),
-            typeof(Image),
-            typeof(Button));
-        RectTransform closeRect = (RectTransform)closeObject.transform;
-        closeRect.SetParent(panelRect, false);
-        closeRect.anchorMin = closeRect.anchorMax = closeRect.pivot = Vector2.one;
-        closeRect.anchoredPosition = new Vector2(-18f, -18f);
-        closeRect.sizeDelta = new Vector2(48f, 48f);
-
-        Image closeImage = closeObject.GetComponent<Image>();
-        closeImage.color = Color.white;
-
-        Button closeButton = closeObject.GetComponent<Button>();
-        closeButton.onClick.AddListener(Close);
-
-        TMP_Text label = CreateText(closeRect, "Label", 28f, TextAlignmentOptions.Center);
-        label.text = "X";
-        label.color = Color.black;
-        label.raycastTarget = false;
-        label.rectTransform.anchorMin = Vector2.zero;
-        label.rectTransform.anchorMax = Vector2.one;
-        label.rectTransform.offsetMin = Vector2.zero;
-        label.rectTransform.offsetMax = Vector2.zero;
-    }
-
-    private void CreateContentRoot(RectTransform panelRect)
-    {
-        GameObject contentObject = new("Content", typeof(RectTransform));
-        contentRoot = (RectTransform)contentObject.transform;
-        contentRoot.SetParent(panelRect, false);
-        contentRoot.anchorMin = contentRoot.anchorMax = new Vector2(0.5f, 1f);
-        contentRoot.pivot = new Vector2(0.5f, 1f);
-        contentRoot.anchoredPosition = new Vector2(0f, -108f);
-        contentRoot.sizeDelta = new Vector2(480f, 280f);
-    }
-
-    private TMP_Text CreateText(
-        RectTransform parent,
-        string objectName,
-        float fontSize,
-        TextAlignmentOptions alignment)
-    {
-        GameObject textObject = new(objectName, typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
-        RectTransform textRect = (RectTransform)textObject.transform;
-        textRect.SetParent(parent, false);
-
-        TMP_Text text = textObject.GetComponent<TMP_Text>();
-        text.fontSize = fontSize;
-        text.alignment = alignment;
-        text.color = Color.white;
-        text.textWrappingMode = TextWrappingModes.NoWrap;
-        text.raycastTarget = false;
-        return text;
-    }
-
-    private void AutoBind()
-    {
-        if (ownerCanvas != null)
+        if (backButton == null || backButtonBound)
             return;
 
-        ownerCanvas = GetComponentInParent<Canvas>();
-        if (ownerCanvas != null)
-            return;
+        backButton.onClick.RemoveListener(Close);
+        backButton.onClick.AddListener(Close);
+        backButtonBound = true;
+    }
 
-        Canvas[] canvases = FindObjectsByType<Canvas>(
-            FindObjectsInactive.Include,
-            FindObjectsSortMode.None);
+    private static Transform FindDirectOrNestedChild(Transform root, string objectName)
+    {
+        if (root == null || string.IsNullOrWhiteSpace(objectName))
+            return null;
 
-        for (int i = 0; i < canvases.Length; i++)
+        Transform[] children = root.GetComponentsInChildren<Transform>(true);
+        for (int i = 0; i < children.Length; i++)
         {
-            Canvas canvas = canvases[i];
-            if (canvas != null && canvas.isRootCanvas && canvas.renderMode != RenderMode.WorldSpace)
-            {
-                ownerCanvas = canvas;
-                return;
-            }
+            Transform child = children[i];
+            if (child != null && string.Equals(child.name, objectName, StringComparison.Ordinal))
+                return child;
         }
 
-        if (canvases.Length > 0)
-            ownerCanvas = canvases[0];
+        return null;
     }
 
     private static Color GetRowColor(LobbyCultureTankPanelState state)
@@ -341,12 +257,38 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         };
     }
 
+    [Serializable]
     private sealed class TankRow
     {
-        public GameObject Root;
-        public Image Background;
-        public Button Button;
-        public TMP_Text Label;
-        public LobbyCultureTankController Controller;
+        [SerializeField] private GameObject root;
+        [SerializeField] private Image background;
+        [SerializeField] private Button button;
+        [SerializeField] private TMP_Text label;
+
+        public GameObject Root
+        {
+            get => root;
+            set => root = value;
+        }
+
+        public Image Background => background;
+        public Button Button => button;
+        public TMP_Text Label => label;
+        public LobbyCultureTankController Controller { get; set; }
+
+        public void BindMissingComponents()
+        {
+            if (root == null)
+                return;
+
+            if (background == null)
+                background = root.GetComponent<Image>();
+
+            if (button == null)
+                button = root.GetComponent<Button>();
+
+            if (label == null)
+                label = root.GetComponentInChildren<TMP_Text>(true);
+        }
     }
 }
