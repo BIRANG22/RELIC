@@ -62,6 +62,10 @@ public class BattlePlayButton : MonoBehaviour
         {
             PlayClickSound();
 
+            // 입장 시점에 현재 중앙에 보이는 구역을 실제 선택값으로 확정합니다.
+            // 캐러셀을 이동한 뒤 구역 버튼을 다시 누르지 않아도 됩니다.
+            CommitCenteredCarouselStage();
+
             if (IsLockedCarouselStageCentered())
             {
                 ShowWarning(lockedStageEnterMessage);
@@ -153,6 +157,14 @@ public class BattlePlayButton : MonoBehaviour
             return;
 
         AudioManager.Instance.PlaySfx(clickSfx);
+    }
+
+    private void CommitCenteredCarouselStage()
+    {
+        FindStageCarouselIfMissing();
+
+        if (stageButtonCarousel != null)
+            stageButtonCarousel.CommitCurrentStageSelection();
     }
 
     private bool IsLockedCarouselStageCentered()

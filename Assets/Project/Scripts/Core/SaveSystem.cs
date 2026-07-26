@@ -25,6 +25,26 @@ public class SaveSystem : Singleton<SaveSystem>
         return File.Exists(SaveFilePath);
     }
 
+    /// <summary>
+    /// 저장 파일을 삭제합니다. 언어와 음량 같은 PlayerPrefs 설정값은 건드리지 않습니다.
+    /// </summary>
+    public bool DeleteSaveFile()
+    {
+        try
+        {
+            if (File.Exists(SaveFilePath))
+                File.Delete(SaveFilePath);
+
+            Debug.Log($"[SaveSystem] Save file deleted: {SaveFilePath}");
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"[SaveSystem] Failed to delete save file. {ex}");
+            return false;
+        }
+    }
+
     public bool HasBattleContinueSave()
     {
         if (!HasSaveFile())

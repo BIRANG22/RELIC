@@ -25,16 +25,17 @@ namespace Relic.Gameplay.Data
             if (party == null)
                 return result;
 
-            int displayIndex = 0;
-            for (int partyIndex = 0;
-                 partyIndex < party.MaxPartyCountValue && displayIndex < result.Length;
-                 partyIndex++)
+            // 파티의 실제 슬롯 번호를 그대로 유지합니다.
+            // 예: 1번 슬롯이 비어 있고 2, 3번 슬롯에 캐릭터가 있으면
+            // 인벤토리에서도 첫 번째 줄은 비우고 두 번째, 세 번째 줄에 표시합니다.
+            int copyCount = Math.Min(party.MaxPartyCountValue, result.Length);
+            for (int partyIndex = 0; partyIndex < copyCount; partyIndex++)
             {
                 string characterId = party.GetCharacterId(partyIndex);
                 if (string.IsNullOrWhiteSpace(characterId))
                     continue;
 
-                result[displayIndex++] = new PartyInventoryCharacterEntry(
+                result[partyIndex] = new PartyInventoryCharacterEntry(
                     partyIndex,
                     characterId.Trim());
             }

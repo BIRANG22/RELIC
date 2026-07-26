@@ -4,7 +4,7 @@ namespace Relic.Gameplay.Data
 {
     public sealed class LobbyRuntimeStore
     {
-        public const int StartingBlueDustium = 999;
+        public const int StartingBlueDustium = 0;
 
         private LobbyRuntimeData data;
 

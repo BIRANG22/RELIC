@@ -44,8 +44,21 @@ public class BattleResultChecker : MonoBehaviour
             Debug.Log("[BattleResultChecker] Battle Win");
             BattleEquipmentEffectService.ApplyBattleEndHealToParty();
 
-            if (IsCurrentNodeBoss())
+            IReadOnlyList<MonsterRuntimeData> defeatedMonsters =
+                BattleRewardCollector.Instance != null
+                    ? BattleRewardCollector.Instance.CollectedMonsters
+                    : null;
+
+            TrialUnlockProgress.RecordDefeatedMonsters(defeatedMonsters);
+
+            bool isBossNode = IsCurrentNodeBoss();
+            if (isBossNode)
             {
+                MapRuntimeData runtime = DataManager.Instance?.MapRuntimeStore?.Get();
+                TrialUnlockProgress.RecordBossClear(
+                    runtime,
+                    TrialSelectionState.SelectedMask);
+
                 if (!OpenRewardPanel(OpenExplorationResultPanel))
                     OpenExplorationResultPanel();
             }
