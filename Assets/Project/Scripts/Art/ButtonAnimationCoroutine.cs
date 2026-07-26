@@ -93,6 +93,10 @@ public class ButtonAnimationCoroutine :
     [SerializeField]
     private float hoverExitPadding = 4f;
 
+    [Tooltip("버튼 이동 중 발생하는 순간적인 포인터 이탈을 무시하는 시간입니다.")]
+    [SerializeField]
+    private float hoverExitDelay = 0.05f;
+
 
     private static ButtonAnimationCoroutine currentClickedButton;
 
@@ -112,6 +116,7 @@ public class ButtonAnimationCoroutine :
 
     private Rect cachedHoverScreenRect;
     private bool hasCachedHoverScreenRect;
+    private float pointerOutsideTime;
 
 
     private void Awake()
@@ -152,10 +157,21 @@ public class ButtonAnimationCoroutine :
         // 완전히 벗어나기 전까지는 호버 상태를 유지합니다.
         if (!isBlocked &&
             isPointerInside &&
-            hasCachedHoverScreenRect &&
-            !cachedHoverScreenRect.Contains(Input.mousePosition))
+            hasCachedHoverScreenRect)
         {
-            ApplyPointerExitState();
+            if (cachedHoverScreenRect.Contains(Input.mousePosition))
+            {
+                pointerOutsideTime = 0f;
+            }
+            else
+            {
+                pointerOutsideTime += Time.unscaledDeltaTime;
+
+                if (pointerOutsideTime >= Mathf.Max(0f, hoverExitDelay))
+                {
+                    ApplyPointerExitState();
+                }
+            }
         }
     }
 
@@ -185,6 +201,7 @@ public class ButtonAnimationCoroutine :
         }
 
         CacheHoverScreenRect(eventData);
+        pointerOutsideTime = 0f;
 
         if (clearClickedStateWhenAnotherButtonHovered)
         {
@@ -213,10 +230,14 @@ public class ButtonAnimationCoroutine :
         if (hasCachedHoverScreenRect &&
             cachedHoverScreenRect.Contains(pointerPosition))
         {
+            pointerOutsideTime = 0f;
             return;
         }
 
-        ApplyPointerExitState();
+        // 버튼 그래픽이 이동하면서 발생한 순간적인 Exit 이벤트만으로는
+        // 호버를 즉시 해제하지 않습니다. Update에서 고정 영역 밖에
+        // hoverExitDelay 이상 머문 경우에만 실제 이탈로 처리합니다.
+        pointerOutsideTime = 0f;
     }
 
 
@@ -278,6 +299,7 @@ public class ButtonAnimationCoroutine :
     {
         isPointerInside = false;
         hasCachedHoverScreenRect = false;
+        pointerOutsideTime = 0f;
 
         if (isClicked &&
             keepClickedStateWhenPointerExit &&
@@ -363,6 +385,7 @@ public class ButtonAnimationCoroutine :
         isClicked = false;
         isPointerInside = false;
         hasCachedHoverScreenRect = false;
+        pointerOutsideTime = 0f;
 
         if (currentClickedButton == this)
         {
