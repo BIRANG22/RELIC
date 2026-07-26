@@ -196,8 +196,8 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         }
         StopHoverScaleEffect(true);
 
-        // �����信���� ȣ���� ������ �⺻ �ȳ� ������ ���ư��ϴ�.
-        // �� ���ÿ����� ���������� Ȯ���� ������ �����մϴ�.
+        // 프리뷰에서는 호버가 끝나면 기본 안내 정보로 돌아갑니다.
+        // 룬 세팅에서는 마지막으로 확인한 정보를 유지합니다.
         if (owner != null && owner.ShouldClearInfoOnHoverExit && shownInfoVersion >= 0)
             owner.ClearRuneInfoFromHover(shownInfoVersion);
 

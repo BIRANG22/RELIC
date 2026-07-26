@@ -16,6 +16,18 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
     [SerializeField] private GameObject[] panelsToClose;
     [SerializeField] private GameObject panelToOpen;
 
+
+    [Header("Lobby Background Change")]
+    [Tooltip("Panel To Open에 맞는 로비 배경으로 자동 전환합니다.")]
+    [SerializeField] private bool changeLobbyBackground = true;
+
+    [Tooltip("비어 있으면 오브젝트 이름으로 자동 탐색합니다.")]
+    [SerializeField] private GameObject positionBackground;
+    [SerializeField] private GameObject characterSettingBackground;
+    [SerializeField] private GameObject erosionSelectBackground;
+    [SerializeField] private GameObject relicShopBackground;
+    [SerializeField] private GameObject cultureTankBackground;
+
     [Header("Opened Popup Close")]
     [SerializeField] private bool closeCurrentUIPanelButtonPanelOnExecute = true;
     [SerializeField] private GameObject[] extraPanelsToCloseOnExecute;
@@ -62,11 +74,13 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 
     private void Awake()
     {
+        ResolveLobbyBackgrounds();
+
         if (executeOnWorldClick && addColliderAutomatically)
             EnsureWorldCollider();
     }
 
-    private void OnMouseUpAsButton()
+    private void OnMouseDown()
     {
         if (!executeOnWorldClick)
             return;
@@ -212,6 +226,7 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
         if (transitionMode == PanelTransitionMode.LobbyToCharacter)
             ResetCameraBeforeTransition();
 
+        ApplyLobbyBackgroundForTargetPanel();
         beforePanelChange?.Invoke();
     }
 
@@ -265,6 +280,99 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 
         if (panelToOpen != null)
             panelToOpen.SetActive(true);
+    }
+
+
+    private void ResolveLobbyBackgrounds()
+    {
+        if (positionBackground == null)
+            positionBackground = FindSceneObject("Position_Back");
+
+        if (characterSettingBackground == null)
+            characterSettingBackground = FindSceneObject("CharacterSetting_Back");
+
+        if (erosionSelectBackground == null)
+            erosionSelectBackground = FindSceneObject("ErosionSelect_Back");
+
+        if (relicShopBackground == null)
+            relicShopBackground = FindSceneObject("RelicShop_Back");
+
+        if (cultureTankBackground == null)
+            cultureTankBackground = FindSceneObject("CultureTank_Back");
+    }
+
+    private void ApplyLobbyBackgroundForTargetPanel()
+    {
+        if (!changeLobbyBackground)
+            return;
+
+        ResolveLobbyBackgrounds();
+
+        GameObject targetBackground = GetTargetLobbyBackground();
+        if (targetBackground == null)
+            return;
+
+        SetBackgroundActive(positionBackground, targetBackground);
+        SetBackgroundActive(characterSettingBackground, targetBackground);
+        SetBackgroundActive(erosionSelectBackground, targetBackground);
+        SetBackgroundActive(relicShopBackground, targetBackground);
+        SetBackgroundActive(cultureTankBackground, targetBackground);
+    }
+
+    private GameObject GetTargetLobbyBackground()
+    {
+        if (transitionMode == PanelTransitionMode.CharacterToLobby)
+            return positionBackground;
+
+        if (panelToOpen == null)
+            return null;
+
+        switch (panelToOpen.name)
+        {
+            case "PositionPanel":
+                return positionBackground;
+
+            case "CharacterSettingPanel":
+                return characterSettingBackground;
+
+            case "ErosionSelectPanel":
+                return erosionSelectBackground;
+
+            case "RelicShopPanel":
+                return relicShopBackground;
+
+            case "CultureTankPanel":
+                return cultureTankBackground;
+
+            default:
+                return null;
+        }
+    }
+
+    private static void SetBackgroundActive(GameObject background, GameObject targetBackground)
+    {
+        if (background != null)
+            background.SetActive(background == targetBackground);
+    }
+
+    private static GameObject FindSceneObject(string objectName)
+    {
+        if (string.IsNullOrWhiteSpace(objectName))
+            return null;
+
+        GameObject[] objects = FindObjectsByType<GameObject>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < objects.Length; i++)
+        {
+            GameObject candidate = objects[i];
+
+            if (candidate != null && candidate.name == objectName)
+                return candidate;
+        }
+
+        return null;
     }
 
     private void EnsureWorldCollider()
