@@ -3,15 +3,10 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.Events;
 using UnityEngine.UI;
 
 public class OptionPanelUI : MonoBehaviour
 {
-    private const string SoundButtonName = "Sound";
-    private const string LanguageButtonName = "Language";
-    private const string ResolutionButtonName = "Resolution";
-    private const string ControlButtonName = "Control";
     private const string SoundContentName = "SoundContent";
     private const string LanguageContentName = "LanguageContent";
     private const string ResolutionContentName = "ResolutionContent";
@@ -31,9 +26,6 @@ public class OptionPanelUI : MonoBehaviour
     [SerializeField] private bool createTutorialControlsWhenMissing = true;
     [SerializeField] private string tutorialToggleLabel = "튜토리얼";
 
-    [Header("Button Auto Binding")]
-    [SerializeField] private bool autoBindContentButtons = true;
-
     [Header("Resolution Dropdown Sorting")]
     [SerializeField] private bool bringResolutionDropdownListToFront = true;
     [SerializeField] private int resolutionDropdownSortingOrderOffset = 50;
@@ -51,10 +43,9 @@ public class OptionPanelUI : MonoBehaviour
     private void OnEnable()
     {
         AutoFindReferences();
-        AutoBindContentButtons();
         SetupResolutionDropdown();
         SetupTutorialToggle();
-        ShowSound();
+        ShowAllContents();
     }
 
     private void OnDisable()
@@ -73,36 +64,14 @@ public class OptionPanelUI : MonoBehaviour
             tutorialToggle.onValueChanged.RemoveListener(OnTutorialToggleChanged);
     }
 
-    public void ShowSound()
+    private void ShowAllContents()
     {
-        CancelScheduledResolutionDropdown();
-        ShowContent(soundContent);
-    }
+        SetContentActive(soundContent, true);
+        SetContentActive(languageContent, true);
+        SetContentActive(resolutionContent, true);
+        SetContentActive(controlContent, true);
 
-    public void ShowLanguage()
-    {
-        CancelScheduledResolutionDropdown();
-        ShowContent(languageContent);
-    }
-
-    public void ShowResolution()
-    {
-        CancelScheduledResolutionDropdown();
-        SetupResolutionDropdown();
-
-        // 해상도 항목을 열 때 드롭다운 목록은 닫힌 상태로 시작합니다.
-        if (resolutionDropdown != null)
-            resolutionDropdown.Hide();
-
-        ShowContent(resolutionContent);
-    }
-
-    public void ShowControl()
-    {
-        CancelScheduledResolutionDropdown();
-        SetupTutorialToggle();
         SyncTutorialToggleFromSettings();
-        ShowContent(controlContent);
     }
 
     public void SaveProgress()
@@ -137,46 +106,6 @@ public class OptionPanelUI : MonoBehaviour
 
         if (controlContent == null)
             controlContent = FindChildGameObject(ControlContentName);
-    }
-
-    private void AutoBindContentButtons()
-    {
-        if (!autoBindContentButtons)
-            return;
-
-        BindButtonByName(SoundButtonName, ShowSound, nameof(ShowSound));
-        BindButtonByName(LanguageButtonName, ShowLanguage, nameof(ShowLanguage));
-        BindButtonByName(ResolutionButtonName, ShowResolution, nameof(ShowResolution));
-        BindButtonByName(ControlButtonName, ShowControl, nameof(ShowControl));
-    }
-
-    private void BindButtonByName(string buttonName, UnityAction action, string methodName)
-    {
-        Transform buttonTransform = FindChildByName(transform, buttonName);
-        if (buttonTransform == null)
-            return;
-
-        Button button = buttonTransform.GetComponent<Button>();
-        if (button == null)
-            return;
-
-        button.onClick.RemoveListener(action);
-        if (!HasPersistentListener(button.onClick, methodName))
-            button.onClick.AddListener(action);
-    }
-
-    private static bool HasPersistentListener(UnityEventBase unityEvent, string methodName)
-    {
-        if (unityEvent == null)
-            return false;
-
-        for (int i = 0; i < unityEvent.GetPersistentEventCount(); i++)
-        {
-            if (unityEvent.GetPersistentMethodName(i) == methodName)
-                return true;
-        }
-
-        return false;
     }
 
     private void SetupResolutionDropdown()
@@ -421,14 +350,6 @@ public class OptionPanelUI : MonoBehaviour
 
         StopCoroutine(openResolutionDropdownCoroutine);
         openResolutionDropdownCoroutine = null;
-    }
-
-    private void ShowContent(GameObject activeContent)
-    {
-        SetContentActive(soundContent, activeContent == soundContent);
-        SetContentActive(languageContent, activeContent == languageContent);
-        SetContentActive(resolutionContent, activeContent == resolutionContent);
-        SetContentActive(controlContent, activeContent == controlContent);
     }
 
     private GameObject FindChildGameObject(string childName)
