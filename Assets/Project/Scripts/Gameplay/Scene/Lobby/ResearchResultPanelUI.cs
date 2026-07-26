@@ -22,9 +22,14 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
 
         PendingResearchResultData pending = lobby.PendingResearchResult;
 
-        PendingResearchSettlementService.ApplyOnce(lobby);
+        bool applied = PendingResearchSettlementService.ApplyOnce(lobby);
         DataManager.Instance.LobbyRuntimeStore.Set(lobby);
         SaveSystem.Instance?.SaveCurrentProgress();
+
+        // 로비 HUD가 보상 정산보다 먼저 활성화될 수 있으므로,
+        // 정산 직후 블루 더스티움 표시를 다시 갱신합니다.
+        if (applied)
+            LobbyBlueDustiumHudUI.RefreshAll();
 
         if (resultText != null)
             resultText.text = BuildText(pending);

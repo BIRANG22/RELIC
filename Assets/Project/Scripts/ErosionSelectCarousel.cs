@@ -1,38 +1,51 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// 기존 침식도 캐러셀 컴포넌트의 연결을 유지하면서
-/// 세 개의 Trial을 개별적으로 선택하거나 해제하는 컨트롤러입니다.
+/// 세 개의 시련 선택, 잠금 상태, 이름 및 설명 표시를 관리합니다.
 /// </summary>
 public class ErosionSelectCarousel : MonoBehaviour
 {
     [System.Serializable]
     private sealed class TrialItem
     {
-        [Tooltip("Trial 항목의 루트 오브젝트입니다.")]
+        [Tooltip("시련 항목의 루트 오브젝트입니다.")]
         public Transform target;
 
-        [Tooltip("Trial을 선택하거나 해제할 버튼입니다. 비워두면 Target에서 자동으로 찾습니다.")]
+        [Tooltip("시련 선택 버튼입니다. 비워 두면 Target에서 자동 탐색합니다.")]
         public Button button;
 
-        [Tooltip("선택되었을 때만 표시할 오브젝트입니다. 예: 테두리, 체크 표시, 하이라이트")]
+        [Tooltip("선택되었을 때 표시할 오브젝트입니다.")]
         public GameObject selectedVisual;
 
-        [Tooltip("선택 상태에 따라 색을 변경할 그래픽입니다. 비워두면 Target에서 자동으로 찾습니다.")]
+        [Tooltip("잠긴 상태에서 표시할 LOCK 오브젝트입니다.")]
+        public GameObject lockVisual;
+
+        [Tooltip("자식 Name 오브젝트의 TMP 텍스트입니다.")]
+        public TMP_Text nameText;
+
+        [Tooltip("자식 Effect 오브젝트의 TMP 텍스트입니다.")]
+        public TMP_Text effectText;
+
+        [Tooltip("선택 상태에 따라 색을 변경할 그래픽입니다.")]
         public Graphic tintGraphic;
+
+        [HideInInspector] public string unlockedName;
+        [HideInInspector] public string unlockedEffect;
+        [HideInInspector] public bool textCached;
     }
 
     [Header("Trial Items")]
-    [Tooltip("Trial 1, Trial 2, Trial 3 순서로 연결합니다.")]
+    [Tooltip("시련 1, 시련 2, 시련 3 순서로 연결합니다.")]
     [SerializeField]
     private TrialItem[] trialItems = new TrialItem[TrialSelectionState.TrialCount];
 
-    [Tooltip("자식 오브젝트 이름 Trial_1, Trial_2, Trial_3을 찾아 자동으로 연결합니다.")]
     [SerializeField] private bool autoBindTrialItems = true;
-
-    [Tooltip("Trial 이름으로 찾지 못하면 기존 Erosion_0, Erosion_1, Erosion_2 이름도 확인합니다.")]
     [SerializeField] private bool allowLegacyErosionNames = true;
+
+    [Header("Locked Text")]
+    [SerializeField] private string lockedNameText = "???";
 
     [Header("Selection Visual")]
     [SerializeField] private bool changeTintColor = true;
@@ -50,15 +63,8 @@ public class ErosionSelectCarousel : MonoBehaviour
 
     private bool isInitialized;
 
-    /// <summary>
-    /// 선택된 Trial 비트 마스크입니다. 아무것도 선택하지 않으면 0입니다.
-    /// </summary>
     public int SelectedMask => TrialSelectionState.SelectedMask;
 
-    /// <summary>
-    /// 기존 외부 코드 호환용입니다. 선택된 Trial이 없으면 -1을 반환합니다.
-    /// 여러 개가 선택된 경우 가장 낮은 번호를 반환합니다.
-    /// </summary>
     public int CurrentIndex
     {
         get
@@ -81,20 +87,27 @@ public class ErosionSelectCarousel : MonoBehaviour
     private void OnEnable()
     {
         Initialize();
+
         TrialSelectionState.SelectionChanged -= RefreshVisuals;
         TrialSelectionState.SelectionChanged += RefreshVisuals;
+
+        TrialUnlockProgress.ProgressChanged -= RefreshVisuals;
+        TrialUnlockProgress.ProgressChanged += RefreshVisuals;
+
         RefreshVisuals();
     }
 
     private void OnDisable()
     {
         TrialSelectionState.SelectionChanged -= RefreshVisuals;
+        TrialUnlockProgress.ProgressChanged -= RefreshVisuals;
     }
 
     private void OnDestroy()
     {
         UnbindButtons();
         TrialSelectionState.SelectionChanged -= RefreshVisuals;
+        TrialUnlockProgress.ProgressChanged -= RefreshVisuals;
     }
 
     private void OnValidate()
@@ -102,36 +115,27 @@ public class ErosionSelectCarousel : MonoBehaviour
         EnsureArraySize();
     }
 
-    /// <summary>
-    /// 인스펙터 Button OnClick에서도 사용할 수 있는 공용 토글 함수입니다.
-    /// trialIndex는 0부터 시작합니다.
-    /// </summary>
     public void ToggleTrial(int trialIndex)
     {
         if (trialIndex < 0 || trialIndex >= TrialSelectionState.TrialCount)
+            return;
+
+        if (!TrialUnlockProgress.IsUnlocked(trialIndex))
             return;
 
         TrialSelectionState.Toggle(trialIndex);
         PlayClickSound();
     }
 
-    public void ToggleTrial1()
-    {
-        ToggleTrial(0);
-    }
-
-    public void ToggleTrial2()
-    {
-        ToggleTrial(1);
-    }
-
-    public void ToggleTrial3()
-    {
-        ToggleTrial(2);
-    }
+    public void ToggleTrial1() => ToggleTrial(0);
+    public void ToggleTrial2() => ToggleTrial(1);
+    public void ToggleTrial3() => ToggleTrial(2);
 
     public void SetTrialSelected(int trialIndex, bool selected)
     {
+        if (selected && !TrialUnlockProgress.IsUnlocked(trialIndex))
+            return;
+
         TrialSelectionState.SetSelected(trialIndex, selected);
     }
 
@@ -179,7 +183,18 @@ public class ErosionSelectCarousel : MonoBehaviour
                 item.tintGraphic = target.GetComponent<Graphic>() ?? target.GetComponentInChildren<Graphic>(true);
 
             if (item.selectedVisual == null)
-                item.selectedVisual = FindSelectedVisual(target);
+                item.selectedVisual = FindNamedChild(target, "Selected");
+
+            if (item.lockVisual == null)
+                item.lockVisual = FindNamedChild(target, "LOCK");
+
+            if (item.nameText == null)
+                item.nameText = FindTextChild(target, "Name");
+
+            if (item.effectText == null)
+                item.effectText = FindTextChild(target, "Effect");
+
+            CacheUnlockedText(item);
         }
 
         if (Application.isPlaying && isInitialized)
@@ -199,6 +214,8 @@ public class ErosionSelectCarousel : MonoBehaviour
 
         if (autoBindTrialItems)
             AutoBindTrialItems();
+        else
+            CacheAllUnlockedTexts();
 
         BindButtons();
         isInitialized = true;
@@ -279,14 +296,55 @@ public class ErosionSelectCarousel : MonoBehaviour
             if (item == null)
                 continue;
 
-            bool selected = TrialSelectionState.IsSelected(i);
+            CacheUnlockedText(item);
+
+            bool unlocked = TrialUnlockProgress.IsUnlocked(i);
+            bool selected = unlocked && TrialSelectionState.IsSelected(i);
+
+            if (!unlocked && TrialSelectionState.IsSelected(i))
+                TrialSelectionState.SetSelected(i, false);
+
+            if (item.lockVisual != null)
+                item.lockVisual.SetActive(!unlocked);
 
             if (item.selectedVisual != null)
                 item.selectedVisual.SetActive(selected);
 
+            if (item.button != null)
+                item.button.interactable = unlocked;
+
+            if (item.nameText != null)
+                item.nameText.text = unlocked ? item.unlockedName : lockedNameText;
+
+            if (item.effectText != null)
+            {
+                item.effectText.text = unlocked
+                    ? item.unlockedEffect
+                    : TrialUnlockProgress.GetUnlockRequirementText(i);
+            }
+
             if (changeTintColor && item.tintGraphic != null)
                 item.tintGraphic.color = selected ? selectedColor : unselectedColor;
         }
+    }
+
+    private void CacheAllUnlockedTexts()
+    {
+        if (trialItems == null)
+            return;
+
+        for (int i = 0; i < trialItems.Length; i++)
+            CacheUnlockedText(trialItems[i]);
+    }
+
+    private static void CacheUnlockedText(TrialItem item)
+    {
+        if (item == null || item.textCached)
+            return;
+
+        item.unlockedName = item.nameText != null ? item.nameText.text : string.Empty;
+        item.unlockedEffect = item.effectText != null ? item.effectText.text : string.Empty;
+        item.textCached = true;
     }
 
     private void PlayClickSound()
@@ -297,18 +355,16 @@ public class ErosionSelectCarousel : MonoBehaviour
         AudioManager.Instance.PlaySfx(clickSfx, clickVolume);
     }
 
-    private static GameObject FindSelectedVisual(Transform target)
+    private static GameObject FindNamedChild(Transform target, string childName)
     {
-        string[] names = { "Selected", "Select", "On", "Check", "Highlight" };
+        Transform found = FindChildRecursive(target, childName);
+        return found != null ? found.gameObject : null;
+    }
 
-        for (int i = 0; i < names.Length; i++)
-        {
-            Transform found = FindChildRecursive(target, names[i]);
-            if (found != null && found != target)
-                return found.gameObject;
-        }
-
-        return null;
+    private static TMP_Text FindTextChild(Transform target, string childName)
+    {
+        Transform found = FindChildRecursive(target, childName);
+        return found != null ? found.GetComponent<TMP_Text>() : null;
     }
 
     private static Transform FindChildRecursive(Transform root, string objectName)

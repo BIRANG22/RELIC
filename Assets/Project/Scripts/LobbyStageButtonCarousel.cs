@@ -80,8 +80,6 @@ public class LobbyStageButtonCarousel : MonoBehaviour, IBeginDragHandler, IDragH
     [SerializeField] private float navigationButtonPressDuration = 0.08f;
 
     [Header("Selection")]
-    [Tooltip("중앙으로 온 스테이지를 즉시 선택 상태로 저장합니다. PlayButton을 누르면 이 스테이지로 시작됩니다.")]
-    [SerializeField] private bool applyStageSelectionWhenCentered = true;
     [SerializeField] private bool sendPointerHoverToCenteredButton = true;
     [SerializeField] private bool onlyCenteredButtonInteractable = false;
     [Tooltip("잠겨있는 스테이지 버튼도 캐러셀 위치 이동과 중앙 이동 대상에 포함합니다. 잠금 여부는 실제 선택 저장 단계에서 처리합니다.")]
@@ -831,13 +829,26 @@ public class LobbyStageButtonCarousel : MonoBehaviour, IBeginDragHandler, IDragH
         if (sendPointerHoverToCenteredButton)
             SendPointerEnter(button.gameObject);
 
-        if (!applyStageSelectionWhenCentered)
-            return;
-
+        // 현재 중앙에 보이는 구역을 실제 선택 상태로 즉시 저장합니다.
+        // 별도로 구역 버튼을 한 번 더 누르지 않아도 PlayButton이 이 구역으로 입장합니다.
         MapChapterSelectButton chapterButton = GetChapterButton(button);
 
         if (chapterButton != null)
             chapterButton.SelectChapterForCarousel();
+    }
+
+    /// <summary>
+    /// 현재 중앙에 보이는 구역을 선택값으로 다시 확정합니다.
+    /// PlayButton을 누르는 순간 표시 중인 구역과 저장된 구역이 어긋나는 것을 방지합니다.
+    /// </summary>
+    public bool CommitCurrentStageSelection()
+    {
+        MapChapterSelectButton chapterButton = GetCurrentChapterButton();
+
+        if (chapterButton == null || chapterButton.IsLocked())
+            return false;
+
+        return chapterButton.SelectChapterForCarousel();
     }
 
     private int FindNextAvailableIndex(int startIndex, int direction)

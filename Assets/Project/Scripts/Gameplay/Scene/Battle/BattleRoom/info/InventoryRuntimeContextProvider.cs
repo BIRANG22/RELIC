@@ -16,7 +16,7 @@ public sealed class InventoryRuntimeContextProvider : MonoBehaviour, IRuntimeSav
 
     [SerializeField] private RuntimeSource source = RuntimeSource.Auto;
     private readonly Dictionary<EquippedRelicSlotUI, int> relicDisplayRows = new();
-    private string lastPartySignature;
+    private string lastInventorySignature;
 
     private static readonly FieldInfo RelicPartySlotIndexField =
         typeof(EquippedRelicSlotUI).GetField(
@@ -77,11 +77,12 @@ public sealed class InventoryRuntimeContextProvider : MonoBehaviour, IRuntimeSav
         }
 
         PartyRuntimeStore party = DataManager.Instance.PartyRuntimeStore;
-        string signature = BuildPartySignature(party);
-        if (!force && string.Equals(signature, lastPartySignature, StringComparison.Ordinal))
+        CharacterRuntimeStore characters = DataManager.Instance.CharacterRuntimeStore;
+        string signature = BuildInventorySignature(party, characters);
+        if (!force && string.Equals(signature, lastInventorySignature, StringComparison.Ordinal))
             return;
 
-        lastPartySignature = signature;
+        lastInventorySignature = signature;
         PartyInventoryCharacterEntry[] order = PartyInventoryCharacterOrder.Build(party, 3);
 
         PartyCharacterSlotListUI[] characterLists =
@@ -148,14 +149,54 @@ public sealed class InventoryRuntimeContextProvider : MonoBehaviour, IRuntimeSav
         }
     }
 
-    private static string BuildPartySignature(PartyRuntimeStore party)
+    private static string BuildInventorySignature(
+        PartyRuntimeStore party,
+        CharacterRuntimeStore characters)
     {
+        if (party == null)
+            return string.Empty;
+
         PartyInventoryCharacterEntry[] order =
             PartyInventoryCharacterOrder.Build(party, party.MaxPartyCountValue);
         var parts = new string[order.Length];
+
         for (int i = 0; i < order.Length; i++)
-            parts[i] = $"{order[i].PartySlotIndex}:{order[i].CharacterId}";
+        {
+            PartyInventoryCharacterEntry entry = order[i];
+            string characterId = entry.CharacterId ?? string.Empty;
+            string skillSignature = string.Empty;
+
+            if (!string.IsNullOrWhiteSpace(characterId) &&
+                characters != null &&
+                characters.TryGet(characterId, out CharacterRuntimeData character) &&
+                character != null)
+            {
+                skillSignature = string.Join(",", new[]
+                {
+                    character.PassiveSkillId ?? string.Empty,
+                    character.UniqueSkillId ?? string.Empty,
+                    character.AbilitySkillId ?? string.Empty,
+                    GetEquippedSkillId(character, 2),
+                    GetEquippedSkillId(character, 3)
+                });
+            }
+
+            parts[i] = $"{entry.PartySlotIndex}:{characterId}:{skillSignature}";
+        }
+
         return string.Join("\u001f", parts);
+    }
+
+    private static string GetEquippedSkillId(CharacterRuntimeData character, int index)
+    {
+        if (character?.EquippedSkillIds == null ||
+            index < 0 ||
+            index >= character.EquippedSkillIds.Length)
+        {
+            return string.Empty;
+        }
+
+        return character.EquippedSkillIds[index] ?? string.Empty;
     }
 
     private static void CaptureLobbyCharacterLoadouts()
