@@ -1,3 +1,4 @@
+using System.IO;
 using System.Text;
 using Relic.Gameplay.Data;
 using TMPro;
@@ -28,6 +29,7 @@ public class SteamLobbyInviteController : MonoBehaviour
     [SerializeField] private bool createStatusPanelIfMissing = true;
     [SerializeField] private TMP_Text statusText;
     [SerializeField] private TMP_Text membersText;
+    [SerializeField] private TMP_InputField lobbyIdInput;
 
     private static bool steamApiInitialized;
 
@@ -97,6 +99,54 @@ public class SteamLobbyInviteController : MonoBehaviour
 #endif
     }
 
+    public void CopyCurrentLobbyId()
+    {
+#if STEAMWORKS_NET
+        if (!EnsureSteamReady())
+            return;
+
+        if (!HasCurrentLobby())
+        {
+            SetStatus("Create or join a Steam lobby before copying its ID.");
+            return;
+        }
+
+        string lobbyId = ToSteamIdValue(currentLobbyId).ToString();
+        GUIUtility.systemCopyBuffer = lobbyId;
+        SetStatus("Lobby ID copied: " + lobbyId);
+#else
+        SetStatus("Steamworks.NET package is not resolved yet.");
+#endif
+    }
+
+    public void JoinLobbyByIdInput()
+    {
+#if STEAMWORKS_NET
+        if (!EnsureSteamReady())
+            return;
+
+        string input = lobbyIdInput != null ? lobbyIdInput.text : "";
+
+        if (!SteamLobbyIdParser.TryParse(input, out ulong lobbyId, out string error))
+        {
+            SetStatus(error);
+            return;
+        }
+
+        CSteamID steamLobbyId = new CSteamID(lobbyId);
+
+        if (!steamLobbyId.IsValid())
+        {
+            SetStatus("Lobby ID is not a valid Steam ID.");
+            return;
+        }
+
+        JoinLobby(steamLobbyId);
+#else
+        SetStatus("Steamworks.NET package is not resolved yet.");
+#endif
+    }
+
     private void BindReferences()
     {
         if (inviteButton == null)
@@ -133,7 +183,18 @@ public class SteamLobbyInviteController : MonoBehaviour
 
         if (!steamApiInitialized)
         {
-            SetStatus("Steam API init failed. Check Steam client and steam_appid.txt.");
+            string expectedAppIdPath = GetExpectedSteamAppIdPath();
+            bool appIdFileExists = File.Exists(expectedAppIdPath);
+            string details = BuildSteamInitFailureMessage(
+                SteamAPI.IsSteamRunning(),
+                expectedAppIdPath,
+                appIdFileExists);
+            Debug.LogError("[SteamLobbyInviteController] " + details, this);
+            SetStatus(
+                "Steam API init failed. App ID file exists: " +
+                appIdFileExists +
+                "\n" +
+                expectedAppIdPath);
             return;
         }
 
@@ -444,30 +505,141 @@ public class SteamLobbyInviteController : MonoBehaviour
 
     private void CreateStatusPanelIfNeeded()
     {
-        if (!createStatusPanelIfMissing || statusText != null || membersText != null)
-            return;
-
         RectTransform buttonRect = transform as RectTransform;
         Transform parent = transform.parent != null ? transform.parent : transform;
 
-        GameObject panelObject = new GameObject("SteamLobbyStatusPanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        if (createStatusPanelIfMissing && statusText == null && membersText == null)
+        {
+            GameObject panelObject = new GameObject("SteamLobbyStatusPanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            RectTransform panelRect = panelObject.GetComponent<RectTransform>();
+            panelRect.SetParent(parent, false);
+            panelRect.anchorMin = buttonRect != null ? buttonRect.anchorMin : new Vector2(0.5f, 0.5f);
+            panelRect.anchorMax = buttonRect != null ? buttonRect.anchorMax : new Vector2(0.5f, 0.5f);
+            panelRect.pivot = new Vector2(0.5f, 0f);
+            panelRect.sizeDelta = new Vector2(520f, 176f);
+            panelRect.anchoredPosition = buttonRect != null
+                ? buttonRect.anchoredPosition + new Vector2(290f, 42f)
+                : Vector2.zero;
+
+            Image background = panelObject.GetComponent<Image>();
+            background.color = new Color(0.02f, 0.04f, 0.07f, 0.82f);
+            background.raycastTarget = false;
+
+            statusText = CreateText(panelRect, "Status", new Vector2(0f, 54f), 24, TextAlignmentOptions.Left);
+            membersText = CreateText(panelRect, "Members", new Vector2(0f, -22f), 20, TextAlignmentOptions.TopLeft);
+        }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        CreateDevelopmentToolsIfNeeded(parent, buttonRect);
+#endif
+    }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    private void CreateDevelopmentToolsIfNeeded(Transform parent, RectTransform buttonRect)
+    {
+        if (lobbyIdInput != null)
+            return;
+
+        GameObject panelObject = new GameObject("SteamLobbyDevelopmentTools", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
         RectTransform panelRect = panelObject.GetComponent<RectTransform>();
         panelRect.SetParent(parent, false);
         panelRect.anchorMin = buttonRect != null ? buttonRect.anchorMin : new Vector2(0.5f, 0.5f);
         panelRect.anchorMax = buttonRect != null ? buttonRect.anchorMax : new Vector2(0.5f, 0.5f);
-        panelRect.pivot = new Vector2(0.5f, 0f);
-        panelRect.sizeDelta = new Vector2(520f, 176f);
+        panelRect.pivot = new Vector2(0.5f, 1f);
+        panelRect.sizeDelta = new Vector2(520f, 76f);
         panelRect.anchoredPosition = buttonRect != null
-            ? buttonRect.anchoredPosition + new Vector2(290f, 42f)
+            ? buttonRect.anchoredPosition + new Vector2(290f, 34f)
             : Vector2.zero;
 
         Image background = panelObject.GetComponent<Image>();
-        background.color = new Color(0.02f, 0.04f, 0.07f, 0.82f);
-        background.raycastTarget = false;
+        background.color = new Color(0.02f, 0.04f, 0.07f, 0.9f);
+        background.raycastTarget = true;
 
-        statusText = CreateText(panelRect, "Status", new Vector2(0f, 54f), 24, TextAlignmentOptions.Left);
-        membersText = CreateText(panelRect, "Members", new Vector2(0f, -22f), 20, TextAlignmentOptions.TopLeft);
+        lobbyIdInput = CreateLobbyIdInput(panelRect);
+        CreateDevelopmentButton(panelRect, "CopyLobbyIdButton", "Copy ID", new Vector2(100f, 0f), CopyCurrentLobbyId);
+        CreateDevelopmentButton(panelRect, "JoinLobbyIdButton", "Join ID", new Vector2(195f, 0f), JoinLobbyByIdInput);
     }
+
+    private static TMP_InputField CreateLobbyIdInput(RectTransform parent)
+    {
+        GameObject inputObject = new GameObject("LobbyIdInput", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(TMP_InputField));
+        RectTransform inputRect = inputObject.GetComponent<RectTransform>();
+        inputRect.SetParent(parent, false);
+        inputRect.anchorMin = new Vector2(0f, 0.5f);
+        inputRect.anchorMax = new Vector2(0f, 0.5f);
+        inputRect.pivot = new Vector2(0f, 0.5f);
+        inputRect.sizeDelta = new Vector2(288f, 46f);
+        inputRect.anchoredPosition = new Vector2(14f, 0f);
+
+        Image background = inputObject.GetComponent<Image>();
+        background.color = new Color(0.08f, 0.11f, 0.16f, 1f);
+
+        GameObject textAreaObject = new GameObject("Text Area", typeof(RectTransform), typeof(RectMask2D));
+        RectTransform textAreaRect = textAreaObject.GetComponent<RectTransform>();
+        textAreaRect.SetParent(inputRect, false);
+        textAreaRect.anchorMin = Vector2.zero;
+        textAreaRect.anchorMax = Vector2.one;
+        textAreaRect.offsetMin = new Vector2(10f, 4f);
+        textAreaRect.offsetMax = new Vector2(-10f, -4f);
+
+        TMP_Text placeholder = CreateInputText(textAreaRect, "Placeholder", "Lobby ID", new Color(1f, 1f, 1f, 0.45f));
+        TMP_Text valueText = CreateInputText(textAreaRect, "Text", "", Color.white);
+
+        TMP_InputField input = inputObject.GetComponent<TMP_InputField>();
+        input.textViewport = textAreaRect;
+        input.textComponent = valueText;
+        input.placeholder = placeholder;
+        input.contentType = TMP_InputField.ContentType.IntegerNumber;
+        input.lineType = TMP_InputField.LineType.SingleLine;
+        return input;
+    }
+
+    private static TMP_Text CreateInputText(RectTransform parent, string objectName, string value, Color color)
+    {
+        GameObject textObject = new GameObject(objectName, typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
+        RectTransform rect = textObject.GetComponent<RectTransform>();
+        rect.SetParent(parent, false);
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
+
+        TextMeshProUGUI text = textObject.GetComponent<TextMeshProUGUI>();
+        text.fontSize = 18;
+        text.color = color;
+        text.alignment = TextAlignmentOptions.MidlineLeft;
+        text.raycastTarget = false;
+        text.text = value;
+        return text;
+    }
+
+    private static void CreateDevelopmentButton(
+        RectTransform parent,
+        string objectName,
+        string label,
+        Vector2 anchoredPosition,
+        UnityEngine.Events.UnityAction clicked)
+    {
+        GameObject buttonObject = new GameObject(objectName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+        RectTransform rect = buttonObject.GetComponent<RectTransform>();
+        rect.SetParent(parent, false);
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.sizeDelta = new Vector2(86f, 46f);
+        rect.anchoredPosition = anchoredPosition;
+
+        Image image = buttonObject.GetComponent<Image>();
+        image.color = new Color(0.14f, 0.32f, 0.5f, 1f);
+
+        Button button = buttonObject.GetComponent<Button>();
+        button.targetGraphic = image;
+        button.onClick.AddListener(clicked);
+
+        TMP_Text text = CreateInputText(rect, "Label", label, Color.white);
+        text.alignment = TextAlignmentOptions.Center;
+        text.fontSize = 17;
+    }
+#endif
 
     private TMP_Text CreateText(RectTransform parent, string objectName, Vector2 anchoredPosition, int fontSize, TextAlignmentOptions alignment)
     {
@@ -494,6 +666,23 @@ public class SteamLobbyInviteController : MonoBehaviour
         lastStatus = status;
         RefreshStatusPanel();
         Debug.Log("[SteamLobbyInviteController] " + status, this);
+    }
+
+    public static string GetExpectedSteamAppIdPath()
+    {
+        string root = Directory.GetParent(Application.dataPath)?.FullName;
+        return Path.Combine(root ?? "", "steam_appid.txt");
+    }
+
+    public static string BuildSteamInitFailureMessage(
+        bool isSteamRunning,
+        string expectedAppIdPath,
+        bool appIdFileExists)
+    {
+        return "Steam API init failed. " +
+               "Steam running: " + isSteamRunning +
+               "; App ID file exists: " + appIdFileExists +
+               "; Expected App ID path: " + expectedAppIdPath;
     }
 
     private void RefreshStatusPanel()
