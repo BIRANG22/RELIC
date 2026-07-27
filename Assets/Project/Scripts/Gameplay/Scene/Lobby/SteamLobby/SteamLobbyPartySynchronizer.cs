@@ -545,6 +545,13 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
         for (int i = 0; i < characterPickers.Length; i++)
             characterPickers[i]?.RefreshFromPartyRuntime();
 
+        CharBtn[] charButtons = FindObjectsByType<CharBtn>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < charButtons.Length; i++)
+            charButtons[i]?.RefreshSelectedPartyMarker();
+
         SpawnGridPanel[] spawnGridPanels = FindObjectsByType<SpawnGridPanel>(
             FindObjectsInactive.Include,
             FindObjectsSortMode.None);

@@ -74,4 +74,19 @@ public class SteamLobbyPartyUiBoundaryTests
         Assert.That(source, Does.Contain("RequestAutomaticCharacterToggle"));
         Assert.That(source, Does.Contain("FindOwnedEmptySlot"));
     }
+
+    [Test]
+    public void SelectedPartyMarker_ReadsAuthoritativeStoreInNetworkParty()
+    {
+        string charBtn = File.ReadAllText(
+            "Assets/Project/Scripts/Gameplay/Scene/Lobby/CharBtn.cs");
+        string synchronizer = File.ReadAllText(
+            SteamLobbyRoot + "SteamLobbyPartySynchronizer.cs");
+
+        Assert.That(charBtn, Does.Contain("IsNetworkPartyActive"));
+        Assert.That(charBtn, Does.Contain(
+            "PartyRuntimeStore.FindCharacterSlot(characterId)"));
+        Assert.That(synchronizer, Does.Contain(
+            "charButtons[i]?.RefreshSelectedPartyMarker()"));
+    }
 }

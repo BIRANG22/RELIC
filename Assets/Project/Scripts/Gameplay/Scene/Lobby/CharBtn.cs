@@ -482,6 +482,19 @@ public class CharBtn : MonoBehaviour,
         if (string.IsNullOrWhiteSpace(characterId))
             return -1;
 
+        SteamLobbyPartySynchronizer synchronizer = SteamLobbyPartySynchronizer.Instance;
+
+        if (synchronizer != null && synchronizer.IsNetworkPartyActive)
+        {
+            if (DataManager.Instance == null ||
+                DataManager.Instance.PartyRuntimeStore == null)
+            {
+                return -1;
+            }
+
+            return DataManager.Instance.PartyRuntimeStore.FindCharacterSlot(characterId);
+        }
+
         if (charPick != null)
             return charPick.FindPendingPartySlot(characterId);
 
