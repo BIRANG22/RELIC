@@ -3,6 +3,8 @@ using System.Text;
 using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 #if STEAMWORKS_NET
@@ -32,9 +34,10 @@ public class SteamLobbyInviteController : MonoBehaviour
     [SerializeField] private TMP_InputField lobbyIdInput;
 
     private static bool steamApiInitialized;
+    private static bool ownsSteamApi;
+    private static bool steamShutdownRegistered;
 
     private readonly string[] lastSyncedCharacterIds = new string[DefaultMaxMembers];
-    private bool didInitializeSteamApi;
     private bool isCreatingLobby;
     private bool pendingInviteDialog;
     private float nextMemberSyncTime;
@@ -47,7 +50,38 @@ public class SteamLobbyInviteController : MonoBehaviour
     private Callback<GameLobbyJoinRequested_t> gameLobbyJoinRequested;
     private Callback<LobbyChatUpdate_t> lobbyChatUpdate;
     private Callback<LobbyDataUpdate_t> lobbyDataUpdate;
+    private Callback<GameOverlayActivated_t> gameOverlayActivated;
 #endif
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetSteamRuntimeState()
+    {
+#if STEAMWORKS_NET
+        if (ownsSteamApi && steamApiInitialized)
+            SteamAPI.Shutdown();
+#endif
+
+        Application.quitting -= ShutdownSteamOnApplicationQuit;
+        steamApiInitialized = false;
+        ownsSteamApi = false;
+        steamShutdownRegistered = false;
+    }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]
+    private static void InitializeSteamBeforeSplashScreen()
+    {
+#if STEAMWORKS_NET
+        if (TryInitializeSteamApi(out string failure))
+        {
+            Debug.Log("[SteamLobbyInviteController] Steam API initialized before splash screen.");
+            return;
+        }
+
+        Debug.LogWarning(
+            "[SteamLobbyInviteController] Early Steam initialization did not complete. " +
+            failure);
+#endif
+    }
 
     private void Awake()
     {
@@ -66,17 +100,21 @@ public class SteamLobbyInviteController : MonoBehaviour
             SyncLocalMemberDataIfNeeded(false);
         }
 #endif
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        HandleLobbyIdPasteShortcut();
+#endif
     }
 
     private void OnDestroy()
     {
 #if STEAMWORKS_NET
-        if (didInitializeSteamApi)
-        {
-            SteamAPI.Shutdown();
-            steamApiInitialized = false;
-            didInitializeSteamApi = false;
-        }
+        lobbyCreatedCallResult?.Dispose();
+        lobbyEnterCallResult?.Dispose();
+        gameLobbyJoinRequested?.Dispose();
+        lobbyChatUpdate?.Dispose();
+        lobbyDataUpdate?.Dispose();
+        gameOverlayActivated?.Dispose();
 #endif
     }
 
@@ -147,6 +185,49 @@ public class SteamLobbyInviteController : MonoBehaviour
 #endif
     }
 
+    public void PasteLobbyIdFromClipboard()
+    {
+        if (lobbyIdInput == null)
+            return;
+
+        if (!SteamLobbyIdParser.TryParse(
+                GUIUtility.systemCopyBuffer,
+                out ulong lobbyId,
+                out string error))
+        {
+            SetStatus("Clipboard: " + error);
+            return;
+        }
+
+        string lobbyIdText = lobbyId.ToString();
+        lobbyIdInput.text = lobbyIdText;
+        lobbyIdInput.caretPosition = lobbyIdText.Length;
+        lobbyIdInput.ActivateInputField();
+        SetStatus("Lobby ID pasted.");
+    }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    private void HandleLobbyIdPasteShortcut()
+    {
+        if (lobbyIdInput == null ||
+            EventSystem.current == null ||
+            EventSystem.current.currentSelectedGameObject != lobbyIdInput.gameObject)
+        {
+            return;
+        }
+
+        Keyboard keyboard = Keyboard.current;
+
+        if (keyboard == null)
+            return;
+
+        bool controlPressed = keyboard.leftCtrlKey.isPressed || keyboard.rightCtrlKey.isPressed;
+
+        if (controlPressed && keyboard.vKey.wasPressedThisFrame)
+            PasteLobbyIdFromClipboard();
+    }
+#endif
+
     private void BindReferences()
     {
         if (inviteButton == null)
@@ -164,32 +245,11 @@ public class SteamLobbyInviteController : MonoBehaviour
             return;
         }
 
-        if (!SteamAPI.IsSteamRunning())
-        {
-            SetStatus("Steam client is not running.");
-            return;
-        }
-
-        try
-        {
-            steamApiInitialized = SteamAPI.Init();
-            didInitializeSteamApi = steamApiInitialized;
-        }
-        catch (System.Exception exception)
-        {
-            Debug.LogError("[SteamLobbyInviteController] SteamAPI.Init failed. " + exception, this);
-            steamApiInitialized = false;
-        }
-
-        if (!steamApiInitialized)
+        if (!TryInitializeSteamApi(out string failure))
         {
             string expectedAppIdPath = GetExpectedSteamAppIdPath();
             bool appIdFileExists = File.Exists(expectedAppIdPath);
-            string details = BuildSteamInitFailureMessage(
-                SteamAPI.IsSteamRunning(),
-                expectedAppIdPath,
-                appIdFileExists);
-            Debug.LogError("[SteamLobbyInviteController] " + details, this);
+            Debug.LogError("[SteamLobbyInviteController] " + failure, this);
             SetStatus(
                 "Steam API init failed. App ID file exists: " +
                 appIdFileExists +
@@ -233,6 +293,9 @@ public class SteamLobbyInviteController : MonoBehaviour
 
         if (lobbyDataUpdate == null)
             lobbyDataUpdate = Callback<LobbyDataUpdate_t>.Create(OnLobbyDataUpdated);
+
+        if (gameOverlayActivated == null)
+            gameOverlayActivated = Callback<GameOverlayActivated_t>.Create(OnGameOverlayActivated);
     }
 
     private void CreateLobby()
@@ -319,6 +382,18 @@ public class SteamLobbyInviteController : MonoBehaviour
         RefreshStatusPanel();
     }
 
+    private void OnGameOverlayActivated(GameOverlayActivated_t callback)
+    {
+        bool active = callback.m_bActive != 0;
+        Debug.Log(
+            "[SteamLobbyInviteController] Steam overlay " +
+            (active ? "activated." : "deactivated."),
+            this);
+
+        if (active)
+            SetStatus("Steam overlay activated.");
+    }
+
     private void ProcessLaunchCommandLine()
     {
         string commandLine;
@@ -355,7 +430,7 @@ public class SteamLobbyInviteController : MonoBehaviour
         }
 
         SteamFriends.ActivateGameOverlayInviteDialog(currentLobbyId);
-        SetStatus("Steam invite overlay opened.");
+        SetStatus("Steam invite overlay requested.");
         RefreshStatusPanel();
     }
 
@@ -683,6 +758,75 @@ public class SteamLobbyInviteController : MonoBehaviour
                "Steam running: " + isSteamRunning +
                "; App ID file exists: " + appIdFileExists +
                "; Expected App ID path: " + expectedAppIdPath;
+    }
+
+#if STEAMWORKS_NET
+    private static bool TryInitializeSteamApi(out string failure)
+    {
+        if (steamApiInitialized)
+        {
+            failure = "";
+            return true;
+        }
+
+        bool isSteamRunning = SteamAPI.IsSteamRunning();
+
+        if (!isSteamRunning)
+        {
+            failure = "Steam client is not running.";
+            return false;
+        }
+
+        try
+        {
+            steamApiInitialized = SteamAPI.Init();
+        }
+        catch (System.Exception exception)
+        {
+            steamApiInitialized = false;
+            failure = "SteamAPI.Init threw an exception: " + exception;
+            return false;
+        }
+
+        if (!steamApiInitialized)
+        {
+            string expectedAppIdPath = GetExpectedSteamAppIdPath();
+            failure = BuildSteamInitFailureMessage(
+                isSteamRunning,
+                expectedAppIdPath,
+                File.Exists(expectedAppIdPath));
+            return false;
+        }
+
+        ownsSteamApi = true;
+        RegisterSteamShutdown();
+        failure = "";
+        return true;
+    }
+
+    private static void RegisterSteamShutdown()
+    {
+        if (steamShutdownRegistered)
+            return;
+
+        Application.quitting += ShutdownSteamOnApplicationQuit;
+        steamShutdownRegistered = true;
+    }
+#endif
+
+    private static void ShutdownSteamOnApplicationQuit()
+    {
+#if STEAMWORKS_NET
+        if (!ownsSteamApi || !steamApiInitialized)
+            return;
+
+        Debug.Log("[SteamLobbyInviteController] Shutting down Steam API on application quit.");
+        SteamAPI.Shutdown();
+#endif
+
+        steamApiInitialized = false;
+        ownsSteamApi = false;
+        steamShutdownRegistered = false;
     }
 
     private void RefreshStatusPanel()

@@ -135,3 +135,28 @@ Unity 에디터가 열려 있으므로 batchmode 테스트는 실행하지 않�
 - Windows 빌드 후 EXE 옆에 `steam_appid.txt`가 자동 생성된다.
 - 빌드 EXE 직접 실행에서 App ID 파일 누락으로 인한 초기화 실패가 재발하지 않는다.
 - 일반 출시 빌드에는 직접 참가 개발 UI가 노출되지 않는다.
+
+## 후속 수정: Steam 오버레이 재실행 안정화
+
+### 확인된 현상과 원인
+
+- 빌드 로그에서 Steam 계정 연결, 로비 생성, 초대 오버레이 호출은 성공했다.
+- 창을 닫은 직후에도 이전 `DUSTIUM.exe` 프로세스가 Unity 종료 정리를 끝낼 때까지 잠시 남았다.
+- Steam API 초기화가 Lobby 씬의 `Awake()`에서 수행되어 D3D 렌더러보다 늦다.
+- `SteamLobbyInviteController.OnDestroy()`가 `SteamAPI.Shutdown()`을 호출하므로 Steam API 수명이 앱이 아니라 Lobby 씬 오브젝트에 묶여 있다.
+
+### 변경 설계
+
+- `RuntimeInitializeOnLoadType.BeforeSplashScreen`에서 Steam API 초기화를 먼저 시도한다.
+- 조기 초기화가 환경 문제로 실패한 경우 Lobby 컨트롤러가 기존처럼 한 번 재시도한다.
+- Steam API는 프로세스에서 한 번만 소유하며 Lobby 씬 오브젝트 파괴 시 종료하지 않는다.
+- `Application.quitting`에서만 소유한 Steam API를 한 번 종료한다.
+- `GameOverlayActivated_t` 콜백을 등록하여 실제 오버레이 활성화와 비활성화를 로그에 기록한다.
+- 화면의 초대 메시지는 API 호출 요청과 실제 오버레이 활성화를 구분한다.
+
+### 완료 조건
+
+- Steam 초기화 메서드가 `BeforeSplashScreen` 단계에 등록된다.
+- Lobby 씬 오브젝트가 파괴되어도 Steam API가 종료되지 않는다.
+- 앱 종료 시 소유한 Steam API가 한 번 종료된다.
+- 오버레이가 실제 활성화되면 `GameOverlayActivated_t` 로그가 남는다.

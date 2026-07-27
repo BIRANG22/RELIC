@@ -13,6 +13,9 @@ public class SteamLobbyInviteControllerDevUiTests
         Assert.That(
             typeof(SteamLobbyInviteController).GetMethod(nameof(SteamLobbyInviteController.JoinLobbyByIdInput)),
             Is.Not.Null);
+        Assert.That(
+            typeof(SteamLobbyInviteController).GetMethod(nameof(SteamLobbyInviteController.PasteLobbyIdFromClipboard)),
+            Is.Not.Null);
     }
 
     [Test]

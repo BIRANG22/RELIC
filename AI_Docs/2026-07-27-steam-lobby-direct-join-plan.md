@@ -238,3 +238,41 @@ git diff -- Assets/Project/Scripts/Gameplay/Scene/Lobby/SteamLobby Assets/Projec
 - 모든 신규 동작은 실패 테스트를 먼저 작성하도록 분리했다.
 - 문서와 테스트 경로는 프로젝트 규칙을 따른다.
 - 커밋과 PR 단계는 포함하지 않았다.
+
+---
+
+### 후속 작업 6: Steam 오버레이 프로세스 생명주기 안정화
+
+**파일:**
+- 수정: `Assets/Project/Scripts/Gameplay/Scene/Lobby/SteamLobby/SteamLobbyInviteController.cs`
+- 테스트: `Assets/Tests/EditMode~/SteamOverlayLifecycleTests.cs`
+
+**검증 인터페이스:**
+- 조기 초기화: `InitializeSteamBeforeSplashScreen()`
+- 앱 종료: `ShutdownSteamOnApplicationQuit()`
+- 실제 활성 콜백: `OnGameOverlayActivated(GameOverlayActivated_t)`
+
+- [ ] **1단계: 실패하는 조기 초기화 테스트 작성**
+
+Reflection으로 `InitializeSteamBeforeSplashScreen()`에
+`RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)`가 지정됐는지 검증한다.
+
+- [ ] **2단계: RED 확인**
+
+예상: 조기 초기화 메서드가 없어 실패한다.
+
+- [ ] **3단계: 프로세스 단위 초기화·종료 구현**
+
+- 정적 소유 상태와 종료 이벤트 등록 상태를 둔다.
+- BeforeSplashScreen에서 Steam 실행 여부를 확인하고 `SteamAPI.Init()`을 시도한다.
+- Lobby `Awake()`에서는 이미 초기화됐으면 콜백만 등록하고, 실패 상태면 재시도한다.
+- `OnDestroy()`에서는 Steam API를 종료하지 않는다.
+- `Application.quitting`에서만 소유한 Steam API를 종료한다.
+
+- [ ] **4단계: 실제 오버레이 활성 콜백 구현**
+
+`GameOverlayActivated_t.m_bActive`를 확인해 활성/비활성 로그를 남기고, 활성 시 상태창에 실제 활성화 메시지를 표시한다.
+
+- [ ] **5단계: 런타임과 Editor 프로젝트 컴파일**
+
+Unity 에디터가 열려 있으므로 batchmode는 실행하지 않는다. MSBuild로 두 프로젝트의 컴파일 오류가 없는지 확인한다.
