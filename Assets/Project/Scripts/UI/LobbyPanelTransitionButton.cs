@@ -70,6 +70,7 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
     [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
     [SerializeField] private float clickSfxVolumeMultiplier = 1f;
 
+    private LobbyBackgroundStateController backgroundStateController;
     private bool isProcessing;
 
     private void Awake()
@@ -80,7 +81,7 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
             EnsureWorldCollider();
     }
 
-    private void OnMouseDown()
+    private void OnMouseUpAsButton()
     {
         if (!executeOnWorldClick)
             return;
@@ -306,9 +307,76 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
         if (!changeLobbyBackground)
             return;
 
+        if (!TryGetTargetLobbyBackgroundState(out LobbyBackgroundState targetState))
+            return;
+
+        LobbyBackgroundStateController controller = ResolveBackgroundStateController();
+        if (controller != null)
+        {
+            controller.ShowBackground(targetState);
+            return;
+        }
+
+        ApplyLobbyBackgroundFallback(targetState);
+    }
+
+    private bool TryGetTargetLobbyBackgroundState(out LobbyBackgroundState state)
+    {
+        if (transitionMode == PanelTransitionMode.CharacterToLobby)
+        {
+            state = LobbyBackgroundState.Position;
+            return true;
+        }
+
+        if (panelToOpen == null)
+        {
+            state = LobbyBackgroundState.Position;
+            return true;
+        }
+
+        switch (panelToOpen.name)
+        {
+            case "PositionPanel":
+                state = LobbyBackgroundState.Position;
+                return true;
+
+            case "CharacterSettingPanel":
+                state = LobbyBackgroundState.CharacterSetting;
+                return true;
+
+            case "ErosionSelectPanel":
+                state = LobbyBackgroundState.ErosionSelect;
+                return true;
+
+            case "RelicShopPanel":
+                state = LobbyBackgroundState.RelicShop;
+                return true;
+
+            case "CultureTankPanel":
+                state = LobbyBackgroundState.CultureTank;
+                return true;
+
+            default:
+                state = LobbyBackgroundState.Position;
+                return false;
+        }
+    }
+
+    private LobbyBackgroundStateController ResolveBackgroundStateController()
+    {
+        if (backgroundStateController != null)
+            return backgroundStateController;
+
+        backgroundStateController = FindFirstObjectByType<LobbyBackgroundStateController>(
+            FindObjectsInactive.Include);
+        return backgroundStateController;
+    }
+
+    private void ApplyLobbyBackgroundFallback(LobbyBackgroundState targetState)
+    {
         ResolveLobbyBackgrounds();
 
-        GameObject targetBackground = GetTargetLobbyBackground();
+        GameObject targetBackground = GetBackgroundForState(targetState);
         if (targetBackground == null)
             return;
 
@@ -319,29 +387,23 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
         SetBackgroundActive(cultureTankBackground, targetBackground);
     }
 
-    private GameObject GetTargetLobbyBackground()
+    private GameObject GetBackgroundForState(LobbyBackgroundState state)
     {
-        if (transitionMode == PanelTransitionMode.CharacterToLobby)
-            return positionBackground;
-
-        if (panelToOpen == null)
-            return null;
-
-        switch (panelToOpen.name)
+        switch (state)
         {
-            case "PositionPanel":
+            case LobbyBackgroundState.Position:
                 return positionBackground;
 
-            case "CharacterSettingPanel":
+            case LobbyBackgroundState.CharacterSetting:
                 return characterSettingBackground;
 
-            case "ErosionSelectPanel":
+            case LobbyBackgroundState.ErosionSelect:
                 return erosionSelectBackground;
 
-            case "RelicShopPanel":
+            case LobbyBackgroundState.RelicShop:
                 return relicShopBackground;
 
-            case "CultureTankPanel":
+            case LobbyBackgroundState.CultureTank:
                 return cultureTankBackground;
 
             default:

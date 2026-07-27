@@ -10,7 +10,7 @@ public sealed class LobbyRelicShopNpcInteraction : MonoBehaviour
     [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
     [SerializeField, Range(0f, 1f)] private float clickSfxVolume = 1f;
 
-    private void OnMouseDown()
+    private void OnMouseUpAsButton()
     {
         // 메뉴 패널이 열려 있는 동안에는 월드 NPC 클릭을 받지 않는다.
         if (UIPanelButton.IsMenuPanelOpen)

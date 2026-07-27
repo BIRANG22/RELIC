@@ -13,7 +13,7 @@ public sealed class LobbyResearcherCultureTankInteraction : MonoBehaviour
         EnsureWorldCollider();
     }
 
-    private void OnMouseDown()
+    private void OnMouseUpAsButton()
     {
         if (ShouldBlockClick())
             return;
