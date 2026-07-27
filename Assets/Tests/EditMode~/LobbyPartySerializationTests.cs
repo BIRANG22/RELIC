@@ -91,6 +91,28 @@ public class LobbyPartySerializationTests
             Is.False);
     }
 
+    [Test]
+    public void CommandResponse_RoundTripsAcceptanceAndRevision()
+    {
+        LobbyPartyCommandResponse source = new(
+            "request-42",
+            200UL,
+            true,
+            LobbyPartyCommandRejectReason.None,
+            8);
+
+        string payload = LobbyPartySerialization.SerializeCommandResponse(source);
+        bool success = LobbyPartySerialization.TryDeserializeCommandResponse(
+            payload,
+            out var restored);
+
+        Assert.That(success, Is.True);
+        Assert.That(restored.RequestId, Is.EqualTo(source.RequestId));
+        Assert.That(restored.RequesterSteamId, Is.EqualTo(source.RequesterSteamId));
+        Assert.That(restored.Accepted, Is.True);
+        Assert.That(restored.ResultRevision, Is.EqualTo(8));
+    }
+
     private static LobbyPartySnapshot CreateSnapshot()
     {
         return new LobbyPartySnapshot(

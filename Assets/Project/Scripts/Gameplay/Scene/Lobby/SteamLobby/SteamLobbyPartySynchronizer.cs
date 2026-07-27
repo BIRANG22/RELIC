@@ -13,6 +13,7 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
 {
     private const string SnapshotLobbyDataKey = "relic.party.snapshot.v1";
     private const string CommandPrefix = "RELIC_PARTY_CMD_V1:";
+    private const string CommandResultPrefix = "RELIC_PARTY_RESULT_V1:";
     private const int MaxLobbyChatMessageBytes = 4096;
     private const int FirstDefaultSpawnGridIndex = 6;
 
@@ -29,7 +30,33 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
     private ulong localSteamId;
     private ulong originalHostSteamId;
     private LobbyPartyAuthorityState authorityState;
+    private LobbyPartySnapshot authoritativeSnapshot;
+    private PendingLocalCommand pendingLocalCommand;
+    private QueuedLocalIntent queuedLocalIntent;
     private Callback<LobbyChatMsg_t> lobbyChatMessage;
+
+    private sealed class PendingLocalCommand
+    {
+        public LobbyPartyCharacterChangeCommand Command { get; }
+        public long AcceptedRevision { get; set; }
+
+        public PendingLocalCommand(LobbyPartyCharacterChangeCommand command)
+        {
+            Command = command;
+        }
+    }
+
+    private sealed class QueuedLocalIntent
+    {
+        public int SlotIndex { get; }
+        public string CharacterId { get; }
+
+        public QueuedLocalIntent(int slotIndex, string characterId)
+        {
+            SlotIndex = slotIndex;
+            CharacterId = characterId ?? string.Empty;
+        }
+    }
 #endif
 
     private void Awake()
@@ -64,6 +91,9 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
         localSteamId = localId;
         originalHostSteamId = ownerSteamId;
         authorityState = null;
+        authoritativeSnapshot = null;
+        pendingLocalCommand = null;
+        queuedLocalIntent = null;
         AppliedRevision = 0;
         CurrentSnapshot = null;
         IsNetworkPartyActive = true;
@@ -138,6 +168,20 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
 #else
         return false;
 #endif
+    }
+
+    public int FindDisplayedCharacterSlot(string characterId)
+    {
+        if (string.IsNullOrWhiteSpace(characterId) || CurrentSnapshot == null)
+            return -1;
+
+        for (int i = 0; i < CurrentSnapshot.Slots.Count; i++)
+        {
+            if (CurrentSnapshot.Slots[i].CharacterId == characterId)
+                return i;
+        }
+
+        return -1;
     }
 
     public bool IsCharacterUsedByOtherSlot(string characterId, int slotIndex)
@@ -222,22 +266,21 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
             return false;
         }
 
-        LobbyPartyCharacterChangeCommand command =
-            new LobbyPartyCharacterChangeCommand(
-                Guid.NewGuid().ToString("N"),
-                localSteamId,
-                slotIndex,
-                characterId,
-                AppliedRevision);
-
         if (IsLocalHost())
-            return TryApplyHostCommand(command);
+        {
+            LobbyPartyCharacterChangeCommand hostCommand =
+                CreateLocalCommand(slotIndex, characterId);
+            return TryApplyHostCommand(hostCommand).Accepted;
+        }
 
-        string payload = CommandPrefix + LobbyPartySerialization.SerializeCommand(command);
-        byte[] bytes = Encoding.UTF8.GetBytes(payload);
+        if (pendingLocalCommand != null)
+        {
+            queuedLocalIntent = new QueuedLocalIntent(slotIndex, characterId);
+            ApplyOptimisticCharacter(slotIndex, characterId);
+            return true;
+        }
 
-        return bytes.Length <= MaxLobbyChatMessageBytes &&
-               SteamMatchmaking.SendLobbyChatMsg(currentLobbyId, bytes, bytes.Length);
+        return SendClientCommand(slotIndex, characterId);
 #else
         return false;
 #endif
@@ -255,6 +298,9 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
         localSteamId = 0UL;
         originalHostSteamId = 0UL;
         authorityState = null;
+        authoritativeSnapshot = null;
+        pendingLocalCommand = null;
+        queuedLocalIntent = null;
 #endif
 
         IsNetworkPartyActive = false;
@@ -268,6 +314,73 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
     private bool IsLocalHost()
     {
         return localSteamId != 0UL && localSteamId == originalHostSteamId;
+    }
+
+    private LobbyPartyCharacterChangeCommand CreateLocalCommand(
+        int slotIndex,
+        string characterId)
+    {
+        return new LobbyPartyCharacterChangeCommand(
+            Guid.NewGuid().ToString("N"),
+            localSteamId,
+            slotIndex,
+            characterId,
+            AppliedRevision);
+    }
+
+    private bool SendClientCommand(int slotIndex, string characterId)
+    {
+        LobbyPartyCharacterChangeCommand command =
+            CreateLocalCommand(slotIndex, characterId);
+        string payload =
+            CommandPrefix + LobbyPartySerialization.SerializeCommand(command);
+
+        if (!TrySendLobbyChatPayload(payload))
+            return false;
+
+        pendingLocalCommand = new PendingLocalCommand(command);
+        ApplyOptimisticCharacter(slotIndex, characterId);
+        return true;
+    }
+
+    private bool TrySendLobbyChatPayload(string payload)
+    {
+        byte[] bytes = Encoding.UTF8.GetBytes(payload ?? string.Empty);
+
+        return bytes.Length <= MaxLobbyChatMessageBytes &&
+               SteamMatchmaking.SendLobbyChatMsg(
+                   currentLobbyId,
+                   bytes,
+                   bytes.Length);
+    }
+
+    private void ApplyOptimisticCharacter(int slotIndex, string characterId)
+    {
+        if (CurrentSnapshot == null ||
+            slotIndex < 0 ||
+            slotIndex >= CurrentSnapshot.Slots.Count)
+        {
+            return;
+        }
+
+        LobbyPartySlotState[] slots =
+            new LobbyPartySlotState[CurrentSnapshot.Slots.Count];
+
+        for (int i = 0; i < slots.Length; i++)
+        {
+            LobbyPartySlotState source = CurrentSnapshot.Slots[i];
+            slots[i] = new LobbyPartySlotState(
+                source.SlotIndex,
+                source.OwnerSteamId,
+                i == slotIndex ? characterId : source.CharacterId);
+        }
+
+        CurrentSnapshot = new LobbyPartySnapshot(
+            CurrentSnapshot.HostSteamId,
+            CurrentSnapshot.Revision,
+            CurrentSnapshot.OrderedClientSteamIds,
+            slots);
+        RefreshOptimisticViews();
     }
 
     private int FindOwnedEmptySlot()
@@ -374,7 +487,6 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
     private void OnLobbyChatMessage(LobbyChatMsg_t callback)
     {
         if (!IsNetworkPartyActive ||
-            !IsLocalHost() ||
             callback.m_ulSteamIDLobby != currentLobbyId.m_SteamID)
         {
             return;
@@ -394,9 +506,23 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
 
         string payload = Encoding.UTF8.GetString(buffer, 0, byteCount);
 
-        if (!payload.StartsWith(CommandPrefix, StringComparison.Ordinal))
-            return;
+        if (payload.StartsWith(CommandPrefix, StringComparison.Ordinal))
+        {
+            if (IsLocalHost())
+                HandleHostCommandPayload(payload, senderId);
 
+            return;
+        }
+
+        if (payload.StartsWith(CommandResultPrefix, StringComparison.Ordinal) &&
+            senderId.m_SteamID == originalHostSteamId)
+        {
+            HandleClientCommandResultPayload(payload);
+        }
+    }
+
+    private void HandleHostCommandPayload(string payload, CSteamID senderId)
+    {
         string commandJson = payload.Substring(CommandPrefix.Length);
 
         if (!LobbyPartySerialization.TryDeserializeCommand(commandJson, out var command) ||
@@ -405,13 +531,27 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
             return;
         }
 
-        TryApplyHostCommand(command);
+        LobbyPartyCommandResult result = TryApplyHostCommand(command);
+        LobbyPartyCommandResponse response = new LobbyPartyCommandResponse(
+            command.RequestId,
+            command.RequesterSteamId,
+            result.Accepted,
+            result.RejectReason,
+            authorityState != null ? authorityState.Revision : 0);
+        string responsePayload =
+            CommandResultPrefix +
+            LobbyPartySerialization.SerializeCommandResponse(response);
+        TrySendLobbyChatPayload(responsePayload);
     }
 
-    private bool TryApplyHostCommand(LobbyPartyCharacterChangeCommand command)
+    private LobbyPartyCommandResult TryApplyHostCommand(
+        LobbyPartyCharacterChangeCommand command)
     {
         if (authorityState == null)
-            return false;
+        {
+            return LobbyPartyCommandResult.Reject(
+                LobbyPartyCommandRejectReason.UnknownMember);
+        }
 
         LobbyPartyCommandResult result = authorityState.TryChangeCharacter(
             command,
@@ -423,11 +563,44 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
                 "[SteamLobbyPartySynchronizer] Party command rejected: " +
                 result.RejectReason,
                 this);
-            return false;
+            return result;
         }
 
         PublishSnapshot();
-        return true;
+        return result;
+    }
+
+    private void HandleClientCommandResultPayload(string payload)
+    {
+        if (IsLocalHost() || pendingLocalCommand == null)
+            return;
+
+        string responseJson = payload.Substring(CommandResultPrefix.Length);
+
+        if (!LobbyPartySerialization.TryDeserializeCommandResponse(
+                responseJson,
+                out var response) ||
+            response.RequesterSteamId != localSteamId ||
+            response.RequestId != pendingLocalCommand.Command.RequestId)
+        {
+            return;
+        }
+
+        if (!response.Accepted)
+        {
+            Debug.LogWarning(
+                "[SteamLobbyPartySynchronizer] Party command rejected: " +
+                response.RejectReason,
+                this);
+            pendingLocalCommand = null;
+            queuedLocalIntent = null;
+            CurrentSnapshot = authoritativeSnapshot;
+            RefreshOptimisticViews();
+            return;
+        }
+
+        pendingLocalCommand.AcceptedRevision = response.ResultRevision;
+        TryCompletePendingCommand();
     }
 
     private bool IsValidCharacterId(string characterId)
@@ -491,10 +664,56 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
         }
 
         ApplySnapshotToPartyRuntime(snapshot);
-        CurrentSnapshot = snapshot;
+        authoritativeSnapshot = snapshot;
         AppliedRevision = snapshot.Revision;
+
+        if (IsLocalHost() || pendingLocalCommand == null)
+            CurrentSnapshot = snapshot;
+
         RefreshPartyViews();
         PartyStateApplied?.Invoke();
+        TryCompletePendingCommand();
+    }
+
+    private void TryCompletePendingCommand()
+    {
+        if (IsLocalHost() ||
+            pendingLocalCommand == null ||
+            authoritativeSnapshot == null ||
+            pendingLocalCommand.AcceptedRevision <= 0 ||
+            authoritativeSnapshot.Revision < pendingLocalCommand.AcceptedRevision)
+        {
+            return;
+        }
+
+        pendingLocalCommand = null;
+        CurrentSnapshot = authoritativeSnapshot;
+
+        QueuedLocalIntent queuedIntent = queuedLocalIntent;
+        queuedLocalIntent = null;
+
+        if (queuedIntent == null)
+        {
+            RefreshOptimisticViews();
+            return;
+        }
+
+        string authoritativeCharacter =
+            authoritativeSnapshot.Slots[queuedIntent.SlotIndex].CharacterId;
+
+        if (authoritativeCharacter == queuedIntent.CharacterId)
+        {
+            RefreshOptimisticViews();
+            return;
+        }
+
+        if (!RequestCharacterChange(
+                queuedIntent.SlotIndex,
+                queuedIntent.CharacterId))
+        {
+            CurrentSnapshot = authoritativeSnapshot;
+            RefreshOptimisticViews();
+        }
     }
 
     private static void ApplySnapshotToPartyRuntime(LobbyPartySnapshot snapshot)
@@ -520,6 +739,16 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
         }
     }
 #endif
+
+    private static void RefreshOptimisticViews()
+    {
+        CharBtn[] charButtons = FindObjectsByType<CharBtn>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < charButtons.Length; i++)
+            charButtons[i]?.RefreshSelectedPartyMarker();
+    }
 
     private static void RefreshPartyViews()
     {

@@ -76,7 +76,7 @@ public class SteamLobbyPartyUiBoundaryTests
     }
 
     [Test]
-    public void SelectedPartyMarker_ReadsAuthoritativeStoreInNetworkParty()
+    public void SelectedPartyMarker_ReadsSynchronizerDisplayStateInNetworkParty()
     {
         string charBtn = File.ReadAllText(
             "Assets/Project/Scripts/Gameplay/Scene/Lobby/CharBtn.cs");
@@ -84,9 +84,21 @@ public class SteamLobbyPartyUiBoundaryTests
             SteamLobbyRoot + "SteamLobbyPartySynchronizer.cs");
 
         Assert.That(charBtn, Does.Contain("IsNetworkPartyActive"));
-        Assert.That(charBtn, Does.Contain(
-            "PartyRuntimeStore.FindCharacterSlot(characterId)"));
+        Assert.That(charBtn, Does.Contain("FindDisplayedCharacterSlot"));
         Assert.That(synchronizer, Does.Contain(
             "charButtons[i]?.RefreshSelectedPartyMarker()"));
+    }
+
+    [Test]
+    public void ClientPartyCommands_UseOptimisticDisplayAndSinglePendingRequest()
+    {
+        string source = File.ReadAllText(
+            SteamLobbyRoot + "SteamLobbyPartySynchronizer.cs");
+
+        Assert.That(source, Does.Contain("pendingLocalCommand"));
+        Assert.That(source, Does.Contain("queuedLocalIntent"));
+        Assert.That(source, Does.Contain("ApplyOptimisticCharacter"));
+        Assert.That(source, Does.Contain("TryCompletePendingCommand"));
+        Assert.That(source, Does.Contain("CommandResultPrefix"));
     }
 }

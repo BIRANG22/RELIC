@@ -71,6 +71,29 @@ public sealed class LobbyPartyCharacterChangeCommand
     }
 }
 
+public sealed class LobbyPartyCommandResponse
+{
+    public string RequestId { get; }
+    public ulong RequesterSteamId { get; }
+    public bool Accepted { get; }
+    public LobbyPartyCommandRejectReason RejectReason { get; }
+    public long ResultRevision { get; }
+
+    public LobbyPartyCommandResponse(
+        string requestId,
+        ulong requesterSteamId,
+        bool accepted,
+        LobbyPartyCommandRejectReason rejectReason,
+        long resultRevision)
+    {
+        RequestId = requestId ?? string.Empty;
+        RequesterSteamId = requesterSteamId;
+        Accepted = accepted;
+        RejectReason = rejectReason;
+        ResultRevision = resultRevision;
+    }
+}
+
 public enum LobbyPartyCommandRejectReason
 {
     None,

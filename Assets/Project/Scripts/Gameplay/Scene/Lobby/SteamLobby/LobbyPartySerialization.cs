@@ -29,6 +29,17 @@ public static class LobbyPartySerialization
     }
 
     [Serializable]
+    private sealed class CommandResponseDto
+    {
+        public int version;
+        public string requestId;
+        public string requesterSteamId;
+        public bool accepted;
+        public int rejectReason;
+        public long resultRevision;
+    }
+
+    [Serializable]
     private sealed class SlotDto
     {
         public int slotIndex;
@@ -118,6 +129,60 @@ public static class LobbyPartySerialization
         }
 
         return JsonUtility.ToJson(dto);
+    }
+
+    public static string SerializeCommandResponse(LobbyPartyCommandResponse response)
+    {
+        if (response == null)
+            return string.Empty;
+
+        CommandResponseDto dto = new CommandResponseDto
+        {
+            version = ProtocolVersion,
+            requestId = response.RequestId,
+            requesterSteamId = ToText(response.RequesterSteamId),
+            accepted = response.Accepted,
+            rejectReason = (int)response.RejectReason,
+            resultRevision = response.ResultRevision
+        };
+
+        return JsonUtility.ToJson(dto);
+    }
+
+    public static bool TryDeserializeCommandResponse(
+        string payload,
+        out LobbyPartyCommandResponse response)
+    {
+        response = null;
+
+        if (string.IsNullOrWhiteSpace(payload))
+            return false;
+
+        try
+        {
+            CommandResponseDto dto = JsonUtility.FromJson<CommandResponseDto>(payload);
+
+            if (dto == null ||
+                dto.version != ProtocolVersion ||
+                string.IsNullOrWhiteSpace(dto.requestId) ||
+                !TryParseSteamId(dto.requesterSteamId, out ulong requesterSteamId) ||
+                !Enum.IsDefined(typeof(LobbyPartyCommandRejectReason), dto.rejectReason))
+            {
+                return false;
+            }
+
+            response = new LobbyPartyCommandResponse(
+                dto.requestId,
+                requesterSteamId,
+                dto.accepted,
+                (LobbyPartyCommandRejectReason)dto.rejectReason,
+                dto.resultRevision);
+            return true;
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
     }
 
     public static bool TryDeserializeSnapshot(string payload, out LobbyPartySnapshot snapshot)

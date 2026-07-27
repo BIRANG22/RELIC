@@ -485,15 +485,7 @@ public class CharBtn : MonoBehaviour,
         SteamLobbyPartySynchronizer synchronizer = SteamLobbyPartySynchronizer.Instance;
 
         if (synchronizer != null && synchronizer.IsNetworkPartyActive)
-        {
-            if (DataManager.Instance == null ||
-                DataManager.Instance.PartyRuntimeStore == null)
-            {
-                return -1;
-            }
-
-            return DataManager.Instance.PartyRuntimeStore.FindCharacterSlot(characterId);
-        }
+            return synchronizer.FindDisplayedCharacterSlot(characterId);
 
         if (charPick != null)
             return charPick.FindPendingPartySlot(characterId);
