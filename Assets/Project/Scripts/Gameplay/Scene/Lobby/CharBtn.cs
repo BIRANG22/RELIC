@@ -343,6 +343,14 @@ public class CharBtn : MonoBehaviour,
         var partyStore = DataManager.Instance.PartyRuntimeStore;
         int selectedSlot = CharacterSelectionState.Instance.CurrentPartySlotIndex;
 
+        SteamLobbyPartySynchronizer synchronizer = SteamLobbyPartySynchronizer.Instance;
+
+        if (synchronizer != null && synchronizer.IsNetworkPartyActive)
+        {
+            synchronizer.RequestCharacterChange(selectedSlot, characterId);
+            return;
+        }
+
         if (selectedSlot < 0 || selectedSlot >= partyStore.MaxPartyCountValue)
         {
             Debug.LogWarning("[Party] 선택된 파티 슬롯이 없습니다.");
@@ -450,6 +458,7 @@ public class CharBtn : MonoBehaviour,
     public void RefreshSelectedPartyMarker()
     {
         AutoPrepareSelectedPartyMarkerReferences();
+        RefreshNetworkAvailability();
 
         if (!showSelectedPartyMarker)
         {
@@ -732,5 +741,28 @@ public class CharBtn : MonoBehaviour,
         canvasGroup.alpha = visible ? 1f : 0f;
         canvasGroup.blocksRaycasts = visible;
         canvasGroup.interactable = visible;
+
+        if (visible)
+            RefreshNetworkAvailability();
+    }
+
+    public void RefreshNetworkAvailability()
+    {
+        if (canvasGroup == null)
+            return;
+
+        SteamLobbyPartySynchronizer synchronizer = SteamLobbyPartySynchronizer.Instance;
+
+        if (synchronizer == null || !synchronizer.IsNetworkPartyActive)
+            return;
+
+        int selectedSlotIndex = CharacterSelectionState.Instance != null
+            ? CharacterSelectionState.Instance.CurrentPartySlotIndex
+            : -1;
+        bool usedByOtherSlot = synchronizer.IsCharacterUsedByOtherSlot(
+            characterId,
+            selectedSlotIndex);
+
+        canvasGroup.alpha = usedByOtherSlot ? 0.55f : 1f;
     }
 }

@@ -10,8 +10,6 @@ public class PartySlotButton : MonoBehaviour
 
     public void Execute()
     {
-        PlayClickSound();
-
         if (CharacterSelectionState.Instance == null)
         {
             Debug.LogWarning("[PartySlotButton] CharacterSelectionState instance is missing.");
@@ -19,6 +17,16 @@ public class PartySlotButton : MonoBehaviour
         }
 
         int resolvedSlotIndex = ResolveSlotIndex();
+        SteamLobbyPartySynchronizer synchronizer = SteamLobbyPartySynchronizer.Instance;
+
+        if (synchronizer != null &&
+            synchronizer.IsNetworkPartyActive &&
+            !synchronizer.CanLocalPlayerEditSlot(resolvedSlotIndex))
+        {
+            return;
+        }
+
+        PlayClickSound();
         CharacterSelectionState.Instance.SelectPartySlot(resolvedSlotIndex);
 
         Debug.Log($"[PartySlotButton] Selected party slot: {resolvedSlotIndex}", this);

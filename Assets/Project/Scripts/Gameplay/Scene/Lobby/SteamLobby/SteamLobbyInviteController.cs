@@ -1,6 +1,5 @@
 using System.IO;
 using System.Text;
-using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -15,14 +14,12 @@ using Steamworks;
 public class SteamLobbyInviteController : MonoBehaviour
 {
     private const int DefaultMaxMembers = 3;
-    private const float MinSyncInterval = 0.1f;
 
     [Header("Lobby")]
     [SerializeField, Range(1, 250)] private int maxMembers = DefaultMaxMembers;
     [SerializeField] private bool createFriendsOnlyLobby = true;
     [SerializeField] private bool openInviteDialogAfterLobbyCreate = true;
-    [SerializeField] private bool applyLobbyMembersToPartyRuntime = true;
-    [SerializeField, Min(MinSyncInterval)] private float memberDataSyncInterval = 0.5f;
+    [SerializeField] private SteamLobbyPartySynchronizer partySynchronizer;
 
     [Header("Button")]
     [SerializeField] private Button inviteButton;
@@ -37,10 +34,8 @@ public class SteamLobbyInviteController : MonoBehaviour
     private static bool ownsSteamApi;
     private static bool steamShutdownRegistered;
 
-    private readonly string[] lastSyncedCharacterIds = new string[DefaultMaxMembers];
     private bool isCreatingLobby;
     private bool pendingInviteDialog;
-    private float nextMemberSyncTime;
     private string lastStatus = "Steam lobby idle.";
 
 #if STEAMWORKS_NET
@@ -95,10 +90,7 @@ public class SteamLobbyInviteController : MonoBehaviour
     {
 #if STEAMWORKS_NET
         if (steamApiInitialized)
-        {
             SteamAPI.RunCallbacks();
-            SyncLocalMemberDataIfNeeded(false);
-        }
 #endif
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -232,6 +224,12 @@ public class SteamLobbyInviteController : MonoBehaviour
     {
         if (inviteButton == null)
             inviteButton = GetComponent<Button>();
+
+        if (partySynchronizer == null)
+            partySynchronizer = GetComponent<SteamLobbyPartySynchronizer>();
+
+        if (partySynchronizer == null)
+            partySynchronizer = gameObject.AddComponent<SteamLobbyPartySynchronizer>();
     }
 
     private void InitializeSteam()
@@ -331,7 +329,7 @@ public class SteamLobbyInviteController : MonoBehaviour
         SteamMatchmaking.SetLobbyData(currentLobbyId, "game", "RELIC");
         SteamMatchmaking.SetLobbyData(currentLobbyId, "flow", "lobby-invite-smoke-test");
         SteamMatchmaking.SetLobbyData(currentLobbyId, "version", Application.version);
-        SyncLocalMemberDataIfNeeded(true);
+        EnterPartySynchronization();
 
         SetStatus("Lobby created: " + ToSteamIdValue(currentLobbyId));
 
@@ -353,8 +351,7 @@ public class SteamLobbyInviteController : MonoBehaviour
         }
 
         currentLobbyId = new CSteamID(callback.m_ulSteamIDLobby);
-        SyncLocalMemberDataIfNeeded(true);
-        RefreshMembersIntoPartyRuntime();
+        EnterPartySynchronization();
         SetStatus("Lobby entered: " + ToSteamIdValue(currentLobbyId));
         RefreshStatusPanel();
     }
@@ -369,7 +366,8 @@ public class SteamLobbyInviteController : MonoBehaviour
         if (HasCurrentLobby() && callback.m_ulSteamIDLobby != ToSteamIdValue(currentLobbyId))
             return;
 
-        RefreshMembersIntoPartyRuntime();
+        partySynchronizer?.HandleLobbyMembershipChanged();
+        HandlePartyLobbyClosedIfNeeded();
         RefreshStatusPanel();
     }
 
@@ -378,7 +376,8 @@ public class SteamLobbyInviteController : MonoBehaviour
         if (HasCurrentLobby() && callback.m_ulSteamIDLobby != ToSteamIdValue(currentLobbyId))
             return;
 
-        RefreshMembersIntoPartyRuntime();
+        partySynchronizer?.HandleLobbyDataChanged();
+        HandlePartyLobbyClosedIfNeeded();
         RefreshStatusPanel();
     }
 
@@ -439,142 +438,27 @@ public class SteamLobbyInviteController : MonoBehaviour
         return currentLobbyId.IsValid();
     }
 
-    private void SyncLocalMemberDataIfNeeded(bool force)
+    private void EnterPartySynchronization()
     {
-        if (!HasCurrentLobby())
+        if (partySynchronizer == null || !HasCurrentLobby())
             return;
 
-        if (!force && Time.unscaledTime < nextMemberSyncTime)
+        CSteamID localId = SteamUser.GetSteamID();
+        CSteamID ownerId = SteamMatchmaking.GetLobbyOwner(currentLobbyId);
+
+        partySynchronizer.EnterLobby(
+            ToSteamIdValue(currentLobbyId),
+            ToSteamIdValue(localId),
+            ToSteamIdValue(ownerId));
+    }
+
+    private void HandlePartyLobbyClosedIfNeeded()
+    {
+        if (partySynchronizer == null || partySynchronizer.IsNetworkPartyActive)
             return;
 
-        nextMemberSyncTime = Time.unscaledTime + Mathf.Max(MinSyncInterval, memberDataSyncInterval);
-        int localSlotIndex = ResolveLocalMemberSlotIndex();
-        string characterId = ResolveLocalCharacterId(localSlotIndex);
-
-        if (!force && localSlotIndex >= 0 && localSlotIndex < lastSyncedCharacterIds.Length &&
-            lastSyncedCharacterIds[localSlotIndex] == characterId)
-        {
-            return;
-        }
-
-        SteamMatchmaking.SetLobbyMemberData(currentLobbyId, "slotIndex", localSlotIndex.ToString());
-        SteamMatchmaking.SetLobbyMemberData(currentLobbyId, "characterId", characterId ?? "");
-        SteamMatchmaking.SetLobbyMemberData(currentLobbyId, "ready", "false");
-
-        for (int i = 0; i < lastSyncedCharacterIds.Length; i++)
-        {
-            string slotCharacterId = ResolvePartySlotCharacterId(i);
-            SteamMatchmaking.SetLobbyMemberData(currentLobbyId, "partySlot" + i, slotCharacterId ?? "");
-            lastSyncedCharacterIds[i] = i == localSlotIndex ? characterId : lastSyncedCharacterIds[i];
-        }
-
-        RefreshStatusPanel();
-    }
-
-    private int ResolveLocalMemberSlotIndex()
-    {
-        if (!HasCurrentLobby())
-            return 0;
-
-        CSteamID localSteamId = SteamUser.GetSteamID();
-        int memberCount = SteamMatchmaking.GetNumLobbyMembers(currentLobbyId);
-
-        for (int i = 0; i < memberCount; i++)
-        {
-            if (SteamMatchmaking.GetLobbyMemberByIndex(currentLobbyId, i) == localSteamId)
-                return Mathf.Clamp(i, 0, Mathf.Max(0, maxMembers - 1));
-        }
-
-        return 0;
-    }
-
-    private string ResolveLocalCharacterId(int localSlotIndex)
-    {
-        string slotCharacterId = ResolvePartySlotCharacterId(localSlotIndex);
-
-        if (!string.IsNullOrWhiteSpace(slotCharacterId))
-            return slotCharacterId;
-
-        for (int i = 0; i < DefaultMaxMembers; i++)
-        {
-            slotCharacterId = ResolvePartySlotCharacterId(i);
-
-            if (!string.IsNullOrWhiteSpace(slotCharacterId))
-                return slotCharacterId;
-        }
-
-        return "";
-    }
-
-    private string ResolvePartySlotCharacterId(int slotIndex)
-    {
-        if (slotIndex < 0)
-            return "";
-
-        PartyRuntimeStore partyStore = DataManager.Instance != null
-            ? DataManager.Instance.PartyRuntimeStore
-            : null;
-
-        if (partyStore == null || slotIndex >= partyStore.MaxPartyCountValue)
-            return "";
-
-        return partyStore.GetCharacterId(slotIndex) ?? "";
-    }
-
-    private void RefreshMembersIntoPartyRuntime()
-    {
-        if (!applyLobbyMembersToPartyRuntime || !HasCurrentLobby())
-            return;
-
-        if (DataManager.Instance == null || DataManager.Instance.PartyRuntimeStore == null)
-            return;
-
-        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
-        int maxPartyCount = Mathf.Min(partyStore.MaxPartyCountValue, maxMembers);
-        int memberCount = Mathf.Min(SteamMatchmaking.GetNumLobbyMembers(currentLobbyId), maxPartyCount);
-
-        partyStore.Clear();
-
-        for (int i = 0; i < memberCount; i++)
-        {
-            CSteamID memberId = SteamMatchmaking.GetLobbyMemberByIndex(currentLobbyId, i);
-            string characterId = SteamMatchmaking.GetLobbyMemberData(currentLobbyId, memberId, "characterId");
-
-            if (string.IsNullOrWhiteSpace(characterId))
-                continue;
-
-            partyStore.SetCharacter(i, characterId);
-            partyStore.SetSpawnGridIndex(i, 6 + i);
-        }
-
-        RefreshPartyViews();
-    }
-
-    private void RefreshPartyViews()
-    {
-        PartySlot[] partySlots = FindObjectsByType<PartySlot>(
-            FindObjectsInactive.Include,
-            FindObjectsSortMode.None);
-
-        for (int i = 0; i < partySlots.Length; i++)
-            partySlots[i]?.RefreshFromRuntime();
-
-        LobbyPartyStatusIconPresenter[] presenters = FindObjectsByType<LobbyPartyStatusIconPresenter>(
-            FindObjectsInactive.Include,
-            FindObjectsSortMode.None);
-
-        for (int i = 0; i < presenters.Length; i++)
-            presenters[i]?.Refresh();
-
-        SpawnGridPanel[] spawnGridPanels = FindObjectsByType<SpawnGridPanel>(
-            FindObjectsInactive.Include,
-            FindObjectsSortMode.None);
-
-        for (int i = 0; i < spawnGridPanels.Length; i++)
-        {
-            spawnGridPanels[i]?.AutoPlacePartyIfNeeded();
-            spawnGridPanels[i]?.Refresh();
-        }
+        currentLobbyId = default;
+        SetStatus("Host left. Returned to local party editing.");
     }
 #endif
 
@@ -852,22 +736,28 @@ public class SteamLobbyInviteController : MonoBehaviour
         builder.Append(ToSteamIdValue(currentLobbyId));
         builder.AppendLine();
 
-        int memberCount = SteamMatchmaking.GetNumLobbyMembers(currentLobbyId);
+        LobbyPartySnapshot snapshot = partySynchronizer != null
+            ? partySynchronizer.CurrentSnapshot
+            : null;
 
-        for (int i = 0; i < memberCount; i++)
+        if (snapshot == null)
+            return builder.Append("Synchronizing party...").ToString();
+
+        for (int i = 0; i < snapshot.Slots.Count; i++)
         {
-            CSteamID memberId = SteamMatchmaking.GetLobbyMemberByIndex(currentLobbyId, i);
-            string personaName = SteamFriends.GetFriendPersonaName(memberId);
-            string slotIndex = SteamMatchmaking.GetLobbyMemberData(currentLobbyId, memberId, "slotIndex");
-            string characterId = SteamMatchmaking.GetLobbyMemberData(currentLobbyId, memberId, "characterId");
+            LobbyPartySlotState slot = snapshot.Slots[i];
+            CSteamID ownerId = new CSteamID(slot.OwnerSteamId);
+            string personaName = SteamFriends.GetFriendPersonaName(ownerId);
 
             builder.Append(i + 1);
             builder.Append(". ");
-            builder.Append(string.IsNullOrWhiteSpace(personaName) ? ToSteamIdValue(memberId).ToString() : personaName);
-            builder.Append(" / slot ");
-            builder.Append(string.IsNullOrWhiteSpace(slotIndex) ? i.ToString() : slotIndex);
+            builder.Append(string.IsNullOrWhiteSpace(personaName)
+                ? slot.OwnerSteamId.ToString()
+                : personaName);
             builder.Append(" / ");
-            builder.Append(string.IsNullOrWhiteSpace(characterId) ? "no character" : characterId);
+            builder.Append(string.IsNullOrWhiteSpace(slot.CharacterId)
+                ? "no character"
+                : slot.CharacterId);
             builder.AppendLine();
         }
 
