@@ -203,6 +203,22 @@ public class LobbyPartyAuthorityStateTests
             "C");
     }
 
+    [Test]
+    public void ClearCharacter_BySlotOwner_EmptiesSlotAndUpdatesRevision()
+    {
+        LobbyPartyAuthorityState state = CreateABC();
+        state.AddClient(200UL);
+        long revision = state.Revision;
+
+        LobbyPartyCommandResult result = state.TryChangeCharacter(
+            Command(200UL, 2, string.Empty, revision),
+            _ => false);
+
+        Assert.That(result.Accepted, Is.True);
+        Assert.That(state.GetSlot(2).CharacterId, Is.Empty);
+        Assert.That(state.Revision, Is.EqualTo(revision + 1));
+    }
+
     private static LobbyPartyAuthorityState CreateABC()
     {
         return LobbyPartyAuthorityState.CreateHost(100UL, new[] { "A", "B", "C" });

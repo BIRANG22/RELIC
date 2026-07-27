@@ -157,14 +157,67 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
         return false;
     }
 
+    public bool CanLocalPlayerSelectCharacter(string characterId)
+    {
+        if (!IsNetworkPartyActive)
+            return true;
+
+#if STEAMWORKS_NET
+        if (CurrentSnapshot == null || string.IsNullOrWhiteSpace(characterId))
+            return false;
+
+        for (int i = 0; i < CurrentSnapshot.Slots.Count; i++)
+        {
+            LobbyPartySlotState slot = CurrentSnapshot.Slots[i];
+
+            if (slot.CharacterId == characterId)
+                return slot.OwnerSteamId == localSteamId;
+        }
+
+        return FindOwnedEmptySlot() >= 0;
+#else
+        return false;
+#endif
+    }
+
+    public bool RequestAutomaticCharacterToggle(string characterId)
+    {
+#if STEAMWORKS_NET
+        if (!IsNetworkPartyActive ||
+            CurrentSnapshot == null ||
+            string.IsNullOrWhiteSpace(characterId))
+        {
+            return false;
+        }
+
+        for (int i = 0; i < CurrentSnapshot.Slots.Count; i++)
+        {
+            LobbyPartySlotState slot = CurrentSnapshot.Slots[i];
+
+            if (slot.CharacterId != characterId)
+                continue;
+
+            if (slot.OwnerSteamId != localSteamId)
+                return false;
+
+            return RequestCharacterChange(i, string.Empty);
+        }
+
+        int emptySlotIndex = FindOwnedEmptySlot();
+        return emptySlotIndex >= 0 &&
+               RequestCharacterChange(emptySlotIndex, characterId);
+#else
+        return false;
+#endif
+    }
+
     public bool RequestCharacterChange(int slotIndex, string characterId)
     {
 #if STEAMWORKS_NET
         if (!IsNetworkPartyActive ||
             CurrentSnapshot == null ||
             !CanLocalPlayerEditSlot(slotIndex) ||
-            IsCharacterUsedByOtherSlot(characterId, slotIndex) ||
-            string.IsNullOrWhiteSpace(characterId))
+            IsCharacterUsedByOtherSlot(characterId, slotIndex))
         {
             return false;
         }
@@ -215,6 +268,25 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
     private bool IsLocalHost()
     {
         return localSteamId != 0UL && localSteamId == originalHostSteamId;
+    }
+
+    private int FindOwnedEmptySlot()
+    {
+        if (CurrentSnapshot == null)
+            return -1;
+
+        for (int i = 0; i < CurrentSnapshot.Slots.Count; i++)
+        {
+            LobbyPartySlotState slot = CurrentSnapshot.Slots[i];
+
+            if (slot.OwnerSteamId == localSteamId &&
+                string.IsNullOrWhiteSpace(slot.CharacterId))
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     private void EnsureSteamCallbacks()

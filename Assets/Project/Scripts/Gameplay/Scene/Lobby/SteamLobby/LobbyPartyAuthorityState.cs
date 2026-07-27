@@ -137,14 +137,19 @@ public sealed class LobbyPartyAuthorityState
         if (command.KnownRevision != Revision)
             return LobbyPartyCommandResult.Reject(LobbyPartyCommandRejectReason.StaleRevision);
 
-        if (string.IsNullOrWhiteSpace(command.RequestedCharacterId) ||
-            isValidCharacterId == null ||
-            !isValidCharacterId(command.RequestedCharacterId))
+        bool isClearRequest = string.IsNullOrWhiteSpace(command.RequestedCharacterId);
+
+        if (isClearRequest && string.IsNullOrWhiteSpace(targetSlot.CharacterId))
+            return LobbyPartyCommandResult.Reject(LobbyPartyCommandRejectReason.InvalidCharacter);
+
+        if (!isClearRequest &&
+            (isValidCharacterId == null ||
+             !isValidCharacterId(command.RequestedCharacterId)))
         {
             return LobbyPartyCommandResult.Reject(LobbyPartyCommandRejectReason.InvalidCharacter);
         }
 
-        for (int i = 0; i < SlotCount; i++)
+        for (int i = 0; !isClearRequest && i < SlotCount; i++)
         {
             if (i != command.SlotIndex &&
                 slots[i].CharacterId == command.RequestedCharacterId)

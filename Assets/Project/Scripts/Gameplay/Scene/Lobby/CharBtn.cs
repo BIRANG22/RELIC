@@ -347,7 +347,7 @@ public class CharBtn : MonoBehaviour,
 
         if (synchronizer != null && synchronizer.IsNetworkPartyActive)
         {
-            synchronizer.RequestCharacterChange(selectedSlot, characterId);
+            synchronizer.RequestAutomaticCharacterToggle(characterId);
             return;
         }
 
@@ -756,13 +756,8 @@ public class CharBtn : MonoBehaviour,
         if (synchronizer == null || !synchronizer.IsNetworkPartyActive)
             return;
 
-        int selectedSlotIndex = CharacterSelectionState.Instance != null
-            ? CharacterSelectionState.Instance.CurrentPartySlotIndex
-            : -1;
-        bool usedByOtherSlot = synchronizer.IsCharacterUsedByOtherSlot(
-            characterId,
-            selectedSlotIndex);
-
-        canvasGroup.alpha = usedByOtherSlot ? 0.55f : 1f;
+        canvasGroup.alpha = synchronizer.CanLocalPlayerSelectCharacter(characterId)
+            ? 1f
+            : 0.55f;
     }
 }

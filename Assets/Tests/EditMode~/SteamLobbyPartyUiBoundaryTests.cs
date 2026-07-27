@@ -49,9 +49,29 @@ public class SteamLobbyPartyUiBoundaryTests
         string charBtn = File.ReadAllText(
             "Assets/Project/Scripts/Gameplay/Scene/Lobby/CharBtn.cs");
 
-        Assert.That(charPick, Does.Contain("RequestCharacterChange"));
-        Assert.That(charBtn, Does.Contain("RequestCharacterChange"));
+        Assert.That(charPick, Does.Contain("RequestAutomaticCharacterToggle"));
+        Assert.That(charBtn, Does.Contain("RequestAutomaticCharacterToggle"));
         Assert.That(charPick, Does.Contain("IsNetworkPartyActive"));
         Assert.That(charBtn, Does.Contain("IsNetworkPartyActive"));
+    }
+
+    [Test]
+    public void InviteController_DoesNotHandleCtrlVPasteInParallelWithTmpInputField()
+    {
+        string source = File.ReadAllText(
+            SteamLobbyRoot + "SteamLobbyInviteController.cs");
+
+        Assert.That(source, Does.Not.Contain("HandleLobbyIdPasteShortcut"));
+        Assert.That(source, Does.Not.Contain("keyboard.vKey.wasPressedThisFrame"));
+    }
+
+    [Test]
+    public void Synchronizer_ProvidesAutomaticOwnedSlotToggle()
+    {
+        string source = File.ReadAllText(
+            SteamLobbyRoot + "SteamLobbyPartySynchronizer.cs");
+
+        Assert.That(source, Does.Contain("RequestAutomaticCharacterToggle"));
+        Assert.That(source, Does.Contain("FindOwnedEmptySlot"));
     }
 }

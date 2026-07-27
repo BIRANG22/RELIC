@@ -176,17 +176,7 @@ public class CharPick : MonoBehaviour
 
         if (synchronizer != null && synchronizer.IsNetworkPartyActive)
         {
-            int selectedSlotIndex = CharacterSelectionState.Instance != null
-                ? CharacterSelectionState.Instance.CurrentPartySlotIndex
-                : -1;
-
-            if (!synchronizer.CanLocalPlayerEditSlot(selectedSlotIndex) ||
-                synchronizer.IsCharacterUsedByOtherSlot(characterId, selectedSlotIndex))
-            {
-                return;
-            }
-
-            synchronizer.RequestCharacterChange(selectedSlotIndex, characterId);
+            synchronizer.RequestAutomaticCharacterToggle(characterId);
             return;
         }
 

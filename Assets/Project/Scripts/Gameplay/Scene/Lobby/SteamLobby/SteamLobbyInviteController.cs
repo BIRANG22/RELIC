@@ -2,8 +2,6 @@ using System.IO;
 using System.Text;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 #if STEAMWORKS_NET
@@ -93,9 +91,6 @@ public class SteamLobbyInviteController : MonoBehaviour
             SteamAPI.RunCallbacks();
 #endif
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-        HandleLobbyIdPasteShortcut();
-#endif
     }
 
     private void OnDestroy()
@@ -197,28 +192,6 @@ public class SteamLobbyInviteController : MonoBehaviour
         lobbyIdInput.ActivateInputField();
         SetStatus("Lobby ID pasted.");
     }
-
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-    private void HandleLobbyIdPasteShortcut()
-    {
-        if (lobbyIdInput == null ||
-            EventSystem.current == null ||
-            EventSystem.current.currentSelectedGameObject != lobbyIdInput.gameObject)
-        {
-            return;
-        }
-
-        Keyboard keyboard = Keyboard.current;
-
-        if (keyboard == null)
-            return;
-
-        bool controlPressed = keyboard.leftCtrlKey.isPressed || keyboard.rightCtrlKey.isPressed;
-
-        if (controlPressed && keyboard.vKey.wasPressedThisFrame)
-            PasteLobbyIdFromClipboard();
-    }
-#endif
 
     private void BindReferences()
     {
