@@ -59,6 +59,9 @@ public class BattleRoomLoader : MonoBehaviour
     [Header("Grid Effects")]
     [SerializeField] private BattleGridEffectController gridEffectController;
 
+    [Header("Tutorial")]
+    [SerializeField] private BattleFirstTutorialController firstBattleTutorialController;
+
     private readonly List<MonsterUnit> spawnedMonsterUnits = new();
     private readonly List<PlayerHUDSlot> playerHudSlots = new();
     private readonly List<PlayerHUDSlot> playerHudNumberOrder = new();
@@ -85,6 +88,20 @@ public class BattleRoomLoader : MonoBehaviour
             return;
 
         timelineController = Object.FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Include);
+    }
+
+    private void EnsureFirstBattleTutorialController()
+    {
+        if (firstBattleTutorialController != null)
+            return;
+
+        firstBattleTutorialController = GetComponent<BattleFirstTutorialController>();
+
+        if (firstBattleTutorialController == null)
+        {
+            firstBattleTutorialController =
+                Object.FindFirstObjectByType<BattleFirstTutorialController>(FindObjectsInactive.Include);
+        }
     }
 
     public void RefreshBattleHUDs()
@@ -1189,6 +1206,11 @@ public class BattleRoomLoader : MonoBehaviour
         }
 
         OpenSelectedCharacterSkillListWhenInputReady();
+
+        EnsureFirstBattleTutorialController();
+
+        if (firstBattleTutorialController != null)
+            firstBattleTutorialController.TryStartTutorialIfNeeded();
     }
 
     public void PlanNextMonsterTurns()
