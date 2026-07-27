@@ -49,6 +49,23 @@ public sealed class LobbyCultureTankPanelTests
     }
 
     [Test]
+    public void ResearcherInteraction_UsesMouseReleaseInsteadOfMousePress()
+    {
+        string sourcePath = System.IO.Path.Combine(
+            UnityEngine.Application.dataPath,
+            "Project",
+            "Scripts",
+            "Gameplay",
+            "Scene",
+            "Lobby",
+            "LobbyResearcherCultureTankInteraction.cs");
+        string source = System.IO.File.ReadAllText(sourcePath);
+
+        Assert.That(source, Does.Contain("private void OnMouseUpAsButton()"));
+        Assert.That(source, Does.Not.Contain("private void OnMouseDown()"));
+    }
+
+    [Test]
     public void AutoBinder_SourceContainsResearcherBindingRule()
     {
         string sourcePath = System.IO.Path.Combine(
