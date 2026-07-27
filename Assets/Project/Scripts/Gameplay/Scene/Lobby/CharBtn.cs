@@ -343,6 +343,14 @@ public class CharBtn : MonoBehaviour,
         var partyStore = DataManager.Instance.PartyRuntimeStore;
         int selectedSlot = CharacterSelectionState.Instance.CurrentPartySlotIndex;
 
+        SteamLobbyPartySynchronizer synchronizer = SteamLobbyPartySynchronizer.Instance;
+
+        if (synchronizer != null && synchronizer.IsNetworkPartyActive)
+        {
+            synchronizer.RequestAutomaticCharacterToggle(characterId);
+            return;
+        }
+
         if (selectedSlot < 0 || selectedSlot >= partyStore.MaxPartyCountValue)
         {
             Debug.LogWarning("[Party] 선택된 파티 슬롯이 없습니다.");
@@ -450,6 +458,7 @@ public class CharBtn : MonoBehaviour,
     public void RefreshSelectedPartyMarker()
     {
         AutoPrepareSelectedPartyMarkerReferences();
+        RefreshNetworkAvailability();
 
         if (!showSelectedPartyMarker)
         {
@@ -472,6 +481,11 @@ public class CharBtn : MonoBehaviour,
     {
         if (string.IsNullOrWhiteSpace(characterId))
             return -1;
+
+        SteamLobbyPartySynchronizer synchronizer = SteamLobbyPartySynchronizer.Instance;
+
+        if (synchronizer != null && synchronizer.IsNetworkPartyActive)
+            return synchronizer.FindDisplayedCharacterSlot(characterId);
 
         if (charPick != null)
             return charPick.FindPendingPartySlot(characterId);
@@ -732,5 +746,23 @@ public class CharBtn : MonoBehaviour,
         canvasGroup.alpha = visible ? 1f : 0f;
         canvasGroup.blocksRaycasts = visible;
         canvasGroup.interactable = visible;
+
+        if (visible)
+            RefreshNetworkAvailability();
+    }
+
+    public void RefreshNetworkAvailability()
+    {
+        if (canvasGroup == null)
+            return;
+
+        SteamLobbyPartySynchronizer synchronizer = SteamLobbyPartySynchronizer.Instance;
+
+        if (synchronizer == null || !synchronizer.IsNetworkPartyActive)
+            return;
+
+        canvasGroup.alpha = synchronizer.CanLocalPlayerSelectCharacter(characterId)
+            ? 1f
+            : 0.55f;
     }
 }

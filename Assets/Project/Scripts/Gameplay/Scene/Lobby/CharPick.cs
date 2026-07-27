@@ -172,6 +172,14 @@ public class CharPick : MonoBehaviour
         if (string.IsNullOrWhiteSpace(characterId))
             return;
 
+        SteamLobbyPartySynchronizer synchronizer = SteamLobbyPartySynchronizer.Instance;
+
+        if (synchronizer != null && synchronizer.IsNetworkPartyActive)
+        {
+            synchronizer.RequestAutomaticCharacterToggle(characterId);
+            return;
+        }
+
         EnsurePendingSlotCount();
 
         int registeredSlot = pendingCharacterIds.IndexOf(characterId);
@@ -229,6 +237,13 @@ public class CharPick : MonoBehaviour
     /// </summary>
     public void ConfirmCurrentCharacter(bool withClickSound)
     {
+        RefreshPartyViews();
+        RefreshAllSelectedPartyMarkers();
+    }
+
+    public void RefreshFromPartyRuntime()
+    {
+        ResetPendingSelectionFromRuntime();
         RefreshPartyViews();
         RefreshAllSelectedPartyMarkers();
     }

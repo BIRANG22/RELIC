@@ -62,6 +62,27 @@ public class PartySlot : MonoBehaviour
             currentCharacterId = DataManager.Instance.PartyRuntimeStore.GetCharacterId(partyIndex);
 
         RefreshVisual();
+        RefreshOwnershipVisual();
+    }
+
+    public void RefreshOwnershipVisual()
+    {
+        SteamLobbyPartySynchronizer synchronizer = SteamLobbyPartySynchronizer.Instance;
+        bool canEdit = synchronizer == null ||
+                       !synchronizer.IsNetworkPartyActive ||
+                       synchronizer.CanLocalPlayerEditSlot(partyIndex);
+        Button button = GetComponent<Button>();
+
+        if (button != null)
+            button.interactable = canEdit;
+
+        CanvasGroup canvasGroup = GetComponent<CanvasGroup>();
+
+        if (canvasGroup != null)
+        {
+            canvasGroup.interactable = canEdit;
+            canvasGroup.alpha = canEdit ? 1f : 0.72f;
+        }
     }
 
     private void RefreshVisual()
