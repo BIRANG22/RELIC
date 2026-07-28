@@ -164,7 +164,164 @@ public class LobbyPartyAuthorityStateTests
     }
 
     [Test]
-    public void ChangeCharacter_WithStaleRevision_IsRejected()
+    public void ViewCharacter_ByKnownMember_UpdatesViewedCharacterAndRevision()
+    {
+        LobbyPartyAuthorityState state = CreateABC();
+        state.AddClient(200UL);
+        long revision = state.Revision;
+
+        LobbyPartyCommandResult result = state.TryViewCharacter(
+            ViewCommand(200UL, "D", revision),
+            _ => true);
+
+        Assert.That(result.Accepted, Is.True);
+        Assert.That(result.RejectReason, Is.EqualTo(LobbyPartyCommandRejectReason.None));
+        Assert.That(state.GetViewedCharacterId(200UL), Is.EqualTo("D"));
+        Assert.That(state.Revision, Is.EqualTo(revision + 1));
+    }
+
+    [Test]
+    public void ViewCharacter_AlreadyViewedByOtherMember_IsRejected()
+    {
+        LobbyPartyAuthorityState state = CreateABC();
+        state.AddClient(200UL);
+        state.AddClient(300UL);
+
+        LobbyPartyCommandResult first = state.TryViewCharacter(
+            ViewCommand(100UL, "D", state.Revision),
+            _ => true);
+        long revision = state.Revision;
+
+        LobbyPartyCommandResult second = state.TryViewCharacter(
+            ViewCommand(200UL, "D", revision),
+            _ => true);
+
+        Assert.That(first.Accepted, Is.True);
+        AssertRejectedWithoutMutation(
+            state,
+            second,
+            LobbyPartyCommandRejectReason.CharacterLockedByOtherMember,
+            revision,
+            2,
+            "B");
+        Assert.That(state.GetViewedCharacterId(100UL), Is.EqualTo("D"));
+        Assert.That(state.GetViewedCharacterId(200UL), Is.Empty);
+    }
+
+    [Test]
+    public void ChangeCharacter_AlreadyViewedByOtherMember_IsRejected()
+    {
+        LobbyPartyAuthorityState state = CreateABC();
+        state.AddClient(200UL);
+
+        LobbyPartyCommandResult view = state.TryViewCharacter(
+            ViewCommand(100UL, "D", state.Revision),
+            _ => true);
+        long revision = state.Revision;
+
+        LobbyPartyCommandResult change = state.TryChangeCharacter(
+            Command(200UL, 2, "D", revision),
+            _ => true);
+
+        Assert.That(view.Accepted, Is.True);
+        AssertRejectedWithoutMutation(
+            state,
+            change,
+            LobbyPartyCommandRejectReason.CharacterLockedByOtherMember,
+            revision,
+            2,
+            "C");
+    }
+
+    [Test]
+    public void ViewCharacter_ReplacesPreviousViewedCharacterAndReleasesOldLock()
+    {
+        LobbyPartyAuthorityState state = CreateABC();
+        state.AddClient(200UL);
+        state.AddClient(300UL);
+
+        LobbyPartyCommandResult first = state.TryViewCharacter(
+            ViewCommand(100UL, "D", state.Revision),
+            _ => true);
+        LobbyPartyCommandResult second = state.TryViewCharacter(
+            ViewCommand(100UL, "E", state.Revision),
+            _ => true);
+        LobbyPartyCommandResult third = state.TryViewCharacter(
+            ViewCommand(200UL, "D", state.Revision),
+            _ => true);
+
+        Assert.That(first.Accepted, Is.True);
+        Assert.That(second.Accepted, Is.True);
+        Assert.That(third.Accepted, Is.True);
+        Assert.That(state.GetViewedCharacterId(100UL), Is.EqualTo("E"));
+        Assert.That(state.GetViewedCharacterId(200UL), Is.EqualTo("D"));
+    }
+
+    [Test]
+    public void ClearViewedCharacter_ReleasesViewedCharacterLock()
+    {
+        LobbyPartyAuthorityState state = CreateABC();
+        state.AddClient(200UL);
+        state.AddClient(300UL);
+
+        LobbyPartyCommandResult first = state.TryViewCharacter(
+            ViewCommand(100UL, "D", state.Revision),
+            _ => true);
+        LobbyPartyCommandResult clear = state.TryViewCharacter(
+            ViewCommand(100UL, string.Empty, state.Revision),
+            _ => false);
+        LobbyPartyCommandResult second = state.TryViewCharacter(
+            ViewCommand(200UL, "D", state.Revision),
+            _ => true);
+
+        Assert.That(first.Accepted, Is.True);
+        Assert.That(clear.Accepted, Is.True);
+        Assert.That(second.Accepted, Is.True);
+        Assert.That(state.GetViewedCharacterId(100UL), Is.Empty);
+        Assert.That(state.GetViewedCharacterId(200UL), Is.EqualTo("D"));
+    }
+
+    [Test]
+    public void ClearCharacter_BySlotOwner_AllowsClearWhileRequesterViewsSameCharacter()
+    {
+        LobbyPartyAuthorityState state = CreateABC();
+        state.AddClient(200UL);
+
+        LobbyPartyCommandResult view = state.TryViewCharacter(
+            ViewCommand(200UL, "C", state.Revision),
+            _ => true);
+        long revision = state.Revision;
+
+        LobbyPartyCommandResult clear = state.TryChangeCharacter(
+            Command(200UL, 2, string.Empty, revision),
+            _ => false);
+
+        Assert.That(view.Accepted, Is.True);
+        Assert.That(clear.Accepted, Is.True);
+        Assert.That(state.GetSlot(2).CharacterId, Is.Empty);
+        Assert.That(state.GetViewedCharacterId(200UL), Is.EqualTo("C"));
+    }
+
+    [Test]
+    public void ClearEmptyCharacterSlot_IsAcceptedAsNoOp()
+    {
+        LobbyPartyAuthorityState state = LobbyPartyAuthorityState.CreateHost(
+            100UL,
+            new[] { "A", "B", "" });
+        long revision = state.Revision;
+
+        LobbyPartyCommandResult result = state.TryChangeCharacter(
+            Command(100UL, 2, string.Empty, revision),
+            _ => false);
+
+        Assert.That(result.Accepted, Is.True);
+        Assert.That(result.RejectReason, Is.EqualTo(LobbyPartyCommandRejectReason.None));
+        Assert.That(state.GetSlot(2).CharacterId, Is.Empty);
+        Assert.That(state.Revision, Is.EqualTo(revision));
+    }
+
+    [Test]
+    public void ChangeCharacter_WithStaleRevision_AppliesAgainstCurrentHostState()
     {
         LobbyPartyAuthorityState state = CreateABC();
         state.AddClient(200UL);
@@ -174,13 +331,10 @@ public class LobbyPartyAuthorityStateTests
             Command(200UL, 2, "D", revision - 1),
             _ => true);
 
-        AssertRejectedWithoutMutation(
-            state,
-            result,
-            LobbyPartyCommandRejectReason.StaleRevision,
-            revision,
-            2,
-            "C");
+        Assert.That(result.Accepted, Is.True);
+        Assert.That(result.RejectReason, Is.EqualTo(LobbyPartyCommandRejectReason.None));
+        Assert.That(state.GetSlot(2).CharacterId, Is.EqualTo("D"));
+        Assert.That(state.Revision, Is.EqualTo(revision + 1));
     }
 
     [Test]
@@ -242,6 +396,18 @@ public class LobbyPartyAuthorityStateTests
             "request-1",
             requester,
             slotIndex,
+            characterId,
+            revision);
+    }
+
+    private static LobbyPartyViewedCharacterCommand ViewCommand(
+        ulong requester,
+        string characterId,
+        long revision)
+    {
+        return new LobbyPartyViewedCharacterCommand(
+            "view-request-1",
+            requester,
             characterId,
             revision);
     }

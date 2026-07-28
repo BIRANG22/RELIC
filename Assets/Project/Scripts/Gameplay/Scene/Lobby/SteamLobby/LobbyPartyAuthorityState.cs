@@ -8,6 +8,7 @@ public sealed class LobbyPartyAuthorityState
 
     private readonly List<ulong> orderedClientSteamIds = new(MaxClientCount);
     private readonly LobbyPartySlotState[] slots = new LobbyPartySlotState[SlotCount];
+    private readonly Dictionary<ulong, string> viewedCharacterIds = new();
 
     public ulong HostSteamId { get; }
     public long Revision { get; private set; }
@@ -97,6 +98,7 @@ public sealed class LobbyPartyAuthorityState
 
         int previousClientCount = orderedClientSteamIds.Count;
         orderedClientSteamIds.RemoveAt(removedIndex);
+        viewedCharacterIds.Remove(clientSteamId);
 
         if (previousClientCount == 1)
         {
@@ -119,6 +121,55 @@ public sealed class LobbyPartyAuthorityState
         return ChangedMembership();
     }
 
+    public string GetViewedCharacterId(ulong memberSteamId)
+    {
+        return viewedCharacterIds.TryGetValue(memberSteamId, out string characterId)
+            ? characterId
+            : string.Empty;
+    }
+
+    public LobbyPartyCommandResult TryViewCharacter(
+        LobbyPartyViewedCharacterCommand command,
+        Func<string, bool> isValidCharacterId)
+    {
+        if (command == null || !ContainsMember(command.RequesterSteamId))
+            return LobbyPartyCommandResult.Reject(LobbyPartyCommandRejectReason.UnknownMember);
+
+        bool isClearRequest = string.IsNullOrWhiteSpace(command.ViewedCharacterId);
+        string currentCharacterId = GetViewedCharacterId(command.RequesterSteamId);
+
+        if (isClearRequest)
+        {
+            if (string.IsNullOrWhiteSpace(currentCharacterId))
+                return LobbyPartyCommandResult.Accept(CreateSnapshot());
+
+            viewedCharacterIds.Remove(command.RequesterSteamId);
+            Revision++;
+            return LobbyPartyCommandResult.Accept(CreateSnapshot());
+        }
+
+        if (isValidCharacterId == null ||
+            !isValidCharacterId(command.ViewedCharacterId))
+        {
+            return LobbyPartyCommandResult.Reject(LobbyPartyCommandRejectReason.InvalidCharacter);
+        }
+
+        if (IsCharacterLockedByOtherMember(
+                command.ViewedCharacterId,
+                command.RequesterSteamId))
+        {
+            return LobbyPartyCommandResult.Reject(
+                LobbyPartyCommandRejectReason.CharacterLockedByOtherMember);
+        }
+
+        if (currentCharacterId == command.ViewedCharacterId)
+            return LobbyPartyCommandResult.Accept(CreateSnapshot());
+
+        viewedCharacterIds[command.RequesterSteamId] = command.ViewedCharacterId;
+        Revision++;
+        return LobbyPartyCommandResult.Accept(CreateSnapshot());
+    }
+
     public LobbyPartyCommandResult TryChangeCharacter(
         LobbyPartyCharacterChangeCommand command,
         Func<string, bool> isValidCharacterId)
@@ -134,19 +185,26 @@ public sealed class LobbyPartyAuthorityState
         if (targetSlot.OwnerSteamId != command.RequesterSteamId)
             return LobbyPartyCommandResult.Reject(LobbyPartyCommandRejectReason.NotSlotOwner);
 
-        if (command.KnownRevision != Revision)
-            return LobbyPartyCommandResult.Reject(LobbyPartyCommandRejectReason.StaleRevision);
-
         bool isClearRequest = string.IsNullOrWhiteSpace(command.RequestedCharacterId);
 
         if (isClearRequest && string.IsNullOrWhiteSpace(targetSlot.CharacterId))
-            return LobbyPartyCommandResult.Reject(LobbyPartyCommandRejectReason.InvalidCharacter);
+            return LobbyPartyCommandResult.Accept(CreateSnapshot());
 
         if (!isClearRequest &&
             (isValidCharacterId == null ||
              !isValidCharacterId(command.RequestedCharacterId)))
         {
             return LobbyPartyCommandResult.Reject(LobbyPartyCommandRejectReason.InvalidCharacter);
+        }
+
+        if (!isClearRequest && targetSlot.CharacterId == command.RequestedCharacterId)
+            return LobbyPartyCommandResult.Accept(CreateSnapshot());
+
+        if (!isClearRequest &&
+            IsViewedByOtherMember(command.RequestedCharacterId, command.RequesterSteamId))
+        {
+            return LobbyPartyCommandResult.Reject(
+                LobbyPartyCommandRejectReason.CharacterLockedByOtherMember);
         }
 
         for (int i = 0; !isClearRequest && i < SlotCount; i++)
@@ -177,11 +235,14 @@ public sealed class LobbyPartyAuthorityState
                 slot.CharacterId);
         }
 
+        LobbyPartyMemberViewState[] viewedCharacters = CreateViewedCharacterSnapshot();
+
         return new LobbyPartySnapshot(
             HostSteamId,
             Revision,
             orderedClientSteamIds,
-            snapshotSlots);
+            snapshotSlots,
+            viewedCharacters);
     }
 
     private void SetSlot(int slotIndex, ulong ownerSteamId, string characterId)
@@ -197,6 +258,66 @@ public sealed class LobbyPartyAuthorityState
     private LobbyPartyMembershipResult UnchangedMembership()
     {
         return new LobbyPartyMembershipResult(false, CreateSnapshot());
+    }
+
+    private LobbyPartyMemberViewState[] CreateViewedCharacterSnapshot()
+    {
+        List<LobbyPartyMemberViewState> result = new();
+        AddViewedCharacterSnapshot(result, HostSteamId);
+
+        for (int i = 0; i < orderedClientSteamIds.Count; i++)
+            AddViewedCharacterSnapshot(result, orderedClientSteamIds[i]);
+
+        return result.ToArray();
+    }
+
+    private void AddViewedCharacterSnapshot(
+        List<LobbyPartyMemberViewState> result,
+        ulong memberSteamId)
+    {
+        string characterId = GetViewedCharacterId(memberSteamId);
+
+        if (string.IsNullOrWhiteSpace(characterId))
+            return;
+
+        result.Add(new LobbyPartyMemberViewState(memberSteamId, characterId));
+    }
+
+    private bool IsCharacterLockedByOtherMember(string characterId, ulong requesterSteamId)
+    {
+        return IsAssignedToOtherMember(characterId, requesterSteamId) ||
+               IsViewedByOtherMember(characterId, requesterSteamId);
+    }
+
+    private bool IsAssignedToOtherMember(string characterId, ulong requesterSteamId)
+    {
+        if (string.IsNullOrWhiteSpace(characterId))
+            return false;
+
+        for (int i = 0; i < SlotCount; i++)
+        {
+            if (slots[i].OwnerSteamId != requesterSteamId &&
+                slots[i].CharacterId == characterId)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool IsViewedByOtherMember(string characterId, ulong requesterSteamId)
+    {
+        if (string.IsNullOrWhiteSpace(characterId))
+            return false;
+
+        foreach (KeyValuePair<ulong, string> pair in viewedCharacterIds)
+        {
+            if (pair.Key != requesterSteamId && pair.Value == characterId)
+                return true;
+        }
+
+        return false;
     }
 
     private static bool IsValidSlot(int slotIndex)
