@@ -66,7 +66,13 @@ public sealed class LobbySkillUpgradePanelUI : MonoBehaviour
 
     public void TuneSelectedSkill()
     {
-        Debug.Log($"[LobbySkillUpgradePanelUI] 강화 버튼 입력. 선택 여부: {selection.HasSelection}");
+        Debug.Log($"[LobbySkillUpgradePanelUI] 강화 버튼 ?�력. ?�택 ?��?: {selection.HasSelection}");
+
+        if (!CanLocalPlayerMutateHostOnlyState())
+        {
+            BattleWarningUI.ShowMessage("Only the host can upgrade in multiplayer lobby.");
+            return;
+        }
 
         if (!selection.HasSelection)
         {
@@ -76,7 +82,7 @@ public sealed class LobbySkillUpgradePanelUI : MonoBehaviour
 
         if (DataManager.Instance == null)
         {
-            Debug.LogError("[LobbySkillUpgradePanelUI] DataManager.Instance가 없어 강화를 실행할 수 없습니다.");
+            Debug.LogError("[LobbySkillUpgradePanelUI] DataManager.Instance가 ?�어 강화�??�행?????�습?�다.");
             return;
         }
 
@@ -86,18 +92,19 @@ public sealed class LobbySkillUpgradePanelUI : MonoBehaviour
 
         if (!result.Succeeded)
         {
-            Debug.LogWarning($"[LobbySkillUpgradePanelUI] 강화 실패: {result.Failure}, 가격: {result.Price}");
+            Debug.LogWarning($"[LobbySkillUpgradePanelUI] 강화 ?�패: {result.Failure}, 가�? {result.Price}");
             ShowFailure(result.Failure);
             RefreshPrice();
             return;
         }
 
-        Debug.Log($"[LobbySkillUpgradePanelUI] 강화 성공. 소모: {result.Price}, 잔액: {lobby.BlueDustium}");
+        Debug.Log($"[LobbySkillUpgradePanelUI] 강화 ?�공. ?�모: {result.Price}, ?�액: {lobby.BlueDustium}");
         LobbyBlueDustiumHudUI.RefreshAll();
         EquippedSkillPanelUI.RefreshAll();
         SkillInventoryPanelUI.RefreshAll();
         ClearSelection();
         Refresh();
+        PublishHostSnapshotAfterLocalMutation();
     }
 
     private void Refresh()
@@ -183,7 +190,7 @@ public sealed class LobbySkillUpgradePanelUI : MonoBehaviour
     private void OnItemClicked(SkillUpgradeRequest request, Sprite icon)
     {
         selection.Select(request);
-        Debug.Log($"[LobbySkillUpgradePanelUI] 스킬 클릭 선택: {request.CurrentSkillId} -> {request.UpgradeSkillId}");
+        Debug.Log($"[LobbySkillUpgradePanelUI] ?�킬 ?�릭 ?�택: {request.CurrentSkillId} -> {request.UpgradeSkillId}");
         CacheSelectedDefaults();
         Image selectedImage = ResolveSelectedSkillIconImage();
         if (selectedImage != null)
@@ -197,8 +204,8 @@ public sealed class LobbySkillUpgradePanelUI : MonoBehaviour
 
     private void ShowSkillInfo(SkillUpgradeRequest request)
     {
-        // 이 패널은 호버 시 상세 정보가 표시되므로, 화면상 미리보기 대상과
-        // 실제 강화 대상을 동일하게 유지한다.
+        // ???�널?� ?�버 ???�세 ?�보가 ?�시?��?�? ?�면??미리보기 ?�?�과
+        // ?�제 강화 ?�?�을 ?�일?�게 ?��??�다.
         selection.Select(request);
 
         DataManager manager = DataManager.Instance;
@@ -226,8 +233,8 @@ public sealed class LobbySkillUpgradePanelUI : MonoBehaviour
     private static void ShowFailure(LobbySkillUpgradeFailure failure)
     {
         string message = failure == LobbySkillUpgradeFailure.InsufficientBlueDustium
-            ? "BlueDustium이 부족합니다."
-            : "스킬을 강화할 수 없습니다.";
+            ? "BlueDustium??부족합?�다."
+            : "?�킬??강화?????�습?�다.";
         BattleWarningUI.ShowMessage(message);
     }
 
@@ -339,6 +346,20 @@ public sealed class LobbySkillUpgradePanelUI : MonoBehaviour
             rect.sizeDelta = ResolveIconSize();
             rect.localScale = Vector3.one;
         }
+    }
+
+    private static bool CanLocalPlayerMutateHostOnlyState()
+    {
+        SteamLobbySharedStateSynchronizer synchronizer =
+            SteamLobbySharedStateSynchronizer.Instance;
+        return synchronizer == null ||
+               synchronizer.CanLocalPlayerMutateHostOnlyState();
+    }
+
+    private static void PublishHostSnapshotAfterLocalMutation()
+    {
+        SteamLobbySharedStateSynchronizer.Instance
+            ?.PublishHostSnapshotAfterLocalMutation();
     }
 
     private void BindPanelButtons()

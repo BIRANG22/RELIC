@@ -18,6 +18,7 @@ public class SteamLobbyInviteController : MonoBehaviour
     [SerializeField] private bool createFriendsOnlyLobby = true;
     [SerializeField] private bool openInviteDialogAfterLobbyCreate = true;
     [SerializeField] private SteamLobbyPartySynchronizer partySynchronizer;
+    [SerializeField] private SteamLobbySharedStateSynchronizer sharedStateSynchronizer;
 
     [Header("Button")]
     [SerializeField] private Button inviteButton;
@@ -196,6 +197,12 @@ public class SteamLobbyInviteController : MonoBehaviour
 
         if (partySynchronizer == null)
             partySynchronizer = gameObject.AddComponent<SteamLobbyPartySynchronizer>();
+
+        if (sharedStateSynchronizer == null)
+            sharedStateSynchronizer = GetComponent<SteamLobbySharedStateSynchronizer>();
+
+        if (sharedStateSynchronizer == null)
+            sharedStateSynchronizer = gameObject.AddComponent<SteamLobbySharedStateSynchronizer>();
     }
 
     private void InitializeSteam()
@@ -333,6 +340,7 @@ public class SteamLobbyInviteController : MonoBehaviour
             return;
 
         partySynchronizer?.HandleLobbyMembershipChanged();
+        sharedStateSynchronizer?.HandleLobbyMembershipChanged();
         HandlePartyLobbyClosedIfNeeded();
         RefreshStatusPanel();
     }
@@ -343,6 +351,7 @@ public class SteamLobbyInviteController : MonoBehaviour
             return;
 
         partySynchronizer?.HandleLobbyDataChanged();
+        sharedStateSynchronizer?.HandleLobbyDataChanged();
         HandlePartyLobbyClosedIfNeeded();
         RefreshStatusPanel();
     }
@@ -416,6 +425,11 @@ public class SteamLobbyInviteController : MonoBehaviour
             ToSteamIdValue(currentLobbyId),
             ToSteamIdValue(localId),
             ToSteamIdValue(ownerId));
+
+        sharedStateSynchronizer?.EnterLobby(
+            ToSteamIdValue(currentLobbyId),
+            ToSteamIdValue(localId),
+            ToSteamIdValue(ownerId));
     }
 
     private void HandlePartyLobbyClosedIfNeeded()
@@ -424,6 +438,7 @@ public class SteamLobbyInviteController : MonoBehaviour
             return;
 
         currentLobbyId = default;
+        sharedStateSynchronizer?.LeaveLobby();
         SetStatus("Host left. Returned to local party editing.");
     }
 #endif

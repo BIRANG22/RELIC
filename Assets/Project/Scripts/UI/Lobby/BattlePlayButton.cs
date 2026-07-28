@@ -8,9 +8,9 @@ public class BattlePlayButton : MonoBehaviour
     [SerializeField] private Button button;
 
     [Header("Stage Carousel")]
-    [Tooltip("스테이지 버튼을 캐러셀 방식으로 사용할 때 연결합니다. 비워두면 씬에서 자동으로 찾습니다.")]
+    [Tooltip("?�테?��? 버튼??캐러?� 방식?�로 ?�용?????�결?�니?? 비워?�면 ?�에???�동?�로 찾습?�다.")]
     [SerializeField] private LobbyStageButtonCarousel stageButtonCarousel;
-    [Tooltip("중앙에 있는 스테이지가 잠겨 있을 때 PlayButton을 누르면 입장을 막고 경고를 표시합니다.")]
+    [Tooltip("중앙???�는 ?�테?��?가 ?�겨 ?�을 ??PlayButton???�르�??�장??막고 경고�??�시?�니??")]
     [SerializeField] private bool blockLockedCarouselStage = true;
 
     [Header("Option")]
@@ -20,12 +20,13 @@ public class BattlePlayButton : MonoBehaviour
 
     [Header("Warning UI")]
     [SerializeField] private SettingWarningUI warningUI;
-    [SerializeField] private string lockedStageEnterMessage = "아직 입장할 수 없는 구역입니다.";
-    [SerializeField] private string mapNotSelectedMessage = "스테이지를 선택해야 합니다.";
-    [SerializeField] private string partyEmptyMessage = "캐릭터를 편성해야 합니다.";
-    [SerializeField] private string partyNotFullMessage = "캐릭터 3명을 모두 편성해야 합니다. 현재 {0}/{1}";
-    [SerializeField] private string dataManagerMissingMessage = "데이터 매니저가 없습니다.";
-    [SerializeField] private string gameManagerMissingMessage = "게임 매니저가 없습니다.";
+    [SerializeField] private string lockedStageEnterMessage = "?�직 ?�장?????�는 구역?�니??";
+    [SerializeField] private string mapNotSelectedMessage = "?�테?��?�??�택?�야 ?�니??";
+    [SerializeField] private string partyEmptyMessage = "캐릭?��? ?�성?�야 ?�니??";
+    [SerializeField] private string partyNotFullMessage = "캐릭??3명을 모두 ?�성?�야 ?�니?? ?�재 {0}/{1}";
+    [SerializeField] private string dataManagerMissingMessage = "?�이??매니?�가 ?�습?�다.";
+    [SerializeField] private string gameManagerMissingMessage = "게임 매니?�가 ?�습?�다.";
+    [SerializeField] private string networkClientStartBlockedMessage = "Only the host can start in multiplayer lobby.";
 
     [Header("Sound")]
     [SerializeField] private bool playClickSound = true;
@@ -62,8 +63,14 @@ public class BattlePlayButton : MonoBehaviour
         {
             PlayClickSound();
 
-            // 입장 시점에 현재 중앙에 보이는 구역을 실제 선택값으로 확정합니다.
-            // 캐러셀을 이동한 뒤 구역 버튼을 다시 누르지 않아도 됩니다.
+            if (!CanLocalPlayerMutateHostOnlyState())
+            {
+                ShowWarning(networkClientStartBlockedMessage);
+                return;
+            }
+
+            // ?�장 ?�점???�재 중앙??보이??구역???�제 ?�택값으�??�정?�니??
+            // 캐러?�???�동????구역 버튼???�시 ?�르지 ?�아???�니??
             CommitCenteredCarouselStage();
 
             if (IsLockedCarouselStageCentered())
@@ -82,7 +89,7 @@ public class BattlePlayButton : MonoBehaviour
             if (checkMapSelected && !IsMapSelected())
             {
                 ShowWarning(mapNotSelectedMessage);
-                Debug.LogWarning("[BattlePlayButton] 선택된 챕터/스테이지가 없습니다.");
+                Debug.LogWarning("[BattlePlayButton] ?�택??챕터/?�테?��?가 ?�습?�다.");
                 return;
             }
 
@@ -199,14 +206,14 @@ public class BattlePlayButton : MonoBehaviour
             if (currentCount < requiredCount)
             {
                 ShowWarning(FormatPartyNotFullMessage(currentCount, requiredCount));
-                Debug.LogWarning($"[BattlePlayButton] 파티 인원이 부족합니다. Current:{currentCount} / Required:{requiredCount}");
+                Debug.LogWarning($"[BattlePlayButton] ?�티 ?�원??부족합?�다. Current:{currentCount} / Required:{requiredCount}");
                 return false;
             }
         }
         else if (currentCount <= 0)
         {
             ShowWarning(partyEmptyMessage);
-            Debug.LogWarning("[BattlePlayButton] 파티에 캐릭터가 없습니다.");
+            Debug.LogWarning("[BattlePlayButton] ?�티??캐릭?��? ?�습?�다.");
             return false;
         }
 
@@ -233,7 +240,7 @@ public class BattlePlayButton : MonoBehaviour
     private string FormatPartyNotFullMessage(int currentCount, int requiredCount)
     {
         if (string.IsNullOrWhiteSpace(partyNotFullMessage))
-            return $"캐릭터 {requiredCount}명을 모두 편성해야 합니다. 현재 {currentCount}/{requiredCount}";
+            return $"캐릭??{requiredCount}명을 모두 ?�성?�야 ?�니?? ?�재 {currentCount}/{requiredCount}";
 
         if (partyNotFullMessage.Contains("{0}") || partyNotFullMessage.Contains("{1}"))
             return string.Format(partyNotFullMessage, currentCount, requiredCount);
@@ -286,5 +293,13 @@ public class BattlePlayButton : MonoBehaviour
         return mapData != null &&
                !string.IsNullOrWhiteSpace(mapData.SelectedChapterId) &&
                !string.IsNullOrWhiteSpace(mapData.CurrentStage);
+    }
+
+    private static bool CanLocalPlayerMutateHostOnlyState()
+    {
+        SteamLobbySharedStateSynchronizer synchronizer =
+            SteamLobbySharedStateSynchronizer.Instance;
+        return synchronizer == null ||
+               synchronizer.CanLocalPlayerMutateHostOnlyState();
     }
 }

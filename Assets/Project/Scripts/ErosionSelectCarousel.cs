@@ -123,8 +123,12 @@ public class ErosionSelectCarousel : MonoBehaviour
         if (!TrialUnlockProgress.IsUnlocked(trialIndex))
             return;
 
+        if (!CanLocalPlayerMutateHostOnlyState())
+            return;
+
         TrialSelectionState.Toggle(trialIndex);
         PlayClickSound();
+        PublishHostSnapshotAfterLocalMutation();
     }
 
     public void ToggleTrial1() => ToggleTrial(0);
@@ -311,7 +315,7 @@ public class ErosionSelectCarousel : MonoBehaviour
                 item.selectedVisual.SetActive(selected);
 
             if (item.button != null)
-                item.button.interactable = unlocked;
+                item.button.interactable = unlocked && CanLocalPlayerMutateHostOnlyState();
 
             if (item.nameText != null)
                 item.nameText.text = unlocked ? item.unlockedName : lockedNameText;
@@ -353,6 +357,20 @@ public class ErosionSelectCarousel : MonoBehaviour
             return;
 
         AudioManager.Instance.PlaySfx(clickSfx, clickVolume);
+    }
+
+    private static bool CanLocalPlayerMutateHostOnlyState()
+    {
+        SteamLobbySharedStateSynchronizer synchronizer =
+            SteamLobbySharedStateSynchronizer.Instance;
+        return synchronizer == null ||
+               synchronizer.CanLocalPlayerMutateHostOnlyState();
+    }
+
+    private static void PublishHostSnapshotAfterLocalMutation()
+    {
+        SteamLobbySharedStateSynchronizer.Instance
+            ?.PublishHostSnapshotAfterLocalMutation();
     }
 
     private static GameObject FindNamedChild(Transform target, string childName)
