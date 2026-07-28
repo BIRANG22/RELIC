@@ -102,10 +102,10 @@ public sealed class LobbyCultureTankController : MonoBehaviour
 
         return state switch
         {
-            LobbyCultureTankPanelState.Completed => $"{title}\n?„ë£Œ",
-            LobbyCultureTankPanelState.Running => $"{title}\në°°ì–‘ì¤?{GetPanelRemainingSeconds()}s",
-            LobbyCultureTankPanelState.MissingData => $"{title}\n?°ì´???†ìŒ",
-            _ => $"{title}\në¹„ì–´ ?ˆìŒ"
+            LobbyCultureTankPanelState.Completed => $"{title}\n\uC644\uB8CC",
+            LobbyCultureTankPanelState.Running => $"{title}\n\uBC30\uC591\uC911 {GetPanelRemainingSeconds()}s",
+            LobbyCultureTankPanelState.MissingData => $"{title}\n\uB370\uC774\uD130 \uC5C6\uC74C",
+            _ => $"{title}\n\uBE44\uC5B4 \uC788\uC74C"
         };
     }
 
