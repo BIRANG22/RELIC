@@ -89,9 +89,43 @@ public class SteamLobbyPartyUiBoundaryTests
 
         Assert.That(charPick, Does.Contain("GetLocalViewedCharacterId"));
         Assert.That(charPick, Does.Contain("RefreshFromNetworkPartyState"));
-        Assert.That(charBtn, Does.Contain("CanLocalPlayerViewCharacter"));
+        Assert.That(charBtn, Does.Contain("SetNetworkViewedCharacterState"));
+        Assert.That(charBtn, Does.Contain("remoteViewedCharacterAlpha"));
         Assert.That(synchronizer, Does.Contain("ViewCommandPrefix"));
         Assert.That(synchronizer, Does.Contain("TryApplyHostViewCommand"));
+        Assert.That(synchronizer, Does.Contain("IsCharacterViewedByRemoteMember"));
+    }
+
+    [Test]
+    public void NetworkCharacterViewing_RefreshesOnlyActiveCharacterPickerPanels()
+    {
+        string source = File.ReadAllText(
+            SteamLobbyRoot + "SteamLobbyPartySynchronizer.cs").Replace("\r\n", "\n");
+
+        Assert.That(source, Does.Contain(
+            "FindObjectsByType<CharPick>(\n            FindObjectsInactive.Exclude"));
+    }
+
+    [Test]
+    public void NetworkCharacterViewing_AppliesAuthoritativeSnapshotsImmediately()
+    {
+        string source = File.ReadAllText(
+            SteamLobbyRoot + "SteamLobbyPartySynchronizer.cs").Replace("\r\n", "\n");
+
+        Assert.That(source, Does.Contain("CurrentSnapshot = snapshot;"));
+        Assert.That(source, Does.Not.Contain(
+            "!clientCommandPipeline.HasPendingCommands)\n            CurrentSnapshot = snapshot"));
+    }
+
+    [Test]
+    public void NetworkCharacterSelection_DoesNotBlockClearRequestsWithViewLocks()
+    {
+        string source = File.ReadAllText(
+            SteamLobbyRoot + "SteamLobbyPartySynchronizer.cs");
+
+        Assert.That(source, Does.Contain("bool isClearRequest = string.IsNullOrWhiteSpace(characterId);"));
+        Assert.That(source, Does.Contain("!isClearRequest &&"));
+        Assert.That(source, Does.Contain("IsCharacterViewedByOtherMember(characterId)"));
     }
 
     [Test]

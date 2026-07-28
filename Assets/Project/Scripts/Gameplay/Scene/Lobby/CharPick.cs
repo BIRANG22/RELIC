@@ -425,18 +425,22 @@ public class CharPick : MonoBehaviour
 
         centerIndex = viewedIndex;
         RefreshFixedButtons();
+
+        if (!isActiveAndEnabled || !gameObject.activeInHierarchy)
+        {
+            RefreshViewedCharacterButtons(true);
+            return;
+        }
+
         RefreshCenterInfo();
     }
 
     private void ClearNetworkViewedCharacter()
     {
-        for (int i = 0; i < charBtns.Count; i++)
-        {
-            if (charBtns[i] != null)
-                charBtns[i].SetViewedCharacter(false, true);
-        }
+        RefreshViewedCharacterButtons(true);
 
-        ClearCenterCharacterInfo();
+        if (isActiveAndEnabled && gameObject.activeInHierarchy)
+            ClearCenterCharacterInfo();
     }
 
     private int FindButtonIndexByCharacterId(string characterId)
@@ -908,12 +912,25 @@ public class CharPick : MonoBehaviour
 
     private void RefreshViewedCharacterButtons(bool immediate = false)
     {
+        SteamLobbyPartySynchronizer synchronizer = SteamLobbyPartySynchronizer.Instance;
+        bool isNetworkPartyActive = synchronizer != null && synchronizer.IsNetworkPartyActive;
+
         for (int i = 0; i < charBtns.Count; i++)
         {
             CharBtn button = charBtns[i];
 
             if (button == null)
                 continue;
+
+            if (isNetworkPartyActive)
+            {
+                string characterId = button.CharacterId;
+                button.SetNetworkViewedCharacterState(
+                    synchronizer.IsLocalViewingCharacter(characterId),
+                    synchronizer.IsCharacterViewedByRemoteMember(characterId),
+                    immediate);
+                continue;
+            }
 
             button.SetViewedCharacter(i == centerIndex, immediate);
         }

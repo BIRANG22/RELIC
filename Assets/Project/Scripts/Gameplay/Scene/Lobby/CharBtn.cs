@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -38,6 +39,9 @@ public class CharBtn : MonoBehaviour,
     [Header("현재 보고 있는 캐릭터 표시")]
     [SerializeField] private RectTransform viewedCharacterBorder;
     [SerializeField] private string viewedCharacterBorderName = "BorderImg1";
+    [SerializeField] private RectTransform[] viewedCharacterBorders;
+    [SerializeField] private string[] viewedCharacterBorderNames = { "BorderImg1", "BorderImg2" };
+    [SerializeField, Range(0f, 1f)] private float remoteViewedCharacterAlpha = 0.45f;
     [SerializeField] private float viewedCharacterRotationZ = -10f;
     [SerializeField] private float viewedCharacterScale = 1.2f;
     [SerializeField] private float viewedCharacterTransitionDuration = 0.2f;
@@ -51,9 +55,13 @@ public class CharBtn : MonoBehaviour,
     private ColorBlock originalButtonColors;
     private bool hasOriginalButtonColors;
     private bool isViewedCharacter;
+    private bool isRemoteViewedCharacter;
     private int lastHandledClickFrame = -1;
 
-    private Quaternion viewedCharacterBorderOriginalRotation = Quaternion.identity;
+    private readonly List<RectTransform> viewedCharacterBorderTargets = new();
+    private readonly List<Quaternion> viewedCharacterBorderOriginalRotations = new();
+    private readonly List<Graphic> viewedCharacterBorderGraphics = new();
+    private readonly List<Color> viewedCharacterBorderOriginalColors = new();
     private Vector3 viewedCharacterOriginalScale = Vector3.one;
     private bool hasViewedCharacterOriginalValues;
     private Coroutine viewedCharacterTransitionCoroutine;
@@ -89,7 +97,7 @@ public class CharBtn : MonoBehaviour,
         AutoPrepareViewedCharacterBorder();
         CacheViewedCharacterOriginalValues();
         RefreshSelectedPartyMarker();
-        ApplyViewedCharacterButtonColor(isViewedCharacter);
+        SetNetworkViewedCharacterState(isViewedCharacter, isRemoteViewedCharacter, true);
     }
 
     private void OnDisable()
@@ -459,6 +467,7 @@ public class CharBtn : MonoBehaviour,
     {
         AutoPrepareSelectedPartyMarkerReferences();
         RefreshNetworkAvailability();
+        RefreshNetworkViewedCharacterState(true);
 
         if (!showSelectedPartyMarker)
         {
@@ -583,17 +592,27 @@ public class CharBtn : MonoBehaviour,
     /// </summary>
     public void SetViewedCharacter(bool isViewed, bool immediate = false)
     {
-        isViewedCharacter = isViewed;
-        ApplyViewedCharacterButtonColor(isViewed);
+        SetNetworkViewedCharacterState(isViewed, false, immediate);
+    }
+
+    public void SetNetworkViewedCharacterState(
+        bool isLocalViewed,
+        bool isRemoteViewed,
+        bool immediate = false)
+    {
+        isViewedCharacter = isLocalViewed;
+        isRemoteViewedCharacter = !isLocalViewed && isRemoteViewed;
+        ApplyViewedCharacterButtonColor(isLocalViewed);
 
         AutoPrepareViewedCharacterBorder();
         CacheViewedCharacterOriginalValues();
 
-        if (viewedCharacterBorder == null || rect == null)
+        if (viewedCharacterBorderTargets.Count <= 0 || rect == null)
             return;
 
-        Quaternion targetRotation = GetViewedCharacterTargetRotation(isViewed);
-        Vector3 targetScale = GetViewedCharacterTargetScale(isViewed);
+        bool shouldShowViewedState = isLocalViewed || isRemoteViewed;
+        Vector3 targetScale = GetViewedCharacterTargetScale(shouldShowViewedState);
+        ApplyViewedCharacterBorderAlpha(isRemoteViewedCharacter);
 
         if (viewedCharacterTransitionCoroutine != null)
         {
@@ -603,13 +622,30 @@ public class CharBtn : MonoBehaviour,
 
         if (immediate || !isActiveAndEnabled || !gameObject.activeInHierarchy || viewedCharacterTransitionDuration <= 0f)
         {
-            viewedCharacterBorder.localRotation = targetRotation;
+            ApplyViewedCharacterBorderRotations(shouldShowViewedState);
             rect.localScale = targetScale;
             return;
         }
 
         viewedCharacterTransitionCoroutine = StartCoroutine(
-            AnimateViewedCharacterRoutine(targetRotation, targetScale));
+            AnimateViewedCharacterRoutine(shouldShowViewedState, targetScale));
+    }
+
+    public void RefreshNetworkViewedCharacterState(bool immediate = false)
+    {
+        SteamLobbyPartySynchronizer synchronizer = SteamLobbyPartySynchronizer.Instance;
+
+        if (synchronizer == null || !synchronizer.IsNetworkPartyActive)
+        {
+            if (isRemoteViewedCharacter)
+                SetNetworkViewedCharacterState(isViewedCharacter, false, immediate);
+
+            return;
+        }
+
+        bool isLocalViewed = synchronizer.IsLocalViewingCharacter(characterId);
+        bool isRemoteViewed = synchronizer.IsCharacterViewedByRemoteMember(characterId);
+        SetNetworkViewedCharacterState(isLocalViewed, isRemoteViewed, immediate);
     }
 
 
@@ -650,9 +686,16 @@ public class CharBtn : MonoBehaviour,
                 : originalButtonColors.normalColor;
     }
 
-    private IEnumerator AnimateViewedCharacterRoutine(Quaternion targetRotation, Vector3 targetScale)
+    private IEnumerator AnimateViewedCharacterRoutine(bool isViewed, Vector3 targetScale)
     {
-        Quaternion startRotation = viewedCharacterBorder.localRotation;
+        List<Quaternion> startRotations = new(viewedCharacterBorderTargets.Count);
+
+        for (int i = 0; i < viewedCharacterBorderTargets.Count; i++)
+        {
+            RectTransform border = viewedCharacterBorderTargets[i];
+            startRotations.Add(border != null ? border.localRotation : Quaternion.identity);
+        }
+
         Vector3 startScale = rect.localScale;
         float duration = Mathf.Max(0.01f, viewedCharacterTransitionDuration);
         float elapsed = 0f;
@@ -663,25 +706,51 @@ public class CharBtn : MonoBehaviour,
             float t = Mathf.Clamp01(elapsed / duration);
             t = Mathf.SmoothStep(0f, 1f, t);
 
-            viewedCharacterBorder.localRotation = Quaternion.Slerp(startRotation, targetRotation, t);
+            for (int i = 0; i < viewedCharacterBorderTargets.Count; i++)
+            {
+                RectTransform border = viewedCharacterBorderTargets[i];
+
+                if (border == null)
+                    continue;
+
+                Quaternion targetRotation = GetViewedCharacterTargetRotation(i, isViewed);
+                border.localRotation = Quaternion.Slerp(startRotations[i], targetRotation, t);
+            }
+
             rect.localScale = Vector3.Lerp(startScale, targetScale, t);
             yield return null;
         }
 
-        viewedCharacterBorder.localRotation = targetRotation;
+        ApplyViewedCharacterBorderRotations(isViewed);
         rect.localScale = targetScale;
         viewedCharacterTransitionCoroutine = null;
     }
 
-    private Quaternion GetViewedCharacterTargetRotation(bool isViewed)
+    private void ApplyViewedCharacterBorderRotations(bool isViewed)
+    {
+        for (int i = 0; i < viewedCharacterBorderTargets.Count; i++)
+        {
+            RectTransform border = viewedCharacterBorderTargets[i];
+
+            if (border != null)
+                border.localRotation = GetViewedCharacterTargetRotation(i, isViewed);
+        }
+    }
+
+    private Quaternion GetViewedCharacterTargetRotation(int borderIndex, bool isViewed)
     {
         if (!hasViewedCharacterOriginalValues)
             return Quaternion.identity;
 
-        if (!isViewed)
-            return viewedCharacterBorderOriginalRotation;
+        Quaternion originalRotation =
+            borderIndex >= 0 && borderIndex < viewedCharacterBorderOriginalRotations.Count
+                ? viewedCharacterBorderOriginalRotations[borderIndex]
+                : Quaternion.identity;
 
-        Vector3 originalEuler = viewedCharacterBorderOriginalRotation.eulerAngles;
+        if (!isViewed)
+            return originalRotation;
+
+        Vector3 originalEuler = originalRotation.eulerAngles;
         return Quaternion.Euler(originalEuler.x, originalEuler.y, viewedCharacterRotationZ);
     }
 
@@ -701,41 +770,126 @@ public class CharBtn : MonoBehaviour,
 
     private void AutoPrepareViewedCharacterBorder()
     {
-        if (viewedCharacterBorder != null)
+        if (viewedCharacterBorderTargets.Count > 0)
             return;
 
         string targetName = string.IsNullOrWhiteSpace(viewedCharacterBorderName)
             ? "BorderImg1"
             : viewedCharacterBorderName;
 
+        if (viewedCharacterBorder != null)
+            AddViewedCharacterBorderTarget(viewedCharacterBorder);
+
+        if (viewedCharacterBorders != null)
+        {
+            for (int i = 0; i < viewedCharacterBorders.Length; i++)
+                AddViewedCharacterBorderTarget(viewedCharacterBorders[i]);
+        }
+
+        AddViewedCharacterBorderTarget(FindViewedCharacterBorder(targetName));
+
+        string[] targetNames = viewedCharacterBorderNames;
+
+        if (targetNames == null || targetNames.Length <= 0)
+            targetNames = new[] { "BorderImg1", "BorderImg2" };
+
+        for (int i = 0; i < targetNames.Length; i++)
+        {
+            string name = targetNames[i];
+
+            if (string.IsNullOrWhiteSpace(name))
+                continue;
+
+            AddViewedCharacterBorderTarget(FindViewedCharacterBorder(name));
+        }
+
+        if (viewedCharacterBorder == null && viewedCharacterBorderTargets.Count > 0)
+            viewedCharacterBorder = viewedCharacterBorderTargets[0];
+    }
+
+    private RectTransform FindViewedCharacterBorder(string targetName)
+    {
+        if (string.IsNullOrWhiteSpace(targetName))
+            return null;
+
         Transform found = transform.Find(targetName);
 
-        if (found == null)
-        {
-            Transform[] children = GetComponentsInChildren<Transform>(true);
+        if (found != null)
+            return found as RectTransform;
 
-            for (int i = 0; i < children.Length; i++)
+        Transform[] children = GetComponentsInChildren<Transform>(true);
+
+        for (int i = 0; i < children.Length; i++)
+        {
+            if (children[i] != null && children[i].name == targetName)
             {
-                if (children[i] != null && children[i].name == targetName)
-                {
-                    found = children[i];
-                    break;
-                }
+                found = children[i];
+                break;
             }
         }
 
-        if (found != null)
-            viewedCharacterBorder = found as RectTransform;
+        return found as RectTransform;
+    }
+
+    private void AddViewedCharacterBorderTarget(RectTransform border)
+    {
+        if (border == null || viewedCharacterBorderTargets.Contains(border))
+            return;
+
+        viewedCharacterBorderTargets.Add(border);
     }
 
     private void CacheViewedCharacterOriginalValues()
     {
-        if (hasViewedCharacterOriginalValues || viewedCharacterBorder == null || rect == null)
+        if (hasViewedCharacterOriginalValues || viewedCharacterBorderTargets.Count <= 0 || rect == null)
             return;
 
-        viewedCharacterBorderOriginalRotation = viewedCharacterBorder.localRotation;
+        viewedCharacterBorderOriginalRotations.Clear();
+        viewedCharacterBorderGraphics.Clear();
+        viewedCharacterBorderOriginalColors.Clear();
+
+        for (int i = 0; i < viewedCharacterBorderTargets.Count; i++)
+        {
+            RectTransform border = viewedCharacterBorderTargets[i];
+            viewedCharacterBorderOriginalRotations.Add(border != null
+                ? border.localRotation
+                : Quaternion.identity);
+
+            Graphic graphic = border != null
+                ? border.GetComponent<Graphic>()
+                : null;
+            viewedCharacterBorderGraphics.Add(graphic);
+            viewedCharacterBorderOriginalColors.Add(graphic != null
+                ? graphic.color
+                : Color.white);
+        }
+
         viewedCharacterOriginalScale = rect.localScale;
         hasViewedCharacterOriginalValues = true;
+    }
+
+    private void ApplyViewedCharacterBorderAlpha(bool isRemoteViewed)
+    {
+        if (!hasViewedCharacterOriginalValues)
+            return;
+
+        float alphaMultiplier = isRemoteViewed
+            ? remoteViewedCharacterAlpha
+            : 1f;
+
+        for (int i = 0; i < viewedCharacterBorderGraphics.Count; i++)
+        {
+            Graphic graphic = viewedCharacterBorderGraphics[i];
+
+            if (graphic == null)
+                continue;
+
+            Color originalColor = i < viewedCharacterBorderOriginalColors.Count
+                ? viewedCharacterBorderOriginalColors[i]
+                : graphic.color;
+            originalColor.a *= alphaMultiplier;
+            graphic.color = originalColor;
+        }
     }
 
     public void SetVisible(bool visible)
@@ -761,8 +915,6 @@ public class CharBtn : MonoBehaviour,
         if (synchronizer == null || !synchronizer.IsNetworkPartyActive)
             return;
 
-        canvasGroup.alpha = synchronizer.CanLocalPlayerViewCharacter(characterId)
-            ? 1f
-            : 0.55f;
+        canvasGroup.alpha = 1f;
     }
 }

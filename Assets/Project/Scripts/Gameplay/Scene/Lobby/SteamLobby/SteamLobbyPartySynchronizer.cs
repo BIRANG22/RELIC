@@ -273,6 +273,25 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
         return string.Empty;
     }
 
+    public bool IsLocalViewingCharacter(string characterId)
+    {
+#if STEAMWORKS_NET
+        return !string.IsNullOrWhiteSpace(characterId) &&
+               GetLocalViewedCharacterId() == characterId;
+#else
+        return false;
+#endif
+    }
+
+    public bool IsCharacterViewedByRemoteMember(string characterId)
+    {
+#if STEAMWORKS_NET
+        return IsCharacterViewedByOtherMember(characterId);
+#else
+        return false;
+#endif
+    }
+
     public bool RequestViewedCharacter(string characterId)
     {
 #if STEAMWORKS_NET
@@ -302,8 +321,7 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
 #if STEAMWORKS_NET
         if (!IsNetworkPartyActive ||
             CurrentSnapshot == null ||
-            string.IsNullOrWhiteSpace(characterId) ||
-            !CanLocalPlayerViewCharacter(characterId))
+            string.IsNullOrWhiteSpace(characterId))
         {
             return false;
         }
@@ -321,6 +339,9 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
             return RequestCharacterChange(i, string.Empty);
         }
 
+        if (!CanLocalPlayerViewCharacter(characterId))
+            return false;
+
         int emptySlotIndex = FindOwnedEmptySlot();
         return emptySlotIndex >= 0 &&
                RequestCharacterChange(emptySlotIndex, characterId);
@@ -332,11 +353,14 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
     public bool RequestCharacterChange(int slotIndex, string characterId)
     {
 #if STEAMWORKS_NET
+        bool isClearRequest = string.IsNullOrWhiteSpace(characterId);
+
         if (!IsNetworkPartyActive ||
             CurrentSnapshot == null ||
             !CanLocalPlayerEditSlot(slotIndex) ||
-            IsCharacterUsedByOtherSlot(characterId, slotIndex) ||
-            IsCharacterViewedByOtherMember(characterId))
+            (!isClearRequest &&
+             (IsCharacterUsedByOtherSlot(characterId, slotIndex) ||
+              IsCharacterViewedByOtherMember(characterId))))
         {
             return false;
         }
@@ -815,9 +839,7 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
         AppliedRevision = snapshot.Revision;
 
         clientCommandPipeline.RemoveAcceptedThroughRevision(snapshot.Revision);
-
-        if (IsLocalHost() || !clientCommandPipeline.HasPendingCommands)
-            CurrentSnapshot = snapshot;
+        CurrentSnapshot = snapshot;
 
         RefreshPartyViews();
         PartyStateApplied?.Invoke();
@@ -894,7 +916,7 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
             presenters[i]?.Refresh();
 
         CharPick[] characterPickers = FindObjectsByType<CharPick>(
-            FindObjectsInactive.Include,
+            FindObjectsInactive.Exclude,
             FindObjectsSortMode.None);
 
         for (int i = 0; i < characterPickers.Length; i++)
