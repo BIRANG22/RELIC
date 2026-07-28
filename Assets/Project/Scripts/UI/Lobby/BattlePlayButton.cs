@@ -27,6 +27,7 @@ public class BattlePlayButton : MonoBehaviour
     [SerializeField] private string dataManagerMissingMessage = "?∞Ïù¥??Îß§Îãà?ÄÍ∞Ä ?ÜÏäµ?àÎã§.";
     [SerializeField] private string gameManagerMissingMessage = "Í≤åÏûÑ Îß§Îãà?ÄÍ∞Ä ?ÜÏäµ?àÎã§.";
     [SerializeField] private string networkClientStartBlockedMessage = "Only the host can start in multiplayer lobby.";
+    [SerializeField] private string networkBattleStartSyncFailedMessage = "Failed to synchronize battle start.";
 
     [Header("Sound")]
     [SerializeField] private bool playClickSound = true;
@@ -63,7 +64,7 @@ public class BattlePlayButton : MonoBehaviour
         {
             PlayClickSound();
 
-            if (!CanLocalPlayerMutateHostOnlyState())
+            if (!CanLocalPlayerStartBattle())
             {
                 ShowWarning(networkClientStartBlockedMessage);
                 return;
@@ -103,26 +104,19 @@ public class BattlePlayButton : MonoBehaviour
                 return;
             }
 
-            CommitRuntimeStateContributorsForBattleStart();
+            LobbyBattleEntryService.CommitRuntimeStateContributorsForBattleStart();
 
-            LobbyRuntimeData lobbyRuntime = DataManager.Instance.LobbyRuntimeStore?.GetOrCreate();
-            BattleRuntimeData battleRuntime = DataManager.Instance.BattleRuntimeStore?.GetOrCreate();
-            LobbyBattleRuntimeTransferResult transferResult =
-                new LobbyBattleRuntimeTransferService().Transfer(
-                    lobbyRuntime,
-                    battleRuntime,
-                    DataManager.Instance.CharacterRuntimeStore);
+            if (!TryBroadcastNetworkBattleStart(out LobbyBattleStartCommand battleStartCommand))
+                return;
 
-            if (!transferResult.Succeeded)
+            LobbyBattleEntryResult entryResult =
+                await LobbyBattleEntryService.EnterBattleAsync(battleStartCommand);
+            if (!entryResult.Succeeded)
             {
-                Debug.LogWarning($"[BattlePlayButton] Failed to transfer lobby inventory. {transferResult.Error}");
+                Debug.LogWarning($"[BattlePlayButton] Failed to enter battle. {entryResult.Error}");
+                ShowWarning(entryResult.Error);
                 return;
             }
-
-            DataManager.Instance.BattleRuntimeStore.Set(battleRuntime);
-            BattleRunAbandonService.CaptureLobbyLoadoutSnapshot(DataManager.Instance);
-
-            await GameManager.Instance.StateMachine.ChangeState(GameStateType.Battle);
         }
         finally
         {
@@ -130,28 +124,6 @@ public class BattlePlayButton : MonoBehaviour
 
             if (button != null)
                 button.interactable = true;
-        }
-    }
-
-    private void CommitRuntimeStateContributorsForBattleStart()
-    {
-        MonoBehaviour[] behaviours = FindObjectsByType<MonoBehaviour>(
-            FindObjectsInactive.Include,
-            FindObjectsSortMode.None);
-
-        for (int i = 0; i < behaviours.Length; i++)
-        {
-            if (behaviours[i] is not IRuntimeSaveStateContributor contributor)
-                continue;
-
-            try
-            {
-                contributor.CommitRuntimeStateForSave();
-            }
-            catch (System.Exception exception)
-            {
-                Debug.LogError($"[BattlePlayButton] Failed to commit runtime state before battle start. {exception}");
-            }
         }
     }
 
@@ -295,11 +267,73 @@ public class BattlePlayButton : MonoBehaviour
                !string.IsNullOrWhiteSpace(mapData.CurrentStage);
     }
 
-    private static bool CanLocalPlayerMutateHostOnlyState()
+    private bool TryBroadcastNetworkBattleStart(out LobbyBattleStartCommand command)
     {
-        SteamLobbySharedStateSynchronizer synchronizer =
+        command = null;
+        SteamLobbySharedStateSynchronizer sharedStateSynchronizer =
             SteamLobbySharedStateSynchronizer.Instance;
-        return synchronizer == null ||
-               synchronizer.CanLocalPlayerMutateHostOnlyState();
+        SteamLobbyBattleStartSynchronizer battleStartSynchronizer =
+            SteamLobbyBattleStartSynchronizer.Instance;
+
+        bool networkBattleStartRequired =
+            (sharedStateSynchronizer != null && sharedStateSynchronizer.IsNetworkSharedStateActive) ||
+            (battleStartSynchronizer != null && battleStartSynchronizer.IsNetworkBattleStartActive);
+        if (!networkBattleStartRequired)
+            return true;
+
+        if (battleStartSynchronizer == null ||
+            !battleStartSynchronizer.IsNetworkBattleStartActive)
+        {
+            ShowWarning(networkBattleStartSyncFailedMessage);
+            return false;
+        }
+
+        if (!battleStartSynchronizer.CanLocalPlayerStartBattle())
+        {
+            ShowWarning(networkClientStartBlockedMessage);
+            return false;
+        }
+
+        if (sharedStateSynchronizer == null)
+        {
+            ShowWarning(networkBattleStartSyncFailedMessage);
+            return false;
+        }
+
+        LobbySharedStateSnapshot snapshot =
+            sharedStateSynchronizer.PublishHostSnapshotNow();
+        if (snapshot == null || snapshot.Revision <= 0)
+        {
+            ShowWarning(networkBattleStartSyncFailedMessage);
+            return false;
+        }
+
+        MapRuntimeData mapRuntime = DataManager.Instance?.MapRuntimeStore?.Get();
+        if (!battleStartSynchronizer.TryBroadcastBattleStart(
+                snapshot,
+                mapRuntime,
+                out command))
+        {
+            ShowWarning(networkBattleStartSyncFailedMessage);
+            return false;
+        }
+
+        return true;
+    }
+
+    private static bool CanLocalPlayerStartBattle()
+    {
+        SteamLobbyBattleStartSynchronizer battleStartSynchronizer =
+            SteamLobbyBattleStartSynchronizer.Instance;
+        if (battleStartSynchronizer != null &&
+            !battleStartSynchronizer.CanLocalPlayerStartBattle())
+        {
+            return false;
+        }
+
+        SteamLobbySharedStateSynchronizer sharedStateSynchronizer =
+            SteamLobbySharedStateSynchronizer.Instance;
+        return sharedStateSynchronizer == null ||
+               sharedStateSynchronizer.CanLocalPlayerMutateHostOnlyState();
     }
 }

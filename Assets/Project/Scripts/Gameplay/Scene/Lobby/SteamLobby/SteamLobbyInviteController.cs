@@ -19,6 +19,7 @@ public class SteamLobbyInviteController : MonoBehaviour
     [SerializeField] private bool openInviteDialogAfterLobbyCreate = true;
     [SerializeField] private SteamLobbyPartySynchronizer partySynchronizer;
     [SerializeField] private SteamLobbySharedStateSynchronizer sharedStateSynchronizer;
+    [SerializeField] private SteamLobbyBattleStartSynchronizer battleStartSynchronizer;
 
     [Header("Button")]
     [SerializeField] private Button inviteButton;
@@ -89,6 +90,9 @@ public class SteamLobbyInviteController : MonoBehaviour
 
     private void OnDestroy()
     {
+        battleStartSynchronizer?.LeaveLobby();
+        sharedStateSynchronizer?.LeaveLobby();
+
 #if STEAMWORKS_NET
         lobbyCreatedCallResult?.Dispose();
         lobbyEnterCallResult?.Dispose();
@@ -203,6 +207,12 @@ public class SteamLobbyInviteController : MonoBehaviour
 
         if (sharedStateSynchronizer == null)
             sharedStateSynchronizer = gameObject.AddComponent<SteamLobbySharedStateSynchronizer>();
+
+        if (battleStartSynchronizer == null)
+            battleStartSynchronizer = GetComponent<SteamLobbyBattleStartSynchronizer>();
+
+        if (battleStartSynchronizer == null)
+            battleStartSynchronizer = gameObject.AddComponent<SteamLobbyBattleStartSynchronizer>();
     }
 
     private void InitializeSteam()
@@ -341,6 +351,7 @@ public class SteamLobbyInviteController : MonoBehaviour
 
         partySynchronizer?.HandleLobbyMembershipChanged();
         sharedStateSynchronizer?.HandleLobbyMembershipChanged();
+        battleStartSynchronizer?.HandleLobbyMembershipChanged();
         HandlePartyLobbyClosedIfNeeded();
         RefreshStatusPanel();
     }
@@ -352,6 +363,7 @@ public class SteamLobbyInviteController : MonoBehaviour
 
         partySynchronizer?.HandleLobbyDataChanged();
         sharedStateSynchronizer?.HandleLobbyDataChanged();
+        battleStartSynchronizer?.HandleLobbyDataChanged();
         HandlePartyLobbyClosedIfNeeded();
         RefreshStatusPanel();
     }
@@ -430,6 +442,11 @@ public class SteamLobbyInviteController : MonoBehaviour
             ToSteamIdValue(currentLobbyId),
             ToSteamIdValue(localId),
             ToSteamIdValue(ownerId));
+
+        battleStartSynchronizer?.EnterLobby(
+            ToSteamIdValue(currentLobbyId),
+            ToSteamIdValue(localId),
+            ToSteamIdValue(ownerId));
     }
 
     private void HandlePartyLobbyClosedIfNeeded()
@@ -439,6 +456,7 @@ public class SteamLobbyInviteController : MonoBehaviour
 
         currentLobbyId = default;
         sharedStateSynchronizer?.LeaveLobby();
+        battleStartSynchronizer?.LeaveLobby();
         SetStatus("Host left. Returned to local party editing.");
     }
 #endif

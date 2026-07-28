@@ -159,6 +159,22 @@ public sealed class SteamLobbySharedStateSynchronizer : MonoBehaviour
 #endif
     }
 
+    public LobbySharedStateSnapshot PublishHostSnapshotNow()
+    {
+#if STEAMWORKS_NET
+        if (IsNetworkSharedStateActive && IsLocalHost())
+        {
+            long previousRevision = AppliedRevision;
+            LobbySharedStateSnapshot snapshot = PublishSnapshot();
+            return snapshot != null && snapshot.Revision > previousRevision
+                ? snapshot
+                : null;
+        }
+#endif
+
+        return CurrentSnapshot;
+    }
+
     public bool RequestEquipRelic(
         string characterId,
         int relicSlotIndex,
