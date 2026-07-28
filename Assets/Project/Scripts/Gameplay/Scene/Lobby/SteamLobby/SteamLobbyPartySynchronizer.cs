@@ -15,6 +15,7 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
     private const string CommandPrefix = "RELIC_PARTY_CMD_V1:";
     private const string ViewCommandPrefix = "RELIC_PARTY_VIEW_CMD_V1:";
     private const string CommandResultPrefix = "RELIC_PARTY_RESULT_V1:";
+    private const string SnapshotBroadcastPrefix = "RELIC_PARTY_SNAPSHOT_V1:";
     private const int MaxLobbyChatMessageBytes = 4096;
     private const int FirstDefaultSpawnGridIndex = 6;
 
@@ -472,6 +473,7 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
             return false;
 
         clientCommandPipeline.TrackSentCommand(command);
+        ApplyOptimisticViewedCharacter(characterId);
         return true;
     }
 
@@ -495,24 +497,18 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
             return;
         }
 
-        LobbyPartySlotState[] slots =
-            new LobbyPartySlotState[CurrentSnapshot.Slots.Count];
+        CurrentSnapshot = CurrentSnapshot.WithSlotCharacter(slotIndex, characterId);
+        RefreshOptimisticViews();
+    }
 
-        for (int i = 0; i < slots.Length; i++)
-        {
-            LobbyPartySlotState source = CurrentSnapshot.Slots[i];
-            slots[i] = new LobbyPartySlotState(
-                source.SlotIndex,
-                source.OwnerSteamId,
-                i == slotIndex ? characterId : source.CharacterId);
-        }
+    private void ApplyOptimisticViewedCharacter(string characterId)
+    {
+        if (CurrentSnapshot == null)
+            return;
 
-        CurrentSnapshot = new LobbyPartySnapshot(
-            CurrentSnapshot.HostSteamId,
-            CurrentSnapshot.Revision,
-            CurrentSnapshot.OrderedClientSteamIds,
-            slots,
-            CurrentSnapshot.ViewedCharacters);
+        CurrentSnapshot = CurrentSnapshot.WithViewedCharacter(
+            localSteamId,
+            characterId);
         RefreshOptimisticViews();
     }
 
@@ -659,6 +655,13 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
             senderId.m_SteamID == originalHostSteamId)
         {
             HandleClientCommandResultPayload(payload);
+            return;
+        }
+
+        if (payload.StartsWith(SnapshotBroadcastPrefix, StringComparison.Ordinal) &&
+            senderId.m_SteamID == originalHostSteamId)
+        {
+            HandleClientSnapshotBroadcastPayload(payload);
         }
     }
 
@@ -811,6 +814,23 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
             TryCompletePendingCommands();
     }
 
+    private void HandleClientSnapshotBroadcastPayload(string payload)
+    {
+        if (IsLocalHost())
+            return;
+
+        string snapshotJson = payload.Substring(SnapshotBroadcastPrefix.Length);
+
+        if (!LobbyPartySerialization.TryDeserializeSnapshot(
+                snapshotJson,
+                out var snapshot))
+        {
+            return;
+        }
+
+        ApplySnapshot(snapshot, true);
+    }
+
     private void ApplyResponseSnapshot(LobbyPartyCommandResponse response)
     {
         if (response != null && response.Snapshot != null)
@@ -847,6 +867,18 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
         }
 
         ApplySnapshot(snapshot, true);
+        BroadcastSnapshot(snapshot);
+    }
+
+    private void BroadcastSnapshot(LobbyPartySnapshot snapshot)
+    {
+        if (snapshot == null || !IsLocalHost())
+            return;
+
+        string payload =
+            SnapshotBroadcastPrefix +
+            LobbyPartySerialization.SerializeSnapshot(snapshot);
+        TrySendLobbyChatPayload(payload);
     }
 
     private void ApplySnapshotFromLobbyData()
@@ -888,7 +920,9 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
         AppliedRevision = snapshot.Revision;
 
         clientCommandPipeline.RemoveAcceptedThroughRevision(snapshot.Revision);
-        CurrentSnapshot = snapshot;
+        CurrentSnapshot = IsLocalHost()
+            ? snapshot
+            : clientCommandPipeline.ApplyPendingOptimism(snapshot);
 
         RefreshPartyViews();
         PartyStateApplied?.Invoke();

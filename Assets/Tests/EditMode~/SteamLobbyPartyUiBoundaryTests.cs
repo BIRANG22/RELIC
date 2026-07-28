@@ -197,6 +197,29 @@ public class SteamLobbyPartyUiBoundaryTests
     }
 
     [Test]
+    public void HostLocalPartyChanges_BroadcastSnapshotsWithoutWaitingForLobbyData()
+    {
+        string source = File.ReadAllText(
+            SteamLobbyRoot + "SteamLobbyPartySynchronizer.cs");
+
+        Assert.That(source, Does.Contain("SnapshotBroadcastPrefix"));
+        Assert.That(source, Does.Contain("BroadcastSnapshot(snapshot)"));
+        Assert.That(source, Does.Contain("HandleClientSnapshotBroadcastPayload"));
+        Assert.That(source, Does.Contain("payload.StartsWith(SnapshotBroadcastPrefix"));
+    }
+
+    [Test]
+    public void ClientViewCommands_ApplyOptimisticViewedCharacterImmediately()
+    {
+        string source = File.ReadAllText(
+            SteamLobbyRoot + "SteamLobbyPartySynchronizer.cs");
+
+        Assert.That(source, Does.Contain("ApplyOptimisticViewedCharacter(characterId)"));
+        Assert.That(source, Does.Contain("clientCommandPipeline.ApplyPendingOptimism"));
+        Assert.That(source, Does.Contain("RefreshOptimisticViews"));
+    }
+
+    [Test]
     public void SteamCallbacks_RunFromRuntimePumpInsteadOfInviteButtonLifetime()
     {
         string pumpPath = SteamLobbyRoot + "SteamworksCallbackPump.cs";

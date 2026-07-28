@@ -49,6 +49,70 @@ public sealed class LobbyPartySnapshot
 
         return result;
     }
+
+    public LobbyPartySnapshot WithSlotCharacter(int slotIndex, string characterId)
+    {
+        if (slotIndex < 0 || slotIndex >= Slots.Count)
+            return this;
+
+        LobbyPartySlotState[] slots = new LobbyPartySlotState[Slots.Count];
+
+        for (int i = 0; i < slots.Length; i++)
+        {
+            LobbyPartySlotState source = Slots[i];
+            slots[i] = new LobbyPartySlotState(
+                source.SlotIndex,
+                source.OwnerSteamId,
+                i == slotIndex ? characterId : source.CharacterId);
+        }
+
+        return new LobbyPartySnapshot(
+            HostSteamId,
+            Revision,
+            OrderedClientSteamIds,
+            slots,
+            ViewedCharacters);
+    }
+
+    public LobbyPartySnapshot WithViewedCharacter(
+        ulong memberSteamId,
+        string characterId)
+    {
+        if (memberSteamId == 0UL)
+            return this;
+
+        bool isClearRequest = string.IsNullOrWhiteSpace(characterId);
+        bool replaced = false;
+        List<LobbyPartyMemberViewState> viewedCharacters = new();
+
+        for (int i = 0; i < ViewedCharacters.Count; i++)
+        {
+            LobbyPartyMemberViewState view = ViewedCharacters[i];
+
+            if (view.MemberSteamId != memberSteamId)
+            {
+                viewedCharacters.Add(view);
+                continue;
+            }
+
+            replaced = true;
+
+            if (!isClearRequest)
+                viewedCharacters.Add(
+                    new LobbyPartyMemberViewState(memberSteamId, characterId));
+        }
+
+        if (!replaced && !isClearRequest)
+            viewedCharacters.Add(
+                new LobbyPartyMemberViewState(memberSteamId, characterId));
+
+        return new LobbyPartySnapshot(
+            HostSteamId,
+            Revision,
+            OrderedClientSteamIds,
+            Slots,
+            viewedCharacters);
+    }
 }
 
 public sealed class LobbyPartyMemberViewState
@@ -144,7 +208,7 @@ public sealed class LobbyPartyClientCommandPipeline
         if (command == null)
             return false;
 
-        return TrackSentRequest(command.RequestId, command.RequesterSteamId);
+        return TrackSentRequest(PendingCommandState.ForCharacterChange(command));
     }
 
     public bool TrackSentCommand(LobbyPartyViewedCharacterCommand command)
@@ -152,15 +216,19 @@ public sealed class LobbyPartyClientCommandPipeline
         if (command == null)
             return false;
 
-        return TrackSentRequest(command.RequestId, command.RequesterSteamId);
+        return TrackSentRequest(PendingCommandState.ForViewedCharacter(command));
     }
 
-    private bool TrackSentRequest(string requestId, ulong requesterSteamId)
+    private bool TrackSentRequest(PendingCommandState command)
     {
-        if (string.IsNullOrWhiteSpace(requestId) || requesterSteamId == 0UL)
+        if (command == null ||
+            string.IsNullOrWhiteSpace(command.RequestId) ||
+            command.RequesterSteamId == 0UL)
+        {
             return false;
+        }
 
-        pendingCommands.Add(new PendingCommandState(requestId, requesterSteamId));
+        pendingCommands.Add(command);
         return true;
     }
 
@@ -215,16 +283,72 @@ public sealed class LobbyPartyClientCommandPipeline
         pendingCommands.Clear();
     }
 
+    public LobbyPartySnapshot ApplyPendingOptimism(LobbyPartySnapshot snapshot)
+    {
+        LobbyPartySnapshot result = snapshot;
+
+        if (result == null)
+            return null;
+
+        for (int i = 0; i < pendingCommands.Count; i++)
+            result = pendingCommands[i].ApplyTo(result);
+
+        return result;
+    }
+
     private sealed class PendingCommandState
     {
         public string RequestId { get; }
         public ulong RequesterSteamId { get; }
+        public int SlotIndex { get; }
+        public string CharacterId { get; }
+        public bool IsViewedCharacterCommand { get; }
         public long AcceptedRevision { get; set; }
 
-        public PendingCommandState(string requestId, ulong requesterSteamId)
+        private PendingCommandState(
+            string requestId,
+            ulong requesterSteamId,
+            int slotIndex,
+            string characterId,
+            bool isViewedCharacterCommand)
         {
             RequestId = requestId ?? string.Empty;
             RequesterSteamId = requesterSteamId;
+            SlotIndex = slotIndex;
+            CharacterId = characterId ?? string.Empty;
+            IsViewedCharacterCommand = isViewedCharacterCommand;
+        }
+
+        public static PendingCommandState ForCharacterChange(
+            LobbyPartyCharacterChangeCommand command)
+        {
+            return new PendingCommandState(
+                command.RequestId,
+                command.RequesterSteamId,
+                command.SlotIndex,
+                command.RequestedCharacterId,
+                false);
+        }
+
+        public static PendingCommandState ForViewedCharacter(
+            LobbyPartyViewedCharacterCommand command)
+        {
+            return new PendingCommandState(
+                command.RequestId,
+                command.RequesterSteamId,
+                -1,
+                command.ViewedCharacterId,
+                true);
+        }
+
+        public LobbyPartySnapshot ApplyTo(LobbyPartySnapshot snapshot)
+        {
+            if (snapshot == null)
+                return null;
+
+            return IsViewedCharacterCommand
+                ? snapshot.WithViewedCharacter(RequesterSteamId, CharacterId)
+                : snapshot.WithSlotCharacter(SlotIndex, CharacterId);
         }
     }
 }
