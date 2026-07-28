@@ -6,8 +6,8 @@ using UnityEngine.EventSystems;
 /// 콜라이더가 있는 월드 오브젝트를 클릭하면 패널을 열고
 /// 카메라 또는 카메라 Rig를 지정 위치로 이동시킵니다.
 ///
-/// 패널이 닫히면 카메라를 패널을 열기 전 위치로 되돌립니다.
-/// 패널이 열린 동안 카메라 위치를 강제로 고정하지 않습니다.
+/// 닫기 버튼을 누르면 패널을 닫고
+/// 카메라를 패널을 열기 전 위치로 되돌립니다.
 /// </summary>
 public class PanelCameraMover : MonoBehaviour
 {
@@ -16,10 +16,14 @@ public class PanelCameraMover : MonoBehaviour
     [SerializeField] private GameObject targetPanel;
 
     [Header("카메라 이동 대상")]
-    [Tooltip("실제로 이동시킬 카메라 부모 오브젝트입니다. 카메라가 단독 오브젝트라면 비워두세요.")]
+    [Tooltip(
+        "실제로 이동시킬 카메라 부모 오브젝트입니다. " +
+        "카메라가 단독 오브젝트라면 비워두세요.")]
     [SerializeField] private Transform cameraRig;
 
-    [Tooltip("Camera Rig가 비어 있을 때 직접 이동시킬 카메라입니다. 비워두면 Main Camera를 자동으로 찾습니다.")]
+    [Tooltip(
+        "Camera Rig가 비어 있을 때 직접 이동시킬 카메라입니다. " +
+        "비워두면 Main Camera를 자동으로 찾습니다.")]
     [SerializeField] private Camera targetCamera;
 
     [Tooltip("패널이 열릴 때 카메라가 이동할 위치입니다.")]
@@ -27,6 +31,12 @@ public class PanelCameraMover : MonoBehaviour
 
     [Tooltip("목표 오브젝트의 회전값도 적용합니다.")]
     [SerializeField] private bool applyTargetRotation = true;
+
+    [Header("허브 카메라 드래그")]
+    [Tooltip(
+        "카메라 복귀가 완료된 뒤 현재 위치를 드래그 목표 위치와 동기화합니다. " +
+        "비워두면 이동 대상에서 자동으로 찾습니다.")]
+    [SerializeField] private HorizontalHubCameraDrag hubCameraDrag;
 
     [Header("카메라 이동 설정")]
     [Tooltip("카메라가 이동하는 데 걸리는 시간입니다.")]
@@ -42,10 +52,14 @@ public class PanelCameraMover : MonoBehaviour
     [SerializeField] private bool useUnscaledTime = true;
 
     [Header("콜라이더 클릭 설정")]
-    [Tooltip("이 스크립트가 붙은 콜라이더 오브젝트를 클릭하면 패널을 엽니다.")]
+    [Tooltip(
+        "이 스크립트가 붙은 콜라이더 오브젝트를 클릭하면 " +
+        "패널을 엽니다.")]
     [SerializeField] private bool openOnColliderClick = true;
 
-    [Tooltip("패널이 열린 상태에서 같은 오브젝트를 다시 클릭하면 패널을 닫습니다.")]
+    [Tooltip(
+        "패널이 열린 상태에서 같은 오브젝트를 다시 클릭하면 " +
+        "패널을 닫습니다.")]
     [SerializeField] private bool toggleOnRepeatedClick = false;
 
     [Tooltip("마우스가 UI 위에 있을 때 월드 오브젝트 클릭을 무시합니다.")]
@@ -55,7 +69,7 @@ public class PanelCameraMover : MonoBehaviour
     [Tooltip("카메라 이동 상태를 Console에 표시합니다.")]
     [SerializeField] private bool showDebugLog = false;
 
-    // 패널을 열기 전 카메라 위치입니다.
+    // 패널을 열기 직전 카메라 위치와 회전값
     private Vector3 originalPosition;
     private Quaternion originalRotation;
 
@@ -89,6 +103,7 @@ public class PanelCameraMover : MonoBehaviour
     private void Awake()
     {
         FindCameraIfNeeded();
+        FindHubCameraDragIfNeeded();
 
         if (targetPanel != null)
             panelWasOpen = targetPanel.activeInHierarchy;
@@ -120,7 +135,7 @@ public class PanelCameraMover : MonoBehaviour
 
         if (toggleOnRepeatedClick && isPanelOpen)
         {
-            ClosePanel();
+            ClosePanelAndReturnCamera();
             return;
         }
 
@@ -162,7 +177,10 @@ public class PanelCameraMover : MonoBehaviour
             return;
         }
 
-        // 패널을 열기 직전 위치를 저장합니다.
+        /*
+         * 패널을 열고 카메라를 이동시키기 직전의
+         * 위치와 회전을 저장합니다.
+         */
         originalPosition = moveTransform.position;
         originalRotation = moveTransform.rotation;
         originalTransformSaved = true;
@@ -176,9 +194,10 @@ public class PanelCameraMover : MonoBehaviour
             panelWasOpen = true;
         }
 
-        Quaternion destinationRotation = applyTargetRotation
-            ? cameraMoveTarget.rotation
-            : moveTransform.rotation;
+        Quaternion destinationRotation =
+            applyTargetRotation
+                ? cameraMoveTarget.rotation
+                : moveTransform.rotation;
 
         StartCameraMove(
             cameraMoveTarget.position,
@@ -194,10 +213,11 @@ public class PanelCameraMover : MonoBehaviour
     }
 
     /// <summary>
-    /// 패널을 닫고 카메라를 원래 위치로 되돌립니다.
-    /// 패널의 닫기 버튼에도 연결할 수 있습니다.
+    /// 버튼의 OnClick에 연결하는 함수입니다.
+    ///
+    /// 패널을 닫고 카메라를 패널을 열기 전 위치로 되돌립니다.
     /// </summary>
-    public void ClosePanel()
+    public void ClosePanelAndReturnCamera()
     {
         if (targetPanel != null)
             targetPanel.SetActive(false);
@@ -209,9 +229,18 @@ public class PanelCameraMover : MonoBehaviour
         if (showDebugLog)
         {
             Debug.Log(
-                "[PanelCameraMover] 패널을 닫습니다.",
+                "[PanelCameraMover] 버튼으로 패널을 닫고 카메라를 복귀시킵니다.",
                 this);
         }
+    }
+
+    /// <summary>
+    /// 기존 UI 연결을 유지하기 위한 함수입니다.
+    /// ClosePanelAndReturnCamera와 동일하게 작동합니다.
+    /// </summary>
+    public void ClosePanel()
+    {
+        ClosePanelAndReturnCamera();
     }
 
     /// <summary>
@@ -224,7 +253,7 @@ public class PanelCameraMover : MonoBehaviour
             targetPanel.activeInHierarchy;
 
         if (isPanelOpen)
-            ClosePanel();
+            ClosePanelAndReturnCamera();
         else
             OpenPanel();
     }
@@ -237,9 +266,13 @@ public class PanelCameraMover : MonoBehaviour
         if (targetPanel == null)
             return;
 
-        bool isPanelOpen = targetPanel.activeInHierarchy;
+        bool isPanelOpen =
+            targetPanel.activeInHierarchy;
 
-        // 이전 프레임에는 열려 있었지만 현재 닫힌 경우입니다.
+        /*
+         * 이전 프레임에는 열려 있었지만
+         * 현재 닫힌 경우 카메라를 원래 위치로 복귀시킵니다.
+         */
         if (panelWasOpen &&
             !isPanelOpen &&
             cameraWasMoved &&
@@ -278,7 +311,7 @@ public class PanelCameraMover : MonoBehaviour
         if (showDebugLog)
         {
             Debug.Log(
-                "[PanelCameraMover] 카메라를 원래 위치로 되돌립니다.",
+                "[PanelCameraMover] 카메라를 이동 전 위치로 되돌립니다.",
                 this);
         }
     }
@@ -298,6 +331,10 @@ public class PanelCameraMover : MonoBehaviour
         originalTransformSaved = true;
     }
 
+    /// <summary>
+    /// 카메라 이동 코루틴을 시작합니다.
+    /// 진행 중인 이동이 있으면 중단하고 새로운 이동을 시작합니다.
+    /// </summary>
     private void StartCameraMove(
         Vector3 destinationPosition,
         Quaternion destinationRotation,
@@ -316,6 +353,9 @@ public class PanelCameraMover : MonoBehaviour
                 returning));
     }
 
+    /// <summary>
+    /// 카메라를 지정 위치까지 부드럽게 이동시킵니다.
+    /// </summary>
     private IEnumerator MoveCameraCoroutine(
         Vector3 destinationPosition,
         Quaternion destinationRotation,
@@ -384,18 +424,80 @@ public class PanelCameraMover : MonoBehaviour
         FinishCameraMove(returning);
     }
 
+    /// <summary>
+    /// 카메라 이동 완료 처리를 합니다.
+    /// </summary>
     private void FinishCameraMove(bool returning)
     {
         moveCoroutine = null;
 
-        if (returning)
-            isReturning = false;
+        if (!returning)
+            return;
+
+        isReturning = false;
+
+        /*
+         * 복귀가 끝난 뒤 HorizontalHubCameraDrag가
+         * 이전 목표 위치로 카메라를 다시 끌어당기지 않도록
+         * 현재 위치를 드래그 목표 위치와 동기화합니다.
+         */
+        FindHubCameraDragIfNeeded();
+
+        if (hubCameraDrag != null)
+            hubCameraDrag.SynchronizeTargetPosition();
+
+        if (showDebugLog)
+        {
+            Debug.Log(
+                "[PanelCameraMover] 카메라 원위치 복귀가 완료되었습니다.",
+                this);
+        }
     }
 
+    /// <summary>
+    /// Target Camera가 비어 있다면 Main Camera를 찾습니다.
+    /// </summary>
     private void FindCameraIfNeeded()
     {
         if (targetCamera == null)
             targetCamera = Camera.main;
+    }
+
+    /// <summary>
+    /// HorizontalHubCameraDrag가 연결되지 않았다면 자동으로 찾습니다.
+    /// </summary>
+    private void FindHubCameraDragIfNeeded()
+    {
+        if (hubCameraDrag != null)
+            return;
+
+        Transform moveTransform = MoveTransform;
+
+        if (moveTransform != null)
+        {
+            hubCameraDrag =
+                moveTransform.GetComponent<HorizontalHubCameraDrag>();
+
+            if (hubCameraDrag == null)
+            {
+                hubCameraDrag =
+                    moveTransform.GetComponentInChildren<HorizontalHubCameraDrag>(
+                        true);
+            }
+
+            if (hubCameraDrag == null)
+            {
+                hubCameraDrag =
+                    moveTransform.GetComponentInParent<HorizontalHubCameraDrag>(
+                        true);
+            }
+        }
+
+        if (hubCameraDrag == null && targetCamera != null)
+        {
+            hubCameraDrag =
+                targetCamera.GetComponent<HorizontalHubCameraDrag>();
+        }
     }
 
     private void OnDisable()
