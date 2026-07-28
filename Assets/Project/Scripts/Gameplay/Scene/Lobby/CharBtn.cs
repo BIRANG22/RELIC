@@ -761,7 +761,7 @@ public class CharBtn : MonoBehaviour,
         if (synchronizer == null || !synchronizer.IsNetworkPartyActive)
             return;
 
-        canvasGroup.alpha = synchronizer.CanLocalPlayerSelectCharacter(characterId)
+        canvasGroup.alpha = synchronizer.CanLocalPlayerViewCharacter(characterId)
             ? 1f
             : 0.55f;
     }

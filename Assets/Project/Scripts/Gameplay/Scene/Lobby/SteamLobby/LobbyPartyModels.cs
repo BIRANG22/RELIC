@@ -21,17 +21,20 @@ public sealed class LobbyPartySnapshot
     public long Revision { get; }
     public IReadOnlyList<ulong> OrderedClientSteamIds { get; }
     public IReadOnlyList<LobbyPartySlotState> Slots { get; }
+    public IReadOnlyList<LobbyPartyMemberViewState> ViewedCharacters { get; }
 
     public LobbyPartySnapshot(
         ulong hostSteamId,
         long revision,
         IReadOnlyList<ulong> orderedClientSteamIds,
-        IReadOnlyList<LobbyPartySlotState> slots)
+        IReadOnlyList<LobbyPartySlotState> slots,
+        IReadOnlyList<LobbyPartyMemberViewState> viewedCharacters = null)
     {
         HostSteamId = hostSteamId;
         Revision = revision;
         OrderedClientSteamIds = Copy(orderedClientSteamIds);
         Slots = Copy(slots);
+        ViewedCharacters = Copy(viewedCharacters);
     }
 
     private static T[] Copy<T>(IReadOnlyList<T> source)
@@ -45,6 +48,18 @@ public sealed class LobbyPartySnapshot
             result[i] = source[i];
 
         return result;
+    }
+}
+
+public sealed class LobbyPartyMemberViewState
+{
+    public ulong MemberSteamId { get; }
+    public string CharacterId { get; }
+
+    public LobbyPartyMemberViewState(ulong memberSteamId, string characterId)
+    {
+        MemberSteamId = memberSteamId;
+        CharacterId = characterId ?? string.Empty;
     }
 }
 
@@ -67,6 +82,26 @@ public sealed class LobbyPartyCharacterChangeCommand
         RequesterSteamId = requesterSteamId;
         SlotIndex = slotIndex;
         RequestedCharacterId = requestedCharacterId ?? string.Empty;
+        KnownRevision = knownRevision;
+    }
+}
+
+public sealed class LobbyPartyViewedCharacterCommand
+{
+    public string RequestId { get; }
+    public ulong RequesterSteamId { get; }
+    public string ViewedCharacterId { get; }
+    public long KnownRevision { get; }
+
+    public LobbyPartyViewedCharacterCommand(
+        string requestId,
+        ulong requesterSteamId,
+        string viewedCharacterId,
+        long knownRevision)
+    {
+        RequestId = requestId ?? string.Empty;
+        RequesterSteamId = requesterSteamId;
+        ViewedCharacterId = viewedCharacterId ?? string.Empty;
         KnownRevision = knownRevision;
     }
 }
@@ -106,7 +141,23 @@ public sealed class LobbyPartyClientCommandPipeline
         if (command == null)
             return false;
 
-        pendingCommands.Add(new PendingCommandState(command));
+        return TrackSentRequest(command.RequestId, command.RequesterSteamId);
+    }
+
+    public bool TrackSentCommand(LobbyPartyViewedCharacterCommand command)
+    {
+        if (command == null)
+            return false;
+
+        return TrackSentRequest(command.RequestId, command.RequesterSteamId);
+    }
+
+    private bool TrackSentRequest(string requestId, ulong requesterSteamId)
+    {
+        if (string.IsNullOrWhiteSpace(requestId) || requesterSteamId == 0UL)
+            return false;
+
+        pendingCommands.Add(new PendingCommandState(requestId, requesterSteamId));
         return true;
     }
 
@@ -119,8 +170,8 @@ public sealed class LobbyPartyClientCommandPipeline
         {
             PendingCommandState pending = pendingCommands[i];
 
-            if (pending.Command.RequestId != response.RequestId ||
-                pending.Command.RequesterSteamId != response.RequesterSteamId)
+            if (pending.RequestId != response.RequestId ||
+                pending.RequesterSteamId != response.RequesterSteamId)
             {
                 continue;
             }
@@ -163,12 +214,14 @@ public sealed class LobbyPartyClientCommandPipeline
 
     private sealed class PendingCommandState
     {
-        public LobbyPartyCharacterChangeCommand Command { get; }
+        public string RequestId { get; }
+        public ulong RequesterSteamId { get; }
         public long AcceptedRevision { get; set; }
 
-        public PendingCommandState(LobbyPartyCharacterChangeCommand command)
+        public PendingCommandState(string requestId, ulong requesterSteamId)
         {
-            Command = command;
+            RequestId = requestId ?? string.Empty;
+            RequesterSteamId = requesterSteamId;
         }
     }
 }
@@ -181,7 +234,8 @@ public enum LobbyPartyCommandRejectReason
     NotSlotOwner,
     StaleRevision,
     InvalidCharacter,
-    DuplicateCharacter
+    DuplicateCharacter,
+    CharacterLockedByOtherMember
 }
 
 public readonly struct LobbyPartyCommandResult

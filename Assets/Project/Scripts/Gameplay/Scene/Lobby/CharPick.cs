@@ -57,13 +57,17 @@ public class CharPick : MonoBehaviour
         AutoBindCharButtonsIfNeeded();
         ClampCenterIndex();
 
-        if (resetPendingSelectionOnEnable)
+        if (IsNetworkPartyActive())
+            RefreshFromNetworkPartyState();
+        else if (resetPendingSelectionOnEnable)
             ResetPendingSelectionFromRuntime();
 
         if (isStarted)
         {
             RefreshFixedButtons();
-            RefreshCenterInfo();
+
+            if (!IsNetworkPartyActive())
+                RefreshCenterInfo();
         }
     }
 
@@ -80,14 +84,20 @@ public class CharPick : MonoBehaviour
                 charBtns[i].Init(this);
         }
 
-        if (pendingCharacterIds.Count <= 0)
+        bool isNetworkPartyActive = IsNetworkPartyActive();
+
+        if (isNetworkPartyActive)
+            RefreshFromNetworkPartyState();
+        else if (pendingCharacterIds.Count <= 0)
             ResetPendingSelectionFromRuntime();
         else
             RefreshAllSelectedPartyMarkers();
 
         RefreshFixedButtons();
 
-        if (charBtns.Count > 0 && charBtns[centerIndex] != null)
+        if (!isNetworkPartyActive &&
+            charBtns.Count > 0 &&
+            charBtns[centerIndex] != null)
         {
             CreateOrUpdateRuntimeData(charBtns[centerIndex]);
             RefreshCenterInfo();
@@ -126,6 +136,9 @@ public class CharPick : MonoBehaviour
         int index = charBtns.IndexOf(btn);
 
         if (index < 0)
+            return;
+
+        if (TryHandleNetworkCharacterClick(btn, playPartyActionSound))
             return;
 
         // 클릭하기 전부터 정보를 보고 있던 캐릭터인지 먼저 기록한다.
@@ -243,7 +256,21 @@ public class CharPick : MonoBehaviour
 
     public void RefreshFromPartyRuntime()
     {
+        if (IsNetworkPartyActive())
+        {
+            RefreshFromNetworkPartyState();
+            return;
+        }
+
         ResetPendingSelectionFromRuntime();
+        RefreshPartyViews();
+        RefreshAllSelectedPartyMarkers();
+    }
+
+    public void RefreshFromNetworkPartyState()
+    {
+        ResetPendingSelectionFromRuntime();
+        ApplyNetworkViewedCharacter();
         RefreshPartyViews();
         RefreshAllSelectedPartyMarkers();
     }
@@ -349,6 +376,87 @@ public class CharPick : MonoBehaviour
         }
 
         return false;
+    }
+
+    private bool TryHandleNetworkCharacterClick(
+        CharBtn btn,
+        bool playPartyActionSound)
+    {
+        SteamLobbyPartySynchronizer synchronizer = SteamLobbyPartySynchronizer.Instance;
+
+        if (synchronizer == null || !synchronizer.IsNetworkPartyActive)
+            return false;
+
+        if (btn == null || btn.IsLocked || !HasUsableCharacterData(btn))
+            return true;
+
+        string characterId = btn.CharacterId;
+
+        if (string.IsNullOrWhiteSpace(characterId))
+            return true;
+
+        string viewedCharacterId = synchronizer.GetLocalViewedCharacterId();
+
+        if (viewedCharacterId != characterId)
+        {
+            synchronizer.RequestViewedCharacter(characterId);
+            return true;
+        }
+
+        ToggleButtonPartyMarker(btn, playPartyActionSound);
+        return true;
+    }
+
+    private void ApplyNetworkViewedCharacter()
+    {
+        SteamLobbyPartySynchronizer synchronizer = SteamLobbyPartySynchronizer.Instance;
+
+        if (synchronizer == null || !synchronizer.IsNetworkPartyActive)
+            return;
+
+        string viewedCharacterId = synchronizer.GetLocalViewedCharacterId();
+        int viewedIndex = FindButtonIndexByCharacterId(viewedCharacterId);
+
+        if (viewedIndex < 0)
+        {
+            ClearNetworkViewedCharacter();
+            return;
+        }
+
+        centerIndex = viewedIndex;
+        RefreshFixedButtons();
+        RefreshCenterInfo();
+    }
+
+    private void ClearNetworkViewedCharacter()
+    {
+        for (int i = 0; i < charBtns.Count; i++)
+        {
+            if (charBtns[i] != null)
+                charBtns[i].SetViewedCharacter(false, true);
+        }
+
+        ClearCenterCharacterInfo();
+    }
+
+    private int FindButtonIndexByCharacterId(string characterId)
+    {
+        if (string.IsNullOrWhiteSpace(characterId))
+            return -1;
+
+        for (int i = 0; i < charBtns.Count; i++)
+        {
+            if (charBtns[i] != null && charBtns[i].CharacterId == characterId)
+                return i;
+        }
+
+        return -1;
+    }
+
+    private bool IsNetworkPartyActive()
+    {
+        SteamLobbyPartySynchronizer synchronizer = SteamLobbyPartySynchronizer.Instance;
+        return synchronizer != null && synchronizer.IsNetworkPartyActive;
     }
 
     private void ApplyPendingSelectionToRuntime()

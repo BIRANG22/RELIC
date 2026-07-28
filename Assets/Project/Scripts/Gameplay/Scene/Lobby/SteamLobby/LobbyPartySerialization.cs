@@ -19,6 +19,16 @@ public static class LobbyPartySerialization
     }
 
     [Serializable]
+    private sealed class ViewCommandDto
+    {
+        public int version;
+        public string requestId;
+        public string requesterSteamId;
+        public string viewedCharacterId;
+        public long knownRevision;
+    }
+
+    [Serializable]
     private sealed class SnapshotDto
     {
         public int version;
@@ -26,6 +36,7 @@ public static class LobbyPartySerialization
         public long revision;
         public string[] orderedClientSteamIds;
         public SlotDto[] slots;
+        public MemberViewDto[] viewedCharacters;
     }
 
     [Serializable]
@@ -44,6 +55,13 @@ public static class LobbyPartySerialization
     {
         public int slotIndex;
         public string ownerSteamId;
+        public string characterId;
+    }
+
+    [Serializable]
+    private sealed class MemberViewDto
+    {
+        public string memberSteamId;
         public string characterId;
     }
 
@@ -100,6 +118,57 @@ public static class LobbyPartySerialization
         }
     }
 
+    public static string SerializeViewCommand(LobbyPartyViewedCharacterCommand command)
+    {
+        if (command == null)
+            return string.Empty;
+
+        ViewCommandDto dto = new ViewCommandDto
+        {
+            version = ProtocolVersion,
+            requestId = command.RequestId,
+            requesterSteamId = ToText(command.RequesterSteamId),
+            viewedCharacterId = command.ViewedCharacterId,
+            knownRevision = command.KnownRevision
+        };
+
+        return JsonUtility.ToJson(dto);
+    }
+
+    public static bool TryDeserializeViewCommand(
+        string payload,
+        out LobbyPartyViewedCharacterCommand command)
+    {
+        command = null;
+
+        if (string.IsNullOrWhiteSpace(payload))
+            return false;
+
+        try
+        {
+            ViewCommandDto dto = JsonUtility.FromJson<ViewCommandDto>(payload);
+
+            if (dto == null ||
+                dto.version != ProtocolVersion ||
+                string.IsNullOrWhiteSpace(dto.requestId) ||
+                !TryParseSteamId(dto.requesterSteamId, out ulong requesterSteamId))
+            {
+                return false;
+            }
+
+            command = new LobbyPartyViewedCharacterCommand(
+                dto.requestId,
+                requesterSteamId,
+                dto.viewedCharacterId,
+                dto.knownRevision);
+            return true;
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
+    }
+
     public static string SerializeSnapshot(LobbyPartySnapshot snapshot)
     {
         if (snapshot == null)
@@ -111,7 +180,8 @@ public static class LobbyPartySerialization
             hostSteamId = ToText(snapshot.HostSteamId),
             revision = snapshot.Revision,
             orderedClientSteamIds = new string[snapshot.OrderedClientSteamIds.Count],
-            slots = new SlotDto[snapshot.Slots.Count]
+            slots = new SlotDto[snapshot.Slots.Count],
+            viewedCharacters = new MemberViewDto[snapshot.ViewedCharacters.Count]
         };
 
         for (int i = 0; i < snapshot.OrderedClientSteamIds.Count; i++)
@@ -125,6 +195,16 @@ public static class LobbyPartySerialization
                 slotIndex = slot.SlotIndex,
                 ownerSteamId = ToText(slot.OwnerSteamId),
                 characterId = slot.CharacterId
+            };
+        }
+
+        for (int i = 0; i < snapshot.ViewedCharacters.Count; i++)
+        {
+            LobbyPartyMemberViewState view = snapshot.ViewedCharacters[i];
+            dto.viewedCharacters[i] = new MemberViewDto
+            {
+                memberSteamId = ToText(view.MemberSteamId),
+                characterId = view.CharacterId
             };
         }
 
@@ -234,11 +314,31 @@ public static class LobbyPartySerialization
                     slotDto.characterId);
             }
 
+            MemberViewDto[] viewDtos = dto.viewedCharacters ?? Array.Empty<MemberViewDto>();
+            LobbyPartyMemberViewState[] viewedCharacters =
+                new LobbyPartyMemberViewState[viewDtos.Length];
+
+            for (int i = 0; i < viewDtos.Length; i++)
+            {
+                MemberViewDto viewDto = viewDtos[i];
+
+                if (viewDto == null ||
+                    !TryParseSteamId(viewDto.memberSteamId, out ulong memberSteamId))
+                {
+                    return false;
+                }
+
+                viewedCharacters[i] = new LobbyPartyMemberViewState(
+                    memberSteamId,
+                    viewDto.characterId);
+            }
+
             snapshot = new LobbyPartySnapshot(
                 hostSteamId,
                 dto.revision,
                 clients,
-                slots);
+                slots,
+                viewedCharacters);
             return true;
         }
         catch (ArgumentException)
@@ -304,7 +404,62 @@ public static class LobbyPartySerialization
             }
         }
 
+        if (!ValidateViewedCharacters(snapshot, currentMembers))
+            return false;
+
         return true;
+    }
+
+    private static bool ValidateViewedCharacters(
+        LobbyPartySnapshot snapshot,
+        IReadOnlyCollection<ulong> currentMembers)
+    {
+        if (snapshot.ViewedCharacters == null)
+            return false;
+
+        HashSet<ulong> viewedMembers = new HashSet<ulong>();
+        HashSet<string> viewedCharacterIds =
+            new HashSet<string>(StringComparer.Ordinal);
+
+        for (int i = 0; i < snapshot.ViewedCharacters.Count; i++)
+        {
+            LobbyPartyMemberViewState view = snapshot.ViewedCharacters[i];
+
+            if (view == null ||
+                view.MemberSteamId == 0UL ||
+                string.IsNullOrWhiteSpace(view.CharacterId) ||
+                !ContainsMember(currentMembers, view.MemberSteamId) ||
+                !viewedMembers.Add(view.MemberSteamId) ||
+                !viewedCharacterIds.Add(view.CharacterId) ||
+                IsCharacterAssignedToOtherMember(
+                    snapshot,
+                    view.CharacterId,
+                    view.MemberSteamId))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool IsCharacterAssignedToOtherMember(
+        LobbyPartySnapshot snapshot,
+        string characterId,
+        ulong memberSteamId)
+    {
+        for (int i = 0; i < snapshot.Slots.Count; i++)
+        {
+            LobbyPartySlotState slot = snapshot.Slots[i];
+
+            if (slot.OwnerSteamId != memberSteamId &&
+                slot.CharacterId == characterId)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static ulong ExpectedOwner(LobbyPartySnapshot snapshot, int slotIndex)

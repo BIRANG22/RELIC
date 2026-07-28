@@ -49,6 +49,7 @@ public class SteamLobbyPartyUiBoundaryTests
         string charBtn = File.ReadAllText(
             "Assets/Project/Scripts/Gameplay/Scene/Lobby/CharBtn.cs");
 
+        Assert.That(charPick, Does.Contain("RequestViewedCharacter"));
         Assert.That(charPick, Does.Contain("RequestAutomaticCharacterToggle"));
         Assert.That(charBtn, Does.Contain("RequestAutomaticCharacterToggle"));
         Assert.That(charPick, Does.Contain("IsNetworkPartyActive"));
@@ -72,7 +73,25 @@ public class SteamLobbyPartyUiBoundaryTests
             SteamLobbyRoot + "SteamLobbyPartySynchronizer.cs");
 
         Assert.That(source, Does.Contain("RequestAutomaticCharacterToggle"));
+        Assert.That(source, Does.Contain("RequestViewedCharacter"));
         Assert.That(source, Does.Contain("FindOwnedEmptySlot"));
+    }
+
+    [Test]
+    public void NetworkCharacterViewing_UsesHostDistributedViewedCharacterState()
+    {
+        string charPick = File.ReadAllText(
+            "Assets/Project/Scripts/Gameplay/Scene/Lobby/CharPick.cs");
+        string charBtn = File.ReadAllText(
+            "Assets/Project/Scripts/Gameplay/Scene/Lobby/CharBtn.cs");
+        string synchronizer = File.ReadAllText(
+            SteamLobbyRoot + "SteamLobbyPartySynchronizer.cs");
+
+        Assert.That(charPick, Does.Contain("GetLocalViewedCharacterId"));
+        Assert.That(charPick, Does.Contain("RefreshFromNetworkPartyState"));
+        Assert.That(charBtn, Does.Contain("CanLocalPlayerViewCharacter"));
+        Assert.That(synchronizer, Does.Contain("ViewCommandPrefix"));
+        Assert.That(synchronizer, Does.Contain("TryApplyHostViewCommand"));
     }
 
     [Test]
