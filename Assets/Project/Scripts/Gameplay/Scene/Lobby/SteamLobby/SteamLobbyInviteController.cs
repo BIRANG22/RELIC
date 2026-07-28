@@ -32,6 +32,8 @@ public class SteamLobbyInviteController : MonoBehaviour
     private static bool ownsSteamApi;
     private static bool steamShutdownRegistered;
 
+    internal static bool IsSteamApiReady => steamApiInitialized;
+
     private bool isCreatingLobby;
     private bool pendingInviteDialog;
     private string lastStatus = "Steam lobby idle.";
@@ -82,15 +84,6 @@ public class SteamLobbyInviteController : MonoBehaviour
         CreateStatusPanelIfNeeded();
         InitializeSteam();
         RefreshStatusPanel();
-    }
-
-    private void Update()
-    {
-#if STEAMWORKS_NET
-        if (steamApiInitialized)
-            SteamAPI.RunCallbacks();
-#endif
-
     }
 
     private void OnDestroy()
@@ -615,6 +608,14 @@ public class SteamLobbyInviteController : MonoBehaviour
                "Steam running: " + isSteamRunning +
                "; App ID file exists: " + appIdFileExists +
                "; Expected App ID path: " + expectedAppIdPath;
+    }
+
+    internal static void RunSteamCallbacksIfReady()
+    {
+#if STEAMWORKS_NET
+        if (steamApiInitialized)
+            SteamAPI.RunCallbacks();
+#endif
     }
 
 #if STEAMWORKS_NET

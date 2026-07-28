@@ -195,4 +195,22 @@ public class SteamLobbyPartyUiBoundaryTests
         Assert.That(source, Does.Contain("CommandResultPrefix"));
         Assert.That(source, Does.Not.Contain("queuedLocalIntent"));
     }
+
+    [Test]
+    public void SteamCallbacks_RunFromRuntimePumpInsteadOfInviteButtonLifetime()
+    {
+        string pumpPath = SteamLobbyRoot + "SteamworksCallbackPump.cs";
+        Assert.That(File.Exists(pumpPath), Is.True);
+
+        string inviteController = File.ReadAllText(
+            SteamLobbyRoot + "SteamLobbyInviteController.cs");
+        string pump = File.ReadAllText(pumpPath);
+
+        Assert.That(inviteController, Does.Contain("internal static bool IsSteamApiReady"));
+        Assert.That(inviteController, Does.Contain("internal static void RunSteamCallbacksIfReady"));
+        Assert.That(inviteController, Does.Not.Contain("private void Update()"));
+        Assert.That(pump, Does.Contain("RuntimeInitializeOnLoadMethod"));
+        Assert.That(pump, Does.Contain("DontDestroyOnLoad"));
+        Assert.That(pump, Does.Contain("SteamLobbyInviteController.RunSteamCallbacksIfReady"));
+    }
 }
