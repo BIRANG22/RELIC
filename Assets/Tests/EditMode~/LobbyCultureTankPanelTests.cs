@@ -1,5 +1,6 @@
 using System.Reflection;
 using NUnit.Framework;
+using UnityEngine;
 
 public sealed class LobbyCultureTankPanelTests
 {
@@ -46,6 +47,41 @@ public sealed class LobbyCultureTankPanelTests
         Assert.That(openPanel, Is.Not.Null);
         Assert.That(openPanel.ReturnType, Is.EqualTo(typeof(void)));
         Assert.That(openPanel.GetParameters(), Is.Empty);
+    }
+
+    [Test]
+    public void CultureTankController_PanelLabelUsesReadableKoreanStateText()
+    {
+        DataManager createdDataManager = null;
+        GameObject dataObject = null;
+        if (DataManager.Instance == null)
+        {
+            dataObject = new GameObject("DataManager_Test");
+            createdDataManager = dataObject.AddComponent<DataManager>();
+        }
+
+        GameObject tankObject = new GameObject("CultureTank_LabelTest");
+        LobbyCultureTankController controller =
+            tankObject.AddComponent<LobbyCultureTankController>();
+
+        try
+        {
+            string label = controller.GetPanelLabel();
+
+            Assert.That(label, Does.Contain("배양조"));
+            Assert.That(label, Does.Contain("비어 있음"));
+            Assert.That(label, Does.Not.Contain("鍮"));
+            Assert.That(label, Does.Not.Contain("諛"));
+        }
+        finally
+        {
+            Object.DestroyImmediate(tankObject);
+
+            if (createdDataManager != null)
+                Object.DestroyImmediate(createdDataManager.gameObject);
+            else if (dataObject != null)
+                Object.DestroyImmediate(dataObject);
+        }
     }
 
     [Test]
