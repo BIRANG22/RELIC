@@ -164,7 +164,7 @@ public class LobbyPartyAuthorityStateTests
     }
 
     [Test]
-    public void ChangeCharacter_WithStaleRevision_IsRejected()
+    public void ChangeCharacter_WithStaleRevision_AppliesAgainstCurrentHostState()
     {
         LobbyPartyAuthorityState state = CreateABC();
         state.AddClient(200UL);
@@ -174,13 +174,10 @@ public class LobbyPartyAuthorityStateTests
             Command(200UL, 2, "D", revision - 1),
             _ => true);
 
-        AssertRejectedWithoutMutation(
-            state,
-            result,
-            LobbyPartyCommandRejectReason.StaleRevision,
-            revision,
-            2,
-            "C");
+        Assert.That(result.Accepted, Is.True);
+        Assert.That(result.RejectReason, Is.EqualTo(LobbyPartyCommandRejectReason.None));
+        Assert.That(state.GetSlot(2).CharacterId, Is.EqualTo("D"));
+        Assert.That(state.Revision, Is.EqualTo(revision + 1));
     }
 
     [Test]

@@ -134,9 +134,6 @@ public sealed class LobbyPartyAuthorityState
         if (targetSlot.OwnerSteamId != command.RequesterSteamId)
             return LobbyPartyCommandResult.Reject(LobbyPartyCommandRejectReason.NotSlotOwner);
 
-        if (command.KnownRevision != Revision)
-            return LobbyPartyCommandResult.Reject(LobbyPartyCommandRejectReason.StaleRevision);
-
         bool isClearRequest = string.IsNullOrWhiteSpace(command.RequestedCharacterId);
 
         if (isClearRequest && string.IsNullOrWhiteSpace(targetSlot.CharacterId))

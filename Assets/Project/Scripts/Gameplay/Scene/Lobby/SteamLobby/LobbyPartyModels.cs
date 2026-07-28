@@ -94,6 +94,85 @@ public sealed class LobbyPartyCommandResponse
     }
 }
 
+public sealed class LobbyPartyClientCommandPipeline
+{
+    private readonly List<PendingCommandState> pendingCommands = new();
+
+    public bool HasPendingCommands => pendingCommands.Count > 0;
+    public int PendingCommandCount => pendingCommands.Count;
+
+    public bool TrackSentCommand(LobbyPartyCharacterChangeCommand command)
+    {
+        if (command == null)
+            return false;
+
+        pendingCommands.Add(new PendingCommandState(command));
+        return true;
+    }
+
+    public bool MarkHostResponse(LobbyPartyCommandResponse response)
+    {
+        if (response == null)
+            return false;
+
+        for (int i = 0; i < pendingCommands.Count; i++)
+        {
+            PendingCommandState pending = pendingCommands[i];
+
+            if (pending.Command.RequestId != response.RequestId ||
+                pending.Command.RequesterSteamId != response.RequesterSteamId)
+            {
+                continue;
+            }
+
+            if (!response.Accepted)
+            {
+                Clear();
+                return true;
+            }
+
+            pending.AcceptedRevision = response.ResultRevision;
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool RemoveAcceptedThroughRevision(long authoritativeRevision)
+    {
+        bool removed = false;
+
+        for (int i = pendingCommands.Count - 1; i >= 0; i--)
+        {
+            long acceptedRevision = pendingCommands[i].AcceptedRevision;
+
+            if (acceptedRevision <= 0 || acceptedRevision > authoritativeRevision)
+                continue;
+
+            pendingCommands.RemoveAt(i);
+            removed = true;
+        }
+
+        return removed;
+    }
+
+    public void Clear()
+    {
+        pendingCommands.Clear();
+    }
+
+    private sealed class PendingCommandState
+    {
+        public LobbyPartyCharacterChangeCommand Command { get; }
+        public long AcceptedRevision { get; set; }
+
+        public PendingCommandState(LobbyPartyCharacterChangeCommand command)
+        {
+            Command = command;
+        }
+    }
+}
+
 public enum LobbyPartyCommandRejectReason
 {
     None,

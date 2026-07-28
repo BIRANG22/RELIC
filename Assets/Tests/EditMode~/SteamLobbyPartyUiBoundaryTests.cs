@@ -90,15 +90,16 @@ public class SteamLobbyPartyUiBoundaryTests
     }
 
     [Test]
-    public void ClientPartyCommands_UseOptimisticDisplayAndSinglePendingRequest()
+    public void ClientPartyCommands_TrackEverySentRequestUntilHostSnapshotCatchesUp()
     {
         string source = File.ReadAllText(
             SteamLobbyRoot + "SteamLobbyPartySynchronizer.cs");
 
-        Assert.That(source, Does.Contain("pendingLocalCommand"));
-        Assert.That(source, Does.Contain("queuedLocalIntent"));
+        Assert.That(source, Does.Contain("LobbyPartyClientCommandPipeline"));
+        Assert.That(source, Does.Contain("TrackSentCommand"));
         Assert.That(source, Does.Contain("ApplyOptimisticCharacter"));
-        Assert.That(source, Does.Contain("TryCompletePendingCommand"));
+        Assert.That(source, Does.Contain("TryCompletePendingCommands"));
         Assert.That(source, Does.Contain("CommandResultPrefix"));
+        Assert.That(source, Does.Not.Contain("queuedLocalIntent"));
     }
 }

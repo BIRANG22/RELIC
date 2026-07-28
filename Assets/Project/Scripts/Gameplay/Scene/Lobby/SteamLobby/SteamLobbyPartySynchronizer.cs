@@ -31,32 +31,8 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
     private ulong originalHostSteamId;
     private LobbyPartyAuthorityState authorityState;
     private LobbyPartySnapshot authoritativeSnapshot;
-    private PendingLocalCommand pendingLocalCommand;
-    private QueuedLocalIntent queuedLocalIntent;
+    private readonly LobbyPartyClientCommandPipeline clientCommandPipeline = new();
     private Callback<LobbyChatMsg_t> lobbyChatMessage;
-
-    private sealed class PendingLocalCommand
-    {
-        public LobbyPartyCharacterChangeCommand Command { get; }
-        public long AcceptedRevision { get; set; }
-
-        public PendingLocalCommand(LobbyPartyCharacterChangeCommand command)
-        {
-            Command = command;
-        }
-    }
-
-    private sealed class QueuedLocalIntent
-    {
-        public int SlotIndex { get; }
-        public string CharacterId { get; }
-
-        public QueuedLocalIntent(int slotIndex, string characterId)
-        {
-            SlotIndex = slotIndex;
-            CharacterId = characterId ?? string.Empty;
-        }
-    }
 #endif
 
     private void Awake()
@@ -92,8 +68,7 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
         originalHostSteamId = ownerSteamId;
         authorityState = null;
         authoritativeSnapshot = null;
-        pendingLocalCommand = null;
-        queuedLocalIntent = null;
+        clientCommandPipeline.Clear();
         AppliedRevision = 0;
         CurrentSnapshot = null;
         IsNetworkPartyActive = true;
@@ -273,13 +248,6 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
             return TryApplyHostCommand(hostCommand).Accepted;
         }
 
-        if (pendingLocalCommand != null)
-        {
-            queuedLocalIntent = new QueuedLocalIntent(slotIndex, characterId);
-            ApplyOptimisticCharacter(slotIndex, characterId);
-            return true;
-        }
-
         return SendClientCommand(slotIndex, characterId);
 #else
         return false;
@@ -299,8 +267,7 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
         originalHostSteamId = 0UL;
         authorityState = null;
         authoritativeSnapshot = null;
-        pendingLocalCommand = null;
-        queuedLocalIntent = null;
+        clientCommandPipeline.Clear();
 #endif
 
         IsNetworkPartyActive = false;
@@ -338,7 +305,7 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
         if (!TrySendLobbyChatPayload(payload))
             return false;
 
-        pendingLocalCommand = new PendingLocalCommand(command);
+        clientCommandPipeline.TrackSentCommand(command);
         ApplyOptimisticCharacter(slotIndex, characterId);
         return true;
     }
@@ -572,7 +539,7 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
 
     private void HandleClientCommandResultPayload(string payload)
     {
-        if (IsLocalHost() || pendingLocalCommand == null)
+        if (IsLocalHost() || !clientCommandPipeline.HasPendingCommands)
             return;
 
         string responseJson = payload.Substring(CommandResultPrefix.Length);
@@ -581,7 +548,7 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
                 responseJson,
                 out var response) ||
             response.RequesterSteamId != localSteamId ||
-            response.RequestId != pendingLocalCommand.Command.RequestId)
+            !clientCommandPipeline.MarkHostResponse(response))
         {
             return;
         }
@@ -592,15 +559,13 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
                 "[SteamLobbyPartySynchronizer] Party command rejected: " +
                 response.RejectReason,
                 this);
-            pendingLocalCommand = null;
-            queuedLocalIntent = null;
+            clientCommandPipeline.Clear();
             CurrentSnapshot = authoritativeSnapshot;
             RefreshOptimisticViews();
             return;
         }
 
-        pendingLocalCommand.AcceptedRevision = response.ResultRevision;
-        TryCompletePendingCommand();
+        TryCompletePendingCommands();
     }
 
     private bool IsValidCharacterId(string characterId)
@@ -667,53 +632,32 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
         authoritativeSnapshot = snapshot;
         AppliedRevision = snapshot.Revision;
 
-        if (IsLocalHost() || pendingLocalCommand == null)
+        clientCommandPipeline.RemoveAcceptedThroughRevision(snapshot.Revision);
+
+        if (IsLocalHost() || !clientCommandPipeline.HasPendingCommands)
             CurrentSnapshot = snapshot;
 
         RefreshPartyViews();
         PartyStateApplied?.Invoke();
-        TryCompletePendingCommand();
+        TryCompletePendingCommands();
     }
 
-    private void TryCompletePendingCommand()
+    private void TryCompletePendingCommands()
     {
         if (IsLocalHost() ||
-            pendingLocalCommand == null ||
-            authoritativeSnapshot == null ||
-            pendingLocalCommand.AcceptedRevision <= 0 ||
-            authoritativeSnapshot.Revision < pendingLocalCommand.AcceptedRevision)
+            authoritativeSnapshot == null)
         {
             return;
         }
 
-        pendingLocalCommand = null;
+        clientCommandPipeline.RemoveAcceptedThroughRevision(
+            authoritativeSnapshot.Revision);
+
+        if (clientCommandPipeline.HasPendingCommands)
+            return;
+
         CurrentSnapshot = authoritativeSnapshot;
-
-        QueuedLocalIntent queuedIntent = queuedLocalIntent;
-        queuedLocalIntent = null;
-
-        if (queuedIntent == null)
-        {
-            RefreshOptimisticViews();
-            return;
-        }
-
-        string authoritativeCharacter =
-            authoritativeSnapshot.Slots[queuedIntent.SlotIndex].CharacterId;
-
-        if (authoritativeCharacter == queuedIntent.CharacterId)
-        {
-            RefreshOptimisticViews();
-            return;
-        }
-
-        if (!RequestCharacterChange(
-                queuedIntent.SlotIndex,
-                queuedIntent.CharacterId))
-        {
-            CurrentSnapshot = authoritativeSnapshot;
-            RefreshOptimisticViews();
-        }
+        RefreshOptimisticViews();
     }
 
     private static void ApplySnapshotToPartyRuntime(LobbyPartySnapshot snapshot)
