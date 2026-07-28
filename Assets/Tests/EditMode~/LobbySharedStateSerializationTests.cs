@@ -79,6 +79,59 @@ public class LobbySharedStateSerializationTests
         Assert.That(restored.KnownRevision, Is.EqualTo(7));
     }
 
+    [Test]
+    public void ApplyLobbyLoadouts_CreatesMissingPartyCharacterRuntimeWithDefaultSkills()
+    {
+        CharacterRuntimeStore characterStore = new();
+        CharacterDatabase characterDatabase = CreateCharacterDatabase();
+        PartyRuntimeStore partyStore = new();
+        Assert.That(partyStore.SetCharacter(0, "Character_A"), Is.True);
+
+        LobbySharedStateCharacterRuntimeUtility.ApplyLobbyLoadouts(
+            new LobbyRuntimeData(),
+            partyStore,
+            characterStore,
+            characterDatabase,
+            null);
+
+        Assert.That(characterStore.TryGet("Character_A", out CharacterRuntimeData runtime), Is.True);
+        Assert.That(runtime.CharacterId, Is.EqualTo("Character_A"));
+        Assert.That(runtime.CurrentHP, Is.EqualTo(120));
+        Assert.That(runtime.CurrentCost, Is.EqualTo(6));
+        Assert.That(runtime.PassiveSkillId, Is.EqualTo("Passive_A"));
+        Assert.That(runtime.UniqueSkillId, Is.EqualTo("Unique_A"));
+        Assert.That(runtime.AbilitySkillId, Is.EqualTo("Ability_A"));
+        Assert.That(runtime.EquippedSkillIds, Is.EqualTo(new[] { "Unique_A", "Ability_A", "Common_A", "" }));
+        Assert.That(runtime.EquippedRelicIds, Has.Length.EqualTo(5));
+    }
+
+    [Test]
+    public void ApplyLobbyLoadouts_AppliesSharedEquipmentToCreatedRuntime()
+    {
+        CharacterRuntimeStore characterStore = new();
+        CharacterDatabase characterDatabase = CreateCharacterDatabase();
+        PartyRuntimeStore partyStore = new();
+        Assert.That(partyStore.SetCharacter(0, "Character_A"), Is.True);
+        LobbyRuntimeData lobby = new();
+        lobby.CharacterLoadouts.Add(new LobbyCharacterLoadoutData
+        {
+            CharacterId = "Character_A",
+            EquippedRelicIds = new[] { "", "Relic_A", "", "", "" },
+            EquippedSkillIds = new[] { "Unique_A", "Ability_A", "Skill_X", "" }
+        });
+
+        LobbySharedStateCharacterRuntimeUtility.ApplyLobbyLoadouts(
+            lobby,
+            partyStore,
+            characterStore,
+            characterDatabase,
+            null);
+
+        Assert.That(characterStore.TryGet("Character_A", out CharacterRuntimeData runtime), Is.True);
+        Assert.That(runtime.EquippedRelicIds, Is.EqualTo(new[] { "", "Relic_A", "", "", "" }));
+        Assert.That(runtime.EquippedSkillIds, Is.EqualTo(new[] { "Unique_A", "Ability_A", "Skill_X", "" }));
+    }
+
     [TestCase("")]
     [TestCase("{broken")]
     [TestCase("{}")]
@@ -126,5 +179,25 @@ public class LobbySharedStateSerializationTests
         });
 
         return lobby;
+    }
+
+    private static CharacterDatabase CreateCharacterDatabase()
+    {
+        CharacterDatabase database = new();
+        database.Initialize(new[]
+        {
+            new CharacterMasterData
+            {
+                CharacterId = "Character_A",
+                MaxHP = 120,
+                MaxCost = 6,
+                PassiveSkill1 = "Passive_A",
+                UniqueSkill1 = "Unique_A",
+                CharacterSkill1 = "Ability_A",
+                CommonSkill1 = "Common_A",
+                IsDefaultProvided = true
+            }
+        });
+        return database;
     }
 }

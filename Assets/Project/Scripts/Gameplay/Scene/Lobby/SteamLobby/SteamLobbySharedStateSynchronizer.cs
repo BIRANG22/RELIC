@@ -554,6 +554,12 @@ public sealed class SteamLobbySharedStateSynchronizer : MonoBehaviour
         if (partyStore == null || characterStore == null)
             return;
 
+        LobbySharedStateCharacterRuntimeUtility.EnsurePartyCharacterRuntimes(
+            partyStore,
+            characterStore,
+            DataManager.Instance.CharacterDatabase,
+            DataManager.Instance.RelicDatabase);
+
         int maxCount = partyStore.MaxPartyCountValue;
         for (int i = 0; i < maxCount; i++)
         {
@@ -585,33 +591,12 @@ public sealed class SteamLobbySharedStateSynchronizer : MonoBehaviour
             LobbySharedStateRuntimeCopy.CopyLobbyRuntime(snapshot.Lobby);
         DataManager.Instance.LobbyRuntimeStore?.Set(lobbyCopy);
         TrialSelectionState.SetMask(snapshot.TrialSelectionMask);
-        ApplyCharacterLoadouts(lobbyCopy);
-    }
-
-    private static void ApplyCharacterLoadouts(LobbyRuntimeData lobby)
-    {
-        if (lobby?.CharacterLoadouts == null || DataManager.Instance == null)
-            return;
-
-        CharacterRuntimeStore characterStore = DataManager.Instance.CharacterRuntimeStore;
-        if (characterStore == null)
-            return;
-
-        for (int i = 0; i < lobby.CharacterLoadouts.Count; i++)
-        {
-            LobbyCharacterLoadoutData loadout = lobby.CharacterLoadouts[i];
-            if (loadout == null ||
-                string.IsNullOrWhiteSpace(loadout.CharacterId) ||
-                !characterStore.TryGet(loadout.CharacterId, out CharacterRuntimeData character) ||
-                character == null)
-            {
-                continue;
-            }
-
-            character.EquippedRelicIds = CopyArray(loadout.EquippedRelicIds, 5);
-            character.EquippedSkillIds = CopyArray(loadout.EquippedSkillIds, 4);
-            characterStore.AddOrUpdate(character);
-        }
+        LobbySharedStateCharacterRuntimeUtility.ApplyLobbyLoadouts(
+            lobbyCopy,
+            DataManager.Instance.PartyRuntimeStore,
+            DataManager.Instance.CharacterRuntimeStore,
+            DataManager.Instance.CharacterDatabase,
+            DataManager.Instance.RelicDatabase);
     }
 
     private static bool ApplyEquipmentCommand(LobbySharedStateCommand command)
