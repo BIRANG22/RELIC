@@ -48,6 +48,7 @@ public static class LobbyPartySerialization
         public bool accepted;
         public int rejectReason;
         public long resultRevision;
+        public SnapshotDto snapshot;
     }
 
     [Serializable]
@@ -174,6 +175,98 @@ public static class LobbyPartySerialization
         if (snapshot == null)
             return string.Empty;
 
+        SnapshotDto dto = ToDto(snapshot);
+
+        return JsonUtility.ToJson(dto);
+    }
+
+    public static string SerializeCommandResponse(LobbyPartyCommandResponse response)
+    {
+        if (response == null)
+            return string.Empty;
+
+        CommandResponseDto dto = new CommandResponseDto
+        {
+            version = ProtocolVersion,
+            requestId = response.RequestId,
+            requesterSteamId = ToText(response.RequesterSteamId),
+            accepted = response.Accepted,
+            rejectReason = (int)response.RejectReason,
+            resultRevision = response.ResultRevision,
+            snapshot = ToDto(response.Snapshot)
+        };
+
+        return JsonUtility.ToJson(dto);
+    }
+
+    public static bool TryDeserializeCommandResponse(
+        string payload,
+        out LobbyPartyCommandResponse response)
+    {
+        response = null;
+
+        if (string.IsNullOrWhiteSpace(payload))
+            return false;
+
+        try
+        {
+            CommandResponseDto dto = JsonUtility.FromJson<CommandResponseDto>(payload);
+
+            if (dto == null ||
+                dto.version != ProtocolVersion ||
+                string.IsNullOrWhiteSpace(dto.requestId) ||
+                !TryParseSteamId(dto.requesterSteamId, out ulong requesterSteamId) ||
+                !Enum.IsDefined(typeof(LobbyPartyCommandRejectReason), dto.rejectReason))
+            {
+                return false;
+            }
+
+            LobbyPartySnapshot snapshot = null;
+
+            if (dto.snapshot != null &&
+                !TryDeserializeSnapshotDto(dto.snapshot, out snapshot))
+            {
+                return false;
+            }
+
+            response = new LobbyPartyCommandResponse(
+                dto.requestId,
+                requesterSteamId,
+                dto.accepted,
+                (LobbyPartyCommandRejectReason)dto.rejectReason,
+                dto.resultRevision,
+                snapshot);
+            return true;
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
+    }
+
+    public static bool TryDeserializeSnapshot(string payload, out LobbyPartySnapshot snapshot)
+    {
+        snapshot = null;
+
+        if (string.IsNullOrWhiteSpace(payload))
+            return false;
+
+        try
+        {
+            SnapshotDto dto = JsonUtility.FromJson<SnapshotDto>(payload);
+            return TryDeserializeSnapshotDto(dto, out snapshot);
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
+    }
+
+    private static SnapshotDto ToDto(LobbyPartySnapshot snapshot)
+    {
+        if (snapshot == null)
+            return null;
+
         SnapshotDto dto = new SnapshotDto
         {
             version = ProtocolVersion,
@@ -208,143 +301,79 @@ public static class LobbyPartySerialization
             };
         }
 
-        return JsonUtility.ToJson(dto);
+        return dto;
     }
 
-    public static string SerializeCommandResponse(LobbyPartyCommandResponse response)
-    {
-        if (response == null)
-            return string.Empty;
-
-        CommandResponseDto dto = new CommandResponseDto
-        {
-            version = ProtocolVersion,
-            requestId = response.RequestId,
-            requesterSteamId = ToText(response.RequesterSteamId),
-            accepted = response.Accepted,
-            rejectReason = (int)response.RejectReason,
-            resultRevision = response.ResultRevision
-        };
-
-        return JsonUtility.ToJson(dto);
-    }
-
-    public static bool TryDeserializeCommandResponse(
-        string payload,
-        out LobbyPartyCommandResponse response)
-    {
-        response = null;
-
-        if (string.IsNullOrWhiteSpace(payload))
-            return false;
-
-        try
-        {
-            CommandResponseDto dto = JsonUtility.FromJson<CommandResponseDto>(payload);
-
-            if (dto == null ||
-                dto.version != ProtocolVersion ||
-                string.IsNullOrWhiteSpace(dto.requestId) ||
-                !TryParseSteamId(dto.requesterSteamId, out ulong requesterSteamId) ||
-                !Enum.IsDefined(typeof(LobbyPartyCommandRejectReason), dto.rejectReason))
-            {
-                return false;
-            }
-
-            response = new LobbyPartyCommandResponse(
-                dto.requestId,
-                requesterSteamId,
-                dto.accepted,
-                (LobbyPartyCommandRejectReason)dto.rejectReason,
-                dto.resultRevision);
-            return true;
-        }
-        catch (ArgumentException)
-        {
-            return false;
-        }
-    }
-
-    public static bool TryDeserializeSnapshot(string payload, out LobbyPartySnapshot snapshot)
+    private static bool TryDeserializeSnapshotDto(
+        SnapshotDto dto,
+        out LobbyPartySnapshot snapshot)
     {
         snapshot = null;
 
-        if (string.IsNullOrWhiteSpace(payload))
-            return false;
-
-        try
+        if (dto == null ||
+            dto.version != ProtocolVersion ||
+            dto.revision <= 0 ||
+            !TryParseSteamId(dto.hostSteamId, out ulong hostSteamId) ||
+            dto.orderedClientSteamIds == null ||
+            dto.slots == null ||
+            dto.slots.Length != LobbyPartyAuthorityState.SlotCount)
         {
-            SnapshotDto dto = JsonUtility.FromJson<SnapshotDto>(payload);
+            return false;
+        }
 
-            if (dto == null ||
-                dto.version != ProtocolVersion ||
-                dto.revision <= 0 ||
-                !TryParseSteamId(dto.hostSteamId, out ulong hostSteamId) ||
-                dto.orderedClientSteamIds == null ||
-                dto.slots == null ||
-                dto.slots.Length != LobbyPartyAuthorityState.SlotCount)
+        ulong[] clients = new ulong[dto.orderedClientSteamIds.Length];
+
+        for (int i = 0; i < clients.Length; i++)
+        {
+            if (!TryParseSteamId(dto.orderedClientSteamIds[i], out clients[i]))
+                return false;
+        }
+
+        LobbyPartySlotState[] slots =
+            new LobbyPartySlotState[LobbyPartyAuthorityState.SlotCount];
+
+        for (int i = 0; i < dto.slots.Length; i++)
+        {
+            SlotDto slotDto = dto.slots[i];
+
+            if (slotDto == null ||
+                !TryParseSteamId(slotDto.ownerSteamId, out ulong ownerSteamId))
             {
                 return false;
             }
 
-            ulong[] clients = new ulong[dto.orderedClientSteamIds.Length];
-
-            for (int i = 0; i < clients.Length; i++)
-            {
-                if (!TryParseSteamId(dto.orderedClientSteamIds[i], out clients[i]))
-                    return false;
-            }
-
-            LobbyPartySlotState[] slots =
-                new LobbyPartySlotState[LobbyPartyAuthorityState.SlotCount];
-
-            for (int i = 0; i < dto.slots.Length; i++)
-            {
-                SlotDto slotDto = dto.slots[i];
-
-                if (slotDto == null ||
-                    !TryParseSteamId(slotDto.ownerSteamId, out ulong ownerSteamId))
-                {
-                    return false;
-                }
-
-                slots[i] = new LobbyPartySlotState(
-                    slotDto.slotIndex,
-                    ownerSteamId,
-                    slotDto.characterId);
-            }
-
-            MemberViewDto[] viewDtos = dto.viewedCharacters ?? Array.Empty<MemberViewDto>();
-            LobbyPartyMemberViewState[] viewedCharacters =
-                new LobbyPartyMemberViewState[viewDtos.Length];
-
-            for (int i = 0; i < viewDtos.Length; i++)
-            {
-                MemberViewDto viewDto = viewDtos[i];
-
-                if (viewDto == null ||
-                    !TryParseSteamId(viewDto.memberSteamId, out ulong memberSteamId))
-                {
-                    return false;
-                }
-
-                viewedCharacters[i] = new LobbyPartyMemberViewState(
-                    memberSteamId,
-                    viewDto.characterId);
-            }
-
-            snapshot = new LobbyPartySnapshot(
-                hostSteamId,
-                dto.revision,
-                clients,
-                slots,
-                viewedCharacters);
-            return true;
+            slots[i] = new LobbyPartySlotState(
+                slotDto.slotIndex,
+                ownerSteamId,
+                slotDto.characterId);
         }
-        catch (ArgumentException)
+
+        MemberViewDto[] viewDtos = dto.viewedCharacters ?? Array.Empty<MemberViewDto>();
+        LobbyPartyMemberViewState[] viewedCharacters =
+            new LobbyPartyMemberViewState[viewDtos.Length];
+
+        for (int i = 0; i < viewDtos.Length; i++)
         {
-            return false;
+            MemberViewDto viewDto = viewDtos[i];
+
+            if (viewDto == null ||
+                !TryParseSteamId(viewDto.memberSteamId, out ulong memberSteamId))
+            {
+                return false;
+            }
+
+            viewedCharacters[i] = new LobbyPartyMemberViewState(
+                memberSteamId,
+                viewDto.characterId);
         }
+
+        snapshot = new LobbyPartySnapshot(
+            hostSteamId,
+            dto.revision,
+            clients,
+            slots,
+            viewedCharacters);
+        return true;
     }
 
     public static bool ValidateSnapshot(

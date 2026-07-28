@@ -258,6 +258,30 @@ public class LobbyPartyAuthorityStateTests
     }
 
     [Test]
+    public void ClearViewedCharacter_ReleasesViewedCharacterLock()
+    {
+        LobbyPartyAuthorityState state = CreateABC();
+        state.AddClient(200UL);
+        state.AddClient(300UL);
+
+        LobbyPartyCommandResult first = state.TryViewCharacter(
+            ViewCommand(100UL, "D", state.Revision),
+            _ => true);
+        LobbyPartyCommandResult clear = state.TryViewCharacter(
+            ViewCommand(100UL, string.Empty, state.Revision),
+            _ => false);
+        LobbyPartyCommandResult second = state.TryViewCharacter(
+            ViewCommand(200UL, "D", state.Revision),
+            _ => true);
+
+        Assert.That(first.Accepted, Is.True);
+        Assert.That(clear.Accepted, Is.True);
+        Assert.That(second.Accepted, Is.True);
+        Assert.That(state.GetViewedCharacterId(100UL), Is.Empty);
+        Assert.That(state.GetViewedCharacterId(200UL), Is.EqualTo("D"));
+    }
+
+    [Test]
     public void ClearCharacter_BySlotOwner_AllowsClearWhileRequesterViewsSameCharacter()
     {
         LobbyPartyAuthorityState state = CreateABC();

@@ -129,6 +129,46 @@ public class SteamLobbyPartyUiBoundaryTests
     }
 
     [Test]
+    public void NetworkCharacterViewing_CanClearLocalViewedCharacterWhenLeavingSetting()
+    {
+        string synchronizer = File.ReadAllText(
+            SteamLobbyRoot + "SteamLobbyPartySynchronizer.cs");
+        string charPick = File.ReadAllText(
+            "Assets/Project/Scripts/Gameplay/Scene/Lobby/CharPick.cs");
+
+        Assert.That(synchronizer, Does.Contain("RequestClearViewedCharacter"));
+        Assert.That(charPick, Does.Contain("ClearNetworkViewedCharacterOnDisable"));
+        Assert.That(charPick, Does.Contain("RequestClearViewedCharacter"));
+    }
+
+    [Test]
+    public void ClientPartyCommands_ApplySnapshotCarriedByHostResponse()
+    {
+        string models = File.ReadAllText(
+            SteamLobbyRoot + "LobbyPartyModels.cs");
+        string serialization = File.ReadAllText(
+            SteamLobbyRoot + "LobbyPartySerialization.cs");
+        string synchronizer = File.ReadAllText(
+            SteamLobbyRoot + "SteamLobbyPartySynchronizer.cs").Replace("\r\n", "\n");
+
+        Assert.That(models, Does.Contain("public LobbyPartySnapshot Snapshot"));
+        Assert.That(serialization, Does.Contain("snapshot = ToDto(response.Snapshot)"));
+        Assert.That(synchronizer, Does.Contain("ApplyResponseSnapshot(response)"));
+        Assert.That(synchronizer, Does.Contain("bool isLocalRequester = response.RequesterSteamId == localSteamId"));
+        Assert.That(synchronizer, Does.Not.Contain("IsLocalHost() || !clientCommandPipeline.HasPendingCommands"));
+    }
+
+    [Test]
+    public void NetworkCharacterViewing_RefreshesVisibleButtonsFromSnapshot()
+    {
+        string source = File.ReadAllText(
+            SteamLobbyRoot + "SteamLobbyPartySynchronizer.cs");
+
+        Assert.That(source, Does.Contain("RefreshNetworkViewedCharacterState"));
+        Assert.That(source, Does.Contain("RefreshFromNetworkPartyState"));
+    }
+
+    [Test]
     public void SelectedPartyMarker_ReadsSynchronizerDisplayStateInNetworkParty()
     {
         string charBtn = File.ReadAllText(

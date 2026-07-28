@@ -113,19 +113,22 @@ public sealed class LobbyPartyCommandResponse
     public bool Accepted { get; }
     public LobbyPartyCommandRejectReason RejectReason { get; }
     public long ResultRevision { get; }
+    public LobbyPartySnapshot Snapshot { get; }
 
     public LobbyPartyCommandResponse(
         string requestId,
         ulong requesterSteamId,
         bool accepted,
         LobbyPartyCommandRejectReason rejectReason,
-        long resultRevision)
+        long resultRevision,
+        LobbyPartySnapshot snapshot = null)
     {
         RequestId = requestId ?? string.Empty;
         RequesterSteamId = requesterSteamId;
         Accepted = accepted;
         RejectReason = rejectReason;
         ResultRevision = resultRevision;
+        Snapshot = snapshot;
     }
 }
 

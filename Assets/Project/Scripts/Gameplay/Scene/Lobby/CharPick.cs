@@ -40,6 +40,7 @@ public class CharPick : MonoBehaviour
     private Vector3 previewBackgroundOriginalScale;
     private bool hasPreviewBackgroundOriginalScale;
     private bool isStarted;
+    private SteamLobbyPartySynchronizer subscribedPartySynchronizer;
 
     public CharBtn CurrentButton
     {
@@ -56,6 +57,7 @@ public class CharPick : MonoBehaviour
     {
         AutoBindCharButtonsIfNeeded();
         ClampCenterIndex();
+        SubscribeNetworkPartyEvents();
 
         if (IsNetworkPartyActive())
             RefreshFromNetworkPartyState();
@@ -106,6 +108,9 @@ public class CharPick : MonoBehaviour
 
     private void OnDisable()
     {
+        ClearNetworkViewedCharacterOnDisable();
+        UnsubscribeNetworkPartyEvents();
+
         if (resetPendingSelectionOnDisable)
             ResetPendingSelectionFromRuntime();
     }
@@ -269,6 +274,7 @@ public class CharPick : MonoBehaviour
 
     public void RefreshFromNetworkPartyState()
     {
+        SubscribeNetworkPartyEvents();
         ResetPendingSelectionFromRuntime();
         ApplyNetworkViewedCharacter();
         RefreshPartyViews();
@@ -461,6 +467,46 @@ public class CharPick : MonoBehaviour
     {
         SteamLobbyPartySynchronizer synchronizer = SteamLobbyPartySynchronizer.Instance;
         return synchronizer != null && synchronizer.IsNetworkPartyActive;
+    }
+
+    private void SubscribeNetworkPartyEvents()
+    {
+        SteamLobbyPartySynchronizer synchronizer = SteamLobbyPartySynchronizer.Instance;
+
+        if (subscribedPartySynchronizer == synchronizer)
+            return;
+
+        UnsubscribeNetworkPartyEvents();
+        subscribedPartySynchronizer = synchronizer;
+
+        if (subscribedPartySynchronizer != null)
+            subscribedPartySynchronizer.PartyStateApplied += HandleNetworkPartyStateApplied;
+    }
+
+    private void UnsubscribeNetworkPartyEvents()
+    {
+        if (subscribedPartySynchronizer == null)
+            return;
+
+        subscribedPartySynchronizer.PartyStateApplied -= HandleNetworkPartyStateApplied;
+        subscribedPartySynchronizer = null;
+    }
+
+    private void HandleNetworkPartyStateApplied()
+    {
+        if (!isActiveAndEnabled || !gameObject.activeInHierarchy)
+            return;
+
+        if (IsNetworkPartyActive())
+            RefreshFromNetworkPartyState();
+    }
+
+    private void ClearNetworkViewedCharacterOnDisable()
+    {
+        SteamLobbyPartySynchronizer synchronizer = SteamLobbyPartySynchronizer.Instance;
+
+        if (synchronizer != null && synchronizer.IsNetworkPartyActive)
+            synchronizer.RequestClearViewedCharacter();
     }
 
     private void ApplyPendingSelectionToRuntime()

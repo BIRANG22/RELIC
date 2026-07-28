@@ -316,6 +316,25 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
 #endif
     }
 
+    public bool RequestClearViewedCharacter()
+    {
+#if STEAMWORKS_NET
+        if (!IsNetworkPartyActive || CurrentSnapshot == null)
+            return false;
+
+        if (IsLocalHost())
+        {
+            LobbyPartyViewedCharacterCommand hostCommand =
+                CreateLocalViewCommand(string.Empty);
+            return TryApplyHostViewCommand(hostCommand).Accepted;
+        }
+
+        return SendClientViewCommand(string.Empty);
+#else
+        return false;
+#endif
+    }
+
     public bool RequestAutomaticCharacterToggle(string characterId)
     {
 #if STEAMWORKS_NET
@@ -659,7 +678,8 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
             command.RequesterSteamId,
             result.Accepted,
             result.RejectReason,
-            authorityState != null ? authorityState.Revision : 0);
+            authorityState != null ? authorityState.Revision : 0,
+            result.Snapshot);
         string responsePayload =
             CommandResultPrefix +
             LobbyPartySerialization.SerializeCommandResponse(response);
@@ -682,7 +702,8 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
             command.RequesterSteamId,
             result.Accepted,
             result.RejectReason,
-            authorityState != null ? authorityState.Revision : 0);
+            authorityState != null ? authorityState.Revision : 0,
+            result.Snapshot);
         string responsePayload =
             CommandResultPrefix +
             LobbyPartySerialization.SerializeCommandResponse(response);
@@ -748,30 +769,58 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
 
     private void HandleClientCommandResultPayload(string payload)
     {
-        if (IsLocalHost() || !clientCommandPipeline.HasPendingCommands)
+        if (IsLocalHost())
             return;
 
         string responseJson = payload.Substring(CommandResultPrefix.Length);
 
         if (!LobbyPartySerialization.TryDeserializeCommandResponse(
                 responseJson,
-                out var response) ||
-            response.RequesterSteamId != localSteamId ||
-            !clientCommandPipeline.MarkHostResponse(response))
+                out var response))
         {
             return;
         }
 
-        if (!response.Accepted)
+        bool isLocalRequester = response.RequesterSteamId == localSteamId;
+        bool trackedLocalResponse = false;
+
+        if (isLocalRequester && clientCommandPipeline.HasPendingCommands)
         {
-            LogUnexpectedCommandReject(response.RejectReason);
-            clientCommandPipeline.Clear();
-            CurrentSnapshot = authoritativeSnapshot;
-            RefreshOptimisticViews();
+            trackedLocalResponse = clientCommandPipeline.MarkHostResponse(response);
+
+            if (!trackedLocalResponse)
+                return;
+
+            if (!response.Accepted)
+            {
+                LogUnexpectedCommandReject(response.RejectReason);
+                clientCommandPipeline.Clear();
+                CurrentSnapshot = authoritativeSnapshot;
+                RefreshOptimisticViews();
+                return;
+            }
+        }
+        else if (!response.Accepted)
+        {
             return;
         }
 
-        TryCompletePendingCommands();
+        ApplyResponseSnapshot(response);
+
+        if (trackedLocalResponse)
+            TryCompletePendingCommands();
+    }
+
+    private void ApplyResponseSnapshot(LobbyPartyCommandResponse response)
+    {
+        if (response != null && response.Snapshot != null)
+        {
+            ApplySnapshot(response.Snapshot, true);
+            return;
+        }
+
+        SteamMatchmaking.RequestLobbyData(currentLobbyId);
+        ApplySnapshotFromLobbyData();
     }
 
     private bool IsValidCharacterId(string characterId)
@@ -890,12 +939,22 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
 
     private static void RefreshOptimisticViews()
     {
+        CharPick[] characterPickers = FindObjectsByType<CharPick>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < characterPickers.Length; i++)
+            characterPickers[i]?.RefreshFromNetworkPartyState();
+
         CharBtn[] charButtons = FindObjectsByType<CharBtn>(
             FindObjectsInactive.Include,
             FindObjectsSortMode.None);
 
         for (int i = 0; i < charButtons.Length; i++)
+        {
+            charButtons[i]?.RefreshNetworkViewedCharacterState(true);
             charButtons[i]?.RefreshSelectedPartyMarker();
+        }
     }
 
     private static void RefreshPartyViews()
@@ -927,7 +986,10 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
             FindObjectsSortMode.None);
 
         for (int i = 0; i < charButtons.Length; i++)
+        {
+            charButtons[i]?.RefreshNetworkViewedCharacterState(true);
             charButtons[i]?.RefreshSelectedPartyMarker();
+        }
 
         SpawnGridPanel[] spawnGridPanels = FindObjectsByType<SpawnGridPanel>(
             FindObjectsInactive.Include,

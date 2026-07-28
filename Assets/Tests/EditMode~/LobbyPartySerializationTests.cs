@@ -136,6 +136,30 @@ public class LobbyPartySerializationTests
         Assert.That(restored.ResultRevision, Is.EqualTo(8));
     }
 
+    [Test]
+    public void CommandResponse_RoundTripsAuthoritativeSnapshot()
+    {
+        LobbyPartySnapshot snapshot = CreateSnapshot();
+        LobbyPartyCommandResponse source = new(
+            "request-42",
+            200UL,
+            true,
+            LobbyPartyCommandRejectReason.None,
+            snapshot.Revision,
+            snapshot);
+
+        string payload = LobbyPartySerialization.SerializeCommandResponse(source);
+        bool success = LobbyPartySerialization.TryDeserializeCommandResponse(
+            payload,
+            out var restored);
+
+        Assert.That(success, Is.True);
+        Assert.That(restored.Snapshot, Is.Not.Null);
+        Assert.That(restored.Snapshot.Revision, Is.EqualTo(snapshot.Revision));
+        Assert.That(restored.Snapshot.Slots[1].CharacterId, Is.EqualTo("C"));
+        Assert.That(restored.Snapshot.ViewedCharacters[0].CharacterId, Is.EqualTo("D"));
+    }
+
     private static LobbyPartySnapshot CreateSnapshot()
     {
         return new LobbyPartySnapshot(
