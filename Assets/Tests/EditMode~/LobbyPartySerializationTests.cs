@@ -24,6 +24,27 @@ public class LobbyPartySerializationTests
     }
 
     [Test]
+    public void ViewCommand_RoundTripsAllFields()
+    {
+        LobbyPartyViewedCharacterCommand source = new(
+            "view-request-42",
+            76561198000000001UL,
+            "Character_C",
+            7);
+
+        string payload = LobbyPartySerialization.SerializeViewCommand(source);
+        bool success = LobbyPartySerialization.TryDeserializeViewCommand(
+            payload,
+            out var restored);
+
+        Assert.That(success, Is.True);
+        Assert.That(restored.RequestId, Is.EqualTo(source.RequestId));
+        Assert.That(restored.RequesterSteamId, Is.EqualTo(source.RequesterSteamId));
+        Assert.That(restored.ViewedCharacterId, Is.EqualTo(source.ViewedCharacterId));
+        Assert.That(restored.KnownRevision, Is.EqualTo(source.KnownRevision));
+    }
+
+    [Test]
     public void Snapshot_RoundTripsAllPartyFields()
     {
         LobbyPartySnapshot source = CreateSnapshot();
@@ -37,6 +58,8 @@ public class LobbyPartySerializationTests
         Assert.That(restored.OrderedClientSteamIds, Is.EqualTo(source.OrderedClientSteamIds));
         Assert.That(restored.Slots[1].OwnerSteamId, Is.EqualTo(200UL));
         Assert.That(restored.Slots[1].CharacterId, Is.EqualTo("C"));
+        Assert.That(restored.ViewedCharacters[0].MemberSteamId, Is.EqualTo(100UL));
+        Assert.That(restored.ViewedCharacters[0].CharacterId, Is.EqualTo("D"));
     }
 
     [TestCase("")]
@@ -113,6 +136,30 @@ public class LobbyPartySerializationTests
         Assert.That(restored.ResultRevision, Is.EqualTo(8));
     }
 
+    [Test]
+    public void CommandResponse_RoundTripsAuthoritativeSnapshot()
+    {
+        LobbyPartySnapshot snapshot = CreateSnapshot();
+        LobbyPartyCommandResponse source = new(
+            "request-42",
+            200UL,
+            true,
+            LobbyPartyCommandRejectReason.None,
+            snapshot.Revision,
+            snapshot);
+
+        string payload = LobbyPartySerialization.SerializeCommandResponse(source);
+        bool success = LobbyPartySerialization.TryDeserializeCommandResponse(
+            payload,
+            out var restored);
+
+        Assert.That(success, Is.True);
+        Assert.That(restored.Snapshot, Is.Not.Null);
+        Assert.That(restored.Snapshot.Revision, Is.EqualTo(snapshot.Revision));
+        Assert.That(restored.Snapshot.Slots[1].CharacterId, Is.EqualTo("C"));
+        Assert.That(restored.Snapshot.ViewedCharacters[0].CharacterId, Is.EqualTo("D"));
+    }
+
     private static LobbyPartySnapshot CreateSnapshot()
     {
         return new LobbyPartySnapshot(
@@ -124,6 +171,10 @@ public class LobbyPartySerializationTests
                 new LobbyPartySlotState(0, 100UL, "A"),
                 new LobbyPartySlotState(1, 200UL, "C"),
                 new LobbyPartySlotState(2, 100UL, "B")
+            },
+            new[]
+            {
+                new LobbyPartyMemberViewState(100UL, "D")
             });
     }
 }

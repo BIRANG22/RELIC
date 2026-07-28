@@ -64,6 +64,9 @@ public class RelicEquipPanelUI : MonoBehaviour
 
         InventoryPanelSelectionResetter.ResetAllSelectionsExcept(this);
 
+        if (!CanLocalPlayerEditCharacter(characterId))
+            return;
+
         selectedCharacterId = characterId;
         selectedRelicSlotIndex = relicSlotIndex;
         UpdateEquippedSlotSelectionVisuals();
@@ -167,6 +170,18 @@ public class RelicEquipPanelUI : MonoBehaviour
 
         if (CheckRelicEditLocked())
             return false;
+
+        if (TryRequestNetworkEquipRelic(
+                characterId,
+                relicSlotIndex,
+                relicId,
+                out bool networkEquipResult))
+        {
+            if (networkEquipResult)
+                ResetSelectionState();
+
+            return networkEquipResult;
+        }
 
         if (DataManager.Instance == null)
             return false;
@@ -504,6 +519,20 @@ public class RelicEquipPanelUI : MonoBehaviour
         if (CheckRelicEditLocked())
             return;
 
+        if (TryRequestNetworkUnequipRelic(
+                characterId,
+                relicSlotIndex,
+                out bool networkUnequipResult))
+        {
+            if (networkUnequipResult)
+            {
+                selectedCharacterId = null;
+                selectedRelicSlotIndex = -1;
+            }
+
+            return;
+        }
+
         if (DataManager.Instance == null)
             return;
 
@@ -542,6 +571,53 @@ public class RelicEquipPanelUI : MonoBehaviour
             return false;
 
         BattleWarningUI.ShowMessage(battleRoomLockMessage);
+        return true;
+    }
+
+    private static bool CanLocalPlayerEditCharacter(string characterId)
+    {
+        SteamLobbySharedStateSynchronizer synchronizer =
+            SteamLobbySharedStateSynchronizer.Instance;
+        return synchronizer == null ||
+               !synchronizer.IsNetworkSharedStateActive ||
+               synchronizer.CanLocalPlayerEditCharacter(characterId);
+    }
+
+    private static bool TryRequestNetworkEquipRelic(
+        string characterId,
+        int relicSlotIndex,
+        string relicId,
+        out bool requestSent)
+    {
+        requestSent = false;
+        SteamLobbySharedStateSynchronizer synchronizer =
+            SteamLobbySharedStateSynchronizer.Instance;
+
+        if (synchronizer == null || !synchronizer.IsNetworkSharedStateActive)
+            return false;
+
+        requestSent = synchronizer.RequestEquipRelic(
+            characterId,
+            relicSlotIndex,
+            relicId);
+        return true;
+    }
+
+    private static bool TryRequestNetworkUnequipRelic(
+        string characterId,
+        int relicSlotIndex,
+        out bool requestSent)
+    {
+        requestSent = false;
+        SteamLobbySharedStateSynchronizer synchronizer =
+            SteamLobbySharedStateSynchronizer.Instance;
+
+        if (synchronizer == null || !synchronizer.IsNetworkSharedStateActive)
+            return false;
+
+        requestSent = synchronizer.RequestUnequipRelic(
+            characterId,
+            relicSlotIndex);
         return true;
     }
 

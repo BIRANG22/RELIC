@@ -10,20 +10,20 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     private const float RefreshIntervalSeconds = 0.25f;
 
     [Header("Panel")]
-    [Tooltip("PositionPanel 안에 미리 배치한 CultureTankPanel입니다. 비어 있으면 이 컴포넌트가 붙은 오브젝트를 사용합니다.")]
+    [Tooltip("PositionPanel ?�에 미리 배치??CultureTankPanel?�니?? 비어 ?�으�???컴포?�트가 붙�? ?�브?�트�??�용?�니??")]
     [SerializeField] private GameObject panelRoot;
 
-    [Tooltip("CultureTankPanel의 BackButton입니다.")]
+    [Tooltip("CultureTankPanel??BackButton?�니??")]
     [SerializeField] private Button backButton;
 
-    [Tooltip("배양조 행들이 들어 있는 Content입니다.")]
+    [Tooltip("배양�??�들???�어 ?�는 Content?�니??")]
     [SerializeField] private RectTransform contentRoot;
 
-    [Tooltip("배양조가 없을 때 표시할 텍스트입니다. 사용하지 않으면 비워도 됩니다.")]
+    [Tooltip("배양조�? ?�을 ???�시???�스?�입?�다. ?�용?��? ?�으�?비워???�니??")]
     [SerializeField] private TMP_Text emptyText;
 
     [Header("Rows")]
-    [Tooltip("Content 아래에 미리 만들어 둔 CultureTankRow_1~3을 순서대로 연결합니다.")]
+    [Tooltip("Content ?�래??미리 만들????CultureTankRow_1~3???�서?��??�결?�니??")]
     [SerializeField] private TankRow[] rows = new TankRow[3];
 
     [Header("Search")]
@@ -64,7 +64,7 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
 
         if (panelRoot == null)
         {
-            Debug.LogWarning("[LobbyCultureTankPanelPresenter] CultureTankPanel이 연결되지 않았습니다.");
+            Debug.LogWarning("[LobbyCultureTankPanelPresenter] CultureTankPanel???�결?��? ?�았?�니??");
             return;
         }
 
@@ -122,6 +122,7 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
             if (row.Button != null)
             {
                 row.Button.onClick.RemoveAllListeners();
+                row.Button.interactable = CanLocalPlayerMutateHostOnlyState();
                 LobbyCultureTankController clickedTank = tank;
                 row.Button.onClick.AddListener(() => InteractWithTank(clickedTank));
             }
@@ -255,6 +256,14 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
             LobbyCultureTankPanelState.MissingData => new Color(0.33f, 0.11f, 0.11f, 0.96f),
             _ => new Color(0.16f, 0.18f, 0.22f, 0.96f)
         };
+    }
+
+    private static bool CanLocalPlayerMutateHostOnlyState()
+    {
+        SteamLobbySharedStateSynchronizer synchronizer =
+            SteamLobbySharedStateSynchronizer.Instance;
+        return synchronizer == null ||
+               synchronizer.CanLocalPlayerMutateHostOnlyState();
     }
 
     [Serializable]

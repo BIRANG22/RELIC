@@ -87,6 +87,9 @@ public sealed class LobbyCultureTankController : MonoBehaviour
         if (ShouldBlockClick())
             return;
 
+        if (!CanLocalPlayerMutateHostOnlyState())
+            return;
+
         HandleInteraction();
     }
 
@@ -99,10 +102,10 @@ public sealed class LobbyCultureTankController : MonoBehaviour
 
         return state switch
         {
-            LobbyCultureTankPanelState.Completed => $"{title}\n완료",
-            LobbyCultureTankPanelState.Running => $"{title}\n배양중 {GetPanelRemainingSeconds()}s",
-            LobbyCultureTankPanelState.MissingData => $"{title}\n데이터 없음",
-            _ => $"{title}\n비어 있음"
+            LobbyCultureTankPanelState.Completed => $"{title}\n\uC644\uB8CC",
+            LobbyCultureTankPanelState.Running => $"{title}\n\uBC30\uC591\uC911 {GetPanelRemainingSeconds()}s",
+            LobbyCultureTankPanelState.MissingData => $"{title}\n\uB370\uC774\uD130 \uC5C6\uC74C",
+            _ => $"{title}\n\uBE44\uC5B4 \uC788\uC74C"
         };
     }
 
@@ -146,14 +149,14 @@ public sealed class LobbyCultureTankController : MonoBehaviour
     private static string FormatPanelTankName(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
-            return "배양조";
+            return "\uBC30\uC591\uC870";
 
         string trimmed = value.Trim();
         const string prefix = "CultureTank";
         if (trimmed.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
         {
             string suffix = trimmed[prefix.Length..].Trim();
-            return string.IsNullOrWhiteSpace(suffix) ? "배양조" : $"배양조 {suffix}";
+            return string.IsNullOrWhiteSpace(suffix) ? "\uBC30\uC591\uC870" : $"\uBC30\uC591\uC870 {suffix}";
         }
 
         return trimmed;
@@ -186,15 +189,18 @@ public sealed class LobbyCultureTankController : MonoBehaviour
         if (CultureTankResearchService.TryGetTank(lobby, tankId, out CultureTankResearchRuntimeData tank))
         {
             bool changed = CultureTankResearchService.RefreshCompletion(tank, nowTicks);
-            if (changed)
+            if (changed && CanLocalPlayerMutateHostOnlyState())
+            {
                 SaveProgress();
+                PublishHostSnapshotAfterLocalMutation();
+            }
 
             RefreshVisuals(true);
 
             if (tank.IsCompleted)
                 ClaimCompletedResearch(lobby, tank, nowTicks);
             else
-                BattleWarningUI.ShowMessage("아직 배양 중입니다.");
+                BattleWarningUI.ShowMessage("?�직 배양 중입?�다.");
 
             return;
         }
@@ -220,7 +226,7 @@ public sealed class LobbyCultureTankController : MonoBehaviour
 
         if (lobby.BagItemIds == null || lobby.BagItemIds.Count <= 0)
         {
-            BattleWarningUI.ShowMessage("배양할 고유아이템이 없습니다.");
+            BattleWarningUI.ShowMessage("배양??고유?�이?�이 ?�습?�다.");
             return;
         }
 
@@ -229,7 +235,7 @@ public sealed class LobbyCultureTankController : MonoBehaviour
 
         if (bagPanel == null)
         {
-            BattleWarningUI.ShowMessage("가방 패널을 찾을 수 없습니다.");
+            BattleWarningUI.ShowMessage("가�??�널??찾을 ???�습?�다.");
             return;
         }
 
@@ -256,7 +262,7 @@ public sealed class LobbyCultureTankController : MonoBehaviour
                 DateTime.UtcNow.Ticks,
                 out string error))
         {
-            BattleWarningUI.ShowMessage("배양을 시작할 수 없습니다.");
+            BattleWarningUI.ShowMessage("배양???�작?????�습?�다.");
             Debug.LogWarning($"[LobbyCultureTankController] Failed to start research. {error}");
             return;
         }
@@ -264,6 +270,7 @@ public sealed class LobbyCultureTankController : MonoBehaviour
         SaveProgress();
         BattleBagPanelUI.RefreshAll();
         RefreshVisuals(true);
+        PublishHostSnapshotAfterLocalMutation();
     }
 
     private void ClaimCompletedResearch(
@@ -284,7 +291,7 @@ public sealed class LobbyCultureTankController : MonoBehaviour
                 out _,
                 out string error))
         {
-            BattleWarningUI.ShowMessage("배양 결과를 받을 수 없습니다.");
+            BattleWarningUI.ShowMessage("배양 결과�?받을 ???�습?�다.");
             Debug.LogWarning($"[LobbyCultureTankController] Failed to claim research. {error}");
             return;
         }
@@ -292,7 +299,8 @@ public sealed class LobbyCultureTankController : MonoBehaviour
         SaveProgress();
         ClearTankVisuals();
         ShowClaimFeedback();
-        BattleWarningUI.ShowMessage("배양 결과 버프를 확보했습니다.");
+        BattleWarningUI.ShowMessage("배양 결과 버프�??�보?�습?�다.");
+        PublishHostSnapshotAfterLocalMutation();
     }
 
     private void RefreshVisuals(bool force)
@@ -311,16 +319,27 @@ public sealed class LobbyCultureTankController : MonoBehaviour
         }
 
         long nowTicks = DateTime.UtcNow.Ticks;
-        bool completedNow = CultureTankResearchService.RefreshCompletion(tank, nowTicks);
+        bool completedNow = false;
+        if (CanLocalPlayerMutateHostOnlyState())
+        {
+            completedNow = CultureTankResearchService.RefreshCompletion(tank, nowTicks);
 
-        if (completedNow)
-            SaveProgress();
+            if (completedNow)
+            {
+                SaveProgress();
+                PublishHostSnapshotAfterLocalMutation();
+            }
+        }
 
-        if (tank.IsCompleted)
+        bool completedForDisplay =
+            tank.IsCompleted ||
+            CultureTankResearchService.GetRemainingSeconds(tank, nowTicks) <= 0;
+
+        if (completedForDisplay)
         {
             SetCompletedVisual(tank.ItemId);
             SetResearchObjects(false);
-            SetStatusText("완료", true);
+            SetStatusText("?�료", true);
             lastRemainingSeconds = -1;
             return;
         }
@@ -331,7 +350,7 @@ public sealed class LobbyCultureTankController : MonoBehaviour
         int remainingSeconds = CultureTankResearchService.GetRemainingSeconds(tank, nowTicks);
         if (force || remainingSeconds != lastRemainingSeconds)
         {
-            SetStatusText($"배양중 {remainingSeconds}s", true);
+            SetStatusText($"배양�?{remainingSeconds}s", true);
             lastRemainingSeconds = remainingSeconds;
         }
 
@@ -443,7 +462,7 @@ public sealed class LobbyCultureTankController : MonoBehaviour
 
     private IEnumerator ShowClaimFeedbackRoutine()
     {
-        claimFeedbackText.text = "버프 확보";
+        claimFeedbackText.text = "버프 ?�보";
         claimFeedbackText.gameObject.SetActive(true);
 
         yield return new WaitForSecondsRealtime(Mathf.Max(0.1f, claimFeedbackDurationSeconds));
@@ -660,5 +679,19 @@ public sealed class LobbyCultureTankController : MonoBehaviour
     private static void SaveProgress()
     {
         SaveSystem.Instance?.SaveCurrentProgress();
+    }
+
+    private static bool CanLocalPlayerMutateHostOnlyState()
+    {
+        SteamLobbySharedStateSynchronizer synchronizer =
+            SteamLobbySharedStateSynchronizer.Instance;
+        return synchronizer == null ||
+               synchronizer.CanLocalPlayerMutateHostOnlyState();
+    }
+
+    private static void PublishHostSnapshotAfterLocalMutation()
+    {
+        SteamLobbySharedStateSynchronizer.Instance
+            ?.PublishHostSnapshotAfterLocalMutation();
     }
 }

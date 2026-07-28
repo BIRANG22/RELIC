@@ -57,6 +57,9 @@ public class SkillInventoryPanelUI : MonoBehaviour
         if (CheckSkillEditLocked())
             return;
 
+        if (!CanLocalPlayerEditCharacter(characterId))
+            return;
+
         selectedCharacterId = characterId;
         selectedEquippedSkillIndex = equippedSkillIndex;
 
@@ -119,6 +122,17 @@ public class SkillInventoryPanelUI : MonoBehaviour
 
         if (CheckSkillEditLocked())
             return false;
+
+        if (TryRequestNetworkUnequipSkill(
+                characterId,
+                equippedSkillIndex,
+                out bool networkUnequipResult))
+        {
+            if (networkUnequipResult)
+                ResetSelectionState();
+
+            return networkUnequipResult;
+        }
 
         if (DataManager.Instance == null)
             return false;
@@ -227,6 +241,18 @@ public class SkillInventoryPanelUI : MonoBehaviour
         if (CheckSkillEditLocked())
             return false;
 
+        if (TryRequestNetworkEquipSkill(
+                characterId,
+                equippedSkillIndex,
+                skillId,
+                out bool networkEquipResult))
+        {
+            if (networkEquipResult)
+                ResetSelectionState();
+
+            return networkEquipResult;
+        }
+
         if (DataManager.Instance == null)
             return false;
 
@@ -284,6 +310,53 @@ public class SkillInventoryPanelUI : MonoBehaviour
 
         BattleWarningUI.ShowMessage(battleRoomLockMessage);
         ResetSelectionState();
+        return true;
+    }
+
+    private static bool CanLocalPlayerEditCharacter(string characterId)
+    {
+        SteamLobbySharedStateSynchronizer synchronizer =
+            SteamLobbySharedStateSynchronizer.Instance;
+        return synchronizer == null ||
+               !synchronizer.IsNetworkSharedStateActive ||
+               synchronizer.CanLocalPlayerEditCharacter(characterId);
+    }
+
+    private static bool TryRequestNetworkEquipSkill(
+        string characterId,
+        int equippedSkillIndex,
+        string skillId,
+        out bool requestSent)
+    {
+        requestSent = false;
+        SteamLobbySharedStateSynchronizer synchronizer =
+            SteamLobbySharedStateSynchronizer.Instance;
+
+        if (synchronizer == null || !synchronizer.IsNetworkSharedStateActive)
+            return false;
+
+        requestSent = synchronizer.RequestEquipSkill(
+            characterId,
+            equippedSkillIndex,
+            skillId);
+        return true;
+    }
+
+    private static bool TryRequestNetworkUnequipSkill(
+        string characterId,
+        int equippedSkillIndex,
+        out bool requestSent)
+    {
+        requestSent = false;
+        SteamLobbySharedStateSynchronizer synchronizer =
+            SteamLobbySharedStateSynchronizer.Instance;
+
+        if (synchronizer == null || !synchronizer.IsNetworkSharedStateActive)
+            return false;
+
+        requestSent = synchronizer.RequestUnequipSkill(
+            characterId,
+            equippedSkillIndex);
         return true;
     }
 
