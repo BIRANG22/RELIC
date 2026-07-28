@@ -75,7 +75,15 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         }
 
         LobbyRuntimeData runtime = DataManager.Instance.LobbyRuntimeStore.GetOrCreate();
-        IReadOnlyList<LobbyRelicOffer> offers = ResolveOffers(runtime);
+        bool canMutate = CanLocalPlayerMutateHostOnlyState();
+        bool hadRestoredOffers = runtime.RelicOfferIds != null &&
+                                 runtime.RelicOfferIds.Count > 0;
+        IReadOnlyList<LobbyRelicOffer> offers = ResolveOffers(runtime, canMutate);
+        bool generatedOffers =
+            canMutate &&
+            !hadRestoredOffers &&
+            runtime.RelicOfferIds != null &&
+            runtime.RelicOfferIds.Count > 0;
 
         for (int i = 0; i < buttons.Count; i++)
         {
@@ -92,13 +100,20 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
             if (Contains(runtime.OwnedRelicIds, offer.RelicId))
                 buttons[i].ShowSold();
+            else
+                buttons[i].SetInteractable(canMutate);
         }
 
         blueDustiumHud?.Refresh();
         RefreshRefreshButton(runtime);
+
+        if (generatedOffers)
+            PublishHostSnapshotAfterLocalMutation();
     }
 
-    private IReadOnlyList<LobbyRelicOffer> ResolveOffers(LobbyRuntimeData runtime)
+    private IReadOnlyList<LobbyRelicOffer> ResolveOffers(
+        LobbyRuntimeData runtime,
+        bool canGenerateMissingOffers)
     {
         var restored = new List<LobbyRelicOffer>();
         if (runtime.RelicOfferIds != null)
@@ -117,6 +132,9 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         if (restored.Count > 0)
             return restored;
 
+        if (!canGenerateMissingOffers)
+            return restored;
+
         if (runtime.RelicOfferSeed == 0)
             runtime.RelicOfferSeed = Environment.TickCount == 0 ? 1 : Environment.TickCount;
 
@@ -133,6 +151,9 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
     private void Purchase(string relicId)
     {
+        if (!CanLocalPlayerMutateHostOnlyState())
+            return;
+
         LobbyRuntimeData runtime = DataManager.Instance?.LobbyRuntimeStore?.GetOrCreate();
         if (runtime == null)
             return;
@@ -154,6 +175,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
         RelicEquipPanelUI.RefreshAll();
         RefreshRefreshButton(runtime);
+        PublishHostSnapshotAfterLocalMutation();
     }
 
     private void EnsureShopPanelReady()
@@ -260,6 +282,9 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
     private void RefreshRelicOffers()
     {
+        if (!CanLocalPlayerMutateHostOnlyState())
+            return;
+
         LobbyRuntimeData runtime = DataManager.Instance?.LobbyRuntimeStore?.GetOrCreate();
         if (runtime == null || DataManager.Instance.RelicDatabase == null)
             return;
@@ -276,6 +301,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         }
 
         RefreshOffers();
+        PublishHostSnapshotAfterLocalMutation();
     }
 
     private void RefreshRefreshButton(LobbyRuntimeData runtime)
@@ -284,7 +310,24 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             return;
 
         int price = LobbyRelicRefreshPricePolicy.GetPrice(runtime.RelicRefreshCount);
-        refreshButton.SetState(price, !LobbyRelicRefreshService.AreAllOffersPurchased(runtime));
+        refreshButton.SetState(
+            price,
+            CanLocalPlayerMutateHostOnlyState() &&
+            !LobbyRelicRefreshService.AreAllOffersPurchased(runtime));
+    }
+
+    private static bool CanLocalPlayerMutateHostOnlyState()
+    {
+        SteamLobbySharedStateSynchronizer synchronizer =
+            SteamLobbySharedStateSynchronizer.Instance;
+        return synchronizer == null ||
+               synchronizer.CanLocalPlayerMutateHostOnlyState();
+    }
+
+    private static void PublishHostSnapshotAfterLocalMutation()
+    {
+        SteamLobbySharedStateSynchronizer.Instance
+            ?.PublishHostSnapshotAfterLocalMutation();
     }
 
     private void InitializeSkillUpgradeButton(Camera camera)

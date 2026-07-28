@@ -22,6 +22,15 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
 
         PendingResearchResultData pending = lobby.PendingResearchResult;
 
+        if (!CanLocalPlayerMutateHostOnlyState())
+        {
+            if (resultText != null)
+                resultText.text = BuildText(pending);
+
+            gameObject.SetActive(true);
+            return;
+        }
+
         bool applied = PendingResearchSettlementService.ApplyOnce(lobby);
         DataManager.Instance.LobbyRuntimeStore.Set(lobby);
         SaveSystem.Instance?.SaveCurrentProgress();
@@ -30,6 +39,9 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
         // 정산 직후 블루 더스티움 표시를 다시 갱신합니다.
         if (applied)
             LobbyBlueDustiumHudUI.RefreshAll();
+
+        if (applied)
+            PublishHostSnapshotAfterLocalMutation();
 
         if (resultText != null)
             resultText.text = BuildText(pending);
@@ -51,14 +63,35 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
 
     private void Confirm()
     {
+        if (!CanLocalPlayerMutateHostOnlyState())
+        {
+            gameObject.SetActive(false);
+            return;
+        }
+
         LobbyRuntimeData lobby = DataManager.Instance?.LobbyRuntimeStore?.GetOrCreate();
         if (lobby != null)
         {
             PendingResearchSettlementService.Clear(lobby);
             DataManager.Instance.LobbyRuntimeStore.Set(lobby);
             SaveSystem.Instance?.SaveCurrentProgress();
+            PublishHostSnapshotAfterLocalMutation();
         }
 
         gameObject.SetActive(false);
+    }
+
+    private static bool CanLocalPlayerMutateHostOnlyState()
+    {
+        SteamLobbySharedStateSynchronizer synchronizer =
+            SteamLobbySharedStateSynchronizer.Instance;
+        return synchronizer == null ||
+               synchronizer.CanLocalPlayerMutateHostOnlyState();
+    }
+
+    private static void PublishHostSnapshotAfterLocalMutation()
+    {
+        SteamLobbySharedStateSynchronizer.Instance
+            ?.PublishHostSnapshotAfterLocalMutation();
     }
 }

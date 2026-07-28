@@ -64,6 +64,14 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour
         button.interactable = false;
     }
 
+    public void SetInteractable(bool interactable)
+    {
+        EnsureView();
+
+        if (button != null)
+            button.interactable = interactable;
+    }
+
     private void EnsureView()
     {
         if (button == null)
