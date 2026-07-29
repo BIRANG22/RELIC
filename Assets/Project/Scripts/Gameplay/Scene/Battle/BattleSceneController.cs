@@ -64,6 +64,7 @@ public class BattleSceneController : MonoBehaviour
     private GameObject lastActiveRoomForPanelAutoClose;
     private int lastNetworkAppliedNodeIndex = int.MinValue;
     private bool lastNetworkAppliedNodeCleared;
+    private bool forceNextBattleRoomLoad;
     private readonly BattleRoomIntroLoadGate battleRoomIntroLoadGate = new();
 
     private void Awake()
@@ -523,6 +524,7 @@ public class BattleSceneController : MonoBehaviour
             GeneratedMapNodeData currentNode = MapRuntimeProgressUtility.FindCurrentNode(mapRuntime);
             if (currentNode != null)
             {
+                forceNextBattleRoomLoad = IsBattleNodeType(currentNode.Type);
                 HideMapPanelImmediate();
                 HandleSelectedMap(currentNode);
                 PlayPendingRoomIntroText();
@@ -691,7 +693,16 @@ public class BattleSceneController : MonoBehaviour
             return;
         }
 
-        loader.LoadBattleFromSceneController();
+        bool forceReload = forceNextBattleRoomLoad;
+        forceNextBattleRoomLoad = false;
+        loader.LoadBattleFromSceneController(forceReload);
+    }
+
+    private static bool IsBattleNodeType(string nodeType)
+    {
+        return nodeType == "Common" ||
+               nodeType == "Elite" ||
+               nodeType == "Boss";
     }
 
     private void CloseAllRooms()

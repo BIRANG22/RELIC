@@ -20,6 +20,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
     private const string SnapshotBroadcastPrefix = "RELIC_BATTLE_STATE_SNAPSHOT_V1:";
     private const string SnapshotChunkBroadcastPrefix = "RELIC_BATTLE_STATE_SNAPSHOT_CHUNK_V1:";
     private const string ExecutionChunkBroadcastPrefix = "RELIC_BATTLE_EXECUTION_CHUNK_V1:";
+    private const string StartRelicChoicesPrefix = "RELIC_BATTLE_START_RELIC_CHOICES_V1:";
     private const string StartRelicSelectedPrefix = "RELIC_BATTLE_START_RELIC_SELECTED_V1:";
     private const string CommandPrefix = "RELIC_BATTLE_STATE_CMD_V1:";
     private const string CommandResultPrefix = "RELIC_BATTLE_STATE_RESULT_V1:";
@@ -39,6 +40,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
 
     private readonly Dictionary<ulong, int> viewedSlotsByMember = new();
     private readonly Dictionary<ulong, bool> readyByMember = new();
+    private string[] startRelicChoiceIds = Array.Empty<string>();
 
     private long hostRevision;
     private string lastPublishedPayload;
@@ -248,6 +250,36 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             return;
 
         Instance.BroadcastStartRelicSelected(relicId);
+    }
+
+    public static void TryBroadcastStartRelicChoices(IReadOnlyList<string> relicIds)
+    {
+        if (Instance == null || !Instance.IsNetworkBattleActive)
+            return;
+
+        Instance.SetHostStartRelicChoices(relicIds);
+    }
+
+    public static bool TryApplyKnownStartRelicChoices(RelicChoiceAreaUI choiceArea)
+    {
+        if (Instance == null ||
+            !Instance.IsNetworkBattleActive ||
+            choiceArea == null)
+        {
+            return false;
+        }
+
+#if STEAMWORKS_NET
+        if (Instance.IsLocalHost())
+            return false;
+#endif
+
+        string[] choices = Instance.GetCachedStartRelicChoices();
+        if (choices == null || choices.Length == 0)
+            return false;
+
+        choiceArea.ApplyNetworkChoices(choices);
+        return true;
     }
 
     public bool CanLocalPlayerEditCharacter(string characterId)
@@ -528,6 +560,13 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             return;
         }
 
+        if (payload.StartsWith(StartRelicChoicesPrefix, StringComparison.Ordinal) &&
+            senderId.m_SteamID == originalHostSteamId)
+        {
+            HandleClientStartRelicChoicesPayload(payload);
+            return;
+        }
+
         if (payload.StartsWith(StartRelicSelectedPrefix, StringComparison.Ordinal) &&
             senderId.m_SteamID == originalHostSteamId)
         {
@@ -647,7 +686,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
 
         bool accepted =
             timelineController != null &&
-            timelineController.ConfirmPlayerCommandFromNetwork(command.slotIndex, playerCommand);
+            timelineController.ConfirmPlayerCommandFromNetwork(command.slotIndex, playerCommand, true);
 
         return accepted
             ? BattleNetworkRejectReason.None
@@ -892,6 +931,42 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
 #endif
     }
 
+    private void SetHostStartRelicChoices(IReadOnlyList<string> relicIds)
+    {
+#if STEAMWORKS_NET
+        if (!IsLocalHost())
+            return;
+
+        startRelicChoiceIds = NormalizeStartRelicChoices(relicIds);
+        if (startRelicChoiceIds.Length == 0)
+            return;
+
+        PublishSnapshotIfChanged(true);
+        BroadcastStartRelicChoices(startRelicChoiceIds);
+#endif
+    }
+
+    private void BroadcastStartRelicChoices(IReadOnlyList<string> relicIds)
+    {
+#if STEAMWORKS_NET
+        if (!IsLocalHost())
+            return;
+
+        string[] normalized = NormalizeStartRelicChoices(relicIds);
+        if (normalized.Length == 0)
+            return;
+
+        BattleNetworkStartRelicChoicesMessage message = new()
+        {
+            hostSteamId = BattleNetworkSerialization.ToText(originalHostSteamId),
+            relicIds = normalized
+        };
+
+        TrySendLobbyChatPayload(
+            StartRelicChoicesPrefix + JsonUtility.ToJson(message));
+#endif
+    }
+
     private void BroadcastStartRelicSelected(string relicId)
     {
 #if STEAMWORKS_NET
@@ -959,6 +1034,35 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         return false;
     }
 
+    private void HandleClientStartRelicChoicesPayload(string payload)
+    {
+        if (IsLocalHost())
+            return;
+
+        string messageJson = payload.Substring(StartRelicChoicesPrefix.Length);
+        if (string.IsNullOrWhiteSpace(messageJson))
+            return;
+
+        try
+        {
+            BattleNetworkStartRelicChoicesMessage message =
+                JsonUtility.FromJson<BattleNetworkStartRelicChoicesMessage>(messageJson);
+
+            if (message == null ||
+                message.version != BattleNetworkSerialization.ProtocolVersion ||
+                !BattleNetworkSerialization.TryParseSteamId(message.hostSteamId, out ulong hostId) ||
+                hostId != originalHostSteamId)
+            {
+                return;
+            }
+
+            ApplyStartRelicChoices(message.relicIds, true);
+        }
+        catch (ArgumentException)
+        {
+        }
+    }
+
     private void HandleClientStartRelicSelectedPayload(string payload)
     {
         if (IsLocalHost())
@@ -992,6 +1096,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
 
         CurrentSnapshot = snapshot;
         AppliedRevision = snapshot.revision;
+        ApplyStartRelicChoices(snapshot.startRelicChoiceIds, false);
         ImportReadyStates(snapshot);
         ImportViewedSlots(snapshot);
 
@@ -1432,6 +1537,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             isExecuting = turnExecutor != null && turnExecutor.IsExecuting,
             map = Clone(DataManager.Instance?.MapRuntimeStore?.Get()),
             battle = Clone(DataManager.Instance?.BattleRuntimeStore?.GetOrCreate()),
+            startRelicChoiceIds = CloneStartRelicChoiceIds(),
             partySlots = CreatePartySlotSnapshots(),
             characters = CreateCharacterSnapshots(),
             monsters = CreateMonsterSnapshots(),
@@ -1668,6 +1774,11 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         };
     }
 
+    private string[] CloneStartRelicChoiceIds()
+    {
+        return NormalizeStartRelicChoices(startRelicChoiceIds);
+    }
+
     private BattleNetworkMemberTimelineSelection[] CreateViewedSlotSnapshots()
     {
         List<BattleNetworkMemberTimelineSelection> result = new();
@@ -1699,6 +1810,70 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         }
 
         return result.ToArray();
+    }
+
+    private string[] GetCachedStartRelicChoices()
+    {
+        if (startRelicChoiceIds != null && startRelicChoiceIds.Length > 0)
+            return NormalizeStartRelicChoices(startRelicChoiceIds);
+
+        return NormalizeStartRelicChoices(CurrentSnapshot?.startRelicChoiceIds);
+    }
+
+    private void ApplyStartRelicChoices(IReadOnlyList<string> relicIds, bool forceUiRefresh)
+    {
+        string[] normalized = NormalizeStartRelicChoices(relicIds);
+        if (normalized.Length == 0)
+            return;
+
+        startRelicChoiceIds = normalized;
+
+#if STEAMWORKS_NET
+        if (!IsLocalHost())
+            ApplyStartRelicChoicesToUi(forceUiRefresh);
+#endif
+    }
+
+    private void ApplyStartRelicChoicesToUi(bool forceUiRefresh)
+    {
+        RelicChoiceAreaUI choiceArea =
+            UnityEngine.Object.FindFirstObjectByType<RelicChoiceAreaUI>(FindObjectsInactive.Include);
+
+        if (choiceArea == null)
+            return;
+
+        StartRoomController controller =
+            choiceArea.GetComponentInParent<StartRoomController>(true);
+
+        if (controller != null && !controller.gameObject.activeInHierarchy)
+            return;
+
+        if (!forceUiRefresh && !choiceArea.gameObject.activeInHierarchy)
+            return;
+
+        choiceArea.ApplyNetworkChoices(startRelicChoiceIds);
+    }
+
+    private static string[] NormalizeStartRelicChoices(IReadOnlyList<string> relicIds)
+    {
+        if (relicIds == null)
+            return Array.Empty<string>();
+
+        List<string> normalized = new();
+        HashSet<string> uniqueIds = new();
+
+        for (int i = 0; i < relicIds.Count; i++)
+        {
+            string relicId = relicIds[i];
+            if (string.IsNullOrWhiteSpace(relicId))
+                continue;
+
+            relicId = relicId.Trim();
+            if (uniqueIds.Add(relicId))
+                normalized.Add(relicId);
+        }
+
+        return normalized.ToArray();
     }
 
     private void ApplyRuntimeSnapshot(BattleNetworkSnapshot snapshot)
@@ -1888,7 +2063,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         {
             PlayerReservedCommand command = RebuildPlayerCommand(slot.playerCommands[i]);
             if (command != null)
-                timelineController.ConfirmPlayerCommandFromNetwork(slot.slotIndex, command);
+                timelineController.ConfirmPlayerCommandFromNetwork(slot.slotIndex, command, true);
         }
     }
 

@@ -728,8 +728,13 @@ public class BattleTimelineController : MonoBehaviour
 
     public bool IsPlayerSlotLocked(int slotIndex)
     {
+        return IsPlayerSlotLocked(slotIndex, false);
+    }
+
+    private bool IsPlayerSlotLocked(int slotIndex, bool ignoreNetworkViewedSlotLock)
+    {
         return (playerLockedSlotIndex >= 0 && slotIndex == playerLockedSlotIndex) ||
-               networkViewedSlotIndices.Contains(slotIndex);
+               (!ignoreNetworkViewedSlotLock && networkViewedSlotIndices.Contains(slotIndex));
     }
 
     public void SetNetworkViewedSlots(IReadOnlyList<int> slotIndices)
@@ -2496,6 +2501,14 @@ public class BattleTimelineController : MonoBehaviour
 
     public bool ConfirmPlayerCommandFromNetwork(int slotIndex, PlayerReservedCommand command)
     {
+        return ConfirmPlayerCommandFromNetwork(slotIndex, command, false);
+    }
+
+    public bool ConfirmPlayerCommandFromNetwork(
+        int slotIndex,
+        PlayerReservedCommand command,
+        bool ignoreNetworkViewedSlotLock)
+    {
         if (command == null)
         {
             ShowBattleWarning("?덉빟???ㅽ궗 ?뺣낫媛 ?놁뒿?덈떎.");
@@ -2514,7 +2527,7 @@ public class BattleTimelineController : MonoBehaviour
             return false;
         }
 
-        if (IsPlayerSlotLocked(slotIndex))
+        if (IsPlayerSlotLocked(slotIndex, ignoreNetworkViewedSlotLock))
         {
             ShowPlayerLockedSlotWarning();
             return false;
@@ -2559,7 +2572,7 @@ public class BattleTimelineController : MonoBehaviour
             return false;
         }
 
-        if (!CanAddPlayerCommandToSlot(slotIndex))
+        if (!CanAddPlayerCommandToSlot(slotIndex, ignoreNetworkViewedSlotLock))
         {
             ShowCombinedSlotCapacityWarning();
             return false;
@@ -2928,7 +2941,9 @@ public class BattleTimelineController : MonoBehaviour
         return GetRemainingCombinedCommandCapacity(slotIndex);
     }
 
-    private bool CanAddPlayerCommandToSlot(int slotIndex)
+    private bool CanAddPlayerCommandToSlot(
+        int slotIndex,
+        bool ignoreNetworkViewedSlotLock = false)
     {
         if (reserveSlots == null)
             return false;
@@ -2936,7 +2951,7 @@ public class BattleTimelineController : MonoBehaviour
         if (slotIndex < 0 || slotIndex >= reserveSlots.Length)
             return false;
 
-        if (IsPlayerSlotLocked(slotIndex))
+        if (IsPlayerSlotLocked(slotIndex, ignoreNetworkViewedSlotLock))
             return false;
 
         ReserveTurnSlotUI slot = reserveSlots[slotIndex];

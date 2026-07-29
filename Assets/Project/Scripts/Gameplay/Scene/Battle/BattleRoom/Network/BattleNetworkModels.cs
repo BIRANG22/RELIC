@@ -71,6 +71,7 @@ public sealed class BattleNetworkSnapshot
     public bool isExecuting;
     public MapRuntimeData map;
     public BattleRuntimeData battle;
+    public string[] startRelicChoiceIds;
     public BattleNetworkPartySlotSnapshot[] partySlots;
     public CharacterRuntimeData[] characters;
     public BattleNetworkMonsterSnapshot[] monsters;
@@ -86,6 +87,14 @@ public sealed class BattleNetworkExecutionSnapshot
     public string hostSteamId;
     public long revision;
     public BattleNetworkExecutionBatchSnapshot[] batches;
+}
+
+[Serializable]
+public sealed class BattleNetworkStartRelicChoicesMessage
+{
+    public int version = BattleNetworkSerialization.ProtocolVersion;
+    public string hostSteamId;
+    public string[] relicIds;
 }
 
 [Serializable]
