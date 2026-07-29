@@ -13,7 +13,9 @@ public class BattleTurnExecutor : MonoBehaviour
     public static event Action BattleExecutionStarted;
     public static event Action PlayerTurnReturned;
 
-    public bool CanAcceptPlayerInput => !isExecuting && isMonsterPlanReady && isPlayerInputReady;
+    public bool CanAcceptPlayerInput => !networkExecutionLocked && !isExecuting && isMonsterPlanReady && isPlayerInputReady;
+    public bool IsExecuting => isExecuting;
+    public Button EndTurnButton => endTurnButton;
 
     [SerializeField] private BattleTimelineController timelineController;
     [SerializeField] private GridManager gridManager;
@@ -57,6 +59,7 @@ public class BattleTurnExecutor : MonoBehaviour
     private bool isMonsterPlanReady;
     private bool isPlayerInputReady;
     private bool isExecuting;
+    private bool networkExecutionLocked;
     private bool battleExecutionUiSuppressed;
     private Coroutine executeTurnCoroutine;
     private int playerTurnNumber = 1;
@@ -70,6 +73,7 @@ public class BattleTurnExecutor : MonoBehaviour
         RefreshTurnNumberText();
         RefreshEndTurnButton();
         RefreshBattlePresentationState();
+        SteamBattleStateSynchronizer.EnsureForBattleScene(this, timelineController);
     }
 
 
@@ -131,6 +135,7 @@ public class BattleTurnExecutor : MonoBehaviour
         isExecuting = false;
         isMonsterPlanReady = false;
         isPlayerInputReady = false;
+        networkExecutionLocked = false;
 
         EnsureSkillListPanel();
         if (skillListPanel != null)
@@ -190,6 +195,17 @@ public class BattleTurnExecutor : MonoBehaviour
         ExecuteTurn();
     }
 
+    public void SetNetworkExecutionLocked(bool locked)
+    {
+        if (networkExecutionLocked == locked)
+            return;
+
+        networkExecutionLocked = locked;
+        RefreshEndTurnButton();
+        RefreshBattlePresentationState();
+        RefreshBattleExecutionUiVisibility();
+    }
+
     public void SetMonsterPlanReady(bool ready)
     {
         isMonsterPlanReady = ready;
@@ -207,6 +223,51 @@ public class BattleTurnExecutor : MonoBehaviour
     }
 
     public void ExecuteTurn()
+    {
+        if (SteamBattleStateSynchronizer.TryHandleExecuteTurnRequest(this))
+            return;
+
+        ExecuteTurnInternal();
+    }
+
+    public void ExecuteTurnFromNetworkHost()
+    {
+        ExecuteTurnInternal();
+    }
+
+    public void PlayNetworkExecutionFromHost(List<BattleActionBatch> batches)
+    {
+        if (batches == null || batches.Count <= 0 || executeTurnCoroutine != null)
+            return;
+
+        EnsureSkillListPanel();
+        if (skillListPanel != null)
+            skillListPanel.CloseForBattleExecution();
+
+        HideBattleExecutionUiUntilPlayerTurn();
+
+        isExecuting = true;
+        isMonsterPlanReady = false;
+        isPlayerInputReady = false;
+        RefreshEndTurnButton();
+        RefreshBattlePresentationState();
+
+        if (endTurnButton != null)
+            endTurnButton.interactable = false;
+
+        if (timelineController != null)
+        {
+            timelineController.ClearSelectedSlotSelection();
+            timelineController.SetSelectedCharacterScaleFeedbackActive(false);
+            timelineController.SetSlotSelectionLocked(true);
+        }
+
+        BattleExecutionStarted?.Invoke();
+
+        executeTurnCoroutine = StartCoroutine(PlayNetworkExecutionRoutine(batches));
+    }
+
+    private void ExecuteTurnInternal()
     {
         Debug.Log(
        $"[EndTurnCheck] isExecuting:{isExecuting} / " +
@@ -285,6 +346,7 @@ public class BattleTurnExecutor : MonoBehaviour
             simulator.Simulate(timelineController);
 
             List<BattleActionBatch> batches = builder.Build(timelineController);
+            SteamBattleStateSynchronizer.TryBroadcastBattleExecution(batches);
 
             yield return ShowBattleProgressIntroTextRoutineSafe();
 
@@ -446,6 +508,155 @@ public class BattleTurnExecutor : MonoBehaviour
         }
     }
 
+    private IEnumerator PlayNetworkExecutionRoutine(List<BattleActionBatch> batches)
+    {
+        try
+        {
+            if (moveGhostPreview != null)
+                moveGhostPreview.ClearAll();
+
+            yield return ReturnCameraDefaultRoutine();
+
+            BattleActionRunner runner = new(
+                gridManager,
+                monsterSpawner,
+                roomLoader,
+                useSafeSequentialExecution,
+                actionRoutineTimeout,
+                uniqueResourceService != null ? uniqueResourceService.OnPlayerCommandExecuted : null
+            );
+
+            yield return ShowBattleProgressIntroTextRoutineSafe();
+
+            int slidThroughSlotIndex = -1;
+            Dictionary<int, int> nextTimelineOrderAnimationIndexBySlot = new Dictionary<int, int>();
+
+            for (int i = 0; i < batches.Count; i++)
+            {
+                BattleActionBatch batch = batches[i];
+
+                if (!BatchHasCommands(batch))
+                    continue;
+
+                int currentSlotIndex = GetBatchTimelineSlotIndex(batch, i);
+
+                if (currentSlotIndex > slidThroughSlotIndex)
+                {
+                    if (timelineController != null)
+                    {
+                        yield return timelineController.SlideTimelineSlotsLeftThroughSlotRoutine(
+                            currentSlotIndex);
+                    }
+
+                    slidThroughSlotIndex = Mathf.Max(slidThroughSlotIndex, currentSlotIndex);
+                }
+
+                int nextOrderAnimationIndex = 0;
+                if (nextTimelineOrderAnimationIndexBySlot.TryGetValue(
+                        currentSlotIndex,
+                        out int savedOrderIndex))
+                {
+                    nextOrderAnimationIndex = savedOrderIndex;
+                }
+
+                int batchCommandCount = GetBatchCommandCount(batch);
+
+                bool keepCameraAfterBatch =
+                    runner.BatchHasCrossSideHitAction(batch) &&
+                    NextExecutableBatchHasCrossSideHitAction(batches, i + 1, runner);
+
+                yield return runner.RunBatch(batch, keepCameraAfterBatch);
+
+                bool hasNextBatchInSameTimelineSlot =
+                    HasNextExecutableBatchInSameTimelineSlot(batches, i + 1, currentSlotIndex);
+
+                if (timelineController != null && batchCommandCount > 0)
+                {
+                    yield return timelineController.PlayTimelineActionAnimationsRoutine(
+                        currentSlotIndex,
+                        nextOrderAnimationIndex,
+                        batchCommandCount,
+                        !hasNextBatchInSameTimelineSlot);
+                }
+
+                nextTimelineOrderAnimationIndexBySlot[currentSlotIndex] =
+                    nextOrderAnimationIndex + batchCommandCount;
+
+                if (hasNextBatchInSameTimelineSlot)
+                    continue;
+
+                int slideThroughSlotIndex =
+                    GetSlideThroughSlotIndexAfterExecutedTimelineSlot(batches, i, currentSlotIndex);
+
+                if (slideThroughSlotIndex > slidThroughSlotIndex)
+                {
+                    if (timelineController != null)
+                        yield return timelineController.SlideTimelineSlotsLeftThroughSlotRoutine(slideThroughSlotIndex);
+
+                    slidThroughSlotIndex = slideThroughSlotIndex;
+                }
+            }
+
+            if (timelineController != null && slidThroughSlotIndex < 4)
+                yield return timelineController.SlideTimelineSlotsLeftThroughSlotRoutine(4);
+
+            if (timelineController != null)
+                yield return timelineController.MoveTimelineBarsToCompletedTurnPositionRoutine();
+
+            yield return runner.ReturnCameraDefaultIfNeeded();
+
+            yield return RestoreNetworkReservationStateAfterExecutionRoutine();
+        }
+        finally
+        {
+            executeTurnCoroutine = null;
+
+            if (timelineController != null)
+                timelineController.SetSlotSelectionLocked(false);
+
+            isExecuting = false;
+            networkExecutionLocked = false;
+            isMonsterPlanReady = true;
+            isPlayerInputReady = true;
+
+            RefreshEndTurnButton();
+            RefreshBattlePresentationState();
+            RefreshBattleExecutionUiVisibility();
+
+            if (CanAcceptPlayerInput && timelineController != null)
+            {
+                timelineController.SelectDefaultSlotWhenInputReady();
+                timelineController.SetSelectedCharacterScaleFeedbackActive(true);
+                timelineController.RefocusCurrentSelectedCharacterWhenInputReady();
+            }
+
+            EnsureSkillListPanel();
+            if (CanAcceptPlayerInput && skillListPanel != null)
+                skillListPanel.ReopenAfterBattleExecution();
+
+            PlayerTurnReturned?.Invoke();
+        }
+    }
+
+    private IEnumerator RestoreNetworkReservationStateAfterExecutionRoutine()
+    {
+        ClearTimeline();
+
+        if (moveGhostPreview != null)
+            moveGhostPreview.ClearAll();
+
+        yield return null;
+
+        playerTurnNumber++;
+        RefreshTurnNumberText();
+
+        if (timelineController != null)
+            yield return timelineController.ResetTimelineSlotsToOriginalPositionRoutine();
+
+        SteamBattleStateSynchronizer.TryRefreshIdleSnapshotAfterNetworkExecution();
+        RefreshBattleHUDs();
+    }
+
     private static void AdvanceGridEffectDurations()
     {
         BattleGridEffectController controller =
@@ -520,6 +731,7 @@ public class BattleTurnExecutor : MonoBehaviour
             return;
 
         endTurnButton.interactable =
+            !networkExecutionLocked &&
             !isExecuting &&
             isMonsterPlanReady &&
             isPlayerInputReady;

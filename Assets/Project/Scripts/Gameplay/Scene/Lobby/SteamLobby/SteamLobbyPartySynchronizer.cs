@@ -417,6 +417,7 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
         IsNetworkPartyActive = false;
         AppliedRevision = 0;
         CurrentSnapshot = null;
+        SteamLobbySessionState.Clear();
         RefreshPartyViews();
         PartyStateApplied?.Invoke();
     }
@@ -924,6 +925,7 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
             ? snapshot
             : clientCommandPipeline.ApplyPendingOptimism(snapshot);
 
+        SteamLobbySessionState.SetPartySnapshot(snapshot);
         RefreshPartyViews();
         PartyStateApplied?.Invoke();
         TryCompletePendingCommands();

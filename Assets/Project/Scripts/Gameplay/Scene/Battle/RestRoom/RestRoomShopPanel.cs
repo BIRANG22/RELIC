@@ -124,6 +124,9 @@ public class RestRoomShopPanel : MonoBehaviour
         if (item == null || goods == null)
             return;
 
+        if (SteamBattleStateSynchronizer.TryBlockSharedBattleStateEdit())
+            return;
+
         if (DataManager.Instance == null || DataManager.Instance.BattleRuntimeStore == null)
             return;
 

@@ -50,6 +50,16 @@ public class RelicChoiceAreaUI : MonoBehaviour
 
         gameObject.SetActive(true);
         HideRelicHoverInfo();
+
+        if (SteamBattleStateSynchronizer.TryApplyKnownStartRelicChoices(this))
+            return;
+
+        if (!SteamBattleStateSynchronizer.CanLocalPlayerMutateSharedBattleState())
+        {
+            ClearSlots();
+            return;
+        }
+
         SetupChoices();
     }
 
@@ -61,7 +71,23 @@ public class RelicChoiceAreaUI : MonoBehaviour
         gameObject.SetActive(false);
     }
 
+    public void ApplyNetworkChoices(IReadOnlyList<string> relicIds)
+    {
+        if (isSelectionCompleted)
+            return;
+
+        isOpen = true;
+        gameObject.SetActive(true);
+        HideRelicHoverInfo();
+        SetupChoices(relicIds, false);
+    }
+
     private void SetupChoices()
+    {
+        SetupChoices(PickRandomRelicIds(), true);
+    }
+
+    private void SetupChoices(IReadOnlyList<string> relicIds, bool broadcastChoices)
     {
         ClearSlots();
 
@@ -72,21 +98,21 @@ public class RelicChoiceAreaUI : MonoBehaviour
             return;
         }
 
-        List<string> relicIds = PickRandomRelicIds();
-        if (relicIds.Count == 0)
+        List<string> normalizedRelicIds = NormalizeChoiceIds(relicIds);
+        if (normalizedRelicIds.Count == 0)
         {
             Debug.LogWarning("[RelicChoiceAreaUI] No selectable relic ids were found.");
             return;
         }
 
-        int count = Mathf.Min(choiceCount, relicIds.Count, validSlots.Count);
+        int count = Mathf.Min(choiceCount, normalizedRelicIds.Count, validSlots.Count);
         for (int i = 0; i < validSlots.Count; i++)
         {
             RelicChoiceSlotUI slot = validSlots[i];
             if (i < count)
             {
                 slot.gameObject.SetActive(true);
-                slot.Setup(relicIds[i], this);
+                slot.Setup(normalizedRelicIds[i], this);
             }
             else
             {
@@ -95,8 +121,33 @@ public class RelicChoiceAreaUI : MonoBehaviour
             }
         }
 
+        if (broadcastChoices)
+            SteamBattleStateSynchronizer.TryBroadcastStartRelicChoices(normalizedRelicIds.GetRange(0, count));
+
         if (relicHoverInfoPanel != null)
             relicHoverInfoPanel.transform.SetAsLastSibling();
+    }
+
+    private List<string> NormalizeChoiceIds(IReadOnlyList<string> relicIds)
+    {
+        List<string> normalized = new();
+        HashSet<string> uniqueIds = new();
+
+        if (relicIds == null)
+            return normalized;
+
+        for (int i = 0; i < relicIds.Count; i++)
+        {
+            string relicId = relicIds[i];
+            if (string.IsNullOrWhiteSpace(relicId))
+                continue;
+
+            relicId = relicId.Trim();
+            if (uniqueIds.Add(relicId))
+                normalized.Add(relicId);
+        }
+
+        return normalized;
     }
 
     private List<RelicChoiceSlotUI> GetValidSlots()
@@ -187,6 +238,9 @@ public class RelicChoiceAreaUI : MonoBehaviour
         if (!isOpen || isSelectionCompleted)
             return;
 
+        if (SteamBattleStateSynchronizer.TryBlockSharedBattleStateEdit())
+            return;
+
         if (string.IsNullOrWhiteSpace(relicId))
             return;
 
@@ -212,6 +266,7 @@ public class RelicChoiceAreaUI : MonoBehaviour
         }
 
         isSelectionCompleted = true;
+        SteamBattleStateSynchronizer.TryBroadcastStartRelicSelected(relicId);
 
         if (!GrantRelic(relicId))
         {

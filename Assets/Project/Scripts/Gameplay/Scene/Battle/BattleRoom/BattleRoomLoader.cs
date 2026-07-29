@@ -394,10 +394,21 @@ public class BattleRoomLoader : MonoBehaviour
         return false;
     }
 
-    public void RequestLoadBattle()
+    public void RequestLoadBattle(bool forceReload = false)
     {
         if (!isActiveAndEnabled)
             return;
+
+        if (forceReload)
+        {
+            if (loadRoutine != null)
+            {
+                StopCoroutine(loadRoutine);
+                loadRoutine = null;
+            }
+
+            ResetLoadedStateForNextBattle(true);
+        }
 
         if (isLoaded || isLoading || loadRoutine != null)
             return;
@@ -405,9 +416,9 @@ public class BattleRoomLoader : MonoBehaviour
         loadRoutine = StartCoroutine(LoadBattleWhenDataManagerReady());
     }
 
-    public void LoadBattleFromSceneController()
+    public void LoadBattleFromSceneController(bool forceReload = false)
     {
-        RequestLoadBattle();
+        RequestLoadBattle(forceReload);
     }
 
     private void OnDisable()
@@ -522,6 +533,8 @@ public class BattleRoomLoader : MonoBehaviour
 
         if (timelineController != null)
             timelineController.ResetTimelineBarsForNewBattleRoom();
+
+        SteamBattleStateSynchronizer.EnsureForBattleScene(turnExecutor, timelineController);
 
         loadedMapId = currentMapId;
         isLoaded = true;
@@ -922,6 +935,13 @@ public class BattleRoomLoader : MonoBehaviour
 
     private void OpenSkillListForPlayer(CharacterRuntimeData runtimeData, RectTransform hudRect)
     {
+        if (runtimeData != null &&
+            !SteamBattleStateSynchronizer.CanLocalPlayerControlCharacter(runtimeData.CharacterId))
+        {
+            BattleWarningUI.ShowMessage("다른 플레이어의 캐릭터입니다.");
+            return;
+        }
+
         SelectPlayerHUD(runtimeData);
         EnsureSkillListPanel();
 

@@ -294,6 +294,12 @@ public class SkillInventoryPanelUI : MonoBehaviour
 
     public bool IsSkillEditLocked()
     {
+        SteamBattleStateSynchronizer battleSynchronizer =
+            SteamBattleStateSynchronizer.Instance;
+
+        if (battleSynchronizer != null && battleSynchronizer.IsNetworkBattleActive)
+            return false;
+
         if (!lockEditInBattleRoom)
             return false;
 
@@ -315,6 +321,12 @@ public class SkillInventoryPanelUI : MonoBehaviour
 
     private static bool CanLocalPlayerEditCharacter(string characterId)
     {
+        SteamBattleStateSynchronizer battleSynchronizer =
+            SteamBattleStateSynchronizer.Instance;
+
+        if (battleSynchronizer != null && battleSynchronizer.IsNetworkBattleActive)
+            return battleSynchronizer.CanLocalPlayerEditCharacter(characterId);
+
         SteamLobbySharedStateSynchronizer synchronizer =
             SteamLobbySharedStateSynchronizer.Instance;
         return synchronizer == null ||
@@ -329,6 +341,18 @@ public class SkillInventoryPanelUI : MonoBehaviour
         out bool requestSent)
     {
         requestSent = false;
+        SteamBattleStateSynchronizer battleSynchronizer =
+            SteamBattleStateSynchronizer.Instance;
+
+        if (battleSynchronizer != null && battleSynchronizer.IsNetworkBattleActive)
+        {
+            requestSent = battleSynchronizer.RequestEquipSkill(
+                characterId,
+                equippedSkillIndex,
+                skillId);
+            return true;
+        }
+
         SteamLobbySharedStateSynchronizer synchronizer =
             SteamLobbySharedStateSynchronizer.Instance;
 
@@ -348,6 +372,17 @@ public class SkillInventoryPanelUI : MonoBehaviour
         out bool requestSent)
     {
         requestSent = false;
+        SteamBattleStateSynchronizer battleSynchronizer =
+            SteamBattleStateSynchronizer.Instance;
+
+        if (battleSynchronizer != null && battleSynchronizer.IsNetworkBattleActive)
+        {
+            requestSent = battleSynchronizer.RequestUnequipSkill(
+                characterId,
+                equippedSkillIndex);
+            return true;
+        }
+
         SteamLobbySharedStateSynchronizer synchronizer =
             SteamLobbySharedStateSynchronizer.Instance;
 

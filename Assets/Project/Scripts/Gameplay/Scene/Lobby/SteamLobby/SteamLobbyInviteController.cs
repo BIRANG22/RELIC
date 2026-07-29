@@ -432,6 +432,10 @@ public class SteamLobbyInviteController : MonoBehaviour
 
         CSteamID localId = SteamUser.GetSteamID();
         CSteamID ownerId = SteamMatchmaking.GetLobbyOwner(currentLobbyId);
+        SteamLobbySessionState.SetLobby(
+            ToSteamIdValue(currentLobbyId),
+            ToSteamIdValue(localId),
+            ToSteamIdValue(ownerId));
 
         partySynchronizer.EnterLobby(
             ToSteamIdValue(currentLobbyId),

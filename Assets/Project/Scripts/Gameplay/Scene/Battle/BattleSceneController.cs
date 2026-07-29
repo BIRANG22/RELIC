@@ -62,6 +62,9 @@ public class BattleSceneController : MonoBehaviour
     private bool hasRoomPanelAutoCloseState;
     private bool lastAnyRoomActiveForPanelAutoClose;
     private GameObject lastActiveRoomForPanelAutoClose;
+    private int lastNetworkAppliedNodeIndex = int.MinValue;
+    private bool lastNetworkAppliedNodeCleared;
+    private bool forceNextBattleRoomLoad;
     private readonly BattleRoomIntroLoadGate battleRoomIntroLoadGate = new();
 
     private void Awake()
@@ -74,6 +77,7 @@ public class BattleSceneController : MonoBehaviour
 
     private void Start()
     {
+        SteamBattleStateSynchronizer.EnsureForBattleScene(null, null);
         InitializeRuntime();
         CloseAllRooms();
 
@@ -495,6 +499,45 @@ public class BattleSceneController : MonoBehaviour
         UpdateLastActiveRoomState();
     }
 
+    public void ApplyNetworkMapRuntime(MapRuntimeData runtime)
+    {
+        if (runtime == null || DataManager.Instance == null)
+            return;
+
+        if (mapRuntimeStore == null)
+            mapRuntimeStore = DataManager.Instance.MapRuntimeStore;
+
+        mapRuntime = runtime;
+        bool isCurrentNodeCleared = MapRuntimeProgressUtility.IsCurrentNodeCleared(mapRuntime);
+
+        if (lastNetworkAppliedNodeIndex == mapRuntime.CurrentNodeIndex &&
+            lastNetworkAppliedNodeCleared == isCurrentNodeCleared)
+        {
+            return;
+        }
+
+        lastNetworkAppliedNodeIndex = mapRuntime.CurrentNodeIndex;
+        lastNetworkAppliedNodeCleared = isCurrentNodeCleared;
+
+        if (mapRuntime.CurrentNodeIndex >= 0 && !isCurrentNodeCleared)
+        {
+            GeneratedMapNodeData currentNode = MapRuntimeProgressUtility.FindCurrentNode(mapRuntime);
+            if (currentNode != null)
+            {
+                forceNextBattleRoomLoad = IsBattleNodeType(currentNode.Type);
+                HideMapPanelImmediate();
+                HandleSelectedMap(currentNode);
+                PlayPendingRoomIntroText();
+                UpdateLastActiveRoomState();
+                return;
+            }
+        }
+
+        CloseAllRooms();
+        OpenMapPanelImmediate();
+        UpdateLastActiveRoomState();
+    }
+
     private void HandleSelectedMap(GeneratedMapNodeData nodeData)
     {
         switch (nodeData.Type)
@@ -650,7 +693,16 @@ public class BattleSceneController : MonoBehaviour
             return;
         }
 
-        loader.LoadBattleFromSceneController();
+        bool forceReload = forceNextBattleRoomLoad;
+        forceNextBattleRoomLoad = false;
+        loader.LoadBattleFromSceneController(forceReload);
+    }
+
+    private static bool IsBattleNodeType(string nodeType)
+    {
+        return nodeType == "Common" ||
+               nodeType == "Elite" ||
+               nodeType == "Boss";
     }
 
     private void CloseAllRooms()
