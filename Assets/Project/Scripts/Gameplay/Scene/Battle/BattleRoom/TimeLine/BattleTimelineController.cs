@@ -2601,6 +2601,42 @@ public class BattleTimelineController : MonoBehaviour
         return true;
     }
 
+    public bool AddPlayerCommandFromNetworkSnapshot(int slotIndex, PlayerReservedCommand command)
+    {
+        if (command == null)
+            return false;
+
+        if (reserveSlots == null || slotIndex < 0 || slotIndex >= reserveSlots.Length)
+            return false;
+
+        ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+
+        if (slot == null ||
+            !slot.CanAcceptCharacter(command.UserRuntime) ||
+            !slot.CanAddCommand())
+        {
+            return false;
+        }
+
+        PrepareCommandForReservation(slotIndex, command);
+
+        if (!slot.AddCommand(command))
+            return false;
+
+        RecordPlayerReservation(slotIndex, command);
+        return true;
+    }
+
+    public void FinalizeNetworkSnapshotReservations()
+    {
+        RecalculateAllReservedCosts();
+        RefreshReservationSimulation();
+        RefreshTimeline();
+        RefreshPlayerHUDs();
+        RefreshMoveGhostPreview();
+        selectedSkill = null;
+    }
+
     private string GetEquipmentReservationBlockReason(
         PlayerReservedCommand command,
         int slotIndex)

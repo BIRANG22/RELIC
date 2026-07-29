@@ -1997,6 +1997,8 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
                         ApplyMonsterCommands(slot);
                     }
                 }
+
+                timelineController.FinalizeNetworkSnapshotReservations();
             }
 
             ApplyViewedSlotsToTimeline(snapshot);
@@ -2063,7 +2065,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         {
             PlayerReservedCommand command = RebuildPlayerCommand(slot.playerCommands[i]);
             if (command != null)
-                timelineController.ConfirmPlayerCommandFromNetwork(slot.slotIndex, command, true);
+                timelineController.AddPlayerCommandFromNetworkSnapshot(slot.slotIndex, command);
         }
     }
 
@@ -2086,12 +2088,16 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             return;
 
         List<int> remoteViewedSlots = new();
+        int localViewedSlot = -1;
 
         foreach (KeyValuePair<ulong, int> pair in viewedSlotsByMember)
         {
 #if STEAMWORKS_NET
             if (pair.Key == localSteamId)
+            {
+                localViewedSlot = pair.Value;
                 continue;
+            }
 #endif
 
             if (pair.Value >= 0)
@@ -2099,6 +2105,11 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         }
 
         timelineController.SetNetworkViewedSlots(remoteViewedSlots);
+
+#if STEAMWORKS_NET
+        if (!IsLocalHost() && localViewedSlot >= 0)
+            timelineController.SelectTimelineSlotFromNetwork(localViewedSlot, false);
+#endif
     }
 
     private void ImportReadyStates(BattleNetworkSnapshot snapshot)
