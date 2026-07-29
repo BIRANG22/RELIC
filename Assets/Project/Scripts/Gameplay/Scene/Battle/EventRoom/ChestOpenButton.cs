@@ -330,6 +330,9 @@ public class ChestOpenButton : MonoBehaviour
         if (IsMenuPanelOpen())
             return;
 
+        if (SteamBattleStateSynchronizer.TryBlockSharedBattleStateEdit())
+            return;
+
         if (isOpened || isOpening || isClickCooling)
             return;
 

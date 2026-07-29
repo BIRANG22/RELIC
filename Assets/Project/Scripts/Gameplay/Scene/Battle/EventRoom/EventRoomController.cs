@@ -110,6 +110,9 @@ public class EventRoomController : MonoBehaviour
 
     public void OnNextButtonClicked()
     {
+        if (SteamBattleStateSynchronizer.TryBlockSharedBattleStateEdit())
+            return;
+
         if (!isChestOpened)
             return;
 

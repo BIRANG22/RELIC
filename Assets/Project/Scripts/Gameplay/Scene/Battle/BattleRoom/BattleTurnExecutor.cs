@@ -13,7 +13,9 @@ public class BattleTurnExecutor : MonoBehaviour
     public static event Action BattleExecutionStarted;
     public static event Action PlayerTurnReturned;
 
-    public bool CanAcceptPlayerInput => !isExecuting && isMonsterPlanReady && isPlayerInputReady;
+    public bool CanAcceptPlayerInput => !networkExecutionLocked && !isExecuting && isMonsterPlanReady && isPlayerInputReady;
+    public bool IsExecuting => isExecuting;
+    public Button EndTurnButton => endTurnButton;
 
     [SerializeField] private BattleTimelineController timelineController;
     [SerializeField] private GridManager gridManager;
@@ -57,6 +59,7 @@ public class BattleTurnExecutor : MonoBehaviour
     private bool isMonsterPlanReady;
     private bool isPlayerInputReady;
     private bool isExecuting;
+    private bool networkExecutionLocked;
     private bool battleExecutionUiSuppressed;
     private Coroutine executeTurnCoroutine;
     private int playerTurnNumber = 1;
@@ -70,6 +73,7 @@ public class BattleTurnExecutor : MonoBehaviour
         RefreshTurnNumberText();
         RefreshEndTurnButton();
         RefreshBattlePresentationState();
+        SteamBattleStateSynchronizer.EnsureForBattleScene(this, timelineController);
     }
 
 
@@ -131,6 +135,7 @@ public class BattleTurnExecutor : MonoBehaviour
         isExecuting = false;
         isMonsterPlanReady = false;
         isPlayerInputReady = false;
+        networkExecutionLocked = false;
 
         EnsureSkillListPanel();
         if (skillListPanel != null)
@@ -190,6 +195,17 @@ public class BattleTurnExecutor : MonoBehaviour
         ExecuteTurn();
     }
 
+    public void SetNetworkExecutionLocked(bool locked)
+    {
+        if (networkExecutionLocked == locked)
+            return;
+
+        networkExecutionLocked = locked;
+        RefreshEndTurnButton();
+        RefreshBattlePresentationState();
+        RefreshBattleExecutionUiVisibility();
+    }
+
     public void SetMonsterPlanReady(bool ready)
     {
         isMonsterPlanReady = ready;
@@ -207,6 +223,19 @@ public class BattleTurnExecutor : MonoBehaviour
     }
 
     public void ExecuteTurn()
+    {
+        if (SteamBattleStateSynchronizer.TryHandleExecuteTurnRequest(this))
+            return;
+
+        ExecuteTurnInternal();
+    }
+
+    public void ExecuteTurnFromNetworkHost()
+    {
+        ExecuteTurnInternal();
+    }
+
+    private void ExecuteTurnInternal()
     {
         Debug.Log(
        $"[EndTurnCheck] isExecuting:{isExecuting} / " +
@@ -520,6 +549,7 @@ public class BattleTurnExecutor : MonoBehaviour
             return;
 
         endTurnButton.interactable =
+            !networkExecutionLocked &&
             !isExecuting &&
             isMonsterPlanReady &&
             isPlayerInputReady;

@@ -484,6 +484,12 @@ public class BattleBagPanelUI : MonoBehaviour
     }
     private void OnClickDiscardButton()
     {
+        if (IsNetworkBattleClientReadOnly())
+        {
+            BattleWarningUI.ShowMessage("멀티 배틀에서는 호스트만 가방을 변경할 수 있습니다.");
+            return;
+        }
+
         IInventoryRuntimeContext context = ResolveRuntimeContext();
 
         if (!IsDiscardAllowed(context))
@@ -542,7 +548,18 @@ public class BattleBagPanelUI : MonoBehaviour
 
     private bool IsDiscardAllowed(IInventoryRuntimeContext context)
     {
+        if (IsNetworkBattleClientReadOnly())
+            return false;
+
         return context == null || !context.IsLobby || allowDiscardInLobby;
+    }
+
+    private static bool IsNetworkBattleClientReadOnly()
+    {
+        SteamBattleStateSynchronizer synchronizer = SteamBattleStateSynchronizer.Instance;
+        return synchronizer != null &&
+               synchronizer.IsNetworkBattleActive &&
+               !SteamLobbySessionState.IsLocalHost;
     }
 
     private void SaveRuntimeContext(IInventoryRuntimeContext context)

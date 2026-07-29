@@ -353,6 +353,9 @@ public class SkillUpgradePanel : MonoBehaviour
 
     private bool ApplySkillUpgrade(SkillUpgradeRequest request)
     {
+        if (SteamBattleStateSynchronizer.TryBlockSharedBattleStateEdit())
+            return false;
+
         if (DataManager.Instance == null)
             return false;
 

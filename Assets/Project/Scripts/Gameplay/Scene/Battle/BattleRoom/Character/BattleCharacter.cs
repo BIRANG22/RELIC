@@ -83,6 +83,12 @@ public class BattleCharacter : MonoBehaviour
         if (RuntimeData == null)
             return;
 
+        if (!SteamBattleStateSynchronizer.CanLocalPlayerControlCharacter(RuntimeData.CharacterId))
+        {
+            BattleWarningUI.ShowMessage("다른 플레이어의 캐릭터입니다.");
+            return;
+        }
+
         if (IsPointerOverUI())
             return;
 

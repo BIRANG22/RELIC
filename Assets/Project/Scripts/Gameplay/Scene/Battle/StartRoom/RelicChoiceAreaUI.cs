@@ -187,6 +187,9 @@ public class RelicChoiceAreaUI : MonoBehaviour
         if (!isOpen || isSelectionCompleted)
             return;
 
+        if (SteamBattleStateSynchronizer.TryBlockSharedBattleStateEdit())
+            return;
+
         if (string.IsNullOrWhiteSpace(relicId))
             return;
 

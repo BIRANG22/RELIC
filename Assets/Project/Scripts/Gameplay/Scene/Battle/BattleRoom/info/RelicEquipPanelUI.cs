@@ -556,6 +556,12 @@ public class RelicEquipPanelUI : MonoBehaviour
 
     private bool IsRelicEditLocked()
     {
+        SteamBattleStateSynchronizer battleSynchronizer =
+            SteamBattleStateSynchronizer.Instance;
+
+        if (battleSynchronizer != null && battleSynchronizer.IsNetworkBattleActive)
+            return false;
+
         if (!lockEditInBattleRoom)
             return false;
 
@@ -576,6 +582,12 @@ public class RelicEquipPanelUI : MonoBehaviour
 
     private static bool CanLocalPlayerEditCharacter(string characterId)
     {
+        SteamBattleStateSynchronizer battleSynchronizer =
+            SteamBattleStateSynchronizer.Instance;
+
+        if (battleSynchronizer != null && battleSynchronizer.IsNetworkBattleActive)
+            return battleSynchronizer.CanLocalPlayerEditCharacter(characterId);
+
         SteamLobbySharedStateSynchronizer synchronizer =
             SteamLobbySharedStateSynchronizer.Instance;
         return synchronizer == null ||
@@ -590,6 +602,18 @@ public class RelicEquipPanelUI : MonoBehaviour
         out bool requestSent)
     {
         requestSent = false;
+        SteamBattleStateSynchronizer battleSynchronizer =
+            SteamBattleStateSynchronizer.Instance;
+
+        if (battleSynchronizer != null && battleSynchronizer.IsNetworkBattleActive)
+        {
+            requestSent = battleSynchronizer.RequestEquipRelic(
+                characterId,
+                relicSlotIndex,
+                relicId);
+            return true;
+        }
+
         SteamLobbySharedStateSynchronizer synchronizer =
             SteamLobbySharedStateSynchronizer.Instance;
 
@@ -609,6 +633,17 @@ public class RelicEquipPanelUI : MonoBehaviour
         out bool requestSent)
     {
         requestSent = false;
+        SteamBattleStateSynchronizer battleSynchronizer =
+            SteamBattleStateSynchronizer.Instance;
+
+        if (battleSynchronizer != null && battleSynchronizer.IsNetworkBattleActive)
+        {
+            requestSent = battleSynchronizer.RequestUnequipRelic(
+                characterId,
+                relicSlotIndex);
+            return true;
+        }
+
         SteamLobbySharedStateSynchronizer synchronizer =
             SteamLobbySharedStateSynchronizer.Instance;
 

@@ -126,6 +126,9 @@ public class BattleRewardPanelUI : MonoBehaviour
         if (slot == null || slot.Reward == null)
             return;
 
+        if (SteamBattleStateSynchronizer.TryBlockSharedBattleStateEdit())
+            return;
+
         BattleRewardData reward = slot.Reward;
 
         if (!CanClaimReward(reward))

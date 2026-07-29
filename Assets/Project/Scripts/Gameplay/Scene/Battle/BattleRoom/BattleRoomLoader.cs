@@ -922,6 +922,13 @@ public class BattleRoomLoader : MonoBehaviour
 
     private void OpenSkillListForPlayer(CharacterRuntimeData runtimeData, RectTransform hudRect)
     {
+        if (runtimeData != null &&
+            !SteamBattleStateSynchronizer.CanLocalPlayerControlCharacter(runtimeData.CharacterId))
+        {
+            BattleWarningUI.ShowMessage("다른 플레이어의 캐릭터입니다.");
+            return;
+        }
+
         SelectPlayerHUD(runtimeData);
         EnsureSkillListPanel();
 

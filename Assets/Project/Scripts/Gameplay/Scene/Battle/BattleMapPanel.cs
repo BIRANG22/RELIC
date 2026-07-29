@@ -182,6 +182,9 @@ public class BattleMapPanel : MonoBehaviour
         if (UIPanelButton.IsMenuPanelOpen)
             return;
 
+        if (SteamBattleStateSynchronizer.TryBlockSharedBattleStateEdit())
+            return;
+
         if (battleSceneController == null)
         {
             Debug.LogWarning("[BattleMapPanel] BattleSceneController가 연결되지 않았습니다.");

@@ -168,6 +168,7 @@ public class BattleTimelineController : MonoBehaviour
         new List<MonsterReservedCommand>[5];
 
     private readonly List<PlayerReservationHistoryEntry> playerReservationHistory = new();
+    private readonly HashSet<int> networkViewedSlotIndices = new();
 
     public int SlotCount => reserveSlots != null ? reserveSlots.Length : 0;
     public int ActiveSlotIndex => activeSlotIndex;
@@ -553,6 +554,9 @@ public class BattleTimelineController : MonoBehaviour
             return;
         }
 
+        if (SteamBattleStateSynchronizer.TryHandleTimelineSlotClicked(this, slotIndex))
+            return;
+
         if (IsPlayerSlotLocked(slotIndex))
         {
             ShowPlayerLockedSlotWarning();
@@ -560,6 +564,11 @@ public class BattleTimelineController : MonoBehaviour
         }
 
         SetActiveTimelineSlot(slotIndex, true);
+    }
+
+    public bool SelectTimelineSlotFromNetwork(int slotIndex, bool tryStartReservation)
+    {
+        return SetActiveTimelineSlot(slotIndex, tryStartReservation);
     }
 
     private bool SetActiveTimelineSlot(int slotIndex, bool tryStartReservation)
@@ -719,7 +728,36 @@ public class BattleTimelineController : MonoBehaviour
 
     public bool IsPlayerSlotLocked(int slotIndex)
     {
-        return playerLockedSlotIndex >= 0 && slotIndex == playerLockedSlotIndex;
+        return (playerLockedSlotIndex >= 0 && slotIndex == playerLockedSlotIndex) ||
+               networkViewedSlotIndices.Contains(slotIndex);
+    }
+
+    public void SetNetworkViewedSlots(IReadOnlyList<int> slotIndices)
+    {
+        networkViewedSlotIndices.Clear();
+
+        if (slotIndices != null)
+        {
+            for (int i = 0; i < slotIndices.Count; i++)
+            {
+                if (IsValidReserveSlotIndex(slotIndices[i]))
+                    networkViewedSlotIndices.Add(slotIndices[i]);
+            }
+        }
+
+        if (IsPlayerSlotLocked(activeSlotIndex))
+        {
+            activeSlotIndex = FindFirstSelectableTimelineSlot(activeSlotIndex);
+            selectedSkill = null;
+
+            if (playerSkillReservationController != null)
+                playerSkillReservationController.ClearPreview();
+
+            SetActiveTimelineSlotVisual(activeSlotIndex);
+            RefreshSelectedSlotValueText();
+        }
+
+        RefreshPlayerLockedSlotVisuals();
     }
 
     private bool IsValidReserveSlotIndex(int slotIndex)
@@ -758,9 +796,19 @@ public class BattleTimelineController : MonoBehaviour
     {
         BattleTimelineBarUI activeBar = GetActiveTimelineBarUI();
         BattleTimelineBarUI standbyBar = GetStandbyTimelineBarUI();
+        int visualLockedSlotIndex = playerLockedSlotIndex;
+
+        if (visualLockedSlotIndex < 0)
+        {
+            foreach (int slotIndex in networkViewedSlotIndices)
+            {
+                visualLockedSlotIndex = slotIndex;
+                break;
+            }
+        }
 
         if (activeBar != null)
-            activeBar.SetPlayerLockedSlot(playerLockedSlotIndex);
+            activeBar.SetPlayerLockedSlot(visualLockedSlotIndex);
 
         if (standbyBar != null && standbyBar != activeBar)
             standbyBar.SetPlayerLockedSlot(-1);
@@ -2434,6 +2482,20 @@ public class BattleTimelineController : MonoBehaviour
 
     public bool ConfirmPlayerCommand(int slotIndex, PlayerReservedCommand command)
     {
+        if (SteamBattleStateSynchronizer.TryHandlePlayerCommandReservation(
+                this,
+                slotIndex,
+                command,
+                out bool networkAccepted))
+        {
+            return networkAccepted;
+        }
+
+        return ConfirmPlayerCommandFromNetwork(slotIndex, command);
+    }
+
+    public bool ConfirmPlayerCommandFromNetwork(int slotIndex, PlayerReservedCommand command)
+    {
         if (command == null)
         {
             ShowBattleWarning("?덉빟???ㅽ궗 ?뺣낫媛 ?놁뒿?덈떎.");
@@ -3792,21 +3854,35 @@ public class BattleTimelineController : MonoBehaviour
 
     public void RemoveCommand(int slotIndex, int orderIndex)
     {
-        if (reserveSlots == null)
+        if (SteamBattleStateSynchronizer.TryHandleRemoveCommand(
+                this,
+                slotIndex,
+                orderIndex,
+                out _))
+        {
             return;
+        }
+
+        RemoveCommandFromNetwork(slotIndex, orderIndex);
+    }
+
+    public bool RemoveCommandFromNetwork(int slotIndex, int orderIndex)
+    {
+        if (reserveSlots == null)
+            return false;
 
         if (slotIndex < 0 || slotIndex >= reserveSlots.Length)
-            return;
+            return false;
 
         ReserveTurnSlotUI slot = reserveSlots[slotIndex];
 
         if (slot == null)
-            return;
+            return false;
 
         bool removed = slot.RemoveCommandAt(orderIndex, out PlayerReservedCommand removedCommand);
 
         if (!removed)
-            return;
+            return false;
 
         RemoveReservedCosts(removedCommand);
         RemovePlayerReservationHistoryEntries(removedCommand);
@@ -3822,6 +3898,7 @@ public class BattleTimelineController : MonoBehaviour
         RefreshMoveGhostPreview();
 
         Debug.Log($"[BattleTimelineController] ?덉빟 痍⑥냼 / Slot:{slotIndex} / Order:{orderIndex}");
+        return true;
     }
 
     private bool IsMoveCommand(PlayerReservedCommand command)
