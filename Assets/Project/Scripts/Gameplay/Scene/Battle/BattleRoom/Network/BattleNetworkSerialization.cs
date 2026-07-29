@@ -78,6 +78,42 @@ public static class BattleNetworkSerialization
         return response == null ? string.Empty : JsonUtility.ToJson(response);
     }
 
+    public static string SerializeExecution(BattleNetworkExecutionSnapshot snapshot)
+    {
+        return snapshot == null ? string.Empty : JsonUtility.ToJson(snapshot);
+    }
+
+    public static bool TryDeserializeExecution(
+        string payload,
+        out BattleNetworkExecutionSnapshot snapshot)
+    {
+        snapshot = null;
+
+        if (string.IsNullOrWhiteSpace(payload))
+            return false;
+
+        try
+        {
+            BattleNetworkExecutionSnapshot dto =
+                JsonUtility.FromJson<BattleNetworkExecutionSnapshot>(payload);
+
+            if (dto == null ||
+                dto.version != ProtocolVersion ||
+                dto.revision <= 0 ||
+                !TryParseSteamId(dto.hostSteamId, out _))
+            {
+                return false;
+            }
+
+            snapshot = dto;
+            return true;
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
+    }
+
     public static bool TryDeserializeCommandResponse(
         string payload,
         out BattleNetworkCommandResponse response)

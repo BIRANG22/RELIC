@@ -80,6 +80,23 @@ public sealed class BattleNetworkSnapshot
 }
 
 [Serializable]
+public sealed class BattleNetworkExecutionSnapshot
+{
+    public int version = BattleNetworkSerialization.ProtocolVersion;
+    public string hostSteamId;
+    public long revision;
+    public BattleNetworkExecutionBatchSnapshot[] batches;
+}
+
+[Serializable]
+public sealed class BattleNetworkExecutionBatchSnapshot
+{
+    public int timelineSlotIndex = -1;
+    public BattleNetworkPlayerCommandSnapshot[] playerCommands;
+    public BattleNetworkMonsterCommandSnapshot[] monsterCommands;
+}
+
+[Serializable]
 public sealed class BattleNetworkPartySlotSnapshot
 {
     public int slotIndex = -1;

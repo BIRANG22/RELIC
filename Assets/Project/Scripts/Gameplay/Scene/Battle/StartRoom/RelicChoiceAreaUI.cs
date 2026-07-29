@@ -215,6 +215,7 @@ public class RelicChoiceAreaUI : MonoBehaviour
         }
 
         isSelectionCompleted = true;
+        SteamBattleStateSynchronizer.TryBroadcastStartRelicSelected(relicId);
 
         if (!GrantRelic(relicId))
         {

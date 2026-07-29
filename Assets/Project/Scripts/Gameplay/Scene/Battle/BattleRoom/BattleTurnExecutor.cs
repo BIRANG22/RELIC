@@ -235,6 +235,34 @@ public class BattleTurnExecutor : MonoBehaviour
         ExecuteTurnInternal();
     }
 
+    public void PlayNetworkExecutionFromHost(List<BattleActionBatch> batches)
+    {
+        if (batches == null || batches.Count <= 0 || executeTurnCoroutine != null)
+            return;
+
+        EnsureSkillListPanel();
+        if (skillListPanel != null)
+            skillListPanel.CloseForBattleExecution();
+
+        HideBattleExecutionUiUntilPlayerTurn();
+
+        isExecuting = true;
+        RefreshEndTurnButton();
+        RefreshBattlePresentationState();
+
+        if (endTurnButton != null)
+            endTurnButton.interactable = false;
+
+        if (timelineController != null)
+        {
+            timelineController.ClearSelectedSlotSelection();
+            timelineController.SetSelectedCharacterScaleFeedbackActive(false);
+            timelineController.SetSlotSelectionLocked(true);
+        }
+
+        executeTurnCoroutine = StartCoroutine(PlayNetworkExecutionRoutine(batches));
+    }
+
     private void ExecuteTurnInternal()
     {
         Debug.Log(
@@ -314,6 +342,7 @@ public class BattleTurnExecutor : MonoBehaviour
             simulator.Simulate(timelineController);
 
             List<BattleActionBatch> batches = builder.Build(timelineController);
+            SteamBattleStateSynchronizer.TryBroadcastBattleExecution(batches);
 
             yield return ShowBattleProgressIntroTextRoutineSafe();
 
@@ -472,6 +501,118 @@ public class BattleTurnExecutor : MonoBehaviour
                 skillListPanel.ReopenAfterBattleExecution();
 
             PlayerTurnReturned?.Invoke();
+        }
+    }
+
+    private IEnumerator PlayNetworkExecutionRoutine(List<BattleActionBatch> batches)
+    {
+        try
+        {
+            if (moveGhostPreview != null)
+                moveGhostPreview.ClearAll();
+
+            yield return ReturnCameraDefaultRoutine();
+
+            BattleActionRunner runner = new(
+                gridManager,
+                monsterSpawner,
+                roomLoader,
+                useSafeSequentialExecution,
+                actionRoutineTimeout,
+                uniqueResourceService != null ? uniqueResourceService.OnPlayerCommandExecuted : null
+            );
+
+            yield return ShowBattleProgressIntroTextRoutineSafe();
+
+            int slidThroughSlotIndex = -1;
+            Dictionary<int, int> nextTimelineOrderAnimationIndexBySlot = new Dictionary<int, int>();
+
+            for (int i = 0; i < batches.Count; i++)
+            {
+                BattleActionBatch batch = batches[i];
+
+                if (!BatchHasCommands(batch))
+                    continue;
+
+                int currentSlotIndex = GetBatchTimelineSlotIndex(batch, i);
+
+                if (currentSlotIndex > slidThroughSlotIndex)
+                {
+                    if (timelineController != null)
+                    {
+                        yield return timelineController.SlideTimelineSlotsLeftThroughSlotRoutine(
+                            currentSlotIndex);
+                    }
+
+                    slidThroughSlotIndex = Mathf.Max(slidThroughSlotIndex, currentSlotIndex);
+                }
+
+                int nextOrderAnimationIndex = 0;
+                if (nextTimelineOrderAnimationIndexBySlot.TryGetValue(
+                        currentSlotIndex,
+                        out int savedOrderIndex))
+                {
+                    nextOrderAnimationIndex = savedOrderIndex;
+                }
+
+                int batchCommandCount = GetBatchCommandCount(batch);
+
+                bool keepCameraAfterBatch =
+                    runner.BatchHasCrossSideHitAction(batch) &&
+                    NextExecutableBatchHasCrossSideHitAction(batches, i + 1, runner);
+
+                yield return runner.RunBatch(batch, keepCameraAfterBatch);
+
+                bool hasNextBatchInSameTimelineSlot =
+                    HasNextExecutableBatchInSameTimelineSlot(batches, i + 1, currentSlotIndex);
+
+                if (timelineController != null && batchCommandCount > 0)
+                {
+                    yield return timelineController.PlayTimelineActionAnimationsRoutine(
+                        currentSlotIndex,
+                        nextOrderAnimationIndex,
+                        batchCommandCount,
+                        !hasNextBatchInSameTimelineSlot);
+                }
+
+                nextTimelineOrderAnimationIndexBySlot[currentSlotIndex] =
+                    nextOrderAnimationIndex + batchCommandCount;
+
+                if (hasNextBatchInSameTimelineSlot)
+                    continue;
+
+                int slideThroughSlotIndex =
+                    GetSlideThroughSlotIndexAfterExecutedTimelineSlot(batches, i, currentSlotIndex);
+
+                if (slideThroughSlotIndex > slidThroughSlotIndex)
+                {
+                    if (timelineController != null)
+                        yield return timelineController.SlideTimelineSlotsLeftThroughSlotRoutine(slideThroughSlotIndex);
+
+                    slidThroughSlotIndex = slideThroughSlotIndex;
+                }
+            }
+
+            if (timelineController != null && slidThroughSlotIndex < 4)
+                yield return timelineController.SlideTimelineSlotsLeftThroughSlotRoutine(4);
+
+            if (timelineController != null)
+                yield return timelineController.MoveTimelineBarsToCompletedTurnPositionRoutine();
+
+            yield return runner.ReturnCameraDefaultIfNeeded();
+        }
+        finally
+        {
+            executeTurnCoroutine = null;
+
+            if (timelineController != null)
+                timelineController.SetSlotSelectionLocked(false);
+
+            isExecuting = false;
+
+            RefreshEndTurnButton();
+            RefreshBattlePresentationState();
+            RefreshBattleExecutionUiVisibility();
         }
     }
 

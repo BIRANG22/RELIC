@@ -19,6 +19,8 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
     private const string SnapshotLobbyChunkKeyPrefix = "relic.battle.state.snapshot.v1.chunk.";
     private const string SnapshotBroadcastPrefix = "RELIC_BATTLE_STATE_SNAPSHOT_V1:";
     private const string SnapshotChunkBroadcastPrefix = "RELIC_BATTLE_STATE_SNAPSHOT_CHUNK_V1:";
+    private const string ExecutionChunkBroadcastPrefix = "RELIC_BATTLE_EXECUTION_CHUNK_V1:";
+    private const string StartRelicSelectedPrefix = "RELIC_BATTLE_START_RELIC_SELECTED_V1:";
     private const string CommandPrefix = "RELIC_BATTLE_STATE_CMD_V1:";
     private const string CommandResultPrefix = "RELIC_BATTLE_STATE_RESULT_V1:";
     private const int MaxLobbyChatMessageBytes = 4096;
@@ -45,6 +47,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
     private float clientPollTimer;
     private bool applyingNetworkTimeline;
     private readonly Dictionary<long, SnapshotChunkAccumulator> snapshotChunksByRevision = new();
+    private readonly Dictionary<long, SnapshotChunkAccumulator> executionChunksByRevision = new();
 
 #if STEAMWORKS_NET
     private CSteamID currentLobbyId;
@@ -85,6 +88,9 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
 
         if (IsLocalHost())
         {
+            if (turnExecutor != null && turnExecutor.IsExecuting)
+                return;
+
             hostPublishTimer += Time.unscaledDeltaTime;
             if (hostPublishTimer >= 0.3f)
             {
@@ -226,6 +232,22 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
 
         accepted = Instance.RequestRemoveCommand(slotIndex, orderIndex);
         return true;
+    }
+
+    public static void TryBroadcastBattleExecution(IReadOnlyList<BattleActionBatch> batches)
+    {
+        if (Instance == null || !Instance.IsNetworkBattleActive)
+            return;
+
+        Instance.BroadcastBattleExecution(batches);
+    }
+
+    public static void TryBroadcastStartRelicSelected(string relicId)
+    {
+        if (Instance == null || !Instance.IsNetworkBattleActive)
+            return;
+
+        Instance.BroadcastStartRelicSelected(relicId);
     }
 
     public bool CanLocalPlayerEditCharacter(string characterId)
@@ -496,6 +518,20 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             senderId.m_SteamID == originalHostSteamId)
         {
             HandleClientSnapshotChunkPayload(payload);
+            return;
+        }
+
+        if (payload.StartsWith(ExecutionChunkBroadcastPrefix, StringComparison.Ordinal) &&
+            senderId.m_SteamID == originalHostSteamId)
+        {
+            HandleClientExecutionChunkPayload(payload);
+            return;
+        }
+
+        if (payload.StartsWith(StartRelicSelectedPrefix, StringComparison.Ordinal) &&
+            senderId.m_SteamID == originalHostSteamId)
+        {
+            HandleClientStartRelicSelectedPayload(payload);
         }
     }
 
@@ -779,7 +815,12 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
 
         List<string> chunks = SplitPayloadForTransport(payload, MaxSnapshotChunkPayloadBytes);
 
-        if (!TryPublishSnapshotChunksToLobbyData(candidate.revision, chunks))
+        ApplySnapshot(candidate, true);
+
+        bool lobbyPublished = TryPublishSnapshotChunksToLobbyData(candidate.revision, chunks);
+        bool broadcastPublished = BroadcastSnapshotChunks(candidate.revision, chunks);
+
+        if (!lobbyPublished && !broadcastPublished)
         {
             Debug.LogWarning(
                 $"[SteamBattleStateSynchronizer] Failed to publish battle snapshot. " +
@@ -787,8 +828,6 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
                 this);
         }
 
-        ApplySnapshot(candidate, true);
-        BroadcastSnapshotChunks(candidate.revision, chunks);
         return candidate;
     }
 
@@ -802,10 +841,12 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         TrySendLobbyChatPayload(payload);
     }
 
-    private void BroadcastSnapshotChunks(long revision, List<string> chunks)
+    private bool BroadcastSnapshotChunks(long revision, List<string> chunks)
     {
         if (!IsLocalHost() || chunks == null || chunks.Count <= 0)
-            return;
+            return false;
+
+        bool sentAny = false;
 
         for (int i = 0; i < chunks.Count; i++)
         {
@@ -818,12 +859,54 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
                 chunks.Count +
                 ":" +
                 chunks[i];
-            TrySendLobbyChatPayload(payload);
+            sentAny |= TrySendLobbyChatPayload(payload);
         }
+
+        return sentAny;
+    }
+
+    private void BroadcastBattleExecution(IReadOnlyList<BattleActionBatch> batches)
+    {
+#if STEAMWORKS_NET
+        if (!IsLocalHost() || batches == null)
+            return;
+
+        BattleNetworkExecutionSnapshot snapshot =
+            CreateExecutionSnapshot(Math.Max(hostRevision, AppliedRevision), batches);
+        string payload = BattleNetworkSerialization.SerializeExecution(snapshot);
+        List<string> chunks = SplitPayloadForTransport(payload, MaxSnapshotChunkPayloadBytes);
+
+        for (int i = 0; i < chunks.Count; i++)
+        {
+            string chunkPayload =
+                ExecutionChunkBroadcastPrefix +
+                snapshot.revision +
+                ":" +
+                i +
+                ":" +
+                chunks.Count +
+                ":" +
+                chunks[i];
+            TrySendLobbyChatPayload(chunkPayload);
+        }
+#endif
+    }
+
+    private void BroadcastStartRelicSelected(string relicId)
+    {
+#if STEAMWORKS_NET
+        if (!IsLocalHost() || string.IsNullOrWhiteSpace(relicId))
+            return;
+
+        TrySendLobbyChatPayload(StartRelicSelectedPrefix + relicId.Trim());
+#endif
     }
 
     private void ApplySnapshotFromLobbyData(bool allowEqualRevision = false)
     {
+        if (TryApplyChunkedSnapshotFromLobbyData(allowEqualRevision))
+            return;
+
         string payload = SteamMatchmaking.GetLobbyData(currentLobbyId, SnapshotLobbyDataKey);
 
         if (BattleNetworkSerialization.TryDeserializeSnapshot(
@@ -831,9 +914,11 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
                 out BattleNetworkSnapshot snapshot))
         {
             ApplySnapshot(snapshot, allowEqualRevision);
-            return;
         }
+    }
 
+    private bool TryApplyChunkedSnapshotFromLobbyData(bool allowEqualRevision)
+    {
         if (!long.TryParse(
                 SteamMatchmaking.GetLobbyData(currentLobbyId, SnapshotLobbyRevisionKey),
                 out long revision) ||
@@ -843,7 +928,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             chunkCount <= 0 ||
             chunkCount > MaxSnapshotChunkCount)
         {
-            return;
+            return false;
         }
 
         StringBuilder builder = new();
@@ -855,7 +940,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
                 SnapshotLobbyChunkKeyPrefix + i);
 
             if (string.IsNullOrEmpty(chunk))
-                return;
+                return false;
 
             builder.Append(chunk);
         }
@@ -868,7 +953,26 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             chunkedSnapshot.revision == revision)
         {
             ApplySnapshot(chunkedSnapshot, allowEqualRevision);
+            return true;
         }
+
+        return false;
+    }
+
+    private void HandleClientStartRelicSelectedPayload(string payload)
+    {
+        if (IsLocalHost())
+            return;
+
+        string relicId = payload.Substring(StartRelicSelectedPrefix.Length);
+        if (string.IsNullOrWhiteSpace(relicId))
+            return;
+
+        StartRoomController controller =
+            UnityEngine.Object.FindFirstObjectByType<StartRoomController>(FindObjectsInactive.Include);
+
+        if (controller != null)
+            controller.OnRelicChoiceFinished(relicId.Trim());
     }
 
     private void ApplySnapshot(BattleNetworkSnapshot snapshot, bool allowEqualRevision)
@@ -921,14 +1025,6 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
                 chunks[i]);
         }
 
-        for (int i = chunks.Count; i < lastPublishedChunkCount; i++)
-        {
-            SteamMatchmaking.SetLobbyData(
-                currentLobbyId,
-                SnapshotLobbyChunkKeyPrefix + i,
-                string.Empty);
-        }
-
         if (!success)
             return false;
 
@@ -943,7 +1039,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         success &= SteamMatchmaking.SetLobbyData(
             currentLobbyId,
             SnapshotLobbyDataKey,
-            string.Empty);
+            "CHUNKED");
 
         if (success)
             lastPublishedChunkCount = chunks.Count;
@@ -1002,6 +1098,62 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         {
             ApplySnapshot(snapshot, true);
         }
+    }
+
+    private void HandleClientExecutionChunkPayload(string payload)
+    {
+        if (IsLocalHost() || string.IsNullOrEmpty(payload))
+            return;
+
+        string body = payload.Substring(ExecutionChunkBroadcastPrefix.Length);
+        int first = body.IndexOf(':');
+        int second = first >= 0 ? body.IndexOf(':', first + 1) : -1;
+        int third = second >= 0 ? body.IndexOf(':', second + 1) : -1;
+
+        if (first < 0 || second < 0 || third < 0)
+            return;
+
+        if (!long.TryParse(body.Substring(0, first), out long revision) ||
+            !int.TryParse(body.Substring(first + 1, second - first - 1), out int index) ||
+            !int.TryParse(body.Substring(second + 1, third - second - 1), out int count) ||
+            count <= 0 ||
+            count > MaxSnapshotChunkCount ||
+            index < 0 ||
+            index >= count)
+        {
+            return;
+        }
+
+        string chunk = body.Substring(third + 1);
+
+        if (!executionChunksByRevision.TryGetValue(revision, out SnapshotChunkAccumulator accumulator) ||
+            accumulator.Count != count)
+        {
+            accumulator = new SnapshotChunkAccumulator(count);
+            executionChunksByRevision[revision] = accumulator;
+        }
+
+        accumulator.Chunks[index] = chunk;
+
+        if (!accumulator.IsComplete)
+            return;
+
+        string executionPayload = string.Concat(accumulator.Chunks);
+        executionChunksByRevision.Remove(revision);
+
+        if (!BattleNetworkSerialization.TryDeserializeExecution(
+                executionPayload,
+                out BattleNetworkExecutionSnapshot execution) ||
+            !BattleNetworkSerialization.TryParseSteamId(execution.hostSteamId, out ulong hostId) ||
+            hostId != originalHostSteamId)
+        {
+            return;
+        }
+
+        List<BattleActionBatch> batches = RebuildExecutionBatches(execution);
+
+        if (turnExecutor != null)
+            turnExecutor.PlayNetworkExecutionFromHost(batches);
     }
 
     private static List<string> SplitPayloadForTransport(string payload, int maxChunkBytes)
@@ -1289,6 +1441,37 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         };
     }
 
+    private BattleNetworkExecutionSnapshot CreateExecutionSnapshot(
+        long revision,
+        IReadOnlyList<BattleActionBatch> batches)
+    {
+        List<BattleNetworkExecutionBatchSnapshot> result = new();
+
+        if (batches != null)
+        {
+            for (int i = 0; i < batches.Count; i++)
+            {
+                BattleActionBatch batch = batches[i];
+                if (batch == null || !batch.HasCommands)
+                    continue;
+
+                result.Add(new BattleNetworkExecutionBatchSnapshot
+                {
+                    timelineSlotIndex = batch.TimelineSlotIndex,
+                    playerCommands = CreatePlayerCommandSnapshots(batch.PlayerCommands),
+                    monsterCommands = CreateMonsterCommandSnapshots(batch.MonsterCommands)
+                });
+            }
+        }
+
+        return new BattleNetworkExecutionSnapshot
+        {
+            hostSteamId = BattleNetworkSerialization.ToText(SteamLobbySessionState.HostSteamId),
+            revision = revision,
+            batches = result.ToArray()
+        };
+    }
+
     private BattleNetworkPartySlotSnapshot[] CreatePartySlotSnapshots()
     {
         PartyRuntimeStore partyStore = DataManager.Instance?.PartyRuntimeStore;
@@ -1392,6 +1575,12 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         IReadOnlyList<PlayerReservedCommand> commands =
             timelineController.GetPlayerCommands(slotIndex);
 
+        return CreatePlayerCommandSnapshots(commands);
+    }
+
+    private BattleNetworkPlayerCommandSnapshot[] CreatePlayerCommandSnapshots(
+        IReadOnlyList<PlayerReservedCommand> commands)
+    {
         if (commands == null)
             return Array.Empty<BattleNetworkPlayerCommandSnapshot>();
 
@@ -1403,22 +1592,30 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             if (command == null)
                 continue;
 
-            result.Add(new BattleNetworkPlayerCommandSnapshot
-            {
-                characterId = command.CharacterId,
-                skillId = command.SkillId,
-                direction = (int)command.Direction,
-                selectedGridIndex = command.SelectedGridIndex,
-                moveOffsetX = command.MoveOffset.x,
-                moveOffsetY = command.MoveOffset.y,
-                plannedMoveDistance = command.PlannedMoveDistance,
-                moveDistancePerCost = command.MoveDistancePerCost,
-                rangeGridIndices = ToArray(command.RangeGridIndices),
-                targetGridIndices = ToArray(command.TargetGridIndices)
-            });
+            result.Add(CreatePlayerCommandSnapshot(command));
         }
 
         return result.ToArray();
+    }
+
+    private BattleNetworkPlayerCommandSnapshot CreatePlayerCommandSnapshot(PlayerReservedCommand command)
+    {
+        if (command == null)
+            return null;
+
+        return new BattleNetworkPlayerCommandSnapshot
+        {
+            characterId = command.CharacterId,
+            skillId = command.SkillId,
+            direction = (int)command.Direction,
+            selectedGridIndex = command.SelectedGridIndex,
+            moveOffsetX = command.MoveOffset.x,
+            moveOffsetY = command.MoveOffset.y,
+            plannedMoveDistance = command.PlannedMoveDistance,
+            moveDistancePerCost = command.MoveDistancePerCost,
+            rangeGridIndices = ToArray(command.RangeGridIndices),
+            targetGridIndices = ToArray(command.TargetGridIndices)
+        };
     }
 
     private BattleNetworkMonsterCommandSnapshot[] CreateMonsterCommandSnapshots(int slotIndex)
@@ -1426,6 +1623,12 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         IReadOnlyList<MonsterReservedCommand> commands =
             timelineController.GetMonsterCommands(slotIndex);
 
+        return CreateMonsterCommandSnapshots(commands);
+    }
+
+    private BattleNetworkMonsterCommandSnapshot[] CreateMonsterCommandSnapshots(
+        IReadOnlyList<MonsterReservedCommand> commands)
+    {
         if (commands == null)
             return Array.Empty<BattleNetworkMonsterCommandSnapshot>();
 
@@ -1437,24 +1640,32 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             if (command == null)
                 continue;
 
-            result.Add(new BattleNetworkMonsterCommandSnapshot
-            {
-                runtimeId = command.RuntimeId,
-                skillId = command.SkillId,
-                moveOffsetX = command.MoveOffset.x,
-                moveOffsetY = command.MoveOffset.y,
-                reservedDamage = command.ReservedDamage,
-                actionIndex = command.ActionIndex,
-                rangeOriginGridIndex = command.RangeOriginGridIndex,
-                hasForcedDirection = command.HasForcedDirection,
-                forcedDirection = (int)command.ForcedDirection,
-                isPortalMove = command.IsPortalMove,
-                rangeGridIndices = ToArray(command.RangeGridIndices),
-                targetGridIndices = ToArray(command.TargetGridIndices)
-            });
+            result.Add(CreateMonsterCommandSnapshot(command));
         }
 
         return result.ToArray();
+    }
+
+    private BattleNetworkMonsterCommandSnapshot CreateMonsterCommandSnapshot(MonsterReservedCommand command)
+    {
+        if (command == null)
+            return null;
+
+        return new BattleNetworkMonsterCommandSnapshot
+        {
+            runtimeId = command.RuntimeId,
+            skillId = command.SkillId,
+            moveOffsetX = command.MoveOffset.x,
+            moveOffsetY = command.MoveOffset.y,
+            reservedDamage = command.ReservedDamage,
+            actionIndex = command.ActionIndex,
+            rangeOriginGridIndex = command.RangeOriginGridIndex,
+            hasForcedDirection = command.HasForcedDirection,
+            forcedDirection = (int)command.ForcedDirection,
+            isPortalMove = command.IsPortalMove,
+            rangeGridIndices = ToArray(command.RangeGridIndices),
+            targetGridIndices = ToArray(command.TargetGridIndices)
+        };
     }
 
     private BattleNetworkMemberTimelineSelection[] CreateViewedSlotSnapshots()
@@ -1619,6 +1830,53 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         {
             applyingNetworkTimeline = false;
         }
+    }
+
+    private List<BattleActionBatch> RebuildExecutionBatches(BattleNetworkExecutionSnapshot snapshot)
+    {
+        List<BattleActionBatch> result = new();
+
+        if (snapshot?.batches == null)
+            return result;
+
+        for (int i = 0; i < snapshot.batches.Length; i++)
+        {
+            BattleNetworkExecutionBatchSnapshot source = snapshot.batches[i];
+            if (source == null)
+                continue;
+
+            BattleActionBatch batch = new();
+            batch.SetTimelineSlotIndexIfNeeded(source.timelineSlotIndex);
+
+            if (source.playerCommands != null)
+            {
+                for (int commandIndex = 0; commandIndex < source.playerCommands.Length; commandIndex++)
+                {
+                    PlayerReservedCommand command =
+                        RebuildPlayerCommand(source.playerCommands[commandIndex]);
+
+                    if (command != null)
+                        batch.PlayerCommands.Add(command);
+                }
+            }
+
+            if (source.monsterCommands != null)
+            {
+                for (int commandIndex = 0; commandIndex < source.monsterCommands.Length; commandIndex++)
+                {
+                    MonsterReservedCommand command =
+                        RebuildMonsterCommand(source.monsterCommands[commandIndex]);
+
+                    if (command != null)
+                        batch.MonsterCommands.Add(command);
+                }
+            }
+
+            if (batch.HasCommands)
+                result.Add(batch);
+        }
+
+        return result;
     }
 
     private void ApplyPlayerCommands(BattleNetworkTimelineSlotSnapshot slot)
