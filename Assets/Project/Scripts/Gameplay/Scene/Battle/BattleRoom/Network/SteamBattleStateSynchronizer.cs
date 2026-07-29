@@ -14,10 +14,16 @@ using Steamworks;
 public sealed class SteamBattleStateSynchronizer : MonoBehaviour
 {
     private const string SnapshotLobbyDataKey = "relic.battle.state.snapshot.v1";
+    private const string SnapshotLobbyRevisionKey = "relic.battle.state.snapshot.v1.revision";
+    private const string SnapshotLobbyChunkCountKey = "relic.battle.state.snapshot.v1.chunkCount";
+    private const string SnapshotLobbyChunkKeyPrefix = "relic.battle.state.snapshot.v1.chunk.";
     private const string SnapshotBroadcastPrefix = "RELIC_BATTLE_STATE_SNAPSHOT_V1:";
+    private const string SnapshotChunkBroadcastPrefix = "RELIC_BATTLE_STATE_SNAPSHOT_CHUNK_V1:";
     private const string CommandPrefix = "RELIC_BATTLE_STATE_CMD_V1:";
     private const string CommandResultPrefix = "RELIC_BATTLE_STATE_RESULT_V1:";
     private const int MaxLobbyChatMessageBytes = 4096;
+    private const int MaxSnapshotChunkPayloadBytes = 3000;
+    private const int MaxSnapshotChunkCount = 256;
 
     public static SteamBattleStateSynchronizer Instance { get; private set; }
 
@@ -34,9 +40,11 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
 
     private long hostRevision;
     private string lastPublishedPayload;
+    private int lastPublishedChunkCount;
     private float hostPublishTimer;
     private float clientPollTimer;
     private bool applyingNetworkTimeline;
+    private readonly Dictionary<long, SnapshotChunkAccumulator> snapshotChunksByRevision = new();
 
 #if STEAMWORKS_NET
     private CSteamID currentLobbyId;
@@ -481,6 +489,13 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             senderId.m_SteamID == originalHostSteamId)
         {
             HandleClientSnapshotBroadcastPayload(payload);
+            return;
+        }
+
+        if (payload.StartsWith(SnapshotChunkBroadcastPrefix, StringComparison.Ordinal) &&
+            senderId.m_SteamID == originalHostSteamId)
+        {
+            HandleClientSnapshotChunkPayload(payload);
         }
     }
 
@@ -507,7 +522,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             accepted = result.Accepted,
             rejectReason = (int)result.RejectReason,
             resultRevision = result.Snapshot != null ? result.Snapshot.revision : AppliedRevision,
-            snapshot = result.Snapshot ?? CurrentSnapshot
+            snapshot = null
         };
 
         string responsePayload =
@@ -727,6 +742,8 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
 
         if (response.snapshot != null)
             ApplySnapshot(response.snapshot, true);
+        else if (!response.accepted)
+            ApplySnapshotFromLobbyData(true);
     }
 
     private void HandleClientSnapshotBroadcastPayload(string payload)
@@ -760,14 +777,18 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         hostRevision = candidate.revision;
         lastPublishedPayload = payload;
 
-        if (!SteamMatchmaking.SetLobbyData(currentLobbyId, SnapshotLobbyDataKey, payload))
+        List<string> chunks = SplitPayloadForTransport(payload, MaxSnapshotChunkPayloadBytes);
+
+        if (!TryPublishSnapshotChunksToLobbyData(candidate.revision, chunks))
         {
-            Debug.LogWarning("[SteamBattleStateSynchronizer] Failed to publish battle snapshot.", this);
-            return CurrentSnapshot;
+            Debug.LogWarning(
+                $"[SteamBattleStateSynchronizer] Failed to publish battle snapshot. " +
+                $"Bytes:{Encoding.UTF8.GetByteCount(payload)} / Chunks:{chunks.Count}",
+                this);
         }
 
         ApplySnapshot(candidate, true);
-        BroadcastSnapshot(candidate, payload);
+        BroadcastSnapshotChunks(candidate.revision, chunks);
         return candidate;
     }
 
@@ -781,7 +802,27 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         TrySendLobbyChatPayload(payload);
     }
 
-    private void ApplySnapshotFromLobbyData()
+    private void BroadcastSnapshotChunks(long revision, List<string> chunks)
+    {
+        if (!IsLocalHost() || chunks == null || chunks.Count <= 0)
+            return;
+
+        for (int i = 0; i < chunks.Count; i++)
+        {
+            string payload =
+                SnapshotChunkBroadcastPrefix +
+                revision +
+                ":" +
+                i +
+                ":" +
+                chunks.Count +
+                ":" +
+                chunks[i];
+            TrySendLobbyChatPayload(payload);
+        }
+    }
+
+    private void ApplySnapshotFromLobbyData(bool allowEqualRevision = false)
     {
         string payload = SteamMatchmaking.GetLobbyData(currentLobbyId, SnapshotLobbyDataKey);
 
@@ -789,7 +830,44 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
                 payload,
                 out BattleNetworkSnapshot snapshot))
         {
-            ApplySnapshot(snapshot, false);
+            ApplySnapshot(snapshot, allowEqualRevision);
+            return;
+        }
+
+        if (!long.TryParse(
+                SteamMatchmaking.GetLobbyData(currentLobbyId, SnapshotLobbyRevisionKey),
+                out long revision) ||
+            !int.TryParse(
+                SteamMatchmaking.GetLobbyData(currentLobbyId, SnapshotLobbyChunkCountKey),
+                out int chunkCount) ||
+            chunkCount <= 0 ||
+            chunkCount > MaxSnapshotChunkCount)
+        {
+            return;
+        }
+
+        StringBuilder builder = new();
+
+        for (int i = 0; i < chunkCount; i++)
+        {
+            string chunk = SteamMatchmaking.GetLobbyData(
+                currentLobbyId,
+                SnapshotLobbyChunkKeyPrefix + i);
+
+            if (string.IsNullOrEmpty(chunk))
+                return;
+
+            builder.Append(chunk);
+        }
+
+        string chunkedPayload = builder.ToString();
+
+        if (BattleNetworkSerialization.TryDeserializeSnapshot(
+                chunkedPayload,
+                out BattleNetworkSnapshot chunkedSnapshot) &&
+            chunkedSnapshot.revision == revision)
+        {
+            ApplySnapshot(chunkedSnapshot, allowEqualRevision);
         }
     }
 
@@ -821,6 +899,141 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
 
         if (turnExecutor != null)
             turnExecutor.SetNetworkExecutionLocked(snapshot.isExecuting && !IsLocalHost());
+    }
+
+    private bool TryPublishSnapshotChunksToLobbyData(long revision, List<string> chunks)
+    {
+        if (!IsLocalHost() ||
+            chunks == null ||
+            chunks.Count <= 0 ||
+            chunks.Count > MaxSnapshotChunkCount)
+        {
+            return false;
+        }
+
+        bool success = true;
+
+        for (int i = 0; i < chunks.Count; i++)
+        {
+            success &= SteamMatchmaking.SetLobbyData(
+                currentLobbyId,
+                SnapshotLobbyChunkKeyPrefix + i,
+                chunks[i]);
+        }
+
+        for (int i = chunks.Count; i < lastPublishedChunkCount; i++)
+        {
+            SteamMatchmaking.SetLobbyData(
+                currentLobbyId,
+                SnapshotLobbyChunkKeyPrefix + i,
+                string.Empty);
+        }
+
+        if (!success)
+            return false;
+
+        success &= SteamMatchmaking.SetLobbyData(
+            currentLobbyId,
+            SnapshotLobbyRevisionKey,
+            revision.ToString());
+        success &= SteamMatchmaking.SetLobbyData(
+            currentLobbyId,
+            SnapshotLobbyChunkCountKey,
+            chunks.Count.ToString());
+        success &= SteamMatchmaking.SetLobbyData(
+            currentLobbyId,
+            SnapshotLobbyDataKey,
+            string.Empty);
+
+        if (success)
+            lastPublishedChunkCount = chunks.Count;
+
+        return success;
+    }
+
+    private void HandleClientSnapshotChunkPayload(string payload)
+    {
+        if (IsLocalHost() || string.IsNullOrEmpty(payload))
+            return;
+
+        string body = payload.Substring(SnapshotChunkBroadcastPrefix.Length);
+        int first = body.IndexOf(':');
+        int second = first >= 0 ? body.IndexOf(':', first + 1) : -1;
+        int third = second >= 0 ? body.IndexOf(':', second + 1) : -1;
+
+        if (first < 0 || second < 0 || third < 0)
+            return;
+
+        if (!long.TryParse(body.Substring(0, first), out long revision) ||
+            !int.TryParse(body.Substring(first + 1, second - first - 1), out int index) ||
+            !int.TryParse(body.Substring(second + 1, third - second - 1), out int count) ||
+            count <= 0 ||
+            count > MaxSnapshotChunkCount ||
+            index < 0 ||
+            index >= count)
+        {
+            return;
+        }
+
+        if (revision < AppliedRevision)
+            return;
+
+        string chunk = body.Substring(third + 1);
+
+        if (!snapshotChunksByRevision.TryGetValue(revision, out SnapshotChunkAccumulator accumulator) ||
+            accumulator.Count != count)
+        {
+            accumulator = new SnapshotChunkAccumulator(count);
+            snapshotChunksByRevision[revision] = accumulator;
+        }
+
+        accumulator.Chunks[index] = chunk;
+
+        if (!accumulator.IsComplete)
+            return;
+
+        string snapshotPayload = string.Concat(accumulator.Chunks);
+        snapshotChunksByRevision.Remove(revision);
+
+        if (BattleNetworkSerialization.TryDeserializeSnapshot(
+                snapshotPayload,
+                out BattleNetworkSnapshot snapshot) &&
+            snapshot.revision == revision)
+        {
+            ApplySnapshot(snapshot, true);
+        }
+    }
+
+    private static List<string> SplitPayloadForTransport(string payload, int maxChunkBytes)
+    {
+        List<string> chunks = new();
+
+        if (string.IsNullOrEmpty(payload))
+        {
+            chunks.Add(string.Empty);
+            return chunks;
+        }
+
+        StringBuilder builder = new();
+
+        for (int i = 0; i < payload.Length; i++)
+        {
+            char next = payload[i];
+
+            if (builder.Length > 0 &&
+                Encoding.UTF8.GetByteCount(builder.ToString() + next) > maxChunkBytes)
+            {
+                chunks.Add(builder.ToString());
+                builder.Clear();
+            }
+
+            builder.Append(next);
+        }
+
+        if (builder.Length > 0)
+            chunks.Add(builder.ToString());
+
+        return chunks;
     }
 
     private bool TrySendLobbyChatPayload(string payload)
@@ -1675,6 +1888,32 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             result.Add(source[i]);
 
         return result;
+    }
+
+    private sealed class SnapshotChunkAccumulator
+    {
+        public SnapshotChunkAccumulator(int count)
+        {
+            Count = count;
+            Chunks = new string[count];
+        }
+
+        public int Count { get; }
+        public string[] Chunks { get; }
+
+        public bool IsComplete
+        {
+            get
+            {
+                for (int i = 0; i < Chunks.Length; i++)
+                {
+                    if (Chunks[i] == null)
+                        return false;
+                }
+
+                return true;
+            }
+        }
     }
 
     private readonly struct BattleNetworkCommandResult
