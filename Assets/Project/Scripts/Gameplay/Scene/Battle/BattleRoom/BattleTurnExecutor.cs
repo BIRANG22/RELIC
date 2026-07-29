@@ -262,6 +262,8 @@ public class BattleTurnExecutor : MonoBehaviour
             timelineController.SetSlotSelectionLocked(true);
         }
 
+        BattleExecutionStarted?.Invoke();
+
         executeTurnCoroutine = StartCoroutine(PlayNetworkExecutionRoutine(batches));
     }
 
@@ -602,6 +604,8 @@ public class BattleTurnExecutor : MonoBehaviour
                 yield return timelineController.MoveTimelineBarsToCompletedTurnPositionRoutine();
 
             yield return runner.ReturnCameraDefaultIfNeeded();
+
+            yield return RestoreNetworkReservationStateAfterExecutionRoutine();
         }
         finally
         {
@@ -629,7 +633,28 @@ public class BattleTurnExecutor : MonoBehaviour
             EnsureSkillListPanel();
             if (CanAcceptPlayerInput && skillListPanel != null)
                 skillListPanel.ReopenAfterBattleExecution();
+
+            PlayerTurnReturned?.Invoke();
         }
+    }
+
+    private IEnumerator RestoreNetworkReservationStateAfterExecutionRoutine()
+    {
+        ClearTimeline();
+
+        if (moveGhostPreview != null)
+            moveGhostPreview.ClearAll();
+
+        yield return null;
+
+        playerTurnNumber++;
+        RefreshTurnNumberText();
+
+        if (timelineController != null)
+            yield return timelineController.ResetTimelineSlotsToOriginalPositionRoutine();
+
+        SteamBattleStateSynchronizer.TryRefreshIdleSnapshotAfterNetworkExecution();
+        RefreshBattleHUDs();
     }
 
     private static void AdvanceGridEffectDurations()

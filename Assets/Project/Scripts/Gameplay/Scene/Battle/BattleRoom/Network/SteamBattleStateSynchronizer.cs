@@ -47,6 +47,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
     private int lastPublishedChunkCount;
     private float hostPublishTimer;
     private float clientPollTimer;
+    private long lastReceivedExecutionRevision;
     private bool applyingNetworkTimeline;
     private readonly Dictionary<long, SnapshotChunkAccumulator> snapshotChunksByRevision = new();
     private readonly Dictionary<long, SnapshotChunkAccumulator> executionChunksByRevision = new();
@@ -242,6 +243,33 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             return;
 
         Instance.BroadcastBattleExecution(batches);
+    }
+
+    public static bool TryRefreshIdleSnapshotAfterNetworkExecution()
+    {
+#if STEAMWORKS_NET
+        if (Instance == null ||
+            !Instance.IsNetworkBattleActive ||
+            Instance.IsLocalHost())
+        {
+            return false;
+        }
+
+        Instance.ApplySnapshotFromLobbyData(true);
+
+        BattleNetworkSnapshot snapshot = Instance.CurrentSnapshot;
+        if (snapshot == null ||
+            snapshot.isExecuting ||
+            snapshot.revision <= Instance.lastReceivedExecutionRevision)
+        {
+            return false;
+        }
+
+        Instance.ApplySnapshot(snapshot, true);
+        return true;
+#else
+        return false;
+#endif
     }
 
     public static void TryBroadcastStartRelicSelected(string relicId)
@@ -1271,6 +1299,10 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             return;
         }
 
+        if (execution.revision <= lastReceivedExecutionRevision)
+            return;
+
+        lastReceivedExecutionRevision = execution.revision;
         List<BattleActionBatch> batches = RebuildExecutionBatches(execution);
 
         if (turnExecutor != null)
