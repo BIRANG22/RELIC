@@ -821,7 +821,7 @@ public class BattleTimelineController : MonoBehaviour
 
     private void ShowPlayerLockedSlotWarning()
     {
-        ShowBattleWarning("\uAC70\uBBF8\uC904\uC5D0 \uC7A0\uAE34 \uC2AC\uB86F\uC785\uB2C8\uB2E4.");
+        ShowBattleWarning("선택할 수 없는 슬롯입니다.");
     }
     public void SelectDefaultSlotWhenInputReady()
     {
@@ -4098,7 +4098,37 @@ public class BattleTimelineController : MonoBehaviour
 
     private void ShowBattleWarning(string message)
     {
-        BattleWarningUI.ShowMessage(message);
+        BattleWarningUI.ShowMessage(NormalizeBattleWarningMessage(message));
+    }
+
+    private string NormalizeBattleWarningMessage(string message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+            return "현재 상태에서는 예약할 수 없습니다.";
+
+        if (!LooksLikeBrokenKorean(message))
+            return message;
+
+        if (message.Contains("HP"))
+            return "HP가 부족합니다.";
+
+        if (message.Contains("Cost"))
+            return "Cost가 부족합니다.";
+
+        return "현재 상태에서는 예약할 수 없습니다.";
+    }
+
+    private bool LooksLikeBrokenKorean(string message)
+    {
+        return message.Contains("??") ||
+               message.Contains("袁") ||
+               message.Contains("筌") ||
+               message.Contains("揶") ||
+               message.Contains("醫") ||
+               message.Contains("癒") ||
+               message.Contains("됰") ||
+               message.Contains("덈") ||
+               message.Contains("뼄");
     }
 
     private void RefreshTimeline()

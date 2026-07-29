@@ -380,6 +380,13 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         if (!IsValidTimelineSlot(slotIndex))
             return;
 
+        if (IsTimelineSlotReservedByOtherMember(slotIndex, localSteamId))
+        {
+            BattleWarningUI.ShowMessage("다른 플레이어가 예약한 슬롯입니다.");
+            ApplySnapshot(CurrentSnapshot, true);
+            return;
+        }
+
         BattleNetworkCommand command = CreateCommand(BattleNetworkCommandType.SelectTimelineSlot);
         command.slotIndex = slotIndex;
 
@@ -653,6 +660,9 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         if (IsSlotViewedByOtherMember(command.slotIndex, requester))
             return BattleNetworkRejectReason.SlotViewedByOtherMember;
 
+        if (IsTimelineSlotReservedByOtherMember(command.slotIndex, requester))
+            return BattleNetworkRejectReason.SlotReservedByOtherMember;
+
         viewedSlotsByMember[requester] = command.slotIndex;
 
         if (requester == localSteamId)
@@ -815,10 +825,16 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             return;
         }
 
+        if (!response.accepted)
+            ShowCommandRejectWarning((BattleNetworkRejectReason)response.rejectReason);
+
         if (response.snapshot != null)
             ApplySnapshot(response.snapshot, true);
         else if (!response.accepted)
+        {
             ApplySnapshotFromLobbyData(true);
+            ApplySnapshot(CurrentSnapshot, true);
+        }
     }
 
     private void HandleClientSnapshotBroadcastPayload(string payload)
@@ -1378,6 +1394,61 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         }
 
         return false;
+    }
+
+    private bool IsTimelineSlotReservedByOtherMember(int slotIndex, ulong requester)
+    {
+        if (!TryGetPlayerCommands(slotIndex, out IReadOnlyList<PlayerReservedCommand> commands))
+            return false;
+
+        for (int i = 0; i < commands.Count; i++)
+        {
+            PlayerReservedCommand command = commands[i];
+            if (command == null || string.IsNullOrWhiteSpace(command.CharacterId))
+                continue;
+
+            if (!SteamLobbySessionState.IsMemberAllowedToControlCharacter(
+                    requester,
+                    command.CharacterId))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool TryGetPlayerCommands(
+        int slotIndex,
+        out IReadOnlyList<PlayerReservedCommand> commands)
+    {
+        commands = null;
+
+        if (timelineController == null ||
+            slotIndex < 0 ||
+            slotIndex >= timelineController.SlotCount)
+        {
+            return false;
+        }
+
+        commands = timelineController.GetPlayerCommands(slotIndex);
+        return commands != null;
+    }
+
+    private void ShowCommandRejectWarning(BattleNetworkRejectReason reason)
+    {
+        string message = reason switch
+        {
+            BattleNetworkRejectReason.NotCharacterOwner => "내 캐릭터만 조작할 수 있습니다.",
+            BattleNetworkRejectReason.InvalidSlot => "선택할 수 없는 타임라인 슬롯입니다.",
+            BattleNetworkRejectReason.SlotViewedByOtherMember => "다른 플레이어가 보고 있는 슬롯입니다.",
+            BattleNetworkRejectReason.SlotReservedByOtherMember => "다른 플레이어가 예약한 슬롯입니다.",
+            BattleNetworkRejectReason.InvalidCommand => "예약할 스킬 정보가 올바르지 않습니다.",
+            BattleNetworkRejectReason.RejectedByService => "현재 상태에서는 예약할 수 없습니다.",
+            _ => "요청이 처리되지 않았습니다."
+        };
+
+        BattleWarningUI.ShowMessage(message);
     }
 
     private PlayerReservedCommand RebuildPlayerCommand(BattleNetworkCommand command)

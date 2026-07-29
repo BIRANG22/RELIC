@@ -247,6 +247,8 @@ public class BattleTurnExecutor : MonoBehaviour
         HideBattleExecutionUiUntilPlayerTurn();
 
         isExecuting = true;
+        isMonsterPlanReady = false;
+        isPlayerInputReady = false;
         RefreshEndTurnButton();
         RefreshBattlePresentationState();
 
@@ -609,10 +611,24 @@ public class BattleTurnExecutor : MonoBehaviour
                 timelineController.SetSlotSelectionLocked(false);
 
             isExecuting = false;
+            networkExecutionLocked = false;
+            isMonsterPlanReady = true;
+            isPlayerInputReady = true;
 
             RefreshEndTurnButton();
             RefreshBattlePresentationState();
             RefreshBattleExecutionUiVisibility();
+
+            if (CanAcceptPlayerInput && timelineController != null)
+            {
+                timelineController.SelectDefaultSlotWhenInputReady();
+                timelineController.SetSelectedCharacterScaleFeedbackActive(true);
+                timelineController.RefocusCurrentSelectedCharacterWhenInputReady();
+            }
+
+            EnsureSkillListPanel();
+            if (CanAcceptPlayerInput && skillListPanel != null)
+                skillListPanel.ReopenAfterBattleExecution();
         }
     }
 

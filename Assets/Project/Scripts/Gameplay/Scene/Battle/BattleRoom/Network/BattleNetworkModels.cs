@@ -22,6 +22,7 @@ public enum BattleNetworkRejectReason
     NotCharacterOwner,
     InvalidSlot,
     SlotViewedByOtherMember,
+    SlotReservedByOtherMember,
     InvalidCommand,
     RejectedByService
 }
