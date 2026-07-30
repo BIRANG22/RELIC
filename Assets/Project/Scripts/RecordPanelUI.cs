@@ -64,7 +64,7 @@ public class RecordPanelUI : MonoBehaviour
 
     private void OnEnable()
     {
-        ShowSkillPassive();
+        ShowSkillTab();
     }
 
     public void Close()
@@ -80,7 +80,7 @@ public class RecordPanelUI : MonoBehaviour
 
     public void ShowSkillTab()
     {
-        ShowSkillPassive();
+        BuildSkillList();
     }
 
     public void ShowFragmentTab()
@@ -112,6 +112,22 @@ public class RecordPanelUI : MonoBehaviour
     public void ShowPassiveRelics() => BuildRelicList(false);
     public void ShowActiveRelics() => BuildRelicList(true);
 
+    private void BuildSkillList()
+    {
+        SetMainTab(MainTab.Skill);
+        ClearCurrentSlots();
+
+        DataManager dataManager = GetDataManager();
+        if (dataManager == null || dataManager.SkillDatabase == null)
+            return;
+
+        IEnumerable<SkillMasterData> skills = dataManager.SkillDatabase.GetAll()
+            .Where(skill => skill != null)
+            .OrderBy(skill => skill.Name, StringComparer.CurrentCulture);
+
+        CreateSkillSlots(dataManager, skills);
+    }
+
     private void BuildSkillList(Category category)
     {
         SetMainTab(MainTab.Skill);
@@ -125,6 +141,11 @@ public class RecordPanelUI : MonoBehaviour
             .Where(skill => skill != null && skill.Category == category)
             .OrderBy(skill => skill.Name, StringComparer.CurrentCulture);
 
+        CreateSkillSlots(dataManager, skills);
+    }
+
+    private void CreateSkillSlots(DataManager dataManager, IEnumerable<SkillMasterData> skills)
+    {
         foreach (SkillMasterData skill in skills)
         {
             Sprite icon = skill.Icon;
