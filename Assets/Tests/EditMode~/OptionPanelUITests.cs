@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using NUnit.Framework;
 using TMPro;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.TestTools;
@@ -10,6 +11,8 @@ using UnityEngine.UI;
 
 public class OptionPanelUITests
 {
+    private const string OptionPrefabPath = "Assets/Project/PrefabsR/Option.prefab";
+
     private readonly List<GameObject> createdObjects = new();
     private bool hadTutorialPreference;
     private int originalTutorialPreference;
@@ -148,6 +151,36 @@ public class OptionPanelUITests
 
         Assert.That(TutorialSettings.ShouldShowTutorial, Is.False);
         Assert.That(PlayerPrefs.GetInt(TutorialSettings.ShowTutorialPrefsKey), Is.EqualTo(0));
+    }
+
+    [Test]
+    public void OptionPrefab_ContainsSerializedTutorialToggle()
+    {
+        GameObject root = PrefabUtility.LoadPrefabContents(OptionPrefabPath);
+
+        try
+        {
+            OptionPanelUI panel = root.GetComponentInChildren<OptionPanelUI>(true);
+            Assert.That(panel, Is.Not.Null);
+
+            var serializedPanel = new SerializedObject(panel);
+            GameObject controlContent = serializedPanel.FindProperty("controlContent").objectReferenceValue as GameObject;
+            Toggle tutorialToggle = serializedPanel.FindProperty("tutorialToggle").objectReferenceValue as Toggle;
+
+            Assert.That(controlContent, Is.Not.Null);
+            Assert.That(tutorialToggle, Is.Not.Null);
+            Assert.That(tutorialToggle.transform.IsChildOf(controlContent.transform), Is.True);
+            Assert.That(tutorialToggle.targetGraphic, Is.Not.Null);
+            Assert.That(tutorialToggle.graphic, Is.Not.Null);
+            Assert.That(
+                controlContent.transform.Find("TutorialSettingRow/TutorialLabel")
+                    ?.GetComponent<TextMeshProUGUI>(),
+                Is.Not.Null);
+        }
+        finally
+        {
+            PrefabUtility.UnloadPrefabContents(root);
+        }
     }
 
     private OptionPanelUI CreateOptionPanel(out GameObject resolutionContent, out TMP_Dropdown dropdown)

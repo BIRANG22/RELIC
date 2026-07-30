@@ -224,7 +224,7 @@ public sealed class LobbyCultureTankController : MonoBehaviour
         if (lobby == null)
             return;
 
-        if (lobby.BagItemIds == null || lobby.BagItemIds.Count <= 0)
+        if (lobby.BagItemIds == null)
         {
             BattleWarningUI.ShowMessage("배양??고유?�이?�이 ?�습?�다.");
             return;

@@ -22,8 +22,6 @@ public class OptionPanelUI : MonoBehaviour
 
     [Header("Tutorial")]
     [SerializeField] private Toggle tutorialToggle;
-    [SerializeField] private bool createTutorialControlsWhenMissing = true;
-    [SerializeField] private string tutorialToggleLabel = "튜토리얼";
 
     [Header("Resolution Template Sorting")]
     [SerializeField] private int resolutionDropdownSortingOrderOffset = 50;
@@ -155,11 +153,13 @@ public class OptionPanelUI : MonoBehaviour
         if (tutorialToggle == null && controlContent != null)
             tutorialToggle = controlContent.GetComponentInChildren<Toggle>(true);
 
-        if (tutorialToggle == null && createTutorialControlsWhenMissing && controlContent != null)
-            tutorialToggle = CreateTutorialControls(controlContent.transform);
-
         if (tutorialToggle == null)
+        {
+            Debug.LogWarning(
+                "[OptionPanelUI] TutorialToggle is not assigned in the Option prefab.",
+                this);
             return;
+        }
 
         tutorialToggle.onValueChanged.RemoveListener(OnTutorialToggleChanged);
         tutorialToggle.SetIsOnWithoutNotify(TutorialSettings.ShouldShowTutorial);
@@ -177,121 +177,6 @@ public class OptionPanelUI : MonoBehaviour
             return;
 
         tutorialToggle.SetIsOnWithoutNotify(TutorialSettings.ShouldShowTutorial);
-    }
-
-    private Toggle CreateTutorialControls(Transform parent)
-    {
-        GameObject rowObject = new(
-            "TutorialSettingRow",
-            typeof(RectTransform),
-            typeof(HorizontalLayoutGroup));
-
-        rowObject.transform.SetParent(parent, false);
-
-        RectTransform rowRect = rowObject.GetComponent<RectTransform>();
-        rowRect.anchorMin = new Vector2(0.5f, 0.5f);
-        rowRect.anchorMax = new Vector2(0.5f, 0.5f);
-        rowRect.pivot = new Vector2(0.5f, 0.5f);
-        rowRect.anchoredPosition = Vector2.zero;
-        rowRect.sizeDelta = new Vector2(520f, 80f);
-
-        HorizontalLayoutGroup layout = rowObject.GetComponent<HorizontalLayoutGroup>();
-        layout.childAlignment = TextAnchor.MiddleCenter;
-        layout.spacing = 24f;
-        layout.childControlWidth = false;
-        layout.childControlHeight = false;
-        layout.childForceExpandWidth = false;
-        layout.childForceExpandHeight = false;
-
-        TextMeshProUGUI label = CreateTutorialLabel(rowObject.transform);
-        LayoutElement labelLayout = label.gameObject.AddComponent<LayoutElement>();
-        labelLayout.preferredWidth = 360f;
-        labelLayout.preferredHeight = 64f;
-
-        Toggle toggle = CreateTutorialToggle(rowObject.transform);
-        LayoutElement toggleLayout = toggle.gameObject.AddComponent<LayoutElement>();
-        toggleLayout.preferredWidth = 64f;
-        toggleLayout.preferredHeight = 64f;
-
-        return toggle;
-    }
-
-    private TextMeshProUGUI CreateTutorialLabel(Transform parent)
-    {
-        GameObject labelObject = new(
-            "TutorialLabel",
-            typeof(RectTransform),
-            typeof(CanvasRenderer),
-            typeof(TextMeshProUGUI));
-
-        labelObject.transform.SetParent(parent, false);
-
-        RectTransform labelRect = labelObject.GetComponent<RectTransform>();
-        labelRect.sizeDelta = new Vector2(360f, 64f);
-
-        TextMeshProUGUI label = labelObject.GetComponent<TextMeshProUGUI>();
-        label.text = tutorialToggleLabel;
-        label.fontSize = 42f;
-        label.alignment = TextAlignmentOptions.MidlineLeft;
-        label.color = Color.white;
-        label.raycastTarget = false;
-
-        return label;
-    }
-
-    private static Toggle CreateTutorialToggle(Transform parent)
-    {
-        GameObject toggleObject = new(
-            "TutorialToggle",
-            typeof(RectTransform),
-            typeof(Toggle));
-
-        toggleObject.transform.SetParent(parent, false);
-
-        RectTransform toggleRect = toggleObject.GetComponent<RectTransform>();
-        toggleRect.sizeDelta = new Vector2(64f, 64f);
-
-        Image background = CreateToggleImage(
-            "Background",
-            toggleObject.transform,
-            new Color(0.08f, 0.1f, 0.12f, 0.92f),
-            new Vector2(64f, 64f));
-
-        Image checkmark = CreateToggleImage(
-            "Checkmark",
-            background.transform,
-            new Color(0.05f, 0.35f, 0.79f, 1f),
-            new Vector2(38f, 38f));
-
-        Toggle toggle = toggleObject.GetComponent<Toggle>();
-        toggle.targetGraphic = background;
-        toggle.graphic = checkmark;
-        toggle.SetIsOnWithoutNotify(TutorialSettings.ShouldShowTutorial);
-
-        return toggle;
-    }
-
-    private static Image CreateToggleImage(string name, Transform parent, Color color, Vector2 size)
-    {
-        GameObject imageObject = new(
-            name,
-            typeof(RectTransform),
-            typeof(CanvasRenderer),
-            typeof(Image));
-
-        imageObject.transform.SetParent(parent, false);
-
-        RectTransform rect = imageObject.GetComponent<RectTransform>();
-        rect.anchorMin = new Vector2(0.5f, 0.5f);
-        rect.anchorMax = new Vector2(0.5f, 0.5f);
-        rect.pivot = new Vector2(0.5f, 0.5f);
-        rect.anchoredPosition = Vector2.zero;
-        rect.sizeDelta = size;
-
-        Image image = imageObject.GetComponent<Image>();
-        image.color = color;
-
-        return image;
     }
 
     private void OnResolutionChanged(int index)

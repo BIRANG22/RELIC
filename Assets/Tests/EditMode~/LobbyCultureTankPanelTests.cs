@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using System.Reflection;
 using NUnit.Framework;
+using Relic.Gameplay.Data;
 using UnityEngine;
 
 public sealed class LobbyCultureTankPanelTests
@@ -34,6 +36,52 @@ public sealed class LobbyCultureTankPanelTests
         finally
         {
             UnityEngine.Object.DestroyImmediate(controller.gameObject);
+        }
+    }
+
+    [Test]
+    public void OpenItemSelection_EmptyBag_OpensBagPanelInSelectionMode()
+    {
+        GameObject bagObject = new GameObject("BagPanel_Test");
+        BattleBagPanelUI bagPanel = bagObject.AddComponent<BattleBagPanelUI>();
+        bagObject.SetActive(false);
+
+        GameObject tankObject = new GameObject("CultureTank_Test");
+        LobbyCultureTankController controller =
+            tankObject.AddComponent<LobbyCultureTankController>();
+
+        FieldInfo bagPanelField = typeof(LobbyCultureTankController).GetField(
+            "bagPanel",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        MethodInfo openItemSelection = typeof(LobbyCultureTankController).GetMethod(
+            "OpenItemSelection",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        FieldInfo selectionModeField = typeof(BattleBagPanelUI).GetField(
+            "isItemSelectionMode",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+
+        try
+        {
+            Assert.That(bagPanelField, Is.Not.Null);
+            Assert.That(openItemSelection, Is.Not.Null);
+            Assert.That(selectionModeField, Is.Not.Null);
+
+            bagPanelField.SetValue(controller, bagPanel);
+            var lobby = new LobbyRuntimeData
+            {
+                BagItemIds = new List<string>()
+            };
+
+            openItemSelection.Invoke(controller, new object[] { lobby });
+
+            Assert.That(bagObject.activeSelf, Is.True);
+            Assert.That(selectionModeField.GetValue(bagPanel), Is.EqualTo(true));
+        }
+        finally
+        {
+            LobbyPositionModalInputBlocker.Unblock(controller);
+            Object.DestroyImmediate(tankObject);
+            Object.DestroyImmediate(bagObject);
         }
     }
 
