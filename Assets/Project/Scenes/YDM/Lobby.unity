@@ -224,7 +224,7 @@ RectTransform:
   m_GameObject: {fileID: 4650064}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 0.40164, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1095205338}
@@ -234,8 +234,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -899, y: 196}
-  m_SizeDelta: {x: 79.6, y: 912.3}
+  m_AnchoredPosition: {x: 144.7, y: 0}
+  m_SizeDelta: {x: 400, y: 150}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &4650066
 MonoBehaviour:
@@ -7024,6 +7024,11 @@ MonoBehaviour:
   selectedPartyTextFormat: '{0}'
   viewedCharacterBorder: {fileID: 2105984894}
   viewedCharacterBorderName: BorderImg1
+  viewedCharacterBorders: []
+  viewedCharacterBorderNames:
+  - BorderImg1
+  - BorderImg2
+  remoteViewedCharacterAlpha: 0.45
   viewedCharacterRotationZ: -10
   viewedCharacterScale: 1.2
   viewedCharacterTransitionDuration: 0.2
@@ -12549,6 +12554,11 @@ MonoBehaviour:
   selectedPartyTextFormat: '{0}'
   viewedCharacterBorder: {fileID: 329462850}
   viewedCharacterBorderName: BorderImg1
+  viewedCharacterBorders: []
+  viewedCharacterBorderNames:
+  - BorderImg1
+  - BorderImg2
+  remoteViewedCharacterAlpha: 0.45
   viewedCharacterRotationZ: -10
   viewedCharacterScale: 1.2
   viewedCharacterTransitionDuration: 0.2
@@ -13241,6 +13251,11 @@ MonoBehaviour:
   selectedPartyTextFormat: '{0}'
   viewedCharacterBorder: {fileID: 1743381699}
   viewedCharacterBorderName: BorderImg1
+  viewedCharacterBorders: []
+  viewedCharacterBorderNames:
+  - BorderImg1
+  - BorderImg2
+  remoteViewedCharacterAlpha: 0.45
   viewedCharacterRotationZ: -10
   viewedCharacterScale: 1.2
   viewedCharacterTransitionDuration: 0.2
@@ -14022,8 +14037,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 1820, y: 980}
+  m_AnchoredPosition: {x: -335, y: 0}
+  m_SizeDelta: {x: 1880, y: 700}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &473840626
 MonoBehaviour:
@@ -21479,7 +21494,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -900, y: 350}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 399, y: 276}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &563306067
@@ -22949,10 +22964,10 @@ MonoBehaviour:
   maximumSmoothSpeed: 100
   useInitialPositionAsDefault: 1
   defaultPosition: {x: 0, y: 0, z: -20}
-  minimumX: -4
-  maximumX: 4
-  minimumY: -0.5
-  maximumY: 0.5
+  minimumX: -2
+  maximumX: 2
+  minimumY: -0.15
+  maximumY: 0.15
 --- !u!1 &643678573
 GameObject:
   m_ObjectHideFlags: 0
@@ -25631,7 +25646,7 @@ Transform:
   m_GameObject: {fileID: 728169703}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 10.62, y: -0.04, z: 0}
+  m_LocalPosition: {x: 8.1, y: -0.04, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -33732,6 +33747,11 @@ MonoBehaviour:
   selectedPartyTextFormat: '{0}'
   viewedCharacterBorder: {fileID: 1636664459}
   viewedCharacterBorderName: BorderImg1
+  viewedCharacterBorders: []
+  viewedCharacterBorderNames:
+  - BorderImg1
+  - BorderImg2
+  remoteViewedCharacterAlpha: 0.45
   viewedCharacterRotationZ: -10
   viewedCharacterScale: 1.2
   viewedCharacterTransitionDuration: 0.2
@@ -42992,6 +43012,8 @@ MonoBehaviour:
     \uD569\uB2C8\uB2E4. \uD604\uC7AC {0}/{1}"
   dataManagerMissingMessage: "\uB370\uC774\uD130 \uB9E4\uB2C8\uC800\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4."
   gameManagerMissingMessage: "\uAC8C\uC784 \uB9E4\uB2C8\uC800\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4."
+  networkClientStartBlockedMessage: Only the host can start in multiplayer lobby.
+  networkBattleStartSyncFailedMessage: Failed to synchronize battle start.
   playClickSound: 1
   clickSfx: 7
 --- !u!114 &999125867
@@ -63226,6 +63248,11 @@ MonoBehaviour:
   selectedPartyTextFormat: '{0}'
   viewedCharacterBorder: {fileID: 688557723}
   viewedCharacterBorderName: BorderImg1
+  viewedCharacterBorders: []
+  viewedCharacterBorderNames:
+  - BorderImg1
+  - BorderImg2
+  remoteViewedCharacterAlpha: 0.45
   viewedCharacterRotationZ: -10
   viewedCharacterScale: 1.2
   viewedCharacterTransitionDuration: 0.2
@@ -63697,7 +63724,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -900, y: 150}
+  m_AnchoredPosition: {x: 200, y: 0}
   m_SizeDelta: {x: 80, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1421801486
@@ -67031,7 +67058,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -900, y: 50}
+  m_AnchoredPosition: {x: 300, y: 0}
   m_SizeDelta: {x: 80, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1511356735
@@ -70123,7 +70150,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -900, y: -44}
+  m_AnchoredPosition: {x: 408.6, y: -31}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1638481423
@@ -70293,6 +70320,8 @@ MonoBehaviour:
   createFriendsOnlyLobby: 1
   openInviteDialogAfterLobbyCreate: 1
   partySynchronizer: {fileID: 0}
+  sharedStateSynchronizer: {fileID: 0}
+  battleStartSynchronizer: {fileID: 0}
   inviteButton: {fileID: 1638481424}
   createStatusPanelIfMissing: 1
   statusText: {fileID: 0}
@@ -71760,7 +71789,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -900, y: 250}
+  m_AnchoredPosition: {x: 100, y: 0}
   m_SizeDelta: {x: 80, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1688221331
@@ -80048,7 +80077,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -179, y: -110}
+  m_AnchoredPosition: {x: -911.1, y: -485.2}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1827125534
@@ -90083,6 +90112,11 @@ MonoBehaviour:
   selectedPartyTextFormat: '{0}'
   viewedCharacterBorder: {fileID: 187575905}
   viewedCharacterBorderName: BorderImg1
+  viewedCharacterBorders: []
+  viewedCharacterBorderNames:
+  - BorderImg1
+  - BorderImg2
+  remoteViewedCharacterAlpha: 0.45
   viewedCharacterRotationZ: -10
   viewedCharacterScale: 1.2
   viewedCharacterTransitionDuration: 0.2
@@ -98104,7 +98138,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2793449712208706624, guid: 1edff599aaa6ccb44847a10c968d8bda, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 10.47
+      value: 8.1
       objectReference: {fileID: 0}
     - target: {fileID: 2793449712208706624, guid: 1edff599aaa6ccb44847a10c968d8bda, type: 3}
       propertyPath: m_LocalPosition.y
