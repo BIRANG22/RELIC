@@ -63,6 +63,68 @@ public class BattleExecutionUiRootVisibilityTests
         }
     }
 
+    [Test]
+    public void RestoreBattleExecutionUiAfterRoomEnd_ReactivatesSuppressedRoots()
+    {
+        GameObject executorObject = new("BattleTurnExecutorUiRestore");
+        GameObject playerHudRoot = new("ConfiguredPlayerHUD_Root");
+        GameObject menuRoot = new("ConfiguredMenuRoot");
+
+        try
+        {
+            BattleTurnExecutor executor = executorObject.AddComponent<BattleTurnExecutor>();
+
+            SetPrivateField(executor, "playerHudRoot", playerHudRoot);
+            SetPrivateField(executor, "menuRoot", menuRoot);
+            SetPrivateField(executor, "battleExecutionUiSuppressed", true);
+            playerHudRoot.SetActive(false);
+            menuRoot.SetActive(false);
+
+            executor.RestoreBattleExecutionUiAfterRoomEnd();
+
+            Assert.That(playerHudRoot.activeSelf, Is.True);
+            Assert.That(menuRoot.activeSelf, Is.True);
+            Assert.That(
+                GetPrivateField<bool>(executor, "battleExecutionUiSuppressed"),
+                Is.False);
+        }
+        finally
+        {
+            Object.DestroyImmediate(executorObject);
+            Object.DestroyImmediate(playerHudRoot);
+            Object.DestroyImmediate(menuRoot);
+        }
+    }
+
+    [Test]
+    public void RestoreBattleExecutionUiAfterRoomEnd_DoesNotOverrideUnsuppressedRoots()
+    {
+        GameObject executorObject = new("BattleTurnExecutorUiNoRestore");
+        GameObject playerHudRoot = new("ConfiguredPlayerHUD_Root");
+        GameObject menuRoot = new("ConfiguredMenuRoot");
+
+        try
+        {
+            BattleTurnExecutor executor = executorObject.AddComponent<BattleTurnExecutor>();
+
+            SetPrivateField(executor, "playerHudRoot", playerHudRoot);
+            SetPrivateField(executor, "menuRoot", menuRoot);
+            playerHudRoot.SetActive(false);
+            menuRoot.SetActive(false);
+
+            executor.RestoreBattleExecutionUiAfterRoomEnd();
+
+            Assert.That(playerHudRoot.activeSelf, Is.False);
+            Assert.That(menuRoot.activeSelf, Is.False);
+        }
+        finally
+        {
+            Object.DestroyImmediate(executorObject);
+            Object.DestroyImmediate(playerHudRoot);
+            Object.DestroyImmediate(menuRoot);
+        }
+    }
+
     private static void SetPrivateField<TValue>(
         BattleTurnExecutor executor,
         string fieldName,
@@ -74,6 +136,18 @@ public class BattleExecutionUiRootVisibilityTests
 
         Assert.That(field, Is.Not.Null, $"{fieldName} field is missing.");
         field.SetValue(executor, value);
+    }
+
+    private static TValue GetPrivateField<TValue>(
+        BattleTurnExecutor executor,
+        string fieldName)
+    {
+        FieldInfo field = typeof(BattleTurnExecutor).GetField(
+            fieldName,
+            BindingFlags.Instance | BindingFlags.NonPublic);
+
+        Assert.That(field, Is.Not.Null, $"{fieldName} field is missing.");
+        return (TValue)field.GetValue(executor);
     }
 
     private static void InvokePrivateMethod(

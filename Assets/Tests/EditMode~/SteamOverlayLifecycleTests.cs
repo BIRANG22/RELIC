@@ -4,20 +4,21 @@ using UnityEngine;
 
 public class SteamOverlayLifecycleTests
 {
-    [Test]
-    public void InitializeSteamBeforeSplashScreen_RunsBeforeRendererInitialization()
+    [TestCase("RELIC.exe", false)]
+    [TestCase("RELIC.exe -logFile player.log", false)]
+    [TestCase("RELIC.exe +connect_lobby 109775241199441234", true)]
+    public void ShouldInitializeSteamForLaunchCommand_RequiresConnectLobby(
+        string commandLine,
+        bool expected)
     {
         MethodInfo method = typeof(SteamLobbyInviteController).GetMethod(
-            "InitializeSteamBeforeSplashScreen",
+            "ShouldInitializeSteamForLaunchCommand",
             BindingFlags.Static | BindingFlags.NonPublic);
 
         Assert.That(method, Is.Not.Null);
-
-        RuntimeInitializeOnLoadMethodAttribute attribute =
-            method.GetCustomAttribute<RuntimeInitializeOnLoadMethodAttribute>();
-
-        Assert.That(attribute, Is.Not.Null);
-        Assert.That(attribute.loadType, Is.EqualTo(RuntimeInitializeLoadType.BeforeSplashScreen));
+        Assert.That(
+            (bool)method.Invoke(null, new object[] { commandLine }),
+            Is.EqualTo(expected));
     }
 
     [Test]

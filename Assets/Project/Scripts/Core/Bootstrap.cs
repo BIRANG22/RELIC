@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using UnityEngine.Localization.Settings;
+using Relic.Gameplay.Data;
 
 public class Bootstrap : MonoBehaviour
 {
@@ -21,6 +22,7 @@ public class Bootstrap : MonoBehaviour
         // 4. Data Load
         DataManager.Instance.Initialize();
         SaveSystem.Instance.TryLoadProgress();
+        InitialDefaultPartySetup.TryInitialize(DataManager.Instance);
 
         // 5. Audio Init
         AudioManager.Instance.Initialize();
