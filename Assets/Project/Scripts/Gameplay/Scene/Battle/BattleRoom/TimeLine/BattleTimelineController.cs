@@ -686,6 +686,29 @@ public class BattleTimelineController : MonoBehaviour
         RefreshSelectedSlotValueText();
     }
 
+    public void StopTimelineMotionEffects()
+    {
+        if (selectedSlotEffectRoutine != null)
+        {
+            StopCoroutine(selectedSlotEffectRoutine);
+            selectedSlotEffectRoutine = null;
+        }
+
+        if (timelineSlideGearRotationRoutine != null)
+        {
+            StopCoroutine(timelineSlideGearRotationRoutine);
+            timelineSlideGearRotationRoutine = null;
+        }
+
+        if (endButtonHoverRotationRoutine != null)
+        {
+            StopCoroutine(endButtonHoverRotationRoutine);
+            endButtonHoverRotationRoutine = null;
+        }
+
+        isEndButtonHovering = false;
+    }
+
     public void SetSlotSelectionLocked(bool locked)
     {
         isSlotSelectionLocked = locked;
@@ -753,10 +776,6 @@ public class BattleTimelineController : MonoBehaviour
         if (IsPlayerSlotLocked(activeSlotIndex))
         {
             activeSlotIndex = FindFirstSelectableTimelineSlot(activeSlotIndex);
-            selectedSkill = null;
-
-            if (playerSkillReservationController != null)
-                playerSkillReservationController.ClearPreview();
 
             SetActiveTimelineSlotVisual(activeSlotIndex);
             RefreshSelectedSlotValueText();

@@ -40,6 +40,8 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
 
     private readonly Dictionary<ulong, int> viewedSlotsByMember = new();
     private readonly Dictionary<ulong, bool> readyByMember = new();
+    private readonly Dictionary<string, BattleNetworkCommandType> pendingCommandTypesByRequestId = new();
+    private readonly Dictionary<string, int> pendingSlotSelectionRollbackByRequestId = new();
     private string[] startRelicChoiceIds = Array.Empty<string>();
 
     private long hostRevision;
@@ -411,15 +413,19 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         if (IsTimelineSlotReservedByOtherMember(slotIndex, localSteamId))
         {
             BattleWarningUI.ShowMessage("다른 플레이어가 예약한 슬롯입니다.");
-            ApplySnapshot(CurrentSnapshot, true);
+            ApplyViewedSlotsToTimeline(CurrentSnapshot);
             return;
         }
 
         BattleNetworkCommand command = CreateCommand(BattleNetworkCommandType.SelectTimelineSlot);
         command.slotIndex = slotIndex;
+        int previousViewedSlot = viewedSlotsByMember.TryGetValue(localSteamId, out int currentViewedSlot)
+            ? currentViewedSlot
+            : -1;
 
         if (SendOrApplyCommand(command, true) && !IsLocalHost())
         {
+            pendingSlotSelectionRollbackByRequestId[command.requestId] = previousViewedSlot;
             viewedSlotsByMember[localSteamId] = slotIndex;
             timelineController.SelectTimelineSlotFromNetwork(slotIndex, true);
             ApplyViewedSlotsToTimeline(CurrentSnapshot);
@@ -533,6 +539,10 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
 
         if (!sent)
             BattleWarningUI.ShowMessage("네트워크 명령 전송에 실패했습니다.");
+
+        if (sent && !string.IsNullOrWhiteSpace(command.requestId))
+            pendingCommandTypesByRequestId[command.requestId] =
+                (BattleNetworkCommandType)command.commandType;
 
         return sent;
     }
@@ -853,8 +863,23 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             return;
         }
 
+        BattleNetworkCommandType responseCommandType = TakePendingCommandType(response.requestId);
+
         if (!response.accepted)
+        {
             ShowCommandRejectWarning((BattleNetworkRejectReason)response.rejectReason);
+
+            if (responseCommandType == BattleNetworkCommandType.SelectTimelineSlot)
+            {
+                RollbackPendingTimelineSlotSelection(response.requestId);
+                return;
+            }
+        }
+        else if (responseCommandType == BattleNetworkCommandType.SelectTimelineSlot)
+        {
+            if (!string.IsNullOrWhiteSpace(response.requestId))
+                pendingSlotSelectionRollbackByRequestId.Remove(response.requestId);
+        }
 
         if (response.snapshot != null)
             ApplySnapshot(response.snapshot, true);
@@ -863,6 +888,42 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             ApplySnapshotFromLobbyData(true);
             ApplySnapshot(CurrentSnapshot, true);
         }
+    }
+
+    private BattleNetworkCommandType TakePendingCommandType(string requestId)
+    {
+        if (string.IsNullOrWhiteSpace(requestId))
+            return BattleNetworkCommandType.None;
+
+        if (!pendingCommandTypesByRequestId.TryGetValue(requestId, out BattleNetworkCommandType commandType))
+            return BattleNetworkCommandType.None;
+
+        pendingCommandTypesByRequestId.Remove(requestId);
+        return commandType;
+    }
+
+    private void RollbackPendingTimelineSlotSelection(string requestId)
+    {
+#if STEAMWORKS_NET
+        int previousSlot = -1;
+
+        if (!string.IsNullOrWhiteSpace(requestId) &&
+            pendingSlotSelectionRollbackByRequestId.TryGetValue(requestId, out int rollbackSlot))
+        {
+            previousSlot = rollbackSlot;
+            pendingSlotSelectionRollbackByRequestId.Remove(requestId);
+        }
+
+        if (previousSlot >= 0)
+            viewedSlotsByMember[localSteamId] = previousSlot;
+        else
+            viewedSlotsByMember.Remove(localSteamId);
+
+        ApplyViewedSlotsToTimeline(CurrentSnapshot);
+
+        if (previousSlot < 0 && timelineController != null)
+            timelineController.SelectDefaultSlotWhenInputReady();
+#endif
     }
 
     private void HandleClientSnapshotBroadcastPayload(string payload)

@@ -628,6 +628,7 @@ public class BattleTurnExecutor : MonoBehaviour
                 timelineController.SelectDefaultSlotWhenInputReady();
                 timelineController.SetSelectedCharacterScaleFeedbackActive(true);
                 timelineController.RefocusCurrentSelectedCharacterWhenInputReady();
+                timelineController.StopTimelineMotionEffects();
             }
 
             EnsureSkillListPanel();
@@ -651,7 +652,10 @@ public class BattleTurnExecutor : MonoBehaviour
         RefreshTurnNumberText();
 
         if (timelineController != null)
+        {
             yield return timelineController.ResetTimelineSlotsToOriginalPositionRoutine();
+            timelineController.StopTimelineMotionEffects();
+        }
 
         SteamBattleStateSynchronizer.TryRefreshIdleSnapshotAfterNetworkExecution();
         RefreshBattleHUDs();
