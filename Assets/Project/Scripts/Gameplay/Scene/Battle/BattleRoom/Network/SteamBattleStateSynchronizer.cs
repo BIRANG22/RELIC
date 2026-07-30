@@ -922,7 +922,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         ApplyViewedSlotsToTimeline(CurrentSnapshot);
 
         if (previousSlot < 0 && timelineController != null)
-            timelineController.SelectDefaultSlotWhenInputReady();
+            timelineController.SelectDefaultSlotWhenInputReady(false);
 #endif
     }
 
@@ -2272,7 +2272,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
 
 #if STEAMWORKS_NET
         if (!IsLocalHost() && localViewedSlot >= 0)
-            timelineController.SelectTimelineSlotFromNetwork(localViewedSlot, false);
+            timelineController.SelectTimelineSlotFromNetwork(localViewedSlot, false, false);
 #endif
     }
 

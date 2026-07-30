@@ -568,10 +568,26 @@ public class BattleTimelineController : MonoBehaviour
 
     public bool SelectTimelineSlotFromNetwork(int slotIndex, bool tryStartReservation)
     {
-        return SetActiveTimelineSlot(slotIndex, tryStartReservation);
+        return SelectTimelineSlotFromNetwork(slotIndex, tryStartReservation, true);
+    }
+
+    public bool SelectTimelineSlotFromNetwork(
+        int slotIndex,
+        bool tryStartReservation,
+        bool playSelectionEffect)
+    {
+        return SetActiveTimelineSlot(slotIndex, tryStartReservation, playSelectionEffect);
     }
 
     private bool SetActiveTimelineSlot(int slotIndex, bool tryStartReservation)
+    {
+        return SetActiveTimelineSlot(slotIndex, tryStartReservation, true);
+    }
+
+    private bool SetActiveTimelineSlot(
+        int slotIndex,
+        bool tryStartReservation,
+        bool playSelectionEffect)
     {
         if (reserveSlots == null || slotIndex < 0 || slotIndex >= reserveSlots.Length)
             return false;
@@ -588,7 +604,9 @@ public class BattleTimelineController : MonoBehaviour
         SetActiveTimelineSlotVisual(activeSlotIndex);
 
         RefreshSelectedSlotValueText();
-        PlaySelectedSlotEffect(previousSlotIndex, activeSlotIndex);
+
+        if (playSelectionEffect)
+            PlaySelectedSlotEffect(previousSlotIndex, activeSlotIndex);
 
         if (tryStartReservation)
             TryStartSkillReservation();
@@ -692,6 +710,12 @@ public class BattleTimelineController : MonoBehaviour
         {
             StopCoroutine(selectedSlotEffectRoutine);
             selectedSlotEffectRoutine = null;
+        }
+
+        if (timelineSlotSlideRoutine != null)
+        {
+            StopCoroutine(timelineSlotSlideRoutine);
+            timelineSlotSlideRoutine = null;
         }
 
         if (timelineSlideGearRotationRoutine != null)
@@ -842,7 +866,7 @@ public class BattleTimelineController : MonoBehaviour
     {
         ShowBattleWarning("선택할 수 없는 슬롯입니다.");
     }
-    public void SelectDefaultSlotWhenInputReady()
+    public void SelectDefaultSlotWhenInputReady(bool playSelectionEffect = true)
     {
         if (!autoSelectFirstSlotWhenInputReady)
             return;
@@ -866,7 +890,9 @@ public class BattleTimelineController : MonoBehaviour
         SetActiveTimelineSlotVisual(activeSlotIndex);
 
         RefreshSelectedSlotValueText();
-        PlaySelectedSlotEffect(previousSlotIndex, activeSlotIndex);
+
+        if (playSelectionEffect)
+            PlaySelectedSlotEffect(previousSlotIndex, activeSlotIndex);
     }
 
     public IEnumerator SlideTimelineSlotsLeftOneStepRoutine()

@@ -625,7 +625,7 @@ public class BattleTurnExecutor : MonoBehaviour
 
             if (CanAcceptPlayerInput && timelineController != null)
             {
-                timelineController.SelectDefaultSlotWhenInputReady();
+                timelineController.SelectDefaultSlotWhenInputReady(false);
                 timelineController.SetSelectedCharacterScaleFeedbackActive(true);
                 timelineController.RefocusCurrentSelectedCharacterWhenInputReady();
                 timelineController.StopTimelineMotionEffects();
@@ -634,6 +634,9 @@ public class BattleTurnExecutor : MonoBehaviour
             EnsureSkillListPanel();
             if (CanAcceptPlayerInput && skillListPanel != null)
                 skillListPanel.ReopenAfterBattleExecution();
+
+            if (CanAcceptPlayerInput && timelineController != null)
+                timelineController.StopTimelineMotionEffects();
 
             PlayerTurnReturned?.Invoke();
         }
