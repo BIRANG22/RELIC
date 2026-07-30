@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,55 +10,56 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour
     [SerializeField] private Button button;
     [SerializeField] private Image iconImage;
     [SerializeField] private TMP_Text priceText;
+    [SerializeField] private GameObject rarityRingRoot;
+    [SerializeField] private ParticleSystem rarityParticles;
 
     private string relicId;
     private Action<string> purchaseRequested;
     private bool clickListenerRegistered;
+    private bool missingViewWarningLogged;
+    private ParticleSystem[] rarityRingParticleSystems = Array.Empty<ParticleSystem>();
+    private Coroutine rarityRingHideCoroutine;
 
     private void Awake()
     {
         EnsureView();
     }
 
-    public static LobbyRelicOfferButtonUI Create(Transform parent, string objectName)
+    public void Bind(
+        LobbyRelicOffer offer,
+        Sprite icon,
+        RelicRarity rarity,
+        Action<string> callback)
     {
-        var root = new GameObject(objectName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
-        var rect = (RectTransform)root.transform;
-        rect.SetParent(parent, false);
-        rect.sizeDelta = new Vector2(150f, 180f);
+        if (!EnsureView())
+            return;
 
-        Image background = root.GetComponent<Image>();
-        background.color = new Color(0.08f, 0.1f, 0.14f, 0.72f);
-
-        LobbyRelicOfferButtonUI view = root.AddComponent<LobbyRelicOfferButtonUI>();
-        view.button = root.GetComponent<Button>();
-        view.iconImage = CreateIcon(rect);
-        view.priceText = CreatePriceText(rect);
-        view.EnsureClickListener();
-        return view;
-    }
-
-    public void Bind(LobbyRelicOffer offer, Sprite icon, Action<string> callback)
-    {
-        EnsureView();
         relicId = offer.RelicId;
         purchaseRequested = callback;
         iconImage.sprite = icon;
         iconImage.enabled = icon != null;
         priceText.text = offer.Price.ToString();
         button.interactable = true;
+        ShowRarityRing(rarity);
     }
 
     public void ShowSold()
     {
-        EnsureView();
+        if (!EnsureView())
+            return;
+
         priceText.text = "판매 완료";
         button.interactable = false;
+        FadeOutRarityRing();
     }
 
     public void ShowEmpty()
     {
-        EnsureView();
+        HideRarityRingImmediately();
+
+        if (!EnsureView())
+            return;
+
         relicId = null;
         iconImage.sprite = null;
         iconImage.enabled = false;
@@ -66,31 +69,38 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour
 
     public void SetInteractable(bool interactable)
     {
-        EnsureView();
-
-        if (button != null)
+        if (EnsureView())
             button.interactable = interactable;
     }
 
-    private void EnsureView()
+    private bool EnsureView()
     {
         if (button == null)
             button = GetComponent<Button>();
 
-        if (transform is not RectTransform rect)
-            return;
-
         if (iconImage == null)
             iconImage = transform.Find("RelicIcon")?.GetComponent<Image>();
-        if (iconImage == null)
-            iconImage = CreateIcon(rect);
 
         if (priceText == null)
             priceText = transform.Find("Price")?.GetComponent<TMP_Text>();
-        if (priceText == null)
-            priceText = CreatePriceText(rect);
+
+        EnsureRarityRingReferences();
+
+        if (button == null || iconImage == null || priceText == null)
+        {
+            if (!missingViewWarningLogged)
+            {
+                Debug.LogWarning(
+                    $"[LobbyRelicOfferButtonUI] Serialized view references are missing on '{name}'.",
+                    this);
+                missingViewWarningLogged = true;
+            }
+
+            return false;
+        }
 
         EnsureClickListener();
+        return true;
     }
 
     private void EnsureClickListener()
@@ -104,42 +114,153 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour
 
     private void RequestPurchase()
     {
-        if (button.interactable && !string.IsNullOrWhiteSpace(relicId))
+        if (button != null && button.interactable && !string.IsNullOrWhiteSpace(relicId))
             purchaseRequested?.Invoke(relicId);
     }
 
-    private static Image CreateIcon(RectTransform parent)
+    private void EnsureRarityRingReferences()
     {
-        var iconObject = new GameObject("RelicIcon", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-        var iconRect = (RectTransform)iconObject.transform;
-        iconRect.SetParent(parent, false);
-        iconRect.anchorMin = new Vector2(0.5f, 1f);
-        iconRect.anchorMax = new Vector2(0.5f, 1f);
-        iconRect.pivot = new Vector2(0.5f, 1f);
-        iconRect.anchoredPosition = new Vector2(0f, -10f);
-        iconRect.sizeDelta = new Vector2(125f, 125f);
+        if (rarityRingRoot == null)
+            rarityRingRoot = transform.Find("magic_ring_06")?.gameObject;
 
-        Image icon = iconObject.GetComponent<Image>();
-        icon.preserveAspect = true;
-        icon.raycastTarget = false;
-        return icon;
+        if (rarityParticles == null && rarityRingRoot != null)
+        {
+            ParticleSystem[] particles =
+                rarityRingRoot.GetComponentsInChildren<ParticleSystem>(true);
+
+            for (int i = 0; i < particles.Length; i++)
+            {
+                if (particles[i] != null && particles[i].name == "03")
+                {
+                    rarityParticles = particles[i];
+                    break;
+                }
+            }
+        }
+
+        if (rarityRingRoot != null)
+        {
+            rarityRingParticleSystems =
+                rarityRingRoot.GetComponentsInChildren<ParticleSystem>(true);
+        }
     }
 
-    private static TMP_Text CreatePriceText(RectTransform parent)
+    private void ShowRarityRing(RelicRarity rarity)
     {
-        var priceObject = new GameObject("Price", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
-        var priceRect = (RectTransform)priceObject.transform;
-        priceRect.SetParent(parent, false);
-        priceRect.anchorMin = new Vector2(0f, 0f);
-        priceRect.anchorMax = new Vector2(1f, 0f);
-        priceRect.pivot = new Vector2(0.5f, 0f);
-        priceRect.anchoredPosition = new Vector2(0f, 10f);
-        priceRect.sizeDelta = new Vector2(0f, 36f);
+        EnsureRarityRingReferences();
+        CancelRarityRingFade();
 
-        TMP_Text price = priceObject.GetComponent<TMP_Text>();
-        price.alignment = TextAlignmentOptions.Center;
-        price.fontSize = 25f;
-        price.raycastTarget = false;
-        return price;
+        if (rarityRingRoot == null)
+            return;
+
+        rarityRingRoot.SetActive(false);
+
+        if (rarityParticles != null)
+        {
+            ParticleSystem.MainModule main = rarityParticles.main;
+            main.startColor = LobbyRelicRarityPalette.GetColor(rarity);
+        }
+
+        rarityRingRoot.SetActive(true);
+        EnsureRarityRingReferences();
+
+        for (int i = 0; i < rarityRingParticleSystems.Length; i++)
+        {
+            ParticleSystem particles = rarityRingParticleSystems[i];
+            if (particles == null || !particles.gameObject.activeInHierarchy)
+                continue;
+
+            particles.Clear(false);
+            particles.Play(false);
+        }
+    }
+
+    private void FadeOutRarityRing()
+    {
+        EnsureRarityRingReferences();
+        CancelRarityRingFade();
+
+        if (rarityRingRoot == null || !rarityRingRoot.activeSelf)
+            return;
+
+        bool stoppedParticles = false;
+
+        for (int i = 0; i < rarityRingParticleSystems.Length; i++)
+        {
+            ParticleSystem particles = rarityRingParticleSystems[i];
+            if (particles == null || !particles.gameObject.activeInHierarchy)
+                continue;
+
+            particles.Stop(false, ParticleSystemStopBehavior.StopEmitting);
+            stoppedParticles = true;
+        }
+
+        if (!stoppedParticles)
+        {
+            rarityRingRoot.SetActive(false);
+            return;
+        }
+
+        rarityRingHideCoroutine = StartCoroutine(HideRarityRingWhenFinished());
+    }
+
+    private IEnumerator HideRarityRingWhenFinished()
+    {
+        while (IsRarityRingAlive())
+            yield return null;
+
+        rarityRingHideCoroutine = null;
+
+        if (rarityRingRoot != null)
+            rarityRingRoot.SetActive(false);
+    }
+
+    private bool IsRarityRingAlive()
+    {
+        for (int i = 0; i < rarityRingParticleSystems.Length; i++)
+        {
+            ParticleSystem particles = rarityRingParticleSystems[i];
+            if (particles != null &&
+                particles.gameObject.activeInHierarchy &&
+                particles.IsAlive(false))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void HideRarityRingImmediately()
+    {
+        CancelRarityRingFade();
+        EnsureRarityRingReferences();
+
+        if (rarityRingRoot != null)
+            rarityRingRoot.SetActive(false);
+    }
+
+    private void CancelRarityRingFade()
+    {
+        if (rarityRingHideCoroutine == null)
+            return;
+
+        StopCoroutine(rarityRingHideCoroutine);
+        rarityRingHideCoroutine = null;
+    }
+}
+
+public static class LobbyRelicRarityPalette
+{
+    public static Color GetColor(RelicRarity rarity)
+    {
+        return rarity switch
+        {
+            RelicRarity.Common => new Color32(200, 208, 217, 255),
+            RelicRarity.Uncommon => new Color32(92, 219, 131, 255),
+            RelicRarity.Rare => new Color32(78, 141, 255, 255),
+            RelicRarity.Unique => new Color32(255, 179, 71, 255),
+            _ => Color.white
+        };
     }
 }

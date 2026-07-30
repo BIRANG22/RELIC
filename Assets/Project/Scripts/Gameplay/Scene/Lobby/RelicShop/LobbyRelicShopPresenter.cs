@@ -16,6 +16,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
     private readonly List<LobbyRelicOfferButtonUI> buttons = new();
     private Canvas ownerCanvas;
+    private bool missingPanelWarningLogged;
 
     private void Awake()
     {
@@ -96,7 +97,12 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             LobbyRelicOffer offer = offers[i];
             Sprite icon = null;
             DataManager.Instance.RelicIconDatabase?.TryGetIcon(offer.RelicId, out icon);
-            buttons[i].Bind(offer, icon, Purchase);
+
+            RelicRarity rarity = RelicRarity.None;
+            if (DataManager.Instance.RelicDatabase.TryGet(offer.RelicId, out RelicData relic))
+                RelicRarityUtility.TryParseChestRarity(relic.Rarity, out rarity);
+
+            buttons[i].Bind(offer, icon, rarity, Purchase);
 
             if (Contains(runtime.OwnedRelicIds, offer.RelicId))
                 buttons[i].ShowSold();
@@ -184,7 +190,19 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             panelRoot = FindScenePanelRoot();
 
         if (panelRoot == null)
-            CreateRuntimeShopPanelIfNeeded();
+        {
+            buttons.Clear();
+
+            if (!missingPanelWarningLogged)
+            {
+                Debug.LogWarning(
+                    "[LobbyRelicShopPresenter] RelicShopPanel must be assigned in the Lobby scene.",
+                    this);
+                missingPanelWarningLogged = true;
+            }
+
+            return;
+        }
 
         BindOfferButtons();
 
@@ -234,35 +252,6 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             panelRoot.GetComponentsInChildren<LobbyRelicOfferButtonUI>(true);
         for (int i = 0; i < sceneButtons.Length; i++)
             buttons.Add(sceneButtons[i]);
-    }
-
-    private void CreateRuntimeShopPanelIfNeeded()
-    {
-        if (panelRoot != null || ownerCanvas == null)
-            return;
-
-        panelRoot = new GameObject("RelicShopPanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-        RectTransform panelRect = (RectTransform)panelRoot.transform;
-        panelRect.SetParent(ownerCanvas.transform, false);
-        panelRect.anchorMin = panelRect.anchorMax = panelRect.pivot = new Vector2(0.5f, 0.5f);
-        panelRect.sizeDelta = new Vector2(660f, 390f);
-        panelRoot.GetComponent<Image>().color = new Color(0.035f, 0.045f, 0.065f, 0.94f);
-
-        for (int i = 0; i < 3; i++)
-        {
-            LobbyRelicOfferButtonUI button = LobbyRelicOfferButtonUI.Create(panelRect, $"RelicOffer_{i + 1}");
-            RectTransform buttonRect = (RectTransform)button.transform;
-            buttonRect.anchorMin = buttonRect.anchorMax = buttonRect.pivot = new Vector2(0.5f, 0.5f);
-            buttonRect.anchoredPosition = new Vector2((i - 1) * 190f, 35f);
-        }
-
-        refreshButton = LobbyRelicRefreshButtonUI.Create(panelRect, relicRefreshIcon, RefreshRelicOffers);
-        RectTransform refreshRect = (RectTransform)refreshButton.transform;
-        refreshRect.anchorMin = refreshRect.anchorMax = refreshRect.pivot = new Vector2(0.5f, 0.5f);
-        refreshRect.sizeDelta = new Vector2(130f, 110f);
-        refreshRect.anchoredPosition = new Vector2(0f, -125f);
-
-        panelRoot.SetActive(false);
     }
 
     private void BindCloseButton()
