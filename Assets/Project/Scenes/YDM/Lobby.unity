@@ -11983,7 +11983,6 @@ GameObject:
   - component: {fileID: 397856609}
   - component: {fileID: 397856611}
   - component: {fileID: 397856610}
-  - component: {fileID: 397856612}
   m_Layer: 0
   m_Name: ErosionSelectPanel
   m_TagString: Untagged
@@ -12078,18 +12077,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 397856608}
   m_CullTransparentMesh: 1
---- !u!114 &397856612
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 397856608}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c1e376b43461d974481bb8b616ded080, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &399918693
 GameObject:
   m_ObjectHideFlags: 0
@@ -13981,7 +13968,7 @@ MonoBehaviour:
   cultureTankBackground: {fileID: 0}
   closeCurrentUIPanelButtonPanelOnExecute: 1
   extraPanelsToCloseOnExecute: []
-  executeOnWorldClick: 1
+  executeOnWorldClick: 0
   blockWorldClickOverUI: 1
   addColliderAutomatically: 1
   worldObjectsToClose: []
@@ -55284,7 +55271,7 @@ MonoBehaviour:
   cultureTankBackground: {fileID: 0}
   closeCurrentUIPanelButtonPanelOnExecute: 1
   extraPanelsToCloseOnExecute: []
-  executeOnWorldClick: 1
+  executeOnWorldClick: 0
   blockWorldClickOverUI: 1
   addColliderAutomatically: 1
   worldObjectsToClose: []
@@ -71549,7 +71536,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1684958231
 RectTransform:
   m_ObjectHideFlags: 0

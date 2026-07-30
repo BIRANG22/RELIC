@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class OptionPanelUI : MonoBehaviour
@@ -26,9 +25,11 @@ public class OptionPanelUI : MonoBehaviour
     [SerializeField] private bool createTutorialControlsWhenMissing = true;
     [SerializeField] private string tutorialToggleLabel = "튜토리얼";
 
-    [Header("Resolution Dropdown Sorting")]
-    [SerializeField] private bool bringResolutionDropdownListToFront = true;
+    [Header("Resolution Template Sorting")]
     [SerializeField] private int resolutionDropdownSortingOrderOffset = 50;
+
+    [Header("Language Template Sorting")]
+    [SerializeField] private int languageDropdownSortingOrderOffset = 50;
 
     [Header("Save Toast")]
     [SerializeField] private string saveSuccessMessage = "저장되었습니다.";
@@ -37,26 +38,18 @@ public class OptionPanelUI : MonoBehaviour
     [SerializeField] private int saveToastSortingOrder = 32100;
 
     private bool isResolutionDropdownReady;
-    private Coroutine openResolutionDropdownCoroutine;
-    private TMPDropdownFrontGuard resolutionDropdownFrontGuard;
 
     private void OnEnable()
     {
         AutoFindReferences();
+        SetupLanguageDropdown();
         SetupResolutionDropdown();
         SetupTutorialToggle();
         ShowAllContents();
     }
 
-    private void OnDisable()
-    {
-        CancelScheduledResolutionDropdown();
-    }
-
     private void OnDestroy()
     {
-        CancelScheduledResolutionDropdown();
-
         if (resolutionDropdown != null)
             resolutionDropdown.onValueChanged.RemoveListener(OnResolutionChanged);
 
@@ -108,6 +101,16 @@ public class OptionPanelUI : MonoBehaviour
             controlContent = FindChildGameObject(ControlContentName);
     }
 
+    private void SetupLanguageDropdown()
+    {
+        TMP_Dropdown contentDropdown = languageContent != null
+            ? languageContent.GetComponentInChildren<TMP_Dropdown>(true)
+            : null;
+
+        DirectTemplateDropdown.Attach(contentDropdown)
+            ?.Configure(languageDropdownSortingOrderOffset);
+    }
+
     private void SetupResolutionDropdown()
     {
         TMP_Dropdown contentDropdown = resolutionContent != null
@@ -139,7 +142,7 @@ public class OptionPanelUI : MonoBehaviour
         resolutionDropdown.AddOptions(options);
         resolutionDropdown.SetValueWithoutNotify(ResolutionManager.CurrentResolutionIndex);
         resolutionDropdown.onValueChanged.AddListener(OnResolutionChanged);
-        AttachResolutionDropdownFrontGuard();
+        DirectTemplateDropdown.Attach(resolutionDropdown)?.Configure(resolutionDropdownSortingOrderOffset);
 
         isResolutionDropdownReady = true;
     }
@@ -299,59 +302,6 @@ public class OptionPanelUI : MonoBehaviour
         ResolutionManager.ApplyResolution(index, true);
     }
 
-    private void OpenResolutionDropdown()
-    {
-        if (resolutionDropdown == null)
-            return;
-
-        if (!resolutionDropdown.gameObject.activeInHierarchy)
-            return;
-
-        resolutionDropdown.Show();
-        resolutionDropdownFrontGuard?.BringOpenedDropdownToFront();
-    }
-
-    private void AttachResolutionDropdownFrontGuard()
-    {
-        resolutionDropdownFrontGuard = null;
-
-        if (!bringResolutionDropdownListToFront || resolutionDropdown == null)
-            return;
-
-        resolutionDropdownFrontGuard = resolutionDropdown.GetComponent<TMPDropdownFrontGuard>();
-        if (resolutionDropdownFrontGuard == null)
-            resolutionDropdownFrontGuard = resolutionDropdown.gameObject.AddComponent<TMPDropdownFrontGuard>();
-
-        resolutionDropdownFrontGuard.Configure(resolutionDropdownSortingOrderOffset);
-    }
-
-    private void ScheduleOpenResolutionDropdown()
-    {
-        CancelScheduledResolutionDropdown();
-
-        if (!isActiveAndEnabled)
-            return;
-
-        openResolutionDropdownCoroutine = StartCoroutine(OpenResolutionDropdownNextFrame());
-    }
-
-    private IEnumerator OpenResolutionDropdownNextFrame()
-    {
-        yield return null;
-
-        openResolutionDropdownCoroutine = null;
-        OpenResolutionDropdown();
-    }
-
-    private void CancelScheduledResolutionDropdown()
-    {
-        if (openResolutionDropdownCoroutine == null)
-            return;
-
-        StopCoroutine(openResolutionDropdownCoroutine);
-        openResolutionDropdownCoroutine = null;
-    }
-
     private GameObject FindChildGameObject(string childName)
     {
         Transform child = FindChildByName(transform, childName);
@@ -499,124 +449,3 @@ public sealed class SaveResultToastUI : MonoBehaviour
     }
 }
 
-public sealed class TMPDropdownFrontGuard : MonoBehaviour, IPointerDownHandler, IPointerClickHandler
-{
-    private const string DropdownListObjectName = "Dropdown List";
-    private const string BlockerObjectName = "Blocker";
-
-    private int sortingOrderOffset = 50;
-    private Coroutine bringToFrontCoroutine;
-
-    public void Configure(int offset)
-    {
-        sortingOrderOffset = Mathf.Max(1, offset);
-    }
-
-    public void OnPointerDown(PointerEventData eventData)
-    {
-        PrepareForDropdownOpen();
-    }
-
-    public void OnPointerClick(PointerEventData eventData)
-    {
-        PrepareForDropdownOpen();
-    }
-
-    public void PrepareForDropdownOpen()
-    {
-        BringOwnerCanvasToFront();
-        ScheduleGeneratedObjectsToFront();
-    }
-
-    public void BringOpenedDropdownToFront()
-    {
-        BringOwnerCanvasToFront();
-        BringGeneratedObjectsToFront();
-        ScheduleGeneratedObjectsToFront();
-    }
-
-    private void ScheduleGeneratedObjectsToFront()
-    {
-        if (!gameObject.activeInHierarchy)
-            return;
-
-        if (bringToFrontCoroutine != null)
-            StopCoroutine(bringToFrontCoroutine);
-
-        bringToFrontCoroutine = StartCoroutine(BringGeneratedObjectsToFrontRoutine());
-    }
-
-    private IEnumerator BringGeneratedObjectsToFrontRoutine()
-    {
-        yield return null;
-        BringGeneratedObjectsToFront();
-
-        yield return null;
-        BringGeneratedObjectsToFront();
-
-        bringToFrontCoroutine = null;
-    }
-
-    private void BringOwnerCanvasToFront()
-    {
-        Canvas parentCanvas = GetComponentInParent<Canvas>();
-        if (parentCanvas == null)
-            return;
-
-        parentCanvas.overrideSorting = true;
-        parentCanvas.sortingOrder = GetHighestCanvasSortingOrder(parentCanvas) + sortingOrderOffset;
-
-        if (parentCanvas.GetComponent<GraphicRaycaster>() == null)
-            parentCanvas.gameObject.AddComponent<GraphicRaycaster>();
-    }
-
-    private void BringGeneratedObjectsToFront()
-    {
-        GameObject[] objects = FindObjectsByType<GameObject>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-        int baseOrder = GetHighestCanvasSortingOrder(null) + sortingOrderOffset;
-
-        for (int i = 0; i < objects.Length; i++)
-        {
-            GameObject target = objects[i];
-            if (target == null)
-                continue;
-
-            if (target.name != DropdownListObjectName && target.name != BlockerObjectName)
-                continue;
-
-            Canvas canvas = target.GetComponent<Canvas>();
-            if (canvas == null)
-                canvas = target.AddComponent<Canvas>();
-
-            canvas.overrideSorting = true;
-            canvas.sortingOrder = target.name == DropdownListObjectName ? baseOrder + 1 : baseOrder;
-
-            if (target.GetComponent<GraphicRaycaster>() == null)
-                target.AddComponent<GraphicRaycaster>();
-        }
-    }
-
-    private int GetHighestCanvasSortingOrder(Canvas excludedCanvas)
-    {
-        int highestOrder = 0;
-        Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsSortMode.None);
-
-        for (int i = 0; i < canvases.Length; i++)
-        {
-            Canvas canvas = canvases[i];
-            if (canvas == null)
-                continue;
-
-            if (canvas == excludedCanvas)
-                continue;
-
-            if (!canvas.gameObject.activeInHierarchy)
-                continue;
-
-            if (canvas.sortingOrder > highestOrder)
-                highestOrder = canvas.sortingOrder;
-        }
-
-        return highestOrder;
-    }
-}

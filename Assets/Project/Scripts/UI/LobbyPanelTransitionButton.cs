@@ -129,7 +129,6 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 
         if (lobbyPanelTransition == null)
         {
-            Debug.LogWarning("[LobbyPanelTransitionButton] Lobby Panel Transition is not assigned.", this);
             InvokeBeforePanelChange();
             ApplyWorldObjectChangeImmediately();
             ApplyPanelChangeImmediately();
