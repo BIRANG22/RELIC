@@ -5,6 +5,32 @@ using UnityEngine;
 public class SteamLobbyInviteControllerDevUiTests
 {
     [Test]
+    public void Controller_CreatesMultiplayerPanelsOnlyAfterInviteFlowStarts()
+    {
+        var root = new GameObject("Root", typeof(RectTransform));
+        var button = new GameObject("Invite", typeof(RectTransform));
+        button.transform.SetParent(root.transform, false);
+        SteamLobbyInviteController controller =
+            button.AddComponent<SteamLobbyInviteController>();
+
+        Assert.That(FindDescendant(root.transform, "SteamLobbyStatusPanel"), Is.Null);
+        Assert.That(FindDescendant(root.transform, "SteamLobbyDevelopmentTools"), Is.Null);
+
+        controller.OpenInviteFlow();
+
+        Assert.That(
+            FindDescendant(root.transform, "SteamLobbyStatusPanel"),
+            Is.Not.Null);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        Assert.That(
+            FindDescendant(root.transform, "SteamLobbyDevelopmentTools"),
+            Is.Not.Null);
+#endif
+
+        Object.DestroyImmediate(root);
+    }
+
+    [Test]
     public void Controller_ExposesLobbyIdCopyAndJoinCommands()
     {
         Assert.That(

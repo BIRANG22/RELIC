@@ -226,6 +226,10 @@ public class BattleSceneController : MonoBehaviour
             return;
         }
 
+        BattleTurnExecutor turnExecutor =
+            Object.FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
+        turnExecutor?.RestoreBattleExecutionUiAfterRoomEnd();
+
         isOpeningMapFromController = true;
         battleMapPanel.Open(mapRuntime);
         isOpeningMapFromController = false;

@@ -159,6 +159,15 @@ public class BattleTurnExecutor : MonoBehaviour
         RefreshBattleExecutionUiVisibility();
     }
 
+    public void RestoreBattleExecutionUiAfterRoomEnd()
+    {
+        if (!battleExecutionUiSuppressed)
+            return;
+
+        battleExecutionUiSuppressed = false;
+        SetBattleExecutionUiVisible(true);
+    }
+
     private void ResetBattleEffectPlanesForRoomEnd()
     {
         BattleEffectPlaneSlideController[] planeControllers = UnityEngine.Object.FindObjectsByType<BattleEffectPlaneSlideController>(

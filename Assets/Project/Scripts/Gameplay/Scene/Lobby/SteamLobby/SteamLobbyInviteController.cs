@@ -64,28 +64,15 @@ public class SteamLobbyInviteController : MonoBehaviour
         steamShutdownRegistered = false;
     }
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]
-    private static void InitializeSteamBeforeSplashScreen()
-    {
-#if STEAMWORKS_NET
-        if (TryInitializeSteamApi(out string failure))
-        {
-            Debug.Log("[SteamLobbyInviteController] Steam API initialized before splash screen.");
-            return;
-        }
-
-        Debug.LogWarning(
-            "[SteamLobbyInviteController] Early Steam initialization did not complete. " +
-            failure);
-#endif
-    }
-
     private void Awake()
     {
         BindReferences();
-        CreateStatusPanelIfNeeded();
+
+        if (!ShouldInitializeSteamForLaunchCommand(System.Environment.CommandLine))
+            return;
+
+        EnsureMultiplayerUiVisible();
         InitializeSteam();
-        RefreshStatusPanel();
     }
 
     private void OnDestroy()
@@ -105,6 +92,8 @@ public class SteamLobbyInviteController : MonoBehaviour
 
     public void OpenInviteFlow()
     {
+        EnsureMultiplayerUiVisible();
+
 #if STEAMWORKS_NET
         if (!EnsureSteamReady())
             return;
@@ -124,6 +113,8 @@ public class SteamLobbyInviteController : MonoBehaviour
 
     public void CopyCurrentLobbyId()
     {
+        EnsureMultiplayerUiVisible();
+
 #if STEAMWORKS_NET
         if (!EnsureSteamReady())
             return;
@@ -144,6 +135,8 @@ public class SteamLobbyInviteController : MonoBehaviour
 
     public void JoinLobbyByIdInput()
     {
+        EnsureMultiplayerUiVisible();
+
 #if STEAMWORKS_NET
         if (!EnsureSteamReady())
             return;
@@ -172,6 +165,8 @@ public class SteamLobbyInviteController : MonoBehaviour
 
     public void PasteLobbyIdFromClipboard()
     {
+        EnsureMultiplayerUiVisible();
+
         if (lobbyIdInput == null)
             return;
 
@@ -382,14 +377,12 @@ public class SteamLobbyInviteController : MonoBehaviour
 
     private void ProcessLaunchCommandLine()
     {
-        string commandLine;
-        int commandLineLength = SteamApps.GetLaunchCommandLine(out commandLine, 2048);
-
-        if (commandLineLength <= 0)
+        if (!SteamLobbyLaunchCommandParser.TryParseLobbyId(
+                System.Environment.CommandLine,
+                out ulong lobbyId))
+        {
             return;
-
-        if (!SteamLobbyLaunchCommandParser.TryParseLobbyId(commandLine, out ulong lobbyId))
-            return;
+        }
 
         JoinLobby(new CSteamID(lobbyId));
     }
@@ -464,6 +457,35 @@ public class SteamLobbyInviteController : MonoBehaviour
         SetStatus("Host left. Returned to local party editing.");
     }
 #endif
+
+    private static bool ShouldInitializeSteamForLaunchCommand(string commandLine)
+    {
+        return SteamLobbyLaunchCommandParser.TryParseLobbyId(
+            commandLine,
+            out _);
+    }
+
+    private void EnsureMultiplayerUiVisible()
+    {
+        CreateStatusPanelIfNeeded();
+
+        Transform parent = transform.parent != null ? transform.parent : transform;
+        SetGeneratedPanelActive(parent, "SteamLobbyStatusPanel");
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        SetGeneratedPanelActive(parent, "SteamLobbyDevelopmentTools");
+#endif
+        RefreshStatusPanel();
+    }
+
+    private static void SetGeneratedPanelActive(Transform parent, string objectName)
+    {
+        if (parent == null || string.IsNullOrWhiteSpace(objectName))
+            return;
+
+        Transform panel = parent.Find(objectName);
+        if (panel != null && !panel.gameObject.activeSelf)
+            panel.gameObject.SetActive(true);
+    }
 
     private void CreateStatusPanelIfNeeded()
     {
