@@ -625,14 +625,18 @@ public class BattleTurnExecutor : MonoBehaviour
 
             if (CanAcceptPlayerInput && timelineController != null)
             {
-                timelineController.SelectDefaultSlotWhenInputReady();
+                timelineController.SelectDefaultSlotWhenInputReady(false);
                 timelineController.SetSelectedCharacterScaleFeedbackActive(true);
                 timelineController.RefocusCurrentSelectedCharacterWhenInputReady();
+                timelineController.StopTimelineMotionEffects();
             }
 
             EnsureSkillListPanel();
             if (CanAcceptPlayerInput && skillListPanel != null)
                 skillListPanel.ReopenAfterBattleExecution();
+
+            if (CanAcceptPlayerInput && timelineController != null)
+                timelineController.StopTimelineMotionEffects();
 
             PlayerTurnReturned?.Invoke();
         }
@@ -651,7 +655,10 @@ public class BattleTurnExecutor : MonoBehaviour
         RefreshTurnNumberText();
 
         if (timelineController != null)
+        {
             yield return timelineController.ResetTimelineSlotsToOriginalPositionRoutine();
+            timelineController.StopTimelineMotionEffects();
+        }
 
         SteamBattleStateSynchronizer.TryRefreshIdleSnapshotAfterNetworkExecution();
         RefreshBattleHUDs();
