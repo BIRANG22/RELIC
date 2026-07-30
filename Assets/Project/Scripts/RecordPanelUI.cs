@@ -122,7 +122,7 @@ public class RecordPanelUI : MonoBehaviour
             return;
 
         IEnumerable<SkillMasterData> skills = dataManager.SkillDatabase.GetAll()
-            .Where(skill => skill != null)
+            .Where(skill => skill != null && skill.Level != 2)
             .OrderBy(skill => skill.Name, StringComparer.CurrentCulture);
 
         CreateSkillSlots(dataManager, skills);
@@ -138,7 +138,7 @@ public class RecordPanelUI : MonoBehaviour
             return;
 
         IEnumerable<SkillMasterData> skills = dataManager.SkillDatabase.GetAll()
-            .Where(skill => skill != null && skill.Category == category)
+            .Where(skill => skill != null && skill.Level != 2 && skill.Category == category)
             .OrderBy(skill => skill.Name, StringComparer.CurrentCulture);
 
         CreateSkillSlots(dataManager, skills);
