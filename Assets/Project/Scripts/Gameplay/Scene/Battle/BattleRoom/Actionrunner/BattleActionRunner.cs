@@ -3156,6 +3156,19 @@ public class BattleActionRunner
     private IEnumerator PlayDamageHitFeedback(
         Transform attacker,
         IReadOnlyList<Transform> targets,
+        int fallbackHorizontalDirection,
+        bool includeTargetPush)
+    {
+        yield return BattleHitImpactFeedback.PlayDamageHitFeedback(
+            attacker,
+            targets,
+            fallbackHorizontalDirection,
+            includeTargetPush);
+    }
+
+    private IEnumerator PlayDamageHitFeedback(
+        Transform attacker,
+        IReadOnlyList<Transform> targets,
         int fallbackHorizontalDirection)
     {
         yield return BattleHitImpactFeedback.PlayDamageHitFeedback(
@@ -3613,12 +3626,14 @@ public class BattleActionRunner
         if (hitPlayer != null)
         {
             ApplyMonsterDashDamage(command, monster, hitPlayer);
-            ApplyMonsterDashKnockback(command, monster, hitPlayer);
 
-            yield return PlayDamageHitFeedback(
+            IEnumerator feedbackRoutine = PlayDamageHitFeedback(
                 monster != null ? monster.transform : null,
                 new List<Transform> { hitPlayer.transform },
-                GetMonsterImpactFallbackDirection(monster));
+                GetMonsterImpactFallbackDirection(monster),
+                false);
+            ApplyMonsterDashKnockback(command, monster, hitPlayer);
+            yield return feedbackRoutine;
 
             yield return new WaitForSeconds(HitCameraDelay);
 

@@ -79,6 +79,8 @@ public class PanelCameraMover : MonoBehaviour
     private bool isReturning;
 
     private Coroutine moveCoroutine;
+    private static PanelCameraMover activeCameraMover;
+    private static Transform activeMoveTransform;
 
     /// <summary>
     /// 실제로 이동시킬 Transform입니다.
@@ -181,9 +183,7 @@ public class PanelCameraMover : MonoBehaviour
          * 패널을 열고 카메라를 이동시키기 직전의
          * 위치와 회전을 저장합니다.
          */
-        originalPosition = moveTransform.position;
-        originalRotation = moveTransform.rotation;
-        originalTransformSaved = true;
+        CaptureOriginalTransformForOpen(moveTransform);
 
         cameraWasMoved = true;
         isReturning = false;
@@ -301,7 +301,8 @@ public class PanelCameraMover : MonoBehaviour
             return;
 
         isReturning = true;
-        cameraWasMoved = false;
+        activeCameraMover = this;
+        activeMoveTransform = moveTransform;
 
         StartCameraMove(
             originalPosition,
@@ -435,6 +436,8 @@ public class PanelCameraMover : MonoBehaviour
             return;
 
         isReturning = false;
+        cameraWasMoved = false;
+        originalTransformSaved = false;
 
         /*
          * 복귀가 끝난 뒤 HorizontalHubCameraDrag가
@@ -446,12 +449,91 @@ public class PanelCameraMover : MonoBehaviour
         if (hubCameraDrag != null)
             hubCameraDrag.SynchronizeTargetPosition();
 
+        ClearActiveCameraMoverIfThis();
+
         if (showDebugLog)
         {
             Debug.Log(
                 "[PanelCameraMover] 카메라 원위치 복귀가 완료되었습니다.",
                 this);
         }
+    }
+
+    /// <summary>
+    /// 겹친 패널 카메라 이동 중 처음 저장한 복귀 위치를 유지합니다.
+    /// </summary>
+    private void CaptureOriginalTransformForOpen(Transform moveTransform)
+    {
+        bool inheritedOriginalTransform = false;
+
+        if (activeCameraMover != null &&
+            activeCameraMover != this &&
+            activeMoveTransform == moveTransform)
+        {
+            PanelCameraMover previousMover = activeCameraMover;
+
+            if (previousMover.originalTransformSaved)
+            {
+                originalPosition = previousMover.originalPosition;
+                originalRotation = previousMover.originalRotation;
+                originalTransformSaved = true;
+                inheritedOriginalTransform = true;
+            }
+
+            previousMover.ReleaseSharedCameraControl(false);
+        }
+
+        if (!inheritedOriginalTransform &&
+            (!originalTransformSaved || !cameraWasMoved))
+        {
+            // When camera return is interrupted, keep the first saved home
+            // transform instead of treating the in-between zoom position as home.
+            originalPosition = moveTransform.position;
+            originalRotation = moveTransform.rotation;
+            originalTransformSaved = true;
+        }
+
+        activeCameraMover = this;
+        activeMoveTransform = moveTransform;
+    }
+
+    private void ReleaseSharedCameraControl(bool snapToOriginal)
+    {
+        Transform moveTransform = MoveTransform;
+
+        if (moveCoroutine != null)
+        {
+            StopCoroutine(moveCoroutine);
+            moveCoroutine = null;
+        }
+
+        if (snapToOriginal &&
+            originalTransformSaved &&
+            moveTransform != null)
+        {
+            moveTransform.position = originalPosition;
+            moveTransform.rotation = originalRotation;
+
+            FindHubCameraDragIfNeeded();
+
+            if (hubCameraDrag != null)
+                hubCameraDrag.SynchronizeTargetPosition();
+        }
+
+        cameraWasMoved = false;
+        isReturning = false;
+        originalTransformSaved = false;
+
+        ClearActiveCameraMoverIfThis();
+    }
+
+    private void ClearActiveCameraMoverIfThis()
+    {
+        if (activeCameraMover != this)
+            return;
+
+        activeCameraMover = null;
+        activeMoveTransform = null;
     }
 
     /// <summary>
@@ -502,12 +584,11 @@ public class PanelCameraMover : MonoBehaviour
 
     private void OnDisable()
     {
-        if (moveCoroutine != null)
-        {
-            StopCoroutine(moveCoroutine);
-            moveCoroutine = null;
-        }
+        bool canSnapToOriginal =
+            (activeCameraMover == null || activeCameraMover == this) &&
+            originalTransformSaved &&
+            (cameraWasMoved || isReturning);
 
-        isReturning = false;
+        ReleaseSharedCameraControl(canSnapToOriginal);
     }
 }

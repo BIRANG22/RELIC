@@ -83,6 +83,9 @@ public class BattleCharacter : MonoBehaviour
         if (RuntimeData == null)
             return;
 
+        if (RuntimeData.IsDead)
+            return;
+
         if (!SteamBattleStateSynchronizer.CanLocalPlayerControlCharacter(RuntimeData.CharacterId))
         {
             BattleWarningUI.ShowMessage("다른 플레이어의 캐릭터입니다.");
@@ -171,6 +174,12 @@ public class BattleCharacter : MonoBehaviour
 
     private void SetTimelineHoverHighlightAlpha(bool active)
     {
+        if (IsTimelineHoverHighlightBlockedByDeath())
+        {
+            ForceTimelineHoverHighlightOff();
+            return;
+        }
+
         timelineHoverHighlightVisible = active;
 
         if (timelineHoverHighlightObject == null)
@@ -185,6 +194,12 @@ public class BattleCharacter : MonoBehaviour
 
     private void SyncTimelineHoverHighlightAnimation()
     {
+        if (IsTimelineHoverHighlightBlockedByDeath())
+        {
+            ForceTimelineHoverHighlightOff();
+            return;
+        }
+
         if (timelineHoverHighlightObject == null)
             return;
 
@@ -242,6 +257,25 @@ public class BattleCharacter : MonoBehaviour
             color.a = timelineHoverHighlightVisible ? timelineHoverHighlightOriginalAlphas[i] : 0f;
             spriteRenderer.color = color;
         }
+    }
+
+    private bool IsTimelineHoverHighlightBlockedByDeath()
+    {
+        return RuntimeData != null && RuntimeData.IsDead;
+    }
+
+    private void ForceTimelineHoverHighlightOff()
+    {
+        timelineHoverHighlightVisible = false;
+
+        if (timelineHoverHighlightObject == null)
+            return;
+
+        CacheTimelineHoverHighlightRenderers();
+        ApplyTimelineHoverHighlightAlpha();
+
+        if (timelineHoverHighlightObject.activeSelf)
+            timelineHoverHighlightObject.SetActive(false);
     }
 
     private void CacheTimelineHoverHighlightRenderers()

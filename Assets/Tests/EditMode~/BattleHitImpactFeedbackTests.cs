@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using Relic.Gameplay.Data;
 using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
@@ -133,6 +134,50 @@ public class BattleHitImpactFeedbackTests
         }
 
         Assert.That(BattleVfxPlaybackPauseController.IsGlobalPauseActive, Is.False);
+    }
+
+    [Test]
+    public void DamageMoveEntries_CanExcludeTargetsForForcedMovementHits()
+    {
+        GameObject feedbackObject = new("ImpactFeedback_ExcludeTargets");
+        GameObject attacker = new("ImpactFeedback_Attacker");
+        GameObject target = new("ImpactFeedback_Target");
+
+        try
+        {
+            BattleHitImpactFeedback feedback =
+                feedbackObject.AddComponent<BattleHitImpactFeedback>();
+
+            MethodInfo method = typeof(BattleHitImpactFeedback).GetMethod(
+                "BuildDamageMoveEntries",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+
+            Assert.That(method, Is.Not.Null, "BuildDamageMoveEntries method is missing.");
+
+            object result = method.Invoke(
+                feedback,
+                new object[]
+                {
+                    attacker.transform,
+                    new List<Transform> { target.transform },
+                    1,
+                    false
+                });
+
+            Assert.That(result, Is.InstanceOf<IList>());
+            IList entries = (IList)result;
+            Assert.That(entries, Has.Count.EqualTo(1));
+
+            FieldInfo targetField = entries[0].GetType().GetField("Target");
+            Assert.That(targetField, Is.Not.Null, "MoveEntry.Target field is missing.");
+            Assert.That(targetField.GetValue(entries[0]), Is.SameAs(attacker.transform));
+        }
+        finally
+        {
+            Object.DestroyImmediate(feedbackObject);
+            Object.DestroyImmediate(attacker);
+            Object.DestroyImmediate(target);
+        }
     }
 
     private static void DestroyIfExists(string objectName)

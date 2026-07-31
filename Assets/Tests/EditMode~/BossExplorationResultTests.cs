@@ -72,6 +72,18 @@ public class BossExplorationResultTests
     }
 
     [Test]
+    public void PendingResearch_DefeatMultiplierHalvesConvertedReward()
+    {
+        PendingResearchResultData pending = ExplorationResearchService.CreatePending(
+            new ExplorationResultData { Remnant = 321 },
+            null,
+            0.5f);
+
+        Assert.That(pending.RemnantBlue, Is.EqualTo(80));
+        Assert.That(pending.TotalBlue, Is.EqualTo(80));
+    }
+
+    [Test]
     public void PendingResearch_ApplyCreditsBlueOnlyOnce()
     {
         LobbyRuntimeData lobby = new() { BlueDustium = 100 };
@@ -166,4 +178,5 @@ public class BossExplorationResultTests
         Assert.That(field, Is.Not.Null, $"Missing field: {fieldName}");
         field.SetValue(target, value);
     }
+
 }

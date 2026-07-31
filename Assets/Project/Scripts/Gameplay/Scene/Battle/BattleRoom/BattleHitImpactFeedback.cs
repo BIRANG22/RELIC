@@ -63,7 +63,8 @@ public class BattleHitImpactFeedback : MonoBehaviour
     public static IEnumerator PlayDamageHitFeedback(
         Transform attacker,
         IReadOnlyList<Transform> targets,
-        int fallbackHorizontalDirection)
+        int fallbackHorizontalDirection,
+        bool includeTargetPush = true)
     {
         BattleHitImpactFeedback feedback = GetOrCreateInstance();
 
@@ -75,7 +76,11 @@ public class BattleHitImpactFeedback : MonoBehaviour
             yield break;
         }
 
-        yield return feedback.PlayDamageHitInternal(attacker, targets, fallbackHorizontalDirection);
+        yield return feedback.PlayDamageHitInternal(
+            attacker,
+            targets,
+            fallbackHorizontalDirection,
+            includeTargetPush);
     }
 
     public static void PlayStatusHitFeedback(Transform target)
@@ -124,7 +129,8 @@ public class BattleHitImpactFeedback : MonoBehaviour
     private IEnumerator PlayDamageHitInternal(
     Transform attacker,
     IReadOnlyList<Transform> targets,
-    int fallbackHorizontalDirection)
+    int fallbackHorizontalDirection,
+    bool includeTargetPush)
     {
         // 실제 피해 적중 시 BattleEffect의 두 Plane 회전 연출을 실행합니다.
         BattleEffectPlaneRotation.PlayHitRotationFeedback();
@@ -138,7 +144,8 @@ public class BattleHitImpactFeedback : MonoBehaviour
             ? PlayDamagePush(
                 attacker,
                 targets,
-                fallbackHorizontalDirection
+                fallbackHorizontalDirection,
+                includeTargetPush
             )
             : null;
 
@@ -186,9 +193,14 @@ public class BattleHitImpactFeedback : MonoBehaviour
     private IEnumerator PlayDamagePush(
         Transform attacker,
         IReadOnlyList<Transform> targets,
-        int fallbackHorizontalDirection)
+        int fallbackHorizontalDirection,
+        bool includeTargetPush)
     {
-        List<MoveEntry> entries = BuildDamageMoveEntries(attacker, targets, fallbackHorizontalDirection);
+        List<MoveEntry> entries = BuildDamageMoveEntries(
+            attacker,
+            targets,
+            fallbackHorizontalDirection,
+            includeTargetPush);
 
         if (entries.Count <= 0)
             yield break;
@@ -206,7 +218,8 @@ public class BattleHitImpactFeedback : MonoBehaviour
     private List<MoveEntry> BuildDamageMoveEntries(
         Transform attacker,
         IReadOnlyList<Transform> targets,
-        int fallbackHorizontalDirection)
+        int fallbackHorizontalDirection,
+        bool includeTargetPush = true)
     {
         List<MoveEntry> entries = new();
         HashSet<Transform> added = new();
@@ -217,7 +230,7 @@ public class BattleHitImpactFeedback : MonoBehaviour
 
         AddMoveEntry(entries, added, attacker, baseOffset * Mathf.Max(0f, attackerPushMultiplier));
 
-        if (targets != null)
+        if (includeTargetPush && targets != null)
         {
             for (int i = 0; i < targets.Count; i++)
                 AddMoveEntry(entries, added, targets[i], baseOffset * Mathf.Max(0f, targetPushMultiplier));
