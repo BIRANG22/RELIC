@@ -160,7 +160,7 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
 
         if (portraitImage != null)
         {
-            portraitImage.sprite = GetCharacterIcon(boundRuntime.CharacterId);
+            portraitImage.sprite = GetCharacterTimelineIcon(boundRuntime.CharacterId);
             portraitImage.enabled = portraitImage.sprite != null;
         }
 
@@ -351,7 +351,7 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
         }
     }
 
-    private Sprite GetCharacterIcon(string characterId)
+    private Sprite GetCharacterTimelineIcon(string characterId)
     {
         if (DataManager.Instance == null)
             return null;
@@ -359,12 +359,12 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
         if (DataManager.Instance.CharacterIconDatabase == null)
             return null;
 
-        if (DataManager.Instance.CharacterIconDatabase.TryGetIcon(
+        if (DataManager.Instance.CharacterIconDatabase.TryGetTimelineIcon(
             characterId,
-            out Sprite icon
+            out Sprite timelineIcon
         ))
         {
-            return icon;
+            return timelineIcon;
         }
 
         return null;
