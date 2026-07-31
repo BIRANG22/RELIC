@@ -33,6 +33,8 @@ public class BattleCameraController : MonoBehaviour
     [SerializeField] private float impactShakeFrequency = 20f;
     [SerializeField] private float impactHitStopDuration = 0.1f;
     [SerializeField, Range(0f, 1f)] private float impactHitStopTimeScale = 0.08f;
+    [SerializeField, Min(1f)] private float impactRecoverySpeedMultiplier = 1.5f;
+    [SerializeField, Min(0f)] private float impactRecoverySpeedDuration = 0.18f;
     [SerializeField] private bool useUnscaledTimeForImpact = true;
 
     [Header("Character Selection Focus")]
@@ -102,6 +104,9 @@ public class BattleCameraController : MonoBehaviour
     private Vector3 lastImpactAppliedPosition;
     private bool isImpactHitStopActive;
     private float previousTimeScale = 1f;
+    private Coroutine impactRecoverySpeedRoutine;
+    private bool isImpactRecoverySpeedActive;
+    private float impactRecoveryBaseTimeScale = 1f;
     private int damageImpactRotationIndex;
 
     public bool IsCombatZoomActive => hasActiveCombatZoom;
@@ -129,6 +134,7 @@ public class BattleCameraController : MonoBehaviour
     private void OnDisable()
     {
         RestoreTimeScaleIfNeeded();
+        CancelImpactRecoverySpeedBoost();
         ClearImpactOffset();
         ForceReturnDefaultImmediate();
     }
@@ -539,7 +545,7 @@ public class BattleCameraController : MonoBehaviour
 
         while (timer < duration)
         {
-            timer += Time.deltaTime;
+            timer += GetCameraDeltaTime();
             float t = Mathf.Clamp01(timer / duration);
             float curvedT = EvaluateZoomCurve(t);
 
@@ -654,6 +660,7 @@ public class BattleCameraController : MonoBehaviour
 
         if (hitStopRunning)
         {
+            CancelImpactRecoverySpeedBoost();
             previousTimeScale = Time.timeScale;
             BattleVfxPlaybackPauseController.PauseAll();
             Time.timeScale = Mathf.Min(previousTimeScale, Mathf.Clamp01(impactHitStopTimeScale));
@@ -790,7 +797,17 @@ public class BattleCameraController : MonoBehaviour
 
     private float GetImpactDeltaTime()
     {
-        return useUnscaledTimeForImpact ? Time.unscaledDeltaTime : Time.deltaTime;
+        float deltaTime = useUnscaledTimeForImpact ? Time.unscaledDeltaTime : Time.deltaTime;
+
+        if (useUnscaledTimeForImpact && isImpactRecoverySpeedActive)
+            deltaTime *= Mathf.Max(1f, impactRecoverySpeedMultiplier);
+
+        return deltaTime;
+    }
+
+    private float GetCameraDeltaTime()
+    {
+        return Time.deltaTime;
     }
 
     private void RestoreTimeScaleIfNeeded()
@@ -801,6 +818,58 @@ public class BattleCameraController : MonoBehaviour
         Time.timeScale = previousTimeScale;
         BattleVfxPlaybackPauseController.ResumeAll();
         isImpactHitStopActive = false;
+        StartImpactRecoverySpeedBoost(previousTimeScale);
+    }
+
+    private void StartImpactRecoverySpeedBoost(float baseTimeScale)
+    {
+        if (!isActiveAndEnabled ||
+            impactRecoverySpeedDuration <= 0f ||
+            impactRecoverySpeedMultiplier <= 1f)
+        {
+            return;
+        }
+
+        CancelImpactRecoverySpeedBoost();
+        impactRecoverySpeedRoutine = StartCoroutine(PlayImpactRecoverySpeedBoost(baseTimeScale));
+    }
+
+    private IEnumerator PlayImpactRecoverySpeedBoost(float baseTimeScale)
+    {
+        impactRecoveryBaseTimeScale = Mathf.Max(0f, baseTimeScale);
+        isImpactRecoverySpeedActive = true;
+        Time.timeScale = impactRecoveryBaseTimeScale * Mathf.Max(1f, impactRecoverySpeedMultiplier);
+
+        float elapsed = 0f;
+
+        while (elapsed < impactRecoverySpeedDuration && !isImpactHitStopActive)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        impactRecoverySpeedRoutine = null;
+        EndImpactRecoverySpeedBoost();
+    }
+
+    private void CancelImpactRecoverySpeedBoost()
+    {
+        if (impactRecoverySpeedRoutine != null)
+        {
+            StopCoroutine(impactRecoverySpeedRoutine);
+            impactRecoverySpeedRoutine = null;
+        }
+
+        EndImpactRecoverySpeedBoost();
+    }
+
+    private void EndImpactRecoverySpeedBoost()
+    {
+        if (!isImpactRecoverySpeedActive)
+            return;
+
+        Time.timeScale = impactRecoveryBaseTimeScale;
+        isImpactRecoverySpeedActive = false;
     }
 
     private void ClearImpactOffset()
@@ -998,6 +1067,8 @@ public class BattleCameraController : MonoBehaviour
         impactShakeFrequency = Mathf.Max(1f, impactShakeFrequency);
         impactHitStopDuration = Mathf.Max(0f, impactHitStopDuration);
         impactHitStopTimeScale = Mathf.Clamp01(impactHitStopTimeScale);
+        impactRecoverySpeedMultiplier = Mathf.Max(1f, impactRecoverySpeedMultiplier);
+        impactRecoverySpeedDuration = Mathf.Max(0f, impactRecoverySpeedDuration);
         monsterInfoFocusDuration = Mathf.Max(0f, monsterInfoFocusDuration);
         monsterInfoReturnDuration = Mathf.Max(0f, monsterInfoReturnDuration);
         monsterInfoFocusSideOffset = Mathf.Max(0f, monsterInfoFocusSideOffset);

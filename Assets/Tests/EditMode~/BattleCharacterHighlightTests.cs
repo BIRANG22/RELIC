@@ -146,6 +146,29 @@ public class BattleCharacterHighlightTests
         Assert.That(shadowRenderer.sortingOrder, Is.EqualTo(sourceRenderer.sortingOrder - 1));
     }
 
+    [Test]
+    public void TimelineHoverHighlight_StaysOffForDeadCharacter()
+    {
+        BattleCharacter character = CreateCharacterWithHighlight(
+            out GameObject highlightObject,
+            out SpriteRenderer highlightRenderer,
+            out SpriteRenderer idleBackRenderer);
+
+        character.Initialize(new Relic.Gameplay.Data.CharacterRuntimeData
+        {
+            CharacterId = "Char_Dead_Highlight",
+            MaxHP = 10,
+            CurrentHP = 0
+        });
+
+        character.SetTimelineHoverHighlight(true);
+        InvokePrivate(character, "LateUpdate");
+
+        Assert.That(highlightObject.activeSelf, Is.False);
+        Assert.That(highlightRenderer.color.a, Is.EqualTo(0f).Within(0.001f));
+        Assert.That(idleBackRenderer.color.a, Is.EqualTo(0f).Within(0.001f));
+    }
+
     private BattleCharacter CreateCharacterWithHighlight(
         out GameObject highlightObject,
         out SpriteRenderer highlightRenderer,

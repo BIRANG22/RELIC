@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class BattleResultChecker : MonoBehaviour
 {
+    private const float DefeatRewardMultiplier = 0.5f;
+
     public static BattleResultChecker Instance { get; private set; }
 
     [SerializeField] private BattleRewardResolver rewardResolver;
@@ -35,6 +37,7 @@ public class BattleResultChecker : MonoBehaviour
         {
             battleEnded = true;
             Debug.Log("[BattleResultChecker] Battle Lose");
+            OpenDefeatExplorationResultPanel();
             return true;
         }
 
@@ -90,6 +93,36 @@ public class BattleResultChecker : MonoBehaviour
             BattleRewardCollector.Instance.Clear();
 
         explorationResultPanel.Open();
+    }
+
+    private void OpenDefeatExplorationResultPanel()
+    {
+        if (explorationResultPanel == null)
+        {
+            explorationResultPanel = Object.FindFirstObjectByType<ExplorationResultPanelUI>(
+                FindObjectsInactive.Include);
+        }
+
+        if (explorationResultPanel == null)
+        {
+            Debug.LogError("[BattleResultChecker] ExplorationResultPanelUI is missing.");
+            return;
+        }
+
+        if (BattleRewardCollector.Instance != null)
+            BattleRewardCollector.Instance.Clear();
+
+        CleanBattleRoom();
+        explorationResultPanel.OpenDefeat(DefeatRewardMultiplier);
+    }
+
+    private static void CleanBattleRoom()
+    {
+        BattleRoomCleaner cleaner =
+            Object.FindFirstObjectByType<BattleRoomCleaner>(FindObjectsInactive.Include);
+
+        if (cleaner != null)
+            cleaner.Clean();
     }
 
     private static bool IsCurrentNodeBoss()

@@ -11,6 +11,8 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
 
     private ExplorationResultData result;
     private bool isTransitioning;
+    private bool isDefeatResult;
+    private float researchRewardMultiplier = 1f;
 
     private void Awake()
     {
@@ -20,16 +22,41 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
 
     public void Open()
     {
+        OpenInternal(false, 1f);
+    }
+
+    public void OpenDefeat(float rewardMultiplier = 0.5f)
+    {
+        OpenInternal(true, rewardMultiplier);
+    }
+
+    private void OpenInternal(bool defeat, float rewardMultiplier)
+    {
         BattleRuntimeData runtime = DataManager.Instance?.BattleRuntimeStore?.Get();
         result = ExplorationResultBuilder.Build(runtime);
+        isDefeatResult = defeat;
+        researchRewardMultiplier = Mathf.Max(0f, rewardMultiplier);
+        isTransitioning = false;
+
+        if (returnToBaseButton != null)
+            returnToBaseButton.interactable = true;
+
         if (resultText != null)
-            resultText.text = BuildText(result);
+            resultText.text = BuildText(result, isDefeatResult, researchRewardMultiplier);
+
         gameObject.SetActive(true);
     }
 
-    private string BuildText(ExplorationResultData value)
+    private string BuildText(ExplorationResultData value, bool defeat, float rewardMultiplier)
     {
         StringBuilder text = new();
+        if (defeat)
+        {
+            text.AppendLine("\uD328\uBC30");
+            text.AppendLine($"\uBCF4\uC0C1 {Mathf.FloorToInt(Mathf.Max(0f, rewardMultiplier) * 100f)}%");
+            text.AppendLine();
+        }
+
         text.AppendLine("━━━━━━━━━━━━━━━━━");
         text.AppendLine("탐사 결과");
         text.AppendLine("━━━━━━━━━━━━━━━━━\n");
@@ -108,7 +135,10 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
             returnToBaseButton.interactable = false;
 
         LobbyRuntimeData lobby = DataManager.Instance.LobbyRuntimeStore.GetOrCreate();
-        lobby.PendingResearchResult = ExplorationResearchService.CreatePending(result, DataManager.Instance);
+        lobby.PendingResearchResult = ExplorationResearchService.CreatePending(
+            result,
+            DataManager.Instance,
+            researchRewardMultiplier);
         lobby.HasPendingResearchResult = true;
         lobby.OwnedRelicIds.Clear();
         ClearLobbyEquippedRelics(lobby);
