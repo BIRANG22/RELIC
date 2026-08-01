@@ -6174,6 +6174,7 @@ MonoBehaviour:
   button: {fileID: 230010014}
   iconImage: {fileID: 230020013}
   priceText: {fileID: 230020023}
+  hoverIconScale: 1.12
   rarityRingRoot: {fileID: 230030010}
   rarityParticles: {fileID: 230030011}
   commonParticleColor: {r: 0.78431374, g: 0.8156863, b: 0.8509804, a: 1}
@@ -6300,6 +6301,7 @@ MonoBehaviour:
   button: {fileID: 230010024}
   iconImage: {fileID: 230020113}
   priceText: {fileID: 230020123}
+  hoverIconScale: 1.12
   rarityRingRoot: {fileID: 230030020}
   rarityParticles: {fileID: 230030021}
   commonParticleColor: {r: 0.78431374, g: 0.8156863, b: 0.8509804, a: 1}
@@ -6426,6 +6428,7 @@ MonoBehaviour:
   button: {fileID: 230010034}
   iconImage: {fileID: 230020213}
   priceText: {fileID: 230020223}
+  hoverIconScale: 1.12
   rarityRingRoot: {fileID: 230030030}
   rarityParticles: {fileID: 230030031}
   commonParticleColor: {r: 0.78431374, g: 0.8156863, b: 0.8509804, a: 1}
@@ -6659,6 +6662,7 @@ GameObject:
   - component: {fileID: 230020011}
   - component: {fileID: 230020012}
   - component: {fileID: 230020013}
+  - component: {fileID: 230020014}
   m_Layer: 5
   m_Name: RelicIcon
   m_TagString: Untagged
@@ -6723,6 +6727,29 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!223 &230020014
+Canvas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 230020010}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 0
+  m_Camera: {fileID: 0}
+  m_PlaneDistance: 100
+  m_PixelPerfect: 0
+  m_ReceivesEvents: 1
+  m_OverrideSorting: 1
+  m_OverridePixelPerfect: 0
+  m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 0
+  m_AdditionalShaderChannelsFlag: 25
+  m_UpdateRectTransformForStandalone: 0
+  m_SortingLayerID: 1597553239
+  m_SortingOrder: 10
+  m_TargetDisplay: 0
 --- !u!1 &230020020
 GameObject:
   m_ObjectHideFlags: 0
@@ -6871,6 +6898,7 @@ GameObject:
   - component: {fileID: 230020111}
   - component: {fileID: 230020112}
   - component: {fileID: 230020113}
+  - component: {fileID: 230020114}
   m_Layer: 5
   m_Name: RelicIcon
   m_TagString: Untagged
@@ -6935,6 +6963,29 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!223 &230020114
+Canvas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 230020110}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 0
+  m_Camera: {fileID: 0}
+  m_PlaneDistance: 100
+  m_PixelPerfect: 0
+  m_ReceivesEvents: 1
+  m_OverrideSorting: 1
+  m_OverridePixelPerfect: 0
+  m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 0
+  m_AdditionalShaderChannelsFlag: 25
+  m_UpdateRectTransformForStandalone: 0
+  m_SortingLayerID: 1597553239
+  m_SortingOrder: 10
+  m_TargetDisplay: 0
 --- !u!1 &230020120
 GameObject:
   m_ObjectHideFlags: 0
@@ -7083,6 +7134,7 @@ GameObject:
   - component: {fileID: 230020211}
   - component: {fileID: 230020212}
   - component: {fileID: 230020213}
+  - component: {fileID: 230020214}
   m_Layer: 5
   m_Name: RelicIcon
   m_TagString: Untagged
@@ -7147,6 +7199,29 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!223 &230020214
+Canvas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 230020210}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 0
+  m_Camera: {fileID: 0}
+  m_PlaneDistance: 100
+  m_PixelPerfect: 0
+  m_ReceivesEvents: 1
+  m_OverrideSorting: 1
+  m_OverridePixelPerfect: 0
+  m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 0
+  m_AdditionalShaderChannelsFlag: 25
+  m_UpdateRectTransformForStandalone: 0
+  m_SortingLayerID: 1597553239
+  m_SortingOrder: 10
+  m_TargetDisplay: 0
 --- !u!1 &230020220
 GameObject:
   m_ObjectHideFlags: 0
@@ -9052,6 +9127,8 @@ MonoBehaviour:
   blockMainInputWhenMenuPanelOpen: 1
   relicShopPanel: {fileID: 0}
   relicShopPresenter: {fileID: 0}
+  cultureTankPanel: {fileID: 821549304}
+  cultureTankPanelPresenter: {fileID: 821549308}
   erosionSelectPanel: {fileID: 0}
   erosionMirrorButton: {fileID: 0}
   partySlot0: {fileID: 0}
@@ -32619,15 +32696,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 407420, guid: 01f1e1f1177f76d499251acb5b14b63a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -794.9
+      value: -802.5
       objectReference: {fileID: 0}
     - target: {fileID: 407420, guid: 01f1e1f1177f76d499251acb5b14b63a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1007.9
+      value: -1010.7
       objectReference: {fileID: 0}
     - target: {fileID: 407420, guid: 01f1e1f1177f76d499251acb5b14b63a, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 8.900155
+      value: 8.9
       objectReference: {fileID: 0}
     - target: {fileID: 407420, guid: 01f1e1f1177f76d499251acb5b14b63a, type: 3}
       propertyPath: m_LocalRotation.w
@@ -33300,19 +33377,26 @@ MonoBehaviour:
   backButton: {fileID: 254924758}
   contentRoot: {fileID: 359541358}
   emptyText: {fileID: 0}
+  inventoryItemRoot: {fileID: 680840708}
   rows:
   - root: {fileID: 0}
     background: {fileID: 0}
     button: {fileID: 0}
     label: {fileID: 0}
+    stateLabel: {fileID: 0}
+    itemIcon: {fileID: 0}
   - root: {fileID: 0}
     background: {fileID: 0}
     button: {fileID: 0}
     label: {fileID: 0}
+    stateLabel: {fileID: 0}
+    itemIcon: {fileID: 0}
   - root: {fileID: 0}
     background: {fileID: 0}
     button: {fileID: 0}
     label: {fileID: 0}
+    stateLabel: {fileID: 0}
+    itemIcon: {fileID: 0}
   tankNamePrefix: CultureTank
 --- !u!1 &821584890
 GameObject:
@@ -71383,15 +71467,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 407420, guid: 01f1e1f1177f76d499251acb5b14b63a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -1340.7
+      value: -1348.5
       objectReference: {fileID: 0}
     - target: {fileID: 407420, guid: 01f1e1f1177f76d499251acb5b14b63a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1007.9
+      value: -1010.7
       objectReference: {fileID: 0}
     - target: {fileID: 407420, guid: 01f1e1f1177f76d499251acb5b14b63a, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 8.900155
+      value: 8.9
       objectReference: {fileID: 0}
     - target: {fileID: 407420, guid: 01f1e1f1177f76d499251acb5b14b63a, type: 3}
       propertyPath: m_LocalRotation.w
@@ -82320,15 +82404,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 407420, guid: 01f1e1f1177f76d499251acb5b14b63a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -1886.8
+      value: -1894.5
       objectReference: {fileID: 0}
     - target: {fileID: 407420, guid: 01f1e1f1177f76d499251acb5b14b63a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1007.9
+      value: -1010.7
       objectReference: {fileID: 0}
     - target: {fileID: 407420, guid: 01f1e1f1177f76d499251acb5b14b63a, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 8.900155
+      value: 8.9
       objectReference: {fileID: 0}
     - target: {fileID: 407420, guid: 01f1e1f1177f76d499251acb5b14b63a, type: 3}
       propertyPath: m_LocalRotation.w
@@ -93028,13 +93112,15 @@ MonoBehaviour:
   - {fileID: 1393047474}
   blueDustiumHud: {fileID: 2200000512}
   skillUpgradeButtonStartPosition: {x: 2400, y: 200}
-  relicRefreshIcon: {fileID: 21300000, guid: e6d00ecee490ed1409b7d5b752b78f25, type: 3}
   panelRoot: {fileID: 230010000}
   offerButtons:
   - {fileID: 230010020}
   - {fileID: 230010030}
   - {fileID: 230010040}
   refreshButton: {fileID: 230010051}
+  relicDescriptionRoot: {fileID: 782155788}
+  relicDescriptionNameText: {fileID: 1544248583}
+  relicDescriptionBodyText: {fileID: 1911251391}
 --- !u!114 &2200000503
 MonoBehaviour:
   m_ObjectHideFlags: 0

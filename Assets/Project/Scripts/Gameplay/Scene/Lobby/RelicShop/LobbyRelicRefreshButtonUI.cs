@@ -18,14 +18,10 @@ public sealed class LobbyRelicRefreshButtonUI : MonoBehaviour
         EnsureView();
     }
 
-    public void Initialize(Sprite icon, Action callback)
+    public void Initialize(Action callback)
     {
         refreshRequested = callback;
-        if (!EnsureView())
-            return;
-
-        iconImage.sprite = icon;
-        iconImage.enabled = icon != null;
+        EnsureView();
     }
 
     public void SetState(int price, bool interactable)

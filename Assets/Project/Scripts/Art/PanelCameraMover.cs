@@ -119,7 +119,7 @@ public class PanelCameraMover : MonoBehaviour
     /// <summary>
     /// 이 스크립트가 붙은 Collider 또는 Collider2D를 클릭하면 호출됩니다.
     /// </summary>
-    private void OnMouseDown()
+    private void OnMouseUpAsButton()
     {
         if (!openOnColliderClick)
             return;

@@ -1,4 +1,5 @@
 using System.Collections;
+using System.IO;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -7,6 +8,17 @@ using Object = UnityEngine.Object;
 
 public sealed class PanelCameraMoverTests
 {
+    private const string SourcePath = "Assets/Project/Scripts/Art/PanelCameraMover.cs";
+
+    [Test]
+    public void ColliderClick_OpensOnMouseReleaseInsteadOfMousePress()
+    {
+        string source = File.ReadAllText(SourcePath);
+
+        Assert.That(source, Does.Contain("private void OnMouseUpAsButton()"));
+        Assert.That(source, Does.Not.Contain("private void OnMouseDown()"));
+    }
+
     [UnityTest]
     public IEnumerator DisableWhileReturning_RestoresOriginalCameraTransform()
     {

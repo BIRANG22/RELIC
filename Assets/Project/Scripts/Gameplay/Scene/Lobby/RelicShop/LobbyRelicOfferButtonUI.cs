@@ -3,45 +3,51 @@ using System.Collections;
 using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public sealed class LobbyRelicOfferButtonUI : MonoBehaviour
+public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [Header("UI")]
     [SerializeField] private Button button;
     [SerializeField] private Image iconImage;
     [SerializeField] private TMP_Text priceText;
+    [SerializeField, Min(1f)] private float hoverIconScale = 1.12f;
 
     [Header("Rarity Ring")]
     [SerializeField] private GameObject rarityRingRoot;
     [SerializeField] private ParticleSystem rarityParticles;
 
     [Header("Rarity Particle Colors")]
-    [Tooltip("일반 등급 파티클 색상")]
+    [Tooltip("?쇰컲 ?깃툒 ?뚰떚???됱긽")]
     [SerializeField]
     private Color commonParticleColor =
         new Color32(200, 208, 217, 255);
 
-    [Tooltip("고급 등급 파티클 색상")]
+    [Tooltip("怨좉툒 ?깃툒 ?뚰떚???됱긽")]
     [SerializeField]
     private Color uncommonParticleColor =
         new Color32(92, 219, 131, 255);
 
-    [Tooltip("희귀 등급 파티클 색상")]
+    [Tooltip("?ш? ?깃툒 ?뚰떚???됱긽")]
     [SerializeField]
     private Color rareParticleColor =
         new Color32(78, 141, 255, 255);
 
-    [Tooltip("유니크 등급 파티클 색상")]
+    [Tooltip("?좊땲???깃툒 ?뚰떚???됱긽")]
     [SerializeField]
     private Color uniqueParticleColor =
         new Color32(255, 179, 71, 255);
 
-    [Tooltip("알 수 없는 등급에 사용할 기본 색상")]
+    [Tooltip("?????녿뒗 ?깃툒???ъ슜??湲곕낯 ?됱긽")]
     [SerializeField] private Color defaultParticleColor = Color.white;
 
     private string relicId;
     private Action<string> purchaseRequested;
+    private Action<string, bool> hoverChanged;
+    private Vector3 iconOriginalScale = Vector3.one;
+    private bool iconScaleCached;
+    private bool isHovered;
 
     private bool clickListenerRegistered;
     private bool missingViewWarningLogged;
@@ -62,11 +68,23 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour
         RelicRarity rarity,
         Action<string> callback)
     {
+        Bind(offer, icon, rarity, callback, null);
+    }
+
+    public void Bind(
+        LobbyRelicOffer offer,
+        Sprite icon,
+        RelicRarity rarity,
+        Action<string> callback,
+        Action<string, bool> hoverCallback)
+    {
         if (!EnsureView())
             return;
 
+        ResetHoverState();
         relicId = offer.RelicId;
         purchaseRequested = callback;
+        hoverChanged = hoverCallback;
 
         iconImage.sprite = icon;
         iconImage.enabled = icon != null;
@@ -82,7 +100,8 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour
         if (!EnsureView())
             return;
 
-        priceText.text = "판매 완료";
+        ResetHoverState();
+        priceText.text = "?먮ℓ ?꾨즺";
         button.interactable = false;
 
         FadeOutRarityRing();
@@ -90,12 +109,14 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour
 
     public void ShowEmpty()
     {
+        ResetHoverState();
         HideRarityRingImmediately();
 
         if (!EnsureView())
             return;
 
         relicId = null;
+        hoverChanged = null;
 
         iconImage.sprite = null;
         iconImage.enabled = false;
@@ -119,6 +140,12 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour
         {
             iconImage =
                 transform.Find("RelicIcon")?.GetComponent<Image>();
+        }
+
+        if (iconImage != null && !iconScaleCached)
+        {
+            iconOriginalScale = iconImage.rectTransform.localScale;
+            iconScaleCached = true;
         }
 
         if (priceText == null)
@@ -169,6 +196,34 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour
         }
 
         purchaseRequested?.Invoke(relicId);
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (button == null || !button.interactable || string.IsNullOrWhiteSpace(relicId))
+            return;
+
+        isHovered = true;
+        if (iconImage != null)
+            iconImage.rectTransform.localScale = iconOriginalScale * hoverIconScale;
+
+        hoverChanged?.Invoke(relicId, true);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        ResetHoverState();
+    }
+
+    private void ResetHoverState()
+    {
+        if (iconImage != null && iconScaleCached)
+            iconImage.rectTransform.localScale = iconOriginalScale;
+
+        if (isHovered && !string.IsNullOrWhiteSpace(relicId))
+            hoverChanged?.Invoke(relicId, false);
+
+        isHovered = false;
     }
 
     private void EnsureRarityRingReferences()
@@ -245,7 +300,7 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour
     }
 
     /// <summary>
-    /// 인스펙터에 지정한 등급별 색상을 반환합니다.
+    /// ?몄뒪?숉꽣??吏?뺥븳 ?깃툒蹂??됱긽??諛섑솚?⑸땲??
     /// </summary>
     private Color GetParticleColor(RelicRarity rarity)
     {
@@ -367,5 +422,10 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour
             button.onClick.RemoveListener(RequestPurchase);
             clickListenerRegistered = false;
         }
+    }
+
+    private void OnDisable()
+    {
+        ResetHoverState();
     }
 }

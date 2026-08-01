@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,20 +11,23 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     private const float RefreshIntervalSeconds = 0.25f;
 
     [Header("Panel")]
-    [Tooltip("PositionPanel ?�에 미리 배치??CultureTankPanel?�니?? 비어 ?�으�???컴포?�트가 붙�? ?�브?�트�??�용?�니??")]
+    [Tooltip("PositionPanel ?덉뿉 誘몃━ 諛곗튂??CultureTankPanel?낅땲?? 鍮꾩뼱 ?덉쑝硫???而댄룷?뚰듃媛 遺숈? ?ㅻ툕?앺듃瑜??ъ슜?⑸땲??")]
     [SerializeField] private GameObject panelRoot;
 
-    [Tooltip("CultureTankPanel??BackButton?�니??")]
+    [Tooltip("CultureTankPanel??BackButton?낅땲??")]
     [SerializeField] private Button backButton;
 
-    [Tooltip("배양�??�들???�어 ?�는 Content?�니??")]
+    [Tooltip("諛곗뼇議??됰뱾???ㅼ뼱 ?덈뒗 Content?낅땲??")]
     [SerializeField] private RectTransform contentRoot;
 
-    [Tooltip("배양조�? ?�을 ???�시???�스?�입?�다. ?�용?��? ?�으�?비워???�니??")]
+    [Tooltip("諛곗뼇議곌? ?놁쓣 ???쒖떆???띿뒪?몄엯?덈떎. ?ъ슜?섏? ?딆쑝硫?鍮꾩썙???⑸땲??")]
     [SerializeField] private TMP_Text emptyText;
 
+    [Header("Inventory")]
+    [SerializeField] private Transform inventoryItemRoot;
+
     [Header("Rows")]
-    [Tooltip("Content ?�래??미리 만들????CultureTankRow_1~3???�서?��??�결?�니??")]
+    [Tooltip("Content ?꾨옒??誘몃━ 留뚮뱾????CultureTankRow_1~3???쒖꽌?濡??곌껐?⑸땲??")]
     [SerializeField] private TankRow[] rows = new TankRow[3];
 
     [Header("Search")]
@@ -31,6 +35,8 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
 
     private float nextRefreshAt;
     private bool backButtonBound;
+    private readonly List<InventorySlot> inventorySlots = new();
+    private LobbyCultureTankController selectedTank;
 
     public bool IsOpen => panelRoot != null && panelRoot.activeSelf;
 
@@ -38,13 +44,16 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     {
         BindSceneObjects();
         BindBackButton();
+        BindInventorySlots();
     }
 
     private void OnEnable()
     {
         BindSceneObjects();
         BindBackButton();
+        BindInventorySlots();
         RefreshRows();
+        RefreshInventory();
         nextRefreshAt = Time.unscaledTime + RefreshIntervalSeconds;
     }
 
@@ -54,6 +63,7 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
             return;
 
         RefreshRows();
+        RefreshInventory();
         nextRefreshAt = Time.unscaledTime + RefreshIntervalSeconds;
     }
 
@@ -64,13 +74,14 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
 
         if (panelRoot == null)
         {
-            Debug.LogWarning("[LobbyCultureTankPanelPresenter] CultureTankPanel???�결?��? ?�았?�니??");
+            Debug.LogWarning("[LobbyCultureTankPanelPresenter] CultureTankPanel???곌껐?섏? ?딆븯?듬땲??");
             return;
         }
 
         panelRoot.SetActive(true);
         panelRoot.transform.SetAsLastSibling();
         RefreshRows();
+        RefreshInventory();
         nextRefreshAt = Time.unscaledTime + RefreshIntervalSeconds;
     }
 
@@ -78,6 +89,8 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     {
         if (panelRoot != null)
             panelRoot.SetActive(false);
+
+        selectedTank = null;
     }
 
     private void RefreshRows()
@@ -114,10 +127,16 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
             row.Controller = tank;
 
             if (row.Label != null)
-                row.Label.text = tank.GetPanelLabel();
+                row.Label.text = tank.GetPanelName();
+
+            if (row.StateLabel != null)
+                row.StateLabel.text = tank.GetPanelStateText();
+
+            LobbyCultureTankPanelState state = tank.GetPanelState();
+            UpdateRowItemIcon(row, tank, state);
 
             if (row.Background != null)
-                row.Background.color = GetRowColor(tank.GetPanelState());
+                row.Background.color = GetRowColor(state);
 
             if (row.Button != null)
             {
@@ -134,9 +153,18 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         if (tank == null)
             return;
 
+        if (tank.GetPanelState() == LobbyCultureTankPanelState.Empty)
+        {
+            selectedTank = tank;
+            RefreshInventory();
+            return;
+        }
+
+        selectedTank = null;
         tank.Interact();
         tank.RefreshNow();
         RefreshRows();
+        RefreshInventory();
     }
 
     private List<LobbyCultureTankController> FindCultureTanks()
@@ -197,6 +225,12 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
                 contentRoot = target as RectTransform;
         }
 
+        if (inventoryItemRoot == null)
+        {
+            Transform inventory = FindDirectOrNestedChild(panelTransform, "inventory");
+            inventoryItemRoot = FindDirectOrNestedChild(inventory, "item");
+        }
+
         if (rows == null || rows.Length != 3)
             rows = new TankRow[3];
 
@@ -212,13 +246,133 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
                 continue;
             }
 
-            Transform rowTransform = FindDirectOrNestedChild(contentRoot, $"CultureTankRow_{i + 1}");
+            Transform rowTransform = FindInteractiveRow(contentRoot, $"CultureTankRow_{i + 1}");
             if (rowTransform == null)
                 continue;
 
             rows[i].Root = rowTransform.gameObject;
             rows[i].BindMissingComponents();
         }
+    }
+
+    private static Transform FindInteractiveRow(Transform root, string rowName)
+    {
+        if (root == null)
+            return null;
+
+        Transform fallback = null;
+        Transform[] children = root.GetComponentsInChildren<Transform>(true);
+        for (int i = 0; i < children.Length; i++)
+        {
+            Transform child = children[i];
+            if (child == null || !string.Equals(child.name, rowName, StringComparison.Ordinal))
+                continue;
+
+            fallback ??= child;
+            if (child.GetComponent<Button>() != null)
+                return child;
+        }
+
+        return fallback;
+    }
+
+    private static void UpdateRowItemIcon(
+        TankRow row,
+        LobbyCultureTankController tank,
+        LobbyCultureTankPanelState state)
+    {
+        if (row?.ItemIcon == null)
+            return;
+
+        Sprite icon = null;
+        string itemId = string.Empty;
+        bool shouldShow = ShouldShowRowItemIcon(state) &&
+                          tank != null &&
+                          tank.TryGetPanelItemId(out itemId);
+
+        ItemIconDatabase iconDatabase = DataManager.Instance?.ItemIconDatabase;
+        if (shouldShow && iconDatabase != null)
+        {
+            if (state == LobbyCultureTankPanelState.Completed)
+                shouldShow = iconDatabase.TryGetResearchResultIcon(itemId, out icon) ||
+                             iconDatabase.TryGetIcon(itemId, out icon);
+            else
+                shouldShow = iconDatabase.TryGetIcon(itemId, out icon);
+        }
+        else
+        {
+            shouldShow = false;
+        }
+
+        row.ItemIcon.sprite = shouldShow ? icon : null;
+        row.ItemIcon.enabled = shouldShow;
+        row.ItemIcon.preserveAspect = true;
+    }
+
+    public static bool ShouldShowRowItemIcon(LobbyCultureTankPanelState state)
+    {
+        return state == LobbyCultureTankPanelState.Running ||
+               state == LobbyCultureTankPanelState.Completed;
+    }
+
+    private void BindInventorySlots()
+    {
+        BindSceneObjects();
+        if (inventoryItemRoot == null || inventorySlots.Count == inventoryItemRoot.childCount)
+            return;
+
+        inventorySlots.Clear();
+        for (int i = 0; i < inventoryItemRoot.childCount; i++)
+        {
+            Transform child = inventoryItemRoot.GetChild(i);
+            Image image = child.GetComponent<Image>();
+            if (image == null)
+                continue;
+
+            Button button = child.GetComponent<Button>();
+            if (button == null)
+                button = child.gameObject.AddComponent<Button>();
+
+            button.targetGraphic = image;
+            inventorySlots.Add(new InventorySlot(image, button));
+        }
+    }
+
+    private void RefreshInventory()
+    {
+        BindInventorySlots();
+        LobbyRuntimeData lobby = DataManager.Instance != null
+            ? DataManager.Instance.LobbyRuntimeStore?.GetOrCreate()
+            : null;
+        IReadOnlyList<string> itemIds = lobby?.BagItemIds;
+        bool canSelect = selectedTank != null &&
+                         selectedTank.GetPanelState() == LobbyCultureTankPanelState.Empty &&
+                         CanLocalPlayerMutateHostOnlyState();
+
+        for (int i = 0; i < inventorySlots.Count; i++)
+        {
+            InventorySlot slot = inventorySlots[i];
+            string itemId = itemIds != null && i < itemIds.Count ? itemIds[i]?.Trim() : string.Empty;
+            Sprite icon = null;
+            if (!string.IsNullOrEmpty(itemId) && DataManager.Instance?.ItemIconDatabase != null)
+                DataManager.Instance.ItemIconDatabase.TryGetIcon(itemId, out icon);
+
+            slot.SetItem(itemId, icon, canSelect && !string.IsNullOrEmpty(itemId), SelectInventoryItem);
+        }
+    }
+
+    private void SelectInventoryItem(string itemId)
+    {
+        LobbyCultureTankController tank = selectedTank;
+        if (tank == null || string.IsNullOrWhiteSpace(itemId))
+            return;
+
+        if (!tank.TryStartResearchFromPanel(itemId))
+            return;
+
+        selectedTank = null;
+        RefreshRows();
+        RefreshInventory();
     }
 
     private void BindBackButton()
@@ -273,6 +427,8 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         [SerializeField] private Image background;
         [SerializeField] private Button button;
         [SerializeField] private TMP_Text label;
+        [SerializeField] private TMP_Text stateLabel;
+        [SerializeField] private Image itemIcon;
 
         public GameObject Root
         {
@@ -283,6 +439,8 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         public Image Background => background;
         public Button Button => button;
         public TMP_Text Label => label;
+        public TMP_Text StateLabel => stateLabel;
+        public Image ItemIcon => itemIcon;
         public LobbyCultureTankController Controller { get; set; }
 
         public void BindMissingComponents()
@@ -297,7 +455,99 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
                 button = root.GetComponent<Button>();
 
             if (label == null)
-                label = root.GetComponentInChildren<TMP_Text>(true);
+            {
+                Transform labelTransform = FindDirectOrNestedChild(root.transform, "Label");
+                label = labelTransform != null
+                    ? labelTransform.GetComponent<TMP_Text>()
+                    : root.GetComponentInChildren<TMP_Text>(true);
+            }
+
+            if (stateLabel == null)
+            {
+                Transform stateTransform = FindDirectOrNestedChild(root.transform, "StateLabel");
+                if (stateTransform != null)
+                    stateLabel = stateTransform.GetComponent<TMP_Text>();
+            }
+
+            if (stateLabel == null && label != null)
+            {
+                GameObject stateObject = Instantiate(label.gameObject, root.transform);
+                stateObject.name = "StateLabel";
+                stateLabel = stateObject.GetComponent<TMP_Text>();
+
+                if (label.transform is RectTransform nameRect &&
+                    stateLabel.transform is RectTransform stateRect)
+                {
+                    Vector2 origin = nameRect.anchoredPosition;
+                    nameRect.anchoredPosition = origin + new Vector2(0f, 24f);
+                    stateRect.anchoredPosition = origin - new Vector2(0f, 24f);
+                }
+            }
+
+            if (itemIcon == null)
+            {
+                Transform iconTransform = FindDirectOrNestedChild(root.transform, "ItemIcon");
+                if (iconTransform != null)
+                    itemIcon = iconTransform.GetComponent<Image>();
+            }
+
+            if (itemIcon == null)
+            {
+                GameObject iconObject = new("ItemIcon", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                iconObject.layer = root.layer;
+                iconObject.transform.SetParent(root.transform, false);
+                itemIcon = iconObject.GetComponent<Image>();
+                itemIcon.raycastTarget = false;
+                itemIcon.enabled = false;
+                itemIcon.preserveAspect = true;
+
+                RectTransform iconRect = (RectTransform)iconObject.transform;
+                iconRect.anchorMin = new Vector2(0.5f, 0.5f);
+                iconRect.anchorMax = new Vector2(0.5f, 0.5f);
+                iconRect.pivot = new Vector2(0.5f, 0.5f);
+                iconRect.anchoredPosition = new Vector2(0f, 12f);
+                iconRect.sizeDelta = new Vector2(88f, 88f);
+                iconRect.SetAsLastSibling();
+            }
+        }
+    }
+
+    private sealed class InventorySlot
+    {
+        private readonly Image image;
+        private readonly Button button;
+        private readonly Sprite emptySprite;
+        private readonly Color emptyColor;
+        private string itemId;
+        private Action<string> selected;
+
+        public InventorySlot(Image image, Button button)
+        {
+            this.image = image;
+            this.button = button;
+            emptySprite = image.sprite;
+            emptyColor = image.color;
+        }
+
+        public void SetItem(string newItemId, Sprite icon, bool interactable, Action<string> callback)
+        {
+            itemId = newItemId;
+            selected = callback;
+            bool showsIcon = !string.IsNullOrEmpty(itemId) && icon != null;
+
+            image.sprite = showsIcon ? icon : emptySprite;
+            image.color = showsIcon ? Color.white : emptyColor;
+            image.preserveAspect = showsIcon;
+
+            button.onClick.RemoveListener(InvokeSelection);
+            button.onClick.AddListener(InvokeSelection);
+            button.interactable = interactable;
+        }
+
+        private void InvokeSelection()
+        {
+            if (button.interactable && !string.IsNullOrEmpty(itemId))
+                selected?.Invoke(itemId);
         }
     }
 }
