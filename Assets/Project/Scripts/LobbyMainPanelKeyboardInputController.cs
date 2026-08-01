@@ -9,7 +9,7 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
 {
     [Header("Position Panel")]
     [FormerlySerializedAs("lobbyMainPanel")]
-    [Tooltip("´Ù¸¥ ÆË¾÷ÀÌ ¿­·Á ÀÖÁö ¾ÊÀ» ¶§ ESC·Î MenuPanelÀ» ¿­ ¼ö ÀÖ´Â ±âº» ·Îºñ ÆĞ³ÎÀÔ´Ï´Ù.")]
+    [Tooltip("ë‹¤ë¥¸ íŒì—…ì´ ì—´ë ¤ ìˆì§€ ì•Šì„ ë•Œ ESCë¡œ MenuPanelì„ ì—´ ìˆ˜ ìˆëŠ” ê¸°ë³¸ ë¡œë¹„ íŒ¨ë„ì…ë‹ˆë‹¤.")]
     [SerializeField] private GameObject positionPanel;
     [SerializeField] private bool requirePositionPanelActive = true;
 
@@ -30,21 +30,25 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
     [SerializeField] private Button playButton;
 
     [Header("Lobby Menu Panel")]
-    [Tooltip("·Îºñ ¸Ş´º¸¦ ¿­°í ´İ´Â Àü¿ë ÄÁÆ®·Ñ·¯ÀÔ´Ï´Ù. MenuButton, ContinueButton, ESC°¡ °°Àº ¹æ½ÄÀ¸·Î µ¿ÀÛÇÏ°Ô ÇÕ´Ï´Ù.")]
+    [Tooltip("ë¡œë¹„ ë©”ë‰´ë¥¼ ì—´ê³  ë‹«ëŠ” ì „ìš© ì»¨íŠ¸ë¡¤ëŸ¬ì…ë‹ˆë‹¤. MenuButton, ContinueButton, ESCê°€ ê°™ì€ ë°©ì‹ìœ¼ë¡œ ë™ì‘í•˜ê²Œ í•©ë‹ˆë‹¤.")]
     [SerializeField] private LobbyMenuController lobbyMenuController;
-    [Tooltip("·Îºñ ¸Ş´º ÆĞ³ÎÀÔ´Ï´Ù. ÄÁÆ®·Ñ·¯°¡ ºñ¾î ÀÖÀ» ¶§ ÀÚµ¿ ¿¬°á°ú ÀÔ·Â Â÷´Ü È®ÀÎ¿¡ »ç¿ëÇÕ´Ï´Ù.")]
+    [Tooltip("ë¡œë¹„ ë©”ë‰´ íŒ¨ë„ì…ë‹ˆë‹¤. ì»¨íŠ¸ë¡¤ëŸ¬ê°€ ë¹„ì–´ ìˆì„ ë•Œ ìë™ ì—°ê²°ê³¼ ì…ë ¥ ì°¨ë‹¨ í™•ì¸ì— ì‚¬ìš©í•©ë‹ˆë‹¤.")]
     [SerializeField] private GameObject menuPanel;
-    [Tooltip("MenuPanelÀÌ ¿­·Á ÀÖÀ¸¸é ·Îºñ ¸ŞÀÎ Å°º¸µå ÀÔ·ÂÀ» ¸·½À´Ï´Ù.")]
+    [Tooltip("MenuPanelì´ ì—´ë ¤ ìˆìœ¼ë©´ ë¡œë¹„ ë©”ì¸ í‚¤ë³´ë“œ ì…ë ¥ì„ ë§‰ìŠµë‹ˆë‹¤.")]
     [SerializeField] private bool blockMainInputWhenMenuPanelOpen = true;
 
-    [Header("ESC ¿ì¼± ´İ±â ÆĞ³Î")]
-    [Tooltip("¿­·Á ÀÖÀ¸¸é ESC ÀÔ·Â ½Ã ¸Ş´ºº¸´Ù ¸ÕÀú ´İÈ÷´Â À¯¹° »óÁ¡ ÆĞ³ÎÀÔ´Ï´Ù.")]
+    [Header("ESC ìš°ì„  ë‹«ê¸° íŒ¨ë„")]
+    [Tooltip("ì—´ë ¤ ìˆìœ¼ë©´ ESC ì…ë ¥ ì‹œ ë©”ë‰´ë³´ë‹¤ ë¨¼ì € ë‹«íˆëŠ” ìœ ë¬¼ ìƒì  íŒ¨ë„ì…ë‹ˆë‹¤.")]
     [SerializeField] private GameObject relicShopPanel;
-    [Tooltip("À¯¹° »óÁ¡ ÆĞ³ÎÀ» ´İÀ» ¶§ »ç¿ëÇÒ ÇÁ·¹Á¨ÅÍÀÔ´Ï´Ù. ºñ¿öµÎ¸é ÀÚµ¿À¸·Î Ã£½À´Ï´Ù.")]
+    [Tooltip("ìœ ë¬¼ ìƒì  íŒ¨ë„ì„ ë‹«ì„ ë•Œ ì‚¬ìš©í•  í”„ë ˆì  í„°ì…ë‹ˆë‹¤. ë¹„ì›Œë‘ë©´ ìë™ìœ¼ë¡œ ì°¾ìŠµë‹ˆë‹¤.")]
     [SerializeField] private LobbyRelicShopPresenter relicShopPresenter;
-    [Tooltip("¿­·Á ÀÖÀ¸¸é ESC ÀÔ·Â ½Ã ¸Ş´ºº¸´Ù ¸ÕÀú ´İÈ÷´Â Ä§½Äµµ ¼±ÅÃ ÆĞ³ÎÀÔ´Ï´Ù.")]
+    [Tooltip("ì—´ë ¤ ìˆìœ¼ë©´ ESC ì…ë ¥ ì‹œ ë©”ë‰´ë³´ë‹¤ ë¨¼ì € ë‹«íˆëŠ” ë°°ì–‘ì¡° íŒ¨ë„ì…ë‹ˆë‹¤.")]
+    [SerializeField] private GameObject cultureTankPanel;
+    [Tooltip("ë°°ì–‘ì¡° íŒ¨ë„ì„ ë‹«ê³  ë‚´ë¶€ ì„ íƒ ìƒíƒœë¥¼ ì •ë¦¬í•˜ëŠ” í”„ë¦¬ì  í„°ì…ë‹ˆë‹¤.")]
+    [SerializeField] private LobbyCultureTankPanelPresenter cultureTankPanelPresenter;
+    [Tooltip("ì—´ë ¤ ìˆìœ¼ë©´ ESC ì…ë ¥ ì‹œ ë©”ë‰´ë³´ë‹¤ ë¨¼ì € ë‹«íˆëŠ” ì¹¨ì‹ë„ ì„ íƒ íŒ¨ë„ì…ë‹ˆë‹¤.")]
     [SerializeField] private GameObject erosionSelectPanel;
-    [Tooltip("Ä§½Äµµ ¼±ÅÃÃ¢À» Á¤»óÀûÀ¸·Î ´İ¾Æ ¿ùµå ÀÔ·Â Â÷´Ü±îÁö ÇØÁ¦ÇÏ´Â ¹öÆ° ÄÁÆ®·Ñ·¯ÀÔ´Ï´Ù. ºñ¿öµÎ¸é ÀÚµ¿À¸·Î Ã£½À´Ï´Ù.")]
+    [Tooltip("ì¹¨ì‹ë„ ì„ íƒì°½ì„ ì •ìƒì ìœ¼ë¡œ ë‹«ì•„ ì›”ë“œ ì…ë ¥ ì°¨ë‹¨ê¹Œì§€ í•´ì œí•˜ëŠ” ë²„íŠ¼ ì»¨íŠ¸ë¡¤ëŸ¬ì…ë‹ˆë‹¤. ë¹„ì›Œë‘ë©´ ìë™ìœ¼ë¡œ ì°¾ìŠµë‹ˆë‹¤.")]
     [SerializeField] private LobbyErosionMirrorButton erosionMirrorButton;
 
     [Header("Lobby Main Party Slots")]
@@ -58,12 +62,12 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
     [SerializeField] private Button[] stageSelectButtons = new Button[4];
     [SerializeField] private bool selectFirstStageWhenPanelOpens = true;
     [SerializeField] private bool wrapStageSelection = true;
-    [Tooltip("½ºÅ×ÀÌÁö ÆĞ³ÎÀ» ·Îºñ ¸ŞÀÎ¿¡¼­ Ç×»ó ÄÑµÓ´Ï´Ù. StageButtonÀ» Á¦°ÅÇÏ°Å³ª ºñÈ°¼ºÈ­ÇÑ ±¸Á¶¿¡¼­ »ç¿ëÇÕ´Ï´Ù.")]
+    [Tooltip("ìŠ¤í…Œì´ì§€ íŒ¨ë„ì„ ë¡œë¹„ ë©”ì¸ì—ì„œ í•­ìƒ ì¼œë‘¡ë‹ˆë‹¤. StageButtonì„ ì œê±°í•˜ê±°ë‚˜ ë¹„í™œì„±í™”í•œ êµ¬ì¡°ì—ì„œ ì‚¬ìš©í•©ë‹ˆë‹¤.")]
     [SerializeField] private bool keepStagePanelAlwaysOpen = true;
-    [Tooltip("Ç×»ó ÄÑµĞ ½ºÅ×ÀÌÁö ÆĞ³ÎÀ» º°µµ ÀÔ·Â ¸ğµå·Î Ã³¸®ÇÒÁö ¼³Á¤ÇÕ´Ï´Ù. ±âº»°ªÀº falseÀÌ¸ç, Space´Â PlayButton ÀÔ·ÂÀ¸·Î À¯ÁöµË´Ï´Ù.")]
+    [Tooltip("í•­ìƒ ì¼œë‘” ìŠ¤í…Œì´ì§€ íŒ¨ë„ì„ ë³„ë„ ì…ë ¥ ëª¨ë“œë¡œ ì²˜ë¦¬í• ì§€ ì„¤ì •í•©ë‹ˆë‹¤. ê¸°ë³¸ê°’ì€ falseì´ë©°, SpaceëŠ” PlayButton ì…ë ¥ìœ¼ë¡œ ìœ ì§€ë©ë‹ˆë‹¤.")]
     [SerializeField] private bool handleAlwaysOpenStagePanelAsModal = false;
     [SerializeField] private bool closeStagePanelBySetActiveWhenCloseButtonMissing = true;
-    [Tooltip("½ºÅ×ÀÌÁö ¹öÆ°À» Áß¾Ó ¼±ÅÃ ¹æ½ÄÀ¸·Î È¸Àü½ÃÅ°´Â ÄÁÆ®·Ñ·¯ÀÔ´Ï´Ù.")]
+    [Tooltip("ìŠ¤í…Œì´ì§€ ë²„íŠ¼ì„ ì¤‘ì•™ ì„ íƒ ë°©ì‹ìœ¼ë¡œ íšŒì „ì‹œí‚¤ëŠ” ì»¨íŠ¸ë¡¤ëŸ¬ì…ë‹ˆë‹¤.")]
     [SerializeField] private LobbyStageButtonCarousel stageButtonCarousel;
 
     [Header("Character Setting Buttons")]
@@ -90,11 +94,11 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
     [SerializeField] private CharacterSubPanelOpenButton runeOpenButton;
     [SerializeField] private GameObject skillArea;
     [SerializeField] private GameObject runeArea;
-    [Tooltip("CharacterSettingPanelÀÇ ÇÁ¸®ºä/·é/½ºÅ³ ÅÇ ÀüÈ¯À» ´ã´çÇÏ´Â Setting ÄÄÆ÷³ÍÆ®ÀÔ´Ï´Ù.")]
+    [Tooltip("CharacterSettingPanelì˜ í”„ë¦¬ë·°/ë£¬/ìŠ¤í‚¬ íƒ­ ì „í™˜ì„ ë‹´ë‹¹í•˜ëŠ” Setting ì»´í¬ë„ŒíŠ¸ì…ë‹ˆë‹¤.")]
     [SerializeField] private Setting characterSettingController;
 
     [Header("Skill Rune Toggle Keyboard SFX")]
-    [Tooltip("CharacterSettingPanel¿¡¼­ Tab Å°·Î SkillArea/RuneArea¸¦ ÀüÈ¯ÇÒ ¶§ ¸¶¿ì½º È£¹ö¿Í °°Àº È¿°úÀ½À» Àç»ıÇÕ´Ï´Ù.")]
+    [Tooltip("CharacterSettingPanelì—ì„œ Tab í‚¤ë¡œ SkillArea/RuneAreaë¥¼ ì „í™˜í•  ë•Œ ë§ˆìš°ìŠ¤ í˜¸ë²„ì™€ ê°™ì€ íš¨ê³¼ìŒì„ ì¬ìƒí•©ë‹ˆë‹¤.")]
     [SerializeField] private bool playSkillRuneKeyboardHoverSfx = true;
     [SerializeField] private SfxType skillRuneKeyboardHoverSfx = SfxType.NormalButtonHover;
     [SerializeField, Range(0f, 2f)] private float skillRuneKeyboardHoverSfxVolume = 1f;
@@ -126,7 +130,7 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
     [SerializeField] private bool ignoreWhenInputFieldSelected = true;
     [SerializeField] private bool ignoreWhenPointerDragging = true;
     [SerializeField] private bool requireButtonInteractable = true;
-    [Tooltip("SettingWarningUIÃ³·³ Àá±ñ Ç¥½ÃµÇ´Â °æ°í UI´Â ÄÑÁ® ÀÖ¾îµµ ·Îºñ Å°º¸µå Á¶ÀÛÀ» ¸·Áö ¾Ê½À´Ï´Ù.")]
+    [Tooltip("SettingWarningUIì²˜ëŸ¼ ì ê¹ í‘œì‹œë˜ëŠ” ê²½ê³  UIëŠ” ì¼œì ¸ ìˆì–´ë„ ë¡œë¹„ í‚¤ë³´ë“œ ì¡°ì‘ì„ ë§‰ì§€ ì•ŠìŠµë‹ˆë‹¤.")]
     [SerializeField] private bool ignoreWarningUIBlockingPanel = true;
     [SerializeField] private float inputCooldown = 0.08f;
 
@@ -182,11 +186,11 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
 
         if (Input.GetKeyDown(backKey) && CanHandleSharedInput())
         {
-            // ESC ¿ì¼±¼øÀ§:
-            // 1. À¯¹° »óÁ¡ ´İ±â
-            // 2. Ä§½Äµµ ¼±ÅÃ ÆĞ³Î ´İ±â
-            // 3. CharacterSettingPanel ´İ±â
-            // 4. PositionPanel¸¸ ¿­·Á ÀÖÀ» ¶§ ¸Ş´º ¿­±â
+            // ESC ìš°ì„ ìˆœìœ„:
+            // 1. ìœ ë¬¼ ìƒì  ë‹«ê¸°
+            // 2. ì¹¨ì‹ë„ ì„ íƒ íŒ¨ë„ ë‹«ê¸°
+            // 3. CharacterSettingPanel ë‹«ê¸°
+            // 4. PositionPanelë§Œ ì—´ë ¤ ìˆì„ ë•Œ ë©”ë‰´ ì—´ê¸°
             if (TryCloseEscapePriorityPanel())
             {
                 BlockInputForCooldown();
@@ -247,8 +251,8 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
         {
             if (keepStagePanelAlwaysOpen && IsPanelActive(stageSelectPanel))
             {
-                // ½ºÅ×ÀÌÁö ÆĞ³ÎÀÌ Ç×»ó ÄÑÁ® ÀÖ´Â ±¸Á¶¿¡¼­´Â TabÀ¸·Î ´ÙÀ½ ½ºÅ×ÀÌÁö¸¦ Áß¾ÓÀ¸·Î ºÒ·¯¿É´Ï´Ù.
-                // A/D´Â Ä§½Ä ³­ÀÌµµ ¼±ÅÃ¿¡ »ç¿ëÇÏ¹Ç·Î ¿©±â¼­´Â Ã³¸®ÇÏÁö ¾Ê½À´Ï´Ù.
+                // ìŠ¤í…Œì´ì§€ íŒ¨ë„ì´ í•­ìƒ ì¼œì ¸ ìˆëŠ” êµ¬ì¡°ì—ì„œëŠ” Tabìœ¼ë¡œ ë‹¤ìŒ ìŠ¤í…Œì´ì§€ë¥¼ ì¤‘ì•™ìœ¼ë¡œ ë¶ˆëŸ¬ì˜µë‹ˆë‹¤.
+                // A/DëŠ” ì¹¨ì‹ ë‚œì´ë„ ì„ íƒì— ì‚¬ìš©í•˜ë¯€ë¡œ ì—¬ê¸°ì„œëŠ” ì²˜ë¦¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
                 MoveStageSelection(1);
                 BlockInputForCooldown();
                 return;
@@ -300,6 +304,12 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
         if (relicShopPanel == null)
             relicShopPanel = FindSceneObjectByName("RelicShopPanel");
 
+        if (cultureTankPanelPresenter == null)
+            cultureTankPanelPresenter = FindFirstObjectByType<LobbyCultureTankPanelPresenter>(FindObjectsInactive.Include);
+
+        if (cultureTankPanel == null)
+            cultureTankPanel = FindSceneObjectByName("CultureTankPanel");
+
         if (erosionSelectPanel == null)
             erosionSelectPanel = FindSceneObjectByName("ErosionSelectPanel");
 
@@ -324,10 +334,20 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
             return true;
         }
 
+        if (IsPanelActive(cultureTankPanel))
+        {
+            if (cultureTankPanelPresenter != null)
+                cultureTankPanelPresenter.Close();
+            else
+                cultureTankPanel.SetActive(false);
+
+            return true;
+        }
+
         if (IsPanelActive(erosionSelectPanel))
         {
-            // ¾À¿¡ °°Àº ÄÄÆ÷³ÍÆ®°¡ ¿©·¯ °³ ÀÖÀ» ¼ö ÀÖÀ¸¹Ç·Î,
-            // ÇöÀç ¿­¸° ÆĞ³ÎÀ» ½ÇÁ¦·Î °ü¸®ÇÏ´Â ÀÎ½ºÅÏ½º¸¦ ´Ù½Ã Ã£½À´Ï´Ù.
+            // ì”¬ì— ê°™ì€ ì»´í¬ë„ŒíŠ¸ê°€ ì—¬ëŸ¬ ê°œ ìˆì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ,
+            // í˜„ì¬ ì—´ë¦° íŒ¨ë„ì„ ì‹¤ì œë¡œ ê´€ë¦¬í•˜ëŠ” ì¸ìŠ¤í„´ìŠ¤ë¥¼ ë‹¤ì‹œ ì°¾ìŠµë‹ˆë‹¤.
             LobbyErosionMirrorButton controller =
                 FindErosionMirrorButtonForPanel(erosionSelectPanel);
 
@@ -341,8 +361,8 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
                 erosionSelectPanel.SetActive(false);
                 LobbyPositionModalInputBlocker.Unblock(null);
                 Debug.LogWarning(
-                    "[LobbyMainPanelKeyboardInputController] ErosionSelectPanelÀ» °ü¸®ÇÏ´Â " +
-                    "LobbyErosionMirrorButtonÀ» Ã£Áö ¸øÇØ ÀÔ·Â Â÷´ÜÀ» °­Á¦·Î ÇØÁ¦Çß½À´Ï´Ù.",
+                    "[LobbyMainPanelKeyboardInputController] ErosionSelectPanelì„ ê´€ë¦¬í•˜ëŠ” " +
+                    "LobbyErosionMirrorButtonì„ ì°¾ì§€ ëª»í•´ ì…ë ¥ ì°¨ë‹¨ì„ ê°•ì œë¡œ í•´ì œí–ˆìŠµë‹ˆë‹¤.",
                     this);
             }
 
@@ -508,7 +528,7 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
 
         if (Input.GetKeyDown(stageKey))
         {
-            // StageSelectPanel ¾È¿¡¼­µµ TabÀº ÆĞ³Î ´İ±â°¡ ¾Æ´Ï¶ó ´ÙÀ½ ½ºÅ×ÀÌÁö ÀÌµ¿À¸·Î »ç¿ëÇÕ´Ï´Ù.
+            // StageSelectPanel ì•ˆì—ì„œë„ Tabì€ íŒ¨ë„ ë‹«ê¸°ê°€ ì•„ë‹ˆë¼ ë‹¤ìŒ ìŠ¤í…Œì´ì§€ ì´ë™ìœ¼ë¡œ ì‚¬ìš©í•©ë‹ˆë‹¤.
             MoveStageSelection(1);
             BlockInputForCooldown();
             return;
@@ -881,8 +901,8 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
         if (characterSettingController == null)
             return;
 
-        // ÅÇ ÀüÈ¯Àº Setting ÇÑ °÷¿¡¼­¸¸ Ã³¸®ÇÑ´Ù.
-        // ¿µ¿ªÀ» ºñÈ°¼ºÈ­ÇÏÁö ¾ÊÀ¸¹Ç·Î ÀÌµ¿ ÄÚ·çÆ¾µµ ¾ÈÀüÇÏ°Ô ½ÇÇàµÈ´Ù.
+        // íƒ­ ì „í™˜ì€ Setting í•œ ê³³ì—ì„œë§Œ ì²˜ë¦¬í•œë‹¤.
+        // ì˜ì—­ì„ ë¹„í™œì„±í™”í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ ì´ë™ ì½”ë£¨í‹´ë„ ì•ˆì „í•˜ê²Œ ì‹¤í–‰ëœë‹¤.
         characterSettingController.CycleTabByKeyboard();
     }
 

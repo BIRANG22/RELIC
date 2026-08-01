@@ -66,7 +66,7 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
         LobbyPositionModalInputBlocker.Unblock(this);
     }
 
-    private void OnMouseUp()
+    private void OnMouseUpAsButton()
     {
         OpenErosionSelectPanel();
     }

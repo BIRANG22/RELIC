@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,10 +10,12 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
     [SerializeField] private Transform[] worldAnchors = new Transform[3];
     [SerializeField] private LobbyBlueDustiumHudUI blueDustiumHud;
     [SerializeField] private Vector2 skillUpgradeButtonStartPosition = new(2400f, 200f);
-    [SerializeField] private Sprite relicRefreshIcon;
     [SerializeField] private GameObject panelRoot;
     [SerializeField] private LobbyRelicOfferButtonUI[] offerButtons = new LobbyRelicOfferButtonUI[3];
     [SerializeField] private LobbyRelicRefreshButtonUI refreshButton;
+    [SerializeField] private GameObject relicDescriptionRoot;
+    [SerializeField] private TMP_Text relicDescriptionNameText;
+    [SerializeField] private TMP_Text relicDescriptionBodyText;
 
     private readonly List<LobbyRelicOfferButtonUI> buttons = new();
     private Canvas ownerCanvas;
@@ -45,6 +48,8 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
     {
         if (panelRoot != null)
             panelRoot.SetActive(false);
+
+        HideRelicDescription();
 
         // ESC와 닫기 버튼 모두 같은 Close()를 사용하므로
         // 상점이 닫힐 때 월드 오브젝트 입력 차단도 반드시 해제한다.
@@ -102,7 +107,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             if (DataManager.Instance.RelicDatabase.TryGet(offer.RelicId, out RelicData relic))
                 RelicRarityUtility.TryParseChestRarity(relic.Rarity, out rarity);
 
-            buttons[i].Bind(offer, icon, rarity, Purchase);
+            buttons[i].Bind(offer, icon, rarity, Purchase, HandleOfferHover);
 
             if (Contains(runtime.OwnedRelicIds, offer.RelicId))
                 buttons[i].ShowSold();
@@ -209,7 +214,8 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         if (refreshButton == null && panelRoot != null)
             refreshButton = panelRoot.GetComponentInChildren<LobbyRelicRefreshButtonUI>(true);
 
-        refreshButton?.Initialize(relicRefreshIcon, RefreshRelicOffers);
+        refreshButton?.Initialize(RefreshRelicOffers);
+        EnsureDescriptionView();
         BindCloseButton();
     }
 
@@ -341,8 +347,91 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
     private void ShowAllEmpty()
     {
+        HideRelicDescription();
         for (int i = 0; i < buttons.Count; i++)
             buttons[i].ShowEmpty();
+    }
+
+    private void HandleOfferHover(string relicId, bool hovered)
+    {
+        if (!hovered || string.IsNullOrWhiteSpace(relicId))
+        {
+            HideRelicDescription();
+            return;
+        }
+
+        EnsureDescriptionView();
+        RelicData relic = DataManager.Instance?.RelicDatabase?.Get(relicId);
+        if (relic == null || relicDescriptionRoot == null)
+        {
+            HideRelicDescription();
+            return;
+        }
+
+        if (relicDescriptionNameText != null)
+            relicDescriptionNameText.text = string.IsNullOrWhiteSpace(relic.Name) ? relicId : relic.Name;
+
+        if (relicDescriptionBodyText != null)
+            relicDescriptionBodyText.text = relic.EffectDesc ?? string.Empty;
+
+        relicDescriptionRoot.SetActive(true);
+    }
+
+    private void HideRelicDescription()
+    {
+        if (relicDescriptionNameText != null)
+            relicDescriptionNameText.text = string.Empty;
+
+        if (relicDescriptionBodyText != null)
+            relicDescriptionBodyText.text = string.Empty;
+    }
+
+    private void EnsureDescriptionView()
+    {
+        if (panelRoot == null)
+            return;
+
+        if (relicDescriptionRoot == null)
+        {
+            Transform info = panelRoot.transform.Find("relic_info");
+            if (info != null)
+                relicDescriptionRoot = info.gameObject;
+        }
+
+        if (relicDescriptionRoot == null)
+            return;
+
+        if (relicDescriptionNameText == null)
+        {
+            Transform nameTransform = FindDescendant(relicDescriptionRoot.transform, "relic_name");
+            if (nameTransform != null)
+                relicDescriptionNameText = nameTransform.GetComponent<TMP_Text>();
+        }
+
+        if (relicDescriptionBodyText == null)
+        {
+            Transform effectTransform = FindDescendant(relicDescriptionRoot.transform, "relic_effect");
+            if (effectTransform != null)
+                relicDescriptionBodyText = effectTransform.GetComponent<TMP_Text>();
+        }
+
+        relicDescriptionRoot.SetActive(true);
+        HideRelicDescription();
+    }
+
+    private static Transform FindDescendant(Transform root, string objectName)
+    {
+        if (root == null)
+            return null;
+
+        Transform[] children = root.GetComponentsInChildren<Transform>(true);
+        for (int i = 0; i < children.Length; i++)
+        {
+            if (children[i] != null && children[i].name == objectName)
+                return children[i];
+        }
+
+        return null;
     }
 
     private static bool Contains(IEnumerable<string> ids, string target)

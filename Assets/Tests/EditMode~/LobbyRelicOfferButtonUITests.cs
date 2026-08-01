@@ -3,12 +3,50 @@ using System.Reflection;
 using NUnit.Framework;
 using Relic.Gameplay.Data;
 using TMPro;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.TestTools;
+using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class LobbyRelicOfferButtonUITests
 {
+    private const string LobbyScenePath = "Assets/Project/Scenes/YDM/Lobby.unity";
+
+    [Test]
+    public void LobbyScene_RelicIconsRenderAboveMagicRingVfx()
+    {
+        Scene scene = EditorSceneManager.OpenPreviewScene(LobbyScenePath);
+
+        try
+        {
+            GameObject panel = FindGameObject(scene, "RelicShopPanel");
+            Assert.That(panel, Is.Not.Null);
+
+            Image[] images = panel.GetComponentsInChildren<Image>(true);
+            int configuredIconCount = 0;
+            foreach (Image image in images)
+            {
+                if (image.name != "RelicIcon")
+                    continue;
+
+                Canvas canvas = image.GetComponent<Canvas>();
+                Assert.That(canvas, Is.Not.Null, $"{image.transform.parent.name}/RelicIcon");
+                Assert.That(canvas.overrideSorting, Is.True);
+                Assert.That(canvas.sortingLayerName, Is.EqualTo("Unit"));
+                Assert.That(canvas.sortingOrder, Is.EqualTo(10));
+                configuredIconCount++;
+            }
+
+            Assert.That(configuredIconCount, Is.EqualTo(3));
+        }
+        finally
+        {
+            EditorSceneManager.ClosePreviewScene(scene);
+        }
+    }
+
     [TestCase(RelicRarity.Common, 200, 208, 217)]
     [TestCase(RelicRarity.Uncommon, 92, 219, 131)]
     [TestCase(RelicRarity.Rare, 78, 141, 255)]
@@ -135,13 +173,134 @@ public class LobbyRelicOfferButtonUITests
 
         try
         {
-            view.Initialize(null, null);
+            view.Initialize(null);
 
             Assert.That(root.transform.childCount, Is.Zero);
         }
         finally
         {
             Object.DestroyImmediate(root);
+        }
+    }
+
+    [Test]
+    public void Initialize_PreservesSceneAssignedRefreshSprite()
+    {
+        var root = new GameObject(
+            "RelicRefresh",
+            typeof(RectTransform),
+            typeof(CanvasRenderer),
+            typeof(Image),
+            typeof(Button));
+        var iconObject = new GameObject(
+            "RefreshIcon",
+            typeof(RectTransform),
+            typeof(CanvasRenderer),
+            typeof(Image));
+        iconObject.transform.SetParent(root.transform, false);
+        var priceObject = new GameObject(
+            "Price",
+            typeof(RectTransform),
+            typeof(CanvasRenderer),
+            typeof(TextMeshProUGUI));
+        priceObject.transform.SetParent(root.transform, false);
+
+        Sprite sceneSprite = Sprite.Create(
+            new Texture2D(2, 2),
+            new Rect(0, 0, 2, 2),
+            Vector2.zero);
+        Image icon = iconObject.GetComponent<Image>();
+        icon.sprite = sceneSprite;
+        LobbyRelicRefreshButtonUI view = root.AddComponent<LobbyRelicRefreshButtonUI>();
+
+        try
+        {
+            view.Initialize(null);
+            Assert.That(icon.sprite, Is.SameAs(sceneSprite));
+        }
+        finally
+        {
+            Texture2D texture = sceneSprite.texture;
+            Object.DestroyImmediate(sceneSprite);
+            Object.DestroyImmediate(texture);
+            Object.DestroyImmediate(root);
+        }
+    }
+
+    [Test]
+    public void PointerHover_ReportsRelicAndScalesIconThenRestoresIt()
+    {
+        LobbyRelicOfferButtonUI view = CreateConfiguredOfferView(
+            out GameObject root,
+            out _,
+            out _);
+        string hoveredRelicId = null;
+        bool? hoverState = null;
+
+        try
+        {
+            view.Bind(
+                new LobbyRelicOffer("relic-test", 100),
+                null,
+                RelicRarity.Common,
+                null,
+                (relicId, hovered) =>
+                {
+                    hoveredRelicId = relicId;
+                    hoverState = hovered;
+                });
+
+            RectTransform icon = root.transform.Find("RelicIcon") as RectTransform;
+            view.OnPointerEnter(null);
+
+            Assert.That(hoveredRelicId, Is.EqualTo("relic-test"));
+            Assert.That(hoverState, Is.True);
+            Assert.That(icon.localScale, Is.EqualTo(Vector3.one * 1.12f));
+
+            view.OnPointerExit(null);
+
+            Assert.That(hoverState, Is.False);
+            Assert.That(icon.localScale, Is.EqualTo(Vector3.one));
+        }
+        finally
+        {
+            Object.DestroyImmediate(root);
+        }
+    }
+
+    [Test]
+    public void DescriptionView_UsesExistingRelicNameAndEffectWithoutCreatingText()
+    {
+        GameObject presenterObject = new("Presenter");
+        LobbyRelicShopPresenter presenter = presenterObject.AddComponent<LobbyRelicShopPresenter>();
+        GameObject panel = new("RelicShopPanel");
+        panel.transform.SetParent(presenterObject.transform, false);
+        GameObject info = new("relic_info");
+        info.transform.SetParent(panel.transform, false);
+        TMP_Text name = new GameObject("relic_name", typeof(RectTransform), typeof(TextMeshProUGUI))
+            .GetComponent<TMP_Text>();
+        name.transform.SetParent(info.transform, false);
+        TMP_Text effect = new GameObject("relic_effect", typeof(RectTransform), typeof(TextMeshProUGUI))
+            .GetComponent<TMP_Text>();
+        effect.transform.SetParent(info.transform, false);
+
+        try
+        {
+            SetPrivateField(presenter, "panelRoot", panel);
+            MethodInfo ensure = typeof(LobbyRelicShopPresenter).GetMethod(
+                "EnsureDescriptionView",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+
+            ensure.Invoke(presenter, null);
+
+            Assert.That(info.activeSelf, Is.True);
+            Assert.That(info.transform.childCount, Is.EqualTo(2));
+            Assert.That(GetPrivateField<TMP_Text>(presenter, "relicDescriptionNameText"), Is.SameAs(name));
+            Assert.That(GetPrivateField<TMP_Text>(presenter, "relicDescriptionBodyText"), Is.SameAs(effect));
+        }
+        finally
+        {
+            Object.DestroyImmediate(presenterObject);
         }
     }
 
@@ -194,5 +353,29 @@ public class LobbyRelicOfferButtonUITests
             BindingFlags.Instance | BindingFlags.NonPublic);
         Assert.That(field, Is.Not.Null);
         field.SetValue(target, value);
+    }
+
+    private static T GetPrivateField<T>(object target, string fieldName)
+    {
+        FieldInfo field = target.GetType().GetField(
+            fieldName,
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.That(field, Is.Not.Null);
+        return (T)field.GetValue(target);
+    }
+
+    private static GameObject FindGameObject(Scene scene, string objectName)
+    {
+        foreach (GameObject root in scene.GetRootGameObjects())
+        {
+            Transform[] children = root.GetComponentsInChildren<Transform>(true);
+            foreach (Transform child in children)
+            {
+                if (child.name == objectName)
+                    return child.gameObject;
+            }
+        }
+
+        return null;
     }
 }

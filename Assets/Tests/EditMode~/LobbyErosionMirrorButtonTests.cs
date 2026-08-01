@@ -1,3 +1,4 @@
+using System.IO;
 using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
@@ -5,6 +6,19 @@ using UnityEngine.UI;
 
 public class LobbyErosionMirrorButtonTests
 {
+    private const string SourcePath =
+        "Assets/Project/Scripts/Gameplay/Scene/Lobby/LobbyErosionMirrorButton.cs";
+
+    [Test]
+    public void WorldClick_OpensOnMouseReleaseOverSameCollider()
+    {
+        string source = File.ReadAllText(SourcePath);
+
+        Assert.That(source, Does.Contain("private void OnMouseUpAsButton()"));
+        Assert.That(source, Does.Not.Contain("private void OnMouseDown()"));
+        Assert.That(source, Does.Not.Contain("private void OnMouseUp()"));
+    }
+
     [Test]
     public void OpenErosionSelectPanel_ShowsModalOverlayUnderPositionPanel()
     {
