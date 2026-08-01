@@ -7,17 +7,48 @@ using UnityEngine.UI;
 
 public sealed class LobbyRelicOfferButtonUI : MonoBehaviour
 {
+    [Header("UI")]
     [SerializeField] private Button button;
     [SerializeField] private Image iconImage;
     [SerializeField] private TMP_Text priceText;
+
+    [Header("Rarity Ring")]
     [SerializeField] private GameObject rarityRingRoot;
     [SerializeField] private ParticleSystem rarityParticles;
 
+    [Header("Rarity Particle Colors")]
+    [Tooltip("일반 등급 파티클 색상")]
+    [SerializeField]
+    private Color commonParticleColor =
+        new Color32(200, 208, 217, 255);
+
+    [Tooltip("고급 등급 파티클 색상")]
+    [SerializeField]
+    private Color uncommonParticleColor =
+        new Color32(92, 219, 131, 255);
+
+    [Tooltip("희귀 등급 파티클 색상")]
+    [SerializeField]
+    private Color rareParticleColor =
+        new Color32(78, 141, 255, 255);
+
+    [Tooltip("유니크 등급 파티클 색상")]
+    [SerializeField]
+    private Color uniqueParticleColor =
+        new Color32(255, 179, 71, 255);
+
+    [Tooltip("알 수 없는 등급에 사용할 기본 색상")]
+    [SerializeField] private Color defaultParticleColor = Color.white;
+
     private string relicId;
     private Action<string> purchaseRequested;
+
     private bool clickListenerRegistered;
     private bool missingViewWarningLogged;
-    private ParticleSystem[] rarityRingParticleSystems = Array.Empty<ParticleSystem>();
+
+    private ParticleSystem[] rarityRingParticleSystems =
+        Array.Empty<ParticleSystem>();
+
     private Coroutine rarityRingHideCoroutine;
 
     private void Awake()
@@ -36,10 +67,13 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour
 
         relicId = offer.RelicId;
         purchaseRequested = callback;
+
         iconImage.sprite = icon;
         iconImage.enabled = icon != null;
+
         priceText.text = offer.Price.ToString();
         button.interactable = true;
+
         ShowRarityRing(rarity);
     }
 
@@ -50,6 +84,7 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour
 
         priceText.text = "판매 완료";
         button.interactable = false;
+
         FadeOutRarityRing();
     }
 
@@ -61,8 +96,10 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour
             return;
 
         relicId = null;
+
         iconImage.sprite = null;
         iconImage.enabled = false;
+
         priceText.text = string.Empty;
         button.interactable = false;
     }
@@ -79,20 +116,30 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour
             button = GetComponent<Button>();
 
         if (iconImage == null)
-            iconImage = transform.Find("RelicIcon")?.GetComponent<Image>();
+        {
+            iconImage =
+                transform.Find("RelicIcon")?.GetComponent<Image>();
+        }
 
         if (priceText == null)
-            priceText = transform.Find("Price")?.GetComponent<TMP_Text>();
+        {
+            priceText =
+                transform.Find("Price")?.GetComponent<TMP_Text>();
+        }
 
         EnsureRarityRingReferences();
 
-        if (button == null || iconImage == null || priceText == null)
+        if (button == null ||
+            iconImage == null ||
+            priceText == null)
         {
             if (!missingViewWarningLogged)
             {
                 Debug.LogWarning(
-                    $"[LobbyRelicOfferButtonUI] Serialized view references are missing on '{name}'.",
+                    $"[LobbyRelicOfferButtonUI] " +
+                    $"Serialized view references are missing on '{name}'.",
                     this);
+
                 missingViewWarningLogged = true;
             }
 
@@ -114,23 +161,35 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour
 
     private void RequestPurchase()
     {
-        if (button != null && button.interactable && !string.IsNullOrWhiteSpace(relicId))
-            purchaseRequested?.Invoke(relicId);
+        if (button == null ||
+            !button.interactable ||
+            string.IsNullOrWhiteSpace(relicId))
+        {
+            return;
+        }
+
+        purchaseRequested?.Invoke(relicId);
     }
 
     private void EnsureRarityRingReferences()
     {
         if (rarityRingRoot == null)
-            rarityRingRoot = transform.Find("magic_ring_06")?.gameObject;
+        {
+            rarityRingRoot =
+                transform.Find("magic_ring_06")?.gameObject;
+        }
 
-        if (rarityParticles == null && rarityRingRoot != null)
+        if (rarityParticles == null &&
+            rarityRingRoot != null)
         {
             ParticleSystem[] particles =
-                rarityRingRoot.GetComponentsInChildren<ParticleSystem>(true);
+                rarityRingRoot.GetComponentsInChildren<ParticleSystem>(
+                    true);
 
             for (int i = 0; i < particles.Length; i++)
             {
-                if (particles[i] != null && particles[i].name == "03")
+                if (particles[i] != null &&
+                    particles[i].name == "03")
                 {
                     rarityParticles = particles[i];
                     break;
@@ -141,7 +200,8 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour
         if (rarityRingRoot != null)
         {
             rarityRingParticleSystems =
-                rarityRingRoot.GetComponentsInChildren<ParticleSystem>(true);
+                rarityRingRoot.GetComponentsInChildren<ParticleSystem>(
+                    true);
         }
     }
 
@@ -157,21 +217,54 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour
 
         if (rarityParticles != null)
         {
-            ParticleSystem.MainModule main = rarityParticles.main;
-            main.startColor = LobbyRelicRarityPalette.GetColor(rarity);
+            ParticleSystem.MainModule main =
+                rarityParticles.main;
+
+            main.startColor = GetParticleColor(rarity);
         }
 
         rarityRingRoot.SetActive(true);
         EnsureRarityRingReferences();
 
-        for (int i = 0; i < rarityRingParticleSystems.Length; i++)
+        for (int i = 0;
+             i < rarityRingParticleSystems.Length;
+             i++)
         {
-            ParticleSystem particles = rarityRingParticleSystems[i];
-            if (particles == null || !particles.gameObject.activeInHierarchy)
+            ParticleSystem particles =
+                rarityRingParticleSystems[i];
+
+            if (particles == null ||
+                !particles.gameObject.activeInHierarchy)
+            {
                 continue;
+            }
 
             particles.Clear(false);
             particles.Play(false);
+        }
+    }
+
+    /// <summary>
+    /// 인스펙터에 지정한 등급별 색상을 반환합니다.
+    /// </summary>
+    private Color GetParticleColor(RelicRarity rarity)
+    {
+        switch (rarity)
+        {
+            case RelicRarity.Common:
+                return commonParticleColor;
+
+            case RelicRarity.Uncommon:
+                return uncommonParticleColor;
+
+            case RelicRarity.Rare:
+                return rareParticleColor;
+
+            case RelicRarity.Unique:
+                return uniqueParticleColor;
+
+            default:
+                return defaultParticleColor;
         }
     }
 
@@ -180,18 +273,31 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour
         EnsureRarityRingReferences();
         CancelRarityRingFade();
 
-        if (rarityRingRoot == null || !rarityRingRoot.activeSelf)
+        if (rarityRingRoot == null ||
+            !rarityRingRoot.activeSelf)
+        {
             return;
+        }
 
         bool stoppedParticles = false;
 
-        for (int i = 0; i < rarityRingParticleSystems.Length; i++)
+        for (int i = 0;
+             i < rarityRingParticleSystems.Length;
+             i++)
         {
-            ParticleSystem particles = rarityRingParticleSystems[i];
-            if (particles == null || !particles.gameObject.activeInHierarchy)
-                continue;
+            ParticleSystem particles =
+                rarityRingParticleSystems[i];
 
-            particles.Stop(false, ParticleSystemStopBehavior.StopEmitting);
+            if (particles == null ||
+                !particles.gameObject.activeInHierarchy)
+            {
+                continue;
+            }
+
+            particles.Stop(
+                false,
+                ParticleSystemStopBehavior.StopEmitting);
+
             stoppedParticles = true;
         }
 
@@ -201,7 +307,8 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour
             return;
         }
 
-        rarityRingHideCoroutine = StartCoroutine(HideRarityRingWhenFinished());
+        rarityRingHideCoroutine =
+            StartCoroutine(HideRarityRingWhenFinished());
     }
 
     private IEnumerator HideRarityRingWhenFinished()
@@ -217,9 +324,13 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour
 
     private bool IsRarityRingAlive()
     {
-        for (int i = 0; i < rarityRingParticleSystems.Length; i++)
+        for (int i = 0;
+             i < rarityRingParticleSystems.Length;
+             i++)
         {
-            ParticleSystem particles = rarityRingParticleSystems[i];
+            ParticleSystem particles =
+                rarityRingParticleSystems[i];
+
             if (particles != null &&
                 particles.gameObject.activeInHierarchy &&
                 particles.IsAlive(false))
@@ -248,19 +359,13 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour
         StopCoroutine(rarityRingHideCoroutine);
         rarityRingHideCoroutine = null;
     }
-}
 
-public static class LobbyRelicRarityPalette
-{
-    public static Color GetColor(RelicRarity rarity)
+    private void OnDestroy()
     {
-        return rarity switch
+        if (button != null && clickListenerRegistered)
         {
-            RelicRarity.Common => new Color32(200, 208, 217, 255),
-            RelicRarity.Uncommon => new Color32(92, 219, 131, 255),
-            RelicRarity.Rare => new Color32(78, 141, 255, 255),
-            RelicRarity.Unique => new Color32(255, 179, 71, 255),
-            _ => Color.white
-        };
+            button.onClick.RemoveListener(RequestPurchase);
+            clickListenerRegistered = false;
+        }
     }
 }
