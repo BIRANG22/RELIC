@@ -16,7 +16,6 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
     [SerializeField] private GameObject[] panelsToClose;
     [SerializeField] private GameObject panelToOpen;
 
-
     [Header("Lobby Background Change")]
     [Tooltip("Panel To Open에 맞는 로비 배경으로 자동 전환합니다.")]
     [SerializeField] private bool changeLobbyBackground = true;
@@ -55,7 +54,11 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 
     [Tooltip("위치를 되돌릴 메인 카메라의 HorizontalHubCameraDrag입니다. 비어 있으면 자동으로 찾습니다.")]
     [SerializeField] private HorizontalHubCameraDrag hubCameraDrag;
-    [SerializeField] private PanelTransitionMode transitionMode = PanelTransitionMode.LobbyToCharacter;
+
+    [SerializeField]
+    private PanelTransitionMode transitionMode =
+        PanelTransitionMode.LobbyToCharacter;
+
     [SerializeField] private float clickActionDelay = 0f;
 
     [Header("Middle Actions")]
@@ -66,12 +69,20 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
     [SerializeField] private bool playHoverSound = true;
     [SerializeField] private SfxType hoverSfx = SfxType.NormalButtonHover;
     [SerializeField] private float hoverSfxVolumeMultiplier = 1f;
+
     [SerializeField] private bool playClickSound = true;
     [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
     [SerializeField] private float clickSfxVolumeMultiplier = 1f;
 
     private LobbyBackgroundStateController backgroundStateController;
     private bool isProcessing;
+
+    /// <summary>
+    /// 이 버튼에 지정된 Panel To Open이 현재 열려 있는지 반환합니다.
+    /// SpriteHoverScale에서 선택 표시를 유지할 때 사용합니다.
+    /// </summary>
+    public bool IsTargetPanelOpen =>
+        panelToOpen != null && panelToOpen.activeInHierarchy;
 
     private void Awake()
     {
@@ -111,7 +122,11 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
             return;
 
         if (AudioManager.Instance != null)
-            AudioManager.Instance.PlaySfx(hoverSfx, hoverSfxVolumeMultiplier);
+        {
+            AudioManager.Instance.PlaySfx(
+                hoverSfx,
+                hoverSfxVolumeMultiplier);
+        }
     }
 
     public void Execute()
@@ -123,7 +138,11 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
             return;
 
         if (playClickSound && AudioManager.Instance != null)
-            AudioManager.Instance.PlaySfx(clickSfx, clickSfxVolumeMultiplier);
+        {
+            AudioManager.Instance.PlaySfx(
+                clickSfx,
+                clickSfxVolumeMultiplier);
+        }
 
         CloseOpenedPopupPanels();
 
@@ -158,9 +177,12 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 
         Invoke(
             nameof(ClearProcessing),
-            Mathf.Max(0.01f, clickActionDelay + lobbyPanelTransition.EstimatedTransitionTime + 0.1f));
+            Mathf.Max(
+                0.01f,
+                clickActionDelay +
+                lobbyPanelTransition.EstimatedTransitionTime +
+                0.1f));
     }
-
 
     /// <summary>
     /// MenuPanel이 열려 있으면 메뉴 바깥의 로비 월드 오브젝트 입력을 차단합니다.
@@ -172,10 +194,12 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
             return false;
 
         GameObject menuPanel = UIPanelButton.FindMenuPanelInScene();
+
         if (menuPanel == null)
             return true;
 
         Transform currentTransform = transform;
+
         return currentTransform != menuPanel.transform &&
                !currentTransform.IsChildOf(menuPanel.transform);
     }
@@ -187,8 +211,9 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 
         if (hubCameraDrag == null)
         {
-            hubCameraDrag = FindFirstObjectByType<HorizontalHubCameraDrag>(
-                FindObjectsInactive.Include);
+            hubCameraDrag =
+                FindFirstObjectByType<HorizontalHubCameraDrag>(
+                    FindObjectsInactive.Include);
         }
 
         if (hubCameraDrag != null)
@@ -199,9 +224,11 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
         out LobbyPanelTransition.TransitionDirection closeDirection,
         out LobbyPanelTransition.TransitionDirection openDirection)
     {
-        // 현재 로비 전환은 HorizontalTransition만 사용합니다.
-        closeDirection = LobbyPanelTransition.TransitionDirection.Horizontal;
-        openDirection = LobbyPanelTransition.TransitionDirection.Horizontal;
+        closeDirection =
+            LobbyPanelTransition.TransitionDirection.Horizontal;
+
+        openDirection =
+            LobbyPanelTransition.TransitionDirection.Horizontal;
     }
 
     private void CloseOpenedPopupPanels()
@@ -221,8 +248,6 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 
     private void InvokeBeforePanelChange()
     {
-        // 전환 화면이 완전히 닫힌 상태에서 카메라를 초기화합니다.
-        // 따라서 카메라 이동 과정은 플레이어에게 보이지 않습니다.
         if (transitionMode == PanelTransitionMode.LobbyToCharacter)
             ResetCameraBeforeTransition();
 
@@ -241,9 +266,13 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
             return;
 
         if (transitionMode == PanelTransitionMode.LobbyToCharacter)
+        {
             viewStateController.ShowCharacterSelection();
+        }
         else if (transitionMode == PanelTransitionMode.CharacterToLobby)
+        {
             viewStateController.ShowPosition();
+        }
     }
 
     private void ApplyWorldObjectChangeImmediately()
@@ -282,14 +311,16 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
             panelToOpen.SetActive(true);
     }
 
-
     private void ResolveLobbyBackgrounds()
     {
         if (positionBackground == null)
             positionBackground = FindSceneObject("Position_Back");
 
         if (characterSettingBackground == null)
-            characterSettingBackground = FindSceneObject("CharacterSetting_Back");
+        {
+            characterSettingBackground =
+                FindSceneObject("CharacterSetting_Back");
+        }
 
         if (erosionSelectBackground == null)
             erosionSelectBackground = FindSceneObject("ErosionSelect_Back");
@@ -306,10 +337,15 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
         if (!changeLobbyBackground)
             return;
 
-        if (!TryGetTargetLobbyBackgroundState(out LobbyBackgroundState targetState))
+        if (!TryGetTargetLobbyBackgroundState(
+                out LobbyBackgroundState targetState))
+        {
             return;
+        }
 
-        LobbyBackgroundStateController controller = ResolveBackgroundStateController();
+        LobbyBackgroundStateController controller =
+            ResolveBackgroundStateController();
+
         if (controller != null)
         {
             controller.ShowBackground(targetState);
@@ -319,7 +355,8 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
         ApplyLobbyBackgroundFallback(targetState);
     }
 
-    private bool TryGetTargetLobbyBackgroundState(out LobbyBackgroundState state)
+    private bool TryGetTargetLobbyBackgroundState(
+        out LobbyBackgroundState state)
     {
         if (transitionMode == PanelTransitionMode.CharacterToLobby)
         {
@@ -366,27 +403,47 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
         if (backgroundStateController != null)
             return backgroundStateController;
 
-        backgroundStateController = FindFirstObjectByType<LobbyBackgroundStateController>(
-            FindObjectsInactive.Include);
+        backgroundStateController =
+            FindFirstObjectByType<LobbyBackgroundStateController>(
+                FindObjectsInactive.Include);
+
         return backgroundStateController;
     }
 
-    private void ApplyLobbyBackgroundFallback(LobbyBackgroundState targetState)
+    private void ApplyLobbyBackgroundFallback(
+        LobbyBackgroundState targetState)
     {
         ResolveLobbyBackgrounds();
 
-        GameObject targetBackground = GetBackgroundForState(targetState);
+        GameObject targetBackground =
+            GetBackgroundForState(targetState);
+
         if (targetBackground == null)
             return;
 
-        SetBackgroundActive(positionBackground, targetBackground);
-        SetBackgroundActive(characterSettingBackground, targetBackground);
-        SetBackgroundActive(erosionSelectBackground, targetBackground);
-        SetBackgroundActive(relicShopBackground, targetBackground);
-        SetBackgroundActive(cultureTankBackground, targetBackground);
+        SetBackgroundActive(
+            positionBackground,
+            targetBackground);
+
+        SetBackgroundActive(
+            characterSettingBackground,
+            targetBackground);
+
+        SetBackgroundActive(
+            erosionSelectBackground,
+            targetBackground);
+
+        SetBackgroundActive(
+            relicShopBackground,
+            targetBackground);
+
+        SetBackgroundActive(
+            cultureTankBackground,
+            targetBackground);
     }
 
-    private GameObject GetBackgroundForState(LobbyBackgroundState state)
+    private GameObject GetBackgroundForState(
+        LobbyBackgroundState state)
     {
         switch (state)
         {
@@ -410,7 +467,9 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
         }
     }
 
-    private static void SetBackgroundActive(GameObject background, GameObject targetBackground)
+    private static void SetBackgroundActive(
+        GameObject background,
+        GameObject targetBackground)
     {
         if (background != null)
             background.SetActive(background == targetBackground);
@@ -421,16 +480,20 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
         if (string.IsNullOrWhiteSpace(objectName))
             return null;
 
-        GameObject[] objects = FindObjectsByType<GameObject>(
-            FindObjectsInactive.Include,
-            FindObjectsSortMode.None);
+        GameObject[] objects =
+            FindObjectsByType<GameObject>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None);
 
         for (int i = 0; i < objects.Length; i++)
         {
             GameObject candidate = objects[i];
 
-            if (candidate != null && candidate.name == objectName)
+            if (candidate != null &&
+                candidate.name == objectName)
+            {
                 return candidate;
+            }
         }
 
         return null;
@@ -438,15 +501,20 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 
     private void EnsureWorldCollider()
     {
-        if (GetComponent<Collider2D>() != null || GetComponent<Collider>() != null)
+        if (GetComponent<Collider2D>() != null ||
+            GetComponent<Collider>() != null)
+        {
             return;
+        }
 
         if (GetComponent<SpriteRenderer>() == null)
         {
             Debug.LogWarning(
-                "[LobbyPanelTransitionButton] 월드 클릭을 사용하지만 Collider와 SpriteRenderer가 없습니다. " +
+                "[LobbyPanelTransitionButton] 월드 클릭을 사용하지만 " +
+                "Collider와 SpriteRenderer가 없습니다. " +
                 "Anchor 오브젝트에 Collider2D를 직접 추가하세요.",
                 this);
+
             return;
         }
 
