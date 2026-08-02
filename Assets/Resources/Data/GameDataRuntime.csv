@@ -242,12 +242,6 @@ S_Monster_24,장막,Self,E_Barrier,1,1,0,Range_Self,Buff,자신에게 장막 1�
 ,,,,,,,,,,
 ,,,,,,,,,,
 ,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
 
 # MonsterPatternInfo
 패턴ID,몬스터ID,순서,스킬id,패턴내용,스킬내용
@@ -605,11 +599,11 @@ Relic_P_04,메마른 그릇,E_Max_HP;E_Max_Cost,-8;2,1;1,Passive,0,최대 체력
 Relic_P_05,영혼 기생충,E_Max_HP;E_Cost_Recovery_Delta,-5;1,1;1,Passive,0,최대 체력이 5 감소하고 코스트 회복량이 1 증가한다,Uncommon
 Relic_P_06,붉은 서약검,E_Attack_Cost_Delta;E_Attack_Value_Delta,1;2,1;1,Passive,0,"공격타입 스킬의 코스트가 1 증가하고, 피해량이 2 증가한다",Uncommon
 Relic_P_07,날카로운 파편,E_Attack_Value_Delta;E_Attack_Count_Delta,-2;1,1;1,Passive,0,"공격타입 스킬의 피해량이 2 감소하고, 횟수가 1 증가한다",Rare
-Relic_P_08,증류기,E_Debuff_Cost_Delta;E_Debuff_Value_Delta,2;2,1;1,Passive,0,"디버프타입 스킬의 코스트가 2 증가하고, 수치가 2 증가한다",Rare
+Relic_P_08,유령 인형,E_Debuff_Cost_Delta;E_Debuff_Value_Delta,2;2,1;1,Passive,0,"디버프타입 스킬의 코스트가 2 증가하고, 수치가 2 증가한다",Rare
 Relic_P_09,선봉의 날개,E_Slot1_First_Skill_Cost_Delta,-1,1,Passive,0,1번 슬롯에 등록하는 첫 스킬의 코스트가 1 감소한다,Unique
-Relic_P_10,돌격대의 휘장,E_Slot1_Attack_Value_Delta,1,1,Passive,0,1번 슬롯에 등록하는 공격타입 스킬의 수치 1 증가한다,Unique
-Relic_P_11,굶주린 송곳니,E_Slot1_Attack_Kill_Focus,1,1,Passive,0,1번 슬롯에 등록하는 공격타입 스킬로 적 처치 시 집중을 1 얻는다,Uncommon
-Relic_P_12,여명의 향로,E_Slot1_Buff_Value_Delta,1,1,Passive,0,1번 슬롯에 등록하는 버프타입 스킬의 수치가 1 증가한다,Uncommon
+Relic_P_10,돌격대의 머리띠,E_Slot1_Attack_Value_Delta,1,1,Passive,0,1번 슬롯에 등록하는 공격타입 스킬의 수치 1 증가한다,Unique
+Relic_P_11,진군의 깃발,E_Slot1_Attack_Kill_Focus,1,1,Passive,0,1번 슬롯에 등록하는 공격타입 스킬로 적 처치 시 집중을 1 얻는다,Uncommon
+Relic_P_12,황금잔,E_Slot1_Buff_Value_Delta,1,1,Passive,0,1번 슬롯에 등록하는 버프타입 스킬의 수치가 1 증가한다,Uncommon
 Relic_P_13,굳은 모래시계,E_Slot5_Skill_Cost_Delta,-1,1,Passive,0,5번 슬롯에 등록하는 모든 스킬의 코스트가 1 감소한다,Rare
 Relic_P_14,부서진 칼날,E_Slot5_Attack_Value_Delta,2,1,Passive,0,5번 슬롯에 등록하는 공격타입 스킬의 수치 2 증가한다,Rare
 Relic_P_15,뾰족한 갈고리,E_Slot5_Attack_Kill_Cost_Refund,1,1,Passive,0,5번 슬롯에 등록하는 공격타입 스킬로 적 처치 시 해당 스킬의 코스트를 돌려받는다,Unique
@@ -618,7 +612,7 @@ Relic_P_17,봉인된 팔찌,E_Blocked_Slot_Mask;E_Cost_Recovery_Delta,3;2,1;1,Pa
 Relic_P_18,부서진 나침반,E_Max_Registrable_Slot_Count;E_Move_Cost_Zero,1;1,1;1,Passive,0,하나의 슬롯에만 스킬을 등록할 수 있다. 이동스킬이 코스트를 소모하지 않는다,Uncommon
 Relic_P_19,어깨 보호대,E_Turn_Start_Armor_Per_Used_Slot,2,0,Passive,0,턴 시작 시 (자신의 스킬이 등록된 슬롯의 수 x2) 만큼 방어도를 얻는다,Uncommon
 Relic_P_20,단단한 투구,E_Turn_Start_Armor_Per_Empty_Slot,2,0,Passive,0,턴 시작 시 (자신의 스킬이 등록되지 않은 슬롯의 수 x2) 만큼 방어도를 얻는다,Uncommon
-Relic_P_21,예지의 단안경,E_Turn_Start_Smite_If_Slots_Empty_Mask,1,7,Passive,0,"턴 시작 시 1,2,3번 슬롯에 자신의 스킬이 없다면 강타를 1 얻는다",Uncommon
+Relic_P_21,단안경,E_Turn_Start_Smite_If_Slots_Empty_Mask,1,7,Passive,0,"턴 시작 시 1,2,3번 슬롯에 자신의 스킬이 없다면 강타를 1 얻는다",Uncommon
 Relic_P_22,망원경,E_Turn_Start_Boost_If_Slots_Empty_Mask,1,28,Passive,0,"턴 시작 시 3,4,5번 슬롯에 자신의 스킬이 없다면 증폭을 1 얻는다",Uncommon
 Relic_P_23,식칼,E_Turn_Start_Boost_If_One_Attack_Command,3,0,Passive,0,턴 시작 시 자신이 등록한 스킬이 공격타입 스킬 하나뿐이라면 스킬의 피해량이 3 증가한다,Uncommon
 Relic_P_24,삼지창,E_Turn_Start_Boost_If_Attack_Command_Count_At_Least,1,3,Passive,0,턴 시작 시 자신이 공격타입 스킬을 3개 이상 등록했다면 모든 스킬의 피해량이 1 증가한다,Uncommon
@@ -627,26 +621,26 @@ Relic_P_26,역병의 향로,E_Turn_Start_All_Enemy_Poison;E_Turn_Start_All_Enemy
 Relic_P_27,회중시계,E_Turn_Start_Armor,10,2,Passive,0,2턴 시작 시 방어도를 10 얻는다,Uncommon
 Relic_P_28,두 갈래 촛대,E_Turn_Start_Charge;E_Turn_Start_Focus,1;1,2;2,Passive,0,2턴 시작 시 충전과 집중을 1 얻는다,Uncommon
 Relic_P_29,막대자석,E_Turn_Start_Swift;E_Turn_Start_Boost,1;1,3;3,Passive,0,3턴 시작 시 신속과 증폭을 1 얻는다,Uncommon
-Relic_P_30,핏빛 성유함,E_Turn_Start_Lifesteal;E_Turn_Start_Smite,1;1,3;3,Passive,0,3턴 시작 시 흡혈과 강타를 1 얻는다,Uncommon
-Relic_P_31,고요한 발찌,E_No_Move_In_Slot_Buff_Cost_Delta,-1,1,Passive,0,해당 슬롯에서 이동스킬을 사용하지 않았다면 버프타입 스킬의 코스트가 1 감소한다,Uncommon
-Relic_P_32,도약의 뿔조각,E_After_Move_Debuff_Cost_Delta,-1,1,Passive,0,해당 슬롯에서 이동스킬을 사용한 뒤 등록하는 디버프 스킬은 코스트가 1 감소한다,Uncommon
-Relic_P_33,독사의 송곳니,E_After_Move_Debuff_Value_Delta,1,1,Passive,0,해당 슬롯에서 이동스킬을 사용한 뒤 등록하는 디버프 스킬은 수치가 1 증가한다,Uncommon
-Relic_P_34,질주의 편자,E_After_Move_Attack_Value_Per_Cost,1,1,Passive,0,해당 슬롯에서 이동스킬을 사용한 뒤 등록하는 공격타입 스킬의 피해량이 (이동에 소모한 코스트)만큼 증가한다,Uncommon
+Relic_P_30,박쥐인형,E_Turn_Start_Lifesteal;E_Turn_Start_Smite,1;1,3;3,Passive,0,3턴 시작 시 흡혈과 강타를 1 얻는다,Uncommon
+Relic_P_31,무거운 발장식,E_No_Move_In_Slot_Buff_Cost_Delta,-1,1,Passive,0,해당 슬롯에서 이동스킬을 사용하지 않았다면 버프타입 스킬의 코스트가 1 감소한다,Uncommon
+Relic_P_32,뿔조각,E_After_Move_Debuff_Cost_Delta,-1,1,Passive,0,해당 슬롯에서 이동스킬을 사용한 뒤 등록하는 디버프 스킬은 코스트가 1 감소한다,Uncommon
+Relic_P_33,송곳니,E_After_Move_Debuff_Value_Delta,1,1,Passive,0,해당 슬롯에서 이동스킬을 사용한 뒤 등록하는 디버프 스킬은 수치가 1 증가한다,Uncommon
+Relic_P_34,편자,E_After_Move_Attack_Value_Per_Cost,1,1,Passive,0,해당 슬롯에서 이동스킬을 사용한 뒤 등록하는 공격타입 스킬의 피해량이 (이동에 소모한 코스트)만큼 증가한다,Uncommon
 Relic_P_35,강철 닻,E_Forced_Move_Immune,1,1,Passive,0,전투 중 넉백과 그랩으로 이동하지 않는다,Uncommon
 Relic_P_36,심연의 비늘,E_Crash_Damage_Immune,1,1,Passive,0,전투 중 충돌로 인한 피해를 받지 않는다,Uncommon
 Relic_P_37,무쇠 장화,E_Grid_Effect_Immune,1,1,Passive,0,전투 중 장애물로 인한 효과를 받지 않는다,Uncommon
-Relic_P_38,가득 찬 주전자,E_Overheal_To_Armor,1,1,Passive,0,전투 중 체력이 최대일 때 체력이 회복되면 수치만큼 방어도를 얻는다,Uncommon
+Relic_P_38,주전자,E_Overheal_To_Armor,1,1,Passive,0,전투 중 체력이 최대일 때 체력이 회복되면 수치만큼 방어도를 얻는다,Uncommon
 Relic_P_39,단단한 얼음,E_No_Damage_Previous_Turn_Smite,1,1,Passive,0,전투 중 이번 턴 동안 받은 피해가 없다면 다음 턴 시작 시 강타를 1 얻는다,Uncommon
-Relic_P_40,피의 성배,E_Healing_Blocked;E_Armor_Gain_Percent,1;50,1;1,Passive,0,전투 중 체력을 회복할 수 없다 대신 자신이 얻는 방어도가 50% 증가한다,Uncommon
+Relic_P_40,피의 잔,E_Healing_Blocked;E_Armor_Gain_Percent,1;50,1;1,Passive,0,전투 중 체력을 회복할 수 없다 대신 자신이 얻는 방어도가 50% 증가한다,Uncommon
 Relic_P_41,날이 선 톱,E_Collision_Target_Damage_Delta,2,1,Passive,0,자신과 충돌이 발생할 때 상대가 받는 피해가 2 증가한다,Uncommon
-Relic_P_42,텅 빈 축전지,E_Collision_Charge,1,1,Passive,0,자신과 충돌이 발생할 때 충전 1을 얻는다,Uncommon
+Relic_P_42,축전지,E_Collision_Charge,1,1,Passive,0,자신과 충돌이 발생할 때 충전 1을 얻는다,Uncommon
 Relic_P_43,신수의 뿔,E_Collision_Kill_Focus,2,1,Passive,0,자신과 충돌이 발생할 때 상대가 체력이 0이 되었다면 집중을 2 얻는다,Uncommon
 Relic_P_44,낡은 허리띠,E_Low_HP_Skill_Cost_Delta,-1,1,Passive,0,현재 체력이 30% 이하라면 자신의 스킬 코스트가 1 감소한다,Uncommon
 Relic_P_45,피 묻은 발톱,E_Low_HP_Attack_Value_Delta,1,1,Passive,0,현재 체력이 30% 이하라면 자신의 공격타입 스킬의 피해량이 1 증가한다,Uncommon
 Relic_P_46,두꺼운 가죽,E_Low_HP_Damage_Reduction_Percent,20,1,Passive,0,현재 체력이 30% 이하라면 받는 피해가 20% 감소한다,Uncommon
-Relic_P_47,맑은 물병,E_High_HP_Cost_Recovery_Delta,1,1,Passive,0,현재 체력이 90% 이상이라면 코스트 회복량이 1 증가한다,Uncommon
-Relic_P_48,고결한 지팡이,E_High_HP_Buff_Cost_Delta,-1,1,Passive,0,현재 체력이 90% 이상이라면 자신의 버프타입 스킬의 코스트가 1 감소한다,Uncommon
-Relic_P_49,맹독 이빨,E_Damage_Poisoned_Fixed,1,1,Passive,0,중독이 부여된 적에게 피해를 준다면 고정피해를 1 준다,Uncommon
+Relic_P_47,배,E_High_HP_Cost_Recovery_Delta,1,1,Passive,0,현재 체력이 90% 이상이라면 코스트 회복량이 1 증가한다,Uncommon
+Relic_P_48,지팡이,E_High_HP_Buff_Cost_Delta,-1,1,Passive,0,현재 체력이 90% 이상이라면 자신의 버프타입 스킬의 코스트가 1 감소한다,Uncommon
+Relic_P_49,독주사기,E_Damage_Poisoned_Fixed,1,1,Passive,0,중독이 부여된 적에게 피해를 준다면 고정피해를 1 준다,Uncommon
 Relic_P_50,톱니 단검,E_Damage_Bleeding_Fixed,1,1,Passive,0,출혈이 부여된 적에게 피해를 준다면 고정피해를 1 준다,Uncommon
 Relic_P_51,금이 간 완갑,E_Damage_Vulnerable_Armor,2,1,Passive,0,취약이 부여된 적에게 피해를 준다면 방어도를 2 얻는다,Uncommon
 Relic_P_52,무거운 방패,E_Damage_Weakened_Armor,2,1,Passive,0,약화가 부여된 적에게 피해를 준다면 방어도를 2 얻는다,Uncommon
@@ -658,27 +652,27 @@ Relic_P_57,빛나는 수정구,E_UniqueResource_Overflow_To_Cost,1,1,Passive,0,�
 Relic_P_58,비단 초커,E_UniqueResource_Max_Skill_Cost_Delta,-1,1,Passive,0,고유자원이 최대인 동안 모든 스킬의 코스트가 1 감소한다,Uncommon
 Relic_P_59,사슬낫,E_Unique_Skill_Kill_Focus,1,1,Passive,0,고유스킬로 적을 처치하면 집중을 1 얻는다,Uncommon
 Relic_P_60,마력 렌즈,E_Unique_Skill_Value_Percent,50,1,Passive,0,고유스킬의 수치가 50% 증가한다,Uncommon
-Relic_P_61,메아리 수정,E_Unique_Skill_Count_Delta,1,1,Passive,0,고유스킬의 횟수가 1회 증가한다,Uncommon
-Relic_P_62,일회용 라이터,E_Once_Battle_End_Turn_Zero_Cost_Charge,10,1,Passive,0,"전투당 1회, 턴을 종료할 때 코스트가 0이라면 충전을 10 얻는다",Uncommon
+Relic_P_61,마력 수정,E_Unique_Skill_Count_Delta,1,1,Passive,0,고유스킬의 횟수가 1회 증가한다,Uncommon
+Relic_P_62,부싯돌,E_Once_Battle_End_Turn_Zero_Cost_Charge,10,1,Passive,0,"전투당 1회, 턴을 종료할 때 코스트가 0이라면 충전을 10 얻는다",Uncommon
 Relic_P_63,불발탄,E_Once_Battle_Attack_Miss_Charge,5,1,Passive,0,"전투당 1회, 공격이 적중하지 않았을 때 충전을 5 얻는다",Uncommon
 Relic_P_64,처형인의 안경,E_Once_Battle_Full_HP_Target_Damage_Percent,100,1,Passive,0,"전투당 1회, 체력이 최대인 적에게 피해를 줄 때 피해량이 2배로 적용된다",Uncommon
-Relic_P_65,에테르 약병,E_Rest_Heal_Percent_Bonus,50,1,Passive,0,휴식으로 회복하는 회복량이 50% 증가한다,Uncommon
+Relic_P_65,블럭집,E_Rest_Heal_Percent_Bonus,50,1,Passive,0,휴식으로 회복하는 회복량이 50% 증가한다,Uncommon
 Relic_P_66,상인의 금인장,E_Shop_Price_Discount_Percent,30,1,Passive,0,상점에서 판매하는 모든 물품의 가격이 30% 감소한다,Uncommon
 Relic_P_67,구슬 주머니,E_Battle_Reward_Currency_Percent,20,1,Passive,0,전투 보상으로 획득하는 재화의 양이 20% 증가한다,Uncommon
 Relic_P_68,붕대,E_Battle_End_Heal,2,1,Passive,0,전투 종료 후 체력을 2 회복한다,Uncommon
-Relic_A_01,아드레날린 주사기,AR_DamageBoostThisTurn,100,1,Active,1,이번 턴 동안 자신의 공격타입 스킬 피해량이 100% 증가합니다.,Uncommon
+Relic_A_01,아드레날린,AR_DamageBoostThisTurn,100,1,Active,1,이번 턴 동안 자신의 공격타입 스킬 피해량이 100% 증가합니다.,Uncommon
 Relic_A_02,경화제 앰플,AR_DamageReductionThisTurn,50,1,Active,1,이번 턴 동안 자신이 받는 피해가 50% 감소합니다.,Uncommon
-Relic_A_03,응축 에테르 약병,AR_RecoverUniqueResourceToMax,1,1,Active,1,자신의 고유자원을 최대치까지 회복합니다.,Uncommon
-Relic_A_04,에너지 드링크,AR_RecoverCostToMax,1,1,Active,1,자신의 코스트를 최대치까지 회복합니다.,Uncommon
+Relic_A_03,응축 에테르,AR_RecoverUniqueResourceToMax,1,1,Active,1,자신의 고유자원을 최대치까지 회복합니다.,Uncommon
+Relic_A_04,실험 플라스크,AR_RecoverCostToMax,1,1,Active,1,자신의 코스트를 최대치까지 회복합니다.,Uncommon
 Relic_A_05,각성제,AR_GrantSwift,2,1,Active,1,자신에게 신속 2를 부여합니다.,Uncommon
-Relic_A_06,순백의 성수,AR_CleanseDebuffs,1,1,Active,1,자신에게 부여된 모든 디버프를 제거합니다.,Uncommon
+Relic_A_06,맑은 물병,AR_CleanseDebuffs,1,1,Active,1,자신에게 부여된 모든 디버프를 제거합니다.,Uncommon
 Relic_A_07,차원의 깃털,AR_MoveToGrid,3,1,Active,3,선택한 빈 그리드로 이동합니다.,Uncommon
-Relic_A_08,쌍둥이 반지,AR_SwapAlly,3,1,Active,3,선택한 그리드의 아군과 위치를 변경합니다.,Uncommon
+Relic_A_08,연결된 반지,AR_SwapAlly,3,1,Active,3,선택한 그리드의 아군과 위치를 변경합니다.,Uncommon
 Relic_A_09,독주머니,AR_SpawnPoisonGridEffect,3,1,Active,3,선택한 그리드에 독 장판을 생성합니다. 독 장판 위를 이동하면 중독 2를 부여하고 사라집니다.,Uncommon
-Relic_A_10,접이식 가시판,AR_SpawnThornGridEffect,3,1,Active,3,"선택한 그리드에 가시 장판을 생성합니다. 가시 장판 위를 이동하면 피해 3을 받으며, 전투가 종료될 때까지 유지됩니다.",Uncommon
-Relic_A_11,합금 수갑,AR_TargetOutgoingDamageReductionThisTurn,50,1,Active,3,선택한 그리드의 적은 이번 턴 동안 주는 피해가 50% 감소합니다.,Uncommon
-Relic_A_12,강철 말뚝,AR_SpawnObstacleGridEffect,3,1,Active,3,선택한 빈 그리드에 장애물을 생성합니다. 전투가 종료될 때까지 유지됩니다.,Uncommon
-Relic_A_13,해체 도구,AR_RemoveGridEffect,3,1,Active,3,선택한 그리드의 장애물을 제거합니다.,Uncommon
+Relic_A_10,휴대용 곰덫,AR_SpawnThornGridEffect,3,1,Active,3,"선택한 그리드에 가시 장판을 생성합니다. 가시 장판 위를 이동하면 피해 3을 받으며, 전투가 종료될 때까지 유지됩니다.",Uncommon
+Relic_A_11,저주인형,AR_TargetOutgoingDamageReductionThisTurn,50,1,Active,3,선택한 그리드의 적은 이번 턴 동안 주는 피해가 50% 감소합니다.,Uncommon
+Relic_A_12,간이 바리게이트,AR_SpawnObstacleGridEffect,3,1,Active,3,선택한 빈 그리드에 장애물을 생성합니다. 전투가 종료될 때까지 유지됩니다.,Uncommon
+Relic_A_13,드라이버,AR_RemoveGridEffect,3,1,Active,3,선택한 그리드의 장애물을 제거합니다.,Uncommon
 Relic_A_14,밀짚 허수아비,AR_SpawnDummyGridEffect,3,1,Active,3,"선택한 빈 그리드에 허수아비를 소환합니다. 허수아비는 적의 공격 대상이 되며, 피해를 받으면 파괴됩니다.",Uncommon
 Relic_A_15,태엽 폭탄 인형,AR_SpawnExplosiveDollGridEffect,3,1,Active,3,선택한 빈 그리드에 폭발 인형을 소환합니다. 폭발 인형은 5번 슬롯의 행동이 끝나면 폭발하여 주변 적에게 고정피해 4를 줍니다.,Uncommon
 
