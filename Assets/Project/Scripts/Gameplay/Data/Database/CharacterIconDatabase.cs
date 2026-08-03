@@ -41,6 +41,24 @@ namespace Relic.Gameplay.Data
             return icon != null;
         }
 
+        public bool TryGetPortrait(string characterId, out Sprite portrait)
+        {
+            portrait = null;
+
+            if (map == null)
+                Initialize();
+
+            if (!map.TryGetValue(characterId, out var entry))
+                return false;
+
+            portrait = entry.Portrait;
+
+            if (portrait == null)
+                portrait = entry.Icon;
+
+            return portrait != null;
+        }
+
         public bool TryGetTimelineIcon(string characterId, out Sprite icon)
         {
             icon = null;
@@ -93,6 +111,7 @@ namespace Relic.Gameplay.Data
     {
         public string CharacterId;
         public Sprite Icon;
+        public Sprite Portrait;
         public Sprite TimelineIcon;
         public Sprite Mark;
         public Sprite Mark2;

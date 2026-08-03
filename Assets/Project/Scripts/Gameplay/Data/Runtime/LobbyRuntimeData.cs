@@ -26,7 +26,7 @@ namespace Relic.Gameplay.Data
     public sealed class LobbyCharacterLoadoutData
     {
         public string CharacterId;
-        public string[] EquippedRelicIds = new string[5];
+        public string[] EquippedRelicIds = new string[7];
         public string[] EquippedSkillIds = new string[4];
     }
 

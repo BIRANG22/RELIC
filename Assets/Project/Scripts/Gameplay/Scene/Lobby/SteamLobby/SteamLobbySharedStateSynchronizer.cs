@@ -592,7 +592,7 @@ public sealed class SteamLobbySharedStateSynchronizer : MonoBehaviour
                 CharacterId = character.CharacterId != null
                     ? character.CharacterId.Trim()
                     : characterId.Trim(),
-                EquippedRelicIds = CopyArray(character.EquippedRelicIds, 5),
+                EquippedRelicIds = CopyArray(character.EquippedRelicIds, 7),
                 EquippedSkillIds = CopyArray(character.EquippedSkillIds, 4)
             });
         }

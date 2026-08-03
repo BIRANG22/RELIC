@@ -11,7 +11,7 @@ public class SaveSystem : Singleton<SaveSystem>
     private const string SaveFileName = "relic-save.json";
     private const int EquippedSkillSlotCount = 4;
     private const int EquippedRuneSlotCount = 12;
-    private const int EquippedRelicSlotCount = 5;
+    private const int EquippedRelicSlotCount = 7;
 
     public string SaveFilePath => Path.Combine(Application.persistentDataPath, SaveFileName);
 

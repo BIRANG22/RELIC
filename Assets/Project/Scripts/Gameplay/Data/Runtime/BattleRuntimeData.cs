@@ -64,7 +64,7 @@ namespace Relic.Gameplay.Data
     {
         private const int EquippedSkillSlotCount = 4;
         private const int EquippedRuneSlotCount = 12;
-        private const int EquippedRelicSlotCount = 5;
+        private const int EquippedRelicSlotCount = 7;
 
         public static void CaptureLobbyLoadoutSnapshot(global::DataManager dataManager)
         {

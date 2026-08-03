@@ -67,16 +67,16 @@ Mon_12,엘리스,Boss,142,0,45,55,Item_012,1,0,Range_All,S_Monster_19,S_Monster_
 SkillId,Name,Category,Rarity,ReferenceResource,Target,Level,SkillType,EffectIds,ValueRate,CountRate,ResourceCostValue,GridMove,RangeType,RangeId,ToolTip,Details
 S_Move_1,이동,Move,Move,Cost,Self,1,0,E_Move,0,1,1,0,Selection,Range_All,선택한 그리드로 이동합니다. 이동한 칸 수만큼 코스트를 소모합니다.,이동한 칸 수만큼 코스트를 소모합니다.
 S_Move_2,이동+,Move,Move,Cost,Self,2,0,E_Move,0,1,1,0,Selection,Range_All,선택한 그리드로 이동합니다. 1코스트로 최대 2칸까지 이동할 수 있습니다.,1코스트로 최대 2칸까지 이동합니다.
-S_Passive_01,결속,Passive,Passive,Ulti,Self,0,0,E_Armor,4,1,0,0,0,Range_Self,분노가 최대치라면 턴 시작 시 방어도 4를 얻습니다.,0
-S_Passive_02,호전성,Passive,Passive,Ulti,Self,0,0,E_Boost,1,1,0,0,0,Range_Self,분노가 최대치라면 턴 시작 시 증폭 1을 얻습니다.,0
-S_Passive_03,평정심,Passive,Passive,Ulti,Self,0,0,E_CostRecovery,1,1,0,0,0,Range_Self,기세가 최대치라면 턴 시작 시 코스트 1을 추가로 회복합니다.,0
-S_Passive_04,간파,Passive,Passive,Ulti,Self,0,0,E_Swift,1,1,0,0,0,Range_Self,기세가 최대치라면 턴 시작 시 신속 1을 얻습니다.,0
-S_Passive_05,안도감,Passive,Passive,Ulti,Self,0,0,E_Armor,3,1,0,0,0,Range_Self,에테르가 최대치라면 턴 시작 시 방어도 3을 얻습니다.,0
-S_Passive_06,결심,Passive,Passive,Ulti,Self,0,0,E_Armor,3,1,0,0,0,Range_Self,에테르가 최대치라면 턴 시작 시 체력이 가장 낮은 아군에게 방어도 3을 부여합니다.,0
-S_Passive_07,자애심,Passive,Passive,Ulti,Self,0,0,E_Heal,1,1,0,0,0,Range_Self,신앙이 최대치라면 턴 시작 시 체력이 가장 낮은 아군의 체력을 1 회복합니다.,0
-S_Passive_08,심판,Passive,Passive,Ulti,Self,0,0,E_Smite,1,1,0,0,0,Range_Self,신앙이 최대치라면 턴 시작 시 강타 1을 얻습니다.,0
-S_Passive_09,블러드러스트,Passive,Passive,Ulti,Self,0,0,E_Lifesteal,1,1,0,0,0,Range_Self,혈기가 최대치라면 턴 시작 시 흡혈 1을 얻습니다.,0
-S_Passive_10,나이트메어,Passive,Passive,Ulti,Self,0,0,E_Boost,1,1,0,0,0,Range_Self,혈기가 최대치라면 턴 시작 시 증폭 1을 얻습니다.,0
+S_Passive_01,결속,Passive,Passive,Ulti,Self,0,0,E_Armor,4,1,0,0,0,Range_Self,분노가 최대치라면 턴 시작 시 방어도 4를 얻습니다.,"피해를 받으면 분노를 얻고, 분노 최대 시 턴 시작에 방어도 4 획득"
+S_Passive_02,호전성,Passive,Passive,Ulti,Self,0,0,E_Boost,1,1,0,0,0,Range_Self,분노가 최대치라면 턴 시작 시 증폭 1을 얻습니다.,"피해를 받으면 분노를 얻고, 분노 최대 시 턴 시작에 증폭 1 획득"
+S_Passive_03,평정심,Passive,Passive,Ulti,Self,0,0,E_CostRecovery,1,1,0,0,0,Range_Self,기세가 최대치라면 턴 시작 시 코스트 1을 추가로 회복합니다.,"한 슬롯에서 2회 행동하면 기세를 얻고, 기세 최대 시 턴 시작에 코스트 1 추가 회복"
+S_Passive_04,간파,Passive,Passive,Ulti,Self,0,0,E_Swift,1,1,0,0,0,Range_Self,기세가 최대치라면 턴 시작 시 신속 1을 얻습니다.,"한 슬롯에서 2회 행동하면 기세를 얻고, 기세 최대 시 턴 시작에 신속 1 획득"
+S_Passive_05,안도감,Passive,Passive,Ulti,Self,0,0,E_Armor,3,1,0,0,0,Range_Self,에테르가 최대치라면 턴 시작 시 방어도 3을 얻습니다.,"한 턴에 코스트를 8 이상 사용하면 에테르를 얻고, 에테르 최대 시 턴 시작에 방어도 3 획득"
+S_Passive_06,결심,Passive,Passive,Ulti,Self,0,0,E_Armor,3,1,0,0,0,Range_Self,에테르가 최대치라면 턴 시작 시 체력이 가장 낮은 아군에게 방어도 3을 부여합니다.,"한 턴에 코스트를 8 이상 사용하면 에테르를 얻고, 에테르 최대 시 턴 시작에 최저 체력 아군에게 방어도 3 부여"
+S_Passive_07,자애심,Passive,Passive,Ulti,Self,0,0,E_Heal,1,1,0,0,0,Range_Self,신앙이 최대치라면 턴 시작 시 체력이 가장 낮은 아군의 체력을 1 회복합니다.,"아군에게 이로운 효과를 부여하면 신앙을 얻고, 신앙 최대 시 턴 시작에 최저 체력 아군의 체력 1 회복"
+S_Passive_08,심판,Passive,Passive,Ulti,Self,0,0,E_Smite,1,1,0,0,0,Range_Self,신앙이 최대치라면 턴 시작 시 강타 1을 얻습니다.,"아군에게 이로운 효과를 부여하면 신앙을 얻고, 신앙 최대 시 턴 시작에 강타 1 획득"
+S_Passive_09,블러드러스트,Passive,Passive,Ulti,Self,0,0,E_Lifesteal,1,1,0,0,0,Range_Self,혈기가 최대치라면 턴 시작 시 흡혈 1을 얻습니다.,"공격으로 적에게 피해를 주면 혈기를 얻고, 혈기 최대 시 턴 시작에 흡혈 1 획득"
+S_Passive_10,나이트메어,Passive,Passive,Ulti,Self,0,0,E_Boost,1,1,0,0,0,Range_Self,혈기가 최대치라면 턴 시작 시 증폭 1을 얻습니다.,"공격으로 적에게 피해를 주면 혈기를 얻고, 혈기 최대 시 턴 시작에 증폭 1 획득"
 S_Unique_01,용의 가호,Unique,Unique,Ulti,PlayerParty,0,Buff,E_Armor,6,1,3,0,Direction,Range_All,용의 힘으로 자신과 아군에게 방어도 6을 부여합니다.,자신과 아군에게 방어도 6을 부여합니다.
 S_Unique_02,대지가르기,Unique,Unique,Ulti,EnemyParty,0,Attack,E_Strike;E_Knockback,14;1,1;1,3,0,Direction,Range_15,할버드로 대지를 갈라 적에게 14의 피해를 주고 1칸 밀쳐냅니다.,적에게 14의 피해를 줍니다. 1칸 밀쳐냅니다.
 S_Unique_03,질풍검 연무,Unique,Unique,Ulti,EnemyParty,0,Attack,E_Strike,3,4,5,0,Direction,Range_07,빠르게 카타나를 휘둘러 적에게 3의 피해를 4번 줍니다.,적에게 3의 피해를 4번 줍니다.

@@ -983,6 +983,24 @@ public class SkillListPanel : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 외부 UI에서 캐릭터와 스킬을 직접 지정해 기존 스킬 선택 흐름을 실행합니다.
+    /// SkillListPanel을 화면에 열지 않고 타임라인 선택 및 등록 단계로 연결합니다.
+    /// </summary>
+    public void SelectSkillForCharacter(
+        CharacterRuntimeData runtimeData,
+        string skillId)
+    {
+        if (runtimeData == null)
+        {
+            ShowBattleWarning("선택된 캐릭터가 없습니다.");
+            return;
+        }
+
+        currentRuntime = runtimeData;
+        SelectSkill(skillId);
+    }
+
     public void SelectSkill(string skillId)
     {
         if (currentRuntime == null)
@@ -1025,6 +1043,18 @@ public class SkillListPanel : MonoBehaviour
 
         battleTimelineController.SelectCharacter(currentRuntime);
         battleTimelineController.SelectSkill(skillData);
+    }
+
+    public void SelectActiveRelicForCharacter(CharacterRuntimeData runtimeData)
+    {
+        if (runtimeData == null)
+        {
+            ShowBattleWarning("선택된 캐릭터가 없습니다.");
+            return;
+        }
+
+        currentRuntime = runtimeData;
+        SelectActiveRelic(null);
     }
 
     public void SelectActiveRelic(ActiveRelicButtonUI selectedButton)
@@ -1206,6 +1236,19 @@ public class SkillListPanel : MonoBehaviour
         }
 
         panelRect.anchoredPosition = localPoint + offsetFromHud;
+    }
+
+    public void ShowSkillHoverRangePreviewForCharacter(
+        CharacterRuntimeData runtimeData,
+        SkillMasterData skillData)
+    {
+        EnsureBattleTimelineController();
+
+        if (battleTimelineController == null)
+            return;
+
+        CharacterRuntimeData previewCharacter = runtimeData ?? currentRuntime;
+        battleTimelineController.ShowSkillHoverRangePreview(previewCharacter, skillData);
     }
 
     public void ShowSkillHoverRangePreview(SkillMasterData skillData)

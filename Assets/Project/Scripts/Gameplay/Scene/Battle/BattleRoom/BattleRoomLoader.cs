@@ -21,7 +21,6 @@ public class BattleRoomLoader : MonoBehaviour
 
     [Header("Player HUD Position Anchors")]
     [SerializeField] private Transform[] playerHudPositionAnchors = new Transform[3];
-    [SerializeField] private bool selectFirstPlayerHudByDefault = true;
     [SerializeField] private bool forcePlayerHudRootOnTop = true;
     [SerializeField] private int playerHudRootSortingOrder = 100;
     [SerializeField] private int selectedHudSortingOrder = 200;
@@ -30,6 +29,9 @@ public class BattleRoomLoader : MonoBehaviour
     [SerializeField] private RectTransform battleCanvasRect;
     [SerializeField] private Camera worldCamera;
     [SerializeField] private Camera uiCamera;
+
+    [Header("Character Panel")]
+    [SerializeField] private BattleCharacterPanelUI battleCharacterPanel;
 
     [Header("Skill List")]
     [SerializeField] private SkillListPanel skillListPanel;
@@ -107,6 +109,10 @@ public class BattleRoomLoader : MonoBehaviour
     public void RefreshBattleHUDs()
     {
         RefreshPlayerHUDs();
+        EnsureBattleCharacterPanel();
+
+        if (battleCharacterPanel != null)
+            battleCharacterPanel.Refresh();
 
         MonsterHUDSlot[] monsterHuds = FindObjectsByType<MonsterHUDSlot>(
             FindObjectsInactive.Include,
@@ -209,8 +215,7 @@ public class BattleRoomLoader : MonoBehaviour
         if (hud == null || hud.BoundRuntime == null)
             return;
 
-        RectTransform hudRect = hud.GetComponent<RectTransform>();
-        OpenSkillListForPlayer(hud.BoundRuntime, hudRect);
+        SelectPlayerHUD(hud.BoundRuntime);
     }
 
     /// <summary>
@@ -296,6 +301,16 @@ public class BattleRoomLoader : MonoBehaviour
         openSelectedSkillListWhenReadyRoutine = null;
     }
 
+    private void EnsureBattleCharacterPanel()
+    {
+        if (battleCharacterPanel != null)
+            return;
+
+        battleCharacterPanel = Object.FindFirstObjectByType<BattleCharacterPanelUI>(
+            FindObjectsInactive.Include
+        );
+    }
+
     private void EnsureSkillListPanel()
     {
         if (skillListPanel != null)
@@ -340,7 +355,7 @@ public class BattleRoomLoader : MonoBehaviour
         if (nextHud == null || nextHud.BoundRuntime == null)
             return;
 
-        OpenSkillListForPlayer(nextHud.BoundRuntime);
+        SelectPlayerHUD(nextHud.BoundRuntime);
     }
 
     private int WrapIndex(int index, int count)
@@ -799,8 +814,14 @@ public class BattleRoomLoader : MonoBehaviour
         for (int i = 0; i < playerRuntimes.Count; i++)
             CreatePlayerHUD(playerRuntimes[i], i);
 
-        if (selectFirstPlayerHudByDefault && playerRuntimes.Count > 0)
+        // 기존 SkillListPanel 자동 열기에 의존하지 않고, 전투 입장 시 첫 번째 캐릭터를 기본 선택합니다.
+        if (playerRuntimes.Count > 0)
             selectedPlayerRuntime = playerRuntimes[0];
+
+        EnsureBattleCharacterPanel();
+
+        if (battleCharacterPanel != null)
+            battleCharacterPanel.Bind(selectedPlayerRuntime);
 
         ApplyPlayerHudAnchorOrder();
         RefreshPlayerHudSelectionVisuals();
@@ -920,12 +941,12 @@ public class BattleRoomLoader : MonoBehaviour
 
     private void OnPlayerHudClicked(CharacterRuntimeData runtimeData, RectTransform hudRect)
     {
-        OpenSkillListForPlayer(runtimeData, hudRect);
+        SelectPlayerHUD(runtimeData);
     }
 
     public void OnPlayerCharacterClicked(CharacterRuntimeData runtimeData)
     {
-        OpenSkillListForPlayer(runtimeData);
+        SelectPlayerHUD(runtimeData);
     }
 
     private void OpenSkillListForPlayer(CharacterRuntimeData runtimeData)
@@ -959,6 +980,10 @@ public class BattleRoomLoader : MonoBehaviour
     private void SelectPlayerHUD(CharacterRuntimeData runtimeData)
     {
         selectedPlayerRuntime = runtimeData;
+        EnsureBattleCharacterPanel();
+
+        if (battleCharacterPanel != null)
+            battleCharacterPanel.Bind(runtimeData);
 
         for (int i = playerHudSlots.Count - 1; i >= 0; i--)
         {
@@ -1225,7 +1250,6 @@ public class BattleRoomLoader : MonoBehaviour
             Debug.Log("[BattleRoomLoader] Battle input ready true after initial monster plan");
         }
 
-        OpenSelectedCharacterSkillListWhenInputReady();
 
         EnsureFirstBattleTutorialController();
 
@@ -1260,7 +1284,6 @@ public class BattleRoomLoader : MonoBehaviour
         if (turnExecutor != null)
             turnExecutor.SetBattleInputReady(true);
 
-        OpenSelectedCharacterSkillListWhenInputReady();
     }
 
     private MonsterHUDSlot CreateMonsterHUD(MonsterRuntimeData runtimeData, Transform monsterTransform, Collider2D monsterCollider)
@@ -1337,6 +1360,9 @@ public class BattleRoomLoader : MonoBehaviour
     private void ClearHUD()
     {
         selectedPlayerRuntime = null;
+
+        if (battleCharacterPanel != null)
+            battleCharacterPanel.Bind(null);
 
         if (skillListPanel != null)
         {

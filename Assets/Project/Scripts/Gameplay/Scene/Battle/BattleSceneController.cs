@@ -1,3 +1,5 @@
+using System;
+using Object = UnityEngine.Object;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -6,15 +8,14 @@ using Relic.Gameplay.Data;
 
 public class BattleSceneController : MonoBehaviour
 {
+    public static bool IsBattleRoomIntroPlaying { get; private set; }
+    public static event Action BattleRoomIntroStarted;
+    public static event Action BattleRoomIntroCompleted;
     [Header("Panels")]
     [SerializeField] private BattleMapPanel battleMapPanel;
 
     [Header("Battle Scene Transition")]
     [SerializeField] private BattleDiagonalSceneTransition battleTransition;
-
-    [Header("Battle Only Tab")]
-    [Tooltip("전투방에서만 표시할 TapButton/Battle 오브젝트입니다.")]
-    [SerializeField] private GameObject battleOnlyTabRoot;
 
     [Header("Battle Map Intro Text")]
     [SerializeField] private BattleMapIntroText battleMapIntroText;
@@ -72,7 +73,6 @@ public class BattleSceneController : MonoBehaviour
         AutoFindRoomRootIfNeeded();
         AutoFindBattleMapIntroTextIfNeeded();
         InstallMapPanelAutoReturnWatcher();
-        SetBattleOnlyTabActive(false);
     }
 
     private void Start()
@@ -95,6 +95,7 @@ public class BattleSceneController : MonoBehaviour
     private void OnDisable()
     {
         CancelPendingBattleRoomIntro();
+        SetBattleRoomIntroPlaying(false);
     }
 
     private void OnEnable()
@@ -658,10 +659,12 @@ public class BattleSceneController : MonoBehaviour
             return;
         }
 
-        roomObject.SetActive(true);
-
         bool isBattleRoom = roomObject == battleRoom;
-        SetBattleOnlyTabActive(isBattleRoom);
+
+        if (isBattleRoom)
+            SetBattleRoomIntroPlaying(true);
+
+        roomObject.SetActive(true);
 
         if (isBattleRoom)
             RequestBattleRoomLoadOnce();
@@ -676,12 +679,40 @@ public class BattleSceneController : MonoBehaviour
 
         IBattleRoomIntroSequence introSequence =
             BattleRoomIntroSequenceUtility.FindFirst(battleRoom);
-        battleRoomIntroLoadGate.Request(introSequence, LoadBattleRoomNow);
+
+        if (introSequence == null || introSequence.IsCompleted)
+            SetBattleRoomIntroPlaying(false);
+        else
+            SetBattleRoomIntroPlaying(true);
+
+        battleRoomIntroLoadGate.Request(
+            introSequence,
+            HandleBattleRoomIntroCompletedAndLoad
+        );
     }
 
     private void CancelPendingBattleRoomIntro()
     {
         battleRoomIntroLoadGate.Cancel();
+    }
+
+    private void HandleBattleRoomIntroCompletedAndLoad()
+    {
+        LoadBattleRoomNow();
+        SetBattleRoomIntroPlaying(false);
+    }
+
+    private static void SetBattleRoomIntroPlaying(bool isPlaying)
+    {
+        if (IsBattleRoomIntroPlaying == isPlaying)
+            return;
+
+        IsBattleRoomIntroPlaying = isPlaying;
+
+        if (isPlaying)
+            BattleRoomIntroStarted?.Invoke();
+        else
+            BattleRoomIntroCompleted?.Invoke();
     }
 
     private void LoadBattleRoomNow()
@@ -712,7 +743,7 @@ public class BattleSceneController : MonoBehaviour
     private void CloseAllRooms()
     {
         CancelPendingBattleRoomIntro();
-        SetBattleOnlyTabActive(false);
+        SetBattleRoomIntroPlaying(false);
         CloseInventoryAndBagPanelsImmediate();
 
         if (roomRoot != null)
@@ -727,15 +758,6 @@ public class BattleSceneController : MonoBehaviour
         SetActiveIfNotNull(battleRoom, false);
         SetActiveIfNotNull(eventRoom, false);
         SetActiveIfNotNull(restRoom, false);
-    }
-
-    private void SetBattleOnlyTabActive(bool isActive)
-    {
-        if (battleOnlyTabRoot == null)
-            return;
-
-        if (battleOnlyTabRoot.activeSelf != isActive)
-            battleOnlyTabRoot.SetActive(isActive);
     }
 
     private void UpdateRoomPanelAutoCloseState()

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
@@ -11,6 +12,7 @@ public class ActiveRelicTargetingController : MonoBehaviour
 
     private ActiveRelicService service;
     private SkillListPanel owner;
+    private Action onTargetingSucceeded;
     private CharacterRuntimeData pendingRuntime;
     private ActiveRelicAvailability pendingAvailability;
     private bool isTargeting;
@@ -30,6 +32,25 @@ public class ActiveRelicTargetingController : MonoBehaviour
     private void OnDisable()
     {
         CancelTargeting();
+    }
+
+
+    public bool BeginTargeting(
+        ActiveRelicService activeRelicService,
+        CharacterRuntimeData runtime,
+        ActiveRelicAvailability availability,
+        Action succeededCallback = null)
+    {
+        bool started = BeginTargeting(
+            null,
+            activeRelicService,
+            runtime,
+            availability);
+
+        if (started)
+            onTargetingSucceeded = succeededCallback;
+
+        return started;
     }
 
     public bool BeginTargeting(
@@ -86,6 +107,7 @@ public class ActiveRelicTargetingController : MonoBehaviour
 
         isTargeting = false;
         owner = null;
+        onTargetingSucceeded = null;
         service = null;
         pendingRuntime = null;
         pendingAvailability = null;
@@ -107,8 +129,10 @@ public class ActiveRelicTargetingController : MonoBehaviour
         if (result.Succeeded)
         {
             SkillListPanel targetOwner = owner;
+            Action succeededCallback = onTargetingSucceeded;
             CancelTargeting();
             targetOwner?.Refresh();
+            succeededCallback?.Invoke();
             return;
         }
 

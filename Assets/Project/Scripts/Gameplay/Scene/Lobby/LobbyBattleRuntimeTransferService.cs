@@ -16,7 +16,7 @@ public readonly struct LobbyBattleRuntimeTransferResult
 
 public sealed class LobbyBattleRuntimeTransferService
 {
-    private const int RelicSlotCount = 5;
+    private const int RelicSlotCount = 7;
     private const int SkillSlotCount = 4;
 
     public LobbyBattleRuntimeTransferResult Transfer(
