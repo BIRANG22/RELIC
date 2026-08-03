@@ -39,7 +39,7 @@ Material:
     - _EdgeWidth: 0.12
     - _InvertReveal: 0
     - _NoiseStrength: 0.05
-    - _Reveal: 0.5
+    - _Reveal: 0.419
     - _Stencil: 0
     - _StencilComp: 8
     - _StencilOp: 0
@@ -48,6 +48,6 @@ Material:
     - _UseUIAlphaClip: 0
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _EdgeColor: {r: 0, g: 0, b: 0, a: 0.45}
+    - _EdgeColor: {r: 0, g: 0, b: 0, a: 0.6313726}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
