@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 /// <summary>
 /// 콜라이더가 있는 월드 오브젝트를 클릭하면 패널을 열고
@@ -79,6 +80,7 @@ public class PanelCameraMover : MonoBehaviour
     private bool isReturning;
 
     private Coroutine moveCoroutine;
+    private GameObject inputShield;
     private static PanelCameraMover activeCameraMover;
     private static Transform activeMoveTransform;
 
@@ -114,6 +116,12 @@ public class PanelCameraMover : MonoBehaviour
     private void Update()
     {
         DetectPanelState();
+    }
+
+    private void OnEnable()
+    {
+        if (targetPanel != null && targetPanel.activeInHierarchy)
+            panelWasOpen = false;
     }
 
     /// <summary>
@@ -174,8 +182,10 @@ public class PanelCameraMover : MonoBehaviour
 
         if (targetPanel != null &&
             targetPanel.activeInHierarchy &&
-            cameraWasMoved)
+            cameraWasMoved &&
+            !isReturning)
         {
+            ShowInputShield();
             return;
         }
 
@@ -192,6 +202,7 @@ public class PanelCameraMover : MonoBehaviour
         {
             targetPanel.SetActive(true);
             panelWasOpen = true;
+            ShowInputShield();
         }
 
         Quaternion destinationRotation =
@@ -223,6 +234,7 @@ public class PanelCameraMover : MonoBehaviour
             targetPanel.SetActive(false);
 
         panelWasOpen = false;
+        HideInputShield();
 
         ReturnCamera();
 
@@ -269,6 +281,14 @@ public class PanelCameraMover : MonoBehaviour
         bool isPanelOpen =
             targetPanel.activeInHierarchy;
 
+        if (!panelWasOpen &&
+            isPanelOpen &&
+            (!cameraWasMoved || isReturning))
+        {
+            OpenPanel();
+            isPanelOpen = targetPanel.activeInHierarchy;
+        }
+
         /*
          * 이전 프레임에는 열려 있었지만
          * 현재 닫힌 경우 카메라를 원래 위치로 복귀시킵니다.
@@ -278,10 +298,80 @@ public class PanelCameraMover : MonoBehaviour
             cameraWasMoved &&
             !isReturning)
         {
+            HideInputShield();
             ReturnCamera();
         }
 
         panelWasOpen = isPanelOpen;
+    }
+
+    public static bool IsAnotherTargetPanelOpen(GameObject requestedPanel)
+    {
+        PanelCameraMover[] movers =
+            FindObjectsByType<PanelCameraMover>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None);
+
+        for (int i = 0; i < movers.Length; i++)
+        {
+            GameObject panel = movers[i] != null
+                ? movers[i].targetPanel
+                : null;
+
+            if (panel != null &&
+                panel != requestedPanel &&
+                panel.activeInHierarchy)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static bool IsAnyTargetPanelOpen()
+    {
+        return IsAnotherTargetPanelOpen(null);
+    }
+
+    private void ShowInputShield()
+    {
+        if (targetPanel == null || targetPanel.transform.parent == null)
+            return;
+
+        if (inputShield == null)
+        {
+            GameObject shield = new(
+                $"{targetPanel.name}_InputShield",
+                typeof(RectTransform),
+                typeof(CanvasRenderer),
+                typeof(Image));
+
+            shield.layer = targetPanel.layer;
+            shield.transform.SetParent(targetPanel.transform.parent, false);
+
+            RectTransform shieldRect = (RectTransform)shield.transform;
+            shieldRect.anchorMin = Vector2.zero;
+            shieldRect.anchorMax = Vector2.one;
+            shieldRect.offsetMin = Vector2.zero;
+            shieldRect.offsetMax = Vector2.zero;
+
+            Image shieldImage = shield.GetComponent<Image>();
+            shieldImage.color = Color.clear;
+            shieldImage.raycastTarget = true;
+
+            inputShield = shield;
+        }
+
+        inputShield.SetActive(true);
+        inputShield.transform.SetAsLastSibling();
+        targetPanel.transform.SetAsLastSibling();
+    }
+
+    private void HideInputShield()
+    {
+        if (inputShield != null)
+            inputShield.SetActive(false);
     }
 
     /// <summary>
@@ -584,11 +674,24 @@ public class PanelCameraMover : MonoBehaviour
 
     private void OnDisable()
     {
+        HideInputShield();
+
         bool canSnapToOriginal =
             (activeCameraMover == null || activeCameraMover == this) &&
             originalTransformSaved &&
             (cameraWasMoved || isReturning);
 
         ReleaseSharedCameraControl(canSnapToOriginal);
+    }
+
+    private void OnDestroy()
+    {
+        if (inputShield == null)
+            return;
+
+        if (Application.isPlaying)
+            Destroy(inputShield);
+        else
+            DestroyImmediate(inputShield);
     }
 }

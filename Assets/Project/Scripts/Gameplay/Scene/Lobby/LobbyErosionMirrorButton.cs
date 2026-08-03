@@ -254,7 +254,8 @@ public static class LobbyPositionModalInputBlocker
 {
     private static object owner;
 
-    public static bool IsBlocked => owner != null;
+    public static bool IsBlocked =>
+        owner != null || PanelCameraMover.IsAnyTargetPanelOpen();
 
     public static void Block(object ownerToken)
     {

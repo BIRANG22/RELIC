@@ -134,6 +134,13 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
         if (ShouldBlockInteractionByOpenMenuPanel())
             return;
 
+        if (panelToOpen != null &&
+            !panelToOpen.activeInHierarchy &&
+            PanelCameraMover.IsAnotherTargetPanelOpen(panelToOpen))
+        {
+            return;
+        }
+
         if (isProcessing)
             return;
 
