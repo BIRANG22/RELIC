@@ -5,7 +5,7 @@ using Relic.Gameplay.Data;
 public static class LobbySharedStateCharacterRuntimeUtility
 {
     private const int EquippedSkillSlotCount = 4;
-    private const int EquippedRelicSlotCount = 5;
+    private const int EquippedRelicSlotCount = 7;
 
     public static void ApplyLobbyLoadouts(
         LobbyRuntimeData lobby,

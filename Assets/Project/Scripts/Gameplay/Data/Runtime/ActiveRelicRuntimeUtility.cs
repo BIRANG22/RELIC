@@ -6,7 +6,7 @@ namespace Relic.Gameplay.Data
     public static class ActiveRelicRuntimeUtility
     {
         public const int ActiveRelicSlotIndex = 0;
-        public const int EquippedRelicSlotCount = 5;
+        public const int EquippedRelicSlotCount = 7;
 
         public static string GetActiveRelicId(CharacterRuntimeData runtime)
         {

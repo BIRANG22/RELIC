@@ -50,7 +50,7 @@ namespace Relic.Gameplay.Data
 
         public string[] EquippedSkillIds = new string[4];
         public string[] EquippedRuneIds = new string[12];
-        public string[] EquippedRelicIds = new string[5];
+        public string[] EquippedRelicIds = new string[7];
         public List<ActiveRelicUseRuntimeData> ActiveRelicUses = new();
         public List<string> AppliedBattleEquipmentEffectIds = new();
 

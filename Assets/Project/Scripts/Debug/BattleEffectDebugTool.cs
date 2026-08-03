@@ -139,7 +139,7 @@ public static class BattleEffectDebugTool
         if (runtime == null)
             return;
 
-        runtime.EquippedRelicIds = new string[5];
+        runtime.EquippedRelicIds = new string[7];
 
         if (relicIds == null)
             return;

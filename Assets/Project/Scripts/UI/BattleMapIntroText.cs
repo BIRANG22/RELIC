@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using TMPro;
 using UnityEngine;
 
@@ -7,6 +8,8 @@ public class BattleMapIntroText : MonoBehaviour
     private static BattleMapIntroText instance;
 
     public static int CurrentPlayCounter { get; private set; }
+    public static event Action IntroStarted;
+    public static event Action IntroCompleted;
 
     public static bool IsAnyPlayingOrVisible()
     {
@@ -124,6 +127,7 @@ public class BattleMapIntroText : MonoBehaviour
 
         CurrentPlayCounter++;
         int version = ++playVersion;
+        IntroStarted?.Invoke();
         playRoutine = StartCoroutine(PlayRoutine(text, version));
     }
 
@@ -142,6 +146,7 @@ public class BattleMapIntroText : MonoBehaviour
 
         CurrentPlayCounter++;
         int version = ++playVersion;
+        IntroStarted?.Invoke();
         playRoutine = StartCoroutine(PlayRoutine(text, version));
         yield return playRoutine;
     }
@@ -217,6 +222,7 @@ public class BattleMapIntroText : MonoBehaviour
                 introImage.SetActive(false);
 
             playRoutine = null;
+            IntroCompleted?.Invoke();
         }
     }
 

@@ -154,6 +154,6 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         if (lobby.CharacterLoadouts == null)
             return;
         for (int i = 0; i < lobby.CharacterLoadouts.Count; i++)
-            lobby.CharacterLoadouts[i].EquippedRelicIds = new string[5];
+            lobby.CharacterLoadouts[i].EquippedRelicIds = new string[7];
     }
 }
