@@ -63,6 +63,46 @@ public class LobbyPanelTransitionButtonTests
         Assert.That(statueCollider, Does.Contain("m_Size: {x: 2.4, y: 5.2}"));
     }
 
+    [Test]
+    public void Execute_DoesNotOpenTargetWhileAnotherCameraPanelIsOpen()
+    {
+        GameObject cameraObject = new("Camera", typeof(Camera));
+        GameObject firstPanel = new("FirstPanel");
+        GameObject firstTarget = new("FirstTarget");
+        GameObject firstMoverObject = new("FirstMover");
+        GameObject secondPanel = new("SecondPanel");
+
+        try
+        {
+            firstPanel.SetActive(false);
+            secondPanel.SetActive(false);
+
+            PanelCameraMover firstMover = firstMoverObject.AddComponent<PanelCameraMover>();
+            SetPrivateField(firstMover, "targetPanel", firstPanel);
+            SetPrivateField(firstMover, "targetCamera", cameraObject.GetComponent<Camera>());
+            SetPrivateField(firstMover, "cameraMoveTarget", firstTarget.transform);
+            SetPrivateField(firstMover, "moveDuration", 0f);
+            firstMover.OpenPanel();
+
+            buttonObject = new GameObject("SecondPanelButton");
+            LobbyPanelTransitionButton button =
+                buttonObject.AddComponent<LobbyPanelTransitionButton>();
+            SetPrivateField(button, "panelToOpen", secondPanel);
+
+            button.Execute();
+
+            Assert.That(secondPanel.activeSelf, Is.False);
+        }
+        finally
+        {
+            Object.DestroyImmediate(secondPanel);
+            Object.DestroyImmediate(firstMoverObject);
+            Object.DestroyImmediate(firstTarget);
+            Object.DestroyImmediate(firstPanel);
+            Object.DestroyImmediate(cameraObject);
+        }
+    }
+
     private static void SetPrivateField(object target, string fieldName, object value)
     {
         FieldInfo field = target.GetType().GetField(
