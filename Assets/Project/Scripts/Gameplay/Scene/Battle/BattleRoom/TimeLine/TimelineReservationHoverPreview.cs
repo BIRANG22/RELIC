@@ -64,9 +64,6 @@ public class TimelineReservationHoverPreview : MonoBehaviour
 
         List<int> rangeIndices = BuildRange(command, casterGridIndex);
 
-        if (reservationController != null && reservationController.ShouldExcludeCasterGridFromPreview(command.SkillData))
-            rangeIndices.RemoveAll(index => index == casterGridIndex);
-
         rangePreview.ShowRangeCells(rangeIndices, GetHighlightColor(command.SkillData));
     }
 
