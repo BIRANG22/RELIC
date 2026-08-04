@@ -53,7 +53,11 @@ public enum SfxType
     InventoryOpen = 28,
     InventoryClose = 29,
 
-    SkillReserve = 30
+    SkillReserve = 30,
+
+    TitleButtonHover = 31,
+    TitleButtonClick = 32,
+    LogoButtonClick = 33
 }
 
 [System.Serializable]

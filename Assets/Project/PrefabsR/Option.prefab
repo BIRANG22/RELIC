@@ -1166,7 +1166,7 @@ MonoBehaviour:
   panelFadeImage: {fileID: 0}
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
-  playHoverSound: 1
+  playHoverSound: 0
   hoverSfx: 6
   playClickSound: 1
   clickSfx: 7
@@ -7032,8 +7032,8 @@ MonoBehaviour:
   m_Colors:
     m_NormalColor: {r: 0.29803923, g: 0.29803923, b: 0.29803923, a: 1}
     m_HighlightedColor: {r: 1, g: 1, b: 1, a: 1}
-    m_PressedColor: {r: 0, g: 0.47843137, b: 1, a: 1}
-    m_SelectedColor: {r: 0, g: 0.47843137, b: 1, a: 1}
+    m_PressedColor: {r: 0.5019608, g: 0.5019608, b: 0.5019608, a: 1}
+    m_SelectedColor: {r: 1, g: 1, b: 1, a: 1}
     m_DisabledColor: {r: 0.14901961, g: 0.14901961, b: 0.14901961, a: 1}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
@@ -7077,7 +7077,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc654f14c97dd3b4a8bb2b95680051b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playHoverSound: 1
+  playHoverSound: 0
   hoverSfx: 6
   playClickSound: 1
   clickSfx: 7
@@ -7411,7 +7411,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Korean
+  m_text: "\uD55C\uAD6D\uC5B4"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
   m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
@@ -8890,19 +8890,19 @@ MonoBehaviour:
   m_MultiSelect: 0
   m_Options:
     m_Options:
-    - m_Text: Korean
+    - m_Text: "\uD55C\uAD6D\uC5B4"
       m_Image: {fileID: 0}
       m_Color: {r: 1, g: 1, b: 1, a: 1}
     - m_Text: English
       m_Image: {fileID: 0}
       m_Color: {r: 1, g: 1, b: 1, a: 1}
-    - m_Text: Chinese
+    - m_Text: "\u4E2D\u6587"
       m_Image: {fileID: 0}
       m_Color: {r: 1, g: 1, b: 1, a: 1}
-    - m_Text: Japanese
+    - m_Text: "\u65E5\u672C\u8A9E"
       m_Image: {fileID: 0}
       m_Color: {r: 1, g: 1, b: 1, a: 1}
-    - m_Text: Spanish
+    - m_Text: "Espa\xF1ol"
       m_Image: {fileID: 0}
       m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_OnValueChanged:
