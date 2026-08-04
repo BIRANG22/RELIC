@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
+public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {
     [Header("Basic")]
     [SerializeField] private Image portraitImage;
@@ -39,6 +39,12 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
     [SerializeField, Min(0f)] private float backAnimationDuration = 0.2f;
 
     [SerializeField] private bool useUnscaledTimeForBackAnimation = true;
+
+    [Header("Back Hover Effect")]
+    [SerializeField] private Image backImage;
+    [SerializeField] private bool autoFindBackImage = true;
+    [SerializeField] private Color selectedBackColor = new Color32(0x0C, 0x58, 0xC5, 0xFF);
+    [SerializeField] private Color hoverBackColor = new Color32(0xEE, 0xEE, 0xEE, 0xFF);
 
     [Header("Click Selection")]
     [SerializeField] private bool enableHudClickSelect = true;
@@ -86,6 +92,8 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
 
     private Vector3 defaultLocalScale;
     private Coroutine backPositionAnimationRoutine;
+    private bool isCommandSelected;
+    private bool isPointerHovering;
 
     public CharacterRuntimeData BoundRuntime => boundRuntime;
 
@@ -99,6 +107,7 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
         ResolveKeyboardNumberReferences();
         ResolveCommandSelectedHighlightReferences();
         ResolveBackAnimationReferences();
+        ResolveBackImageReference();
         ResolveResourceSlotReferences();
         ApplyStatusEffectParentLayout();
         ApplyKeyboardNumberVisual();
@@ -110,6 +119,7 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
         SetupHudClickSelection();
         ResolveKeyboardNumberReferences();
         ResolveBackAnimationReferences();
+        ResolveBackImageReference();
         ResolveResourceSlotReferences();
         ApplyKeyboardNumberVisual();
 
@@ -124,6 +134,7 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
 
         ResolveCommandSelectedHighlightReferences();
         ResolveBackAnimationReferences();
+        ResolveBackImageReference();
         ResolveResourceSlotReferences();
         ApplyStatusEffectParentLayout();
 
@@ -383,7 +394,9 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
 
     private void ApplyCommandSelectedVisual(bool selected)
     {
+        isCommandSelected = selected;
         ResolveCommandSelectedHighlightReferences();
+        ResolveBackImageReference();
 
         if (commandSelectedHighlightObject != null)
         {
@@ -396,11 +409,17 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
             commandSelectedHighlightImage.gameObject.SetActive(selected);
         }
 
-        transform.localScale = selected
+        ApplyScaleVisualState();
+        ApplyBackVisualState();
+    }
+
+    private void ApplyScaleVisualState()
+    {
+        bool shouldEnlarge = isCommandSelected || isPointerHovering;
+
+        transform.localScale = shouldEnlarge
             ? defaultLocalScale * Mathf.Max(1f, selectedScale)
             : defaultLocalScale;
-
-        PlayBackSelectionAnimation(selected);
     }
 
     private void ResolveBackAnimationReferences()
@@ -418,6 +437,36 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
         {
             backRect = backObject.GetComponent<RectTransform>();
         }
+    }
+
+    private void ResolveBackImageReference()
+    {
+        if (backImage != null)
+            return;
+
+        if (!autoFindBackImage)
+            return;
+
+        ResolveBackAnimationReferences();
+
+        if (backRect != null)
+            backImage = backRect.GetComponent<Image>();
+    }
+
+    private void ApplyBackVisualState()
+    {
+        ResolveBackImageReference();
+
+        bool showBack = isCommandSelected || isPointerHovering;
+
+        if (backImage != null)
+        {
+            backImage.color = isCommandSelected
+                ? selectedBackColor
+                : hoverBackColor;
+        }
+
+        PlayBackSelectionAnimation(showBack);
     }
 
     private void PlayBackSelectionAnimation(bool selected)
@@ -728,6 +777,8 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
 
     private void Clear()
     {
+        isPointerHovering = false;
+
         if (portraitImage != null)
         {
             portraitImage.sprite = null;
@@ -819,6 +870,66 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler
             GetComponent<RectTransform>();
 
         OnClicked?.Invoke(boundRuntime, rect);
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (IsMenuPanelOpen())
+            return;
+
+        if (boundRuntime == null || isCommandSelected)
+            return;
+
+        SetHoverVisualState(true);
+        SetLinkedCharacterHoverHighlight(true);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (!isPointerHovering)
+            return;
+
+        SetHoverVisualState(false);
+        SetLinkedCharacterHoverHighlight(false);
+    }
+
+    /// <summary>
+    /// 캐릭터 호버와 연동되어 HUD 호버 효과만 변경합니다.
+    /// 반대쪽 캐릭터에 다시 전달하지 않아 호버 호출이 순환하지 않습니다.
+    /// </summary>
+    public void SetLinkedCharacterHover(bool active)
+    {
+        if (isCommandSelected)
+            active = false;
+
+        SetHoverVisualState(active);
+    }
+
+    private void SetHoverVisualState(bool active)
+    {
+        isPointerHovering = active;
+        ApplyScaleVisualState();
+        ApplyBackVisualState();
+    }
+
+    private void SetLinkedCharacterHoverHighlight(bool active)
+    {
+        if (boundRuntime == null || string.IsNullOrWhiteSpace(boundRuntime.CharacterId))
+            return;
+
+        BattleCharacter[] characters = FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            BattleCharacter character = characters[i];
+
+            if (character == null || character.CharacterId != boundRuntime.CharacterId)
+                continue;
+
+            character.SetLinkedHudHoverHighlight(active);
+        }
     }
 
     public void OnPointerClick(

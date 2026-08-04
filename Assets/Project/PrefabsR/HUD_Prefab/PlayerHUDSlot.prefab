@@ -1481,7 +1481,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -72.4, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: 96, y: 96}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &283384868976618786
 CanvasRenderer:
@@ -1966,6 +1966,10 @@ MonoBehaviour:
   selectedBackAnchoredPosition: {x: -80.6, y: -2.6}
   backAnimationDuration: 0.2
   useUnscaledTimeForBackAnimation: 1
+  backImage: {fileID: 0}
+  autoFindBackImage: 1
+  selectedBackColor: {r: 0.047058824, g: 0.34509805, b: 0.77254903, a: 1}
+  hoverBackColor: {r: 0.93333334, g: 0.93333334, b: 0.93333334, a: 1}
   enableHudClickSelect: 1
   ensureClickableRaycastGraphic: 1
   autoAddButtonClickHandler: 1
