@@ -304,10 +304,10 @@ public class BattleActionRunner
         if (command.ReservedMoveGridIndex >= 0)
             return false;
 
-        if (command.SkillData.Target == TargetType.Self)
+        if (ShouldPlayerSkillTargetSelf(command))
             return command.UserRuntime != null && !command.UserRuntime.IsDead;
 
-        if (command.SkillData.Target == TargetType.PlayerParty)
+        if (ShouldPlayerSkillTargetPlayerParty(command))
             return HasPlayerPartyTarget(command);
 
         return HasMonsterTarget(command);
@@ -331,6 +331,50 @@ public class BattleActionRunner
             return FindFirstAliveMonsterTarget(command, unitFinder.FindMonsterUnit(command.RuntimeId)) != null;
 
         return HasPlayerTarget(command);
+    }
+
+    private static bool IsAllRangePlayerSkill(PlayerReservedCommand command)
+    {
+        if (command == null || command.SkillData == null)
+            return false;
+
+        string rangeId = BattleEquipmentEffectService.GetEffectiveRangeId(
+            command.UserRuntime,
+            command.SkillData
+        );
+
+        return BattleRangeCalculator.IsAllRangeId(rangeId);
+    }
+
+    private static bool ShouldPlayerSkillTargetPlayerParty(PlayerReservedCommand command)
+    {
+        if (command == null || command.SkillData == null)
+            return false;
+
+        if (!IsAllRangePlayerSkill(command))
+            return command.SkillData.Target == TargetType.PlayerParty;
+
+        if (command.SkillData.SkillType == SkillType.Buff)
+            return true;
+
+        if (command.SkillData.SkillType == SkillType.Attack ||
+            command.SkillData.SkillType == SkillType.Debuff)
+        {
+            return false;
+        }
+
+        return command.SkillData.Target == TargetType.PlayerParty;
+    }
+
+    private static bool ShouldPlayerSkillTargetSelf(PlayerReservedCommand command)
+    {
+        if (command == null || command.SkillData == null)
+            return false;
+
+        if (IsAllRangePlayerSkill(command))
+            return false;
+
+        return command.SkillData.Target == TargetType.Self;
     }
 
     private bool HasPlayerPartyTarget(PlayerReservedCommand command)
@@ -379,8 +423,11 @@ public class BattleActionRunner
                 if (command.ReservedMoveGridIndex >= 0)
                     continue;
 
-                if (command.SkillData.Target == TargetType.Self || command.SkillData.Target == TargetType.PlayerParty)
+                if (ShouldPlayerSkillTargetSelf(command) ||
+                    ShouldPlayerSkillTargetPlayerParty(command))
+                {
                     continue;
+                }
 
                 if (HasMonsterTarget(command))
                     count++;
@@ -1427,7 +1474,7 @@ public class BattleActionRunner
 
         RecalculatePlayerSkillRangeAtExecution(attacker, command);
 
-        ShowExecutionRange(BuildPlayerExecutionRange(command, attacker.CurrentGridIndex));
+        ShowExecutionRange(BuildPlayerExecutionRange(command));
 
         try
         {
@@ -1441,7 +1488,7 @@ public class BattleActionRunner
 
             BattleUnitAnimator attackerAnimator = attacker.GetComponent<BattleUnitAnimator>();
 
-            if (command.SkillData.Target == TargetType.PlayerParty)
+            if (ShouldPlayerSkillTargetPlayerParty(command))
             {
                 if (attackerAnimator != null)
                     attackerAnimator.PlaySkillAction(command.SkillData);
@@ -1479,7 +1526,7 @@ public class BattleActionRunner
                 yield break;
             }
 
-            if (command.SkillData.Target == TargetType.Self)
+            if (ShouldPlayerSkillTargetSelf(command))
             {
                 if (attackerAnimator != null)
                     attackerAnimator.PlaySkillAction(command.SkillData);
@@ -1575,7 +1622,7 @@ public class BattleActionRunner
         if (command.SkillData.RangeType == RangeType.None)
             return;
 
-        if (DataManager.Instance == null || DataManager.Instance.RangeDatabase == null)
+        if (gridManager == null || DataManager.Instance == null)
             return;
 
         BattleDirection direction = attacker.RuntimeData != null
@@ -1584,6 +1631,12 @@ public class BattleActionRunner
 
         string rangeId =
             BattleEquipmentEffectService.GetEffectiveRangeId(attacker.RuntimeData, command.SkillData);
+
+        if (!BattleRangeCalculator.IsAllRangeId(rangeId) &&
+            DataManager.Instance.RangeDatabase == null)
+        {
+            return;
+        }
 
         List<int> rangeGridIndices = new();
 

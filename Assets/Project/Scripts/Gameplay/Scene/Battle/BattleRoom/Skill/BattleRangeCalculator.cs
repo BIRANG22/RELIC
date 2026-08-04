@@ -12,10 +12,13 @@ public static class BattleRangeCalculator
     {
         List<int> result = new();
 
-        if (rangeDatabase == null || gridManager == null)
+        if (gridManager == null)
             return result;
 
-        if (!rangeDatabase.TryGet(rangeId, out SkillRangeData rangeData))
+        if (IsAllRangeId(rangeId))
+            return GetAllGridIndices(gridManager);
+
+        if (rangeDatabase == null || !rangeDatabase.TryGet(rangeId, out SkillRangeData rangeData))
             return result;
 
         Vector2Int casterCoord = gridManager.IndexToCoord(casterGridIndex);
@@ -42,10 +45,13 @@ public static class BattleRangeCalculator
     {
         List<int> result = new();
 
-        if (rangeDatabase == null || gridManager == null)
+        if (gridManager == null)
             return result;
 
-        if (!rangeDatabase.TryGet(rangeId, out SkillRangeData rangeData))
+        if (IsAllRangeId(rangeId))
+            return GetAllGridIndices(gridManager);
+
+        if (rangeDatabase == null || !rangeDatabase.TryGet(rangeId, out SkillRangeData rangeData))
             return result;
 
         Vector2Int casterCoord = gridManager.IndexToCoord(casterGridIndex);
@@ -60,6 +66,26 @@ public static class BattleRangeCalculator
 
             result.Add(gridManager.CoordToIndex(targetCoord));
         }
+
+        return result;
+    }
+    public static bool IsAllRangeId(string rangeId)
+    {
+        return string.Equals(rangeId, "Range_All", System.StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(rangeId, "Rnage_All", System.StringComparison.OrdinalIgnoreCase);
+    }
+
+    public static List<int> GetAllGridIndices(GridManager gridManager)
+    {
+        List<int> result = new();
+
+        if (gridManager == null)
+            return result;
+
+        int cellCount = gridManager.Width * gridManager.Height;
+
+        for (int index = 0; index < cellCount; index++)
+            result.Add(index);
 
         return result;
     }
