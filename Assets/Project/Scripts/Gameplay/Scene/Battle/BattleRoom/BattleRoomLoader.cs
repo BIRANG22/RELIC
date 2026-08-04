@@ -814,17 +814,13 @@ public class BattleRoomLoader : MonoBehaviour
         for (int i = 0; i < playerRuntimes.Count; i++)
             CreatePlayerHUD(playerRuntimes[i], i);
 
-        // 기존 SkillListPanel 자동 열기에 의존하지 않고, 전투 입장 시 첫 번째 캐릭터를 기본 선택합니다.
-        if (playerRuntimes.Count > 0)
-            selectedPlayerRuntime = playerRuntimes[0];
-
-        EnsureBattleCharacterPanel();
-
-        if (battleCharacterPanel != null)
-            battleCharacterPanel.Bind(selectedPlayerRuntime);
-
         ApplyPlayerHudAnchorOrder();
-        RefreshPlayerHudSelectionVisuals();
+
+        // 전투방에 입장한 직후에는 아직 예약 단계가 시작되지 않았으므로
+        // 캐릭터를 선택하지 않습니다. 첫 번째 캐릭터 선택은 전투 입력이 활성화되어
+        // 예약 단계가 시작되는 시점에 처리합니다.
+        SelectPlayerHUD(null);
+
         EnsurePlayerHudLayerOrder();
     }
 
@@ -981,9 +977,13 @@ public class BattleRoomLoader : MonoBehaviour
     {
         selectedPlayerRuntime = runtimeData;
         EnsureBattleCharacterPanel();
+        EnsureTimelineController();
 
         if (battleCharacterPanel != null)
             battleCharacterPanel.Bind(runtimeData);
+
+        if (timelineController != null)
+            timelineController.SelectCharacter(runtimeData);
 
         for (int i = playerHudSlots.Count - 1; i >= 0; i--)
         {
@@ -1250,6 +1250,11 @@ public class BattleRoomLoader : MonoBehaviour
             Debug.Log("[BattleRoomLoader] Battle input ready true after initial monster plan");
         }
 
+        // 초기 몬스터 예약이 끝나고 플레이어 예약 단계가 실제로 시작된 시점에
+        // 첫 번째 캐릭터를 기본 선택하여 패널, HUD, 하이라이트를 함께 갱신합니다.
+        CharacterRuntimeData initialSelectedRuntime = GetSelectedOrFirstPlayerRuntime();
+        if (initialSelectedRuntime != null)
+            SelectPlayerHUD(initialSelectedRuntime);
 
         EnsureFirstBattleTutorialController();
 

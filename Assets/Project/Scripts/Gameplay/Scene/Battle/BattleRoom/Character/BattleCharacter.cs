@@ -5,6 +5,8 @@ using UnityEngine.EventSystems;
 
 public class BattleCharacter : MonoBehaviour
 {
+    private static readonly Color CharacterSelectedHighlightColor = new Color32(0x0C, 0x58, 0xC5, 0xFF);
+    private static readonly Color CharacterHoverHighlightColor = new Color32(0xEE, 0xEE, 0xEE, 0xFF);
     private const string TimelineHoverHighlightIdleBackName = "Idle_Back";
     private const string TimelineHoverHighlightShadowName = "Shadow";
 
@@ -20,6 +22,7 @@ public class BattleCharacter : MonoBehaviour
     private Animator timelineHoverHighlightSourceAnimator;
     private Animator timelineHoverHighlightIdleBackAnimator;
     private bool timelineHoverHighlightVisible;
+    private bool selectionHighlightVisible;
 
     public CharacterRuntimeData RuntimeData { get; private set; }
 
@@ -57,7 +60,8 @@ public class BattleCharacter : MonoBehaviour
 
     public void SetSelectionScaleFeedback(bool selected)
     {
-        SetTimelineHoverHighlight(selected);
+        selectionHighlightVisible = selected;
+        ApplyTimelineHoverHighlightAlpha();
     }
 
     private void LateUpdate()
@@ -73,6 +77,62 @@ public class BattleCharacter : MonoBehaviour
     private void OnDestroy()
     {
         SetTimelineHoverHighlight(false);
+    }
+
+    private void OnMouseEnter()
+    {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
+        if (RuntimeData == null || RuntimeData.IsDead)
+            return;
+
+        if (IsPointerOverUI())
+            return;
+
+        SetTimelineHoverHighlight(true);
+        SetLinkedHudHover(true);
+    }
+
+    private void OnMouseExit()
+    {
+        SetTimelineHoverHighlight(false);
+        SetLinkedHudHover(false);
+    }
+
+    /// <summary>
+    /// HUD 호버와 연동되어 캐릭터 하이라이트만 변경합니다.
+    /// 반대쪽 HUD에 다시 전달하지 않아 호버 호출이 순환하지 않습니다.
+    /// </summary>
+    public void SetLinkedHudHoverHighlight(bool active)
+    {
+        if (selectionHighlightVisible)
+            active = false;
+
+        SetTimelineHoverHighlight(active);
+    }
+
+    private void SetLinkedHudHover(bool active)
+    {
+        if (RuntimeData == null || string.IsNullOrWhiteSpace(RuntimeData.CharacterId))
+            return;
+
+        PlayerHUDSlot[] hudSlots = FindObjectsByType<PlayerHUDSlot>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < hudSlots.Length; i++)
+        {
+            PlayerHUDSlot hudSlot = hudSlots[i];
+
+            if (hudSlot == null || hudSlot.BoundRuntime == null)
+                continue;
+
+            if (hudSlot.BoundRuntime.CharacterId != RuntimeData.CharacterId)
+                continue;
+
+            hudSlot.SetLinkedCharacterHover(active);
+        }
     }
 
     private void OnMouseDown()
@@ -253,8 +313,11 @@ public class BattleCharacter : MonoBehaviour
             if (spriteRenderer == null)
                 continue;
 
-            Color color = spriteRenderer.color;
-            color.a = timelineHoverHighlightVisible ? timelineHoverHighlightOriginalAlphas[i] : 0f;
+            bool shouldShow = selectionHighlightVisible || timelineHoverHighlightVisible;
+            Color color = selectionHighlightVisible
+                ? CharacterSelectedHighlightColor
+                : CharacterHoverHighlightColor;
+            color.a = shouldShow ? timelineHoverHighlightOriginalAlphas[i] : 0f;
             spriteRenderer.color = color;
         }
     }
@@ -267,6 +330,7 @@ public class BattleCharacter : MonoBehaviour
     private void ForceTimelineHoverHighlightOff()
     {
         timelineHoverHighlightVisible = false;
+        selectionHighlightVisible = false;
 
         if (timelineHoverHighlightObject == null)
             return;
