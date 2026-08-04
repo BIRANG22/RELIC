@@ -11,23 +11,23 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     private const float RefreshIntervalSeconds = 0.25f;
 
     [Header("Panel")]
-    [Tooltip("PositionPanel ?덉뿉 誘몃━ 諛곗튂??CultureTankPanel?낅땲?? 鍮꾩뼱 ?덉쑝硫???而댄룷?뚰듃媛 遺숈? ?ㅻ툕?앺듃瑜??ъ슜?⑸땲??")]
+    [Tooltip("PositionPanel 안에 미리 배치한 CultureTankPanel입니다. 비어 있으면 이 컴포넌트가 붙은 오브젝트를 사용합니다.")]
     [SerializeField] private GameObject panelRoot;
 
-    [Tooltip("CultureTankPanel??BackButton?낅땲??")]
+    [Tooltip("CultureTankPanel의 BackButton입니다.")]
     [SerializeField] private Button backButton;
 
-    [Tooltip("諛곗뼇議??됰뱾???ㅼ뼱 ?덈뒗 Content?낅땲??")]
+    [Tooltip("배양조 행들이 들어 있는 Content입니다.")]
     [SerializeField] private RectTransform contentRoot;
 
-    [Tooltip("諛곗뼇議곌? ?놁쓣 ???쒖떆???띿뒪?몄엯?덈떎. ?ъ슜?섏? ?딆쑝硫?鍮꾩썙???⑸땲??")]
+    [Tooltip("배양조가 없을 때 표시할 텍스트입니다. 사용하지 않으면 비워 둬도 됩니다.")]
     [SerializeField] private TMP_Text emptyText;
 
     [Header("Inventory")]
     [SerializeField] private Transform inventoryItemRoot;
 
     [Header("Rows")]
-    [Tooltip("Content ?꾨옒??誘몃━ 留뚮뱾????CultureTankRow_1~3???쒖꽌?濡??곌껐?⑸땲??")]
+    [Tooltip("Content 아래에 미리 만든 CultureTankRow_1~3을 순서대로 연결합니다.")]
     [SerializeField] private TankRow[] rows = new TankRow[3];
 
     [Header("Search")]
@@ -74,7 +74,7 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
 
         if (panelRoot == null)
         {
-            Debug.LogWarning("[LobbyCultureTankPanelPresenter] CultureTankPanel???곌껐?섏? ?딆븯?듬땲??");
+            Debug.LogWarning("[LobbyCultureTankPanelPresenter] CultureTankPanel이 연결되지 않았습니다.");
             return;
         }
 

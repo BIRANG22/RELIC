@@ -19,27 +19,27 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
     [SerializeField] private ParticleSystem rarityParticles;
 
     [Header("Rarity Particle Colors")]
-    [Tooltip("?쇰컲 ?깃툒 ?뚰떚???됱긽")]
+    [Tooltip("일반 등급 테두리 색상")]
     [SerializeField]
     private Color commonParticleColor =
         new Color32(200, 208, 217, 255);
 
-    [Tooltip("怨좉툒 ?깃툒 ?뚰떚???됱긽")]
+    [Tooltip("고급 등급 테두리 색상")]
     [SerializeField]
     private Color uncommonParticleColor =
         new Color32(92, 219, 131, 255);
 
-    [Tooltip("?ш? ?깃툒 ?뚰떚???됱긽")]
+    [Tooltip("희귀 등급 테두리 색상")]
     [SerializeField]
     private Color rareParticleColor =
         new Color32(78, 141, 255, 255);
 
-    [Tooltip("?좊땲???깃툒 ?뚰떚???됱긽")]
+    [Tooltip("유니크 등급 테두리 색상")]
     [SerializeField]
     private Color uniqueParticleColor =
         new Color32(255, 179, 71, 255);
 
-    [Tooltip("?????녿뒗 ?깃툒???ъ슜??湲곕낯 ?됱긽")]
+    [Tooltip("알 수 없는 등급에 사용할 기본 색상")]
     [SerializeField] private Color defaultParticleColor = Color.white;
 
     private string relicId;
@@ -101,7 +101,7 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
             return;
 
         ResetHoverState();
-        priceText.text = "?먮ℓ ?꾨즺";
+        priceText.text = "판매 완료";
         button.interactable = false;
 
         FadeOutRarityRing();
@@ -300,7 +300,7 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
     }
 
     /// <summary>
-    /// ?몄뒪?숉꽣??吏?뺥븳 ?깃툒蹂??됱긽??諛섑솚?⑸땲??
+    /// 인스펙터에 지정한 등급별 색상을 반환합니다.
     /// </summary>
     private Color GetParticleColor(RelicRarity rarity)
     {

@@ -66,7 +66,7 @@ public sealed class LobbySkillUpgradePanelUI : MonoBehaviour
 
     public void TuneSelectedSkill()
     {
-        Debug.Log($"[LobbySkillUpgradePanelUI] ê°•í™” ë²„íŠ¼ ?…ë ¥. ? íƒ ?¬ë?: {selection.HasSelection}");
+        Debug.Log($"[LobbySkillUpgradePanelUI] °­È­ ¹öÆ° ÀÔ·Â. ¼±ÅÃ ¿©ºÎ: {selection.HasSelection}");
 
         if (!CanLocalPlayerMutateHostOnlyState())
         {
@@ -82,7 +82,7 @@ public sealed class LobbySkillUpgradePanelUI : MonoBehaviour
 
         if (DataManager.Instance == null)
         {
-            Debug.LogError("[LobbySkillUpgradePanelUI] DataManager.Instanceê°€ ?†ì–´ ê°•í™”ë¥??¤í–‰?????†ìŠµ?ˆë‹¤.");
+            Debug.LogError("[LobbySkillUpgradePanelUI] DataManager.Instance°¡ ¾ø¾î °­È­¸¦ ½ÇÇàÇÒ ¼ö ¾ø½À´Ï´Ù.");
             return;
         }
 
@@ -92,13 +92,13 @@ public sealed class LobbySkillUpgradePanelUI : MonoBehaviour
 
         if (!result.Succeeded)
         {
-            Debug.LogWarning($"[LobbySkillUpgradePanelUI] ê°•í™” ?¤íŒ¨: {result.Failure}, ê°€ê²? {result.Price}");
+            Debug.LogWarning($"[LobbySkillUpgradePanelUI] °­È­ ½ÇÆĞ: {result.Failure}, °¡°İ: {result.Price}");
             ShowFailure(result.Failure);
             RefreshPrice();
             return;
         }
 
-        Debug.Log($"[LobbySkillUpgradePanelUI] ê°•í™” ?±ê³µ. ?Œëª¨: {result.Price}, ?”ì•¡: {lobby.BlueDustium}");
+        Debug.Log($"[LobbySkillUpgradePanelUI] °­È­ ¼º°ø. ¼Ò¸ğ: {result.Price}, ÀÜ¾×: {lobby.BlueDustium}");
         LobbyBlueDustiumHudUI.RefreshAll();
         EquippedSkillPanelUI.RefreshAll();
         SkillInventoryPanelUI.RefreshAll();
@@ -190,7 +190,7 @@ public sealed class LobbySkillUpgradePanelUI : MonoBehaviour
     private void OnItemClicked(SkillUpgradeRequest request, Sprite icon)
     {
         selection.Select(request);
-        Debug.Log($"[LobbySkillUpgradePanelUI] ?¤í‚¬ ?´ë¦­ ? íƒ: {request.CurrentSkillId} -> {request.UpgradeSkillId}");
+        Debug.Log($"[LobbySkillUpgradePanelUI] ½ºÅ³ Å¬¸¯ ¼±ÅÃ: {request.CurrentSkillId} -> {request.UpgradeSkillId}");
         CacheSelectedDefaults();
         Image selectedImage = ResolveSelectedSkillIconImage();
         if (selectedImage != null)
@@ -204,8 +204,8 @@ public sealed class LobbySkillUpgradePanelUI : MonoBehaviour
 
     private void ShowSkillInfo(SkillUpgradeRequest request)
     {
-        // ???¨ë„?€ ?¸ë²„ ???ì„¸ ?•ë³´ê°€ ?œì‹œ?˜ë?ë¡? ?”ë©´??ë¯¸ë¦¬ë³´ê¸° ?€?ê³¼
-        // ?¤ì œ ê°•í™” ?€?ì„ ?™ì¼?˜ê²Œ ? ì??œë‹¤.
+        // ÀÌ ÆĞ³ÎÀº È£¹ö ½Ã »ó¼¼ Á¤º¸°¡ Ç¥½ÃµÇÁö ¾ÊÀ¸¹Ç·Î ¹Ì¸®º¸±â ¿äÃ»°ú
+        // ½ÇÁ¦ °­È­ ¿äÃ»À» µ¿ÀÏÇÏ°Ô À¯ÁöÇÑ´Ù.
         selection.Select(request);
 
         DataManager manager = DataManager.Instance;
@@ -233,8 +233,8 @@ public sealed class LobbySkillUpgradePanelUI : MonoBehaviour
     private static void ShowFailure(LobbySkillUpgradeFailure failure)
     {
         string message = failure == LobbySkillUpgradeFailure.InsufficientBlueDustium
-            ? "BlueDustium??ë¶€ì¡±í•©?ˆë‹¤."
-            : "?¤í‚¬??ê°•í™”?????†ìŠµ?ˆë‹¤.";
+            ? "BlueDustiumÀÌ ºÎÁ·ÇÕ´Ï´Ù."
+            : "½ºÅ³À» °­È­ÇÒ ¼ö ¾ø½À´Ï´Ù.";
         BattleWarningUI.ShowMessage(message);
     }
 
