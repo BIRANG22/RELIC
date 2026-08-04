@@ -2356,6 +2356,9 @@ MonoBehaviour:
   - type: 29
     clip: {fileID: 8300000, guid: a4bd1740484f2064fa0b21baa659acbc, type: 3}
     volume: 0.3
+  - type: 30
+    clip: {fileID: 8300000, guid: a4bd1740484f2064fa0b21baa659acbc, type: 3}
+    volume: 0.3
   battleSfxList:
   - type: 12
     clip: {fileID: 8300000, guid: 97920063d95b7e94c8098f16e03d9bf8, type: 3}

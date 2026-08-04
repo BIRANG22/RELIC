@@ -135,6 +135,11 @@ public class BattleTimelineController : MonoBehaviour
     [SerializeField] private SfxType timelineSlotSlideSfxType = SfxType.BattleTimelineSlotSlide;
     [SerializeField, Range(0f, 1f)] private float timelineSlotSlideSfxVolume = 1f;
 
+    [Header("Total Used Cost Text")]
+    [SerializeField] private TMP_Text totalUsedCostText;
+    [SerializeField] private bool autoFindTotalUsedCostText = true;
+    [SerializeField] private string totalUsedCostTextObjectName = "useCOST";
+    [SerializeField] private string totalUsedCostFormat = "{0}";
 
     private int activeSlotIndex = -1;
     private CharacterRuntimeData selectedCharacter;
@@ -202,12 +207,14 @@ public class BattleTimelineController : MonoBehaviour
         AutoFindTimelineSpriteAnimationControllerIfNeeded();
         AutoBindEndButtonHoverRotationTargetIfNeeded();
         AutoBindEndButtonHoverLinkedGearTargetsIfNeeded();
+        AutoFindTotalUsedCostTextIfNeeded();
         BindEndButtonHoverRotationEventsIfNeeded();
 
         if (turnExecutor == null)
             turnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
 
         RefreshSelectedSlotValueText();
+        RefreshTotalUsedCostText();
 
         InitTimelineBars();
 
@@ -1617,10 +1624,6 @@ public class BattleTimelineController : MonoBehaviour
         if (target == null)
             return;
 
-        // TurnUI의 Chain 오브젝트는 회전시키지 않고, 연결된 톱니 이미지만 회전합니다.
-        if (target.name.Equals("Chain", System.StringComparison.OrdinalIgnoreCase))
-            return;
-
         Vector3 eulerAngles = target.localEulerAngles;
         eulerAngles.z = zRotation;
         target.localEulerAngles = eulerAngles;
@@ -1646,6 +1649,70 @@ public class BattleTimelineController : MonoBehaviour
         }
     }
 
+    private void AutoFindTotalUsedCostTextIfNeeded()
+    {
+        if (!autoFindTotalUsedCostText)
+            return;
+
+        if (totalUsedCostText != null)
+            return;
+
+        Transform searchRoot = GetTimelineSearchRoot();
+        Transform found = FindChildRecursive(searchRoot, totalUsedCostTextObjectName);
+
+        if (found == null)
+        {
+            BattleTimelineBarUI foundTimelineBar = FindFirstObjectByType<BattleTimelineBarUI>(FindObjectsInactive.Include);
+
+            if (foundTimelineBar != null)
+                found = FindChildRecursive(foundTimelineBar.transform, totalUsedCostTextObjectName);
+        }
+
+        if (found == null)
+            return;
+
+        totalUsedCostText = found.GetComponent<TMP_Text>();
+    }
+
+    private void RefreshTotalUsedCostText()
+    {
+        AutoFindTotalUsedCostTextIfNeeded();
+
+        if (totalUsedCostText == null)
+            return;
+
+        int totalUsedCost = CalculateTotalReservedCost();
+        string format = string.IsNullOrEmpty(totalUsedCostFormat) ? "{0}" : totalUsedCostFormat;
+        totalUsedCostText.text = string.Format(format, totalUsedCost);
+    }
+
+    private int CalculateTotalReservedCost()
+    {
+        if (reserveSlots == null || reserveSlots.Length <= 0)
+            return 0;
+
+        int totalCost = 0;
+
+        for (int slotIndex = 0; slotIndex < reserveSlots.Length; slotIndex++)
+        {
+            ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+
+            if (slot == null || slot.Commands == null)
+                continue;
+
+            for (int i = 0; i < slot.Commands.Count; i++)
+            {
+                PlayerReservedCommand command = slot.Commands[i];
+
+                if (command == null)
+                    continue;
+
+                totalCost += Mathf.Max(0, command.Cost);
+            }
+        }
+
+        return totalCost;
+    }
 
     private void AutoFindSelectedSlotValueTextIfNeeded()
     {
@@ -2318,6 +2385,19 @@ public class BattleTimelineController : MonoBehaviour
             runtimeData,
             skillData,
             activeSlotIndex
+        );
+    }
+
+    public void CancelGridSelectionWhenHoveringDifferentSkill(
+        CharacterRuntimeData runtimeData,
+        SkillMasterData skillData)
+    {
+        if (playerSkillReservationController == null)
+            playerSkillReservationController = FindFirstObjectByType<PlayerSkillReservationController>(FindObjectsInactive.Include);
+
+        playerSkillReservationController?.CancelSelectionWhenHoveringDifferentSkill(
+            runtimeData,
+            skillData
         );
     }
 
@@ -4133,6 +4213,7 @@ public class BattleTimelineController : MonoBehaviour
             activeBar.SetEmptyUseSkillSlotsVisible(true);
         }
 
+        RefreshTotalUsedCostText();
     }
 
     private void RefreshPlayerHUDs()

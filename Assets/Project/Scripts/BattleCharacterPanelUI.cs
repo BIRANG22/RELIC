@@ -90,6 +90,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
     [Header("Skill Slot Visual")]
     [SerializeField] private Color skillNameColor = Color.white;
     [SerializeField] private Color emptySkillNameColor = new Color32(0x77, 0x77, 0x77, 0xFF);
+    [SerializeField] private Color unavailableSkillColor = new Color32(0x55, 0x55, 0x55, 0xFF);
     [SerializeField] private string emptySkillName = "스킬 없음";
 
     [Header("Skill Info")]
@@ -1494,6 +1495,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         }
 
         bool hasSkill = skillData != null;
+        bool isResourceUnavailable = hasSkill && !CanUseSkillWithPreviewResource(skillData);
 
         if (button != null)
         {
@@ -1523,6 +1525,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
             iconImage.enabled = skillIcon != null;
             iconImage.gameObject.SetActive(skillIcon != null);
             iconImage.preserveAspect = true;
+            iconImage.color = isResourceUnavailable ? unavailableSkillColor : Color.white;
         }
 
         if (nameText != null)
@@ -1530,7 +1533,34 @@ public class BattleCharacterPanelUI : MonoBehaviour
             nameText.text = hasSkill && !string.IsNullOrWhiteSpace(skillData.Name)
                 ? skillData.Name
                 : emptySkillName;
-            nameText.color = hasSkill ? skillNameColor : emptySkillNameColor;
+            nameText.color = !hasSkill
+                ? emptySkillNameColor
+                : isResourceUnavailable
+                    ? unavailableSkillColor
+                    : skillNameColor;
+        }
+    }
+
+    private bool CanUseSkillWithPreviewResource(SkillMasterData skillData)
+    {
+        if (boundRuntime == null || skillData == null || boundRuntime.IsDead)
+            return false;
+
+        int requiredAmount = Mathf.Max(0, skillData.ResourceCostValue);
+
+        switch (skillData.ReferenceResource)
+        {
+            case ReferenceResource.HP:
+                // 체력 소모 스킬은 사용 후 체력이 최소 1 이상 남아야 합니다.
+                return requiredAmount <= 0 || boundRuntime.PreviewHP > requiredAmount;
+
+            case ReferenceResource.UniqueResource:
+                return requiredAmount <= 0 || boundRuntime.PreviewResource >= requiredAmount;
+
+            case ReferenceResource.MovePoint:
+            case ReferenceResource.Cost:
+            default:
+                return requiredAmount <= 0 || boundRuntime.PreviewCost >= requiredAmount;
         }
     }
 

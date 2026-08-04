@@ -51,7 +51,9 @@ public enum SfxType
     BagOpen = 26,
     BagClose = 27,
     InventoryOpen = 28,
-    InventoryClose = 29
+    InventoryClose = 29,
+
+    SkillReserve = 30
 }
 
 [System.Serializable]

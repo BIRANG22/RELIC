@@ -35,6 +35,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     [SerializeField] private Color disabledTextColor = new Color(1f, 1f, 1f, 0.5f);
     [SerializeField] private Color usableImageColor = Color.white;
     [SerializeField] private Color emptyImageColor = new Color(1f, 1f, 1f, 0.15f);
+    [SerializeField] private Color insufficientResourceColor = new Color32(0x55, 0x55, 0x55, 0xFF);
 
     [Header("Hover Breath Effect")]
     [SerializeField] private RectTransform scaleTarget;
@@ -63,6 +64,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     private RectTransform rectTransform;
     private string detailText = "";
     private bool canClick;
+    private int displayedCostValue;
     private int lastSelectFrame = -1;
     private Vector3 baseScale = Vector3.one;
     private bool hasCapturedBaseScale;
@@ -101,6 +103,9 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private void Update()
     {
+        // 예약 비용과 고유 자원 예약량은 슬롯 생성 이후에도 계속 변할 수 있으므로
+        // 매 프레임 현재 사용 가능 여부를 다시 반영합니다.
+        ApplyVisualState();
         ApplyScale(false);
     }
 
@@ -154,6 +159,8 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         int payAmount = displayedCostValue >= 0
             ? displayedCostValue
             : skillData.ResourceCostValue;
+
+        this.displayedCostValue = Mathf.Max(0, payAmount);
 
         ApplySkillMasterData(skillData, displayedCostValue);
 
@@ -224,8 +231,12 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     {
         BindMissingReferences();
 
+        displayedCostValue = Mathf.Max(0, costValue);
+
         if (skillCostValueText != null)
-            skillCostValueText.text = Mathf.Max(0, costValue).ToString();
+            skillCostValueText.text = displayedCostValue.ToString();
+
+        ApplyVisualState();
     }
 
     private void SetEmpty()
@@ -234,6 +245,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         skillData = null;
         runtimeData = null;
         detailText = "";
+        displayedCostValue = 0;
         isPointerOver = false;
         isSelected = false;
 
@@ -345,10 +357,13 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     private void ApplyVisualState()
     {
         bool hasSkill = skillData != null;
+        bool isResourceInsufficient = hasSkill && !CanAffordDisplayedCost();
 
         if (backgroundImage != null)
         {
-            if (isSelected && hasSkill)
+            if (isResourceInsufficient)
+                backgroundImage.color = insufficientResourceColor;
+            else if (isSelected && hasSkill)
                 backgroundImage.color = selectedBackgroundColor;
             else if (isPointerOver && hasSkill)
                 backgroundImage.color = hoverBackgroundColor;
@@ -360,7 +375,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         Color imageColor = hasSkill ? usableImageColor : emptyImageColor;
 
         if (skillNameText != null)
-            skillNameText.color = textColor;
+            skillNameText.color = isResourceInsufficient ? insufficientResourceColor : textColor;
 
         if (skillCostTypeText != null)
             skillCostTypeText.color = textColor;
@@ -368,13 +383,33 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         if (skillCostValueText != null)
             skillCostValueText.color = textColor;
 
-        Color skillIconColor = hasSkill
-            ? SkillRarityUtility.GetSkillIconColor(skillData.SkillId, usableImageColor)
-            : emptyImageColor;
+        Color skillIconColor = isResourceInsufficient
+            ? insufficientResourceColor
+            : hasSkill
+                ? SkillRarityUtility.GetSkillIconColor(skillData.SkillId, usableImageColor)
+                : emptyImageColor;
 
         ApplyImageColor(skillIconImage, skillIconColor);
         ApplyImageColor(skillRangeImage, imageColor);
         ApplyImageColor(skillCostImage, imageColor);
+    }
+
+
+    private bool CanAffordDisplayedCost()
+    {
+        if (skillData == null || runtimeData == null)
+            return true;
+
+        int cost = Mathf.Max(0, displayedCostValue);
+
+        return skillData.ReferenceResource switch
+        {
+            ReferenceResource.HP => runtimeData.CanReserveHP(cost),
+            ReferenceResource.Cost => runtimeData.CanReserveCost(cost),
+            ReferenceResource.MovePoint => runtimeData.CanReserveCost(cost),
+            ReferenceResource.UniqueResource => runtimeData.CanReserveResource(cost),
+            _ => true
+        };
     }
 
     private void ApplyImageColor(Image targetImage, Color color)
