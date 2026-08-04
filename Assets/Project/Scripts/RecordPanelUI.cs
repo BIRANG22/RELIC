@@ -26,6 +26,16 @@ public class RecordPanelUI : MonoBehaviour
     [SerializeField] private GameObject relicContent;
     [SerializeField] private GameObject itemContent;
 
+    [Header("Main Tab Buttons")]
+    [Tooltip("기억(Skill) 메인 탭 버튼을 연결합니다.")]
+    [SerializeField] private Button skillTabButton;
+    [Tooltip("파편(Fragment) 메인 탭 버튼을 연결합니다.")]
+    [SerializeField] private Button fragmentTabButton;
+    [Tooltip("유물(Relic) 메인 탭 버튼을 연결합니다.")]
+    [SerializeField] private Button relicTabButton;
+    [Tooltip("아이템(Item) 메인 탭 버튼을 연결합니다.")]
+    [SerializeField] private Button itemTabButton;
+
     [Header("Grid Contents")]
     [Tooltip("SkillContent 안의 Scroll View/Viewport/Content를 연결합니다.")]
     [SerializeField] private RectTransform skillGridContent;
@@ -56,16 +66,23 @@ public class RecordPanelUI : MonoBehaviour
     private readonly List<RecordIconSlotUI> spawnedSlots = new();
     private RecordIconSlotUI selectedSlot;
     private MainTab currentMainTab = MainTab.Skill;
+    private ColorBlock skillTabOriginalColors;
+    private ColorBlock fragmentTabOriginalColors;
+    private ColorBlock relicTabOriginalColors;
+    private ColorBlock itemTabOriginalColors;
+    private bool mainTabColorsCached;
 
     private void Awake()
     {
         ApplyGridConstraints();
+        CacheMainTabButtonColors();
     }
 
     private void OnEnable()
     {
         ShowSkillTab();
     }
+
 
     public void Close()
     {
@@ -242,6 +259,63 @@ public class RecordPanelUI : MonoBehaviour
         SetActive(fragmentContent, tab == MainTab.Fragment);
         SetActive(relicContent, tab == MainTab.Relic);
         SetActive(itemContent, tab == MainTab.Item);
+
+        SelectMainTabButton(tab);
+    }
+
+    private void SelectMainTabButton(MainTab tab)
+    {
+        CacheMainTabButtonColors();
+
+        ApplyMainTabButtonColors(skillTabButton, skillTabOriginalColors, tab == MainTab.Skill);
+        ApplyMainTabButtonColors(fragmentTabButton, fragmentTabOriginalColors, tab == MainTab.Fragment);
+        ApplyMainTabButtonColors(relicTabButton, relicTabOriginalColors, tab == MainTab.Relic);
+        ApplyMainTabButtonColors(itemTabButton, itemTabOriginalColors, tab == MainTab.Item);
+    }
+
+    private void CacheMainTabButtonColors()
+    {
+        if (mainTabColorsCached)
+            return;
+
+        if (skillTabButton != null)
+            skillTabOriginalColors = skillTabButton.colors;
+
+        if (fragmentTabButton != null)
+            fragmentTabOriginalColors = fragmentTabButton.colors;
+
+        if (relicTabButton != null)
+            relicTabOriginalColors = relicTabButton.colors;
+
+        if (itemTabButton != null)
+            itemTabOriginalColors = itemTabButton.colors;
+
+        mainTabColorsCached = true;
+    }
+
+    private static void ApplyMainTabButtonColors(Button button, ColorBlock originalColors, bool selected)
+    {
+        if (button == null)
+            return;
+
+        ColorBlock colors = originalColors;
+
+        if (selected)
+            colors.normalColor = originalColors.selectedColor;
+
+        button.colors = colors;
+    }
+
+    private Button GetMainTabButton(MainTab tab)
+    {
+        return tab switch
+        {
+            MainTab.Skill => skillTabButton,
+            MainTab.Fragment => fragmentTabButton,
+            MainTab.Relic => relicTabButton,
+            MainTab.Item => itemTabButton,
+            _ => null
+        };
     }
 
     private void CreateSlot(RectTransform parent, Sprite icon, string displayName)

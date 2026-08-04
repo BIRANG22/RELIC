@@ -2323,6 +2323,15 @@ MonoBehaviour:
   - type: 11
     clip: {fileID: 8300000, guid: 748ab9133e00d04458c3a6b54f77b212, type: 3}
     volume: 1
+  - type: 31
+    clip: {fileID: 8300000, guid: 010ca4953b15dd546994bcc230c3ff2d, type: 3}
+    volume: 1
+  - type: 32
+    clip: {fileID: 8300000, guid: 402b751614041df4ab89e77be2808de2, type: 3}
+    volume: 0.5
+  - type: 33
+    clip: {fileID: 8300000, guid: 3e264338eeeb0aa438690640c2886401, type: 3}
+    volume: 1
   playerSfxList: []
   monsterSfxList: []
   uiSfxList:
