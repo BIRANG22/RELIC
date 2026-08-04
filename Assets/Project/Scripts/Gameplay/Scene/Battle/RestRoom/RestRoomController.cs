@@ -18,7 +18,7 @@ public class RestRoomController : MonoBehaviour
 
     [Header("Heal")]
     [SerializeField, Range(0f, 1f)] private float healHpRatio = 0.3f;
-    [SerializeField] private string healCompleteMessage = "紐⑤뱺 罹먮┃?곗쓽 泥대젰??30% ?뚮났?덉뒿?덈떎";
+    [SerializeField] private string healCompleteMessage = "모든 캐릭터의 체력을 30% 회복했습니다.";
     [SerializeField] private GameObject healButtonRoot;
     [SerializeField] private Image healButtonBackImage;
     [SerializeField] private TMP_Text healButtonText;
@@ -114,7 +114,7 @@ public class RestRoomController : MonoBehaviour
 
         if (upgradePanel == null)
         {
-            Debug.LogWarning("[RestRoomController] SkillUpgradePanel ?놁쓬");
+            Debug.LogWarning("[RestRoomController] SkillUpgradePanel 없음");
             return;
         }
 
@@ -140,7 +140,7 @@ public class RestRoomController : MonoBehaviour
 
         if (upgradePanel == null)
         {
-            Debug.LogWarning("[RestRoomController] SkillUpgradePanel ?놁쓬");
+            Debug.LogWarning("[RestRoomController] SkillUpgradePanel 없음");
             return;
         }
 
@@ -219,7 +219,7 @@ public class RestRoomController : MonoBehaviour
             runtimeData.CurrentHP = Mathf.Clamp(runtimeData.CurrentHP + healAmount, 0, maxHp);
         }
 
-        Debug.Log($"[RestRoomController] 紐⑤뱺 ?뚰떚??HP {Mathf.RoundToInt(safeRatio * 100f)}% ?뚮났 ?꾨즺");
+        Debug.Log($"[RestRoomController] 모든 파티원 HP {Mathf.RoundToInt(safeRatio * 100f)}% 회복 완료");
     }
 
     private void SpawnPartyAllies()
