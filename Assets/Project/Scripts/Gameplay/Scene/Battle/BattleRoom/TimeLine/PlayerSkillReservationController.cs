@@ -18,6 +18,13 @@ public class PlayerSkillReservationController : MonoBehaviour
     [SerializeField] private bool keepSkillListOpenAfterReservationClick = true;
     [SerializeField] private int keepSkillListOpenIgnoreFrames = 1;
 
+    [Header("Reservation SFX")]
+    [Tooltip("스킬 또는 이동 행동이 타임라인에 정상 등록되었을 때 재생할 효과음입니다.")]
+    [SerializeField] private SfxType reservationConfirmSfx = SfxType.SkillReserve;
+    [Tooltip("행동 등록 효과음의 볼륨 배율입니다.")]
+    [Range(0f, 1f)]
+    [SerializeField] private float reservationConfirmSfxVolume = 1f;
+
     [Header("Range Highlight Material")]
     [Tooltip("이동 스킬의 선택 가능 그리드에만 사용하는 머테리얼입니다. 비워두면 기존 하이라이트 머테리얼을 사용합니다.")]
     [SerializeField] private Material moveHighlightMaterial;
@@ -140,7 +147,22 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     private void Update()
     {
+        HandleGridSelectionCancelInput();
         UpdateMoveHoverPingFloatingAnimation();
+    }
+
+    private void HandleGridSelectionCancelInput()
+    {
+        if (currentSkillData == null ||
+            currentSkillData.RangeType != RangeType.Selection)
+        {
+            return;
+        }
+
+        if (!Input.GetMouseButtonDown(1))
+            return;
+
+        ClearPreview();
     }
 
     private void UpdateMoveHoverPingFloatingAnimation()
@@ -379,7 +401,7 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (currentSkillData.RangeType == RangeType.Selection)
         {
             bool isMoveSkill = IsMoveSkill(currentSkillData);
-            SetGridTargetMonsterVisualActive(true);
+            SetGridTargetMonsterVisualActive(isMoveSkill);
 
             if (isMoveSkill)
             {
@@ -969,9 +991,11 @@ public class PlayerSkillReservationController : MonoBehaviour
             rangeIndices
         );
 
-        ConfirmCommand(command);
+        bool confirmed = ConfirmCommand(command);
         KeepSkillListOpenForThisClick();
-        ClearPreview();
+
+        if (!confirmed || !RefreshContinuousGridSelection())
+            ClearPreview();
     }
 
     private void ConfirmAllRangeReservation()
@@ -1074,10 +1098,11 @@ public class PlayerSkillReservationController : MonoBehaviour
             if (selfFlipCommands.Count <= 0)
                 return;
 
-            ConfirmCommands(selfFlipCommands);
+            bool selfFlipConfirmed = ConfirmCommands(selfFlipCommands);
 
             KeepSkillListOpenForThisClick();
-            ClearPreview();
+            if (!selfFlipConfirmed || !RefreshContinuousGridSelection())
+                ClearPreview();
             return;
         }
 
@@ -1106,10 +1131,11 @@ public class PlayerSkillReservationController : MonoBehaviour
             return;
         }
 
-        ConfirmCommands(commands);
+        bool confirmed = ConfirmCommands(commands);
 
         KeepSkillListOpenForThisClick();
-        ClearPreview();
+        if (!confirmed || !RefreshContinuousGridSelection())
+            ClearPreview();
     }
 
     private List<Vector2Int> GetFirstReservableMovePath(List<List<Vector2Int>> pathCandidates)
@@ -2364,6 +2390,87 @@ public class PlayerSkillReservationController : MonoBehaviour
         ClearPreview();
     }
 
+
+    private bool RefreshContinuousGridSelection()
+    {
+        if (currentUserRuntime == null ||
+            currentSkillData == null ||
+            currentSkillData.RangeType != RangeType.Selection ||
+            currentSlotIndex < 0)
+        {
+            return false;
+        }
+
+        EnsureTimelineController();
+
+        if (timelineController == null ||
+            timelineController.GetRemainingPlayerCommandCapacity(currentSlotIndex) <= 0 ||
+            !CanReserveCurrentSkillAgain())
+        {
+            return false;
+        }
+
+        HideMoveHoverPing();
+        RefreshCurrentCasterStateFromTimelinePreview();
+
+        bool isMoveSkill = IsMoveSkill(currentSkillData);
+        SetGridTargetMonsterVisualActive(isMoveSkill);
+
+        if (rangePreview != null)
+            rangePreview.Clear();
+
+        if (isMoveSkill)
+        {
+            PreviewMoveSelectableCells();
+            return currentMoveSelectableIndices.Count > 0;
+        }
+
+        PreviewGeneralSelectionSelectableCells();
+        return currentGeneralSelectionSelectableIndices.Count > 0;
+    }
+
+    private bool CanReserveCurrentSkillAgain()
+    {
+        if (currentUserRuntime == null || currentSkillData == null || currentUserRuntime.IsDead)
+            return false;
+
+        PlayerReservedCommand previewCommand =
+            new PlayerReservedCommand(currentUserRuntime, currentSkillData);
+
+        EnsureTimelineController();
+        if (timelineController != null && currentSlotIndex >= 0)
+            timelineController.PreparePreviewCommandForReservation(currentSlotIndex, previewCommand);
+
+        return currentUserRuntime.PreviewHP > previewCommand.HPCost &&
+               currentUserRuntime.PreviewCost >= previewCommand.Cost &&
+               currentUserRuntime.PreviewResource >= previewCommand.ResourceCost &&
+               currentUserRuntime.PreviewShield >= previewCommand.ShieldCost;
+    }
+
+    public void CancelSelectionWhenHoveringDifferentSkill(
+        CharacterRuntimeData runtimeData,
+        SkillMasterData hoveredSkillData)
+    {
+        if (currentSkillData == null ||
+            currentSkillData.RangeType != RangeType.Selection ||
+            hoveredSkillData == null)
+        {
+            return;
+        }
+
+        if (runtimeData != null &&
+            currentUserRuntime != null &&
+            runtimeData.CharacterId != currentUserRuntime.CharacterId)
+        {
+            return;
+        }
+
+        if (currentSkillData.SkillId == hoveredSkillData.SkillId)
+            return;
+
+        ClearPreview();
+    }
+
     private bool ConfirmCommand(PlayerReservedCommand command)
     {
         EnsureTimelineController();
@@ -2377,7 +2484,10 @@ public class PlayerSkillReservationController : MonoBehaviour
         bool confirmed = timelineController.ConfirmPlayerCommand(currentSlotIndex, command);
 
         if (confirmed)
+        {
             ShowTemporaryMonsterHUDsForCommand(command);
+            PlayReservationConfirmSfx();
+        }
 
         return confirmed;
     }
@@ -2395,9 +2505,23 @@ public class PlayerSkillReservationController : MonoBehaviour
         bool confirmed = timelineController.ConfirmPlayerCommands(currentSlotIndex, commands);
 
         if (confirmed)
+        {
             ShowTemporaryMonsterHUDsForCommands(commands);
+            PlayReservationConfirmSfx();
+        }
 
         return confirmed;
+    }
+
+    private void PlayReservationConfirmSfx()
+    {
+        if (AudioManager.Instance == null)
+            return;
+
+        AudioManager.Instance.PlaySfx(
+            reservationConfirmSfx,
+            reservationConfirmSfxVolume
+        );
     }
 
     private void ShowTemporaryMonsterHUDsForCommands(IReadOnlyList<PlayerReservedCommand> commands)

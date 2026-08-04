@@ -34,6 +34,14 @@ public class TimelineReservationHoverPreview : MonoBehaviour
         if (command.SkillData == null || command.UserRuntime == null)
             return;
 
+        // 타임라인에 등록된 이동 행동은 이동 경로와 고스트만으로 확인하므로
+        // 별도의 공격 범위 하이라이트를 표시하지 않습니다.
+        if (BattleEquipmentEffectService.IsMoveCommand(command))
+        {
+            rangePreview.ClearRangeOnly();
+            return;
+        }
+
         FindReferencesIfNeeded();
 
         if (reservationController != null && reservationController.IsMoveSkillSelectionActive())

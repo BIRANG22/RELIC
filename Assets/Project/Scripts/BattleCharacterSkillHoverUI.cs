@@ -136,6 +136,7 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
         }
 
         ApplyScale(false);
+        CancelDifferentGridSelection();
         ShowSkillRangePreview();
         skillInfoHandler?.Invoke(skillData);
     }
@@ -213,6 +214,18 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
         scaleTarget.localScale = Vector3.Lerp(scaleTarget.localScale, targetScale, t);
     }
 
+
+    private void CancelDifferentGridSelection()
+    {
+        if (skillData == null)
+            return;
+
+        EnsureBattleTimelineController();
+        battleTimelineController?.CancelGridSelectionWhenHoveringDifferentSkill(
+            previewRuntime,
+            skillData
+        );
+    }
 
     private void ShowSkillRangePreview()
     {

@@ -975,9 +975,20 @@ public class BattleRoomLoader : MonoBehaviour
 
     private void SelectPlayerHUD(CharacterRuntimeData runtimeData)
     {
-        selectedPlayerRuntime = runtimeData;
         EnsureBattleCharacterPanel();
         EnsureTimelineController();
+
+        bool isChangingCharacter =
+            selectedPlayerRuntime != null &&
+            runtimeData != null &&
+            selectedPlayerRuntime.CharacterId != runtimeData.CharacterId;
+
+        if (isChangingCharacter && timelineController != null)
+        {
+            timelineController.CancelSkillReservationPreviewFromSkillList(selectedPlayerRuntime);
+        }
+
+        selectedPlayerRuntime = runtimeData;
 
         if (battleCharacterPanel != null)
             battleCharacterPanel.Bind(runtimeData);
