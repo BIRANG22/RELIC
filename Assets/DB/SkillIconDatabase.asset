@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entries:
   - SkillId: S_Move_1
-    Icon: {fileID: 21300000, guid: c0b46c2047de74c4b91d3a2a10e4a1b3, type: 3}
+    Icon: {fileID: 21300000, guid: cf58f308725b71341a304338ebcd0bb3, type: 3}
   - SkillId: S_Move_2
-    Icon: {fileID: 21300000, guid: c0b46c2047de74c4b91d3a2a10e4a1b3, type: 3}
+    Icon: {fileID: 21300000, guid: cf58f308725b71341a304338ebcd0bb3, type: 3}
   - SkillId: S_Passive_01
     Icon: {fileID: 21300000, guid: 6d1c8b62d7fd62d48b9f7f805eebf781, type: 3}
   - SkillId: S_Passive_02
@@ -30,13 +30,13 @@ MonoBehaviour:
   - SkillId: S_Passive_06
     Icon: {fileID: 21300000, guid: 4ce169d59e5f8634498963e42953412f, type: 3}
   - SkillId: S_Passive_07
-    Icon: {fileID: 21300000, guid: 387fc08bdd3fedf44a80162b3822b440, type: 3}
+    Icon: {fileID: 21300000, guid: 3dd0f18578a36374aa2d320f2b6b26e9, type: 3}
   - SkillId: S_Passive_08
-    Icon: {fileID: 21300000, guid: 8a1365cd119b8b64590e26da198caf86, type: 3}
+    Icon: {fileID: 21300000, guid: f9b08554a3ddbdb49bb9d7f8188ccf8a, type: 3}
   - SkillId: S_Passive_09
-    Icon: {fileID: 21300000, guid: 2c3979d7071b69446b18cce09c264e74, type: 3}
+    Icon: {fileID: 21300000, guid: 121171d69ccc3de43ba442ba02845f54, type: 3}
   - SkillId: S_Passive_10
-    Icon: {fileID: 21300000, guid: 44b3e9989efd01b498395398b8e74a6d, type: 3}
+    Icon: {fileID: 21300000, guid: 042f71f696c3f324eb43718d8237ab53, type: 3}
   - SkillId: S_Unique_01
     Icon: {fileID: 21300000, guid: 35988405e24bc104583477a13d461e60, type: 3}
   - SkillId: S_Unique_02
@@ -50,13 +50,13 @@ MonoBehaviour:
   - SkillId: S_Unique_06
     Icon: {fileID: 21300000, guid: 8cfb41fe60863b946aeddda938ae0d37, type: 3}
   - SkillId: S_Unique_07
-    Icon: {fileID: 21300000, guid: 9b3cbb3beeb4bb54dac881eac25f69dc, type: 3}
+    Icon: {fileID: 21300000, guid: 23fe954561a059943abed9a029e05b16, type: 3}
   - SkillId: S_Unique_08
-    Icon: {fileID: 21300000, guid: c32adfd60c0f47d4b85905261f747c57, type: 3}
+    Icon: {fileID: 21300000, guid: d24d3bbca3f922047bf8e4c9fb8ca991, type: 3}
   - SkillId: S_Unique_09
-    Icon: {fileID: 21300000, guid: 17b5e73d57b791040b86e5b0ecc6500b, type: 3}
+    Icon: {fileID: 21300000, guid: 41cf3c253dd44f949aa894fe54f18f63, type: 3}
   - SkillId: S_Unique_10
-    Icon: {fileID: 21300000, guid: 010f9897135996446a038fdb6ecf7d32, type: 3}
+    Icon: {fileID: 21300000, guid: 331771124d998184cb4cbc1407628438, type: 3}
   - SkillId: S_Ability_01
     Icon: {fileID: 21300000, guid: 7dba70aed79dbd14c97d3524026a4350, type: 3}
   - SkillId: S_Ability_02
@@ -82,21 +82,21 @@ MonoBehaviour:
   - SkillId: S_Ability_12
     Icon: {fileID: 21300000, guid: d2b274ae26cf8c7438f6b8b6fc0acf8f, type: 3}
   - SkillId: S_Ability_13
-    Icon: {fileID: 21300000, guid: c81c4821d5366e14691a8eaae5c73d68, type: 3}
+    Icon: {fileID: 21300000, guid: 046e443ad4c7c2344977d6910a5139e6, type: 3}
   - SkillId: S_Ability_14
-    Icon: {fileID: 21300000, guid: 1d2a1a7fdcf574242b4e06db79bd662b, type: 3}
+    Icon: {fileID: 21300000, guid: 046e443ad4c7c2344977d6910a5139e6, type: 3}
   - SkillId: S_Ability_15
-    Icon: {fileID: 21300000, guid: cfdc3bc7ec82f05488aa8ad55eb65588, type: 3}
+    Icon: {fileID: 21300000, guid: ffc0db1daf2d2e2489a26b2d2dad8ebf, type: 3}
   - SkillId: S_Ability_16
-    Icon: {fileID: 21300000, guid: 3eb1463b4d3ef72479d1774dff047673, type: 3}
+    Icon: {fileID: 21300000, guid: ffc0db1daf2d2e2489a26b2d2dad8ebf, type: 3}
   - SkillId: S_Ability_17
-    Icon: {fileID: 21300000, guid: 08222536874b2f949be2d247400e16f8, type: 3}
+    Icon: {fileID: 21300000, guid: 5069c15345b09c84b8458f04a9983f7b, type: 3}
   - SkillId: S_Ability_18
-    Icon: {fileID: 21300000, guid: fbb97495d48d1e247b02a4b383525c28, type: 3}
+    Icon: {fileID: 21300000, guid: 5069c15345b09c84b8458f04a9983f7b, type: 3}
   - SkillId: S_Ability_19
-    Icon: {fileID: 21300000, guid: acd7997b9e9b31048903fd051a350806, type: 3}
+    Icon: {fileID: 21300000, guid: 8e9bf0c3767bf924caa49b3f33d5d582, type: 3}
   - SkillId: S_Ability_20
-    Icon: {fileID: 21300000, guid: 4239448e76cb8cb47bfaea77091022a0, type: 3}
+    Icon: {fileID: 21300000, guid: 8e9bf0c3767bf924caa49b3f33d5d582, type: 3}
   - SkillId: S_Public_01
     Icon: {fileID: 21300000, guid: 4a14921920943014dafaca6bce4e3e2c, type: 3}
   - SkillId: S_Public_02
