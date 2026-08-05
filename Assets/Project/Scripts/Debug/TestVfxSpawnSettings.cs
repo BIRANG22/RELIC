@@ -30,6 +30,7 @@ public class TestVfxSpawnSettings
     public float YMultiplier = 100f;
 
     [Header("RenderTexture Proxy")]
+    public bool ScaleDirectWorldRendererToProxyHeight;
     public int RenderTextureWidth = 512;
     public int RenderTextureHeight = 512;
     public float RenderCameraOrthographicSize = 5f;
@@ -48,6 +49,7 @@ public class TestVfxSpawnSettings
             flipType = FlipType,
             renderMode = RenderMode,
             proxyBlendMode = ProxyBlendMode,
+            scaleDirectWorldRendererToProxyHeight = ScaleDirectWorldRendererToProxyHeight,
             sfx = new BattleVfxSfxEntry
             {
                 playSfx = PlaySfx,

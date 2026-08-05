@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public static class TestVfxWorkbenchUtility
@@ -27,6 +28,37 @@ public static class TestVfxWorkbenchUtility
         where TEnum : struct
     {
         return CycleEnumValue(current, -1);
+    }
+
+    public static int RebuildFilteredLabelIndexes(
+        IReadOnlyList<string> labels,
+        string search,
+        List<int> resultIndexes,
+        int maxResultCount)
+    {
+        resultIndexes?.Clear();
+
+        if (labels == null)
+            return 0;
+
+        string trimmedSearch = string.IsNullOrWhiteSpace(search)
+            ? string.Empty
+            : search.Trim();
+        int visibleLimit = maxResultCount > 0 ? maxResultCount : int.MaxValue;
+        int totalMatches = 0;
+
+        for (int i = 0; i < labels.Count; i++)
+        {
+            if (!MatchesLabel(labels[i], trimmedSearch))
+                continue;
+
+            if (resultIndexes != null && resultIndexes.Count < visibleLimit)
+                resultIndexes.Add(i);
+
+            totalMatches++;
+        }
+
+        return totalMatches;
     }
 
     public static void SetLayerRecursively(GameObject obj, int layer)
@@ -131,6 +163,15 @@ public static class TestVfxWorkbenchUtility
         Vector3 euler = target.localEulerAngles;
         euler.y += amount;
         target.localEulerAngles = euler;
+    }
+
+    private static bool MatchesLabel(string label, string trimmedSearch)
+    {
+        if (string.IsNullOrEmpty(trimmedSearch))
+            return true;
+
+        return label != null &&
+               label.IndexOf(trimmedSearch, StringComparison.OrdinalIgnoreCase) >= 0;
     }
 
     private static void FlipParticleRendererY(GameObject vfx)

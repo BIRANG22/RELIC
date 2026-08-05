@@ -17,6 +17,8 @@ public class DataManager : Singleton<DataManager>
     [SerializeField] private SkillRangeIconDatabase skillRangeIconDatabase;
     [SerializeField] private ItemIconDatabase itemIconDatabase;
     [SerializeField] private GridEffectSpriteDatabase gridEffectSpriteDatabase;
+    [SerializeField] private SkillAttackOverrideDatabase skillAttackOverrideDatabase;
+    [SerializeField] private SkillVfxDatabase skillVfxDatabase;
 
     private DataBootstrap dataBootstrap = new();
 
@@ -46,6 +48,8 @@ public class DataManager : Singleton<DataManager>
     public ItemIconDatabase ItemIconDatabase => itemIconDatabase;
     public GridEffectDatabase GridEffectDatabase => dataBootstrap.GridEffectDatabase;
     public GridEffectSpriteDatabase GridEffectSpriteDatabase => gridEffectSpriteDatabase;
+    public SkillAttackOverrideDatabase SkillAttackOverrideDatabase => skillAttackOverrideDatabase;
+    public SkillVfxDatabase SkillVfxDatabase => skillVfxDatabase;
     public CharacterRuntimeStore CharacterRuntimeStore { get; private set; } = new();
     public PartyRuntimeStore PartyRuntimeStore { get; private set; } = new();
     public SkillRuntimeStore SkillRuntimeStore { get; private set; } = new();
@@ -81,6 +85,12 @@ public class DataManager : Singleton<DataManager>
 
         if (gridEffectSpriteDatabase != null)
             gridEffectSpriteDatabase.Initialize();
+
+        if (skillAttackOverrideDatabase != null)
+            skillAttackOverrideDatabase.Initialize();
+
+        if (skillVfxDatabase != null)
+            skillVfxDatabase.Initialize();
 
         SkillEquipService = new SkillEquipService(CharacterRuntimeStore);
     }

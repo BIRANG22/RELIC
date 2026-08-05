@@ -61,6 +61,33 @@ public class DebugBattlePartySetupTests
         Assert.That(partyStore.HasAnyCharacter, Is.False);
     }
 
+    [Test]
+    public void TryCreateDefaultParty_EquipsSkillVfxTestSkillForChar03()
+    {
+        CharacterDatabase database = new();
+        database.Initialize(new[]
+        {
+            CreateMaster("Char_01", true, 100),
+            CreateMaster("Char_02", true, 100),
+            CreateMaster("Char_03", true, 100)
+        });
+
+        CharacterRuntimeStore characterStore = new();
+        PartyRuntimeStore partyStore = new();
+
+        bool result = DebugBattlePartySetup.TryCreateDefaultParty(
+            database,
+            characterStore,
+            partyStore,
+            null);
+
+        Assert.That(result, Is.True);
+        CharacterRuntimeData runtime = characterStore.Get("Char_03");
+        Assert.That(runtime, Is.Not.Null);
+        Assert.That(runtime.EquippedSkillIds.Contains("S_Ability_11"), Is.True);
+        Assert.That(runtime.EquippedSkillIds[3], Is.EqualTo("S_Ability_11"));
+    }
+
     private static CharacterMasterData CreateMaster(string id, bool isDefaultProvided, int maxHp)
     {
         return new CharacterMasterData

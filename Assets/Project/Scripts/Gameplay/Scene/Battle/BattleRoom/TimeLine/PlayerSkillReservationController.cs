@@ -321,7 +321,7 @@ public class PlayerSkillReservationController : MonoBehaviour
         // 실제로 그리드 선택을 진행 중일 때는 선택 가능 범위를 유지하고,
         // 스킬 아이콘 호버로만 표시한 범위는 Highlight까지 완전히 해제한다.
         if (IsMoveSkillSelectionActive() || IsGeneralSelectionSkillActive())
-            rangePreview.ClearRangeOnly();
+            RestoreCurrentSelectionPreview();
         else
             rangePreview.ClearAll();
     }
@@ -345,6 +345,32 @@ public class PlayerSkillReservationController : MonoBehaviour
             casterDirection,
             casterSprite
         );
+    }
+
+    private void RestoreCurrentSelectionPreview()
+    {
+        if (rangePreview == null)
+            return;
+
+        if (IsMoveSkillSelectionActive())
+        {
+            rangePreview.ShowDirectionCells(
+                currentMoveSelectableIndices,
+                GetHighlightColor(currentSkillData),
+                moveHighlightMaterial);
+            return;
+        }
+
+        if (IsGeneralSelectionSkillActive())
+        {
+            rangePreview.ShowDirectionCells(
+                currentGeneralSelectionSelectableIndices,
+                moveHighlightColor,
+                moveHighlightMaterial);
+            return;
+        }
+
+        rangePreview.ClearAll();
     }
 
     public void StartReservation(
@@ -2464,6 +2490,9 @@ public class PlayerSkillReservationController : MonoBehaviour
         {
             return;
         }
+
+        if (IsMoveSkill(hoveredSkillData))
+            return;
 
         if (currentSkillData.SkillId == hoveredSkillData.SkillId)
             return;

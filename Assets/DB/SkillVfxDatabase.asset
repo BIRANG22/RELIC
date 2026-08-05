@@ -1,0 +1,87 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82f0f5a86f2742b2b9bfcf5eedc4e6a1, type: 3}
+  m_Name: SkillVfxDatabase
+  m_EditorClassIdentifier: 
+  entries:
+  - SkillId: S_Ability_11
+    Vfx:
+      prefab: {fileID: 3688985328973339552, guid: 29f13300e2979c949905f4b38ac44c24, type: 3}
+      flipType: 2
+      sfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      renderMode: 2
+      proxyBlendMode: 0
+      spawnAnchor: 1
+      scaleDirectWorldRendererToProxyHeight: 1
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 3
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
+  - SkillId: S_Public_17
+    Vfx:
+      prefab: {fileID: 8934398230962162692, guid: d6ecd58b7ed664f459ec6d2d06b7ffeb, type: 3}
+      flipType: 2
+      sfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      renderMode: 2
+      proxyBlendMode: 0
+      spawnAnchor: 0
+      scaleDirectWorldRendererToProxyHeight: 1
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 3
+      proxyWorldOffset: {x: 15, y: -3, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
+  - SkillId: S_Public_19
+    Vfx:
+      prefab: {fileID: 3227610880858663653, guid: a168d5406d649fb42a013779f4db911b, type: 3}
+      flipType: 2
+      sfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      renderMode: 2
+      proxyBlendMode: 0
+      spawnAnchor: 0
+      scaleDirectWorldRendererToProxyHeight: 1
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 3
+      proxyWorldOffset: {x: -2, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100

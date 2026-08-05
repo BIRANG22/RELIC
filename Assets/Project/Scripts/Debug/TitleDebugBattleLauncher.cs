@@ -21,7 +21,18 @@ public sealed class TitleDebugBattleLauncher : MonoBehaviour
             return;
         }
 
-        if (!DebugBattlePartySetup.TryCreateDefaultParty(DataManager.Instance))
+        DataManager dataManager = DataManager.Instance;
+
+        if (dataManager == null)
+        {
+            Debug.LogError("[TitleDebugBattleLauncher] DataManager is missing.");
+            isLoading = false;
+            return;
+        }
+
+        dataManager.Initialize();
+
+        if (!DebugBattlePartySetup.TryCreateDefaultParty(dataManager))
         {
             Debug.LogError("[TitleDebugBattleLauncher] Failed to create the default debug party.");
             isLoading = false;
