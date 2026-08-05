@@ -46,6 +46,9 @@ public class BattleUnitAnimator : MonoBehaviour
     [Header("Skill Attack Overrides")]
     [SerializeField] private SkillAttackOverrideDatabase skillAttackOverrideDatabase;
 
+    [Header("Skill VFX")]
+    [SerializeField] private SkillVfxDatabase skillVfxDatabase;
+
     [Header("Monster Action Presentations")]
     [SerializeField]
     private BattleUnitActionPresentation[] monsterActionPresentations =
@@ -199,9 +202,12 @@ public class BattleUnitAnimator : MonoBehaviour
 
         if (skillData.Category == Category.Move)
         {
+            PlaySkillVfx(skillData);
             PlayMove();
             return;
         }
+
+        PlaySkillVfx(skillData);
 
         switch (skillData.SkillType)
         {
@@ -239,6 +245,9 @@ public class BattleUnitAnimator : MonoBehaviour
             PlaySkillAction(skillData);
             return;
         }
+
+        if (hitIndex <= 0)
+            PlaySkillVfx(skillData);
 
         if (TryPlaySkillAttackOverride(skillData))
             return;
@@ -430,6 +439,35 @@ public class BattleUnitAnimator : MonoBehaviour
 
         return DataManager.Instance != null
             ? DataManager.Instance.SkillAttackOverrideDatabase
+            : null;
+    }
+
+    private void PlaySkillVfx(SkillMasterData skillData)
+    {
+        if (!TryResolveSkillVfx(skillData, out BattleVfxEntry vfx))
+            return;
+
+        SpawnVfx(vfx);
+    }
+
+    private bool TryResolveSkillVfx(SkillMasterData skillData, out BattleVfxEntry vfx)
+    {
+        vfx = null;
+
+        if (skillData == null || string.IsNullOrWhiteSpace(skillData.SkillId))
+            return false;
+
+        SkillVfxDatabase database = ResolveSkillVfxDatabase();
+        return database != null && database.TryGetVfx(skillData.SkillId, out vfx);
+    }
+
+    private SkillVfxDatabase ResolveSkillVfxDatabase()
+    {
+        if (skillVfxDatabase != null)
+            return skillVfxDatabase;
+
+        return DataManager.Instance != null
+            ? DataManager.Instance.SkillVfxDatabase
             : null;
     }
 

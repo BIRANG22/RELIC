@@ -12,4 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3c6a4abaea04ee68c88012de09ae8e5, type: 3}
   m_Name: SkillAttackOverrideDatabase
   m_EditorClassIdentifier: 
-  entries: []
+  entries:
+  - CharacterId: Char_01
+    SkillId: 'S_Ability_03 '
+    AttackSlot: 1
