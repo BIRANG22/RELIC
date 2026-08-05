@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using Relic.Gameplay.Data;
+using System.Collections.Generic;
 
 public class MapRuntimeProgressUtilityTests
 {
@@ -38,6 +39,43 @@ public class MapRuntimeProgressUtilityTests
         Assert.That(MapRuntimeProgressUtility.MarkCurrentNodeCleared(runtime), Is.True);
         Assert.That(MapRuntimeProgressUtility.MarkCurrentNodeCleared(runtime), Is.False);
         Assert.That(runtime.ClearedMapIds, Is.EqualTo(new[] { "1" }));
+    }
+
+    [Test]
+    public void FindStartNode_ReturnsStartNodeRegardlessOfListOrder()
+    {
+        MapRuntimeData runtime = CreateRuntime();
+
+        Assert.That(MapRuntimeProgressUtility.FindStartNode(runtime)?.NodeIndex, Is.EqualTo(0));
+    }
+
+    [Test]
+    public void CollectSelectableNextNodes_ReturnsConnectedNodesInConnectionOrder()
+    {
+        MapRuntimeData runtime = CreateRuntime();
+        runtime.ClearedMapIds.Add("1");
+        runtime.GeneratedNodes.Add(new GeneratedMapNodeData
+        {
+            NodeIndex = 3,
+            Type = "Rest",
+            MapId = "rest_01"
+        });
+        runtime.GeneratedNodes[1].NextNodeIndices.Add(3);
+
+        List<GeneratedMapNodeData> result =
+            MapRuntimeProgressUtility.CollectSelectableNextNodes(runtime, 3);
+
+        Assert.That(result.ConvertAll(node => node.NodeIndex), Is.EqualTo(new[] { 2, 3 }));
+    }
+
+    [Test]
+    public void CollectSelectableNextNodes_UnclearedCurrentNode_ReturnsEmpty()
+    {
+        MapRuntimeData runtime = CreateRuntime();
+
+        Assert.That(
+            MapRuntimeProgressUtility.CollectSelectableNextNodes(runtime, 3),
+            Is.Empty);
     }
 
     private static MapRuntimeData CreateRuntime()

@@ -1,4 +1,4 @@
-﻿using Relic.Gameplay.Data;
+using Relic.Gameplay.Data;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,28 +9,51 @@ public class BattleMapPanel : MonoBehaviour
     [Header("View")]
     [SerializeField] private MapViewSpawner mapViewSpawner;
     [SerializeField] private ScrollRect mapScrollRect;
+    [SerializeField] private BattleNextNodeSelectionPanel nextNodeSelectionPanel;
+    [SerializeField] private BattleMapPartyInfoPresenter partyInfoPresenter;
+    [SerializeField] private BattleMapNodeInfoPresenter nodeInfoPresenter;
     [Header("Owner")]
     [SerializeField] private BattleSceneController battleSceneController;
     [Header("Scroll Focus")]
-    [SerializeField] private float selectedNodeViewportYRatio = 0.3f;
+    [SerializeField] private float horizontalContentPadding = 40f;
     [SerializeField] private float focusDelay = 0.02f;
 
     private MapRuntimeStore runtimeStore;
     private MapRuntimeData runtime;
 
+    private void Awake()
+    {
+        EnsureNextNodeSelectionPanel();
+        EnsurePartyInfoPresenter();
+        EnsureNodeInfoPresenter();
+    }
+
     public void Open(MapRuntimeData mapRuntime)
     {
         gameObject.SetActive(true);
+        Prepare(mapRuntime);
+        SpawnMapView();
+        ShowCurrentNodeInfo();
+        partyInfoPresenter?.RefreshFromRuntime();
 
+        if (nextNodeSelectionPanel != null)
+            nextNodeSelectionPanel.Open(runtime, OnNextNodeSelected);
+    }
+
+    public void Prepare(MapRuntimeData mapRuntime)
+    {
         runtimeStore = DataManager.Instance.MapRuntimeStore;
         runtime = mapRuntime;
-
         EnsureMapGenerated();
-        SpawnMapView();
+        BattleMapLayoutUtility.ApplyHorizontalLayout(runtime?.GeneratedNodes);
+        runtimeStore?.Set(runtime);
     }
 
     public void Close()
     {
+        if (nextNodeSelectionPanel != null)
+            nextNodeSelectionPanel.Close();
+
         gameObject.SetActive(false);
     }
 
@@ -74,11 +97,36 @@ public class BattleMapPanel : MonoBehaviour
             return;
         }
 
-        mapViewSpawner.Spawn(runtime.GeneratedNodes, OnNodeClicked);
+        mapViewSpawner.Spawn(runtime.GeneratedNodes, OnNodeClicked, OnNodeHovered, OnNodeHoverExited);
 
         Canvas.ForceUpdateCanvases();
+        ConfigureScrollContentWidth();
 
         StartCoroutine(FocusCurrentNodeRoutine());
+    }
+
+    private void ConfigureScrollContentWidth()
+    {
+        if (mapScrollRect == null || mapScrollRect.content == null ||
+            mapScrollRect.viewport == null || runtime?.GeneratedNodes == null ||
+            runtime.GeneratedNodes.Count == 0)
+        {
+            return;
+        }
+
+        GetHorizontalNodeBounds(out float minNodeX, out float maxNodeX);
+
+        Vector2 size = mapScrollRect.content.sizeDelta;
+        size.x = BattleMapScrollUtility.CalculateContentWidth(
+            minNodeX,
+            maxNodeX,
+            mapScrollRect.viewport.rect.width,
+            horizontalContentPadding);
+        mapScrollRect.content.sizeDelta = size;
+
+        Vector2 position = mapScrollRect.content.anchoredPosition;
+        position.x = 0f;
+        mapScrollRect.content.anchoredPosition = position;
     }
 
     private IEnumerator FocusCurrentNodeRoutine()
@@ -97,46 +145,47 @@ public class BattleMapPanel : MonoBehaviour
         if (mapScrollRect.content == null || mapScrollRect.viewport == null)
             return;
 
-        List<GeneratedMapNodeData> focusNodes = FindClickableNextNodes();
-
-        if (focusNodes == null || focusNodes.Count <= 0)
+        GeneratedMapNodeData currentNode = FindNodeByIndex(runtime.CurrentNodeIndex);
+        if (currentNode == null)
             return;
-
-        float focusY = 0f;
-
-        for (int i = 0; i < focusNodes.Count; i++)
-            focusY += focusNodes[i].Position.y;
-
-        focusY /= focusNodes.Count;
 
         RectTransform content = mapScrollRect.content;
         RectTransform viewport = mapScrollRect.viewport;
-
-        float contentHeight = content.rect.height;
-        float viewportHeight = viewport.rect.height;
-
-        if (contentHeight <= viewportHeight)
-            return;
-
-        float desiredViewportY =
-            Mathf.Lerp(
-                -viewportHeight * 0.5f,
-                viewportHeight * 0.5f,
-                selectedNodeViewportYRatio
-            );
+        GetHorizontalNodeBounds(out float minNodeX, out _);
 
         Vector2 anchoredPosition = content.anchoredPosition;
-
-        anchoredPosition.y = -focusY + desiredViewportY;
-
-        float maxY = contentHeight - viewportHeight;
-        anchoredPosition.y = Mathf.Clamp(anchoredPosition.y, 0f, maxY);
-
+        anchoredPosition.x = BattleMapScrollUtility.CalculateAnchoredX(
+            currentNode.Position.x,
+            minNodeX,
+            content.rect.width,
+            viewport.rect.width);
+        mapScrollRect.StopMovement();
         content.anchoredPosition = anchoredPosition;
 
         Debug.Log(
-            $"[MapFocus] FocusY:{focusY} / DesiredViewportY:{desiredViewportY} / AnchoredY:{anchoredPosition.y}"
+            $"[MapFocus] CurrentNode:{currentNode.NodeIndex} / NodeX:{currentNode.Position.x} / AnchoredX:{anchoredPosition.x}"
         );
+    }
+
+    private void GetHorizontalNodeBounds(out float minNodeX, out float maxNodeX)
+    {
+        minNodeX = float.MaxValue;
+        maxNodeX = float.MinValue;
+
+        for (int i = 0; i < runtime.GeneratedNodes.Count; i++)
+        {
+            GeneratedMapNodeData node = runtime.GeneratedNodes[i];
+            if (node == null)
+                continue;
+
+            minNodeX = Mathf.Min(minNodeX, node.Position.x);
+            maxNodeX = Mathf.Max(maxNodeX, node.Position.x);
+        }
+
+        if (minNodeX == float.MaxValue)
+            minNodeX = 0f;
+        if (maxNodeX == float.MinValue)
+            maxNodeX = minNodeX;
     }
     private List<GeneratedMapNodeData> FindClickableNextNodes()
     {
@@ -192,5 +241,98 @@ public class BattleMapPanel : MonoBehaviour
         }
 
         battleSceneController.OnMapNodeSelected(nodeData);
+    }
+
+    private void OnNextNodeSelected(int nodeIndex)
+    {
+        if (battleSceneController == null)
+        {
+            Debug.LogWarning("[BattleMapPanel] BattleSceneController가 연결되지 않았습니다.");
+            return;
+        }
+
+        battleSceneController.OnMapNodeSelectedByIndex(nodeIndex);
+    }
+
+    private void EnsureNextNodeSelectionPanel()
+    {
+        if (nextNodeSelectionPanel == null)
+            nextNodeSelectionPanel = GetComponentInChildren<BattleNextNodeSelectionPanel>(true);
+
+        if (nextNodeSelectionPanel == null)
+        {
+            GameObject panelObject = new("NextNodeSelectionRoot", typeof(RectTransform),
+                typeof(BattleNextNodeSelectionPanel));
+            panelObject.transform.SetParent(transform, false);
+
+            RectTransform panelRect = (RectTransform)panelObject.transform;
+            panelRect.anchorMin = new Vector2(0.77f, 0f);
+            panelRect.anchorMax = Vector2.one;
+            panelRect.offsetMin = new Vector2(12f, 24f);
+            panelRect.offsetMax = new Vector2(-20f, -46f);
+            nextNodeSelectionPanel = panelObject.GetComponent<BattleNextNodeSelectionPanel>();
+        }
+
+    }
+
+    private void EnsurePartyInfoPresenter()
+    {
+        if (partyInfoPresenter == null)
+            partyInfoPresenter = GetComponentInChildren<BattleMapPartyInfoPresenter>(true);
+    }
+
+    private void EnsureNodeInfoPresenter()
+    {
+        if (nodeInfoPresenter == null)
+            nodeInfoPresenter = GetComponentInChildren<BattleMapNodeInfoPresenter>(true);
+    }
+
+    private void OnNodeHovered(GeneratedMapNodeData node, Sprite icon)
+    {
+        nodeInfoPresenter?.Show(node, icon);
+    }
+
+    private void OnNodeHoverExited()
+    {
+        // 최근에 호버한 노드 정보를 그대로 유지합니다.
+    }
+
+    private void ShowCurrentNodeInfo()
+    {
+        EnsureNodeInfoPresenter();
+        if (nodeInfoPresenter == null) return;
+
+        GeneratedMapNodeData node = MapRuntimeProgressUtility.FindCurrentNode(runtime)
+            ?? MapRuntimeProgressUtility.FindStartNode(runtime);
+        if (node == null) return;
+
+        Sprite icon = null;
+        MapNodeIconDatabase iconDatabase = DataManager.Instance?.MapNodeIconDatabase;
+        iconDatabase?.TryGetIcon(node.Type, out icon);
+        nodeInfoPresenter.Show(node, icon);
+    }
+}
+
+public static class BattleMapScrollUtility
+{
+    public static float CalculateContentWidth(
+        float minNodeX,
+        float maxNodeX,
+        float viewportWidth,
+        float horizontalPadding)
+    {
+        float nodeSpan = Mathf.Max(0f, maxNodeX - minNodeX);
+        return Mathf.Max(viewportWidth, nodeSpan + horizontalPadding);
+    }
+
+    public static float CalculateAnchoredX(
+        float currentNodeX,
+        float minNodeX,
+        float contentWidth,
+        float viewportWidth)
+    {
+        float desiredX = -(currentNodeX - minNodeX);
+        float minimumX = -Mathf.Max(0f, contentWidth - viewportWidth);
+        return Mathf.Clamp(desiredX, minimumX, 0f);
     }
 }
