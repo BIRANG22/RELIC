@@ -36,9 +36,11 @@ public class BattleFirstTutorialControllerTests
         Assert.That(loader, Does.Contain("BattleFirstTutorialController firstBattleTutorialController"));
         Assert.That(loader, Does.Contain("EnsureFirstBattleTutorialController"));
         Assert.That(loader, Does.Contain("firstBattleTutorialController.TryStartTutorialIfNeeded()"));
-        Assert.That(
-            loader.IndexOf("OpenSelectedCharacterSkillListWhenInputReady()"),
-            Is.LessThan(loader.IndexOf("firstBattleTutorialController.TryStartTutorialIfNeeded()")));
+        int openSkillListIndex = loader.IndexOf("OpenSelectedCharacterSkillListWhenInputReady()");
+        int tutorialStartIndex = loader.IndexOf("firstBattleTutorialController.TryStartTutorialIfNeeded()");
+
+        Assert.That(openSkillListIndex, Is.GreaterThanOrEqualTo(0));
+        Assert.That(openSkillListIndex, Is.LessThan(tutorialStartIndex));
     }
 
     [Test]

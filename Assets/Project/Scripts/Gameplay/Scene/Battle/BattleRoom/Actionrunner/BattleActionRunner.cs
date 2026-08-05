@@ -1491,7 +1491,7 @@ public class BattleActionRunner
             if (ShouldPlayerSkillTargetPlayerParty(command))
             {
                 if (attackerAnimator != null)
-                    attackerAnimator.PlaySkillAction(command.SkillData);
+                    attackerAnimator.PlaySkillAction(command);
 
 
                 if (attacker.RuntimeData == null || attacker.RuntimeData.IsDead)
@@ -1529,7 +1529,7 @@ public class BattleActionRunner
             if (ShouldPlayerSkillTargetSelf(command))
             {
                 if (attackerAnimator != null)
-                    attackerAnimator.PlaySkillAction(command.SkillData);
+                    attackerAnimator.PlaySkillAction(command);
 
 
                 if (attacker.RuntimeData == null || attacker.RuntimeData.IsDead)
@@ -1581,7 +1581,7 @@ public class BattleActionRunner
             if (hitTargets.Count <= 0 && gridEffectTargets.Count <= 0)
             {
                 if (attackerAnimator != null)
-                    attackerAnimator.PlaySkillAction(command.SkillData);
+                    attackerAnimator.PlaySkillAction(command);
 
                 hudService.RefreshHUDs();
                 yield return new WaitForSeconds(ActionDelay);
@@ -1705,7 +1705,7 @@ public class BattleActionRunner
             Debug.LogWarning($"[PlayerSkillEffect] EffectEntries 없음 / Skill:{command.SkillData.SkillId}");
 
             if (attackerAnimator != null)
-                attackerAnimator.PlaySkillAction(command.SkillData);
+                attackerAnimator.PlaySkillAction(command);
 
             yield return new WaitForSeconds(ActionDelay);
             yield break;
@@ -1748,7 +1748,7 @@ public class BattleActionRunner
             if (!playedDamageSequence && !playedActionForNonDamage)
             {
                 if (attackerAnimator != null)
-                    attackerAnimator.PlaySkillAction(command.SkillData);
+                    attackerAnimator.PlaySkillAction(command);
 
                 playedActionForNonDamage = true;
                 yield return new WaitForSeconds(ActionDelay);
@@ -1766,7 +1766,7 @@ public class BattleActionRunner
         if (!playedDamageSequence && !playedActionForNonDamage)
         {
             if (attackerAnimator != null)
-                attackerAnimator.PlaySkillAction(command.SkillData);
+                attackerAnimator.PlaySkillAction(command);
 
             yield return new WaitForSeconds(ActionDelay);
         }
@@ -1804,7 +1804,7 @@ public class BattleActionRunner
             }
 
             if (attackerAnimator != null)
-                attackerAnimator.PlaySkillAction(command.SkillData, hitIndex);
+                attackerAnimator.PlaySkillAction(command, hitIndex);
 
             float hitActionDelay = isMultiHit
                 ? ActionDelay / MultiHitAnimationSpeed

@@ -32,6 +32,7 @@ public sealed class TestVfxWorkbench : MonoBehaviour
     [Header("VFX Discovery")]
     [SerializeField] private GameObject[] manualVfxPrefabs = Array.Empty<GameObject>();
     [SerializeField] private string[] editorVfxSearchFolders = { "Assets/Project/Art/VFX" };
+    [SerializeField] private int maxVisibleVfxSearchResults = 120;
 
     [Header("Workbench")]
     [SerializeField] private TestVfxSpawnSettings settings = new TestVfxSpawnSettings();
@@ -62,12 +63,15 @@ public sealed class TestVfxWorkbench : MonoBehaviour
 
     private readonly List<GameObject> vfxPrefabs = new List<GameObject>();
     private readonly List<string> vfxLabels = new List<string>();
+    private readonly List<int> filteredVfxIndexes = new List<int>();
     private readonly List<GameObject> spawnedObjects = new List<GameObject>();
 
     private Rect windowRect = new Rect(16f, 16f, 460f, 780f);
     private Vector2 windowScroll;
     private Vector2 vfxListScroll;
     private string vfxSearch = string.Empty;
+    private int filteredVfxTotalCount;
+    private bool filteredVfxDirty = true;
     private int selectedVfxIndex;
     private bool panelVisible = true;
     private float repeatTimer;
@@ -100,6 +104,8 @@ public sealed class TestVfxWorkbench : MonoBehaviour
         if (settings == null)
             settings = new TestVfxSpawnSettings();
         repeatInterval = Mathf.Max(0.05f, repeatInterval);
+        maxVisibleVfxSearchResults = Mathf.Max(0, maxVisibleVfxSearchResults);
+        filteredVfxDirty = true;
     }
 
     private void Update()
@@ -190,7 +196,14 @@ public sealed class TestVfxWorkbench : MonoBehaviour
         GUILayout.Label("VFX Prefab", EditorLikeHeaderStyle());
 
         GUILayout.BeginHorizontal();
-        vfxSearch = LabeledTextField("Search", vfxSearch);
+        string nextSearch = LabeledTextField("Search", vfxSearch);
+        if (!string.Equals(nextSearch, vfxSearch, StringComparison.Ordinal))
+        {
+            vfxSearch = nextSearch;
+            filteredVfxDirty = true;
+            vfxListScroll = Vector2.zero;
+        }
+
         if (GUILayout.Button("Refresh", GUILayout.Width(78f)))
             RefreshVfxList();
         GUILayout.EndHorizontal();
@@ -211,10 +224,24 @@ public sealed class TestVfxWorkbench : MonoBehaviour
             SelectNextVfx();
         GUILayout.EndHorizontal();
 
-        vfxListScroll = GUILayout.BeginScrollView(vfxListScroll, GUILayout.Height(160f));
-        for (int i = 0; i < vfxPrefabs.Count; i++)
+        EnsureFilteredVfxIndexes();
+        if (filteredVfxTotalCount <= 0)
         {
-            if (!MatchesSearch(vfxLabels[i], vfxSearch))
+            GUILayout.Label("No matching VFX prefabs.");
+            return;
+        }
+
+        if (filteredVfxTotalCount > filteredVfxIndexes.Count)
+        {
+            GUILayout.Label(
+                $"Showing {filteredVfxIndexes.Count} / {filteredVfxTotalCount} matches. Refine Search for more.");
+        }
+
+        vfxListScroll = GUILayout.BeginScrollView(vfxListScroll, GUILayout.Height(160f));
+        for (int resultIndex = 0; resultIndex < filteredVfxIndexes.Count; resultIndex++)
+        {
+            int i = filteredVfxIndexes[resultIndex];
+            if (i < 0 || i >= vfxPrefabs.Count)
                 continue;
 
             GUIStyle style = i == selectedVfxIndex ? SelectedButtonStyle() : GUI.skin.button;
@@ -259,6 +286,8 @@ public sealed class TestVfxWorkbench : MonoBehaviour
 
         GUILayout.Label("Proxy Offset");
         settings.ProxyWorldOffset = DrawVector3(settings.ProxyWorldOffset);
+        settings.ScaleDirectWorldRendererToProxyHeight =
+            GUILayout.Toggle(settings.ScaleDirectWorldRendererToProxyHeight, "Scale Direct VFX To Proxy Height");
         settings.ProxyWorldHeight = LabeledFloatField("Proxy Height", settings.ProxyWorldHeight);
         settings.RenderTextureWidth = LabeledIntField("RT Width", settings.RenderTextureWidth);
         settings.RenderTextureHeight = LabeledIntField("RT Height", settings.RenderTextureHeight);
@@ -683,6 +712,20 @@ public sealed class TestVfxWorkbench : MonoBehaviour
 #endif
 
         selectedVfxIndex = Mathf.Clamp(selectedVfxIndex, 0, Mathf.Max(0, vfxPrefabs.Count - 1));
+        filteredVfxDirty = true;
+    }
+
+    private void EnsureFilteredVfxIndexes()
+    {
+        if (!filteredVfxDirty)
+            return;
+
+        filteredVfxTotalCount = TestVfxWorkbenchUtility.RebuildFilteredLabelIndexes(
+            vfxLabels,
+            vfxSearch,
+            filteredVfxIndexes,
+            maxVisibleVfxSearchResults);
+        filteredVfxDirty = false;
     }
 
     private void AddVfxPrefab(GameObject prefab, string label)
@@ -745,15 +788,6 @@ public sealed class TestVfxWorkbench : MonoBehaviour
             sortingLayerNames[i] = layers[i].name;
 
         return sortingLayerNames;
-    }
-
-    private static bool MatchesSearch(string label, string search)
-    {
-        if (string.IsNullOrWhiteSpace(search))
-            return true;
-
-        return label != null &&
-               label.IndexOf(search.Trim(), StringComparison.OrdinalIgnoreCase) >= 0;
     }
 
     private static Enum DrawEnumToolbar(string label, Enum value)

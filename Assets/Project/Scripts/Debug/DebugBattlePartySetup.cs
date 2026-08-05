@@ -7,6 +7,9 @@ public static class DebugBattlePartySetup
 {
     private const int DebugPartySize = 3;
     private const string DefaultMoveSkillId = "S_Move_1";
+    private const string SkillVfxTestCharacterId = "Char_03";
+    private const string SkillVfxTestSkillId = "S_Ability_11";
+    private const int SkillVfxTestPreferredSlotIndex = 3;
 
     public static bool TryCreateDefaultParty(DataManager dataManager)
     {
@@ -68,7 +71,42 @@ public static class DebugBattlePartySetup
             }
         }
 
+        EnsureSkillVfxTestSkill(characterStore);
+
         Debug.Log($"[DebugBattlePartySetup] Created default debug party with {defaultCharacters.Length} character(s).");
+        return true;
+    }
+
+    public static bool EnsureSkillVfxTestSkill(DataManager dataManager)
+    {
+        if (dataManager == null)
+        {
+            Debug.LogError("[DebugBattlePartySetup] DataManager is missing.");
+            return false;
+        }
+
+        return EnsureSkillVfxTestSkill(dataManager.CharacterRuntimeStore);
+    }
+
+    public static bool EnsureSkillVfxTestSkill(CharacterRuntimeStore characterStore)
+    {
+        if (characterStore == null)
+        {
+            Debug.LogError("[DebugBattlePartySetup] CharacterRuntimeStore is missing.");
+            return false;
+        }
+
+        if (!characterStore.TryGet(SkillVfxTestCharacterId, out CharacterRuntimeData runtime) ||
+            runtime == null)
+        {
+            return false;
+        }
+
+        runtime.EquippedSkillIds = EnsureEquippedSkill(
+            runtime.EquippedSkillIds,
+            SkillVfxTestSkillId,
+            SkillVfxTestPreferredSlotIndex);
+
         return true;
     }
 
@@ -106,5 +144,35 @@ public static class DebugBattlePartySetup
 
         CharacterStartingRelicUtility.InitializeActiveRelicUses(runtime, relicDatabase);
         return runtime;
+    }
+
+    private static string[] EnsureEquippedSkill(
+        string[] equippedSkillIds,
+        string skillId,
+        int preferredSlotIndex)
+    {
+        int requiredLength = Mathf.Max(preferredSlotIndex + 1, equippedSkillIds != null ? equippedSkillIds.Length : 0);
+        string[] result = new string[requiredLength];
+
+        if (equippedSkillIds != null)
+            Array.Copy(equippedSkillIds, result, equippedSkillIds.Length);
+
+        for (int i = 0; i < result.Length; i++)
+        {
+            if (string.Equals(result[i], skillId, StringComparison.Ordinal))
+                return result;
+        }
+
+        for (int i = 0; i < result.Length; i++)
+        {
+            if (string.IsNullOrWhiteSpace(result[i]))
+            {
+                result[i] = skillId;
+                return result;
+            }
+        }
+
+        result[Mathf.Clamp(preferredSlotIndex, 0, result.Length - 1)] = skillId;
+        return result;
     }
 }

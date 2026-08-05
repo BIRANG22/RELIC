@@ -43,6 +43,13 @@ public class BattleUnitAnimator : MonoBehaviour
     [Header("Player Skill Presentations")]
     [SerializeField] private BattleUnitPlayerSkillPresentations playerSkillPresentations = new();
 
+    [Header("Skill Attack Overrides")]
+    [SerializeField] private SkillAttackOverrideDatabase skillAttackOverrideDatabase;
+
+    [Header("Skill VFX")]
+    [SerializeField] private SkillVfxDatabase skillVfxDatabase;
+    [SerializeField] private GridManager gridManager;
+
     [Header("Monster Action Presentations")]
     [SerializeField]
     private BattleUnitActionPresentation[] monsterActionPresentations =
@@ -188,6 +195,22 @@ public class BattleUnitAnimator : MonoBehaviour
 
     public void PlaySkillAction(SkillMasterData skillData)
     {
+        PlaySkillAction(skillData, null);
+    }
+
+    public void PlaySkillAction(PlayerReservedCommand command)
+    {
+        if (command == null)
+        {
+            PlayIdle();
+            return;
+        }
+
+        PlaySkillAction(command.SkillData, command);
+    }
+
+    private void PlaySkillAction(SkillMasterData skillData, PlayerReservedCommand command)
+    {
         if (skillData == null)
         {
             PlayIdle();
@@ -196,9 +219,12 @@ public class BattleUnitAnimator : MonoBehaviour
 
         if (skillData.Category == Category.Move)
         {
+            PlaySkillVfx(skillData, command);
             PlayMove();
             return;
         }
+
+        PlaySkillVfx(skillData, command);
 
         switch (skillData.SkillType)
         {
@@ -213,6 +239,9 @@ public class BattleUnitAnimator : MonoBehaviour
                 break;
 
             case SkillType.Attack:
+                if (TryPlaySkillAttackOverride(skillData))
+                    break;
+
                 PlayRandomAttackAction();
                 break;
 
@@ -228,11 +257,33 @@ public class BattleUnitAnimator : MonoBehaviour
     /// </summary>
     public void PlaySkillAction(SkillMasterData skillData, int hitIndex)
     {
-        if (skillData == null || skillData.SkillType != SkillType.Attack)
+        PlaySkillAction(skillData, null, hitIndex);
+    }
+
+    public void PlaySkillAction(PlayerReservedCommand command, int hitIndex)
+    {
+        if (command == null)
         {
-            PlaySkillAction(skillData);
+            PlayIdle();
             return;
         }
+
+        PlaySkillAction(command.SkillData, command, hitIndex);
+    }
+
+    private void PlaySkillAction(SkillMasterData skillData, PlayerReservedCommand command, int hitIndex)
+    {
+        if (skillData == null || skillData.SkillType != SkillType.Attack)
+        {
+            PlaySkillAction(skillData, command);
+            return;
+        }
+
+        if (hitIndex <= 0)
+            PlaySkillVfx(skillData, command);
+
+        if (TryPlaySkillAttackOverride(skillData))
+            return;
 
         List<int> assignedAttackIndices = GetAssignedAttackIndices();
 
@@ -380,6 +431,90 @@ public class BattleUnitAnimator : MonoBehaviour
     {
         currentAttackIndex = GetRandomAssignedAttackIndex();
         PlayCurrentAttackAction();
+    }
+
+    private bool TryPlaySkillAttackOverride(SkillMasterData skillData)
+    {
+        if (!TryResolveSkillAttackOverride(skillData, out int attackIndex))
+            return false;
+
+        EnsurePlayerSkillPresentations();
+
+        BattleUnitActionPresentation presentation = playerSkillPresentations.GetAttack(attackIndex);
+        if (!HasPresentation(presentation))
+            return false;
+
+        currentAttackIndex = attackIndex;
+        PlayPresentation(presentation);
+        return true;
+    }
+
+    private bool TryResolveSkillAttackOverride(SkillMasterData skillData, out int attackIndex)
+    {
+        attackIndex = 0;
+
+        if (skillData == null || string.IsNullOrWhiteSpace(skillData.SkillId))
+            return false;
+
+        string characterId = GetOwnerCharacterId();
+        if (string.IsNullOrWhiteSpace(characterId))
+            return false;
+
+        SkillAttackOverrideDatabase database = ResolveSkillAttackOverrideDatabase();
+        return database != null &&
+               database.TryGetAttackIndex(characterId, skillData.SkillId, out attackIndex);
+    }
+
+    private SkillAttackOverrideDatabase ResolveSkillAttackOverrideDatabase()
+    {
+        if (skillAttackOverrideDatabase != null)
+            return skillAttackOverrideDatabase;
+
+        return DataManager.Instance != null
+            ? DataManager.Instance.SkillAttackOverrideDatabase
+            : null;
+    }
+
+    private void PlaySkillVfx(SkillMasterData skillData)
+    {
+        PlaySkillVfx(skillData, null);
+    }
+
+    private void PlaySkillVfx(SkillMasterData skillData, PlayerReservedCommand command)
+    {
+        if (!TryResolveSkillVfx(skillData, out BattleVfxEntry vfx))
+            return;
+
+        SpawnVfx(vfx, command);
+    }
+
+    private bool TryResolveSkillVfx(SkillMasterData skillData, out BattleVfxEntry vfx)
+    {
+        vfx = null;
+
+        if (skillData == null || string.IsNullOrWhiteSpace(skillData.SkillId))
+            return false;
+
+        SkillVfxDatabase database = ResolveSkillVfxDatabase();
+        return database != null && database.TryGetVfx(skillData.SkillId, out vfx);
+    }
+
+    private SkillVfxDatabase ResolveSkillVfxDatabase()
+    {
+        if (skillVfxDatabase != null)
+            return skillVfxDatabase;
+
+        return DataManager.Instance != null
+            ? DataManager.Instance.SkillVfxDatabase
+            : null;
+    }
+
+    private string GetOwnerCharacterId()
+    {
+        BattleCharacter character = GetComponentInParent<BattleCharacter>();
+        return character != null && character.RuntimeData != null
+            ? character.RuntimeData.CharacterId
+            : null;
     }
 
     private void PlayPresentation(BattleUnitActionPresentation presentation)
@@ -614,11 +749,22 @@ public class BattleUnitAnimator : MonoBehaviour
 
     private void SpawnVfx(BattleVfxEntry entry)
     {
+        SpawnVfx(entry, null);
+    }
+
+    private void SpawnVfx(BattleVfxEntry entry, PlayerReservedCommand command)
+    {
         if (entry == null || entry.prefab == null)
             return;
 
         if (vfxLayer < 0)
             vfxLayer = LayerMask.NameToLayer(vfxLayerName);
+
+        if (TryResolveDetachedVfxAnchor(entry, command, out Vector3 anchorWorldPosition))
+        {
+            SpawnDetachedVfx(entry, anchorWorldPosition, vfxLifeTime);
+            return;
+        }
 
         Transform spawn = GetVfxSpawnTransform();
 
@@ -634,6 +780,106 @@ public class BattleUnitAnimator : MonoBehaviour
         ApplyDirectWorldVfxSorting(vfx, entry, GetUnitVfxSortingReferenceY());
 
         Destroy(vfx, vfxLifeTime);
+    }
+
+    private bool TryResolveDetachedVfxAnchor(
+        BattleVfxEntry entry,
+        PlayerReservedCommand command,
+        out Vector3 anchorWorldPosition)
+    {
+        anchorWorldPosition = Vector3.zero;
+
+        if (entry == null || entry.spawnAnchor != BattleVfxSpawnAnchor.SelectedGrid)
+            return false;
+
+        if (command == null || command.SelectedGridIndex < 0)
+            return false;
+
+        GridManager manager = ResolveGridManager();
+
+        if (manager == null)
+            return false;
+
+        Vector2Int coord = manager.IndexToCoord(command.SelectedGridIndex);
+        if (!manager.IsValidCoord(coord))
+            return false;
+
+        GridCell cell = manager.GetCell(coord);
+        if (cell == null)
+            return false;
+
+        anchorWorldPosition = cell.transform.position;
+        return true;
+    }
+
+    private GridManager ResolveGridManager()
+    {
+        if (gridManager != null)
+            return gridManager;
+
+        gridManager = Object.FindFirstObjectByType<GridManager>(FindObjectsInactive.Include);
+        return gridManager;
+    }
+
+    private void SpawnDetachedVfx(
+        BattleVfxEntry entry,
+        Vector3 anchorWorldPosition,
+        float lifeTime)
+    {
+        if (TrySpawnDetachedWorldVfx(
+                entry,
+                anchorWorldPosition,
+                lifeTime,
+                useUnitSortingTarget: false,
+                out _))
+        {
+            return;
+        }
+
+        if (TrySpawnDetachedDirectWorldVfx(entry, anchorWorldPosition, lifeTime))
+            return;
+
+        SpawnDetachedPrefabVfx(entry, anchorWorldPosition, lifeTime);
+    }
+
+    private bool TrySpawnDetachedDirectWorldVfx(
+        BattleVfxEntry entry,
+        Vector3 anchorWorldPosition,
+        float lifeTime)
+    {
+        if (entry.renderMode != BattleVfxRenderMode.DirectWorldRenderer)
+            return false;
+
+        GameObject anchor = CreateDetachedVfxAnchor(entry, anchorWorldPosition);
+        GameObject vfx = Instantiate(entry.prefab, anchor.transform, false);
+
+        ConfigureDirectWorldVfxInstance(vfx, entry, anchor.transform.position.y);
+        Destroy(anchor, Mathf.Max(0.01f, lifeTime));
+        return true;
+    }
+
+    private void SpawnDetachedPrefabVfx(
+        BattleVfxEntry entry,
+        Vector3 anchorWorldPosition,
+        float lifeTime)
+    {
+        GameObject anchor = CreateDetachedVfxAnchor(entry, anchorWorldPosition);
+        GameObject vfx = Instantiate(entry.prefab, anchor.transform, false);
+
+        ConfigureDirectWorldVfxInstance(vfx, entry, anchor.transform.position.y);
+        Destroy(anchor, Mathf.Max(0.01f, lifeTime));
+    }
+
+    private static GameObject CreateDetachedVfxAnchor(
+        BattleVfxEntry entry,
+        Vector3 anchorWorldPosition)
+    {
+        string anchorName = entry != null && entry.prefab != null
+            ? $"{entry.prefab.name}_VfxAnchor"
+            : "SkillVfx_VfxAnchor";
+        GameObject anchor = new(anchorName);
+        anchor.transform.position = anchorWorldPosition + (entry != null ? entry.proxyWorldOffset : Vector3.zero);
+        return anchor;
     }
 
     private IEnumerator PlayProjectileVfx(
@@ -848,16 +1094,96 @@ public class BattleUnitAnimator : MonoBehaviour
             return false;
 
         GameObject vfx = Instantiate(entry.prefab, spawn, false);
-        ConfigureVfxInstance(vfx, entry);
-        ApplyDirectWorldVfxSorting(vfx, entry, GetUnitVfxSortingReferenceY());
+        vfx.transform.localPosition += entry.proxyWorldOffset;
+        ConfigureDirectWorldVfxInstance(vfx, entry, GetUnitVfxSortingReferenceY());
         Destroy(vfx, Mathf.Max(0.01f, lifeTime));
         return true;
+    }
+
+    private void ConfigureDirectWorldVfxInstance(
+        GameObject vfx,
+        BattleVfxEntry entry,
+        float sortingReferenceY)
+    {
+        ConfigureVfxInstance(vfx, entry);
+        ScaleDirectWorldVfxToProxyHeight(vfx, entry);
+        ApplyDirectWorldVfxSorting(vfx, entry, sortingReferenceY);
+    }
+
+    private static void ScaleDirectWorldVfxToProxyHeight(
+        GameObject vfx,
+        BattleVfxEntry entry)
+    {
+        if (vfx == null || entry == null)
+            return;
+
+        if (!entry.scaleDirectWorldRendererToProxyHeight)
+            return;
+
+        float targetHeight = Mathf.Max(0.01f, entry.proxyWorldHeight);
+        if (!TryGetRendererBounds(vfx, out Bounds bounds))
+            return;
+
+        float currentHeight = bounds.size.y;
+        if (currentHeight <= 0.0001f)
+            return;
+
+        float multiplier = targetHeight / currentHeight;
+        vfx.transform.localScale = new Vector3(
+            vfx.transform.localScale.x * multiplier,
+            vfx.transform.localScale.y * multiplier,
+            vfx.transform.localScale.z * multiplier);
+    }
+
+    private static bool TryGetRendererBounds(GameObject root, out Bounds bounds)
+    {
+        bounds = default;
+
+        if (root == null)
+            return false;
+
+        Renderer[] renderers = root.GetComponentsInChildren<Renderer>(true);
+        bool hasBounds = false;
+
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            Renderer renderer = renderers[i];
+
+            if (renderer == null)
+                continue;
+
+            if (!hasBounds)
+            {
+                bounds = renderer.bounds;
+                hasBounds = true;
+                continue;
+            }
+
+            bounds.Encapsulate(renderer.bounds);
+        }
+
+        return hasBounds;
     }
 
     private bool TrySpawnDetachedWorldVfx(
         BattleVfxEntry entry,
         Vector3 position,
         float lifeTime,
+        out BattleWorldVfxHandle handle)
+    {
+        return TrySpawnDetachedWorldVfx(
+            entry,
+            position,
+            lifeTime,
+            useUnitSortingTarget: true,
+            out handle);
+    }
+
+    private bool TrySpawnDetachedWorldVfx(
+        BattleVfxEntry entry,
+        Vector3 position,
+        float lifeTime,
+        bool useUnitSortingTarget,
         out BattleWorldVfxHandle handle)
     {
         Transform spawn = GetVfxSpawnTransform();
@@ -872,7 +1198,7 @@ public class BattleUnitAnimator : MonoBehaviour
             vfx => ConfigureVfxInstance(vfx, entry),
             out handle);
 
-        if (spawned)
+        if (spawned && useUnitSortingTarget)
             ApplyUnitVfxSortingTarget(handle, entry);
 
         return spawned;
