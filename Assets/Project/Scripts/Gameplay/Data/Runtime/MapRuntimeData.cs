@@ -76,6 +76,52 @@ namespace Relic.Gameplay.Data
             return null;
         }
 
+        public static GeneratedMapNodeData FindStartNode(MapRuntimeData runtime)
+        {
+            if (runtime?.GeneratedNodes == null)
+                return null;
+
+            for (int i = 0; i < runtime.GeneratedNodes.Count; i++)
+            {
+                GeneratedMapNodeData node = runtime.GeneratedNodes[i];
+                if (node != null && string.Equals(node.Type, "Start", StringComparison.Ordinal))
+                    return node;
+            }
+
+            return null;
+        }
+
+        public static List<GeneratedMapNodeData> CollectSelectableNextNodes(
+            MapRuntimeData runtime,
+            int maxCount = 3)
+        {
+            List<GeneratedMapNodeData> result = new();
+
+            if (runtime == null || maxCount <= 0 || !IsCurrentNodeCleared(runtime))
+                return result;
+
+            GeneratedMapNodeData currentNode = FindCurrentNode(runtime);
+            if (currentNode?.NextNodeIndices == null || runtime.GeneratedNodes == null)
+                return result;
+
+            for (int i = 0; i < currentNode.NextNodeIndices.Count && result.Count < maxCount; i++)
+            {
+                int nextNodeIndex = currentNode.NextNodeIndices[i];
+
+                for (int j = 0; j < runtime.GeneratedNodes.Count; j++)
+                {
+                    GeneratedMapNodeData candidate = runtime.GeneratedNodes[j];
+                    if (candidate == null || candidate.NodeIndex != nextNodeIndex)
+                        continue;
+
+                    result.Add(candidate);
+                    break;
+                }
+            }
+
+            return result;
+        }
+
         public static bool IsNodeClickableFromCurrentProgress(
             MapRuntimeData runtime,
             GeneratedMapNodeData node)

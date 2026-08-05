@@ -15,15 +15,27 @@ public class MapViewSpawner : MonoBehaviour
 
     private List<GeneratedMapNodeData> lastNodes;
     private Action<GeneratedMapNodeData> lastOnNodeClicked;
+    private Action<GeneratedMapNodeData, Sprite> lastOnNodeHovered;
+    private Action lastOnNodeHoverExited;
 
     public void Spawn(
         List<GeneratedMapNodeData> nodes,
         Action<GeneratedMapNodeData> onNodeClicked)
     {
+        Spawn(nodes, onNodeClicked, null, null);
+    }
+
+    public void Spawn(List<GeneratedMapNodeData> nodes,
+        Action<GeneratedMapNodeData> onNodeClicked,
+        Action<GeneratedMapNodeData, Sprite> onNodeHovered,
+        Action onNodeHoverExited)
+    {
         lastNodes = nodes;
         lastOnNodeClicked = onNodeClicked;
+        lastOnNodeHovered = onNodeHovered;
+        lastOnNodeHoverExited = onNodeHoverExited;
 
-        // ¹æ Å¬¸®¾î ÈÄ ¸ÊÀ¸·Î µ¹¾Æ¿ÔÀ» ¶§ ÀÌÀü Ä«Å×°í¸® ¹öÆ° »ö»óÀÌ ³²Áö ¾Êµµ·Ï ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        // ë°© í´ë¦¬ì–´ í›„ ë§µìœ¼ë¡œ ëŒì•„ì™”ì„ ë•Œ ì´ì „ ì¹´í…Œê³ ë¦¬ ë²„íŠ¼ ìƒ‰ìƒì´ ë‚¨ì§€ ì•Šë„ë¡ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         MapCategoryHighlightController categoryHighlightController =
             FindFirstObjectByType<MapCategoryHighlightController>();
 
@@ -37,17 +49,16 @@ public class MapViewSpawner : MonoBehaviour
 
         if (nodePrefab == null || linePrefab == null)
         {
-            Debug.LogWarning("[MapViewSpawner] NodePrefab ¶Ç´Â LinePrefabÀÌ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù.");
+            Debug.LogWarning("[MapViewSpawner] NodePrefab ë˜ëŠ” LinePrefabì´ ì—°ê²°ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
             return;
         }
 
         if (nodeRoot == null || lineRoot == null)
         {
-            Debug.LogWarning("[MapViewSpawner] NodeRoot ¶Ç´Â LineRoot°¡ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù.");
+            Debug.LogWarning("[MapViewSpawner] NodeRoot ë˜ëŠ” LineRootê°€ ì—°ê²°ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
             return;
         }
 
-        MapRuntimeData runtime = DataManager.Instance.MapRuntimeStore.Get();
         MapNodeIconDatabase iconDatabase = DataManager.Instance.MapNodeIconDatabase;
 
         for (int i = 0; i < nodes.Count; i++)
@@ -60,17 +71,20 @@ public class MapViewSpawner : MonoBehaviour
 
             if (rect != null)
             {
-                rect.anchorMin = new Vector2(0.5f, 0.5f);
-                rect.anchorMax = new Vector2(0.5f, 0.5f);
+                rect.anchorMin = new Vector2(0f, 0.5f);
+                rect.anchorMax = new Vector2(0f, 0.5f);
                 rect.pivot = new Vector2(0.5f, 0.5f);
                 rect.anchoredPosition = data.Position;
                 rect.localScale = Vector3.one;
                 rect.localRotation = Quaternion.identity;
             }
 
-            bool canClick = IsNodeClickable(data, nodes, runtime);
+            node.Setup(data, iconDatabase, null, false);
 
-            node.Setup(data, iconDatabase, onNodeClicked, canClick);
+            Sprite nodeIcon = null;
+            iconDatabase?.TryGetIcon(data.Type, out nodeIcon);
+            MapNodeHoverRelay hoverRelay = node.GetComponentInChildren<MapNodeHoverRelay>(true);
+            hoverRelay?.Configure(data, nodeIcon, onNodeHovered, onNodeHoverExited);
 
             spawnedNodes[data.NodeIndex] = node;
         }
@@ -91,28 +105,6 @@ public class MapViewSpawner : MonoBehaviour
                 CreateLine(from.Position, to.Position);
             }
         }
-    }
-
-    private bool IsNodeClickable(
-    GeneratedMapNodeData node,
-    List<GeneratedMapNodeData> nodes,
-    MapRuntimeData runtime)
-    {
-        if (node == null || runtime == null)
-            return false;
-
-        bool canClick = MapRuntimeProgressUtility.IsNodeClickableFromCurrentProgress(runtime, node);
-
-        if (!canClick &&
-            runtime.CurrentNodeIndex >= 0 &&
-            MapRuntimeProgressUtility.FindCurrentNode(runtime) == null)
-        {
-            Debug.LogWarning(
-                $"[MapViewSpawner] CurrentNode not found / CurrentNodeIndex:{runtime.CurrentNodeIndex}"
-            );
-        }
-
-        return canClick;
     }
 
     private GeneratedMapNodeData GetNodeData(List<GeneratedMapNodeData> nodes, int nodeIndex)
@@ -180,6 +172,6 @@ public class MapViewSpawner : MonoBehaviour
 
     public void Refresh()
     {
-        Spawn(lastNodes, lastOnNodeClicked);
+        Spawn(lastNodes, lastOnNodeClicked, lastOnNodeHovered, lastOnNodeHoverExited);
     }
 }

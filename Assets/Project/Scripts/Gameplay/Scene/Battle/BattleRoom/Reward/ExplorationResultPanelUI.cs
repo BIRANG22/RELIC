@@ -45,6 +45,7 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
             resultText.text = BuildText(result, isDefeatResult, researchRewardMultiplier);
 
         gameObject.SetActive(true);
+        transform.SetAsLastSibling();
     }
 
     private string BuildText(ExplorationResultData value, bool defeat, float rewardMultiplier)

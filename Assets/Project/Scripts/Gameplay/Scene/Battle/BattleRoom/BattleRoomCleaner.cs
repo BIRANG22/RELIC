@@ -4,6 +4,11 @@ using UnityEngine;
 
 public class BattleRoomCleaner : MonoBehaviour
 {
+    public void PrepareForMapSelection()
+    {
+        ClearPartyBattleRoomTemporaryStatusEffects();
+    }
+
     public void Clean()
     {
         ClearPartyBattleRoomTemporaryStatusEffects();

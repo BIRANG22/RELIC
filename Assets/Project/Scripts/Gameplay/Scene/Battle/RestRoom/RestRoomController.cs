@@ -265,6 +265,9 @@ public class RestRoomController : MonoBehaviour
             ally.transform.localRotation = Quaternion.identity;
             ally.transform.localScale = Vector3.one * Mathf.Max(0f, allySpawnScale);
 
+            if (ally.GetComponent<BattleMapSelectionCharacterMarker>() == null)
+                ally.AddComponent<BattleMapSelectionCharacterMarker>();
+
             spawnedAllyAnimators[i] = ally.GetComponentInChildren<BattleUnitAnimator>(true);
         }
     }

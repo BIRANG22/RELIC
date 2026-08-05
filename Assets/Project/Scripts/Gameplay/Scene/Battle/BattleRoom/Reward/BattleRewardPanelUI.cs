@@ -399,7 +399,7 @@ public class BattleRewardPanelUI : MonoBehaviour
             Object.FindFirstObjectByType<BattleRoomCleaner>(FindObjectsInactive.Include);
 
         if (cleaner != null)
-            cleaner.Clean();
+            cleaner.PrepareForMapSelection();
 
         HideDetailPanel();
         gameObject.SetActive(false);
@@ -412,17 +412,13 @@ public class BattleRewardPanelUI : MonoBehaviour
             return;
         }
 
-        if (battlePanel != null)
-            battlePanel.SetActive(false);
+        BattleSceneController sceneController =
+            Object.FindFirstObjectByType<BattleSceneController>(FindObjectsInactive.Include);
 
-        if (mapPanel != null)
-            mapPanel.SetActive(true);
-
-        MapViewSpawner mapViewSpawner =
-            Object.FindFirstObjectByType<MapViewSpawner>(FindObjectsInactive.Include);
-
-        if (mapViewSpawner != null)
-            mapViewSpawner.Refresh();
+        if (sceneController != null)
+            sceneController.ReturnToMap();
+        else
+            Debug.LogWarning("[BattleRewardPanelUI] BattleSceneController is missing.");
     }
 
     private void MarkCurrentBattleNodeCleared()

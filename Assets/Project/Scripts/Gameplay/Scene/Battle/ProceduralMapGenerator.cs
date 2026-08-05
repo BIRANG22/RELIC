@@ -1,15 +1,51 @@
 using System.Collections.Generic;
+using System.Linq;
 using Relic.Gameplay.Battle;
 using UnityEngine;
 
 namespace Relic.Gameplay.Data
 {
+    public static class BattleMapLayoutUtility
+    {
+        public const float LayerGap = 100f;
+        public const float RowGap = 40f;
+
+        public static Vector2 CalculatePosition(int layerIndex, int rowIndex, int rowCount)
+        {
+            int safeRowCount = Mathf.Max(1, rowCount);
+            float centeredRow = rowIndex - (safeRowCount - 1) * 0.5f;
+            return new Vector2(layerIndex * LayerGap, -centeredRow * RowGap);
+        }
+
+        public static void ApplyHorizontalLayout(List<GeneratedMapNodeData> nodes)
+        {
+            if (nodes == null)
+                return;
+
+            foreach (IGrouping<int, GeneratedMapNodeData> layerGroup in
+                     nodes.Where(node => node != null).GroupBy(node => node.LayerIndex))
+            {
+                List<GeneratedMapNodeData> layer = layerGroup.ToList();
+                float minX = layer.Min(node => node.Position.x);
+                float maxX = layer.Max(node => node.Position.x);
+                bool alreadyHorizontal = maxX - minX < 1f;
+
+                layer.Sort((left, right) => alreadyHorizontal
+                    ? right.Position.y.CompareTo(left.Position.y)
+                    : left.Position.x.CompareTo(right.Position.x));
+
+                for (int row = 0; row < layer.Count; row++)
+                    layer[row].Position = CalculatePosition(layerGroup.Key, row, layer.Count);
+            }
+        }
+    }
+
     public class ProceduralMapGenerator
     {
         private int nextNodeIndex;
 
-        // Common ∏ ¿∫ «— π¯ µÓ¿Â«œ∏È ¿Ã»ƒ º±≈√ ∞°¡ﬂƒ°∏¶ ≥∑√‰¥œ¥Ÿ.
-        // ∞∞¿∫ Common ∏ ¿Ã 2»∏ ø¨º” µÓ¿Â«— ∞ÊøÏø°¥¬ ¥ı ≈©∞‘ ≥∑√‰¥œ¥Ÿ.
+        // Common ÎßµÏùÄ Ìïú Î≤à Îì±Ïû•ÌïòÎ©¥ Ïù¥ÌõÑ ÏÑ†ÌÉù Í∞ÄÏ§ëÏπòÎ•º ÎÇÆÏ∂•ÎãàÎã§.
+        // Í∞ôÏùÄ Common ÎßµÏù¥ 2Ìöå Ïó∞ÏÜç Îì±Ïû•Ìïú Í≤ΩÏö∞ÏóêÎäî Îçî ÌÅ¨Í≤å ÎÇÆÏ∂•ÎãàÎã§.
         private readonly Dictionary<string, int> commonMapAppearCounts = new();
         private string lastCommonMapId = string.Empty;
         private int consecutiveCommonMapCount;
@@ -18,21 +54,14 @@ namespace Relic.Gameplay.Data
         private const float CommonDoubleRepeatWeightMultiplier = 0.2f;
 
         private const int TotalLayerCount = 10;
-        private const int MaxColumnCount = 5;
+        private const int MaxColumnCount = 3;
 
         private const int MaxOutgoingConnections = 2;
         private const int MaxIncomingConnections = 2;
         private const float MinNodeXDistance = 110f;
 
-        private const int MinTotalNodeCount = 24;
-        private const int MaxTotalNodeCount = 30;
-
-        private const float YStart = -1070f;
-        private const float YGap = 150f;
-        private const float XGap = 280f;
-
-        private const float XJitter = 45f;
-        private const float YJitter = 25f;
+        private const int MinTotalNodeCount = 20;
+        private const int MaxTotalNodeCount = 24;
 
         private const float ExtraConnectionChance = 0.60f;
         private const float EdgeExtraConnectionChance = 0.80f;
@@ -52,7 +81,7 @@ namespace Relic.Gameplay.Data
 
             if (mapPool == null || mapPool.Count == 0)
             {
-                Debug.LogWarning("[ProceduralMapGenerator] MapPool¿Ã ∫ÒæÓ ¿÷Ω¿¥œ¥Ÿ.");
+                Debug.LogWarning("[ProceduralMapGenerator] MapPoolÏù¥ ÎπÑÏñ¥ ÏûàÏäµÎãàÎã§.");
                 return result;
             }
 
@@ -65,8 +94,6 @@ namespace Relic.Gameplay.Data
                 List<GeneratedMapNodeData> currentLayer = new();
 
                 int nodeCount = layerNodeCounts[layer];
-                int[] columns = DecideColumns(layer, nodeCount);
-
                 List<string> layerTypes = DecideLayerTypes(layer, nodeCount, layers);
 
                 for (int i = 0; i < nodeCount; i++)
@@ -84,7 +111,7 @@ namespace Relic.Gameplay.Data
                     if (mapData == null)
                         continue;
 
-                    Vector2 position = CalculatePosition(layer, columns[i]);
+                    Vector2 position = CalculatePosition(layer, i, nodeCount);
 
                     GeneratedMapNodeData node = CreateNode(
                         mapData.MapId,
@@ -109,8 +136,8 @@ namespace Relic.Gameplay.Data
                 );
             }
 
-            // º≠∑Œ ¡˜¡¢ ø¨∞·µ» Common ≥ÎµÂ¥¬ ∞∞¿∫ ∏ ¿ª ªÁøÎ«œ¡ˆ æ Ω¿¥œ¥Ÿ.
-            // ø¨∞· ¡§∫∏∞° øœº∫µ» µ⁄ ∫Œ∏ ≥ÎµÂ¿« ∏  ID∏¶ ¡¶ø‹«œ∞Ì ¥ŸΩ√ º±≈√«’¥œ¥Ÿ.
+            // ÏÑúÎ°ú ÏßÅÏ†ë Ïó∞Í≤∞Îêú Common ÎÖ∏ÎìúÎäî Í∞ôÏùÄ ÎßµÏùÑ ÏÇ¨Ïö©ÌïòÏßÄ ÏïäÏäµÎãàÎã§.
+            // Ïó∞Í≤∞ Ï†ïÎ≥¥Í∞Ä ÏôÑÏÑ±Îêú Îí§ Î∂ÄÎ™® ÎÖ∏ÎìúÏùò Îßµ IDÎ•º Ï†úÏô∏ÌïòÍ≥† Îã§Ïãú ÏÑ†ÌÉùÌï©ÎãàÎã§.
             EnforceConnectedCommonMapUniqueness(
                 layers,
                 mapPool,
@@ -146,7 +173,7 @@ namespace Relic.Gameplay.Data
                     }
                     else if (layer == TotalLayerCount - 3)
                     {
-                        counts[layer] = 4;
+                        counts[layer] = 3;
                     }
                     else
                     {
@@ -173,7 +200,7 @@ namespace Relic.Gameplay.Data
 
             return new int[]
             {
-                1,3,4,3,4,4,3,3,2,1
+                1,2,3,3,3,3,3,3,2,1
             };
         }
 
@@ -197,21 +224,21 @@ namespace Relic.Gameplay.Data
         private int[] DecideColumns(int layer, int nodeCount)
         {
             if (layer == 0)
-                return new int[] { 2 };
+                return new int[] { 1 };
 
             if (layer == 1 && nodeCount == 2)
-                return new int[] { 1, 3 };
+                return new int[] { 0, 2 };
 
             if (layer == TotalLayerCount - 3)
             {
-                return new int[] { 0, 1, 3, 4 };
+                return new int[] { 0, 1, 2 };
             }
 
             if (layer == TotalLayerCount - 2)
-                return new int[] { 1, 3 };
+                return new int[] { 0, 2 };
 
             if (layer == TotalLayerCount - 1)
-                return new int[] { 2 };
+                return new int[] { 1 };
 
             List<int> columns = new();
 
@@ -227,28 +254,9 @@ namespace Relic.Gameplay.Data
             return columns.ToArray();
         }
 
-        private Vector2 CalculatePosition(int layer, int column)
+        private Vector2 CalculatePosition(int layer, int row, int rowCount)
         {
-            float centerOffset = (MaxColumnCount - 1) * 0.5f;
-
-            float baseX = (column - centerOffset) * XGap;
-            float baseY = YStart + layer * YGap;
-
-            bool isStartLayer = layer == 0;
-            bool isPenultimateLayer = layer == TotalLayerCount - 2;
-            bool isBossLayer = layer == TotalLayerCount - 1;
-
-
-            if (isStartLayer || isBossLayer)
-                return new Vector2(0f, baseY);
-
-            float randomX = BattleRandom.Range(-XJitter, XJitter);
-            float randomY = BattleRandom.Range(-YJitter, YJitter);
-
-            return new Vector2(
-                baseX + randomX,
-                baseY + randomY
-            );
+            return BattleMapLayoutUtility.CalculatePosition(layer, row, rowCount);
         }
 
         private void ConnectLayersWithoutCrossing(
@@ -261,8 +269,8 @@ namespace Relic.Gameplay.Data
             if (previousLayer.Count == 0 || currentLayer.Count == 0)
                 return;
 
-            previousLayer.Sort((a, b) => a.Position.x.CompareTo(b.Position.x));
-            currentLayer.Sort((a, b) => a.Position.x.CompareTo(b.Position.x));
+            previousLayer.Sort((a, b) => a.Position.y.CompareTo(b.Position.y));
+            currentLayer.Sort((a, b) => a.Position.y.CompareTo(b.Position.y));
 
             Dictionary<int, int> outgoingCount = new();
             Dictionary<int, int> incomingCount = new();
@@ -349,7 +357,7 @@ namespace Relic.Gameplay.Data
 
                 float chance = ExtraConnectionChance;
 
-                if (Mathf.Abs(from.Position.x) >= EdgeColumnThresholdX)
+                if (Mathf.Abs(from.Position.y) >= EdgeColumnThresholdX)
                     chance = EdgeExtraConnectionChance;
 
                 if (BattleRandom.Value() > chance)
@@ -382,9 +390,9 @@ namespace Relic.Gameplay.Data
 
                 if (connectedIndex >= 0)
                 {
-                    float connectedX = currentLayer[connectedIndex].Position.x;
+                    float connectedX = currentLayer[connectedIndex].Position.y;
 
-                    if (connectedX < from.Position.x)
+                    if (connectedX < from.Position.y)
                     {
                         AddLimitedConnection(
                             from,
@@ -393,7 +401,7 @@ namespace Relic.Gameplay.Data
                             incomingCount
                         );
                     }
-                    else if (connectedX > from.Position.x)
+                    else if (connectedX > from.Position.y)
                     {
                         AddLimitedConnection(
                             from,
@@ -436,8 +444,8 @@ namespace Relic.Gameplay.Data
                 if (from.NextNodeIndices.Contains(candidate.NodeIndex))
                     continue;
 
-                bool isLeft = candidate.Position.x < from.Position.x;
-                bool isRight = candidate.Position.x > from.Position.x;
+                bool isLeft = candidate.Position.y < from.Position.y;
+                bool isRight = candidate.Position.y > from.Position.y;
 
                 if (leftSide && !isLeft)
                     continue;
@@ -445,7 +453,7 @@ namespace Relic.Gameplay.Data
                 if (!leftSide && !isRight)
                     continue;
 
-                float distance = Mathf.Abs(candidate.Position.x - from.Position.x);
+                float distance = Mathf.Abs(candidate.Position.y - from.Position.y);
 
                 if (distance < bestDistance)
                 {
@@ -499,8 +507,8 @@ namespace Relic.Gameplay.Data
                     if (!parent.NextNodeIndices.Contains(current.NodeIndex))
                         continue;
 
-                    minParentX = Mathf.Min(minParentX, parent.Position.x);
-                    maxParentX = Mathf.Max(maxParentX, parent.Position.x);
+                    minParentX = Mathf.Min(minParentX, parent.Position.y);
+                    maxParentX = Mathf.Max(maxParentX, parent.Position.y);
                     parentCount++;
                 }
 
@@ -508,7 +516,7 @@ namespace Relic.Gameplay.Data
                     continue;
 
                 Vector2 position = current.Position;
-                position.x = Mathf.Clamp(position.x, minParentX, maxParentX);
+                position.y = Mathf.Clamp(position.y, minParentX, maxParentX);
                 current.Position = position;
             }
         }
@@ -581,7 +589,7 @@ namespace Relic.Gameplay.Data
                         alternatives.Add(candidate);
                     }
 
-                    // ¥Î√º ∞°¥…«— Common ∏ ¿Ã «œ≥™µµ æ¯¥Ÿ∏È ±‚¡∏ ∏ ¿ª ¿Ø¡ˆ«’¥œ¥Ÿ.
+                    // ÎåÄÏ≤¥ Í∞ÄÎä•Ìïú Common ÎßµÏù¥ ÌïòÎÇòÎèÑ ÏóÜÎã§Î©¥ Í∏∞Ï°¥ ÎßµÏùÑ Ïú†ÏßÄÌï©ÎãàÎã§.
                     if (alternatives.Count == 0)
                         continue;
 
@@ -883,14 +891,14 @@ namespace Relic.Gameplay.Data
             if (layer == null || layer.Count <= 1)
                 return;
 
-            layer.Sort((a, b) => a.Position.x.CompareTo(b.Position.x));
+            layer.Sort((a, b) => a.Position.y.CompareTo(b.Position.y));
 
             for (int i = 1; i < layer.Count; i++)
             {
                 GeneratedMapNodeData left = layer[i - 1];
                 GeneratedMapNodeData right = layer[i];
 
-                float distance = right.Position.x - left.Position.x;
+                float distance = right.Position.y - left.Position.y;
 
                 if (distance >= MinNodeXDistance)
                     continue;
@@ -901,8 +909,8 @@ namespace Relic.Gameplay.Data
                 Vector2 leftPos = left.Position;
                 Vector2 rightPos = right.Position;
 
-                leftPos.x -= half;
-                rightPos.x += half;
+                leftPos.y -= half;
+                rightPos.y += half;
 
                 left.Position = leftPos;
                 right.Position = rightPos;
@@ -913,14 +921,14 @@ namespace Relic.Gameplay.Data
 
         private void ClampLayerInsideMapWidth(List<GeneratedMapNodeData> layer)
         {
-            float maxX = ((MaxColumnCount - 1) * 0.5f) * XGap + XJitter;
+            float maxX = ((MaxColumnCount - 1) * 0.5f) * BattleMapLayoutUtility.RowGap;
             float minX = -maxX;
 
             for (int i = 0; i < layer.Count; i++)
             {
                 Vector2 position = layer[i].Position;
 
-                position.x = Mathf.Clamp(position.x, minX, maxX);
+                position.y = Mathf.Clamp(position.y, minX, maxX);
 
                 layer[i].Position = position;
             }

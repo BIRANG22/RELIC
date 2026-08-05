@@ -13,17 +13,18 @@ public class BattleSceneController : MonoBehaviour
     public static event Action BattleRoomIntroCompleted;
     [Header("Panels")]
     [SerializeField] private BattleMapPanel battleMapPanel;
+    [SerializeField] private BattleRoomMapSelectionPresenter mapSelectionPresenter;
 
     [Header("Battle Scene Transition")]
     [SerializeField] private BattleDiagonalSceneTransition battleTransition;
 
     [Header("Battle Map Intro Text")]
     [SerializeField] private BattleMapIntroText battleMapIntroText;
-    [SerializeField] private string mapIntroMessage = "Á¦1±¸¿ª ÆóÇã";
-    [SerializeField] private string startRoomIntroMessage = "¼ö»óÇÑ ÀÚ¿Í Á¶¿ì";
-    [SerializeField] private string battleRoomIntroMessage = "ÀüÅõ ½ÃÀÛ";
-    [SerializeField] private string restRoomIntroMessage = "ÈŞ½Ä ±¸¿ª";
-    [SerializeField] private string eventRoomIntroMessage = "³°Àº º¸°üÇÔ";
+    [SerializeField] private string mapIntroMessage = "ì œ1êµ¬ì—­ íí—ˆ";
+    [SerializeField] private string startRoomIntroMessage = "ìˆ˜ìƒí•œ ìì™€ ì¡°ìš°";
+    [SerializeField] private string battleRoomIntroMessage = "ì „íˆ¬ ì‹œì‘";
+    [SerializeField] private string restRoomIntroMessage = "íœ´ì‹ êµ¬ì—­";
+    [SerializeField] private string eventRoomIntroMessage = "ë‚¡ì€ ë³´ê´€í•¨";
     [SerializeField] private bool playMapIntroOnStart = true;
     [SerializeField] private bool playBattleRoomIntroFromSceneController = false;
 
@@ -66,6 +67,7 @@ public class BattleSceneController : MonoBehaviour
     private int lastNetworkAppliedNodeIndex = int.MinValue;
     private bool lastNetworkAppliedNodeCleared;
     private bool forceNextBattleRoomLoad;
+    private int lastBattleRoomBackgroundLayer = -1;
     private readonly BattleRoomIntroLoadGate battleRoomIntroLoadGate = new();
 
     private void Awake()
@@ -73,6 +75,12 @@ public class BattleSceneController : MonoBehaviour
         AutoFindRoomRootIfNeeded();
         AutoFindBattleMapIntroTextIfNeeded();
         InstallMapPanelAutoReturnWatcher();
+
+        if (mapSelectionPresenter == null)
+            mapSelectionPresenter = GetComponent<BattleRoomMapSelectionPresenter>();
+
+        if (mapSelectionPresenter == null)
+            mapSelectionPresenter = gameObject.AddComponent<BattleRoomMapSelectionPresenter>();
     }
 
     private void Start()
@@ -81,7 +89,10 @@ public class BattleSceneController : MonoBehaviour
         InitializeRuntime();
         CloseAllRooms();
 
-        if (!TryOpenUnclearedCurrentNodeOnStart())
+        if (battleMapPanel != null)
+            battleMapPanel.Prepare(mapRuntime);
+
+        if (!TryOpenUnclearedCurrentNodeOnStart() && !TryOpenStartNodeOnNewRun())
         {
             OpenMapPanelImmediate();
             PlayMapIntroTextOnStart();
@@ -275,6 +286,33 @@ public class BattleSceneController : MonoBehaviour
         return true;
     }
 
+    private bool TryOpenStartNodeOnNewRun()
+    {
+        if (mapRuntime == null || mapRuntime.CurrentNodeIndex >= 0)
+            return false;
+
+        GeneratedMapNodeData startNode = MapRuntimeProgressUtility.FindStartNode(mapRuntime);
+        if (startNode == null)
+        {
+            Debug.LogWarning("[BattleSceneController] Generated map has no Start node.");
+            return false;
+        }
+
+        mapRuntime.CurrentMapId = startNode.MapId;
+        mapRuntime.CurrentNodeIndex = startNode.NodeIndex;
+        mapRuntime.VisitedMapIds ??= new List<string>();
+
+        string nodeKey = startNode.NodeIndex.ToString();
+        if (!mapRuntime.VisitedMapIds.Contains(nodeKey))
+            mapRuntime.VisitedMapIds.Add(nodeKey);
+
+        mapRuntimeStore.Set(mapRuntime);
+        HideMapPanelImmediate();
+        HandleSelectedMap(startNode);
+        PlayPendingRoomIntroText();
+        return true;
+    }
+
     public async void OnMapNodeSelected(GeneratedMapNodeData nodeData)
     {
         if (nodeData == null)
@@ -282,6 +320,13 @@ public class BattleSceneController : MonoBehaviour
 
         if (isChangingRoom)
             return;
+
+        if (!MapRuntimeProgressUtility.IsNodeClickableFromCurrentProgress(mapRuntime, nodeData))
+        {
+            Debug.LogWarning(
+                $"[BattleSceneController] Selectable next node validation failed: {nodeData.NodeIndex}");
+            return;
+        }
 
         mapRuntime.CurrentMapId = nodeData.MapId;
         mapRuntime.CurrentNodeIndex = nodeData.NodeIndex;
@@ -298,7 +343,29 @@ public class BattleSceneController : MonoBehaviour
             $"{nodeData.MapId} / Node:{nodeData.NodeIndex} / {nodeData.Type}"
         );
 
-        await PlayMapToRoomTransitionAsync(() => HandleSelectedMap(nodeData));
+        await PlayMapToRoomTransitionAsync(() =>
+        {
+            CleanupCompletedBattleRoom();
+            HandleSelectedMap(nodeData);
+        });
+    }
+
+    public void OnMapNodeSelectedByIndex(int nodeIndex)
+    {
+        if (mapRuntime?.GeneratedNodes == null)
+            return;
+
+        for (int i = 0; i < mapRuntime.GeneratedNodes.Count; i++)
+        {
+            GeneratedMapNodeData node = mapRuntime.GeneratedNodes[i];
+            if (node == null || node.NodeIndex != nodeIndex)
+                continue;
+
+            OnMapNodeSelected(node);
+            return;
+        }
+
+        Debug.LogWarning($"[BattleSceneController] Map node not found: {nodeIndex}");
     }
 
     public async void ReturnToMap()
@@ -306,9 +373,12 @@ public class BattleSceneController : MonoBehaviour
         if (isChangingRoom)
             return;
 
+        GameObject roomToKeepVisible = FindActiveRoomObject();
+
         await PlayRoomToMapTransitionAsync(() =>
         {
-            CloseAllRooms();
+            roomToKeepVisible = PrepareRoomForMapSelection(roomToKeepVisible);
+            mapSelectionPresenter?.Show(roomToKeepVisible);
             OpenMapPanelImmediate();
         });
 
@@ -413,7 +483,8 @@ public class BattleSceneController : MonoBehaviour
         {
             isAutoReturningToMap = false;
             autoReturnRoomToKeepVisible = null;
-            CloseAllRooms();
+            roomToKeepVisible = PrepareRoomForMapSelection(roomToKeepVisible);
+            mapSelectionPresenter?.Show(roomToKeepVisible);
             OpenMapPanelImmediate();
         });
 
@@ -444,7 +515,9 @@ public class BattleSceneController : MonoBehaviour
 
         await PlayRoomToMapAlreadyCoveredTransitionAsync(() =>
         {
-            CloseAllRooms();
+            GameObject roomToKeepVisible = FindActiveRoomObject() ?? lastActiveRoomLastFrame;
+            roomToKeepVisible = PrepareRoomForMapSelection(roomToKeepVisible);
+            mapSelectionPresenter?.Show(roomToKeepVisible);
             OpenMapPanelImmediate();
         });
 
@@ -585,6 +658,7 @@ public class BattleSceneController : MonoBehaviour
     {
         Debug.Log($"[BattleSceneController] Battle room start: {nodeData.MapId}");
         pendingRoomIntroMessage = playBattleRoomIntroFromSceneController ? battleRoomIntroMessage : null;
+        lastBattleRoomBackgroundLayer = nodeData.LayerIndex;
         ShowRoomBackground(battleRoom, nodeData);
         OpenRoom(battleRoom, "BattleRoom");
     }
@@ -593,6 +667,7 @@ public class BattleSceneController : MonoBehaviour
     {
         Debug.Log($"[BattleSceneController] Boss battle start: {nodeData.MapId}");
         pendingRoomIntroMessage = playBattleRoomIntroFromSceneController ? battleRoomIntroMessage : null;
+        lastBattleRoomBackgroundLayer = nodeData.LayerIndex;
         ShowRoomBackground(battleRoom, nodeData);
         OpenRoom(battleRoom, "BattleRoom");
     }
@@ -609,11 +684,40 @@ public class BattleSceneController : MonoBehaviour
     {
         Debug.Log($"[BattleSceneController] Special event start: {nodeData.MapId}");
 
-        // ÇöÀç´Â ÀÌº¥Æ®¹æ ³ëµåµµ RestRoom ¿ÀºêÁ§Æ®¸¦ ÇÔ²² »ç¿ëÇÒ ¼ö ÀÖÀ¸¹Ç·Î
-        // Event Room Intro Message ±âº»°ªÀ» ÈŞ½Ä ±¸¿ªÀ¸·Î µĞ´Ù.
-        // ³ªÁß¿¡ ½ÇÁ¦ EventRoomÀ» Ãß°¡ÇÏ¸é ÀÎ½ºÆåÅÍ¿¡¼­ ¹®±¸¸¸ ¹Ù²Ù¸é µÈ´Ù.
+        // í˜„ì¬ëŠ” ì´ë²¤íŠ¸ë°© ë…¸ë“œë„ RestRoom ì˜¤ë¸Œì íŠ¸ë¥¼ í•¨ê»˜ ì‚¬ìš©í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ
+        // Event Room Intro Message ê¸°ë³¸ê°’ì„ íœ´ì‹ êµ¬ì—­ìœ¼ë¡œ ë‘”ë‹¤.
+        // ë‚˜ì¤‘ì— ì‹¤ì œ EventRoomì„ ì¶”ê°€í•˜ë©´ ì¸ìŠ¤í™í„°ì—ì„œ ë¬¸êµ¬ë§Œ ë°”ê¾¸ë©´ ëœë‹¤.
         pendingRoomIntroMessage = eventRoomIntroMessage;
         OpenRoom(eventRoom, "EventRoom");
+    }
+
+    private GameObject PrepareRoomForMapSelection(GameObject completedRoom)
+    {
+        if (completedRoom != eventRoom || battleRoom == null)
+            return completedRoom;
+
+        if (eventRoom != null)
+            eventRoom.SetActive(false);
+
+        battleRoom.SetActive(true);
+
+        GeneratedMapNodeData currentNode = MapRuntimeProgressUtility.FindCurrentNode(mapRuntime);
+        int backgroundLayer = lastBattleRoomBackgroundLayer >= 0
+            ? lastBattleRoomBackgroundLayer
+            : currentNode != null ? currentNode.LayerIndex : 0;
+
+        StageBackgroundController background =
+            battleRoom.GetComponentInChildren<StageBackgroundController>(true);
+        background?.ShowForLayer(backgroundLayer);
+
+        if (battleRoom.GetComponentsInChildren<BattleCharacter>(true).Length == 0)
+        {
+            BattleUnitSpawner spawner =
+                battleRoom.GetComponentInChildren<BattleUnitSpawner>(true);
+            spawner?.SpawnFromRuntimeData();
+        }
+
+        return battleRoom;
     }
 
     private void PlayMapIntroTextOnStart()
@@ -647,6 +751,8 @@ public class BattleSceneController : MonoBehaviour
 
     private void OpenRoom(GameObject roomObject, string roomName)
     {
+        mapSelectionPresenter?.Hide();
+
         if (battleMapPanel != null)
             battleMapPanel.Close();
 
@@ -668,6 +774,13 @@ public class BattleSceneController : MonoBehaviour
 
         if (isBattleRoom)
             RequestBattleRoomLoadOnce();
+    }
+
+    private void CleanupCompletedBattleRoom()
+    {
+        BattleRoomCleaner cleaner =
+            Object.FindFirstObjectByType<BattleRoomCleaner>(FindObjectsInactive.Include);
+        cleaner?.Clean();
     }
 
     private void RequestBattleRoomLoadOnce()

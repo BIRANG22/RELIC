@@ -180,6 +180,9 @@ public class StartRoomController : MonoBehaviour
             ally.transform.localPosition = Vector3.zero;
             ally.transform.localRotation = Quaternion.identity;
             ally.transform.localScale = Vector3.one;
+
+            if (ally.GetComponent<BattleMapSelectionCharacterMarker>() == null)
+                ally.AddComponent<BattleMapSelectionCharacterMarker>();
         }
     }
 
