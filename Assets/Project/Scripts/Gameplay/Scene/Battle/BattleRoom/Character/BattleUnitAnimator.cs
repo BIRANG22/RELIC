@@ -43,6 +43,9 @@ public class BattleUnitAnimator : MonoBehaviour
     [Header("Player Skill Presentations")]
     [SerializeField] private BattleUnitPlayerSkillPresentations playerSkillPresentations = new();
 
+    [Header("Skill Attack Overrides")]
+    [SerializeField] private SkillAttackOverrideDatabase skillAttackOverrideDatabase;
+
     [Header("Monster Action Presentations")]
     [SerializeField]
     private BattleUnitActionPresentation[] monsterActionPresentations =
@@ -213,6 +216,9 @@ public class BattleUnitAnimator : MonoBehaviour
                 break;
 
             case SkillType.Attack:
+                if (TryPlaySkillAttackOverride(skillData))
+                    break;
+
                 PlayRandomAttackAction();
                 break;
 
@@ -233,6 +239,9 @@ public class BattleUnitAnimator : MonoBehaviour
             PlaySkillAction(skillData);
             return;
         }
+
+        if (TryPlaySkillAttackOverride(skillData))
+            return;
 
         List<int> assignedAttackIndices = GetAssignedAttackIndices();
 
@@ -380,6 +389,56 @@ public class BattleUnitAnimator : MonoBehaviour
     {
         currentAttackIndex = GetRandomAssignedAttackIndex();
         PlayCurrentAttackAction();
+    }
+
+    private bool TryPlaySkillAttackOverride(SkillMasterData skillData)
+    {
+        if (!TryResolveSkillAttackOverride(skillData, out int attackIndex))
+            return false;
+
+        EnsurePlayerSkillPresentations();
+
+        BattleUnitActionPresentation presentation = playerSkillPresentations.GetAttack(attackIndex);
+        if (!HasPresentation(presentation))
+            return false;
+
+        currentAttackIndex = attackIndex;
+        PlayPresentation(presentation);
+        return true;
+    }
+
+    private bool TryResolveSkillAttackOverride(SkillMasterData skillData, out int attackIndex)
+    {
+        attackIndex = 0;
+
+        if (skillData == null || string.IsNullOrWhiteSpace(skillData.SkillId))
+            return false;
+
+        string characterId = GetOwnerCharacterId();
+        if (string.IsNullOrWhiteSpace(characterId))
+            return false;
+
+        SkillAttackOverrideDatabase database = ResolveSkillAttackOverrideDatabase();
+        return database != null &&
+               database.TryGetAttackIndex(characterId, skillData.SkillId, out attackIndex);
+    }
+
+    private SkillAttackOverrideDatabase ResolveSkillAttackOverrideDatabase()
+    {
+        if (skillAttackOverrideDatabase != null)
+            return skillAttackOverrideDatabase;
+
+        return DataManager.Instance != null
+            ? DataManager.Instance.SkillAttackOverrideDatabase
+            : null;
+    }
+
+    private string GetOwnerCharacterId()
+    {
+        BattleCharacter character = GetComponentInParent<BattleCharacter>();
+        return character != null && character.RuntimeData != null
+            ? character.RuntimeData.CharacterId
+            : null;
     }
 
     private void PlayPresentation(BattleUnitActionPresentation presentation)

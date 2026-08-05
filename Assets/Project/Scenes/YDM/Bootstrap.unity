@@ -2031,6 +2031,7 @@ MonoBehaviour:
   skillRangeIconDatabase: {fileID: 11400000, guid: 09d2c1b69fb5b3f44af4df6fb1368947, type: 2}
   itemIconDatabase: {fileID: 11400000, guid: 9a35744c33f245f4dbaf83fcee49049d, type: 2}
   gridEffectSpriteDatabase: {fileID: 11400000, guid: f6d72b30125e4ab1b257ac2caa7f779c, type: 2}
+  skillAttackOverrideDatabase: {fileID: 11400000, guid: a05c4d7b53f743068031e96a185644a3, type: 2}
 --- !u!1 &1726247874
 GameObject:
   m_ObjectHideFlags: 0
