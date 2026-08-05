@@ -16,3 +16,6 @@ MonoBehaviour:
   - CharacterId: Char_01
     SkillId: 'S_Ability_03 '
     AttackSlot: 1
+  - CharacterId: Char_01
+    SkillId: S_Public_17
+    AttackSlot: 3

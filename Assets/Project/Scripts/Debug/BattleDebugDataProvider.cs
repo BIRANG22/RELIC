@@ -28,6 +28,14 @@ public class BattleDebugDataProvider : MonoBehaviour
             return;
         }
 
+        if (!HasAnyDebugCharacterId())
+        {
+            if (!DebugBattlePartySetup.TryCreateDefaultParty(dm))
+                Debug.LogError("[BattleDebugDataProvider] Failed to create default debug party.");
+
+            return;
+        }
+
         dm.PartyRuntimeStore.Clear();
 
         for (int i = 0; i < debugCharacterIds.Length && i < 3; i++)
@@ -76,5 +84,21 @@ public class BattleDebugDataProvider : MonoBehaviour
 
             Debug.Log($"[BattleDebugDataProvider] Slot {i}: {characterId} / Grid {gridIndex}");
         }
+
+        DebugBattlePartySetup.EnsureSkillVfxTestSkill(dm);
+    }
+
+    private bool HasAnyDebugCharacterId()
+    {
+        if (debugCharacterIds == null)
+            return false;
+
+        for (int i = 0; i < debugCharacterIds.Length; i++)
+        {
+            if (!string.IsNullOrWhiteSpace(debugCharacterIds[i]))
+                return true;
+        }
+
+        return false;
     }
 }

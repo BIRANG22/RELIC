@@ -1265,7 +1265,10 @@ public class BattleRoomLoader : MonoBehaviour
         // 첫 번째 캐릭터를 기본 선택하여 패널, HUD, 하이라이트를 함께 갱신합니다.
         CharacterRuntimeData initialSelectedRuntime = GetSelectedOrFirstPlayerRuntime();
         if (initialSelectedRuntime != null)
+        {
             SelectPlayerHUD(initialSelectedRuntime);
+            OpenSelectedCharacterSkillListWhenInputReady();
+        }
 
         EnsureFirstBattleTutorialController();
 

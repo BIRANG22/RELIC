@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using UnityEngine;
@@ -12,10 +13,18 @@ public sealed class BattleEffectDebugWindow : MonoBehaviour
     [SerializeField] private string customRelicIds = "";
     [SerializeField] private string customRuneIds = "";
     [SerializeField] private string customGridEffectId = "GR_Poisson";
+    [SerializeField] private string skillTestId = DebugBattleSkillCastUtility.DefaultSkillId;
+    [SerializeField] private int skillTestSlotIndex = DebugBattleSkillCastUtility.DefaultTimelineSlotIndex;
+    [SerializeField] private int skillTestTargetGridIndex = DebugBattleSkillCastUtility.DefaultDebugTargetGridIndex;
+    [SerializeField] private bool autoUseSkillOwner = true;
+    [SerializeField] private bool forceSkillTestTargetGrid = true;
+    [SerializeField] private bool clearReservationsBeforeSkillTest = true;
+    [SerializeField] private bool refillResourcesBeforeSkillTest = true;
 
     private Vector2 scrollPosition;
     private Rect windowRect = new(16f, 16f, 430f, 720f);
     private GUIStyle smallLabelStyle;
+    private string skillTestMessage = "";
 
     private void Update()
     {
@@ -45,6 +54,8 @@ public sealed class BattleEffectDebugWindow : MonoBehaviour
         DrawPresets();
         GUILayout.Space(8f);
         DrawRuntimeControls();
+        GUILayout.Space(8f);
+        DrawSkillCastControls();
         GUILayout.Space(8f);
         DrawStatusControls();
         GUILayout.Space(8f);
@@ -137,6 +148,43 @@ public sealed class BattleEffectDebugWindow : MonoBehaviour
                 Debug.Log("[BattleEffectDebug] ApplyCustomLoadout");
             }
         }
+    }
+
+    private void DrawSkillCastControls()
+    {
+        GUILayout.Label("Skill Cast Test", EditorLikeHeaderStyle());
+
+        CharacterRuntimeData caster = GetSkillTestRuntime();
+        string casterLabel = caster != null ? caster.CharacterId : "None";
+        GUILayout.Label($"Caster: {casterLabel}", smallLabelStyle);
+
+        GUILayout.Label("SkillId", smallLabelStyle);
+        skillTestId = GUILayout.TextField(skillTestId ?? string.Empty);
+
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Slot", GUILayout.Width(38f));
+        string slotText = GUILayout.TextField(skillTestSlotIndex.ToString(), GUILayout.Width(56f));
+        if (int.TryParse(slotText, out int parsedSlotIndex))
+            skillTestSlotIndex = Mathf.Clamp(parsedSlotIndex, 0, 4);
+
+        GUILayout.Label("Target Grid", GUILayout.Width(78f));
+        string targetGridText = GUILayout.TextField(skillTestTargetGridIndex.ToString(), GUILayout.Width(56f));
+        if (int.TryParse(targetGridText, out int parsedTargetGridIndex))
+            skillTestTargetGridIndex = Mathf.Clamp(parsedTargetGridIndex, 0, 34);
+        GUILayout.EndHorizontal();
+
+        autoUseSkillOwner = GUILayout.Toggle(autoUseSkillOwner, "Auto use equipped skill owner");
+        forceSkillTestTargetGrid = GUILayout.Toggle(forceSkillTestTargetGrid, "Force target grid for debug");
+        clearReservationsBeforeSkillTest =
+            GUILayout.Toggle(clearReservationsBeforeSkillTest, "Clear reservations before cast");
+        refillResourcesBeforeSkillTest =
+            GUILayout.Toggle(refillResourcesBeforeSkillTest, "Refill resources before cast");
+
+        if (GUILayout.Button("Cast Skill"))
+            CastDebugSkill();
+
+        if (!string.IsNullOrWhiteSpace(skillTestMessage))
+            GUILayout.Label(skillTestMessage, smallLabelStyle);
     }
 
     private void DrawRuntimeControls()
@@ -266,6 +314,52 @@ public sealed class BattleEffectDebugWindow : MonoBehaviour
         return BattleEffectDebugTool.GetPartyRuntime(selectedPartyIndex);
     }
 
+    private CharacterRuntimeData GetSkillTestRuntime()
+    {
+        CharacterRuntimeData selected = GetSelectedRuntime();
+
+        if (!autoUseSkillOwner || string.IsNullOrWhiteSpace(skillTestId))
+            return selected;
+
+        if (HasSkill(selected, skillTestId))
+            return selected;
+
+        int maxPartyCount = DataManager.Instance != null && DataManager.Instance.PartyRuntimeStore != null
+            ? DataManager.Instance.PartyRuntimeStore.MaxPartyCountValue
+            : 3;
+
+        for (int i = 0; i < maxPartyCount; i++)
+        {
+            CharacterRuntimeData runtime = BattleEffectDebugTool.GetPartyRuntime(i);
+            if (!HasSkill(runtime, skillTestId))
+                continue;
+
+            selectedPartyIndex = i;
+            return runtime;
+        }
+
+        return selected;
+    }
+
+    private void CastDebugSkill()
+    {
+        CharacterRuntimeData runtime = GetSkillTestRuntime();
+        bool castRequested = DebugBattleSkillCastUtility.TryCastSkillNow(
+            runtime,
+            skillTestId,
+            skillTestSlotIndex,
+            skillTestTargetGridIndex,
+            forceSkillTestTargetGrid,
+            clearReservationsBeforeSkillTest,
+            refillResourcesBeforeSkillTest,
+            out skillTestMessage);
+
+        if (castRequested)
+            Debug.Log($"[BattleEffectDebug] {skillTestMessage}");
+        else
+            Debug.LogWarning($"[BattleEffectDebug] {skillTestMessage}");
+    }
+
     private void ApplyHp(CharacterRuntimeData runtime, float percent)
     {
         BattleEffectDebugTool.SetHpPercent(runtime, percent);
@@ -383,5 +477,38 @@ public sealed class BattleEffectDebugWindow : MonoBehaviour
         }
 
         return ids.ToArray();
+    }
+
+    private static bool HasSkill(CharacterRuntimeData runtime, string skillId)
+    {
+        if (runtime == null || string.IsNullOrWhiteSpace(skillId))
+            return false;
+
+        string normalizedSkillId = skillId.Trim();
+
+        if (IsSameSkill(runtime.MoveSkillId, normalizedSkillId) ||
+            IsSameSkill(runtime.PassiveSkillId, normalizedSkillId) ||
+            IsSameSkill(runtime.UniqueSkillId, normalizedSkillId) ||
+            IsSameSkill(runtime.AbilitySkillId, normalizedSkillId))
+        {
+            return true;
+        }
+
+        if (runtime.EquippedSkillIds == null)
+            return false;
+
+        for (int i = 0; i < runtime.EquippedSkillIds.Length; i++)
+        {
+            if (IsSameSkill(runtime.EquippedSkillIds[i], normalizedSkillId))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsSameSkill(string currentSkillId, string targetSkillId)
+    {
+        return !string.IsNullOrWhiteSpace(currentSkillId) &&
+               string.Equals(currentSkillId.Trim(), targetSkillId, StringComparison.Ordinal);
     }
 }
