@@ -29161,6 +29161,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 82567347}
     m_Modifications:
+    - target: {fileID: 1020942474148388796, guid: 1edff599aaa6ccb44847a10c968d8bda, type: 3}
+      propertyPath: m_SortingOrder
+      value: -5
+      objectReference: {fileID: 0}
     - target: {fileID: 1023008379845916366, guid: 1edff599aaa6ccb44847a10c968d8bda, type: 3}
       propertyPath: InitialModule.startColor.maxColor.a
       value: 1
