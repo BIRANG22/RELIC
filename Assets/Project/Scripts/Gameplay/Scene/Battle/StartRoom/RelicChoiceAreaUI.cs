@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using Relic.Gameplay.Data;
 
 public class RelicChoiceAreaUI : MonoBehaviour
@@ -8,13 +8,9 @@ public class RelicChoiceAreaUI : MonoBehaviour
     [Header("Slots In Scene")]
     [SerializeField] private RelicChoiceSlotUI[] choiceSlots;
 
-    [Header("Hover Info Panel")]
-    [SerializeField] private GameObject relicHoverInfoPanel;
-    [SerializeField] private TMP_Text relicHoverNameText;
-    [SerializeField] private TMP_Text relicHoverDescText;
-
     [Header("Choice Setting")]
     [SerializeField, Min(1)] private int choiceCount = 3;
+    [SerializeField] private Button acquireButton;
 
     [Header("Complete")]
     [SerializeField] private BattleMapController battleMapController;
@@ -26,6 +22,8 @@ public class RelicChoiceAreaUI : MonoBehaviour
 
     private bool isOpen;
     private bool isSelectionCompleted;
+    private string selectedRelicId;
+    private RelicChoiceSlotUI selectedSlot;
 
     private void Awake()
     {
@@ -35,21 +33,33 @@ public class RelicChoiceAreaUI : MonoBehaviour
         if (battleMapController == null)
             battleMapController = Object.FindFirstObjectByType<BattleMapController>(FindObjectsInactive.Include);
 
-        HideRelicHoverInfo();
+        if (acquireButton != null)
+        {
+            acquireButton.onClick.RemoveListener(AcquireSelectedRelic);
+            acquireButton.onClick.AddListener(AcquireSelectedRelic);
+        }
+
+        RefreshAcquireButton();
     }
 
     private void OnDisable()
     {
-        HideRelicHoverInfo();
+        ClearSelection();
+    }
+
+    private void OnDestroy()
+    {
+        if (acquireButton != null)
+            acquireButton.onClick.RemoveListener(AcquireSelectedRelic);
     }
 
     public void Open()
     {
         isOpen = true;
         isSelectionCompleted = false;
+        ClearSelection();
 
         gameObject.SetActive(true);
-        HideRelicHoverInfo();
 
         if (SteamBattleStateSynchronizer.TryApplyKnownStartRelicChoices(this))
             return;
@@ -66,7 +76,7 @@ public class RelicChoiceAreaUI : MonoBehaviour
     public void Close()
     {
         isOpen = false;
-        HideRelicHoverInfo();
+        ClearSelection();
         ClearSlots();
         gameObject.SetActive(false);
     }
@@ -77,8 +87,8 @@ public class RelicChoiceAreaUI : MonoBehaviour
             return;
 
         isOpen = true;
+        ClearSelection();
         gameObject.SetActive(true);
-        HideRelicHoverInfo();
         SetupChoices(relicIds, false);
     }
 
@@ -89,6 +99,7 @@ public class RelicChoiceAreaUI : MonoBehaviour
 
     private void SetupChoices(IReadOnlyList<string> relicIds, bool broadcastChoices)
     {
+        ClearSelection();
         ClearSlots();
 
         List<RelicChoiceSlotUI> validSlots = GetValidSlots();
@@ -124,8 +135,6 @@ public class RelicChoiceAreaUI : MonoBehaviour
         if (broadcastChoices)
             SteamBattleStateSynchronizer.TryBroadcastStartRelicChoices(normalizedRelicIds.GetRange(0, count));
 
-        if (relicHoverInfoPanel != null)
-            relicHoverInfoPanel.transform.SetAsLastSibling();
     }
 
     private List<string> NormalizeChoiceIds(IReadOnlyList<string> relicIds)
@@ -200,37 +209,30 @@ public class RelicChoiceAreaUI : MonoBehaviour
         candidates.RemoveAll(id => !string.IsNullOrWhiteSpace(id) && unavailableRelicIds.Contains(id.Trim()));
     }
 
-    public void ShowRelicHoverInfo(string relicId)
+    public void SelectSlot(RelicChoiceSlotUI slot, string relicId)
     {
-        if (!isOpen || string.IsNullOrWhiteSpace(relicId))
+        if (!isOpen || isSelectionCompleted || slot == null || string.IsNullOrWhiteSpace(relicId))
             return;
 
-        if (DataManager.Instance == null || DataManager.Instance.RelicDatabase == null)
-        {
-            Debug.LogWarning("[RelicChoiceAreaUI] DataManager or RelicDatabase is null.");
-            return;
-        }
-
-        if (!DataManager.Instance.RelicDatabase.TryGet(relicId, out RelicData relicData) || relicData == null)
+        if (SteamBattleStateSynchronizer.TryBlockSharedBattleStateEdit())
             return;
 
-        if (relicHoverNameText != null)
-            relicHoverNameText.text = relicData.Name;
+        selectedSlot = slot;
+        selectedRelicId = relicId.Trim();
 
-        if (relicHoverDescText != null)
-            relicHoverDescText.text = relicData.EffectDesc;
+        List<RelicChoiceSlotUI> validSlots = GetValidSlots();
+        for (int i = 0; i < validSlots.Count; i++)
+            validSlots[i].SetSelected(validSlots[i] == selectedSlot);
 
-        if (relicHoverInfoPanel != null)
-        {
-            relicHoverInfoPanel.transform.SetAsLastSibling();
-            relicHoverInfoPanel.SetActive(true);
-        }
+        RefreshAcquireButton();
     }
 
-    public void HideRelicHoverInfo()
+    public void AcquireSelectedRelic()
     {
-        if (relicHoverInfoPanel != null)
-            relicHoverInfoPanel.SetActive(false);
+        if (string.IsNullOrWhiteSpace(selectedRelicId))
+            return;
+
+        SelectRelic(selectedRelicId);
     }
 
     public void SelectRelic(string relicId)
@@ -404,6 +406,29 @@ public class RelicChoiceAreaUI : MonoBehaviour
         List<RelicChoiceSlotUI> validSlots = GetValidSlots();
         for (int i = 0; i < validSlots.Count; i++)
             validSlots[i].ClearSlot();
+    }
+
+    private void ClearSelection()
+    {
+        selectedRelicId = string.Empty;
+        selectedSlot = null;
+
+        List<RelicChoiceSlotUI> validSlots = GetValidSlots();
+        for (int i = 0; i < validSlots.Count; i++)
+            validSlots[i].SetSelected(false);
+
+        RefreshAcquireButton();
+    }
+
+    private void RefreshAcquireButton()
+    {
+        if (acquireButton != null)
+        {
+            acquireButton.interactable =
+                isOpen &&
+                !isSelectionCompleted &&
+                !string.IsNullOrWhiteSpace(selectedRelicId);
+        }
     }
 
     private void Shuffle(List<string> list)
