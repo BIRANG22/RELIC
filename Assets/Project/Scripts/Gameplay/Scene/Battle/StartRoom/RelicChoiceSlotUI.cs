@@ -1,4 +1,5 @@
 using Relic.Gameplay.Data;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -7,24 +8,22 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
 {
     [Header("UI")]
     [SerializeField] private Image relicIconImage;
+    [SerializeField] private TMP_Text relicNameText;
+    [SerializeField] private TMP_Text relicEffectText;
     [SerializeField] private Button button;
-
-    [Header("Hover Scale Effect")]
-    [SerializeField] private Transform scaleTarget;
-    [SerializeField, Min(1f)] private float hoverBaseScale = 1.08f;
-    [SerializeField, Min(0f)] private float breathAmount = 0.04f;
-    [SerializeField, Min(0.1f)] private float breathSpeed = 4f;
-    [SerializeField, Min(0.1f)] private float scaleLerpSpeed = 14f;
+    [SerializeField] private GameObject hoverImage;
+    [SerializeField] private GameObject clickImage;
 
     private string relicId;
     private RelicChoiceAreaUI owner;
     private bool isSetup;
     private bool isPointerInside;
-    private bool isClicked;
-    private Vector3 originalScale = Vector3.one;
+    private bool isSelected;
 
     private void Awake()
     {
+        EnsureReferences();
+
         if (button == null)
             button = GetComponent<Button>();
 
@@ -34,50 +33,21 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
             button.onClick.AddListener(OnClick);
         }
 
-        if (scaleTarget == null)
-            scaleTarget = transform;
-
-        originalScale = scaleTarget.localScale;
+        RefreshStateImages();
     }
 
     private void OnEnable()
     {
-        if (scaleTarget == null)
-            scaleTarget = transform;
-
-        originalScale = scaleTarget.localScale;
-
         isPointerInside = false;
-        isClicked = false;
-        ResetScaleImmediate();
-    }
-
-    private void Update()
-    {
-        if (scaleTarget == null)
-            return;
-
-        Vector3 targetScale = originalScale;
-
-        if (isSetup && isPointerInside && !isClicked)
-        {
-            float breath = Mathf.Sin(Time.unscaledTime * breathSpeed) * breathAmount;
-            float scale = hoverBaseScale + breath;
-            targetScale = originalScale * scale;
-        }
-
-        scaleTarget.localScale = Vector3.Lerp(
-            scaleTarget.localScale,
-            targetScale,
-            Time.unscaledDeltaTime * scaleLerpSpeed
-        );
+        isSelected = false;
+        RefreshStateImages();
     }
 
     private void OnDisable()
     {
         isPointerInside = false;
-        isClicked = false;
-        ResetScaleImmediate();
+        isSelected = false;
+        RefreshStateImages();
     }
 
     private void OnDestroy()
@@ -92,8 +62,8 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
         owner = choiceArea;
         isSetup = false;
         isPointerInside = false;
-        isClicked = false;
-        ResetScaleImmediate();
+        isSelected = false;
+        RefreshStateImages();
 
         if (string.IsNullOrWhiteSpace(relicId))
         {
@@ -117,9 +87,10 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
             return;
         }
 
-        SetupIcon();
+        SetupDisplay(relicData);
 
         isSetup = true;
+        RefreshStateImages();
 
         if (button != null)
             button.interactable = true;
@@ -127,25 +98,31 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
         gameObject.SetActive(true);
     }
 
-    private void SetupIcon()
+    private void SetupDisplay(RelicData relicData)
     {
-        if (relicIconImage == null)
-            return;
+        if (relicIconImage != null)
+        {
+            if (DataManager.Instance != null &&
+                DataManager.Instance.RelicIconDatabase != null &&
+                DataManager.Instance.RelicIconDatabase.TryGetIcon(relicId, out Sprite icon))
+            {
+                relicIconImage.sprite = icon;
+                relicIconImage.enabled = true;
+                relicIconImage.raycastTarget = true;
+            }
+            else
+            {
+                relicIconImage.sprite = null;
+                relicIconImage.enabled = false;
+                relicIconImage.raycastTarget = false;
+            }
+        }
 
-        if (DataManager.Instance != null &&
-            DataManager.Instance.RelicIconDatabase != null &&
-            DataManager.Instance.RelicIconDatabase.TryGetIcon(relicId, out Sprite icon))
-        {
-            relicIconImage.sprite = icon;
-            relicIconImage.enabled = true;
-            relicIconImage.raycastTarget = true;
-        }
-        else
-        {
-            relicIconImage.sprite = null;
-            relicIconImage.enabled = false;
-            relicIconImage.raycastTarget = false;
-        }
+        if (relicNameText != null)
+            relicNameText.text = relicData.Name;
+
+        if (relicEffectText != null)
+            relicEffectText.text = relicData.EffectDesc;
     }
 
     public void ClearSlot()
@@ -154,8 +131,8 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
         owner = null;
         isSetup = false;
         isPointerInside = false;
-        isClicked = false;
-        ResetScaleImmediate();
+        isSelected = false;
+        RefreshStateImages();
 
         if (button != null)
             button.interactable = false;
@@ -166,6 +143,12 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
             relicIconImage.enabled = false;
             relicIconImage.raycastTarget = false;
         }
+
+        if (relicNameText != null)
+            relicNameText.text = string.Empty;
+
+        if (relicEffectText != null)
+            relicEffectText.text = string.Empty;
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -173,19 +156,17 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
         if (IsMenuPanelOpen())
             return;
 
-        if (!isSetup || owner == null || isClicked)
+        if (!isSetup || owner == null)
             return;
 
         isPointerInside = true;
-        owner.ShowRelicHoverInfo(relicId);
+        RefreshStateImages();
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
         isPointerInside = false;
-
-        if (owner != null)
-            owner.HideRelicHoverInfo();
+        RefreshStateImages();
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -201,23 +182,83 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
         if (IsMenuPanelOpen())
             return;
 
-        if (!isSetup || isClicked || string.IsNullOrWhiteSpace(relicId))
+        if (!isSetup || string.IsNullOrWhiteSpace(relicId))
             return;
 
-        isClicked = true;
-        isPointerInside = false;
-
-        if (button != null)
-            button.interactable = false;
-
         if (owner != null)
-            owner.SelectRelic(relicId);
+            owner.SelectSlot(this, relicId);
     }
 
-    private void ResetScaleImmediate()
+    public void SetSelected(bool selected)
     {
-        if (scaleTarget != null)
-            scaleTarget.localScale = originalScale;
+        isSelected = isSetup && selected;
+        RefreshStateImages();
+    }
+
+    private void RefreshStateImages()
+    {
+        if (hoverImage != null)
+            hoverImage.SetActive(isSetup && isPointerInside);
+
+        if (clickImage != null)
+            clickImage.SetActive(isSetup && isSelected);
+    }
+
+    private void EnsureReferences()
+    {
+        if (relicIconImage == null)
+        {
+            Transform iconTransform = FindChildRecursive(transform, "Relic_Icon");
+            if (iconTransform != null)
+                relicIconImage = iconTransform.GetComponent<Image>();
+        }
+
+        if (relicNameText == null)
+        {
+            Transform nameTransform = FindChildRecursive(transform, "RelicNameText");
+            if (nameTransform != null)
+                relicNameText = nameTransform.GetComponent<TMP_Text>();
+        }
+
+        if (relicEffectText == null)
+        {
+            Transform effectTransform = FindChildRecursive(transform, "RelicEffectText");
+            if (effectTransform != null)
+                relicEffectText = effectTransform.GetComponent<TMP_Text>();
+        }
+
+        if (hoverImage == null)
+        {
+            Transform hoverTransform = FindChildRecursive(transform, "HoverImage");
+            if (hoverTransform != null)
+                hoverImage = hoverTransform.gameObject;
+        }
+
+        if (clickImage == null)
+        {
+            Transform clickTransform = FindChildRecursive(transform, "ClickImage");
+            if (clickTransform != null)
+                clickImage = clickTransform.gameObject;
+        }
+    }
+
+    private static Transform FindChildRecursive(Transform root, string childName)
+    {
+        if (root == null || string.IsNullOrWhiteSpace(childName))
+            return null;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform child = root.GetChild(i);
+            if (child.name == childName)
+                return child;
+
+            Transform found = FindChildRecursive(child, childName);
+            if (found != null)
+                return found;
+        }
+
+        return null;
     }
 
     private static bool IsMenuPanelOpen()
