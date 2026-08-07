@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,6 +17,10 @@ public class RelicChoiceAreaUI : MonoBehaviour
     [SerializeField] private BattleMapController battleMapController;
     [SerializeField] private StartRoomController startRoomController;
 
+    [Header("Canvas Handoff")]
+    [Tooltip("Equip_panel이 열리는 동안 숨길 시작방 선택 Canvas입니다. 비워두면 부모의 RelicChoiceCanvas/Canvas를 자동으로 찾습니다.")]
+    [SerializeField] private GameObject relicChoiceCanvas;
+
     [Header("SFX")]
     [SerializeField] private bool playAcquireSfx = true;
     [SerializeField] private SfxType acquireSfxType = SfxType.RelicChoiceAcquire;
@@ -32,6 +37,9 @@ public class RelicChoiceAreaUI : MonoBehaviour
 
         if (battleMapController == null)
             battleMapController = Object.FindFirstObjectByType<BattleMapController>(FindObjectsInactive.Include);
+
+        if (relicChoiceCanvas == null)
+            relicChoiceCanvas = FindRelicChoiceCanvas();
 
         // Choice Slot을 클릭하면 즉시 유물을 습득하므로 Acquire Button은 사용하지 않습니다.
         if (acquireButton != null)
@@ -270,30 +278,69 @@ public class RelicChoiceAreaUI : MonoBehaviour
         isSelectionCompleted = true;
         SteamBattleStateSynchronizer.TryBroadcastStartRelicSelected(relicId);
 
-        if (!GrantRelic(relicId))
+        PlayAcquireSfx();
+
+        // 시작방 선택 Canvas가 Equip_panel 뒤에 그대로 남지 않도록 먼저 숨깁니다.
+        // Close()를 사용하면 선택 슬롯이 초기화되므로 Canvas 활성 상태만 임시로 변경합니다.
+        SetRelicChoiceCanvasVisible(false);
+
+        if (BattleRewardEquipPanelUI.TryOpenRelicReward(
+                relicId,
+                () =>
+                {
+                    RefreshRelicEquipPanel();
+                    RestoreChoiceCanvasAndComplete(relicId);
+                }))
         {
-            isSelectionCompleted = false;
-            SetupChoices();
             return;
         }
 
-        PlayAcquireSfx();
-        RefreshRelicEquipPanel();
-        CompleteChoiceEvent(relicId);
+        SetRelicChoiceCanvasVisible(true);
+        Debug.LogWarning($"[RelicChoiceAreaUI] Equip_panel을 찾을 수 없어 유물 선택을 완료하지 않았습니다. Relic:{relicId}");
+        isSelectionCompleted = false;
+        SetupChoices();
     }
 
-    private bool GrantRelic(string relicId)
+
+    private GameObject FindRelicChoiceCanvas()
     {
-        if (string.IsNullOrWhiteSpace(relicId) || HasRelicAnywhere(relicId))
-            return false;
+        Transform current = transform;
+        while (current != null)
+        {
+            if (string.Equals(current.name, "RelicChoiceCanvas", System.StringComparison.OrdinalIgnoreCase))
+                return current.gameObject;
 
-        BattleRuntimeData runtime = DataManager.Instance.BattleRuntimeStore.GetOrCreate();
-        runtime.OwnedRelicIds ??= new List<string>();
+            current = current.parent;
+        }
 
-        runtime.OwnedRelicIds.Add(relicId.Trim());
-        NormalizeOwnedRelics(runtime);
-        DataManager.Instance.BattleRuntimeStore.Set(runtime);
-        return true;
+        Canvas parentCanvas = GetComponentInParent<Canvas>(true);
+        return parentCanvas != null ? parentCanvas.gameObject : gameObject;
+    }
+
+    private void SetRelicChoiceCanvasVisible(bool visible)
+    {
+        if (relicChoiceCanvas == null)
+            relicChoiceCanvas = FindRelicChoiceCanvas();
+
+        if (relicChoiceCanvas != null && relicChoiceCanvas.activeSelf != visible)
+            relicChoiceCanvas.SetActive(visible);
+    }
+
+    private void RestoreChoiceCanvasAndComplete(string relicId)
+    {
+        SetRelicChoiceCanvasVisible(true);
+
+        if (isActiveAndEnabled)
+            StartCoroutine(CompleteChoiceAfterCanvasRestoreRoutine(relicId));
+        else
+            CompleteChoiceEvent(relicId);
+    }
+
+    private IEnumerator CompleteChoiceAfterCanvasRestoreRoutine(string relicId)
+    {
+        // Canvas가 다시 표시된 한 프레임 뒤 시작방 완료 처리를 진행합니다.
+        yield return null;
+        CompleteChoiceEvent(relicId);
     }
 
     private void PlayAcquireSfx()

@@ -18,6 +18,9 @@ public class BattleRewardPanelUI : MonoBehaviour
     [Header("Legacy Confirm Button")]
     [SerializeField] private Button confirmButton;
 
+    [Header("Reward Equip Panel")]
+    [SerializeField] private BattleRewardEquipPanelUI equipPanel;
+
     [Header("After Reward")]
     [SerializeField] private GameObject battlePanel;
     [SerializeField] private GameObject mapPanel;
@@ -26,9 +29,12 @@ public class BattleRewardPanelUI : MonoBehaviour
     private readonly List<BattleRewardData> claimedRewards = new();
     private readonly List<BattleRewardSlotUI> activeSlots = new();
     private Action onRewardFlowCompleted;
+    private bool pendingEquipmentReward;
 
     private void Awake()
     {
+        ResolveEquipPanelIfNeeded();
+
         if (confirmButton != null)
             confirmButton.gameObject.SetActive(false);
 
@@ -41,6 +47,8 @@ public class BattleRewardPanelUI : MonoBehaviour
         claimedRewards.Clear();
         activeSlots.Clear();
         onRewardFlowCompleted = completedCallback;
+        pendingEquipmentReward = false;
+        ResolveEquipPanelIfNeeded();
 
         if (rewards != null)
             currentRewards.AddRange(rewards);
@@ -99,12 +107,51 @@ public class BattleRewardPanelUI : MonoBehaviour
         if (!CanClaimReward(reward))
             return;
 
+        if (pendingEquipmentReward)
+            return;
+
+        if (reward.Type == BattleRewardType.Relic || reward.Type == BattleRewardType.Skill)
+        {
+            if (!OpenEquipmentRewardPanel(slot, reward))
+                Debug.LogWarning($"[BattleRewardPanelUI] Equip_panel을 찾을 수 없어 보상 처리를 보류합니다. Type:{reward.Type} / Id:{reward.RewardId}");
+
+            return;
+        }
+
         ApplyReward(reward);
         PlayRewardAcquireSfx(reward);
-        claimedRewards.Add(reward);
-        activeSlots.Remove(slot);
+        CompleteRewardSlot(slot, reward);
+    }
 
-        Destroy(slot.gameObject);
+    private bool OpenEquipmentRewardPanel(BattleRewardSlotUI slot, BattleRewardData reward)
+    {
+        ResolveEquipPanelIfNeeded();
+
+        if (equipPanel == null || slot == null || reward == null)
+            return false;
+
+        pendingEquipmentReward = true;
+        PlayRewardAcquireSfx(reward);
+        equipPanel.Open(reward, () => OnEquipmentRewardResolved(slot, reward));
+        return true;
+    }
+
+    private void OnEquipmentRewardResolved(BattleRewardSlotUI slot, BattleRewardData reward)
+    {
+        pendingEquipmentReward = false;
+        CompleteRewardSlot(slot, reward);
+    }
+
+    private void CompleteRewardSlot(BattleRewardSlotUI slot, BattleRewardData reward)
+    {
+        if (reward != null && !claimedRewards.Contains(reward))
+            claimedRewards.Add(reward);
+
+        if (slot != null)
+        {
+            activeSlots.Remove(slot);
+            Destroy(slot.gameObject);
+        }
 
         if (claimedRewards.Count >= currentRewards.Count)
         {
@@ -112,8 +159,16 @@ public class BattleRewardPanelUI : MonoBehaviour
             return;
         }
 
-        LayoutRebuilder.ForceRebuildLayoutImmediate(rewardRoot as RectTransform);
+        if (rewardRoot is RectTransform rectTransform)
+            LayoutRebuilder.ForceRebuildLayoutImmediate(rectTransform);
+    }
 
+    private void ResolveEquipPanelIfNeeded()
+    {
+        if (equipPanel != null)
+            return;
+
+        equipPanel = Object.FindFirstObjectByType<BattleRewardEquipPanelUI>(FindObjectsInactive.Include);
     }
 
     private void ApplyReward(BattleRewardData reward)
@@ -144,25 +199,8 @@ public class BattleRewardPanelUI : MonoBehaviour
                 break;
 
             case BattleRewardType.Relic:
-                if (!string.IsNullOrWhiteSpace(reward.RewardId) && !HasRelic(runtime, reward.RewardId))
-                {
-                    runtime.OwnedRelicIds.Add(reward.RewardId.Trim());
-                    NormalizeOwnedRelics(runtime);
-                    RelicEquipPanelUI.RefreshAll();
-                }
-                break;
-
             case BattleRewardType.Skill:
-                if (!string.IsNullOrWhiteSpace(reward.RewardId) && !HasSkill(runtime, reward.RewardId))
-                {
-                    string skillId = reward.RewardId.Trim();
-                    runtime.SkillInventoryIds.Add(skillId);
-                    runtime.AcquiredSkillIds ??= new List<string>();
-                    if (!runtime.AcquiredSkillIds.Contains(skillId))
-                        runtime.AcquiredSkillIds.Add(skillId);
-                    SkillInventoryNotificationUI.ShowNewSkillNotice();
-                    SkillInventoryPanelUI.RefreshAll();
-                }
+                // 기억/유물은 Equip_panel에서 직접 처리하며 인벤토리에 저장하지 않습니다.
                 break;
         }
 

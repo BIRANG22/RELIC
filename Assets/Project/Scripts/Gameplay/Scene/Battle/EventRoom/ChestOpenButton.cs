@@ -520,12 +520,6 @@ public class ChestOpenButton : MonoBehaviour
         if (!useRandomRelicReward || !hasSelectedReward || isRewardGranted || !selectedReward.IsValid)
             return;
 
-        if (!ChestRelicRewardService.GrantReward(DataManager.Instance, selectedReward))
-        {
-            Debug.LogWarning($"[ChestOpenButton] 유물 보상 지급 실패 / Relic:{selectedReward.RelicId}");
-            return;
-        }
-
         isRewardGranted = true;
         SetRewardItemInteractable(false);
         RewardPointerExited?.Invoke();
@@ -533,9 +527,23 @@ public class ChestOpenButton : MonoBehaviour
         if (rewardItemObject != null)
             rewardItemObject.SetActive(false);
 
+        string relicId = selectedReward.RelicId;
+        if (BattleRewardEquipPanelUI.TryOpenRelicReward(relicId, () => CompleteSelectedRewardClaim(relicId)))
+            return;
+
+        isRewardGranted = false;
+        SetRewardItemInteractable(true);
+        if (rewardItemObject != null)
+            rewardItemObject.SetActive(true);
+
+        Debug.LogWarning($"[ChestOpenButton] Equip_panel을 찾을 수 없어 유물 보상 처리를 보류합니다. Relic:{selectedReward.RelicId}");
+    }
+
+    private void CompleteSelectedRewardClaim(string relicId)
+    {
         RelicEquipPanelUI.RefreshAll();
-        RewardClaimed?.Invoke(selectedReward.RelicId);
-        Debug.Log($"[ChestOpenButton] 유물 보상 지급 / Relic:{selectedReward.RelicId}");
+        RewardClaimed?.Invoke(relicId);
+        Debug.Log($"[ChestOpenButton] 유물 보상 처리 완료 / Relic:{relicId}");
     }
 
     public void NotifyRewardPointerEnter()
