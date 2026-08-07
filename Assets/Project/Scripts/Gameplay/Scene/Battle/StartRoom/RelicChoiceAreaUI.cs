@@ -33,13 +33,12 @@ public class RelicChoiceAreaUI : MonoBehaviour
         if (battleMapController == null)
             battleMapController = Object.FindFirstObjectByType<BattleMapController>(FindObjectsInactive.Include);
 
+        // Choice Slot을 클릭하면 즉시 유물을 습득하므로 Acquire Button은 사용하지 않습니다.
         if (acquireButton != null)
         {
             acquireButton.onClick.RemoveListener(AcquireSelectedRelic);
-            acquireButton.onClick.AddListener(AcquireSelectedRelic);
+            acquireButton.gameObject.SetActive(false);
         }
-
-        RefreshAcquireButton();
     }
 
     private void OnDisable()
@@ -224,7 +223,8 @@ public class RelicChoiceAreaUI : MonoBehaviour
         for (int i = 0; i < validSlots.Count; i++)
             validSlots[i].SetSelected(validSlots[i] == selectedSlot);
 
-        RefreshAcquireButton();
+        // 선택 상태만 만드는 것이 아니라 슬롯 클릭 즉시 유물을 습득합니다.
+        SelectRelic(selectedRelicId);
     }
 
     public void AcquireSelectedRelic()
@@ -417,18 +417,6 @@ public class RelicChoiceAreaUI : MonoBehaviour
         for (int i = 0; i < validSlots.Count; i++)
             validSlots[i].SetSelected(false);
 
-        RefreshAcquireButton();
-    }
-
-    private void RefreshAcquireButton()
-    {
-        if (acquireButton != null)
-        {
-            acquireButton.interactable =
-                isOpen &&
-                !isSelectionCompleted &&
-                !string.IsNullOrWhiteSpace(selectedRelicId);
-        }
     }
 
     private void Shuffle(List<string> list)
