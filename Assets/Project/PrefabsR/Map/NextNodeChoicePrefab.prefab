@@ -61,7 +61,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.03, g: 0.03, b: 0.04, a: 0.19607843}
+  m_Color: {r: 0.03, g: 0.03, b: 0.04, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -136,11 +136,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   button: {fileID: 500000}
   iconImage: {fileID: 900000}
-  eventSprite: {fileID: -1582218920, guid: 19d03964e292ca54eb78171432ffa69b, type: 3}
-  restSprite: {fileID: 899907494, guid: 19d03964e292ca54eb78171432ffa69b, type: 3}
-  battleSprite: {fileID: -1175322488, guid: 19d03964e292ca54eb78171432ffa69b, type: 3}
-  eliteBattleSprite: {fileID: 342818246, guid: 19d03964e292ca54eb78171432ffa69b, type: 3}
-  bossBattleSprite: {fileID: 1943164380, guid: 19d03964e292ca54eb78171432ffa69b, type: 3}
+  animator: {fileID: 5241099268780994042}
+  eventClip: {fileID: 7400000, guid: 68ccd6f3c19c8eb45a89a188f98538b1, type: 2}
+  restClip: {fileID: 7400000, guid: dea4d3c163967064e87234fe449ceafb, type: 2}
+  battleClip: {fileID: 7400000, guid: 41cfe047161da93419e36f557bbba1f5, type: 2}
+  eliteBattleClip: {fileID: 7400000, guid: 79adf154d50c42a4fb7cdeed9e6d5dda, type: 2}
+  bossBattleClip: {fileID: 7400000, guid: 6d0cc2605d1299c4393aed0309cccf89, type: 2}
 --- !u!1 &700000
 GameObject:
   m_ObjectHideFlags: 0
@@ -152,6 +153,7 @@ GameObject:
   - component: {fileID: 800000}
   - component: {fileID: 850000}
   - component: {fileID: 900000}
+  - component: {fileID: 5241099268780994042}
   m_Layer: 5
   m_Name: NodeIcon
   m_TagString: Untagged
@@ -216,3 +218,25 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!95 &5241099268780994042
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 700000}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 30bb593e41b71824aaaaaa8772d08b76, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
