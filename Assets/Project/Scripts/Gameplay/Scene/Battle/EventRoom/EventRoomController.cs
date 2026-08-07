@@ -170,9 +170,13 @@ public class EventRoomController : MonoBehaviour
         PlayAcquireSfx();
 
         if (relicAcquireRoutine != null)
+        {
             StopCoroutine(relicAcquireRoutine);
+            relicAcquireRoutine = null;
+        }
 
-        relicAcquireRoutine = StartCoroutine(PlayRelicAcquireRoutine(relicId));
+        HideRelicFlyObjects();
+        SetNextButtonVisible(true);
     }
 
     private IEnumerator PlayRelicAcquireRoutine(string relicId)

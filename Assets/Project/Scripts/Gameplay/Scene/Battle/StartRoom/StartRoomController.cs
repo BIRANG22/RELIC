@@ -231,7 +231,27 @@ public class StartRoomController : MonoBehaviour
         isRelicChoiceOpened = false;
         isRelicSelected = true;
 
-        StartCoroutine(PlayRelicAcquireRoutine(relicId));
+        if (relicChoiceArea != null)
+            relicChoiceArea.Close();
+
+        if (relicFlyRoot != null)
+            relicFlyRoot.gameObject.SetActive(false);
+
+        if (relicFlyHighlight != null)
+            relicFlyHighlight.SetActive(false);
+
+        if (relicSettingGuideText != null)
+            relicSettingGuideText.gameObject.SetActive(false);
+
+        CompleteCurrentNode();
+
+        BattleSceneController sceneController =
+            Object.FindFirstObjectByType<BattleSceneController>(FindObjectsInactive.Include);
+
+        if (sceneController != null)
+            sceneController.ReturnToMap();
+        else
+            Debug.LogWarning("[StartRoomController] BattleSceneController ¾øÀ½");
     }
 
     private void CompleteCurrentNode()

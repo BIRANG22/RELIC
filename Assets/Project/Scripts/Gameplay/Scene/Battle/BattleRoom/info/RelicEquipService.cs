@@ -33,7 +33,7 @@ namespace Relic.Gameplay.Data
             if (string.IsNullOrWhiteSpace(characterId))
                 return false;
 
-            if (slotIndex < 0 || slotIndex >= 5)
+            if (slotIndex < 0 || slotIndex >= 6)
                 return false;
 
             if (string.IsNullOrWhiteSpace(relicId))
@@ -94,7 +94,7 @@ namespace Relic.Gameplay.Data
             if (string.IsNullOrWhiteSpace(characterId))
                 return false;
 
-            if (slotIndex < 0 || slotIndex >= 5)
+            if (slotIndex < 0 || slotIndex >= 6)
                 return false;
 
             if (!characterStore.TryGet(characterId, out CharacterRuntimeData character))

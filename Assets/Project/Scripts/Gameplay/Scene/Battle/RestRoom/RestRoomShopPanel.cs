@@ -141,14 +141,30 @@ public class RestRoomShopPanel : MonoBehaviour
         if (!CanPurchase(runtime, goods))
             return;
 
-        if (!GrantGoods(runtime, goods))
+        if (!TryOpenEquipPanel(goods))
+        {
+            ShowWarning("장착 패널을 열 수 없습니다.");
             return;
+        }
 
         runtime.Remnant -= goods.Price;
 
         DataManager.Instance.BattleRuntimeStore.Set(runtime);
         BattleGoldHudUI.RefreshAll();
         item.MarkPurchased();
+    }
+
+    private bool TryOpenEquipPanel(RestRoomShopGoods goods)
+    {
+        if (goods == null || string.IsNullOrWhiteSpace(goods.Id))
+            return false;
+
+        return goods.Kind switch
+        {
+            RestRoomShopGoodsKind.Skill => BattleRewardEquipPanelUI.TryOpenSkillReward(goods.Id),
+            RestRoomShopGoodsKind.Relic => BattleRewardEquipPanelUI.TryOpenRelicReward(goods.Id),
+            _ => false
+        };
     }
 
     private bool CanPurchase(BattleRuntimeData runtime, RestRoomShopGoods goods)
@@ -166,32 +182,6 @@ public class RestRoomShopPanel : MonoBehaviour
         }
 
         return true;
-    }
-
-    private bool GrantGoods(BattleRuntimeData runtime, RestRoomShopGoods goods)
-    {
-        if (runtime == null || goods == null || string.IsNullOrWhiteSpace(goods.Id))
-            return false;
-
-        switch (goods.Kind)
-        {
-            case RestRoomShopGoodsKind.Skill:
-                runtime.SkillInventoryIds ??= new List<string>();
-                runtime.SkillInventoryIds.Add(goods.Id.Trim());
-                SkillInventoryNotificationUI.ShowNewSkillNotice();
-                SkillInventoryPanelUI.RefreshAll();
-                return true;
-
-            case RestRoomShopGoodsKind.Relic:
-                runtime.OwnedRelicIds ??= new List<string>();
-                runtime.OwnedRelicIds.Add(goods.Id.Trim());
-                NormalizeOwnedRelics(runtime);
-                RelicEquipPanelUI.RefreshAll();
-                return true;
-
-            default:
-                return false;
-        }
     }
 
     private void PrepareSpawnedItemLayout(GoodsIconItem item, int index)
