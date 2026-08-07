@@ -9,7 +9,6 @@ using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-[InitializeOnLoad]
 public static class LobbyInventoryButtonSceneInstaller
 {
     private const string LobbyScenePath = "Assets/Project/Scenes/YDM/Lobby.unity";
