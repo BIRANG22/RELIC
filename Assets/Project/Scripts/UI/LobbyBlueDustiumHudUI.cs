@@ -1,29 +1,44 @@
-using TMPro;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+[ExecuteAlways]
 public sealed class LobbyBlueDustiumHudUI : MonoBehaviour
 {
     private static readonly HashSet<LobbyBlueDustiumHudUI> Instances = new();
+
+    [Header("HUD 연결")]
+    [SerializeField] private Image iconImage;
+    [SerializeField] private TMP_Text valueText;
 
     [Header("아이콘")]
     [SerializeField] private Sprite blueDustiumIcon;
     [SerializeField] private Color iconColor = Color.white;
 
-    private TMP_Text valueText;
-    private Image iconImage;
+    [Header("에디터 미리보기")]
+    [SerializeField, Min(0)] private int editorPreviewValue = 0;
 
     private void Awake()
     {
-        EnsureVisuals();
+        BindExistingChildren();
         ApplyIconSettings();
     }
 
     private void OnEnable()
     {
-        Instances.Add(this);
-        Refresh();
+        BindExistingChildren();
+        ApplyIconSettings();
+
+        if (Application.isPlaying)
+        {
+            Instances.Add(this);
+            Refresh();
+        }
+        else
+        {
+            SetValueImmediate(editorPreviewValue);
+        }
     }
 
     private void OnDisable()
@@ -42,8 +57,14 @@ public sealed class LobbyBlueDustiumHudUI : MonoBehaviour
 
     public void Refresh()
     {
-        EnsureVisuals();
+        BindExistingChildren();
         ApplyIconSettings();
+
+        if (!Application.isPlaying)
+        {
+            SetValueImmediate(editorPreviewValue);
+            return;
+        }
 
         int value = DataManager.Instance?.LobbyRuntimeStore?.GetOrCreate()?.BlueDustium ?? 0;
         SetValueImmediate(value);
@@ -51,64 +72,26 @@ public sealed class LobbyBlueDustiumHudUI : MonoBehaviour
 
     public void SetValueImmediate(int value)
     {
-        EnsureVisuals();
+        BindExistingChildren();
 
         if (valueText != null)
             valueText.text = Mathf.Max(0, value).ToString();
     }
 
-    private void EnsureVisuals()
+    private void BindExistingChildren()
     {
         if (iconImage == null)
         {
-            Transform existingIcon = transform.Find("BlueDustiumIcon");
-            if (existingIcon != null)
-                iconImage = existingIcon.GetComponent<Image>();
+            Transform iconTransform = transform.Find("Icon");
+            if (iconTransform != null)
+                iconImage = iconTransform.GetComponent<Image>();
         }
 
         if (valueText == null)
         {
-            Transform existingValue = transform.Find("Value");
-            if (existingValue != null)
-                valueText = existingValue.GetComponent<TMP_Text>();
-        }
-
-        if (iconImage == null)
-        {
-            var iconObject = new GameObject(
-                "BlueDustiumIcon",
-                typeof(RectTransform),
-                typeof(CanvasRenderer),
-                typeof(Image));
-
-            RectTransform iconRect = (RectTransform)iconObject.transform;
-            iconRect.SetParent(transform, false);
-            iconRect.anchorMin = new Vector2(0f, 0.5f);
-            iconRect.anchorMax = new Vector2(0f, 0.5f);
-            iconRect.sizeDelta = new Vector2(48f, 48f);
-
-            iconImage = iconObject.GetComponent<Image>();
-            iconImage.preserveAspect = true;
-        }
-
-        if (valueText == null)
-        {
-            var textObject = new GameObject(
-                "Value",
-                typeof(RectTransform),
-                typeof(CanvasRenderer),
-                typeof(TextMeshProUGUI));
-
-            RectTransform textRect = (RectTransform)textObject.transform;
-            textRect.SetParent(transform, false);
-            textRect.anchorMin = Vector2.zero;
-            textRect.anchorMax = Vector2.one;
-            textRect.offsetMin = new Vector2(30f, 0f);
-            textRect.offsetMax = Vector2.zero;
-
-            valueText = textObject.GetComponent<TMP_Text>();
-            valueText.alignment = TextAlignmentOptions.MidlineLeft;
-            valueText.fontSize = 30f;
+            Transform valueTransform = transform.Find("Value");
+            if (valueTransform != null)
+                valueText = valueTransform.GetComponent<TMP_Text>();
         }
     }
 
@@ -117,7 +100,9 @@ public sealed class LobbyBlueDustiumHudUI : MonoBehaviour
         if (iconImage == null)
             return;
 
-        iconImage.sprite = blueDustiumIcon;
+        if (blueDustiumIcon != null)
+            iconImage.sprite = blueDustiumIcon;
+
         iconImage.color = iconColor;
         iconImage.preserveAspect = true;
     }
@@ -125,16 +110,13 @@ public sealed class LobbyBlueDustiumHudUI : MonoBehaviour
 #if UNITY_EDITOR
     private void OnValidate()
     {
-        // OnValidate에서는 GameObject 또는 Component를 생성하지 않는다.
-        // 이미 생성된 아이콘이 있을 때만 설정값을 갱신한다.
-        if (iconImage == null)
-        {
-            Transform existingIcon = transform.Find("BlueDustiumIcon");
-            if (existingIcon != null)
-                iconImage = existingIcon.GetComponent<Image>();
-        }
+        editorPreviewValue = Mathf.Max(0, editorPreviewValue);
 
+        BindExistingChildren();
         ApplyIconSettings();
+
+        if (!Application.isPlaying && valueText != null)
+            valueText.text = editorPreviewValue.ToString();
     }
 #endif
 }

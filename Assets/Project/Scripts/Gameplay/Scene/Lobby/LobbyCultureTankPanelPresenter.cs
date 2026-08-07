@@ -59,7 +59,17 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
 
     private void Update()
     {
-        if (!IsOpen || Time.unscaledTime < nextRefreshAt)
+        // ESC나 다른 스크립트에서 패널을 직접 비활성화한 경우에도
+        // 월드 오브젝트 입력 차단 상태가 남지 않도록 자동으로 해제합니다.
+        if (!IsOpen)
+        {
+            if (LobbyPositionModalInputBlocker.IsBlockedBy(this))
+                LobbyPositionModalInputBlocker.Unblock(this);
+
+            return;
+        }
+
+        if (Time.unscaledTime < nextRefreshAt)
             return;
 
         RefreshRows();
@@ -69,6 +79,11 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
 
     public void Open()
     {
+        // 침식도 선택창이나 유물 상점처럼 다른 위치 모달이 열려 있으면
+        // 배양조 패널을 중복으로 열지 않습니다.
+        if (LobbyPositionModalInputBlocker.IsBlockedByAnother(this))
+            return;
+
         BindSceneObjects();
         BindBackButton();
 
@@ -77,6 +92,10 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
             Debug.LogWarning("[LobbyCultureTankPanelPresenter] CultureTankPanel이 연결되지 않았습니다.");
             return;
         }
+
+        // CultureTankPanel이 열려 있는 동안 Statue, relic_stone, Researcher 등
+        // 뒤쪽 월드 오브젝트가 클릭되지 않도록 입력을 차단합니다.
+        LobbyPositionModalInputBlocker.Block(this);
 
         panelRoot.SetActive(true);
         panelRoot.transform.SetAsLastSibling();
@@ -91,6 +110,17 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
             panelRoot.SetActive(false);
 
         selectedTank = null;
+        LobbyPositionModalInputBlocker.Unblock(this);
+    }
+
+    private void OnDisable()
+    {
+        LobbyPositionModalInputBlocker.Unblock(this);
+    }
+
+    private void OnDestroy()
+    {
+        LobbyPositionModalInputBlocker.Unblock(this);
     }
 
     private void RefreshRows()
@@ -345,8 +375,9 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
             ? DataManager.Instance.LobbyRuntimeStore?.GetOrCreate()
             : null;
         IReadOnlyList<string> itemIds = lobby?.BagItemIds;
-        bool canSelect = selectedTank != null &&
-                         selectedTank.GetPanelState() == LobbyCultureTankPanelState.Empty &&
+        LobbyCultureTankController availableTank = selectedTank ?? FindFirstEmptyTank();
+        bool canSelect = availableTank != null &&
+                         availableTank.GetPanelState() == LobbyCultureTankPanelState.Empty &&
                          CanLocalPlayerMutateHostOnlyState();
 
         for (int i = 0; i < inventorySlots.Count; i++)
@@ -363,7 +394,7 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
 
     private void SelectInventoryItem(string itemId)
     {
-        LobbyCultureTankController tank = selectedTank;
+        LobbyCultureTankController tank = selectedTank ?? FindFirstEmptyTank();
         if (tank == null || string.IsNullOrWhiteSpace(itemId))
             return;
 
@@ -373,6 +404,19 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         selectedTank = null;
         RefreshRows();
         RefreshInventory();
+    }
+
+    private LobbyCultureTankController FindFirstEmptyTank()
+    {
+        List<LobbyCultureTankController> tanks = FindCultureTanks();
+        for (int i = 0; i < tanks.Count; i++)
+        {
+            LobbyCultureTankController tank = tanks[i];
+            if (tank != null && tank.GetPanelState() == LobbyCultureTankPanelState.Empty)
+                return tank;
+        }
+
+        return null;
     }
 
     private void BindBackButton()
