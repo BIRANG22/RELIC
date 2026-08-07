@@ -96,18 +96,33 @@ Shader "UI/DustiumBackgroundBlur"
 
             fixed4 frag(v2f IN) : SV_Target
             {
-                float2 offset = _MainTex_TexelSize.xy * _BlurRadius;
-                fixed4 col = 0;
+                // 기존처럼 멀리 떨어진 8방향 픽셀을 동일하게 섞지 않고,
+                // 중심에 높은 가중치를 두고 가까운 픽셀을 촘촘하게 섞어
+                // 윤곽이 사방으로 번지는 느낌 없이 제자리에서 부드럽게 흐려지도록 합니다.
+                float2 texel = _MainTex_TexelSize.xy;
+                float radius = _BlurRadius * 0.65;
+                float2 nearOffset = texel * radius * 0.5;
+                float2 farOffset = texel * radius;
 
-                col += tex2D(_MainTex, IN.texcoord) * 0.20;
-                col += tex2D(_MainTex, IN.texcoord + float2( offset.x, 0)) * 0.10;
-                col += tex2D(_MainTex, IN.texcoord + float2(-offset.x, 0)) * 0.10;
-                col += tex2D(_MainTex, IN.texcoord + float2(0,  offset.y)) * 0.10;
-                col += tex2D(_MainTex, IN.texcoord + float2(0, -offset.y)) * 0.10;
-                col += tex2D(_MainTex, IN.texcoord + float2( offset.x,  offset.y)) * 0.10;
-                col += tex2D(_MainTex, IN.texcoord + float2(-offset.x,  offset.y)) * 0.10;
-                col += tex2D(_MainTex, IN.texcoord + float2( offset.x, -offset.y)) * 0.10;
-                col += tex2D(_MainTex, IN.texcoord + float2(-offset.x, -offset.y)) * 0.10;
+                fixed4 col = tex2D(_MainTex, IN.texcoord) * 0.30;
+
+                // 가까운 십자 방향 - 가장 높은 주변 가중치
+                col += tex2D(_MainTex, IN.texcoord + float2( nearOffset.x, 0.0)) * 0.10;
+                col += tex2D(_MainTex, IN.texcoord + float2(-nearOffset.x, 0.0)) * 0.10;
+                col += tex2D(_MainTex, IN.texcoord + float2(0.0,  nearOffset.y)) * 0.10;
+                col += tex2D(_MainTex, IN.texcoord + float2(0.0, -nearOffset.y)) * 0.10;
+
+                // 가까운 대각선 - 형태를 둥글게 흐림
+                col += tex2D(_MainTex, IN.texcoord + float2( nearOffset.x,  nearOffset.y)) * 0.05;
+                col += tex2D(_MainTex, IN.texcoord + float2(-nearOffset.x,  nearOffset.y)) * 0.05;
+                col += tex2D(_MainTex, IN.texcoord + float2( nearOffset.x, -nearOffset.y)) * 0.05;
+                col += tex2D(_MainTex, IN.texcoord + float2(-nearOffset.x, -nearOffset.y)) * 0.05;
+
+                // 바깥쪽은 낮은 가중치만 사용해 번짐을 억제
+                col += tex2D(_MainTex, IN.texcoord + float2( farOffset.x, 0.0)) * 0.025;
+                col += tex2D(_MainTex, IN.texcoord + float2(-farOffset.x, 0.0)) * 0.025;
+                col += tex2D(_MainTex, IN.texcoord + float2(0.0,  farOffset.y)) * 0.025;
+                col += tex2D(_MainTex, IN.texcoord + float2(0.0, -farOffset.y)) * 0.025;
 
                 col.rgb *= 1.0 - saturate(_Darken);
                 col *= IN.color;

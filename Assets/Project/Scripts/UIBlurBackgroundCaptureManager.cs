@@ -1,11 +1,9 @@
-using System.Collections;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 /// <summary>
-/// �˾��� ������ ���� ȭ���� ���ػ� RenderTexture�� �����մϴ�.
-/// ���� �г��� �ϳ��� Ȱ��ȭ�Ǿ� �ִ� ���ȿ��� ĸó�� ����
-/// �˾� ��ü�� ���� ��濡 �ٽ� ������ ���� �����մϴ�.
+/// 블러 패널이 열릴 때 요청받아 게임 카메라 화면을 한 번 캡처합니다.
+/// 평상시에는 별도의 캡처 루프를 실행하지 않으므로 다른 씬의 UI 입력에 영향을 주지 않습니다.
+/// 캡처 시에는 카메라의 Culling Mask에서 UI 레이어만 제외합니다.
 /// </summary>
 [DefaultExecutionOrder(-10000)]
 public sealed class UIBlurBackgroundCaptureManager : MonoBehaviour
@@ -13,15 +11,16 @@ public sealed class UIBlurBackgroundCaptureManager : MonoBehaviour
     private const string RuntimeObjectName = "UIBlurBackgroundCaptureManager";
 
     private static UIBlurBackgroundCaptureManager instance;
-    private static int activeBlurPanelCount;
 
     [Header("Capture")]
     [SerializeField, Range(2, 8)] private int downsample = 4;
-    [SerializeField, Min(0.05f)] private float captureInterval = 0.10f;
+
+    [Header("UI Exclusion")]
+    [Tooltip("프로젝트의 UI 레이어를 캡처 카메라의 Culling Mask에서 제외합니다.")]
+    [SerializeField] private bool excludeUILayer = true;
 
     private RenderTexture screenCaptureTexture;
     private RenderTexture capturedTexture;
-    private Coroutine captureRoutine;
     private int capturedScreenWidth;
     private int capturedScreenHeight;
 
@@ -29,26 +28,33 @@ public sealed class UIBlurBackgroundCaptureManager : MonoBehaviour
     {
         get
         {
-            EnsureInstance();
             return instance != null ? instance.capturedTexture : null;
         }
     }
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-    private static void RuntimeInitialize()
+    /// <summary>
+    /// 블러가 필요한 순간에만 배경을 캡처하고 결과 텍스처를 반환합니다.
+    /// </summary>
+    public static Texture CaptureBackgroundNow()
     {
         EnsureInstance();
+
+        if (instance == null)
+            return null;
+
+        instance.CaptureCurrentScreen();
+        return instance.capturedTexture;
     }
 
+    // 기존 코드와의 참조 호환성을 위해 유지합니다.
+    // 더 이상 전역 캡처 루프나 패널 카운트를 사용하지 않습니다.
     public static void RegisterBlurPanel()
     {
         EnsureInstance();
-        activeBlurPanelCount++;
     }
 
     public static void UnregisterBlurPanel()
     {
-        activeBlurPanelCount = Mathf.Max(0, activeBlurPanelCount - 1);
     }
 
     private static void EnsureInstance()
@@ -62,7 +68,6 @@ public sealed class UIBlurBackgroundCaptureManager : MonoBehaviour
 
         GameObject runtimeObject = new GameObject(RuntimeObjectName);
         instance = runtimeObject.AddComponent<UIBlurBackgroundCaptureManager>();
-        DontDestroyOnLoad(runtimeObject);
     }
 
     private void Awake()
@@ -74,26 +79,6 @@ public sealed class UIBlurBackgroundCaptureManager : MonoBehaviour
         }
 
         instance = this;
-        DontDestroyOnLoad(gameObject);
-    }
-
-    private void OnEnable()
-    {
-        SceneManager.sceneLoaded += OnSceneLoaded;
-
-        if (captureRoutine == null)
-            captureRoutine = StartCoroutine(CaptureLoop());
-    }
-
-    private void OnDisable()
-    {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
-
-        if (captureRoutine != null)
-        {
-            StopCoroutine(captureRoutine);
-            captureRoutine = null;
-        }
     }
 
     private void OnDestroy()
@@ -104,43 +89,99 @@ public sealed class UIBlurBackgroundCaptureManager : MonoBehaviour
         ReleaseCaptureTextures();
     }
 
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        activeBlurPanelCount = 0;
-        ReleaseCaptureTextures();
-    }
-
-    private IEnumerator CaptureLoop()
-    {
-        WaitForEndOfFrame waitForEndOfFrame = new WaitForEndOfFrame();
-        float nextCaptureTime = 0f;
-
-        while (true)
-        {
-            yield return waitForEndOfFrame;
-
-            if (activeBlurPanelCount > 0)
-                continue;
-
-            if (Time.unscaledTime < nextCaptureTime)
-                continue;
-
-            nextCaptureTime = Time.unscaledTime + captureInterval;
-            CaptureCurrentScreen();
-        }
-    }
-
     private void CaptureCurrentScreen()
     {
         if (Screen.width <= 0 || Screen.height <= 0)
+            return;
+
+        Camera sourceCamera = FindCaptureCamera();
+        if (sourceCamera == null)
             return;
 
         EnsureCaptureTextures();
         if (screenCaptureTexture == null || capturedTexture == null)
             return;
 
-        ScreenCapture.CaptureScreenshotIntoRenderTexture(screenCaptureTexture);
-        Graphics.Blit(screenCaptureTexture, capturedTexture);
+        RenderTexture previousTargetTexture = sourceCamera.targetTexture;
+        int previousCullingMask = sourceCamera.cullingMask;
+
+        try
+        {
+            if (excludeUILayer)
+                sourceCamera.cullingMask = RemoveUILayer(previousCullingMask);
+
+            sourceCamera.targetTexture = screenCaptureTexture;
+            sourceCamera.Render();
+            Graphics.Blit(screenCaptureTexture, capturedTexture);
+        }
+        finally
+        {
+            sourceCamera.targetTexture = previousTargetTexture;
+            sourceCamera.cullingMask = previousCullingMask;
+        }
+    }
+
+    private static Camera FindCaptureCamera()
+    {
+        Camera mainCamera = Camera.main;
+        if (IsUsableCaptureCamera(mainCamera))
+            return mainCamera;
+
+        Camera[] cameras = FindObjectsByType<Camera>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        Camera bestCamera = null;
+
+        for (int i = 0; i < cameras.Length; i++)
+        {
+            Camera camera = cameras[i];
+            if (!IsUsableCaptureCamera(camera))
+                continue;
+
+            if (bestCamera == null)
+            {
+                bestCamera = camera;
+                continue;
+            }
+
+            bool cameraRendersUI = CameraRendersUILayer(camera);
+            bool bestRendersUI = CameraRendersUILayer(bestCamera);
+
+            if (bestRendersUI && !cameraRendersUI)
+            {
+                bestCamera = camera;
+                continue;
+            }
+
+            if (cameraRendersUI == bestRendersUI && camera.depth < bestCamera.depth)
+                bestCamera = camera;
+        }
+
+        return bestCamera;
+    }
+
+    private static bool IsUsableCaptureCamera(Camera camera)
+    {
+        return camera != null &&
+               camera.enabled &&
+               camera.gameObject.activeInHierarchy &&
+               camera.targetTexture == null;
+    }
+
+    private static bool CameraRendersUILayer(Camera camera)
+    {
+        int uiLayer = LayerMask.NameToLayer("UI");
+        if (uiLayer < 0)
+            return false;
+
+        return (camera.cullingMask & (1 << uiLayer)) != 0;
+    }
+
+    private static int RemoveUILayer(int cullingMask)
+    {
+        int uiLayer = LayerMask.NameToLayer("UI");
+        if (uiLayer < 0)
+            return cullingMask;
+
+        return cullingMask & ~(1 << uiLayer);
     }
 
     private void EnsureCaptureTextures()
@@ -167,7 +208,7 @@ public sealed class UIBlurBackgroundCaptureManager : MonoBehaviour
         screenCaptureTexture = CreateRenderTexture(
             Screen.width,
             Screen.height,
-            "UI_Blur_Screen_Capture",
+            "UI_Blur_Camera_Capture",
             FilterMode.Bilinear);
 
         capturedTexture = CreateRenderTexture(
@@ -186,7 +227,7 @@ public sealed class UIBlurBackgroundCaptureManager : MonoBehaviour
         string textureName,
         FilterMode filterMode)
     {
-        RenderTexture texture = new RenderTexture(width, height, 0, RenderTextureFormat.ARGB32)
+        RenderTexture texture = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB32)
         {
             name = textureName,
             filterMode = filterMode,
