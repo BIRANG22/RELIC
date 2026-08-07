@@ -1,4 +1,5 @@
 using Relic.Gameplay.Data;
+using Relic.Gameplay.Monster;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -12,6 +13,15 @@ using UnityEngine.UI;
 /// </summary>
 public class BattleCharacterPanelUI : MonoBehaviour
 {
+    [Header("Selection Content")]
+    [Tooltip("캐릭터가 선택되었을 때 활성화되는 Character 루트입니다.")]
+    [SerializeField] private GameObject characterRoot;
+
+    [Tooltip("몬스터가 선택되었을 때 활성화되는 Monster 루트입니다.")]
+    [SerializeField] private GameObject monsterRoot;
+
+    [SerializeField] private BattleMonsterInfoPanelUI monsterInfoPanelUI;
+
     [Header("Character")]
     [SerializeField] private Image portraitImage;
     [SerializeField] private TMP_Text characterNameText;
@@ -196,6 +206,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private Coroutine numberChangeCoroutine;
     private Coroutine panelMoveCoroutine;
+    private Coroutine selectionPanelRefreshCoroutine;
     private bool isBattleExecutionInProgress;
     private RectTransform panelRectTransform;
     private bool hasDisplayedStats;
@@ -223,6 +234,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
     private void Awake()
     {
         panelRectTransform = GetComponent<RectTransform>();
+        ResolveSelectionContentReferences();
         RegisterSkillButtonListeners();
         RegisterMoveAndItemButtonListeners();
         EnsureSkillButtonHoverEffects();
@@ -235,6 +247,12 @@ public class BattleCharacterPanelUI : MonoBehaviour
         BattleTurnExecutor.BattleExecutionStarted += HandleBattleExecutionStarted;
         BattleTurnExecutor.PlayerTurnReturned -= HandlePlayerTurnReturned;
         BattleTurnExecutor.PlayerTurnReturned += HandlePlayerTurnReturned;
+        BattleResultChecker.BattleFinished -= HandleBattleFinished;
+        BattleResultChecker.BattleFinished += HandleBattleFinished;
+        BattleTimelineController.CharacterSelectionChanged -= HandleCharacterSelectionChanged;
+        BattleTimelineController.CharacterSelectionChanged += HandleCharacterSelectionChanged;
+        MonsterUnit.MonsterInfoSelectionChanged -= HandleMonsterInfoSelectionChanged;
+        MonsterUnit.MonsterInfoSelectionChanged += HandleMonsterInfoSelectionChanged;
         BattleSceneController.BattleRoomIntroStarted -= HandleBattleRoomIntroStarted;
         BattleSceneController.BattleRoomIntroStarted += HandleBattleRoomIntroStarted;
         BattleSceneController.BattleRoomIntroCompleted -= HandleBattleRoomIntroCompleted;
@@ -255,8 +273,17 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private void OnDisable()
     {
+        if (selectionPanelRefreshCoroutine != null)
+        {
+            StopCoroutine(selectionPanelRefreshCoroutine);
+            selectionPanelRefreshCoroutine = null;
+        }
+
         BattleTurnExecutor.BattleExecutionStarted -= HandleBattleExecutionStarted;
         BattleTurnExecutor.PlayerTurnReturned -= HandlePlayerTurnReturned;
+        BattleResultChecker.BattleFinished -= HandleBattleFinished;
+        BattleTimelineController.CharacterSelectionChanged -= HandleCharacterSelectionChanged;
+        MonsterUnit.MonsterInfoSelectionChanged -= HandleMonsterInfoSelectionChanged;
         BattleSceneController.BattleRoomIntroStarted -= HandleBattleRoomIntroStarted;
         BattleSceneController.BattleRoomIntroCompleted -= HandleBattleRoomIntroCompleted;
         BattleMapIntroText.IntroStarted -= HandleBattleMapIntroStarted;
@@ -280,7 +307,251 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (IsIntroBlockingPanel())
             return;
 
+        if (BattleResultChecker.Instance != null && BattleResultChecker.Instance.BattleEnded)
+        {
+            MovePanelAndBattleSlotToDefault();
+            return;
+        }
+
+        EnsureBattleTimelineController();
+
+        if (!HasAnyInfoSelection())
+        {
+            MovePanelAndBattleSlotToDefault();
+            return;
+        }
+
         MoveBattleSlotToDefaultThenReservation();
+    }
+
+    private void HandleBattleFinished()
+    {
+        isBattleExecutionInProgress = false;
+        MovePanelAndBattleSlotToDefault();
+    }
+
+    private void HandleCharacterSelectionChanged(CharacterRuntimeData runtimeData)
+    {
+        ResolveSelectionContentReferences();
+
+        if (runtimeData != null)
+        {
+            ShowCharacterContent();
+        }
+        else if (MonsterUnit.CurrentInfoSelectedMonster != null)
+        {
+            ShowMonsterContent(MonsterUnit.CurrentInfoSelectedMonster);
+        }
+        else
+        {
+            HideSelectionContent();
+        }
+
+        ScheduleSelectionPanelPositionRefresh();
+    }
+
+    private void HandleMonsterInfoSelectionChanged(MonsterUnit monster)
+    {
+        ResolveSelectionContentReferences();
+
+        if (monster != null && monster.RuntimeData != null && !monster.RuntimeData.IsDead)
+        {
+            ShowMonsterContent(monster);
+        }
+        else
+        {
+            EnsureBattleTimelineController();
+
+            if (battleTimelineController != null && battleTimelineController.SelectedCharacter != null)
+                ShowCharacterContent();
+            else
+                HideSelectionContent();
+        }
+
+        ScheduleSelectionPanelPositionRefresh();
+    }
+
+    private void ScheduleSelectionPanelPositionRefresh()
+    {
+        if (!isActiveAndEnabled)
+            return;
+
+        if (selectionPanelRefreshCoroutine != null)
+            return;
+
+        selectionPanelRefreshCoroutine = StartCoroutine(RefreshSelectionPanelPositionNextFrame());
+    }
+
+    private IEnumerator RefreshSelectionPanelPositionNextFrame()
+    {
+        // 캐릭터 <-> 몬스터 전환 시 같은 클릭에서 선택 해제/선택 이벤트가 연속으로 발생할 수 있습니다.
+        // 한 프레임 뒤 최종 선택 상태만 보고 패널 위치를 결정해 중간에 내려갔다 올라오는 움직임을 막습니다.
+        yield return null;
+        selectionPanelRefreshCoroutine = null;
+        RefreshSelectionPanelPosition();
+    }
+
+    private void RefreshSelectionPanelPosition()
+    {
+        if (isBattleExecutionInProgress || IsIntroBlockingPanel())
+            return;
+
+        if (BattleResultChecker.Instance != null && BattleResultChecker.Instance.BattleEnded)
+        {
+            MovePanelAndBattleSlotToDefault();
+            return;
+        }
+
+        if (!HasAnyInfoSelection())
+        {
+            MovePanelAndBattleSlotToDefault();
+            return;
+        }
+
+        EnsureTurnExecutor();
+
+        if (turnExecutor != null && turnExecutor.CanAcceptPlayerInput)
+            MovePanelToY(reservationPositionY);
+    }
+
+    private bool HasAnyInfoSelection()
+    {
+        EnsureBattleTimelineController();
+
+        bool hasCharacter =
+            battleTimelineController != null &&
+            battleTimelineController.SelectedCharacter != null;
+
+        bool hasMonster = MonsterUnit.CurrentInfoSelectedMonster != null;
+        return hasCharacter || hasMonster;
+    }
+
+    private void ResolveSelectionContentReferences()
+    {
+        if (characterRoot == null)
+        {
+            Transform characterTransform = FindDirectChild(transform, "Character");
+            if (characterTransform != null)
+                characterRoot = characterTransform.gameObject;
+        }
+
+        if (monsterRoot == null)
+        {
+            Transform monsterTransform = FindDirectChild(transform, "Monster");
+            if (monsterTransform != null)
+                monsterRoot = monsterTransform.gameObject;
+        }
+
+        if (monsterInfoPanelUI == null && monsterRoot != null)
+        {
+            Transform monsterInfoTransform = FindChildRecursive(monsterRoot.transform, "MonsterInfo");
+            if (monsterInfoTransform != null)
+            {
+                monsterInfoPanelUI = monsterInfoTransform.GetComponent<BattleMonsterInfoPanelUI>();
+                if (monsterInfoPanelUI == null)
+                    monsterInfoPanelUI = monsterInfoTransform.gameObject.AddComponent<BattleMonsterInfoPanelUI>();
+            }
+        }
+
+        if (monsterInfoPanelUI != null)
+            monsterInfoPanelUI.ConfigureStatusEffectPrefab(statusEffectIconPrefab);
+    }
+
+    private void ShowCharacterContent()
+    {
+        if (characterRoot != null)
+            characterRoot.SetActive(true);
+
+        if (monsterRoot != null)
+            monsterRoot.SetActive(false);
+    }
+
+    private void ShowMonsterContent(MonsterUnit monster)
+    {
+        if (characterRoot != null)
+            characterRoot.SetActive(false);
+
+        if (monsterRoot != null)
+            monsterRoot.SetActive(true);
+
+        if (monsterInfoPanelUI != null)
+            monsterInfoPanelUI.Bind(monster);
+    }
+
+    private void HideSelectionContent()
+    {
+        if (characterRoot != null)
+            characterRoot.SetActive(false);
+
+        if (monsterRoot != null)
+            monsterRoot.SetActive(false);
+
+        if (monsterInfoPanelUI != null)
+            monsterInfoPanelUI.Clear();
+    }
+
+    private static Transform FindDirectChild(Transform root, string objectName)
+    {
+        if (root == null || string.IsNullOrWhiteSpace(objectName))
+            return null;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform child = root.GetChild(i);
+            if (child != null && child.name == objectName)
+                return child;
+        }
+
+        return null;
+    }
+
+    private static Transform FindChildRecursive(Transform root, string objectName)
+    {
+        if (root == null || string.IsNullOrWhiteSpace(objectName))
+            return null;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform child = root.GetChild(i);
+            if (child == null)
+                continue;
+
+            if (child.name == objectName)
+                return child;
+
+            Transform nested = FindChildRecursive(child, objectName);
+            if (nested != null)
+                return nested;
+        }
+
+        return null;
+    }
+
+    private void MovePanelAndBattleSlotToDefault()
+    {
+        if (panelRectTransform == null)
+            panelRectTransform = GetComponent<RectTransform>();
+
+        StopPanelMoveCoroutine();
+
+        if (!isActiveAndEnabled || panelMoveDuration <= 0f)
+        {
+            SetPanelAndBattleSlotDefaultImmediate();
+            return;
+        }
+
+        panelMoveCoroutine = StartCoroutine(MovePanelAndBattleSlotToDefaultRoutine());
+    }
+
+    private IEnumerator MovePanelAndBattleSlotToDefaultRoutine()
+    {
+        yield return AnimatePanelAndBattleSlotRoutine(
+            executionPositionY,
+            battleSlotDefaultPositionY,
+            battleSlotNormalScale
+        );
+
+        panelMoveCoroutine = null;
     }
 
 
@@ -355,9 +626,18 @@ public class BattleCharacterPanelUI : MonoBehaviour
             return;
 
         EnsureTurnExecutor();
+        EnsureBattleTimelineController();
 
-        if (turnExecutor != null && turnExecutor.CanAcceptPlayerInput)
+        if (turnExecutor != null &&
+            turnExecutor.CanAcceptPlayerInput &&
+            HasAnyInfoSelection())
+        {
             MovePanelToY(reservationPositionY);
+        }
+        else
+        {
+            MovePanelAndBattleSlotToDefault();
+        }
     }
 
     private static bool IsIntroBlockingPanel()
@@ -370,11 +650,14 @@ public class BattleCharacterPanelUI : MonoBehaviour
     {
         EnsureTurnExecutor();
 
+        EnsureBattleTimelineController();
+
         bool canShowReservationPosition =
             !isBattleExecutionInProgress &&
             !IsIntroBlockingPanel() &&
             turnExecutor != null &&
-            turnExecutor.CanAcceptPlayerInput;
+            turnExecutor.CanAcceptPlayerInput &&
+            HasAnyInfoSelection();
 
         if (IsIntroBlockingPanel())
         {
@@ -582,6 +865,9 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     public void Bind(CharacterRuntimeData runtimeData)
     {
+        ResolveSelectionContentReferences();
+        ShowCharacterContent();
+
         StopNumberChangeCoroutine();
         hasDisplayedStats = false;
         boundRuntime = runtimeData;

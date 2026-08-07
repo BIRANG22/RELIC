@@ -1,4 +1,5 @@
 using Relic.Gameplay.Data;
+using Relic.Gameplay.Monster;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -8,6 +9,8 @@ using UnityEngine.UI;
 
 public class BattleTimelineController : MonoBehaviour
 {
+    public static event System.Action<CharacterRuntimeData> CharacterSelectionChanged;
+
     [Header("Timeline")]
     [Tooltip("전투 구조 호환용 TimelineBar입니다. 비어 있으면 TimelineBar1을 사용합니다.")]
     [SerializeField] private BattleTimelineBarUI timelineBarUI;
@@ -236,6 +239,140 @@ public class BattleTimelineController : MonoBehaviour
         HandleKeyboardSlotMoveInput();
         HandleKeyboardUndoReservationInput();
         HandleEndButtonHoverOutsidePolling();
+        HandleCharacterSelectionOutsideGridClick();
+    }
+
+    private void HandleCharacterSelectionOutsideGridClick()
+    {
+        bool hasCharacterSelection = selectedCharacter != null;
+        bool hasMonsterSelection = Relic.Gameplay.Monster.MonsterUnit.CurrentInfoSelectedMonster != null;
+
+        if (!hasCharacterSelection && !hasMonsterSelection)
+            return;
+
+        if (!Input.GetMouseButtonDown(0))
+            return;
+
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+            return;
+
+        if (IsPointerInsideBattleGrid(Input.mousePosition))
+            return;
+
+        if (IsPointerOverBattleWorldTarget(Input.mousePosition))
+            return;
+
+        if (hasCharacterSelection)
+            ClearCharacterSelection();
+
+        if (hasMonsterSelection)
+            Relic.Gameplay.Monster.MonsterUnit.ClearMonsterInfoSelection();
+    }
+
+    private bool IsPointerOverBattleWorldTarget(Vector2 screenPosition)
+    {
+        Camera camera = Camera.main;
+        if (camera == null)
+            return false;
+
+        Ray ray = camera.ScreenPointToRay(screenPosition);
+        float maxDistance = camera.farClipPlane;
+
+        RaycastHit[] hits3D = Physics.RaycastAll(ray, maxDistance);
+        for (int i = 0; i < hits3D.Length; i++)
+        {
+            Transform hitTransform = hits3D[i].transform;
+            if (IsSelectionPreservingWorldTarget(hitTransform))
+                return true;
+        }
+
+        RaycastHit2D[] hits2D = Physics2D.GetRayIntersectionAll(ray, maxDistance);
+        for (int i = 0; i < hits2D.Length; i++)
+        {
+            Transform hitTransform = hits2D[i].transform;
+            if (IsSelectionPreservingWorldTarget(hitTransform))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsSelectionPreservingWorldTarget(Transform target)
+    {
+        if (target == null)
+            return false;
+
+        if (target.GetComponentInParent<BattleCharacter>() != null)
+            return true;
+
+        if (target.GetComponentInParent<MonsterUnit>() != null)
+            return true;
+
+        if (target.GetComponentInParent<GridCell>() != null)
+            return true;
+
+        return false;
+    }
+
+    private bool IsPointerInsideBattleGrid(Vector2 screenPosition)
+    {
+        if (gridManager == null)
+            gridManager = FindFirstObjectByType<GridManager>(FindObjectsInactive.Include);
+
+        if (gridManager == null)
+            return false;
+
+        Camera camera = Camera.main;
+        if (camera == null)
+            return false;
+
+        Ray ray = camera.ScreenPointToRay(screenPosition);
+        float maxDistance = camera.farClipPlane;
+
+        for (int x = 0; x < gridManager.Width; x++)
+        {
+            for (int y = 0; y < gridManager.Height; y++)
+            {
+                GridCell cell = gridManager.GetCell(x, y);
+                if (cell == null || !cell.gameObject.activeInHierarchy)
+                    continue;
+
+                Collider[] colliders = cell.GetComponentsInChildren<Collider>(false);
+                for (int i = 0; i < colliders.Length; i++)
+                {
+                    Collider cellCollider = colliders[i];
+                    if (cellCollider == null || !cellCollider.enabled)
+                        continue;
+
+                    if (cellCollider.Raycast(ray, out _, maxDistance))
+                        return true;
+                }
+
+                Collider2D[] colliders2D = cell.GetComponentsInChildren<Collider2D>(false);
+                for (int i = 0; i < colliders2D.Length; i++)
+                {
+                    Collider2D cellCollider = colliders2D[i];
+                    if (cellCollider == null || !cellCollider.enabled)
+                        continue;
+
+                    Plane cellPlane = new Plane(
+                        cellCollider.transform.forward,
+                        cellCollider.transform.position);
+
+                    if (!cellPlane.Raycast(ray, out float enter))
+                        continue;
+
+                    Vector3 worldPoint = ray.GetPoint(enter);
+                    if (cellCollider.OverlapPoint(worldPoint))
+                        return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private void HandleKeyboardSlotMoveInput()
@@ -378,9 +515,17 @@ public class BattleTimelineController : MonoBehaviour
 
     public void SelectCharacter(CharacterRuntimeData runtimeData)
     {
+        if (runtimeData != null)
+            Relic.Gameplay.Monster.MonsterUnit.ClearMonsterInfoSelection();
+
         bool isChangingCharacter =
             runtimeData != null &&
             (selectedCharacter == null ||
+             selectedCharacter.CharacterId != runtimeData.CharacterId);
+
+        bool selectionChanged =
+            selectedCharacter != runtimeData ||
+            (selectedCharacter != null && runtimeData != null &&
              selectedCharacter.CharacterId != runtimeData.CharacterId);
 
         selectedCharacter = runtimeData;
@@ -390,6 +535,9 @@ public class BattleTimelineController : MonoBehaviour
 
         ApplySelectedCharacterScaleFeedback(runtimeData);
         TryFocusCameraOnSelectedCharacter(runtimeData);
+
+        if (selectionChanged)
+            CharacterSelectionChanged?.Invoke(selectedCharacter);
     }
 
     public void ClearCharacterSelectionFromSkillList(CharacterRuntimeData runtimeData)
@@ -402,6 +550,19 @@ public class BattleTimelineController : MonoBehaviour
             return;
         }
 
+        ClearCharacterSelection();
+    }
+
+    public void ClearCharacterSelection()
+    {
+        if (selectedCharacter == null && selectedSkill == null)
+            return;
+
+        CharacterRuntimeData previousCharacter = selectedCharacter;
+
+        if (previousCharacter != null)
+            CancelSkillReservationPreviewFromSkillList(previousCharacter);
+
         selectedCharacter = null;
         selectedSkill = null;
         lastCameraFocusedCharacterId = null;
@@ -410,6 +571,14 @@ public class BattleTimelineController : MonoBehaviour
         BattleCameraController cameraController = BattleCameraController.Instance;
         if (cameraController != null)
             cameraController.StartReturnDefault();
+
+        CharacterSelectionChanged?.Invoke(null);
+    }
+
+    public static void ClearCurrentCharacterSelection()
+    {
+        BattleTimelineController controller = FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Exclude);
+        controller?.ClearCharacterSelection();
     }
 
     private void ApplySelectedCharacterScaleFeedback(CharacterRuntimeData runtimeData)

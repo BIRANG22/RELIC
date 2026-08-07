@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class BattleNextNodeSelectionPanel : MonoBehaviour
 {
@@ -16,7 +15,6 @@ public class BattleNextNodeSelectionPanel : MonoBehaviour
 
     private void Awake()
     {
-        EnsureLayout();
         ResolveChoices();
     }
 
@@ -29,6 +27,10 @@ public class BattleNextNodeSelectionPanel : MonoBehaviour
         List<GeneratedMapNodeData> nodes =
             MapRuntimeProgressUtility.CollectSelectableNextNodes(runtime, capacity);
 
+        // 지도에서 실제로 보이는 순서와 NextNodeChoice의 순서를 일치시킵니다.
+        // Position.y가 큰 노드가 화면 위쪽에 있으므로 위 -> 아래 순서로 정렬합니다.
+        nodes.Sort(CompareNodeTopToBottom);
+
         for (int i = 0; i < choices.Length; i++)
         {
             BattleNextNodeChoiceButton choice = choices[i];
@@ -37,8 +39,9 @@ public class BattleNextNodeSelectionPanel : MonoBehaviour
 
             if (i < nodes.Count)
             {
-                choice.Bind(nodes[i], onSelected);
-                visibleNodeIndices.Add(nodes[i].NodeIndex);
+                GeneratedMapNodeData node = nodes[i];
+                choice.Bind(node, onSelected);
+                visibleNodeIndices.Add(node.NodeIndex);
             }
             else
             {
@@ -69,20 +72,46 @@ public class BattleNextNodeSelectionPanel : MonoBehaviour
             }
         }
 
+        // VerticalLayoutGroup은 sibling 순서대로 위 -> 아래 배치하므로
+        // 실제 버튼 배열도 동일한 순서로 고정합니다.
+        resolved.Sort(CompareChoiceHierarchyOrder);
         choices = resolved.ToArray();
     }
 
-    private void EnsureLayout()
+    private static int CompareNodeTopToBottom(
+        GeneratedMapNodeData a,
+        GeneratedMapNodeData b)
     {
-        VerticalLayoutGroup layout = GetComponent<VerticalLayoutGroup>();
-        if (layout == null)
-            layout = gameObject.AddComponent<VerticalLayoutGroup>();
+        if (ReferenceEquals(a, b))
+            return 0;
 
-        layout.spacing = 12f;
-        layout.childAlignment = TextAnchor.MiddleCenter;
-        layout.childControlWidth = true;
-        layout.childControlHeight = true;
-        layout.childForceExpandWidth = true;
-        layout.childForceExpandHeight = true;
+        if (a == null)
+            return 1;
+
+        if (b == null)
+            return -1;
+
+        int yCompare = b.Position.y.CompareTo(a.Position.y);
+        if (yCompare != 0)
+            return yCompare;
+
+        // 같은 높이에 있는 경우에도 실행마다 순서가 흔들리지 않도록 고정합니다.
+        return a.NodeIndex.CompareTo(b.NodeIndex);
+    }
+
+    private static int CompareChoiceHierarchyOrder(
+        BattleNextNodeChoiceButton a,
+        BattleNextNodeChoiceButton b)
+    {
+        if (ReferenceEquals(a, b))
+            return 0;
+
+        if (a == null)
+            return 1;
+
+        if (b == null)
+            return -1;
+
+        return a.transform.GetSiblingIndex().CompareTo(b.transform.GetSiblingIndex());
     }
 }

@@ -23,6 +23,7 @@ public class BattleNextNodeChoiceButton : MonoBehaviour
 
     private AnimatorOverrideController overrideController;
     private AnimationClip originalClip;
+    private AnimationClip pendingClip;
 
     private void Awake()
     {
@@ -35,8 +36,6 @@ public class BattleNextNodeChoiceButton : MonoBehaviour
         if (animator == null && iconImage != null)
             animator = iconImage.GetComponent<Animator>();
 
-        SetupOverrideController();
-
         if (button != null)
         {
             button.onClick.RemoveListener(Select);
@@ -44,38 +43,60 @@ public class BattleNextNodeChoiceButton : MonoBehaviour
         }
     }
 
-    private void SetupOverrideController()
+    private void OnEnable()
+    {
+        TryPlayPendingClip();
+    }
+
+    private void Update()
+    {
+        if (pendingClip != null)
+            TryPlayPendingClip();
+    }
+
+    private bool EnsureOverrideController()
     {
         if (animator == null)
-            return;
+            return false;
 
-        RuntimeAnimatorController controller =
-            animator.runtimeAnimatorController;
+        if (!animator.isActiveAndEnabled || !animator.gameObject.activeInHierarchy)
+            return false;
 
+        if (overrideController != null && originalClip != null)
+        {
+            if (animator.runtimeAnimatorController != overrideController)
+                animator.runtimeAnimatorController = overrideController;
+
+            return true;
+        }
+
+        RuntimeAnimatorController controller = animator.runtimeAnimatorController;
         if (controller == null)
-            return;
+            return false;
 
-        overrideController =
-            new AnimatorOverrideController(controller);
+        overrideController = new AnimatorOverrideController(controller);
 
         AnimationClip[] clips = overrideController.animationClips;
-
         if (clips == null || clips.Length == 0)
-            return;
+        {
+            overrideController = null;
+            return false;
+        }
 
         originalClip = clips[0];
-
         animator.runtimeAnimatorController = overrideController;
+        return true;
     }
 
     public void ConfigureGeneratedUi(Image generatedIcon)
     {
         iconImage = generatedIcon;
+        animator = iconImage != null ? iconImage.GetComponent<Animator>() : null;
 
-        if (iconImage != null)
-            animator = iconImage.GetComponent<Animator>();
+        overrideController = null;
+        originalClip = null;
 
-        SetupOverrideController();
+        TryPlayPendingClip();
     }
 
     public void Bind(
@@ -88,11 +109,13 @@ public class BattleNextNodeChoiceButton : MonoBehaviour
         gameObject.SetActive(node != null);
 
         if (node == null)
+        {
+            pendingClip = null;
             return;
+        }
 
-        AnimationClip clip = GetNodeAnimationClip(node);
-
-        PlayClip(clip);
+        pendingClip = GetNodeAnimationClip(node);
+        TryPlayPendingClip();
     }
 
     private AnimationClip GetNodeAnimationClip(
@@ -112,23 +135,24 @@ public class BattleNextNodeChoiceButton : MonoBehaviour
         };
     }
 
-    private void PlayClip(AnimationClip clip)
+    private void TryPlayPendingClip()
     {
-        if (animator == null ||
-            overrideController == null ||
-            originalClip == null ||
-            clip == null)
-        {
+        if (pendingClip == null || animator == null)
             return;
-        }
+
+        if (!animator.isActiveAndEnabled || !animator.gameObject.activeInHierarchy)
+            return;
+
+        if (!EnsureOverrideController() || originalClip == null)
+            return;
+
+        AnimationClip clip = pendingClip;
+        pendingClip = null;
 
         overrideController[originalClip] = clip;
 
-        animator.runtimeAnimatorController = overrideController;
-
         animator.Rebind();
         animator.Update(0f);
-
         animator.Play(0, 0, 0f);
     }
 
@@ -136,6 +160,7 @@ public class BattleNextNodeChoiceButton : MonoBehaviour
     {
         nodeIndex = -1;
         onSelected = null;
+        pendingClip = null;
 
         gameObject.SetActive(false);
     }

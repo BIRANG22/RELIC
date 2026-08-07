@@ -8,6 +8,9 @@ public class BattleResultChecker : MonoBehaviour
     private const float DefeatRewardMultiplier = 0.5f;
 
     public static BattleResultChecker Instance { get; private set; }
+    public static event System.Action BattleFinished;
+
+    public bool BattleEnded => battleEnded;
 
     [SerializeField] private BattleRewardResolver rewardResolver;
     [SerializeField] private BattleRewardPanelUI rewardPanel;
@@ -36,6 +39,7 @@ public class BattleResultChecker : MonoBehaviour
         if (IsAllPlayersDead())
         {
             battleEnded = true;
+            BattleFinished?.Invoke();
             Debug.Log("[BattleResultChecker] Battle Lose");
             OpenDefeatExplorationResultPanel();
             return true;
@@ -44,6 +48,7 @@ public class BattleResultChecker : MonoBehaviour
         if (IsAllMonstersDead())
         {
             battleEnded = true;
+            BattleFinished?.Invoke();
             Debug.Log("[BattleResultChecker] Battle Win");
             BattleEquipmentEffectService.ApplyBattleEndHealToParty();
 
