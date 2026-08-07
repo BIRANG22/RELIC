@@ -5858,6 +5858,7 @@ GameObject:
   - component: {fileID: 230010001}
   - component: {fileID: 230010002}
   - component: {fileID: 230010003}
+  - component: {fileID: 230010004}
   m_Layer: 5
   m_Name: RelicShopPanel
   m_TagString: Untagged
@@ -5929,6 +5930,23 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &230010004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 230010000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5943fcfd32fa7f04db83a14a40091532, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fadeDuration: 0.5
+  excludedObjects:
+  - {fileID: 1621084190}
+  - {fileID: 1628821924}
+  - {fileID: 1359349407}
 --- !u!1 &230010010
 GameObject:
   m_ObjectHideFlags: 0
@@ -12655,6 +12673,7 @@ GameObject:
   - component: {fileID: 397856609}
   - component: {fileID: 397856611}
   - component: {fileID: 397856610}
+  - component: {fileID: 397856612}
   m_Layer: 0
   m_Name: ErosionSelectPanel
   m_TagString: Untagged
@@ -12749,6 +12768,23 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 397856608}
   m_CullTransparentMesh: 1
+--- !u!114 &397856612
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 397856608}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5943fcfd32fa7f04db83a14a40091532, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fadeDuration: 0.5
+  excludedObjects:
+  - {fileID: 946416551}
+  - {fileID: 850479812}
+  - {fileID: 565802890}
 --- !u!1 &399918693
 GameObject:
   m_ObjectHideFlags: 0
@@ -28798,6 +28834,7 @@ GameObject:
   - component: {fileID: 821549307}
   - component: {fileID: 821549306}
   - component: {fileID: 821549308}
+  - component: {fileID: 821549309}
   m_Layer: 5
   m_Name: CultureTankPanel
   m_TagString: Untagged
@@ -28905,6 +28942,23 @@ MonoBehaviour:
     stateLabel: {fileID: 0}
     itemIcon: {fileID: 0}
   tankNamePrefix: CultureTank
+--- !u!114 &821549309
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 821549304}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5943fcfd32fa7f04db83a14a40091532, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fadeDuration: 0.5
+  excludedObjects:
+  - {fileID: 1633718161}
+  - {fileID: 1550048788}
+  - {fileID: 2135203239}
 --- !u!1 &821584890
 GameObject:
   m_ObjectHideFlags: 0
