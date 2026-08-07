@@ -4,8 +4,10 @@ Shader "UI/DustiumBackgroundBlur"
     {
         [PerRendererData] _MainTex ("Texture", 2D) = "white" {}
         _Color ("Tint", Color) = (1,1,1,1)
-        _BlurRadius ("Blur Radius", Range(0,8)) = 3.5
-        _Darken ("Darken", Range(0,1)) = 0.18
+        _BlurRadius ("Blur Radius", Range(0,8)) = 4.0
+        _Darken ("Darken", Range(0,1)) = 0.75
+        _Saturation ("Saturation", Range(0,1)) = 0.4
+        _Contrast ("Contrast", Range(0.5,1.5)) = 0.8
 
         _StencilComp ("Stencil Comparison", Float) = 8
         _Stencil ("Stencil ID", Float) = 0
@@ -80,6 +82,8 @@ Shader "UI/DustiumBackgroundBlur"
             float4 _ClipRect;
             float _BlurRadius;
             float _Darken;
+            float _Saturation;
+            float _Contrast;
 
             v2f vert(appdata_t v)
             {
@@ -96,9 +100,8 @@ Shader "UI/DustiumBackgroundBlur"
 
             fixed4 frag(v2f IN) : SV_Target
             {
-                // 기존처럼 멀리 떨어진 8방향 픽셀을 동일하게 섞지 않고,
-                // 중심에 높은 가중치를 두고 가까운 픽셀을 촘촘하게 섞어
-                // 윤곽이 사방으로 번지는 느낌 없이 제자리에서 부드럽게 흐려지도록 합니다.
+                // 중심을 유지하면서 주변 픽셀을 촘촘하게 섞어,
+                // 화면 전체가 번지는 느낌보다 부드럽게 초점이 빠진 배경을 만듭니다.
                 float2 texel = _MainTex_TexelSize.xy;
                 float radius = _BlurRadius * 0.65;
                 float2 nearOffset = texel * radius * 0.5;
@@ -106,34 +109,43 @@ Shader "UI/DustiumBackgroundBlur"
 
                 fixed4 col = tex2D(_MainTex, IN.texcoord) * 0.30;
 
-                // 가까운 십자 방향 - 가장 높은 주변 가중치
+                // 가까운 십자 방향
                 col += tex2D(_MainTex, IN.texcoord + float2( nearOffset.x, 0.0)) * 0.10;
                 col += tex2D(_MainTex, IN.texcoord + float2(-nearOffset.x, 0.0)) * 0.10;
                 col += tex2D(_MainTex, IN.texcoord + float2(0.0,  nearOffset.y)) * 0.10;
                 col += tex2D(_MainTex, IN.texcoord + float2(0.0, -nearOffset.y)) * 0.10;
 
-                // 가까운 대각선 - 형태를 둥글게 흐림
+                // 가까운 대각선 방향
                 col += tex2D(_MainTex, IN.texcoord + float2( nearOffset.x,  nearOffset.y)) * 0.05;
                 col += tex2D(_MainTex, IN.texcoord + float2(-nearOffset.x,  nearOffset.y)) * 0.05;
                 col += tex2D(_MainTex, IN.texcoord + float2( nearOffset.x, -nearOffset.y)) * 0.05;
                 col += tex2D(_MainTex, IN.texcoord + float2(-nearOffset.x, -nearOffset.y)) * 0.05;
 
-                // 바깥쪽은 낮은 가중치만 사용해 번짐을 억제
+                // 바깥쪽은 낮은 가중치만 사용해 과도한 번짐을 억제합니다.
                 col += tex2D(_MainTex, IN.texcoord + float2( farOffset.x, 0.0)) * 0.025;
                 col += tex2D(_MainTex, IN.texcoord + float2(-farOffset.x, 0.0)) * 0.025;
                 col += tex2D(_MainTex, IN.texcoord + float2(0.0,  farOffset.y)) * 0.025;
                 col += tex2D(_MainTex, IN.texcoord + float2(0.0, -farOffset.y)) * 0.025;
 
+                // 채도 감소: 0이면 완전 흑백, 1이면 원본 색상입니다.
+                float luminance = dot(col.rgb, float3(0.299, 0.587, 0.114));
+                col.rgb = lerp(luminance.xxx, col.rgb, saturate(_Saturation));
+
+                // 대비 조절: 1이 원본, 1보다 작으면 부드럽게, 크면 선명하게 만듭니다.
+                col.rgb = (col.rgb - 0.5) * _Contrast + 0.5;
+
+                // 전체 밝기를 낮춰 참고 이미지처럼 뒤쪽 UI를 눌러줍니다.
                 col.rgb *= 1.0 - saturate(_Darken);
+
                 col *= IN.color;
 
-#ifdef UNITY_UI_CLIP_RECT
+            #ifdef UNITY_UI_CLIP_RECT
                 col.a *= UnityGet2DClipping(IN.worldPosition.xy, _ClipRect);
-#endif
+            #endif
 
-#ifdef UNITY_UI_ALPHACLIP
+            #ifdef UNITY_UI_ALPHACLIP
                 clip(col.a - 0.001);
-#endif
+            #endif
 
                 return col;
             }

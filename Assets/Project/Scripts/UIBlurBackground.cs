@@ -17,13 +17,22 @@ public sealed class UIBlurBackground : MonoBehaviour
     private const int BlurCanvasSortingOrder = -32768;
 
     [Header("Blur")]
-    [SerializeField, Range(0f, 8f)] private float blurRadius = 1.6f;
+    [SerializeField, Range(0f, 8f)] private float blurRadius = 4f;
 
     [Header("Darken")]
-    [SerializeField, Range(0f, 1f)] private float darken = 0.2f;
+    [SerializeField, Range(0f, 1f)] private float darken = 0.75f;
+
+    [Header("Color Adjustment")]
+    [Tooltip("0이면 흑백, 1이면 원본 채도입니다.")]
+    [SerializeField, Range(0f, 1.5f)] private float saturation = 0.4f;
+
+    [Tooltip("1이면 원본 대비, 1보다 작으면 부드럽고 흐릿하게, 1보다 크면 대비가 강해집니다.")]
+    [SerializeField, Range(0f, 2f)] private float contrast = 0.8f;
 
     private static readonly int BlurRadiusId = Shader.PropertyToID("_BlurRadius");
     private static readonly int DarkenId = Shader.PropertyToID("_Darken");
+    private static readonly int SaturationId = Shader.PropertyToID("_Saturation");
+    private static readonly int ContrastId = Shader.PropertyToID("_Contrast");
 
     private Image backgroundImage;
     private bool originalBackgroundImageEnabled;
@@ -263,6 +272,12 @@ public sealed class UIBlurBackground : MonoBehaviour
 
         runtimeMaterial.SetFloat(BlurRadiusId, blurRadius);
         runtimeMaterial.SetFloat(DarkenId, darken);
+
+        if (runtimeMaterial.HasProperty(SaturationId))
+            runtimeMaterial.SetFloat(SaturationId, saturation);
+
+        if (runtimeMaterial.HasProperty(ContrastId))
+            runtimeMaterial.SetFloat(ContrastId, contrast);
     }
 
     private static void SetLayerRecursively(GameObject target, int layer)

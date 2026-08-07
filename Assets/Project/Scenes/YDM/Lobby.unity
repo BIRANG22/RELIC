@@ -32008,6 +32008,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   blurRadius: 4
   darken: 0.5
+  saturation: 0.58
+  contrast: 0.88
 --- !u!1 &947132128
 GameObject:
   m_ObjectHideFlags: 0
@@ -60123,6 +60125,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   blurRadius: 4
   darken: 0.5
+  saturation: 0.58
+  contrast: 0.88
 --- !u!1 &1624834131
 GameObject:
   m_ObjectHideFlags: 0
@@ -60288,6 +60292,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   blurRadius: 4
   darken: 0.5
+  saturation: 0.58
+  contrast: 0.88
 --- !u!1 &1634370571
 GameObject:
   m_ObjectHideFlags: 0
@@ -61976,7 +61982,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1684958231
 RectTransform:
   m_ObjectHideFlags: 0
