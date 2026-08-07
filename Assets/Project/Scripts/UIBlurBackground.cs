@@ -2,16 +2,19 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// ±âÁ¸ ¹İÅõ¸í °ËÀº ¹è°æ Image¿¡ ºÙÀÌ´Â ºí·¯ ÄÄÆ÷³ÍÆ®ÀÔ´Ï´Ù.
-/// ±âÁ¸ ImageÀÇ È°¼º/ºñÈ°¼º Å¸ÀÌ¹Ö°ú Raycast Â÷´ÜÀº ±×´ë·Î »ç¿ëÇÏ°í,
-/// ³»ºÎ¿¡ ºí·¯ È­¸é¿ë RawImage¸¦ ÀÚµ¿ »ı¼ºÇÕ´Ï´Ù.
+/// íŒì—…ì´ ì—´ë¦´ ë•Œ ê²Œì„ í™”ë©´ ìº¡ì²˜ë¥¼ ë¸”ëŸ¬í•˜ì—¬ ë°°ê²½ìœ¼ë¡œ í‘œì‹œí•©ë‹ˆë‹¤.
+/// ë¸”ëŸ¬ ì´ë¯¸ì§€ëŠ” ê¸°ì¡´ UI Canvasì˜ ìì‹ìœ¼ë¡œ ë„£ì§€ ì•Šê³ ,
+/// ë³„ë„ì˜ Screen Space - Overlay Canvasì—ì„œ ë§¤ìš° ë‚®ì€ Sorting Orderë¡œ ë Œë”í•©ë‹ˆë‹¤.
+/// ë”°ë¼ì„œ ë‹¤ë¥¸ ì¼ë°˜ UI CanvasëŠ” ë¸”ëŸ¬ ì´ë¯¸ì§€ë³´ë‹¤ ìœ„ì— í‘œì‹œë©ë‹ˆë‹¤.
 /// </summary>
 [DisallowMultipleComponent]
 [RequireComponent(typeof(Image))]
 public sealed class UIBlurBackground : MonoBehaviour
 {
     private const string BlurShaderName = "UI/DustiumBackgroundBlur";
+    private const string BlurCanvasNamePrefix = "UIBlurCanvas_";
     private const string BlurGraphicName = "BlurGraphic";
+    private const int BlurCanvasSortingOrder = -32768;
 
     [Header("Blur")]
     [SerializeField, Range(0f, 8f)] private float blurRadius = 1.6f;
@@ -19,57 +22,66 @@ public sealed class UIBlurBackground : MonoBehaviour
     [Header("Darken")]
     [SerializeField, Range(0f, 1f)] private float darken = 0.2f;
 
-    [Header("Input")]
-    [Tooltip("±âÁ¸ ¹è°æ Image°¡ µÚÂÊ UI ÀÔ·ÂÀ» ¸·µµ·Ï À¯ÁöÇÕ´Ï´Ù.")]
-    [SerializeField] private bool blockRaycasts = true;
-
     private static readonly int BlurRadiusId = Shader.PropertyToID("_BlurRadius");
     private static readonly int DarkenId = Shader.PropertyToID("_Darken");
 
-    private Image inputBlockImage;
+    private Image backgroundImage;
+    private bool originalBackgroundImageEnabled;
+    private bool capturedBackgroundImageState;
+
+    private GameObject blurCanvasObject;
+    private Canvas blurCanvas;
     private RawImage blurGraphic;
     private Material runtimeMaterial;
-    private bool registered;
 
     private void Awake()
     {
-        inputBlockImage = GetComponent<Image>();
-        ApplyRaycastSetting();
-        EnsureBlurGraphic();
+        backgroundImage = GetComponent<Image>();
+        CaptureOriginalBackgroundImageState();
+        DisableOriginalBackgroundVisual();
+        EnsureBlurCanvas();
         EnsureMaterial();
-        RefreshCapturedTexture();
+        ApplyRaycastSetting();
     }
 
     private void OnEnable()
     {
-        if (!registered)
-        {
-            UIBlurBackgroundCaptureManager.RegisterBlurPanel();
-            registered = true;
-        }
-
-        ApplyRaycastSetting();
-        EnsureBlurGraphic();
+        CaptureOriginalBackgroundImageState();
+        DisableOriginalBackgroundVisual();
+        EnsureBlurCanvas();
         EnsureMaterial();
-        RefreshCapturedTexture();
+        ApplyRaycastSetting();
+        ApplyBlurCanvasSorting();
+
+        if (blurCanvasObject != null)
+            blurCanvasObject.SetActive(true);
+
+        CaptureAndRefreshBackground();
         ApplyMaterialProperties();
     }
 
     private void OnDisable()
     {
-        if (registered)
-        {
-            UIBlurBackgroundCaptureManager.UnregisterBlurPanel();
-            registered = false;
-        }
+        if (blurCanvasObject != null)
+            blurCanvasObject.SetActive(false);
+
+        RestoreOriginalBackgroundImageState();
     }
 
     private void OnDestroy()
     {
-        if (registered)
+        RestoreOriginalBackgroundImageState();
+
+        if (blurCanvasObject != null)
         {
-            UIBlurBackgroundCaptureManager.UnregisterBlurPanel();
-            registered = false;
+            if (Application.isPlaying)
+                Destroy(blurCanvasObject);
+            else
+                DestroyImmediate(blurCanvasObject);
+
+            blurCanvasObject = null;
+            blurCanvas = null;
+            blurGraphic = null;
         }
 
         if (runtimeMaterial != null)
@@ -86,53 +98,122 @@ public sealed class UIBlurBackground : MonoBehaviour
 #if UNITY_EDITOR
     private void OnValidate()
     {
-        if (inputBlockImage == null)
-            inputBlockImage = GetComponent<Image>();
+        if (backgroundImage == null)
+            backgroundImage = GetComponent<Image>();
 
         ApplyRaycastSetting();
+        ApplyBlurCanvasSorting();
         ApplyMaterialProperties();
     }
 #endif
 
-    private void ApplyRaycastSetting()
+    private void CaptureOriginalBackgroundImageState()
     {
-        if (inputBlockImage != null)
-            inputBlockImage.raycastTarget = blockRaycasts;
-    }
-
-    private void EnsureBlurGraphic()
-    {
-        if (blurGraphic != null)
+        if (backgroundImage == null || capturedBackgroundImageState)
             return;
 
-        Transform existing = transform.Find(BlurGraphicName);
-        if (existing != null)
-            blurGraphic = existing.GetComponent<RawImage>();
+        originalBackgroundImageEnabled = backgroundImage.enabled;
+        capturedBackgroundImageState = true;
+    }
 
-        if (blurGraphic == null)
+    private void DisableOriginalBackgroundVisual()
+    {
+        if (backgroundImage == null)
+            return;
+
+        // ê¸°ì¡´ ì „ì²´í™”ë©´ ImageëŠ” ì§ì ‘ ê·¸ë¦¬ì§€ ì•ŠìŠµë‹ˆë‹¤.
+        // ì–´ë‘¡ê²Œ ì²˜ë¦¬ëŠ” ë¸”ëŸ¬ ì…°ì´ë”ì˜ _Darken ê°’ì´ ë‹´ë‹¹í•©ë‹ˆë‹¤.
+        backgroundImage.enabled = false;
+        backgroundImage.raycastTarget = false;
+    }
+
+    private void RestoreOriginalBackgroundImageState()
+    {
+        if (backgroundImage == null || !capturedBackgroundImageState)
+            return;
+
+        backgroundImage.enabled = originalBackgroundImageEnabled;
+        backgroundImage.raycastTarget = false;
+        capturedBackgroundImageState = false;
+    }
+
+    private void EnsureBlurCanvas()
+    {
+        if (blurCanvasObject != null && blurCanvas != null && blurGraphic != null)
+            return;
+
+        // ì´ì „ ë²„ì „ì—ì„œ ì´ ì˜¤ë¸Œì íŠ¸ ì•„ë˜ì— ìƒì„±í–ˆë˜ BlurGraphicì´ ë‚¨ì•„ ìˆìœ¼ë©´ ì œê±°í•©ë‹ˆë‹¤.
+        Transform oldChild = transform.Find(BlurGraphicName);
+        if (oldChild != null)
         {
-            GameObject blurObject = new GameObject(
-                BlurGraphicName,
-                typeof(RectTransform),
-                typeof(CanvasRenderer),
-                typeof(RawImage));
-
-            RectTransform blurRect = blurObject.GetComponent<RectTransform>();
-            blurRect.SetParent(transform, false);
-            blurRect.anchorMin = Vector2.zero;
-            blurRect.anchorMax = Vector2.one;
-            blurRect.offsetMin = Vector2.zero;
-            blurRect.offsetMax = Vector2.zero;
-            blurRect.localScale = Vector3.one;
-            blurRect.SetAsFirstSibling();
-
-            blurGraphic = blurObject.GetComponent<RawImage>();
+            if (Application.isPlaying)
+                Destroy(oldChild.gameObject);
+            else
+                DestroyImmediate(oldChild.gameObject);
         }
 
+        blurCanvasObject = new GameObject(
+            BlurCanvasNamePrefix + GetInstanceID(),
+            typeof(RectTransform),
+            typeof(Canvas));
+
+        blurCanvas = blurCanvasObject.GetComponent<Canvas>();
+        blurCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        blurCanvas.overrideSorting = true;
+        blurCanvas.sortingOrder = BlurCanvasSortingOrder;
+        ApplyLowestSortingLayer();
+
+        GameObject blurObject = new GameObject(
+            BlurGraphicName,
+            typeof(RectTransform),
+            typeof(CanvasRenderer),
+            typeof(RawImage));
+
+        RectTransform blurRect = blurObject.GetComponent<RectTransform>();
+        blurRect.SetParent(blurCanvasObject.transform, false);
+        blurRect.anchorMin = Vector2.zero;
+        blurRect.anchorMax = Vector2.one;
+        blurRect.pivot = new Vector2(0.5f, 0.5f);
+        blurRect.offsetMin = Vector2.zero;
+        blurRect.offsetMax = Vector2.zero;
+        blurRect.localScale = Vector3.one;
+
+        blurGraphic = blurObject.GetComponent<RawImage>();
         blurGraphic.raycastTarget = false;
         blurGraphic.color = Color.white;
-        // ScreenCapture RenderTexture´Â UI RawImage ±âÁØÀ¸·Î YÃàÀÌ µÚÁıÇô º¸ÀÏ ¼ö ÀÖÀ¸¹Ç·Î ¼¼·Î UV¸¦ ¹İÀüÇÕ´Ï´Ù.
-        blurGraphic.uvRect = new Rect(0f, 1f, 1f, -1f);
+        blurGraphic.uvRect = new Rect(0f, 0f, 1f, 1f);
+
+        SetLayerRecursively(blurCanvasObject, LayerMask.NameToLayer("UI"));
+    }
+
+    private void ApplyBlurCanvasSorting()
+    {
+        if (blurCanvas == null)
+            return;
+
+        blurCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        blurCanvas.overrideSorting = true;
+        blurCanvas.sortingOrder = BlurCanvasSortingOrder;
+        ApplyLowestSortingLayer();
+    }
+
+    private void ApplyLowestSortingLayer()
+    {
+        if (blurCanvas == null)
+            return;
+
+        SortingLayer[] sortingLayers = SortingLayer.layers;
+        if (sortingLayers != null && sortingLayers.Length > 0)
+            blurCanvas.sortingLayerID = sortingLayers[0].id;
+    }
+
+    private void ApplyRaycastSetting()
+    {
+        if (backgroundImage != null)
+            backgroundImage.raycastTarget = false;
+
+        if (blurGraphic != null)
+            blurGraphic.raycastTarget = false;
     }
 
     private void EnsureMaterial()
@@ -150,8 +231,8 @@ public sealed class UIBlurBackground : MonoBehaviour
         if (blurShader == null)
         {
             Debug.LogWarning(
-                $"[UIBlurBackground] '{BlurShaderName}' ¼ÎÀÌ´õ¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù. " +
-                "DustiumBackgroundBlur.shader°¡ ÇÁ·ÎÁ§Æ®¿¡ Æ÷ÇÔµÇ¾î ÀÖ´ÂÁö È®ÀÎÇØÁÖ¼¼¿ä.",
+                $"[UIBlurBackground] '{BlurShaderName}' ì…°ì´ë”ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤. " +
+                "DustiumBackgroundBlur.shaderê°€ í”„ë¡œì íŠ¸ì— í¬í•¨ë˜ì–´ ìˆëŠ”ì§€ í™•ì¸í•´ì£¼ì„¸ìš”.",
                 this);
             return;
         }
@@ -163,15 +244,14 @@ public sealed class UIBlurBackground : MonoBehaviour
         };
 
         blurGraphic.material = runtimeMaterial;
-        ApplyMaterialProperties();
     }
 
-    private void RefreshCapturedTexture()
+    private void CaptureAndRefreshBackground()
     {
         if (blurGraphic == null)
             return;
 
-        Texture captured = UIBlurBackgroundCaptureManager.CapturedTexture;
+        Texture captured = UIBlurBackgroundCaptureManager.CaptureBackgroundNow();
         if (captured != null)
             blurGraphic.texture = captured;
     }
@@ -183,5 +263,17 @@ public sealed class UIBlurBackground : MonoBehaviour
 
         runtimeMaterial.SetFloat(BlurRadiusId, blurRadius);
         runtimeMaterial.SetFloat(DarkenId, darken);
+    }
+
+    private static void SetLayerRecursively(GameObject target, int layer)
+    {
+        if (target == null || layer < 0)
+            return;
+
+        target.layer = layer;
+
+        Transform targetTransform = target.transform;
+        for (int i = 0; i < targetTransform.childCount; i++)
+            SetLayerRecursively(targetTransform.GetChild(i).gameObject, layer);
     }
 }
