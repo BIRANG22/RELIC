@@ -1,4 +1,5 @@
 ﻿using Relic.Gameplay.Battle;
+using System;
 using Relic.Gameplay.Data;
 using System.Collections;
 using System.Collections.Generic;
@@ -44,7 +45,11 @@ namespace Relic.Gameplay.Monster
         private bool isAttackRangePreviewVisible;
 
         private static MonsterUnit selectedMonster;
+        private static MonsterUnit infoSelectedMonster;
         private static int selectedMonsterClickFrame = -1000;
+
+        public static event Action<MonsterUnit> MonsterInfoSelectionChanged;
+        public static MonsterUnit CurrentInfoSelectedMonster => infoSelectedMonster;
 
         private readonly List<int> occupiedGridIndices = new();
         public IReadOnlyList<int> OccupiedGridIndices => occupiedGridIndices;
@@ -192,6 +197,12 @@ namespace Relic.Gameplay.Monster
                 selectedMonster = null;
             }
 
+            if (infoSelectedMonster == this)
+            {
+                infoSelectedMonster = null;
+                MonsterInfoSelectionChanged?.Invoke(null);
+            }
+
             HideStatusClickTooltip();
         }
 
@@ -204,6 +215,12 @@ namespace Relic.Gameplay.Monster
             {
                 SetSelected(false);
                 selectedMonster = null;
+            }
+
+            if (infoSelectedMonster == this)
+            {
+                infoSelectedMonster = null;
+                MonsterInfoSelectionChanged?.Invoke(null);
             }
 
             HideStatusClickTooltip();
@@ -302,7 +319,15 @@ namespace Relic.Gameplay.Monster
                 return;
 
             SelectThisMonster();
-            global::UIDissolveReveal.ShowForMonsterClick(this);
+
+            infoSelectedMonster = this;
+            BattleTimelineController.ClearCurrentCharacterSelection();
+
+            BattleCameraController cameraController = BattleCameraController.Instance;
+            if (cameraController != null)
+                cameraController.FocusOnCharacterSelection(transform, MainGridIndex);
+
+            MonsterInfoSelectionChanged?.Invoke(this);
         }
 
         private void OnMouseEnter()
@@ -391,14 +416,14 @@ namespace Relic.Gameplay.Monster
         private void FindHoverRangeReferences()
         {
             if (hoverRangePreview == null)
-                hoverRangePreview = Object.FindFirstObjectByType<RangePreview>(FindObjectsInactive.Include);
+                hoverRangePreview = UnityEngine.Object.FindFirstObjectByType<RangePreview>(FindObjectsInactive.Include);
 
             if (hoverGridManager == null)
-                hoverGridManager = Object.FindFirstObjectByType<GridManager>(FindObjectsInactive.Include);
+                hoverGridManager = UnityEngine.Object.FindFirstObjectByType<GridManager>(FindObjectsInactive.Include);
 
             if (reservationController == null)
             {
-                reservationController = Object.FindFirstObjectByType<PlayerSkillReservationController>(
+                reservationController = UnityEngine.Object.FindFirstObjectByType<PlayerSkillReservationController>(
                     FindObjectsInactive.Include);
             }
         }
@@ -451,6 +476,20 @@ namespace Relic.Gameplay.Monster
             }
 
             return false;
+        }
+
+        public static void ClearMonsterInfoSelection()
+        {
+            if (infoSelectedMonster == null)
+                return;
+
+            MonsterUnit previous = infoSelectedMonster;
+            infoSelectedMonster = null;
+
+            if (selectedMonster == previous)
+                DeselectCurrentMonster();
+
+            MonsterInfoSelectionChanged?.Invoke(null);
         }
 
         private static void DeselectCurrentMonster()
@@ -609,7 +648,7 @@ namespace Relic.Gameplay.Monster
         public static void SetAllReservationVisualState(bool reservation)
         {
             MonsterUnit[] monsters =
-                Object.FindObjectsByType<MonsterUnit>(
+                UnityEngine.Object.FindObjectsByType<MonsterUnit>(
                     FindObjectsInactive.Exclude,
                     FindObjectsSortMode.None
                 );
@@ -750,7 +789,7 @@ namespace Relic.Gameplay.Monster
                                     new HashSet<int>(rangeGridIndices);
 
             MonsterUnit[] monsters =
-                Object.FindObjectsByType<MonsterUnit>(
+                UnityEngine.Object.FindObjectsByType<MonsterUnit>(
                     FindObjectsInactive.Exclude,
                     FindObjectsSortMode.None
                 );
@@ -775,7 +814,7 @@ namespace Relic.Gameplay.Monster
         public static void HideAllTemporaryHUDs()
         {
             MonsterUnit[] monsters =
-                Object.FindObjectsByType<MonsterUnit>(
+                UnityEngine.Object.FindObjectsByType<MonsterUnit>(
                     FindObjectsInactive.Exclude,
                     FindObjectsSortMode.None
                 );

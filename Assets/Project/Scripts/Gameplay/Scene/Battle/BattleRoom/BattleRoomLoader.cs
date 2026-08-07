@@ -128,6 +128,9 @@ public class BattleRoomLoader : MonoBehaviour
 
     private void OnEnable()
     {
+        BattleTimelineController.CharacterSelectionChanged -= HandleTimelineCharacterSelectionChanged;
+        BattleTimelineController.CharacterSelectionChanged += HandleTimelineCharacterSelectionChanged;
+
         if (loadOnEnableWithoutSceneController)
             RequestLoadBattle();
     }
@@ -438,6 +441,8 @@ public class BattleRoomLoader : MonoBehaviour
 
     private void OnDisable()
     {
+        BattleTimelineController.CharacterSelectionChanged -= HandleTimelineCharacterSelectionChanged;
+
         if (loadRoutine != null)
         {
             StopCoroutine(loadRoutine);
@@ -971,6 +976,12 @@ public class BattleRoomLoader : MonoBehaviour
             skillListPanel.RegisterKeepOpenClickRoot(hudRect);
 
         skillListPanel.Open(runtimeData, hudRect);
+    }
+
+    private void HandleTimelineCharacterSelectionChanged(CharacterRuntimeData runtimeData)
+    {
+        selectedPlayerRuntime = runtimeData;
+        RefreshPlayerHudSelectionVisuals();
     }
 
     private void SelectPlayerHUD(CharacterRuntimeData runtimeData)
