@@ -10,6 +10,7 @@ public enum LobbyRelicPurchaseFailure
     NotActiveRelic,
     UnknownRarity,
     AlreadyOwned,
+    PurchaseLimitReached,
     InsufficientBlueDustium
 }
 
@@ -62,6 +63,9 @@ public sealed class LobbyRelicPurchaseService
 
         if (relicDatabase == null || !relicDatabase.TryGet(relicId, out RelicData relic))
             return Fail(relicId, LobbyRelicPurchaseFailure.RelicNotFound);
+
+        if (LobbyRelicShopPurchaseLimit.HasPurchasedOffer(runtime))
+            return Fail(relicId, LobbyRelicPurchaseFailure.PurchaseLimitReached);
 
         if (!LobbyRelicPricePolicy.TryGetPrice(relic.Rarity, out int price))
             return Fail(relicId, LobbyRelicPurchaseFailure.UnknownRarity);

@@ -85,6 +85,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         bool hadRestoredOffers = runtime.RelicOfferIds != null &&
                                  runtime.RelicOfferIds.Count > 0;
         IReadOnlyList<LobbyRelicOffer> offers = ResolveOffers(runtime, canMutate);
+        bool purchaseLimitReached = LobbyRelicShopPurchaseLimit.HasPurchasedOffer(runtime);
         bool generatedOffers =
             canMutate &&
             !hadRestoredOffers &&
@@ -112,7 +113,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             if (Contains(runtime.OwnedRelicIds, offer.RelicId))
                 buttons[i].ShowSold();
             else
-                buttons[i].SetInteractable(canMutate);
+                buttons[i].SetInteractable(canMutate && !purchaseLimitReached);
         }
 
         blueDustiumHud?.Refresh();
@@ -178,14 +179,8 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
         blueDustiumHud?.Refresh();
 
-        for (int i = 0; i < buttons.Count && i < runtime.RelicOfferIds.Count; i++)
-        {
-            if (runtime.RelicOfferIds[i] == relicId)
-                buttons[i].ShowSold();
-        }
-
         RelicEquipPanelUI.RefreshAll();
-        RefreshRefreshButton(runtime);
+        RefreshOffers();
         PublishHostSnapshotAfterLocalMutation();
     }
 
@@ -308,6 +303,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         refreshButton.SetState(
             price,
             CanLocalPlayerMutateHostOnlyState() &&
+            !LobbyRelicShopPurchaseLimit.HasPurchasedOffer(runtime) &&
             !LobbyRelicRefreshService.AreAllOffersPurchased(runtime));
     }
 

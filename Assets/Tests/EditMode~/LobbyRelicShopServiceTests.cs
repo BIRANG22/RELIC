@@ -81,6 +81,30 @@ public class LobbyRelicShopServiceTests
     }
 
     [Test]
+    public void Purchase_AfterBuyingOneOfferedRelic_RejectsSecondOfferWithoutMutation()
+    {
+        RelicDatabase database = CreateDatabase(
+            CreateRelic("A", "Active", "Common"),
+            CreateRelic("B", "Passive", "Uncommon"));
+        var runtime = new LobbyRuntimeData
+        {
+            BlueDustium = 999,
+            RelicOfferIds = new List<string> { "A", "B" }
+        };
+        var service = new LobbyRelicPurchaseService(database);
+
+        LobbyRelicPurchaseResult first = service.Execute(
+            new LobbyRelicPurchaseCommand("A"), runtime);
+        LobbyRelicPurchaseResult second = service.Execute(
+            new LobbyRelicPurchaseCommand("B"), runtime);
+
+        Assert.That(first.Succeeded, Is.True);
+        Assert.That(second.Failure, Is.EqualTo(LobbyRelicPurchaseFailure.PurchaseLimitReached));
+        Assert.That(runtime.BlueDustium, Is.EqualTo(899));
+        Assert.That(runtime.OwnedRelicIds, Is.EqualTo(new[] { "A" }));
+    }
+
+    [Test]
     public void Purchase_OwnedRelic_DoesNotChargeAgain()
     {
         RelicDatabase database = CreateDatabase(CreateRelic("A", "Active", "Common"));
@@ -109,7 +133,7 @@ public class LobbyRelicShopServiceTests
     }
 
     [Test]
-    public void Refresh_KeepsPurchasedSlotAndReplacesOnlyUnpurchasedSlots()
+    public void Refresh_AfterBuyingOneOfferedRelic_DoesNotChargeOrChangeOffers()
     {
         RelicDatabase database = CreateDatabase(
             CreateRelic("A", "Active", "Common"),
@@ -127,12 +151,11 @@ public class LobbyRelicShopServiceTests
         LobbyRelicRefreshResult result = new LobbyRelicRefreshService(
             database, new FirstIndexRandom()).Execute(runtime, 123);
 
-        Assert.That(result.Succeeded, Is.True);
-        Assert.That(runtime.RelicOfferIds[2], Is.EqualTo("C"));
-        Assert.That(runtime.RelicOfferIds[0], Is.Not.EqualTo("A"));
-        Assert.That(runtime.RelicOfferIds[1], Is.Not.EqualTo("B"));
-        Assert.That(runtime.BlueDustium, Is.EqualTo(949));
-        Assert.That(runtime.RelicRefreshCount, Is.EqualTo(1));
+        Assert.That(result.Failure, Is.EqualTo(LobbyRelicRefreshFailure.PurchaseLimitReached));
+        Assert.That(runtime.RelicOfferIds, Is.EqualTo(new[] { "A", "B", "C" }));
+        Assert.That(runtime.BlueDustium, Is.EqualTo(999));
+        Assert.That(runtime.RelicRefreshCount, Is.Zero);
+        Assert.That(runtime.RelicOfferSeed, Is.Zero);
     }
 
     [Test]

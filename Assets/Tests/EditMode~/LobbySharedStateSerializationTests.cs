@@ -28,6 +28,7 @@ public class LobbySharedStateSerializationTests
         Assert.That(restored.Lobby.BagItemIds, Is.EqualTo(new[] { "Item_A" }));
         Assert.That(restored.Lobby.RelicOfferIds, Is.EqualTo(new[] { "Relic_Offer" }));
         Assert.That(restored.Lobby.CultureTankResearches[0].TankId, Is.EqualTo("CultureTank1"));
+        Assert.That(restored.Lobby.CompletedCultureTankCombinationId, Is.EqualTo("Culture_ABC"));
         Assert.That(restored.Lobby.PendingCultureTankBattleStartEffects[0].EffectId, Is.EqualTo("Effect_A"));
         Assert.That(restored.Lobby.CharacterLoadouts[0].EquippedRelicIds[1], Is.EqualTo("Relic_A"));
         Assert.That(restored.Lobby.CharacterLoadouts[0].EquippedSkillIds[2], Is.EqualTo("Skill_A"));
@@ -148,7 +149,9 @@ public class LobbySharedStateSerializationTests
         {
             BlueDustium = 321,
             RelicOfferSeed = 11,
-            RelicRefreshCount = 2
+            RelicRefreshCount = 2,
+            CultureTankCombinationSchemaVersion = CultureTankResearchService.CurrentSchemaVersion,
+            CompletedCultureTankCombinationId = "Culture_ABC"
         };
 
         lobby.OwnedRelicIds.Add("Relic_A");
@@ -158,10 +161,7 @@ public class LobbySharedStateSerializationTests
         lobby.CultureTankResearches.Add(new CultureTankResearchRuntimeData
         {
             TankId = "CultureTank1",
-            ItemId = "Item_A",
-            StartedAtUtcTicks = 1234,
-            DurationSeconds = 30,
-            IsCompleted = true
+            ItemId = "Item_A"
         });
         lobby.PendingCultureTankBattleStartEffects.Add(new CultureTankBattleStartEffectRuntimeData
         {
