@@ -21,12 +21,23 @@ namespace Relic.Gameplay.Monster
         private const int PreferredMaxDistance = 4;
         private const int MaxSpiderEggCount = 2;
 
+        // Range_19: 주변 8칸 + 상하좌우 2칸까지 이동 가능
         private static readonly Vector2Int[] MoveOffsets =
         {
             Vector2Int.left,
             Vector2Int.right,
             Vector2Int.up,
-            Vector2Int.down
+            Vector2Int.down,
+
+            new Vector2Int(-1, -1),
+            new Vector2Int(-1, 1),
+            new Vector2Int(1, -1),
+            new Vector2Int(1, 1),
+
+            Vector2Int.left * 2,
+            Vector2Int.right * 2,
+            Vector2Int.up * 2,
+            Vector2Int.down * 2
         };
 
         public override string SelectSkill(MonsterRuntimeData monster, BattleContext context)

@@ -268,8 +268,7 @@ public static class BattleEffectUtility
 
         int hpBefore = target.RuntimeData.CurrentHP;
 
-        int shieldDamage = Mathf.Min(target.RuntimeData.CurrentShield, damage);
-        target.RuntimeData.CurrentShield -= shieldDamage;
+        int shieldDamage = target.RuntimeData.AbsorbShieldDamage(damage);
         damage -= shieldDamage;
 
         if (damage > 0)
@@ -603,7 +602,7 @@ public static class BattleEffectUtility
         if (shieldValue <= 0)
             return;
 
-        target.RuntimeData.CurrentShield += shieldValue;
+        target.RuntimeData.AddTemporaryShield(shieldValue);
         BattleDamageTextPopupUI.ShowArmorGain(target.transform, shieldValue);
         PlayStatusVfx(ResolveUnitAnimator(target), "E_Armor");
         BattleHitImpactFeedback.PlayStatusHitFeedback(target.transform);

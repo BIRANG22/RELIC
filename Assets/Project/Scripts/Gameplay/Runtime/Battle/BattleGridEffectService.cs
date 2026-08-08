@@ -265,8 +265,7 @@ namespace Relic.Gameplay.Battle
             if (damage <= 0)
                 return false;
 
-            int shieldDamage = Mathf.Min(runtimeData.CurrentShield, damage);
-            runtimeData.CurrentShield -= shieldDamage;
+            int shieldDamage = runtimeData.AbsorbShieldDamage(damage);
             damage -= shieldDamage;
 
             if (damage > 0)
@@ -301,7 +300,7 @@ namespace Relic.Gameplay.Battle
             if (shield <= 0)
                 return false;
 
-            runtimeData.CurrentShield += shield;
+            runtimeData.AddTemporaryShield(shield);
             return true;
         }
 
