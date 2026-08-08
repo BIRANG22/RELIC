@@ -67,14 +67,9 @@ public class PlayerSkillReservationController : MonoBehaviour
 
 
     [Header("Nocturn Portal Preview")]
-    [Tooltip("녹턴이 포탈로 이동할 그리드에 표시할 이미지입니다.")]
-    [SerializeField] private Sprite nocturnPortalIndicatorSprite;
-    [Tooltip("그리드 중심에서 포탈 예고 이미지에 추가할 위치 오프셋입니다.")]
+    [Tooltip("그리드 중심에서 포털 예고 프리팹에 추가할 위치 오프셋입니다.")]
     [SerializeField] private Vector3 nocturnPortalIndicatorOffset = Vector3.zero;
-    [Tooltip("포탈 예고 이미지의 크기입니다. 1은 원본 크기입니다.")]
-    [Min(0f)]
-    [SerializeField] private float nocturnPortalIndicatorScale = 1f;
-    [Tooltip("포탈 예고 이미지의 정렬 순서 오프셋입니다.")]
+    [Tooltip("포털 예고 프리팹 렌더러의 정렬 순서 오프셋입니다.")]
     [SerializeField] private int nocturnPortalIndicatorSortingOrder = 13;
 
     [Header("Range Highlight Colors")]
@@ -104,7 +99,7 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     private sealed class NocturnPortalIndicatorEntry
     {
-        public SpriteRenderer Renderer;
+        public GameObject Instance;
         public int ReferenceCount;
     }
 
@@ -115,6 +110,9 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     private const string MoveSkillLevelOneId = "S_Move_1";
     private const string MoveSkillLevelTwoId = "S_Move_2";
+    private const string NocturnPortalPreviewGridEffectId = "GR_nocturn_portal_preview";
+    private const string NocturnPortalVfxLayerName = "VFX";
+    private const float NocturnPortalPreviewLifeTime = 9999f;
     private const string GeneralSelectionRangeId = "Range_24";
     private const string MoveHoverPingSortingLayerName = "Unit";
     private const float MoveHoverPingYSortMultiplier = 100f;
@@ -858,31 +856,47 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     public void ShowNocturnPortalDestinationIndicator(string runtimeId, int destinationGridIndex)
     {
-        if (gridManager == null || nocturnPortalIndicatorSprite == null || destinationGridIndex < 0)
+        if (gridManager == null || destinationGridIndex < 0)
             return;
 
         string key = BuildNocturnPortalIndicatorKey(runtimeId, destinationGridIndex);
 
         if (nocturnPortalIndicators.TryGetValue(key, out NocturnPortalIndicatorEntry existing) &&
-            existing != null && existing.Renderer != null)
+            existing != null && existing.Instance != null)
         {
             existing.ReferenceCount++;
-            ApplyNocturnPortalIndicatorTransform(existing.Renderer, destinationGridIndex);
-            existing.Renderer.gameObject.SetActive(true);
+            existing.Instance.SetActive(true);
             return;
         }
 
-        GameObject indicatorObject = new GameObject(
-            $"Nocturn Portal Destination {runtimeId}_{destinationGridIndex}");
-        indicatorObject.transform.SetParent(transform, false);
+        Vector3 gridWorldPosition = gridManager.GetWorldPositionByIndex(destinationGridIndex);
+        BattleVfxEntry previewEntry = CreateNocturnPortalPreviewEntry(
+            DataManager.Instance?.GridEffectSpriteDatabase,
+            nocturnPortalIndicatorSortingOrder);
+        int renderLayer = LayerMask.NameToLayer(NocturnPortalVfxLayerName);
 
-        SpriteRenderer renderer = indicatorObject.AddComponent<SpriteRenderer>();
-        renderer.sprite = nocturnPortalIndicatorSprite;
-        ApplyNocturnPortalIndicatorTransform(renderer, destinationGridIndex);
+        if (previewEntry == null ||
+            !BattleWorldVfxRenderer.TrySpawnDetached(
+                previewEntry,
+                gridWorldPosition + nocturnPortalIndicatorOffset,
+                renderLayer,
+                gameObject.layer,
+                NocturnPortalPreviewLifeTime,
+                vfx => ConfigureNocturnPortalPreviewVfx(vfx, renderLayer),
+                out BattleWorldVfxHandle handle) ||
+            handle == null)
+        {
+            Debug.LogWarning(
+                $"[PlayerSkillReservationController] Failed to spawn grid effect preview: {NocturnPortalPreviewGridEffectId}");
+            return;
+        }
+
+        GameObject indicatorObject = handle.gameObject;
+        indicatorObject.name = $"Nocturn Portal Destination {runtimeId}_{destinationGridIndex}";
 
         nocturnPortalIndicators[key] = new NocturnPortalIndicatorEntry
         {
-            Renderer = renderer,
+            Instance = indicatorObject,
             ReferenceCount = 1
         };
     }
@@ -904,37 +918,63 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         nocturnPortalIndicators.Remove(key);
 
-        if (entry.Renderer != null)
-            Destroy(entry.Renderer.gameObject);
+        if (entry.Instance != null)
+            Destroy(entry.Instance);
     }
 
     public void ClearNocturnPortalDestinationIndicators()
     {
         foreach (KeyValuePair<string, NocturnPortalIndicatorEntry> pair in nocturnPortalIndicators)
         {
-            if (pair.Value != null && pair.Value.Renderer != null)
-                Destroy(pair.Value.Renderer.gameObject);
+            if (pair.Value != null && pair.Value.Instance != null)
+                Destroy(pair.Value.Instance);
         }
 
         nocturnPortalIndicators.Clear();
     }
 
-    private void ApplyNocturnPortalIndicatorTransform(
-        SpriteRenderer renderer,
-        int destinationGridIndex)
+    private static BattleVfxEntry CreateNocturnPortalPreviewEntry(
+        GridEffectSpriteDatabase database,
+        int sortingOrderOffset)
     {
-        if (renderer == null || gridManager == null)
+        if (database == null ||
+            !database.TryGetPrefab(NocturnPortalPreviewGridEffectId, out GameObject prefab) ||
+            prefab == null)
+        {
+            return null;
+        }
+
+        return new BattleVfxEntry
+        {
+            prefab = prefab,
+            renderMode = BattleVfxRenderMode.IndividualWorldRenderTexture,
+            proxyBlendMode = BattleVfxProxyBlendMode.Alpha,
+            proxySortingLayerName = MoveHoverPingSortingLayerName,
+            proxySortingOrderOffset = sortingOrderOffset,
+            proxyYMultiplier = MoveHoverPingYSortMultiplier
+        };
+    }
+
+    private static void ConfigureNocturnPortalPreviewVfx(GameObject vfx, int renderLayer)
+    {
+        if (vfx == null)
             return;
 
-        Vector3 gridWorldPosition = gridManager.GetWorldPositionByIndex(destinationGridIndex);
-        renderer.sprite = nocturnPortalIndicatorSprite;
-        renderer.transform.position = gridWorldPosition + nocturnPortalIndicatorOffset;
-        renderer.transform.localScale = Vector3.one * Mathf.Max(0f, nocturnPortalIndicatorScale);
-        ApplyMoveHoverYSort(
-            renderer,
-            gridWorldPosition.y,
-            nocturnPortalIndicatorSortingOrder,
-            3);
+        vfx.SetActive(true);
+
+        if (renderLayer >= 0)
+            SetNocturnPortalPreviewLayerRecursively(vfx, renderLayer);
+
+        if (vfx.GetComponent<BattleVfxPlaybackPauseController>() == null)
+            vfx.AddComponent<BattleVfxPlaybackPauseController>();
+    }
+
+    private static void SetNocturnPortalPreviewLayerRecursively(GameObject target, int layer)
+    {
+        target.layer = layer;
+
+        foreach (Transform child in target.transform)
+            SetNocturnPortalPreviewLayerRecursively(child.gameObject, layer);
     }
 
     private static string BuildNocturnPortalIndicatorKey(
