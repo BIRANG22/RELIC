@@ -35,6 +35,9 @@ namespace Relic.Gameplay.Data
         public string PossSkillId09;
         public string PossSkillId10;
 
+        public string SpecialAction1;
+        public string SpecialAction2;
+
         [NonSerialized]
         public GameObject BattlePrefab;
 

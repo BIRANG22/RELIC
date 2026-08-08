@@ -1156,7 +1156,7 @@ public class BattleTurnExecutor : MonoBehaviour
             if (monsters[i] == null || monsters[i].RuntimeData == null)
                 continue;
 
-            monsters[i].RuntimeData.CurrentShield = 0;
+            monsters[i].RuntimeData.ClearTemporaryShield();
         }
     }
 

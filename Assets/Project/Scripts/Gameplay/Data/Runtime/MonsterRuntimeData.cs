@@ -18,6 +18,7 @@ namespace Relic.Gameplay.Data
         [FormerlySerializedAs("CurrentHp")]
         public int CurrentHP;
         public int CurrentShield;
+        public int RemainingInnateShield;
 
         public int MinRemnant;
         public int MaxRemnant;
@@ -25,6 +26,8 @@ namespace Relic.Gameplay.Data
         public float UniqueItemChance;
         public float RelicChance;
         public string AttackRangeId;
+        public string SpecialAction1;
+        public string SpecialAction2;
 
         public string[] PossibleSkillIdsByActionIndex = new string[MonsterMasterData.PossibleSkillSlotCount];
         public List<string> PossSkillIds = new();
@@ -56,6 +59,7 @@ namespace Relic.Gameplay.Data
             MaxHP = masterData.HP;
             CurrentHP = masterData.HP;
             CurrentShield = Math.Max(0, masterData.Armor);
+            RemainingInnateShield = CurrentShield;
 
             MinRemnant = masterData.MinRemnant;
             MaxRemnant = masterData.MaxRemnant;
@@ -63,6 +67,8 @@ namespace Relic.Gameplay.Data
             UniqueItemChance = masterData.UniqueItemChance;
             RelicChance = masterData.RelicChance;
             AttackRangeId = masterData.AttackRangeId;
+            SpecialAction1 = masterData.SpecialAction1;
+            SpecialAction2 = masterData.SpecialAction2;
 
             TurnCount = 0;
             InitializePossibleSkills(masterData);
@@ -100,6 +106,51 @@ namespace Relic.Gameplay.Data
 
             if (CurrentHP < 0)
                 CurrentHP = 0;
+        }
+
+        public int AbsorbShieldDamage(int damage)
+        {
+            damage = Math.Max(0, damage);
+
+            if (damage <= 0 || CurrentShield <= 0)
+                return 0;
+
+            int shieldBefore = CurrentShield;
+            int temporaryShield = Math.Max(0, CurrentShield - RemainingInnateShield);
+            int temporaryDamage = Math.Min(temporaryShield, damage);
+
+            CurrentShield -= temporaryDamage;
+            damage -= temporaryDamage;
+
+            if (damage > 0 && RemainingInnateShield > 0)
+            {
+                int innateDamage = Math.Min(RemainingInnateShield, damage);
+                RemainingInnateShield -= innateDamage;
+                CurrentShield -= innateDamage;
+            }
+
+            CurrentShield = Math.Max(0, CurrentShield);
+            RemainingInnateShield = Math.Max(0, Math.Min(RemainingInnateShield, CurrentShield));
+            return shieldBefore - CurrentShield;
+        }
+
+        public void AddTemporaryShield(int amount)
+        {
+            if (amount <= 0)
+                return;
+
+            CurrentShield += amount;
+        }
+
+        public void ClearTemporaryShield()
+        {
+            CurrentShield = Math.Max(0, RemainingInnateShield);
+        }
+
+        public void ClearAllShield()
+        {
+            CurrentShield = 0;
+            RemainingInnateShield = 0;
         }
 
         public void Heal(int amount)
