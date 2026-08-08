@@ -37,6 +37,14 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 290, y: 92}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &34298750
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 34298747}
+  m_CullTransparentMesh: 1
 --- !u!114 &34298749
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -67,14 +75,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!222 &34298750
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 34298747}
-  m_CullTransparentMesh: 1
 --- !u!1 &99430862
 GameObject:
   m_ObjectHideFlags: 0
@@ -112,6 +112,14 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 25}
   m_SizeDelta: {x: 835, y: 617.4}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &99430865
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 99430862}
+  m_CullTransparentMesh: 1
 --- !u!114 &99430864
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -142,14 +150,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!222 &99430865
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 99430862}
-  m_CullTransparentMesh: 1
 --- !u!1 &209327257
 GameObject:
   m_ObjectHideFlags: 0
@@ -170,85 +170,37 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &209327258
-MonoBehaviour:
+--- !u!224 &209327262
+RectTransform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 209327257}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  allowSpriteRendererClick: 1
-  ignoreSpriteClickWhenMoved: 1
-  panelToOpen: {fileID: 0}
-  panelsToClose: []
-  panelToMove: {fileID: 0}
-  moveOffset: {x: 300, y: 0}
-  moveDuration: 0.2
-  toggleMove: 1
-  flipButtonOnMove: 0
-  flipTarget: {fileID: 0}
-  toggleIfAlreadyOpen: 1
-  bringOpenedPanelToFront: 0
-  forceOpenedPanelCanvasSorting: 0
-  openedPanelSortingOrder: 1000
-  addGraphicRaycasterToOpenedPanel: 1
-  closeOpenedPanelWhenOtherButtonHovered: 0
-  resetMoveWhenClosedByOtherButton: 1
-  moveTogetherTargets: []
-  effect: 0
-  fadeImage: {fileID: 0}
-  fadeDuration: 0.2
-  fadePanelImageOnChange: 0
-  panelFadeImage: {fileID: 0}
-  openedPanelAlpha: 0.9019608
-  panelFadeDuration: 0.2
-  playHoverSound: 1
-  hoverSfx: 8
-  playClickSound: 1
-  clickSfx: 9
-  playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
-  panelOpenCloseSfxVolume: 1
---- !u!114 &209327259
-MonoBehaviour:
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1197545818}
+  - {fileID: 435672652}
+  - {fileID: 1087786949}
+  - {fileID: 2046715210}
+  m_Father: {fileID: 808157329}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 150}
+  m_SizeDelta: {x: 290, y: 92}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &209327261
+CanvasRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 209327257}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fa9b19d30445e9c4f952d5b21bbf6629, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  startImageObject: {fileID: 0}
-  buttonContent: {fileID: 209327262}
-  hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
-  hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
-  hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 0}
-  protectedButtonImage: {fileID: 0}
-  changingBackgroundImage: {fileID: 0}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: -10, y: -10, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 1, g: 1, b: 1, a: 1}
-  clickedColor: {r: 0.30588236, g: 0.40000004, b: 0.8745099, a: 1}
-  toggleClickState: 1
-  keepClickedStateWhenPointerExit: 1
-  usePersistentClickedState: 0
-  clearClickedStateWhenAnotherButtonHovered: 1
-  hoverHitArea: {fileID: 0}
-  hoverExitPadding: 4
-  hoverExitDelay: 0.05
+  m_CullTransparentMesh: 1
 --- !u!114 &209327260
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -305,37 +257,85 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!222 &209327261
-CanvasRenderer:
+--- !u!114 &209327259
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 209327257}
-  m_CullTransparentMesh: 1
---- !u!224 &209327262
-RectTransform:
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa9b19d30445e9c4f952d5b21bbf6629, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  startImageObject: {fileID: 0}
+  buttonContent: {fileID: 209327262}
+  hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
+  hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
+  hoverDuration: 0.2
+  protectedBackgroundImage: {fileID: 0}
+  protectedButtonImage: {fileID: 0}
+  changingBackgroundImage: {fileID: 0}
+  changingBackgroundGraphic: {fileID: 0}
+  hoverChangingBackgroundMoveOffset: {x: -10, y: -10, z: 0}
+  hoverChangingBackgroundRotationZOffset: 0
+  changingBackgroundDuration: 0.2
+  normalColor: {r: 1, g: 1, b: 1, a: 1}
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
+  clickedColor: {r: 0.30588236, g: 0.40000004, b: 0.8745099, a: 1}
+  toggleClickState: 1
+  keepClickedStateWhenPointerExit: 1
+  usePersistentClickedState: 0
+  clearClickedStateWhenAnotherButtonHovered: 1
+  hoverHitArea: {fileID: 0}
+  hoverExitPadding: 4
+  hoverExitDelay: 0.05
+--- !u!114 &209327258
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 209327257}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1197545818}
-  - {fileID: 435672652}
-  - {fileID: 1087786949}
-  - {fileID: 2046715210}
-  m_Father: {fileID: 808157329}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 150}
-  m_SizeDelta: {x: 290, y: 92}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  allowSpriteRendererClick: 1
+  ignoreSpriteClickWhenMoved: 1
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 0
+  forceOpenedPanelCanvasSorting: 0
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  fadePanelImageOnChange: 0
+  panelFadeImage: {fileID: 0}
+  openedPanelAlpha: 0.9019608
+  panelFadeDuration: 0.2
+  playHoverSound: 1
+  hoverSfx: 8
+  playClickSound: 1
+  clickSfx: 9
+  playPanelOpenCloseSound: 0
+  panelOpenSfx: 26
+  panelCloseSfx: 27
+  panelOpenCloseSfxVolume: 1
 --- !u!1 &225729991
 GameObject:
   m_ObjectHideFlags: 0
@@ -373,6 +373,14 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 290, y: 92}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &225729994
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 225729991}
+  m_CullTransparentMesh: 1
 --- !u!114 &225729993
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -403,14 +411,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!222 &225729994
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 225729991}
-  m_CullTransparentMesh: 1
 --- !u!1 &309968161
 GameObject:
   m_ObjectHideFlags: 0
@@ -454,85 +454,14 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: -70}
   m_SizeDelta: {x: 290, y: 92}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &309968163
-MonoBehaviour:
+--- !u!222 &309968166
+CanvasRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 309968161}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fa9b19d30445e9c4f952d5b21bbf6629, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  startImageObject: {fileID: 0}
-  buttonContent: {fileID: 309968162}
-  hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
-  hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
-  hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 0}
-  protectedButtonImage: {fileID: 0}
-  changingBackgroundImage: {fileID: 0}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: -10, y: -10, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 1, g: 1, b: 1, a: 1}
-  clickedColor: {r: 0.30588236, g: 0.40000004, b: 0.8745099, a: 1}
-  toggleClickState: 1
-  keepClickedStateWhenPointerExit: 1
-  usePersistentClickedState: 0
-  clearClickedStateWhenAnotherButtonHovered: 1
-  hoverHitArea: {fileID: 0}
-  hoverExitPadding: 4
-  hoverExitDelay: 0.05
---- !u!114 &309968164
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 309968161}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  allowSpriteRendererClick: 1
-  ignoreSpriteClickWhenMoved: 1
-  panelToOpen: {fileID: 0}
-  panelsToClose: []
-  panelToMove: {fileID: 0}
-  moveOffset: {x: 300, y: 0}
-  moveDuration: 0.2
-  toggleMove: 1
-  flipButtonOnMove: 0
-  flipTarget: {fileID: 0}
-  toggleIfAlreadyOpen: 1
-  bringOpenedPanelToFront: 0
-  forceOpenedPanelCanvasSorting: 0
-  openedPanelSortingOrder: 1000
-  addGraphicRaycasterToOpenedPanel: 1
-  closeOpenedPanelWhenOtherButtonHovered: 0
-  resetMoveWhenClosedByOtherButton: 1
-  moveTogetherTargets: []
-  effect: 0
-  fadeImage: {fileID: 0}
-  fadeDuration: 0.2
-  fadePanelImageOnChange: 0
-  panelFadeImage: {fileID: 0}
-  openedPanelAlpha: 0.9019608
-  panelFadeDuration: 0.2
-  playHoverSound: 1
-  hoverSfx: 8
-  playClickSound: 1
-  clickSfx: 9
-  playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
-  panelOpenCloseSfxVolume: 1
+  m_CullTransparentMesh: 1
 --- !u!114 &309968165
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -589,14 +518,85 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!222 &309968166
-CanvasRenderer:
+--- !u!114 &309968164
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 309968161}
-  m_CullTransparentMesh: 1
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  allowSpriteRendererClick: 1
+  ignoreSpriteClickWhenMoved: 1
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 0
+  forceOpenedPanelCanvasSorting: 0
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  fadePanelImageOnChange: 0
+  panelFadeImage: {fileID: 0}
+  openedPanelAlpha: 0.9019608
+  panelFadeDuration: 0.2
+  playHoverSound: 1
+  hoverSfx: 8
+  playClickSound: 1
+  clickSfx: 9
+  playPanelOpenCloseSound: 0
+  panelOpenSfx: 26
+  panelCloseSfx: 27
+  panelOpenCloseSfxVolume: 1
+--- !u!114 &309968163
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 309968161}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa9b19d30445e9c4f952d5b21bbf6629, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  startImageObject: {fileID: 0}
+  buttonContent: {fileID: 309968162}
+  hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
+  hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
+  hoverDuration: 0.2
+  protectedBackgroundImage: {fileID: 0}
+  protectedButtonImage: {fileID: 0}
+  changingBackgroundImage: {fileID: 0}
+  changingBackgroundGraphic: {fileID: 0}
+  hoverChangingBackgroundMoveOffset: {x: -10, y: -10, z: 0}
+  hoverChangingBackgroundRotationZOffset: 0
+  changingBackgroundDuration: 0.2
+  normalColor: {r: 1, g: 1, b: 1, a: 1}
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
+  clickedColor: {r: 0.30588236, g: 0.40000004, b: 0.8745099, a: 1}
+  toggleClickState: 1
+  keepClickedStateWhenPointerExit: 1
+  usePersistentClickedState: 0
+  clearClickedStateWhenAnotherButtonHovered: 1
+  hoverHitArea: {fileID: 0}
+  hoverExitPadding: 4
+  hoverExitDelay: 0.05
 --- !u!1 &382394377
 GameObject:
   m_ObjectHideFlags: 0
@@ -634,6 +634,14 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 263}
   m_SizeDelta: {x: 600, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &382394380
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 382394377}
+  m_CullTransparentMesh: 1
 --- !u!114 &382394379
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -726,14 +734,6 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!222 &382394380
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 382394377}
-  m_CullTransparentMesh: 1
 --- !u!1 &435672651
 GameObject:
   m_ObjectHideFlags: 0
@@ -771,6 +771,14 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 290, y: 92}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &435672654
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 435672651}
+  m_CullTransparentMesh: 1
 --- !u!114 &435672653
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -801,14 +809,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!222 &435672654
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 435672651}
-  m_CullTransparentMesh: 1
 --- !u!1 &522716813
 GameObject:
   m_ObjectHideFlags: 0
@@ -846,6 +846,14 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 290, y: 92}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &522716816
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 522716813}
+  m_CullTransparentMesh: 1
 --- !u!114 &522716815
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -876,14 +884,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!222 &522716816
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 522716813}
-  m_CullTransparentMesh: 1
 --- !u!1 &779332223
 GameObject:
   m_ObjectHideFlags: 0
@@ -928,101 +928,14 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: -180}
   m_SizeDelta: {x: 290, y: 92}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &779332225
-MonoBehaviour:
+--- !u!222 &779332229
+CanvasRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 779332223}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  allowSpriteRendererClick: 1
-  ignoreSpriteClickWhenMoved: 1
-  panelToOpen: {fileID: 0}
-  panelsToClose: []
-  panelToMove: {fileID: 0}
-  moveOffset: {x: 300, y: 0}
-  moveDuration: 0.2
-  toggleMove: 1
-  flipButtonOnMove: 0
-  flipTarget: {fileID: 0}
-  toggleIfAlreadyOpen: 1
-  bringOpenedPanelToFront: 0
-  forceOpenedPanelCanvasSorting: 0
-  openedPanelSortingOrder: 1000
-  addGraphicRaycasterToOpenedPanel: 1
-  closeOpenedPanelWhenOtherButtonHovered: 0
-  resetMoveWhenClosedByOtherButton: 1
-  moveTogetherTargets: []
-  effect: 0
-  fadeImage: {fileID: 0}
-  fadeDuration: 0.2
-  fadePanelImageOnChange: 0
-  panelFadeImage: {fileID: 0}
-  openedPanelAlpha: 0.9019608
-  panelFadeDuration: 0.2
-  playHoverSound: 1
-  hoverSfx: 8
-  playClickSound: 1
-  clickSfx: 9
-  playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
-  panelOpenCloseSfxVolume: 1
---- !u!114 &779332226
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 779332223}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fa9b19d30445e9c4f952d5b21bbf6629, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  startImageObject: {fileID: 0}
-  buttonContent: {fileID: 779332224}
-  hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
-  hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
-  hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 0}
-  protectedButtonImage: {fileID: 0}
-  changingBackgroundImage: {fileID: 0}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: 10, y: -10, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 1, g: 1, b: 1, a: 1}
-  clickedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
-  toggleClickState: 1
-  keepClickedStateWhenPointerExit: 1
-  usePersistentClickedState: 0
-  clearClickedStateWhenAnotherButtonHovered: 1
-  hoverHitArea: {fileID: 0}
-  hoverExitPadding: 4
-  hoverExitDelay: 0.05
---- !u!114 &779332227
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 779332223}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4ea157357b94e13459b28632d56ee271, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  playHoverSound: 1
-  hoverSfx: 6
-  playClickSound: 1
-  clickSfx: 7
+  m_CullTransparentMesh: 1
 --- !u!114 &779332228
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1079,14 +992,101 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!222 &779332229
-CanvasRenderer:
+--- !u!114 &779332227
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 779332223}
-  m_CullTransparentMesh: 1
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ea157357b94e13459b28632d56ee271, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playHoverSound: 1
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 7
+--- !u!114 &779332226
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 779332223}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa9b19d30445e9c4f952d5b21bbf6629, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  startImageObject: {fileID: 0}
+  buttonContent: {fileID: 779332224}
+  hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
+  hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
+  hoverDuration: 0.2
+  protectedBackgroundImage: {fileID: 0}
+  protectedButtonImage: {fileID: 0}
+  changingBackgroundImage: {fileID: 0}
+  changingBackgroundGraphic: {fileID: 0}
+  hoverChangingBackgroundMoveOffset: {x: 10, y: -10, z: 0}
+  hoverChangingBackgroundRotationZOffset: 0
+  changingBackgroundDuration: 0.2
+  normalColor: {r: 1, g: 1, b: 1, a: 1}
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
+  clickedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
+  toggleClickState: 1
+  keepClickedStateWhenPointerExit: 1
+  usePersistentClickedState: 0
+  clearClickedStateWhenAnotherButtonHovered: 1
+  hoverHitArea: {fileID: 0}
+  hoverExitPadding: 4
+  hoverExitDelay: 0.05
+--- !u!114 &779332225
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 779332223}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  allowSpriteRendererClick: 1
+  ignoreSpriteClickWhenMoved: 1
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 0
+  forceOpenedPanelCanvasSorting: 0
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  fadePanelImageOnChange: 0
+  panelFadeImage: {fileID: 0}
+  openedPanelAlpha: 0.9019608
+  panelFadeDuration: 0.2
+  playHoverSound: 1
+  hoverSfx: 8
+  playClickSound: 1
+  clickSfx: 9
+  playPanelOpenCloseSound: 0
+  panelOpenSfx: 26
+  panelCloseSfx: 27
+  panelOpenCloseSfxVolume: 1
 --- !u!1 &808157328
 GameObject:
   m_ObjectHideFlags: 0
@@ -1119,6 +1119,8 @@ RectTransform:
   - {fileID: 1675059425}
   - {fileID: 99430863}
   - {fileID: 1566927259}
+  - {fileID: 1598590395986169004}
+  - {fileID: 1748115762591387298}
   - {fileID: 382394378}
   - {fileID: 209327262}
   - {fileID: 2079656778}
@@ -1157,6 +1159,33 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!224 &1087786949
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1087786946}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 209327262}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 290, y: 92}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &1087786948
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1087786946}
+  m_CullTransparentMesh: 1
 --- !u!114 &1087786947
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1187,33 +1216,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!222 &1087786948
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1087786946}
-  m_CullTransparentMesh: 1
---- !u!224 &1087786949
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1087786946}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 209327262}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 290, y: 92}
-  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1197545817
 GameObject:
   m_ObjectHideFlags: 0
@@ -1326,6 +1328,14 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 300, y: 120}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &1212762121
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1212762118}
+  m_CullTransparentMesh: 1
 --- !u!114 &1212762120
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1418,14 +1428,6 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!222 &1212762121
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1212762118}
-  m_CullTransparentMesh: 1
 --- !u!1 &1254059953
 GameObject:
   m_ObjectHideFlags: 0
@@ -1463,6 +1465,14 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 290, y: 92}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &1254059956
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1254059953}
+  m_CullTransparentMesh: 1
 --- !u!114 &1254059955
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1493,14 +1503,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!222 &1254059956
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1254059953}
-  m_CullTransparentMesh: 1
 --- !u!1 &1565010393
 GameObject:
   m_ObjectHideFlags: 0
@@ -1538,6 +1540,14 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 290, y: 92}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &1565010396
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1565010393}
+  m_CullTransparentMesh: 1
 --- !u!114 &1565010395
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1568,14 +1578,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!222 &1565010396
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1565010393}
-  m_CullTransparentMesh: 1
 --- !u!1 &1566927258
 GameObject:
   m_ObjectHideFlags: 0
@@ -1610,9 +1612,17 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 40}
-  m_SizeDelta: {x: 860.9, y: 654}
+  m_AnchoredPosition: {x: 0, y: 334}
+  m_SizeDelta: {x: 806.91, y: 9}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &1566927261
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1566927258}
+  m_CullTransparentMesh: 1
 --- !u!114 &1566927260
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1633,7 +1643,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 5cae2de971f12ca458b46bfc5cbe6cb1, type: 3}
+  m_Sprite: {fileID: 21300000, guid: af283de9d5bcac24ba88e8e10901dfa6, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1643,14 +1653,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!222 &1566927261
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1566927258}
-  m_CullTransparentMesh: 1
 --- !u!1 &1675059424
 GameObject:
   m_ObjectHideFlags: 0
@@ -1688,6 +1690,14 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &1675059427
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1675059424}
+  m_CullTransparentMesh: 1
 --- !u!114 &1675059426
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1718,14 +1728,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!222 &1675059427
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1675059424}
-  m_CullTransparentMesh: 1
 --- !u!1 &1703578786
 GameObject:
   m_ObjectHideFlags: 0
@@ -1763,6 +1765,14 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 290, y: 92}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &1703578789
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1703578786}
+  m_CullTransparentMesh: 1
 --- !u!114 &1703578788
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1793,14 +1803,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!222 &1703578789
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1703578786}
-  m_CullTransparentMesh: 1
 --- !u!1 &1813401934
 GameObject:
   m_ObjectHideFlags: 0
@@ -1838,6 +1840,14 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 290, y: 92}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &1813401937
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1813401934}
+  m_CullTransparentMesh: 1
 --- !u!114 &1813401936
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1868,14 +1878,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!222 &1813401937
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1813401934}
-  m_CullTransparentMesh: 1
 --- !u!1 &1890205736
 GameObject:
   m_ObjectHideFlags: 0
@@ -1913,6 +1915,14 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 300, y: 120}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &1890205739
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1890205736}
+  m_CullTransparentMesh: 1
 --- !u!114 &1890205738
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2005,14 +2015,6 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!222 &1890205739
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1890205736}
-  m_CullTransparentMesh: 1
 --- !u!1 &1942304245
 GameObject:
   m_ObjectHideFlags: 0
@@ -2050,6 +2052,14 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 300, y: 120}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &1942304248
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1942304245}
+  m_CullTransparentMesh: 1
 --- !u!114 &1942304247
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2142,14 +2152,6 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!222 &1942304248
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1942304245}
-  m_CullTransparentMesh: 1
 --- !u!1 &2046173532
 GameObject:
   m_ObjectHideFlags: 0
@@ -2187,6 +2189,14 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 290, y: 92}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &2046173535
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2046173532}
+  m_CullTransparentMesh: 1
 --- !u!114 &2046173534
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2217,14 +2227,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!222 &2046173535
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2046173532}
-  m_CullTransparentMesh: 1
 --- !u!1 &2046715209
 GameObject:
   m_ObjectHideFlags: 0
@@ -2262,6 +2264,14 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 300, y: 120}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &2046715212
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2046715209}
+  m_CullTransparentMesh: 1
 --- !u!114 &2046715211
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2354,14 +2364,6 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!222 &2046715212
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2046715209}
-  m_CullTransparentMesh: 1
 --- !u!1 &2047871259
 GameObject:
   m_ObjectHideFlags: 0
@@ -2399,6 +2401,14 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 290, y: 92}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &2047871262
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2047871259}
+  m_CullTransparentMesh: 1
 --- !u!114 &2047871261
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2429,14 +2439,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!222 &2047871262
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2047871259}
-  m_CullTransparentMesh: 1
 --- !u!1 &2079656777
 GameObject:
   m_ObjectHideFlags: 0
@@ -2481,101 +2483,14 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 40}
   m_SizeDelta: {x: 290, y: 92}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &2079656779
-MonoBehaviour:
+--- !u!222 &2079656783
+CanvasRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2079656777}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  allowSpriteRendererClick: 1
-  ignoreSpriteClickWhenMoved: 1
-  panelToOpen: {fileID: 0}
-  panelsToClose: []
-  panelToMove: {fileID: 0}
-  moveOffset: {x: 300, y: 0}
-  moveDuration: 0.2
-  toggleMove: 1
-  flipButtonOnMove: 0
-  flipTarget: {fileID: 0}
-  toggleIfAlreadyOpen: 1
-  bringOpenedPanelToFront: 0
-  forceOpenedPanelCanvasSorting: 0
-  openedPanelSortingOrder: 1000
-  addGraphicRaycasterToOpenedPanel: 1
-  closeOpenedPanelWhenOtherButtonHovered: 0
-  resetMoveWhenClosedByOtherButton: 1
-  moveTogetherTargets: []
-  effect: 0
-  fadeImage: {fileID: 0}
-  fadeDuration: 0.2
-  fadePanelImageOnChange: 0
-  panelFadeImage: {fileID: 0}
-  openedPanelAlpha: 0.9019608
-  panelFadeDuration: 0.2
-  playHoverSound: 1
-  hoverSfx: 8
-  playClickSound: 1
-  clickSfx: 9
-  playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
-  panelOpenCloseSfxVolume: 1
---- !u!114 &2079656780
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2079656777}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fa9b19d30445e9c4f952d5b21bbf6629, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  startImageObject: {fileID: 0}
-  buttonContent: {fileID: 2079656778}
-  hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
-  hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
-  hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 0}
-  protectedButtonImage: {fileID: 0}
-  changingBackgroundImage: {fileID: 0}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: 10, y: -10, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 1, g: 1, b: 1, a: 1}
-  clickedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
-  toggleClickState: 1
-  keepClickedStateWhenPointerExit: 1
-  usePersistentClickedState: 0
-  clearClickedStateWhenAnotherButtonHovered: 1
-  hoverHitArea: {fileID: 0}
-  hoverExitPadding: 4
-  hoverExitDelay: 0.05
---- !u!114 &2079656781
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2079656777}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4ea157357b94e13459b28632d56ee271, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  playHoverSound: 1
-  hoverSfx: 6
-  playClickSound: 1
-  clickSfx: 7
+  m_CullTransparentMesh: 1
 --- !u!114 &2079656782
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2632,11 +2547,248 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!222 &2079656783
-CanvasRenderer:
+--- !u!114 &2079656781
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2079656777}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ea157357b94e13459b28632d56ee271, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playHoverSound: 1
+  hoverSfx: 6
+  playClickSound: 1
+  clickSfx: 7
+--- !u!114 &2079656780
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2079656777}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa9b19d30445e9c4f952d5b21bbf6629, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  startImageObject: {fileID: 0}
+  buttonContent: {fileID: 2079656778}
+  hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
+  hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
+  hoverDuration: 0.2
+  protectedBackgroundImage: {fileID: 0}
+  protectedButtonImage: {fileID: 0}
+  changingBackgroundImage: {fileID: 0}
+  changingBackgroundGraphic: {fileID: 0}
+  hoverChangingBackgroundMoveOffset: {x: 10, y: -10, z: 0}
+  hoverChangingBackgroundRotationZOffset: 0
+  changingBackgroundDuration: 0.2
+  normalColor: {r: 1, g: 1, b: 1, a: 1}
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
+  clickedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
+  toggleClickState: 1
+  keepClickedStateWhenPointerExit: 1
+  usePersistentClickedState: 0
+  clearClickedStateWhenAnotherButtonHovered: 1
+  hoverHitArea: {fileID: 0}
+  hoverExitPadding: 4
+  hoverExitDelay: 0.05
+--- !u!114 &2079656779
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2079656777}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  allowSpriteRendererClick: 1
+  ignoreSpriteClickWhenMoved: 1
+  panelToOpen: {fileID: 0}
+  panelsToClose: []
+  panelToMove: {fileID: 0}
+  moveOffset: {x: 300, y: 0}
+  moveDuration: 0.2
+  toggleMove: 1
+  flipButtonOnMove: 0
+  flipTarget: {fileID: 0}
+  toggleIfAlreadyOpen: 1
+  bringOpenedPanelToFront: 0
+  forceOpenedPanelCanvasSorting: 0
+  openedPanelSortingOrder: 1000
+  addGraphicRaycasterToOpenedPanel: 1
+  closeOpenedPanelWhenOtherButtonHovered: 0
+  resetMoveWhenClosedByOtherButton: 1
+  moveTogetherTargets: []
+  effect: 0
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.2
+  fadePanelImageOnChange: 0
+  panelFadeImage: {fileID: 0}
+  openedPanelAlpha: 0.9019608
+  panelFadeDuration: 0.2
+  playHoverSound: 1
+  hoverSfx: 8
+  playClickSound: 1
+  clickSfx: 9
+  playPanelOpenCloseSound: 0
+  panelOpenSfx: 26
+  panelCloseSfx: 27
+  panelOpenCloseSfxVolume: 1
+--- !u!1 &7105040831688555757
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1598590395986169004}
+  - component: {fileID: 7301873547395053918}
+  - component: {fileID: 514964981252872072}
+  m_Layer: 5
+  m_Name: Image (2)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1598590395986169004
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7105040831688555757}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 808157329}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: -279.01}
+  m_SizeDelta: {x: 806.91, y: 5}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &7301873547395053918
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7105040831688555757}
   m_CullTransparentMesh: 1
+--- !u!114 &514964981252872072
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7105040831688555757}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 6aaec7555138b8643b43dc1f2d1aafeb, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!1 &7767053809991709758
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1748115762591387298}
+  - component: {fileID: 1442881745286198391}
+  - component: {fileID: 8400189510065248180}
+  m_Layer: 5
+  m_Name: Image (3)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1748115762591387298
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7767053809991709758}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 808157329}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 324}
+  m_SizeDelta: {x: 40.2, y: 60}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &1442881745286198391
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7767053809991709758}
+  m_CullTransparentMesh: 1
+--- !u!114 &8400189510065248180
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7767053809991709758}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 0b5f1e83f235d8a4abe5bed4e2ed9959, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
