@@ -29,3 +29,5 @@ MonoBehaviour:
     prefab: {fileID: 7300000000000000001, guid: d90630b968e146ed9f934c2565d1b4e3, type: 3}
   - gridEffectId: GR_spider_web
     prefab: {fileID: 7400000000000000001, guid: 9aa89ef1f9eb4ef68a9dd5fe303e0f5f, type: 3}
+  - gridEffectId: GR_nocturn_portal_preview
+    prefab: {fileID: 7383548059930101559, guid: ecd05d8207b1dc7479b902ef4afeb80f, type: 3}

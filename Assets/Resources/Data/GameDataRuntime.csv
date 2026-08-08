@@ -324,6 +324,7 @@ GR_dummy,허수아비,0,0,-1,0,1,0,Summon,적의 공격 대상이 되는 소환�
 GR_explosive_doll,폭발 인형,0,0,-1,4,1,0,Summon,5번 슬롯 행동이 끝나면 주변 적에게 고정피해를 주는 소환물입니다.
 GR_spider_egg,거미알,0,0,-1,10,5,2,Summon,2턴 후 신더로 부화합니다. 피해를 받아 HP가 0이 되면 파괴됩니다.
 GR_spider_web,거미줄,1,0,E_Spider_Web,2,1,2,Monster,진입한 캐릭터의 다음 이동 예약 사용 코스트가 2배가 됩니다.
+GR_nocturn_portal_preview,녹턴 포털 예고,1,0,-1,0,1,0,Monster,녹턴의 포털 이동 목적지를 미리 표시합니다.
 ,
 
 # Effect
