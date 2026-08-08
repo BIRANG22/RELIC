@@ -6,50 +6,28 @@ namespace Relic.Gameplay.Data
 {
     public static class CultureTankResearchService
     {
-        public const int DefaultResearchDurationSeconds = 150;
         public const int DefaultBattleStartEffectUses = 3;
+        public const int CurrentSchemaVersion = 1;
 
-        public static bool TryStartResearch(
-            LobbyRuntimeData lobby,
-            string tankId,
-            string itemId,
-            long startedAtUtcTicks,
-            out string error)
+        public static bool TryPlaceIngredient(LobbyRuntimeData lobby, string tankId, string itemId, out string error)
         {
             error = string.Empty;
-
-            if (lobby == null)
-            {
-                error = "Lobby runtime is missing.";
+            if (!ValidateLobbyAndIds(lobby, tankId, itemId, out string slotId, out string ingredientId, out error))
                 return false;
-            }
-
-            string normalizedTankId = NormalizeId(tankId);
-            string normalizedItemId = NormalizeId(itemId);
-
-            if (string.IsNullOrEmpty(normalizedTankId))
-            {
-                error = "TankId is required.";
-                return false;
-            }
-
-            if (string.IsNullOrEmpty(normalizedItemId))
-            {
-                error = "ItemId is required.";
-                return false;
-            }
 
             Normalize(lobby);
-
-            if (TryGetTank(lobby, normalizedTankId, out _))
+            if (!string.IsNullOrEmpty(lobby.CompletedCultureTankCombinationId))
             {
-                error = "Culture tank is already occupied.";
+                error = "Claim the completed combination first.";
+                return false;
+            }
+            if (TryGetTank(lobby, slotId, out _))
+            {
+                error = "Culture tank slot is already occupied.";
                 return false;
             }
 
-            int bagIndex = lobby.BagItemIds.FindIndex(value =>
-                string.Equals(NormalizeId(value), normalizedItemId, StringComparison.Ordinal));
-
+            int bagIndex = lobby.BagItemIds.FindIndex(value => NormalizeId(value) == ingredientId);
             if (bagIndex < 0)
             {
                 error = "Selected item does not exist in lobby bag.";
@@ -57,275 +35,194 @@ namespace Relic.Gameplay.Data
             }
 
             lobby.BagItemIds.RemoveAt(bagIndex);
-            lobby.CultureTankResearches.Add(new CultureTankResearchRuntimeData
-            {
-                TankId = normalizedTankId,
-                ItemId = normalizedItemId,
-                StartedAtUtcTicks = Math.Max(0L, startedAtUtcTicks),
-                DurationSeconds = DefaultResearchDurationSeconds,
-                IsCompleted = false
-            });
-
+            lobby.CultureTankResearches.Add(new CultureTankResearchRuntimeData { TankId = slotId, ItemId = ingredientId });
             return true;
         }
 
-        public static bool TryGetTank(
-            LobbyRuntimeData lobby,
-            string tankId,
-            out CultureTankResearchRuntimeData tank)
+        public static bool TryRemoveIngredient(LobbyRuntimeData lobby, string tankId, out string error)
         {
-            tank = null;
-
-            if (lobby == null)
-                return false;
-
+            error = string.Empty;
+            if (lobby == null) { error = "Lobby runtime is missing."; return false; }
             Normalize(lobby);
-            string normalizedTankId = NormalizeId(tankId);
-            if (string.IsNullOrEmpty(normalizedTankId))
-                return false;
-
-            for (int i = 0; i < lobby.CultureTankResearches.Count; i++)
+            if (!TryGetTank(lobby, tankId, out CultureTankResearchRuntimeData slot))
             {
-                CultureTankResearchRuntimeData candidate = lobby.CultureTankResearches[i];
-                if (candidate == null)
-                    continue;
+                error = "Culture tank slot is empty.";
+                return false;
+            }
+            lobby.BagItemIds.Add(slot.ItemId);
+            lobby.CultureTankResearches.Remove(slot);
+            return true;
+        }
 
-                if (!string.Equals(NormalizeId(candidate.TankId), normalizedTankId, StringComparison.Ordinal))
-                    continue;
-
-                tank = candidate;
-                return true;
+        public static bool TryCombine(
+            LobbyRuntimeData lobby,
+            ItemDatabase itemDatabase,
+            CultureTankCombinationDatabase combinationDatabase,
+            out string combinationId,
+            out string error)
+        {
+            combinationId = string.Empty;
+            error = string.Empty;
+            if (lobby == null || itemDatabase == null || combinationDatabase == null)
+            {
+                error = "Culture tank data is missing.";
+                return false;
+            }
+            Normalize(lobby);
+            if (!string.IsNullOrEmpty(lobby.CompletedCultureTankCombinationId))
+            {
+                error = "Claim the completed combination first.";
+                return false;
+            }
+            if (lobby.CultureTankResearches.Count != 3)
+            {
+                error = "Three ingredients are required.";
+                return false;
             }
 
-            return false;
-        }
+            string[] types = new string[3];
+            for (int i = 0; i < 3; i++)
+            {
+                ItemData item = itemDatabase.Get(lobby.CultureTankResearches[i].ItemId);
+                if (item == null || string.IsNullOrWhiteSpace(item.CultureType))
+                {
+                    error = "Ingredient type data is missing.";
+                    return false;
+                }
+                types[i] = item.CultureType;
+            }
 
-        public static bool RefreshCompletion(
-            CultureTankResearchRuntimeData tank,
-            long nowUtcTicks)
-        {
-            if (tank == null || tank.IsCompleted)
+            if (!combinationDatabase.TryGetByTypes(types[0], types[1], types[2], out CultureTankCombinationEntry recipe))
+            {
+                error = "No culture tank recipe matches these ingredients.";
                 return false;
+            }
 
-            if (GetRemainingSeconds(tank, nowUtcTicks) > 0)
-                return false;
-
-            tank.IsCompleted = true;
+            combinationId = recipe.CombinationId;
+            lobby.CultureTankResearches.Clear();
+            lobby.CompletedCultureTankCombinationId = combinationId;
             return true;
         }
 
-        public static int GetRemainingSeconds(
-            CultureTankResearchRuntimeData tank,
-            long nowUtcTicks)
-        {
-            if (tank == null)
-                return 0;
-
-            int durationSeconds = Mathf.Max(0, tank.DurationSeconds);
-            long elapsedTicks = Math.Max(0L, nowUtcTicks - Math.Max(0L, tank.StartedAtUtcTicks));
-            double elapsedSeconds = TimeSpan.FromTicks(elapsedTicks).TotalSeconds;
-            return Mathf.Max(0, Mathf.CeilToInt(durationSeconds - (float)elapsedSeconds));
-        }
-
-        public static float GetProgress01(
-            CultureTankResearchRuntimeData tank,
-            long nowUtcTicks)
-        {
-            if (tank == null)
-                return 0f;
-
-            int durationSeconds = Mathf.Max(1, tank.DurationSeconds);
-            long elapsedTicks = Math.Max(0L, nowUtcTicks - Math.Max(0L, tank.StartedAtUtcTicks));
-            float elapsedSeconds = (float)TimeSpan.FromTicks(elapsedTicks).TotalSeconds;
-            return Mathf.Clamp01(elapsedSeconds / durationSeconds);
-        }
-
-        public static bool TryClaimCompletedResearch(
+        public static bool TryClaimCompletedCombination(
             LobbyRuntimeData lobby,
-            ItemData item,
-            string tankId,
-            long nowUtcTicks,
+            CultureTankCombinationDatabase combinationDatabase,
             out CultureTankBattleStartEffectRuntimeData effect,
             out string error)
         {
             effect = null;
             error = string.Empty;
-
-            if (lobby == null)
+            if (lobby == null || combinationDatabase == null)
             {
-                error = "Lobby runtime is missing.";
+                error = "Culture tank data is missing.";
                 return false;
             }
-
             Normalize(lobby);
-
-            if (!TryGetTank(lobby, tankId, out CultureTankResearchRuntimeData tank))
+            if (!combinationDatabase.TryGetById(lobby.CompletedCultureTankCombinationId, out CultureTankCombinationEntry recipe) ||
+                string.IsNullOrWhiteSpace(recipe.EffectId))
             {
-                error = "Culture tank is empty.";
+                error = "Completed combination data is missing.";
                 return false;
             }
 
-            RefreshCompletion(tank, nowUtcTicks);
-
-            if (!tank.IsCompleted)
+            effect = new CultureTankBattleStartEffectRuntimeData
             {
-                error = "Research is not completed.";
-                return false;
-            }
-
-            if (item == null || !string.Equals(NormalizeId(item.ItemId), NormalizeId(tank.ItemId), StringComparison.Ordinal))
-            {
-                error = "Completed item data is missing.";
-                return false;
-            }
-
-            effect = BuildBattleStartEffect(item);
-            if (effect == null)
-            {
-                error = "Completed item has no battle start effect.";
-                return false;
-            }
-
+                SourceItemId = recipe.CombinationId,
+                EffectId = recipe.EffectId.Trim(),
+                Value = Mathf.Max(0, recipe.ValueRate),
+                Count = Mathf.Max(0, recipe.CountRate),
+                RemainingBattleStarts = Mathf.Max(1, recipe.RemainingBattleStarts)
+            };
             lobby.PendingCultureTankBattleStartEffects.Add(effect);
-            RemoveTank(lobby, tank.TankId);
+            lobby.CompletedCultureTankCombinationId = string.Empty;
             return true;
         }
 
-        public static CultureTankBattleStartEffectRuntimeData BuildBattleStartEffect(ItemData item)
+        public static bool TryGetTank(LobbyRuntimeData lobby, string tankId, out CultureTankResearchRuntimeData tank)
         {
-            if (item == null)
-                return null;
-
-            string itemId = NormalizeId(item.ItemId);
-            string effectId = NormalizeId(item.EffectId);
-
-            if (string.IsNullOrEmpty(itemId) || string.IsNullOrEmpty(effectId))
-                return null;
-
-            int value = ParsePositiveInt(item.ValueRate, 1);
-            int count = ParsePositiveInt(item.CountRate, 1);
-
-            return new CultureTankBattleStartEffectRuntimeData
-            {
-                SourceItemId = itemId,
-                EffectId = effectId,
-                Value = value,
-                Count = count,
-                RemainingBattleStarts = DefaultBattleStartEffectUses
-            };
+            tank = null;
+            if (lobby == null) return false;
+            Normalize(lobby);
+            string id = NormalizeId(tankId);
+            tank = lobby.CultureTankResearches.Find(value => value != null && NormalizeId(value.TankId) == id);
+            return tank != null;
         }
 
-        public static List<CultureTankBattleStartEffectRuntimeData> CopyPendingBattleStartEffects(
-            LobbyRuntimeData lobby)
+        public static List<CultureTankBattleStartEffectRuntimeData> CopyPendingBattleStartEffects(LobbyRuntimeData lobby)
         {
             var result = new List<CultureTankBattleStartEffectRuntimeData>();
-
-            if (lobby == null)
-                return result;
-
+            if (lobby == null) return result;
             Normalize(lobby);
-
-            for (int i = 0; i < lobby.PendingCultureTankBattleStartEffects.Count; i++)
+            foreach (CultureTankBattleStartEffectRuntimeData source in lobby.PendingCultureTankBattleStartEffects)
             {
-                CultureTankBattleStartEffectRuntimeData source = lobby.PendingCultureTankBattleStartEffects[i];
                 CultureTankBattleStartEffectRuntimeData copy = CopyBattleStartEffect(source);
-
-                if (copy != null)
-                    result.Add(copy);
+                if (copy != null) result.Add(copy);
             }
-
             return result;
         }
 
-        public static CultureTankBattleStartEffectRuntimeData CopyBattleStartEffect(
-            CultureTankBattleStartEffectRuntimeData source)
+        public static CultureTankBattleStartEffectRuntimeData CopyBattleStartEffect(CultureTankBattleStartEffectRuntimeData source)
         {
-            if (source == null ||
-                string.IsNullOrWhiteSpace(source.EffectId) ||
-                source.RemainingBattleStarts <= 0)
-            {
-                return null;
-            }
-
+            if (source == null || string.IsNullOrWhiteSpace(source.EffectId) || source.RemainingBattleStarts <= 0) return null;
             return new CultureTankBattleStartEffectRuntimeData
             {
-                SourceItemId = NormalizeId(source.SourceItemId),
-                EffectId = NormalizeId(source.EffectId),
-                Value = Mathf.Max(0, source.Value),
-                Count = Mathf.Max(0, source.Count),
+                SourceItemId = NormalizeId(source.SourceItemId), EffectId = NormalizeId(source.EffectId),
+                Value = Mathf.Max(0, source.Value), Count = Mathf.Max(0, source.Count),
                 RemainingBattleStarts = Mathf.Max(0, source.RemainingBattleStarts)
             };
         }
 
         public static void Normalize(LobbyRuntimeData lobby)
         {
-            if (lobby == null)
-                return;
-
+            if (lobby == null) return;
+            lobby.BagItemIds ??= new List<string>();
             lobby.CultureTankResearches ??= new List<CultureTankResearchRuntimeData>();
             lobby.PendingCultureTankBattleStartEffects ??= new List<CultureTankBattleStartEffectRuntimeData>();
+            lobby.CompletedCultureTankCombinationId = NormalizeId(lobby.CompletedCultureTankCombinationId);
 
-            for (int i = lobby.CultureTankResearches.Count - 1; i >= 0; i--)
+            if (lobby.CultureTankCombinationSchemaVersion < CurrentSchemaVersion)
             {
-                CultureTankResearchRuntimeData tank = lobby.CultureTankResearches[i];
-                if (tank == null ||
-                    string.IsNullOrWhiteSpace(tank.TankId) ||
-                    string.IsNullOrWhiteSpace(tank.ItemId))
-                {
-                    lobby.CultureTankResearches.RemoveAt(i);
-                    continue;
-                }
-
-                tank.TankId = NormalizeId(tank.TankId);
-                tank.ItemId = NormalizeId(tank.ItemId);
-                tank.StartedAtUtcTicks = Math.Max(0L, tank.StartedAtUtcTicks);
-
-                if (tank.DurationSeconds <= 0)
-                    tank.DurationSeconds = DefaultResearchDurationSeconds;
+                foreach (CultureTankResearchRuntimeData legacy in lobby.CultureTankResearches)
+                    if (legacy != null && !string.IsNullOrWhiteSpace(legacy.ItemId))
+                        lobby.BagItemIds.Add(legacy.ItemId.Trim());
+                lobby.CultureTankResearches.Clear();
+                lobby.CompletedCultureTankCombinationId = string.Empty;
+                lobby.CultureTankCombinationSchemaVersion = CurrentSchemaVersion;
             }
 
+            var usedSlots = new HashSet<string>(StringComparer.Ordinal);
+            for (int i = lobby.CultureTankResearches.Count - 1; i >= 0; i--)
+            {
+                CultureTankResearchRuntimeData slot = lobby.CultureTankResearches[i];
+                if (slot == null || string.IsNullOrWhiteSpace(slot.TankId) || string.IsNullOrWhiteSpace(slot.ItemId))
+                { lobby.CultureTankResearches.RemoveAt(i); continue; }
+                slot.TankId = NormalizeId(slot.TankId);
+                slot.ItemId = NormalizeId(slot.ItemId);
+                if (!usedSlots.Add(slot.TankId))
+                { lobby.BagItemIds.Add(slot.ItemId); lobby.CultureTankResearches.RemoveAt(i); }
+            }
             for (int i = lobby.PendingCultureTankBattleStartEffects.Count - 1; i >= 0; i--)
             {
-                CultureTankBattleStartEffectRuntimeData copy =
-                    CopyBattleStartEffect(lobby.PendingCultureTankBattleStartEffects[i]);
-
-                if (copy == null)
-                    lobby.PendingCultureTankBattleStartEffects.RemoveAt(i);
-                else
-                    lobby.PendingCultureTankBattleStartEffects[i] = copy;
+                CultureTankBattleStartEffectRuntimeData copy = CopyBattleStartEffect(lobby.PendingCultureTankBattleStartEffects[i]);
+                if (copy == null) lobby.PendingCultureTankBattleStartEffects.RemoveAt(i);
+                else lobby.PendingCultureTankBattleStartEffects[i] = copy;
             }
         }
 
-        private static void RemoveTank(LobbyRuntimeData lobby, string tankId)
+        [Obsolete("Use TryPlaceIngredient.")]
+        public static bool TryStartResearch(LobbyRuntimeData lobby, string tankId, string itemId, long _, out string error) =>
+            TryPlaceIngredient(lobby, tankId, itemId, out error);
+
+        private static bool ValidateLobbyAndIds(LobbyRuntimeData lobby, string tankId, string itemId,
+            out string slotId, out string ingredientId, out string error)
         {
-            if (lobby == null || lobby.CultureTankResearches == null)
-                return;
-
-            string normalizedTankId = NormalizeId(tankId);
-
-            for (int i = lobby.CultureTankResearches.Count - 1; i >= 0; i--)
-            {
-                CultureTankResearchRuntimeData tank = lobby.CultureTankResearches[i];
-
-                if (tank != null &&
-                    string.Equals(NormalizeId(tank.TankId), normalizedTankId, StringComparison.Ordinal))
-                {
-                    lobby.CultureTankResearches.RemoveAt(i);
-                }
-            }
+            slotId = NormalizeId(tankId); ingredientId = NormalizeId(itemId); error = string.Empty;
+            if (lobby == null) error = "Lobby runtime is missing.";
+            else if (string.IsNullOrEmpty(slotId)) error = "TankId is required.";
+            else if (string.IsNullOrEmpty(ingredientId)) error = "ItemId is required.";
+            return string.IsNullOrEmpty(error);
         }
 
-        private static string NormalizeId(string value)
-        {
-            return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
-        }
-
-        private static int ParsePositiveInt(string value, int fallback)
-        {
-            if (int.TryParse(value, out int parsed))
-                return Mathf.Max(0, parsed);
-
-            return Mathf.Max(0, fallback);
-        }
+        private static string NormalizeId(string value) => string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
     }
 }

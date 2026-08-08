@@ -1,0 +1,105 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67db5854cbca4c1e9d7fdf6d423bc816, type: 3}
+  m_Name: Culture Tank Combination Database
+  m_EditorClassIdentifier: 
+  entries:
+  - CombinationId: Culture_AAA
+    TypeA: A
+    TypeB: A
+    TypeC: A
+    ResultIcon: {fileID: 21300000, guid: dc678e16ce6a8684cb0622c503b35fe9, type: 3}
+    EffectId: E_Barrier
+    ValueRate: 1
+    CountRate: 1
+    RemainingBattleStarts: 3
+  - CombinationId: Culture_AAB
+    TypeA: A
+    TypeB: A
+    TypeC: B
+    ResultIcon: {fileID: 21300000, guid: 0e49ef9082429ef4e80ebf19dfe1195c, type: 3}
+    EffectId: E_Armor
+    ValueRate: 1
+    CountRate: 1
+    RemainingBattleStarts: 3
+  - CombinationId: Culture_AAC
+    TypeA: A
+    TypeB: A
+    TypeC: C
+    ResultIcon: {fileID: 21300000, guid: 423109f8614dd784a969f1c1246979de, type: 3}
+    EffectId: E_Move_First_Attack_Power
+    ValueRate: 1
+    CountRate: 1
+    RemainingBattleStarts: 3
+  - CombinationId: Culture_ABB
+    TypeA: A
+    TypeB: B
+    TypeC: B
+    ResultIcon: {fileID: 21300000, guid: fe50fe15785b62a44b32c2131ff16208, type: 3}
+    EffectId: E_Poison_Apply_Double
+    ValueRate: 1
+    CountRate: 1
+    RemainingBattleStarts: 3
+  - CombinationId: Culture_ABC
+    TypeA: A
+    TypeB: B
+    TypeC: C
+    ResultIcon: {fileID: 21300000, guid: 6fae272c651e39449a6de3af99555a20, type: 3}
+    EffectId: E_Bleeding_Apply_Double
+    ValueRate: 1
+    CountRate: 1
+    RemainingBattleStarts: 3
+  - CombinationId: Culture_ACC
+    TypeA: A
+    TypeB: C
+    TypeC: C
+    ResultIcon: {fileID: 21300000, guid: 3f53a25558e61cd4faff1af051ee3827, type: 3}
+    EffectId: E_Max_HP_Up
+    ValueRate: 1
+    CountRate: 1
+    RemainingBattleStarts: 3
+  - CombinationId: Culture_BBB
+    TypeA: B
+    TypeB: B
+    TypeC: B
+    ResultIcon: {fileID: 21300000, guid: 627676264c5080f40b76630b6a0302c9, type: 3}
+    EffectId: E_Kill_Heal
+    ValueRate: 1
+    CountRate: 1
+    RemainingBattleStarts: 3
+  - CombinationId: Culture_BBC
+    TypeA: B
+    TypeB: B
+    TypeC: C
+    ResultIcon: {fileID: 21300000, guid: 45b0411861b72844db076dfcd5924f0f, type: 3}
+    EffectId: E_Skill_Resource_Gain_Up
+    ValueRate: 1
+    CountRate: 1
+    RemainingBattleStarts: 3
+  - CombinationId: Culture_BCC
+    TypeA: B
+    TypeB: C
+    TypeC: C
+    ResultIcon: {fileID: 21300000, guid: 4415121ae9b61da4598d06caffd521a5, type: 3}
+    EffectId: E_Buff_Apply_Double
+    ValueRate: 1
+    CountRate: 1
+    RemainingBattleStarts: 3
+  - CombinationId: Culture_CCC
+    TypeA: C
+    TypeB: C
+    TypeC: C
+    ResultIcon: {fileID: 21300000, guid: 28470202b66fc1e47beb35d5f1ecacc3, type: 3}
+    EffectId: E_Low_HP_Power
+    ValueRate: 1
+    CountRate: 1
+    RemainingBattleStarts: 3

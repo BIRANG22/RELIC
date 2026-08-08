@@ -19,7 +19,7 @@ namespace Relic.Gameplay.Data
             {
                 if (entry == null ||
                     string.IsNullOrWhiteSpace(entry.ItemId) ||
-                    (entry.Icon == null && entry.ResearchResultIcon == null))
+                    entry.Icon == null)
                 {
                     continue;
                 }
@@ -45,22 +45,6 @@ namespace Relic.Gameplay.Data
             return true;
         }
 
-        public bool TryGetResearchResultIcon(string itemId, out Sprite icon)
-        {
-            icon = null;
-
-            if (map == null)
-                Initialize();
-
-            if (string.IsNullOrWhiteSpace(itemId))
-                return false;
-
-            if (!map.TryGetValue(itemId, out ItemIconEntry entry) || entry.ResearchResultIcon == null)
-                return false;
-
-            icon = entry.ResearchResultIcon;
-            return true;
-        }
     }
 
     [Serializable]
@@ -68,6 +52,5 @@ namespace Relic.Gameplay.Data
     {
         public string ItemId;
         public Sprite Icon;
-        public Sprite ResearchResultIcon;
     }
 }

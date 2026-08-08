@@ -7,9 +7,6 @@ namespace Relic.Gameplay.Data
     {
         public string TankId;
         public string ItemId;
-        public long StartedAtUtcTicks;
-        public int DurationSeconds = CultureTankResearchService.DefaultResearchDurationSeconds;
-        public bool IsCompleted;
     }
 
     [Serializable]
