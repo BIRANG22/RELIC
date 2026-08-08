@@ -1,9 +1,10 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 public sealed class BattleRewardEquipPanelUI : MonoBehaviour
@@ -12,8 +13,8 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
     private const int VisibleRelicSlotCount = 6;
     private const int VisibleSkillSlotCount = 3;
 
-    // skill1Àº Ä³¸¯ÅÍ Àü¿ë ½ºÅ³(EquippedSkillIds[1]) Ç¥½Ã¿ëÀÌ°í,
-    // ½ÇÁ¦ È¹µæ ±â¾ïÀº ÇöÀç ÀÚÀ¯ ½½·ÔÀÎ skill2/skill3(EquippedSkillIds[2]/[3])¿¡ »õ±æ ¼ö ÀÖ½À´Ï´Ù.
+    // skill1ì€ ìºë¦­í„° ì „ìš© ìŠ¤í‚¬(EquippedSkillIds[1]) í‘œì‹œìš©ì´ê³ ,
+    // ì‹¤ì œ íšë“ ê¸°ì–µì€ í˜„ìž¬ ìžìœ  ìŠ¬ë¡¯ì¸ skill2/skill3(EquippedSkillIds[2]/[3])ì— ìƒˆê¸¸ ìˆ˜ ìžˆìŠµë‹ˆë‹¤.
     private static readonly int[] RuntimeSkillSlotIndices = { 1, 2, 3 };
 
     [Header("Item")]
@@ -182,6 +183,9 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
         RefreshSelectionVisuals();
         RefreshConfirmButton();
 
+        if (deleteButton != null)
+            deleteButton.interactable = true;
+
         gameObject.SetActive(true);
         transform.SetAsLastSibling();
         EnsureTopmostSorting();
@@ -251,8 +255,9 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
 
             if (view.CharacterButton != null)
             {
-                view.CharacterButton.onClick.RemoveAllListeners();
-                view.CharacterButton.onClick.AddListener(() => SelectCharacter(characterIndex));
+                view.CharacterClickAction ??= () => SelectCharacter(characterIndex);
+                view.CharacterButton.onClick.RemoveListener(view.CharacterClickAction);
+                view.CharacterButton.onClick.AddListener(view.CharacterClickAction);
             }
 
             for (int skillIndex = 0; skillIndex < view.SkillSlots.Length; skillIndex++)
@@ -262,8 +267,9 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
                     continue;
 
                 int capturedSkillIndex = skillIndex;
-                skillSlot.Button.onClick.RemoveAllListeners();
-                skillSlot.Button.onClick.AddListener(() => SelectSkillSlot(characterIndex, capturedSkillIndex));
+                skillSlot.ClickAction ??= () => SelectCharacterArea(characterIndex, capturedSkillIndex);
+                skillSlot.Button.onClick.RemoveListener(skillSlot.ClickAction);
+                skillSlot.Button.onClick.AddListener(skillSlot.ClickAction);
             }
         }
     }
@@ -292,9 +298,24 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
 
         if (currentReward.Type == BattleRewardType.Relic)
             selectedRelicRuntimeSlotIndex = FindFirstCompatibleEmptyRelicSlot(view.CharacterId);
+        else if (currentReward.Type == BattleRewardType.Skill)
+            TrySelectSkillDestination(view.CharacterId);
 
         RefreshSelectionVisuals();
         RefreshConfirmButton();
+    }
+
+    private void SelectCharacterArea(int characterIndex, int skillViewIndex)
+    {
+        if (currentReward != null &&
+            currentReward.Type == BattleRewardType.Skill &&
+            IsSupportedSkillViewIndex(skillViewIndex))
+        {
+            SelectSkillSlot(characterIndex, skillViewIndex);
+            return;
+        }
+
+        SelectCharacter(characterIndex);
     }
 
     private void SelectSkillSlot(int characterIndex, int skillViewIndex)
@@ -315,6 +336,18 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
         CharacterView view = characterViews[characterIndex];
         if (view == null || string.IsNullOrWhiteSpace(view.CharacterId))
             return;
+
+        CharacterRuntimeData character = GetCharacterRuntime(view.CharacterId);
+        SkillMasterData nextSkill = ResolveSkill(currentReward.RewardId);
+        string previousSkillId = GetEquippedSkillId(character, runtimeSkillIndex);
+        if (character == null ||
+            !SkillRarityUtility.CanEquipToFreeSlot(nextSkill) ||
+            (!string.IsNullOrWhiteSpace(previousSkillId) &&
+             !SkillRarityUtility.CanUnequip(ResolveSkill(previousSkillId))))
+        {
+            SelectCharacter(characterIndex);
+            return;
+        }
 
         selectedCharacterIndex = characterIndex;
         selectedSkillViewIndex = skillViewIndex;
@@ -341,7 +374,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
 
     private void ConfirmRelicEquip()
     {
-        if (!TryGetSelectedCharacter(out CharacterView view) || selectedRelicRuntimeSlotIndex < 0)
+        if (!TryGetSelectedCharacter(out CharacterView view))
             return;
 
         if (DataManager.Instance == null || currentReward == null)
@@ -353,11 +386,15 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
             return;
 
         ActiveRelicRuntimeUtility.EnsureRelicSlots(character);
-        if (selectedRelicRuntimeSlotIndex < 0 ||
-            selectedRelicRuntimeSlotIndex >= character.EquippedRelicIds.Length ||
-            !string.IsNullOrWhiteSpace(character.EquippedRelicIds[selectedRelicRuntimeSlotIndex]))
+        if (!IsSelectedRelicSlotValid(character, relic))
         {
-            return;
+            selectedRelicRuntimeSlotIndex = FindFirstCompatibleEmptyRelicSlot(view.CharacterId);
+            if (!IsSelectedRelicSlotValid(character, relic))
+            {
+                RefreshSelectionVisuals();
+                RefreshConfirmButton();
+                return;
+            }
         }
 
         bool isActiveRelic = ActiveRelicEffectResolver.IsActiveRelic(relic);
@@ -375,8 +412,19 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
 
     private void OpenSkillConfirmDialog()
     {
-        if (!TryGetSelectedCharacter(out CharacterView view) || selectedSkillViewIndex < 0)
+        if (!TryGetSelectedCharacter(out CharacterView view))
             return;
+
+        if (!IsSelectedSkillDestinationValid(view.CharacterId))
+        {
+            selectedSkillViewIndex = -1;
+            if (!TrySelectSkillDestination(view.CharacterId))
+            {
+                RefreshSelectionVisuals();
+                RefreshConfirmButton();
+                return;
+            }
+        }
 
         int runtimeSkillIndex = RuntimeSkillSlotIndices[selectedSkillViewIndex];
         if (!SkillInventoryEquipService.IsFreeSkillSlotIndex(runtimeSkillIndex))
@@ -390,11 +438,11 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
             string characterName = string.IsNullOrWhiteSpace(view.CharacterName)
                 ? view.CharacterId
                 : view.CharacterName;
-            message = $"'{characterName}'¿¡°Ô ÀÌ ±â¾ïÀ» »õ±â½Ã°Ú½À´Ï±î?";
+            message = $"'{characterName}'ì—ê²Œ ì´ ê¸°ì–µì„ ìƒˆê¸°ì‹œê² ìŠµë‹ˆê¹Œ?";
         }
         else
         {
-            message = "±â¾ïÀ» ¹Ù²Ù½Ã°Ú½À´Ï±î?\n±âÁ¸¿¡ »õ°ÜÁø ±â¾ïÀº »ç¶óÁý´Ï´Ù.";
+            message = "ê¸°ì–µì„ ë°”ê¾¸ì‹œê² ìŠµë‹ˆê¹Œ?\nê¸°ì¡´ì— ìƒˆê²¨ì§„ ê¸°ì–µì€ ì‚¬ë¼ì§‘ë‹ˆë‹¤.";
         }
 
         if (UIManager.Instance == null)
@@ -618,8 +666,6 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
                 continue;
 
             int runtimeIndex = i < RuntimeSkillSlotIndices.Length ? RuntimeSkillSlotIndices[i] : -1;
-            bool supported = SkillInventoryEquipService.IsFreeSkillSlotIndex(runtimeIndex);
-
             if (slot.Root != null)
                 slot.Root.gameObject.SetActive(true);
 
@@ -632,7 +678,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
             ApplyImage(slot.IconImage, icon, SkillRarityUtility.GetSkillIconColor(skillId));
 
             if (slot.Button != null)
-                slot.Button.interactable = currentReward != null && currentReward.Type == BattleRewardType.Skill;
+                slot.Button.interactable = currentReward != null;
         }
     }
 
@@ -733,12 +779,81 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
         if (currentReward != null && IsValidCharacterIndex(selectedCharacterIndex))
         {
             if (currentReward.Type == BattleRewardType.Skill)
-                interactable = selectedSkillViewIndex >= 0;
+            {
+                CharacterView view = characterViews[selectedCharacterIndex];
+                interactable = view != null && IsSelectedSkillDestinationValid(view.CharacterId);
+            }
             else if (currentReward.Type == BattleRewardType.Relic)
-                interactable = selectedRelicRuntimeSlotIndex >= 0;
+            {
+                CharacterView view = characterViews[selectedCharacterIndex];
+                CharacterRuntimeData character = view != null ? GetCharacterRuntime(view.CharacterId) : null;
+                RelicData relic = ResolveRelic(currentReward.RewardId);
+                interactable = IsSelectedRelicSlotValid(character, relic);
+            }
         }
 
         confirmButton.interactable = interactable;
+    }
+
+    private bool TrySelectSkillDestination(string characterId)
+    {
+        CharacterRuntimeData character = GetCharacterRuntime(characterId);
+        SkillMasterData nextSkill = ResolveSkill(currentReward?.RewardId);
+        if (!SkillRarityUtility.CanEquipToFreeSlot(nextSkill))
+            return false;
+
+        if (!BattleRewardEquipSelectionPolicy.TryFindSkillViewIndex(
+                character,
+                ResolveSkill,
+                out int skillViewIndex))
+        {
+            return false;
+        }
+
+        selectedSkillViewIndex = skillViewIndex;
+        return true;
+    }
+
+    private bool IsSelectedSkillDestinationValid(string characterId)
+    {
+        if (!IsSupportedSkillViewIndex(selectedSkillViewIndex))
+            return false;
+
+        int runtimeSkillIndex = RuntimeSkillSlotIndices[selectedSkillViewIndex];
+        CharacterRuntimeData character = GetCharacterRuntime(characterId);
+        SkillMasterData nextSkill = ResolveSkill(currentReward?.RewardId);
+        if (character == null || !SkillRarityUtility.CanEquipToFreeSlot(nextSkill))
+            return false;
+
+        SkillInventoryEquipService.EnsureEquippedSkillArray(character);
+        string previousSkillId = character.EquippedSkillIds[runtimeSkillIndex];
+        return string.IsNullOrWhiteSpace(previousSkillId) ||
+               SkillRarityUtility.CanUnequip(ResolveSkill(previousSkillId));
+    }
+
+    private bool IsSelectedRelicSlotValid(CharacterRuntimeData character, RelicData relic)
+    {
+        if (character == null || relic == null)
+            return false;
+
+        ActiveRelicRuntimeUtility.EnsureRelicSlots(character);
+        if (selectedRelicRuntimeSlotIndex < 0 ||
+            selectedRelicRuntimeSlotIndex >= character.EquippedRelicIds.Length ||
+            !string.IsNullOrWhiteSpace(character.EquippedRelicIds[selectedRelicRuntimeSlotIndex]))
+        {
+            return false;
+        }
+
+        bool isActiveRelic = ActiveRelicEffectResolver.IsActiveRelic(relic);
+        bool isActiveSlot = selectedRelicRuntimeSlotIndex == ActiveRelicRuntimeUtility.ActiveRelicSlotIndex;
+        return isActiveRelic == isActiveSlot;
+    }
+
+    private static bool IsSupportedSkillViewIndex(int skillViewIndex)
+    {
+        return skillViewIndex >= 0 &&
+               skillViewIndex < RuntimeSkillSlotIndices.Length &&
+               SkillInventoryEquipService.IsFreeSkillSlotIndex(RuntimeSkillSlotIndices[skillViewIndex]);
     }
 
     private int FindFirstCompatibleEmptyRelicSlot(string characterId)
@@ -925,7 +1040,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
         itemRarityText ??= item != null ? FindText(item, "Rarity") : null;
         itemEffectText ??= item != null ? FindText(item, "Effect") : null;
 
-        confirmButton ??= FindButtonByNames(transform, "Confirm_Button", "ConfirmButton", "Confirm", "OK_Button", "OKButton");
+        confirmButton ??= FindButtonByNames(transform, "Comfirm_Button", "Confirm_Button", "ConfirmButton", "Confirm", "OK_Button", "OKButton");
         deleteButton ??= FindButtonByNames(transform, "Delete_Button", "DeleteButton", "Delete");
 
         if (deleteButton != null)
@@ -1096,6 +1211,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
         public TMP_Text NameText;
         public Image Mark1Image;
         public Image Mark2Image;
+        public UnityAction CharacterClickAction;
         public string CharacterId;
         public string CharacterName;
         public SkillSlotView[] SkillSlots = new SkillSlotView[VisibleSkillSlotCount];
@@ -1110,6 +1226,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
         public Image BackImage;
         public Image IconImage;
         public Button Button;
+        public UnityAction ClickAction;
         public Color DefaultBackColor;
     }
 }
