@@ -18,7 +18,7 @@ public class RestRoomController : MonoBehaviour
 
     [Header("Heal")]
     [SerializeField, Range(0f, 1f)] private float healHpRatio = 0.3f;
-    [SerializeField] private string healCompleteMessage = "¸ğµç Ä³¸¯ÅÍÀÇ Ã¼·ÂÀ» 30% È¸º¹Çß½À´Ï´Ù.";
+    [SerializeField] private string healCompleteMessage = "ëª¨ë“  ìºë¦­í„°ì˜ ì²´ë ¥ì„ 30% íšŒë³µí–ˆìŠµë‹ˆë‹¤.";
     [SerializeField] private GameObject healButtonRoot;
     [SerializeField] private Image healButtonBackImage;
     [SerializeField] private TMP_Text healButtonText;
@@ -69,6 +69,7 @@ public class RestRoomController : MonoBehaviour
         EnsureHealButtonReferences();
         EnsurePlayerHudReferences();
         SetNextButtonVisible(false);
+        SetRestActionButtonsVisible(true);
         SetUpgradeButtonDisabledFeedback(false);
         SetHealButtonDisabledFeedback(false);
         SpawnPartyAllies();
@@ -101,6 +102,7 @@ public class RestRoomController : MonoBehaviour
         BattleWarningUI.ShowMessage(healCompleteMessage);
         SetHealButtonDisabledFeedback(true);
         SetUpgradeButtonDisabledFeedback(true);
+        SetRestActionButtonsVisible(false);
         SetNextButtonVisible(true);
     }
 
@@ -114,17 +116,21 @@ public class RestRoomController : MonoBehaviour
 
         if (upgradePanel == null)
         {
-            Debug.LogWarning("[RestRoomController] SkillUpgradePanel ¾øÀ½");
+            Debug.LogWarning("[RestRoomController] SkillUpgradePanel ì—†ìŒ");
             return;
         }
 
         upgradePanel.Open();
+        SetRestActionButtonsVisible(false);
     }
 
     public void OnUpgradeCancelButtonClicked()
     {
         if (upgradePanel != null)
             upgradePanel.Close();
+
+        if (!isRestUsed)
+            SetRestActionButtonsVisible(true);
     }
 
     public void OnTuningButtonClicked()
@@ -140,7 +146,7 @@ public class RestRoomController : MonoBehaviour
 
         if (upgradePanel == null)
         {
-            Debug.LogWarning("[RestRoomController] SkillUpgradePanel ¾øÀ½");
+            Debug.LogWarning("[RestRoomController] SkillUpgradePanel ì—†ìŒ");
             return;
         }
 
@@ -153,6 +159,7 @@ public class RestRoomController : MonoBehaviour
         RefreshPlayerHUDs();
         SetHealButtonDisabledFeedback(true);
         SetUpgradeButtonDisabledFeedback(true);
+        SetRestActionButtonsVisible(false);
         SetNextButtonVisible(true);
     }
 
@@ -219,7 +226,7 @@ public class RestRoomController : MonoBehaviour
             runtimeData.CurrentHP = Mathf.Clamp(runtimeData.CurrentHP + healAmount, 0, maxHp);
         }
 
-        Debug.Log($"[RestRoomController] ¸ğµç ÆÄÆ¼¿ø HP {Mathf.RoundToInt(safeRatio * 100f)}% È¸º¹ ¿Ï·á");
+        Debug.Log($"[RestRoomController] ëª¨ë“  íŒŒí‹°ì› HP {Mathf.RoundToInt(safeRatio * 100f)}% íšŒë³µ ì™„ë£Œ");
     }
 
     private void SpawnPartyAllies()
@@ -544,6 +551,18 @@ public class RestRoomController : MonoBehaviour
 
         if (nextButtonRoot != null)
             nextButtonRoot.SetActive(visible);
+    }
+
+    private void SetRestActionButtonsVisible(bool visible)
+    {
+        EnsureUpgradeButtonReferences();
+        EnsureHealButtonReferences();
+
+        if (upgradeButtonRoot != null)
+            upgradeButtonRoot.SetActive(visible);
+
+        if (healButtonRoot != null)
+            healButtonRoot.SetActive(visible);
     }
 
     private void EnsureUpgradeButtonReferences()

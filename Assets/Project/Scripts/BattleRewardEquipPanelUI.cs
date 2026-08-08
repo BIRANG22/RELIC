@@ -12,8 +12,8 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
     private const int VisibleRelicSlotCount = 6;
     private const int VisibleSkillSlotCount = 3;
 
-    // skill1Àº Ä³¸¯ÅÍ Àü¿ë ½ºÅ³(EquippedSkillIds[1]) Ç¥½Ã¿ëÀÌ°í,
-    // ½ÇÁ¦ È¹µæ ±â¾ïÀº ÇöÀç ÀÚÀ¯ ½½·ÔÀÎ skill2/skill3(EquippedSkillIds[2]/[3])¿¡ »õ±æ ¼ö ÀÖ½À´Ï´Ù.
+    // skill1ì€ ìºë¦­í„° ì „ìš© ìŠ¤í‚¬(EquippedSkillIds[1]) í‘œì‹œìš©ì´ê³ ,
+    // ì‹¤ì œ íšë“ ê¸°ì–µì€ í˜„ì¬ ììœ  ìŠ¬ë¡¯ì¸ skill2/skill3(EquippedSkillIds[2]/[3])ì— ìƒˆê¸¸ ìˆ˜ ìˆìŠµë‹ˆë‹¤.
     private static readonly int[] RuntimeSkillSlotIndices = { 1, 2, 3 };
 
     [Header("Item")]
@@ -33,6 +33,10 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
     [SerializeField] private Color normalCharacterColor = new Color32(0x4E, 0x4E, 0x4E, 0xFF);
     [SerializeField] private Color selectedCharacterColor = new Color32(0x3C, 0x44, 0x76, 0xFF);
     [SerializeField] private Color selectedSkillColor = new Color32(0x57, 0x6F, 0xAF, 0xFF);
+
+    [Header("Selected Slot Overlay")]
+    [SerializeField] private Sprite selectedSlotOverlaySprite;
+    [SerializeField] private Color selectedSlotOverlayColor = Color.white;
 
     [Header("Extraction")]
     [SerializeField, Range(0f, 1f)] private float relicExtractionRate = 0.30f;
@@ -390,11 +394,11 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
             string characterName = string.IsNullOrWhiteSpace(view.CharacterName)
                 ? view.CharacterId
                 : view.CharacterName;
-            message = $"'{characterName}'¿¡°Ô ÀÌ ±â¾ïÀ» »õ±â½Ã°Ú½À´Ï±î?";
+            message = $"'{characterName}'ì—ê²Œ ì´ ê¸°ì–µì„ ìƒˆê¸°ì‹œê² ìŠµë‹ˆê¹Œ?";
         }
         else
         {
-            message = "±â¾ïÀ» ¹Ù²Ù½Ã°Ú½À´Ï±î?\n±âÁ¸¿¡ »õ°ÜÁø ±â¾ïÀº »ç¶óÁı´Ï´Ù.";
+            message = "ê¸°ì–µì„ ë°”ê¾¸ì‹œê² ìŠµë‹ˆê¹Œ?\nê¸°ì¡´ì— ìƒˆê²¨ì§„ ê¸°ì–µì€ ì‚¬ë¼ì§‘ë‹ˆë‹¤.";
         }
 
         if (UIManager.Instance == null)
@@ -713,14 +717,53 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
             for (int j = 0; j < view.SkillSlots.Length; j++)
             {
                 SkillSlotView skillSlot = view.SkillSlots[j];
-                if (skillSlot?.BackImage == null)
+                if (skillSlot == null)
                     continue;
 
-                skillSlot.BackImage.color = i == selectedCharacterIndex && j == selectedSkillViewIndex
-                    ? selectedSkillColor
-                    : skillSlot.DefaultBackColor;
+                if (skillSlot.BackImage != null)
+                {
+                    skillSlot.BackImage.color = i == selectedCharacterIndex && j == selectedSkillViewIndex
+                        ? selectedSkillColor
+                        : skillSlot.DefaultBackColor;
+                }
+
+                bool showSkillOverlay = currentReward != null &&
+                                        currentReward.Type == BattleRewardType.Skill &&
+                                        i == selectedCharacterIndex &&
+                                        j == selectedSkillViewIndex;
+                SetSelectionOverlay(skillSlot.SelectionOverlayImage, showSkillOverlay);
+            }
+
+            bool showActiveRelicOverlay = currentReward != null &&
+                                          currentReward.Type == BattleRewardType.Relic &&
+                                          i == selectedCharacterIndex &&
+                                          selectedRelicRuntimeSlotIndex == ActiveRelicRuntimeUtility.ActiveRelicSlotIndex;
+            SetSelectionOverlay(view.ActiveRelicSelectionOverlay, showActiveRelicOverlay);
+
+            for (int j = 0; j < view.RelicSelectionOverlays.Length; j++)
+            {
+                int runtimeRelicIndex = j + 1;
+                bool showRelicOverlay = currentReward != null &&
+                                        currentReward.Type == BattleRewardType.Relic &&
+                                        i == selectedCharacterIndex &&
+                                        selectedRelicRuntimeSlotIndex == runtimeRelicIndex;
+                SetSelectionOverlay(view.RelicSelectionOverlays[j], showRelicOverlay);
             }
         }
+    }
+
+    private void SetSelectionOverlay(Image overlayImage, bool visible)
+    {
+        if (overlayImage == null)
+            return;
+
+        overlayImage.sprite = selectedSlotOverlaySprite;
+        overlayImage.color = selectedSlotOverlayColor;
+        overlayImage.raycastTarget = false;
+        overlayImage.enabled = visible && selectedSlotOverlaySprite != null;
+
+        if (overlayImage.enabled)
+            overlayImage.transform.SetAsLastSibling();
     }
 
     private void RefreshConfirmButton()
@@ -986,12 +1029,14 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
             button.targetGraphic = skillBack;
 
             Image icon = FindImageByNames(slotRoot, "Icon");
+            Image selectionOverlay = EnsureSelectionOverlay(slotRoot);
 
             view.SkillSlots[i] = new SkillSlotView
             {
                 Root = slotRoot,
                 BackImage = skillBack,
                 IconImage = icon,
+                SelectionOverlayImage = selectionOverlay,
                 Button = button,
                 DefaultBackColor = skillBack != null ? skillBack.color : Color.white
             };
@@ -999,7 +1044,10 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
 
         Transform activeRoot = root.Find("Active") ?? FindChildRecursive(root, "Active");
         if (activeRoot != null)
+        {
             view.ActiveRelicIcon = FindImageByNames(activeRoot, "Icon");
+            view.ActiveRelicSelectionOverlay = EnsureSelectionOverlay(activeRoot);
+        }
 
         Transform relicRoot = root.Find("Relic") ?? FindChildRecursive(root, "Relic");
         for (int i = 0; i < VisibleRelicSlotCount; i++)
@@ -1011,9 +1059,37 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
 
             Image icon = FindImageByNames(relicSlot, "Icon") ?? relicSlot.GetComponent<Image>();
             view.RelicIcons[i] = icon;
+            view.RelicSelectionOverlays[i] = EnsureSelectionOverlay(relicSlot);
         }
 
         return view;
+    }
+
+    private static Image EnsureSelectionOverlay(Transform slotRoot)
+    {
+        if (slotRoot == null)
+            return null;
+
+        Transform existing = slotRoot.Find("SelectionOverlay");
+        Image overlayImage = existing != null ? existing.GetComponent<Image>() : null;
+
+        if (overlayImage == null)
+        {
+            GameObject overlayObject = new GameObject("SelectionOverlay", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            RectTransform rect = overlayObject.GetComponent<RectTransform>();
+            rect.SetParent(slotRoot, false);
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+
+            overlayImage = overlayObject.GetComponent<Image>();
+        }
+
+        overlayImage.raycastTarget = false;
+        overlayImage.enabled = false;
+        overlayImage.transform.SetAsLastSibling();
+        return overlayImage;
     }
 
     private static Transform FindChildRecursive(Transform root, string targetName)
@@ -1100,7 +1176,9 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
         public string CharacterName;
         public SkillSlotView[] SkillSlots = new SkillSlotView[VisibleSkillSlotCount];
         public Image ActiveRelicIcon;
+        public Image ActiveRelicSelectionOverlay;
         public Image[] RelicIcons = new Image[VisibleRelicSlotCount];
+        public Image[] RelicSelectionOverlays = new Image[VisibleRelicSlotCount];
     }
 
     [Serializable]
@@ -1109,6 +1187,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
         public Transform Root;
         public Image BackImage;
         public Image IconImage;
+        public Image SelectionOverlayImage;
         public Button Button;
         public Color DefaultBackColor;
     }
