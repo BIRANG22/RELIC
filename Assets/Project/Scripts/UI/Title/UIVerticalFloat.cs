@@ -9,34 +9,37 @@ public class UIVerticalFloat : MonoBehaviour
     }
 
     [Header("Target")]
-    [Tooltip("¿òÁ÷ÀÏ UI ¶Ç´Â ÀÏ¹İ ½ºÇÁ¶óÀÌÆ® ¿ÀºêÁ§Æ®ÀÔ´Ï´Ù. ºñ¿öµÎ¸é ÀÌ ½ºÅ©¸³Æ®°¡ ºÙÀº ¿ÀºêÁ§Æ®¸¦ »ç¿ëÇÕ´Ï´Ù.")]
+    [Tooltip("ì›€ì§ì¼ UI ë˜ëŠ” ì¼ë°˜ ìŠ¤í”„ë¼ì´íŠ¸ ì˜¤ë¸Œì íŠ¸ì…ë‹ˆë‹¤. ë¹„ì›Œë‘ë©´ ì´ ìŠ¤í¬ë¦½íŠ¸ê°€ ë¶™ì€ ì˜¤ë¸Œì íŠ¸ë¥¼ ì‚¬ìš©í•©ë‹ˆë‹¤.")]
     [SerializeField] private Transform target;
 
     [Header("Move Direction")]
-    [Tooltip("VerticalÀº À§¾Æ·¡, HorizontalÀº ÁÂ¿ì·Î ¿òÁ÷ÀÔ´Ï´Ù.")]
+    [Tooltip("Verticalì€ ìœ„ì•„ë˜, Horizontalì€ ì¢Œìš°ë¡œ ì›€ì§ì…ë‹ˆë‹¤.")]
     [SerializeField] private MoveDirection moveDirection = MoveDirection.Vertical;
 
     [Header("Float Option")]
-    [Tooltip("ÀÌµ¿ÇÏ´Â °Å¸®ÀÔ´Ï´Ù.")]
+    [Tooltip("ì´ë™í•˜ëŠ” ê±°ë¦¬ì…ë‹ˆë‹¤.")]
     [SerializeField] private float moveAmount = 10f;
 
-    [Tooltip("ÀÌµ¿ ¼ÓµµÀÔ´Ï´Ù.")]
+    [Tooltip("ì´ë™ ì†ë„ì…ë‹ˆë‹¤.")]
     [SerializeField] private float moveSpeed = 1.5f;
 
-    [Tooltip("°ÔÀÓÀÌ ÀÏ½ÃÁ¤ÁöµÇ¾îµµ ¿òÁ÷ÀÌ°Ô ÇÕ´Ï´Ù.")]
+    [Tooltip("ê²Œì„ì´ ì¼ì‹œì •ì§€ë˜ì–´ë„ ì›€ì§ì´ê²Œ í•©ë‹ˆë‹¤.")]
     [SerializeField] private bool useUnscaledTime = true;
 
-    [Tooltip("¿ÀºêÁ§Æ®°¡ ºñÈ°¼ºÈ­µÉ ¶§ ¿ø·¡ À§Ä¡·Î µ¹¾Æ°©´Ï´Ù.")]
+    [Tooltip("ì˜¤ë¸Œì íŠ¸ê°€ ë¹„í™œì„±í™”ë  ë•Œ ì›ë˜ ìœ„ì¹˜ë¡œ ëŒì•„ê°‘ë‹ˆë‹¤.")]
     [SerializeField] private bool restorePositionOnDisable = true;
 
     [Header("Sprite Option")]
-    [Tooltip("ÀÏ¹İ ½ºÇÁ¶óÀÌÆ®ÀÇ ÀÌµ¿ °Å¸®¿¡ º°µµÀÇ ¹èÀ²À» Àû¿ëÇÕ´Ï´Ù. UI¿Í ¿ùµå ÁÂÇ¥ Å©±â°¡ ´Ù¸¦ ¶§ Á¶ÀıÇÏ¼¼¿ä.")]
+    [Tooltip("ì¼ë°˜ ìŠ¤í”„ë¼ì´íŠ¸ì˜ ì´ë™ ê±°ë¦¬ì— ë³„ë„ì˜ ë°°ìœ¨ì„ ì ìš©í•©ë‹ˆë‹¤. UIì™€ ì›”ë“œ ì¢Œí‘œ í¬ê¸°ê°€ ë‹¤ë¥¼ ë•Œ ì¡°ì ˆí•˜ì„¸ìš”.")]
     [SerializeField] private float spriteMoveMultiplier = 0.01f;
 
     private RectTransform targetRectTransform;
 
     private Vector2 startAnchoredPosition;
     private Vector3 startLocalPosition;
+
+    private Vector2 lastAppliedUIOffset;
+    private Vector3 lastAppliedSpriteOffset;
 
     private bool isUITarget;
 
@@ -65,7 +68,7 @@ public class UIVerticalFloat : MonoBehaviour
     }
 
 
-    private void Update()
+    private void LateUpdate()
     {
         if (target == null)
         {
@@ -93,6 +96,7 @@ public class UIVerticalFloat : MonoBehaviour
     {
         if (!restorePositionOnDisable || target == null)
         {
+            ResetAppliedOffsets();
             return;
         }
 
@@ -101,7 +105,7 @@ public class UIVerticalFloat : MonoBehaviour
 
 
     /// <summary>
-    /// ´ë»óÀÌ UIÀÎÁö ÀÏ¹İ TransformÀÎÁö È®ÀÎÇÕ´Ï´Ù.
+    /// ëŒ€ìƒì´ UIì¸ì§€ ì¼ë°˜ Transformì¸ì§€ í™•ì¸í•©ë‹ˆë‹¤.
     /// </summary>
     private void InitializeTarget()
     {
@@ -118,7 +122,9 @@ public class UIVerticalFloat : MonoBehaviour
 
 
     /// <summary>
-    /// UI ¿ÀºêÁ§Æ®¸¦ ¿òÁ÷ÀÔ´Ï´Ù.
+    /// UI ì˜¤ë¸Œì íŠ¸ë¥¼ ì›€ì§ì…ë‹ˆë‹¤.
+    /// ì™¸ë¶€ ìŠ¤í¬ë¦½íŠ¸ê°€ ë³€ê²½í•œ ìœ„ì¹˜ëŠ” ê·¸ëŒ€ë¡œ ê¸°ì¤€ ìœ„ì¹˜ë¡œ ì‚¬ìš©í•˜ê³ ,
+    /// ì´ ìŠ¤í¬ë¦½íŠ¸ê°€ ì§ì „ì— ì ìš©í•œ ë¶€ìœ  ì´ë™ëŸ‰ë§Œ ë¶„ë¦¬í•´ì„œ ë‹¤ì‹œ ê³„ì‚°í•©ë‹ˆë‹¤.
     /// </summary>
     private void MoveUI(float offset)
     {
@@ -126,6 +132,11 @@ public class UIVerticalFloat : MonoBehaviour
         {
             return;
         }
+
+        // í˜„ì¬ ìœ„ì¹˜ì—ì„œ ì´ ìŠ¤í¬ë¦½íŠ¸ê°€ ì§ì „ì— ë”í–ˆë˜ ê°’ë§Œ ì œê±°í•©ë‹ˆë‹¤.
+        // í˜¸ë²„ ë“± ì™¸ë¶€ ìŠ¤í¬ë¦½íŠ¸ê°€ ë°”ê¾¼ ìœ„ì¹˜ê°’ì€ ê·¸ëŒ€ë¡œ ë‚¨ìŠµë‹ˆë‹¤.
+        startAnchoredPosition =
+            targetRectTransform.anchoredPosition - lastAppliedUIOffset;
 
         Vector2 moveOffset;
 
@@ -140,15 +151,24 @@ public class UIVerticalFloat : MonoBehaviour
 
         targetRectTransform.anchoredPosition =
             startAnchoredPosition + moveOffset;
+
+        lastAppliedUIOffset = moveOffset;
     }
 
 
     /// <summary>
-    /// ÀÏ¹İ ½ºÇÁ¶óÀÌÆ® ¶Ç´Â ¿ùµå ¿ÀºêÁ§Æ®¸¦ ¿òÁ÷ÀÔ´Ï´Ù.
+    /// ì¼ë°˜ ìŠ¤í”„ë¼ì´íŠ¸ ë˜ëŠ” ì›”ë“œ ì˜¤ë¸Œì íŠ¸ë¥¼ ì›€ì§ì…ë‹ˆë‹¤.
+    /// ì™¸ë¶€ ìŠ¤í¬ë¦½íŠ¸ê°€ ë³€ê²½í•œ ìœ„ì¹˜ëŠ” ê·¸ëŒ€ë¡œ ê¸°ì¤€ ìœ„ì¹˜ë¡œ ì‚¬ìš©í•˜ê³ ,
+    /// ì´ ìŠ¤í¬ë¦½íŠ¸ê°€ ì§ì „ì— ì ìš©í•œ ë¶€ìœ  ì´ë™ëŸ‰ë§Œ ë¶„ë¦¬í•´ì„œ ë‹¤ì‹œ ê³„ì‚°í•©ë‹ˆë‹¤.
     /// </summary>
     private void MoveSprite(float offset)
     {
         float worldOffset = offset * spriteMoveMultiplier;
+
+        // í˜„ì¬ ìœ„ì¹˜ì—ì„œ ì´ ìŠ¤í¬ë¦½íŠ¸ê°€ ì§ì „ì— ë”í–ˆë˜ ê°’ë§Œ ì œê±°í•©ë‹ˆë‹¤.
+        // í˜¸ë²„ ë“± ì™¸ë¶€ ìŠ¤í¬ë¦½íŠ¸ê°€ ë°”ê¾¼ ìœ„ì¹˜ê°’ì€ ê·¸ëŒ€ë¡œ ë‚¨ìŠµë‹ˆë‹¤.
+        startLocalPosition =
+            target.localPosition - lastAppliedSpriteOffset;
 
         Vector3 moveOffset;
 
@@ -163,11 +183,14 @@ public class UIVerticalFloat : MonoBehaviour
 
         target.localPosition =
             startLocalPosition + moveOffset;
+
+        lastAppliedSpriteOffset = moveOffset;
     }
 
 
     /// <summary>
-    /// ÇöÀç À§Ä¡¸¦ ¿òÁ÷ÀÓÀÇ ±âÁØ À§Ä¡·Î ÀúÀåÇÕ´Ï´Ù.
+    /// í˜„ì¬ ìœ„ì¹˜ë¥¼ ì›€ì§ì„ì˜ ê¸°ì¤€ ìœ„ì¹˜ë¡œ ì €ì¥í•©ë‹ˆë‹¤.
+    /// ì´ë¯¸ ë¶€ìœ  ì˜¤í”„ì…‹ì´ ì ìš©ëœ ìƒíƒœë¼ë©´ í•´ë‹¹ ì˜¤í”„ì…‹ì„ ì œì™¸í•œ ìœ„ì¹˜ë¥¼ ì €ì¥í•©ë‹ˆë‹¤.
     /// </summary>
     public void CacheStartPosition()
     {
@@ -179,18 +202,20 @@ public class UIVerticalFloat : MonoBehaviour
         if (isUITarget && targetRectTransform != null)
         {
             startAnchoredPosition =
-                targetRectTransform.anchoredPosition;
+                targetRectTransform.anchoredPosition - lastAppliedUIOffset;
         }
         else
         {
             startLocalPosition =
-                target.localPosition;
+                target.localPosition - lastAppliedSpriteOffset;
         }
+
+        ResetAppliedOffsets();
     }
 
 
     /// <summary>
-    /// ÀúÀåµÈ ±âÁØ À§Ä¡·Î µÇµ¹¸³´Ï´Ù.
+    /// ì €ì¥ëœ ê¸°ì¤€ ìœ„ì¹˜ë¡œ ë˜ëŒë¦½ë‹ˆë‹¤.
     /// </summary>
     public void RestoreStartPosition()
     {
@@ -209,16 +234,29 @@ public class UIVerticalFloat : MonoBehaviour
             target.localPosition =
                 startLocalPosition;
         }
+
+        ResetAppliedOffsets();
     }
 
 
     /// <summary>
-    /// ¿ÜºÎ¿¡¼­ ¿òÁ÷ÀÏ ´ë»óÀ» º¯°æÇÒ ¶§ »ç¿ëÇÕ´Ï´Ù.
+    /// ì´ ìŠ¤í¬ë¦½íŠ¸ê°€ ì§ì „ì— ì ìš©í•œ ì´ë™ëŸ‰ì„ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
+    /// </summary>
+    private void ResetAppliedOffsets()
+    {
+        lastAppliedUIOffset = Vector2.zero;
+        lastAppliedSpriteOffset = Vector3.zero;
+    }
+
+
+    /// <summary>
+    /// ì™¸ë¶€ì—ì„œ ì›€ì§ì¼ ëŒ€ìƒì„ ë³€ê²½í•  ë•Œ ì‚¬ìš©í•©ë‹ˆë‹¤.
     /// </summary>
     public void SetTarget(Transform newTarget)
     {
         target = newTarget;
 
+        ResetAppliedOffsets();
         InitializeTarget();
         CacheStartPosition();
     }
