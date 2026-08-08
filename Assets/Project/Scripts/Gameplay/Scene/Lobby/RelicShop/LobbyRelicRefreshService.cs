@@ -19,6 +19,7 @@ public enum LobbyRelicRefreshFailure
     None,
     InvalidRuntime,
     AllOffersPurchased,
+    PurchaseLimitReached,
     InsufficientBlueDustium,
     NotEnoughCandidates
 }
@@ -53,6 +54,12 @@ public sealed class LobbyRelicRefreshService
         int price = LobbyRelicRefreshPricePolicy.GetPrice(runtime?.RelicRefreshCount ?? 0);
         if (runtime == null || relicDatabase == null || random == null || runtime.RelicOfferIds == null)
             return Fail(price, LobbyRelicRefreshFailure.InvalidRuntime);
+
+        if (AreAllOffersPurchased(runtime))
+            return Fail(price, LobbyRelicRefreshFailure.AllOffersPurchased);
+
+        if (LobbyRelicShopPurchaseLimit.HasPurchasedOffer(runtime))
+            return Fail(price, LobbyRelicRefreshFailure.PurchaseLimitReached);
 
         var refreshIndices = new List<int>();
         var excludedIds = new List<string>();
