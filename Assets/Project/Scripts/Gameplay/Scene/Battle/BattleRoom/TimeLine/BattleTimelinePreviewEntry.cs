@@ -399,11 +399,7 @@ public class BattleTimelinePreviewEntry
             ? command.SkillData
             : skillData;
 
-        string valueText = BattleDamageService.GetMonsterDamageText(command);
-
-        if (string.IsNullOrWhiteSpace(valueText))
-            valueText = BattleDamageService.GetMonsterDamageRangeText(sourceSkillData);
-
+        string valueText = GetMonsterEffectValueText(sourceSkillData);
         if (string.IsNullOrWhiteSpace(valueText))
             return description;
 
@@ -412,6 +408,22 @@ public class BattleTimelinePreviewEntry
         return description
             .Replace($"\"{valueToken}\"", valueText)
             .Replace(valueToken, valueText);
+    }
+
+    private static string GetMonsterEffectValueText(MonsterSkillData skillData)
+    {
+        if (skillData == null || string.IsNullOrWhiteSpace(skillData.ValueRate))
+            return string.Empty;
+
+        string[] values = skillData.ValueRate.Split(';');
+        string baseValue = values.Length > 0 ? values[0].Trim() : string.Empty;
+        if (string.IsNullOrWhiteSpace(baseValue))
+            return string.Empty;
+
+        int randomRange = Mathf.Max(0, skillData.ValueRandomRange);
+        return randomRange > 0
+            ? $"{baseValue}(±{randomRange})"
+            : baseValue;
     }
 
 }

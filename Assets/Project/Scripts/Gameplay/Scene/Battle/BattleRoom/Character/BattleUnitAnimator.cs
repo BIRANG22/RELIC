@@ -350,24 +350,16 @@ public class BattleUnitAnimator : MonoBehaviour
         if (command == null || command.SkillData == null)
             return false;
 
-        if (command.IsPortalMove ||
-            command.SkillData.TimelineNotation == TimelineActionType.Move)
-        {
+        // 실제 이동 명령만 이동 연출을 사용합니다.
+        // 공격 스킬의 EffectIds에 이동 관련 값이 섞여 있더라도 공격 연출이
+        // 이동 VFX로 잘못 재생되지 않도록 EffectIds만으로 이동을 판정하지 않습니다.
+        if (command.IsPortalMove)
             return true;
-        }
 
-        string effectIds = command.SkillData.EffectIds;
-        if (string.IsNullOrWhiteSpace(effectIds))
-            return false;
+        if (command.EffectiveMoveOffset != Vector2Int.zero)
+            return true;
 
-        string[] splitEffectIds = effectIds.Split(',', ';');
-        for (int i = 0; i < splitEffectIds.Length; i++)
-        {
-            if (string.Equals(splitEffectIds[i].Trim(), "E_Move", System.StringComparison.Ordinal))
-                return true;
-        }
-
-        return false;
+        return command.SkillData.TimelineNotation == TimelineActionType.Move;
     }
 
     public bool HasMonsterProjectileVfx(MonsterReservedCommand command)

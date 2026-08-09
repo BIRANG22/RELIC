@@ -8,8 +8,8 @@ namespace Relic.Gameplay.Monster
     public class RancorAI : MonsterAIBase
     {
         private const string AttackSkillId = "S_Monster_06";
-        private const string BuffSkillId = "S_Monster_10";
-        private const string MoveSkillId = "S_Monster_03";
+        private const string BuffSkillId = "S_Monster_07";
+        private const string MoveSkillId = "S_Monster_05";
 
         private static readonly Vector2Int[] EscapeOffsets =
         {
