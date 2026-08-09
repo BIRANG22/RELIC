@@ -1,11 +1,11 @@
-using Relic.Gameplay.Battle;
+ï»¿using Relic.Gameplay.Battle;
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
 using UnityEngine;
 
 public class MonsterSkillEffectService
 {
-    private const string NocturnGrabSkillId = "S_Monster_17";
+    private const string NocturnGrabSkillId = "S_Monster_19";
     private enum EffectExecutionMode
     {
         All,
@@ -248,8 +248,8 @@ public class MonsterSkillEffectService
             int count = ParseIndexedValue(command.SkillData.CountRate, i);
             bool isDamageHitEffect = IsDamageHitEffect(effectId);
 
-            // ³ìÅÏÀÇ ²ø¾î´ç±â±â ½ºÅ³Àº ValueRate 1À» ÀÌµ¿ Ä­ ¼ö·Î¸¸ »ç¿ëÇÕ´Ï´Ù.
-            // µ¥ÀÌÅÍ¿¡ °ø°İ È¿°ú°¡ Æ÷ÇÔµÇ¾î ÀÖ¾îµµ ÇÇÇØ´Â ½ÇÇàÇÏÁö ¾Ê½À´Ï´Ù.
+            // ë…¹í„´ì˜ ëŒì–´ë‹¹ê¸°ê¸° ìŠ¤í‚¬ì€ ValueRate 1ì„ ì´ë™ ì¹¸ ìˆ˜ë¡œë§Œ ì‚¬ìš©í•©ë‹ˆë‹¤.
+            // ë°ì´í„°ì— ê³µê²© íš¨ê³¼ê°€ í¬í•¨ë˜ì–´ ìˆì–´ë„ í”¼í•´ëŠ” ì‹¤í–‰í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
             if (string.Equals(command.SkillData.SkillId, NocturnGrabSkillId, System.StringComparison.Ordinal) &&
                 isDamageHitEffect)
             {
@@ -323,8 +323,8 @@ public class MonsterSkillEffectService
                 Debug.LogException(e);
             }
 
-            // ±â½À ÆÇÁ¤Àº ÇÇ°İ Á÷ÀüÀÇ ¹æÇâÀ» »ç¿ëÇØ¾ß ÇÕ´Ï´Ù.
-            // ÇÇÇØ Àû¿ëÀÌ ³¡³­ µÚ¿¡¸¸ ÇÇ°İ Ä³¸¯ÅÍ°¡ °ø°İÀÚ¸¦ ¹Ù¶óº¸µµ·Ï ÀüÈ¯ÇÕ´Ï´Ù.
+            // ê¸°ìŠµ íŒì •ì€ í”¼ê²© ì§ì „ì˜ ë°©í–¥ì„ ì‚¬ìš©í•´ì•¼ í•©ë‹ˆë‹¤.
+            // í”¼í•´ ì ìš©ì´ ëë‚œ ë’¤ì—ë§Œ í”¼ê²© ìºë¦­í„°ê°€ ê³µê²©ìë¥¼ ë°”ë¼ë³´ë„ë¡ ì „í™˜í•©ë‹ˆë‹¤.
             if (playerTarget != null && isDamageHitEffect &&
                 playerTarget.RuntimeData != null && !playerTarget.RuntimeData.IsDead)
             {

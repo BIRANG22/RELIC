@@ -7,8 +7,8 @@ namespace Relic.Gameplay.Monster
 {
     public class BlobAI : MonsterAIBase
     {
-        private const string MoveSkillId = "S_Monster_02";
-        private const string AttackSkillId = "S_Monster_05";
+        private const string MoveSkillId = "S_Monster_03";
+        private const string AttackSkillId = "S_Monster_04";
 
         private static readonly Vector2Int[] MoveDirections =
         {
@@ -41,7 +41,36 @@ namespace Relic.Gameplay.Monster
             MonsterSkillData attackSkill =
                 DataManager.Instance?.MonsterSkillDatabase?.Get(AttackSkillId);
 
-            // 블롭은 십자 방향으로만 1칸 이동합니다.
+            // 현재 위치에서 이미 공격 가능한 캐릭터가 있다면 이동하지 않고 바로 공격합니다.
+            // 블롭의 잔여물은 이동했을 때만 생성되어야 하므로, 공격 가능 상태에서 불필요한 이동을 예약하지 않습니다.
+            BattleCharacter currentAttackTarget = FindNearestAttackablePlayer(
+                monsterUnit,
+                monsterUnit.MainGridIndex,
+                attackSkill,
+                gridManager);
+
+            if (currentAttackTarget != null)
+            {
+                BattleDirection currentAttackDirection = GetBlobAttackDirection(
+                    monsterUnit.MainGridIndex,
+                    currentAttackTarget.CurrentGridIndex,
+                    gridManager);
+
+                plan.Add(new MonsterAIAction(
+                    AttackSkillId,
+                    Vector2Int.zero,
+                    MonsterAISlotPreference.SameSlot,
+                    1,
+                    0,
+                    monsterUnit.MainGridIndex,
+                    true,
+                    currentAttackDirection
+                ));
+
+                return plan;
+            }
+
+            // 현재 위치에서 공격할 수 없을 때만 십자 방향으로 1칸 이동합니다.
             // 이동 후 실제로 공격이 닿는 위치를 최우선으로 선택하고,
             // 그런 위치가 없다면 가장 가까워지는 위치로 이동합니다.
             Vector2Int moveOffset = GetBestCardinalMove(

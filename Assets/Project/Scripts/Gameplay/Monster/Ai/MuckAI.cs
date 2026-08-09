@@ -7,7 +7,7 @@ namespace Relic.Gameplay.Monster
     public class MuckAI : MonsterAIBase
     {
         private const string MoveSkillId = "S_Monster_01";
-        private const string AttackSkillId = "S_Monster_04";
+        private const string AttackSkillId = "S_Monster_02";
 
         private static readonly Vector2Int[] MoveDirections =
         {

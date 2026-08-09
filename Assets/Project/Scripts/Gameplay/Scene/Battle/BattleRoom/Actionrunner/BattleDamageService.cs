@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using Relic.Gameplay.Battle;
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class BattleDamageService
 {
-    private const string NocturnGrabSkillId = "S_Monster_17";
+    private const string NocturnGrabSkillId = "S_Monster_19";
     private readonly BattleUnitFinder unitFinder;
 
     public BattleDamageService(BattleUnitFinder unitFinder)
@@ -82,8 +82,8 @@ public class BattleDamageService
         if (!TryGetMonsterDamageDisplayValues(command, out int baseDamage, out int additiveDamage))
             return "";
 
-        // ÆË¾÷ ¼³¸í¿¡´Â ±âº» ÇÇÇØ¿Í È®Á¤ Á¤¼ö Ãß°¡ ÇÇÇØ¸¦ ºĞ¸®ÇØ Ç¥½ÃÇÕ´Ï´Ù.
-        // Ãë¾à, ¾àÈ­, ±â½ÀÃ³·³ ½ÇÇà °á°ú¿¡ µû¶ó ´Ş¶óÁö´Â ¹èÀ²Çü È¿°ú´Â Æ÷ÇÔÇÏÁö ¾Ê½À´Ï´Ù.
+        // íŒì—… ì„¤ëª…ì—ëŠ” ê¸°ë³¸ í”¼í•´ì™€ í™•ì • ì •ìˆ˜ ì¶”ê°€ í”¼í•´ë¥¼ ë¶„ë¦¬í•´ í‘œì‹œí•©ë‹ˆë‹¤.
+        // ì·¨ì•½, ì•½í™”, ê¸°ìŠµì²˜ëŸ¼ ì‹¤í–‰ ê²°ê³¼ì— ë”°ë¼ ë‹¬ë¼ì§€ëŠ” ë°°ìœ¨í˜• íš¨ê³¼ëŠ” í¬í•¨í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
         if (additiveDamage > 0)
             return $"{baseDamage}(+{additiveDamage})";
 
@@ -95,7 +95,7 @@ public class BattleDamageService
         if (!TryGetMonsterDamageDisplayValues(command, out int baseDamage, out int additiveDamage))
             return "";
 
-        // Å¸ÀÓ¶óÀÎ ½½·ÔÀÇ ÂªÀº ¼öÄ¡ Ç¥½Ã´Â È®Á¤µÈ Á¤¼ö ÇÇÇØ¸¦ ÇÕ»êÇØ Ç¥½ÃÇÕ´Ï´Ù.
+        // íƒ€ì„ë¼ì¸ ìŠ¬ë¡¯ì˜ ì§§ì€ ìˆ˜ì¹˜ í‘œì‹œëŠ” í™•ì •ëœ ì •ìˆ˜ í”¼í•´ë¥¼ í•©ì‚°í•´ í‘œì‹œí•©ë‹ˆë‹¤.
         return (baseDamage + additiveDamage).ToString();
     }
 

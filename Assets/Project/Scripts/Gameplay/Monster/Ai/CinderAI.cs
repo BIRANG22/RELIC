@@ -11,7 +11,7 @@ namespace Relic.Gameplay.Monster
     /// </summary>
     public class CinderAI : MonsterAIBase
     {
-        private const string MoveSkillId = "S_Monster_01";
+        private const string MoveSkillId = "S_Monster_13";
         private const string ExplodeSkillId = "S_Monster_14";
 
         private static readonly Vector2Int[] MoveDirections =
@@ -93,9 +93,14 @@ namespace Relic.Gameplay.Monster
             Vector2Int currentCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
             Vector2Int targetCoord = gridManager.IndexToCoord(target.CurrentGridIndex);
 
+            int currentDeltaX = Mathf.Abs(targetCoord.x - currentCoord.x);
+            int currentDeltaY = Mathf.Abs(targetCoord.y - currentCoord.y);
+            int currentChebyshevDistance = Mathf.Max(currentDeltaX, currentDeltaY);
+            int currentManhattanDistance = currentDeltaX + currentDeltaY;
+
             Vector2Int bestOffset = Vector2Int.zero;
-            int bestChebyshevDistance = int.MaxValue;
-            int bestManhattanDistance = int.MaxValue;
+            int bestChebyshevDistance = currentChebyshevDistance;
+            int bestManhattanDistance = currentManhattanDistance;
 
             for (int i = 0; i < MoveDirections.Length; i++)
             {
@@ -114,6 +119,15 @@ namespace Relic.Gameplay.Monster
                 int deltaY = Mathf.Abs(targetCoord.y - projectedCoord.y);
                 int chebyshevDistance = Mathf.Max(deltaX, deltaY);
                 int manhattanDistance = deltaX + deltaY;
+
+                // 현재 위치보다 가까워지지 않는 이동은 선택하지 않습니다.
+                // 가까운 방향이 막혔다고 해서 옆이나 뒤로 물러나는 것을 방지합니다.
+                if (chebyshevDistance > currentChebyshevDistance ||
+                    (chebyshevDistance == currentChebyshevDistance &&
+                     manhattanDistance >= currentManhattanDistance))
+                {
+                    continue;
+                }
 
                 if (chebyshevDistance > bestChebyshevDistance)
                     continue;
