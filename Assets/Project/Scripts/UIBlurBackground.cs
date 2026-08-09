@@ -42,6 +42,7 @@ public sealed class UIBlurBackground : MonoBehaviour
     private Canvas blurCanvas;
     private RawImage blurGraphic;
     private Material runtimeMaterial;
+    private bool blurPresentationRegistered;
 
     private void Awake()
     {
@@ -67,10 +68,12 @@ public sealed class UIBlurBackground : MonoBehaviour
 
         CaptureAndRefreshBackground();
         ApplyMaterialProperties();
+        RegisterBlurPresentation();
     }
 
     private void OnDisable()
     {
+        UnregisterBlurPresentation();
         if (blurCanvasObject != null)
             blurCanvasObject.SetActive(false);
 
@@ -79,6 +82,7 @@ public sealed class UIBlurBackground : MonoBehaviour
 
     private void OnDestroy()
     {
+        UnregisterBlurPresentation();
         RestoreOriginalBackgroundImageState();
 
         if (blurCanvasObject != null)
@@ -102,6 +106,24 @@ public sealed class UIBlurBackground : MonoBehaviour
 
             runtimeMaterial = null;
         }
+    }
+
+    private void RegisterBlurPresentation()
+    {
+        if (blurPresentationRegistered)
+            return;
+
+        blurPresentationRegistered = true;
+        UIBlurBackgroundCaptureManager.BeginBlurPresentation();
+    }
+
+    private void UnregisterBlurPresentation()
+    {
+        if (!blurPresentationRegistered)
+            return;
+
+        blurPresentationRegistered = false;
+        UIBlurBackgroundCaptureManager.EndBlurPresentation();
     }
 
 #if UNITY_EDITOR
