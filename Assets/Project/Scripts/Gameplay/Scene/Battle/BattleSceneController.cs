@@ -42,6 +42,12 @@ public class BattleSceneController : MonoBehaviour
     [SerializeField] private GameObject eventRoom;
     [SerializeField] private GameObject restRoom;
 
+    [Header("Map Room")]
+    [Tooltip("지도 화면에서만 표시할 전용 MapRoom입니다. 비워두면 RoomRoot 아래의 MapRoom을 자동으로 찾습니다.")]
+    [SerializeField] private GameObject mapRoom;
+    [SerializeField] private string mapRoomObjectName = "MapRoom";
+    [SerializeField] private bool autoFindMapRoom = true;
+
     [Header("Room Change Auto Close")]
     [SerializeField] private bool closeInventoryAndBagOnRoomActiveChange = true;
     [SerializeField] private string[] inventoryPanelObjectNames = { "InventoryPanel" };
@@ -73,6 +79,7 @@ public class BattleSceneController : MonoBehaviour
     private void Awake()
     {
         AutoFindRoomRootIfNeeded();
+        AutoFindMapRoomIfNeeded();
         AutoFindBattleMapIntroTextIfNeeded();
         InstallMapPanelAutoReturnWatcher();
 
@@ -194,6 +201,40 @@ public class BattleSceneController : MonoBehaviour
             roomRoot = foundRoomRoot.transform;
     }
 
+    private void AutoFindMapRoomIfNeeded()
+    {
+        if (mapRoom != null || !autoFindMapRoom || string.IsNullOrWhiteSpace(mapRoomObjectName))
+            return;
+
+        if (roomRoot != null)
+        {
+            for (int i = 0; i < roomRoot.childCount; i++)
+            {
+                Transform child = roomRoot.GetChild(i);
+                if (child != null && child.name == mapRoomObjectName)
+                {
+                    mapRoom = child.gameObject;
+                    return;
+                }
+            }
+        }
+
+        Transform[] transforms = Resources.FindObjectsOfTypeAll<Transform>();
+        for (int i = 0; i < transforms.Length; i++)
+        {
+            Transform candidate = transforms[i];
+            if (candidate == null || candidate.name != mapRoomObjectName)
+                continue;
+
+            GameObject candidateObject = candidate.gameObject;
+            if (!candidateObject.scene.IsValid() || !candidateObject.scene.isLoaded)
+                continue;
+
+            mapRoom = candidateObject;
+            return;
+        }
+    }
+
     private void AutoFindBattleMapIntroTextIfNeeded()
     {
         if (battleMapIntroText != null)
@@ -242,6 +283,8 @@ public class BattleSceneController : MonoBehaviour
             Object.FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
         turnExecutor?.RestoreBattleExecutionUiAfterRoomEnd();
 
+        ActivateMapRoomForMap();
+
         isOpeningMapFromController = true;
         battleMapPanel.Open(mapRuntime);
         isOpeningMapFromController = false;
@@ -249,11 +292,59 @@ public class BattleSceneController : MonoBehaviour
 
     private void HideMapPanelImmediate()
     {
-        if (battleMapPanel == null)
-            return;
-
-        if (battleMapPanel.gameObject.activeSelf)
+        if (battleMapPanel != null && battleMapPanel.gameObject.activeSelf)
             battleMapPanel.gameObject.SetActive(false);
+
+        AutoFindMapRoomIfNeeded();
+        if (mapRoom != null && mapRoom.activeSelf)
+            mapRoom.SetActive(false);
+    }
+
+    private void ActivateMapRoomForMap()
+    {
+        AutoFindMapRoomIfNeeded();
+
+        // 지도에서는 직전에 사용한 Start/Battle/Event/Rest/Shop 등의 룸을 남겨두지 않는다.
+        // RoomRoot 아래에서는 MapRoom만 활성 상태로 유지한다.
+        if (roomRoot != null)
+        {
+            for (int i = 0; i < roomRoot.childCount; i++)
+            {
+                GameObject roomObject = roomRoot.GetChild(i).gameObject;
+                if (roomObject == mapRoom)
+                    continue;
+
+                if (roomObject.activeSelf)
+                    roomObject.SetActive(false);
+            }
+        }
+        else
+        {
+            SetActiveIfNotNull(startRoom, false);
+            SetActiveIfNotNull(battleRoom, false);
+            SetActiveIfNotNull(eventRoom, false);
+            SetActiveIfNotNull(restRoom, false);
+        }
+
+        SetBattleRoomIntroPlaying(false);
+
+        if (mapRoom == null)
+        {
+            Debug.LogWarning(
+                "[BattleSceneController] MapRoom을 찾지 못했습니다. " +
+                "Inspector의 Map Room을 연결하거나 RoomRoot/MapRoom 이름을 확인하세요.",
+                this);
+            return;
+        }
+
+        if (!mapRoom.activeSelf)
+            mapRoom.SetActive(true);
+
+        MapRoomController controller = mapRoom.GetComponent<MapRoomController>();
+        if (controller == null)
+            controller = mapRoom.GetComponentInChildren<MapRoomController>(true);
+
+        controller?.RefreshNow();
     }
 
     private bool TryOpenUnclearedCurrentNodeOnStart()
@@ -1087,6 +1178,9 @@ public class BattleSceneController : MonoBehaviour
             for (int i = 0; i < roomRoot.childCount; i++)
             {
                 GameObject roomObject = roomRoot.GetChild(i).gameObject;
+                if (roomObject == mapRoom)
+                    continue;
+
                 if (roomObject.activeSelf)
                     return roomObject;
             }
@@ -1117,7 +1211,11 @@ public class BattleSceneController : MonoBehaviour
         {
             for (int i = 0; i < roomRoot.childCount; i++)
             {
-                if (roomRoot.GetChild(i).gameObject == target)
+                GameObject roomObject = roomRoot.GetChild(i).gameObject;
+                if (roomObject == mapRoom)
+                    continue;
+
+                if (roomObject == target)
                     return true;
             }
 
