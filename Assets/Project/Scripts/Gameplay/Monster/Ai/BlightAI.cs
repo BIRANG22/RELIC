@@ -7,9 +7,9 @@ namespace Relic.Gameplay.Monster
 {
     public class BlightAI : MonsterAIBase
     {
-        private const string AttackSkillId = "S_Monster_06";
-        private const string DebuffSkillId = "S_Monster_12";
-        private const string MoveSkillId = "S_Monster_03";
+        private const string AttackSkillId = "S_Monster_09";
+        private const string DebuffSkillId = "S_Monster_10";
+        private const string MoveSkillId = "S_Monster_08";
 
         private static readonly Vector2Int[] EscapeOffsets =
         {

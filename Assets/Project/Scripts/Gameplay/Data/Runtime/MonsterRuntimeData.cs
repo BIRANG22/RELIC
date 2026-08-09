@@ -290,7 +290,7 @@ namespace Relic.Gameplay.Data
             }
             else if (MonsterId == "Mon_06")
             {
-                StatusEffects.Add(new StatusEffectRuntimeData("E_Explode", 3));
+                StatusEffects.Add(new StatusEffectRuntimeData("E_Explode", 2));
             }
             else if (MonsterId == "Mon_10")
             {

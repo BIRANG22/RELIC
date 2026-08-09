@@ -10,8 +10,8 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
-/// BattleCharacterPanel ì•ˆì—ì„œ ì„ íƒëœ ëª¬ìŠ¤í„°ì˜ í•µì‹¬ ì •ë³´ì™€ ë³´ìœ  ìŠ¤í‚¬ì„ í‘œì‹œí•©ë‹ˆë‹¤.
-/// MonsterInfo / SkillList / SkillInfo í•˜ìœ„ UIë¥¼ ì´ë¦„ìœ¼ë¡œ ìë™ ì—°ê²°í•©ë‹ˆë‹¤.
+/// BattleCharacterPanel ¾È¿¡¼­ ¼±ÅÃµÈ ¸ó½ºÅÍÀÇ ÇÙ½É Á¤º¸¿Í º¸À¯ ½ºÅ³À» Ç¥½ÃÇÕ´Ï´Ù.
+/// MonsterInfo / SkillList / SkillInfo ÇÏÀ§ UI¸¦ ÀÌ¸§À¸·Î ÀÚµ¿ ¿¬°áÇÕ´Ï´Ù.
 /// </summary>
 public class BattleMonsterInfoPanelUI : MonoBehaviour
 {
@@ -33,13 +33,13 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
     [SerializeField] private TMP_Text armorText;
 
     [Header("Action Range")]
-    [Tooltip("ActionRange/RangeIcon ì´ë¯¸ì§€ì…ë‹ˆë‹¤. ëª¬ìŠ¤í„°ì˜ AttackRangeIdì— í•´ë‹¹í•˜ëŠ” ë²”ìœ„ ì´ë¯¸ì§€ë¥¼ í‘œì‹œí•©ë‹ˆë‹¤.")]
+    [Tooltip("ActionRange/RangeIcon ÀÌ¹ÌÁöÀÔ´Ï´Ù. ¸ó½ºÅÍÀÇ AttackRangeId¿¡ ÇØ´çÇÏ´Â ¹üÀ§ ÀÌ¹ÌÁö¸¦ Ç¥½ÃÇÕ´Ï´Ù.")]
     [SerializeField] private Image actionRangeImage;
 
     [Header("Special Actions")]
-    [Tooltip("SpecialAction/Effect01 í…ìŠ¤íŠ¸ì…ë‹ˆë‹¤.")]
+    [Tooltip("SpecialAction/Effect01 ÅØ½ºÆ®ÀÔ´Ï´Ù.")]
     [SerializeField] private TMP_Text specialAction1Text;
-    [Tooltip("SpecialAction/Effect02 í…ìŠ¤íŠ¸ì…ë‹ˆë‹¤.")]
+    [Tooltip("SpecialAction/Effect02 ÅØ½ºÆ®ÀÔ´Ï´Ù.")]
     [SerializeField] private TMP_Text specialAction2Text;
 
     [Header("Status Effects")]
@@ -47,11 +47,11 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
     [SerializeField] private StatusEffectIcon statusEffectIconPrefab;
 
     [Header("Portrait")]
-    [Tooltip("MonsterIconDatabaseì—ì„œ ì¼ë°˜ Iconì„ ì°¾ì§€ ëª»í–ˆì„ ë•Œë§Œ ì›”ë“œ ìŠ¤í”„ë¼ì´íŠ¸ë¥¼ ì˜ˆë¹„ ì´ˆìƒí™”ë¡œ ì‚¬ìš©í•©ë‹ˆë‹¤.")]
+    [Tooltip("MonsterIconDatabase¿¡¼­ ÀÏ¹İ IconÀ» Ã£Áö ¸øÇßÀ» ¶§¸¸ ¿ùµå ½ºÇÁ¶óÀÌÆ®¸¦ ¿¹ºñ ÃÊ»óÈ­·Î »ç¿ëÇÕ´Ï´Ù.")]
     [SerializeField] private bool useWorldSpriteAsPortraitFallback = true;
 
     [Header("Monster Skill List")]
-    [Tooltip("SkillList ì˜¤ë¸Œì íŠ¸ì…ë‹ˆë‹¤. ë¹„ì–´ ìˆìœ¼ë©´ ìë™ìœ¼ë¡œ ì°¾ìŠµë‹ˆë‹¤.")]
+    [Tooltip("SkillList ¿ÀºêÁ§Æ®ÀÔ´Ï´Ù. ºñ¾î ÀÖÀ¸¸é ÀÚµ¿À¸·Î Ã£½À´Ï´Ù.")]
     [SerializeField] private Transform skillListRoot;
     [SerializeField] private Button[] skillButtons = new Button[MonsterSkillSlotCount];
     [SerializeField] private Image[] skillBackgroundImages = new Image[MonsterSkillSlotCount];
@@ -393,7 +393,7 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
         if (skillInfoNameText != null)
         {
             skillInfoNameText.text = !string.IsNullOrWhiteSpace(skillData.Name)
-                ? GameDataLocalization.MonsterSkillName(skillData)
+                ? skillData.Name
                 : skillData.SkillId;
         }
 
@@ -401,9 +401,33 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
             skillInfoTypeText.text = GetStringMemberValue(skillData, "SkillType");
 
         if (skillInfoDetailsText != null)
-            skillInfoDetailsText.text = GameDataLocalization.MonsterSkillDescription(skillData);
+            skillInfoDetailsText.text = FormatMonsterEffectDescription(skillData.EffectDesc, skillData);
 
         RefreshMonsterSkillEffects(skillData);
+    }
+
+    private static string FormatMonsterEffectDescription(string description, MonsterSkillData skillData)
+    {
+        if (string.IsNullOrWhiteSpace(description) || skillData == null)
+            return description ?? string.Empty;
+
+        string[] values = string.IsNullOrWhiteSpace(skillData.ValueRate)
+            ? Array.Empty<string>()
+            : skillData.ValueRate.Split(';');
+
+        string baseValue = values.Length > 0 ? values[0].Trim() : string.Empty;
+        if (string.IsNullOrWhiteSpace(baseValue))
+            return description;
+
+        int randomRange = Mathf.Max(0, skillData.ValueRandomRange);
+        string valueText = randomRange > 0
+            ? $"{baseValue}(¡¾{randomRange})"
+            : baseValue;
+
+        const string valueToken = "¼öÄ¡";
+        return description
+            .Replace($"\"{valueToken}\"", valueText)
+            .Replace(valueToken, valueText);
     }
 
     private void RefreshMonsterSkillEffects(MonsterSkillData skillData)
@@ -581,24 +605,24 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
         switch (effectId.Trim())
         {
             case "E_Move":
-                return GameLocalization.Get("common.move", "ì´ë™");
+                return "ÀÌµ¿";
             case "E_Strike":
             case "E_Pierce":
-                return GameLocalization.Get("common.damage", "í”¼í•´");
+                return "ÇÇÇØ";
             case "E_Knockback":
-                return GameLocalization.Get("effect.knockback", "ë°€ì–´ëƒ„");
+                return "¹Ğ¾î³¿";
             case "E_Grab":
-                return GameLocalization.Get("effect.pull", "ëŒì–´ë‹¹ê¹€");
+                return "²ø¾î´ç±è";
             case "E_Grudge":
-                return GameLocalization.Get("effect.grudge", "ì›í•œ");
+                return "¿øÇÑ";
             case "E_Corrosion":
-                return GameLocalization.Get("effect.corrosion", "ì¹¨ì‹");
+                return "Ä§½Ä";
             case "E_Spawn_Spider_Egg":
-                return GameLocalization.Get("effect.spawn_spider_egg", "ê±°ë¯¸ì•Œ ìƒì„±");
+                return "°Å¹Ì¾Ë »ı¼º";
             case "E_Spawn_Spider_Web":
-                return GameLocalization.Get("effect.spawn_spider_web", "ê±°ë¯¸ì¤„ ìƒì„±");
+                return "°Å¹ÌÁÙ »ı¼º";
             case "E_Barrier":
-                return GameLocalization.Get("effect.barrier", "ì¥ë§‰");
+                return "Àå¸·";
             default:
                 return effectId.Trim();
         }

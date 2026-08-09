@@ -7,12 +7,12 @@ namespace Relic.Gameplay.Monster
 {
     public class EliseAI : MonsterAIBase
     {
-        private const string MoveSkillId = "S_Monster_19";
-        private const string MeleeAttackSkillId = "S_Monster_20";
-        private const string PositionPressureSkillId = "S_Monster_21";
-        private const string SpawnEggSkillId = "S_Monster_22";
-        private const string SpawnWebSkillId = "S_Monster_23";
-        private const string BarrierSkillId = "S_Monster_24";
+        private const string MoveSkillId = "S_Monster_20";
+        private const string MeleeAttackSkillId = "S_Monster_21";
+        private const string PositionPressureSkillId = "S_Monster_22";
+        private const string SpawnEggSkillId = "S_Monster_23";
+        private const string SpawnWebSkillId = "S_Monster_24";
+        private const string BarrierSkillId = "S_Monster_25";
 
         private const string BarrierEffectId = "E_Barrier";
         private const string SpiderEggGridEffectId = "GR_spider_egg";

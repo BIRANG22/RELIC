@@ -148,6 +148,37 @@ public class BattleGridEffectController : MonoBehaviour
         }
     }
 
+    public void ApplyStandingResidueToPlayers()
+    {
+        if (!EnsureDependencies())
+            return;
+
+        BattleCharacter[] characters = FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            BattleCharacter character = characters[i];
+
+            if (character == null || character.RuntimeData == null || character.RuntimeData.IsDead)
+                continue;
+
+            int gridIndex = character.CurrentGridIndex;
+
+            if (gridIndex < 0 ||
+                !state.TryGetEffectId(gridIndex, out string gridEffectId) ||
+                !string.Equals(gridEffectId, "GR_Residue", System.StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            // 잔여물 위에서 새 턴을 시작하면 이동하지 않았더라도 다시 피해를 받습니다.
+            ApplyToPlayer(gridIndex, character);
+        }
+    }
+
     public BattleGridEffectApplyResult ApplyToPlayer(int gridIndex, BattleCharacter character)
     {
         if (character == null || character.RuntimeData == null)

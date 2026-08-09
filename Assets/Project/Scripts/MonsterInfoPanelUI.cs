@@ -1,5 +1,6 @@
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -268,7 +269,7 @@ public class MonsterInfoPanelUI : MonoBehaviour
             item.gameObject.name = template.gameObject.name + "_" + GetPatternItemName(patternInfo);
             item.transform.localScale = Vector3.one * patternItemScale;
             item.gameObject.SetActive(true);
-            item.Bind(patternInfo.Order, GameDataLocalization.MonsterPatternDescription(patternInfo));
+            item.Bind(patternInfo.Order, patternInfo.Description);
             spawnedPatternItems.Add(item);
         }
     }
@@ -367,7 +368,7 @@ public class MonsterInfoPanelUI : MonoBehaviour
     private static string GetSkillName(string skillId, MonsterSkillData skillData)
     {
         if (skillData != null && !string.IsNullOrWhiteSpace(skillData.Name))
-            return GameDataLocalization.MonsterSkillName(skillData).Trim();
+            return skillData.Name.Trim();
 
         return string.IsNullOrWhiteSpace(skillId) ? string.Empty : skillId.Trim();
     }
@@ -375,12 +376,36 @@ public class MonsterInfoPanelUI : MonoBehaviour
     private static string GetSkillDescription(MonsterPatternInfoData patternInfo, MonsterSkillData skillData)
     {
         if (patternInfo != null && !string.IsNullOrWhiteSpace(patternInfo.SkillInfo))
-            return GameDataLocalization.MonsterPatternSkillDescription(patternInfo).Trim();
+            return patternInfo.SkillInfo.Trim();
 
         if (skillData != null && !string.IsNullOrWhiteSpace(skillData.EffectDesc))
-            return GameDataLocalization.MonsterSkillDescription(skillData).Trim();
+            return FormatMonsterEffectDescription(skillData.EffectDesc, skillData);
 
         return string.Empty;
+    }
+
+    private static string FormatMonsterEffectDescription(string description, MonsterSkillData skillData)
+    {
+        if (string.IsNullOrWhiteSpace(description) || skillData == null)
+            return description?.Trim() ?? string.Empty;
+
+        string[] values = string.IsNullOrWhiteSpace(skillData.ValueRate)
+            ? Array.Empty<string>()
+            : skillData.ValueRate.Split(';');
+
+        string baseValue = values.Length > 0 ? values[0].Trim() : string.Empty;
+        if (string.IsNullOrWhiteSpace(baseValue))
+            return description.Trim();
+
+        int randomRange = Mathf.Max(0, skillData.ValueRandomRange);
+        string valueText = randomRange > 0
+            ? $"{baseValue}(¡¾{randomRange})"
+            : baseValue;
+
+        const string valueToken = "¼öÄ¡";
+        return description.Trim()
+            .Replace($"\"{valueToken}\"", valueText)
+            .Replace(valueToken, valueText);
     }
 
     private static Sprite GetTimelineActionIcon(MonsterSkillData skillData)

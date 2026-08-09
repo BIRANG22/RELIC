@@ -32,7 +32,7 @@ public class BattleActionRunner
     private const float HitCameraDelay = 0.08f;
     private const float MonsterHUDVisibleDelay = 0.45f;
     private const float DefaultActionRoutineTimeout = 8f;
-    private const string MuckProjectileSkillId = "S_Monster_04";
+    private const string MuckProjectileSkillId = "S_Monster_02";
     private const string BlobMonsterId = "Mon_02";
     private const string ResidueGridEffectId = "GR_Residue";
     private static readonly Color ExecutionRangeColor = Color.red;
@@ -2368,8 +2368,7 @@ public class BattleActionRunner
 
             if (moveResolution.ActualOffset == Vector2Int.zero)
             {
-                if (moveResolution.WasBlocked)
-                    ApplyCrashToMonster(monster);
+                ApplyMonsterMoveCrashAfterMovement(monster, moveResolution);
 
                 hudService.RefreshHUDs();
                 yield return new WaitForSeconds(ActionDelay);
@@ -2398,6 +2397,10 @@ public class BattleActionRunner
 
             monster.MoveOccupiedCells(moveResolution.ActualOffset, gridManager);
 
+            // 예약 후 다른 유닛이 경로를 막은 경우, 실제로 이동 가능한 지점까지 이동한 뒤
+            // 막힌 유닛과 이동한 몬스터 양쪽에 충돌 피해를 적용합니다.
+            ApplyMonsterMoveCrashAfterMovement(monster, moveResolution);
+
             // 블롭은 이동이 완료되면 이동 전 그리드에 잔여물을 남깁니다.
             // 잔여물의 피해는 이동 공격과 별개로 GridEffect 데이터에 따라 적용합니다.
             if (monster.RuntimeData != null &&
@@ -2408,9 +2411,6 @@ public class BattleActionRunner
 
             ApplyGridEffectsToMonster(enteredGridIndices, monster);
             statusEffectService.ApplyBleedDamageToMonsterOnMove(monster);
-
-            if (moveResolution.WasBlocked && monster.RuntimeData != null && !monster.RuntimeData.IsDead)
-                ApplyCrashToMonster(monster);
 
             hudService.RefreshHUDs();
 
@@ -2579,7 +2579,33 @@ public class BattleActionRunner
     {
         public Vector2Int ActualOffset;
         public bool WasBlocked;
+        public bool BlockedByUnit;
+        public int BlockingUnitGridIndex = -1;
         public List<int> EnteredGridIndices = new();
+    }
+
+    private void ApplyMonsterMoveCrashAfterMovement(
+        MonsterUnit monster,
+        MonsterMoveResolution moveResolution)
+    {
+        if (monster == null ||
+            moveResolution == null ||
+            !moveResolution.WasBlocked ||
+            monster.RuntimeData == null ||
+            monster.RuntimeData.IsDead)
+        {
+            return;
+        }
+
+        ApplyCrashToMonster(monster);
+
+        if (moveResolution.BlockedByUnit && moveResolution.BlockingUnitGridIndex >= 0)
+        {
+            ApplyCrashToBlockingUnitAtGrid(
+                moveResolution.BlockingUnitGridIndex,
+                null,
+                monster);
+        }
     }
 
     private MonsterMoveResolution ResolveMonsterMove(MonsterUnit monster, Vector2Int requestedOffset)
@@ -2629,15 +2655,15 @@ public class BattleActionRunner
 
         if (horizontalFirst)
         {
-            completed = TryApplyMonsterMoveAxisSteps(currentCoords, requestedOffset.x, true, monster, result.EnteredGridIndices, applyCrashToBlockingUnit);
+            completed = TryApplyMonsterMoveAxisSteps(currentCoords, requestedOffset.x, true, monster, result.EnteredGridIndices, applyCrashToBlockingUnit, result);
             if (completed)
-                completed = TryApplyMonsterMoveAxisSteps(currentCoords, requestedOffset.y, false, monster, result.EnteredGridIndices, applyCrashToBlockingUnit);
+                completed = TryApplyMonsterMoveAxisSteps(currentCoords, requestedOffset.y, false, monster, result.EnteredGridIndices, applyCrashToBlockingUnit, result);
         }
         else
         {
-            completed = TryApplyMonsterMoveAxisSteps(currentCoords, requestedOffset.y, false, monster, result.EnteredGridIndices, applyCrashToBlockingUnit);
+            completed = TryApplyMonsterMoveAxisSteps(currentCoords, requestedOffset.y, false, monster, result.EnteredGridIndices, applyCrashToBlockingUnit, result);
             if (completed)
-                completed = TryApplyMonsterMoveAxisSteps(currentCoords, requestedOffset.x, true, monster, result.EnteredGridIndices, applyCrashToBlockingUnit);
+                completed = TryApplyMonsterMoveAxisSteps(currentCoords, requestedOffset.x, true, monster, result.EnteredGridIndices, applyCrashToBlockingUnit, result);
         }
 
         if (currentCoords.Count > 0)
@@ -2690,7 +2716,8 @@ public class BattleActionRunner
         bool horizontal,
         MonsterUnit monster,
         List<int> enteredGridIndices = null,
-        bool applyCrashToBlockingUnit = false)
+        bool applyCrashToBlockingUnit = false,
+        MonsterMoveResolution moveResolution = null)
     {
         int remaining = amount;
 
@@ -2712,8 +2739,11 @@ public class BattleActionRunner
 
                 if (BattleOccupancyService.IsOccupiedByAnyUnit(targetIndex, null, monster))
                 {
-                    if (applyCrashToBlockingUnit)
-                        ApplyCrashToBlockingUnitAtGrid(targetIndex, null, monster);
+                    if (applyCrashToBlockingUnit && moveResolution != null)
+                    {
+                        moveResolution.BlockedByUnit = true;
+                        moveResolution.BlockingUnitGridIndex = targetIndex;
+                    }
 
                     return false;
                 }
@@ -2905,7 +2935,7 @@ public class BattleActionRunner
             command.ClearForcedDirection();
         }
 
-        if (command.SkillData.SkillId == "S_Monster_07")
+        if (command.SkillData.SkillId == "S_Monster_12")
         {
             ShowExecutionRange(BuildMonsterSkillExecutionRange(command, monster.MainGridIndex));
 

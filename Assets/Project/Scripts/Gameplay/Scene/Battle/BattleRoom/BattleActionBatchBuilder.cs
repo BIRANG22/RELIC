@@ -332,7 +332,7 @@ public class BattleActionBatchBuilder
 
         bool isDashAttack =
             command.SkillData != null &&
-            command.SkillData.SkillId == "S_Monster_07";
+            command.SkillData.SkillId == "S_Monster_12";
 
         if (isTimelineMove)
         {

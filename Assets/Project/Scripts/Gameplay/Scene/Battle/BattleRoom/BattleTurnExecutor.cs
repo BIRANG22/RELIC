@@ -488,6 +488,17 @@ public class BattleTurnExecutor : MonoBehaviour
 
                 roomLoader.RefreshBattleHUDs();
             }
+
+            // 몬스터 계획과 턴 전환 정리가 모두 끝난 뒤, 실제 다음 플레이어 턴이 시작되는 시점에
+            // 현재 잔여물 위에 서 있는 캐릭터에게 피해를 다시 적용합니다.
+            ApplyStandingResidueAtTurnStart();
+
+            if (BattleResultChecker.Instance != null &&
+                BattleResultChecker.Instance.CheckBattleEnd())
+            {
+                yield return ReturnCameraDefaultRoutine();
+                yield break;
+            }
         }
         finally
         {
@@ -671,6 +682,15 @@ public class BattleTurnExecutor : MonoBehaviour
 
         SteamBattleStateSynchronizer.TryRefreshIdleSnapshotAfterNetworkExecution();
         RefreshBattleHUDs();
+    }
+
+    private static void ApplyStandingResidueAtTurnStart()
+    {
+        BattleGridEffectController controller =
+            FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+
+        if (controller != null)
+            controller.ApplyStandingResidueToPlayers();
     }
 
     private static void AdvanceGridEffectDurations()

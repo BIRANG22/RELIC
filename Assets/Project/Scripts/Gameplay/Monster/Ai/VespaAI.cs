@@ -7,8 +7,8 @@ namespace Relic.Gameplay.Monster
 {
     public class VespaAI : MonsterAIBase
     {
-        private const string MoveSkillId = "S_Monster_03";
-        private const string AttackSkillId = "S_Monster_07";
+        private const string MoveSkillId = "S_Monster_11";
+        private const string AttackSkillId = "S_Monster_12";
 
         public override string SelectSkill(MonsterRuntimeData monster, BattleContext context)
         {
