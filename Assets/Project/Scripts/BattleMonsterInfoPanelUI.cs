@@ -10,8 +10,8 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
-/// BattleCharacterPanel ¾È¿¡¼­ ¼±ÅÃµÈ ¸ó½ºÅÍÀÇ ÇÙ½É Á¤º¸¿Í º¸À¯ ½ºÅ³À» Ç¥½ÃÇÕ´Ï´Ù.
-/// MonsterInfo / SkillList / SkillInfo ÇÏÀ§ UI¸¦ ÀÌ¸§À¸·Î ÀÚµ¿ ¿¬°áÇÕ´Ï´Ù.
+/// BattleCharacterPanel ì•ˆì—ì„œ ì„ íƒëœ ëª¬ìŠ¤í„°ì˜ í•µì‹¬ ì •ë³´ì™€ ë³´ìœ  ìŠ¤í‚¬ì„ í‘œì‹œí•©ë‹ˆë‹¤.
+/// MonsterInfo / SkillList / SkillInfo í•˜ìœ„ UIë¥¼ ì´ë¦„ìœ¼ë¡œ ìë™ ì—°ê²°í•©ë‹ˆë‹¤.
 /// </summary>
 public class BattleMonsterInfoPanelUI : MonoBehaviour
 {
@@ -33,13 +33,13 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
     [SerializeField] private TMP_Text armorText;
 
     [Header("Action Range")]
-    [Tooltip("ActionRange/RangeIcon ÀÌ¹ÌÁöÀÔ´Ï´Ù. ¸ó½ºÅÍÀÇ AttackRangeId¿¡ ÇØ´çÇÏ´Â ¹üÀ§ ÀÌ¹ÌÁö¸¦ Ç¥½ÃÇÕ´Ï´Ù.")]
+    [Tooltip("ActionRange/RangeIcon ì´ë¯¸ì§€ì…ë‹ˆë‹¤. ëª¬ìŠ¤í„°ì˜ AttackRangeIdì— í•´ë‹¹í•˜ëŠ” ë²”ìœ„ ì´ë¯¸ì§€ë¥¼ í‘œì‹œí•©ë‹ˆë‹¤.")]
     [SerializeField] private Image actionRangeImage;
 
     [Header("Special Actions")]
-    [Tooltip("SpecialAction/Effect01 ÅØ½ºÆ®ÀÔ´Ï´Ù.")]
+    [Tooltip("SpecialAction/Effect01 í…ìŠ¤íŠ¸ì…ë‹ˆë‹¤.")]
     [SerializeField] private TMP_Text specialAction1Text;
-    [Tooltip("SpecialAction/Effect02 ÅØ½ºÆ®ÀÔ´Ï´Ù.")]
+    [Tooltip("SpecialAction/Effect02 í…ìŠ¤íŠ¸ì…ë‹ˆë‹¤.")]
     [SerializeField] private TMP_Text specialAction2Text;
 
     [Header("Status Effects")]
@@ -47,11 +47,11 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
     [SerializeField] private StatusEffectIcon statusEffectIconPrefab;
 
     [Header("Portrait")]
-    [Tooltip("MonsterIconDatabase¿¡¼­ ÀÏ¹İ IconÀ» Ã£Áö ¸øÇßÀ» ¶§¸¸ ¿ùµå ½ºÇÁ¶óÀÌÆ®¸¦ ¿¹ºñ ÃÊ»óÈ­·Î »ç¿ëÇÕ´Ï´Ù.")]
+    [Tooltip("MonsterIconDatabaseì—ì„œ ì¼ë°˜ Iconì„ ì°¾ì§€ ëª»í–ˆì„ ë•Œë§Œ ì›”ë“œ ìŠ¤í”„ë¼ì´íŠ¸ë¥¼ ì˜ˆë¹„ ì´ˆìƒí™”ë¡œ ì‚¬ìš©í•©ë‹ˆë‹¤.")]
     [SerializeField] private bool useWorldSpriteAsPortraitFallback = true;
 
     [Header("Monster Skill List")]
-    [Tooltip("SkillList ¿ÀºêÁ§Æ®ÀÔ´Ï´Ù. ºñ¾î ÀÖÀ¸¸é ÀÚµ¿À¸·Î Ã£½À´Ï´Ù.")]
+    [Tooltip("SkillList ì˜¤ë¸Œì íŠ¸ì…ë‹ˆë‹¤. ë¹„ì–´ ìˆìœ¼ë©´ ìë™ìœ¼ë¡œ ì°¾ìŠµë‹ˆë‹¤.")]
     [SerializeField] private Transform skillListRoot;
     [SerializeField] private Button[] skillButtons = new Button[MonsterSkillSlotCount];
     [SerializeField] private Image[] skillBackgroundImages = new Image[MonsterSkillSlotCount];
@@ -393,7 +393,7 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
         if (skillInfoNameText != null)
         {
             skillInfoNameText.text = !string.IsNullOrWhiteSpace(skillData.Name)
-                ? skillData.Name
+                ? GameDataLocalization.MonsterSkillName(skillData)
                 : skillData.SkillId;
         }
 
@@ -401,7 +401,7 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
             skillInfoTypeText.text = GetStringMemberValue(skillData, "SkillType");
 
         if (skillInfoDetailsText != null)
-            skillInfoDetailsText.text = skillData.EffectDesc ?? string.Empty;
+            skillInfoDetailsText.text = GameDataLocalization.MonsterSkillDescription(skillData);
 
         RefreshMonsterSkillEffects(skillData);
     }
@@ -581,24 +581,24 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
         switch (effectId.Trim())
         {
             case "E_Move":
-                return "ÀÌµ¿";
+                return GameLocalization.Get("common.move", "ì´ë™");
             case "E_Strike":
             case "E_Pierce":
-                return "ÇÇÇØ";
+                return GameLocalization.Get("common.damage", "í”¼í•´");
             case "E_Knockback":
-                return "¹Ğ¾î³¿";
+                return GameLocalization.Get("effect.knockback", "ë°€ì–´ëƒ„");
             case "E_Grab":
-                return "²ø¾î´ç±è";
+                return GameLocalization.Get("effect.pull", "ëŒì–´ë‹¹ê¹€");
             case "E_Grudge":
-                return "¿øÇÑ";
+                return GameLocalization.Get("effect.grudge", "ì›í•œ");
             case "E_Corrosion":
-                return "Ä§½Ä";
+                return GameLocalization.Get("effect.corrosion", "ì¹¨ì‹");
             case "E_Spawn_Spider_Egg":
-                return "°Å¹Ì¾Ë »ı¼º";
+                return GameLocalization.Get("effect.spawn_spider_egg", "ê±°ë¯¸ì•Œ ìƒì„±");
             case "E_Spawn_Spider_Web":
-                return "°Å¹ÌÁÙ »ı¼º";
+                return GameLocalization.Get("effect.spawn_spider_web", "ê±°ë¯¸ì¤„ ìƒì„±");
             case "E_Barrier":
-                return "Àå¸·";
+                return GameLocalization.Get("effect.barrier", "ì¥ë§‰");
             default:
                 return effectId.Trim();
         }

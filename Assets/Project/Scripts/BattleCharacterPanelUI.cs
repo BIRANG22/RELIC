@@ -8,16 +8,16 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// ÀüÅõ¿¡¼­ ÇöÀç ¼±ÅÃµÈ Ä³¸¯ÅÍÀÇ ±âº» Á¤º¸¸¦ ÇÏ´Ü ÅëÇÕ UI¿¡ Ç¥½ÃÇÕ´Ï´Ù.
-/// Ä³¸¯ÅÍ°¡ º¯°æµÇ¸é Bind¸¦ È£ÃâÇÏ°í, ¼öÄ¡°¡ º¯°æµÇ¸é Refresh¸¦ È£ÃâÇÕ´Ï´Ù.
+/// ì „íˆ¬ì—ì„œ í˜„ì¬ ì„ íƒëœ ìºë¦­í„°ì˜ ê¸°ë³¸ ì •ë³´ë¥¼ í•˜ë‹¨ í†µí•© UIì— í‘œì‹œí•©ë‹ˆë‹¤.
+/// ìºë¦­í„°ê°€ ë³€ê²½ë˜ë©´ Bindë¥¼ í˜¸ì¶œí•˜ê³ , ìˆ˜ì¹˜ê°€ ë³€ê²½ë˜ë©´ Refreshë¥¼ í˜¸ì¶œí•©ë‹ˆë‹¤.
 /// </summary>
 public class BattleCharacterPanelUI : MonoBehaviour
 {
     [Header("Selection Content")]
-    [Tooltip("Ä³¸¯ÅÍ°¡ ¼±ÅÃµÇ¾úÀ» ¶§ È°¼ºÈ­µÇ´Â Character ·çÆ®ÀÔ´Ï´Ù.")]
+    [Tooltip("ìºë¦­í„°ê°€ ì„ íƒë˜ì—ˆì„ ë•Œ í™œì„±í™”ë˜ëŠ” Character ë£¨íŠ¸ì…ë‹ˆë‹¤.")]
     [SerializeField] private GameObject characterRoot;
 
-    [Tooltip("¸ó½ºÅÍ°¡ ¼±ÅÃµÇ¾úÀ» ¶§ È°¼ºÈ­µÇ´Â Monster ·çÆ®ÀÔ´Ï´Ù.")]
+    [Tooltip("ëª¬ìŠ¤í„°ê°€ ì„ íƒë˜ì—ˆì„ ë•Œ í™œì„±í™”ë˜ëŠ” Monster ë£¨íŠ¸ì…ë‹ˆë‹¤.")]
     [SerializeField] private GameObject monsterRoot;
 
     [SerializeField] private BattleMonsterInfoPanelUI monsterInfoPanelUI;
@@ -62,13 +62,13 @@ public class BattleCharacterPanelUI : MonoBehaviour
     [SerializeField] private TMP_Text skill04NameText;
 
     [Header("Battle Action Controllers")]
-    [Tooltip("½ºÅ³ ¼±ÅÃ°ú ¹üÀ§ ¹Ì¸®º¸±â¸¦ Ã³¸®ÇÏ´Â ÀüÅõ Å¸ÀÓ¶óÀÎ ÄÁÆ®·Ñ·¯ÀÔ´Ï´Ù.")]
+    [Tooltip("ìŠ¤í‚¬ ì„ íƒê³¼ ë²”ìœ„ ë¯¸ë¦¬ë³´ê¸°ë¥¼ ì²˜ë¦¬í•˜ëŠ” ì „íˆ¬ íƒ€ì„ë¼ì¸ ì»¨íŠ¸ë¡¤ëŸ¬ì…ë‹ˆë‹¤.")]
     [SerializeField] private BattleTimelineController battleTimelineController;
 
-    [Tooltip("¾×Æ¼ºê À¯¹°ÀÇ ´ë»ó ¼±ÅÃÀ» Ã³¸®ÇÏ´Â ÄÁÆ®·Ñ·¯ÀÔ´Ï´Ù.")]
+    [Tooltip("ì•¡í‹°ë¸Œ ìœ ë¬¼ì˜ ëŒ€ìƒ ì„ íƒì„ ì²˜ë¦¬í•˜ëŠ” ì»¨íŠ¸ë¡¤ëŸ¬ì…ë‹ˆë‹¤.")]
     [SerializeField] private ActiveRelicTargetingController activeRelicTargetingController;
 
-    [Tooltip("ÇÃ·¹ÀÌ¾î ÀÔ·Â °¡´É ¿©ºÎ¸¦ È®ÀÎÇÏ´Â ÀüÅõ ½ÇÇà ÄÁÆ®·Ñ·¯ÀÔ´Ï´Ù.")]
+    [Tooltip("í”Œë ˆì´ì–´ ì…ë ¥ ê°€ëŠ¥ ì—¬ë¶€ë¥¼ í™•ì¸í•˜ëŠ” ì „íˆ¬ ì‹¤í–‰ ì»¨íŠ¸ë¡¤ëŸ¬ì…ë‹ˆë‹¤.")]
     [SerializeField] private BattleTurnExecutor turnExecutor;
 
     [Header("Move Button")]
@@ -101,7 +101,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
     [SerializeField] private Color skillNameColor = Color.white;
     [SerializeField] private Color emptySkillNameColor = new Color32(0x77, 0x77, 0x77, 0xFF);
     [SerializeField] private Color unavailableSkillColor = new Color32(0x55, 0x55, 0x55, 0xFF);
-    [SerializeField] private string emptySkillName = "½ºÅ³ ¾øÀ½";
+    [SerializeField] private string emptySkillName = "ìŠ¤í‚¬ ì—†ìŒ";
 
     [Header("Skill Info")]
     [SerializeField] private Image skillInfoIconImage;
@@ -133,70 +133,70 @@ public class BattleCharacterPanelUI : MonoBehaviour
     [SerializeField] private TMP_Text skillEffect03Value;
 
     [Header("Panel Position Animation")]
-    [Tooltip("ÀüÅõ ÁøÇà Áß ÆĞ³ÎÀÌ ³»·Á°¡ ÀÖÀ» Y À§Ä¡ÀÔ´Ï´Ù.")]
+    [Tooltip("ì „íˆ¬ ì§„í–‰ ì¤‘ íŒ¨ë„ì´ ë‚´ë ¤ê°€ ìˆì„ Y ìœ„ì¹˜ì…ë‹ˆë‹¤.")]
     [SerializeField] private float executionPositionY = 150f;
 
-    [Tooltip("ÇÃ·¹ÀÌ¾î°¡ Çàµ¿À» ¿¹¾àÇÒ ¶§ ÆĞ³ÎÀÌ ¿Ã¶ó¿Ã Y À§Ä¡ÀÔ´Ï´Ù.")]
+    [Tooltip("í”Œë ˆì´ì–´ê°€ í–‰ë™ì„ ì˜ˆì•½í•  ë•Œ íŒ¨ë„ì´ ì˜¬ë¼ì˜¬ Y ìœ„ì¹˜ì…ë‹ˆë‹¤.")]
     [SerializeField] private float reservationPositionY = 540f;
 
     [Header("Battle Slot Position Animation")]
-    [Tooltip("BattleSlot ¿ÀºêÁ§Æ®ÀÇ RectTransformÀÔ´Ï´Ù.")]
+    [Tooltip("BattleSlot ì˜¤ë¸Œì íŠ¸ì˜ RectTransformì…ë‹ˆë‹¤.")]
     [SerializeField] private RectTransform battleSlotRectTransform;
 
-    [Tooltip("ÀüÅõ¹æ¿¡ Ã³À½ ÀÔÀåÇßÀ» ¶§ BattleSlotÀÌ ´ë±âÇÏ´Â Y À§Ä¡ÀÔ´Ï´Ù.")]
+    [Tooltip("ì „íˆ¬ë°©ì— ì²˜ìŒ ì…ì¥í–ˆì„ ë•Œ BattleSlotì´ ëŒ€ê¸°í•˜ëŠ” Y ìœ„ì¹˜ì…ë‹ˆë‹¤.")]
     [SerializeField] private float battleSlotDefaultPositionY = 190f;
 
-    [Tooltip("ÀüÅõ ÁøÇà Áß BattleSlotÀÌ Ç¥½ÃµÇ´Â Y À§Ä¡ÀÔ´Ï´Ù.")]
+    [Tooltip("ì „íˆ¬ ì§„í–‰ ì¤‘ BattleSlotì´ í‘œì‹œë˜ëŠ” Y ìœ„ì¹˜ì…ë‹ˆë‹¤.")]
     [SerializeField] private float battleSlotExecutionPositionY = 250f;
 
-    [Tooltip("ÇÃ·¹ÀÌ¾î°¡ Çàµ¿À» ¿¹¾àÇÒ ¶§ BattleSlotÀÌ ¿Ã¶ó¿Ã Y À§Ä¡ÀÔ´Ï´Ù.")]
+    [Tooltip("í”Œë ˆì´ì–´ê°€ í–‰ë™ì„ ì˜ˆì•½í•  ë•Œ BattleSlotì´ ì˜¬ë¼ì˜¬ Y ìœ„ì¹˜ì…ë‹ˆë‹¤.")]
     [SerializeField] private float battleSlotReservationPositionY = 475f;
 
-    [Tooltip("ÀüÅõ¹æ ÀÔÀå ¹× ¿¹¾à ´Ü°è¿¡¼­ »ç¿ëÇÏ´Â BattleSlot Å©±âÀÔ´Ï´Ù.")]
+    [Tooltip("ì „íˆ¬ë°© ì…ì¥ ë° ì˜ˆì•½ ë‹¨ê³„ì—ì„œ ì‚¬ìš©í•˜ëŠ” BattleSlot í¬ê¸°ì…ë‹ˆë‹¤.")]
     [SerializeField, Min(0f)] private float battleSlotNormalScale = 1f;
 
-    [Tooltip("ÀüÅõ ÁøÇà ´Ü°è¿¡¼­ »ç¿ëÇÏ´Â BattleSlot Å©±âÀÔ´Ï´Ù.")]
+    [Tooltip("ì „íˆ¬ ì§„í–‰ ë‹¨ê³„ì—ì„œ ì‚¬ìš©í•˜ëŠ” BattleSlot í¬ê¸°ì…ë‹ˆë‹¤.")]
     [SerializeField, Min(0f)] private float battleSlotExecutionScale = 1.3f;
 
-    [Tooltip("ÆĞ³Î À§Ä¡°¡ ÀÌµ¿ÇÏ´Â µ¥ °É¸®´Â ½Ã°£ÀÔ´Ï´Ù.")]
+    [Tooltip("íŒ¨ë„ ìœ„ì¹˜ê°€ ì´ë™í•˜ëŠ” ë° ê±¸ë¦¬ëŠ” ì‹œê°„ì…ë‹ˆë‹¤.")]
     [SerializeField, Min(0f)] private float panelMoveDuration = 0.25f;
 
     [SerializeField] private bool useUnscaledTimeForPanelMove = true;
 
     [Header("Number Change Animation")]
-    [Tooltip("ÇöÀç Ç¥½Ã°ª¿¡¼­ º¯°æµÈ °ª±îÁö ¼ıÀÚ°¡ º¯ÇÏ´Â ½Ã°£ÀÔ´Ï´Ù.")]
+    [Tooltip("í˜„ì¬ í‘œì‹œê°’ì—ì„œ ë³€ê²½ëœ ê°’ê¹Œì§€ ìˆ«ìê°€ ë³€í•˜ëŠ” ì‹œê°„ì…ë‹ˆë‹¤.")]
     [SerializeField, Min(0f)] private float numberChangeDuration = 0.2f;
 
     [Header("Status Effects")]
-    [Tooltip("»óÅÂÈ¿°ú ¾ÆÀÌÄÜÀÌ »ı¼ºµÉ ºÎ¸ğ ¿ÀºêÁ§Æ®ÀÔ´Ï´Ù.")]
+    [Tooltip("ìƒíƒœíš¨ê³¼ ì•„ì´ì½˜ì´ ìƒì„±ë  ë¶€ëª¨ ì˜¤ë¸Œì íŠ¸ì…ë‹ˆë‹¤.")]
     [SerializeField] private RectTransform statusEffectListRoot;
 
-    [Tooltip("±âÁ¸ StatusEffectIcon ÇÁ¸®ÆÕÀÔ´Ï´Ù.")]
+    [Tooltip("ê¸°ì¡´ StatusEffectIcon í”„ë¦¬íŒ¹ì…ë‹ˆë‹¤.")]
     [SerializeField] private StatusEffectIcon statusEffectIconPrefab;
 
-    [Tooltip("ÇÑ ÁÙ¿¡ Ç¥½ÃÇÒ »óÅÂÈ¿°ú ¾ÆÀÌÄÜ ¼öÀÔ´Ï´Ù.")]
+    [Tooltip("í•œ ì¤„ì— í‘œì‹œí•  ìƒíƒœíš¨ê³¼ ì•„ì´ì½˜ ìˆ˜ì…ë‹ˆë‹¤.")]
     [SerializeField, Min(1)] private int statusEffectColumnCount = 6;
 
-    [Tooltip("»óÅÂÈ¿°ú ¾ÆÀÌÄÜ ÇÑ Ä­ÀÇ Å©±âÀÔ´Ï´Ù.")]
+    [Tooltip("ìƒíƒœíš¨ê³¼ ì•„ì´ì½˜ í•œ ì¹¸ì˜ í¬ê¸°ì…ë‹ˆë‹¤.")]
     [SerializeField] private Vector2 statusEffectCellSize = new Vector2(40f, 40f);
 
-    [Tooltip("»óÅÂÈ¿°ú ¾ÆÀÌÄÜ »çÀÌ °£°İÀÔ´Ï´Ù.")]
+    [Tooltip("ìƒíƒœíš¨ê³¼ ì•„ì´ì½˜ ì‚¬ì´ ê°„ê²©ì…ë‹ˆë‹¤.")]
     [SerializeField] private Vector2 statusEffectSpacing = new Vector2(4f, 4f);
 
     [Header("Unique Resource Slots")]
-    [Tooltip("Resource01 ¿ÀºêÁ§Æ®")]
+    [Tooltip("Resource01 ì˜¤ë¸Œì íŠ¸")]
     [SerializeField] private GameObject resource01;
 
-    [Tooltip("Resource02 ¿ÀºêÁ§Æ®")]
+    [Tooltip("Resource02 ì˜¤ë¸Œì íŠ¸")]
     [SerializeField] private GameObject resource02;
 
-    [Tooltip("Resource03 ¿ÀºêÁ§Æ®")]
+    [Tooltip("Resource03 ì˜¤ë¸Œì íŠ¸")]
     [SerializeField] private GameObject resource03;
 
-    [Tooltip("Resource04 ¿ÀºêÁ§Æ®")]
+    [Tooltip("Resource04 ì˜¤ë¸Œì íŠ¸")]
     [SerializeField] private GameObject resource04;
 
-    [Tooltip("Resource05 ¿ÀºêÁ§Æ®")]
+    [Tooltip("Resource05 ì˜¤ë¸Œì íŠ¸")]
     [SerializeField] private GameObject resource05;
 
     private CharacterRuntimeData boundRuntime;
@@ -384,8 +384,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private IEnumerator RefreshSelectionPanelPositionNextFrame()
     {
-        // Ä³¸¯ÅÍ <-> ¸ó½ºÅÍ ÀüÈ¯ ½Ã °°Àº Å¬¸¯¿¡¼­ ¼±ÅÃ ÇØÁ¦/¼±ÅÃ ÀÌº¥Æ®°¡ ¿¬¼ÓÀ¸·Î ¹ß»ıÇÒ ¼ö ÀÖ½À´Ï´Ù.
-        // ÇÑ ÇÁ·¹ÀÓ µÚ ÃÖÁ¾ ¼±ÅÃ »óÅÂ¸¸ º¸°í ÆĞ³Î À§Ä¡¸¦ °áÁ¤ÇØ Áß°£¿¡ ³»·Á°¬´Ù ¿Ã¶ó¿À´Â ¿òÁ÷ÀÓÀ» ¸·½À´Ï´Ù.
+        // ìºë¦­í„° <-> ëª¬ìŠ¤í„° ì „í™˜ ì‹œ ê°™ì€ í´ë¦­ì—ì„œ ì„ íƒ í•´ì œ/ì„ íƒ ì´ë²¤íŠ¸ê°€ ì—°ì†ìœ¼ë¡œ ë°œìƒí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+        // í•œ í”„ë ˆì„ ë’¤ ìµœì¢… ì„ íƒ ìƒíƒœë§Œ ë³´ê³  íŒ¨ë„ ìœ„ì¹˜ë¥¼ ê²°ì •í•´ ì¤‘ê°„ì— ë‚´ë ¤ê°”ë‹¤ ì˜¬ë¼ì˜¤ëŠ” ì›€ì§ì„ì„ ë§‰ìŠµë‹ˆë‹¤.
         yield return null;
         selectionPanelRefreshCoroutine = null;
         RefreshSelectionPanelPosition();
@@ -574,14 +574,14 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private IEnumerator MoveBattleSlotToDefaultThenReservationRoutine()
     {
-        // ÀüÅõ°¡ ³¡³­ Á÷ÈÄ¿¡´Â BattleSlot¸¸ ¸ÕÀú ±âº» »óÅÂ·Î µ¹¾Æ¿É´Ï´Ù.
+        // ì „íˆ¬ê°€ ëë‚œ ì§í›„ì—ëŠ” BattleSlotë§Œ ë¨¼ì € ê¸°ë³¸ ìƒíƒœë¡œ ëŒì•„ì˜µë‹ˆë‹¤.
         yield return AnimatePanelAndBattleSlotRoutine(
             executionPositionY,
             battleSlotDefaultPositionY,
             battleSlotNormalScale
         );
 
-        // BattleCharacterPanelÀÌ ¿Ã¶ó¿Ã ¶§ BattleSlotµµ ¿¹¾à À§Ä¡·Î ÇÔ²² ÀÌµ¿ÇÕ´Ï´Ù.
+        // BattleCharacterPanelì´ ì˜¬ë¼ì˜¬ ë•Œ BattleSlotë„ ì˜ˆì•½ ìœ„ì¹˜ë¡œ í•¨ê»˜ ì´ë™í•©ë‹ˆë‹¤.
         yield return AnimatePanelAndBattleSlotRoutine(
             reservationPositionY,
             battleSlotReservationPositionY,
@@ -593,8 +593,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private void HandleBattleRoomIntroStarted()
     {
-        // »õ ÀüÅõ¹æ ÀÔÀå ÀÎÆ®·Î´Â ÀÌÀü ÀüÅõ ÁøÇà »óÅÂ¸¦ Á¾·áÇÏ°í
-        // BattleSlotÀ» ±âº» À§Ä¡¿Í Å©±â·Î ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        // ìƒˆ ì „íˆ¬ë°© ì…ì¥ ì¸íŠ¸ë¡œëŠ” ì´ì „ ì „íˆ¬ ì§„í–‰ ìƒíƒœë¥¼ ì¢…ë£Œí•˜ê³ 
+        // BattleSlotì„ ê¸°ë³¸ ìœ„ì¹˜ì™€ í¬ê¸°ë¡œ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         isBattleExecutionInProgress = false;
         SetPanelAndBattleSlotDefaultImmediate();
     }
@@ -606,9 +606,9 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private void HandleBattleMapIntroStarted()
     {
-        // ÀüÅõ ÁøÇà Áß Ç¥½ÃµÇ´Â ÀÏ¹İ ÀÎÆ®·Î ÅØ½ºÆ®´Â BattleSlot »óÅÂ¸¦
-        // ÃÊ±âÈ­ÇÏÁö ¾Ê½À´Ï´Ù. TimelineBar°¡ ÁøÇàµÇ´Â µ¿¾È¿¡´Â
-        // Y 250, Scale 1.3 »óÅÂ¸¦ °è¼Ó À¯ÁöÇØ¾ß ÇÕ´Ï´Ù.
+        // ì „íˆ¬ ì§„í–‰ ì¤‘ í‘œì‹œë˜ëŠ” ì¼ë°˜ ì¸íŠ¸ë¡œ í…ìŠ¤íŠ¸ëŠ” BattleSlot ìƒíƒœë¥¼
+        // ì´ˆê¸°í™”í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. TimelineBarê°€ ì§„í–‰ë˜ëŠ” ë™ì•ˆì—ëŠ”
+        // Y 250, Scale 1.3 ìƒíƒœë¥¼ ê³„ì† ìœ ì§€í•´ì•¼ í•©ë‹ˆë‹¤.
         if (isBattleExecutionInProgress)
             return;
 
@@ -840,8 +840,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private void LateUpdate()
     {
-        // ´Ù¸¥ UI °»½ÅÀÌ³ª ·¹ÀÌ¾Æ¿ô Ã³¸®·Î BattleSlotÀÇ À§Ä¡¸¸ µÇµ¹¾Æ°¡´Â °æ¿ì¸¦ ¸·½À´Ï´Ù.
-        // ÀüÅõ ÁøÇà Áß¿¡´Â ÀÌµ¿ ¾Ö´Ï¸ŞÀÌ¼ÇÀÌ ³¡³­ µÚ Y 250 / Scale 1.3 »óÅÂ¸¦ °è¼Ó °íÁ¤ÇÕ´Ï´Ù.
+        // ë‹¤ë¥¸ UI ê°±ì‹ ì´ë‚˜ ë ˆì´ì•„ì›ƒ ì²˜ë¦¬ë¡œ BattleSlotì˜ ìœ„ì¹˜ë§Œ ë˜ëŒì•„ê°€ëŠ” ê²½ìš°ë¥¼ ë§‰ìŠµë‹ˆë‹¤.
+        // ì „íˆ¬ ì§„í–‰ ì¤‘ì—ëŠ” ì´ë™ ì• ë‹ˆë©”ì´ì…˜ì´ ëë‚œ ë’¤ Y 250 / Scale 1.3 ìƒíƒœë¥¼ ê³„ì† ê³ ì •í•©ë‹ˆë‹¤.
         if (isBattleExecutionInProgress && panelMoveCoroutine == null)
             EnforceBattleSlotExecutionState();
 
@@ -1139,7 +1139,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
         characterNameText.text = boundMaster != null &&
                                  !string.IsNullOrWhiteSpace(boundMaster.Name)
-            ? boundMaster.Name
+            ? GameDataLocalization.CharacterName(boundMaster)
             : boundRuntime.CharacterId;
     }
 
@@ -1166,7 +1166,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         {
             passiveNameText.text = hasPassive &&
                                    !string.IsNullOrWhiteSpace(passiveSkillData.Name)
-                ? passiveSkillData.Name
+                ? GameDataLocalization.SkillName(passiveSkillData)
                 : string.Empty;
         }
 
@@ -1177,13 +1177,21 @@ public class BattleCharacterPanelUI : MonoBehaviour
             if (hasPassive)
             {
                 if (!string.IsNullOrWhiteSpace(passiveSkillData.Details))
-                    effectDescription = passiveSkillData.Details;
+                    effectDescription = GameDataLocalization.SkillDetails(passiveSkillData);
                 else if (!string.IsNullOrWhiteSpace(passiveSkillData.ToolTip))
-                    effectDescription = passiveSkillData.ToolTip;
+                    effectDescription = GameDataLocalization.SkillTooltip(passiveSkillData);
                 else if (!string.IsNullOrWhiteSpace(passiveSkillData.EffectDescription))
-                    effectDescription = passiveSkillData.EffectDescription;
+                    effectDescription = GameLocalization.GetData(
+                        "SkillMaster",
+                        passiveSkillData.SkillId,
+                        "details",
+                        passiveSkillData.EffectDescription);
                 else if (!string.IsNullOrWhiteSpace(passiveSkillData.EffectDesc))
-                    effectDescription = passiveSkillData.EffectDesc;
+                    effectDescription = GameLocalization.GetData(
+                        "SkillMaster",
+                        passiveSkillData.SkillId,
+                        "details",
+                        passiveSkillData.EffectDesc);
             }
 
             passiveEffectText.text = effectDescription;
@@ -1350,8 +1358,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (moveNameText != null)
         {
             moveNameText.text = hasMoveSkill
-                ? (!string.IsNullOrWhiteSpace(moveSkillData.Name) ? moveSkillData.Name : moveSkillId)
-                : "ÀÌµ¿ ¾øÀ½";
+                ? (!string.IsNullOrWhiteSpace(moveSkillData.Name) ? GameDataLocalization.SkillName(moveSkillData) : moveSkillId)
+                : "ì´ë™ ì—†ìŒ";
         }
 
         ConfigureButtonHover(moveButton, "Background", "Background2", moveSkillData);
@@ -1607,13 +1615,13 @@ public class BattleCharacterPanelUI : MonoBehaviour
     {
         if (boundRuntime == null)
         {
-            ShowBattleWarning("¼±ÅÃµÈ Ä³¸¯ÅÍ°¡ ¾ø½À´Ï´Ù.");
+            ShowBattleWarning("ì„ íƒëœ ìºë¦­í„°ê°€ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(skillId))
         {
-            ShowBattleWarning("µî·ÏµÈ ½ºÅ³ÀÌ ¾ø½À´Ï´Ù.");
+            ShowBattleWarning("ë“±ë¡ëœ ìŠ¤í‚¬ì´ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -1621,14 +1629,14 @@ public class BattleCharacterPanelUI : MonoBehaviour
             !DataManager.Instance.SkillDatabase.TryGet(skillId, out SkillMasterData skillData) ||
             skillData == null)
         {
-            ShowBattleWarning("½ºÅ³ µ¥ÀÌÅÍ¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.");
+            ShowBattleWarning("ìŠ¤í‚¬ ë°ì´í„°ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
         EnsureBattleTimelineController();
         if (battleTimelineController == null)
         {
-            ShowBattleWarning("Å¸ÀÓ¶óÀÎ ÄÁÆ®·Ñ·¯¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.");
+            ShowBattleWarning("íƒ€ì„ë¼ì¸ ì»¨íŠ¸ë¡¤ëŸ¬ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -1640,21 +1648,21 @@ public class BattleCharacterPanelUI : MonoBehaviour
     {
         if (boundRuntime == null)
         {
-            ShowBattleWarning("¼±ÅÃµÈ Ä³¸¯ÅÍ°¡ ¾ø½À´Ï´Ù.");
+            ShowBattleWarning("ì„ íƒëœ ìºë¦­í„°ê°€ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
         EnsureTurnExecutor();
         if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
         {
-            ShowBattleWarning("Áö±İÀº À¯¹°À» »ç¿ëÇÒ ¼ö ¾ø½À´Ï´Ù.");
+            ShowBattleWarning("ì§€ê¸ˆì€ ìœ ë¬¼ì„ ì‚¬ìš©í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
         ActiveRelicAvailability availability = GetActiveRelicAvailability();
         if (availability == null || !availability.CanUse)
         {
-            ShowBattleWarning(availability != null ? availability.Message : "À¯¹°À» »ç¿ëÇÒ ¼ö ¾ø½À´Ï´Ù.");
+            ShowBattleWarning(availability != null ? availability.Message : "ìœ ë¬¼ì„ ì‚¬ìš©í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
             RefreshItemButton();
             return;
         }
@@ -1680,7 +1688,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
                 availability,
                 Refresh))
         {
-            ShowBattleWarning("´ë»ó ¼±ÅÃÀ» ½ÃÀÛÇÒ ¼ö ¾ø½À´Ï´Ù.");
+            ShowBattleWarning("ëŒ€ìƒ ì„ íƒì„ ì‹œì‘í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
         }
     }
 
@@ -1798,8 +1806,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
         if (button != null)
         {
-            // Button TransitionÀÌ Skill_Background¸¦ ¼û±âÁö ¾Êµµ·Ï
-            // ½ºÅ³ ½½·ÔÀÇ ½Ã°¢ È¿°ú´Â Àü¿ë È£¹ö ½ºÅ©¸³Æ®¿¡¼­¸¸ Ã³¸®ÇÕ´Ï´Ù.
+            // Button Transitionì´ Skill_Backgroundë¥¼ ìˆ¨ê¸°ì§€ ì•Šë„ë¡
+            // ìŠ¤í‚¬ ìŠ¬ë¡¯ì˜ ì‹œê° íš¨ê³¼ëŠ” ì „ìš© í˜¸ë²„ ìŠ¤í¬ë¦½íŠ¸ì—ì„œë§Œ ì²˜ë¦¬í•©ë‹ˆë‹¤.
             button.transition = Selectable.Transition.None;
             button.interactable = hasSkill;
             SetSkillBackgroundAlwaysVisible(button);
@@ -1817,7 +1825,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (nameText != null)
         {
             nameText.text = hasSkill && !string.IsNullOrWhiteSpace(skillData.Name)
-                ? skillData.Name
+                ? GameDataLocalization.SkillName(skillData)
                 : emptySkillName;
             nameText.color = !hasSkill
                 ? emptySkillNameColor
@@ -1837,7 +1845,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         switch (skillData.ReferenceResource)
         {
             case ReferenceResource.HP:
-                // Ã¼·Â ¼Ò¸ğ ½ºÅ³Àº »ç¿ë ÈÄ Ã¼·ÂÀÌ ÃÖ¼Ò 1 ÀÌ»ó ³²¾Æ¾ß ÇÕ´Ï´Ù.
+                // ì²´ë ¥ ì†Œëª¨ ìŠ¤í‚¬ì€ ì‚¬ìš© í›„ ì²´ë ¥ì´ ìµœì†Œ 1 ì´ìƒ ë‚¨ì•„ì•¼ í•©ë‹ˆë‹¤.
                 return requiredAmount <= 0 || boundRuntime.PreviewHP > requiredAmount;
 
             case ReferenceResource.UniqueResource:
@@ -1886,7 +1894,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         }
 
         if (moveNameText != null)
-            moveNameText.text = "ÀÌµ¿ ¾øÀ½";
+            moveNameText.text = GameLocalization.Get("battle.no_move", "ì´ë™ ì—†ìŒ");
 
         if (itemButton != null)
             itemButton.interactable = false;
@@ -1912,7 +1920,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (skillInfoNameText != null)
         {
             skillInfoNameText.text = !string.IsNullOrWhiteSpace(skillData.Name)
-                ? skillData.Name
+                ? GameDataLocalization.SkillName(skillData)
                 : skillData.SkillId;
         }
 
@@ -1924,9 +1932,9 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (skillInfoDetailsText != null)
         {
             skillInfoDetailsText.text = !string.IsNullOrWhiteSpace(skillData.Details)
-                ? skillData.Details
+                ? GameDataLocalization.SkillDetails(skillData)
                 : !string.IsNullOrWhiteSpace(skillData.ToolTip)
-                    ? skillData.ToolTip
+                    ? GameDataLocalization.SkillTooltip(skillData)
                     : string.Empty;
         }
 
@@ -2026,13 +2034,13 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
         string effectName = entry.EffectData != null &&
                             !string.IsNullOrWhiteSpace(entry.EffectData.Name)
-            ? entry.EffectData.Name
+            ? GameDataLocalization.EffectName(entry.EffectData)
             : entry.EffectId;
 
         string normalized = effectName.Replace(" ", string.Empty).ToLowerInvariant();
 
-        if (normalized.Contains("Å¸°İ") || normalized.Contains("strike"))
-            return "ÇÇÇØ";
+        if (normalized.Contains("íƒ€ê²©") || normalized.Contains("strike"))
+            return GameLocalization.Get("common.damage", "í”¼í•´");
 
         return effectName;
     }
@@ -2042,10 +2050,10 @@ public class BattleCharacterPanelUI : MonoBehaviour
         switch (rangeType)
         {
             case RangeType.Selection:
-                return "±×¸®µå ¼±ÅÃ";
+                return GameLocalization.Get("skill.range_selection", "ê·¸ë¦¬ë“œ ì„ íƒ");
 
             case RangeType.Direction:
-                return "½ÃÀüÀÚ À§Ä¡";
+                return GameLocalization.Get("skill.range_caster_position", "ì‹œì „ì ìœ„ì¹˜");
 
             default:
                 return string.Empty;
@@ -2057,19 +2065,19 @@ public class BattleCharacterPanelUI : MonoBehaviour
         switch (resource)
         {
             case ReferenceResource.HP:
-                return "Ã¼·Â";
+                return GameLocalization.Get("common.hp", "ì²´ë ¥");
 
             case ReferenceResource.UniqueResource:
                 return boundMaster != null
                     ? GetUniqueResourceDisplayName(boundMaster.ResourceType)
-                    : "°íÀ¯ÀÚ¿ø";
+                    : GameLocalization.Get("resource.unique", "ê³ ìœ ìì›");
 
             case ReferenceResource.MovePoint:
-                return "ÀÌµ¿";
+                return GameLocalization.Get("common.move", "ì´ë™");
 
             case ReferenceResource.Cost:
             default:
-                return "ÄÚ½ºÆ®";
+                return GameLocalization.Get("common.cost", "ì½”ìŠ¤íŠ¸");
         }
     }
 
@@ -2077,12 +2085,12 @@ public class BattleCharacterPanelUI : MonoBehaviour
     {
         switch (resourceType)
         {
-            case ResourceType.Rage: return "ºĞ³ë";
-            case ResourceType.Momentum: return "±â¼¼";
-            case ResourceType.Aether: return "¿¡Å×¸£";
-            case ResourceType.Faith: return "½Å¾Ó";
-            case ResourceType.Blood: return "Ç÷±â";
-            default: return "°íÀ¯ÀÚ¿ø";
+            case ResourceType.Rage: return GameLocalization.Get("resource.rage", "ë¶„ë…¸");
+            case ResourceType.Momentum: return GameLocalization.Get("resource.momentum", "ê¸°ì„¸");
+            case ResourceType.Aether: return GameLocalization.Get("resource.aether", "ì—í…Œë¥´");
+            case ResourceType.Faith: return GameLocalization.Get("resource.faith", "ì‹ ì•™");
+            case ResourceType.Blood: return GameLocalization.Get("resource.blood", "í˜ˆê¸°");
+            default: return GameLocalization.Get("resource.unique", "ê³ ìœ ìì›");
         }
     }
 

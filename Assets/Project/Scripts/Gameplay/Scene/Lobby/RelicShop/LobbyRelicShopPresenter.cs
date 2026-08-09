@@ -365,10 +365,12 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         }
 
         if (relicDescriptionNameText != null)
-            relicDescriptionNameText.text = string.IsNullOrWhiteSpace(relic.Name) ? relicId : relic.Name;
+            relicDescriptionNameText.text = string.IsNullOrWhiteSpace(relic.Name)
+                ? relicId
+                : GameDataLocalization.RelicName(relic);
 
         if (relicDescriptionBodyText != null)
-            relicDescriptionBodyText.text = relic.EffectDesc ?? string.Empty;
+            relicDescriptionBodyText.text = GameDataLocalization.RelicDescription(relic);
 
         relicDescriptionRoot.SetActive(true);
     }

@@ -22,6 +22,6083 @@ MonoBehaviour:
     m_Localized: Start
     m_Metadata:
       m_Items: []
+  - m_Id: 41367126123487249
+    m_Localized: Cost
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41367126123487251
+    m_Localized: Armor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41367126123487264
+    m_Localized: Skill
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915657494528
+    m_Localized: Hilt
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466048
+    m_Localized: Stronger guy, more passionate battle!\n\nA warlike and unstoppable
+      charging explorer.\nThrough battle, he wants to test his limits and prove his
+      strength.\n\nIf he takes damage, gains 1 Rage at the end of the turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466049
+    m_Localized: Kaya
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466050
+    m_Localized: A shaky sword tip only invites death.\n\nA calm and cool-headed
+      investigator.\nContinuously learning all combat techniques and seeking to reach
+      the pinnacle of swordsmanship.\n\nWhen acting twice in one slot, gain 1 momentum
+      at the end of the turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466051
+    m_Localized: Hayes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466052
+    m_Localized: Nia, please don't fall from my side!\n\nYou are a timid and timid
+      explorer.\nYou fight with your summons to overcome your weakness.\n\nIf you
+      spend 8 or more costs in one turn, you acquire 1 Ether at the end of the turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466053
+    m_Localized: Ines
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466054
+    m_Localized: Ines, the gentle executioner\n\nShe looks after her allies with
+      a bright face.\nShe embraces her allies affectionately, but even her smile
+      turns cold in the face of those who threaten them.\n\nIf a beneficial effect
+      is given to an ally, gains 1 Faith at the end of the turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466055
+    m_Localized: Raina
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466056
+    m_Localized: Rayna, Moonlight Wanderer\n\nShe talks little, but is a free-spirited
+      vampire.\nShe steps forward without hesitation when it comes to her heart.\n\nIf
+      you damage an enemy with an attack, gain 1 blood at the end of the turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466057
+    m_Localized: Merck
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466058
+    m_Localized: "\uAC00\uAE4C\uC6B4 \uCE90\uB9AD\uD130\uC5D0\uAC8C\\n\uC774\uB3D9\uD569\uB2C8\uB2E4."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466059
+    m_Localized: When the division value reaches 0, it splits into 2 \n blobs.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466060
+    m_Localized: Blob
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466061
+    m_Localized: "\uAC00\uAE4C\uC6B4 \uCE90\uB9AD\uD130\uC5D0\uAC8C\\n\uC774\uB3D9\uD569\uB2C8\uB2E4."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466062
+    m_Localized: When moving, \n residue is created at the location passed.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466063
+    m_Localized: Lancer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466064
+    m_Localized: When the character gets close,\nmoves away.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466065
+    m_Localized: Grants\nGrudge to all monsters every turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466066
+    m_Localized: Blight
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466067
+    m_Localized: When the character gets close,\nmoves away.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466068
+    m_Localized: Grants \n_erosion to all characters every turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466069
+    m_Localized: Vespa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466070
+    m_Localized: You can move \n up to 2 times per turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466071
+    m_Localized: Move in the same line as the character and rush.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466072
+    m_Localized: Cinder
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466073
+    m_Localized: "\uAC00\uAE4C\uC6B4 \uCE90\uB9AD\uD130\uC5D0\uAC8C\\n\uC774\uB3D9\uD569\uB2C8\uB2E4."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466074
+    m_Localized: When the explosion value reaches 0, \n explodes and deals damage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466075
+    m_Localized: Mon_07
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466076
+    m_Localized: 0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466077
+    m_Localized: 0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466078
+    m_Localized: Mon_08
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466079
+    m_Localized: 0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466080
+    m_Localized: 0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466081
+    m_Localized: Mon_09
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466082
+    m_Localized: 0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466083
+    m_Localized: 0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466084
+    m_Localized: Nocturne
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466085
+    m_Localized: Teleport to the rear of the character\n.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466086
+    m_Localized: Possesses surprise attack and deals strong damage when inflicting
+      damage to the rear.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466087
+    m_Localized: Mon_11
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466088
+    m_Localized: 0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466089
+    m_Localized: 0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466090
+    m_Localized: Arabella
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466091
+    m_Localized: When the character gets closer, \nmoves in the opposite direction.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466092
+    m_Localized: Disables the use of one random slot each turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466093
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466094
+    m_Localized: Moves to the selected grid. Cost is consumed equal to the number
+      of spaces moved.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466095
+    m_Localized: Cost is consumed equal to the number of spaces moved.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466096
+    m_Localized: Move+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466097
+    m_Localized: Moves to the selected grid. You can move up to 2 spaces with 1 cost.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466098
+    m_Localized: Moves up to 2 spaces with 1 cost.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466099
+    m_Localized: "\uACB0\uC18D"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466100
+    m_Localized: If your Rage is at maximum, you gain 4 Armor at the start of your
+      turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466101
+    m_Localized: When you take damage, you gain Rage, and when Rage is maxed, you
+      gain 4 Armor at the start of the turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466102
+    m_Localized: Belligerence
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466103
+    m_Localized: If your Rage is at maximum, you gain 1 boost at the start of your
+      turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466104
+    m_Localized: When you receive damage, you gain Rage, and when Rage is maxed,
+      you gain 1 amplification at the start of the turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466105
+    m_Localized: Calmness
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466106
+    m_Localized: If momentum is at maximum, an additional cost of 1 is recovered
+      at the start of the turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466107
+    m_Localized: Gain momentum by acting twice in one slot, and recover an additional
+      cost of 1 at the start of the turn when momentum is maximum.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466108
+    m_Localized: "\uAC04\uD30C"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466109
+    m_Localized: If your momentum is at maximum, gain 1 haste at the start of your
+      turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466110
+    m_Localized: Gain momentum when you act twice in one slot, and gain 1 haste at
+      the start of the turn when momentum is maximum.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466111
+    m_Localized: Relief
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466112
+    m_Localized: If your Ether is at max, you gain 3 Armor at the start of your turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466113
+    m_Localized: If you spend 8 or more costs in one turn, you get ether, and when
+      you max out ether, you get 3 armor at the start of the turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466114
+    m_Localized: "\uACB0\uC2EC"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466115
+    m_Localized: If Ether is at maximum, grants 3 Armor to the ally with the lowest
+      health at the start of the turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466116
+    m_Localized: If you use a cost of 8 or more in one turn, you will receive ether,
+      and when ether is maxed out, grant 3 defense to the ally with the lowest health
+      at the start of the turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466117
+    m_Localized: Compassionateness
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466118
+    m_Localized: If your faith is at maximum, restore 1 health to the ally with the
+      lowest health at the start of the turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466119
+    m_Localized: When you give a beneficial effect to an ally, you gain faith, and
+      when faith is maxed, the lowest health ally recovers 1 stamina at the start
+      of the turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466120
+    m_Localized: Referee
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466121
+    m_Localized: If your Faith is at maximum, you gain 1 Strike at the start of your
+      turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466122
+    m_Localized: When you give a beneficial effect to an ally, you gain Faith, and
+      when Faith is maxed, you gain 1 Strike at the start of the turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466123
+    m_Localized: Bloodlust
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466124
+    m_Localized: If your blood energy is at maximum, you gain 1 blood absorption
+      at the start of the turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466125
+    m_Localized: When you damage an enemy with an attack, you gain blood energy,
+      and when blood energy is maxed, you gain 1 vampire at the start of the turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466126
+    m_Localized: Nightmare
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466127
+    m_Localized: If your blood energy is at maximum, you get an amplification of
+      1 at the start of your turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466128
+    m_Localized: When you damage an enemy with an attack, you gain blood energy,
+      and when blood energy is maxed, you gain 1 amplification at the start of the
+      turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466129
+    m_Localized: Dragon's Protection
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466130
+    m_Localized: Grants 6 armor to you and your allies with the power of the dragon.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466131
+    m_Localized: Grants 6 armor to you and your allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466132
+    m_Localized: Cutting the Earth
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466133
+    m_Localized: Cleaves the ground with the halberd, dealing 14 damage to the enemy
+      and pushing them back 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466134
+    m_Localized: Deals 14 damage to enemies. Pushes 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466135
+    m_Localized: Swift Sword Smoke
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466136
+    m_Localized: Swing the katana quickly, dealing 3 damage to the enemy 4 times.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466137
+    m_Localized: Deals 3 damage to the enemy 4 times.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466138
+    m_Localized: Flurry of Swords
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466139
+    m_Localized: Cuts past the enemy, dealing 12 piercing damage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466140
+    m_Localized: Deals 12 piercing damage to enemies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466141
+    m_Localized: Sharp light
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466142
+    m_Localized: Radiates light, dealing 2 damage to enemies and inflicting 1 Vulnerability.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466143
+    m_Localized: Deals 2 damage to the enemy. Grants Vulnerability 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915678466144
+    m_Localized: Will of Light
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660352
+    m_Localized: Radiates light, granting amplification 2 to yourself and your allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660353
+    m_Localized: Gives you and your allies Amplification 2.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660354
+    m_Localized: Prayer of Salvation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660355
+    m_Localized: Raises prayers to restore 3 health to yourself and your allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660356
+    m_Localized: Restores 3 health to yourself and your allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660357
+    m_Localized: Holy Strike
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660358
+    m_Localized: Infused with divine power, deals 10 damage to enemies and weakens
+      them by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660359
+    m_Localized: Deals 10 damage to enemies. Grants Weakness 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660360
+    m_Localized: Deathside
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660361
+    m_Localized: Cuts deeply, inflicting 10 piercing damage to the enemy and inflicting
+      1 vulnerability.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660362
+    m_Localized: Deals 10 piercing damage to enemies. Grants Vulnerability 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660363
+    m_Localized: Scarlet Nova
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660364
+    m_Localized: Explodes blood, dealing 14 damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660365
+    m_Localized: Deals 14 damage to enemies. Pushes 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660366
+    m_Localized: Swing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660367
+    m_Localized: Swing the halberd to inflict 6 damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660368
+    m_Localized: Deals 6 damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660369
+    m_Localized: Swing+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660370
+    m_Localized: Swing the halberd and deal 9 damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660371
+    m_Localized: Deals 8 damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660372
+    m_Localized: Downstroke
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660373
+    m_Localized: Slashes the halberd, dealing 7 damage to the enemy and pushing it
+      back 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660374
+    m_Localized: Deals 7 damage to the enemy. Pushes 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660375
+    m_Localized: Downstroke+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660376
+    m_Localized: Slashes the halberd, dealing 10 damage to the enemy and pushing
+      it back 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660377
+    m_Localized: Deals 9 damage to the enemy. Pushes 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660378
+    m_Localized: Storm Sword Type 3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660379
+    m_Localized: Swing the katana continuously, dealing 3 damage to the enemy twice.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660380
+    m_Localized: Deals 3 damage to the enemy twice.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660381
+    m_Localized: Swift Sword 3+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660382
+    m_Localized: Swing the katana continuously to inflict 5 damage to the enemy twice.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660383
+    m_Localized: Deals 4 damage to the enemy 2 times.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660384
+    m_Localized: 1st gale sword
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660385
+    m_Localized: Fires and inflicts 7 piercing damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660386
+    m_Localized: Deals 7 piercing damage to enemies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660387
+    m_Localized: Swift Sword 1 set+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660388
+    m_Localized: Fires and inflicts 10 piercing damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660389
+    m_Localized: Deals 9 piercing damage to enemies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660390
+    m_Localized: Nia's miasma
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660391
+    m_Localized: Nia spreads poison, inflicting 2 poison to enemies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660392
+    m_Localized: Gives poison 2 to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660393
+    m_Localized: Nia's miasma+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660394
+    m_Localized: Nia spreads poison, inflicting 2 poison to enemies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660395
+    m_Localized: Gives poison 2 to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660396
+    m_Localized: Nia's Flash
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660397
+    m_Localized: Nia creates a flash of light, dealing 6 damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660398
+    m_Localized: Deals 6 damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660399
+    m_Localized: Nia's Flash+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660400
+    m_Localized: Nia creates a flash of light, dealing 9 damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660401
+    m_Localized: Deals 8 damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660402
+    m_Localized: Controlling the regime
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660403
+    m_Localized: Throws out a fist and deals 6 damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660404
+    m_Localized: Deals 6 damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660405
+    m_Localized: Controlling the regime+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660406
+    m_Localized: Throws out a fist and deals 10 damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660407
+    m_Localized: Deals 10 damage to enemies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660408
+    m_Localized: All attack and defense
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660409
+    m_Localized: Takes a stance and grants 1 amplification and 3 armor to you and
+      your allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660410
+    m_Localized: Gives you and your allies Amplification 1 and Armor 3.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660411
+    m_Localized: All Attack and Defense+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660412
+    m_Localized: Takes a stance and grants 1 amplification and 3 armor to you and
+      your allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660413
+    m_Localized: Gives you and your allies Amplification 1 and Armor 3.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660414
+    m_Localized: Crimson Chain
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660415
+    m_Localized: Deals 6 damage to the enemy with a red chain and pulls them 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660416
+    m_Localized: Deals 6 damage to the enemy. Pull 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660417
+    m_Localized: Crimson Chain+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660418
+    m_Localized: Deals 9 damage to the enemy with a red chain and pulls them 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660419
+    m_Localized: Deals 8 damage to the enemy. Pull 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660420
+    m_Localized: Crescent Swing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660421
+    m_Localized: Swing the side widely, dealing 6 damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660422
+    m_Localized: Deals 6 damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660423
+    m_Localized: Crescent Swing+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660424
+    m_Localized: Swing the side widely, dealing 9 damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660425
+    m_Localized: Deals 7 damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660426
+    m_Localized: Overbearing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660427
+    m_Localized: Suppresses the opponent's momentum and inflicts 1 weakening.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660428
+    m_Localized: Grants Weakness 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660429
+    m_Localized: Intimidating+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660430
+    m_Localized: Suppresses the opponent's momentum and inflicts 1 weakening.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660431
+    m_Localized: Grants Weakness 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660432
+    m_Localized: Attack stance
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660433
+    m_Localized: Gives you and your allies Amplification 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660434
+    m_Localized: Gives you and your allies Amplification 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660435
+    m_Localized: Attack Stance+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660436
+    m_Localized: Gives you and your allies Amplification 2.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660437
+    m_Localized: Gives amplification 2 to self and allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660438
+    m_Localized: Cut the gap
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660439
+    m_Localized: Quickly slashes, dealing 4 damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660440
+    m_Localized: Deals 4 damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660441
+    m_Localized: Gap Cut+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660442
+    m_Localized: Quickly slashes to inflict 6 damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660443
+    m_Localized: Deals 6 damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660444
+    m_Localized: Take a breather
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660445
+    m_Localized: Take a deep breath and give yourself 1 focus.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660446
+    m_Localized: Gives you 1 focus.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660447
+    m_Localized: Take a breath+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660448
+    m_Localized: Take a deep breath and give yourself 1 focus.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660449
+    m_Localized: Gives you 1 focus.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660450
+    m_Localized: Push
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660451
+    m_Localized: Push back with your body, dealing 4 damage to the enemy and pushing
+      them back 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660452
+    m_Localized: Deals 4 damage to the enemy. Pushes 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660453
+    m_Localized: Push+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660454
+    m_Localized: Push back with your body, dealing 4 damage to the enemy and pushing
+      them back 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660455
+    m_Localized: Deals 4 damage to the enemy. Pushes 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660456
+    m_Localized: "\uACA9\uB824"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660457
+    m_Localized: Inspires courage and grants 2 charges to an ally.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660458
+    m_Localized: Gives 2 charges to an ally.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660459
+    m_Localized: "\uACA9\uB824+"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660460
+    m_Localized: Inspires courage and grants 2 charges to an ally.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660461
+    m_Localized: Gives 2 charges to an ally.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660462
+    m_Localized: Hold on
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660463
+    m_Localized: Stand firm and grant 4 armor to yourself and your allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660464
+    m_Localized: Grants 4 armor to you and your allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660465
+    m_Localized: Hold on+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660466
+    m_Localized: Stand firm and grant 4 armor to yourself and your allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660467
+    m_Localized: Grants 4 armor to you and your allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660468
+    m_Localized: Pull
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660469
+    m_Localized: Grabs the enemy and pulls it in, dealing 4 damage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660470
+    m_Localized: Deals 5 damage to the enemy. Pull 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660471
+    m_Localized: Pull+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660472
+    m_Localized: Grabs the enemy and pulls it in, dealing 6 damage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660473
+    m_Localized: Deals 6 damage to the enemy. Pull 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660474
+    m_Localized: Bloodpierce
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660475
+    m_Localized: Stab the enemy, dealing 4 damage and inflicting 1 bleeding.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660476
+    m_Localized: Deals 4 damage to the enemy. Grants 1 bleeding.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660477
+    m_Localized: Bloodpierce+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660478
+    m_Localized: Stab the enemy, dealing 4 damage and inflicting 1 bleeding.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660479
+    m_Localized: Deals 4 damage to the enemy. Grants 1 bleeding.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660480
+    m_Localized: Speedster
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660481
+    m_Localized: Seize the opportunity to move before your opponent and gain 1 speed.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660482
+    m_Localized: Gives yourself speed 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660483
+    m_Localized: Speedster+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660484
+    m_Localized: Seize the opportunity to move before your opponent and gain 1 speed.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660485
+    m_Localized: Gives yourself speed 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660486
+    m_Localized: The price of life
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660487
+    m_Localized: Gain 1 Focus at the cost of Stamina.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660488
+    m_Localized: Gain 1 Focus.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660489
+    m_Localized: The price of life+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660490
+    m_Localized: Gain 1 Focus at the cost of Stamina.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660491
+    m_Localized: Gain 1 Focus.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660492
+    m_Localized: The Rise of Jeon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660493
+    m_Localized: Increases the fighting spirit of allies and grants an amplification
+      of 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660494
+    m_Localized: Gives an ally an amplification of 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660495
+    m_Localized: Previous rise+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660496
+    m_Localized: Increases the fighting spirit of allies and grants an amplification
+      of 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660497
+    m_Localized: Gives an ally an amplification of 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660498
+    m_Localized: First Aid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660499
+    m_Localized: Heals wounds and restores 3 health to allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660500
+    m_Localized: Restores 3 health to allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660501
+    m_Localized: First Aid+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660502
+    m_Localized: Heals wounds and restores 5 health to allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660503
+    m_Localized: Restores 5 health to allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660504
+    m_Localized: Shield
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660505
+    m_Localized: Protects allies and grants them 4 defense.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660506
+    m_Localized: Grants 4 armor to allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660507
+    m_Localized: Shield+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660508
+    m_Localized: Protects allies and grants 6 defense.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660509
+    m_Localized: Grants 6 armor to allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660510
+    m_Localized: "\uAC15\uCCA0 \uD53C\uBD80"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660511
+    m_Localized: Makes your skin as hard as steel, giving you 6 armor.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660512
+    m_Localized: Grants self 6 armor.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660513
+    m_Localized: "\uAC15\uCCA0 \uD53C\uBD80+"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660514
+    m_Localized: Makes your skin as hard as steel, giving you 6 armor.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660515
+    m_Localized: Grants self 6 armor.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660516
+    m_Localized: Supply
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660517
+    m_Localized: Replenish your supply to gain 2 Charges.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660518
+    m_Localized: Gain 2 Charges.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660519
+    m_Localized: Supply+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660520
+    m_Localized: Replenish your supply to gain 2 Charges.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660521
+    m_Localized: Gain 2 Charges.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660522
+    m_Localized: "\uAC00\uC2DC\uAC11\uC637"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660523
+    m_Localized: "\uAC00\uC2DC \uB3CB\uCE5C \uAC11\uC637\uC744 \uB458\uB7EC \uC790\uC2E0\uC5D0\uAC8C
+      \uAC00\uD638 2\uB97C \uBD80\uC5EC\uD569\uB2C8\uB2E4."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660524
+    m_Localized: Grants protection 2 to yourself.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915682660525
+    m_Localized: "\uAC00\uC2DC\uAC11\uC637+"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854656
+    m_Localized: "\uAC00\uC2DC \uB3CB\uCE5C \uAC11\uC637\uC744 \uB458\uB7EC \uC790\uC2E0\uC5D0\uAC8C
+      \uAC00\uD638 2\uB97C \uBD80\uC5EC\uD569\uB2C8\uB2E4."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854657
+    m_Localized: Grants protection 2 to yourself.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854658
+    m_Localized: Detecting Weakness
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854659
+    m_Localized: Detects the enemy's weakness and grants Vulnerability 2.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854660
+    m_Localized: Gives the enemy Vulnerability 2.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854661
+    m_Localized: Detect Weakness+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854662
+    m_Localized: Detects the enemy's weakness and grants Vulnerability 2.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854663
+    m_Localized: Gives the enemy Vulnerability 2.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854664
+    m_Localized: Neutralization
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854665
+    m_Localized: Breaks the enemy's defense posture and inflicts Weakness 2.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854666
+    m_Localized: Gives weakness to the enemy by 2.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854667
+    m_Localized: Neutralize+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854668
+    m_Localized: Breaks the enemy's defense posture and inflicts Weakness 2.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854669
+    m_Localized: Gives weakness to the enemy by 2.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854670
+    m_Localized: Deadly Fog
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854671
+    m_Localized: Spreads corrosive miasma, inflicting 3 poison to enemies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854672
+    m_Localized: Gives poison 3 to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854673
+    m_Localized: Poison Fog+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854674
+    m_Localized: Spreads corrosive miasma, inflicting 3 poison to enemies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854675
+    m_Localized: Gives poison 3 to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854676
+    m_Localized: Opening the Wound
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854677
+    m_Localized: Leaves a blood mark, inflicting 3 bleeds on the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854678
+    m_Localized: Inflicts bleed 3 on the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854679
+    m_Localized: Opening the Wound+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854680
+    m_Localized: Leaves a blood mark, inflicting 3 bleeds on the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854681
+    m_Localized: Inflicts bleed 3 on the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854682
+    m_Localized: Slash
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854683
+    m_Localized: "\uAC80\uC5D0 \uAE30\uB97C \uB458\uB7EC \uC801\uC5D0\uAC8C 7\uC758
+      \uD53C\uD574\uB97C \uC90D\uB2C8\uB2E4."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854684
+    m_Localized: Deals 7 damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854685
+    m_Localized: Slash+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854686
+    m_Localized: "\uAC80\uC5D0 \uAE30\uB97C \uB458\uB7EC \uC801\uC5D0\uAC8C 8\uC758
+      \uD53C\uD574\uB97C \uC90D\uB2C8\uB2E4."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854687
+    m_Localized: Deals 8 damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854688
+    m_Localized: Piercing Light
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854689
+    m_Localized: Shoots light and inflicts 7 piercing damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854690
+    m_Localized: Deals 7 piercing damage to enemies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854691
+    m_Localized: Piercing Light+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854692
+    m_Localized: Shoots light and deals 8 piercing damage to enemies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854693
+    m_Localized: Deals 8 piercing damage to enemies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854694
+    m_Localized: Moving Shooting
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854695
+    m_Localized: "\uACAC\uC81C \uACF5\uACA9\uC73C\uB85C \uC801\uC5D0\uAC8C 4\uC758
+      \uD53C\uD574\uB97C \uC8FC\uACE0 \uB4A4\uB85C 1\uCE78 \uC774\uB3D9\uD569\uB2C8\uB2E4."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854696
+    m_Localized: Deals 4 damage to the enemy. Move back 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854697
+    m_Localized: Move Shooting+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854698
+    m_Localized: "\uACAC\uC81C \uACF5\uACA9\uC73C\uB85C \uC801\uC5D0\uAC8C 6\uC758
+      \uD53C\uD574\uB97C \uC8FC\uACE0 \uB4A4\uB85C 1\uCE78 \uC774\uB3D9\uD569\uB2C8\uB2E4."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854699
+    m_Localized: Deals 6 damage to the enemy. Move back 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854700
+    m_Localized: Vital Guard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854701
+    m_Localized: Surrounds the vitality of an ally with a shield, recovering 2 stamina
+      and granting 4 armor.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854702
+    m_Localized: Restores 2 health to allies. Grants 4 Armor.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854703
+    m_Localized: Vital Guard+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854704
+    m_Localized: Surrounds the vitality of an ally with a shield, recovering 2 stamina
+      and granting 4 armor.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854705
+    m_Localized: Restores 2 health to allies. Grants 4 Armor.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854706
+    m_Localized: Tactical Maintenance
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854707
+    m_Localized: Reorganize your tactics, granting yourself 2 Charges and 1 Focus.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854708
+    m_Localized: Gives yourself 2 Charges and 1 Focus.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854709
+    m_Localized: Tactical Maintenance+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854710
+    m_Localized: Reorganize your tactics, granting yourself 3 Charges and 1 Focus.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854711
+    m_Localized: Gives yourself 3 Charges and 1 Focus.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854712
+    m_Localized: Blood Mark
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854713
+    m_Localized: Marks the blood mark, inflicting 2 Bleeding and 1 Vulnerability
+      to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854714
+    m_Localized: Gives the enemy 2 Bleeding and 1 Vulnerability.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854715
+    m_Localized: Blood Mark+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854716
+    m_Localized: Marks the blood mark, inflicting 2 Bleeding and 1 Vulnerability
+      to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854717
+    m_Localized: Gives the enemy 2 Bleeding and 1 Vulnerability.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854718
+    m_Localized: Toxic Erosion
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854719
+    m_Localized: Erosions the enemy with toxic energy, inflicting 1 Weakness and
+      1 Poison.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854720
+    m_Localized: Gives the enemy 1 Weakness and 1 Poison.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854721
+    m_Localized: Toxic Erosion+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854722
+    m_Localized: Erosions the enemy with toxic energy, inflicting 1 Weakness and
+      1 Poison.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854723
+    m_Localized: Gives the enemy 1 Weakness and 1 Poison.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854724
+    m_Localized: Shock Wave
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854725
+    m_Localized: Creates a shockwave that deals 6 damage to the enemy and pushes
+      them back 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854726
+    m_Localized: Deals 6 damage to the enemy. Pushes 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854727
+    m_Localized: Shock Wave+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854728
+    m_Localized: Creates a shockwave, dealing 8 damage to the enemy and pushing them
+      back 2 squares.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854729
+    m_Localized: Deals 8 damage to the enemy. Pushes 2 spaces.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854730
+    m_Localized: Bind Chain
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854731
+    m_Localized: Grabs the enemy with a chain, deals 6 damage to the enemy and pulls
+      it back 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854732
+    m_Localized: Deals 6 damage to the enemy. Pull 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854733
+    m_Localized: Bind Chain+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854734
+    m_Localized: Grabs the enemy with a chain, deals 6 damage to the enemy and pulls
+      it back 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854735
+    m_Localized: Deals 6 damage to the enemy. Pull 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854736
+    m_Localized: Crush Blow
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854737
+    m_Localized: Deals 12 damage to the enemy with a heavy blow.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854738
+    m_Localized: Deals 12 damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854739
+    m_Localized: Crush Blow+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854740
+    m_Localized: Deals 16 damage to the enemy with a heavy blow.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854741
+    m_Localized: Deals 16 damage to enemies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854742
+    m_Localized: Combo Strike
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854743
+    m_Localized: Attacks continuously, dealing 4 damage to the enemy twice.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854744
+    m_Localized: Deals 4 damage to the enemy 2 times.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854745
+    m_Localized: Combo+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854746
+    m_Localized: Attacks continuously and deals 4 damage to the enemy 3 times.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854747
+    m_Localized: Deals 4 damage to the enemy 3 times.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854748
+    m_Localized: Baptism of arrows
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854749
+    m_Localized: Rains down arrows, dealing 3 damage to the enemy 3 times.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854750
+    m_Localized: Deals 3 damage to the enemy 3 times.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854751
+    m_Localized: Baptism of arrows+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854752
+    m_Localized: Rains down arrows, dealing 3 damage to the enemy 4 times.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854753
+    m_Localized: Deals 3 damage to the enemy 4 times.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854754
+    m_Localized: Forward Strike
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854755
+    m_Localized: Moves forward one space and deals 9 damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854756
+    m_Localized: Deals 9 damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854757
+    m_Localized: Forward Strike+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854758
+    m_Localized: Moves forward one space and deals 12 damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854759
+    m_Localized: Deals 12 damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854760
+    m_Localized: Crimson Armor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854761
+    m_Localized: Surround yourself with red armor and grant 2 protection and 8 armor
+      to your allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854762
+    m_Localized: Grants 2 protection and 8 armor to allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854763
+    m_Localized: Crimson Armor+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854764
+    m_Localized: Surround yourself with red armor and grant 3 protection and 10 defense
+      to allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854765
+    m_Localized: Grants 3 protection and 10 defense to allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854766
+    m_Localized: Time Warp
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854767
+    m_Localized: Distorts the flow of time and grants speed 1 to yourself and your
+      allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854768
+    m_Localized: Grants speed 1 to yourself and your allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854769
+    m_Localized: Time Warp+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854770
+    m_Localized: Distorts the flow of time and grants speed 1 to yourself and your
+      allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854771
+    m_Localized: Grants speed 1 to yourself and your allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854772
+    m_Localized: Domination
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854773
+    m_Localized: Dominates the battlefield, inflicting Vulnerability 2 and Weakness
+      2 to enemies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854774
+    m_Localized: Grants Vulnerable 2 and Weakened 2 to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854775
+    m_Localized: Domination+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854776
+    m_Localized: Dominates the battlefield, inflicting Vulnerability 3 and Weakness
+      3 to enemies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854777
+    m_Localized: Gives the enemy 3 Vulnerability and 3 Weakness.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854778
+    m_Localized: Blood Venom
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854779
+    m_Localized: Spreads sharp miasma, inflicting 2 poisoning and 2 bleeding to enemies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854780
+    m_Localized: Inflicts Poison 2 and Bleeding 2 on the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854781
+    m_Localized: Blood Venom+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854782
+    m_Localized: Spreads sharp miasma, inflicting 2 poisoning and 2 bleeding to enemies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854783
+    m_Localized: Inflicts Poison 2 and Bleeding 2 on the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854784
+    m_Localized: Heart Pierce
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854785
+    m_Localized: Pierces a vital point, inflicting 13 piercing damage to the enemy
+      and inflicting 1 vulnerability.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854786
+    m_Localized: Deals 13 piercing damage to enemies. Grants Vulnerability 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854787
+    m_Localized: Heart Pierce+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854788
+    m_Localized: Penetrates a vital point, inflicting 15 piercing damage to the enemy
+      and inflicting Vulnerability 2.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854789
+    m_Localized: Deals 15 piercing damage to enemies. Grants Vulnerability 2.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854790
+    m_Localized: Finisher
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854791
+    m_Localized: Deals 18 damage to the enemy with a finishing blow.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854792
+    m_Localized: Deals 18 damage to enemies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854793
+    m_Localized: Finisher+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854794
+    m_Localized: Deals 22 damage to the enemy with a finishing blow.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854795
+    m_Localized: Deals 22 damage to enemies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854796
+    m_Localized: Access
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854797
+    m_Localized: "\uAC00\uAE4C\uC6B4 \uCE90\uB9AD\uD130\uB97C \uD5A5\uD574 1\uCE78
+      \uC774\uB3D9\uD569\uB2C8\uB2E4."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854798
+    m_Localized: Slime Throwing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854799
+    m_Localized: Deals 6 damage to the target.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854800
+    m_Localized: Access
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854801
+    m_Localized: "\uAC00\uAE4C\uC6B4 \uCE90\uB9AD\uD130\uB97C \uD5A5\uD574 1\uCE78
+      \uC774\uB3D9\uD569\uB2C8\uB2E4."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854802
+    m_Localized: Pounce
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854803
+    m_Localized: Deals 4 damage to the target.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854804
+    m_Localized: Run away
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854805
+    m_Localized: Move up to 2 spaces away from the character.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854806
+    m_Localized: Flame explosion
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854807
+    m_Localized: Deals 8 damage to those around you.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854808
+    m_Localized: Flame of Resentment
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854809
+    m_Localized: Gives 1 erosion to the characters involved.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854810
+    m_Localized: Run away
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854811
+    m_Localized: Move up to 2 spaces away from the character.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854812
+    m_Localized: Erosion Explosion
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854813
+    m_Localized: Deals 8 damage to those around you.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854814
+    m_Localized: Erosion Spreading
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854815
+    m_Localized: Grants 1 erosion to all characters.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854816
+    m_Localized: Flight
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854817
+    m_Localized: Move up to 2 spaces to line up with the character.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854818
+    m_Localized: Hit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854819
+    m_Localized: Rushes, dealing 16 damage to the target and pushing it 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854820
+    m_Localized: Chase
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854821
+    m_Localized: "\uAC00\uAE4C\uC6B4 \uCE90\uB9AD\uD130\uB97C \uD5A5\uD574 1\uCE78
+      \uC774\uB3D9\uD569\uB2C8\uB2E4."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854822
+    m_Localized: Big explosion
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854823
+    m_Localized: Deals 25 damage to the surrounding area.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854824
+    m_Localized: Advance
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854825
+    m_Localized: Move 1 space to approach the character.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854826
+    m_Localized: Shadow Walk
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854827
+    m_Localized: Teleports to the rear of the character.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854828
+    m_Localized: Abyss Stab
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854829
+    m_Localized: Stab the target in front, dealing 10 damage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854830
+    m_Localized: Cut through the darkness
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854831
+    m_Localized: Swings in a forward area, dealing 12 damage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854832
+    m_Localized: Shadow Vortex
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854833
+    m_Localized: Deals 2 damage to the target within range and pulls them 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854834
+    m_Localized: Retreat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854835
+    m_Localized: Move up to 2 spaces away from the character.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854836
+    m_Localized: Tear in all directions
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854837
+    m_Localized: Deals 10 damage to those around you.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854838
+    m_Localized: Hunting Mark
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915686854839
+    m_Localized: Attacks the space where the character is located, dealing 8 damage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048960
+    m_Localized: Planting cocoons
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048961
+    m_Localized: Creates 1 spider egg at the specified location.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048962
+    m_Localized: Hunting Room
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048963
+    m_Localized: Creates 1 spider web at the specified location.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048964
+    m_Localized: "\uAC70\uBBF8\uC904 \uAC11\uC8FC"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048965
+    m_Localized: Grants a veil that blocks damage once.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048966
+    m_Localized: "\uAC00\uAE4C\uC6B4 \uCE90\uB9AD\uD130\uC5D0\uAC8C \uC774\uB3D9\uD569\uB2C8\uB2E4."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048967
+    m_Localized: Moves 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048968
+    m_Localized: Attacks a 5-square crosshair area based on the user.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048969
+    m_Localized: "Deals 6(\xB12) damage."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048970
+    m_Localized: Splits into 2 blobs upon death.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048971
+    m_Localized: "\uAC00\uAE4C\uC6B4 \uCE90\uB9AD\uD130\uC5D0\uAC8C \uC774\uB3D9\uD569\uB2C8\uB2E4."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048972
+    m_Localized: Moves 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048973
+    m_Localized: Attacks a 2-square area in front of you.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048974
+    m_Localized: "Deals 4(\xB11) damage."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048975
+    m_Localized: If there are characters around, run away.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048976
+    m_Localized: Moves 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048977
+    m_Localized: If there are characters nearby, it will attack those around you.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048978
+    m_Localized: "Deals 5(\xB12) damage."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048979
+    m_Localized: Grants Grudge to all monsters each turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048980
+    m_Localized: Grants 1 grudge.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048981
+    m_Localized: If there are characters around, run away.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048982
+    m_Localized: Moves 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048983
+    m_Localized: If there are characters nearby, it will attack those around you.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048984
+    m_Localized: "Deals 5(\xB12) damage."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048985
+    m_Localized: Grants erosion to all characters every turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048986
+    m_Localized: Grants 1 erosion.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048987
+    m_Localized: Moves to the same line as the character.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048988
+    m_Localized: Moves 1 or 2 spaces.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048989
+    m_Localized: Rushes and deals damage to the character it collides with.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048990
+    m_Localized: "Deals 16(\xB12) damage."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048991
+    m_Localized: "Yongrin \u2160"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048992
+    m_Localized: You start with 1 Rage at the start of the expedition.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048993
+    m_Localized: "Yongrin \u2161"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048994
+    m_Localized: When Rage reaches maximum, gain 1 charge.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048995
+    m_Localized: "Yongrin \u2162"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048996
+    m_Localized: The armor granted by Dragon's Protection is doubled.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048997
+    m_Localized: "Yongrin \u2163"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048998
+    m_Localized: The damage of Earth Cleave increases by 2, and the target is pushed
+      back by 3 squares.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691048999
+    m_Localized: "Yongrin \u2164"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691049000
+    m_Localized: Damage from swings and slashes increases by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915691049001
+    m_Localized: "\uAC80\uC2EC \u2160"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631872
+    m_Localized: You start with 2 momentum when exploring.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631873
+    m_Localized: "\uAC80\uC2EC \u2161"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631874
+    m_Localized: When momentum reaches maximum, gain 1 slam.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631875
+    m_Localized: "\uAC80\uC2EC \u2162"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631876
+    m_Localized: The number of attacks of Swift Blade Fog increases by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631877
+    m_Localized: "\uAC80\uC2EC \u2163"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631878
+    m_Localized: The damage of the flurry of swords increases by 3.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631879
+    m_Localized: "\uAC80\uC2EC \u2164"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631880
+    m_Localized: Damage from 3 types of Swift Sword and 1 type of Swift Sword increases
+      by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631881
+    m_Localized: "Embers \u2160"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631882
+    m_Localized: You start with 1 Ether when exploring.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631883
+    m_Localized: "Embers \u2161"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631884
+    m_Localized: When Ether reaches its maximum level, you recover 2 health.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631885
+    m_Localized: "Embers \u2162"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631886
+    m_Localized: Sharp Light damage increases by 2.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631887
+    m_Localized: "Embers \u2163"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631888
+    m_Localized: The amplification granted by Will of Light increases by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631889
+    m_Localized: "Embers \u2164"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631890
+    m_Localized: The range of Nia's Miasma and Nia's Flash is increased.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631891
+    m_Localized: "Grace \u2160"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631892
+    m_Localized: At the start of the expedition, you start with Faith 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631893
+    m_Localized: "Grace \u2161"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631894
+    m_Localized: When your Faith reaches maximum, you and your ally with the lowest
+      health gain 2 Armor.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631895
+    m_Localized: "Grace \u2162"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631896
+    m_Localized: Stamina recovered through Prayer of Salvation increases by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631897
+    m_Localized: "Grace \u2163"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631898
+    m_Localized: Holy Strike damage increases by 2.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631899
+    m_Localized: "Grace \u2164"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631900
+    m_Localized: The cost of regime control and attack and defense is reduced by
+      1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631901
+    m_Localized: "Liberation \u2160"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631902
+    m_Localized: You start with 1 blood when exploring.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631903
+    m_Localized: "Liberation \u2161"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631904
+    m_Localized: When your blood energy reaches maximum, gain 2 charges.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631905
+    m_Localized: "Liberation \u2162"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631906
+    m_Localized: Death Scythe damage increases by 3.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631907
+    m_Localized: "Liberation \u2163"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631908
+    m_Localized: Scarlet Nova's damage increases by 2, and the target is pushed back
+      by 2 spaces.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631909
+    m_Localized: "Liberation \u2164"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631910
+    m_Localized: The damage of Crimson Chain and Crescent Swing increases by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631911
+    m_Localized: "\uAC01\uC778\xB7\uBD88\uC548\uC815\uD55C \uC6D0\uCC9C"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631912
+    m_Localized: Maximum health decreases by 3, but maximum cost increases by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631913
+    m_Localized: "\uAC01\uC778\xB7\uBA54\uB9C8\uB978 \uACE0\uB3D9"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631914
+    m_Localized: Maximum health decreases by 5, but cost recovery increases by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631915
+    m_Localized: "\uAC01\uC778\xB7\uAD73\uC5B4\uC9C4 \uC721\uC2E0"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631916
+    m_Localized: Maximum cost decreases by 1, but maximum health increases by 4.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631917
+    m_Localized: "\uAC01\uC778\xB7\uC783\uC5B4\uBC84\uB9B0 \uC228\uACB0"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631918
+    m_Localized: Maximum health is reduced by 12, but health is restored by 3 at
+      the end of the battle.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631919
+    m_Localized: "\uAC01\uC778\xB7\uB4A4\uD2C0\uB9B0 \uACA9\uB958"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631920
+    m_Localized: The maximum cost is reduced by 3, but the cost recovery amount is
+      increased by 2.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631921
+    m_Localized: Overflowing Life
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631922
+    m_Localized: Maximum health increases by 6.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631923
+    m_Localized: Deepened bowl
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631924
+    m_Localized: Maximum cost increases by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631925
+    m_Localized: Endless cycle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631926
+    m_Localized: Cost recovery amount increases by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631927
+    m_Localized: Perfect Balance
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631928
+    m_Localized: Maximum health, maximum cost, and cost recovery each increase by
+      1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631929
+    m_Localized: "\uAC00\uBCBC\uC6B4 \uBC1C\uAC78\uC74C"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631930
+    m_Localized: The final cost consumed by movement skills is reduced by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631931
+    m_Localized: "\uAC15\uB82C\uD55C \uD30C\uB3D9"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631932
+    m_Localized: The damage of attack skills increases by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631933
+    m_Localized: Full recovery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631934
+    m_Localized: The recovery value granted by the skill increases by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631935
+    m_Localized: A strong barrier
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631936
+    m_Localized: The armor value granted by the skill increases by 2.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631937
+    m_Localized: Dense miasma
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631938
+    m_Localized: The poison value granted by the skill increases by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631939
+    m_Localized: Clear blood traces
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631940
+    m_Localized: The bleeding value given by the skill increases by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631941
+    m_Localized: Blessing/Swift
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631942
+    m_Localized: Gain 1 haste at the start of combat.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631943
+    m_Localized: Blessing, Strike
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631944
+    m_Localized: Gain 1 Strike at the start of battle.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631945
+    m_Localized: Blessing/Amplification
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631946
+    m_Localized: Gain 1 boost at the start of battle.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631947
+    m_Localized: Blessing, Abundance
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631948
+    m_Localized: Goods obtained from battle increases by 5%.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631949
+    m_Localized: Blessing/Play
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631950
+    m_Localized: Recovers 1 stamina at the end of battle.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631951
+    m_Localized: Wreckage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631952
+    m_Localized: "\uAC00\uC2DC"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631953
+    m_Localized: Helmet
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631954
+    m_Localized: Bandage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631955
+    m_Localized: Poison
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631956
+    m_Localized: Residue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631957
+    m_Localized: Scarecrow
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631958
+    m_Localized: This is a summon that becomes the target of enemy attacks.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631959
+    m_Localized: Explosion Doll
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631960
+    m_Localized: This is a summon that deals fixed damage to nearby enemies when
+      the 5th slot action ends.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631961
+    m_Localized: "\uAC70\uBBF8\uC54C"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631962
+    m_Localized: Hatches into Cinder after 2 turns. If it takes damage and its HP
+      becomes 0, it will be destroyed.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631963
+    m_Localized: "\uAC70\uBBF8\uC904"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631964
+    m_Localized: The cost to reserve the next move for the entered character is doubled.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631965
+    m_Localized: Max HP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631966
+    m_Localized: Unit's life force resource
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631967
+    m_Localized: Maximum Cost
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631968
+    m_Localized: "Resources required to use a unit\u2019s skills"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631969
+    m_Localized: Strike
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631970
+    m_Localized: Causes normal damage. If the target has armor, the armor is reduced
+      first.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631971
+    m_Localized: Penetration
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631972
+    m_Localized: Ignores armor and deals direct damage to the target's health.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631973
+    m_Localized: Knockback
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631974
+    m_Localized: Pushes the target away from the caster.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631975
+    m_Localized: Grab
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631976
+    m_Localized: Pulls the target in a direction closer to the caster.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631977
+    m_Localized: Crash
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631978
+    m_Localized: If you are blocked by a unit or obstacle while moving, you take
+      2 fixed damage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631979
+    m_Localized: Amplification
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631980
+    m_Localized: During this turn, the attack value increases by this value. At the
+      end of the turn, the amplification value disappears.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631981
+    m_Localized: Armor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631982
+    m_Localized: turns. At the end of the turn, the armor value disappears.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631983
+    m_Localized: Healing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631984
+    m_Localized: Immediately recovers stamina equal to the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631985
+    m_Localized: Cost recovery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631986
+    m_Localized: Immediately recovers the cost equal to the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631987
+    m_Localized: Unique resource recovery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631988
+    m_Localized: Immediately recovers unique resources equal to the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631989
+    m_Localized: Charge
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631990
+    m_Localized: At the end of the turn, the cost is restored by the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631991
+    m_Localized: Focus
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631992
+    m_Localized: At the end of the turn, acquire unique resources (anger, momentum,
+      ether, faith, blood) equal to the numerical value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631993
+    m_Localized: Quick
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631994
+    m_Localized: You can proceed with actions before the monster. At the end of the
+      turn, the value decreases by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631995
+    m_Localized: "\uAC15\uD0C0"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631996
+    m_Localized: The damage of the first attack increases by 50%. At the end of the
+      turn, the value decreases by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631997
+    m_Localized: Vampirism
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631998
+    m_Localized: Recovers stamina equal to 30% of the damage dealt. At the end of
+      the turn, the value decreases by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631999
+    m_Localized: "\uAC00\uD638"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703632000
+    m_Localized: When taking damage, deal damage equal to the value. At the end of
+      the turn, the value decreases by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703632001
+    m_Localized: Grudge
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826176
+    m_Localized: Attack value increases by the amount. It does not disappear at the
+      end of the turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826177
+    m_Localized: Veil
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826178
+    m_Localized: Ignores damage received once. Disappears when activated. At the
+      end of the turn, the value decreases by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826179
+    m_Localized: Addiction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826180
+    m_Localized: At the end of the turn, you take damage equal to this value. At
+      the end of the turn, the value decreases by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826181
+    m_Localized: Bleeding
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826182
+    m_Localized: When moving, you take damage equal to the value. At the end of the
+      turn, the value decreases by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826183
+    m_Localized: Vulnerable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826184
+    m_Localized: Increases damage received by 30%. At the end of the turn, the value
+      decreases by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826185
+    m_Localized: Weaken
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826186
+    m_Localized: Reduces damage dealt by 15%. At the end of the turn, the value decreases
+      by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826187
+    m_Localized: Erosion
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826188
+    m_Localized: All damage received increases by this value. It does not disappear
+      at the end of the turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826189
+    m_Localized: Blocked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826190
+    m_Localized: Negates beneficial effects once. Disappears when activated.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826191
+    m_Localized: Division
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826192
+    m_Localized: The value decreases by 1 depending on the number of damage.  If
+      it is alive when it reaches 0, it splits into two blobs.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826193
+    m_Localized: Explosion
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826194
+    m_Localized: At the end of the turn, the value decreases by 1. When the value
+      reaches 0, it self-destructs and dies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826195
+    m_Localized: Surprise
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826196
+    m_Localized: Damage increases by 50% when attacking from behind.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826197
+    m_Localized: Strengthened Assault
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826198
+    m_Localized: The damage of the first attack used after moving is increased by
+      20%.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826199
+    m_Localized: Enhanced Poison
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826200
+    m_Localized: When granting poison, the amount of poison granted is doubled.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826201
+    m_Localized: Enhanced Bleeding
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826202
+    m_Localized: When applying bleeding, the amount of bleeding is doubled.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826203
+    m_Localized: Strengthening vitality
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826204
+    m_Localized: Maximum HP increases by 10%.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826205
+    m_Localized: Absorb Life
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826206
+    m_Localized: When you kill an enemy, you recover health equal to 5% of your maximum
+      HP.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826207
+    m_Localized: Resource Circulation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826208
+    m_Localized: Cost acquisition amount increases.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826209
+    m_Localized: Amplification
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826210
+    m_Localized: When granting a buff to an ally, the amount of buff granted is doubled.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826211
+    m_Localized: Last Stand
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826212
+    m_Localized: The lower your current health, the higher your attack power.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826213
+    m_Localized: Enhanced mobility
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826214
+    m_Localized: Movement power increases by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826215
+    m_Localized: Aim
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826216
+    m_Localized: You are aiming.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826217
+    m_Localized: Movement value change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826218
+    m_Localized: Changes the movement value by the number.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826219
+    m_Localized: Cost recovery amount change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826220
+    m_Localized: Changes the cost recovery amount by the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826221
+    m_Localized: Battle start cost change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826222
+    m_Localized: At the start of battle, the cost is added by the number.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826223
+    m_Localized: Battle Start Unique Resources
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826224
+    m_Localized: At the start of battle, secure unique resources up to a certain
+      number.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826225
+    m_Localized: Correction for unique resource gap acquisition
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826226
+    m_Localized: When unique resources are 0, the amount of unique resources acquired
+      increases by the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826227
+    m_Localized: Change in minimum use of unique resources
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915707826228
+    m_Localized: "\uACE0\uC720\uC2A4\uD0AC \uC0AC\uC6A9 \uAC00\uB2A5 \uCD5C\uC18C
+      \uACE0\uC720\uC790\uC6D0 \uAE30\uC900\uC744 \uC218\uCE58\uB9CC\uD07C \uBCC0\uD654\uC2DC\uD0A8\uB2E4."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915716214784
+    m_Localized: Recover costs exceeding unique resources
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915716214785
+    m_Localized: When unique resources are at their maximum, if unique resources
+      are obtained, the cost is recovered by the numerical multiplier.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915716214786
+    m_Localized: Unique resource maximum skill cost change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915716214787
+    m_Localized: When unique resources are at maximum, all skill costs are changed
+      by a certain amount.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915716214788
+    m_Localized: Unique Resource 3 Aim
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915716214789
+    m_Localized: If the unique resource is 3 or more, you gain aim equal to the value
+      at the start of the turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915716214790
+    m_Localized: Unique Resource 3 Armor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915716214791
+    m_Localized: If the unique resource is 3 or more, gain defense equal to the value
+      at the start of the turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915716214792
+    m_Localized: Amplify unique resources by 3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915716214793
+    m_Localized: If the unique resource is 3 or more, gain amplification equal to
+      the value at the start of the turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915716214794
+    m_Localized: Amplify unique resources by 5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915716214795
+    m_Localized: If the unique resource is 5 or more, gain amplification equal to
+      the value at the start of the turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915716214796
+    m_Localized: Skill range change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915716214797
+    m_Localized: Changes the skill range by the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915716214798
+    m_Localized: First move cost change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915716214799
+    m_Localized: Changes the first move skill cost by the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915716214800
+    m_Localized: Movement cost change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915716214801
+    m_Localized: Changes the movement skill cost by the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915716214802
+    m_Localized: Change in armor acquisition amount
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915716214803
+    m_Localized: Changes the amount of armor gained by the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915716214804
+    m_Localized: Armor gain percentage change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915716214805
+    m_Localized: Changes the armor gain to a percentage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915716214806
+    m_Localized: Attack skill cost change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915716214807
+    m_Localized: Changes the attack type skill cost by the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603392
+    m_Localized: Buff skill cost change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603393
+    m_Localized: 'Changes the buff type skill cost by the value.
+
+      Prevents
+      damage equal to this value for'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603394
+    m_Localized: Debuff skill cost change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603395
+    m_Localized: Changes the debuff type skill cost by the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603396
+    m_Localized: Movement cost removed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603397
+    m_Localized: Movement skills do not consume cost.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603398
+    m_Localized: Registration prohibited slot mask
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603399
+    m_Localized: Skills cannot be registered in the slot included in the mask.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603400
+    m_Localized: Limited number of slots available for registration
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603401
+    m_Localized: Limits the number of slots in which skills can be registered to
+      a numerical value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603402
+    m_Localized: No movement Slot buff cost change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603403
+    m_Localized: If no movement skill is used in the slot, the buff skill cost is
+      changed by the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603404
+    m_Localized: Debuff cost change after moving
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603405
+    m_Localized: Changes the debuff skill cost registered after using the movement
+      skill in the slot by the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603406
+    m_Localized: 1st slot skill cost change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603407
+    m_Localized: Changes all skill costs registered in slot 1 by the number.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603408
+    m_Localized: First skill cost change in slot 1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603409
+    m_Localized: Changes the cost of the first skill registered in slot 1 by the
+      number.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603410
+    m_Localized: 5th slot skill cost change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603411
+    m_Localized: Changes all skill costs registered in slot 5 by the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603412
+    m_Localized: Ignore last slot duplicate cost
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603413
+    m_Localized: Ignore the last slot duplicate reservation cost.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603414
+    m_Localized: Low stamina skill cost change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603415
+    m_Localized: If the current health is below 30%, the skill cost is changed by
+      the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603416
+    m_Localized: High stamina cost recovery change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603417
+    m_Localized: If the current health is over 90%, the cost recovery amount changes
+      by the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603418
+    m_Localized: High health buff cost change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603419
+    m_Localized: If the current health is over 90%, the buff skill cost is changed
+      by the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603420
+    m_Localized: Attack skill damage change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603421
+    m_Localized: Changes the attack type skill damage by the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603422
+    m_Localized: Change in attack skill count
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603423
+    m_Localized: Changes the number of attack type skill damage by the number.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603424
+    m_Localized: Random attack count change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603425
+    m_Localized: Changes the number of selected attack skills by the number.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603426
+    m_Localized: Buff skill value change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603427
+    m_Localized: Changes the buff type skill value by the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603428
+    m_Localized: Debuff skill value change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603429
+    m_Localized: Changes the debuff type skill value by the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603430
+    m_Localized: Debuff value changes after moving
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603431
+    m_Localized: Changes the debuff skill value registered after using the movement
+      skill in the slot by the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603432
+    m_Localized: Damage proportional to attack cost after moving
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603433
+    m_Localized: Increases attack damage by the cost consumed to move in the slot.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603434
+    m_Localized: 1st slot attack value change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603435
+    m_Localized: Changes the damage of the 1st slot attack type skill by the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603436
+    m_Localized: 1st slot buff value change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603437
+    m_Localized: Changes the 1st slot buff type skill value by the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603438
+    m_Localized: 1st slot debuff value change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603439
+    m_Localized: Changes the 1st slot debuff type skill value by the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603440
+    m_Localized: 5th slot attack value change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603441
+    m_Localized: Changes the damage of the 5th slot attack type skill by the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603442
+    m_Localized: Low health attack damage change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603443
+    m_Localized: If the current health is below 30%, the attack type skill damage
+      is changed by the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603444
+    m_Localized: Self-buff blocking buff value change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603445
+    m_Localized: You cannot give yourself a buff, but instead increase the buff value
+      by the number.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603446
+    m_Localized: Change in maximum health buff value
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603447
+    m_Localized: If the stamina is at maximum, the buff type skill value changes
+      by the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603448
+    m_Localized: "\uACE0\uC720\uC2A4\uD0AC \uC218\uCE58 \uD37C\uC13C\uD2B8 \uBCC0\uD654"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603449
+    m_Localized: "\uACE0\uC720\uC2A4\uD0AC \uC218\uCE58\uB97C \uD37C\uC13C\uD2B8\uB85C
+      \uBCC0\uD654\uC2DC\uD0A8\uB2E4."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603450
+    m_Localized: Unique skill count change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603451
+    m_Localized: Changes the number of unique skills by the number.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603452
+    m_Localized: 5th slot attack penetration change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603453
+    m_Localized: Changes the hitting damage of the 5th slot attack skill to penetration
+      damage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603454
+    m_Localized: Focus on killing attacks in slot 1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603455
+    m_Localized: When you kill an enemy with the 1st slot attack skill, you gain
+      concentration equal to the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603456
+    m_Localized: 5th slot attack kill cost refund
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603457
+    m_Localized: When an enemy is killed with the 5th slot attack skill, the skill
+      cost is refunded.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603458
+    m_Localized: "\uACE0\uC720\uC2A4\uD0AC \uCC98\uCE58 \uC9D1\uC911"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603459
+    m_Localized: When you kill an enemy with a unique skill, you gain a certain amount
+      of concentration.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603460
+    m_Localized: Additional fixed damage to poisoned target
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603461
+    m_Localized: When damaging an enemy with poison, fixed damage is given equal
+      to the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603462
+    m_Localized: Additional fixed damage to bleeding target
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603463
+    m_Localized: When damaging an enemy with bleeding, fixed damage is given equal
+      to the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603464
+    m_Localized: Gain defense against vulnerable targets
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603465
+    m_Localized: When you damage an enemy with vulnerability, you gain armor equal
+      to the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603466
+    m_Localized: Gain defense against weakened target
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603467
+    m_Localized: When you damage an enemy that has been weakened, you gain armor
+      equal to the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603468
+    m_Localized: Grants poisoning damage to non-poisoned targets
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603469
+    m_Localized: If damage is inflicted on an enemy that has not been given poison,
+      the poison is given equal to the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603470
+    m_Localized: Acquire buff charge for allies
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603471
+    m_Localized: When you give a buff to an ally other than yourself, you gain charge
+      equal to the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603472
+    m_Localized: Low Health Damage Reduction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603473
+    m_Localized: If current health is below 30%, damage received is reduced by a
+      percentage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603474
+    m_Localized: "\uAC15\uC81C\uC774\uB3D9 \uBA74\uC5ED"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915724603475
+    m_Localized: Does not move with knockback or grab.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797696
+    m_Localized: Immune to collision damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797697
+    m_Localized: Does not take damage from collisions.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797698
+    m_Localized: Grid effect immunity
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797699
+    m_Localized: Does not receive grid effects.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797700
+    m_Localized: Max health recovery armor conversion
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797701
+    m_Localized: When you recover from maximum health, you gain armor proportional
+      to the amount recovered.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797702
+    m_Localized: Block recovery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797703
+    m_Localized: Stamina cannot be recovered.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797704
+    m_Localized: No damage Strike next turn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797705
+    m_Localized: If you have not taken damage during the previous turn, you gain
+      a strike equal to the value at the start of the turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797706
+    m_Localized: Cost 0 End Charge once per battle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797707
+    m_Localized: If the remaining cost at the end of the turn is 0, you get a charge
+      equal to the value once per battle.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797708
+    m_Localized: Attack failure charge once per battle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797709
+    m_Localized: When the attack does not hit, you gain a charge equal to the value
+      once per battle.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797710
+    m_Localized: Increases damage to maximum health target once per battle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797711
+    m_Localized: When damaging an enemy with maximum health, the damage is increased
+      by a percentage once per battle.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797712
+    m_Localized: Armor for designated turn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797713
+    m_Localized: At the start of the specified turn, gain armor equal to the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797714
+    m_Localized: Registration slot proportional armor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797715
+    m_Localized: Gain armor in proportion to the number of registered slots.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797716
+    m_Localized: Empty Slot Proportional Armor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797717
+    m_Localized: Gain armor in proportion to the number of empty slots.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797718
+    m_Localized: Charge in designated turns
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797719
+    m_Localized: At the start of the specified turn, gain a certain number of charges.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797720
+    m_Localized: Concentrate on designated turns
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797721
+    m_Localized: At the start of the specified turn, gain concentration equal to
+      the specified number.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797722
+    m_Localized: Speed up designated turn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797723
+    m_Localized: At the start of the specified turn, gain speed equal to the specified
+      value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797724
+    m_Localized: Amplification for specified turn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797725
+    m_Localized: At the start of the specified turn, gain amplification equal to
+      the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797726
+    m_Localized: Strike in designated turn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797727
+    m_Localized: At the start of the specified turn, you gain a certain amount of
+      power.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797728
+    m_Localized: Vampirism in designated turn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797729
+    m_Localized: At the start of the designated turn, gain a certain amount of blood
+      absorption.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797730
+    m_Localized: Empty slot condition hit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797731
+    m_Localized: If all slots included in the mask are empty, you get a bash equal
+      to the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797732
+    m_Localized: Amplify empty slot condition
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797733
+    m_Localized: If all slots included in the mask are empty, amplification is obtained
+      by the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797734
+    m_Localized: Amplify one attack condition
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797735
+    m_Localized: If there is only one registered attack skill, you will receive amplification
+      equal to the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797736
+    m_Localized: Attack count condition amplification
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797737
+    m_Localized: If the number of registered attack skills is greater than the standard,
+      you will receive amplification equal to the number.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797738
+    m_Localized: Vulnerable to all enemies for a given turn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797739
+    m_Localized: At the start of the designated turn, all enemies are given vulnerability
+      equal to the specified number.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797740
+    m_Localized: Weakens all enemies for a specified turn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797741
+    m_Localized: At the start of the designated turn, all enemies are weakened by
+      a certain amount.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797742
+    m_Localized: Poisons all enemies in a given turn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797743
+    m_Localized: At the start of the designated turn, inflicts a certain amount of
+      poison to all enemies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797744
+    m_Localized: Bleeds all enemies in a given turn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797745
+    m_Localized: At the start of the designated turn, inflicts bleeding equal to
+      the specified amount on all enemies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797746
+    m_Localized: Change in collision damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797747
+    m_Localized: Changes the damage received by the opponent who collided with you
+      by the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797748
+    m_Localized: Obtain Crash Charge
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797749
+    m_Localized: If a collision occurs with you, you gain a certain number of charges.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797750
+    m_Localized: Conflict Kill Focus
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797751
+    m_Localized: If the opponent you collided with dies, you gain concentration equal
+      to the number.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797752
+    m_Localized: Increased rest recovery amount
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797753
+    m_Localized: Increases the amount recovered by rest by percentage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797754
+    m_Localized: Store price discount
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797755
+    m_Localized: Reduces store sales price by percent.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797756
+    m_Localized: Battle reward currency increased
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797757
+    m_Localized: Increases the amount of battle reward goods acquired by percentage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797758
+    m_Localized: Recovery after battle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797759
+    m_Localized: After the battle, your stamina is restored by the same amount.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797760
+    m_Localized: Increased damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797761
+    m_Localized: Damage dealt increases during this turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797762
+    m_Localized: Damage Reduction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797763
+    m_Localized: Damage received during this turn is reduced.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797764
+    m_Localized: Maximum recovery of unique resources
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797765
+    m_Localized: Recovers unique resources to the maximum.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797766
+    m_Localized: Maximum cost recovery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797767
+    m_Localized: Recovers the cost to the maximum.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797768
+    m_Localized: Grants speed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797769
+    m_Localized: Grants speed.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797770
+    m_Localized: Remove debuff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797771
+    m_Localized: Removes all debuffs.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797772
+    m_Localized: Move selection grid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797773
+    m_Localized: Moves to the selected empty grid.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797774
+    m_Localized: Friendly location exchange
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797775
+    m_Localized: Exchange locations with allies in the selected grid.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797776
+    m_Localized: Reduced damage to target
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797777
+    m_Localized: Reduces the damage inflicted by enemies in the selected grid during
+      this turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797778
+    m_Localized: Remove grid effect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797779
+    m_Localized: Removes grid effects, including obstacles in the selected grid.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797780
+    m_Localized: Create a poison floor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797781
+    m_Localized: Creates a dock in the selected empty grid.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797782
+    m_Localized: "\uAC00\uC2DC \uC7A5\uD310 \uC0DD\uC131"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797783
+    m_Localized: Creates a thorn floor in the selected empty grid.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797784
+    m_Localized: Creates obstacles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797785
+    m_Localized: Creates an obstacle in the selected empty grid.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797786
+    m_Localized: Create a scarecrow
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797787
+    m_Localized: Creates a scarecrow in the selected empty grid.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797788
+    m_Localized: Create an explosion doll
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797789
+    m_Localized: Creates an explosion doll in the selected empty grid.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797790
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797791
+    m_Localized: This is a movement effect.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797792
+    m_Localized: image
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797793
+    m_Localized: Burn status.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797794
+    m_Localized: "\uAC70\uBBF8\uC54C \uC0DD\uC131"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797795
+    m_Localized: Creates spider eggs in the selected grid.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797796
+    m_Localized: "\uAC70\uBBF8\uC904 \uC0DD\uC131"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797797
+    m_Localized: Creates a spider web in the selected grid.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797798
+    m_Localized: "\uAC70\uBBF8\uC904"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797799
+    m_Localized: The cost to reserve the next move is doubled. It disappears when
+      the transfer reservation is successful.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797800
+    m_Localized: Common_Battle3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797801
+    m_Localized: Common_Battle3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797802
+    m_Localized: Common_Battle4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797803
+    m_Localized: Common_Battle5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797804
+    m_Localized: Common_Battle6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797805
+    m_Localized: Elite_Battle1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797806
+    m_Localized: Elite_Battle2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797807
+    m_Localized: Boss_Battle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797808
+    m_Localized: Rest1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797809
+    m_Localized: Rest2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797810
+    m_Localized: Shop
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797811
+    m_Localized: Chest
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797812
+    m_Localized: Special1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797813
+    m_Localized: Special2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797814
+    m_Localized: Special3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797815
+    m_Localized: Special4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797816
+    m_Localized: Special5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797817
+    m_Localized: Special6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797818
+    m_Localized: Blob*2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797819
+    m_Localized: Cinder*1, Vespa*1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797820
+    m_Localized: Muck*1, Rancor*1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797821
+    m_Localized: Vespa*1, Blight*1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797822
+    m_Localized: Cinder*1, Blob*1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797823
+    m_Localized: Nocturne*1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797824
+    m_Localized: Elise*1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797825
+    m_Localized: Range_Cross4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797826
+    m_Localized: Range_Square8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797827
+    m_Localized: Range_Rhombus12
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797828
+    m_Localized: Range_Bigcross8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797829
+    m_Localized: Range_Front1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797830
+    m_Localized: Range_Front2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797831
+    m_Localized: Range_Front3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797832
+    m_Localized: Range_Front4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797833
+    m_Localized: Range_Front6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797834
+    m_Localized: Range_Tuck5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797835
+    m_Localized: Range_Tuck6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797836
+    m_Localized: Range_Tuck8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797837
+    m_Localized: Range_T-shaped4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797838
+    m_Localized: Range_T-shaped7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797839
+    m_Localized: Range_Oblong6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797840
+    m_Localized: Range_Frontsquare9
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797841
+    m_Localized: Range_Frontcross5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797842
+    m_Localized: Range_One
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797843
+    m_Localized: Range_Five
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797844
+    m_Localized: Range_Square9
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797845
+    m_Localized: Range_One_Front3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797846
+    m_Localized: Range_Front3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797847
+    m_Localized: Range_Explosion
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797848
+    m_Localized: All
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797849
+    m_Localized: Party
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797850
+    m_Localized: Self
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797851
+    m_Localized: Range_Cross4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797852
+    m_Localized: Range_Square8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797853
+    m_Localized: Range_Rhombus12
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797854
+    m_Localized: Range_Bigcross8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797855
+    m_Localized: Range_Front1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797856
+    m_Localized: Range_Front2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797857
+    m_Localized: Range_Front3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797858
+    m_Localized: Range_Front4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797859
+    m_Localized: Range_Front6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797860
+    m_Localized: Range_Tuck5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797861
+    m_Localized: Range_Tuck6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797862
+    m_Localized: Range_Tuck8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797863
+    m_Localized: Range_T-shaped4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797864
+    m_Localized: Range_T-shaped7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797865
+    m_Localized: Range_Oblong6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797866
+    m_Localized: Range_Frontsquare9
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797867
+    m_Localized: Range_Frontcross5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797868
+    m_Localized: Range_One
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797869
+    m_Localized: Range_Five
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797870
+    m_Localized: Range_Square9
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797871
+    m_Localized: Range_One_Front3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797872
+    m_Localized: Range_Front3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797873
+    m_Localized: Range_Explosion
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797874
+    m_Localized: Root of Life
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797875
+    m_Localized: Maximum health increases by 5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797876
+    m_Localized: Start
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797877
+    m_Localized: Ether Piece
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797878
+    m_Localized: Maximum cost increases by 1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797879
+    m_Localized: Shop
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992000
+    m_Localized: Silver Mainspring
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992001
+    m_Localized: Cost recovery amount increases by 1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992002
+    m_Localized: Common
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992003
+    m_Localized: Dry Bowl
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992004
+    m_Localized: Maximum health decreases by 8 and maximum cost increases by 2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992005
+    m_Localized: Common
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992006
+    m_Localized: Soul Parasite
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992007
+    m_Localized: Maximum health decreases by 5 and cost recovery increases by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992008
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992009
+    m_Localized: Red Oath Sword
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992010
+    m_Localized: The cost of attack type skills increases by 1, and the damage increases
+      by 2.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992011
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992012
+    m_Localized: Sharp Shard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992013
+    m_Localized: The damage of attack type skills decreases by 2, and the number
+      of times increases by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992014
+    m_Localized: Rare
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992015
+    m_Localized: Ghost Doll
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992016
+    m_Localized: The cost of debuff type skills increases by 2, and the value increases
+      by 2.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992017
+    m_Localized: Rare
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992018
+    m_Localized: Wings of the Vanguard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992019
+    m_Localized: The cost of the first skill registered in slot 1 is reduced by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992020
+    m_Localized: Unique
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992021
+    m_Localized: Assault Headband
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992022
+    m_Localized: The value of attack type skills registered in slot 1 increases by
+      1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992023
+    m_Localized: Unique
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992024
+    m_Localized: Flag of the March
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992025
+    m_Localized: Gain 1 focus when defeating an enemy with an attack-type skill registered
+      in slot 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992026
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992027
+    m_Localized: Golden Cup
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992028
+    m_Localized: The value of the buff type skill registered in slot 1 increases
+      by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992029
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992030
+    m_Localized: Solid Hourglass
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992031
+    m_Localized: The cost of all skills registered in slot 5 is reduced by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992032
+    m_Localized: Rare
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992033
+    m_Localized: Broken Blade
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992034
+    m_Localized: The value of attack type skills registered in slot 5 increases by
+      2.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992035
+    m_Localized: Rare
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992036
+    m_Localized: Sharp Hook
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992037
+    m_Localized: When an enemy is killed with an attack-type skill registered in
+      slot 5, the cost of the skill is refunded.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992038
+    m_Localized: Unique
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992039
+    m_Localized: Obsidian Ring
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992040
+    m_Localized: The damage of attack type skills registered in slot 5 is changed
+      to penetration damage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992041
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992042
+    m_Localized: Sealed Bracelet
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992043
+    m_Localized: Skills cannot be registered in slots 1 and 2. Cost recovery increases
+      by 2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992044
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992045
+    m_Localized: Broken Compass
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992046
+    m_Localized: A skill can be registered in only one slot. Movement skills do not
+      consume cost
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992047
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992048
+    m_Localized: Shoulder Guards
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992049
+    m_Localized: At the start of the turn, gain armor equal to (number of slots where
+      your skill is registered x 2)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992050
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992051
+    m_Localized: Solid Helmet
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992052
+    m_Localized: At the start of the turn, gain armor equal to (number of slots in
+      which your skill is not registered x 2)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992053
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992054
+    m_Localized: Monocle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992055
+    m_Localized: At the start of the turn, if you do not have a skill in slots 1,
+      2, and 3, you gain 1 Strike.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992056
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992057
+    m_Localized: Telescope
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992058
+    m_Localized: At the start of the turn, if there is no skill in slots 3, 4, or
+      5, gain 1 amplification.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992059
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992060
+    m_Localized: Kitchen Knife
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992061
+    m_Localized: If the only skill registered at the start of the turn is an attack
+      type skill, the damage of the skill increases by 3.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992062
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992063
+    m_Localized: Trident
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992064
+    m_Localized: If you have registered 3 or more attack type skills at the start
+      of the turn, the damage of all skills increases by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992065
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992066
+    m_Localized: Prophet's Talisman
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992067
+    m_Localized: At the start of turn 1, inflicts vulnerability and weakness to all
+      enemies by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992068
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992069
+    m_Localized: Censer of Plague
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992070
+    m_Localized: At the start of turn 1, inflicts 1 poisoning and 1 bleeding to all
+      enemies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992071
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992072
+    m_Localized: Pocket Watch
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992073
+    m_Localized: Gain 10 armor at the start of turn 2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992074
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992075
+    m_Localized: Two-pronged candlestick
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992076
+    m_Localized: Gain 1 charge and 1 focus at the start of turn 2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992077
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992078
+    m_Localized: Bar magnet
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992079
+    m_Localized: At the start of turn 3, gain speed and amplification by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992080
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992081
+    m_Localized: Bat doll
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992082
+    m_Localized: At the start of turn 3, gain 1 Vampirism and 1 Strike.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992083
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992084
+    m_Localized: Heavy foot decoration
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992085
+    m_Localized: If no movement skill is used in the slot, the cost of the buff type
+      skill is reduced by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992086
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992087
+    m_Localized: Horn Piece
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992088
+    m_Localized: The cost of debuff skills registered after using a movement skill
+      in the slot is reduced by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992089
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992090
+    m_Localized: Fang
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992091
+    m_Localized: The value of debuff skills registered after using a movement skill
+      in the slot increases by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992092
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992093
+    m_Localized: Horseshoe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992094
+    m_Localized: After using a movement skill in the slot, the damage of the attack
+      type skill registered increases by (cost consumed for movement).
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992095
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992096
+    m_Localized: "\uAC15\uCCA0 \uB2FB"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992097
+    m_Localized: Does not move due to knockback or grab during battle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992098
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992099
+    m_Localized: Scale of the Abyss
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992100
+    m_Localized: Do not take damage from collisions during battle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992101
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992102
+    m_Localized: Cast Iron Boots
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992103
+    m_Localized: Does not receive effects from obstacles during battle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992104
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992105
+    m_Localized: Kettle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992106
+    m_Localized: During battle, when your health is at maximum, when your health
+      is restored, you gain armor equal to the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992107
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992108
+    m_Localized: Solid Ice
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992109
+    m_Localized: If no damage was received during this turn during battle, gain 1
+      Strike at the start of the next turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992110
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992111
+    m_Localized: Cup of Blood
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992112
+    m_Localized: Stamina cannot be recovered during battle, but the armor you gain
+      increases by 50%.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992113
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992114
+    m_Localized: Sharp saw
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992115
+    m_Localized: When a collision occurs, the damage the opponent receives increases
+      by 2.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992116
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992117
+    m_Localized: Storage battery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992118
+    m_Localized: Gain 1 charge when colliding with yourself
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992119
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992120
+    m_Localized: Horn of the Divine Beast
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992121
+    m_Localized: If a collision occurs and the opponent's health is 0, gain 2 focus.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992122
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992123
+    m_Localized: Old Belt
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992124
+    m_Localized: If your current health is below 30%, your skill cost is reduced
+      by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992125
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992126
+    m_Localized: Bloody Claws
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992127
+    m_Localized: If your current health is below 30%, the damage of your attack type
+      skills increases by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992128
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992129
+    m_Localized: Thick leather
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992130
+    m_Localized: If your current health is below 30%, damage received is reduced
+      by 20%.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992131
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992132
+    m_Localized: Pear
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992133
+    m_Localized: If current health is over 90%, cost recovery increases by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992134
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992135
+    m_Localized: Staff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992136
+    m_Localized: If your current health is over 90%, the cost of your buff type skills
+      is reduced by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992137
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992138
+    m_Localized: Poison syringe scam
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992139
+    m_Localized: If you damage an enemy with poison, deal 1 fixed damage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992140
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992141
+    m_Localized: Serrated Dagger
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992142
+    m_Localized: When damaging an enemy with bleeding, deal 1 fixed damage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992143
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992144
+    m_Localized: Cracked Vambraces
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992145
+    m_Localized: If you damage an enemy with vulnerability, gain 2 armor.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992146
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992147
+    m_Localized: Heavy Shield
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992148
+    m_Localized: If you damage a weakened enemy, gain 2 armor.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992149
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992150
+    m_Localized: "\uAC10\uC5FC\uB41C \uBC14\uB298"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992151
+    m_Localized: If you damage an enemy that is not poisoned, give 1 poison.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992152
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992153
+    m_Localized: Victim's Coffin
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992154
+    m_Localized: You cannot give yourself a buff. Instead, the value of buff type
+      skills increases by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992155
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992156
+    m_Localized: Pure White Crown
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992157
+    m_Localized: If your stamina is at maximum, the value of buff type skills increases
+      by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992158
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992159
+    m_Localized: Crow's Feather
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992160
+    m_Localized: When you give a buff to one or more allies excluding yourself, you
+      gain 1 charge.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992161
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992162
+    m_Localized: Shining crystal ball
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992163
+    m_Localized: If you obtain a unique resource while the unique resource is at
+      its maximum, the cost is recovered by the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992164
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992165
+    m_Localized: Silk Choker
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992166
+    m_Localized: While unique resources are at maximum, the cost of all skills is
+      reduced by 1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992167
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992168
+    m_Localized: Chain Scythe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992169
+    m_Localized: When you kill an enemy with a unique skill, you gain 1 focus.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992170
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992171
+    m_Localized: Horsepower Lens
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992172
+    m_Localized: Unique skill value increases by 50%
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992173
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992174
+    m_Localized: Magic Power Crystal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992175
+    m_Localized: The number of unique skills increases by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992176
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992177
+    m_Localized: Flint
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992178
+    m_Localized: Once per battle, if the cost is 0 at the end of the turn, gain 10
+      charges.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992179
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992180
+    m_Localized: Unexploded bomb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992181
+    m_Localized: Once per battle, gain 5 charges when an attack does not hit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992182
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992183
+    m_Localized: Executioner's Glasses
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992184
+    m_Localized: Once per battle, double damage is applied when damaging an enemy
+      with maximum health.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992185
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915732992186
+    m_Localized: Block house
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186304
+    m_Localized: The amount of recovery from rest increases by 50%.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186305
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186306
+    m_Localized: Merchant's Gold Seal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186307
+    m_Localized: The price of all items sold in the store is reduced by 30%.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186308
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186309
+    m_Localized: Bag of beads
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186310
+    m_Localized: The amount of goods obtained as a battle reward increases by 20%.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186311
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186312
+    m_Localized: Bandage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186313
+    m_Localized: Recovers 2 stamina after battle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186314
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186315
+    m_Localized: Adrenaline
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186316
+    m_Localized: Your attack type skill damage increases by 100% during this turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186317
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186318
+    m_Localized: "\uACBD\uD654\uC81C \uC570\uD50C"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186319
+    m_Localized: Damage you take is reduced by 50% during this turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186320
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186321
+    m_Localized: Condensed Ether
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186322
+    m_Localized: Recovers your unique resources to the maximum.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186323
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186324
+    m_Localized: Experimental Flask
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186325
+    m_Localized: Recovers your cost to the maximum.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186326
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186327
+    m_Localized: "\uAC01\uC131\uC81C"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186328
+    m_Localized: Gives yourself speed 2.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186329
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186330
+    m_Localized: Clear water bottle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186331
+    m_Localized: Removes all debuffs given to you.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186332
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186333
+    m_Localized: Dimensional Feather
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186334
+    m_Localized: Moves to the selected empty grid.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186335
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186336
+    m_Localized: Connected Ring
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186337
+    m_Localized: Changes allies and positions in the selected grid.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186338
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186339
+    m_Localized: Poison Pouch
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186340
+    m_Localized: Creates a dock in the selected grid. Moving on a poison floor grants
+      2 poison and disappears.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186341
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186342
+    m_Localized: Portable Bear Trap
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186343
+    m_Localized: Creates a thorn floor in the selected grid. Moving on the thorn
+      floor takes 3 damage, which lasts until the end of the battle.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186344
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186345
+    m_Localized: Cursed Doll
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186346
+    m_Localized: Enemies on the selected grid deal 50% less damage this turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186347
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186348
+    m_Localized: "\uAC04\uC774 \uBC14\uB9AC\uAC8C\uC774\uD2B8"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186349
+    m_Localized: Creates an obstacle in the selected empty grid. It lasts until the
+      battle ends.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186350
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186351
+    m_Localized: Driver
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186352
+    m_Localized: Removes obstacles in the selected grid.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186353
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186354
+    m_Localized: Straw Scarecrow
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186355
+    m_Localized: Summons a scarecrow in the selected empty grid. The Scarecrow becomes
+      the target of enemy attacks and is destroyed when it takes damage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186356
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186357
+    m_Localized: Wind-Up Bomb Doll
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186358
+    m_Localized: Summons a blow-up doll to the selected empty grid. The explosion
+      doll explodes when the action in slot 5 ends, dealing 4 fixed damage to nearby
+      enemies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186359
+    m_Localized: Uncommon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186360
+    m_Localized: Merck's Gel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186361
+    m_Localized: A
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186362
+    m_Localized: It is a sticky Merck gel. When sold, you get 15 Dustium.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186363
+    m_Localized: Block of Slime
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186364
+    m_Localized: B
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186365
+    m_Localized: It is a soft block of slime. When sold, you get 7 Dustium.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186366
+    m_Localized: Lancer's Core
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186367
+    m_Localized: C
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186368
+    m_Localized: This is the core where Lancer's power remains. When sold, you get
+      12 Dustium.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186369
+    m_Localized: Core of Blight
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186370
+    m_Localized: A
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186371
+    m_Localized: This is a core with the energy of Blight remaining. When sold, you
+      get 10 Dustium.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186372
+    m_Localized: Vespa's Stinger
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186373
+    m_Localized: B
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186374
+    m_Localized: This is spit soaked with Vespa poison. When sold, you get 24 Dustium.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186375
+    m_Localized: Stone Piece
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186376
+    m_Localized: C
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186377
+    m_Localized: It is a hard but ordinary piece of stone. When sold, you get 20
+      Dustium.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186378
+    m_Localized: Rotten Bones
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186379
+    m_Localized: A
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186380
+    m_Localized: It is a bone with decayed energy remaining. When sold, you get 25
+      Dustium.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186381
+    m_Localized: Dark Crystal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186382
+    m_Localized: B
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186383
+    m_Localized: It is a crystal with dark energy. When sold, you get 25 Dustium.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186384
+    m_Localized: "\uACE0\uB300 \uC870\uAC01"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186385
+    m_Localized: C
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186386
+    m_Localized: It is a fragment of a trace of an old civilization. Get 30 Dustium
+      when selling.\n
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186387
+    m_Localized: Rusty Blade
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186388
+    m_Localized: A
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186389
+    m_Localized: This is a hard joint that fell off from Ellis. When sold, you get
+      50 Dustium.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186390
+    m_Localized: 11
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186391
+    m_Localized: B
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186392
+    m_Localized: It is a heart where the power of an elite individual is condensed.
+      When sold, you get 60 Dustium.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186393
+    m_Localized: Alice's Bow
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915737186394
+    m_Localized: C
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380608
+    m_Localized: "\uAC15\uB300\uD55C \uC874\uC7AC\uB97C \uC4F0\uB7EC\uB728\uB9B0
+      \uC99D\uD45C\uB2E4. \uD310\uB9E4 \uC2DC 100 \uB354\uC2A4\uD2F0\uC6C0\uC744
+      \uC5BB\uB294\uB2E4."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380609
+    m_Localized: Chest
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380610
+    m_Localized: Treasure Chest
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380611
+    m_Localized: There is an old treasure chest on the side of the road.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380612
+    m_Localized: OldMerchant
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380613
+    m_Localized: Suspicious Merchant
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380614
+    m_Localized: A merchant wearing an old cloak proposes a deal.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380615
+    m_Localized: HealingSpring
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380616
+    m_Localized: Fountain of Recovery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380617
+    m_Localized: Clear spring water restores HP.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380618
+    m_Localized: Open the box
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380619
+    m_Localized: Investigate carefully
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380620
+    m_Localized: Ignore
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380621
+    m_Localized: Pay gold to purchase
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380622
+    m_Localized: "\uAC70\uB798\uD558\uC9C0 \uC54A\uB294\uB2E4"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380623
+    m_Localized: Drink spring water
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380624
+    m_Localized: Defeat Slime
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380625
+    m_Localized: Kill 5 slimes.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380626
+    m_Localized: "\uACE0\uBE14\uB9B0 \uD1A0\uBC8C"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380627
+    m_Localized: "\uACE0\uBE14\uB9B0\uC744 10\uB9C8\uB9AC \uCC98\uCE58\uD558\uB77C"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380628
+    m_Localized: Defeat the boss
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380629
+    m_Localized: Slay the Dragon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380630
+    m_Localized: Collect items
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380631
+    m_Localized: Obtain 3 potions
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380632
+    m_Localized: Clear stage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380633
+    m_Localized: Clear Stage_01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380634
+    m_Localized: Acquired item.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380635
+    m_Localized: Available skill.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380636
+    m_Localized: 'Tooltip: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380637
+    m_Localized: Node Info
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380638
+    m_Localized: Hover over a node to view its information.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380639
+    m_Localized: The starting point of a new expedition.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380640
+    m_Localized: Recover from wounds and regroup.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380641
+    m_Localized: Encounter an unpredictable event.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380642
+    m_Localized: Defeat enemies and move forward.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380643
+    m_Localized: Overcome powerful enemies for valuable rewards.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380644
+    m_Localized: Face the boss guarding the end of the expedition.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380645
+    m_Localized: 'Character data was not found: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380646
+    m_Localized: No rune is selected.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380647
+    m_Localized: This character cannot use that rune.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380648
+    m_Localized: There are no empty rune slots.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380649
+    m_Localized: This shared rune requires a player or account level.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380650
+    m_Localized: This character rune unlocks at LV.{0}.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380651
+    m_Localized: There is no rune to unequip.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380652
+    m_Localized: That rune is not equipped.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380653
+    m_Localized: The rune slot is not connected.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380654
+    m_Localized: This rune slot is still locked.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380655
+    m_Localized: This shared rune is still locked.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380656
+    m_Localized: The skill slot is not connected.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380657
+    m_Localized: No Cost
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380658
+    m_Localized: HP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380659
+    m_Localized: Move Points
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380660
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380661
+    m_Localized: Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380662
+    m_Localized: Resource
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380663
+    m_Localized: No effect description is available.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380664
+    m_Localized: Rage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380665
+    m_Localized: Momentum
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380666
+    m_Localized: Aether
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380667
+    m_Localized: Faith
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380668
+    m_Localized: Bloodlust
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380669
+    m_Localized: Unique Resource
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380670
+    m_Localized: Grid Selection
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380671
+    m_Localized: Caster Position
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380672
+    m_Localized: Active while maintaining 3 Rage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380673
+    m_Localized: Active while maintaining 5 Momentum
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380674
+    m_Localized: Active while maintaining 3 Aether
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380675
+    m_Localized: Active while maintaining 3 Faith
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380676
+    m_Localized: Active while maintaining 5 Bloodlust
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380677
+    m_Localized: Active while Unique Resource is at maximum
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380678
+    m_Localized: Select a slot before equipping a skill.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380679
+    m_Localized: No skill is selected.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380680
+    m_Localized: 'This skill is still locked. Required level: LV. {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380681
+    m_Localized: This skill cannot be equipped in that slot.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380682
+    m_Localized: No Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380683
+    m_Localized: Knockback
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380684
+    m_Localized: Pull
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380685
+    m_Localized: Grudge
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380686
+    m_Localized: Corrosion
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380687
+    m_Localized: Spawn Spider Egg
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380688
+    m_Localized: Spawn Spider Web
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380689
+    m_Localized: Barrier
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380690
+    m_Localized: Only the host can change the bag in a multiplayer battle.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380691
+    m_Localized: Select a unique item to discard first.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380692
+    m_Localized: The selected unique item could not be found.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380693
+    m_Localized: A skill cannot be assigned to this slot.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380694
+    m_Localized: Skills can be assigned to up to {0} slots.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380695
+    m_Localized: There is no skill to reserve.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380696
+    m_Localized: No character is selected.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380697
+    m_Localized: 'Not enough {0}. Required: {1} / Available: {2}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380698
+    m_Localized: Cannot reserve in the current state.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380699
+    m_Localized: Not enough HP.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380700
+    m_Localized: Not enough Cost.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380701
+    m_Localized: Gain {0} Dustium.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380702
+    m_Localized: Upgraded to {0}.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380703
+    m_Localized: This character belongs to another player.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380704
+    m_Localized: This slot is reserved by another player.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380705
+    m_Localized: Failed to send the network command.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380706
+    m_Localized: Piercing Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380707
+    m_Localized: No Effect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380708
+    m_Localized: Culture Tank
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380709
+    m_Localized: Main Menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380710
+    m_Localized: Lobby
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380711
+    m_Localized: Exploring
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380712
+    m_Localized: Playing RELIC
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380713
+    m_Localized: Preparing for Adventure
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915741380714
+    m_Localized: Forming a Party
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100672
+    m_Localized: Close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100673
+    m_Localized: Back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100674
+    m_Localized: Confirm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100675
+    m_Localized: Yes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100676
+    m_Localized: No
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100677
+    m_Localized: Save
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100678
+    m_Localized: Delete
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100679
+    m_Localized: Exit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100680
+    m_Localized: Settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100681
+    m_Localized: Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100682
+    m_Localized: Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100683
+    m_Localized: Continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100684
+    m_Localized: Enter
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100685
+    m_Localized: Proceed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100686
+    m_Localized: Discard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100687
+    m_Localized: Extract
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100688
+    m_Localized: 'Effect:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100689
+    m_Localized: Range
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100690
+    m_Localized: Rarity
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100691
+    m_Localized: Bleed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100692
+    m_Localized: Knockback
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100693
+    m_Localized: Recovery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100694
+    m_Localized: Active
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100695
+    m_Localized: Passive
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100696
+    m_Localized: Unique
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100697
+    m_Localized: Shared
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100698
+    m_Localized: Exclusive
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100699
+    m_Localized: Master
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100700
+    m_Localized: Item
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100701
+    m_Localized: Material
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100702
+    m_Localized: Equipment
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100703
+    m_Localized: Relic
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100704
+    m_Localized: Rune
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100705
+    m_Localized: Sound
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100706
+    m_Localized: Music
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100707
+    m_Localized: Sound Effects
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100708
+    m_Localized: Controls
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100709
+    m_Localized: Tutorial
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100710
+    m_Localized: Language
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100711
+    m_Localized: Resolution
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100712
+    m_Localized: Continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100713
+    m_Localized: Press any key
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100714
+    m_Localized: Archive
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100715
+    m_Localized: Memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100716
+    m_Localized: Memory & Relics
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100717
+    m_Localized: Summon Relic
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100718
+    m_Localized: Relic Acquired
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100719
+    m_Localized: Material Research
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100720
+    m_Localized: Combine
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100721
+    m_Localized: Invite
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100722
+    m_Localized: Formation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100723
+    m_Localized: Training
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100724
+    m_Localized: Explore
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100725
+    m_Localized: Prepare Expedition
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100726
+    m_Localized: Rest
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100727
+    m_Localized: Return to Base
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100728
+    m_Localized: Character Profile
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100729
+    m_Localized: Battle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100730
+    m_Localized: End Turn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100731
+    m_Localized: Give Up
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100732
+    m_Localized: Paused
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100733
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100734
+    m_Localized: Select Grid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100735
+    m_Localized: Choose Next Path
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100736
+    m_Localized: Selected Node
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100737
+    m_Localized: Choose Trial
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100738
+    m_Localized: Elite
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100739
+    m_Localized: Boss
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100740
+    m_Localized: Event
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100741
+    m_Localized: Loot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100742
+    m_Localized: Shard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100743
+    m_Localized: Preview
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100744
+    m_Localized: Rising Threat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100745
+    m_Localized: Corroded Body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100746
+    m_Localized: Sharp Remnant
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100747
+    m_Localized: Powerful enemies appear more frequently.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100748
+    m_Localized: All enemies gain increased Attack.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100749
+    m_Localized: All enemies gain increased Health.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100750
+    m_Localized: Action Range
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100751
+    m_Localized: Action Trait
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100752
+    m_Localized: Upgradeable Skills
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100753
+    m_Localized: Upgrade
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100754
+    m_Localized: Usage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100755
+    m_Localized: Numeric Effect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100756
+    m_Localized: Passive Skill
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100757
+    m_Localized: Quit the game?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100758
+    m_Localized: Unable to load data.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100759
+    m_Localized: Locked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100760
+    m_Localized: Culture Tank {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100761
+    m_Localized: Material inserted
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100762
+    m_Localized: Empty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100763
+    m_Localized: Unable to combine.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100764
+    m_Localized: Sold
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100765
+    m_Localized: No character is selected.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100766
+    m_Localized: Character data could not be found.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100767
+    m_Localized: There is no character in that party slot.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100768
+    m_Localized: Select a character first.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100769
+    m_Localized: Rune and skill information appears here.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100770
+    m_Localized: Skill Info
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100771
+    m_Localized: Skill information appears here.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100772
+    m_Localized: Rune Info
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100773
+    m_Localized: Rune information appears here.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100774
+    m_Localized: Return to the title screen?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100775
+    m_Localized: No Skill
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100776
+    m_Localized: The bag is full. You can carry up to {0} unique items.
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

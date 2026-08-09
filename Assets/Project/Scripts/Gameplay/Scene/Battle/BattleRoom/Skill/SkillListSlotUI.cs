@@ -217,7 +217,9 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             skillCostImage.enabled = false;
 
         if (skillNameText != null)
-            skillNameText.text = string.IsNullOrWhiteSpace(data.Name) ? data.SkillId : data.Name;
+            skillNameText.text = string.IsNullOrWhiteSpace(data.Name)
+                ? data.SkillId
+                : GameDataLocalization.SkillName(data);
 
         if (skillCostTypeText != null)
             skillCostTypeText.text = GetReferenceResourceDisplayName(data.ReferenceResource);
@@ -267,7 +269,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             skillCostImage.enabled = false;
 
         if (skillNameText != null)
-            skillNameText.text = "스킬 없음";
+            skillNameText.text = GameLocalization.Get("battle.no_skill", "스킬 없음");
 
         if (skillCostTypeText != null)
             skillCostTypeText.text = "";
@@ -580,7 +582,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         // SkillListPanel의 detailsBackground에는 Details만 그대로 표시합니다.
         // ValueRate를 설명 앞에 자동으로 붙이지 않습니다.
         return !string.IsNullOrWhiteSpace(data.Details)
-            ? data.Details
+            ? GameDataLocalization.SkillDetails(data)
             : "효과 설명이 없습니다.";
     }
 

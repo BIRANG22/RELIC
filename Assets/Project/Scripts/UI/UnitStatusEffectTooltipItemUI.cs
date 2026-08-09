@@ -54,7 +54,7 @@ public class UnitStatusEffectTooltipItemUI : MonoBehaviour
         if (titleText != null)
         {
             if (masterData != null && !string.IsNullOrWhiteSpace(masterData.Name))
-                titleText.text = masterData.Name;
+                titleText.text = GameDataLocalization.EffectName(masterData);
             else
                 titleText.text = data.EffectId;
         }
@@ -62,7 +62,7 @@ public class UnitStatusEffectTooltipItemUI : MonoBehaviour
         if (descriptionText != null)
         {
             if (masterData != null && !string.IsNullOrWhiteSpace(masterData.ToolTip))
-                descriptionText.text = masterData.ToolTip;
+                descriptionText.text = GameDataLocalization.EffectTooltip(masterData);
             else
                 descriptionText.text = string.Empty;
         }

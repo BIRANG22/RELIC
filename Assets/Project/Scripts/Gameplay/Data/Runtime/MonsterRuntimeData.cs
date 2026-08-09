@@ -78,10 +78,20 @@ namespace Relic.Gameplay.Data
 
         public string GetDisplayName()
         {
-            if (!string.IsNullOrWhiteSpace(DisplayName))
-                return DisplayName;
+            string localizedBaseName = GameDataLocalization.MonsterName(MonsterId, Name);
 
-            return string.IsNullOrWhiteSpace(Name) ? string.Empty : Name;
+            if (!string.IsNullOrWhiteSpace(DisplayName))
+            {
+                if (DisplayName == Name)
+                    return localizedBaseName;
+
+                if (!string.IsNullOrWhiteSpace(Name) && DisplayName.StartsWith(Name + "_", StringComparison.Ordinal))
+                    return localizedBaseName + DisplayName.Substring(Name.Length);
+
+                return DisplayName;
+            }
+
+            return localizedBaseName;
         }
 
         public void SetDisplaySuffix(string suffix)
@@ -204,14 +214,14 @@ namespace Relic.Gameplay.Data
             MonsterSkillData selectedSkillData =
                 DataManager.Instance.MonsterSkillDatabase.Get(normalizedSkillId);
 
-            // ÀÌµ¿Àº Move »óÅÂ¸¦ »ç¿ëÇÏ°í, °ø°İÀÌ ¾Æ´Ñ Çàµ¿Àº ±âÁ¸ ÇÁ·¹Á¨Å×ÀÌ¼Ç ¹øÈ£¸¦ À¯ÁöÇÕ´Ï´Ù.
+            // ì´ë™ì€ Move ìƒíƒœë¥¼ ì‚¬ìš©í•˜ê³ , ê³µê²©ì´ ì•„ë‹Œ í–‰ë™ì€ ê¸°ì¡´ í”„ë ˆì  í…Œì´ì…˜ ë²ˆí˜¸ë¥¼ ìœ ì§€í•©ë‹ˆë‹¤.
             if (selectedSkillData == null ||
                 selectedSkillData.TimelineNotation != TimelineActionType.Attack)
             {
                 return IsActualMoveSkill(selectedSkillData) ? 0 : originalActionIndex;
             }
 
-            // °ø°İ ½ºÅ³¸¸ º¸À¯ ¼ø¼­´ë·Î ¼¼¾î AttackAction1, 2, 3¿¡ ¿¬°áÇÕ´Ï´Ù.
+            // ê³µê²© ìŠ¤í‚¬ë§Œ ë³´ìœ  ìˆœì„œëŒ€ë¡œ ì„¸ì–´ AttackAction1, 2, 3ì— ì—°ê²°í•©ë‹ˆë‹¤.
             int attackActionIndex = 0;
 
             for (int i = 0; i < PossibleSkillIdsByActionIndex.Length; i++)
@@ -284,7 +294,7 @@ namespace Relic.Gameplay.Data
             }
             else if (MonsterId == "Mon_10")
             {
-                // ³ìÅÏÀº ÀüÅõ ³»³» À¯ÁöµÇ´Â ±â½À È¿°ú¸¦ ±âº» Æ¯¼ºÀ¸·Î °¡Áı´Ï´Ù.
+                // ë…¹í„´ì€ ì „íˆ¬ ë‚´ë‚´ ìœ ì§€ë˜ëŠ” ê¸°ìŠµ íš¨ê³¼ë¥¼ ê¸°ë³¸ íŠ¹ì„±ìœ¼ë¡œ ê°€ì§‘ë‹ˆë‹¤.
                 StatusEffects.Add(new StatusEffectRuntimeData("E_Flank", 1));
             }
         }

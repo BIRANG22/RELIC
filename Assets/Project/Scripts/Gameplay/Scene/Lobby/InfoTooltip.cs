@@ -234,7 +234,7 @@ public class InfoTooltip : MonoBehaviour
         if (!string.IsNullOrWhiteSpace(runeData.RangeId))
             text += "\nRange: " + runeData.RangeId;
 
-        return string.IsNullOrWhiteSpace(text) ? "È¿°ú ¾øÀ½" : text;
+        return string.IsNullOrWhiteSpace(text) ? GameLocalization.Get("common.no_effect", "íš¨ê³¼ ì—†ìŒ") : text;
     }
 
     public static string GetSkillEffectText(SkillMasterData skillData)
@@ -245,9 +245,10 @@ public class InfoTooltip : MonoBehaviour
         string text = "";
 
         if (!string.IsNullOrWhiteSpace(skillData.ToolTip))
-            text += "ToolTip: " + skillData.ToolTip;
+            text += GameLocalization.Get("runtime.common.tooltip_label", "ToolTip: ") +
+                    GameDataLocalization.SkillTooltip(skillData);
 
-        return string.IsNullOrWhiteSpace(text) ? "È¿°ú ¾øÀ½" : text;
+        return string.IsNullOrWhiteSpace(text) ? GameLocalization.Get("common.no_effect", "íš¨ê³¼ ì—†ìŒ") : text;
     }
     private string HighlightNumbers(string text)
     {

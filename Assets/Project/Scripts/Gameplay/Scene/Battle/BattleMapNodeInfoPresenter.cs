@@ -12,9 +12,6 @@ public readonly struct BattleMapNodeInfoCopy
 
 public class BattleMapNodeInfoPresenter : MonoBehaviour
 {
-    private const string DefaultName = "노드 정보";
-    private const string DefaultDescription = "노드에 마우스를 올려 정보를 확인하세요.";
-
     [SerializeField] private TMP_Text nodeNameText;
     [SerializeField] private Image nodeIconImage;
     [SerializeField] private TMP_Text nodeInfoText;
@@ -55,8 +52,8 @@ public class BattleMapNodeInfoPresenter : MonoBehaviour
     {
         ResolveReferences();
         if (!gameObject.activeSelf) gameObject.SetActive(true);
-        if (nodeNameText != null) nodeNameText.text = DefaultName;
-        if (nodeInfoText != null) nodeInfoText.text = DefaultDescription;
+        if (nodeNameText != null) nodeNameText.text = GameLocalization.Get("battle.node_info", "노드 정보");
+        if (nodeInfoText != null) nodeInfoText.text = GameLocalization.Get("battle.node_hover_hint", "노드에 마우스를 올려 정보를 확인하세요.");
         if (nodeIconImage != null)
         {
             nodeIconImage.sprite = null;
@@ -66,12 +63,12 @@ public class BattleMapNodeInfoPresenter : MonoBehaviour
 
     public static BattleMapNodeInfoCopy ResolveCopy(string nodeType) => nodeType switch
     {
-        "Start" => new("시작", "새로운 탐사를 시작하는 출발점입니다."),
-        "Rest" => new("휴식", "상처를 회복하고 전열을 가다듬습니다."),
-        "Special" => new("사건", "예측할 수 없는 사건과 마주칩니다."),
-        "Common" => new("전투", "적을 물리치고 앞으로 나아갑니다."),
-        "Elite" => new("정예", "강력한 적을 넘어 값진 보상을 노립니다."),
-        "Boss" => new("보스", "탐사의 끝을 지키는 우두머리와 결전합니다."),
+        "Start" => new(GameLocalization.Get("ui_start", "시작"), GameLocalization.Get("battle.node_start_description", "새로운 탐사를 시작하는 출발점입니다.")),
+        "Rest" => new(GameLocalization.Get("lobby.rest", "휴식"), GameLocalization.Get("battle.node_rest_description", "상처를 회복하고 전열을 가다듬습니다.")),
+        "Special" => new(GameLocalization.Get("battle.event", "사건"), GameLocalization.Get("battle.node_event_description", "예측할 수 없는 사건과 마주칩니다.")),
+        "Common" => new(GameLocalization.Get("battle.battle", "전투"), GameLocalization.Get("battle.node_common_description", "적을 물리치고 앞으로 나아갑니다.")),
+        "Elite" => new(GameLocalization.Get("battle.elite", "정예"), GameLocalization.Get("battle.node_elite_description", "강력한 적을 넘어 값진 보상을 노립니다.")),
+        "Boss" => new(GameLocalization.Get("battle.boss", "보스"), GameLocalization.Get("battle.node_boss_description", "탐사의 끝을 지키는 우두머리와 결전합니다.")),
         _ => new(nodeType ?? string.Empty, string.Empty)
     };
 

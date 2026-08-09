@@ -145,10 +145,10 @@ public class EventRoomController : MonoBehaviour
             return;
 
         if (relicHoverNameText != null)
-            relicHoverNameText.text = relicData.Name;
+            relicHoverNameText.text = GameDataLocalization.RelicName(relicData);
 
         if (relicHoverDescText != null)
-            relicHoverDescText.text = relicData.EffectDesc;
+            relicHoverDescText.text = GameDataLocalization.RelicDescription(relicData);
 
         if (relicHoverInfoPanel != null)
         {

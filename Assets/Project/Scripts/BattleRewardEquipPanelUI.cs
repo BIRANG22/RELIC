@@ -133,7 +133,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
             }
 
             reward.Name = string.IsNullOrWhiteSpace(relic.Name) ? rewardId : relic.Name;
-            reward.Description = relic.EffectDesc;
+            reward.Description = GameDataLocalization.RelicDescription(relic);
 
             if (DataManager.Instance.RelicIconDatabase != null &&
                 DataManager.Instance.RelicIconDatabase.TryGetIcon(rewardId, out Sprite relicIcon))
@@ -617,7 +617,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
 
             if (itemEffectText != null)
                 itemEffectText.text = !string.IsNullOrWhiteSpace(relic?.EffectDesc)
-                    ? relic.EffectDesc
+                    ? GameDataLocalization.RelicDescription(relic)
                     : currentReward.Description ?? string.Empty;
         }
     }
@@ -988,16 +988,16 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
             return fallback ?? string.Empty;
 
         if (!string.IsNullOrWhiteSpace(skill.Details))
-            return skill.Details;
+            return GameDataLocalization.SkillDetails(skill);
 
         if (!string.IsNullOrWhiteSpace(skill.ToolTip))
-            return skill.ToolTip;
+            return GameDataLocalization.SkillTooltip(skill);
 
         if (!string.IsNullOrWhiteSpace(skill.EffectDescription))
             return skill.EffectDescription;
 
         if (!string.IsNullOrWhiteSpace(skill.EffectDesc))
-            return skill.EffectDesc;
+            return GameLocalization.GetData("SkillMaster", skill.SkillId, "details", skill.EffectDesc);
 
         return fallback ?? string.Empty;
     }

@@ -16,8 +16,8 @@ public class CharacterInfoPanel : MonoBehaviour
     [Header("Label Texts")]
     [SerializeField, FormerlySerializedAs("staminaLabelText")] private TMP_Text costLabelText;
     [SerializeField, FormerlySerializedAs("staminaRecoveryLabelText")] private TMP_Text recoveryLabelText;
-    [SerializeField] private string costLabel = "ÄÚ½ºÆ®";
-    [SerializeField] private string recoveryLabel = "ÄÚ½ºÆ® È¸º¹·®";
+    [SerializeField] private string costLabel = "ì½”ìŠ¤íŠ¸";
+    [SerializeField] private string recoveryLabel = "ì½”ìŠ¤íŠ¸ íšŒë³µëŸ‰";
 
     [Header("Rune Modified Stat Display")]
     [SerializeField] private bool showModifiedStatDelta = true;
@@ -83,7 +83,7 @@ public class CharacterInfoPanel : MonoBehaviour
         int baseHP = Mathf.Max(1, currentMasterData.MaxHP);
         int baseCost = Mathf.Max(0, currentMasterData.MaxCost);
         int baseRecovery = Mathf.Max(0, currentMasterData.CostRecovery);
-        // Ä³¸¯ÅÍ µ¥ÀÌÅÍ¿¡´Â ±âº» ÀÌµ¿°ªÀÌ ¾øÀ¸¸ç, ÀÌµ¿°ªÀº Àåºñ/·é È¿°ú·Î¸¸ °è»êÇÕ´Ï´Ù.
+        // ìºë¦­í„° ë°ì´í„°ì—ëŠ” ê¸°ë³¸ ì´ë™ê°’ì´ ì—†ìœ¼ë©°, ì´ë™ê°’ì€ ì¥ë¹„/ë£¬ íš¨ê³¼ë¡œë§Œ ê³„ì‚°í•©ë‹ˆë‹¤.
         int baseMove = 0;
 
         int effectiveHP = BattleEquipmentEffectService.GetEffectiveMaxHP(currentRuntimeData, currentMasterData);
@@ -120,8 +120,8 @@ public class CharacterInfoPanel : MonoBehaviour
 
         ApplyCostLabels();
 
-        // Ä³¸¯ÅÍ Á¤º¸°¡ ¾øÀ» ¶§µµ ½ºÅÈ ¿µ¿ªÀÌ ºóÄ­À¸·Î ³²Áö ¾Êµµ·Ï
-        // ¸ğµç ¼öÄ¡¸¦ 0À¸·Î Ç¥½ÃÇÑ´Ù.
+        // ìºë¦­í„° ì •ë³´ê°€ ì—†ì„ ë•Œë„ ìŠ¤íƒ¯ ì˜ì—­ì´ ë¹ˆì¹¸ìœ¼ë¡œ ë‚¨ì§€ ì•Šë„ë¡
+        // ëª¨ë“  ìˆ˜ì¹˜ë¥¼ 0ìœ¼ë¡œ í‘œì‹œí•œë‹¤.
         if (hpValueText != null)
             hpValueText.text = "0";
 
@@ -135,7 +135,7 @@ public class CharacterInfoPanel : MonoBehaviour
             moveValueText.text = "0";
 
         ClearCharacterMark();
-        ApplyStoryText("¼³¸í ¾øÀ½");
+        ApplyStoryText("ì„¤ëª… ì—†ìŒ");
     }
 
     public void ShowStatTooltipInStory(Component owner, string statName, string description, string valueLine)
@@ -193,7 +193,7 @@ public class CharacterInfoPanel : MonoBehaviour
     private void RefreshStoryTextCache()
     {
         currentStoryText = currentMasterData != null
-            ? FormatIntroduction(currentMasterData.Introduction)
+            ? FormatIntroduction(GameDataLocalization.CharacterIntroduction(currentMasterData))
             : "";
     }
 
@@ -229,7 +229,7 @@ public class CharacterInfoPanel : MonoBehaviour
 
     private string FormatStoryTooltip(string statName, string description, string valueLine)
     {
-        string title = string.IsNullOrWhiteSpace(statName) ? "Á¤º¸" : statName.Trim();
+        string title = string.IsNullOrWhiteSpace(statName) ? "ì •ë³´" : statName.Trim();
         string body = string.IsNullOrWhiteSpace(description) ? "" : description.Trim();
         string value = string.IsNullOrWhiteSpace(valueLine) ? "" : valueLine.Trim();
 

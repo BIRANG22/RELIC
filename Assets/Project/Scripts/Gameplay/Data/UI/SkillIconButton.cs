@@ -88,7 +88,7 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
             return;
 
         if (nameText != null)
-            nameText.text = currentSkillData.Name;
+            nameText.text = GameDataLocalization.SkillName(currentSkillData);
 
         if (iconImage != null)
         {
@@ -116,7 +116,7 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
             isPointerInside = true;
         }
 
-        // ·é ¹öÆ° À§¿¡ ¸¶¿ì½º°¡ ÀÖÀ¸¸é ·é Á¤º¸°¡ Ç×»ó ¿ì¼±ÀÔ´Ï´Ù.
+        // ë£¬ ë²„íŠ¼ ìœ„ì— ë§ˆìš°ìŠ¤ê°€ ìžˆìœ¼ë©´ ë£¬ ì •ë³´ê°€ í•­ìƒ ìš°ì„ ìž…ë‹ˆë‹¤.
         if (!LobbyInfoHoverState.IsRuneHovered &&
             owner != null && currentSkillData != null && owner.CanPreviewSkillIconHover)
         {
@@ -137,8 +137,8 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
         StopHoverScaleEffect(true);
 
-        // ÇÁ¸®ºä¿¡¼­´Â È£¹ö°¡ ³¡³ª¸é ±âº» ¾È³» Á¤º¸·Î µ¹¾Æ°©´Ï´Ù.
-        // ½ºÅ³ ¼¼ÆÃ¿¡¼­´Â ¸¶Áö¸·À¸·Î È®ÀÎÇÑ Á¤º¸¸¦ À¯ÁöÇÕ´Ï´Ù.
+        // í”„ë¦¬ë·°ì—ì„œëŠ” í˜¸ë²„ê°€ ëë‚˜ë©´ ê¸°ë³¸ ì•ˆë‚´ ì •ë³´ë¡œ ëŒì•„ê°‘ë‹ˆë‹¤.
+        // ìŠ¤í‚¬ ì„¸íŒ…ì—ì„œëŠ” ë§ˆì§€ë§‰ìœ¼ë¡œ í™•ì¸í•œ ì •ë³´ë¥¼ ìœ ì§€í•©ë‹ˆë‹¤.
         if (owner != null && owner.ShouldClearInfoOnHoverExit && shownInfoVersion >= 0)
             owner.ClearSkillInfoFromHover(shownInfoVersion);
 

@@ -268,7 +268,7 @@ public class MonsterInfoPanelUI : MonoBehaviour
             item.gameObject.name = template.gameObject.name + "_" + GetPatternItemName(patternInfo);
             item.transform.localScale = Vector3.one * patternItemScale;
             item.gameObject.SetActive(true);
-            item.Bind(patternInfo.Order, patternInfo.Description);
+            item.Bind(patternInfo.Order, GameDataLocalization.MonsterPatternDescription(patternInfo));
             spawnedPatternItems.Add(item);
         }
     }
@@ -367,7 +367,7 @@ public class MonsterInfoPanelUI : MonoBehaviour
     private static string GetSkillName(string skillId, MonsterSkillData skillData)
     {
         if (skillData != null && !string.IsNullOrWhiteSpace(skillData.Name))
-            return skillData.Name.Trim();
+            return GameDataLocalization.MonsterSkillName(skillData).Trim();
 
         return string.IsNullOrWhiteSpace(skillId) ? string.Empty : skillId.Trim();
     }
@@ -375,10 +375,10 @@ public class MonsterInfoPanelUI : MonoBehaviour
     private static string GetSkillDescription(MonsterPatternInfoData patternInfo, MonsterSkillData skillData)
     {
         if (patternInfo != null && !string.IsNullOrWhiteSpace(patternInfo.SkillInfo))
-            return patternInfo.SkillInfo.Trim();
+            return GameDataLocalization.MonsterPatternSkillDescription(patternInfo).Trim();
 
         if (skillData != null && !string.IsNullOrWhiteSpace(skillData.EffectDesc))
-            return skillData.EffectDesc.Trim();
+            return GameDataLocalization.MonsterSkillDescription(skillData).Trim();
 
         return string.Empty;
     }

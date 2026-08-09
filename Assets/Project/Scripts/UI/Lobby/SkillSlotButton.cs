@@ -94,8 +94,8 @@ public class SkillSlotButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         if (!isSelected)
             RestoreDefaultBorderColor();
 
-        // ÇÁ¸®ºä¿¡¼­´Â ±âº» ¾È³» Á¤º¸·Î µ¹¾Æ°¡°í,
-        // ½ºÅ³ ¼¼ÆÃ¿¡¼­´Â ¸¶Áö¸·À¸·Î È®ÀÎÇÑ Á¤º¸¸¦ À¯ÁöÇÕ´Ï´Ù.
+        // í”„ë¦¬ë·°ì—ì„œëŠ” ê¸°ë³¸ ì•ˆë‚´ ì •ë³´ë¡œ ëŒì•„ê°€ê³ ,
+        // ìŠ¤í‚¬ ì„¸íŒ…ì—ì„œëŠ” ë§ˆì§€ë§‰ìœ¼ë¡œ í™•ì¸í•œ ì •ë³´ë¥¼ ìœ ì§€í•©ë‹ˆë‹¤.
         if (owner != null && owner.ShouldClearInfoOnHoverExit && shownInfoVersion >= 0)
             owner.ClearSkillInfoFromHover(shownInfoVersion);
 
@@ -119,7 +119,7 @@ public class SkillSlotButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         equippedSkill = skill;
 
         if (nameText != null)
-            nameText.text = skill != null ? skill.Name : "";
+            nameText.text = skill != null ? GameDataLocalization.SkillName(skill) : "";
 
         if (iconImage != null)
         {
@@ -158,9 +158,9 @@ public class SkillSlotButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private void CacheDefaultVisualState()
     {
-        // ÆĞ³ÎÀÌ ÄÑÁö´Â ¼ø°£ ´Ù¸¥ UI Ã³¸®·Î ½ºÄÉÀÏÀÌ Àá½Ã 0ÀÌ µÉ ¼ö ÀÖ½À´Ï´Ù.
-        // 0 ½ºÄÉÀÏÀ» ±âº»°ªÀ¸·Î ÀúÀåÇÏ¸é ÀÌÈÄ¿¡µµ ¹öÆ°ÀÌ °è¼Ó º¸ÀÌÁö ¾ÊÀ¸¹Ç·Î
-        // À¯È¿ÇÑ ½ºÄÉÀÏ¸¸ ÀúÀåÇÏ°í, °ªÀÌ 0ÀÌ¸é ±âº» Å©±âÀÎ 1·Î º¹±¸ÇÕ´Ï´Ù.
+        // íŒ¨ë„ì´ ì¼œì§€ëŠ” ìˆœê°„ ë‹¤ë¥¸ UI ì²˜ë¦¬ë¡œ ìŠ¤ì¼€ì¼ì´ ì ì‹œ 0ì´ ë  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+        // 0 ìŠ¤ì¼€ì¼ì„ ê¸°ë³¸ê°’ìœ¼ë¡œ ì €ì¥í•˜ë©´ ì´í›„ì—ë„ ë²„íŠ¼ì´ ê³„ì† ë³´ì´ì§€ ì•Šìœ¼ë¯€ë¡œ
+        // ìœ íš¨í•œ ìŠ¤ì¼€ì¼ë§Œ ì €ì¥í•˜ê³ , ê°’ì´ 0ì´ë©´ ê¸°ë³¸ í¬ê¸°ì¸ 1ë¡œ ë³µêµ¬í•©ë‹ˆë‹¤.
         Vector3 currentScale = transform.localScale;
 
         if (IsZeroScale(currentScale))

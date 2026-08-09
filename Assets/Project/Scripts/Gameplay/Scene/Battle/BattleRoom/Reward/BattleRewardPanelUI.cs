@@ -239,7 +239,11 @@ public class BattleRewardPanelUI : MonoBehaviour
         if (currentCount < MaxBagItemCount)
             return true;
 
-        ShowWarning($"가방이 가득 찼습니다. 고유아이템은 최대 {MaxBagItemCount}개까지 보유할 수 있습니다.");
+        ShowWarning(string.Format(
+            GameLocalization.Get(
+                "battle.bag_full_unique_item_limit",
+                "가방이 가득 찼습니다. 고유아이템은 최대 {0}개까지 보유할 수 있습니다."),
+            MaxBagItemCount));
         return false;
     }
 

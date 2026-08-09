@@ -40,8 +40,8 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
     [SerializeField] private GameObject skillInfoCostLabel;
     [SerializeField] private GameObject skillInfoValueLabel;
 
-    [SerializeField] private string emptySkillInfoTitle = "½ºÅ³¸í";
-    [SerializeField, TextArea] private string emptySkillInfoEffect = "½ºÅ³À» ¼±ÅÃÇÏ¸é Á¤º¸°¡ Ç¥½ÃµË´Ï´Ù.";
+    [SerializeField] private string emptySkillInfoTitle = "ìŠ¤í‚¬ëª…";
+    [SerializeField, TextArea] private string emptySkillInfoEffect = "ìŠ¤í‚¬ì„ ì„ íƒí•˜ë©´ ì •ë³´ê°€ í‘œì‹œë©ë‹ˆë‹¤.";
     [SerializeField] private bool autoBindSkillInfoArea = true;
 
     [Header("Warning UI")]
@@ -340,7 +340,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
     public bool ShouldClearInfoOnHoverExit => !skillSelectPanelAllowed;
 
-    // ½ºÅ³ ¼±ÅÃ ÆĞ³ÎÀÌ ÀÌµ¿ÇÏ´Â µ¿¾È¿¡´Â Áö³ª°¡´Â ¾ÆÀÌÄÜÀÇ È£¹ö Á¤º¸¸¦ ¹İ¿µÇÏÁö ¾Ê½À´Ï´Ù.
+    // ìŠ¤í‚¬ ì„ íƒ íŒ¨ë„ì´ ì´ë™í•˜ëŠ” ë™ì•ˆì—ëŠ” ì§€ë‚˜ê°€ëŠ” ì•„ì´ì½˜ì˜ í˜¸ë²„ ì •ë³´ë¥¼ ë°˜ì˜í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
     public bool CanPreviewSkillIconHover => !suppressSkillIconHover;
 
     public void SetSkillSelectPanelEnabledForTab(bool enabled)
@@ -355,7 +355,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             return;
         }
 
-        // ½ºÅ³ ÅÇÀ¸·Î µé¾î¿Â Á÷ÈÄ¿¡´Â ½½·ÔÀ» ¼±ÅÃÇÏ±â Àü±îÁö ¼±ÅÃ ÆĞ³ÎÀ» ¿­Áö ¾Ê´Â´Ù.
+        // ìŠ¤í‚¬ íƒ­ìœ¼ë¡œ ë“¤ì–´ì˜¨ ì§í›„ì—ëŠ” ìŠ¬ë¡¯ì„ ì„ íƒí•˜ê¸° ì „ê¹Œì§€ ì„ íƒ íŒ¨ë„ì„ ì—´ì§€ ì•ŠëŠ”ë‹¤.
         SetSkillSelectPanelVisible(currentSelectedSlot != null);
     }
 
@@ -386,7 +386,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             if (panelObject == null)
                 continue;
 
-            // ¼±ÅÃ ÆĞ³ÎÀº ºñÈ°¼ºÈ­ÇÏÁö ¾Ê°í X ÁÂÇ¥ ÀÌµ¿À¸·Î È­¸é ¾ÈÆÆÀ» ÀüÈ¯ÇÑ´Ù.
+            // ì„ íƒ íŒ¨ë„ì€ ë¹„í™œì„±í™”í•˜ì§€ ì•Šê³  X ì¢Œí‘œ ì´ë™ìœ¼ë¡œ í™”ë©´ ì•ˆíŒì„ ì „í™˜í•œë‹¤.
             if (!panelObject.activeSelf)
                 panelObject.SetActive(true);
 
@@ -487,21 +487,21 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (DataManager.Instance == null)
         {
             ClearSkillSlots();
-            ShowWarning("DataManager°¡ ¾ø½À´Ï´Ù.");
+            ShowWarning(GameLocalization.Get("common.data_unavailable", "ë°ì´í„°ë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤."));
             return;
         }
 
         if (string.IsNullOrWhiteSpace(characterId))
         {
             ClearSkillSlots();
-            ShowWarning("¼±ÅÃµÈ Ä³¸¯ÅÍ°¡ ¾ø½À´Ï´Ù.");
+            ShowWarning(GameLocalization.Get("lobby.no_character_selected", "ì„ íƒëœ ìºë¦­í„°ê°€ ì—†ìŠµë‹ˆë‹¤."));
             return;
         }
 
         if (!DataManager.Instance.CharacterDatabase.TryGet(characterId, out currentMasterData))
         {
             ClearSkillSlots();
-            ShowWarning("Ä³¸¯ÅÍ ¸¶½ºÅÍ µ¥ÀÌÅÍ¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù: " + characterId);
+            ShowWarning(GameLocalization.Format("lobby.character_data_not_found_id", "ìºë¦­í„° ë°ì´í„°ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤: {0}", characterId));
             return;
         }
 
@@ -510,7 +510,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (currentRuntimeData == null)
         {
             ClearSkillSlots();
-            ShowWarning("Ä³¸¯ÅÍ ·±Å¸ÀÓ µ¥ÀÌÅÍ¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù: " + characterId);
+            ShowWarning(GameLocalization.Format("lobby.character_data_not_found_id", "ìºë¦­í„° ë°ì´í„°ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤: {0}", characterId));
             return;
         }
 
@@ -623,19 +623,19 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
     {
         if (slotButton == null)
         {
-            ShowWarning("½ºÅ³ ½½·ÔÀÌ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù.");
+            ShowWarning(GameLocalization.Get("lobby.skill_slot_not_connected", "ìŠ¤í‚¬ ìŠ¬ë¡¯ì´ ì—°ê²°ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤."));
             return;
         }
 
         if (currentRuntimeData == null || currentMasterData == null)
         {
-            ShowWarning("Ä³¸¯ÅÍ¸¦ ¸ÕÀú ¼±ÅÃÇØ¾ß ÇÕ´Ï´Ù.");
+            ShowWarning(GameLocalization.Get("lobby.select_character_first", "ìºë¦­í„°ë¥¼ ë¨¼ì € ì„ íƒí•´ì•¼ í•©ë‹ˆë‹¤."));
             return;
         }
 
         int slotIndex = slotButton.SlotIndex;
 
-        // ÀÌ¹Ì ¿­·Á ÀÖ´Â °°Àº ½ºÅ³ ¹öÆ°À» ´Ù½Ã ´©¸£¸é ¼±ÅÃ ÆĞ³ÎÀ» ´İ´Â´Ù.
+        // ì´ë¯¸ ì—´ë ¤ ìˆëŠ” ê°™ì€ ìŠ¤í‚¬ ë²„íŠ¼ì„ ë‹¤ì‹œ ëˆ„ë¥´ë©´ ì„ íƒ íŒ¨ë„ì„ ë‹«ëŠ”ë‹¤.
         if (openedSkillSelectPanelIndex == slotIndex)
         {
             SetSelectedSkillSlot(null);
@@ -649,7 +649,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         List<SkillMasterData> candidates = GetSkillCandidates(slotIndex);
         RefreshSkillIconButtons(candidates, slotIndex);
 
-        // ´Ù¸¥ ÆĞ³ÎÀº X 230À¸·Î º¹±ÍÇÏ°í ¼±ÅÃÇÑ ÆĞ³Î¸¸ X -15·Î ÀÌµ¿ÇÑ´Ù.
+        // ë‹¤ë¥¸ íŒ¨ë„ì€ X 230ìœ¼ë¡œ ë³µê·€í•˜ê³  ì„ íƒí•œ íŒ¨ë„ë§Œ X -15ë¡œ ì´ë™í•œë‹¤.
         SetSkillSelectPanelVisible(true);
     }
 
@@ -941,7 +941,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
     public void ShowSkillInfo(SkillMasterData skill)
     {
-        // ·é À§¿¡ ¸¶¿ì½º°¡ ÀÖ´Â µ¿¾È¿¡´Â µÚ´Ê°Ô µé¾î¿Â ½ºÅ³ È£¹ö°¡ ·é Á¤º¸¸¦ µ¤¾î¾²Áö ¾Ê½À´Ï´Ù.
+        // ë£¬ ìœ„ì— ë§ˆìš°ìŠ¤ê°€ ìˆëŠ” ë™ì•ˆì—ëŠ” ë’¤ëŠ¦ê²Œ ë“¤ì–´ì˜¨ ìŠ¤í‚¬ í˜¸ë²„ê°€ ë£¬ ì •ë³´ë¥¼ ë®ì–´ì“°ì§€ ì•ŠìŠµë‹ˆë‹¤.
         if (LobbyInfoHoverState.IsRuneHovered)
             return;
 
@@ -961,7 +961,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         SetSkillInfoLabelsVisible(true);
         SetSkillInfoValueObjectsVisible(true);
 
-        SetPlainTmpText(skillInfoTitleText, skill.Name);
+        SetPlainTmpText(skillInfoTitleText, GameDataLocalization.SkillName(skill));
         SetRichTmpText(skillInfoEffectText, BuildSkillDetailsText(skill));
         SetSkillRangeImage(skill);
         SetPlainTmpText(skillInfoCostText, BuildSkillCostText(skill));
@@ -1029,8 +1029,8 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
     }
 
     /// <summary>
-    /// ·é Á¤º¸°¡ Ç¥½ÃµÉ ¶§ ½ºÅ³ Àü¿ë Á¤º¸ ¿ÀºêÁ§Æ®¸¦ Á¤È®ÇÑ ÂüÁ¶·Î ¼û±é´Ï´Ù.
-    /// ÀÌ¸§ °Ë»öÀÌ ¾Æ´Ï¶ó ÇöÀç SkillSettingPanelÀÌ »ç¿ëÇÏ´Â ½ÇÁ¦ ¿ÀºêÁ§Æ®¸¦ Á¦¾îÇÕ´Ï´Ù.
+    /// ë£¬ ì •ë³´ê°€ í‘œì‹œë  ë•Œ ìŠ¤í‚¬ ì „ìš© ì •ë³´ ì˜¤ë¸Œì íŠ¸ë¥¼ ì •í™•í•œ ì°¸ì¡°ë¡œ ìˆ¨ê¹ë‹ˆë‹¤.
+    /// ì´ë¦„ ê²€ìƒ‰ì´ ì•„ë‹ˆë¼ í˜„ì¬ SkillSettingPanelì´ ì‚¬ìš©í•˜ëŠ” ì‹¤ì œ ì˜¤ë¸Œì íŠ¸ë¥¼ ì œì–´í•©ë‹ˆë‹¤.
     /// </summary>
     public void SetSkillInfoExtrasVisible(bool visible)
     {
@@ -1074,7 +1074,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
         if (skillInfoEffectText != null)
         {
-            // ½ºÅ³ ¼³¸íÀÇ ¼ıÀÚ¿¡ º°µµ »ö»óÀ» Àû¿ëÇÏÁö ¾Ê°í CSV ¿ø¹® ±×´ë·Î Ç¥½ÃÇÕ´Ï´Ù.
+            // ìŠ¤í‚¬ ì„¤ëª…ì˜ ìˆ«ìì— ë³„ë„ ìƒ‰ìƒì„ ì ìš©í•˜ì§€ ì•Šê³  CSV ì›ë¬¸ ê·¸ëŒ€ë¡œ í‘œì‹œí•©ë‹ˆë‹¤.
             skillInfoEffectText.richText = false;
             skillInfoEffectText.parseCtrlCharacters = true;
         }
@@ -1143,18 +1143,18 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
         int costValue = Mathf.Max(0, skill.ResourceCostValue);
         if (costValue <= 0)
-            return "¼Ò¸ğ ¾øÀ½";
+            return GameLocalization.Get("common.no_cost", "ì†Œëª¨ ì—†ìŒ");
 
         string resourceName;
 
         switch (skill.ReferenceResource)
         {
             case ReferenceResource.HP:
-                resourceName = "Ã¼·Â";
+                resourceName = GameLocalization.Get("common.hp", "ì²´ë ¥");
                 break;
 
             case ReferenceResource.Cost:
-                resourceName = "ÄÚ½ºÆ®";
+                resourceName = GameLocalization.Get("common.cost", "ì½”ìŠ¤íŠ¸");
                 break;
 
             case ReferenceResource.UniqueResource:
@@ -1162,7 +1162,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
                 break;
 
             case ReferenceResource.MovePoint:
-                resourceName = "ÀÌµ¿·Â";
+                resourceName = GameLocalization.Get("common.move_point", "ì´ë™ë ¥");
                 break;
 
             default:
@@ -1177,22 +1177,22 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         switch (GetCurrentCharacterNumber())
         {
             case 1:
-                return "ºĞ³ë";
+                return GameLocalization.Get("resource.rage", "ë¶„ë…¸");
 
             case 2:
-                return "±â¼¼";
+                return GameLocalization.Get("resource.momentum", "ê¸°ì„¸");
 
             case 3:
-                return "¿¡Å×¸£";
+                return GameLocalization.Get("resource.aether", "ì—í…Œë¥´");
 
             case 4:
-                return "½Å¾Ó";
+                return GameLocalization.Get("resource.faith", "ì‹ ì•™");
 
             case 5:
-                return "Ç÷±â";
+                return GameLocalization.Get("resource.blood", "í˜ˆê¸°");
 
             default:
-                return "°íÀ¯ÀÚ¿ø";
+                return GameLocalization.Get("resource.unique", "ê³ ìœ ìì›");
         }
     }
 
@@ -1201,17 +1201,17 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (skill == null)
             return string.Empty;
 
-        // ÆĞ½Ãºê ½ºÅ³Àº ¹üÀ§ »ç¿ë ¹æ½Ä ´ë½Å °íÀ¯ÀÚ¿ø À¯Áö Á¶°ÇÀ» Ç¥½ÃÇÕ´Ï´Ù.
+        // íŒ¨ì‹œë¸Œ ìŠ¤í‚¬ì€ ë²”ìœ„ ì‚¬ìš© ë°©ì‹ ëŒ€ì‹  ê³ ìœ ìì› ìœ ì§€ ì¡°ê±´ì„ í‘œì‹œí•©ë‹ˆë‹¤.
         if (skill.Category == Category.Passive)
             return BuildPassiveActivationTypeText();
 
         switch (skill.RangeType)
         {
             case RangeType.Selection:
-                return "±×¸®µå ¼±ÅÃ";
+                return GameLocalization.Get("skill.range_selection", "ê·¸ë¦¬ë“œ ì„ íƒ");
 
             case RangeType.Direction:
-                return "½ÃÀüÀÚ À§Ä¡";
+                return GameLocalization.Get("skill.range_caster_position", "ì‹œì „ì ìœ„ì¹˜");
 
             default:
                 return string.Empty;
@@ -1223,22 +1223,22 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         switch (GetCurrentCharacterNumber())
         {
             case 1:
-                return "ºĞ³ë 3 À¯Áö ½Ã Áö¼Ó";
+                return GameLocalization.Get("skill.passive_rage_3", "ë¶„ë…¸ 3 ìœ ì§€ ì‹œ ì§€ì†");
 
             case 2:
-                return "±â¼¼ 5 À¯Áö ½Ã Áö¼Ó";
+                return GameLocalization.Get("skill.passive_momentum_5", "ê¸°ì„¸ 5 ìœ ì§€ ì‹œ ì§€ì†");
 
             case 3:
-                return "¿¡Å×¸£ 3 À¯Áö ½Ã Áö¼Ó";
+                return GameLocalization.Get("skill.passive_aether_3", "ì—í…Œë¥´ 3 ìœ ì§€ ì‹œ ì§€ì†");
 
             case 4:
-                return "½Å¾Ó 3 À¯Áö ½Ã Áö¼Ó";
+                return GameLocalization.Get("skill.passive_faith_3", "ì‹ ì•™ 3 ìœ ì§€ ì‹œ ì§€ì†");
 
             case 5:
-                return "Ç÷±â 5 À¯Áö ½Ã Áö¼Ó";
+                return GameLocalization.Get("skill.passive_blood_5", "í˜ˆê¸° 5 ìœ ì§€ ì‹œ ì§€ì†");
 
             default:
-                return "°íÀ¯ÀÚ¿ø ÃÖ´ëÄ¡ À¯Áö ½Ã Áö¼Ó";
+                return GameLocalization.Get("skill.passive_unique_max", "ê³ ìœ ìì› ìµœëŒ€ì¹˜ ìœ ì§€ ì‹œ ì§€ì†");
         }
     }
 
@@ -1269,7 +1269,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
             string effectName = entry.EffectData != null &&
                                 !string.IsNullOrWhiteSpace(entry.EffectData.Name)
-                ? entry.EffectData.Name
+                ? GameDataLocalization.EffectName(entry.EffectData)
                 : entry.EffectId;
 
             effectName = GetEffectDisplayName(effectName, entry.EffectId);
@@ -1293,7 +1293,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
             if (count > 1)
             {
-                builder.Append(" ¡¿ ");
+                builder.Append(" Ã— ");
                 builder.Append(count);
             }
         }
@@ -1311,16 +1311,16 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             ? effectId.Trim()
             : string.Empty;
 
-        if (string.Equals(source, "Å¸°İ", System.StringComparison.OrdinalIgnoreCase))
-            return "ÇÇÇØ";
+        if (string.Equals(source, "íƒ€ê²©", System.StringComparison.OrdinalIgnoreCase))
+            return GameLocalization.Get("common.damage", "í”¼í•´");
 
-        if (string.Equals(source, "°üÅë", System.StringComparison.OrdinalIgnoreCase))
-            return "°üÅëÇÇÇØ";
+        if (string.Equals(source, "ê´€í†µ", System.StringComparison.OrdinalIgnoreCase))
+            return GameLocalization.Get("effect.piercing_damage", "ê´€í†µí”¼í•´");
 
         if (string.Equals(source, "E_Move", System.StringComparison.OrdinalIgnoreCase) ||
             string.Equals(id, "E_Move", System.StringComparison.OrdinalIgnoreCase))
         {
-            return "ÀÌµ¿";
+            return GameLocalization.Get("common.move", "ì´ë™");
         }
 
         return source;
@@ -1360,15 +1360,15 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (skill == null)
             return "";
 
-        string details = skill.Details;
+        string details = GameDataLocalization.SkillDetails(skill);
 
         if (string.IsNullOrWhiteSpace(details))
-            details = skill.ToolTip;
+            details = GameDataLocalization.SkillTooltip(skill);
 
         if (string.IsNullOrWhiteSpace(details))
             return "";
 
-        // ¼³¸í¿¡ Æ÷ÇÔµÈ ¼ıÀÚ¸¦ »ö»ó ÅÂ±×·Î °¨½ÎÁö ¾Ê°í ¿ø¹® ±×´ë·Î Ç¥½ÃÇÕ´Ï´Ù.
+        // ì„¤ëª…ì— í¬í•¨ëœ ìˆ«ìë¥¼ ìƒ‰ìƒ íƒœê·¸ë¡œ ê°ì‹¸ì§€ ì•Šê³  ì›ë¬¸ ê·¸ëŒ€ë¡œ í‘œì‹œí•©ë‹ˆë‹¤.
         return NormalizeSkillInfoText(details);
     }
 
@@ -1441,13 +1441,13 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
     {
         if (currentSelectedSlot == null)
         {
-            ShowWarning("½ºÅ³À» ÀåÂøÇÒ ½½·ÔÀ» ¸ÕÀú ¼±ÅÃÇÏ¼¼¿ä.");
+            ShowWarning(GameLocalization.Get("lobby.select_skill_slot_first", "ìŠ¤í‚¬ì„ ì¥ì°©í•  ìŠ¬ë¡¯ì„ ë¨¼ì € ì„ íƒí•˜ì„¸ìš”."));
             return;
         }
 
         if (skill == null)
         {
-            ShowWarning("¼±ÅÃµÈ ½ºÅ³ÀÌ ¾ø½À´Ï´Ù.");
+            ShowWarning(GameLocalization.Get("lobby.no_skill_selected", "ì„ íƒëœ ìŠ¤í‚¬ì´ ì—†ìŠµë‹ˆë‹¤."));
             return;
         }
 
@@ -1456,13 +1456,13 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
         if (characterLevel < requiredLevel)
         {
-            ShowWarning("¾ÆÁ÷ Àá°ÜÀÖ´Â ½ºÅ³ÀÔ´Ï´Ù. ÇÊ¿ä ·¹º§: LV. " + requiredLevel);
+            ShowWarning(GameLocalization.Format("lobby.skill_locked_level", "ì•„ì§ ì ê²¨ìˆëŠ” ìŠ¤í‚¬ì…ë‹ˆë‹¤. í•„ìš” ë ˆë²¨: LV. {0}", requiredLevel));
             return;
         }
 
         if (!IsSkillValidForCurrentCharacterSlot(skill, currentSelectedSlot.SlotIndex))
         {
-            ShowWarning("ÀÌ ½½·Ô¿¡ ÀåÂøÇÒ ¼ö ¾ø´Â ½ºÅ³ÀÔ´Ï´Ù.");
+            ShowWarning(GameLocalization.Get("lobby.skill_not_available_for_slot", "ì´ ìŠ¬ë¡¯ì— ì¥ì°©í•  ìˆ˜ ì—†ëŠ” ìŠ¤í‚¬ì…ë‹ˆë‹¤."));
             return;
         }
 
@@ -1470,14 +1470,14 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         ShowSkillInfo(skill);
         SaveCurrentSkillSetting();
 
-        // ÆĞ³ÎÀÌ ´İÈ÷¸ç ´Ù¸¥ ¾ÆÀÌÄÜ À§¸¦ Áö³ª°¥ ¶§ ¹ß»ıÇÏ´Â PointerEnter¸¦ ¹«½ÃÇÕ´Ï´Ù.
+        // íŒ¨ë„ì´ ë‹«íˆë©° ë‹¤ë¥¸ ì•„ì´ì½˜ ìœ„ë¥¼ ì§€ë‚˜ê°ˆ ë•Œ ë°œìƒí•˜ëŠ” PointerEnterë¥¼ ë¬´ì‹œí•©ë‹ˆë‹¤.
         suppressSkillIconHover = true;
 
-        // ÆĞ³Î ¾ÈÀÇ ½ºÅ³ ¹öÆ°À» ¼±ÅÃÇÏ¸é ¼±ÅÃ ÆĞ³ÎÀ» ´Ù½Ã ¼û±è À§Ä¡·Î µ¹¸°´Ù.
+        // íŒ¨ë„ ì•ˆì˜ ìŠ¤í‚¬ ë²„íŠ¼ì„ ì„ íƒí•˜ë©´ ì„ íƒ íŒ¨ë„ì„ ë‹¤ì‹œ ìˆ¨ê¹€ ìœ„ì¹˜ë¡œ ëŒë¦°ë‹¤.
         SetSkillSelectPanelVisible(false);
 
-        // ÆĞ³ÎÀÌ ÀÌµ¿ÇÏ¸ç ´Ù¸¥ ¾ÆÀÌÄÜÀÇ PointerEnter°¡ ¹ß»ıÇØµµ
-        // ÃÖÁ¾ÀûÀ¸·Î ½ÇÁ¦ ¼±ÅÃÇÑ ½ºÅ³ Á¤º¸°¡ ³²µµ·Ï ´Ù½Ã °íÁ¤ÇÕ´Ï´Ù.
+        // íŒ¨ë„ì´ ì´ë™í•˜ë©° ë‹¤ë¥¸ ì•„ì´ì½˜ì˜ PointerEnterê°€ ë°œìƒí•´ë„
+        // ìµœì¢…ì ìœ¼ë¡œ ì‹¤ì œ ì„ íƒí•œ ìŠ¤í‚¬ ì •ë³´ê°€ ë‚¨ë„ë¡ ë‹¤ì‹œ ê³ ì •í•©ë‹ˆë‹¤.
         StartCoroutine(RestoreSelectedSkillInfoAfterPanelClose(skill));
     }
 

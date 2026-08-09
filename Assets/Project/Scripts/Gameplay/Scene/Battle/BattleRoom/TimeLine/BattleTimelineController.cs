@@ -2874,7 +2874,7 @@ public class BattleTimelineController : MonoBehaviour
             return string.Empty;
 
         if (BattleEquipmentEffectService.IsSlotBlockedByEquipment(runtime, slotIndex))
-            return "이 슬롯에는 스킬을 등록할 수 없습니다.";
+            return GameLocalization.Get("battle.skill_slot_blocked", "이 슬롯에는 스킬을 등록할 수 없습니다.");
 
         int maxSlotCount = BattleEquipmentEffectService.GetMaxRegistrableSlotCount(runtime);
 
@@ -2888,7 +2888,7 @@ public class BattleTimelineController : MonoBehaviour
             occupiedSlotCount++;
 
         return occupiedSlotCount > maxSlotCount
-            ? $"스킬을 등록할 수 있는 슬롯은 {maxSlotCount}개까지입니다."
+            ? GameLocalization.Format("battle.skill_slot_limit", "스킬을 등록할 수 있는 슬롯은 {0}개까지입니다.", maxSlotCount)
             : string.Empty;
     }
 
@@ -3758,10 +3758,10 @@ public class BattleTimelineController : MonoBehaviour
     private string GetReserveBlockReason(PlayerReservedCommand command)
     {
         if (command == null)
-            return "예약할 스킬 정보가 없습니다.";
+            return GameLocalization.Get("battle.no_skill_to_reserve", "예약할 스킬 정보가 없습니다.");
 
         if (command.UserRuntime == null)
-            return "선택한 캐릭터가 없습니다.";
+            return GameLocalization.Get("battle.no_character_selected", "선택한 캐릭터가 없습니다.");
 
         CharacterRuntimeData runtime = command.UserRuntime;
 
@@ -3775,7 +3775,7 @@ public class BattleTimelineController : MonoBehaviour
     private string GetShortageMessage(CharacterRuntimeData runtime, PlayerReservedCommand command)
     {
         if (runtime == null || command == null)
-            return "예약할 스킬 정보가 없습니다.";
+            return GameLocalization.Get("battle.no_skill_to_reserve", "예약할 스킬 정보가 없습니다.");
 
         if (!runtime.CanReserveHP(command.HPCost))
             return BuildShortageMessage("HP", command.HPCost, runtime.CurrentHP - runtime.ReservedHPCost);
@@ -3784,10 +3784,10 @@ public class BattleTimelineController : MonoBehaviour
             return BuildShortageMessage("Cost", command.Cost, runtime.CurrentCost - runtime.ReservedCost);
 
         if (!runtime.CanReserveResource(command.ResourceCost))
-            return BuildShortageMessage("고유자원", command.ResourceCost, runtime.CurrentResource - runtime.ReservedResourceCost);
+            return BuildShortageMessage(GameLocalization.Get("resource.unique", "고유자원"), command.ResourceCost, runtime.CurrentResource - runtime.ReservedResourceCost);
 
         if (!runtime.CanReserveShield(command.ShieldCost))
-            return BuildShortageMessage("방어도", command.ShieldCost, runtime.CurrentShield - runtime.ReservedShieldCost);
+            return BuildShortageMessage(GameLocalization.Get("common.armor", "방어도"), command.ShieldCost, runtime.CurrentShield - runtime.ReservedShieldCost);
 
         return string.Empty;
     }
@@ -3795,7 +3795,7 @@ public class BattleTimelineController : MonoBehaviour
     private string BuildShortageMessage(string label, int required, int available)
     {
         int safeAvailable = Mathf.Max(0, available);
-        return $"{label}가 부족합니다. 필요:{required} / 보유:{safeAvailable}";
+        return GameLocalization.Format("battle.resource_shortage", "{0}가 부족합니다. 필요:{1} / 보유:{2}", label, required, safeAvailable);
     }
 
     private string GetCostLabel(ReferenceResource resource)
@@ -3810,10 +3810,10 @@ public class BattleTimelineController : MonoBehaviour
                 return "Cost";
 
             case ReferenceResource.UniqueResource:
-                return "고유자원";
+                return GameLocalization.Get("resource.unique", "고유자원");
 
             default:
-                return "자원";
+                return GameLocalization.Get("common.resource", "자원");
         }
     }
 
@@ -4331,18 +4331,18 @@ public class BattleTimelineController : MonoBehaviour
     private string NormalizeBattleWarningMessage(string message)
     {
         if (string.IsNullOrWhiteSpace(message))
-            return "현재 상태에서는 예약할 수 없습니다.";
+            return GameLocalization.Get("battle.cannot_reserve_now", "현재 상태에서는 예약할 수 없습니다.");
 
         if (!LooksLikeBrokenKorean(message))
             return message;
 
         if (message.Contains("HP"))
-            return "HP가 부족합니다.";
+            return GameLocalization.Get("battle.hp_shortage", "HP가 부족합니다.");
 
         if (message.Contains("Cost"))
-            return "Cost가 부족합니다.";
+            return GameLocalization.Get("battle.cost_shortage", "Cost가 부족합니다.");
 
-        return "현재 상태에서는 예약할 수 없습니다.";
+        return GameLocalization.Get("battle.cannot_reserve_now", "현재 상태에서는 예약할 수 없습니다.");
     }
 
     private bool LooksLikeBrokenKorean(string message)

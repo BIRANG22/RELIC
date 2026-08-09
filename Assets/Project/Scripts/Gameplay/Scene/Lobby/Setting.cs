@@ -326,21 +326,21 @@ public class Setting : MonoBehaviour
         if (string.IsNullOrWhiteSpace(characterId))
         {
             Clear();
-            ShowWarning("선택된 캐릭터가 없습니다.");
+            ShowWarning(GameLocalization.Get("lobby.no_character_selected", "선택된 캐릭터가 없습니다."));
             return;
         }
 
         if (DataManager.Instance == null)
         {
             Clear();
-            ShowWarning("DataManager가 없습니다.");
+            ShowWarning(GameLocalization.Get("common.data_unavailable", "데이터를 불러올 수 없습니다."));
             return;
         }
 
         if (!DataManager.Instance.CharacterDatabase.TryGet(characterId, out currentMasterData))
         {
             Clear();
-            ShowWarning("캐릭터 데이터를 찾을 수 없습니다.");
+            ShowWarning(GameLocalization.Get("lobby.character_data_not_found", "캐릭터 데이터를 찾을 수 없습니다."));
             return;
         }
 
@@ -350,7 +350,7 @@ public class Setting : MonoBehaviour
         if (currentRuntimeData == null)
         {
             Clear();
-            ShowWarning("캐릭터 런타임 데이터를 찾을 수 없습니다.");
+            ShowWarning(GameLocalization.Get("lobby.character_data_not_found", "캐릭터 데이터를 찾을 수 없습니다."));
             return;
         }
 
@@ -366,7 +366,7 @@ public class Setting : MonoBehaviour
         if (DataManager.Instance == null)
         {
             Clear();
-            ShowWarning("DataManager가 없습니다.");
+            ShowWarning(GameLocalization.Get("common.data_unavailable", "데이터를 불러올 수 없습니다."));
             return;
         }
 
@@ -375,7 +375,7 @@ public class Setting : MonoBehaviour
         if (string.IsNullOrWhiteSpace(characterId))
         {
             Clear();
-            ShowWarning("해당 파티 슬롯에 캐릭터가 없습니다.");
+            ShowWarning(GameLocalization.Get("lobby.party_slot_empty", "해당 파티 슬롯에 캐릭터가 없습니다."));
             return;
         }
 
@@ -412,7 +412,7 @@ public class Setting : MonoBehaviour
     {
         if (currentRuntimeData == null)
         {
-            ShowWarning("캐릭터를 먼저 선택해야 합니다.");
+            ShowWarning(GameLocalization.Get("lobby.select_character_first", "캐릭터를 먼저 선택해야 합니다."));
             return;
         }
 
@@ -513,7 +513,9 @@ public class Setting : MonoBehaviour
             charPick.ShowCurrentPreviewNormal();
 
         SetSharedInfoArea(false);
-        ApplyEmptyInfoText(string.Empty, "룬/스킬의 정보가 표시됩니다.");
+        ApplyEmptyInfoText(
+            string.Empty,
+            GameLocalization.Get("lobby.rune_skill_info_hint", "룬/스킬의 정보가 표시됩니다."));
         RefreshTabButtons();
     }
 
@@ -537,7 +539,9 @@ public class Setting : MonoBehaviour
             charPick.ShowCurrentPreviewSkill();
 
         SetSharedInfoArea(false);
-        ApplyEmptyInfoText("스킬정보", "스킬의 정보가 표시됩니다.");
+        ApplyEmptyInfoText(
+            GameLocalization.Get("lobby.skill_info", "스킬정보"),
+            GameLocalization.Get("lobby.skill_info_hint", "스킬의 정보가 표시됩니다."));
         RefreshTabButtons();
     }
 
@@ -561,7 +565,9 @@ public class Setting : MonoBehaviour
             charPick.ShowCurrentPreviewRune();
 
         SetSharedInfoArea(false);
-        ApplyEmptyInfoText("룬정보", "룬의 정보가 표시됩니다.");
+        ApplyEmptyInfoText(
+            GameLocalization.Get("lobby.rune_info", "룬정보"),
+            GameLocalization.Get("lobby.rune_info_hint", "룬의 정보가 표시됩니다."));
         RefreshTabButtons();
     }
 
@@ -583,7 +589,7 @@ public class Setting : MonoBehaviour
         }
 
         if (characterNameText != null)
-            characterNameText.text = currentMasterData.Name;
+            characterNameText.text = GameDataLocalization.CharacterName(currentMasterData);
 
         if (characterInfoText != null)
             characterInfoText.text = "";
@@ -604,7 +610,7 @@ public class Setting : MonoBehaviour
         // 캐릭터 정보가 없는 잠금 버튼을 선택해도 빈칸으로 보이지 않도록
         // 기본 안내 문구와 0 수치를 표시한다.
         if (characterNameText != null)
-            characterNameText.text = "잠김";
+            characterNameText.text = GameLocalization.Get("common.locked", "잠김");
 
         if (characterInfoText != null)
             characterInfoText.text = "";
@@ -663,7 +669,7 @@ public class Setting : MonoBehaviour
     {
         if (currentRuntimeData == null)
         {
-            ShowWarning("캐릭터를 먼저 선택해야 합니다.");
+            ShowWarning(GameLocalization.Get("lobby.select_character_first", "캐릭터를 먼저 선택해야 합니다."));
             return;
         }
 
@@ -676,7 +682,7 @@ public class Setting : MonoBehaviour
     {
         if (currentRuntimeData == null)
         {
-            ShowWarning("캐릭터를 먼저 선택해야 합니다.");
+            ShowWarning(GameLocalization.Get("lobby.select_character_first", "캐릭터를 먼저 선택해야 합니다."));
             return;
         }
 
@@ -700,7 +706,7 @@ public class Setting : MonoBehaviour
     {
         if (currentRuntimeData == null)
         {
-            ShowWarning("캐릭터를 먼저 선택해야 합니다.");
+            ShowWarning(GameLocalization.Get("lobby.select_character_first", "캐릭터를 먼저 선택해야 합니다."));
             return;
         }
 
