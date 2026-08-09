@@ -209,7 +209,13 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
             sortingCanvas.sortingLayerID = parentCanvas.sortingLayerID;
 
         sortingCanvas.overrideSorting = true;
-        sortingCanvas.sortingOrder = GetHighestCanvasSortingOrder(sortingCanvas) + Mathf.Max(1, sortingOrderOffset);
+
+        // Equip_panel은 일반 UI보다 앞에 표시하되,
+        // 메뉴 패널이 사용하는 최상단 정렬값(10000)보다 낮게 유지합니다.
+        const int menuSortingOrder = 10000;
+        int highestOrder = GetHighestCanvasSortingOrder(sortingCanvas);
+        int desiredOrder = highestOrder + Mathf.Max(1, sortingOrderOffset);
+        sortingCanvas.sortingOrder = Mathf.Min(desiredOrder, menuSortingOrder - 1);
 
         if (GetComponent<GraphicRaycaster>() == null)
             gameObject.AddComponent<GraphicRaycaster>();
