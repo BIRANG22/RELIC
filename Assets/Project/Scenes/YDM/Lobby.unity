@@ -39873,8 +39873,7 @@ MonoBehaviour:
   - {fileID: 397856608}
   - {fileID: 230010000}
   - {fileID: 821549304}
-  flowPropertyName: _Flow
-  normalFlow: 1
+  flowPropertyName: _noiseflow
 --- !u!1 &1033850257
 GameObject:
   m_ObjectHideFlags: 0
