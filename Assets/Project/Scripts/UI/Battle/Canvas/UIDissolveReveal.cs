@@ -185,7 +185,10 @@ public class UIDissolveReveal : MonoBehaviour
             return;
 
         bool pointerOverUI = IsPointerOverUI();
-        if (!pointerOverUI && IsScreenPointOverAnyMonster(Input.mousePosition))
+        if (pointerOverUI)
+            return;
+
+        if (IsScreenPointOverAnyMonster(Input.mousePosition))
             return;
 
         HideToLastRevealSide();

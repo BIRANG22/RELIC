@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
 
 namespace Relic.Gameplay.Monster
 {
@@ -24,9 +25,12 @@ namespace Relic.Gameplay.Monster
         [SerializeField, Range(0f, 1f)] private float reservationAlpha = 0.45f;
         [SerializeField] private bool disableInteractionDuringReservationVisual = true;
 
-        [Header("Status Click Tooltip")]
-        [SerializeField] private bool showStatusTooltipOnClick = true;
+        [Header("Status Hover Tooltip")]
+        [FormerlySerializedAs("showStatusTooltipOnClick")]
+        [SerializeField] private bool showStatusTooltipOnHover = true;
         [SerializeField] private UnitStatusEffectTooltipUI statusTooltipUI;
+
+        private bool isStatusTooltipHovering;
 
         public MonsterRuntimeData RuntimeData { get; private set; }
 
@@ -203,7 +207,7 @@ namespace Relic.Gameplay.Monster
                 MonsterInfoSelectionChanged?.Invoke(null);
             }
 
-            HideStatusClickTooltip();
+            HideStatusHoverTooltip();
         }
 
         private void OnDestroy()
@@ -223,11 +227,13 @@ namespace Relic.Gameplay.Monster
                 MonsterInfoSelectionChanged?.Invoke(null);
             }
 
-            HideStatusClickTooltip();
+            HideStatusHoverTooltip();
         }
 
         private void Update()
         {
+            UpdateStatusHoverTooltipPosition();
+
             if (selectedMonster != this)
                 return;
 
@@ -243,17 +249,29 @@ namespace Relic.Gameplay.Monster
             if (IsScreenPointOverAnyMonster(Input.mousePosition))
                 return;
 
-            DeselectCurrentMonster();
+            if (infoSelectedMonster == this)
+                ClearMonsterInfoSelection();
+            else
+                DeselectCurrentMonster();
         }
 
-        private void ShowStatusClickTooltip()
+        private void UpdateStatusHoverTooltipPosition()
         {
-            if (!showStatusTooltipOnClick)
+            if (!isStatusTooltipHovering || statusTooltipUI == null)
+                return;
+
+            UnitStatusEffectTooltipSide tooltipSide = GetStatusTooltipSide();
+            statusTooltipUI.UpdatePosition(GetStatusTooltipScreenPosition(tooltipSide), tooltipSide);
+        }
+
+        private void ShowStatusHoverTooltip()
+        {
+            if (!showStatusTooltipOnHover)
                 return;
 
             if (RuntimeData == null || RuntimeData.StatusEffects == null || RuntimeData.StatusEffects.Count <= 0)
             {
-                HideStatusClickTooltip();
+                HideStatusHoverTooltip();
                 return;
             }
 
@@ -270,11 +288,7 @@ namespace Relic.Gameplay.Monster
 
         private UnitStatusEffectTooltipSide GetStatusTooltipSide()
         {
-            int gridIndex = MainGridIndex;
-
-            if (gridIndex >= 20 && gridIndex <= 34)
-                return UnitStatusEffectTooltipSide.Left;
-
+            // 몬스터 본체 호버 툴팁은 항상 몬스터 Collider2D의 오른쪽에 표시합니다.
             return UnitStatusEffectTooltipSide.Right;
         }
 
@@ -291,13 +305,15 @@ namespace Relic.Gameplay.Monster
             else if (!TryGetRendererBounds(out bounds))
                 bounds = new Bounds(transform.position, Vector3.zero);
 
-            float anchorX = side == UnitStatusEffectTooltipSide.Left ? bounds.min.x : bounds.max.x;
+            float anchorX = bounds.max.x;
             Vector3 worldPosition = new Vector3(anchorX, bounds.center.y, bounds.center.z);
             return mainCamera.WorldToScreenPoint(worldPosition);
         }
 
-        private void HideStatusClickTooltip()
+        private void HideStatusHoverTooltip()
         {
+            isStatusTooltipHovering = false;
+
             if (statusTooltipUI == null)
                 return;
 
@@ -318,7 +334,17 @@ namespace Relic.Gameplay.Monster
             if (IsPointerOverUI())
                 return;
 
+            MonsterUnit previousInfoSelectedMonster = infoSelectedMonster;
+
             SelectThisMonster();
+
+            if (previousInfoSelectedMonster != null &&
+                previousInfoSelectedMonster != this)
+            {
+                previousInfoSelectedMonster.SetSelected(false);
+                previousInfoSelectedMonster.HideAttackRangePreview();
+                previousInfoSelectedMonster.HideStatusHoverTooltip();
+            }
 
             infoSelectedMonster = this;
             BattleTimelineController.ClearCurrentCharacterSelection();
@@ -326,6 +352,10 @@ namespace Relic.Gameplay.Monster
             BattleCameraController cameraController = BattleCameraController.Instance;
             if (cameraController != null)
                 cameraController.FocusOnCharacterSelection(transform, MainGridIndex);
+
+            // 클릭으로 선택한 몬스터는 마우스가 빠져도 HUD와 행동 범위를 유지합니다.
+            SetSelected(true);
+            ShowAttackRangePreview();
 
             MonsterInfoSelectionChanged?.Invoke(this);
         }
@@ -344,19 +374,52 @@ namespace Relic.Gameplay.Monster
             if (IsPointerOverUI())
                 return;
 
-            SelectThisMonster();
+            if (infoSelectedMonster == null || infoSelectedMonster == this)
+            {
+                SelectThisMonster();
+            }
+            else if (hud != null)
+            {
+                // 다른 몬스터가 클릭 선택되어 있어도 현재 호버한 몬스터의 HUD는 임시로 함께 표시합니다.
+                hud.Show();
+            }
+
             ShowAttackRangePreview();
+            isStatusTooltipHovering = true;
+            ShowStatusHoverTooltip();
         }
 
         private void OnMouseExit()
         {
-            HideAttackRangePreview();
+            isStatusTooltipHovering = false;
+            HideStatusHoverTooltip();
 
             if (UIPanelButton.IsMenuPanelOpen)
                 return;
 
             if (reservationVisualActive)
                 return;
+
+            // 클릭 선택된 몬스터는 호버가 끝나도 HUD와 행동 범위를 유지합니다.
+            if (infoSelectedMonster == this)
+            {
+                SetSelected(true);
+                ShowAttackRangePreview();
+                return;
+            }
+
+            HideAttackRangePreview();
+
+            if (infoSelectedMonster != null)
+            {
+                if (!isTemporaryHUDVisible && hud != null)
+                    hud.Hide();
+
+                // 다른 몬스터를 잠깐 호버했다면 클릭 선택된 몬스터의 범위를 다시 표시합니다.
+                infoSelectedMonster.SetSelected(true);
+                infoSelectedMonster.ShowAttackRangePreview();
+                return;
+            }
 
             if (selectedMonster != this)
                 return;
@@ -486,8 +549,12 @@ namespace Relic.Gameplay.Monster
             MonsterUnit previous = infoSelectedMonster;
             infoSelectedMonster = null;
 
+            previous.HideAttackRangePreview();
+
             if (selectedMonster == previous)
                 DeselectCurrentMonster();
+            else
+                previous.SetSelected(false);
 
             MonsterInfoSelectionChanged?.Invoke(null);
         }
@@ -501,7 +568,7 @@ namespace Relic.Gameplay.Monster
             selectedMonster = null;
 
             monster.SetSelected(false);
-            monster.HideStatusClickTooltip();
+            monster.HideStatusHoverTooltip();
         }
 
         private void EnsureClickCollider2D()
@@ -608,7 +675,7 @@ namespace Relic.Gameplay.Monster
                     DeselectCurrentMonster();
 
                 HideTemporaryHUD();
-                HideStatusClickTooltip();
+                HideStatusHoverTooltip();
             }
 
             float alpha = reservation && dimVisual && dimMonsterDuringMoveTargetSelection ? reservationAlpha : 1f;
@@ -704,14 +771,13 @@ namespace Relic.Gameplay.Monster
             if (selectedMonster != null && selectedMonster != this)
             {
                 selectedMonster.SetSelected(false);
-                selectedMonster.HideStatusClickTooltip();
+                selectedMonster.HideStatusHoverTooltip();
             }
 
             selectedMonster = this;
             selectedMonsterClickFrame = Time.frameCount;
 
             SetSelected(true);
-            ShowStatusClickTooltip();
         }
 
         public void SetSelected(bool selected)

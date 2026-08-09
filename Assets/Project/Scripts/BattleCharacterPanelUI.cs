@@ -533,6 +533,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
             panelRectTransform = GetComponent<RectTransform>();
 
         StopPanelMoveCoroutine();
+        ReturnCameraToDefaultForPanelDown();
 
         if (!isActiveAndEnabled || panelMoveDuration <= 0f)
         {
@@ -596,6 +597,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         // 새 전투방 입장 인트로는 이전 전투 진행 상태를 종료하고
         // BattleSlot을 기본 위치와 크기로 초기화합니다.
         isBattleExecutionInProgress = false;
+        ReturnCameraToDefaultForPanelDown();
         SetPanelAndBattleSlotDefaultImmediate();
     }
 
@@ -612,6 +614,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (isBattleExecutionInProgress)
             return;
 
+        ReturnCameraToDefaultForPanelDown();
         SetPanelAndBattleSlotDefaultImmediate();
     }
 
@@ -644,6 +647,19 @@ public class BattleCharacterPanelUI : MonoBehaviour
     {
         return BattleSceneController.IsBattleRoomIntroPlaying ||
                BattleMapIntroText.IsAnyPlayingOrVisible();
+    }
+
+    /// <summary>
+    /// BattleCharacterPanel이 실제로 내려가는 경우에만 카메라를 기본 위치로 복귀시킵니다.
+    /// 패널이 올라와 있는 동안의 스킬/패턴 선택은 카메라 위치에 영향을 주지 않습니다.
+    /// </summary>
+    private static void ReturnCameraToDefaultForPanelDown()
+    {
+        BattleCameraController cameraController = BattleCameraController.Instance;
+        if (cameraController == null)
+            return;
+
+        cameraController.StartReturnDefault();
     }
 
     private void ApplyCurrentBattlePhasePositionImmediate()
@@ -681,6 +697,9 @@ public class BattleCharacterPanelUI : MonoBehaviour
             return;
 
         StopPanelMoveCoroutine();
+
+        if (Mathf.Approximately(targetY, executionPositionY))
+            ReturnCameraToDefaultForPanelDown();
 
         if (!isActiveAndEnabled || panelMoveDuration <= 0f)
         {
@@ -1642,6 +1661,10 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
         battleTimelineController.SelectCharacter(boundRuntime);
         battleTimelineController.SelectSkill(skillData);
+
+        // BattleCharacterPanel의 스킬 버튼을 눌러도 현재 선택 캐릭터의
+        // 카메라 포커스가 기본 위치로 풀리지 않도록 다시 고정합니다.
+        battleTimelineController.RefocusCurrentSelectedCharacterWhenInputReady();
     }
 
     private void UseActiveRelicDirectly()

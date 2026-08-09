@@ -19,6 +19,18 @@ public class StatusEffectIcon : MonoBehaviour, IPointerEnterHandler, IPointerExi
     private StatusEffectRuntimeData currentData;
     private bool pointerInside;
 
+
+    public void SetTooltipEnabled(bool enabled)
+    {
+        showTooltipOnHover = enabled;
+
+        if (!showTooltipOnHover)
+        {
+            pointerInside = false;
+            HideTooltip();
+        }
+    }
+
     public void Set(StatusEffectRuntimeData data)
     {
         currentData = data;

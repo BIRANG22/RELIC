@@ -205,7 +205,7 @@ public class MonsterHUDSlot : MonoBehaviour
         if (shieldValueText != null)
         {
             shieldValueText.gameObject.SetActive(shield > 0);
-            shieldValueText.text = shield.ToString();
+            shieldValueText.text = $"+{shield}";
         }
     }
 
@@ -226,6 +226,7 @@ public class MonsterHUDSlot : MonoBehaviour
                 continue;
 
             StatusEffectIcon icon = Instantiate(statusIconPrefab, statusIconRoot);
+            icon.SetTooltipEnabled(false);
             icon.Set(statusEffects[i]);
 
             spawnedStatusIcons.Add(icon);
