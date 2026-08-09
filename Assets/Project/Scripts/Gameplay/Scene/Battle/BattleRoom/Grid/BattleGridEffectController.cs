@@ -15,6 +15,16 @@ public class BattleGridEffectController : MonoBehaviour
     [SerializeField] private GridManager gridManager;
     [SerializeField] private Transform effectRoot;
 
+    [Header("Grid Effect HP UI")]
+    [Tooltip("체력이 있는 그리드 효과 위에 표시할 공용 HP UI 프리팹입니다.")]
+    [SerializeField] private GridEffectHpUI gridEffectHpUiPrefab;
+
+    [Tooltip("GridEffect HP UI가 생성될 Screen Space Canvas입니다.")]
+    [SerializeField] private Canvas gridEffectHpCanvas;
+
+    [Tooltip("BoxCollider2D의 위쪽 끝에서 HP UI를 추가로 띄울 월드 Y 오프셋입니다.")]
+    [SerializeField] private float gridEffectHpUiWorldYOffset = 0.12f;
+
     [Header("View")]
     [SerializeField] private Vector3 worldOffset = new(0f, 0.05f, 0f);
     [SerializeField] private float viewScale = 1.0f;
@@ -32,6 +42,7 @@ public class BattleGridEffectController : MonoBehaviour
 
     private readonly BattleGridEffectState state = new();
     private readonly Dictionary<int, GameObject> viewsByGridIndex = new();
+    private readonly Dictionary<int, GridEffectHpUI> hpUiByGridIndex = new();
     private BattleGridEffectService service;
     private GridEffectSpriteDatabase prefabDatabase;
 
@@ -112,6 +123,28 @@ public class BattleGridEffectController : MonoBehaviour
     public bool HasDamageableEffect(int gridIndex)
     {
         return state.TryGetHitPoints(gridIndex, out int hitPoints) && hitPoints > 0;
+    }
+
+    /// <summary>
+    /// 체력을 가진 그리드 효과의 현재 체력과 최대 체력을 반환합니다.
+    /// </summary>
+    public bool TryGetEffectHitPoints(int gridIndex, out int currentHp, out int maxHp)
+    {
+        currentHp = 0;
+        maxHp = 0;
+
+        if (!state.TryGetHitPoints(gridIndex, out currentHp) ||
+            !TryGetEffectData(gridIndex, out GridEffectData data) ||
+            data == null ||
+            data.HP <= 0)
+        {
+            currentHp = 0;
+            return false;
+        }
+
+        maxHp = Mathf.Max(0, data.HP);
+        currentHp = Mathf.Clamp(currentHp, 0, maxHp);
+        return true;
     }
 
     public bool IsCharacterTargetEffect(int gridIndex)
@@ -539,6 +572,65 @@ public class BattleGridEffectController : MonoBehaviour
         PlayWorldVfxProxies(view, view.transform.position);
 
         viewsByGridIndex[placement.GridIndex] = view;
+        SpawnHpUi(placement.GridIndex, placement.GridEffectId, view);
+    }
+
+    private void SpawnHpUi(int gridIndex, string gridEffectId, GameObject view)
+    {
+        RemoveHpUi(gridIndex);
+
+        if (view == null ||
+            gridEffectHpUiPrefab == null ||
+            gridEffectHpCanvas == null ||
+            DataManager.Instance == null ||
+            DataManager.Instance.GridEffectDatabase == null ||
+            !DataManager.Instance.GridEffectDatabase.TryGet(gridEffectId, out GridEffectData data) ||
+            data == null ||
+            data.HP <= 0)
+        {
+            return;
+        }
+
+        // 호버 판정과 동일하게 프리팹에 직접 설정한 BoxCollider2D를 기준으로 사용합니다.
+        BoxCollider2D targetCollider = view.GetComponentInChildren<BoxCollider2D>(true);
+
+        if (targetCollider == null)
+        {
+            Debug.LogWarning(
+                $"[BattleGridEffectController] HP UI를 표시할 BoxCollider2D가 없습니다. GridEffect={gridEffectId}",
+                view);
+            return;
+        }
+
+        GridEffectHpUI hpUi = Instantiate(gridEffectHpUiPrefab, gridEffectHpCanvas.transform);
+        hpUi.name = $"GridEffectHpUI_{gridEffectId}_{gridIndex}";
+        hpUi.gameObject.SetActive(true);
+        hpUi.Bind(
+            this,
+            gridIndex,
+            targetCollider,
+            gridEffectHpCanvas,
+            gridEffectHpUiWorldYOffset);
+
+        hpUiByGridIndex[gridIndex] = hpUi;
+    }
+
+    private void RemoveHpUi(int gridIndex)
+    {
+        if (!hpUiByGridIndex.TryGetValue(gridIndex, out GridEffectHpUI hpUi))
+            return;
+
+        hpUiByGridIndex.Remove(gridIndex);
+
+        if (hpUi == null)
+            return;
+
+        hpUi.gameObject.SetActive(false);
+
+        if (Application.isPlaying)
+            Destroy(hpUi.gameObject);
+        else
+            DestroyImmediate(hpUi.gameObject);
     }
 
     private void ApplyRendererSorting(GameObject view)
@@ -728,6 +820,8 @@ public class BattleGridEffectController : MonoBehaviour
 
     private void RemoveView(int gridIndex)
     {
+        RemoveHpUi(gridIndex);
+
         if (!viewsByGridIndex.TryGetValue(gridIndex, out GameObject view))
             return;
 
@@ -765,5 +859,6 @@ public class BattleGridEffectController : MonoBehaviour
             RemoveView(gridIndices[i]);
 
         viewsByGridIndex.Clear();
+        hpUiByGridIndex.Clear();
     }
 }
