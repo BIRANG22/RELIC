@@ -7,6 +7,8 @@ using UnityEngine;
 public class BattleGridEffectController : MonoBehaviour
 {
     private const string SpiderEggGridEffectId = "GR_spider_egg";
+    private const string ExplosiveDollGridEffectId = "GR_explosive_doll";
+    private const string CharacterTargetType = "Character";
     private const string CinderMonsterId = "Mon_06";
 
     [Header("References")]
@@ -112,6 +114,33 @@ public class BattleGridEffectController : MonoBehaviour
         return state.TryGetHitPoints(gridIndex, out int hitPoints) && hitPoints > 0;
     }
 
+    public bool IsCharacterTargetEffect(int gridIndex)
+    {
+        if (!HasDamageableEffect(gridIndex) || !TryGetEffectData(gridIndex, out GridEffectData data))
+            return false;
+
+        return string.Equals(
+            data.TargetType?.Trim(),
+            CharacterTargetType,
+            System.StringComparison.OrdinalIgnoreCase);
+    }
+
+    public IReadOnlyList<int> GetCharacterTargetGridIndices()
+    {
+        List<int> result = new();
+        IReadOnlyList<BattleGridEffectPlacement> placements = state.GetPlacements();
+
+        for (int i = 0; i < placements.Count; i++)
+        {
+            int gridIndex = placements[i].GridIndex;
+
+            if (IsCharacterTargetEffect(gridIndex))
+                result.Add(gridIndex);
+        }
+
+        return result;
+    }
+
     public bool TryDamageEffect(int gridIndex, int damage, out bool destroyed)
     {
         destroyed = false;
@@ -129,6 +158,70 @@ public class BattleGridEffectController : MonoBehaviour
             RemoveView(gridIndex);
 
         return true;
+    }
+
+    public void ResolveTurnEndGridEffects()
+    {
+        if (!EnsureDependencies())
+            return;
+
+        IReadOnlyList<BattleGridEffectPlacement> placements = state.GetPlacements();
+        List<int> explosiveDollGridIndices = new();
+
+        for (int i = 0; i < placements.Count; i++)
+        {
+            BattleGridEffectPlacement placement = placements[i];
+
+            if (string.Equals(
+                    placement.GridEffectId,
+                    ExplosiveDollGridEffectId,
+                    System.StringComparison.OrdinalIgnoreCase))
+            {
+                explosiveDollGridIndices.Add(placement.GridIndex);
+            }
+        }
+
+        for (int i = 0; i < explosiveDollGridIndices.Count; i++)
+            ExplodeDoll(explosiveDollGridIndices[i]);
+    }
+
+    private void ExplodeDoll(int gridIndex)
+    {
+        if (!TryGetEffectData(gridIndex, out GridEffectData data) || gridManager == null)
+            return;
+
+        int damage = Mathf.Max(0, data.ValueRate);
+        Vector2Int origin = gridManager.IndexToCoord(gridIndex);
+        HashSet<MonsterUnit> damagedMonsters = new();
+
+        for (int y = -1; y <= 1; y++)
+        {
+            for (int x = -1; x <= 1; x++)
+            {
+                if (x == 0 && y == 0)
+                    continue;
+
+                Vector2Int coord = origin + new Vector2Int(x, y);
+
+                if (!gridManager.IsValidCoord(coord))
+                    continue;
+
+                int targetGridIndex = gridManager.CoordToIndex(coord);
+
+                if (!BattleOccupancyService.TryGetMonsterAtGrid(targetGridIndex, out MonsterUnit monster) ||
+                    monster == null ||
+                    monster.RuntimeData == null ||
+                    monster.RuntimeData.IsDead ||
+                    !damagedMonsters.Add(monster))
+                {
+                    continue;
+                }
+
+                BattleEffectUtility.DamageMonster(monster, damage);
+            }
+        }
+
+        TryRemoveEffect(gridIndex);
     }
 
     public void AdvanceTurnDurations()
@@ -307,12 +400,21 @@ public class BattleGridEffectController : MonoBehaviour
 
     private static int GetInitialHitPoints(GridEffectData data)
     {
-        if (data == null)
-            return 0;
+        return data != null ? Mathf.Max(0, data.HP) : 0;
+    }
 
-        return data.GridEffectID == SpiderEggGridEffectId
-            ? Mathf.Max(0, data.ValueRate)
-            : 0;
+    private bool TryGetEffectData(int gridIndex, out GridEffectData data)
+    {
+        data = null;
+
+        if (!state.TryGetEffectId(gridIndex, out string gridEffectId) ||
+            DataManager.Instance == null ||
+            DataManager.Instance.GridEffectDatabase == null)
+        {
+            return false;
+        }
+
+        return DataManager.Instance.GridEffectDatabase.TryGet(gridEffectId, out data) && data != null;
     }
 
     private void SpawnCinderFromExpiredEgg(int eggGridIndex)
@@ -429,6 +531,11 @@ public class BattleGridEffectController : MonoBehaviour
 
         ApplyRendererSorting(view);
         view.SetActive(true);
+
+        // 그리드 효과의 실제 오브젝트 또는 VFX 위에 마우스를 올리면
+        // GameData의 Name / ToolTip을 표시할 수 있도록 공통 호버 대상을 자동으로 붙입니다.
+        GridEffectHoverTarget.Attach(view, placement.GridEffectId);
+
         PlayWorldVfxProxies(view, view.transform.position);
 
         viewsByGridIndex[placement.GridIndex] = view;

@@ -595,6 +595,11 @@ namespace Relic.Gameplay.Monster
 
         public void SetReservationVisualState(bool reservation)
         {
+            SetReservationVisualState(reservation, true);
+        }
+
+        public void SetReservationVisualState(bool reservation, bool dimVisual)
+        {
             reservationVisualActive = reservation;
 
             if (reservation)
@@ -606,7 +611,7 @@ namespace Relic.Gameplay.Monster
                 HideStatusClickTooltip();
             }
 
-            float alpha = reservation && dimMonsterDuringMoveTargetSelection ? reservationAlpha : 1f;
+            float alpha = reservation && dimVisual && dimMonsterDuringMoveTargetSelection ? reservationAlpha : 1f;
 
             SpriteRenderer[] spriteRenderers = GetComponentsInChildren<SpriteRenderer>(true);
             for (int i = 0; i < spriteRenderers.Length; i++)
@@ -623,7 +628,7 @@ namespace Relic.Gameplay.Monster
                 }
 
                 Color color = spriteRenderer.color;
-                color.a = reservation && dimMonsterDuringMoveTargetSelection
+                color.a = reservation && dimVisual && dimMonsterDuringMoveTargetSelection
                     ? originalAlpha * reservationAlpha
                     : originalAlpha;
                 spriteRenderer.color = color;
@@ -647,6 +652,11 @@ namespace Relic.Gameplay.Monster
 
         public static void SetAllReservationVisualState(bool reservation)
         {
+            SetAllReservationVisualState(reservation, true);
+        }
+
+        public static void SetAllReservationVisualState(bool reservation, bool dimVisual)
+        {
             MonsterUnit[] monsters =
                 UnityEngine.Object.FindObjectsByType<MonsterUnit>(
                     FindObjectsInactive.Exclude,
@@ -656,7 +666,7 @@ namespace Relic.Gameplay.Monster
             for (int i = 0; i < monsters.Length; i++)
             {
                 if (monsters[i] != null)
-                    monsters[i].SetReservationVisualState(reservation);
+                    monsters[i].SetReservationVisualState(reservation, dimVisual);
             }
         }
 

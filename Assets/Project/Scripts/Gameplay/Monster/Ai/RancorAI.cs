@@ -43,12 +43,12 @@ namespace Relic.Gameplay.Monster
                 10
             ));
 
-            BattleCharacter target = FindNearestPlayerInActionRange(
+            int targetGridIndex = FindNearestCharacterTargetInActionRange(
                 monsterUnit,
                 gridManager);
 
-            // 행동범위 안에 캐릭터가 없다면 공격하거나 이동하지 않습니다.
-            if (target == null)
+            // 행동범위 안에 캐릭터 또는 Character 타입 그리드 오브젝트가 없다면 공격하거나 이동하지 않습니다.
+            if (targetGridIndex < 0)
                 return plan;
 
             int group = 1;
@@ -64,7 +64,7 @@ namespace Relic.Gameplay.Monster
 
             Vector2Int moveOffset = GetBestTwoTileEscapeMove(
                 monsterUnit,
-                target,
+                targetGridIndex,
                 gridManager);
 
             if (moveOffset != Vector2Int.zero)
@@ -82,7 +82,7 @@ namespace Relic.Gameplay.Monster
             return plan;
         }
 
-        private BattleCharacter FindNearestPlayerInActionRange(
+        private int FindNearestCharacterTargetInActionRange(
             MonsterUnit monsterUnit,
             GridManager gridManager)
         {
@@ -91,18 +91,18 @@ namespace Relic.Gameplay.Monster
                 gridManager == null ||
                 monsterUnit.MainGridIndex < 0)
             {
-                return null;
+                return -1;
             }
 
             string actionRangeId = monsterUnit.RuntimeData.AttackRangeId;
 
             if (string.IsNullOrWhiteSpace(actionRangeId) || actionRangeId.Trim() == "0")
-                return null;
+                return -1;
 
             RangeDatabase rangeDatabase = DataManager.Instance?.RangeDatabase;
 
             if (rangeDatabase == null)
-                return null;
+                return -1;
 
             List<int> actionRange = BattleRangeCalculator.GetSelectionRangeIndices(
                 monsterUnit.MainGridIndex,
@@ -111,57 +111,51 @@ namespace Relic.Gameplay.Monster
                 gridManager);
 
             if (actionRange == null || actionRange.Count <= 0)
-                return null;
+                return -1;
 
             HashSet<int> actionRangeSet = new(actionRange);
-            BattleCharacter[] players = FindPlayers();
+            List<int> targets = FindCharacterTargetGridIndices();
             Vector2Int monsterCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
-
-            BattleCharacter nearest = null;
+            int nearestGridIndex = -1;
             int nearestDistance = int.MaxValue;
 
-            for (int i = 0; i < players.Length; i++)
+            for (int i = 0; i < targets.Count; i++)
             {
-                BattleCharacter player = players[i];
+                int gridIndex = targets[i];
 
-                if (!IsAlivePlayer(player) ||
-                    player.CurrentGridIndex < 0 ||
-                    !actionRangeSet.Contains(player.CurrentGridIndex))
-                {
+                if (gridIndex < 0 || !actionRangeSet.Contains(gridIndex))
                     continue;
-                }
 
-                Vector2Int playerCoord = gridManager.IndexToCoord(player.CurrentGridIndex);
+                Vector2Int targetCoord = gridManager.IndexToCoord(gridIndex);
                 int distance =
-                    Mathf.Abs(playerCoord.x - monsterCoord.x) +
-                    Mathf.Abs(playerCoord.y - monsterCoord.y);
+                    Mathf.Abs(targetCoord.x - monsterCoord.x) +
+                    Mathf.Abs(targetCoord.y - monsterCoord.y);
 
                 if (distance >= nearestDistance)
                     continue;
 
                 nearestDistance = distance;
-                nearest = player;
+                nearestGridIndex = gridIndex;
             }
 
-            return nearest;
+            return nearestGridIndex;
         }
 
         private Vector2Int GetBestTwoTileEscapeMove(
             MonsterUnit monsterUnit,
-            BattleCharacter target,
+            int targetGridIndex,
             GridManager gridManager)
         {
             if (monsterUnit == null ||
-                target == null ||
                 gridManager == null ||
                 monsterUnit.MainGridIndex < 0 ||
-                target.CurrentGridIndex < 0)
+                targetGridIndex < 0)
             {
                 return Vector2Int.zero;
             }
 
             Vector2Int currentCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
-            Vector2Int targetCoord = gridManager.IndexToCoord(target.CurrentGridIndex);
+            Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
 
             Vector2Int bestOffset = Vector2Int.zero;
             int bestDistance =

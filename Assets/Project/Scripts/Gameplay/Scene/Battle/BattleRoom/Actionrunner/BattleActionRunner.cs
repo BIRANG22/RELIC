@@ -3134,7 +3134,7 @@ public class BattleActionRunner
         );
 
         Vector2Int originCoord = gridManager.IndexToCoord(originGridIndex);
-        BattleCharacter nearest = null;
+        int nearestGridIndex = -1;
         int nearestDistance = int.MaxValue;
 
         for (int i = 0; i < characters.Length; i++)
@@ -3144,10 +3144,7 @@ public class BattleActionRunner
             if (character == null || character.RuntimeData == null)
                 continue;
 
-            if (character.RuntimeData.IsDead)
-                continue;
-
-            if (character.CurrentGridIndex < 0)
+            if (character.RuntimeData.IsDead || character.CurrentGridIndex < 0)
                 continue;
 
             Vector2Int targetCoord = gridManager.IndexToCoord(character.CurrentGridIndex);
@@ -3158,14 +3155,37 @@ public class BattleActionRunner
             if (distance < nearestDistance)
             {
                 nearestDistance = distance;
-                nearest = character;
+                nearestGridIndex = character.CurrentGridIndex;
             }
         }
 
-        if (nearest == null)
+        BattleGridEffectController gridEffectController = ResolveGridEffectController();
+
+        if (gridEffectController != null)
+        {
+            IReadOnlyList<int> characterTargetGridIndices =
+                gridEffectController.GetCharacterTargetGridIndices();
+
+            for (int i = 0; i < characterTargetGridIndices.Count; i++)
+            {
+                int gridIndex = characterTargetGridIndices[i];
+                Vector2Int targetCoord = gridManager.IndexToCoord(gridIndex);
+                int distance =
+                    Mathf.Abs(targetCoord.x - originCoord.x) +
+                    Mathf.Abs(targetCoord.y - originCoord.y);
+
+                if (distance < nearestDistance)
+                {
+                    nearestDistance = distance;
+                    nearestGridIndex = gridIndex;
+                }
+            }
+        }
+
+        if (nearestGridIndex < 0)
             return false;
 
-        return gridManager.IndexToCoord(nearest.CurrentGridIndex).x >= originCoord.x;
+        return gridManager.IndexToCoord(nearestGridIndex).x >= originCoord.x;
     }
 
     private BattleCharacter FindFirstPlayerTarget(MonsterReservedCommand command)
@@ -3205,7 +3225,8 @@ public class BattleActionRunner
         switch (command.SkillData.Target)
         {
             case TargetType.PlayerParty:
-                return FindFirstAlivePlayerTarget(command) != null;
+                return FindFirstAlivePlayerTarget(command) != null ||
+                       HasCharacterGridEffectTarget(command);
 
             case TargetType.EnemyParty:
                 return FindFirstAliveMonsterTarget(command, caster) != null;
@@ -3218,6 +3239,25 @@ public class BattleActionRunner
             default:
                 return true;
         }
+    }
+
+    private bool HasCharacterGridEffectTarget(MonsterReservedCommand command)
+    {
+        if (command == null || command.TargetGridIndices == null)
+            return false;
+
+        BattleGridEffectController controller = ResolveGridEffectController();
+
+        if (controller == null)
+            return false;
+
+        for (int i = 0; i < command.TargetGridIndices.Count; i++)
+        {
+            if (controller.IsCharacterTargetEffect(command.TargetGridIndices[i]))
+                return true;
+        }
+
+        return false;
     }
 
     private bool HasMonsterSkillCameraTarget(MonsterReservedCommand command)
@@ -3644,6 +3684,7 @@ public class BattleActionRunner
 
         Vector2Int finalOffset = Vector2Int.zero;
         BattleCharacter hitPlayer = null;
+        int hitCharacterGridEffectIndex = -1;
         bool wasBlockedByCollision = false;
 
         for (int step = 1; step <= maxMove; step++)
@@ -3656,7 +3697,11 @@ public class BattleActionRunner
                 break;
             }
 
-            if (!CanMonsterDashToOffset(monster, testOffset, out BattleCharacter blockingPlayer))
+            if (!CanMonsterDashToOffset(
+                    monster,
+                    testOffset,
+                    out BattleCharacter blockingPlayer,
+                    out int blockingCharacterGridEffectIndex))
             {
                 // 장애물이나 다른 유닛에 막힌 경우에만 충돌로 처리합니다.
                 wasBlockedByCollision = true;
@@ -3666,6 +3711,12 @@ public class BattleActionRunner
             if (blockingPlayer != null)
             {
                 hitPlayer = blockingPlayer;
+                break;
+            }
+
+            if (blockingCharacterGridEffectIndex >= 0)
+            {
+                hitCharacterGridEffectIndex = blockingCharacterGridEffectIndex;
                 break;
             }
 
@@ -3723,6 +3774,11 @@ public class BattleActionRunner
             if (BattleCameraController.Instance != null)
                 yield return BattleCameraController.Instance.ReturnDefaultIfNotHeld();
         }
+        else if (hitCharacterGridEffectIndex >= 0)
+        {
+            ApplyMonsterDashDamageToGridEffect(command, hitCharacterGridEffectIndex);
+            yield return new WaitForSeconds(HitCameraDelay);
+        }
         else
         {
             if (wasBlockedByCollision && monster.RuntimeData != null && !monster.RuntimeData.IsDead)
@@ -3755,9 +3811,11 @@ public class BattleActionRunner
     private bool CanMonsterDashToOffset(
     MonsterUnit monster,
     Vector2Int moveOffset,
-    out BattleCharacter blockingPlayer)
+    out BattleCharacter blockingPlayer,
+    out int blockingCharacterGridEffectIndex)
     {
         blockingPlayer = null;
+        blockingCharacterGridEffectIndex = -1;
 
         if (monster == null || gridManager == null)
             return false;
@@ -3779,6 +3837,15 @@ public class BattleActionRunner
             if (player != null)
             {
                 blockingPlayer = player;
+                return true;
+            }
+
+            BattleGridEffectController gridEffectController = ResolveGridEffectController();
+
+            if (gridEffectController != null &&
+                gridEffectController.IsCharacterTargetEffect(targetIndex))
+            {
+                blockingCharacterGridEffectIndex = targetIndex;
                 return true;
             }
 
@@ -3883,6 +3950,24 @@ public class BattleActionRunner
         }
 
         return false;
+    }
+
+    private void ApplyMonsterDashDamageToGridEffect(
+        MonsterReservedCommand command,
+        int gridIndex)
+    {
+        if (command == null || gridIndex < 0)
+            return;
+
+        BattleGridEffectController controller = ResolveGridEffectController();
+
+        if (controller == null || !controller.IsCharacterTargetEffect(gridIndex))
+            return;
+
+        int damage = Mathf.Max(0, damageService.GetMonsterDamage(command));
+
+        if (damage > 0)
+            controller.TryDamageEffect(gridIndex, damage, out _);
     }
 
     private void ApplyMonsterDashDamage(

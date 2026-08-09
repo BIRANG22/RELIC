@@ -94,7 +94,11 @@ namespace Relic.Gameplay.Battle
 
                 if (!database.TryGet(gridEffectId, out GridEffectData gridEffectData) ||
                     gridEffectData == null ||
-                    !state.Place(gridIndex, gridEffectId, gridEffectData.Duration))
+                    !state.Place(
+                        gridIndex,
+                        gridEffectId,
+                        gridEffectData.Duration,
+                        Mathf.Max(0, gridEffectData.HP)))
                 {
                     continue;
                 }

@@ -12,6 +12,8 @@ namespace Relic.Gameplay.Data
         public int CountRate;
         public int Duration;
         public string SpawnType;
+        public int HP;
+        public string TargetType;
         public string ToolTip;
     }
 }

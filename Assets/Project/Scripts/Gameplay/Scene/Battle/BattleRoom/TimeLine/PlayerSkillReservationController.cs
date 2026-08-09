@@ -425,7 +425,7 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (currentSkillData.RangeType == RangeType.Selection)
         {
             bool isMoveSkill = IsMoveSkill(currentSkillData);
-            SetGridTargetMonsterVisualActive(isMoveSkill);
+            SetGridTargetMonsterVisualActive(true, isMoveSkill);
 
             if (isMoveSkill)
             {
@@ -869,8 +869,16 @@ public class PlayerSkillReservationController : MonoBehaviour
             return;
         }
 
+        if (!TryGetNocturnPortalPreviewData(out GridEffectData previewData))
+        {
+            Debug.LogWarning(
+                $"[PlayerSkillReservationController] GridEffect 데이터에서 {NocturnPortalPreviewGridEffectId}를 찾을 수 없습니다.");
+            return;
+        }
+
         Vector3 gridWorldPosition = gridManager.GetWorldPositionByIndex(destinationGridIndex);
         BattleVfxEntry previewEntry = CreateNocturnPortalPreviewEntry(
+            previewData,
             DataManager.Instance?.GridEffectSpriteDatabase,
             nocturnPortalIndicatorSortingOrder);
         int renderLayer = LayerMask.NameToLayer(NocturnPortalVfxLayerName);
@@ -893,6 +901,12 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         GameObject indicatorObject = handle.gameObject;
         indicatorObject.name = $"Nocturn Portal Destination {runtimeId}_{destinationGridIndex}";
+
+        // 녹턴의 이동 예정 위치 VFX도 일반 그리드 효과와 같은 툴팁 경로를 사용합니다.
+        GridEffectHoverTarget.Attach(
+            indicatorObject,
+            previewData.GridEffectID,
+            new Vector2(1f, 1f));
 
         nocturnPortalIndicators[key] = new NocturnPortalIndicatorEntry
         {
@@ -933,12 +947,26 @@ public class PlayerSkillReservationController : MonoBehaviour
         nocturnPortalIndicators.Clear();
     }
 
+    private static bool TryGetNocturnPortalPreviewData(out GridEffectData data)
+    {
+        data = null;
+
+        GridEffectDatabase database = DataManager.Instance?.GridEffectDatabase;
+
+        return database != null &&
+               database.TryGet(NocturnPortalPreviewGridEffectId, out data) &&
+               data != null;
+    }
+
     private static BattleVfxEntry CreateNocturnPortalPreviewEntry(
+        GridEffectData previewData,
         GridEffectSpriteDatabase database,
         int sortingOrderOffset)
     {
-        if (database == null ||
-            !database.TryGetPrefab(NocturnPortalPreviewGridEffectId, out GameObject prefab) ||
+        if (previewData == null ||
+            string.IsNullOrWhiteSpace(previewData.GridEffectID) ||
+            database == null ||
+            !database.TryGetPrefab(previewData.GridEffectID, out GameObject prefab) ||
             prefab == null)
         {
             return null;
@@ -2480,7 +2508,7 @@ public class PlayerSkillReservationController : MonoBehaviour
         RefreshCurrentCasterStateFromTimelinePreview();
 
         bool isMoveSkill = IsMoveSkill(currentSkillData);
-        SetGridTargetMonsterVisualActive(isMoveSkill);
+        SetGridTargetMonsterVisualActive(true, isMoveSkill);
 
         if (rangePreview != null)
             rangePreview.Clear();
@@ -2662,13 +2690,22 @@ public class PlayerSkillReservationController : MonoBehaviour
         return true;
     }
 
-    private void SetGridTargetMonsterVisualActive(bool active)
+    private bool isGridTargetMonsterDimVisualActive;
+
+    private void SetGridTargetMonsterVisualActive(bool active, bool dimVisual = true)
     {
-        if (isGridTargetMonsterVisualActive == active)
+        if (isGridTargetMonsterVisualActive == active &&
+            (!active || isGridTargetMonsterDimVisualActive == dimVisual))
+        {
             return;
+        }
 
         isGridTargetMonsterVisualActive = active;
-        MonsterUnit.SetAllReservationVisualState(active);
+        isGridTargetMonsterDimVisualActive = active && dimVisual;
+
+        MonsterUnit.SetAllReservationVisualState(
+            active,
+            isGridTargetMonsterDimVisualActive);
     }
 
     private bool IsMoveSkill(SkillMasterData skillData)

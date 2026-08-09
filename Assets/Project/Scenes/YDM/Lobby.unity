@@ -359,8 +359,6 @@ MonoBehaviour:
   worldObjectsToOpen:
   - {fileID: 2200000400}
   lobbyPanelTransition: {fileID: 1512315629}
-  resetCameraBeforeTransition: 1
-  hubCameraDrag: {fileID: 0}
   transitionMode: 0
   clickActionDelay: 0
   beforePanelChange:
@@ -369,7 +367,7 @@ MonoBehaviour:
   afterPanelChange:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 642062182}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: HorizontalHubCameraDrag, Assembly-CSharp
         m_MethodName: ResetToDefaultPosition
         m_Mode: 1
@@ -22992,7 +22990,6 @@ GameObject:
   - component: {fileID: 642062179}
   - component: {fileID: 642062178}
   - component: {fileID: 642062181}
-  - component: {fileID: 642062182}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -23120,34 +23117,6 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
---- !u!114 &642062182
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 642062177}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8590e0351265a734fbeda7d27c2ac8aa, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  horizontalDragSpeed: 0.5
-  verticalDragSpeed: 0.5
-  invertDrag: 1
-  blockDragOverUI: 1
-  dragBlockingPanels:
-  - {fileID: 397856608}
-  - {fileID: 230010000}
-  - {fileID: 821549304}
-  smoothTime: 0.2
-  maximumSmoothSpeed: 100
-  useInitialPositionAsDefault: 0
-  defaultPosition: {x: 0, y: 0, z: -20}
-  minimumX: -0.5
-  maximumX: 0.5
-  minimumY: -0.15
-  maximumY: 0.15
 --- !u!1 &643678573
 GameObject:
   m_ObjectHideFlags: 0
@@ -53874,8 +53843,6 @@ MonoBehaviour:
   worldObjectsToClose: []
   worldObjectsToOpen: []
   lobbyPanelTransition: {fileID: 1512315629}
-  resetCameraBeforeTransition: 1
-  hubCameraDrag: {fileID: 0}
   transitionMode: 1
   clickActionDelay: 0.2
   beforePanelChange:
@@ -60745,8 +60712,6 @@ MonoBehaviour:
   worldObjectsToOpen:
   - {fileID: 2200000400}
   lobbyPanelTransition: {fileID: 1512315629}
-  resetCameraBeforeTransition: 1
-  hubCameraDrag: {fileID: 0}
   transitionMode: 0
   clickActionDelay: 0
   beforePanelChange:
@@ -60755,7 +60720,7 @@ MonoBehaviour:
   afterPanelChange:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 642062182}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: HorizontalHubCameraDrag, Assembly-CSharp
         m_MethodName: ResetToDefaultPosition
         m_Mode: 1
@@ -64283,8 +64248,6 @@ MonoBehaviour:
   worldObjectsToOpen:
   - {fileID: 0}
   lobbyPanelTransition: {fileID: 1512315629}
-  resetCameraBeforeTransition: 1
-  hubCameraDrag: {fileID: 0}
   transitionMode: 1
   clickActionDelay: 0.2
   beforePanelChange:

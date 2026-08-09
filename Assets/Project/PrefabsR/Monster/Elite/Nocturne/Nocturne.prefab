@@ -137,7 +137,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 6, y: 12}
+  m_Size: {x: 6, y: 14}
   m_EdgeRadius: 0
 --- !u!114 &8538534029465631251
 MonoBehaviour:
@@ -216,6 +216,8 @@ MonoBehaviour:
       removeEmbeddedAudioSources: 1
     renderMode: 0
     proxyBlendMode: 1
+    spawnAnchor: 0
+    scaleDirectWorldRendererToProxyHeight: 0
     renderTextureWidth: 512
     renderTextureHeight: 512
     renderCameraOrthographicSize: 5
@@ -237,6 +239,8 @@ MonoBehaviour:
       removeEmbeddedAudioSources: 1
     renderMode: 0
     proxyBlendMode: 0
+    spawnAnchor: 0
+    scaleDirectWorldRendererToProxyHeight: 0
     renderTextureWidth: 512
     renderTextureHeight: 512
     renderCameraOrthographicSize: 5
@@ -258,6 +262,8 @@ MonoBehaviour:
       removeEmbeddedAudioSources: 1
     renderMode: 0
     proxyBlendMode: 0
+    spawnAnchor: 0
+    scaleDirectWorldRendererToProxyHeight: 0
     renderTextureWidth: 512
     renderTextureHeight: 512
     renderCameraOrthographicSize: 5
@@ -279,6 +285,8 @@ MonoBehaviour:
       removeEmbeddedAudioSources: 1
     renderMode: 0
     proxyBlendMode: 0
+    spawnAnchor: 0
+    scaleDirectWorldRendererToProxyHeight: 0
     renderTextureWidth: 512
     renderTextureHeight: 512
     renderCameraOrthographicSize: 5
@@ -301,6 +309,8 @@ MonoBehaviour:
         removeEmbeddedAudioSources: 1
       renderMode: 0
       proxyBlendMode: 0
+      spawnAnchor: 0
+      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -322,6 +332,8 @@ MonoBehaviour:
         removeEmbeddedAudioSources: 1
       renderMode: 0
       proxyBlendMode: 0
+      spawnAnchor: 0
+      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -343,6 +355,8 @@ MonoBehaviour:
         removeEmbeddedAudioSources: 1
       renderMode: 0
       proxyBlendMode: 0
+      spawnAnchor: 0
+      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -364,6 +378,8 @@ MonoBehaviour:
         removeEmbeddedAudioSources: 1
       renderMode: 0
       proxyBlendMode: 0
+      spawnAnchor: 0
+      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -385,6 +401,8 @@ MonoBehaviour:
         removeEmbeddedAudioSources: 1
       renderMode: 0
       proxyBlendMode: 0
+      spawnAnchor: 0
+      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -406,6 +424,8 @@ MonoBehaviour:
         removeEmbeddedAudioSources: 1
       renderMode: 0
       proxyBlendMode: 0
+      spawnAnchor: 0
+      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -427,6 +447,8 @@ MonoBehaviour:
         removeEmbeddedAudioSources: 1
       renderMode: 0
       proxyBlendMode: 0
+      spawnAnchor: 0
+      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -448,6 +470,8 @@ MonoBehaviour:
         removeEmbeddedAudioSources: 1
       renderMode: 0
       proxyBlendMode: 0
+      spawnAnchor: 0
+      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -469,6 +493,8 @@ MonoBehaviour:
         removeEmbeddedAudioSources: 1
       renderMode: 0
       proxyBlendMode: 0
+      spawnAnchor: 0
+      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -490,6 +516,8 @@ MonoBehaviour:
         removeEmbeddedAudioSources: 1
       renderMode: 0
       proxyBlendMode: 0
+      spawnAnchor: 0
+      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -511,6 +539,8 @@ MonoBehaviour:
         removeEmbeddedAudioSources: 1
       renderMode: 0
       proxyBlendMode: 0
+      spawnAnchor: 0
+      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -532,6 +562,8 @@ MonoBehaviour:
         removeEmbeddedAudioSources: 1
       renderMode: 0
       proxyBlendMode: 0
+      spawnAnchor: 0
+      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -553,6 +585,8 @@ MonoBehaviour:
         removeEmbeddedAudioSources: 1
       renderMode: 0
       proxyBlendMode: 0
+      spawnAnchor: 0
+      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -574,6 +608,8 @@ MonoBehaviour:
         removeEmbeddedAudioSources: 1
       renderMode: 0
       proxyBlendMode: 0
+      spawnAnchor: 0
+      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -595,6 +631,8 @@ MonoBehaviour:
         removeEmbeddedAudioSources: 1
       renderMode: 0
       proxyBlendMode: 0
+      spawnAnchor: 0
+      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -616,6 +654,8 @@ MonoBehaviour:
         removeEmbeddedAudioSources: 1
       renderMode: 0
       proxyBlendMode: 0
+      spawnAnchor: 0
+      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -640,6 +680,8 @@ MonoBehaviour:
           removeEmbeddedAudioSources: 1
         renderMode: 0
         proxyBlendMode: 0
+        spawnAnchor: 0
+        scaleDirectWorldRendererToProxyHeight: 0
         renderTextureWidth: 512
         renderTextureHeight: 512
         renderCameraOrthographicSize: 5
@@ -689,6 +731,8 @@ MonoBehaviour:
           removeEmbeddedAudioSources: 1
         renderMode: 0
         proxyBlendMode: 0
+        spawnAnchor: 0
+        scaleDirectWorldRendererToProxyHeight: 0
         renderTextureWidth: 512
         renderTextureHeight: 512
         renderCameraOrthographicSize: 5
@@ -738,6 +782,8 @@ MonoBehaviour:
           removeEmbeddedAudioSources: 1
         renderMode: 0
         proxyBlendMode: 1
+        spawnAnchor: 0
+        scaleDirectWorldRendererToProxyHeight: 0
         renderTextureWidth: 512
         renderTextureHeight: 512
         renderCameraOrthographicSize: 5
@@ -787,6 +833,8 @@ MonoBehaviour:
           removeEmbeddedAudioSources: 1
         renderMode: 0
         proxyBlendMode: 1
+        spawnAnchor: 0
+        scaleDirectWorldRendererToProxyHeight: 0
         renderTextureWidth: 512
         renderTextureHeight: 512
         renderCameraOrthographicSize: 5
@@ -836,6 +884,8 @@ MonoBehaviour:
           removeEmbeddedAudioSources: 1
         renderMode: 0
         proxyBlendMode: 0
+        spawnAnchor: 0
+        scaleDirectWorldRendererToProxyHeight: 0
         renderTextureWidth: 512
         renderTextureHeight: 512
         renderCameraOrthographicSize: 5
@@ -871,6 +921,9 @@ MonoBehaviour:
         impactLifeTime: 2
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
+  skillAttackOverrideDatabase: {fileID: 0}
+  skillVfxDatabase: {fileID: 0}
+  gridManager: {fileID: 0}
   monsterActionPresentations:
   - stateName: Move
     vfx:
@@ -885,6 +938,8 @@ MonoBehaviour:
         removeEmbeddedAudioSources: 1
       renderMode: 0
       proxyBlendMode: 0
+      spawnAnchor: 0
+      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -933,6 +988,8 @@ MonoBehaviour:
         removeEmbeddedAudioSources: 1
       renderMode: 0
       proxyBlendMode: 0
+      spawnAnchor: 0
+      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -981,6 +1038,8 @@ MonoBehaviour:
         removeEmbeddedAudioSources: 1
       renderMode: 0
       proxyBlendMode: 0
+      spawnAnchor: 0
+      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -1029,6 +1088,8 @@ MonoBehaviour:
         removeEmbeddedAudioSources: 1
       renderMode: 0
       proxyBlendMode: 0
+      spawnAnchor: 0
+      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -1077,6 +1138,8 @@ MonoBehaviour:
         removeEmbeddedAudioSources: 1
       renderMode: 0
       proxyBlendMode: 0
+      spawnAnchor: 0
+      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -1125,6 +1188,8 @@ MonoBehaviour:
         removeEmbeddedAudioSources: 1
       renderMode: 0
       proxyBlendMode: 0
+      spawnAnchor: 0
+      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -1173,6 +1238,8 @@ MonoBehaviour:
         removeEmbeddedAudioSources: 1
       renderMode: 0
       proxyBlendMode: 0
+      spawnAnchor: 0
+      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -1221,6 +1288,8 @@ MonoBehaviour:
         removeEmbeddedAudioSources: 1
       renderMode: 0
       proxyBlendMode: 0
+      spawnAnchor: 0
+      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -1269,6 +1338,8 @@ MonoBehaviour:
         removeEmbeddedAudioSources: 1
       renderMode: 0
       proxyBlendMode: 0
+      spawnAnchor: 0
+      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -1317,6 +1388,8 @@ MonoBehaviour:
         removeEmbeddedAudioSources: 1
       renderMode: 0
       proxyBlendMode: 0
+      spawnAnchor: 0
+      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5

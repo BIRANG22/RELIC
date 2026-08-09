@@ -33,9 +33,9 @@ namespace Relic.Gameplay.Monster
             if (monsterUnit == null || monsterUnit.RuntimeData == null || gridManager == null)
                 return plan;
 
-            BattleCharacter target = FindNearestPlayer(monsterUnit, gridManager);
+            int targetGridIndex = FindNearestCharacterTargetGridIndex(monsterUnit, gridManager);
 
-            if (target == null || target.CurrentGridIndex < 0)
+            if (targetGridIndex < 0)
                 return plan;
 
             MonsterSkillData attackSkill =
@@ -43,17 +43,17 @@ namespace Relic.Gameplay.Monster
 
             // 현재 위치에서 이미 공격 가능한 캐릭터가 있다면 이동하지 않고 바로 공격합니다.
             // 블롭의 잔여물은 이동했을 때만 생성되어야 하므로, 공격 가능 상태에서 불필요한 이동을 예약하지 않습니다.
-            BattleCharacter currentAttackTarget = FindNearestAttackablePlayer(
+            int currentAttackTargetGridIndex = FindNearestAttackableCharacterTarget(
                 monsterUnit,
                 monsterUnit.MainGridIndex,
                 attackSkill,
                 gridManager);
 
-            if (currentAttackTarget != null)
+            if (currentAttackTargetGridIndex >= 0)
             {
                 BattleDirection currentAttackDirection = GetBlobAttackDirection(
                     monsterUnit.MainGridIndex,
-                    currentAttackTarget.CurrentGridIndex,
+                    currentAttackTargetGridIndex,
                     gridManager);
 
                 plan.Add(new MonsterAIAction(
@@ -75,7 +75,7 @@ namespace Relic.Gameplay.Monster
             // 그런 위치가 없다면 가장 가까워지는 위치로 이동합니다.
             Vector2Int moveOffset = GetBestCardinalMove(
                 monsterUnit,
-                target,
+                targetGridIndex,
                 attackSkill,
                 gridManager);
 
@@ -100,20 +100,20 @@ namespace Relic.Gameplay.Monster
                 gridManager,
                 canMove ? moveOffset : Vector2Int.zero);
 
-            BattleCharacter attackTarget = FindNearestAttackablePlayer(
+            int attackTargetGridIndex = FindNearestAttackableCharacterTarget(
                 monsterUnit,
                 projectedGridIndex,
                 attackSkill,
                 gridManager);
 
-            // 이동을 마친 위치에서 실제 공격 범위 안에 캐릭터가 없으면
+            // 이동을 마친 위치에서 실제 공격 범위 안에 캐릭터 또는 Character 타입 오브젝트가 없으면
             // 빈 방향으로 공격하지 않습니다.
-            if (attackTarget == null)
+            if (attackTargetGridIndex < 0)
                 return plan;
 
             BattleDirection attackDirection = GetBlobAttackDirection(
                 projectedGridIndex,
-                attackTarget.CurrentGridIndex,
+                attackTargetGridIndex,
                 gridManager);
 
             plan.Add(new MonsterAIAction(
@@ -132,21 +132,20 @@ namespace Relic.Gameplay.Monster
 
         private Vector2Int GetBestCardinalMove(
             MonsterUnit monsterUnit,
-            BattleCharacter target,
+            int targetGridIndex,
             MonsterSkillData attackSkill,
             GridManager gridManager)
         {
             if (monsterUnit == null ||
-                target == null ||
                 gridManager == null ||
                 monsterUnit.MainGridIndex < 0 ||
-                target.CurrentGridIndex < 0)
+                targetGridIndex < 0)
             {
                 return Vector2Int.zero;
             }
 
             Vector2Int currentCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
-            Vector2Int targetCoord = gridManager.IndexToCoord(target.CurrentGridIndex);
+            Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
 
             Vector2Int bestAttackOffset = Vector2Int.zero;
             int bestAttackDistance = int.MaxValue;
@@ -174,7 +173,7 @@ namespace Relic.Gameplay.Monster
                 if (CanAttackTargetFromGrid(
                     monsterUnit,
                     projectedGridIndex,
-                    target,
+                    targetGridIndex,
                     attackSkill,
                     gridManager))
                 {
@@ -199,7 +198,7 @@ namespace Relic.Gameplay.Monster
                 : bestApproachOffset;
         }
 
-        private BattleCharacter FindNearestAttackablePlayer(
+        private int FindNearestAttackableCharacterTarget(
             MonsterUnit monsterUnit,
             int originGridIndex,
             MonsterSkillData attackSkill,
@@ -210,60 +209,55 @@ namespace Relic.Gameplay.Monster
                 attackSkill == null ||
                 gridManager == null)
             {
-                return null;
+                return -1;
             }
 
-            BattleCharacter[] players = FindPlayers();
+            List<int> targets = FindCharacterTargetGridIndices();
             Vector2Int originCoord = gridManager.IndexToCoord(originGridIndex);
-
-            BattleCharacter nearest = null;
+            int nearestGridIndex = -1;
             int nearestDistance = int.MaxValue;
 
-            for (int i = 0; i < players.Length; i++)
+            for (int i = 0; i < targets.Count; i++)
             {
-                BattleCharacter player = players[i];
-
-                if (!IsAlivePlayer(player) || player.CurrentGridIndex < 0)
-                    continue;
+                int targetGridIndex = targets[i];
 
                 if (!CanAttackTargetFromGrid(
                     monsterUnit,
                     originGridIndex,
-                    player,
+                    targetGridIndex,
                     attackSkill,
                     gridManager))
                 {
                     continue;
                 }
 
-                Vector2Int playerCoord = gridManager.IndexToCoord(player.CurrentGridIndex);
+                Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
                 int distance =
-                    Mathf.Abs(playerCoord.x - originCoord.x) +
-                    Mathf.Abs(playerCoord.y - originCoord.y);
+                    Mathf.Abs(targetCoord.x - originCoord.x) +
+                    Mathf.Abs(targetCoord.y - originCoord.y);
 
                 if (distance >= nearestDistance)
                     continue;
 
                 nearestDistance = distance;
-                nearest = player;
+                nearestGridIndex = targetGridIndex;
             }
 
-            return nearest;
+            return nearestGridIndex;
         }
 
         private bool CanAttackTargetFromGrid(
             MonsterUnit monsterUnit,
             int originGridIndex,
-            BattleCharacter target,
+            int targetGridIndex,
             MonsterSkillData attackSkill,
             GridManager gridManager)
         {
             if (monsterUnit == null ||
-                target == null ||
                 attackSkill == null ||
                 gridManager == null ||
                 originGridIndex < 0 ||
-                target.CurrentGridIndex < 0)
+                targetGridIndex < 0)
             {
                 return false;
             }
@@ -274,7 +268,7 @@ namespace Relic.Gameplay.Monster
                 return false;
 
             Vector2Int originCoord = gridManager.IndexToCoord(originGridIndex);
-            Vector2Int targetCoord = gridManager.IndexToCoord(target.CurrentGridIndex);
+            Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
 
             // 블롭의 근거리 공격은 좌우 방향 공격이므로 같은 가로 라인만 유효합니다.
             if (originCoord.y != targetCoord.y)
@@ -292,7 +286,7 @@ namespace Relic.Gameplay.Monster
                 originGridIndex,
                 rangeDatabase);
 
-            return attackRange != null && attackRange.Contains(target.CurrentGridIndex);
+            return attackRange != null && attackRange.Contains(targetGridIndex);
         }
 
         private static BattleDirection GetBlobAttackDirection(

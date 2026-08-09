@@ -131,7 +131,11 @@ public static class MonsterSkillRangeService
                     return true;
             }
 
-            return false;
+            BattleGridEffectController gridEffectController =
+                Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+
+            return gridEffectController != null &&
+                   gridEffectController.IsCharacterTargetEffect(gridIndex);
         }
 
         if (target == TargetType.EnemyParty)
@@ -181,8 +185,22 @@ public static class MonsterSkillRangeService
                 if (players[i].RuntimeData.CurrentHP <= 0)
                     continue;
 
-                if (players[i].CurrentGridIndex >= 0)
+                if (players[i].CurrentGridIndex >= 0 && !result.Contains(players[i].CurrentGridIndex))
                     result.Add(players[i].CurrentGridIndex);
+            }
+
+            BattleGridEffectController gridEffectController =
+                Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+
+            if (gridEffectController != null)
+            {
+                IReadOnlyList<int> characterTargets = gridEffectController.GetCharacterTargetGridIndices();
+
+                for (int i = 0; i < characterTargets.Count; i++)
+                {
+                    if (!result.Contains(characterTargets[i]))
+                        result.Add(characterTargets[i]);
+                }
             }
         }
         else if (target == TargetType.EnemyParty)

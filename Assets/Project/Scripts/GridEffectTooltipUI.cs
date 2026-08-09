@@ -1,0 +1,237 @@
+using Relic.Gameplay.Data;
+using TMPro;
+using UnityEngine;
+using UnityEngine.Serialization;
+
+[DisallowMultipleComponent]
+[RequireComponent(typeof(CanvasGroup))]
+public class GridEffectTooltipUI : MonoBehaviour
+{
+    private static GridEffectTooltipUI instance;
+
+    [Header("References")]
+    [SerializeField] private RectTransform tooltipRect;
+    [SerializeField] private CanvasGroup canvasGroup;
+    [SerializeField] private TMP_Text nameText;
+
+    [FormerlySerializedAs("descriptionText")]
+    [SerializeField] private TMP_Text toolTipText;
+
+    [Header("Position")]
+    [SerializeField] private Vector2 screenOffset = new(24f, -24f);
+    [SerializeField] private Vector2 screenPadding = new(16f, 16f);
+    [SerializeField] private bool followMouse = true;
+
+    private Canvas rootCanvas;
+    private Camera canvasCamera;
+    private Object currentOwner;
+    private Vector2 lastScreenPosition;
+
+    /// <summary>
+    /// 씬에 사용자가 직접 배치한 GridEffectTooltipUI를 반환합니다.
+    /// UI를 런타임에 자동 생성하지 않습니다.
+    /// </summary>
+    public static GridEffectTooltipUI GetOrCreate()
+    {
+        if (instance != null)
+            return instance;
+
+        instance = FindFirstObjectByType<GridEffectTooltipUI>(FindObjectsInactive.Include);
+
+        if (instance != null)
+        {
+            instance.InitializeReferences();
+            return instance;
+        }
+
+        Debug.LogWarning(
+            "[GridEffectTooltipUI] 씬에서 GridEffectTooltipUI를 찾을 수 없습니다. " +
+            "전투 UI에 GridEffectTooltipUI 오브젝트를 만들고 스크립트를 연결해 주세요.");
+
+        return null;
+    }
+
+    private void Awake()
+    {
+        if (instance != null && instance != this)
+        {
+            Debug.LogWarning(
+                "[GridEffectTooltipUI] 씬에 GridEffectTooltipUI가 여러 개 있습니다. " +
+                "하나만 사용해 주세요.",
+                this);
+            return;
+        }
+
+        instance = this;
+        InitializeReferences();
+        SetVisible(false);
+    }
+
+    private void OnDestroy()
+    {
+        if (instance == this)
+            instance = null;
+    }
+
+    private void LateUpdate()
+    {
+        if (currentOwner == null)
+        {
+            if (canvasGroup != null && canvasGroup.alpha > 0f)
+                SetVisible(false);
+
+            return;
+        }
+
+        if (followMouse)
+            SetPosition(Input.mousePosition);
+        else
+            SetPosition(lastScreenPosition);
+    }
+
+    public void Show(Object owner, string gridEffectId, Vector2 screenPosition)
+    {
+        if (owner == null || string.IsNullOrWhiteSpace(gridEffectId))
+            return;
+
+        GridEffectDatabase database = DataManager.Instance?.GridEffectDatabase;
+
+        if (database == null ||
+            !database.TryGet(gridEffectId.Trim(), out GridEffectData data) ||
+            data == null)
+        {
+            Hide(owner);
+            return;
+        }
+
+        Show(owner, data, screenPosition);
+    }
+
+    public void Show(Object owner, GridEffectData data, Vector2 screenPosition)
+    {
+        if (owner == null || data == null)
+            return;
+
+        InitializeReferences();
+
+        if (nameText == null || toolTipText == null)
+        {
+            Debug.LogWarning(
+                "[GridEffectTooltipUI] Name Text 또는 Tool Tip Text가 연결되지 않았습니다. " +
+                "Inspector에서 직접 연결해 주세요.",
+                this);
+            return;
+        }
+
+        currentOwner = owner;
+        lastScreenPosition = screenPosition;
+
+        // Inspector에 연결한 TMP 텍스트에 GameData 값을 그대로 표시합니다.
+        nameText.text = data.Name ?? string.Empty;
+        toolTipText.text = data.ToolTip ?? string.Empty;
+
+        BringToFront();
+        SetVisible(true);
+        SetPosition(screenPosition);
+    }
+
+    public void Hide(Object owner)
+    {
+        if (currentOwner != null && owner != null && currentOwner != owner)
+            return;
+
+        currentOwner = null;
+        SetVisible(false);
+    }
+
+    public void SetPosition(Vector2 screenPosition)
+    {
+        InitializeReferences();
+
+        if (tooltipRect == null)
+            return;
+
+        lastScreenPosition = screenPosition;
+        Vector2 target = ClampToScreen(screenPosition + screenOffset);
+
+        if (rootCanvas == null || rootCanvas.renderMode == RenderMode.ScreenSpaceOverlay)
+        {
+            tooltipRect.position = target;
+            return;
+        }
+
+        RectTransform parentRect = tooltipRect.parent as RectTransform;
+
+        if (parentRect != null &&
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                parentRect,
+                target,
+                canvasCamera,
+                out Vector2 localPoint))
+        {
+            tooltipRect.localPosition = localPoint;
+        }
+    }
+
+    private void InitializeReferences()
+    {
+        // Inspector에서 연결한 값은 절대 교체하지 않습니다.
+        if (tooltipRect == null)
+            tooltipRect = transform as RectTransform;
+
+        if (canvasGroup == null)
+            canvasGroup = GetComponent<CanvasGroup>();
+
+        if (canvasGroup != null)
+        {
+            canvasGroup.interactable = false;
+            canvasGroup.blocksRaycasts = false;
+        }
+
+        rootCanvas = GetComponentInParent<Canvas>();
+        if (rootCanvas != null && rootCanvas.rootCanvas != null)
+            rootCanvas = rootCanvas.rootCanvas;
+
+        canvasCamera = rootCanvas != null ? rootCanvas.worldCamera : null;
+    }
+
+    private Vector2 ClampToScreen(Vector2 screenPosition)
+    {
+        if (tooltipRect == null)
+            return screenPosition;
+
+        Vector2 size = tooltipRect.rect.size;
+        Vector3 scale = tooltipRect.lossyScale;
+        size.x *= Mathf.Abs(scale.x);
+        size.y *= Mathf.Abs(scale.y);
+
+        float minX = screenPadding.x;
+        float maxX = Mathf.Max(minX, Screen.width - screenPadding.x);
+        float minY = screenPadding.y;
+        float maxY = Mathf.Max(minY, Screen.height - screenPadding.y);
+
+        if (screenPosition.x + size.x > maxX)
+            screenPosition.x = Mathf.Max(minX, maxX - size.x);
+
+        if (screenPosition.y - size.y < minY)
+            screenPosition.y = Mathf.Min(maxY, minY + size.y);
+
+        screenPosition.x = Mathf.Clamp(screenPosition.x, minX, maxX);
+        screenPosition.y = Mathf.Clamp(screenPosition.y, minY, maxY);
+        return screenPosition;
+    }
+
+    private void BringToFront()
+    {
+        if (tooltipRect != null)
+            tooltipRect.SetAsLastSibling();
+    }
+
+    private void SetVisible(bool visible)
+    {
+        if (canvasGroup == null)
+            return;
+
+        canvasGroup.alpha = visible ? 1f : 0f;
+    }
+}
