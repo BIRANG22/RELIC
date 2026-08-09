@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Relic.Gameplay.Monster;
+using System.Collections;
 using UnityEngine;
 
 public class BattleCameraController : MonoBehaviour
@@ -71,30 +72,16 @@ public class BattleCameraController : MonoBehaviour
     [SerializeField] private float monsterInfoFocusOrthographicSize = 4.4f;
     [SerializeField] private bool clampMonsterInfoFocusPosition = false;
 
-    [Header("Drag")]
-    [SerializeField] private bool enableMouseDrag = true;
-    [SerializeField] private bool dragOnlyInBattleRoom = true;
-    [SerializeField] private Transform battleRoomRoot;
-    [SerializeField] private string battleRoomObjectName = "BattleRoom";
-    [SerializeField] private float dragSpeed = 1f;
-    [SerializeField] private float dragSmoothTime = 0.08f;
-    [SerializeField] private bool returnToDefaultAfterDrag = true;
-    [SerializeField] private float dragReturnDuration = 0.5f;
+    [Header("Camera Position Clamp")]
     [SerializeField] private Vector2 minCameraPosition = new Vector2(-0.5f, -1f);
     [SerializeField] private Vector2 maxCameraPosition = new Vector2(0.5f, 1f);
 
     private float defaultSize;
     private Vector3 defaultPosition;
     private Coroutine routine;
-    private Vector3 lastMouseWorldPosition;
-    private Vector3 dragTargetPosition;
-    private Vector3 dragSmoothVelocity;
-    private bool isDragging;
-    private bool hasDragTarget;
     private bool holdDefaultReturn;
     private bool hasActiveCombatZoom;
     private bool hasActiveMonsterInfoFocus;
-    private bool suppressDragUntilMouseReleased;
 
     private Transform zoomFollowTarget;
     private Vector3 zoomFollowVelocity;
@@ -126,11 +113,6 @@ public class BattleCameraController : MonoBehaviour
         }
     }
 
-    private void Start()
-    {
-        TryFindBattleRoomRoot();
-    }
-
     private void OnDisable()
     {
         RestoreTimeScaleIfNeeded();
@@ -141,7 +123,6 @@ public class BattleCameraController : MonoBehaviour
 
     private void Update()
     {
-        HandleMouseDrag();
         HandleZoomFollowTarget();
     }
 
@@ -193,7 +174,6 @@ public class BattleCameraController : MonoBehaviour
     {
         zoomFollowTarget = target;
         zoomFollowVelocity = Vector3.zero;
-        CancelDrag(false);
     }
 
     public void EndZoomFollowTarget()
@@ -216,7 +196,6 @@ public class BattleCameraController : MonoBehaviour
             yield break;
 
         hasActiveMonsterInfoFocus = false;
-        CancelDrag(false);
         EndZoomFollowTarget();
 
         if (routine != null)
@@ -258,7 +237,6 @@ public class BattleCameraController : MonoBehaviour
             return;
 
         hasActiveMonsterInfoFocus = false;
-        CancelDrag(false);
         EndZoomFollowTarget();
 
         if (routine != null)
@@ -329,7 +307,6 @@ public class BattleCameraController : MonoBehaviour
         if (hasActiveCombatZoom)
             return;
 
-        CancelDrag(false);
         EndZoomFollowTarget();
 
         if (routine != null)
@@ -362,6 +339,11 @@ public class BattleCameraController : MonoBehaviour
         if (!hasActiveMonsterInfoFocus)
             return;
 
+        // BattleCharacterPanel에 캐릭터 또는 몬스터 선택이 남아 있다면
+        // 패널 내부 UI 조작으로 간주하고 선택 포커스를 유지합니다.
+        if (HasActiveInfoSelection())
+            return;
+
         if (targetCamera == null)
             return;
 
@@ -371,7 +353,6 @@ public class BattleCameraController : MonoBehaviour
             return;
         }
 
-        CancelDrag(false);
         EndZoomFollowTarget();
 
         if (routine != null)
@@ -390,6 +371,12 @@ public class BattleCameraController : MonoBehaviour
 
     public void StartReturnDefault()
     {
+        // BattleCharacterPanel이 올라와 있는 동안에는 카메라를 기본 위치로
+        // 복귀시키지 않습니다. 실제 선택이 모두 해제되어 패널이 내려갈 때만
+        // 기본 위치 복귀를 허용합니다.
+        if (HasActiveInfoSelection())
+            return;
+
         if (targetCamera == null)
             return;
 
@@ -402,12 +389,23 @@ public class BattleCameraController : MonoBehaviour
         StartCoroutine(ReturnDefault());
     }
 
+    private bool HasActiveInfoSelection()
+    {
+        if (MonsterUnit.CurrentInfoSelectedMonster != null)
+            return true;
+
+        BattleTimelineController timelineController =
+            FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Include);
+
+        return timelineController != null &&
+               timelineController.SelectedCharacter != null;
+    }
+
     public void ForceReturnDefaultImmediate()
     {
         if (targetCamera == null)
             return;
 
-        CancelDrag(false);
         EndZoomFollowTarget();
 
         if (routine != null)
@@ -431,7 +429,6 @@ public class BattleCameraController : MonoBehaviour
         if (targetCamera == null)
             yield break;
 
-        CancelDrag(false);
         EndZoomFollowTarget();
 
         if (routine != null)
@@ -889,159 +886,6 @@ public class BattleCameraController : MonoBehaviour
         lastImpactAppliedPosition = targetCamera.transform.position;
     }
 
-    private void HandleMouseDrag()
-    {
-        if (!enableMouseDrag || targetCamera == null || !IsDragAllowedInCurrentRoom())
-        {
-            CancelDrag(false);
-            return;
-        }
-
-        if (suppressDragUntilMouseReleased)
-        {
-            if (!Input.GetMouseButton(0))
-                suppressDragUntilMouseReleased = false;
-            else
-                return;
-        }
-
-        if (routine != null)
-        {
-            CancelDrag(false);
-            return;
-        }
-
-        if (isDragging && !Input.GetMouseButton(0))
-        {
-            EndDrag(true);
-            return;
-        }
-
-        if (Input.GetMouseButtonDown(0))
-        {
-            isDragging = true;
-            hasDragTarget = true;
-            dragTargetPosition = targetCamera.transform.position;
-            dragSmoothVelocity = Vector3.zero;
-            lastMouseWorldPosition = GetMouseWorldPosition();
-        }
-
-        if (Input.GetMouseButtonUp(0))
-        {
-            EndDrag(true);
-            return;
-        }
-
-        if (!isDragging)
-            return;
-
-        Vector3 currentMouseWorldPosition = GetMouseWorldPosition();
-        Vector3 delta = lastMouseWorldPosition - currentMouseWorldPosition;
-
-        dragTargetPosition = ClampCameraPosition(dragTargetPosition + delta * dragSpeed);
-        targetCamera.transform.position = SmoothMoveToDragTarget(targetCamera.transform.position, dragTargetPosition);
-
-        lastMouseWorldPosition = currentMouseWorldPosition;
-    }
-
-    private void EndDrag(bool returnToDefault)
-    {
-        if (!isDragging && !hasDragTarget)
-            return;
-
-        isDragging = false;
-        dragSmoothVelocity = Vector3.zero;
-
-        if (returnToDefault && returnToDefaultAfterDrag)
-            StartDragReturnToDefault();
-    }
-
-    private void CancelDrag(bool returnToDefault)
-    {
-        if (!isDragging && !hasDragTarget)
-        {
-            if (Input.GetMouseButton(0))
-                suppressDragUntilMouseReleased = true;
-
-            return;
-        }
-
-        isDragging = false;
-        hasDragTarget = false;
-        dragSmoothVelocity = Vector3.zero;
-
-        if (Input.GetMouseButton(0))
-            suppressDragUntilMouseReleased = true;
-    }
-
-    private Vector3 SmoothMoveToDragTarget(Vector3 currentPosition, Vector3 targetPosition)
-    {
-        if (dragSmoothTime <= 0f)
-            return targetPosition;
-
-        return Vector3.SmoothDamp(
-            currentPosition,
-            targetPosition,
-            ref dragSmoothVelocity,
-            dragSmoothTime,
-            Mathf.Infinity,
-            Time.deltaTime);
-    }
-
-    private void StartDragReturnToDefault()
-    {
-        suppressDragUntilMouseReleased = false;
-
-        if (!hasDragTarget || targetCamera == null)
-            return;
-
-        if (routine != null)
-            StopCoroutine(routine);
-
-        hasDragTarget = false;
-        ClearImpactOffset();
-        routine = StartCoroutine(MoveCamera(defaultPosition, defaultSize, dragReturnDuration, false, true));
-    }
-
-    private bool IsDragAllowedInCurrentRoom()
-    {
-        if (!dragOnlyInBattleRoom)
-            return true;
-
-        if (battleRoomRoot == null)
-            TryFindBattleRoomRoot();
-
-        return battleRoomRoot != null && battleRoomRoot.gameObject.activeInHierarchy;
-    }
-
-    private void TryFindBattleRoomRoot()
-    {
-        if (battleRoomRoot != null || string.IsNullOrWhiteSpace(battleRoomObjectName))
-            return;
-
-        Transform[] transforms = Resources.FindObjectsOfTypeAll<Transform>();
-        for (int i = 0; i < transforms.Length; i++)
-        {
-            Transform candidate = transforms[i];
-            if (candidate == null || candidate.name != battleRoomObjectName)
-                continue;
-
-            GameObject candidateObject = candidate.gameObject;
-            if (!candidateObject.scene.IsValid() || !candidateObject.scene.isLoaded)
-                continue;
-
-            battleRoomRoot = candidate;
-            return;
-        }
-    }
-
-    private Vector3 GetMouseWorldPosition()
-    {
-        Vector3 mouse = Input.mousePosition;
-        mouse.z = Mathf.Abs(targetCamera.transform.position.z);
-        return targetCamera.ScreenToWorldPoint(mouse);
-    }
-
     private Vector3 ClampCameraPosition(Vector3 position)
     {
         position.x = Mathf.Clamp(position.x, minCameraPosition.x, maxCameraPosition.x);
@@ -1056,8 +900,6 @@ public class BattleCameraController : MonoBehaviour
         zoomDuration = Mathf.Max(0f, zoomDuration);
         returnDuration = Mathf.Max(0f, returnDuration);
         zoomZOffset = Mathf.Max(0f, zoomZOffset);
-        dragSmoothTime = Mathf.Max(0f, dragSmoothTime);
-        dragReturnDuration = Mathf.Max(0f, dragReturnDuration);
         impactZoomAmount = Mathf.Max(0f, impactZoomAmount);
         impactZoomZOffset = Mathf.Max(0f, impactZoomZOffset);
         impactZoomInDuration = Mathf.Max(0f, impactZoomInDuration);
