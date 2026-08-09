@@ -47,14 +47,6 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 
     [Header("Transition")]
     [SerializeField] private LobbyPanelTransition lobbyPanelTransition;
-
-    [Header("Camera Reset")]
-    [Tooltip("전환 화면이 완전히 닫힌 뒤, 패널이 교체되기 직전에 메인 카메라를 기본 위치로 되돌립니다.")]
-    [SerializeField] private bool resetCameraBeforeTransition = true;
-
-    [Tooltip("위치를 되돌릴 메인 카메라의 HorizontalHubCameraDrag입니다. 비어 있으면 자동으로 찾습니다.")]
-    [SerializeField] private HorizontalHubCameraDrag hubCameraDrag;
-
     [SerializeField]
     private PanelTransitionMode transitionMode =
         PanelTransitionMode.LobbyToCharacter;
@@ -211,22 +203,6 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
                !currentTransform.IsChildOf(menuPanel.transform);
     }
 
-    private void ResetCameraBeforeTransition()
-    {
-        if (!resetCameraBeforeTransition)
-            return;
-
-        if (hubCameraDrag == null)
-        {
-            hubCameraDrag =
-                FindFirstObjectByType<HorizontalHubCameraDrag>(
-                    FindObjectsInactive.Include);
-        }
-
-        if (hubCameraDrag != null)
-            hubCameraDrag.ResetToDefaultPositionImmediate();
-    }
-
     private void GetDirections(
         out LobbyPanelTransition.TransitionDirection closeDirection,
         out LobbyPanelTransition.TransitionDirection openDirection)
@@ -255,8 +231,6 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 
     private void InvokeBeforePanelChange()
     {
-        if (transitionMode == PanelTransitionMode.LobbyToCharacter)
-            ResetCameraBeforeTransition();
 
         ApplyLobbyBackgroundForTargetPanel();
         beforePanelChange?.Invoke();

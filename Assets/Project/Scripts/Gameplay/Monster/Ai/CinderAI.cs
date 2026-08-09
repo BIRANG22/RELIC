@@ -81,17 +81,16 @@ namespace Relic.Gameplay.Monster
             MonsterUnit monsterUnit,
             GridManager gridManager)
         {
-            BattleCharacter target = FindNearestPlayer(monsterUnit, gridManager);
+            int targetGridIndex = FindNearestCharacterTargetGridIndex(monsterUnit, gridManager);
 
-            if (target == null ||
-                target.CurrentGridIndex < 0 ||
+            if (targetGridIndex < 0 ||
                 monsterUnit.MainGridIndex < 0)
             {
                 return Vector2Int.zero;
             }
 
             Vector2Int currentCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
-            Vector2Int targetCoord = gridManager.IndexToCoord(target.CurrentGridIndex);
+            Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
 
             int currentDeltaX = Mathf.Abs(targetCoord.x - currentCoord.x);
             int currentDeltaY = Mathf.Abs(targetCoord.y - currentCoord.y);

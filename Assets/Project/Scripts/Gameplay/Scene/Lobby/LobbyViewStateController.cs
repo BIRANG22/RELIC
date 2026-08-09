@@ -25,9 +25,6 @@ public sealed class LobbyViewStateController : MonoBehaviour
     [SerializeField] private GameObject lobbyDirectionalLight;
     [SerializeField] private GameObject positionDirectionalLight;
 
-    [Header("Position Camera")]
-    [SerializeField] private HorizontalHubCameraDrag hubCameraDrag;
-
     public LobbyViewState CurrentState { get; private set; }
 
     private void Start()
@@ -75,9 +72,6 @@ public sealed class LobbyViewStateController : MonoBehaviour
         SetActive(positionPanel, isPosition);
         SetActive(lobbyDirectionalLight, !isPosition);
         SetActive(positionDirectionalLight, isPosition);
-
-        if (hubCameraDrag != null)
-            hubCameraDrag.enabled = isPosition;
     }
 
     private static void SetActive(GameObject target, bool active)

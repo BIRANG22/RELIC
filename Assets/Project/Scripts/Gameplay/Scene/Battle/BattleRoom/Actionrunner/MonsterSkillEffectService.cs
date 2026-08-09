@@ -148,6 +148,64 @@ public class MonsterSkillEffectService
 
             ExecuteEffects(caster, target, null, command, mode, hitIndex);
         }
+
+        ApplyDamageToCharacterGridEffects(command, mode, hitIndex);
+    }
+
+    private void ApplyDamageToCharacterGridEffects(
+        MonsterReservedCommand command,
+        EffectExecutionMode mode,
+        int hitIndex)
+    {
+        if (command == null || command.SkillData == null ||
+            mode == EffectExecutionMode.NonDamage ||
+            command.TargetGridIndices == null ||
+            command.TargetGridIndices.Count <= 0 ||
+            string.IsNullOrWhiteSpace(command.SkillData.EffectIds))
+        {
+            return;
+        }
+
+        BattleGridEffectController controller =
+            Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+
+        if (controller == null)
+            return;
+
+        string[] effectIds = command.SkillData.EffectIds.Split(';');
+
+        for (int effectIndex = 0; effectIndex < effectIds.Length; effectIndex++)
+        {
+            string effectId = effectIds[effectIndex].Trim();
+
+            if (!IsDamageHitEffect(effectId))
+                continue;
+
+            int hitCount = Mathf.Max(1, ParseIndexedValue(command.SkillData.CountRate, effectIndex));
+
+            if (mode == EffectExecutionMode.DamageHit && hitIndex >= hitCount)
+                continue;
+
+            int repetitions = mode == EffectExecutionMode.All ? hitCount : 1;
+
+            for (int hit = 0; hit < repetitions; hit++)
+            {
+                int damage = ResolveEffectValue(command, effectId, effectIndex);
+
+                if (damage <= 0)
+                    continue;
+
+                for (int targetIndex = 0; targetIndex < command.TargetGridIndices.Count; targetIndex++)
+                {
+                    int gridIndex = command.TargetGridIndices[targetIndex];
+
+                    if (!controller.IsCharacterTargetEffect(gridIndex))
+                        continue;
+
+                    controller.TryDamageEffect(gridIndex, damage, out _);
+                }
+            }
+        }
     }
 
     private void ApplyToMonsters(

@@ -42,7 +42,6 @@ public class SkillUpgradePanel : MonoBehaviour
     [SerializeField] private float gearRotateTickDuration = 0.12f;
     [SerializeField] private float gearRotateTickInterval = 1f;
     [SerializeField] private float closeDelayAfterUpgradeComplete = 0.5f;
-    [SerializeField] private string upgradeCompleteMessageFormat = "{0}으로 강화되었습니다.";
     [SerializeField] private Color upgradedSkillIconColor = new Color32(0x7E, 0x93, 0xEC, 0xFF);
 
     [Header("Layout")]

@@ -33,12 +33,6 @@ public class PanelCameraMover : MonoBehaviour
     [Tooltip("목표 오브젝트의 회전값도 적용합니다.")]
     [SerializeField] private bool applyTargetRotation = true;
 
-    [Header("허브 카메라 드래그")]
-    [Tooltip(
-        "카메라 복귀가 완료된 뒤 현재 위치를 드래그 목표 위치와 동기화합니다. " +
-        "비워두면 이동 대상에서 자동으로 찾습니다.")]
-    [SerializeField] private HorizontalHubCameraDrag hubCameraDrag;
-
     [Header("카메라 이동 설정")]
     [Tooltip("카메라가 이동하는 데 걸리는 시간입니다.")]
     [Min(0f)]
@@ -107,7 +101,6 @@ public class PanelCameraMover : MonoBehaviour
     private void Awake()
     {
         FindCameraIfNeeded();
-        FindHubCameraDragIfNeeded();
 
         if (targetPanel != null)
             panelWasOpen = targetPanel.activeInHierarchy;
@@ -529,16 +522,6 @@ public class PanelCameraMover : MonoBehaviour
         cameraWasMoved = false;
         originalTransformSaved = false;
 
-        /*
-         * 복귀가 끝난 뒤 HorizontalHubCameraDrag가
-         * 이전 목표 위치로 카메라를 다시 끌어당기지 않도록
-         * 현재 위치를 드래그 목표 위치와 동기화합니다.
-         */
-        FindHubCameraDragIfNeeded();
-
-        if (hubCameraDrag != null)
-            hubCameraDrag.SynchronizeTargetPosition();
-
         ClearActiveCameraMoverIfThis();
 
         if (showDebugLog)
@@ -603,11 +586,6 @@ public class PanelCameraMover : MonoBehaviour
         {
             moveTransform.position = originalPosition;
             moveTransform.rotation = originalRotation;
-
-            FindHubCameraDragIfNeeded();
-
-            if (hubCameraDrag != null)
-                hubCameraDrag.SynchronizeTargetPosition();
         }
 
         cameraWasMoved = false;
@@ -633,43 +611,6 @@ public class PanelCameraMover : MonoBehaviour
     {
         if (targetCamera == null)
             targetCamera = Camera.main;
-    }
-
-    /// <summary>
-    /// HorizontalHubCameraDrag가 연결되지 않았다면 자동으로 찾습니다.
-    /// </summary>
-    private void FindHubCameraDragIfNeeded()
-    {
-        if (hubCameraDrag != null)
-            return;
-
-        Transform moveTransform = MoveTransform;
-
-        if (moveTransform != null)
-        {
-            hubCameraDrag =
-                moveTransform.GetComponent<HorizontalHubCameraDrag>();
-
-            if (hubCameraDrag == null)
-            {
-                hubCameraDrag =
-                    moveTransform.GetComponentInChildren<HorizontalHubCameraDrag>(
-                        true);
-            }
-
-            if (hubCameraDrag == null)
-            {
-                hubCameraDrag =
-                    moveTransform.GetComponentInParent<HorizontalHubCameraDrag>(
-                        true);
-            }
-        }
-
-        if (hubCameraDrag == null && targetCamera != null)
-        {
-            hubCameraDrag =
-                targetCamera.GetComponent<HorizontalHubCameraDrag>();
-        }
     }
 
     private void OnDisable()
