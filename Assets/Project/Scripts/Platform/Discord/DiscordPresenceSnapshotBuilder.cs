@@ -19,19 +19,19 @@ public static class DiscordPresenceSnapshotBuilder
     private static string BuildDetails(string sceneName, MapRuntimeData map)
     {
         if (string.Equals(sceneName, "Title", StringComparison.OrdinalIgnoreCase))
-            return "메인 메뉴";
+            return GameLocalization.Get("presence.main_menu", "메인 메뉴");
 
         if (string.Equals(sceneName, "Lobby", StringComparison.OrdinalIgnoreCase))
-            return "로비";
+            return GameLocalization.Get("presence.lobby", "로비");
 
         if (map != null && map.IsRunInitialized)
         {
-            string chapter = FirstValue(map.SelectedChapterId, "탐험 중");
+            string chapter = FirstValue(map.SelectedChapterId, GameLocalization.Get("presence.exploring", "탐험 중"));
             string location = FirstValue(map.CurrentStage, map.CurrentMapId);
             return string.IsNullOrWhiteSpace(location) ? chapter : $"{chapter} · {location}";
         }
 
-        return string.IsNullOrWhiteSpace(sceneName) ? "RELIC 플레이 중" : sceneName.Trim();
+        return string.IsNullOrWhiteSpace(sceneName) ? GameLocalization.Get("presence.playing_relic", "RELIC 플레이 중") : sceneName.Trim();
     }
 
     private static string BuildState(
@@ -40,7 +40,7 @@ public static class DiscordPresenceSnapshotBuilder
         CharacterDatabase characters)
     {
         if (string.Equals(sceneName, "Title", StringComparison.OrdinalIgnoreCase))
-            return "모험 준비 중";
+            return GameLocalization.Get("presence.preparing_adventure", "모험 준비 중");
 
         List<string> names = new();
 
@@ -57,7 +57,7 @@ public static class DiscordPresenceSnapshotBuilder
         }
 
         return names.Count == 0
-            ? "파티 편성 중"
+            ? GameLocalization.Get("presence.forming_party", "파티 편성 중")
             : $"캐릭터: {string.Join(", ", names)}";
     }
 

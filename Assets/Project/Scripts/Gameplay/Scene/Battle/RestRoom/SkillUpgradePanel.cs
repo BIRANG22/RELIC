@@ -663,7 +663,7 @@ public class SkillUpgradePanel : MonoBehaviour
             return string.Empty;
 
         if (!string.IsNullOrWhiteSpace(skillData.Name))
-            return skillData.Name;
+            return GameDataLocalization.SkillName(skillData);
 
         return skillData.SkillId;
     }
@@ -682,17 +682,15 @@ public class SkillUpgradePanel : MonoBehaviour
         if (!string.IsNullOrWhiteSpace(request.UpgradeSkillId))
             return request.UpgradeSkillId;
 
-        return "스킬";
+        return GameLocalization.Get("common.skill", "스킬");
     }
 
     private void ShowUpgradeCompleteWarning(string upgradedSkillName)
     {
-        string safeName = string.IsNullOrWhiteSpace(upgradedSkillName) ? "스킬" : upgradedSkillName;
-        string format = string.IsNullOrWhiteSpace(upgradeCompleteMessageFormat)
-            ? "{0}으로 강화되었습니다."
-            : upgradeCompleteMessageFormat;
-
-        BattleWarningUI.ShowMessage(string.Format(format, safeName));
+        string safeName = string.IsNullOrWhiteSpace(upgradedSkillName)
+            ? GameLocalization.Get("common.skill", "스킬")
+            : upgradedSkillName;
+        BattleWarningUI.ShowMessage(GameLocalization.Format("battle.skill_upgraded", "{0}으로 강화되었습니다.", safeName));
     }
 
     private void ClearSkillInfoTexts()

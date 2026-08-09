@@ -385,12 +385,18 @@ public class UIManager : Singleton<UIManager>
 
     public void ShowGiveUpConfirm()
     {
-        ShowConfirmDialog(giveUpConfirmMessage, OnConfirmGiveUpToTitle, HideConfirmDialog);
+        ShowConfirmDialog(
+            GameLocalization.Get("battle.confirm_return_to_title", giveUpConfirmMessage),
+            OnConfirmGiveUpToTitle,
+            HideConfirmDialog);
     }
 
     public void ShowQuitConfirm()
     {
-        ShowConfirmDialog(quitConfirmMessage, OnConfirmQuitGame, HideConfirmDialog);
+        ShowConfirmDialog(
+            GameLocalization.Get("common.confirm_quit_game", quitConfirmMessage),
+            OnConfirmQuitGame,
+            HideConfirmDialog);
     }
 
     public void ShowConfirmDialog(string message, System.Action yesAction, System.Action noAction)
@@ -404,7 +410,12 @@ public class UIManager : Singleton<UIManager>
             return;
         }
 
-        confirmDialogUI.Configure(message, confirmYesText, confirmNoText, yesAction, noAction);
+        confirmDialogUI.Configure(
+            message,
+            GameLocalization.Get("common.yes", confirmYesText),
+            GameLocalization.Get("common.no", confirmNoText),
+            yesAction,
+            noAction);
         confirmDialogInstance.SetActive(true);
         BringConfirmDialogToFront();
     }

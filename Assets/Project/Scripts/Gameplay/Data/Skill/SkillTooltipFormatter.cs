@@ -163,13 +163,13 @@ namespace Relic.Gameplay.Data
                 return skill.EffectDescription;
 
             if (!string.IsNullOrWhiteSpace(skill.EffectDesc))
-                return skill.EffectDesc;
+                return GameLocalization.GetData("SkillMaster", skill.SkillId, "details", skill.EffectDesc);
 
             if (!string.IsNullOrWhiteSpace(skill.ToolTip))
-                return skill.ToolTip;
+                return GameDataLocalization.SkillTooltip(skill);
 
             if (!string.IsNullOrWhiteSpace(skill.Details))
-                return skill.Details;
+                return GameDataLocalization.SkillDetails(skill);
 
             return "";
         }

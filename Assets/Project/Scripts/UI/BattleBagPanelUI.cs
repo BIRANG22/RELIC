@@ -87,7 +87,7 @@ public class BattleBagPanelUI : MonoBehaviour
 
         if (detailPanel != null)
         {
-            // ÅøÆÁÆĞ³Î ÀÚ±â ÀÚ½ÅÀÇ Image´Â ¹è°æ ÀÌ¹ÌÁöÀÌ¹Ç·Î ¾ÆÀÌÅÛ ¾ÆÀÌÄÜ Ãâ·Â¿ëÀ¸·Î »ç¿ëÇÏÁö ¾Ê½À´Ï´Ù.
+            // íˆ´íŒíŒ¨ë„ ìê¸° ìì‹ ì˜ ImageëŠ” ë°°ê²½ ì´ë¯¸ì§€ì´ë¯€ë¡œ ì•„ì´í…œ ì•„ì´ì½˜ ì¶œë ¥ìš©ìœ¼ë¡œ ì‚¬ìš©í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
             if (detailIconImage != null && detailIconImage.transform == detailPanel.transform)
                 detailIconImage = null;
 
@@ -282,8 +282,8 @@ public class BattleBagPanelUI : MonoBehaviour
         selectedSlot = slot;
         selectedSlot.SetSelected(true);
 
-        // Å¬¸¯Àº ¹ö¸®±â ´ë»ó ¼±ÅÃ¸¸ Ã³¸®ÇÕ´Ï´Ù.
-        // ÅøÆÁÀº ¸¶¿ì½º¸¦ ¿Ã·ÈÀ» ¶§¸¸ Ç¥½ÃÇÏ°í, Å¬¸¯À¸·Î °íÁ¤ÇÏÁö ¾Ê½À´Ï´Ù.
+        // í´ë¦­ì€ ë²„ë¦¬ê¸° ëŒ€ìƒ ì„ íƒë§Œ ì²˜ë¦¬í•©ë‹ˆë‹¤.
+        // íˆ´íŒì€ ë§ˆìš°ìŠ¤ë¥¼ ì˜¬ë ¸ì„ ë•Œë§Œ í‘œì‹œí•˜ê³ , í´ë¦­ìœ¼ë¡œ ê³ ì •í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
         if (hoveredSlot != slot)
             HideDetail();
 
@@ -386,15 +386,19 @@ public class BattleBagPanelUI : MonoBehaviour
         }
 
         if (detailNameText != null)
-            detailNameText.text = item != null && !string.IsNullOrWhiteSpace(item.Name) ? item.Name : itemId;
+            detailNameText.text = item != null && !string.IsNullOrWhiteSpace(item.Name)
+                ? GameDataLocalization.ItemName(item)
+                : itemId;
 
         if (detailDescriptionText != null)
-            detailDescriptionText.text = item != null && !string.IsNullOrWhiteSpace(item.Desc) ? item.Desc : "È¹µæÇÑ ¾ÆÀÌÅÛÀÔ´Ï´Ù.";
+            detailDescriptionText.text = item != null && !string.IsNullOrWhiteSpace(item.Desc)
+                ? GameDataLocalization.ItemDescription(item)
+                : GameLocalization.Get("battle.acquired_item", "íšë“í•œ ì•„ì´í…œì…ë‹ˆë‹¤.");
 
-        // °¡¹æ ÅøÆÁÀº ¾ÆÀÌÅÛ ÀÌ¸§°ú ¼³¸í¸¸ Ç¥½ÃÇÕ´Ï´Ù.
-        // ÆÇ¸Å °¡°İ ¹®±¸´Â GameData Item ½ÃÆ®ÀÇ ¼³¸í(Desc)¿¡ Á÷Á¢ ÀÛ¼ºÇØ¼­ »ç¿ëÇÕ´Ï´Ù.
-        // DetailValueText°¡ ÀÌ¸§ ¶Ç´Â ¼³¸í ÅØ½ºÆ®¿Í °°Àº ¿ÀºêÁ§Æ®·Î Àß¸ø ¿¬°áµÇ¾î ÀÖ¾îµµ
-        // ÀÌ¹Ì Ãâ·ÂÇÑ ¾ÆÀÌÅÛ ÀÌ¸§/¼³¸íÀ» ºó ¹®ÀÚ¿­·Î µ¤¾î¾²Áö ¾Ê½À´Ï´Ù.
+        // ê°€ë°© íˆ´íŒì€ ì•„ì´í…œ ì´ë¦„ê³¼ ì„¤ëª…ë§Œ í‘œì‹œí•©ë‹ˆë‹¤.
+        // íŒë§¤ ê°€ê²© ë¬¸êµ¬ëŠ” GameData Item ì‹œíŠ¸ì˜ ì„¤ëª…(Desc)ì— ì§ì ‘ ì‘ì„±í•´ì„œ ì‚¬ìš©í•©ë‹ˆë‹¤.
+        // DetailValueTextê°€ ì´ë¦„ ë˜ëŠ” ì„¤ëª… í…ìŠ¤íŠ¸ì™€ ê°™ì€ ì˜¤ë¸Œì íŠ¸ë¡œ ì˜ëª» ì—°ê²°ë˜ì–´ ìˆì–´ë„
+        // ì´ë¯¸ ì¶œë ¥í•œ ì•„ì´í…œ ì´ë¦„/ì„¤ëª…ì„ ë¹ˆ ë¬¸ìì—´ë¡œ ë®ì–´ì“°ì§€ ì•ŠìŠµë‹ˆë‹¤.
         if (detailValueText != null &&
             detailValueText != detailNameText &&
             detailValueText != detailDescriptionText)
@@ -486,7 +490,7 @@ public class BattleBagPanelUI : MonoBehaviour
     {
         if (IsNetworkBattleClientReadOnly())
         {
-            BattleWarningUI.ShowMessage("¸ÖÆ¼ ¹èÆ²¿¡¼­´Â È£½ºÆ®¸¸ °¡¹æÀ» º¯°æÇÒ ¼ö ÀÖ½À´Ï´Ù.");
+            BattleWarningUI.ShowMessage(GameLocalization.Get("battle.host_only_bag_change", "ë©€í‹° ë°°í‹€ì—ì„œëŠ” í˜¸ìŠ¤íŠ¸ë§Œ ê°€ë°©ì„ ë³€ê²½í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤."));
             return;
         }
 
@@ -497,7 +501,7 @@ public class BattleBagPanelUI : MonoBehaviour
 
         if (selectedSlot == null || !selectedSlot.HasItem)
         {
-            BattleWarningUI.ShowMessage("¹ö¸± °íÀ¯¾ÆÀÌÅÛÀ» ¸ÕÀú ¼±ÅÃÇØÁÖ¼¼¿ä.");
+            BattleWarningUI.ShowMessage(GameLocalization.Get("battle.select_item_to_discard", "ë²„ë¦´ ê³ ìœ ì•„ì´í…œì„ ë¨¼ì € ì„ íƒí•´ì£¼ì„¸ìš”."));
             return;
         }
 
@@ -505,7 +509,7 @@ public class BattleBagPanelUI : MonoBehaviour
 
         if (slotIndex < 0)
         {
-            BattleWarningUI.ShowMessage("¼±ÅÃÇÑ °íÀ¯¾ÆÀÌÅÛÀ» Ã£À» ¼ö ¾ø½À´Ï´Ù.");
+            BattleWarningUI.ShowMessage(GameLocalization.Get("battle.selected_item_not_found", "ì„ íƒí•œ ê³ ìœ ì•„ì´í…œì„ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤."));
             Refresh();
             return;
         }
@@ -538,7 +542,7 @@ public class BattleBagPanelUI : MonoBehaviour
         HideDetail();
         Refresh();
 
-        Debug.Log($"[BattleBagPanelUI] °íÀ¯¾ÆÀÌÅÛÀ» ¹ö·È½À´Ï´Ù. Item:{removedItemId}");
+        Debug.Log($"[BattleBagPanelUI] ê³ ìœ ì•„ì´í…œì„ ë²„ë ¸ìŠµë‹ˆë‹¤. Item:{removedItemId}");
     }
 
     private bool IsDiscardAllowed()
@@ -598,7 +602,7 @@ public class BattleBagPanelUI : MonoBehaviour
                 return image;
         }
 
-        // ÀÌ¸§ÀÌ ¸Â´Â ¾ÆÀÌÄÜ ÀÚ½ÄÀ» Ã£Áö ¸øÇß´Ù¸é ¹è°æ ÀÌ¹ÌÁö¸¦ Àß¸ø ÀâÁö ¾Êµµ·Ï nullÀ» ¹İÈ¯ÇÕ´Ï´Ù.
+        // ì´ë¦„ì´ ë§ëŠ” ì•„ì´ì½˜ ìì‹ì„ ì°¾ì§€ ëª»í–ˆë‹¤ë©´ ë°°ê²½ ì´ë¯¸ì§€ë¥¼ ì˜ëª» ì¡ì§€ ì•Šë„ë¡ nullì„ ë°˜í™˜í•©ë‹ˆë‹¤.
         return null;
     }
 

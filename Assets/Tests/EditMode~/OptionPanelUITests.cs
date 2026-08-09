@@ -183,6 +183,36 @@ public class OptionPanelUITests
         }
     }
 
+    [Test]
+    public void OptionPrefab_LanguageDropdownControllerIsHostedByOptionRoot()
+    {
+        GameObject root = PrefabUtility.LoadPrefabContents(OptionPrefabPath);
+
+        try
+        {
+            OptionPanelUI panel = root.GetComponentInChildren<OptionPanelUI>(true);
+            LanguageDropdownUI languageController = root.GetComponentInChildren<LanguageDropdownUI>(true);
+
+            Assert.That(panel, Is.Not.Null);
+            Assert.That(languageController, Is.Not.Null);
+            Assert.That(languageController.gameObject, Is.SameAs(panel.gameObject));
+            Assert.That(languageController.gameObject.activeSelf, Is.True);
+
+            var serializedPanel = new SerializedObject(panel);
+            var serializedController = new SerializedObject(languageController);
+            GameObject languageContent = serializedPanel.FindProperty("languageContent").objectReferenceValue as GameObject;
+            TMP_Dropdown languageDropdown = serializedController.FindProperty("languageDropdown").objectReferenceValue as TMP_Dropdown;
+
+            Assert.That(languageContent, Is.Not.Null);
+            Assert.That(languageDropdown, Is.Not.Null);
+            Assert.That(languageDropdown.transform.IsChildOf(languageContent.transform), Is.True);
+        }
+        finally
+        {
+            PrefabUtility.UnloadPrefabContents(root);
+        }
+    }
+
     private OptionPanelUI CreateOptionPanel(out GameObject resolutionContent, out TMP_Dropdown dropdown)
     {
         return CreateOptionPanel(

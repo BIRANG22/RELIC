@@ -57,8 +57,14 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
             if (row?.Root == null) continue;
             string slotId = GetSlotId(i);
             bool filled = CultureTankResearchService.TryGetTank(lobby, slotId, out CultureTankResearchRuntimeData slot);
-            if (row.Label != null) row.Label.text = $"배양조 {i + 1}";
-            if (row.StateLabel != null) row.StateLabel.text = filled ? "재료 투입됨" : "비어 있음";
+            if (row.Label != null)
+                row.Label.text = string.Format(
+                    GameLocalization.Get("lobby.culture_tank_number", "배양조 {0}"),
+                    i + 1);
+            if (row.StateLabel != null)
+                row.StateLabel.text = filled
+                    ? GameLocalization.Get("lobby.material_inserted", "재료 투입됨")
+                    : GameLocalization.Get("lobby.empty", "비어 있음");
             Sprite icon = null;
             if (filled) DataManager.Instance?.ItemIconDatabase?.TryGetIcon(slot.ItemId, out icon);
             row.SetIcon(icon);
@@ -101,7 +107,7 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     {
         DataManager data = DataManager.Instance;
         if (!CultureTankResearchService.TryCombine(GetLobby(), data?.ItemDatabase, data?.CultureTankCombinationDatabase, out _, out string error))
-        { BattleWarningUI.ShowMessage("조합할 수 없습니다."); Debug.LogWarning($"[LobbyCultureTankPanelPresenter] {error}"); return; }
+        { BattleWarningUI.ShowMessage(GameLocalization.Get("lobby.cannot_combine", "조합할 수 없습니다.")); Debug.LogWarning($"[LobbyCultureTankPanelPresenter] {error}"); return; }
         selectedSlotIndex = -1; SaveAndPublish(); RefreshAll();
     }
 

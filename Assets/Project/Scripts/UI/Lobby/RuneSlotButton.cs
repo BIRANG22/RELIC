@@ -91,8 +91,8 @@ public class RuneSlotButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
             isPointerInside = false;
         }
 
-        // ÇÁ¸®ºä¿¡¼­´Â ±âº» ¾È³» Á¤º¸·Î µ¹¾Æ°¡°í,
-        // ·é ¼¼ÆÃ¿¡¼­´Â ¸¶Áö¸·À¸·Î È®ÀÎÇÑ Á¤º¸¸¦ À¯ÁöÇÕ´Ï´Ù.
+        // í”„ë¦¬ë·°ì—ì„œëŠ” ê¸°ë³¸ ì•ˆë‚´ ì •ë³´ë¡œ ëŒì•„ê°€ê³ ,
+        // ë£¬ ì„¸íŒ…ì—ì„œëŠ” ë§ˆì§€ë§‰ìœ¼ë¡œ í™•ì¸í•œ ì •ë³´ë¥¼ ìœ ì§€í•©ë‹ˆë‹¤.
         if (owner != null && owner.ShouldClearInfoOnHoverExit && shownInfoVersion >= 0)
             owner.ClearRuneInfoFromHover(shownInfoVersion);
 
@@ -112,7 +112,7 @@ public class RuneSlotButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         equippedRune = runeData;
 
         if (nameText != null)
-            nameText.text = equippedRune != null ? equippedRune.Name : "";
+            nameText.text = equippedRune != null ? GameDataLocalization.RuneName(equippedRune) : "";
 
         if (iconImage != null)
         {
@@ -202,8 +202,8 @@ public class RuneSlotButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
     private Color GetRuneDisplayColor(RuneData runeData)
     {
-        // ·éÀ» ÀåÂø ½½·Ô¿¡ Ç¥½ÃÇÒ ¶§µµ ¾ÆÀÌÄÜ ½ºÇÁ¶óÀÌÆ®ÀÇ ¿øº» »ö»óÀ» À¯ÁöÇÕ´Ï´Ù.
-        // ÀåÂø ¿©ºÎ´Â Å×µÎ¸®¿Í º°µµ ÀåÂø Ç¥½Ã·Î¸¸ ±¸ºĞÇÕ´Ï´Ù.
+        // ë£¬ì„ ì¥ì°© ìŠ¬ë¡¯ì— í‘œì‹œí•  ë•Œë„ ì•„ì´ì½˜ ìŠ¤í”„ë¼ì´íŠ¸ì˜ ì›ë³¸ ìƒ‰ìƒì„ ìœ ì§€í•©ë‹ˆë‹¤.
+        // ì¥ì°© ì—¬ë¶€ëŠ” í…Œë‘ë¦¬ì™€ ë³„ë„ ì¥ì°© í‘œì‹œë¡œë§Œ êµ¬ë¶„í•©ë‹ˆë‹¤.
         return Color.white;
     }
 

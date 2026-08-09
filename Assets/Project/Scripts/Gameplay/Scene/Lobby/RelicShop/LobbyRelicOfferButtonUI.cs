@@ -101,7 +101,7 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
             return;
 
         ResetHoverState();
-        priceText.text = "판매 완료";
+        priceText.text = GameLocalization.Get("lobby.sold_out", "판매 완료");
         button.interactable = false;
 
         FadeOutRarityRing();

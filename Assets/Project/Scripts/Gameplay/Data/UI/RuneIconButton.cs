@@ -104,7 +104,7 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         }
 
         if (nameText != null)
-            nameText.text = currentRuneData.Name;
+            nameText.text = GameDataLocalization.RuneName(currentRuneData);
 
         if (iconImage != null)
         {

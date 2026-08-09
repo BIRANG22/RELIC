@@ -119,10 +119,10 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
         }
 
         if (relicNameText != null)
-            relicNameText.text = relicData.Name;
+            relicNameText.text = GameDataLocalization.RelicName(relicData);
 
         if (relicEffectText != null)
-            relicEffectText.text = relicData.EffectDesc;
+            relicEffectText.text = GameDataLocalization.RelicDescription(relicData);
     }
 
     public void ClearSlot()

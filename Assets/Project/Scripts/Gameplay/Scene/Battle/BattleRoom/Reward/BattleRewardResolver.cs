@@ -223,8 +223,8 @@ public class BattleRewardResolver : MonoBehaviour
             SourceKey = uniqueRewardKey,
             Amount = 1,
             Icon = icon,
-            Name = item != null ? item.Name : uniqueItemId,
-            Description = item != null ? item.Desc : "",
+            Name = item != null ? GameDataLocalization.ItemName(item) : uniqueItemId,
+            Description = item != null ? GameDataLocalization.ItemDescription(item) : "",
             Value = item != null ? item.Value : 0
         });
     }
@@ -254,8 +254,8 @@ public class BattleRewardResolver : MonoBehaviour
             SourceKey = $"Relic|{relic.FragmentId}",
             Amount = 1,
             Icon = icon,
-            Name = relic.Name,
-            Description = relic.EffectDesc,
+            Name = GameDataLocalization.RelicName(relic),
+            Description = GameDataLocalization.RelicDescription(relic),
             Value = 0
         });
     }
@@ -293,7 +293,7 @@ public class BattleRewardResolver : MonoBehaviour
             SourceKey = $"Skill|{dropSettings.BattleMapId}|{skill.SkillId}",
             Amount = 1,
             Icon = icon,
-            Name = string.IsNullOrWhiteSpace(skill.Name) ? skill.SkillId : skill.Name,
+            Name = string.IsNullOrWhiteSpace(skill.Name) ? skill.SkillId : GameDataLocalization.SkillName(skill),
             Description = BuildSkillRewardDescription(skill),
             Value = 0
         });
@@ -412,11 +412,11 @@ public class BattleRewardResolver : MonoBehaviour
 
         string rarityName = SkillRarityUtility.GetDisplayName(skill.Rarity);
         string description = !string.IsNullOrWhiteSpace(skill.Details)
-            ? skill.Details
-            : skill.ToolTip;
+            ? GameDataLocalization.SkillDetails(skill)
+            : GameDataLocalization.SkillTooltip(skill);
 
         if (string.IsNullOrWhiteSpace(description))
-            description = "획득 가능한 스킬입니다.";
+            description = GameLocalization.Get("battle.available_skill", "획득 가능한 스킬입니다.");
 
         if (string.IsNullOrWhiteSpace(rarityName))
             return description;

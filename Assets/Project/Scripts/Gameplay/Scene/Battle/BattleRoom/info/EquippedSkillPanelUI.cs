@@ -149,7 +149,7 @@ public class EquippedSkillPanelUI : MonoBehaviour
         }
 
         SetTooltip(
-            string.IsNullOrWhiteSpace(skillData.Name) ? skillData.SkillId : skillData.Name,
+            string.IsNullOrWhiteSpace(skillData.Name) ? skillData.SkillId : GameDataLocalization.SkillName(skillData),
             BuildSkillDescription(skillData, runtimeData),
             hoveredSlotRect
         );
@@ -181,7 +181,7 @@ public class EquippedSkillPanelUI : MonoBehaviour
         }
 
         SetTooltip(
-            string.IsNullOrWhiteSpace(relicData.Name) ? relicData.FragmentId : relicData.Name,
+            string.IsNullOrWhiteSpace(relicData.Name) ? relicData.FragmentId : GameDataLocalization.RelicName(relicData),
             BuildRelicDescription(relicData),
             hoveredSlotRect
         );
@@ -237,9 +237,9 @@ public class EquippedSkillPanelUI : MonoBehaviour
         // 인벤토리 툴팁에는 스킬 마스터의 Details만 그대로 표시합니다.
         // ValueRate를 설명 앞에 자동으로 붙이지 않습니다.
         if (!string.IsNullOrWhiteSpace(skillData.Details))
-            return skillData.Details;
+            return GameDataLocalization.SkillDetails(skillData);
 
-        return "효과 설명이 없습니다.";
+        return GameLocalization.Get("common.no_effect_description", "효과 설명이 없습니다.");
     }
 
     private string BuildRelicDescription(RelicData relicData)
@@ -248,9 +248,9 @@ public class EquippedSkillPanelUI : MonoBehaviour
             return string.Empty;
 
         if (!string.IsNullOrWhiteSpace(relicData.EffectDesc))
-            return relicData.EffectDesc;
+            return GameDataLocalization.RelicDescription(relicData);
 
-        return "효과 설명이 없습니다.";
+        return GameLocalization.Get("common.no_effect_description", "효과 설명이 없습니다.");
     }
 
     private void MoveTooltipToSlot(RectTransform hoveredSlotRect)

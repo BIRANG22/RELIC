@@ -142,7 +142,9 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         }
 
         if (nameText != null)
-            nameText.text = item != null && !string.IsNullOrWhiteSpace(item.Name) ? item.Name : itemId;
+            nameText.text = item != null && !string.IsNullOrWhiteSpace(item.Name)
+                ? GameDataLocalization.ItemName(item)
+                : itemId;
 
         RefreshHighlight();
     }
@@ -309,8 +311,8 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
 
     public void OnSelect(BaseEventData eventData)
     {
-        // ¹öÆ° ¼±ÅÃ/Å¬¸¯À¸·Î´Â ÅøÆÁÀ» ¶ç¿ìÁö ¾Ê½À´Ï´Ù.
-        // °¡¹æ ÅøÆÁÀº PointerEnter »óÅÂ¿¡¼­¸¸ Ç¥½ÃÇÕ´Ï´Ù.
+        // ë²„íŠ¼ ì„ íƒ/í´ë¦­ìœ¼ë¡œëŠ” íˆ´íŒì„ ë„ìš°ì§€ ì•ŠìŠµë‹ˆë‹¤.
+        // ê°€ë°© íˆ´íŒì€ PointerEnter ìƒíƒœì—ì„œë§Œ í‘œì‹œí•©ë‹ˆë‹¤.
     }
 
     public void OnPointerClick(PointerEventData eventData)
