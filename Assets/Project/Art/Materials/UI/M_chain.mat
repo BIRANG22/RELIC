@@ -24,9 +24,9 @@ Material:
   m_Shader: {fileID: -6465566751694194690, guid: e9be6ffd63464b54e9f59995b4db9689, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords:
+  m_ValidKeywords: []
+  m_InvalidKeywords:
   - _ALPHATEST_ON
-  m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -63,8 +63,12 @@ Material:
         m_Texture: {fileID: 2800000, guid: d1aeab8b9160ea648b56128c81aaf5b8, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _Texture2D:
+        m_Texture: {fileID: 2800000, guid: a4cd66e9b271f1a4090fbdc936cc9a50, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _noisetexture:
-        m_Texture: {fileID: 2800000, guid: d1aeab8b9160ea648b56128c81aaf5b8, type: 3}
+        m_Texture: {fileID: 2800000, guid: 2d716b7bc78d71e448880d6fb51ba979, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
@@ -113,7 +117,7 @@ Material:
     - _ClipRect: {r: 0, g: 0, b: 0, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
-    - _noiseflow: {r: 0.01, g: 0, b: 0, a: 0}
+    - _noiseflow: {r: -0.01, g: 0, b: 0, a: 0}
     - _noiseoffset: {r: 0, g: 0, b: 0, a: 0}
     - _noisetiling: {r: 1, g: 1, b: 0, a: 0}
   m_BuildTextureStacks: []
