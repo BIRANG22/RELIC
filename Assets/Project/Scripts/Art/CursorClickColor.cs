@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class CursorClickColor : MonoBehaviour
@@ -9,18 +10,16 @@ public class CursorClickColor : MonoBehaviour
     [Header("커서 클릭 위치")]
     [SerializeField] private Vector2 hotSpot = Vector2.zero;
 
-    [Header("클릭 효과")]
-    [SerializeField, Min(0f)] private float minimumClickDuration = 0.1f;
+    [Header("클릭 커서 최소 유지 시간")]
+    [SerializeField] private float clickHoldTime = 0.15f;
 
     private static CursorClickColor instance;
 
-    private float clickStartTime;
-    private bool isClickedCursorActive;
-    private bool waitingForMinimumDuration;
+    private Coroutine restoreCoroutine;
+    private bool isMousePressed;
 
     private void Awake()
     {
-        // 이미 커서 매니저가 존재하면 중복 제거
         if (instance != null && instance != this)
         {
             Destroy(gameObject);
@@ -40,51 +39,49 @@ public class CursorClickColor : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            clickStartTime = Time.unscaledTime;
-            waitingForMinimumDuration = false;
+            isMousePressed = true;
+
+            if (restoreCoroutine != null)
+            {
+                StopCoroutine(restoreCoroutine);
+                restoreCoroutine = null;
+            }
+
             SetClickedCursor();
         }
 
         if (Input.GetMouseButtonUp(0))
         {
-            float elapsed = Time.unscaledTime - clickStartTime;
+            isMousePressed = false;
 
-            if (elapsed >= minimumClickDuration)
+            if (restoreCoroutine != null)
             {
-                SetNormalCursor();
+                StopCoroutine(restoreCoroutine);
             }
-            else
-            {
-                waitingForMinimumDuration = true;
-            }
+
+            restoreCoroutine = StartCoroutine(RestoreCursorAfterDelay());
         }
+    }
 
-        if (waitingForMinimumDuration &&
-            isClickedCursorActive &&
-            Time.unscaledTime - clickStartTime >= minimumClickDuration)
+    private IEnumerator RestoreCursorAfterDelay()
+    {
+        yield return new WaitForSecondsRealtime(clickHoldTime);
+
+        if (!isMousePressed)
         {
-            waitingForMinimumDuration = false;
             SetNormalCursor();
         }
+
+        restoreCoroutine = null;
     }
 
     private void SetNormalCursor()
     {
         Cursor.SetCursor(normalCursor, hotSpot, CursorMode.Auto);
-        isClickedCursorActive = false;
-        waitingForMinimumDuration = false;
     }
 
     private void SetClickedCursor()
     {
         Cursor.SetCursor(clickedCursor, hotSpot, CursorMode.Auto);
-        isClickedCursorActive = true;
     }
-
-#if UNITY_EDITOR
-    private void OnValidate()
-    {
-        minimumClickDuration = Mathf.Max(0f, minimumClickDuration);
-    }
-#endif
 }
