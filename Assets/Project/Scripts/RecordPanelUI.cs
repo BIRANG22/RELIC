@@ -140,7 +140,7 @@ public class RecordPanelUI : MonoBehaviour
 
         IEnumerable<SkillMasterData> skills = dataManager.SkillDatabase.GetAll()
             .Where(skill => skill != null && skill.Level != 2)
-            .OrderBy(skill => skill.Name, StringComparer.CurrentCulture);
+            .OrderBy(RecordDisplayNameResolver.SkillName, StringComparer.CurrentCulture);
 
         CreateSkillSlots(dataManager, skills);
     }
@@ -156,7 +156,7 @@ public class RecordPanelUI : MonoBehaviour
 
         IEnumerable<SkillMasterData> skills = dataManager.SkillDatabase.GetAll()
             .Where(skill => skill != null && skill.Level != 2 && skill.Category == category)
-            .OrderBy(skill => skill.Name, StringComparer.CurrentCulture);
+            .OrderBy(RecordDisplayNameResolver.SkillName, StringComparer.CurrentCulture);
 
         CreateSkillSlots(dataManager, skills);
     }
@@ -169,7 +169,7 @@ public class RecordPanelUI : MonoBehaviour
             if (icon == null && dataManager.SkillIconDatabase != null)
                 dataManager.SkillIconDatabase.TryGetIcon(skill.SkillId, out icon);
 
-            CreateSlot(skillGridContent, icon, skill.Name);
+            CreateSlot(skillGridContent, icon, RecordDisplayNameResolver.SkillName(skill));
         }
 
         CompleteListBuild(skillScrollRect);
@@ -188,7 +188,7 @@ public class RecordPanelUI : MonoBehaviour
         // GameData의 Rune 시트에 등록된 모든 룬을 표시합니다.
         IEnumerable<RuneData> runes = dataManager.RuneDatabase.GetAll()
             .Where(rune => rune != null)
-            .OrderBy(rune => rune.Name, StringComparer.CurrentCulture);
+            .OrderBy(RecordDisplayNameResolver.RuneName, StringComparer.CurrentCulture);
 
         foreach (RuneData rune in runes)
         {
@@ -196,7 +196,7 @@ public class RecordPanelUI : MonoBehaviour
             if (dataManager.RuneIconDatabase != null)
                 dataManager.RuneIconDatabase.TryGetIcon(rune.RuneId, out icon);
 
-            CreateSlot(fragmentGridContent, icon, rune.Name);
+            CreateSlot(fragmentGridContent, icon, RecordDisplayNameResolver.RuneName(rune));
         }
 
         CompleteListBuild(fragmentScrollRect);
@@ -213,7 +213,7 @@ public class RecordPanelUI : MonoBehaviour
 
         IEnumerable<RelicData> relics = dataManager.RelicDatabase.GetAll()
             .Where(relic => relic != null && IsActiveRelic(relic) == activeOnly)
-            .OrderBy(relic => relic.Name, StringComparer.CurrentCulture);
+            .OrderBy(RecordDisplayNameResolver.RelicName, StringComparer.CurrentCulture);
 
         foreach (RelicData relic in relics)
         {
@@ -221,7 +221,7 @@ public class RecordPanelUI : MonoBehaviour
             if (dataManager.RelicIconDatabase != null)
                 dataManager.RelicIconDatabase.TryGetIcon(relic.FragmentId, out icon);
 
-            CreateSlot(relicGridContent, icon, relic.Name);
+            CreateSlot(relicGridContent, icon, RecordDisplayNameResolver.RelicName(relic));
         }
 
         CompleteListBuild(relicScrollRect);
@@ -237,7 +237,7 @@ public class RecordPanelUI : MonoBehaviour
 
         IEnumerable<ItemData> items = dataManager.ItemDatabase.GetAll()
             .Where(item => item != null)
-            .OrderBy(item => item.Name, StringComparer.CurrentCulture);
+            .OrderBy(RecordDisplayNameResolver.ItemName, StringComparer.CurrentCulture);
 
         foreach (ItemData item in items)
         {
@@ -245,7 +245,7 @@ public class RecordPanelUI : MonoBehaviour
             if (dataManager.ItemIconDatabase != null)
                 dataManager.ItemIconDatabase.TryGetIcon(item.ItemId, out icon);
 
-            CreateSlot(itemGridContent, icon, item.Name);
+            CreateSlot(itemGridContent, icon, RecordDisplayNameResolver.ItemName(item));
         }
 
         CompleteListBuild(itemScrollRect);
@@ -429,5 +429,67 @@ public class RecordPanelUI : MonoBehaviour
     {
         if (target != null && target.activeSelf != active)
             target.SetActive(active);
+    }
+}
+
+public static class RecordDisplayNameResolver
+{
+    public static string SkillName(SkillMasterData data)
+    {
+        return data == null
+            ? string.Empty
+            : ResolveDisplayName(data, data.SkillId, data.Name, GameDataLocalization.SkillName);
+    }
+
+    public static string RuneName(RuneData data)
+    {
+        return data == null
+            ? string.Empty
+            : ResolveDisplayName(data, data.RuneId, data.Name, GameDataLocalization.RuneName);
+    }
+
+    public static string RelicName(RelicData data)
+    {
+        return data == null
+            ? string.Empty
+            : ResolveDisplayName(data, data.FragmentId, data.Name, GameDataLocalization.RelicName);
+    }
+
+    public static string ItemName(ItemData data)
+    {
+        return data == null
+            ? string.Empty
+            : ResolveDisplayName(data, data.ItemId, data.Name, GameDataLocalization.ItemName);
+    }
+
+    public static string ResolveDisplayName<T>(
+        T data,
+        string fallbackId,
+        string sourceName,
+        Func<T, string> localizer)
+    {
+        if (data == null)
+            return string.Empty;
+
+        string localizedName = null;
+        if (localizer != null)
+        {
+            try
+            {
+                localizedName = localizer(data);
+            }
+            catch (Exception)
+            {
+                localizedName = null;
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(localizedName))
+            return localizedName;
+
+        if (!string.IsNullOrWhiteSpace(sourceName))
+            return sourceName;
+
+        return fallbackId?.Trim() ?? string.Empty;
     }
 }
