@@ -5883,6 +5883,54 @@ MonoBehaviour:
     m_Key: presence.forming_party
     m_Metadata:
       m_Items: []
+  - m_Id: 41387432259100777
+    m_Key: lobby.stage_select.area_3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100778
+    m_Key: lobby.stage_select.area_7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100779
+    m_Key: lobby.stage_select.area_12
+    m_Metadata:
+      m_Items: []  - m_Id: 41387432259100780
+    m_Key: lobby.skill_info.method_label
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100781
+    m_Key: lobby.skill_info.cost_label
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100782
+    m_Key: lobby.rune_slot_unlock_level
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100783
+    m_Key: lobby.stat.hp.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100784
+    m_Key: lobby.stat.cost.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100785
+    m_Key: lobby.stat.recovery.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100786
+    m_Key: lobby.stat.move.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100787
+    m_Key: lobby.stat.base_value
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100788
+    m_Key: lobby.stat.rune_bonus
+    m_Metadata:
+      m_Items: []
+
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

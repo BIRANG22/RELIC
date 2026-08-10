@@ -1093,8 +1093,13 @@ public class RuneSettingPanel : MonoBehaviour
 
             if (runeInfoEffectText != null)
                 runeInfoEffectText.text = requiredLevel > 0
-                    ? $"캐릭터 {requiredLevel}레벨에 오픈됩니다."
-                    : "잠긴 룬 슬롯입니다.";
+                    ? GameLocalization.Format(
+                        "lobby.rune_slot_unlock_level",
+                        "캐릭터 {0}레벨에 오픈됩니다.",
+                        requiredLevel)
+                    : GameLocalization.Get(
+                        "lobby.rune_slot_locked",
+                        "아직 잠겨있는 룬 슬롯입니다.");
 
             return;
         }

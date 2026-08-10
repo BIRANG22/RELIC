@@ -93,7 +93,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915678466058
-    m_Localized: "\uAC00\uAE4C\uC6B4 \uCE90\uB9AD\uD130\uC5D0\uAC8C\\n\uC774\uB3D9\uD569\uB2C8\uB2E4."
+    m_Localized: "Mu\xE9vete hacia el\\npersonaje m\xE1s cercano."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915678466059
@@ -106,7 +106,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915678466061
-    m_Localized: "\uAC00\uAE4C\uC6B4 \uCE90\uB9AD\uD130\uC5D0\uAC8C\\n\uC774\uB3D9\uD569\uB2C8\uB2E4."
+    m_Localized: "Mu\xE9vete hacia el\\npersonaje m\xE1s cercano."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915678466062
@@ -154,7 +154,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915678466073
-    m_Localized: "\uAC00\uAE4C\uC6B4 \uCE90\uB9AD\uD130\uC5D0\uAC8C\\n\uC774\uB3D9\uD569\uB2C8\uB2E4."
+    m_Localized: "Mu\xE9vete hacia el\\npersonaje m\xE1s cercano."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915678466074
@@ -263,7 +263,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915678466099
-    m_Localized: "\uACB0\uC18D"
+    m_Localized: "V\xEDnculo"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915678466100
@@ -305,7 +305,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915678466108
-    m_Localized: "\uAC04\uD30C"
+    m_Localized: Perspicacia
     m_Metadata:
       m_Items: []
   - m_Id: 41385915678466109
@@ -333,7 +333,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915678466114
-    m_Localized: "\uACB0\uC2EC"
+    m_Localized: "Determinaci\xF3n"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915678466115
@@ -903,7 +903,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915682660456
-    m_Localized: "\uACA9\uB824"
+    m_Localized: "\xC1nimo"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915682660457
@@ -1123,7 +1123,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915682660510
-    m_Localized: "\uAC15\uCCA0 \uD53C\uBD80"
+    m_Localized: Piel de Acero
     m_Metadata:
       m_Items: []
   - m_Id: 41385915682660511
@@ -1135,7 +1135,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915682660513
-    m_Localized: "\uAC15\uCCA0 \uD53C\uBD80+"
+    m_Localized: Piel de Acero+
     m_Metadata:
       m_Items: []
   - m_Id: 41385915682660514
@@ -1171,12 +1171,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915682660522
-    m_Localized: "\uAC00\uC2DC\uAC11\uC637"
+    m_Localized: Armadura de Espinas
     m_Metadata:
       m_Items: []
   - m_Id: 41385915682660523
-    m_Localized: "\uAC00\uC2DC \uB3CB\uCE5C \uAC11\uC637\uC744 \uB458\uB7EC \uC790\uC2E0\uC5D0\uAC8C
-      \uAC00\uD638 2\uB97C \uBD80\uC5EC\uD569\uB2C8\uB2E4."
+    m_Localized: "C\xFAbrete con una armadura espinosa y obt\xE9n 2 de Protecci\xF3n."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915682660524
@@ -1184,12 +1183,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915682660525
-    m_Localized: "\uAC00\uC2DC\uAC11\uC637+"
+    m_Localized: Armadura de Espinas+
     m_Metadata:
       m_Items: []
   - m_Id: 41385915686854656
-    m_Localized: "\uAC00\uC2DC \uB3CB\uCE5C \uAC11\uC637\uC744 \uB458\uB7EC \uC790\uC2E0\uC5D0\uAC8C
-      \uAC00\uD638 2\uB97C \uBD80\uC5EC\uD569\uB2C8\uB2E4."
+    m_Localized: "C\xFAbrete con una armadura espinosa y obt\xE9n 2 de Protecci\xF3n."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915686854657
@@ -1297,8 +1295,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915686854683
-    m_Localized: "\uAC80\uC5D0 \uAE30\uB97C \uB458\uB7EC \uC801\uC5D0\uAC8C 7\uC758
-      \uD53C\uD574\uB97C \uC90D\uB2C8\uB2E4."
+    m_Localized: "Imbuye la espada con energ\xEDa para infligir 7 de da\xF1o a un
+      enemigo."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915686854684
@@ -1310,8 +1308,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915686854686
-    m_Localized: "\uAC80\uC5D0 \uAE30\uB97C \uB458\uB7EC \uC801\uC5D0\uAC8C 8\uC758
-      \uD53C\uD574\uB97C \uC90D\uB2C8\uB2E4."
+    m_Localized: "Imbuye la espada con energ\xEDa para infligir 8 de da\xF1o a un
+      enemigo."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915686854687
@@ -1347,8 +1345,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915686854695
-    m_Localized: "\uACAC\uC81C \uACF5\uACA9\uC73C\uB85C \uC801\uC5D0\uAC8C 4\uC758
-      \uD53C\uD574\uB97C \uC8FC\uACE0 \uB4A4\uB85C 1\uCE78 \uC774\uB3D9\uD569\uB2C8\uB2E4."
+    m_Localized: "Inflige 4 de da\xF1o a un enemigo con un ataque de hostigamiento
+      y luego retrocede 1 casilla."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915686854696
@@ -1360,8 +1358,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915686854698
-    m_Localized: "\uACAC\uC81C \uACF5\uACA9\uC73C\uB85C \uC801\uC5D0\uAC8C 6\uC758
-      \uD53C\uD574\uB97C \uC8FC\uACE0 \uB4A4\uB85C 1\uCE78 \uC774\uB3D9\uD569\uB2C8\uB2E4."
+    m_Localized: "Inflige 6 de da\xF1o a un enemigo con un ataque de hostigamiento
+      y luego retrocede 1 casilla."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915686854699
@@ -1779,8 +1777,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915686854797
-    m_Localized: "\uAC00\uAE4C\uC6B4 \uCE90\uB9AD\uD130\uB97C \uD5A5\uD574 1\uCE78
-      \uC774\uB3D9\uD569\uB2C8\uB2E4."
+    m_Localized: "Mu\xE9vete 1 casilla hacia el personaje m\xE1s cercano."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915686854798
@@ -1796,8 +1793,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915686854801
-    m_Localized: "\uAC00\uAE4C\uC6B4 \uCE90\uB9AD\uD130\uB97C \uD5A5\uD574 1\uCE78
-      \uC774\uB3D9\uD569\uB2C8\uB2E4."
+    m_Localized: "Mu\xE9vete 1 casilla hacia el personaje m\xE1s cercano."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915686854802
@@ -1877,8 +1873,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915686854821
-    m_Localized: "\uAC00\uAE4C\uC6B4 \uCE90\uB9AD\uD130\uB97C \uD5A5\uD574 1\uCE78
-      \uC774\uB3D9\uD569\uB2C8\uB2E4."
+    m_Localized: "Mu\xE9vete 1 casilla hacia el personaje m\xE1s cercano."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915686854822
@@ -1971,7 +1966,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915691048964
-    m_Localized: "\uAC70\uBBF8\uC904 \uAC11\uC8FC"
+    m_Localized: "Armadura de Telara\xF1a"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915691048965
@@ -1979,7 +1974,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915691048966
-    m_Localized: "\uAC00\uAE4C\uC6B4 \uCE90\uB9AD\uD130\uC5D0\uAC8C \uC774\uB3D9\uD569\uB2C8\uB2E4."
+    m_Localized: "Mu\xE9vete hacia el personaje m\xE1s cercano."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915691048967
@@ -1999,7 +1994,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915691048971
-    m_Localized: "\uAC00\uAE4C\uC6B4 \uCE90\uB9AD\uD130\uC5D0\uAC8C \uC774\uB3D9\uD569\uB2C8\uB2E4."
+    m_Localized: "Mu\xE9vete hacia el personaje m\xE1s cercano."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915691048972
@@ -2120,7 +2115,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915691049001
-    m_Localized: "\uAC80\uC2EC \u2160"
+    m_Localized: "Coraz\xF3n de Espada \u2160"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631872
@@ -2128,7 +2123,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631873
-    m_Localized: "\uAC80\uC2EC \u2161"
+    m_Localized: "Coraz\xF3n de Espada \u2161"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631874
@@ -2136,7 +2131,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631875
-    m_Localized: "\uAC80\uC2EC \u2162"
+    m_Localized: "Coraz\xF3n de Espada \u2162"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631876
@@ -2144,7 +2139,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631877
-    m_Localized: "\uAC80\uC2EC \u2163"
+    m_Localized: "Coraz\xF3n de Espada \u2163"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631878
@@ -2152,7 +2147,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631879
-    m_Localized: "\uAC80\uC2EC \u2164"
+    m_Localized: "Coraz\xF3n de Espada \u2164"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631880
@@ -2286,7 +2281,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631911
-    m_Localized: "\uAC01\uC778\xB7\uBD88\uC548\uC815\uD55C \uC6D0\uCC9C"
+    m_Localized: "Grabado\xB7Fuente Inestable"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631912
@@ -2295,7 +2290,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631913
-    m_Localized: "\uAC01\uC778\xB7\uBA54\uB9C8\uB978 \uACE0\uB3D9"
+    m_Localized: "Grabado\xB7Pulso Marchito"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631914
@@ -2304,7 +2299,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631915
-    m_Localized: "\uAC01\uC778\xB7\uAD73\uC5B4\uC9C4 \uC721\uC2E0"
+    m_Localized: "Grabado\xB7Cuerpo Endurecido"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631916
@@ -2313,7 +2308,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631917
-    m_Localized: "\uAC01\uC778\xB7\uC783\uC5B4\uBC84\uB9B0 \uC228\uACB0"
+    m_Localized: "Grabado\xB7Aliento Perdido"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631918
@@ -2322,7 +2317,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631919
-    m_Localized: "\uAC01\uC778\xB7\uB4A4\uD2C0\uB9B0 \uACA9\uB958"
+    m_Localized: "Grabado\xB7Torrente Retorcido"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631920
@@ -2364,7 +2359,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631929
-    m_Localized: "\uAC00\uBCBC\uC6B4 \uBC1C\uAC78\uC74C"
+    m_Localized: Paso Ligero
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631930
@@ -2373,7 +2368,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631931
-    m_Localized: "\uAC15\uB82C\uD55C \uD30C\uB3D9"
+    m_Localized: Onda Intensa
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631932
@@ -2458,7 +2453,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631952
-    m_Localized: "\uAC00\uC2DC"
+    m_Localized: Espinas
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631953
@@ -2496,7 +2491,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631961
-    m_Localized: "\uAC70\uBBF8\uC54C"
+    m_Localized: "Huevo de Ara\xF1a"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631962
@@ -2505,7 +2500,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631963
-    m_Localized: "\uAC70\uBBF8\uC904"
+    m_Localized: "Telara\xF1a"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631964
@@ -2639,7 +2634,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631995
-    m_Localized: "\uAC15\uD0C0"
+    m_Localized: Golpe Fuerte
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631996
@@ -2657,7 +2652,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631999
-    m_Localized: "\uAC00\uD638"
+    m_Localized: "Protecci\xF3n"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703632000
@@ -2892,8 +2887,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915707826228
-    m_Localized: "\uACE0\uC720\uC2A4\uD0AC \uC0AC\uC6A9 \uAC00\uB2A5 \uCD5C\uC18C
-      \uACE0\uC720\uC790\uC6D0 \uAE30\uC900\uC744 \uC218\uCE58\uB9CC\uD07C \uBCC0\uD654\uC2DC\uD0A8\uB2E4."
+    m_Localized: "Cambia en la cantidad indicada el m\xEDnimo de Recurso \xDAnico
+      necesario para usar una Habilidad \xDAnica."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915716214784
@@ -3245,12 +3240,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915724603448
-    m_Localized: "\uACE0\uC720\uC2A4\uD0AC \uC218\uCE58 \uD37C\uC13C\uD2B8 \uBCC0\uD654"
+    m_Localized: "Cambio Porcentual del Valor de Habilidad \xDAnica"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915724603449
-    m_Localized: "\uACE0\uC720\uC2A4\uD0AC \uC218\uCE58\uB97C \uD37C\uC13C\uD2B8\uB85C
-      \uBCC0\uD654\uC2DC\uD0A8\uB2E4."
+    m_Localized: "Cambia porcentualmente el valor de la Habilidad \xDAnica."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915724603450
@@ -3289,7 +3283,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915724603458
-    m_Localized: "\uACE0\uC720\uC2A4\uD0AC \uCC98\uCE58 \uC9D1\uC911"
+    m_Localized: "Concentraci\xF3n de Eliminaci\xF3n de Habilidad \xDAnica"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915724603459
@@ -3361,7 +3355,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915724603474
-    m_Localized: "\uAC15\uC81C\uC774\uB3D9 \uBA74\uC5ED"
+    m_Localized: Inmunidad al Movimiento Forzado
     m_Metadata:
       m_Items: []
   - m_Id: 41385915724603475
@@ -3740,7 +3734,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797782
-    m_Localized: "\uAC00\uC2DC \uC7A5\uD310 \uC0DD\uC131"
+    m_Localized: Crear Campo de Espinas
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797783
@@ -3789,7 +3783,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797794
-    m_Localized: "\uAC70\uBBF8\uC54C \uC0DD\uC131"
+    m_Localized: "Crear Huevo de Ara\xF1a"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797795
@@ -3797,7 +3791,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797796
-    m_Localized: "\uAC70\uBBF8\uC904 \uC0DD\uC131"
+    m_Localized: "Crear Telara\xF1a"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797797
@@ -3805,7 +3799,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797798
-    m_Localized: "\uAC70\uBBF8\uC904"
+    m_Localized: "Telara\xF1a"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797799
@@ -4546,7 +4540,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992096
-    m_Localized: "\uAC15\uCCA0 \uB2FB"
+    m_Localized: Ancla de Acero
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992097
@@ -4772,7 +4766,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992150
-    m_Localized: "\uAC10\uC5FC\uB41C \uBC14\uB298"
+    m_Localized: Aguja Infectada
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992151
@@ -4987,7 +4981,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186318
-    m_Localized: "\uACBD\uD654\uC81C \uC570\uD50C"
+    m_Localized: Ampolla Endurecedora
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186319
@@ -5023,7 +5017,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186327
-    m_Localized: "\uAC01\uC131\uC81C"
+    m_Localized: Estimulante
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186328
@@ -5111,7 +5105,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186348
-    m_Localized: "\uAC04\uC774 \uBC14\uB9AC\uAC8C\uC774\uD2B8"
+    m_Localized: Barricada Improvisada
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186349
@@ -5266,7 +5260,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186384
-    m_Localized: "\uACE0\uB300 \uC870\uAC01"
+    m_Localized: Fragmento Antiguo
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186385
@@ -5313,9 +5307,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915741380608
-    m_Localized: "\uAC15\uB300\uD55C \uC874\uC7AC\uB97C \uC4F0\uB7EC\uB728\uB9B0
-      \uC99D\uD45C\uB2E4. \uD310\uB9E4 \uC2DC 100 \uB354\uC2A4\uD2F0\uC6C0\uC744
-      \uC5BB\uB294\uB2E4."
+    m_Localized: Prueba de haber derrotado a un ser poderoso. Al venderlo, obtienes
+      100 Dustium.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915741380609
@@ -5371,7 +5364,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915741380622
-    m_Localized: "\uAC70\uB798\uD558\uC9C0 \uC54A\uB294\uB2E4"
+    m_Localized: No comerciar
     m_Metadata:
       m_Items: []
   - m_Id: 41385915741380623
@@ -5387,11 +5380,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915741380626
-    m_Localized: "\uACE0\uBE14\uB9B0 \uD1A0\uBC8C"
+    m_Localized: Caza de Goblins
     m_Metadata:
       m_Items: []
   - m_Id: 41385915741380627
-    m_Localized: "\uACE0\uBE14\uB9B0\uC744 10\uB9C8\uB9AC \uCC98\uCE58\uD558\uB77C"
+    m_Localized: Derrota a 10 Goblins.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915741380628
@@ -5631,11 +5624,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915741380687
-    m_Localized: "Generar huevo de ara\xF1a"
+    m_Localized: "Crear Huevo de Ara\xF1a"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915741380688
-    m_Localized: "Generar telara\xF1a"
+    m_Localized: "Crear Telara\xF1a"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915741380689
@@ -6162,6 +6155,54 @@ MonoBehaviour:
     m_Localized: "La bolsa est\xE1 llena. Puedes llevar hasta {0} objetos \xFAnicos."
     m_Metadata:
       m_Items: []
+  - m_Id: 41387432259100777
+    m_Localized: 'Area 3: Ruinas Rojas'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100778
+    m_Localized: 'Area 7: Canal Ceniciento'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100779
+    m_Localized: 'Area 12: Cueva de Erosion'
+    m_Metadata:
+      m_Items: []  - m_Id: 41387432259100780
+    m_Localized: "M\u00E9todo: "
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100781
+    m_Localized: "Coste:"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100782
+    m_Localized: "Se abre en el nivel {0} del personaje."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100783
+    m_Localized: "La salud del personaje.\\nCon 0 PV, no puede combatir."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100784
+    m_Localized: "Recurso que se gasta al usar habilidades.\\nNo puedes usar habilidades sin suficiente coste actual."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100785
+    m_Localized: "Coste recuperado al inicio del turno.\\nUna mayor recuperaci\u00F3n ofrece m\u00E1s opciones de habilidad cada turno."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100786
+    m_Localized: "Las habilidades de movimiento gastan 1 coste por casilla en combate.\\nCon 50 o m\u00E1s puntos de movimiento, 1 coste mueve 2 casillas."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100787
+    m_Localized: "Valor base {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100788
+    m_Localized: "Bonificaci\u00F3n de runa {0}"
+    m_Metadata:
+      m_Items: []
+
   references:
     version: 2
     RefIds: []

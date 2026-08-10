@@ -101,7 +101,7 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
             case StatType.CostRecovery:
                 return Mathf.Max(0, masterData.CostRecovery);
             case StatType.Move:
-                // Ä³¸¯ÅÍ µ¥ÀÌÅÍ¿¡´Â ±âº» ÀÌµ¿°ªÀÌ ¾ø½À´Ï´Ù.
+                // ìºë¦­í„° ë°ì´í„°ì—ëŠ” ê¸°ë³¸ ì´ë™ê°’ì´ ì—†ìŠµë‹ˆë‹¤.
                 return 0;
             default:
                 return 0;
@@ -133,15 +133,15 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
         switch (resolvedStatType)
         {
             case StatType.HP:
-                return "Ã¼·Â";
+                return GetLocalizedTooltipText("common.hp", "ì²´ë ¥");
             case StatType.Cost:
-                return "ÄÚ½ºÆ®";
+                return GetLocalizedTooltipText("common.cost", "ì½”ìŠ¤íŠ¸");
             case StatType.CostRecovery:
-                return "ÄÚ½ºÆ® È¸º¹·®";
+                return GetLocalizedTooltipText("common.recovery", "íšŒë³µ");
             case StatType.Move:
-                return "ÀÌµ¿·Â";
+                return GetLocalizedTooltipText("common.move_point", "ì´ë™ë ¥");
             default:
-                return "Á¤º¸";
+                return "ì •ë³´";
         }
     }
 
@@ -153,13 +153,21 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
         switch (resolvedStatType)
         {
             case StatType.HP:
-                return "Ä³¸¯ÅÍÀÇ »ý¸í·ÂÀÔ´Ï´Ù.\nÃ¼·ÂÀÌ 0ÀÌ µÇ¸é ÀüÅõºÒ´É »óÅÂ°¡ µË´Ï´Ù.";
+                return GetLocalizedTooltipText(
+                    "lobby.stat.hp.description",
+                    "ìºë¦­í„°ì˜ ì²´ë ¥ìž…ë‹ˆë‹¤.\nì²´ë ¥ì´ 0ì´ ë˜ë©´ ì „íˆ¬ë¶ˆëŠ¥ ìƒíƒœê°€ ë©ë‹ˆë‹¤.");
             case StatType.Cost:
-                return "½ºÅ³À» »ç¿ëÇÒ ¶§ ¼Ò¸ðÇÏ´Â ÀÚ¿øÀÔ´Ï´Ù.\nº¸À¯ ÄÚ½ºÆ®°¡ ³ôÀ»¼ö·Ï ÇÑ ÅÏ¿¡ ´õ ¸¹Àº ½ºÅ³À» »ç¿ëÇÒ ¼ö ÀÖ½À´Ï´Ù.";
+                return GetLocalizedTooltipText(
+                    "lobby.stat.cost.description",
+                    "ìŠ¤í‚¬ì„ ì‚¬ìš©í•  ë•Œ ì†Œëª¨í•˜ëŠ” ìžì›ìž…ë‹ˆë‹¤.\ní˜„ìž¬ ì½”ìŠ¤íŠ¸ê°€ ë¶€ì¡±í•˜ë©´ ìŠ¤í‚¬ì„ ì‚¬ìš©í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
             case StatType.CostRecovery:
-                return "ÅÏÀÌ ½ÃÀÛµÉ ¶§ È¸º¹µÇ´Â ÄÚ½ºÆ® ¼öÄ¡ÀÔ´Ï´Ù.\nÈ¸º¹·®ÀÌ ³ôÀ»¼ö·Ï ¸Å ÅÏ »ç¿ëÇÒ ¼ö ÀÖ´Â ½ºÅ³ ¼±ÅÃÁö°¡ ´Ã¾î³³´Ï´Ù.";
+                return GetLocalizedTooltipText(
+                    "lobby.stat.recovery.description",
+                    "í„´ì´ ì‹œìž‘ë  ë•Œ íšŒë³µë˜ëŠ” ì½”ìŠ¤íŠ¸ ìˆ˜ì¹˜ìž…ë‹ˆë‹¤.\níšŒë³µëŸ‰ì´ ë†’ì„ìˆ˜ë¡ í•œ í„´ì— ì‚¬ìš©í•  ìˆ˜ ìžˆëŠ” ìŠ¤í‚¬ ì„ íƒì§€ê°€ ëŠ˜ì–´ë‚©ë‹ˆë‹¤.");
             case StatType.Move:
-                return "ÀüÅõ Áß ÀÌµ¿½ºÅ³ »ç¿ë ½Ã 1Ä­ ÀÌµ¿¿¡ 1ÄÚ½ºÆ®¸¦ »ç¿ëÇÕ´Ï´Ù.\nÀÌµ¿·ÂÀÌ 50 ÀÌ»óÀÏ ¶§´Â 2Ä­ ÀÌµ¿¿¡ 1ÄÚ½ºÆ®¸¦ »ç¿ëÇÕ´Ï´Ù.";
+                return GetLocalizedTooltipText(
+                    "lobby.stat.move.description",
+                    "ì „íˆ¬ ì¤‘ ì´ë™ìŠ¤í‚¬ ì‚¬ìš© ì‹œ 1ì¹¸ ì´ë™ì— 1ì½”ìŠ¤íŠ¸ë¥¼ ì†Œëª¨í•©ë‹ˆë‹¤.\nì´ë™ë ¥ì´ 50 ì´ìƒì´ë©´ 2ì¹¸ ì´ë™ì— 1ì½”ìŠ¤íŠ¸ë¥¼ ì†Œëª¨í•©ë‹ˆë‹¤.");
             default:
                 return "";
         }
@@ -178,23 +186,23 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
 
             if (NameContains(objectName, "HP") ||
                 NameContains(objectName, "Health") ||
-                NameContains(objectName, "Ã¼·Â"))
+                NameContains(objectName, "ì²´ë ¥"))
                 return StatType.HP;
 
             if (NameContains(objectName, "Recovery") ||
                 NameContains(objectName, "Recover") ||
                 NameContains(objectName, "CostRecovery") ||
-                NameContains(objectName, "È¸º¹"))
+                NameContains(objectName, "íšŒë³µ"))
                 return StatType.CostRecovery;
 
             if (NameContains(objectName, "Stamina") ||
                 NameContains(objectName, "Cost") ||
-                NameContains(objectName, "ÄÚ½ºÆ®"))
+                NameContains(objectName, "ì½”ìŠ¤íŠ¸"))
                 return StatType.Cost;
 
             if (NameContains(objectName, "Move") ||
                 NameContains(objectName, "MoveValue") ||
-                NameContains(objectName, "ÀÌµ¿"))
+                NameContains(objectName, "ì´ë™"))
                 return StatType.Move;
 
             current = current.parent;
@@ -213,8 +221,13 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
 
     private string FormatValueLine(int baseValue, int runeBonus)
     {
+        string baseLine = GetLocalizedTooltipFormat(
+            "lobby.stat.base_value",
+            "ê¸°ë³¸ ìˆ˜ì¹˜ {0}",
+            baseValue);
+
         if (runeBonus == 0)
-            return "±âº» ¼öÄ¡ " + baseValue;
+            return baseLine;
 
         string sign = runeBonus > 0 ? "+" : "";
         string runeColor = runeBonus > 0 ? runeIncreaseColor : runeDecreaseColor;
@@ -223,8 +236,35 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
         if (!string.IsNullOrWhiteSpace(runeColor))
             runeText = "<color=" + runeColor + ">" + runeText + "</color>";
 
-        return "±âº» ¼öÄ¡ " + baseValue + "\n" +
-               "·é º¸Á¤ " + runeText;
+        string runeLine = GetLocalizedTooltipFormat(
+            "lobby.stat.rune_bonus",
+            "ë£¬ ë³´ì • {0}",
+            runeText);
+
+        return baseLine + "\n" + runeLine;
+    }
+
+    private string GetLocalizedTooltipText(string key, string fallback)
+    {
+        return NormalizeTooltipText(GameLocalization.Get(key, fallback));
+    }
+
+    private string GetLocalizedTooltipFormat(string key, string fallback, params object[] arguments)
+    {
+        return NormalizeTooltipText(GameLocalization.Format(key, fallback, arguments));
+    }
+
+    private string NormalizeTooltipText(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+            return string.Empty;
+
+        return text
+            .Replace("\\r\\n", "\n")
+            .Replace("\\n", "\n")
+            .Replace("\\r", "")
+            .Replace("\r\n", "\n")
+            .Replace("\r", "\n");
     }
 
     private void AutoBindIfNeeded()

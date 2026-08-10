@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -29,10 +30,16 @@ public sealed class UIBlurBackground : MonoBehaviour
     [Tooltip("1이면 원본 대비, 1보다 작으면 부드럽고 흐릿하게, 1보다 크면 대비가 강해집니다.")]
     [SerializeField, Range(0f, 2f)] private float contrast = 0.8f;
 
+    [Header("Manual UI Blur Exceptions")]
+    [Tooltip("이 블러 배경에 함께 흐리게 담을 UI 루트입니다. 비워두면 모든 UI가 캡처에서 제외됩니다.")]
+    [SerializeField] private GameObject[] blurredUiRoots = new GameObject[0];
+
     private static readonly int BlurRadiusId = Shader.PropertyToID("_BlurRadius");
     private static readonly int DarkenId = Shader.PropertyToID("_Darken");
     private static readonly int SaturationId = Shader.PropertyToID("_Saturation");
     private static readonly int ContrastId = Shader.PropertyToID("_Contrast");
+    private static readonly Dictionary<GameObject, SourceRootHideState> HiddenSourceRoots =
+        new Dictionary<GameObject, SourceRootHideState>();
 
     private Image backgroundImage;
     private bool originalBackgroundImageEnabled;
@@ -42,7 +49,19 @@ public sealed class UIBlurBackground : MonoBehaviour
     private Canvas blurCanvas;
     private RawImage blurGraphic;
     private Material runtimeMaterial;
-    private bool blurPresentationRegistered;
+    private readonly List<GameObject> hiddenSourceRoots = new List<GameObject>();
+
+    private sealed class SourceRootHideState
+    {
+        public CanvasGroup CanvasGroup;
+        public bool AddedCanvasGroup;
+        public float OriginalAlpha;
+        public bool OriginalInteractable;
+        public bool OriginalBlocksRaycasts;
+        public int RefCount;
+    }
+
+    public IReadOnlyList<GameObject> BlurredUiRoots => blurredUiRoots;
 
     private void Awake()
     {
@@ -63,17 +82,18 @@ public sealed class UIBlurBackground : MonoBehaviour
         ApplyRaycastSetting();
         ApplyBlurCanvasSorting();
 
-        if (blurCanvasObject != null)
-            blurCanvasObject.SetActive(true);
-
-        CaptureAndRefreshBackground();
+        HideBlurCanvasForCapture();
+        bool captured = CaptureAndRefreshBackground();
         ApplyMaterialProperties();
-        RegisterBlurPresentation();
+        ShowBlurCanvasAfterCapture();
+
+        if (captured)
+            HideBlurredUiSources();
     }
 
     private void OnDisable()
     {
-        UnregisterBlurPresentation();
+        RestoreBlurredUiSources();
         if (blurCanvasObject != null)
             blurCanvasObject.SetActive(false);
 
@@ -82,7 +102,7 @@ public sealed class UIBlurBackground : MonoBehaviour
 
     private void OnDestroy()
     {
-        UnregisterBlurPresentation();
+        RestoreBlurredUiSources();
         RestoreOriginalBackgroundImageState();
 
         if (blurCanvasObject != null)
@@ -106,24 +126,6 @@ public sealed class UIBlurBackground : MonoBehaviour
 
             runtimeMaterial = null;
         }
-    }
-
-    private void RegisterBlurPresentation()
-    {
-        if (blurPresentationRegistered)
-            return;
-
-        blurPresentationRegistered = true;
-        UIBlurBackgroundCaptureManager.BeginBlurPresentation();
-    }
-
-    private void UnregisterBlurPresentation()
-    {
-        if (!blurPresentationRegistered)
-            return;
-
-        blurPresentationRegistered = false;
-        UIBlurBackgroundCaptureManager.EndBlurPresentation();
     }
 
 #if UNITY_EDITOR
@@ -277,14 +279,142 @@ public sealed class UIBlurBackground : MonoBehaviour
         blurGraphic.material = runtimeMaterial;
     }
 
-    private void CaptureAndRefreshBackground()
+    private bool CaptureAndRefreshBackground()
     {
+        if (blurGraphic == null)
+            return false;
+
+        Texture captured = UIBlurBackgroundCaptureManager.CaptureBackgroundNow(blurredUiRoots);
+        if (captured != null)
+        {
+            blurGraphic.texture = captured;
+            return true;
+        }
+
+        return false;
+    }
+
+    private void HideBlurCanvasForCapture()
+    {
+        if (blurCanvasObject != null)
+            blurCanvasObject.SetActive(false);
+    }
+
+    private void ShowBlurCanvasAfterCapture()
+    {
+        if (blurCanvasObject == null)
+            return;
+
+        blurCanvasObject.SetActive(true);
+
         if (blurGraphic == null)
             return;
 
-        Texture captured = UIBlurBackgroundCaptureManager.CaptureBackgroundNow();
-        if (captured != null)
-            blurGraphic.texture = captured;
+        CanvasRenderer renderer = blurGraphic.canvasRenderer;
+        if (renderer == null)
+            return;
+
+        renderer.SetAlpha(1f);
+        renderer.cull = false;
+    }
+
+    private void HideBlurredUiSources()
+    {
+        RestoreBlurredUiSources();
+
+        List<GameObject> validRoots = UIBlurBackgroundCaptureManager.GetValidBlurredUiRoots(blurredUiRoots);
+        for (int i = 0; i < validRoots.Count; i++)
+        {
+            GameObject root = validRoots[i];
+            if (root == null || !root.activeInHierarchy)
+                continue;
+
+            HideSourceRoot(root);
+            hiddenSourceRoots.Add(root);
+        }
+    }
+
+    private void RestoreBlurredUiSources()
+    {
+        for (int i = hiddenSourceRoots.Count - 1; i >= 0; i--)
+        {
+            GameObject root = hiddenSourceRoots[i];
+            if (root == null)
+                continue;
+
+            if (!HiddenSourceRoots.TryGetValue(root, out SourceRootHideState state))
+                continue;
+
+            state.RefCount = Mathf.Max(0, state.RefCount - 1);
+            if (state.RefCount > 0)
+                continue;
+
+            RestoreSourceRoot(root, state);
+            HiddenSourceRoots.Remove(root);
+        }
+
+        hiddenSourceRoots.Clear();
+    }
+
+    private static void HideSourceRoot(GameObject root)
+    {
+        if (root == null)
+            return;
+
+        if (!HiddenSourceRoots.TryGetValue(root, out SourceRootHideState state))
+        {
+            CanvasGroup canvasGroup = root.GetComponent<CanvasGroup>();
+            bool addedCanvasGroup = canvasGroup == null;
+
+            if (canvasGroup == null)
+                canvasGroup = root.AddComponent<CanvasGroup>();
+
+            state = new SourceRootHideState
+            {
+                CanvasGroup = canvasGroup,
+                AddedCanvasGroup = addedCanvasGroup,
+                OriginalAlpha = canvasGroup.alpha,
+                OriginalInteractable = canvasGroup.interactable,
+                OriginalBlocksRaycasts = canvasGroup.blocksRaycasts
+            };
+
+            HiddenSourceRoots.Add(root, state);
+        }
+
+        state.RefCount++;
+        ApplyHiddenSourceState(state.CanvasGroup);
+    }
+
+    private static void RestoreSourceRoot(GameObject root, SourceRootHideState state)
+    {
+        if (root == null || state == null)
+            return;
+
+        CanvasGroup canvasGroup = state.CanvasGroup;
+        if (canvasGroup != null)
+        {
+            canvasGroup.alpha = state.OriginalAlpha;
+            canvasGroup.interactable = state.OriginalInteractable;
+            canvasGroup.blocksRaycasts = state.OriginalBlocksRaycasts;
+        }
+
+        if (state.AddedCanvasGroup && canvasGroup != null)
+        {
+            if (Application.isPlaying)
+                Destroy(canvasGroup);
+            else
+                DestroyImmediate(canvasGroup);
+        }
+    }
+
+    private static void ApplyHiddenSourceState(CanvasGroup canvasGroup)
+    {
+        if (canvasGroup == null)
+            return;
+
+        canvasGroup.alpha = 0f;
+        canvasGroup.interactable = false;
+        canvasGroup.blocksRaycasts = false;
     }
 
     private void ApplyMaterialProperties()
