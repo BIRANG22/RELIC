@@ -19,6 +19,7 @@ namespace Relic.Gameplay.Data
 
         public bool IsBossUnlocked;
         public bool IsRunInitialized;
+        public bool IsManualMapTemplate;
 
         public List<GeneratedMapNodeData> GeneratedNodes = new();
     }
