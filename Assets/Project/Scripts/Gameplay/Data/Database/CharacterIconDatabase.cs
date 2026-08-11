@@ -41,6 +41,24 @@ namespace Relic.Gameplay.Data
             return icon != null;
         }
 
+        public bool TryGetTimelineIcon(string characterId, out Sprite icon)
+        {
+            icon = null;
+
+            if (map == null)
+                Initialize();
+
+            if (!map.TryGetValue(characterId, out var entry))
+                return false;
+
+            icon = entry.TimelineIcon;
+
+            if (icon == null)
+                icon = entry.Icon;
+
+            return icon != null;
+        }
+
         public bool TryGetPortrait(string characterId, out Sprite portrait)
         {
             portrait = null;
@@ -59,9 +77,9 @@ namespace Relic.Gameplay.Data
             return portrait != null;
         }
 
-        public bool TryGetTimelineIcon(string characterId, out Sprite icon)
+        public bool TryGetCharBackImage(string characterId, out Sprite charBackImage)
         {
-            icon = null;
+            charBackImage = null;
 
             if (map == null)
                 Initialize();
@@ -69,12 +87,8 @@ namespace Relic.Gameplay.Data
             if (!map.TryGetValue(characterId, out var entry))
                 return false;
 
-            icon = entry.TimelineIcon;
-
-            if (icon == null)
-                icon = entry.Icon;
-
-            return icon != null;
+            charBackImage = entry.CharBackImage;
+            return charBackImage != null;
         }
 
         public bool TryGetMark(string characterId, out Sprite mark)
@@ -113,6 +127,7 @@ namespace Relic.Gameplay.Data
         public Sprite Icon;
         public Sprite Portrait;
         public Sprite TimelineIcon;
+        public Sprite CharBackImage;
         public Sprite Mark;
         public Sprite Mark2;
     }
