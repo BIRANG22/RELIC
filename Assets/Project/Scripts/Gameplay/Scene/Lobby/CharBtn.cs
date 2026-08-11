@@ -319,7 +319,7 @@ public class CharBtn : MonoBehaviour,
             {
                 master.UniqueSkill1,
                 master.CharacterSkill1,
-                master.CommonSkill1,
+                "",
                 ""
             },
 

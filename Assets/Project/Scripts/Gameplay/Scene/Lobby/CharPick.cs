@@ -727,7 +727,7 @@ public class CharPick : MonoBehaviour
             {
                 master.UniqueSkill1,
                 master.CharacterSkill1,
-                master.CommonSkill1,
+                "",
                 ""
             },
 

@@ -9,6 +9,8 @@ using UnityEngine.UI;
 
 public class BattleMenuEscapeInputController : MonoBehaviour
 {
+    private static int lastHandledEscapeFrame = -1;
+
     [Header("Input")]
     [SerializeField] private bool enableEscapeInput = true;
 
@@ -78,15 +80,26 @@ public class BattleMenuEscapeInputController : MonoBehaviour
     {
         if (enableEscapeInput && WasEscapePressedThisFrame() && !IsTypingInputFieldSelected())
         {
-            if (UIManager.WasConfirmDialogClosedByEscapeThisFrame || UIManager.WasOptionPanelClosedByEscapeThisFrame)
+            if (UIManager.WasConfirmDialogClosedByEscapeThisFrame ||
+                UIManager.WasRecordPanelClosedByEscapeThisFrame ||
+                UIManager.WasOptionPanelClosedByEscapeThisFrame)
                 return;
 
             if (UIManager.Instance != null && UIManager.Instance.TryHideConfirmDialogIfOpen(true))
                 return;
 
+            if (UIManager.Instance != null && UIManager.Instance.TryHideRecordIfOpen(true))
+                return;
+
             if (UIManager.Instance != null && UIManager.Instance.TryHideOptionIfOpen(true))
                 return;
 
+            // 배틀 공용 캔버스와 방별 캔버스에 이 컨트롤러가 함께 있어도
+            // 같은 ESC 입력으로 MenuButton이 두 번 토글되지 않도록 한 프레임에 한 번만 처리합니다.
+            if (lastHandledEscapeFrame == Time.frameCount)
+                return;
+
+            lastHandledEscapeFrame = Time.frameCount;
             ClickMenuButton();
         }
 

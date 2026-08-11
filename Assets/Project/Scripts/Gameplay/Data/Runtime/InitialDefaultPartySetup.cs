@@ -108,7 +108,7 @@ namespace Relic.Gameplay.Data
                 {
                     master.UniqueSkill1,
                     master.CharacterSkill1,
-                    master.CommonSkill1,
+                    string.Empty,
                     string.Empty
                 },
                 EquippedRuneIds = new string[12],
