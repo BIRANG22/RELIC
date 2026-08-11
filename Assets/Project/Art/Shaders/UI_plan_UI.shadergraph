@@ -1316,7 +1316,7 @@
     "m_StageCapability": 3,
     "m_Value": {
         "x": 0.0,
-        "y": 0.3199999928474426
+        "y": 0.3400000035762787
     },
     "m_DefaultValue": {
         "x": 0.5,
@@ -1891,7 +1891,7 @@
             "x": 1.0,
             "y": 1.0,
             "z": 1.0,
-            "w": 0.20352482795715333
+            "w": 0.38706034421920779
         }
     ],
     "m_SerializableAlphaKeys": [
@@ -3382,7 +3382,7 @@
     "m_Hidden": false,
     "m_ShaderOutputName": "Rotation",
     "m_StageCapability": 3,
-    "m_Value": -2.990000009536743,
+    "m_Value": -2.690000057220459,
     "m_DefaultValue": 0.0,
     "m_Labels": []
 }
@@ -4008,7 +4008,7 @@
             "x": 1.0,
             "y": 1.0,
             "z": 1.0,
-            "w": 0.23411917686462403
+            "w": 0.5611810684204102
         }
     ],
     "m_SerializableAlphaKeys": [
