@@ -13,11 +13,43 @@ MonoBehaviour:
   m_Name: MonsterSkillIconDatabase
   m_EditorClassIdentifier: 
   entries:
-  - iconId: icon_mon_attack
-    sprite: {fileID: 21300000, guid: 4a4957c8f922a224a9b47874371ccfa1, type: 3}
-  - iconId: icon_mon_buff
-    sprite: {fileID: 21300000, guid: 172f40b792ddbf648bc72b6e1c82b8a4, type: 3}
-  - iconId: icon_mon_debuff
-    sprite: {fileID: 21300000, guid: e82bca95b3544c3439c703560577f301, type: 3}
-  - iconId: icon_mon_move
-    sprite: {fileID: 21300000, guid: 76651f2c4ef19bd478d9388dc661cc14, type: 3}
+  - iconId: icon_mon_skill_001
+    sprite: {fileID: 21300000, guid: a3be011d02ad8dc47bc1bc75fec5acd5, type: 3}
+  - iconId: icon_mon_skill_002
+    sprite: {fileID: 21300000, guid: 2b7b2a8b2c3d03f4196531cbb7952410, type: 3}
+  - iconId: icon_mon_skill_003
+    sprite: {fileID: 21300000, guid: ef496477535e0b04a88d36aae55c3e46, type: 3}
+  - iconId: icon_mon_skill_004
+    sprite: {fileID: 21300000, guid: f34c38bd46c747f40b6292424e824fc7, type: 3}
+  - iconId: icon_mon_skill_005
+    sprite: {fileID: 21300000, guid: 47c8fc253bb03a9458e97248abda278d, type: 3}
+  - iconId: icon_mon_skill_006
+    sprite: {fileID: 21300000, guid: 4ba2870ca78df724a8fc966b97327151, type: 3}
+  - iconId: icon_mon_skill_007
+    sprite: {fileID: 21300000, guid: 68ce60e2f8150c9449afcee009e7ccfe, type: 3}
+  - iconId: icon_mon_skill_008
+    sprite: {fileID: 21300000, guid: b5185096500960c488466a7ce6aa3d7b, type: 3}
+  - iconId: icon_mon_skill_009
+    sprite: {fileID: 21300000, guid: 776689923c74c8a4ca29c46fb9f002e2, type: 3}
+  - iconId: icon_mon_skill_010
+    sprite: {fileID: 21300000, guid: c229f1aff69eb8647934f33e5f4f3ece, type: 3}
+  - iconId: icon_mon_skill_011
+    sprite: {fileID: 21300000, guid: 32ff76d749269d84883663c7f8d0267d, type: 3}
+  - iconId: icon_mon_skill_012
+    sprite: {fileID: 21300000, guid: 088c84a368feecd49b70085e41f6ad8b, type: 3}
+  - iconId: icon_mon_skill_013
+    sprite: {fileID: 21300000, guid: a122da390e6599f48a48b67e5ff18572, type: 3}
+  - iconId: icon_mon_skill_014
+    sprite: {fileID: 21300000, guid: 9d49ad06fc6858742a993907bf073e8b, type: 3}
+  - iconId: icon_mon_skill_015
+    sprite: {fileID: 21300000, guid: 7913fa60c7deb234691b69e480fa1a13, type: 3}
+  - iconId: icon_mon_skill_016
+    sprite: {fileID: 21300000, guid: 93c9149c4df34084e84c0fcc5d19c7ca, type: 3}
+  - iconId: icon_mon_skill_017
+    sprite: {fileID: 21300000, guid: 6d0380c98d9655049ae994f882293b29, type: 3}
+  - iconId: icon_mon_skill_018
+    sprite: {fileID: 21300000, guid: 2d3294c3847d7b347ad90641461222af, type: 3}
+  - iconId: icon_mon_skill_019
+    sprite: {fileID: 21300000, guid: 1067ea87da8d14f4eba3012d6de94268, type: 3}
+  - iconId: icon_mon_skill_020
+    sprite: {fileID: 21300000, guid: cb3465cf0e7c61045962a023473baa90, type: 3}
