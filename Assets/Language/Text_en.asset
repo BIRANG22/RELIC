@@ -22,16 +22,436 @@ MonoBehaviour:
     m_Localized: Start
     m_Metadata:
       m_Items: []
+  - m_Id: 41387432259100672
+    m_Localized: Close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100673
+    m_Localized: Back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100674
+    m_Localized: Confirm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100675
+    m_Localized: Yes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100676
+    m_Localized: No
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100677
+    m_Localized: Save
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100678
+    m_Localized: Delete
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100679
+    m_Localized: Exit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100680
+    m_Localized: Settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100681
+    m_Localized: Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100682
+    m_Localized: Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100683
+    m_Localized: Continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100684
+    m_Localized: Enter
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100685
+    m_Localized: Proceed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100686
+    m_Localized: Discard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100687
+    m_Localized: Extract
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100688
+    m_Localized: 'Effect:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100689
+    m_Localized: Range
+    m_Metadata:
+      m_Items: []
   - m_Id: 41367126123487249
     m_Localized: Cost
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100690
+    m_Localized: Rarity
     m_Metadata:
       m_Items: []
   - m_Id: 41367126123487251
     m_Localized: Armor
     m_Metadata:
       m_Items: []
+  - m_Id: 41387432259100691
+    m_Localized: Bleed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100692
+    m_Localized: Knockback
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100693
+    m_Localized: Recovery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100694
+    m_Localized: Active
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100695
+    m_Localized: Passive
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100696
+    m_Localized: Unique
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100697
+    m_Localized: Shared
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100698
+    m_Localized: Exclusive
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100699
+    m_Localized: Master
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100700
+    m_Localized: Item
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100701
+    m_Localized: Material
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100702
+    m_Localized: Equipment
+    m_Metadata:
+      m_Items: []
   - m_Id: 41367126123487264
     m_Localized: Skill
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100703
+    m_Localized: Relic
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100704
+    m_Localized: Rune
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100705
+    m_Localized: Sound
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100706
+    m_Localized: Music
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100707
+    m_Localized: Sound Effects
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100708
+    m_Localized: Controls
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100709
+    m_Localized: Tutorial
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100710
+    m_Localized: Language
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100711
+    m_Localized: Resolution
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100712
+    m_Localized: Continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100713
+    m_Localized: Press any key
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100714
+    m_Localized: Archive
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100715
+    m_Localized: Memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100716
+    m_Localized: Memory & Relics
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100717
+    m_Localized: Summon Relic
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100718
+    m_Localized: Relic Acquired
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100719
+    m_Localized: Material Research
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100720
+    m_Localized: Combine
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100721
+    m_Localized: Invite
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100722
+    m_Localized: Formation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100723
+    m_Localized: Training
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100724
+    m_Localized: Explore
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100725
+    m_Localized: Prepare Expedition
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100726
+    m_Localized: Rest
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100727
+    m_Localized: Return to Base
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100728
+    m_Localized: Character Profile
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100729
+    m_Localized: Battle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100730
+    m_Localized: End Turn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100731
+    m_Localized: Give Up
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100732
+    m_Localized: Paused
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100733
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100734
+    m_Localized: Select Grid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100735
+    m_Localized: Choose Next Path
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100736
+    m_Localized: Selected Node
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100737
+    m_Localized: Choose Trial
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100738
+    m_Localized: Elite
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100739
+    m_Localized: Boss
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100740
+    m_Localized: Event
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100741
+    m_Localized: Loot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100742
+    m_Localized: Shard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100743
+    m_Localized: Preview
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100744
+    m_Localized: Rising Threat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100745
+    m_Localized: Corroded Body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100746
+    m_Localized: Sharp Remnant
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100747
+    m_Localized: Powerful enemies appear more frequently.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100748
+    m_Localized: All enemies gain increased Attack.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100749
+    m_Localized: All enemies gain increased Health.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100750
+    m_Localized: Action Range
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100751
+    m_Localized: Action Trait
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100752
+    m_Localized: Upgradeable Skills
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100753
+    m_Localized: Upgrade
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100754
+    m_Localized: Usage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100755
+    m_Localized: Numeric Effect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100756
+    m_Localized: Passive Skill
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100757
+    m_Localized: Quit the game?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100758
+    m_Localized: Unable to load data.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100759
+    m_Localized: Locked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100760
+    m_Localized: Culture Tank {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100761
+    m_Localized: Material inserted
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100762
+    m_Localized: Empty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100763
+    m_Localized: Unable to combine.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100764
+    m_Localized: Sold
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100765
+    m_Localized: No character is selected.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100766
+    m_Localized: Character data could not be found.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100767
+    m_Localized: There is no character in that party slot.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100768
+    m_Localized: Select a character first.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100769
+    m_Localized: Rune and skill information appears here.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100770
+    m_Localized: Skill Info
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100771
+    m_Localized: Skill information appears here.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100772
+    m_Localized: Rune Info
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100773
+    m_Localized: Rune information appears here.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100774
+    m_Localized: Return to the title screen?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100775
+    m_Localized: No Skill
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100776
+    m_Localized: The bag is full. You can carry up to {0} unique items.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915657494528
@@ -5669,426 +6089,6 @@ MonoBehaviour:
     m_Localized: Forming a Party
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100672
-    m_Localized: Close
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100673
-    m_Localized: Back
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100674
-    m_Localized: Confirm
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100675
-    m_Localized: Yes
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100676
-    m_Localized: No
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100677
-    m_Localized: Save
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100678
-    m_Localized: Delete
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100679
-    m_Localized: Exit
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100680
-    m_Localized: Settings
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100681
-    m_Localized: Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100682
-    m_Localized: Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100683
-    m_Localized: Continue
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100684
-    m_Localized: Enter
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100685
-    m_Localized: Proceed
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100686
-    m_Localized: Discard
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100687
-    m_Localized: Extract
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100688
-    m_Localized: 'Effect:'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100689
-    m_Localized: Range
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100690
-    m_Localized: Rarity
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100691
-    m_Localized: Bleed
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100692
-    m_Localized: Knockback
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100693
-    m_Localized: Recovery
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100694
-    m_Localized: Active
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100695
-    m_Localized: Passive
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100696
-    m_Localized: Unique
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100697
-    m_Localized: Shared
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100698
-    m_Localized: Exclusive
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100699
-    m_Localized: Master
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100700
-    m_Localized: Item
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100701
-    m_Localized: Material
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100702
-    m_Localized: Equipment
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100703
-    m_Localized: Relic
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100704
-    m_Localized: Rune
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100705
-    m_Localized: Sound
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100706
-    m_Localized: Music
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100707
-    m_Localized: Sound Effects
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100708
-    m_Localized: Controls
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100709
-    m_Localized: Tutorial
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100710
-    m_Localized: Language
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100711
-    m_Localized: Resolution
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100712
-    m_Localized: Continue
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100713
-    m_Localized: Press any key
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100714
-    m_Localized: Archive
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100715
-    m_Localized: Memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100716
-    m_Localized: Memory & Relics
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100717
-    m_Localized: Summon Relic
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100718
-    m_Localized: Relic Acquired
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100719
-    m_Localized: Material Research
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100720
-    m_Localized: Combine
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100721
-    m_Localized: Invite
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100722
-    m_Localized: Formation
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100723
-    m_Localized: Training
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100724
-    m_Localized: Explore
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100725
-    m_Localized: Prepare Expedition
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100726
-    m_Localized: Rest
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100727
-    m_Localized: Return to Base
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100728
-    m_Localized: Character Profile
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100729
-    m_Localized: Battle
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100730
-    m_Localized: End Turn
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100731
-    m_Localized: Give Up
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100732
-    m_Localized: Paused
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100733
-    m_Localized: Move
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100734
-    m_Localized: Select Grid
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100735
-    m_Localized: Choose Next Path
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100736
-    m_Localized: Selected Node
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100737
-    m_Localized: Choose Trial
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100738
-    m_Localized: Elite
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100739
-    m_Localized: Boss
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100740
-    m_Localized: Event
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100741
-    m_Localized: Loot
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100742
-    m_Localized: Shard
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100743
-    m_Localized: Preview
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100744
-    m_Localized: Rising Threat
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100745
-    m_Localized: Corroded Body
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100746
-    m_Localized: Sharp Remnant
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100747
-    m_Localized: Powerful enemies appear more frequently.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100748
-    m_Localized: All enemies gain increased Attack.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100749
-    m_Localized: All enemies gain increased Health.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100750
-    m_Localized: Action Range
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100751
-    m_Localized: Action Trait
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100752
-    m_Localized: Upgradeable Skills
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100753
-    m_Localized: Upgrade
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100754
-    m_Localized: Usage
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100755
-    m_Localized: Numeric Effect
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100756
-    m_Localized: Passive Skill
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100757
-    m_Localized: Quit the game?
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100758
-    m_Localized: Unable to load data.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100759
-    m_Localized: Locked
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100760
-    m_Localized: Culture Tank {0}
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100761
-    m_Localized: Material inserted
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100762
-    m_Localized: Empty
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100763
-    m_Localized: Unable to combine.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100764
-    m_Localized: Sold
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100765
-    m_Localized: No character is selected.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100766
-    m_Localized: Character data could not be found.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100767
-    m_Localized: There is no character in that party slot.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100768
-    m_Localized: Select a character first.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100769
-    m_Localized: Rune and skill information appears here.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100770
-    m_Localized: Skill Info
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100771
-    m_Localized: Skill information appears here.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100772
-    m_Localized: Rune Info
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100773
-    m_Localized: Rune information appears here.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100774
-    m_Localized: Return to the title screen?
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100775
-    m_Localized: No Skill
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100776
-    m_Localized: The bag is full. You can carry up to {0} unique items.
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100777
     m_Localized: 'Area 3: Red Ruins'
     m_Metadata:
@@ -6099,6 +6099,10 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 41387432259100779
     m_Localized: 'Area 12: Erosion Cave'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100780
+    m_Localized: 'Method: '
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100781
@@ -6136,8 +6140,258 @@ MonoBehaviour:
     m_Localized: Rune bonus {0}
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100780
-    m_Localized: 'Method: '
+  - m_Id: 41387432259100789
+    m_Localized: Overbearing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100790
+    m_Localized: Suppresses the opponent's momentum and inflicts 1 weakening.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100791
+    m_Localized: Grants Weakness 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100792
+    m_Localized: Intimidating+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100793
+    m_Localized: Suppresses the opponent's momentum and inflicts 1 weakening.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100794
+    m_Localized: Grants Weakness 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100795
+    m_Localized: Attack stance
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100796
+    m_Localized: Gives you and your allies Amplification 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100797
+    m_Localized: Gives you and your allies Amplification 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100798
+    m_Localized: Attack Stance+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100799
+    m_Localized: Gives you and your allies Amplification 2.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100800
+    m_Localized: Gives amplification 2 to self and allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100801
+    m_Localized: Cut the gap
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100802
+    m_Localized: Quickly slashes, dealing 4 damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100803
+    m_Localized: Deals 4 damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100804
+    m_Localized: Gap Cut+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100805
+    m_Localized: Quickly slashes to inflict 6 damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100806
+    m_Localized: Deals 6 damage to the enemy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100807
+    m_Localized: Take a breather
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100808
+    m_Localized: Take a deep breath and give yourself 1 focus.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100809
+    m_Localized: Gives you 1 focus.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100810
+    m_Localized: Take a breath+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100811
+    m_Localized: Take a deep breath and give yourself 1 focus.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100812
+    m_Localized: Gives you 1 focus.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100813
+    m_Localized: Push
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100814
+    m_Localized: Push back with your body, dealing 4 damage to the enemy and pushing
+      them back 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100815
+    m_Localized: Deals 4 damage to the enemy. Pushes 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100816
+    m_Localized: Push+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100817
+    m_Localized: Push back with your body, dealing 4 damage to the enemy and pushing
+      them back 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100818
+    m_Localized: Deals 4 damage to the enemy. Pushes 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100819
+    m_Localized: Encouragement
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100820
+    m_Localized: Inspires courage and grants 2 charges to an ally.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100821
+    m_Localized: Gives 2 charges to an ally.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100822
+    m_Localized: "\uACA9\uB824+"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100823
+    m_Localized: Inspires courage and grants 2 charges to an ally.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100824
+    m_Localized: Gives 2 charges to an ally.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100825
+    m_Localized: Hold on
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100826
+    m_Localized: Stand firm and grant 4 armor to yourself and your allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100827
+    m_Localized: Grants 4 armor to you and your allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100828
+    m_Localized: Hold on+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100829
+    m_Localized: Stand firm and grant 4 armor to yourself and your allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100830
+    m_Localized: Grants 4 armor to you and your allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100831
+    m_Localized: Pull
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100832
+    m_Localized: Grabs the enemy and pulls it in, dealing 4 damage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100833
+    m_Localized: Deals 5 damage to the enemy. Pull 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100834
+    m_Localized: Pull+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100835
+    m_Localized: Grabs the enemy and pulls it in, dealing 6 damage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100836
+    m_Localized: Deals 6 damage to the enemy. Pull 1 space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100837
+    m_Localized: Bloodpierce
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100838
+    m_Localized: Stab the enemy, dealing 4 damage and inflicting 1 bleeding.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100839
+    m_Localized: Deals 4 damage to the enemy. Grants 1 bleeding.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100840
+    m_Localized: Bloodpierce+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100841
+    m_Localized: Stab the enemy, dealing 4 damage and inflicting 1 bleeding.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100842
+    m_Localized: Deals 4 damage to the enemy. Grants 1 bleeding.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100843
+    m_Localized: Speedster
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100844
+    m_Localized: Seize the opportunity to move before your opponent and gain 1 speed.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100845
+    m_Localized: Gives yourself speed 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100846
+    m_Localized: Speedster+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100847
+    m_Localized: Seize the opportunity to move before your opponent and gain 1 speed.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100848
+    m_Localized: Gives yourself speed 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100849
+    m_Localized: 'Unlock: Clear Area 3 once.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100850
+    m_Localized: 'Unlock: Defeat Nocturne 3 times.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100851
+    m_Localized: 'Unlock: Clear with 2 Trials applied.'
     m_Metadata:
       m_Items: []
   references:

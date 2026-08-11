@@ -5931,14 +5931,266 @@ MonoBehaviour:
     m_Key: lobby.stat.rune_bonus
     m_Metadata:
       m_Items: []
+  - m_Id: 41387432259100789
+    m_Key: data.skill_master.s_core_61.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100790
+    m_Key: data.skill_master.s_core_61.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100791
+    m_Key: data.skill_master.s_core_61.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100792
+    m_Key: data.skill_master.s_core_62.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100793
+    m_Key: data.skill_master.s_core_62.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100794
+    m_Key: data.skill_master.s_core_62.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100795
+    m_Key: data.skill_master.s_core_63.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100796
+    m_Key: data.skill_master.s_core_63.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100797
+    m_Key: data.skill_master.s_core_63.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100798
+    m_Key: data.skill_master.s_core_64.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100799
+    m_Key: data.skill_master.s_core_64.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100800
+    m_Key: data.skill_master.s_core_64.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100801
+    m_Key: data.skill_master.s_core_65.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100802
+    m_Key: data.skill_master.s_core_65.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100803
+    m_Key: data.skill_master.s_core_65.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100804
+    m_Key: data.skill_master.s_core_66.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100805
+    m_Key: data.skill_master.s_core_66.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100806
+    m_Key: data.skill_master.s_core_66.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100807
+    m_Key: data.skill_master.s_core_67.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100808
+    m_Key: data.skill_master.s_core_67.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100809
+    m_Key: data.skill_master.s_core_67.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100810
+    m_Key: data.skill_master.s_core_68.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100811
+    m_Key: data.skill_master.s_core_68.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100812
+    m_Key: data.skill_master.s_core_68.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100813
+    m_Key: data.skill_master.s_core_69.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100814
+    m_Key: data.skill_master.s_core_69.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100815
+    m_Key: data.skill_master.s_core_69.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100816
+    m_Key: data.skill_master.s_core_70.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100817
+    m_Key: data.skill_master.s_core_70.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100818
+    m_Key: data.skill_master.s_core_70.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100819
+    m_Key: data.skill_master.s_core_71.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100820
+    m_Key: data.skill_master.s_core_71.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100821
+    m_Key: data.skill_master.s_core_71.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100822
+    m_Key: data.skill_master.s_core_72.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100823
+    m_Key: data.skill_master.s_core_72.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100824
+    m_Key: data.skill_master.s_core_72.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100825
+    m_Key: data.skill_master.s_core_73.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100826
+    m_Key: data.skill_master.s_core_73.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100827
+    m_Key: data.skill_master.s_core_73.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100828
+    m_Key: data.skill_master.s_core_74.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100829
+    m_Key: data.skill_master.s_core_74.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100830
+    m_Key: data.skill_master.s_core_74.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100831
+    m_Key: data.skill_master.s_core_75.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100832
+    m_Key: data.skill_master.s_core_75.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100833
+    m_Key: data.skill_master.s_core_75.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100834
+    m_Key: data.skill_master.s_core_76.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100835
+    m_Key: data.skill_master.s_core_76.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100836
+    m_Key: data.skill_master.s_core_76.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100837
+    m_Key: data.skill_master.s_core_77.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100838
+    m_Key: data.skill_master.s_core_77.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100839
+    m_Key: data.skill_master.s_core_77.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100840
+    m_Key: data.skill_master.s_core_78.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100841
+    m_Key: data.skill_master.s_core_78.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100842
+    m_Key: data.skill_master.s_core_78.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100843
+    m_Key: data.skill_master.s_core_79.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100844
+    m_Key: data.skill_master.s_core_79.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100845
+    m_Key: data.skill_master.s_core_79.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100846
+    m_Key: data.skill_master.s_core_80.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100847
+    m_Key: data.skill_master.s_core_80.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100848
+    m_Key: data.skill_master.s_core_80.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100849
+    m_Key: lobby.trial.unlock.stage3_clear
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100850
+    m_Key: lobby.trial.unlock.nocturne_kill
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100851
+    m_Key: lobby.trial.unlock.two_trials_clear
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
-    rid: 5312828318474829911
+    rid: 5312828318474829915
   references:
     version: 2
     RefIds:
-    - rid: 5312828318474829911
+    - rid: 5312828318474829915
       type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
       data:
-        m_CustomEpoch: 1786346678269
+        m_CustomEpoch: 1786421451723
