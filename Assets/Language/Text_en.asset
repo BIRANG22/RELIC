@@ -6100,43 +6100,46 @@ MonoBehaviour:
   - m_Id: 41387432259100779
     m_Localized: 'Area 12: Erosion Cave'
     m_Metadata:
-      m_Items: []  - m_Id: 41387432259100780
-    m_Localized: "Method: "
-    m_Metadata:
       m_Items: []
   - m_Id: 41387432259100781
-    m_Localized: "Cost:"
+    m_Localized: 'Cost:'
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100782
-    m_Localized: "Opens at character level {0}."
+    m_Localized: Opens at character level {0}.
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100783
-    m_Localized: "Character health.\\nAt 0 HP, the character becomes unable to fight."
+    m_Localized: Character health.\nAt 0 HP, the character becomes unable to fight.
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100784
-    m_Localized: "A resource spent to use skills.\\nSkills cannot be used without enough current Cost."
+    m_Localized: A resource spent to use skills.\nSkills cannot be used without enough
+      current Cost.
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100785
-    m_Localized: "Cost restored at the start of the turn.\\nHigher recovery gives more skill options each turn."
+    m_Localized: Cost restored at the start of the turn.\nHigher recovery gives more
+      skill options each turn.
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100786
-    m_Localized: "Movement skills spend 1 Cost per tile during battle.\\nAt 50 or more Move Points, 1 Cost moves 2 tiles."
+    m_Localized: Movement skills spend 1 Cost per tile during battle.\nAt 50 or more
+      Move Points, 1 Cost moves 2 tiles.
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100787
-    m_Localized: "Base value {0}"
+    m_Localized: Base value {0}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100788
-    m_Localized: "Rune bonus {0}"
+    m_Localized: Rune bonus {0}
     m_Metadata:
       m_Items: []
-
+  - m_Id: 41387432259100780
+    m_Localized: 'Method: '
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
