@@ -1,5 +1,7 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Components;
 using UnityEngine.UI;
 
 /// <summary>
@@ -28,11 +30,15 @@ public class ErosionSelectCarousel : MonoBehaviour
         [Tooltip("자식 Effect 오브젝트의 TMP 텍스트입니다.")]
         public TMP_Text effectText;
 
+        [Tooltip("Effect 텍스트의 Localize String Event입니다. 비워 두면 Effect에서 자동 탐색합니다.")]
+        public LocalizeStringEvent effectLocalizer;
+
         [Tooltip("선택 상태에 따라 색을 변경할 그래픽입니다.")]
         public Graphic tintGraphic;
 
         [HideInInspector] public string unlockedName;
         [HideInInspector] public string unlockedEffect;
+        [HideInInspector] public string unlockedEffectKey;
         [HideInInspector] public bool textCached;
     }
 
@@ -198,6 +204,9 @@ public class ErosionSelectCarousel : MonoBehaviour
             if (item.effectText == null)
                 item.effectText = FindTextChild(target, "Effect");
 
+            if (item.effectLocalizer == null && item.effectText != null)
+                item.effectLocalizer = item.effectText.GetComponent<LocalizeStringEvent>();
+
             CacheUnlockedText(item);
         }
 
@@ -322,9 +331,13 @@ public class ErosionSelectCarousel : MonoBehaviour
 
             if (item.effectText != null)
             {
-                item.effectText.text = unlocked
-                    ? item.unlockedEffect
-                    : TrialUnlockProgress.GetUnlockRequirementText(i);
+                if (unlocked)
+                    ApplyEffectText(item, item.unlockedEffectKey, item.unlockedEffect);
+                else
+                    ApplyEffectText(
+                        item,
+                        TrialUnlockProgress.GetUnlockRequirementKey(i),
+                        TrialUnlockProgress.GetUnlockRequirementText(i));
             }
 
             if (changeTintColor && item.tintGraphic != null)
@@ -348,7 +361,34 @@ public class ErosionSelectCarousel : MonoBehaviour
 
         item.unlockedName = item.nameText != null ? item.nameText.text : string.Empty;
         item.unlockedEffect = item.effectText != null ? item.effectText.text : string.Empty;
+        item.unlockedEffectKey = item.effectLocalizer != null
+            ? item.effectLocalizer.StringReference.TableEntryReference.Key
+            : string.Empty;
         item.textCached = true;
+    }
+
+    private static void ApplyEffectText(TrialItem item, string localizationKey, string fallback)
+    {
+        if (item == null || item.effectText == null)
+            return;
+
+        if (item.effectLocalizer == null)
+        {
+            item.effectText.text = fallback ?? string.Empty;
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(localizationKey))
+        {
+            item.effectLocalizer.StringReference = new LocalizedString(
+                GameLocalization.TableName,
+                localizationKey);
+            item.effectLocalizer.RefreshString();
+            item.effectText.text = GameLocalization.Get(localizationKey, fallback);
+            return;
+        }
+
+        item.effectText.text = fallback ?? string.Empty;
     }
 
     private void PlayClickSound()

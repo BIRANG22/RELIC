@@ -15,6 +15,20 @@ public static class TrialUnlockProgress
     private const string FirstAreaStageId = "Stage1";
     private const int RequiredNocturnKills = 3;
 
+    private static readonly string[] UnlockRequirementKeys =
+    {
+        "lobby.trial.unlock.stage3_clear",
+        "lobby.trial.unlock.nocturne_kill",
+        "lobby.trial.unlock.two_trials_clear",
+    };
+
+    private static readonly string[] UnlockRequirementFallbacks =
+    {
+        "해금 : 3구역 1회 클리어",
+        "해금 : 녹턴 3회 처치",
+        "해금 : 2개의 시련을 적용 후 클리어",
+    };
+
     public static event Action ProgressChanged;
 
     public static int Stage3ClearCount => PlayerPrefs.GetInt(Stage3ClearKey, 0);
@@ -41,20 +55,30 @@ public static class TrialUnlockProgress
 
     public static string GetUnlockRequirementText(int trialIndex)
     {
-        switch (trialIndex)
-        {
-            case 0:
-                return "해금 : 3구역 1회 클리어";
+        string fallback = GetUnlockRequirementFallbackText(trialIndex);
+        string key = GetUnlockRequirementKey(trialIndex);
+        return string.IsNullOrWhiteSpace(key)
+            ? fallback
+            : GameLocalization.Get(key, fallback);
+    }
 
-            case 1:
-                return "해금 : 녹턴 3회 처치";
+    public static string GetUnlockRequirementKey(int trialIndex)
+    {
+        return IsValidTrialIndex(trialIndex)
+            ? UnlockRequirementKeys[trialIndex]
+            : string.Empty;
+    }
 
-            case 2:
-                return "해금 : 2개의 시련을 적용 후 클리어";
+    public static string GetUnlockRequirementFallbackText(int trialIndex)
+    {
+        return IsValidTrialIndex(trialIndex)
+            ? UnlockRequirementFallbacks[trialIndex]
+            : string.Empty;
+    }
 
-            default:
-                return string.Empty;
-        }
+    private static bool IsValidTrialIndex(int trialIndex)
+    {
+        return trialIndex >= 0 && trialIndex < UnlockRequirementKeys.Length;
     }
 
     /// <summary>

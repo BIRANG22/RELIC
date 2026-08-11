@@ -22,16 +22,436 @@ MonoBehaviour:
     m_Localized: Inicio
     m_Metadata:
       m_Items: []
+  - m_Id: 41387432259100672
+    m_Localized: Cerrar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100673
+    m_Localized: "Atr\xE1s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100674
+    m_Localized: Confirmar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100675
+    m_Localized: "S\xED"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100676
+    m_Localized: No
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100677
+    m_Localized: Guardar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100678
+    m_Localized: Eliminar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100679
+    m_Localized: Salir
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100680
+    m_Localized: Ajustes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100681
+    m_Localized: Nombre
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100682
+    m_Localized: "Descripci\xF3n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100683
+    m_Localized: Continuar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100684
+    m_Localized: Entrar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100685
+    m_Localized: Continuar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100686
+    m_Localized: Descartar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100687
+    m_Localized: Extraer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100688
+    m_Localized: 'Efecto:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100689
+    m_Localized: Alcance
+    m_Metadata:
+      m_Items: []
   - m_Id: 41367126123487249
     m_Localized: Coste
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100690
+    m_Localized: Rareza
     m_Metadata:
       m_Items: []
   - m_Id: 41367126123487251
     m_Localized: Armadura
     m_Metadata:
       m_Items: []
+  - m_Id: 41387432259100691
+    m_Localized: Sangrado
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100692
+    m_Localized: Empuje
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100693
+    m_Localized: "Recuperaci\xF3n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100694
+    m_Localized: Activo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100695
+    m_Localized: Pasivo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100696
+    m_Localized: "\xDAnico"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100697
+    m_Localized: "Com\xFAn"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100698
+    m_Localized: Exclusivo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100699
+    m_Localized: Maestro
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100700
+    m_Localized: Objeto
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100701
+    m_Localized: Material
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100702
+    m_Localized: Equipo
+    m_Metadata:
+      m_Items: []
   - m_Id: 41367126123487264
     m_Localized: Habilidad
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100703
+    m_Localized: Reliquia
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100704
+    m_Localized: Runa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100705
+    m_Localized: Sonido
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100706
+    m_Localized: "M\xFAsica"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100707
+    m_Localized: Efectos de sonido
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100708
+    m_Localized: Controles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100709
+    m_Localized: Tutorial
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100710
+    m_Localized: Idioma
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100711
+    m_Localized: "Resoluci\xF3n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100712
+    m_Localized: Continuar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100713
+    m_Localized: Pulsa cualquier tecla
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100714
+    m_Localized: Archivo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100715
+    m_Localized: Memoria
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100716
+    m_Localized: Memoria y reliquias
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100717
+    m_Localized: Invocar reliquia
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100718
+    m_Localized: Reliquia obtenida
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100719
+    m_Localized: "Investigaci\xF3n de materiales"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100720
+    m_Localized: Combinar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100721
+    m_Localized: Invitar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100722
+    m_Localized: "Formaci\xF3n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100723
+    m_Localized: Entrenamiento
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100724
+    m_Localized: Explorar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100725
+    m_Localized: "Preparar expedici\xF3n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100726
+    m_Localized: Descansar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100727
+    m_Localized: Volver a la base
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100728
+    m_Localized: Perfil del personaje
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100729
+    m_Localized: Combate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100730
+    m_Localized: Terminar turno
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100731
+    m_Localized: Rendirse
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100732
+    m_Localized: Pausa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100733
+    m_Localized: Mover
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100734
+    m_Localized: Seleccionar casilla
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100735
+    m_Localized: Elegir siguiente ruta
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100736
+    m_Localized: Nodo seleccionado
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100737
+    m_Localized: Elegir prueba
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100738
+    m_Localized: "\xC9lite"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100739
+    m_Localized: Jefe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100740
+    m_Localized: Evento
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100741
+    m_Localized: "Bot\xEDn"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100742
+    m_Localized: Fragmento
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100743
+    m_Localized: Vista previa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100744
+    m_Localized: Amenaza creciente
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100745
+    m_Localized: "Cuerpo corro\xEDdo"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100746
+    m_Localized: Vestigio afilado
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100747
+    m_Localized: "Los enemigos poderosos aparecen con m\xE1s frecuencia."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100748
+    m_Localized: Aumenta el ataque de todos los enemigos.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100749
+    m_Localized: Aumenta la salud de todos los enemigos.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100750
+    m_Localized: "Alcance de acci\xF3n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100751
+    m_Localized: "Rasgo de acci\xF3n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100752
+    m_Localized: Habilidades mejorables
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100753
+    m_Localized: Mejorar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100754
+    m_Localized: Uso
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100755
+    m_Localized: "Efecto num\xE9rico"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100756
+    m_Localized: Habilidad pasiva
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100757
+    m_Localized: "\xBFQuieres salir del juego?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100758
+    m_Localized: No se pueden cargar los datos.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100759
+    m_Localized: Bloqueado
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100760
+    m_Localized: Tanque de cultivo {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100761
+    m_Localized: Material insertado
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100762
+    m_Localized: "Vac\xEDo"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100763
+    m_Localized: No se puede combinar.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100764
+    m_Localized: Vendido
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100765
+    m_Localized: "No hay ning\xFAn personaje seleccionado."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100766
+    m_Localized: No se encontraron los datos del personaje.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100767
+    m_Localized: "No hay ning\xFAn personaje en ese espacio del grupo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100768
+    m_Localized: Selecciona primero un personaje.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100769
+    m_Localized: "Aqu\xED se muestra informaci\xF3n de runas y habilidades."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100770
+    m_Localized: "Informaci\xF3n de habilidad"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100771
+    m_Localized: "Aqu\xED se muestra informaci\xF3n de la habilidad."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100772
+    m_Localized: "Informaci\xF3n de runa"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100773
+    m_Localized: "Aqu\xED se muestra informaci\xF3n de la runa."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100774
+    m_Localized: "\xBFQuieres volver a la pantalla de t\xEDtulo?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100775
+    m_Localized: Sin habilidad
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100776
+    m_Localized: "La bolsa est\xE1 llena. Puedes llevar hasta {0} objetos \xFAnicos."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915657494528
@@ -5735,426 +6155,6 @@ MonoBehaviour:
     m_Localized: Formando el grupo
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100672
-    m_Localized: Cerrar
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100673
-    m_Localized: "Atr\xE1s"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100674
-    m_Localized: Confirmar
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100675
-    m_Localized: "S\xED"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100676
-    m_Localized: No
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100677
-    m_Localized: Guardar
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100678
-    m_Localized: Eliminar
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100679
-    m_Localized: Salir
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100680
-    m_Localized: Ajustes
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100681
-    m_Localized: Nombre
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100682
-    m_Localized: "Descripci\xF3n"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100683
-    m_Localized: Continuar
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100684
-    m_Localized: Entrar
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100685
-    m_Localized: Continuar
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100686
-    m_Localized: Descartar
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100687
-    m_Localized: Extraer
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100688
-    m_Localized: 'Efecto:'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100689
-    m_Localized: Alcance
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100690
-    m_Localized: Rareza
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100691
-    m_Localized: Sangrado
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100692
-    m_Localized: Empuje
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100693
-    m_Localized: "Recuperaci\xF3n"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100694
-    m_Localized: Activo
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100695
-    m_Localized: Pasivo
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100696
-    m_Localized: "\xDAnico"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100697
-    m_Localized: "Com\xFAn"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100698
-    m_Localized: Exclusivo
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100699
-    m_Localized: Maestro
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100700
-    m_Localized: Objeto
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100701
-    m_Localized: Material
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100702
-    m_Localized: Equipo
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100703
-    m_Localized: Reliquia
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100704
-    m_Localized: Runa
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100705
-    m_Localized: Sonido
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100706
-    m_Localized: "M\xFAsica"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100707
-    m_Localized: Efectos de sonido
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100708
-    m_Localized: Controles
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100709
-    m_Localized: Tutorial
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100710
-    m_Localized: Idioma
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100711
-    m_Localized: "Resoluci\xF3n"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100712
-    m_Localized: Continuar
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100713
-    m_Localized: Pulsa cualquier tecla
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100714
-    m_Localized: Archivo
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100715
-    m_Localized: Memoria
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100716
-    m_Localized: Memoria y reliquias
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100717
-    m_Localized: Invocar reliquia
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100718
-    m_Localized: Reliquia obtenida
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100719
-    m_Localized: "Investigaci\xF3n de materiales"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100720
-    m_Localized: Combinar
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100721
-    m_Localized: Invitar
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100722
-    m_Localized: "Formaci\xF3n"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100723
-    m_Localized: Entrenamiento
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100724
-    m_Localized: Explorar
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100725
-    m_Localized: "Preparar expedici\xF3n"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100726
-    m_Localized: Descansar
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100727
-    m_Localized: Volver a la base
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100728
-    m_Localized: Perfil del personaje
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100729
-    m_Localized: Combate
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100730
-    m_Localized: Terminar turno
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100731
-    m_Localized: Rendirse
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100732
-    m_Localized: Pausa
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100733
-    m_Localized: Mover
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100734
-    m_Localized: Seleccionar casilla
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100735
-    m_Localized: Elegir siguiente ruta
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100736
-    m_Localized: Nodo seleccionado
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100737
-    m_Localized: Elegir prueba
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100738
-    m_Localized: "\xC9lite"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100739
-    m_Localized: Jefe
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100740
-    m_Localized: Evento
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100741
-    m_Localized: "Bot\xEDn"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100742
-    m_Localized: Fragmento
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100743
-    m_Localized: Vista previa
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100744
-    m_Localized: Amenaza creciente
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100745
-    m_Localized: "Cuerpo corro\xEDdo"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100746
-    m_Localized: Vestigio afilado
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100747
-    m_Localized: "Los enemigos poderosos aparecen con m\xE1s frecuencia."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100748
-    m_Localized: Aumenta el ataque de todos los enemigos.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100749
-    m_Localized: Aumenta la salud de todos los enemigos.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100750
-    m_Localized: "Alcance de acci\xF3n"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100751
-    m_Localized: "Rasgo de acci\xF3n"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100752
-    m_Localized: Habilidades mejorables
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100753
-    m_Localized: Mejorar
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100754
-    m_Localized: Uso
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100755
-    m_Localized: "Efecto num\xE9rico"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100756
-    m_Localized: Habilidad pasiva
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100757
-    m_Localized: "\xBFQuieres salir del juego?"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100758
-    m_Localized: No se pueden cargar los datos.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100759
-    m_Localized: Bloqueado
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100760
-    m_Localized: Tanque de cultivo {0}
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100761
-    m_Localized: Material insertado
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100762
-    m_Localized: "Vac\xEDo"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100763
-    m_Localized: No se puede combinar.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100764
-    m_Localized: Vendido
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100765
-    m_Localized: "No hay ning\xFAn personaje seleccionado."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100766
-    m_Localized: No se encontraron los datos del personaje.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100767
-    m_Localized: "No hay ning\xFAn personaje en ese espacio del grupo."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100768
-    m_Localized: Selecciona primero un personaje.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100769
-    m_Localized: "Aqu\xED se muestra informaci\xF3n de runas y habilidades."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100770
-    m_Localized: "Informaci\xF3n de habilidad"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100771
-    m_Localized: "Aqu\xED se muestra informaci\xF3n de la habilidad."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100772
-    m_Localized: "Informaci\xF3n de runa"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100773
-    m_Localized: "Aqu\xED se muestra informaci\xF3n de la runa."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100774
-    m_Localized: "\xBFQuieres volver a la pantalla de t\xEDtulo?"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100775
-    m_Localized: Sin habilidad
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100776
-    m_Localized: "La bolsa est\xE1 llena. Puedes llevar hasta {0} objetos \xFAnicos."
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100777
     m_Localized: 'Area 3: Ruinas Rojas'
     m_Metadata:
@@ -6165,6 +6165,10 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 41387432259100779
     m_Localized: 'Area 12: Cueva de Erosion'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100780
+    m_Localized: "M\xE9todo: "
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100781
@@ -6202,8 +6206,260 @@ MonoBehaviour:
     m_Localized: "Bonificaci\xF3n de runa {0}"
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100780
-    m_Localized: "M\xE9todo: "
+  - m_Id: 41387432259100789
+    m_Localized: Dominante
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100790
+    m_Localized: Suprime el impulso del oponente e inflige 1 debilitamiento.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100791
+    m_Localized: Otorga la debilidad 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100792
+    m_Localized: Intimidante+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100793
+    m_Localized: Suprime el impulso del oponente e inflige 1 debilitamiento.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100794
+    m_Localized: Otorga la debilidad 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100795
+    m_Localized: Postura de ataque
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100796
+    m_Localized: "Te da a ti y a tus aliados Amplificaci\xF3n 1."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100797
+    m_Localized: "Te da a ti y a tus aliados Amplificaci\xF3n 1."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100798
+    m_Localized: Postura de ataque+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100799
+    m_Localized: "Te da a ti y a tus aliados Amplificaci\xF3n 2."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100800
+    m_Localized: "Otorga amplificaci\xF3n 2 a uno mismo y a sus aliados."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100801
+    m_Localized: Cortar la brecha
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100802
+    m_Localized: "Corta r\xE1pidamente, causando 4 da\xF1os al enemigo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100803
+    m_Localized: "Inflige 4 da\xF1os al enemigo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100804
+    m_Localized: Corte de espacio+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100805
+    m_Localized: "Corta r\xE1pidamente para infligir 6 da\xF1os al enemigo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100806
+    m_Localized: "Inflige 6 da\xF1os al enemigo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100807
+    m_Localized: Toma un respiro
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100808
+    m_Localized: "Respira hondo y conc\xE9ntrate en ti mismo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100809
+    m_Localized: Te da 1 enfoque.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100810
+    m_Localized: Toma un respiro+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100811
+    m_Localized: "Respira hondo y conc\xE9ntrate en ti mismo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100812
+    m_Localized: Te da 1 enfoque.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100813
+    m_Localized: Empujar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100814
+    m_Localized: "Empuja hacia atr\xE1s con tu cuerpo, causando 4 da\xF1os al enemigo
+      y empuj\xE1ndolo hacia atr\xE1s 1 espacio."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100815
+    m_Localized: "Inflige 4 da\xF1os al enemigo. Empuja 1 espacio."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100816
+    m_Localized: Empujar+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100817
+    m_Localized: "Empuja hacia atr\xE1s con tu cuerpo, causando 4 da\xF1os al enemigo
+      y empuj\xE1ndolo hacia atr\xE1s 1 espacio."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100818
+    m_Localized: "Inflige 4 da\xF1os al enemigo. Empuja 1 espacio."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100819
+    m_Localized: "\xC1nimo"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100820
+    m_Localized: Inspira coraje y otorga 2 cargas a un aliado.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100821
+    m_Localized: Otorga 2 cargas a un aliado.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100822
+    m_Localized: "\uACA9\uB824+"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100823
+    m_Localized: Inspira coraje y otorga 2 cargas a un aliado.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100824
+    m_Localized: Otorga 2 cargas a un aliado.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100825
+    m_Localized: Espera
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100826
+    m_Localized: Mantente firme y otorga 4 armaduras para ti y tus aliados.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100827
+    m_Localized: Te otorga 4 armaduras a ti y a tus aliados.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100828
+    m_Localized: Espera+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100829
+    m_Localized: Mantente firme y otorga 4 armaduras para ti y tus aliados.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100830
+    m_Localized: Te otorga 4 armaduras a ti y a tus aliados.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100831
+    m_Localized: Tirar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100832
+    m_Localized: "Agarra al enemigo y lo atrae, caus\xE1ndole 4 da\xF1os."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100833
+    m_Localized: "Inflige 5 da\xF1os al enemigo. Tira 1 espacio."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100834
+    m_Localized: Tirar+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100835
+    m_Localized: "Agarra al enemigo y lo atrae, caus\xE1ndole 6 da\xF1os."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100836
+    m_Localized: "Inflige 6 da\xF1os al enemigo. Tira 1 espacio."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100837
+    m_Localized: Perforador de sangre
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100838
+    m_Localized: "Apu\xF1ala al enemigo, causando 4 da\xF1os e infligiendo 1 sangrado."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100839
+    m_Localized: "Inflige 4 da\xF1os al enemigo. Otorga 1 sangrado."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100840
+    m_Localized: "Perforaci\xF3n de sangre+"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100841
+    m_Localized: "Apu\xF1ala al enemigo, causando 4 da\xF1os e infligiendo 1 sangrado."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100842
+    m_Localized: "Inflige 4 da\xF1os al enemigo. Otorga 1 sangrado."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100843
+    m_Localized: Velocista
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100844
+    m_Localized: Aprovecha la oportunidad para moverte antes que tu oponente y ganar
+      1 velocidad.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100845
+    m_Localized: Te da velocidad 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100846
+    m_Localized: Velocista+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100847
+    m_Localized: Aprovecha la oportunidad para moverte antes que tu oponente y ganar
+      1 velocidad.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100848
+    m_Localized: Te da velocidad 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100849
+    m_Localized: "Desbloqueo: despeja el \xC1rea 3 una vez."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100850
+    m_Localized: 'Desbloqueo: derrota a Nocturno 3 veces.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100851
+    m_Localized: 'Desbloqueo: completa con 2 pruebas aplicadas.'
     m_Metadata:
       m_Items: []
   references:
