@@ -127,6 +127,12 @@ public class Setting : MonoBehaviour
         if (runeSettingPanelScript != null)
             runeSettingPanelScript.OnRuneChanged += RefreshCharacterInfo;
 
+        if (skillSettingPanelScript != null)
+            skillSettingPanelScript.SetSettingController(this);
+
+        if (runeSettingPanelScript != null)
+            runeSettingPanelScript.SetSettingController(this);
+
         InitPresetButtons();
         InitTabButtons();
         DisableTabButtonNavigation();
@@ -451,6 +457,32 @@ public class Setting : MonoBehaviour
         ShowRuneSetting();
     }
 
+    public void OpenSkillSettingForSlot(SkillSlotButton slotButton)
+    {
+        if (slotButton == null || skillSettingPanelScript == null)
+            return;
+
+        PlayUserTabTransitionSound(SettingTab.Skill);
+        ShowSkillSetting(openDefaultSlot: false);
+        skillSettingPanelScript.OpenSkillSelectPanel(slotButton);
+    }
+
+    public void OpenRuneSettingForSlot(RuneSlotButton slotButton)
+    {
+        if (slotButton == null || runeSettingPanelScript == null)
+            return;
+
+        if (slotButton.IsLocked)
+        {
+            runeSettingPanelScript.HandleRuneSlotClick(slotButton);
+            return;
+        }
+
+        PlayUserTabTransitionSound(SettingTab.Rune);
+        ShowRuneSetting();
+        runeSettingPanelScript.SelectRuneSlotForSetting(slotButton);
+    }
+
     /// <summary>
     /// 사용자가 프리뷰/스킬/룬 버튼을 직접 눌렀을 때만 탭 이동 효과음을 재생한다.
     /// 초기화나 다른 스크립트에서 Show...Setting()을 호출하는 경우에는 재생하지 않는다.
@@ -521,8 +553,18 @@ public class Setting : MonoBehaviour
 
     public void ShowSkillSetting()
     {
+        ShowSkillSetting(openDefaultSlot: true);
+    }
+
+    private void ShowSkillSetting(bool openDefaultSlot)
+    {
         if (currentTab == SettingTab.Skill)
+        {
+            if (openDefaultSlot && skillSettingPanelScript != null)
+                skillSettingPanelScript.OpenDefaultSkillSlot();
+
             return;
+        }
 
         currentTab = SettingTab.Skill;
 
@@ -543,6 +585,11 @@ public class Setting : MonoBehaviour
             GameLocalization.Get("lobby.skill_info", "스킬정보"),
             GameLocalization.Get("lobby.skill_info_hint", "스킬의 정보가 표시됩니다."));
         RefreshTabButtons();
+
+        // 상단 스킬 버튼으로 진입하면 무엇을 설정하는 화면인지 바로 알 수 있도록
+        // 첫 번째 스킬 슬롯의 선택 목록을 기본으로 표시한다.
+        if (openDefaultSlot && skillSettingPanelScript != null)
+            skillSettingPanelScript.OpenDefaultSkillSlot();
     }
 
     public void ShowRuneSetting()

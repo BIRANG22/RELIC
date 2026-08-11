@@ -48,6 +48,7 @@ public class RuneSettingPanel : MonoBehaviour
     [Header("Warning UI")]
     [SerializeField] private SettingWarningUI warningUI;
 
+    private Setting settingController;
     private string currentCharacterId;
     private CharacterMasterData currentMasterData;
     private CharacterRuntimeData currentRuntimeData;
@@ -55,11 +56,17 @@ public class RuneSettingPanel : MonoBehaviour
     private bool runeSelectPanelAllowed = true;
     private RectTransform runeIconSelectPanelRect;
     private Coroutine runeSelectPanelMoveCoroutine;
+    private RuneSlotButton selectedRuneSlot;
 
     public bool IsRuneInteractionEnabled => runeSelectPanelAllowed;
     public bool ShouldClearInfoOnHoverExit => !runeSelectPanelAllowed;
 
     public event Action OnRuneChanged;
+
+    public void SetSettingController(Setting controller)
+    {
+        settingController = controller;
+    }
 
     private void Awake()
     {
@@ -226,6 +233,7 @@ public class RuneSettingPanel : MonoBehaviour
 
         if (!enabled)
         {
+            selectedRuneSlot = null;
             ClearRuneInfo();
             SetRuneSelectPanelVisible(false);
             return;
@@ -744,7 +752,7 @@ public class RuneSettingPanel : MonoBehaviour
             return;
         }
 
-        RuneSlotButton emptySlot = FindFirstEmptyUnlockedSlot();
+        RuneSlotButton emptySlot = GetRuneEquipDestinationSlot();
 
         if (emptySlot == null)
         {
@@ -761,6 +769,14 @@ public class RuneSettingPanel : MonoBehaviour
         RefreshRuneIconEquippedStates();
 
         OnRuneChanged?.Invoke();
+    }
+
+    private RuneSlotButton GetRuneEquipDestinationSlot()
+    {
+        if (selectedRuneSlot != null && !selectedRuneSlot.IsLocked)
+            return selectedRuneSlot;
+
+        return FindFirstEmptyUnlockedSlot();
     }
 
     public void TrySelectRuneIcon(RuneData runeData, bool locked, int requiredLevel)
@@ -854,6 +870,44 @@ public class RuneSettingPanel : MonoBehaviour
         RefreshRuneIconEquippedStates();
 
         OnRuneChanged?.Invoke();
+    }
+
+    public void HandleRuneSlotClick(RuneSlotButton slotButton)
+    {
+        if (slotButton == null)
+            return;
+
+        if (!runeSelectPanelAllowed)
+        {
+            OpenRuneSettingFromPreview(slotButton);
+            return;
+        }
+
+        UnequipRuneFromSlot(slotButton);
+    }
+
+    private void OpenRuneSettingFromPreview(RuneSlotButton slotButton)
+    {
+        if (slotButton.IsLocked)
+        {
+            ShowWarning(GameLocalization.Get("lobby.rune_slot_locked", "아직 잠겨있는 룬 슬롯입니다."));
+            return;
+        }
+
+        if (settingController == null)
+            settingController = FindFirstObjectByType<Setting>(FindObjectsInactive.Include);
+
+        settingController?.OpenRuneSettingForSlot(slotButton);
+    }
+
+    public void SelectRuneSlotForSetting(RuneSlotButton slotButton)
+    {
+        if (slotButton == null || slotButton.IsLocked)
+            return;
+
+        selectedRuneSlot = slotButton;
+        ShowRuneSlotInfo(slotButton.SlotIndex, slotButton.EquippedRune, false);
+        SetRuneSelectPanelVisible(true);
     }
 
     private RuneSlotButton FindFirstEmptyUnlockedSlot()

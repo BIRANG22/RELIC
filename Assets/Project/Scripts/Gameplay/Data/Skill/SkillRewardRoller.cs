@@ -129,9 +129,6 @@ namespace Relic.Gameplay.Data
                 if (skill.Category != Category.Core)
                     continue;
 
-                if (!skill.SkillId.StartsWith("S_Core_", System.StringComparison.Ordinal))
-                    continue;
-
                 if (skill.Rarity != rarity)
                     continue;
 

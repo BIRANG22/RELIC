@@ -178,7 +178,7 @@ public static class LobbySharedStateCharacterRuntimeUtility
 
         result[0] = master.UniqueSkill1;
         result[1] = master.CharacterSkill1;
-        result[2] = master.CommonSkill1;
+        result[2] = string.Empty;
         result[3] = string.Empty;
         return result;
     }
@@ -192,7 +192,7 @@ public static class LobbySharedStateCharacterRuntimeUtility
         if (source == null)
             return result;
 
-        int count = Math.Min(source.Length, result.Length);
+        int count = Math.Min(source.Length, 2);
         for (int i = 0; i < count; i++)
         {
             if (i <= 1 && string.IsNullOrWhiteSpace(source[i]))

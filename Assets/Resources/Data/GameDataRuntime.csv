@@ -124,26 +124,6 @@ S_Ability_17,크림슨체인,Ability,CharacterExclusive,Cost,EnemyParty,1,Attack
 S_Ability_18,크림슨체인+,Ability,CharacterExclusive,Cost,EnemyParty,2,Attack,E_Strike;E_Grab,8;1,1;1,4,0,Direction,Range_21,붉은 사슬로 적에게 9의 피해를 주고 1칸 당겨옵니다.,적에게 8의 피해를 줍니다. 1칸 당겨옵니다.
 S_Ability_19,크레센트스윙,Ability,CharacterExclusive,Cost,EnemyParty,1,Attack,E_Strike,6,1,3,0,Direction,Range_15,사이드를 넓게 휘둘러 적에게 6의 피해를 줍니다.,적에게 6의 피해를 줍니다.
 S_Ability_20,크레센트스윙+,Ability,CharacterExclusive,Cost,EnemyParty,2,Attack,E_Strike,7,1,3,0,Direction,Range_15,사이드를 넓게 휘둘러 적에게 9의 피해를 줍니다.,적에게 7의 피해를 줍니다.
-S_Public_01,위압,Public,Shared,Cost,EnemyParty,1,Debuff,E_Weaken,1,1,4,0,Direction,Range_07,상대의 기세를 억눌러 약화 1을 부여합니다.,약화 1을 부여합니다.
-S_Public_02,위압+,Public,Shared,Cost,EnemyParty,2,Debuff,E_Weaken,1,1,3,0,Direction,Range_07,상대의 기세를 억눌러 약화 1을 부여합니다.,약화 1을 부여합니다.
-S_Public_03,공격태세,Public,Shared,Cost,PlayerParty,1,Buff,E_Boost,1,1,4,0,Direction,Range_b_02,자신과 아군에게 증폭 1을 부여합니다.,자신과 아군에게 증폭 1을 부여합니다.
-S_Public_04,공격태세+,Public,Shared,Cost,PlayerParty,2,Buff,E_Boost,2,1,4,0,Direction,Range_b_02,자신과 아군에게 증폭 2를 부여합니다.,자신과 아군에게 증폭 2 부여합니다.
-S_Public_05,틈새베기,Public,Shared,Cost,EnemyParty,1,Attack,E_Strike,4,1,2,0,Direction,Range_10,빠르게 베어 적에게 4의 피해를 줍니다.,적에게 4의 피해를 줍니다.
-S_Public_06,틈새베기+,Public,Shared,Cost,EnemyParty,2,Attack,E_Strike,6,1,2,0,Direction,Range_10,빠르게 베어 적에게 6의 피해를 줍니다.,적에게 6의 피해를 줍니다.
-S_Public_07,숨돌리기,Public,Shared,Cost,PlayerParty,1,Buff,E_Focus,1,1,5,0,Direction,Range_Self,호흡을 가다듬어 자신에게 집중 1을 부여합니다.,자신에게 집중 1을 부여합니다.
-S_Public_08,숨돌리기+,Public,Shared,Cost,PlayerParty,2,Buff,E_Focus,1,1,4,0,Direction,Range_Self,호흡을 가다듬어 자신에게 집중 1을 부여합니다.,자신에게 집중 1을 부여합니다.
-S_Public_09,밀쳐내기,Public,Shared,Cost,EnemyParty,1,Attack,E_Strike;E_Knockback,4;1,1,3,0,Direction,Range_23,몸으로 밀쳐 적에게 4의 피해를 주고 1칸 밀쳐냅니다.,적에게 4의 피해를 줍니다. 1칸 밀쳐냅니다.
-S_Public_10,밀쳐내기+,Public,Shared,Cost,EnemyParty,2,Attack,E_Strike;E_Knockback,4;1,1,2,0,Direction,Range_23,몸으로 밀쳐 적에게 4의 피해를 주고 1칸 밀쳐냅니다.,적에게 4의 피해를 줍니다. 1칸 밀쳐냅니다.
-S_Public_11,격려,Public,Shared,Cost,PlayerParty,1,Buff,E_Charge,2,1,4,0,Selection,Range_b_17,용기를 북돋아 아군에게 충전 2를 부여합니다.,아군에게 충전 2를 부여합니다.
-S_Public_12,격려+,Public,Shared,Cost,PlayerParty,2,Buff,E_Charge,2,1,3,0,Selection,Range_b_17,용기를 북돋아 아군에게 충전 2를 부여합니다.,아군에게 충전 2를 부여합니다.
-S_Public_13,버티기,Public,Shared,Cost,PlayerParty,1,Buff,E_Armor,4,1,2,0,Direction,Range_b_02,굳게 버텨 자신과 아군에게 방어도 4를 부여합니다.,자신과 아군에게 방어도 4를 부여합니다.
-S_Public_14,버티기+,Public,Shared,Cost,PlayerParty,2,Buff,E_Armor,4,1,2,0,Direction,Range_b_19,굳게 버텨 자신과 아군에게 방어도 4를 부여합니다.,자신과 아군에게 방어도 4를 부여합니다.
-S_Public_15,끌어당기기,Public,Shared,Cost,EnemyParty,1,Attack,E_Strike;E_Grab,5;1,1,3,0,Direction,Range_22,적을 붙잡아 끌어당기며 4의 피해를 줍니다.,적에게 5의 피해를 줍니다. 1칸 당겨옵니다.
-S_Public_16,끌어당기기+,Public,Shared,Cost,EnemyParty,2,Attack,E_Strike;E_Grab,6;1,1,3,0,Direction,Range_22,적을 붙잡아 끌어당기며 6의 피해를 줍니다.,적에게 6의 피해를 줍니다. 1칸 당겨옵니다.
-S_Public_17,블러드피어스,Public,Shared,Hp,EnemyParty,1,Attack,E_Strike;E_Bleed,4;1,1,3,0,Direction,Range_06,적을 찔러 4의 피해를 주고 출혈 1을 부여합니다.,적에게 4의 피해를 줍니다. 출혈 1을 부여합니다.
-S_Public_18,블러드피어스+,Public,Shared,Hp,EnemyParty,2,Attack,E_Strike;E_Bleed,4;1,1,2,0,Direction,Range_07,적을 찔러 4의 피해를 주고 출혈 1을 부여합니다.,적에게 4의 피해를 줍니다. 출혈 1을 부여합니다.
-S_Public_19,스피드스터,Public,Shared,Cost,PlayerParty,1,Buff,E_Swift,1,1,4,0,Direction,Range_Self,상대보다 먼저 움직일 틈을 잡아 신속 1을 얻습니다.,자신에게 신속 1을 부여합니다.
-S_Public_20,스피드스터+,Public,Shared,Cost,PlayerParty,2,Buff,E_Swift,1,1,3,0,Direction,Range_Self,상대보다 먼저 움직일 틈을 잡아 신속 1을 얻습니다.,자신에게 신속 1을 부여합니다.
 S_Core_01,생명의 대가,Core,CoreCommon,Hp,Self,1,Buff,E_Focus,1,1,4,0,Direction,Range_Self,체력을 대가로 집중 1을 얻습니다.,집중 1을 얻습니다.
 S_Core_02,생명의 대가+,Core,CoreCommon,Hp,Self,2,Buff,E_Focus,1,1,3,0,Direction,Range_Self,체력을 대가로 집중 1을 얻습니다.,집중 1을 얻습니다.
 S_Core_03,전의 상승,Core,CoreCommon,Cost,PlayerParty,1,Buff,E_Boost,1,1,4,0,Selection,Range_b_17,아군의 전의를 끌어올려 증폭 1을 부여합니다.,아군에게 증폭 1을 부여합니다.
@@ -204,7 +184,26 @@ S_Core_57,하트 피어스,Core,CoreEpic,Cost,EnemyParty,1,Attack,E_Pierce;E_Vul
 S_Core_58,하트 피어스+,Core,CoreEpic,Cost,EnemyParty,2,Attack,E_Pierce;E_Vulnerable,15;2,1;1,6,0,Direction,Range_21,급소를 꿰뚫어 적에게 15의 관통 피해를 주고 취약 2를 부여합니다.,적에게 15의 관통 피해를 줍니다. 취약 2를 부여합니다.
 S_Core_59,피니셔,Core,CoreEpic,Cost,EnemyParty,1,Attack,E_Strike,18,1,5,0,Direction,Range_09,마무리 일격으로 적에게 18의 피해를 줍니다.,적에게 18의 피해를 줍니다.
 S_Core_60,피니셔+,Core,CoreEpic,Cost,EnemyParty,2,Attack,E_Strike,22,1,5,0,Direction,Range_09,마무리 일격으로 적에게 22의 피해를 줍니다.,적에게 22의 피해를 줍니다.
-,,,,,,,,,,,,,,,,
+S_Core_61,위압,Core,CoreCommon,Cost,EnemyParty,1,Debuff,E_Weaken,1,1,4,0,Direction,Range_07,상대의 기세를 억눌러 약화 1을 부여합니다.,약화 1을 부여합니다.
+S_Core_62,위압+,Core,CoreCommon,Cost,EnemyParty,2,Debuff,E_Weaken,1,1,3,0,Direction,Range_07,상대의 기세를 억눌러 약화 1을 부여합니다.,약화 1을 부여합니다.
+S_Core_63,공격태세,Core,CoreCommon,Cost,PlayerParty,1,Buff,E_Boost,1,1,4,0,Direction,Range_b_02,자신과 아군에게 증폭 1을 부여합니다.,자신과 아군에게 증폭 1을 부여합니다.
+S_Core_64,공격태세+,Core,CoreCommon,Cost,PlayerParty,2,Buff,E_Boost,2,1,4,0,Direction,Range_b_02,자신과 아군에게 증폭 2를 부여합니다.,자신과 아군에게 증폭 2 부여합니다.
+S_Core_65,틈새베기,Core,CoreCommon,Cost,EnemyParty,1,Attack,E_Strike,4,1,2,0,Direction,Range_10,빠르게 베어 적에게 4의 피해를 줍니다.,적에게 4의 피해를 줍니다.
+S_Core_66,틈새베기+,Core,CoreCommon,Cost,EnemyParty,2,Attack,E_Strike,6,1,2,0,Direction,Range_10,빠르게 베어 적에게 6의 피해를 줍니다.,적에게 6의 피해를 줍니다.
+S_Core_67,숨돌리기,Core,CoreCommon,Cost,PlayerParty,1,Buff,E_Focus,1,1,5,0,Direction,Range_Self,호흡을 가다듬어 자신에게 집중 1을 부여합니다.,자신에게 집중 1을 부여합니다.
+S_Core_68,숨돌리기+,Core,CoreCommon,Cost,PlayerParty,2,Buff,E_Focus,1,1,4,0,Direction,Range_Self,호흡을 가다듬어 자신에게 집중 1을 부여합니다.,자신에게 집중 1을 부여합니다.
+S_Core_69,밀쳐내기,Core,CoreCommon,Cost,EnemyParty,1,Attack,E_Strike;E_Knockback,4;1,1,3,0,Direction,Range_23,몸으로 밀쳐 적에게 4의 피해를 주고 1칸 밀쳐냅니다.,적에게 4의 피해를 줍니다. 1칸 밀쳐냅니다.
+S_Core_70,밀쳐내기+,Core,CoreCommon,Cost,EnemyParty,2,Attack,E_Strike;E_Knockback,4;1,1,2,0,Direction,Range_23,몸으로 밀쳐 적에게 4의 피해를 주고 1칸 밀쳐냅니다.,적에게 4의 피해를 줍니다. 1칸 밀쳐냅니다.
+S_Core_71,격려,Core,CoreCommon,Cost,PlayerParty,1,Buff,E_Charge,2,1,4,0,Selection,Range_b_17,용기를 북돋아 아군에게 충전 2를 부여합니다.,아군에게 충전 2를 부여합니다.
+S_Core_72,격려+,Core,CoreCommon,Cost,PlayerParty,2,Buff,E_Charge,2,1,3,0,Selection,Range_b_17,용기를 북돋아 아군에게 충전 2를 부여합니다.,아군에게 충전 2를 부여합니다.
+S_Core_73,버티기,Core,CoreCommon,Cost,PlayerParty,1,Buff,E_Armor,4,1,2,0,Direction,Range_b_02,굳게 버텨 자신과 아군에게 방어도 4를 부여합니다.,자신과 아군에게 방어도 4를 부여합니다.
+S_Core_74,버티기+,Core,CoreCommon,Cost,PlayerParty,2,Buff,E_Armor,4,1,2,0,Direction,Range_b_19,굳게 버텨 자신과 아군에게 방어도 4를 부여합니다.,자신과 아군에게 방어도 4를 부여합니다.
+S_Core_75,끌어당기기,Core,CoreCommon,Cost,EnemyParty,1,Attack,E_Strike;E_Grab,5;1,1,3,0,Direction,Range_22,적을 붙잡아 끌어당기며 4의 피해를 줍니다.,적에게 5의 피해를 줍니다. 1칸 당겨옵니다.
+S_Core_76,끌어당기기+,Core,CoreCommon,Cost,EnemyParty,2,Attack,E_Strike;E_Grab,6;1,1,3,0,Direction,Range_22,적을 붙잡아 끌어당기며 6의 피해를 줍니다.,적에게 6의 피해를 줍니다. 1칸 당겨옵니다.
+S_Core_77,블러드피어스,Core,CoreCommon,Hp,EnemyParty,1,Attack,E_Strike;E_Bleed,4;1,1,3,0,Direction,Range_06,적을 찔러 4의 피해를 주고 출혈 1을 부여합니다.,적에게 4의 피해를 줍니다. 출혈 1을 부여합니다.
+S_Core_78,블러드피어스+,Core,CoreCommon,Hp,EnemyParty,2,Attack,E_Strike;E_Bleed,4;1,1,2,0,Direction,Range_07,적을 찔러 4의 피해를 주고 출혈 1을 부여합니다.,적에게 4의 피해를 줍니다. 출혈 1을 부여합니다.
+S_Core_79,스피드스터,Core,CoreCommon,Cost,PlayerParty,1,Buff,E_Swift,1,1,4,0,Direction,Range_Self,상대보다 먼저 움직일 틈을 잡아 신속 1을 얻습니다.,자신에게 신속 1을 부여합니다.
+S_Core_80,스피드스터+,Core,CoreCommon,Cost,PlayerParty,2,Buff,E_Swift,1,1,3,0,Direction,Range_Self,상대보다 먼저 움직일 틈을 잡아 신속 1을 얻습니다.,자신에게 신속 1을 부여합니다.
 
 # MonsterSkill
 스킬ID,이름,대상,효과ID,수치계수,횟수계수,그리드이동,범위ID,타임라인표기,효과설명,수치값변수,아이콘,타입
@@ -266,31 +265,31 @@ PatternInfo_Vespa_02,Mon_05,2,S_Monster_07,돌진하여 충돌한 캐릭터에�
 # Rune
 룬ID,이름,대상캐릭터ID,대상스킬ID,효과ID,수치계수,횟수계수,자원소모량,강화레벨,범위타입,범위ID,효과설명
 RuneId,Name,TargetCharacterId,TargetSkillId,EffectIds,ValueRate,CountRate,Consumption,EnhancementLevel,RangeType,RangeId,EffectDesc
-Rune_51,용린 Ⅰ,Char_01,0,E_Battle_Start_UniqueResource,3,1,0,0,0,0,탐사 시작 시 분노 1을 가지고 시작합니다.
-Rune_52,용린 Ⅱ,Char_01,0,E_UniqueResource3_Turn_Start_Boost,1,0,0,0,0,0,분노가 최대치에 도달하면 충전을 1 얻습니다.
-Rune_53,용린 Ⅲ,Char_01,0,E_UniqueResource_Gain_If_Empty_Delta,1,1,0,0,0,0,용의 가호로 부여하는 방어도가 2배가 됩니다.
-Rune_54,용린 Ⅳ,Char_01,0,E_Armor_Gain_Delta,1,1,0,0,0,0,"대지 가르기의 피해량이 2 증가하고, 대상을 3칸 밀쳐냅니다."
-Rune_55,용린 Ⅴ,Char_01,0,E_UniqueResource_Min_Use_Delta,-2,1,0,0,0,0,휘두르기와 내려찍기의 피해량이 1 증가합니다.
-Rune_56,검심 Ⅰ,Char_02,0,E_Battle_Start_UniqueResource,3,1,0,0,0,0,탐사 시작 시 기세 2를 가지고 시작합니다.
-Rune_57,검심 Ⅱ,Char_02,0,E_UniqueResource3_Turn_Start_Aiming,1,0,0,0,0,0,기세가 최대치에 도달하면 강타를 1 얻습니다.
-Rune_58,검심 Ⅲ,Char_02,0,E_UniqueResource5_Turn_Start_Boost,1,0,0,0,0,0,질풍검 연무의 공격 횟수가 1회 증가합니다.
-Rune_59,검심 Ⅳ,Char_02,0,E_Attack_Value_Delta,2,1,0,0,0,0,질풍검 일섬의 피해량이 3 증가합니다.
-Rune_60,검심 Ⅴ,Char_02,0,E_UniqueResource_Min_Use_Delta,-3,1,-3,0,0,0,질풍검 3식과 질풍검 1식의 피해량이 1 증가합니다.
-Rune_61,불씨 Ⅰ,Char_03,0,E_Battle_Start_UniqueResource,3,1,0,0,0,0,탐사 시작 시 에테르 1을 가지고 시작합니다.
-Rune_62,불씨 Ⅱ,Char_03,0,E_UniqueResource3_Turn_Start_Armor,2,0,0,1,0,0,에테르가 최대치에 도달하면 체력을 2 회복합니다.
-Rune_63,불씨 Ⅲ,Char_03,0,E_UniqueResource3_Turn_Start_Boost,1,0,0,0,0,0,날카로운 빛의 피해량이 2 증가합니다.
-Rune_64,불씨 Ⅳ,Char_03,0,E_Range_Delta,2,1,0,0,0,0,빛의 의지로 부여하는 증폭이 1 증가합니다.
-Rune_65,불씨 Ⅴ,Char_03,0,E_UniqueResource_Min_Use_Delta,-2,1,-3,0,0,0,니아의 독기와 니아의 섬광의 범위가 증가합니다.
-Rune_66,은총 Ⅰ,Char_04,0,,,,,,,,탐사 시작 시 신앙 1을 가지고 시작합니다.
-Rune_67,은총 Ⅱ,Char_04,0,,,,,,,,신앙이 최대치에 도달하면 자신과 체력이 가장 낮은 아군이 방어도를 2 얻습니다.
-Rune_68,은총 Ⅲ,Char_04,0,,,,,,,,구원의 기도로 회복하는 체력이 1 증가합니다.
-Rune_69,은총 Ⅳ,Char_04,0,,,,,,,,신성한 일격의 피해량이 2 증가합니다.
-Rune_70,은총 Ⅴ,Char_04,0,,,,,,,,정권 지르기와 공방일체의 코스트가 1 감소합니다.
-Rune_71,해방 Ⅰ,Char_05,0,,,,,,,,탐사 시작 시 혈기 1을 가지고 시작합니다.
-Rune_72,해방 Ⅱ,Char_05,0,,,,,,,,혈기가 최대치에 도달하면 충전을 2 얻습니다.
-Rune_73,해방 Ⅲ,Char_05,0,,,,,,,,데스사이드의 피해량이 3 증가합니다.
-Rune_74,해방 Ⅳ,Char_05,0,,,,,,,,"스칼렛노바의 피해량이 2 증가하고, 대상을 2칸 밀쳐냅니다."
-Rune_75,해방 Ⅴ,Char_05,0,,,,,,,,크림슨체인과 크레센트스윙의 피해량이 1 증가합니다.
+Rune_51,용린·분기,Char_01,0,E_Battle_Start_UniqueResource,3,1,0,0,0,0,탐사 시작 시 분노 1을 가지고 시작합니다.
+Rune_52,용린·격앙,Char_01,0,E_UniqueResource3_Turn_Start_Boost,1,0,0,0,0,0,분노가 최대치에 도달하면 충전을 1 얻습니다.
+Rune_53,용린·수호,Char_01,0,E_UniqueResource_Gain_If_Empty_Delta,1,1,0,0,0,0,용의 가호로 부여하는 방어도가 2배가 됩니다.
+Rune_54,용린·격진,Char_01,0,E_Armor_Gain_Delta,1,1,0,0,0,0,"대지 가르기의 피해량이 2 증가하고, 대상을 3칸 밀쳐냅니다."
+Rune_55,용린·맹격,Char_01,0,E_UniqueResource_Min_Use_Delta,-2,1,0,0,0,0,휘두르기와 내려찍기의 피해량이 1 증가합니다.
+Rune_56,검심·예기,Char_02,0,E_Battle_Start_UniqueResource,3,1,0,0,0,0,탐사 시작 시 기세 2를 가지고 시작합니다.
+Rune_57,검심·절정,Char_02,0,E_UniqueResource3_Turn_Start_Aiming,1,0,0,0,0,0,기세가 최대치에 도달하면 강타를 1 얻습니다.
+Rune_58,검심·연무,Char_02,0,E_UniqueResource5_Turn_Start_Boost,1,0,0,0,0,0,질풍검 연무의 공격 횟수가 1회 증가합니다.
+Rune_59,검심·일섬,Char_02,0,E_Attack_Value_Delta,2,1,0,0,0,0,질풍검 일섬의 피해량이 3 증가합니다.
+Rune_60,검심·질풍,Char_02,0,E_UniqueResource_Min_Use_Delta,-3,1,-3,0,0,0,질풍검 3식과 질풍검 1식의 피해량이 1 증가합니다.
+Rune_61,불씨·점화,Char_03,0,E_Battle_Start_UniqueResource,3,1,0,0,0,0,탐사 시작 시 에테르 1을 가지고 시작합니다.
+Rune_62,불씨·온기,Char_03,0,E_UniqueResource3_Turn_Start_Armor,2,0,0,1,0,0,에테르가 최대치에 도달하면 체력을 2 회복합니다.
+Rune_63,불씨·광휘,Char_03,0,E_UniqueResource3_Turn_Start_Boost,1,0,0,0,0,0,날카로운 빛의 피해량이 2 증가합니다.
+Rune_64,불씨·의지,Char_03,0,E_Range_Delta,2,1,0,0,0,0,빛의 의지로 부여하는 증폭이 1 증가합니다.
+Rune_65,불씨·확산,Char_03,0,E_UniqueResource_Min_Use_Delta,-2,1,-3,0,0,0,니아의 독기와 니아의 섬광의 범위가 증가합니다.
+Rune_66,은총·신심,Char_04,0,,,,,,,,탐사 시작 시 신앙 1을 가지고 시작합니다.
+Rune_67,은총·가호,Char_04,0,,,,,,,,신앙이 최대치에 도달하면 자신과 체력이 가장 낮은 아군이 방어도를 2 얻습니다.
+Rune_68,은총·구원,Char_04,0,,,,,,,,구원의 기도로 회복하는 체력이 1 증가합니다.
+Rune_69,은총·심판,Char_04,0,,,,,,,,신성한 일격의 피해량이 2 증가합니다.
+Rune_70,은총·헌신,Char_04,0,,,,,,,,정권 지르기와 공방일체의 코스트가 1 감소합니다.
+Rune_71,해방·갈증,Char_05,0,,,,,,,,탐사 시작 시 혈기 1을 가지고 시작합니다.
+Rune_72,해방·격정,Char_05,0,,,,,,,,혈기가 최대치에 도달하면 충전을 2 얻습니다.
+Rune_73,해방·사신,Char_05,0,,,,,,,,데스사이드의 피해량이 3 증가합니다.
+Rune_74,해방·혈화,Char_05,0,,,,,,,,"스칼렛노바의 피해량이 2 증가하고, 대상을 2칸 밀쳐냅니다."
+Rune_75,해방·참월,Char_05,0,,,,,,,,크림슨체인과 크레센트스윙의 피해량이 1 증가합니다.
 Rune_01,각인·불안정한 원천,All,0,E_Max_HP,3,1,0,0,0,0,"최대 체력이 3 감소하지만, 최대 코스트가 1 증가합니다."
 Rune_02,각인·메마른 고동,All,0,E_Move_Value,3,1,0,1,0,0,"최대 체력이 5 감소하지만, 코스트 회복량이 1 증가합니다."
 Rune_03,각인·굳어진 육신,All,0,E_Max_HP,5,1,0,0,0,0,"최대 코스트가 1 감소하지만, 최대 체력이 4 증가합니다."

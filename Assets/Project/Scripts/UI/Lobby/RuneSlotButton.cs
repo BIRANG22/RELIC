@@ -104,7 +104,7 @@ public class RuneSlotButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         if (owner == null)
             return;
 
-        owner.UnequipRuneFromSlot(this);
+        owner.HandleRuneSlotClick(this);
     }
 
     public void SetRune(RuneData runeData)

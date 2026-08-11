@@ -340,7 +340,6 @@ public static class RestRoomShopService
         return skill != null &&
                !string.IsNullOrWhiteSpace(skill.SkillId) &&
                skill.Category == Category.Core &&
-               skill.SkillId.Trim().StartsWith("S_Core_", StringComparison.OrdinalIgnoreCase) &&
                SkillRarityUtility.IsCoreDropRarity(skill.Rarity) &&
                SkillRarityUtility.IsBaseSkillVariant(skill.SkillId);
     }
