@@ -8,13 +8,20 @@ namespace Relic.Gameplay.Data
         Maintain,
     }
 
+    public enum EffectType
+    {
+        Neutral,
+        Beneficial,
+        Harmful,
+    }
+
     [System.Serializable]
     public class EffectMasterData
     {
         public string EffectId;
         public string Name;
 
-
+        public EffectType EffectType;
         public EndTurn EndTurn;
 
         public string ToolTip;

@@ -331,159 +331,159 @@ GR_nocturn_portal_preview,그림자,1,0,-1,0,1,1,Monster,0,None,그림자가 머
 ,,,,,,,,,
 
 # Effect
-효과ID,이름,턴종료제거,툴팁
-EffectId,Name,EndTurn,ToolTip
-E_Max_HP,최대 HP,0,유닛의 생명력 자원
-E_Max_Cost,최대 Cost,0,유닛의 스킬사용에 필요한 자원
-E_Strike,타격,0,일반적인 피해를 준다. 대상의 방어도가 있으면 방어도부터 감소시킨다.
-E_Pierce,관통,0,방어도를 무시하고 대상의 체력에 직접 피해를 준다.
-E_Knockback,넉백,0,대상을 시전자와 멀어지는 방향으로 밀어낸다.
-E_Grab,그랩,0,대상을 시전자와 가까워지는 방향으로 당겨온다.
-E_Crash,충돌,0,이동 중 유닛 또는 장애물에 막히면 2의 고정 피해를 받는다.
-E_Boost,증폭,Remove,이번 턴 동안 공격 수치가 수치만큼 증가한다. 턴 종료 시 증폭 수치는 사라진다.
-E_Armor,방어도,Remove,번 턴 동안 수치만큼 피해를 막는다. 턴 종료 시 방어도 수치는 사라진다.
-E_Heal,치유,0,체력을 수치만큼 즉시 회복한다.
-E_CostRecovery,코스트회복,0,코스트를 수치만큼 즉시 회복한다.
-E_UniqueRecovery,고유자원회복,0,고유자원을수치만큼 즉시 회복한다.
-E_Charge,충전,Remove,턴 종료 시 코스트를 수치만큼 회복한다.
-E_Focus,집중,Remove,"턴 종료 시 고유자원(분노, 기세, 에테르, 신앙, 혈기)을(를) 수치만큼 획득한다."
-E_Swift,신속,Decrease,몬스터보다 먼저 행동을 진행할 수 있다. 턴 종료 시 수치가 1씩 감소한다.
-E_Smite,강타,Decrease,첫 공격의 피해가 50% 증가한다. 턴 종료 시 수치가 1씩 감소한다.
-E_Lifesteal,흡혈,Decrease,준 피해의 30%만큼 체력을 회복한다. 턴 종료 시 수치가 1씩 감소한다.
-E_Ward,가호,Decrease,피해를 받을 때 수치만큼 피해를 준다. 턴 종료 시 수치가 1씩 감소한다.
-E_Grudge,원한,Maintain,공격 수치가 수치만큼 증가한다. 턴 종료 시 사라지지 않는다.
-E_Barrier,장막,Decrease,받는 피해를 1회 무시한다. 발동 시 사라진다. 턴 종료 시 수치가 1씩 감소한다.
-E_Poison,중독,Decrease,턴 종료 시 수치만큼 피해를 받는다. 턴 종료 시 수치가 1씩 감소한다.
-E_Bleed,출혈,Decrease,이동 시 수치만큼 피해를 받는다. 턴 종료 시 수치가 1씩 감소한다.
-E_Vulnerable,취약,Decrease,받는 피해를 30% 증가시킨다. 턴 종료 시 수치가 1씩 감소한다.
-E_Weaken,약화,Decrease,주는 피해를 15% 감소시킨다. 턴 종료 시 수치가 1씩 감소한다.
-E_Corrosion,침식,Maintain,받는 모든 피해가 수치만큼 증가한다. 턴 종료 시 사라지지 않는다.
-E_Block,차단,Maintain,이로운 효과를 1회 무효화한다. 발동 시 사라진다.
-E_Split,분열,Maintain,피해횟수에 따라 수치가 1 감소한다.  0이 되었을 때 살아 있다면 블롭 2마리로 분열한다.
-E_Explode,폭발,Decrease,턴 종료 시 수치가 1 감소합니다. 수치가 0이 되면 자폭을 시전하고 사망한다.
-E_Flank,기습,Maintain,뒤를 공격할 때 피해가 50% 증가한다.
-E_Move_First_Attack_Power,돌격 강화,Decrease,이동 후 처음 사용하는 공격의 피해가 20% 증가합니다.
-E_Poison_Apply_Double,맹독 강화,Decrease,중독을 부여할 때 중독 부여량이 2배로 증가합니다.
-E_Bleeding_Apply_Double,출혈 강화,Decrease,출혈을 부여할 때 출혈 부여량이 2배로 증가합니다.,,
-E_Max_HP_Up,생명력 강화,Maintain,최대 HP가 10% 증가합니다.
-E_Kill_Heal,생명 흡수,Maintain,적을 처치하면 최대 HP의 5%만큼 체력을 회복합니다.
-E_Skill_Resource_Gain_Up,자원 순환,Maintain,코스트 획득량이 증가합니다.
-E_Buff_Apply_Double,증폭,Decrease,아군에게 버프를 부여할 때 버프 부여량이 2배로 증가합니다.
-E_Low_HP_Power,최후의 저항,Maintain,현재 체력이 낮을수록 공격력이 증가합니다.
-E_Move_Point_Up,기동력 강화,Maintain,이동력이 1 증가합니다.
-E_Aiming,조준,Decrease,조준 상태입니다.
-E_Move_Value,이동 수치 변화,0,이동 수치를 수치만큼 변화시킨다.
-E_Cost_Recovery_Delta,코스트 회복량 변화,0,코스트 회복량을 수치만큼 변화시킨다.
-E_Battle_Start_Cost,전투 시작 코스트 변화,0,전투 시작 시 코스트를 수치만큼 추가한다.
-E_Battle_Start_UniqueResource,전투 시작 고유자원,0,전투 시작 시 고유자원을 수치만큼 확보한다.
-E_UniqueResource_Gain_If_Empty_Delta,고유자원 공백 획득 보정,0,고유자원이 0일 때 고유자원 획득량을 수치만큼 증가시킨다.
-E_UniqueResource_Min_Use_Delta,고유자원 사용 최소치 변화,0,고유스킬 사용 가능 최소 고유자원 기준을 수치만큼 변화시킨다.
-E_UniqueResource_Overflow_To_Cost,고유자원 초과 코스트 회복,0,고유자원이 최대일 때 고유자원을 얻으면 수치 배율만큼 코스트를 회복한다.
-E_UniqueResource_Max_Skill_Cost_Delta,고유자원 최대 스킬 코스트 변화,0,고유자원이 최대일 때 모든 스킬 코스트를 수치만큼 변화시킨다.
-E_UniqueResource3_Turn_Start_Aiming,고유자원 3 조준,0,고유자원이 3 이상이면 턴 시작 시 조준을 수치만큼 얻는다.
-E_UniqueResource3_Turn_Start_Armor,고유자원 3 방어도,0,고유자원이 3 이상이면 턴 시작 시 방어도를 수치만큼 얻는다.
-E_UniqueResource3_Turn_Start_Boost,고유자원 3 증폭,0,고유자원이 3 이상이면 턴 시작 시 증폭을 수치만큼 얻는다.
-E_UniqueResource5_Turn_Start_Boost,고유자원 5 증폭,0,고유자원이 5 이상이면 턴 시작 시 증폭을 수치만큼 얻는다.
-E_Range_Delta,스킬 범위 변화,0,스킬 범위를 수치만큼 변화시킨다.
-E_First_Move_Cost_Delta,첫 이동 코스트 변화,0,첫 이동 스킬 코스트를 수치만큼 변화시킨다.
-E_Move_Cost_Delta,이동 코스트 변화,0,이동 스킬 코스트를 수치만큼 변화시킨다.
-E_Armor_Gain_Delta,방어도 획득량 변화,0,방어도 획득량을 수치만큼 변화시킨다.
-E_Armor_Gain_Percent,방어도 획득량 퍼센트 변화,0,방어도 획득량을 퍼센트로 변화시킨다.
-E_Attack_Cost_Delta,공격 스킬 코스트 변화,0,공격타입 스킬 코스트를 수치만큼 변화시킨다.
-E_Buff_Cost_Delta,버프 스킬 코스트 변화,0,버프타입 스킬 코스트를 수치만큼 변화시킨다.
-E_Debuff_Cost_Delta,디버프 스킬 코스트 변화,0,디버프타입 스킬 코스트를 수치만큼 변화시킨다.
-E_Move_Cost_Zero,이동 코스트 제거,0,이동 스킬이 코스트를 소모하지 않는다.
-E_Blocked_Slot_Mask,등록 금지 슬롯 마스크,0,마스크에 포함된 슬롯에 스킬을 등록할 수 없다.
-E_Max_Registrable_Slot_Count,등록 가능 슬롯 수 제한,0,스킬을 등록할 수 있는 슬롯 수를 수치로 제한한다.
-E_No_Move_In_Slot_Buff_Cost_Delta,이동 없음 슬롯 버프 코스트 변화,0,해당 슬롯에서 이동스킬을 사용하지 않았다면 버프 스킬 코스트를 수치만큼 변화시킨다.
-E_After_Move_Debuff_Cost_Delta,이동 후 디버프 코스트 변화,0,해당 슬롯에서 이동스킬을 사용한 뒤 등록하는 디버프 스킬 코스트를 수치만큼 변화시킨다.
-E_Slot1_Skill_Cost_Delta,1번 슬롯 스킬 코스트 변화,0,1번 슬롯에 등록하는 모든 스킬 코스트를 수치만큼 변화시킨다.
-E_Slot1_First_Skill_Cost_Delta,1번 슬롯 첫 스킬 코스트 변화,0,1번 슬롯에 등록하는 첫 스킬 코스트를 수치만큼 변화시킨다.
-E_Slot5_Skill_Cost_Delta,5번 슬롯 스킬 코스트 변화,0,5번 슬롯에 등록하는 모든 스킬 코스트를 수치만큼 변화시킨다.
-E_Last_Slot_Duplicate_Cost_Ignore,마지막 슬롯 중복 코스트 무시,0,마지막 슬롯 중복 예약 코스트를 무시한다.
-E_Low_HP_Skill_Cost_Delta,낮은 체력 스킬 코스트 변화,0,현재 체력이 30% 이하라면 스킬 코스트를 수치만큼 변화시킨다.
-E_High_HP_Cost_Recovery_Delta,높은 체력 코스트 회복 변화,0,현재 체력이 90% 이상이라면 코스트 회복량을 수치만큼 변화시킨다.
-E_High_HP_Buff_Cost_Delta,높은 체력 버프 코스트 변화,0,현재 체력이 90% 이상이라면 버프 스킬 코스트를 수치만큼 변화시킨다.
-E_Attack_Value_Delta,공격 스킬 피해량 변화,0,공격타입 스킬 피해량을 수치만큼 변화시킨다.
-E_Attack_Count_Delta,공격 스킬 횟수 변화,0,공격타입 스킬 피해 횟수를 수치만큼 변화시킨다.
-E_Random_Attack_Count_Delta,무작위 공격 횟수 변화,0,선택된 공격 스킬의 횟수를 수치만큼 변화시킨다.
-E_Buff_Value_Delta,버프 스킬 수치 변화,0,버프타입 스킬 수치를 수치만큼 변화시킨다.
-E_Debuff_Value_Delta,디버프 스킬 수치 변화,0,디버프타입 스킬 수치를 수치만큼 변화시킨다.
-E_After_Move_Debuff_Value_Delta,이동 후 디버프 수치 변화,0,해당 슬롯에서 이동스킬을 사용한 뒤 등록하는 디버프 스킬 수치를 수치만큼 변화시킨다.
-E_After_Move_Attack_Value_Per_Cost,이동 후 공격 소모 코스트 비례 피해,0,해당 슬롯에서 이동에 소모한 코스트만큼 공격 피해량을 증가시킨다.
-E_Slot1_Attack_Value_Delta,1번 슬롯 공격 수치 변화,0,1번 슬롯 공격타입 스킬 피해량을 수치만큼 변화시킨다.
-E_Slot1_Buff_Value_Delta,1번 슬롯 버프 수치 변화,0,1번 슬롯 버프타입 스킬 수치를 수치만큼 변화시킨다.
-E_Slot1_Debuff_Value_Delta,1번 슬롯 디버프 수치 변화,0,1번 슬롯 디버프타입 스킬 수치를 수치만큼 변화시킨다.
-E_Slot5_Attack_Value_Delta,5번 슬롯 공격 수치 변화,0,5번 슬롯 공격타입 스킬 피해량을 수치만큼 변화시킨다.
-E_Low_HP_Attack_Value_Delta,낮은 체력 공격 피해 변화,0,현재 체력이 30% 이하라면 공격타입 스킬 피해량을 수치만큼 변화시킨다.
-E_Self_Buff_Blocked_Buff_Value_Delta,자신 버프 차단 버프 수치 변화,0,자신에게 버프를 부여할 수 없는 대신 버프 수치를 수치만큼 증가시킨다.
-E_Full_HP_Buff_Value_Delta,최대 체력 버프 수치 변화,0,체력이 최대라면 버프타입 스킬 수치를 수치만큼 변화시킨다.
-E_Unique_Skill_Value_Percent,고유스킬 수치 퍼센트 변화,0,고유스킬 수치를 퍼센트로 변화시킨다.
-E_Unique_Skill_Count_Delta,고유스킬 횟수 변화,0,고유스킬 횟수를 수치만큼 변화시킨다.
-E_Slot5_Attack_Pierce,5번 슬롯 공격 관통 변경,0,5번 슬롯 공격 스킬의 타격 피해를 관통 피해로 변경한다.
-E_Slot1_Attack_Kill_Focus,1번 슬롯 공격 처치 집중,0,1번 슬롯 공격 스킬로 적 처치 시 집중을 수치만큼 얻는다.
-E_Slot5_Attack_Kill_Cost_Refund,5번 슬롯 공격 처치 코스트 반환,0,5번 슬롯 공격 스킬로 적 처치 시 해당 스킬 코스트를 돌려받는다.
-E_Unique_Skill_Kill_Focus,고유스킬 처치 집중,0,고유스킬로 적 처치 시 집중을 수치만큼 얻는다.
-E_Damage_Poisoned_Fixed,중독 대상 추가 고정피해,0,중독이 부여된 적에게 피해를 주면 고정피해를 수치만큼 준다.
-E_Damage_Bleeding_Fixed,출혈 대상 추가 고정피해,0,출혈이 부여된 적에게 피해를 주면 고정피해를 수치만큼 준다.
-E_Damage_Vulnerable_Armor,취약 대상 피해 방어도 획득,0,취약이 부여된 적에게 피해를 주면 방어도를 수치만큼 얻는다.
-E_Damage_Weakened_Armor,약화 대상 피해 방어도 획득,0,약화가 부여된 적에게 피해를 주면 방어도를 수치만큼 얻는다.
-E_Damage_Non_Poisoned_Apply_Poison,비중독 대상 피해 중독 부여,0,중독이 부여되지 않은 적에게 피해를 주면 중독을 수치만큼 부여한다.
-E_Ally_Buff_Charge,아군 버프 충전 획득,0,자신을 제외한 아군에게 버프를 부여하면 충전을 수치만큼 얻는다.
-E_Low_HP_Damage_Reduction_Percent,낮은 체력 피해 감소,0,현재 체력이 30% 이하라면 받는 피해를 퍼센트로 감소시킨다.
-E_Forced_Move_Immune,강제이동 면역,0,넉백과 그랩으로 이동하지 않는다.
-E_Crash_Damage_Immune,충돌 피해 면역,0,충돌로 인한 피해를 받지 않는다.
-E_Grid_Effect_Immune,그리드 효과 면역,0,그리드 효과를 받지 않는다.
-E_Overheal_To_Armor,최대 체력 회복 방어도 전환,0,최대 체력에서 회복되면 회복량에 비례해 방어도를 얻는다.
-E_Healing_Blocked,회복 차단,0,체력을 회복할 수 없다.
-E_No_Damage_Previous_Turn_Smite,피해 없음 다음 턴 강타,0,이전 턴 동안 피해를 받지 않았다면 턴 시작 시 강타를 수치만큼 얻는다.
-E_Once_Battle_End_Turn_Zero_Cost_Charge,전투당 1회 코스트 0 종료 충전,0,턴 종료 시 남은 코스트가 0이면 전투당 1회 충전을 수치만큼 얻는다.
-E_Once_Battle_Attack_Miss_Charge,전투당 1회 공격 실패 충전,0,공격이 적중하지 않았을 때 전투당 1회 충전을 수치만큼 얻는다.
-E_Once_Battle_Full_HP_Target_Damage_Percent,전투당 1회 최대 체력 대상 피해 증가,0,체력이 최대인 적에게 피해를 줄 때 전투당 1회 피해량을 퍼센트로 증가시킨다.
-E_Turn_Start_Armor,지정 턴 방어도,0,지정 턴 시작 시 방어도를 수치만큼 얻는다.
-E_Turn_Start_Armor_Per_Used_Slot,등록 슬롯 비례 방어도,0,등록된 슬롯 수에 비례해 방어도를 얻는다.
-E_Turn_Start_Armor_Per_Empty_Slot,빈 슬롯 비례 방어도,0,비어 있는 슬롯 수에 비례해 방어도를 얻는다.
-E_Turn_Start_Charge,지정 턴 충전,0,지정 턴 시작 시 충전을 수치만큼 얻는다.
-E_Turn_Start_Focus,지정 턴 집중,0,지정 턴 시작 시 집중을 수치만큼 얻는다.
-E_Turn_Start_Swift,지정 턴 신속,0,지정 턴 시작 시 신속을 수치만큼 얻는다.
-E_Turn_Start_Boost,지정 턴 증폭,0,지정 턴 시작 시 증폭을 수치만큼 얻는다.
-E_Turn_Start_Smite,지정 턴 강타,0,지정 턴 시작 시 강타를 수치만큼 얻는다.
-E_Turn_Start_Lifesteal,지정 턴 흡혈,0,지정 턴 시작 시 흡혈을 수치만큼 얻는다.
-E_Turn_Start_Smite_If_Slots_Empty_Mask,빈 슬롯 조건 강타,0,마스크에 포함된 슬롯이 모두 비어 있으면 강타를 수치만큼 얻는다.
-E_Turn_Start_Boost_If_Slots_Empty_Mask,빈 슬롯 조건 증폭,0,마스크에 포함된 슬롯이 모두 비어 있으면 증폭을 수치만큼 얻는다.
-E_Turn_Start_Boost_If_One_Attack_Command,공격 하나 조건 증폭,0,등록한 공격 스킬이 하나뿐이면 증폭을 수치만큼 얻는다.
-E_Turn_Start_Boost_If_Attack_Command_Count_At_Least,공격 수 조건 증폭,0,등록한 공격 스킬 수가 기준 이상이면 증폭을 수치만큼 얻는다.
-E_Turn_Start_All_Enemy_Vulnerable,지정 턴 전체 적 취약,0,지정 턴 시작 시 모든 적에게 취약을 수치만큼 부여한다.
-E_Turn_Start_All_Enemy_Weaken,지정 턴 전체 적 약화,0,지정 턴 시작 시 모든 적에게 약화를 수치만큼 부여한다.
-E_Turn_Start_All_Enemy_Poison,지정 턴 전체 적 중독,0,지정 턴 시작 시 모든 적에게 중독을 수치만큼 부여한다.
-E_Turn_Start_All_Enemy_Bleed,지정 턴 전체 적 출혈,0,지정 턴 시작 시 모든 적에게 출혈을 수치만큼 부여한다.
-E_Collision_Target_Damage_Delta,충돌 상대 피해 변화,0,자신과 충돌한 상대가 받는 피해를 수치만큼 변화시킨다.
-E_Collision_Charge,충돌 충전 획득,0,자신과 충돌이 발생하면 충전을 수치만큼 얻는다.
-E_Collision_Kill_Focus,충돌 처치 집중,0,자신과 충돌한 상대가 사망하면 집중을 수치만큼 얻는다.
-E_Rest_Heal_Percent_Bonus,휴식 회복량 증가,0,휴식으로 회복하는 회복량을 퍼센트로 증가시킨다.
-E_Shop_Price_Discount_Percent,상점 가격 할인,0,상점 판매 가격을 퍼센트로 감소시킨다.
-E_Battle_Reward_Currency_Percent,전투 보상 재화 증가,0,전투 보상 재화 획득량을 퍼센트로 증가시킨다.
-E_Battle_End_Heal,전투 종료 회복,0,전투 종료 후 체력을 수치만큼 회복한다.
-AR_DamageBoostThisTurn,피해 증가,Remove,이번 턴 동안 주는 피해가 증가한다.
-AR_DamageReductionThisTurn,피해 감소,Remove,이번 턴 동안 받는 피해가 감소한다.
-AR_RecoverUniqueResourceToMax,고유자원 최대 회복,0,고유자원을 최대치까지 회복한다.
-AR_RecoverCostToMax,코스트 최대 회복,0,코스트를 최대치까지 회복한다.
-AR_GrantSwift,신속 부여,0,신속을 부여한다.
-AR_CleanseDebuffs,디버프 제거,0,모든 디버프를 제거한다.
-AR_MoveToGrid,선택 그리드 이동,0,선택한 빈 그리드로 이동한다.
-AR_SwapAlly,아군 위치 교환,0,선택한 그리드의 아군과 위치를 교환한다.
-AR_TargetOutgoingDamageReductionThisTurn,대상 피해 감소,Remove,선택한 그리드의 적이 이번 턴 동안 주는 피해를 감소시킨다.
-AR_RemoveGridEffect,그리드 효과 제거,0,선택한 그리드의 장애물을 포함한 그리드 효과를 제거한다.
-AR_SpawnPoisonGridEffect,독 장판 생성,0,선택한 빈 그리드에 독 장판을 생성한다.
-AR_SpawnThornGridEffect,가시 장판 생성,0,선택한 빈 그리드에 가시 장판을 생성한다.
-AR_SpawnObstacleGridEffect,장애물 생성,0,선택한 빈 그리드에 장애물을 생성한다.
-AR_SpawnDummyGridEffect,허수아비 생성,0,선택한 빈 그리드에 허수아비를 생성한다.
-AR_SpawnExplosiveDollGridEffect,폭발 인형 생성,0,선택한 빈 그리드에 폭발 인형을 생성한다.
-E_Move,이동,0,이동 효과입니다.
-E_Burn,화상,Decrease,화상 상태입니다.
-E_Spawn_Spider_Egg,거미알 생성,None,선택한 그리드에 거미알을 생성한다.
-E_Spawn_Spider_Web,거미줄 생성,None,선택한 그리드에 거미줄을 생성한다.
-E_Spider_Web,거미줄,Maintain,다음 이동 예약 사용 코스트가 2배가 된다. 이동 예약 성공 시 사라진다.
+효과ID,이름,효과타입,턴종료제거,툴팁
+EffectId,Name,EffectType,EndTurn,ToolTip
+E_Max_HP,최대 HP,Neutral,0,유닛의 생명력 자원
+E_Max_Cost,최대 Cost,Neutral,0,유닛의 스킬사용에 필요한 자원
+E_Strike,타격,Neutral,0,일반적인 피해를 준다. 대상의 방어도가 있으면 방어도부터 감소시킨다.
+E_Pierce,관통,Neutral,0,방어도를 무시하고 대상의 체력에 직접 피해를 준다.
+E_Knockback,넉백,Neutral,0,대상을 시전자와 멀어지는 방향으로 밀어낸다.,
+E_Grab,그랩,Neutral,0,대상을 시전자와 가까워지는 방향으로 당겨온다.
+E_Crash,충돌,Neutral,0,이동 중 유닛 또는 장애물에 막히면 2의 고정 피해를 받는다.
+E_Boost,증폭,Beneficial,Remove,이번 턴 동안 공격 수치가 수치만큼 증가한다. 턴 종료 시 증폭 수치는 사라진다.
+E_Armor,방어도,Beneficial,Remove,번 턴 동안 수치만큼 피해를 막는다. 턴 종료 시 방어도 수치는 사라진다.
+E_Heal,치유,Neutral,0,체력을 수치만큼 즉시 회복한다.
+E_CostRecovery,코스트회복,Neutral,0,코스트를 수치만큼 즉시 회복한다.
+E_UniqueRecovery,고유자원회복,Neutral,0,고유자원을수치만큼 즉시 회복한다.
+E_Charge,충전,Beneficial,Remove,턴 종료 시 코스트를 수치만큼 회복한다.
+E_Focus,집중,Beneficial,Remove,"턴 종료 시 고유자원(분노, 기세, 에테르, 신앙, 혈기)을(를) 수치만큼 획득한다."
+E_Swift,신속,Beneficial,Decrease,몬스터보다 먼저 행동을 진행할 수 있다. 턴 종료 시 수치가 1씩 감소한다.
+E_Smite,강타,Beneficial,Decrease,첫 공격의 피해가 50% 증가한다. 턴 종료 시 수치가 1씩 감소한다.
+E_Lifesteal,흡혈,Beneficial,Decrease,준 피해의 30%만큼 체력을 회복한다. 턴 종료 시 수치가 1씩 감소한다.
+E_Ward,가호,Beneficial,Decrease,피해를 받을 때 수치만큼 피해를 준다. 턴 종료 시 수치가 1씩 감소한다.
+E_Grudge,원한,Beneficial,Maintain,공격 수치가 수치만큼 증가한다. 턴 종료 시 사라지지 않는다.
+E_Barrier,장막,Beneficial,Decrease,받는 피해를 1회 무시한다. 발동 시 사라진다. 턴 종료 시 수치가 1씩 감소한다.
+E_Poison,중독,Harmful,Decrease,턴 종료 시 수치만큼 피해를 받는다. 턴 종료 시 수치가 1씩 감소한다.
+E_Bleed,출혈,Harmful,Decrease,이동 시 수치만큼 피해를 받는다. 턴 종료 시 수치가 1씩 감소한다.
+E_Vulnerable,취약,Harmful,Decrease,받는 피해를 30% 증가시킨다. 턴 종료 시 수치가 1씩 감소한다.
+E_Weaken,약화,Harmful,Decrease,주는 피해를 15% 감소시킨다. 턴 종료 시 수치가 1씩 감소한다.
+E_Corrosion,침식,Harmful,Maintain,받는 모든 피해가 수치만큼 증가한다. 턴 종료 시 사라지지 않는다.
+E_Block,차단,Harmful,Maintain,이로운 효과를 1회 무효화한다. 발동 시 사라진다.
+E_Split,분열,Neutral,Maintain,피해횟수에 따라 수치가 1 감소한다.  0이 되었을 때 살아 있다면 블롭 2마리로 분열한다.
+E_Explode,폭발,Neutral,Decrease,턴 종료 시 수치가 1 감소합니다. 수치가 0이 되면 자폭을 시전하고 사망한다.
+E_Flank,기습,Beneficial,Maintain,뒤를 공격할 때 피해가 50% 증가한다.
+E_Move_First_Attack_Power,돌격 강화,Beneficial,Decrease,이동 후 처음 사용하는 공격의 피해가 20% 증가합니다.
+E_Poison_Apply_Double,맹독 강화,Beneficial,Decrease,중독을 부여할 때 중독 부여량이 2배로 증가합니다.
+E_Bleeding_Apply_Double,출혈 강화,Beneficial,Decrease,출혈을 부여할 때 출혈 부여량이 2배로 증가합니다.,,
+E_Max_HP_Up,생명력 강화,Beneficial,Maintain,최대 HP가 10% 증가합니다.
+E_Kill_Heal,생명 흡수,Beneficial,Maintain,적을 처치하면 최대 HP의 5%만큼 체력을 회복합니다.
+E_Skill_Resource_Gain_Up,자원 순환,Beneficial,Maintain,코스트 획득량이 증가합니다.
+E_Buff_Apply_Double,증폭,Beneficial,Decrease,아군에게 버프를 부여할 때 버프 부여량이 2배로 증가합니다.
+E_Low_HP_Power,최후의 저항,Beneficial,Maintain,현재 체력이 낮을수록 공격력이 증가합니다.
+E_Move_Point_Up,기동력 강화,Beneficial,Maintain,이동력이 1 증가합니다.
+E_Aiming,조준,Beneficial,Decrease,조준 상태입니다.
+E_Move_Value,이동 수치 변화,Neutral,0,이동 수치를 수치만큼 변화시킨다.
+E_Cost_Recovery_Delta,코스트 회복량 변화,Neutral,0,코스트 회복량을 수치만큼 변화시킨다.
+E_Battle_Start_Cost,전투 시작 코스트 변화,Neutral,0,전투 시작 시 코스트를 수치만큼 추가한다.
+E_Battle_Start_UniqueResource,전투 시작 고유자원,Neutral,0,전투 시작 시 고유자원을 수치만큼 확보한다.
+E_UniqueResource_Gain_If_Empty_Delta,고유자원 공백 획득 보정,Neutral,0,고유자원이 0일 때 고유자원 획득량을 수치만큼 증가시킨다.
+E_UniqueResource_Min_Use_Delta,고유자원 사용 최소치 변화,Neutral,0,고유스킬 사용 가능 최소 고유자원 기준을 수치만큼 변화시킨다.
+E_UniqueResource_Overflow_To_Cost,고유자원 초과 코스트 회복,Neutral,0,고유자원이 최대일 때 고유자원을 얻으면 수치 배율만큼 코스트를 회복한다.
+E_UniqueResource_Max_Skill_Cost_Delta,고유자원 최대 스킬 코스트 변화,Neutral,0,고유자원이 최대일 때 모든 스킬 코스트를 수치만큼 변화시킨다.
+E_UniqueResource3_Turn_Start_Aiming,고유자원 3 조준,Neutral,0,고유자원이 3 이상이면 턴 시작 시 조준을 수치만큼 얻는다.
+E_UniqueResource3_Turn_Start_Armor,고유자원 3 방어도,Neutral,0,고유자원이 3 이상이면 턴 시작 시 방어도를 수치만큼 얻는다.
+E_UniqueResource3_Turn_Start_Boost,고유자원 3 증폭,Neutral,0,고유자원이 3 이상이면 턴 시작 시 증폭을 수치만큼 얻는다.
+E_UniqueResource5_Turn_Start_Boost,고유자원 5 증폭,Neutral,0,고유자원이 5 이상이면 턴 시작 시 증폭을 수치만큼 얻는다.
+E_Range_Delta,스킬 범위 변화,Neutral,0,스킬 범위를 수치만큼 변화시킨다.
+E_First_Move_Cost_Delta,첫 이동 코스트 변화,Neutral,0,첫 이동 스킬 코스트를 수치만큼 변화시킨다.
+E_Move_Cost_Delta,이동 코스트 변화,Neutral,0,이동 스킬 코스트를 수치만큼 변화시킨다.
+E_Armor_Gain_Delta,방어도 획득량 변화,Neutral,0,방어도 획득량을 수치만큼 변화시킨다.
+E_Armor_Gain_Percent,방어도 획득량 퍼센트 변화,Neutral,0,방어도 획득량을 퍼센트로 변화시킨다.
+E_Attack_Cost_Delta,공격 스킬 코스트 변화,Neutral,0,공격타입 스킬 코스트를 수치만큼 변화시킨다.
+E_Buff_Cost_Delta,버프 스킬 코스트 변화,Neutral,0,버프타입 스킬 코스트를 수치만큼 변화시킨다.
+E_Debuff_Cost_Delta,디버프 스킬 코스트 변화,Neutral,0,디버프타입 스킬 코스트를 수치만큼 변화시킨다.
+E_Move_Cost_Zero,이동 코스트 제거,Neutral,0,이동 스킬이 코스트를 소모하지 않는다.
+E_Blocked_Slot_Mask,등록 금지 슬롯 마스크,Neutral,0,마스크에 포함된 슬롯에 스킬을 등록할 수 없다.
+E_Max_Registrable_Slot_Count,등록 가능 슬롯 수 제한,Neutral,0,스킬을 등록할 수 있는 슬롯 수를 수치로 제한한다.
+E_No_Move_In_Slot_Buff_Cost_Delta,이동 없음 슬롯 버프 코스트 변화,Neutral,0,해당 슬롯에서 이동스킬을 사용하지 않았다면 버프 스킬 코스트를 수치만큼 변화시킨다.
+E_After_Move_Debuff_Cost_Delta,이동 후 디버프 코스트 변화,Neutral,0,해당 슬롯에서 이동스킬을 사용한 뒤 등록하는 디버프 스킬 코스트를 수치만큼 변화시킨다.
+E_Slot1_Skill_Cost_Delta,1번 슬롯 스킬 코스트 변화,Neutral,0,1번 슬롯에 등록하는 모든 스킬 코스트를 수치만큼 변화시킨다.
+E_Slot1_First_Skill_Cost_Delta,1번 슬롯 첫 스킬 코스트 변화,Neutral,0,1번 슬롯에 등록하는 첫 스킬 코스트를 수치만큼 변화시킨다.
+E_Slot5_Skill_Cost_Delta,5번 슬롯 스킬 코스트 변화,Neutral,0,5번 슬롯에 등록하는 모든 스킬 코스트를 수치만큼 변화시킨다.
+E_Last_Slot_Duplicate_Cost_Ignore,마지막 슬롯 중복 코스트 무시,Neutral,0,마지막 슬롯 중복 예약 코스트를 무시한다.
+E_Low_HP_Skill_Cost_Delta,낮은 체력 스킬 코스트 변화,Neutral,0,현재 체력이 30% 이하라면 스킬 코스트를 수치만큼 변화시킨다.
+E_High_HP_Cost_Recovery_Delta,높은 체력 코스트 회복 변화,Neutral,0,현재 체력이 90% 이상이라면 코스트 회복량을 수치만큼 변화시킨다.
+E_High_HP_Buff_Cost_Delta,높은 체력 버프 코스트 변화,Neutral,0,현재 체력이 90% 이상이라면 버프 스킬 코스트를 수치만큼 변화시킨다.
+E_Attack_Value_Delta,공격 스킬 피해량 변화,Neutral,0,공격타입 스킬 피해량을 수치만큼 변화시킨다.
+E_Attack_Count_Delta,공격 스킬 횟수 변화,Neutral,0,공격타입 스킬 피해 횟수를 수치만큼 변화시킨다.
+E_Random_Attack_Count_Delta,무작위 공격 횟수 변화,Neutral,0,선택된 공격 스킬의 횟수를 수치만큼 변화시킨다.
+E_Buff_Value_Delta,버프 스킬 수치 변화,Neutral,0,버프타입 스킬 수치를 수치만큼 변화시킨다.
+E_Debuff_Value_Delta,디버프 스킬 수치 변화,Neutral,0,디버프타입 스킬 수치를 수치만큼 변화시킨다.
+E_After_Move_Debuff_Value_Delta,이동 후 디버프 수치 변화,Neutral,0,해당 슬롯에서 이동스킬을 사용한 뒤 등록하는 디버프 스킬 수치를 수치만큼 변화시킨다.
+E_After_Move_Attack_Value_Per_Cost,이동 후 공격 소모 코스트 비례 피해,Neutral,0,해당 슬롯에서 이동에 소모한 코스트만큼 공격 피해량을 증가시킨다.
+E_Slot1_Attack_Value_Delta,1번 슬롯 공격 수치 변화,Neutral,0,1번 슬롯 공격타입 스킬 피해량을 수치만큼 변화시킨다.
+E_Slot1_Buff_Value_Delta,1번 슬롯 버프 수치 변화,Neutral,0,1번 슬롯 버프타입 스킬 수치를 수치만큼 변화시킨다.
+E_Slot1_Debuff_Value_Delta,1번 슬롯 디버프 수치 변화,Neutral,0,1번 슬롯 디버프타입 스킬 수치를 수치만큼 변화시킨다.
+E_Slot5_Attack_Value_Delta,5번 슬롯 공격 수치 변화,Neutral,0,5번 슬롯 공격타입 스킬 피해량을 수치만큼 변화시킨다.
+E_Low_HP_Attack_Value_Delta,낮은 체력 공격 피해 변화,Neutral,0,현재 체력이 30% 이하라면 공격타입 스킬 피해량을 수치만큼 변화시킨다.
+E_Self_Buff_Blocked_Buff_Value_Delta,자신 버프 차단 버프 수치 변화,Neutral,0,자신에게 버프를 부여할 수 없는 대신 버프 수치를 수치만큼 증가시킨다.
+E_Full_HP_Buff_Value_Delta,최대 체력 버프 수치 변화,Neutral,0,체력이 최대라면 버프타입 스킬 수치를 수치만큼 변화시킨다.
+E_Unique_Skill_Value_Percent,고유스킬 수치 퍼센트 변화,Neutral,0,고유스킬 수치를 퍼센트로 변화시킨다.
+E_Unique_Skill_Count_Delta,고유스킬 횟수 변화,Neutral,0,고유스킬 횟수를 수치만큼 변화시킨다.
+E_Slot5_Attack_Pierce,5번 슬롯 공격 관통 변경,Neutral,0,5번 슬롯 공격 스킬의 타격 피해를 관통 피해로 변경한다.
+E_Slot1_Attack_Kill_Focus,1번 슬롯 공격 처치 집중,Neutral,0,1번 슬롯 공격 스킬로 적 처치 시 집중을 수치만큼 얻는다.
+E_Slot5_Attack_Kill_Cost_Refund,5번 슬롯 공격 처치 코스트 반환,Neutral,0,5번 슬롯 공격 스킬로 적 처치 시 해당 스킬 코스트를 돌려받는다.
+E_Unique_Skill_Kill_Focus,고유스킬 처치 집중,Neutral,0,고유스킬로 적 처치 시 집중을 수치만큼 얻는다.
+E_Damage_Poisoned_Fixed,중독 대상 추가 고정피해,Neutral,0,중독이 부여된 적에게 피해를 주면 고정피해를 수치만큼 준다.
+E_Damage_Bleeding_Fixed,출혈 대상 추가 고정피해,Neutral,0,출혈이 부여된 적에게 피해를 주면 고정피해를 수치만큼 준다.
+E_Damage_Vulnerable_Armor,취약 대상 피해 방어도 획득,Neutral,0,취약이 부여된 적에게 피해를 주면 방어도를 수치만큼 얻는다.
+E_Damage_Weakened_Armor,약화 대상 피해 방어도 획득,Neutral,0,약화가 부여된 적에게 피해를 주면 방어도를 수치만큼 얻는다.
+E_Damage_Non_Poisoned_Apply_Poison,비중독 대상 피해 중독 부여,Neutral,0,중독이 부여되지 않은 적에게 피해를 주면 중독을 수치만큼 부여한다.
+E_Ally_Buff_Charge,아군 버프 충전 획득,Neutral,0,자신을 제외한 아군에게 버프를 부여하면 충전을 수치만큼 얻는다.
+E_Low_HP_Damage_Reduction_Percent,낮은 체력 피해 감소,Neutral,0,현재 체력이 30% 이하라면 받는 피해를 퍼센트로 감소시킨다.
+E_Forced_Move_Immune,강제이동 면역,Neutral,0,넉백과 그랩으로 이동하지 않는다.
+E_Crash_Damage_Immune,충돌 피해 면역,Neutral,0,충돌로 인한 피해를 받지 않는다.
+E_Grid_Effect_Immune,그리드 효과 면역,Neutral,0,그리드 효과를 받지 않는다.
+E_Overheal_To_Armor,최대 체력 회복 방어도 전환,Neutral,0,최대 체력에서 회복되면 회복량에 비례해 방어도를 얻는다.
+E_Healing_Blocked,회복 차단,Neutral,0,체력을 회복할 수 없다.
+E_No_Damage_Previous_Turn_Smite,피해 없음 다음 턴 강타,Neutral,0,이전 턴 동안 피해를 받지 않았다면 턴 시작 시 강타를 수치만큼 얻는다.
+E_Once_Battle_End_Turn_Zero_Cost_Charge,전투당 1회 코스트 0 종료 충전,Neutral,0,턴 종료 시 남은 코스트가 0이면 전투당 1회 충전을 수치만큼 얻는다.
+E_Once_Battle_Attack_Miss_Charge,전투당 1회 공격 실패 충전,Neutral,0,공격이 적중하지 않았을 때 전투당 1회 충전을 수치만큼 얻는다.
+E_Once_Battle_Full_HP_Target_Damage_Percent,전투당 1회 최대 체력 대상 피해 증가,Neutral,0,체력이 최대인 적에게 피해를 줄 때 전투당 1회 피해량을 퍼센트로 증가시킨다.
+E_Turn_Start_Armor,지정 턴 방어도,Neutral,0,지정 턴 시작 시 방어도를 수치만큼 얻는다.
+E_Turn_Start_Armor_Per_Used_Slot,등록 슬롯 비례 방어도,Neutral,0,등록된 슬롯 수에 비례해 방어도를 얻는다.
+E_Turn_Start_Armor_Per_Empty_Slot,빈 슬롯 비례 방어도,Neutral,0,비어 있는 슬롯 수에 비례해 방어도를 얻는다.
+E_Turn_Start_Charge,지정 턴 충전,Neutral,0,지정 턴 시작 시 충전을 수치만큼 얻는다.
+E_Turn_Start_Focus,지정 턴 집중,Neutral,0,지정 턴 시작 시 집중을 수치만큼 얻는다.
+E_Turn_Start_Swift,지정 턴 신속,Neutral,0,지정 턴 시작 시 신속을 수치만큼 얻는다.
+E_Turn_Start_Boost,지정 턴 증폭,Neutral,0,지정 턴 시작 시 증폭을 수치만큼 얻는다.
+E_Turn_Start_Smite,지정 턴 강타,Neutral,0,지정 턴 시작 시 강타를 수치만큼 얻는다.
+E_Turn_Start_Lifesteal,지정 턴 흡혈,Neutral,0,지정 턴 시작 시 흡혈을 수치만큼 얻는다.
+E_Turn_Start_Smite_If_Slots_Empty_Mask,빈 슬롯 조건 강타,Neutral,0,마스크에 포함된 슬롯이 모두 비어 있으면 강타를 수치만큼 얻는다.
+E_Turn_Start_Boost_If_Slots_Empty_Mask,빈 슬롯 조건 증폭,Neutral,0,마스크에 포함된 슬롯이 모두 비어 있으면 증폭을 수치만큼 얻는다.
+E_Turn_Start_Boost_If_One_Attack_Command,공격 하나 조건 증폭,Neutral,0,등록한 공격 스킬이 하나뿐이면 증폭을 수치만큼 얻는다.
+E_Turn_Start_Boost_If_Attack_Command_Count_At_Least,공격 수 조건 증폭,Neutral,0,등록한 공격 스킬 수가 기준 이상이면 증폭을 수치만큼 얻는다.
+E_Turn_Start_All_Enemy_Vulnerable,지정 턴 전체 적 취약,Neutral,0,지정 턴 시작 시 모든 적에게 취약을 수치만큼 부여한다.
+E_Turn_Start_All_Enemy_Weaken,지정 턴 전체 적 약화,Neutral,0,지정 턴 시작 시 모든 적에게 약화를 수치만큼 부여한다.
+E_Turn_Start_All_Enemy_Poison,지정 턴 전체 적 중독,Neutral,0,지정 턴 시작 시 모든 적에게 중독을 수치만큼 부여한다.
+E_Turn_Start_All_Enemy_Bleed,지정 턴 전체 적 출혈,Neutral,0,지정 턴 시작 시 모든 적에게 출혈을 수치만큼 부여한다.
+E_Collision_Target_Damage_Delta,충돌 상대 피해 변화,Neutral,0,자신과 충돌한 상대가 받는 피해를 수치만큼 변화시킨다.
+E_Collision_Charge,충돌 충전 획득,Neutral,0,자신과 충돌이 발생하면 충전을 수치만큼 얻는다.
+E_Collision_Kill_Focus,충돌 처치 집중,Neutral,0,자신과 충돌한 상대가 사망하면 집중을 수치만큼 얻는다.
+E_Rest_Heal_Percent_Bonus,휴식 회복량 증가,Neutral,0,휴식으로 회복하는 회복량을 퍼센트로 증가시킨다.
+E_Shop_Price_Discount_Percent,상점 가격 할인,Neutral,0,상점 판매 가격을 퍼센트로 감소시킨다.
+E_Battle_Reward_Currency_Percent,전투 보상 재화 증가,Neutral,0,전투 보상 재화 획득량을 퍼센트로 증가시킨다.
+E_Battle_End_Heal,전투 종료 회복,Neutral,0,전투 종료 후 체력을 수치만큼 회복한다.
+AR_DamageBoostThisTurn,피해 증가,Beneficial,Remove,이번 턴 동안 주는 피해가 증가한다.
+AR_DamageReductionThisTurn,피해 감소,Beneficial,Remove,이번 턴 동안 받는 피해가 감소한다.
+AR_RecoverUniqueResourceToMax,고유자원 최대 회복,Neutral,0,고유자원을 최대치까지 회복한다.
+AR_RecoverCostToMax,코스트 최대 회복,Neutral,0,코스트를 최대치까지 회복한다.
+AR_GrantSwift,신속 부여,Neutral,0,신속을 부여한다.
+AR_CleanseDebuffs,디버프 제거,Neutral,0,모든 디버프를 제거한다.
+AR_MoveToGrid,선택 그리드 이동,Neutral,0,선택한 빈 그리드로 이동한다.
+AR_SwapAlly,아군 위치 교환,Neutral,0,선택한 그리드의 아군과 위치를 교환한다.
+AR_TargetOutgoingDamageReductionThisTurn,대상 피해 감소,Harmful,Remove,선택한 그리드의 적이 이번 턴 동안 주는 피해를 감소시킨다.
+AR_RemoveGridEffect,그리드 효과 제거,Neutral,0,선택한 그리드의 장애물을 포함한 그리드 효과를 제거한다.
+AR_SpawnPoisonGridEffect,독 장판 생성,Neutral,0,선택한 빈 그리드에 독 장판을 생성한다.
+AR_SpawnThornGridEffect,가시 장판 생성,Neutral,0,선택한 빈 그리드에 가시 장판을 생성한다.
+AR_SpawnObstacleGridEffect,장애물 생성,Neutral,0,선택한 빈 그리드에 장애물을 생성한다.
+AR_SpawnDummyGridEffect,허수아비 생성,Neutral,0,선택한 빈 그리드에 허수아비를 생성한다.
+AR_SpawnExplosiveDollGridEffect,폭발 인형 생성,Neutral,0,선택한 빈 그리드에 폭발 인형을 생성한다.
+E_Move,이동,Neutral,0,이동 효과입니다.
+E_Burn,화상,Harmful,Decrease,화상 상태입니다.
+E_Spawn_Spider_Egg,거미알 생성,Neutral,None,선택한 그리드에 거미알을 생성한다.
+E_Spawn_Spider_Web,거미줄 생성,Neutral,None,선택한 그리드에 거미줄을 생성한다.
+E_Spider_Web,거미줄,Neutral,Maintain,다음 이동 예약 사용 코스트가 2배가 된다. 이동 예약 성공 시 사라진다.
 
 # Map
 맵ID,이름,타입,전투맵ID,이벤트ID,챕터,스테이지 맵,등장가중치,고정위치,드랍스킬분류

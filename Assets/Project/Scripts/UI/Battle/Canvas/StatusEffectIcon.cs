@@ -9,6 +9,7 @@ public class StatusEffectIcon : MonoBehaviour, IPointerEnterHandler, IPointerExi
 {
     [Header("References")]
     [SerializeField] private Image iconImage;
+    [SerializeField] private Image typeIconImage;
     [SerializeField] private TMP_Text valueText;
 
     [Header("Tooltip")]
@@ -45,10 +46,10 @@ public class StatusEffectIcon : MonoBehaviour, IPointerEnterHandler, IPointerExi
         gameObject.SetActive(true);
 
         if (iconImage != null)
-        {
-            iconImage.sprite = GetIcon(data.EffectId);
-            iconImage.enabled = iconImage.sprite != null;
-        }
+            ApplyImage(iconImage, GetIcon(data.EffectId));
+
+        if (typeIconImage != null)
+            ApplyImage(typeIconImage, GetTypeIcon(data.EffectId));
 
         if (valueText != null)
         {
@@ -184,5 +185,30 @@ public class StatusEffectIcon : MonoBehaviour, IPointerEnterHandler, IPointerExi
             return icon;
 
         return null;
+    }
+
+    private Sprite GetTypeIcon(string effectId)
+    {
+        if (DataManager.Instance == null)
+            return null;
+
+        if (DataManager.Instance.StatusEffectIconDatabase == null)
+            return null;
+
+        if (DataManager.Instance.StatusEffectIconDatabase.TryGetTypeIcon(
+                effectId,
+                DataManager.Instance.EffectDatabase,
+                out Sprite icon))
+        {
+            return icon;
+        }
+
+        return null;
+    }
+
+    private static void ApplyImage(Image image, Sprite sprite)
+    {
+        image.sprite = sprite;
+        image.enabled = sprite != null;
     }
 }

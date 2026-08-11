@@ -14,6 +14,8 @@ public class BattleMapPanel : MonoBehaviour
     [SerializeField] private BattleMapNodeInfoPresenter nodeInfoPresenter;
     [Header("Owner")]
     [SerializeField] private BattleSceneController battleSceneController;
+    [Header("Generation")]
+    [SerializeField] private ManualBattleMapTemplate manualMapTemplate;
     [Header("Scroll Focus")]
     [SerializeField] private float horizontalContentPadding = 40f;
     [SerializeField] private float focusDelay = 0.02f;
@@ -45,7 +47,10 @@ public class BattleMapPanel : MonoBehaviour
         runtimeStore = DataManager.Instance.MapRuntimeStore;
         runtime = mapRuntime;
         EnsureMapGenerated();
-        BattleMapLayoutUtility.ApplyHorizontalLayout(runtime?.GeneratedNodes);
+
+        if (runtime?.IsManualMapTemplate != true)
+            BattleMapLayoutUtility.ApplyHorizontalLayout(runtime?.GeneratedNodes);
+
         runtimeStore?.Set(runtime);
     }
 
@@ -76,13 +81,14 @@ public class BattleMapPanel : MonoBehaviour
 
         Debug.Log($"[BattleMapPanel] Chapter: {runtime.SelectedChapterId}, Stage: {runtime.CurrentStage}");
 
-        ProceduralMapGenerator generator = new();
-
-        runtime.GeneratedNodes = generator.Generate(
+        BattleMapGenerationResult generationResult = BattleMapGenerationResolver.GenerateResult(
             mapPool,
             runtime.SelectedChapterId,
-            runtime.CurrentStage
+            runtime.CurrentStage,
+            manualMapTemplate
         );
+        runtime.GeneratedNodes = generationResult.Nodes;
+        runtime.IsManualMapTemplate = generationResult.UsedManualTemplate;
 
         runtime.IsRunInitialized = true;
 

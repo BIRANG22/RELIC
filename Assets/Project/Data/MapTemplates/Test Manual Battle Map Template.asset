@@ -1,0 +1,159 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67b8b2d736ff91a4486a9b4e552d7ba8, type: 3}
+  m_Name: Test Manual Battle Map Template
+  m_EditorClassIdentifier: 
+  nodes:
+  - NodeIndex: 0
+    LayerIndex: 0
+    RowIndex: 1
+    Type: Start
+    MapIdOverride: 
+    UseCustomPosition: 1
+    CustomPosition: {x: 0, y: 0}
+    NextNodeIndices:
+    - 1
+    - 2
+  - NodeIndex: 1
+    LayerIndex: 1
+    RowIndex: 0
+    Type: Common
+    MapIdOverride: 
+    UseCustomPosition: 1
+    CustomPosition: {x: 100, y: 40}
+    NextNodeIndices:
+    - 3
+  - NodeIndex: 2
+    LayerIndex: 1
+    RowIndex: 2
+    Type: Special
+    MapIdOverride: 
+    UseCustomPosition: 1
+    CustomPosition: {x: 100, y: -40}
+    NextNodeIndices:
+    - 4
+  - NodeIndex: 3
+    LayerIndex: 2
+    RowIndex: 0
+    Type: Common
+    MapIdOverride: 
+    UseCustomPosition: 1
+    CustomPosition: {x: 200, y: 40}
+    NextNodeIndices:
+    - 5
+  - NodeIndex: 4
+    LayerIndex: 2
+    RowIndex: 2
+    Type: Special
+    MapIdOverride: 
+    UseCustomPosition: 1
+    CustomPosition: {x: 200, y: -40}
+    NextNodeIndices:
+    - 6
+  - NodeIndex: 5
+    LayerIndex: 3
+    RowIndex: 0
+    Type: Common
+    MapIdOverride: 
+    UseCustomPosition: 1
+    CustomPosition: {x: 300, y: 40}
+    NextNodeIndices:
+    - 7
+  - NodeIndex: 6
+    LayerIndex: 3
+    RowIndex: 2
+    Type: Special
+    MapIdOverride: 
+    UseCustomPosition: 1
+    CustomPosition: {x: 300, y: -40}
+    NextNodeIndices:
+    - 8
+  - NodeIndex: 7
+    LayerIndex: 4
+    RowIndex: 0
+    Type: Common
+    MapIdOverride: 
+    UseCustomPosition: 1
+    CustomPosition: {x: 400, y: 40}
+    NextNodeIndices:
+    - 9
+  - NodeIndex: 8
+    LayerIndex: 4
+    RowIndex: 2
+    Type: Special
+    MapIdOverride: 
+    UseCustomPosition: 1
+    CustomPosition: {x: 400, y: -40}
+    NextNodeIndices:
+    - 10
+  - NodeIndex: 9
+    LayerIndex: 5
+    RowIndex: 0
+    Type: Common
+    MapIdOverride: 
+    UseCustomPosition: 1
+    CustomPosition: {x: 500, y: 40}
+    NextNodeIndices:
+    - 11
+  - NodeIndex: 10
+    LayerIndex: 5
+    RowIndex: 2
+    Type: Special
+    MapIdOverride: 
+    UseCustomPosition: 1
+    CustomPosition: {x: 500, y: -40}
+    NextNodeIndices:
+    - 12
+  - NodeIndex: 11
+    LayerIndex: 6
+    RowIndex: 0
+    Type: Common
+    MapIdOverride: 
+    UseCustomPosition: 1
+    CustomPosition: {x: 600, y: 40}
+    NextNodeIndices:
+    - 13
+  - NodeIndex: 12
+    LayerIndex: 6
+    RowIndex: 2
+    Type: Special
+    MapIdOverride: 
+    UseCustomPosition: 1
+    CustomPosition: {x: 600, y: -40}
+    NextNodeIndices:
+    - 13
+  - NodeIndex: 13
+    LayerIndex: 7
+    RowIndex: 1
+    Type: Elite
+    MapIdOverride: 
+    UseCustomPosition: 1
+    CustomPosition: {x: 700, y: 0}
+    NextNodeIndices:
+    - 14
+  - NodeIndex: 14
+    LayerIndex: 8
+    RowIndex: 1
+    Type: Rest
+    MapIdOverride: 
+    UseCustomPosition: 1
+    CustomPosition: {x: 800, y: 0}
+    NextNodeIndices:
+    - 15
+  - NodeIndex: 15
+    LayerIndex: 9
+    RowIndex: 1
+    Type: Boss
+    MapIdOverride: 
+    UseCustomPosition: 1
+    CustomPosition: {x: 900, y: 0}
+    NextNodeIndices: []
