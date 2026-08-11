@@ -29,13 +29,13 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterH
     [SerializeField] private bool autoFindBackRect = true;
     [SerializeField] private string backObjectName = "back";
 
-    [Tooltip("¼±ÅÃµÇÁö ¾Ê¾ÒÀ» ¶§ back ÀÌ¹ÌÁöÀÇ À§Ä¡ÀÔ´Ï´Ù.")]
+    [Tooltip("ì„ íƒë˜ì§€ ì•Šì•˜ì„ ë•Œ back ì´ë¯¸ì§€ì˜ ìœ„ì¹˜ì…ë‹ˆë‹¤.")]
     [SerializeField] private Vector2 normalBackAnchoredPosition = Vector2.zero;
 
-    [Tooltip("HUD°¡ ¼±ÅÃµÆÀ» ¶§ back ÀÌ¹ÌÁö°¡ ÀÌµ¿ÇÒ À§Ä¡ÀÔ´Ï´Ù.")]
+    [Tooltip("HUDê°€ ì„ íƒëì„ ë•Œ back ì´ë¯¸ì§€ê°€ ì´ë™í•  ìœ„ì¹˜ì…ë‹ˆë‹¤.")]
     [SerializeField] private Vector2 selectedBackAnchoredPosition = Vector2.zero;
 
-    [Tooltip("back ÀÌ¹ÌÁö°¡ ÀÌµ¿ÇÏ´Â µ¥ °É¸®´Â ½Ã°£ÀÔ´Ï´Ù.")]
+    [Tooltip("back ì´ë¯¸ì§€ê°€ ì´ë™í•˜ëŠ” ë° ê±¸ë¦¬ëŠ” ì‹œê°„ì…ë‹ˆë‹¤.")]
     [SerializeField, Min(0f)] private float backAnimationDuration = 0.2f;
 
     [SerializeField] private bool useUnscaledTimeForBackAnimation = true;
@@ -59,7 +59,7 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterH
     [SerializeField] private TMP_Text hpValueText;
 
     [Header("Cost")]
-    [Tooltip("ÇöÀç ÄÚ½ºÆ® ºñÀ²À» Ç¥½ÃÇÒ Filled Å¸ÀÔ ÀÌ¹ÌÁöÀÔ´Ï´Ù.")]
+    [Tooltip("í˜„ì¬ ì½”ìŠ¤íŠ¸ ë¹„ìœ¨ì„ í‘œì‹œí•  Filled íƒ€ì… ì´ë¯¸ì§€ì…ë‹ˆë‹¤.")]
     [SerializeField] private Image costFill;
 
     [SerializeField] private TMP_Text costValueText;
@@ -174,6 +174,8 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterH
             portraitImage.sprite = GetCharacterTimelineIcon(boundRuntime.CharacterId);
             portraitImage.enabled = portraitImage.sprite != null;
         }
+
+        RefreshCharacterBackImage();
 
         int maxHP = boundRuntime.MaxHP > 0
             ? boundRuntime.MaxHP
@@ -381,6 +383,38 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterH
         return null;
     }
 
+    private void RefreshCharacterBackImage()
+    {
+        ResolveBackImageReference();
+
+        if (backImage == null)
+            return;
+
+        Sprite charBackImage = GetCharacterBackImage(boundRuntime.CharacterId);
+
+        backImage.sprite = charBackImage;
+        backImage.enabled = charBackImage != null && (isCommandSelected || isPointerHovering);
+    }
+
+    private Sprite GetCharacterBackImage(string characterId)
+    {
+        if (DataManager.Instance == null)
+            return null;
+
+        if (DataManager.Instance.CharacterIconDatabase == null)
+            return null;
+
+        if (DataManager.Instance.CharacterIconDatabase.TryGetCharBackImage(
+            characterId,
+            out Sprite charBackImage
+        ))
+        {
+            return charBackImage;
+        }
+
+        return null;
+    }
+
     public void SetBaseScale(Vector3 baseScale)
     {
         defaultLocalScale = baseScale;
@@ -461,6 +495,9 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterH
 
         if (backImage != null)
         {
+            if (showBack)
+                backImage.enabled = backImage.sprite != null;
+
             backImage.color = isCommandSelected
                 ? selectedBackColor
                 : hoverBackColor;
@@ -490,20 +527,26 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterH
             !isActiveAndEnabled)
         {
             backRect.anchoredPosition = targetPosition;
+
+            if (!selected && backImage != null)
+                backImage.enabled = false;
+
             return;
         }
 
         backPositionAnimationRoutine = StartCoroutine(
             AnimateBackPositionRoutine(
                 backRect.anchoredPosition,
-                targetPosition
+                targetPosition,
+                !selected
             )
         );
     }
 
     private IEnumerator AnimateBackPositionRoutine(
         Vector2 startPosition,
-        Vector2 targetPosition
+        Vector2 targetPosition,
+        bool hideBackWhenFinished
     )
     {
         float elapsed = 0f;
@@ -543,6 +586,14 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterH
 
         if (backRect != null)
             backRect.anchoredPosition = targetPosition;
+
+        if (hideBackWhenFinished &&
+            !isCommandSelected &&
+            !isPointerHovering &&
+            backImage != null)
+        {
+            backImage.enabled = false;
+        }
 
         backPositionAnimationRoutine = null;
     }
@@ -785,6 +836,14 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterH
             portraitImage.enabled = false;
         }
 
+        ResolveBackImageReference();
+
+        if (backImage != null)
+        {
+            backImage.sprite = null;
+            backImage.enabled = false;
+        }
+
         RefreshBar(hpFill, hpValueText, 0, 1);
         RefreshCost(0, 0);
         RefreshUniqueResource(0, 0);
@@ -894,8 +953,8 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterH
     }
 
     /// <summary>
-    /// Ä³¸¯ÅÍ È£¹ö¿Í ¿¬µ¿µÇ¾î HUD È£¹ö È¿°ú¸¸ º¯°æÇÕ´Ï´Ù.
-    /// ¹İ´ëÂÊ Ä³¸¯ÅÍ¿¡ ´Ù½Ã Àü´ŞÇÏÁö ¾Ê¾Æ È£¹ö È£ÃâÀÌ ¼øÈ¯ÇÏÁö ¾Ê½À´Ï´Ù.
+    /// ìºë¦­í„° í˜¸ë²„ì™€ ì—°ë™ë˜ì–´ HUD í˜¸ë²„ íš¨ê³¼ë§Œ ë³€ê²½í•©ë‹ˆë‹¤.
+    /// ë°˜ëŒ€ìª½ ìºë¦­í„°ì— ë‹¤ì‹œ ì „ë‹¬í•˜ì§€ ì•Šì•„ í˜¸ë²„ í˜¸ì¶œì´ ìˆœí™˜í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
     /// </summary>
     public void SetLinkedCharacterHover(bool active)
     {
