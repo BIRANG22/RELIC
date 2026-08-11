@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff59a99fca07b8a4f95e5835b0d044ba, type: 3}
   m_Name: StatusEffectIconDatabase
   m_EditorClassIdentifier: 
+  beneficialIcon: {fileID: 21300000, guid: 8baaaf469a664b54089db57f0e77dfcc, type: 3}
+  harmfulIcon: {fileID: 21300000, guid: b98f9d4577eba5240a6261d95dd2e229, type: 3}
   entries:
   - EffectId: E_Boost
     Icon: {fileID: 21300000, guid: 6e9fbfdb521f41046a01c0e5d1e3a1f4, type: 3}
