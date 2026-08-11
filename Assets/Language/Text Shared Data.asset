@@ -5894,7 +5894,8 @@ MonoBehaviour:
   - m_Id: 41387432259100779
     m_Key: lobby.stage_select.area_12
     m_Metadata:
-      m_Items: []  - m_Id: 41387432259100780
+      m_Items: []
+  - m_Id: 41387432259100780
     m_Key: lobby.skill_info.method_label
     m_Metadata:
       m_Items: []
@@ -5930,15 +5931,14 @@ MonoBehaviour:
     m_Key: lobby.stat.rune_bonus
     m_Metadata:
       m_Items: []
-
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
-    rid: 2854258838015050044
+    rid: 5312828318474829911
   references:
     version: 2
     RefIds:
-    - rid: 2854258838015050044
+    - rid: 5312828318474829911
       type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
       data:
-        m_CustomEpoch: 1776398090498
+        m_CustomEpoch: 1786346678269

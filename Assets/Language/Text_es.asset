@@ -6166,43 +6166,46 @@ MonoBehaviour:
   - m_Id: 41387432259100779
     m_Localized: 'Area 12: Cueva de Erosion'
     m_Metadata:
-      m_Items: []  - m_Id: 41387432259100780
-    m_Localized: "M\u00E9todo: "
-    m_Metadata:
       m_Items: []
   - m_Id: 41387432259100781
-    m_Localized: "Coste:"
+    m_Localized: 'Coste:'
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100782
-    m_Localized: "Se abre en el nivel {0} del personaje."
+    m_Localized: Se abre en el nivel {0} del personaje.
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100783
-    m_Localized: "La salud del personaje.\\nCon 0 PV, no puede combatir."
+    m_Localized: La salud del personaje.\nCon 0 PV, no puede combatir.
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100784
-    m_Localized: "Recurso que se gasta al usar habilidades.\\nNo puedes usar habilidades sin suficiente coste actual."
+    m_Localized: Recurso que se gasta al usar habilidades.\nNo puedes usar habilidades
+      sin suficiente coste actual.
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100785
-    m_Localized: "Coste recuperado al inicio del turno.\\nUna mayor recuperaci\u00F3n ofrece m\u00E1s opciones de habilidad cada turno."
+    m_Localized: "Coste recuperado al inicio del turno.\\nUna mayor recuperaci\xF3n
+      ofrece m\xE1s opciones de habilidad cada turno."
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100786
-    m_Localized: "Las habilidades de movimiento gastan 1 coste por casilla en combate.\\nCon 50 o m\u00E1s puntos de movimiento, 1 coste mueve 2 casillas."
+    m_Localized: "Las habilidades de movimiento gastan 1 coste por casilla en combate.\\nCon
+      50 o m\xE1s puntos de movimiento, 1 coste mueve 2 casillas."
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100787
-    m_Localized: "Valor base {0}"
+    m_Localized: Valor base {0}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100788
-    m_Localized: "Bonificaci\u00F3n de runa {0}"
+    m_Localized: "Bonificaci\xF3n de runa {0}"
     m_Metadata:
       m_Items: []
-
+  - m_Id: 41387432259100780
+    m_Localized: "M\xE9todo: "
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
