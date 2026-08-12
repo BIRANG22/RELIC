@@ -58,6 +58,7 @@ public class ManualBattleMapTemplateTests
         Assert.That(nodes[1].Position, Is.EqualTo(BattleMapLayoutUtility.CalculatePosition(1, 0, 2)));
         Assert.That(nodes[2].Type, Is.EqualTo("Special"));
         Assert.That(nodes[2].MapId, Is.EqualTo("event_a"));
+        Assert.That(nodes[2].EventId, Is.EqualTo("Event_04"));
         Assert.That(nodes[2].Position, Is.EqualTo(BattleMapLayoutUtility.CalculatePosition(1, 1, 2)));
     }
 
@@ -89,6 +90,56 @@ public class ManualBattleMapTemplateTests
         Assert.That(built, Is.True);
         Assert.That(nodes[1].Type, Is.EqualTo("Common"));
         Assert.That(nodes[1].MapId, Is.EqualTo("battle_a"));
+    }
+
+    [Test]
+    public void TryBuildNodes_BlankStartMapIdSelectsStartMapByType()
+    {
+        ManualBattleMapTemplate template = ScriptableObject.CreateInstance<ManualBattleMapTemplate>();
+        template.Nodes.Add(new ManualBattleMapNodeDefinition
+        {
+            NodeIndex = 0,
+            LayerIndex = 0,
+            RowIndex = 0,
+            Type = "Start"
+        });
+
+        bool built = template.TryBuildNodes(CreateMapPool(), "chapter_01", "stage_01", out List<GeneratedMapNodeData> nodes);
+
+        Object.DestroyImmediate(template);
+
+        Assert.That(built, Is.True);
+        Assert.That(nodes[0].Type, Is.EqualTo("Start"));
+        Assert.That(nodes[0].MapId, Is.EqualTo("start_map"));
+    }
+
+    [Test]
+    public void TryBuildNodes_BlankRestMapIdUsesBuiltInRestRoomWhenNoMapDataExists()
+    {
+        ManualBattleMapTemplate template = ScriptableObject.CreateInstance<ManualBattleMapTemplate>();
+        template.Nodes.Add(new ManualBattleMapNodeDefinition
+        {
+            NodeIndex = 0,
+            LayerIndex = 0,
+            RowIndex = 0,
+            Type = "Start",
+            NextNodeIndices = new List<int> { 1 }
+        });
+        template.Nodes.Add(new ManualBattleMapNodeDefinition
+        {
+            NodeIndex = 1,
+            LayerIndex = 1,
+            RowIndex = 0,
+            Type = "Rest"
+        });
+
+        bool built = template.TryBuildNodes(CreateMapPool(), "chapter_01", "stage_01", out List<GeneratedMapNodeData> nodes);
+
+        Object.DestroyImmediate(template);
+
+        Assert.That(built, Is.True);
+        Assert.That(nodes[1].Type, Is.EqualTo("Rest"));
+        Assert.That(nodes[1].MapId, Is.EqualTo("Rest"));
     }
 
     [Test]
@@ -204,8 +255,7 @@ public class ManualBattleMapTemplateTests
                 Type = "Start",
                 Chapter = "chapter_01",
                 Stage = "stage_01",
-                SpawnWeight = 1,
-                FixedPosition = FixedPosition.Front
+                SpawnWeight = 1
             },
             new()
             {
@@ -213,17 +263,16 @@ public class ManualBattleMapTemplateTests
                 Type = "Common",
                 Chapter = "chapter_01",
                 Stage = "stage_01",
-                SpawnWeight = 1,
-                FixedPosition = FixedPosition.None
+                SpawnWeight = 1
             },
             new()
             {
                 MapId = "event_a",
                 Type = "Special",
+                EventId = "EVT004",
                 Chapter = "chapter_01",
                 Stage = "stage_01",
-                SpawnWeight = 1,
-                FixedPosition = FixedPosition.None
+                SpawnWeight = 1
             },
             new()
             {
@@ -231,8 +280,7 @@ public class ManualBattleMapTemplateTests
                 Type = "Boss",
                 Chapter = "chapter_01",
                 Stage = "stage_01",
-                SpawnWeight = 1,
-                FixedPosition = FixedPosition.Final
+                SpawnWeight = 1
             },
             new()
             {
@@ -240,8 +288,7 @@ public class ManualBattleMapTemplateTests
                 Type = "Common",
                 Chapter = "chapter_01",
                 Stage = "stage_02",
-                SpawnWeight = 1,
-                FixedPosition = FixedPosition.None
+                SpawnWeight = 1
             }
         };
     }

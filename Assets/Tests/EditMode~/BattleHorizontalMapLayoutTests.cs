@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using Relic.Gameplay.Data;
+using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
@@ -61,5 +62,76 @@ public class BattleHorizontalMapLayoutTests
             int[] counts = (int[])generateCounts.Invoke(generator, null);
             Assert.That(counts, Has.All.LessThanOrEqualTo(3));
         }
+    }
+
+    [Test]
+    public void Generate_FirstLayerSelectsStartMapByType()
+    {
+        ProceduralMapGenerator generator = new();
+
+        List<GeneratedMapNodeData> nodes = generator.Generate(
+            CreateMapPool(),
+            "chapter_01",
+            "stage_01");
+
+        Assert.That(nodes, Is.Not.Empty);
+        Assert.That(nodes[0].LayerIndex, Is.Zero);
+        Assert.That(nodes[0].Type, Is.EqualTo("Start"));
+        Assert.That(nodes[0].MapId, Is.EqualTo("start_map"));
+    }
+
+    private static List<MapData> CreateMapPool()
+    {
+        return new List<MapData>
+        {
+            new()
+            {
+                MapId = "start_map",
+                Type = "Start",
+                Chapter = "chapter_01",
+                Stage = "stage_01",
+                SpawnWeight = 1
+            },
+            new()
+            {
+                MapId = "battle_a",
+                Type = "Common",
+                Chapter = "chapter_01",
+                Stage = "stage_01",
+                SpawnWeight = 1
+            },
+            new()
+            {
+                MapId = "event_a",
+                Type = "Special",
+                Chapter = "chapter_01",
+                Stage = "stage_01",
+                SpawnWeight = 1
+            },
+            new()
+            {
+                MapId = "elite_a",
+                Type = "Elite",
+                Chapter = "chapter_01",
+                Stage = "stage_01",
+                SpawnWeight = 1
+            },
+            new()
+            {
+                MapId = "rest_a",
+                Type = "Rest",
+                Chapter = "chapter_01",
+                Stage = "stage_01",
+                SpawnWeight = 1
+            },
+            new()
+            {
+                MapId = "boss_a",
+                Type = "Boss",
+                Chapter = "chapter_01",
+                Stage = "stage_01",
+                SpawnWeight = 1
+            }
+        };
     }
 }

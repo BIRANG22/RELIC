@@ -1,7 +1,11 @@
 using System.Collections;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Relic.Gameplay.Battle;
 using Relic.Gameplay.Data;
 
 public class EventRoomController : MonoBehaviour
@@ -11,6 +15,13 @@ public class EventRoomController : MonoBehaviour
 
     [Header("Progression")]
     [SerializeField] private GameObject nextButtonRoot;
+
+    [Header("Event Data")]
+    [SerializeField] private GameObject dataEventRoot;
+    [SerializeField] private TMP_Text eventNameText;
+    [SerializeField] private TMP_Text eventTitleText;
+    [SerializeField] private TMP_Text eventResultText;
+    [SerializeField] private EventChoiceSlotUI[] choiceSlots;
 
     [Header("Hover Info Panel")]
     [SerializeField] private GameObject relicHoverInfoPanel;
@@ -47,6 +58,11 @@ public class EventRoomController : MonoBehaviour
     private bool hasRelicFlyRootOriginalState;
     private Vector2 relicFlyRootOriginalAnchoredPosition;
     private Vector3 relicFlyRootOriginalLocalScale;
+    private string pendingEventId;
+    private EventDefinition currentEventDefinition;
+    private bool isDataEventActive;
+    private bool isEventResolved;
+    private readonly EventChoiceSessionState eventChoiceSessionState = new();
 
     private void Awake()
     {
@@ -58,11 +74,20 @@ public class EventRoomController : MonoBehaviour
         HideRelicFlyObjects();
     }
 
+    public void SetEventId(string eventId)
+    {
+        pendingEventId = EventIdUtility.Normalize(eventId);
+
+        if (isActiveAndEnabled)
+            TryStartDataEventMode();
+    }
+
     private void OnEnable()
     {
         EnsureReferences();
         ApplyBackgroundSorting();
         BindNextButton();
+        UnbindChestEvents();
 
         if (relicAcquireRoutine != null)
         {
@@ -79,7 +104,14 @@ public class EventRoomController : MonoBehaviour
 
         isChestOpened = false;
         isRelicClaimed = false;
+        isEventResolved = false;
         SetNextButtonVisible(false);
+
+        if (TryStartDataEventMode())
+            return;
+
+        SetDataEventRootVisible(false);
+        SetChestRootVisible(true);
         BindChestEvents();
     }
 
@@ -98,10 +130,16 @@ public class EventRoomController : MonoBehaviour
 
         HideRelicHoverInfo();
         HideRelicFlyObjects();
+        ClearChoiceSlots();
+        SetDataEventRootVisible(false);
+        isDataEventActive = false;
     }
 
     public void NotifyChestOpened()
     {
+        if (isDataEventActive)
+            return;
+
         isChestOpened = true;
 
         if (chestOpenButton == null || !chestOpenButton.IsAwaitingRewardSelection)
@@ -113,6 +151,16 @@ public class EventRoomController : MonoBehaviour
         if (SteamBattleStateSynchronizer.TryBlockSharedBattleStateEdit())
             return;
 
+        if (isDataEventActive)
+        {
+            if (!isEventResolved)
+                return;
+
+            CompleteCurrentNode();
+            ReturnToMap();
+            return;
+        }
+
         if (!isChestOpened)
             return;
 
@@ -121,13 +169,7 @@ public class EventRoomController : MonoBehaviour
 
         CompleteCurrentNode();
 
-        BattleSceneController sceneController =
-            Object.FindFirstObjectByType<BattleSceneController>(FindObjectsInactive.Include);
-
-        if (sceneController != null)
-            sceneController.ReturnToMap();
-        else
-            Debug.LogWarning("[EventRoomController] BattleSceneController not found");
+        ReturnToMap();
     }
 
     public void ShowRelicHoverInfo(string relicId)
@@ -214,6 +256,1072 @@ public class EventRoomController : MonoBehaviour
 
         SetNextButtonVisible(true);
         relicAcquireRoutine = null;
+    }
+
+    private bool TryStartDataEventMode()
+    {
+        ClearChoiceSlots();
+        currentEventDefinition = null;
+        isDataEventActive = false;
+        isEventResolved = false;
+
+        if (string.IsNullOrWhiteSpace(pendingEventId))
+            return false;
+
+        if (DataManager.Instance == null || DataManager.Instance.EventDatabase == null)
+        {
+            Debug.LogWarning("[EventRoomController] EventDatabase is not ready.");
+            return false;
+        }
+
+        if (!DataManager.Instance.EventDatabase.TryGetEvent(pendingEventId, out EventDefinition definition) ||
+            definition == null)
+        {
+            Debug.LogWarning($"[EventRoomController] Event data not found: {pendingEventId}");
+            return false;
+        }
+
+        SetChestRootVisible(false);
+        EnsureDataEventReferences();
+        LoadEventDefinition(definition, string.Empty);
+        return true;
+    }
+
+    private void LoadEventDefinition(EventDefinition definition, string resultMessage)
+    {
+        if (definition == null)
+            return;
+
+        EnsureDataEventReferences();
+
+        currentEventDefinition = definition;
+        pendingEventId = definition.EventId;
+        isDataEventActive = true;
+        isEventResolved = false;
+
+        SetDataEventRootVisible(true);
+        SetNextButtonVisible(false);
+
+        if (eventNameText != null)
+            eventNameText.text = string.IsNullOrWhiteSpace(definition.EventName)
+                ? definition.EventId
+                : definition.EventName;
+
+        if (eventTitleText != null)
+            eventTitleText.text = definition.Title ?? string.Empty;
+
+        if (eventResultText != null)
+            eventResultText.text = resultMessage ?? string.Empty;
+
+        BindChoiceSlots(definition.Choices);
+    }
+
+    private void BindChoiceSlots(IReadOnlyList<EventData> choices)
+    {
+        EnsureChoiceSlots();
+        ClearChoiceSlots();
+
+        if (choiceSlots == null || choiceSlots.Length == 0 || choices == null)
+            return;
+
+        int slotIndex = 0;
+        for (int i = 0; i < choices.Count && slotIndex < choiceSlots.Length; i++)
+        {
+            EventData choice = choices[i];
+            if (choice == null)
+                continue;
+
+            EventChoiceSlotUI slot = choiceSlots[slotIndex];
+            if (slot == null)
+                continue;
+
+            bool selectable = EventChoiceExecutionService.CanSelect(
+                choice,
+                CreateExecutionContext(),
+                out string unavailableReason);
+            EventData captured = choice;
+            slot.Bind(
+                choice,
+                selectable,
+                unavailableReason,
+                () => OnEventChoiceClicked(captured));
+            slotIndex++;
+        }
+    }
+
+    private void OnEventChoiceClicked(EventData choice)
+    {
+        if (choice == null)
+            return;
+
+        if (SteamBattleStateSynchronizer.TryBlockSharedBattleStateEdit())
+            return;
+
+        SetChoiceSlotsInteractable(false);
+
+        EventChoiceExecutionResult result = EventChoiceExecutionService.Execute(
+            choice,
+            CreateExecutionContext());
+
+        if (!result.Accepted)
+        {
+            if (eventResultText != null)
+                eventResultText.text = result.ResultMessage;
+
+            BindChoiceSlots(currentEventDefinition?.Choices);
+            return;
+        }
+
+        PersistEventRuntime();
+        PlayVisualAction(result);
+
+        if (!string.IsNullOrWhiteSpace(result.NextEventId) &&
+            DataManager.Instance != null &&
+            DataManager.Instance.EventDatabase != null &&
+            DataManager.Instance.EventDatabase.TryGetEvent(result.NextEventId, out EventDefinition nextDefinition) &&
+            nextDefinition != null)
+        {
+            LoadEventDefinition(nextDefinition, result.ResultMessage);
+            return;
+        }
+
+        if (eventResultText != null)
+            eventResultText.text = result.ResultMessage;
+
+        isEventResolved = true;
+        SetNextButtonVisible(true);
+    }
+
+    private void PlayVisualAction(EventChoiceExecutionResult result)
+    {
+        if (!result.HasVisualAction)
+            return;
+
+        MapVisualController visualController = GetComponent<MapVisualController>();
+        if (visualController == null)
+            visualController = GetComponentInParent<MapVisualController>();
+        if (visualController == null)
+            visualController = GetComponentInChildren<MapVisualController>(true);
+
+        if (visualController == null)
+        {
+            Debug.LogWarning(
+                $"[EventRoomController] MapVisualController not found for visual action: {result.VisualObjectId}/{result.VisualActionId}",
+                this);
+            return;
+        }
+
+        if (!visualController.TryPlayAction(result.VisualObjectId, result.VisualActionId))
+        {
+            Debug.LogWarning(
+                $"[EventRoomController] Visual action not found: {result.VisualObjectId}/{result.VisualActionId}",
+                this);
+        }
+    }
+
+    private string ResolveChoice(EventData choice, out string nextEventId)
+    {
+        nextEventId = string.Empty;
+
+        int diceRoll = 0;
+        bool success = true;
+        List<string> messages = new();
+
+        if (!string.IsNullOrWhiteSpace(choice.ChoiceDesc))
+            messages.Add(choice.ChoiceDesc.Trim());
+
+        if (SameToken(choice.ChoiceType, "Dice"))
+        {
+            diceRoll = RollThreeSixSidedDice();
+            messages.Add($"주사위 결과: {diceRoll}");
+
+            if (!string.IsNullOrWhiteSpace(choice.SuccessCondition))
+                success = IsDiceSuccess(diceRoll, choice.SuccessCondition);
+        }
+        else if (SameToken(choice.ChoiceType, "Chance"))
+        {
+            success = RollChance(choice.SuccessRate);
+            messages.Add(success ? "판정 성공" : "판정 실패");
+        }
+
+        if (!success)
+        {
+            string failure = ApplyFailureResult(choice.FailResult);
+            if (!string.IsNullOrWhiteSpace(failure))
+                messages.Add(failure);
+
+            return string.Join("\n", messages);
+        }
+
+        string result = ApplySuccessResult(choice, diceRoll);
+        if (!string.IsNullOrWhiteSpace(result))
+            messages.Add(result);
+
+        nextEventId = EventIdUtility.Normalize(choice.NextEventId);
+        return string.Join("\n", messages);
+    }
+
+    private string ApplySuccessResult(EventData choice, int diceRoll)
+    {
+        string resultType = choice.ResultType?.Trim();
+
+        if (string.IsNullOrWhiteSpace(resultType))
+            return BuildResultSummary(choice);
+
+        if (SameToken(resultType, "RollTable"))
+            return ApplyRollTable(choice, diceRoll);
+
+        if (SameToken(resultType, "GainRandom"))
+        {
+            if (Contains(choice.ResultTarget, "유물"))
+                return GrantRandomRelic();
+
+            return BuildResultSummary(choice);
+        }
+
+        if (SameToken(resultType, "GainMultiple"))
+        {
+            if (Contains(choice.ResultTarget, "유물"))
+                return $"{BuildResultSummary(choice)}\n{GrantRandomRelic()}";
+
+            return BuildResultSummary(choice);
+        }
+
+        if (SameToken(resultType, "Modify"))
+        {
+            if (TryParseSignedValue(choice.ResultValue, out int amount))
+            {
+                if (Contains(choice.ResultTarget, "코스트 회복"))
+                {
+                    int count = ModifyPartyCostRecovery(amount);
+                    return $"파티 코스트 회복량 {amount:+#;-#;0} 적용 ({count}명)";
+                }
+
+                if (Contains(choice.ResultTarget, "최대 코스트"))
+                {
+                    int count = ModifyPartyMaxCost(amount);
+                    return $"파티 최대 코스트 {amount:+#;-#;0} 적용 ({count}명)";
+                }
+            }
+
+            return BuildResultSummary(choice);
+        }
+
+        if (SameToken(resultType, "Heal"))
+        {
+            if (TryParseSignedValue(choice.ResultValue, out int amount))
+            {
+                int count = ModifyPartyCurrentHp(Mathf.Max(0, amount));
+                return $"파티 체력 {amount} 회복 ({count}명)";
+            }
+
+            return BuildResultSummary(choice);
+        }
+
+        if (SameToken(resultType, "Accumulate"))
+        {
+            eventChoiceSessionState.AccumulatedRemnant += EventChoiceExecutionService.SmallRemnantAmount;
+            return BuildResultSummary(choice);
+        }
+
+        if (SameToken(resultType, "CommitAccumulated"))
+        {
+            bool hadReward = eventChoiceSessionState.AccumulatedRemnant > 0;
+            eventChoiceSessionState.AccumulatedRemnant = 0;
+            return hadReward ? BuildResultSummary(choice) : "확정할 누적 보상이 없습니다.";
+        }
+
+        if (SameToken(resultType, "OpenPanel"))
+        {
+            if (Contains(choice.ResultTarget, "상점") && TryOpenShopPanel())
+                return "상점 패널을 열었습니다.";
+
+            return BuildResultSummary(choice);
+        }
+
+        if (SameToken(resultType, "EndEvent"))
+            return string.IsNullOrWhiteSpace(choice.ChoiceDesc) ? "이벤트를 종료합니다." : string.Empty;
+
+        return BuildResultSummary(choice);
+    }
+
+    private string ApplyRollTable(EventData choice, int diceRoll)
+    {
+        string tableId = choice.ResultValue?.Trim();
+
+        if (SameToken(tableId, "RT001"))
+        {
+            int amount = diceRoll <= 8 ? 3 : diceRoll <= 15 ? 5 : 10;
+            int count = ModifyPartyCurrentHp(amount);
+            return $"파티 전원 체력 {amount} 회복 ({count}명)";
+        }
+
+        if (SameToken(tableId, "RT002"))
+        {
+            int amount = diceRoll <= 8 ? 2 : diceRoll <= 15 ? 4 : 8;
+            int count = ModifyPartyMaxHp(amount);
+            return $"파티 전원 최대 체력 {amount} 증가 ({count}명)";
+        }
+
+        if (SameToken(tableId, "RT003"))
+            return BuildResultSummary(choice);
+
+        return BuildResultSummary(choice);
+    }
+
+    private string ApplyFailureResult(string failResult)
+    {
+        if (string.IsNullOrWhiteSpace(failResult))
+            return "실패했습니다.";
+
+        if (Contains(failResult, "현재 체력") && TryParseSignedValue(failResult, out int hpAmount))
+            ModifyPartyCurrentHp(hpAmount);
+
+        if (Contains(failResult, "최대 코스트") && TryParseSignedValue(failResult, out int maxCostAmount))
+            ModifyPartyMaxCost(maxCostAmount);
+
+        if (Contains(failResult, "누적") && Contains(failResult, "소실"))
+            eventChoiceSessionState.AccumulatedRemnant = 0;
+
+        return failResult.Trim();
+    }
+
+    private string GrantRandomRelic()
+    {
+        if (!ChestRelicRewardService.TryRollReward(DataManager.Instance, out ChestRelicReward reward) ||
+            !ChestRelicRewardService.GrantReward(DataManager.Instance, reward))
+        {
+            return "획득 가능한 유물이 없습니다.";
+        }
+
+        string relicName = reward.Relic != null
+            ? GameDataLocalization.RelicName(reward.Relic)
+            : reward.RelicId;
+
+        return $"유물 획득: {relicName}";
+    }
+
+    private int ModifyPartyCurrentHp(int amount)
+    {
+        int count = 0;
+
+        foreach (CharacterRuntimeData character in EnumeratePartyCharacters())
+        {
+            if (character == null)
+                continue;
+
+            character.CurrentHP = Mathf.Clamp(character.CurrentHP + amount, 0, Mathf.Max(0, character.MaxHP));
+            count++;
+        }
+
+        return count;
+    }
+
+    private int ModifyPartyMaxHp(int amount)
+    {
+        int count = 0;
+
+        foreach (CharacterRuntimeData character in EnumeratePartyCharacters())
+        {
+            if (character == null)
+                continue;
+
+            character.MaxHP = Mathf.Max(0, character.MaxHP + amount);
+            character.CurrentHP = Mathf.Clamp(character.CurrentHP + Mathf.Max(0, amount), 0, character.MaxHP);
+            count++;
+        }
+
+        return count;
+    }
+
+    private int ModifyPartyMaxCost(int amount)
+    {
+        int count = 0;
+
+        foreach (CharacterRuntimeData character in EnumeratePartyCharacters())
+        {
+            if (character == null)
+                continue;
+
+            character.MaxCost = Mathf.Max(0, character.MaxCost + amount);
+            character.CurrentCost = Mathf.Clamp(character.CurrentCost, 0, character.MaxCost);
+            count++;
+        }
+
+        return count;
+    }
+
+    private int ModifyPartyCostRecovery(int amount)
+    {
+        int count = 0;
+
+        foreach (CharacterRuntimeData character in EnumeratePartyCharacters())
+        {
+            if (character == null)
+                continue;
+
+            character.BonusCostRecovery += amount;
+            count++;
+        }
+
+        return count;
+    }
+
+    private IEnumerable<CharacterRuntimeData> EnumeratePartyCharacters()
+    {
+        if (DataManager.Instance == null || DataManager.Instance.CharacterRuntimeStore == null)
+            yield break;
+
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+        CharacterRuntimeStore characterStore = DataManager.Instance.CharacterRuntimeStore;
+        HashSet<string> yielded = new();
+
+        if (partyStore != null)
+        {
+            for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
+            {
+                string characterId = partyStore.GetCharacterId(i);
+                if (string.IsNullOrWhiteSpace(characterId))
+                    continue;
+
+                characterId = characterId.Trim();
+                if (!yielded.Add(characterId))
+                    continue;
+
+                if (characterStore.TryGet(characterId, out CharacterRuntimeData character) && character != null)
+                    yield return character;
+            }
+        }
+
+        if (yielded.Count > 0)
+            yield break;
+
+        IReadOnlyDictionary<string, CharacterRuntimeData> allCharacters = characterStore.GetAll();
+        if (allCharacters == null)
+            yield break;
+
+        foreach (KeyValuePair<string, CharacterRuntimeData> pair in allCharacters)
+        {
+            if (pair.Value != null)
+                yield return pair.Value;
+        }
+    }
+
+    private bool TryOpenShopPanel()
+    {
+        RestRoomShopPanel shopPanel =
+            Object.FindFirstObjectByType<RestRoomShopPanel>(FindObjectsInactive.Include);
+
+        if (shopPanel == null)
+            return false;
+
+        shopPanel.Open();
+        return true;
+    }
+
+    private EventChoiceExecutionContext CreateExecutionContext()
+    {
+        BattleRuntimeData battleRuntime = DataManager.Instance?.BattleRuntimeStore?.GetOrCreate();
+
+        return new EventChoiceExecutionContext
+        {
+            BattleRuntime = battleRuntime,
+            PartyCharacters = CollectPartyCharacters(),
+            SessionState = eventChoiceSessionState,
+            GrantRandomRelic = TryGrantRandomRelic,
+            GrantRandomSkill = TryGrantRandomSkill,
+            UpgradeRandomSkill = TryUpgradeRandomSkill,
+            OpenShop = TryOpenShopPanel,
+            RefreshRemnantHud = BattleGoldHudUI.RefreshAll
+        };
+    }
+
+    private void PersistEventRuntime()
+    {
+        if (DataManager.Instance == null)
+            return;
+
+        BattleRuntimeData battleRuntime = DataManager.Instance.BattleRuntimeStore?.GetOrCreate();
+        if (battleRuntime != null)
+            DataManager.Instance.BattleRuntimeStore.Set(battleRuntime);
+
+        BattleGoldHudUI.RefreshAll();
+        SkillInventoryPanelUI.RefreshAll();
+        EquippedSkillPanelUI.RefreshAll();
+        RelicEquipPanelUI.RefreshAll();
+    }
+
+    private List<CharacterRuntimeData> CollectPartyCharacters()
+    {
+        List<CharacterRuntimeData> characters = new();
+
+        foreach (CharacterRuntimeData character in EnumeratePartyCharacters())
+        {
+            if (character != null)
+                characters.Add(character);
+        }
+
+        return characters;
+    }
+
+    private bool TryGrantRandomRelic(out string resultMessage)
+    {
+        resultMessage = string.Empty;
+
+        if (!ChestRelicRewardService.TryRollReward(DataManager.Instance, out ChestRelicReward reward) ||
+            !ChestRelicRewardService.GrantReward(DataManager.Instance, reward))
+        {
+            resultMessage = "획득 가능한 유물이 없습니다.";
+            return false;
+        }
+
+        string relicName = reward.Relic != null
+            ? GameDataLocalization.RelicName(reward.Relic)
+            : reward.RelicId;
+
+        resultMessage = $"유물 획득: {relicName}";
+        return true;
+    }
+
+    private bool TryGrantRandomSkill(out string resultMessage)
+    {
+        resultMessage = string.Empty;
+
+        if (!TryPickRandomAvailableSkill(out SkillMasterData skill) ||
+            skill == null ||
+            string.IsNullOrWhiteSpace(skill.SkillId))
+        {
+            resultMessage = "획득 가능한 기억이 없습니다.";
+            return false;
+        }
+
+        BattleRuntimeData runtime = DataManager.Instance?.BattleRuntimeStore?.GetOrCreate();
+        if (runtime == null)
+        {
+            resultMessage = "전투 런타임 데이터가 없습니다.";
+            return false;
+        }
+
+        runtime.SkillInventoryIds ??= new List<string>();
+        runtime.AcquiredSkillIds ??= new List<string>();
+
+        string skillId = skill.SkillId.Trim();
+        runtime.SkillInventoryIds.Add(skillId);
+
+        if (!ContainsId(runtime.AcquiredSkillIds, skillId))
+            runtime.AcquiredSkillIds.Add(skillId);
+
+        DataManager.Instance.BattleRuntimeStore.Set(runtime);
+        resultMessage = $"기억 획득: {GameDataLocalization.SkillName(skill)}";
+        return true;
+    }
+
+    private bool TryUpgradeRandomSkill(out string resultMessage)
+    {
+        resultMessage = string.Empty;
+        List<OwnedSkillReference> candidates = CollectUpgradeableSkillReferences();
+
+        if (candidates.Count == 0)
+        {
+            resultMessage = "강화 가능한 기억이 없습니다.";
+            return false;
+        }
+
+        OwnedSkillReference selected = candidates[BattleRandom.Range(0, candidates.Count)];
+
+        if (!SkillRarityUtility.TryGetPairedVariantId(selected.SkillId, out string upgradeId) ||
+            string.IsNullOrWhiteSpace(upgradeId))
+        {
+            resultMessage = "강화 가능한 기억이 없습니다.";
+            return false;
+        }
+
+        ApplySkillUpgrade(selected, upgradeId);
+
+        SkillMasterData upgradedSkill = DataManager.Instance.SkillDatabase.Get(upgradeId);
+        resultMessage = $"기억 강화: {GameDataLocalization.SkillName(upgradedSkill)}";
+        return true;
+    }
+
+    private bool TryPickRandomAvailableSkill(out SkillMasterData selectedSkill)
+    {
+        selectedSkill = null;
+
+        if (DataManager.Instance == null || DataManager.Instance.SkillDatabase == null)
+            return false;
+
+        List<SkillMasterData> allSkills = DataManager.Instance.SkillDatabase.GetAll();
+        if (allSkills == null || allSkills.Count == 0)
+            return false;
+
+        HashSet<string> unavailableIds = CollectUnavailableSkillIds();
+        List<SkillMasterData> candidates = new();
+
+        for (int i = 0; i < allSkills.Count; i++)
+        {
+            SkillMasterData skill = allSkills[i];
+
+            if (skill == null || string.IsNullOrWhiteSpace(skill.SkillId))
+                continue;
+
+            string skillId = skill.SkillId.Trim();
+
+            if (skill.Category != Category.Core)
+                continue;
+
+            if (!SkillRarityUtility.IsBaseSkillVariant(skillId))
+                continue;
+
+            if (unavailableIds.Contains(skillId))
+                continue;
+
+            candidates.Add(skill);
+        }
+
+        if (candidates.Count == 0)
+            return false;
+
+        selectedSkill = candidates[BattleRandom.Range(0, candidates.Count)];
+        return selectedSkill != null;
+    }
+
+    private HashSet<string> CollectUnavailableSkillIds()
+    {
+        HashSet<string> ids = new();
+        BattleRuntimeData runtime = DataManager.Instance?.BattleRuntimeStore?.GetOrCreate();
+
+        if (runtime?.SkillInventoryIds != null)
+        {
+            for (int i = 0; i < runtime.SkillInventoryIds.Count; i++)
+                AddSkillAndPair(ids, runtime.SkillInventoryIds[i]);
+        }
+
+        IReadOnlyDictionary<string, CharacterRuntimeData> characters =
+            DataManager.Instance?.CharacterRuntimeStore?.GetAll();
+
+        if (characters != null)
+        {
+            foreach (KeyValuePair<string, CharacterRuntimeData> pair in characters)
+            {
+                CharacterRuntimeData character = pair.Value;
+
+                if (character == null)
+                    continue;
+
+                AddSkillAndPair(ids, character.MoveSkillId);
+                AddSkillAndPair(ids, character.PassiveSkillId);
+                AddSkillAndPair(ids, character.UniqueSkillId);
+                AddSkillAndPair(ids, character.AbilitySkillId);
+
+                if (character.EquippedSkillIds == null)
+                    continue;
+
+                for (int i = 0; i < character.EquippedSkillIds.Length; i++)
+                    AddSkillAndPair(ids, character.EquippedSkillIds[i]);
+            }
+        }
+
+        return ids;
+    }
+
+    private List<OwnedSkillReference> CollectUpgradeableSkillReferences()
+    {
+        List<OwnedSkillReference> candidates = new();
+
+        if (DataManager.Instance == null || DataManager.Instance.SkillDatabase == null)
+            return candidates;
+
+        BattleRuntimeData runtime = DataManager.Instance.BattleRuntimeStore?.GetOrCreate();
+
+        if (runtime?.SkillInventoryIds != null)
+        {
+            for (int i = 0; i < runtime.SkillInventoryIds.Count; i++)
+                AddUpgradeableReference(candidates, runtime.SkillInventoryIds[i], null, -1, i);
+        }
+
+        IReadOnlyDictionary<string, CharacterRuntimeData> characters =
+            DataManager.Instance.CharacterRuntimeStore?.GetAll();
+
+        if (characters != null)
+        {
+            foreach (KeyValuePair<string, CharacterRuntimeData> pair in characters)
+            {
+                CharacterRuntimeData character = pair.Value;
+
+                if (character?.EquippedSkillIds == null)
+                    continue;
+
+                for (int i = 0; i < character.EquippedSkillIds.Length; i++)
+                    AddUpgradeableReference(candidates, character.EquippedSkillIds[i], character, i, -1);
+            }
+        }
+
+        return candidates;
+    }
+
+    private void AddUpgradeableReference(
+        List<OwnedSkillReference> candidates,
+        string skillId,
+        CharacterRuntimeData character,
+        int equippedIndex,
+        int inventoryIndex)
+    {
+        if (candidates == null || string.IsNullOrWhiteSpace(skillId))
+            return;
+
+        string normalizedSkillId = skillId.Trim();
+
+        if (SkillRarityUtility.IsUpgradeSkillVariant(normalizedSkillId))
+            return;
+
+        if (!DataManager.Instance.SkillDatabase.TryGet(normalizedSkillId, out SkillMasterData skill) ||
+            !SkillRarityUtility.CanUpgrade(skill))
+        {
+            return;
+        }
+
+        if (!SkillRarityUtility.TryGetPairedVariantId(normalizedSkillId, out string upgradeId) ||
+            !DataManager.Instance.SkillDatabase.TryGet(upgradeId, out _))
+        {
+            return;
+        }
+
+        candidates.Add(new OwnedSkillReference(normalizedSkillId, character, equippedIndex, inventoryIndex));
+    }
+
+    private void ApplySkillUpgrade(OwnedSkillReference selected, string upgradeId)
+    {
+        if (string.IsNullOrWhiteSpace(upgradeId))
+            return;
+
+        BattleRuntimeData runtime = DataManager.Instance?.BattleRuntimeStore?.GetOrCreate();
+
+        if (selected.InventoryIndex >= 0 &&
+            runtime?.SkillInventoryIds != null &&
+            selected.InventoryIndex < runtime.SkillInventoryIds.Count)
+        {
+            runtime.SkillInventoryIds[selected.InventoryIndex] = upgradeId;
+            DataManager.Instance.BattleRuntimeStore.Set(runtime);
+            return;
+        }
+
+        CharacterRuntimeData character = selected.Character;
+        if (character == null)
+            return;
+
+        SkillInventoryEquipService.EnsureEquippedSkillArray(character);
+
+        if (selected.EquippedIndex >= 0 &&
+            selected.EquippedIndex < character.EquippedSkillIds.Length)
+        {
+            character.EquippedSkillIds[selected.EquippedIndex] = upgradeId;
+        }
+
+        if (string.Equals(character.AbilitySkillId?.Trim(), selected.SkillId, System.StringComparison.Ordinal))
+            character.AbilitySkillId = upgradeId;
+
+        if (string.Equals(character.UniqueSkillId?.Trim(), selected.SkillId, System.StringComparison.Ordinal))
+            character.UniqueSkillId = upgradeId;
+    }
+
+    private static void AddSkillAndPair(HashSet<string> ids, string skillId)
+    {
+        if (ids == null || string.IsNullOrWhiteSpace(skillId))
+            return;
+
+        string normalizedSkillId = skillId.Trim();
+        ids.Add(normalizedSkillId);
+
+        if (SkillRarityUtility.TryGetPairedVariantId(normalizedSkillId, out string pairedSkillId))
+            ids.Add(pairedSkillId);
+    }
+
+    private static bool ContainsId(IReadOnlyList<string> ids, string targetId)
+    {
+        if (ids == null || string.IsNullOrWhiteSpace(targetId))
+            return false;
+
+        for (int i = 0; i < ids.Count; i++)
+        {
+            if (string.Equals(ids[i]?.Trim(), targetId.Trim(), System.StringComparison.Ordinal))
+                return true;
+        }
+
+        return false;
+    }
+
+    private readonly struct OwnedSkillReference
+    {
+        public OwnedSkillReference(
+            string skillId,
+            CharacterRuntimeData character,
+            int equippedIndex,
+            int inventoryIndex)
+        {
+            SkillId = skillId;
+            Character = character;
+            EquippedIndex = equippedIndex;
+            InventoryIndex = inventoryIndex;
+        }
+
+        public string SkillId { get; }
+        public CharacterRuntimeData Character { get; }
+        public int EquippedIndex { get; }
+        public int InventoryIndex { get; }
+    }
+
+    private bool CanSelectChoice(EventData choice)
+    {
+        if (choice == null || string.IsNullOrWhiteSpace(choice.SelectCondition))
+            return true;
+
+        string condition = choice.SelectCondition;
+
+        if (Contains(condition, "채굴") && Contains(condition, "성공"))
+            return eventChoiceSessionState.AccumulatedRemnant > 0;
+
+        if (Contains(condition, "유물") && Contains(condition, "보유"))
+            return HasAnyOwnedRelic();
+
+        return true;
+    }
+
+    private bool HasAnyOwnedRelic()
+    {
+        BattleRuntimeData battleRuntime = DataManager.Instance?.BattleRuntimeStore?.GetOrCreate();
+        if (battleRuntime?.OwnedRelicIds != null && battleRuntime.OwnedRelicIds.Count > 0)
+            return true;
+
+        foreach (CharacterRuntimeData character in EnumeratePartyCharacters())
+        {
+            if (character?.EquippedRelicIds == null)
+                continue;
+
+            for (int i = 0; i < character.EquippedRelicIds.Length; i++)
+            {
+                if (!string.IsNullOrWhiteSpace(character.EquippedRelicIds[i]))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    private int RollThreeSixSidedDice()
+    {
+        return BattleRandom.Range(1, 7) +
+               BattleRandom.Range(1, 7) +
+               BattleRandom.Range(1, 7);
+    }
+
+    private bool RollChance(string successRate)
+    {
+        if (!TryParsePercentage(successRate, out float rate))
+            rate = 1f;
+
+        return BattleRandom.Range(0, 10000) < Mathf.RoundToInt(rate * 10000f);
+    }
+
+    private bool IsDiceSuccess(int diceRoll, string condition)
+    {
+        if (string.IsNullOrWhiteSpace(condition))
+            return true;
+
+        string[] ranges = condition.Split(new[] { ',', '/' }, System.StringSplitOptions.RemoveEmptyEntries);
+
+        for (int i = 0; i < ranges.Length; i++)
+        {
+            if (TryParseRange(ranges[i], out int min, out int max) &&
+                diceRoll >= min &&
+                diceRoll <= max)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool TryParseRange(string text, out int min, out int max)
+    {
+        min = 0;
+        max = 0;
+
+        if (string.IsNullOrWhiteSpace(text))
+            return false;
+
+        string normalized = text.Trim().Replace("~", "-");
+        string[] parts = normalized.Split(new[] { '-' }, System.StringSplitOptions.RemoveEmptyEntries);
+
+        if (parts.Length == 1 && int.TryParse(parts[0].Trim(), out int single))
+        {
+            min = single;
+            max = single;
+            return true;
+        }
+
+        if (parts.Length != 2)
+            return false;
+
+        if (!int.TryParse(parts[0].Trim(), out min) ||
+            !int.TryParse(parts[1].Trim(), out max))
+        {
+            return false;
+        }
+
+        if (min > max)
+            (min, max) = (max, min);
+
+        return true;
+    }
+
+    private bool TryParsePercentage(string value, out float rate)
+    {
+        rate = 0f;
+
+        if (string.IsNullOrWhiteSpace(value))
+            return false;
+
+        string normalized = value.Trim().Replace("%", string.Empty);
+
+        if (!float.TryParse(normalized, NumberStyles.Any, CultureInfo.InvariantCulture, out float parsed))
+            return false;
+
+        rate = Mathf.Clamp01(parsed > 1f ? parsed / 100f : parsed);
+        return true;
+    }
+
+    private static bool TryParseSignedValue(string value, out int amount)
+    {
+        amount = 0;
+
+        if (string.IsNullOrWhiteSpace(value))
+            return false;
+
+        MatchCollection matches = Regex.Matches(value, @"[+-]?\d+");
+        if (matches.Count == 0)
+            return false;
+
+        return int.TryParse(matches[matches.Count - 1].Value, out amount);
+    }
+
+    private static bool SameToken(string left, string right)
+    {
+        return string.Equals(left?.Trim(), right?.Trim(), System.StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool Contains(string source, string value)
+    {
+        return !string.IsNullOrWhiteSpace(source) &&
+               !string.IsNullOrWhiteSpace(value) &&
+               source.IndexOf(value, System.StringComparison.OrdinalIgnoreCase) >= 0;
+    }
+
+    private static string BuildResultSummary(EventData choice)
+    {
+        if (choice == null)
+            return string.Empty;
+
+        List<string> parts = new();
+
+        if (!string.IsNullOrWhiteSpace(choice.ResultType))
+            parts.Add(choice.ResultType.Trim());
+
+        if (!string.IsNullOrWhiteSpace(choice.ResultTarget))
+            parts.Add(choice.ResultTarget.Trim());
+
+        if (!string.IsNullOrWhiteSpace(choice.ResultValue))
+            parts.Add(choice.ResultValue.Trim());
+
+        return parts.Count > 0 ? string.Join(" / ", parts) : string.Empty;
+    }
+
+    private static string BuildChoiceLabel(EventData choice)
+    {
+        if (choice == null)
+            return string.Empty;
+
+        string order = choice.ChoiceOrder > 0 ? $"{choice.ChoiceOrder}. " : string.Empty;
+        string name = choice.ChoiceName ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(choice.ChoiceDesc))
+            return $"{order}{name}";
+
+        return $"{order}{name}\n{choice.ChoiceDesc}";
+    }
+
+    private void EnsureDataEventReferences()
+    {
+        if (dataEventRoot == null)
+        {
+            Transform dataRoot = FindChildRecursive(transform, "DataEventRoot");
+            if (dataRoot != null)
+                dataEventRoot = dataRoot.gameObject;
+        }
+
+        Transform searchRoot = dataEventRoot != null ? dataEventRoot.transform : transform;
+
+        if (eventNameText == null)
+            eventNameText = FindText(searchRoot, "EventNameText");
+
+        if (eventTitleText == null)
+            eventTitleText = FindText(searchRoot, "EventTitleText");
+
+        if (eventResultText == null)
+            eventResultText = FindText(searchRoot, "EventResultText");
+
+        EnsureChoiceSlots();
+    }
+
+    private void EnsureChoiceSlots()
+    {
+        if (choiceSlots != null && choiceSlots.Length > 0)
+            return;
+
+        Transform searchRoot = dataEventRoot != null ? dataEventRoot.transform : transform;
+        choiceSlots = searchRoot.GetComponentsInChildren<EventChoiceSlotUI>(true);
+        SortChoiceSlotsByName(choiceSlots);
+    }
+
+    private static void SortChoiceSlotsByName(EventChoiceSlotUI[] slots)
+    {
+        if (slots == null || slots.Length <= 1)
+            return;
+
+        System.Array.Sort(slots, (left, right) =>
+        {
+            string leftName = left != null ? left.name : string.Empty;
+            string rightName = right != null ? right.name : string.Empty;
+            return string.CompareOrdinal(leftName, rightName);
+        });
+    }
+
+    private TMP_Text FindText(Transform root, string targetName)
+    {
+        Transform target = FindChildRecursive(root, targetName);
+        return target != null ? target.GetComponent<TMP_Text>() : null;
+    }
+
+    private void SetChoiceSlotsInteractable(bool interactable)
+    {
+        EnsureChoiceSlots();
+
+        if (choiceSlots == null)
+            return;
+
+        for (int i = 0; i < choiceSlots.Length; i++)
+            choiceSlots[i]?.SetInteractable(interactable);
+    }
+
+    private void ClearChoiceSlots()
+    {
+        EnsureChoiceSlots();
+
+        if (choiceSlots == null)
+            return;
+
+        for (int i = 0; i < choiceSlots.Length; i++)
+            choiceSlots[i]?.Clear();
     }
 
     private void EnsureReferences()
@@ -326,6 +1434,40 @@ public class EventRoomController : MonoBehaviour
 
         if (nextButtonRoot != null)
             nextButtonRoot.SetActive(visible);
+    }
+
+    private void SetChestRootVisible(bool visible)
+    {
+        if (chestOpenButton != null)
+            chestOpenButton.gameObject.SetActive(visible);
+    }
+
+    private void SetDataEventRootVisible(bool visible)
+    {
+        if (dataEventRoot != null)
+            dataEventRoot.SetActive(visible);
+    }
+
+    private void ReturnToMap()
+    {
+        BattleSceneController sceneController =
+            Object.FindFirstObjectByType<BattleSceneController>(FindObjectsInactive.Include);
+
+        if (sceneController != null)
+            sceneController.ReturnToMap();
+        else
+            Debug.LogWarning("[EventRoomController] BattleSceneController not found");
+    }
+
+    private void DestroyGeneratedObject(GameObject target)
+    {
+        if (target == null)
+            return;
+
+        if (Application.isPlaying)
+            Destroy(target);
+        else
+            DestroyImmediate(target);
     }
 
     private void HideRelicFlyObjects()
