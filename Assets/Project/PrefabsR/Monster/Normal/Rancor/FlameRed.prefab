@@ -392,7 +392,7 @@ MonoBehaviour:
   dimMonsterDuringMoveTargetSelection: 1
   reservationAlpha: 0.45
   disableInteractionDuringReservationVisual: 1
-  showStatusTooltipOnClick: 1
+  showStatusTooltipOnHover: 1
   statusTooltipUI: {fileID: 0}
 --- !u!61 &5463209877570129000
 BoxCollider2D:
@@ -1019,9 +1019,9 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     attack1:
-      stateName: AttackAction1
+      stateName: 
       vfx:
-        prefab: {fileID: 7970636651724152907, guid: 380aaad3e9937d04fa4d33c13ad754cd, type: 3}
+        prefab: {fileID: 0}
         flipType: 0
         sfx:
           playSfx: 0
@@ -1226,56 +1226,6 @@ MonoBehaviour:
   skillVfxDatabase: {fileID: 0}
   gridManager: {fileID: 0}
   monsterActionPresentations:
-  - stateName: Move
-    vfx:
-      prefab: {fileID: 7536603162193489409, guid: 247ccc1305ac9a143b18c44c2da5f74f, type: 3}
-      flipType: 0
-      sfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-      renderMode: 0
-      proxyBlendMode: 0
-      spawnAnchor: 0
-      scaleDirectWorldRendererToProxyHeight: 0
-      renderTextureWidth: 512
-      renderTextureHeight: 512
-      renderCameraOrthographicSize: 5
-      proxyWorldHeight: 10
-      proxyWorldOffset: {x: 0, y: 0, z: 0}
-      proxySortingLayerName: Unit
-      proxySortingOrderOffset: 0
-      proxySortingWorldYOffset: 0
-      proxyYMultiplier: 100
-    projectileVfx:
-      skillId: 
-      missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 0}
-      missileFlipType: 2
-      impactFlipType: 2
-      missileSfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-      impactSfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-      launchDelay: 0
-      travelDuration: 0.25
-      arrivalDistance: 0.05
-      impactLifeTime: 2
-      launchOffset: {x: 0, y: 0, z: 0}
-      impactOffset: {x: 0, y: 0, z: 0}
   - stateName: AttackAction1
     vfx:
       prefab: {fileID: 7970636651724152907, guid: 380aaad3e9937d04fa4d33c13ad754cd, type: 3}
@@ -1329,6 +1279,56 @@ MonoBehaviour:
   - stateName: AttackAction1
     vfx:
       prefab: {fileID: 7970636651724152907, guid: 380aaad3e9937d04fa4d33c13ad754cd, type: 3}
+      flipType: 0
+      sfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      renderMode: 0
+      proxyBlendMode: 0
+      spawnAnchor: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
+    projectileVfx:
+      skillId: 
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
+      missileFlipType: 2
+      impactFlipType: 2
+      missileSfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      impactSfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
+  - stateName: 
+    vfx:
+      prefab: {fileID: 0}
       flipType: 0
       sfx:
         playSfx: 0
@@ -1753,11 +1753,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targetAnimator: {fileID: 0}
-  moveKey: 49
-  hitKey: 50
-  guardKey: 51
-  attack1Key: 52
-  attack2Key: 53
-  attack3Key: 54
   targetFacing: {fileID: 0}
-  flipKey: 122
+  debugBindings:
+  - key: 49
+    action: 2
+    flipBeforeAction: 1
+  - key: 50
+    action: 3
+    flipBeforeAction: 1
+  - key: 51
+    action: 4
+    flipBeforeAction: 1
+  - key: 52
+    action: 7
+    flipBeforeAction: 1
+  - key: 53
+    action: 8
+    flipBeforeAction: 1
+  - key: 54
+    action: 9
+    flipBeforeAction: 1
+  - key: 122
+    action: 20
+    flipBeforeAction: 0

@@ -518,6 +518,18 @@ public class BattleUnitAnimator : MonoBehaviour
         SpawnVfx(presentation.vfx);
     }
 
+    /// <summary>
+    /// 디버그 입력 등에서 Monster Action Presentations의 지정 슬롯을 직접 재생합니다.
+    /// 인스펙터의 Monster Action Presentations 1~10과 동일한 인덱스를 사용합니다.
+    /// </summary>
+    public void PlayMonsterActionPresentation(int actionIndex)
+    {
+        if (!IsValidMonsterActionIndex(actionIndex))
+            return;
+
+        PlayPresentation(GetMonsterActionPresentation(actionIndex));
+    }
+
     private BattleUnitActionPresentation GetMonsterActionPresentation(int actionIndex)
     {
         EnsureMonsterActionPresentationArray();

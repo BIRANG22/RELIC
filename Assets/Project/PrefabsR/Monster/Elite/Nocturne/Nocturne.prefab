@@ -91,7 +91,7 @@ MonoBehaviour:
   dimMonsterDuringMoveTargetSelection: 1
   reservationAlpha: 0.45
   disableInteractionDuringReservationVisual: 1
-  showStatusTooltipOnClick: 1
+  showStatusTooltipOnHover: 1
   statusTooltipUI: {fileID: 0}
 --- !u!61 &2180048205224593603
 BoxCollider2D:
@@ -718,9 +718,9 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     attack1:
-      stateName: AttackAction1
+      stateName: 
       vfx:
-        prefab: {fileID: 8678038702199689449, guid: dafad4a8c50e0e5419500dadf5f7a4d5, type: 3}
+        prefab: {fileID: 0}
         flipType: 0
         sfx:
           playSfx: 0
@@ -769,9 +769,9 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     attack2:
-      stateName: AttackAction2
+      stateName: 
       vfx:
-        prefab: {fileID: 883642454426607995, guid: 337cd8521de29174b89b08942c92953f, type: 3}
+        prefab: {fileID: 0}
         flipType: 0
         sfx:
           playSfx: 0
@@ -820,9 +820,9 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     attack3:
-      stateName: AttackAction3
+      stateName: 
       vfx:
-        prefab: {fileID: 4923209245293396599, guid: 3de88738a70e25a43b753719fc19c5e5, type: 3}
+        prefab: {fileID: 0}
         flipType: 0
         sfx:
           playSfx: 0
@@ -925,9 +925,9 @@ MonoBehaviour:
   skillVfxDatabase: {fileID: 0}
   gridManager: {fileID: 0}
   monsterActionPresentations:
-  - stateName: Move
+  - stateName: AttackAction1
     vfx:
-      prefab: {fileID: 4145361429921181282, guid: 64eec7862f4d94a4198ea5d201af5b88, type: 3}
+      prefab: {fileID: 8678038702199689449, guid: dafad4a8c50e0e5419500dadf5f7a4d5, type: 3}
       flipType: 0
       sfx:
         playSfx: 0
@@ -975,9 +975,9 @@ MonoBehaviour:
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
-  - stateName: 
+  - stateName: AttackAction2
     vfx:
-      prefab: {fileID: 0}
+      prefab: {fileID: 883642454426607995, guid: 337cd8521de29174b89b08942c92953f, type: 3}
       flipType: 0
       sfx:
         playSfx: 0
@@ -1025,9 +1025,9 @@ MonoBehaviour:
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
-  - stateName: 
+  - stateName: AttackAction3
     vfx:
-      prefab: {fileID: 0}
+      prefab: {fileID: 4923209245293396599, guid: 3de88738a70e25a43b753719fc19c5e5, type: 3}
       flipType: 0
       sfx:
         playSfx: 0
@@ -1452,14 +1452,29 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targetAnimator: {fileID: 0}
-  moveKey: 49
-  hitKey: 50
-  guardKey: 51
-  attack1Key: 52
-  attack2Key: 53
-  attack3Key: 54
   targetFacing: {fileID: 0}
-  flipKey: 122
+  debugBindings:
+  - key: 49
+    action: 2
+    flipBeforeAction: 1
+  - key: 50
+    action: 3
+    flipBeforeAction: 1
+  - key: 51
+    action: 4
+    flipBeforeAction: 1
+  - key: 52
+    action: 10
+    flipBeforeAction: 1
+  - key: 53
+    action: 11
+    flipBeforeAction: 1
+  - key: 54
+    action: 12
+    flipBeforeAction: 1
+  - key: 122
+    action: 20
+    flipBeforeAction: 0
 --- !u!1 &2469629087936589391
 GameObject:
   m_ObjectHideFlags: 0
