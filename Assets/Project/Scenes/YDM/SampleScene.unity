@@ -4230,6 +4230,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66c09b715519f4c47bbc61aec84d290c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  characterRoot: {fileID: 0}
+  monsterRoot: {fileID: 0}
+  monsterInfoPanelUI: {fileID: 0}
   portraitImage: {fileID: 0}
   characterNameText: {fileID: 0}
   passiveIconImage: {fileID: 0}
@@ -4762,6 +4765,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66c09b715519f4c47bbc61aec84d290c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  characterRoot: {fileID: 0}
+  monsterRoot: {fileID: 0}
+  monsterInfoPanelUI: {fileID: 0}
   portraitImage: {fileID: 0}
   characterNameText: {fileID: 0}
   passiveIconImage: {fileID: 0}
@@ -5774,6 +5780,28 @@ MonoBehaviour:
   choices: []
   choicePrefab: {fileID: 0}
   maxChoiceCount: 3
+  oneChoiceLayout:
+    anchoredPositions:
+    - {x: 0, y: 0}
+    localScales:
+    - {x: 1, y: 1, z: 1}
+  twoChoiceLayout:
+    anchoredPositions:
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    localScales:
+    - {x: 1, y: 1, z: 1}
+    - {x: 1, y: 1, z: 1}
+  threeChoiceLayout:
+    anchoredPositions:
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    localScales:
+    - {x: 1, y: 1, z: 1}
+    - {x: 1, y: 1, z: 1}
+    - {x: 1, y: 1, z: 1}
+  hoverScaleMultiplier: {x: 1.1, y: 1.1, z: 1.1}
 --- !u!1 &1460078446
 GameObject:
   m_ObjectHideFlags: 0
@@ -8220,7 +8248,6 @@ GameObject:
   - component: {fileID: 1956908826}
   - component: {fileID: 1956908825}
   - component: {fileID: 1956908824}
-  - component: {fileID: 1956908823}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -8228,34 +8255,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1956908823
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1956908822}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8590e0351265a734fbeda7d27c2ac8aa, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  horizontalDragSpeed: 1
-  verticalDragSpeed: 1
-  invertDrag: 1
-  blockDragOverUI: 1
-  dragBlockingPanels:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  smoothTime: 0.2
-  maximumSmoothSpeed: 100
-  useInitialPositionAsDefault: 1
-  defaultPosition: {x: 0, y: 0, z: -20}
-  minimumX: -2
-  maximumX: 2
-  minimumY: -0.15
-  maximumY: 0.15
 --- !u!114 &1956908824
 MonoBehaviour:
   m_ObjectHideFlags: 0

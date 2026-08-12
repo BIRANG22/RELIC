@@ -162,6 +162,46 @@ public class AnimationVfxLoadoutCleanupTests
     }
 
     [Test]
+    public void MonsterRuntimeData_PresentationIndexUsesOneSequenceAfterExcludingMove()
+    {
+        GameObject dataManagerObject = new("DataManager_Presentation_Index_Test");
+
+        try
+        {
+            DataManager dataManager = dataManagerObject.AddComponent<DataManager>();
+            dataManager.MonsterSkillDatabase.Initialize(new[]
+            {
+                new MonsterSkillData { SkillId = "Move", TimelineNotation = TimelineActionType.Move },
+                new MonsterSkillData { SkillId = "Attack_01", TimelineNotation = TimelineActionType.Attack },
+                new MonsterSkillData { SkillId = "Attack_02", TimelineNotation = TimelineActionType.Attack },
+                new MonsterSkillData { SkillId = "Skill_03", TimelineNotation = TimelineActionType.Buff },
+                new MonsterSkillData { SkillId = "Skill_04", TimelineNotation = TimelineActionType.Debuff }
+            });
+
+            MonsterRuntimeData runtime = new("Arabella_Runtime", new MonsterMasterData
+            {
+                MonsterId = "Arabella",
+                HP = 10,
+                PossSkillId01 = "Move",
+                PossSkillId02 = "Attack_01",
+                PossSkillId03 = "Attack_02",
+                PossSkillId04 = "Skill_03",
+                PossSkillId05 = "Skill_04"
+            });
+
+            Assert.That(runtime.GetPresentationActionIndexForSkill("Move"), Is.EqualTo(0));
+            Assert.That(runtime.GetPresentationActionIndexForSkill("Attack_01"), Is.EqualTo(1));
+            Assert.That(runtime.GetPresentationActionIndexForSkill("Attack_02"), Is.EqualTo(2));
+            Assert.That(runtime.GetPresentationActionIndexForSkill("Skill_03"), Is.EqualTo(3));
+            Assert.That(runtime.GetPresentationActionIndexForSkill("Skill_04"), Is.EqualTo(4));
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(dataManagerObject);
+        }
+    }
+
+    [Test]
     public void MonsterReservedCommand_ResolvesActionIndexFromRuntimeSkillSlots()
     {
         MonsterMasterData master = new()
