@@ -91,7 +91,7 @@ MonoBehaviour:
   dimMonsterDuringMoveTargetSelection: 1
   reservationAlpha: 0.45
   disableInteractionDuringReservationVisual: 1
-  showStatusTooltipOnClick: 1
+  showStatusTooltipOnHover: 1
   statusTooltipUI: {fileID: 0}
 --- !u!61 &2180048205224593603
 BoxCollider2D:
@@ -718,7 +718,7 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     attack1:
-      stateName: AttackAction1
+      stateName: 
       vfx:
         prefab: {fileID: 0}
         flipType: 0
@@ -769,7 +769,7 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     attack2:
-      stateName: AttackAction2
+      stateName: 
       vfx:
         prefab: {fileID: 0}
         flipType: 0
@@ -820,7 +820,7 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     attack3:
-      stateName: AttackAction3
+      stateName: 
       vfx:
         prefab: {fileID: 0}
         flipType: 0
@@ -833,7 +833,7 @@ MonoBehaviour:
           removeEmbeddedAudioSources: 1
         renderMode: 0
         proxyBlendMode: 1
-        spawnAnchor: 0
+        spawnAnchor: 1
         scaleDirectWorldRendererToProxyHeight: 0
         renderTextureWidth: 512
         renderTextureHeight: 512
@@ -925,59 +925,9 @@ MonoBehaviour:
   skillVfxDatabase: {fileID: 0}
   gridManager: {fileID: 0}
   monsterActionPresentations:
-  - stateName: Move
-    vfx:
-      prefab: {fileID: 4145361429921181282, guid: 64eec7862f4d94a4198ea5d201af5b88, type: 3}
-      flipType: 0
-      sfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-      renderMode: 0
-      proxyBlendMode: 0
-      spawnAnchor: 0
-      scaleDirectWorldRendererToProxyHeight: 0
-      renderTextureWidth: 512
-      renderTextureHeight: 512
-      renderCameraOrthographicSize: 5
-      proxyWorldHeight: 10
-      proxyWorldOffset: {x: 0, y: 0, z: 0}
-      proxySortingLayerName: Unit
-      proxySortingOrderOffset: 0
-      proxySortingWorldYOffset: 0
-      proxyYMultiplier: 100
-    projectileVfx:
-      skillId: 
-      missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 0}
-      missileFlipType: 2
-      impactFlipType: 2
-      missileSfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-      impactSfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-      launchDelay: 0
-      travelDuration: 0.25
-      arrivalDistance: 0.05
-      impactLifeTime: 2
-      launchOffset: {x: 0, y: 0, z: 0}
-      impactOffset: {x: 0, y: 0, z: 0}
   - stateName: AttackAction1
     vfx:
-      prefab: {fileID: 0}
+      prefab: {fileID: 5755029021125086085, guid: 4fa99d2efc68cb541b6fc5c7f44a8447, type: 3}
       flipType: 0
       sfx:
         playSfx: 0
@@ -988,7 +938,7 @@ MonoBehaviour:
         removeEmbeddedAudioSources: 1
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
+      spawnAnchor: 1
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -1027,7 +977,7 @@ MonoBehaviour:
       impactOffset: {x: 0, y: 0, z: 0}
   - stateName: AttackAction2
     vfx:
-      prefab: {fileID: 0}
+      prefab: {fileID: 7525588489078206328, guid: 69474b264de00714485785d33ec45076, type: 3}
       flipType: 0
       sfx:
         playSfx: 0
@@ -1038,7 +988,7 @@ MonoBehaviour:
         removeEmbeddedAudioSources: 1
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
+      spawnAnchor: 1
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -1077,7 +1027,7 @@ MonoBehaviour:
       impactOffset: {x: 0, y: 0, z: 0}
   - stateName: AttackAction3
     vfx:
-      prefab: {fileID: 0}
+      prefab: {fileID: 7042334462189142359, guid: 7053264502be7a342bbf60ff7ae337f6, type: 3}
       flipType: 0
       sfx:
         playSfx: 0
@@ -1088,7 +1038,7 @@ MonoBehaviour:
         removeEmbeddedAudioSources: 1
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
+      spawnAnchor: 1
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -1127,7 +1077,7 @@ MonoBehaviour:
       impactOffset: {x: 0, y: 0, z: 0}
   - stateName: AttackAction4
     vfx:
-      prefab: {fileID: 0}
+      prefab: {fileID: 7042334462189142359, guid: 675f32f386a432f409f44b450ac64ed4, type: 3}
       flipType: 0
       sfx:
         playSfx: 0
@@ -1176,6 +1126,56 @@ MonoBehaviour:
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
   - stateName: AttackAction5
+    vfx:
+      prefab: {fileID: 7042334462189142359, guid: 1b2db9fcbd8002640b795a7f1acb7540, type: 3}
+      flipType: 0
+      sfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      renderMode: 0
+      proxyBlendMode: 0
+      spawnAnchor: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
+    projectileVfx:
+      skillId: 
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
+      missileFlipType: 2
+      impactFlipType: 2
+      missileSfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      impactSfx:
+        playSfx: 0
+        sfxId: 
+        delay: 0
+        volumeMultiplier: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        removeEmbeddedAudioSources: 1
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
+  - stateName: 
     vfx:
       prefab: {fileID: 0}
       flipType: 0
@@ -1446,20 +1446,38 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1910251976348132752}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 46a3b90ac864fa341b003dc84fd7d7f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   targetAnimator: {fileID: 0}
-  moveKey: 49
-  hitKey: 50
-  guardKey: 51
-  attack1Key: 52
-  attack2Key: 53
-  attack3Key: 54
   targetFacing: {fileID: 0}
-  flipKey: 122
+  debugBindings:
+  - key: 49
+    action: 2
+    flipBeforeAction: 1
+  - key: 50
+    action: 3
+    flipBeforeAction: 1
+  - key: 51
+    action: 4
+    flipBeforeAction: 1
+  - key: 52
+    action: 10
+    flipBeforeAction: 1
+  - key: 53
+    action: 11
+    flipBeforeAction: 1
+  - key: 54
+    action: 12
+    flipBeforeAction: 1
+  - key: 55
+    action: 13
+    flipBeforeAction: 1
+  - key: 56
+    action: 14
+    flipBeforeAction: 1
 --- !u!1 &2469629087936589391
 GameObject:
   m_ObjectHideFlags: 0
