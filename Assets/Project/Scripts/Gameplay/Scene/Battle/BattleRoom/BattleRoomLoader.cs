@@ -8,6 +8,9 @@ using UnityEngine.UI;
 
 public class BattleRoomLoader : MonoBehaviour
 {
+    private const string BattleHudCanvasObjectName = "BattleHUDCanvas";
+    private const string BattleCharacterPanelObjectName = "BattleCharacterPanel";
+
     [Header("Spawner")]
     [SerializeField] private BattleUnitSpawner unitSpawner;
     [SerializeField] private BattleMonsterSpawner monsterSpawner;
@@ -306,12 +309,87 @@ public class BattleRoomLoader : MonoBehaviour
 
     private void EnsureBattleCharacterPanel()
     {
-        if (battleCharacterPanel != null)
+        BattleCharacterPanelUI roomPanel = FindOwnBattleCharacterPanel();
+        if (roomPanel != null)
+        {
+            battleCharacterPanel = roomPanel;
+            EnsureBattleCharacterPanelHierarchy();
+            return;
+        }
+
+        battleCharacterPanel = FindSceneBattleCharacterPanel();
+
+        EnsureBattleCharacterPanelHierarchy();
+    }
+
+    private BattleCharacterPanelUI FindOwnBattleCharacterPanel()
+    {
+        BattleCharacterPanelUI[] panels = GetComponentsInChildren<BattleCharacterPanelUI>(true);
+        return SelectPreferredBattleCharacterPanel(panels);
+    }
+
+    private static BattleCharacterPanelUI FindSceneBattleCharacterPanel()
+    {
+        BattleCharacterPanelUI[] panels = Object.FindObjectsByType<BattleCharacterPanelUI>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        return SelectPreferredBattleCharacterPanel(panels);
+    }
+
+    private static BattleCharacterPanelUI SelectPreferredBattleCharacterPanel(
+        BattleCharacterPanelUI[] panels)
+    {
+        if (panels == null || panels.Length == 0)
+            return null;
+
+        for (int i = 0; i < panels.Length; i++)
+        {
+            if (panels[i] != null && panels[i].name == BattleCharacterPanelObjectName)
+                return panels[i];
+        }
+
+        for (int i = 0; i < panels.Length; i++)
+        {
+            if (panels[i] != null)
+                return panels[i];
+        }
+
+        return null;
+    }
+
+    private void EnsureBattleCharacterPanelHierarchy()
+    {
+        if (battleCharacterPanel == null)
             return;
 
-        battleCharacterPanel = Object.FindFirstObjectByType<BattleCharacterPanelUI>(
-            FindObjectsInactive.Include
-        );
+        Transform battleHudCanvas = FindChildRecursive(transform, BattleHudCanvasObjectName);
+        if (battleHudCanvas == null)
+            return;
+
+        Transform panelTransform = battleCharacterPanel.transform;
+        if (panelTransform.parent != battleHudCanvas)
+            panelTransform.SetParent(battleHudCanvas, false);
+
+        panelTransform.SetAsLastSibling();
+    }
+
+    private static Transform FindChildRecursive(Transform root, string targetName)
+    {
+        if (root == null || string.IsNullOrWhiteSpace(targetName))
+            return null;
+
+        if (root.name == targetName)
+            return root;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform found = FindChildRecursive(root.GetChild(i), targetName);
+            if (found != null)
+                return found;
+        }
+
+        return null;
     }
 
     private void EnsureSkillListPanel()

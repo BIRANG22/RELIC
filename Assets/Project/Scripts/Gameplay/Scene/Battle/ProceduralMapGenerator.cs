@@ -72,6 +72,15 @@ namespace Relic.Gameplay.Data
             string chapter,
             string stage)
         {
+            return Generate(mapPool, chapter, stage, null);
+        }
+
+        public List<GeneratedMapNodeData> Generate(
+            List<MapData> mapPool,
+            string chapter,
+            string stage,
+            EventMapRandomExclusionSettings randomExclusionSettings)
+        {
             nextNodeIndex = 0;
             commonMapAppearCounts.Clear();
             lastCommonMapId = string.Empty;
@@ -105,7 +114,8 @@ namespace Relic.Gameplay.Data
                         chapter,
                         stage,
                         layer,
-                        type
+                        type,
+                        randomExclusionSettings
                     );
 
                     if (mapData == null)
@@ -143,7 +153,8 @@ namespace Relic.Gameplay.Data
                 layers,
                 mapPool,
                 chapter,
-                stage
+                stage,
+                randomExclusionSettings
             );
 
             return result;
@@ -527,7 +538,8 @@ namespace Relic.Gameplay.Data
             List<List<GeneratedMapNodeData>> layers,
             List<MapData> mapPool,
             string chapter,
-            string stage)
+            string stage,
+            EventMapRandomExclusionSettings randomExclusionSettings)
         {
             if (layers == null || mapPool == null)
                 return;
@@ -581,6 +593,9 @@ namespace Relic.Gameplay.Data
                         if (candidate.Type != "Common")
                             continue;
 
+                        if (!IsRandomCandidateAllowed(candidate, randomExclusionSettings))
+                            continue;
+
                         if (connectedParentCommonMapIds.Contains(candidate.MapId))
                             continue;
 
@@ -628,7 +643,8 @@ namespace Relic.Gameplay.Data
             string chapter,
             string stage,
             int layer,
-            string decidedType)
+            string decidedType,
+            EventMapRandomExclusionSettings randomExclusionSettings)
         {
             if (layer == 0)
             {
@@ -636,7 +652,8 @@ namespace Relic.Gameplay.Data
                     mapPool,
                     chapter,
                     stage,
-                    "Start"
+                    "Start",
+                    randomExclusionSettings
                 );
 
                 if (startMap != null)
@@ -646,13 +663,14 @@ namespace Relic.Gameplay.Data
             }
 
             if (layer == TotalLayerCount - 1)
-                return PickRandomMapData(mapPool, chapter, stage, "Boss");
+                return PickRandomMapData(mapPool, chapter, stage, "Boss", randomExclusionSettings);
 
             return PickRandomMapData(
                 mapPool,
                 chapter,
                 stage,
-                decidedType
+                decidedType,
+                randomExclusionSettings
             );
         }
 
@@ -677,13 +695,17 @@ namespace Relic.Gameplay.Data
             List<MapData> mapPool,
             string chapter,
             string stage,
-            string type)
+            string type,
+            EventMapRandomExclusionSettings randomExclusionSettings)
         {
             List<MapData> candidates = new();
 
             for (int i = 0; i < mapPool.Count; i++)
             {
                 MapData data = mapPool[i];
+
+                if (data == null)
+                    continue;
 
                 if (data.Chapter != chapter)
                     continue;
@@ -694,11 +716,14 @@ namespace Relic.Gameplay.Data
                 if (data.Type != type)
                     continue;
 
+                if (!IsRandomCandidateAllowed(data, randomExclusionSettings))
+                    continue;
+
                 candidates.Add(data);
             }
 
             if (candidates.Count == 0 && !IsReservedMapType(type))
-                return PickAnyNormalMap(mapPool, chapter, stage);
+                return PickAnyNormalMap(mapPool, chapter, stage, randomExclusionSettings);
 
             if (candidates.Count == 0)
                 return null;
@@ -716,13 +741,17 @@ namespace Relic.Gameplay.Data
         private MapData PickAnyNormalMap(
             List<MapData> mapPool,
             string chapter,
-            string stage)
+            string stage,
+            EventMapRandomExclusionSettings randomExclusionSettings)
         {
             List<MapData> candidates = new();
 
             for (int i = 0; i < mapPool.Count; i++)
             {
                 MapData data = mapPool[i];
+
+                if (data == null)
+                    continue;
 
                 if (data.Chapter != chapter)
                     continue;
@@ -731,6 +760,9 @@ namespace Relic.Gameplay.Data
                     continue;
 
                 if (IsReservedMapType(data.Type))
+                    continue;
+
+                if (!IsRandomCandidateAllowed(data, randomExclusionSettings))
                     continue;
 
                 candidates.Add(data);
@@ -893,6 +925,14 @@ namespace Relic.Gameplay.Data
         private bool IsReservedMapType(string type)
         {
             return type == "Start" || type == "Boss";
+        }
+
+        private static bool IsRandomCandidateAllowed(
+            MapData candidate,
+            EventMapRandomExclusionSettings randomExclusionSettings)
+        {
+            return randomExclusionSettings == null ||
+                   randomExclusionSettings.IsMapAllowedForRandomSelection(candidate);
         }
 
         private bool WouldCrossExistingConnections(

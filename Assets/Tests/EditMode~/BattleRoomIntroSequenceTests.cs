@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using System.Reflection;
 using UnityEngine;
 
 public class BattleRoomIntroSequenceTests
@@ -97,6 +98,73 @@ public class BattleRoomIntroSequenceTests
         finally
         {
             Object.DestroyImmediate(root);
+        }
+    }
+
+    [Test]
+    public void FindFirst_ReturnsTimedObjectRevealSequence()
+    {
+        GameObject root = new("SharedRoomRoot");
+        GameObject child = new("St1BossRevealSequence");
+        child.transform.SetParent(root.transform, false);
+        TimedObjectRevealSequence expected = child.AddComponent<TimedObjectRevealSequence>();
+
+        try
+        {
+            IBattleRoomIntroSequence result = BattleRoomIntroSequenceUtility.FindFirst(root);
+
+            Assert.That(result, Is.SameAs(expected));
+        }
+        finally
+        {
+            Object.DestroyImmediate(root);
+        }
+    }
+
+    [Test]
+    public void BattleSceneController_WaitsForSharedBossIntroAndSuppressesBattleUi()
+    {
+        GameObject controllerObject = new("BattleSceneController");
+        GameObject battleRoom = new("BattleRoom");
+        GameObject sharedRoot = new("SharedRoomRoot");
+        GameObject sequenceObject = new("BossIntroSequence");
+        GameObject executorObject = new("BattleTurnExecutor");
+        GameObject playerHudRoot = new("PlayerHUD_Root");
+        GameObject menuRoot = new("MenuRoot");
+        sequenceObject.transform.SetParent(sharedRoot.transform, false);
+        executorObject.transform.SetParent(battleRoom.transform, false);
+        TestIntroSequence sequence = sequenceObject.AddComponent<TestIntroSequence>();
+        BattleTurnExecutor executor = executorObject.AddComponent<BattleTurnExecutor>();
+        playerHudRoot.SetActive(true);
+        menuRoot.SetActive(true);
+
+        try
+        {
+            BattleSceneController controller = controllerObject.AddComponent<BattleSceneController>();
+            SetPrivateField(controller, "battleRoom", battleRoom);
+            SetPrivateField(controller, "sharedRoomRoot", sharedRoot);
+            SetPrivateField(controller, "pendingBattleRoomUsesBossIntro", true);
+            SetPrivateField(executor, "playerHudRoot", playerHudRoot);
+            SetPrivateField(executor, "menuRoot", menuRoot);
+
+            InvokePrivateMethod(controller, "RequestBattleRoomLoadOnce");
+
+            Assert.That(BattleSceneController.IsBattleRoomIntroPlaying, Is.True);
+            Assert.That(playerHudRoot.activeSelf, Is.False);
+            Assert.That(menuRoot.activeSelf, Is.False);
+            Assert.That(sequence.IsCompleted, Is.False);
+        }
+        finally
+        {
+            InvokePrivateStaticMethod(
+                typeof(BattleSceneController),
+                "SetBattleRoomIntroPlaying",
+                false);
+            Object.DestroyImmediate(controllerObject);
+            Object.DestroyImmediate(battleRoom);
+            Object.DestroyImmediate(sharedRoot);
+            Object.DestroyImmediate(playerHudRoot);
+            Object.DestroyImmediate(menuRoot);
         }
     }
 
@@ -213,5 +281,38 @@ public class BattleRoomIntroSequenceTests
         {
             Object.DestroyImmediate(gameObject);
         }
+    }
+
+    private static void SetPrivateField(object target, string fieldName, object value)
+    {
+        FieldInfo field = target.GetType().GetField(
+            fieldName,
+            BindingFlags.Instance | BindingFlags.NonPublic);
+
+        Assert.That(field, Is.Not.Null, $"Missing field: {fieldName}");
+        field.SetValue(target, value);
+    }
+
+    private static void InvokePrivateMethod(object target, string methodName, params object[] args)
+    {
+        MethodInfo method = target.GetType().GetMethod(
+            methodName,
+            BindingFlags.Instance | BindingFlags.NonPublic);
+
+        Assert.That(method, Is.Not.Null, $"Missing method: {methodName}");
+        method.Invoke(target, args);
+    }
+
+    private static void InvokePrivateStaticMethod(
+        System.Type type,
+        string methodName,
+        params object[] args)
+    {
+        MethodInfo method = type.GetMethod(
+            methodName,
+            BindingFlags.Static | BindingFlags.NonPublic);
+
+        Assert.That(method, Is.Not.Null, $"Missing method: {methodName}");
+        method.Invoke(null, args);
     }
 }

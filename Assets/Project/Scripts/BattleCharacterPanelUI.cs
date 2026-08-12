@@ -903,6 +903,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
         Refresh();
         ShowDefaultSkillInfo();
+        ScheduleSelectionPanelPositionRefresh();
     }
 
     private void ShowDefaultSkillInfo()

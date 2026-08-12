@@ -7,6 +7,152 @@ using UnityEngine;
 namespace Relic.Gameplay.Data
 {
     [Serializable]
+    public class EventMapRandomExclusionEntry
+    {
+        public string EventId;
+        public bool Disabled;
+    }
+
+    [Serializable]
+    public class EventMapRandomExclusionSettings
+    {
+        [SerializeField] private bool enabled = true;
+        [SerializeField] private List<EventMapRandomExclusionEntry> entries = CreateDefaultEntries();
+
+        public bool Enabled
+        {
+            get => enabled;
+            set => enabled = value;
+        }
+
+        public List<EventMapRandomExclusionEntry> Entries => entries;
+
+        public bool IsMapAllowedForRandomSelection(MapData mapData)
+        {
+            if (mapData == null)
+                return false;
+
+            return !IsEventDisabled(mapData.EventId);
+        }
+
+        public bool IsEventDisabled(string eventId)
+        {
+            if (!enabled || string.IsNullOrWhiteSpace(eventId) || entries == null)
+                return false;
+
+            string normalizedEventId = EventIdUtility.Normalize(eventId);
+
+            if (string.IsNullOrWhiteSpace(normalizedEventId))
+                return false;
+
+            for (int i = 0; i < entries.Count; i++)
+            {
+                EventMapRandomExclusionEntry entry = entries[i];
+
+                if (entry == null || !entry.Disabled)
+                    continue;
+
+                string disabledEventId = EventIdUtility.Normalize(entry.EventId);
+
+                if (string.IsNullOrWhiteSpace(disabledEventId))
+                    continue;
+
+                if (string.Equals(disabledEventId, normalizedEventId, StringComparison.Ordinal))
+                    return true;
+            }
+
+            return false;
+        }
+
+        public string GetRuntimeKey()
+        {
+            if (!enabled || entries == null || entries.Count == 0)
+                return string.Empty;
+
+            List<string> disabledEventIds = CollectDisabledEventIds();
+
+            if (disabledEventIds.Count == 0)
+                return string.Empty;
+
+            disabledEventIds.Sort(StringComparer.Ordinal);
+
+            uint hash = 2166136261;
+            for (int i = 0; i < disabledEventIds.Count; i++)
+                hash = AppendHash(hash, disabledEventIds[i]);
+
+            return $"EventMapRandomExclusion:{hash:X8}";
+        }
+
+        private List<string> CollectDisabledEventIds()
+        {
+            List<string> result = new();
+
+            if (entries == null)
+                return result;
+
+            for (int i = 0; i < entries.Count; i++)
+            {
+                EventMapRandomExclusionEntry entry = entries[i];
+
+                if (entry == null || !entry.Disabled)
+                    continue;
+
+                string normalizedEventId = EventIdUtility.Normalize(entry.EventId);
+
+                if (string.IsNullOrWhiteSpace(normalizedEventId))
+                    continue;
+
+                if (!result.Contains(normalizedEventId))
+                    result.Add(normalizedEventId);
+            }
+
+            return result;
+        }
+
+        private static List<EventMapRandomExclusionEntry> CreateDefaultEntries()
+        {
+            return new List<EventMapRandomExclusionEntry>
+            {
+                new() { EventId = "Event_01" },
+                new() { EventId = "Event_02" },
+                new() { EventId = "Event_03" },
+                new() { EventId = "Event_04" },
+                new() { EventId = "Event_05" },
+                new() { EventId = "Event_06" },
+                new() { EventId = "Event_07" },
+                new() { EventId = "Event_08" },
+                new() { EventId = "Event_09" }
+            };
+        }
+
+        private static uint AppendHash(uint hash, string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return AppendHash(hash, 0);
+
+            unchecked
+            {
+                for (int i = 0; i < value.Length; i++)
+                {
+                    hash ^= value[i];
+                    hash *= 16777619;
+                }
+
+                return hash;
+            }
+        }
+
+        private static uint AppendHash(uint hash, int value)
+        {
+            unchecked
+            {
+                hash ^= (uint)value;
+                return hash * 16777619;
+            }
+        }
+    }
+
+    [Serializable]
     public class ManualBattleMapNodeDefinition
     {
         public int NodeIndex;
@@ -41,6 +187,16 @@ namespace Relic.Gameplay.Data
             string stage,
             out List<GeneratedMapNodeData> generatedNodes)
         {
+            return TryBuildNodes(mapPool, chapter, stage, null, out generatedNodes);
+        }
+
+        public bool TryBuildNodes(
+            List<MapData> mapPool,
+            string chapter,
+            string stage,
+            EventMapRandomExclusionSettings randomExclusionSettings,
+            out List<GeneratedMapNodeData> generatedNodes)
+        {
             generatedNodes = new List<GeneratedMapNodeData>();
 
             if (nodes == null || nodes.Count == 0)
@@ -53,7 +209,15 @@ namespace Relic.Gameplay.Data
             {
                 ManualBattleMapNodeDefinition definition = nodes[i];
 
-                if (!TryResolveMap(mapPool, chapter, stage, definition, out string mapId, out string type, out string eventId))
+                if (!TryResolveMap(
+                    mapPool,
+                    chapter,
+                    stage,
+                    definition,
+                    randomExclusionSettings,
+                    out string mapId,
+                    out string type,
+                    out string eventId))
                 {
                     generatedNodes.Clear();
                     return false;
@@ -251,6 +415,7 @@ namespace Relic.Gameplay.Data
             string chapter,
             string stage,
             ManualBattleMapNodeDefinition definition,
+            EventMapRandomExclusionSettings randomExclusionSettings,
             out string mapId,
             out string resolvedType,
             out string eventId)
@@ -281,7 +446,7 @@ namespace Relic.Gameplay.Data
 
             if (IsBuiltInRoomType(type))
             {
-                if (TryPickCandidate(mapPool, chapter, stage, type, out MapData builtInMap))
+                if (TryPickCandidate(mapPool, chapter, stage, type, randomExclusionSettings, out MapData builtInMap))
                 {
                     mapId = builtInMap.MapId;
                     resolvedType = builtInMap.Type;
@@ -294,7 +459,7 @@ namespace Relic.Gameplay.Data
                 return true;
             }
 
-            if (TryPickCandidate(mapPool, chapter, stage, type, out MapData mapData))
+            if (TryPickCandidate(mapPool, chapter, stage, type, randomExclusionSettings, out MapData mapData))
             {
                 mapId = mapData.MapId;
                 resolvedType = mapData.Type;
@@ -360,6 +525,7 @@ namespace Relic.Gameplay.Data
             string chapter,
             string stage,
             string type,
+            EventMapRandomExclusionSettings randomExclusionSettings,
             out MapData result)
         {
             result = null;
@@ -382,6 +548,9 @@ namespace Relic.Gameplay.Data
                 {
                     continue;
                 }
+
+                if (!IsRandomCandidateAllowed(candidate, randomExclusionSettings))
+                    continue;
 
                 candidates.Add(candidate);
             }
@@ -417,6 +586,14 @@ namespace Relic.Gameplay.Data
             return candidates[candidates.Count - 1];
         }
 
+        private static bool IsRandomCandidateAllowed(
+            MapData candidate,
+            EventMapRandomExclusionSettings randomExclusionSettings)
+        {
+            return randomExclusionSettings == null ||
+                   randomExclusionSettings.IsMapAllowedForRandomSelection(candidate);
+        }
+
         private static bool Same(string left, string right)
         {
             return string.Equals(
@@ -446,19 +623,26 @@ namespace Relic.Gameplay.Data
             List<MapData> mapPool,
             string chapter,
             string stage,
-            ManualBattleMapTemplate manualMapTemplate)
+            ManualBattleMapTemplate manualMapTemplate,
+            EventMapRandomExclusionSettings randomExclusionSettings = null)
         {
-            return GenerateResult(mapPool, chapter, stage, manualMapTemplate).Nodes;
+            return GenerateResult(mapPool, chapter, stage, manualMapTemplate, randomExclusionSettings).Nodes;
         }
 
         public static BattleMapGenerationResult GenerateResult(
             List<MapData> mapPool,
             string chapter,
             string stage,
-            ManualBattleMapTemplate manualMapTemplate)
+            ManualBattleMapTemplate manualMapTemplate,
+            EventMapRandomExclusionSettings randomExclusionSettings = null)
         {
             if (manualMapTemplate != null &&
-                manualMapTemplate.TryBuildNodes(mapPool, chapter, stage, out List<GeneratedMapNodeData> manualNodes))
+                manualMapTemplate.TryBuildNodes(
+                    mapPool,
+                    chapter,
+                    stage,
+                    randomExclusionSettings,
+                    out List<GeneratedMapNodeData> manualNodes))
             {
                 return new BattleMapGenerationResult(manualNodes, true);
             }
@@ -468,7 +652,7 @@ namespace Relic.Gameplay.Data
 
             ProceduralMapGenerator generator = new();
             return new BattleMapGenerationResult(
-                generator.Generate(mapPool, chapter, stage),
+                generator.Generate(mapPool, chapter, stage, randomExclusionSettings),
                 false);
         }
     }

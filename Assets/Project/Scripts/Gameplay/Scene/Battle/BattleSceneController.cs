@@ -8,6 +8,8 @@ using Relic.Gameplay.Data;
 
 public class BattleSceneController : MonoBehaviour
 {
+    private const string SharedPartyPresentationRootObjectName = "AllyRoot";
+
     public static bool IsBattleRoomIntroPlaying { get; private set; }
     public static event Action BattleRoomIntroStarted;
     public static event Action BattleRoomIntroCompleted;
@@ -74,7 +76,7 @@ public class BattleSceneController : MonoBehaviour
     private int lastNetworkAppliedNodeIndex = int.MinValue;
     private bool lastNetworkAppliedNodeCleared;
     private bool forceNextBattleRoomLoad;
-    private int lastBattleRoomBackgroundLayer = -1;
+    private bool pendingBattleRoomUsesBossIntro;
     private readonly BattleRoomIntroLoadGate battleRoomIntroLoadGate = new();
 
     private void Awake()
@@ -220,6 +222,15 @@ public class BattleSceneController : MonoBehaviour
         if (sharedRoomPresentationController == null && sharedRoomRoot != null)
             sharedRoomPresentationController = sharedRoomRoot.GetComponent<MapRoomController>();
 
+        if (sharedPartyPresentationRoot == null && sharedRoomRoot != null)
+        {
+            Transform sharedPartyTransform =
+                FindChildRecursive(sharedRoomRoot.transform, SharedPartyPresentationRootObjectName);
+
+            if (sharedPartyTransform != null)
+                sharedPartyPresentationRoot = sharedPartyTransform.gameObject;
+        }
+
         if (sharedRoomRoot != null && !sharedRoomRoot.activeSelf)
             sharedRoomRoot.SetActive(true);
     }
@@ -336,6 +347,7 @@ public class BattleSceneController : MonoBehaviour
         SetBattleRoomIntroPlaying(false);
 
         AutoFindSharedRoomPresentationIfNeeded();
+        SetSharedPartyPresentationVisible(true);
         sharedRoomPresentationController?.RefreshNow();
     }
 
@@ -460,8 +472,7 @@ public class BattleSceneController : MonoBehaviour
 
         await PlayRoomToMapTransitionAsync(() =>
         {
-            roomToKeepVisible = PrepareRoomForMapSelection(roomToKeepVisible);
-            mapSelectionPresenter?.Show(roomToKeepVisible);
+            PrepareRoomForMapSelection(roomToKeepVisible);
             OpenMapPanelImmediate();
         });
 
@@ -566,8 +577,7 @@ public class BattleSceneController : MonoBehaviour
         {
             isAutoReturningToMap = false;
             autoReturnRoomToKeepVisible = null;
-            roomToKeepVisible = PrepareRoomForMapSelection(roomToKeepVisible);
-            mapSelectionPresenter?.Show(roomToKeepVisible);
+            PrepareRoomForMapSelection(roomToKeepVisible);
             OpenMapPanelImmediate();
         });
 
@@ -599,8 +609,7 @@ public class BattleSceneController : MonoBehaviour
         await PlayRoomToMapAlreadyCoveredTransitionAsync(() =>
         {
             GameObject roomToKeepVisible = FindActiveRoomObject() ?? lastActiveRoomLastFrame;
-            roomToKeepVisible = PrepareRoomForMapSelection(roomToKeepVisible);
-            mapSelectionPresenter?.Show(roomToKeepVisible);
+            PrepareRoomForMapSelection(roomToKeepVisible);
             OpenMapPanelImmediate();
         });
 
@@ -732,6 +741,7 @@ public class BattleSceneController : MonoBehaviour
 
     private void OpenStartEvent(GeneratedMapNodeData nodeData)
     {
+        pendingBattleRoomUsesBossIntro = false;
         pendingRoomIntroMessage = startRoomIntroMessage;
         ShowRoomBackground(startRoom, nodeData);
         OpenRoom(startRoom, "StartRoom");
@@ -741,8 +751,8 @@ public class BattleSceneController : MonoBehaviour
     private void OpenBattleMap(GeneratedMapNodeData nodeData)
     {
         Debug.Log($"[BattleSceneController] Battle room start: {nodeData.MapId}");
+        pendingBattleRoomUsesBossIntro = false;
         pendingRoomIntroMessage = playBattleRoomIntroFromSceneController ? battleRoomIntroMessage : null;
-        lastBattleRoomBackgroundLayer = nodeData.LayerIndex;
         ShowRoomBackground(battleRoom, nodeData);
         OpenRoom(battleRoom, "BattleRoom");
         ApplyRoomVisual(battleRoom, nodeData);
@@ -751,8 +761,8 @@ public class BattleSceneController : MonoBehaviour
     private void OpenBossBattle(GeneratedMapNodeData nodeData)
     {
         Debug.Log($"[BattleSceneController] Boss battle start: {nodeData.MapId}");
+        pendingBattleRoomUsesBossIntro = true;
         pendingRoomIntroMessage = playBattleRoomIntroFromSceneController ? battleRoomIntroMessage : null;
-        lastBattleRoomBackgroundLayer = nodeData.LayerIndex;
         ShowRoomBackground(battleRoom, nodeData);
         OpenRoom(battleRoom, "BattleRoom");
         ApplyRoomVisual(battleRoom, nodeData);
@@ -761,6 +771,7 @@ public class BattleSceneController : MonoBehaviour
     private void OpenRestEvent(GeneratedMapNodeData nodeData)
     {
         Debug.Log($"[BattleSceneController] Rest event start: {nodeData.MapId}");
+        pendingBattleRoomUsesBossIntro = false;
         pendingRoomIntroMessage = restRoomIntroMessage;
         ShowRoomBackground(restRoom, nodeData);
         OpenRoom(restRoom, "RestRoom");
@@ -770,6 +781,7 @@ public class BattleSceneController : MonoBehaviour
     private void OpenSpecialEvent(GeneratedMapNodeData nodeData)
     {
         Debug.Log($"[BattleSceneController] Special event start: {nodeData.MapId} / Event:{nodeData.EventId}");
+        pendingBattleRoomUsesBossIntro = false;
 
         // 현재는 이벤트방 노드도 RestRoom 오브젝트를 함께 사용할 수 있으므로
         // Event Room Intro Message 기본값을 휴식 구역으로 둔다.
@@ -787,41 +799,17 @@ public class BattleSceneController : MonoBehaviour
         ApplyRoomVisual(eventRoom, nodeData);
     }
 
-    private GameObject PrepareRoomForMapSelection(GameObject completedRoom)
+    private void PrepareRoomForMapSelection(GameObject completedRoom)
     {
-        if (completedRoom != eventRoom || battleRoom == null)
-            return completedRoom;
+        BattleRoomCleaner cleaner =
+            Object.FindFirstObjectByType<BattleRoomCleaner>(FindObjectsInactive.Include);
+        cleaner?.PrepareForMapSelection();
 
-        if (eventRoom != null)
+        if (completedRoom == eventRoom && eventRoom != null)
             eventRoom.SetActive(false);
 
-        battleRoom.SetActive(true);
-
-        GeneratedMapNodeData currentNode = MapRuntimeProgressUtility.FindCurrentNode(mapRuntime);
-        int backgroundLayer = lastBattleRoomBackgroundLayer >= 0
-            ? lastBattleRoomBackgroundLayer
-            : currentNode != null ? currentNode.LayerIndex : 0;
-
         AutoFindSharedRoomPresentationIfNeeded();
-        if (sharedBackgroundController != null)
-        {
-            sharedBackgroundController.ShowForLayer(backgroundLayer);
-        }
-        else
-        {
-            StageBackgroundController background =
-                battleRoom.GetComponentInChildren<StageBackgroundController>(true);
-            background?.ShowForLayer(backgroundLayer);
-        }
-
-        if (battleRoom.GetComponentsInChildren<BattleCharacter>(true).Length == 0)
-        {
-            BattleUnitSpawner spawner =
-                battleRoom.GetComponentInChildren<BattleUnitSpawner>(true);
-            spawner?.SpawnFromRuntimeData();
-        }
-
-        return battleRoom;
+        sharedRoomPresentationController?.RefreshNow();
     }
 
     public bool TryPlaySharedMapVisualAction(string visualObjectId, string actionId)
@@ -877,6 +865,7 @@ public class BattleSceneController : MonoBehaviour
         }
 
         bool isBattleRoom = roomObject == battleRoom;
+        SetSharedPartyPresentationVisible(!isBattleRoom);
 
         if (isBattleRoom)
             SetBattleRoomIntroPlaying(true);
@@ -901,18 +890,62 @@ public class BattleSceneController : MonoBehaviour
 
         CancelPendingBattleRoomIntro();
 
-        IBattleRoomIntroSequence introSequence =
-            BattleRoomIntroSequenceUtility.FindFirst(battleRoom);
+        IBattleRoomIntroSequence introSequence = ResolveBattleRoomIntroSequence();
 
         if (introSequence == null || introSequence.IsCompleted)
+        {
             SetBattleRoomIntroPlaying(false);
+        }
         else
+        {
             SetBattleRoomIntroPlaying(true);
+            SuppressBattleRoomExecutionUiUntilPlayerInputReady();
+        }
 
         battleRoomIntroLoadGate.Request(
             introSequence,
             HandleBattleRoomIntroCompletedAndLoad
         );
+    }
+
+    private IBattleRoomIntroSequence ResolveBattleRoomIntroSequence()
+    {
+        IBattleRoomIntroSequence introSequence =
+            BattleRoomIntroSequenceUtility.FindFirst(battleRoom);
+
+        if (introSequence != null)
+            return introSequence;
+
+        if (!pendingBattleRoomUsesBossIntro)
+            return null;
+
+        AutoFindSharedRoomPresentationIfNeeded();
+
+        introSequence = sharedBackgroundController != null
+            ? sharedBackgroundController.CurrentBattleRoomIntroSequence
+            : null;
+
+        if (introSequence != null)
+            return introSequence;
+
+        return BattleRoomIntroSequenceUtility.FindFirst(sharedRoomRoot);
+    }
+
+    private void SuppressBattleRoomExecutionUiUntilPlayerInputReady()
+    {
+        BattleTurnExecutor[] executors = battleRoom != null
+            ? battleRoom.GetComponentsInChildren<BattleTurnExecutor>(true)
+            : null;
+
+        if (executors == null || executors.Length == 0)
+        {
+            executors = Object.FindObjectsByType<BattleTurnExecutor>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None);
+        }
+
+        for (int i = 0; i < executors.Length; i++)
+            executors[i]?.SuppressBattleExecutionUiUntilPlayerInputReady();
     }
 
     private void CancelPendingBattleRoomIntro()
@@ -1271,5 +1304,34 @@ public class BattleSceneController : MonoBehaviour
     {
         if (target != null)
             target.SetActive(active);
+    }
+
+    private void SetSharedPartyPresentationVisible(bool visible)
+    {
+        AutoFindSharedRoomPresentationIfNeeded();
+
+        if (sharedPartyPresentationRoot != null &&
+            sharedPartyPresentationRoot.activeSelf != visible)
+        {
+            sharedPartyPresentationRoot.SetActive(visible);
+        }
+    }
+
+    private static Transform FindChildRecursive(Transform root, string targetName)
+    {
+        if (root == null || string.IsNullOrWhiteSpace(targetName))
+            return null;
+
+        if (root.name == targetName)
+            return root;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform found = FindChildRecursive(root.GetChild(i), targetName);
+            if (found != null)
+                return found;
+        }
+
+        return null;
     }
 }

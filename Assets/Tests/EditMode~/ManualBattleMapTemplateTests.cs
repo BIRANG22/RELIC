@@ -93,6 +93,72 @@ public class ManualBattleMapTemplateTests
     }
 
     [Test]
+    public void TryBuildNodes_RandomSelectionSkipsDisabledEventId()
+    {
+        ManualBattleMapTemplate template = ScriptableObject.CreateInstance<ManualBattleMapTemplate>();
+        template.Nodes.Add(new ManualBattleMapNodeDefinition
+        {
+            NodeIndex = 0,
+            LayerIndex = 0,
+            RowIndex = 0,
+            Type = "Start",
+            MapIdOverride = "start_map",
+            NextNodeIndices = new List<int> { 1 }
+        });
+        template.Nodes.Add(new ManualBattleMapNodeDefinition
+        {
+            NodeIndex = 1,
+            LayerIndex = 1,
+            RowIndex = 0,
+            Type = "Special"
+        });
+
+        EventMapRandomExclusionSettings settings = CreateDisabledEventSettings("EVT004");
+
+        bool built = template.TryBuildNodes(
+            CreateEventMapPoolWithAlternativeEvents(),
+            "chapter_01",
+            "stage_01",
+            settings,
+            out List<GeneratedMapNodeData> nodes);
+
+        Object.DestroyImmediate(template);
+
+        Assert.That(built, Is.True);
+        Assert.That(nodes[1].MapId, Is.EqualTo("event_enabled"));
+        Assert.That(nodes[1].EventId, Is.EqualTo("Event_05"));
+    }
+
+    [Test]
+    public void TryBuildNodes_MapIdOverrideAllowsDisabledEventForDirectTesting()
+    {
+        ManualBattleMapTemplate template = ScriptableObject.CreateInstance<ManualBattleMapTemplate>();
+        template.Nodes.Add(new ManualBattleMapNodeDefinition
+        {
+            NodeIndex = 0,
+            LayerIndex = 0,
+            RowIndex = 0,
+            Type = "Special",
+            MapIdOverride = "event_disabled"
+        });
+
+        EventMapRandomExclusionSettings settings = CreateDisabledEventSettings("Event_04");
+
+        bool built = template.TryBuildNodes(
+            CreateEventMapPoolWithAlternativeEvents(),
+            "chapter_01",
+            "stage_01",
+            settings,
+            out List<GeneratedMapNodeData> nodes);
+
+        Object.DestroyImmediate(template);
+
+        Assert.That(built, Is.True);
+        Assert.That(nodes[0].MapId, Is.EqualTo("event_disabled"));
+        Assert.That(nodes[0].EventId, Is.EqualTo("Event_04"));
+    }
+
+    [Test]
     public void TryBuildNodes_BlankStartMapIdSelectsStartMapByType()
     {
         ManualBattleMapTemplate template = ScriptableObject.CreateInstance<ManualBattleMapTemplate>();
@@ -288,6 +354,53 @@ public class ManualBattleMapTemplateTests
                 Type = "Common",
                 Chapter = "chapter_01",
                 Stage = "stage_02",
+                SpawnWeight = 1
+            }
+        };
+    }
+
+    private static EventMapRandomExclusionSettings CreateDisabledEventSettings(string eventId)
+    {
+        EventMapRandomExclusionSettings settings = new()
+        {
+            Enabled = true
+        };
+        settings.Entries.Add(new EventMapRandomExclusionEntry
+        {
+            EventId = eventId,
+            Disabled = true
+        });
+        return settings;
+    }
+
+    private static List<MapData> CreateEventMapPoolWithAlternativeEvents()
+    {
+        return new List<MapData>
+        {
+            new()
+            {
+                MapId = "start_map",
+                Type = "Start",
+                Chapter = "chapter_01",
+                Stage = "stage_01",
+                SpawnWeight = 1
+            },
+            new()
+            {
+                MapId = "event_disabled",
+                Type = "Special",
+                EventId = "Event_04",
+                Chapter = "chapter_01",
+                Stage = "stage_01",
+                SpawnWeight = 100
+            },
+            new()
+            {
+                MapId = "event_enabled",
+                Type = "Special",
+                EventId = "EVT005",
+                Chapter = "chapter_01",
+                Stage = "stage_01",
                 SpawnWeight = 1
             }
         };
