@@ -15,8 +15,8 @@ MonoBehaviour:
   entries:
   - MapId: Map_09
     Spawns:
-    - Prefab: {fileID: 1000000000000000001, guid: 54f1f6cc87734fe1961e7aefc6848ddf, type: 3}
-      VisualObjectId: Event08
+    - Prefab: {fileID: 1000000000000000001, guid: eee07011085cee44283275162156fc77, type: 3}
+      VisualObjectId: event5
       AnchorName: 
       LocalPosition: {x: 0, y: 0, z: 0}
       LocalEulerAngles: {x: 0, y: 0, z: 0}
