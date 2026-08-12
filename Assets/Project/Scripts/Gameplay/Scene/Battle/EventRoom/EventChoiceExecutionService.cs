@@ -8,6 +8,8 @@ using UnityEngine;
 namespace Relic.Gameplay.Data
 {
     public delegate bool EventChoiceRewardGrant(out string resultMessage);
+    public delegate bool EventChoiceRemnantRewardGrant(int amount, out string resultMessage);
+    public delegate void EventChoiceRemnantRewardRevoke(int amount);
 
     public sealed class EventChoiceSessionState
     {
@@ -25,8 +27,11 @@ namespace Relic.Gameplay.Data
         public EventChoiceRewardGrant GrantRandomRelic;
         public EventChoiceRewardGrant GrantRandomSkill;
         public EventChoiceRewardGrant UpgradeRandomSkill;
+        public EventChoiceRemnantRewardGrant GrantRemnant;
+        public EventChoiceRemnantRewardRevoke RevokeRemnant;
         public Func<bool> OpenShop;
         public Action RefreshRemnantHud;
+        public bool SuppressRewardResultMessages;
     }
 
     public readonly struct EventChoiceExecutionResult
@@ -308,8 +313,7 @@ namespace Relic.Gameplay.Data
                         ? MediumRemnantAmount
                         : LargeRemnantAmount;
 
-                AddRemnant(context, amount);
-                return $"레드 더스티움 {amount} 획득";
+                return GrantRemnantReward(context, amount);
             }
 
             return BuildResultSummary(choice);
@@ -320,9 +324,8 @@ namespace Relic.Gameplay.Data
             if (ContainsAny(choice.ResultTarget, "레드 더스티움"))
             {
                 int amount = ResolveRemnantAmount(choice.ResultValue, DefaultImmediateRemnantAmount);
-                AddRemnant(context, amount);
                 context.SessionState.LastImmediateRemnant = amount;
-                return $"레드 더스티움 {amount} 획득";
+                return GrantRemnantReward(context, amount);
             }
 
             return BuildResultSummary(choice);
@@ -331,10 +334,10 @@ namespace Relic.Gameplay.Data
         private static string ApplyGainRandom(EventData choice, EventChoiceExecutionContext context)
         {
             if (ContainsAny(choice.ResultTarget, "유물"))
-                return TryInvokeGrant(context.GrantRandomRelic, "획득 가능한 유물이 없습니다.");
+                return TryInvokeRewardGrant(context, context.GrantRandomRelic, "획득 가능한 유물이 없습니다.");
 
             if (ContainsAny(choice.ResultTarget, "기억"))
-                return TryInvokeGrant(context.GrantRandomSkill, "획득 가능한 기억이 없습니다.");
+                return TryInvokeRewardGrant(context, context.GrantRandomSkill, "획득 가능한 기억이 없습니다.");
 
             return BuildResultSummary(choice);
         }
@@ -344,13 +347,12 @@ namespace Relic.Gameplay.Data
             List<string> messages = new();
 
             if (ContainsAny(choice.ResultTarget, "유물"))
-                messages.Add(TryInvokeGrant(context.GrantRandomRelic, "획득 가능한 유물이 없습니다."));
+                messages.Add(TryInvokeRewardGrant(context, context.GrantRandomRelic, "획득 가능한 유물이 없습니다."));
 
             if (ContainsAny(choice.ResultTarget, "레드 더스티움") &&
                 TryParseEffectAmount(choice.ResultValue, out int amount))
             {
-                AddRemnant(context, Mathf.Max(0, amount));
-                messages.Add($"레드 더스티움 {Mathf.Max(0, amount)} 획득");
+                messages.Add(GrantRemnantReward(context, Mathf.Max(0, amount)));
             }
             else if (ContainsAny(choice.ResultTarget, "레드 더스티움"))
             {
@@ -404,9 +406,9 @@ namespace Relic.Gameplay.Data
             if (amount <= 0)
                 return "확정할 누적 보상이 없습니다.";
 
-            AddRemnant(context, amount);
+            string message = GrantRemnantReward(context, amount);
             context.SessionState.AccumulatedRemnant = 0;
-            return $"누적 레드 더스티움 {amount} 획득";
+            return message;
         }
 
         private static string ApplyFailureResult(
@@ -428,7 +430,12 @@ namespace Relic.Gameplay.Data
                 ContainsAny(effectText, "잃"))
             {
                 int amount = Mathf.Max(0, context.SessionState.LastImmediateRemnant);
-                if (amount > 0 && context.BattleRuntime != null)
+                if (amount > 0 && context.RevokeRemnant != null)
+                {
+                    context.RevokeRemnant(amount);
+                    context.SessionState.LastImmediateRemnant = 0;
+                }
+                else if (amount > 0 && context.BattleRuntime != null)
                 {
                     context.BattleRuntime.Remnant = Mathf.Max(0, context.BattleRuntime.Remnant - amount);
                     context.SessionState.LastImmediateRemnant = 0;
@@ -544,6 +551,36 @@ namespace Relic.Gameplay.Data
             context.RefreshRemnantHud?.Invoke();
         }
 
+        private static string GrantRemnantReward(EventChoiceExecutionContext context, int amount)
+        {
+            amount = Mathf.Max(0, amount);
+
+            if (amount <= 0)
+                return string.Empty;
+
+            if (context.GrantRemnant != null)
+            {
+                bool granted = context.GrantRemnant(amount, out string resultMessage);
+
+                if (!granted)
+                {
+                    return string.IsNullOrWhiteSpace(resultMessage)
+                        ? "획득 가능한 레드 더스티움이 없습니다."
+                        : resultMessage;
+                }
+
+                if (context.SuppressRewardResultMessages)
+                    return string.Empty;
+
+                return string.IsNullOrWhiteSpace(resultMessage)
+                    ? $"레드 더스티움 {amount} 획득"
+                    : resultMessage;
+            }
+
+            AddRemnant(context, amount);
+            return $"레드 더스티움 {amount} 획득";
+        }
+
         private static bool HasAnyOwnedRelic(EventChoiceExecutionContext context)
         {
             if (context.BattleRuntime?.OwnedRelicIds != null)
@@ -612,6 +649,22 @@ namespace Relic.Gameplay.Data
             return grant(out string resultMessage)
                 ? resultMessage
                 : string.IsNullOrWhiteSpace(resultMessage) ? fallback : resultMessage;
+        }
+
+        private static string TryInvokeRewardGrant(
+            EventChoiceExecutionContext context,
+            EventChoiceRewardGrant grant,
+            string fallback)
+        {
+            if (grant == null)
+                return fallback;
+
+            bool granted = grant(out string resultMessage);
+
+            if (!granted)
+                return string.IsNullOrWhiteSpace(resultMessage) ? fallback : resultMessage;
+
+            return context.SuppressRewardResultMessages ? string.Empty : resultMessage;
         }
 
         private static int RollThreeDice(EventChoiceExecutionContext context)
