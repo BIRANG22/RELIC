@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Relic.Gameplay.Battle;
 using UnityEngine;
 
@@ -25,6 +26,15 @@ namespace Relic.Gameplay.Data
 
         public List<ManualBattleMapNodeDefinition> Nodes => nodes;
 
+        public string GetRuntimeKey()
+        {
+            string templateName = string.IsNullOrWhiteSpace(name)
+                ? GetInstanceID().ToString(CultureInfo.InvariantCulture)
+                : name.Trim();
+
+            return $"ManualBattleMapTemplate:{templateName}:{CalculateContentHash():X8}";
+        }
+
         public bool TryBuildNodes(
             List<MapData> mapPool,
             string chapter,
@@ -43,7 +53,7 @@ namespace Relic.Gameplay.Data
             {
                 ManualBattleMapNodeDefinition definition = nodes[i];
 
-                if (!TryResolveMap(mapPool, chapter, stage, definition, out string mapId, out string type))
+                if (!TryResolveMap(mapPool, chapter, stage, definition, out string mapId, out string type, out string eventId))
                 {
                     generatedNodes.Clear();
                     return false;
@@ -55,6 +65,7 @@ namespace Relic.Gameplay.Data
                     LayerIndex = definition.LayerIndex,
                     MapId = mapId,
                     Type = type,
+                    EventId = eventId,
                     Position = ResolvePosition(definition),
                     NextNodeIndices = CopyValidConnections(definition, definedNodeIndices)
                 });
@@ -70,6 +81,74 @@ namespace Relic.Gameplay.Data
             });
 
             return generatedNodes.Count > 0;
+        }
+
+        private uint CalculateContentHash()
+        {
+            unchecked
+            {
+                uint hash = 2166136261;
+
+                if (nodes == null)
+                    return hash;
+
+                for (int i = 0; i < nodes.Count; i++)
+                {
+                    ManualBattleMapNodeDefinition node = nodes[i];
+                    if (node == null)
+                    {
+                        hash = AppendHash(hash, 0);
+                        continue;
+                    }
+
+                    hash = AppendHash(hash, node.NodeIndex);
+                    hash = AppendHash(hash, node.LayerIndex);
+                    hash = AppendHash(hash, node.RowIndex);
+                    hash = AppendHash(hash, node.Type);
+                    hash = AppendHash(hash, node.MapIdOverride);
+                    hash = AppendHash(hash, node.UseCustomPosition ? 1 : 0);
+                    hash = AppendHash(hash, Mathf.RoundToInt(node.CustomPosition.x * 1000f));
+                    hash = AppendHash(hash, Mathf.RoundToInt(node.CustomPosition.y * 1000f));
+
+                    if (node.NextNodeIndices == null)
+                    {
+                        hash = AppendHash(hash, 0);
+                        continue;
+                    }
+
+                    hash = AppendHash(hash, node.NextNodeIndices.Count);
+                    for (int j = 0; j < node.NextNodeIndices.Count; j++)
+                        hash = AppendHash(hash, node.NextNodeIndices[j]);
+                }
+
+                return hash;
+            }
+        }
+
+        private static uint AppendHash(uint hash, int value)
+        {
+            unchecked
+            {
+                hash ^= (uint)value;
+                return hash * 16777619;
+            }
+        }
+
+        private static uint AppendHash(uint hash, string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return AppendHash(hash, 0);
+
+            unchecked
+            {
+                for (int i = 0; i < value.Length; i++)
+                {
+                    hash ^= value[i];
+                    hash *= 16777619;
+                }
+
+                return hash;
+            }
         }
 
         private bool TryValidateDefinitions(out HashSet<int> definedNodeIndices)
@@ -173,10 +252,12 @@ namespace Relic.Gameplay.Data
             string stage,
             ManualBattleMapNodeDefinition definition,
             out string mapId,
-            out string resolvedType)
+            out string resolvedType,
+            out string eventId)
         {
             mapId = string.Empty;
             resolvedType = string.Empty;
+            eventId = string.Empty;
 
             string type = definition.Type?.Trim();
 
@@ -191,42 +272,51 @@ namespace Relic.Gameplay.Data
                 {
                     mapId = overrideMap.MapId;
                     resolvedType = overrideMap.Type;
+                    eventId = EventIdUtility.Normalize(overrideMap.EventId);
                     return true;
                 }
 
                 return false;
             }
 
-            if (string.Equals(type, "Start", StringComparison.OrdinalIgnoreCase))
+            if (IsBuiltInRoomType(type))
             {
-                if (TryPickCandidate(mapPool, chapter, stage, type, FixedPosition.Front, out MapData startMap))
+                if (TryPickCandidate(mapPool, chapter, stage, type, out MapData builtInMap))
                 {
-                    mapId = startMap.MapId;
-                    resolvedType = startMap.Type;
+                    mapId = builtInMap.MapId;
+                    resolvedType = builtInMap.Type;
+                    eventId = EventIdUtility.Normalize(builtInMap.EventId);
                     return true;
                 }
 
-                mapId = "Start";
-                resolvedType = "Start";
+                resolvedType = NormalizeBuiltInRoomType(type);
+                mapId = resolvedType;
                 return true;
             }
 
-            if (string.Equals(type, "Boss", StringComparison.OrdinalIgnoreCase) &&
-                TryPickCandidate(mapPool, chapter, stage, type, FixedPosition.Final, out MapData finalMap))
-            {
-                mapId = finalMap.MapId;
-                resolvedType = finalMap.Type;
-                return true;
-            }
-
-            if (TryPickCandidate(mapPool, chapter, stage, type, FixedPosition.None, out MapData mapData))
+            if (TryPickCandidate(mapPool, chapter, stage, type, out MapData mapData))
             {
                 mapId = mapData.MapId;
                 resolvedType = mapData.Type;
+                eventId = EventIdUtility.Normalize(mapData.EventId);
                 return true;
             }
 
             return false;
+        }
+
+        private static bool IsBuiltInRoomType(string type)
+        {
+            return string.Equals(type, "Start", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(type, "Rest", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static string NormalizeBuiltInRoomType(string type)
+        {
+            if (string.Equals(type, "Rest", StringComparison.OrdinalIgnoreCase))
+                return "Rest";
+
+            return "Start";
         }
 
         private static bool TryFindMapById(
@@ -270,7 +360,6 @@ namespace Relic.Gameplay.Data
             string chapter,
             string stage,
             string type,
-            FixedPosition fixedPosition,
             out MapData result)
         {
             result = null;
@@ -289,8 +378,7 @@ namespace Relic.Gameplay.Data
 
                 if (!Same(candidate.Chapter, chapter) ||
                     !Same(candidate.Stage, stage) ||
-                    !Same(candidate.Type, type) ||
-                    candidate.FixedPosition != fixedPosition)
+                    !Same(candidate.Type, type))
                 {
                     continue;
                 }

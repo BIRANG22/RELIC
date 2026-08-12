@@ -2,14 +2,6 @@ using System;
 
 namespace Relic.Gameplay.Data
 {
-    public enum FixedPosition
-    {
-        None,
-        Front,
-        Final,
-        Penultimate
-    }
-
     [Serializable]
     public class MapData
     {
@@ -24,6 +16,5 @@ namespace Relic.Gameplay.Data
         public string Stage;
 
         public int SpawnWeight;
-        public FixedPosition FixedPosition;
     }
 }

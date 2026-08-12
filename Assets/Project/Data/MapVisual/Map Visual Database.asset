@@ -1,0 +1,88 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87aedc2041b54a6fb7849d34d2b144f7, type: 3}
+  m_Name: Map Visual Database
+  m_EditorClassIdentifier: 
+  entries:
+  - MapId: Map_09
+    Spawns:
+    - Prefab: {fileID: 1000000000000000001, guid: 54f1f6cc87734fe1961e7aefc6848ddf, type: 3}
+      VisualObjectId: event_visual_test_crystal
+      AnchorName: 
+      LocalPosition: {x: 0, y: 0, z: 0}
+      LocalEulerAngles: {x: 0, y: 0, z: 0}
+      LocalScale: {x: 1, y: 1, z: 1}
+      Active: 1
+  - MapId: Map_10
+    Spawns:
+    - Prefab: {fileID: 0}
+      AnchorName: 
+      LocalPosition: {x: 0, y: 0, z: 0}
+      LocalEulerAngles: {x: 0, y: 0, z: 0}
+      LocalScale: {x: 0, y: 0, z: 0}
+      Active: 0
+  - MapId: Map_11
+    Spawns:
+    - Prefab: {fileID: 0}
+      AnchorName: 
+      LocalPosition: {x: 0, y: 0, z: 0}
+      LocalEulerAngles: {x: 0, y: 0, z: 0}
+      LocalScale: {x: 0, y: 0, z: 0}
+      Active: 0
+  - MapId: Map_12
+    Spawns:
+    - Prefab: {fileID: 0}
+      AnchorName: 
+      LocalPosition: {x: 0, y: 0, z: 0}
+      LocalEulerAngles: {x: 0, y: 0, z: 0}
+      LocalScale: {x: 0, y: 0, z: 0}
+      Active: 0
+  - MapId: Map_13
+    Spawns:
+    - Prefab: {fileID: 0}
+      AnchorName: 
+      LocalPosition: {x: 0, y: 0, z: 0}
+      LocalEulerAngles: {x: 0, y: 0, z: 0}
+      LocalScale: {x: 0, y: 0, z: 0}
+      Active: 0
+  - MapId: Map_14
+    Spawns:
+    - Prefab: {fileID: 0}
+      AnchorName: 
+      LocalPosition: {x: 0, y: 0, z: 0}
+      LocalEulerAngles: {x: 0, y: 0, z: 0}
+      LocalScale: {x: 0, y: 0, z: 0}
+      Active: 0
+  - MapId: Map_15
+    Spawns:
+    - Prefab: {fileID: 0}
+      AnchorName: 
+      LocalPosition: {x: 0, y: 0, z: 0}
+      LocalEulerAngles: {x: 0, y: 0, z: 0}
+      LocalScale: {x: 0, y: 0, z: 0}
+      Active: 0
+  - MapId: Map_16
+    Spawns:
+    - Prefab: {fileID: 0}
+      AnchorName: 
+      LocalPosition: {x: 0, y: 0, z: 0}
+      LocalEulerAngles: {x: 0, y: 0, z: 0}
+      LocalScale: {x: 0, y: 0, z: 0}
+      Active: 0
+  - MapId: Map_17
+    Spawns:
+    - Prefab: {fileID: 0}
+      AnchorName: 
+      LocalPosition: {x: 0, y: 0, z: 0}
+      LocalEulerAngles: {x: 0, y: 0, z: 0}
+      LocalScale: {x: 0, y: 0, z: 0}
+      Active: 0

@@ -70,9 +70,11 @@ public class BattleMapPanel : MonoBehaviour
             return;
         }
 
-        if (runtime.IsRunInitialized &&
-            runtime.GeneratedNodes != null &&
-            runtime.GeneratedNodes.Count > 0)
+        string manualTemplateKey = manualMapTemplate != null
+            ? manualMapTemplate.GetRuntimeKey()
+            : string.Empty;
+
+        if (!BattleMapRuntimeGenerationPolicy.ShouldRegenerate(runtime, manualTemplateKey))
         {
             return;
         }
@@ -89,8 +91,12 @@ public class BattleMapPanel : MonoBehaviour
         );
         runtime.GeneratedNodes = generationResult.Nodes;
         runtime.IsManualMapTemplate = generationResult.UsedManualTemplate;
+        runtime.ManualMapTemplateKey = generationResult.UsedManualTemplate
+            ? manualTemplateKey
+            : string.Empty;
 
         runtime.IsRunInitialized = true;
+        BattleMapRuntimeGenerationPolicy.ResetProgressForRegeneratedMap(runtime);
 
         runtimeStore.Set(runtime);
     }

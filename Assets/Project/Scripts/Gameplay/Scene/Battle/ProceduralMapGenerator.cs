@@ -116,6 +116,7 @@ namespace Relic.Gameplay.Data
                     GeneratedMapNodeData node = CreateNode(
                         mapData.MapId,
                         mapData.Type,
+                        mapData.EventId,
                         position,
                         layer
                     );
@@ -580,9 +581,6 @@ namespace Relic.Gameplay.Data
                         if (candidate.Type != "Common")
                             continue;
 
-                        if (candidate.FixedPosition != FixedPosition.None)
-                            continue;
-
                         if (connectedParentCommonMapIds.Contains(candidate.MapId))
                             continue;
 
@@ -602,6 +600,7 @@ namespace Relic.Gameplay.Data
 
                     currentNode.MapId = replacement.MapId;
                     currentNode.Type = replacement.Type;
+                    currentNode.EventId = EventIdUtility.Normalize(replacement.EventId);
                     RecordCommonMapSelection(replacement);
                 }
             }
@@ -633,11 +632,11 @@ namespace Relic.Gameplay.Data
         {
             if (layer == 0)
             {
-                MapData startMap = PickFixedMapData(
+                MapData startMap = PickRandomMapData(
                     mapPool,
                     chapter,
                     stage,
-                    FixedPosition.Front
+                    "Start"
                 );
 
                 if (startMap != null)
@@ -646,33 +645,8 @@ namespace Relic.Gameplay.Data
                 return CreateVirtualMapData("Start", "Start");
             }
 
-            //if (layer == TotalLayerCount - 2)
-            //{
-            //    MapData penultimateMap = PickFixedMapData(
-            //        mapPool,
-            //        chapter,
-            //        stage,
-            //        FixedPosition.Penultimate
-            //    );
-
-            //    if (penultimateMap != null)
-            //        return penultimateMap;
-            //}
-
             if (layer == TotalLayerCount - 1)
-            {
-                MapData finalMap = PickFixedMapData(
-                    mapPool,
-                    chapter,
-                    stage,
-                    FixedPosition.Final
-                );
-
-                if (finalMap != null)
-                    return finalMap;
-
                 return PickRandomMapData(mapPool, chapter, stage, "Boss");
-            }
 
             return PickRandomMapData(
                 mapPool,
@@ -720,14 +694,14 @@ namespace Relic.Gameplay.Data
                 if (data.Type != type)
                     continue;
 
-                if (data.FixedPosition != FixedPosition.None)
-                    continue;
-
                 candidates.Add(data);
             }
 
-            if (candidates.Count == 0)
+            if (candidates.Count == 0 && !IsReservedMapType(type))
                 return PickAnyNormalMap(mapPool, chapter, stage);
+
+            if (candidates.Count == 0)
+                return null;
 
             if (type == "Common")
             {
@@ -735,36 +709,6 @@ namespace Relic.Gameplay.Data
                 RecordCommonMapSelection(selectedCommonMap);
                 return selectedCommonMap;
             }
-
-            return PickByWeight(candidates);
-        }
-
-        private MapData PickFixedMapData(
-            List<MapData> mapPool,
-            string chapter,
-            string stage,
-            FixedPosition fixedPosition)
-        {
-            List<MapData> candidates = new();
-
-            for (int i = 0; i < mapPool.Count; i++)
-            {
-                MapData data = mapPool[i];
-
-                if (data.Chapter != chapter)
-                    continue;
-
-                if (data.Stage != stage)
-                    continue;
-
-                if (data.FixedPosition != fixedPosition)
-                    continue;
-
-                candidates.Add(data);
-            }
-
-            if (candidates.Count == 0)
-                return null;
 
             return PickByWeight(candidates);
         }
@@ -786,7 +730,7 @@ namespace Relic.Gameplay.Data
                 if (data.Stage != stage)
                     continue;
 
-                if (data.FixedPosition != FixedPosition.None)
+                if (IsReservedMapType(data.Type))
                     continue;
 
                 candidates.Add(data);
@@ -941,9 +885,14 @@ namespace Relic.Gameplay.Data
                 MapId = mapId,
                 Name = mapId,
                 Type = type,
-                SpawnWeight = 1,
-                FixedPosition = FixedPosition.Front
+                EventId = string.Empty,
+                SpawnWeight = 1
             };
+        }
+
+        private bool IsReservedMapType(string type)
+        {
+            return type == "Start" || type == "Boss";
         }
 
         private bool WouldCrossExistingConnections(
@@ -1009,6 +958,7 @@ namespace Relic.Gameplay.Data
         private GeneratedMapNodeData CreateNode(
             string mapId,
             string type,
+            string eventId,
             Vector2 position,
             int layerIndex)
         {
@@ -1018,6 +968,7 @@ namespace Relic.Gameplay.Data
                 LayerIndex = layerIndex,
                 MapId = mapId,
                 Type = type,
+                EventId = EventIdUtility.Normalize(eventId),
                 Position = position
             };
         }

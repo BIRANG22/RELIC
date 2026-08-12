@@ -259,6 +259,15 @@ public class BattleSceneController : MonoBehaviour
         controller.ShowForLayer(nodeData.LayerIndex);
     }
 
+    private void ApplyRoomVisual(GameObject room, GeneratedMapNodeData nodeData)
+    {
+        MapVisualController controller = room != null
+            ? room.GetComponentInChildren<MapVisualController>(true)
+            : null;
+
+        controller?.ApplyMapVisual(nodeData?.MapId);
+    }
+
     private void InstallMapPanelAutoReturnWatcher()
     {
         if (battleMapPanel == null)
@@ -743,6 +752,7 @@ public class BattleSceneController : MonoBehaviour
         pendingRoomIntroMessage = startRoomIntroMessage;
         ShowRoomBackground(startRoom, nodeData);
         OpenRoom(startRoom, "StartRoom");
+        ApplyRoomVisual(startRoom, nodeData);
     }
 
     private void OpenBattleMap(GeneratedMapNodeData nodeData)
@@ -752,6 +762,7 @@ public class BattleSceneController : MonoBehaviour
         lastBattleRoomBackgroundLayer = nodeData.LayerIndex;
         ShowRoomBackground(battleRoom, nodeData);
         OpenRoom(battleRoom, "BattleRoom");
+        ApplyRoomVisual(battleRoom, nodeData);
     }
 
     private void OpenBossBattle(GeneratedMapNodeData nodeData)
@@ -761,6 +772,7 @@ public class BattleSceneController : MonoBehaviour
         lastBattleRoomBackgroundLayer = nodeData.LayerIndex;
         ShowRoomBackground(battleRoom, nodeData);
         OpenRoom(battleRoom, "BattleRoom");
+        ApplyRoomVisual(battleRoom, nodeData);
     }
 
     private void OpenRestEvent(GeneratedMapNodeData nodeData)
@@ -769,17 +781,27 @@ public class BattleSceneController : MonoBehaviour
         pendingRoomIntroMessage = restRoomIntroMessage;
         ShowRoomBackground(restRoom, nodeData);
         OpenRoom(restRoom, "RestRoom");
+        ApplyRoomVisual(restRoom, nodeData);
     }
 
     private void OpenSpecialEvent(GeneratedMapNodeData nodeData)
     {
-        Debug.Log($"[BattleSceneController] Special event start: {nodeData.MapId}");
+        Debug.Log($"[BattleSceneController] Special event start: {nodeData.MapId} / Event:{nodeData.EventId}");
 
         // 현재는 이벤트방 노드도 RestRoom 오브젝트를 함께 사용할 수 있으므로
         // Event Room Intro Message 기본값을 휴식 구역으로 둔다.
         // 나중에 실제 EventRoom을 추가하면 인스펙터에서 문구만 바꾸면 된다.
         pendingRoomIntroMessage = eventRoomIntroMessage;
+        EventRoomController eventController =
+            eventRoom != null
+                ? eventRoom.GetComponentInChildren<EventRoomController>(true)
+                : null;
+
+        if (eventController != null)
+            eventController.SetEventId(nodeData.EventId);
+
         OpenRoom(eventRoom, "EventRoom");
+        ApplyRoomVisual(eventRoom, nodeData);
     }
 
     private GameObject PrepareRoomForMapSelection(GameObject completedRoom)

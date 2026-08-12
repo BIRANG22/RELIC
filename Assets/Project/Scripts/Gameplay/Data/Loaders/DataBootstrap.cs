@@ -91,7 +91,7 @@ namespace Relic.Gameplay.Data
             var ranges = RangeCsvLoader.Load(workbook);
             var assets = AssetCsvLoader.Load(workbook);
             var quests = QuestCsvLoader.Load(workbook);
-            var events = EventCsvLoader.LoadMaster(workbook);
+            var events = EventCsvLoader.Load(workbook);
             var rewardTables = RewardTableCsvLoader.Load(workbook);
             var items = ItemCsvLoader.Load(workbook);
             var maps = MapCsvLoader.Load(workbook);
@@ -134,6 +134,7 @@ namespace Relic.Gameplay.Data
             RuneDatabase.Initialize(runes);
             AssetDatabase.Initialize(assets);
             QuestDatabase.Initialize(quests);
+            EventDatabase.Initialize(events);
             RewardTableDatabase.Initialize(rewardTables);
             ItemDatabase.Initialize(items);
             MapDatabase.Initialize(maps);
