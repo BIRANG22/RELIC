@@ -16,6 +16,7 @@ public class BattleMapPanel : MonoBehaviour
     [SerializeField] private BattleSceneController battleSceneController;
     [Header("Generation")]
     [SerializeField] private ManualBattleMapTemplate manualMapTemplate;
+    [SerializeField] private EventMapRandomExclusionSettings eventMapRandomExclusionSettings = new();
     [Header("Scroll Focus")]
     [SerializeField] private float horizontalContentPadding = 40f;
     [SerializeField] private float focusDelay = 0.02f;
@@ -73,8 +74,12 @@ public class BattleMapPanel : MonoBehaviour
         string manualTemplateKey = manualMapTemplate != null
             ? manualMapTemplate.GetRuntimeKey()
             : string.Empty;
+        string randomExclusionKey = eventMapRandomExclusionSettings != null
+            ? eventMapRandomExclusionSettings.GetRuntimeKey()
+            : string.Empty;
+        string generationKey = BuildGenerationKey(manualTemplateKey, randomExclusionKey);
 
-        if (!BattleMapRuntimeGenerationPolicy.ShouldRegenerate(runtime, manualTemplateKey))
+        if (!BattleMapRuntimeGenerationPolicy.ShouldRegenerate(runtime, generationKey))
         {
             return;
         }
@@ -87,18 +92,37 @@ public class BattleMapPanel : MonoBehaviour
             mapPool,
             runtime.SelectedChapterId,
             runtime.CurrentStage,
-            manualMapTemplate
+            manualMapTemplate,
+            eventMapRandomExclusionSettings
         );
         runtime.GeneratedNodes = generationResult.Nodes;
         runtime.IsManualMapTemplate = generationResult.UsedManualTemplate;
         runtime.ManualMapTemplateKey = generationResult.UsedManualTemplate
             ? manualTemplateKey
             : string.Empty;
+        runtime.MapGenerationKey = generationKey;
 
         runtime.IsRunInitialized = true;
         BattleMapRuntimeGenerationPolicy.ResetProgressForRegeneratedMap(runtime);
 
         runtimeStore.Set(runtime);
+    }
+
+    private static string BuildGenerationKey(string manualTemplateKey, string randomExclusionKey)
+    {
+        bool hasManualTemplate = !string.IsNullOrWhiteSpace(manualTemplateKey);
+        bool hasRandomExclusion = !string.IsNullOrWhiteSpace(randomExclusionKey);
+
+        if (!hasManualTemplate && !hasRandomExclusion)
+            return string.Empty;
+
+        if (!hasRandomExclusion)
+            return manualTemplateKey.Trim();
+
+        if (!hasManualTemplate)
+            return randomExclusionKey.Trim();
+
+        return $"BattleMapGeneration:{manualTemplateKey.Trim()}|{randomExclusionKey.Trim()}";
     }
 
     private void SpawnMapView()

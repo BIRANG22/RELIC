@@ -38,15 +38,7 @@ public class BattleRoomMapSelectionPresenter : MonoBehaviour
         if (activeRoom == null)
             return;
 
-        BattleCharacter[] battleCharacters =
-            activeRoom.GetComponentsInChildren<BattleCharacter>(true);
         List<Transform> characters = new();
-
-        for (int i = 0; i < battleCharacters.Length; i++)
-        {
-            if (battleCharacters[i] != null && !characters.Contains(battleCharacters[i].transform))
-                characters.Add(battleCharacters[i].transform);
-        }
 
         BattleMapSelectionCharacterMarker[] markedCharacters =
             activeRoom.GetComponentsInChildren<BattleMapSelectionCharacterMarker>(true);

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 using Relic.Gameplay.Data;
@@ -12,6 +13,7 @@ public class MapVisualDatabaseTests
     private const string MapVisualActorGuid = "31bba6d4fa734d6c9c88ca8b3b28f3a9";
     private const string MapVisualTestPrefabGuid = "54f1f6cc87734fe1961e7aefc6848ddf";
     private const string MapVisualTestSpriteGuid = "822c09c083645384ba86f958acff31dd";
+    private const string WorldVfxRendererRootName = "__BattleWorldVfxRenderer";
 
     [Test]
     public void TryGetEntry_ReturnsConfiguredEntryForTrimmedMapId()
@@ -266,6 +268,68 @@ public class MapVisualDatabaseTests
     }
 
     [Test]
+    public void TryPlayAction_SpawnsVfxThroughWorldProxyInsteadOfActorChild()
+    {
+        GameObject actorObject = new("Actor");
+        GameObject vfxRootObject = new("VfxRoot");
+        GameObject vfxPrefab = new("MapActionVfx");
+
+        try
+        {
+            actorObject.transform.position = new Vector3(2f, 3f, 0f);
+            vfxRootObject.transform.SetParent(actorObject.transform, false);
+            vfxRootObject.transform.localPosition = new Vector3(1f, 0f, 0f);
+
+            MapVisualActor actor = actorObject.AddComponent<MapVisualActor>();
+            SetPrivateField(actor, "vfxRoot", vfxRootObject.transform);
+            SetPrivateField(actor, "actions", new List<MapVisualActionEntry>
+            {
+                new()
+                {
+                    ActionId = "shine",
+                    VfxPrefab = vfxPrefab,
+                    VfxLocalPosition = new Vector3(0.5f, 0.25f, -0.1f),
+                    VfxLocalEulerAngles = new Vector3(0f, 45f, 0f),
+                    VfxLocalScale = new Vector3(2f, 2f, 2f),
+                    VfxLifetime = 1f
+                }
+            });
+
+            bool played = actor.TryPlayAction("shine");
+
+            Assert.That(played, Is.True);
+            Assert.That(
+                vfxRootObject.GetComponentsInChildren<Transform>(true)
+                    .Any(t => t != vfxRootObject.transform && t.name.StartsWith("MapActionVfx")),
+                Is.False);
+
+            GameObject proxy = GameObject.Find("MapActionVfx_WorldVfxProxy");
+            Assert.That(proxy, Is.Not.Null);
+            Assert.That(
+                proxy.transform.position,
+                Is.EqualTo(vfxRootObject.transform.TransformPoint(new Vector3(0.5f, 0.25f, -0.1f))));
+
+            Transform renderSpace = GameObject.Find(WorldVfxRendererRootName)?.transform.Find("RenderSpace");
+            Assert.That(renderSpace, Is.Not.Null);
+
+            Transform renderVfx = renderSpace
+                .GetComponentsInChildren<Transform>(true)
+                .FirstOrDefault(t => t.name.StartsWith("MapActionVfx"));
+
+            Assert.That(renderVfx, Is.Not.Null);
+            Assert.That(renderVfx.localPosition, Is.EqualTo(Vector3.zero));
+            Assert.That(renderVfx.localEulerAngles.y, Is.EqualTo(45f).Within(0.001f));
+            Assert.That(renderVfx.localScale, Is.EqualTo(new Vector3(2f, 2f, 2f)));
+        }
+        finally
+        {
+            DestroyObject(GameObject.Find(WorldVfxRendererRootName));
+            Object.DestroyImmediate(vfxPrefab);
+            Object.DestroyImmediate(actorObject);
+        }
+    }
+
+    [Test]
     public void TryPlayAction_ReturnsFalseWhenActorOrActionIsMissing()
     {
         GameObject room = new("Room");
@@ -428,6 +492,17 @@ public class MapVisualDatabaseTests
         }
 
         return count;
+    }
+
+    private static void DestroyObject(Object target)
+    {
+        if (target == null)
+            return;
+
+        if (Application.isPlaying)
+            Object.Destroy(target);
+        else
+            Object.DestroyImmediate(target);
     }
 
     private static void AssertCallOrderInMethod(

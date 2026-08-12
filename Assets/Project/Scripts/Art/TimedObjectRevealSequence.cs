@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TimedObjectRevealSequence : MonoBehaviour
+public class TimedObjectRevealSequence : MonoBehaviour, IBattleRoomIntroSequence
 {
     [Serializable]
     public class RevealTarget
@@ -106,6 +106,8 @@ public class TimedObjectRevealSequence : MonoBehaviour
     private Coroutine sequenceCoroutine;
 
     public bool IsPlaying => sequenceCoroutine != null;
+    public bool IsCompleted { get; private set; } = true;
+    public event Action Completed;
 
     private void Awake()
     {
@@ -150,6 +152,7 @@ public class TimedObjectRevealSequence : MonoBehaviour
     public void Play()
     {
         StopSequence();
+        IsCompleted = false;
 
         SetRevealTargetsActive(false);
 
@@ -174,6 +177,7 @@ public class TimedObjectRevealSequence : MonoBehaviour
 
             SetFinishObjectsActive(true);
             sequenceCoroutine = null;
+            MarkCompleted();
             yield break;
         }
 
@@ -231,6 +235,7 @@ public class TimedObjectRevealSequence : MonoBehaviour
         SetFinishObjectsActive(true);
 
         sequenceCoroutine = null;
+        MarkCompleted();
 
         if (disableSequenceObjectAfterFinish)
         {
@@ -364,6 +369,7 @@ public class TimedObjectRevealSequence : MonoBehaviour
     public void ResetSequence()
     {
         StopSequence();
+        IsCompleted = true;
 
         SetRevealTargetsActive(false);
         SetFinishObjectsActive(false);
@@ -372,10 +378,20 @@ public class TimedObjectRevealSequence : MonoBehaviour
     public void ActivateFinishObjectsImmediately()
     {
         SetFinishObjectsActive(true);
+        MarkCompleted();
     }
 
     public void HideFinishObjectsImmediately()
     {
         SetFinishObjectsActive(false);
+    }
+
+    private void MarkCompleted()
+    {
+        if (IsCompleted)
+            return;
+
+        IsCompleted = true;
+        Completed?.Invoke();
     }
 }
