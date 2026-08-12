@@ -23,6 +23,9 @@ public class EventRoomController : MonoBehaviour
     [SerializeField] private TMP_Text eventResultText;
     [SerializeField] private EventChoiceSlotUI[] choiceSlots;
 
+    [Header("Event Rewards")]
+    [SerializeField] private EventRoomRewardPanelUI rewardPanel;
+
     [Header("Hover Info Panel")]
     [SerializeField] private GameObject relicHoverInfoPanel;
     [SerializeField] private TMP_Text relicHoverNameText;
@@ -62,6 +65,8 @@ public class EventRoomController : MonoBehaviour
     private EventDefinition currentEventDefinition;
     private bool isDataEventActive;
     private bool isEventResolved;
+    private bool isEventRewardPanelOpen;
+    private readonly List<BattleRewardData> pendingEventRewards = new();
     private readonly EventChoiceSessionState eventChoiceSessionState = new();
 
     private void Awake()
@@ -105,6 +110,8 @@ public class EventRoomController : MonoBehaviour
         isChestOpened = false;
         isRelicClaimed = false;
         isEventResolved = false;
+        isEventRewardPanelOpen = false;
+        pendingEventRewards.Clear();
         SetNextButtonVisible(false);
 
         if (TryStartDataEventMode())
@@ -133,6 +140,8 @@ public class EventRoomController : MonoBehaviour
         ClearChoiceSlots();
         SetDataEventRootVisible(false);
         isDataEventActive = false;
+        isEventRewardPanelOpen = false;
+        pendingEventRewards.Clear();
     }
 
     public void NotifyChestOpened()
@@ -153,7 +162,13 @@ public class EventRoomController : MonoBehaviour
 
         if (isDataEventActive)
         {
+            if (isEventRewardPanelOpen)
+                return;
+
             if (!isEventResolved)
+                return;
+
+            if (pendingEventRewards.Count > 0 && TryOpenPendingEventRewardPanel())
                 return;
 
             CompleteCurrentNode();
@@ -375,20 +390,37 @@ public class EventRoomController : MonoBehaviour
         PersistEventRuntime();
         PlayVisualAction(result);
 
+        bool hasContinuingEvent = false;
+
         if (!string.IsNullOrWhiteSpace(result.NextEventId) &&
             DataManager.Instance != null &&
             DataManager.Instance.EventDatabase != null &&
             DataManager.Instance.EventDatabase.TryGetEvent(result.NextEventId, out EventDefinition nextDefinition) &&
             nextDefinition != null)
         {
+            hasContinuingEvent = true;
             LoadEventDefinition(nextDefinition, result.ResultMessage);
             return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(result.NextEventId))
+        {
+            Debug.LogWarning(
+                $"[EventRoomController] Next event '{result.NextEventId}' not found. Treating this choice as terminal.",
+                this);
         }
 
         if (eventResultText != null)
             eventResultText.text = result.ResultMessage;
 
         isEventResolved = true;
+
+        if (EventRoomRewardFlowUtility.ShouldOpenPendingRewards(result, pendingEventRewards.Count, hasContinuingEvent) &&
+            TryOpenPendingEventRewardPanel())
+        {
+            return;
+        }
+
         SetNextButtonVisible(true);
     }
 
@@ -728,11 +760,14 @@ public class EventRoomController : MonoBehaviour
             BattleRuntime = battleRuntime,
             PartyCharacters = CollectPartyCharacters(),
             SessionState = eventChoiceSessionState,
-            GrantRandomRelic = TryGrantRandomRelic,
-            GrantRandomSkill = TryGrantRandomSkill,
+            GrantRandomRelic = TryQueueRandomRelicReward,
+            GrantRandomSkill = TryQueueRandomSkillReward,
             UpgradeRandomSkill = TryUpgradeRandomSkill,
+            GrantRemnant = TryQueueRemnantReward,
+            RevokeRemnant = RevokeQueuedRemnantReward,
             OpenShop = TryOpenShopPanel,
-            RefreshRemnantHud = BattleGoldHudUI.RefreshAll
+            RefreshRemnantHud = BattleGoldHudUI.RefreshAll,
+            SuppressRewardResultMessages = true
         };
     }
 
@@ -762,6 +797,86 @@ public class EventRoomController : MonoBehaviour
         }
 
         return characters;
+    }
+
+    private bool TryQueueRemnantReward(int amount, out string resultMessage)
+    {
+        int safeAmount = Mathf.Max(0, amount);
+
+        if (safeAmount <= 0)
+        {
+            resultMessage = "획득 가능한 레드 더스티움이 없습니다.";
+            return false;
+        }
+
+        QueueEventReward(EventRoomRewardFlowUtility.CreateRemnantReward(safeAmount));
+        resultMessage = $"레드 더스티움 {safeAmount} 획득";
+        return true;
+    }
+
+    private void RevokeQueuedRemnantReward(int amount)
+    {
+        int remaining = Mathf.Max(0, amount);
+
+        if (remaining <= 0)
+            return;
+
+        for (int i = pendingEventRewards.Count - 1; i >= 0 && remaining > 0; i--)
+        {
+            BattleRewardData reward = pendingEventRewards[i];
+            if (reward == null || reward.Type != BattleRewardType.Remnant)
+                continue;
+
+            int consumed = Mathf.Min(reward.Amount, remaining);
+            reward.Amount -= consumed;
+            remaining -= consumed;
+
+            if (reward.Amount <= 0)
+                pendingEventRewards.RemoveAt(i);
+        }
+    }
+
+    private bool TryQueueRandomRelicReward(out string resultMessage)
+    {
+        resultMessage = string.Empty;
+
+        if (!TryPickRandomAvailableRelic(out ChestRelicReward reward))
+        {
+            resultMessage = "획득 가능한 유물이 없습니다.";
+            return false;
+        }
+
+        string relicName = reward.Relic != null
+            ? GameDataLocalization.RelicName(reward.Relic)
+            : reward.RelicId;
+
+        QueueEventReward(EventRoomRewardFlowUtility.CreateRelicReward(
+            reward.Relic,
+            GetRelicSprite(reward.RelicId)));
+
+        resultMessage = $"유물 획득: {relicName}";
+        return true;
+    }
+
+    private bool TryQueueRandomSkillReward(out string resultMessage)
+    {
+        resultMessage = string.Empty;
+
+        if (!TryPickRandomAvailableSkill(out SkillMasterData skill) ||
+            skill == null ||
+            string.IsNullOrWhiteSpace(skill.SkillId))
+        {
+            resultMessage = "획득 가능한 기억이 없습니다.";
+            return false;
+        }
+
+        string skillId = skill.SkillId.Trim();
+        QueueEventReward(EventRoomRewardFlowUtility.CreateSkillReward(
+            skill,
+            GetSkillSprite(skillId, skill)));
+
+        resultMessage = $"기억 획득: {GameDataLocalization.SkillName(skill)}";
+        return true;
     }
 
     private bool TryGrantRandomRelic(out string resultMessage)
@@ -843,6 +958,29 @@ public class EventRoomController : MonoBehaviour
         return true;
     }
 
+    private bool TryPickRandomAvailableRelic(out ChestRelicReward reward)
+    {
+        reward = default;
+
+        if (DataManager.Instance == null || DataManager.Instance.RelicDatabase == null)
+            return false;
+
+        IReadOnlyList<RelicData> allRelics = DataManager.Instance.RelicDatabase.GetAll();
+        List<RelicData> candidates = ChestRelicRewardService.GetChestRewardCandidates(
+            allRelics,
+            CollectUnavailableRelicIds());
+
+        if (candidates.Count == 0)
+            return false;
+
+        RelicData selected = candidates[BattleRandom.Range(0, candidates.Count)];
+        if (selected == null || !RelicRarityUtility.TryParseChestRarity(selected.Rarity, out RelicRarity rarity))
+            return false;
+
+        reward = new ChestRelicReward(selected, rarity);
+        return reward.IsValid;
+    }
+
     private bool TryPickRandomAvailableSkill(out SkillMasterData selectedSkill)
     {
         selectedSkill = null;
@@ -919,6 +1057,51 @@ public class EventRoomController : MonoBehaviour
                 for (int i = 0; i < character.EquippedSkillIds.Length; i++)
                     AddSkillAndPair(ids, character.EquippedSkillIds[i]);
             }
+        }
+
+        for (int i = 0; i < pendingEventRewards.Count; i++)
+        {
+            BattleRewardData reward = pendingEventRewards[i];
+            if (reward != null && reward.Type == BattleRewardType.Skill)
+                AddSkillAndPair(ids, reward.RewardId);
+        }
+
+        return ids;
+    }
+
+    private HashSet<string> CollectUnavailableRelicIds()
+    {
+        HashSet<string> ids = new();
+        BattleRuntimeData runtime = DataManager.Instance?.BattleRuntimeStore?.GetOrCreate();
+
+        if (runtime?.OwnedRelicIds != null)
+        {
+            for (int i = 0; i < runtime.OwnedRelicIds.Count; i++)
+                AddRelicId(ids, runtime.OwnedRelicIds[i]);
+        }
+
+        IReadOnlyDictionary<string, CharacterRuntimeData> characters =
+            DataManager.Instance?.CharacterRuntimeStore?.GetAll();
+
+        if (characters != null)
+        {
+            foreach (KeyValuePair<string, CharacterRuntimeData> pair in characters)
+            {
+                CharacterRuntimeData character = pair.Value;
+
+                if (character?.EquippedRelicIds == null)
+                    continue;
+
+                for (int i = 0; i < character.EquippedRelicIds.Length; i++)
+                    AddRelicId(ids, character.EquippedRelicIds[i]);
+            }
+        }
+
+        for (int i = 0; i < pendingEventRewards.Count; i++)
+        {
+            BattleRewardData reward = pendingEventRewards[i];
+            if (reward != null && reward.Type == BattleRewardType.Relic)
+                AddRelicId(ids, reward.RewardId);
         }
 
         return ids;
@@ -1024,6 +1207,84 @@ public class EventRoomController : MonoBehaviour
             character.UniqueSkillId = upgradeId;
     }
 
+    private void QueueEventReward(BattleRewardData reward)
+    {
+        if (reward == null)
+            return;
+
+        if (reward.Type == BattleRewardType.Remnant)
+        {
+            BattleRewardData existing = pendingEventRewards.Find(x => x != null && x.Type == BattleRewardType.Remnant);
+            if (existing != null)
+            {
+                existing.Amount += Mathf.Max(0, reward.Amount);
+                return;
+            }
+        }
+
+        pendingEventRewards.Add(reward);
+    }
+
+    private bool TryOpenPendingEventRewardPanel()
+    {
+        if (pendingEventRewards.Count <= 0)
+            return false;
+
+        EnsureRewardPanelReference();
+
+        if (rewardPanel == null)
+        {
+            Debug.LogWarning("[EventRoomController] EventRoomRewardPanelUI not found for event rewards.");
+            return false;
+        }
+
+        isEventRewardPanelOpen = true;
+        SetNextButtonVisible(false);
+        SetChoiceSlotsInteractable(false);
+
+        List<BattleRewardData> rewards = new(pendingEventRewards);
+        pendingEventRewards.Clear();
+        rewardPanel.Open(rewards, OnEventRewardPanelCompleted);
+        return true;
+    }
+
+    private void OnEventRewardPanelCompleted()
+    {
+        isEventRewardPanelOpen = false;
+        pendingEventRewards.Clear();
+        PersistEventRuntime();
+        CompleteCurrentNode();
+        ReturnToMap();
+    }
+
+    private void EnsureRewardPanelReference()
+    {
+        if (rewardPanel != null)
+            return;
+
+        rewardPanel = GetComponentInChildren<EventRoomRewardPanelUI>(true);
+
+        if (rewardPanel == null)
+            rewardPanel = Object.FindFirstObjectByType<EventRoomRewardPanelUI>(FindObjectsInactive.Include);
+    }
+
+    private Sprite GetSkillSprite(string skillId, SkillMasterData skill)
+    {
+        if (skill != null && skill.Icon != null)
+            return skill.Icon;
+
+        if (string.IsNullOrWhiteSpace(skillId) ||
+            DataManager.Instance == null ||
+            DataManager.Instance.SkillIconDatabase == null)
+        {
+            return null;
+        }
+
+        return DataManager.Instance.SkillIconDatabase.TryGetIcon(skillId.Trim(), out Sprite icon)
+            ? icon
+            : null;
+    }
+
     private static void AddSkillAndPair(HashSet<string> ids, string skillId)
     {
         if (ids == null || string.IsNullOrWhiteSpace(skillId))
@@ -1034,6 +1295,14 @@ public class EventRoomController : MonoBehaviour
 
         if (SkillRarityUtility.TryGetPairedVariantId(normalizedSkillId, out string pairedSkillId))
             ids.Add(pairedSkillId);
+    }
+
+    private static void AddRelicId(HashSet<string> ids, string relicId)
+    {
+        if (ids == null || string.IsNullOrWhiteSpace(relicId))
+            return;
+
+        ids.Add(relicId.Trim());
     }
 
     private static bool ContainsId(IReadOnlyList<string> ids, string targetId)
@@ -1370,6 +1639,7 @@ public class EventRoomController : MonoBehaviour
                 backgroundRoot = backgroundTransform;
         }
 
+        EnsureRewardPanelReference();
         EnsureNextButtonRoot();
     }
 
