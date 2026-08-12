@@ -102,12 +102,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   visualObjectId: event5
-  animator: {fileID: 6840267059490976100, guid: 019ba31b25ece444fb0b0000dd8fa035, type: 3}
+  animator: {fileID: 5000000000000000001}
   vfxRoot: {fileID: 2000000000000000001}
   actions:
   - ActionId: event_choice_01_success
     AnimatorTrigger: 
-    AnimatorStateName: 
+    AnimatorStateName: event_dustium_fale
     VfxPrefab: {fileID: 5997636969157186472, guid: 1edff599aaa6ccb44847a10c968d8bda, type: 3}
     VfxRootOverride: {fileID: 0}
     VfxLocalPosition: {x: 0, y: 0, z: -0.1}
