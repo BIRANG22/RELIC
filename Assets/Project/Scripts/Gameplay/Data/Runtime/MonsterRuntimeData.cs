@@ -218,12 +218,8 @@ namespace Relic.Gameplay.Data
             if (IsActualMoveSkill(selectedSkillData))
                 return 0;
 
-            bool selectedIsAttack =
-                selectedSkillData != null &&
-                selectedSkillData.TimelineNotation == TimelineActionType.Attack;
-
-            // 공격은 공격끼리, 비공격 행동은 비공격 행동끼리 보유 순서대로 세어
-            // 각각의 Presentation 1, 2, 3...에 연결합니다.
+            // 이동을 제외한 모든 행동은 보유 순서대로 하나의 연속된
+            // Presentation 1, 2, 3...에 연결합니다.
             int presentationActionIndex = 0;
 
             for (int i = 0; i < PossibleSkillIdsByActionIndex.Length; i++)
@@ -240,12 +236,7 @@ namespace Relic.Gameplay.Data
                 if (IsActualMoveSkill(possibleSkillData))
                     continue;
 
-                bool possibleIsAttack =
-                    possibleSkillData != null &&
-                    possibleSkillData.TimelineNotation == TimelineActionType.Attack;
-
-                if (possibleIsAttack == selectedIsAttack)
-                    presentationActionIndex++;
+                presentationActionIndex++;
 
                 if (string.Equals(possibleSkillId, normalizedSkillId, StringComparison.Ordinal))
                     return presentationActionIndex;
