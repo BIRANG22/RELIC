@@ -16,7 +16,12 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
 
     [Header("Rarity Ring")]
     [SerializeField] private GameObject rarityRingRoot;
+    [Tooltip("기존 등급 색상 변경 대상 파티클입니다.")]
     [SerializeField] private ParticleSystem rarityParticles;
+
+    [Tooltip("등급에 따라 같은 색상으로 변경할 추가 파티클들입니다. Size를 늘려 원하는 만큼 지정할 수 있습니다.")]
+    [SerializeField] private ParticleSystem[] additionalRarityColorParticles =
+        Array.Empty<ParticleSystem>();
 
     [Header("Rarity Particle Colors")]
     [Tooltip("일반 등급 테두리 색상")]
@@ -47,6 +52,8 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
     private Action<string, bool> hoverChanged;
     private Vector3 iconOriginalScale = Vector3.one;
     private bool iconScaleCached;
+    private Vector3 rarityRingOriginalScale = Vector3.one;
+    private bool rarityRingScaleCached;
     private bool isHovered;
 
     private bool clickListenerRegistered;
@@ -204,8 +211,12 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
             return;
 
         isHovered = true;
+
         if (iconImage != null)
             iconImage.rectTransform.localScale = iconOriginalScale * hoverIconScale;
+
+        if (rarityRingRoot != null && rarityRingScaleCached)
+            rarityRingRoot.transform.localScale = rarityRingOriginalScale * hoverIconScale;
 
         hoverChanged?.Invoke(relicId, true);
     }
@@ -220,6 +231,9 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
         if (iconImage != null && iconScaleCached)
             iconImage.rectTransform.localScale = iconOriginalScale;
 
+        if (rarityRingRoot != null && rarityRingScaleCached)
+            rarityRingRoot.transform.localScale = rarityRingOriginalScale;
+
         if (isHovered && !string.IsNullOrWhiteSpace(relicId))
             hoverChanged?.Invoke(relicId, false);
 
@@ -232,6 +246,12 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
         {
             rarityRingRoot =
                 transform.Find("magic_ring_06")?.gameObject;
+        }
+
+        if (rarityRingRoot != null && !rarityRingScaleCached)
+        {
+            rarityRingOriginalScale = rarityRingRoot.transform.localScale;
+            rarityRingScaleCached = true;
         }
 
         if (rarityParticles == null &&
@@ -270,12 +290,17 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
 
         rarityRingRoot.SetActive(false);
 
-        if (rarityParticles != null)
-        {
-            ParticleSystem.MainModule main =
-                rarityParticles.main;
+        Color rarityColor = GetParticleColor(rarity);
+        ApplyRarityColor(rarityParticles, rarityColor);
 
-            main.startColor = GetParticleColor(rarity);
+        if (additionalRarityColorParticles != null)
+        {
+            for (int i = 0; i < additionalRarityColorParticles.Length; i++)
+            {
+                ApplyRarityColor(
+                    additionalRarityColorParticles[i],
+                    rarityColor);
+            }
         }
 
         rarityRingRoot.SetActive(true);
@@ -297,6 +322,18 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
             particles.Clear(false);
             particles.Play(false);
         }
+    }
+
+
+    private static void ApplyRarityColor(
+        ParticleSystem particles,
+        Color color)
+    {
+        if (particles == null)
+            return;
+
+        ParticleSystem.MainModule main = particles.main;
+        main.startColor = color;
     }
 
     /// <summary>
