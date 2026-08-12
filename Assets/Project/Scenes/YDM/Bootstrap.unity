@@ -2082,6 +2082,7 @@ MonoBehaviour:
   gridEffectSpriteDatabase: {fileID: 11400000, guid: f6d72b30125e4ab1b257ac2caa7f779c, type: 2}
   skillAttackOverrideDatabase: {fileID: 11400000, guid: a05c4d7b53f743068031e96a185644a3, type: 2}
   skillVfxDatabase: {fileID: 11400000, guid: 64d6b86b66c94a0fa7609aa53000565e, type: 2}
+  mapVisualDatabase: {fileID: 11400000, guid: 3686190205ec417ca06c680bcf53da8c, type: 2}
 --- !u!1 &1726247874
 GameObject:
   m_ObjectHideFlags: 0

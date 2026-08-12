@@ -11,6 +11,7 @@ namespace Relic.Gameplay.Data
 
         public string MapId;
         public string Type;
+        public string EventId;
 
         public Vector2 Position;
         public List<int> NextNodeIndices = new();

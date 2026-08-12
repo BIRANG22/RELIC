@@ -20,6 +20,7 @@ public class DataManager : Singleton<DataManager>
     [SerializeField] private GridEffectSpriteDatabase gridEffectSpriteDatabase;
     [SerializeField] private SkillAttackOverrideDatabase skillAttackOverrideDatabase;
     [SerializeField] private SkillVfxDatabase skillVfxDatabase;
+    [SerializeField] private MapVisualDatabase mapVisualDatabase;
 
     private DataBootstrap dataBootstrap = new();
 
@@ -41,6 +42,7 @@ public class DataManager : Singleton<DataManager>
     public MonsterDatabase MonsterDatabase => dataBootstrap.MonsterDatabase;
     public MonsterIconDatabase MonsterIconDatabase => monsterIconDatabase;
     public MapDatabase MapDatabase => dataBootstrap.MapDatabase;
+    public EventDatabase EventDatabase => dataBootstrap.EventDatabase;
     public MonsterSkillDatabase MonsterSkillDatabase => dataBootstrap.MonsterSkillDatabase;
     public MonsterPatternInfoDatabase MonsterPatternInfoDatabase => dataBootstrap.MonsterPatternInfoDatabase;
     public RuneDatabase RuneDatabase => dataBootstrap.RuneDatabase;
@@ -52,6 +54,7 @@ public class DataManager : Singleton<DataManager>
     public GridEffectSpriteDatabase GridEffectSpriteDatabase => gridEffectSpriteDatabase;
     public SkillAttackOverrideDatabase SkillAttackOverrideDatabase => skillAttackOverrideDatabase;
     public SkillVfxDatabase SkillVfxDatabase => skillVfxDatabase;
+    public MapVisualDatabase MapVisualDatabase => mapVisualDatabase;
     public CharacterRuntimeStore CharacterRuntimeStore { get; private set; } = new();
     public PartyRuntimeStore PartyRuntimeStore { get; private set; } = new();
     public SkillRuntimeStore SkillRuntimeStore { get; private set; } = new();
@@ -93,6 +96,9 @@ public class DataManager : Singleton<DataManager>
 
         if (skillVfxDatabase != null)
             skillVfxDatabase.Initialize();
+
+        if (mapVisualDatabase != null)
+            mapVisualDatabase.Initialize();
 
         SkillEquipService = new SkillEquipService(CharacterRuntimeStore);
     }

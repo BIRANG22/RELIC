@@ -20,8 +20,84 @@ namespace Relic.Gameplay.Data
         public bool IsBossUnlocked;
         public bool IsRunInitialized;
         public bool IsManualMapTemplate;
+        public string ManualMapTemplateKey;
 
         public List<GeneratedMapNodeData> GeneratedNodes = new();
+    }
+
+    public static class BattleMapRuntimeGenerationPolicy
+    {
+        public static bool ShouldRegenerate(MapRuntimeData runtime, string manualTemplateKey)
+        {
+            if (runtime == null)
+                return false;
+
+            bool hasGeneratedNodes = runtime.GeneratedNodes != null && runtime.GeneratedNodes.Count > 0;
+
+            if (!runtime.IsRunInitialized || !hasGeneratedNodes)
+                return true;
+
+            if (string.IsNullOrWhiteSpace(manualTemplateKey))
+                return false;
+
+            if (!runtime.IsManualMapTemplate)
+                return true;
+
+            return !string.Equals(
+                runtime.ManualMapTemplateKey?.Trim(),
+                manualTemplateKey.Trim(),
+                System.StringComparison.Ordinal);
+        }
+
+        public static void ResetProgressForRegeneratedMap(MapRuntimeData runtime)
+        {
+            if (runtime == null)
+                return;
+
+            runtime.ClearedMapIds ??= new();
+            runtime.VisitedMapIds ??= new();
+
+            int currentNodeIndex = runtime.CurrentNodeIndex;
+            string currentNodeKey = currentNodeIndex.ToString();
+            bool wasCurrentNodeCleared = ContainsNodeKey(runtime.ClearedMapIds, currentNodeKey);
+            bool wasCurrentNodeVisited = ContainsNodeKey(runtime.VisitedMapIds, currentNodeKey);
+
+            runtime.ClearedMapIds.Clear();
+            runtime.VisitedMapIds.Clear();
+
+            GeneratedMapNodeData currentNode = MapRuntimeProgressUtility.FindCurrentNode(runtime);
+            if (currentNode != null)
+            {
+                runtime.CurrentMapId = currentNode.MapId ?? string.Empty;
+
+                if (wasCurrentNodeVisited || wasCurrentNodeCleared)
+                    runtime.VisitedMapIds.Add(currentNodeKey);
+
+                if (wasCurrentNodeCleared)
+                    runtime.ClearedMapIds.Add(currentNodeKey);
+            }
+            else
+            {
+                runtime.CurrentMapId = string.Empty;
+                runtime.CurrentNodeIndex = -1;
+            }
+
+            runtime.IsBossUnlocked = false;
+        }
+
+        private static bool ContainsNodeKey(List<string> nodeKeys, string nodeKey)
+        {
+            if (nodeKeys == null || string.IsNullOrWhiteSpace(nodeKey))
+                return false;
+
+            for (int i = 0; i < nodeKeys.Count; i++)
+            {
+                if (string.Equals(nodeKeys[i], nodeKey, System.StringComparison.Ordinal))
+                    return true;
+            }
+
+            return false;
+        }
     }
 
     public static class MapRuntimeProgressUtility
