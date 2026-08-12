@@ -120,6 +120,12 @@ public sealed class MapVisualActionEntry
 
     private void PlayAnimator(MapVisualActor owner)
     {
+        if (string.IsNullOrWhiteSpace(AnimatorTrigger) &&
+            string.IsNullOrWhiteSpace(AnimatorStateName))
+        {
+            return;
+        }
+
         Animator resolvedAnimator = owner != null ? owner.ResolveAnimator() : null;
         if (resolvedAnimator == null)
             return;

@@ -42,6 +42,47 @@ public class EventDataIntegrationTests
         Assert.That(follow.EventId, Is.EqualTo("Event_02_A"));
     }
 
+    [Test]
+    public void MergeChoices_KeepsPersistentChoiceAcrossFollowingStageWithoutDuplicates()
+    {
+        EventData resonance = new() { EventId = "Event_08", ChoiceOrder = 1, ChoiceName = "1차 공명" };
+        EventData exit = new()
+        {
+            EventId = "Event_08",
+            ChoiceOrder = 2,
+            ChoiceName = "돌아선다",
+            PersistAcrossNextEvent = true
+        };
+        List<EventData> persistent = new();
+
+        IReadOnlyList<EventData> first = EventChoiceSequenceUtility.MergeChoices(
+            new[] { resonance, exit }, persistent);
+        IReadOnlyList<EventData> second = EventChoiceSequenceUtility.MergeChoices(
+            new[] { new EventData { EventId = "Event_08_A", ChoiceOrder = 1, ChoiceName = "2차 공명" } },
+            persistent);
+
+        Assert.That(first, Has.Count.EqualTo(2));
+        Assert.That(second, Has.Count.EqualTo(2));
+        Assert.That(second[1], Is.SameAs(exit));
+        Assert.That(persistent, Has.Count.EqualTo(1));
+    }
+
+    [Test]
+    public void RuntimeCsv_Event08UsesOnePersistentExitChoiceAcrossFourRows()
+    {
+        string[] lines = System.IO.File.ReadAllLines("Assets/Resources/Data/GameDataRuntime.csv");
+        List<string> event08Lines = new();
+        foreach (string line in lines)
+        {
+            if (line.StartsWith("Event_08", System.StringComparison.Ordinal))
+                event08Lines.Add(line);
+        }
+
+        Assert.That(event08Lines, Has.Count.EqualTo(4));
+        Assert.That(event08Lines.FindAll(x => x.Contains(",돌아선다,")), Has.Count.EqualTo(1));
+        Assert.That(event08Lines.Find(x => x.Contains(",돌아선다,")), Does.Contain(",true,"));
+    }
+
     private static Dictionary<string, string> Row(
         string eventId,
         string choiceOrder,

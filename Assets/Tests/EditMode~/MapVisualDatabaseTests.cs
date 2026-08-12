@@ -239,6 +239,33 @@ public class MapVisualDatabaseTests
     }
 
     [Test]
+    public void TryPlayAction_WithoutAnimatorCommand_DoesNotEnableAnimatorDefaultState()
+    {
+        GameObject actorObject = new("Actor");
+
+        try
+        {
+            Animator animator = actorObject.AddComponent<Animator>();
+            animator.enabled = false;
+            MapVisualActor actor = actorObject.AddComponent<MapVisualActor>();
+            SetPrivateField(actor, "animator", animator);
+            SetPrivateField(actor, "actions", new List<MapVisualActionEntry>
+            {
+                new() { ActionId = "event_choice_02_success" }
+            });
+
+            bool played = actor.TryPlayAction("event_choice_02_success");
+
+            Assert.That(played, Is.True);
+            Assert.That(animator.enabled, Is.False);
+        }
+        finally
+        {
+            Object.DestroyImmediate(actorObject);
+        }
+    }
+
+    [Test]
     public void TryPlayAction_ReturnsFalseWhenActorOrActionIsMissing()
     {
         GameObject room = new("Room");
@@ -340,13 +367,20 @@ public class MapVisualDatabaseTests
         Assert.That(prefabText, Does.Contain(MapVisualTestSpriteGuid));
         Assert.That(prefabText, Does.Contain(MapVisualActorGuid));
         Assert.That(prefabText, Does.Contain("visualObjectId: event_visual_test_crystal"));
-        Assert.That(prefabText, Does.Contain("ActionId: event_choice_success"));
-        Assert.That(prefabText, Does.Contain("ActionId: event_choice_failure"));
+        Assert.That(prefabText, Does.Contain("ActionId: event_choice_01_success"));
+        Assert.That(prefabText, Does.Contain("ActionId: event_choice_01_failure"));
         Assert.That(prefabText, Does.Contain("AnimatorStateName: New Animation"));
         Assert.That(prefabText, Does.Contain("- component: {fileID: 5000000000000000001}"));
         Assert.That(prefabText, Does.Contain("animator: {fileID: 5000000000000000001}"));
         Assert.That(prefabText, Does.Contain("m_Controller: {fileID: 9100000, guid: dc80ed60007fb6d4a94cfc8f5311133c, type: 2}"));
         Assert.That(prefabText, Does.Match("(?s)--- !u!95 &5000000000000000001.*?m_Enabled: 0"));
+
+        for (int choice = 1; choice <= 5; choice++)
+        {
+            string prefix = $"event_choice_{choice:00}";
+            Assert.That(CountOccurrences(prefabText, $"ActionId: {prefix}_success"), Is.EqualTo(1));
+            Assert.That(CountOccurrences(prefabText, $"ActionId: {prefix}_failure"), Is.EqualTo(1));
+        }
     }
 
     [Test]

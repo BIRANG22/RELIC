@@ -68,6 +68,7 @@ public class EventRoomController : MonoBehaviour
     private bool isEventRewardPanelOpen;
     private readonly List<BattleRewardData> pendingEventRewards = new();
     private readonly EventChoiceSessionState eventChoiceSessionState = new();
+    private readonly List<EventData> persistentEventChoices = new();
 
     private void Awake()
     {
@@ -112,6 +113,7 @@ public class EventRoomController : MonoBehaviour
         isEventResolved = false;
         isEventRewardPanelOpen = false;
         pendingEventRewards.Clear();
+        persistentEventChoices.Clear();
         SetNextButtonVisible(false);
 
         if (TryStartDataEventMode())
@@ -142,6 +144,7 @@ public class EventRoomController : MonoBehaviour
         isDataEventActive = false;
         isEventRewardPanelOpen = false;
         pendingEventRewards.Clear();
+        persistentEventChoices.Clear();
     }
 
     public void NotifyChestOpened()
@@ -276,6 +279,7 @@ public class EventRoomController : MonoBehaviour
     private bool TryStartDataEventMode()
     {
         ClearChoiceSlots();
+        persistentEventChoices.Clear();
         currentEventDefinition = null;
         isDataEventActive = false;
         isEventResolved = false;
@@ -328,7 +332,10 @@ public class EventRoomController : MonoBehaviour
         if (eventResultText != null)
             eventResultText.text = resultMessage ?? string.Empty;
 
-        BindChoiceSlots(definition.Choices);
+        IReadOnlyList<EventData> visibleChoices = EventChoiceSequenceUtility.MergeChoices(
+            definition.Choices,
+            persistentEventChoices);
+        BindChoiceSlots(visibleChoices);
     }
 
     private void BindChoiceSlots(IReadOnlyList<EventData> choices)
