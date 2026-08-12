@@ -1,8 +1,39 @@
 using NUnit.Framework;
+using System.Reflection;
 using UnityEngine;
 
 public class BattleRoomMapSelectionPresenterTests
 {
+    [Test]
+    public void CloseAllRooms_KeepsSharedRoomRootActive()
+    {
+        GameObject controllerObject = new("BattleSceneController");
+        GameObject roomRoot = new("RoomRoot");
+        GameObject sharedRoot = new("SharedRoomRoot");
+        GameObject battleRoom = new("BattleRoom");
+        sharedRoot.transform.SetParent(roomRoot.transform);
+        battleRoom.transform.SetParent(roomRoot.transform);
+
+        try
+        {
+            BattleSceneController controller = controllerObject.AddComponent<BattleSceneController>();
+            SetPrivateField(controller, "roomRoot", roomRoot.transform);
+            SetPrivateField(controller, "sharedRoomRoot", sharedRoot);
+
+            typeof(BattleSceneController).GetMethod(
+                "CloseAllRooms",
+                BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(controller, null);
+
+            Assert.That(sharedRoot.activeSelf, Is.True);
+            Assert.That(battleRoom.activeSelf, Is.False);
+        }
+        finally
+        {
+            Object.DestroyImmediate(controllerObject);
+            Object.DestroyImmediate(roomRoot);
+        }
+    }
+
     [Test]
     public void CalculateCharacterPosition_ArrangesCharactersInOneHorizontalRow()
     {
@@ -16,6 +47,15 @@ public class BattleRoomMapSelectionPresenterTests
         Assert.That(third.y, Is.EqualTo(first.y));
         Assert.That(first.y, Is.EqualTo(-0.25f));
         Assert.That(first.z, Is.EqualTo(-2f));
+    }
+
+    private static void SetPrivateField(object target, string fieldName, object value)
+    {
+        FieldInfo field = target.GetType().GetField(
+            fieldName,
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.That(field, Is.Not.Null, $"Missing field: {fieldName}");
+        field.SetValue(target, value);
     }
 
     [Test]

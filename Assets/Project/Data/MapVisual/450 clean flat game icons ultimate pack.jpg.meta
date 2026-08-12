@@ -1,0 +1,945 @@
+fileFormatVersion: 2
+guid: e6610a56d4c5f3645a40d31950dc0248
+TextureImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 0
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 614
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 132437aad3551f14ca27e927e5118e60
+      internalID: 1974355746
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_1
+      rect:
+        serializedVersion: 2
+        x: 122
+        y: 614
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 348f286a9010d7a458cbb41bd54949b5
+      internalID: 285394602
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_2
+      rect:
+        serializedVersion: 2
+        x: 244
+        y: 614
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 054424f98646e034ab6733dda88ea922
+      internalID: -1297724496
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_3
+      rect:
+        serializedVersion: 2
+        x: 366
+        y: 614
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d405f62f4cb5ad34eab99673f85ef968
+      internalID: 96192692
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_4
+      rect:
+        serializedVersion: 2
+        x: 488
+        y: 614
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a6e9b703e06d2e04baf48e0f177932a3
+      internalID: -1182708198
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_5
+      rect:
+        serializedVersion: 2
+        x: 610
+        y: 614
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a4eb923f14cfa4a469b30a3bb32408e7
+      internalID: -379820986
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_6
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 492
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 122f8eb479ac8d54998ca75076eb6996
+      internalID: -1365897976
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_7
+      rect:
+        serializedVersion: 2
+        x: 122
+        y: 492
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1028415cfc1aacd4d9868772f4d258ae
+      internalID: -466515500
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_8
+      rect:
+        serializedVersion: 2
+        x: 244
+        y: 492
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cd09961618c75d44ca1a3882a47a5f1a
+      internalID: -6261653
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_9
+      rect:
+        serializedVersion: 2
+        x: 366
+        y: 492
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f35bb2cdc290d4e47b0a12033a0bcf00
+      internalID: 1116412023
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_10
+      rect:
+        serializedVersion: 2
+        x: 488
+        y: 492
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b433130eb6a244d4e82d7d0b4e9008d4
+      internalID: -1861074826
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_11
+      rect:
+        serializedVersion: 2
+        x: 610
+        y: 492
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 84cd47e887f775b43b47ac4f575be17e
+      internalID: -425999054
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_12
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 370
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 444f3abeae42bbe499e63deedc8a37dc
+      internalID: 910713438
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_13
+      rect:
+        serializedVersion: 2
+        x: 122
+        y: 370
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b2c02072a255cd1419d75c62f7367832
+      internalID: -677608977
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_14
+      rect:
+        serializedVersion: 2
+        x: 244
+        y: 370
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8b7ebbeb2b4ed584684ce0813bcd49e8
+      internalID: -956040793
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_15
+      rect:
+        serializedVersion: 2
+        x: 366
+        y: 370
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6566389dba4482a4582bca14275b349f
+      internalID: 1668407958
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_16
+      rect:
+        serializedVersion: 2
+        x: 488
+        y: 370
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: aaf1768a5bd321b48b12bc10f53d862a
+      internalID: -418020568
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_17
+      rect:
+        serializedVersion: 2
+        x: 610
+        y: 370
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 884d98327957a18428c3869bc318207f
+      internalID: -5686527
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_18
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 248
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2326cb638762e564494905ff676aeb64
+      internalID: 1162522160
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_19
+      rect:
+        serializedVersion: 2
+        x: 122
+        y: 248
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 82a5eec548d55bf498092f8c1c82dbe2
+      internalID: 2086205904
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_20
+      rect:
+        serializedVersion: 2
+        x: 244
+        y: 248
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b89d80fae80f36045b7ac719686810f4
+      internalID: -267833762
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_21
+      rect:
+        serializedVersion: 2
+        x: 366
+        y: 248
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 551b9594d74da1847bfe7321d771b0b2
+      internalID: 1132210546
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_22
+      rect:
+        serializedVersion: 2
+        x: 488
+        y: 248
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4605abcb3a0a6b24e873781886359771
+      internalID: 808400745
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_23
+      rect:
+        serializedVersion: 2
+        x: 610
+        y: 248
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fa921853c6d4b5346abdaf15ebc80c81
+      internalID: -1372151137
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_24
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 126
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f633ae67a7e747f47b1975018a5e3681
+      internalID: 1776843682
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_25
+      rect:
+        serializedVersion: 2
+        x: 122
+        y: 126
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fe9fe389634d31343ba6bccd19393b02
+      internalID: -1846551381
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_26
+      rect:
+        serializedVersion: 2
+        x: 244
+        y: 126
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1568e30195dceba4a916c8af7f7b16de
+      internalID: 506929505
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_27
+      rect:
+        serializedVersion: 2
+        x: 366
+        y: 126
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2dc3fc2bb3cf52a40a4913e107b879fa
+      internalID: -930983511
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_28
+      rect:
+        serializedVersion: 2
+        x: 488
+        y: 126
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 336114dbd1711ff46baecb1414e0a2a5
+      internalID: 2119594469
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_29
+      rect:
+        serializedVersion: 2
+        x: 610
+        y: 126
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 16c5be7e5e5b6144e8c499fac114459e
+      internalID: -982304206
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_30
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 4
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 39a6870f13a22d34fa2d4cf099a25338
+      internalID: 384075572
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_31
+      rect:
+        serializedVersion: 2
+        x: 122
+        y: 4
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1207630c78cd55042ab83d19e359e583
+      internalID: -2043385794
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_32
+      rect:
+        serializedVersion: 2
+        x: 244
+        y: 4
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6881a0310d094294ea7d9a94080f4f46
+      internalID: -255097720
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_33
+      rect:
+        serializedVersion: 2
+        x: 366
+        y: 4
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 08b540169d2dae84d978130e9c348570
+      internalID: 199841393
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_34
+      rect:
+        serializedVersion: 2
+        x: 488
+        y: 4
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: eca0a3e63e2a81d4c8f3a8692e77ef61
+      internalID: 525526939
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 450 clean flat game icons ultimate pack_35
+      rect:
+        serializedVersion: 2
+        x: 610
+        y: 4
+        width: 122
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c9643133fd6a012429671418ab797699
+      internalID: -1920294917
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      450 clean flat game icons ultimate pack_0: 1974355746
+      450 clean flat game icons ultimate pack_1: 285394602
+      450 clean flat game icons ultimate pack_10: -1861074826
+      450 clean flat game icons ultimate pack_11: -425999054
+      450 clean flat game icons ultimate pack_12: 910713438
+      450 clean flat game icons ultimate pack_13: -677608977
+      450 clean flat game icons ultimate pack_14: -956040793
+      450 clean flat game icons ultimate pack_15: 1668407958
+      450 clean flat game icons ultimate pack_16: -418020568
+      450 clean flat game icons ultimate pack_17: -5686527
+      450 clean flat game icons ultimate pack_18: 1162522160
+      450 clean flat game icons ultimate pack_19: 2086205904
+      450 clean flat game icons ultimate pack_2: -1297724496
+      450 clean flat game icons ultimate pack_20: -267833762
+      450 clean flat game icons ultimate pack_21: 1132210546
+      450 clean flat game icons ultimate pack_22: 808400745
+      450 clean flat game icons ultimate pack_23: -1372151137
+      450 clean flat game icons ultimate pack_24: 1776843682
+      450 clean flat game icons ultimate pack_25: -1846551381
+      450 clean flat game icons ultimate pack_26: 506929505
+      450 clean flat game icons ultimate pack_27: -930983511
+      450 clean flat game icons ultimate pack_28: 2119594469
+      450 clean flat game icons ultimate pack_29: -982304206
+      450 clean flat game icons ultimate pack_3: 96192692
+      450 clean flat game icons ultimate pack_30: 384075572
+      450 clean flat game icons ultimate pack_31: -2043385794
+      450 clean flat game icons ultimate pack_32: -255097720
+      450 clean flat game icons ultimate pack_33: 199841393
+      450 clean flat game icons ultimate pack_34: 525526939
+      450 clean flat game icons ultimate pack_35: -1920294917
+      450 clean flat game icons ultimate pack_4: -1182708198
+      450 clean flat game icons ultimate pack_5: -379820986
+      450 clean flat game icons ultimate pack_6: -1365897976
+      450 clean flat game icons ultimate pack_7: -466515500
+      450 clean flat game icons ultimate pack_8: -6261653
+      450 clean flat game icons ultimate pack_9: 1116412023
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

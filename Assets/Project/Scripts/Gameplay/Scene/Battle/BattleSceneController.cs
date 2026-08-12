@@ -32,6 +32,13 @@ public class BattleSceneController : MonoBehaviour
     [SerializeField] private bool autoDetectReturnToMap = true;
     [SerializeField] private Transform roomRoot;
 
+    [Header("Shared Room Presentation")]
+    [SerializeField] private GameObject sharedRoomRoot;
+    [SerializeField] private StageBackgroundController sharedBackgroundController;
+    [SerializeField] private MapVisualController sharedMapVisualController;
+    [SerializeField] private GameObject sharedPartyPresentationRoot;
+    [SerializeField] private MapRoomController sharedRoomPresentationController;
+
     [Header("Runtime Default")]
     [SerializeField] private string defaultChapterId = "Chapter1";
     [SerializeField] private string defaultStage = "Stage1";
@@ -41,12 +48,6 @@ public class BattleSceneController : MonoBehaviour
     [SerializeField] private GameObject battleRoom;
     [SerializeField] private GameObject eventRoom;
     [SerializeField] private GameObject restRoom;
-
-    [Header("Map Room")]
-    [Tooltip("지도 화면에서만 표시할 전용 MapRoom입니다. 비워두면 RoomRoot 아래의 MapRoom을 자동으로 찾습니다.")]
-    [SerializeField] private GameObject mapRoom;
-    [SerializeField] private string mapRoomObjectName = "MapRoom";
-    [SerializeField] private bool autoFindMapRoom = true;
 
     [Header("Room Change Auto Close")]
     [SerializeField] private bool closeInventoryAndBagOnRoomActiveChange = true;
@@ -79,7 +80,7 @@ public class BattleSceneController : MonoBehaviour
     private void Awake()
     {
         AutoFindRoomRootIfNeeded();
-        AutoFindMapRoomIfNeeded();
+        AutoFindSharedRoomPresentationIfNeeded();
         AutoFindBattleMapIntroTextIfNeeded();
         InstallMapPanelAutoReturnWatcher();
 
@@ -201,38 +202,26 @@ public class BattleSceneController : MonoBehaviour
             roomRoot = foundRoomRoot.transform;
     }
 
-    private void AutoFindMapRoomIfNeeded()
+    private void AutoFindSharedRoomPresentationIfNeeded()
     {
-        if (mapRoom != null || !autoFindMapRoom || string.IsNullOrWhiteSpace(mapRoomObjectName))
-            return;
-
-        if (roomRoot != null)
+        if (sharedRoomRoot == null && roomRoot != null)
         {
-            for (int i = 0; i < roomRoot.childCount; i++)
-            {
-                Transform child = roomRoot.GetChild(i);
-                if (child != null && child.name == mapRoomObjectName)
-                {
-                    mapRoom = child.gameObject;
-                    return;
-                }
-            }
+            Transform sharedTransform = roomRoot.Find("SharedRoomRoot");
+            if (sharedTransform != null)
+                sharedRoomRoot = sharedTransform.gameObject;
         }
 
-        Transform[] transforms = Resources.FindObjectsOfTypeAll<Transform>();
-        for (int i = 0; i < transforms.Length; i++)
-        {
-            Transform candidate = transforms[i];
-            if (candidate == null || candidate.name != mapRoomObjectName)
-                continue;
+        if (sharedBackgroundController == null && sharedRoomRoot != null)
+            sharedBackgroundController = sharedRoomRoot.GetComponentInChildren<StageBackgroundController>(true);
 
-            GameObject candidateObject = candidate.gameObject;
-            if (!candidateObject.scene.IsValid() || !candidateObject.scene.isLoaded)
-                continue;
+        if (sharedMapVisualController == null && sharedRoomRoot != null)
+            sharedMapVisualController = sharedRoomRoot.GetComponent<MapVisualController>();
 
-            mapRoom = candidateObject;
-            return;
-        }
+        if (sharedRoomPresentationController == null && sharedRoomRoot != null)
+            sharedRoomPresentationController = sharedRoomRoot.GetComponent<MapRoomController>();
+
+        if (sharedRoomRoot != null && !sharedRoomRoot.activeSelf)
+            sharedRoomRoot.SetActive(true);
     }
 
     private void AutoFindBattleMapIntroTextIfNeeded()
@@ -245,6 +234,13 @@ public class BattleSceneController : MonoBehaviour
 
     private void ShowRoomBackground(GameObject room, GeneratedMapNodeData nodeData)
     {
+        AutoFindSharedRoomPresentationIfNeeded();
+        if (sharedBackgroundController != null)
+        {
+            sharedBackgroundController.ShowForLayer(nodeData.LayerIndex);
+            return;
+        }
+
         StageBackgroundController controller = room != null
             ? room.GetComponentInChildren<StageBackgroundController>(true)
             : null;
@@ -261,6 +257,13 @@ public class BattleSceneController : MonoBehaviour
 
     private void ApplyRoomVisual(GameObject room, GeneratedMapNodeData nodeData)
     {
+        AutoFindSharedRoomPresentationIfNeeded();
+        if (sharedMapVisualController != null)
+        {
+            sharedMapVisualController.ApplyMapVisual(nodeData?.MapId);
+            return;
+        }
+
         MapVisualController controller = room != null
             ? room.GetComponentInChildren<MapVisualController>(true)
             : null;
@@ -304,15 +307,10 @@ public class BattleSceneController : MonoBehaviour
         if (battleMapPanel != null && battleMapPanel.gameObject.activeSelf)
             battleMapPanel.gameObject.SetActive(false);
 
-        AutoFindMapRoomIfNeeded();
-        if (mapRoom != null && mapRoom.activeSelf)
-            mapRoom.SetActive(false);
     }
 
     private void ActivateMapRoomForMap()
     {
-        AutoFindMapRoomIfNeeded();
-
         // 지도에서는 직전에 사용한 Start/Battle/Event/Rest/Shop 등의 룸을 남겨두지 않는다.
         // RoomRoot 아래에서는 MapRoom만 활성 상태로 유지한다.
         if (roomRoot != null)
@@ -320,7 +318,7 @@ public class BattleSceneController : MonoBehaviour
             for (int i = 0; i < roomRoot.childCount; i++)
             {
                 GameObject roomObject = roomRoot.GetChild(i).gameObject;
-                if (roomObject == mapRoom)
+                if (roomObject == sharedRoomRoot)
                     continue;
 
                 if (roomObject.activeSelf)
@@ -337,23 +335,8 @@ public class BattleSceneController : MonoBehaviour
 
         SetBattleRoomIntroPlaying(false);
 
-        if (mapRoom == null)
-        {
-            Debug.LogWarning(
-                "[BattleSceneController] MapRoom을 찾지 못했습니다. " +
-                "Inspector의 Map Room을 연결하거나 RoomRoot/MapRoom 이름을 확인하세요.",
-                this);
-            return;
-        }
-
-        if (!mapRoom.activeSelf)
-            mapRoom.SetActive(true);
-
-        MapRoomController controller = mapRoom.GetComponent<MapRoomController>();
-        if (controller == null)
-            controller = mapRoom.GetComponentInChildren<MapRoomController>(true);
-
-        controller?.RefreshNow();
+        AutoFindSharedRoomPresentationIfNeeded();
+        sharedRoomPresentationController?.RefreshNow();
     }
 
     private bool TryOpenUnclearedCurrentNodeOnStart()
@@ -819,9 +802,17 @@ public class BattleSceneController : MonoBehaviour
             ? lastBattleRoomBackgroundLayer
             : currentNode != null ? currentNode.LayerIndex : 0;
 
-        StageBackgroundController background =
-            battleRoom.GetComponentInChildren<StageBackgroundController>(true);
-        background?.ShowForLayer(backgroundLayer);
+        AutoFindSharedRoomPresentationIfNeeded();
+        if (sharedBackgroundController != null)
+        {
+            sharedBackgroundController.ShowForLayer(backgroundLayer);
+        }
+        else
+        {
+            StageBackgroundController background =
+                battleRoom.GetComponentInChildren<StageBackgroundController>(true);
+            background?.ShowForLayer(backgroundLayer);
+        }
 
         if (battleRoom.GetComponentsInChildren<BattleCharacter>(true).Length == 0)
         {
@@ -831,6 +822,13 @@ public class BattleSceneController : MonoBehaviour
         }
 
         return battleRoom;
+    }
+
+    public bool TryPlaySharedMapVisualAction(string visualObjectId, string actionId)
+    {
+        AutoFindSharedRoomPresentationIfNeeded();
+        return sharedMapVisualController != null &&
+               sharedMapVisualController.TryPlayAction(visualObjectId, actionId);
     }
 
     private void PlayMapIntroTextOnStart()
@@ -975,7 +973,16 @@ public class BattleSceneController : MonoBehaviour
         if (roomRoot != null)
         {
             for (int i = 0; i < roomRoot.childCount; i++)
-                roomRoot.GetChild(i).gameObject.SetActive(false);
+            {
+                GameObject roomObject = roomRoot.GetChild(i).gameObject;
+                if (roomObject == sharedRoomRoot)
+                    continue;
+
+                roomObject.SetActive(false);
+            }
+
+            if (sharedRoomRoot != null && !sharedRoomRoot.activeSelf)
+                sharedRoomRoot.SetActive(true);
 
             return;
         }
@@ -1200,7 +1207,7 @@ public class BattleSceneController : MonoBehaviour
             for (int i = 0; i < roomRoot.childCount; i++)
             {
                 GameObject roomObject = roomRoot.GetChild(i).gameObject;
-                if (roomObject == mapRoom)
+                if (roomObject == sharedRoomRoot)
                     continue;
 
                 if (roomObject.activeSelf)
@@ -1234,7 +1241,7 @@ public class BattleSceneController : MonoBehaviour
             for (int i = 0; i < roomRoot.childCount; i++)
             {
                 GameObject roomObject = roomRoot.GetChild(i).gameObject;
-                if (roomObject == mapRoom)
+                if (roomObject == sharedRoomRoot)
                     continue;
 
                 if (roomObject == target)

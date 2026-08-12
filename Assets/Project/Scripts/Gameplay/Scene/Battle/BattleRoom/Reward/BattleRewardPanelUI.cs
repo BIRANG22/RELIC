@@ -389,46 +389,11 @@ public class BattleRewardPanelUI : MonoBehaviour
 
     private void FinishRewardFlow()
     {
-        MarkCurrentBattleNodeCleared();
-
-        if (BattleRewardCollector.Instance != null)
-            BattleRewardCollector.Instance.Clear();
-
-        BattleRoomCleaner cleaner =
-            Object.FindFirstObjectByType<BattleRoomCleaner>(FindObjectsInactive.Include);
-
-        if (cleaner != null)
-            cleaner.PrepareForMapSelection();
-
         gameObject.SetActive(false);
 
         Action completedCallback = onRewardFlowCompleted;
         onRewardFlowCompleted = null;
-        if (completedCallback != null)
-        {
-            completedCallback.Invoke();
-            return;
-        }
-
-        BattleSceneController sceneController =
-            Object.FindFirstObjectByType<BattleSceneController>(FindObjectsInactive.Include);
-
-        if (sceneController != null)
-            sceneController.ReturnToMap();
-        else
-            Debug.LogWarning("[BattleRewardPanelUI] BattleSceneController is missing.");
-    }
-
-    private void MarkCurrentBattleNodeCleared()
-    {
-        if (DataManager.Instance == null || DataManager.Instance.MapRuntimeStore == null)
-            return;
-
-        MapRuntimeData runtime = DataManager.Instance.MapRuntimeStore.Get();
-        if (!MapRuntimeProgressUtility.MarkCurrentNodeCleared(runtime))
-            return;
-
-        DataManager.Instance.MapRuntimeStore.Set(runtime);
+        completedCallback?.Invoke();
     }
 
     private void EnsureVerticalRewardLayout()

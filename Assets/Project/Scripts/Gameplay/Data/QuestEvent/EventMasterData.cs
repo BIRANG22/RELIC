@@ -28,6 +28,7 @@ namespace Relic.Gameplay.Data
         public string SuccessRate;
         public string FailResult;
         public string NextEventId;
+        public bool PersistAcrossNextEvent;
         public string SuccessVisualObjectId;
         public string SuccessVisualActionId;
         public string FailureVisualObjectId;
@@ -41,6 +42,40 @@ namespace Relic.Gameplay.Data
         public string EventName;
         public string Title;
         public List<EventData> Choices = new();
+    }
+
+    public static class EventChoiceSequenceUtility
+    {
+        public static IReadOnlyList<EventData> MergeChoices(
+            IReadOnlyList<EventData> currentChoices,
+            List<EventData> persistentChoices)
+        {
+            persistentChoices ??= new List<EventData>();
+            List<EventData> merged = new();
+
+            if (currentChoices != null)
+            {
+                for (int i = 0; i < currentChoices.Count; i++)
+                {
+                    EventData choice = currentChoices[i];
+                    if (choice == null)
+                        continue;
+
+                    merged.Add(choice);
+                    if (choice.PersistAcrossNextEvent && !persistentChoices.Contains(choice))
+                        persistentChoices.Add(choice);
+                }
+            }
+
+            for (int i = 0; i < persistentChoices.Count; i++)
+            {
+                EventData persistent = persistentChoices[i];
+                if (persistent != null && !merged.Contains(persistent))
+                    merged.Add(persistent);
+            }
+
+            return merged;
+        }
     }
 
     public static class EventIdUtility

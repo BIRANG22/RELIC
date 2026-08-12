@@ -248,6 +248,80 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!1 &930000000000000000
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 930000000000000001}
+  - component: {fileID: 930000000000000003}
+  - component: {fileID: 930000000000000004}
+  m_Layer: 0
+  m_Name: SharedRoomRoot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &930000000000000001
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 930000000000000000}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 777314790}
+  - {fileID: 457932037}
+  m_Father: {fileID: 1644270114}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &930000000000000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 930000000000000000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ec1b8e7e72644d98d09ccec70eca556, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  databaseOverride: {fileID: 0}
+  visualRoot: {fileID: 930000000000000001}
+  anchors: []
+  clearWhenNoEntry: 1
+--- !u!114 &930000000000000004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 930000000000000000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08b74680766d0f34785db938ccf45cff, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  battleMapPanel: {fileID: 511562515}
+  stageBackgroundController: {fileID: 796714481}
+  fallbackLayerIndex: 0
+  allyRoot: {fileID: 457932037}
+  allySpawnPoints:
+  - {fileID: 1529565278}
+  - {fileID: 1787176592}
+  - {fileID: 1664192522}
+  allySpawnScale: 1
+  autoFindAllySpawnPoints: 1
+  refreshWhenMapOpens: 1
 --- !u!222 &2343508
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -17414,15 +17488,17 @@ MonoBehaviour:
   playBattleRoomIntroFromSceneController: 0
   autoDetectReturnToMap: 1
   roomRoot: {fileID: 1644270114}
+  sharedRoomRoot: {fileID: 930000000000000000}
+  sharedBackgroundController: {fileID: 796714481}
+  sharedMapVisualController: {fileID: 930000000000000003}
+  sharedPartyPresentationRoot: {fileID: 457932036}
+  sharedRoomPresentationController: {fileID: 930000000000000004}
   defaultChapterId: Chapter1
   defaultStage: Stage1
   startRoom: {fileID: 1137359714}
   battleRoom: {fileID: 1242706629}
   eventRoom: {fileID: 1268787443}
   restRoom: {fileID: 1231175799}
-  mapRoom: {fileID: 0}
-  mapRoomObjectName: MapRoom
-  autoFindMapRoom: 1
   closeInventoryAndBagOnRoomActiveChange: 1
   inventoryPanelObjectNames:
   - InventoryPanel
@@ -21361,7 +21437,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &413953728
 Transform:
   m_ObjectHideFlags: 0
@@ -22909,7 +22985,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &452751307
 Transform:
   m_ObjectHideFlags: 0
@@ -23096,7 +23172,7 @@ Transform:
   - {fileID: 1529565278}
   - {fileID: 1787176592}
   - {fileID: 1664192522}
-  m_Father: {fileID: 1849105015}
+  m_Father: {fileID: 930000000000000001}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &464942457
 GameObject:
@@ -36720,6 +36796,7 @@ RectTransform:
   m_Children:
   - {fileID: 1138866862}
   - {fileID: 1137809861}
+  - {fileID: 1979314416}
   - {fileID: 98804243}
   - {fileID: 1141413084}
   - {fileID: 858746745}
@@ -37970,7 +38047,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 796714480}
-  m_Father: {fileID: 1849105015}
+  m_Father: {fileID: 930000000000000001}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &778440950
 GameObject:
@@ -44823,7 +44900,6 @@ Transform:
   - {fileID: 1115507530}
   - {fileID: 133206929}
   - {fileID: 832015598}
-  - {fileID: 1979314416}
   m_Father: {fileID: 1242706630}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &911281009
@@ -55733,8 +55809,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ac62436d4d8173744a74a2621c5239d0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
 --- !u!1 &1117127704
 GameObject:
   m_ObjectHideFlags: 0
@@ -56786,9 +56862,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   allySpawnPoints:
-  - {fileID: 194158813}
-  - {fileID: 932190178}
-  - {fileID: 1935011957}
+  - {fileID: 1529565278}
+  - {fileID: 1787176592}
+  - {fileID: 1664192522}
   chatWindow: {fileID: 1417614912}
   relicChoiceArea: {fileID: 1928598300}
   npcDialogLines:
@@ -56932,7 +57008,6 @@ GameObject:
   - component: {fileID: 1138866864}
   - component: {fileID: 1138866863}
   - component: {fileID: 511562515}
-  - component: {fileID: 1138866865}
   m_Layer: 5
   m_Name: MapPanel
   m_TagString: Untagged
@@ -57080,21 +57155,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1138866861}
   m_CullTransparentMesh: 1
---- !u!114 &1138866865
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1138866861}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0375ee787de9af44f9042027ad2fcec2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mapRoom: {fileID: 1849105014}
-  mapRoomObjectName: MapRoom
-  autoFindMapRoom: 1
 --- !u!1 &1141413083
 GameObject:
   m_ObjectHideFlags: 0
@@ -61634,9 +61694,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   allySpawnPoints:
-  - {fileID: 305116701}
-  - {fileID: 1677211137}
-  - {fileID: 1561540703}
+  - {fileID: 1529565278}
+  - {fileID: 1787176592}
+  - {fileID: 1664192522}
   allySpawnScale: 0.7
   upgradePanel: {fileID: 72850082}
   upgradeButtonRoot: {fileID: 160912499}
@@ -63777,7 +63837,7 @@ MonoBehaviour:
   - {fileID: 910000000000000020}
   - {fileID: 910000000000000042}
   - {fileID: 910000000000000064}
-  rewardPanel: {fileID: 910100000000000002}
+  rewardPanel: {fileID: 297680668}
   relicHoverInfoPanel: {fileID: 0}
   relicHoverNameText: {fileID: 0}
   relicHoverDescText: {fileID: 0}
@@ -76837,7 +76897,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1506357486
 Transform:
   m_ObjectHideFlags: 0
@@ -83104,11 +83164,11 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 930000000000000001}
   - {fileID: 1242706630}
   - {fileID: 1137359716}
   - {fileID: 1268787444}
   - {fileID: 1231175801}
-  - {fileID: 1849105015}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1644429953
@@ -88623,7 +88683,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1744714746
 Transform:
   m_ObjectHideFlags: 0
@@ -89217,7 +89277,7 @@ RectTransform:
   m_GameObject: {fileID: 1755583471}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2071934040}
@@ -93702,63 +93762,6 @@ RectTransform:
   m_AnchoredPosition: {x: 5, y: -40}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!1 &1849105014
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1849105015}
-  - component: {fileID: 1849105016}
-  m_Layer: 0
-  m_Name: MapRoom
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!4 &1849105015
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1849105014}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 777314790}
-  - {fileID: 457932037}
-  m_Father: {fileID: 1644270114}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1849105016
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1849105014}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 08b74680766d0f34785db938ccf45cff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  battleMapPanel: {fileID: 511562515}
-  stageBackgroundController: {fileID: 796714481}
-  fallbackLayerIndex: 0
-  allyRoot: {fileID: 0}
-  allySpawnPoints:
-  - {fileID: 1529565278}
-  - {fileID: 1787176592}
-  - {fileID: 1664192522}
-  allySpawnScale: 1
-  autoFindAllySpawnPoints: 1
-  refreshWhenMapOpens: 1
 --- !u!1 &1849431343
 GameObject:
   m_ObjectHideFlags: 0
@@ -100412,17 +100415,17 @@ RectTransform:
   m_GameObject: {fileID: 1979314415}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 297680667}
-  m_Father: {fileID: 911281008}
+  m_Father: {fileID: 742669610}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1979314417
 MonoBehaviour:
   m_ObjectHideFlags: 0
