@@ -342,6 +342,11 @@ public class MapVisualDatabaseTests
         Assert.That(prefabText, Does.Contain("visualObjectId: event_visual_test_crystal"));
         Assert.That(prefabText, Does.Contain("ActionId: event_choice_success"));
         Assert.That(prefabText, Does.Contain("ActionId: event_choice_failure"));
+        Assert.That(prefabText, Does.Contain("AnimatorStateName: New Animation"));
+        Assert.That(prefabText, Does.Contain("- component: {fileID: 5000000000000000001}"));
+        Assert.That(prefabText, Does.Contain("animator: {fileID: 5000000000000000001}"));
+        Assert.That(prefabText, Does.Contain("m_Controller: {fileID: 9100000, guid: dc80ed60007fb6d4a94cfc8f5311133c, type: 2}"));
+        Assert.That(prefabText, Does.Match("(?s)--- !u!95 &5000000000000000001.*?m_Enabled: 0"));
     }
 
     [Test]

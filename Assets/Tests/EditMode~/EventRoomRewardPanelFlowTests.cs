@@ -146,20 +146,20 @@ public class EventRoomRewardPanelFlowTests
     }
 
     [Test]
-    public void EventRoomController_UsesEventRoomRewardPanelReference()
+    public void EventRoomController_UsesSharedBattleRewardPanelReference()
     {
         FieldInfo field = typeof(EventRoomController).GetField(
             "rewardPanel",
             BindingFlags.Instance | BindingFlags.NonPublic);
 
         Assert.That(field, Is.Not.Null);
-        Assert.That(field.FieldType, Is.EqualTo(typeof(EventRoomRewardPanelUI)));
+        Assert.That(field.FieldType, Is.EqualTo(typeof(BattleRewardPanelUI)));
     }
 
     [Test]
-    public void EventRoomRewardPanelUI_ExposesBattleRewardPanelOpenContract()
+    public void SharedRewardPanel_ExposesRewardOpenContract()
     {
-        MethodInfo openMethod = typeof(EventRoomRewardPanelUI).GetMethod(
+        MethodInfo openMethod = typeof(BattleRewardPanelUI).GetMethod(
             "Open",
             new[] { typeof(List<BattleRewardData>), typeof(Action) });
 

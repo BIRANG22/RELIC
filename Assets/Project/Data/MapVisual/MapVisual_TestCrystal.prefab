@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 2000000000000000001}
   - component: {fileID: 3000000000000000001}
   - component: {fileID: 4000000000000000001}
+  - component: {fileID: 5000000000000000001}
   m_Layer: 0
   m_Name: MapVisual_TestCrystal
   m_TagString: Untagged
@@ -82,12 +83,32 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 10.24, y: 15.36}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!95 &5000000000000000001
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1000000000000000001}
+  m_Enabled: 0
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: dc80ed60007fb6d4a94cfc8f5311133c, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!114 &4000000000000000001
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -101,11 +122,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   visualObjectId: event_visual_test_crystal
-  animator: {fileID: 0}
+  animator: {fileID: 5000000000000000001}
   vfxRoot: {fileID: 2000000000000000001}
   actions:
   - ActionId: event_choice_success
     AnimatorTrigger: 
+    AnimatorStateName: New Animation
     VfxPrefab: {fileID: 5997636969157186472, guid: 1edff599aaa6ccb44847a10c968d8bda, type: 3}
     VfxRootOverride: {fileID: 0}
     VfxLocalPosition: {x: 0, y: 0, z: -0.1}
@@ -114,7 +136,7 @@ MonoBehaviour:
     VfxLifetime: 2
     TintTarget: {fileID: 3000000000000000001}
     ApplyTint: 1
-    TintColor: {r: 0.65, g: 1, b: 1, a: 1}
+    TintColor: {r: 0.6944642, g: 0.9622642, b: 0.9622642, a: 1}
     ScaleTarget: {fileID: 2000000000000000001}
     ApplyLocalScale: 1
     LocalScale: {x: 1.12, y: 1.12, z: 1}
@@ -123,6 +145,7 @@ MonoBehaviour:
     ActiveState: 1
   - ActionId: event_choice_failure
     AnimatorTrigger: 
+    AnimatorStateName: New Animation
     VfxPrefab: {fileID: 0}
     VfxRootOverride: {fileID: 0}
     VfxLocalPosition: {x: 0, y: 0, z: 0}

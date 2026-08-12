@@ -24,7 +24,7 @@ public class EventRoomController : MonoBehaviour
     [SerializeField] private EventChoiceSlotUI[] choiceSlots;
 
     [Header("Event Rewards")]
-    [SerializeField] private EventRoomRewardPanelUI rewardPanel;
+    [SerializeField] private BattleRewardPanelUI rewardPanel;
 
     [Header("Hover Info Panel")]
     [SerializeField] private GameObject relicHoverInfoPanel;
@@ -428,6 +428,20 @@ public class EventRoomController : MonoBehaviour
     {
         if (!result.HasVisualAction)
             return;
+
+        BattleSceneController sceneController =
+            Object.FindFirstObjectByType<BattleSceneController>(FindObjectsInactive.Include);
+        if (sceneController != null)
+        {
+            if (!sceneController.TryPlaySharedMapVisualAction(result.VisualObjectId, result.VisualActionId))
+            {
+                Debug.LogWarning(
+                    $"[EventRoomController] Visual action not found: {result.VisualObjectId}/{result.VisualActionId}",
+                    this);
+            }
+
+            return;
+        }
 
         MapVisualController visualController = GetComponent<MapVisualController>();
         if (visualController == null)
@@ -1234,7 +1248,7 @@ public class EventRoomController : MonoBehaviour
 
         if (rewardPanel == null)
         {
-            Debug.LogWarning("[EventRoomController] EventRoomRewardPanelUI not found for event rewards.");
+            Debug.LogWarning("[EventRoomController] Shared BattleRewardPanelUI not found for event rewards.");
             return false;
         }
 
@@ -1262,10 +1276,10 @@ public class EventRoomController : MonoBehaviour
         if (rewardPanel != null)
             return;
 
-        rewardPanel = GetComponentInChildren<EventRoomRewardPanelUI>(true);
+        rewardPanel = GetComponentInChildren<BattleRewardPanelUI>(true);
 
         if (rewardPanel == null)
-            rewardPanel = Object.FindFirstObjectByType<EventRoomRewardPanelUI>(FindObjectsInactive.Include);
+            rewardPanel = Object.FindFirstObjectByType<BattleRewardPanelUI>(FindObjectsInactive.Include);
     }
 
     private Sprite GetSkillSprite(string skillId, SkillMasterData skill)

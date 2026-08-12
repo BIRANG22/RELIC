@@ -156,8 +156,46 @@ public class BattleResultChecker : MonoBehaviour
 
         Debug.Log($"[BattleResultChecker] ResolvedRewardCount:{rewards.Count}");
 
-        rewardPanel.Open(rewards, onRewardFlowCompleted);
+        rewardPanel.Open(rewards, () => CompleteBattleRewardFlow(onRewardFlowCompleted));
         return true;
+    }
+
+    private static void CompleteBattleRewardFlow(System.Action completedCallback)
+    {
+        MarkCurrentBattleNodeCleared();
+
+        if (BattleRewardCollector.Instance != null)
+            BattleRewardCollector.Instance.Clear();
+
+        BattleRoomCleaner cleaner =
+            Object.FindFirstObjectByType<BattleRoomCleaner>(FindObjectsInactive.Include);
+        cleaner?.PrepareForMapSelection();
+
+        if (completedCallback != null)
+        {
+            completedCallback.Invoke();
+            return;
+        }
+
+        BattleSceneController sceneController =
+            Object.FindFirstObjectByType<BattleSceneController>(FindObjectsInactive.Include);
+
+        if (sceneController != null)
+            sceneController.ReturnToMap();
+        else
+            Debug.LogWarning("[BattleResultChecker] BattleSceneController is missing.");
+    }
+
+    private static void MarkCurrentBattleNodeCleared()
+    {
+        if (DataManager.Instance == null || DataManager.Instance.MapRuntimeStore == null)
+            return;
+
+        MapRuntimeData runtime = DataManager.Instance.MapRuntimeStore.Get();
+        if (!MapRuntimeProgressUtility.MarkCurrentNodeCleared(runtime))
+            return;
+
+        DataManager.Instance.MapRuntimeStore.Set(runtime);
     }
 
     private bool IsAllMonstersDead()

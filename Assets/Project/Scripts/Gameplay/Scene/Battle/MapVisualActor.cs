@@ -75,6 +75,8 @@ public sealed class MapVisualActionEntry
 
     [Header("Animator")]
     public string AnimatorTrigger;
+    [Tooltip("Trigger가 없는 Controller에서 선택 시 직접 재생할 상태 이름입니다.")]
+    public string AnimatorStateName;
 
     [Header("VFX")]
     public GameObject VfxPrefab;
@@ -118,12 +120,21 @@ public sealed class MapVisualActionEntry
 
     private void PlayAnimator(MapVisualActor owner)
     {
-        if (string.IsNullOrWhiteSpace(AnimatorTrigger))
+        Animator resolvedAnimator = owner != null ? owner.ResolveAnimator() : null;
+        if (resolvedAnimator == null)
             return;
 
-        Animator resolvedAnimator = owner != null ? owner.ResolveAnimator() : null;
-        if (resolvedAnimator != null)
+        if (!resolvedAnimator.enabled)
+            resolvedAnimator.enabled = true;
+
+        if (!string.IsNullOrWhiteSpace(AnimatorTrigger))
+        {
             resolvedAnimator.SetTrigger(AnimatorTrigger.Trim());
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(AnimatorStateName))
+            resolvedAnimator.Play(AnimatorStateName.Trim(), 0, 0f);
     }
 
     private void SpawnVfx(MapVisualActor owner)
