@@ -497,14 +497,14 @@ Map_06,Elite_Battle1,Elite,Battlemap_06,,Chapter1,Stage1,1,,
 Map_07,Elite_Battle2,Elite,Battlemap_06,,Chapter1,Stage1,1,,
 Map_08,Boss_Battle,Boss,Battlemap_07,,Chapter1,Stage1,1,,
 Map_09,Special1,Special,0,Event_05,Chapter1,Stage1,1,,
-Map_09,Special2,Special,0,Event_05,Chapter1,Stage1,1,,
-Map_09,Special3,Special,0,Event_05,Chapter1,Stage1,1,,
-Map_09,Special4,Special,0,Event_05,Chapter1,Stage1,1,,
-Map_09,Special5,Special,0,Event_05,Chapter1,Stage1,1,,
-Map_09,Special6,Special,0,Event_05,Chapter1,Stage1,1,,
-Map_09,Special7,Special,0,Event_05,Chapter1,Stage1,1,,
-Map_09,Special8,Special,0,Event_05,Chapter1,Stage1,1,,
-Map_09,Special9,Special,0,Event_05,Chapter1,Stage1,1,,
+Map_10,Special2,Special,0,Event_08,Chapter1,Stage1,1,,
+Map_11,Special3,Special,0,Event_04,Chapter1,Stage1,1,,
+Map_12,Special4,Special,0,Event_02,Chapter1,Stage1,1,,
+Map_13,Special5,Special,0,Event_03,Chapter1,Stage1,1,,
+Map_14,Special6,Special,0,Event_04,Chapter1,Stage1,1,,
+Map_15,Special7,Special,0,Event_06,Chapter1,Stage1,1,,
+Map_16,Special8,Special,0,Event_07,Chapter1,Stage1,1,,
+Map_17,Special9,Special,0,Event_01,Chapter1,Stage1,1,,
 ,,,,,,,,,
 ,,,
 
@@ -535,34 +535,34 @@ Battlemap_07,Mon_12,27,-1,-1,-1,Elise*1,0,60,30,10
 # Event
 이벤트ID,이벤트 이름,제목,선택지 순서,선택지이름,선택지 내용,선택지 타입,선택 조건,비용 타입,비용 대상,비용 값,성공 조건,결과타입,결과대상,결과값,성공확률,실패결과,다음이벤트ID,PersistAcrossNextEvent,SuccessVisualObjectId,SuccessVisualActionId,FailureVisualObjectId,FailureVisualActionId
 EventId,EventName,Title,ChoiceOrder,ChoiceName,ChoiceDesc,ChoiceType,SelectCondition,CostType,CostTarget,CostValue,SuccessCondition,ResultType,ResultTarget,ResultValue,SuccessRate,FailResult,NextEventId,PersistAcrossNextEvent,SuccessVisualObjectId,SuccessVisualActionId,FailureVisualObjectId,FailureVisualActionId
-Event_01,세라피아 교단과의 조우,“이곳에 오래 머무는 것은 위험합니다. 떠나기 전에 저희가 도울 수 있는 일이 있다면 말씀해 주세요.”,1,지원 요청,무작위 유물 1개 획득,Immediate,,,,,,GainRandom,유물,1개,,,,,event_visual_test_crystal,event_choice_01_success,,event_choice_01_failure
-Event_01,세라피아 교단과의 조우,“이곳에 오래 머무는 것은 위험합니다. 떠나기 전에 저희가 도울 수 있는 일이 있다면 말씀해 주세요.”,2,정화 요청,육면체 주사위 3개를 굴려 파티 전원의 체력을 회복한다.,Dice,,,,,,RollTable,파티 전원 현재 체력,RT001,,,,,event_visual_test_crystal,event_choice_02_success,,event_choice_02_failure
-Event_01,세라피아 교단과의 조우,“이곳에 오래 머무는 것은 위험합니다. 떠나기 전에 저희가 도울 수 있는 일이 있다면 말씀해 주세요.”,3,기도 요청,육면체 주사위 3개를 굴려 파티 전원의 최대 체력을 증가시킨다.,Dice,,,,,,RollTable,파티 전원 최대 체력,RT002,,,,,event_visual_test_crystal,event_choice_03_success,,event_choice_03_failure
-Event_02,모르테라 교단의 의식,“쇠락한 육신이여…… 금단의 힘을 받아 새로운 그릇으로 깨어나라…….”,1,상자 열기,"판정 없이 반드시 성공, 레드 더스티움 획득",Immediate,,,,,,Gain,레드 더스티움,수량 TBD,,,Event_02_A,,,event_choice_01_success,,event_choice_01_failure
-Event_02_A,모르테라 교단의 의식,상자 열기 후 추가 선택,1,한 번 더 열기,육면체 주사위 3개를 굴린다.,Dice,Event_02 상자 열기 선택 후,,,,11~18,GainMultiple,레드 더스티움 + 무작위 유물,기존 더스티움 유지 + 유물 1개,,3~10: 앞서 획득한 레드 더스티움을 잃고 도주,,,,event_choice_02_success,,event_choice_02_failure
-Event_02,모르테라 교단의 의식,“쇠락한 육신이여…… 금단의 힘을 받아 새로운 그릇으로 깨어나라…….”,2,의식 엿보기,육면체 주사위 3개를 굴린다.,Dice,,,,,9~18,Modify,파티 코스트 회복량,+1,,3~8: 파티 최대 코스트 -1,,,,event_choice_03_success,,event_choice_03_failure
-Event_02,모르테라 교단의 의식,“쇠락한 육신이여…… 금단의 힘을 받아 새로운 그릇으로 깨어나라…….”,3,의식 방해,육면체 주사위 3개를 굴린다.,Dice,,,,,13~18,GainRandom,유물,1개,,3~12: 파티 전원 현재 체력 감소 (수치 TBD),,,,event_choice_04_success,,event_choice_04_failure
-Event_03,시체더미,"시체들 사이로 아직 쓸 만한 물건이 보이지만, 더미 안쪽에서 희미한 움직임이 느껴진다.",1,시체 불태우기,육면체 주사위 3개를 굴려 레드 더스티움을 획득한다.,Dice,,,,,,RollTable,레드 더스티움,RT003,,,,,,event_choice_01_success,,event_choice_01_failure
-Event_03,시체더미,"시체들 사이로 아직 쓸 만한 물건이 보이지만, 더미 안쪽에서 희미한 움직임이 느껴진다.",2,시체 조사,무작위 기억 1개 획득,Immediate,,,,,,GainRandom,기억,1개,,,,,,event_choice_02_success,,event_choice_02_failure
-Event_04,수상한 자와의 조우,“쓸 만한 물건을 찾는 모양이군. 대가는 어떤 방식으로 치르겠나?”,1,수상한 거래,"레드 더스티움을 지불, 무작위 유물 1개 획득",CostExchange,,레드 더스티움,파티,수량 TBD,,GainRandom,유물,1개,,,,,,event_choice_01_success,,event_choice_01_failure
-Event_04,수상한 자와의 조우,“쓸 만한 물건을 찾는 모양이군. 대가는 어떤 방식으로 치르겠나?”,2,운명 시험,육면체 주사위 3개를 굴린다.,Dice,,,,,11~18,GainRandom,유물,1개,,3~10: 파티 전원 현재 체력 -5,,,,event_choice_02_success,,event_choice_02_failure
-Event_04,수상한 자와의 조우,“쓸 만한 물건을 찾는 모양이군. 대가는 어떤 방식으로 치르겠나?”,3,등가 교환,보유한 유물 1개를 선택하여 잃고 새로운 무작위 유물 1개 획득,CostExchange,유물 1개 이상 보유,유물,선택 유물,1개,,GainRandom,유물,1개,,,,,,event_choice_03_success,,event_choice_03_failure
+Event_01,세라피아 교단과의 조우,“이곳에 오래 머무는 것은 위험합니다. 떠나기 전에 저희가 도울 수 있는 일이 있다면 말씀해 주세요.”,1,지원 요청,무작위 유물 1개 획득,Immediate,,,,,,GainRandom,유물,1개,,,,,event1,event_choice_01_success,event1,event_choice_01_failure
+Event_01,세라피아 교단과의 조우,“이곳에 오래 머무는 것은 위험합니다. 떠나기 전에 저희가 도울 수 있는 일이 있다면 말씀해 주세요.”,2,정화 요청,육면체 주사위 3개를 굴려 파티 전원의 체력을 회복한다.,Dice,,,,,,RollTable,파티 전원 현재 체력,RT001,,,,,event1,event_choice_02_success,event1,event_choice_02_failure
+Event_01,세라피아 교단과의 조우,“이곳에 오래 머무는 것은 위험합니다. 떠나기 전에 저희가 도울 수 있는 일이 있다면 말씀해 주세요.”,3,기도 요청,육면체 주사위 3개를 굴려 파티 전원의 최대 체력을 증가시킨다.,Dice,,,,,,RollTable,파티 전원 최대 체력,RT002,,,,,event1,event_choice_03_success,event1,event_choice_03_failure
+Event_02,모르테라 교단의 의식,“쇠락한 육신이여…… 금단의 힘을 받아 새로운 그릇으로 깨어나라…….”,1,상자 열기,"판정 없이 반드시 성공, 레드 더스티움 획득",Immediate,,,,,,Gain,레드 더스티움,수량 TBD,,,Event_02_A,,event2,event_choice_01_success,event2,event_choice_01_failure
+Event_02_A,모르테라 교단의 의식,상자 열기 후 추가 선택,1,한 번 더 열기,육면체 주사위 3개를 굴린다.,Dice,Event_02 상자 열기 선택 후,,,,11~18,GainMultiple,레드 더스티움 + 무작위 유물,기존 더스티움 유지 + 유물 1개,,3~10: 앞서 획득한 레드 더스티움을 잃고 도주,,,event2,event_choice_02_success,event2,event_choice_02_failure
+Event_02,모르테라 교단의 의식,“쇠락한 육신이여…… 금단의 힘을 받아 새로운 그릇으로 깨어나라…….”,2,의식 엿보기,육면체 주사위 3개를 굴린다.,Dice,,,,,9~18,Modify,파티 코스트 회복량,+1,,3~8: 파티 최대 코스트 -1,,,event2,event_choice_03_success,event2,event_choice_03_failure
+Event_02,모르테라 교단의 의식,“쇠락한 육신이여…… 금단의 힘을 받아 새로운 그릇으로 깨어나라…….”,3,의식 방해,육면체 주사위 3개를 굴린다.,Dice,,,,,13~18,GainRandom,유물,1개,,3~12: 파티 전원 현재 체력 감소 (수치 TBD),,,event2,event_choice_04_success,event2,event_choice_04_failure
+Event_03,시체더미,"시체들 사이로 아직 쓸 만한 물건이 보이지만, 더미 안쪽에서 희미한 움직임이 느껴진다.",1,시체 불태우기,육면체 주사위 3개를 굴려 레드 더스티움을 획득한다.,Dice,,,,,,RollTable,레드 더스티움,RT003,,,,,event3,event_choice_01_success,event3,event_choice_01_failure
+Event_03,시체더미,"시체들 사이로 아직 쓸 만한 물건이 보이지만, 더미 안쪽에서 희미한 움직임이 느껴진다.",2,시체 조사,무작위 기억 1개 획득,Immediate,,,,,,GainRandom,기억,1개,,,,,event3,event_choice_02_success,event3,event_choice_02_failure
+Event_04,수상한 자와의 조우,“쓸 만한 물건을 찾는 모양이군. 대가는 어떤 방식으로 치르겠나?”,1,수상한 거래,"레드 더스티움을 지불, 무작위 유물 1개 획득",CostExchange,,레드 더스티움,파티,수량 TBD,,GainRandom,유물,1개,,,,,event4,event_choice_01_success,event4,event_choice_01_failure
+Event_04,수상한 자와의 조우,“쓸 만한 물건을 찾는 모양이군. 대가는 어떤 방식으로 치르겠나?”,2,운명 시험,육면체 주사위 3개를 굴린다.,Dice,,,,,11~18,GainRandom,유물,1개,,3~10: 파티 전원 현재 체력 -5,,,event4,event_choice_02_success,event4,event_choice_02_failure
+Event_04,수상한 자와의 조우,“쓸 만한 물건을 찾는 모양이군. 대가는 어떤 방식으로 치르겠나?”,3,등가 교환,보유한 유물 1개를 선택하여 잃고 새로운 무작위 유물 1개 획득,CostExchange,유물 1개 이상 보유,유물,선택 유물,1개,,GainRandom,유물,1개,,,,,event4,event_choice_03_success,event4,event_choice_03_failure
 Event_05,거대한 더스티움,"불안정해 보이지만, 조심스럽게 채굴한다면 상당한 양을 확보할 수 있을 것 같다.",1,소량 채굴,육면체 주사위 3개를 굴린다.,Dice,,,,,9~18,Accumulate,레드 더스티움,소량,,3~8: 누적 레드 더스티움 전부 소실,Event_05,,event5,event_choice_01_success,event5,event_choice_01_failure
 Event_05,거대한 더스티움,"불안정해 보이지만, 조심스럽게 채굴한다면 상당한 양을 확보할 수 있을 것 같다.",2,대량 채굴,육면체 주사위 3개를 굴린다.,Dice,,,,,13~18,Accumulate,레드 더스티움,대량,,3~12: 누적 레드 더스티움 전부 소실,Event_05,,event5,event_choice_02_success,event5,event_choice_02_failure
 Event_05,거대한 더스티움,"불안정해 보이지만, 조심스럽게 채굴한다면 상당한 양을 확보할 수 있을 것 같다.",3,채굴 종료,현재까지 누적한 레드 더스티움을 확정 획득,Conditional,채굴 1회 이상 성공,,,,,CommitAccumulated,레드 더스티움,누적량,,,,,event5,event_choice_03_success,event5,event_choice_03_failure
-Event_06,떠돌이 거래상,“이런 곳에서 손님을 만날 줄이야. 마침 쓸 만한 물건이 좀 있는데…… 구경해 보겠나?”,1,물품 확인,"상점 패널 활성화, 상품 구매",OpenUI,,,,,,OpenPanel,상점,활성화,,,,,,event_choice_01_success,,event_choice_01_failure
-Event_06,떠돌이 거래상,“이런 곳에서 손님을 만날 줄이야. 마침 쓸 만한 물건이 좀 있는데…… 구경해 보겠나?”,2,떠나기,거래하지 않고 이벤트 종료,Exit,,,,,,EndEvent,,,,,,,,event_choice_02_success,,event_choice_02_failure
-Event_07,안식의 샘,고요한 물소리와 함께 분수에서 희미한 빛이 흘러나온다. 분수에 남은 힘은 한 번만 사용할 수 있을 것 같다.,1,기억 강화,보유한 기억 중 무작위 기억 1개 강화,Immediate,기억 1개 이상 보유,,,,,UpgradeRandom,기억,1개,,,,,,event_choice_01_success,,event_choice_01_failure
-Event_07,안식의 샘,고요한 물소리와 함께 분수에서 희미한 빛이 흘러나온다. 분수에 남은 힘은 한 번만 사용할 수 있을 것 같다.,2,휴식,파티 전원의 체력 회복,Immediate,,,,,,Heal,파티 전원 현재 체력,회복량 TBD,,,,,,event_choice_02_success,,event_choice_02_failure
-Event_08,공명의 비석,비석의 문자가 기억에 반응한다. 힘을 깨울수록 소멸할 위험이 커진다.,1,1차 공명,각성하지 않은 기억 1개를 선택,Chance,미각성 기억 1개 이상,,,,,Awaken,선택 기억,각성,90%,실패 결과 TBD,Event_08_A,,event_visual_test_crystal,event_choice_01_success,event_visual_test_crystal,event_choice_01_failure
-Event_08_A,공명의 비석,1차 공명 성공 후,1,2차 공명,다른 각성하지 않은 기억을 선택,Chance,다른 미각성 기억 1개 이상,,,,,Awaken,선택 기억,각성,50%,실패 결과 TBD,Event_08_B,,event_visual_test_crystal,event_choice_02_success,event_visual_test_crystal,event_choice_02_failure
-Event_08_B,공명의 비석,2차 공명 성공 후,1,3차 공명,다른 각성하지 않은 기억을 선택,Chance,다른 미각성 기억 1개 이상,,,,,Awaken,선택 기억,각성,30%,실패 결과 TBD,,,event_visual_test_crystal,event_choice_03_success,event_visual_test_crystal,event_choice_03_failure
-Event_08,공명의 비석,비석의 문자가 기억에 반응한다. 힘을 깨울수록 소멸할 위험이 커진다.,2,돌아선다,현재까지 각성한 기억을 유지하고 이벤트 종료,Exit,,,,,,EndEvent,,,,,,true,event_visual_test_crystal,event_choice_04_success,,event_choice_04_failure
-Event_09,한 줄기 빛,"폐허에 들어선 순간, 갈라진 하늘 사이로 빛이 내려온다. 빛 속에서 서로 다른 기억들이 모습을 드러낸다.",1,첫 번째 잔상,공격 관련 기억 2개가 제시된다.,SelectReward,,,,,,OfferChoice,공격 관련 기억,2개 제시 / 선택 규칙 TBD,,,,,,event_choice_01_success,,event_choice_01_failure
-Event_09,한 줄기 빛,"폐허에 들어선 순간, 갈라진 하늘 사이로 빛이 내려온다. 빛 속에서 서로 다른 기억들이 모습을 드러낸다.",2,두 번째 잔상,버프 관련 기억 2개가 제시된다.,SelectReward,,,,,,OfferChoice,버프 관련 기억,2개 제시 / 선택 규칙 TBD,,,,,,event_choice_02_success,,event_choice_02_failure
-Event_09,한 줄기 빛,"폐허에 들어선 순간, 갈라진 하늘 사이로 빛이 내려온다. 빛 속에서 서로 다른 기억들이 모습을 드러낸다.",3,세 번째 잔상,디버프 관련 기억 2개가 제시된다.,SelectReward,,,,,,OfferChoice,디버프 관련 기억,2개 제시 / 선택 규칙 TBD,,,,,,event_choice_03_success,,event_choice_03_failure
+Event_06,떠돌이 거래상,“이런 곳에서 손님을 만날 줄이야. 마침 쓸 만한 물건이 좀 있는데…… 구경해 보겠나?”,1,물품 확인,"상점 패널 활성화, 상품 구매",OpenUI,,,,,,OpenPanel,상점,활성화,,,,,event6,event_choice_01_success,event6,event_choice_01_failure
+Event_06,떠돌이 거래상,“이런 곳에서 손님을 만날 줄이야. 마침 쓸 만한 물건이 좀 있는데…… 구경해 보겠나?”,2,떠나기,거래하지 않고 이벤트 종료,Exit,,,,,,EndEvent,,,,,,,event6,event_choice_02_success,event6,event_choice_02_failure
+Event_07,안식의 샘,고요한 물소리와 함께 분수에서 희미한 빛이 흘러나온다. 분수에 남은 힘은 한 번만 사용할 수 있을 것 같다.,1,기억 강화,보유한 기억 중 무작위 기억 1개 강화,Immediate,기억 1개 이상 보유,,,,,UpgradeRandom,기억,1개,,,,,event7,event_choice_01_success,event7,event_choice_01_failure
+Event_07,안식의 샘,고요한 물소리와 함께 분수에서 희미한 빛이 흘러나온다. 분수에 남은 힘은 한 번만 사용할 수 있을 것 같다.,2,휴식,파티 전원의 체력 회복,Immediate,,,,,,Heal,파티 전원 현재 체력,회복량 TBD,,,,,event7,event_choice_02_success,event7,event_choice_02_failure
+Event_08,공명의 비석,비석의 문자가 기억에 반응한다. 힘을 깨울수록 소멸할 위험이 커진다.,1,1차 공명,각성하지 않은 기억 1개를 선택,Chance,미각성 기억 1개 이상,,,,,Awaken,선택 기억,각성,90%,실패 결과 TBD,Event_08_A,,event8,event_choice_01_success,event8,event_choice_01_failure
+Event_08_A,공명의 비석,1차 공명 성공 후,1,2차 공명,다른 각성하지 않은 기억을 선택,Chance,다른 미각성 기억 1개 이상,,,,,Awaken,선택 기억,각성,50%,실패 결과 TBD,Event_08_B,,event8,event_choice_02_success,event8,event_choice_02_failure
+Event_08_B,공명의 비석,2차 공명 성공 후,1,3차 공명,다른 각성하지 않은 기억을 선택,Chance,다른 미각성 기억 1개 이상,,,,,Awaken,선택 기억,각성,30%,실패 결과 TBD,,,event8,event_choice_03_success,event8,event_choice_03_failure
+Event_08,공명의 비석,비석의 문자가 기억에 반응한다. 힘을 깨울수록 소멸할 위험이 커진다.,2,돌아선다,현재까지 각성한 기억을 유지하고 이벤트 종료,Exit,,,,,,EndEvent,,,,,,true,event8,event_choice_04_success,event8,event_choice_04_failure
+Event_09,한 줄기 빛,"폐허에 들어선 순간, 갈라진 하늘 사이로 빛이 내려온다. 빛 속에서 서로 다른 기억들이 모습을 드러낸다.",1,첫 번째 잔상,공격 관련 기억 2개가 제시된다.,SelectReward,,,,,,OfferChoice,공격 관련 기억,2개 제시 / 선택 규칙 TBD,,,,,event9,event_choice_01_success,event9,event_choice_01_failure
+Event_09,한 줄기 빛,"폐허에 들어선 순간, 갈라진 하늘 사이로 빛이 내려온다. 빛 속에서 서로 다른 기억들이 모습을 드러낸다.",2,두 번째 잔상,버프 관련 기억 2개가 제시된다.,SelectReward,,,,,,OfferChoice,버프 관련 기억,2개 제시 / 선택 규칙 TBD,,,,,event9,event_choice_02_success,event9,event_choice_02_failure
+Event_09,한 줄기 빛,"폐허에 들어선 순간, 갈라진 하늘 사이로 빛이 내려온다. 빛 속에서 서로 다른 기억들이 모습을 드러낸다.",3,세 번째 잔상,디버프 관련 기억 2개가 제시된다.,SelectReward,,,,,,OfferChoice,디버프 관련 기억,2개 제시 / 선택 규칙 TBD,,,,,event9,event_choice_03_success,event9,event_choice_03_failure
 
-
+,,,,,,
 
 
 

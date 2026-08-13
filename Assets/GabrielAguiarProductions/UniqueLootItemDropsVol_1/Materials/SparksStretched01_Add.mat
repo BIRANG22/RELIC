@@ -116,7 +116,7 @@ Material:
     - _Blend: 2
     - _CastShadows: 1
     - _Clip: 0
-    - _Cull: 2
+    - _Cull: 0
     - _Dissolve: 0.8
     - _DissolveAmount: 1
     - _DistortionAmount: 0
