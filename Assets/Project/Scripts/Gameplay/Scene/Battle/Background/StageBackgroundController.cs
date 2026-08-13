@@ -59,6 +59,11 @@ public class StageBackgroundController : MonoBehaviour
     private GameObject currentPrefab;
     private GameObject currentInstance;
 
+    public IBattleRoomIntroSequence CurrentBattleRoomIntroSequence =>
+        st1BossPrefab != null && currentPrefab == st1BossPrefab
+            ? timedObjectRevealSequence
+            : null;
+
     /// <summary>
     /// 현재 레이어에 해당하는 배경을 생성합니다.
     /// layerIndex는 0부터 시작하므로 행 번호는 1을 더합니다.
@@ -85,6 +90,9 @@ public class StageBackgroundController : MonoBehaviour
         if (currentPrefab == range.Prefab &&
             currentInstance != null)
         {
+            if (range.Prefab == st1BossPrefab)
+                PlaySt1BossRevealSequence();
+
             return;
         }
 

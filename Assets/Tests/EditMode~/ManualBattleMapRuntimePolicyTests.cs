@@ -59,6 +59,60 @@ public class ManualBattleMapRuntimePolicyTests
     }
 
     [Test]
+    public void ShouldRegenerate_ReturnsFalseWhenExistingGenerationKeyMatches()
+    {
+        MapRuntimeData runtime = new()
+        {
+            IsRunInitialized = true,
+            IsManualMapTemplate = false,
+            MapGenerationKey = "BattleMapGeneration:FilterA",
+            GeneratedNodes = new List<GeneratedMapNodeData>
+            {
+                new()
+                {
+                    NodeIndex = 0,
+                    LayerIndex = 0,
+                    Type = "Start",
+                    MapId = "procedural_start"
+                }
+            }
+        };
+
+        bool shouldRegenerate = BattleMapRuntimeGenerationPolicy.ShouldRegenerate(
+            runtime,
+            "BattleMapGeneration:FilterA");
+
+        Assert.That(shouldRegenerate, Is.False);
+    }
+
+    [Test]
+    public void ShouldRegenerate_ReturnsTrueWhenGenerationKeyChanges()
+    {
+        MapRuntimeData runtime = new()
+        {
+            IsRunInitialized = true,
+            IsManualMapTemplate = false,
+            MapGenerationKey = "BattleMapGeneration:FilterA",
+            GeneratedNodes = new List<GeneratedMapNodeData>
+            {
+                new()
+                {
+                    NodeIndex = 0,
+                    LayerIndex = 0,
+                    Type = "Start",
+                    MapId = "procedural_start"
+                }
+            }
+        };
+
+        bool shouldRegenerate = BattleMapRuntimeGenerationPolicy.ShouldRegenerate(
+            runtime,
+            "BattleMapGeneration:FilterB");
+
+        Assert.That(shouldRegenerate, Is.True);
+    }
+
+    [Test]
     public void ResetProgressForRegeneratedMap_PreservesClearedCurrentNodeWhenNodeStillExists()
     {
         MapRuntimeData runtime = new()

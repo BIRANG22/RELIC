@@ -21,13 +21,14 @@ namespace Relic.Gameplay.Data
         public bool IsRunInitialized;
         public bool IsManualMapTemplate;
         public string ManualMapTemplateKey;
+        public string MapGenerationKey;
 
         public List<GeneratedMapNodeData> GeneratedNodes = new();
     }
 
     public static class BattleMapRuntimeGenerationPolicy
     {
-        public static bool ShouldRegenerate(MapRuntimeData runtime, string manualTemplateKey)
+        public static bool ShouldRegenerate(MapRuntimeData runtime, string generationKey)
         {
             if (runtime == null)
                 return false;
@@ -37,7 +38,16 @@ namespace Relic.Gameplay.Data
             if (!runtime.IsRunInitialized || !hasGeneratedNodes)
                 return true;
 
-            if (string.IsNullOrWhiteSpace(manualTemplateKey))
+            string requestedGenerationKey = generationKey?.Trim() ?? string.Empty;
+            string existingGenerationKey = runtime.MapGenerationKey?.Trim() ?? string.Empty;
+
+            if (!string.IsNullOrWhiteSpace(existingGenerationKey))
+                return !string.Equals(
+                    existingGenerationKey,
+                    requestedGenerationKey,
+                    StringComparison.Ordinal);
+
+            if (string.IsNullOrWhiteSpace(requestedGenerationKey))
                 return false;
 
             if (!runtime.IsManualMapTemplate)
@@ -45,8 +55,8 @@ namespace Relic.Gameplay.Data
 
             return !string.Equals(
                 runtime.ManualMapTemplateKey?.Trim(),
-                manualTemplateKey.Trim(),
-                System.StringComparison.Ordinal);
+                requestedGenerationKey,
+                StringComparison.Ordinal);
         }
 
         public static void ResetProgressForRegeneratedMap(MapRuntimeData runtime)

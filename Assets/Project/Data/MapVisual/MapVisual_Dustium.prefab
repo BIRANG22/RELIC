@@ -107,19 +107,19 @@ MonoBehaviour:
   actions:
   - ActionId: event_choice_01_success
     AnimatorTrigger: 
-    AnimatorStateName: 
+    AnimatorStateName: event_dustium_fale
     VfxPrefab: {fileID: 1117934107437797500, guid: 88f1a976e51edc6498fbd356d3e3f7f1, type: 3}
     VfxRootOverride: {fileID: 2000000000000000001}
     VfxLocalPosition: {x: 0, y: 0, z: -0.1}
     VfxLocalEulerAngles: {x: 0, y: 0, z: 0}
-    VfxLocalScale: {x: 1, y: 1, z: 1}
+    VfxLocalScale: {x: 0.75, y: 0.75, z: 0.75}
     VfxLifetime: 2
     TintTarget: {fileID: 3000000000000000001}
     ApplyTint: 1
-    TintColor: {r: 1, g: 0.11097643, b: 0, a: 1}
+    TintColor: {r: 0.6944642, g: 0.9622642, b: 0.9622642, a: 1}
     ScaleTarget: {fileID: 2000000000000000001}
     ApplyLocalScale: 1
-    LocalScale: {x: 1, y: 1, z: 1}
+    LocalScale: {x: 1.12, y: 1.12, z: 1}
     ActiveTarget: {fileID: 0}
     ApplyActiveState: 0
     ActiveState: 1
@@ -285,6 +285,18 @@ MonoBehaviour:
     ActiveTarget: {fileID: 0}
     ApplyActiveState: 0
     ActiveState: 1
+  useWorldVfxProxy: 1
+  vfxLayerName: VFX
+  worldVfxProxyBlendMode: 0
+  worldVfxRenderTextureWidth: 512
+  worldVfxRenderTextureHeight: 512
+  worldVfxRenderCameraOrthographicSize: 5
+  worldVfxProxyWorldHeight: 10
+  worldVfxProxyWorldOffset: {x: 0, y: 0, z: 0}
+  worldVfxProxySortingLayerName:
+  worldVfxProxySortingOrderOffset: 1
+  worldVfxProxySortingWorldYOffset: 0
+  worldVfxProxyYMultiplier: 100
 --- !u!95 &5000000000000000001
 Animator:
   serializedVersion: 7
