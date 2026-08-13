@@ -87,7 +87,7 @@ Material:
     - _Blend: 2
     - _CastShadows: 1
     - _Clip: 0
-    - _Cull: 2
+    - _Cull: 0
     - _DissolveAmount: 0.723
     - _DistortionAmount: 0
     - _DstBlend: 1

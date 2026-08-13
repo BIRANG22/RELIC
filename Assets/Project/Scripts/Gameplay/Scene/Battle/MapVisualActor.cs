@@ -286,9 +286,14 @@ public sealed class MapVisualActionEntry
     public Vector3 LocalScale = Vector3.one;
 
     [Header("Activation")]
-    public GameObject ActiveTarget;
-    public bool ApplyActiveState;
-    public bool ActiveState = true;
+    [Tooltip("이 액션에서 활성화/비활성화할 오브젝트 목록입니다.")]
+    public List<MapVisualActivationEntry> Activations = new();
+
+    // 기존 씬/프리팹에 저장되어 있던 단일 Activation 데이터를 유지하기 위한 레거시 필드입니다.
+    // Inspector에는 숨기고 실행 시에는 계속 적용합니다.
+    [HideInInspector] public GameObject ActiveTarget;
+    [HideInInspector] public bool ApplyActiveState;
+    [HideInInspector] public bool ActiveState = true;
 
     public bool Matches(string actionId)
     {
@@ -374,9 +379,28 @@ public sealed class MapVisualActionEntry
 
     private void ApplyActivation()
     {
-        if (!ApplyActiveState || ActiveTarget == null)
+        // 기존 단일 Activation 설정이 저장되어 있는 경우 그대로 유지합니다.
+        if (ApplyActiveState && ActiveTarget != null)
+            ActiveTarget.SetActive(ActiveState);
+
+        if (Activations == null)
             return;
 
-        ActiveTarget.SetActive(ActiveState);
+        for (int i = 0; i < Activations.Count; i++)
+        {
+            MapVisualActivationEntry activation = Activations[i];
+            if (activation == null || !activation.ApplyActiveState || activation.ActiveTarget == null)
+                continue;
+
+            activation.ActiveTarget.SetActive(activation.ActiveState);
+        }
     }
+}
+
+[Serializable]
+public sealed class MapVisualActivationEntry
+{
+    public GameObject ActiveTarget;
+    public bool ApplyActiveState = true;
+    public bool ActiveState = true;
 }
