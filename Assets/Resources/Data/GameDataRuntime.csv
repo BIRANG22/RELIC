@@ -496,15 +496,15 @@ Map_05,Common_Battle6,Common,Battlemap_05,,Chapter1,Stage1,1,,
 Map_06,Elite_Battle1,Elite,Battlemap_06,,Chapter1,Stage1,1,,
 Map_07,Elite_Battle2,Elite,Battlemap_06,,Chapter1,Stage1,1,,
 Map_08,Boss_Battle,Boss,Battlemap_07,,Chapter1,Stage1,1,,
-Map_09,Special1,Special,0,Event_05,Chapter1,Stage1,1,,
-Map_10,Special2,Special,0,Event_08,Chapter1,Stage1,1,,
-Map_11,Special3,Special,0,Event_04,Chapter1,Stage1,1,,
-Map_12,Special4,Special,0,Event_02,Chapter1,Stage1,1,,
-Map_13,Special5,Special,0,Event_03,Chapter1,Stage1,1,,
-Map_14,Special6,Special,0,Event_04,Chapter1,Stage1,1,,
-Map_15,Special7,Special,0,Event_06,Chapter1,Stage1,1,,
-Map_16,Special8,Special,0,Event_07,Chapter1,Stage1,1,,
-Map_17,Special9,Special,0,Event_01,Chapter1,Stage1,1,,
+Map_09,Special1,Special,0,Event_01,Chapter1,Stage1,1,,
+Map_10,Special2,Special,0,Event_02,Chapter1,Stage1,1,,
+Map_11,Special3,Special,0,Event_03,Chapter1,Stage1,1,,
+Map_12,Special4,Special,0,Event_04,Chapter1,Stage1,1,,
+Map_13,Special5,Special,0,Event_05,Chapter1,Stage1,1,,
+Map_14,Special6,Special,0,Event_06,Chapter1,Stage1,1,,
+Map_15,Special7,Special,0,Event_07,Chapter1,Stage1,1,,
+Map_16,Special8,Special,0,Event_08,Chapter1,Stage1,1,,
+Map_17,Special9,Special,0,Event_09,Chapter1,Stage1,1,,
 ,,,,,,,,,
 ,,,
 
@@ -558,9 +558,9 @@ Event_08,공명의 비석,비석의 문자가 기억에 반응한다. 힘을 깨
 Event_08_A,공명의 비석,1차 공명 성공 후,1,2차 공명,다른 각성하지 않은 기억을 선택,Chance,다른 미각성 기억 1개 이상,,,,,Awaken,선택 기억,각성,50%,실패 결과 TBD,Event_08_B,,event8,event_choice_02_success,event8,event_choice_02_failure
 Event_08_B,공명의 비석,2차 공명 성공 후,1,3차 공명,다른 각성하지 않은 기억을 선택,Chance,다른 미각성 기억 1개 이상,,,,,Awaken,선택 기억,각성,30%,실패 결과 TBD,,,event8,event_choice_03_success,event8,event_choice_03_failure
 Event_08,공명의 비석,비석의 문자가 기억에 반응한다. 힘을 깨울수록 소멸할 위험이 커진다.,2,돌아선다,현재까지 각성한 기억을 유지하고 이벤트 종료,Exit,,,,,,EndEvent,,,,,,true,event8,event_choice_04_success,event8,event_choice_04_failure
-Event_09,한 줄기 빛,"폐허에 들어선 순간, 갈라진 하늘 사이로 빛이 내려온다. 빛 속에서 서로 다른 기억들이 모습을 드러낸다.",1,첫 번째 잔상,공격 관련 기억 2개가 제시된다.,SelectReward,,,,,,OfferChoice,공격 관련 기억,2개 제시 / 선택 규칙 TBD,,,,,event9,event_choice_01_success,event9,event_choice_01_failure
-Event_09,한 줄기 빛,"폐허에 들어선 순간, 갈라진 하늘 사이로 빛이 내려온다. 빛 속에서 서로 다른 기억들이 모습을 드러낸다.",2,두 번째 잔상,버프 관련 기억 2개가 제시된다.,SelectReward,,,,,,OfferChoice,버프 관련 기억,2개 제시 / 선택 규칙 TBD,,,,,event9,event_choice_02_success,event9,event_choice_02_failure
-Event_09,한 줄기 빛,"폐허에 들어선 순간, 갈라진 하늘 사이로 빛이 내려온다. 빛 속에서 서로 다른 기억들이 모습을 드러낸다.",3,세 번째 잔상,디버프 관련 기억 2개가 제시된다.,SelectReward,,,,,,OfferChoice,디버프 관련 기억,2개 제시 / 선택 규칙 TBD,,,,,event9,event_choice_03_success,event9,event_choice_03_failure
+Event_09,한 줄기 빛,"폐허에 들어선 순간, 갈라진 균열이 나타났다. ",1,첫 번째 잔상,공격 관련 기억 2개가 제시된다.,SelectReward,,,,,,OfferChoice,공격 관련 기억,2개 제시 / 선택 규칙 TBD,,,,,event9,event_choice_01_success,event9,event_choice_01_failure
+Event_09,한 줄기 빛,"폐허에 들어선 순간, 갈라진 균열이 나타났다. ",2,두 번째 잔상,버프 관련 기억 2개가 제시된다.,SelectReward,,,,,,OfferChoice,버프 관련 기억,2개 제시 / 선택 규칙 TBD,,,,,event9,event_choice_02_success,event9,event_choice_02_failure
+Event_09,한 줄기 빛,"폐허에 들어선 순간, 갈라진 균열이 나타났다. ",3,세 번째 잔상,디버프 관련 기억 2개가 제시된다.,SelectReward,,,,,,OfferChoice,디버프 관련 기억,2개 제시 / 선택 규칙 TBD,,,,,event9,event_choice_03_success,event9,event_choice_03_failure
 
 ,,,,,,
 

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 4000000000000000001}
   - component: {fileID: 5000000000000000001}
   m_Layer: 0
-  m_Name: MapVisual_Dustium
+  m_Name: MapVisual_event6_Shop
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -78,7 +78,7 @@ SpriteRenderer:
   m_SortingLayerID: 735699439
   m_SortingLayer: -1
   m_SortingOrder: 20
-  m_Sprite: {fileID: 21300000, guid: fd8914555b33aec4db2713d092f4ffec, type: 3}
+  m_Sprite: {fileID: -489377962, guid: e079c38418f1cc5439dc890c573b407e, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -101,14 +101,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 31bba6d4fa734d6c9c88ca8b3b28f3a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  visualObjectId: event5
+  visualObjectId: event6
   animator: {fileID: 5000000000000000001}
   vfxRoot: {fileID: 2000000000000000001}
   actions:
   - ActionId: event_choice_01_success
     AnimatorTrigger: 
-    AnimatorStateName: 
-    VfxPrefab: {fileID: 4873703482218212909, guid: 30178c6bbd6c7744f935aaeb353f081d, type: 3}
+    AnimatorStateName: toopen
+    VfxPrefab: {fileID: 0}
     VfxRootOverride: {fileID: 2000000000000000001}
     VfxLocalPosition: {x: 0, y: 0, z: -0.1}
     VfxLocalEulerAngles: {x: 0, y: 0, z: 0}
@@ -116,16 +116,19 @@ MonoBehaviour:
     VfxLifetime: 2
     TintTarget: {fileID: 0}
     ApplyTint: 0
-    TintColor: {r: 0.6944642, g: 0.9622642, b: 0.9622642, a: 1}
+    TintColor: {r: 0.33773577, g: 0.590343, b: 1, a: 1}
     ScaleTarget: {fileID: 2000000000000000001}
     ApplyLocalScale: 0
     LocalScale: {x: 1, y: 1, z: 1}
+    Activations: []
+    DisableTargetsOnPlay: []
+    DisableDelayOnPlay: 0
     ActiveTarget: {fileID: 0}
     ApplyActiveState: 0
     ActiveState: 1
   - ActionId: event_choice_01_failure
     AnimatorTrigger: 
-    AnimatorStateName: event_dustium_fale
+    AnimatorStateName: 
     VfxPrefab: {fileID: 0}
     VfxRootOverride: {fileID: 0}
     VfxLocalPosition: {x: 0, y: 0, z: 0}
@@ -138,30 +141,36 @@ MonoBehaviour:
     ScaleTarget: {fileID: 0}
     ApplyLocalScale: 0
     LocalScale: {x: 1, y: 1, z: 1}
+    Activations: []
+    DisableTargetsOnPlay: []
+    DisableDelayOnPlay: 0
     ActiveTarget: {fileID: 0}
     ApplyActiveState: 0
     ActiveState: 1
   - ActionId: event_choice_02_success
     AnimatorTrigger: 
     AnimatorStateName: 
-    VfxPrefab: {fileID: 4873703482218212909, guid: 30178c6bbd6c7744f935aaeb353f081d, type: 3}
-    VfxRootOverride: {fileID: 2000000000000000001}
+    VfxPrefab: {fileID: 0}
+    VfxRootOverride: {fileID: 0}
     VfxLocalPosition: {x: 0, y: 0, z: -0.1}
     VfxLocalEulerAngles: {x: 0, y: 0, z: 0}
     VfxLocalScale: {x: 1, y: 1, z: 1}
     VfxLifetime: 2
     TintTarget: {fileID: 0}
     ApplyTint: 0
-    TintColor: {r: 0.6944642, g: 0.9622642, b: 0.9622642, a: 1}
-    ScaleTarget: {fileID: 2000000000000000001}
+    TintColor: {r: 1, g: 1, b: 1, a: 1}
+    ScaleTarget: {fileID: 0}
     ApplyLocalScale: 0
     LocalScale: {x: 1, y: 1, z: 1}
+    Activations: []
+    DisableTargetsOnPlay: []
+    DisableDelayOnPlay: 0
     ActiveTarget: {fileID: 0}
     ApplyActiveState: 0
     ActiveState: 1
   - ActionId: event_choice_02_failure
     AnimatorTrigger: 
-    AnimatorStateName: event_dustium_fale
+    AnimatorStateName: 
     VfxPrefab: {fileID: 0}
     VfxRootOverride: {fileID: 0}
     VfxLocalPosition: {x: 0, y: 0, z: 0}
@@ -174,6 +183,9 @@ MonoBehaviour:
     ScaleTarget: {fileID: 0}
     ApplyLocalScale: 0
     LocalScale: {x: 1, y: 1, z: 1}
+    Activations: []
+    DisableTargetsOnPlay: []
+    DisableDelayOnPlay: 0
     ActiveTarget: {fileID: 0}
     ApplyActiveState: 0
     ActiveState: 1
@@ -192,6 +204,9 @@ MonoBehaviour:
     ScaleTarget: {fileID: 0}
     ApplyLocalScale: 0
     LocalScale: {x: 1, y: 1, z: 1}
+    Activations: []
+    DisableTargetsOnPlay: []
+    DisableDelayOnPlay: 0
     ActiveTarget: {fileID: 0}
     ApplyActiveState: 0
     ActiveState: 1
@@ -210,78 +225,9 @@ MonoBehaviour:
     ScaleTarget: {fileID: 0}
     ApplyLocalScale: 0
     LocalScale: {x: 1, y: 1, z: 1}
-    ActiveTarget: {fileID: 0}
-    ApplyActiveState: 0
-    ActiveState: 1
-  - ActionId: event_choice_04_success
-    AnimatorTrigger: 
-    AnimatorStateName: 
-    VfxPrefab: {fileID: 0}
-    VfxRootOverride: {fileID: 0}
-    VfxLocalPosition: {x: 0, y: 0, z: 0}
-    VfxLocalEulerAngles: {x: 0, y: 0, z: 0}
-    VfxLocalScale: {x: 1, y: 1, z: 1}
-    VfxLifetime: 0
-    TintTarget: {fileID: 0}
-    ApplyTint: 0
-    TintColor: {r: 1, g: 1, b: 1, a: 1}
-    ScaleTarget: {fileID: 0}
-    ApplyLocalScale: 0
-    LocalScale: {x: 1, y: 1, z: 1}
-    ActiveTarget: {fileID: 0}
-    ApplyActiveState: 0
-    ActiveState: 1
-  - ActionId: event_choice_04_failure
-    AnimatorTrigger: 
-    AnimatorStateName: 
-    VfxPrefab: {fileID: 0}
-    VfxRootOverride: {fileID: 0}
-    VfxLocalPosition: {x: 0, y: 0, z: 0}
-    VfxLocalEulerAngles: {x: 0, y: 0, z: 0}
-    VfxLocalScale: {x: 1, y: 1, z: 1}
-    VfxLifetime: 0
-    TintTarget: {fileID: 0}
-    ApplyTint: 0
-    TintColor: {r: 1, g: 1, b: 1, a: 1}
-    ScaleTarget: {fileID: 0}
-    ApplyLocalScale: 0
-    LocalScale: {x: 1, y: 1, z: 1}
-    ActiveTarget: {fileID: 0}
-    ApplyActiveState: 0
-    ActiveState: 1
-  - ActionId: event_choice_05_success
-    AnimatorTrigger: 
-    AnimatorStateName: 
-    VfxPrefab: {fileID: 0}
-    VfxRootOverride: {fileID: 0}
-    VfxLocalPosition: {x: 0, y: 0, z: 0}
-    VfxLocalEulerAngles: {x: 0, y: 0, z: 0}
-    VfxLocalScale: {x: 1, y: 1, z: 1}
-    VfxLifetime: 0
-    TintTarget: {fileID: 0}
-    ApplyTint: 0
-    TintColor: {r: 1, g: 1, b: 1, a: 1}
-    ScaleTarget: {fileID: 0}
-    ApplyLocalScale: 0
-    LocalScale: {x: 1, y: 1, z: 1}
-    ActiveTarget: {fileID: 0}
-    ApplyActiveState: 0
-    ActiveState: 1
-  - ActionId: event_choice_05_failure
-    AnimatorTrigger: 
-    AnimatorStateName: 
-    VfxPrefab: {fileID: 0}
-    VfxRootOverride: {fileID: 0}
-    VfxLocalPosition: {x: 0, y: 0, z: 0}
-    VfxLocalEulerAngles: {x: 0, y: 0, z: 0}
-    VfxLocalScale: {x: 1, y: 1, z: 1}
-    VfxLifetime: 0
-    TintTarget: {fileID: 0}
-    ApplyTint: 0
-    TintColor: {r: 1, g: 1, b: 1, a: 1}
-    ScaleTarget: {fileID: 0}
-    ApplyLocalScale: 0
-    LocalScale: {x: 1, y: 1, z: 1}
+    Activations: []
+    DisableTargetsOnPlay: []
+    DisableDelayOnPlay: 0
     ActiveTarget: {fileID: 0}
     ApplyActiveState: 0
     ActiveState: 1
@@ -305,9 +251,9 @@ Animator:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1000000000000000001}
-  m_Enabled: 0
+  m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 29f042e8f0c58b74099f3df39c2cdb6c, type: 2}
+  m_Controller: {fileID: 9100000, guid: 9932eac7cac675744b49394cbdeaedd5, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0

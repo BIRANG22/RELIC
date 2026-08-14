@@ -88,14 +88,14 @@ Material:
     - _BUILTIN_ZTest: 4
     - _BUILTIN_ZWrite: 0
     - _BUILTIN_ZWriteControl: 0
-    - _Blend: 0
+    - _Blend: 2
     - _CastShadows: 1
     - _Clip: 0.01
     - _Cull: 0
     - _DissolveAmount: 0
     - _DistortionAmount: 0
-    - _DstBlend: 10
-    - _DstBlendAlpha: 10
+    - _DstBlend: 1
+    - _DstBlendAlpha: 1
     - _QueueControl: 0
     - _QueueOffset: 0
     - _RGB_Offset: 0.12

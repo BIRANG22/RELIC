@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -75,6 +76,28 @@ public class MapVisualActor : MonoBehaviour
     internal Transform ResolveVfxRoot()
     {
         return vfxRoot != null ? vfxRoot : transform;
+    }
+
+    internal void DisableTarget(GameObject target, float delay)
+    {
+        if (target == null)
+            return;
+
+        if (delay <= 0f)
+        {
+            target.SetActive(false);
+            return;
+        }
+
+        StartCoroutine(DisableTargetAfterDelay(target, delay));
+    }
+
+    private IEnumerator DisableTargetAfterDelay(GameObject target, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        if (target != null)
+            target.SetActive(false);
     }
 
     internal bool TrySpawnWorldVfx(MapVisualActionEntry action, Transform actionRoot)
@@ -289,6 +312,12 @@ public sealed class MapVisualActionEntry
     [Tooltip("이 액션에서 활성화/비활성화할 오브젝트 목록입니다.")]
     public List<MapVisualActivationEntry> Activations = new();
 
+    [Header("Disable On Play")]
+    [Tooltip("이 액션이 실행될 때 비활성화할 오브젝트 목록입니다.")]
+    public List<GameObject> DisableTargetsOnPlay = new();
+    [Tooltip("액션 실행 후 오브젝트를 비활성화하기까지 기다릴 시간(초)입니다. 0이면 즉시 비활성화됩니다.")]
+    [Min(0f)] public float DisableDelayOnPlay;
+
     // 기존 씬/프리팹에 저장되어 있던 단일 Activation 데이터를 유지하기 위한 레거시 필드입니다.
     // Inspector에는 숨기고 실행 시에는 계속 적용합니다.
     [HideInInspector] public GameObject ActiveTarget;
@@ -310,6 +339,7 @@ public sealed class MapVisualActionEntry
         ApplySpriteTint();
         ApplyTransformScale();
         ApplyActivation();
+        DisableTargets(owner);
     }
 
     private void PlayAnimator(MapVisualActor owner)
@@ -393,6 +423,26 @@ public sealed class MapVisualActionEntry
                 continue;
 
             activation.ActiveTarget.SetActive(activation.ActiveState);
+        }
+    }
+
+    private void DisableTargets(MapVisualActor owner)
+    {
+        if (DisableTargetsOnPlay == null)
+            return;
+
+        float delay = Mathf.Max(0f, DisableDelayOnPlay);
+
+        for (int i = 0; i < DisableTargetsOnPlay.Count; i++)
+        {
+            GameObject target = DisableTargetsOnPlay[i];
+            if (target == null)
+                continue;
+
+            if (owner != null)
+                owner.DisableTarget(target, delay);
+            else
+                target.SetActive(false);
         }
     }
 }
