@@ -546,7 +546,7 @@ MonoBehaviour:
     renderTextureHeight: 512
     renderCameraOrthographicSize: 5
     proxyWorldHeight: 10
-    proxyWorldOffset: {x: 0, y: 0, z: 0}
+    proxyWorldOffset: {x: 0, y: -0.5, z: 0}
     proxySortingLayerName: Unit
     proxySortingOrderOffset: 0
     proxySortingWorldYOffset: 0
@@ -569,7 +569,7 @@ MonoBehaviour:
     renderTextureHeight: 512
     renderCameraOrthographicSize: 5
     proxyWorldHeight: 10
-    proxyWorldOffset: {x: 0, y: 0, z: 0}
+    proxyWorldOffset: {x: 0, y: -0.5, z: 0}
     proxySortingLayerName: Unit
     proxySortingOrderOffset: 0
     proxySortingWorldYOffset: 0
@@ -1228,7 +1228,7 @@ MonoBehaviour:
   monsterActionPresentations:
   - stateName: AttackAction1
     vfx:
-      prefab: {fileID: 7970636651724152907, guid: 380aaad3e9937d04fa4d33c13ad754cd, type: 3}
+      prefab: {fileID: 5426120665623789715, guid: 380aaad3e9937d04fa4d33c13ad754cd, type: 3}
       flipType: 0
       sfx:
         playSfx: 0
@@ -1278,7 +1278,7 @@ MonoBehaviour:
       impactOffset: {x: 0, y: 0, z: 0}
   - stateName: AttackAction1
     vfx:
-      prefab: {fileID: 7970636651724152907, guid: 380aaad3e9937d04fa4d33c13ad754cd, type: 3}
+      prefab: {fileID: 4953072336942044038, guid: 11539de2e4a6fcd438d0a127451f66f5, type: 3}
       flipType: 0
       sfx:
         playSfx: 0

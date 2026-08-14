@@ -983,7 +983,7 @@ MonoBehaviour:
   monsterActionPresentations:
   - stateName: AttackAction1
     vfx:
-      prefab: {fileID: 3312019939790567086, guid: b9392d3c64a56d24da5c515180f9ccc4, type: 3}
+      prefab: {fileID: 8931706953396669433, guid: b9392d3c64a56d24da5c515180f9ccc4, type: 3}
       flipType: 0
       sfx:
         playSfx: 0
@@ -1033,7 +1033,7 @@ MonoBehaviour:
       impactOffset: {x: 0, y: 0, z: 0}
   - stateName: AttackAction1
     vfx:
-      prefab: {fileID: 3312019939790567086, guid: b9392d3c64a56d24da5c515180f9ccc4, type: 3}
+      prefab: {fileID: 1267188191556793296, guid: c79e07f8b5d5a8d46b9eeed91914045f, type: 3}
       flipType: 0
       sfx:
         playSfx: 0
