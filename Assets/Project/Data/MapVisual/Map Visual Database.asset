@@ -18,7 +18,7 @@ MonoBehaviour:
     - Prefab: {fileID: 1000000000000000001, guid: bb86614ef8daa0848b5b116705ab9a42, type: 3}
       VisualObjectId: event1
       AnchorName: 
-      LocalPosition: {x: 0, y: 0, z: 0}
+      LocalPosition: {x: 0, y: -1.5, z: 0}
       LocalEulerAngles: {x: 0, y: 0, z: 0}
       LocalScale: {x: 1, y: 1, z: 1}
       Active: 1
@@ -45,7 +45,7 @@ MonoBehaviour:
     - Prefab: {fileID: 1000000000000000001, guid: 9bc2c6d76e0e8a54bbb8905db8c70549, type: 3}
       VisualObjectId: event4
       AnchorName: 
-      LocalPosition: {x: 5, y: 1.5, z: 0}
+      LocalPosition: {x: 5, y: 1.88, z: 0}
       LocalEulerAngles: {x: 0, y: 0, z: 0}
       LocalScale: {x: -0.5, y: 0.5, z: 1}
       Active: 1
@@ -65,7 +65,7 @@ MonoBehaviour:
       AnchorName: 
       LocalPosition: {x: 5, y: 1.5, z: 0}
       LocalEulerAngles: {x: 0, y: 0, z: 0}
-      LocalScale: {x: 0.55, y: 0.55, z: 1}
+      LocalScale: {x: 0.5, y: 0.5, z: 1}
       Active: 1
   - MapId: Map_15
     Spawns:
