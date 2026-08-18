@@ -13,9 +13,7 @@ using UnityEngine.UI;
 public sealed class UIBlurBackground : MonoBehaviour
 {
     private const string BlurShaderName = "UI/DustiumBackgroundBlur";
-    private const string BlurCanvasNamePrefix = "UIBlurCanvas_";
     private const string BlurGraphicName = "BlurGraphic";
-    private const int BlurCanvasSortingOrder = -32768;
 
     [Header("Blur")]
     [SerializeField, Range(0f, 8f)] private float blurRadius = 4f;
@@ -46,10 +44,11 @@ public sealed class UIBlurBackground : MonoBehaviour
     private bool capturedBackgroundImageState;
 
     private GameObject blurCanvasObject;
-    private Canvas blurCanvas;
     private RawImage blurGraphic;
     private Material runtimeMaterial;
     private readonly List<GameObject> hiddenSourceRoots = new List<GameObject>();
+    private readonly List<GameObject> runtimeBlurredUiRoots = new List<GameObject>();
+    private readonly List<GameObject> effectiveBlurredUiRoots = new List<GameObject>();
 
     private sealed class SourceRootHideState
     {
@@ -61,7 +60,15 @@ public sealed class UIBlurBackground : MonoBehaviour
         public int RefCount;
     }
 
-    public IReadOnlyList<GameObject> BlurredUiRoots => blurredUiRoots;
+    public IReadOnlyList<GameObject> BlurredUiRoots => GetEffectiveBlurredUiRoots();
+
+    public void SetRuntimeBlurredUiRoots(IEnumerable<GameObject> roots)
+    {
+        runtimeBlurredUiRoots.Clear();
+
+        List<GameObject> validRoots = UIBlurBackgroundCaptureManager.GetValidBlurredUiRoots(roots);
+        runtimeBlurredUiRoots.AddRange(validRoots);
+    }
 
     private void Awake()
     {
@@ -113,7 +120,6 @@ public sealed class UIBlurBackground : MonoBehaviour
                 DestroyImmediate(blurCanvasObject);
 
             blurCanvasObject = null;
-            blurCanvas = null;
             blurGraphic = null;
         }
 
@@ -172,8 +178,11 @@ public sealed class UIBlurBackground : MonoBehaviour
 
     private void EnsureBlurCanvas()
     {
-        if (blurCanvasObject != null && blurCanvas != null && blurGraphic != null)
+        if (blurCanvasObject != null && blurGraphic != null)
+        {
+            ApplyBlurCanvasSorting();
             return;
+        }
 
         // 이전 버전에서 이 오브젝트 아래에 생성했던 BlurGraphic이 남아 있으면 제거합니다.
         Transform oldChild = transform.Find(BlurGraphicName);
@@ -186,58 +195,39 @@ public sealed class UIBlurBackground : MonoBehaviour
         }
 
         blurCanvasObject = new GameObject(
-            BlurCanvasNamePrefix + GetInstanceID(),
-            typeof(RectTransform),
-            typeof(Canvas));
-
-        blurCanvas = blurCanvasObject.GetComponent<Canvas>();
-        blurCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        blurCanvas.overrideSorting = true;
-        blurCanvas.sortingOrder = BlurCanvasSortingOrder;
-        ApplyLowestSortingLayer();
-
-        GameObject blurObject = new GameObject(
             BlurGraphicName,
             typeof(RectTransform),
             typeof(CanvasRenderer),
             typeof(RawImage));
 
-        RectTransform blurRect = blurObject.GetComponent<RectTransform>();
-        blurRect.SetParent(blurCanvasObject.transform, false);
+        RectTransform blurRect = blurCanvasObject.GetComponent<RectTransform>();
+        blurRect.SetParent(transform, false);
         blurRect.anchorMin = Vector2.zero;
         blurRect.anchorMax = Vector2.one;
         blurRect.pivot = new Vector2(0.5f, 0.5f);
         blurRect.offsetMin = Vector2.zero;
         blurRect.offsetMax = Vector2.zero;
         blurRect.localScale = Vector3.one;
+        blurRect.SetAsFirstSibling();
 
-        blurGraphic = blurObject.GetComponent<RawImage>();
+        blurGraphic = blurCanvasObject.GetComponent<RawImage>();
         blurGraphic.raycastTarget = false;
         blurGraphic.color = Color.white;
         blurGraphic.uvRect = new Rect(0f, 0f, 1f, 1f);
 
-        SetLayerRecursively(blurCanvasObject, LayerMask.NameToLayer("UI"));
+        SetLayerRecursively(blurCanvasObject, gameObject.layer);
     }
 
     private void ApplyBlurCanvasSorting()
     {
-        if (blurCanvas == null)
+        if (blurCanvasObject == null)
             return;
 
-        blurCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        blurCanvas.overrideSorting = true;
-        blurCanvas.sortingOrder = BlurCanvasSortingOrder;
-        ApplyLowestSortingLayer();
-    }
+        Transform blurTransform = blurCanvasObject.transform;
+        if (blurTransform.parent != transform)
+            blurTransform.SetParent(transform, false);
 
-    private void ApplyLowestSortingLayer()
-    {
-        if (blurCanvas == null)
-            return;
-
-        SortingLayer[] sortingLayers = SortingLayer.layers;
-        if (sortingLayers != null && sortingLayers.Length > 0)
-            blurCanvas.sortingLayerID = sortingLayers[0].id;
+        blurTransform.SetAsFirstSibling();
     }
 
     private void ApplyRaycastSetting()
@@ -284,7 +274,7 @@ public sealed class UIBlurBackground : MonoBehaviour
         if (blurGraphic == null)
             return false;
 
-        Texture captured = UIBlurBackgroundCaptureManager.CaptureBackgroundNow(blurredUiRoots);
+        Texture captured = UIBlurBackgroundCaptureManager.CaptureBackgroundNow(GetEffectiveBlurredUiRoots());
         if (captured != null)
         {
             blurGraphic.texture = captured;
@@ -322,7 +312,7 @@ public sealed class UIBlurBackground : MonoBehaviour
     {
         RestoreBlurredUiSources();
 
-        List<GameObject> validRoots = UIBlurBackgroundCaptureManager.GetValidBlurredUiRoots(blurredUiRoots);
+        List<GameObject> validRoots = UIBlurBackgroundCaptureManager.GetValidBlurredUiRoots(GetEffectiveBlurredUiRoots());
         for (int i = 0; i < validRoots.Count; i++)
         {
             GameObject root = validRoots[i];
@@ -404,6 +394,28 @@ public sealed class UIBlurBackground : MonoBehaviour
                 Destroy(canvasGroup);
             else
                 DestroyImmediate(canvasGroup);
+        }
+    }
+
+    private IReadOnlyList<GameObject> GetEffectiveBlurredUiRoots()
+    {
+        effectiveBlurredUiRoots.Clear();
+        AppendValidBlurredUiRoots(blurredUiRoots, effectiveBlurredUiRoots);
+        AppendValidBlurredUiRoots(runtimeBlurredUiRoots, effectiveBlurredUiRoots);
+        return effectiveBlurredUiRoots;
+    }
+
+    private static void AppendValidBlurredUiRoots(IEnumerable<GameObject> roots, List<GameObject> target)
+    {
+        if (roots == null || target == null)
+            return;
+
+        foreach (GameObject root in roots)
+        {
+            if (root == null || target.Contains(root))
+                continue;
+
+            target.Add(root);
         }
     }
 

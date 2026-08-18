@@ -11,6 +11,8 @@ public enum BattleRewardType
 [System.Serializable]
 public class BattleRewardData
 {
+    private const string DefaultRemnantDisplayName = "더스티움";
+
     public BattleRewardType Type;
     public string RewardId;
     public string SourceKey;
@@ -22,6 +24,12 @@ public class BattleRewardData
 
     public string GetDisplayName()
     {
+        if (Type == BattleRewardType.Remnant)
+        {
+            string remnantName = string.IsNullOrWhiteSpace(Name) ? DefaultRemnantDisplayName : Name;
+            return $"{remnantName} x{Mathf.Max(0, Amount)}";
+        }
+
         return string.IsNullOrWhiteSpace(Name) ? RewardId : Name;
     }
 
