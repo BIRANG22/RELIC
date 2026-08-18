@@ -424,6 +424,53 @@ public class EventChoiceExecutionServiceTests
         });
     }
 
+    [Test]
+    public void CanSelectChoice_AllowsEvent09TypedSkillRewardOffer()
+    {
+        EventChoiceExecutionContext context = new();
+        EventData choice = CreateTypedSkillRewardOfferChoice("공격 관련 기억");
+
+        bool canSelect = EventChoiceExecutionService.CanSelect(choice, context, out string reason);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(canSelect, Is.True);
+            Assert.That(reason, Is.Empty);
+        });
+    }
+
+    [Test]
+    public void ExecuteChoice_OfferChoiceQueuesTypedSkillRewardsByTargetAndCount()
+    {
+        bool grantCalled = false;
+        SkillType receivedSkillType = SkillType.None;
+        int receivedCount = 0;
+        EventChoiceExecutionContext context = new()
+        {
+            OfferTypedSkillRewards = (SkillType skillType, int count, out string message) =>
+            {
+                grantCalled = true;
+                receivedSkillType = skillType;
+                receivedCount = count;
+                message = "디버프 관련 기억 2개 제시";
+                return true;
+            }
+        };
+        EventData choice = CreateTypedSkillRewardOfferChoice("디버프 관련 기억");
+
+        EventChoiceExecutionResult result = EventChoiceExecutionService.Execute(choice, context);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Accepted, Is.True);
+            Assert.That(result.Succeeded, Is.True);
+            Assert.That(grantCalled, Is.True);
+            Assert.That(receivedSkillType, Is.EqualTo(SkillType.Debuff));
+            Assert.That(receivedCount, Is.EqualTo(2));
+            Assert.That(result.ResultMessage, Does.Contain("2"));
+        });
+    }
+
     private static EventData CreateAwakenMemoryChoice()
     {
         return new EventData
@@ -434,6 +481,18 @@ public class EventChoiceExecutionServiceTests
             ResultTarget = "선택 기억",
             ResultValue = "각성",
             SuccessRate = "100%"
+        };
+    }
+
+    private static EventData CreateTypedSkillRewardOfferChoice(string resultTarget)
+    {
+        return new EventData
+        {
+            EventId = "Event_09",
+            ChoiceType = "SelectReward",
+            ResultType = "OfferChoice",
+            ResultTarget = resultTarget,
+            ResultValue = "2개 제시 / 선택 규칙 TBD"
         };
     }
 

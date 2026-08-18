@@ -1178,6 +1178,17 @@ public class EventRoomController : MonoBehaviour
         };
     }
 
+    private static string GetSkillTypeRewardDisplayName(SkillType skillType)
+    {
+        return skillType switch
+        {
+            SkillType.Attack => "공격",
+            SkillType.Buff => "버프",
+            SkillType.Debuff => "디버프",
+            _ => "기억"
+        };
+    }
+
     private void PlayVisualAction(EventChoiceExecutionResult result)
     {
         if (!result.HasVisualAction)
@@ -1561,6 +1572,7 @@ public class EventRoomController : MonoBehaviour
             SelectedSkillAwakenTarget = selectedSkillAwakenTarget,
             UpgradeSelectedSkill = TryUpgradeSelectedSkill,
             RollbackAwakenedSkills = TryRollbackAwakenedSkills,
+            OfferTypedSkillRewards = TryQueueTypedSkillRewards,
             HasUpgradeableEquippedSkill = HasAnyUpgradeableEquippedSkill,
             OpenShop = TryOpenShopPanel,
             RefreshRemnantHud = BattleGoldHudUI.RefreshAll,
@@ -1738,6 +1750,46 @@ public class EventRoomController : MonoBehaviour
         return true;
     }
 
+    private bool TryQueueTypedSkillRewards(
+        SkillType skillType,
+        int count,
+        out string resultMessage)
+    {
+        resultMessage = string.Empty;
+        int rewardCount = Mathf.Max(0, count);
+
+        if (rewardCount <= 0)
+        {
+            resultMessage = "제시할 기억 개수가 올바르지 않습니다.";
+            return false;
+        }
+
+        List<SkillMasterData> candidates = CollectAvailableSkillRewardCandidates(skillType);
+        if (candidates.Count < rewardCount)
+        {
+            resultMessage = $"획득 가능한 {GetSkillTypeRewardDisplayName(skillType)} 관련 기억이 부족합니다.";
+            return false;
+        }
+
+        for (int i = 0; i < rewardCount; i++)
+        {
+            int selectedIndex = BattleRandom.Range(0, candidates.Count);
+            SkillMasterData skill = candidates[selectedIndex];
+            candidates.RemoveAt(selectedIndex);
+
+            if (skill == null || string.IsNullOrWhiteSpace(skill.SkillId))
+                continue;
+
+            string skillId = skill.SkillId.Trim();
+            QueueEventReward(EventRoomRewardFlowUtility.CreateSkillReward(
+                skill,
+                GetSkillSprite(skillId, skill)));
+        }
+
+        resultMessage = $"{GetSkillTypeRewardDisplayName(skillType)} 관련 기억 {rewardCount}개 제시";
+        return true;
+    }
+
     private bool TryGrantRandomRelic(out string resultMessage)
     {
         resultMessage = string.Empty;
@@ -1844,15 +1896,27 @@ public class EventRoomController : MonoBehaviour
     {
         selectedSkill = null;
 
-        if (DataManager.Instance == null || DataManager.Instance.SkillDatabase == null)
+        List<SkillMasterData> candidates = CollectAvailableSkillRewardCandidates();
+        if (candidates.Count == 0)
             return false;
+
+        selectedSkill = candidates[BattleRandom.Range(0, candidates.Count)];
+        return selectedSkill != null;
+    }
+
+    private List<SkillMasterData> CollectAvailableSkillRewardCandidates(
+        SkillType? requiredSkillType = null)
+    {
+        List<SkillMasterData> candidates = new();
+
+        if (DataManager.Instance == null || DataManager.Instance.SkillDatabase == null)
+            return candidates;
 
         List<SkillMasterData> allSkills = DataManager.Instance.SkillDatabase.GetAll();
         if (allSkills == null || allSkills.Count == 0)
-            return false;
+            return candidates;
 
         HashSet<string> unavailableIds = CollectUnavailableSkillIds();
-        List<SkillMasterData> candidates = new();
 
         for (int i = 0; i < allSkills.Count; i++)
         {
@@ -1866,6 +1930,9 @@ public class EventRoomController : MonoBehaviour
             if (skill.Category != Category.Core)
                 continue;
 
+            if (requiredSkillType.HasValue && skill.SkillType != requiredSkillType.Value)
+                continue;
+
             if (!SkillRarityUtility.IsBaseSkillVariant(skillId))
                 continue;
 
@@ -1875,11 +1942,7 @@ public class EventRoomController : MonoBehaviour
             candidates.Add(skill);
         }
 
-        if (candidates.Count == 0)
-            return false;
-
-        selectedSkill = candidates[BattleRandom.Range(0, candidates.Count)];
-        return selectedSkill != null;
+        return candidates;
     }
 
     private HashSet<string> CollectUnavailableSkillIds()

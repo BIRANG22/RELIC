@@ -19,6 +19,10 @@ namespace Relic.Gameplay.Data
     public delegate bool EventChoiceSkillAwakenRollback(
         IReadOnlyList<EventChoiceSkillAwakenTarget> targets,
         out string resultMessage);
+    public delegate bool EventChoiceTypedSkillRewardGrant(
+        SkillType skillType,
+        int count,
+        out string resultMessage);
 
     public enum EventChoiceSkillSlotKind
     {
@@ -110,6 +114,7 @@ namespace Relic.Gameplay.Data
         public EventChoiceSkillAwakenTarget SelectedSkillAwakenTarget;
         public EventChoiceSkillAwakenGrant UpgradeSelectedSkill;
         public EventChoiceSkillAwakenRollback RollbackAwakenedSkills;
+        public EventChoiceTypedSkillRewardGrant OfferTypedSkillRewards;
         public Func<bool> HasUpgradeableEquippedSkill;
         public Func<bool> OpenShop;
         public Action RefreshRemnantHud;
@@ -157,6 +162,7 @@ namespace Relic.Gameplay.Data
         public const int DefaultTradeRemnantCost = 100;
         public const int DefaultRestHealAmount = 10;
         public const int DefaultFailureHpDamage = -5;
+        public const int DefaultOfferChoiceSkillCount = 2;
         public const int SmallRemnantAmount = 30;
         public const int MediumRemnantAmount = 60;
         public const int LargeRemnantAmount = 100;
@@ -191,8 +197,11 @@ namespace Relic.Gameplay.Data
             if (IsToken(choice.ResultType, "OfferChoice") ||
                 IsToken(choice.ChoiceType, "SelectReward"))
             {
-                unavailableReason = "보상 선택 UI가 필요합니다.";
-                return false;
+                if (!IsSupportedTypedSkillRewardOffer(choice))
+                {
+                    unavailableReason = "보상 선택 UI가 필요합니다.";
+                    return false;
+                }
             }
 
             if (IsToken(choice.ResultType, "CommitAccumulated") ||
@@ -437,6 +446,9 @@ namespace Relic.Gameplay.Data
             if (IsToken(resultType, "GainMultiple"))
                 return ApplyGainMultiple(choice, context);
 
+            if (IsToken(resultType, "OfferChoice"))
+                return ApplyOfferChoice(choice, context);
+
             if (IsToken(resultType, "Modify"))
                 return ApplyModify(choice, context);
 
@@ -604,6 +616,22 @@ namespace Relic.Gameplay.Data
             }
 
             return JoinMessages(messages);
+        }
+
+        private static string ApplyOfferChoice(EventData choice, EventChoiceExecutionContext context)
+        {
+            if (TryResolveTypedSkillRewardOffer(choice, out SkillType skillType))
+            {
+                int count = ResolveOfferChoiceCount(choice.ResultValue, DefaultOfferChoiceSkillCount);
+                return TryInvokeTypedSkillRewardGrant(
+                    context,
+                    context.OfferTypedSkillRewards,
+                    skillType,
+                    count,
+                    "획득 가능한 기억이 없습니다.");
+            }
+
+            return BuildResultSummary(choice);
         }
 
         private static string ApplyModify(EventData choice, EventChoiceExecutionContext context)
@@ -953,6 +981,55 @@ namespace Relic.Gameplay.Data
                    !string.IsNullOrWhiteSpace(pairedSkillId);
         }
 
+        private static bool IsSupportedTypedSkillRewardOffer(EventData choice)
+        {
+            return TryResolveTypedSkillRewardOffer(choice, out _);
+        }
+
+        private static bool TryResolveTypedSkillRewardOffer(EventData choice, out SkillType skillType)
+        {
+            skillType = SkillType.None;
+
+            if (choice == null ||
+                !ContainsAny(choice.ResultTarget, "기억") ||
+                (!IsToken(choice.ResultType, "OfferChoice") &&
+                 !IsToken(choice.ChoiceType, "SelectReward")))
+            {
+                return false;
+            }
+
+            if (ContainsAny(choice.ResultTarget, "공격", "Attack"))
+            {
+                skillType = SkillType.Attack;
+                return true;
+            }
+
+            if (ContainsAny(choice.ResultTarget, "디버프", "Debuff"))
+            {
+                skillType = SkillType.Debuff;
+                return true;
+            }
+
+            if (ContainsAny(choice.ResultTarget, "버프", "Buff"))
+            {
+                skillType = SkillType.Buff;
+                return true;
+            }
+
+            return false;
+        }
+
+        private static int ResolveOfferChoiceCount(string value, int fallback)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return Mathf.Max(0, fallback);
+
+            Match match = Regex.Match(value, @"\d+");
+            return match.Success && int.TryParse(match.Value, out int parsed)
+                ? Mathf.Max(0, parsed)
+                : Mathf.Max(0, fallback);
+        }
+
         private static string TryInvokeGrant(EventChoiceRewardGrant grant, string fallback)
         {
             if (grant == null)
@@ -972,6 +1049,24 @@ namespace Relic.Gameplay.Data
                 return fallback;
 
             bool granted = grant(out string resultMessage);
+
+            if (!granted)
+                return string.IsNullOrWhiteSpace(resultMessage) ? fallback : resultMessage;
+
+            return context.SuppressRewardResultMessages ? string.Empty : resultMessage;
+        }
+
+        private static string TryInvokeTypedSkillRewardGrant(
+            EventChoiceExecutionContext context,
+            EventChoiceTypedSkillRewardGrant grant,
+            SkillType skillType,
+            int count,
+            string fallback)
+        {
+            if (grant == null)
+                return fallback;
+
+            bool granted = grant(skillType, count, out string resultMessage);
 
             if (!granted)
                 return string.IsNullOrWhiteSpace(resultMessage) ? fallback : resultMessage;
