@@ -137,9 +137,7 @@ public static class BattleEquipmentEffectService
 
         ResetBattleOnlyEffectState(runtime);
 
-        int baseMaxHP = masterData != null
-            ? Mathf.Max(1, masterData.MaxHP)
-            : Mathf.Max(1, runtime.MaxHP);
+        int baseMaxHP = GetRunAdjustedBaseMaxHP(runtime, masterData);
 
         int previousMaxHP = runtime.MaxHP > 0
             ? runtime.MaxHP
@@ -157,9 +155,7 @@ public static class BattleEquipmentEffectService
         else
             runtime.CurrentHP = Mathf.Clamp(runtime.CurrentHP, 1, runtime.MaxHP);
 
-        int baseMaxCost = masterData != null
-            ? Mathf.Max(0, masterData.MaxCost)
-            : Mathf.Max(0, runtime.MaxCost);
+        int baseMaxCost = GetRunAdjustedBaseMaxCost(runtime, masterData);
 
         runtime.MaxCost = Mathf.Max(0, baseMaxCost + GetMaxCostBonus(runtime));
         runtime.CurrentCost = Mathf.Max(0, runtime.MaxCost + GetBattleStartCostBonus(runtime));
@@ -188,9 +184,7 @@ public static class BattleEquipmentEffectService
         CharacterRuntimeData runtime,
         CharacterMasterData masterData)
     {
-        int baseMaxHP = masterData != null
-            ? Mathf.Max(1, masterData.MaxHP)
-            : runtime != null ? Mathf.Max(1, runtime.MaxHP) : 1;
+        int baseMaxHP = GetRunAdjustedBaseMaxHP(runtime, masterData);
 
         return Mathf.Max(1, baseMaxHP + GetMaxHPBonus(runtime, baseMaxHP));
     }
@@ -199,9 +193,7 @@ public static class BattleEquipmentEffectService
         CharacterRuntimeData runtime,
         CharacterMasterData masterData)
     {
-        int baseMaxCost = masterData != null
-            ? Mathf.Max(0, masterData.MaxCost)
-            : runtime != null ? Mathf.Max(0, runtime.MaxCost) : 0;
+        int baseMaxCost = GetRunAdjustedBaseMaxCost(runtime, masterData);
 
         return Mathf.Max(0, baseMaxCost + GetMaxCostBonus(runtime));
     }
@@ -217,6 +209,30 @@ public static class BattleEquipmentEffectService
         int bonusRecovery = runtime != null ? runtime.BonusCostRecovery : 0;
 
         return Mathf.Max(0, baseRecovery + bonusRecovery + GetCostRecoveryBonus(runtime));
+    }
+
+    private static int GetRunAdjustedBaseMaxHP(
+        CharacterRuntimeData runtime,
+        CharacterMasterData masterData)
+    {
+        int runBonus = runtime != null ? runtime.RunMaxHPBonus : 0;
+        int baseMaxHP = masterData != null
+            ? Mathf.Max(1, masterData.MaxHP)
+            : runtime != null ? Mathf.Max(1, runtime.MaxHP - runBonus) : 1;
+
+        return Mathf.Max(1, baseMaxHP + runBonus);
+    }
+
+    private static int GetRunAdjustedBaseMaxCost(
+        CharacterRuntimeData runtime,
+        CharacterMasterData masterData)
+    {
+        int runBonus = runtime != null ? runtime.RunMaxCostBonus : 0;
+        int baseMaxCost = masterData != null
+            ? Mathf.Max(0, masterData.MaxCost)
+            : runtime != null ? Mathf.Max(0, runtime.MaxCost - runBonus) : 0;
+
+        return Mathf.Max(0, baseMaxCost + runBonus);
     }
 
     public static void ResetBattleOnlyEffectState(CharacterRuntimeData runtime)

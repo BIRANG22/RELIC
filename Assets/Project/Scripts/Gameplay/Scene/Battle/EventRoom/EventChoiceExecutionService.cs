@@ -10,11 +10,87 @@ namespace Relic.Gameplay.Data
     public delegate bool EventChoiceRewardGrant(out string resultMessage);
     public delegate bool EventChoiceRemnantRewardGrant(int amount, out string resultMessage);
     public delegate void EventChoiceRemnantRewardRevoke(int amount);
+    public delegate bool EventChoiceEquippedRelicCostRevoke(
+        EventChoiceEquippedRelicCost cost,
+        out string resultMessage);
+    public delegate bool EventChoiceSkillAwakenGrant(
+        EventChoiceSkillAwakenTarget target,
+        out string resultMessage);
+    public delegate bool EventChoiceSkillAwakenRollback(
+        IReadOnlyList<EventChoiceSkillAwakenTarget> targets,
+        out string resultMessage);
+
+    public enum EventChoiceSkillSlotKind
+    {
+        Passive,
+        Unique,
+        Ability,
+        Equipped
+    }
+
+    public readonly struct EventChoiceSkillAwakenTarget
+    {
+        public EventChoiceSkillAwakenTarget(
+            string characterId,
+            EventChoiceSkillSlotKind slotKind,
+            int slotIndex,
+            string skillId,
+            string upgradeSkillId)
+        {
+            CharacterId = Normalize(characterId);
+            SlotKind = slotKind;
+            SlotIndex = slotIndex;
+            SkillId = Normalize(skillId);
+            UpgradeSkillId = Normalize(upgradeSkillId);
+        }
+
+        public string CharacterId { get; }
+        public EventChoiceSkillSlotKind SlotKind { get; }
+        public int SlotIndex { get; }
+        public string SkillId { get; }
+        public string UpgradeSkillId { get; }
+
+        public bool IsValid =>
+            !string.IsNullOrWhiteSpace(CharacterId) &&
+            !string.IsNullOrWhiteSpace(SkillId) &&
+            !string.IsNullOrWhiteSpace(UpgradeSkillId) &&
+            (SlotKind != EventChoiceSkillSlotKind.Equipped || SlotIndex >= 0);
+
+        private static string Normalize(string id)
+        {
+            return string.IsNullOrWhiteSpace(id) ? string.Empty : id.Trim();
+        }
+    }
+
+    public readonly struct EventChoiceEquippedRelicCost
+    {
+        public EventChoiceEquippedRelicCost(string characterId, int relicSlotIndex, string relicId)
+        {
+            CharacterId = Normalize(characterId);
+            RelicSlotIndex = relicSlotIndex;
+            RelicId = Normalize(relicId);
+        }
+
+        public string CharacterId { get; }
+        public int RelicSlotIndex { get; }
+        public string RelicId { get; }
+
+        public bool IsValid =>
+            !string.IsNullOrWhiteSpace(CharacterId) &&
+            RelicSlotIndex >= 0 &&
+            !string.IsNullOrWhiteSpace(RelicId);
+
+        private static string Normalize(string id)
+        {
+            return string.IsNullOrWhiteSpace(id) ? string.Empty : id.Trim();
+        }
+    }
 
     public sealed class EventChoiceSessionState
     {
         public int AccumulatedRemnant;
         public int LastImmediateRemnant;
+        public readonly List<EventChoiceSkillAwakenTarget> AwakenedSkillTargets = new();
     }
 
     public sealed class EventChoiceExecutionContext
@@ -29,6 +105,12 @@ namespace Relic.Gameplay.Data
         public EventChoiceRewardGrant UpgradeRandomSkill;
         public EventChoiceRemnantRewardGrant GrantRemnant;
         public EventChoiceRemnantRewardRevoke RevokeRemnant;
+        public EventChoiceEquippedRelicCost SelectedEquippedRelicCost;
+        public EventChoiceEquippedRelicCostRevoke RevokeEquippedRelic;
+        public EventChoiceSkillAwakenTarget SelectedSkillAwakenTarget;
+        public EventChoiceSkillAwakenGrant UpgradeSelectedSkill;
+        public EventChoiceSkillAwakenRollback RollbackAwakenedSkills;
+        public Func<bool> HasUpgradeableEquippedSkill;
         public Func<bool> OpenShop;
         public Action RefreshRemnantHud;
         public bool SuppressRewardResultMessages;
@@ -41,9 +123,11 @@ namespace Relic.Gameplay.Data
             string resultMessage,
             string nextEventId,
             string visualObjectId = "",
-            string visualActionId = "")
+            string visualActionId = "",
+            bool succeeded = true)
         {
             Accepted = accepted;
+            Succeeded = accepted && succeeded;
             ResultMessage = resultMessage ?? string.Empty;
             NextEventId = EventIdUtility.Normalize(nextEventId);
             VisualObjectId = NormalizeId(visualObjectId);
@@ -51,6 +135,7 @@ namespace Relic.Gameplay.Data
         }
 
         public bool Accepted { get; }
+        public bool Succeeded { get; }
         public string ResultMessage { get; }
         public string NextEventId { get; }
         public bool HasNextEvent => !string.IsNullOrWhiteSpace(NextEventId);
@@ -91,6 +176,12 @@ namespace Relic.Gameplay.Data
 
             context = NormalizeContext(context);
 
+            if (RequiresSkillAwakenSelection(choice) && !HasAnyUpgradeableEquippedSkill(context))
+            {
+                unavailableReason = "강화 가능한 장착 기억이 없습니다.";
+                return false;
+            }
+
             if (RequiresTargetSelection(choice))
             {
                 unavailableReason = "대상 선택 UI가 필요합니다.";
@@ -114,14 +205,29 @@ namespace Relic.Gameplay.Data
                 }
             }
 
-            if (ContainsAny(choice.SelectCondition, "유물 1개 이상 보유") &&
+            if (RequiresEquippedRelicCostSelection(choice))
+            {
+                if (!HasAnyEquippedRelic(context))
+                {
+                    unavailableReason = "장착 중인 유물이 없습니다.";
+                    return false;
+                }
+            }
+            else if (ContainsAny(choice.SelectCondition, "유물 1개 이상 보유") &&
                 !HasAnyOwnedRelic(context))
             {
                 unavailableReason = "보유한 유물이 없습니다.";
                 return false;
             }
 
-            if (ContainsAny(choice.SelectCondition, "기억 1개 이상 보유", "미각성 기억 1개 이상") &&
+            if (ContainsAny(choice.SelectCondition, "미각성 기억", "각성하지 않은 기억") &&
+                !HasAnyUpgradeableEquippedSkill(context))
+            {
+                unavailableReason = "강화 가능한 장착 기억이 없습니다.";
+                return false;
+            }
+
+            if (ContainsAny(choice.SelectCondition, "기억 1개 이상 보유") &&
                 !HasAnyOwnedSkill(context))
             {
                 unavailableReason = "보유한 기억이 없습니다.";
@@ -150,12 +256,19 @@ namespace Relic.Gameplay.Data
             if (!CanSelect(choice, context, out string unavailableReason))
                 return new EventChoiceExecutionResult(false, unavailableReason, string.Empty);
 
+            if (RequiresSkillAwakenSelection(choice) &&
+                !context.SelectedSkillAwakenTarget.IsValid)
+            {
+                return new EventChoiceExecutionResult(false, "강화할 기억을 선택해야 합니다.", string.Empty);
+            }
+
             List<string> messages = new();
 
             if (!string.IsNullOrWhiteSpace(choice.ChoiceDesc))
                 messages.Add(choice.ChoiceDesc.Trim());
 
-            ApplyCost(choice, context, messages);
+            if (!TryApplyCost(choice, context, messages, out unavailableReason))
+                return new EventChoiceExecutionResult(false, unavailableReason, string.Empty);
 
             int diceRoll = 0;
             bool success = true;
@@ -180,12 +293,21 @@ namespace Relic.Gameplay.Data
                 if (!string.IsNullOrWhiteSpace(failure))
                     messages.Add(failure);
 
+                string awakenRollback = ApplyAwakenFailureRollback(choice, context);
+                if (!string.IsNullOrWhiteSpace(awakenRollback))
+                    messages.Add(awakenRollback);
+
+                string nextEventId = RequiresSkillAwakenSelection(choice)
+                    ? string.Empty
+                    : choice.NextEventId;
+
                 return new EventChoiceExecutionResult(
                     true,
                     JoinMessages(messages),
-                    choice.NextEventId,
+                    nextEventId,
                     choice.FailureVisualObjectId,
-                    choice.FailureVisualActionId);
+                    choice.FailureVisualActionId,
+                    succeeded: false);
             }
 
             string result = ApplySuccessResult(choice, diceRoll, context);
@@ -207,14 +329,35 @@ namespace Relic.Gameplay.Data
             return context;
         }
 
+        public static bool RequiresEquippedRelicCostSelection(EventData choice)
+        {
+            return choice != null &&
+                   ContainsAny(choice.CostType, "유물") &&
+                   (ContainsAny(choice.CostTarget, "선택 유물") ||
+                    ContainsAny(choice.CostValue, "선택 유물"));
+        }
+
+        public static bool RequiresSkillAwakenSelection(EventData choice)
+        {
+            if (choice == null)
+                return false;
+
+            if (IsToken(choice.ResultType, "Awaken"))
+                return true;
+
+            return ContainsAny(choice.ResultTarget, "선택 기억") &&
+                   ContainsAny(choice.ResultValue, "각성", "강화");
+        }
+
         private static bool RequiresTargetSelection(EventData choice)
         {
             if (choice == null)
                 return false;
 
-            if (ContainsAny(choice.CostValue, "선택 유물") ||
-                ContainsAny(choice.ResultTarget, "선택 기억") ||
-                IsToken(choice.ResultType, "Awaken"))
+            if (RequiresSkillAwakenSelection(choice))
+                return false;
+
+            if (ContainsAny(choice.ResultTarget, "선택 기억"))
             {
                 return true;
             }
@@ -222,18 +365,54 @@ namespace Relic.Gameplay.Data
             return false;
         }
 
-        private static void ApplyCost(
+        private static bool TryApplyCost(
             EventData choice,
             EventChoiceExecutionContext context,
-            List<string> messages)
+            List<string> messages,
+            out string unavailableReason)
         {
-            if (!IsRedDustiumCost(choice) || context.BattleRuntime == null)
-                return;
+            unavailableReason = string.Empty;
+
+            if (RequiresEquippedRelicCostSelection(choice))
+            {
+                if (!context.SelectedEquippedRelicCost.IsValid)
+                {
+                    unavailableReason = "삭제할 장착 유물을 선택해야 합니다.";
+                    return false;
+                }
+
+                if (context.RevokeEquippedRelic == null)
+                {
+                    unavailableReason = "장착 유물 삭제 처리가 준비되지 않았습니다.";
+                    return false;
+                }
+
+                if (!context.RevokeEquippedRelic(context.SelectedEquippedRelicCost, out string resultMessage))
+                {
+                    unavailableReason = string.IsNullOrWhiteSpace(resultMessage)
+                        ? "선택한 장착 유물을 삭제하지 못했습니다."
+                        : resultMessage;
+                    return false;
+                }
+
+                if (!string.IsNullOrWhiteSpace(resultMessage))
+                    messages.Add(resultMessage);
+            }
+
+            if (!IsRedDustiumCost(choice))
+                return true;
+
+            if (context.BattleRuntime == null)
+            {
+                unavailableReason = "전투 런타임 데이터가 없습니다.";
+                return false;
+            }
 
             int cost = ResolveRemnantAmount(choice.CostValue, DefaultTradeRemnantCost);
             context.BattleRuntime.Remnant = Mathf.Max(0, context.BattleRuntime.Remnant - cost);
             context.RefreshRemnantHud?.Invoke();
             messages.Add($"레드 더스티움 {cost} 지불");
+            return true;
         }
 
         private static string ApplySuccessResult(
@@ -275,6 +454,9 @@ namespace Relic.Gameplay.Data
                     ? "상점 패널을 열었습니다."
                     : BuildResultSummary(choice);
 
+            if (IsToken(resultType, "Awaken"))
+                return ApplyAwaken(choice, context);
+
             if (IsToken(resultType, "UpgradeRandom"))
                 return TryInvokeGrant(context.UpgradeRandomSkill, "강화 가능한 기억이 없습니다.");
 
@@ -282,6 +464,68 @@ namespace Relic.Gameplay.Data
                 return "이벤트를 종료합니다.";
 
             return BuildResultSummary(choice);
+        }
+
+        private static string ApplyAwaken(EventData choice, EventChoiceExecutionContext context)
+        {
+            if (!context.SelectedSkillAwakenTarget.IsValid)
+                return "강화할 기억을 선택해야 합니다.";
+
+            if (context.UpgradeSelectedSkill == null)
+                return "선택 기억 강화 처리가 준비되지 않았습니다.";
+
+            bool upgraded = context.UpgradeSelectedSkill(
+                context.SelectedSkillAwakenTarget,
+                out string resultMessage);
+            if (!upgraded)
+            {
+                return string.IsNullOrWhiteSpace(resultMessage)
+                    ? "선택한 기억을 강화하지 못했습니다."
+                    : resultMessage;
+            }
+
+            context.SessionState?.AwakenedSkillTargets.Add(context.SelectedSkillAwakenTarget);
+
+            if (!string.IsNullOrWhiteSpace(resultMessage))
+                return resultMessage;
+
+            string upgradeSkillId = context.SelectedSkillAwakenTarget.UpgradeSkillId;
+            return string.IsNullOrWhiteSpace(upgradeSkillId)
+                ? BuildResultSummary(choice)
+                : $"기억 강화: {upgradeSkillId}";
+        }
+
+        private static string ApplyAwakenFailureRollback(
+            EventData choice,
+            EventChoiceExecutionContext context)
+        {
+            if (!RequiresSkillAwakenSelection(choice))
+                return string.Empty;
+
+            List<EventChoiceSkillAwakenTarget> awakenedTargets =
+                context.SessionState?.AwakenedSkillTargets;
+            if (awakenedTargets == null || awakenedTargets.Count == 0)
+                return string.Empty;
+
+            List<EventChoiceSkillAwakenTarget> targets = new(awakenedTargets);
+            bool rolledBack = false;
+            string resultMessage = string.Empty;
+
+            if (context.RollbackAwakenedSkills != null)
+            {
+                rolledBack = context.RollbackAwakenedSkills(targets, out resultMessage);
+            }
+            else
+            {
+                resultMessage = "이번 이벤트로 얻은 기억 제거 처리가 준비되지 않았습니다.";
+            }
+
+            awakenedTargets.Clear();
+
+            if (!rolledBack && string.IsNullOrWhiteSpace(resultMessage))
+                return "이번 이벤트로 얻은 기억을 제거하지 못했습니다.";
+
+            return resultMessage;
         }
 
         private static string ApplyRollTable(
@@ -493,6 +737,7 @@ namespace Relic.Gameplay.Data
                 if (character == null)
                     continue;
 
+                character.RunMaxHPBonus += amount;
                 character.MaxHP = Mathf.Max(0, character.MaxHP + amount);
                 character.CurrentHP = Mathf.Clamp(character.CurrentHP + Mathf.Max(0, amount), 0, character.MaxHP);
                 count++;
@@ -514,6 +759,7 @@ namespace Relic.Gameplay.Data
                 if (character == null)
                     continue;
 
+                character.RunMaxCostBonus += amount;
                 character.MaxCost = Mathf.Max(0, character.MaxCost + amount);
                 character.CurrentCost = Mathf.Clamp(character.CurrentCost, 0, character.MaxCost);
                 count++;
@@ -611,6 +857,27 @@ namespace Relic.Gameplay.Data
             return false;
         }
 
+        private static bool HasAnyEquippedRelic(EventChoiceExecutionContext context)
+        {
+            if (context.PartyCharacters == null)
+                return false;
+
+            for (int i = 0; i < context.PartyCharacters.Count; i++)
+            {
+                CharacterRuntimeData character = context.PartyCharacters[i];
+                if (character?.EquippedRelicIds == null)
+                    continue;
+
+                for (int slot = 0; slot < character.EquippedRelicIds.Length; slot++)
+                {
+                    if (!string.IsNullOrWhiteSpace(character.EquippedRelicIds[slot]))
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
         private static bool HasAnyOwnedSkill(EventChoiceExecutionContext context)
         {
             if (context.BattleRuntime?.SkillInventoryIds != null)
@@ -639,6 +906,51 @@ namespace Relic.Gameplay.Data
             }
 
             return false;
+        }
+
+        private static bool HasAnyUpgradeableEquippedSkill(EventChoiceExecutionContext context)
+        {
+            if (context.HasUpgradeableEquippedSkill != null)
+                return context.HasUpgradeableEquippedSkill();
+
+            if (context.PartyCharacters == null)
+                return false;
+
+            for (int i = 0; i < context.PartyCharacters.Count; i++)
+            {
+                CharacterRuntimeData character = context.PartyCharacters[i];
+                if (character == null)
+                    continue;
+
+                if (HasUpgradeableSkillId(character.PassiveSkillId) ||
+                    HasUpgradeableSkillId(character.UniqueSkillId) ||
+                    HasUpgradeableSkillId(character.AbilitySkillId))
+                {
+                    return true;
+                }
+
+                if (character.EquippedSkillIds == null)
+                    continue;
+
+                for (int slot = 0; slot < character.EquippedSkillIds.Length; slot++)
+                {
+                    if (HasUpgradeableSkillId(character.EquippedSkillIds[slot]))
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool HasUpgradeableSkillId(string skillId)
+        {
+            if (string.IsNullOrWhiteSpace(skillId))
+                return false;
+
+            string normalizedSkillId = skillId.Trim();
+            return !SkillRarityUtility.IsUpgradeSkillVariant(normalizedSkillId) &&
+                   SkillRarityUtility.TryGetPairedVariantId(normalizedSkillId, out string pairedSkillId) &&
+                   !string.IsNullOrWhiteSpace(pairedSkillId);
         }
 
         private static string TryInvokeGrant(EventChoiceRewardGrant grant, string fallback)

@@ -3,6 +3,17 @@ using UnityEngine;
 
 public static class EventRoomRewardFlowUtility
 {
+    private const string OptionalSecondChestEventId = "Event_02_A";
+    private const string MiningEventId = "Event_05";
+
+    public static bool CanSkipUnresolvedEvent(EventDefinition definition)
+    {
+        if (definition == null)
+            return false;
+
+        return EventIdUtility.Normalize(definition.EventId) == OptionalSecondChestEventId;
+    }
+
     public static bool ShouldOpenPendingRewards(
         EventChoiceExecutionResult result,
         int pendingRewardCount)
@@ -27,6 +38,17 @@ public static class EventRoomRewardFlowUtility
         return result.Accepted &&
                pendingRewardCount > 0 &&
                result.HasNextEvent;
+    }
+
+    public static bool ShouldCompleteAfterFailedChoice(
+        EventData choice,
+        EventChoiceExecutionResult result)
+    {
+        if (choice == null || !result.Accepted || result.Succeeded)
+            return false;
+
+        return EventIdUtility.Normalize(choice.EventId) == MiningEventId &&
+               (choice.ChoiceOrder == 1 || choice.ChoiceOrder == 2);
     }
 
     public static BattleRewardData CreateRemnantReward(int amount)

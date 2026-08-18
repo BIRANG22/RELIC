@@ -518,20 +518,17 @@ public class RestRoomController : MonoBehaviour
         if (shopPanel != null)
             return;
 
-        shopPanel = Object.FindFirstObjectByType<RestRoomShopPanel>(FindObjectsInactive.Include);
+        shopPanel = GetComponentInChildren<RestRoomShopPanel>(true);
 
         if (shopPanel != null)
             return;
 
         Transform shopPanelTransform = FindSceneTransformByName("ShopPanel");
 
-        if (shopPanelTransform == null)
+        if (shopPanelTransform == null || !shopPanelTransform.IsChildOf(transform))
             return;
 
         shopPanel = shopPanelTransform.GetComponent<RestRoomShopPanel>();
-
-        if (shopPanel == null)
-            shopPanel = shopPanelTransform.gameObject.AddComponent<RestRoomShopPanel>();
     }
 
     private void EnsureNextButtonRoot()
