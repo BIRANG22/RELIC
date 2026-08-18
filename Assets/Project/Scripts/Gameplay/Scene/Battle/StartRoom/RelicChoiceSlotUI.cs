@@ -16,6 +16,8 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
 
     private string relicId;
     private RelicChoiceAreaUI owner;
+    private StartRoomSkillRewardChoice skillRewardChoice;
+    private bool isSkillRewardChoice;
     private bool isSetup;
     private bool isPointerInside;
     private bool isSelected;
@@ -60,6 +62,8 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
     {
         relicId = id;
         owner = choiceArea;
+        skillRewardChoice = default;
+        isSkillRewardChoice = false;
         isSetup = false;
         isPointerInside = false;
         isSelected = false;
@@ -88,6 +92,34 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
         }
 
         SetupDisplay(relicData);
+
+        isSetup = true;
+        RefreshStateImages();
+
+        if (button != null)
+            button.interactable = true;
+
+        gameObject.SetActive(true);
+    }
+
+    public void SetupSkillRewardChoice(StartRoomSkillRewardChoice choice, RelicChoiceAreaUI choiceArea)
+    {
+        relicId = string.Empty;
+        owner = choiceArea;
+        skillRewardChoice = choice;
+        isSkillRewardChoice = true;
+        isSetup = false;
+        isPointerInside = false;
+        isSelected = false;
+        RefreshStateImages();
+
+        if (!choice.IsValid)
+        {
+            ClearSlot();
+            return;
+        }
+
+        SetupSkillRewardChoiceDisplay(choice);
 
         isSetup = true;
         RefreshStateImages();
@@ -129,6 +161,8 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
     {
         relicId = string.Empty;
         owner = null;
+        skillRewardChoice = default;
+        isSkillRewardChoice = false;
         isSetup = false;
         isPointerInside = false;
         isSelected = false;
@@ -182,11 +216,19 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
         if (IsMenuPanelOpen())
             return;
 
-        if (!isSetup || string.IsNullOrWhiteSpace(relicId))
+        if (!isSetup || owner == null)
             return;
 
-        if (owner != null)
-            owner.SelectSlot(this, relicId);
+        if (isSkillRewardChoice)
+        {
+            owner.SelectSkillRewardChoice(this, skillRewardChoice);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(relicId))
+            return;
+
+        owner.SelectSlot(this, relicId);
     }
 
     public void SetSelected(bool selected)
@@ -240,6 +282,33 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
             if (clickTransform != null)
                 clickImage = clickTransform.gameObject;
         }
+    }
+
+    private void SetupSkillRewardChoiceDisplay(StartRoomSkillRewardChoice choice)
+    {
+        if (relicIconImage != null)
+        {
+            if (DataManager.Instance != null &&
+                DataManager.Instance.ActionTypeIconDatabase != null &&
+                DataManager.Instance.ActionTypeIconDatabase.TryGetIcon(choice.SkillType.ToString(), out Sprite icon))
+            {
+                relicIconImage.sprite = icon;
+                relicIconImage.enabled = true;
+                relicIconImage.raycastTarget = true;
+            }
+            else
+            {
+                relicIconImage.sprite = null;
+                relicIconImage.enabled = false;
+                relicIconImage.raycastTarget = false;
+            }
+        }
+
+        if (relicNameText != null)
+            relicNameText.text = choice.Title;
+
+        if (relicEffectText != null)
+            relicEffectText.text = choice.Description;
     }
 
     private static Transform FindChildRecursive(Transform root, string childName)
