@@ -80,14 +80,14 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1597553239
-  m_SortingLayer: 4
+  m_SortingLayer: 1
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: d31c0c1d8cffe4c48b55a0016edef09c, type: 3}
+  m_Sprite: {fileID: 21300000, guid: ee9c491b593b14d42952ce587c43b70b, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 4, y: 5.56}
+  m_Size: {x: 3.6, y: 3.6}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -105,6 +105,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 33c392ea8bf721f4f9b83ea336edc598, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  useVirtualYOffset: 0
+  virtualYOffset: 0
   sortingOrderOffset: 0
   yMultiplier: 100
 --- !u!114 &692834655279357922
@@ -122,6 +124,12 @@ MonoBehaviour:
   autoAddClickCollider2D: 1
   fallbackColliderSize: {x: 1, y: 1}
   timelineHoverHighlightObject: {fileID: 5906332997287827078}
+  showAttackRangeOnHover: 1
+  dimMonsterDuringMoveTargetSelection: 1
+  reservationAlpha: 0.45
+  disableInteractionDuringReservationVisual: 1
+  showStatusTooltipOnHover: 1
+  statusTooltipUI: {fileID: 0}
 --- !u!61 &184688981553446317
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -159,9 +167,9 @@ BoxCollider2D:
   m_Offset: {x: 0, y: 1.44}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.1}
-    oldSize: {x: 4.4, y: 3.6}
-    newSize: {x: 4, y: 5.56}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 3.6, y: 3.6}
+    newSize: {x: 3.6, y: 3.6}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
@@ -197,6 +205,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spriteRoot: {fileID: 0}
+  linkedFacingRoots: []
   startFacingRight: 1
   minHorizontalDelta: 0.01
 --- !u!1 &5906332997287827078

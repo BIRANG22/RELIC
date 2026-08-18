@@ -46,6 +46,7 @@ public class BattleEffectRegistry
         Register(new GrabEffect());
         Register(new SpawnSpiderEggEffect());
         Register(new SpawnSpiderWebEffect());
+        Register(new SpawnSoldierEffect());
         Register(new LogOnlyEffect("E_Rush"));
         Register(new CrashEffect());
     }

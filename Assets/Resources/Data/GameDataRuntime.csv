@@ -47,33 +47,40 @@ Char_05,레이나,90,12,4,5,Blood,OnDamageEnemy,2,2,S_Passive_09,S_Passive_10,S_
 # Monster
 몬스터ID,이름,등급,HP,방어도,최소 렘넌트,최대 렘넌트,고유아이템,고유 아이템 확률,유물확률,공격범위,보유스킬1 ID,보유스킬2 ID,보유스킬3 ID,보유스킬4 ID,보유스킬5 ID,보유스킬6 ID,보유스킬7 ID,보유스킬8 ID,보유스킬9 ID,보유스킬10 ID,특수행동1,특수행동2
 MonsterId,Name,Grade,HP,Armor,MinRemnant,MaxRemnant,UniqueItemId ,UniqueItemChance,RelicChance,AttackRange,PossSkillId01,PossSkillId02,PossSkillId03,PossSkillId04,PossSkillId05,PossSkillId06,PossSkillId07,PossSkillId08,PossSkillId09,PossSkillId10,SpecialAction1,SpecialAction2
-Mon_01,머크,Common,32,0,8,16,Item_001,0.5,0.02,Range_19,S_Monster_01,S_Monster_02,0,0,0,0,0,0,0,0,"가까운 캐릭터에게
+Mon_01,머크,Common,32,0,8,16,Item_001,0.4,0.02,Range_19,S_Monster_01,S_Monster_02,0,0,0,0,0,0,0,0,"가까운 캐릭터에게
 이동합니다.","분열 수치가 0이 되면
 블롭 2마리로 분열합니다."
-Mon_02,블롭,Common,15,0,5,10,Item_002,0.5,0.02,Range_20,S_Monster_03,S_Monster_04,0,0,0,0,0,0,0,0,"가까운 캐릭터에게
+Mon_02,블롭,Common,15,0,5,10,Item_002,0.4,0.02,Range_20,S_Monster_03,S_Monster_04,0,0,0,0,0,0,0,0,"가까운 캐릭터에게
 이동합니다.","이동할 때 지나온 위치에
 잔여물을 생성합니다."
-Mon_03,랜서,Common,18,0,12,18,Item_003,0.5,0.02,Range_19,S_Monster_05,S_Monster_06,S_Monster_07,0,0,0,0,0,0,0,"캐릭터가 가까이 오면
+Mon_03,랜서,Common,18,0,12,18,Item_003,0.4,0.02,Range_19,S_Monster_05,S_Monster_06,S_Monster_07,0,0,0,0,0,0,0,"캐릭터가 가까이 오면
 멀리 이동합니다.","매 턴 모든 몬스터에게
 원한을 부여합니다."
-Mon_04,블라이트,Common,20,0,12,18,Item_004,0.5,0.02,Range_19,S_Monster_08,S_Monster_09,S_Monster_10,0,0,0,0,0,0,0,"캐릭터가 가까이 오면
+Mon_04,블라이트,Common,20,0,12,18,Item_004,0.4,0.02,Range_19,S_Monster_08,S_Monster_09,S_Monster_10,0,0,0,0,0,0,0,"캐릭터가 가까이 오면
 멀리 이동합니다.","매 턴 모든 캐릭터에게
 침식을 부여합니다."
-Mon_05,베스파,Common,35,0,18,25,Item_005,0.5,0.02,Range_20,S_Monster_11,S_Monster_12,0,0,0,0,0,0,0,0,"한 턴에 최대 2회
+Mon_05,베스파,Common,35,0,18,25,Item_005,0.4,0.02,Range_20,S_Monster_11,S_Monster_12,0,0,0,0,0,0,0,0,"한 턴에 최대 2회
 이동할 수 있습니다.","캐릭터와 같은 라인으로
 이동하여 돌진합니다."
-Mon_06,신더,Common,16,20,15,22,Item_006,0.5,0.02,Range_24,S_Monster_13,S_Monster_14,0,0,0,0,0,0,0,0,"가까운 캐릭터에게
+Mon_06,신더,Common,16,20,15,22,Item_006,0.4,0.02,Range_24,S_Monster_13,S_Monster_14,0,0,0,0,0,0,0,0,"가까운 캐릭터에게
 이동합니다.","폭발 수치가 0이 되면
 폭발하여 피해를 줍니다."
-Mon_07,Mon_07,Common,,,,,,,,0,0,0,0,0,0,0,0,0,0,0,0,0
-Mon_08,Mon_08,Common,,,,,,,,0,0,0,0,0,0,0,0,0,0,0,0,0
-Mon_09,Mon_09,Common,,,,,,,,0,0,0,0,0,0,0,0,0,0,0,0,0
-Mon_10,녹턴,Elite,94,0,36,48,Item_010,0.7,0.1,Range_24,S_Monster_15,S_Monster_16,S_Monster_17,S_Monster_18,S_Monster_19,0,0,0,0,0,"캐릭터의 후방으로
+Mon_07,드라우그,Common,38,0,10,20,Item_007,0.4,0.02,Range_02,S_Monster_26,S_Monster_27,S_Monster_28,0,0,0,0,0,0,0,"가까운 캐릭터에게
+이동합니다.","공격스킬에 피격받으면
+반격합니다."
+Mon_08,바로우,Common,30,0,10,20,Item_008,0.4,0.02,Range_20,S_Monster_29,S_Monster_30,S_Monster_31,0,0,0,0,0,0,0,"캐릭터가 가까이오면
+반대로 이동합니다.","캐릭터가 같은 라인에 없다면
+곡사를 사용합니다."
+Mon_09,루크,Elite,85,0,30,45,Item_009,0.25,0.1,Range_02,S_Monster_32,S_Monster_33,S_Monster_34,S_Monster_35,S_Monster_36,0,0,0,0,0,"가까운 캐릭터에게
+이동합니다.",매 턴 방어도를 회복합니다.
+Mon_10,녹턴,Elite,94,0,36,48,Item_010,0.25,0.1,Range_24,S_Monster_15,S_Monster_16,S_Monster_17,S_Monster_18,S_Monster_19,0,0,0,0,0,"캐릭터의 후방으로
 순간이동합니다.","기습을 보유하며,
 후방에 피해를 줄 때
 강한 피해를 줍니다."
-Mon_11,Mon_11,Elite,,,,,,,,0,0,0,0,0,0,0,0,0,0,0,0,0
-Mon_12,아라벨라,Boss,142,0,45,55,Item_012,1,0,Range_19,S_Monster_20,S_Monster_21,S_Monster_22,S_Monster_23,S_Monster_24,S_Monster_25,0,0,0,0,"캐릭터가 가까이 오면
+Mon_11,모르트,Elite,77,0,35,42,Item_011,0.25,0.1,Range_19,S_Monster_37,S_Monster_38,S_Monster_39,S_Monster_40,S_Monster_41,0,0,0,0,0,"캐릭터가 가까이오면
+반대로 이동합니다.","병사가 죽었다면
+1턴 후 되살립니다."
+Mon_12,아라벨라,Boss,142,0,45,55,Item_012,0.7,0,Range_19,S_Monster_20,S_Monster_21,S_Monster_22,S_Monster_23,S_Monster_24,S_Monster_25,0,0,0,0,"캐릭터가 가까이 오면
 반대로 이동합니다.","매 턴 무작위 슬롯 하나를
 사용할 수 없게 합니다."
 ,,,,,,,,,,,,,,,,,,
@@ -227,12 +234,28 @@ S_Monster_16,그림자걸음,Self,E_Move,0,1,0,Range_24,Move,캐릭터의 후방
 S_Monster_17,심연 찌르기,PlayerParty,E_Pierce,10,1,0,Range_03,Attack,전방의 대상을 찔러 수치의 피해를 줍니다.,1,icon_mon_skill_013,관통피해
 S_Monster_18,어둠 가르기,PlayerParty,E_Strike,12,1,0,Range_14,Attack,전방 범위를 휘둘러 수치의 피해를 줍니다.,1,icon_mon_skill_014,일반피해
 S_Monster_19,그림자 소용돌이,PlayerParty,E_Strike;E_Grab,2;1,1,0,Range_12,Attack,범위 내 대상에게 수치의 피해를 주고 1칸 끌어당깁니다.,0,icon_mon_skill_015,끌어당김
-S_Monster_20,후퇴,Self,E_Move,0,1,0,Range_19,Move,캐릭터에게서 멀어지도록 최대 2칸 이동합니다.,0,icon_mon_skill_001,이동
+S_Monster_20,회피,Self,E_Move,0,1,0,Range_19,Move,캐릭터에게서 멀어지도록 최대 2칸 이동합니다.,0,icon_mon_skill_001,이동
 S_Monster_21,사방 찢기,PlayerParty,E_Strike,10,1,0,Range_02,Attack,자신의 주변에 수치의 피해를 줍니다.,2,icon_mon_skill_016,일반피해
 S_Monster_22,사냥 표식,PlayerParty,E_Strike,8,1,0,Range_16,Attack,캐릭터가 위치한 칸을 공격하여 수치의 피해를 줍니다.,1,icon_mon_skill_017,일반피해
 S_Monster_23,고치 심기,Self,E_Spawn_Spider_Egg,1,1,0,Range_16,Debuff,지정된 위치에 거미알을 수치개 생성합니다.,0,icon_mon_skill_018,설치
 S_Monster_24,사냥실,Self,E_Spawn_Spider_Web,1,1,0,Range_16,Debuff,지정된 위치에 거미줄을 수치개 생성합니다.,0,icon_mon_skill_019,설치
 S_Monster_25,거미줄 갑주,Self,E_Barrier,1,1,0,Range_Self,Buff,자신에게 피해를 수치회 막는 장막을 부여합니다.,0,icon_mon_skill_020,버프
+S_Monster_26,전진,Self,E_Move,0,1,0,Range_02,Move,가까운 캐릭터를 향해 1칸 이동합니다.,0,icon_mon_skill_001,이동
+S_Monster_27,가로베기,PlayerParty,E_Strike,9,1,0,Range_07,Attack,전방 범위에 수치의 피해를 줍니다.,1,,일반피해
+S_Monster_28,세로베기,PlayerParty,E_Strike,6,1,0,Range_10,Attack,공격 스킬에 피격되면 수치의 피해로 반격합니다.,0,,일반피해
+S_Monster_29,거리조절,Self,E_Move,0,1,0,Range_20,Move,십자 방향으로 최대 2칸 이동합니다.,0,icon_mon_skill_001,이동
+S_Monster_30,직사,PlayerParty,E_Strike,8,1,0,Range_18,Attack,정면 일직선상의 대상에게 수치의 피해를 줍니다.,2,,일반피해
+S_Monster_31,곡사,PlayerParty,E_Strike,4,2,0,Range_05,Attack,가장 먼 캐릭터 범위에 수치의 피해를 2회 줍니다.,0,,일반피해
+S_Monster_32,진군,Self,E_Move,0,1,0,Range_20,Move,가까운 캐릭터를 향해 1칸 이동합니다.,0,,이동
+S_Monster_33,방패돌진,PlayerParty,E_Strike;E_Knockback,10;6,1,6,Range_18,Attack,돌진하여 대상에게 수치의 피해를 주고 수치칸 밀어냅니다.,1,,밀어냄
+S_Monster_34,방패강타,PlayerParty,E_Strike;E_Knockback,18;1,1,0,Range_04,Attack,전방 범위에 수치의 피해를 주고 수치칸 밀어냅니다.,1,,밀어냄
+S_Monster_35,대지진,PlayerParty,E_Strike,6,1,0,Range_All,Attack,전 범위에 수치의 피해를 줍니다.,0,,일반피해
+S_Monster_36,철옹성,Self,E_Armor,15,1,0,Range_Self,Buff,자신에게 수치만큼 방어도를 부여합니다.,0,,버프
+S_Monster_37,변위,Self,E_Move,0,1,0,Range_02,Move,캐릭터에게서 멀어지도록 1칸 이동합니다.,0,,이동
+S_Monster_38,망령쇄도,PlayerParty,E_Pierce,12,1,0,Range_18,Attack,전방 일직선 범위에 수치의 관통 피해를 줍니다.,0,,관통피해
+S_Monster_39,혼령폭발,PlayerParty,E_Strike,14,1,0,Range_17,Attack,지정된 범위에 수치의 피해를 줍니다.,0,,일반피해
+S_Monster_40,피의저주,PlayerParty,E_Bleed,1,1,0,Range_16,Debuff,대상에게 출혈을 수치 부여합니다.,0,,디버프
+S_Monster_41,사령술,Self,E_Spawn_Soldier,1,1,0,Range_Self,Buff,죽은 병사 1명을 다시 소환합니다.,0,,버프
 
 # MonsterPatternInfo
 패턴ID,몬스터ID,순서,스킬id,패턴내용,스킬내용
@@ -484,6 +507,7 @@ E_Burn,화상,Harmful,Decrease,화상 상태입니다.
 E_Spawn_Spider_Egg,거미알 생성,Neutral,None,선택한 그리드에 거미알을 생성한다.
 E_Spawn_Spider_Web,거미줄 생성,Neutral,None,선택한 그리드에 거미줄을 생성한다.
 E_Spider_Web,거미줄,Neutral,Maintain,다음 이동 예약 사용 코스트가 2배가 된다. 이동 예약 성공 시 사라진다.
+E_Spawn_Soldier,사령술,Neutral,None,지정된 위치에 죽었던 병사를 다시 생성한다.
 
 # Map
 맵ID,이름,타입,전투맵ID,이벤트ID,챕터,스테이지 맵,등장가중치,,
