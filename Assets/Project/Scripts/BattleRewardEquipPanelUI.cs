@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using TMPro;
@@ -9,6 +8,7 @@ using UnityEngine.UI;
 
 public sealed class BattleRewardEquipPanelUI : MonoBehaviour
 {
+    private const string BattleHudCanvasName = "BattleHUDCanvas";
     private const int CharacterCount = 3;
     private const int VisibleRelicSlotCount = 6;
     private const int VisibleSkillSlotCount = 3;
@@ -57,6 +57,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
 
     private BattleRewardData currentReward;
     private Action resolvedCallback;
+    private UIFadeInOnEnable fadeTransition;
     private int selectedCharacterIndex = -1;
     private int selectedSkillViewIndex = -1;
     private int selectedRelicRuntimeSlotIndex = -1;
@@ -94,6 +95,9 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
             relicExtractionRate = 0f;
         else if (relicExtractionRate > 1f)
             relicExtractionRate = 1f;
+
+        if (closeDelayAfterApply < 0f)
+            closeDelayAfterApply = 0f;
     }
 #endif
 
@@ -190,6 +194,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
         if (deleteButton != null)
             deleteButton.interactable = true;
 
+        RefreshBlurBackgroundTargets();
         gameObject.SetActive(true);
         transform.SetAsLastSibling();
         EnsureTopmostSorting();
@@ -239,6 +244,81 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
         }
 
         return highest;
+    }
+
+    private void RefreshBlurBackgroundTargets()
+    {
+        UIBlurBackground[] blurBackgrounds = GetComponentsInChildren<UIBlurBackground>(true);
+        if (blurBackgrounds == null || blurBackgrounds.Length == 0)
+            return;
+
+        List<GameObject> roots = CollectRewardEquipBlurRoots(this);
+        for (int i = 0; i < blurBackgrounds.Length; i++)
+        {
+            UIBlurBackground blurBackground = blurBackgrounds[i];
+            if (blurBackground == null)
+                continue;
+
+            blurBackground.SetRuntimeBlurredUiRoots(roots);
+        }
+    }
+
+    private static List<GameObject> CollectRewardEquipBlurRoots(BattleRewardEquipPanelUI owner)
+    {
+        List<GameObject> roots = new List<GameObject>();
+        Transform ownerTransform = owner != null ? owner.transform : null;
+
+        BattleRewardPanelUI[] rewardPanels = UnityEngine.Object.FindObjectsByType<BattleRewardPanelUI>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < rewardPanels.Length; i++)
+        {
+            BattleRewardPanelUI rewardPanel = rewardPanels[i];
+            if (rewardPanel == null || !rewardPanel.gameObject.activeInHierarchy)
+                continue;
+
+            if (IsTransformSelfOrChildOfOwner(ownerTransform, rewardPanel.transform))
+                continue;
+
+            AddUniqueRoot(roots, rewardPanel.gameObject);
+        }
+
+        Canvas[] canvases = UnityEngine.Object.FindObjectsByType<Canvas>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < canvases.Length; i++)
+        {
+            Canvas canvas = canvases[i];
+            if (canvas == null || !canvas.gameObject.activeInHierarchy)
+                continue;
+
+            if (!string.Equals(canvas.gameObject.name, BattleHudCanvasName, StringComparison.Ordinal))
+                continue;
+
+            if (IsTransformSelfOrChildOfOwner(ownerTransform, canvas.transform))
+                continue;
+
+            AddUniqueRoot(roots, canvas.gameObject);
+        }
+
+        return roots;
+    }
+
+    private static bool IsTransformSelfOrChildOfOwner(Transform ownerTransform, Transform target)
+    {
+        return ownerTransform != null &&
+               target != null &&
+               (target == ownerTransform || target.IsChildOf(ownerTransform));
+    }
+
+    private static void AddUniqueRoot(List<GameObject> roots, GameObject root)
+    {
+        if (roots == null || root == null || roots.Contains(root))
+            return;
+
+        roots.Add(root);
     }
 
     private void RegisterButtonEvents()
@@ -548,15 +628,6 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
         if (deleteButton != null)
             deleteButton.interactable = false;
 
-        StartCoroutine(CloseAfterAppliedPreviewRoutine());
-    }
-
-    private IEnumerator CloseAfterAppliedPreviewRoutine()
-    {
-        float delay = Mathf.Max(0f, closeDelayAfterApply);
-        if (delay > 0f)
-            yield return new WaitForSecondsRealtime(delay);
-
         FinishResolvedReward();
     }
 
@@ -579,8 +650,17 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
         selectedSkillViewIndex = -1;
         selectedRelicRuntimeSlotIndex = -1;
 
+        if (TryFadeOutAndDeactivate(callback))
+            return;
+
         gameObject.SetActive(false);
         callback?.Invoke();
+    }
+
+    private bool TryFadeOutAndDeactivate(Action callback)
+    {
+        fadeTransition ??= GetComponent<UIFadeInOnEnable>();
+        return fadeTransition != null && fadeTransition.TryFadeOutAndDeactivate(callback);
     }
 
     private void RefreshItemInfo()

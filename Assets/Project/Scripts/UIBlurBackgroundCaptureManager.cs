@@ -277,12 +277,13 @@ public sealed class UIBlurBackgroundCaptureManager : MonoBehaviour
             if (root == null || !root.activeInHierarchy)
                 continue;
 
+            AddRootCanvasToCaptureTargets(root);
+
             Transform[] targets = root.GetComponentsInChildren<Transform>(true);
             for (int targetIndex = 0; targetIndex < targets.Length; targetIndex++)
             {
                 Transform target = targets[targetIndex];
-                if (target != null && !captureIncludedTargets.Contains(target.gameObject))
-                    captureIncludedTargets.Add(target.gameObject);
+                AddCaptureIncludedTarget(target != null ? target.gameObject : null);
             }
         }
 
@@ -333,6 +334,27 @@ public sealed class UIBlurBackgroundCaptureManager : MonoBehaviour
                 rootCanvas.worldCamera = sourceCamera;
             }
         }
+    }
+
+    private void AddRootCanvasToCaptureTargets(GameObject includedRoot)
+    {
+        if (includedRoot == null)
+            return;
+
+        Canvas canvas = includedRoot.GetComponentInParent<Canvas>();
+        Canvas rootCanvas = canvas != null ? canvas.rootCanvas : null;
+        if (rootCanvas == null || !rootCanvas.gameObject.activeInHierarchy)
+            return;
+
+        AddCaptureIncludedTarget(rootCanvas.gameObject);
+    }
+
+    private void AddCaptureIncludedTarget(GameObject target)
+    {
+        if (target == null || captureIncludedTargets.Contains(target))
+            return;
+
+        captureIncludedTargets.Add(target);
     }
 
     private void RestoreCaptureIncludedUI()

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -22,6 +23,12 @@ public class UIFadeInOnEnable : MonoBehaviour
     private readonly List<GraphicFadeData> fadeTargets = new List<GraphicFadeData>();
 
     private Coroutine fadeCoroutine;
+    private Action fadeOutCompletedCallback;
+    private CanvasGroup interactionCanvasGroup;
+    private bool addedInteractionCanvasGroup;
+    private bool capturedInteractionCanvasGroupState;
+    private bool originalInteractable;
+    private bool originalBlocksRaycasts;
 
     private bool initialized = false;
 
@@ -42,6 +49,8 @@ public class UIFadeInOnEnable : MonoBehaviour
             StopCoroutine(fadeCoroutine);
         }
 
+        fadeOutCompletedCallback = null;
+        RestoreInteractionState();
         SetAlphaToZero();
 
         fadeCoroutine = StartCoroutine(FadeIn());
@@ -55,7 +64,29 @@ public class UIFadeInOnEnable : MonoBehaviour
             fadeCoroutine = null;
         }
 
+        fadeOutCompletedCallback = null;
+        RestoreInteractionState();
         RestoreOriginalAlpha();
+    }
+
+    public bool TryFadeOutAndDeactivate(Action completedCallback = null)
+    {
+        if (!isActiveAndEnabled || !gameObject.activeInHierarchy)
+            return false;
+
+        if (!initialized)
+            Initialize();
+
+        if (fadeCoroutine != null)
+        {
+            StopCoroutine(fadeCoroutine);
+            fadeCoroutine = null;
+        }
+
+        fadeOutCompletedCallback = completedCallback;
+        BlockInteraction();
+        fadeCoroutine = StartCoroutine(FadeOutAndDeactivate());
+        return true;
     }
 
     /// <summary>
@@ -99,6 +130,9 @@ public class UIFadeInOnEnable : MonoBehaviour
     /// </summary>
     private bool IsExcluded(Transform target)
     {
+        if (target != null && target.GetComponentInParent<UIBlurBackground>(true) != null)
+            return true;
+
         foreach (GameObject excludedObject in excludedObjects)
         {
             if (excludedObject == null)
@@ -186,6 +220,118 @@ public class UIFadeInOnEnable : MonoBehaviour
         RestoreOriginalAlpha();
 
         fadeCoroutine = null;
+    }
+
+    private IEnumerator FadeOutAndDeactivate()
+    {
+        List<float> startAlphas = CaptureCurrentAlphas();
+
+        if (fadeDuration <= 0f)
+        {
+            SetAlphaToZero();
+            CompleteFadeOutAndDeactivate();
+            yield break;
+        }
+
+        float elapsedTime = 0f;
+
+        while (elapsedTime < fadeDuration)
+        {
+            elapsedTime += Time.unscaledDeltaTime;
+
+            float t = Mathf.Clamp01(elapsedTime / fadeDuration);
+            t = Mathf.SmoothStep(0f, 1f, t);
+
+            for (int i = 0; i < fadeTargets.Count; i++)
+            {
+                GraphicFadeData data = fadeTargets[i];
+                if (data.graphic == null)
+                    continue;
+
+                Color color = data.graphic.color;
+                float startAlpha = i < startAlphas.Count ? startAlphas[i] : color.a;
+                color.a = Mathf.Lerp(startAlpha, 0f, t);
+                data.graphic.color = color;
+            }
+
+            yield return null;
+        }
+
+        SetAlphaToZero();
+        CompleteFadeOutAndDeactivate();
+    }
+
+    private List<float> CaptureCurrentAlphas()
+    {
+        List<float> startAlphas = new List<float>(fadeTargets.Count);
+        for (int i = 0; i < fadeTargets.Count; i++)
+        {
+            Graphic graphic = fadeTargets[i].graphic;
+            startAlphas.Add(graphic != null ? graphic.color.a : 0f);
+        }
+
+        return startAlphas;
+    }
+
+    private void CompleteFadeOutAndDeactivate()
+    {
+        Action callback = fadeOutCompletedCallback;
+        fadeOutCompletedCallback = null;
+        fadeCoroutine = null;
+
+        gameObject.SetActive(false);
+        callback?.Invoke();
+    }
+
+    private void BlockInteraction()
+    {
+        EnsureInteractionCanvasGroup();
+
+        if (interactionCanvasGroup == null)
+            return;
+
+        interactionCanvasGroup.interactable = false;
+        interactionCanvasGroup.blocksRaycasts = false;
+    }
+
+    private void EnsureInteractionCanvasGroup()
+    {
+        if (interactionCanvasGroup != null)
+            return;
+
+        interactionCanvasGroup = GetComponent<CanvasGroup>();
+        addedInteractionCanvasGroup = interactionCanvasGroup == null;
+
+        if (interactionCanvasGroup == null)
+            interactionCanvasGroup = gameObject.AddComponent<CanvasGroup>();
+
+        if (interactionCanvasGroup == null || capturedInteractionCanvasGroupState)
+            return;
+
+        originalInteractable = interactionCanvasGroup.interactable;
+        originalBlocksRaycasts = interactionCanvasGroup.blocksRaycasts;
+        capturedInteractionCanvasGroupState = true;
+    }
+
+    private void RestoreInteractionState()
+    {
+        if (interactionCanvasGroup != null && capturedInteractionCanvasGroupState)
+        {
+            interactionCanvasGroup.interactable = originalInteractable;
+            interactionCanvasGroup.blocksRaycasts = originalBlocksRaycasts;
+        }
+
+        if (addedInteractionCanvasGroup && interactionCanvasGroup != null)
+        {
+            if (Application.isPlaying)
+                Destroy(interactionCanvasGroup);
+            else
+                DestroyImmediate(interactionCanvasGroup);
+        }
+
+        interactionCanvasGroup = null;
+        addedInteractionCanvasGroup = false;
+        capturedInteractionCanvasGroupState = false;
     }
 
     /// <summary>
