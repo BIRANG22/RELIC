@@ -24,8 +24,17 @@ namespace Relic.Gameplay.Monster
                 case "Mon_06":
                     return new CinderAI();
 
+                case "Mon_07":
+                    return new DraugrAI();
+
+                case "Mon_08":
+                    return new BarrowAI();
+
                 case "Mon_10":
                     return new NocturnAI();
+
+                case "Mon_11":
+                    return new MortAI();
 
                 case "Mon_12":
                     return new EliseAI();
