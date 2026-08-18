@@ -1784,6 +1784,7 @@ public class BattleActionRunner
     {
         int hitCount = Mathf.Max(1, count);
         bool isMultiHit = hitCount > 1;
+        HashSet<MonsterUnit> draugrCounterCandidates = new();
 
         // 다단 공격은 타격 횟수만큼 서로 다른 공격 모션을 빠르게 이어서 재생한다.
         // 1회 공격보다 각 모션의 재생 속도를 높여 전체 행동 시간이 과도하게 길어지지 않도록 한다.
@@ -1845,6 +1846,17 @@ public class BattleActionRunner
                 bool receivedDamage = monster.RuntimeData != null &&
                     (monster.RuntimeData.CurrentHP < hpBeforeHit ||
                      monster.RuntimeData.CurrentShield < shieldBeforeHit);
+
+                // 드라우그는 플레이어의 공격 스킬에 실제로 피격된 경우에만 반격 후보가 됩니다.
+                // 다단 공격은 타격마다 반격하지 않고, 해당 스킬의 모든 타격이 끝난 뒤 한 번만 반격합니다.
+                if (receivedDamage &&
+                    monster.RuntimeData != null &&
+                    !monster.RuntimeData.IsDead &&
+                    string.Equals(monster.RuntimeData.MonsterId, "Mon_07", StringComparison.Ordinal))
+                {
+                    draugrCounterCandidates.Add(monster);
+                }
+
                 bool shouldSplit = receivedDamage &&
                     statusEffectService.ApplySplitHitAndCheckTrigger(monster);
 
@@ -1885,6 +1897,92 @@ public class BattleActionRunner
 
         if (isMultiHit && attackerAnimator != null)
             attackerAnimator.RestorePlaybackSpeed();
+
+        // 공격 스킬 한 번의 피해 처리가 끝난 뒤 살아 있는 드라우그가 공격자를 반격합니다.
+        if (draugrCounterCandidates.Count > 0)
+            yield return ExecuteDraugrCounters(caster, draugrCounterCandidates);
+    }
+
+    private IEnumerator ExecuteDraugrCounters(
+        BattleCharacter caster,
+        HashSet<MonsterUnit> counterCandidates)
+    {
+        if (caster == null ||
+            caster.RuntimeData == null ||
+            caster.RuntimeData.IsDead ||
+            caster.CurrentGridIndex < 0 ||
+            counterCandidates == null ||
+            counterCandidates.Count <= 0)
+        {
+            yield break;
+        }
+
+        MonsterSkillData counterSkill =
+            DataManager.Instance?.MonsterSkillDatabase?.Get("S_Monster_28");
+
+        if (counterSkill == null)
+        {
+            Debug.LogWarning("[DraugrAI] 반격 스킬 S_Monster_28 데이터를 찾을 수 없습니다.");
+            yield break;
+        }
+
+        foreach (MonsterUnit draugr in counterCandidates)
+        {
+            if (draugr == null ||
+                draugr.RuntimeData == null ||
+                draugr.RuntimeData.IsDead ||
+                draugr.MainGridIndex < 0 ||
+                caster.RuntimeData.IsDead ||
+                caster.CurrentGridIndex < 0)
+            {
+                continue;
+            }
+
+            Vector2Int draugrCoord = gridManager.IndexToCoord(draugr.MainGridIndex);
+            Vector2Int casterCoord = gridManager.IndexToCoord(caster.CurrentGridIndex);
+
+            // 세로베기 반격 범위는 오른쪽 기준 (1,0), (2,0)이며
+            // 공격자가 왼쪽에 있을 때는 좌우 반전하여 동일하게 판정합니다.
+            if (draugrCoord.y != casterCoord.y)
+                continue;
+
+            int deltaX = casterCoord.x - draugrCoord.x;
+
+            if (deltaX == 0 || Mathf.Abs(deltaX) > 2)
+                continue;
+
+            int horizontalSign = deltaX > 0 ? 1 : -1;
+            BattleDirection counterDirection = horizontalSign > 0
+                ? BattleDirection.Right
+                : BattleDirection.Left;
+
+            List<int> counterRange = new();
+
+            for (int distance = 1; distance <= 2; distance++)
+            {
+                Vector2Int coord = draugrCoord + new Vector2Int(horizontalSign * distance, 0);
+
+                if (!gridManager.IsValidCoord(coord))
+                    continue;
+
+                counterRange.Add(gridManager.CoordToIndex(coord));
+            }
+
+            if (!counterRange.Contains(caster.CurrentGridIndex))
+                continue;
+
+            MonsterReservedCommand counterCommand =
+                new MonsterReservedCommand(draugr.RuntimeData, counterSkill);
+
+            counterCommand.SetRangeOriginGridIndex(draugr.MainGridIndex);
+            counterCommand.SetForcedDirection(counterDirection);
+            counterCommand.SetExplicitRangeResult(counterRange, counterRange);
+
+            yield return ExecuteMonsterSkill(counterCommand);
+
+            if (caster.RuntimeData.IsDead)
+                yield break;
+        }
     }
 
     private void ExecutePlayerNonDamageEffectToMonsters(
