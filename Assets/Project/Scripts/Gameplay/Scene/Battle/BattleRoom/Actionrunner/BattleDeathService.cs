@@ -104,12 +104,18 @@ public class BattleDeathService
 
         monster.RuntimeData.IsDeathHandled = true;
 
+        // 모르트와 함께 전투 중인 드라우그/바로우의 사망 위치와 사망 턴을 기록합니다.
+        MortNecromancyTracker.RecordSoldierDeath(monster, gridManager);
+
+        if (monster.RuntimeData.MonsterId == "Mon_11")
+            MortNecromancyTracker.RemoveMort(monster.RuntimeData.RuntimeId);
+
         BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
 
         if (animator != null)
             animator.PlayDead();
 
-        if (collectReward)
+        if (collectReward && !MortNecromancyTracker.IsRevivedSoldier(monster.RuntimeData.RuntimeId))
             CollectMonsterReward(monster);
 
         if (roomLoader != null)

@@ -3033,7 +3033,8 @@ public class BattleActionRunner
             command.ClearForcedDirection();
         }
 
-        if (command.SkillData.SkillId == "S_Monster_12")
+        if (command.SkillData.SkillId == "S_Monster_12" ||
+            command.SkillData.SkillId == "S_Monster_33")
         {
             ShowExecutionRange(BuildMonsterSkillExecutionRange(command, monster.MainGridIndex));
 
@@ -3778,7 +3779,9 @@ public class BattleActionRunner
             : facing == null || facing.IsFacingRight;
 
         int dirX = facingRight ? 1 : -1;
-        int maxMove = gridManager.Width;
+        int maxMove = command.SkillData.SkillId == "S_Monster_33"
+            ? 6
+            : gridManager.Width;
 
         Vector2Int finalOffset = Vector2Int.zero;
         BattleCharacter hitPlayer = null;
