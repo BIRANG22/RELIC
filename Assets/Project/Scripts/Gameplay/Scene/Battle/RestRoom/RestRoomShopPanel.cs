@@ -14,6 +14,12 @@ public class RestRoomShopPanel : MonoBehaviour
     [SerializeField] private Transform contentRoot;
     [SerializeField] private GoodsIconItem goodsPrefab;
 
+    [Header("Open Close")]
+    [SerializeField] private RectTransform slideRoot;
+    [SerializeField] private Vector2 openAnchoredPosition = Vector2.zero;
+    [SerializeField] private Vector2 closedAnchoredPosition = new(0f, 1100f);
+    [SerializeField] private bool deactivateOnClose;
+
     [Header("Stock")]
     [SerializeField] private int totalGoodsCount = RestRoomShopService.DefaultTotalGoodsCount;
     [SerializeField] private int skillGoodsCount = RestRoomShopService.DefaultSkillGoodsCount;
@@ -47,10 +53,9 @@ public class RestRoomShopPanel : MonoBehaviour
 
     public void Open()
     {
-        if (panelRoot != null)
-            panelRoot.SetActive(true);
-        else
-            gameObject.SetActive(true);
+        EnsureBindings();
+        ApplyPanelPosition(openAnchoredPosition);
+        SetPanelRootActive(true);
 
         Refresh();
     }
@@ -58,11 +63,10 @@ public class RestRoomShopPanel : MonoBehaviour
     public void Close()
     {
         ClearSpawnedItems();
+        ApplyPanelPosition(closedAnchoredPosition);
 
-        if (panelRoot != null)
-            panelRoot.SetActive(false);
-        else
-            gameObject.SetActive(false);
+        if (deactivateOnClose)
+            SetPanelRootActive(false);
     }
 
     public void Refresh()
@@ -143,7 +147,7 @@ public class RestRoomShopPanel : MonoBehaviour
 
         if (!TryOpenEquipPanel(goods))
         {
-            ShowWarning("¿Â¬¯ ∆–≥Œ¿ª ø≠ ºˆ æ¯Ω¿¥œ¥Ÿ.");
+            ShowWarning("Ïû•Ï∞© Ìå®ÎÑêÏùÑ Ïó¥ Ïàò ÏóÜÏäµÎãàÎã§.");
             return;
         }
 
@@ -446,6 +450,9 @@ public class RestRoomShopPanel : MonoBehaviour
         if (panelRoot == null)
             panelRoot = gameObject;
 
+        if (slideRoot == null)
+            slideRoot = ResolvePanelRectTransform();
+
         if (goodsPrefab == null)
             goodsPrefab = LoadDefaultGoodsPrefabAsset();
 
@@ -468,6 +475,34 @@ public class RestRoomShopPanel : MonoBehaviour
 
         if (goodsPrefab == null)
             goodsPrefab = CreateFallbackGoodsTemplate();
+    }
+
+    private void SetPanelRootActive(bool active)
+    {
+        if (panelRoot != null)
+        {
+            panelRoot.SetActive(active);
+            return;
+        }
+
+        gameObject.SetActive(active);
+    }
+
+    private void ApplyPanelPosition(Vector2 anchoredPosition)
+    {
+        if (slideRoot == null)
+            slideRoot = ResolvePanelRectTransform();
+
+        if (slideRoot != null)
+            slideRoot.anchoredPosition = anchoredPosition;
+    }
+
+    private RectTransform ResolvePanelRectTransform()
+    {
+        if (panelRoot != null && panelRoot.TryGetComponent(out RectTransform panelRectTransform))
+            return panelRectTransform;
+
+        return GetComponent<RectTransform>();
     }
 
     private GoodsIconItem LoadDefaultGoodsPrefabAsset()

@@ -52,6 +52,32 @@ public class EventRoomRewardPanelFlowTests
     }
 
     [Test]
+    public void CanSkipUnresolvedEvent_AllowsEvent02A()
+    {
+        EventDefinition definition = new()
+        {
+            EventId = "Event_02_A"
+        };
+
+        Assert.That(
+            EventRoomRewardFlowUtility.CanSkipUnresolvedEvent(definition),
+            Is.True);
+    }
+
+    [Test]
+    public void CanSkipUnresolvedEvent_BlocksRegularEvent()
+    {
+        EventDefinition definition = new()
+        {
+            EventId = "Event_06"
+        };
+
+        Assert.That(
+            EventRoomRewardFlowUtility.CanSkipUnresolvedEvent(definition),
+            Is.False);
+    }
+
+    [Test]
     public void CreateRemnantReward_UsesBattleRewardPanelDataContract()
     {
         BattleRewardData reward = EventRoomRewardFlowUtility.CreateRemnantReward(30);

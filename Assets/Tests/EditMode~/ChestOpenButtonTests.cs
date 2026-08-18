@@ -1,5 +1,6 @@
 using System.Reflection;
 using NUnit.Framework;
+using Relic.Gameplay.Data;
 using UnityEngine;
 
 public class ChestOpenButtonTests
@@ -113,6 +114,60 @@ public class ChestOpenButtonTests
         }
     }
 
+    [Test]
+    public void EventRoomController_LoadEvent02A_ShowsNextButton()
+    {
+        GameObject eventRoomObject = new("EventRoom");
+        GameObject nextButtonObject = new("NextButton");
+
+        try
+        {
+            EventRoomController controller = eventRoomObject.AddComponent<EventRoomController>();
+            nextButtonObject.SetActive(false);
+
+            SetPrivateField(controller, "nextButtonRoot", nextButtonObject);
+            InvokePrivate(
+                controller,
+                "LoadEventDefinition",
+                new EventDefinition { EventId = "Event_02_A" },
+                string.Empty);
+
+            Assert.That(nextButtonObject.activeSelf, Is.True);
+        }
+        finally
+        {
+            DestroyObject(eventRoomObject);
+            DestroyObject(nextButtonObject);
+        }
+    }
+
+    [Test]
+    public void EventRoomController_LoadRegularDataEvent_HidesNextButton()
+    {
+        GameObject eventRoomObject = new("EventRoom");
+        GameObject nextButtonObject = new("NextButton");
+
+        try
+        {
+            EventRoomController controller = eventRoomObject.AddComponent<EventRoomController>();
+            nextButtonObject.SetActive(true);
+
+            SetPrivateField(controller, "nextButtonRoot", nextButtonObject);
+            InvokePrivate(
+                controller,
+                "LoadEventDefinition",
+                new EventDefinition { EventId = "Event_06" },
+                string.Empty);
+
+            Assert.That(nextButtonObject.activeSelf, Is.False);
+        }
+        finally
+        {
+            DestroyObject(eventRoomObject);
+            DestroyObject(nextButtonObject);
+        }
+    }
+
     private static void SetPrivateField(object target, string fieldName, object value)
     {
         FieldInfo field = target.GetType().GetField(
@@ -133,14 +188,14 @@ public class ChestOpenButtonTests
         return (string)method.Invoke(target, null);
     }
 
-    private static void InvokePrivate(object target, string methodName)
+    private static void InvokePrivate(object target, string methodName, params object[] args)
     {
         MethodInfo method = target.GetType().GetMethod(
             methodName,
             BindingFlags.Instance | BindingFlags.NonPublic);
 
         Assert.That(method, Is.Not.Null);
-        method.Invoke(target, null);
+        method.Invoke(target, args);
     }
 
     private static T GetPrivateField<T>(object target, string fieldName)

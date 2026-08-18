@@ -16,6 +16,8 @@ namespace Relic.Gameplay.Data
         public int MaxHP;
         [FormerlySerializedAs("MaxStamina")]
         public int MaxCost;
+        public int RunMaxHPBonus;
+        public int RunMaxCostBonus;
         [FormerlySerializedAs("StaminaRecovery")]
         public int CostRecovery;
         [FormerlySerializedAs("BonusStaminaRecovery")]

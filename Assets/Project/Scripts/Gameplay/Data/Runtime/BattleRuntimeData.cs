@@ -49,6 +49,8 @@ namespace Relic.Gameplay.Data
 
         public int MaxHP;
         public int MaxCost;
+        public int RunMaxHPBonus;
+        public int RunMaxCostBonus;
         public int CostRecovery;
         public int BonusCostRecovery;
 
@@ -138,6 +140,8 @@ namespace Relic.Gameplay.Data
                 EquippedRuneIds = CopyStringArray(character.EquippedRuneIds, EquippedRuneSlotCount),
                 MaxHP = character.MaxHP,
                 MaxCost = character.MaxCost,
+                RunMaxHPBonus = character.RunMaxHPBonus,
+                RunMaxCostBonus = character.RunMaxCostBonus,
                 CostRecovery = character.CostRecovery,
                 BonusCostRecovery = character.BonusCostRecovery,
                 CurrentHP = character.CurrentHP,
@@ -217,6 +221,8 @@ namespace Relic.Gameplay.Data
 
             character.MaxHP = Mathf.Max(1, snapshot.MaxHP);
             character.MaxCost = Mathf.Max(0, snapshot.MaxCost);
+            character.RunMaxHPBonus = snapshot.RunMaxHPBonus;
+            character.RunMaxCostBonus = snapshot.RunMaxCostBonus;
             character.CostRecovery = Mathf.Max(0, snapshot.CostRecovery);
             character.BonusCostRecovery = snapshot.BonusCostRecovery;
             character.CurrentHP = Mathf.Clamp(snapshot.CurrentHP, 1, character.MaxHP);
@@ -240,6 +246,8 @@ namespace Relic.Gameplay.Data
 
             character.MaxHP = Mathf.Max(1, master.MaxHP);
             character.MaxCost = Mathf.Max(0, master.MaxCost);
+            character.RunMaxHPBonus = 0;
+            character.RunMaxCostBonus = 0;
             character.CostRecovery = Mathf.Max(0, master.CostRecovery);
             character.BonusCostRecovery = 0;
             character.CurrentHP = character.MaxHP;

@@ -64,6 +64,76 @@ public sealed class ReusableEquipmentEffectTests
     }
 
     [Test]
+    public void BattleStartEffects_PreservesRunMaxHpBonusWithoutAccumulatingEquipmentBonus()
+    {
+        DataManager.Instance.RelicDatabase.Initialize(new[]
+        {
+            CreateRelic("Relic_Stats", Entry("E_Max_HP", 5))
+        });
+
+        CharacterRuntimeData runtime = CreateRuntime();
+        runtime.RunMaxHPBonus = 8;
+        runtime.MaxHP = 48;
+        runtime.CurrentHP = 48;
+        runtime.EquippedRelicIds[1] = "Relic_Stats";
+
+        CharacterMasterData master = new()
+        {
+            CharacterId = runtime.CharacterId,
+            MaxHP = 40,
+            MaxCost = 3,
+            CostRecovery = 2
+        };
+
+        BattleEquipmentEffectService.ApplyBattleStartEffects(runtime, master);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(runtime.MaxHP, Is.EqualTo(53));
+            Assert.That(runtime.CurrentHP, Is.EqualTo(53));
+        });
+
+        BattleEquipmentEffectService.ApplyBattleStartEffects(runtime, master);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(runtime.MaxHP, Is.EqualTo(53));
+            Assert.That(runtime.CurrentHP, Is.EqualTo(53));
+        });
+    }
+
+    [Test]
+    public void BattleStartEffects_PreservesRunMaxCostBonusWithoutAccumulatingEquipmentBonus()
+    {
+        DataManager.Instance.RelicDatabase.Initialize(new[]
+        {
+            CreateRelic("Relic_Stats", Entry("E_Max_Cost", 2))
+        });
+
+        CharacterRuntimeData runtime = CreateRuntime();
+        runtime.RunMaxCostBonus = 2;
+        runtime.MaxCost = 5;
+        runtime.CurrentCost = 5;
+        runtime.EquippedRelicIds[1] = "Relic_Stats";
+
+        CharacterMasterData master = new()
+        {
+            CharacterId = runtime.CharacterId,
+            MaxHP = 40,
+            MaxCost = 3,
+            CostRecovery = 2
+        };
+
+        BattleEquipmentEffectService.ApplyBattleStartEffects(runtime, master);
+
+        Assert.That(runtime.MaxCost, Is.EqualTo(7));
+
+        BattleEquipmentEffectService.ApplyBattleStartEffects(runtime, master);
+
+        Assert.That(runtime.MaxCost, Is.EqualTo(7));
+    }
+
+    [Test]
     public void ReusableSkillModifierEffects_ModifyReservationCostValueAndCount()
     {
         DataManager.Instance.RelicDatabase.Initialize(new[]
