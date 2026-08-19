@@ -51,10 +51,10 @@ namespace Relic.Gameplay.Data
             data == null ? string.Empty : GameLocalization.GetData("Relic", data.FragmentId, "rarity", data.Rarity);
 
         public static string ItemName(ItemData data) =>
-            data == null ? string.Empty : GameLocalization.GetData("Item", data.ItemId, "name", data.Name);
+            data == null ? string.Empty : data.Name;
 
         public static string ItemDescription(ItemData data) =>
-            data == null ? string.Empty : GameLocalization.GetData("Item", data.ItemId, "description", data.Desc);
+            data == null ? string.Empty : data.Desc;
 
         public static string EffectName(EffectMasterData data) =>
             data == null ? string.Empty : GameLocalization.GetData("Effect", data.EffectId, "name", data.Name);

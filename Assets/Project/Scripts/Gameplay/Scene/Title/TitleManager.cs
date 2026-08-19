@@ -22,6 +22,15 @@ public class TitleManager : MonoBehaviour
     [SerializeField] private string unavailableMessage = "아직 준비되지 않았습니다.";
     [SerializeField] private Button[] unavailableButtons;
 
+    [Header("Run Buttons")]
+    [SerializeField] private GameObject startButtonObject;
+    [SerializeField] private GameObject continueButtonObject;
+    [SerializeField] private GameObject abandonBattleButtonObject;
+    [SerializeField] private bool autoFindRunButtons = true;
+    [SerializeField] private string startButtonName = "StartButton";
+    [SerializeField] private string continueButtonName = "ContinueButton";
+    [SerializeField] private string abandonBattleButtonName = "AbandonBattleButton";
+
     [Header("Title Mode Panels")]
     [SerializeField] private GameObject[] titleModePanels;
     [SerializeField] private bool autoFindTitleModePanels = true;
@@ -43,14 +52,21 @@ public class TitleManager : MonoBehaviour
     private void Awake()
     {
         ResolveTitleModePanels();
+        ResolveRunButtons();
         ResolveExitButton();
         AddExitButtonListener();
         AddUnavailableButtonListeners();
     }
 
+    private void OnEnable()
+    {
+        RefreshRunButtons();
+    }
+
     private void Start()
     {
         RefreshLogoDefaultState();
+        RefreshRunButtons();
         StartTitleBgmRetry();
     }
 
@@ -119,6 +135,40 @@ public class TitleManager : MonoBehaviour
 
         Debug.LogWarning("[TitleManager] UIManager is not found. Quit confirm dialog cannot be opened. Quitting directly instead.");
         QuitGameImmediately();
+    }
+
+    public void RefreshRunButtons()
+    {
+        ResolveRunButtons();
+
+        bool hasBattleContinueSave = HasBattleContinueSave();
+
+        SetActiveSafely(startButtonObject, !hasBattleContinueSave);
+        SetActiveSafely(continueButtonObject, hasBattleContinueSave);
+        SetActiveSafely(abandonBattleButtonObject, hasBattleContinueSave);
+
+        if (continueButtonObject != null)
+        {
+            TitleContinueButton continueButton = continueButtonObject.GetComponent<TitleContinueButton>();
+            if (continueButton != null)
+            {
+                continueButton.RefreshLockState();
+            }
+        }
+
+        if (abandonBattleButtonObject != null)
+        {
+            TitleAbandonBattleButton abandonButton = abandonBattleButtonObject.GetComponent<TitleAbandonBattleButton>();
+            if (abandonButton != null)
+            {
+                abandonButton.RefreshInteractable();
+            }
+        }
+    }
+
+    public bool HasBattleContinueSave()
+    {
+        return SaveSystem.Instance != null && SaveSystem.Instance.HasBattleContinueSave();
     }
 
     private void QuitGameImmediately()
@@ -191,6 +241,18 @@ public class TitleManager : MonoBehaviour
         }
 
         manager.CloseTitleModePanelsExcept(panelToKeep);
+    }
+
+    public static void RefreshRunButtonsInScene()
+    {
+        TitleManager manager = FindFirstObjectByType<TitleManager>(FindObjectsInactive.Include);
+
+        if (manager == null)
+        {
+            return;
+        }
+
+        manager.RefreshRunButtons();
     }
 
     private void RefreshLogoDefaultState()
@@ -278,6 +340,64 @@ public class TitleManager : MonoBehaviour
         }
 
         titleModePanels = resolvedPanels.ToArray();
+    }
+
+    private void ResolveRunButtons()
+    {
+        if (!autoFindRunButtons)
+        {
+            return;
+        }
+
+        if (startButtonObject == null)
+        {
+            startButtonObject = FindObjectByName(startButtonName);
+        }
+
+        if (continueButtonObject == null)
+        {
+            continueButtonObject = FindObjectByName(continueButtonName);
+        }
+
+        if (abandonBattleButtonObject == null)
+        {
+            abandonBattleButtonObject = FindObjectByName(abandonBattleButtonName);
+        }
+    }
+
+    private static void SetActiveSafely(GameObject target, bool shouldBeActive)
+    {
+        if (target == null || target.activeSelf == shouldBeActive)
+        {
+            return;
+        }
+
+        target.SetActive(shouldBeActive);
+    }
+
+    private static GameObject FindObjectByName(string objectName)
+    {
+        if (string.IsNullOrWhiteSpace(objectName))
+        {
+            return null;
+        }
+
+        Transform[] transforms = FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < transforms.Length; i++)
+        {
+            Transform target = transforms[i];
+            if (target == null || target.gameObject == null)
+            {
+                continue;
+            }
+
+            if (target.name == objectName)
+            {
+                return target.gameObject;
+            }
+        }
+
+        return null;
     }
 
     private void AddPanelIfValid(List<GameObject> panels, GameObject panel)

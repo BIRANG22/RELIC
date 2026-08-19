@@ -401,6 +401,21 @@ public class UIManager : Singleton<UIManager>
 
     public void ShowConfirmDialog(string message, System.Action yesAction, System.Action noAction)
     {
+        ShowConfirmDialog(
+            message,
+            GameLocalization.Get("common.yes", confirmYesText),
+            GameLocalization.Get("common.no", confirmNoText),
+            yesAction,
+            noAction);
+    }
+
+    public void ShowConfirmDialog(
+        string message,
+        string yesText,
+        string noText,
+        System.Action yesAction,
+        System.Action noAction)
+    {
         if (confirmDialogInstance == null)
             CreateConfirmDialog();
 
@@ -412,8 +427,8 @@ public class UIManager : Singleton<UIManager>
 
         confirmDialogUI.Configure(
             message,
-            GameLocalization.Get("common.yes", confirmYesText),
-            GameLocalization.Get("common.no", confirmNoText),
+            string.IsNullOrWhiteSpace(yesText) ? GameLocalization.Get("common.yes", confirmYesText) : yesText,
+            string.IsNullOrWhiteSpace(noText) ? GameLocalization.Get("common.no", confirmNoText) : noText,
             yesAction,
             noAction);
         confirmDialogInstance.SetActive(true);

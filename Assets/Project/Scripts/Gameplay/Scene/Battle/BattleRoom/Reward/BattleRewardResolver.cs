@@ -225,7 +225,7 @@ public class BattleRewardResolver : MonoBehaviour
             Icon = icon,
             Name = item != null ? GameDataLocalization.ItemName(item) : uniqueItemId,
             Description = item != null ? GameDataLocalization.ItemDescription(item) : "",
-            Value = item != null ? item.Value : 0
+            Value = 0
         });
     }
 

@@ -34,8 +34,15 @@ public class TitleContinueButton : MonoBehaviour
     {
         bool canContinue = HasBattleContinueSave();
 
+        if (button != null)
+        {
+            button.interactable = canContinue;
+        }
+
         if (lockedImage != null)
+        {
             lockedImage.SetActive(!canContinue);
+        }
     }
 
     public async void OnClickContinue()
@@ -49,6 +56,7 @@ public class TitleContinueButton : MonoBehaviour
             !SaveSystem.Instance.TryLoadBattleContinueProgress())
         {
             RefreshLockState();
+            TitleManager.RefreshRunButtonsInScene();
             ShowMissingContinueWarning();
             return;
         }
