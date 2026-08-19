@@ -13,8 +13,8 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
     private const int VisibleRelicSlotCount = 6;
     private const int VisibleSkillSlotCount = 3;
 
-    // skill1은 캐릭터 전용 스킬(EquippedSkillIds[1]) 표시용이고,
-    // 실제 획득 기억은 현재 자유 슬롯인 skill2/skill3(EquippedSkillIds[2]/[3])에 새길 수 있습니다.
+    // Equip_panel의 skill1/skill2/skill3은 모두 보상 기억 장착 대상으로 사용합니다.
+    // 런타임 인덱스는 각각 EquippedSkillIds[1]/[2]/[3]에 대응합니다.
     private static readonly int[] RuntimeSkillSlotIndices = { 1, 2, 3 };
 
     [Header("Item")]
@@ -432,7 +432,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
         }
 
         int runtimeSkillIndex = RuntimeSkillSlotIndices[skillViewIndex];
-        if (!SkillInventoryEquipService.IsFreeSkillSlotIndex(runtimeSkillIndex))
+        if (!IsRewardSkillSlotIndex(runtimeSkillIndex))
             return;
 
         CharacterView view = characterViews[characterIndex];
@@ -444,8 +444,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
         string previousSkillId = GetEquippedSkillId(character, runtimeSkillIndex);
         if (character == null ||
             !SkillRarityUtility.CanEquipToFreeSlot(nextSkill) ||
-            (!string.IsNullOrWhiteSpace(previousSkillId) &&
-             !SkillRarityUtility.CanUnequip(ResolveSkill(previousSkillId))))
+            !CanReplaceRewardSkill(runtimeSkillIndex, previousSkillId))
         {
             SelectCharacter(characterIndex);
             return;
@@ -529,23 +528,19 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
         }
 
         int runtimeSkillIndex = RuntimeSkillSlotIndices[selectedSkillViewIndex];
-        if (!SkillInventoryEquipService.IsFreeSkillSlotIndex(runtimeSkillIndex))
+        if (!IsRewardSkillSlotIndex(runtimeSkillIndex))
             return;
 
         string previousSkillId = GetEquippedSkillId(view.CharacterId, runtimeSkillIndex);
-        string message;
 
+        // 빈 슬롯에는 확인창 없이 즉시 장착합니다.
         if (string.IsNullOrWhiteSpace(previousSkillId))
         {
-            string characterName = string.IsNullOrWhiteSpace(view.CharacterName)
-                ? view.CharacterId
-                : view.CharacterName;
-            message = $"'{characterName}'에게 이 기억을 새기시겠습니까?";
+            ApplySelectedSkill(view, runtimeSkillIndex, previousSkillId);
+            return;
         }
-        else
-        {
-            message = "기억을 바꾸시겠습니까?\n기존에 새겨진 기억은 사라집니다.";
-        }
+
+        const string message = "기억을 바꾸시겠습니까?\n기존에 새겨진 기억은 사라집니다.";
 
         if (UIManager.Instance == null)
         {
@@ -573,19 +568,15 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
             return;
 
         SkillInventoryEquipService.EnsureEquippedSkillArray(character);
-        if (!SkillInventoryEquipService.IsFreeSkillSlotIndex(runtimeSkillIndex))
+        if (!IsRewardSkillSlotIndex(runtimeSkillIndex))
             return;
 
         SkillMasterData nextSkill = ResolveSkill(currentReward.RewardId);
         if (!SkillRarityUtility.CanEquipToFreeSlot(nextSkill))
             return;
 
-        if (!string.IsNullOrWhiteSpace(previousSkillId))
-        {
-            SkillMasterData previousSkill = ResolveSkill(previousSkillId);
-            if (!SkillRarityUtility.CanUnequip(previousSkill))
-                return;
-        }
+        if (!CanReplaceRewardSkill(runtimeSkillIndex, previousSkillId))
+            return;
 
         character.EquippedSkillIds[runtimeSkillIndex] = currentReward.RewardId.Trim();
         DataManager.Instance.CharacterRuntimeStore.AddOrUpdate(character);
@@ -968,8 +959,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
 
         SkillInventoryEquipService.EnsureEquippedSkillArray(character);
         string previousSkillId = character.EquippedSkillIds[runtimeSkillIndex];
-        return string.IsNullOrWhiteSpace(previousSkillId) ||
-               SkillRarityUtility.CanUnequip(ResolveSkill(previousSkillId));
+        return CanReplaceRewardSkill(runtimeSkillIndex, previousSkillId);
     }
 
     private bool IsSelectedRelicSlotValid(CharacterRuntimeData character, RelicData relic)
@@ -994,7 +984,25 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
     {
         return skillViewIndex >= 0 &&
                skillViewIndex < RuntimeSkillSlotIndices.Length &&
-               SkillInventoryEquipService.IsFreeSkillSlotIndex(RuntimeSkillSlotIndices[skillViewIndex]);
+               IsRewardSkillSlotIndex(RuntimeSkillSlotIndices[skillViewIndex]);
+    }
+
+    private static bool IsRewardSkillSlotIndex(int runtimeSkillIndex)
+    {
+        return runtimeSkillIndex >= 1 && runtimeSkillIndex <= 3;
+    }
+
+    private bool CanReplaceRewardSkill(int runtimeSkillIndex, string previousSkillId)
+    {
+        if (string.IsNullOrWhiteSpace(previousSkillId))
+            return true;
+
+        // skill1(EquippedSkillIds[1])은 기존 캐릭터 전용 스킬이 있어도
+        // 보상 기억으로 교체할 수 있도록 허용합니다.
+        if (runtimeSkillIndex == 1)
+            return true;
+
+        return SkillRarityUtility.CanUnequip(ResolveSkill(previousSkillId));
     }
 
     private int FindFirstCompatibleEmptyRelicSlot(string characterId)

@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using Relic.Gameplay.Battle;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace Relic.Gameplay.Data
 {
@@ -165,12 +168,90 @@ namespace Relic.Gameplay.Data
         public List<int> NextNodeIndices = new();
     }
 
+    [Serializable]
+    public class ManualBattleMapFixedNodeDefinition
+    {
+        public string Type = "Common";
+        public string MapIdOverride;
+        public bool UseCustomPosition;
+        public Vector2 CustomPosition;
+        public List<int> NextNodeIndices = new();
+    }
+
+    [Serializable]
+    public class ManualBattleMapSlotDefinition
+    {
+        public bool Enabled;
+        public string Type = "Common";
+        public string MapIdOverride;
+        public bool UseCustomPosition;
+        public Vector2 CustomPosition;
+        public List<int> NextNodeIndices = new();
+    }
+
+    [Serializable]
+    public class ManualBattleMapLayerSlots
+    {
+        public ManualBattleMapSlotDefinition Slot1 = new();
+        public ManualBattleMapSlotDefinition Slot2 = new();
+        public ManualBattleMapSlotDefinition Slot3 = new();
+        public ManualBattleMapSlotDefinition Slot4 = new();
+
+        public ManualBattleMapSlotDefinition GetSlot(int rowIndex)
+        {
+            return rowIndex switch
+            {
+                0 => Slot1,
+                1 => Slot2,
+                2 => Slot3,
+                3 => Slot4,
+                _ => null
+            };
+        }
+    }
+
     [CreateAssetMenu(menuName = "Relic/Data/Manual Battle Map Template")]
     public class ManualBattleMapTemplate : ScriptableObject
     {
-        [SerializeField] private List<ManualBattleMapNodeDefinition> nodes = new();
+        private const int StartLayerIndex = 0;
+        private const int BossLayerIndex = 13;
+        private const int TotalLayerCount = 14;
+        private const int FixedMiddleLayerRowCount = 4;
+        private const int StartNodeIndex = 0;
+        private const int BossNodeIndex = 49;
 
-        public List<ManualBattleMapNodeDefinition> Nodes => nodes;
+        [Header("Layer 0")]
+        [SerializeField] private ManualBattleMapFixedNodeDefinition layer0Start = new() { Type = "Special" };
+
+        [Header("Layer 1")]
+        [SerializeField] private ManualBattleMapLayerSlots layer1 = new();
+        [Header("Layer 2")]
+        [SerializeField] private ManualBattleMapLayerSlots layer2 = new();
+        [Header("Layer 3")]
+        [SerializeField] private ManualBattleMapLayerSlots layer3 = new();
+        [Header("Layer 4")]
+        [SerializeField] private ManualBattleMapLayerSlots layer4 = new();
+        [Header("Layer 5")]
+        [SerializeField] private ManualBattleMapLayerSlots layer5 = new();
+        [Header("Layer 6")]
+        [SerializeField] private ManualBattleMapLayerSlots layer6 = new();
+        [Header("Layer 7")]
+        [SerializeField] private ManualBattleMapLayerSlots layer7 = new();
+        [Header("Layer 8")]
+        [SerializeField] private ManualBattleMapLayerSlots layer8 = new();
+        [Header("Layer 9")]
+        [SerializeField] private ManualBattleMapLayerSlots layer9 = new();
+        [Header("Layer 10")]
+        [SerializeField] private ManualBattleMapLayerSlots layer10 = new();
+        [Header("Layer 11")]
+        [SerializeField] private ManualBattleMapLayerSlots layer11 = new();
+        [Header("Layer 12")]
+        [SerializeField] private ManualBattleMapLayerSlots layer12 = new();
+
+        [Header("Layer 13 - Boss")]
+        [SerializeField] private ManualBattleMapFixedNodeDefinition layer13Boss = new() { Type = "Boss" };
+
+        public List<ManualBattleMapNodeDefinition> Nodes => BuildDefinitions();
 
         public string GetRuntimeKey()
         {
@@ -198,16 +279,17 @@ namespace Relic.Gameplay.Data
             out List<GeneratedMapNodeData> generatedNodes)
         {
             generatedNodes = new List<GeneratedMapNodeData>();
+            List<ManualBattleMapNodeDefinition> definitions = BuildDefinitions();
 
-            if (nodes == null || nodes.Count == 0)
+            if (definitions.Count == 0)
                 return false;
 
-            if (!TryValidateDefinitions(out HashSet<int> definedNodeIndices))
+            if (!TryValidateDefinitions(definitions, out HashSet<int> definedNodeIndices))
                 return false;
 
-            for (int i = 0; i < nodes.Count; i++)
+            for (int i = 0; i < definitions.Count; i++)
             {
-                ManualBattleMapNodeDefinition definition = nodes[i];
+                ManualBattleMapNodeDefinition definition = definitions[i];
 
                 if (!TryResolveMap(
                     mapPool,
@@ -252,19 +334,14 @@ namespace Relic.Gameplay.Data
             unchecked
             {
                 uint hash = 2166136261;
+                List<ManualBattleMapNodeDefinition> definitions = BuildDefinitions();
 
-                if (nodes == null)
-                    return hash;
+                hash = AppendHash(hash, TotalLayerCount);
+                hash = AppendHash(hash, definitions.Count);
 
-                for (int i = 0; i < nodes.Count; i++)
+                for (int i = 0; i < definitions.Count; i++)
                 {
-                    ManualBattleMapNodeDefinition node = nodes[i];
-                    if (node == null)
-                    {
-                        hash = AppendHash(hash, 0);
-                        continue;
-                    }
-
+                    ManualBattleMapNodeDefinition node = definitions[i];
                     hash = AppendHash(hash, node.NodeIndex);
                     hash = AppendHash(hash, node.LayerIndex);
                     hash = AppendHash(hash, node.RowIndex);
@@ -273,14 +350,11 @@ namespace Relic.Gameplay.Data
                     hash = AppendHash(hash, node.UseCustomPosition ? 1 : 0);
                     hash = AppendHash(hash, Mathf.RoundToInt(node.CustomPosition.x * 1000f));
                     hash = AppendHash(hash, Mathf.RoundToInt(node.CustomPosition.y * 1000f));
+                    hash = AppendHash(hash, node.NextNodeIndices?.Count ?? 0);
 
                     if (node.NextNodeIndices == null)
-                    {
-                        hash = AppendHash(hash, 0);
                         continue;
-                    }
 
-                    hash = AppendHash(hash, node.NextNodeIndices.Count);
                     for (int j = 0; j < node.NextNodeIndices.Count; j++)
                         hash = AppendHash(hash, node.NextNodeIndices[j]);
                 }
@@ -315,19 +389,105 @@ namespace Relic.Gameplay.Data
             }
         }
 
-        private bool TryValidateDefinitions(out HashSet<int> definedNodeIndices)
+        private List<ManualBattleMapNodeDefinition> BuildDefinitions()
+        {
+            List<ManualBattleMapNodeDefinition> result = new();
+
+            result.Add(CreateFixedNode(layer0Start, StartNodeIndex, StartLayerIndex, 0));
+
+            AddMiddleLayer(result, layer1, 1);
+            AddMiddleLayer(result, layer2, 2);
+            AddMiddleLayer(result, layer3, 3);
+            AddMiddleLayer(result, layer4, 4);
+            AddMiddleLayer(result, layer5, 5);
+            AddMiddleLayer(result, layer6, 6);
+            AddMiddleLayer(result, layer7, 7);
+            AddMiddleLayer(result, layer8, 8);
+            AddMiddleLayer(result, layer9, 9);
+            AddMiddleLayer(result, layer10, 10);
+            AddMiddleLayer(result, layer11, 11);
+            AddMiddleLayer(result, layer12, 12);
+
+            result.Add(CreateFixedNode(layer13Boss, BossNodeIndex, BossLayerIndex, 0));
+            return result;
+        }
+
+        private static ManualBattleMapNodeDefinition CreateFixedNode(
+            ManualBattleMapFixedNodeDefinition source,
+            int nodeIndex,
+            int layerIndex,
+            int rowIndex)
+        {
+            source ??= new ManualBattleMapFixedNodeDefinition();
+
+            return new ManualBattleMapNodeDefinition
+            {
+                NodeIndex = nodeIndex,
+                LayerIndex = layerIndex,
+                RowIndex = rowIndex,
+                Type = source.Type,
+                MapIdOverride = source.MapIdOverride,
+                UseCustomPosition = source.UseCustomPosition,
+                CustomPosition = source.CustomPosition,
+                NextNodeIndices = source.NextNodeIndices == null
+                    ? new List<int>()
+                    : new List<int>(source.NextNodeIndices)
+            };
+        }
+
+        private static void AddMiddleLayer(
+            List<ManualBattleMapNodeDefinition> result,
+            ManualBattleMapLayerSlots layer,
+            int layerIndex)
+        {
+            if (result == null || layer == null)
+                return;
+
+            for (int rowIndex = 0; rowIndex < FixedMiddleLayerRowCount; rowIndex++)
+            {
+                ManualBattleMapSlotDefinition slot = layer.GetSlot(rowIndex);
+
+                if (slot == null || !slot.Enabled)
+                    continue;
+
+                result.Add(new ManualBattleMapNodeDefinition
+                {
+                    NodeIndex = GetReservedMiddleNodeIndex(layerIndex, rowIndex),
+                    LayerIndex = layerIndex,
+                    RowIndex = rowIndex,
+                    Type = slot.Type,
+                    MapIdOverride = slot.MapIdOverride,
+                    UseCustomPosition = slot.UseCustomPosition,
+                    CustomPosition = slot.CustomPosition,
+                    NextNodeIndices = slot.NextNodeIndices == null
+                        ? new List<int>()
+                        : new List<int>(slot.NextNodeIndices)
+                });
+            }
+        }
+
+        private static int GetReservedMiddleNodeIndex(int layerIndex, int rowIndex)
+        {
+            return 1 + ((layerIndex - 1) * FixedMiddleLayerRowCount) + rowIndex;
+        }
+
+        private bool TryValidateDefinitions(List<ManualBattleMapNodeDefinition> definitions, out HashSet<int> definedNodeIndices)
         {
             definedNodeIndices = new HashSet<int>();
+            Dictionary<int, HashSet<int>> usedRowsByLayer = new();
+            int startNodeCount = 0;
+            int bossNodeCount = 0;
 
-            for (int i = 0; i < nodes.Count; i++)
+            for (int i = 0; i < definitions.Count; i++)
             {
-                ManualBattleMapNodeDefinition definition = nodes[i];
+                ManualBattleMapNodeDefinition definition = definitions[i];
 
                 if (definition == null)
                     return false;
 
                 if (definition.NodeIndex < 0 ||
-                    definition.LayerIndex < 0 ||
+                    definition.LayerIndex < StartLayerIndex ||
+                    definition.LayerIndex > BossLayerIndex ||
                     definition.RowIndex < 0 ||
                     string.IsNullOrWhiteSpace(definition.Type))
                 {
@@ -336,11 +496,51 @@ namespace Relic.Gameplay.Data
 
                 if (!definedNodeIndices.Add(definition.NodeIndex))
                     return false;
+
+                if (!usedRowsByLayer.TryGetValue(definition.LayerIndex, out HashSet<int> usedRows))
+                {
+                    usedRows = new HashSet<int>();
+                    usedRowsByLayer.Add(definition.LayerIndex, usedRows);
+                }
+
+                if (IsStartOrBossLayer(definition.LayerIndex))
+                {
+                    if (definition.RowIndex != 0)
+                        return false;
+
+                    if (!usedRows.Add(0))
+                        return false;
+
+                    if (definition.LayerIndex == StartLayerIndex)
+                        startNodeCount++;
+                    else
+                        bossNodeCount++;
+
+                    continue;
+                }
+
+                if (definition.RowIndex >= FixedMiddleLayerRowCount)
+                    return false;
+
+                if (!usedRows.Add(definition.RowIndex))
+                    return false;
             }
 
-            for (int i = 0; i < nodes.Count; i++)
+            if (startNodeCount != 1 || bossNodeCount != 1)
+                return false;
+
+            for (int layerIndex = StartLayerIndex + 1; layerIndex < BossLayerIndex; layerIndex++)
             {
-                ManualBattleMapNodeDefinition definition = nodes[i];
+                if (usedRowsByLayer.TryGetValue(layerIndex, out HashSet<int> usedRows) &&
+                    usedRows.Count > FixedMiddleLayerRowCount)
+                {
+                    return false;
+                }
+            }
+
+            for (int i = 0; i < definitions.Count; i++)
+            {
+                ManualBattleMapNodeDefinition definition = definitions[i];
 
                 if (definition.NextNodeIndices == null)
                     continue;
@@ -364,30 +564,30 @@ namespace Relic.Gameplay.Data
 
         private Vector2 ResolvePosition(ManualBattleMapNodeDefinition definition)
         {
-            if (definition.UseCustomPosition)
+            if (!IsStartOrBossLayer(definition.LayerIndex) && definition.UseCustomPosition)
                 return definition.CustomPosition;
 
+            int rowIndex = IsStartOrBossLayer(definition.LayerIndex) ? 0 : definition.RowIndex;
             return BattleMapLayoutUtility.CalculatePosition(
                 definition.LayerIndex,
-                definition.RowIndex,
+                rowIndex,
                 GetLayerRowCount(definition.LayerIndex));
         }
 
         private int GetLayerRowCount(int layerIndex)
         {
-            int rowCount = 0;
+            if (IsStartOrBossLayer(layerIndex))
+                return 1;
 
-            for (int i = 0; i < nodes.Count; i++)
-            {
-                ManualBattleMapNodeDefinition candidate = nodes[i];
+            if (layerIndex > StartLayerIndex && layerIndex < BossLayerIndex)
+                return FixedMiddleLayerRowCount;
 
-                if (candidate == null || candidate.LayerIndex != layerIndex)
-                    continue;
+            return 1;
+        }
 
-                rowCount = Mathf.Max(rowCount, candidate.RowIndex + 1);
-            }
-
-            return Mathf.Max(1, rowCount);
+        private static bool IsStartOrBossLayer(int layerIndex)
+        {
+            return layerIndex == StartLayerIndex || layerIndex == BossLayerIndex;
         }
 
         private List<int> CopyValidConnections(
@@ -593,6 +793,91 @@ namespace Relic.Gameplay.Data
             return randomExclusionSettings == null ||
                    randomExclusionSettings.IsMapAllowedForRandomSelection(candidate);
         }
+
+#if UNITY_EDITOR
+        [CustomPropertyDrawer(typeof(ManualBattleMapLayerSlots))]
+        public class ManualBattleMapLayerSlotsDrawer : PropertyDrawer
+        {
+            private const float VerticalSpacing = 2f;
+
+            public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+            {
+                float height = EditorGUIUtility.singleLineHeight;
+
+                if (!property.isExpanded)
+                    return height;
+
+                height += VerticalSpacing;
+                height += GetChildHeight(property, "Slot1");
+                height += VerticalSpacing;
+                height += GetChildHeight(property, "Slot2");
+                height += VerticalSpacing;
+                height += GetChildHeight(property, "Slot3");
+                height += VerticalSpacing;
+                height += GetChildHeight(property, "Slot4");
+                return height;
+            }
+
+            public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+            {
+                EditorGUI.BeginProperty(position, label, property);
+
+                Rect foldoutRect = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
+                property.isExpanded = EditorGUI.Foldout(foldoutRect, property.isExpanded, label, true);
+
+                if (property.isExpanded)
+                {
+                    EditorGUI.indentLevel++;
+
+                    int baseNodeIndex = GetBaseNodeIndex(property.name);
+                    float y = foldoutRect.yMax + VerticalSpacing;
+
+                    y = DrawChild(position, property, "Slot1", baseNodeIndex + 0, y);
+                    y = DrawChild(position, property, "Slot2", baseNodeIndex + 1, y);
+                    y = DrawChild(position, property, "Slot3", baseNodeIndex + 2, y);
+                    DrawChild(position, property, "Slot4", baseNodeIndex + 3, y);
+
+                    EditorGUI.indentLevel--;
+                }
+
+                EditorGUI.EndProperty();
+            }
+
+            private static float GetChildHeight(SerializedProperty property, string childName)
+            {
+                SerializedProperty child = property.FindPropertyRelative(childName);
+                return child == null
+                    ? EditorGUIUtility.singleLineHeight
+                    : EditorGUI.GetPropertyHeight(child, true);
+            }
+
+            private static float DrawChild(Rect totalRect, SerializedProperty property, string childName, int nodeIndex, float y)
+            {
+                SerializedProperty child = property.FindPropertyRelative(childName);
+                if (child == null)
+                    return y + EditorGUIUtility.singleLineHeight;
+
+                float height = EditorGUI.GetPropertyHeight(child, true);
+                Rect childRect = new Rect(totalRect.x, y, totalRect.width, height);
+                EditorGUI.PropertyField(childRect, child, new GUIContent(nodeIndex.ToString()), true);
+                return childRect.yMax + VerticalSpacing;
+            }
+
+            private static int GetBaseNodeIndex(string propertyName)
+            {
+                if (string.IsNullOrWhiteSpace(propertyName) || !propertyName.StartsWith("layer", StringComparison.OrdinalIgnoreCase))
+                    return 1;
+
+                if (!int.TryParse(propertyName.Substring(5), out int layerIndex))
+                    return 1;
+
+                if (layerIndex <= 0)
+                    return 1;
+
+                return 1 + ((layerIndex - 1) * 4);
+            }
+        }
+#endif
 
         private static bool Same(string left, string right)
         {

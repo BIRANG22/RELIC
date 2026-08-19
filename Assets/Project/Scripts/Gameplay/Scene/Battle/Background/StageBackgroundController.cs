@@ -68,7 +68,7 @@ public class StageBackgroundController : MonoBehaviour
     /// 현재 레이어에 해당하는 배경을 생성합니다.
     /// layerIndex는 0부터 시작하므로 행 번호는 1을 더합니다.
     /// </summary>
-    public void ShowForLayer(int layerIndex)
+    public void ShowForLayer(int layerIndex, bool playBossReveal = false)
     {
         int row = layerIndex + 1;
         BackgroundRange range = FindRange(row);
@@ -90,7 +90,7 @@ public class StageBackgroundController : MonoBehaviour
         if (currentPrefab == range.Prefab &&
             currentInstance != null)
         {
-            if (range.Prefab == st1BossPrefab)
+            if (playBossReveal && range.Prefab == st1BossPrefab)
                 PlaySt1BossRevealSequence();
 
             return;
@@ -112,7 +112,7 @@ public class StageBackgroundController : MonoBehaviour
         currentPrefab = range.Prefab;
 
         // St1_boss 프리팹이 생성됐을 때만 순차 등장 연출 실행
-        if (range.Prefab == st1BossPrefab)
+        if (playBossReveal && range.Prefab == st1BossPrefab)
         {
             PlaySt1BossRevealSequence();
         }

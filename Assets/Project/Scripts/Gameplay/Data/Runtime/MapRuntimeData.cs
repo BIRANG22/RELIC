@@ -168,6 +168,16 @@ namespace Relic.Gameplay.Data
             if (runtime?.GeneratedNodes == null)
                 return null;
 
+            // 시작 지점은 방 Type이 아니라 지도 구조의 Layer 0으로 결정한다.
+            // 따라서 Layer 0에 Special 이벤트를 배치해도 새 탐사 시작 시 바로 해당 노드를 연다.
+            for (int i = 0; i < runtime.GeneratedNodes.Count; i++)
+            {
+                GeneratedMapNodeData node = runtime.GeneratedNodes[i];
+                if (node != null && node.LayerIndex == 0)
+                    return node;
+            }
+
+            // 기존/레거시 데이터 호환용 fallback.
             for (int i = 0; i < runtime.GeneratedNodes.Count; i++)
             {
                 GeneratedMapNodeData node = runtime.GeneratedNodes[i];
