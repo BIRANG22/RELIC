@@ -208,6 +208,15 @@ public class UIManager : Singleton<UIManager>
 
     public void ShowRecord()
     {
+        ShowRecord(false);
+    }
+
+    /// <summary>
+    /// 도감을 엽니다. revealAll이 true이면 저장 데이터는 변경하지 않고
+    /// 현재 도감 UI에서만 모든 기억/파편/유물/재료를 공개합니다.
+    /// </summary>
+    public void ShowRecord(bool revealAll)
+    {
         if (recordPanelInstance == null)
             CreateRecordPanel();
 
@@ -217,12 +226,18 @@ public class UIManager : Singleton<UIManager>
             return;
         }
 
+        if (recordPanelUI == null)
+            recordPanelUI = recordPanelInstance.GetComponent<RecordPanelUI>();
+
         if (recordPanelTransition == null)
         {
             recordPanelTransition = recordPanelInstance.GetComponent<OptionPanelTransition>();
             if (recordPanelTransition == null)
                 recordPanelTransition = recordPanelInstance.AddComponent<OptionPanelTransition>();
         }
+
+        if (recordPanelUI != null)
+            recordPanelUI.SetDebugRevealAll(revealAll);
 
         recordPanelInstance.transform.localScale = Vector3.one;
         recordPanelInstance.SetActive(true);

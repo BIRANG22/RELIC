@@ -89,6 +89,7 @@ public static class ChestRelicRewardService
         if (!ContainsRelicId(runtime.OwnedRelicIds, relicId))
             runtime.OwnedRelicIds.Add(relicId);
 
+        RecordDiscoveryService.RegisterRelic(dataManager, relicId);
         dataManager.BattleRuntimeStore.Set(runtime);
         return true;
     }

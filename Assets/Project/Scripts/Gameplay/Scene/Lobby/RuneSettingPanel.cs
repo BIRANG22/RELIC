@@ -764,7 +764,10 @@ public class RuneSettingPanel : MonoBehaviour
         SetRuntimeRuneId(emptySlot.SlotIndex, runeData.RuneId);
 
         if (DataManager.Instance != null)
+        {
+            RecordDiscoveryService.RegisterRune(DataManager.Instance, runeData.RuneId);
             DataManager.Instance.CharacterRuntimeStore.AddOrUpdate(currentRuntimeData);
+        }
 
         RefreshRuneIconEquippedStates();
 

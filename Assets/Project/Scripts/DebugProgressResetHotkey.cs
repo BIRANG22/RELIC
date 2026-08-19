@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 /// <summary>
 /// 개발 중 저장 진행도를 빠르게 초기화하기 위한 단축키입니다.
 /// ] 키를 누르면 게임 진행 데이터만 초기화하고 타이틀로 이동합니다.
+/// ; 키를 누르면 현재 저장된 획득 기록 기준 도감을 열고, ' 키를 누르면 저장을 바꾸지 않고 도감을 전체 공개합니다.
 /// - 키를 누르면 푸른 더스티움을 100 감소시키고, = 키를 누르면 100 증가시킵니다.
 /// 언어, 음량 등 환경설정은 유지합니다.
 /// </summary>
@@ -61,6 +62,18 @@ public sealed class DebugProgressResetHotkey : MonoBehaviour
             return;
         }
 
+        if (keyboard.semicolonKey.wasPressedThisFrame)
+        {
+            OpenRecordForDebug(false);
+            return;
+        }
+
+        if (keyboard.quoteKey.wasPressedThisFrame)
+        {
+            OpenRecordForDebug(true);
+            return;
+        }
+
         if (keyboard.minusKey.wasPressedThisFrame)
         {
             ChangeBlueDustium(-100);
@@ -69,6 +82,25 @@ public sealed class DebugProgressResetHotkey : MonoBehaviour
 
         if (keyboard.equalsKey.wasPressedThisFrame)
             ChangeBlueDustium(100);
+    }
+
+    private static void OpenRecordForDebug(bool revealAll)
+    {
+        UIManager uiManager = UIManager.Instance;
+        if (uiManager == null)
+            uiManager = FindFirstObjectByType<UIManager>(FindObjectsInactive.Include);
+
+        if (uiManager == null)
+        {
+            Debug.LogWarning("[DebugProgressResetHotkey] UIManager를 찾지 못해 도감을 열 수 없습니다.");
+            return;
+        }
+
+        uiManager.ShowRecord(revealAll);
+
+        Debug.Log(revealAll
+            ? "[DebugProgressResetHotkey] 도감 전체 공개 미리보기를 열었습니다. 저장 데이터는 변경하지 않습니다."
+            : "[DebugProgressResetHotkey] 현재 저장된 획득 기록 기준으로 도감을 열었습니다.");
     }
 
     private static void ChangeBlueDustium(int amount)

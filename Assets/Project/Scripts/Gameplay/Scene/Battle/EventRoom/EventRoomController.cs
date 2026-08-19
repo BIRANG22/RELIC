@@ -1837,6 +1837,7 @@ public class EventRoomController : MonoBehaviour
         if (!ContainsId(runtime.AcquiredSkillIds, skillId))
             runtime.AcquiredSkillIds.Add(skillId);
 
+        RecordDiscoveryService.RegisterSkill(DataManager.Instance, skillId);
         DataManager.Instance.BattleRuntimeStore.Set(runtime);
         resultMessage = $"기억 획득: {GameDataLocalization.SkillName(skill)}";
         return true;

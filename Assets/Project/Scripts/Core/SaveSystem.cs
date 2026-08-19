@@ -62,6 +62,7 @@ public class SaveSystem : Singleton<SaveSystem>
         }
 
         CommitRuntimeStateContributorsForSave();
+        RecordDiscoveryService.BackfillFromCurrentState(DataManager.Instance);
 
         GameSaveData saveData = CreateSaveData();
         return WriteSaveData(saveData);
@@ -230,6 +231,7 @@ public class SaveSystem : Singleton<SaveSystem>
         if (GameManager.Instance != null && GameManager.Instance.Context != null)
             GameManager.Instance.Context.SelectedGameMode = saveData.SelectedGameMode;
 
+        RecordDiscoveryService.BackfillFromCurrentState(dataManager);
         Debug.Log($"[SaveSystem] Progress loaded: {SaveFilePath}");
     }
 
@@ -367,6 +369,8 @@ public class SaveSystem : Singleton<SaveSystem>
 
         saveData.Characters ??= new List<CharacterRuntimeData>();
         saveData.Skills ??= new List<SkillRuntimeData>();
+        saveData.Player ??= new PlayerRuntimeData();
+        RecordDiscoveryService.Normalize(saveData.Player);
         saveData.Party ??= new PartyRuntimeData();
         saveData.Party.Slots ??= new List<PartySlotRuntimeData>();
         saveData.Lobby ??= new LobbyRuntimeData();
