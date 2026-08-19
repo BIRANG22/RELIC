@@ -1276,9 +1276,9 @@ MonoBehaviour:
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
-  - stateName: AttackAction1
+  - stateName: AttackAction2
     vfx:
-      prefab: {fileID: 3312019939790567086, guid: b9392d3c64a56d24da5c515180f9ccc4, type: 3}
+      prefab: {fileID: 7849381218892773088, guid: dba56832103a0a841a7c8b232077fce6, type: 3}
       flipType: 0
       sfx:
         playSfx: 0
@@ -1747,7 +1747,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5089267951778699808}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 46a3b90ac864fa341b003dc84fd7d7f6, type: 3}
   m_Name: 
@@ -1768,7 +1768,7 @@ MonoBehaviour:
     action: 10
     flipBeforeAction: 1
   - key: 53
-    action: 8
+    action: 11
     flipBeforeAction: 1
   - key: 54
     action: 9
