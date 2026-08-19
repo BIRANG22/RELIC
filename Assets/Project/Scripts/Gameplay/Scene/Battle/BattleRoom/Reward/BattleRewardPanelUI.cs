@@ -193,7 +193,9 @@ public class BattleRewardPanelUI : MonoBehaviour
             case BattleRewardType.Item:
                 if (!string.IsNullOrWhiteSpace(reward.RewardId) && runtime.BagItemIds.Count < MaxBagItemCount)
                 {
-                    runtime.BagItemIds.Add(reward.RewardId.Trim());
+                    string itemId = reward.RewardId.Trim();
+                    runtime.BagItemIds.Add(itemId);
+                    RecordDiscoveryService.RegisterItem(DataManager.Instance, itemId);
                     BattleBagPanelUI.RefreshAll();
                 }
                 break;

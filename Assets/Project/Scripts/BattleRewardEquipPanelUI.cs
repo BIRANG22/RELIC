@@ -180,6 +180,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
 
         currentReward = reward;
         this.resolvedCallback = resolvedCallback;
+        RegisterCurrentRewardDiscovery();
         selectedCharacterIndex = -1;
         selectedSkillViewIndex = -1;
         selectedRelicRuntimeSlotIndex = -1;
@@ -198,6 +199,17 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
         gameObject.SetActive(true);
         transform.SetAsLastSibling();
         EnsureTopmostSorting();
+    }
+
+    private void RegisterCurrentRewardDiscovery()
+    {
+        if (currentReward == null || DataManager.Instance == null)
+            return;
+
+        if (currentReward.Type == BattleRewardType.Skill)
+            RecordDiscoveryService.RegisterSkill(DataManager.Instance, currentReward.RewardId);
+        else if (currentReward.Type == BattleRewardType.Relic)
+            RecordDiscoveryService.RegisterRelic(DataManager.Instance, currentReward.RewardId);
     }
 
     private void EnsureTopmostSorting()

@@ -59,6 +59,7 @@ public class RecordPanelUI : MonoBehaviour
     [Header("Info")]
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private string emptyNameText = string.Empty;
+    [SerializeField] private string unknownDisplayName = "???";
 
     [Header("Initial View")]
     [SerializeField] private bool selectFirstItemAutomatically = true;
@@ -71,6 +72,7 @@ public class RecordPanelUI : MonoBehaviour
     private ColorBlock relicTabOriginalColors;
     private ColorBlock itemTabOriginalColors;
     private bool mainTabColorsCached;
+    private bool debugRevealAll;
 
     private void Awake()
     {
@@ -80,9 +82,22 @@ public class RecordPanelUI : MonoBehaviour
 
     private void OnEnable()
     {
+        RecordDiscoveryService.BackfillFromCurrentState(GetDataManager());
         ShowSkillTab();
     }
 
+
+    /// <summary>
+    /// 디버그 도감 표시 모드를 설정합니다.
+    /// true이면 저장된 획득 이력을 변경하지 않고 모든 항목을 UI에서만 공개합니다.
+    /// </summary>
+    public void SetDebugRevealAll(bool revealAll)
+    {
+        debugRevealAll = revealAll;
+
+        if (gameObject.activeInHierarchy)
+            ShowSkillTab();
+    }
 
     public void Close()
     {
@@ -165,11 +180,21 @@ public class RecordPanelUI : MonoBehaviour
     {
         foreach (SkillMasterData skill in skills)
         {
-            Sprite icon = skill.Icon;
-            if (icon == null && dataManager.SkillIconDatabase != null)
-                dataManager.SkillIconDatabase.TryGetIcon(skill.SkillId, out icon);
+            bool discovered = debugRevealAll || RecordDiscoveryService.IsSkillDiscovered(dataManager, skill.SkillId);
+            Sprite icon = null;
 
-            CreateSlot(skillGridContent, icon, RecordDisplayNameResolver.SkillName(skill));
+            if (discovered)
+            {
+                icon = skill.Icon;
+                if (icon == null && dataManager.SkillIconDatabase != null)
+                    dataManager.SkillIconDatabase.TryGetIcon(skill.SkillId, out icon);
+            }
+
+            string displayName = discovered
+                ? RecordDisplayNameResolver.SkillName(skill)
+                : unknownDisplayName;
+
+            CreateSlot(skillGridContent, icon, displayName);
         }
 
         CompleteListBuild(skillScrollRect);
@@ -192,11 +217,17 @@ public class RecordPanelUI : MonoBehaviour
 
         foreach (RuneData rune in runes)
         {
+            bool discovered = debugRevealAll || RecordDiscoveryService.IsRuneDiscovered(dataManager, rune.RuneId);
             Sprite icon = null;
-            if (dataManager.RuneIconDatabase != null)
+
+            if (discovered && dataManager.RuneIconDatabase != null)
                 dataManager.RuneIconDatabase.TryGetIcon(rune.RuneId, out icon);
 
-            CreateSlot(fragmentGridContent, icon, RecordDisplayNameResolver.RuneName(rune));
+            string displayName = discovered
+                ? RecordDisplayNameResolver.RuneName(rune)
+                : unknownDisplayName;
+
+            CreateSlot(fragmentGridContent, icon, displayName);
         }
 
         CompleteListBuild(fragmentScrollRect);
@@ -217,11 +248,17 @@ public class RecordPanelUI : MonoBehaviour
 
         foreach (RelicData relic in relics)
         {
+            bool discovered = debugRevealAll || RecordDiscoveryService.IsRelicDiscovered(dataManager, relic.FragmentId);
             Sprite icon = null;
-            if (dataManager.RelicIconDatabase != null)
+
+            if (discovered && dataManager.RelicIconDatabase != null)
                 dataManager.RelicIconDatabase.TryGetIcon(relic.FragmentId, out icon);
 
-            CreateSlot(relicGridContent, icon, RecordDisplayNameResolver.RelicName(relic));
+            string displayName = discovered
+                ? RecordDisplayNameResolver.RelicName(relic)
+                : unknownDisplayName;
+
+            CreateSlot(relicGridContent, icon, displayName);
         }
 
         CompleteListBuild(relicScrollRect);
@@ -241,11 +278,17 @@ public class RecordPanelUI : MonoBehaviour
 
         foreach (ItemData item in items)
         {
+            bool discovered = debugRevealAll || RecordDiscoveryService.IsItemDiscovered(dataManager, item.ItemId);
             Sprite icon = null;
-            if (dataManager.ItemIconDatabase != null)
+
+            if (discovered && dataManager.ItemIconDatabase != null)
                 dataManager.ItemIconDatabase.TryGetIcon(item.ItemId, out icon);
 
-            CreateSlot(itemGridContent, icon, RecordDisplayNameResolver.ItemName(item));
+            string displayName = discovered
+                ? RecordDisplayNameResolver.ItemName(item)
+                : unknownDisplayName;
+
+            CreateSlot(itemGridContent, icon, displayName);
         }
 
         CompleteListBuild(itemScrollRect);

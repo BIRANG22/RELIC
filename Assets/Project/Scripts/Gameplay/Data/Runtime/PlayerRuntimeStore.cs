@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Relic.Gameplay.Data
@@ -76,15 +77,30 @@ namespace Relic.Gameplay.Data
                 data.Level = MinLevel;
                 data.Exp = 0;
                 data.TotalExp = 0;
+                data.DiscoveredSkillIds = new List<string>();
+                data.DiscoveredRuneIds = new List<string>();
+                data.DiscoveredRelicIds = new List<string>();
+                data.DiscoveredItemIds = new List<string>();
                 return;
             }
 
             data.Level = Mathf.Clamp(source.Level, MinLevel, MaxLevel);
             data.Exp = Mathf.Max(0, source.Exp);
             data.TotalExp = Mathf.Max(0, source.TotalExp);
+            data.DiscoveredSkillIds = CopyIds(source.DiscoveredSkillIds);
+            data.DiscoveredRuneIds = CopyIds(source.DiscoveredRuneIds);
+            data.DiscoveredRelicIds = CopyIds(source.DiscoveredRelicIds);
+            data.DiscoveredItemIds = CopyIds(source.DiscoveredItemIds);
+
+            RecordDiscoveryService.Normalize(data);
 
             if (data.Level >= MaxLevel)
                 data.Exp = 0;
+        }
+
+        private static List<string> CopyIds(List<string> source)
+        {
+            return source == null ? new List<string>() : new List<string>(source);
         }
     }
 }

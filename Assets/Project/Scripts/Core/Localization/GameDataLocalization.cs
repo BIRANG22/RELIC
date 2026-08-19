@@ -36,7 +36,7 @@ namespace Relic.Gameplay.Data
             data == null ? string.Empty : GameLocalization.GetData("MonsterPatternInfo", data.PatternId, "skill_description", data.SkillInfo);
 
         public static string RuneName(RuneData data) =>
-            data == null ? string.Empty : GameLocalization.GetData("Rune", data.RuneId, "name", data.Name);
+            data == null ? string.Empty : data.Name;
 
         public static string RuneDescription(RuneData data) =>
             data == null ? string.Empty : GameLocalization.GetData("Rune", data.RuneId, "effect_description", data.EffectDesc);

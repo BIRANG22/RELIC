@@ -177,6 +177,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         if (!result.Succeeded)
             return;
 
+        RecordDiscoveryService.RegisterRelic(DataManager.Instance, result.RelicId);
         blueDustiumHud?.Refresh();
 
         RelicEquipPanelUI.RefreshAll();
