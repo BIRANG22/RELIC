@@ -560,29 +560,9 @@ public class BattleUnitAnimator : MonoBehaviour
             return false;
 
         if (TryGetMonsterActionPresentation(command, out BattleUnitActionPresentation mapped) &&
-            HasProjectileVfx(mapped.projectileVfx) &&
-            ProjectileVfxMatchesSkill(command, mapped.projectileVfx, true))
+            HasProjectileVfx(mapped.projectileVfx))
         {
             presentation = mapped;
-            return true;
-        }
-
-        EnsureMonsterActionPresentationArray();
-
-        for (int i = 0; i < monsterActionPresentations.Length; i++)
-        {
-            BattleUnitActionPresentation candidate = monsterActionPresentations[i];
-
-            if (candidate == null)
-                continue;
-
-            if (!HasProjectileVfx(candidate.projectileVfx))
-                continue;
-
-            if (!ProjectileVfxMatchesSkill(command, candidate.projectileVfx, false))
-                continue;
-
-            presentation = candidate;
             return true;
         }
 
@@ -727,22 +707,7 @@ public class BattleUnitAnimator : MonoBehaviour
 
     private bool HasProjectileVfx(BattleProjectileVfxEntry entry)
     {
-        return entry != null && entry.missilePrefab != null;
-    }
-
-    private bool ProjectileVfxMatchesSkill(
-        MonsterReservedCommand command,
-        BattleProjectileVfxEntry entry,
-        bool allowEmptySkillId)
-    {
-        if (entry == null)
-            return false;
-
-        if (string.IsNullOrWhiteSpace(entry.skillId))
-            return allowEmptySkillId;
-
-        return command != null &&
-               string.Equals(entry.skillId.Trim(), command.SkillId, System.StringComparison.Ordinal);
+        return entry != null && (entry.missilePrefab != null || entry.impactPrefab != null);
     }
 
     private bool HasPresentation(BattleUnitActionPresentation presentation)
@@ -890,7 +855,7 @@ public class BattleUnitAnimator : MonoBehaviour
         BattleProjectileVfxEntry entry,
         Vector3 targetWorldPosition)
     {
-        if (entry == null || entry.missilePrefab == null)
+        if (!HasProjectileVfx(entry))
             yield break;
 
         if (entry.launchDelay > 0f)
@@ -901,6 +866,17 @@ public class BattleUnitAnimator : MonoBehaviour
 
         Transform spawn = GetVfxSpawnTransform();
         Vector3 startPosition = spawn.position;
+
+        if (entry.missilePrefab == null)
+        {
+            SpawnImpactVfx(
+                entry,
+                ResolveProjectileImpactPosition(
+                    targetWorldPosition,
+                    entry.impactOffset,
+                    startPosition.z));
+            yield break;
+        }
 
         BattleVfxEntry missileEntry = CreateRuntimeVfxEntry(
             entry.missilePrefab,
@@ -915,7 +891,6 @@ public class BattleUnitAnimator : MonoBehaviour
         {
             startPosition += entry.launchOffset;
             missileHandle.SetWorldPosition(startPosition);
-
             Vector3 worldImpactPosition = ResolveProjectileImpactPosition(
                 targetWorldPosition,
                 entry.impactOffset,

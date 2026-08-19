@@ -371,7 +371,6 @@ public class AnimationVfxLoadoutCleanupTests
             BattleUnitActionPresentation[] slots = BattleUnitActionPresentation.CreateArray(10);
             slots[1].projectileVfx = new BattleProjectileVfxEntry
             {
-                skillId = "S_Monster_Projectile",
                 missilePrefab = missilePrefab,
                 impactPrefab = impactPrefab,
                 travelDuration = 0.01f
@@ -398,7 +397,7 @@ public class AnimationVfxLoadoutCleanupTests
     }
 
     [Test]
-    public void BattleUnitAnimator_MonsterCommandProjectileVfxCanBeMatchedBySkillId()
+    public void BattleUnitAnimator_MonsterCommandProjectileVfxDoesNotFallbackToSkillId()
     {
         GameObject owner = new("MonsterProjectileSkillIdOwner");
         GameObject missilePrefab = new("MonsterSkillIdProjectileMissileVfx");
@@ -410,7 +409,6 @@ public class AnimationVfxLoadoutCleanupTests
             BattleUnitActionPresentation[] slots = BattleUnitActionPresentation.CreateArray(10);
             slots[1].projectileVfx = new BattleProjectileVfxEntry
             {
-                skillId = "S_Monster_Projectile",
                 missilePrefab = missilePrefab
             };
             SetPrivateField(animator, "monsterActionPresentations", slots);
@@ -425,11 +423,48 @@ public class AnimationVfxLoadoutCleanupTests
             MonsterReservedCommand command = new(runtime, new MonsterSkillData { SkillId = "S_Monster_Projectile" });
 
             Assert.That(command.ActionIndex, Is.EqualTo(0));
-            Assert.That(animator.HasMonsterProjectileVfx(command), Is.True);
+            Assert.That(animator.HasMonsterProjectileVfx(command), Is.False);
         }
         finally
         {
             UnityEngine.Object.DestroyImmediate(missilePrefab);
+            UnityEngine.Object.DestroyImmediate(owner);
+        }
+    }
+
+    [Test]
+    public void BattleUnitAnimator_MonsterCommandProjectileVfxCanUseImpactOnlySlot()
+    {
+        GameObject owner = new("MonsterProjectileImpactOnlyOwner");
+        GameObject impactPrefab = new("MonsterProjectileImpactOnlyVfx");
+
+        try
+        {
+            BattleUnitAnimator animator = owner.AddComponent<BattleUnitAnimator>();
+
+            BattleUnitActionPresentation[] slots = BattleUnitActionPresentation.CreateArray(10);
+            slots[1].projectileVfx = new BattleProjectileVfxEntry
+            {
+                impactPrefab = impactPrefab,
+                impactLifeTime = 0.01f
+            };
+            SetPrivateField(animator, "monsterActionPresentations", slots);
+
+            MonsterMasterData master = new()
+            {
+                MonsterId = "M_ImpactOnly",
+                HP = 10,
+                PossSkillId02 = "S_Monster_ImpactOnly"
+            };
+            MonsterRuntimeData runtime = new("Runtime_ImpactOnly", master);
+            MonsterReservedCommand command = new(runtime, new MonsterSkillData { SkillId = "S_Monster_ImpactOnly" });
+
+            Assert.That(command.ActionIndex, Is.EqualTo(2));
+            Assert.That(animator.HasMonsterProjectileVfx(command), Is.True);
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(impactPrefab);
             UnityEngine.Object.DestroyImmediate(owner);
         }
     }
@@ -623,7 +658,7 @@ public class AnimationVfxLoadoutCleanupTests
 
         BattleProjectileVfxEntry projectileVfx = presentations
             .Select(presentation => presentation?.projectileVfx)
-            .FirstOrDefault(entry => entry != null && entry.skillId == "S_Monster_04");
+            .FirstOrDefault(entry => entry != null && entry.missilePrefab != null && entry.impactPrefab != null);
 
         Assert.That(projectileVfx, Is.Not.Null);
         Assert.That(projectileVfx.missileFlipType, Is.EqualTo(VfxFlipType.ParticleRendererFlipY));
