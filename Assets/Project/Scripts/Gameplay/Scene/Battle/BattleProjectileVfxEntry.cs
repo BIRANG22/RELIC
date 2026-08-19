@@ -4,7 +4,6 @@ using UnityEngine;
 [Serializable]
 public class BattleProjectileVfxEntry
 {
-    public string skillId;
     public GameObject missilePrefab;
     public GameObject impactPrefab;
     public VfxFlipType missileFlipType = VfxFlipType.None;

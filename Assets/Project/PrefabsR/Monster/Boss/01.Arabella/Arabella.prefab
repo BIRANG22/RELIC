@@ -977,7 +977,7 @@ MonoBehaviour:
       impactOffset: {x: 0, y: 0, z: 0}
   - stateName: AttackAction2
     vfx:
-      prefab: {fileID: 7525588489078206328, guid: 69474b264de00714485785d33ec45076, type: 3}
+      prefab: {fileID: 0}
       flipType: 0
       sfx:
         playSfx: 0
@@ -1000,11 +1000,11 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
-      skillId: 
+      skillId: S_Monster_22
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 0}
+      impactPrefab: {fileID: 7525588489078206328, guid: 69474b264de00714485785d33ec45076, type: 3}
       missileFlipType: 2
-      impactFlipType: 2
+      impactFlipType: 0
       missileSfx:
         playSfx: 0
         sfxId: 
