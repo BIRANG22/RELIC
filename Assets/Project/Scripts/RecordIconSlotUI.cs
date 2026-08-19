@@ -5,8 +5,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// 도감에 표시되는 개별 아이콘 슬롯입니다.
-/// 테두리 이미지는 기본, 마우스 오버, 선택 상태에 따라 색상으로 구분하며,
-/// 선택된 슬롯은 자식 Select 오브젝트를 활성화합니다.
+/// 테두리 이미지를 기본, 마우스 오버, 선택 상태에 따라 색상으로 구분합니다.
 /// </summary>
 public class RecordIconSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
@@ -30,47 +29,50 @@ public class RecordIconSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExi
 
     private void Awake()
     {
-        ResolveSelectObject();
-        RefreshVisualState();
+        EnsureReferences();
+        SetSelectVisible(false);
     }
 
-    public void Initialize(Sprite icon, string itemName, Action<RecordIconSlotUI, string> onClicked)
+    public void Initialize(Sprite icon, string itemName, Action<RecordIconSlotUI, string> onClicked, bool showIcon = true)
     {
+        EnsureReferences();
+
         displayName = itemName ?? string.Empty;
         clickedCallback = onClicked;
         isSelected = false;
         isPointerInside = false;
 
-        ResolveSelectObject();
-
         if (iconImage != null)
         {
-            bool hasIcon = icon != null;
             iconImage.sprite = icon;
-            iconImage.enabled = hasIcon;
             iconImage.preserveAspect = true;
-            iconImage.gameObject.SetActive(hasIcon);
+            iconImage.enabled = showIcon && icon != null;
+
+            if (iconImage.gameObject != null)
+                iconImage.gameObject.SetActive(showIcon && icon != null);
         }
 
-        RefreshVisualState();
+        SetSelectVisible(false);
+        RefreshBorderColor();
     }
 
     public void SetSelected(bool selected)
     {
         isSelected = selected;
-        RefreshVisualState();
+        SetSelectVisible(selected);
+        RefreshBorderColor();
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
         isPointerInside = true;
-        RefreshVisualState();
+        RefreshBorderColor();
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
         isPointerInside = false;
-        RefreshVisualState();
+        RefreshBorderColor();
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -84,13 +86,34 @@ public class RecordIconSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExi
     private void OnDisable()
     {
         isPointerInside = false;
-        RefreshVisualState();
+        SetSelectVisible(false);
+        RefreshBorderColor();
     }
 
-    private void RefreshVisualState()
+    private void EnsureReferences()
     {
-        RefreshBorderColor();
-        RefreshSelectObject();
+        if (borderImage == null)
+            borderImage = GetComponentInChildren<Image>(true);
+
+        if (iconImage == null)
+        {
+            Transform iconTransform = transform.Find("Icon");
+            if (iconTransform != null)
+                iconImage = iconTransform.GetComponent<Image>();
+        }
+
+        if (selectObject == null)
+        {
+            Transform selectTransform = transform.Find("Select");
+            if (selectTransform != null)
+                selectObject = selectTransform.gameObject;
+        }
+    }
+
+    private void SetSelectVisible(bool visible)
+    {
+        if (selectObject != null && selectObject.activeSelf != visible)
+            selectObject.SetActive(visible);
     }
 
     private void RefreshBorderColor()
@@ -105,41 +128,5 @@ public class RecordIconSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExi
         }
 
         borderImage.color = isPointerInside ? hoverColor : normalColor;
-    }
-
-    private void RefreshSelectObject()
-    {
-        if (selectObject == null)
-            return;
-
-        selectObject.SetActive(isSelected);
-    }
-
-    private void ResolveSelectObject()
-    {
-        if (selectObject != null)
-            return;
-
-        selectObject = FindChildByName("Select");
-    }
-
-    private GameObject FindChildByName(string childName)
-    {
-        if (string.IsNullOrWhiteSpace(childName))
-            return null;
-
-        Transform[] children = GetComponentsInChildren<Transform>(true);
-        for (int i = 0; i < children.Length; i++)
-        {
-            Transform child = children[i];
-
-            if (child == null || child == transform)
-                continue;
-
-            if (child.name == childName)
-                return child.gameObject;
-        }
-
-        return null;
     }
 }
