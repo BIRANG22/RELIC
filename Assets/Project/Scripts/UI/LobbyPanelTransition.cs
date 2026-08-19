@@ -199,6 +199,12 @@ public class LobbyPanelTransition : MonoBehaviour
             afterPanelChange));
     }
 
+    private static void UpdateLobbyCameraPauseForOpenedPanel(GameObject panelToOpen)
+    {
+        bool shouldPause = panelToOpen != null && panelToOpen.name != "PositionPanel";
+        CameraMouseParallaxController.SetLobbyContentPanelPause(shouldPause);
+    }
+
     public void SetAllOpenedImmediate()
     {
         horizontalTransition.SetRootRotationZ(0f);
@@ -238,6 +244,7 @@ public class LobbyPanelTransition : MonoBehaviour
         beforePanelChange?.Invoke();
         ApplyWorldObjectChange(worldObjectsToClose, worldObjectsToOpen);
         ApplyPanelChange(panelsToClose, panelToOpen);
+        UpdateLobbyCameraPauseForOpenedPanel(panelToOpen);
         afterPanelChange?.Invoke();
 
         if (closedHoldDuration > 0f)

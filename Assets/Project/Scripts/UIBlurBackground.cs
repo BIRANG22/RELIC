@@ -14,6 +14,7 @@ public sealed class UIBlurBackground : MonoBehaviour
 {
     private const string BlurShaderName = "UI/DustiumBackgroundBlur";
     private const string BlurGraphicName = "BlurGraphic";
+    private const int BlurCanvasSortingOrder = -32000;
 
     [Header("Blur")]
     [SerializeField, Range(0f, 8f)] private float blurRadius = 4f;
@@ -42,6 +43,7 @@ public sealed class UIBlurBackground : MonoBehaviour
     private Image backgroundImage;
     private bool originalBackgroundImageEnabled;
     private bool capturedBackgroundImageState;
+    private bool cameraPauseRegistered;
 
     private GameObject blurCanvasObject;
     private RawImage blurGraphic;
@@ -82,6 +84,7 @@ public sealed class UIBlurBackground : MonoBehaviour
 
     private void OnEnable()
     {
+        RegisterCameraPause();
         CaptureOriginalBackgroundImageState();
         DisableOriginalBackgroundVisual();
         EnsureBlurCanvas();
@@ -100,6 +103,7 @@ public sealed class UIBlurBackground : MonoBehaviour
 
     private void OnDisable()
     {
+        UnregisterCameraPause();
         RestoreBlurredUiSources();
         if (blurCanvasObject != null)
             blurCanvasObject.SetActive(false);
@@ -109,6 +113,7 @@ public sealed class UIBlurBackground : MonoBehaviour
 
     private void OnDestroy()
     {
+        UnregisterCameraPause();
         RestoreBlurredUiSources();
         RestoreOriginalBackgroundImageState();
 
@@ -132,6 +137,25 @@ public sealed class UIBlurBackground : MonoBehaviour
 
             runtimeMaterial = null;
         }
+    }
+
+
+    private void RegisterCameraPause()
+    {
+        if (cameraPauseRegistered)
+            return;
+
+        CameraMouseParallaxController.BeginUiPanelPause();
+        cameraPauseRegistered = true;
+    }
+
+    private void UnregisterCameraPause()
+    {
+        if (!cameraPauseRegistered)
+            return;
+
+        CameraMouseParallaxController.EndUiPanelPause();
+        cameraPauseRegistered = false;
     }
 
 #if UNITY_EDITOR
@@ -194,23 +218,41 @@ public sealed class UIBlurBackground : MonoBehaviour
                 DestroyImmediate(oldChild.gameObject);
         }
 
+        // 블러 화면은 패널의 RectTransform/Scale/애니메이션을 상속받으면 안 됩니다.
+        // 독립된 Screen Space - Overlay Canvas를 만들어 화면 전체에 그대로 표시합니다.
         blurCanvasObject = new GameObject(
+            $"{BlurGraphicName}_Canvas",
+            typeof(RectTransform),
+            typeof(Canvas),
+            typeof(CanvasScaler));
+
+        blurCanvasObject.transform.SetParent(null, false);
+
+        Canvas blurCanvas = blurCanvasObject.GetComponent<Canvas>();
+        blurCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        blurCanvas.overrideSorting = true;
+        blurCanvas.sortingOrder = BlurCanvasSortingOrder;
+
+        CanvasScaler scaler = blurCanvasObject.GetComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
+        scaler.scaleFactor = 1f;
+
+        GameObject graphicObject = new GameObject(
             BlurGraphicName,
             typeof(RectTransform),
             typeof(CanvasRenderer),
             typeof(RawImage));
 
-        RectTransform blurRect = blurCanvasObject.GetComponent<RectTransform>();
-        blurRect.SetParent(transform, false);
+        RectTransform blurRect = graphicObject.GetComponent<RectTransform>();
+        blurRect.SetParent(blurCanvasObject.transform, false);
         blurRect.anchorMin = Vector2.zero;
         blurRect.anchorMax = Vector2.one;
         blurRect.pivot = new Vector2(0.5f, 0.5f);
         blurRect.offsetMin = Vector2.zero;
         blurRect.offsetMax = Vector2.zero;
         blurRect.localScale = Vector3.one;
-        blurRect.SetAsFirstSibling();
 
-        blurGraphic = blurCanvasObject.GetComponent<RawImage>();
+        blurGraphic = graphicObject.GetComponent<RawImage>();
         blurGraphic.raycastTarget = false;
         blurGraphic.color = Color.white;
         blurGraphic.uvRect = new Rect(0f, 0f, 1f, 1f);
@@ -223,11 +265,16 @@ public sealed class UIBlurBackground : MonoBehaviour
         if (blurCanvasObject == null)
             return;
 
-        Transform blurTransform = blurCanvasObject.transform;
-        if (blurTransform.parent != transform)
-            blurTransform.SetParent(transform, false);
+        Canvas blurCanvas = blurCanvasObject.GetComponent<Canvas>();
+        if (blurCanvas == null)
+            return;
 
-        blurTransform.SetAsFirstSibling();
+        if (blurCanvasObject.transform.parent != null)
+            blurCanvasObject.transform.SetParent(null, false);
+
+        blurCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        blurCanvas.overrideSorting = true;
+        blurCanvas.sortingOrder = BlurCanvasSortingOrder;
     }
 
     private void ApplyRaycastSetting()

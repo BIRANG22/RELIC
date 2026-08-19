@@ -23,6 +23,51 @@ public sealed class CameraMouseParallaxController : MonoBehaviour
     private Vector3 previousBasePosition;
     private Quaternion previousBaseRotation = Quaternion.identity;
     private bool hasPreviousBaseTransform;
+    private int blurCapturePauseDepth;
+    private static int uiPanelPauseDepth;
+    private static bool lobbyContentPanelPause;
+
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStaticPauseState()
+    {
+        uiPanelPauseDepth = 0;
+        lobbyContentPanelPause = false;
+    }
+
+    /// <summary>
+    /// 블러 패널이나 메뉴 패널이 열린 동안 로비 카메라 마우스 패럴랙스를 정지합니다.
+    /// 여러 패널이 겹쳐 열려도 마지막 패널이 닫힐 때까지 정지 상태를 유지합니다.
+    /// </summary>
+    public static void BeginUiPanelPause()
+    {
+        uiPanelPauseDepth++;
+    }
+
+    /// <summary>
+    /// 패널 정지 요청을 하나 해제합니다. 모든 패널이 닫혔을 때만 패럴랙스가 다시 동작합니다.
+    /// </summary>
+    public static void EndUiPanelPause()
+    {
+        if (uiPanelPauseDepth <= 0)
+        {
+            uiPanelPauseDepth = 0;
+            return;
+        }
+
+        uiPanelPauseDepth--;
+    }
+
+    public static bool IsUiPanelPauseActive => uiPanelPauseDepth > 0 || lobbyContentPanelPause;
+
+    /// <summary>
+    /// 로비의 메인 PositionPanel 이외의 콘텐츠 패널이 열려 있는 동안 카메라 패럴랙스를 정지합니다.
+    /// 패널 전환 시 현재 열린 메인 패널을 기준으로 true/false를 직접 갱신합니다.
+    /// </summary>
+    public static void SetLobbyContentPanelPause(bool shouldPause)
+    {
+        lobbyContentPanelPause = shouldPause;
+    }
 
     private void Awake()
     {
@@ -41,10 +86,17 @@ public sealed class CameraMouseParallaxController : MonoBehaviour
     {
         ClearMouseParallaxImmediate();
         hasPreviousBaseTransform = false;
+        blurCapturePauseDepth = 0;
     }
 
     private void Update()
     {
+        // 패널/블러 캡처로 정지된 동안에는 현재 화면에 적용된 패럴랙스 오프셋을 유지합니다.
+        // 정지 요청이 없는 평상시에만 다른 카메라 이동 로직이 기준 Transform을 다룰 수 있도록
+        // 이전 프레임의 패럴랙스 오프셋을 제거합니다.
+        if (IsParallaxPaused())
+            return;
+
         RemoveMouseParallax();
     }
 
@@ -53,11 +105,55 @@ public sealed class CameraMouseParallaxController : MonoBehaviour
         ApplyMouseParallax();
     }
 
+    /// <summary>
+    /// 블러 배경 캡처 직전에 호출합니다.
+    /// 현재 화면에 적용되어 있는 마우스 패럴랙스 위치/회전을 그대로 유지한 채
+    /// 캡처가 끝날 때까지 추가 카메라 무빙만 정지합니다.
+    /// </summary>
+    public void BeginBlurCapturePause()
+    {
+        ResolveTargetCamera();
+        blurCapturePauseDepth++;
+    }
+
+    /// <summary>
+    /// 블러 배경 캡처가 끝난 뒤 호출합니다.
+    /// 중첩된 캡처 요청이 모두 끝났을 때 마우스 패럴랙스를 다시 허용합니다.
+    /// </summary>
+    public void EndBlurCapturePause()
+    {
+        if (blurCapturePauseDepth <= 0)
+            return;
+
+        blurCapturePauseDepth--;
+    }
+
+    /// <summary>
+    /// 이 컨트롤러가 지정한 카메라를 제어하는지 확인합니다.
+    /// </summary>
+    public bool UsesCamera(Camera camera)
+    {
+        if (camera == null)
+            return false;
+
+        ResolveTargetCamera();
+        return targetCamera == camera;
+    }
+
+
+    private bool IsParallaxPaused()
+    {
+        return blurCapturePauseDepth > 0 || uiPanelPauseDepth > 0 || lobbyContentPanelPause;
+    }
+
     private void ApplyMouseParallax()
     {
         ResolveTargetCamera();
 
         if (targetCamera == null)
+            return;
+
+        if (IsParallaxPaused())
             return;
 
         RemoveMouseParallax();
