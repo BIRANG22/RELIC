@@ -263,7 +263,7 @@ public sealed class UIBlurBackground : MonoBehaviour
         runtimeMaterial = new Material(blurShader)
         {
             name = "UIBlurBackground_RuntimeMaterial",
-            hideFlags = HideFlags.HideAndDontSave
+            hideFlags = HideFlags.DontSaveInBuild
         };
 
         blurGraphic.material = runtimeMaterial;
