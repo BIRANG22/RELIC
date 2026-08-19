@@ -76,6 +76,13 @@ public class BattleCameraController : MonoBehaviour
     [SerializeField] private Vector2 minCameraPosition = new Vector2(-0.5f, -1f);
     [SerializeField] private Vector2 maxCameraPosition = new Vector2(0.5f, 1f);
 
+    [Header("Mouse Parallax")]
+    [SerializeField] private bool enableMouseParallax = true;
+    [SerializeField] private Vector2 mouseParallaxPositionAmount = new Vector2(0.08f, 0.05f);
+    [SerializeField] private Vector2 mouseParallaxRotationAmount = new Vector2(1f, 1f);
+    [SerializeField, Min(0f)] private float mouseParallaxSmoothSpeed = 8f;
+    [SerializeField, Range(0f, 1f)] private float mouseParallaxCameraMotionMultiplier = 0.35f;
+
     private float defaultSize;
     private Vector3 defaultPosition;
     private Coroutine routine;
@@ -96,6 +103,11 @@ public class BattleCameraController : MonoBehaviour
     private float impactRecoveryBaseTimeScale = 1f;
     private int damageImpactRotationIndex;
 
+    private Vector2 currentMouseParallax;
+    private Vector3 lastMouseParallaxPositionOffset;
+    private Quaternion lastMouseParallaxRotationOffset = Quaternion.identity;
+    private bool hasAppliedMouseParallax;
+
     public bool IsCombatZoomActive => hasActiveCombatZoom;
     public bool IsMonsterInfoFocusActive => hasActiveMonsterInfoFocus;
 
@@ -115,6 +127,7 @@ public class BattleCameraController : MonoBehaviour
 
     private void OnDisable()
     {
+        RemoveMouseParallax();
         RestoreTimeScaleIfNeeded();
         CancelImpactRecoverySpeedBoost();
         ClearImpactOffset();
@@ -123,7 +136,13 @@ public class BattleCameraController : MonoBehaviour
 
     private void Update()
     {
+        RemoveMouseParallax();
         HandleZoomFollowTarget();
+    }
+
+    private void LateUpdate()
+    {
+        ApplyMouseParallax();
     }
 
     public IEnumerator ZoomTo(Transform target)
@@ -195,6 +214,7 @@ public class BattleCameraController : MonoBehaviour
         if (targetCamera == null)
             yield break;
 
+        RemoveMouseParallax();
         hasActiveMonsterInfoFocus = false;
         EndZoomFollowTarget();
 
@@ -236,6 +256,7 @@ public class BattleCameraController : MonoBehaviour
         if (hasActiveCombatZoom)
             return;
 
+        RemoveMouseParallax();
         hasActiveMonsterInfoFocus = false;
         EndZoomFollowTarget();
 
@@ -307,6 +328,7 @@ public class BattleCameraController : MonoBehaviour
         if (hasActiveCombatZoom)
             return;
 
+        RemoveMouseParallax();
         EndZoomFollowTarget();
 
         if (routine != null)
@@ -347,6 +369,7 @@ public class BattleCameraController : MonoBehaviour
         if (targetCamera == null)
             return;
 
+        RemoveMouseParallax();
         if (!isActiveAndEnabled)
         {
             ForceReturnDefaultImmediate();
@@ -380,6 +403,7 @@ public class BattleCameraController : MonoBehaviour
         if (targetCamera == null)
             return;
 
+        RemoveMouseParallax();
         if (!isActiveAndEnabled)
         {
             ForceReturnDefaultImmediate();
@@ -406,6 +430,7 @@ public class BattleCameraController : MonoBehaviour
         if (targetCamera == null)
             return;
 
+        ClearMouseParallaxImmediate();
         EndZoomFollowTarget();
 
         if (routine != null)
@@ -429,6 +454,7 @@ public class BattleCameraController : MonoBehaviour
         if (targetCamera == null)
             yield break;
 
+        RemoveMouseParallax();
         EndZoomFollowTarget();
 
         if (routine != null)
@@ -452,6 +478,7 @@ public class BattleCameraController : MonoBehaviour
         if (targetCamera == null || !enableDamageImpact)
             yield break;
 
+        RemoveMouseParallax();
         ApplyNextDamageImpactRotation();
 
         if (routine != null)
@@ -507,6 +534,7 @@ public class BattleCameraController : MonoBehaviour
         if (targetCamera == null)
             return;
 
+        RemoveMouseParallax();
         targetCamera.transform.rotation = Quaternion.Euler(0f, 0f, rotationZ);
     }
 
@@ -729,6 +757,136 @@ public class BattleCameraController : MonoBehaviour
             Time.deltaTime);
     }
 
+    private void ApplyMouseParallax()
+    {
+        if (targetCamera == null)
+            return;
+
+        RemoveMouseParallax();
+
+        if (!enableMouseParallax)
+        {
+            currentMouseParallax = Vector2.zero;
+            return;
+        }
+
+        Vector2 screenSize = new Vector2(Screen.width, Screen.height);
+        Vector2 targetParallax = NormalizeMousePositionForParallax(Input.mousePosition, screenSize);
+        float interpolation = GetMouseParallaxInterpolation();
+        currentMouseParallax = Vector2.Lerp(currentMouseParallax, targetParallax, interpolation);
+
+        float intensityMultiplier = GetMouseParallaxIntensityMultiplier();
+        lastMouseParallaxPositionOffset = CalculateMouseParallaxPositionOffset(
+            currentMouseParallax,
+            mouseParallaxPositionAmount,
+            intensityMultiplier);
+
+        Vector3 eulerOffset = CalculateMouseParallaxEulerOffset(
+            currentMouseParallax,
+            mouseParallaxRotationAmount,
+            intensityMultiplier);
+
+        lastMouseParallaxRotationOffset = Quaternion.Euler(eulerOffset);
+
+        Transform cameraTransform = targetCamera.transform;
+        cameraTransform.SetPositionAndRotation(
+            cameraTransform.position + lastMouseParallaxPositionOffset,
+            cameraTransform.rotation * lastMouseParallaxRotationOffset);
+
+        hasAppliedMouseParallax = true;
+    }
+
+    private void RemoveMouseParallax()
+    {
+        if (targetCamera == null || !hasAppliedMouseParallax)
+            return;
+
+        Transform cameraTransform = targetCamera.transform;
+        cameraTransform.SetPositionAndRotation(
+            cameraTransform.position - lastMouseParallaxPositionOffset,
+            cameraTransform.rotation * Quaternion.Inverse(lastMouseParallaxRotationOffset));
+
+        lastMouseParallaxPositionOffset = Vector3.zero;
+        lastMouseParallaxRotationOffset = Quaternion.identity;
+        hasAppliedMouseParallax = false;
+    }
+
+    private void ClearMouseParallaxImmediate()
+    {
+        RemoveMouseParallax();
+        currentMouseParallax = Vector2.zero;
+    }
+
+    private float GetMouseParallaxInterpolation()
+    {
+        float smoothSpeed = Mathf.Max(0f, mouseParallaxSmoothSpeed);
+
+        if (smoothSpeed <= 0f)
+            return 1f;
+
+        return 1f - Mathf.Exp(-smoothSpeed * Time.unscaledDeltaTime);
+    }
+
+    private float GetMouseParallaxIntensityMultiplier()
+    {
+        bool isCameraMotionActive =
+            routine != null ||
+            hasActiveCombatZoom ||
+            hasActiveMonsterInfoFocus ||
+            isImpactHitStopActive ||
+            activeImpactOffset.sqrMagnitude > 0.000001f;
+
+        return isCameraMotionActive ? Mathf.Clamp01(mouseParallaxCameraMotionMultiplier) : 1f;
+    }
+
+    public static Vector2 NormalizeMousePositionForParallax(Vector2 mousePosition, Vector2 screenSize)
+    {
+        if (screenSize.x <= 0f || screenSize.y <= 0f)
+            return Vector2.zero;
+
+        float normalizedX = (mousePosition.x / screenSize.x - 0.5f) * 2f;
+        float normalizedY = (mousePosition.y / screenSize.y - 0.5f) * 2f;
+
+        return new Vector2(
+            Mathf.Clamp(normalizedX, -1f, 1f),
+            Mathf.Clamp(normalizedY, -1f, 1f));
+    }
+
+    public static Vector3 CalculateMouseParallaxPositionOffset(
+        Vector2 normalizedMouseOffset,
+        Vector2 positionAmount,
+        float intensityMultiplier)
+    {
+        Vector2 clampedOffset = ClampMouseParallaxOffset(normalizedMouseOffset);
+        float multiplier = Mathf.Max(0f, intensityMultiplier);
+
+        return new Vector3(
+            clampedOffset.x * positionAmount.x * multiplier,
+            clampedOffset.y * positionAmount.y * multiplier,
+            0f);
+    }
+
+    public static Vector3 CalculateMouseParallaxEulerOffset(
+        Vector2 normalizedMouseOffset,
+        Vector2 rotationAmount,
+        float intensityMultiplier)
+    {
+        Vector2 clampedOffset = ClampMouseParallaxOffset(normalizedMouseOffset);
+        float multiplier = Mathf.Max(0f, intensityMultiplier);
+
+        return new Vector3(
+            -clampedOffset.y * rotationAmount.x * multiplier,
+            clampedOffset.x * rotationAmount.y * multiplier,
+            0f);
+    }
+
+    private static Vector2 ClampMouseParallaxOffset(Vector2 normalizedMouseOffset)
+    {
+        return new Vector2(
+            Mathf.Clamp(normalizedMouseOffset.x, -1f, 1f),
+            Mathf.Clamp(normalizedMouseOffset.y, -1f, 1f));
+    }
+
     private float GetZoomZPosition()
     {
         if (useFixedZoomZPosition)
@@ -918,6 +1076,12 @@ public class BattleCameraController : MonoBehaviour
         monsterInfoFocusOrthographicSize = Mathf.Max(0.1f, monsterInfoFocusOrthographicSize);
         characterSelectionFocusGridColumnCount = Mathf.Max(1, characterSelectionFocusGridColumnCount);
         characterSelectionFocusGridRowCount = Mathf.Max(1, characterSelectionFocusGridRowCount);
+        mouseParallaxPositionAmount.x = Mathf.Max(0f, mouseParallaxPositionAmount.x);
+        mouseParallaxPositionAmount.y = Mathf.Max(0f, mouseParallaxPositionAmount.y);
+        mouseParallaxRotationAmount.x = Mathf.Max(0f, mouseParallaxRotationAmount.x);
+        mouseParallaxRotationAmount.y = Mathf.Max(0f, mouseParallaxRotationAmount.y);
+        mouseParallaxSmoothSpeed = Mathf.Max(0f, mouseParallaxSmoothSpeed);
+        mouseParallaxCameraMotionMultiplier = Mathf.Clamp01(mouseParallaxCameraMotionMultiplier);
     }
 #endif
 }
