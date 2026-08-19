@@ -380,6 +380,39 @@ public class ButtonAnimationCoroutine :
     }
 
 
+    public void ForceSetClickedState(bool clicked, bool animate)
+    {
+        isClicked = clicked;
+        isPointerInside = false;
+        hasCachedHoverScreenRect = false;
+        pointerOutsideTime = 0f;
+
+        if (clicked)
+        {
+            if (currentClickedButton != null &&
+                currentClickedButton != this)
+            {
+                currentClickedButton.ForceClearState(false);
+            }
+
+            currentClickedButton = this;
+        }
+        else if (currentClickedButton == this)
+        {
+            currentClickedButton = null;
+        }
+
+        if (animate && !IsBlockedByStartImage())
+        {
+            StartVisualAnimationIfNeeded();
+        }
+        else
+        {
+            StopVisualAnimation();
+            ApplyVisualStateImmediately();
+        }
+    }
+
     public void ForceClearState(bool animate)
     {
         isClicked = false;

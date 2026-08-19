@@ -20,11 +20,8 @@ namespace Relic.Gameplay.Data
 
         public SkillMasterData Get(string id)
         {
-            if (skillDb.TryGet(id, out SkillMasterData value))
+            if (TryGet(id, out SkillMasterData value))
                 return value;
-
-            if (TryGetLegacyPublicCoreId(id, out string migratedId))
-                return skillDb.Get(migratedId);
 
             return skillDb.Get(id);
         }
@@ -34,8 +31,35 @@ namespace Relic.Gameplay.Data
             if (skillDb.TryGet(id, out value))
                 return true;
 
-            return TryGetLegacyPublicCoreId(id, out string migratedId) &&
-                   skillDb.TryGet(migratedId, out value);
+            if (TryGetLegacyPublicCoreId(id, out string migratedId) &&
+                skillDb.TryGet(migratedId, out value))
+            {
+                return true;
+            }
+
+            return TryGetLegacyPaddedNumericId(id, out string normalizedId) &&
+                   skillDb.TryGet(normalizedId, out value);
+        }
+
+        private static bool TryGetLegacyPaddedNumericId(string skillId, out string normalizedSkillId)
+        {
+            normalizedSkillId = null;
+
+            if (string.IsNullOrWhiteSpace(skillId))
+                return false;
+
+            string trimmedId = skillId.Trim();
+            int separatorIndex = trimmedId.LastIndexOf('_');
+
+            if (separatorIndex < 0 || separatorIndex >= trimmedId.Length - 1)
+                return false;
+
+            string numberText = trimmedId.Substring(separatorIndex + 1);
+            if (!int.TryParse(numberText, out int number) || number < 0)
+                return false;
+
+            normalizedSkillId = trimmedId.Substring(0, separatorIndex + 1) + number.ToString("D2");
+            return !string.Equals(normalizedSkillId, trimmedId, StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool TryGetLegacyPublicCoreId(string skillId, out string migratedCoreSkillId)
