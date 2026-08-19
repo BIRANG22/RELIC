@@ -23,10 +23,8 @@ public class BattleSceneController : MonoBehaviour
     [Header("Battle Map Intro Text")]
     [SerializeField] private BattleMapIntroText battleMapIntroText;
     [SerializeField] private string mapIntroMessage = "제1구역 폐허";
-    [SerializeField] private string startRoomIntroMessage = "수상한 자와 조우";
     [SerializeField] private string battleRoomIntroMessage = "전투 시작";
     [SerializeField] private string restRoomIntroMessage = "휴식 구역";
-    [SerializeField] private string eventRoomIntroMessage = "낡은 보관함";
     [SerializeField] private bool playMapIntroOnStart = true;
     [SerializeField] private bool playBattleRoomIntroFromSceneController = false;
 
@@ -46,7 +44,6 @@ public class BattleSceneController : MonoBehaviour
     [SerializeField] private string defaultStage = "Stage1";
 
     [Header("Rooms")]
-    [SerializeField] private GameObject startRoom;
     [SerializeField] private GameObject battleRoom;
     [SerializeField] private GameObject eventRoom;
     [SerializeField] private GameObject restRoom;
@@ -102,7 +99,7 @@ public class BattleSceneController : MonoBehaviour
         if (battleMapPanel != null)
             battleMapPanel.Prepare(mapRuntime);
 
-        if (!TryOpenUnclearedCurrentNodeOnStart() && !TryOpenStartNodeOnNewRun())
+        if (!TryOpenUnclearedCurrentNodeOnStart() && !TryOpenLayerZeroNodeOnNewRun())
         {
             OpenMapPanelImmediate();
             PlayMapIntroTextOnStart();
@@ -243,12 +240,12 @@ public class BattleSceneController : MonoBehaviour
         battleMapIntroText = Object.FindFirstObjectByType<BattleMapIntroText>(FindObjectsInactive.Include);
     }
 
-    private void ShowRoomBackground(GameObject room, GeneratedMapNodeData nodeData)
+    private void ShowRoomBackground(GameObject room, GeneratedMapNodeData nodeData, bool playBossReveal = false)
     {
         AutoFindSharedRoomPresentationIfNeeded();
         if (sharedBackgroundController != null)
         {
-            sharedBackgroundController.ShowForLayer(nodeData.LayerIndex);
+            sharedBackgroundController.ShowForLayer(nodeData.LayerIndex, playBossReveal);
             return;
         }
 
@@ -263,7 +260,7 @@ public class BattleSceneController : MonoBehaviour
             return;
         }
 
-        controller.ShowForLayer(nodeData.LayerIndex);
+        controller.ShowForLayer(nodeData.LayerIndex, playBossReveal);
     }
 
     private void ApplyRoomVisual(GameObject room, GeneratedMapNodeData nodeData)
@@ -322,7 +319,7 @@ public class BattleSceneController : MonoBehaviour
 
     private void ActivateMapRoomForMap()
     {
-        // 지도에서는 직전에 사용한 Start/Battle/Event/Rest/Shop 등의 룸을 남겨두지 않는다.
+        // 지도에서는 직전에 사용한 Battle/Event/Rest/Shop 등의 룸을 남겨두지 않는다.
         // RoomRoot 아래에서는 MapRoom만 활성 상태로 유지한다.
         if (roomRoot != null)
         {
@@ -338,7 +335,6 @@ public class BattleSceneController : MonoBehaviour
         }
         else
         {
-            SetActiveIfNotNull(startRoom, false);
             SetActiveIfNotNull(battleRoom, false);
             SetActiveIfNotNull(eventRoom, false);
             SetActiveIfNotNull(restRoom, false);
@@ -347,6 +343,7 @@ public class BattleSceneController : MonoBehaviour
         SetBattleRoomIntroPlaying(false);
 
         AutoFindSharedRoomPresentationIfNeeded();
+        sharedMapVisualController?.ClearVisuals();
         SetSharedPartyPresentationVisible(true);
         sharedRoomPresentationController?.RefreshNow();
     }
@@ -381,29 +378,29 @@ public class BattleSceneController : MonoBehaviour
         return true;
     }
 
-    private bool TryOpenStartNodeOnNewRun()
+    private bool TryOpenLayerZeroNodeOnNewRun()
     {
         if (mapRuntime == null || mapRuntime.CurrentNodeIndex >= 0)
             return false;
 
-        GeneratedMapNodeData startNode = MapRuntimeProgressUtility.FindStartNode(mapRuntime);
-        if (startNode == null)
+        GeneratedMapNodeData entryNode = MapRuntimeProgressUtility.FindStartNode(mapRuntime);
+        if (entryNode == null)
         {
-            Debug.LogWarning("[BattleSceneController] Generated map has no Start node.");
+            Debug.LogWarning("[BattleSceneController] Generated map has no Layer 0 entry node.");
             return false;
         }
 
-        mapRuntime.CurrentMapId = startNode.MapId;
-        mapRuntime.CurrentNodeIndex = startNode.NodeIndex;
+        mapRuntime.CurrentMapId = entryNode.MapId;
+        mapRuntime.CurrentNodeIndex = entryNode.NodeIndex;
         mapRuntime.VisitedMapIds ??= new List<string>();
 
-        string nodeKey = startNode.NodeIndex.ToString();
+        string nodeKey = entryNode.NodeIndex.ToString();
         if (!mapRuntime.VisitedMapIds.Contains(nodeKey))
             mapRuntime.VisitedMapIds.Add(nodeKey);
 
         mapRuntimeStore.Set(mapRuntime);
         HideMapPanelImmediate();
-        HandleSelectedMap(startNode);
+        HandleSelectedMap(entryNode);
         PlayPendingRoomIntroText();
         return true;
     }
@@ -712,10 +709,6 @@ public class BattleSceneController : MonoBehaviour
     {
         switch (nodeData.Type)
         {
-            case "Start":
-                OpenStartEvent(nodeData);
-                break;
-
             case "Common":
             case "Elite":
                 OpenBattleMap(nodeData);
@@ -739,15 +732,6 @@ public class BattleSceneController : MonoBehaviour
         }
     }
 
-    private void OpenStartEvent(GeneratedMapNodeData nodeData)
-    {
-        pendingBattleRoomUsesBossIntro = false;
-        pendingRoomIntroMessage = startRoomIntroMessage;
-        ShowRoomBackground(startRoom, nodeData);
-        OpenRoom(startRoom, "StartRoom");
-        ApplyRoomVisual(startRoom, nodeData);
-    }
-
     private void OpenBattleMap(GeneratedMapNodeData nodeData)
     {
         Debug.Log($"[BattleSceneController] Battle room start: {nodeData.MapId}");
@@ -763,7 +747,7 @@ public class BattleSceneController : MonoBehaviour
         Debug.Log($"[BattleSceneController] Boss battle start: {nodeData.MapId}");
         pendingBattleRoomUsesBossIntro = true;
         pendingRoomIntroMessage = playBattleRoomIntroFromSceneController ? battleRoomIntroMessage : null;
-        ShowRoomBackground(battleRoom, nodeData);
+        ShowRoomBackground(battleRoom, nodeData, true);
         OpenRoom(battleRoom, "BattleRoom");
         ApplyRoomVisual(battleRoom, nodeData);
     }
@@ -783,10 +767,7 @@ public class BattleSceneController : MonoBehaviour
         Debug.Log($"[BattleSceneController] Special event start: {nodeData.MapId} / Event:{nodeData.EventId}");
         pendingBattleRoomUsesBossIntro = false;
 
-        // 현재는 이벤트방 노드도 RestRoom 오브젝트를 함께 사용할 수 있으므로
-        // Event Room Intro Message 기본값을 휴식 구역으로 둔다.
-        // 나중에 실제 EventRoom을 추가하면 인스펙터에서 문구만 바꾸면 된다.
-        pendingRoomIntroMessage = eventRoomIntroMessage;
+        pendingRoomIntroMessage = ResolveEventRoomIntroMessage(nodeData);
         EventRoomController eventController =
             eventRoom != null
                 ? eventRoom.GetComponentInChildren<EventRoomController>(true)
@@ -795,8 +776,31 @@ public class BattleSceneController : MonoBehaviour
         if (eventController != null)
             eventController.SetEventId(nodeData.EventId);
 
-        OpenRoom(eventRoom, "EventRoom");
+        // EventRoom의 OnEnable에서 이벤트 선택지/연출이 즉시 실행될 수 있으므로
+        // MapVisual을 먼저 생성한 뒤 EventRoom을 활성화한다.
         ApplyRoomVisual(eventRoom, nodeData);
+        OpenRoom(eventRoom, "EventRoom");
+    }
+
+    private static string ResolveEventRoomIntroMessage(GeneratedMapNodeData nodeData)
+    {
+        if (nodeData == null)
+            return string.Empty;
+
+        string eventId = EventIdUtility.Normalize(nodeData.EventId);
+        if (string.IsNullOrWhiteSpace(eventId))
+            return string.Empty;
+
+        if (DataManager.Instance?.EventDatabase != null &&
+            DataManager.Instance.EventDatabase.TryGetEvent(eventId, out EventDefinition definition) &&
+            definition != null)
+        {
+            if (!string.IsNullOrWhiteSpace(definition.EventName))
+                return definition.EventName.Trim();
+        }
+
+        Debug.LogWarning($"[BattleSceneController] EventName을 찾을 수 없습니다: {eventId}");
+        return eventId;
     }
 
     private void PrepareRoomForMapSelection(GameObject completedRoom)
@@ -1020,7 +1024,6 @@ public class BattleSceneController : MonoBehaviour
             return;
         }
 
-        SetActiveIfNotNull(startRoom, false);
         SetActiveIfNotNull(battleRoom, false);
         SetActiveIfNotNull(eventRoom, false);
         SetActiveIfNotNull(restRoom, false);
@@ -1250,9 +1253,6 @@ public class BattleSceneController : MonoBehaviour
             return null;
         }
 
-        if (IsActiveSelf(startRoom))
-            return startRoom;
-
         if (IsActiveSelf(battleRoom))
             return battleRoom;
         if (IsActiveSelf(eventRoom))
@@ -1284,8 +1284,7 @@ public class BattleSceneController : MonoBehaviour
             return false;
         }
 
-        return target == startRoom ||
-               target == battleRoom ||
+        return target == battleRoom ||
                target == eventRoom ||
                target == restRoom;
     }

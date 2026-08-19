@@ -9,7 +9,6 @@ public class BattleMapController : MonoBehaviour
     [SerializeField] private MapViewSpawner mapViewSpawner;
 
     [Header("Rooms")]
-    [SerializeField] private GameObject startRoom;
     [SerializeField] private GameObject battleRoom;
     [SerializeField] private GameObject chestRoom;
     [SerializeField] private GameObject shopRoom;
@@ -95,11 +94,6 @@ public class BattleMapController : MonoBehaviour
 
         switch (nodeType)
         {
-            case "Start":
-                if (startRoom != null)
-                    startRoom.SetActive(true);
-                break;
-
             case "Common":
             case "Elite":
             case "Boss":
@@ -131,7 +125,6 @@ public class BattleMapController : MonoBehaviour
 
     private void CloseAllRooms()
     {
-        if (startRoom != null) startRoom.SetActive(false);
         if (battleRoom != null) battleRoom.SetActive(false);
         if (chestRoom != null) chestRoom.SetActive(false);
         if (shopRoom != null) shopRoom.SetActive(false);
