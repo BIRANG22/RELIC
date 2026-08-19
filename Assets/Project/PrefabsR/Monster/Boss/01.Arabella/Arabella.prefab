@@ -205,7 +205,7 @@ MonoBehaviour:
   healStateName: 
   deadStateName: Dead
   moveVfx:
-    prefab: {fileID: 5677070968414788663, guid: 8bcb4e0d61109cf4eb10358a484b4127, type: 3}
+    prefab: {fileID: 4145361429921181282, guid: 64eec7862f4d94a4198ea5d201af5b88, type: 3}
     flipType: 0
     sfx:
       playSfx: 0
@@ -1446,7 +1446,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1910251976348132752}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 46a3b90ac864fa341b003dc84fd7d7f6, type: 3}
   m_Name: 
