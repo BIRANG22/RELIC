@@ -70,6 +70,7 @@ public class UIManager : Singleton<UIManager>
     private Button cachedRecordButton;
     private Button cachedQuitButton;
     private TMP_Text cachedQuitText;
+    private bool menuCameraPauseActive;
 
     public static bool WasOptionPanelClosedByEscapeThisFrame => lastOptionClosedByEscapeFrame == Time.frameCount;
     public static bool WasRecordPanelClosedByEscapeThisFrame => lastRecordClosedByEscapeFrame == Time.frameCount;
@@ -116,6 +117,12 @@ public class UIManager : Singleton<UIManager>
 
         if (IsTitleScene())
             ShowQuitConfirm();
+    }
+
+    protected override void OnDestroy()
+    {
+        ReleaseMenuCameraPause();
+        base.OnDestroy();
     }
 
     private void CreateRecordPanel()
@@ -683,6 +690,7 @@ public class UIManager : Singleton<UIManager>
     private void UpdateMenuButtonRuntimeState()
     {
         GameObject menuPanel = UIPanelButton.FindMenuPanelInScene();
+        UpdateMenuCameraPause(menuPanel);
 
         if (menuPanel != cachedMenuPanel)
         {
@@ -715,6 +723,32 @@ public class UIManager : Singleton<UIManager>
 
         if (cachedQuitText != null)
             cachedQuitText.text = isLobbyScene ? lobbyQuitButtonText : battleQuitButtonText;
+    }
+
+    private void UpdateMenuCameraPause(GameObject menuPanel)
+    {
+        bool shouldPause = menuPanel != null && menuPanel.activeInHierarchy;
+
+        if (shouldPause == menuCameraPauseActive)
+            return;
+
+        if (shouldPause)
+        {
+            CameraMouseParallaxController.BeginUiPanelPause();
+            menuCameraPauseActive = true;
+            return;
+        }
+
+        ReleaseMenuCameraPause();
+    }
+
+    private void ReleaseMenuCameraPause()
+    {
+        if (!menuCameraPauseActive)
+            return;
+
+        CameraMouseParallaxController.EndUiPanelPause();
+        menuCameraPauseActive = false;
     }
 
     private static TMP_Text FindMenuText(Button button, string objectName)

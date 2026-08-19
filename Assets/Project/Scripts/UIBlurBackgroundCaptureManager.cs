@@ -175,13 +175,19 @@ public sealed class UIBlurBackgroundCaptureManager : MonoBehaviour
         if (sourceCamera == null)
             return;
 
-        EnsureCaptureTextures();
+        int captureWidth = Mathf.Max(1, sourceCamera.pixelWidth);
+        int captureHeight = Mathf.Max(1, sourceCamera.pixelHeight);
+
+        EnsureCaptureTextures(captureWidth, captureHeight);
         if (screenCaptureTexture == null || capturedTexture == null)
             return;
 
         List<GameObject> validBlurredUiRoots = GetValidBlurredUiRoots(blurredUiRoots);
+        List<CameraMouseParallaxController> pausedParallaxControllers =
+            BeginCameraMotionPauseForCapture(sourceCamera);
         RenderTexture previousTargetTexture = sourceCamera.targetTexture;
         int previousCullingMask = sourceCamera.cullingMask;
+        Matrix4x4 previousProjectionMatrix = sourceCamera.projectionMatrix;
 
         try
         {
@@ -196,6 +202,11 @@ public sealed class UIBlurBackgroundCaptureManager : MonoBehaviour
             sourceCamera.cullingMask = captureMask;
             sourceCamera.targetTexture = screenCaptureTexture;
 
+            // targetTexture를 지정하면 RenderTexture 크기를 기준으로 카메라의 투영 비율이
+            // 다시 계산될 수 있습니다. 실제 게임 화면에서 사용하던 투영 행렬을 그대로
+            // 적용하여 블러 캡처가 확대/축소되어 보이지 않도록 합니다.
+            sourceCamera.projectionMatrix = previousProjectionMatrix;
+
             Canvas.ForceUpdateCanvases();
             sourceCamera.Render();
             Graphics.Blit(screenCaptureTexture, capturedTexture);
@@ -204,9 +215,51 @@ public sealed class UIBlurBackgroundCaptureManager : MonoBehaviour
         {
             sourceCamera.targetTexture = previousTargetTexture;
             sourceCamera.cullingMask = previousCullingMask;
+            sourceCamera.projectionMatrix = previousProjectionMatrix;
             RestoreCaptureIncludedUI();
             RestoreHiddenCanvasRenderers();
             Canvas.ForceUpdateCanvases();
+            EndCameraMotionPauseForCapture(pausedParallaxControllers);
+        }
+    }
+
+    private static List<CameraMouseParallaxController> BeginCameraMotionPauseForCapture(Camera sourceCamera)
+    {
+        List<CameraMouseParallaxController> pausedControllers =
+            new List<CameraMouseParallaxController>();
+
+        if (sourceCamera == null)
+            return pausedControllers;
+
+        CameraMouseParallaxController[] controllers =
+            FindObjectsByType<CameraMouseParallaxController>(
+                FindObjectsInactive.Exclude,
+                FindObjectsSortMode.None);
+
+        for (int i = 0; i < controllers.Length; i++)
+        {
+            CameraMouseParallaxController controller = controllers[i];
+            if (controller == null || !controller.isActiveAndEnabled || !controller.UsesCamera(sourceCamera))
+                continue;
+
+            controller.BeginBlurCapturePause();
+            pausedControllers.Add(controller);
+        }
+
+        return pausedControllers;
+    }
+
+    private static void EndCameraMotionPauseForCapture(
+        List<CameraMouseParallaxController> pausedControllers)
+    {
+        if (pausedControllers == null)
+            return;
+
+        for (int i = pausedControllers.Count - 1; i >= 0; i--)
+        {
+            CameraMouseParallaxController controller = pausedControllers[i];
+            if (controller != null)
+                controller.EndBlurCapturePause();
         }
     }
 
@@ -482,19 +535,22 @@ public sealed class UIBlurBackgroundCaptureManager : MonoBehaviour
         return cullingMask & ~(1 << uiLayer);
     }
 
-    private void EnsureCaptureTextures()
+    private void EnsureCaptureTextures(int captureWidth, int captureHeight)
     {
+        captureWidth = Mathf.Max(1, captureWidth);
+        captureHeight = Mathf.Max(1, captureHeight);
+
         int safeDownsample = Mathf.Max(1, downsample);
-        int blurWidth = Mathf.Max(1, Screen.width / safeDownsample);
-        int blurHeight = Mathf.Max(1, Screen.height / safeDownsample);
+        int blurWidth = Mathf.Max(1, captureWidth / safeDownsample);
+        int blurHeight = Mathf.Max(1, captureHeight / safeDownsample);
 
         bool sameSize =
             screenCaptureTexture != null &&
             capturedTexture != null &&
-            capturedScreenWidth == Screen.width &&
-            capturedScreenHeight == Screen.height &&
-            screenCaptureTexture.width == Screen.width &&
-            screenCaptureTexture.height == Screen.height &&
+            capturedScreenWidth == captureWidth &&
+            capturedScreenHeight == captureHeight &&
+            screenCaptureTexture.width == captureWidth &&
+            screenCaptureTexture.height == captureHeight &&
             capturedTexture.width == blurWidth &&
             capturedTexture.height == blurHeight;
 
@@ -504,8 +560,8 @@ public sealed class UIBlurBackgroundCaptureManager : MonoBehaviour
         ReleaseCaptureTextures();
 
         screenCaptureTexture = CreateRenderTexture(
-            Screen.width,
-            Screen.height,
+            captureWidth,
+            captureHeight,
             "UI_Blur_Camera_Capture",
             FilterMode.Bilinear);
 
@@ -515,8 +571,8 @@ public sealed class UIBlurBackgroundCaptureManager : MonoBehaviour
             "UI_Blur_Background_Capture",
             FilterMode.Bilinear);
 
-        capturedScreenWidth = Screen.width;
-        capturedScreenHeight = Screen.height;
+        capturedScreenWidth = captureWidth;
+        capturedScreenHeight = captureHeight;
     }
 
     private static RenderTexture CreateRenderTexture(
