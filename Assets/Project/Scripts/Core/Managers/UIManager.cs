@@ -37,8 +37,12 @@ public class UIManager : Singleton<UIManager>
     [SerializeField] private bool overrideConfirmDialogSorting = true;
     [SerializeField] private int confirmDialogSortingOrderOffset = 20;
 
+    [Header("Menu Button Text")]
+    [SerializeField] private string lobbyQuitButtonText = "타이틀로";
+    [SerializeField] private string battleQuitButtonText = "저장 후 종료";
+
     [Header("Confirm Dialog Text")]
-    [SerializeField] private string giveUpConfirmMessage = "타이틀로 돌아가겠습니까?";
+    [SerializeField] private string giveUpConfirmMessage = "정말 포기하시겠습니까?";
     [SerializeField] private string quitConfirmMessage = "게임을 종료하겠습니까?";
     [SerializeField] private string confirmYesText = "예";
     [SerializeField] private string confirmNoText = "아니오";
@@ -61,6 +65,11 @@ public class UIManager : Singleton<UIManager>
     private OptionPanelTransition recordPanelTransition;
     private GameObject confirmDialogInstance;
     private BootstrapConfirmDialogUI confirmDialogUI;
+    private GameObject cachedMenuPanel;
+    private Button cachedGiveUpButton;
+    private Button cachedRecordButton;
+    private Button cachedQuitButton;
+    private TMP_Text cachedQuitText;
 
     public static bool WasOptionPanelClosedByEscapeThisFrame => lastOptionClosedByEscapeFrame == Time.frameCount;
     public static bool WasRecordPanelClosedByEscapeThisFrame => lastRecordClosedByEscapeFrame == Time.frameCount;
@@ -88,6 +97,8 @@ public class UIManager : Singleton<UIManager>
 
     private void Update()
     {
+        UpdateMenuButtonRuntimeState();
+
         if (IsTypingInputFieldSelected())
             return;
 
@@ -400,9 +411,19 @@ public class UIManager : Singleton<UIManager>
 
     public void ShowGiveUpConfirm()
     {
+        ShowBattleGiveUpConfirm();
+    }
+
+    public void ShowBattleGiveUpConfirm()
+    {
+        if (IsLobbyScene())
+            return;
+
         ShowConfirmDialog(
-            GameLocalization.Get("battle.confirm_return_to_title", giveUpConfirmMessage),
-            OnConfirmGiveUpToTitle,
+            giveUpConfirmMessage,
+            confirmYesText,
+            confirmNoText,
+            OnConfirmGiveUpToLobby,
             HideConfirmDialog);
     }
 
@@ -475,13 +496,47 @@ public class UIManager : Singleton<UIManager>
         return true;
     }
 
-    private async void OnConfirmGiveUpToTitle()
+    private async void OnConfirmGiveUpToLobby()
     {
         HideConfirmDialog();
-        HideOption();
+        HideRecord(true);
+        HideOption(true);
         UIPanelButton.CloseCurrentOpenedPanel();
         Time.timeScale = 1f;
         AbandonCurrentBattleRunIfPossible();
+
+        if (GameManager.Instance != null && GameManager.Instance.StateMachine != null)
+        {
+            await GameManager.Instance.StateMachine.ChangeState(GameStateType.Lobby);
+            return;
+        }
+
+        if (SceneFlowManager.Instance != null)
+        {
+            await SceneFlowManager.Instance.LoadSceneAsync(SceneName.Lobby);
+            return;
+        }
+
+        UnityEngine.SceneManagement.SceneManager.LoadScene(SceneName.Lobby);
+    }
+
+    public async void SaveAndReturnToTitle()
+    {
+        HideConfirmDialog();
+        HideRecord(true);
+        HideOption(true);
+        UIPanelButton.CloseCurrentOpenedPanel();
+        Time.timeScale = 1f;
+
+        if (SaveSystem.Instance != null)
+        {
+            if (!SaveSystem.Instance.SaveCurrentProgress())
+                Debug.LogWarning("[UIManager] 현재 진행상황 저장에 실패했습니다. 타이틀로 이동합니다.");
+        }
+        else
+        {
+            Debug.LogWarning("[UIManager] SaveSystem.Instance를 찾지 못했습니다. 타이틀로 이동합니다.");
+        }
 
         if (GameManager.Instance != null && GameManager.Instance.StateMachine != null)
         {
@@ -624,6 +679,83 @@ public class UIManager : Singleton<UIManager>
             eventSystem.SetSelectedGameObject(null);
     }
 
+
+    private void UpdateMenuButtonRuntimeState()
+    {
+        GameObject menuPanel = UIPanelButton.FindMenuPanelInScene();
+
+        if (menuPanel != cachedMenuPanel)
+        {
+            if (cachedRecordButton != null)
+                cachedRecordButton.onClick.RemoveListener(ShowRecord);
+
+            cachedMenuPanel = menuPanel;
+            cachedGiveUpButton = FindMenuButton(menuPanel, "Giveup");
+            cachedRecordButton = FindMenuButton(menuPanel, "Record");
+            cachedQuitButton = FindMenuButton(menuPanel, "Quit");
+            cachedQuitText = FindMenuText(cachedQuitButton, "quit_Text");
+
+            if (cachedRecordButton != null)
+            {
+                cachedRecordButton.onClick.RemoveListener(ShowRecord);
+                cachedRecordButton.onClick.AddListener(ShowRecord);
+            }
+        }
+
+        bool isLobbyScene = IsLobbyScene();
+
+        if (cachedGiveUpButton != null)
+        {
+            cachedGiveUpButton.gameObject.SetActive(!isLobbyScene);
+            cachedGiveUpButton.interactable = !isLobbyScene;
+        }
+
+        if (cachedQuitText == null && cachedQuitButton != null)
+            cachedQuitText = FindMenuText(cachedQuitButton, "quit_Text");
+
+        if (cachedQuitText != null)
+            cachedQuitText.text = isLobbyScene ? lobbyQuitButtonText : battleQuitButtonText;
+    }
+
+    private static TMP_Text FindMenuText(Button button, string objectName)
+    {
+        if (button == null || string.IsNullOrWhiteSpace(objectName))
+            return null;
+
+        TMP_Text[] texts = button.GetComponentsInChildren<TMP_Text>(true);
+        for (int i = 0; i < texts.Length; i++)
+        {
+            TMP_Text text = texts[i];
+            if (text != null && string.Equals(text.gameObject.name, objectName, System.StringComparison.Ordinal))
+                return text;
+        }
+
+        return null;
+    }
+
+    private static Button FindMenuButton(GameObject menuPanel, string objectName)
+    {
+        if (menuPanel == null || string.IsNullOrWhiteSpace(objectName))
+            return null;
+
+        Button[] buttons = menuPanel.GetComponentsInChildren<Button>(true);
+        for (int i = 0; i < buttons.Length; i++)
+        {
+            Button button = buttons[i];
+            if (button != null && string.Equals(button.gameObject.name, objectName, System.StringComparison.Ordinal))
+                return button;
+        }
+
+        return null;
+    }
+
+    private static bool IsLobbyScene()
+    {
+        return string.Equals(
+            UnityEngine.SceneManagement.SceneManager.GetActiveScene().name,
+            SceneName.Lobby,
+            System.StringComparison.OrdinalIgnoreCase);
+    }
 
     private static bool IsTitleScene()
     {

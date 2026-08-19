@@ -70,6 +70,12 @@ public sealed class TMPKoreanGlyphPreloader : MonoBehaviour
 #if UNITY_EDITOR
         if (replaceTextFontsOnSceneLoaded)
             SceneManager.sceneLoaded -= OnSceneLoaded;
+
+        if (Application.isPlaying && useRuntimeFontClonesInEditor)
+        {
+            RestoreLoadedTextFontsToOriginals();
+            DestroyRuntimeFontClones();
+        }
 #endif
     }
 
@@ -202,9 +208,47 @@ public sealed class TMPKoreanGlyphPreloader : MonoBehaviour
         if (runtimeFontClones.TryGetValue(source, out TMP_FontAsset cachedClone) && cachedClone != null)
             return cachedClone;
 
-        TMP_FontAsset clone = Instantiate(source);
+        Font sourceFontFile = source.sourceFontFile;
+        if (sourceFontFile == null)
+        {
+            if (logResult)
+            {
+                Debug.LogWarning(
+                    $"[TMPKoreanGlyphPreloader] '{source.name}'의 Source Font File을 찾을 수 없어 에디터 런타임 FontAsset 생성을 건너뜁니다.",
+                    source);
+            }
+
+            return null;
+        }
+
+        // 기존 TMP_FontAsset을 Instantiate하면 atlas/material 서브 에셋 참조까지 복제되어
+        // 파괴 시 프로젝트 에셋을 제거하려는 문제가 생길 수 있습니다.
+        // 원본 Font 파일에서 독립된 런타임 FontAsset을 새로 만들어 사용합니다.
+        TMP_FontAsset clone = TMP_FontAsset.CreateFontAsset(sourceFontFile);
+        if (clone == null)
+        {
+            if (logResult)
+                Debug.LogWarning($"[TMPKoreanGlyphPreloader] '{source.name}'의 런타임 FontAsset 생성에 실패했습니다.", source);
+
+            return null;
+        }
+
         clone.name = source.name + " Runtime Clone";
-        clone.hideFlags = HideFlags.DontSave;
+        clone.hideFlags = HideFlags.DontSaveInBuild;
+
+        if (clone.material != null)
+            clone.material.hideFlags = HideFlags.DontSaveInBuild;
+
+        Texture2D[] runtimeAtlases = clone.atlasTextures;
+        if (runtimeAtlases != null)
+        {
+            for (int i = 0; i < runtimeAtlases.Length; i++)
+            {
+                if (runtimeAtlases[i] != null)
+                    runtimeAtlases[i].hideFlags = HideFlags.DontSaveInBuild;
+            }
+        }
+
         runtimeFontClones[source] = clone;
 
         CloneFallbackFontList(source, clone);
@@ -264,6 +308,45 @@ public sealed class TMPKoreanGlyphPreloader : MonoBehaviour
 
         if (logResult && replacedCount > 0)
             Debug.Log($"[TMPKoreanGlyphPreloader] TMP_Text {replacedCount}개의 FontAsset을 에디터 런타임 복제본으로 교체했습니다.", this);
+    }
+
+    private void RestoreLoadedTextFontsToOriginals()
+    {
+        TMP_Text[] texts = Resources.FindObjectsOfTypeAll<TMP_Text>();
+
+        for (int i = 0; i < texts.Length; i++)
+        {
+            TMP_Text text = texts[i];
+            if (text == null || text.font == null)
+                continue;
+
+            if (EditorUtility.IsPersistent(text))
+                continue;
+
+            if (!text.gameObject.scene.IsValid())
+                continue;
+
+            TMP_FontAsset original = GetOriginalFontFromRuntimeClone(text.font);
+            if (original == null)
+                continue;
+
+            text.font = original;
+            text.SetAllDirty();
+        }
+    }
+
+    private void DestroyRuntimeFontClones()
+    {
+        foreach (KeyValuePair<TMP_FontAsset, TMP_FontAsset> pair in runtimeFontClones)
+        {
+            TMP_FontAsset clone = pair.Value;
+            if (clone == null)
+                continue;
+
+            Destroy(clone);
+        }
+
+        runtimeFontClones.Clear();
     }
 
     private bool IsRuntimeFontClone(TMP_FontAsset font)

@@ -23075,7 +23075,7 @@ MonoBehaviour:
   targetCamera: {fileID: 0}
   enableMouseParallax: 1
   mouseParallaxPositionAmount: {x: 0.08, y: 0.03}
-  mouseParallaxRotationAmount: {x: 3, y: 1.5}
+  mouseParallaxRotationAmount: {x: 0.5, y: 1}
   mouseParallaxSmoothSpeed: 8
   mouseParallaxCameraMotionMultiplier: 0.35
 --- !u!1 &643678573
