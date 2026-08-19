@@ -237,7 +237,7 @@ public class RecordPanelUI : MonoBehaviour
 
         IEnumerable<ItemData> items = dataManager.ItemDatabase.GetAll()
             .Where(item => item != null)
-            .OrderBy(RecordDisplayNameResolver.ItemName, StringComparer.CurrentCulture);
+            .OrderBy(item => item.ItemId, StringComparer.Ordinal);
 
         foreach (ItemData item in items)
         {
