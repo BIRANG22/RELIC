@@ -144,7 +144,6 @@ MonoBehaviour:
   gearRotateTickDuration: 0.12
   gearRotateTickInterval: 1
   closeDelayAfterUpgradeComplete: 0.5
-  upgradeCompleteMessageFormat: "{0}\uC73C\uB85C \uAC15\uD654\uB418\uC5C8\uC2B5\uB2C8\uB2E4."
   upgradedSkillIconColor: {r: 0.49411765, g: 0.5764706, b: 0.9254902, a: 1}
   fallbackIconSize: {x: 50, y: 50}
   iconSpacing: {x: 15, y: 15}
@@ -613,7 +612,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2093394021849751893}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
   m_Name: 
@@ -1140,7 +1139,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2651172300671169505}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
   m_Name: 
