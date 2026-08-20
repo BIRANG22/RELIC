@@ -13,6 +13,7 @@ namespace Relic.Gameplay.Data
         public List<string> DiscoveredSkillIds = new();
         public List<string> DiscoveredRuneIds = new();
         public List<string> DiscoveredRelicIds = new();
+        public List<string> DiscoveredCompoundIds = new();
         public List<string> DiscoveredItemIds = new();
     }
 }

@@ -78,15 +78,17 @@ namespace Relic.Gameplay.Data
 
         private bool CanEquipRelicInSlot(int slotIndex, string relicId)
         {
-            if (relicDatabase == null ||
-                !relicDatabase.TryGet(relicId, out RelicData relic))
+            bool isCompoundSlot = slotIndex == ActiveRelicRuntimeUtility.ActiveRelicSlotIndex;
+
+            if (isCompoundSlot)
             {
-                return false;
+                return global::DataManager.Instance?.CompoundDatabase != null &&
+                       global::DataManager.Instance.CompoundDatabase.TryGet(relicId, out _);
             }
 
-            bool isActiveRelic = ActiveRelicEffectResolver.IsActiveRelic(relic);
-            bool isActiveSlot = slotIndex == ActiveRelicRuntimeUtility.ActiveRelicSlotIndex;
-            return isActiveRelic == isActiveSlot;
+            return relicDatabase != null &&
+                   relicDatabase.TryGet(relicId, out RelicData relic) &&
+                   !ActiveRelicEffectResolver.IsActiveRelic(relic);
         }
 
         public bool UnequipRelic(string characterId, int slotIndex)
@@ -166,19 +168,15 @@ namespace Relic.Gameplay.Data
         {
             if (character == null ||
                 string.IsNullOrWhiteSpace(relicId) ||
-                global::DataManager.Instance == null ||
-                global::DataManager.Instance.RelicDatabase == null)
+                global::DataManager.Instance?.CompoundDatabase == null)
             {
                 return;
             }
 
-            if (!global::DataManager.Instance.RelicDatabase.TryGet(relicId, out RelicData relic) ||
-                !ActiveRelicEffectResolver.IsActiveRelic(relic))
-            {
+            if (!global::DataManager.Instance.CompoundDatabase.TryGet(relicId, out CompoundData compound))
                 return;
-            }
 
-            ActiveRelicRuntimeUtility.ResetUses(character, relic);
+            ActiveRelicRuntimeUtility.ResetUses(character, compound);
         }
     }
 }

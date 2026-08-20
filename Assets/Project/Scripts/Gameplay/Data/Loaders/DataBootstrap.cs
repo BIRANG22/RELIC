@@ -19,6 +19,7 @@ namespace Relic.Gameplay.Data
         public SkillDatabase SkillDatabase { get; } = new();
         public EffectDatabase EffectDatabase { get; } = new();
         public RelicDatabase RelicDatabase { get; } = new();
+        public CompoundDatabase CompoundDatabase { get; } = new();
         public RangeDatabase RangeDatabase { get; } = new();
         public AssetDatabase AssetDatabase { get; } = new();
         public QuestDatabase QuestDatabase { get; } = new();
@@ -88,6 +89,7 @@ namespace Relic.Gameplay.Data
             var skills = SkillCsvLoader.LoadSkills(workbook);
             var effects = EffectCsvLoader.Load(workbook);
             var relics = RelicCsvLoader.Load(workbook);
+            var compounds = CompoundCsvLoader.Load(workbook);
             var ranges = RangeCsvLoader.Load(workbook);
             var assets = AssetCsvLoader.Load(workbook);
             var quests = QuestCsvLoader.Load(workbook);
@@ -126,7 +128,11 @@ namespace Relic.Gameplay.Data
             foreach (var relic in relics)
                 relic.EffectEntries = SkillEffectParser.Parse(relic, EffectDatabase);
 
+            foreach (var compound in compounds)
+                compound.EffectEntries = SkillEffectParser.Parse(compound, EffectDatabase);
+
             RelicDatabase.Initialize(relics);
+            CompoundDatabase.Initialize(compounds);
             SkillDatabase.Initialize(skills);
             RangeDatabase.Initialize(ranges);
             MonsterSkillDatabase.Initialize(monsterSkills);

@@ -7,7 +7,7 @@ namespace Relic.Gameplay.Data
     public static class CultureTankResearchService
     {
         public const int DefaultBattleStartEffectUses = 3;
-        public const int CurrentSchemaVersion = 1;
+        public const int CurrentSchemaVersion = 2;
 
         public static bool TryPlaceIngredient(LobbyRuntimeData lobby, string tankId, string itemId, out string error)
         {
@@ -57,7 +57,7 @@ namespace Relic.Gameplay.Data
         public static bool TryCombine(
             LobbyRuntimeData lobby,
             ItemDatabase itemDatabase,
-            CultureTankCombinationDatabase combinationDatabase,
+            CompoundDatabase combinationDatabase,
             out string combinationId,
             out string error)
         {
@@ -80,25 +80,23 @@ namespace Relic.Gameplay.Data
                 return false;
             }
 
-            string[] types = new string[3];
-            for (int i = 0; i < 3; i++)
-            {
-                ItemData item = itemDatabase.Get(lobby.CultureTankResearches[i].ItemId);
-                if (item == null || string.IsNullOrWhiteSpace(item.CultureType))
-                {
-                    error = "Ingredient type data is missing.";
-                    return false;
-                }
-                types[i] = item.CultureType;
-            }
+            string first = lobby.CultureTankResearches[0].ItemId;
+            string second = lobby.CultureTankResearches[1].ItemId;
+            string third = lobby.CultureTankResearches[2].ItemId;
 
-            if (!combinationDatabase.TryGetByTypes(types[0], types[1], types[2], out CultureTankCombinationEntry recipe))
+            if (itemDatabase.Get(first) == null || itemDatabase.Get(second) == null || itemDatabase.Get(third) == null)
             {
-                error = "No culture tank recipe matches these ingredients.";
+                error = "Ingredient item data is missing.";
                 return false;
             }
 
-            combinationId = recipe.CombinationId;
+            if (!combinationDatabase.TryGetByMaterials(first, second, third, out CompoundData recipe))
+            {
+                error = "No compound recipe matches these ingredients.";
+                return false;
+            }
+
+            combinationId = recipe.CompoundId;
             lobby.CultureTankResearches.Clear();
             lobby.CompletedCultureTankCombinationId = combinationId;
             return true;
@@ -106,34 +104,30 @@ namespace Relic.Gameplay.Data
 
         public static bool TryClaimCompletedCombination(
             LobbyRuntimeData lobby,
-            CultureTankCombinationDatabase combinationDatabase,
-            out CultureTankBattleStartEffectRuntimeData effect,
+            CompoundDatabase combinationDatabase,
+            out string compoundId,
             out string error)
         {
-            effect = null;
+            compoundId = string.Empty;
             error = string.Empty;
+
             if (lobby == null || combinationDatabase == null)
             {
-                error = "Culture tank data is missing.";
-                return false;
-            }
-            Normalize(lobby);
-            if (!combinationDatabase.TryGetById(lobby.CompletedCultureTankCombinationId, out CultureTankCombinationEntry recipe) ||
-                string.IsNullOrWhiteSpace(recipe.EffectId))
-            {
-                error = "Completed combination data is missing.";
+                error = "Compound data is missing.";
                 return false;
             }
 
-            effect = new CultureTankBattleStartEffectRuntimeData
+            Normalize(lobby);
+
+            if (!combinationDatabase.TryGet(lobby.CompletedCultureTankCombinationId, out CompoundData compound))
             {
-                SourceItemId = recipe.CombinationId,
-                EffectId = recipe.EffectId.Trim(),
-                Value = Mathf.Max(0, recipe.ValueRate),
-                Count = Mathf.Max(0, recipe.CountRate),
-                RemainingBattleStarts = Mathf.Max(1, recipe.RemainingBattleStarts)
-            };
-            lobby.PendingCultureTankBattleStartEffects.Add(effect);
+                error = "Completed compound data is missing.";
+                return false;
+            }
+
+            lobby.OwnedRelicIds ??= new List<string>();
+            compoundId = compound.CompoundId;
+            lobby.OwnedRelicIds.Add(compoundId);
             lobby.CompletedCultureTankCombinationId = string.Empty;
             return true;
         }
@@ -166,8 +160,10 @@ namespace Relic.Gameplay.Data
             if (source == null || string.IsNullOrWhiteSpace(source.EffectId) || source.RemainingBattleStarts <= 0) return null;
             return new CultureTankBattleStartEffectRuntimeData
             {
-                SourceItemId = NormalizeId(source.SourceItemId), EffectId = NormalizeId(source.EffectId),
-                Value = Mathf.Max(0, source.Value), Count = Mathf.Max(0, source.Count),
+                SourceItemId = NormalizeId(source.SourceItemId),
+                EffectId = NormalizeId(source.EffectId),
+                Value = Mathf.Max(0, source.Value),
+                Count = Mathf.Max(0, source.Count),
                 RemainingBattleStarts = Mathf.Max(0, source.RemainingBattleStarts)
             };
         }
@@ -187,6 +183,7 @@ namespace Relic.Gameplay.Data
                         lobby.BagItemIds.Add(legacy.ItemId.Trim());
                 lobby.CultureTankResearches.Clear();
                 lobby.CompletedCultureTankCombinationId = string.Empty;
+                lobby.PendingCultureTankBattleStartEffects.Clear();
                 lobby.CultureTankCombinationSchemaVersion = CurrentSchemaVersion;
             }
 

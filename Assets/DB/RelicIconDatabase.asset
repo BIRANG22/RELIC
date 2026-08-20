@@ -13,35 +13,35 @@ MonoBehaviour:
   m_Name: RelicIconDatabase
   m_EditorClassIdentifier: 
   entries:
-  - RelicId: Relic_A_01
+  - RelicId: Compound_01
     Icon: {fileID: 21300000, guid: 05ee1f53e7557494b878712a00bde3ee, type: 3}
-  - RelicId: Relic_A_02
+  - RelicId: Compound_02
     Icon: {fileID: 21300000, guid: 3d7330e169f99a74fa827e2ab6dc8175, type: 3}
-  - RelicId: Relic_A_03
+  - RelicId: Compound_03
     Icon: {fileID: 21300000, guid: 1107dbfd456dd454a9d34452641406ce, type: 3}
-  - RelicId: Relic_A_04
+  - RelicId: Compound_04
     Icon: {fileID: 21300000, guid: 48fe18d9212378f4aa25104056cd4f2a, type: 3}
-  - RelicId: Relic_A_05
+  - RelicId: Compound_05
     Icon: {fileID: 21300000, guid: acf8b4cf1db7d88459e1271da6f215c0, type: 3}
-  - RelicId: Relic_A_06
+  - RelicId: Compound_06
     Icon: {fileID: 21300000, guid: 7655923706035924699018625ae6e2fd, type: 3}
-  - RelicId: Relic_A_07
+  - RelicId: Compound_07
     Icon: {fileID: 21300000, guid: 62a5541d80ae335489a194658de2a343, type: 3}
-  - RelicId: Relic_A_08
+  - RelicId: Compound_08
     Icon: {fileID: 21300000, guid: 8378d65a5c0d3d748b6c5ccd030c70b6, type: 3}
-  - RelicId: Relic_A_09
+  - RelicId: Compound_09
     Icon: {fileID: 21300000, guid: 7e387453f43d3cd48950bd13c370feb5, type: 3}
-  - RelicId: Relic_A_10
+  - RelicId: Compound_10
     Icon: {fileID: 21300000, guid: df069e9d1cd2d4d4792bd741333e95af, type: 3}
-  - RelicId: Relic_A_11
+  - RelicId: Compound_11
     Icon: {fileID: 21300000, guid: 27af604481393894583d1d2044a9c125, type: 3}
-  - RelicId: Relic_A_12
+  - RelicId: Compound_12
     Icon: {fileID: 21300000, guid: ea828efb61ebb494591b68a0bf1929ae, type: 3}
-  - RelicId: Relic_A_13
+  - RelicId: Compound_13
     Icon: {fileID: 21300000, guid: 76240d1ee8fe6c941bd4445dd0e464ca, type: 3}
-  - RelicId: Relic_A_14
+  - RelicId: Compound_14
     Icon: {fileID: 21300000, guid: 26a3931b7d297d44ab3c72cfdd23d9f0, type: 3}
-  - RelicId: Relic_A_15
+  - RelicId: Compound_15
     Icon: {fileID: 21300000, guid: c2aa04d438985e045b54ae153def8aa8, type: 3}
   - RelicId: Relic_P_01
     Icon: {fileID: 21300000, guid: 91ebc247a2bd53140a493b2a611439b9, type: 3}

@@ -57,20 +57,17 @@ namespace Relic.Gameplay.Data
             CharacterRuntimeData runtime,
             RelicDatabase relicDatabase)
         {
-            if (runtime == null || relicDatabase == null)
+            if (runtime == null || global::DataManager.Instance?.CompoundDatabase == null)
                 return;
 
-            string relicId = ActiveRelicRuntimeUtility.GetActiveRelicId(runtime);
-            if (string.IsNullOrWhiteSpace(relicId))
+            string compoundId = ActiveRelicRuntimeUtility.GetActiveRelicId(runtime);
+            if (string.IsNullOrWhiteSpace(compoundId))
                 return;
 
-            if (!relicDatabase.TryGet(relicId, out RelicData relic) ||
-                !ActiveRelicEffectResolver.IsActiveRelic(relic))
-            {
+            if (!global::DataManager.Instance.CompoundDatabase.TryGet(compoundId, out CompoundData compound))
                 return;
-            }
 
-            ActiveRelicRuntimeUtility.ResetUses(runtime, relic);
+            ActiveRelicRuntimeUtility.ResetUses(runtime, compound);
         }
     }
 }

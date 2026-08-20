@@ -455,22 +455,28 @@ public class RelicEquipPanelUI : MonoBehaviour
     {
         isActiveRelic = false;
 
-        if (selectedInventoryRelicIcon == null ||
-            DataManager.Instance == null ||
-            DataManager.Instance.RelicDatabase == null)
-        {
+        if (selectedInventoryRelicIcon == null || DataManager.Instance == null)
             return false;
-        }
 
         string relicId = selectedInventoryRelicIcon.RelicId;
-        if (string.IsNullOrWhiteSpace(relicId) ||
-            !DataManager.Instance.RelicDatabase.TryGet(relicId, out RelicData relic))
-        {
+        if (string.IsNullOrWhiteSpace(relicId))
             return false;
+
+        if (DataManager.Instance.CompoundDatabase != null &&
+            DataManager.Instance.CompoundDatabase.TryGet(relicId, out _))
+        {
+            isActiveRelic = true;
+            return true;
         }
 
-        isActiveRelic = ActiveRelicEffectResolver.IsActiveRelic(relic);
-        return true;
+        if (DataManager.Instance.RelicDatabase != null &&
+            DataManager.Instance.RelicDatabase.TryGet(relicId, out RelicData relic))
+        {
+            isActiveRelic = ActiveRelicEffectResolver.IsActiveRelic(relic);
+            return true;
+        }
+
+        return false;
     }
 
     private void UpdateEquippedSlotSelectionVisuals()

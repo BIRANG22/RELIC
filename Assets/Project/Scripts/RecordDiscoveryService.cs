@@ -17,11 +17,13 @@ namespace Relic.Gameplay.Data
             player.DiscoveredSkillIds ??= new List<string>();
             player.DiscoveredRuneIds ??= new List<string>();
             player.DiscoveredRelicIds ??= new List<string>();
+            player.DiscoveredCompoundIds ??= new List<string>();
             player.DiscoveredItemIds ??= new List<string>();
 
             NormalizeIds(player.DiscoveredSkillIds);
             NormalizeIds(player.DiscoveredRuneIds);
             NormalizeIds(player.DiscoveredRelicIds);
+            NormalizeIds(player.DiscoveredCompoundIds);
             NormalizeIds(player.DiscoveredItemIds);
         }
 
@@ -43,6 +45,12 @@ namespace Relic.Gameplay.Data
             return Register(relicId, player?.DiscoveredRelicIds);
         }
 
+        public static bool RegisterCompound(DataManager dataManager, string compoundId)
+        {
+            PlayerRuntimeData player = PreparePlayer(dataManager);
+            return Register(compoundId, player?.DiscoveredCompoundIds);
+        }
+
         public static bool RegisterItem(DataManager dataManager, string itemId)
         {
             PlayerRuntimeData player = PreparePlayer(dataManager);
@@ -62,6 +70,11 @@ namespace Relic.Gameplay.Data
         public static bool IsRelicDiscovered(DataManager dataManager, string relicId)
         {
             return Contains(dataManager?.PlayerRuntimeStore?.Data?.DiscoveredRelicIds, relicId);
+        }
+
+        public static bool IsCompoundDiscovered(DataManager dataManager, string compoundId)
+        {
+            return Contains(dataManager?.PlayerRuntimeStore?.Data?.DiscoveredCompoundIds, compoundId);
         }
 
         public static bool IsItemDiscovered(DataManager dataManager, string itemId)
@@ -105,7 +118,17 @@ namespace Relic.Gameplay.Data
                 RegisterSkill(dataManager, character.AbilitySkillId);
                 RegisterIds(character.EquippedSkillIds, id => RegisterSkill(dataManager, id));
                 RegisterIds(character.EquippedRuneIds, id => RegisterRune(dataManager, id));
-                RegisterIds(character.EquippedRelicIds, id => RegisterRelic(dataManager, id));
+                if (character.EquippedRelicIds != null)
+                {
+                    for (int i = 0; i < character.EquippedRelicIds.Length; i++)
+                    {
+                        string equippedId = character.EquippedRelicIds[i];
+                        if (IsCompoundId(equippedId))
+                            RegisterCompound(dataManager, equippedId);
+                        else
+                            RegisterRelic(dataManager, equippedId);
+                    }
+                }
 
                 if (!character.IsUnlocked ||
                     string.IsNullOrWhiteSpace(character.CharacterId) ||
@@ -135,7 +158,7 @@ namespace Relic.Gameplay.Data
 
             RegisterIds(battle.SkillInventoryIds, id => RegisterSkill(dataManager, id));
             RegisterIds(battle.AcquiredSkillIds, id => RegisterSkill(dataManager, id));
-            RegisterIds(battle.OwnedRelicIds, id => RegisterRelic(dataManager, id));
+            RegisterIds(battle.OwnedRelicIds, id => RegisterOwnedRelicOrCompound(dataManager, id));
             RegisterIds(battle.BagItemIds, id => RegisterItem(dataManager, id));
         }
 
@@ -146,7 +169,7 @@ namespace Relic.Gameplay.Data
                 return;
 
             RegisterIds(lobby.SkillInventoryIds, id => RegisterSkill(dataManager, id));
-            RegisterIds(lobby.OwnedRelicIds, id => RegisterRelic(dataManager, id));
+            RegisterIds(lobby.OwnedRelicIds, id => RegisterOwnedRelicOrCompound(dataManager, id));
             RegisterIds(lobby.BagItemIds, id => RegisterItem(dataManager, id));
 
             if (lobby.CultureTankResearches != null)
@@ -158,6 +181,20 @@ namespace Relic.Gameplay.Data
                         RegisterItem(dataManager, research.ItemId);
                 }
             }
+        }
+
+        private static void RegisterOwnedRelicOrCompound(DataManager dataManager, string id)
+        {
+            if (IsCompoundId(id))
+                RegisterCompound(dataManager, id);
+            else
+                RegisterRelic(dataManager, id);
+        }
+
+        private static bool IsCompoundId(string id)
+        {
+            return !string.IsNullOrWhiteSpace(id) &&
+                   id.Trim().StartsWith("Compound_", StringComparison.Ordinal);
         }
 
         private static PlayerRuntimeData PreparePlayer(DataManager dataManager)

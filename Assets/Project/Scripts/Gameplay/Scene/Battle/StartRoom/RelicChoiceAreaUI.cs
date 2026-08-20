@@ -245,14 +245,14 @@ public class RelicChoiceAreaUI : MonoBehaviour
 
     private List<string> PickRandomRelicIds()
     {
-        if (DataManager.Instance == null || DataManager.Instance.RelicDatabase == null)
+        if (DataManager.Instance == null || DataManager.Instance.CompoundDatabase == null)
         {
-            Debug.LogWarning("[RelicChoiceAreaUI] DataManager or RelicDatabase is null.");
+            Debug.LogWarning("[RelicChoiceAreaUI] DataManager or CompoundDatabase is null.");
             return new List<string>();
         }
 
         List<string> candidates = StartRoomRelicSelectionUtility.CollectActiveRelicIds(
-            DataManager.Instance.RelicDatabase.GetAll());
+            DataManager.Instance.CompoundDatabase.GetAll());
 
         RemoveAlreadyOwnedRelics(candidates);
         Shuffle(candidates);
@@ -333,15 +333,15 @@ public class RelicChoiceAreaUI : MonoBehaviour
         if (string.IsNullOrWhiteSpace(relicId))
             return;
 
-        if (DataManager.Instance == null || DataManager.Instance.BattleRuntimeStore == null || DataManager.Instance.RelicDatabase == null)
+        if (DataManager.Instance == null || DataManager.Instance.BattleRuntimeStore == null || DataManager.Instance.CompoundDatabase == null)
         {
-            Debug.LogWarning("[RelicChoiceAreaUI] DataManager, BattleRuntimeStore, or RelicDatabase is null.");
+            Debug.LogWarning("[RelicChoiceAreaUI] DataManager, BattleRuntimeStore, or CompoundDatabase is null.");
             return;
         }
 
         relicId = relicId.Trim();
 
-        if (!DataManager.Instance.RelicDatabase.TryGet(relicId, out _))
+        if (!DataManager.Instance.CompoundDatabase.TryGet(relicId, out _))
         {
             Debug.LogWarning($"[RelicChoiceAreaUI] Unknown relic id: {relicId}");
             return;
@@ -718,18 +718,18 @@ public class RelicChoiceAreaUI : MonoBehaviour
 
 public static class StartRoomRelicSelectionUtility
 {
-    private const string ActiveRelicIdPrefix = "Relic_A_";
+    private const string ActiveRelicIdPrefix = "Compound_";
 
-    public static List<string> CollectActiveRelicIds(IReadOnlyList<RelicData> relics)
+    public static List<string> CollectActiveRelicIds(IReadOnlyList<CompoundData> compounds)
     {
         List<string> result = new();
 
-        if (relics == null)
+        if (compounds == null)
             return result;
 
-        for (int i = 0; i < relics.Count; i++)
+        for (int i = 0; i < compounds.Count; i++)
         {
-            string id = relics[i]?.FragmentId?.Trim();
+            string id = compounds[i]?.CompoundId?.Trim();
 
             if (!string.IsNullOrWhiteSpace(id) &&
                 id.StartsWith(ActiveRelicIdPrefix, System.StringComparison.Ordinal))

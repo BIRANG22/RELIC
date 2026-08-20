@@ -16,7 +16,6 @@ public class DataManager : Singleton<DataManager>
     [SerializeField] private MapNodeIconDatabase mapNodeIconDatabase;
     [SerializeField] private SkillRangeIconDatabase skillRangeIconDatabase;
     [SerializeField] private ItemIconDatabase itemIconDatabase;
-    [SerializeField] private CultureTankCombinationDatabase cultureTankCombinationDatabase;
     [SerializeField] private GridEffectSpriteDatabase gridEffectSpriteDatabase;
     [SerializeField] private SkillAttackOverrideDatabase skillAttackOverrideDatabase;
     [SerializeField] private SkillVfxDatabase skillVfxDatabase;
@@ -35,6 +34,7 @@ public class DataManager : Singleton<DataManager>
     public RuneIconDatabase RuneIconDatabase => runeIconDatabase;
     public EffectDatabase EffectDatabase => dataBootstrap.EffectDatabase;
     public RelicDatabase RelicDatabase => dataBootstrap.RelicDatabase;
+    public CompoundDatabase CompoundDatabase => dataBootstrap.CompoundDatabase;
     public StatusEffectIconDatabase StatusEffectIconDatabase => statusEffectIconDatabase;
     public ActionTypeIconDatabase ActionTypeIconDatabase => actionTypeIconDatabase;
     public MapNodeIconDatabase MapNodeIconDatabase => mapNodeIconDatabase;
@@ -49,7 +49,6 @@ public class DataManager : Singleton<DataManager>
     public RewardTableDatabase RewardTableDatabase => dataBootstrap.RewardTableDatabase;
     public ItemDatabase ItemDatabase => dataBootstrap.ItemDatabase;
     public ItemIconDatabase ItemIconDatabase => itemIconDatabase;
-    public CultureTankCombinationDatabase CultureTankCombinationDatabase => cultureTankCombinationDatabase;
     public GridEffectDatabase GridEffectDatabase => dataBootstrap.GridEffectDatabase;
     public GridEffectSpriteDatabase GridEffectSpriteDatabase => gridEffectSpriteDatabase;
     public SkillAttackOverrideDatabase SkillAttackOverrideDatabase => skillAttackOverrideDatabase;
