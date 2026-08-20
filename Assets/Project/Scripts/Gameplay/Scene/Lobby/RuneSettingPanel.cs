@@ -976,15 +976,32 @@ public class RuneSettingPanel : MonoBehaviour
 
     private bool IsRuneLockedForCurrentState(RuneData runeData)
     {
-        // 테스트를 위해 룬 아이템 자체는 전부 해금 상태로 둔다.
-        // 장착 가능 여부는 룬 슬롯 잠금 상태에서만 제한한다.
-        return false;
+        if (runeData == null)
+            return true;
+
+        // 공용 파편의 블루 더스티움 구매/영구 해금은 별도 시스템에서 처리한다.
+        // 현재 단계에서는 기존처럼 공용 파편 자체는 레벨로 잠그지 않는다.
+        if (string.Equals(runeData.TargetCharacterId, "All", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        // 전용 파편은 해당 캐릭터의 레벨이 UnlockLevel에 도달해야 사용할 수 있다.
+        int requiredLevel = GetRequiredLevelForRune(runeData);
+
+        if (requiredLevel <= 0)
+            return false;
+
+        if (currentRuntimeData == null)
+            return true;
+
+        return currentRuntimeData.Level < requiredLevel;
     }
 
     private int GetRequiredLevelForRune(RuneData runeData)
     {
-        // 현재 테스트 단계에서는 캐릭터 룬과 공용룬을 모두 LV.1부터 사용할 수 있게 둔다.
-        return 1;
+        if (runeData == null)
+            return 0;
+
+        return runeData.UnlockLevel;
     }
 
     private void ShowRuneLockedWarning(RuneData runeData)
@@ -1372,7 +1389,10 @@ public class RuneSettingPanel : MonoBehaviour
             return string.Empty;
 
         if (!string.IsNullOrWhiteSpace(runeData.EffectDesc))
-            return StripRichTextTags(NormalizeRuneEffectDesc(GameDataLocalization.RuneDescription(runeData)));
+        {
+            string effectDesc = NormalizeRuneEffectDesc(runeData.EffectDesc);
+            return StripRichTextTags(ReplaceRuneEffectTokens(effectDesc, runeData.ValueRate, runeData.CountRate));
+        }
 
         StringBuilder builder = new StringBuilder();
 
@@ -1386,6 +1406,57 @@ public class RuneSettingPanel : MonoBehaviour
             builder.Append("등록된 효과 설명이 없습니다.");
 
         return StripRichTextTags(builder.ToString());
+    }
+
+    private static string ReplaceRuneEffectTokens(string source, string valueRate, string countRate)
+    {
+        string result = source ?? string.Empty;
+        result = ReplaceRuneIndexedTokens(result, "ValueRate", valueRate);
+        result = ReplaceRuneIndexedTokens(result, "CountRate", countRate);
+
+        if (result.Contains("{ValueRate}"))
+            result = result.Replace("{ValueRate}", GetRuneDisplayRateValue(valueRate));
+        if (result.Contains("{CountRate}"))
+            result = result.Replace("{CountRate}", GetRuneDisplayRateValue(countRate));
+
+        return result;
+    }
+
+    private static string ReplaceRuneIndexedTokens(string source, string tokenName, string values)
+    {
+        if (string.IsNullOrEmpty(source) || string.IsNullOrWhiteSpace(tokenName))
+            return source;
+
+        string[] splitValues = string.IsNullOrWhiteSpace(values)
+            ? Array.Empty<string>()
+            : values.Split(';');
+
+        for (int i = 0; i < splitValues.Length; i++)
+        {
+            string token = $"{{{tokenName}{i + 1}}}";
+            if (source.Contains(token))
+                source = source.Replace(token, GetRuneDisplayRateValue(splitValues[i]));
+        }
+
+        return source;
+    }
+
+    private static string GetRuneDisplayRateValue(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return "?";
+
+        string result = value.Trim();
+        if (result.Length > 1 && result[0] == '-' && float.TryParse(
+            result.Substring(1),
+            System.Globalization.NumberStyles.Float,
+            System.Globalization.CultureInfo.InvariantCulture,
+            out _))
+        {
+            return result.Substring(1);
+        }
+
+        return result;
     }
 
     private string NormalizeRuneEffectDesc(string effectDesc)

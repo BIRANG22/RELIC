@@ -1050,12 +1050,12 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
             if (!string.IsNullOrWhiteSpace(activeRelicId) &&
                 DataManager.Instance != null &&
-                DataManager.Instance.CompoundDatabase != null &&
-                DataManager.Instance.CompoundDatabase.TryGet(activeRelicId, out CompoundData compound) &&
-                compound != null)
+                DataManager.Instance.RelicDatabase != null &&
+                DataManager.Instance.RelicDatabase.TryGet(activeRelicId, out RelicData relic) &&
+                relic != null)
             {
-                hash = hash * 31 + ActiveRelicRuntimeUtility.GetRemainingUses(boundRuntime, compound);
-                hash = hash * 31 + ActiveRelicRuntimeUtility.GetMaxUses(compound);
+                hash = hash * 31 + ActiveRelicRuntimeUtility.GetRemainingUses(boundRuntime, relic);
+                hash = hash * 31 + ActiveRelicRuntimeUtility.GetMaxUses(relic);
             }
 
             return hash;
@@ -1198,20 +1198,6 @@ public class BattleCharacterPanelUI : MonoBehaviour
             {
                 if (!string.IsNullOrWhiteSpace(passiveSkillData.Details))
                     effectDescription = GameDataLocalization.SkillDetails(passiveSkillData);
-                else if (!string.IsNullOrWhiteSpace(passiveSkillData.ToolTip))
-                    effectDescription = GameDataLocalization.SkillTooltip(passiveSkillData);
-                else if (!string.IsNullOrWhiteSpace(passiveSkillData.EffectDescription))
-                    effectDescription = GameLocalization.GetData(
-                        "SkillMaster",
-                        passiveSkillData.SkillId,
-                        "details",
-                        passiveSkillData.EffectDescription);
-                else if (!string.IsNullOrWhiteSpace(passiveSkillData.EffectDesc))
-                    effectDescription = GameLocalization.GetData(
-                        "SkillMaster",
-                        passiveSkillData.SkillId,
-                        "details",
-                        passiveSkillData.EffectDesc);
             }
 
             passiveEffectText.text = effectDescription;
@@ -1957,9 +1943,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         {
             skillInfoDetailsText.text = !string.IsNullOrWhiteSpace(skillData.Details)
                 ? GameDataLocalization.SkillDetails(skillData)
-                : !string.IsNullOrWhiteSpace(skillData.ToolTip)
-                    ? GameDataLocalization.SkillTooltip(skillData)
-                    : string.Empty;
+                : string.Empty;
         }
 
         RefreshSkillInfoEffects(skillData);

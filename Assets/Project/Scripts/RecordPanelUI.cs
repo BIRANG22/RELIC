@@ -43,6 +43,14 @@ public class RecordPanelUI : MonoBehaviour
     [SerializeField] private Button compoundTabButton;
     [SerializeField] private Button itemTabButton;
 
+    [Header("Record Numbers")]
+    [SerializeField] private TMP_Text uniqueNumberText;
+    [SerializeField] private TMP_Text skillNumberText;
+    [SerializeField] private TMP_Text fragmentNumberText;
+    [SerializeField] private TMP_Text relicNumberText;
+    [SerializeField] private TMP_Text compoundNumberText;
+    [SerializeField] private TMP_Text itemNumberText;
+
     [Header("Grid Contents")]
     [SerializeField] private RectTransform uniqueRootContent;
     [SerializeField] private RectTransform skillGridContent;
@@ -66,13 +74,37 @@ public class RecordPanelUI : MonoBehaviour
     [Header("Info")]
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private TMP_Text descriptionText;
+    [SerializeField] private TMP_Text rarityText;
     [SerializeField] private string emptyNameText = string.Empty;
     [SerializeField] private string emptyDescriptionText = string.Empty;
 
+    [Header("Rarity Colors")]
+    [SerializeField] private Color commonRarityColor = Color.white;
+    [SerializeField] private Color rareRarityColor = Color.white;
+    [SerializeField] private Color epicRarityColor = Color.white;
+    [SerializeField] private Color uniqueRarityColor = Color.white;
+    [SerializeField] private Color exclusiveRarityColor = new Color(1f, 0.82f, 0.2f, 1f);
+
+    [Header("Effect Value Color")]
+    [Tooltip("유물 효과 설명에서 {ValueRate1}, {ValueRate2}, {CountRate1} 등으로 치환되는 수치의 강조 색상입니다.")]
+    [SerializeField] private Color valueHighlightColor = Color.yellow;
+
+    [Header("Fragment Info")]
+    [SerializeField] private GameObject fragmentInfoPanel;
+    [SerializeField] private TMP_Text fragmentUnlockText;
+
+    [Header("Memory Info")]
+    [SerializeField] private GameObject memoryInfoPanel;
+    [SerializeField] private Image memoryRangeImage;
+    [SerializeField] private GameObject memoryRangeQuestion;
+    [SerializeField] private TMP_Text memoryMethodText;
+    [SerializeField] private TMP_Text memoryConsumptionText;
+    [SerializeField] private TMP_Text memoryPointText;
+
     [Header("Compound Info")]
     [SerializeField] private GameObject compoundInfoPanel;
-    [SerializeField] private TMP_Text compoundTargetTypeText;
-    [SerializeField] private TMP_Text compoundValueText;
+    [SerializeField] private TMP_Text compoundTypeText;
+    [SerializeField] private TMP_Text compoundUsesText;
     [SerializeField] private GameObject compoundItem01Question;
     [SerializeField] private Image compoundItem01Icon;
     [SerializeField] private GameObject compoundItem02Question;
@@ -91,6 +123,11 @@ public class RecordPanelUI : MonoBehaviour
 
     private readonly List<RecordIconSlotUI> spawnedSlots = new();
     private readonly Dictionary<RecordIconSlotUI, string> slotDescriptions = new();
+    private readonly Dictionary<RecordIconSlotUI, string> slotRarityLabels = new();
+    private readonly Dictionary<RecordIconSlotUI, string> slotRarities = new();
+    private readonly Dictionary<RecordIconSlotUI, RuneData> slotRunes = new();
+    private readonly Dictionary<RecordIconSlotUI, SkillMasterData> slotSkills = new();
+    private readonly HashSet<RecordIconSlotUI> revealedSkillSlots = new();
     private readonly Dictionary<RecordIconSlotUI, CompoundData> slotCompounds = new();
     private readonly List<RecordIconSlotUI> activeFixedSlots = new();
     private RecordIconSlotUI selectedSlot;
@@ -103,6 +140,9 @@ public class RecordPanelUI : MonoBehaviour
     private ColorBlock compoundTabOriginalColors;
     private ColorBlock itemTabOriginalColors;
     private bool mainTabColorsCached;
+    private Color nameOriginalColor;
+    private Color rarityOriginalColor;
+    private bool infoColorsCached;
     private bool debugRevealAll;
     private Coroutine uniqueLayoutRefreshCoroutine;
 
@@ -111,6 +151,7 @@ public class RecordPanelUI : MonoBehaviour
         EnsureReferences();
         ApplyGridConstraints();
         CacheMainTabButtonColors();
+        CacheInfoTextColors();
         BindCompoundTabButton();
     }
 
@@ -118,6 +159,7 @@ public class RecordPanelUI : MonoBehaviour
     {
         RecordDiscoveryService.BackfillFromCurrentState(GetDataManager());
         EnsureReferences();
+        RefreshRecordCounts();
         ShowUniqueTab();
     }
 
@@ -294,6 +336,21 @@ public class RecordPanelUI : MonoBehaviour
         RecordIconSlotUI slot = Instantiate(iconSlotPrefab, slotContainer, false);
         slot.Initialize(icon, displayName, OnSlotClicked, showIcon);
         spawnedSlots.Add(slot);
+
+        string description = revealSkill && skill != null
+            ? FormatHighlightedSkillDescription(skill)
+            : UnknownDescription;
+        string rarity = skill != null ? SkillRarityUtility.GetCanonicalName(skill.Rarity) : string.Empty;
+        slotDescriptions[slot] = description;
+        slotRarityLabels[slot] = skill != null
+            ? FormatRarityLabel(rarity, MainTab.Unique)
+            : string.Empty;
+        slotRarities[slot] = rarity;
+        if (skill != null)
+            slotSkills[slot] = skill;
+        if (revealSkill && skill != null)
+            revealedSkillSlots.Add(slot);
+        ApplySlotRarityColor(slot, rarity);
     }
 
     private static string GetCanonicalSkillId(SkillDatabase skillDatabase, string skillId)
@@ -352,7 +409,23 @@ public class RecordPanelUI : MonoBehaviour
             }
 
             string displayName = revealSkill ? RecordDisplayNameResolver.SkillName(skill) : UnknownDisplayName;
-            CreateSlot(skillGridContent, icon, displayName, revealSkill);
+            string description = revealSkill ? FormatHighlightedSkillDescription(skill) : UnknownDescription;
+            string rarity = SkillRarityUtility.GetCanonicalName(skill.Rarity);
+            RecordIconSlotUI slot = CreateSlot(
+                skillGridContent,
+                icon,
+                displayName,
+                revealSkill,
+                description,
+                FormatRarityLabel(rarity, MainTab.Skill),
+                rarity);
+
+            if (slot != null)
+            {
+                slotSkills[slot] = skill;
+                if (revealSkill)
+                    revealedSkillSlots.Add(slot);
+            }
         }
 
         CompleteListBuild(skillScrollRect);
@@ -366,76 +439,47 @@ public class RecordPanelUI : MonoBehaviour
 
         return skill.Rarity switch
         {
-            SkillRarity.CoreCommon => 0,
-            SkillRarity.CoreRare => 1,
-            SkillRarity.CoreEpic => 2,
-            SkillRarity.Shared => 3,
-            SkillRarity.Passive => 4,
-            SkillRarity.Unique => 5,
-            SkillRarity.CharacterExclusive => 6,
-            SkillRarity.Move => 7,
-            _ => 8
+            SkillRarity.Exclusive => 0,
+            SkillRarity.Common => 1,
+            SkillRarity.Rare => 2,
+            SkillRarity.Epic => 3,
+            SkillRarity.Unique => 4,
+            SkillRarity.Move => 5,
+            _ => 6
         };
     }
 
-    private static Dictionary<string, int> BuildCharacterRuneOrderMap(DataManager dataManager)
-    {
-        var result = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        if (dataManager?.CharacterDatabase == null)
-            return result;
-
-        string[] characterOrder = { "Hilt", "Kaya", "Haze", "Ines", "Reina" };
-        int order = 0;
-
-        for (int characterIndex = 0; characterIndex < characterOrder.Length; characterIndex++)
-        {
-            CharacterMasterData character = FindCharacterForSection(dataManager, characterOrder[characterIndex]);
-            if (character == null)
-                continue;
-
-            string[] runeIds = character.GetRuneIds();
-            if (runeIds == null)
-                continue;
-
-            for (int runeIndex = 0; runeIndex < runeIds.Length; runeIndex++)
-            {
-                string runeId = runeIds[runeIndex];
-                if (string.IsNullOrWhiteSpace(runeId) || result.ContainsKey(runeId))
-                    continue;
-
-                result.Add(runeId.Trim(), order++);
-            }
-        }
-
-        return result;
-    }
-
-    private static int GetRuneGroupOrder(RuneData rune, IReadOnlyDictionary<string, int> characterRuneOrder)
+    private static int GetRuneRecordGroupOrder(RuneData rune)
     {
         if (rune == null)
             return int.MaxValue;
 
-        if (!string.IsNullOrWhiteSpace(rune.RuneId) &&
-            characterRuneOrder != null &&
-            characterRuneOrder.ContainsKey(rune.RuneId.Trim()))
-        {
-            return 0;
-        }
-
-        if (!string.IsNullOrWhiteSpace(rune.TargetCharacterId))
-            return 1;
-
-        return 2;
+        return string.Equals(rune.Rarity, "Exclusive", StringComparison.OrdinalIgnoreCase)
+            ? 0
+            : 1;
     }
 
-    private static int GetCharacterRuneOrder(RuneData rune, IReadOnlyDictionary<string, int> characterRuneOrder)
+    private static int GetRuneCharacterOrder(RuneData rune)
     {
-        if (rune == null || string.IsNullOrWhiteSpace(rune.RuneId) || characterRuneOrder == null)
+        if (rune == null || !string.Equals(rune.Rarity, "Exclusive", StringComparison.OrdinalIgnoreCase))
             return int.MaxValue;
 
-        return characterRuneOrder.TryGetValue(rune.RuneId.Trim(), out int order)
-            ? order
-            : int.MaxValue;
+        return GetTrailingIdNumber(rune.TargetCharacterId);
+    }
+
+    private static int GetRuneRarityOrder(RuneData rune)
+    {
+        if (rune == null || string.Equals(rune.Rarity, "Exclusive", StringComparison.OrdinalIgnoreCase))
+            return 0;
+
+        if (string.Equals(rune.Rarity, "Common", StringComparison.OrdinalIgnoreCase))
+            return 0;
+        if (string.Equals(rune.Rarity, "Rare", StringComparison.OrdinalIgnoreCase))
+            return 1;
+        if (string.Equals(rune.Rarity, "Unique", StringComparison.OrdinalIgnoreCase))
+            return 2;
+
+        return 3;
     }
 
     private void BuildRuneList()
@@ -447,12 +491,14 @@ public class RecordPanelUI : MonoBehaviour
         if (dataManager == null || dataManager.RuneDatabase == null)
             return;
 
-        Dictionary<string, int> characterRuneOrder = BuildCharacterRuneOrderMap(dataManager);
-
         IEnumerable<RuneData> runes = dataManager.RuneDatabase.GetAll()
             .Where(rune => rune != null)
-            .OrderBy(rune => GetRuneGroupOrder(rune, characterRuneOrder))
-            .ThenBy(rune => GetCharacterRuneOrder(rune, characterRuneOrder))
+            .OrderBy(GetRuneRecordGroupOrder)
+            .ThenBy(GetRuneCharacterOrder)
+            .ThenBy(rune => string.Equals(rune.Rarity, "Exclusive", StringComparison.OrdinalIgnoreCase)
+                ? Mathf.Max(0, rune.UnlockLevel)
+                : GetRuneRarityOrder(rune))
+            .ThenBy(rune => GetTrailingIdNumber(rune.RuneId))
             .ThenBy(rune => rune.RuneId, StringComparer.OrdinalIgnoreCase);
 
         foreach (RuneData rune in runes)
@@ -464,10 +510,31 @@ public class RecordPanelUI : MonoBehaviour
                 dataManager.RuneIconDatabase.TryGetIcon(rune.RuneId, out icon);
 
             string displayName = discovered ? RecordDisplayNameResolver.RuneName(rune) : UnknownDisplayName;
-            CreateSlot(fragmentGridContent, icon, displayName, discovered);
+            string description = discovered ? FormatRuneEffectDescription(rune) : UnknownDescription;
+
+            RecordIconSlotUI slot = CreateSlot(
+                fragmentGridContent,
+                icon,
+                displayName,
+                discovered,
+                description,
+                FormatRarityLabel(rune.Rarity, MainTab.Fragment),
+                rune.Rarity);
+
+            if (slot != null)
+                slotRunes[slot] = rune;
         }
 
         CompleteListBuild(fragmentScrollRect);
+    }
+
+    private string FormatRuneEffectDescription(RuneData rune)
+    {
+        if (rune == null)
+            return string.Empty;
+
+        string description = rune.EffectDesc;
+        return FormatHighlightedEffectDescription(description, rune.ValueRate, rune.CountRate);
     }
 
     private void BuildRelicList()
@@ -481,7 +548,9 @@ public class RecordPanelUI : MonoBehaviour
 
         IEnumerable<RelicData> relics = dataManager.RelicDatabase.GetAll()
             .Where(relic => relic != null)
-            .OrderBy(RecordDisplayNameResolver.RelicName, StringComparer.CurrentCulture);
+            .OrderBy(relic => GetRecordRarityOrder(relic.Rarity))
+            .ThenBy(relic => GetTrailingIdNumber(relic.FragmentId))
+            .ThenBy(relic => relic.FragmentId, StringComparer.OrdinalIgnoreCase);
 
         foreach (RelicData relic in relics)
         {
@@ -491,11 +560,131 @@ public class RecordPanelUI : MonoBehaviour
                 dataManager.RelicIconDatabase.TryGetIcon(relic.FragmentId, out icon);
 
             string displayName = discovered ? RecordDisplayNameResolver.RelicName(relic) : UnknownDisplayName;
-            string description = discovered ? relic.EffectDesc : UnknownDescription;
-            CreateSlot(relicGridContent, icon, displayName, discovered, description);
+            string description = discovered ? FormatRelicEffectDescription(relic) : UnknownDescription;
+            CreateSlot(relicGridContent, icon, displayName, discovered, description, FormatRarityLabel(relic.Rarity, MainTab.Relic), relic.Rarity);
         }
 
         CompleteListBuild(relicScrollRect);
+    }
+
+
+    private string FormatHighlightedSkillDescription(SkillMasterData skill)
+    {
+        if (skill == null || string.IsNullOrWhiteSpace(skill.Details))
+            return string.Empty;
+
+        return FormatHighlightedEffectDescription(skill.Details, skill.ValueRate, skill.CountRate);
+    }
+
+    private string FormatRelicEffectDescription(RelicData relic)
+    {
+        if (relic == null || string.IsNullOrWhiteSpace(relic.EffectDesc))
+            return string.Empty;
+
+        return FormatHighlightedEffectDescription(relic.EffectDesc, relic.ValueRate, relic.CountRate);
+    }
+
+    private string FormatHighlightedEffectDescription(string description, string valueRate, string countRate)
+    {
+        if (string.IsNullOrWhiteSpace(description))
+            return string.Empty;
+
+        string result = description;
+        string colorHex = ColorUtility.ToHtmlStringRGB(valueHighlightColor);
+
+        result = ReplaceIndexedHighlightedValues(result, "ValueRate", valueRate, colorHex);
+        result = ReplaceIndexedHighlightedValues(result, "CountRate", countRate, colorHex);
+
+        // 기존 데이터의 {ValueRate}, {CountRate} 표기도 호환을 위해 유지합니다.
+        result = ReplaceHighlightedValue(result, "{ValueRate}", valueRate, colorHex);
+        result = ReplaceHighlightedValue(result, "{CountRate}", countRate, colorHex);
+
+        return result;
+    }
+
+    private static string ReplaceIndexedHighlightedValues(string source, string tokenName, string values, string colorHex)
+    {
+        if (string.IsNullOrEmpty(source) || string.IsNullOrWhiteSpace(tokenName))
+            return source;
+
+        string[] splitValues = string.IsNullOrWhiteSpace(values)
+            ? Array.Empty<string>()
+            : values.Split(';');
+
+        for (int i = 0; i < splitValues.Length; i++)
+        {
+            string token = $"{{{tokenName}{i + 1}}}";
+            if (!source.Contains(token))
+                continue;
+
+            string displayValue = GetDisplayRateValue(splitValues[i]);
+            source = source.Replace(token, $"<color=#{colorHex}>{displayValue}</color>");
+        }
+
+        return source;
+    }
+
+    private static string ReplaceHighlightedValue(string source, string token, string value, string colorHex)
+    {
+        if (string.IsNullOrEmpty(source) || string.IsNullOrEmpty(token) || !source.Contains(token))
+            return source;
+
+        string displayValue = GetDisplayRateValue(value);
+        return source.Replace(token, $"<color=#{colorHex}>{displayValue}</color>");
+    }
+
+    private static string GetDisplayRateValue(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return "?";
+
+        string displayValue = value.Trim();
+
+        // 실제 계산 데이터의 음수 부호는 유지하되, 설명에서는 '감소' 문구와 중복되지 않도록 부호를 숨깁니다.
+        if (displayValue.Length > 1 &&
+            displayValue[0] == '-' &&
+            float.TryParse(
+                displayValue.Substring(1),
+                System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out _))
+        {
+            return displayValue.Substring(1);
+        }
+
+        return displayValue;
+    }
+
+    private static int GetRecordRarityOrder(string rarity)
+    {
+        if (string.Equals(rarity, "Common", StringComparison.OrdinalIgnoreCase))
+            return 0;
+        if (string.Equals(rarity, "Rare", StringComparison.OrdinalIgnoreCase))
+            return 1;
+        if (string.Equals(rarity, "Epic", StringComparison.OrdinalIgnoreCase))
+            return 2;
+        if (string.Equals(rarity, "Unique", StringComparison.OrdinalIgnoreCase))
+            return 3;
+
+        return 4;
+    }
+
+    private static int GetTrailingIdNumber(string relicId)
+    {
+        if (string.IsNullOrWhiteSpace(relicId))
+            return int.MaxValue;
+
+        int end = relicId.Length - 1;
+        while (end >= 0 && char.IsDigit(relicId[end]))
+            end--;
+
+        int start = end + 1;
+        if (start >= relicId.Length)
+            return int.MaxValue;
+
+        return int.TryParse(relicId.Substring(start), out int number)
+            ? number
+            : int.MaxValue;
     }
 
     private void BuildCompoundList()
@@ -509,7 +698,9 @@ public class RecordPanelUI : MonoBehaviour
 
         IEnumerable<CompoundData> compounds = dataManager.CompoundDatabase.GetAll()
             .Where(compound => compound != null)
-            .OrderBy(compound => compound.CompoundId, StringComparer.OrdinalIgnoreCase);
+            .OrderBy(compound => GetRecordRarityOrder(compound.Rarity))
+            .ThenBy(compound => GetTrailingIdNumber(compound.CompoundId))
+            .ThenBy(compound => compound.CompoundId, StringComparer.OrdinalIgnoreCase);
 
         foreach (CompoundData compound in compounds)
         {
@@ -522,7 +713,7 @@ public class RecordPanelUI : MonoBehaviour
                 ? (string.IsNullOrWhiteSpace(compound.Name) ? compound.CompoundId : compound.Name)
                 : UnknownDisplayName;
             string description = discovered ? compound.EffectDesc : UnknownDescription;
-            RecordIconSlotUI slot = CreateSlot(compoundGridContent, icon, displayName, discovered, description);
+            RecordIconSlotUI slot = CreateSlot(compoundGridContent, icon, displayName, discovered, description, FormatRarityLabel(compound.Rarity, MainTab.Compound), compound.Rarity);
             if (slot != null)
                 slotCompounds[slot] = compound;
         }
@@ -540,7 +731,9 @@ public class RecordPanelUI : MonoBehaviour
 
         IEnumerable<ItemData> items = dataManager.ItemDatabase.GetAll()
             .Where(item => item != null)
-            .OrderBy(item => item.ItemId, StringComparer.OrdinalIgnoreCase);
+            .OrderBy(item => GetRecordRarityOrder(item.Rarity))
+            .ThenBy(item => GetTrailingIdNumber(item.ItemId))
+            .ThenBy(item => item.ItemId, StringComparer.OrdinalIgnoreCase);
 
         foreach (ItemData item in items)
         {
@@ -555,10 +748,125 @@ public class RecordPanelUI : MonoBehaviour
                 ? GameDataLocalization.ItemDescription(item)
                 : UnknownDescription;
 
-            CreateSlot(itemGridContent, icon, displayName, discovered, description);
+            CreateSlot(itemGridContent, icon, displayName, discovered, description, FormatRarityLabel(item.Rarity, MainTab.Item), item.Rarity);
         }
 
         CompleteListBuild(itemScrollRect);
+    }
+
+    private void RefreshRecordCounts()
+    {
+        DataManager dataManager = GetDataManager();
+        if (dataManager == null)
+        {
+            SetRecordCountText(uniqueNumberText, 0, 0);
+            SetRecordCountText(skillNumberText, 0, 0);
+            SetRecordCountText(fragmentNumberText, 0, 0);
+            SetRecordCountText(relicNumberText, 0, 0);
+            SetRecordCountText(compoundNumberText, 0, 0);
+            SetRecordCountText(itemNumberText, 0, 0);
+            return;
+        }
+
+        HashSet<string> uniqueSkillIds = GetUniqueRecordSkillIds(dataManager);
+        int uniqueTotal = uniqueSkillIds.Count;
+        int uniqueDiscovered = uniqueSkillIds.Count(skillId => RecordDiscoveryService.IsSkillDiscovered(dataManager, skillId));
+        SetRecordCountText(uniqueNumberText, uniqueDiscovered, uniqueTotal);
+
+        if (dataManager.SkillDatabase != null)
+        {
+            List<SkillMasterData> skills = dataManager.SkillDatabase.GetAll()
+                .Where(skill => skill != null && skill.Level != 2)
+                .Where(skill => skill.Category != Category.Move)
+                .Where(skill => !uniqueSkillIds.Contains(skill.SkillId))
+                .ToList();
+
+            int discovered = skills.Count(skill => RecordDiscoveryService.IsSkillDiscovered(dataManager, skill.SkillId));
+            SetRecordCountText(skillNumberText, discovered, skills.Count);
+        }
+        else
+        {
+            SetRecordCountText(skillNumberText, 0, 0);
+        }
+
+        if (dataManager.RuneDatabase != null)
+        {
+            List<RuneData> runes = dataManager.RuneDatabase.GetAll().Where(rune => rune != null).ToList();
+            int discovered = runes.Count(rune => RecordDiscoveryService.IsRuneDiscovered(dataManager, rune.RuneId));
+            SetRecordCountText(fragmentNumberText, discovered, runes.Count);
+        }
+        else
+        {
+            SetRecordCountText(fragmentNumberText, 0, 0);
+        }
+
+        if (dataManager.RelicDatabase != null)
+        {
+            List<RelicData> relics = dataManager.RelicDatabase.GetAll().Where(relic => relic != null).ToList();
+            int discovered = relics.Count(relic => RecordDiscoveryService.IsRelicDiscovered(dataManager, relic.FragmentId));
+            SetRecordCountText(relicNumberText, discovered, relics.Count);
+        }
+        else
+        {
+            SetRecordCountText(relicNumberText, 0, 0);
+        }
+
+        if (dataManager.CompoundDatabase != null)
+        {
+            List<CompoundData> compounds = dataManager.CompoundDatabase.GetAll().Where(compound => compound != null).ToList();
+            int discovered = compounds.Count(compound => RecordDiscoveryService.IsCompoundDiscovered(dataManager, compound.CompoundId));
+            SetRecordCountText(compoundNumberText, discovered, compounds.Count);
+        }
+        else
+        {
+            SetRecordCountText(compoundNumberText, 0, 0);
+        }
+
+        if (dataManager.ItemDatabase != null)
+        {
+            List<ItemData> items = dataManager.ItemDatabase.GetAll().Where(item => item != null).ToList();
+            int discovered = items.Count(item => RecordDiscoveryService.IsItemDiscovered(dataManager, item.ItemId));
+            SetRecordCountText(itemNumberText, discovered, items.Count);
+        }
+        else
+        {
+            SetRecordCountText(itemNumberText, 0, 0);
+        }
+    }
+
+    private static HashSet<string> GetUniqueRecordSkillIds(DataManager dataManager)
+    {
+        HashSet<string> result = new(StringComparer.OrdinalIgnoreCase);
+        if (dataManager?.CharacterDatabase == null)
+            return result;
+
+        foreach (CharacterMasterData character in dataManager.CharacterDatabase.GetAll().Values)
+        {
+            if (character == null)
+                continue;
+
+            foreach (string skillId in GetCharacterUniqueSkillIds(character))
+            {
+                if (string.IsNullOrWhiteSpace(skillId))
+                    continue;
+
+                string canonicalSkillId = GetCanonicalSkillId(dataManager.SkillDatabase, skillId);
+                if (!string.IsNullOrWhiteSpace(canonicalSkillId))
+                    result.Add(canonicalSkillId.Trim());
+            }
+        }
+
+        return result;
+    }
+
+    private static void SetRecordCountText(TMP_Text target, int discoveredCount, int totalCount)
+    {
+        if (target == null)
+            return;
+
+        int safeTotal = Mathf.Max(0, totalCount);
+        int safeDiscovered = Mathf.Clamp(discoveredCount, 0, safeTotal);
+        target.text = $"{safeDiscovered}/{safeTotal}";
     }
 
     private void SetMainTab(MainTab tab)
@@ -571,7 +879,18 @@ public class RecordPanelUI : MonoBehaviour
         SetActive(relicContent, tab == MainTab.Relic);
         SetActive(compoundContent, tab == MainTab.Compound);
         SetActive(itemContent, tab == MainTab.Item);
+        SetActive(fragmentInfoPanel, tab == MainTab.Fragment);
+        SetActive(memoryInfoPanel, tab == MainTab.Unique || tab == MainTab.Skill);
         SetActive(compoundInfoPanel, tab == MainTab.Compound);
+        if (rarityText != null)
+            rarityText.gameObject.SetActive(tab == MainTab.Unique || tab == MainTab.Skill || tab == MainTab.Fragment || tab == MainTab.Relic || tab == MainTab.Compound || tab == MainTab.Item);
+        RefreshRecordCounts();
+
+        if (tab != MainTab.Fragment)
+            ClearFragmentInfo();
+
+        if (tab != MainTab.Unique && tab != MainTab.Skill)
+            ClearMemoryInfo();
 
         if (tab != MainTab.Compound)
             ClearCompoundInfo();
@@ -708,7 +1027,14 @@ public class RecordPanelUI : MonoBehaviour
         return dataManager.RelicIconDatabase.TryGetIcon(legacyRelicId, out icon) && icon != null;
     }
 
-    private RecordIconSlotUI CreateSlot(RectTransform parent, Sprite icon, string displayName, bool showIcon, string description = "")
+    private RecordIconSlotUI CreateSlot(
+        RectTransform parent,
+        Sprite icon,
+        string displayName,
+        bool showIcon,
+        string description = "",
+        string rarityLabel = "",
+        string rarity = "")
     {
         if (parent == null || iconSlotPrefab == null)
             return null;
@@ -717,13 +1043,38 @@ public class RecordPanelUI : MonoBehaviour
         slot.Initialize(icon, displayName, OnSlotClicked, showIcon);
         spawnedSlots.Add(slot);
         slotDescriptions[slot] = description ?? string.Empty;
+        slotRarityLabels[slot] = rarityLabel ?? string.Empty;
+        slotRarities[slot] = rarity ?? string.Empty;
+        ApplySlotRarityColor(slot, rarity);
         return slot;
+    }
+
+    private void ApplySlotRarityColor(RecordIconSlotUI slot, string rarity)
+    {
+        if (slot == null || string.IsNullOrWhiteSpace(rarity))
+            return;
+
+        Transform backTransform = slot.transform.Find("Back") ?? FindDeepChild(slot.transform, "Back");
+        if (backTransform == null)
+            return;
+
+        Image backImage = backTransform.GetComponent<Image>();
+        if (backImage != null)
+        {
+            Color rarityColor = GetRarityColor(rarity);
+            Color currentColor = backImage.color;
+            rarityColor.a = currentColor.a;
+            backImage.color = rarityColor;
+        }
     }
 
     private void OnSlotClicked(RecordIconSlotUI clickedSlot, string displayName)
     {
         SelectSlot(clickedSlot);
         SetInfo(displayName, GetSlotDescription(clickedSlot));
+        RefreshRarityInfo(clickedSlot);
+        RefreshFragmentInfo(clickedSlot);
+        RefreshMemoryInfo(clickedSlot);
         RefreshCompoundInfo(clickedSlot);
     }
 
@@ -750,6 +1101,9 @@ public class RecordPanelUI : MonoBehaviour
             RecordIconSlotUI firstSlot = spawnedSlots[0];
             SelectSlot(firstSlot);
             SetInfo(firstSlot.DisplayName, GetSlotDescription(firstSlot));
+            RefreshRarityInfo(firstSlot);
+            RefreshFragmentInfo(firstSlot);
+            RefreshMemoryInfo(firstSlot);
             RefreshCompoundInfo(firstSlot);
             return;
         }
@@ -802,8 +1156,16 @@ public class RecordPanelUI : MonoBehaviour
 
         spawnedSlots.Clear();
         slotDescriptions.Clear();
+        slotRarityLabels.Clear();
+        slotRarities.Clear();
+        slotRunes.Clear();
+        slotSkills.Clear();
+        revealedSkillSlots.Clear();
         slotCompounds.Clear();
         SetInfo(emptyNameText, emptyDescriptionText);
+        ClearRarityInfo();
+        ClearFragmentInfo();
+        ClearMemoryInfo();
         ClearCompoundInfo();
     }
 
@@ -833,6 +1195,349 @@ public class RecordPanelUI : MonoBehaviour
             descriptionText.text = value ?? string.Empty;
     }
 
+    private void RefreshRarityInfo(RecordIconSlotUI slot)
+    {
+        bool showRarity = currentMainTab == MainTab.Unique
+            || currentMainTab == MainTab.Skill
+            || currentMainTab == MainTab.Fragment
+            || currentMainTab == MainTab.Relic
+            || currentMainTab == MainTab.Compound
+            || currentMainTab == MainTab.Item;
+
+        CacheInfoTextColors();
+
+        if (rarityText != null)
+        {
+            rarityText.gameObject.SetActive(showRarity);
+            rarityText.text = showRarity && slot != null && slotRarityLabels.TryGetValue(slot, out string label)
+                ? label ?? string.Empty
+                : string.Empty;
+        }
+
+        if (!showRarity || slot == null || !slotRarities.TryGetValue(slot, out string rarity))
+        {
+            RestoreInfoTextColors();
+            return;
+        }
+
+        Color rarityColor = GetRarityColor(rarity);
+        if (nameText != null)
+            nameText.color = rarityColor;
+        if (rarityText != null)
+            rarityText.color = rarityColor;
+    }
+
+    private void ClearRarityInfo()
+    {
+        bool showRarity = currentMainTab == MainTab.Unique
+            || currentMainTab == MainTab.Skill
+            || currentMainTab == MainTab.Fragment
+            || currentMainTab == MainTab.Relic
+            || currentMainTab == MainTab.Compound
+            || currentMainTab == MainTab.Item;
+
+        if (rarityText != null)
+        {
+            rarityText.gameObject.SetActive(showRarity);
+            rarityText.text = string.Empty;
+        }
+
+        RestoreInfoTextColors();
+    }
+
+    private void CacheInfoTextColors()
+    {
+        if (infoColorsCached)
+            return;
+
+        if (nameText == null || rarityText == null)
+            return;
+
+        nameOriginalColor = nameText.color;
+        rarityOriginalColor = rarityText.color;
+        infoColorsCached = true;
+    }
+
+    private void RestoreInfoTextColors()
+    {
+        if (!infoColorsCached)
+            return;
+
+        if (nameText != null)
+            nameText.color = nameOriginalColor;
+        if (rarityText != null)
+            rarityText.color = rarityOriginalColor;
+    }
+
+    private Color GetRarityColor(string rarity)
+    {
+        if (string.Equals(rarity, "Exclusive", StringComparison.OrdinalIgnoreCase))
+            return exclusiveRarityColor;
+        if (string.Equals(rarity, "Rare", StringComparison.OrdinalIgnoreCase))
+            return rareRarityColor;
+        if (string.Equals(rarity, "Epic", StringComparison.OrdinalIgnoreCase))
+            return epicRarityColor;
+        if (string.Equals(rarity, "Unique", StringComparison.OrdinalIgnoreCase))
+            return uniqueRarityColor;
+
+        return commonRarityColor;
+    }
+
+    private static string FormatRarityLabel(string rarity, MainTab tab)
+    {
+        string normalized = string.IsNullOrWhiteSpace(rarity) ? string.Empty : rarity.Trim();
+
+        if (tab == MainTab.Unique || tab == MainTab.Skill)
+        {
+            if (string.Equals(normalized, "Exclusive", StringComparison.OrdinalIgnoreCase)) return "고유 기억";
+            if (string.Equals(normalized, "Common", StringComparison.OrdinalIgnoreCase)) return "일반 기억";
+            if (string.Equals(normalized, "Rare", StringComparison.OrdinalIgnoreCase)) return "레어 기억";
+            if (string.Equals(normalized, "Epic", StringComparison.OrdinalIgnoreCase)) return "에픽 기억";
+            if (string.Equals(normalized, "Unique", StringComparison.OrdinalIgnoreCase)) return "유니크 기억";
+        }
+        else if (tab == MainTab.Fragment)
+        {
+            if (string.Equals(normalized, "Exclusive", StringComparison.OrdinalIgnoreCase)) return "고유 파편";
+            if (string.Equals(normalized, "Common", StringComparison.OrdinalIgnoreCase)) return "각인 파편";
+            if (string.Equals(normalized, "Rare", StringComparison.OrdinalIgnoreCase)) return "일반 파편";
+            if (string.Equals(normalized, "Unique", StringComparison.OrdinalIgnoreCase)) return "축복 파편";
+        }
+        else if (tab == MainTab.Item)
+        {
+            if (string.Equals(normalized, "Common", StringComparison.OrdinalIgnoreCase)) return "일반 재료";
+            if (string.Equals(normalized, "Rare", StringComparison.OrdinalIgnoreCase)) return "레어 재료";
+            if (string.Equals(normalized, "Epic", StringComparison.OrdinalIgnoreCase)) return "에픽 재료";
+        }
+        else if (tab == MainTab.Compound)
+        {
+            if (string.Equals(normalized, "Common", StringComparison.OrdinalIgnoreCase)) return "일반 연성제";
+            if (string.Equals(normalized, "Rare", StringComparison.OrdinalIgnoreCase)) return "레어 연성제";
+            if (string.Equals(normalized, "Epic", StringComparison.OrdinalIgnoreCase)) return "에픽 연성제";
+        }
+        else if (tab == MainTab.Relic)
+        {
+            if (string.Equals(normalized, "Common", StringComparison.OrdinalIgnoreCase)) return "일반 유물";
+            if (string.Equals(normalized, "Rare", StringComparison.OrdinalIgnoreCase)) return "레어 유물";
+            if (string.Equals(normalized, "Epic", StringComparison.OrdinalIgnoreCase)) return "에픽 유물";
+            if (string.Equals(normalized, "Unique", StringComparison.OrdinalIgnoreCase)) return "유니크 유물";
+        }
+
+        return normalized;
+    }
+
+
+
+    private void RefreshFragmentInfo(RecordIconSlotUI slot)
+    {
+        if (currentMainTab != MainTab.Fragment || fragmentInfoPanel == null)
+            return;
+
+        if (slot == null || !slotRunes.TryGetValue(slot, out RuneData rune) || rune == null)
+        {
+            ClearFragmentInfo();
+            return;
+        }
+
+        if (fragmentUnlockText == null)
+            return;
+
+        if (string.Equals(rune.Rarity, "Exclusive", StringComparison.OrdinalIgnoreCase))
+        {
+            fragmentUnlockText.text = $"획득 조건 : 캐릭터 Lv.{Mathf.Max(0, rune.UnlockLevel)} 도달";
+            return;
+        }
+
+        fragmentUnlockText.text = $"획득 조건 : 블루 더스티움 {Mathf.Max(0, rune.BlueDustiumCost)}";
+    }
+
+    private void ClearFragmentInfo()
+    {
+        if (fragmentUnlockText != null)
+            fragmentUnlockText.text = string.Empty;
+    }
+
+    private void RefreshMemoryInfo(RecordIconSlotUI slot)
+    {
+        if ((currentMainTab != MainTab.Unique && currentMainTab != MainTab.Skill) || memoryInfoPanel == null)
+            return;
+
+        if (slot == null || !slotSkills.TryGetValue(slot, out SkillMasterData skill) || skill == null)
+        {
+            ClearMemoryInfo();
+            return;
+        }
+
+        if (!revealedSkillSlots.Contains(slot))
+        {
+            SetUnknownMemoryInfo();
+            return;
+        }
+
+        SetMemoryRangeQuestion(false);
+        SetMemoryRangeImage(ResolveSkillRangeIcon(skill.RangeId));
+
+        if (memoryMethodText != null)
+            memoryMethodText.text = $"방식 : {GetMemoryMethodTypeDisplayName(skill.RangeType)}";
+
+        if (memoryConsumptionText != null)
+            memoryConsumptionText.text = $"소모 : {GetMemoryConsumptionDisplay(skill)}";
+
+        List<SkillEffectEntry> entries = skill.EffectEntries;
+        if ((entries == null || entries.Count == 0) && DataManager.Instance != null)
+            entries = SkillEffectParser.Parse(skill, DataManager.Instance.EffectDatabase);
+
+        if (memoryPointText != null)
+            memoryPointText.text = $"효과 : {GetMemoryPointDisplay(entries)}";
+    }
+
+    private void ClearMemoryInfo()
+    {
+        SetMemoryRangeQuestion(false);
+        SetMemoryRangeImage(null);
+
+        if (memoryMethodText != null)
+            memoryMethodText.text = string.Empty;
+
+        if (memoryConsumptionText != null)
+            memoryConsumptionText.text = string.Empty;
+
+        if (memoryPointText != null)
+            memoryPointText.text = string.Empty;
+    }
+
+    private void SetUnknownMemoryInfo()
+    {
+        SetMemoryRangeImage(null);
+        SetMemoryRangeQuestion(true);
+
+        if (memoryMethodText != null)
+            memoryMethodText.text = "방식 : ???";
+
+        if (memoryConsumptionText != null)
+            memoryConsumptionText.text = "소모 : ???";
+
+        if (memoryPointText != null)
+            memoryPointText.text = "효과 : ???";
+    }
+
+    private void SetMemoryRangeQuestion(bool active)
+    {
+        if (memoryRangeQuestion != null)
+            memoryRangeQuestion.SetActive(active);
+    }
+
+    private void SetMemoryRangeImage(Sprite sprite)
+    {
+        if (memoryRangeImage == null)
+            return;
+
+        bool hasSprite = sprite != null;
+        memoryRangeImage.sprite = sprite;
+        memoryRangeImage.preserveAspect = true;
+        memoryRangeImage.enabled = hasSprite;
+        memoryRangeImage.gameObject.SetActive(hasSprite);
+    }
+
+    private static Sprite ResolveSkillRangeIcon(string rangeId)
+    {
+        if (string.IsNullOrWhiteSpace(rangeId) ||
+            DataManager.Instance == null ||
+            DataManager.Instance.SkillRangeIconDatabase == null)
+        {
+            return null;
+        }
+
+        return DataManager.Instance.SkillRangeIconDatabase.TryGetIcon(rangeId, out Sprite icon)
+            ? icon
+            : null;
+    }
+
+    private static string GetMemoryMethodTypeDisplayName(RangeType rangeType)
+    {
+        switch (rangeType)
+        {
+            case RangeType.Direction:
+                return "시전자 위치";
+            case RangeType.Selection:
+                return "그리드 선택";
+            case RangeType.Passive:
+                return "카르마 최대 시 지속";
+            default:
+                return string.Empty;
+        }
+    }
+
+    private static string GetMemoryConsumptionDisplay(SkillMasterData skill)
+    {
+        if (skill == null)
+            return string.Empty;
+
+        if (skill.ResourceCostValue <= 0)
+            return "소모 없음";
+
+        string resourceName;
+        switch (skill.ReferenceResource)
+        {
+            case ReferenceResource.HP:
+                resourceName = "생명력";
+                break;
+            case ReferenceResource.UniqueResource:
+                resourceName = "카르마";
+                break;
+            case ReferenceResource.Cost:
+                resourceName = "마나";
+                break;
+            case ReferenceResource.MovePoint:
+                resourceName = "이동";
+                break;
+            default:
+                resourceName = string.Empty;
+                break;
+        }
+
+        if (string.IsNullOrEmpty(resourceName))
+            return Mathf.Max(0, skill.ResourceCostValue).ToString();
+
+        return $"{resourceName} {Mathf.Max(0, skill.ResourceCostValue)}";
+    }
+
+    private static string GetMemoryPointDisplay(List<SkillEffectEntry> entries)
+    {
+        if (entries == null || entries.Count == 0)
+            return "없음";
+
+        List<string> parts = new List<string>(2);
+        int count = Mathf.Min(2, entries.Count);
+        for (int i = 0; i < count; i++)
+        {
+            SkillEffectEntry entry = entries[i];
+            if (entry == null || string.IsNullOrWhiteSpace(entry.EffectId))
+                continue;
+
+            string effectName = GetMemoryEffectDisplayName(entry);
+            int effectValue = entry.ValueAmount != 0 ? entry.ValueAmount : entry.CountAmount;
+            string valueText = Mathf.Abs(effectValue).ToString();
+            parts.Add(string.IsNullOrWhiteSpace(effectName) ? valueText : $"{effectName} {valueText}");
+        }
+
+        return parts.Count > 0 ? string.Join(" / ", parts) : "없음";
+    }
+
+    private static string GetMemoryEffectDisplayName(SkillEffectEntry entry)
+    {
+        if (entry == null)
+            return string.Empty;
+
+        string effectName = entry.EffectData != null && !string.IsNullOrWhiteSpace(entry.EffectData.Name)
+            ? GameDataLocalization.EffectName(entry.EffectData)
+            : entry.EffectId;
+
+        string normalized = effectName.Replace(" ", string.Empty).ToLowerInvariant();
+        if (normalized.Contains("타격") || normalized.Contains("strike"))
+            return "피해";
+
+        return effectName;
+    }
 
     private void RefreshCompoundInfo(RecordIconSlotUI slot)
     {
@@ -848,11 +1553,15 @@ public class RecordPanelUI : MonoBehaviour
         DataManager dataManager = GetDataManager();
         bool discovered = debugRevealAll || RecordDiscoveryService.IsCompoundDiscovered(dataManager, compound.CompoundId);
 
-        if (compoundTargetTypeText != null)
-            compoundTargetTypeText.text = discovered ? GetCompoundTargetTypeLabel(compound.TargetType) : "?";
+        if (compoundTypeText != null)
+            compoundTypeText.text = discovered
+                ? $"사용 대상 : {GetCompoundTargetTypeLabel(compound.TargetType)}"
+                : "사용 대상 : ???";
 
-        if (compoundValueText != null)
-            compoundValueText.text = discovered ? $"{compound.Durability}회" : "?";
+        if (compoundUsesText != null)
+            compoundUsesText.text = discovered
+                ? $"사용 가능 횟수 : {compound.Durability}"
+                : "사용 가능 횟수 : ???";
 
         UpdateCompoundMaterialSlot(compound.MaterialId1, compoundItem01Question, compoundItem01Icon, dataManager);
         UpdateCompoundMaterialSlot(compound.MaterialId2, compoundItem02Question, compoundItem02Icon, dataManager);
@@ -892,11 +1601,11 @@ public class RecordPanelUI : MonoBehaviour
 
     private void ClearCompoundInfo()
     {
-        if (compoundTargetTypeText != null)
-            compoundTargetTypeText.text = "?";
+        if (compoundTypeText != null)
+            compoundTypeText.text = "?";
 
-        if (compoundValueText != null)
-            compoundValueText.text = "?";
+        if (compoundUsesText != null)
+            compoundUsesText.text = "?";
 
         ClearCompoundMaterialSlot(compoundItem01Question, compoundItem01Icon);
         ClearCompoundMaterialSlot(compoundItem02Question, compoundItem02Icon);
@@ -1019,6 +1728,19 @@ public class RecordPanelUI : MonoBehaviour
         if (itemTabButton == null)
             itemTabButton = FindButtonByPath("Buttons/Item") ?? FindButtonByName("Item");
 
+        if (uniqueNumberText == null)
+            uniqueNumberText = FindTextByPathOrName("Number/Unique", "Unique");
+        if (skillNumberText == null)
+            skillNumberText = FindTextByPathOrName("Number/Skill", "Skill");
+        if (fragmentNumberText == null)
+            fragmentNumberText = FindTextByPathOrName("Number/Fragment", "Fragment");
+        if (relicNumberText == null)
+            relicNumberText = FindTextByPathOrName("Number/Relic", "Relic");
+        if (compoundNumberText == null)
+            compoundNumberText = FindTextByPathOrName("Number/Compound", "Compound");
+        if (itemNumberText == null)
+            itemNumberText = FindTextByPathOrName("Number/Item", "Item");
+
         if (uniqueRootContent == null && uniqueContent != null)
             uniqueRootContent = FindNestedRectTransform(uniqueContent.transform, "Scroll View/Viewport/Content");
 
@@ -1058,14 +1780,41 @@ public class RecordPanelUI : MonoBehaviour
         if (nameText == null)
             nameText = FindTextByPathOrName("Info/Name", "Name");
 
+        if (rarityText == null)
+            rarityText = FindTextByPathOrName("Info/Rarity", "Rarity");
+
+        if (fragmentInfoPanel == null)
+            fragmentInfoPanel = FindGameObjectByPath("Info/Fragment") ?? FindGameObjectByName("Fragment");
+
+        if (fragmentUnlockText == null)
+            fragmentUnlockText = FindTextByPathOrName("Info/Fragment/Unlock", "Unlock");
+
+        if (memoryInfoPanel == null)
+            memoryInfoPanel = FindGameObjectByPath("Info/Memory") ?? FindGameObjectByName("Memory");
+
+        if (memoryRangeImage == null)
+            memoryRangeImage = FindImageByPath("Info/Memory/Range");
+
+        if (memoryRangeQuestion == null)
+            memoryRangeQuestion = FindGameObjectByPath("Info/Memory/Range_Qus") ?? FindGameObjectByName("Range_Qus");
+
+        if (memoryMethodText == null)
+            memoryMethodText = FindTextByPathOrName("Info/Memory/method", "method");
+
+        if (memoryConsumptionText == null)
+            memoryConsumptionText = FindTextByPathOrName("Info/Memory/consumption", "consumption");
+
+        if (memoryPointText == null)
+            memoryPointText = FindTextByPathOrName("Info/Memory/Point", "Point");
+
         if (compoundInfoPanel == null)
             compoundInfoPanel = FindGameObjectByPath("Info/Compound") ?? FindGameObjectByName("Compound");
 
-        if (compoundTargetTypeText == null)
-            compoundTargetTypeText = FindTextByPathOrName("Info/Compound/TargetType", "TargetType");
+        if (compoundTypeText == null)
+            compoundTypeText = FindTextByPathOrName("Info/Compound/Type", "Type");
 
-        if (compoundValueText == null)
-            compoundValueText = FindTextByPathOrName("Info/Compound/Value", "Value");
+        if (compoundUsesText == null)
+            compoundUsesText = FindTextByPathOrName("Info/Compound/Uses", "Uses");
 
         if (compoundItem01Question == null)
             compoundItem01Question = FindGameObjectByPath("Info/Compound/Mixture/Item01/question");

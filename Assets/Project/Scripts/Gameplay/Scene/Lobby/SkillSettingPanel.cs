@@ -1417,9 +1417,6 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         string details = GameDataLocalization.SkillDetails(skill);
 
         if (string.IsNullOrWhiteSpace(details))
-            details = GameDataLocalization.SkillTooltip(skill);
-
-        if (string.IsNullOrWhiteSpace(details))
             return "";
 
         // 설명에 포함된 숫자를 색상 태그로 감싸지 않고 원문 그대로 표시합니다.

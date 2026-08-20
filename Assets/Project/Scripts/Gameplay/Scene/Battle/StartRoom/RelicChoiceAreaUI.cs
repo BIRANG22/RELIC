@@ -245,14 +245,14 @@ public class RelicChoiceAreaUI : MonoBehaviour
 
     private List<string> PickRandomRelicIds()
     {
-        if (DataManager.Instance == null || DataManager.Instance.CompoundDatabase == null)
+        if (DataManager.Instance == null || DataManager.Instance.RelicDatabase == null)
         {
-            Debug.LogWarning("[RelicChoiceAreaUI] DataManager or CompoundDatabase is null.");
+            Debug.LogWarning("[RelicChoiceAreaUI] DataManager or RelicDatabase is null.");
             return new List<string>();
         }
 
         List<string> candidates = StartRoomRelicSelectionUtility.CollectActiveRelicIds(
-            DataManager.Instance.CompoundDatabase.GetAll());
+            DataManager.Instance.RelicDatabase.GetAll());
 
         RemoveAlreadyOwnedRelics(candidates);
         Shuffle(candidates);
@@ -333,15 +333,15 @@ public class RelicChoiceAreaUI : MonoBehaviour
         if (string.IsNullOrWhiteSpace(relicId))
             return;
 
-        if (DataManager.Instance == null || DataManager.Instance.BattleRuntimeStore == null || DataManager.Instance.CompoundDatabase == null)
+        if (DataManager.Instance == null || DataManager.Instance.BattleRuntimeStore == null || DataManager.Instance.RelicDatabase == null)
         {
-            Debug.LogWarning("[RelicChoiceAreaUI] DataManager, BattleRuntimeStore, or CompoundDatabase is null.");
+            Debug.LogWarning("[RelicChoiceAreaUI] DataManager, BattleRuntimeStore, or RelicDatabase is null.");
             return;
         }
 
         relicId = relicId.Trim();
 
-        if (!DataManager.Instance.CompoundDatabase.TryGet(relicId, out _))
+        if (!DataManager.Instance.RelicDatabase.TryGet(relicId, out _))
         {
             Debug.LogWarning($"[RelicChoiceAreaUI] Unknown relic id: {relicId}");
             return;
@@ -536,9 +536,7 @@ public class RelicChoiceAreaUI : MonoBehaviour
             return string.Empty;
 
         string rarityName = SkillRarityUtility.GetDisplayName(skill.Rarity);
-        string description = !string.IsNullOrWhiteSpace(skill.Details)
-            ? GameDataLocalization.SkillDetails(skill)
-            : GameDataLocalization.SkillTooltip(skill);
+        string description = GameDataLocalization.SkillDetails(skill);
 
         if (string.IsNullOrWhiteSpace(description))
             description = GameLocalization.Get("battle.available_skill", "획득 가능한 기억입니다.");
@@ -718,18 +716,18 @@ public class RelicChoiceAreaUI : MonoBehaviour
 
 public static class StartRoomRelicSelectionUtility
 {
-    private const string ActiveRelicIdPrefix = "Compound_";
+    private const string ActiveRelicIdPrefix = "Relic_A_";
 
-    public static List<string> CollectActiveRelicIds(IReadOnlyList<CompoundData> compounds)
+    public static List<string> CollectActiveRelicIds(IReadOnlyList<RelicData> relics)
     {
         List<string> result = new();
 
-        if (compounds == null)
+        if (relics == null)
             return result;
 
-        for (int i = 0; i < compounds.Count; i++)
+        for (int i = 0; i < relics.Count; i++)
         {
-            string id = compounds[i]?.CompoundId?.Trim();
+            string id = relics[i]?.FragmentId?.Trim();
 
             if (!string.IsNullOrWhiteSpace(id) &&
                 id.StartsWith(ActiveRelicIdPrefix, System.StringComparison.Ordinal))

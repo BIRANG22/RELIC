@@ -34,15 +34,23 @@ namespace Relic.Gameplay.Data
 
     public enum SkillRarity
     {
-        None,
-        Move,
-        Passive,
-        Unique,
-        CharacterExclusive,
-        Shared,
-        CoreCommon,
-        CoreRare,
-        CoreEpic
+        None = 0,
+        Move = 1,
+
+        // 현재 기억 레어도 체계
+        Exclusive = 2,
+        Common = 3,
+        Rare = 4,
+        Epic = 5,
+        Unique = 6,
+
+        // 이전 코드 호환용 별칭
+        Passive = Exclusive,
+        CharacterExclusive = Exclusive,
+        Shared = Common,
+        CoreCommon = Common,
+        CoreRare = Rare,
+        CoreEpic = Epic
     }
 
     public enum ReferenceResource
@@ -63,7 +71,8 @@ namespace Relic.Gameplay.Data
     {
         None,
         Selection,
-        Direction
+        Direction,
+        Passive
     }
 
     public enum TargetType
@@ -98,11 +107,6 @@ namespace Relic.Gameplay.Data
         public RangeType RangeType;
         public string RangeId;
 
-        // CSV/엑셀에 EffectDescription 또는 EffectDesc 컬럼을 추가하면 자동으로 매핑됩니다.
-        public string EffectDescription;
-        public string EffectDesc;
-
-        public string ToolTip;
         public string Details;
 
         // 런타임 사용용

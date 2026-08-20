@@ -106,9 +106,7 @@ public static class EventRoomRewardFlowUtility
             return string.Empty;
 
         string rarityName = SkillRarityUtility.GetDisplayName(skill.Rarity);
-        string description = !string.IsNullOrWhiteSpace(skill.Details)
-            ? GameDataLocalization.SkillDetails(skill)
-            : GameDataLocalization.SkillTooltip(skill);
+        string description = GameDataLocalization.SkillDetails(skill);
 
         if (string.IsNullOrWhiteSpace(description))
             description = GameLocalization.Get("battle.available_skill", "획득 가능한 스킬입니다.");
