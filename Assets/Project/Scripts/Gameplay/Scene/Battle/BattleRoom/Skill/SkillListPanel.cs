@@ -1132,10 +1132,10 @@ public class SkillListPanel : MonoBehaviour
         if (activeRelicService != null)
             return true;
 
-        if (DataManager.Instance == null || DataManager.Instance.RelicDatabase == null)
+        if (DataManager.Instance == null || DataManager.Instance.CompoundDatabase == null)
             return false;
 
-        activeRelicService = new ActiveRelicService(DataManager.Instance.RelicDatabase);
+        activeRelicService = new ActiveRelicService(DataManager.Instance.CompoundDatabase);
         return true;
     }
 

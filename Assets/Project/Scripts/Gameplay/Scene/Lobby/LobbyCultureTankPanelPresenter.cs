@@ -106,28 +106,39 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     private void Combine()
     {
         DataManager data = DataManager.Instance;
-        if (!CultureTankResearchService.TryCombine(GetLobby(), data?.ItemDatabase, data?.CultureTankCombinationDatabase, out _, out string error))
+        if (!CultureTankResearchService.TryCombine(GetLobby(), data?.ItemDatabase, data?.CompoundDatabase, out _, out string error))
         { BattleWarningUI.ShowMessage(GameLocalization.Get("lobby.cannot_combine", "조합할 수 없습니다.")); Debug.LogWarning($"[LobbyCultureTankPanelPresenter] {error}"); return; }
         selectedSlotIndex = -1; SaveAndPublish(); RefreshAll();
     }
 
     private void ClaimCompletion()
     {
-        if (!CultureTankResearchService.TryClaimCompletedCombination(GetLobby(), DataManager.Instance?.CultureTankCombinationDatabase, out _, out string error))
+        if (!CultureTankResearchService.TryClaimCompletedCombination(GetLobby(), DataManager.Instance?.CompoundDatabase, out string compoundId, out string error))
         { Debug.LogWarning($"[LobbyCultureTankPanelPresenter] {error}"); return; }
-        SaveAndPublish(); RefreshAll();
+
+        RecordDiscoveryService.RegisterCompound(DataManager.Instance, compoundId);
+        SaveAndPublish();
+        RefreshAll();
     }
 
     private void RefreshCompletion()
     {
         LobbyRuntimeData lobby = GetLobby();
         string id = lobby?.CompletedCultureTankCombinationId;
-        CultureTankCombinationEntry recipe = null;
+        CompoundData recipe = null;
         bool completed = !string.IsNullOrWhiteSpace(id) &&
-                         DataManager.Instance?.CultureTankCombinationDatabase != null &&
-                         DataManager.Instance.CultureTankCombinationDatabase.TryGetById(id, out recipe);
+                         DataManager.Instance?.CompoundDatabase != null &&
+                         DataManager.Instance.CompoundDatabase.TryGet(id, out recipe);
         if (completionRoot != null) completionRoot.SetActive(ShouldShowCompletionRoot(completed));
-        if (completionIcon != null) { completionIcon.sprite = completed ? recipe.ResultIcon : null; completionIcon.enabled = completed && recipe.ResultIcon != null; completionIcon.preserveAspect = true; }
+        if (completionIcon != null)
+        {
+            Sprite icon = null;
+            if (completed && DataManager.Instance?.RelicIconDatabase != null)
+                DataManager.Instance.RelicIconDatabase.TryGetIcon(recipe.CompoundId, out icon);
+            completionIcon.sprite = icon;
+            completionIcon.enabled = completed && icon != null;
+            completionIcon.preserveAspect = true;
+        }
         if (completionButton != null) completionButton.interactable = completed && CanMutate();
     }
 
@@ -228,7 +239,8 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     {
         [SerializeField] private GameObject root; [SerializeField] private Image background; [SerializeField] private Button button;
         [SerializeField] private TMP_Text label; [SerializeField] private TMP_Text stateLabel; [SerializeField] private Image itemIcon;
-        public GameObject Root { get => root; set => root = value; } public Image Background => background; public Button Button => button;
+        public GameObject Root { get => root; set => root = value; }
+        public Image Background => background; public Button Button => button;
         public TMP_Text Label => label; public TMP_Text StateLabel => stateLabel;
         public void Bind()
         {

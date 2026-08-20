@@ -157,19 +157,30 @@ public class EquippedSkillPanelUI : MonoBehaviour
 
     public void ShowRelicTooltip(string relicId, RectTransform hoveredSlotRect)
     {
-        if (string.IsNullOrWhiteSpace(relicId) || DataManager.Instance == null || DataManager.Instance.RelicDatabase == null)
+        if (string.IsNullOrWhiteSpace(relicId) || DataManager.Instance == null)
         {
             HideSkillTooltip();
             return;
         }
 
-        if (!DataManager.Instance.RelicDatabase.TryGet(relicId, out RelicData relicData))
+        if (DataManager.Instance.CompoundDatabase != null &&
+            DataManager.Instance.CompoundDatabase.TryGet(relicId, out CompoundData compoundData))
         {
-            HideSkillTooltip();
+            SetTooltip(
+                string.IsNullOrWhiteSpace(compoundData.Name) ? compoundData.CompoundId : compoundData.Name,
+                BuildRelicDescription(compoundData),
+                hoveredSlotRect);
             return;
         }
 
-        ShowRelicTooltip(relicData, hoveredSlotRect);
+        if (DataManager.Instance.RelicDatabase != null &&
+            DataManager.Instance.RelicDatabase.TryGet(relicId, out RelicData relicData))
+        {
+            ShowRelicTooltip(relicData, hoveredSlotRect);
+            return;
+        }
+
+        HideSkillTooltip();
     }
 
     public void ShowRelicTooltip(RelicData relicData, RectTransform hoveredSlotRect)

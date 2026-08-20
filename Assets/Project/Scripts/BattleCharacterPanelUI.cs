@@ -1050,12 +1050,12 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
             if (!string.IsNullOrWhiteSpace(activeRelicId) &&
                 DataManager.Instance != null &&
-                DataManager.Instance.RelicDatabase != null &&
-                DataManager.Instance.RelicDatabase.TryGet(activeRelicId, out RelicData relic) &&
-                relic != null)
+                DataManager.Instance.CompoundDatabase != null &&
+                DataManager.Instance.CompoundDatabase.TryGet(activeRelicId, out CompoundData compound) &&
+                compound != null)
             {
-                hash = hash * 31 + ActiveRelicRuntimeUtility.GetRemainingUses(boundRuntime, relic);
-                hash = hash * 31 + ActiveRelicRuntimeUtility.GetMaxUses(relic);
+                hash = hash * 31 + ActiveRelicRuntimeUtility.GetRemainingUses(boundRuntime, compound);
+                hash = hash * 31 + ActiveRelicRuntimeUtility.GetMaxUses(compound);
             }
 
             return hash;
@@ -1419,12 +1419,12 @@ public class BattleCharacterPanelUI : MonoBehaviour
     {
         if (boundRuntime == null ||
             DataManager.Instance == null ||
-            DataManager.Instance.RelicDatabase == null)
+            DataManager.Instance.CompoundDatabase == null)
         {
             return null;
         }
 
-        activeRelicService ??= new ActiveRelicService(DataManager.Instance.RelicDatabase);
+        activeRelicService ??= new ActiveRelicService(DataManager.Instance.CompoundDatabase);
         return activeRelicService.GetAvailability(boundRuntime);
     }
 

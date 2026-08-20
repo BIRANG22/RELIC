@@ -75,14 +75,14 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
             return;
         }
 
-        if (DataManager.Instance == null || DataManager.Instance.RelicDatabase == null)
+        if (DataManager.Instance == null || DataManager.Instance.CompoundDatabase == null)
         {
-            Debug.LogWarning("[RelicChoiceSlotUI] DataManager or RelicDatabase is null.");
+            Debug.LogWarning("[RelicChoiceSlotUI] DataManager or CompoundDatabase is null.");
             ClearSlot();
             return;
         }
 
-        RelicData relicData = DataManager.Instance.RelicDatabase.Get(relicId);
+        RelicData relicData = DataManager.Instance.CompoundDatabase.Get(relicId);
 
         if (relicData == null)
         {
@@ -150,11 +150,21 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
             }
         }
 
+        CompoundData compoundData = relicData as CompoundData;
+
         if (relicNameText != null)
-            relicNameText.text = GameDataLocalization.RelicName(relicData);
+        {
+            relicNameText.text = compoundData != null && !string.IsNullOrWhiteSpace(compoundData.Name)
+                ? compoundData.Name
+                : GameDataLocalization.RelicName(relicData);
+        }
 
         if (relicEffectText != null)
-            relicEffectText.text = GameDataLocalization.RelicDescription(relicData);
+        {
+            relicEffectText.text = compoundData != null && !string.IsNullOrWhiteSpace(compoundData.EffectDesc)
+                ? compoundData.EffectDesc
+                : GameDataLocalization.RelicDescription(relicData);
+        }
     }
 
     public void ClearSlot()

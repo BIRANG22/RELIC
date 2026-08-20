@@ -7,7 +7,6 @@ namespace Relic.Gameplay.Data
     {
         public string ItemId;
         public string Name;
-        public string CultureType;
         public string Desc;
     }
 }

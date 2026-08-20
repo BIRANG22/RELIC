@@ -57,11 +57,11 @@ public sealed class ActiveRelicUseResult
 
 public sealed class ActiveRelicService
 {
-    private readonly RelicDatabase relicDatabase;
+    private readonly CompoundDatabase compoundDatabase;
 
-    public ActiveRelicService(RelicDatabase relicDatabase)
+    public ActiveRelicService(CompoundDatabase compoundDatabase)
     {
-        this.relicDatabase = relicDatabase;
+        this.compoundDatabase = compoundDatabase;
     }
 
     public ActiveRelicAvailability GetAvailability(CharacterRuntimeData runtime)
@@ -94,11 +94,11 @@ public sealed class ActiveRelicService
 
         availability.RelicId = relicId;
 
-        if (relicDatabase == null ||
-            !relicDatabase.TryGet(relicId, out RelicData relic) ||
+        if (compoundDatabase == null ||
+            !compoundDatabase.TryGet(relicId, out CompoundData relic) ||
             relic == null)
         {
-            availability.Message = "Relic data is missing.";
+            availability.Message = "Compound data is missing.";
             return availability;
         }
 

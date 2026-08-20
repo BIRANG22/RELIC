@@ -17,13 +17,7 @@ namespace Relic.Gameplay.Data
 
         public static bool IsActiveRelic(RelicData relic)
         {
-            if (relic == null)
-                return false;
-
-            return string.Equals(
-                relic.Type?.Trim(),
-                "Active",
-                StringComparison.OrdinalIgnoreCase);
+            return relic is CompoundData;
         }
 
         public static string ResolveEffectId(RelicData relic)

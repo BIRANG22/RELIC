@@ -47,7 +47,9 @@ namespace Relic.Gameplay.Data
 
         public static int GetMaxUses(RelicData relic)
         {
-            return Mathf.Max(0, relic?.Durability ?? 0);
+            return relic is CompoundData compound
+                ? Mathf.Max(0, compound.Durability)
+                : 0;
         }
 
         public static int GetRemainingUses(CharacterRuntimeData runtime, RelicData relic)

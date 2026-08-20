@@ -97,21 +97,21 @@ public static class BattleEffectDebugTool
         Preset("P66_ShopDiscount", "P66 상점 할인", "Relic_P_66"),
         Preset("P67_RewardCurrency", "P67 전투 보상 재화", "Relic_P_67"),
         Preset("P68_BattleEndHeal", "P68 전투 종료 회복", "Relic_P_68"),
-        Preset("A01_DamageBoost", "A01 이번 턴 피해 증가", "Relic_A_01"),
-        Preset("A02_DamageReduction", "A02 이번 턴 피해 감소", "Relic_A_02"),
-        Preset("A03_RecoverResource", "A03 고유자원 최대 회복", "Relic_A_03"),
-        Preset("A04_RecoverCost", "A04 코스트 최대 회복", "Relic_A_04"),
-        Preset("A05_GrantSwift", "A05 신속 부여", "Relic_A_05"),
-        Preset("A06_Cleanse", "A06 디버프 제거", "Relic_A_06"),
-        Preset("A07_MoveToGrid", "A07 빈 그리드 이동", "Relic_A_07"),
-        Preset("A08_SwapAlly", "A08 아군 위치 교환", "Relic_A_08"),
-        Preset("A09_PoisonGrid", "A09 독 장판", "Relic_A_09"),
-        Preset("A10_ThornGrid", "A10 가시 장판", "Relic_A_10"),
-        Preset("A11_TargetDamageDown", "A11 적 주는 피해 감소", "Relic_A_11"),
-        Preset("A12_Obstacle", "A12 장애물 생성", "Relic_A_12"),
-        Preset("A13_RemoveGrid", "A13 그리드 효과 제거", "Relic_A_13"),
-        Preset("A14_Dummy", "A14 허수아비", "Relic_A_14"),
-        Preset("A15_ExplosiveDoll", "A15 폭발 인형", "Relic_A_15")
+        Preset("A01_DamageBoost", "A01 이번 턴 피해 증가", "Compound_01"),
+        Preset("A02_DamageReduction", "A02 이번 턴 피해 감소", "Compound_02"),
+        Preset("A03_RecoverResource", "A03 고유자원 최대 회복", "Compound_03"),
+        Preset("A04_RecoverCost", "A04 코스트 최대 회복", "Compound_04"),
+        Preset("A05_GrantSwift", "A05 신속 부여", "Compound_05"),
+        Preset("A06_Cleanse", "A06 디버프 제거", "Compound_06"),
+        Preset("A07_MoveToGrid", "A07 빈 그리드 이동", "Compound_07"),
+        Preset("A08_SwapAlly", "A08 아군 위치 교환", "Compound_08"),
+        Preset("A09_PoisonGrid", "A09 독 장판", "Compound_09"),
+        Preset("A10_ThornGrid", "A10 가시 장판", "Compound_10"),
+        Preset("A11_TargetDamageDown", "A11 적 주는 피해 감소", "Compound_11"),
+        Preset("A12_Obstacle", "A12 장애물 생성", "Compound_12"),
+        Preset("A13_RemoveGrid", "A13 그리드 효과 제거", "Compound_13"),
+        Preset("A14_Dummy", "A14 허수아비", "Compound_14"),
+        Preset("A15_ExplosiveDoll", "A15 폭발 인형", "Compound_15")
     };
 
     public static IReadOnlyList<BattleEffectDebugPreset> GetDefaultPresets()
@@ -400,14 +400,14 @@ public static class BattleEffectDebugTool
             return false;
 
         if (DataManager.Instance != null &&
-            DataManager.Instance.RelicDatabase != null &&
-            DataManager.Instance.RelicDatabase.TryGet(relicId, out RelicData relic) &&
-            relic != null)
+            DataManager.Instance.CompoundDatabase != null &&
+            DataManager.Instance.CompoundDatabase.TryGet(relicId, out CompoundData compound) &&
+            compound != null)
         {
-            return ActiveRelicEffectResolver.IsActiveRelic(relic);
+            return true;
         }
 
-        return relicId.StartsWith("Relic_A_", StringComparison.OrdinalIgnoreCase);
+        return relicId.StartsWith("Compound_", StringComparison.OrdinalIgnoreCase);
     }
 
     private static string NormalizeId(string id)

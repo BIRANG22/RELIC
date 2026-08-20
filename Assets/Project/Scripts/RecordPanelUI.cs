@@ -20,16 +20,19 @@ public class RecordPanelUI : MonoBehaviour
         Skill,
         Fragment,
         Relic,
+        Compound,
         Item
     }
 
     private const string UnknownDisplayName = "???";
+    private const string UnknownDescription = "아직 기록되지 않았습니다";
 
     [Header("Main Tab Panels")]
     [SerializeField] private GameObject uniqueContent;
     [SerializeField] private GameObject skillContent;
     [SerializeField] private GameObject fragmentContent;
     [SerializeField] private GameObject relicContent;
+    [SerializeField] private GameObject compoundContent;
     [SerializeField] private GameObject itemContent;
 
     [Header("Main Tab Buttons")]
@@ -37,6 +40,7 @@ public class RecordPanelUI : MonoBehaviour
     [SerializeField] private Button skillTabButton;
     [SerializeField] private Button fragmentTabButton;
     [SerializeField] private Button relicTabButton;
+    [SerializeField] private Button compoundTabButton;
     [SerializeField] private Button itemTabButton;
 
     [Header("Grid Contents")]
@@ -44,6 +48,7 @@ public class RecordPanelUI : MonoBehaviour
     [SerializeField] private RectTransform skillGridContent;
     [SerializeField] private RectTransform fragmentGridContent;
     [SerializeField] private RectTransform relicGridContent;
+    [SerializeField] private RectTransform compoundGridContent;
     [SerializeField] private RectTransform itemGridContent;
 
     [Header("Scroll Rects")]
@@ -51,6 +56,7 @@ public class RecordPanelUI : MonoBehaviour
     [SerializeField] private ScrollRect skillScrollRect;
     [SerializeField] private ScrollRect fragmentScrollRect;
     [SerializeField] private ScrollRect relicScrollRect;
+    [SerializeField] private ScrollRect compoundScrollRect;
     [SerializeField] private ScrollRect itemScrollRect;
 
     [Header("Item Slot")]
@@ -59,7 +65,20 @@ public class RecordPanelUI : MonoBehaviour
 
     [Header("Info")]
     [SerializeField] private TMP_Text nameText;
+    [SerializeField] private TMP_Text descriptionText;
     [SerializeField] private string emptyNameText = string.Empty;
+    [SerializeField] private string emptyDescriptionText = string.Empty;
+
+    [Header("Compound Info")]
+    [SerializeField] private GameObject compoundInfoPanel;
+    [SerializeField] private TMP_Text compoundTargetTypeText;
+    [SerializeField] private TMP_Text compoundValueText;
+    [SerializeField] private GameObject compoundItem01Question;
+    [SerializeField] private Image compoundItem01Icon;
+    [SerializeField] private GameObject compoundItem02Question;
+    [SerializeField] private Image compoundItem02Icon;
+    [SerializeField] private GameObject compoundItem03Question;
+    [SerializeField] private Image compoundItem03Icon;
 
     [Header("Initial View")]
     [SerializeField] private bool selectFirstItemAutomatically = true;
@@ -67,8 +86,12 @@ public class RecordPanelUI : MonoBehaviour
     [Header("Record Scroll Padding")]
     [Tooltip("모든 도감 스크롤에서 마지막 슬롯이 Viewport 마스크에 잘리지 않도록 Content 하단에 추가하는 공통 여백입니다.")]
     [SerializeField, Min(0f)] private float contentBottomPadding = 40f;
+    [Tooltip("모든 도감 스크롤에서 첫 슬롯이 Viewport 상단에 너무 붙거나 잘리지 않도록 Content 상단에 추가하는 공통 여백입니다.")]
+    [SerializeField, Min(0f)] private float contentTopPadding = 20f;
 
     private readonly List<RecordIconSlotUI> spawnedSlots = new();
+    private readonly Dictionary<RecordIconSlotUI, string> slotDescriptions = new();
+    private readonly Dictionary<RecordIconSlotUI, CompoundData> slotCompounds = new();
     private readonly List<RecordIconSlotUI> activeFixedSlots = new();
     private RecordIconSlotUI selectedSlot;
     private MainTab currentMainTab = MainTab.Unique;
@@ -77,6 +100,7 @@ public class RecordPanelUI : MonoBehaviour
     private ColorBlock skillTabOriginalColors;
     private ColorBlock fragmentTabOriginalColors;
     private ColorBlock relicTabOriginalColors;
+    private ColorBlock compoundTabOriginalColors;
     private ColorBlock itemTabOriginalColors;
     private bool mainTabColorsCached;
     private bool debugRevealAll;
@@ -87,6 +111,7 @@ public class RecordPanelUI : MonoBehaviour
         EnsureReferences();
         ApplyGridConstraints();
         CacheMainTabButtonColors();
+        BindCompoundTabButton();
     }
 
     private void OnEnable()
@@ -120,6 +145,9 @@ public class RecordPanelUI : MonoBehaviour
                 break;
             case MainTab.Relic:
                 ShowRelicTab();
+                break;
+            case MainTab.Compound:
+                ShowCompoundTab();
                 break;
             case MainTab.Item:
                 ShowItemTab();
@@ -159,6 +187,11 @@ public class RecordPanelUI : MonoBehaviour
         ShowPassiveRelics();
     }
 
+    public void ShowCompoundTab()
+    {
+        BuildCompoundList();
+    }
+
     public void ShowItemTab()
     {
         SetMainTab(MainTab.Item);
@@ -176,8 +209,9 @@ public class RecordPanelUI : MonoBehaviour
     public void ShowCommonRunes() => BuildRuneList();
     public void ShowExclusiveRunes() => BuildRuneList();
 
-    public void ShowPassiveRelics() => BuildRelicList(false);
-    public void ShowActiveRelics() => BuildRelicList(true);
+    public void ShowPassiveRelics() => BuildRelicList();
+    // 기존 프리팹/버튼 이벤트 호환용. 액티브 유물은 이제 연성제 탭으로 이동했습니다.
+    public void ShowActiveRelics() => ShowCompoundTab();
 
     private void BuildUniqueSkillSections()
     {
@@ -436,7 +470,7 @@ public class RecordPanelUI : MonoBehaviour
         CompleteListBuild(fragmentScrollRect);
     }
 
-    private void BuildRelicList(bool activeOnly)
+    private void BuildRelicList()
     {
         SetMainTab(MainTab.Relic);
         ClearCurrentSlots();
@@ -446,22 +480,54 @@ public class RecordPanelUI : MonoBehaviour
             return;
 
         IEnumerable<RelicData> relics = dataManager.RelicDatabase.GetAll()
-            .Where(relic => relic != null && IsActiveRelic(relic) == activeOnly)
+            .Where(relic => relic != null)
             .OrderBy(RecordDisplayNameResolver.RelicName, StringComparer.CurrentCulture);
 
         foreach (RelicData relic in relics)
         {
             bool discovered = debugRevealAll || RecordDiscoveryService.IsRelicDiscovered(dataManager, relic.FragmentId);
             Sprite icon = null;
-
             if (discovered && dataManager.RelicIconDatabase != null)
                 dataManager.RelicIconDatabase.TryGetIcon(relic.FragmentId, out icon);
 
             string displayName = discovered ? RecordDisplayNameResolver.RelicName(relic) : UnknownDisplayName;
-            CreateSlot(relicGridContent, icon, displayName, discovered);
+            string description = discovered ? relic.EffectDesc : UnknownDescription;
+            CreateSlot(relicGridContent, icon, displayName, discovered, description);
         }
 
         CompleteListBuild(relicScrollRect);
+    }
+
+    private void BuildCompoundList()
+    {
+        SetMainTab(MainTab.Compound);
+        ClearCurrentSlots();
+
+        DataManager dataManager = GetDataManager();
+        if (dataManager == null || dataManager.CompoundDatabase == null)
+            return;
+
+        IEnumerable<CompoundData> compounds = dataManager.CompoundDatabase.GetAll()
+            .Where(compound => compound != null)
+            .OrderBy(compound => compound.CompoundId, StringComparer.OrdinalIgnoreCase);
+
+        foreach (CompoundData compound in compounds)
+        {
+            bool discovered = debugRevealAll || RecordDiscoveryService.IsCompoundDiscovered(dataManager, compound.CompoundId);
+            Sprite icon = null;
+            if (discovered)
+                TryGetCompoundIcon(dataManager, compound.CompoundId, out icon);
+
+            string displayName = discovered
+                ? (string.IsNullOrWhiteSpace(compound.Name) ? compound.CompoundId : compound.Name)
+                : UnknownDisplayName;
+            string description = discovered ? compound.EffectDesc : UnknownDescription;
+            RecordIconSlotUI slot = CreateSlot(compoundGridContent, icon, displayName, discovered, description);
+            if (slot != null)
+                slotCompounds[slot] = compound;
+        }
+
+        CompleteListBuild(compoundScrollRect);
     }
 
     private void BuildItemList()
@@ -485,7 +551,11 @@ public class RecordPanelUI : MonoBehaviour
                 dataManager.ItemIconDatabase.TryGetIcon(item.ItemId, out icon);
 
             string displayName = discovered ? RecordDisplayNameResolver.ItemName(item) : UnknownDisplayName;
-            CreateSlot(itemGridContent, icon, displayName, discovered);
+            string description = discovered
+                ? GameDataLocalization.ItemDescription(item)
+                : UnknownDescription;
+
+            CreateSlot(itemGridContent, icon, displayName, discovered, description);
         }
 
         CompleteListBuild(itemScrollRect);
@@ -499,7 +569,12 @@ public class RecordPanelUI : MonoBehaviour
         SetActive(skillContent, tab == MainTab.Skill);
         SetActive(fragmentContent, tab == MainTab.Fragment);
         SetActive(relicContent, tab == MainTab.Relic);
+        SetActive(compoundContent, tab == MainTab.Compound);
         SetActive(itemContent, tab == MainTab.Item);
+        SetActive(compoundInfoPanel, tab == MainTab.Compound);
+
+        if (tab != MainTab.Compound)
+            ClearCompoundInfo();
 
         SelectMainTabButton(tab);
         StartCoroutine(RefreshMainTabSelectionNextFrame(tab));
@@ -521,12 +596,14 @@ public class RecordPanelUI : MonoBehaviour
         ApplyMainTabButtonColors(skillTabButton, skillTabOriginalColors, tab == MainTab.Skill);
         ApplyMainTabButtonColors(fragmentTabButton, fragmentTabOriginalColors, tab == MainTab.Fragment);
         ApplyMainTabButtonColors(relicTabButton, relicTabOriginalColors, tab == MainTab.Relic);
+        ApplyMainTabButtonColors(compoundTabButton, compoundTabOriginalColors, tab == MainTab.Compound);
         ApplyMainTabButtonColors(itemTabButton, itemTabOriginalColors, tab == MainTab.Item);
 
         ApplyMainTabAnimationState(uniqueTabButton, tab == MainTab.Unique);
         ApplyMainTabAnimationState(skillTabButton, tab == MainTab.Skill);
         ApplyMainTabAnimationState(fragmentTabButton, tab == MainTab.Fragment);
         ApplyMainTabAnimationState(relicTabButton, tab == MainTab.Relic);
+        ApplyMainTabAnimationState(compoundTabButton, tab == MainTab.Compound);
         ApplyMainTabAnimationState(itemTabButton, tab == MainTab.Item);
     }
 
@@ -559,6 +636,9 @@ public class RecordPanelUI : MonoBehaviour
 
         if (relicTabButton != null)
             relicTabOriginalColors = relicTabButton.colors;
+
+        if (compoundTabButton != null)
+            compoundTabOriginalColors = compoundTabButton.colors;
 
         if (itemTabButton != null)
             itemTabOriginalColors = itemTabButton.colors;
@@ -607,20 +687,44 @@ public class RecordPanelUI : MonoBehaviour
         }
     }
 
-    private void CreateSlot(RectTransform parent, Sprite icon, string displayName, bool showIcon)
+
+    private static bool TryGetCompoundIcon(DataManager dataManager, string compoundId, out Sprite icon)
+    {
+        icon = null;
+
+        if (dataManager == null || dataManager.RelicIconDatabase == null || string.IsNullOrWhiteSpace(compoundId))
+            return false;
+
+        string id = compoundId.Trim();
+        if (dataManager.RelicIconDatabase.TryGetIcon(id, out icon) && icon != null)
+            return true;
+
+        const string compoundPrefix = "Compound_";
+        if (!id.StartsWith(compoundPrefix, StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        string suffix = id.Substring(compoundPrefix.Length);
+        string legacyRelicId = $"Relic_A_{suffix}";
+        return dataManager.RelicIconDatabase.TryGetIcon(legacyRelicId, out icon) && icon != null;
+    }
+
+    private RecordIconSlotUI CreateSlot(RectTransform parent, Sprite icon, string displayName, bool showIcon, string description = "")
     {
         if (parent == null || iconSlotPrefab == null)
-            return;
+            return null;
 
         RecordIconSlotUI slot = Instantiate(iconSlotPrefab, parent, false);
         slot.Initialize(icon, displayName, OnSlotClicked, showIcon);
         spawnedSlots.Add(slot);
+        slotDescriptions[slot] = description ?? string.Empty;
+        return slot;
     }
 
     private void OnSlotClicked(RecordIconSlotUI clickedSlot, string displayName)
     {
         SelectSlot(clickedSlot);
-        SetName(displayName);
+        SetInfo(displayName, GetSlotDescription(clickedSlot));
+        RefreshCompoundInfo(clickedSlot);
     }
 
     private void SelectSlot(RecordIconSlotUI slot)
@@ -645,7 +749,8 @@ public class RecordPanelUI : MonoBehaviour
         {
             RecordIconSlotUI firstSlot = spawnedSlots[0];
             SelectSlot(firstSlot);
-            SetName(firstSlot.DisplayName);
+            SetInfo(firstSlot.DisplayName, GetSlotDescription(firstSlot));
+            RefreshCompoundInfo(firstSlot);
             return;
         }
 
@@ -696,7 +801,24 @@ public class RecordPanelUI : MonoBehaviour
         }
 
         spawnedSlots.Clear();
-        SetName(emptyNameText);
+        slotDescriptions.Clear();
+        slotCompounds.Clear();
+        SetInfo(emptyNameText, emptyDescriptionText);
+        ClearCompoundInfo();
+    }
+
+    private string GetSlotDescription(RecordIconSlotUI slot)
+    {
+        if (slot != null && slotDescriptions.TryGetValue(slot, out string description))
+            return description ?? string.Empty;
+
+        return string.Empty;
+    }
+
+    private void SetInfo(string name, string description)
+    {
+        SetName(name);
+        SetDescription(description);
     }
 
     private void SetName(string value)
@@ -705,13 +827,92 @@ public class RecordPanelUI : MonoBehaviour
             nameText.text = value ?? string.Empty;
     }
 
-    private bool IsActiveRelic(RelicData relic)
+    private void SetDescription(string value)
     {
-        if (relic == null || string.IsNullOrWhiteSpace(relic.Type))
-            return false;
+        if (descriptionText != null)
+            descriptionText.text = value ?? string.Empty;
+    }
 
-        return relic.Type.IndexOf("active", StringComparison.OrdinalIgnoreCase) >= 0 ||
-               relic.Type.IndexOf("액티브", StringComparison.OrdinalIgnoreCase) >= 0;
+
+    private void RefreshCompoundInfo(RecordIconSlotUI slot)
+    {
+        if (currentMainTab != MainTab.Compound || compoundInfoPanel == null)
+            return;
+
+        if (slot == null || !slotCompounds.TryGetValue(slot, out CompoundData compound) || compound == null)
+        {
+            ClearCompoundInfo();
+            return;
+        }
+
+        DataManager dataManager = GetDataManager();
+        bool discovered = debugRevealAll || RecordDiscoveryService.IsCompoundDiscovered(dataManager, compound.CompoundId);
+
+        if (compoundTargetTypeText != null)
+            compoundTargetTypeText.text = discovered ? GetCompoundTargetTypeLabel(compound.TargetType) : "?";
+
+        if (compoundValueText != null)
+            compoundValueText.text = discovered ? $"{compound.Durability}회" : "?";
+
+        UpdateCompoundMaterialSlot(compound.MaterialId1, compoundItem01Question, compoundItem01Icon, dataManager);
+        UpdateCompoundMaterialSlot(compound.MaterialId2, compoundItem02Question, compoundItem02Icon, dataManager);
+        UpdateCompoundMaterialSlot(compound.MaterialId3, compoundItem03Question, compoundItem03Icon, dataManager);
+    }
+
+    private static string GetCompoundTargetTypeLabel(string targetType)
+    {
+        if (string.Equals(targetType, "Self", StringComparison.OrdinalIgnoreCase))
+            return "자신";
+
+        if (string.Equals(targetType, "Grid", StringComparison.OrdinalIgnoreCase))
+            return "그리드";
+
+        return string.IsNullOrWhiteSpace(targetType) ? "?" : targetType.Trim();
+    }
+
+    private void UpdateCompoundMaterialSlot(string materialId, GameObject question, Image iconImage, DataManager dataManager)
+    {
+        bool discovered = debugRevealAll || RecordDiscoveryService.IsItemDiscovered(dataManager, materialId);
+
+        if (question != null)
+            question.SetActive(!discovered);
+
+        if (iconImage == null)
+            return;
+
+        iconImage.gameObject.SetActive(discovered);
+        iconImage.sprite = null;
+
+        if (!discovered || dataManager?.ItemIconDatabase == null || string.IsNullOrWhiteSpace(materialId))
+            return;
+
+        if (dataManager.ItemIconDatabase.TryGetIcon(materialId, out Sprite icon))
+            iconImage.sprite = icon;
+    }
+
+    private void ClearCompoundInfo()
+    {
+        if (compoundTargetTypeText != null)
+            compoundTargetTypeText.text = "?";
+
+        if (compoundValueText != null)
+            compoundValueText.text = "?";
+
+        ClearCompoundMaterialSlot(compoundItem01Question, compoundItem01Icon);
+        ClearCompoundMaterialSlot(compoundItem02Question, compoundItem02Icon);
+        ClearCompoundMaterialSlot(compoundItem03Question, compoundItem03Icon);
+    }
+
+    private static void ClearCompoundMaterialSlot(GameObject question, Image iconImage)
+    {
+        if (question != null)
+            question.SetActive(true);
+
+        if (iconImage != null)
+        {
+            iconImage.sprite = null;
+            iconImage.gameObject.SetActive(false);
+        }
     }
 
     private DataManager GetDataManager()
@@ -728,9 +929,11 @@ public class RecordPanelUI : MonoBehaviour
 
     private void ApplyGridConstraints()
     {
+        ApplyLayoutTopPadding(uniqueRootContent);
         ApplyGridConstraint(skillGridContent);
         ApplyGridConstraint(fragmentGridContent);
         ApplyGridConstraint(relicGridContent);
+        ApplyGridConstraint(compoundGridContent);
         ApplyGridConstraint(itemGridContent);
     }
 
@@ -750,8 +953,26 @@ public class RecordPanelUI : MonoBehaviour
         if (padding == null)
             padding = new RectOffset();
 
+        padding.top = Mathf.Max(0, Mathf.RoundToInt(contentTopPadding));
         padding.bottom = Mathf.Max(0, Mathf.RoundToInt(contentBottomPadding));
         grid.padding = padding;
+    }
+
+    private void ApplyLayoutTopPadding(RectTransform content)
+    {
+        if (content == null)
+            return;
+
+        LayoutGroup layout = content.GetComponent<LayoutGroup>();
+        if (layout == null)
+            return;
+
+        RectOffset padding = layout.padding;
+        if (padding == null)
+            padding = new RectOffset();
+
+        padding.top = Mathf.Max(0, Mathf.RoundToInt(contentTopPadding));
+        layout.padding = padding;
     }
 
     private void SetActive(GameObject target, bool active)
@@ -774,6 +995,9 @@ public class RecordPanelUI : MonoBehaviour
         if (relicContent == null)
             relicContent = FindGameObjectByPath("Content/RelicContent") ?? FindGameObjectByName("RelicContent");
 
+        if (compoundContent == null)
+            compoundContent = FindGameObjectByPath("Content/CompoundContent") ?? FindGameObjectByName("CompoundContent");
+
         if (itemContent == null)
             itemContent = FindGameObjectByPath("Content/ItemContent") ?? FindGameObjectByName("ItemContent");
 
@@ -788,6 +1012,9 @@ public class RecordPanelUI : MonoBehaviour
 
         if (relicTabButton == null)
             relicTabButton = FindButtonByPath("Buttons/Relic") ?? FindButtonByName("Relic");
+
+        if (compoundTabButton == null)
+            compoundTabButton = FindButtonByPath("Buttons/Compound") ?? FindButtonByName("Compound");
 
         if (itemTabButton == null)
             itemTabButton = FindButtonByPath("Buttons/Item") ?? FindButtonByName("Item");
@@ -804,6 +1031,9 @@ public class RecordPanelUI : MonoBehaviour
         if (relicGridContent == null && relicContent != null)
             relicGridContent = FindNestedRectTransform(relicContent.transform, "Scroll View/Viewport/Content");
 
+        if (compoundGridContent == null && compoundContent != null)
+            compoundGridContent = FindNestedRectTransform(compoundContent.transform, "Scroll View/Viewport/Content");
+
         if (itemGridContent == null && itemContent != null)
             itemGridContent = FindNestedRectTransform(itemContent.transform, "Scroll View/Viewport/Content");
 
@@ -819,14 +1049,96 @@ public class RecordPanelUI : MonoBehaviour
         if (relicScrollRect == null && relicContent != null)
             relicScrollRect = relicContent.GetComponentInChildren<ScrollRect>(true);
 
+        if (compoundScrollRect == null && compoundContent != null)
+            compoundScrollRect = compoundContent.GetComponentInChildren<ScrollRect>(true);
+
         if (itemScrollRect == null && itemContent != null)
             itemScrollRect = itemContent.GetComponentInChildren<ScrollRect>(true);
+
+        if (nameText == null)
+            nameText = FindTextByPathOrName("Info/Name", "Name");
+
+        if (compoundInfoPanel == null)
+            compoundInfoPanel = FindGameObjectByPath("Info/Compound") ?? FindGameObjectByName("Compound");
+
+        if (compoundTargetTypeText == null)
+            compoundTargetTypeText = FindTextByPathOrName("Info/Compound/TargetType", "TargetType");
+
+        if (compoundValueText == null)
+            compoundValueText = FindTextByPathOrName("Info/Compound/Value", "Value");
+
+        if (compoundItem01Question == null)
+            compoundItem01Question = FindGameObjectByPath("Info/Compound/Mixture/Item01/question");
+        if (compoundItem01Icon == null)
+            compoundItem01Icon = FindImageByPath("Info/Compound/Mixture/Item01/Icon");
+
+        if (compoundItem02Question == null)
+            compoundItem02Question = FindGameObjectByPath("Info/Compound/Mixture/Item02/question");
+        if (compoundItem02Icon == null)
+            compoundItem02Icon = FindImageByPath("Info/Compound/Mixture/Item02/Icon");
+
+        if (compoundItem03Question == null)
+            compoundItem03Question = FindGameObjectByPath("Info/Compound/Mixture/Item03/question");
+        if (compoundItem03Icon == null)
+            compoundItem03Icon = FindImageByPath("Info/Compound/Mixture/Item03/Icon");
+
+        TMP_Text effectText = FindTextByPathOrName("Info/Effect", "Effect");
+        if (effectText != null)
+        {
+            descriptionText = effectText;
+        }
+        else if (descriptionText == null)
+        {
+            descriptionText = FindTextByPathOrName("Info/Desc", "Desc")
+                ?? FindTextByPathOrName("Info/Description", "Description");
+        }
+    }
+
+    private void BindCompoundTabButton()
+    {
+        if (compoundTabButton == null)
+            return;
+
+        // 새 Compound 버튼의 Inspector OnClick 연결이 비어 있어도 도감에서 바로 사용할 수 있게 합니다.
+        compoundTabButton.onClick.RemoveListener(ShowCompoundTab);
+        compoundTabButton.onClick.AddListener(ShowCompoundTab);
+    }
+
+    private TMP_Text FindTextByPathOrName(string path, string objectName)
+    {
+        Transform byPath = transform.Find(path);
+        if (byPath != null)
+        {
+            TMP_Text pathText = byPath.GetComponent<TMP_Text>();
+            if (pathText != null)
+                return pathText;
+        }
+
+        Transform[] children = GetComponentsInChildren<Transform>(true);
+        foreach (Transform child in children)
+        {
+            if (!string.Equals(child.name, objectName, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            TMP_Text text = child.GetComponent<TMP_Text>();
+            if (text != null)
+                return text;
+        }
+
+        return null;
     }
 
     private GameObject FindGameObjectByPath(string path)
     {
         Transform found = transform.Find(path);
         return found != null ? found.gameObject : null;
+    }
+
+
+    private Image FindImageByPath(string path)
+    {
+        Transform found = transform.Find(path);
+        return found != null ? found.GetComponent<Image>() : null;
     }
 
     private GameObject FindGameObjectByName(string objectName)
@@ -984,7 +1296,7 @@ public class RecordPanelUI : MonoBehaviour
             ? uniqueScrollRect.viewport.rect.height
             : 0f;
 
-        float paddedContentHeight = contentHeight + contentBottomPadding;
+        float paddedContentHeight = contentHeight + contentTopPadding + contentBottomPadding;
 
         root.SetSizeWithCurrentAnchors(
             RectTransform.Axis.Vertical,
