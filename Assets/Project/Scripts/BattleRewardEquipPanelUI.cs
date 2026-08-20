@@ -1090,15 +1090,6 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
         if (!string.IsNullOrWhiteSpace(skill.Details))
             return GameDataLocalization.SkillDetails(skill);
 
-        if (!string.IsNullOrWhiteSpace(skill.ToolTip))
-            return GameDataLocalization.SkillTooltip(skill);
-
-        if (!string.IsNullOrWhiteSpace(skill.EffectDescription))
-            return skill.EffectDescription;
-
-        if (!string.IsNullOrWhiteSpace(skill.EffectDesc))
-            return GameLocalization.GetData("SkillMaster", skill.SkillId, "details", skill.EffectDesc);
-
         return fallback ?? string.Empty;
     }
 

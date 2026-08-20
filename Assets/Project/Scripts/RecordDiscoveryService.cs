@@ -83,8 +83,9 @@ namespace Relic.Gameplay.Data
         }
 
         /// <summary>
-        /// 기존 세이브와 기본 지급 콘텐츠를 도감 이력으로 보정합니다.
-        /// 현재 소지/장착 중인 콘텐츠와 해금된 캐릭터의 기본 기억/파편을 획득한 것으로 처리합니다.
+        /// 기존 세이브와 현재 보유/장착 상태를 도감 이력으로 보정합니다.
+        /// 기본 지급 캐릭터의 기본 기억은 런타임 캐릭터가 아직 생성되지 않았더라도 처음부터 공개합니다.
+        /// 전용 파편은 캐릭터 마스터 데이터만으로 자동 등록하지 않고, 실제 장착된 파편만 등록합니다.
         /// </summary>
         public static void BackfillFromCurrentState(DataManager dataManager)
         {
@@ -93,9 +94,28 @@ namespace Relic.Gameplay.Data
 
             Normalize(dataManager.PlayerRuntimeStore.Data);
 
+            BackfillDefaultProvidedCharacterSkills(dataManager);
             BackfillCharacters(dataManager);
             BackfillBattleRuntime(dataManager);
             BackfillLobbyRuntime(dataManager);
+        }
+
+        private static void BackfillDefaultProvidedCharacterSkills(DataManager dataManager)
+        {
+            IReadOnlyDictionary<string, CharacterMasterData> masters =
+                dataManager.CharacterDatabase?.GetAll();
+
+            if (masters == null)
+                return;
+
+            foreach (KeyValuePair<string, CharacterMasterData> pair in masters)
+            {
+                CharacterMasterData master = pair.Value;
+                if (master == null || !master.IsDefaultProvided)
+                    continue;
+
+                RegisterBaseSkills(dataManager, master);
+            }
         }
 
         private static void BackfillCharacters(DataManager dataManager)
@@ -112,12 +132,20 @@ namespace Relic.Gameplay.Data
                 if (character == null)
                     continue;
 
+                // 잠겨 있는 캐릭터의 기억/파편/유물은 도감에 자동 등록하지 않습니다.
+                if (!character.IsUnlocked)
+                    continue;
+
                 RegisterSkill(dataManager, character.MoveSkillId);
                 RegisterSkill(dataManager, character.PassiveSkillId);
                 RegisterSkill(dataManager, character.UniqueSkillId);
                 RegisterSkill(dataManager, character.AbilitySkillId);
                 RegisterIds(character.EquippedSkillIds, id => RegisterSkill(dataManager, id));
+
+                // 파편은 캐릭터 마스터에 존재한다는 이유만으로 등록하지 않습니다.
+                // 실제 장착한 파편만 도감 획득 이력으로 등록합니다.
                 RegisterIds(character.EquippedRuneIds, id => RegisterRune(dataManager, id));
+
                 if (character.EquippedRelicIds != null)
                 {
                     for (int i = 0; i < character.EquippedRelicIds.Length; i++)
@@ -130,8 +158,7 @@ namespace Relic.Gameplay.Data
                     }
                 }
 
-                if (!character.IsUnlocked ||
-                    string.IsNullOrWhiteSpace(character.CharacterId) ||
+                if (string.IsNullOrWhiteSpace(character.CharacterId) ||
                     dataManager.CharacterDatabase == null ||
                     !dataManager.CharacterDatabase.TryGet(character.CharacterId, out CharacterMasterData master) ||
                     master == null)
@@ -139,15 +166,20 @@ namespace Relic.Gameplay.Data
                     continue;
                 }
 
-                // 캐릭터가 처음부터 가지고 있는 기본 기억은 처음부터 도감에 공개합니다.
-                RegisterSkill(dataManager, master.PassiveSkill1);
-                RegisterSkill(dataManager, master.UniqueSkill1);
-                RegisterSkill(dataManager, master.CharacterSkill1);
-                RegisterSkill(dataManager, master.CommonSkill1);
-
-                // 캐릭터 기본 파편도 처음부터 획득한 것으로 처리합니다.
-                RegisterIds(master.GetRuneIds(), id => RegisterRune(dataManager, id));
+                // 해금된 캐릭터가 처음부터 가지고 있는 기본 기억은 도감에 공개합니다.
+                RegisterBaseSkills(dataManager, master);
             }
+        }
+
+        private static void RegisterBaseSkills(DataManager dataManager, CharacterMasterData master)
+        {
+            if (master == null)
+                return;
+
+            RegisterSkill(dataManager, master.PassiveSkill1);
+            RegisterSkill(dataManager, master.UniqueSkill1);
+            RegisterSkill(dataManager, master.CharacterSkill1);
+            RegisterSkill(dataManager, master.CommonSkill1);
         }
 
         private static void BackfillBattleRuntime(DataManager dataManager)

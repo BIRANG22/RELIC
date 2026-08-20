@@ -31,9 +31,10 @@ namespace Relic.Gameplay.Data
 
         public static bool IsCoreDropRarity(SkillRarity rarity)
         {
-            return rarity == SkillRarity.CoreCommon ||
-                   rarity == SkillRarity.CoreRare ||
-                   rarity == SkillRarity.CoreEpic;
+            return rarity == SkillRarity.Common ||
+                   rarity == SkillRarity.Rare ||
+                   rarity == SkillRarity.Epic ||
+                   rarity == SkillRarity.Unique;
         }
 
         public static bool IsBaseSkillVariant(string skillId)
@@ -99,18 +100,27 @@ namespace Relic.Gameplay.Data
             return true;
         }
 
+        public static string GetCanonicalName(SkillRarity rarity)
+        {
+            if (rarity == SkillRarity.Move) return "Move";
+            if (rarity == SkillRarity.Exclusive) return "Exclusive";
+            if (rarity == SkillRarity.Common) return "Common";
+            if (rarity == SkillRarity.Rare) return "Rare";
+            if (rarity == SkillRarity.Epic) return "Epic";
+            if (rarity == SkillRarity.Unique) return "Unique";
+            return string.Empty;
+        }
+
         public static string GetDisplayName(SkillRarity rarity)
         {
             return rarity switch
             {
                 SkillRarity.Move => "이동",
-                SkillRarity.Passive => "패시브",
-                SkillRarity.Unique => "고유",
-                SkillRarity.CharacterExclusive => "캐릭터 전용",
-                SkillRarity.Shared => "공유 가능",
-                SkillRarity.CoreCommon => "코어 일반",
-                SkillRarity.CoreRare => "코어 희귀",
-                SkillRarity.CoreEpic => "코어 영웅",
+                SkillRarity.Exclusive => "고유 기억",
+                SkillRarity.Common => "일반 기억",
+                SkillRarity.Rare => "레어 기억",
+                SkillRarity.Epic => "에픽 기억",
+                SkillRarity.Unique => "유니크 기억",
                 _ => string.Empty
             };
         }

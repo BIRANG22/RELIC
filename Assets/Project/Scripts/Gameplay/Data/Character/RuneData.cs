@@ -13,17 +13,14 @@ namespace Relic.Gameplay.Data
         public string TargetSkillId;
 
         public string EffectIds;
-        public string EffectDesc;
         public string ValueRate;
-        public string CountCalcTypes;
         public string CountRate;
 
-        public int Consumption;
+        public int BlueDustiumCost;
+        public int UnlockLevel;
 
-        public int EnhancementLevel;
-
-        public RangeType RangeType;
-        public string RangeId;
+        public string EffectDesc;
+        public string Rarity;
 
         public List<SkillEffectEntry> EffectEntries = new();
     }

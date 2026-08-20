@@ -104,17 +104,6 @@ public class BattleTimelinePreviewEntry
         {
             if (IsPlayer && PlayerSkillData != null)
             {
-                if (!string.IsNullOrWhiteSpace(PlayerSkillData.EffectDescription))
-                    return FormatPlayerSkillEffectDescription(GameLocalization.GetData(
-                        "SkillMaster", PlayerSkillData.SkillId, "details", PlayerSkillData.EffectDescription));
-
-                if (!string.IsNullOrWhiteSpace(PlayerSkillData.EffectDesc))
-                    return FormatPlayerSkillEffectDescription(GameLocalization.GetData(
-                        "SkillMaster", PlayerSkillData.SkillId, "details", PlayerSkillData.EffectDesc));
-
-                if (!string.IsNullOrWhiteSpace(PlayerSkillData.ToolTip))
-                    return FormatPlayerSkillEffectDescription(GameDataLocalization.SkillTooltip(PlayerSkillData));
-
                 if (!string.IsNullOrWhiteSpace(PlayerSkillData.Details))
                     return FormatPlayerSkillEffectDescription(GameDataLocalization.SkillDetails(PlayerSkillData));
             }

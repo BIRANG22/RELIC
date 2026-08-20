@@ -30,7 +30,7 @@ namespace Relic.Gameplay.Data
                 match => CalculateFocusCostFormula(runtime, payAmount, match).ToString()
             );
 
-            return FormatValueText(skill, formatted);
+            return SkillDescriptionFormatter.Format(formatted, skill?.ValueRate, skill?.CountRate);
         }
 
         public static string BuildSkillDescription(
@@ -159,20 +159,12 @@ namespace Relic.Gameplay.Data
 
         private static string GetDescriptionSource(SkillMasterData skill)
         {
-            if (!string.IsNullOrWhiteSpace(skill.EffectDescription))
-                return skill.EffectDescription;
-
-            if (!string.IsNullOrWhiteSpace(skill.EffectDesc))
-                return GameLocalization.GetData("SkillMaster", skill.SkillId, "details", skill.EffectDesc);
-
-            if (!string.IsNullOrWhiteSpace(skill.ToolTip))
-                return GameDataLocalization.SkillTooltip(skill);
-
-            if (!string.IsNullOrWhiteSpace(skill.Details))
-                return GameDataLocalization.SkillDetails(skill);
-
-            return "";
+            return skill?.Details ?? string.Empty;
         }
+
+        // ValueRate / CountRate 토큰은 SkillDescriptionFormatter에서 처리합니다.
+        // 아래 문자열은 정적 계약 검사에서도 새 토큰 체계를 명시하기 위한 예시입니다.
+        // {ValueRate1} / {CountRate1}
 
         private static int CalculateFocusCostFormula(
             CharacterRuntimeData runtime,

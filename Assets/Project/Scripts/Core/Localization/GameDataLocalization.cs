@@ -17,11 +17,8 @@ namespace Relic.Gameplay.Data
         public static string SkillName(SkillMasterData data) =>
             data == null ? string.Empty : GameLocalization.GetData("SkillMaster", data.SkillId, "name", data.Name);
 
-        public static string SkillTooltip(SkillMasterData data) =>
-            data == null ? string.Empty : GameLocalization.GetData("SkillMaster", data.SkillId, "tooltip", data.ToolTip);
-
         public static string SkillDetails(SkillMasterData data) =>
-            data == null ? string.Empty : GameLocalization.GetData("SkillMaster", data.SkillId, "details", data.Details);
+            SkillDescriptionFormatter.Format(data);
 
         public static string MonsterSkillName(MonsterSkillData data) =>
             data == null ? string.Empty : GameLocalization.GetData("MonsterSkill", data.SkillId, "name", data.Name);
