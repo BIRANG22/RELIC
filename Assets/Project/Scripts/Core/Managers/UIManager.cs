@@ -14,6 +14,7 @@ using UnityEditor;
 
 public class UIManager : Singleton<UIManager>
 {
+    private const int ModalPanelSortingOrderCeiling = 30000;
     [Header("References")]
     [SerializeField] private Canvas mainCanvas;
 
@@ -342,7 +343,8 @@ public class UIManager : Singleton<UIManager>
             optionCanvas = optionPanelInstance.AddComponent<Canvas>();
 
         optionCanvas.overrideSorting = true;
-        optionCanvas.sortingOrder = GetHighestCanvasSortingOrder(optionCanvas) + Mathf.Max(1, optionPanelSortingOrderOffset);
+        int desiredOrder = GetHighestCanvasSortingOrder(optionCanvas) + Mathf.Max(1, optionPanelSortingOrderOffset);
+        optionCanvas.sortingOrder = Mathf.Min(desiredOrder, ModalPanelSortingOrderCeiling);
 
         if (optionPanelInstance.GetComponent<GraphicRaycaster>() == null)
             optionPanelInstance.AddComponent<GraphicRaycaster>();
@@ -363,7 +365,8 @@ public class UIManager : Singleton<UIManager>
             recordCanvas = recordPanelInstance.AddComponent<Canvas>();
 
         recordCanvas.overrideSorting = true;
-        recordCanvas.sortingOrder = GetHighestCanvasSortingOrder(recordCanvas) + Mathf.Max(1, recordPanelSortingOrderOffset);
+        int desiredOrder = GetHighestCanvasSortingOrder(recordCanvas) + Mathf.Max(1, recordPanelSortingOrderOffset);
+        recordCanvas.sortingOrder = Mathf.Min(desiredOrder, ModalPanelSortingOrderCeiling);
 
         if (recordPanelInstance.GetComponent<GraphicRaycaster>() == null)
             recordPanelInstance.AddComponent<GraphicRaycaster>();
@@ -387,7 +390,8 @@ public class UIManager : Singleton<UIManager>
             confirmCanvas = confirmDialogInstance.AddComponent<Canvas>();
 
         confirmCanvas.overrideSorting = true;
-        confirmCanvas.sortingOrder = GetHighestCanvasSortingOrder(confirmCanvas) + Mathf.Max(1, confirmDialogSortingOrderOffset);
+        int desiredOrder = GetHighestCanvasSortingOrder(confirmCanvas) + Mathf.Max(1, confirmDialogSortingOrderOffset);
+        confirmCanvas.sortingOrder = Mathf.Min(desiredOrder, ModalPanelSortingOrderCeiling);
 
         if (confirmDialogInstance.GetComponent<GraphicRaycaster>() == null)
             confirmDialogInstance.AddComponent<GraphicRaycaster>();

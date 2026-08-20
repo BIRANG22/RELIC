@@ -13,6 +13,7 @@ public class SceneFlowManager : Singleton<SceneFlowManager>
 
     private bool isLoading;
     private bool hasLoadedSceneOnce;
+    private bool transitionAlreadyClosedForNextLoad;
 
     protected override void Awake()
     {
@@ -41,6 +42,7 @@ public class SceneFlowManager : Singleton<SceneFlowManager>
         if (CurrentScene == sceneName)
         {
             Debug.Log($"[SceneFlowManager] Scene already loaded: {sceneName}");
+            transitionAlreadyClosedForNextLoad = false;
             hasLoadedSceneOnce = true;
             return;
         }
@@ -50,6 +52,7 @@ public class SceneFlowManager : Singleton<SceneFlowManager>
         Debug.Log($"[SceneFlowManager] Loading scene: {sceneName}");
         SceneManager.LoadScene(sceneName);
 
+        transitionAlreadyClosedForNextLoad = false;
         hasLoadedSceneOnce = true;
         isLoading = false;
         Debug.Log($"[SceneFlowManager] Loaded scene: {sceneName}");
@@ -72,6 +75,7 @@ public class SceneFlowManager : Singleton<SceneFlowManager>
         if (CurrentScene == sceneName)
         {
             Debug.Log($"[SceneFlowManager] Scene already loaded: {sceneName}");
+            transitionAlreadyClosedForNextLoad = false;
             hasLoadedSceneOnce = true;
             return;
         }
@@ -79,9 +83,15 @@ public class SceneFlowManager : Singleton<SceneFlowManager>
         isLoading = true;
 
         CanvasMaterialSceneTransition transition = GetSceneTransition();
-        bool shouldPlayTransition = ShouldPlayTransition(transition);
+        bool continueFromClosedTransition = transitionAlreadyClosedForNextLoad &&
+                                            useSceneTransition &&
+                                            transition != null;
 
-        if (shouldPlayTransition)
+        transitionAlreadyClosedForNextLoad = false;
+
+        bool shouldPlayTransition = continueFromClosedTransition || ShouldPlayTransition(transition);
+
+        if (shouldPlayTransition && !continueFromClosedTransition)
         {
             await transition.PlayCloseAsync();
             await Task.Yield();
@@ -92,6 +102,10 @@ public class SceneFlowManager : Singleton<SceneFlowManager>
         if (loadOperation == null)
         {
             Debug.LogError($"[SceneFlowManager] Failed to load scene: {sceneName}");
+
+            if (continueFromClosedTransition && transition != null)
+                await transition.PlayOpenAsync();
+
             isLoading = false;
             return;
         }
@@ -113,6 +127,24 @@ public class SceneFlowManager : Singleton<SceneFlowManager>
 
         isLoading = false;
         Debug.Log($"[SceneFlowManager] Loaded scene: {sceneName}");
+    }
+
+    /// <summary>
+    /// 다음 비동기 씬 로드가 이미 닫힌 전환 화면에서 시작하도록 지정합니다.
+    /// 인트로처럼 씬 사이에 별도 화면을 끼워 넣은 뒤, 닫힘 연출을 중복 재생하지 않고
+    /// 그대로 다음 씬을 로드한 후 열림 연출만 이어서 재생할 때 사용합니다.
+    /// </summary>
+    public void UseAlreadyClosedTransitionForNextLoad()
+    {
+        CanvasMaterialSceneTransition transition = GetSceneTransition();
+
+        if (!useSceneTransition || transition == null)
+        {
+            transitionAlreadyClosedForNextLoad = false;
+            return;
+        }
+
+        transitionAlreadyClosedForNextLoad = true;
     }
 
     private CanvasMaterialSceneTransition GetSceneTransition()

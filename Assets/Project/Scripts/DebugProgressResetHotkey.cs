@@ -136,6 +136,7 @@ public sealed class DebugProgressResetHotkey : MonoBehaviour
         // PlayerPrefs에 별도로 저장되는 시련 해금 진행도를 삭제합니다.
         TrialUnlockProgress.ResetProgress();
         TrialSelectionState.Clear();
+        IntroSettings.ResetIntroSeenState();
 
         ResetRuntimeStores();
 

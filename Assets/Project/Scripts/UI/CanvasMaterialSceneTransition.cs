@@ -4,6 +4,8 @@ using UnityEngine.UI;
 
 public class CanvasMaterialSceneTransition : Singleton<CanvasMaterialSceneTransition>
 {
+    private const int TransitionSortingOrderFloor = 32000;
+    private const int TransitionSortingOrderCeiling = 32760;
     [Header("Root")]
     [SerializeField] private GameObject transitionRoot;
     [SerializeField] private CanvasGroup canvasGroup;
@@ -184,7 +186,7 @@ public class CanvasMaterialSceneTransition : Singleton<CanvasMaterialSceneTransi
         }
 
         canvas.overrideSorting = true;
-        canvas.sortingOrder = canvasSortingOrder;
+        canvas.sortingOrder = Mathf.Clamp(canvasSortingOrder, TransitionSortingOrderFloor, TransitionSortingOrderCeiling);
 
         EnsureRootCanvasScaler();
 

@@ -17,6 +17,21 @@ public class StartModeButton : MonoBehaviour
         ResetPreviousRunRuntimeState();
 
         GameManager.Instance.Context.SelectedGameMode = gameMode;
+
+        if (IntroSettings.ShouldPlayIntro)
+        {
+            IntroSequenceController introController = IntroSequenceController.Instance;
+            if (introController != null)
+            {
+                introController.PlayFirstTimeIntro();
+                return;
+            }
+
+            Debug.LogWarning(
+                "[StartModeButton] IntroSequenceController가 없어 인트로를 건너뛰고 로비로 이동합니다.",
+                this);
+        }
+
         await GameManager.Instance.StateMachine.ChangeState(GameStateType.Lobby);
     }
 
