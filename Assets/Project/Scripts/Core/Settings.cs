@@ -46,3 +46,28 @@ public static class TutorialSettings
         SetShouldShowTutorial(false);
     }
 }
+
+public static class IntroSettings
+{
+    public const string IntroSeenPrefsKey = "Dustium.IntroSeen";
+
+    private const int SeenValue = 1;
+    private const int NotSeenValue = 0;
+
+    public static bool HasSeenIntro =>
+        PlayerPrefs.GetInt(IntroSeenPrefsKey, NotSeenValue) == SeenValue;
+
+    public static bool ShouldPlayIntro => !HasSeenIntro;
+
+    public static void MarkIntroSeen()
+    {
+        PlayerPrefs.SetInt(IntroSeenPrefsKey, SeenValue);
+        PlayerPrefs.Save();
+    }
+
+    public static void ResetIntroSeenState()
+    {
+        PlayerPrefs.SetInt(IntroSeenPrefsKey, NotSeenValue);
+        PlayerPrefs.Save();
+    }
+}

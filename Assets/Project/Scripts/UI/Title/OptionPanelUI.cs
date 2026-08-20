@@ -10,6 +10,8 @@ public class OptionPanelUI : MonoBehaviour
     private const string LanguageContentName = "LanguageContent";
     private const string ResolutionContentName = "ResolutionContent";
     private const string ControlContentName = "ControlContent";
+    private const string TutorialToggleName = "TutorialToggle";
+    private const string IntroToggleName = "IntroToggle";
 
     [Header("Contents")]
     [SerializeField] private GameObject soundContent;
@@ -22,6 +24,9 @@ public class OptionPanelUI : MonoBehaviour
 
     [Header("Tutorial")]
     [SerializeField] private Toggle tutorialToggle;
+
+    [Header("Intro")]
+    [SerializeField] private Toggle introToggle;
 
     [Header("Resolution Template Sorting")]
     [SerializeField] private int resolutionDropdownSortingOrderOffset = 50;
@@ -43,7 +48,14 @@ public class OptionPanelUI : MonoBehaviour
         SetupLanguageDropdown();
         SetupResolutionDropdown();
         SetupTutorialToggle();
+        SetupIntroToggle();
+        SubscribeIntroFinished();
         ShowAllContents();
+    }
+
+    private void OnDisable()
+    {
+        UnsubscribeIntroFinished();
     }
 
     private void OnDestroy()
@@ -53,6 +65,11 @@ public class OptionPanelUI : MonoBehaviour
 
         if (tutorialToggle != null)
             tutorialToggle.onValueChanged.RemoveListener(OnTutorialToggleChanged);
+
+        if (introToggle != null)
+            introToggle.onValueChanged.RemoveListener(OnIntroToggleChanged);
+
+        UnsubscribeIntroFinished();
     }
 
     private void ShowAllContents()
@@ -63,6 +80,25 @@ public class OptionPanelUI : MonoBehaviour
         SetContentActive(controlContent, true);
 
         SyncTutorialToggleFromSettings();
+        ResetIntroToggle();
+    }
+
+    /// <summary>
+    /// 설정창의 인트로 다시보기 버튼에서 호출합니다.
+    /// 현재 진행 상태를 변경하지 않고 인트로만 다시 재생합니다.
+    /// </summary>
+    public void ReplayIntro()
+    {
+        IntroSequenceController introController = IntroSequenceController.Instance;
+        if (introController == null)
+        {
+            Debug.LogWarning(
+                "[OptionPanelUI] IntroSequenceController를 찾을 수 없습니다.",
+                this);
+            return;
+        }
+
+        introController.ReplayIntro();
     }
 
     public void SaveProgress()
@@ -151,7 +187,11 @@ public class OptionPanelUI : MonoBehaviour
             controlContent = FindChildGameObject(ControlContentName);
 
         if (tutorialToggle == null && controlContent != null)
-            tutorialToggle = controlContent.GetComponentInChildren<Toggle>(true);
+        {
+            Transform tutorialToggleTransform = FindChildByName(controlContent.transform, TutorialToggleName);
+            if (tutorialToggleTransform != null)
+                tutorialToggle = tutorialToggleTransform.GetComponent<Toggle>();
+        }
 
         if (tutorialToggle == null)
         {
@@ -164,6 +204,80 @@ public class OptionPanelUI : MonoBehaviour
         tutorialToggle.onValueChanged.RemoveListener(OnTutorialToggleChanged);
         tutorialToggle.SetIsOnWithoutNotify(TutorialSettings.ShouldShowTutorial);
         tutorialToggle.onValueChanged.AddListener(OnTutorialToggleChanged);
+    }
+
+
+    private void SetupIntroToggle()
+    {
+        if (controlContent == null)
+            controlContent = FindChildGameObject(ControlContentName);
+
+        if (introToggle == null && controlContent != null)
+        {
+            Transform introToggleTransform = FindChildByName(controlContent.transform, IntroToggleName);
+            if (introToggleTransform != null)
+                introToggle = introToggleTransform.GetComponent<Toggle>();
+        }
+
+        if (introToggle == null)
+        {
+            Debug.LogWarning(
+                "[OptionPanelUI] IntroToggle is not assigned in the Option prefab.",
+                this);
+            return;
+        }
+
+        introToggle.onValueChanged.RemoveListener(OnIntroToggleChanged);
+        introToggle.SetIsOnWithoutNotify(false);
+        introToggle.onValueChanged.AddListener(OnIntroToggleChanged);
+    }
+
+    private void OnIntroToggleChanged(bool isOn)
+    {
+        if (!isOn)
+            return;
+
+        IntroSequenceController introController = IntroSequenceController.Instance;
+        if (introController == null)
+        {
+            Debug.LogWarning(
+                "[OptionPanelUI] IntroSequenceController를 찾을 수 없습니다.",
+                this);
+            ResetIntroToggle();
+            return;
+        }
+
+        introController.ReplayIntro();
+    }
+
+    private void SubscribeIntroFinished()
+    {
+        IntroSequenceController introController = IntroSequenceController.Instance;
+        if (introController == null)
+            return;
+
+        introController.IntroFinished -= HandleIntroFinished;
+        introController.IntroFinished += HandleIntroFinished;
+    }
+
+    private void UnsubscribeIntroFinished()
+    {
+        IntroSequenceController introController = IntroSequenceController.Instance;
+        if (introController == null)
+            return;
+
+        introController.IntroFinished -= HandleIntroFinished;
+    }
+
+    private void HandleIntroFinished()
+    {
+        ResetIntroToggle();
+    }
+
+    private void ResetIntroToggle()
+    {
+        if (introToggle != null)
+            introToggle.SetIsOnWithoutNotify(false);
     }
 
     private void OnTutorialToggleChanged(bool shouldShowTutorial)
