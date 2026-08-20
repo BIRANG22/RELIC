@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 2a958f0b2d84fce4990a1b11f366dd5a
+guid: 7b0751884616ac844a81a91f4b869d9c
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -48,7 +48,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 40
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -69,7 +69,7 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 8192
+    maxTextureSize: 4096
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -97,353 +97,353 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Mon_E_01_die_0
+      name: Mon_E_03_idle_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 3240
-        width: 1920
-        height: 1080
+        y: 3072
+        width: 1024
+        height: 1024
       alignment: 9
-      pivot: {x: 0.48, y: 0.035}
+      pivot: {x: 0.5, y: 0.2}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 07cfa0d606b8b0d419f5b955060884f4
-      internalID: -831211283
+      spriteID: a83a98ec4ad03bb44927c421e3deab7f
+      internalID: 1260267404
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_E_01_die_1
+      name: Mon_E_03_idle_1
       rect:
         serializedVersion: 2
-        x: 1920
-        y: 3240
-        width: 1920
-        height: 1080
+        x: 1024
+        y: 3072
+        width: 1024
+        height: 1024
       alignment: 9
-      pivot: {x: 0.48, y: 0.035}
+      pivot: {x: 0.5, y: 0.2}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 2ac0e3183468d5e4ba4315c5459d97a8
-      internalID: -472676126
+      spriteID: c3b3d36fc4c3edb4a9711ab154f233af
+      internalID: -1371195049
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_E_01_die_2
+      name: Mon_E_03_idle_2
       rect:
         serializedVersion: 2
-        x: 3840
-        y: 3240
-        width: 1920
-        height: 1080
+        x: 2048
+        y: 3072
+        width: 1024
+        height: 1024
       alignment: 9
-      pivot: {x: 0.48, y: 0.035}
+      pivot: {x: 0.5, y: 0.2}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: f9c6890348375584bba655a0eea84ce3
-      internalID: 1942593598
+      spriteID: a49d7f870ec934443bd2ad18ba983f88
+      internalID: 515525214
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_E_01_die_3
+      name: Mon_E_03_idle_3
       rect:
         serializedVersion: 2
-        x: 5760
-        y: 3240
-        width: 1920
-        height: 1080
+        x: 3072
+        y: 3072
+        width: 1024
+        height: 1024
       alignment: 9
-      pivot: {x: 0.48, y: 0.035}
+      pivot: {x: 0.5, y: 0.2}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 97d82326523546f469623b35d7296063
-      internalID: 157548387
+      spriteID: b303a6d67573d644a86f523e10e3d7a4
+      internalID: 993635227
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_E_01_die_4
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 2160
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.48, y: 0.035}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: a80d2b91fa624ba47ae5cd78412595e2
-      internalID: 2058815746
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_E_01_die_5
-      rect:
-        serializedVersion: 2
-        x: 1920
-        y: 2160
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.48, y: 0.035}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 710fb3c3cbcf30c4ab49321ab34d83b2
-      internalID: -659500954
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_E_01_die_6
-      rect:
-        serializedVersion: 2
-        x: 3840
-        y: 2160
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.48, y: 0.035}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: e2f6fcc10e698974ea3163c1990688d0
-      internalID: 983085257
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_E_01_die_7
-      rect:
-        serializedVersion: 2
-        x: 5760
-        y: 2160
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.48, y: 0.035}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 0ae7c1355f113774f9cf35f32fe3986a
-      internalID: -708640124
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_E_01_die_8
+      name: Mon_E_03_idle_4
       rect:
         serializedVersion: 2
         x: 0
-        y: 1080
-        width: 1920
-        height: 1080
+        y: 2048
+        width: 1024
+        height: 1024
       alignment: 9
-      pivot: {x: 0.48, y: 0.035}
+      pivot: {x: 0.5, y: 0.2}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: aec8e47c6398c264eaab36afc5268e1f
-      internalID: 1649394494
+      spriteID: 395299be8e9af3940a66e972630383d7
+      internalID: -1972381535
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_E_01_die_9
+      name: Mon_E_03_idle_5
       rect:
         serializedVersion: 2
-        x: 1920
-        y: 1080
-        width: 1920
-        height: 1080
+        x: 1024
+        y: 2048
+        width: 1024
+        height: 1024
       alignment: 9
-      pivot: {x: 0.48, y: 0.035}
+      pivot: {x: 0.5, y: 0.2}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c129ffa226d2a3846970662eeaaaa27e
-      internalID: -944228082
+      spriteID: 683f3c3f818ff404d9bd3cfbc0c845b6
+      internalID: 1715348971
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_E_01_die_10
+      name: Mon_E_03_idle_6
       rect:
         serializedVersion: 2
-        x: 3840
-        y: 1080
-        width: 1920
-        height: 1080
+        x: 2048
+        y: 2048
+        width: 1024
+        height: 1024
       alignment: 9
-      pivot: {x: 0.48, y: 0.035}
+      pivot: {x: 0.5, y: 0.2}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 5c65a91434ad1fd4dba85309736a35ef
-      internalID: 1009159308
+      spriteID: 1dfb209555d0bac40aaa0db7f029d209
+      internalID: -36730521
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_E_01_die_11
+      name: Mon_E_03_idle_7
       rect:
         serializedVersion: 2
-        x: 5760
-        y: 1080
-        width: 1920
-        height: 1080
+        x: 3072
+        y: 2048
+        width: 1024
+        height: 1024
       alignment: 9
-      pivot: {x: 0.48, y: 0.035}
+      pivot: {x: 0.5, y: 0.2}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 383d116fa363c8448bfb321cc8e52799
-      internalID: 29940033
+      spriteID: e394b37f2f273d94289cb736dcd530b7
+      internalID: -1798868157
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_E_01_die_12
+      name: Mon_E_03_idle_8
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1024
+        width: 1024
+        height: 1024
+      alignment: 9
+      pivot: {x: 0.5, y: 0.2}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cd117f4f9f3bdfd48937f46c5b1c421c
+      internalID: -734967296
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Mon_E_03_idle_9
+      rect:
+        serializedVersion: 2
+        x: 1024
+        y: 1024
+        width: 1024
+        height: 1024
+      alignment: 9
+      pivot: {x: 0.5, y: 0.2}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 435f237d7d136f04f8627388d3db5347
+      internalID: 1267367877
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Mon_E_03_idle_10
+      rect:
+        serializedVersion: 2
+        x: 2048
+        y: 1024
+        width: 1024
+        height: 1024
+      alignment: 9
+      pivot: {x: 0.5, y: 0.2}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b216d4521cc4bf546a02d33c63c8d11f
+      internalID: 485206854
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Mon_E_03_idle_11
+      rect:
+        serializedVersion: 2
+        x: 3072
+        y: 1024
+        width: 1024
+        height: 1024
+      alignment: 9
+      pivot: {x: 0.5, y: 0.2}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cf593b4cda4d26946b765d026a7c3635
+      internalID: -399613383
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Mon_E_03_idle_12
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 1920
-        height: 1080
+        width: 1024
+        height: 1024
       alignment: 9
-      pivot: {x: 0.48, y: 0.035}
+      pivot: {x: 0.5, y: 0.2}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 3bd1089349ca1ff45b5e6716e36600cc
-      internalID: -1054090028
+      spriteID: 9cab87c0705255040aeb015563ec909b
+      internalID: 40039316
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_E_01_die_13
+      name: Mon_E_03_idle_13
       rect:
         serializedVersion: 2
-        x: 1920
+        x: 1024
         y: 0
-        width: 1920
-        height: 1080
+        width: 1024
+        height: 1024
       alignment: 9
-      pivot: {x: 0.48, y: 0.035}
+      pivot: {x: 0.5, y: 0.2}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 192f42a937c345f4aa2c2d5b4f8718a5
-      internalID: 1264479672
+      spriteID: 4d7186bf2a6b8b244867cce96ed6a92b
+      internalID: -387239612
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_E_01_die_14
+      name: Mon_E_03_idle_14
       rect:
         serializedVersion: 2
-        x: 3840
+        x: 2048
         y: 0
-        width: 1920
-        height: 1080
+        width: 1024
+        height: 1024
       alignment: 9
-      pivot: {x: 0.48, y: 0.035}
+      pivot: {x: 0.5, y: 0.2}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 8260c346b7e0e8e47b00914df193b44f
-      internalID: 246156927
+      spriteID: 3333d9d271c5a6a448bdc7eec275948a
+      internalID: 900347544
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_E_01_die_15
+      name: Mon_E_03_idle_15
       rect:
         serializedVersion: 2
-        x: 5760
+        x: 3072
         y: 0
-        width: 1920
-        height: 1080
+        width: 1024
+        height: 1024
       alignment: 9
-      pivot: {x: 0.48, y: 0.035}
+      pivot: {x: 0.5, y: 0.2}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 4d35a51689ca7db49bdb505486c1a77b
-      internalID: 357213433
+      spriteID: ec9ce2d5b46ccd246aa20c67c128e36c
+      internalID: -1429816913
       vertices: []
       indices: 
       edges: []
@@ -452,7 +452,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 53d4ebad27fd55440939456386e71232
+    spriteID: 519ccee42e52cb640a6c92eb15042e9a
     internalID: 0
     vertices: []
     indices: 
@@ -462,22 +462,22 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Mon_E_01_die_0: -831211283
-      Mon_E_01_die_1: -472676126
-      Mon_E_01_die_10: 1009159308
-      Mon_E_01_die_11: 29940033
-      Mon_E_01_die_12: -1054090028
-      Mon_E_01_die_13: 1264479672
-      Mon_E_01_die_14: 246156927
-      Mon_E_01_die_15: 357213433
-      Mon_E_01_die_2: 1942593598
-      Mon_E_01_die_3: 157548387
-      Mon_E_01_die_4: 2058815746
-      Mon_E_01_die_5: -659500954
-      Mon_E_01_die_6: 983085257
-      Mon_E_01_die_7: -708640124
-      Mon_E_01_die_8: 1649394494
-      Mon_E_01_die_9: -944228082
+      Mon_E_03_idle_0: 1260267404
+      Mon_E_03_idle_1: -1371195049
+      Mon_E_03_idle_10: 485206854
+      Mon_E_03_idle_11: -399613383
+      Mon_E_03_idle_12: 40039316
+      Mon_E_03_idle_13: -387239612
+      Mon_E_03_idle_14: 900347544
+      Mon_E_03_idle_15: -1429816913
+      Mon_E_03_idle_2: 515525214
+      Mon_E_03_idle_3: 993635227
+      Mon_E_03_idle_4: -1972381535
+      Mon_E_03_idle_5: 1715348971
+      Mon_E_03_idle_6: -36730521
+      Mon_E_03_idle_7: -1798868157
+      Mon_E_03_idle_8: -734967296
+      Mon_E_03_idle_9: 1267367877
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

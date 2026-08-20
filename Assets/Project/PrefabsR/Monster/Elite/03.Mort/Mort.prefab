@@ -993,7 +993,6 @@ MonoBehaviour:
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
       projectileVfx:
-        skillId: 
         missilePrefab: {fileID: 0}
         impactPrefab: {fileID: 0}
         missileFlipType: 2
@@ -1044,7 +1043,6 @@ MonoBehaviour:
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
       projectileVfx:
-        skillId: 
         missilePrefab: {fileID: 0}
         impactPrefab: {fileID: 0}
         missileFlipType: 2
@@ -1095,7 +1093,6 @@ MonoBehaviour:
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
       projectileVfx:
-        skillId: 
         missilePrefab: {fileID: 0}
         impactPrefab: {fileID: 0}
         missileFlipType: 2
@@ -1146,7 +1143,6 @@ MonoBehaviour:
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
       projectileVfx:
-        skillId: 
         missilePrefab: {fileID: 0}
         impactPrefab: {fileID: 0}
         missileFlipType: 2
@@ -1197,7 +1193,6 @@ MonoBehaviour:
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
       projectileVfx:
-        skillId: 
         missilePrefab: {fileID: 0}
         impactPrefab: {fileID: 0}
         missileFlipType: 2
@@ -1228,7 +1223,7 @@ MonoBehaviour:
   monsterActionPresentations:
   - stateName: AttackAction1
     vfx:
-      prefab: {fileID: 0}
+      prefab: {fileID: 8323198300880681488, guid: 54a105f7d4413df498febf2c20247103, type: 3}
       flipType: 0
       sfx:
         playSfx: 0
@@ -1251,7 +1246,6 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
-      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
@@ -1278,7 +1272,7 @@ MonoBehaviour:
       impactOffset: {x: 0, y: 0, z: 0}
   - stateName: AttackAction2
     vfx:
-      prefab: {fileID: 0}
+      prefab: {fileID: 2270861586506169575, guid: 0572c5c158b09494c9b80317f866ec91, type: 3}
       flipType: 0
       sfx:
         playSfx: 0
@@ -1301,7 +1295,6 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
-      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
@@ -1328,7 +1321,7 @@ MonoBehaviour:
       impactOffset: {x: 0, y: 0, z: 0}
   - stateName: AttackAction3
     vfx:
-      prefab: {fileID: 0}
+      prefab: {fileID: 2722526190595881914, guid: 6c96fe66d3d5321458160c40faa279bb, type: 3}
       flipType: 0
       sfx:
         playSfx: 0
@@ -1338,7 +1331,7 @@ MonoBehaviour:
         routeEmbeddedAudioSourcesThroughAudioManager: 1
         removeEmbeddedAudioSources: 1
       renderMode: 0
-      proxyBlendMode: 1
+      proxyBlendMode: 0
       spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
@@ -1351,7 +1344,6 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
-      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
@@ -1401,7 +1393,6 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
-      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
@@ -1451,7 +1442,6 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
-      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
@@ -1501,7 +1491,6 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
-      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
@@ -1551,7 +1540,6 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
-      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
@@ -1601,7 +1589,6 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
-      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
@@ -1651,7 +1638,6 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
-      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
@@ -1701,7 +1687,6 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
-      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2

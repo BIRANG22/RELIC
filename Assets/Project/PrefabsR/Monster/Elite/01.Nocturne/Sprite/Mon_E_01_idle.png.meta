@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 9e460bd947e87704984989ebb09ac058
+guid: 88d1c6881430cac45a223b7a6f48a393
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -48,7 +48,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 90
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -97,7 +97,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Mon_E_01_move_0
+      name: Mon_E_01_idle_0
       rect:
         serializedVersion: 2
         x: 0
@@ -112,14 +112,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: eea276cc91b500a4fb1ad50174ee071f
-      internalID: -1781505397
+      spriteID: 9cb940b326c13ec49afb94f51cd00d8c
+      internalID: -421441253
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_E_01_move_1
+      name: Mon_E_01_idle_1
       rect:
         serializedVersion: 2
         x: 1920
@@ -134,14 +134,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e95c885bfc5e336419c7c93730202b27
-      internalID: 1537172439
+      spriteID: cc285fbbd117a7b41ad2c16e0618a7f4
+      internalID: -403181540
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_E_01_move_2
+      name: Mon_E_01_idle_2
       rect:
         serializedVersion: 2
         x: 3840
@@ -156,14 +156,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 3537203f726b8ff4a8c0400dc315f260
-      internalID: 1782104878
+      spriteID: cc6f461589790cb4c83f6f25b2e8a1b9
+      internalID: 902121267
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_E_01_move_3
+      name: Mon_E_01_idle_3
       rect:
         serializedVersion: 2
         x: 5760
@@ -178,14 +178,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 5d359559e13d1bd43ac43ed383b4d646
-      internalID: 2024878744
+      spriteID: 6d2f67ccf1da2cc47a5d51c81c34972d
+      internalID: -1722086621
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_E_01_move_4
+      name: Mon_E_01_idle_4
       rect:
         serializedVersion: 2
         x: 0
@@ -200,14 +200,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ead41d8dcac0e8c4b8980d74f6afd095
-      internalID: -1233734006
+      spriteID: 7a42d52d558583b42823e2eaf6e77598
+      internalID: 1676460331
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_E_01_move_5
+      name: Mon_E_01_idle_5
       rect:
         serializedVersion: 2
         x: 1920
@@ -222,14 +222,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 36f69f4ccbefdbc4f908d2efa29345a4
-      internalID: -1241336502
+      spriteID: e966cd91a024eab42b3d79d58e49a123
+      internalID: -2043570242
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_E_01_move_6
+      name: Mon_E_01_idle_6
       rect:
         serializedVersion: 2
         x: 3840
@@ -244,14 +244,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 20d16f0ac7cc5634a981400881a79f07
-      internalID: 1025265468
+      spriteID: c906079b2624c9a4e80ae56cc4c9164e
+      internalID: -1046484972
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_E_01_move_7
+      name: Mon_E_01_idle_7
       rect:
         serializedVersion: 2
         x: 5760
@@ -266,14 +266,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: cb3e352d26c281a4cac9f1ff4304dff9
-      internalID: -1573574842
+      spriteID: fef12c5f520fe7a46835800969fbf182
+      internalID: -2095097538
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_E_01_move_8
+      name: Mon_E_01_idle_8
       rect:
         serializedVersion: 2
         x: 0
@@ -288,14 +288,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 5eaa330c7c9bd6d44a22b52318925c73
-      internalID: 1139183619
+      spriteID: f764450781468b84392cf50cf6e7fb14
+      internalID: -532336477
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_E_01_move_9
+      name: Mon_E_01_idle_9
       rect:
         serializedVersion: 2
         x: 1920
@@ -310,14 +310,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: be8822e02758b954fbd42ba2004c49b8
-      internalID: -749378418
+      spriteID: 22828d1a87f4c964eb1bef71247fcbe8
+      internalID: -1665019306
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_E_01_move_10
+      name: Mon_E_01_idle_10
       rect:
         serializedVersion: 2
         x: 3840
@@ -332,14 +332,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 52f381fd6b467cd43b54cd13cc144257
-      internalID: 1108918068
+      spriteID: c795b262a1adf10488f79adf736eb012
+      internalID: 2134466793
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_E_01_move_11
+      name: Mon_E_01_idle_11
       rect:
         serializedVersion: 2
         x: 5760
@@ -354,14 +354,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: fa8c6781cacce214086fa6f1dee93eec
-      internalID: 739858378
+      spriteID: 285dc925405bab04cbae7233458dc82b
+      internalID: -1013452250
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_E_01_move_12
+      name: Mon_E_01_idle_12
       rect:
         serializedVersion: 2
         x: 0
@@ -376,14 +376,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c7e8e731373fc8e46baef92b1f789fcd
-      internalID: -1529173968
+      spriteID: ddfd2e54d6dae08478a4bdf9de392503
+      internalID: -1279838710
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_E_01_move_13
+      name: Mon_E_01_idle_13
       rect:
         serializedVersion: 2
         x: 1920
@@ -398,14 +398,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 91db662f675f17a4e914d2b70a92c6c6
-      internalID: -942996907
+      spriteID: cb929e81fcbafb149866529f0029beef
+      internalID: 1604030614
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_E_01_move_14
+      name: Mon_E_01_idle_14
       rect:
         serializedVersion: 2
         x: 3840
@@ -420,14 +420,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 3060e97df0295f24bb26f6834e74e100
-      internalID: 1686567667
+      spriteID: a3f76b9fd88475046af7c5597865ffcc
+      internalID: 17860694
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Mon_E_01_move_15
+      name: Mon_E_01_idle_15
       rect:
         serializedVersion: 2
         x: 5760
@@ -442,8 +442,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 5ac83027ee41c394782976d7f9a07046
-      internalID: -635085461
+      spriteID: 39172e43ed3297a43a852919224a3f62
+      internalID: 843603356
       vertices: []
       indices: 
       edges: []
@@ -452,7 +452,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: f527ea5fc82b897418e306061281b17b
+    spriteID: 579c64ab131f5e041a2de0aaa9233e98
     internalID: 0
     vertices: []
     indices: 
@@ -462,22 +462,22 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Mon_E_01_move_0: -1781505397
-      Mon_E_01_move_1: 1537172439
-      Mon_E_01_move_10: 1108918068
-      Mon_E_01_move_11: 739858378
-      Mon_E_01_move_12: -1529173968
-      Mon_E_01_move_13: -942996907
-      Mon_E_01_move_14: 1686567667
-      Mon_E_01_move_15: -635085461
-      Mon_E_01_move_2: 1782104878
-      Mon_E_01_move_3: 2024878744
-      Mon_E_01_move_4: -1233734006
-      Mon_E_01_move_5: -1241336502
-      Mon_E_01_move_6: 1025265468
-      Mon_E_01_move_7: -1573574842
-      Mon_E_01_move_8: 1139183619
-      Mon_E_01_move_9: -749378418
+      Mon_E_01_idle_0: -421441253
+      Mon_E_01_idle_1: -403181540
+      Mon_E_01_idle_10: 2134466793
+      Mon_E_01_idle_11: -1013452250
+      Mon_E_01_idle_12: -1279838710
+      Mon_E_01_idle_13: 1604030614
+      Mon_E_01_idle_14: 17860694
+      Mon_E_01_idle_15: 843603356
+      Mon_E_01_idle_2: 902121267
+      Mon_E_01_idle_3: -1722086621
+      Mon_E_01_idle_4: 1676460331
+      Mon_E_01_idle_5: -2043570242
+      Mon_E_01_idle_6: -1046484972
+      Mon_E_01_idle_7: -2095097538
+      Mon_E_01_idle_8: -532336477
+      Mon_E_01_idle_9: -1665019306
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
