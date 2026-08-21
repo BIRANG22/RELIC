@@ -99,6 +99,8 @@ public class Setting : MonoBehaviour
     }
 
     private int currentPartyIndex = -1;
+    private int pendingPartyIndex = -1;
+    private Coroutine pendingPartyOpenCoroutine;
     private SettingTab currentTab = SettingTab.Preview;
 
     private CharacterSettingTabButtonScaleEffect previewButtonScaleEffect;
@@ -163,6 +165,30 @@ public class Setting : MonoBehaviour
         // EventSystem 선택 상태가 CharacterSelect로 이동해도 탭 색상이 깜빡이지 않도록
         // Button의 Color Tint 전환이 Target Graphic 색상을 덮어쓰지 않게 한다.
         button.transition = Selectable.Transition.None;
+    }
+
+    private void OnEnable()
+    {
+        if (pendingPartyIndex < 0)
+            return;
+
+        if (pendingPartyOpenCoroutine != null)
+            StopCoroutine(pendingPartyOpenCoroutine);
+
+        pendingPartyOpenCoroutine = StartCoroutine(OpenPendingPartySettingRoutine());
+    }
+
+    private IEnumerator OpenPendingPartySettingRoutine()
+    {
+        // 패널이 활성화된 첫 프레임의 Start/초기화가 끝난 뒤 선택 캐릭터를 적용합니다.
+        yield return null;
+
+        int partyIndex = pendingPartyIndex;
+        pendingPartyIndex = -1;
+        pendingPartyOpenCoroutine = null;
+
+        if (partyIndex >= 0)
+            OpenPartySetting(partyIndex);
     }
 
     private void Start()
@@ -363,6 +389,22 @@ public class Setting : MonoBehaviour
         RefreshAllPanels();
     }
 
+    /// <summary>
+    /// CharacterSettingPanel이 아직 비활성 상태면 슬롯 선택을 예약하고,
+    /// 패널 활성화/초기화가 끝난 다음 해당 캐릭터를 엽니다.
+    /// </summary>
+    public void OpenPartySettingWhenActive(int partyIndex)
+    {
+        if (isActiveAndEnabled && gameObject.activeInHierarchy)
+        {
+            pendingPartyIndex = -1;
+            OpenPartySetting(partyIndex);
+            return;
+        }
+
+        pendingPartyIndex = partyIndex;
+    }
+
     public void OpenPartySetting(int partyIndex)
     {
         SaveBeforeBattle();
@@ -384,6 +426,11 @@ public class Setting : MonoBehaviour
             ShowWarning(GameLocalization.Get("lobby.party_slot_empty", "해당 파티 슬롯에 캐릭터가 없습니다."));
             return;
         }
+
+        // 외부의 Character1~3 슬롯에서 설정 화면을 연 경우에도
+        // CharacterSelect의 CharBtn 선택 상태를 실제 파티 캐릭터와 맞춘다.
+        if (charPick != null)
+            charPick.SelectViewedCharacterForSetting(characterId);
 
         OpenCharacterSetting(characterId);
         currentPartyIndex = partyIndex;
