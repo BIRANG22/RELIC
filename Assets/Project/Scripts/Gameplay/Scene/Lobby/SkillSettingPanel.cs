@@ -30,11 +30,23 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
     [SerializeField] private GameObject sharedInfoArea;
     [SerializeField] private TMP_Text skillInfoTitleText;
     [SerializeField] private TMP_Text skillInfoEffectText;
+    [SerializeField] private TMP_Text skillInfoRarityText;
     [SerializeField] private GameObject skillInfoRangeRoot;
     [SerializeField] private Image skillInfoRangeImage;
     [SerializeField] private TMP_Text skillInfoCostText;
     [SerializeField] private TMP_Text skillInfoTypeText;
     [SerializeField] private TMP_Text skillInfoValueText;
+
+    [Header("Info Rarity Colors")]
+    [SerializeField] private Color commonRarityColor = Color.white;
+    [SerializeField] private Color rareRarityColor = Color.white;
+    [SerializeField] private Color epicRarityColor = Color.white;
+    [SerializeField] private Color uniqueRarityColor = Color.white;
+    [SerializeField] private Color exclusiveRarityColor = new Color(1f, 0.82f, 0.2f, 1f);
+
+    [Header("Info Effect Value Color")]
+    [Tooltip("도감과 동일하게 설명 안의 ValueRate/CountRate 치환 수치에 적용할 강조 색상입니다.")]
+    [SerializeField] private Color valueHighlightColor = Color.yellow;
 
     [Header("Shared Info Labels")]
     [SerializeField] private GameObject skillInfoRangeLabel;
@@ -212,6 +224,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
         if (skillInfoTitleText != null &&
             skillInfoEffectText != null &&
+            skillInfoRarityText != null &&
             skillInfoRangeImage != null &&
             skillInfoCostText != null &&
             skillInfoTypeText != null &&
@@ -254,6 +267,13 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
                 effect = area.Find("SkillEffectText");
             if (effect != null)
                 skillInfoEffectText = effect.GetComponent<TMP_Text>();
+        }
+
+        if (skillInfoRarityText == null)
+        {
+            Transform rarity = area.Find("RarityText");
+            if (rarity != null)
+                skillInfoRarityText = rarity.GetComponent<TMP_Text>();
         }
 
         if (skillInfoRangeRoot == null)
@@ -301,7 +321,9 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
         if (skillInfoTypeText == null)
         {
-            Transform type = area.Find("TypeText");
+            Transform type = area.Find("TpyeText");
+            if (type == null)
+                type = area.Find("TypeText");
             if (type == null)
                 type = area.Find("RangeTypeText");
             if (type != null)
@@ -1016,11 +1038,13 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         SetSkillInfoValueObjectsVisible(true);
 
         SetPlainTmpText(skillInfoTitleText, GameDataLocalization.SkillName(skill));
+        SetPlainTmpText(skillInfoRarityText, SkillRarityUtility.GetDisplayName(skill.Rarity));
+        ApplySkillInfoRarityColor(skill.Rarity);
         SetRichTmpText(skillInfoEffectText, BuildSkillDetailsText(skill));
         SetSkillRangeImage(skill);
-        SetPlainTmpText(skillInfoCostText, BuildSkillCostText(skill));
-        SetPlainTmpText(skillInfoTypeText, BuildSkillRangeTypeText(skill));
-        SetPlainTmpText(skillInfoValueText, BuildSkillValueText(skill));
+        SetPlainTmpText(skillInfoCostText, $"소모 : {BuildSkillCostText(skill)}");
+        SetPlainTmpText(skillInfoTypeText, $"방식 : {BuildSkillRangeTypeText(skill)}");
+        SetPlainTmpText(skillInfoValueText, $"효과 : {BuildSkillValueText(skill)}");
     }
 
     public void ClearSkillInfoFromHover()
@@ -1060,6 +1084,8 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         SetSkillInfoValueObjectsVisible(false);
 
         SetPlainTmpText(skillInfoTitleText, emptySkillInfoTitle);
+        SetPlainTmpText(skillInfoRarityText, string.Empty);
+        RestoreSkillInfoRarityColor();
         SetRichTmpText(skillInfoEffectText, emptySkillInfoEffect);
         ClearSkillRangeImage();
         SetPlainTmpText(skillInfoCostText, string.Empty);
@@ -1069,17 +1095,19 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
     private void SetSkillInfoLabelsVisible(bool visible)
     {
+        // Infotext_1~4는 더 이상 사용하지 않습니다.
+        // 방식/소모/효과 라벨은 각 값 텍스트에 직접 포함합니다.
         if (skillInfoRangeLabel != null)
-            skillInfoRangeLabel.SetActive(visible);
+            skillInfoRangeLabel.SetActive(false);
 
         if (skillInfoTypeLabel != null)
-            skillInfoTypeLabel.SetActive(visible);
+            skillInfoTypeLabel.SetActive(false);
 
         if (skillInfoCostLabel != null)
-            skillInfoCostLabel.SetActive(visible);
+            skillInfoCostLabel.SetActive(false);
 
         if (skillInfoValueLabel != null)
-            skillInfoValueLabel.SetActive(visible);
+            skillInfoValueLabel.SetActive(false);
     }
 
     /// <summary>
@@ -1128,9 +1156,15 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
         if (skillInfoEffectText != null)
         {
-            // 스킬 설명의 숫자에 별도 색상을 적용하지 않고 CSV 원문 그대로 표시합니다.
-            skillInfoEffectText.richText = false;
+            skillInfoEffectText.richText = true;
+            skillInfoEffectText.overrideColorTags = false;
             skillInfoEffectText.parseCtrlCharacters = true;
+        }
+
+        if (skillInfoRarityText != null)
+        {
+            skillInfoRarityText.richText = false;
+            skillInfoRarityText.parseCtrlCharacters = true;
         }
 
         if (skillInfoCostText != null)
@@ -1195,35 +1229,33 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (skill == null)
             return string.Empty;
 
-        int costValue = Mathf.Max(0, skill.ResourceCostValue);
-        if (costValue <= 0)
-            return GameLocalization.Get("common.no_cost", "소모 없음");
+        if (skill.ResourceCostValue <= 0)
+            return "소모 없음";
 
         string resourceName;
-
         switch (skill.ReferenceResource)
         {
             case ReferenceResource.HP:
-                resourceName = GameLocalization.Get("common.hp", "체력");
+                resourceName = "생명력";
                 break;
-
             case ReferenceResource.Cost:
-                resourceName = GameLocalization.Get("common.cost", "코스트");
+                resourceName = "마나";
                 break;
-
             case ReferenceResource.UniqueResource:
-                resourceName = GetCurrentUniqueResourceName();
+                resourceName = "카르마";
                 break;
-
             case ReferenceResource.MovePoint:
-                resourceName = GameLocalization.Get("common.move_point", "이동력");
+                resourceName = "이동";
                 break;
-
             default:
-                return string.Empty;
+                resourceName = string.Empty;
+                break;
         }
 
-        return $"{resourceName} {costValue}";
+        int costValue = Mathf.Max(0, skill.ResourceCostValue);
+        return string.IsNullOrEmpty(resourceName)
+            ? costValue.ToString()
+            : $"{resourceName} {costValue}";
     }
 
     private string GetCurrentUniqueResourceName()
@@ -1255,18 +1287,14 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (skill == null)
             return string.Empty;
 
-        // 패시브 스킬은 범위 사용 방식 대신 고유자원 유지 조건을 표시합니다.
-        if (skill.Category == Category.Passive)
-            return BuildPassiveActivationTypeText();
-
         switch (skill.RangeType)
         {
-            case RangeType.Selection:
-                return GameLocalization.Get("skill.range_selection", "그리드 선택");
-
             case RangeType.Direction:
-                return GameLocalization.Get("skill.range_caster_position", "시전자 위치");
-
+                return "시전자 위치";
+            case RangeType.Selection:
+                return "그리드 선택";
+            case RangeType.Passive:
+                return "카르마 최대 시 지속";
             default:
                 return string.Empty;
         }
@@ -1302,7 +1330,6 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             return string.Empty;
 
         List<SkillEffectEntry> entries = skill.EffectEntries;
-
         if ((entries == null || entries.Count == 0) &&
             DataManager.Instance != null &&
             DataManager.Instance.EffectDatabase != null)
@@ -1311,48 +1338,31 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         }
 
         if (entries == null || entries.Count == 0)
-            return string.Empty;
+            return "없음";
 
-        StringBuilder builder = new StringBuilder();
+        List<string> parts = new List<string>(2);
+        int count = Mathf.Min(2, entries.Count);
 
-        for (int i = 0; i < entries.Count; i++)
+        for (int i = 0; i < count; i++)
         {
             SkillEffectEntry entry = entries[i];
-            if (entry == null)
+            if (entry == null || string.IsNullOrWhiteSpace(entry.EffectId))
                 continue;
 
-            string effectName = entry.EffectData != null &&
-                                !string.IsNullOrWhiteSpace(entry.EffectData.Name)
+            string effectName = entry.EffectData != null && !string.IsNullOrWhiteSpace(entry.EffectData.Name)
                 ? GameDataLocalization.EffectName(entry.EffectData)
                 : entry.EffectId;
 
-            effectName = GetEffectDisplayName(effectName, entry.EffectId);
+            string normalized = (effectName ?? string.Empty).Replace(" ", string.Empty).ToLowerInvariant();
+            if (normalized.Contains("타격") || normalized.Contains("strike"))
+                effectName = "피해";
 
-            if (string.IsNullOrWhiteSpace(effectName))
-                continue;
-
-            int value = SkillValueCalculator.GetValue(entry);
-            int count = Mathf.Max(0, SkillValueCalculator.GetCount(entry));
-
-            if (builder.Length > 0)
-                builder.AppendLine();
-
-            builder.Append(effectName);
-
-            if (value != 0)
-            {
-                builder.Append(' ');
-                builder.Append(value);
-            }
-
-            if (count > 1)
-            {
-                builder.Append(" × ");
-                builder.Append(count);
-            }
+            int effectValue = entry.ValueAmount != 0 ? entry.ValueAmount : entry.CountAmount;
+            string valueText = Mathf.Abs(effectValue).ToString();
+            parts.Add(string.IsNullOrWhiteSpace(effectName) ? valueText : $"{effectName} {valueText}");
         }
 
-        return builder.ToString();
+        return parts.Count > 0 ? string.Join(" / ", parts) : "없음";
     }
 
     private string GetEffectDisplayName(string effectName, string effectId)
@@ -1414,13 +1424,116 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (skill == null)
             return "";
 
-        string details = GameDataLocalization.SkillDetails(skill);
+        // 도감과 동일하게 토큰 치환 전 원본 Details를 사용합니다.
+        // GameDataLocalization.SkillDetails()는 먼저 {ValueRate}/{CountRate}를 숫자로 바꾸므로
+        // 이후에는 어떤 숫자가 치환값인지 알 수 없어 색상 태그를 적용할 수 없습니다.
+        string details = skill.Details;
 
         if (string.IsNullOrWhiteSpace(details))
             return "";
 
-        // 설명에 포함된 숫자를 색상 태그로 감싸지 않고 원문 그대로 표시합니다.
-        return NormalizeSkillInfoText(details);
+        return FormatHighlightedEffectDescription(
+            NormalizeSkillInfoText(details),
+            skill.ValueRate,
+            skill.CountRate);
+    }
+
+    private string FormatHighlightedEffectDescription(string description, string valueRate, string countRate)
+    {
+        if (string.IsNullOrWhiteSpace(description))
+            return string.Empty;
+
+        string result = description;
+        string colorHex = ColorUtility.ToHtmlStringRGB(valueHighlightColor);
+
+        result = ReplaceIndexedHighlightedValues(result, "ValueRate", valueRate, colorHex);
+        result = ReplaceIndexedHighlightedValues(result, "CountRate", countRate, colorHex);
+        result = ReplaceHighlightedValue(result, "{ValueRate}", valueRate, colorHex);
+        result = ReplaceHighlightedValue(result, "{CountRate}", countRate, colorHex);
+
+        return result;
+    }
+
+    private static string ReplaceIndexedHighlightedValues(string source, string tokenName, string values, string colorHex)
+    {
+        if (string.IsNullOrEmpty(source) || string.IsNullOrWhiteSpace(tokenName))
+            return source;
+
+        string[] splitValues = string.IsNullOrWhiteSpace(values)
+            ? System.Array.Empty<string>()
+            : values.Split(';');
+
+        for (int i = 0; i < splitValues.Length; i++)
+        {
+            string token = $"{{{tokenName}{i + 1}}}";
+            if (!source.Contains(token))
+                continue;
+
+            string displayValue = GetHighlightedDisplayRateValue(splitValues[i]);
+            source = source.Replace(token, $"<color=#{colorHex}>{displayValue}</color>");
+        }
+
+        return source;
+    }
+
+    private static string ReplaceHighlightedValue(string source, string token, string value, string colorHex)
+    {
+        if (string.IsNullOrEmpty(source) || string.IsNullOrEmpty(token) || !source.Contains(token))
+            return source;
+
+        string displayValue = GetHighlightedDisplayRateValue(value);
+        return source.Replace(token, $"<color=#{colorHex}>{displayValue}</color>");
+    }
+
+    private static string GetHighlightedDisplayRateValue(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return "?";
+
+        string displayValue = value.Trim();
+        if (displayValue.Length > 1 &&
+            displayValue[0] == '-' &&
+            float.TryParse(
+                displayValue.Substring(1),
+                System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out _))
+        {
+            return displayValue.Substring(1);
+        }
+
+        return displayValue;
+    }
+
+    private void ApplySkillInfoRarityColor(SkillRarity rarity)
+    {
+        if (skillInfoRarityText == null)
+            return;
+
+        skillInfoRarityText.color = GetSkillInfoRarityColor(rarity);
+    }
+
+    private void RestoreSkillInfoRarityColor()
+    {
+        if (skillInfoRarityText != null)
+            skillInfoRarityText.color = commonRarityColor;
+    }
+
+    private Color GetSkillInfoRarityColor(SkillRarity rarity)
+    {
+        switch (rarity)
+        {
+            case SkillRarity.Exclusive:
+                return exclusiveRarityColor;
+            case SkillRarity.Rare:
+                return rareRarityColor;
+            case SkillRarity.Epic:
+                return epicRarityColor;
+            case SkillRarity.Unique:
+                return uniqueRarityColor;
+            default:
+                return commonRarityColor;
+        }
     }
 
     private string ColorizeSkillDetailNumbersOutsideRichTags(string text)

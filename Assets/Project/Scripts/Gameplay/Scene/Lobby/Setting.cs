@@ -422,15 +422,25 @@ public class Setting : MonoBehaviour
 
         if (string.IsNullOrWhiteSpace(characterId))
         {
-            Clear();
-            ShowWarning(GameLocalization.Get("lobby.party_slot_empty", "해당 파티 슬롯에 캐릭터가 없습니다."));
-            return;
+            // 빈 슬롯이면 현재 파티에 아직 편성되지 않은 캐릭터 중
+            // CharacterSelect에서 가장 앞에 있는 사용 가능한 캐릭터를 보여준다.
+            if (charPick == null ||
+                !charPick.TrySelectFirstUnassignedCharacterForSetting(out characterId))
+            {
+                Clear();
+                ShowWarning(GameLocalization.Get(
+                    "lobby.no_available_character",
+                    "선택할 수 있는 캐릭터가 없습니다."));
+                return;
+            }
         }
-
-        // 외부의 Character1~3 슬롯에서 설정 화면을 연 경우에도
-        // CharacterSelect의 CharBtn 선택 상태를 실제 파티 캐릭터와 맞춘다.
-        if (charPick != null)
-            charPick.SelectViewedCharacterForSetting(characterId);
+        else
+        {
+            // 외부의 Character1~3 슬롯에서 설정 화면을 연 경우에도
+            // CharacterSelect의 CharBtn 선택 상태를 실제 파티 캐릭터와 맞춘다.
+            if (charPick != null)
+                charPick.SelectViewedCharacterForSetting(characterId);
+        }
 
         OpenCharacterSetting(characterId);
         currentPartyIndex = partyIndex;

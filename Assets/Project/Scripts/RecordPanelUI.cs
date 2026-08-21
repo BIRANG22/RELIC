@@ -1221,8 +1221,6 @@ public class RecordPanelUI : MonoBehaviour
         }
 
         Color rarityColor = GetRarityColor(rarity);
-        if (nameText != null)
-            nameText.color = rarityColor;
         if (rarityText != null)
             rarityText.color = rarityColor;
     }

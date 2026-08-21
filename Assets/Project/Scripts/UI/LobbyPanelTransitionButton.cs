@@ -163,10 +163,13 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 
         isProcessing = true;
 
+        GameObject[] effectivePanelsToClose = GetEffectivePanelsToClose();
+        GameObject[] effectiveWorldObjectsToClose = GetEffectiveWorldObjectsToClose();
+
         lobbyPanelTransition.PlayPanelChange(
-            panelsToClose,
+            effectivePanelsToClose,
             panelToOpen,
-            worldObjectsToClose,
+            effectiveWorldObjectsToClose,
             worldObjectsToOpen,
             closeDirection,
             openDirection,
@@ -249,6 +252,9 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
         if (transitionMode == PanelTransitionMode.LobbyToCharacter)
         {
             viewStateController.ShowCharacterSelection();
+
+            if (panelToOpen != null && panelToOpen.name == "CharacterSettingPanel")
+                KeepSettingButtonActive();
         }
         else if (transitionMode == PanelTransitionMode.CharacterToLobby)
         {
@@ -258,12 +264,14 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 
     private void ApplyWorldObjectChangeImmediately()
     {
-        if (worldObjectsToClose != null)
+        GameObject[] effectiveWorldObjectsToClose = GetEffectiveWorldObjectsToClose();
+
+        if (effectiveWorldObjectsToClose != null)
         {
-            for (int i = 0; i < worldObjectsToClose.Length; i++)
+            for (int i = 0; i < effectiveWorldObjectsToClose.Length; i++)
             {
-                if (worldObjectsToClose[i] != null)
-                    worldObjectsToClose[i].SetActive(false);
+                if (effectiveWorldObjectsToClose[i] != null)
+                    effectiveWorldObjectsToClose[i].SetActive(false);
             }
         }
 
@@ -279,17 +287,116 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 
     private void ApplyPanelChangeImmediately()
     {
-        if (panelsToClose != null)
+        GameObject[] effectivePanelsToClose = GetEffectivePanelsToClose();
+
+        if (effectivePanelsToClose != null)
         {
-            for (int i = 0; i < panelsToClose.Length; i++)
+            for (int i = 0; i < effectivePanelsToClose.Length; i++)
             {
-                if (panelsToClose[i] != null)
-                    panelsToClose[i].SetActive(false);
+                if (effectivePanelsToClose[i] != null)
+                    effectivePanelsToClose[i].SetActive(false);
             }
         }
 
         if (panelToOpen != null)
             panelToOpen.SetActive(true);
+    }
+
+    /// <summary>
+    /// CharacterSettingPanel을 열 때는 로비의 SettingButton을 유지합니다.
+    /// 기존 인스펙터의 Panels To Close에 SettingButton이 들어 있어도
+    /// 캐릭터 설정 화면으로 전환할 때만 자동으로 제외합니다.
+    /// </summary>
+    private GameObject[] GetEffectivePanelsToClose()
+    {
+        if (panelsToClose == null || panelsToClose.Length == 0)
+            return panelsToClose;
+
+        if (panelToOpen == null || panelToOpen.name != "CharacterSettingPanel")
+            return panelsToClose;
+
+        int keepCount = 0;
+
+        for (int i = 0; i < panelsToClose.Length; i++)
+        {
+            GameObject panel = panelsToClose[i];
+
+            if (panel != null && panel.name != "SettingButton")
+                keepCount++;
+        }
+
+        if (keepCount == panelsToClose.Length)
+            return panelsToClose;
+
+        GameObject[] filtered = new GameObject[keepCount];
+        int index = 0;
+
+        for (int i = 0; i < panelsToClose.Length; i++)
+        {
+            GameObject panel = panelsToClose[i];
+
+            if (panel == null || panel.name == "SettingButton")
+                continue;
+
+            filtered[index++] = panel;
+        }
+
+        return filtered;
+    }
+
+
+    /// <summary>
+    /// CharacterSettingPanel을 열 때는 World Objects To Close에 SettingButton이
+    /// 등록되어 있어도 비활성화하지 않습니다.
+    /// </summary>
+    private GameObject[] GetEffectiveWorldObjectsToClose()
+    {
+        if (worldObjectsToClose == null || worldObjectsToClose.Length == 0)
+            return worldObjectsToClose;
+
+        if (panelToOpen == null || panelToOpen.name != "CharacterSettingPanel")
+            return worldObjectsToClose;
+
+        int keepCount = 0;
+
+        for (int i = 0; i < worldObjectsToClose.Length; i++)
+        {
+            GameObject target = worldObjectsToClose[i];
+
+            if (target != null && target.name != "SettingButton")
+                keepCount++;
+        }
+
+        if (keepCount == worldObjectsToClose.Length)
+            return worldObjectsToClose;
+
+        GameObject[] filtered = new GameObject[keepCount];
+        int index = 0;
+
+        for (int i = 0; i < worldObjectsToClose.Length; i++)
+        {
+            GameObject target = worldObjectsToClose[i];
+
+            if (target == null || target.name == "SettingButton")
+                continue;
+
+            filtered[index++] = target;
+        }
+
+        return filtered;
+    }
+
+
+    /// <summary>
+    /// 캐릭터 설정 화면에서는 SettingButton을 항상 활성 상태로 유지합니다.
+    /// 인스펙터의 닫기 목록에 잘못 포함되어 있어도 마지막 단계에서 복구합니다.
+    /// </summary>
+    private void KeepSettingButtonActive()
+    {
+        GameObject settingButton = FindSceneObject("SettingButton");
+
+        if (settingButton != null)
+            settingButton.SetActive(true);
     }
 
     private void ResolveLobbyBackgrounds()
