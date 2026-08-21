@@ -1163,6 +1163,81 @@ MonoBehaviour:
   references:
     version: 2
     RefIds: []
+--- !u!1 &23686726
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 23686727}
+  - component: {fileID: 23686729}
+  - component: {fileID: 23686728}
+  m_Layer: 0
+  m_Name: SelectedGlowBorder
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &23686727
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 23686726}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1904583160}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 140, y: 70}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &23686728
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 23686726}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 2100000, guid: b3235e40e18ed284487b133d4826dbb0, type: 2}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 4578f9e70fa8a8447b8451121f25aefc, type: 3}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &23686729
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 23686726}
+  m_CullTransparentMesh: 1
 --- !u!1 &26929532
 GameObject:
   m_ObjectHideFlags: 0
@@ -1773,6 +1848,81 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &80060793
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 80060794}
+  - component: {fileID: 80060796}
+  - component: {fileID: 80060795}
+  m_Layer: 0
+  m_Name: SelectedGlowBorder
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &80060794
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 80060793}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2012554166}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 140, y: 70}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &80060795
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 80060793}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 2100000, guid: b3235e40e18ed284487b133d4826dbb0, type: 2}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 4578f9e70fa8a8447b8451121f25aefc, type: 3}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &80060796
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 80060793}
+  m_CullTransparentMesh: 1
 --- !u!1 &86989392
 GameObject:
   m_ObjectHideFlags: 0
@@ -10914,7 +11064,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.047058824, g: 0.047058824, b: 0.047058824, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -23983,6 +24133,7 @@ GameObject:
   - component: {fileID: 655768711}
   - component: {fileID: 655768714}
   - component: {fileID: 655768715}
+  - component: {fileID: 655768716}
   m_Layer: 0
   m_Name: SkillButton
   m_TagString: Untagged
@@ -24003,6 +24154,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1247722707}
+  - {fileID: 992902654}
   - {fileID: 428997621}
   - {fileID: 848790876}
   m_Father: {fileID: 1789030766}
@@ -24149,6 +24301,29 @@ MonoBehaviour:
   panels: []
   playClickSound: 0
   clickSfx: 7
+--- !u!114 &655768716
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 655768709}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3737f5e2735b1584a904f6eea45596e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  glowImage: {fileID: 992902655}
+  hideWhenUnselected: 1
+  selectOnClick: 1
+  selectionGroupRoot: {fileID: 0}
+  selectedOnEnable: 0
+  selected: 0
+  glowColor: {r: 1, g: 1, b: 1, a: 1}
+  flowSpeed: 0.5
+  glowWidth: 0.5
+  glowStrength: 4
+  baseBrightness: 2
 --- !u!1 &656357418
 GameObject:
   m_ObjectHideFlags: 0
@@ -25456,7 +25631,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uD504\uB9AC\uBDF0"
+  m_text: "\uAE30\uBCF8"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
   m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
@@ -29593,7 +29768,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC2A4\uD0AC"
+  m_text: "\uAE30\uC5B5"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
   m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
@@ -38257,6 +38432,81 @@ MonoBehaviour:
   hoverHitArea: {fileID: 0}
   hoverExitPadding: 4
   hoverExitDelay: 0.05
+--- !u!1 &992902653
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 992902654}
+  - component: {fileID: 992902656}
+  - component: {fileID: 992902655}
+  m_Layer: 0
+  m_Name: SelectedGlowBorder
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &992902654
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 992902653}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 655768710}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 140, y: 70}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &992902655
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 992902653}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 2100000, guid: b3235e40e18ed284487b133d4826dbb0, type: 2}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 4578f9e70fa8a8447b8451121f25aefc, type: 3}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &992902656
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 992902653}
+  m_CullTransparentMesh: 1
 --- !u!1 &994032177
 GameObject:
   m_ObjectHideFlags: 0
@@ -40228,11 +40478,18 @@ MonoBehaviour:
   sharedInfoArea: {fileID: 1687239344}
   skillInfoTitleText: {fileID: 1260823026}
   skillInfoEffectText: {fileID: 1169981078}
+  skillInfoRarityText: {fileID: 0}
   skillInfoRangeRoot: {fileID: 0}
   skillInfoRangeImage: {fileID: 360758240}
   skillInfoCostText: {fileID: 129666089}
   skillInfoTypeText: {fileID: 2040703524}
   skillInfoValueText: {fileID: 148508383}
+  commonRarityColor: {r: 1, g: 1, b: 1, a: 1}
+  rareRarityColor: {r: 1, g: 1, b: 1, a: 1}
+  epicRarityColor: {r: 1, g: 1, b: 1, a: 1}
+  uniqueRarityColor: {r: 1, g: 1, b: 1, a: 1}
+  exclusiveRarityColor: {r: 1, g: 0.82, b: 0.2, a: 1}
+  valueHighlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   skillInfoRangeLabel: {fileID: 0}
   skillInfoTypeLabel: {fileID: 0}
   skillInfoCostLabel: {fileID: 0}
@@ -60939,7 +61196,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uB8EC"
+  m_text: "\uD30C\uD3B8"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
   m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
@@ -73247,6 +73504,7 @@ GameObject:
   - component: {fileID: 1904583163}
   - component: {fileID: 1904583162}
   - component: {fileID: 1904583161}
+  - component: {fileID: 1904583166}
   m_Layer: 0
   m_Name: PresetButton
   m_TagString: Untagged
@@ -73267,6 +73525,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 933682849}
+  - {fileID: 23686727}
   - {fileID: 346437921}
   - {fileID: 699362577}
   m_Father: {fileID: 1789030766}
@@ -73413,6 +73672,29 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1904583159}
   m_CullTransparentMesh: 1
+--- !u!114 &1904583166
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1904583159}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3737f5e2735b1584a904f6eea45596e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  glowImage: {fileID: 23686728}
+  hideWhenUnselected: 1
+  selectOnClick: 1
+  selectionGroupRoot: {fileID: 0}
+  selectedOnEnable: 0
+  selected: 0
+  glowColor: {r: 1, g: 1, b: 1, a: 1}
+  flowSpeed: 0.5
+  glowWidth: 0.5
+  glowStrength: 4
+  baseBrightness: 2
 --- !u!1 &1910902822
 GameObject:
   m_ObjectHideFlags: 0
@@ -74337,10 +74619,17 @@ MonoBehaviour:
   sharedInfoArea: {fileID: 0}
   runeInfoTitleText: {fileID: 0}
   runeInfoEffectText: {fileID: 0}
+  runeInfoRarityText: {fileID: 0}
   sharedSkillSettingPanel: {fileID: 0}
   emptyRuneInfoTitle: "\uB8EC \uC815\uBCF4"
   emptyRuneInfoEffect: "\uB8EC\uC744 \uC120\uD0DD\uD558\uBA74 \uC815\uBCF4\uAC00
     \uD45C\uC2DC\uB429\uB2C8\uB2E4."
+  commonRarityColor: {r: 1, g: 1, b: 1, a: 1}
+  rareRarityColor: {r: 1, g: 1, b: 1, a: 1}
+  epicRarityColor: {r: 1, g: 1, b: 1, a: 1}
+  uniqueRarityColor: {r: 1, g: 1, b: 1, a: 1}
+  exclusiveRarityColor: {r: 1, g: 0.82, b: 0.2, a: 1}
+  valueHighlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   warningUI: {fileID: 1763934034}
 --- !u!222 &1943513972
 CanvasRenderer:
@@ -75789,6 +76078,7 @@ GameObject:
   - component: {fileID: 2012554167}
   - component: {fileID: 2012554170}
   - component: {fileID: 2012554171}
+  - component: {fileID: 2012554172}
   m_Layer: 0
   m_Name: RuneButton
   m_TagString: Untagged
@@ -75809,6 +76099,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 697386563}
+  - {fileID: 80060794}
   - {fileID: 1824462962}
   - {fileID: 1661096955}
   m_Father: {fileID: 1789030766}
@@ -75955,6 +76246,29 @@ MonoBehaviour:
   panels: []
   playClickSound: 0
   clickSfx: 7
+--- !u!114 &2012554172
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2012554165}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3737f5e2735b1584a904f6eea45596e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  glowImage: {fileID: 80060795}
+  hideWhenUnselected: 1
+  selectOnClick: 1
+  selectionGroupRoot: {fileID: 0}
+  selectedOnEnable: 0
+  selected: 0
+  glowColor: {r: 1, g: 1, b: 1, a: 1}
+  flowSpeed: 0.5
+  glowWidth: 0.5
+  glowStrength: 4
+  baseBrightness: 2
 --- !u!1 &2015401050
 GameObject:
   m_ObjectHideFlags: 0
