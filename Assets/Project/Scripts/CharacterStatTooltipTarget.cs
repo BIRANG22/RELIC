@@ -130,14 +130,21 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
         if (!string.IsNullOrWhiteSpace(customName))
             return customName;
 
+        if (characterInfoPanel != null)
+        {
+            string panelTitle = characterInfoPanel.GetStatTooltipTitle(resolvedStatType);
+            if (!string.IsNullOrWhiteSpace(panelTitle))
+                return panelTitle;
+        }
+
         switch (resolvedStatType)
         {
             case StatType.HP:
-                return GetLocalizedTooltipText("common.hp", "체력");
+                return GetLocalizedTooltipText("common.hp", "생명력");
             case StatType.Cost:
-                return GetLocalizedTooltipText("common.cost", "코스트");
+                return GetLocalizedTooltipText("common.cost", "마나");
             case StatType.CostRecovery:
-                return GetLocalizedTooltipText("common.recovery", "회복");
+                return GetLocalizedTooltipText("common.recovery", "마나재생량");
             case StatType.Move:
                 return GetLocalizedTooltipText("common.move_point", "이동력");
             default:
@@ -149,6 +156,13 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
     {
         if (!string.IsNullOrWhiteSpace(customDescription))
             return customDescription;
+
+        if (characterInfoPanel != null)
+        {
+            string panelDescription = characterInfoPanel.GetStatTooltipDescription(resolvedStatType);
+            if (!string.IsNullOrWhiteSpace(panelDescription))
+                return panelDescription;
+        }
 
         switch (resolvedStatType)
         {

@@ -13,6 +13,12 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private TMP_Text lockText;
     [SerializeField] private GameObject lockObject;
+    [Tooltip("기억 버튼의 Line 이미지입니다. 비어 있으면 자식 이름 'Line'으로 자동으로 찾습니다.")]
+    [SerializeField] private Image lineImage;
+
+    private static readonly Color32 LockedLineColor = new Color32(0x77, 0x77, 0x77, 0xFF);
+    private static readonly Color32 UnlockedLineColor = new Color32(0xFF, 0xFF, 0xFF, 0xFF);
+
 
     [Header("Hover Scale Effect")]
     [SerializeField] private Transform scaleTarget;
@@ -38,12 +44,17 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private void Awake()
     {
+        EnsureUiReferences();
         CacheOriginalScale();
+        ResolveLineImage();
     }
 
     private void OnEnable()
     {
+        EnsureUiReferences();
         CacheOriginalScale();
+        ResolveLineImage();
+        ApplyLineVisualState();
     }
 
     private void OnDisable()
@@ -74,6 +85,7 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         int requiredLv
     )
     {
+        EnsureUiReferences();
         StopHoverScaleEffect(true);
 
         currentSkillData = skillData;
@@ -96,7 +108,10 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
             iconImage.enabled = icon != null;
             iconImage.sprite = icon;
-            iconImage.color = SkillRarityUtility.GetSkillIconColor(currentSkillData.SkillId);
+
+            Color32 iconColor = SkillRarityUtility.GetSkillIconColor(currentSkillData.SkillId);
+            iconColor.a = isLocked ? (byte)100 : (byte)255;
+            iconImage.color = iconColor;
         }
 
         if (lockObject != null)
@@ -106,6 +121,8 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
             lockText.text = isLocked
                 ? $"LV.{requiredLevel}"
                 : "";
+
+        ApplyLineVisualState();
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -157,13 +174,85 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
         if (isLocked)
         {
-            Debug.Log(
-                $"[SkillIconButton] Locked. Required Level: {requiredLevel}"
-            );
+            owner.ShowWarning(
+                SettingWarningUI.GetSkillMemoryUnlockLevelMessage(requiredLevel));
             return;
         }
 
         owner.SelectSkill(currentSkillData);
+    }
+
+
+    private void ResolveLineImage()
+    {
+        if (lineImage != null)
+            return;
+
+        Transform lineTransform = transform.Find("Line");
+        if (lineTransform == null)
+            lineTransform = FindChildByName(transform, "Line");
+
+        if (lineTransform != null)
+            lineImage = lineTransform.GetComponent<Image>();
+    }
+
+    private void ApplyLineVisualState()
+    {
+        ResolveLineImage();
+
+        if (lineImage == null)
+            return;
+
+        lineImage.color = isLocked ? LockedLineColor : UnlockedLineColor;
+    }
+
+    private void EnsureUiReferences()
+    {
+        if (button == null)
+            button = GetComponent<Button>();
+
+        if (iconImage == null)
+        {
+            Transform iconTransform = transform.Find("IconImg");
+            if (iconTransform == null)
+                iconTransform = FindChildByName(transform, "IconImg");
+
+            if (iconTransform != null)
+                iconImage = iconTransform.GetComponent<Image>();
+        }
+
+        if (lockObject == null)
+        {
+            Transform unlockTransform = transform.Find("unlock");
+            if (unlockTransform == null)
+                unlockTransform = FindChildByName(transform, "unlock");
+
+            if (unlockTransform != null)
+            {
+                lockObject = unlockTransform.gameObject;
+
+                if (lockText == null)
+                    lockText = unlockTransform.GetComponent<TMP_Text>();
+            }
+        }
+    }
+
+    private static Transform FindChildByName(Transform root, string childName)
+    {
+        if (root == null || string.IsNullOrWhiteSpace(childName))
+            return null;
+
+        foreach (Transform child in root)
+        {
+            if (child.name == childName)
+                return child;
+
+            Transform nested = FindChildByName(child, childName);
+            if (nested != null)
+                return nested;
+        }
+
+        return null;
     }
 
     private void CacheOriginalScale()

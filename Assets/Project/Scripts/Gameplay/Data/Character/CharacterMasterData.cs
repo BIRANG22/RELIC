@@ -30,6 +30,7 @@ namespace Relic.Gameplay.Data
         public string CharacterId;
         public string Name;
         public string Introduction;
+        public string Regeneration;
 
         [FormerlySerializedAs("MaxHealth")]
         public int MaxHP;

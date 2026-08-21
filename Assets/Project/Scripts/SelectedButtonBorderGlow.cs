@@ -4,32 +4,31 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
-/// 선택된 버튼의 테두리 이미지에 빛이 순환하는 머티리얼을 적용합니다.
-/// 버튼이 EventSystem에서 선택되거나 기본 선택 버튼으로 지정되면 Glow를 켜고,
-/// 다른 버튼으로 선택이 이동하면 자동으로 끕니다.
+/// 선택된 버튼의 테두리 Glow 이미지를 관리합니다.
+/// 다른 Glow 버튼을 선택했을 때만 이전 Glow가 꺼지며,
+/// 일반 UI 버튼을 눌러 EventSystem 포커스가 이동해도 선택된 Glow는 유지됩니다.
 /// </summary>
 [DisallowMultipleComponent]
 public class SelectedButtonBorderGlow : MonoBehaviour,
     IPointerClickHandler,
-    ISelectHandler,
-    IDeselectHandler
+    ISelectHandler
 {
     [Header("Glow Target")]
-    [Tooltip("선택 상태에서 빛이 도는 테두리 Image입니다.")]
+    [Tooltip("선택 상태에서 표시할 빛나는 테두리 Image입니다.")]
     [SerializeField] private Image glowImage;
 
     [Tooltip("선택되지 않은 상태에서는 Glow Image 오브젝트를 비활성화합니다.")]
     [SerializeField] private bool hideWhenUnselected = true;
 
     [Header("Selection")]
-    [Tooltip("버튼을 클릭하면 EventSystem의 선택 대상으로 지정합니다.")]
+    [Tooltip("버튼을 클릭하면 EventSystem의 선택 대상으로 설정합니다.")]
     [SerializeField] private bool selectOnClick = true;
 
     [Tooltip("같은 선택 그룹으로 사용할 부모입니다. 비워두면 이 오브젝트의 부모를 사용합니다.")]
     [SerializeField] private Transform selectionGroupRoot;
 
     [Header("Initial State")]
-    [Tooltip("패널이 활성화될 때 이 버튼을 기본 선택 상태로 표시합니다. 프리셋 버튼에만 체크하세요.")]
+    [Tooltip("패널이 활성화될 때 이 버튼을 기본 선택 상태로 표시합니다. 기본 버튼에서만 체크하세요.")]
     [SerializeField] private bool selectedOnEnable;
 
     [SerializeField] private bool selected;
@@ -74,8 +73,8 @@ public class SelectedButtonBorderGlow : MonoBehaviour,
 
     private IEnumerator InitializeSelectionNextFrame()
     {
-        // CharacterSettingPanel이 켜지는 프레임에는 기존 선택 UI 초기화가 아직 끝나지 않을 수 있습니다.
-        // 한 프레임 뒤 같은 그룹의 기본 버튼을 찾아 실제 선택 상태와 Glow를 맞춥니다.
+        // CharacterSettingPanel이 켜진 첫 프레임에는 다른 선택 UI 초기화가 아직 끝나지 않을 수 있습니다.
+        // 한 프레임 뒤 같은 선택 그룹의 기본 버튼을 찾아 현재 선택 상태와 Glow를 동기화합니다.
         yield return null;
 
         initializeSelectionCoroutine = null;
@@ -130,7 +129,7 @@ public class SelectedButtonBorderGlow : MonoBehaviour,
         if (group == null || group.Length == 0)
             return null;
 
-        // 명시적으로 기본 선택을 지정한 버튼이 있으면 가장 우선합니다.
+        // 인스펙터에서 기본 선택으로 지정한 버튼을 가장 먼저 우선합니다.
         for (int i = 0; i < group.Length; i++)
         {
             SelectedButtonBorderGlow glow = group[i];
@@ -138,7 +137,7 @@ public class SelectedButtonBorderGlow : MonoBehaviour,
                 return glow;
         }
 
-        // 별도 지정이 없으면 Hierarchy상 가장 앞의 활성 버튼을 기본 선택으로 사용합니다.
+        // 별도 지정이 없으면 Hierarchy에서 가장 앞의 활성 버튼을 기본 선택으로 사용합니다.
         SelectedButtonBorderGlow first = null;
         int firstSiblingIndex = int.MaxValue;
 
@@ -196,10 +195,9 @@ public class SelectedButtonBorderGlow : MonoBehaviour,
         SelectExclusive();
     }
 
-    public void OnDeselect(BaseEventData eventData)
-    {
-        SetSelected(false);
-    }
+    // EventSystem의 Deselect는 탭 선택 해제를 의미하지 않습니다.
+    // 다른 일반 버튼으로 포커스가 이동해도 현재 선택된 Glow는 유지합니다.
+    // 다른 Glow 버튼이 선택될 때 SelectExclusive()가 이전 Glow를 해제합니다.
 
     public void SetSelected(bool value)
     {
