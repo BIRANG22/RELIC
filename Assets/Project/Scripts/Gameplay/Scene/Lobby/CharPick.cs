@@ -281,6 +281,34 @@ public class CharPick : MonoBehaviour
         RefreshAllSelectedPartyMarkers();
     }
 
+    /// <summary>
+    /// CharacterSettingPanel을 외부 파티 슬롯에서 열 때,
+    /// CharacterSelect의 현재 선택 버튼도 해당 캐릭터로 맞춥니다.
+    /// 파티 편성 자체는 변경하지 않습니다.
+    /// </summary>
+    public bool SelectViewedCharacterForSetting(string characterId)
+    {
+        AutoBindCharButtonsIfNeeded();
+
+        int index = FindButtonIndexByCharacterId(characterId);
+        if (index < 0)
+            return false;
+
+        CharBtn button = charBtns[index];
+        if (button == null || !CanShowCharacterData(button, characterId))
+            return false;
+
+        centerIndex = index;
+        RefreshFixedButtons();
+        RefreshViewedCharacterButtons(true);
+
+        CreateOrUpdateRuntimeData(button);
+        SelectCenterCharacterState(button, characterId);
+        ShowPreview(characterId);
+
+        return true;
+    }
+
     public void ShowCurrentPreviewNormal()
     {
         if (TryGetCurrentPreviewAnimator(out ButtonResponsiveSpriteAnimator animator))
