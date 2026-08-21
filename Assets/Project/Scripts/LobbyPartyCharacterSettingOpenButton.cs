@@ -62,14 +62,8 @@ public class LobbyPartyCharacterSettingOpenButton : MonoBehaviour, IPointerClick
             return;
         }
 
-        string characterId = dataManager.PartyRuntimeStore.GetCharacterId(partyIndex);
-        if (string.IsNullOrWhiteSpace(characterId))
-        {
-            Debug.LogWarning(
-                $"[LobbyPartyCharacterSettingOpenButton] Character{partyIndex + 1} 슬롯이 비어 있습니다.",
-                this);
-            return;
-        }
+        // 슬롯이 비어 있어도 설정 패널은 엽니다.
+        // Setting에서 현재 파티에 아직 편성되지 않은 캐릭터 중 가장 앞 캐릭터를 선택합니다.
 
         ResolveReferences();
 

@@ -40,10 +40,22 @@ public class RuneSettingPanel : MonoBehaviour
     [SerializeField] private GameObject sharedInfoArea;
     [SerializeField] private TMP_Text runeInfoTitleText;
     [SerializeField] private TMP_Text runeInfoEffectText;
+    [SerializeField] private TMP_Text runeInfoRarityText;
     [Tooltip("같은 InfoArea를 사용하는 SkillSettingPanel입니다. 비어 있으면 자동으로 찾습니다.")]
     [SerializeField] private SkillSettingPanel sharedSkillSettingPanel;
     [SerializeField] private string emptyRuneInfoTitle = "룬 정보";
     [SerializeField, TextArea] private string emptyRuneInfoEffect = "룬을 선택하면 정보가 표시됩니다.";
+
+    [Header("Info Rarity Colors")]
+    [SerializeField] private Color commonRarityColor = Color.white;
+    [SerializeField] private Color rareRarityColor = Color.white;
+    [SerializeField] private Color epicRarityColor = Color.white;
+    [SerializeField] private Color uniqueRarityColor = Color.white;
+    [SerializeField] private Color exclusiveRarityColor = new Color(1f, 0.82f, 0.2f, 1f);
+
+    [Header("Info Effect Value Color")]
+    [Tooltip("도감과 동일하게 설명 안의 ValueRate/CountRate 치환 수치에 적용할 강조 색상입니다.")]
+    [SerializeField] private Color valueHighlightColor = Color.yellow;
 
     [Header("Warning UI")]
     [SerializeField] private SettingWarningUI warningUI;
@@ -1165,6 +1177,9 @@ public class RuneSettingPanel : MonoBehaviour
             if (runeInfoTitleText != null)
                 runeInfoTitleText.text = string.Empty;
 
+            if (runeInfoRarityText != null)
+                runeInfoRarityText.text = string.Empty;
+
             if (runeInfoEffectText != null)
                 runeInfoEffectText.text = requiredLevel > 0
                     ? GameLocalization.Format(
@@ -1206,8 +1221,18 @@ public class RuneSettingPanel : MonoBehaviour
                 ? runeData.RuneId
                 : GameDataLocalization.RuneName(runeData);
 
+        if (runeInfoRarityText != null)
+        {
+            runeInfoRarityText.text = BuildRuneRarityText(runeData);
+            runeInfoRarityText.color = GetRuneInfoRarityColor(runeData.Rarity);
+        }
+
         if (runeInfoEffectText != null)
+        {
+            runeInfoEffectText.richText = true;
+            runeInfoEffectText.overrideColorTags = false;
             runeInfoEffectText.text = BuildRuneEffectText(runeData);
+        }
     }
 
     public void ClearRuneInfoFromHover()
@@ -1243,13 +1268,23 @@ public class RuneSettingPanel : MonoBehaviour
         if (runeInfoTitleText != null)
             runeInfoTitleText.text = emptyRuneInfoTitle;
 
+        if (runeInfoRarityText != null)
+        {
+            runeInfoRarityText.text = string.Empty;
+            runeInfoRarityText.color = commonRarityColor;
+        }
+
         if (runeInfoEffectText != null)
+        {
+            runeInfoEffectText.richText = true;
+            runeInfoEffectText.overrideColorTags = false;
             runeInfoEffectText.text = emptyRuneInfoEffect;
+        }
     }
 
     private void AutoBindRuneInfoTexts()
     {
-        if (runeInfoTitleText != null && runeInfoEffectText != null)
+        if (runeInfoTitleText != null && runeInfoEffectText != null && runeInfoRarityText != null)
             return;
 
         Transform infoAreaTransform = sharedInfoArea != null
@@ -1274,6 +1309,8 @@ public class RuneSettingPanel : MonoBehaviour
                 runeInfoTitleText = texts[i];
             else if (runeInfoEffectText == null && objectName == "EffectText")
                 runeInfoEffectText = texts[i];
+            else if (runeInfoRarityText == null && objectName == "RarityText")
+                runeInfoRarityText = texts[i];
         }
     }
 
@@ -1305,6 +1342,7 @@ public class RuneSettingPanel : MonoBehaviour
         SetChildActive(infoArea, "Infotext_4", false);
 
         SetChildActive(infoArea, "CostText", false);
+        SetChildActive(infoArea, "TpyeText", false);
         SetChildActive(infoArea, "TypeText", false);
         SetChildActive(infoArea, "ValueText", false);
 
@@ -1383,6 +1421,39 @@ public class RuneSettingPanel : MonoBehaviour
         return null;
     }
 
+    private static string BuildRuneRarityText(RuneData runeData)
+    {
+        if (runeData == null || string.IsNullOrWhiteSpace(runeData.Rarity))
+            return string.Empty;
+
+        string rarity = runeData.Rarity.Trim();
+
+        if (string.Equals(rarity, "Exclusive", StringComparison.OrdinalIgnoreCase))
+            return "고유 파편";
+        if (string.Equals(rarity, "Common", StringComparison.OrdinalIgnoreCase))
+            return "각인 파편";
+        if (string.Equals(rarity, "Rare", StringComparison.OrdinalIgnoreCase))
+            return "일반 파편";
+        if (string.Equals(rarity, "Unique", StringComparison.OrdinalIgnoreCase))
+            return "축복 파편";
+
+        return rarity;
+    }
+
+    private Color GetRuneInfoRarityColor(string rarity)
+    {
+        if (string.Equals(rarity, "Exclusive", StringComparison.OrdinalIgnoreCase))
+            return exclusiveRarityColor;
+        if (string.Equals(rarity, "Rare", StringComparison.OrdinalIgnoreCase))
+            return rareRarityColor;
+        if (string.Equals(rarity, "Epic", StringComparison.OrdinalIgnoreCase))
+            return epicRarityColor;
+        if (string.Equals(rarity, "Unique", StringComparison.OrdinalIgnoreCase))
+            return uniqueRarityColor;
+
+        return commonRarityColor;
+    }
+
     private string BuildRuneEffectText(RuneData runeData)
     {
         if (runeData == null)
@@ -1391,7 +1462,7 @@ public class RuneSettingPanel : MonoBehaviour
         if (!string.IsNullOrWhiteSpace(runeData.EffectDesc))
         {
             string effectDesc = NormalizeRuneEffectDesc(runeData.EffectDesc);
-            return StripRichTextTags(ReplaceRuneEffectTokens(effectDesc, runeData.ValueRate, runeData.CountRate));
+            return ReplaceRuneEffectTokens(effectDesc, runeData.ValueRate, runeData.CountRate);
         }
 
         StringBuilder builder = new StringBuilder();
@@ -1408,21 +1479,22 @@ public class RuneSettingPanel : MonoBehaviour
         return StripRichTextTags(builder.ToString());
     }
 
-    private static string ReplaceRuneEffectTokens(string source, string valueRate, string countRate)
+    private string ReplaceRuneEffectTokens(string source, string valueRate, string countRate)
     {
         string result = source ?? string.Empty;
-        result = ReplaceRuneIndexedTokens(result, "ValueRate", valueRate);
-        result = ReplaceRuneIndexedTokens(result, "CountRate", countRate);
+        string colorHex = ColorUtility.ToHtmlStringRGB(valueHighlightColor);
+        result = ReplaceRuneIndexedTokens(result, "ValueRate", valueRate, colorHex);
+        result = ReplaceRuneIndexedTokens(result, "CountRate", countRate, colorHex);
 
         if (result.Contains("{ValueRate}"))
-            result = result.Replace("{ValueRate}", GetRuneDisplayRateValue(valueRate));
+            result = result.Replace("{ValueRate}", $"<color=#{colorHex}>{GetRuneDisplayRateValue(valueRate)}</color>");
         if (result.Contains("{CountRate}"))
-            result = result.Replace("{CountRate}", GetRuneDisplayRateValue(countRate));
+            result = result.Replace("{CountRate}", $"<color=#{colorHex}>{GetRuneDisplayRateValue(countRate)}</color>");
 
         return result;
     }
 
-    private static string ReplaceRuneIndexedTokens(string source, string tokenName, string values)
+    private static string ReplaceRuneIndexedTokens(string source, string tokenName, string values, string colorHex)
     {
         if (string.IsNullOrEmpty(source) || string.IsNullOrWhiteSpace(tokenName))
             return source;
@@ -1435,7 +1507,7 @@ public class RuneSettingPanel : MonoBehaviour
         {
             string token = $"{{{tokenName}{i + 1}}}";
             if (source.Contains(token))
-                source = source.Replace(token, GetRuneDisplayRateValue(splitValues[i]));
+                source = source.Replace(token, $"<color=#{colorHex}>{GetRuneDisplayRateValue(splitValues[i])}</color>");
         }
 
         return source;

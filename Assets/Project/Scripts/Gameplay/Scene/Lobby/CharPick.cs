@@ -309,6 +309,44 @@ public class CharPick : MonoBehaviour
         return true;
     }
 
+    /// <summary>
+    /// 빈 파티 슬롯에서 CharacterSettingPanel을 열 때 사용합니다.
+    /// CharacterSelect의 앞쪽 버튼부터 확인하여 현재 파티에 아직 편성되지 않은
+    /// 사용 가능한 캐릭터를 선택합니다. 파티 편성 자체는 변경하지 않습니다.
+    /// </summary>
+    public bool TrySelectFirstUnassignedCharacterForSetting(out string characterId)
+    {
+        characterId = null;
+        AutoBindCharButtonsIfNeeded();
+
+        if (DataManager.Instance == null || DataManager.Instance.PartyRuntimeStore == null)
+            return false;
+
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+
+        for (int i = 0; i < charBtns.Count; i++)
+        {
+            CharBtn button = charBtns[i];
+            if (button == null || button.IsLocked || !HasUsableCharacterData(button))
+                continue;
+
+            string candidateId = button.CharacterId;
+            if (string.IsNullOrWhiteSpace(candidateId))
+                continue;
+
+            if (partyStore.FindCharacterSlot(candidateId) >= 0)
+                continue;
+
+            if (!SelectViewedCharacterForSetting(candidateId))
+                continue;
+
+            characterId = candidateId;
+            return true;
+        }
+
+        return false;
+    }
+
     public void ShowCurrentPreviewNormal()
     {
         if (TryGetCurrentPreviewAnimator(out ButtonResponsiveSpriteAnimator animator))
