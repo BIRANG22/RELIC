@@ -14,10 +14,12 @@ public class CharacterInfoPanel : MonoBehaviour
     [SerializeField] private TMP_Text moveValueText;
 
     [Header("Label Texts")]
+    [SerializeField] private TMP_Text hpLabelText;
     [SerializeField, FormerlySerializedAs("staminaLabelText")] private TMP_Text costLabelText;
     [SerializeField, FormerlySerializedAs("staminaRecoveryLabelText")] private TMP_Text recoveryLabelText;
-    [SerializeField] private string costLabel = "코스트";
-    [SerializeField] private string recoveryLabel = "코스트 회복량";
+    [SerializeField] private string hpLabel = "생명력";
+    [SerializeField] private string costLabel = "마나";
+    [SerializeField] private string recoveryLabel = "마나재생량";
 
     [Header("Rune Modified Stat Display")]
     [SerializeField] private bool showModifiedStatDelta = true;
@@ -34,6 +36,17 @@ public class CharacterInfoPanel : MonoBehaviour
     [SerializeField] private TMP_Text storyText;
     [SerializeField] private string storyTooltipTitleColor = "#4E66DF";
 
+    [Header("Karma Acquisition Text")]
+    [SerializeField] private string karmaAcquisitionTitle = "카르마 획득 조건";
+
+    [Header("Stat Tooltip Text")]
+    [SerializeField] private string hpTooltipTitle = "생명력";
+    [SerializeField, TextArea(2, 4)] private string hpTooltipDescription = "캐릭터의 생명력입니다.\n생명력이 0이 되면 전투불능 상태가 됩니다.";
+    [SerializeField] private string costTooltipTitle = "마나";
+    [SerializeField, TextArea(2, 4)] private string costTooltipDescription = "기억을 사용할 때 소모하는 자원입니다.\n현재 마나가 부족하면 기억을 사용할 수 없습니다.";
+    [SerializeField] private string recoveryTooltipTitle = "마나재생량";
+    [SerializeField, TextArea(2, 4)] private string recoveryTooltipDescription = "턴이 시작될 때 회복되는 마나 수치입니다.";
+
     [Header("Story Tooltip Timing")]
     [SerializeField, Min(0f)] private float storyTooltipRestoreDelay = 0.15f;
 
@@ -49,6 +62,7 @@ public class CharacterInfoPanel : MonoBehaviour
     private void Awake()
     {
         AutoBindCharacterMarkImageIfNeeded();
+        AutoBindStatLabelTexts();
         ApplyCostLabels();
     }
 
@@ -56,6 +70,7 @@ public class CharacterInfoPanel : MonoBehaviour
     private void OnValidate()
     {
         AutoBindCharacterMarkImageIfNeeded();
+        AutoBindStatLabelTexts();
         ApplyCostLabels();
     }
 #endif
@@ -192,9 +207,59 @@ public class CharacterInfoPanel : MonoBehaviour
 
     private void RefreshStoryTextCache()
     {
-        currentStoryText = currentMasterData != null
-            ? FormatIntroduction(GameDataLocalization.CharacterIntroduction(currentMasterData))
-            : "";
+        if (currentMasterData == null)
+        {
+            currentStoryText = "";
+            return;
+        }
+
+        currentStoryText = FormatStoryTooltip(
+            NormalizeEditableText(karmaAcquisitionTitle),
+            NormalizeEditableText(currentMasterData.Regeneration),
+            "");
+    }
+
+    public string GetStatTooltipTitle(CharacterStatTooltipTarget.StatType statType)
+    {
+        switch (statType)
+        {
+            case CharacterStatTooltipTarget.StatType.HP:
+                return NormalizeEditableText(hpTooltipTitle);
+            case CharacterStatTooltipTarget.StatType.Cost:
+                return NormalizeEditableText(costTooltipTitle);
+            case CharacterStatTooltipTarget.StatType.CostRecovery:
+                return NormalizeEditableText(recoveryTooltipTitle);
+            default:
+                return string.Empty;
+        }
+    }
+
+    public string GetStatTooltipDescription(CharacterStatTooltipTarget.StatType statType)
+    {
+        switch (statType)
+        {
+            case CharacterStatTooltipTarget.StatType.HP:
+                return NormalizeEditableText(hpTooltipDescription);
+            case CharacterStatTooltipTarget.StatType.Cost:
+                return NormalizeEditableText(costTooltipDescription);
+            case CharacterStatTooltipTarget.StatType.CostRecovery:
+                return NormalizeEditableText(recoveryTooltipDescription);
+            default:
+                return string.Empty;
+        }
+    }
+
+    private static string NormalizeEditableText(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+            return string.Empty;
+
+        return text
+            .Replace("\\r\\n", "\n")
+            .Replace("\\n", "\n")
+            .Replace("\\r", "")
+            .Replace("\r\n", "\n")
+            .Replace("\r", "\n");
     }
 
     private void ApplyStoryText(string text)
@@ -205,11 +270,45 @@ public class CharacterInfoPanel : MonoBehaviour
 
     private void ApplyCostLabels()
     {
+        AutoBindStatLabelTexts();
+
+        if (hpLabelText != null)
+            hpLabelText.text = hpLabel;
+
         if (costLabelText != null)
             costLabelText.text = costLabel;
 
         if (recoveryLabelText != null)
             recoveryLabelText.text = recoveryLabel;
+    }
+
+    private void AutoBindStatLabelTexts()
+    {
+        if (hpLabelText == null)
+            hpLabelText = FindStatLabelText("HP", hpValueText);
+
+        if (costLabelText == null)
+            costLabelText = FindStatLabelText("Cost", costValueText);
+
+        if (recoveryLabelText == null)
+            recoveryLabelText = FindStatLabelText("Recovery", recoveryValueText);
+    }
+
+    private TMP_Text FindStatLabelText(string rootName, TMP_Text valueText)
+    {
+        Transform statRoot = FindChildByName(transform, rootName);
+        if (statRoot == null)
+            return null;
+
+        TMP_Text[] texts = statRoot.GetComponentsInChildren<TMP_Text>(true);
+        for (int i = 0; i < texts.Length; i++)
+        {
+            TMP_Text candidate = texts[i];
+            if (candidate != null && candidate != valueText)
+                return candidate;
+        }
+
+        return null;
     }
 
     private string FormatStatValue(int baseValue, int effectiveValue)

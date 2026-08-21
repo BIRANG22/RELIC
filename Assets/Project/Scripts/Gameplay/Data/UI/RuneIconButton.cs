@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, ISelectHandler
+public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, ISelectHandler, IDeselectHandler
 {
     [Header("UI")]
     [SerializeField] private Button button;
@@ -22,17 +22,22 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
     [Header("Equipped UI")]
     [SerializeField] private GameObject equippedObject;
-    [SerializeField] private bool useEquippedObject = false;
 
     [Header("Locked UI")]
     [SerializeField] private GameObject lockedObject;
     [SerializeField] private TMP_Text requiredLevelText;
+
+    [Header("Purchase Selection UI")]
+    [SerializeField] private GameObject selectedObject;
 
     private RuneSettingPanel owner;
     private RuneData currentRuneData;
 
     private bool isLocked;
     private bool isEquipped;
+    private bool isCommonRune;
+    private bool isPurchased = true;
+    private bool isPurchaseSelected;
     private int requiredLevel;
 
     private Vector3 originalScale = Vector3.one;
@@ -47,12 +52,18 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
     private void Awake()
     {
+        ResolveEquippedUIReferences();
+        ResolveLockedUIReferences();
+        ResolvePurchaseSelectionUI();
         CacheOriginalScale();
         CacheOriginalIconColor();
     }
 
     private void OnEnable()
     {
+        ResolveEquippedUIReferences();
+        ResolveLockedUIReferences();
+        ResolvePurchaseSelectionUI();
         CacheOriginalScale();
         CacheOriginalIconColor();
     }
@@ -65,6 +76,7 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
             isPointerInside = false;
         }
 
+        RefreshUnlockHoverState();
         StopHoverScaleEffect(true);
     }
 
@@ -114,6 +126,7 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         }
 
         SetLockedState(isLocked, this.requiredLevel);
+        RefreshPurchaseSelectionVisual();
         ApplyIconVisualState();
     }
 
@@ -121,18 +134,102 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     {
         isEquipped = equipped;
 
-        if (useEquippedObject && equippedObject != null)
+        ResolveEquippedUIReferences();
+
+        if (equippedObject != null)
             equippedObject.SetActive(equipped);
-        else if (equippedObject != null)
-            equippedObject.SetActive(false);
 
         ApplyIconVisualState();
     }
 
+    public void SetPurchaseState(bool commonRune, bool purchased, bool selectedForPurchase)
+    {
+        isCommonRune = commonRune;
+        isPurchased = purchased;
+        isPurchaseSelected = selectedForPurchase;
+        RefreshPurchaseSelectionVisual();
+        ApplyIconVisualState();
+    }
+
+    public void SetPurchaseSelected(bool selected)
+    {
+        isPurchaseSelected = selected;
+        RefreshPurchaseSelectionVisual();
+        ApplyIconVisualState();
+    }
+
+
+    private void ResolveEquippedUIReferences()
+    {
+        if (equippedObject != null)
+            return;
+
+        Transform installationTransform = transform.Find("Installation");
+        if (installationTransform == null)
+            installationTransform = FindDeepChild(transform, "Installation");
+
+        if (installationTransform != null)
+            equippedObject = installationTransform.gameObject;
+    }
+
+    private void ResolvePurchaseSelectionUI()
+    {
+        if (selectedObject != null)
+            return;
+
+        Transform selectedTransform = transform.Find("Selected");
+        if (selectedTransform == null)
+            selectedTransform = FindDeepChild(transform, "Selected");
+
+        if (selectedTransform != null)
+            selectedObject = selectedTransform.gameObject;
+    }
+
+    private void RefreshPurchaseSelectionVisual()
+    {
+        ResolvePurchaseSelectionUI();
+
+        if (selectedObject != null)
+            selectedObject.SetActive(isCommonRune && !isPurchased && isPurchaseSelected);
+    }
+
+    private void ResolveLockedUIReferences()
+    {
+        if (lockedObject == null)
+        {
+            Transform unlockTransform = transform.Find("unlock");
+            if (unlockTransform == null)
+                unlockTransform = FindDeepChild(transform, "unlock");
+
+            if (unlockTransform != null)
+                lockedObject = unlockTransform.gameObject;
+        }
+
+        if (requiredLevelText == null && lockedObject != null)
+            requiredLevelText = lockedObject.GetComponentInChildren<TMP_Text>(true);
+    }
+
+    private static Transform FindDeepChild(Transform parent, string targetName)
+    {
+        if (parent == null)
+            return null;
+
+        foreach (Transform child in parent)
+        {
+            if (string.Equals(child.name, targetName, System.StringComparison.OrdinalIgnoreCase))
+                return child;
+
+            Transform nested = FindDeepChild(child, targetName);
+            if (nested != null)
+                return nested;
+        }
+
+        return null;
+    }
+
     private void SetLockedState(bool locked, int level)
     {
-        if (lockedObject != null)
-            lockedObject.SetActive(locked);
+        ResolveLockedUIReferences();
 
         if (requiredLevelText != null)
         {
@@ -142,6 +239,26 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
         if (button != null)
             button.interactable = currentRuneData != null;
+
+        RefreshUnlockHoverState();
+    }
+
+    private void RefreshUnlockHoverState()
+    {
+        ResolveLockedUIReferences();
+
+        if (lockedObject == null)
+            return;
+
+        // 공용룬 구매 UI에서는 unlock 오브젝트를 사용하지 않습니다.
+        // 전용룬의 레벨 잠금 표시만 기존 방식으로 유지합니다.
+        if (isCommonRune)
+        {
+            lockedObject.SetActive(false);
+            return;
+        }
+
+        lockedObject.SetActive(isLocked);
     }
 
     private void ApplyIconVisualState()
@@ -155,8 +272,17 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
             return;
         }
 
-        // 장착 여부와 관계없이 룬 아이콘은 데이터베이스에 연결된 원본 색상을 유지합니다.
-        // 장착 상태는 equippedObject 같은 별도 표시 오브젝트로만 표현합니다.
+        if (isCommonRune && !isPurchased)
+        {
+            // 구매 대상으로 선택되어도 아이콘 밝기는 바꾸지 않습니다.
+            Color baseColor = GetRuneDisplayColor(currentRuneData);
+            baseColor.r *= 0.35f;
+            baseColor.g *= 0.35f;
+            baseColor.b *= 0.35f;
+            iconImage.color = baseColor;
+            return;
+        }
+
         iconImage.color = GetRuneDisplayColor(currentRuneData);
     }
 
@@ -182,6 +308,7 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
             LobbyInfoHoverState.BeginRuneHover();
             isPointerInside = true;
         }
+        RefreshUnlockHoverState();
         ShowCurrentRuneInfo();
         shownInfoVersion = LobbyInfoHoverState.CurrentVersion;
         StartHoverScaleEffect();
@@ -194,6 +321,7 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
             LobbyInfoHoverState.EndRuneHover();
             isPointerInside = false;
         }
+        RefreshUnlockHoverState();
         StopHoverScaleEffect(true);
 
         // 프리뷰에서는 호버가 끝나면 기본 안내 정보로 돌아갑니다.
@@ -207,6 +335,11 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     public void OnSelect(BaseEventData eventData)
     {
         ShowCurrentRuneInfo();
+    }
+
+    public void OnDeselect(BaseEventData eventData)
+    {
+        owner?.HandleRuneIconDeselected(this);
     }
 
     private void ShowCurrentRuneInfo()

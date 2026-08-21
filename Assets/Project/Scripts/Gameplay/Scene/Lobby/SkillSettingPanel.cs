@@ -1,4 +1,5 @@
 using Relic.Gameplay.Data;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -962,7 +963,27 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
     private int GetRequiredLevelForSkill(SkillMasterData skill, int slotIndex)
     {
-        return 1;
+        if (skill == null)
+            return 1;
+
+        // 본능기억(패시브)의 두 번째 기억은 Lv.5,
+        // 발현기억(카르마 사용)의 두 번째 기억은 Lv.10에 해금됩니다.
+        if (slotIndex != 0 && slotIndex != 1)
+            return 1;
+
+        string[] candidateSkillIds = GetCandidateSkillIds(slotIndex);
+        if (candidateSkillIds == null || candidateSkillIds.Length < 2)
+            return 1;
+
+        string secondSkillId = candidateSkillIds[1];
+        if (string.IsNullOrWhiteSpace(secondSkillId) ||
+            string.IsNullOrWhiteSpace(skill.SkillId) ||
+            !string.Equals(secondSkillId.Trim(), skill.SkillId.Trim(), StringComparison.OrdinalIgnoreCase))
+        {
+            return 1;
+        }
+
+        return slotIndex == 0 ? 5 : 10;
     }
 
     private bool IsSameSkill(SkillMasterData a, SkillMasterData b)

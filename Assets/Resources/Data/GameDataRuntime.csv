@@ -1,36 +1,40 @@
 # Character
-캐릭터ID,이름,최대 HP,최대 Cost,Cost 회복량,자원최대치,자원타입,자원조건,기본지급여부,해금조건,패시브스킬1,패시브스킬2,고유스킬1,고유스킬2,캐릭터스킬1,캐릭터스킬2,공유스킬1,공유스킬2,룬1,룬2,룬3,룬4,룬5,캐릭터소개
-CharacterId,Name,MaxHP,MaxCost,CostRecovery,MaxResource,ResourceType,ResourceTrigger,IsDefaultProvided,UnlockCondition,PassiveSkill1,PassiveSkill2,UniqueSkill1,UniqueSkill2,CharacterSkill1,CharacterSkill2,CommonSkill1,CommonSkill2,Rune1,Rune2,Rune3,Rune4,Rune5,introduction
-Char_01,힐트,105,10,4,5,Rage,OnAnyAllyDamaged,1,1,S_Passive_01,S_Passive_02,S_Unique_01,S_Unique_02,S_Ability_01,S_Ability_03,S_Public_01,S_Public_03,Rune_51,Rune_52,Rune_53,Rune_54,Rune_55,"""더 강한 놈, 더 열렬한 전투!""
+캐릭터ID,이름,최대 HP,최대 Cost,Cost 회복량,자원최대치,자원타입,자원조건,기본지급여부,해금조건,패시브스킬1,패시브스킬2,고유스킬1,고유스킬2,캐릭터스킬1,캐릭터스킬2,공유스킬1,공유스킬2,룬1,룬2,룬3,룬4,룬5,카르마 회복,캐릭터소개
+CharacterId,Name,MaxHP,MaxCost,CostRecovery,MaxResource,ResourceType,ResourceTrigger,IsDefaultProvided,UnlockCondition,PassiveSkill1,PassiveSkill2,UniqueSkill1,UniqueSkill2,CharacterSkill1,CharacterSkill2,CommonSkill1,CommonSkill2,Rune1,Rune2,Rune3,Rune4,Rune5,Regeneration,introduction
+Char_01,힐트,105,10,4,5,Karma,OnAnyAllyDamaged,1,1,S_Passive_01,S_Passive_02,S_Unique_01,S_Unique_02,S_Ability_01,S_Ability_03,S_Public_01,S_Public_03,Rune_51,Rune_52,Rune_53,Rune_54,Rune_55,"피해를 받았을 때
+생명력이 감소하지 않았다면
+카르마를 1 회복합니다.
 
-호전적이고 거침없이 돌격하는 탐사자입니다.
-전투를 통해 자신의 한계를 시험하고 강함을 증명하고자 합니다.
+최대 보유 카르마 : 5","“강한 놈들이 득실거린다며?
+그럼 내가 가야지.”
 
-피해를 받으면 턴 종료 시 분노를 1 획득합니다.",,,,,
-Char_02,카야,98,11,4,5,Momentum,OnThreeActionsInSameSlot,1,1,S_Passive_03,S_Passive_04,S_Unique_03,S_Unique_04,S_Ability_05,S_Ability_07,S_Public_05,S_Public_07,Rune_56,Rune_57,Rune_58,Rune_59,Rune_60,"""흔들리는 검 끝은 죽음을 부를 뿐.""
+벨가드 용병단에서 파견된 용병입니다. 호전적이고 거침없는 성격으로, 위험한 전투일수록 먼저 뛰어들며 이번 탐사에서도 자신의 강함을 증명하려 합니다.",,,,,
+Char_02,카야,98,11,4,5,Karma,OnThreeActionsInSameSlot,1,1,S_Passive_03,S_Passive_04,S_Unique_03,S_Unique_04,S_Ability_05,S_Ability_07,S_Public_05,S_Public_07,Rune_56,Rune_57,Rune_58,Rune_59,Rune_60,"한 슬롯에서 3회 이상 행동을
+등록하면 카르마를 1 회복합니다. 
 
-침착하고 냉철한 탐사자입니다.
-모든 전투 기술을 끊임없이 배우고 검술의 극의에 닿고자 합니다.
+최대 보유 카르마 : 5","“임무라면 완수한다. 그뿐이야.”
 
-한 슬롯에서 2회  행동 할때 턴 종료 시 기세를 1 획득합니다.",,,,,
-Char_03,헤이즈,84,14,4,5,Aether,OnSpendEightCostInTurn,1,1,S_Passive_05,S_Passive_06,S_Unique_05,S_Unique_06,S_Ability_09,S_Ability_11,S_Public_09,S_Public_11,Rune_61,Rune_62,Rune_63,Rune_64,Rune_65,"""니아, 제발 내 곁에서 떨어지지 마!""
+하쿠렌 가문을 대표하여 파견된 검사입니다. 침착하고 냉철하며 어떤 상황에서도 흐트러지지 않고, 미지의 적과 전투를 거치며 자신의 검술을 더욱 완성해갑니다.",,,,,
+Char_03,헤이즈,84,14,4,5,Karma,OnSpendEightCostInTurn,1,1,S_Passive_05,S_Passive_06,S_Unique_05,S_Unique_06,S_Ability_09,S_Ability_11,S_Public_09,S_Public_11,Rune_61,Rune_62,Rune_63,Rune_64,Rune_65,"한 턴에 마나를 8 이상 소모하면
+카르마를 1 회복합니다.
 
-겁이 많고 소심한 탐사자입니다.
-자신의 나약함을 극복하고자 소환수와 함께 전투를 진행합니다.
+최대 보유 카르마 : 5","“정말 제가 가야 하는 건가요?”
 
-한 턴에 코스트를 8 이상 소모하면 턴 종료 시 에테르를 1 획득합니다.",,,,,
-Char_04,이네스,100,10,4,5,Faith,OnAllyBuffApplied,1,1,S_Passive_07,S_Passive_08,S_Unique_07,S_Unique_08,S_Ability_13,S_Ability_15,S_Public_13,S_Public_15,Rune_66,Rune_67,Rune_68,Rune_69,Rune_70,"이네스, 상냥한 집행자
+아스텔 학회에서 조사를 위해 합류한 연구원입니다. 겁이 많고 소심하지만 맡은 연구에서 물러서지는 않으며, 소환수 니아와 함께 자신의 나약함을 극복하려 합니다.",,,,,
+Char_04,이네스,100,10,4,5,Karma,OnAllyBuffApplied,1,1,S_Passive_07,S_Passive_08,S_Unique_07,S_Unique_08,S_Ability_13,S_Ability_15,S_Public_13,S_Public_15,Rune_66,Rune_67,Rune_68,Rune_69,Rune_70,"아군에게 이로운 효과를 부여하면
+카르마를 1 회복합니다.
 
-밝은 얼굴로 아군을 보살핍니다.
-다정하게 아군을 감싸지만, 그들을 위협하는 존재 앞에서는 웃음마저 차갑게 식어갑니다.
+최대 보유 카르마 : 5","“걱정하지 마세요.
+모두 무사히 돌아갈 수 있도록 할게요.”
 
-아군에게 이로운 효과가 부여되면 턴 종료 시 신앙을 1 획득합니다.",,,,,
-Char_05,레이나,90,12,4,5,Blood,OnDamageEnemy,2,2,S_Passive_09,S_Passive_10,S_Unique_09,S_Unique_10,S_Ability_17,S_Ability_19,S_Public_17,S_Public_19,Rune_71,Rune_72,Rune_73,Rune_74,Rune_75,"레이나, 달빛의 방랑자
+세라피아 교단에서 파견된 집행자입니다. 밝고 상냥하게 동료들을 보살피지만, 그들을 위협하는 존재 앞에서는 망설임 없이 냉혹한 모습을 드러냅니다.",,,,,
+Char_05,레이나,90,12,4,5,Karma,OnDamageEnemy,2,2,S_Passive_09,S_Passive_10,S_Unique_09,S_Unique_10,S_Ability_17,S_Ability_19,S_Public_17,S_Public_19,Rune_71,Rune_72,Rune_73,Rune_74,Rune_75,"공격타입의 기억으로
+적에게 피해를 주면
+카르마를1 회복합니다.
 
-말수는 적지만 자유분방한 뱀파이어입니다.
-마음이 향한 일에는 망설임 없이 발을 내딛습니다.
+최대 보유 카르마 : 5","“그냥 내가 가고 싶어서 가는 거야.”
 
-공격으로 적에게 피해를 주면 턴 종료 시 혈기를 1 획득합니다.",,,,,
+어느 집단에도 속하지 않은 채 홀로 떠도는 뱀파이어입니다. 말수는 적고 자유분방하며 타인의 규칙에 얽매이지 않고, 자신의 관심이 향한 탐사대를 따라 스스로 위험 속으로 발을 들입니다.",,,,,
 ,,,,,,,,,
 ,,,,,,,,,
 ,,,,,,,,,
@@ -113,16 +117,28 @@ Mon_12,아라벨라,Boss,142,0,45,55,Item_012,0.7,0,Range_19,S_Monster_20,S_Mons
 SkillId,Name,Category,Rarity,ReferenceResource,Target,Level,SkillType,EffectIds,ValueRate,CountRate,ResourceCostValue,RangeType,RangeId,Details
 S_Move_1,이동,Move,Move,Cost,Self,1,0,E_Move,0,1,1,Selection,Range_All,선택한 그리드로 이동합니다. 이동한 칸 수만큼 코스트를 소모합니다.
 S_Move_2,이동+,Move,Move,Cost,Self,2,0,E_Move,0,1,1,Selection,Range_All,선택한 그리드로 이동합니다. 1코스트로 최대 2칸까지 이동할 수 있습니다.
-S_Passive_01,결속,Passive,Exclusive,Ulti,Self,0,0,E_Armor,5,1,0,Passive,Range_Self,카르마가 최대라면 턴 시작 시 방어도를 {ValueRate1} 얻습니다.
-S_Passive_02,호전성,Passive,Exclusive,Ulti,Self,0,0,E_Boost,1,1,0,Passive,Range_Self,카르마가 최대라면 턴 시작 시 증폭을 {ValueRate1} 얻습니다.
-S_Passive_03,평정심,Passive,Exclusive,Ulti,Self,0,0,E_CostRecovery,1,1,0,Passive,Range_Self,카르마가 최대라면 턴 시작 시 마나를 추가로 {ValueRate1} 회복합니다.
-S_Passive_04,간파,Passive,Exclusive,Ulti,Self,0,0,E_Swift,1,1,0,Passive,Range_Self,카르마가 최대라면 턴 시작 시 신속을 {ValueRate1} 얻습니다.
-S_Passive_05,안도감,Passive,Exclusive,Ulti,Self,0,0,E_Armor,4,1,0,Passive,Range_Self,카르마가 최대라면 턴 시작 시 방어도를 {ValueRate1} 얻습니다.
-S_Passive_06,결심,Passive,Exclusive,Ulti,Self,0,0,E_Armor,3,1,0,Passive,Range_Self,카르마가 최대라면 턴 시작 시 생명력이 가장 낮은 아군에게 방어도를 {ValueRate1} 부여합니다.
-S_Passive_07,자애심,Passive,Exclusive,Ulti,Self,0,0,E_Heal,2,1,0,Passive,Range_Self,카르마가 최대라면 턴 시작 시 생명력이 가장 낮은 아군의 생명력을 {ValueRate1} 회복합니다.
-S_Passive_08,심판,Passive,Exclusive,Ulti,Self,0,0,E_Smite,1,1,0,Passive,Range_Self,카르마가 최대라면 턴 시작 시 강타를 {ValueRate1} 얻습니다.
-S_Passive_09,블러드러스트,Passive,Exclusive,Ulti,Self,0,0,E_Lifesteal,1,1,0,Passive,Range_Self,카르마가 최대라면 턴 시작 시 흡혈을 {ValueRate1} 얻습니다.
-S_Passive_10,나이트메어,Passive,Exclusive,Ulti,Self,0,0,E_Boost,1,1,0,Passive,Range_Self,카르마가 최대라면 턴 시작 시 증폭을 {ValueRate1} 얻습니다.
+S_Passive_01,결속,Passive,Exclusive,Ulti,Self,0,0,E_Armor,5,1,0,Passive,Range_Self,"카르마가 최대라면 턴 시작 시
+방어도를 {ValueRate1} 얻습니다."
+S_Passive_02,호전성,Passive,Exclusive,Ulti,Self,0,0,E_Boost,1,1,0,Passive,Range_Self,"카르마가 최대라면 턴 시작 시
+증폭을 {ValueRate1} 얻습니다."
+S_Passive_03,평정심,Passive,Exclusive,Ulti,Self,0,0,E_CostRecovery,1,1,0,Passive,Range_Self,"카르마가 최대라면 턴 시작 시
+마나를 추가로 {ValueRate1} 회복합니다."
+S_Passive_04,간파,Passive,Exclusive,Ulti,Self,0,0,E_Swift,1,1,0,Passive,Range_Self,"카르마가 최대라면 턴 시작 시
+신속을 {ValueRate1} 얻습니다."
+S_Passive_05,안도감,Passive,Exclusive,Ulti,Self,0,0,E_Armor,4,1,0,Passive,Range_Self,"카르마가 최대라면 턴 시작 시
+방어도를 {ValueRate1} 얻습니다."
+S_Passive_06,결심,Passive,Exclusive,Ulti,Self,0,0,E_Armor,3,1,0,Passive,Range_Self,"카르마가 최대라면 턴 시작 시
+생명력이 가장 낮은 아군에게
+방어도를 {ValueRate1} 부여합니다."
+S_Passive_07,자애심,Passive,Exclusive,Ulti,Self,0,0,E_Heal,2,1,0,Passive,Range_Self,"카르마가 최대라면 턴 시작 시
+생명력이 가장 낮은 아군의
+생명력을 {ValueRate1} 회복합니다."
+S_Passive_08,심판,Passive,Exclusive,Ulti,Self,0,0,E_Smite,1,1,0,Passive,Range_Self,"카르마가 최대라면 턴 시작 시
+강타를 {ValueRate1} 얻습니다."
+S_Passive_09,블러드러스트,Passive,Exclusive,Ulti,Self,0,0,E_Lifesteal,1,1,0,Passive,Range_Self,"카르마가 최대라면 턴 시작 시
+흡혈을 {ValueRate1} 얻습니다."
+S_Passive_10,나이트메어,Passive,Exclusive,Ulti,Self,0,0,E_Boost,1,1,0,Passive,Range_Self,"카르마가 최대라면 턴 시작 시
+증폭을 {ValueRate1} 얻습니다."
 S_Unique_01,용의 가호,Unique,Exclusive,Ulti,PlayerParty,0,Buff,E_Armor,8,1,3,Direction,Range_All,용의 힘으로 자신과 아군에게 방어도를 {ValueRate1} 부여합니다.
 S_Unique_02,대지가르기,Unique,Exclusive,Ulti,EnemyParty,0,Attack,E_Strike;E_Knockback,14;1,1;1,3,Direction,Range_15,할버드로 대지를 갈라 적에게 {ValueRate1}의 피해를 주고 {ValueRate2}칸 넉백시킵니다.
 S_Unique_03,질풍검 연무,Unique,Exclusive,Ulti,EnemyParty,0,Attack,E_Strike,3,4,3,Direction,Range_07,카타나를 연속으로 휘둘러 적에게 {ValueRate1}의 피해를 {CountRate1}번 줍니다.

@@ -62,10 +62,14 @@ public class Setting : MonoBehaviour
     [SerializeField] private RectTransform runeAreaBackGround;
     [Tooltip("룬 영역에서 함께 이동할 RuneSettingPanel입니다. 비어 있으면 자동으로 찾습니다.")]
     [SerializeField] private RectTransform runeSettingPanelRect;
-    [Tooltip("화면에 표시될 때의 Y 좌표입니다.")]
-    [SerializeField] private float areaShownY = 0f;
-    [Tooltip("화면 위로 숨겨질 때의 Y 좌표입니다.")]
-    [SerializeField] private float areaHiddenY = 800f;
+    [Tooltip("스킬 영역이 화면에 표시될 때의 X 좌표입니다.")]
+    [SerializeField] private float skillShownX = 0f;
+    [Tooltip("스킬 영역이 화면 오른쪽으로 숨겨질 때의 X 좌표입니다.")]
+    [SerializeField] private float skillHiddenX = 400f;
+    [Tooltip("룬 영역이 화면에 표시될 때의 Y 좌표입니다.")]
+    [SerializeField] private float runeShownY = 0f;
+    [Tooltip("룬 영역이 화면 위로 숨겨질 때의 Y 좌표입니다.")]
+    [SerializeField] private float runeHiddenY = 800f;
     [Tooltip("영역이 목표 위치까지 이동하는 시간입니다.")]
     [SerializeField] private float areaMoveDuration = 0.25f;
 
@@ -110,6 +114,7 @@ public class Setting : MonoBehaviour
 
     private void Awake()
     {
+        BindCharacterInfoTextIfNeeded();
         BindInfoAreaIfNeeded();
         BindAreaSlideTargetsIfNeeded();
 
@@ -686,6 +691,8 @@ public class Setting : MonoBehaviour
 
     private void RefreshCharacterInfo()
     {
+        BindCharacterInfoTextIfNeeded();
+
         if (currentMasterData == null || currentRuntimeData == null)
         {
             Clear();
@@ -696,7 +703,7 @@ public class Setting : MonoBehaviour
             characterNameText.text = GameDataLocalization.CharacterName(currentMasterData);
 
         if (characterInfoText != null)
-            characterInfoText.text = "";
+            characterInfoText.text = FormatCharacterIntroduction(currentMasterData.Introduction);
 
         if (characterInfoPanel != null)
             characterInfoPanel.SetCharacter(currentMasterData, currentRuntimeData);
@@ -888,7 +895,26 @@ public class Setting : MonoBehaviour
         SetButtonColor(skillButton, currentTab == SettingTab.Skill ? tabSelectedColor : tabNormalColor);
         SetButtonColor(runeButton, currentTab == SettingTab.Rune ? tabSelectedColor : tabNormalColor);
 
+        // EventSystem 포커스와 무관하게 실제 탭 상태를 기준으로 Glow를 동기화합니다.
+        // CharBtn으로 캐릭터를 변경해 탭 UI가 다시 갱신되어도 현재 탭의 Glow가 유지됩니다.
+        SetTabButtonGlowSelected(previewButton, currentTab == SettingTab.Preview);
+        SetTabButtonGlowSelected(skillButton, currentTab == SettingTab.Skill);
+        SetTabButtonGlowSelected(runeButton, currentTab == SettingTab.Rune);
+
         RefreshTabButtonScaleEffects();
+    }
+
+    private static void SetTabButtonGlowSelected(Button button, bool selected)
+    {
+        if (button == null)
+            return;
+
+        SelectedButtonBorderGlow glow = button.GetComponent<SelectedButtonBorderGlow>();
+        if (glow == null)
+            glow = button.GetComponentInChildren<SelectedButtonBorderGlow>(true);
+
+        if (glow != null)
+            glow.SetSelected(selected);
     }
 
     private void InitTabButtonScaleEffects()
@@ -1007,13 +1033,13 @@ public class Setting : MonoBehaviour
         if (areaMoveCoroutine != null)
             StopCoroutine(areaMoveCoroutine);
 
-        float skillTargetY = showSkillArea ? areaShownY : areaHiddenY;
-        float runeTargetY = showRuneArea ? areaShownY : areaHiddenY;
+        float skillTargetX = showSkillArea ? skillShownX : skillHiddenX;
+        float runeTargetY = showRuneArea ? runeShownY : runeHiddenY;
 
-        areaMoveCoroutine = StartCoroutine(MoveSettingAreasRoutine(skillTargetY, runeTargetY));
+        areaMoveCoroutine = StartCoroutine(MoveSettingAreasRoutine(skillTargetX, runeTargetY));
     }
 
-    private IEnumerator MoveSettingAreasRoutine(float skillTargetY, float runeTargetY)
+    private IEnumerator MoveSettingAreasRoutine(float skillTargetX, float runeTargetY)
     {
         Vector2 skillBackGroundStart = GetAnchoredPosition(skillAreaBackGround);
         Vector2 skillPanelStart = GetAnchoredPosition(skillSettingPanelRect);
@@ -1029,16 +1055,16 @@ public class Setting : MonoBehaviour
             float t = Mathf.Clamp01(elapsed / duration);
             float easedT = 1f - Mathf.Pow(1f - t, 3f);
 
-            SetAnchoredPositionY(skillAreaBackGround, Mathf.Lerp(skillBackGroundStart.y, skillTargetY, easedT));
-            SetAnchoredPositionY(skillSettingPanelRect, Mathf.Lerp(skillPanelStart.y, skillTargetY, easedT));
+            SetAnchoredPositionX(skillAreaBackGround, Mathf.Lerp(skillBackGroundStart.x, skillTargetX, easedT));
+            SetAnchoredPositionX(skillSettingPanelRect, Mathf.Lerp(skillPanelStart.x, skillTargetX, easedT));
             SetAnchoredPositionY(runeAreaBackGround, Mathf.Lerp(runeBackGroundStart.y, runeTargetY, easedT));
             SetAnchoredPositionY(runeSettingPanelRect, Mathf.Lerp(runePanelStart.y, runeTargetY, easedT));
 
             yield return null;
         }
 
-        SetAnchoredPositionY(skillAreaBackGround, skillTargetY);
-        SetAnchoredPositionY(skillSettingPanelRect, skillTargetY);
+        SetAnchoredPositionX(skillAreaBackGround, skillTargetX);
+        SetAnchoredPositionX(skillSettingPanelRect, skillTargetX);
         SetAnchoredPositionY(runeAreaBackGround, runeTargetY);
         SetAnchoredPositionY(runeSettingPanelRect, runeTargetY);
 
@@ -1050,6 +1076,16 @@ public class Setting : MonoBehaviour
         return target != null ? target.anchoredPosition : Vector2.zero;
     }
 
+    private void SetAnchoredPositionX(RectTransform target, float x)
+    {
+        if (target == null)
+            return;
+
+        Vector2 position = target.anchoredPosition;
+        position.x = x;
+        target.anchoredPosition = position;
+    }
+
     private void SetAnchoredPositionY(RectTransform target, float y)
     {
         if (target == null)
@@ -1058,6 +1094,60 @@ public class Setting : MonoBehaviour
         Vector2 position = target.anchoredPosition;
         position.y = y;
         target.anchoredPosition = position;
+    }
+
+    private static string FormatCharacterIntroduction(string introduction)
+    {
+        if (string.IsNullOrEmpty(introduction))
+            return string.Empty;
+
+        // GameData 소개문은 일반 큰따옴표(" "), 스마트 따옴표(“ ”) 둘 다 사용할 수 있습니다.
+        // 따옴표 안에 줄바꿈이 있어도 시작/종료 따옴표 사이 전체를 중앙 정렬합니다.
+        int firstQuote = introduction.IndexOf('“');
+        char closingQuote = '”';
+
+        if (firstQuote < 0)
+        {
+            firstQuote = introduction.IndexOf('\"');
+            closingQuote = '\"';
+        }
+
+        if (firstQuote < 0)
+            return introduction;
+
+        int secondQuote = introduction.IndexOf(closingQuote, firstQuote + 1);
+        if (secondQuote < 0)
+            return introduction;
+
+        string beforeQuote = introduction.Substring(0, firstQuote);
+        string quotedText = introduction.Substring(firstQuote, secondQuote - firstQuote + 1);
+        string afterQuote = introduction.Substring(secondQuote + 1);
+
+        // TMP 정렬 태그 안에서도 GameData 셀의 줄바꿈이 확실히 유지되도록
+        // 인용문 내부의 실제 개행 문자를 <br> 태그로 변환합니다.
+        quotedText = quotedText
+            .Replace("\r\n", "<br>")
+            .Replace("\r", "<br>")
+            .Replace("\n", "<br>");
+
+        return beforeQuote + "<align=\"center\">" + quotedText + "</align>" + afterQuote;
+    }
+
+    private void BindCharacterInfoTextIfNeeded()
+    {
+        if (characterInfoText != null)
+            return;
+
+        TMP_Text[] texts = transform.root.GetComponentsInChildren<TMP_Text>(true);
+        for (int i = 0; i < texts.Length; i++)
+        {
+            TMP_Text candidate = texts[i];
+            if (candidate != null && candidate.name == "CharacterInfoText")
+            {
+                characterInfoText = candidate;
+                return;
+            }
+        }
     }
 
     private void BindInfoAreaIfNeeded()

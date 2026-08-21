@@ -1267,6 +1267,14 @@ public class RecordPanelUI : MonoBehaviour
             rarityText.color = rarityOriginalColor;
     }
 
+    /// <summary>
+    /// 도감에서 실제 사용하는 레어리티 색상을 외부 UI에서도 동일하게 사용할 수 있도록 반환합니다.
+    /// </summary>
+    public Color GetRarityDisplayColor(string rarity)
+    {
+        return GetRarityColor(rarity);
+    }
+
     private Color GetRarityColor(string rarity)
     {
         if (string.Equals(rarity, "Exclusive", StringComparison.OrdinalIgnoreCase))

@@ -1131,7 +1131,7 @@ MonoBehaviour:
   rareRarityColor: {r: 0.13830544, g: 0.36458287, b: 0.7924528, a: 1}
   epicRarityColor: {r: 0.43892005, g: 0.1782218, b: 0.8396226, a: 1}
   uniqueRarityColor: {r: 0.7924528, g: 0.15325737, b: 0.54574585, a: 1}
-  exclusiveRarityColor: {r: 0.8962264, g: 0.76181734, b: 0.30015132, a: 1}
+  exclusiveRarityColor: {r: 0.8113208, g: 0.71703094, b: 0.4018334, a: 1}
   valueHighlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   fragmentInfoPanel: {fileID: 159937094902106906}
   fragmentUnlockText: {fileID: 1444540805196264133}

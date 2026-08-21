@@ -31,6 +31,42 @@ public class SettingWarningUI : MonoBehaviour
     [SerializeField] private Color normalBackgroundColor = new Color(0f, 0f, 0f, 0.75f);
     [SerializeField] private Color warningTextColor = Color.white;
 
+    [Header("Warning Text - General")]
+    [SerializeField] private string dataUnavailableMessage = "데이터를 불러올 수 없습니다.";
+    [SerializeField] private string noCharacterSelectedMessage = "선택된 캐릭터가 없습니다.";
+    [SerializeField] private string characterDataNotFoundMessage = "캐릭터 데이터를 찾을 수 없습니다.";
+    [Tooltip("{0} 위치에 캐릭터 ID가 들어갑니다.")]
+    [SerializeField] private string characterDataNotFoundWithIdMessage = "캐릭터 데이터를 찾을 수 없습니다: {0}";
+    [SerializeField] private string selectCharacterFirstMessage = "캐릭터를 먼저 선택해야 합니다.";
+    [SerializeField] private string noAvailableCharacterMessage = "선택할 수 있는 캐릭터가 없습니다.";
+    [SerializeField] private string maxLevelMessage = "최대 레벨입니다.";
+
+    [Header("Warning Text - Skill")]
+    [SerializeField] private string skillSlotNotConnectedMessage = "스킬 슬롯이 연결되지 않았습니다.";
+    [SerializeField] private string selectSkillSlotFirstMessage = "스킬을 장착할 슬롯을 먼저 선택하세요.";
+    [SerializeField] private string noSkillSelectedMessage = "선택된 스킬이 없습니다.";
+    [Tooltip("레벨이 부족한 기억을 클릭했을 때 표시할 문구입니다. {0} 위치에 필요한 레벨이 들어갑니다.")]
+    [SerializeField] private string skillMemoryUnlockLevelMessage = "캐릭터 Lv.{0}에 해금됩니다.";
+    [Tooltip("일반 스킬 레벨 잠금 경고입니다. {0} 위치에 필요한 레벨이 들어갑니다.")]
+    [SerializeField] private string skillLockedLevelMessage = "아직 잠겨있는 스킬입니다. 필요 레벨: LV. {0}";
+    [SerializeField] private string skillNotAvailableForSlotMessage = "이 슬롯에 장착할 수 없는 스킬입니다.";
+
+    [Header("Warning Text - Rune")]
+    [SerializeField] private string noRuneSelectedMessage = "선택된 룬이 없습니다.";
+    [SerializeField] private string runeNotAvailableMessage = "현재 캐릭터가 사용할 수 없는 룬입니다.";
+    [SerializeField] private string noEmptyRuneSlotMessage = "비어있는 룬 슬롯이 없습니다.";
+    [SerializeField] private string sharedRuneLevelRequiredMessage = "플레이어 또는 계정 레벨 조건이 필요한 공용룬입니다.";
+    [Tooltip("{0} 위치에 필요한 캐릭터 레벨이 들어갑니다.")]
+    [SerializeField] private string characterRuneUnlockLevelMessage = "캐릭터 LV.{0}에 해금되는 전용룬입니다.";
+    [SerializeField] private string noRuneToUnequipMessage = "해제할 룬이 없습니다.";
+    [SerializeField] private string runeNotEquippedMessage = "장착 중인 룬이 아닙니다.";
+    [SerializeField] private string runeSlotNotConnectedMessage = "룬 슬롯이 연결되지 않았습니다.";
+    [SerializeField] private string runeSlotLockedMessage = "아직 잠겨있는 룬 슬롯입니다.";
+    [Tooltip("{0} 위치에 필요한 캐릭터 레벨이 들어갑니다.")]
+    [SerializeField] private string runeSlotUnlockLevelMessage = "캐릭터 Lv.{0}에 해금되는 룬 슬롯입니다.";
+    [SerializeField] private string sharedRuneLockedMessage = "아직 잠겨있는 공용룬입니다.";
+    [SerializeField] private string insufficientBlueDustiumMessage = "블루 더스티움이 부족합니다.";
+
     private Vector2 baseAnchoredPosition;
     private float timer;
     private bool isShowing;
@@ -59,16 +95,69 @@ public class SettingWarningUI : MonoBehaviour
 
     public static bool ShowMessage(string message)
     {
-        SettingWarningUI warningUI = Instance;
-
-        if (warningUI == null)
-            warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
+        SettingWarningUI warningUI = ResolveInstance();
 
         if (warningUI == null)
             return false;
 
         warningUI.Show(message);
         return true;
+    }
+
+    public static string GetSkillMemoryUnlockLevelMessage(int requiredLevel)
+    {
+        SettingWarningUI warningUI = ResolveInstance();
+        string format = warningUI != null
+            ? warningUI.skillMemoryUnlockLevelMessage
+            : "캐릭터 Lv.{0}에 해금됩니다.";
+
+        if (string.IsNullOrWhiteSpace(format))
+            format = "캐릭터 Lv.{0}에 해금됩니다.";
+
+        try
+        {
+            return string.Format(format, Mathf.Max(0, requiredLevel));
+        }
+        catch (System.FormatException)
+        {
+            return format;
+        }
+    }
+
+    public static string GetRuneSlotUnlockLevelMessage(int requiredLevel)
+    {
+        SettingWarningUI warningUI = ResolveInstance();
+        string format = warningUI != null
+            ? warningUI.runeSlotUnlockLevelMessage
+            : "캐릭터 Lv.{0}에 해금되는 룬 슬롯입니다.";
+
+        if (string.IsNullOrWhiteSpace(format))
+            format = "캐릭터 Lv.{0}에 해금되는 룬 슬롯입니다.";
+
+        try
+        {
+            return string.Format(format, Mathf.Max(0, requiredLevel));
+        }
+        catch (System.FormatException)
+        {
+            return format;
+        }
+    }
+
+    public static string GetInsufficientBlueDustiumMessage()
+    {
+        SettingWarningUI warningUI = ResolveInstance();
+        return warningUI != null && !string.IsNullOrWhiteSpace(warningUI.insufficientBlueDustiumMessage)
+            ? warningUI.insufficientBlueDustiumMessage
+            : "블루 더스티움이 부족합니다.";
+    }
+
+    private static SettingWarningUI ResolveInstance()
+    {
+        if (Instance != null)
+            return Instance;
+
+        return FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
     }
 
     private void OnEnable()
@@ -99,6 +188,8 @@ public class SettingWarningUI : MonoBehaviour
         if (string.IsNullOrEmpty(message))
             return;
 
+        message = ResolveInspectorMessage(message);
+
         if (moveTarget != null)
             baseAnchoredPosition = moveTarget.anchoredPosition - endOffset;
 
@@ -126,6 +217,150 @@ public class SettingWarningUI : MonoBehaviour
             if (useScalePop)
                 moveTarget.localScale = startScale;
         }
+    }
+
+    private string ResolveInspectorMessage(string message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+            return message;
+
+        string trimmed = message.Trim();
+
+        if (trimmed == "블루 더스티움이 부족합니다.")
+            return GetConfiguredText(insufficientBlueDustiumMessage, trimmed);
+
+        if (trimmed == "데이터를 불러올 수 없습니다." ||
+            trimmed == "데이터를 사용할 수 없습니다." ||
+            trimmed == "DataManager가 없습니다.")
+            return GetConfiguredText(dataUnavailableMessage, trimmed);
+
+        if (trimmed == "선택된 캐릭터가 없습니다.")
+            return GetConfiguredText(noCharacterSelectedMessage, trimmed);
+
+        if (trimmed == "캐릭터 데이터를 찾을 수 없습니다." ||
+            trimmed.StartsWith("캐릭터 마스터 데이터를 찾을 수 없습니다:") ||
+            trimmed.StartsWith("캐릭터 런타임 데이터를 찾을 수 없습니다:"))
+            return GetConfiguredText(characterDataNotFoundMessage, trimmed);
+
+        if (trimmed.StartsWith("캐릭터 데이터를 찾을 수 없습니다:"))
+        {
+            string value = trimmed.Substring("캐릭터 데이터를 찾을 수 없습니다:".Length).Trim();
+            return FormatConfiguredText(characterDataNotFoundWithIdMessage, trimmed, value);
+        }
+
+        if (trimmed == "캐릭터를 먼저 선택해야 합니다.")
+            return GetConfiguredText(selectCharacterFirstMessage, trimmed);
+
+        if (trimmed == "선택할 수 있는 캐릭터가 없습니다.")
+            return GetConfiguredText(noAvailableCharacterMessage, trimmed);
+
+        if (trimmed == "최대 레벨입니다.")
+            return GetConfiguredText(maxLevelMessage, trimmed);
+
+        if (trimmed == "스킬 슬롯이 연결되지 않았습니다.")
+            return GetConfiguredText(skillSlotNotConnectedMessage, trimmed);
+
+        if (trimmed == "스킬을 장착할 슬롯을 먼저 선택하세요.")
+            return GetConfiguredText(selectSkillSlotFirstMessage, trimmed);
+
+        if (trimmed == "선택된 스킬이 없습니다.")
+            return GetConfiguredText(noSkillSelectedMessage, trimmed);
+
+        if (trimmed.StartsWith("아직 잠겨있는 스킬입니다. 필요 레벨:"))
+        {
+            int requiredLevel = ExtractLastInteger(trimmed);
+            return FormatConfiguredText(skillLockedLevelMessage, trimmed, requiredLevel);
+        }
+
+        if (trimmed == "이 슬롯에 장착할 수 없는 스킬입니다.")
+            return GetConfiguredText(skillNotAvailableForSlotMessage, trimmed);
+
+        if (trimmed == "선택된 룬이 없습니다.")
+            return GetConfiguredText(noRuneSelectedMessage, trimmed);
+
+        if (trimmed == "현재 캐릭터가 사용할 수 없는 룬입니다.")
+            return GetConfiguredText(runeNotAvailableMessage, trimmed);
+
+        if (trimmed == "비어있는 룬 슬롯이 없습니다.")
+            return GetConfiguredText(noEmptyRuneSlotMessage, trimmed);
+
+        if (trimmed == "플레이어 또는 계정 레벨 조건이 필요한 공용룬입니다.")
+            return GetConfiguredText(sharedRuneLevelRequiredMessage, trimmed);
+
+        if (trimmed.StartsWith("캐릭터 LV.") && trimmed.Contains("해금되는 전용룬"))
+        {
+            int requiredLevel = ExtractLastInteger(trimmed);
+            return FormatConfiguredText(characterRuneUnlockLevelMessage, trimmed, requiredLevel);
+        }
+
+        if (trimmed == "해제할 룬이 없습니다.")
+            return GetConfiguredText(noRuneToUnequipMessage, trimmed);
+
+        if (trimmed == "장착 중인 룬이 아닙니다.")
+            return GetConfiguredText(runeNotEquippedMessage, trimmed);
+
+        if (trimmed == "룬 슬롯이 연결되지 않았습니다.")
+            return GetConfiguredText(runeSlotNotConnectedMessage, trimmed);
+
+        if (trimmed.StartsWith("캐릭터 Lv.") && trimmed.Contains("해금되는 룬 슬롯"))
+        {
+            int requiredLevel = ExtractLastInteger(trimmed);
+            return FormatConfiguredText(runeSlotUnlockLevelMessage, trimmed, requiredLevel);
+        }
+
+        if (trimmed == "아직 잠겨있는 룬 슬롯입니다.")
+            return GetConfiguredText(runeSlotLockedMessage, trimmed);
+
+        if (trimmed == "아직 잠겨있는 공용룬입니다.")
+            return GetConfiguredText(sharedRuneLockedMessage, trimmed);
+
+        return message;
+    }
+
+    private static string GetConfiguredText(string configured, string fallback)
+    {
+        return string.IsNullOrWhiteSpace(configured) ? fallback : configured;
+    }
+
+    private static string FormatConfiguredText(string configured, string fallback, params object[] args)
+    {
+        string format = string.IsNullOrWhiteSpace(configured) ? fallback : configured;
+
+        try
+        {
+            return string.Format(format, args);
+        }
+        catch (System.FormatException)
+        {
+            return format;
+        }
+    }
+
+    private static int ExtractLastInteger(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+            return 0;
+
+        int value = 0;
+        int multiplier = 1;
+        bool foundDigit = false;
+
+        for (int i = text.Length - 1; i >= 0; i--)
+        {
+            char c = text[i];
+            if (char.IsDigit(c))
+            {
+                foundDigit = true;
+                value += (c - '0') * multiplier;
+                multiplier *= 10;
+                continue;
+            }
+
+            if (foundDigit)
+                break;
+        }
+
+        return value;
     }
 
     public void HideImmediate()

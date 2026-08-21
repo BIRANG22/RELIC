@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class RuneSettingPanel : MonoBehaviour
@@ -14,25 +15,25 @@ public class RuneSettingPanel : MonoBehaviour
     [SerializeField] private RuneSlotButton[] runeSlotButtons;
 
     [Header("Rune Slot Unlock Settings")]
-    [SerializeField] private int[] runeSlotUnlockLevels = { 1, 1, 3, 5, 7, 10 };
-
-    [Header("Locked Rune Slot Visual")]
-    [Tooltip("잠긴 룬 슬롯에 표시할 자물쇠 스프라이트입니다.")]
-    [SerializeField] private Sprite lockedRuneSlotSprite;
-    [Tooltip("룬 슬롯의 아이콘 Image를 순서대로 연결합니다. 비어 있으면 자동으로 찾습니다.")]
-    [SerializeField] private Image[] runeSlotIconImages;
-    [Tooltip("잠긴 룬 슬롯 자물쇠 이미지의 알파값입니다. 0~255 기준입니다.")]
-    [SerializeField, Range(0, 255)] private int lockedRuneSlotAlpha = 150;
+    [SerializeField] private int[] runeSlotUnlockLevels = { 1, 1, 2, 4, 6, 8 };
 
     [Header("Rune Icon List Panel")]
     [SerializeField] private GameObject runeIconSelectPanel;
     [SerializeField] private RuneIconButton[] runeIconButtons;
 
+    [Header("Common Rune Purchase")]
+    [SerializeField] private GameObject buyButtonRoot;
+    [SerializeField] private Button buyButton;
+    [SerializeField] private TMP_Text buyPriceText;
+    [SerializeField] private string emptyBuyPriceText = "0";
+    [SerializeField] private Color buyButtonInactiveColor = new Color(0.6f, 0.6f, 0.6f, 1f);
+    [SerializeField] private Color buyButtonReadyColor = Color.white;
+
     [Header("Rune Icon Select Panel Move Effect")]
     [Tooltip("룬 선택 패널이 닫혀 있을 때의 X 좌표입니다.")]
     [SerializeField] private float runeSelectPanelHiddenX = 1200f;
     [Tooltip("룬 탭에서 표시될 때의 X 좌표입니다.")]
-    [SerializeField] private float runeSelectPanelShownX = 790f;
+    [SerializeField] private float runeSelectPanelShownX = 770f;
     [Tooltip("룬 선택 패널이 목표 위치까지 이동하는 시간입니다.")]
     [SerializeField] private float runeSelectPanelMoveDuration = 0.25f;
 
@@ -61,6 +62,7 @@ public class RuneSettingPanel : MonoBehaviour
     [SerializeField] private SettingWarningUI warningUI;
 
     private Setting settingController;
+    private RecordPanelUI recordPanelUI;
     private string currentCharacterId;
     private CharacterMasterData currentMasterData;
     private CharacterRuntimeData currentRuntimeData;
@@ -69,6 +71,7 @@ public class RuneSettingPanel : MonoBehaviour
     private RectTransform runeIconSelectPanelRect;
     private Coroutine runeSelectPanelMoveCoroutine;
     private RuneSlotButton selectedRuneSlot;
+    private RuneData selectedPurchaseRune;
 
     public bool IsRuneInteractionEnabled => runeSelectPanelAllowed;
     public bool ShouldClearInfoOnHoverExit => !runeSelectPanelAllowed;
@@ -82,6 +85,8 @@ public class RuneSettingPanel : MonoBehaviour
 
     private void Awake()
     {
+        MigrateRuneSelectPanelMoveValues();
+
         if (warningUI == null)
             warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
 
@@ -91,13 +96,29 @@ public class RuneSettingPanel : MonoBehaviour
         ClearRuneInfo();
 
         InitRuneSlots();
-        AutoBindRuneSlotIconImages();
         InitRuneIconButtons();
+        BindCommonRunePurchaseUI();
         ApplyDefaultLockedState();
 
         // 탭 전환 시 활성화/비활성화하지 않고 X 좌표 이동만 사용한다.
         SetRuneSelectPanelActive();
         SetRuneSelectPanelXImmediate(runeSelectPanelHiddenX);
+    }
+
+
+    private void OnValidate()
+    {
+        MigrateRuneSelectPanelMoveValues();
+    }
+
+    private void MigrateRuneSelectPanelMoveValues()
+    {
+        if (Mathf.Approximately(runeSelectPanelHiddenX, 1200f) &&
+            Mathf.Approximately(runeSelectPanelShownX, 790f))
+        {
+            runeSelectPanelHiddenX = 1200f;
+            runeSelectPanelShownX = 770f;
+        }
     }
 
     private void OnEnable()
@@ -108,6 +129,7 @@ public class RuneSettingPanel : MonoBehaviour
         AutoBindRuneInfoTexts();
         BindSharedSkillSettingPanel();
         BindRuneSelectPanelRect();
+        BindCommonRunePurchaseUI();
         SetRuneSelectPanelActive();
         MoveRuneSelectPanel(runeSelectPanelAllowed);
 
@@ -150,83 +172,6 @@ public class RuneSettingPanel : MonoBehaviour
     }
 
 
-    private void AutoBindRuneSlotIconImages()
-    {
-        int slotCount = runeSlotButtons != null ? runeSlotButtons.Length : 0;
-
-        if (slotCount <= 0)
-            return;
-
-        if (runeSlotIconImages == null || runeSlotIconImages.Length != slotCount)
-            Array.Resize(ref runeSlotIconImages, slotCount);
-
-        for (int i = 0; i < slotCount; i++)
-        {
-            if (runeSlotIconImages[i] != null || runeSlotButtons[i] == null)
-                continue;
-
-            Transform iconTransform = FindDeepChild(runeSlotButtons[i].transform, "RuneImg");
-
-            if (iconTransform == null)
-                iconTransform = FindDeepChild(runeSlotButtons[i].transform, "IconImg");
-
-            if (iconTransform == null)
-                iconTransform = FindDeepChild(runeSlotButtons[i].transform, "Icon");
-
-            if (iconTransform != null)
-                runeSlotIconImages[i] = iconTransform.GetComponent<Image>();
-        }
-    }
-
-    private void RefreshLockedRuneSlotVisuals()
-    {
-        AutoBindRuneSlotIconImages();
-
-        if (runeSlotButtons == null)
-            return;
-
-        for (int i = 0; i < runeSlotButtons.Length; i++)
-        {
-            bool locked = runeSlotButtons[i] != null && runeSlotButtons[i].IsLocked;
-            ApplyLockedRuneSlotVisual(i, locked);
-        }
-    }
-
-    private void ApplyLockedRuneSlotVisual(int slotIndex, bool locked)
-    {
-        if (runeSlotIconImages == null || slotIndex < 0 || slotIndex >= runeSlotIconImages.Length)
-            return;
-
-        Image iconImage = runeSlotIconImages[slotIndex];
-
-        if (iconImage == null)
-            return;
-
-        if (!locked)
-        {
-            RuneData equippedRune = null;
-
-            if (runeSlotButtons != null && slotIndex < runeSlotButtons.Length && runeSlotButtons[slotIndex] != null)
-                equippedRune = runeSlotButtons[slotIndex].EquippedRune;
-
-            if (equippedRune == null)
-            {
-                iconImage.sprite = null;
-                iconImage.enabled = false;
-                iconImage.color = Color.white;
-            }
-
-            return;
-        }
-
-        iconImage.sprite = lockedRuneSlotSprite;
-        iconImage.enabled = lockedRuneSlotSprite != null;
-
-        Color color = Color.white;
-        color.a = Mathf.Clamp01(lockedRuneSlotAlpha / 255f);
-        iconImage.color = color;
-    }
-
     private void InitRuneIconButtons()
     {
         if (runeIconButtons == null)
@@ -239,6 +184,48 @@ public class RuneSettingPanel : MonoBehaviour
         }
     }
 
+    private void BindCommonRunePurchaseUI()
+    {
+        if (buyButtonRoot == null && runeIconSelectPanel != null)
+        {
+            Transform found = FindDeepChild(runeIconSelectPanel.transform, "BuyButton");
+            if (found != null)
+                buyButtonRoot = found.gameObject;
+        }
+
+        if (buyButtonRoot == null && transform.parent != null)
+        {
+            Transform found = FindDeepChild(transform.parent, "BuyButton");
+            if (found != null)
+                buyButtonRoot = found.gameObject;
+        }
+
+        if (buyButton == null && buyButtonRoot != null)
+        {
+            Transform buttonTransform = FindDeepChild(buyButtonRoot.transform, "Button");
+            if (buttonTransform != null)
+                buyButton = buttonTransform.GetComponent<Button>();
+
+            if (buyButton == null)
+                buyButton = buyButtonRoot.GetComponentInChildren<Button>(true);
+        }
+
+        if (buyPriceText == null && buyButtonRoot != null)
+        {
+            Transform priceTransform = FindDeepChild(buyButtonRoot.transform, "price_text");
+            if (priceTransform != null)
+                buyPriceText = priceTransform.GetComponent<TMP_Text>();
+        }
+
+        if (buyButton != null)
+        {
+            buyButton.onClick.RemoveListener(BuySelectedCommonRune);
+            buyButton.onClick.AddListener(BuySelectedCommonRune);
+        }
+
+        RefreshCommonRunePurchaseUI();
+    }
+
     public void SetRuneSelectPanelEnabledForTab(bool enabled)
     {
         runeSelectPanelAllowed = enabled;
@@ -246,6 +233,7 @@ public class RuneSettingPanel : MonoBehaviour
         if (!enabled)
         {
             selectedRuneSlot = null;
+            ClearSelectedPurchaseRune();
             ClearRuneInfo();
             SetRuneSelectPanelVisible(false);
             return;
@@ -339,6 +327,7 @@ public class RuneSettingPanel : MonoBehaviour
         currentMasterData = null;
         currentRuntimeData = null;
 
+        ClearSelectedPurchaseRune();
         ClearRuneInfo();
 
         if (DataManager.Instance == null)
@@ -394,7 +383,6 @@ public class RuneSettingPanel : MonoBehaviour
     {
         ApplyRuneSlotUnlockState();
         LoadCurrentRuneSetting();
-        RefreshLockedRuneSlotVisuals();
         RefreshRuneIconButtons();
     }
 
@@ -449,7 +437,6 @@ public class RuneSettingPanel : MonoBehaviour
         }
 
         int characterLevel = currentRuntimeData.Level;
-        int unlockedSlotCount = GetUnlockedRuneSlotCount(characterLevel);
 
         if (runeSlotButtons == null)
             return;
@@ -459,7 +446,8 @@ public class RuneSettingPanel : MonoBehaviour
             if (runeSlotButtons[i] == null)
                 continue;
 
-            bool unlocked = i < unlockedSlotCount;
+            int requiredLevel = GetRuneSlotRequiredLevel(i);
+            bool unlocked = requiredLevel <= 0 || characterLevel >= requiredLevel;
             runeSlotButtons[i].SetLocked(!unlocked);
 
             if (!unlocked)
@@ -474,31 +462,12 @@ public class RuneSettingPanel : MonoBehaviour
 
         for (int i = 0; i < runeSlotButtons.Length; i++)
         {
-            if (runeSlotButtons[i] != null)
-                runeSlotButtons[i].SetLocked(true);
+            if (runeSlotButtons[i] == null)
+                continue;
 
-            ApplyLockedRuneSlotVisual(i, true);
+            bool locked = GetRuneSlotRequiredLevel(i) > 1;
+            runeSlotButtons[i].SetLocked(locked);
         }
-    }
-
-    private int GetUnlockedRuneSlotCount(int level)
-    {
-        int totalSlotCount = Mathf.Min(
-            runeSlotButtons != null ? runeSlotButtons.Length : 0,
-            runeSlotUnlockLevels != null ? runeSlotUnlockLevels.Length : 0);
-
-        int safeLevel = Mathf.Max(1, level);
-        int unlockedSlotCount = 0;
-
-        for (int i = 0; i < totalSlotCount; i++)
-        {
-            int requiredLevel = Mathf.Max(1, runeSlotUnlockLevels[i]);
-
-            if (safeLevel >= requiredLevel)
-                unlockedSlotCount++;
-        }
-
-        return unlockedSlotCount;
     }
 
     private void SaveCurrentRuneSetting()
@@ -543,14 +512,19 @@ public class RuneSettingPanel : MonoBehaviour
                 if (candidates != null && i < candidates.Length)
                 {
                     RuneData runeData = candidates[i];
-                    bool locked = IsRuneLockedForCurrentState(runeData);
+                    bool locked = !IsCommonRune(runeData) && IsRuneLockedForCurrentState(runeData);
                     int requiredLevel = GetRequiredLevelForRune(runeData);
 
                     runeIconButtons[i].SetRuneData(runeData, locked, requiredLevel);
+                    runeIconButtons[i].SetPurchaseState(
+                        IsCommonRune(runeData),
+                        IsCommonRunePurchased(runeData),
+                        selectedPurchaseRune != null && selectedPurchaseRune.RuneId == runeData.RuneId);
                 }
                 else
                 {
                     runeIconButtons[i].SetRuneData(null, false, 0);
+                    runeIconButtons[i].SetPurchaseState(false, true, false);
                 }
             }
         }
@@ -617,6 +591,17 @@ public class RuneSettingPanel : MonoBehaviour
 
         if (groupA != groupB)
             return groupA.CompareTo(groupB);
+
+        // 현재 캐릭터의 전용룬은 ID가 아니라 해금 레벨이 낮은 순서대로 표시합니다.
+        // 같은 해금 레벨일 때만 RuneId를 보조 정렬 기준으로 사용합니다.
+        if (groupA == 1 || groupA == 3)
+        {
+            int unlockLevelA = a != null ? Mathf.Max(0, a.UnlockLevel) : int.MaxValue;
+            int unlockLevelB = b != null ? Mathf.Max(0, b.UnlockLevel) : int.MaxValue;
+
+            if (unlockLevelA != unlockLevelB)
+                return unlockLevelA.CompareTo(unlockLevelB);
+        }
 
         int numberA = GetRuneNumber(a != null ? a.RuneId : null);
         int numberB = GetRuneNumber(b != null ? b.RuneId : null);
@@ -764,6 +749,14 @@ public class RuneSettingPanel : MonoBehaviour
             return;
         }
 
+        // 공용룬은 파티 전체에서 하나만 장착할 수 있습니다.
+        // 현재 캐릭터가 아닌 다른 캐릭터가 이미 사용 중이면 새로 장착하지 않습니다.
+        if (IsCommonRune(runeData) && IsCommonRuneEquippedByOtherCharacter(runeData))
+        {
+            ShowWarning("다른 캐릭터가 장착 중인 룬입니다.");
+            return;
+        }
+
         RuneSlotButton emptySlot = GetRuneEquipDestinationSlot();
 
         if (emptySlot == null)
@@ -799,6 +792,12 @@ public class RuneSettingPanel : MonoBehaviour
         if (runeData == null)
             return;
 
+        if (IsCommonRune(runeData) && !IsCommonRunePurchased(runeData))
+        {
+            SelectCommonRuneForPurchase(runeData);
+            return;
+        }
+
         if (locked)
         {
             if (runeData.TargetCharacterId == "All")
@@ -809,7 +808,246 @@ public class RuneSettingPanel : MonoBehaviour
             return;
         }
 
+        ClearSelectedPurchaseRune();
         TryEquipRuneToFirstEmptySlot(runeData);
+    }
+
+    private void SelectCommonRuneForPurchase(RuneData runeData)
+    {
+        selectedPurchaseRune = runeData;
+        RefreshRuneIconPurchaseStates();
+        RefreshCommonRunePurchaseUI();
+        ShowRuneInfo(runeData);
+    }
+
+    private void ClearSelectedPurchaseRune()
+    {
+        if (selectedPurchaseRune == null)
+        {
+            RefreshCommonRunePurchaseUI();
+            return;
+        }
+
+        selectedPurchaseRune = null;
+        RefreshRuneIconPurchaseStates();
+        RefreshCommonRunePurchaseUI();
+    }
+
+    private void RefreshRuneIconPurchaseStates()
+    {
+        if (runeIconButtons == null)
+            return;
+
+        for (int i = 0; i < runeIconButtons.Length; i++)
+        {
+            RuneIconButton iconButton = runeIconButtons[i];
+            if (iconButton == null)
+                continue;
+
+            RuneData runeData = iconButton.CurrentRuneData;
+            bool isCommon = IsCommonRune(runeData);
+            bool purchased = !isCommon || IsCommonRunePurchased(runeData);
+            bool selected = selectedPurchaseRune != null && runeData != null &&
+                            selectedPurchaseRune.RuneId == runeData.RuneId;
+
+            iconButton.SetPurchaseState(isCommon, purchased, selected);
+        }
+    }
+
+    private void RefreshCommonRunePurchaseUI()
+    {
+        bool hasSelection = selectedPurchaseRune != null &&
+                            IsCommonRune(selectedPurchaseRune) &&
+                            !IsCommonRunePurchased(selectedPurchaseRune);
+
+        int price = hasSelection
+            ? Mathf.Max(0, selectedPurchaseRune.BlueDustiumCost)
+            : 0;
+
+        if (buyPriceText != null)
+            buyPriceText.text = hasSelection
+                ? price.ToString()
+                : (string.IsNullOrWhiteSpace(emptyBuyPriceText) ? "0" : emptyBuyPriceText);
+
+        bool hasEnoughBlueDustium = false;
+        if (hasSelection && DataManager.Instance != null && DataManager.Instance.LobbyRuntimeStore != null)
+        {
+            LobbyRuntimeData lobby = DataManager.Instance.LobbyRuntimeStore.GetOrCreate();
+            hasEnoughBlueDustium = lobby != null && lobby.BlueDustium >= price;
+        }
+
+        if (buyButton != null)
+        {
+            // 선택된 룬이 있으면 클릭은 허용해 부족 경고를 표시할 수 있게 유지합니다.
+            buyButton.interactable = hasSelection;
+            ApplyBuyButtonVisual(hasSelection && hasEnoughBlueDustium);
+        }
+    }
+
+    private void ApplyBuyButtonVisual(bool purchaseAvailable)
+    {
+        if (buyButton == null)
+            return;
+
+        // Button 오브젝트 자체의 Image 색상은 변경하지 않습니다.
+        // 구매 가능 여부는 Button의 자식 Image와 TMP_Text만 표시합니다.
+        Color targetColor = purchaseAvailable
+            ? Color.white
+            : new Color(0x77 / 255f, 0x77 / 255f, 0x77 / 255f, 1f);
+
+        Image[] buttonImages = buyButton.GetComponentsInChildren<Image>(true);
+        for (int i = 0; i < buttonImages.Length; i++)
+        {
+            Image image = buttonImages[i];
+            if (image == null || image.gameObject == buyButton.gameObject)
+                continue;
+
+            Color imageColor = targetColor;
+            imageColor.a = image.color.a;
+            image.color = imageColor;
+        }
+
+        TMP_Text[] buttonTexts = buyButton.GetComponentsInChildren<TMP_Text>(true);
+        for (int i = 0; i < buttonTexts.Length; i++)
+        {
+            TMP_Text text = buttonTexts[i];
+            if (text == null)
+                continue;
+
+            Color textColor = targetColor;
+            textColor.a = text.color.a;
+            text.color = textColor;
+        }
+    }
+
+    private void BuySelectedCommonRune()
+    {
+        if (selectedPurchaseRune == null || !IsCommonRune(selectedPurchaseRune))
+            return;
+
+        if (IsCommonRunePurchased(selectedPurchaseRune))
+        {
+            ClearSelectedPurchaseRune();
+            return;
+        }
+
+        if (DataManager.Instance == null || DataManager.Instance.LobbyRuntimeStore == null)
+        {
+            ShowWarning("데이터를 불러올 수 없습니다.");
+            return;
+        }
+
+        LobbyRuntimeData lobby = DataManager.Instance.LobbyRuntimeStore.GetOrCreate();
+        int price = Mathf.Max(0, selectedPurchaseRune.BlueDustiumCost);
+
+        if (lobby.BlueDustium < price)
+        {
+            ShowWarning(SettingWarningUI.GetInsufficientBlueDustiumMessage());
+            return;
+        }
+
+        lobby.BlueDustium -= price;
+        RecordDiscoveryService.RegisterRune(DataManager.Instance, selectedPurchaseRune.RuneId);
+        LobbyBlueDustiumHudUI.RefreshAll();
+
+        RuneData purchasedRune = selectedPurchaseRune;
+        selectedPurchaseRune = null;
+        RefreshRuneIconPurchaseStates();
+        RefreshCommonRunePurchaseUI();
+        ShowRuneInfo(purchasedRune);
+    }
+
+    private bool IsCommonRuneEquippedByOtherCharacter(RuneData runeData)
+    {
+        if (runeData == null || string.IsNullOrWhiteSpace(runeData.RuneId))
+            return false;
+
+        if (DataManager.Instance == null || DataManager.Instance.CharacterRuntimeStore == null)
+            return false;
+
+        IReadOnlyDictionary<string, CharacterRuntimeData> allCharacters =
+            DataManager.Instance.CharacterRuntimeStore.GetAll();
+
+        if (allCharacters == null)
+            return false;
+
+        foreach (KeyValuePair<string, CharacterRuntimeData> pair in allCharacters)
+        {
+            CharacterRuntimeData character = pair.Value;
+            if (character == null)
+                continue;
+
+            if (!string.IsNullOrWhiteSpace(currentCharacterId) &&
+                string.Equals(character.CharacterId, currentCharacterId, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            string[] equippedRuneIds = character.EquippedRuneIds;
+            if (equippedRuneIds == null)
+                continue;
+
+            for (int i = 0; i < equippedRuneIds.Length; i++)
+            {
+                if (string.Equals(equippedRuneIds[i], runeData.RuneId, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool IsCommonRunePurchased(RuneData runeData)
+    {
+        if (!IsCommonRune(runeData))
+            return true;
+
+        return DataManager.Instance != null &&
+               RecordDiscoveryService.IsRuneDiscovered(DataManager.Instance, runeData.RuneId);
+    }
+
+    private bool IsCommonRune(RuneData runeData)
+    {
+        if (runeData == null)
+            return false;
+
+        int runeNumber = GetRuneNumber(runeData.RuneId);
+        return IsCommonRuneNumber(runeNumber) ||
+               string.Equals(runeData.TargetCharacterId, "All", StringComparison.OrdinalIgnoreCase);
+    }
+
+    public void HandleRuneIconDeselected(RuneIconButton iconButton)
+    {
+        if (iconButton == null || selectedPurchaseRune == null)
+            return;
+
+        RuneData runeData = iconButton.CurrentRuneData;
+        if (runeData == null || runeData.RuneId != selectedPurchaseRune.RuneId)
+            return;
+
+        StartCoroutine(ClearPurchaseSelectionAfterDeselect(runeData.RuneId));
+    }
+
+    private IEnumerator ClearPurchaseSelectionAfterDeselect(string runeId)
+    {
+        yield return null;
+
+        if (selectedPurchaseRune == null || selectedPurchaseRune.RuneId != runeId)
+            yield break;
+
+        GameObject selectedObject = EventSystem.current != null
+            ? EventSystem.current.currentSelectedGameObject
+            : null;
+
+        if (buyButtonRoot != null && selectedObject != null &&
+            (selectedObject == buyButtonRoot || selectedObject.transform.IsChildOf(buyButtonRoot.transform)))
+        {
+            yield break;
+        }
+
+        // BuyButton으로 포커스가 이동한 경우에만 구매 선택을 유지합니다.
+        // 다른 룬이나 다른 UI를 선택하면 기존 Selected 표시를 해제합니다.
+        ClearSelectedPurchaseRune();
     }
 
     public void UnequipRune(RuneData runeData)
@@ -869,7 +1107,7 @@ public class RuneSettingPanel : MonoBehaviour
 
         if (slotButton.IsLocked)
         {
-            ShowWarning(GameLocalization.Get("lobby.rune_slot_locked", "아직 잠겨있는 룬 슬롯입니다."));
+            ShowRuneSlotLockedWarning(slotButton.SlotIndex);
             return;
         }
 
@@ -905,7 +1143,7 @@ public class RuneSettingPanel : MonoBehaviour
     {
         if (slotButton.IsLocked)
         {
-            ShowWarning(GameLocalization.Get("lobby.rune_slot_locked", "아직 잠겨있는 룬 슬롯입니다."));
+            ShowRuneSlotLockedWarning(slotButton.SlotIndex);
             return;
         }
 
@@ -917,8 +1155,14 @@ public class RuneSettingPanel : MonoBehaviour
 
     public void SelectRuneSlotForSetting(RuneSlotButton slotButton)
     {
-        if (slotButton == null || slotButton.IsLocked)
+        if (slotButton == null)
             return;
+
+        if (slotButton.IsLocked)
+        {
+            ShowRuneSlotLockedWarning(slotButton.SlotIndex);
+            return;
+        }
 
         selectedRuneSlot = slotButton;
         ShowRuneSlotInfo(slotButton.SlotIndex, slotButton.EquippedRune, false);
@@ -991,10 +1235,10 @@ public class RuneSettingPanel : MonoBehaviour
         if (runeData == null)
             return true;
 
-        // 공용 파편의 블루 더스티움 구매/영구 해금은 별도 시스템에서 처리한다.
-        // 현재 단계에서는 기존처럼 공용 파편 자체는 레벨로 잠그지 않는다.
-        if (string.Equals(runeData.TargetCharacterId, "All", StringComparison.OrdinalIgnoreCase))
-            return false;
+        // 공용 파편은 블루 더스티움으로 구매해 영구 해금해야 장착할 수 있다.
+        // 구매 전에는 장착만 막고, RuneIconButton에서는 별도의 구매 선택/호버 UI를 사용한다.
+        if (IsCommonRune(runeData))
+            return !IsCommonRunePurchased(runeData);
 
         // 전용 파편은 해당 캐릭터의 레벨이 UnlockLevel에 도달해야 사용할 수 있다.
         int requiredLevel = GetRequiredLevelForRune(runeData);
@@ -1040,10 +1284,13 @@ public class RuneSettingPanel : MonoBehaviour
                 continue;
 
             RuneData runeData = runeIconButtons[i].CurrentRuneData;
-            bool equipped = IsRuneEquipped(runeData);
+            bool equipped = IsRuneEquipped(runeData) ||
+                (IsCommonRune(runeData) && IsCommonRuneEquippedByOtherCharacter(runeData));
 
             runeIconButtons[i].SetEquippedState(equipped);
         }
+
+        RefreshRuneIconPurchaseStates();
     }
 
     private string GetRuntimeRuneId(int slotIndex)
@@ -1128,7 +1375,6 @@ public class RuneSettingPanel : MonoBehaviour
 
                 runeSlotButtons[i].SetLocked(true);
                 runeSlotButtons[i].SetRune(null);
-                ApplyLockedRuneSlotVisual(i, true);
             }
         }
 
@@ -1145,6 +1391,7 @@ public class RuneSettingPanel : MonoBehaviour
             {
                 if (runeIconButtons[i] != null)
                     runeIconButtons[i].SetRuneData(null, false, 0);
+                runeIconButtons[i].SetPurchaseState(false, true, false);
             }
         }
 
@@ -1194,6 +1441,19 @@ public class RuneSettingPanel : MonoBehaviour
         }
 
         ShowRuneInfo(runeData);
+    }
+
+    private void ShowRuneSlotLockedWarning(int slotIndex)
+    {
+        int requiredLevel = GetRuneSlotRequiredLevel(slotIndex);
+
+        if (requiredLevel > 0)
+        {
+            ShowWarning(SettingWarningUI.GetRuneSlotUnlockLevelMessage(requiredLevel));
+            return;
+        }
+
+        ShowWarning(GameLocalization.Get("lobby.rune_slot_locked", "아직 잠겨있는 룬 슬롯입니다."));
     }
 
     private int GetRuneSlotRequiredLevel(int slotIndex)
@@ -1442,6 +1702,17 @@ public class RuneSettingPanel : MonoBehaviour
 
     private Color GetRuneInfoRarityColor(string rarity)
     {
+        // 로비의 파편 레어리티 색상은 도감에서 실제로 사용하는 색상을 그대로 가져옵니다.
+        // 이렇게 하면 도감 프리팹에서 색상을 수정해도 로비 InfoArea가 자동으로 동일한 색상을 사용합니다.
+        if (recordPanelUI == null)
+        {
+            recordPanelUI = FindFirstObjectByType<RecordPanelUI>(FindObjectsInactive.Include);
+        }
+
+        if (recordPanelUI != null)
+            return recordPanelUI.GetRarityDisplayColor(rarity);
+
+        // 도감 패널을 찾을 수 없는 경우에만 기존 인스펙터 색상을 예비값으로 사용합니다.
         if (string.Equals(rarity, "Exclusive", StringComparison.OrdinalIgnoreCase))
             return exclusiveRarityColor;
         if (string.Equals(rarity, "Rare", StringComparison.OrdinalIgnoreCase))
