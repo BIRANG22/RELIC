@@ -75,23 +75,48 @@ namespace Relic.Gameplay.Data
             InitializeMonsterTraits();
         }
 
-
         public string GetDisplayName()
         {
             string localizedBaseName = GameDataLocalization.MonsterName(MonsterId, Name);
+            string baseDisplayName = ResolveBaseDisplayName(localizedBaseName);
 
             if (!string.IsNullOrWhiteSpace(DisplayName))
             {
                 if (DisplayName == Name)
-                    return localizedBaseName;
+                    return baseDisplayName;
 
                 if (!string.IsNullOrWhiteSpace(Name) && DisplayName.StartsWith(Name + "_", StringComparison.Ordinal))
-                    return localizedBaseName + DisplayName.Substring(Name.Length);
+                    return baseDisplayName + DisplayName.Substring(Name.Length);
 
                 return DisplayName;
             }
 
-            return localizedBaseName;
+            return baseDisplayName;
+        }
+
+        private string ResolveBaseDisplayName(string localizedBaseName)
+        {
+            string normalizedMonsterId = MonsterId?.Trim();
+            string normalizedName = Name?.Trim();
+            string normalizedLocalizedName = localizedBaseName?.Trim();
+
+            // 로컬라이징 테이블에 신규 몬스터 키가 아직 없어서 ID가 그대로 반환되는 경우,
+            // GameData Monster 시트의 Name 값을 우선 사용합니다.
+            if (!string.IsNullOrWhiteSpace(normalizedName) &&
+                !string.Equals(normalizedName, normalizedMonsterId, StringComparison.OrdinalIgnoreCase) &&
+                (string.IsNullOrWhiteSpace(normalizedLocalizedName) ||
+                 string.Equals(normalizedLocalizedName, normalizedMonsterId, StringComparison.OrdinalIgnoreCase)))
+            {
+                return normalizedName;
+            }
+
+            if (!string.IsNullOrWhiteSpace(normalizedLocalizedName))
+                return normalizedLocalizedName;
+
+            if (!string.IsNullOrWhiteSpace(normalizedName))
+                return normalizedName;
+
+            return normalizedMonsterId ?? string.Empty;
         }
 
         public void SetDisplaySuffix(string suffix)
@@ -214,13 +239,15 @@ namespace Relic.Gameplay.Data
             MonsterSkillData selectedSkillData =
                 DataManager.Instance.MonsterSkillDatabase.Get(normalizedSkillId);
 
-            // 이동은 공통 Move 상태를 사용하므로 프레젠테이션 인덱스를 사용하지 않습니다.
-            if (IsActualMoveSkill(selectedSkillData))
-                return 0;
+            // 이동은 Move 상태를 사용하고, 공격이 아닌 행동은 기존 프레젠테이션 번호를 유지합니다.
+            if (selectedSkillData == null ||
+                selectedSkillData.TimelineNotation != TimelineActionType.Attack)
+            {
+                return IsActualMoveSkill(selectedSkillData) ? 0 : originalActionIndex;
+            }
 
-            // 이동을 제외한 모든 행동은 보유 순서대로 하나의 연속된
-            // Presentation 1, 2, 3...에 연결합니다.
-            int presentationActionIndex = 0;
+            // 공격 스킬만 보유 순서대로 세어 AttackAction1, 2, 3에 연결합니다.
+            int attackActionIndex = 0;
 
             for (int i = 0; i < PossibleSkillIdsByActionIndex.Length; i++)
             {
@@ -232,20 +259,18 @@ namespace Relic.Gameplay.Data
                 MonsterSkillData possibleSkillData =
                     DataManager.Instance.MonsterSkillDatabase.Get(possibleSkillId);
 
-                // 이동 스킬은 별도의 Presentation 순번에서 제외합니다.
-                if (IsActualMoveSkill(possibleSkillData))
-                    continue;
-
-                presentationActionIndex++;
+                if (possibleSkillData != null &&
+                    possibleSkillData.TimelineNotation == TimelineActionType.Attack)
+                {
+                    attackActionIndex++;
+                }
 
                 if (string.Equals(possibleSkillId, normalizedSkillId, StringComparison.Ordinal))
-                    return presentationActionIndex;
+                    return attackActionIndex;
             }
 
             return originalActionIndex;
         }
-
-
 
         private static bool IsActualMoveSkill(MonsterSkillData skillData)
         {
@@ -276,7 +301,6 @@ namespace Relic.Gameplay.Data
 
             return (float)CurrentHP / MaxHP;
         }
-
 
         private void InitializeMonsterTraits()
         {
@@ -317,4 +341,3 @@ namespace Relic.Gameplay.Data
         }
     }
 }
-
