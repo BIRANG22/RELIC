@@ -505,11 +505,38 @@ public sealed class UIBlurBackground : MonoBehaviour
             return;
 
         Canvas ownerCanvas = GetComponentInParent<Canvas>();
-        if (ownerCanvas == null)
-            return;
+        Canvas rootCanvas = ownerCanvas != null ? ownerCanvas.rootCanvas : null;
 
-        Transform questPanelTransform = ownerCanvas.transform.Find(
-            "Resolution Viewport/PositionPanel/QuestPanel");
+        Transform questPanelTransform = null;
+
+        if (rootCanvas != null)
+        {
+            questPanelTransform = rootCanvas.transform.Find(
+                "Resolution Viewport/PositionPanel/QuestPanel");
+        }
+
+        // ErosionSelectPanel처럼 자체 Canvas를 사용하는 패널에서도
+        // 로비 최상위 PositionPanel의 QuestPanel을 놓치지 않도록 씬 전체에서 보조 탐색합니다.
+        if (questPanelTransform == null)
+        {
+            Transform[] transforms = FindObjectsByType<Transform>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None);
+
+            for (int i = 0; i < transforms.Length; i++)
+            {
+                Transform item = transforms[i];
+                if (item == null || !item.gameObject.scene.IsValid() || item.name != "QuestPanel")
+                    continue;
+
+                Transform parent = item.parent;
+                if (parent == null || parent.name != "PositionPanel")
+                    continue;
+
+                questPanelTransform = item;
+                break;
+            }
+        }
 
         if (questPanelTransform == null)
             return;
