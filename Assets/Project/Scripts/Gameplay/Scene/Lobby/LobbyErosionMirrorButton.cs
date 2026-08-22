@@ -83,6 +83,7 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
         PlayClickSfx();
         TitleManager.CloseTitleModePanelsExceptInScene(erosionSelectPanel);
 
+        UIBlurBackground.EnsureForPanel(erosionSelectPanel);
         erosionSelectPanel.SetActive(true);
 
         if (bringPanelToFront)
