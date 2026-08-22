@@ -86,7 +86,7 @@ public class BattleMapPanel : MonoBehaviour
 
         List<MapData> mapPool = DataManager.Instance.MapDatabase.GetAll();
 
-        Debug.Log($"[BattleMapPanel] Chapter: {runtime.SelectedChapterId}, Stage: {runtime.CurrentStage}");
+        Debug.Log($"[BattleMapPanel] Stage: {runtime.CurrentStage}");
 
         BattleMapGenerationResult generationResult = BattleMapGenerationResolver.GenerateResult(
             mapPool,

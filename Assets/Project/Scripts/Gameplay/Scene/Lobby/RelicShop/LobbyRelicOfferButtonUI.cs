@@ -20,7 +20,8 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
     [SerializeField] private ParticleSystem rarityParticles;
 
     [Tooltip("등급에 따라 같은 색상으로 변경할 추가 파티클들입니다. Size를 늘려 원하는 만큼 지정할 수 있습니다.")]
-    [SerializeField] private ParticleSystem[] additionalRarityColorParticles =
+    [SerializeField]
+    private ParticleSystem[] additionalRarityColorParticles =
         Array.Empty<ParticleSystem>();
 
     [Header("Rarity Particle Colors")]
@@ -29,12 +30,12 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
     private Color commonParticleColor =
         new Color32(200, 208, 217, 255);
 
-    [Tooltip("고급 등급 테두리 색상")]
+    [Tooltip("레어 등급 테두리 색상")]
     [SerializeField]
     private Color uncommonParticleColor =
         new Color32(92, 219, 131, 255);
 
-    [Tooltip("희귀 등급 테두리 색상")]
+    [Tooltip("에픽 등급 테두리 색상")]
     [SerializeField]
     private Color rareParticleColor =
         new Color32(78, 141, 255, 255);
@@ -346,10 +347,10 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
             case RelicRarity.Common:
                 return commonParticleColor;
 
-            case RelicRarity.Uncommon:
+            case RelicRarity.Rare:
                 return uncommonParticleColor;
 
-            case RelicRarity.Rare:
+            case RelicRarity.Epic:
                 return rareParticleColor;
 
             case RelicRarity.Unique:

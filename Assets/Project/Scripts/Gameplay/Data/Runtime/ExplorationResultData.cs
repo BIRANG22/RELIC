@@ -193,17 +193,18 @@ namespace Relic.Gameplay.Data
         public static int GetRelicBlue(RelicRarity rarity) => rarity switch
         {
             RelicRarity.Common => 10,
-            RelicRarity.Uncommon => 25,
-            RelicRarity.Rare => 50,
+            RelicRarity.Rare => 25,
+            RelicRarity.Epic => 50,
             RelicRarity.Unique => 100,
             _ => 0
         };
 
         public static int GetSkillBlue(SkillRarity rarity) => rarity switch
         {
-            SkillRarity.CoreCommon => 10,
-            SkillRarity.CoreRare => 25,
-            SkillRarity.CoreEpic => 50,
+            SkillRarity.Common => 10,
+            SkillRarity.Rare => 25,
+            SkillRarity.Epic => 50,
+            SkillRarity.Unique => 100,
             _ => 0
         };
     }

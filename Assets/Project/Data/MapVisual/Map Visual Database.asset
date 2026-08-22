@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Map Visual Database
   m_EditorClassIdentifier: 
   entries:
-  - MapId: Map_09
+  - MapId: Map_17
     Spawns:
     - Prefab: {fileID: 1000000000000000001, guid: bb86614ef8daa0848b5b116705ab9a42, type: 3}
       VisualObjectId: event1
@@ -22,7 +22,7 @@ MonoBehaviour:
       LocalEulerAngles: {x: 0, y: 0, z: 0}
       LocalScale: {x: 1, y: 1, z: 1}
       Active: 1
-  - MapId: Map_10
+  - MapId: Map_18
     Spawns:
     - Prefab: {fileID: 0}
       VisualObjectId: 
@@ -31,7 +31,7 @@ MonoBehaviour:
       LocalEulerAngles: {x: 0, y: 0, z: 0}
       LocalScale: {x: 1, y: 1, z: 1}
       Active: 1
-  - MapId: Map_11
+  - MapId: Map_19
     Spawns:
     - Prefab: {fileID: 0}
       VisualObjectId: 
@@ -40,7 +40,7 @@ MonoBehaviour:
       LocalEulerAngles: {x: 0, y: 0, z: 0}
       LocalScale: {x: 1, y: 1, z: 1}
       Active: 1
-  - MapId: Map_12
+  - MapId: Map_20
     Spawns:
     - Prefab: {fileID: 1000000000000000001, guid: 9bc2c6d76e0e8a54bbb8905db8c70549, type: 3}
       VisualObjectId: event4
@@ -49,7 +49,7 @@ MonoBehaviour:
       LocalEulerAngles: {x: 0, y: 0, z: 0}
       LocalScale: {x: -0.5, y: 0.5, z: 1}
       Active: 1
-  - MapId: Map_13
+  - MapId: Map_21
     Spawns:
     - Prefab: {fileID: 1000000000000000001, guid: eee07011085cee44283275162156fc77, type: 3}
       VisualObjectId: event5
@@ -58,7 +58,7 @@ MonoBehaviour:
       LocalEulerAngles: {x: 0, y: 0, z: 0}
       LocalScale: {x: 0.8, y: 0.8, z: 1}
       Active: 1
-  - MapId: Map_14
+  - MapId: Map_22
     Spawns:
     - Prefab: {fileID: 1000000000000000001, guid: 0b612cf68cb08b44bb8f54bafd3e7dbc, type: 3}
       VisualObjectId: event6
@@ -67,7 +67,7 @@ MonoBehaviour:
       LocalEulerAngles: {x: 0, y: 0, z: 0}
       LocalScale: {x: 0.5, y: 0.5, z: 1}
       Active: 1
-  - MapId: Map_15
+  - MapId: Map_23
     Spawns:
     - Prefab: {fileID: 1000000000000000001, guid: dd4885ea04c40a64c812f64ffa0e7587, type: 3}
       VisualObjectId: event7
@@ -76,7 +76,7 @@ MonoBehaviour:
       LocalEulerAngles: {x: 0, y: 0, z: 0}
       LocalScale: {x: 0.7, y: 0.7, z: 0}
       Active: 1
-  - MapId: Map_16
+  - MapId: Map_24
     Spawns:
     - Prefab: {fileID: 1000000000000000001, guid: 54f1f6cc87734fe1961e7aefc6848ddf, type: 3}
       VisualObjectId: event8
@@ -85,7 +85,7 @@ MonoBehaviour:
       LocalEulerAngles: {x: 0, y: 0, z: 0}
       LocalScale: {x: 0.6, y: 0.6, z: 1}
       Active: 1
-  - MapId: Map_17
+  - MapId: Map_25
     Spawns:
     - Prefab: {fileID: 1000000000000000001, guid: b224834a5547fc441800d6830714760a, type: 3}
       VisualObjectId: event9

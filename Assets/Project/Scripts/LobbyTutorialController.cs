@@ -462,14 +462,34 @@ public sealed class LobbyTutorialController : MonoBehaviour
             // 대화를 끝내기 전에 Next를 연속 입력해도 지급이 누락되지 않도록 한 번 더 보장합니다.
             GrantStarterRunes();
             lobby.TutorialProgress = LobbyTutorialProgress.WaitingForSetup;
+            SaveTutorialProgressImmediately();
         }
         else if (finishedMode == DialogueMode.FirstExpedition &&
                  lobby.TutorialProgress == LobbyTutorialProgress.WaitingForSetup)
         {
             lobby.TutorialProgress = LobbyTutorialProgress.FirstExpeditionAssigned;
+            SaveTutorialProgressImmediately();
         }
 
         RefreshQuestPanel(lobby);
+    }
+
+    private void SaveTutorialProgressImmediately()
+    {
+        if (SaveSystem.Instance == null)
+        {
+            Debug.LogWarning(
+                "[LobbyTutorialController] SaveSystem.Instance를 찾지 못해 튜토리얼 진행 상태를 즉시 저장하지 못했습니다.",
+                this);
+            return;
+        }
+
+        if (!SaveSystem.Instance.SaveCurrentProgress())
+        {
+            Debug.LogWarning(
+                "[LobbyTutorialController] 튜토리얼 진행 상태 즉시 저장에 실패했습니다.",
+                this);
+        }
     }
 
     private void RefreshQuestPanel(LobbyRuntimeData lobby)

@@ -26,14 +26,14 @@ MonoBehaviour:
   - monsterId: Mon_06
     prefab: {fileID: 5089267951778699808, guid: e0b5f7fcaa5e49c4fa1bbadd87e56e29, type: 3}
   - monsterId: Mon_07
-    prefab: {fileID: 7212625001059380839, guid: af34001a803d25c4989ab3dc4d3b7694, type: 3}
+    prefab: {fileID: 5089267951778699808, guid: 8d87094afeb1557448ad9e565f734c58, type: 3}
   - monsterId: Mon_08
-    prefab: {fileID: 8430645116846625561, guid: 1c3260ebcafd6c44b878c662ae19cc7d, type: 3}
+    prefab: {fileID: 5089267951778699808, guid: af33594025d785b41b52dad4a24af3b4, type: 3}
   - monsterId: Mon_09
-    prefab: {fileID: 9021640511591303100, guid: c3ba04f2252b3aa47b299ac1f308e9a3, type: 3}
+    prefab: {fileID: 5089267951778699808, guid: 495aec57f056c2c448b337692c68afca, type: 3}
   - monsterId: Mon_10
     prefab: {fileID: 1910251976348132752, guid: 69f02f80bdce5664b89b099b867d6b4e, type: 3}
   - monsterId: Mon_11
-    prefab: {fileID: 325311907647569197, guid: 251169e79f3b8064f8ad148309d74199, type: 3}
+    prefab: {fileID: 5089267951778699808, guid: 4ef514e68769a0444a2085e9b7e228b3, type: 3}
   - monsterId: Mon_12
     prefab: {fileID: 1910251976348132752, guid: 8df1171d9a06f794999c80c154f147eb, type: 3}
