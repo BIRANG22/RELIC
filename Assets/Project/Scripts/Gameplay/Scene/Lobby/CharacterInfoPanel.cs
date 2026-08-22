@@ -11,7 +11,7 @@ public class CharacterInfoPanel : MonoBehaviour
     [SerializeField] private TMP_Text hpValueText;
     [SerializeField, FormerlySerializedAs("staminaValueText")] private TMP_Text costValueText;
     [SerializeField, FormerlySerializedAs("staminaRecoveryValueText")] private TMP_Text recoveryValueText;
-    [SerializeField] private TMP_Text moveValueText;
+    [SerializeField] private TMP_Text karmaValueText;
 
     [Header("Label Texts")]
     [SerializeField] private TMP_Text hpLabelText;
@@ -46,6 +46,8 @@ public class CharacterInfoPanel : MonoBehaviour
     [SerializeField, TextArea(2, 4)] private string costTooltipDescription = "기억을 사용할 때 소모하는 자원입니다.\n현재 마나가 부족하면 기억을 사용할 수 없습니다.";
     [SerializeField] private string recoveryTooltipTitle = "마나재생량";
     [SerializeField, TextArea(2, 4)] private string recoveryTooltipDescription = "턴이 시작될 때 회복되는 마나 수치입니다.";
+    [SerializeField] private string karmaTooltipTitle = "카르마";
+    [SerializeField, TextArea(2, 4)] private string karmaTooltipDescription = "발현기억에 사용하는 자원입니다.\n최대 보유량은 {0}입니다.";
 
     [Header("Story Tooltip Timing")]
     [SerializeField, Min(0f)] private float storyTooltipRestoreDelay = 0.15f;
@@ -98,13 +100,11 @@ public class CharacterInfoPanel : MonoBehaviour
         int baseHP = Mathf.Max(1, currentMasterData.MaxHP);
         int baseCost = Mathf.Max(0, currentMasterData.MaxCost);
         int baseRecovery = Mathf.Max(0, currentMasterData.CostRecovery);
-        // 캐릭터 데이터에는 기본 이동값이 없으며, 이동값은 장비/룬 효과로만 계산합니다.
-        int baseMove = 0;
+        int maxKarma = Mathf.Max(0, currentMasterData.MaxResource);
 
         int effectiveHP = BattleEquipmentEffectService.GetEffectiveMaxHP(currentRuntimeData, currentMasterData);
         int effectiveCost = BattleEquipmentEffectService.GetEffectiveMaxCost(currentRuntimeData, currentMasterData);
         int effectiveRecovery = BattleEquipmentEffectService.GetEffectiveCostRecovery(currentRuntimeData, currentMasterData);
-        int effectiveMove = BattleEquipmentEffectService.GetEffectiveMoveValue(currentRuntimeData, currentMasterData);
 
         if (hpValueText != null)
             hpValueText.text = FormatStatValue(baseHP, effectiveHP);
@@ -115,8 +115,9 @@ public class CharacterInfoPanel : MonoBehaviour
         if (recoveryValueText != null)
             recoveryValueText.text = FormatStatValue(baseRecovery, effectiveRecovery);
 
-        if (moveValueText != null)
-            moveValueText.text = FormatStatValue(baseMove, effectiveMove);
+        AutoBindKarmaValueText();
+        if (karmaValueText != null)
+            karmaValueText.text = maxKarma.ToString();
 
         RefreshCharacterMark();
         RefreshStoryTextCache();
@@ -146,8 +147,9 @@ public class CharacterInfoPanel : MonoBehaviour
         if (recoveryValueText != null)
             recoveryValueText.text = "0";
 
-        if (moveValueText != null)
-            moveValueText.text = "0";
+        AutoBindKarmaValueText();
+        if (karmaValueText != null)
+            karmaValueText.text = "0";
 
         ClearCharacterMark();
         ApplyStoryText("설명 없음");
@@ -229,6 +231,8 @@ public class CharacterInfoPanel : MonoBehaviour
                 return NormalizeEditableText(costTooltipTitle);
             case CharacterStatTooltipTarget.StatType.CostRecovery:
                 return NormalizeEditableText(recoveryTooltipTitle);
+            case CharacterStatTooltipTarget.StatType.Karma:
+                return NormalizeEditableText(karmaTooltipTitle);
             default:
                 return string.Empty;
         }
@@ -244,6 +248,9 @@ public class CharacterInfoPanel : MonoBehaviour
                 return NormalizeEditableText(costTooltipDescription);
             case CharacterStatTooltipTarget.StatType.CostRecovery:
                 return NormalizeEditableText(recoveryTooltipDescription);
+            case CharacterStatTooltipTarget.StatType.Karma:
+                int maxKarma = currentMasterData != null ? Mathf.Max(0, currentMasterData.MaxResource) : 0;
+                return string.Format(NormalizeEditableText(karmaTooltipDescription), maxKarma);
             default:
                 return string.Empty;
         }
@@ -292,6 +299,20 @@ public class CharacterInfoPanel : MonoBehaviour
 
         if (recoveryLabelText == null)
             recoveryLabelText = FindStatLabelText("Recovery", recoveryValueText);
+    }
+
+    private void AutoBindKarmaValueText()
+    {
+        if (karmaValueText != null)
+            return;
+
+        Transform karmaRoot = FindChildByName(transform, "Karma");
+        if (karmaRoot == null)
+            return;
+
+        Transform valueTransform = FindChildByName(karmaRoot, "ValueText");
+        if (valueTransform != null)
+            karmaValueText = valueTransform.GetComponent<TMP_Text>();
     }
 
     private TMP_Text FindStatLabelText(string rootName, TMP_Text valueText)
