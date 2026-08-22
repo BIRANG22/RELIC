@@ -161,6 +161,14 @@ public sealed class TMPKoreanGlyphPreloader : MonoBehaviour
         {
             fontToUse.TryAddCharacters(characters, out string missingCharacters);
 
+#if UNITY_EDITOR
+            // TMP가 글리프를 추가하면서 런타임 Material/Atlas의 HideFlags를 다시 설정할 수 있습니다.
+            // 씬의 TMP_Text가 런타임 복제 FontAsset을 참조하는 동안 DontSaveInEditor가 남아 있으면
+            // Inspector 직렬화 과정에서 Unity Assertion이 발생할 수 있으므로 다시 정리합니다.
+            if (Application.isPlaying && useRuntimeFontClonesInEditor && IsRuntimeFontClone(fontToUse))
+                PrepareRuntimeCloneForEditorReference(fontToUse);
+#endif
+
             if (logResult)
             {
                 int missingCount = string.IsNullOrEmpty(missingCharacters) ? 0 : missingCharacters.Length;
@@ -234,25 +242,48 @@ public sealed class TMPKoreanGlyphPreloader : MonoBehaviour
         }
 
         clone.name = source.name + " Runtime Clone";
-        clone.hideFlags = HideFlags.DontSaveInBuild;
 
-        if (clone.material != null)
-            clone.material.hideFlags = HideFlags.DontSaveInBuild;
-
-        Texture2D[] runtimeAtlases = clone.atlasTextures;
-        if (runtimeAtlases != null)
-        {
-            for (int i = 0; i < runtimeAtlases.Length; i++)
-            {
-                if (runtimeAtlases[i] != null)
-                    runtimeAtlases[i].hideFlags = HideFlags.DontSaveInBuild;
-            }
-        }
+        // CreateFontAsset가 생성한 FontAsset/Material/Atlas 중 일부에는 Unity 내부적으로
+        // DontSaveInEditor가 포함될 수 있습니다. 이 상태의 객체를 씬 TMP_Text에 연결하면
+        // 에디터가 해당 참조를 검사하는 과정에서 persistent 참조 Assertion이 발생할 수 있습니다.
+        // 런타임 복제본은 빌드에 저장하지 않되, 에디터 참조를 막는 플래그만 제거합니다.
+        PrepareRuntimeCloneForEditorReference(clone);
 
         runtimeFontClones[source] = clone;
 
         CloneFallbackFontList(source, clone);
         return clone;
+    }
+
+
+    private static void PrepareRuntimeCloneForEditorReference(TMP_FontAsset clone)
+    {
+        if (clone == null)
+            return;
+
+        clone.hideFlags = RemoveDontSaveInEditor(clone.hideFlags) | HideFlags.DontSaveInBuild;
+
+        Material runtimeMaterial = clone.material;
+        if (runtimeMaterial != null)
+            runtimeMaterial.hideFlags = RemoveDontSaveInEditor(runtimeMaterial.hideFlags) | HideFlags.DontSaveInBuild;
+
+        Texture2D[] runtimeAtlases = clone.atlasTextures;
+        if (runtimeAtlases == null)
+            return;
+
+        for (int i = 0; i < runtimeAtlases.Length; i++)
+        {
+            Texture2D atlas = runtimeAtlases[i];
+            if (atlas == null)
+                continue;
+
+            atlas.hideFlags = RemoveDontSaveInEditor(atlas.hideFlags) | HideFlags.DontSaveInBuild;
+        }
+    }
+
+    private static HideFlags RemoveDontSaveInEditor(HideFlags flags)
+    {
+        return flags & ~HideFlags.DontSaveInEditor;
     }
 
     private void CloneFallbackFontList(TMP_FontAsset source, TMP_FontAsset clone)

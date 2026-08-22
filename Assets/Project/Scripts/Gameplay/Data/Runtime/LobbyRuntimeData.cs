@@ -3,10 +3,19 @@ using System.Collections.Generic;
 
 namespace Relic.Gameplay.Data
 {
+    public enum LobbyTutorialProgress
+    {
+        NotStarted = 0,
+        WaitingForSetup = 1,
+        FirstExpeditionAssigned = 2,
+        Completed = 3
+    }
+
     [Serializable]
     public sealed class LobbyRuntimeData
     {
         public int BlueDustium = LobbyRuntimeStore.StartingBlueDustium;
+        public LobbyTutorialProgress TutorialProgress = LobbyTutorialProgress.NotStarted;
         public int LobbySkillUpgradeCount;
         public List<string> OwnedRelicIds = new();
         public List<string> SkillInventoryIds = new();
