@@ -371,8 +371,15 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
 
         if (IsPanelActive(characterSettingPanel))
         {
-            InvokeButton(characterBackButton);
-            return true;
+            AutoBindCharacterReferencesIfNeeded();
+
+            if (InvokeButton(characterBackButton))
+                return true;
+
+            Debug.LogWarning(
+                "[LobbyMainPanelKeyboardInputController] CharacterSettingPanel의 BackButton을 찾지 못했거나 버튼을 실행할 수 없습니다.",
+                this);
+            return false;
         }
 
         return false;
@@ -562,8 +569,11 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
 
         if (Input.GetKeyDown(characterBackKey))
         {
-            InvokeButton(characterBackButton);
-            BlockInputForCooldown();
+            AutoBindCharacterReferencesIfNeeded();
+
+            if (InvokeButton(characterBackButton))
+                BlockInputForCooldown();
+
             return;
         }
 
@@ -1003,6 +1013,33 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
 
     private void AutoBindCharacterReferencesIfNeeded()
     {
+        if (characterSettingPanel == null)
+            characterSettingPanel = FindSceneObjectByName("CharacterSettingPanel");
+
+        if (characterBackButton == null && characterSettingPanel != null)
+        {
+            Transform backButtonTransform = characterSettingPanel.transform.Find("BackButton");
+
+            if (backButtonTransform == null)
+            {
+                Transform[] children = characterSettingPanel.GetComponentsInChildren<Transform>(true);
+
+                for (int i = 0; i < children.Length; i++)
+                {
+                    Transform child = children[i];
+
+                    if (child != null && child.name == "BackButton")
+                    {
+                        backButtonTransform = child;
+                        break;
+                    }
+                }
+            }
+
+            if (backButtonTransform != null)
+                characterBackButton = backButtonTransform.GetComponent<Button>();
+        }
+
         if (charPick == null && characterSettingPanel != null)
             charPick = characterSettingPanel.GetComponentInChildren<CharPick>(true);
 

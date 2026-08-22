@@ -100,10 +100,10 @@ public sealed class LobbyTutorialController : MonoBehaviour
 
     [Header("Quest Panel Position")]
     [Tooltip("대화 중 QuestPanel의 Y 위치입니다.")]
-    [SerializeField] private float questDialogueY = -610f;
+    [SerializeField] private float questDialogueY = 600f;
 
     [Tooltip("대화가 끝났을 때 QuestPanel의 Y 위치입니다.")]
-    [SerializeField] private float questNormalY = -490f;
+    [SerializeField] private float questNormalY = 490f;
 
     [Tooltip("QuestPanel이 대화 위치와 기본 위치 사이를 이동하는 시간입니다.")]
     [Min(0.01f)]
