@@ -7,7 +7,8 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
     {
         Research,
         Exploration,
-        Resonance
+        Resonance,
+        Npc
     }
 
     [Header("Hover Name")]
@@ -18,10 +19,10 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
     [SerializeField] private float screenYOffset = -18f;
 
     [Header("Blocking Panels")]
-    [Tooltip("If any registered panel is active, the world object hover name is hidden.")]
+    [Tooltip("등록된 패널 중 하나라도 활성화되어 있으면 월드 오브젝트 이름을 숨깁니다.")]
     [SerializeField] private GameObject[] blockingPanels;
 
-    [Tooltip("When enabled, common lobby modal panels are also detected automatically by name.")]
+    [Tooltip("활성화하면 로비에서 자주 사용하는 모달 패널을 이름으로 자동 감지합니다.")]
     [SerializeField] private bool autoDetectCommonBlockingPanels = true;
 
     private static readonly string[] CommonBlockingPanelNames =
@@ -41,70 +42,87 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
     [Tooltip("비워두면 ObjectName의 TMP_Text를 자동으로 찾습니다.")]
     [SerializeField] private TMP_Text objectNameText;
 
-    [Tooltip("비워두면 이 오브젝트의 Collider2D를 자동으로 찾습니다.")]
-    [SerializeField] private Collider2D targetCollider;
+    private static LobbyWorldObjectHoverName currentOwner;
 
+    private GameObject worldObjectNamePanel;
+    private RectTransform worldObjectNamePanelRect;
     private Canvas targetCanvas;
-    private RectTransform canvasRect;
+    private RectTransform positionRoot;
     private Camera worldCamera;
+    private Collider2D targetCollider;
     private GameObject[] commonBlockingPanels;
     private bool isHovered;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStaticState()
+    {
+        currentOwner = null;
+    }
 
     private void Awake()
     {
         AutoBindIfNeeded();
-        SetNameVisible(false);
+        isHovered = false;
+
+        if (currentOwner == null)
+            SetNameVisible(false);
     }
 
     private void OnEnable()
     {
         AutoBindIfNeeded();
         isHovered = false;
-        SetNameVisible(false);
     }
 
     private void OnDisable()
     {
         isHovered = false;
-        SetNameVisible(false);
+
+        if (currentOwner == this)
+        {
+            SetNameVisible(false);
+            currentOwner = null;
+        }
     }
 
     private void OnMouseEnter()
     {
         AutoBindIfNeeded();
 
-        if (objectNameRect == null || objectNameText == null || targetCollider == null)
+        if (targetCollider == null || objectNameText == null || worldObjectNamePanel == null)
             return;
 
         if (IsAnyBlockingPanelActive())
-        {
-            isHovered = false;
-            SetNameVisible(false);
             return;
-        }
 
+        currentOwner = this;
         isHovered = true;
         objectNameText.text = GetDisplayName();
-        SetNameVisible(true);
         UpdateNamePosition();
+        SetNameVisible(true);
     }
 
     private void OnMouseExit()
     {
         isHovered = false;
+
+        if (currentOwner != this)
+            return;
+
         SetNameVisible(false);
+        currentOwner = null;
     }
 
     private void LateUpdate()
     {
-        if (!isHovered)
+        if (!isHovered || currentOwner != this)
             return;
 
         if (IsAnyBlockingPanelActive())
         {
-            // Require the pointer to leave and enter again after a modal closes.
             isHovered = false;
             SetNameVisible(false);
+            currentOwner = null;
             return;
         }
 
@@ -115,7 +133,7 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
     {
         AutoBindIfNeeded();
 
-        if (objectNameRect == null || targetCollider == null || targetCanvas == null || canvasRect == null)
+        if (worldObjectNamePanelRect == null || targetCollider == null || targetCanvas == null || positionRoot == null)
             return;
 
         if (worldCamera == null)
@@ -130,7 +148,13 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
 
         if (screenPoint.z < 0f)
         {
-            SetNameVisible(false);
+            if (currentOwner == this)
+            {
+                SetNameVisible(false);
+                currentOwner = null;
+                isHovered = false;
+            }
+
             return;
         }
 
@@ -140,25 +164,23 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
             ? null
             : targetCanvas.worldCamera;
 
-        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                canvasRect,
+        if (!RectTransformUtility.ScreenPointToWorldPointInRectangle(
+                positionRoot,
                 screenPoint,
                 uiCamera,
-                out Vector2 localPoint))
+                out Vector3 worldPoint))
         {
             return;
         }
 
-        objectNameRect.anchoredPosition = localPoint;
-
-        if (!objectNameRect.gameObject.activeSelf)
-            SetNameVisible(true);
+        // ObjectName의 로컬 X/Y는 건드리지 않고 부모 패널만 콜라이더 하단으로 이동합니다.
+        worldObjectNamePanelRect.position = worldPoint;
     }
 
     private void SetNameVisible(bool visible)
     {
-        if (objectNameRect != null && objectNameRect.gameObject.activeSelf != visible)
-            objectNameRect.gameObject.SetActive(visible);
+        if (worldObjectNamePanel != null && worldObjectNamePanel.activeSelf != visible)
+            worldObjectNamePanel.SetActive(visible);
     }
 
     private string GetDisplayName()
@@ -173,6 +195,9 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
 
             case HoverNameType.Resonance:
                 return "비석";
+
+            case HoverNameType.Npc:
+                return "연구원 엘릭";
 
             default:
                 return string.Empty;
@@ -227,29 +252,30 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
         if (targetCollider == null)
             targetCollider = GetComponent<Collider2D>();
 
-        if (objectNameRect == null)
+        if (worldObjectNamePanel == null)
+            worldObjectNamePanel = FindSceneObjectByName("WorldObjectNamePanel");
+
+        if (worldObjectNamePanelRect == null && worldObjectNamePanel != null)
+            worldObjectNamePanelRect = worldObjectNamePanel.GetComponent<RectTransform>();
+
+        if (objectNameRect == null && worldObjectNamePanel != null)
         {
-            GameObject panel = FindSceneObjectByName("WorldObjectNamePanel");
+            GameObject objectName = FindChildByName(worldObjectNamePanel.transform, "ObjectName");
 
-            if (panel != null)
-            {
-                GameObject objectName = FindChildByName(panel.transform, "ObjectName");
-
-                if (objectName != null)
-                    objectNameRect = objectName.GetComponent<RectTransform>();
-            }
+            if (objectName != null)
+                objectNameRect = objectName.GetComponent<RectTransform>();
         }
 
         if (objectNameText == null && objectNameRect != null)
             objectNameText = objectNameRect.GetComponent<TMP_Text>() ?? objectNameRect.GetComponentInChildren<TMP_Text>(true);
 
-        if (objectNameRect != null)
+        if (worldObjectNamePanelRect != null)
         {
             if (targetCanvas == null)
-                targetCanvas = objectNameRect.GetComponentInParent<Canvas>();
+                targetCanvas = worldObjectNamePanelRect.GetComponentInParent<Canvas>();
 
-            if (targetCanvas != null && canvasRect == null)
-                canvasRect = targetCanvas.transform as RectTransform;
+            if (positionRoot == null)
+                positionRoot = worldObjectNamePanelRect.parent as RectTransform;
         }
 
         if (worldCamera == null)
