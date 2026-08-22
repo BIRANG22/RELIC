@@ -11,7 +11,7 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
         HP,
         Cost,
         CostRecovery,
-        Move
+        Karma
     }
 
     [Header("Target")]
@@ -26,11 +26,25 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
     [SerializeField] private string runeIncreaseColor = "#4E66DF";
     [SerializeField] private string runeDecreaseColor = "#D94B4B";
 
+    [Header("Hover Scale")]
+    [Tooltip("생명력, 카르마, 마나, 마나재생량 아이콘에 마우스를 올렸을 때 적용할 크기 배율입니다.")]
+    [Min(1f)]
+    [SerializeField] private float hoverScaleMultiplier = 1.1f;
+
     private bool isPointerInside;
+    private RectTransform hoverScaleTarget;
+    private Vector3 originalHoverScale;
+    private bool scaleInitialized;
 
     private void Awake()
     {
         AutoBindIfNeeded();
+        InitializeScale();
+    }
+
+    private void OnEnable()
+    {
+        InitializeScale();
     }
 
 #if UNITY_EDITOR
@@ -45,21 +59,100 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
         if (isPointerInside && characterInfoPanel != null)
             characterInfoPanel.HideStatTooltipInStory(this);
 
+        ApplyHoverScale(false);
         isPointerInside = false;
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        isPointerInside = true;
-        ShowInStory();
+        SetHoverState(true);
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        isPointerInside = false;
+        SetHoverState(false);
+    }
 
-        if (characterInfoPanel != null)
+    private void SetHoverState(bool hovered)
+    {
+        if (isPointerInside == hovered)
+            return;
+
+        isPointerInside = hovered;
+        ApplyHoverScale(hovered);
+
+        if (hovered)
+        {
+            ShowInStory();
+        }
+        else if (characterInfoPanel != null)
+        {
             characterInfoPanel.HideStatTooltipInStory(this);
+        }
+    }
+
+    private RectTransform FindHoverScaleTarget()
+    {
+        Transform directIcon = transform.Find("Icon");
+        if (directIcon is RectTransform directRect)
+            return directRect;
+
+        RectTransform[] children = GetComponentsInChildren<RectTransform>(true);
+        for (int i = 0; i < children.Length; i++)
+        {
+            RectTransform child = children[i];
+            if (child != null && child != transform &&
+                string.Equals(child.name, "Icon", System.StringComparison.OrdinalIgnoreCase))
+            {
+                return child;
+            }
+        }
+
+        return transform as RectTransform;
+    }
+
+    private void InitializeScale()
+    {
+        if (hoverScaleTarget == null)
+            hoverScaleTarget = FindHoverScaleTarget();
+
+        if (hoverScaleTarget == null)
+        {
+            scaleInitialized = false;
+            return;
+        }
+
+        originalHoverScale = hoverScaleTarget.localScale;
+        scaleInitialized = true;
+    }
+
+    private void ApplyHoverScale(bool hovered)
+    {
+        if (!scaleInitialized || hoverScaleTarget == null)
+            InitializeScale();
+
+        if (hoverScaleTarget == null)
+            return;
+
+        if (!IsHoverScaleEnabled())
+        {
+            hoverScaleTarget.localScale = originalHoverScale;
+            return;
+        }
+
+        hoverScaleTarget.localScale = hovered
+            ? originalHoverScale * hoverScaleMultiplier
+            : originalHoverScale;
+    }
+
+    private bool IsHoverScaleEnabled()
+    {
+        StatType resolvedStatType = GetResolvedStatType();
+
+        return resolvedStatType == StatType.HP ||
+               resolvedStatType == StatType.Cost ||
+               resolvedStatType == StatType.CostRecovery ||
+               resolvedStatType == StatType.Karma;
     }
 
     private void ShowInStory()
@@ -79,12 +172,15 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
         int baseValue = GetBaseValue(masterData, resolvedStatType);
         int effectiveValue = GetEffectiveValue(runtimeData, masterData, resolvedStatType);
         int runeBonus = effectiveValue - baseValue;
+        string valueLine = resolvedStatType == StatType.Karma
+            ? string.Empty
+            : FormatValueLine(baseValue, runeBonus);
 
         characterInfoPanel.ShowStatTooltipInStory(
             this,
             GetStatName(resolvedStatType),
             GetStatDescription(resolvedStatType),
-            FormatValueLine(baseValue, runeBonus));
+            valueLine);
     }
 
     private int GetBaseValue(CharacterMasterData masterData, StatType resolvedStatType)
@@ -100,9 +196,8 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
                 return Mathf.Max(0, masterData.MaxCost);
             case StatType.CostRecovery:
                 return Mathf.Max(0, masterData.CostRecovery);
-            case StatType.Move:
-                // 캐릭터 데이터에는 기본 이동값이 없습니다.
-                return 0;
+            case StatType.Karma:
+                return Mathf.Max(0, masterData.MaxResource);
             default:
                 return 0;
         }
@@ -118,8 +213,8 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
                 return BattleEquipmentEffectService.GetEffectiveMaxCost(runtimeData, masterData);
             case StatType.CostRecovery:
                 return BattleEquipmentEffectService.GetEffectiveCostRecovery(runtimeData, masterData);
-            case StatType.Move:
-                return BattleEquipmentEffectService.GetEffectiveMoveValue(runtimeData, masterData);
+            case StatType.Karma:
+                return GetBaseValue(masterData, resolvedStatType);
             default:
                 return GetBaseValue(masterData, resolvedStatType);
         }
@@ -145,8 +240,8 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
                 return GetLocalizedTooltipText("common.cost", "마나");
             case StatType.CostRecovery:
                 return GetLocalizedTooltipText("common.recovery", "마나재생량");
-            case StatType.Move:
-                return GetLocalizedTooltipText("common.move_point", "이동력");
+            case StatType.Karma:
+                return GetLocalizedTooltipText("common.karma", "카르마");
             default:
                 return "정보";
         }
@@ -178,10 +273,14 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
                 return GetLocalizedTooltipText(
                     "lobby.stat.recovery.description",
                     "턴이 시작될 때 회복되는 코스트 수치입니다.\n회복량이 높을수록 한 턴에 사용할 수 있는 스킬 선택지가 늘어납니다.");
-            case StatType.Move:
-                return GetLocalizedTooltipText(
-                    "lobby.stat.move.description",
-                    "전투 중 이동스킬 사용 시 1칸 이동에 1코스트를 소모합니다.\n이동력이 50 이상이면 2칸 이동에 1코스트를 소모합니다.");
+            case StatType.Karma:
+                int maxKarma = characterInfoPanel != null && characterInfoPanel.CurrentMasterData != null
+                    ? Mathf.Max(0, characterInfoPanel.CurrentMasterData.MaxResource)
+                    : 0;
+                return GetLocalizedTooltipFormat(
+                    "lobby.stat.karma.description",
+                    "발현기억에 사용하는 자원입니다.\n최대 보유량은 {0}입니다.",
+                    maxKarma);
             default:
                 return "";
         }
@@ -209,15 +308,14 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
                 NameContains(objectName, "회복"))
                 return StatType.CostRecovery;
 
+            if (NameContains(objectName, "Karma") ||
+                NameContains(objectName, "카르마"))
+                return StatType.Karma;
+
             if (NameContains(objectName, "Stamina") ||
                 NameContains(objectName, "Cost") ||
                 NameContains(objectName, "코스트"))
                 return StatType.Cost;
-
-            if (NameContains(objectName, "Move") ||
-                NameContains(objectName, "MoveValue") ||
-                NameContains(objectName, "이동"))
-                return StatType.Move;
 
             current = current.parent;
         }

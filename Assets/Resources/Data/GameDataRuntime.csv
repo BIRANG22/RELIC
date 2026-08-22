@@ -3,36 +3,26 @@
 CharacterId,Name,MaxHP,MaxCost,CostRecovery,MaxResource,ResourceType,ResourceTrigger,IsDefaultProvided,UnlockCondition,PassiveSkill1,PassiveSkill2,UniqueSkill1,UniqueSkill2,CharacterSkill1,CharacterSkill2,CommonSkill1,CommonSkill2,Rune1,Rune2,Rune3,Rune4,Rune5,Regeneration,introduction
 Char_01,힐트,105,10,4,5,Karma,OnAnyAllyDamaged,1,1,S_Passive_01,S_Passive_02,S_Unique_01,S_Unique_02,S_Ability_01,S_Ability_03,S_Public_01,S_Public_03,Rune_51,Rune_52,Rune_53,Rune_54,Rune_55,"피해를 받았을 때
 생명력이 감소하지 않았다면
-카르마를 1 회복합니다.
-
-최대 보유 카르마 : 5","“강한 놈들이 득실거린다며?
+카르마를 1 회복합니다.","“강한 놈들이 득실거린다며?
 그럼 내가 가야지.”
 
 벨가드 용병단에서 파견된 용병입니다. 호전적이고 거침없는 성격으로, 위험한 전투일수록 먼저 뛰어들며 이번 탐사에서도 자신의 강함을 증명하려 합니다.",,,,,
 Char_02,카야,98,11,4,5,Karma,OnThreeActionsInSameSlot,1,1,S_Passive_03,S_Passive_04,S_Unique_03,S_Unique_04,S_Ability_05,S_Ability_07,S_Public_05,S_Public_07,Rune_56,Rune_57,Rune_58,Rune_59,Rune_60,"한 슬롯에서 3회 이상 행동을
-등록하면 카르마를 1 회복합니다. 
-
-최대 보유 카르마 : 5","“임무라면 완수한다. 그뿐이야.”
+등록하면 카르마를 1 회복합니다. ","“임무라면 완수한다. 그뿐이야.”
 
 하쿠렌 가문을 대표하여 파견된 검사입니다. 침착하고 냉철하며 어떤 상황에서도 흐트러지지 않고, 미지의 적과 전투를 거치며 자신의 검술을 더욱 완성해갑니다.",,,,,
 Char_03,헤이즈,84,14,4,5,Karma,OnSpendEightCostInTurn,1,1,S_Passive_05,S_Passive_06,S_Unique_05,S_Unique_06,S_Ability_09,S_Ability_11,S_Public_09,S_Public_11,Rune_61,Rune_62,Rune_63,Rune_64,Rune_65,"한 턴에 마나를 8 이상 소모하면
-카르마를 1 회복합니다.
-
-최대 보유 카르마 : 5","“정말 제가 가야 하는 건가요?”
+카르마를 1 회복합니다.","“정말 제가 가야 하는 건가요?”
 
 아스텔 학회에서 조사를 위해 합류한 연구원입니다. 겁이 많고 소심하지만 맡은 연구에서 물러서지는 않으며, 소환수 니아와 함께 자신의 나약함을 극복하려 합니다.",,,,,
 Char_04,이네스,100,10,4,5,Karma,OnAllyBuffApplied,1,1,S_Passive_07,S_Passive_08,S_Unique_07,S_Unique_08,S_Ability_13,S_Ability_15,S_Public_13,S_Public_15,Rune_66,Rune_67,Rune_68,Rune_69,Rune_70,"아군에게 이로운 효과를 부여하면
-카르마를 1 회복합니다.
-
-최대 보유 카르마 : 5","“걱정하지 마세요.
+카르마를 1 회복합니다.","“걱정하지 마세요.
 모두 무사히 돌아갈 수 있도록 할게요.”
 
 세라피아 교단에서 파견된 집행자입니다. 밝고 상냥하게 동료들을 보살피지만, 그들을 위협하는 존재 앞에서는 망설임 없이 냉혹한 모습을 드러냅니다.",,,,,
 Char_05,레이나,90,12,4,5,Karma,OnDamageEnemy,2,2,S_Passive_09,S_Passive_10,S_Unique_09,S_Unique_10,S_Ability_17,S_Ability_19,S_Public_17,S_Public_19,Rune_71,Rune_72,Rune_73,Rune_74,Rune_75,"공격타입의 기억으로
 적에게 피해를 주면
-카르마를1 회복합니다.
-
-최대 보유 카르마 : 5","“그냥 내가 가고 싶어서 가는 거야.”
+카르마를1 회복합니다.","“그냥 내가 가고 싶어서 가는 거야.”
 
 어느 집단에도 속하지 않은 채 홀로 떠도는 뱀파이어입니다. 말수는 적고 자유분방하며 타인의 규칙에 얽매이지 않고, 자신의 관심이 향한 탐사대를 따라 스스로 위험 속으로 발을 들입니다.",,,,,
 ,,,,,,,,,
