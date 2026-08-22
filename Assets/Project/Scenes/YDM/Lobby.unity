@@ -15910,7 +15910,6 @@ MonoBehaviour:
   autoDetectCommonBlockingPanels: 1
   objectNameRect: {fileID: 1457075252}
   objectNameText: {fileID: 1922774556}
-  targetCollider: {fileID: 0}
 --- !u!1 &418399750
 GameObject:
   m_ObjectHideFlags: 0
@@ -32612,7 +32611,7 @@ Transform:
   m_GameObject: {fileID: 358303215}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 3.92, y: -3.47, z: 0}
+  m_LocalPosition: {x: 4.69, y: -4, z: 0}
   m_LocalScale: {x: 0.35, y: 0.35, z: 0.35}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -43688,6 +43687,7 @@ Transform:
   - {fileID: 1577149336}
   - {fileID: 416785454}
   - {fileID: 1128527672}
+  - {fileID: 1004468418}
   m_Father: {fileID: 771082558}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &994675722
@@ -44416,8 +44416,11 @@ GameObject:
   m_Component:
   - component: {fileID: 1004468418}
   - component: {fileID: 1004468419}
+  - component: {fileID: 1004468420}
+  - component: {fileID: 1004468421}
+  - component: {fileID: 1004468422}
   m_Layer: 0
-  m_Name: deco05
+  m_Name: Npc
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -44431,13 +44434,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1004468417}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 3.18, y: -2.57, z: 0}
-  m_LocalScale: {x: 1.39, y: 1.39, z: 1.39}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
+  m_LocalPosition: {x: -4.35, y: -0.96, z: 0}
+  m_LocalScale: {x: 0.3475, y: 0.3475, z: 0.3475}
   m_ConstrainProportionsScale: 1
   m_Children: []
-  m_Father: {fileID: 1128527672}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Father: {fileID: 994032178}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!212 &1004468419
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -44493,6 +44496,84 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!61 &1004468420
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1004468417}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: -0.2, y: -0.5}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 19.2, y: 10.8}
+    newSize: {x: 1, y: 1}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 2, y: 6}
+  m_EdgeRadius: 0
+--- !u!114 &1004468421
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1004468417}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3ef175f5759eff4ba552071271a0934, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tutorialController: {fileID: 1225100696}
+  ignoreClickWhenPointerOverUi: 1
+--- !u!114 &1004468422
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1004468417}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5d0995e458f11b4cbb4853f69ef5f08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hoverNameType: 3
+  screenYOffset: -18
+  blockingPanels: []
+  autoDetectCommonBlockingPanels: 1
+  objectNameRect: {fileID: 0}
+  objectNameText: {fileID: 0}
 --- !u!1 &1004795393
 GameObject:
   m_ObjectHideFlags: 0
@@ -48077,7 +48158,6 @@ GameObject:
   - component: {fileID: 1128527679}
   - component: {fileID: 1128527675}
   - component: {fileID: 1128527680}
-  - component: {fileID: 1128527681}
   - component: {fileID: 1128527682}
   m_Layer: 0
   m_Name: Researcher
@@ -48099,7 +48179,6 @@ Transform:
   m_LocalScale: {x: 0.25, y: 0.25, z: 0.25}
   m_ConstrainProportionsScale: 1
   m_Children:
-  - {fileID: 1004468418}
   - {fileID: 504568167}
   - {fileID: 1798205919}
   m_Father: {fileID: 994032178}
@@ -48270,20 +48349,6 @@ MonoBehaviour:
   detectUIRectHover: 1
   restoreOnPointerExit: 1
   useUnscaledTime: 1
---- !u!114 &1128527681
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1128527671}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b3ef175f5759eff4ba552071271a0934, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  tutorialController: {fileID: 1225100696}
-  ignoreClickWhenPointerOverUi: 1
 --- !u!114 &1128527682
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -48302,7 +48367,6 @@ MonoBehaviour:
   autoDetectCommonBlockingPanels: 1
   objectNameRect: {fileID: 1457075252}
   objectNameText: {fileID: 1922774556}
-  targetCollider: {fileID: 0}
 --- !u!1 &1131502595
 GameObject:
   m_ObjectHideFlags: 0
@@ -49238,7 +49302,7 @@ Transform:
   m_GameObject: {fileID: 1948413765}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -4.6, y: -4.16, z: 0}
+  m_LocalPosition: {x: -3.02, y: -5.12, z: 0}
   m_LocalScale: {x: 0.35, y: 0.35, z: 0.35}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -54039,13 +54103,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 156549420}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -3.551, y: -2.65, z: 0}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
+  m_LocalPosition: {x: 2.39, y: -0.7, z: 0}
   m_LocalScale: {x: 0.35, y: 0.35, z: 0.35}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 695555849}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!212 &1288888649
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -68174,7 +68238,6 @@ MonoBehaviour:
   autoDetectCommonBlockingPanels: 1
   objectNameRect: {fileID: 1457075252}
   objectNameText: {fileID: 1922774556}
-  targetCollider: {fileID: 0}
 --- !u!1 &1581049136
 GameObject:
   m_ObjectHideFlags: 0
