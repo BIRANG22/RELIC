@@ -58,8 +58,12 @@ public class CanvasMaterialSceneTransition : Singleton<CanvasMaterialSceneTransi
     private Material runtimeRightMaterial;
     private bool isInitialized;
     private bool isPlaying;
+    private bool isOpening;
+    private float openRemainingTime;
 
     public bool IsPlaying => isPlaying;
+    public bool IsOpening => isOpening;
+    public float OpenRemainingTime => openRemainingTime;
 
     protected override void Awake()
     {
@@ -95,11 +99,22 @@ public class CanvasMaterialSceneTransition : Singleton<CanvasMaterialSceneTransi
     {
         InitializeIfNeeded();
 
+        isOpening = true;
+        openRemainingTime = Mathf.Max(0f, openDuration);
         ShowRoot();
-        await AnimateTransitionAsync(false, openDuration, openCurve);
-        SetOpenedImmediate();
-        HideRoot();
-        isPlaying = false;
+
+        try
+        {
+            await AnimateTransitionAsync(false, openDuration, openCurve);
+            SetOpenedImmediate();
+            HideRoot();
+        }
+        finally
+        {
+            openRemainingTime = 0f;
+            isOpening = false;
+            isPlaying = false;
+        }
     }
 
     public async Task HoldClosedAsync()
@@ -271,6 +286,10 @@ public class CanvasMaterialSceneTransition : Singleton<CanvasMaterialSceneTransi
         while (elapsedTime < safeDuration)
         {
             elapsedTime += Time.unscaledDeltaTime;
+
+            if (!closing)
+                openRemainingTime = Mathf.Max(0f, safeDuration - elapsedTime);
+
             float normalizedTime = Mathf.Clamp01(elapsedTime / safeDuration);
             float curveValue = curve != null ? curve.Evaluate(normalizedTime) : normalizedTime;
 

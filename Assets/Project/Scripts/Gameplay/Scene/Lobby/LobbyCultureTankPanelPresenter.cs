@@ -33,6 +33,7 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         BindSceneObjects(); BindButtons();
         if (panelRoot == null) return;
         LobbyPositionModalInputBlocker.Block(this);
+        UIBlurBackground.EnsureForPanel(panelRoot);
         panelRoot.SetActive(true); panelRoot.transform.SetAsLastSibling(); RefreshAll();
     }
 

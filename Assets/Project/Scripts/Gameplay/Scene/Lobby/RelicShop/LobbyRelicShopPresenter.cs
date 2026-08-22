@@ -39,6 +39,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             return;
 
         LobbyPositionModalInputBlocker.Block(this);
+        UIBlurBackground.EnsureForPanel(panelRoot);
         panelRoot.SetActive(true);
         panelRoot.transform.SetAsLastSibling();
         RefreshOffers();

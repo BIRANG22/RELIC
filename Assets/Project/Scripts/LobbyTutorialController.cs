@@ -23,6 +23,11 @@ public sealed class LobbyTutorialController : MonoBehaviour
     [SerializeField] private RectTransform nextButtonIndicator;
     [SerializeField] private string speakerName = "엘릭";
 
+    [Header("Scene Transition Timing")]
+    [Tooltip("로비 열림 전환이 끝나기 몇 초 전에 최초 튜토리얼 대화를 시작할지 설정합니다.")]
+    [Min(0f)]
+    [SerializeField] private float tutorialStartBeforeTransitionEnd = 0.15f;
+
     [Header("Text Typewriter")]
     [Tooltip("1초에 표시할 글자 수입니다.")]
     [Min(1f)]
@@ -43,11 +48,11 @@ public sealed class LobbyTutorialController : MonoBehaviour
     [SerializeField] private GameObject fragmentGroup;
     [SerializeField] private Image[] fragmentImages = new Image[3];
 
-    [Header("Starter Common Runes")]
-    [Tooltip("첫 로비 튜토리얼에서 지급할 공용 룬 ID 3개입니다.")]
-    [SerializeField] private string[] starterRuneIds = new string[3];
-
-    private static readonly string[] IntroDialogue =
+    [Header("Tutorial Dialogue Text")]
+    [Tooltip("최초 로비 진입 시 엘릭이 말하는 대사입니다. 위에서부터 순서대로 재생됩니다.")]
+    [TextArea(2, 4)]
+    [SerializeField]
+    private string[] introDialogue =
     {
         "드디어 모두 도착하셨군요. 기다리고 있었습니다.",
         "우선, 이것을 받아 주세요.",
@@ -58,12 +63,66 @@ public sealed class LobbyTutorialController : MonoBehaviour
         "준비가 끝나면 다시 저에게 말을 걸어 주세요."
     };
 
-    private static readonly string[] FirstExpeditionDialogue =
+    [Tooltip("AnchorImage를 표시하기 시작할 최초 대사 번호입니다. 0부터 시작합니다.")]
+    [Min(0)]
+    [SerializeField] private int anchorShowStartIndex = 1;
+
+    [Tooltip("AnchorImage를 마지막으로 표시할 대사 번호입니다. 0부터 시작합니다.")]
+    [Min(0)]
+    [SerializeField] private int anchorShowEndIndex = 3;
+
+    [Tooltip("FragmentGroup을 표시하기 시작할 최초 대사 번호입니다. 0부터 시작합니다.")]
+    [Min(0)]
+    [SerializeField] private int fragmentShowStartIndex = 4;
+
+    [Tooltip("FragmentGroup을 마지막으로 표시할 대사 번호입니다. 0부터 시작합니다.")]
+    [Min(0)]
+    [SerializeField] private int fragmentShowEndIndex = 5;
+
+    [Header("First Expedition Dialogue Text")]
+    [Tooltip("최초 튜토리얼 이후 엘릭에게 다시 말을 걸었을 때 나오는 대사입니다.")]
+    [TextArea(2, 4)]
+    [SerializeField]
+    private string[] firstExpeditionDialogue =
     {
         "준비를 마치셨군요.",
         "첫 탐사지는 로데른 폐허입니다.",
         "그곳에서 연구에 필요한 재료를 확보해 와 주세요."
     };
+
+    [Header("Starter Common Runes")]
+    [Tooltip("첫 로비 튜토리얼에서 지급할 공용 룬 ID 3개입니다.")]
+    [SerializeField] private string[] starterRuneIds = new string[3];
+
+    [Header("Quest")]
+    [SerializeField] private GameObject questPanel;
+    [SerializeField] private TMP_Text questText;
+
+    [Header("Quest Panel Position")]
+    [Tooltip("대화 중 QuestPanel의 Y 위치입니다.")]
+    [SerializeField] private float questDialogueY = -610f;
+
+    [Tooltip("대화가 끝났을 때 QuestPanel의 Y 위치입니다.")]
+    [SerializeField] private float questNormalY = -490f;
+
+    [Tooltip("QuestPanel이 대화 위치와 기본 위치 사이를 이동하는 시간입니다.")]
+    [Min(0.01f)]
+    [SerializeField] private float questMoveDuration = 0.25f;
+
+    [Tooltip("최초 엘릭 대화가 끝난 뒤 표시할 목표 문구입니다.")]
+    [TextArea(2, 4)]
+    [SerializeField] private string setupQuestText = "파티편성 및 캐릭터 세팅이 완료 되었다면, 엘릭과 대화하세요";
+
+    [Tooltip("첫 탐사 의뢰 후 표시할 목표 문구입니다. {Current}와 {Target}은 진행 수치로 자동 치환됩니다.")]
+    [TextArea(2, 4)]
+    [SerializeField] private string arabellaQuestText = "로데른 폐허에서 아라벨라를 처치하고 아라벨라의 각성핵을 수집하세요. ({Current}/{Target})";
+
+    [Tooltip("아라벨라 각성핵 목표 수량입니다.")]
+    [Min(1)]
+    [SerializeField] private int arabellaQuestTargetCount = 1;
+
+    [Tooltip("아라벨라 처치 보상으로 얻는 각성핵 ItemId입니다.")]
+    [SerializeField] private string arabellaAwakeningCoreItemId;
 
     private DialogueMode dialogueMode;
     private int dialogueIndex;
@@ -74,6 +133,7 @@ public sealed class LobbyTutorialController : MonoBehaviour
     private Vector2 nextButtonIndicatorBasePosition;
     private bool hasNextButtonIndicatorBasePosition;
     private bool cameraPauseActive;
+    private Coroutine questMoveCoroutine;
 
     public bool IsDialogueOpen => dialogueMode != DialogueMode.None;
 
@@ -83,6 +143,7 @@ public sealed class LobbyTutorialController : MonoBehaviour
         BindNextButton();
         SetDialogueVisible(false);
         SetTutorialDisplay(false, false);
+        SetQuestVisible(false);
         CacheNextButtonIndicatorPosition();
         SetNextButtonReady(false);
     }
@@ -94,8 +155,48 @@ public sealed class LobbyTutorialController : MonoBehaviour
             yield return null;
 
         LobbyRuntimeData lobby = DataManager.Instance.LobbyRuntimeStore.GetOrCreate();
+        RefreshQuestPanel(lobby);
+
         if (lobby.TutorialProgress == LobbyTutorialProgress.NotStarted)
+        {
+            // 로비 씬 전환의 열림 연출이 완전히 끝난 뒤 최초 튜토리얼 대화를 시작합니다.
+            yield return WaitForLobbySceneTransitionComplete();
             BeginIntroDialogue();
+        }
+    }
+
+    private IEnumerator WaitForLobbySceneTransitionComplete()
+    {
+        // 로비 씬이 활성화된 직후에는 열림 전환이 아직 시작되지 않았을 수 있으므로
+        // 한 프레임 기다린 뒤 전환의 마지막 구간을 감시합니다.
+        yield return null;
+
+        float safeLeadTime = Mathf.Max(0f, tutorialStartBeforeTransitionEnd);
+
+        while (true)
+        {
+            SceneFlowManager sceneFlow = SceneFlowManager.Instance;
+            CanvasMaterialSceneTransition transition = CanvasMaterialSceneTransition.Instance;
+
+            if (transition != null && transition.IsOpening)
+            {
+                // 전환이 완전히 사라진 뒤가 아니라 마지막 구간에 대화 UI를 미리 준비합니다.
+                // 전환 그래픽이 위를 덮고 있으므로 플레이어에게는 자연스럽게 함께 드러납니다.
+                if (transition.OpenRemainingTime <= safeLeadTime)
+                    break;
+            }
+            else
+            {
+                bool sceneFlowLoading = sceneFlow != null && sceneFlow.IsLoading;
+                bool transitionPlaying = transition != null && transition.IsPlaying;
+
+                // 전환을 사용하지 않는 경로에서는 씬 로드가 끝나는 즉시 시작합니다.
+                if (!sceneFlowLoading && !transitionPlaying)
+                    break;
+            }
+
+            yield return null;
+        }
     }
 
     private void Update()
@@ -106,6 +207,7 @@ public sealed class LobbyTutorialController : MonoBehaviour
     private void OnDisable()
     {
         StopTypewriter();
+        StopQuestPanelMove();
         ReleaseCameraPause();
     }
 
@@ -160,14 +262,22 @@ public sealed class LobbyTutorialController : MonoBehaviour
 
     private void AdvanceDialogue()
     {
-        if (dialogueMode == DialogueMode.None || isTyping)
+        if (dialogueMode == DialogueMode.None)
             return;
+
+        // 인트로와 동일하게 타이핑 중 클릭하면 현재 문장을 즉시 전부 표시합니다.
+        // 문장이 모두 표시된 상태에서 다시 클릭해야 다음 대사로 넘어갑니다.
+        if (isTyping)
+        {
+            CompleteTypewriterImmediately();
+            return;
+        }
 
         dialogueIndex++;
 
         int count = dialogueMode == DialogueMode.Intro
-            ? IntroDialogue.Length
-            : FirstExpeditionDialogue.Length;
+            ? GetDialogueCount(introDialogue)
+            : GetDialogueCount(firstExpeditionDialogue);
 
         if (dialogueIndex >= count)
         {
@@ -187,16 +297,37 @@ public sealed class LobbyTutorialController : MonoBehaviour
 
         if (dialogueMode == DialogueMode.Intro)
         {
-            line = IntroDialogue[Mathf.Clamp(dialogueIndex, 0, IntroDialogue.Length - 1)];
+            line = GetDialogueLine(introDialogue, dialogueIndex);
             ApplyIntroDisplay(dialogueIndex);
         }
         else if (dialogueMode == DialogueMode.FirstExpedition)
         {
-            line = FirstExpeditionDialogue[Mathf.Clamp(dialogueIndex, 0, FirstExpeditionDialogue.Length - 1)];
+            line = GetDialogueLine(firstExpeditionDialogue, dialogueIndex);
             SetTutorialDisplay(false, false);
         }
 
         StartTypewriter(line);
+    }
+
+
+    private static int GetDialogueCount(string[] lines)
+    {
+        return lines != null ? lines.Length : 0;
+    }
+
+    private static string GetDialogueLine(string[] lines, int index)
+    {
+        if (lines == null || lines.Length == 0)
+            return string.Empty;
+
+        return lines[Mathf.Clamp(index, 0, lines.Length - 1)] ?? string.Empty;
+    }
+
+    private static bool IsIndexInRange(int index, int startIndex, int endIndex)
+    {
+        int min = Mathf.Min(startIndex, endIndex);
+        int max = Mathf.Max(startIndex, endIndex);
+        return index >= min && index <= max;
     }
 
     private void StartTypewriter(string line)
@@ -216,6 +347,10 @@ public sealed class LobbyTutorialController : MonoBehaviour
         currentDialogueCharacterCount = dialogueText.textInfo.characterCount;
 
         typewriterCoroutine = StartCoroutine(TypeDialogueLine());
+
+        // 타이핑 중에도 클릭을 받아 현재 문장을 즉시 완성할 수 있게 합니다.
+        if (nextButton != null)
+            nextButton.interactable = true;
     }
 
     private IEnumerator TypeDialogueLine()
@@ -260,6 +395,21 @@ public sealed class LobbyTutorialController : MonoBehaviour
         SetNextButtonReady(true);
     }
 
+    private void CompleteTypewriterImmediately()
+    {
+        if (typewriterCoroutine != null)
+        {
+            StopCoroutine(typewriterCoroutine);
+            typewriterCoroutine = null;
+        }
+
+        if (dialogueText != null)
+            dialogueText.maxVisibleCharacters = currentDialogueCharacterCount;
+
+        isTyping = false;
+        SetNextButtonReady(true);
+    }
+
     private void StopTypewriter()
     {
         if (typewriterCoroutine != null)
@@ -273,8 +423,8 @@ public sealed class LobbyTutorialController : MonoBehaviour
 
     private void ApplyIntroDisplay(int index)
     {
-        bool showAnchor = index >= 1 && index <= 3;
-        bool showFragments = index >= 4 && index <= 5;
+        bool showAnchor = IsIndexInRange(index, anchorShowStartIndex, anchorShowEndIndex);
+        bool showFragments = IsIndexInRange(index, fragmentShowStartIndex, fragmentShowEndIndex);
 
         SetTutorialDisplay(showAnchor, showFragments);
 
@@ -312,13 +462,126 @@ public sealed class LobbyTutorialController : MonoBehaviour
             // 대화를 끝내기 전에 Next를 연속 입력해도 지급이 누락되지 않도록 한 번 더 보장합니다.
             GrantStarterRunes();
             lobby.TutorialProgress = LobbyTutorialProgress.WaitingForSetup;
-
         }
         else if (finishedMode == DialogueMode.FirstExpedition &&
                  lobby.TutorialProgress == LobbyTutorialProgress.WaitingForSetup)
         {
             lobby.TutorialProgress = LobbyTutorialProgress.FirstExpeditionAssigned;
         }
+
+        RefreshQuestPanel(lobby);
+    }
+
+    private void RefreshQuestPanel(LobbyRuntimeData lobby)
+    {
+        if (lobby == null)
+        {
+            SetQuestVisible(false);
+            return;
+        }
+
+        switch (lobby.TutorialProgress)
+        {
+            case LobbyTutorialProgress.WaitingForSetup:
+                SetQuestText(setupQuestText);
+                SetQuestVisible(true);
+                break;
+
+            case LobbyTutorialProgress.FirstExpeditionAssigned:
+                int targetCount = Mathf.Max(1, arabellaQuestTargetCount);
+                int currentCount = HasArabellaAwakeningCore(lobby) ? targetCount : 0;
+                string progressText = (arabellaQuestText ?? string.Empty)
+                    .Replace("{Current}", currentCount.ToString())
+                    .Replace("{Target}", targetCount.ToString());
+                SetQuestText(progressText);
+                SetQuestVisible(true);
+                break;
+
+            default:
+                SetQuestVisible(false);
+                break;
+        }
+    }
+
+    private bool HasArabellaAwakeningCore(LobbyRuntimeData lobby)
+    {
+        if (lobby?.BagItemIds == null || string.IsNullOrWhiteSpace(arabellaAwakeningCoreItemId))
+            return false;
+
+        string targetId = arabellaAwakeningCoreItemId.Trim();
+        for (int i = 0; i < lobby.BagItemIds.Count; i++)
+        {
+            string itemId = lobby.BagItemIds[i];
+            if (!string.IsNullOrWhiteSpace(itemId) &&
+                string.Equals(itemId.Trim(), targetId, System.StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void SetQuestText(string text)
+    {
+        if (questText != null)
+            questText.text = text ?? string.Empty;
+    }
+
+    private void SetQuestVisible(bool visible)
+    {
+        if (questPanel != null)
+            questPanel.SetActive(visible);
+    }
+
+    private void SetQuestPanelY(float y)
+    {
+        if (questPanel == null)
+            return;
+
+        RectTransform rectTransform = questPanel.GetComponent<RectTransform>();
+        if (rectTransform == null)
+            return;
+
+        StopQuestPanelMove();
+        questMoveCoroutine = StartCoroutine(MoveQuestPanelY(rectTransform, y));
+    }
+
+    private IEnumerator MoveQuestPanelY(RectTransform rectTransform, float targetY)
+    {
+        if (rectTransform == null)
+            yield break;
+
+        Vector2 startPosition = rectTransform.anchoredPosition;
+        float startY = startPosition.y;
+        float duration = Mathf.Max(0.01f, questMoveDuration);
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float easedT = Mathf.SmoothStep(0f, 1f, t);
+
+            Vector2 position = rectTransform.anchoredPosition;
+            position.y = Mathf.LerpUnclamped(startY, targetY, easedT);
+            rectTransform.anchoredPosition = position;
+            yield return null;
+        }
+
+        Vector2 finalPosition = rectTransform.anchoredPosition;
+        finalPosition.y = targetY;
+        rectTransform.anchoredPosition = finalPosition;
+        questMoveCoroutine = null;
+    }
+
+    private void StopQuestPanelMove()
+    {
+        if (questMoveCoroutine == null)
+            return;
+
+        StopCoroutine(questMoveCoroutine);
+        questMoveCoroutine = null;
     }
 
     private void GrantStarterRunes()
@@ -374,6 +637,11 @@ public sealed class LobbyTutorialController : MonoBehaviour
 
     private void SetDialogueVisible(bool visible)
     {
+        if (visible)
+            SetQuestPanelY(questDialogueY);
+        else
+            SetQuestPanelY(questNormalY);
+
         if (dialoguePanel != null)
             dialoguePanel.SetActive(visible);
 
@@ -518,6 +786,19 @@ public sealed class LobbyTutorialController : MonoBehaviour
             if (fragmentGroup == null)
                 fragmentGroup = FindChildGameObject(displayRoot, "FragmentGroup");
         }
+
+        if (questPanel == null)
+        {
+            Canvas parentCanvas = GetComponentInParent<Canvas>();
+            Transform searchRoot = parentCanvas != null ? parentCanvas.transform : transform.parent;
+            GameObject positionPanel = FindChildGameObject(searchRoot, "PositionPanel");
+
+            if (positionPanel != null)
+                questPanel = FindChildGameObject(positionPanel.transform, "QuestPanel");
+        }
+
+        if (questPanel != null && questText == null)
+            questText = FindChildComponent<TMP_Text>(questPanel.transform, "QuestText");
 
         AutoBindFragmentImages();
     }

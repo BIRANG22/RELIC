@@ -30,13 +30,13 @@ public sealed class TMPKoreanGlyphPreloader : MonoBehaviour
     [Tooltip("에디터 플레이 중 프로젝트에 저장된 TMP FontAsset(.asset)을 직접 수정하지 않습니다. 켜두면 NativeFormatImporter inconsistent result 경고와 순간 렉을 줄일 수 있습니다.")]
     [SerializeField] private bool preventEditorAssetModification = true;
 
-    [Tooltip("에디터 플레이 중 씬의 TMP_Text가 원본 FontAsset 대신 런타임 복제본을 사용하게 합니다. 배틀씬/스킬 툴팁처럼 새 TMP 텍스트가 표시될 때 원본 DungGeunMo SDF.asset이 갱신되는 문제를 줄입니다.")]
+    [Tooltip("에디터 플레이 중 원본 FontAsset을 수정하지 않도록 독립된 런타임 복제본에서 글리프를 미리 준비합니다. 씬의 TMP_Text에는 복제본을 직접 연결하지 않습니다.")]
     [SerializeField] private bool useRuntimeFontClonesInEditor = true;
 
-    [Tooltip("씬 로드 후 새로 등장한 TMP_Text에도 런타임 복제 FontAsset을 다시 적용합니다.")]
+    [Tooltip("씬 로드 후 새로 등장한 TMP_Text가 사용하는 FontAsset도 런타임 복제본에 미리 준비합니다. TMP_Text의 실제 FontAsset 참조는 변경하지 않습니다.")]
     [SerializeField] private bool replaceTextFontsOnSceneLoaded = true;
 
-    [Tooltip("스킬 툴팁/팝업처럼 플레이 중 생성되는 TMP_Text도 주기적으로 검사해서 원본 FontAsset을 런타임 복제본으로 교체합니다.")]
+    [Tooltip("스킬 툴팁/팝업처럼 플레이 중 생성되는 TMP_Text의 FontAsset도 주기적으로 확인해 런타임 복제본을 준비합니다. TMP_Text의 실제 FontAsset 참조는 변경하지 않습니다.")]
     [SerializeField] private bool scanRuntimeTextsInEditor = true;
 
     [SerializeField, Min(0.05f)] private float runtimeTextScanInterval = 0.25f;
@@ -161,14 +161,6 @@ public sealed class TMPKoreanGlyphPreloader : MonoBehaviour
         {
             fontToUse.TryAddCharacters(characters, out string missingCharacters);
 
-#if UNITY_EDITOR
-            // TMP가 글리프를 추가하면서 런타임 Material/Atlas의 HideFlags를 다시 설정할 수 있습니다.
-            // 씬의 TMP_Text가 런타임 복제 FontAsset을 참조하는 동안 DontSaveInEditor가 남아 있으면
-            // Inspector 직렬화 과정에서 Unity Assertion이 발생할 수 있으므로 다시 정리합니다.
-            if (Application.isPlaying && useRuntimeFontClonesInEditor && IsRuntimeFontClone(fontToUse))
-                PrepareRuntimeCloneForEditorReference(fontToUse);
-#endif
-
             if (logResult)
             {
                 int missingCount = string.IsNullOrEmpty(missingCharacters) ? 0 : missingCharacters.Length;
@@ -242,48 +234,25 @@ public sealed class TMPKoreanGlyphPreloader : MonoBehaviour
         }
 
         clone.name = source.name + " Runtime Clone";
+        clone.hideFlags = HideFlags.DontSaveInBuild;
 
-        // CreateFontAsset가 생성한 FontAsset/Material/Atlas 중 일부에는 Unity 내부적으로
-        // DontSaveInEditor가 포함될 수 있습니다. 이 상태의 객체를 씬 TMP_Text에 연결하면
-        // 에디터가 해당 참조를 검사하는 과정에서 persistent 참조 Assertion이 발생할 수 있습니다.
-        // 런타임 복제본은 빌드에 저장하지 않되, 에디터 참조를 막는 플래그만 제거합니다.
-        PrepareRuntimeCloneForEditorReference(clone);
+        if (clone.material != null)
+            clone.material.hideFlags = HideFlags.DontSaveInBuild;
+
+        Texture2D[] runtimeAtlases = clone.atlasTextures;
+        if (runtimeAtlases != null)
+        {
+            for (int i = 0; i < runtimeAtlases.Length; i++)
+            {
+                if (runtimeAtlases[i] != null)
+                    runtimeAtlases[i].hideFlags = HideFlags.DontSaveInBuild;
+            }
+        }
 
         runtimeFontClones[source] = clone;
 
         CloneFallbackFontList(source, clone);
         return clone;
-    }
-
-
-    private static void PrepareRuntimeCloneForEditorReference(TMP_FontAsset clone)
-    {
-        if (clone == null)
-            return;
-
-        clone.hideFlags = RemoveDontSaveInEditor(clone.hideFlags) | HideFlags.DontSaveInBuild;
-
-        Material runtimeMaterial = clone.material;
-        if (runtimeMaterial != null)
-            runtimeMaterial.hideFlags = RemoveDontSaveInEditor(runtimeMaterial.hideFlags) | HideFlags.DontSaveInBuild;
-
-        Texture2D[] runtimeAtlases = clone.atlasTextures;
-        if (runtimeAtlases == null)
-            return;
-
-        for (int i = 0; i < runtimeAtlases.Length; i++)
-        {
-            Texture2D atlas = runtimeAtlases[i];
-            if (atlas == null)
-                continue;
-
-            atlas.hideFlags = RemoveDontSaveInEditor(atlas.hideFlags) | HideFlags.DontSaveInBuild;
-        }
-    }
-
-    private static HideFlags RemoveDontSaveInEditor(HideFlags flags)
-    {
-        return flags & ~HideFlags.DontSaveInEditor;
     }
 
     private void CloneFallbackFontList(TMP_FontAsset source, TMP_FontAsset clone)
@@ -310,8 +279,11 @@ public sealed class TMPKoreanGlyphPreloader : MonoBehaviour
 
     private void ReplaceLoadedTextFontsWithRuntimeClones()
     {
+        // CreateFontAsset()으로 만든 런타임 FontAsset을 씬 TMP_Text.font에 직접 연결하면
+        // Inspector 직렬화 과정에서 kDontSaveInEditor Assertion이 발생할 수 있습니다.
+        // 기존 검색/복제 구조는 유지하되 TMP_Text의 실제 FontAsset 참조는 변경하지 않습니다.
         TMP_Text[] texts = Resources.FindObjectsOfTypeAll<TMP_Text>();
-        int replacedCount = 0;
+        int preparedCount = 0;
 
         for (int i = 0; i < texts.Length; i++)
         {
@@ -325,20 +297,19 @@ public sealed class TMPKoreanGlyphPreloader : MonoBehaviour
             if (!text.gameObject.scene.IsValid())
                 continue;
 
-            if (IsRuntimeFontClone(text.font))
-                continue;
-
-            TMP_FontAsset clone = GetOrCreateRuntimeClone(text.font);
-            if (clone == null || text.font == clone)
-                continue;
-
-            text.font = clone;
-            text.SetAllDirty();
-            replacedCount++;
+            TMP_FontAsset sourceFont = GetOriginalFontFromRuntimeClone(text.font) ?? text.font;
+            TMP_FontAsset clone = GetOrCreateRuntimeClone(sourceFont);
+            if (clone != null)
+                preparedCount++;
         }
 
-        if (logResult && replacedCount > 0)
-            Debug.Log($"[TMPKoreanGlyphPreloader] TMP_Text {replacedCount}개의 FontAsset을 에디터 런타임 복제본으로 교체했습니다.", this);
+        if (logResult && preparedCount > 0)
+        {
+            Debug.Log(
+                $"[TMPKoreanGlyphPreloader] TMP_Text {preparedCount}개의 FontAsset에 대응하는 에디터 런타임 복제본을 준비했습니다. " +
+                "씬 TMP_Text의 FontAsset 참조는 변경하지 않습니다.",
+                this);
+        }
     }
 
     private void RestoreLoadedTextFontsToOriginals()

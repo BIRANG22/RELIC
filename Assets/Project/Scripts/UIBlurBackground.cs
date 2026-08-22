@@ -72,6 +72,52 @@ public sealed class UIBlurBackground : MonoBehaviour
         runtimeBlurredUiRoots.AddRange(validRoots);
     }
 
+    public static UIBlurBackground EnsureForPanel(GameObject panelRoot)
+    {
+        if (panelRoot == null)
+            return null;
+
+        UIBlurBackground existing = panelRoot.GetComponentInChildren<UIBlurBackground>(true);
+        if (existing != null)
+            return existing;
+
+        const string runtimeBackgroundName = "__AutoBlurBackground";
+        Transform existingTransform = panelRoot.transform.Find(runtimeBackgroundName);
+        GameObject backgroundObject;
+
+        if (existingTransform != null)
+        {
+            backgroundObject = existingTransform.gameObject;
+        }
+        else
+        {
+            backgroundObject = new GameObject(
+                runtimeBackgroundName,
+                typeof(RectTransform),
+                typeof(CanvasRenderer),
+                typeof(Image));
+            backgroundObject.transform.SetParent(panelRoot.transform, false);
+            backgroundObject.transform.SetAsFirstSibling();
+
+            RectTransform rectTransform = backgroundObject.GetComponent<RectTransform>();
+            rectTransform.anchorMin = Vector2.zero;
+            rectTransform.anchorMax = Vector2.one;
+            rectTransform.offsetMin = Vector2.zero;
+            rectTransform.offsetMax = Vector2.zero;
+            rectTransform.localScale = Vector3.one;
+
+            Image image = backgroundObject.GetComponent<Image>();
+            image.color = Color.clear;
+            image.raycastTarget = false;
+        }
+
+        UIBlurBackground blur = backgroundObject.GetComponent<UIBlurBackground>();
+        if (blur == null)
+            blur = backgroundObject.AddComponent<UIBlurBackground>();
+
+        return blur;
+    }
+
     private void Awake()
     {
         backgroundImage = GetComponent<Image>();
@@ -449,7 +495,30 @@ public sealed class UIBlurBackground : MonoBehaviour
         effectiveBlurredUiRoots.Clear();
         AppendValidBlurredUiRoots(blurredUiRoots, effectiveBlurredUiRoots);
         AppendValidBlurredUiRoots(runtimeBlurredUiRoots, effectiveBlurredUiRoots);
+        AppendLobbyQuestPanelRoot(effectiveBlurredUiRoots);
         return effectiveBlurredUiRoots;
+    }
+
+    private void AppendLobbyQuestPanelRoot(List<GameObject> target)
+    {
+        if (target == null)
+            return;
+
+        Canvas ownerCanvas = GetComponentInParent<Canvas>();
+        if (ownerCanvas == null)
+            return;
+
+        Transform questPanelTransform = ownerCanvas.transform.Find(
+            "Resolution Viewport/PositionPanel/QuestPanel");
+
+        if (questPanelTransform == null)
+            return;
+
+        GameObject questPanel = questPanelTransform.gameObject;
+        if (!questPanel.activeInHierarchy || target.Contains(questPanel))
+            return;
+
+        target.Add(questPanel);
     }
 
     private static void AppendValidBlurredUiRoots(IEnumerable<GameObject> roots, List<GameObject> target)
