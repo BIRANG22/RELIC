@@ -63,10 +63,15 @@ namespace Relic.Gameplay.Data
                 if (data == null)
                     continue;
 
-                if (data.SkillDropChance > 0f ||
-                    data.CoreCommonChance > 0f ||
-                    data.CoreRareChance > 0f ||
-                    data.CoreEpicChance > 0f)
+                if (data.MemoryDropChance > 0f ||
+                    data.RelicCommonChance > 0f ||
+                    data.RelicRareChance > 0f ||
+                    data.RelicEpicChance > 0f ||
+                    data.RelicUniqueChance > 0f ||
+                    data.MemoryCommonChance > 0f ||
+                    data.MemoryRareChance > 0f ||
+                    data.MemoryEpicChance > 0f ||
+                    data.MemoryUniqueChance > 0f)
                 {
                     return data;
                 }

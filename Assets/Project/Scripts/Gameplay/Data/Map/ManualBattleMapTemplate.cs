@@ -707,7 +707,7 @@ namespace Relic.Gameplay.Data
                 if (!Same(candidate.MapId, mapId))
                     continue;
 
-                if (!Same(candidate.Chapter, chapter) || !Same(candidate.Stage, stage))
+                if (!Same(candidate.Stage, stage))
                     continue;
 
                 if (!Same(candidate.Type, type))
@@ -742,8 +742,7 @@ namespace Relic.Gameplay.Data
                 if (candidate == null)
                     continue;
 
-                if (!Same(candidate.Chapter, chapter) ||
-                    !Same(candidate.Stage, stage) ||
+                if (!Same(candidate.Stage, stage) ||
                     !Same(candidate.Type, type))
                 {
                     continue;

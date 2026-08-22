@@ -587,7 +587,7 @@ namespace Relic.Gameplay.Data
                         if (candidate == null)
                             continue;
 
-                        if (candidate.Chapter != chapter || candidate.Stage != stage)
+                        if (candidate.Stage != stage)
                             continue;
 
                         if (candidate.Type != "Common")
@@ -707,9 +707,6 @@ namespace Relic.Gameplay.Data
                 if (data == null)
                     continue;
 
-                if (data.Chapter != chapter)
-                    continue;
-
                 if (data.Stage != stage)
                     continue;
 
@@ -751,9 +748,6 @@ namespace Relic.Gameplay.Data
                 MapData data = mapPool[i];
 
                 if (data == null)
-                    continue;
-
-                if (data.Chapter != chapter)
                     continue;
 
                 if (data.Stage != stage)

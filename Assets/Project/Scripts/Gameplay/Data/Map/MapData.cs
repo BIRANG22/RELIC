@@ -12,7 +12,6 @@ namespace Relic.Gameplay.Data
         public string BattleMapId;
         public string EventId;
 
-        public string Chapter;
         public string Stage;
 
         public int SpawnWeight;

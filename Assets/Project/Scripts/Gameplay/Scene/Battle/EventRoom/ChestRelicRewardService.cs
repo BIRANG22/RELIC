@@ -21,8 +21,8 @@ public static class ChestRelicRewardService
     private static readonly RelicRarity[] RevealOrder =
     {
         RelicRarity.Common,
-        RelicRarity.Uncommon,
         RelicRarity.Rare,
+        RelicRarity.Epic,
         RelicRarity.Unique
     };
 

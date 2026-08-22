@@ -12,8 +12,8 @@ public static class LobbyRelicPricePolicy
         price = rarity switch
         {
             RelicRarity.Common => 100,
-            RelicRarity.Uncommon => 200,
-            RelicRarity.Rare => 300,
+            RelicRarity.Rare => 200,
+            RelicRarity.Epic => 300,
             RelicRarity.Unique => 500,
             _ => 0
         };

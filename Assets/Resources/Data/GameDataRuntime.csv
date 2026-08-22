@@ -489,51 +489,80 @@ E_Spider_Web,거미줄,Neutral,Maintain,다음 이동 예약 사용 코스트가
 E_Spawn_Soldier,사령술,Neutral,None,지정된 위치에 죽었던 병사를 다시 생성한다.
 
 # Map
-맵ID,이름,타입,전투맵ID,이벤트ID,챕터,스테이지 맵,등장가중치,,
-MapId,Name,Type,BattleMapId,EventId,Chapter,Stage,SpawnWeight,,
-Map_01,Common_Battle3,Common,Battlemap_01,,Chapter1,Stage1,1,,
-Map_02,Common_Battle3,Common,Battlemap_02,,Chapter1,Stage1,1,,
-Map_03,Common_Battle4,Common,Battlemap_03,,Chapter1,Stage1,1,,
-Map_04,Common_Battle5,Common,Battlemap_04,,Chapter1,Stage1,1,,
-Map_05,Common_Battle6,Common,Battlemap_05,,Chapter1,Stage1,1,,
-Map_06,Elite_Battle1,Elite,Battlemap_06,,Chapter1,Stage1,1,,
-Map_07,Elite_Battle2,Elite,Battlemap_06,,Chapter1,Stage1,1,,
-Map_08,Boss_Battle,Boss,Battlemap_07,,Chapter1,Stage1,1,,
-Map_09,Special1,Special,0,Event_01,Chapter1,Stage1,1,,
-Map_10,Special2,Special,0,Event_02,Chapter1,Stage1,1,,
-Map_11,Special3,Special,0,Event_03,Chapter1,Stage1,1,,
-Map_12,Special4,Special,0,Event_04,Chapter1,Stage1,1,,
-Map_13,Special5,Special,0,Event_05,Chapter1,Stage1,1,,
-Map_14,Special6,Special,0,Event_06,Chapter1,Stage1,1,,
-Map_15,Special7,Special,0,Event_07,Chapter1,Stage1,1,,
-Map_16,Special8,Special,0,Event_08,Chapter1,Stage1,1,,
-Map_17,Special9,Special,0,Event_09,Chapter1,Stage1,1,,
-,,,,,,,,,
+맵ID,이름,타입,전투맵ID,이벤트ID,스테이지 맵,등장가중치
+MapId,Name,Type,BattleMapId,EventId,Stage,SpawnWeight
+Map_01,Common_Battle1,Common,Battlemap_01,0,Stage1,1
+Map_02,Common_Battle2,Common,Battlemap_02,0,Stage1,1
+Map_03,Common_Battle3,Common,Battlemap_03,0,Stage1,1
+Map_04,Common_Battle4,Common,Battlemap_04,0,Stage1,1
+Map_05,Common_Battle5,Common,Battlemap_05,0,Stage1,1
+Map_06,Common_Battle6,Common,Battlemap_06,0,Stage1,1
+Map_07,Common_Battle7,Common,Battlemap_07,0,Stage1,1
+Map_08,Common_Battle8,Common,Battlemap_08,0,Stage1,1
+Map_09,Common_Battle9,Common,Battlemap_09,0,Stage1,1
+Map_10,Common_Battle10,Common,Battlemap_10,0,Stage1,1
+Map_11,Elite_Battle1,Elite,Battlemap_11,0,Stage1,1
+Map_12,Elite_Battle2,Elite,Battlemap_12,0,Stage1,1
+Map_13,Elite_Battle3,Elite,Battlemap_13,0,Stage1,1
+Map_14,Elite_Battle4,Elite,Battlemap_14,0,Stage1,1
+Map_15,Elite_Battle5,Elite,Battlemap_15,0,Stage1,1
+Map_16,Boss_Battle,Boss,Battlemap_16,0,Stage1,1
+Map_17,Special1,Special,0,Event_01,Stage1,1
+Map_18,Special2,Special,0,Event_02,Stage1,1
+Map_19,Special3,Special,0,Event_03,Stage1,1
+Map_20,Special4,Special,0,Event_04,Stage1,1
+Map_21,Special5,Special,0,Event_05,Stage1,1
+Map_22,Special6,Special,0,Event_06,Stage1,1
+Map_23,Special7,Special,0,Event_07,Stage1,1
+Map_24,Special8,Special,0,Event_08,Stage1,1
+Map_25,Special9,Special,0,Event_09,Stage1,1
+,,,
+,,,
 ,,,
 
+
+
 # BattleMap
-전투맵ID,몬스터ID,점유칸1,점유칸2,점유칸3,점유칸4,설명,스킬드랍확률,코어일반확률,코어희귀확률,코어영웅확률
-BattleMapId,MonsterId,OccupiedCell1,OccupiedCell2,OccupiedCell3,OccupiedCell4,Description,SkillDropChance,CoreCommonChance,CoreRareChance,CoreEpicChance
-Battlemap_01,Mon_02,21,-1,-1,-1,Blob*2,1,60,30,10
-Battlemap_01,Mon_02,23,-1,-1,-1,,,,,
-Battlemap_02,Mon_06,27,-1,-1,-1,"Cinder*1, Vespa*1",1,60,30,10
-Battlemap_02,Mon_05,33,-1,-1,-1,,,,,
-Battlemap_03,Mon_01,26,-1,-1,-1,"Muck*1,  Rancor*1",1,60,30,10
-Battlemap_03,Mon_03,23,-1,-1,-1,,,,,
-Battlemap_04,Mon_05,25,-1,-1,-1,"Vespa*1, Blight*1",1,60,30,10
-Battlemap_04,Mon_04,22,-1,-1,-1,,,,,
-Battlemap_05,Mon_02,26,-1,-1,-1,"Cinder*1, Blob*1",1,60,30,10
-Battlemap_05,Mon_06,23,-1,-1,-1,,,,,
-Battlemap_06,Mon_10,22,-1,-1,-1,Nocturne*1,1,60,30,10
-Battlemap_07,Mon_12,27,-1,-1,-1,Elise*1,0,60,30,10
-
-
-
-,,,,,,,,,,,,,,,15,20,25,30
-,,,,,,,,,,,,,,,16,21,26,31
-,,,,,,,,,,,,,,,17,22,27,32
-,,,,,,,,,,,,,,,18,23,28,33
-,,,,,,,,,,,,,,,19,24,29,34
+전투맵ID,몬스터ID,점유칸1,점유칸2,점유칸3,점유칸4,설명,기억 획득,유물 노말,유물 레어,유물 에픽,유물 유니크,기억 노말,기억 레어,기억 에픽,기억 유니크
+BattleMapId,MonsterId,OccupiedCell1,OccupiedCell2,OccupiedCell3,OccupiedCell4,Description,MemoryDropChance,RelicCommonChance,RelicRareChance,RelicEpicChance,RelicUniqueChance,MemoryCommonChance,MemoryRareChance,MemoryEpicChance,MemoryUniqueChance
+Battlemap_01,Mon_01,24,-1,-1,-1,"머크 2마리, 블롭 1마리",20,35,30,25,10,25,35,25,15
+Battlemap_01,Mon_01,25,-1,-1,-1,,,,,,,,,,
+Battlemap_01,Mon_02,22,-1,-1,-1,,,,,,,,,,
+Battlemap_02,Mon_02,21,-1,-1,-1,"블롭 2마리, 블라이트 1마리",20,35,30,25,10,25,35,25,15
+Battlemap_02,Mon_02,23,-1,-1,-1,,,,,,,,,,
+Battlemap_02,Mon_04,27,-1,-1,-1,,,,,,,,,,
+Battlemap_03,Mon_06,22,-1,-1,-1,"신더, 베스파, 랜서",20,35,30,25,10,25,35,25,15
+Battlemap_03,Mon_05,31,-1,-1,-1,,,,,,,,,,
+Battlemap_03,Mon_03,28,-1,-1,-1,,,,,,,,,,,
+Battlemap_04,Mon_06,22,-1,-1,-1,"신더, 베스파, 블라이트",20,35,30,25,10,25,35,25,15
+Battlemap_04,Mon_05,34,-1,-1,-1,,,,,,,,,,
+Battlemap_04,Mon_04,26,-1,-1,-1,,,,,,,,,,
+Battlemap_05,Mon_05,25,-1,-1,-1,베스파 2마리,20,35,30,25,10,25,35,25,15,
+Battlemap_05,Mon_05,33,-1,-1,-1,,,,,,,,,,,
+Battlemap_06,Mon_07,26,-1,-1,-1,"드라우그 1마리, 바로우 1마리",20,35,30,25,10,25,35,25,15,
+Battlemap_06,Mon_08,28,-1,-1,-1,,,,,,,,,,,
+Battlemap_07,Mon_06,21,-1,-1,-1,"신더 2마리, 랜서 1마리",20,35,30,25,10,25,35,25,15
+Battlemap_07,Mon_06,23,-1,-1,-1,,,,,,,,,,
+Battlemap_07,Mon_03,32,-1,-1,-1,,,,,,,,,,
+Battlemap_08,Mon_01,24,-1,-1,-1,"머크 1마리, 드라우그 2마리",20,35,30,25,10,25,35,25,15
+Battlemap_08,Mon_07,20,-1,-1,-1,,,,,,,,,,
+Battlemap_08,Mon_07,28,-1,-1,-1,,,,,,,,,,
+Battlemap_09,Mon_03,27,-1,-1,-1,"바로우 2마리, 랜서 1마리",20,35,30,25,10,25,35,25,15,,15,20,25,30
+Battlemap_09,Mon_08,29,-1,-1,-1,,,,,,,,,,,,16,21,26,31
+Battlemap_09,Mon_08,31,-1,-1,-1,,,,,,,,,,,,17,22,27,32
+Battlemap_10,Mon_04,33,-1,-1,-1,"드라우그, 바로우, 블라이트",20,35,30,25,10,25,35,25,15,,18,23,28,33
+Battlemap_10,Mon_07,21,-1,-1,-1,,,,,,,,,,,,19,24,29,34
+Battlemap_10,Mon_08,27,-1,-1,-1,,,,,,,,,,
+Battlemap_11,Mon_09,27,-1,-1,-1,"정예 루크, 랜서",60,20,25,30,25,25,35,25,15
+Battlemap_11,Mon_03,31,-1,-1,-1,,,,,,,,,,
+Battlemap_12,Mon_09,27,-1,-1,-1,"정예 루크, 블라이트",60,20,25,30,25,25,35,25,15
+Battlemap_12,Mon_04,33,-1,-1,-1,,,,,,,,,,
+Battlemap_13,Mon_10,22,-1,-1,-1,정예 녹턴,60,20,25,30,25,25,35,25,15
+Battlemap_14,Mon_07,21,-1,-1,-1,"정예 모르트, 드라우그",60,20,25,30,25,25,35,25,15
+Battlemap_14,Mon_11,28,-1,-1,-1,,,,,,,,,,
+Battlemap_15,Mon_08,26,-1,-1,-1,"정예 모르트, 바로우",60,20,25,30,25,25,35,25,15
+Battlemap_15,Mon_11,32,-1,-1,-1,,,,,,,,,,
+Battlemap_16,Mon_12,27,-1,-1,-1,보스 아라벨라,100,5,15,50,30,25,35,25,15
 
 # Event
 이벤트ID,이벤트 이름,제목,선택지 순서,선택지이름,선택지 내용,선택지 타입,선택 조건,비용 타입,비용 대상,비용 값,성공 조건,결과타입,결과대상,결과값,성공확률,실패결과,다음이벤트ID,다음 이벤트까지 유지,성공 시각적 객체 ID,성공 시각적 작업 ID,실패 시각적 객체 ID,실패 시 시각적 동작 ID

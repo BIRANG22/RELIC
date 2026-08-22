@@ -7,8 +7,8 @@ namespace Relic.Gameplay.Data
     {
         None = 0,
         Common = 1,
-        Uncommon = 2,
-        Rare = 3,
+        Rare = 2,
+        Epic = 3,
         Unique = 4
     }
 
@@ -18,12 +18,16 @@ namespace Relic.Gameplay.Data
         {
             ["common"] = RelicRarity.Common,
             ["커먼"] = RelicRarity.Common,
-            ["uncommon"] = RelicRarity.Uncommon,
-            ["언커먼"] = RelicRarity.Uncommon,
             ["rare"] = RelicRarity.Rare,
             ["레어"] = RelicRarity.Rare,
+            ["epic"] = RelicRarity.Epic,
+            ["에픽"] = RelicRarity.Epic,
             ["unique"] = RelicRarity.Unique,
-            ["유니크"] = RelicRarity.Unique
+            ["유니크"] = RelicRarity.Unique,
+
+            // 이전 GameData 호환: Uncommon은 현재 Rare 단계로 취급합니다.
+            ["uncommon"] = RelicRarity.Rare,
+            ["언커먼"] = RelicRarity.Rare
         };
 
         public static bool TryParseChestRarity(string raw, out RelicRarity rarity)
