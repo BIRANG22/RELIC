@@ -110,6 +110,7 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
     private int lastClickSoundFrame = -1;
     private float originalPanelAlpha = 1f;
     private bool usesBattlePlayerHudOpenOrigin;
+    private int lastMoveToggleFrame = -1;
 
     public static void CloseCurrentOpenedPanel()
     {
@@ -232,6 +233,14 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
     {
         if (currentOpenedPanelOwner == this)
             currentOpenedPanelOwner = null;
+
+        if (IsLobbyStorageMovePanel())
+            LobbyPositionModalInputBlocker.Unblock(this);
+    }
+
+    private void Update()
+    {
+        HandleMovePanelDismissInput();
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -389,6 +398,24 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
                 : GetClosedPosition();
 
             isMoved = willOpen;
+
+            if (IsLobbyStorageMovePanel())
+            {
+                lastMoveToggleFrame = Time.frameCount;
+
+                if (willOpen)
+                {
+                    currentOpenedPanelOwner = this;
+                    LobbyPositionModalInputBlocker.Block(this);
+                }
+                else
+                {
+                    if (currentOpenedPanelOwner == this)
+                        currentOpenedPanelOwner = null;
+
+                    LobbyPositionModalInputBlocker.Unblock(this);
+                }
+            }
         }
         else
         {
@@ -408,6 +435,64 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         moveCoroutine = StartCoroutine(MoveRoutine(targetPosition));
 
         FadePanelImageTo(willOpen ? openedPanelAlpha : originalPanelAlpha);
+    }
+
+    private void HandleMovePanelDismissInput()
+    {
+        if (currentOpenedPanelOwner != this || !IsLobbyStorageMovePanel())
+            return;
+
+        SyncMoveStateFromCurrentPosition();
+        if (!isMoved || Time.frameCount == lastMoveToggleFrame)
+            return;
+
+        if (!Input.GetMouseButtonDown(0))
+            return;
+
+        Vector2 pointerPosition = Input.mousePosition;
+        if (IsScreenPointInsideRect(panelToMove, pointerPosition))
+            return;
+
+        RectTransform buttonRect = transform as RectTransform;
+        if (IsScreenPointInsideRect(buttonRect, pointerPosition))
+            return;
+
+        CloseLobbyStorageMovePanel();
+    }
+
+    private void CloseLobbyStorageMovePanel()
+    {
+        if (!IsLobbyStorageMovePanel())
+            return;
+
+        SyncMoveStateFromCurrentPosition();
+        if (isMoved)
+            SetMovePanelOpen(false);
+
+        if (currentOpenedPanelOwner == this)
+            currentOpenedPanelOwner = null;
+
+        LobbyPositionModalInputBlocker.Unblock(this);
+    }
+
+    private bool IsLobbyStorageMovePanel()
+    {
+        return panelToMove != null &&
+               string.Equals(panelToMove.name, "StoragePanel", System.StringComparison.Ordinal);
+    }
+
+    private static bool IsScreenPointInsideRect(RectTransform rect, Vector2 screenPosition)
+    {
+        if (rect == null || !rect.gameObject.activeInHierarchy)
+            return false;
+
+        Canvas canvas = rect.GetComponentInParent<Canvas>();
+        Camera eventCamera = null;
+
+        if (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+            eventCamera = canvas.worldCamera;
+
+        return RectTransformUtility.RectangleContainsScreenPoint(rect, screenPosition, eventCamera);
     }
 
     private bool ShouldBlockInteractionByOpenMenuPanel()
@@ -608,6 +693,12 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
     private void CloseOwnPanel()
     {
+        if (IsLobbyStorageMovePanel())
+        {
+            CloseLobbyStorageMovePanel();
+            return;
+        }
+
         if (panelToOpen != null)
         {
             TitleModePanelSpreadAnimator titleModeAnimator =

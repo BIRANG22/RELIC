@@ -51,6 +51,9 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
     [Tooltip("침식도 선택창을 정상적으로 닫아 월드 입력 차단까지 해제하는 버튼 컨트롤러입니다. 비워두면 자동으로 찾습니다.")]
     [SerializeField] private LobbyErosionMirrorButton erosionMirrorButton;
 
+    [Tooltip("열려 있으면 ESC 입력 시 메뉴보다 먼저 닫히는 로비 장비 패널입니다. 비워두면 자동으로 찾습니다.")]
+    [SerializeField] private LobbyEquipPanelUI lobbyEquipPanel;
+
     [Header("Lobby Main Party Slots")]
     [SerializeField] private GameObject partySlot0;
     [SerializeField] private GameObject partySlot1;
@@ -187,10 +190,10 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
         if (Input.GetKeyDown(backKey) && CanHandleSharedInput())
         {
             // ESC 우선순위:
-            // 1. 유물 상점 닫기
-            // 2. 침식도 선택 패널 닫기
+            // 1. Equip_panel / StoragePanel 등 현재 열린 전면 패널 닫기
+            // 2. 유물 상점 / 배양조 / 침식도 선택 패널 닫기
             // 3. CharacterSettingPanel 닫기
-            // 4. PositionPanel만 열려 있을 때 메뉴 열기
+            // 4. 닫을 패널이 없을 때만 MenuPanel 열기
             if (TryCloseEscapePriorityPanel())
             {
                 BlockInputForCooldown();
@@ -318,11 +321,27 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
         {
             erosionMirrorButton = FindErosionMirrorButtonForPanel(erosionSelectPanel);
         }
+
+        if (lobbyEquipPanel == null)
+            lobbyEquipPanel = FindFirstObjectByType<LobbyEquipPanelUI>(FindObjectsInactive.Include);
     }
 
     private bool TryCloseEscapePriorityPanel()
     {
         AutoBindEscapePriorityPanelsIfNeeded();
+
+        // Equip_panel은 오브젝트 자체가 항상 활성화되어 있으므로
+        // activeInHierarchy가 아니라 전용 컨트롤러의 IsOpen 상태로 판단합니다.
+        if (lobbyEquipPanel != null && lobbyEquipPanel.IsOpen)
+        {
+            lobbyEquipPanel.Close();
+            return true;
+        }
+
+        // StoragePanel처럼 UIPanelButton으로 열리는 이동 패널이 있으면
+        // 해당 ESC 입력은 패널 닫기에만 사용하고 메뉴를 열지 않습니다.
+        if (UIPanelButton.HasCurrentOpenedPanel && UIPanelButton.TryCloseCurrentOpenedPanel())
+            return true;
 
         if (IsPanelActive(relicShopPanel))
         {
