@@ -25,6 +25,7 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     [SerializeField] private Image completionIcon;
 
     private readonly List<BattleBagItemSlotUI> storageSlots = new();
+    private readonly List<string> storageItemOrder = new();
     private int selectedSlotIndex = -1;
 
     public bool IsOpen => panelRoot != null && panelRoot.activeSelf;
@@ -202,6 +203,7 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
                 slot.GetComponent<CultureTankInventorySlotClickRelay>() ??
                 slot.gameObject.AddComponent<CultureTankInventorySlotClickRelay>();
             relay.Configure(button, itemId, canSelect && slot.HasItem && itemCount > 0, SelectInventoryItem);
+            slot.RefreshQuantityVisual();
         }
 
         if (storageContentRoot is RectTransform contentRect)
@@ -361,29 +363,67 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         return null;
     }
 
-    private static List<BagItemStack> BuildStorageStacksIncludingReserved(LobbyRuntimeData lobby)
+    private List<BagItemStack> BuildStorageStacksIncludingReserved(LobbyRuntimeData lobby)
     {
-        List<BagItemStack> stacks = BagItemStackUtility.BuildStacks(lobby?.BagItemIds);
-        if (lobby?.CultureTankResearches == null || lobby.CultureTankResearches.Count == 0)
-            return stacks;
+        var counts = new Dictionary<string, int>(StringComparer.Ordinal);
+        var activeIds = new HashSet<string>(StringComparer.Ordinal);
+        var discoveryOrder = new List<string>();
 
-        var knownIds = new HashSet<string>(StringComparer.Ordinal);
-        for (int i = 0; i < stacks.Count; i++)
+        if (lobby?.BagItemIds != null)
         {
-            if (!string.IsNullOrWhiteSpace(stacks[i].ItemId))
-                knownIds.Add(stacks[i].ItemId.Trim());
+            for (int i = 0; i < lobby.BagItemIds.Count; i++)
+            {
+                string rawId = lobby.BagItemIds[i];
+                if (string.IsNullOrWhiteSpace(rawId))
+                    continue;
+
+                string itemId = rawId.Trim();
+                if (activeIds.Add(itemId))
+                    discoveryOrder.Add(itemId);
+
+                counts.TryGetValue(itemId, out int count);
+                counts[itemId] = count + 1;
+            }
         }
 
-        // 배양조에 임시 등록되어 Storage 수량이 0이 된 재료도 기존 슬롯 자리를 유지합니다.
-        for (int i = 0; i < lobby.CultureTankResearches.Count; i++)
+        if (lobby?.CultureTankResearches != null)
         {
-            CultureTankResearchRuntimeData research = lobby.CultureTankResearches[i];
-            if (research == null || string.IsNullOrWhiteSpace(research.ItemId))
+            for (int i = 0; i < lobby.CultureTankResearches.Count; i++)
+            {
+                CultureTankResearchRuntimeData research = lobby.CultureTankResearches[i];
+                if (research == null || string.IsNullOrWhiteSpace(research.ItemId))
+                    continue;
+
+                string itemId = research.ItemId.Trim();
+                if (activeIds.Add(itemId))
+                    discoveryOrder.Add(itemId);
+
+                if (!counts.ContainsKey(itemId))
+                    counts[itemId] = 0;
+            }
+        }
+
+        // 작업대에 임시 등록한 재료는 실제 확정 소비 전까지 Storage의 원래 슬롯 위치를 유지합니다.
+        // 취소 시에도 같은 슬롯에서 0 -> 1로 돌아오도록, 현재 존재하는 ID의 표시 순서를 캐시합니다.
+        storageItemOrder.RemoveAll(itemId => !activeIds.Contains(itemId));
+
+        var orderedIds = new HashSet<string>(storageItemOrder, StringComparer.Ordinal);
+        for (int i = 0; i < discoveryOrder.Count; i++)
+        {
+            string itemId = discoveryOrder[i];
+            if (orderedIds.Add(itemId))
+                storageItemOrder.Add(itemId);
+        }
+
+        var stacks = new List<BagItemStack>(storageItemOrder.Count);
+        for (int i = 0; i < storageItemOrder.Count; i++)
+        {
+            string itemId = storageItemOrder[i];
+            if (!activeIds.Contains(itemId))
                 continue;
 
-            string itemId = research.ItemId.Trim();
-            if (knownIds.Add(itemId))
-                stacks.Add(new BagItemStack(itemId, 0));
+            counts.TryGetValue(itemId, out int count);
+            stacks.Add(new BagItemStack(itemId, count));
         }
 
         return stacks;

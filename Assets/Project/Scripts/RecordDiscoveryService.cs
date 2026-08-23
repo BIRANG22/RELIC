@@ -203,6 +203,7 @@ namespace Relic.Gameplay.Data
             RegisterIds(lobby.SkillInventoryIds, id => RegisterSkill(dataManager, id));
             RegisterIds(lobby.OwnedRelicIds, id => RegisterOwnedRelicOrCompound(dataManager, id));
             RegisterIds(lobby.BagItemIds, id => RegisterItem(dataManager, id));
+            RegisterIds(lobby.StoredCompoundIds, id => RegisterCompound(dataManager, id));
 
             if (lobby.CultureTankResearches != null)
             {

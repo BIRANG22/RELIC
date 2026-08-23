@@ -128,6 +128,13 @@ namespace Relic.Gameplay.Data
             lobby.StoredCompoundIds ??= new List<string>();
             compoundId = compound.CompoundId;
             lobby.StoredCompoundIds.Add(compoundId);
+
+            // 연성제를 실제로 수령하는 순간 도감 발견 상태도 함께 등록합니다.
+            // Presenter 외의 다른 경로에서 수령하더라도 발견 처리가 누락되지 않도록
+            // 수령 서비스 단계에서 보장합니다.
+            if (DataManager.Instance != null)
+                RecordDiscoveryService.RegisterCompound(DataManager.Instance, compoundId);
+
             lobby.CompletedCultureTankCombinationId = string.Empty;
             return true;
         }

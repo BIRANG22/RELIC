@@ -26,7 +26,7 @@ public class BattleBagPanelUI : MonoBehaviour
     [SerializeField] private Transform slotRoot;
     [SerializeField] private List<BattleBagItemSlotUI> slots = new();
 
-    [Header("Lobby Storage Dynamic Slots")]
+    [Header("Dynamic Content Slots")]
     [SerializeField] private Transform storageContentRoot;
     [SerializeField] private BattleBagItemSlotUI storageSlotPrefab;
     [SerializeField] private ScrollRect storageScrollRect;
@@ -166,7 +166,8 @@ public class BattleBagPanelUI : MonoBehaviour
 
         if (discardButton == null)
         {
-            Transform discard = FindDeepChild(transform, "DiscardButton");
+            Transform discard = FindDeepChild(transform, "DiscardButton")
+                                ?? FindDeepChild(transform, "Discard_Button");
 
             if (discard != null)
                 discardButton = discard.GetComponent<Button>();
@@ -253,9 +254,12 @@ public class BattleBagPanelUI : MonoBehaviour
         IReadOnlyList<string> displayedIds = GetDisplayedIds(context);
         List<BagItemStack> stacks = BagItemStackUtility.BuildStacks(displayedIds);
 
-        if (context != null && context.IsLobby && storageContentRoot != null && storageSlotPrefab != null)
+        if (storageContentRoot != null && storageSlotPrefab != null)
         {
-            RefreshLobbyStorageSlots(stacks);
+            if (context != null && context.IsLobby)
+                RefreshLobbyStorageSlots(stacks);
+            else
+                RefreshBattleDynamicSlots(stacks);
         }
         else
         {
@@ -289,6 +293,38 @@ public class BattleBagPanelUI : MonoBehaviour
                 slot.Clear(OnFocusSlot, OnExitSlot, OnClickSlot);
             }
         }
+    }
+
+    private void RefreshBattleDynamicSlots(List<BagItemStack> stacks)
+    {
+        ClearLobbyStorageSlots();
+
+        // 배틀 가방은 서로 다른 재료 8종류까지 보관할 수 있습니다.
+        // 보유 종류가 8개보다 적더라도 항상 8개의 슬롯 공간을 유지합니다.
+        int stackCount = Mathf.Min(stacks != null ? stacks.Count : 0, MaxBagItemCount);
+        int visibleSlotCount = MaxBagItemCount;
+
+        for (int i = 0; i < visibleSlotCount; i++)
+        {
+            BattleBagItemSlotUI slot = Instantiate(storageSlotPrefab, storageContentRoot, false);
+            slot.name = $"{storageSlotPrefab.name}_{i}";
+            slot.gameObject.SetActive(true);
+
+            if (i < stackCount)
+            {
+                BagItemStack stack = stacks[i];
+                slot.Setup(stack.ItemId, stack.Count, OnFocusSlot, OnExitSlot, OnClickSlot);
+            }
+            else
+            {
+                slot.Clear(OnFocusSlot, OnExitSlot, OnClickSlot);
+            }
+
+            storageSlots.Add(slot);
+        }
+
+        if (storageContentRoot is RectTransform contentRect)
+            LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
     }
 
     private void RefreshLobbyStorageSlots(List<BagItemStack> stacks)

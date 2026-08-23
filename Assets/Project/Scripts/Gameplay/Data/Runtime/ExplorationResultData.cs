@@ -109,7 +109,7 @@ namespace Relic.Gameplay.Data
             HashSet<string> startingSkills = ToSet(runtime.StartingSkillInventoryIds);
             CopyUnique(runtime.SkillInventoryIds, result.NewSkillIds, startingSkills);
             CopyUnique(runtime.AcquiredSkillIds, result.NewSkillIds, startingSkills);
-            CopyUnique(runtime.BagItemIds, result.BagItemIds, null);
+            CopyAll(runtime.BagItemIds, result.BagItemIds);
 
             if (runtime.CharacterStatistics != null)
             {
@@ -162,6 +162,18 @@ namespace Relic.Gameplay.Data
                 string id = source[i].Trim();
                 if ((excluded == null || !excluded.Contains(id)) && added.Add(id))
                     destination.Add(id);
+            }
+        }
+
+        private static void CopyAll(List<string> source, List<string> destination)
+        {
+            if (source == null || destination == null)
+                return;
+
+            for (int i = 0; i < source.Count; i++)
+            {
+                if (!string.IsNullOrWhiteSpace(source[i]))
+                    destination.Add(source[i].Trim());
             }
         }
     }
@@ -229,7 +241,7 @@ namespace Relic.Gameplay.Data
 
             lobby.BlueDustium += Mathf.Max(0, pending.TotalBlue);
             lobby.BagItemIds ??= new List<string>();
-            CopyUnique(pending.ExplorationResult?.BagItemIds, lobby.BagItemIds);
+            CopyAll(pending.ExplorationResult?.BagItemIds, lobby.BagItemIds);
             pending.IsApplied = true;
             return true;
         }
@@ -243,22 +255,15 @@ namespace Relic.Gameplay.Data
             lobby.PendingResearchResult = null;
         }
 
-        private static void CopyUnique(List<string> source, List<string> destination)
+        private static void CopyAll(List<string> source, List<string> destination)
         {
-            if (source == null)
+            if (source == null || destination == null)
                 return;
-
-            destination ??= new List<string>();
-            HashSet<string> added = new(destination, StringComparer.Ordinal);
 
             for (int i = 0; i < source.Count; i++)
             {
-                if (string.IsNullOrWhiteSpace(source[i]))
-                    continue;
-
-                string id = source[i].Trim();
-                if (added.Add(id))
-                    destination.Add(id);
+                if (!string.IsNullOrWhiteSpace(source[i]))
+                    destination.Add(source[i].Trim());
             }
         }
     }
