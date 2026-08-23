@@ -20,6 +20,7 @@ namespace Relic.Gameplay.Data
         public List<string> OwnedRelicIds = new();
         public List<string> SkillInventoryIds = new();
         public List<string> BagItemIds = new();
+        public List<string> StoredCompoundIds = new();
         public List<LobbyCharacterLoadoutData> CharacterLoadouts = new();
         public List<LobbySkillUpgradeRecordData> CharacterSkillUpgrades = new();
         public int RelicOfferSeed;

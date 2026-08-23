@@ -14,11 +14,13 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
     [SerializeField] private Image borderImage;
     [SerializeField] private Image iconImage;
     [SerializeField] private TMP_Text nameText;
+    [SerializeField] private TMP_Text quantityText;
     [SerializeField] private GameObject emptyRoot;
     [SerializeField] private GameObject filledRoot;
     [SerializeField] private Button button;
 
     private string itemId;
+    private int quantity;
     private Action<BattleBagItemSlotUI> onFocus;
     private Action<BattleBagItemSlotUI> onExit;
     private Action<BattleBagItemSlotUI> onClick;
@@ -30,6 +32,7 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
 
     public string ItemId => itemId;
     public bool HasItem => !string.IsNullOrWhiteSpace(itemId);
+    public int Quantity => quantity;
     public RectTransform RectTransform => transform as RectTransform;
 
     private void Awake()
@@ -49,9 +52,40 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         Action<BattleBagItemSlotUI> exitCallback,
         Action<BattleBagItemSlotUI> clickCallback)
     {
+        Setup(newItemId, 1, focusCallback, exitCallback, clickCallback);
+    }
+
+    public void Setup(
+        string newItemId,
+        int quantity,
+        Action<BattleBagItemSlotUI> focusCallback,
+        Action<BattleBagItemSlotUI> exitCallback,
+        Action<BattleBagItemSlotUI> clickCallback)
+    {
         AutoBind();
 
         itemId = string.IsNullOrWhiteSpace(newItemId) ? "" : newItemId.Trim();
+        this.quantity = HasItem ? Mathf.Max(1, quantity) : 0;
+        onFocus = focusCallback;
+        onExit = exitCallback;
+        onClick = clickCallback;
+        isSelected = false;
+        isHovered = false;
+
+        Refresh();
+    }
+
+    public void SetupAllowZeroQuantity(
+        string newItemId,
+        int quantity,
+        Action<BattleBagItemSlotUI> focusCallback,
+        Action<BattleBagItemSlotUI> exitCallback,
+        Action<BattleBagItemSlotUI> clickCallback)
+    {
+        AutoBind();
+
+        itemId = string.IsNullOrWhiteSpace(newItemId) ? "" : newItemId.Trim();
+        this.quantity = HasItem ? Mathf.Max(0, quantity) : 0;
         onFocus = focusCallback;
         onExit = exitCallback;
         onClick = clickCallback;
@@ -66,7 +100,7 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         Action<BattleBagItemSlotUI> exitCallback,
         Action<BattleBagItemSlotUI> clickCallback)
     {
-        Setup("", focusCallback, exitCallback, clickCallback);
+        Setup("", 0, focusCallback, exitCallback, clickCallback);
     }
 
     public void SetSelected(bool selected)
@@ -117,6 +151,9 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
             if (nameText != null)
                 nameText.text = "";
 
+            if (quantityText != null)
+                quantityText.text = "";
+
             isSelected = false;
             isHovered = false;
             RefreshHighlight();
@@ -124,14 +161,26 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         }
 
         ItemData item = null;
+        CompoundData compound = null;
         Sprite icon = null;
 
         if (DataManager.Instance != null)
         {
-            item = DataManager.Instance.ItemDatabase.Get(itemId);
+            bool isCompound = DataManager.Instance.CompoundDatabase != null &&
+                              DataManager.Instance.CompoundDatabase.TryGet(itemId, out compound);
 
-            if (DataManager.Instance.ItemIconDatabase != null)
-                DataManager.Instance.ItemIconDatabase.TryGetIcon(itemId, out icon);
+            if (isCompound)
+            {
+                if (DataManager.Instance.RelicIconDatabase != null)
+                    DataManager.Instance.RelicIconDatabase.TryGetIcon(itemId, out icon);
+            }
+            else
+            {
+                item = DataManager.Instance.ItemDatabase.Get(itemId);
+
+                if (DataManager.Instance.ItemIconDatabase != null)
+                    DataManager.Instance.ItemIconDatabase.TryGetIcon(itemId, out icon);
+            }
         }
 
         if (iconImage != null)
@@ -141,10 +190,18 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
             iconImage.color = NormalIconColor;
         }
 
-        if (nameText != null)
-            nameText.text = item != null && !string.IsNullOrWhiteSpace(item.Name)
-                ? GameDataLocalization.ItemName(item)
-                : itemId;
+        if (nameText != null && nameText != quantityText)
+        {
+            if (item != null && !string.IsNullOrWhiteSpace(item.Name))
+                nameText.text = GameDataLocalization.ItemName(item);
+            else if (compound != null && !string.IsNullOrWhiteSpace(compound.Name))
+                nameText.text = compound.Name;
+            else
+                nameText.text = itemId;
+        }
+
+        if (quantityText != null)
+            quantityText.text = quantity.ToString();
 
         RefreshHighlight();
     }
@@ -183,8 +240,14 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         if (iconImage == borderImage)
             iconImage = FindChildImageExcept(borderImage, "Icon", "ItemIcon", "ItemImage", "Image");
 
+        if (quantityText == null)
+            quantityText = FindChildTextByName("ValueText", "CountText", "QuantityText", "Count", "Value");
+
         if (nameText == null)
             nameText = FindChildTextByName("Name", "ItemName", "Text", "Text (TMP)");
+
+        if (nameText == quantityText)
+            nameText = null;
     }
 
     private Image FindChildImageByName(params string[] names)
@@ -255,7 +318,7 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
                 return text;
         }
 
-        return GetComponentInChildren<TMP_Text>(true);
+        return null;
     }
 
     private Transform FindDeepChild(Transform root, string childName)

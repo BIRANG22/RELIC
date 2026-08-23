@@ -1,9 +1,10 @@
 using System;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 [DisallowMultipleComponent]
-public sealed class CultureTankInventorySlotClickRelay : MonoBehaviour
+public sealed class CultureTankInventorySlotClickRelay : MonoBehaviour, IPointerClickHandler
 {
     private Button button;
     private string itemId;
@@ -35,7 +36,24 @@ public sealed class CultureTankInventorySlotClickRelay : MonoBehaviour
 
     private void HandleClick()
     {
-        if (!selectionEnabled || string.IsNullOrWhiteSpace(itemId)) return;
+        InvokeSelection();
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        // 슬롯 루트에 Button이 없는 StorageSlotUI 프리팹도 클릭할 수 있게 합니다.
+        // Button이 있는 경우에는 Button.onClick에서 처리하므로 중복 실행하지 않습니다.
+        if (button != null)
+            return;
+
+        InvokeSelection();
+    }
+
+    private void InvokeSelection()
+    {
+        if (!selectionEnabled || string.IsNullOrWhiteSpace(itemId))
+            return;
+
         onSelected?.Invoke(itemId);
     }
 }

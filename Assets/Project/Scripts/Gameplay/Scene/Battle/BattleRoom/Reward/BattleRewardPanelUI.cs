@@ -191,12 +191,16 @@ public class BattleRewardPanelUI : MonoBehaviour
                 break;
 
             case BattleRewardType.Item:
-                if (!string.IsNullOrWhiteSpace(reward.RewardId) && runtime.BagItemIds.Count < MaxBagItemCount)
+                if (!string.IsNullOrWhiteSpace(reward.RewardId))
                 {
                     string itemId = reward.RewardId.Trim();
-                    runtime.BagItemIds.Add(itemId);
-                    RecordDiscoveryService.RegisterItem(DataManager.Instance, itemId);
-                    BattleBagPanelUI.RefreshAll();
+
+                    if (BagItemStackUtility.CanAddItem(runtime.BagItemIds, itemId, MaxBagItemCount))
+                    {
+                        runtime.BagItemIds.Add(itemId);
+                        RecordDiscoveryService.RegisterItem(DataManager.Instance, itemId);
+                        BattleBagPanelUI.RefreshAll();
+                    }
                 }
                 break;
 
@@ -236,27 +240,21 @@ public class BattleRewardPanelUI : MonoBehaviour
         if (reward.Type != BattleRewardType.Item)
             return true;
 
-        int currentCount = GetCurrentBagItemCount();
+        if (DataManager.Instance == null || DataManager.Instance.BattleRuntimeStore == null)
+            return false;
 
-        if (currentCount < MaxBagItemCount)
+        BattleRuntimeData runtime = DataManager.Instance.BattleRuntimeStore.GetOrCreate();
+        runtime.BagItemIds ??= new List<string>();
+
+        if (BagItemStackUtility.CanAddItem(runtime.BagItemIds, reward.RewardId, MaxBagItemCount))
             return true;
 
         ShowWarning(string.Format(
             GameLocalization.Get(
                 "battle.bag_full_unique_item_limit",
-                "가방이 가득 찼습니다. 고유아이템은 최대 {0}개까지 보유할 수 있습니다."),
+                "가방이 가득 찼습니다. 서로 다른 아이템은 최대 {0}종류까지 보유할 수 있습니다."),
             MaxBagItemCount));
         return false;
-    }
-
-    private int GetCurrentBagItemCount()
-    {
-        if (DataManager.Instance == null || DataManager.Instance.BattleRuntimeStore == null)
-            return 0;
-
-        BattleRuntimeData runtime = DataManager.Instance.BattleRuntimeStore.GetOrCreate();
-        runtime.BagItemIds ??= new List<string>();
-        return runtime.BagItemIds.Count;
     }
 
     private void ShowWarning(string message)

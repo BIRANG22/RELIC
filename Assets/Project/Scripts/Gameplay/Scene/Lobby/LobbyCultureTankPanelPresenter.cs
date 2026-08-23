@@ -8,23 +8,28 @@ using UnityEngine.UI;
 [DisallowMultipleComponent]
 public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
 {
+    private const int StorageMinimumSlotCount = 36;
+
     [SerializeField] private GameObject panelRoot;
     [SerializeField] private Button backButton;
     [SerializeField] private RectTransform contentRoot;
     [SerializeField] private TMP_Text emptyText;
-    [SerializeField] private Transform inventoryItemRoot;
+    [SerializeField] private Transform storageContentRoot;
+    [SerializeField] private BattleBagItemSlotUI storageSlotPrefab;
+    [SerializeField] private ScrollRect storageScrollRect;
+    [SerializeField] private Scrollbar storageVerticalScrollbar;
     [SerializeField] private TankRow[] rows = new TankRow[3];
     [SerializeField] private Button combineButton;
     [SerializeField] private GameObject completionRoot;
     [SerializeField] private Button completionButton;
     [SerializeField] private Image completionIcon;
 
-    private readonly List<BattleBagItemSlotUI> inventorySlots = new();
+    private readonly List<BattleBagItemSlotUI> storageSlots = new();
     private int selectedSlotIndex = -1;
 
     public bool IsOpen => panelRoot != null && panelRoot.activeSelf;
-    private void Awake() { BindSceneObjects(); BindButtons(); BindInventorySlots(); }
-    private void OnEnable() { BindSceneObjects(); BindButtons(); BindInventorySlots(); RefreshAll(); }
+    private void Awake() { BindSceneObjects(); BindButtons(); EnsureStorageSlots(); }
+    private void OnEnable() { BindSceneObjects(); BindButtons(); EnsureStorageSlots(); RefreshAll(); }
     private void Update() { if (IsOpen) RefreshAll(); }
 
     public void Open()
@@ -69,9 +74,6 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
             Sprite icon = null;
             if (filled) DataManager.Instance?.ItemIconDatabase?.TryGetIcon(slot.ItemId, out icon);
             row.SetIcon(icon);
-            if (row.Background != null) row.Background.color = selectedSlotIndex == i
-                ? new Color(0.25f, 0.42f, 0.3f, 0.96f)
-                : filled ? new Color(0.48f, 0.24f, 0.08f, 0.96f) : new Color(0.16f, 0.18f, 0.22f, 0.96f);
             if (row.Button != null) row.Button.interactable = CanMutate();
         }
         if (emptyText != null) emptyText.gameObject.SetActive(false);
@@ -96,12 +98,31 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     {
         LobbyRuntimeData lobby = GetLobby();
         bool hasCompletedCombination = !string.IsNullOrWhiteSpace(lobby?.CompletedCultureTankCombinationId);
-        if (!CanSelectInventoryItem(selectedSlotIndex >= 0, CanMutate(), hasCompletedCombination) ||
-            string.IsNullOrWhiteSpace(itemId))
+
+        if (!CanMutate() || hasCompletedCombination || string.IsNullOrWhiteSpace(itemId))
             return;
-        if (!CultureTankResearchService.TryPlaceIngredient(lobby, GetSlotId(selectedSlotIndex), itemId, out string error))
-        { Debug.LogWarning($"[LobbyCultureTankPanelPresenter] {error}"); return; }
-        selectedSlotIndex = -1; SaveAndPublish(); RefreshAll();
+
+        // Storage의 재료를 바로 클릭하면 선택된 행이 있을 때는 그 행에,
+        // 선택된 행이 없을 때는 CultureTankRow_1~3 중 첫 번째 빈 행에 자동 투입합니다.
+        int targetSlotIndex = selectedSlotIndex >= 0
+            ? selectedSlotIndex
+            : FindFirstEmptyTankIndex(lobby);
+
+        if (targetSlotIndex < 0)
+        {
+            Debug.LogWarning("[LobbyCultureTankPanelPresenter] 비어 있는 배양조가 없습니다.");
+            return;
+        }
+
+        if (!CultureTankResearchService.TryPlaceIngredient(lobby, GetSlotId(targetSlotIndex), itemId, out string error))
+        {
+            Debug.LogWarning($"[LobbyCultureTankPanelPresenter] {error}");
+            return;
+        }
+
+        selectedSlotIndex = -1;
+        SaveAndPublish();
+        RefreshAll();
     }
 
     private void Combine()
@@ -145,25 +166,46 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
 
     private void RefreshInventory()
     {
-        BindInventorySlots();
+        EnsureStorageSlots();
+
         LobbyRuntimeData lobby = GetLobby();
-        IReadOnlyList<string> items = lobby?.BagItemIds;
-        bool canSelect = CanSelectInventoryItem(
-            selectedSlotIndex >= 0,
-            CanMutate(),
-            !string.IsNullOrWhiteSpace(lobby?.CompletedCultureTankCombinationId));
-        for (int i = 0; i < inventorySlots.Count; i++)
+        List<BagItemStack> stacks = BuildStorageStacksIncludingReserved(lobby);
+        int stackCount = stacks != null ? stacks.Count : 0;
+        int visibleSlotCount = Mathf.Max(StorageMinimumSlotCount, stackCount);
+        EnsureStorageSlotCount(visibleSlotCount);
+
+        bool hasCompletedCombination = !string.IsNullOrWhiteSpace(lobby?.CompletedCultureTankCombinationId);
+        bool canSelect = CanMutate() && !hasCompletedCombination && HasEmptyTankSlot(lobby);
+
+        for (int i = 0; i < storageSlots.Count; i++)
         {
-            string id = items != null && i < items.Count ? items[i] : string.Empty;
-            BattleBagItemSlotUI slot = inventorySlots[i];
-            if (slot == null) continue;
-            slot.Setup(id, null, null, null);
+            BattleBagItemSlotUI slot = storageSlots[i];
+            if (slot == null)
+                continue;
+
+            string itemId = string.Empty;
+            int itemCount = 0;
+            if (i < stackCount)
+            {
+                BagItemStack stack = stacks[i];
+                itemId = stack.ItemId;
+                itemCount = stack.Count;
+                slot.SetupAllowZeroQuantity(stack.ItemId, stack.Count, null, null, null);
+            }
+            else
+            {
+                slot.Clear(null, null, null);
+            }
+
             Button button = slot.GetComponent<Button>();
             CultureTankInventorySlotClickRelay relay =
                 slot.GetComponent<CultureTankInventorySlotClickRelay>() ??
                 slot.gameObject.AddComponent<CultureTankInventorySlotClickRelay>();
-            relay.Configure(button, id, canSelect && slot.HasItem, SelectInventoryItem);
+            relay.Configure(button, itemId, canSelect && slot.HasItem && itemCount > 0, SelectInventoryItem);
         }
+
+        if (storageContentRoot is RectTransform contentRect)
+            LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
     }
 
     private void BindSceneObjects()
@@ -171,17 +213,60 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         if (panelRoot == null) panelRoot = gameObject;
         Transform root = panelRoot.transform;
         if (backButton == null) backButton = Find(root, "BackButton")?.GetComponent<Button>();
+        // 새 하이어라키에서는 CultureTankPanel 바로 아래에 MixButton, completion, CultureTankRow_1~3, Storage가 위치합니다.
+        // contentRoot는 구형 하이어라키 호환용으로만 유지하며, 새 구조 바인딩에는 사용하지 않습니다.
         if (contentRoot == null) contentRoot = Find(root, "Content") as RectTransform;
-        Transform inventory = Find(root, "Inventory");
-        if (inventory == null) inventory = Find(root, "inventory");
-        if (inventoryItemRoot == null) inventoryItemRoot = Find(inventory, "SlotRoot");
-        if (inventoryItemRoot == null) inventoryItemRoot = Find(inventory, "itemRoot");
-        if (inventoryItemRoot == null) inventoryItemRoot = Find(inventory, "item");
+        Transform storage = Find(root, "Storage");
+        if (storage != null)
+        {
+            Transform scrollView = Find(storage, "Scroll View");
+            Transform viewport = Find(scrollView, "Viewport");
+
+            if (storageContentRoot == null)
+            {
+                storageContentRoot = Find(viewport, "Content");
+                if (storageContentRoot == null)
+                    storageContentRoot = Find(storage, "Content");
+            }
+
+            if (storageScrollRect == null && scrollView != null)
+                storageScrollRect = scrollView.GetComponent<ScrollRect>();
+
+            if (storageVerticalScrollbar == null && scrollView != null)
+                storageVerticalScrollbar = Find(scrollView, "Scrollbar Vertical")?.GetComponent<Scrollbar>();
+        }
+
+        BindStorageScrollView();
         if (combineButton == null)
-            Debug.LogError("[LobbyCultureTankPanelPresenter] Combine Button inspector reference is missing.", this);
-        if (completionRoot == null) completionRoot = Find(contentRoot, "completion")?.gameObject;
-        if (completionButton == null && completionRoot != null)
-            completionButton = completionRoot.GetComponentInChildren<Button>(true);
+            combineButton = Find(root, "MixButton")?.GetComponent<Button>();
+        if (combineButton == null)
+            Debug.LogError("[LobbyCultureTankPanelPresenter] MixButton 오브젝트에 Button 컴포넌트가 필요합니다.", this);
+
+        if (completionRoot == null) completionRoot = Find(root, "completion")?.gameObject;
+        if (completionRoot != null)
+        {
+            // completion에는 씬/프리팹에 미리 설정한 Button을 그대로 사용합니다.
+            // 런타임에 Button/Image를 추가하면 기존 클릭 영역과 Graphic 설정이 바뀔 수 있습니다.
+            completionButton = completionRoot.GetComponent<Button>();
+            if (completionButton == null)
+            {
+                Debug.LogError("[LobbyCultureTankPanelPresenter] completion 오브젝트에 Button 컴포넌트가 필요합니다.", completionRoot);
+            }
+            else
+            {
+                Graphic targetGraphic = completionButton.targetGraphic;
+                if (targetGraphic == null)
+                    targetGraphic = completionRoot.GetComponent<Graphic>();
+                if (targetGraphic == null)
+                    targetGraphic = completionRoot.GetComponentInChildren<Graphic>(true);
+
+                if (targetGraphic != null)
+                {
+                    targetGraphic.raycastTarget = true;
+                    completionButton.targetGraphic = targetGraphic;
+                }
+            }
+        }
         if (completionIcon == null && completionRoot != null)
             completionIcon = Find(completionRoot.transform, "icon")?.GetComponent<Image>();
         if (completionIcon == null && completionRoot != null)
@@ -192,8 +277,36 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         for (int i = 0; i < 3; i++)
         {
             rows[i] ??= new TankRow();
-            if (rows[i].Root == null) rows[i].Root = Find(contentRoot, $"CultureTankRow_{i + 1}")?.gameObject;
+            if (rows[i].Root == null) rows[i].Root = Find(root, $"CultureTankRow_{i + 1}")?.gameObject;
             rows[i].Bind();
+        }
+    }
+
+    private void BindStorageScrollView()
+    {
+        if (storageScrollRect == null)
+            return;
+
+        // 씬/프리팹에서 설정한 Viewport/Content RectTransform 값은 절대 변경하지 않습니다.
+        // ScrollRect 참조가 비어 있을 때만 연결하고, 스크롤 기능만 활성화합니다.
+        if (storageScrollRect.content == null && storageContentRoot is RectTransform contentRect)
+            storageScrollRect.content = contentRect;
+
+        if (storageScrollRect.viewport == null)
+        {
+            Transform viewportTransform = Find(storageScrollRect.transform, "Viewport");
+            if (viewportTransform != null)
+                storageScrollRect.viewport = viewportTransform as RectTransform;
+        }
+
+        storageScrollRect.horizontal = false;
+        storageScrollRect.vertical = true;
+
+        if (storageVerticalScrollbar != null)
+        {
+            storageVerticalScrollbar.gameObject.SetActive(true);
+            storageScrollRect.verticalScrollbar = storageVerticalScrollbar;
+            storageScrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.Permanent;
         }
     }
 
@@ -210,13 +323,34 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         }
     }
 
-    private void BindInventorySlots()
+    private void EnsureStorageSlots()
     {
-        if (inventoryItemRoot == null) return;
-        BattleBagItemSlotUI[] foundSlots = inventoryItemRoot.GetComponentsInChildren<BattleBagItemSlotUI>(true);
-        if (inventorySlots.Count == foundSlots.Length) return;
-        inventorySlots.Clear();
-        inventorySlots.AddRange(foundSlots);
+        if (storageContentRoot == null || storageSlotPrefab == null)
+            return;
+
+        int targetCount = Mathf.Max(StorageMinimumSlotCount, storageSlots.Count);
+        EnsureStorageSlotCount(targetCount);
+    }
+
+    private void EnsureStorageSlotCount(int targetCount)
+    {
+        if (storageContentRoot == null || storageSlotPrefab == null)
+            return;
+
+        storageSlots.RemoveAll(slot => slot == null);
+
+        while (storageSlots.Count < targetCount)
+        {
+            int index = storageSlots.Count;
+            BattleBagItemSlotUI slot = Instantiate(storageSlotPrefab, storageContentRoot, false);
+            slot.name = $"{storageSlotPrefab.name}_{index}";
+            slot.gameObject.SetActive(true);
+            slot.Clear(null, null, null);
+            storageSlots.Add(slot);
+        }
+
+        for (int i = 0; i < storageSlots.Count; i++)
+            storageSlots[i].gameObject.SetActive(i < targetCount);
     }
 
     private static Transform Find(Transform root, string name)
@@ -226,6 +360,50 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
             if (child.name == name) return child;
         return null;
     }
+
+    private static List<BagItemStack> BuildStorageStacksIncludingReserved(LobbyRuntimeData lobby)
+    {
+        List<BagItemStack> stacks = BagItemStackUtility.BuildStacks(lobby?.BagItemIds);
+        if (lobby?.CultureTankResearches == null || lobby.CultureTankResearches.Count == 0)
+            return stacks;
+
+        var knownIds = new HashSet<string>(StringComparer.Ordinal);
+        for (int i = 0; i < stacks.Count; i++)
+        {
+            if (!string.IsNullOrWhiteSpace(stacks[i].ItemId))
+                knownIds.Add(stacks[i].ItemId.Trim());
+        }
+
+        // 배양조에 임시 등록되어 Storage 수량이 0이 된 재료도 기존 슬롯 자리를 유지합니다.
+        for (int i = 0; i < lobby.CultureTankResearches.Count; i++)
+        {
+            CultureTankResearchRuntimeData research = lobby.CultureTankResearches[i];
+            if (research == null || string.IsNullOrWhiteSpace(research.ItemId))
+                continue;
+
+            string itemId = research.ItemId.Trim();
+            if (knownIds.Add(itemId))
+                stacks.Add(new BagItemStack(itemId, 0));
+        }
+
+        return stacks;
+    }
+
+    private static int FindFirstEmptyTankIndex(LobbyRuntimeData lobby)
+    {
+        if (lobby == null)
+            return -1;
+
+        for (int i = 0; i < 3; i++)
+        {
+            if (!CultureTankResearchService.TryGetTank(lobby, GetSlotId(i), out _))
+                return i;
+        }
+
+        return -1;
+    }
+
+    private static bool HasEmptyTankSlot(LobbyRuntimeData lobby) => FindFirstEmptyTankIndex(lobby) >= 0;
 
     private static string GetSlotId(int index) => $"CultureTank{index + 1}";
     public static bool ShouldShowCompletionRoot(bool hasCompletedCombination) => true;
@@ -259,10 +437,22 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
             button.targetGraphic = clickSurface;
             if (label == null) label = Find(root.transform, "Label")?.GetComponent<TMP_Text>() ?? root.GetComponentInChildren<TMP_Text>(true);
             if (stateLabel == null) stateLabel = Find(root.transform, "StateLabel")?.GetComponent<TMP_Text>();
-            if (itemIcon == null) itemIcon = Find(root.transform, "ItemIcon")?.GetComponent<Image>();
-            if (itemIcon == null) { GameObject go = new("ItemIcon", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image)); go.transform.SetParent(root.transform, false); itemIcon = go.GetComponent<Image>(); itemIcon.raycastTarget = false; ((RectTransform)go.transform).sizeDelta = new Vector2(88, 88); }
+            // CultureTankRow 안에 이미 배치된 Icon 오브젝트를 재료 아이콘 표시용으로 사용합니다.
+            // 런타임에 ItemIcon 오브젝트를 새로 만들지 않습니다.
+            if (itemIcon == null) itemIcon = Find(root.transform, "Icon")?.GetComponent<Image>();
+            if (itemIcon == null) itemIcon = Find(root.transform, "icon")?.GetComponent<Image>();
+            if (itemIcon != null) itemIcon.raycastTarget = false;
         }
-        public void SetIcon(Sprite icon) { if (itemIcon == null) return; itemIcon.sprite = icon; itemIcon.enabled = icon != null; itemIcon.preserveAspect = true; }
+        public void SetIcon(Sprite icon)
+        {
+            if (itemIcon == null) return;
+
+            bool hasIcon = icon != null;
+            itemIcon.sprite = icon;
+            itemIcon.preserveAspect = true;
+            itemIcon.enabled = hasIcon;
+            itemIcon.gameObject.SetActive(hasIcon);
+        }
     }
 
 }
