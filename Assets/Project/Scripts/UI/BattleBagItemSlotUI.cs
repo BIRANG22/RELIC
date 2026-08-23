@@ -46,6 +46,12 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         }
     }
 
+    private void OnEnable()
+    {
+        AutoBind();
+        RefreshQuantityVisual();
+    }
+
     public void Setup(
         string newItemId,
         Action<BattleBagItemSlotUI> focusCallback,
@@ -152,7 +158,10 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
                 nameText.text = "";
 
             if (quantityText != null)
+            {
                 quantityText.text = "";
+                quantityText.ForceMeshUpdate();
+            }
 
             isSelected = false;
             isHovered = false;
@@ -200,10 +209,37 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
                 nameText.text = itemId;
         }
 
-        if (quantityText != null)
-            quantityText.text = quantity.ToString();
+        RefreshQuantityVisual();
 
         RefreshHighlight();
+    }
+
+    /// <summary>
+    /// 슬롯이 다시 활성화되거나 패널을 다시 열었을 때 수량 표시를 확실하게 복구합니다.
+    /// 프리팹의 Value/ValueText 오브젝트가 꺼져 있더라도 실제 아이템 슬롯이면 다시 활성화합니다.
+    /// </summary>
+    public void RefreshQuantityVisual()
+    {
+        AutoBind();
+
+        if (quantityText == null)
+            return;
+
+        if (!HasItem)
+        {
+            quantityText.text = "";
+            quantityText.ForceMeshUpdate();
+            return;
+        }
+
+        Transform valueRoot = quantityText.transform.parent;
+        if (valueRoot != null && string.Equals(valueRoot.name, "Value", StringComparison.OrdinalIgnoreCase))
+            valueRoot.gameObject.SetActive(true);
+
+        quantityText.gameObject.SetActive(true);
+        quantityText.enabled = true;
+        quantityText.text = quantity.ToString();
+        quantityText.ForceMeshUpdate();
     }
 
     private void RefreshHighlight()
