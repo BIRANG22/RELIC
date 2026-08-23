@@ -6,15 +6,18 @@ Char_01,힐트,105,10,4,5,Karma,OnAnyAllyDamaged,1,1,S_Passive_01,S_Passive_02,S
 카르마를 1 회복합니다.","“강한 놈들이 득실거린다며?
 그럼 내가 가야지.”
 
-벨가드 용병단에서 파견된 용병입니다. 호전적이고 거침없는 성격으로, 위험한 전투일수록 먼저 뛰어들며 이번 탐사에서도 자신의 강함을 증명하려 합니다.",,,,,
+벨가드 용병단 소속의 탐사자.
+호전적이고 거침없는 성격으로, 위험한 전투일수록 먼저 뛰어들며 이번 탐사에서도 자신의 강함을 증명하려 합니다.",,,,,
 Char_02,카야,98,11,4,5,Karma,OnThreeActionsInSameSlot,1,1,S_Passive_03,S_Passive_04,S_Unique_03,S_Unique_04,S_Ability_05,S_Ability_07,S_Public_05,S_Public_07,Rune_56,Rune_57,Rune_58,Rune_59,Rune_60,"한 슬롯에서 3회 이상 행동을
 등록하면 카르마를 1 회복합니다. ","“임무라면 완수한다. 그뿐이야.”
 
-하쿠렌 가문을 대표하여 파견된 검사입니다. 침착하고 냉철하며 어떤 상황에서도 흐트러지지 않고, 미지의 적과 전투를 거치며 자신의 검술을 더욱 완성해갑니다.",,,,,
+하쿠렌 가문 소속의 탐사자.
+침착하고 냉철하며 어떤 상황에서도 흐트러지지 않고, 미지의 적과 전투를 거치며 자신의 검술을 더욱 완성해갑니다.",,,,,
 Char_03,헤이즈,84,14,4,5,Karma,OnSpendEightCostInTurn,1,1,S_Passive_05,S_Passive_06,S_Unique_05,S_Unique_06,S_Ability_09,S_Ability_11,S_Public_09,S_Public_11,Rune_61,Rune_62,Rune_63,Rune_64,Rune_65,"한 턴에 마나를 8 이상 소모하면
 카르마를 1 회복합니다.","“정말 제가 가야 하는 건가요?”
 
-아스텔 학회에서 조사를 위해 합류한 연구원입니다. 겁이 많고 소심하지만 맡은 연구에서 물러서지는 않으며, 소환수 니아와 함께 자신의 나약함을 극복하려 합니다.",,,,,
+아스텔 학회 소속의 탐사자.
+겁이 많고 소심하지만 맡은 연구에서 물러서지는 않으며, 소환수 니아와 함께 자신의 나약함을 극복하려 합니다.",,,,,
 Char_04,이네스,100,10,4,5,Karma,OnAllyBuffApplied,1,1,S_Passive_07,S_Passive_08,S_Unique_07,S_Unique_08,S_Ability_13,S_Ability_15,S_Public_13,S_Public_15,Rune_66,Rune_67,Rune_68,Rune_69,Rune_70,"아군에게 이로운 효과를 부여하면
 카르마를 1 회복합니다.","“걱정하지 마세요.
 모두 무사히 돌아갈 수 있도록 할게요.”
@@ -516,8 +519,8 @@ Map_22,Special6,Special,0,Event_06,Stage1,1
 Map_23,Special7,Special,0,Event_07,Stage1,1
 Map_24,Special8,Special,0,Event_08,Stage1,1
 Map_25,Special9,Special,0,Event_09,Stage1,1
-,,,
-,,,
+
+
 ,,,
 
 

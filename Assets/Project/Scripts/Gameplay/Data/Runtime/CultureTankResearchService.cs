@@ -125,9 +125,9 @@ namespace Relic.Gameplay.Data
                 return false;
             }
 
-            lobby.OwnedRelicIds ??= new List<string>();
+            lobby.StoredCompoundIds ??= new List<string>();
             compoundId = compound.CompoundId;
-            lobby.OwnedRelicIds.Add(compoundId);
+            lobby.StoredCompoundIds.Add(compoundId);
             lobby.CompletedCultureTankCombinationId = string.Empty;
             return true;
         }
@@ -172,6 +172,7 @@ namespace Relic.Gameplay.Data
         {
             if (lobby == null) return;
             lobby.BagItemIds ??= new List<string>();
+            lobby.StoredCompoundIds ??= new List<string>();
             lobby.CultureTankResearches ??= new List<CultureTankResearchRuntimeData>();
             lobby.PendingCultureTankBattleStartEffects ??= new List<CultureTankBattleStartEffectRuntimeData>();
             lobby.CompletedCultureTankCombinationId = NormalizeId(lobby.CompletedCultureTankCombinationId);

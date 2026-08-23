@@ -429,6 +429,7 @@ public class SaveSystem : Singleton<SaveSystem>
         lobby.OwnedRelicIds ??= new List<string>();
         lobby.SkillInventoryIds ??= new List<string>();
         lobby.BagItemIds ??= new List<string>();
+        lobby.StoredCompoundIds ??= new List<string>();
         lobby.CharacterLoadouts ??= new List<LobbyCharacterLoadoutData>();
         lobby.RelicOfferIds ??= new List<string>();
         CultureTankResearchService.Normalize(lobby);

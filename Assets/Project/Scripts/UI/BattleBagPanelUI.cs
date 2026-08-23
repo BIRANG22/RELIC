@@ -9,15 +9,32 @@ using UnityEngine.UI;
 
 public class BattleBagPanelUI : MonoBehaviour
 {
+    private enum StorageCategory
+    {
+        Item,
+        Compound
+    }
+
     private const int MaxBagItemCount = 8;
+    private const int StorageMinimumSlotCount = 36;
 
     [Header("Runtime")]
     [SerializeField] private InventoryRuntimeContextProvider runtimeContextProvider;
     [SerializeField] private bool allowDiscardInLobby = false;
 
-    [Header("Slot List")]
+    [Header("Battle Slot List")]
     [SerializeField] private Transform slotRoot;
     [SerializeField] private List<BattleBagItemSlotUI> slots = new();
+
+    [Header("Lobby Storage Dynamic Slots")]
+    [SerializeField] private Transform storageContentRoot;
+    [SerializeField] private BattleBagItemSlotUI storageSlotPrefab;
+    [SerializeField] private ScrollRect storageScrollRect;
+    [SerializeField] private Scrollbar storageVerticalScrollbar;
+    [SerializeField] private Button itemButton;
+    [SerializeField] private Button compoundButton;
+    private readonly List<BattleBagItemSlotUI> storageSlots = new();
+    private StorageCategory storageCategory = StorageCategory.Item;
 
     [Header("Discard")]
     [SerializeField] private Button discardButton;
@@ -41,6 +58,7 @@ public class BattleBagPanelUI : MonoBehaviour
     {
         AutoBind();
         BindDiscardButton();
+        BindStorageCategoryButtons();
     }
 
     private void OnEnable()
@@ -71,10 +89,52 @@ public class BattleBagPanelUI : MonoBehaviour
     {
         if (slotRoot == null)
         {
-            Transform foundSlotRoot = transform.Find("SlotRoot");
+            Transform foundSlotRoot = FindDeepChild(transform, "SlotRoot");
 
             if (foundSlotRoot != null)
                 slotRoot = foundSlotRoot;
+        }
+
+        Transform storageScrollView = FindDeepChild(transform, "Scroll View");
+        if (storageScrollView != null)
+        {
+            Transform viewport = FindDeepChild(storageScrollView, "Viewport");
+
+            if (storageContentRoot == null && viewport != null)
+            {
+                Transform foundContent = FindDeepChild(viewport, "Content");
+                if (foundContent != null)
+                    storageContentRoot = foundContent;
+            }
+
+            if (storageScrollRect == null)
+                storageScrollRect = storageScrollView.GetComponent<ScrollRect>();
+
+            if (storageVerticalScrollbar == null)
+                storageVerticalScrollbar = FindDeepChild(storageScrollView, "Scrollbar Vertical")?.GetComponent<Scrollbar>();
+        }
+
+        if (storageContentRoot == null)
+        {
+            Transform foundContent = FindDeepChild(transform, "Content");
+            if (foundContent != null)
+                storageContentRoot = foundContent;
+        }
+
+        BindStorageScrollView();
+
+        if (itemButton == null)
+        {
+            Transform itemButtonTransform = FindDeepChild(transform, "Item_Button");
+            if (itemButtonTransform != null)
+                itemButton = itemButtonTransform.GetComponent<Button>();
+        }
+
+        if (compoundButton == null)
+        {
+            Transform compoundButtonTransform = FindDeepChild(transform, "Compound_Button");
+            if (compoundButtonTransform != null)
+                compoundButton = compoundButtonTransform.GetComponent<Button>();
         }
 
         if (detailPanel == null)
@@ -113,7 +173,36 @@ public class BattleBagPanelUI : MonoBehaviour
         }
 
         BindDiscardButton();
+        BindStorageCategoryButtons();
         BuildSlotsIfNeeded();
+    }
+
+    private void BindStorageScrollView()
+    {
+        if (storageScrollRect == null)
+            return;
+
+        // 씬/프리팹에서 설정한 Viewport/Content RectTransform 값은 절대 변경하지 않습니다.
+        // ScrollRect 참조가 비어 있을 때만 연결하고, 스크롤 기능만 활성화합니다.
+        if (storageScrollRect.content == null && storageContentRoot is RectTransform contentRect)
+            storageScrollRect.content = contentRect;
+
+        if (storageScrollRect.viewport == null)
+        {
+            Transform viewportTransform = FindDeepChild(storageScrollRect.transform, "Viewport");
+            if (viewportTransform != null)
+                storageScrollRect.viewport = viewportTransform as RectTransform;
+        }
+
+        storageScrollRect.horizontal = false;
+        storageScrollRect.vertical = true;
+
+        if (storageVerticalScrollbar != null)
+        {
+            storageVerticalScrollbar.gameObject.SetActive(true);
+            storageScrollRect.verticalScrollbar = storageVerticalScrollbar;
+            storageScrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.Permanent;
+        }
     }
 
     private void BuildSlotsIfNeeded()
@@ -121,6 +210,11 @@ public class BattleBagPanelUI : MonoBehaviour
         slots.RemoveAll(x => x == null);
 
         if (slots.Count > 0)
+            return;
+
+        // 로비 Storage는 Content + Prefab을 사용해 런타임에 슬롯을 생성합니다.
+        // StoragePanel의 다른 자식 오브젝트에 슬롯 컴포넌트를 자동 추가하지 않습니다.
+        if (storageContentRoot != null && storageSlotPrefab != null)
             return;
 
         Transform root = slotRoot != null ? slotRoot : transform;
@@ -155,7 +249,26 @@ public class BattleBagPanelUI : MonoBehaviour
         selectedSlot = null;
         hoveredSlot = null;
 
-        IReadOnlyList<string> itemIds = GetBagItemIds();
+        IInventoryRuntimeContext context = ResolveRuntimeContext();
+        IReadOnlyList<string> displayedIds = GetDisplayedIds(context);
+        List<BagItemStack> stacks = BagItemStackUtility.BuildStacks(displayedIds);
+
+        if (context != null && context.IsLobby && storageContentRoot != null && storageSlotPrefab != null)
+        {
+            RefreshLobbyStorageSlots(stacks);
+        }
+        else
+        {
+            RefreshBattleSlots(stacks);
+        }
+
+        HideDetail();
+        RefreshDiscardButtonState();
+    }
+
+    private void RefreshBattleSlots(List<BagItemStack> stacks)
+    {
+        int visibleStackCount = Mathf.Min(stacks != null ? stacks.Count : 0, MaxBagItemCount);
 
         for (int i = 0; i < slots.Count; i++)
         {
@@ -164,14 +277,64 @@ public class BattleBagPanelUI : MonoBehaviour
             if (slot == null)
                 continue;
 
-            if (itemIds != null && i < itemIds.Count && i < MaxBagItemCount)
-                slot.Setup(itemIds[i], OnFocusSlot, OnExitSlot, OnClickSlot);
+            slot.gameObject.SetActive(true);
+
+            if (i < visibleStackCount)
+            {
+                BagItemStack stack = stacks[i];
+                slot.Setup(stack.ItemId, stack.Count, OnFocusSlot, OnExitSlot, OnClickSlot);
+            }
             else
+            {
                 slot.Clear(OnFocusSlot, OnExitSlot, OnClickSlot);
+            }
+        }
+    }
+
+    private void RefreshLobbyStorageSlots(List<BagItemStack> stacks)
+    {
+        ClearLobbyStorageSlots();
+
+        int stackCount = stacks != null ? stacks.Count : 0;
+        int visibleSlotCount = Mathf.Max(StorageMinimumSlotCount, stackCount);
+
+        for (int i = 0; i < visibleSlotCount; i++)
+        {
+            BattleBagItemSlotUI slot = Instantiate(storageSlotPrefab, storageContentRoot, false);
+            slot.name = $"{storageSlotPrefab.name}_{i}";
+            slot.gameObject.SetActive(true);
+
+            if (i < stackCount)
+            {
+                BagItemStack stack = stacks[i];
+                slot.Setup(stack.ItemId, stack.Count, OnFocusSlot, OnExitSlot, OnClickSlot);
+            }
+            else
+            {
+                slot.Clear(OnFocusSlot, OnExitSlot, OnClickSlot);
+            }
+
+            storageSlots.Add(slot);
         }
 
-        HideDetail();
-        RefreshDiscardButtonState();
+        if (storageContentRoot is RectTransform contentRect)
+            LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
+    }
+
+    private void ClearLobbyStorageSlots()
+    {
+        for (int i = storageSlots.Count - 1; i >= 0; i--)
+        {
+            BattleBagItemSlotUI slot = storageSlots[i];
+
+            if (slot != null)
+            {
+                slot.gameObject.SetActive(false);
+                Destroy(slot.gameObject);
+            }
+        }
+
+        storageSlots.Clear();
     }
 
     public void OpenForItemSelection(
@@ -182,6 +345,7 @@ public class BattleBagPanelUI : MonoBehaviour
             return;
 
         isItemSelectionMode = true;
+        storageCategory = StorageCategory.Item;
         itemSelectionCallback = onItemSelected;
         itemSelectionClosedCallback = onSelectionClosed;
         gameObject.SetActive(true);
@@ -192,6 +356,30 @@ public class BattleBagPanelUI : MonoBehaviour
     {
         EndItemSelectionMode(false, true);
     }
+    private IReadOnlyList<string> GetDisplayedIds(IInventoryRuntimeContext context)
+    {
+        if (context == null)
+            return null;
+
+        if (!context.IsLobby || storageCategory == StorageCategory.Item)
+            return context.BagItemIds;
+
+        LobbyRuntimeData lobby = DataManager.Instance?.LobbyRuntimeStore?.GetOrCreate();
+        return lobby?.StoredCompoundIds;
+    }
+
+    private List<string> GetMutableDisplayedIds(IInventoryRuntimeContext context)
+    {
+        if (context == null)
+            return null;
+
+        if (!context.IsLobby || storageCategory == StorageCategory.Item)
+            return context.BagItemIds;
+
+        LobbyRuntimeData lobby = DataManager.Instance?.LobbyRuntimeStore?.GetOrCreate();
+        return lobby?.StoredCompoundIds;
+    }
+
     private IReadOnlyList<string> GetBagItemIds()
     {
         IInventoryRuntimeContext context = ResolveRuntimeContext();
@@ -204,6 +392,20 @@ public class BattleBagPanelUI : MonoBehaviour
 
     private IInventoryRuntimeContext ResolveRuntimeContext()
     {
+        if (DataManager.Instance == null)
+            return null;
+
+        bool isLobbyScene = string.Equals(
+            SceneManager.GetActiveScene().name,
+            "Lobby",
+            System.StringComparison.OrdinalIgnoreCase);
+
+        // 로비 Storage는 부모에 어떤 RuntimeContextProvider가 있더라도
+        // 반드시 LobbyRuntimeData를 표시해야 합니다. Battle 소스를 잘못 물면
+        // 로비에 재료가 있어도 36개의 빈 슬롯만 보일 수 있습니다.
+        if (isLobbyScene && DataManager.Instance.LobbyRuntimeStore != null)
+            return InventoryRuntimeContext.ForLobby(DataManager.Instance.LobbyRuntimeStore.GetOrCreate());
+
         if (runtimeContextProvider == null)
             runtimeContextProvider = GetComponentInParent<InventoryRuntimeContextProvider>(true);
 
@@ -213,17 +415,6 @@ public class BattleBagPanelUI : MonoBehaviour
 
         if (context != null)
             return context;
-
-        if (DataManager.Instance == null)
-            return null;
-
-        bool isLobbyScene = string.Equals(
-            SceneManager.GetActiveScene().name,
-            "Lobby",
-            System.StringComparison.OrdinalIgnoreCase);
-
-        if (isLobbyScene && DataManager.Instance.LobbyRuntimeStore != null)
-            return InventoryRuntimeContext.ForLobby(DataManager.Instance.LobbyRuntimeStore.GetOrCreate());
 
         if (DataManager.Instance.BattleRuntimeStore != null)
             return InventoryRuntimeContext.ForBattle(DataManager.Instance.BattleRuntimeStore.GetOrCreate());
@@ -306,6 +497,12 @@ public class BattleBagPanelUI : MonoBehaviour
             if (slots[i] != null)
                 slots[i].ResetVisualState();
         }
+
+        for (int i = 0; i < storageSlots.Count; i++)
+        {
+            if (storageSlots[i] != null)
+                storageSlots[i].ResetVisualState();
+        }
     }
 
     private bool IsPointerOverSelectedBagSlotOrDiscardButton()
@@ -366,14 +563,26 @@ public class BattleBagPanelUI : MonoBehaviour
         }
 
         ItemData item = null;
+        CompoundData compound = null;
         Sprite icon = null;
 
         if (DataManager.Instance != null)
         {
-            item = DataManager.Instance.ItemDatabase.Get(itemId);
+            bool isCompound = DataManager.Instance.CompoundDatabase != null &&
+                              DataManager.Instance.CompoundDatabase.TryGet(itemId, out compound);
 
-            if (DataManager.Instance.ItemIconDatabase != null)
-                DataManager.Instance.ItemIconDatabase.TryGetIcon(itemId, out icon);
+            if (isCompound)
+            {
+                if (DataManager.Instance.RelicIconDatabase != null)
+                    DataManager.Instance.RelicIconDatabase.TryGetIcon(itemId, out icon);
+            }
+            else
+            {
+                item = DataManager.Instance.ItemDatabase.Get(itemId);
+
+                if (item != null && DataManager.Instance.ItemIconDatabase != null)
+                    DataManager.Instance.ItemIconDatabase.TryGetIcon(itemId, out icon);
+            }
         }
 
         if (detailPanel != null)
@@ -386,14 +595,24 @@ public class BattleBagPanelUI : MonoBehaviour
         }
 
         if (detailNameText != null)
-            detailNameText.text = item != null && !string.IsNullOrWhiteSpace(item.Name)
-                ? GameDataLocalization.ItemName(item)
-                : itemId;
+        {
+            if (item != null && !string.IsNullOrWhiteSpace(item.Name))
+                detailNameText.text = GameDataLocalization.ItemName(item);
+            else if (compound != null && !string.IsNullOrWhiteSpace(compound.Name))
+                detailNameText.text = compound.Name;
+            else
+                detailNameText.text = itemId;
+        }
 
         if (detailDescriptionText != null)
-            detailDescriptionText.text = item != null && !string.IsNullOrWhiteSpace(item.Desc)
-                ? GameDataLocalization.ItemDescription(item)
-                : GameLocalization.Get("battle.acquired_item", "획득한 아이템입니다.");
+        {
+            if (item != null && !string.IsNullOrWhiteSpace(item.Desc))
+                detailDescriptionText.text = GameDataLocalization.ItemDescription(item);
+            else if (compound != null && !string.IsNullOrWhiteSpace(compound.EffectDesc))
+                detailDescriptionText.text = compound.EffectDesc;
+            else
+                detailDescriptionText.text = GameLocalization.Get("battle.acquired_item", "획득한 아이템입니다.");
+        }
 
         // 가방 툴팁은 아이템 이름과 설명만 표시합니다.
         // 판매 가격 문구는 GameData Item 시트의 설명(Desc)에 직접 작성해서 사용합니다.
@@ -446,6 +665,36 @@ public class BattleBagPanelUI : MonoBehaviour
     {
         if (detailPanel != null)
             detailPanel.SetActive(false);
+    }
+
+    private void BindStorageCategoryButtons()
+    {
+        if (itemButton != null)
+        {
+            itemButton.onClick.RemoveListener(ShowStoredItems);
+            itemButton.onClick.AddListener(ShowStoredItems);
+        }
+
+        if (compoundButton != null)
+        {
+            compoundButton.onClick.RemoveListener(ShowStoredCompounds);
+            compoundButton.onClick.AddListener(ShowStoredCompounds);
+        }
+    }
+
+    private void ShowStoredItems()
+    {
+        storageCategory = StorageCategory.Item;
+        Refresh();
+    }
+
+    private void ShowStoredCompounds()
+    {
+        if (isItemSelectionMode)
+            return;
+
+        storageCategory = StorageCategory.Compound;
+        Refresh();
     }
 
     private void BindDiscardButton()
@@ -505,26 +754,19 @@ public class BattleBagPanelUI : MonoBehaviour
             return;
         }
 
-        int slotIndex = slots.IndexOf(selectedSlot);
+        if (context == null)
+            return;
 
-        if (slotIndex < 0)
+        string removedItemId = selectedSlot.ItemId;
+
+        List<string> displayedIds = GetMutableDisplayedIds(context);
+
+        if (!BagItemStackUtility.RemoveOne(displayedIds, removedItemId))
         {
             BattleWarningUI.ShowMessage(GameLocalization.Get("battle.selected_item_not_found", "선택한 고유아이템을 찾을 수 없습니다."));
             Refresh();
             return;
         }
-
-        if (context == null)
-            return;
-
-
-        if (slotIndex >= context.BagItemIds.Count)
-        {
-            Refresh();
-            return;
-        }
-
-        string removedItemId = context.BagItemIds[slotIndex];
 
         if (selectedSlot != null)
             selectedSlot.ResetVisualState();
@@ -534,7 +776,6 @@ public class BattleBagPanelUI : MonoBehaviour
 
         ClearAllSlotVisualStates();
 
-        context.BagItemIds.RemoveAt(slotIndex);
         SaveRuntimeContext(context);
 
         selectedSlot = null;
