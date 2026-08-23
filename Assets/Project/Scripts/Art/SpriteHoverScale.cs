@@ -133,7 +133,7 @@ public class SpriteHoverScale : MonoBehaviour
         if (!isActiveAndEnabled)
             return;
 
-        if (UIPanelButton.IsMenuPanelOpen)
+        if (UIPanelButton.IsMenuPanelOpen || LobbyPositionModalInputBlocker.IsBlocked)
         {
             ResetHoverImmediate();
             return;
@@ -183,7 +183,7 @@ public class SpriteHoverScale : MonoBehaviour
     {
         // 메뉴가 열리면 월드 오브젝트의 크기 및 위치 호버 효과는 해제합니다.
         // 단, 해당 버튼의 패널이 열려 있으면 표시 오브젝트는 유지됩니다.
-        if (isHovering && UIPanelButton.IsMenuPanelOpen)
+        if (isHovering && (UIPanelButton.IsMenuPanelOpen || LobbyPositionModalInputBlocker.IsBlocked))
             ResetHoverImmediate();
 
         bool isTargetPanelOpen = IsTargetPanelOpen();

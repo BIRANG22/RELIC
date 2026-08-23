@@ -206,6 +206,11 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
 
     private bool IsAnyBlockingPanelActive()
     {
+        // 실제로 로비 모달 입력 차단기가 활성화된 경우에만 월드 호버를 차단합니다.
+        // 패널 오브젝트 이름만으로 상태를 추정하지 않아, 닫힌 Storage/Equip 때문에 호버가 막히지 않습니다.
+        if (LobbyPositionModalInputBlocker.IsBlocked)
+            return true;
+
         if (blockingPanels != null)
         {
             for (int i = 0; i < blockingPanels.Length; i++)
