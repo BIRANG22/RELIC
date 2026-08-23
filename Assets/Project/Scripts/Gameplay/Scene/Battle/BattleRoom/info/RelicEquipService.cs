@@ -33,7 +33,7 @@ namespace Relic.Gameplay.Data
             if (string.IsNullOrWhiteSpace(characterId))
                 return false;
 
-            if (slotIndex < 0 || slotIndex >= 6)
+            if (slotIndex < 0 || slotIndex >= ActiveRelicRuntimeUtility.EquippedRelicSlotCount)
                 return false;
 
             if (string.IsNullOrWhiteSpace(relicId))

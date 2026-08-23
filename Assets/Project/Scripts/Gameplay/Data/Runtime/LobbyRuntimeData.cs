@@ -26,6 +26,7 @@ namespace Relic.Gameplay.Data
         public int RelicOfferSeed;
         public int RelicRefreshCount;
         public List<string> RelicOfferIds = new();
+        public bool RelicShopPurchaseLocked;
         public int CultureTankCombinationSchemaVersion;
         public List<CultureTankResearchRuntimeData> CultureTankResearches = new();
         public string CompletedCultureTankCombinationId;

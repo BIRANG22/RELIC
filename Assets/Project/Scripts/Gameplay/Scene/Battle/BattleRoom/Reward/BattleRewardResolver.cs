@@ -282,7 +282,7 @@ public class BattleRewardResolver : MonoBehaviour
             Amount = 1,
             Icon = icon,
             Name = GameDataLocalization.RelicName(relic),
-            Description = GameDataLocalization.RelicDescription(relic),
+            Description = GameDataLocalization.RelicEffectDescription(relic),
             Value = 0
         });
     }

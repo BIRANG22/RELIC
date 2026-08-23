@@ -79,6 +79,7 @@ public sealed class LobbyRelicPurchaseService
 
         runtime.BlueDustium -= price;
         runtime.OwnedRelicIds.Add(relicId);
+        LobbyRelicShopPurchaseLimit.LockAfterPurchase(runtime);
 
         return new LobbyRelicPurchaseResult(true, relicId, price, LobbyRelicPurchaseFailure.None);
     }

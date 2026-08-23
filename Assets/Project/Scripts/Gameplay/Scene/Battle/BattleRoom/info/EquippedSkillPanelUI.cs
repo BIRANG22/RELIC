@@ -259,7 +259,7 @@ public class EquippedSkillPanelUI : MonoBehaviour
             return string.Empty;
 
         if (!string.IsNullOrWhiteSpace(relicData.EffectDesc))
-            return GameDataLocalization.RelicDescription(relicData);
+            return GameDataLocalization.RelicEffectDescription(relicData);
 
         return GameLocalization.Get("common.no_effect_description", "효과 설명이 없습니다.");
     }

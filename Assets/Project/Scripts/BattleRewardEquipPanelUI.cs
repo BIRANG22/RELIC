@@ -137,7 +137,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
             }
 
             reward.Name = string.IsNullOrWhiteSpace(relic.Name) ? rewardId : relic.Name;
-            reward.Description = GameDataLocalization.RelicDescription(relic);
+            reward.Description = GameDataLocalization.RelicEffectDescription(relic);
 
             if (DataManager.Instance.RelicIconDatabase != null &&
                 DataManager.Instance.RelicIconDatabase.TryGetIcon(rewardId, out Sprite relicIcon))
@@ -700,7 +700,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
 
             if (itemEffectText != null)
                 itemEffectText.text = !string.IsNullOrWhiteSpace(relic?.EffectDesc)
-                    ? GameDataLocalization.RelicDescription(relic)
+                    ? GameDataLocalization.RelicEffectDescription(relic)
                     : currentReward.Description ?? string.Empty;
         }
     }
