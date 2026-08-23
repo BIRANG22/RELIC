@@ -1,6 +1,5 @@
 using Relic.Gameplay.Data;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -11,6 +10,7 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterH
 {
     [Header("Basic")]
     [SerializeField] private Image portraitImage;
+
 
     [Header("Keyboard Number")]
     [SerializeField] private GameObject numberObject;
@@ -24,27 +24,14 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterH
     [SerializeField] private bool autoFindCommandSelectedHighlight = true;
     [SerializeField] private float selectedScale = 1.06f;
 
-    [Header("Back Selection Animation")]
-    [SerializeField] private RectTransform backRect;
-    [SerializeField] private bool autoFindBackRect = true;
-    [SerializeField] private string backObjectName = "back";
-
-    [Tooltip("선택되지 않았을 때 back 이미지의 위치입니다.")]
-    [SerializeField] private Vector2 normalBackAnchoredPosition = Vector2.zero;
-
-    [Tooltip("HUD가 선택됐을 때 back 이미지가 이동할 위치입니다.")]
-    [SerializeField] private Vector2 selectedBackAnchoredPosition = Vector2.zero;
-
-    [Tooltip("back 이미지가 이동하는 데 걸리는 시간입니다.")]
-    [SerializeField, Min(0f)] private float backAnimationDuration = 0.2f;
-
-    [SerializeField] private bool useUnscaledTimeForBackAnimation = true;
-
-    [Header("Back Hover Effect")]
-    [SerializeField] private Image backImage;
-    [SerializeField] private bool autoFindBackImage = true;
-    [SerializeField] private Color selectedBackColor = new Color32(0x0C, 0x58, 0xC5, 0xFF);
+    [Header("Back Hover Color Effect")]
+    [Tooltip("호버 시 색상을 변경할 오브젝트를 지정합니다. 오브젝트의 Graphic(Image 등) 색상만 변경하며 활성/비활성은 건드리지 않습니다.")]
+    [SerializeField] private GameObject backHoverObject;
+    [SerializeField] private Color normalBackColor = Color.white;
     [SerializeField] private Color hoverBackColor = new Color32(0xEE, 0xEE, 0xEE, 0xFF);
+    [SerializeField] private Color selectedBackColor = new Color32(0x0C, 0x58, 0xC5, 0xFF);
+
+    private Graphic backHoverGraphic;
 
     [Header("Click Selection")]
     [SerializeField] private bool enableHudClickSelect = true;
@@ -91,7 +78,6 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterH
     private readonly List<StatusEffectIcon> spawnedStatusIcons = new();
 
     private Vector3 defaultLocalScale;
-    private Coroutine backPositionAnimationRoutine;
     private bool isCommandSelected;
     private bool isPointerHovering;
 
@@ -106,8 +92,6 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterH
         SetupHudClickSelection();
         ResolveKeyboardNumberReferences();
         ResolveCommandSelectedHighlightReferences();
-        ResolveBackAnimationReferences();
-        ResolveBackImageReference();
         ResolveResourceSlotReferences();
         ApplyStatusEffectParentLayout();
         ApplyKeyboardNumberVisual();
@@ -118,8 +102,6 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterH
     {
         SetupHudClickSelection();
         ResolveKeyboardNumberReferences();
-        ResolveBackAnimationReferences();
-        ResolveBackImageReference();
         ResolveResourceSlotReferences();
         ApplyKeyboardNumberVisual();
 
@@ -133,8 +115,6 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterH
         boundMaster = null;
 
         ResolveCommandSelectedHighlightReferences();
-        ResolveBackAnimationReferences();
-        ResolveBackImageReference();
         ResolveResourceSlotReferences();
         ApplyStatusEffectParentLayout();
 
@@ -171,11 +151,11 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterH
 
         if (portraitImage != null)
         {
-            portraitImage.sprite = GetCharacterTimelineIcon(boundRuntime.CharacterId);
+            portraitImage.sprite = GetCharacterSideImage(boundRuntime.CharacterId);
             portraitImage.enabled = portraitImage.sprite != null;
         }
 
-        RefreshCharacterBackImage();
+        ApplyBackVisualState();
 
         int maxHP = boundRuntime.MaxHP > 0
             ? boundRuntime.MaxHP
@@ -364,52 +344,23 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterH
         }
     }
 
-    private Sprite GetCharacterTimelineIcon(string characterId)
+    private Sprite GetCharacterSideImage(string characterId)
     {
+        if (string.IsNullOrWhiteSpace(characterId))
+            return null;
+
         if (DataManager.Instance == null)
             return null;
 
         if (DataManager.Instance.CharacterIconDatabase == null)
             return null;
 
-        if (DataManager.Instance.CharacterIconDatabase.TryGetTimelineIcon(
+        if (DataManager.Instance.CharacterIconDatabase.TryGetSideImage(
             characterId,
-            out Sprite timelineIcon
+            out Sprite sideSprite
         ))
         {
-            return timelineIcon;
-        }
-
-        return null;
-    }
-
-    private void RefreshCharacterBackImage()
-    {
-        ResolveBackImageReference();
-
-        if (backImage == null)
-            return;
-
-        Sprite charBackImage = GetCharacterBackImage(boundRuntime.CharacterId);
-
-        backImage.sprite = charBackImage;
-        backImage.enabled = charBackImage != null && (isCommandSelected || isPointerHovering);
-    }
-
-    private Sprite GetCharacterBackImage(string characterId)
-    {
-        if (DataManager.Instance == null)
-            return null;
-
-        if (DataManager.Instance.CharacterIconDatabase == null)
-            return null;
-
-        if (DataManager.Instance.CharacterIconDatabase.TryGetCharBackImage(
-            characterId,
-            out Sprite charBackImage
-        ))
-        {
-            return charBackImage;
+            return sideSprite;
         }
 
         return null;
@@ -430,7 +381,6 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterH
     {
         isCommandSelected = selected;
         ResolveCommandSelectedHighlightReferences();
-        ResolveBackImageReference();
 
         if (commandSelectedHighlightObject != null)
         {
@@ -456,146 +406,45 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterH
             : defaultLocalScale;
     }
 
-    private void ResolveBackAnimationReferences()
-    {
-        if (backRect != null)
-            return;
-
-        if (!autoFindBackRect)
-            return;
-
-        GameObject backObject =
-            FindChildGameObjectByName(backObjectName);
-
-        if (backObject != null)
-        {
-            backRect = backObject.GetComponent<RectTransform>();
-        }
-    }
-
-    private void ResolveBackImageReference()
-    {
-        if (backImage != null)
-            return;
-
-        if (!autoFindBackImage)
-            return;
-
-        ResolveBackAnimationReferences();
-
-        if (backRect != null)
-            backImage = backRect.GetComponent<Image>();
-    }
-
     private void ApplyBackVisualState()
     {
-        ResolveBackImageReference();
+        ResolveBackHoverGraphic();
 
-        bool showBack = isCommandSelected || isPointerHovering;
-
-        if (backImage != null)
-        {
-            if (showBack)
-                backImage.enabled = backImage.sprite != null;
-
-            backImage.color = isCommandSelected
-                ? selectedBackColor
-                : hoverBackColor;
-        }
-
-        PlayBackSelectionAnimation(showBack);
-    }
-
-    private void PlayBackSelectionAnimation(bool selected)
-    {
-        ResolveBackAnimationReferences();
-
-        if (backRect == null)
+        if (backHoverGraphic == null)
             return;
 
-        if (backPositionAnimationRoutine != null)
+        if (isCommandSelected)
         {
-            StopCoroutine(backPositionAnimationRoutine);
-            backPositionAnimationRoutine = null;
+            backHoverGraphic.color = selectedBackColor;
         }
-
-        Vector2 targetPosition = selected
-            ? selectedBackAnchoredPosition
-            : normalBackAnchoredPosition;
-
-        if (backAnimationDuration <= 0f ||
-            !isActiveAndEnabled)
+        else if (isPointerHovering)
         {
-            backRect.anchoredPosition = targetPosition;
+            backHoverGraphic.color = hoverBackColor;
+        }
+        else
+        {
+            backHoverGraphic.color = normalBackColor;
+        }
+    }
 
-            if (!selected && backImage != null)
-                backImage.enabled = false;
-
+    private void ResolveBackHoverGraphic()
+    {
+        if (backHoverObject == null)
+        {
+            backHoverGraphic = null;
             return;
         }
 
-        backPositionAnimationRoutine = StartCoroutine(
-            AnimateBackPositionRoutine(
-                backRect.anchoredPosition,
-                targetPosition,
-                !selected
-            )
-        );
-    }
-
-    private IEnumerator AnimateBackPositionRoutine(
-        Vector2 startPosition,
-        Vector2 targetPosition,
-        bool hideBackWhenFinished
-    )
-    {
-        float elapsed = 0f;
-        float duration = Mathf.Max(
-            0.0001f,
-            backAnimationDuration
-        );
-
-        while (elapsed < duration)
+        if (backHoverGraphic != null &&
+            backHoverGraphic.gameObject == backHoverObject)
         {
-            float deltaTime = useUnscaledTimeForBackAnimation
-                ? Time.unscaledDeltaTime
-                : Time.deltaTime;
-
-            elapsed += deltaTime;
-
-            float normalizedTime =
-                Mathf.Clamp01(elapsed / duration);
-
-            float smoothTime =
-                normalizedTime *
-                normalizedTime *
-                (3f - 2f * normalizedTime);
-
-            if (backRect != null)
-            {
-                backRect.anchoredPosition =
-                    Vector2.LerpUnclamped(
-                        startPosition,
-                        targetPosition,
-                        smoothTime
-                    );
-            }
-
-            yield return null;
+            return;
         }
 
-        if (backRect != null)
-            backRect.anchoredPosition = targetPosition;
+        backHoverGraphic = backHoverObject.GetComponent<Graphic>();
 
-        if (hideBackWhenFinished &&
-            !isCommandSelected &&
-            !isPointerHovering &&
-            backImage != null)
-        {
-            backImage.enabled = false;
-        }
-
-        backPositionAnimationRoutine = null;
+        if (backHoverGraphic == null)
+            backHoverGraphic = backHoverObject.GetComponentInChildren<Graphic>(true);
     }
 
     private void ApplyKeyboardNumberVisual()
@@ -836,13 +685,8 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterH
             portraitImage.enabled = false;
         }
 
-        ResolveBackImageReference();
 
-        if (backImage != null)
-        {
-            backImage.sprite = null;
-            backImage.enabled = false;
-        }
+        ApplyBackVisualState();
 
         RefreshBar(hpFill, hpValueText, 0, 1);
         RefreshCost(0, 0);
@@ -936,7 +780,7 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterH
         if (IsMenuPanelOpen())
             return;
 
-        if (boundRuntime == null || isCommandSelected)
+        if (boundRuntime == null)
             return;
 
         SetHoverVisualState(true);

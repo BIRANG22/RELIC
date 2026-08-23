@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Relic.Gameplay.Data
 {
@@ -77,9 +78,9 @@ namespace Relic.Gameplay.Data
             return portrait != null;
         }
 
-        public bool TryGetCharBackImage(string characterId, out Sprite charBackImage)
+        public bool TryGetSideImage(string characterId, out Sprite sideImage)
         {
-            charBackImage = null;
+            sideImage = null;
 
             if (map == null)
                 Initialize();
@@ -87,8 +88,14 @@ namespace Relic.Gameplay.Data
             if (!map.TryGetValue(characterId, out var entry))
                 return false;
 
-            charBackImage = entry.CharBackImage;
-            return charBackImage != null;
+            sideImage = entry.SideImage;
+            return sideImage != null;
+        }
+
+        [Obsolete("Use TryGetSideImage instead.")]
+        public bool TryGetCharBackImage(string characterId, out Sprite charBackImage)
+        {
+            return TryGetSideImage(characterId, out charBackImage);
         }
 
         public bool TryGetMark(string characterId, out Sprite mark)
@@ -127,7 +134,8 @@ namespace Relic.Gameplay.Data
         public Sprite Icon;
         public Sprite Portrait;
         public Sprite TimelineIcon;
-        public Sprite CharBackImage;
+        [FormerlySerializedAs("CharBackImage")]
+        public Sprite SideImage;
         public Sprite Mark;
         public Sprite Mark2;
     }
