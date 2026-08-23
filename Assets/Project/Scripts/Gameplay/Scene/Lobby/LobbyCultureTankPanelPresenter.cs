@@ -330,8 +330,32 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         if (storageContentRoot == null || storageSlotPrefab == null)
             return;
 
+        // Content 아래에 미리 배치한 StorageSlotUI_0~35를 우선 재사용합니다.
+        // 기본 36칸이 이미 존재하면 새 슬롯을 만들지 않고, 36종류를 초과할 때만 추가 생성합니다.
+        RegisterExistingStorageSlots();
+
         int targetCount = Mathf.Max(StorageMinimumSlotCount, storageSlots.Count);
         EnsureStorageSlotCount(targetCount);
+    }
+
+    private void RegisterExistingStorageSlots()
+    {
+        if (storageContentRoot == null)
+            return;
+
+        storageSlots.RemoveAll(slot => slot == null);
+        if (storageSlots.Count > 0)
+            return;
+
+        for (int i = 0; i < storageContentRoot.childCount; i++)
+        {
+            Transform child = storageContentRoot.GetChild(i);
+            BattleBagItemSlotUI slot = child.GetComponent<BattleBagItemSlotUI>();
+            if (slot == null)
+                continue;
+
+            storageSlots.Add(slot);
+        }
     }
 
     private void EnsureStorageSlotCount(int targetCount)
