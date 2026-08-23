@@ -32,16 +32,23 @@ public static class DebugBattleSceneBootstrap
         BattleEffectDebugWindow existingWindow = Object.FindFirstObjectByType<BattleEffectDebugWindow>(
             FindObjectsInactive.Include);
 
-        if (existingWindow != null)
-            return;
+        GameObject windowObject = existingWindow != null
+            ? existingWindow.gameObject
+            : new GameObject(DebugWindowObjectName);
 
-        GameObject windowObject = new(DebugWindowObjectName);
-        windowObject.AddComponent<BattleEffectDebugWindow>();
-        windowObject.AddComponent<BattleDebugKillAllMonsters>();
-        windowObject.AddComponent<DebugBattleTargetController>();
-        windowObject.AddComponent<DebugBattleSceneRunner>();
+        if (existingWindow == null)
+            windowObject.AddComponent<BattleEffectDebugWindow>();
 
-        Debug.Log("[DebugBattleSceneBootstrap] Debug battle window created.");
+        if (windowObject.GetComponent<BattleDebugKillAllMonsters>() == null)
+            windowObject.AddComponent<BattleDebugKillAllMonsters>();
+
+        if (windowObject.GetComponent<DebugBattleTargetController>() == null)
+            windowObject.AddComponent<DebugBattleTargetController>();
+
+        if (windowObject.GetComponent<DebugBattleSceneRunner>() == null)
+            windowObject.AddComponent<DebugBattleSceneRunner>();
+
+        Debug.Log("[DebugBattleSceneBootstrap] Debug battle tools ensured.");
     }
 }
 

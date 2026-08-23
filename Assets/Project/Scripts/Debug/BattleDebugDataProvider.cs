@@ -5,10 +5,10 @@ using Relic.Gameplay.Data;
 public class BattleDebugDataProvider : MonoBehaviour
 {
     [Header("Debug Characters")]
-    [SerializeField] private string[] debugCharacterIds = new string[3];
+    [SerializeField] private string[] debugCharacterIds = new string[DebugBattlePartySetup.DefaultDebugPartySize];
 
     [Header("Debug Grid Indices")]
-    [SerializeField] private int[] debugGridIndices = { 0, 1, 2 };
+    [SerializeField] private int[] debugGridIndices = { 12 };
 
     [Header("Debug Skills")]
     [SerializeField] private string defaultMoveSkillId = "S_Move_1";
@@ -36,9 +36,7 @@ public class BattleDebugDataProvider : MonoBehaviour
             return;
         }
 
-        dm.PartyRuntimeStore.Clear();
-
-        for (int i = 0; i < debugCharacterIds.Length && i < 3; i++)
+        for (int i = 0; i < debugCharacterIds.Length && i < DebugBattlePartySetup.DefaultDebugPartySize; i++)
         {
             string characterId = debugCharacterIds[i];
 
@@ -50,42 +48,34 @@ public class BattleDebugDataProvider : MonoBehaviour
             if (debugGridIndices != null && i < debugGridIndices.Length)
                 gridIndex = debugGridIndices[i];
 
-            CharacterRuntimeData runtimeData = new CharacterRuntimeData
-            {
-                CharacterId = characterId,
-                Level = 1,
-                Exp = 0,
+            if (!DebugBattlePartySetup.TryCreateSingleCharacterParty(dm, characterId, gridIndex))
+                Debug.LogError($"[BattleDebugDataProvider] Failed to create debug character: {characterId}");
+            else
+                Debug.Log($"[BattleDebugDataProvider] Slot {i}: {characterId} / Grid {gridIndex}");
 
-                CurrentHP = 100,
-                CurrentCost = 100,
-                CurrentResource = 0,
-                CurrentMoveLevel = 0,
-
-                IsUnlocked = true,
-
-                MoveSkillId = defaultMoveSkillId,
-                PassiveSkillId = defaultPassiveSkillId,
-                UniqueSkillId = defaultUniqueSkillId,
-                AbilitySkillId = defaultAbilitySkillId,
-
-                EquippedSkillIds = new string[4]
-                {
-                    defaultUniqueSkillId,
-                    defaultAbilitySkillId,
-                    defaultFreeSkillId1,
-                    defaultFreeSkillId2
-                },
-
-                EquippedRuneIds = new string[12],
-            };
-
-            dm.CharacterRuntimeStore.AddOrUpdate(runtimeData);
-            dm.PartyRuntimeStore.SetSlot(i, characterId, gridIndex);
-
-            Debug.Log($"[BattleDebugDataProvider] Slot {i}: {characterId} / Grid {gridIndex}");
+            ApplySkillOverrides(BattleEffectDebugTool.GetPartyRuntime(0));
+            break;
         }
 
         DebugBattlePartySetup.EnsureSkillVfxTestSkill(dm);
+    }
+
+    private void ApplySkillOverrides(CharacterRuntimeData runtimeData)
+    {
+        if (runtimeData == null)
+            return;
+
+        runtimeData.MoveSkillId = defaultMoveSkillId;
+        runtimeData.PassiveSkillId = defaultPassiveSkillId;
+        runtimeData.UniqueSkillId = defaultUniqueSkillId;
+        runtimeData.AbilitySkillId = defaultAbilitySkillId;
+        runtimeData.EquippedSkillIds = new string[4]
+        {
+            defaultUniqueSkillId,
+            defaultAbilitySkillId,
+            defaultFreeSkillId1,
+            defaultFreeSkillId2
+        };
     }
 
     private bool HasAnyDebugCharacterId()

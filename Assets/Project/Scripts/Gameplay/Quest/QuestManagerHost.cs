@@ -7,7 +7,11 @@ public sealed class QuestManagerHost : Singleton<QuestManagerHost>
 {
     [SerializeField] private QuestPanelPresenter questPanel;
 
+    private bool questPanelSceneVisible = true;
+
     public QuestManager Manager { get; private set; } = new();
+
+    public bool QuestPanelSceneVisible => questPanelSceneVisible;
 
     protected override void Awake()
     {
@@ -49,7 +53,13 @@ public sealed class QuestManagerHost : Singleton<QuestManagerHost>
             return;
 
         QuestDisplayState state = Manager.GetCurrentDisplayState();
-        questPanel.Show(state.Text, state.Visible);
+        questPanel.Show(state.Text, state.Visible && questPanelSceneVisible);
+    }
+
+    public void SetQuestPanelSceneVisible(bool visible)
+    {
+        questPanelSceneVisible = visible;
+        RefreshPanel();
     }
 
     private void EnsureQuestPanel()

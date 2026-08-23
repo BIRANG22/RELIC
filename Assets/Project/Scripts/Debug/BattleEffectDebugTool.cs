@@ -27,92 +27,13 @@ public sealed class BattleEffectDebugPreset
 
 public static class BattleEffectDebugTool
 {
-    private static readonly BattleEffectDebugPreset[] DefaultPresets =
-    {
-        Preset("P01_MaxHP", "P01 최대 체력 +5", "Relic_P_01"),
-        Preset("P02_MaxCost", "P02 최대 코스트 +1", "Relic_P_02"),
-        Preset("P03_CostRecovery", "P03 코스트 회복 +1", "Relic_P_03"),
-        Preset("P04_HPDownCostUp", "P04 HP -8 / 코스트 +2", "Relic_P_04"),
-        Preset("P05_HPDownRecoveryUp", "P05 HP -5 / 회복 +1", "Relic_P_05"),
-        Preset("P06_AttackCostDamage", "P06 공격 코스트/피해", "Relic_P_06"),
-        Preset("P07_AttackDamageCount", "P07 공격 피해/횟수", "Relic_P_07"),
-        Preset("P08_DebuffCostValue", "P08 디버프 코스트/수치", "Relic_P_08"),
-        Preset("P09_Slot1FirstCost", "P09 1번 첫 스킬 코스트", "Relic_P_09"),
-        Preset("P10_Slot1AttackValue", "P10 1번 공격 수치", "Relic_P_10"),
-        Preset("P11_Slot1KillFocus", "P11 1번 공격 처치 집중", "Relic_P_11"),
-        Preset("P12_Slot1BuffValue", "P12 1번 버프 수치", "Relic_P_12"),
-        Preset("P13_Slot5Cost", "P13 5번 슬롯 코스트", "Relic_P_13"),
-        Preset("P14_Slot5AttackValue", "P14 5번 공격 수치", "Relic_P_14"),
-        Preset("P15_Slot5KillRefund", "P15 5번 처치 코스트 반환", "Relic_P_15"),
-        Preset("P16_Slot5Pierce", "P16 5번 공격 관통", "Relic_P_16"),
-        Preset("P17_BlockSlot12", "P17 1,2번 슬롯 금지", "Relic_P_17"),
-        Preset("P18_OneSlotMoveFree", "P18 한 슬롯 / 이동 무료", "Relic_P_18"),
-        Preset("P19_ArmorUsedSlots", "P19 등록 슬롯 방어도", "Relic_P_19"),
-        Preset("P20_ArmorEmptySlots", "P20 빈 슬롯 방어도", "Relic_P_20"),
-        Preset("P21_Empty123Smite", "P21 1,2,3 빈 슬롯 강타", "Relic_P_21"),
-        Preset("P22_Empty345Boost", "P22 3,4,5 빈 슬롯 증폭", "Relic_P_22"),
-        Preset("P23_OneAttackBoost", "P23 공격 하나 증폭", "Relic_P_23"),
-        Preset("P24_ThreeAttackBoost", "P24 공격 3개 증폭", "Relic_P_24"),
-        Preset("P25_Turn1EnemyDebuff", "P25 1턴 적 취약/약화", "Relic_P_25"),
-        Preset("P26_Turn1DotDebuff", "P26 1턴 적 중독/출혈", "Relic_P_26"),
-        Preset("P27_Turn2Armor", "P27 2턴 방어도", "Relic_P_27"),
-        Preset("P28_Turn2ChargeFocus", "P28 2턴 충전/집중", "Relic_P_28"),
-        Preset("P29_Turn3SwiftBoost", "P29 3턴 신속/증폭", "Relic_P_29"),
-        Preset("P30_Turn3LifestealSmite", "P30 3턴 흡혈/강타", "Relic_P_30"),
-        Preset("P31_NoMoveBuffCost", "P31 이동 없음 버프 코스트", "Relic_P_31"),
-        Preset("P32_AfterMoveDebuffCost", "P32 이동 후 디버프 코스트", "Relic_P_32"),
-        Preset("P33_AfterMoveDebuffValue", "P33 이동 후 디버프 수치", "Relic_P_33"),
-        Preset("P34_AfterMoveAttackValue", "P34 이동 코스트 비례 공격", "Relic_P_34"),
-        Preset("P35_ForcedMoveImmune", "P35 넉백/그랩 면역", "Relic_P_35"),
-        Preset("P36_CrashImmune", "P36 충돌 피해 면역", "Relic_P_36"),
-        Preset("P37_GridEffectImmune", "P37 그리드 효과 면역", "Relic_P_37"),
-        Preset("P38_OverhealArmor", "P38 최대체력 회복 방어도", "Relic_P_38"),
-        Preset("P39_NoDamageSmite", "P39 피해 없음 다음 턴 강타", "Relic_P_39"),
-        Preset("P40_NoHealArmorUp", "P40 회복 불가 / 방어도 증가", "Relic_P_40"),
-        Preset("P41_Collision", "P41 충돌 추가 피해", "Relic_P_41"),
-        Preset("P42_CollisionCharge", "P42 충돌 충전", "Relic_P_42"),
-        Preset("P43_CollisionKillFocus", "P43 충돌 처치 집중", "Relic_P_43"),
-        Preset("P44_LowHpCost", "P44 낮은 HP 코스트", "Relic_P_44"),
-        Preset("P45_LowHpAttack", "P45 낮은 HP 공격 피해", "Relic_P_45"),
-        Preset("P46_LowHpReduction", "P46 낮은 HP 피해 감소", "Relic_P_46"),
-        Preset("P47_HighHpRecovery", "P47 높은 HP 회복량", "Relic_P_47"),
-        Preset("P48_HighHpBuffCost", "P48 높은 HP 버프 코스트", "Relic_P_48"),
-        Preset("P49_PoisonedDamage", "P49 중독 대상 추가 피해", "Relic_P_49"),
-        Preset("P50_BleedingDamage", "P50 출혈 대상 추가 피해", "Relic_P_50"),
-        Preset("P51_VulnerableArmor", "P51 취약 대상 방어도", "Relic_P_51"),
-        Preset("P52_WeakenArmor", "P52 약화 대상 방어도", "Relic_P_52"),
-        Preset("P53_ApplyPoison", "P53 비중독 대상 중독", "Relic_P_53"),
-        Preset("P54_BlockSelfBuff", "P54 자신 버프 차단", "Relic_P_54"),
-        Preset("P55_FullHpBuffValue", "P55 최대 HP 버프 수치", "Relic_P_55"),
-        Preset("P56_AllyBuffCharge", "P56 아군 버프 충전", "Relic_P_56"),
-        Preset("P57_ResourceOverflowCost", "P57 고유자원 초과 코스트", "Relic_P_57"),
-        Preset("P58_ResourceMaxCostDown", "P58 고유자원 최대 코스트", "Relic_P_58"),
-        Preset("P59_UniqueKillFocus", "P59 고유스킬 처치 집중", "Relic_P_59"),
-        Preset("P60_UniqueValue", "P60 고유스킬 수치", "Relic_P_60"),
-        Preset("P61_UniqueCount", "P61 고유스킬 횟수", "Relic_P_61"),
-        Preset("P62_ZeroCostEndCharge", "P62 코스트 0 종료 충전", "Relic_P_62"),
-        Preset("P63_MissCharge", "P63 미적중 충전", "Relic_P_63"),
-        Preset("P64_FullHpTargetDamage", "P64 최대 HP 대상 피해", "Relic_P_64"),
-        Preset("P65_RestHeal", "P65 휴식 회복량", "Relic_P_65"),
-        Preset("P66_ShopDiscount", "P66 상점 할인", "Relic_P_66"),
-        Preset("P67_RewardCurrency", "P67 전투 보상 재화", "Relic_P_67"),
-        Preset("P68_BattleEndHeal", "P68 전투 종료 회복", "Relic_P_68"),
-        Preset("A01_DamageBoost", "A01 이번 턴 피해 증가", "Compound_01"),
-        Preset("A02_DamageReduction", "A02 이번 턴 피해 감소", "Compound_02"),
-        Preset("A03_RecoverResource", "A03 고유자원 최대 회복", "Compound_03"),
-        Preset("A04_RecoverCost", "A04 코스트 최대 회복", "Compound_04"),
-        Preset("A05_GrantSwift", "A05 신속 부여", "Compound_05"),
-        Preset("A06_Cleanse", "A06 디버프 제거", "Compound_06"),
-        Preset("A07_MoveToGrid", "A07 빈 그리드 이동", "Compound_07"),
-        Preset("A08_SwapAlly", "A08 아군 위치 교환", "Compound_08"),
-        Preset("A09_PoisonGrid", "A09 독 장판", "Compound_09"),
-        Preset("A10_ThornGrid", "A10 가시 장판", "Compound_10"),
-        Preset("A11_TargetDamageDown", "A11 적 주는 피해 감소", "Compound_11"),
-        Preset("A12_Obstacle", "A12 장애물 생성", "Compound_12"),
-        Preset("A13_RemoveGrid", "A13 그리드 효과 제거", "Compound_13"),
-        Preset("A14_Dummy", "A14 허수아비", "Compound_14"),
-        Preset("A15_ExplosiveDoll", "A15 폭발 인형", "Compound_15")
-    };
+    public const int SkillDisplaySlotCount = 4;
+    public const int RuneSlotCount = 12;
+    public const int PassiveRelicSlotCount = 6;
+    public const int BattleGridCellCount = 35;
+
+    private const int SkillRuntimeSlotCount = 4;
+    private static readonly BattleEffectDebugPreset[] DefaultPresets = Array.Empty<BattleEffectDebugPreset>();
 
     public static IReadOnlyList<BattleEffectDebugPreset> GetDefaultPresets()
     {
@@ -126,12 +47,7 @@ public static class BattleEffectDebugTool
 
         EquipOnlyRelics(runtime, preset.RelicIds);
         EquipOnlyRunes(runtime, preset.RuneIds);
-
-        runtime.ActiveRelicUses ??= new List<ActiveRelicUseRuntimeData>();
-        runtime.ActiveRelicUses.Clear();
-
-        runtime.AppliedBattleEquipmentEffectIds ??= new List<string>();
-        runtime.AppliedBattleEquipmentEffectIds.Clear();
+        ClearEquipmentEffectState(runtime);
     }
 
     public static void EquipOnlyRelics(CharacterRuntimeData runtime, IReadOnlyList<string> relicIds)
@@ -139,30 +55,24 @@ public static class BattleEffectDebugTool
         if (runtime == null)
             return;
 
-        runtime.EquippedRelicIds = new string[7];
+        runtime.EquippedRelicIds = new string[ActiveRelicRuntimeUtility.EquippedRelicSlotCount];
 
         if (relicIds == null)
             return;
 
-        int passiveSlotIndex = 1;
+        int passiveSlotIndex = 0;
 
         for (int i = 0; i < relicIds.Count; i++)
         {
             string relicId = NormalizeId(relicIds[i]);
 
-            if (string.IsNullOrWhiteSpace(relicId))
+            if (string.IsNullOrWhiteSpace(relicId) || IsCompoundId(relicId))
                 continue;
 
-            if (IsActiveRelicId(relicId))
-            {
-                runtime.EquippedRelicIds[0] = relicId;
-                continue;
-            }
-
-            if (passiveSlotIndex >= runtime.EquippedRelicIds.Length)
+            if (passiveSlotIndex >= PassiveRelicSlotCount)
                 break;
 
-            runtime.EquippedRelicIds[passiveSlotIndex] = relicId;
+            SetPassiveRelicSlot(runtime, passiveSlotIndex, relicId);
             passiveSlotIndex++;
         }
     }
@@ -172,7 +82,7 @@ public static class BattleEffectDebugTool
         if (runtime == null)
             return;
 
-        runtime.EquippedRuneIds = new string[12];
+        runtime.EquippedRuneIds = new string[RuneSlotCount];
 
         if (runeIds == null)
             return;
@@ -189,6 +99,166 @@ public static class BattleEffectDebugTool
             runtime.EquippedRuneIds[slotIndex] = runeId;
             slotIndex++;
         }
+    }
+
+    public static bool SetSkillDisplaySlot(
+        CharacterRuntimeData runtime,
+        int displaySlotIndex,
+        string skillId)
+    {
+        if (runtime == null ||
+            displaySlotIndex < 0 ||
+            displaySlotIndex >= SkillDisplaySlotCount)
+        {
+            return false;
+        }
+
+        EnsureSkillSlots(runtime);
+        string normalizedSkillId = NormalizeId(skillId);
+
+        switch (displaySlotIndex)
+        {
+            case 0:
+                runtime.AbilitySkillId = normalizedSkillId;
+                runtime.EquippedSkillIds[1] = normalizedSkillId;
+                break;
+
+            case 1:
+                runtime.EquippedSkillIds[2] = normalizedSkillId;
+                break;
+
+            case 2:
+                runtime.EquippedSkillIds[3] = normalizedSkillId;
+                break;
+
+            case 3:
+                runtime.UniqueSkillId = normalizedSkillId;
+                runtime.EquippedSkillIds[0] = normalizedSkillId;
+                break;
+        }
+
+        return true;
+    }
+
+    public static string GetSkillDisplaySlotId(CharacterRuntimeData runtime, int displaySlotIndex)
+    {
+        if (runtime == null)
+            return string.Empty;
+
+        return displaySlotIndex switch
+        {
+            0 => runtime.AbilitySkillId ?? string.Empty,
+            1 => GetRuntimeSkillSlotId(runtime, 2),
+            2 => GetRuntimeSkillSlotId(runtime, 3),
+            3 => runtime.UniqueSkillId ?? string.Empty,
+            _ => string.Empty
+        };
+    }
+
+    public static bool SetPassiveRelicSlot(
+        CharacterRuntimeData runtime,
+        int passiveSlotIndex,
+        string relicId)
+    {
+        if (runtime == null ||
+            passiveSlotIndex < 0 ||
+            passiveSlotIndex >= PassiveRelicSlotCount)
+        {
+            return false;
+        }
+
+        string normalizedRelicId = NormalizeId(relicId);
+
+        if (!string.IsNullOrWhiteSpace(normalizedRelicId) && IsCompoundId(normalizedRelicId))
+            return false;
+
+        ActiveRelicRuntimeUtility.EnsureRelicSlots(runtime);
+        runtime.EquippedRelicIds[passiveSlotIndex + 1] = normalizedRelicId;
+        ClearEquipmentEffectState(runtime);
+        return true;
+    }
+
+    public static string GetPassiveRelicSlotId(CharacterRuntimeData runtime, int passiveSlotIndex)
+    {
+        if (runtime == null ||
+            passiveSlotIndex < 0 ||
+            passiveSlotIndex >= PassiveRelicSlotCount)
+        {
+            return string.Empty;
+        }
+
+        ActiveRelicRuntimeUtility.EnsureRelicSlots(runtime);
+        return runtime.EquippedRelicIds[passiveSlotIndex + 1] ?? string.Empty;
+    }
+
+    public static bool SetCompoundSlot(CharacterRuntimeData runtime, string compoundId)
+    {
+        if (runtime == null)
+            return false;
+
+        string normalizedCompoundId = NormalizeId(compoundId);
+        ActiveRelicRuntimeUtility.EnsureRelicSlots(runtime);
+        runtime.EquippedRelicIds[ActiveRelicRuntimeUtility.ActiveRelicSlotIndex] = normalizedCompoundId;
+        ClearEquipmentEffectState(runtime);
+        return true;
+    }
+
+    public static string GetCompoundSlotId(CharacterRuntimeData runtime)
+    {
+        return ActiveRelicRuntimeUtility.GetActiveRelicId(runtime) ?? string.Empty;
+    }
+
+    public static bool SetRuneSlot(CharacterRuntimeData runtime, int slotIndex, string runeId)
+    {
+        if (runtime == null || slotIndex < 0 || slotIndex >= RuneSlotCount)
+            return false;
+
+        EnsureRuneSlots(runtime);
+        runtime.EquippedRuneIds[slotIndex] = NormalizeId(runeId);
+        ClearEquipmentEffectState(runtime);
+        return true;
+    }
+
+    public static string GetRuneSlotId(CharacterRuntimeData runtime, int slotIndex)
+    {
+        if (runtime == null || slotIndex < 0 || slotIndex >= RuneSlotCount)
+            return string.Empty;
+
+        EnsureRuneSlots(runtime);
+        return runtime.EquippedRuneIds[slotIndex] ?? string.Empty;
+    }
+
+    public static void AdjustCurrentHP(CharacterRuntimeData runtime, int delta)
+    {
+        if (runtime == null)
+            return;
+
+        int maxHp = Mathf.Max(1, runtime.MaxHP);
+        runtime.CurrentHP = Mathf.Clamp(runtime.CurrentHP + delta, 1, maxHp);
+    }
+
+    public static void AdjustCurrentCost(CharacterRuntimeData runtime, int delta)
+    {
+        if (runtime == null)
+            return;
+
+        SetCurrentCost(runtime, runtime.CurrentCost + delta);
+    }
+
+    public static void AdjustCurrentShield(CharacterRuntimeData runtime, int delta)
+    {
+        if (runtime == null)
+            return;
+
+        runtime.CurrentShield = Mathf.Max(0, runtime.CurrentShield + delta);
+    }
+
+    public static void AdjustCostRecovery(CharacterRuntimeData runtime, int delta)
+    {
+        if (runtime == null)
+            return;
+
+        runtime.CostRecovery = Mathf.Max(0, runtime.CostRecovery + delta);
     }
 
     public static void SetHpPercent(CharacterRuntimeData runtime, float percent)
@@ -350,6 +420,24 @@ public static class BattleEffectDebugTool
         loader.RequestLoadBattle();
     }
 
+    public static bool TryApplySingleCharacterParty(string characterId, int gridIndex)
+    {
+        if (DataManager.Instance == null)
+            return false;
+
+        bool configured = DebugBattlePartySetup.TryCreateSingleCharacterParty(
+            DataManager.Instance,
+            characterId,
+            gridIndex);
+
+        if (!configured)
+            return false;
+
+        ReloadBattleRoom();
+        RefreshBattle();
+        return true;
+    }
+
     public static CharacterRuntimeData GetPartyRuntime(int partyIndex)
     {
         if (DataManager.Instance == null ||
@@ -389,25 +477,89 @@ public static class BattleEffectDebugTool
         return result;
     }
 
-    private static BattleEffectDebugPreset Preset(string key, string label, params string[] relicIds)
-    {
-        return new BattleEffectDebugPreset(key, label, relicIds, null);
-    }
-
-    private static bool IsActiveRelicId(string relicId)
+    public static bool IsCompoundId(string relicId)
     {
         if (string.IsNullOrWhiteSpace(relicId))
             return false;
 
+        string normalizedRelicId = relicId.Trim();
+
         if (DataManager.Instance != null &&
             DataManager.Instance.CompoundDatabase != null &&
-            DataManager.Instance.CompoundDatabase.TryGet(relicId, out CompoundData compound) &&
+            DataManager.Instance.CompoundDatabase.TryGet(normalizedRelicId, out CompoundData compound) &&
             compound != null)
         {
             return true;
         }
 
-        return relicId.StartsWith("Compound_", StringComparison.OrdinalIgnoreCase);
+        return normalizedRelicId.StartsWith("Compound_", StringComparison.OrdinalIgnoreCase) ||
+               normalizedRelicId.StartsWith("Relic_A_", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string GetRuntimeSkillSlotId(CharacterRuntimeData runtime, int equippedIndex)
+    {
+        EnsureSkillSlots(runtime);
+        return runtime.EquippedSkillIds[equippedIndex] ?? string.Empty;
+    }
+
+    private static void EnsureSkillSlots(CharacterRuntimeData runtime)
+    {
+        if (runtime == null)
+            return;
+
+        if (runtime.EquippedSkillIds != null &&
+            runtime.EquippedSkillIds.Length == SkillRuntimeSlotCount)
+        {
+            return;
+        }
+
+        string[] normalized = new string[SkillRuntimeSlotCount];
+
+        if (runtime.EquippedSkillIds != null)
+        {
+            int count = Mathf.Min(runtime.EquippedSkillIds.Length, normalized.Length);
+
+            for (int i = 0; i < count; i++)
+                normalized[i] = runtime.EquippedSkillIds[i];
+        }
+
+        runtime.EquippedSkillIds = normalized;
+    }
+
+    private static void EnsureRuneSlots(CharacterRuntimeData runtime)
+    {
+        if (runtime == null)
+            return;
+
+        if (runtime.EquippedRuneIds != null &&
+            runtime.EquippedRuneIds.Length == RuneSlotCount)
+        {
+            return;
+        }
+
+        string[] normalized = new string[RuneSlotCount];
+
+        if (runtime.EquippedRuneIds != null)
+        {
+            int count = Mathf.Min(runtime.EquippedRuneIds.Length, normalized.Length);
+
+            for (int i = 0; i < count; i++)
+                normalized[i] = runtime.EquippedRuneIds[i];
+        }
+
+        runtime.EquippedRuneIds = normalized;
+    }
+
+    private static void ClearEquipmentEffectState(CharacterRuntimeData runtime)
+    {
+        if (runtime == null)
+            return;
+
+        runtime.ActiveRelicUses ??= new List<ActiveRelicUseRuntimeData>();
+        runtime.ActiveRelicUses.Clear();
+
+        runtime.AppliedBattleEquipmentEffectIds ??= new List<string>();
+        runtime.AppliedBattleEquipmentEffectIds.Clear();
     }
 
     private static string NormalizeId(string id)

@@ -5,7 +5,8 @@ using UnityEngine;
 
 public static class DebugBattlePartySetup
 {
-    private const int DebugPartySize = 3;
+    public const int DefaultDebugPartySize = 1;
+
     private const string DefaultMoveSkillId = "S_Move_1";
     private const string SkillVfxTestCharacterId = "Char_03";
     private const string SkillVfxTestSkillId = "S_Ability_11";
@@ -43,7 +44,7 @@ public static class DebugBattlePartySetup
                                 character.IsDefaultProvided &&
                                 !string.IsNullOrWhiteSpace(character.CharacterId))
             .OrderBy(character => character.CharacterId, StringComparer.Ordinal)
-            .Take(DebugPartySize)
+            .Take(DefaultDebugPartySize)
             .ToArray();
 
         characterStore.Clear();
@@ -58,7 +59,7 @@ public static class DebugBattlePartySetup
         for (int slotIndex = 0; slotIndex < defaultCharacters.Length; slotIndex++)
         {
             CharacterMasterData master = defaultCharacters[slotIndex];
-            CharacterRuntimeData runtime = CreateRuntimeData(master, relicDatabase);
+            CharacterRuntimeData runtime = CreateDebugRuntime(master, slotIndex, relicDatabase);
 
             characterStore.AddOrUpdate(runtime);
 
@@ -74,6 +75,67 @@ public static class DebugBattlePartySetup
         EnsureSkillVfxTestSkill(characterStore);
 
         Debug.Log($"[DebugBattlePartySetup] Created default debug party with {defaultCharacters.Length} character(s).");
+        return true;
+    }
+
+    public static bool TryCreateSingleCharacterParty(
+        DataManager dataManager,
+        string characterId,
+        int gridIndex)
+    {
+        if (dataManager == null)
+        {
+            Debug.LogError("[DebugBattlePartySetup] DataManager is missing.");
+            return false;
+        }
+
+        return TryCreateSingleCharacterParty(
+            dataManager.CharacterDatabase,
+            dataManager.CharacterRuntimeStore,
+            dataManager.PartyRuntimeStore,
+            dataManager.RelicDatabase,
+            characterId,
+            gridIndex);
+    }
+
+    public static bool TryCreateSingleCharacterParty(
+        CharacterDatabase characterDatabase,
+        CharacterRuntimeStore characterStore,
+        PartyRuntimeStore partyStore,
+        RelicDatabase relicDatabase,
+        string characterId,
+        int gridIndex)
+    {
+        if (characterDatabase == null || characterStore == null || partyStore == null)
+        {
+            Debug.LogError("[DebugBattlePartySetup] Required runtime stores are missing.");
+            return false;
+        }
+
+        string normalizedCharacterId = string.IsNullOrWhiteSpace(characterId) ? string.Empty : characterId.Trim();
+        if (string.IsNullOrWhiteSpace(normalizedCharacterId) ||
+            !characterDatabase.TryGet(normalizedCharacterId, out CharacterMasterData master) ||
+            master == null)
+        {
+            Debug.LogWarning($"[DebugBattlePartySetup] Character not found: {normalizedCharacterId}");
+            return false;
+        }
+
+        characterStore.Clear();
+        partyStore.Clear();
+
+        CharacterRuntimeData runtime = CreateDebugRuntime(master, gridIndex, relicDatabase);
+        characterStore.AddOrUpdate(runtime);
+
+        if (!partyStore.SetSlot(0, master.CharacterId, Mathf.Clamp(gridIndex, 0, 34)))
+        {
+            characterStore.Clear();
+            partyStore.Clear();
+            Debug.LogError("[DebugBattlePartySetup] Failed to configure debug party slot 0.");
+            return false;
+        }
+
+        EnsureSkillVfxTestSkill(characterStore);
         return true;
     }
 
@@ -110,8 +172,14 @@ public static class DebugBattlePartySetup
         return true;
     }
 
-    private static CharacterRuntimeData CreateRuntimeData(
+    public static CharacterRuntimeData CreateDebugRuntime(CharacterMasterData master, int gridIndex)
+    {
+        return CreateDebugRuntime(master, gridIndex, null);
+    }
+
+    public static CharacterRuntimeData CreateDebugRuntime(
         CharacterMasterData master,
+        int gridIndex,
         RelicDatabase relicDatabase)
     {
         CharacterRuntimeData runtime = new()
