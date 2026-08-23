@@ -117,14 +117,30 @@ namespace Relic.Gameplay.Data
             if (dataManager == null)
                 return;
 
+            BattleRuntimeData currentBattleRuntime = dataManager.BattleRuntimeStore?.Get();
+            bool hadActiveBattleRun = currentBattleRuntime != null &&
+                                      currentBattleRuntime.IsBattleRunInitialized;
+
             Dictionary<string, BattleLobbyLoadoutSnapshotData> snapshots =
-                BuildSnapshotMap(dataManager.BattleRuntimeStore?.Get());
+                BuildSnapshotMap(currentBattleRuntime);
 
             RestoreCharacterLoadoutsAndClearBattleState(dataManager, snapshots);
             dataManager.PartyRuntimeStore?.ResetCurrentGridIndicesToSpawn();
             dataManager.SkillRuntimeStore?.Clear();
             dataManager.MapRuntimeStore?.Clear();
             dataManager.BattleRuntimeStore?.Clear();
+
+            // 실제 탐사가 존재했던 경우에만 유물 상점의 1회 구매 대기 상태를 해제합니다.
+            // 단순 타이틀 진입이나 새 게임 초기화에서는 상점 상태를 건드리지 않습니다.
+            if (hadActiveBattleRun)
+            {
+                LobbyRuntimeData lobbyRuntime = dataManager.LobbyRuntimeStore?.GetOrCreate();
+                if (lobbyRuntime != null)
+                {
+                    global::LobbyRelicShopPurchaseLimit.ResetAfterExploration(lobbyRuntime);
+                    dataManager.LobbyRuntimeStore?.Set(lobbyRuntime);
+                }
+            }
         }
 
         private static BattleLobbyLoadoutSnapshotData CreateSnapshot(CharacterRuntimeData character)

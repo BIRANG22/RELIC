@@ -56,6 +56,7 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
     private Vector3 rarityRingOriginalScale = Vector3.one;
     private bool rarityRingScaleCached;
     private bool isHovered;
+    private RelicRarity currentRarity = RelicRarity.None;
 
     private bool clickListenerRegistered;
     private bool missingViewWarningLogged;
@@ -64,6 +65,16 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
         Array.Empty<ParticleSystem>();
 
     private Coroutine rarityRingHideCoroutine;
+    private CanvasGroup canvasGroup;
+
+    public string RelicId => relicId;
+    public RelicRarity CurrentRarity => currentRarity;
+    public Color CurrentRarityColor => GetParticleColor(currentRarity);
+    public Sprite IconSprite => iconImage != null ? iconImage.sprite : null;
+    public Image IconImage => iconImage;
+    public RectTransform ButtonRectTransform => transform as RectTransform;
+    public RectTransform IconRectTransform => iconImage != null ? iconImage.rectTransform : null;
+    public GameObject RarityRingRootObject => rarityRingRoot;
 
     private void Awake()
     {
@@ -90,9 +101,12 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
             return;
 
         ResetHoverState();
+        SetTemporaryHidden(false);
+
         relicId = offer.RelicId;
         purchaseRequested = callback;
         hoverChanged = hoverCallback;
+        currentRarity = rarity;
 
         iconImage.sprite = icon;
         iconImage.enabled = icon != null;
@@ -109,6 +123,7 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
             return;
 
         ResetHoverState();
+        SetTemporaryHidden(false);
         priceText.text = GameLocalization.Get("lobby.sold_out", "판매 완료");
         button.interactable = false;
 
@@ -118,6 +133,7 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
     public void ShowEmpty()
     {
         ResetHoverState();
+        SetTemporaryHidden(false);
         HideRarityRingImmediately();
 
         if (!EnsureView())
@@ -125,6 +141,7 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
 
         relicId = null;
         hoverChanged = null;
+        currentRarity = RelicRarity.None;
 
         iconImage.sprite = null;
         iconImage.enabled = false;
@@ -137,6 +154,17 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
     {
         if (EnsureView())
             button.interactable = interactable;
+    }
+
+    public void SetTemporaryHidden(bool hidden)
+    {
+        EnsureCanvasGroup();
+        if (canvasGroup == null)
+            return;
+
+        canvasGroup.alpha = hidden ? 0f : 1f;
+        canvasGroup.interactable = !hidden;
+        canvasGroup.blocksRaycasts = !hidden;
     }
 
     private bool EnsureView()
@@ -163,6 +191,7 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
         }
 
         EnsureRarityRingReferences();
+        EnsureCanvasGroup();
 
         if (button == null ||
             iconImage == null ||
@@ -183,6 +212,15 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
 
         EnsureClickListener();
         return true;
+    }
+
+    private void EnsureCanvasGroup()
+    {
+        if (canvasGroup == null)
+            canvasGroup = GetComponent<CanvasGroup>();
+
+        if (canvasGroup == null)
+            canvasGroup = gameObject.AddComponent<CanvasGroup>();
     }
 
     private void EnsureClickListener()

@@ -1,3 +1,4 @@
+using Relic.Gameplay.Data;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,6 +11,20 @@ public sealed class LobbyRelicShopNpcInteraction : MonoBehaviour
     [Tooltip("유물 상점 패널을 닫는 BackButton입니다.")]
     [SerializeField] private Button backButton;
 
+    [Header("Availability Indicator")]
+    [Tooltip("유물 상점을 이용할 수 있을 때 항상 표시할 relic_stone (1)의 SpriteRenderer입니다.")]
+    [SerializeField] private SpriteRenderer availabilityIndicatorRenderer;
+    [Tooltip("이용 가능 상태에서 숨쉬기 효과의 시작 색상입니다.")]
+    [SerializeField] private Color availabilityAvailableColor = new Color32(0, 177, 255, 255);
+    [Tooltip("이용 가능 상태에서 숨쉬기 효과의 밝은 색상입니다.")]
+    [SerializeField] private Color availabilityPulseColor = Color.white;
+    [Tooltip("색상이 왕복하는 속도입니다. 값이 클수록 빠르게 숨쉽니다.")]
+    [SerializeField, Min(0.01f)] private float availabilityPulseSpeed = 1f;
+
+    [Header("Purchase Cooldown")]
+    [SerializeField] private SettingWarningUI warningUI;
+    [SerializeField] private string purchaseCooldownWarningMessage = "다시 이용하려면 대기 시간이 필요합니다.";
+
     [Header("Sound")]
     [SerializeField] private bool playClickSound = true;
     [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
@@ -18,11 +33,20 @@ public sealed class LobbyRelicShopNpcInteraction : MonoBehaviour
     private void Awake()
     {
         BindBackButton();
+        RefreshAvailabilityIndicator(true);
     }
 
     private void OnEnable()
     {
         BindBackButton();
+        RefreshAvailabilityIndicator(true);
+    }
+
+    private void LateUpdate()
+    {
+        // 기존 호버 스크립트가 같은 오브젝트를 켜고 끄더라도
+        // 유물 상점의 실제 이용 가능 상태가 최종 표시 상태를 결정하도록 LateUpdate에서 갱신합니다.
+        RefreshAvailabilityIndicator(false);
     }
 
     private void OnDestroy()
@@ -33,12 +57,9 @@ public sealed class LobbyRelicShopNpcInteraction : MonoBehaviour
 
     private void OnMouseUpAsButton()
     {
-        // 메뉴 패널이 열려 있는 동안에는 월드 NPC 클릭을 받지 않는다.
         if (UIPanelButton.IsMenuPanelOpen)
             return;
 
-        // 침식도 선택창이나 배양조처럼 다른 위치 모달이 열려 있으면
-        // 유물 상점을 중복으로 열지 않는다.
         if (presenter != null &&
             LobbyPositionModalInputBlocker.IsBlockedByAnother(presenter))
         {
@@ -47,6 +68,15 @@ public sealed class LobbyRelicShopNpcInteraction : MonoBehaviour
 
         if (presenter == null)
             return;
+
+        LobbyRuntimeData runtime = DataManager.Instance?.LobbyRuntimeStore?.GetOrCreate();
+        if (LobbyRelicShopPurchaseLimit.HasPurchasedOffer(runtime))
+        {
+            PlayClickSfx();
+            ShowWarning(purchaseCooldownWarningMessage);
+            RefreshAvailabilityIndicator(true);
+            return;
+        }
 
         PlayClickSfx();
         presenter.Open();
@@ -68,6 +98,60 @@ public sealed class LobbyRelicShopNpcInteraction : MonoBehaviour
 
         PlayClickSfx();
         presenter.Close();
+    }
+
+    private void RefreshAvailabilityIndicator(bool forceColorReset)
+    {
+        if (availabilityIndicatorRenderer == null)
+            return;
+
+        LobbyRuntimeData runtime = DataManager.Instance?.LobbyRuntimeStore?.GetOrCreate();
+        bool locked = LobbyRelicShopPurchaseLimit.HasPurchasedOffer(runtime);
+
+        GameObject indicatorObject = availabilityIndicatorRenderer.gameObject;
+        if (indicatorObject.activeSelf == locked)
+            indicatorObject.SetActive(!locked);
+
+        if (locked)
+            return;
+
+        if (forceColorReset)
+        {
+            availabilityIndicatorRenderer.color = availabilityAvailableColor;
+            return;
+        }
+
+        float pingPong = Mathf.PingPong(
+            Time.unscaledTime * Mathf.Max(0.01f, availabilityPulseSpeed),
+            1f);
+        float eased = pingPong * pingPong * (3f - 2f * pingPong);
+        availabilityIndicatorRenderer.color = Color.Lerp(
+            availabilityAvailableColor,
+            availabilityPulseColor,
+            eased);
+    }
+
+    private void ShowWarning(string message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+            return;
+
+        if (warningUI == null)
+            warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
+
+        if (warningUI != null)
+        {
+            warningUI.Show(message);
+            return;
+        }
+
+        if (SettingWarningUI.Instance != null)
+        {
+            SettingWarningUI.Instance.Show(message);
+            return;
+        }
+
+        Debug.LogWarning($"[LobbyRelicShopNpcInteraction] Warning UI is missing. Message: {message}", this);
     }
 
     private void PlayClickSfx()

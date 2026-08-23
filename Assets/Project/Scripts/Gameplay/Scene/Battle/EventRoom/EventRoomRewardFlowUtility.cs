@@ -78,7 +78,7 @@ public static class EventRoomRewardFlowUtility
             Amount = 1,
             Icon = icon,
             Name = relic != null ? GameDataLocalization.RelicName(relic) : relicId,
-            Description = relic != null ? GameDataLocalization.RelicDescription(relic) : string.Empty
+            Description = relic != null ? GameDataLocalization.RelicEffectDescription(relic) : string.Empty
         };
     }
 
