@@ -4,13 +4,22 @@ using Relic.Gameplay.Data;
 
 public static class LobbyRelicRefreshPricePolicy
 {
-    public const int BasePrice = 50;
-    public const int PriceIncrease = 25;
+    public const int FixedPrice = 30;
+    public const int MaxRefreshCount = 3;
 
     public static int GetPrice(int successfulRefreshCount)
     {
-        long count = Math.Max(0, successfulRefreshCount);
-        return (int)Math.Min(int.MaxValue, BasePrice + count * PriceIncrease);
+        return FixedPrice;
+    }
+
+    public static int GetRemainingCount(int successfulRefreshCount)
+    {
+        return Math.Max(0, MaxRefreshCount - Math.Max(0, successfulRefreshCount));
+    }
+
+    public static bool CanRefresh(int successfulRefreshCount)
+    {
+        return GetRemainingCount(successfulRefreshCount) > 0;
     }
 }
 
@@ -20,6 +29,7 @@ public enum LobbyRelicRefreshFailure
     InvalidRuntime,
     AllOffersPurchased,
     PurchaseLimitReached,
+    RefreshLimitReached,
     InsufficientBlueDustium,
     NotEnoughCandidates
 }
@@ -54,6 +64,9 @@ public sealed class LobbyRelicRefreshService
         int price = LobbyRelicRefreshPricePolicy.GetPrice(runtime?.RelicRefreshCount ?? 0);
         if (runtime == null || relicDatabase == null || random == null || runtime.RelicOfferIds == null)
             return Fail(price, LobbyRelicRefreshFailure.InvalidRuntime);
+
+        if (!LobbyRelicRefreshPricePolicy.CanRefresh(runtime.RelicRefreshCount))
+            return Fail(price, LobbyRelicRefreshFailure.RefreshLimitReached);
 
         if (AreAllOffersPurchased(runtime))
             return Fail(price, LobbyRelicRefreshFailure.AllOffersPurchased);
