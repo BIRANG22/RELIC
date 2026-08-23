@@ -80,6 +80,7 @@ namespace Relic.Gameplay.Data
                 data.DiscoveredSkillIds = new List<string>();
                 data.DiscoveredRuneIds = new List<string>();
                 data.DiscoveredRelicIds = new List<string>();
+                data.DiscoveredCompoundIds = new List<string>();
                 data.DiscoveredItemIds = new List<string>();
                 return;
             }
@@ -90,6 +91,7 @@ namespace Relic.Gameplay.Data
             data.DiscoveredSkillIds = CopyIds(source.DiscoveredSkillIds);
             data.DiscoveredRuneIds = CopyIds(source.DiscoveredRuneIds);
             data.DiscoveredRelicIds = CopyIds(source.DiscoveredRelicIds);
+            data.DiscoveredCompoundIds = CopyIds(source.DiscoveredCompoundIds);
             data.DiscoveredItemIds = CopyIds(source.DiscoveredItemIds);
 
             RecordDiscoveryService.Normalize(data);
