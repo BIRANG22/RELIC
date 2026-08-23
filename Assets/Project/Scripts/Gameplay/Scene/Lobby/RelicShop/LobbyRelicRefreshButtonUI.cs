@@ -8,6 +8,7 @@ public sealed class LobbyRelicRefreshButtonUI : MonoBehaviour
     [SerializeField] private Button button;
     [SerializeField] private Image iconImage;
     [SerializeField] private TMP_Text priceText;
+    [SerializeField] private TMP_Text remainingCountText;
 
     private Action refreshRequested;
     private bool clickListenerRegistered;
@@ -24,12 +25,13 @@ public sealed class LobbyRelicRefreshButtonUI : MonoBehaviour
         EnsureView();
     }
 
-    public void SetState(int price, bool interactable)
+    public void SetState(int price, int remainingCount, bool interactable)
     {
         if (!EnsureView())
             return;
 
         priceText.text = Mathf.Max(0, price).ToString();
+        remainingCountText.text = $"x{Mathf.Max(0, remainingCount)}";
         button.interactable = interactable;
     }
 
@@ -44,7 +46,10 @@ public sealed class LobbyRelicRefreshButtonUI : MonoBehaviour
         if (priceText == null)
             priceText = transform.Find("Price")?.GetComponent<TMP_Text>();
 
-        if (button == null || iconImage == null || priceText == null)
+        if (remainingCountText == null)
+            remainingCountText = transform.Find("Value")?.GetComponent<TMP_Text>();
+
+        if (button == null || iconImage == null || priceText == null || remainingCountText == null)
         {
             if (!missingViewWarningLogged)
             {

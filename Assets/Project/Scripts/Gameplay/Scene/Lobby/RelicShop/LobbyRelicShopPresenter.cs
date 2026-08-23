@@ -302,9 +302,12 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             return;
 
         int price = LobbyRelicRefreshPricePolicy.GetPrice(runtime.RelicRefreshCount);
+        int remainingCount = LobbyRelicRefreshPricePolicy.GetRemainingCount(runtime.RelicRefreshCount);
         refreshButton.SetState(
             price,
+            remainingCount,
             CanLocalPlayerMutateHostOnlyState() &&
+            remainingCount > 0 &&
             !LobbyRelicShopPurchaseLimit.HasPurchasedOffer(runtime) &&
             !LobbyRelicRefreshService.AreAllOffersPurchased(runtime));
     }
