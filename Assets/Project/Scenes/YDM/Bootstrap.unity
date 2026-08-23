@@ -1804,6 +1804,7 @@ GameObject:
   m_Component:
   - component: {fileID: 971541963}
   - component: {fileID: 971541962}
+  - component: {fileID: 971541964}
   m_Layer: 0
   m_Name: Bootstrap
   m_TagString: Untagged
@@ -1825,6 +1826,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   firstState: 2
   defaultLanguageCode: ko
+--- !u!114 &971541964
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 971541961}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5f2a0ed7bb24d7bbd111c90486a1a01, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  questPanel: {fileID: 0}
 --- !u!4 &971541963
 Transform:
   m_ObjectHideFlags: 0

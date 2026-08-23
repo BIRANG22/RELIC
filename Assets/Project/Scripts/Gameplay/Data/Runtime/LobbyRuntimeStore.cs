@@ -32,6 +32,8 @@ namespace Relic.Gameplay.Data
             value.OwnedRelicIds ??= new List<string>();
             value.SkillInventoryIds ??= new List<string>();
             value.BagItemIds ??= new List<string>();
+            value.CompletedQuestIds ??= new List<string>();
+            value.UnlockedSystemIds ??= new List<string>();
             value.CharacterLoadouts ??= new List<LobbyCharacterLoadoutData>();
             value.CharacterSkillUpgrades ??= new List<LobbySkillUpgradeRecordData>();
             value.RelicOfferIds ??= new List<string>();
