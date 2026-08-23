@@ -16,13 +16,11 @@ namespace Relic.Gameplay.Data
     {
         public int BlueDustium = LobbyRuntimeStore.StartingBlueDustium;
         public LobbyTutorialProgress TutorialProgress = LobbyTutorialProgress.NotStarted;
-        public string ActiveQuestId;
         public int LobbySkillUpgradeCount;
         public List<string> OwnedRelicIds = new();
         public List<string> SkillInventoryIds = new();
         public List<string> BagItemIds = new();
-        public List<string> CompletedQuestIds = new();
-        public List<string> UnlockedSystemIds = new();
+        public List<string> StoredCompoundIds = new();
         public List<LobbyCharacterLoadoutData> CharacterLoadouts = new();
         public List<LobbySkillUpgradeRecordData> CharacterSkillUpgrades = new();
         public int RelicOfferSeed;
