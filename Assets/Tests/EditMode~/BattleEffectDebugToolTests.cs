@@ -5,28 +5,26 @@ using Relic.Gameplay.Data;
 public sealed class BattleEffectDebugToolTests
 {
     [Test]
-    public void GetDefaultPresets_IncludesRepresentativePassiveAndActiveRelics()
+    public void GetDefaultPresets_NoLongerProvidesHardcodedLoadoutCatalog()
     {
         IReadOnlyList<BattleEffectDebugPreset> presets = BattleEffectDebugTool.GetDefaultPresets();
 
-        Assert.That(ContainsPreset(presets, "P01_MaxHP", "Relic_P_01"), Is.True);
-        Assert.That(ContainsPreset(presets, "P41_Collision", "Relic_P_41"), Is.True);
-        Assert.That(ContainsPreset(presets, "A15_ExplosiveDoll", "Relic_A_15"), Is.True);
+        Assert.That(presets, Is.Empty);
     }
 
     [Test]
-    public void ApplyPreset_EquipsActiveRelicToSlotZeroAndPassiveRelicsAfterIt()
+    public void ApplyPreset_EquipsOnlyPassiveRelicsAndLeavesCompoundSlotEmpty()
     {
         CharacterRuntimeData runtime = CreateRuntime();
         BattleEffectDebugPreset preset = new(
             "Mixed",
             "Mixed",
-            new[] { "Relic_A_15", "Relic_P_01", "Relic_P_06" },
+            new[] { "Compound_01", "Relic_P_01", "Relic_P_06" },
             null);
 
         BattleEffectDebugTool.ApplyPreset(runtime, preset);
 
-        Assert.That(runtime.EquippedRelicIds[0], Is.EqualTo("Relic_A_15"));
+        Assert.That(runtime.EquippedRelicIds[0], Is.Null.Or.Empty);
         Assert.That(runtime.EquippedRelicIds[1], Is.EqualTo("Relic_P_01"));
         Assert.That(runtime.EquippedRelicIds[2], Is.EqualTo("Relic_P_06"));
     }
@@ -93,34 +91,9 @@ public sealed class BattleEffectDebugToolTests
             MaxCost = 3,
             CurrentCost = 3,
             CurrentResource = 0,
-            EquippedRelicIds = new string[5],
+            EquippedRelicIds = new string[7],
             EquippedRuneIds = new string[12],
             StatusEffects = new List<StatusEffectRuntimeData>()
         };
-    }
-
-    private static bool ContainsPreset(
-        IReadOnlyList<BattleEffectDebugPreset> presets,
-        string key,
-        string relicId)
-    {
-        if (presets == null)
-            return false;
-
-        for (int i = 0; i < presets.Count; i++)
-        {
-            BattleEffectDebugPreset preset = presets[i];
-
-            if (preset == null || preset.Key != key || preset.RelicIds == null)
-                continue;
-
-            for (int relicIndex = 0; relicIndex < preset.RelicIds.Length; relicIndex++)
-            {
-                if (preset.RelicIds[relicIndex] == relicId)
-                    return true;
-            }
-        }
-
-        return false;
     }
 }
