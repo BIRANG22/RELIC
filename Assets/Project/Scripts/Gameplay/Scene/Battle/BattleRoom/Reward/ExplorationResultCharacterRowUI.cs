@@ -6,6 +6,9 @@ using UnityEngine.UI;
 
 public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
 {
+    private const string LevelText = "LV";
+    private const string LevelUpText = "LV UP";
+
     [SerializeField] private Image portraitImage;
     [SerializeField] private TMP_Text killCountText;
     [SerializeField] private TMP_Text damageDealtText;
@@ -27,7 +30,8 @@ public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
         Sprite portrait,
         int gainedExperience = 0,
         bool leveledUp = false,
-        float experienceProgress = 0f)
+        float experienceProgress = 0f,
+        IReadOnlyList<string> unlockTexts = null)
     {
         AutoBindSceneReferences();
 
@@ -50,7 +54,7 @@ public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
         SetText(buffAppliedText, Mathf.Max(0, statistics.BuffApplied).ToString());
         SetText(defeatCountText, Mathf.Max(0, statistics.DeathCount).ToString());
         SetExperience(gainedExperience, leveledUp, experienceProgress);
-        SetUnlockRootsVisible(false);
+        SetUnlockTexts(unlockTexts);
     }
 
     public void Clear()
@@ -71,19 +75,80 @@ public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
         SetText(experienceText, $"+{safeExperience}");
 
         if (levelUpRoot != null)
-            levelUpRoot.SetActive(leveledUp || safeExperience > 0);
+            SetLevelUpText(leveledUp);
     }
 
-    private void SetUnlockRootsVisible(bool visible)
+    private void SetLevelUpText(bool leveledUp)
+    {
+        levelUpRoot.SetActive(true);
+
+        TMP_Text text = levelUpRoot.GetComponent<TMP_Text>();
+        if (text == null)
+            text = levelUpRoot.GetComponentInChildren<TMP_Text>(true);
+
+        SetText(text, leveledUp ? LevelUpText : LevelText);
+    }
+
+    private void SetUnlockTexts(IReadOnlyList<string> unlockTexts)
     {
         if (unlockRoots == null)
             return;
 
+        int textCount = unlockTexts?.Count ?? 0;
+        if (unlockRoots.Length == 1 && textCount > 1)
+        {
+            SetUnlockRootVisible(unlockRoots[0], true);
+            SetUnlockRootText(unlockRoots[0], BuildJoinedUnlockText(unlockTexts));
+            return;
+        }
+
         for (int i = 0; i < unlockRoots.Length; i++)
         {
-            if (unlockRoots[i] != null)
-                unlockRoots[i].SetActive(visible);
+            GameObject root = unlockRoots[i];
+            bool visible = root != null && i < textCount && !string.IsNullOrWhiteSpace(unlockTexts[i]);
+            SetUnlockRootVisible(root, visible);
+
+            if (visible)
+                SetUnlockRootText(root, unlockTexts[i]);
         }
+    }
+
+    private static void SetUnlockRootVisible(GameObject root, bool visible)
+    {
+        if (root != null)
+            root.SetActive(visible);
+    }
+
+    private static void SetUnlockRootText(GameObject root, string value)
+    {
+        if (root == null)
+            return;
+
+        TMP_Text text = root.GetComponent<TMP_Text>();
+        if (text == null)
+            text = root.GetComponentInChildren<TMP_Text>(true);
+
+        SetText(text, value);
+    }
+
+    private static string BuildJoinedUnlockText(IReadOnlyList<string> unlockTexts)
+    {
+        if (unlockTexts == null || unlockTexts.Count == 0)
+            return string.Empty;
+
+        string result = string.Empty;
+        for (int i = 0; i < unlockTexts.Count; i++)
+        {
+            if (string.IsNullOrWhiteSpace(unlockTexts[i]))
+                continue;
+
+            if (result.Length > 0)
+                result += "\n";
+
+            result += unlockTexts[i];
+        }
+
+        return result;
     }
 
     private static void SetText(TMP_Text text, string value)

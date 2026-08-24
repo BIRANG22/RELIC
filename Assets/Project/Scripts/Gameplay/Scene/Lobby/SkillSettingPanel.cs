@@ -966,24 +966,43 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (skill == null)
             return 1;
 
-        // 본능기억(패시브)의 두 번째 기억은 Lv.5,
-        // 발현기억(카르마 사용)의 두 번째 기억은 Lv.10에 해금됩니다.
-        if (slotIndex != 0 && slotIndex != 1)
+        if (slotIndex < 0 || slotIndex >= SetupSkillSlotCount)
             return 1;
+
+        int candidateIndex = GetCandidateSkillIndex(skill, slotIndex);
+        if (candidateIndex < 0)
+            return 1;
+
+        return CharacterLevelUnlockService.GetSkillMemoryUnlockLevel(
+            currentMasterData,
+            slotIndex,
+            candidateIndex);
+    }
+
+    private int GetCandidateSkillIndex(SkillMasterData skill, int slotIndex)
+    {
+        if (skill == null || string.IsNullOrWhiteSpace(skill.SkillId))
+            return -1;
 
         string[] candidateSkillIds = GetCandidateSkillIds(slotIndex);
-        if (candidateSkillIds == null || candidateSkillIds.Length < 2)
-            return 1;
+        if (candidateSkillIds == null)
+            return -1;
 
-        string secondSkillId = candidateSkillIds[1];
-        if (string.IsNullOrWhiteSpace(secondSkillId) ||
-            string.IsNullOrWhiteSpace(skill.SkillId) ||
-            !string.Equals(secondSkillId.Trim(), skill.SkillId.Trim(), StringComparison.OrdinalIgnoreCase))
+        for (int i = 0; i < candidateSkillIds.Length; i++)
         {
-            return 1;
+            if (string.IsNullOrWhiteSpace(candidateSkillIds[i]))
+                continue;
+
+            if (string.Equals(
+                    candidateSkillIds[i].Trim(),
+                    skill.SkillId.Trim(),
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return i;
+            }
         }
 
-        return slotIndex == 0 ? 5 : 10;
+        return -1;
     }
 
     private bool IsSameSkill(SkillMasterData a, SkillMasterData b)

@@ -756,7 +756,21 @@ public class Setting : MonoBehaviour
             characterLevelText.text = "LV. " + currentRuntimeData.Level;
 
         if (characterExpText != null)
-            characterExpText.text = "EXP " + currentRuntimeData.Exp;
+            characterExpText.text = "EXP " + GetDisplayedCharacterExperienceInCurrentLevel(
+                currentRuntimeData.Level,
+                currentRuntimeData.Exp);
+    }
+
+    public static int GetDisplayedCharacterExperienceInCurrentLevel(
+        int level,
+        int cumulativeExperience)
+    {
+        int safeLevel = Mathf.Max(1, level);
+        int safeCumulativeExperience = Mathf.Max(0, cumulativeExperience);
+        int levelStartExperience =
+            BattleStageClearExperienceService.GetCumulativeExperienceForLevel(safeLevel);
+
+        return Mathf.Max(0, safeCumulativeExperience - levelStartExperience);
     }
 
     private void HandleTestLevelCheatKeys()
