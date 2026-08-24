@@ -16,7 +16,7 @@ public class MapNodeView : MonoBehaviour
     [SerializeField] private bool autoCreateCheckAnimationImage = true;
     [SerializeField] private Sprite[] checkAnimationSprites = Array.Empty<Sprite>();
     [SerializeField] private float checkFrameInterval = 0.05f;
-    [SerializeField] private Vector2 checkImageSize = new Vector2(96f, 96f);
+    private static readonly Vector2 CheckImageSize = new Vector2(80f, 80f);
     [SerializeField] private bool hideIconDuringCheckAnimation;
     [SerializeField] private bool keepLastCheckSpriteUntilRoomOpens = true;
     [SerializeField] private int keepFrameIndex = -1;
@@ -42,6 +42,8 @@ public class MapNodeView : MonoBehaviour
     private Coroutine clickRoutine;
     private bool isClickProcessing;
     private bool currentCanClick;
+    private bool currentAvailable;
+    private bool currentVisited;
     private bool isCategoryHighlighted;
     private RectTransform rectTransform;
     private Vector3 baseScale = Vector3.one;
@@ -82,6 +84,8 @@ public class MapNodeView : MonoBehaviour
         nodeData = data;
         onClicked = clickCallback;
         currentCanClick = canClick;
+        currentAvailable = false;
+        currentVisited = false;
         isCategoryHighlighted = false;
         isClickProcessing = false;
         CaptureBaseScale();
@@ -116,45 +120,38 @@ public class MapNodeView : MonoBehaviour
         if (button != null)
             button.interactable = canClick && !isClickProcessing;
 
-        ApplyNodeAlpha();
-
         if (!CanPlayHoverBreath())
             ResetHoverScale();
     }
 
-    public void SetCategoryHighlighted(bool highlighted)
+    public void SetAvailabilityVisual(bool available)
     {
-        isCategoryHighlighted = highlighted;
-        ApplyNodeAlpha();
+        SetProgressVisual(available, false);
     }
 
-    private void ApplyNodeAlpha()
+    public void SetProgressVisual(bool available, bool visited)
+    {
+        currentAvailable = available;
+        currentVisited = visited;
+        ApplyNodeColor();
+    }
+
+    public void SetCategoryHighlighted(bool highlighted)
+    {
+        // 이동 가능 여부 색상이 항상 우선되도록 카테고리 강조는 색상을 변경하지 않습니다.
+        isCategoryHighlighted = highlighted;
+        ApplyNodeColor();
+    }
+
+    private void ApplyNodeColor()
     {
         if (iconImage == null)
             return;
 
-        const float clickableAlpha = 1f;
-        const float categoryHighlightedAlpha = 200f / 255f;
-        const float unavailableAlpha = 115f / 255f;
-        Color categoryHighlightedColor = new Color32(0x4D, 0x68, 0xDF, 0xC8);
-
-        CaptureBaseIconColor();
-        Color color = baseIconColor;
-
-        if (isCategoryHighlighted)
-        {
-            // 선택한 카테고리의 노드는 이동 가능 여부와 관계없이 강조 색상을 사용합니다.
-            color = categoryHighlightedColor;
-            color.a = currentCanClick ? clickableAlpha : categoryHighlightedAlpha;
-        }
-        else
-        {
-            color.a = currentCanClick ? clickableAlpha : unavailableAlpha;
-        }
-
-        iconImage.color = color;
+        Color availableColor = new Color32(0xFF, 0xFF, 0xFF, 0xFF);
+        Color unavailableColor = new Color32(0x77, 0x77, 0x77, 0xFF);
+        iconImage.color = (currentAvailable || currentVisited) ? availableColor : unavailableColor;
     }
-
     private void CaptureBaseIconColor()
     {
         if (iconImage == null || hasCapturedBaseIconColor)
@@ -442,7 +439,7 @@ public class MapNodeView : MonoBehaviour
         rect.anchorMax = new Vector2(0.5f, 0.5f);
         rect.pivot = new Vector2(0.5f, 0.5f);
         rect.anchoredPosition = Vector2.zero;
-        rect.sizeDelta = checkImageSize;
+        rect.sizeDelta = CheckImageSize;
         rect.localScale = Vector3.one;
         rect.localRotation = Quaternion.identity;
     }
