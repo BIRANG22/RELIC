@@ -281,6 +281,7 @@ public sealed class ActiveRelicService
         }
 
         MoveCharacterToGrid(character, gridIndex, gridManager);
+        CancelInvalidatedReservations(runtime);
         gridEffectController?.ApplyToPlayer(gridIndex, character);
         return true;
     }
@@ -321,7 +322,24 @@ public sealed class ActiveRelicService
 
         MoveCharacterToGrid(character, targetGridIndex, gridManager);
         MoveCharacterToGrid(ally, sourceGridIndex, gridManager);
+        CancelInvalidatedReservations(runtime);
+        CancelInvalidatedReservations(ally.RuntimeData);
         return true;
+    }
+
+
+    private static void CancelInvalidatedReservations(CharacterRuntimeData runtime)
+    {
+        if (runtime == null)
+            return;
+
+        BattleTimelineController timelineController =
+            Object.FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Include);
+
+        if (timelineController == null)
+            return;
+
+        timelineController.CancelMoveAndAttackReservations(runtime);
     }
 
     private static bool TryApplyImmediateSelfEffect(
@@ -350,12 +368,32 @@ public sealed class ActiveRelicService
                 return true;
 
             case ActiveRelicEffectIds.RecoverCostToMax:
-                runtime.CurrentCost = Mathf.Max(runtime.CurrentCost, runtime.MaxCost);
-                return true;
+                {
+                    // Compound_04: 현재/최대 마나와 관계없이 마나를 정확히 10 회복한다.
+                    // 최대 마나(MaxCost)와 예약 마나(ReservedCost)는 변경하지 않는다.
+                    // 예) CurrentCost 10, ReservedCost 8 -> PreviewCost 2/10
+                    //     사용 후 CurrentCost 20, ReservedCost 8 -> PreviewCost 12/10
+                    //     예약 취소 후 ReservedCost 0 -> PreviewCost 20/10
+                    int recoverAmount = Mathf.Max(0, GetRelicValue(availability.RelicData, 10));
+                    runtime.CurrentCost = Mathf.Max(0, runtime.CurrentCost) + recoverAmount;
+                    return true;
+                }
 
             case ActiveRelicEffectIds.RecoverUniqueResourceToMax:
-                runtime.CurrentResource = ResolveMaxUniqueResource(runtime);
-                return true;
+                {
+                    // Compound_03: 카르마를 정확히 3 회복하되 총 보유량은 최대치를 넘지 않는다.
+                    // CurrentResource는 예약된 카르마까지 포함한 총 보유량이므로
+                    // ReservedResourceCost를 건드리지 않고 CurrentResource만 회복하면
+                    // 예약 취소로 카르마가 복제되는 문제를 막을 수 있다.
+                    // 예) 최대 5, CurrentResource 5, ReservedResourceCost 3 -> PreviewResource 2
+                    //     다시 사용해도 총 보유량이 이미 5이므로 회복 0
+                    //     예약 취소 후 PreviewResource는 5
+                    int maxKarma = ResolveMaxUniqueResource(runtime);
+                    int recoverAmount = Mathf.Max(0, GetRelicValue(availability.RelicData, 3));
+
+                    runtime.CurrentResource = Mathf.Min(maxKarma, Mathf.Max(0, runtime.CurrentResource) + recoverAmount);
+                    return true;
+                }
 
             case ActiveRelicEffectIds.GrantSwift:
                 AddOrStackStatus(runtime, "E_Swift", GetRelicValue(availability.RelicData, 2));
@@ -441,11 +479,10 @@ public sealed class ActiveRelicService
             return false;
         }
 
-        int stack = GetRelicValue(relic, 1);
         AddOrStackStatus(
             monster.RuntimeData.StatusEffects,
             ActiveRelicEffectIds.TargetOutgoingDamageReductionThisTurn,
-            stack);
+            1);
         monster.ShowAndRefreshHUD();
         return true;
     }

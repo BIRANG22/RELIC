@@ -4144,6 +4144,61 @@ public class BattleTimelineController : MonoBehaviour
         RemoveCommandFromNetwork(slotIndex, orderIndex);
     }
 
+
+    public int CancelMoveAndAttackReservations(CharacterRuntimeData runtime)
+    {
+        if (runtime == null || reserveSlots == null)
+            return 0;
+
+        int removedCount = 0;
+
+        for (int slotIndex = 0; slotIndex < reserveSlots.Length; slotIndex++)
+        {
+            ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+
+            if (slot == null || slot.Commands == null)
+                continue;
+
+            for (int commandIndex = slot.Commands.Count - 1; commandIndex >= 0; commandIndex--)
+            {
+                PlayerReservedCommand command = slot.Commands[commandIndex];
+
+                if (command == null || command.UserRuntime != runtime)
+                    continue;
+
+                bool isMove = IsMoveCommand(command) ||
+                              (command.SkillData != null &&
+                               command.SkillData.TimelineNotation == TimelineActionType.Move);
+                bool isAttack = command.SkillData != null &&
+                                (command.SkillData.SkillType == SkillType.Attack ||
+                                 command.SkillData.TimelineNotation == TimelineActionType.Attack);
+
+                if (!isMove && !isAttack)
+                    continue;
+
+                if (!slot.RemoveCommandAt(commandIndex, out PlayerReservedCommand removedCommand))
+                    continue;
+
+                RemoveReservedCosts(removedCommand);
+                RemovePlayerReservationHistoryEntries(removedCommand);
+                removedCount++;
+            }
+        }
+
+        if (removedCount <= 0)
+            return 0;
+
+        reservationVersion++;
+        RecalculateAllReservedCosts();
+        RefreshReservationSimulation();
+        RefreshTimeline();
+        RefreshPlayerHUDs();
+        RefreshMoveGhostPreview();
+
+        Debug.Log($"[BattleTimelineController] 위치 변경으로 이동/공격 예약 취소 / Character:{runtime.CharacterId} / Count:{removedCount}");
+        return removedCount;
+    }
+
     public bool RemoveCommandFromNetwork(int slotIndex, int orderIndex)
     {
         if (reserveSlots == null)

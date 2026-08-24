@@ -25,6 +25,14 @@ public sealed class BattleEffectDebugPreset
     public string[] RuneIds { get; }
 }
 
+public sealed class BattleDebugMonsterEntry
+{
+    public string RuntimeId;
+    public string MonsterId;
+    public string Name;
+    public int GridIndex;
+}
+
 public static class BattleEffectDebugTool
 {
     public const int SkillDisplaySlotCount = 4;
@@ -418,6 +426,195 @@ public static class BattleEffectDebugTool
 
         loader.ResetLoadedStateForNextBattle(true);
         loader.RequestLoadBattle();
+    }
+
+    public static bool TryApplyPartyCharacter(int partyIndex, string characterId, int gridIndex)
+    {
+        if (DataManager.Instance == null)
+            return false;
+
+        bool configured = DebugBattlePartySetup.TrySetPartyCharacter(
+            DataManager.Instance,
+            partyIndex,
+            characterId,
+            gridIndex);
+
+        if (!configured)
+            return false;
+
+        ReloadBattleRoom();
+        RefreshBattle();
+        return true;
+    }
+
+    public static List<MonsterMasterData> GetMonsterMasters()
+    {
+        List<MonsterMasterData> result = new();
+        IReadOnlyDictionary<string, MonsterMasterData> all = DataManager.Instance?.MonsterDatabase?.GetAll();
+
+        if (all == null)
+            return result;
+
+        foreach (KeyValuePair<string, MonsterMasterData> pair in all)
+        {
+            MonsterMasterData data = pair.Value;
+            if (data == null || string.IsNullOrWhiteSpace(data.MonsterId) || data.BattlePrefab == null)
+                continue;
+
+            result.Add(data);
+        }
+
+        result.Sort((a, b) => string.Compare(a.MonsterId, b.MonsterId, StringComparison.Ordinal));
+        return result;
+    }
+
+    public static bool TrySpawnMonster(string monsterId, int gridIndex, out string monsterRuntimeId)
+    {
+        monsterRuntimeId = string.Empty;
+        string normalizedMonsterId = NormalizeId(monsterId);
+
+        if (string.IsNullOrWhiteSpace(normalizedMonsterId) ||
+            gridIndex < 0 ||
+            gridIndex >= BattleGridCellCount ||
+            DataManager.Instance?.MonsterDatabase == null)
+        {
+            return false;
+        }
+
+        MonsterMasterData monsterData = DataManager.Instance.MonsterDatabase.Get(normalizedMonsterId);
+        if (monsterData == null || monsterData.BattlePrefab == null)
+            return false;
+
+        if (BattleOccupancyService.IsOccupiedByAnyUnit(gridIndex))
+        {
+            Debug.LogWarning($"[BattleEffectDebug] Grid {gridIndex} is already occupied.");
+            return false;
+        }
+
+        BattleMonsterSpawner spawner = Object.FindFirstObjectByType<BattleMonsterSpawner>(FindObjectsInactive.Include);
+        if (spawner == null)
+        {
+            Debug.LogWarning("[BattleEffectDebug] BattleMonsterSpawner not found.");
+            return false;
+        }
+
+        SpawnedMonsterResult spawned = spawner.SpawnRuntimeMonster(
+            normalizedMonsterId,
+            new List<int> { gridIndex });
+
+        if (spawned?.RuntimeData == null)
+            return false;
+
+        monsterRuntimeId = spawned.RuntimeData.RuntimeId ?? string.Empty;
+        RefreshBattle();
+        return !string.IsNullOrWhiteSpace(monsterRuntimeId);
+    }
+
+    public static List<BattleDebugMonsterEntry> GetLiveMonsters()
+    {
+        List<BattleDebugMonsterEntry> result = new();
+        MonsterUnit[] monsters = Object.FindObjectsByType<MonsterUnit>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < monsters.Length; i++)
+        {
+            MonsterUnit monster = monsters[i];
+            if (monster == null || monster.RuntimeData == null || monster.RuntimeData.IsDead)
+                continue;
+
+            result.Add(new BattleDebugMonsterEntry
+            {
+                RuntimeId = monster.RuntimeData.RuntimeId ?? string.Empty,
+                MonsterId = monster.RuntimeData.MonsterId ?? string.Empty,
+                Name = monster.RuntimeData.GetDisplayName(),
+                GridIndex = monster.MainGridIndex
+            });
+        }
+
+        result.Sort((a, b) => string.Compare(a.RuntimeId, b.RuntimeId, StringComparison.Ordinal));
+        return result;
+    }
+
+    public static List<MonsterSkillData> GetMonsterSkills(string monsterRuntimeId)
+    {
+        List<MonsterSkillData> result = new();
+        MonsterUnit monster = FindMonsterUnit(monsterRuntimeId);
+        if (monster == null || monster.RuntimeData == null || DataManager.Instance == null)
+            return result;
+
+        MonsterMasterData master = DataManager.Instance.MonsterDatabase?.Get(monster.RuntimeData.MonsterId);
+        if (master == null)
+            return result;
+
+        string[] skillIds = master.GetPossibleSkillIds();
+        for (int i = 0; i < skillIds.Length; i++)
+        {
+            MonsterSkillData skill = DataManager.Instance.MonsterSkillDatabase?.Get(skillIds[i]);
+            if (skill != null)
+                result.Add(skill);
+        }
+
+        return result;
+    }
+
+    public static bool TryQueueMonsterSkill(
+        string monsterRuntimeId,
+        string skillId,
+        int slotIndex)
+    {
+        MonsterUnit monster = FindMonsterUnit(monsterRuntimeId);
+        BattleTimelineController timeline = Object.FindFirstObjectByType<BattleTimelineController>(
+            FindObjectsInactive.Include);
+        GridManager gridManager = Object.FindFirstObjectByType<GridManager>(FindObjectsInactive.Include);
+
+        if (monster == null || monster.RuntimeData == null || timeline == null || gridManager == null)
+            return false;
+
+        MonsterSkillData skillData = DataManager.Instance?.MonsterSkillDatabase?.Get(NormalizeId(skillId));
+        if (skillData == null)
+            return false;
+
+        MonsterReservedCommand command = new(monster.RuntimeData, skillData);
+        command.SetRangeOriginGridIndex(monster.MainGridIndex);
+        command.SetForcedDirection(monster.RuntimeData.Direction);
+
+        bool facingRight = monster.RuntimeData.Direction == BattleDirection.Right;
+        List<int> range = MonsterSkillRangeService.BuildRangeGridIndices(
+            monster,
+            skillData,
+            gridManager,
+            facingRight,
+            monster.MainGridIndex,
+            DataManager.Instance?.RangeDatabase);
+        List<int> targets = MonsterSkillRangeService.FilterTargetGridIndices(skillData, range);
+        command.SetRangeResult(range, targets);
+
+        timeline.AddMonsterCommand(Mathf.Clamp(slotIndex, 0, Mathf.Max(0, timeline.SlotCount - 1)), command);
+        return true;
+    }
+
+    private static MonsterUnit FindMonsterUnit(string monsterRuntimeId)
+    {
+        if (string.IsNullOrWhiteSpace(monsterRuntimeId))
+            return null;
+
+        string normalizedRuntimeId = monsterRuntimeId.Trim();
+        MonsterUnit[] monsters = Object.FindObjectsByType<MonsterUnit>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < monsters.Length; i++)
+        {
+            MonsterUnit monster = monsters[i];
+            if (monster?.RuntimeData == null)
+                continue;
+
+            if (string.Equals(monster.RuntimeData.RuntimeId, normalizedRuntimeId, StringComparison.Ordinal))
+                return monster;
+        }
+
+        return null;
     }
 
     public static bool TryApplySingleCharacterParty(string characterId, int gridIndex)
