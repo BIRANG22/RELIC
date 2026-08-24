@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
 using Relic.Gameplay.Data;
+using TMPro;
 using UnityEngine;
 
 public sealed class ExplorationResultPanelSourceTests
@@ -132,6 +133,74 @@ public sealed class ExplorationResultPanelSourceTests
     }
 
     [Test]
+    public void ExplorationResultPanel_PassesLevelUnlockTextsToCharacterRows()
+    {
+        string resultPanelSource = File.ReadAllText(
+            "Assets/Project/Scripts/Gameplay/Scene/Battle/BattleRoom/Reward/ExplorationResultPanelUI.cs");
+        string rowSource = File.ReadAllText(
+            "Assets/Project/Scripts/Gameplay/Scene/Battle/BattleRoom/Reward/ExplorationResultCharacterRowUI.cs");
+
+        StringAssert.Contains("ResolveCharacterUnlockTexts", resultPanelSource);
+        StringAssert.Contains("CharacterLevelUnlockService.GetUnlockTexts", resultPanelSource);
+        StringAssert.Contains("unlockTexts", resultPanelSource);
+        StringAssert.Contains("IReadOnlyList<string> unlockTexts", rowSource);
+        StringAssert.Contains("SetUnlockTexts(unlockTexts)", rowSource);
+    }
+
+    [Test]
+    public void ExplorationResultPanel_DefeatStillBuildsAndAppliesExperienceContext()
+    {
+        string source = File.ReadAllText(
+            "Assets/Project/Scripts/Gameplay/Scene/Battle/BattleRoom/Reward/ExplorationResultPanelUI.cs");
+
+        StringAssert.Contains(
+            "BattleStageClearExperienceService.BuildContext(mapRuntime, currentNode, defeat)",
+            source);
+        Assert.That(source, Does.Not.Contain("? BattleStageClearExperienceContext.Empty"));
+        Assert.That(source, Does.Not.Contain("isDefeatResult ||"));
+        Assert.That(source, Does.Not.Contain("!defeat);"));
+    }
+
+    [Test]
+    public void ExplorationResultCharacterRow_ShowsLvAlwaysAndUpOnlyWhenLevelActuallyChanged()
+    {
+        GameObject rowObject = new("ExplorationReportRow");
+        GameObject levelUpObject = new("LevelUp");
+        levelUpObject.transform.SetParent(rowObject.transform, false);
+        TMP_Text levelUpText = levelUpObject.AddComponent<TextMeshProUGUI>();
+
+        try
+        {
+            ExplorationResultCharacterRowUI row =
+                rowObject.AddComponent<ExplorationResultCharacterRowUI>();
+
+            row.Bind(
+                new BattleRunCharacterStatisticsData { CharacterId = "Char_A" },
+                null,
+                gainedExperience: 90,
+                leveledUp: false,
+                experienceProgress: 0.09f);
+
+            Assert.That(levelUpObject.activeSelf, Is.True);
+            Assert.That(levelUpText.text, Is.EqualTo("LV"));
+
+            row.Bind(
+                new BattleRunCharacterStatisticsData { CharacterId = "Char_A" },
+                null,
+                gainedExperience: 1000,
+                leveledUp: true,
+                experienceProgress: 0f);
+
+            Assert.That(levelUpObject.activeSelf, Is.True);
+            Assert.That(levelUpText.text, Is.EqualTo("LV UP"));
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(rowObject);
+        }
+    }
+
+    [Test]
     public void ExplorationResultCharacterRow_DoesNotCreateRuntimeObjects()
     {
         string source = File.ReadAllText(
@@ -172,6 +241,21 @@ public sealed class ExplorationResultPanelSourceTests
         StringAssert.Contains("m_Name: ExplorationReportExpSlider_0", scene);
         Assert.That(scene, Does.Not.Contain("`n"));
         Assert.That(scene.Replace("\r\n", "\n"), Does.Not.Contain("m_Children:\n  []"));
+    }
+
+    [Test]
+    public void LobbyScene_ResearchResultPanelStartsInactiveAndCanAutoOpenPendingResult()
+    {
+        string scene = File.ReadAllText("Assets/Project/Scenes/YDM/Lobby.unity");
+        string source = File.ReadAllText(
+            "Assets/Project/Scripts/Gameplay/Scene/Lobby/ResearchResultPanelUI.cs");
+
+        string resultPanelGameObject = GetYamlObject(scene, "1684958230");
+
+        StringAssert.Contains("m_Name: ResearchResultPanel", resultPanelGameObject);
+        StringAssert.Contains("m_IsActive: 0", resultPanelGameObject);
+        StringAssert.Contains("TryOpenPendingResultOnLoadedScene", source);
+        StringAssert.Contains("Resources.FindObjectsOfTypeAll<ResearchResultPanelUI>()", source);
     }
 
     [Test]

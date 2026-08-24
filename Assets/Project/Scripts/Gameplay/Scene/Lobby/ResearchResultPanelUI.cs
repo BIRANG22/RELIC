@@ -1,23 +1,68 @@
 using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public sealed class ResearchResultPanelUI : MonoBehaviour
 {
+    private const string LobbySceneName = "Lobby";
+
     [SerializeField] private TMP_Text resultText;
     [SerializeField] private Button confirmButton;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    private static void RegisterPendingResultAutoOpen()
+    {
+        SceneManager.sceneLoaded -= HandleSceneLoaded;
+        SceneManager.sceneLoaded += HandleSceneLoaded;
+        TryOpenPendingResultOnLoadedScene();
+    }
 
     private void Start()
     {
         if (confirmButton != null)
             confirmButton.onClick.AddListener(Confirm);
 
+        OpenIfPending();
+    }
+
+    public static bool TryOpenPendingResultOnLoadedScene()
+    {
+        ResearchResultPanelUI[] panels =
+            Resources.FindObjectsOfTypeAll<ResearchResultPanelUI>();
+
+        for (int i = 0; i < panels.Length; i++)
+        {
+            ResearchResultPanelUI panel = panels[i];
+            if (panel == null ||
+                panel.gameObject == null ||
+                !panel.gameObject.scene.IsValid() ||
+                panel.gameObject.scene.name != LobbySceneName)
+            {
+                continue;
+            }
+
+            if (panel.OpenIfPending())
+                return true;
+        }
+
+        return false;
+    }
+
+    private static void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.IsValid() && scene.name == LobbySceneName)
+            TryOpenPendingResultOnLoadedScene();
+    }
+
+    private bool OpenIfPending()
+    {
         LobbyRuntimeData lobby = DataManager.Instance?.LobbyRuntimeStore?.GetOrCreate();
         if (!PendingResearchSettlementService.HasPending(lobby))
         {
             gameObject.SetActive(false);
-            return;
+            return false;
         }
 
         PendingResearchResultData pending = lobby.PendingResearchResult;
@@ -28,7 +73,7 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
                 resultText.text = BuildText(pending);
 
             gameObject.SetActive(true);
-            return;
+            return true;
         }
 
         bool applied = PendingResearchSettlementService.ApplyOnce(lobby);
@@ -46,6 +91,7 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
         if (resultText != null)
             resultText.text = BuildText(pending);
         gameObject.SetActive(true);
+        return true;
     }
 
     private static string BuildText(PendingResearchResultData pending)

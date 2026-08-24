@@ -256,7 +256,10 @@ namespace Relic.Gameplay.Data
 
         public bool LeveledUp => LevelAfter > LevelBefore;
         public float ProgressAfter01 => RequiredExperienceAfter > 0
-            ? Mathf.Clamp01((float)ExperienceAfter / RequiredExperienceAfter)
+            ? Mathf.Clamp01(
+                (float)(ExperienceAfter -
+                    BattleStageClearExperienceService.GetCumulativeExperienceForLevel(LevelAfter)) /
+                RequiredExperienceAfter)
             : 1f;
 
         public BattleStageClearExperiencePreview(
@@ -339,6 +342,12 @@ namespace Relic.Gameplay.Data
                 return 0;
 
             return ExperiencePerLevel;
+        }
+
+        public static int GetCumulativeExperienceForLevel(int level)
+        {
+            int safeLevel = Mathf.Clamp(level, MinCharacterLevel, MaxCharacterLevel);
+            return (safeLevel - MinCharacterLevel) * ExperiencePerLevel;
         }
 
         public static BattleStageClearExperienceContext BuildContext(
@@ -482,51 +491,51 @@ namespace Relic.Gameplay.Data
             CharacterRuntimeData character,
             int rewardExperience)
         {
-            int levelBefore = Mathf.Clamp(
+            int storedLevel = Mathf.Clamp(
                 character?.Level ?? MinCharacterLevel,
                 MinCharacterLevel,
                 MaxCharacterLevel);
-            int levelAfter = levelBefore;
-            int expAfter = levelBefore >= MaxCharacterLevel
-                ? 0
-                : Mathf.Max(0, character?.Exp ?? 0);
-            int remaining = levelAfter >= MaxCharacterLevel
+            int experienceBefore = NormalizeStoredCumulativeExperience(character, storedLevel);
+            int levelBefore = Mathf.Max(
+                storedLevel,
+                CalculateLevelFromCumulativeExperience(experienceBefore));
+            int gained = levelBefore >= MaxCharacterLevel
                 ? 0
                 : Mathf.Max(0, rewardExperience);
-            int gained = remaining;
-
-            while (remaining > 0 && levelAfter < MaxCharacterLevel)
-            {
-                int required = GetRequiredExperienceForNextLevel(levelAfter);
-                if (required <= 0)
-                    break;
-
-                int needed = Mathf.Max(0, required - expAfter);
-                if (remaining < needed)
-                {
-                    expAfter += remaining;
-                    remaining = 0;
-                    break;
-                }
-
-                remaining -= needed;
-                levelAfter++;
-                expAfter = 0;
-            }
+            int experienceAfter = levelBefore >= MaxCharacterLevel
+                ? GetCumulativeExperienceForLevel(MaxCharacterLevel)
+                : Mathf.Max(0, experienceBefore + gained);
+            int levelAfter = CalculateLevelFromCumulativeExperience(experienceAfter);
 
             if (levelAfter >= MaxCharacterLevel)
-            {
-                levelAfter = MaxCharacterLevel;
-                expAfter = 0;
-            }
+                experienceAfter = GetCumulativeExperienceForLevel(MaxCharacterLevel);
 
             return new BattleStageClearExperiencePreview(
                 characterId,
                 gained,
                 levelBefore,
                 levelAfter,
-                expAfter,
+                experienceAfter,
                 GetRequiredExperienceForNextLevel(levelAfter));
+        }
+
+        private static int NormalizeStoredCumulativeExperience(
+            CharacterRuntimeData character,
+            int currentLevel)
+        {
+            int levelStartExperience = GetCumulativeExperienceForLevel(currentLevel);
+            int storedExperience = Mathf.Max(0, character?.Exp ?? levelStartExperience);
+            if (currentLevel > MinCharacterLevel && storedExperience < levelStartExperience)
+                return levelStartExperience + storedExperience;
+
+            return storedExperience;
+        }
+
+        private static int CalculateLevelFromCumulativeExperience(int cumulativeExperience)
+        {
+            int safeExperience = Mathf.Max(0, cumulativeExperience);
+            int level = (safeExperience / ExperiencePerLevel) + MinCharacterLevel;
+            return Mathf.Clamp(level, MinCharacterLevel, MaxCharacterLevel);
         }
 
         private static string NormalizeCharacterId(string characterId)

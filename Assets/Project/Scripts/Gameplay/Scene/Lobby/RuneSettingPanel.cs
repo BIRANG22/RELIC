@@ -14,9 +14,6 @@ public class RuneSettingPanel : MonoBehaviour
     [Header("Rune Slots")]
     [SerializeField] private RuneSlotButton[] runeSlotButtons;
 
-    [Header("Rune Slot Unlock Settings")]
-    [SerializeField] private int[] runeSlotUnlockLevels = { 1, 1, 2, 4, 6, 8 };
-
     [Header("Rune Icon List Panel")]
     [SerializeField] private GameObject runeIconSelectPanel;
     [SerializeField] private RuneIconButton[] runeIconButtons;
@@ -596,8 +593,8 @@ public class RuneSettingPanel : MonoBehaviour
         // 같은 해금 레벨일 때만 RuneId를 보조 정렬 기준으로 사용합니다.
         if (groupA == 1 || groupA == 3)
         {
-            int unlockLevelA = a != null ? Mathf.Max(0, a.UnlockLevel) : int.MaxValue;
-            int unlockLevelB = b != null ? Mathf.Max(0, b.UnlockLevel) : int.MaxValue;
+            int unlockLevelA = a != null ? GetRequiredLevelForRune(a) : int.MaxValue;
+            int unlockLevelB = b != null ? GetRequiredLevelForRune(b) : int.MaxValue;
 
             if (unlockLevelA != unlockLevelB)
                 return unlockLevelA.CompareTo(unlockLevelB);
@@ -1257,7 +1254,33 @@ public class RuneSettingPanel : MonoBehaviour
         if (runeData == null)
             return 0;
 
-        return runeData.UnlockLevel;
+        return CharacterLevelUnlockService.GetRuneUnlockLevel(
+            currentMasterData,
+            runeData,
+            GetCurrentCharacterRuneIndex(runeData));
+    }
+
+    private int GetCurrentCharacterRuneIndex(RuneData runeData)
+    {
+        if (runeData == null || currentMasterData == null)
+            return -1;
+
+        string[] runeIds = currentMasterData.GetRuneIds();
+        for (int i = 0; i < runeIds.Length; i++)
+        {
+            if (string.IsNullOrWhiteSpace(runeIds[i]))
+                continue;
+
+            if (string.Equals(
+                    runeIds[i].Trim(),
+                    runeData.RuneId?.Trim(),
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     private void ShowRuneLockedWarning(RuneData runeData)
@@ -1458,10 +1481,7 @@ public class RuneSettingPanel : MonoBehaviour
 
     private int GetRuneSlotRequiredLevel(int slotIndex)
     {
-        if (runeSlotUnlockLevels == null || slotIndex < 0 || slotIndex >= runeSlotUnlockLevels.Length)
-            return 0;
-
-        return Mathf.Max(1, runeSlotUnlockLevels[slotIndex]);
+        return CharacterLevelUnlockService.GetRuneSlotUnlockLevel(currentMasterData, slotIndex);
     }
 
     public void ShowRuneInfo(RuneData runeData)

@@ -174,9 +174,61 @@ public class BossExplorationResultTests
             Assert.That(result["Char_A"].ExperienceGained, Is.EqualTo(834));
             Assert.That(result["Char_B"].ExperienceGained, Is.EqualTo(445));
             Assert.That(store.Get("Char_A").Level, Is.EqualTo(2));
-            Assert.That(store.Get("Char_A").Exp, Is.EqualTo(734));
+            Assert.That(store.Get("Char_A").Exp, Is.EqualTo(1734));
             Assert.That(store.Get("Char_B").Level, Is.EqualTo(2));
-            Assert.That(store.Get("Char_B").Exp, Is.EqualTo(345));
+            Assert.That(store.Get("Char_B").Exp, Is.EqualTo(1345));
+        });
+    }
+
+    [Test]
+    public void StageClearExperience_TreatsCharacterExpAsCumulativeTotal()
+    {
+        CharacterRuntimeStore store = new();
+        store.AddOrUpdate(new CharacterRuntimeData { CharacterId = "Char_A", Level = 2, Exp = 1000 });
+
+        BattleRunCharacterStatisticsData[] statistics =
+        {
+            new() { CharacterId = "Char_A" }
+        };
+
+        BattleStageClearExperiencePreview preview =
+            BattleStageClearExperienceService.Apply(
+                store,
+                statistics,
+                new BattleStageClearExperienceContext(1, 0, 0, 0))["Char_A"];
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(preview.LevelAfter, Is.EqualTo(2));
+            Assert.That(preview.ExperienceAfter, Is.EqualTo(1090));
+            Assert.That(preview.ProgressAfter01, Is.EqualTo(0.09f).Within(0.0001f));
+            Assert.That(store.Get("Char_A").Level, Is.EqualTo(2));
+            Assert.That(store.Get("Char_A").Exp, Is.EqualTo(1090));
+        });
+    }
+
+    [Test]
+    public void StageClearExperience_MigratesLegacyLevelLocalExpToCumulative()
+    {
+        CharacterRuntimeStore store = new();
+        store.AddOrUpdate(new CharacterRuntimeData { CharacterId = "Char_A", Level = 2, Exp = 345 });
+
+        BattleRunCharacterStatisticsData[] statistics =
+        {
+            new() { CharacterId = "Char_A" }
+        };
+
+        BattleStageClearExperiencePreview preview =
+            BattleStageClearExperienceService.Apply(
+                store,
+                statistics,
+                new BattleStageClearExperienceContext(1, 0, 0, 0))["Char_A"];
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(preview.LevelAfter, Is.EqualTo(2));
+            Assert.That(preview.ExperienceAfter, Is.EqualTo(1435));
+            Assert.That(store.Get("Char_A").Exp, Is.EqualTo(1435));
         });
     }
 
@@ -254,6 +306,37 @@ public class BossExplorationResultTests
             Assert.That(context.NormalBattleClearCount, Is.EqualTo(1));
             Assert.That(context.EliteBattleClearCount, Is.EqualTo(1));
             Assert.That(context.BossBattleClearCount, Is.EqualTo(1));
+            Assert.That(context.EventClearCount, Is.EqualTo(1));
+        });
+    }
+
+    [Test]
+    public void StageClearExperience_BuildsDefeatContextFromPreviouslyClearedRooms()
+    {
+        MapRuntimeData runtime = new()
+        {
+            CurrentNodeIndex = 4,
+            ClearedMapIds = new List<string> { "1", "2", "3" },
+            GeneratedNodes = new List<GeneratedMapNodeData>
+            {
+                new() { NodeIndex = 1, Type = "Common" },
+                new() { NodeIndex = 2, Type = "Elite" },
+                new() { NodeIndex = 3, Type = "Event" },
+                new() { NodeIndex = 4, Type = "Boss" }
+            }
+        };
+
+        BattleStageClearExperienceContext context =
+            BattleStageClearExperienceService.BuildContext(
+                runtime,
+                MapRuntimeProgressUtility.FindCurrentNode(runtime),
+                defeat: true);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(context.NormalBattleClearCount, Is.EqualTo(1));
+            Assert.That(context.EliteBattleClearCount, Is.EqualTo(1));
+            Assert.That(context.BossBattleClearCount, Is.EqualTo(0));
             Assert.That(context.EventClearCount, Is.EqualTo(1));
         });
     }

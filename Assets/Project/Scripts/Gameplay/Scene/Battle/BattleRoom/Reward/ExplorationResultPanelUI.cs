@@ -55,9 +55,8 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
 
         result = ExplorationResultBuilder.Build(runtime);
         isDefeatResult = defeat;
-        experienceContext = defeat
-            ? BattleStageClearExperienceContext.Empty
-            : BattleStageClearExperienceService.BuildContext(mapRuntime, currentNode, defeat);
+        experienceContext =
+            BattleStageClearExperienceService.BuildContext(mapRuntime, currentNode, defeat);
         researchRewardMultiplier = Mathf.Max(0f, rewardMultiplier);
         isTransitioning = false;
         stageClearExperienceApplied = false;
@@ -107,25 +106,21 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
 
         ApplyCharacterRows(
             value,
-            clearContext,
-            !defeat);
+            clearContext);
     }
 
     private void ApplyCharacterRows(
         ExplorationResultData value,
-        BattleStageClearExperienceContext clearContext,
-        bool awardExperience)
+        BattleStageClearExperienceContext clearContext)
     {
         if (characterRows == null)
             return;
 
         IReadOnlyDictionary<string, BattleStageClearExperiencePreview> experiencePreviews =
-            awardExperience
-                ? BattleStageClearExperienceService.Preview(
-                    DataManager.Instance?.CharacterRuntimeStore,
-                    value?.CharacterStatistics,
-                    clearContext)
-                : null;
+            BattleStageClearExperienceService.Preview(
+                DataManager.Instance?.CharacterRuntimeStore,
+                value?.CharacterStatistics,
+                clearContext);
 
         int statsCount = value?.CharacterStatistics?.Count ?? 0;
         for (int i = 0; i < characterRows.Length; i++)
@@ -144,6 +139,7 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
             int gainedExperience = 0;
             bool leveledUp = false;
             float experienceProgress = 0f;
+            IReadOnlyList<string> unlockTexts = null;
 
             if (TryGetExperiencePreview(
                     experiencePreviews,
@@ -153,6 +149,7 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
                 gainedExperience = preview.ExperienceGained;
                 leveledUp = preview.LeveledUp;
                 experienceProgress = preview.ProgressAfter01;
+                unlockTexts = ResolveCharacterUnlockTexts(statistics?.CharacterId, preview);
             }
 
             row.Bind(
@@ -160,7 +157,8 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
                 ResolveCharacterResultImage(statistics?.CharacterId),
                 gainedExperience,
                 leveledUp,
-                experienceProgress);
+                experienceProgress,
+                unlockTexts);
         }
     }
 
@@ -336,6 +334,29 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         return previews.TryGetValue(characterId.Trim(), out preview);
     }
 
+    private static IReadOnlyList<string> ResolveCharacterUnlockTexts(
+        string characterId,
+        BattleStageClearExperiencePreview preview)
+    {
+        if (!preview.LeveledUp ||
+            string.IsNullOrWhiteSpace(characterId) ||
+            DataManager.Instance?.CharacterDatabase == null)
+        {
+            return null;
+        }
+
+        string id = characterId.Trim();
+        if (!DataManager.Instance.CharacterDatabase.TryGet(id, out CharacterMasterData character))
+            return null;
+
+        return CharacterLevelUnlockService.GetUnlockTexts(
+            character,
+            DataManager.Instance.RuneDatabase,
+            DataManager.Instance.SkillDatabase,
+            preview.LevelBefore,
+            preview.LevelAfter);
+    }
+
     private static BattleNodeSummary CountClearedNodeSummary(
         BattleStageClearExperienceContext context)
     {
@@ -460,7 +481,6 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
     private void ApplyStageClearExperienceOnce()
     {
         if (stageClearExperienceApplied ||
-            isDefeatResult ||
             result?.CharacterStatistics == null ||
             DataManager.Instance?.CharacterRuntimeStore == null)
         {
