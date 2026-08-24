@@ -244,6 +244,9 @@ public static class BattleEquipmentEffectService
             runtime.AppliedBattleEquipmentEffectIds = new List<string>();
         else
             runtime.AppliedBattleEquipmentEffectIds.Clear();
+
+        runtime.PendingNextTurnSmiteStack = 0;
+        runtime.PendingNextTurnSmiteTurn = 0;
     }
 
     public static void MarkMovedBeforeNextAttack(CharacterRuntimeData runtime)
@@ -297,6 +300,7 @@ public static class BattleEquipmentEffectService
         if (runtime == null)
             return;
 
+        ApplyQueuedNextTurnSmite(runtime, playerTurnNumber);
         ApplyConfiguredTurnStartEffects(runtime, playerTurnNumber);
         ApplyNoDamagePreviousTurnEffect(runtime, playerTurnNumber);
 
@@ -718,7 +722,11 @@ public static class BattleEquipmentEffectService
                     if (IsSlotMaskEmpty(emptySlotMask, entry.CountAmount) &&
                         TryMarkBattleEffectApplied(runtime, applyKey))
                     {
-                        AddPassiveStatus(runtime, "E_Smite", value, effect.SourceId);
+                        QueueNextTurnSmite(
+                            runtime,
+                            effect.SourceId,
+                            value,
+                            playerTurnNumber + 1);
                     }
                     break;
 
@@ -2020,6 +2028,77 @@ public static class BattleEquipmentEffectService
             return true;
 
         return (emptySlotMask & mask) == mask;
+    }
+
+    private static void QueueNextTurnSmite(
+        CharacterRuntimeData runtime,
+        string sourceId,
+        int stack,
+        int targetTurnNumber)
+    {
+        if (runtime == null || stack <= 0 || targetTurnNumber <= 0)
+            return;
+
+        if (runtime.PendingNextTurnSmiteTurn != targetTurnNumber)
+        {
+            runtime.PendingNextTurnSmiteTurn = targetTurnNumber;
+            runtime.PendingNextTurnSmiteStack = 0;
+        }
+
+        runtime.PendingNextTurnSmiteStack += stack;
+    }
+
+    private static void ApplyQueuedNextTurnSmite(
+        CharacterRuntimeData runtime,
+        int playerTurnNumber)
+    {
+        if (runtime == null ||
+            runtime.PendingNextTurnSmiteStack <= 0 ||
+            runtime.PendingNextTurnSmiteTurn != playerTurnNumber)
+        {
+            return;
+        }
+
+        int stack = runtime.PendingNextTurnSmiteStack;
+        runtime.PendingNextTurnSmiteStack = 0;
+        runtime.PendingNextTurnSmiteTurn = 0;
+
+        AddTemporaryStatus(runtime, "E_Smite", stack, TurnStartSmiteIfSlotsEmptyMaskEffectId);
+    }
+
+    private static void AddTemporaryStatus(
+        CharacterRuntimeData runtime,
+        string effectId,
+        int stack,
+        string sourceId)
+    {
+        if (runtime == null || string.IsNullOrWhiteSpace(effectId) || stack <= 0)
+            return;
+
+        if (runtime.StatusEffects == null)
+            runtime.StatusEffects = new List<StatusEffectRuntimeData>();
+
+        for (int i = 0; i < runtime.StatusEffects.Count; i++)
+        {
+            StatusEffectRuntimeData existing = runtime.StatusEffects[i];
+            if (existing == null || existing.EffectId != effectId)
+                continue;
+
+            existing.Stack += stack;
+            existing.TurnCount = Mathf.Max(existing.TurnCount, 1);
+            existing.IsPassive = false;
+            existing.SourceSkillId = sourceId;
+            return;
+        }
+
+        runtime.StatusEffects.Add(new StatusEffectRuntimeData
+        {
+            EffectId = effectId,
+            Stack = stack,
+            TurnCount = 1,
+            IsPassive = false,
+            SourceSkillId = sourceId
+        });
     }
 
     private static void AddPassiveStatus(

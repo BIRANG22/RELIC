@@ -43,6 +43,7 @@ public sealed class BattleEffectDebugWindow : MonoBehaviour
 
     private Vector2 scrollPosition;
     private Vector2 skillOptionScroll;
+    private Vector2 relicOptionScroll;
     private Vector2 compoundOptionScroll;
     private Rect windowRect = new(16f, 16f, 700f, 820f);
     private GUIStyle smallLabelStyle;
@@ -318,11 +319,12 @@ public sealed class BattleEffectDebugWindow : MonoBehaviour
         GUILayout.Label("유물", EditorLikeHeaderStyle());
 
         List<DebugOption> options = BuildRelicOptions();
-        selectedRelicId = DrawOptionDropdown(
+        selectedRelicId = DrawScrollableOptionDropdown(
             "유물 선택",
             options,
             selectedRelicId,
-            ref relicDropdownOpen);
+            ref relicDropdownOpen,
+            ref relicOptionScroll);
         DrawClearSelectionButton(ref selectedRelicId, "유물 선택 비우기");
 
         CharacterRuntimeData runtime = GetSelectedRuntime();
