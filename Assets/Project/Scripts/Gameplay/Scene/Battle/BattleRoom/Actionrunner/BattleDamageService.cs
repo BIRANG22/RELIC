@@ -24,7 +24,15 @@ public class BattleDamageService
         BattleCharacter attacker = unitFinder.FindBattleCharacter(command.CharacterId);
 
         if (attacker != null && attacker.RuntimeData != null)
+        {
             value += GetStatusStack(attacker.RuntimeData.StatusEffects, "E_Boost");
+
+            if (command.SkillData.SkillType == SkillType.Attack &&
+                GetStatusStack(attacker.RuntimeData.StatusEffects, "E_Smite") > 0)
+            {
+                value = Mathf.CeilToInt(value * 1.5f);
+            }
+        }
 
         return Mathf.Max(1, value);
     }
