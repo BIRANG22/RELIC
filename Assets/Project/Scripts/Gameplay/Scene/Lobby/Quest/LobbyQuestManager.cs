@@ -1,4 +1,5 @@
 using Relic.Gameplay.Data;
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -10,6 +11,23 @@ public sealed class LobbyQuestManager : MonoBehaviour
     [SerializeField] private LobbyQuestTextConfig textConfig = new();
     [SerializeField] private Canvas questCanvas;
     [SerializeField] private LobbyQuestPanel questPanel;
+    [SerializeField] private string[] hideWhenAnyActiveObjectNames =
+    {
+        "DialoguePanel",
+        "CharacterSettingPanel",
+        "SkillSettingPanel",
+        "RuneSettingPanel",
+        "SkillIconSelectPanel_0",
+        "SkillIconSelectPanel_1",
+        "SkillIconSelectPanel_2",
+        "RuneIconSelectPanel",
+        "RelicShopPanel",
+        "CultureTankPanel",
+        "ResearchResultPanel",
+        "ErosionSelectPanel",
+        "StageSelectPanel",
+        "StoragePanel"
+    };
 
     public static LobbyQuestManager Instance { get; private set; }
 
@@ -37,6 +55,11 @@ public sealed class LobbyQuestManager : MonoBehaviour
         SceneManager.sceneLoaded -= HandleSceneLoaded;
     }
 
+    private void LateUpdate()
+    {
+        Refresh();
+    }
+
     public bool CanUseFeature(LobbyTutorialProgress required)
     {
         return LobbyQuestState.CanUseFeature(CurrentProgress, required);
@@ -61,7 +84,7 @@ public sealed class LobbyQuestManager : MonoBehaviour
 
         LobbyQuestState state = LobbyQuestState.Build(GetLobby(), textConfig);
         if (questCanvas != null)
-            questCanvas.gameObject.SetActive(state.IsVisible);
+            questCanvas.gameObject.SetActive(state.IsVisible && IsDefaultLobbyStateVisible());
 
         if (questPanel != null)
             questPanel.Apply(state);
@@ -81,5 +104,48 @@ public sealed class LobbyQuestManager : MonoBehaviour
     {
         Scene activeScene = SceneManager.GetActiveScene();
         return activeScene.IsValid() && activeScene.name == LobbySceneName;
+    }
+
+    private bool IsDefaultLobbyStateVisible()
+    {
+        if (hideWhenAnyActiveObjectNames == null ||
+            hideWhenAnyActiveObjectNames.Length == 0)
+        {
+            return true;
+        }
+
+        for (int i = 0; i < hideWhenAnyActiveObjectNames.Length; i++)
+        {
+            string objectName = hideWhenAnyActiveObjectNames[i];
+            if (string.IsNullOrWhiteSpace(objectName))
+                continue;
+
+            if (IsLobbyObjectActive(objectName))
+                return false;
+        }
+
+        return true;
+    }
+
+    private static bool IsLobbyObjectActive(string objectName)
+    {
+        GameObject[] objects = Resources.FindObjectsOfTypeAll<GameObject>();
+
+        for (int i = 0; i < objects.Length; i++)
+        {
+            GameObject target = objects[i];
+            if (target == null ||
+                !string.Equals(target.name, objectName, StringComparison.Ordinal) ||
+                !target.scene.IsValid() ||
+                target.scene.name != LobbySceneName)
+            {
+                continue;
+            }
+
+            if (target.activeInHierarchy)
+                return true;
+        }
+
+        return false;
     }
 }

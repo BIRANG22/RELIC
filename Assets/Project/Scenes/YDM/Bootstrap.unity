@@ -5781,6 +5781,21 @@ MonoBehaviour:
     FirstExpeditionRequiredItemId:
   questCanvas: {fileID: 2101000014}
   questPanel: {fileID: 2101000024}
+  hideWhenAnyActiveObjectNames:
+  - DialoguePanel
+  - CharacterSettingPanel
+  - SkillSettingPanel
+  - RuneSettingPanel
+  - SkillIconSelectPanel_0
+  - SkillIconSelectPanel_1
+  - SkillIconSelectPanel_2
+  - RuneIconSelectPanel
+  - RelicShopPanel
+  - CultureTankPanel
+  - ResearchResultPanel
+  - ErosionSelectPanel
+  - StageSelectPanel
+  - StoragePanel
 --- !u!1 &2101000010
 GameObject:
   m_ObjectHideFlags: 0

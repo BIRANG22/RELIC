@@ -61,6 +61,21 @@ public sealed class LobbyQuestSourceTests
         StringAssert.Contains("m_Name: LobbyQuestText", scene);
     }
 
+    [Test]
+    public void LobbyQuestPanel_IsHiddenOutsideDefaultLobbyState()
+    {
+        string source = File.ReadAllText("Assets/Project/Scripts/Gameplay/Scene/Lobby/Quest/LobbyQuestManager.cs");
+        string scene = File.ReadAllText("Assets/Project/Scenes/YDM/Bootstrap.unity");
+
+        StringAssert.Contains("hideWhenAnyActiveObjectNames", source);
+        StringAssert.Contains("LateUpdate()", source);
+        StringAssert.Contains("state.IsVisible && IsDefaultLobbyStateVisible()", source);
+        StringAssert.Contains("DialoguePanel", scene);
+        StringAssert.Contains("CharacterSettingPanel", scene);
+        StringAssert.Contains("StageSelectPanel", scene);
+        StringAssert.Contains("StoragePanel", scene);
+    }
+
     private static void AssertSourceContains(string path, string expected)
     {
         string source = File.ReadAllText(path);
