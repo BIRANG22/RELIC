@@ -343,7 +343,7 @@ public class RecordPanelUI : MonoBehaviour
         string rarity = skill != null ? SkillRarityUtility.GetCanonicalName(skill.Rarity) : string.Empty;
         slotDescriptions[slot] = description;
         slotRarityLabels[slot] = skill != null
-            ? FormatRarityLabel(rarity, MainTab.Unique)
+            ? SkillRarityUtility.GetMemoryTypeDisplayName(skill)
             : string.Empty;
         slotRarities[slot] = rarity;
         if (skill != null)
@@ -417,7 +417,7 @@ public class RecordPanelUI : MonoBehaviour
                 displayName,
                 revealSkill,
                 description,
-                FormatRarityLabel(rarity, MainTab.Skill),
+                SkillRarityUtility.GetMemoryTypeDisplayName(skill),
                 rarity);
 
             if (slot != null)

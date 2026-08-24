@@ -30,6 +30,10 @@ public class PierceEffect : BattleEffectBase
                 dealtDamage,
                 wasAlive && context.MonsterTarget.RuntimeData.IsDead);
 
+            BattleEquipmentEffectService.ApplyPlayerLifesteal(
+                context,
+                dealtDamage);
+
             bool killedTarget = wasAlive && context.MonsterTarget.RuntimeData.IsDead;
 
             if (dealtDamage > 0 && context.PlayerCaster != null)

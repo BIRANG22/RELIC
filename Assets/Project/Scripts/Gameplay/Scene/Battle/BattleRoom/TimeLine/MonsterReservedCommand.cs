@@ -39,8 +39,12 @@ public class MonsterReservedCommand
     public bool IsSimulatedMoveBlocked { get; private set; }
     public Vector2Int SimulatedMoveOffset { get; private set; } = Vector2Int.zero;
 
+    public bool UseRequestedMoveOffsetForExecution { get; private set; }
+
     public Vector2Int EffectiveMoveOffset =>
-        HasSimulatedResult ? SimulatedMoveOffset : MoveOffset;
+        UseRequestedMoveOffsetForExecution
+            ? MoveOffset
+            : (HasSimulatedResult ? SimulatedMoveOffset : MoveOffset);
 
     public void SetSimulatedMoveResult(bool blocked, Vector2Int moveOffset)
     {
@@ -51,6 +55,11 @@ public class MonsterReservedCommand
     public void SetMoveOffset(Vector2Int moveOffset)
     {
         MoveOffset = moveOffset;
+    }
+
+    public void SetUseRequestedMoveOffsetForExecution(bool useRequestedMoveOffset)
+    {
+        UseRequestedMoveOffsetForExecution = useRequestedMoveOffset;
     }
 
     public void SetActionIndex(int actionIndex)

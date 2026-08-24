@@ -105,7 +105,7 @@ public static class EventRoomRewardFlowUtility
         if (skill == null)
             return string.Empty;
 
-        string rarityName = SkillRarityUtility.GetDisplayName(skill.Rarity);
+        string rarityName = SkillRarityUtility.GetDisplayName(skill);
         string description = GameDataLocalization.SkillDetails(skill);
 
         if (string.IsNullOrWhiteSpace(description))

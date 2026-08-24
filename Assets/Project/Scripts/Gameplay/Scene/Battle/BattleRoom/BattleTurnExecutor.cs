@@ -326,7 +326,6 @@ public class BattleTurnExecutor : MonoBehaviour
         timelineController.SetSelectedCharacterScaleFeedbackActive(false);
         timelineController.SetSlotSelectionLocked(true);
 
-        ApplyPlayerEndTurnTriggeredEquipmentEffects();
         ApplyPlayerReservationTurnStartEquipmentEffects();
         RefreshBattleHUDs();
 
@@ -465,6 +464,9 @@ public class BattleTurnExecutor : MonoBehaviour
                 timelineController.ApplyBlockedMoveCostRefunds();
                 RefreshBattleHUDs();
             }
+
+            ApplyPlayerEndTurnTriggeredEquipmentEffects();
+            RefreshBattleHUDs();
 
             ClearTimeline();
             yield return null;

@@ -686,7 +686,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
             SkillMasterData skill = ResolveSkill(currentReward.RewardId);
 
             if (itemRarityText != null)
-                itemRarityText.text = skill != null ? SkillRarityUtility.GetDisplayName(skill.Rarity) : string.Empty;
+                itemRarityText.text = skill != null ? SkillRarityUtility.GetDisplayName(skill) : string.Empty;
 
             if (itemEffectText != null)
                 itemEffectText.text = GetSkillDescription(skill, currentReward.Description);

@@ -57,6 +57,8 @@ namespace Relic.Gameplay.Data
         public List<string> AppliedBattleEquipmentEffectIds = new();
         public int PendingNextTurnSmiteStack;
         public int PendingNextTurnSmiteTurn;
+        public int PendingNextTurnBoostStack;
+        public int PendingNextTurnBoostTurn;
 
         public bool IsUnlocked;
 

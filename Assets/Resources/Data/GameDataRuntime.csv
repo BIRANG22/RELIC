@@ -382,7 +382,7 @@ E_Cost_Recovery_Delta,코스트 회복량 변화,Neutral,0,코스트 회복량�
 E_Battle_Start_Cost,전투 시작 코스트 변화,Neutral,0,전투 시작 시 코스트를 수치만큼 추가한다.
 E_Battle_Start_UniqueResource,전투 시작 고유자원,Neutral,0,전투 시작 시 고유자원을 수치만큼 확보한다.
 E_UniqueResource_Gain_If_Empty_Delta,고유자원 공백 획득 보정,Neutral,0,고유자원이 0일 때 고유자원 획득량을 수치만큼 증가시킨다.
-E_UniqueResource_Min_Use_Delta,고유자원 사용 최소치 변화,Neutral,0,고유스킬 사용 가능 최소 고유자원 기준을 수치만큼 변화시킨다.
+E_UniqueResource_Min_Use_Delta,고유자원 사용 최소치 변화,Neutral,0,발현 기억 사용 가능 최소 고유자원 기준을 수치만큼 변화시킨다.
 E_UniqueResource_Overflow_To_Cost,고유자원 초과 코스트 회복,Neutral,0,고유자원이 최대일 때 고유자원을 얻으면 수치 배율만큼 코스트를 회복한다.
 E_UniqueResource_Max_Skill_Cost_Delta,고유자원 최대 스킬 코스트 변화,Neutral,0,고유자원이 최대일 때 모든 스킬 코스트를 수치만큼 변화시킨다.
 E_UniqueResource3_Turn_Start_Aiming,고유자원 3 조준,Neutral,0,고유자원이 3 이상이면 턴 시작 시 조준을 수치만큼 얻는다.
@@ -423,12 +423,12 @@ E_Slot5_Attack_Value_Delta,5번 슬롯 공격 수치 변화,Neutral,0,5번 슬�
 E_Low_HP_Attack_Value_Delta,낮은 체력 공격 피해 변화,Neutral,0,현재 체력이 30% 이하라면 공격타입 스킬 피해량을 수치만큼 변화시킨다.
 E_Self_Buff_Blocked_Buff_Value_Delta,자신 버프 차단 버프 수치 변화,Neutral,0,자신에게 버프를 부여할 수 없는 대신 버프 수치를 수치만큼 증가시킨다.
 E_Full_HP_Buff_Value_Delta,최대 체력 버프 수치 변화,Neutral,0,체력이 최대라면 버프타입 스킬 수치를 수치만큼 변화시킨다.
-E_Unique_Skill_Value_Percent,고유스킬 수치 퍼센트 변화,Neutral,0,고유스킬 수치를 퍼센트로 변화시킨다.
-E_Unique_Skill_Count_Delta,고유스킬 횟수 변화,Neutral,0,고유스킬 횟수를 수치만큼 변화시킨다.
+E_Unique_Skill_Value_Percent,발현 기억 수치 퍼센트 변화,Neutral,0,발현 기억의 효과 수치를 퍼센트로 변화시킨다.
+E_Unique_Skill_Count_Delta,발현 기억 횟수 변화,Neutral,0,발현 기억의 횟수를 수치만큼 변화시킨다.
 E_Slot5_Attack_Pierce,5번 슬롯 공격 관통 변경,Neutral,0,5번 슬롯 공격 스킬의 타격 피해를 관통 피해로 변경한다.
 E_Slot1_Attack_Kill_Focus,1번 슬롯 공격 처치 집중,Neutral,0,1번 슬롯 공격 스킬로 적 처치 시 집중을 수치만큼 얻는다.
 E_Slot5_Attack_Kill_Cost_Refund,5번 슬롯 공격 처치 코스트 반환,Neutral,0,5번 슬롯 공격 스킬로 적 처치 시 해당 스킬 코스트를 돌려받는다.
-E_Unique_Skill_Kill_Focus,고유스킬 처치 집중,Neutral,0,고유스킬로 적 처치 시 집중을 수치만큼 얻는다.
+E_Unique_Skill_Kill_Focus,발현 기억 처치 집중,Neutral,0,발현 기억으로 적 처치 시 집중을 수치만큼 얻는다.
 E_Damage_Poisoned_Fixed,중독 대상 추가 고정피해,Neutral,0,중독이 부여된 적에게 피해를 주면 고정피해를 수치만큼 준다.
 E_Damage_Bleeding_Fixed,출혈 대상 추가 고정피해,Neutral,0,출혈이 부여된 적에게 피해를 주면 고정피해를 수치만큼 준다.
 E_Damage_Vulnerable_Armor,취약 대상 피해 방어도 획득,Neutral,0,취약이 부여된 적에게 피해를 주면 방어도를 수치만큼 얻는다.
@@ -442,9 +442,9 @@ E_Grid_Effect_Immune,그리드 효과 면역,Neutral,0,그리드 효과를 받�
 E_Overheal_To_Armor,최대 체력 회복 방어도 전환,Neutral,0,최대 체력에서 회복되면 회복량에 비례해 방어도를 얻는다.
 E_Healing_Blocked,회복 차단,Neutral,0,체력을 회복할 수 없다.
 E_No_Damage_Previous_Turn_Smite,피해 없음 다음 턴 강타,Neutral,0,이전 턴 동안 피해를 받지 않았다면 턴 시작 시 강타를 수치만큼 얻는다.
-E_Once_Battle_End_Turn_Zero_Cost_Charge,전투당 1회 코스트 0 종료 충전,Neutral,0,턴 종료 시 남은 코스트가 0이면 전투당 1회 충전을 수치만큼 얻는다.
-E_Once_Battle_Attack_Miss_Charge,전투당 1회 공격 실패 충전,Neutral,0,공격이 적중하지 않았을 때 전투당 1회 충전을 수치만큼 얻는다.
-E_Once_Battle_Full_HP_Target_Damage_Percent,전투당 1회 최대 체력 대상 피해 증가,Neutral,0,체력이 최대인 적에게 피해를 줄 때 전투당 1회 피해량을 퍼센트로 증가시킨다.
+E_Once_Battle_End_Turn_Zero_Cost_Charge,턴 종료 마나 0 회복,Neutral,0,턴 종료 시 남은 마나가 0이면 마나를 수치만큼 회복한다.
+E_Once_Battle_Attack_Miss_Charge,공격 실패 마나 회복,Neutral,0,공격이 적중하지 않았을 때마다 마나를 수치만큼 회복한다.
+E_Once_Battle_Full_HP_Target_Damage_Percent,최대 생명력 대상 피해 배율,Neutral,0,생명력이 최대인 적에게 피해를 줄 때 피해량을 수치 배로 적용한다.
 E_Turn_Start_Armor,지정 턴 방어도,Neutral,0,지정 턴 시작 시 방어도를 수치만큼 얻는다.
 E_Turn_Start_Armor_Per_Used_Slot,등록 슬롯 비례 방어도,Neutral,0,등록된 슬롯 수에 비례해 방어도를 얻는다.
 E_Turn_Start_Armor_Per_Empty_Slot,빈 슬롯 비례 방어도,Neutral,0,비어 있는 슬롯 수에 비례해 방어도를 얻는다.
@@ -464,22 +464,22 @@ E_Turn_Start_All_Enemy_Poison,지정 턴 전체 적 중독,Neutral,0,지정 턴 
 E_Turn_Start_All_Enemy_Bleed,지정 턴 전체 적 출혈,Neutral,0,지정 턴 시작 시 모든 적에게 출혈을 수치만큼 부여한다.
 E_Collision_Target_Damage_Delta,충돌 상대 피해 변화,Neutral,0,자신과 충돌한 상대가 받는 피해를 수치만큼 변화시킨다.
 E_Collision_Charge,충돌 충전 획득,Neutral,0,자신과 충돌이 발생하면 충전을 수치만큼 얻는다.
-E_Collision_Kill_Focus,충돌 처치 집중,Neutral,0,자신과 충돌한 상대가 사망하면 집중을 수치만큼 얻는다.
-E_Rest_Heal_Percent_Bonus,휴식 회복량 증가,Neutral,0,휴식으로 회복하는 회복량을 퍼센트로 증가시킨다.
-E_Shop_Price_Discount_Percent,상점 가격 할인,Neutral,0,상점 판매 가격을 퍼센트로 감소시킨다.
-E_Battle_Reward_Currency_Percent,전투 보상 재화 증가,Neutral,0,전투 보상 재화 획득량을 퍼센트로 증가시킨다.
-E_Battle_End_Heal,전투 종료 회복,Neutral,0,전투 종료 후 체력을 수치만큼 회복한다.
+E_Collision_Kill_Focus,충돌 처치 집중,Neutral,0,자신과 충돌한 상대가 사망하면 집중을 수치만큼 얻는다.,
+E_Rest_Heal_Percent_Bonus,휴식 회복량 증가,Neutral,0,휴식으로 회복하는 회복량을 퍼센트로 증가시킨다.,
+E_Shop_Price_Discount_Percent,상점 가격 할인,Neutral,0,상점 판매 가격을 퍼센트로 감소시킨다.,
+E_Battle_Reward_Currency_Percent,전투 보상 재화 증가,Neutral,0,전투 보상 재화 획득량을 퍼센트로 증가시킨다.,
+E_Battle_End_Heal,전투 종료 회복,Neutral,0,전투 종료 후 체력을 수치만큼 회복한다.,
 AR_DamageBoostThisTurn,힘,Beneficial,Decrease,이번 턴 동안 주는 피해가 100% 증가한다.,아이콘
 AR_DamageReductionThisTurn,경화,Beneficial,Decrease,이번 턴 동안 받는 피해가 50% 감소한다.,아이콘
-AR_RecoverUniqueResourceToMax,응축된 카르마,Neutral,0,카르마를 3 회복한다.
-AR_RecoverCostToMax,마력 플라스크,Neutral,0,마나를 10 회복한다.
-AR_GrantSwift,각성,Neutral,0,신속을 2 부여한다.
-AR_CleanseDebuffs,맑은 물,Neutral,0,모든 디버프를 제거한다.
-AR_MoveToGrid,위치 이동,Neutral,0,선택한 빈 그리드로 이동한다.
-AR_SwapAlly,위치 변경,Neutral,0,선택한 그리드의 아군과 위치를 교환한다.
+AR_RecoverUniqueResourceToMax,응축된 카르마,Neutral,0,카르마를 3 회복한다.,
+AR_RecoverCostToMax,마력 플라스크,Neutral,0,마나를 10 회복한다.,
+AR_GrantSwift,각성,Neutral,0,신속을 2 부여한다.,
+AR_CleanseDebuffs,맑은 물,Neutral,0,모든 디버프를 제거한다.,
+AR_MoveToGrid,위치 이동,Neutral,0,선택한 빈 그리드로 이동한다.,
+AR_SwapAlly,위치 변경,Neutral,0,선택한 그리드의 아군과 위치를 교환한다.,
 AR_TargetOutgoingDamageReductionThisTurn,쇠약,Harmful,Decrease,이번 턴 동안 주는 피해를 50% 감소시킨다.,아이콘
-AR_RemoveGridEffect,장애물 제거,Neutral,0,선택한 그리드의 장애물을 제거한다.
-AR_SpawnPoisonGridEffect,독 장판 생성,Neutral,0,선택한 그리드에 독 장판을 생성한다.
+AR_RemoveGridEffect,장애물 제거,Neutral,0,선택한 그리드의 장애물을 제거한다.,
+AR_SpawnPoisonGridEffect,독 장판 생성,Neutral,0,선택한 그리드에 독 장판을 생성한다.,
 AR_SpawnThornGridEffect,가시 생성,Neutral,0,선택한 그리드에 가시를 생성한다.
 AR_SpawnObstacleGridEffect,잔해 생성,Neutral,0,선택한 그리드에 잔해를 생성한다.
 AR_SpawnDummyGridEffect,호문쿨루스 루어,Neutral,0,선택한 빈 그리드에 루어를 생성한다.
@@ -490,6 +490,8 @@ E_Spawn_Spider_Egg,거미알 생성,Neutral,None,선택한 그리드에 거미�
 E_Spawn_Spider_Web,거미줄 생성,Neutral,None,선택한 그리드에 거미줄을 생성한다.
 E_Spider_Web,거미줄,Neutral,Maintain,다음 이동 예약 사용 코스트가 2배가 된다. 이동 예약 성공 시 사라진다.
 E_Spawn_Soldier,사령술,Neutral,None,지정된 위치에 죽었던 병사를 다시 생성한다.
+E_Turn_Start_Cost_Recovery,지정 턴 마나 회복,Neutral,0,지정 턴 시작 시 마나를 수치만큼 회복한다.
+E_Turn_Start_Unique_Resource_Recovery,지정 턴 카르마 회복,Neutral,0,지정 턴 시작 시 카르마를 수치만큼 회복한다. 최대치를 초과하지 않는다.
 
 # Map
 맵ID,이름,타입,전투맵ID,이벤트ID,스테이지 맵,등장가중치
@@ -550,11 +552,11 @@ Battlemap_07,Mon_03,32,-1,-1,-1,,,,,,,,,,
 Battlemap_08,Mon_01,24,-1,-1,-1,"머크 1마리, 드라우그 2마리",20,35,30,25,10,25,35,25,15
 Battlemap_08,Mon_07,20,-1,-1,-1,,,,,,,,,,
 Battlemap_08,Mon_07,28,-1,-1,-1,,,,,,,,,,
-Battlemap_09,Mon_03,27,-1,-1,-1,"바로우 2마리, 랜서 1마리",20,35,30,25,10,25,35,25,15,,15,20,25,30
-Battlemap_09,Mon_08,29,-1,-1,-1,,,,,,,,,,,,16,21,26,31
-Battlemap_09,Mon_08,31,-1,-1,-1,,,,,,,,,,,,17,22,27,32
-Battlemap_10,Mon_04,33,-1,-1,-1,"드라우그, 바로우, 블라이트",20,35,30,25,10,25,35,25,15,,18,23,28,33
-Battlemap_10,Mon_07,21,-1,-1,-1,,,,,,,,,,,,19,24,29,34
+Battlemap_09,Mon_03,27,-1,-1,-1,"바로우 2마리, 랜서 1마리",20,35,30,25,10,25,35,25,15
+Battlemap_09,Mon_08,29,-1,-1,-1,,,,,,,,,,
+Battlemap_09,Mon_08,31,-1,-1,-1,,,,,,,,,,
+Battlemap_10,Mon_04,33,-1,-1,-1,"드라우그, 바로우, 블라이트",20,35,30,25,10,25,35,25,15
+Battlemap_10,Mon_07,21,-1,-1,-1,,,,,,,,,,
 Battlemap_10,Mon_08,27,-1,-1,-1,,,,,,,,,,
 Battlemap_11,Mon_09,27,-1,-1,-1,"정예 루크, 랜서",60,20,25,30,25,25,35,25,15
 Battlemap_11,Mon_03,31,-1,-1,-1,,,,,,,,,,
@@ -737,7 +739,7 @@ Relic_P_09,선봉의 날개,E_Slot1_First_Skill_Cost_Delta,-1,1,1번 슬롯에 �
 Relic_P_10,돌격대의 머리띠,E_Slot1_Attack_Value_Delta,1,1,1번 슬롯에 등록하는 공격타입 기억의 피해량이 {ValueRate1} 증가합니다.,Rare,,,,,,,,,,,,,
 Relic_P_11,진군의 깃발,E_Slot1_Attack_Kill_Focus,1,1,1번 슬롯에 등록한 공격타입 기억으로 적을 처치하면 카르마를 {ValueRate1} 회복합니다.,Rare,,,,,,,,,,,,,
 Relic_P_12,황금잔,E_Slot1_Buff_Value_Delta,1,1,1번 슬롯에 등록하는 버프타입 기억의 효과 수치가 {ValueRate1} 증가합니다.,Rare
-Relic_P_13,굳은 모래시계,E_Slot5_Skill_Cost_Delta,-1,1,5번 슬롯에 등록하는 모든 기억의 마나 소모량이 {ValueRate1} 감소합니다.,Rare
+Relic_P_13,굳은 모래시계,E_Slot5_Skill_Cost_Delta,-1,1,5번 슬롯에 등록하는 모든 기억의 마나 소모량이 {ValueRate1} 감소합니다.,Epic
 Relic_P_14,부서진 칼날,E_Slot5_Attack_Value_Delta,2,1,5번 슬롯에 등록하는 공격타입 기억의 피해량이 {ValueRate1} 증가합니다.,Rare
 Relic_P_15,뾰족한 갈고리,E_Slot5_Attack_Kill_Cost_Refund,1,1,"5번 슬롯에 등록한 공격타입 기억으로 적을 처치하면, 해당 기억에 사용한 마나를 돌려받습니다.",Epic
 Relic_P_16,흑요석 반지,E_Slot5_Attack_Pierce,1,1,5번 슬롯에 등록하는 공격타입 기억의 피해가 관통 피해로 변경됩니다.,Unique
@@ -746,31 +748,31 @@ Relic_P_18,부서진 나침반,E_Max_Registrable_Slot_Count;E_Move_Cost_Zero,1;1
 Relic_P_19,어깨 보호대,E_Turn_Start_Armor_Per_Used_Slot,2,1,턴 실행 시 자신의 기억이 등록된 슬롯 수 × {ValueRate1}만큼 방어도를 얻습니다.,Common
 Relic_P_20,단단한 투구,E_Turn_Start_Armor_Per_Empty_Slot,2,1,턴 실행 시 자신의 기억이 등록되지 않은 슬롯 수 × {ValueRate1}만큼 방어도를 얻습니다.,Common
 Relic_P_21,단안경,E_Turn_Start_Smite_If_Slots_Empty_Mask,1,7,"턴 실행 시 1, 2, 3번 슬롯에 자신의 기억이 하나도 없다면 다음 턴에 강타를 {ValueRate1} 얻습니다.",Rare,,,
-Relic_P_22,망원경,,1,1,"턴 실행 시 3, 4, 5번 슬롯에 자신의 기억이 하나도 없다면 다음 턴에 증폭을 {ValueRate1} 얻습니다.",Rare
+Relic_P_22,망원경,E_Turn_Start_Boost_If_Slots_Empty_Mask,1,28,"턴 실행 시 3, 4, 5번 슬롯에 자신의 기억이 하나도 없다면 다음 턴에 증폭을 {ValueRate1} 얻습니다.",Rare
 Relic_P_23,식칼,E_Turn_Start_Boost_If_One_Attack_Command,3,1,"턴 실행 시 자신이 등록한 공격타입 기억이 하나뿐이라면, 해당 기억의 피해량이 {ValueRate1} 증가합니다.",Epic
 Relic_P_24,삼지창,E_Turn_Start_Boost_If_Attack_Command_Count_At_Least,1,3,"턴 실행 시 공격타입 기억을 {CountRate1}개 이상 등록했다면, 모든 기억의 피해량이 {ValueRate1} 증가합니다.",Common,,
 Relic_P_25,선각자의 부적,E_Turn_Start_All_Enemy_Vulnerable;E_Turn_Start_All_Enemy_Weaken,1,1,1턴 시작 시 모든 적에게 취약과 약화를 각각 {ValueRate1} 부여합니다.,Rare,,
 Relic_P_26,역병의 향로,E_Turn_Start_All_Enemy_Poison;E_Turn_Start_All_Enemy_Bleed,1,1,1턴 시작 시 모든 적에게 중독과 출혈을 각각 {ValueRate1} 부여합니다.,Rare,,
 Relic_P_27,회중시계,E_Turn_Start_Armor,10,2,2턴 시작 시 방어도를 {ValueRate1} 얻습니다.,Common,,
-Relic_P_28,두 갈래 촛대,E_Turn_Start_Charge;E_Turn_Start_Focus,1,2,2턴 시작 시 마나와 카르마를 각각 {ValueRate1} 회복합니다.,Common
-Relic_P_29,막대자석,E_Turn_Start_Swift;E_Turn_Start_Boost,2,3,3턴 시작 시 신속과 증폭을 각각 {ValueRate1} 얻습니다.,Common
-Relic_P_30,박쥐인형,E_Turn_Start_Lifesteal;E_Turn_Start_Smite,2,3,3턴 시작 시 흡혈과 강타를 각각 {ValueRate1} 얻습니다.,Common
-Relic_P_31,무거운 발장식,E_No_Move_In_Slot_Buff_Cost_Delta,-1,1,"등록하려는 슬롯에서 이동타입 기억을 사용하지 않았다면, 버프타입 기억의 마나 소모량이 {ValueRate1} 감소합니다.",Rare
-Relic_P_32,뿔조각,E_After_Move_Debuff_Cost_Delta,-2,1,"등록하려는 슬롯에서 이동타입 기억을 사용한 뒤라면, 디버프타입 기억의 마나 소모량이 {ValueRate1} 감소합니다.",Rare
-Relic_P_33,송곳니,E_After_Move_Debuff_Value_Delta,2,1,"등록하려는 슬롯에서 이동타입 기억을 사용한 뒤라면, 디버프타입 기억의 효과 수치가 {ValueRate1} 증가합니다.",Rare
-Relic_P_34,편자,E_After_Move_Attack_Value_Per_Cost,1,1,"등록하려는 슬롯에서 이동타입 기억을 사용한 뒤라면, 공격타입 기억의 피해량이 이동에 소모한 마나만큼 증가합니다.",Epic
+Relic_P_28,두 갈래 촛대,E_Turn_Start_Cost_Recovery;E_Turn_Start_Unique_Resource_Recovery,1;1,2;2,2턴 시작 시 마나와 카르마를 각각 {ValueRate1} 회복합니다.,Common
+Relic_P_29,막대자석,E_Turn_Start_Swift;E_Turn_Start_Boost,2;2,3;3,3턴 시작 시 신속과 증폭을 각각 {ValueRate1} 얻습니다.,Common
+Relic_P_30,박쥐 인형,E_Turn_Start_Lifesteal;E_Turn_Start_Smite,2;2,3;3,3턴 시작 시 흡혈과 강타를 각각 {ValueRate1} 얻습니다.,Common
+Relic_P_31,무거운 발장식,E_No_Move_In_Slot_Buff_Cost_Delta,-1,1,"등록하려는 슬롯에서 이동하지 않았다면, 버프타입 기억의 마나 소모량이 {ValueRate1} 감소합니다.",Rare
+Relic_P_32,뿔조각,E_After_Move_Debuff_Cost_Delta,-2,1,"등록하려는 슬롯에서 이동한 뒤라면, 디버프타입 기억의 마나 소모량이 {ValueRate1} 감소합니다.",Epic
+Relic_P_33,송곳니,E_After_Move_Debuff_Value_Delta,2,1,"등록하려는 슬롯에서 이동한 뒤라면, 디버프타입 기억의 효과 수치가 {ValueRate1} 증가합니다.",Unique
+Relic_P_34,편자,E_After_Move_Attack_Value_Per_Cost,1,1,"등록하려는 슬롯에서 이동한 뒤라면, 공격타입 기억의 피해량이 이동에 소모한 마나만큼 증가합니다.",Epic
 Relic_P_35,강철 닻,E_Forced_Move_Immune,1,1,넉백과 그랩의 영향을 받지 않습니다.,Rare,,
 Relic_P_36,심연의 비늘,E_Crash_Damage_Immune,1,1,충돌로 인한 피해를 받지 않습니다.,Epic,,
 Relic_P_37,무쇠 장화,E_Grid_Effect_Immune,1,1,장애물로 인한 효과를 받지 않습니다.,Unique,,
 Relic_P_38,주전자,E_Overheal_To_Armor,1,1,"생명력이 최대인 상태에서 생명력을 회복하면, 회복량만큼 방어도를 얻습니다.",Rare,,
-Relic_P_39,단단한 얼음,E_No_Damage_Previous_Turn_Smite,1,1,"이번 턴 동안 피해를 받지 않았다면, 다음 턴 시작 시 강타를 {ValueRate1} 얻습니다.",Unique
+Relic_P_39,단단한 얼음,E_No_Damage_Previous_Turn_Smite,1,1,"이번 턴 동안 피해를 받지 않았다면, 다음 턴에 강타를 {ValueRate1} 얻습니다.",Unique
 Relic_P_40,피의 잔,E_Healing_Blocked;E_Armor_Gain_Percent,50,1,"생명력을 회복할 수 없는 대신, 자신이 얻는 방어도가 {ValueRate1}% 증가합니다.",Epic
 Relic_P_41,날이 선 톱,E_Collision_Target_Damage_Delta,2,1,충돌한 대상이 받는 충돌 피해가 {ValueRate1} 증가합니다.,Epic
 Relic_P_42,축전지,E_Collision_Charge,1,1,충돌이 발생하면 마나를 {ValueRate1} 회복합니다.,Common
 Relic_P_43,신수의 뿔,E_Collision_Kill_Focus,2,1,"충돌한 대상의 생명력이 0이 되면, 카르마를 {ValueRate1} 회복합니다.",Common
 Relic_P_44,낡은 허리띠,E_Low_HP_Skill_Cost_Delta,-1,1,"생명력이 30% 이하라면, 모든 기억의 마나 소모량이 {ValueRate1} 감소합니다.",Common
 Relic_P_45,피 묻은 발톱,E_Low_HP_Attack_Value_Delta,1,1,"생명력이 30% 이하라면, 공격타입 기억의 피해량이 {ValueRate1} 증가합니다.",Common
-Relic_P_46,두꺼운 가죽,E_Low_HP_Damage_Reduction_Percent,20,1,"생명력이 30% 이하라면, 받는 피해가 {ValueRate1}% 감소합니다.",Common
+Relic_P_46,두꺼운 가죽,E_Low_HP_Damage_Reduction_Percent,50,1,"생명력이 30% 이하라면, 받는 피해가 {ValueRate1}% 감소합니다.",Common
 Relic_P_47,배,E_High_HP_Cost_Recovery_Delta,1,1,"생명력이 90% 이상이라면, 마나 재생량이 {ValueRate1} 증가합니다.",Rare
 Relic_P_48,지팡이,E_High_HP_Buff_Cost_Delta,-1,1,"생명력이 90% 이상이라면, 버프타입 기억의 마나 소모량이 {ValueRate1} 감소합니다.",Rare
 Relic_P_49,독주사기,E_Damage_Poisoned_Fixed,1,1,"중독이 부여된 적에게 피해를 주면, {ValueRate1}의 추가 피해를 줍니다.",Common
@@ -780,15 +782,15 @@ Relic_P_52,무거운 방패,E_Damage_Weakened_Armor,2,1,"약화가 부여된 적
 Relic_P_53,감염된 바늘,E_Damage_Non_Poisoned_Apply_Poison,1,1,"중독이 부여되지 않은 적에게 피해를 주면, 중독을 {ValueRate1} 부여합니다.",Common,,
 Relic_P_54,희생자의 관,E_Self_Buff_Blocked_Buff_Value_Delta,2,1,"자신에게 이로운 효과를 부여할 수 없는 대신, 버프타입 기억의 효과 수치가 {ValueRate1} 증가합니다.",Unique,,
 Relic_P_55,순백의 왕관,E_Full_HP_Buff_Value_Delta,1,1,"생명력이 최대라면, 버프타입 기억의 효과 수치가 {ValueRate1} 증가합니다.",Rare
-Relic_P_56,까마귀의 깃,E_Ally_Buff_Charge,1,1,"자신을 제외한 아군에게 이로운 효과를 부여하면, 마나를 {ValueRate1} 회복합니다.",Epic
+Relic_P_56,까마귀의 깃,E_Ally_Buff_Charge,1,1,"아군에게 이로운 효과를 부여하면, 마나를 {ValueRate1} 회복합니다.",Epic
 Relic_P_57,빛나는 수정구,E_UniqueResource_Overflow_To_Cost,1,1,"카르마가 최대인 상태에서 카르마를 회복하면, 획득하려던 수치만큼 마나를 회복합니다.",Epic
 Relic_P_58,비단 초커,E_UniqueResource_Max_Skill_Cost_Delta,-1,1,"카르마가 최대라면, 모든 기억의 마나 소모량이 {ValueRate1} 감소합니다.",Unique
-Relic_P_59,사슬낫,E_Unique_Skill_Kill_Focus,1,1,"고유 기억으로 적을 처치하면, 카르마를 {ValueRate1} 회복합니다.",Epic
-Relic_P_60,마력 렌즈,E_Unique_Skill_Value_Percent,50,1,고유 기억의 효과 수치가 {ValueRate1}% 증가합니다.,Rare
-Relic_P_61,마력 수정,E_Unique_Skill_Count_Delta,1,1,고유 기억의 횟수가 {ValueRate1}회 증가합니다.,Epic
-Relic_P_62,부싯돌,,3,1,턴 종료 시 마나가 0이라면 마나를 {ValueRate1} 회복합니다.,Epic
-Relic_P_63,불발탄,,1,1,공격이 적중하지 않았다면 마나를 {ValueRate1} 회복합니다.,Rare
-Relic_P_64,처형인의 안경,,2,1,"생명력이 최대인 적에게 피해를 주면, 피해량이 {ValueRate1}배로 적용됩니다.",Epic
+Relic_P_59,사슬낫,E_Unique_Skill_Kill_Focus,1,1,"발현 기억으로 적을 처치하면, 카르마를 {ValueRate1} 회복합니다.",Epic
+Relic_P_60,마력 렌즈,E_Unique_Skill_Value_Percent,50,1,발현 기억의 효과 수치가 {ValueRate1}% 증가합니다.,Rare
+Relic_P_61,마력 수정,E_Unique_Skill_Count_Delta,1,1,발현 기억의 횟수가 {ValueRate1}회 증가합니다.,Epic
+Relic_P_62,부싯돌,E_Once_Battle_End_Turn_Zero_Cost_Charge,3,1,턴 종료 시 마나가 0이라면 마나를 {ValueRate1} 회복합니다.,Epic
+Relic_P_63,불발탄,E_Once_Battle_Attack_Miss_Charge,1,1,공격이 적중하지 않았다면 마나를 {ValueRate1} 회복합니다.,Rare
+Relic_P_64,처형인의 안경,E_Once_Battle_Full_HP_Target_Damage_Percent,2,1,"생명력이 최대인 적에게 피해를 주면, 피해량이 {ValueRate1}배로 적용됩니다.",Epic
 Relic_P_65,블럭집,E_Rest_Heal_Percent_Bonus,50,1,휴식으로 회복하는 생명력이 {ValueRate1}% 증가합니다.,Common
 Relic_P_66,상인의 금인장,E_Shop_Price_Discount_Percent,30,1,상점에서 판매하는 모든 물품의 가격이 {ValueRate1}% 감소합니다.,Common,,
 Relic_P_67,구슬 주머니,E_Battle_Reward_Currency_Percent,20,1,전투 보상으로 획득하는 재화의 양이 {ValueRate1}% 증가합니다.,Rare,,

@@ -116,12 +116,31 @@ namespace Relic.Gameplay.Data
             return rarity switch
             {
                 SkillRarity.Move => "이동",
-                SkillRarity.Exclusive => "고유 기억",
+                SkillRarity.Exclusive => "기억",
                 SkillRarity.Common => "일반 기억",
                 SkillRarity.Rare => "레어 기억",
                 SkillRarity.Epic => "에픽 기억",
                 SkillRarity.Unique => "유니크 기억",
                 _ => string.Empty
+            };
+        }
+
+        public static string GetDisplayName(SkillMasterData skill)
+        {
+            return GetMemoryTypeDisplayName(skill);
+        }
+
+        public static string GetMemoryTypeDisplayName(SkillMasterData skill)
+        {
+            if (skill == null)
+                return string.Empty;
+
+            return skill.Category switch
+            {
+                Category.Passive => "본능 기억",
+                Category.Unique => "발현 기억",
+                Category.Ability => "구현 기억",
+                _ => GetDisplayName(skill.Rarity)
             };
         }
 

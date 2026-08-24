@@ -478,7 +478,7 @@ public class BattleRewardResolver : MonoBehaviour
         if (skill == null)
             return "";
 
-        string rarityName = SkillRarityUtility.GetDisplayName(skill.Rarity);
+        string rarityName = SkillRarityUtility.GetDisplayName(skill);
         string description = GameDataLocalization.SkillDetails(skill);
 
         if (string.IsNullOrWhiteSpace(description))

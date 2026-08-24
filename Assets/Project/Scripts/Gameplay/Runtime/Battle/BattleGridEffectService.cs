@@ -249,12 +249,21 @@ namespace Relic.Gameplay.Battle
             if (damage <= 0)
                 return false;
 
+            int hpBefore = runtimeData.CurrentHP;
+            int shieldBefore = runtimeData.CurrentShield;
+
             int shieldDamage = Mathf.Min(runtimeData.CurrentShield, damage);
             runtimeData.CurrentShield -= shieldDamage;
             damage -= shieldDamage;
 
             if (damage > 0)
                 runtimeData.CurrentHP = Mathf.Max(0, runtimeData.CurrentHP - damage);
+
+            int hpDamage = Mathf.Max(0, hpBefore - runtimeData.CurrentHP);
+            int appliedDamage = Mathf.Max(0, shieldBefore - runtimeData.CurrentShield) + hpDamage;
+
+            if (appliedDamage > 0)
+                BattleEquipmentEffectService.MarkPlayerDamagedThisTurn(runtimeData);
 
             return true;
         }
