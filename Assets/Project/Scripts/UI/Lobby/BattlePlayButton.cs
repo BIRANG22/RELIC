@@ -6,6 +6,7 @@ public class BattlePlayButton : MonoBehaviour
 {
     [Header("Button")]
     [SerializeField] private Button button;
+    [SerializeField] private LobbyQuestGate questGate;
 
     [Header("Stage Carousel")]
     [Tooltip("스테이지 버튼을 캐러셀 방식으로 사용할 때 연결합니다. 비워 두면 씬에서 자동으로 찾습니다.")]
@@ -40,6 +41,15 @@ public class BattlePlayButton : MonoBehaviour
         if (button == null)
             button = GetComponent<Button>();
 
+        if (questGate == null)
+        {
+            questGate = GetComponent<LobbyQuestGate>();
+            if (questGate == null)
+                questGate = gameObject.AddComponent<LobbyQuestGate>();
+
+            questGate.RequiredProgress = LobbyTutorialProgress.FirstExpeditionAssigned;
+        }
+
         FindWarningUIIfMissing();
         FindStageCarouselIfMissing();
     }
@@ -53,6 +63,9 @@ public class BattlePlayButton : MonoBehaviour
     public async void OnClickPlay()
     {
         if (isProcessing)
+            return;
+
+        if (questGate != null && !questGate.TryConsume())
             return;
 
         isProcessing = true;

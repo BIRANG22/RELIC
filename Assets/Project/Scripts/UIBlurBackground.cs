@@ -495,57 +495,7 @@ public sealed class UIBlurBackground : MonoBehaviour
         effectiveBlurredUiRoots.Clear();
         AppendValidBlurredUiRoots(blurredUiRoots, effectiveBlurredUiRoots);
         AppendValidBlurredUiRoots(runtimeBlurredUiRoots, effectiveBlurredUiRoots);
-        AppendLobbyQuestPanelRoot(effectiveBlurredUiRoots);
         return effectiveBlurredUiRoots;
-    }
-
-    private void AppendLobbyQuestPanelRoot(List<GameObject> target)
-    {
-        if (target == null)
-            return;
-
-        Canvas ownerCanvas = GetComponentInParent<Canvas>();
-        Canvas rootCanvas = ownerCanvas != null ? ownerCanvas.rootCanvas : null;
-
-        Transform questPanelTransform = null;
-
-        if (rootCanvas != null)
-        {
-            questPanelTransform = rootCanvas.transform.Find(
-                "Resolution Viewport/PositionPanel/QuestPanel");
-        }
-
-        // ErosionSelectPanel처럼 자체 Canvas를 사용하는 패널에서도
-        // 로비 최상위 PositionPanel의 QuestPanel을 놓치지 않도록 씬 전체에서 보조 탐색합니다.
-        if (questPanelTransform == null)
-        {
-            Transform[] transforms = FindObjectsByType<Transform>(
-                FindObjectsInactive.Include,
-                FindObjectsSortMode.None);
-
-            for (int i = 0; i < transforms.Length; i++)
-            {
-                Transform item = transforms[i];
-                if (item == null || !item.gameObject.scene.IsValid() || item.name != "QuestPanel")
-                    continue;
-
-                Transform parent = item.parent;
-                if (parent == null || parent.name != "PositionPanel")
-                    continue;
-
-                questPanelTransform = item;
-                break;
-            }
-        }
-
-        if (questPanelTransform == null)
-            return;
-
-        GameObject questPanel = questPanelTransform.gameObject;
-        if (!questPanel.activeInHierarchy || target.Contains(questPanel))
-            return;
-
-        target.Add(questPanel);
     }
 
     private static void AppendValidBlurredUiRoots(IEnumerable<GameObject> roots, List<GameObject> target)

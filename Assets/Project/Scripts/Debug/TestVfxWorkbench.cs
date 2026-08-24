@@ -43,7 +43,7 @@ public sealed class TestVfxWorkbench : MonoBehaviour
     [SerializeField] private string statusEffectId = "E_Poison";
 
     [Header("Shortcuts")]
-    [SerializeField] private KeyCode togglePanelKey = KeyCode.BackQuote;
+    [SerializeField] private KeyCode togglePanelKey = KeyCode.F2;
     [SerializeField] private KeyCode toggleHelpKey = KeyCode.F1;
     [SerializeField] private KeyCode playOnceKey = KeyCode.Space;
     [SerializeField] private KeyCode clearKey = KeyCode.Delete;
