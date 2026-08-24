@@ -83545,7 +83545,7 @@ MonoBehaviour:
   - {fileID: 1512511009}
   hideFinishObjectsOnAwake: 1
   hideFinishObjectsOnPlay: 1
-  finalHoldTime: 1
+  finalHoldTime: 2
   hideRevealTargetsAfterFinish: 1
   disableSequenceObjectAfterFinish: 0
   hideRevealTargetsOnAwake: 1
