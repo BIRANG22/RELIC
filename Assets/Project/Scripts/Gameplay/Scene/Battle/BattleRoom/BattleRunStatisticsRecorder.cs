@@ -23,4 +23,13 @@ public static class BattleRunStatisticsRecorder
         if (killed)
             BattleRunStatisticsService.RecordKill(runtime, characterId);
     }
+
+    public static void RecordBuffApplied(string characterId, int value)
+    {
+        BattleRuntimeData runtime = DataManager.Instance?.BattleRuntimeStore?.GetOrCreate();
+        if (runtime == null || string.IsNullOrWhiteSpace(characterId))
+            return;
+
+        BattleRunStatisticsService.RecordBuffApplied(runtime, characterId, value);
+    }
 }

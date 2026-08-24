@@ -28,6 +28,9 @@ public abstract class BattleEffectBase
             {
                 BattleEffectUtility.OnPlayerBuffApplied?.Invoke(buffTarget);
                 BattleEquipmentEffectService.HandlePlayerBuffApplied(context, buffTarget);
+                BattleRunStatisticsRecorder.RecordBuffApplied(
+                    context.PlayerCaster?.RuntimeData?.CharacterId,
+                    BattleEffectUtility.GetRepeatedValue(context));
             }
         }
     }
