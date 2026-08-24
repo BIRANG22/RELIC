@@ -86,10 +86,13 @@ public static class BattleEquipmentEffectService
     private const string TurnStartArmorPerEmptySlotEffectId = "E_Turn_Start_Armor_Per_Empty_Slot";
     private const string TurnStartChargeEffectId = "E_Turn_Start_Charge";
     private const string TurnStartFocusEffectId = "E_Turn_Start_Focus";
+    private const string TurnStartCostRecoveryEffectId = "E_Turn_Start_Cost_Recovery";
+    private const string TurnStartUniqueResourceRecoveryEffectId = "E_Turn_Start_Unique_Resource_Recovery";
     private const string TurnStartSwiftEffectId = "E_Turn_Start_Swift";
     private const string TurnStartBoostEffectId = "E_Turn_Start_Boost";
     private const string TurnStartSmiteEffectId = "E_Turn_Start_Smite";
     private const string TurnStartLifestealEffectId = "E_Turn_Start_Lifesteal";
+    private const string LifestealEffectId = "E_Lifesteal";
     private const string TurnStartSmiteIfSlotsEmptyMaskEffectId = "E_Turn_Start_Smite_If_Slots_Empty_Mask";
     private const string TurnStartBoostIfSlotsEmptyMaskEffectId = "E_Turn_Start_Boost_If_Slots_Empty_Mask";
     private const string TurnStartBoostIfOneAttackCommandEffectId = "E_Turn_Start_Boost_If_One_Attack_Command";
@@ -247,6 +250,8 @@ public static class BattleEquipmentEffectService
 
         runtime.PendingNextTurnSmiteStack = 0;
         runtime.PendingNextTurnSmiteTurn = 0;
+        runtime.PendingNextTurnBoostStack = 0;
+        runtime.PendingNextTurnBoostTurn = 0;
     }
 
     public static void MarkMovedBeforeNextAttack(CharacterRuntimeData runtime)
@@ -278,6 +283,25 @@ public static class BattleEquipmentEffectService
         RemoveBattleEffectApplied(runtime, MoveFirstAttackReadyStateId);
     }
 
+    public static void ApplyPlayerLifesteal(BattleEffectContext context, int dealtDamage)
+    {
+        if (context == null ||
+            context.PlayerCaster == null ||
+            context.PlayerCaster.RuntimeData == null ||
+            dealtDamage <= 0)
+        {
+            return;
+        }
+
+        if (GetStatusStack(context.PlayerCaster.RuntimeData, LifestealEffectId) <= 0)
+            return;
+
+        int healAmount = Mathf.CeilToInt(dealtDamage * 0.3f);
+
+        if (healAmount > 0)
+            BattleEffectUtility.HealPlayer(context.PlayerCaster, healAmount);
+    }
+
     public static int GetKillHealAmount(CharacterRuntimeData runtime)
     {
         int stack = GetStatusStack(runtime, KillHealEffectId);
@@ -301,6 +325,7 @@ public static class BattleEquipmentEffectService
             return;
 
         ApplyQueuedNextTurnSmite(runtime, playerTurnNumber);
+        ApplyQueuedNextTurnBoost(runtime, playerTurnNumber);
         ApplyConfiguredTurnStartEffects(runtime, playerTurnNumber);
         ApplyNoDamagePreviousTurnEffect(runtime, playerTurnNumber);
 
@@ -734,7 +759,11 @@ public static class BattleEquipmentEffectService
                     if (IsSlotMaskEmpty(emptySlotMask, entry.CountAmount) &&
                         TryMarkBattleEffectApplied(runtime, applyKey))
                     {
-                        AddPassiveStatus(runtime, "E_Boost", value, effect.SourceId);
+                        QueueNextTurnBoost(
+                            runtime,
+                            effect.SourceId,
+                            value,
+                            playerTurnNumber + 1);
                     }
                     break;
 
@@ -763,9 +792,9 @@ public static class BattleEquipmentEffectService
         if (runtime == null)
             return;
 
-        int charge = SumConfiguredEffectValues(runtime, OnceBattleEndTurnZeroCostChargeEffectId);
+        int recovery = SumConfiguredEffectValues(runtime, OnceBattleEndTurnZeroCostChargeEffectId);
 
-        if (charge <= 0)
+        if (recovery <= 0)
             return;
 
         int remainingCost = Mathf.Max(0, runtime.CurrentCost - runtime.ReservedCost);
@@ -773,10 +802,9 @@ public static class BattleEquipmentEffectService
         if (remainingCost > 0)
             return;
 
-        if (!TryMarkBattleEffectApplied(runtime, OnceBattleEndTurnZeroCostChargeEffectId))
-            return;
-
-        AddPassiveStatus(runtime, "E_Charge", charge, OnceBattleEndTurnZeroCostChargeEffectId);
+        runtime.CurrentCost = Mathf.Min(
+            Mathf.Max(0, runtime.MaxCost),
+            Mathf.Max(0, runtime.CurrentCost) + recovery);
     }
 
     public static void TryApplyAttackMissCharge(CharacterRuntimeData runtime)
@@ -784,15 +812,14 @@ public static class BattleEquipmentEffectService
         if (runtime == null)
             return;
 
-        int charge = SumConfiguredEffectValues(runtime, OnceBattleAttackMissChargeEffectId);
+        int recovery = SumConfiguredEffectValues(runtime, OnceBattleAttackMissChargeEffectId);
 
-        if (charge <= 0)
+        if (recovery <= 0)
             return;
 
-        if (!TryMarkBattleEffectApplied(runtime, OnceBattleAttackMissChargeEffectId))
-            return;
-
-        AddPassiveStatus(runtime, "E_Charge", charge, OnceBattleAttackMissChargeEffectId);
+        runtime.CurrentCost = Mathf.Min(
+            Mathf.Max(0, runtime.MaxCost),
+            Mathf.Max(0, runtime.CurrentCost) + recovery);
     }
 
     public static float ModifyPlayerDamageToMonster(
@@ -816,28 +843,37 @@ public static class BattleEquipmentEffectService
             return result;
 
         CharacterRuntimeData runtime = context.PlayerCaster.RuntimeData;
-        int bonusPercent = SumConfiguredEffectValues(runtime, OnceBattleFullHpTargetDamagePercentEffectId);
+        int multiplier = SumConfiguredEffectValues(runtime, OnceBattleFullHpTargetDamagePercentEffectId);
 
-        if (bonusPercent <= 0)
+        if (multiplier <= 0)
             return result;
 
-        if (!TryMarkBattleEffectApplied(runtime, OnceBattleFullHpTargetDamagePercentEffectId))
-            return result;
+        return result * multiplier;
+    }
 
-        return result * (1f + bonusPercent / 100f);
+    public static int GetCollisionTargetDamageDelta(CharacterRuntimeData runtime)
+    {
+        if (runtime == null || runtime.IsDead)
+            return 0;
+
+        return Mathf.Max(0, SumConfiguredEffectValues(runtime, CollisionTargetDamageDeltaEffectId));
     }
 
     public static void ApplyPlayerCollisionEffects(
         BattleCharacter owner,
         BattleCharacter playerTarget,
-        MonsterUnit monsterTarget)
+        MonsterUnit monsterTarget,
+        bool targetKilledOverride = false)
     {
         CharacterRuntimeData runtime = owner != null ? owner.RuntimeData : null;
 
         if (runtime == null || runtime.IsDead)
             return;
 
-        bool targetKilled = ApplyCollisionExtraDamage(runtime, playerTarget, monsterTarget);
+        bool targetKilled =
+            targetKilledOverride ||
+            (playerTarget != null && playerTarget.RuntimeData != null && playerTarget.RuntimeData.IsDead) ||
+            (monsterTarget != null && monsterTarget.RuntimeData != null && monsterTarget.RuntimeData.IsDead);
 
         int charge = SumConfiguredEffectValues(runtime, CollisionChargeEffectId);
 
@@ -847,10 +883,10 @@ public static class BattleEquipmentEffectService
         if (!targetKilled)
             return;
 
-        int focus = SumConfiguredEffectValues(runtime, CollisionKillFocusEffectId);
+        int karmaRecovery = SumConfiguredEffectValues(runtime, CollisionKillFocusEffectId);
 
-        if (focus > 0)
-            AddPassiveStatus(runtime, "E_Focus", focus, CollisionKillFocusEffectId);
+        if (karmaRecovery > 0)
+            RecoverUniqueResource(runtime, karmaRecovery);
     }
 
     public static int ModifyRestHealAmountForParty(int baseAmount)
@@ -1059,6 +1095,14 @@ public static class BattleEquipmentEffectService
         if (runtime == null || command == null || entry == null)
             return count;
 
+        if (command.SkillData != null &&
+            command.SkillData.Category == Category.Unique)
+        {
+            count = Mathf.Max(
+                0,
+                count + SumConfiguredEffectValues(runtime, UniqueSkillCountDeltaEffectId));
+        }
+
         if (!IsDamageEffect(entry.EffectId))
             return count;
 
@@ -1068,14 +1112,6 @@ public static class BattleEquipmentEffectService
         count = Mathf.Max(
             0,
             count + SumConfiguredEffectValues(runtime, AttackCountDeltaEffectId));
-
-        if (command.SkillData != null &&
-            command.SkillData.Category == Category.Unique)
-        {
-            count = Mathf.Max(
-                0,
-                count + SumConfiguredEffectValues(runtime, UniqueSkillCountDeltaEffectId));
-        }
 
         int randomAttackCountDelta = SumConfiguredEffectValues(runtime, RandomAttackCountDeltaEffectId);
         if (randomAttackCountDelta != 0 &&
@@ -1321,6 +1357,18 @@ public static class BattleEquipmentEffectService
                 continue;
             }
 
+            if (entry.EffectId == TurnStartCostRecoveryEffectId)
+            {
+                ApplyTurnStartCostRecovery(runtime, Mathf.Max(0, entry.ValueAmount));
+                continue;
+            }
+
+            if (entry.EffectId == TurnStartUniqueResourceRecoveryEffectId)
+            {
+                ApplyTurnStartUniqueResourceRecovery(runtime, Mathf.Max(0, entry.ValueAmount));
+                continue;
+            }
+
             if (TryApplyEnemyTurnStartStatusEffect(entry, effect.SourceId))
                 continue;
 
@@ -1332,7 +1380,7 @@ public static class BattleEquipmentEffectService
             if (string.IsNullOrWhiteSpace(statusEffectId))
                 continue;
 
-            AddPassiveStatus(
+            AddTemporaryStatus(
                 runtime,
                 statusEffectId,
                 Mathf.Max(0, entry.ValueAmount),
@@ -1353,10 +1401,88 @@ public static class BattleEquipmentEffectService
             int smite = SumConfiguredEffectValues(runtime, NoDamagePreviousTurnSmiteEffectId);
 
             if (smite > 0)
-                AddPassiveStatus(runtime, "E_Smite", smite, NoDamagePreviousTurnSmiteEffectId);
+                AddTemporaryStatus(runtime, "E_Smite", smite, NoDamagePreviousTurnSmiteEffectId);
         }
 
         RemoveBattleEffectApplied(runtime, DamageTakenThisTurnStateId);
+    }
+
+    private static void ApplyTurnStartCostRecovery(CharacterRuntimeData runtime, int amount)
+    {
+        if (runtime == null || amount <= 0)
+            return;
+
+        runtime.CurrentCost = Mathf.Min(
+            Mathf.Max(0, runtime.MaxCost),
+            Mathf.Max(0, runtime.CurrentCost) + amount);
+    }
+
+    private static void ApplyTurnStartUniqueResourceRecovery(CharacterRuntimeData runtime, int amount)
+    {
+        if (runtime == null || amount <= 0)
+            return;
+
+        int maxResource = GetMaxUniqueResource(runtime);
+        if (maxResource <= 0)
+            return;
+
+        runtime.CurrentResource = Mathf.Clamp(
+            Mathf.Max(0, runtime.CurrentResource) + amount,
+            0,
+            maxResource);
+    }
+
+    private static int GetMaxUniqueResource(CharacterRuntimeData runtime)
+    {
+        if (runtime == null ||
+            DataManager.Instance == null ||
+            DataManager.Instance.CharacterDatabase == null ||
+            !DataManager.Instance.CharacterDatabase.TryGet(
+                runtime.CharacterId,
+                out CharacterMasterData masterData) ||
+            masterData == null)
+        {
+            return 0;
+        }
+
+        return Mathf.Max(0, masterData.MaxResource);
+    }
+
+    private static void RecoverUniqueResource(CharacterRuntimeData runtime, int amount)
+    {
+        if (runtime == null || amount <= 0)
+            return;
+
+        int maxResource = GetMaxUniqueResource(runtime);
+        if (maxResource <= 0)
+            return;
+
+        int previousResource = Mathf.Max(0, runtime.CurrentResource);
+        int modifiedAmount = Mathf.Max(0, ModifyUniqueResourceGain(runtime, amount));
+
+        ApplyUniqueResourceGainSideEffects(
+            runtime,
+            modifiedAmount,
+            previousResource,
+            maxResource);
+
+        runtime.CurrentResource = Mathf.Clamp(
+            previousResource + modifiedAmount,
+            0,
+            maxResource);
+
+        if (runtime.CurrentResource == previousResource)
+            return;
+
+        PlayerHUDSlot[] hudSlots = Object.FindObjectsByType<PlayerHUDSlot>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < hudSlots.Length; i++)
+        {
+            if (hudSlots[i] != null)
+                hudSlots[i].Refresh();
+        }
     }
 
     private static void ApplyTurnStartArmor(CharacterRuntimeData runtime, int baseArmor)
@@ -1542,21 +1668,16 @@ public static class BattleEquipmentEffectService
         if (extraFixedDamage > 0)
             BattleEffectUtility.StatusDamageMonster(target, extraFixedDamage);
 
-        if (HasStatus(target.RuntimeData.StatusEffects, "E_Vulnerable"))
-        {
-            int armor = SumConfiguredEffectValues(runtime, DamageVulnerableArmorEffectId);
+        int gainedArmor = 0;
 
-            if (armor > 0)
-                BattleEffectUtility.AddShieldToPlayer(caster, armor);
-        }
+        if (HasStatus(target.RuntimeData.StatusEffects, "E_Vulnerable"))
+            gainedArmor += SumConfiguredEffectValues(runtime, DamageVulnerableArmorEffectId);
 
         if (HasStatus(target.RuntimeData.StatusEffects, "E_Weaken"))
-        {
-            int armor = SumConfiguredEffectValues(runtime, DamageWeakenedArmorEffectId);
+            gainedArmor += SumConfiguredEffectValues(runtime, DamageWeakenedArmorEffectId);
 
-            if (armor > 0)
-                BattleEffectUtility.AddShieldToPlayer(caster, armor);
-        }
+        if (gainedArmor > 0)
+            BattleEffectUtility.AddShieldToPlayer(caster, gainedArmor);
 
         if (!HasStatus(target.RuntimeData.StatusEffects, "E_Poison"))
         {
@@ -1954,9 +2075,8 @@ public static class BattleEquipmentEffectService
         if (relic == null)
             return new List<SkillEffectEntry>();
 
-        if (relic.EffectEntries != null && relic.EffectEntries.Count > 0)
-            return relic.EffectEntries;
-
+        // 유물은 현재 GameData의 EffectIds / ValueRate / CountRate를 기준으로 다시 파싱합니다.
+        // 런타임에 남아 있는 이전 EffectEntries 캐시 때문에 새로 추가한 효과가 누락되는 것을 방지합니다.
         return SkillEffectParser.Parse(
             relic,
             DataManager.Instance != null ? DataManager.Instance.EffectDatabase : null);
@@ -2064,6 +2184,42 @@ public static class BattleEquipmentEffectService
         runtime.PendingNextTurnSmiteTurn = 0;
 
         AddTemporaryStatus(runtime, "E_Smite", stack, TurnStartSmiteIfSlotsEmptyMaskEffectId);
+    }
+
+    private static void QueueNextTurnBoost(
+        CharacterRuntimeData runtime,
+        string sourceId,
+        int stack,
+        int targetTurnNumber)
+    {
+        if (runtime == null || stack <= 0 || targetTurnNumber <= 0)
+            return;
+
+        if (runtime.PendingNextTurnBoostTurn != targetTurnNumber)
+        {
+            runtime.PendingNextTurnBoostTurn = targetTurnNumber;
+            runtime.PendingNextTurnBoostStack = 0;
+        }
+
+        runtime.PendingNextTurnBoostStack += stack;
+    }
+
+    private static void ApplyQueuedNextTurnBoost(
+        CharacterRuntimeData runtime,
+        int playerTurnNumber)
+    {
+        if (runtime == null ||
+            runtime.PendingNextTurnBoostStack <= 0 ||
+            runtime.PendingNextTurnBoostTurn != playerTurnNumber)
+        {
+            return;
+        }
+
+        int stack = runtime.PendingNextTurnBoostStack;
+        runtime.PendingNextTurnBoostStack = 0;
+        runtime.PendingNextTurnBoostTurn = 0;
+
+        AddTemporaryStatus(runtime, "E_Boost", stack, TurnStartBoostIfSlotsEmptyMaskEffectId);
     }
 
     private static void AddTemporaryStatus(

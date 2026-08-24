@@ -390,8 +390,16 @@ public sealed class ActiveRelicService
                     //     예약 취소 후 PreviewResource는 5
                     int maxKarma = ResolveMaxUniqueResource(runtime);
                     int recoverAmount = Mathf.Max(0, GetRelicValue(availability.RelicData, 3));
+                    int finalAmount = BattleEquipmentEffectService.ModifyUniqueResourceGain(runtime, recoverAmount);
+                    int previousResource = Mathf.Max(0, runtime.CurrentResource);
 
-                    runtime.CurrentResource = Mathf.Min(maxKarma, Mathf.Max(0, runtime.CurrentResource) + recoverAmount);
+                    BattleEquipmentEffectService.ApplyUniqueResourceGainSideEffects(
+                        runtime,
+                        finalAmount,
+                        previousResource,
+                        maxKarma);
+
+                    runtime.CurrentResource = Mathf.Min(maxKarma, previousResource + finalAmount);
                     return true;
                 }
 

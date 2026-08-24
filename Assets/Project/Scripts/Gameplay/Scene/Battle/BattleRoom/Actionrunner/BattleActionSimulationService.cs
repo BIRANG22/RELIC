@@ -1037,6 +1037,15 @@ public class BattleActionSimulationService
                 return true;
         }
 
+        foreach (var pair in monsterPositions)
+        {
+            if (pair.Value == null)
+                continue;
+
+            if (pair.Value.Contains(gridIndex))
+                return true;
+        }
+
         return false;
     }
 

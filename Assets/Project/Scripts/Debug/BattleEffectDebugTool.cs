@@ -579,6 +579,13 @@ public static class BattleEffectDebugTool
         command.SetRangeOriginGridIndex(monster.MainGridIndex);
         command.SetForcedDirection(monster.RuntimeData.Direction);
 
+        if (skillData.TimelineNotation == TimelineActionType.Move)
+        {
+            int forwardX = monster.RuntimeData.Direction == BattleDirection.Right ? 1 : -1;
+            command.SetMoveOffset(new Vector2Int(forwardX, 0));
+            command.SetUseRequestedMoveOffsetForExecution(true);
+        }
+
         bool facingRight = monster.RuntimeData.Direction == BattleDirection.Right;
         List<int> range = MonsterSkillRangeService.BuildRangeGridIndices(
             monster,

@@ -1635,6 +1635,9 @@ public class BattleActionRunner
 
             if (hitTargets.Count <= 0 && gridEffectTargets.Count <= 0)
             {
+                if (command.SkillData.SkillType == SkillType.Attack)
+                    BattleEquipmentEffectService.TryApplyAttackMissCharge(command.UserRuntime);
+
                 if (attackerAnimator != null)
                     attackerAnimator.PlaySkillAction(command);
 
@@ -2750,15 +2753,16 @@ public class BattleActionRunner
             return;
         }
 
-        ApplyCrashToMonster(monster);
-
         if (moveResolution.BlockedByUnit && moveResolution.BlockingUnitGridIndex >= 0)
         {
             ApplyCrashToBlockingUnitAtGrid(
                 moveResolution.BlockingUnitGridIndex,
                 null,
                 monster);
+            return;
         }
+
+        ApplyCrashToMonster(monster);
     }
 
     private MonsterMoveResolution ResolveMonsterMove(MonsterUnit monster, Vector2Int requestedOffset)
@@ -2993,7 +2997,6 @@ public class BattleActionRunner
             if (!BattleOccupancyService.IsOccupiedByAnyUnit(nextGridIndex, null, monster))
                 continue;
 
-            ApplyCrashToMonster(monster);
             ApplyCrashToBlockingUnitAtGrid(nextGridIndex, null, monster);
             return true;
         }
@@ -3006,6 +3009,8 @@ public class BattleActionRunner
         string movingCharacterId,
         MonsterUnit movingMonster)
     {
+        const int baseCrashDamage = 2;
+
         BattleCharacter movingCharacter = !string.IsNullOrWhiteSpace(movingCharacterId)
             ? unitFinder.FindBattleCharacter(movingCharacterId)
             : null;
@@ -3015,7 +3020,21 @@ public class BattleActionRunner
                 out BattleCharacter blockingCharacter,
                 movingCharacterId))
         {
-            ApplyCrashToPlayer(blockingCharacter);
+            int damageToMovingUnit = baseCrashDamage +
+                BattleEquipmentEffectService.GetCollisionTargetDamageDelta(blockingCharacter.RuntimeData);
+            int damageToBlockingCharacter = baseCrashDamage +
+                BattleEquipmentEffectService.GetCollisionTargetDamageDelta(
+                    movingCharacter != null ? movingCharacter.RuntimeData : null);
+
+            bool movingMonsterKilled = false;
+
+            if (movingCharacter != null)
+                ApplyCrashToPlayer(movingCharacter, damageToMovingUnit);
+            else if (movingMonster != null)
+                movingMonsterKilled = ApplyCrashToMonster(movingMonster, damageToMovingUnit);
+
+            ApplyCrashToPlayer(blockingCharacter, damageToBlockingCharacter);
+
             BattleEquipmentEffectService.ApplyPlayerCollisionEffects(
                 movingCharacter,
                 blockingCharacter,
@@ -3023,7 +3042,8 @@ public class BattleActionRunner
             BattleEquipmentEffectService.ApplyPlayerCollisionEffects(
                 blockingCharacter,
                 movingCharacter,
-                movingMonster);
+                movingMonster,
+                movingMonsterKilled);
             return;
         }
 
@@ -3032,15 +3052,25 @@ public class BattleActionRunner
                 out MonsterUnit blockingMonster,
                 movingMonster))
         {
-            ApplyCrashToMonster(blockingMonster);
+            int damageToBlockingMonster = baseCrashDamage +
+                BattleEquipmentEffectService.GetCollisionTargetDamageDelta(
+                    movingCharacter != null ? movingCharacter.RuntimeData : null);
+
+            if (movingCharacter != null)
+                ApplyCrashToPlayer(movingCharacter, baseCrashDamage);
+            else if (movingMonster != null)
+                ApplyCrashToMonster(movingMonster, baseCrashDamage);
+
+            bool blockingMonsterKilled = ApplyCrashToMonster(blockingMonster, damageToBlockingMonster);
             BattleEquipmentEffectService.ApplyPlayerCollisionEffects(
                 movingCharacter,
                 null,
-                blockingMonster);
+                blockingMonster,
+                blockingMonsterKilled);
         }
     }
 
-    private void ApplyCrashToPlayer(BattleCharacter target)
+    private void ApplyCrashToPlayer(BattleCharacter target, int damage = 2)
     {
         if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return;
@@ -3050,24 +3080,33 @@ public class BattleActionRunner
             PlayerTarget = target,
             GridManager = gridManager,
             EffectId = "E_Crash",
-            Value = 2,
+            Value = Mathf.Max(0, damage),
             Count = 1
         });
     }
 
-    private void ApplyCrashToMonster(MonsterUnit target)
+    private bool ApplyCrashToMonster(MonsterUnit target, int damage = 2)
     {
         if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
-            return;
+            return false;
+
+        bool wasAlive = !target.RuntimeData.IsDead;
 
         new CrashEffect().Execute(new BattleEffectContext
         {
             MonsterTarget = target,
             GridManager = gridManager,
             EffectId = "E_Crash",
-            Value = 2,
+            Value = Mathf.Max(0, damage),
             Count = 1
         });
+
+        bool killedByCrash = wasAlive && target.RuntimeData != null && target.RuntimeData.IsDead;
+
+        if (killedByCrash)
+            deathService.HandleMonsterDead(target);
+
+        return killedByCrash;
     }
 
     private IEnumerator ExecuteMonsterSkill(MonsterReservedCommand command)

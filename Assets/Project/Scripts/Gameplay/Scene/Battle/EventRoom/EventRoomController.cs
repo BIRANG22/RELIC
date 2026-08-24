@@ -1170,9 +1170,9 @@ public class EventRoomController : MonoBehaviour
     {
         return slotKind switch
         {
-            EventChoiceSkillSlotKind.Passive => "패시브 기억",
-            EventChoiceSkillSlotKind.Unique => "고유 기억",
-            EventChoiceSkillSlotKind.Ability => "능력 기억",
+            EventChoiceSkillSlotKind.Passive => "본능 기억",
+            EventChoiceSkillSlotKind.Unique => "발현 기억",
+            EventChoiceSkillSlotKind.Ability => "구현 기억",
             EventChoiceSkillSlotKind.Equipped => $"장착 기억 {slotIndex + 1}",
             _ => "장착 기억"
         };

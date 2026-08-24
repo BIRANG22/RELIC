@@ -406,7 +406,7 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
                 DataManager.Instance.SkillDatabase.TryGet(id, out SkillMasterData skill))
             {
                 name = string.IsNullOrWhiteSpace(skill.Name) ? id : skill.Name;
-                rarity = SkillRarityUtility.GetDisplayName(skill.Rarity);
+                rarity = SkillRarityUtility.GetDisplayName(skill);
             }
             text.AppendLine($"• {name} {rarity}");
         }

@@ -1059,7 +1059,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         SetSkillInfoValueObjectsVisible(true);
 
         SetPlainTmpText(skillInfoTitleText, GameDataLocalization.SkillName(skill));
-        SetPlainTmpText(skillInfoRarityText, SkillRarityUtility.GetDisplayName(skill.Rarity));
+        SetPlainTmpText(skillInfoRarityText, SkillRarityUtility.GetMemoryTypeDisplayName(skill));
         ApplySkillInfoRarityColor(skill.Rarity);
         SetRichTmpText(skillInfoEffectText, BuildSkillDetailsText(skill));
         SetSkillRangeImage(skill);
