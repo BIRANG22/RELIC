@@ -471,19 +471,19 @@ E_Battle_Reward_Currency_Percent,전투 보상 재화 증가,Neutral,0,전투 �
 E_Battle_End_Heal,전투 종료 회복,Neutral,0,전투 종료 후 체력을 수치만큼 회복한다.
 AR_DamageBoostThisTurn,힘,Beneficial,Decrease,이번 턴 동안 주는 피해가 100% 증가한다.,아이콘
 AR_DamageReductionThisTurn,경화,Beneficial,Decrease,이번 턴 동안 받는 피해가 50% 감소한다.,아이콘
-AR_RecoverUniqueResourceToMax,고유자원 최대 회복,Neutral,0,고유자원을 최대치까지 회복한다.
-AR_RecoverCostToMax,코스트 최대 회복,Neutral,0,코스트를 최대치까지 회복한다.
-AR_GrantSwift,신속 부여,Neutral,0,신속을 부여한다.
+AR_RecoverUniqueResourceToMax,고유자원 최대 회복,Neutral,0,카르마를 3 회복한다.
+AR_RecoverCostToMax,코스트 최대 회복,Neutral,0,마나를 10 회복한다.
+AR_GrantSwift,신속 부여,Neutral,0,신속을 2 부여한다.
 AR_CleanseDebuffs,디버프 제거,Neutral,0,모든 디버프를 제거한다.
-AR_MoveToGrid,선택 그리드 이동,Neutral,0,선택한 빈 그리드로 이동한다.
-AR_SwapAlly,아군 위치 교환,Neutral,0,선택한 그리드의 아군과 위치를 교환한다.
+AR_MoveToGrid,위치 이동,Neutral,0,선택한 빈 그리드로 이동한다.
+AR_SwapAlly,위치 변경,Neutral,0,선택한 그리드의 아군과 위치를 교환한다.
 AR_TargetOutgoingDamageReductionThisTurn,쇠약,Harmful,Decrease,이번 턴 동안 주는 피해를 50% 감소시킨다.,아이콘
-AR_RemoveGridEffect,그리드 효과 제거,Neutral,0,선택한 그리드의 장애물을 포함한 그리드 효과를 제거한다.
-AR_SpawnPoisonGridEffect,독 장판 생성,Neutral,0,선택한 빈 그리드에 독 장판을 생성한다.
-AR_SpawnThornGridEffect,가시 장판 생성,Neutral,0,선택한 빈 그리드에 가시 장판을 생성한다.
-AR_SpawnObstacleGridEffect,장애물 생성,Neutral,0,선택한 빈 그리드에 장애물을 생성한다.
-AR_SpawnDummyGridEffect,허수아비 생성,Neutral,0,선택한 빈 그리드에 허수아비를 생성한다.
-AR_SpawnExplosiveDollGridEffect,폭발 인형 생성,Neutral,0,선택한 빈 그리드에 폭발 인형을 생성한다.
+AR_RemoveGridEffect,장애물 제거,Neutral,0,선택한 그리드의 장애물을 제거한다.
+AR_SpawnPoisonGridEffect,독 장판 생성,Neutral,0,선택한 그리드에 독 장판을 생성한다.
+AR_SpawnThornGridEffect,가시 생성,Neutral,0,선택한 그리드에 가시를 생성한다.
+AR_SpawnObstacleGridEffect,잔해 생성,Neutral,0,선택한 그리드에 잔해를 생성한다.
+AR_SpawnDummyGridEffect,루어 생성,Neutral,0,선택한 빈 그리드에 루어를 생성한다.
+AR_SpawnExplosiveDollGridEffect,브룸 생성,Neutral,0,선택한 빈 그리드에 브룸을 생성한다.
 E_Move,이동,Neutral,0,이동 효과입니다.
 E_Burn,화상,Harmful,Decrease,화상 상태입니다.
 E_Spawn_Spider_Egg,거미알 생성,Neutral,None,선택한 그리드에 거미알을 생성한다.
