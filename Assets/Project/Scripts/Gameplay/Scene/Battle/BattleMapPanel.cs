@@ -1,5 +1,4 @@
 using Relic.Gameplay.Data;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -17,10 +16,6 @@ public class BattleMapPanel : MonoBehaviour
     [Header("Generation")]
     [SerializeField] private ManualBattleMapTemplate manualMapTemplate;
     [SerializeField] private EventMapRandomExclusionSettings eventMapRandomExclusionSettings = new();
-    [Header("Scroll Focus")]
-    [SerializeField] private float horizontalContentPadding = 40f;
-    [SerializeField] private float focusDelay = 0.02f;
-
     private MapRuntimeStore runtimeStore;
     private MapRuntimeData runtime;
 
@@ -136,92 +131,9 @@ public class BattleMapPanel : MonoBehaviour
         mapViewSpawner.Spawn(runtime.GeneratedNodes, OnNodeClicked, OnNodeHovered, OnNodeHoverExited);
 
         Canvas.ForceUpdateCanvases();
-        ConfigureScrollContentWidth();
 
-        StartCoroutine(FocusCurrentNodeRoutine());
-    }
-
-    private void ConfigureScrollContentWidth()
-    {
-        if (mapScrollRect == null || mapScrollRect.content == null ||
-            mapScrollRect.viewport == null || runtime?.GeneratedNodes == null ||
-            runtime.GeneratedNodes.Count == 0)
-        {
-            return;
-        }
-
-        GetHorizontalNodeBounds(out float minNodeX, out float maxNodeX);
-
-        Vector2 size = mapScrollRect.content.sizeDelta;
-        size.x = BattleMapScrollUtility.CalculateContentWidth(
-            minNodeX,
-            maxNodeX,
-            mapScrollRect.viewport.rect.width,
-            horizontalContentPadding);
-        mapScrollRect.content.sizeDelta = size;
-
-        Vector2 position = mapScrollRect.content.anchoredPosition;
-        position.x = 0f;
-        mapScrollRect.content.anchoredPosition = position;
-    }
-
-    private IEnumerator FocusCurrentNodeRoutine()
-    {
-        yield return null;
-        yield return new WaitForSecondsRealtime(focusDelay);
-
-        FocusCurrentNode();
-    }
-
-    private void FocusCurrentNode()
-    {
-        if (mapScrollRect == null || runtime == null || runtime.GeneratedNodes == null)
-            return;
-
-        if (mapScrollRect.content == null || mapScrollRect.viewport == null)
-            return;
-
-        GeneratedMapNodeData currentNode = FindNodeByIndex(runtime.CurrentNodeIndex);
-        if (currentNode == null)
-            return;
-
-        RectTransform content = mapScrollRect.content;
-        RectTransform viewport = mapScrollRect.viewport;
-        GetHorizontalNodeBounds(out float minNodeX, out _);
-
-        Vector2 anchoredPosition = content.anchoredPosition;
-        anchoredPosition.x = BattleMapScrollUtility.CalculateAnchoredX(
-            currentNode.Position.x,
-            minNodeX,
-            content.rect.width,
-            viewport.rect.width);
-        mapScrollRect.StopMovement();
-        content.anchoredPosition = anchoredPosition;
-
-        Debug.Log(
-            $"[MapFocus] CurrentNode:{currentNode.NodeIndex} / NodeX:{currentNode.Position.x} / AnchoredX:{anchoredPosition.x}"
-        );
-    }
-
-    private void GetHorizontalNodeBounds(out float minNodeX, out float maxNodeX)
-    {
-        minNodeX = float.MaxValue;
-        maxNodeX = float.MinValue;
-
-        for (int i = 0; i < runtime.GeneratedNodes.Count; i++)
-        {
-            GeneratedMapNodeData node = runtime.GeneratedNodes[i];
-            if (node == null)
-                continue;
-
-            minNodeX = Mathf.Min(minNodeX, node.Position.x);
-            maxNodeX = Mathf.Max(maxNodeX, node.Position.x);
-        }
-
-        if (minNodeX == float.MaxValue)
-            minNodeX = 0f;
-        if (maxNodeX == float.MinValue)
-            maxNodeX = minNodeX;
+        // Map의 가로 위치와 폭은 MapViewSpawner가 단독으로 관리합니다.
+        // BattleMapPanel에서는 ScrollRect content 위치를 다시 계산하지 않습니다.
     }
     private List<GeneratedMapNodeData> FindClickableNextNodes()
     {
