@@ -199,14 +199,69 @@ public class BattleActionRunner
         int timelineSlotIndex,
         IEnumerator actionRoutine)
     {
+        bool consumeSmiteAfterAttack = ShouldConsumeSmite(command);
+
         if (actionRoutine != null)
         {
             while (actionRoutine.MoveNext())
                 yield return actionRoutine.Current;
         }
 
+        if (consumeSmiteAfterAttack)
+            ConsumeSmiteAfterAttack(command);
+
         if (command != null && command.UserRuntime != null && !command.UserRuntime.IsDead)
             onPlayerCommandExecuted?.Invoke(command, timelineSlotIndex);
+    }
+
+    private static bool ShouldConsumeSmite(PlayerReservedCommand command)
+    {
+        if (command == null ||
+            command.UserRuntime == null ||
+            command.SkillData == null ||
+            command.SkillData.SkillType != SkillType.Attack ||
+            command.UserRuntime.StatusEffects == null)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < command.UserRuntime.StatusEffects.Count; i++)
+        {
+            StatusEffectRuntimeData status = command.UserRuntime.StatusEffects[i];
+
+            if (status != null && status.EffectId == "E_Smite" && status.Stack > 0)
+                return true;
+        }
+
+        return false;
+    }
+
+    private static void ConsumeSmiteAfterAttack(PlayerReservedCommand command)
+    {
+        if (command == null || command.UserRuntime == null || command.UserRuntime.StatusEffects == null)
+            return;
+
+        List<StatusEffectRuntimeData> statuses = command.UserRuntime.StatusEffects;
+
+        for (int i = statuses.Count - 1; i >= 0; i--)
+        {
+            StatusEffectRuntimeData status = statuses[i];
+
+            if (status == null || status.EffectId != "E_Smite")
+                continue;
+
+            if (status.Stack > 1)
+            {
+                status.Stack--;
+                status.TurnCount = Mathf.Max(status.TurnCount, 1);
+            }
+            else
+            {
+                statuses.RemoveAt(i);
+            }
+
+            return;
+        }
     }
 
     private IEnumerator RunPostActionPresentationRoutine(bool hasInteraction = true)
