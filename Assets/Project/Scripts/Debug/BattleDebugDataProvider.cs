@@ -8,7 +8,7 @@ public class BattleDebugDataProvider : MonoBehaviour
     [SerializeField] private string[] debugCharacterIds = new string[DebugBattlePartySetup.DefaultDebugPartySize];
 
     [Header("Debug Grid Indices")]
-    [SerializeField] private int[] debugGridIndices = { 12 };
+    [SerializeField] private int[] debugGridIndices = { 12, 17, 22 };
 
     [Header("Debug Skills")]
     [SerializeField] private string defaultMoveSkillId = "S_Move_1";
@@ -17,6 +17,31 @@ public class BattleDebugDataProvider : MonoBehaviour
     [SerializeField] private string defaultAbilitySkillId = "S_Ability_01";
     [SerializeField] private string defaultFreeSkillId1 = "S_Public_01";
     [SerializeField] private string defaultFreeSkillId2 = "";
+
+
+    private void OnValidate()
+    {
+        EnsureDebugArraySizes();
+    }
+
+    private void Awake()
+    {
+        EnsureDebugArraySizes();
+    }
+
+    private void EnsureDebugArraySizes()
+    {
+        if (debugCharacterIds == null || debugCharacterIds.Length != DebugBattlePartySetup.DefaultDebugPartySize)
+            System.Array.Resize(ref debugCharacterIds, DebugBattlePartySetup.DefaultDebugPartySize);
+
+        int previousGridCount = debugGridIndices != null ? debugGridIndices.Length : 0;
+        if (debugGridIndices == null || debugGridIndices.Length != DebugBattlePartySetup.DefaultDebugPartySize)
+            System.Array.Resize(ref debugGridIndices, DebugBattlePartySetup.DefaultDebugPartySize);
+
+        int[] defaults = { 12, 17, 22 };
+        for (int i = previousGridCount; i < debugGridIndices.Length && i < defaults.Length; i++)
+            debugGridIndices[i] = defaults[i];
+    }
 
     public void CreateDebugData()
     {
@@ -36,26 +61,27 @@ public class BattleDebugDataProvider : MonoBehaviour
             return;
         }
 
-        for (int i = 0; i < debugCharacterIds.Length && i < DebugBattlePartySetup.DefaultDebugPartySize; i++)
+        List<string> characterIds = new();
+        List<int> gridIndices = new();
+
+        for (int i = 0; i < DebugBattlePartySetup.DefaultDebugPartySize; i++)
         {
-            string characterId = debugCharacterIds[i];
-
-            if (string.IsNullOrWhiteSpace(characterId))
-                continue;
-
-            int gridIndex = i;
-
-            if (debugGridIndices != null && i < debugGridIndices.Length)
-                gridIndex = debugGridIndices[i];
-
-            if (!DebugBattlePartySetup.TryCreateSingleCharacterParty(dm, characterId, gridIndex))
-                Debug.LogError($"[BattleDebugDataProvider] Failed to create debug character: {characterId}");
-            else
-                Debug.Log($"[BattleDebugDataProvider] Slot {i}: {characterId} / Grid {gridIndex}");
-
-            ApplySkillOverrides(BattleEffectDebugTool.GetPartyRuntime(0));
-            break;
+            characterIds.Add(debugCharacterIds != null && i < debugCharacterIds.Length
+                ? debugCharacterIds[i]
+                : string.Empty);
+            gridIndices.Add(debugGridIndices != null && i < debugGridIndices.Length
+                ? debugGridIndices[i]
+                : i);
         }
+
+        if (!DebugBattlePartySetup.TryCreateParty(dm, characterIds, gridIndices))
+        {
+            Debug.LogError("[BattleDebugDataProvider] Failed to create configured debug party.");
+            return;
+        }
+
+        for (int i = 0; i < DebugBattlePartySetup.DefaultDebugPartySize; i++)
+            ApplySkillOverrides(BattleEffectDebugTool.GetPartyRuntime(i));
 
         DebugBattlePartySetup.EnsureSkillVfxTestSkill(dm);
     }

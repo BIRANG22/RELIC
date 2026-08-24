@@ -4,10 +4,32 @@ public static class BattleActionOrderUtility
 {
     public static bool HasSwift(PlayerReservedCommand command)
     {
-        if (command == null || command.SkillData == null)
+        if (command == null)
             return false;
 
-        return HasSwift(command.SkillData);
+        if (HasSwift(command.SkillData))
+            return true;
+
+        return HasSwiftStatus(command.UserRuntime);
+    }
+
+    private static bool HasSwiftStatus(CharacterRuntimeData runtime)
+    {
+        if (runtime?.StatusEffects == null)
+            return false;
+
+        for (int i = 0; i < runtime.StatusEffects.Count; i++)
+        {
+            StatusEffectRuntimeData status = runtime.StatusEffects[i];
+
+            if (status == null || status.EffectId != "E_Swift")
+                continue;
+
+            if (status.Stack > 0 && status.TurnCount > 0)
+                return true;
+        }
+
+        return false;
     }
 
     public static bool HasSwift(SkillMasterData skillData)
