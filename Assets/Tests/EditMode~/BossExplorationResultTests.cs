@@ -14,6 +14,7 @@ public class BossExplorationResultTests
         BattleRunStatisticsService.RecordDamageDealt(runtime, "Char_A", 12);
         BattleRunStatisticsService.RecordDamageDealt(runtime, "Char_A", 8);
         BattleRunStatisticsService.RecordDamageTaken(runtime, "Char_A", 7);
+        BattleRunStatisticsService.RecordBuffApplied(runtime, "Char_A", 9);
         BattleRunStatisticsService.RecordDeath(runtime, "Char_A");
         BattleRunStatisticsService.RecordKill(runtime, "Char_A");
 
@@ -21,6 +22,7 @@ public class BossExplorationResultTests
         Assert.That(stats.CharacterId, Is.EqualTo("Char_A"));
         Assert.That(stats.DamageDealt, Is.EqualTo(20));
         Assert.That(stats.DamageTaken, Is.EqualTo(7));
+        Assert.That(stats.BuffApplied, Is.EqualTo(9));
         Assert.That(stats.DeathCount, Is.EqualTo(1));
         Assert.That(stats.KillCount, Is.EqualTo(1));
     }
@@ -55,6 +57,205 @@ public class BossExplorationResultTests
         ExplorationResultData result = ExplorationResultBuilder.Build(runtime);
 
         Assert.That(result.BagItemIds, Is.EqualTo(new[] { "Item_A", "Item_B" }));
+    }
+
+    [Test]
+    public void ResultBuilder_CreatesZeroStatisticsRowsFromLobbySnapshots()
+    {
+        BattleRuntimeData runtime = new()
+        {
+            LobbyLoadoutSnapshots = new List<BattleLobbyLoadoutSnapshotData>
+            {
+                new() { CharacterId = "Char_A" },
+                new() { CharacterId = " Char_B " }
+            }
+        };
+
+        ExplorationResultData result = ExplorationResultBuilder.Build(runtime);
+
+        Assert.That(result.CharacterStatistics, Has.Count.EqualTo(2));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.CharacterStatistics[0].CharacterId, Is.EqualTo("Char_A"));
+            Assert.That(result.CharacterStatistics[0].KillCount, Is.EqualTo(0));
+            Assert.That(result.CharacterStatistics[0].DamageDealt, Is.EqualTo(0));
+            Assert.That(result.CharacterStatistics[0].DamageTaken, Is.EqualTo(0));
+            Assert.That(result.CharacterStatistics[0].BuffApplied, Is.EqualTo(0));
+            Assert.That(result.CharacterStatistics[0].DeathCount, Is.EqualTo(0));
+            Assert.That(result.CharacterStatistics[1].CharacterId, Is.EqualTo("Char_B"));
+        });
+    }
+
+    [Test]
+    public void ResultBuilder_MergesRecordedStatisticsIntoSnapshotRows()
+    {
+        BattleRuntimeData runtime = new()
+        {
+            LobbyLoadoutSnapshots = new List<BattleLobbyLoadoutSnapshotData>
+            {
+                new() { CharacterId = "Char_A" },
+                new() { CharacterId = "Char_B" }
+            },
+            CharacterStatistics = new List<BattleRunCharacterStatisticsData>
+            {
+                new()
+                {
+                    CharacterId = "Char_B",
+                    DamageDealt = 123,
+                    DamageTaken = 45,
+                    BuffApplied = 6,
+                    DeathCount = 1,
+                    KillCount = 2
+                },
+                new() { CharacterId = "Char_C", KillCount = 1 }
+            }
+        };
+
+        ExplorationResultData result = ExplorationResultBuilder.Build(runtime);
+
+        Assert.That(result.CharacterStatistics, Has.Count.EqualTo(3));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.CharacterStatistics[0].CharacterId, Is.EqualTo("Char_A"));
+            Assert.That(result.CharacterStatistics[0].DamageDealt, Is.EqualTo(0));
+            Assert.That(result.CharacterStatistics[1].CharacterId, Is.EqualTo("Char_B"));
+            Assert.That(result.CharacterStatistics[1].DamageDealt, Is.EqualTo(123));
+            Assert.That(result.CharacterStatistics[1].DamageTaken, Is.EqualTo(45));
+            Assert.That(result.CharacterStatistics[1].BuffApplied, Is.EqualTo(6));
+            Assert.That(result.CharacterStatistics[1].DeathCount, Is.EqualTo(1));
+            Assert.That(result.CharacterStatistics[1].KillCount, Is.EqualTo(2));
+            Assert.That(result.CharacterStatistics[2].CharacterId, Is.EqualTo("Char_C"));
+            Assert.That(result.CharacterStatistics[2].KillCount, Is.EqualTo(1));
+        });
+    }
+
+    [Test]
+    public void StageClearExperience_UsesThousandExperiencePerLevel()
+    {
+        Assert.Multiple(() =>
+        {
+            Assert.That(BattleStageClearExperienceService.GetRequiredExperienceForNextLevel(1), Is.EqualTo(1000));
+            Assert.That(BattleStageClearExperienceService.GetRequiredExperienceForNextLevel(29), Is.EqualTo(1000));
+            Assert.That(BattleStageClearExperienceService.GetRequiredExperienceForNextLevel(30), Is.EqualTo(0));
+        });
+    }
+
+    [Test]
+    public void StageClearExperience_CalculatesTableRewardPerCharacter()
+    {
+        CharacterRuntimeStore store = new();
+        store.AddOrUpdate(new CharacterRuntimeData { CharacterId = "Char_A", Level = 1, Exp = 900 });
+        store.AddOrUpdate(new CharacterRuntimeData { CharacterId = "Char_B", Level = 1, Exp = 900 });
+
+        BattleRunCharacterStatisticsData[] statistics =
+        {
+            new()
+            {
+                CharacterId = "Char_A",
+                DamageDealt = 12,
+                DamageTaken = 14,
+                BuffApplied = 11,
+                KillCount = 2
+            },
+            new()
+            {
+                CharacterId = "Char_B",
+                DeathCount = 1
+            }
+        };
+
+        BattleStageClearExperienceContext context = new(2, 1, 1, 1);
+
+        IReadOnlyDictionary<string, BattleStageClearExperiencePreview> result =
+            BattleStageClearExperienceService.Apply(store, statistics, context);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result["Char_A"].ExperienceGained, Is.EqualTo(834));
+            Assert.That(result["Char_B"].ExperienceGained, Is.EqualTo(445));
+            Assert.That(store.Get("Char_A").Level, Is.EqualTo(2));
+            Assert.That(store.Get("Char_A").Exp, Is.EqualTo(734));
+            Assert.That(store.Get("Char_B").Level, Is.EqualTo(2));
+            Assert.That(store.Get("Char_B").Exp, Is.EqualTo(345));
+        });
+    }
+
+    [Test]
+    public void StageClearExperience_DoesNotApplyDuplicateCharacterRowsTwice()
+    {
+        CharacterRuntimeStore store = new();
+        store.AddOrUpdate(new CharacterRuntimeData { CharacterId = "Char_A", Level = 1, Exp = 0 });
+
+        BattleRunCharacterStatisticsData[] statistics =
+        {
+            new() { CharacterId = "Char_A" },
+            new() { CharacterId = "Char_A" }
+        };
+
+        BattleStageClearExperienceService.Apply(
+            store,
+            statistics,
+            new BattleStageClearExperienceContext(1, 0, 0, 0));
+
+        Assert.That(store.Get("Char_A").Exp, Is.EqualTo(90));
+    }
+
+    [Test]
+    public void StageClearExperience_FloorsStatBonusesByFive()
+    {
+        CharacterRuntimeStore store = new();
+        store.AddOrUpdate(new CharacterRuntimeData { CharacterId = "Char_A", Level = 1, Exp = 0 });
+
+        BattleRunCharacterStatisticsData[] statistics =
+        {
+            new()
+            {
+                CharacterId = "Char_A",
+                DamageDealt = 9,
+                DamageTaken = 9,
+                BuffApplied = 9,
+                KillCount = 1
+            }
+        };
+
+        BattleStageClearExperiencePreview preview =
+            BattleStageClearExperienceService.Apply(
+                store,
+                statistics,
+                BattleStageClearExperienceContext.Empty)["Char_A"];
+
+        Assert.That(preview.ExperienceGained, Is.EqualTo(22));
+    }
+
+    [Test]
+    public void StageClearExperience_BuildsContextFromClearedMapRuntime()
+    {
+        MapRuntimeData runtime = new()
+        {
+            CurrentNodeIndex = 4,
+            ClearedMapIds = new List<string> { "1", "2", "3" },
+            GeneratedNodes = new List<GeneratedMapNodeData>
+            {
+                new() { NodeIndex = 1, Type = "Common" },
+                new() { NodeIndex = 2, Type = "Elite" },
+                new() { NodeIndex = 3, Type = "Event" },
+                new() { NodeIndex = 4, Type = "Boss" }
+            }
+        };
+
+        BattleStageClearExperienceContext context =
+            BattleStageClearExperienceService.BuildContext(
+                runtime,
+                MapRuntimeProgressUtility.FindCurrentNode(runtime),
+                defeat: false);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(context.NormalBattleClearCount, Is.EqualTo(1));
+            Assert.That(context.EliteBattleClearCount, Is.EqualTo(1));
+            Assert.That(context.BossBattleClearCount, Is.EqualTo(1));
+            Assert.That(context.EventClearCount, Is.EqualTo(1));
+        });
     }
 
     [Test]
