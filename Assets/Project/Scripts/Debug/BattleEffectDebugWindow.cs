@@ -15,6 +15,11 @@ public sealed class BattleEffectDebugWindow : MonoBehaviour
     [SerializeField] private string selectedRuneId = "";
     [SerializeField] private string selectedCompoundId = "";
     [SerializeField] private string selectedGridEffectId = "";
+    [SerializeField] private string selectedMonsterId = "";
+    [SerializeField] private int monsterSpawnGridIndex = 27;
+    [SerializeField] private string selectedMonsterRuntimeId = "";
+    [SerializeField] private string selectedMonsterSkillId = "";
+    [SerializeField] private int monsterSkillSlotIndex;
     [SerializeField] private int characterGridIndex = 12;
     [SerializeField, Range(MinUiScale, MaxUiScale)] private float uiScale = 1.35f;
 
@@ -37,6 +42,8 @@ public sealed class BattleEffectDebugWindow : MonoBehaviour
     private static readonly int[] StatDeltas = { -10, -1, 1, 10 };
 
     private Vector2 scrollPosition;
+    private Vector2 skillOptionScroll;
+    private Vector2 compoundOptionScroll;
     private Rect windowRect = new(16f, 16f, 700f, 820f);
     private GUIStyle smallLabelStyle;
     private GUIStyle headerStyle;
@@ -50,6 +57,9 @@ public sealed class BattleEffectDebugWindow : MonoBehaviour
     private bool runeDropdownOpen;
     private bool compoundDropdownOpen;
     private bool gridEffectDropdownOpen;
+    private bool monsterMasterDropdownOpen;
+    private bool monsterDropdownOpen;
+    private bool monsterSkillDropdownOpen;
     private bool isResizing;
 
     private struct DebugOption
@@ -94,6 +104,8 @@ public sealed class BattleEffectDebugWindow : MonoBehaviour
 
         DrawSearchAndViewControls();
         DrawCharacterSection();
+        DrawMonsterSpawnSection();
+        DrawMonsterSkillSection();
         DrawSkillSection();
         DrawRelicSection();
         DrawRuneSection();
@@ -134,13 +146,12 @@ public sealed class BattleEffectDebugWindow : MonoBehaviour
 
         DrawIntStepper("배치 그리드", ref characterGridIndex, 0, BattleEffectDebugTool.BattleGridCellCount - 1);
 
-        if (GUILayout.Button("아군 1번 슬롯 교체", buttonStyle, ControlHeightOption()))
+        if (GUILayout.Button($"아군 {selectedPartyIndex + 1}번 슬롯 배치/교체", buttonStyle, ControlHeightOption()))
         {
-            bool applied = BattleEffectDebugTool.TryApplySingleCharacterParty(selectedCharacterId, characterGridIndex);
+            bool applied = BattleEffectDebugTool.TryApplyPartyCharacter(selectedPartyIndex, selectedCharacterId, characterGridIndex);
             if (applied)
             {
-                selectedPartyIndex = 0;
-                Debug.Log($"[BattleEffectDebug] Character:{selectedCharacterId} Grid:{characterGridIndex}");
+                Debug.Log($"[BattleEffectDebug] PartySlot:{selectedPartyIndex + 1} Character:{selectedCharacterId} Grid:{characterGridIndex}");
             }
             else
             {
@@ -152,16 +163,133 @@ public sealed class BattleEffectDebugWindow : MonoBehaviour
         GUILayout.Space(SectionSpacing());
     }
 
+    private void DrawMonsterSpawnSection()
+    {
+        GUILayout.Label("몬스터 소환", EditorLikeHeaderStyle());
+
+        List<MonsterMasterData> monsterMasters = BattleEffectDebugTool.GetMonsterMasters();
+        List<DebugOption> monsterOptions = new();
+
+        for (int i = 0; i < monsterMasters.Count; i++)
+        {
+            MonsterMasterData monster = monsterMasters[i];
+            if (monster != null)
+                AddOptionIfMatches(monsterOptions, monster.MonsterId, monster.Name);
+        }
+        SortOptions(monsterOptions);
+
+        selectedMonsterId = DrawOptionDropdown(
+            "소환 몬스터 선택",
+            monsterOptions,
+            selectedMonsterId,
+            ref monsterMasterDropdownOpen);
+
+        DrawIntStepper(
+            "소환 그리드",
+            ref monsterSpawnGridIndex,
+            0,
+            BattleEffectDebugTool.BattleGridCellCount - 1);
+
+        if (GUILayout.Button("선택 몬스터 소환", buttonStyle, ControlHeightOption()))
+        {
+            if (BattleEffectDebugTool.TrySpawnMonster(
+                    selectedMonsterId,
+                    monsterSpawnGridIndex,
+                    out string runtimeId))
+            {
+                selectedMonsterRuntimeId = runtimeId;
+                selectedMonsterSkillId = string.Empty;
+                Debug.Log(
+                    $"[BattleEffectDebug] Spawn Monster:{selectedMonsterId} " +
+                    $"Runtime:{runtimeId} Grid:{monsterSpawnGridIndex}");
+            }
+            else
+            {
+                Debug.LogWarning(
+                    $"[BattleEffectDebug] Failed Spawn Monster:{selectedMonsterId} " +
+                    $"Grid:{monsterSpawnGridIndex}");
+            }
+        }
+
+        GUILayout.Label(
+            "빈 그리드에 원하는 몬스터를 즉시 소환합니다. 소환 후 아래 몬스터 선택에 자동 지정됩니다.",
+            smallLabelStyle);
+        GUILayout.Space(SectionSpacing());
+    }
+
+    private void DrawMonsterSkillSection()
+    {
+        GUILayout.Label("몬스터 스킬 강제 등록", EditorLikeHeaderStyle());
+
+        List<BattleDebugMonsterEntry> monsters = BattleEffectDebugTool.GetLiveMonsters();
+        List<DebugOption> monsterOptions = new();
+        for (int i = 0; i < monsters.Count; i++)
+        {
+            BattleDebugMonsterEntry monster = monsters[i];
+            monsterOptions.Add(new DebugOption(
+                monster.RuntimeId,
+                $"{monster.Name} ({monster.MonsterId}) Grid {monster.GridIndex}"));
+        }
+
+        selectedMonsterRuntimeId = DrawOptionDropdown(
+            "몬스터 선택",
+            monsterOptions,
+            selectedMonsterRuntimeId,
+            ref monsterDropdownOpen);
+
+        List<MonsterSkillData> monsterSkills = BattleEffectDebugTool.GetMonsterSkills(selectedMonsterRuntimeId);
+        List<DebugOption> skillOptions = new();
+        for (int i = 0; i < monsterSkills.Count; i++)
+        {
+            MonsterSkillData skill = monsterSkills[i];
+            if (skill != null)
+                skillOptions.Add(new DebugOption(skill.SkillId, skill.Name));
+        }
+
+        selectedMonsterSkillId = DrawOptionDropdown(
+            "몬스터 스킬 선택",
+            skillOptions,
+            selectedMonsterSkillId,
+            ref monsterSkillDropdownOpen);
+
+        DrawIntStepper("등록 슬롯 (0=1번)", ref monsterSkillSlotIndex, 0, 4);
+
+        if (GUILayout.Button("선택 몬스터 스킬 등록", buttonStyle, ControlHeightOption()))
+        {
+            if (BattleEffectDebugTool.TryQueueMonsterSkill(
+                    selectedMonsterRuntimeId,
+                    selectedMonsterSkillId,
+                    monsterSkillSlotIndex))
+            {
+                Debug.Log(
+                    $"[BattleEffectDebug] Monster:{selectedMonsterRuntimeId} " +
+                    $"Skill:{selectedMonsterSkillId} Slot:{monsterSkillSlotIndex + 1}");
+            }
+            else
+            {
+                Debug.LogWarning(
+                    $"[BattleEffectDebug] Failed MonsterSkill Monster:{selectedMonsterRuntimeId} " +
+                    $"Skill:{selectedMonsterSkillId}");
+            }
+        }
+
+        GUILayout.Label(
+            "공격/버프/디버프 스킬은 실제 타임라인에 등록됩니다. 대상은 현재 몬스터 방향과 실제 스킬 범위로 계산됩니다.",
+            smallLabelStyle);
+        GUILayout.Space(SectionSpacing());
+    }
+
     private void DrawSkillSection()
     {
         GUILayout.Label("스킬", EditorLikeHeaderStyle());
 
         List<DebugOption> options = BuildSkillOptions();
-        selectedSkillId = DrawOptionDropdown(
+        selectedSkillId = DrawScrollableOptionDropdown(
             "스킬 선택",
             options,
             selectedSkillId,
-            ref skillDropdownOpen);
+            ref skillDropdownOpen,
+            ref skillOptionScroll);
         DrawClearSelectionButton(ref selectedSkillId, "스킬 선택 비우기");
 
         CharacterRuntimeData runtime = GetSelectedRuntime();
@@ -257,11 +385,12 @@ public sealed class BattleEffectDebugWindow : MonoBehaviour
         GUILayout.Label("Compound", EditorLikeHeaderStyle());
 
         List<DebugOption> options = BuildCompoundOptions();
-        selectedCompoundId = DrawOptionDropdown(
+        selectedCompoundId = DrawScrollableOptionDropdown(
             "Compound 선택",
             options,
             selectedCompoundId,
-            ref compoundDropdownOpen);
+            ref compoundDropdownOpen,
+            ref compoundOptionScroll);
         DrawClearSelectionButton(ref selectedCompoundId, "Compound 선택 비우기");
 
         CharacterRuntimeData runtime = GetSelectedRuntime();
@@ -487,6 +616,51 @@ public sealed class BattleEffectDebugWindow : MonoBehaviour
         if (options.Count > drawCount)
             GUILayout.Label($"+ {options.Count - drawCount} more. ID 검색으로 좁혀주세요.", smallLabelStyle);
 
+        return selectedId;
+    }
+
+    private string DrawScrollableOptionDropdown(
+        string title,
+        IReadOnlyList<DebugOption> options,
+        string selectedId,
+        ref bool isOpen,
+        ref Vector2 scrollPosition)
+    {
+        GUILayout.Label($"{title} ({options.Count})", smallLabelStyle);
+
+        string buttonLabel = ResolveSelectedLabel(options, selectedId);
+        if (GUILayout.Button(buttonLabel, buttonStyle, ControlHeightOption()))
+            isOpen = !isOpen;
+
+        if (!isOpen)
+            return selectedId;
+
+        if (options.Count == 0)
+        {
+            GUILayout.Label("목록이 없습니다.", smallLabelStyle);
+            return selectedId;
+        }
+
+        float rowHeight = GetScaledControlHeight(uiScale) + 2f;
+        float listHeight = Mathf.Min(options.Count, MaxDropdownRows) * rowHeight;
+        scrollPosition = GUILayout.BeginScrollView(
+            scrollPosition,
+            false,
+            true,
+            GUILayout.Height(Mathf.Max(rowHeight, listHeight)));
+
+        for (int i = 0; i < options.Count; i++)
+        {
+            DebugOption option = options[i];
+            if (!GUILayout.Button(option.Label, buttonStyle, ControlHeightOption()))
+                continue;
+
+            selectedId = option.Id;
+            isOpen = false;
+            break;
+        }
+
+        GUILayout.EndScrollView();
         return selectedId;
     }
 

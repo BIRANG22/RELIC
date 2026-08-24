@@ -943,7 +943,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
         SetStatVisualActive(recoveryIconImage, recoveryValueText, true);
 
         int targetHp = Mathf.Clamp(boundRuntime.PreviewHP, 0, Mathf.Max(0, maxHp));
-        int targetCost = Mathf.Clamp(boundRuntime.PreviewCost, 0, Mathf.Max(0, maxCost));
+        // 초과 마나는 숫자로 그대로 표시하고, 최대 마나(MaxCost)는 증가시키지 않는다.
+        int targetCost = Mathf.Max(0, boundRuntime.PreviewCost);
         int targetArmor = Mathf.Max(0, boundRuntime.PreviewShield);
         int targetRecovery = ResolveRecovery();
         int targetResource = Mathf.Clamp(
@@ -2254,7 +2255,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
     private void ApplyDisplayedStats(int maxHp, int maxCost, int maxResource)
     {
         RefreshCurrentAndMaxText(hpValueText, displayedHp, maxHp);
-        RefreshCurrentAndMaxText(costValueText, displayedCost, maxCost);
+        RefreshCurrentAndMaxText(costValueText, displayedCost, maxCost, false);
 
         if (armorValueText != null)
             armorValueText.text = Mathf.Max(0, displayedArmor).ToString();
@@ -2433,7 +2434,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
     private int ResolveMaxCost()
     {
         if (boundRuntime.MaxCost > 0)
-            return Mathf.Max(boundRuntime.MaxCost, boundRuntime.PreviewCost);
+            return boundRuntime.MaxCost;
 
         if (boundMaster != null && boundMaster.MaxCost > 0)
             return boundMaster.MaxCost;
@@ -2452,13 +2453,17 @@ public class BattleCharacterPanelUI : MonoBehaviour
     private static void RefreshCurrentAndMaxText(
         TMP_Text valueText,
         int current,
-        int max)
+        int max,
+        bool clampCurrentToMax = true)
     {
         if (valueText == null)
             return;
 
         max = Mathf.Max(0, max);
-        current = Mathf.Clamp(current, 0, max);
+        current = clampCurrentToMax
+            ? Mathf.Clamp(current, 0, max)
+            : Mathf.Max(0, current);
+
         valueText.text = $"{current}/{max}";
     }
 

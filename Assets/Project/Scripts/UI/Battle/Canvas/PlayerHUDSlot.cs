@@ -163,8 +163,9 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterH
                 ? boundMaster.MaxHP
                 : Mathf.Max(1, boundRuntime.CurrentHP);
 
+        // 초과 마나가 있어도 최대 마나 표시는 실제 MaxCost를 유지한다.
         int maxCost = boundRuntime.MaxCost > 0
-            ? Mathf.Max(boundRuntime.MaxCost, boundRuntime.PreviewCost)
+            ? boundRuntime.MaxCost
             : boundMaster != null
                 ? boundMaster.MaxCost
                 : Mathf.Max(1, boundRuntime.CurrentCost);
@@ -218,12 +219,15 @@ public class PlayerHUDSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterH
     private void RefreshCost(int currentCost, int maxCost)
     {
         maxCost = Mathf.Max(0, maxCost);
-        currentCost = Mathf.Clamp(currentCost, 0, maxCost);
+        currentCost = Mathf.Max(0, currentCost);
+
+        // 게이지는 최대 마나까지만 채우되, 숫자는 초과 마나를 그대로 표시한다.
+        int fillCost = Mathf.Min(currentCost, maxCost);
 
         if (costFill != null)
         {
             costFill.fillAmount = maxCost > 0
-                ? (float)currentCost / maxCost
+                ? (float)fillCost / maxCost
                 : 0f;
         }
 
