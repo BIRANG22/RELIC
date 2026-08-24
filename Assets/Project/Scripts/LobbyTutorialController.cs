@@ -94,36 +94,6 @@ public sealed class LobbyTutorialController : MonoBehaviour
     [Tooltip("첫 로비 튜토리얼에서 지급할 공용 룬 ID 3개입니다.")]
     [SerializeField] private string[] starterRuneIds = new string[3];
 
-    [Header("Quest")]
-    [SerializeField] private GameObject questPanel;
-    [SerializeField] private TMP_Text questText;
-
-    [Header("Quest Panel Position")]
-    [Tooltip("대화 중 QuestPanel의 Y 위치입니다.")]
-    [SerializeField] private float questDialogueY = 600f;
-
-    [Tooltip("대화가 끝났을 때 QuestPanel의 Y 위치입니다.")]
-    [SerializeField] private float questNormalY = 490f;
-
-    [Tooltip("QuestPanel이 대화 위치와 기본 위치 사이를 이동하는 시간입니다.")]
-    [Min(0.01f)]
-    [SerializeField] private float questMoveDuration = 0.25f;
-
-    [Tooltip("최초 엘릭 대화가 끝난 뒤 표시할 목표 문구입니다.")]
-    [TextArea(2, 4)]
-    [SerializeField] private string setupQuestText = "파티편성 및 캐릭터 세팅이 완료 되었다면, 엘릭과 대화하세요";
-
-    [Tooltip("첫 탐사 의뢰 후 표시할 목표 문구입니다. {Current}와 {Target}은 진행 수치로 자동 치환됩니다.")]
-    [TextArea(2, 4)]
-    [SerializeField] private string arabellaQuestText = "로데른 폐허에서 아라벨라를 처치하고 아라벨라의 각성핵을 수집하세요. ({Current}/{Target})";
-
-    [Tooltip("아라벨라 각성핵 목표 수량입니다.")]
-    [Min(1)]
-    [SerializeField] private int arabellaQuestTargetCount = 1;
-
-    [Tooltip("아라벨라 처치 보상으로 얻는 각성핵 ItemId입니다.")]
-    [SerializeField] private string arabellaAwakeningCoreItemId;
-
     private DialogueMode dialogueMode;
     private int dialogueIndex;
     private bool starterRunesGrantedThisDialogue;
@@ -133,7 +103,6 @@ public sealed class LobbyTutorialController : MonoBehaviour
     private Vector2 nextButtonIndicatorBasePosition;
     private bool hasNextButtonIndicatorBasePosition;
     private bool cameraPauseActive;
-    private Coroutine questMoveCoroutine;
 
     public bool IsDialogueOpen => dialogueMode != DialogueMode.None;
 
@@ -143,7 +112,6 @@ public sealed class LobbyTutorialController : MonoBehaviour
         BindNextButton();
         SetDialogueVisible(false);
         SetTutorialDisplay(false, false);
-        SetQuestVisible(false);
         CacheNextButtonIndicatorPosition();
         SetNextButtonReady(false);
     }
@@ -155,7 +123,7 @@ public sealed class LobbyTutorialController : MonoBehaviour
             yield return null;
 
         LobbyRuntimeData lobby = DataManager.Instance.LobbyRuntimeStore.GetOrCreate();
-        RefreshQuestPanel(lobby);
+        LobbyQuestManager.Instance?.Refresh();
 
         if (lobby.TutorialProgress == LobbyTutorialProgress.NotStarted)
         {
@@ -207,7 +175,6 @@ public sealed class LobbyTutorialController : MonoBehaviour
     private void OnDisable()
     {
         StopTypewriter();
-        StopQuestPanelMove();
         ReleaseCameraPause();
     }
 
@@ -471,7 +438,7 @@ public sealed class LobbyTutorialController : MonoBehaviour
             SaveTutorialProgressImmediately();
         }
 
-        RefreshQuestPanel(lobby);
+        LobbyQuestManager.Instance?.Refresh();
     }
 
     private void SaveTutorialProgressImmediately()
@@ -490,118 +457,6 @@ public sealed class LobbyTutorialController : MonoBehaviour
                 "[LobbyTutorialController] 튜토리얼 진행 상태 즉시 저장에 실패했습니다.",
                 this);
         }
-    }
-
-    private void RefreshQuestPanel(LobbyRuntimeData lobby)
-    {
-        if (lobby == null)
-        {
-            SetQuestVisible(false);
-            return;
-        }
-
-        switch (lobby.TutorialProgress)
-        {
-            case LobbyTutorialProgress.WaitingForSetup:
-                SetQuestText(setupQuestText);
-                SetQuestVisible(true);
-                break;
-
-            case LobbyTutorialProgress.FirstExpeditionAssigned:
-                int targetCount = Mathf.Max(1, arabellaQuestTargetCount);
-                int currentCount = HasArabellaAwakeningCore(lobby) ? targetCount : 0;
-                string progressText = (arabellaQuestText ?? string.Empty)
-                    .Replace("{Current}", currentCount.ToString())
-                    .Replace("{Target}", targetCount.ToString());
-                SetQuestText(progressText);
-                SetQuestVisible(true);
-                break;
-
-            default:
-                SetQuestVisible(false);
-                break;
-        }
-    }
-
-    private bool HasArabellaAwakeningCore(LobbyRuntimeData lobby)
-    {
-        if (lobby?.BagItemIds == null || string.IsNullOrWhiteSpace(arabellaAwakeningCoreItemId))
-            return false;
-
-        string targetId = arabellaAwakeningCoreItemId.Trim();
-        for (int i = 0; i < lobby.BagItemIds.Count; i++)
-        {
-            string itemId = lobby.BagItemIds[i];
-            if (!string.IsNullOrWhiteSpace(itemId) &&
-                string.Equals(itemId.Trim(), targetId, System.StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private void SetQuestText(string text)
-    {
-        if (questText != null)
-            questText.text = text ?? string.Empty;
-    }
-
-    private void SetQuestVisible(bool visible)
-    {
-        if (questPanel != null)
-            questPanel.SetActive(visible);
-    }
-
-    private void SetQuestPanelY(float y)
-    {
-        if (questPanel == null)
-            return;
-
-        RectTransform rectTransform = questPanel.GetComponent<RectTransform>();
-        if (rectTransform == null)
-            return;
-
-        StopQuestPanelMove();
-        questMoveCoroutine = StartCoroutine(MoveQuestPanelY(rectTransform, y));
-    }
-
-    private IEnumerator MoveQuestPanelY(RectTransform rectTransform, float targetY)
-    {
-        if (rectTransform == null)
-            yield break;
-
-        Vector2 startPosition = rectTransform.anchoredPosition;
-        float startY = startPosition.y;
-        float duration = Mathf.Max(0.01f, questMoveDuration);
-        float elapsed = 0f;
-
-        while (elapsed < duration)
-        {
-            elapsed += Time.unscaledDeltaTime;
-            float t = Mathf.Clamp01(elapsed / duration);
-            float easedT = Mathf.SmoothStep(0f, 1f, t);
-
-            Vector2 position = rectTransform.anchoredPosition;
-            position.y = Mathf.LerpUnclamped(startY, targetY, easedT);
-            rectTransform.anchoredPosition = position;
-            yield return null;
-        }
-
-        Vector2 finalPosition = rectTransform.anchoredPosition;
-        finalPosition.y = targetY;
-        rectTransform.anchoredPosition = finalPosition;
-        questMoveCoroutine = null;
-    }
-
-    private void StopQuestPanelMove()
-    {
-        if (questMoveCoroutine == null)
-            return;
-
-        StopCoroutine(questMoveCoroutine);
-        questMoveCoroutine = null;
     }
 
     private void GrantStarterRunes()
@@ -657,11 +512,6 @@ public sealed class LobbyTutorialController : MonoBehaviour
 
     private void SetDialogueVisible(bool visible)
     {
-        if (visible)
-            SetQuestPanelY(questDialogueY);
-        else
-            SetQuestPanelY(questNormalY);
-
         if (dialoguePanel != null)
             dialoguePanel.SetActive(visible);
 
@@ -806,19 +656,6 @@ public sealed class LobbyTutorialController : MonoBehaviour
             if (fragmentGroup == null)
                 fragmentGroup = FindChildGameObject(displayRoot, "FragmentGroup");
         }
-
-        if (questPanel == null)
-        {
-            Canvas parentCanvas = GetComponentInParent<Canvas>();
-            Transform searchRoot = parentCanvas != null ? parentCanvas.transform : transform.parent;
-            GameObject positionPanel = FindChildGameObject(searchRoot, "PositionPanel");
-
-            if (positionPanel != null)
-                questPanel = FindChildGameObject(positionPanel.transform, "QuestPanel");
-        }
-
-        if (questPanel != null && questText == null)
-            questText = FindChildComponent<TMP_Text>(questPanel.transform, "QuestText");
 
         AutoBindFragmentImages();
     }
