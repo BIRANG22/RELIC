@@ -83,7 +83,8 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
         PlayClickSfx();
         TitleManager.CloseTitleModePanelsExceptInScene(erosionSelectPanel);
 
-        UIBlurBackground.EnsureForPanel(erosionSelectPanel);
+        UIBlurBackground blurBackground = UIBlurBackground.EnsureForPanel(erosionSelectPanel);
+        LobbyQuestManager.Instance?.ConfigureQuestPanelBlur(blurBackground);
         erosionSelectPanel.SetActive(true);
 
         if (bringPanelToFront)

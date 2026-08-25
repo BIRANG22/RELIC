@@ -35,7 +35,7 @@ public sealed class BattleDebugMonsterEntry
 
 public static class BattleEffectDebugTool
 {
-    public const int SkillDisplaySlotCount = 4;
+    public const int SkillDisplaySlotCount = 5;
     public const int RuneSlotCount = 12;
     public const int PassiveRelicSlotCount = 6;
     public const int BattleGridCellCount = 35;
@@ -143,6 +143,11 @@ public static class BattleEffectDebugTool
                 runtime.UniqueSkillId = normalizedSkillId;
                 runtime.EquippedSkillIds[0] = normalizedSkillId;
                 break;
+
+            case 4:
+                runtime.PassiveSkillId = normalizedSkillId;
+                BattlePassiveSkillService.RefreshRuntimePassiveEffects(runtime);
+                break;
         }
 
         return true;
@@ -159,6 +164,7 @@ public static class BattleEffectDebugTool
             1 => GetRuntimeSkillSlotId(runtime, 2),
             2 => GetRuntimeSkillSlotId(runtime, 3),
             3 => runtime.UniqueSkillId ?? string.Empty,
+            4 => runtime.PassiveSkillId ?? string.Empty,
             _ => string.Empty
         };
     }
