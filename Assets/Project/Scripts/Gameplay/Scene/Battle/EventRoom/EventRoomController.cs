@@ -27,6 +27,7 @@ public class EventRoomController : MonoBehaviour
 
     [Header("Event Rewards")]
     [SerializeField] private BattleRewardPanelUI rewardPanel;
+    [SerializeField, Min(0f)] private float eventRewardPanelOpenDelay = 0.6f;
 
     [Header("Shop")]
     [SerializeField] private RestRoomShopPanel shopPanel;
@@ -77,6 +78,7 @@ public class EventRoomController : MonoBehaviour
     private bool isDataEventActive;
     private bool isEventResolved;
     private bool isEventRewardPanelOpen;
+    private Coroutine eventRewardPanelDelayRoutine;
     private readonly List<BattleRewardData> pendingEventRewards = new();
     private readonly EventChoiceSessionState eventChoiceSessionState = new();
     private readonly List<EventData> persistentEventChoices = new();
@@ -118,6 +120,7 @@ public class EventRoomController : MonoBehaviour
             relicAcquireRoutine = null;
         }
 
+        StopEventRewardPanelDelay();
         CacheRelicFlyRootOriginalState();
         HideRelicHoverInfo();
         HideRelicFlyObjects();
@@ -157,6 +160,7 @@ public class EventRoomController : MonoBehaviour
             relicAcquireRoutine = null;
         }
 
+        StopEventRewardPanelDelay();
         HideRelicHoverInfo();
         HideRelicFlyObjects();
         ClearChoiceSlots();
@@ -211,7 +215,7 @@ public class EventRoomController : MonoBehaviour
                 isEventResolved = true;
             }
 
-            if (pendingEventRewards.Count > 0 && TryOpenPendingEventRewardPanel())
+            if (pendingEventRewards.Count > 0 && TryOpenPendingEventRewardPanel(false))
                 return;
 
             CompleteCurrentNode();
@@ -492,7 +496,7 @@ public class EventRoomController : MonoBehaviour
         isEventResolved = true;
 
         if (EventRoomRewardFlowUtility.ShouldOpenPendingRewards(result, pendingEventRewards.Count, hasContinuingEvent) &&
-            TryOpenPendingEventRewardPanel())
+            TryOpenPendingEventRewardPanel(true))
         {
             return;
         }
@@ -1238,9 +1242,6 @@ public class EventRoomController : MonoBehaviour
         bool success = true;
         List<string> messages = new();
 
-        if (!string.IsNullOrWhiteSpace(choice.ChoiceDesc))
-            messages.Add(choice.ChoiceDesc.Trim());
-
         if (SameToken(choice.ChoiceType, "Dice"))
         {
             diceRoll = RollThreeSixSidedDice();
@@ -1351,7 +1352,7 @@ public class EventRoomController : MonoBehaviour
         }
 
         if (SameToken(resultType, "EndEvent"))
-            return string.IsNullOrWhiteSpace(choice.ChoiceDesc) ? "이벤트를 종료합니다." : string.Empty;
+            return "이벤트를 종료합니다.";
 
         return BuildResultSummary(choice);
     }
@@ -2148,7 +2149,7 @@ public class EventRoomController : MonoBehaviour
         pendingEventRewards.Add(reward);
     }
 
-    private bool TryOpenPendingEventRewardPanel()
+    private bool TryOpenPendingEventRewardPanel(bool delayOpening = false)
     {
         if (pendingEventRewards.Count <= 0)
             return false;
@@ -2167,12 +2168,45 @@ public class EventRoomController : MonoBehaviour
 
         List<BattleRewardData> rewards = new(pendingEventRewards);
         pendingEventRewards.Clear();
-        rewardPanel.Open(rewards, OnEventRewardPanelCompleted);
+
+        if (delayOpening && eventRewardPanelOpenDelay > 0f && isActiveAndEnabled)
+        {
+            StopEventRewardPanelDelay();
+            eventRewardPanelDelayRoutine =
+                StartCoroutine(OpenPendingEventRewardPanelAfterDelay(rewards));
+            return true;
+        }
+
+        OpenPendingEventRewardPanelNow(rewards);
         return true;
+    }
+
+    private IEnumerator OpenPendingEventRewardPanelAfterDelay(List<BattleRewardData> rewards)
+    {
+        yield return new WaitForSecondsRealtime(Mathf.Max(0f, eventRewardPanelOpenDelay));
+
+        eventRewardPanelDelayRoutine = null;
+        OpenPendingEventRewardPanelNow(rewards);
+    }
+
+    private void OpenPendingEventRewardPanelNow(List<BattleRewardData> rewards)
+    {
+        eventRewardPanelDelayRoutine = null;
+        rewardPanel.Open(rewards, OnEventRewardPanelCompleted);
+    }
+
+    private void StopEventRewardPanelDelay()
+    {
+        if (eventRewardPanelDelayRoutine == null)
+            return;
+
+        StopCoroutine(eventRewardPanelDelayRoutine);
+        eventRewardPanelDelayRoutine = null;
     }
 
     private void OnEventRewardPanelCompleted()
     {
+        StopEventRewardPanelDelay();
         isEventRewardPanelOpen = false;
         pendingEventRewards.Clear();
         PersistEventRuntime();
