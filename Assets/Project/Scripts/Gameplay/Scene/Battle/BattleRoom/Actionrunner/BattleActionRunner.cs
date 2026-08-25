@@ -2429,6 +2429,13 @@ public class BattleActionRunner
                 entry,
                 damageService.GetPlayerDamage(command));
 
+        if (entry.EffectId == "E_Knockback")
+            return BattleEquipmentEffectService.ModifyPlayerKnockbackValue(
+                command.UserRuntime,
+                command,
+                entry,
+                entry.ValueAmount);
+
         return BattleEquipmentEffectService.ModifyPlayerEffectValue(
             command.UserRuntime,
             command,

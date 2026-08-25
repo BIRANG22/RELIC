@@ -13,24 +13,50 @@ public class GrabEffect : BattleEffectBase
             return;
 
         Vector2Int offset = GetReverseDirectionOffset(context.Direction);
-
         int moveCount = Mathf.Max(1, context.Value);
+
+        BattleCharacter playerTarget = context.PlayerTarget;
+        MonsterUnit monsterTarget = context.MonsterTarget;
+        Vector3 startWorldPosition = playerTarget != null
+            ? playerTarget.transform.position
+            : monsterTarget != null ? monsterTarget.transform.position : Vector3.zero;
+        int startGridIndex = playerTarget != null
+            ? playerTarget.CurrentGridIndex
+            : monsterTarget != null ? monsterTarget.MainGridIndex : -1;
 
         for (int i = 0; i < moveCount; i++)
         {
-            if (context.PlayerTarget != null)
+            if (playerTarget != null)
             {
-                if (BattleEquipmentEffectService.IsForcedMoveImmune(context.PlayerTarget.RuntimeData))
+                if (BattleEquipmentEffectService.IsForcedMoveImmune(playerTarget.RuntimeData))
                     break;
 
-                if (!TryMovePlayer(context.PlayerTarget, offset, context.GridManager))
+                if (!TryMovePlayer(playerTarget, offset, context.GridManager))
                     break;
             }
-            else if (context.MonsterTarget != null)
+            else if (monsterTarget != null)
             {
-                if (!TryMoveMonster(context.MonsterTarget, offset, context.GridManager))
+                if (!TryMoveMonster(monsterTarget, offset, context.GridManager))
                     break;
             }
+        }
+
+        int finalGridIndex = playerTarget != null
+            ? playerTarget.CurrentGridIndex
+            : monsterTarget != null ? monsterTarget.MainGridIndex : -1;
+
+        if (startGridIndex >= 0 && finalGridIndex >= 0 && startGridIndex != finalGridIndex)
+        {
+            Transform visualTarget = playerTarget != null ? playerTarget.transform : monsterTarget.transform;
+            Vector3 startCellWorldPosition = context.GridManager.GetWorldPositionByIndex(startGridIndex);
+            Vector3 finalCellWorldPosition = context.GridManager.GetWorldPositionByIndex(finalGridIndex);
+            Vector3 finalWorldPosition =
+                startWorldPosition + (finalCellWorldPosition - startCellWorldPosition);
+
+            if (playerTarget != null)
+                playerTarget.StartCoroutine(MoveTransformSmooth(visualTarget, startWorldPosition, finalWorldPosition));
+            else if (monsterTarget != null)
+                monsterTarget.StartCoroutine(MoveTransformSmooth(visualTarget, startWorldPosition, finalWorldPosition));
         }
     }
 
@@ -70,13 +96,9 @@ public class GrabEffect : BattleEffectBase
             return false;
         }
 
-        Vector3 startPosition = target.transform.position;
-        Vector3 targetPosition = gridManager.GetWorldPositionByIndex(targetIndex);
-
-        // 논리 그리드 위치를 먼저 갱신하고 화면에서는 부드럽게 이동하는 연출을 재생합니다.
+        // 논리 그리드 위치를 즉시 갱신합니다.
+        // 화면 이동은 전체 그랩 판정이 끝난 뒤 최종 칸까지 한 번만 재생합니다.
         target.SetGridIndex(targetIndex);
-        target.StartCoroutine(MoveTransformSmooth(target.transform, startPosition, targetPosition));
-
         return true;
     }
 
@@ -112,18 +134,9 @@ public class GrabEffect : BattleEffectBase
             }
         }
 
-        int mainIndex = target.MainGridIndex;
-        Vector2Int mainCoord = gridManager.IndexToCoord(mainIndex);
-        Vector2Int movedMainCoord = mainCoord + offset;
-        int movedMainIndex = gridManager.CoordToIndex(movedMainCoord);
-
-        Vector3 startPosition = target.transform.position;
-        Vector3 targetPosition = gridManager.GetWorldPositionByIndex(movedMainIndex);
-
-        // 점유 그리드를 먼저 갱신한 뒤 몬스터 오브젝트를 부드럽게 이동시킵니다.
+        // 점유 그리드를 즉시 갱신합니다.
+        // 화면 이동은 전체 그랩 판정이 끝난 뒤 최종 칸까지 한 번만 재생합니다.
         target.MoveOccupiedCells(offset, gridManager);
-        target.StartCoroutine(MoveTransformSmooth(target.transform, startPosition, targetPosition));
-
         return true;
     }
 

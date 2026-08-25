@@ -60,6 +60,13 @@ namespace Relic.Gameplay.Data
         public int PendingNextTurnBoostStack;
         public int PendingNextTurnBoostTurn;
 
+        // 카르마 최대 도달 룬은 도달한 턴이 아니라 다음 턴 시작 시 적용합니다.
+        public int PendingUniqueResourceMaxBoost;
+        public int PendingUniqueResourceMaxSmite;
+        public int PendingUniqueResourceMaxCostRecovery;
+        public int PendingUniqueResourceMaxArmor;
+        public int PendingUniqueResourceMaxSelfLowestAllyArmor;
+
         public bool IsUnlocked;
 
         public Vector2Int LastMoveOffset => new(LastMoveOffsetX, LastMoveOffsetY);

@@ -108,6 +108,24 @@ public static class BattleEquipmentEffectService
     private const string ShopPriceDiscountPercentEffectId = "E_Shop_Price_Discount_Percent";
     private const string BattleRewardCurrencyPercentEffectId = "E_Battle_Reward_Currency_Percent";
     private const string BattleEndHealEffectId = "E_Battle_End_Heal";
+    private const string HealValueDeltaEffectId = "E_Heal_Value_Delta";
+    private const string SkillArmorValueDeltaEffectId = "E_Skill_Armor_Value_Delta";
+    private const string PoisonValueDeltaEffectId = "E_Poison_Value_Delta";
+    private const string BleedValueDeltaEffectId = "E_Bleed_Value_Delta";
+    private const string ExplorationStartUniqueResourceEffectId = "E_Exploration_Start_Unique_Resource";
+    private const string UniqueResourceMaxReachedBoostEffectId = "E_Unique_Resource_Max_Reached_Boost";
+    private const string UniqueResourceMaxReachedSmiteEffectId = "E_Unique_Resource_Max_Reached_Smite";
+    private const string UniqueResourceMaxReachedCostRecoveryEffectId = "E_Unique_Resource_Max_Reached_Cost_Recovery";
+    private const string UniqueResourceMaxReachedArmorEffectId = "E_Unique_Resource_Max_Reached_Armor";
+    private const string UniqueResourceMaxReachedSelfLowestAllyArmorEffectId = "E_Unique_Resource_Max_Reached_Self_Lowest_Ally_Armor";
+    private const string RuneTargetDamageValueDeltaEffectId = "E_Rune_Target_Damage_Value_Delta";
+    private const string RuneTargetKnockbackValueDeltaEffectId = "E_Rune_Target_Knockback_Value_Delta";
+    private const string RuneTargetAttackCountDeltaEffectId = "E_Rune_Target_Attack_Count_Delta";
+    private const string RuneTargetSkillCostDeltaEffectId = "E_Rune_Target_Skill_Cost_Delta";
+    private const string RuneTargetArmorMultiplierEffectId = "E_Rune_Target_Armor_Multiplier";
+    private const string RuneTargetBoostValueDeltaEffectId = "E_Rune_Target_Boost_Value_Delta";
+    private const string RuneTargetHealValueDeltaEffectId = "E_Rune_Target_Heal_Value_Delta";
+    private const string RuneTargetRangeExpandEffectId = "E_Rune_Target_Range_Expand";
     private const string MoveFirstAttackPowerEffectId = "E_Move_First_Attack_Power";
     private const string PoisonApplyDoubleEffectId = "E_Poison_Apply_Double";
     private const string BleedingApplyDoubleEffectId = "E_Bleeding_Apply_Double";
@@ -166,6 +184,16 @@ public static class BattleEquipmentEffectService
         int maxResource = masterData != null
             ? Mathf.Max(0, masterData.MaxResource)
             : Mathf.Max(0, runtime.CurrentResource);
+        int explorationStartResource = ConsumeExplorationStartUniqueResource(runtime);
+        if (explorationStartResource > 0)
+        {
+            int previousResource = Mathf.Max(0, runtime.CurrentResource);
+            ApplyUniqueResourceGainSideEffects(
+                runtime, explorationStartResource, previousResource, maxResource);
+            runtime.CurrentResource = Mathf.Clamp(
+                previousResource + explorationStartResource, 0, maxResource);
+        }
+
         int battleStartResource = GetBattleStartUniqueResource(runtime, masterData);
         runtime.CurrentResource = Mathf.Clamp(Mathf.Max(runtime.CurrentResource, battleStartResource), 0, maxResource);
         runtime.CurrentMoveLevel = Mathf.Max(0, GetEffectiveMoveValue(runtime, masterData));
@@ -252,6 +280,12 @@ public static class BattleEquipmentEffectService
         runtime.PendingNextTurnSmiteTurn = 0;
         runtime.PendingNextTurnBoostStack = 0;
         runtime.PendingNextTurnBoostTurn = 0;
+
+        runtime.PendingUniqueResourceMaxBoost = 0;
+        runtime.PendingUniqueResourceMaxSmite = 0;
+        runtime.PendingUniqueResourceMaxCostRecovery = 0;
+        runtime.PendingUniqueResourceMaxArmor = 0;
+        runtime.PendingUniqueResourceMaxSelfLowestAllyArmor = 0;
     }
 
     public static void MarkMovedBeforeNextAttack(CharacterRuntimeData runtime)
@@ -326,6 +360,7 @@ public static class BattleEquipmentEffectService
 
         ApplyQueuedNextTurnSmite(runtime, playerTurnNumber);
         ApplyQueuedNextTurnBoost(runtime, playerTurnNumber);
+        ApplyQueuedUniqueResourceMaxRuneEffects(runtime);
         ApplyConfiguredTurnStartEffects(runtime, playerTurnNumber);
         ApplyNoDamagePreviousTurnEffect(runtime, playerTurnNumber);
 
@@ -358,13 +393,6 @@ public static class BattleEquipmentEffectService
         if (runtime == null || safeAmount <= 0)
             return safeAmount;
 
-        if (IsCharacter(runtime, "Char_01") &&
-            HasRune(runtime, "Rune_03") &&
-            runtime.CurrentResource <= 0)
-        {
-            safeAmount += 1;
-        }
-
         if (runtime.CurrentResource <= 0)
             safeAmount += SumConfiguredEffectValues(runtime, UniqueResourceGainIfEmptyDeltaEffectId);
 
@@ -380,6 +408,12 @@ public static class BattleEquipmentEffectService
         if (runtime == null || requestedAmount <= 0 || maxResource <= 0)
             return;
 
+        if (previousResource < maxResource &&
+            previousResource + requestedAmount >= maxResource)
+        {
+            ApplyUniqueResourceMaxReachedRuneEffects(runtime);
+        }
+
         if (previousResource < maxResource)
             return;
 
@@ -394,6 +428,142 @@ public static class BattleEquipmentEffectService
         runtime.CurrentCost = Mathf.Min(
             Mathf.Max(0, runtime.MaxCost),
             Mathf.Max(0, runtime.CurrentCost) + restoredCost);
+    }
+
+    private static int ConsumeExplorationStartUniqueResource(CharacterRuntimeData runtime)
+    {
+        if (runtime == null ||
+            string.IsNullOrWhiteSpace(runtime.CharacterId) ||
+            DataManager.Instance == null ||
+            DataManager.Instance.BattleRuntimeStore == null)
+        {
+            return 0;
+        }
+
+        int amount = SumConfiguredEffectValues(runtime, ExplorationStartUniqueResourceEffectId);
+        if (amount <= 0)
+            return 0;
+
+        BattleRuntimeData battleRuntime = DataManager.Instance.BattleRuntimeStore.GetOrCreate();
+        battleRuntime.AppliedExplorationStartRuneCharacterIds ??= new List<string>();
+
+        string characterId = runtime.CharacterId.Trim();
+        if (battleRuntime.AppliedExplorationStartRuneCharacterIds.Contains(characterId))
+            return 0;
+
+        battleRuntime.AppliedExplorationStartRuneCharacterIds.Add(characterId);
+        DataManager.Instance.BattleRuntimeStore.Set(battleRuntime);
+        return amount;
+    }
+
+    private static void ApplyUniqueResourceMaxReachedRuneEffects(CharacterRuntimeData runtime)
+    {
+        if (runtime == null || runtime.IsDead)
+            return;
+
+        // Rune_52 / 57 / 62 / 67 / 72
+        // 카르마가 최대에 도달한 순간에는 효과를 바로 주지 않고,
+        // 다음 플레이어 턴 시작 시 적용할 수치만 예약합니다.
+        runtime.PendingUniqueResourceMaxBoost += Mathf.Max(
+            0,
+            SumConfiguredEffectValues(runtime, UniqueResourceMaxReachedBoostEffectId));
+
+        runtime.PendingUniqueResourceMaxSmite += Mathf.Max(
+            0,
+            SumConfiguredEffectValues(runtime, UniqueResourceMaxReachedSmiteEffectId));
+
+        runtime.PendingUniqueResourceMaxCostRecovery += Mathf.Max(
+            0,
+            SumConfiguredEffectValues(runtime, UniqueResourceMaxReachedCostRecoveryEffectId));
+
+        runtime.PendingUniqueResourceMaxArmor += Mathf.Max(
+            0,
+            SumConfiguredEffectValues(runtime, UniqueResourceMaxReachedArmorEffectId));
+
+        runtime.PendingUniqueResourceMaxSelfLowestAllyArmor += Mathf.Max(
+            0,
+            SumConfiguredEffectValues(runtime, UniqueResourceMaxReachedSelfLowestAllyArmorEffectId));
+    }
+
+    private static void ApplyQueuedUniqueResourceMaxRuneEffects(CharacterRuntimeData runtime)
+    {
+        if (runtime == null || runtime.IsDead)
+            return;
+
+        int boost = runtime.PendingUniqueResourceMaxBoost;
+        int smite = runtime.PendingUniqueResourceMaxSmite;
+        int costRecovery = runtime.PendingUniqueResourceMaxCostRecovery;
+        int armor = runtime.PendingUniqueResourceMaxArmor;
+        int partyArmor = runtime.PendingUniqueResourceMaxSelfLowestAllyArmor;
+
+        runtime.PendingUniqueResourceMaxBoost = 0;
+        runtime.PendingUniqueResourceMaxSmite = 0;
+        runtime.PendingUniqueResourceMaxCostRecovery = 0;
+        runtime.PendingUniqueResourceMaxArmor = 0;
+        runtime.PendingUniqueResourceMaxSelfLowestAllyArmor = 0;
+
+        if (boost > 0)
+            AddTemporaryStatus(runtime, "E_Boost", boost, UniqueResourceMaxReachedBoostEffectId);
+
+        if (smite > 0)
+            AddTemporaryStatus(runtime, "E_Smite", smite, UniqueResourceMaxReachedSmiteEffectId);
+
+        if (costRecovery > 0)
+        {
+            int maxCost = Mathf.Max(0, runtime.MaxCost);
+            runtime.CurrentCost = Mathf.Min(maxCost, Mathf.Max(0, runtime.CurrentCost) + costRecovery);
+        }
+
+        if (armor > 0)
+            AddRuneTriggeredArmor(runtime, armor);
+
+        if (partyArmor > 0)
+        {
+            AddRuneTriggeredArmor(runtime, partyArmor);
+
+            CharacterRuntimeData lowestAlly = FindLowestHpLivingAlly(runtime);
+            if (lowestAlly != null)
+                AddRuneTriggeredArmor(lowestAlly, partyArmor);
+        }
+    }
+
+    private static void AddRuneTriggeredArmor(CharacterRuntimeData runtime, int amount)
+    {
+        if (runtime == null || runtime.IsDead || amount <= 0)
+            return;
+
+        int gainedArmor = ModifyArmorGain(runtime, amount);
+        if (gainedArmor <= 0)
+            return;
+
+        runtime.CurrentShield += gainedArmor;
+        BattleDamageTextPopupUI.ShowArmorGain(runtime.CharacterId, gainedArmor);
+    }
+
+    private static CharacterRuntimeData FindLowestHpLivingAlly(CharacterRuntimeData owner)
+    {
+        if (owner == null)
+            return null;
+
+        List<CharacterRuntimeData> party = GetCurrentPartyRuntimeData();
+        CharacterRuntimeData best = null;
+        float bestRatio = float.MaxValue;
+
+        for (int i = 0; i < party.Count; i++)
+        {
+            CharacterRuntimeData candidate = party[i];
+            if (candidate == null || candidate.IsDead || candidate == owner || candidate.MaxHP <= 0)
+                continue;
+
+            float ratio = candidate.CurrentHP / (float)candidate.MaxHP;
+            if (best == null || ratio < bestRatio)
+            {
+                best = candidate;
+                bestRatio = ratio;
+            }
+        }
+
+        return best;
     }
 
     public static void ApplyReservationCostModifiers(
@@ -432,17 +602,6 @@ public static class BattleEquipmentEffectService
             command.SetCosts(0, 0, 0, 0);
             command.MarkReservationCostModifiersApplied();
             return;
-        }
-
-        if (HasRune(command.UserRuntime, "Rune_24") &&
-            isFirstMoveCommand &&
-            IsMoveCommand(command))
-        {
-            ReduceFirstPositiveCost(
-                ref hpCost,
-                ref cost,
-                ref resourceCost,
-                ref shieldCost);
         }
 
         if (isFirstMoveCommand && IsMoveCommand(command))
@@ -981,40 +1140,33 @@ public static class BattleEquipmentEffectService
 
     public static void ApplyPassiveExtras(CharacterRuntimeData runtime)
     {
-        if (runtime == null)
-            return;
+        // Rune 효과는 GameData EffectIds 기반으로 처리합니다.
+        // 기존 Rune_01~25 하드코딩 패시브는 현재 룬 데이터와 충돌하므로 사용하지 않습니다.
+    }
 
-        int resource = Mathf.Max(0, runtime.CurrentResource);
+    public static int ModifyPlayerKnockbackValue(
+        CharacterRuntimeData runtime,
+        PlayerReservedCommand command,
+        SkillEffectEntry entry,
+        int baseValue)
+    {
+        int value = Mathf.Max(0, baseValue);
 
-        if (IsCharacter(runtime, "Char_01") &&
-            HasRune(runtime, "Rune_02") &&
-            resource >= 3)
-        {
-            AddPassiveStatus(runtime, "E_Boost", 1, "Rune_02");
-        }
+        if (runtime == null || command == null || entry == null)
+            return value;
 
-        if (IsCharacter(runtime, "Char_02") &&
-            HasRune(runtime, "Rune_08") &&
-            resource >= 5)
-        {
-            AddPassiveStatus(runtime, "E_Boost", 1, "Rune_08");
-        }
+        int runeKnockbackValue = SumConfiguredRuneTargetEffectValues(
+            runtime, RuneTargetKnockbackValueDeltaEffectId, command.SkillId);
 
-        if (IsCharacter(runtime, "Char_03") &&
-            HasRune(runtime, "Rune_12") &&
-            resource >= 3)
-        {
-            int gainedArmor = ModifyArmorGain(runtime, 2);
-            runtime.CurrentShield += gainedArmor;
-            BattleDamageTextPopupUI.ShowArmorGain(runtime.CharacterId, gainedArmor);
-        }
+        // 전용 룬의 넉백 값은 추가 수치가 아니라 최종 넉백 거리입니다.
+        // 예: 기본 1칸인 대지가르기에 Rune_54 값 3이 적용되면 최종 3칸 넉백입니다.
+        if (runeKnockbackValue > 0)
+            value = runeKnockbackValue;
 
-        if (IsCharacter(runtime, "Char_03") &&
-            HasRune(runtime, "Rune_13") &&
-            resource >= 3)
-        {
-            AddPassiveStatus(runtime, "E_Boost", 1, "Rune_13");
-        }
+        // 넉백 자체에 적용되는 일반 장비 보정이 있다면 함께 반영합니다.
+        value += GetConfiguredEffectValueDelta(runtime, command, entry);
+
+        return Mathf.Max(0, value);
     }
 
     public static int ModifyPlayerEffectValue(
@@ -1043,11 +1195,39 @@ public static class BattleEquipmentEffectService
         if (ShouldDoubleBuffApplication(runtime, command, entry))
             value *= 2;
 
-        if (IsDamageEffect(entry.EffectId) &&
-            IsCharacter(runtime, "Char_02") &&
-            HasRune(runtime, "Rune_09"))
+        if (entry.EffectId == "E_Heal")
         {
-            value += 2;
+            value += SumConfiguredEffectValues(runtime, HealValueDeltaEffectId);
+            value += SumConfiguredRuneTargetEffectValues(
+                runtime, RuneTargetHealValueDeltaEffectId, command.SkillId);
+        }
+
+        if (entry.EffectId == "E_Armor")
+        {
+            value += SumConfiguredEffectValues(runtime, SkillArmorValueDeltaEffectId);
+
+            int armorMultiplier = SumConfiguredRuneTargetEffectValues(
+                runtime, RuneTargetArmorMultiplierEffectId, command.SkillId);
+            if (armorMultiplier > 1)
+                value *= armorMultiplier;
+        }
+
+        if (entry.EffectId == "E_Poison")
+            value += SumConfiguredEffectValues(runtime, PoisonValueDeltaEffectId);
+
+        if (entry.EffectId == "E_Bleed")
+            value += SumConfiguredEffectValues(runtime, BleedValueDeltaEffectId);
+
+        if (entry.EffectId == "E_Boost")
+        {
+            value += SumConfiguredRuneTargetEffectValues(
+                runtime, RuneTargetBoostValueDeltaEffectId, command.SkillId);
+        }
+
+        if (IsDamageEffect(entry.EffectId))
+        {
+            value += SumConfiguredRuneTargetEffectValues(
+                runtime, RuneTargetDamageValueDeltaEffectId, command.SkillId);
         }
 
         value = Mathf.Max(
@@ -1113,6 +1293,11 @@ public static class BattleEquipmentEffectService
             0,
             count + SumConfiguredEffectValues(runtime, AttackCountDeltaEffectId));
 
+        count = Mathf.Max(
+            0,
+            count + SumConfiguredRuneTargetEffectValues(
+                runtime, RuneTargetAttackCountDeltaEffectId, command.SkillId));
+
         int randomAttackCountDelta = SumConfiguredEffectValues(runtime, RandomAttackCountDeltaEffectId);
         if (randomAttackCountDelta != 0 &&
             IsRelic07SelectedAttackSkill(runtime, command.SkillId))
@@ -1136,6 +1321,13 @@ public static class BattleEquipmentEffectService
     {
         if (skillData == null)
             return string.Empty;
+
+        if (SumConfiguredRuneTargetEffectValues(
+                runtime, RuneTargetRangeExpandEffectId, skillData.SkillId) > 0 &&
+            skillData.RangeId == "Range_17")
+        {
+            return "Range_05";
+        }
 
         if (SumConfiguredEffectValues(runtime, RangeDeltaEffectId) >= 2 &&
             skillData.RangeId == "Range_21")
@@ -1194,18 +1386,6 @@ public static class BattleEquipmentEffectService
     {
         int bonus = SumConfiguredEffectValues(runtime, MaxHpEffectId);
 
-        if (HasRune(runtime, "Rune_16"))
-            bonus += 3;
-
-        if (HasRune(runtime, "Rune_18"))
-            bonus += 5;
-
-        if (HasRune(runtime, "Rune_22"))
-            bonus += 7;
-
-        if (HasRune(runtime, "Rune_25"))
-            bonus += 3;
-
         if (HasRelic(runtime, "Relic_09") &&
             !HasConfiguredRelicEffect(runtime, "Relic_09", MaxHpEffectId))
         {
@@ -1222,15 +1402,6 @@ public static class BattleEquipmentEffectService
     private static int GetMaxCostBonus(CharacterRuntimeData runtime)
     {
         int bonus = SumConfiguredEffectValues(runtime, MaxCostEffectId);
-
-        if (HasRune(runtime, "Rune_20"))
-            bonus += 1;
-
-        if (HasRune(runtime, "Rune_21"))
-            bonus += 2;
-
-        if (HasRune(runtime, "Rune_25"))
-            bonus += 1;
 
         if (HasRelic(runtime, "Relic_08") &&
             !HasConfiguredRelicEffect(runtime, "Relic_08", MaxCostEffectId))
@@ -1255,18 +1426,6 @@ public static class BattleEquipmentEffectService
     private static int GetMoveValueBonus(CharacterRuntimeData runtime)
     {
         int bonus = SumConfiguredEffectValues(runtime, MoveValueEffectId);
-
-        if (HasRune(runtime, "Rune_17"))
-            bonus += 3;
-
-        if (HasRune(runtime, "Rune_19"))
-            bonus += 5;
-
-        if (HasRune(runtime, "Rune_23"))
-            bonus += 7;
-
-        if (HasRune(runtime, "Rune_25"))
-            bonus += 3;
 
         if (HasRelic(runtime, "Relic_10") &&
             !HasConfiguredRelicEffect(runtime, "Relic_10", MoveValueEffectId))
@@ -1298,15 +1457,6 @@ public static class BattleEquipmentEffectService
     {
         int resource = SumConfiguredEffectValues(runtime, BattleStartUniqueResourceEffectId);
 
-        if (IsCharacter(runtime, "Char_01") && HasRune(runtime, "Rune_01"))
-            resource += 3;
-
-        if (IsCharacter(runtime, "Char_02") && HasRune(runtime, "Rune_06"))
-            resource += 3;
-
-        if (IsCharacter(runtime, "Char_03") && HasRune(runtime, "Rune_11"))
-            resource += 3;
-
         int maxResource = masterData != null
             ? Mathf.Max(0, masterData.MaxResource)
             : Mathf.Max(0, resource);
@@ -1317,9 +1467,6 @@ public static class BattleEquipmentEffectService
     private static int ModifyArmorGain(CharacterRuntimeData runtime, int baseValue)
     {
         int value = Mathf.Max(0, baseValue);
-
-        if (IsCharacter(runtime, "Char_01") && HasRune(runtime, "Rune_04"))
-            value += 1;
 
         value += SumConfiguredEffectValues(runtime, ArmorGainDeltaEffectId);
 
@@ -1419,17 +1566,7 @@ public static class BattleEquipmentEffectService
 
     private static void ApplyTurnStartUniqueResourceRecovery(CharacterRuntimeData runtime, int amount)
     {
-        if (runtime == null || amount <= 0)
-            return;
-
-        int maxResource = GetMaxUniqueResource(runtime);
-        if (maxResource <= 0)
-            return;
-
-        runtime.CurrentResource = Mathf.Clamp(
-            Mathf.Max(0, runtime.CurrentResource) + amount,
-            0,
-            maxResource);
+        RecoverUniqueResource(runtime, amount);
     }
 
     private static int GetMaxUniqueResource(CharacterRuntimeData runtime)
@@ -1595,7 +1732,8 @@ public static class BattleEquipmentEffectService
 
         CharacterRuntimeData runtime = command.UserRuntime;
         SkillType skillType = command.SkillData.SkillType;
-        int delta = 0;
+        int delta = SumConfiguredRuneTargetEffectValues(
+            runtime, RuneTargetSkillCostDeltaEffectId, command.SkillId);
 
         if (skillType == SkillType.Attack)
             delta += SumConfiguredEffectValues(runtime, AttackCostDeltaEffectId);
@@ -1810,6 +1948,67 @@ public static class BattleEquipmentEffectService
         }
 
         return delta;
+    }
+
+    private static int SumConfiguredRuneTargetEffectValues(
+        CharacterRuntimeData runtime,
+        string effectId,
+        string skillId)
+    {
+        if (runtime?.EquippedRuneIds == null ||
+            string.IsNullOrWhiteSpace(effectId) ||
+            string.IsNullOrWhiteSpace(skillId) ||
+            DataManager.Instance == null ||
+            DataManager.Instance.RuneDatabase == null)
+        {
+            return 0;
+        }
+
+        int total = 0;
+        string normalizedSkillId = skillId.Trim();
+
+        for (int i = 0; i < runtime.EquippedRuneIds.Length; i++)
+        {
+            string runeId = runtime.EquippedRuneIds[i];
+
+            if (string.IsNullOrWhiteSpace(runeId) ||
+                !DataManager.Instance.RuneDatabase.TryGet(runeId, out RuneData rune) ||
+                rune == null ||
+                !RuneTargetsSkill(rune, normalizedSkillId))
+            {
+                continue;
+            }
+
+            List<SkillEffectEntry> entries = ResolveRuneEntries(rune);
+            for (int entryIndex = 0; entryIndex < entries.Count; entryIndex++)
+            {
+                SkillEffectEntry entry = entries[entryIndex];
+                if (entry != null && entry.EffectId == effectId)
+                    total += GetRepeatedEntryValue(entry);
+            }
+        }
+
+        return total;
+    }
+
+    private static bool RuneTargetsSkill(RuneData rune, string skillId)
+    {
+        if (rune == null ||
+            string.IsNullOrWhiteSpace(rune.TargetSkillId) ||
+            string.IsNullOrWhiteSpace(skillId))
+        {
+            return false;
+        }
+
+        string[] targetSkillIds = rune.TargetSkillId.Split(';');
+        for (int i = 0; i < targetSkillIds.Length; i++)
+        {
+            string targetSkillId = targetSkillIds[i]?.Trim();
+            if (!string.IsNullOrWhiteSpace(targetSkillId) && targetSkillId == skillId)
+                return true;
+        }
+
+        return false;
     }
 
     private static int SumConfiguredEffectValues(
@@ -2087,9 +2286,8 @@ public static class BattleEquipmentEffectService
         if (rune == null)
             return new List<SkillEffectEntry>();
 
-        if (rune.EffectEntries != null && rune.EffectEntries.Count > 0)
-            return rune.EffectEntries;
-
+        // 룬도 현재 GameData 값을 기준으로 매번 파싱합니다.
+        // 이전 EffectEntries 캐시가 남아 새 EffectIds가 누락되는 것을 방지합니다.
         return SkillEffectParser.Parse(
             rune,
             DataManager.Instance != null ? DataManager.Instance.EffectDatabase : null);
