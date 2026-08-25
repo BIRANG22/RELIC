@@ -17,7 +17,7 @@ MonoBehaviour:
     MapIdOverride: Map_25
     UseCustomPosition: 0
     CustomPosition: {x: 0, y: 0}
-    NextNodeIndices: 3100000004000000
+    NextNodeIndices: 0200000004000000
   layer1:
     Slot1:
       Enabled: 0
