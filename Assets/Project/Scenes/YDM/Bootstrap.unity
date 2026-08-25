@@ -3039,9 +3039,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   normalCursor: {fileID: 2800000, guid: 9abefc67f3013b04e8edee824cb25aca, type: 3}
+  hoverCursor: {fileID: 2800000, guid: ad7f4c8f67144fa4185d2aa3a0f3cb59, type: 3}
   clickedCursor: {fileID: 2800000, guid: 28e83807785631147992129379044c79, type: 3}
   hotSpot: {x: 0, y: 0}
   clickHoldTime: 0.15
+  detectUIHover: 1
+  detect2DColliderHover: 1
+  detect3DColliderHover: 1
+  hoverLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  hoverRayDistance: 1000
 --- !u!4 &685693744
 Transform:
   m_ObjectHideFlags: 0
@@ -6407,6 +6415,31 @@ MonoBehaviour:
     FirstExpeditionRequiredItemId: 
   questCanvas: {fileID: 2101000014}
   questPanel: {fileID: 2101000024}
+  dialogueMoveDuration: 0.25
+  dialogueMoveCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   hideWhenAnyActiveObjectNames:
   - CharacterSettingPanel
 --- !u!1 &2101000010
