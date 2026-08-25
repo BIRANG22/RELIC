@@ -80,7 +80,8 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
         LobbyPositionModalInputBlocker.Block(this);
         RestoreShopPanelVisualState();
-        UIBlurBackground.EnsureForPanel(panelRoot);
+        UIBlurBackground blurBackground = UIBlurBackground.EnsureForPanel(panelRoot);
+        LobbyQuestManager.Instance?.ConfigureQuestPanelBlur(blurBackground);
         panelRoot.SetActive(true);
         panelRoot.transform.SetAsLastSibling();
         RefreshOffers();
