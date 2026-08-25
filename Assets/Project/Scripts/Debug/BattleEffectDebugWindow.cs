@@ -44,6 +44,7 @@ public sealed class BattleEffectDebugWindow : MonoBehaviour
     private Vector2 scrollPosition;
     private Vector2 skillOptionScroll;
     private Vector2 relicOptionScroll;
+    private Vector2 runeOptionScroll;
     private Vector2 compoundOptionScroll;
     private Rect windowRect = new(16f, 16f, 700f, 820f);
     private GUIStyle smallLabelStyle;
@@ -353,11 +354,12 @@ public sealed class BattleEffectDebugWindow : MonoBehaviour
         GUILayout.Label("룬", EditorLikeHeaderStyle());
 
         List<DebugOption> options = BuildRuneOptions();
-        selectedRuneId = DrawOptionDropdown(
+        selectedRuneId = DrawScrollableOptionDropdown(
             "룬 선택",
             options,
             selectedRuneId,
-            ref runeDropdownOpen);
+            ref runeDropdownOpen,
+            ref runeOptionScroll);
         DrawClearSelectionButton(ref selectedRuneId, "룬 선택 비우기");
 
         CharacterRuntimeData runtime = GetSelectedRuntime();

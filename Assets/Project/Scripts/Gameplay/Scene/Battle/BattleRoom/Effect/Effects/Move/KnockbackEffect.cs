@@ -16,33 +16,60 @@ public class KnockbackEffect : BattleEffectBase
         Vector2Int offset = GetDirectionOffset(context.Direction);
         int moveCount = Mathf.Max(1, context.Value);
 
+        BattleCharacter playerTarget = context.PlayerTarget;
+        MonsterUnit monsterTarget = context.MonsterTarget;
+        Vector3 startWorldPosition = playerTarget != null
+            ? playerTarget.transform.position
+            : monsterTarget != null ? monsterTarget.transform.position : Vector3.zero;
+        int startGridIndex = playerTarget != null
+            ? playerTarget.CurrentGridIndex
+            : monsterTarget != null ? monsterTarget.MainGridIndex : -1;
+
         for (int i = 0; i < moveCount; i++)
         {
-            if (context.PlayerTarget != null)
+            if (playerTarget != null)
             {
-                if (BattleEquipmentEffectService.IsForcedMoveImmune(context.PlayerTarget.RuntimeData))
+                if (BattleEquipmentEffectService.IsForcedMoveImmune(playerTarget.RuntimeData))
                     break;
 
-                if (WouldMovePlayerOutsideGrid(context.PlayerTarget, offset, context.GridManager))
+                if (WouldMovePlayerOutsideGrid(playerTarget, offset, context.GridManager))
                     break;
 
-                if (!TryMovePlayer(context.PlayerTarget, offset, context.GridManager))
+                if (!TryMovePlayer(playerTarget, offset, context.GridManager))
                 {
-                    ApplyCrashEffect(context, context.PlayerTarget);
+                    ApplyCrashEffect(context, playerTarget);
                     break;
                 }
             }
-            else if (context.MonsterTarget != null)
+            else if (monsterTarget != null)
             {
-                if (WouldMoveMonsterOutsideGrid(context.MonsterTarget, offset, context.GridManager))
+                if (WouldMoveMonsterOutsideGrid(monsterTarget, offset, context.GridManager))
                     break;
 
-                if (!TryMoveMonster(context.MonsterTarget, offset, context.GridManager))
+                if (!TryMoveMonster(monsterTarget, offset, context.GridManager))
                 {
-                    ApplyCrashEffect(context, context.MonsterTarget);
+                    ApplyCrashEffect(context, monsterTarget);
                     break;
                 }
             }
+        }
+
+        int finalGridIndex = playerTarget != null
+            ? playerTarget.CurrentGridIndex
+            : monsterTarget != null ? monsterTarget.MainGridIndex : -1;
+
+        if (startGridIndex >= 0 && finalGridIndex >= 0 && startGridIndex != finalGridIndex)
+        {
+            Transform visualTarget = playerTarget != null ? playerTarget.transform : monsterTarget.transform;
+            Vector3 startCellWorldPosition = context.GridManager.GetWorldPositionByIndex(startGridIndex);
+            Vector3 finalCellWorldPosition = context.GridManager.GetWorldPositionByIndex(finalGridIndex);
+            Vector3 finalWorldPosition =
+                startWorldPosition + (finalCellWorldPosition - startCellWorldPosition);
+
+            if (playerTarget != null)
+                playerTarget.StartCoroutine(MoveTransformSmooth(visualTarget, startWorldPosition, finalWorldPosition));
+            else if (monsterTarget != null)
+                monsterTarget.StartCoroutine(MoveTransformSmooth(visualTarget, startWorldPosition, finalWorldPosition));
         }
     }
 
@@ -115,12 +142,9 @@ public class KnockbackEffect : BattleEffectBase
         if (gridEffectController != null && gridEffectController.IsBlocked(targetIndex))
             return false;
 
-        Vector3 startPosition = target.transform.position;
-        Vector3 targetPosition = gridManager.GetWorldPositionByIndex(targetIndex);
-
-        // 판정용 그리드 위치는 즉시 갱신하고 화면에서는 밀려나는 과정을 보여줍니다.
+        // 판정용 그리드 위치는 즉시 갱신합니다.
+        // 화면 이동은 전체 넉백 판정이 끝난 뒤 최종 칸까지 한 번만 재생합니다.
         target.SetGridIndex(targetIndex);
-        target.StartCoroutine(MoveTransformSmooth(target.transform, startPosition, targetPosition));
         return true;
     }
 
@@ -169,21 +193,9 @@ public class KnockbackEffect : BattleEffectBase
         if (movedCells.Count <= 0)
             return false;
 
-        int oldMainIndex = target.MainGridIndex;
-        int newMainIndex = movedCells[0];
-        Vector3 oldWorldPosition = target.transform.position;
-        Vector3 oldCellWorldPosition = gridManager.GetWorldPositionByIndex(oldMainIndex);
-        Vector3 newCellWorldPosition = gridManager.GetWorldPositionByIndex(newMainIndex);
-
-        Vector3 targetWorldPosition =
-            oldWorldPosition + (newCellWorldPosition - oldCellWorldPosition);
-
-        // 점유 그리드는 즉시 갱신하되 몬스터 오브젝트는 부드럽게 밀려나게 합니다.
+        // 점유 그리드는 즉시 갱신합니다.
+        // 화면 이동은 전체 넉백 판정이 끝난 뒤 최종 칸까지 한 번만 재생합니다.
         target.SetOccupiedCells(movedCells);
-        target.StartCoroutine(MoveTransformSmooth(
-            target.transform,
-            oldWorldPosition,
-            targetWorldPosition));
         return true;
     }
 
@@ -226,6 +238,7 @@ public class KnockbackEffect : BattleEffectBase
             Count = 1
         });
     }
+
 
     private static IEnumerator MoveTransformSmooth(
         Transform target,

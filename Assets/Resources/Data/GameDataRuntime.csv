@@ -1,33 +1,33 @@
 # Character
-캐릭터ID,이름,최대 HP,최대 Cost,Cost 회복량,자원최대치,자원타입,자원조건,기본지급여부,해금조건,패시브스킬1,패시브스킬2,고유스킬1,고유스킬2,캐릭터스킬1,캐릭터스킬2,공유스킬1,공유스킬2,룬1,룬2,룬3,룬4,룬5,카르마 회복,캐릭터소개,룬 슬롯 해금 레벨,룬 해금 레벨,본능기억 해금 레벨,발현기억 해금 레벨,전용기억 해금 레벨
-CharacterId,Name,MaxHP,MaxCost,CostRecovery,MaxResource,ResourceType,ResourceTrigger,IsDefaultProvided,UnlockCondition,PassiveSkill1,PassiveSkill2,UniqueSkill1,UniqueSkill2,CharacterSkill1,CharacterSkill2,CommonSkill1,CommonSkill2,Rune1,Rune2,Rune3,Rune4,Rune5,Regeneration,introduction,RuneSlotUnlockLevels,RuneUnlockLevels,PassiveSkillUnlockLevels,UniqueSkillUnlockLevels,CharacterSkillUnlockLevels
+캐릭터ID,이름,최대 HP,최대 Cost,Cost 회복량,자원최대치,자원타입,자원조건,기본지급여부,해금조건,패시브스킬1,패시브스킬2,고유스킬1,고유스킬2,캐릭터스킬1,캐릭터스킬2,공유스킬1,공유스킬2,룬1,룬2,룬3,룬4,룬5,카르마 회복,캐릭터소개
+CharacterId,Name,MaxHP,MaxCost,CostRecovery,MaxResource,ResourceType,ResourceTrigger,IsDefaultProvided,UnlockCondition,PassiveSkill1,PassiveSkill2,UniqueSkill1,UniqueSkill2,CharacterSkill1,CharacterSkill2,CommonSkill1,CommonSkill2,Rune1,Rune2,Rune3,Rune4,Rune5,Regeneration,introduction
 Char_01,힐트,105,10,4,5,Karma,OnAnyAllyDamaged,1,1,S_Passive_01,S_Passive_02,S_Unique_01,S_Unique_02,S_Ability_01,S_Ability_03,S_Public_01,S_Public_03,Rune_51,Rune_52,Rune_53,Rune_54,Rune_55,"피해를 받았을 때
 생명력이 감소하지 않았다면
 카르마를 1 회복합니다.","“강한 놈들이 득실거린다며?
 그럼 내가 가야지.”
 
 벨가드 용병단 소속의 탐사자.
-호전적이고 거침없는 성격으로, 위험한 전투일수록 먼저 뛰어들며 이번 탐사에서도 자신의 강함을 증명하려 합니다.",1;1;3;5;7;10,9;12;6;15;3,1;5,1;10,1;1
+호전적이고 거침없는 성격으로, 위험한 전투일수록 먼저 뛰어들며 이번 탐사에서도 자신의 강함을 증명하려 합니다.",,,,,
 Char_02,카야,98,11,4,5,Karma,OnThreeActionsInSameSlot,1,1,S_Passive_03,S_Passive_04,S_Unique_03,S_Unique_04,S_Ability_05,S_Ability_07,S_Public_05,S_Public_07,Rune_56,Rune_57,Rune_58,Rune_59,Rune_60,"한 슬롯에서 3회 이상 행동을
 등록하면 카르마를 1 회복합니다. ","“임무라면 완수한다. 그뿐이야.”
 
 하쿠렌 가문 소속의 탐사자.
-침착하고 냉철하며 어떤 상황에서도 흐트러지지 않고, 미지의 적과 전투를 거치며 자신의 검술을 더욱 완성해갑니다.",1;1;3;5;7;10,9;12;6;15;3,1;5,1;10,1;1
+침착하고 냉철하며 어떤 상황에서도 흐트러지지 않고, 미지의 적과 전투를 거치며 자신의 검술을 더욱 완성해갑니다.",,,,,
 Char_03,헤이즈,84,14,4,5,Karma,OnSpendEightCostInTurn,1,1,S_Passive_05,S_Passive_06,S_Unique_05,S_Unique_06,S_Ability_09,S_Ability_11,S_Public_09,S_Public_11,Rune_61,Rune_62,Rune_63,Rune_64,Rune_65,"한 턴에 마나를 8 이상 소모하면
 카르마를 1 회복합니다.","“정말 제가 가야 하는 건가요?”
 
 아스텔 학회 소속의 탐사자.
-겁이 많고 소심하지만 맡은 연구에서 물러서지는 않으며, 소환수 니아와 함께 자신의 나약함을 극복하려 합니다.",1;1;3;5;7;10,9;12;6;15;3,1;5,1;10,1;1
+겁이 많고 소심하지만 맡은 연구에서 물러서지는 않으며, 소환수 니아와 함께 자신의 나약함을 극복하려 합니다.",,,,,
 Char_04,이네스,100,10,4,5,Karma,OnAllyBuffApplied,1,1,S_Passive_07,S_Passive_08,S_Unique_07,S_Unique_08,S_Ability_13,S_Ability_15,S_Public_13,S_Public_15,Rune_66,Rune_67,Rune_68,Rune_69,Rune_70,"아군에게 이로운 효과를 부여하면
 카르마를 1 회복합니다.","“걱정하지 마세요.
 모두 무사히 돌아갈 수 있도록 할게요.”
 
-세라피아 교단에서 파견된 집행자입니다. 밝고 상냥하게 동료들을 보살피지만, 그들을 위협하는 존재 앞에서는 망설임 없이 냉혹한 모습을 드러냅니다.",1;1;3;5;7;10,9;12;6;15;3,1;5,1;10,1;1
+세라피아 교단에서 파견된 집행자입니다. 밝고 상냥하게 동료들을 보살피지만, 그들을 위협하는 존재 앞에서는 망설임 없이 냉혹한 모습을 드러냅니다.",,,,,
 Char_05,레이나,90,12,4,5,Karma,OnDamageEnemy,2,2,S_Passive_09,S_Passive_10,S_Unique_09,S_Unique_10,S_Ability_17,S_Ability_19,S_Public_17,S_Public_19,Rune_71,Rune_72,Rune_73,Rune_74,Rune_75,"공격타입의 기억으로
 적에게 피해를 주면
 카르마를1 회복합니다.","“그냥 내가 가고 싶어서 가는 거야.”
 
-어느 집단에도 속하지 않은 채 홀로 떠도는 뱀파이어입니다. 말수는 적고 자유분방하며 타인의 규칙에 얽매이지 않고, 자신의 관심이 향한 탐사대를 따라 스스로 위험 속으로 발을 들입니다.",1;1;3;5;7;10,9;12;6;15;3,1;5,1;10,1;1
+어느 집단에도 속하지 않은 채 홀로 떠도는 뱀파이어입니다. 말수는 적고 자유분방하며 타인의 규칙에 얽매이지 않고, 자신의 관심이 향한 탐사대를 따라 스스로 위험 속으로 발을 들입니다.",,,,,
 ,,,,,,,,,
 ,,,,,,,,,
 ,,,,,,,,,
@@ -114,8 +114,8 @@ S_Passive_01,결속,Passive,Exclusive,Ulti,Self,0,0,E_Armor,5,1,0,Passive,Range_
 방어도를 {ValueRate1} 얻습니다."
 S_Passive_02,호전성,Passive,Exclusive,Ulti,Self,0,0,E_Boost,1,1,0,Passive,Range_Self,"카르마가 최대라면 턴 시작 시
 증폭을 {ValueRate1} 얻습니다."
-S_Passive_03,평정심,Passive,Exclusive,Ulti,Self,0,0,E_CostRecovery,1,1,0,Passive,Range_Self,"카르마가 최대라면 턴 시작 시
-마나를 추가로 {ValueRate1} 회복합니다."
+S_Passive_03,평정심,Passive,Exclusive,Ulti,Self,0,0,E_Charge,1,1,0,Passive,Range_Self,"카르마가 최대라면 턴 시작 시
+충전을 {ValueRate1} 얻습니다."
 S_Passive_04,간파,Passive,Exclusive,Ulti,Self,0,0,E_Swift,1,1,0,Passive,Range_Self,"카르마가 최대라면 턴 시작 시
 신속을 {ValueRate1} 얻습니다."
 S_Passive_05,안도감,Passive,Exclusive,Ulti,Self,0,0,E_Armor,4,1,0,Passive,Range_Self,"카르마가 최대라면 턴 시작 시
@@ -492,6 +492,24 @@ E_Spider_Web,거미줄,Neutral,Maintain,다음 이동 예약 사용 코스트가
 E_Spawn_Soldier,사령술,Neutral,None,지정된 위치에 죽었던 병사를 다시 생성한다.
 E_Turn_Start_Cost_Recovery,지정 턴 마나 회복,Neutral,0,지정 턴 시작 시 마나를 수치만큼 회복한다.
 E_Turn_Start_Unique_Resource_Recovery,지정 턴 카르마 회복,Neutral,0,지정 턴 시작 시 카르마를 수치만큼 회복한다. 최대치를 초과하지 않는다.
+E_Heal_Value_Delta,기억 치유량 변화,Neutral,0,기억으로 회복하는 생명력을 수치만큼 변화시킨다.
+E_Skill_Armor_Value_Delta,기억 방어도 변화,Neutral,0,기억으로 부여하는 방어도를 수치만큼 변화시킨다.
+E_Poison_Value_Delta,기억 중독 부여량 변화,Neutral,0,기억으로 부여하는 중독 수치를 수치만큼 변화시킨다.
+E_Bleed_Value_Delta,기억 출혈 부여량 변화,Neutral,0,기억으로 부여하는 출혈 수치를 수치만큼 변화시킨다.
+E_Exploration_Start_Unique_Resource,탐사 시작 카르마 회복,Neutral,0,탐사 시작 시 1회 카르마를 수치만큼 회복한다.
+E_Unique_Resource_Max_Reached_Boost,카르마 최대 도달 증폭,Neutral,0,카르마가 최대치에 도달하면 증폭을 수치만큼 얻는다.
+E_Unique_Resource_Max_Reached_Smite,카르마 최대 도달 강타,Neutral,0,카르마가 최대치에 도달하면 강타를 수치만큼 얻는다.
+E_Unique_Resource_Max_Reached_Cost_Recovery,카르마 최대 도달 마나 회복,Neutral,0,카르마가 최대치에 도달하면 마나를 수치만큼 회복한다.
+E_Unique_Resource_Max_Reached_Armor,카르마 최대 도달 방어도,Neutral,0,카르마가 최대치에 도달하면 방어도를 수치만큼 얻는다.
+E_Unique_Resource_Max_Reached_Self_Lowest_Ally_Armor,카르마 최대 도달 아군 방어도,Neutral,0,카르마가 최대치에 도달하면 자신과 생명력 비율이 가장 낮은 다른 아군에게 방어도를 수치만큼 부여한다.
+E_Rune_Target_Damage_Value_Delta,룬 대상 기억 피해 변화,Neutral,0,룬의 대상 기억이 주는 피해를 수치만큼 변화시킨다.
+E_Rune_Target_Knockback_Value_Delta,룬 대상 기억 넉백 변화,Neutral,0,룬의 대상 기억이 부여하는 넉백 거리를 수치만큼 변화시킨다.
+E_Rune_Target_Attack_Count_Delta,룬 대상 기억 공격 횟수 변화,Neutral,0,룬의 대상 기억 공격 횟수를 수치만큼 변화시킨다.
+E_Rune_Target_Skill_Cost_Delta,룬 대상 기억 마나 소모 변화,Neutral,0,룬의 대상 기억 마나 소모량을 수치만큼 변화시킨다.
+E_Rune_Target_Armor_Multiplier,룬 대상 기억 방어도 배율,Neutral,0,룬의 대상 기억이 부여하는 방어도를 수치 배율로 적용한다.
+E_Rune_Target_Boost_Value_Delta,룬 대상 기억 증폭 변화,Neutral,0,룬의 대상 기억이 부여하는 증폭을 수치만큼 변화시킨다.
+E_Rune_Target_Heal_Value_Delta,룬 대상 기억 치유 변화,Neutral,0,룬의 대상 기억이 회복하는 생명력을 수치만큼 변화시킨다.
+E_Rune_Target_Range_Expand,룬 대상 기억 범위 확장,Neutral,0,룬의 대상 기억 범위를 한 단계 확장한다.
 
 # Map
 맵ID,이름,타입,전투맵ID,이벤트ID,스테이지 맵,등장가중치
@@ -678,51 +696,51 @@ Range_b_24,Range_Explosion,0;0,-2;2,-1;2,0;2,1;2,2;2,-2;1,-1;1,0;1,1;1,2;1,-2;0,
 # Rune
 룬ID,이름,대상캐릭터ID,대상스킬ID,효과ID,수치계수,횟수계수,해금가격,해금레벨,효과설명,레어도
 RuneId,Name,TargetCharacterId,TargetSkillId,EffectIds,ValueRate,CountRate,BlueDustiumCost,UnlockLevel,EffectDesc,Rarity
-Rune_51,용린·분기,Char_01,0,,3,1,0,9,탐사 시작 시 카르마를 {ValueRate1} 회복합니다.,Exclusive
-Rune_52,용린·격앙,Char_01,0,,2,1,0,12,카르마가 최대에 도달하면 증폭을 {ValueRate1} 얻습니다.,Exclusive
-Rune_53,용린·수호,Char_01,0,,2,1,0,6,용의 가호로 부여하는 방어도가 {ValueRate1}배로 증가합니다.,Exclusive
-Rune_54,용린·격진,Char_01,0,,2;3,1;1,0,15,"대지 가르기의 피해량이 {ValueRate1} 증가하고, 대상을 {ValueRate2}칸 넉백시킵니다.",Exclusive
-Rune_55,용린·맹격,Char_01,0,,1,1,0,3,휘두르기와 내려찍기의 피해량이 {ValueRate1} 증가합니다.,Exclusive
-Rune_56,검심·예기,Char_02,0,,3,1,0,9,탐사 시작 시 카르마를 {ValueRate1} 회복합니다.,Exclusive
-Rune_57,검심·절정,Char_02,0,,2,1,0,12,카르마가 최대에 도달하면 강타를 {ValueRate1} 얻습니다.,Exclusive
-Rune_58,검심·연무,Char_02,0,,1,1,0,6,질풍검 연무의 공격 횟수가 {ValueRate1}회 증가합니다.,Exclusive
-Rune_59,검심·일섬,Char_02,0,,3,1,0,15,질풍검 일섬의 피해량이 {ValueRate1} 증가합니다.,Exclusive
-Rune_60,검심·질풍,Char_02,0,,1,1,0,3,질풍검 3식과 질풍검 1식의 피해량이 {ValueRate1} 증가합니다.,Exclusive
-Rune_61,불씨·점화,Char_03,0,,3,1,0,9,탐사 시작 시 카르마를 {ValueRate1} 회복합니다.,Exclusive
-Rune_62,불씨·온기,Char_03,0,,2,1,0,12,카르마가 최대에 도달하면 마나를 {ValueRate1} 회복합니다.,Exclusive
-Rune_63,불씨·광휘,Char_03,0,,2,1,0,6,날카로운 빛의 피해량이 {ValueRate1} 증가합니다.,Exclusive
-Rune_64,불씨·의지,Char_03,0,,1,1,0,15,빛의 의지로 부여하는 증폭이 {ValueRate1} 증가합니다.,Exclusive
-Rune_65,불씨·확산,Char_03,0,,1,1,0,3,니아의 독기와 니아의 섬광의 범위가 증가합니다.,Exclusive
-Rune_66,은총·신심,Char_04,0,,3,1,0,9,탐사 시작 시 카르마를 {ValueRate1} 회복합니다.,Exclusive
-Rune_67,은총·가호,Char_04,0,,5,1,0,12,카르마가 최대에 도달하면 자신과 생명력이 가장 낮은 아군이 방어도를 {ValueRate1} 얻습니다.,Exclusive
-Rune_68,은총·구원,Char_04,0,,1,1,0,6,구원의 기도로 회복하는 생명력이 {ValueRate1} 증가합니다.,Exclusive
-Rune_69,은총·심판,Char_04,0,,2,1,0,15,신성한 일격의 피해량이 {ValueRate1} 증가합니다.,Exclusive
-Rune_70,은총·헌신,Char_04,0,,-1,1,0,3,정권 지르기와 공방일체의 마나 소모량이 {ValueRate1} 감소합니다.,Exclusive
-Rune_71,해방·갈증,Char_05,0,,3,1,0,9,탐사 시작 시 카르마를 {ValueRate1} 회복합니다.,Exclusive
-Rune_72,해방·격정,Char_05,0,,5,1,0,12,카르마가 최대에 도달하면 방어도를 {ValueRate1} 얻습니다.,Exclusive
-Rune_73,해방·사신,Char_05,0,,3,1,0,6,데스사이드의 피해량이 {ValueRate1} 증가합니다.,Exclusive
-Rune_74,해방·혈화,Char_05,0,,2,1,0,15,스칼렛노바의 피해량이 {ValueRate1} 증가합니다.,Exclusive
-Rune_75,해방·참월,Char_05,0,,1,1,0,3,크림슨체인과 크레센트스윙의 피해량이 {ValueRate1} 증가합니다.,Exclusive
-Rune_01,각인·불안정한 원천,All,0,,-3;1,1;1,60,0,"최대 생명력이 {ValueRate1} 감소하는 대신, 최대 마나가 {ValueRate2} 증가합니다.",Common
-Rune_02,각인·메마른 고동,All,0,,-5;1,1;1,80,0,"최대 생명력이 {ValueRate1} 감소하는 대신, 마나 재생량이 {ValueRate2} 증가합니다.",Common
-Rune_03,각인·굳어진 육신,All,0,,-1;4,1;1,65,0,"최대 마나가 {ValueRate1} 감소하는 대신, 최대 생명력이 {ValueRate2} 증가합니다.",Common
-Rune_04,각인·잃어버린 숨결,All,0,,-15;3,1;1,105,0,"최대 생명력이 {ValueRate1} 감소하는 대신, 전투 종료 후 생명력을 {ValueRate2} 회복합니다.",Common
-Rune_05,각인·뒤틀린 격류,All,0,,-3;2,1;1,145,0,"최대 마나가 {ValueRate1} 감소하는 대신, 마나 재생량이 {ValueRate2} 증가합니다.",Common
-Rune_06,넘치는 생명,All,0,,6,1,80,0,최대 생명력이 {ValueRate1} 증가합니다.,Rare
-Rune_07,깊어진 그릇,All,0,,1,1,80,0,최대 마나가 {ValueRate1} 증가합니다.,Rare
-Rune_08,끊임없는 순환,All,0,,1,1,100,0,마나 재생량이 {ValueRate1} 증가합니다.,Rare
-Rune_09,완전한 균형,All,0,,1,1,200,0,"최대 생명력, 최대 마나, 마나 재생량이 각각 {ValueRate1} 증가합니다.",Rare
-Rune_10,가벼운 발걸음,All,0,,-1,1,150,0,이동타입 기억의 최종 마나 소모량이 {ValueRate1} 감소합니다.,Rare
-Rune_11,강렬한 파동,All,0,,1,1,120,0,공격타입 기억의 피해량이 {ValueRate1} 증가합니다.,Rare
-Rune_12,온전한 회복,All,0,,1,1,125,0,기억으로 회복하는 생명력이 {ValueRate1} 증가합니다.,Rare
-Rune_13,굳건한 방벽,All,0,,2,1,125,0,기억으로 부여하는 방어도가 {ValueRate1} 증가합니다.,Rare
-Rune_14,짙은 독기,All,0,,1,1,180,0,기억으로 부여하는 중독이 {ValueRate1} 증가합니다.,Rare
-Rune_15,선명한 혈흔,All,0,,1,1,180,0,기억으로 부여하는 출혈이 {ValueRate1} 증가합니다.,Rare
-Rune_16,축복·신속,All,0,,1,1,350,0,전투 시작 시 신속을 {ValueRate1} 얻습니다.,Unique
-Rune_17,축복·강타,All,0,,1,1,350,0,전투 시작 시 강타를 {ValueRate1} 얻습니다.,Unique
-Rune_18,축복·증폭,All,0,,1,1,350,0,전투 시작 시 증폭을 {ValueRate1} 얻습니다.,Unique
-Rune_19,축복·풍요,All,0,,5,1,500,0,전투 보상으로 획득하는 재화의 양이 {ValueRate1}% 증가합니다.,Unique
-Rune_20,축복·재생,All,0,,1,1,300,0,전투 종료 후 생명력을 {ValueRate1} 회복합니다.,Unique
+Rune_51,용린·분기,Char_01,0,E_Exploration_Start_Unique_Resource,3,1,0,9,탐사 시작 시 카르마를 {ValueRate1} 회복합니다.,Exclusive
+Rune_52,용린·격앙,Char_01,0,E_Unique_Resource_Max_Reached_Boost,2,1,0,12,카르마가 최대에 도달하면 다음 턴에 증폭을 {ValueRate1} 얻습니다.,Exclusive
+Rune_53,용린·수호,Char_01,S_Unique_01,E_Rune_Target_Armor_Multiplier,2,1,0,6,용의 가호로 부여하는 방어도가 {ValueRate1}배로 증가합니다.,Exclusive
+Rune_54,용린·격진,Char_01,S_Unique_02,E_Rune_Target_Damage_Value_Delta;E_Rune_Target_Knockback_Value_Delta,2;3,1;1,0,15,"대지 가르기의 피해량이 {ValueRate1} 증가하고, 대상을 {ValueRate2}칸 넉백시킵니다.",Exclusive
+Rune_55,용린·맹격,Char_01,S_Ability_01;S_Ability_02;S_Ability_03;S_Ability_04,E_Rune_Target_Damage_Value_Delta,1,1,0,3,휘두르기와 내려찍기의 피해량이 {ValueRate1} 증가합니다.,Exclusive
+Rune_56,검심·예기,Char_02,0,E_Exploration_Start_Unique_Resource,3,1,0,9,탐사 시작 시 카르마를 {ValueRate1} 회복합니다.,Exclusive
+Rune_57,검심·절정,Char_02,0,E_Unique_Resource_Max_Reached_Smite,2,1,0,12,카르마가 최대에 도달하면 다음 턴에 강타를 {ValueRate1} 얻습니다.,Exclusive
+Rune_58,검심·연무,Char_02,S_Unique_03,E_Rune_Target_Attack_Count_Delta,1,1,0,6,질풍검 연무의 공격 횟수가 {ValueRate1}회 증가합니다.,Exclusive
+Rune_59,검심·일섬,Char_02,S_Unique_04,E_Rune_Target_Damage_Value_Delta,3,1,0,15,질풍검 일섬의 피해량이 {ValueRate1} 증가합니다.,Exclusive
+Rune_60,검심·질풍,Char_02,S_Ability_05;S_Ability_06;S_Ability_07;S_Ability_08,E_Rune_Target_Damage_Value_Delta,1,1,0,3,질풍검 3식과 질풍검 1식의 피해량이 {ValueRate1} 증가합니다.,Exclusive
+Rune_61,불씨·점화,Char_03,0,E_Exploration_Start_Unique_Resource,3,1,0,9,탐사 시작 시 카르마를 {ValueRate1} 회복합니다.,Exclusive
+Rune_62,불씨·온기,Char_03,0,E_Unique_Resource_Max_Reached_Cost_Recovery,2,1,0,12,카르마가 최대에 도달하면 다음 턴에 마나를 {ValueRate1} 회복합니다.,Exclusive
+Rune_63,불씨·광휘,Char_03,S_Unique_05,E_Rune_Target_Damage_Value_Delta,2,1,0,6,날카로운 빛의 피해량이 {ValueRate1} 증가합니다.,Exclusive
+Rune_64,불씨·의지,Char_03,S_Unique_06,E_Rune_Target_Boost_Value_Delta,1,1,0,15,빛의 의지로 부여하는 증폭이 {ValueRate1} 증가합니다.,Exclusive
+Rune_65,불씨·확산,Char_03,S_Ability_09;S_Ability_10;S_Ability_11;S_Ability_12,E_Rune_Target_Range_Expand,1,1,0,3,니아의 독기와 니아의 섬광의 범위가 증가합니다.,Exclusive
+Rune_66,은총·신심,Char_04,0,E_Exploration_Start_Unique_Resource,3,1,0,9,탐사 시작 시 카르마를 {ValueRate1} 회복합니다.,Exclusive
+Rune_67,은총·가호,Char_04,0,E_Unique_Resource_Max_Reached_Self_Lowest_Ally_Armor,5,1,0,12,카르마가 최대에 도달하면 다음 턴에 자신과 생명력이 가장 낮은 아군이 방어도를 {ValueRate1} 얻습니다.,Exclusive
+Rune_68,은총·구원,Char_04,S_Unique_07,E_Rune_Target_Heal_Value_Delta,1,1,0,6,구원의 기도로 회복하는 생명력이 {ValueRate1} 증가합니다.,Exclusive
+Rune_69,은총·심판,Char_04,S_Unique_08,E_Rune_Target_Damage_Value_Delta,2,1,0,15,신성한 일격의 피해량이 {ValueRate1} 증가합니다.,Exclusive
+Rune_70,은총·헌신,Char_04,S_Ability_13;S_Ability_14;S_Ability_15;S_Ability_16,E_Rune_Target_Skill_Cost_Delta,-1,1,0,3,정권 지르기와 공방일체의 마나 소모량이 {ValueRate1} 감소합니다.,Exclusive
+Rune_71,해방·갈증,Char_05,0,E_Exploration_Start_Unique_Resource,3,1,0,9,탐사 시작 시 카르마를 {ValueRate1} 회복합니다.,Exclusive
+Rune_72,해방·격정,Char_05,0,E_Unique_Resource_Max_Reached_Armor,5,1,0,12,카르마가 최대에 도달하면 다음 턴에 방어도를 {ValueRate1} 얻습니다.,Exclusive
+Rune_73,해방·사신,Char_05,S_Unique_09,E_Rune_Target_Damage_Value_Delta,3,1,0,6,데스사이드의 피해량이 {ValueRate1} 증가합니다.,Exclusive
+Rune_74,해방·혈화,Char_05,S_Unique_10,E_Rune_Target_Damage_Value_Delta,2,1,0,15,스칼렛노바의 피해량이 {ValueRate1} 증가합니다.,Exclusive
+Rune_75,해방·참월,Char_05,S_Ability_17;S_Ability_18;S_Ability_19;S_Ability_20,E_Rune_Target_Damage_Value_Delta,1,1,0,3,크림슨체인과 크레센트스윙의 피해량이 {ValueRate1} 증가합니다.,Exclusive
+Rune_01,각인·불안정한 원천,All,0,E_Max_HP;E_Max_Cost,-3;1,1;1,60,0,"최대 생명력이 {ValueRate1} 감소하는 대신, 최대 마나가 {ValueRate2} 증가합니다.",Common
+Rune_02,각인·메마른 고동,All,0,E_Max_HP;E_Cost_Recovery_Delta,-5;1,1;1,80,0,"최대 생명력이 {ValueRate1} 감소하는 대신, 마나 재생량이 {ValueRate2} 증가합니다.",Common
+Rune_03,각인·굳어진 육신,All,0,E_Max_Cost;E_Max_HP,-1;4,1;1,65,0,"최대 마나가 {ValueRate1} 감소하는 대신, 최대 생명력이 {ValueRate2} 증가합니다.",Common
+Rune_04,각인·잃어버린 숨결,All,0,E_Max_HP;E_Battle_End_Heal,-15;3,1;1,105,0,"최대 생명력이 {ValueRate1} 감소하는 대신, 전투 종료 후 생명력을 {ValueRate2} 회복합니다.",Common
+Rune_05,각인·뒤틀린 격류,All,0,E_Max_Cost;E_Cost_Recovery_Delta,-3;2,1;1,145,0,"최대 마나가 {ValueRate1} 감소하는 대신, 마나 재생량이 {ValueRate2} 증가합니다.",Common
+Rune_06,넘치는 생명,All,0,E_Max_HP,6,1,80,0,최대 생명력이 {ValueRate1} 증가합니다.,Rare
+Rune_07,깊어진 그릇,All,0,E_Max_Cost,1,1,80,0,최대 마나가 {ValueRate1} 증가합니다.,Rare
+Rune_08,끊임없는 순환,All,0,E_Cost_Recovery_Delta,1,1,100,0,마나 재생량이 {ValueRate1} 증가합니다.,Rare
+Rune_09,완전한 균형,All,0,E_Max_HP;E_Max_Cost;E_Cost_Recovery_Delta,1,1,200,0,"최대 생명력, 최대 마나, 마나 재생량이 각각 {ValueRate1} 증가합니다.",Rare
+Rune_10,가벼운 발걸음,All,0,E_First_Move_Cost_Delta,-1,1,150,0,첫 이동의 마나 소모량이 {ValueRate1} 감소합니다.,Rare
+Rune_11,강렬한 파동,All,0,E_Attack_Value_Delta,1,1,120,0,공격타입 기억의 피해량이 {ValueRate1} 증가합니다.,Rare
+Rune_12,온전한 회복,All,0,E_Heal_Value_Delta,1,1,125,0,기억으로 회복하는 생명력이 {ValueRate1} 증가합니다.,Rare
+Rune_13,굳건한 방벽,All,0,E_Skill_Armor_Value_Delta,2,1,125,0,기억으로 부여하는 방어도가 {ValueRate1} 증가합니다.,Rare
+Rune_14,짙은 독기,All,0,E_Poison_Value_Delta,1,1,180,0,기억으로 부여하는 중독이 {ValueRate1} 증가합니다.,Rare
+Rune_15,선명한 혈흔,All,0,E_Bleed_Value_Delta,1,1,180,0,기억으로 부여하는 출혈이 {ValueRate1} 증가합니다.,Rare
+Rune_16,축복·신속,All,0,E_Turn_Start_Swift,1,1,350,0,전투 시작 시 신속을 {ValueRate1} 얻습니다.,Unique
+Rune_17,축복·강타,All,0,E_Turn_Start_Smite,1,1,350,0,전투 시작 시 강타를 {ValueRate1} 얻습니다.,Unique
+Rune_18,축복·증폭,All,0,E_Turn_Start_Boost,1,1,350,0,전투 시작 시 증폭을 {ValueRate1} 얻습니다.,Unique
+Rune_19,축복·풍요,All,0,E_Battle_Reward_Currency_Percent,5,1,500,0,전투 보상으로 획득하는 재화의 양이 {ValueRate1}% 증가합니다.,Unique
+Rune_20,축복·재생,All,0,E_Battle_End_Heal,1,1,300,0,전투 종료 후 생명력을 {ValueRate1} 회복합니다.,Unique
 
 # Relic
 유물 ID,이름,효과ID,수치계수,횟수계수,효과설명,레어도

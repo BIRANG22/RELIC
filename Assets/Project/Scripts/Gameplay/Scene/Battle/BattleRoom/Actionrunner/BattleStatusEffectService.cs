@@ -274,9 +274,20 @@ public class BattleStatusEffectService
             {
                 CharacterMasterData masterData = DataManager.Instance?.CharacterDatabase?.Get(character.RuntimeData.CharacterId);
                 int maxResource = masterData != null ? Mathf.Max(0, masterData.MaxResource) : int.MaxValue;
+                int requestedAmount = Mathf.Max(0, status.Stack);
+                int previousResource = Mathf.Max(0, character.RuntimeData.CurrentResource);
+                int finalAmount = BattleEquipmentEffectService.ModifyUniqueResourceGain(
+                    character.RuntimeData, requestedAmount);
+
+                BattleEquipmentEffectService.ApplyUniqueResourceGainSideEffects(
+                    character.RuntimeData,
+                    finalAmount,
+                    previousResource,
+                    maxResource);
+
                 character.RuntimeData.CurrentResource = Mathf.Min(
                     maxResource,
-                    character.RuntimeData.CurrentResource + Mathf.Max(0, status.Stack)
+                    previousResource + finalAmount
                 );
             }
 

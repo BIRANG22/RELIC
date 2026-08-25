@@ -27,6 +27,10 @@ namespace Relic.Gameplay.Data
         public List<BattleLobbyLoadoutSnapshotData> LobbyLoadoutSnapshots = new();
         public List<CultureTankBattleStartEffectRuntimeData> CultureTankBattleStartEffects = new();
 
+        // 탐사 시작 1회 룬 효과 적용 여부. BattleRuntimeData가 새 탐사마다 초기화되므로
+        // 같은 탐사 안의 다음 전투방에서는 다시 적용되지 않습니다.
+        public List<string> AppliedExplorationStartRuneCharacterIds = new();
+
         // 진행 상태
         public int CurrentBattleCount;
         public int CurrentRewardCount;
