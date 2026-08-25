@@ -17,26 +17,32 @@ MonoBehaviour:
   entries:
   - EffectId: E_Boost
     Icon: {fileID: 21300000, guid: 6e9fbfdb521f41046a01c0e5d1e3a1f4, type: 3}
+  - EffectId: E_Armor
+    Icon: {fileID: 0}
+  - EffectId: E_Charge
+    Icon: {fileID: 0}
+  - EffectId: E_Focus
+    Icon: {fileID: 0}
+  - EffectId: E_Swift
+    Icon: {fileID: 21300000, guid: fa7d39e67d89c9b418127e7a213819cc, type: 3}
+  - EffectId: E_Smite
+    Icon: {fileID: 21300000, guid: 8283ad43f1939a74ca7d89dcd54229e7, type: 3}
+  - EffectId: E_Lifesteal
+    Icon: {fileID: 21300000, guid: 8283ad43f1939a74ca7d89dcd54229e7, type: 3}
   - EffectId: E_Ward
     Icon: {fileID: 21300000, guid: 21a399c6d5e23644489856ea07cc26c0, type: 3}
-  - EffectId: E_Charge
-    Icon: {fileID: 21300000, guid: 00554984b21fd8e45a0c2520f55ac47a, type: 3}
-  - EffectId: E_Bleed
-    Icon: {fileID: 21300000, guid: 91d86b9f65c58ab47acc1ec5a896fd84, type: 3}
+  - EffectId: E_Grudge
+    Icon: {fileID: 21300000, guid: aa7838dcb9f103e458ace51355d286c9, type: 3}
+  - EffectId: E_Barrier
+    Icon: {fileID: 21300000, guid: e6ca7f1ecbfb666429ebdbf9bf9aec99, type: 3}
   - EffectId: E_Poison
     Icon: {fileID: 21300000, guid: 8e4a613cf2278c24d87afa317ab8ed7c, type: 3}
+  - EffectId: E_Bleed
+    Icon: {fileID: 21300000, guid: 91d86b9f65c58ab47acc1ec5a896fd84, type: 3}
   - EffectId: E_Vulnerable
     Icon: {fileID: 21300000, guid: 8f726f03d6869a74baca6a5a14b8f7ad, type: 3}
   - EffectId: E_Weaken
     Icon: {fileID: 21300000, guid: c1b03667955cb284db78537f8e2317d9, type: 3}
-  - EffectId: E_Silence
-    Icon: {fileID: 21300000, guid: 5abeb5edf661b7c4e8582d8650200708, type: 3}
-  - EffectId: E_Barrier
-    Icon: {fileID: 21300000, guid: e6ca7f1ecbfb666429ebdbf9bf9aec99, type: 3}
-  - EffectId: E_Focus
-    Icon: {fileID: 21300000, guid: 1793c665807dfcf40901ffa309d6b347, type: 3}
-  - EffectId: E_Grudge
-    Icon: {fileID: 21300000, guid: aa7838dcb9f103e458ace51355d286c9, type: 3}
   - EffectId: E_Corrosion
     Icon: {fileID: 21300000, guid: f943f0cf97295a44183e84137985a2b0, type: 3}
   - EffectId: E_Split
@@ -45,21 +51,11 @@ MonoBehaviour:
     Icon: {fileID: 21300000, guid: 01261e3bf0e77994d8f7976d499f2ab8, type: 3}
   - EffectId: E_Flank
     Icon: {fileID: 21300000, guid: 7cb43e15292969549904a05a59841d2f, type: 3}
-  - EffectId: E_Move_First_Attack_Power
-    Icon: {fileID: 21300000, guid: 63f5284398de7d643b5e6f0fc7193fd1, type: 3}
-  - EffectId: E_Poison_Apply_Double
-    Icon: {fileID: 21300000, guid: 7a24377781daf714c86a076c75d03b38, type: 3}
-  - EffectId: E_Bleeding_Apply_Double
-    Icon: {fileID: 21300000, guid: 9dcdaf1a09bcf0d4b856f95bd215fcb0, type: 3}
-  - EffectId: E_Max_HP_Up
-    Icon: {fileID: 21300000, guid: 7700a3c836910b743aa2f42fe6bba348, type: 3}
-  - EffectId: E_Kill_Heal
-    Icon: {fileID: 21300000, guid: 89d182913c0f168428fd89f334bb31f4, type: 3}
-  - EffectId: E_Skill_Resource_Gain_Up
-    Icon: {fileID: 21300000, guid: 591a5173ec98cc24a9eba5acf4b7da9a, type: 3}
-  - EffectId: E_Buff_Apply_Double
-    Icon: {fileID: 21300000, guid: c9792c02f9d11f84dab646190995677a, type: 3}
-  - EffectId: E_Low_HP_Power
-    Icon: {fileID: 21300000, guid: 4be84d2887890714a92259dc51287315, type: 3}
-  - EffectId: E_Move_Point_Up
-    Icon: {fileID: 21300000, guid: 8283ad43f1939a74ca7d89dcd54229e7, type: 3}
+  - EffectId: E_Spawn_Soldier
+    Icon: {fileID: 0}
+  - EffectId: AR_DamageBoostThisTurn
+    Icon: {fileID: 0}
+  - EffectId: AR_DamageReductionThisTurn
+    Icon: {fileID: 0}
+  - EffectId: AR_TargetOutgoingDamageReductionThisTurn
+    Icon: {fileID: 0}
