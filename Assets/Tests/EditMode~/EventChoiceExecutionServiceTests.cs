@@ -39,6 +39,42 @@ public class EventChoiceExecutionServiceTests
     }
 
     [Test]
+    public void ExecuteChoice_ResultMessageOmitsChoiceDescription()
+    {
+        CharacterRuntimeData character = new()
+        {
+            CharacterId = "C_001",
+            MaxHP = 10,
+            CurrentHP = 1
+        };
+        EventChoiceExecutionContext context = new()
+        {
+            PartyCharacters = new List<CharacterRuntimeData> { character },
+            RollThreeDice = () => 10
+        };
+        EventData choice = new()
+        {
+            ChoiceName = "선택지 제목",
+            ChoiceDesc = "선택지에만 보여야 하는 설명",
+            ChoiceType = "Dice",
+            SuccessCondition = "1~18",
+            ResultType = "Heal",
+            ResultTarget = "파티 전원 현재 체력",
+            ResultValue = "5"
+        };
+
+        EventChoiceExecutionResult result = EventChoiceExecutionService.Execute(choice, context);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.ResultMessage, Does.Not.Contain("선택지 제목"));
+            Assert.That(result.ResultMessage, Does.Not.Contain("선택지에만 보여야 하는 설명"));
+            Assert.That(result.ResultMessage, Does.Contain("주사위 결과: 10"));
+            Assert.That(result.ResultMessage, Does.Contain("파티 전원 체력 5 회복"));
+        });
+    }
+
+    [Test]
     public void ExecuteChoice_RollTableRt002AddsRunMaxHpBonus()
     {
         CharacterRuntimeData character = new()

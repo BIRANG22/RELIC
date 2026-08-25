@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Relic.Gameplay.Data;
+using UnityEngine;
+using Object = UnityEngine.Object;
 
 public class EventRoomRewardPanelFlowTests
 {
@@ -172,6 +174,69 @@ public class EventRoomRewardPanelFlowTests
     }
 
     [Test]
+    public void TryOpenPendingEventRewardPanel_WhenDelayed_DoesNotActivateRewardPanelImmediately()
+    {
+        GameObject eventRoomObject = new("EventRoom");
+        GameObject nextButtonRoot = new("NextButtonRoot");
+        GameObject rewardPanelObject = new("BattleRewardPanelUI");
+
+        try
+        {
+            EventRoomController controller =
+                eventRoomObject.AddComponent<EventRoomController>();
+            BattleRewardPanelUI rewardPanel =
+                rewardPanelObject.AddComponent<BattleRewardPanelUI>();
+
+            nextButtonRoot.SetActive(true);
+            rewardPanelObject.SetActive(false);
+
+            SetPrivateField(controller, "nextButtonRoot", nextButtonRoot);
+            SetPrivateField(controller, "rewardPanel", rewardPanel);
+            SetPrivateField(controller, "eventRewardPanelOpenDelay", 0.6f);
+
+            List<BattleRewardData> pendingRewards =
+                GetPrivateField<List<BattleRewardData>>(
+                    controller,
+                    "pendingEventRewards");
+            pendingRewards.Add(new BattleRewardData
+            {
+                Type = BattleRewardType.Remnant,
+                RewardId = "0",
+                Amount = 30,
+                Name = "더스티움"
+            });
+
+            MethodInfo openMethod = typeof(EventRoomController).GetMethod(
+                "TryOpenPendingEventRewardPanel",
+                BindingFlags.Instance | BindingFlags.NonPublic,
+                null,
+                new[] { typeof(bool) },
+                null);
+            Assert.That(openMethod, Is.Not.Null);
+
+            bool opened = (bool)openMethod.Invoke(
+                controller,
+                new object[] { true });
+
+            Assert.That(opened, Is.True);
+            Assert.That(rewardPanelObject.activeSelf, Is.False);
+            Assert.That(nextButtonRoot.activeSelf, Is.False);
+            Assert.That(
+                GetPrivateField<bool>(
+                    controller,
+                    "isEventRewardPanelOpen"),
+                Is.True);
+            Assert.That(pendingRewards, Is.Empty);
+        }
+        finally
+        {
+            Object.DestroyImmediate(eventRoomObject);
+            Object.DestroyImmediate(nextButtonRoot);
+            Object.DestroyImmediate(rewardPanelObject);
+        }
+    }
+
+    [Test]
     public void EventRoomController_UsesSharedBattleRewardPanelReference()
     {
         FieldInfo field = typeof(EventRoomController).GetField(
@@ -190,5 +255,26 @@ public class EventRoomRewardPanelFlowTests
             new[] { typeof(List<BattleRewardData>), typeof(Action) });
 
         Assert.That(openMethod, Is.Not.Null);
+    }
+
+    private static void SetPrivateField(
+        object target,
+        string fieldName,
+        object value)
+    {
+        FieldInfo field = target.GetType().GetField(
+            fieldName,
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.That(field, Is.Not.Null);
+        field.SetValue(target, value);
+    }
+
+    private static T GetPrivateField<T>(object target, string fieldName)
+    {
+        FieldInfo field = target.GetType().GetField(
+            fieldName,
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.That(field, Is.Not.Null);
+        return (T)field.GetValue(target);
     }
 }

@@ -273,9 +273,6 @@ namespace Relic.Gameplay.Data
 
             List<string> messages = new();
 
-            if (!string.IsNullOrWhiteSpace(choice.ChoiceDesc))
-                messages.Add(choice.ChoiceDesc.Trim());
-
             if (!TryApplyCost(choice, context, messages, out unavailableReason))
                 return new EventChoiceExecutionResult(false, unavailableReason, string.Empty);
 
