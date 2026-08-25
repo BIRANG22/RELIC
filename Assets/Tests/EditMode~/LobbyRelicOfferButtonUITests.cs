@@ -13,6 +13,8 @@ using UnityEngine.UI;
 public class LobbyRelicOfferButtonUITests
 {
     private const string LobbyScenePath = "Assets/Project/Scenes/YDM/Lobby.unity";
+    private const string RarityRingProxyObjectName = "RarityRingVfxProxy";
+    private const string RarityRingRendererRootName = "__LobbyRelicOfferRarityVfxRenderer";
 
     [Test]
     public void LobbyScene_RelicIconsRenderAboveMagicRingVfx()
@@ -48,22 +50,41 @@ public class LobbyRelicOfferButtonUITests
     }
 
     [TestCase(RelicRarity.Common, 200, 208, 217)]
-    [TestCase(RelicRarity.Uncommon, 92, 219, 131)]
-    [TestCase(RelicRarity.Rare, 78, 141, 255)]
+    [TestCase(RelicRarity.Rare, 92, 219, 131)]
+    [TestCase(RelicRarity.Epic, 78, 141, 255)]
     [TestCase(RelicRarity.Unique, 255, 179, 71)]
-    public void GetColor_ReturnsConfiguredRelicRarityColor(
+    public void CurrentRarityColor_ReturnsConfiguredRelicRarityColor(
         RelicRarity rarity,
         int red,
         int green,
         int blue)
     {
-        Color actual = LobbyRelicRarityPalette.GetColor(rarity);
-        Color expected = new(red / 255f, green / 255f, blue / 255f, 1f);
+        LobbyRelicOfferButtonUI view = CreateConfiguredOfferView(
+            out GameObject root,
+            out _,
+            out _);
 
-        Assert.That(actual.r, Is.EqualTo(expected.r).Within(0.0001f));
-        Assert.That(actual.g, Is.EqualTo(expected.g).Within(0.0001f));
-        Assert.That(actual.b, Is.EqualTo(expected.b).Within(0.0001f));
-        Assert.That(actual.a, Is.EqualTo(1f));
+        try
+        {
+            view.Bind(
+                new LobbyRelicOffer("relic-test", 100),
+                null,
+                rarity,
+                null);
+
+            Color actual = view.CurrentRarityColor;
+            Color expected = new(red / 255f, green / 255f, blue / 255f, 1f);
+
+            Assert.That(actual.r, Is.EqualTo(expected.r).Within(0.0001f));
+            Assert.That(actual.g, Is.EqualTo(expected.g).Within(0.0001f));
+            Assert.That(actual.b, Is.EqualTo(expected.b).Within(0.0001f));
+            Assert.That(actual.a, Is.EqualTo(1f));
+        }
+        finally
+        {
+            Object.DestroyImmediate(root);
+            CleanupRarityRingRendererRoot();
+        }
     }
 
     [Test]
@@ -85,14 +106,67 @@ public class LobbyRelicOfferButtonUITests
                 null);
 
             Color actual = rarityParticles.main.startColor.color;
-            Assert.That(ringRoot.activeSelf, Is.True);
+            RawImage proxyImage = GetRarityRingProxyImage(root);
+            ParticleSystem runtimeParticles =
+                FindRuntimeRarityParticles(rarityParticles);
+            Color runtimeActual = runtimeParticles.main.startColor.color;
+
+            Assert.That(ringRoot.activeSelf, Is.False);
+            Assert.That(proxyImage.enabled, Is.True);
+            Assert.That(proxyImage.texture, Is.TypeOf<RenderTexture>());
+            Assert.That(runtimeParticles.gameObject.activeInHierarchy, Is.True);
             Assert.That(actual.r, Is.EqualTo(78f / 255f).Within(0.0001f));
             Assert.That(actual.g, Is.EqualTo(141f / 255f).Within(0.0001f));
             Assert.That(actual.b, Is.EqualTo(1f).Within(0.0001f));
+            Assert.That(runtimeActual.r, Is.EqualTo(78f / 255f).Within(0.0001f));
+            Assert.That(runtimeActual.g, Is.EqualTo(141f / 255f).Within(0.0001f));
+            Assert.That(runtimeActual.b, Is.EqualTo(1f).Within(0.0001f));
         }
         finally
         {
             Object.DestroyImmediate(root);
+            CleanupRarityRingRendererRoot();
+        }
+    }
+
+    [Test]
+    public void Bind_RoutesRarityRingThroughPerOfferUiRenderTextureProxy()
+    {
+        LobbyRelicOfferButtonUI view = CreateConfiguredOfferView(
+            out GameObject root,
+            out GameObject ringRoot,
+            out ParticleSystem rarityParticles);
+
+        try
+        {
+            ringRoot.SetActive(false);
+
+            view.Bind(
+                new LobbyRelicOffer("relic-test", 100),
+                null,
+                RelicRarity.Common,
+                null);
+
+            RawImage proxyImage = GetRarityRingProxyImage(root);
+            RectTransform proxyRect = proxyImage.rectTransform;
+            ParticleSystem runtimeParticles =
+                FindRuntimeRarityParticles(rarityParticles);
+
+            Assert.That(proxyImage.transform.parent, Is.SameAs(root.transform));
+            Assert.That(proxyImage.transform.GetSiblingIndex(), Is.EqualTo(0));
+            Assert.That(proxyImage.raycastTarget, Is.False);
+            Assert.That(proxyRect.anchorMin, Is.EqualTo(new Vector2(0.5f, 0.5f)));
+            Assert.That(proxyRect.anchorMax, Is.EqualTo(new Vector2(0.5f, 0.5f)));
+            Assert.That(proxyRect.anchoredPosition, Is.EqualTo(Vector2.zero));
+            Assert.That(proxyRect.sizeDelta, Is.EqualTo(new Vector2(250f, 250f)));
+            Assert.That(ringRoot.activeSelf, Is.False);
+            Assert.That(runtimeParticles, Is.Not.SameAs(rarityParticles));
+            Assert.That(runtimeParticles.transform.IsChildOf(root.transform), Is.False);
+        }
+        finally
+        {
+            Object.DestroyImmediate(root);
+            CleanupRarityRingRendererRoot();
         }
     }
 
@@ -118,22 +192,26 @@ public class LobbyRelicOfferButtonUITests
                 null,
                 RelicRarity.Common,
                 null);
-            rarityParticles.Emit(1);
+            RawImage proxyImage = GetRarityRingProxyImage(root);
+            ParticleSystem runtimeParticles =
+                FindRuntimeRarityParticles(rarityParticles);
+            runtimeParticles.Emit(1);
 
             view.ShowSold();
 
-            Assert.That(ringRoot.activeSelf, Is.True);
-            Assert.That(rarityParticles.isEmitting, Is.False);
+            Assert.That(ringRoot.activeSelf, Is.False);
+            Assert.That(runtimeParticles.isEmitting, Is.False);
 
             float timeout = Time.realtimeSinceStartup + 0.5f;
-            while (ringRoot.activeSelf && Time.realtimeSinceStartup < timeout)
+            while (proxyImage.enabled && Time.realtimeSinceStartup < timeout)
                 yield return null;
 
-            Assert.That(ringRoot.activeSelf, Is.False);
+            Assert.That(proxyImage.enabled, Is.False);
         }
         finally
         {
             Object.DestroyImmediate(root);
+            CleanupRarityRingRendererRoot();
         }
     }
 
@@ -256,15 +334,22 @@ public class LobbyRelicOfferButtonUITests
             Assert.That(hoveredRelicId, Is.EqualTo("relic-test"));
             Assert.That(hoverState, Is.True);
             Assert.That(icon.localScale, Is.EqualTo(Vector3.one * 1.12f));
+            Assert.That(
+                root.transform.Find(RarityRingProxyObjectName).localScale,
+                Is.EqualTo(Vector3.one * 1.12f));
 
             view.OnPointerExit(null);
 
             Assert.That(hoverState, Is.False);
             Assert.That(icon.localScale, Is.EqualTo(Vector3.one));
+            Assert.That(
+                root.transform.Find(RarityRingProxyObjectName).localScale,
+                Is.EqualTo(Vector3.one));
         }
         finally
         {
             Object.DestroyImmediate(root);
+            CleanupRarityRingRendererRoot();
         }
     }
 
@@ -331,9 +416,11 @@ public class LobbyRelicOfferButtonUITests
         priceObject.transform.SetParent(root.transform, false);
 
         ringRoot = new GameObject("magic_ring_06");
+        ringRoot.layer = 9;
         ringRoot.transform.SetParent(root.transform, false);
 
         GameObject rarityObject = new("03", typeof(ParticleSystem));
+        rarityObject.layer = 9;
         rarityObject.transform.SetParent(ringRoot.transform, false);
         rarityParticles = rarityObject.GetComponent<ParticleSystem>();
 
@@ -344,6 +431,46 @@ public class LobbyRelicOfferButtonUITests
         SetPrivateField(view, "rarityRingRoot", ringRoot);
         SetPrivateField(view, "rarityParticles", rarityParticles);
         return view;
+    }
+
+    private static RawImage GetRarityRingProxyImage(GameObject root)
+    {
+        Transform proxy = root.transform.Find(RarityRingProxyObjectName);
+        Assert.That(proxy, Is.Not.Null);
+
+        RawImage proxyImage = proxy.GetComponent<RawImage>();
+        Assert.That(proxyImage, Is.Not.Null);
+        return proxyImage;
+    }
+
+    private static ParticleSystem FindRuntimeRarityParticles(
+        ParticleSystem sourceParticles)
+    {
+        GameObject rendererRoot = GameObject.Find(RarityRingRendererRootName);
+        Assert.That(rendererRoot, Is.Not.Null);
+
+        ParticleSystem[] particles =
+            rendererRoot.GetComponentsInChildren<ParticleSystem>(true);
+        for (int i = 0; i < particles.Length; i++)
+        {
+            ParticleSystem candidate = particles[i];
+            if (candidate != null &&
+                candidate != sourceParticles &&
+                candidate.name == sourceParticles.name)
+            {
+                return candidate;
+            }
+        }
+
+        Assert.Fail("Runtime rarity particles were not created.");
+        return null;
+    }
+
+    private static void CleanupRarityRingRendererRoot()
+    {
+        GameObject rendererRoot = GameObject.Find(RarityRingRendererRootName);
+        if (rendererRoot != null)
+            Object.DestroyImmediate(rendererRoot);
     }
 
     private static void SetPrivateField(object target, string fieldName, object value)

@@ -6422,7 +6422,6 @@ MonoBehaviour:
   - ResearchResultPanel
   - ErosionSelectPanel
   - StageSelectPanel
-  - StoragePanel
 --- !u!1 &2101000010
 GameObject:
   m_ObjectHideFlags: 0

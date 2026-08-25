@@ -9,6 +9,8 @@ public class ResolutionManager : MonoBehaviour
     private const string ResolutionIndexPrefsKey = "Relic.ResolutionIndex";
     private const int DefaultResolutionIndex = 3;
     private const int LetterboxSortingOrder = 32000;
+    private const int RequiredStableRefreshFrames = 3;
+    private const int MaxResolutionRefreshFrames = 45;
 
     private static readonly ResolutionOption[] SupportedResolutions =
     {
@@ -21,7 +23,7 @@ public class ResolutionManager : MonoBehaviour
     };
 
     private static ResolutionManager instance;
-    private static Color letterboxColor = new Color32(0x00, 0x02, 0x22, 0xFF);//·¹ÅÍ¹Ú½º »ö
+    private static Color letterboxColor = new Color32(0x00, 0x02, 0x22, 0xFF);//ï¿½ï¿½ï¿½Í¹Ú½ï¿½ ï¿½ï¿½
     private ResolutionLetterboxOverlay letterboxOverlay;
     private Coroutine resolutionRefreshCoroutine;
     private readonly List<ResolutionCanvasViewportFitter> canvasViewportFitters = new();
@@ -67,12 +69,7 @@ public class ResolutionManager : MonoBehaviour
         if (!screenSizeChanged && !fullScreenModeChanged)
             return;
 
-        ApplyLetterbox();
-
-        // Ã¢¸ðµå¿Í ÀüÃ¼È­¸é ÀüÈ¯Àº ½ÇÁ¦ È­¸é Å©±â Àû¿ëÀÌ ¿©·¯ ÇÁ·¹ÀÓ ´ÊÀ» ¼ö ÀÖ½À´Ï´Ù.
-        // ÀüÈ¯ÀÌ °¨ÁöµÇ¸é ÇØ»óµµ º¯°æ°ú µ¿ÀÏÇÏ°Ô È­¸é ¹èÄ¡¸¦ ¹Ýº¹ °»½ÅÇÕ´Ï´Ù.
-        if (fullScreenModeChanged)
-            StartResolutionRefresh();
+        StartResolutionRefresh();
     }
 
     public static IReadOnlyList<ResolutionOption> GetSupportedResolutions()
@@ -128,22 +125,29 @@ public class ResolutionManager : MonoBehaviour
         if (resolutionRefreshCoroutine != null)
             StopCoroutine(resolutionRefreshCoroutine);
 
-        // Screen.SetResolutionÀº ½ÇÁ¦ Ã¢ Å©±â¸¦ ´ÙÀ½ ÇÁ·¹ÀÓºÎÅÍ ¹Ý¿µÇÕ´Ï´Ù.
-        // Ã¢°ú Canvas Å©±â°¡ ¿ÏÀüÈ÷ °»½ÅµÉ ¶§±îÁö ¸î ÇÁ·¹ÀÓ µ¿¾È È­¸é ¹èÄ¡¸¦ ´Ù½Ã ¸ÂÃä´Ï´Ù.
+        // Screen.SetResolutionï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã¢ Å©ï¿½â¸¦ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Óºï¿½ï¿½ï¿½ ï¿½Ý¿ï¿½ï¿½Õ´Ï´ï¿½.
+        // Ã¢ï¿½ï¿½ Canvas Å©ï¿½â°¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Åµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È­ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½Ù½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.
         resolutionRefreshCoroutine = StartCoroutine(RefreshResolutionLayoutRoutine());
     }
 
     private IEnumerator RefreshResolutionLayoutRoutine()
     {
-        const int refreshFrameCount = 5;
+        ResolutionRefreshStability stability = default;
 
-        for (int i = 0; i < refreshFrameCount; i++)
+        for (int i = 0; i < MaxResolutionRefreshFrames; i++)
         {
             yield return null;
             Canvas.ForceUpdateCanvases();
             ApplyLetterbox();
+
+            Vector2Int screenSize = new(Screen.width, Screen.height);
+            Vector2 canvasSize = GetLargestActiveRootCanvasSize();
+            if (stability.Observe(screenSize, canvasSize, RequiredStableRefreshFrames))
+                break;
         }
 
+        Canvas.ForceUpdateCanvases();
+        ApplyLetterbox();
         resolutionRefreshCoroutine = null;
     }
 
@@ -188,8 +192,11 @@ public class ResolutionManager : MonoBehaviour
         Rect viewport,
         Vector2 targetSize)
     {
-        if (canvasSize.x <= 0f || canvasSize.y <= 0f || targetSize.x <= 0f || targetSize.y <= 0f)
+        if (targetSize.x <= 0f || targetSize.y <= 0f)
             return new ResolutionCanvasViewportLayout(Vector2.zero, Vector2.zero, 1f);
+
+        if (canvasSize.x <= 0f || canvasSize.y <= 0f)
+            return new ResolutionCanvasViewportLayout(Vector2.zero, targetSize, 1f);
 
         Vector2 viewportSize = new(
             Mathf.Max(0f, viewport.width * canvasSize.x),
@@ -255,7 +262,7 @@ public class ResolutionManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        ApplyLetterbox();
+        StartResolutionRefresh();
     }
 
     private void ApplyLetterbox()
@@ -338,19 +345,63 @@ public class ResolutionManager : MonoBehaviour
 
     private static bool ShouldFitCanvas(Canvas canvas)
     {
+        return ShouldFitCanvasForResolution(canvas);
+    }
+
+    public static bool ShouldFitCanvasForResolution(Canvas canvas)
+    {
         if (canvas == null)
             return false;
 
         if (!canvas.isRootCanvas)
             return false;
 
-        if (canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+        if (canvas.renderMode != RenderMode.ScreenSpaceOverlay &&
+            canvas.renderMode != RenderMode.ScreenSpaceCamera &&
+            canvas.renderMode != RenderMode.WorldSpace)
+            return false;
+
+        if (canvas.targetDisplay != 0)
             return false;
 
         if (canvas.GetComponent<ResolutionLetterboxOverlay>() != null)
             return false;
 
         return true;
+    }
+
+    private static Vector2 GetLargestActiveRootCanvasSize()
+    {
+        Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        Vector2 largestSize = Vector2.zero;
+        float largestArea = 0f;
+
+        for (int i = 0; i < canvases.Length; i++)
+        {
+            Canvas canvas = canvases[i];
+            if (!ShouldFitCanvas(canvas))
+                continue;
+
+            RectTransform rectTransform = canvas.transform as RectTransform;
+            if (rectTransform == null)
+                continue;
+
+            Vector2 size = rectTransform.rect.size;
+            if (size.x <= 0f || size.y <= 0f)
+                continue;
+
+            float area = size.x * size.y;
+            if (area <= largestArea)
+                continue;
+
+            largestArea = area;
+            largestSize = size;
+        }
+
+        if (largestSize.x <= 0f || largestSize.y <= 0f)
+            return new Vector2(Screen.width, Screen.height);
+
+        return largestSize;
     }
 }
 
@@ -379,6 +430,48 @@ public readonly struct ResolutionCanvasViewportLayout
         Position = position;
         Size = size;
         Scale = scale;
+    }
+}
+
+public struct ResolutionRefreshStability
+{
+    private Vector2Int lastScreenSize;
+    private Vector2 lastCanvasSize;
+    private int stableFrameCount;
+    private bool hasLastSample;
+
+    public bool Observe(Vector2Int screenSize, Vector2 canvasSize, int requiredStableFrames)
+    {
+        if (screenSize.x <= 0 || screenSize.y <= 0 || canvasSize.x <= 0f || canvasSize.y <= 0f)
+        {
+            Reset();
+            return false;
+        }
+
+        if (!hasLastSample || lastScreenSize != screenSize || !Approximately(lastCanvasSize, canvasSize))
+        {
+            lastScreenSize = screenSize;
+            lastCanvasSize = canvasSize;
+            stableFrameCount = 0;
+            hasLastSample = true;
+            return false;
+        }
+
+        stableFrameCount++;
+        return stableFrameCount >= Mathf.Max(1, requiredStableFrames);
+    }
+
+    private void Reset()
+    {
+        lastScreenSize = default;
+        lastCanvasSize = default;
+        stableFrameCount = 0;
+        hasLastSample = false;
+    }
+
+    private static bool Approximately(Vector2 left, Vector2 right)
+    {
+        return Mathf.Approximately(left.x, right.x) && Mathf.Approximately(left.y, right.y);
     }
 }
 
@@ -471,8 +564,32 @@ public sealed class ResolutionLetterboxOverlay : MonoBehaviour
 public sealed class ResolutionCanvasViewportFitter : MonoBehaviour
 {
     private const string ViewportObjectName = "Resolution Viewport";
+    private static readonly Vector2 DefaultContentSize = new(1920f, 1080f);
 
     private RectTransform viewportRoot;
+
+    public RectTransform ContentRoot
+    {
+        get
+        {
+            EnsureViewportRoot();
+            return viewportRoot;
+        }
+    }
+
+    public static RectTransform ResolveContentRoot(Transform canvasTransform)
+    {
+        if (canvasTransform == null)
+            return null;
+
+        ResolutionCanvasViewportFitter fitter =
+            canvasTransform.GetComponent<ResolutionCanvasViewportFitter>();
+        if (fitter != null)
+            return fitter.ContentRoot;
+
+        Transform existing = canvasTransform.Find(ViewportObjectName);
+        return existing as RectTransform;
+    }
 
     public void Apply(Rect viewport, int targetWidth, int targetHeight)
     {
@@ -508,7 +625,7 @@ public sealed class ResolutionCanvasViewportFitter : MonoBehaviour
             return scaler.referenceResolution;
         }
 
-        return new Vector2(fallbackWidth, fallbackHeight);
+        return DefaultContentSize;
     }
 
     private void EnsureViewportRoot()

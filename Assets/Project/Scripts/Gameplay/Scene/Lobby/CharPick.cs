@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 using Relic.Gameplay.Data;
 
 public class CharPick : MonoBehaviour
@@ -76,6 +77,7 @@ public class CharPick : MonoBehaviour
     private void Start()
     {
         isStarted = true;
+        ConfigurePreviewCanvasScaler();
         CachePreviewBackgroundScale();
         AutoBindCharButtonsIfNeeded();
         ClampCenterIndex();
@@ -1144,6 +1146,25 @@ public class CharPick : MonoBehaviour
         currentPreview.name = "Preview_" + characterId;
 
         PlayPreviewBackgroundAnim();
+    }
+
+    private void ConfigurePreviewCanvasScaler()
+    {
+        if (previewRoot == null)
+            return;
+
+        Canvas canvas = previewRoot.GetComponentInParent<Canvas>();
+        if (canvas == null)
+            return;
+
+        CanvasScaler scaler = canvas.GetComponent<CanvasScaler>();
+        if (scaler == null)
+            return;
+
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920f, 1080f);
+        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+        scaler.matchWidthOrHeight = 0f;
     }
 
     private bool TryGetCurrentPreviewAnimator(out ButtonResponsiveSpriteAnimator animator)

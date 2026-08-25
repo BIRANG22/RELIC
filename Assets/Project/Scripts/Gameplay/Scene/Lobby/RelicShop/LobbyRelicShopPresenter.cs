@@ -317,8 +317,10 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         HideShopPanelForPurchaseAnimation();
 
         Canvas transferCanvas = ResolveTransferEffectCanvas();
+        RectTransform transferParent = ResolveTransferEffectParent(transferCanvas);
         Image transferEffect = CreateTransferEffectImage(
             transferCanvas,
+            transferParent,
             startScreenPosition,
             rarityColor);
 
@@ -327,6 +329,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             yield return AnimateUiTransferEffectRoutine(
                 transferEffect.rectTransform,
                 transferCanvas,
+                transferParent,
                 startScreenPosition,
                 equipScreenPosition);
         }
@@ -726,6 +729,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
     private Image CreateTransferEffectImage(
         Canvas transferCanvas,
+        RectTransform transferParent,
         Vector2 screenPosition,
         Color rarityColor)
     {
@@ -739,13 +743,13 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             typeof(Image));
 
         RectTransform rect = effectObject.GetComponent<RectTransform>();
-        rect.SetParent(transferCanvas.transform, false);
+        rect.SetParent(transferParent != null ? transferParent : transferCanvas.transform, false);
         rect.anchorMin = new Vector2(0.5f, 0.5f);
         rect.anchorMax = new Vector2(0.5f, 0.5f);
         rect.pivot = new Vector2(0.5f, 0.5f);
         rect.sizeDelta = purchaseTransferEffectSize;
         rect.localScale = Vector3.one;
-        rect.anchoredPosition = ScreenToCanvasLocalPosition(transferCanvas, screenPosition);
+        rect.anchoredPosition = ScreenToUiLocalPosition(transferCanvas, transferParent, screenPosition);
         rect.SetAsLastSibling();
 
         Image image = effectObject.GetComponent<Image>();
@@ -768,6 +772,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
     private IEnumerator AnimateUiTransferEffectRoutine(
         RectTransform target,
         Canvas transferCanvas,
+        RectTransform transferParent,
         Vector2 fromScreenPosition,
         Vector2 toScreenPosition)
     {
@@ -775,8 +780,8 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             yield break;
 
         Image sourceImage = target.GetComponent<Image>();
-        Vector2 fromPosition = ScreenToCanvasLocalPosition(transferCanvas, fromScreenPosition);
-        Vector2 toPosition = ScreenToCanvasLocalPosition(transferCanvas, toScreenPosition);
+        Vector2 fromPosition = ScreenToUiLocalPosition(transferCanvas, transferParent, fromScreenPosition);
+        Vector2 toPosition = ScreenToUiLocalPosition(transferCanvas, transferParent, toScreenPosition);
         Vector2 bouncePosition = fromPosition + purchaseBounceOffset;
 
         Vector3 originalScale = target.localScale;
@@ -806,6 +811,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
                 target,
                 sourceImage,
                 transferCanvas,
+                transferParent,
                 trailGhosts,
                 ref trailTimer);
             UpdateTrailGhosts(trailGhosts, deltaTime);
@@ -834,6 +840,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
                 target,
                 sourceImage,
                 transferCanvas,
+                transferParent,
                 trailGhosts,
                 ref trailTimer);
             UpdateTrailGhosts(trailGhosts, deltaTime);
@@ -855,6 +862,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         RectTransform sourceRect,
         Image sourceImage,
         Canvas transferCanvas,
+        RectTransform transferParent,
         List<PurchaseTrailGhost> trailGhosts,
         ref float trailTimer)
     {
@@ -871,7 +879,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         while (trailTimer >= safeInterval)
         {
             trailTimer -= safeInterval;
-            PurchaseTrailGhost ghost = CreateTrailGhost(sourceRect, sourceImage, transferCanvas);
+            PurchaseTrailGhost ghost = CreateTrailGhost(sourceRect, sourceImage, transferCanvas, transferParent);
             if (ghost != null)
                 trailGhosts.Add(ghost);
         }
@@ -880,7 +888,8 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
     private PurchaseTrailGhost CreateTrailGhost(
         RectTransform sourceRect,
         Image sourceImage,
-        Canvas transferCanvas)
+        Canvas transferCanvas,
+        RectTransform transferParent)
     {
         GameObject ghostObject = new GameObject(
             "RelicPurchaseTrail",
@@ -889,7 +898,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             typeof(Image));
 
         RectTransform ghostRect = ghostObject.GetComponent<RectTransform>();
-        ghostRect.SetParent(transferCanvas.transform, false);
+        ghostRect.SetParent(transferParent != null ? transferParent : transferCanvas.transform, false);
         ghostRect.anchorMin = sourceRect.anchorMin;
         ghostRect.anchorMax = sourceRect.anchorMax;
         ghostRect.pivot = sourceRect.pivot;
@@ -968,13 +977,18 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         return t * t * t * t * t;
     }
 
-    private static Vector2 ScreenToCanvasLocalPosition(Canvas canvas, Vector2 screenPosition)
+    private static Vector2 ScreenToUiLocalPosition(
+        Canvas canvas,
+        RectTransform coordinateRoot,
+        Vector2 screenPosition)
     {
         if (canvas == null)
             return Vector2.zero;
 
-        RectTransform canvasRect = canvas.transform as RectTransform;
-        if (canvasRect == null)
+        RectTransform targetRect = coordinateRoot != null
+            ? coordinateRoot
+            : canvas.transform as RectTransform;
+        if (targetRect == null)
             return Vector2.zero;
 
         Camera uiCamera = canvas.renderMode == RenderMode.ScreenSpaceOverlay
@@ -982,7 +996,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             : canvas.worldCamera;
 
         if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                canvasRect,
+                targetRect,
                 screenPosition,
                 uiCamera,
                 out Vector2 localPoint))
@@ -991,6 +1005,16 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         }
 
         return Vector2.zero;
+    }
+
+    private static RectTransform ResolveTransferEffectParent(Canvas transferCanvas)
+    {
+        if (transferCanvas == null)
+            return null;
+
+        RectTransform contentRoot =
+            ResolutionCanvasViewportFitter.ResolveContentRoot(transferCanvas.transform);
+        return contentRoot != null ? contentRoot : transferCanvas.transform as RectTransform;
     }
 
     private Camera ResolveTargetUiCamera(RectTransform targetRect)
