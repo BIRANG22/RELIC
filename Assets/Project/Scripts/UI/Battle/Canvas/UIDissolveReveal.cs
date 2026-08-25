@@ -521,7 +521,7 @@ public class UIDissolveReveal : MonoBehaviour
         if (!forceRenderOutputCanvasSorting)
             return;
 
-        Canvas canvas = ResolveRenderOutputCanvas();
+        Canvas canvas = ResolveExistingRenderOutputCanvas();
         if (canvas == null)
             return;
 
@@ -542,6 +542,19 @@ public class UIDissolveReveal : MonoBehaviour
         if (renderOutputCanvas == null)
             renderOutputCanvas = renderRoot.AddComponent<Canvas>();
 
+        return renderOutputCanvas;
+    }
+
+    private Canvas ResolveExistingRenderOutputCanvas()
+    {
+        if (renderOutputCanvas != null)
+            return renderOutputCanvas;
+
+        GameObject renderRoot = ResolveRenderOutputRoot();
+        if (renderRoot == null)
+            return null;
+
+        renderOutputCanvas = renderRoot.GetComponent<Canvas>();
         return renderOutputCanvas;
     }
 

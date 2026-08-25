@@ -7,6 +7,11 @@ using UnityEngine.UI;
 [DisallowMultipleComponent]
 public sealed class LobbyTutorialController : MonoBehaviour
 {
+    private const string AnchorVfxRootObjectName = "Vfx_root_anchor";
+    private const string AnchorVfxProxyObjectName = "AnchorVfxProxy";
+    private const string AnchorVfxRendererRootName = "__LobbyTutorialAnchorVfxRenderer";
+    private const int AnchorVfxRenderLayer = 9;
+
     private enum DialogueMode
     {
         None,
@@ -47,6 +52,30 @@ public sealed class LobbyTutorialController : MonoBehaviour
     [SerializeField] private GameObject anchorImage;
     [SerializeField] private GameObject fragmentGroup;
     [SerializeField] private Image[] fragmentImages = new Image[3];
+
+    [Header("Anchor VFX RenderTexture")]
+    [SerializeField] private GameObject anchorVfxRoot;
+
+    [Tooltip("RenderTexture width for the tutorial anchor VFX.")]
+    [SerializeField, Min(1)] private int anchorVfxRenderTextureWidth = 512;
+
+    [Tooltip("RenderTexture height for the tutorial anchor VFX.")]
+    [SerializeField, Min(1)] private int anchorVfxRenderTextureHeight = 512;
+
+    [Tooltip("Orthographic size of the private tutorial anchor VFX camera.")]
+    [SerializeField, Min(0.01f)] private float anchorVfxRenderCameraOrthographicSize = 3f;
+
+    [Tooltip("UI size of the tutorial anchor VFX RawImage proxy.")]
+    [SerializeField] private Vector2 anchorVfxProxySize = new(400f, 400f);
+
+    [Tooltip("Anchored position offset of the tutorial anchor VFX RawImage proxy.")]
+    [SerializeField] private Vector2 anchorVfxProxyAnchoredPosition = Vector2.zero;
+
+    [Tooltip("Local position of the cloned VFX inside the private render space.")]
+    [SerializeField] private Vector3 anchorVfxRenderVfxLocalPosition = Vector3.zero;
+
+    [Tooltip("Optional RawImage material template. Empty uses the scene VFXImage material when present.")]
+    [SerializeField] private Material anchorVfxProxyMaterialTemplate;
 
     [Header("Tutorial Dialogue Text")]
     [Tooltip("최초 로비 진입 시 엘릭이 말하는 대사입니다. 위에서부터 순서대로 재생됩니다.")]
@@ -103,6 +132,7 @@ public sealed class LobbyTutorialController : MonoBehaviour
     private Vector2 nextButtonIndicatorBasePosition;
     private bool hasNextButtonIndicatorBasePosition;
     private bool cameraPauseActive;
+    private LobbyUiVfxRenderTextureProxy anchorVfxProxy;
 
     public bool IsDialogueOpen => dialogueMode != DialogueMode.None;
 
@@ -175,6 +205,7 @@ public sealed class LobbyTutorialController : MonoBehaviour
     private void OnDisable()
     {
         StopTypewriter();
+        HideAnchorVfxProxy();
         ReleaseCameraPause();
     }
 
@@ -183,6 +214,7 @@ public sealed class LobbyTutorialController : MonoBehaviour
         if (nextButton != null)
             nextButton.onClick.RemoveListener(AdvanceDialogue);
 
+        HideAnchorVfxProxy();
         ReleaseCameraPause();
     }
 
@@ -607,11 +639,74 @@ public sealed class LobbyTutorialController : MonoBehaviour
         if (tutorialDisplay != null)
             tutorialDisplay.SetActive(showRoot);
 
-        if (anchorImage != null)
-            anchorImage.SetActive(showAnchor);
+        if (showAnchor)
+        {
+            if (anchorImage != null)
+                anchorImage.SetActive(true);
+
+            ShowAnchorVfxProxy();
+        }
+        else
+        {
+            HideAnchorVfxProxy();
+
+            if (anchorImage != null)
+                anchorImage.SetActive(false);
+        }
 
         if (fragmentGroup != null)
             fragmentGroup.SetActive(showFragments);
+    }
+
+    private void ShowAnchorVfxProxy()
+    {
+        LobbyUiVfxRenderTextureProxy proxy = EnsureAnchorVfxProxy();
+        if (proxy != null)
+            proxy.Show();
+    }
+
+    private void HideAnchorVfxProxy()
+    {
+        if (anchorVfxProxy == null && anchorImage != null)
+            anchorVfxProxy = anchorImage.GetComponent<LobbyUiVfxRenderTextureProxy>();
+
+        if (anchorVfxProxy != null)
+            anchorVfxProxy.Hide();
+
+        if (anchorVfxRoot != null)
+            anchorVfxRoot.SetActive(false);
+    }
+
+    private LobbyUiVfxRenderTextureProxy EnsureAnchorVfxProxy()
+    {
+        if (anchorImage == null)
+            return null;
+
+        if (anchorVfxRoot == null)
+            anchorVfxRoot = FindChildGameObject(anchorImage.transform, AnchorVfxRootObjectName);
+
+        if (anchorVfxRoot == null)
+            return null;
+
+        if (anchorVfxProxy == null)
+            anchorVfxProxy = anchorImage.GetComponent<LobbyUiVfxRenderTextureProxy>();
+
+        if (anchorVfxProxy == null)
+            anchorVfxProxy = anchorImage.AddComponent<LobbyUiVfxRenderTextureProxy>();
+
+        anchorVfxProxy.Configure(
+            anchorVfxRoot,
+            AnchorVfxProxyObjectName,
+            AnchorVfxRendererRootName,
+            anchorVfxRenderTextureWidth,
+            anchorVfxRenderTextureHeight,
+            anchorVfxRenderCameraOrthographicSize,
+            anchorVfxProxySize,
+            anchorVfxProxyAnchoredPosition,
+            anchorVfxRenderVfxLocalPosition,
+            anchorVfxProxyMaterialTemplate,
+            AnchorVfxRenderLayer);
+        return anchorVfxProxy;
     }
 
     private void AutoBindHierarchy()
@@ -652,6 +747,9 @@ public sealed class LobbyTutorialController : MonoBehaviour
 
             if (anchorImage == null)
                 anchorImage = FindChildGameObject(displayRoot, "AnchorImage");
+
+            if (anchorVfxRoot == null && anchorImage != null)
+                anchorVfxRoot = FindChildGameObject(anchorImage.transform, AnchorVfxRootObjectName);
 
             if (fragmentGroup == null)
                 fragmentGroup = FindChildGameObject(displayRoot, "FragmentGroup");

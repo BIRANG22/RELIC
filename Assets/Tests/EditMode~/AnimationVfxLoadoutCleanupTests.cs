@@ -6,6 +6,7 @@ using NUnit.Framework;
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
 using UnityEngine;
+using UnityEngine.UI;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -536,7 +537,72 @@ public class AnimationVfxLoadoutCleanupTests
     }
 
     [Test]
-    public void BattleVfxCameraSyncCopiesSourceCameraButPreservesVfxOutput()
+    public void BattleVfxCameraSyncKeepsLockedRenderTextureCameraReferenceState()
+    {
+        GameObject sourceObject = new("MainCameraSource");
+        GameObject targetObject = new("VfxCameraTarget");
+        RenderTexture targetTexture = new(64, 64, 0);
+
+        try
+        {
+            Camera sourceCamera = sourceObject.AddComponent<Camera>();
+            Camera targetCamera = targetObject.AddComponent<Camera>();
+
+            targetCamera.transform.position = new Vector3(0f, 0f, -20f);
+            targetCamera.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
+            targetCamera.orthographic = true;
+            targetCamera.fieldOfView = 20f;
+            targetCamera.orthographicSize = 8f;
+            targetCamera.nearClipPlane = 0.3f;
+            targetCamera.farClipPlane = 100f;
+            targetCamera.cullingMask = 1 << 9;
+            targetCamera.targetTexture = targetTexture;
+            targetCamera.clearFlags = CameraClearFlags.SolidColor;
+            targetCamera.backgroundColor = new Color(0f, 0f, 0f, 0f);
+            targetCamera.depth = 99f;
+
+            BattleVfxCameraSync sync = targetObject.AddComponent<BattleVfxCameraSync>();
+
+            SetPrivateField(sync, "sourceCamera", sourceCamera);
+            SetPrivateField(sync, "targetCamera", targetCamera);
+            SetPrivateField(sync, "lockRenderTextureReferenceState", true);
+
+            sourceCamera.transform.position = new Vector3(1.25f, -2.5f, -17f);
+            sourceCamera.transform.rotation = Quaternion.Euler(5f, 10f, 15f);
+            sourceCamera.orthographic = false;
+            sourceCamera.fieldOfView = 31f;
+            sourceCamera.orthographicSize = 4.25f;
+            sourceCamera.nearClipPlane = 0.2f;
+            sourceCamera.farClipPlane = 250f;
+            sourceCamera.rect = new Rect(0.1f, 0.2f, 0.7f, 0.6f);
+
+            sync.SyncNow();
+
+            Assert.That(targetCamera.transform.position, Is.EqualTo(new Vector3(0f, 0f, -20f)));
+            Assert.That(Quaternion.Angle(targetCamera.transform.rotation, Quaternion.identity), Is.LessThan(0.01f));
+            Assert.That(targetCamera.orthographic, Is.True);
+            Assert.That(targetCamera.fieldOfView, Is.EqualTo(20f));
+            Assert.That(targetCamera.orthographicSize, Is.EqualTo(8f));
+            Assert.That(targetCamera.nearClipPlane, Is.EqualTo(0.3f));
+            Assert.That(targetCamera.farClipPlane, Is.EqualTo(100f));
+            Assert.That(targetCamera.rect, Is.EqualTo(new Rect(0f, 0f, 1f, 1f)));
+            Assert.That(targetCamera.aspect, Is.EqualTo(1f).Within(0.001f));
+            Assert.That(targetCamera.cullingMask, Is.EqualTo(1 << 9));
+            Assert.That(targetCamera.targetTexture, Is.SameAs(targetTexture));
+            Assert.That(targetCamera.clearFlags, Is.EqualTo(CameraClearFlags.SolidColor));
+            Assert.That(targetCamera.backgroundColor, Is.EqualTo(new Color(0f, 0f, 0f, 0f)));
+            Assert.That(targetCamera.depth, Is.EqualTo(99f));
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(targetTexture);
+            UnityEngine.Object.DestroyImmediate(targetObject);
+            UnityEngine.Object.DestroyImmediate(sourceObject);
+        }
+    }
+
+    [Test]
+    public void BattleVfxCameraSyncCopiesSourceCameraForRenderTextureByDefault()
     {
         GameObject sourceObject = new("MainCameraSource");
         GameObject targetObject = new("VfxCameraTarget");
@@ -578,7 +644,8 @@ public class AnimationVfxLoadoutCleanupTests
             Assert.That(targetCamera.orthographicSize, Is.EqualTo(sourceCamera.orthographicSize));
             Assert.That(targetCamera.nearClipPlane, Is.EqualTo(sourceCamera.nearClipPlane));
             Assert.That(targetCamera.farClipPlane, Is.EqualTo(sourceCamera.farClipPlane));
-            Assert.That(targetCamera.rect, Is.EqualTo(sourceCamera.rect));
+            Assert.That(targetCamera.rect, Is.EqualTo(new Rect(0f, 0f, 1f, 1f)));
+            Assert.That(targetCamera.aspect, Is.EqualTo(1f).Within(0.001f));
             Assert.That(targetCamera.cullingMask, Is.EqualTo(1 << 9));
             Assert.That(targetCamera.targetTexture, Is.SameAs(targetTexture));
             Assert.That(targetCamera.clearFlags, Is.EqualTo(CameraClearFlags.SolidColor));
