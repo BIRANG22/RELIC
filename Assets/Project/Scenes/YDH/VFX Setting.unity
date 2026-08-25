@@ -339,6 +339,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Ruke
       objectReference: {fileID: 0}
+    - target: {fileID: 5089267951778699808, guid: 495aec57f056c2c448b337692c68afca, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6256747592659753451, guid: 495aec57f056c2c448b337692c68afca, type: 3}
       propertyPath: m_LocalPosition.x
       value: 6.03
@@ -520,6 +524,10 @@ PrefabInstance:
     - target: {fileID: 5089267951778699808, guid: 4ef514e68769a0444a2085e9b7e228b3, type: 3}
       propertyPath: m_Name
       value: Mort
+      objectReference: {fileID: 0}
+    - target: {fileID: 5089267951778699808, guid: 4ef514e68769a0444a2085e9b7e228b3, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6256747592659753451, guid: 4ef514e68769a0444a2085e9b7e228b3, type: 3}
       propertyPath: m_LocalPosition.x
@@ -4212,6 +4220,10 @@ PrefabInstance:
     - target: {fileID: 7036759572937273705, guid: f764d6b38eea26a41b7a95f5596efbe3, type: 3}
       propertyPath: m_Name
       value: St1_02
+      objectReference: {fileID: 0}
+    - target: {fileID: 7036759572937273705, guid: f764d6b38eea26a41b7a95f5596efbe3, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
