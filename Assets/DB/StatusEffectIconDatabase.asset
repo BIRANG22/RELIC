@@ -16,25 +16,25 @@ MonoBehaviour:
   harmfulIcon: {fileID: 21300000, guid: b98f9d4577eba5240a6261d95dd2e229, type: 3}
   entries:
   - EffectId: E_Boost
-    Icon: {fileID: 21300000, guid: 6e9fbfdb521f41046a01c0e5d1e3a1f4, type: 3}
+    Icon: {fileID: 21300000, guid: 7cb43e15292969549904a05a59841d2f, type: 3}
   - EffectId: E_Armor
-    Icon: {fileID: 0}
+    Icon: {fileID: 21300000, guid: 72e72c9cc0c588c47ac56a3c3e4ec85c, type: 3}
   - EffectId: E_Charge
-    Icon: {fileID: 0}
+    Icon: {fileID: 21300000, guid: 84ff6a1355c79864c9d62e7546416392, type: 3}
   - EffectId: E_Focus
-    Icon: {fileID: 0}
+    Icon: {fileID: 21300000, guid: b168e4f58fbdbcd4d9cc85b10e8203f2, type: 3}
   - EffectId: E_Swift
     Icon: {fileID: 21300000, guid: fa7d39e67d89c9b418127e7a213819cc, type: 3}
   - EffectId: E_Smite
-    Icon: {fileID: 21300000, guid: 8283ad43f1939a74ca7d89dcd54229e7, type: 3}
+    Icon: {fileID: 21300000, guid: 7839ac77cb9cced469687bdd4d13a311, type: 3}
   - EffectId: E_Lifesteal
-    Icon: {fileID: 21300000, guid: 8283ad43f1939a74ca7d89dcd54229e7, type: 3}
+    Icon: {fileID: 21300000, guid: f689c660598ea2542b843194572a4372, type: 3}
   - EffectId: E_Ward
-    Icon: {fileID: 21300000, guid: 21a399c6d5e23644489856ea07cc26c0, type: 3}
+    Icon: {fileID: 21300000, guid: 9606f9c7581b13d489a3909348beb72f, type: 3}
   - EffectId: E_Grudge
     Icon: {fileID: 21300000, guid: aa7838dcb9f103e458ace51355d286c9, type: 3}
   - EffectId: E_Barrier
-    Icon: {fileID: 21300000, guid: e6ca7f1ecbfb666429ebdbf9bf9aec99, type: 3}
+    Icon: {fileID: 21300000, guid: cf3aae4c53940d64db3b9198babd23df, type: 3}
   - EffectId: E_Poison
     Icon: {fileID: 21300000, guid: 8e4a613cf2278c24d87afa317ab8ed7c, type: 3}
   - EffectId: E_Bleed
@@ -50,12 +50,12 @@ MonoBehaviour:
   - EffectId: E_Explode
     Icon: {fileID: 21300000, guid: 01261e3bf0e77994d8f7976d499f2ab8, type: 3}
   - EffectId: E_Flank
-    Icon: {fileID: 21300000, guid: 7cb43e15292969549904a05a59841d2f, type: 3}
+    Icon: {fileID: 21300000, guid: 580dd08d3c41d52469434649b1d9a061, type: 3}
   - EffectId: E_Spawn_Soldier
-    Icon: {fileID: 0}
+    Icon: {fileID: 21300000, guid: ffaa7e4755362b94b9a37153bbfbc776, type: 3}
   - EffectId: AR_DamageBoostThisTurn
-    Icon: {fileID: 0}
+    Icon: {fileID: 21300000, guid: 8ec94790a18e82a49be85cf02486a628, type: 3}
   - EffectId: AR_DamageReductionThisTurn
-    Icon: {fileID: 0}
+    Icon: {fileID: 21300000, guid: e82d31e1779beae4194dbe3a01e8d83a, type: 3}
   - EffectId: AR_TargetOutgoingDamageReductionThisTurn
-    Icon: {fileID: 0}
+    Icon: {fileID: 21300000, guid: feb192925dc6b5b44b25e6408817d2ae, type: 3}
