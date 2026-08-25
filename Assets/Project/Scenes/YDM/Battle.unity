@@ -58994,6 +58994,8 @@ MonoBehaviour:
   shopPanel: {fileID: 930600000000000003}
   equippedRelicSelectionPanel: {fileID: 0}
   skillAwakenSelectionPanel: {fileID: 0}
+  diceRollPresenter: {fileID: 0}
+  diceRollPresenterPrefab: {fileID: 100002, guid: d8e70fa5b7d945089c84fc1f45718db8, type: 3}
   relicHoverInfoPanel: {fileID: 0}
   relicHoverNameText: {fileID: 0}
   relicHoverDescText: {fileID: 0}
