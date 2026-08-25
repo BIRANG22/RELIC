@@ -603,15 +603,6 @@ Event_09,한 줄기 빛,"폐허에 들어선 순간, 갈라진 균열이 나타�
 
 
 
-# Quest
-퀘스트 ID,이름,설명,목표 타입,목표 대상,목표 수치,보상 타입,보상 수치
-QuestId,Name,Description,ObjectiveType,ObjectiveTarget,ObjectiveValue,RewardType,RewardValue
-QUEST_001,슬라임 처치,슬라임을 5마리 처치하라,KillMonster,MON_001,5,Gold,100
-QUEST_002,고블린 토벌,고블린을 10마리 처치하라,KillMonster,MON_002,10,Gold,200
-QUEST_003,보스 격파,드래곤을 처치하라,KillMonster,MON_005,1,Gem,50
-QUEST_004,아이템 수집,포션을 3개 획득하라,CollectItem,ITEM_POTION,3,Gold,150
-QUEST_005,스테이지 클리어,Stage_01을 클리어하라,ClearStage,Stage_01,1,Gem,30
-
 # SkillRange
 범위ID,이름,범위1,범위2,범위3,범위4,범위5,범위6,범위7,범위8,범위9,범위10,범위11,범위12,범위13,범위14,범위15,범위16,범위17,범위18,범위19,범위20,범위21,범위22,범위23,범위24,범위25,범위26,범위27,범위28,범위29,범위30
 RangeId,Name,Range1,Range2,Range3,Range4,Range5,Range6,Range7,Range8,Range9,Range10,Range11,Range12,Range13,Range14,Range15,Range16,Range17,Range18,Range19,Range20,Range21,Range22,Range23,Range24,Range25,Range26,Range27,Range28,Range29,Range30
@@ -850,4 +841,7 @@ Item_033,Rare,3S-9,
 Item_034,Rare,3S-10,
 Item_035,Rare,3S-11,
 Item_036,Epic,3S-12,
+Item_037,Unique,퀘스트1,
+Item_038,Unique,퀘스트2,
+Item_039,Unique,퀘스트3,
 

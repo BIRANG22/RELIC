@@ -22,7 +22,6 @@ namespace Relic.Gameplay.Data
         public CompoundDatabase CompoundDatabase { get; } = new();
         public RangeDatabase RangeDatabase { get; } = new();
         public AssetDatabase AssetDatabase { get; } = new();
-        public QuestDatabase QuestDatabase { get; } = new();
         public EventDatabase EventDatabase { get; } = new();
         public RewardTableDatabase RewardTableDatabase { get; } = new();
         public ItemDatabase ItemDatabase { get; } = new();
@@ -92,7 +91,6 @@ namespace Relic.Gameplay.Data
             var compounds = CompoundCsvLoader.Load(workbook);
             var ranges = RangeCsvLoader.Load(workbook);
             var assets = AssetCsvLoader.Load(workbook);
-            var quests = QuestCsvLoader.Load(workbook);
             var events = EventCsvLoader.Load(workbook);
             var rewardTables = RewardTableCsvLoader.Load(workbook);
             var items = ItemCsvLoader.Load(workbook);
@@ -137,7 +135,6 @@ namespace Relic.Gameplay.Data
             MonsterSkillDatabase.Initialize(monsterSkills);
             RuneDatabase.Initialize(runes);
             AssetDatabase.Initialize(assets);
-            QuestDatabase.Initialize(quests);
             EventDatabase.Initialize(events);
             RewardTableDatabase.Initialize(rewardTables);
             ItemDatabase.Initialize(items);
