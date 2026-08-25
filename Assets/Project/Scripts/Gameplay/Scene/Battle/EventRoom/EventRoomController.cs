@@ -38,6 +38,10 @@ public class EventRoomController : MonoBehaviour
     [Header("Event Skill Awaken Selection")]
     [SerializeField] private EventSkillAwakenSelectionPanelUI skillAwakenSelectionPanel;
 
+    [Header("Event Dice Roll")]
+    [SerializeField] private EventDiceRollPresenter diceRollPresenter;
+    [SerializeField] private EventDiceRollPresenter diceRollPresenterPrefab;
+
     [Header("Hover Info Panel")]
     [SerializeField] private GameObject relicHoverInfoPanel;
     [SerializeField] private TMP_Text relicHoverNameText;
@@ -88,6 +92,7 @@ public class EventRoomController : MonoBehaviour
     private bool isSelectingEquippedRelicCost;
     private EventData pendingSkillAwakenChoice;
     private bool isSelectingSkillAwaken;
+    private Coroutine diceRollRoutine;
 
     private void Awake()
     {
@@ -120,6 +125,7 @@ public class EventRoomController : MonoBehaviour
             relicAcquireRoutine = null;
         }
 
+        StopDiceRollRoutine();
         StopEventRewardPanelDelay();
         CacheRelicFlyRootOriginalState();
         HideRelicHoverInfo();
@@ -160,6 +166,7 @@ public class EventRoomController : MonoBehaviour
             relicAcquireRoutine = null;
         }
 
+        StopDiceRollRoutine();
         StopEventRewardPanelDelay();
         HideRelicHoverInfo();
         HideRelicFlyObjects();
@@ -437,19 +444,23 @@ public class EventRoomController : MonoBehaviour
             return;
         }
 
+        if (IsDiceChoice(choice) && TryBeginDiceRollChoice(choice))
+            return;
+
         ExecuteEventChoice(choice);
     }
 
     private void ExecuteEventChoice(
         EventData choice,
         EventChoiceEquippedRelicCost selectedEquippedRelicCost = default,
-        EventChoiceSkillAwakenTarget selectedSkillAwakenTarget = default)
+        EventChoiceSkillAwakenTarget selectedSkillAwakenTarget = default,
+        int[] forcedDiceFaces = null)
     {
         SetChoiceSlotsInteractable(false);
 
         EventChoiceExecutionResult result = EventChoiceExecutionService.Execute(
             choice,
-            CreateExecutionContext(selectedEquippedRelicCost, selectedSkillAwakenTarget));
+            CreateExecutionContext(selectedEquippedRelicCost, selectedSkillAwakenTarget, forcedDiceFaces));
 
         if (!result.Accepted)
         {
@@ -502,6 +513,42 @@ public class EventRoomController : MonoBehaviour
         }
 
         SetNextButtonVisible(true);
+    }
+
+    private bool TryBeginDiceRollChoice(EventData choice)
+    {
+        EnsureDiceRollPresenter();
+        if (diceRollPresenter == null || !diceRollPresenter.IsReady)
+            return false;
+
+        StopDiceRollRoutine();
+        SetChoiceSlotsInteractable(false);
+        SetNextButtonVisible(false);
+
+        int[] diceFaces = RollThreeSixSidedDiceFaces();
+        diceRollRoutine = StartCoroutine(PlayDiceRollThenExecute(choice, diceFaces));
+        return true;
+    }
+
+    private IEnumerator PlayDiceRollThenExecute(EventData choice, int[] diceFaces)
+    {
+        bool completed = false;
+        diceRollPresenter.Play(diceFaces, () => completed = true);
+
+        while (!completed)
+            yield return null;
+
+        diceRollRoutine = null;
+        ExecuteEventChoice(choice, forcedDiceFaces: diceFaces);
+    }
+
+    private void StopDiceRollRoutine()
+    {
+        if (diceRollRoutine == null)
+            return;
+
+        StopCoroutine(diceRollRoutine);
+        diceRollRoutine = null;
     }
 
     private void BeginEquippedRelicCostSelection(EventData choice)
@@ -1554,7 +1601,8 @@ public class EventRoomController : MonoBehaviour
 
     private EventChoiceExecutionContext CreateExecutionContext(
         EventChoiceEquippedRelicCost selectedEquippedRelicCost = default,
-        EventChoiceSkillAwakenTarget selectedSkillAwakenTarget = default)
+        EventChoiceSkillAwakenTarget selectedSkillAwakenTarget = default,
+        int[] forcedDiceFaces = null)
     {
         BattleRuntimeData battleRuntime = DataManager.Instance?.BattleRuntimeStore?.GetOrCreate();
 
@@ -1563,6 +1611,7 @@ public class EventRoomController : MonoBehaviour
             BattleRuntime = battleRuntime,
             PartyCharacters = CollectPartyCharacters(),
             SessionState = eventChoiceSessionState,
+            RollDiceFaces = forcedDiceFaces != null ? () => forcedDiceFaces : null,
             GrantRandomRelic = TryQueueRandomRelicReward,
             GrantRandomSkill = TryQueueRandomSkillReward,
             UpgradeRandomSkill = TryUpgradeRandomSkill,
@@ -2347,6 +2396,16 @@ public class EventRoomController : MonoBehaviour
                BattleRandom.Range(1, 7);
     }
 
+    private int[] RollThreeSixSidedDiceFaces()
+    {
+        return new[]
+        {
+            BattleRandom.Range(1, 7),
+            BattleRandom.Range(1, 7),
+            BattleRandom.Range(1, 7)
+        };
+    }
+
     private bool RollChance(string successRate)
     {
         if (!TryParsePercentage(successRate, out float rate))
@@ -2443,6 +2502,11 @@ public class EventRoomController : MonoBehaviour
         return string.Equals(left?.Trim(), right?.Trim(), System.StringComparison.OrdinalIgnoreCase);
     }
 
+    private static bool IsDiceChoice(EventData choice)
+    {
+        return choice != null && SameToken(choice.ChoiceType, "Dice");
+    }
+
     private static bool Contains(string source, string value)
     {
         return !string.IsNullOrWhiteSpace(source) &&
@@ -2506,6 +2570,7 @@ public class EventRoomController : MonoBehaviour
         EnsureChoiceSlots();
         EnsureEquippedRelicSelectionPanel();
         EnsureSkillAwakenSelectionPanel();
+        EnsureDiceRollPresenter();
     }
 
     private void EnsureEquippedRelicSelectionPanel()
@@ -2526,6 +2591,22 @@ public class EventRoomController : MonoBehaviour
         Transform searchRoot = dataEventRoot != null ? dataEventRoot.transform : transform;
         skillAwakenSelectionPanel =
             searchRoot.GetComponentInChildren<EventSkillAwakenSelectionPanelUI>(true);
+    }
+
+    private void EnsureDiceRollPresenter()
+    {
+        if (diceRollPresenter != null)
+            return;
+
+        Transform searchRoot = dataEventRoot != null ? dataEventRoot.transform : transform;
+        diceRollPresenter = searchRoot.GetComponentInChildren<EventDiceRollPresenter>(true);
+
+        if (diceRollPresenter != null || diceRollPresenterPrefab == null)
+            return;
+
+        diceRollPresenter = Instantiate(diceRollPresenterPrefab, searchRoot);
+        diceRollPresenter.name = diceRollPresenterPrefab.name;
+        diceRollPresenter.transform.SetAsLastSibling();
     }
 
     private void EnsureChoiceSlots()

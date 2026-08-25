@@ -102,6 +102,7 @@ namespace Relic.Gameplay.Data
         public BattleRuntimeData BattleRuntime;
         public IReadOnlyList<CharacterRuntimeData> PartyCharacters;
         public EventChoiceSessionState SessionState;
+        public Func<int[]> RollDiceFaces;
         public Func<int> RollThreeDice;
         public Func<float> RollChanceValue;
         public EventChoiceRewardGrant GrantRandomRelic;
@@ -129,7 +130,9 @@ namespace Relic.Gameplay.Data
             string nextEventId,
             string visualObjectId = "",
             string visualActionId = "",
-            bool succeeded = true)
+            bool succeeded = true,
+            int diceRoll = 0,
+            IReadOnlyList<int> diceFaces = null)
         {
             Accepted = accepted;
             Succeeded = accepted && succeeded;
@@ -137,6 +140,8 @@ namespace Relic.Gameplay.Data
             NextEventId = EventIdUtility.Normalize(nextEventId);
             VisualObjectId = NormalizeId(visualObjectId);
             VisualActionId = NormalizeId(visualActionId);
+            DiceRoll = Mathf.Max(0, diceRoll);
+            DiceFaces = CopyDiceFaces(diceFaces);
         }
 
         public bool Accepted { get; }
@@ -146,6 +151,8 @@ namespace Relic.Gameplay.Data
         public bool HasNextEvent => !string.IsNullOrWhiteSpace(NextEventId);
         public string VisualObjectId { get; }
         public string VisualActionId { get; }
+        public int DiceRoll { get; }
+        public IReadOnlyList<int> DiceFaces { get; }
         public bool HasVisualAction =>
             !string.IsNullOrWhiteSpace(VisualObjectId) &&
             !string.IsNullOrWhiteSpace(VisualActionId);
@@ -153,6 +160,17 @@ namespace Relic.Gameplay.Data
         private static string NormalizeId(string id)
         {
             return string.IsNullOrWhiteSpace(id) ? string.Empty : id.Trim();
+        }
+
+        private static int[] CopyDiceFaces(IReadOnlyList<int> diceFaces)
+        {
+            if (diceFaces == null || diceFaces.Count == 0)
+                return Array.Empty<int>();
+
+            int[] copy = new int[diceFaces.Count];
+            for (int i = 0; i < diceFaces.Count; i++)
+                copy[i] = diceFaces[i];
+            return copy;
         }
     }
 
@@ -277,11 +295,13 @@ namespace Relic.Gameplay.Data
                 return new EventChoiceExecutionResult(false, unavailableReason, string.Empty);
 
             int diceRoll = 0;
+            IReadOnlyList<int> diceFaces = Array.Empty<int>();
             bool success = true;
 
             if (IsToken(choice.ChoiceType, "Dice"))
             {
-                diceRoll = RollThreeDice(context);
+                diceFaces = RollDiceFaces(context);
+                diceRoll = SumDiceFaces(diceFaces);
                 messages.Add($"주사위 결과: {diceRoll}");
 
                 if (!string.IsNullOrWhiteSpace(choice.SuccessCondition))
@@ -313,7 +333,9 @@ namespace Relic.Gameplay.Data
                     nextEventId,
                     choice.FailureVisualObjectId,
                     choice.FailureVisualActionId,
-                    succeeded: false);
+                    succeeded: false,
+                    diceRoll: diceRoll,
+                    diceFaces: diceFaces);
             }
 
             string result = ApplySuccessResult(choice, diceRoll, context);
@@ -325,7 +347,9 @@ namespace Relic.Gameplay.Data
                 JoinMessages(messages),
                 choice.NextEventId,
                 choice.SuccessVisualObjectId,
-                choice.SuccessVisualActionId);
+                choice.SuccessVisualActionId,
+                diceRoll: diceRoll,
+                diceFaces: diceFaces);
         }
 
         private static EventChoiceExecutionContext NormalizeContext(EventChoiceExecutionContext context)
@@ -1079,6 +1103,68 @@ namespace Relic.Gameplay.Data
             return BattleRandom.Range(1, 7) +
                    BattleRandom.Range(1, 7) +
                    BattleRandom.Range(1, 7);
+        }
+
+        private static IReadOnlyList<int> RollDiceFaces(EventChoiceExecutionContext context)
+        {
+            if (context.RollDiceFaces != null)
+            {
+                int[] provided = context.RollDiceFaces();
+                return NormalizeDiceFaces(provided);
+            }
+
+            if (context.RollThreeDice != null)
+                return SplitTotalIntoDiceFaces(context.RollThreeDice());
+
+            return new[]
+            {
+                BattleRandom.Range(1, 7),
+                BattleRandom.Range(1, 7),
+                BattleRandom.Range(1, 7)
+            };
+        }
+
+        private static int[] NormalizeDiceFaces(IReadOnlyList<int> diceFaces)
+        {
+            int count = Mathf.Max(3, diceFaces?.Count ?? 0);
+            int[] normalized = new int[count];
+
+            for (int i = 0; i < normalized.Length; i++)
+            {
+                int value = diceFaces != null && i < diceFaces.Count
+                    ? diceFaces[i]
+                    : BattleRandom.Range(1, 7);
+                normalized[i] = Mathf.Clamp(value, 1, 6);
+            }
+
+            return normalized;
+        }
+
+        private static int[] SplitTotalIntoDiceFaces(int total)
+        {
+            total = Mathf.Clamp(total, 3, 18);
+            int[] faces = { 1, 1, 1 };
+            int remaining = total - 3;
+
+            for (int i = 0; i < faces.Length && remaining > 0; i++)
+            {
+                int add = Mathf.Min(5, remaining);
+                faces[i] += add;
+                remaining -= add;
+            }
+
+            return faces;
+        }
+
+        private static int SumDiceFaces(IReadOnlyList<int> diceFaces)
+        {
+            if (diceFaces == null || diceFaces.Count == 0)
+                return 0;
+
+            int total = 0;
+            for (int i = 0; i < diceFaces.Count; i++)
+                total += diceFaces[i];
+            return total;
         }
 
         private static bool RollChance(string successRate, EventChoiceExecutionContext context)
