@@ -73,6 +73,11 @@ public static class BattleEffectUtility
             if (status.EffectId != effectId)
                 continue;
 
+            // 일반 스킬/효과로 얻는 상태는 패시브 상태와 분리해서 유지합니다.
+            // 패시브 갱신 시 IsPassive 상태만 제거되므로 서로 합치면 일반 스택도 함께 사라질 수 있습니다.
+            if (status.IsPassive)
+                continue;
+
             status.Stack += stack;
             status.TurnCount = Mathf.Max(status.TurnCount, 1);
             return true;

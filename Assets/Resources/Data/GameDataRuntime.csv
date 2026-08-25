@@ -166,8 +166,8 @@ S_Core_01,생명의 대가,Core,Common,Hp,Self,1,Buff,E_Focus,1,1,4,Direction,Ra
 S_Core_02,생명의 대가+,Core,Common,Hp,Self,2,Buff,E_Focus,1,1,3,Direction,Range_Self,생명력을 대가로 카르마를 {ValueRate1} 회복합니다.
 S_Core_03,전의 상승,Core,Common,Cost,PlayerParty,1,Buff,E_Boost,1,1,4,Selection,Range_b_17,아군의 전의를 끌어올려 증폭을 {ValueRate1} 부여합니다.
 S_Core_04,전의 상승+,Core,Common,Cost,PlayerParty,2,Buff,E_Boost,1,1,4,Selection,Range_b_05,아군의 전의를 끌어올려 증폭을 {ValueRate1} 부여합니다.
-S_Core_05,응급 처치,Core,Rare,Cost,PlayerParty,1,Buff,E_Heal,3,1,4,Direction,Range_b_16,상처를 치료해 아군의 생명력을 {ValueRate1} 회복합니다.
-S_Core_06,응급 처치+,Core,Rare,Cost,PlayerParty,2,Buff,E_Heal,5,1,4,Direction,Range_b_16,상처를 치료해 아군의 생명력을 {ValueRate1} 회복합니다.
+S_Core_05,응급 처치,Core,Rare,Cost,PlayerParty,1,Buff,E_Heal,3,1,4,Selection,Range_b_16,상처를 치료해 아군의 생명력을 {ValueRate1} 회복합니다.
+S_Core_06,응급 처치+,Core,Rare,Cost,PlayerParty,2,Buff,E_Heal,5,1,4,Selection,Range_b_16,상처를 치료해 아군의 생명력을 {ValueRate1} 회복합니다.
 S_Core_07,보호막,Core,Common,Cost,PlayerParty,1,Buff,E_Armor,4,1,3,Selection,Range_b_17,아군을 보호하는 방어도를 {ValueRate1} 부여합니다.
 S_Core_08,보호막+,Core,Common,Cost,PlayerParty,2,Buff,E_Armor,6,1,3,Selection,Range_b_17,아군을 보호하는 방어도를 {ValueRate1} 부여합니다.
 S_Core_09,강철 피부,Core,Rare,Cost,Self,1,Buff,E_Armor,6,1,3,Direction,Range_Self,피부를 강철처럼 단단하게 만들어 방어도를 {ValueRate1} 얻습니다.
@@ -196,8 +196,8 @@ S_Core_31,전술 정비,Core,Epic,Cost,Self,1,Buff,E_Charge;E_Focus,2;1,1;1,4,Di
 S_Core_32,전술 정비+,Core,Epic,Cost,Self,2,Buff,E_Charge;E_Focus,3;1,1;1,4,Direction,Range_Self,"전술을 재정비하여 충전을 {ValueRate1}, 카르마를 {ValueRate2} 회복합니다."
 S_Core_33,블러드 마크,Core,Rare,Hp,EnemyParty,1,Debuff,E_Bleed;E_Vulnerable,2;1,1;1,4,Direction,Range_13,"피의 표식을 새겨 적에게 출혈을 {ValueRate1}, 취약을 {ValueRate2} 부여합니다."
 S_Core_34,블러드 마크+,Core,Rare,Hp,EnemyParty,2,Debuff,E_Bleed;E_Vulnerable,2;1,1;1,3,Direction,Range_13,"피의 표식을 새겨 적에게 출혈을 {ValueRate1}, 취약을 {ValueRate2} 부여합니다."
-S_Core_35,독성 침식,Core,Rare,Cost,EnemyParty,1,Debuff,E_Weaken;E_Poison,1;1,1;1,5,Direction,Range_04,"독성 기운으로 적을 침식시켜 약화를 {ValueRate1}, 중독을 {ValueRate2} 부여합니다."
-S_Core_36,독성 침식+,Core,Rare,Cost,EnemyParty,2,Debuff,E_Weaken;E_Poison,1;1,1;1,4,Direction,Range_04,"독성 기운으로 적을 침식시켜 약화를 {ValueRate1}, 중독을 {ValueRate2} 부여합니다."
+S_Core_35,독성 침식,Core,Rare,Cost,EnemyParty,1,Debuff,E_Weaken;E_Poison,1;2,1;1,5,Direction,Range_02,"독성 기운으로 적을 침식시켜 약화를 {ValueRate1}, 중독을 {ValueRate2} 부여합니다."
+S_Core_36,독성 침식+,Core,Rare,Cost,EnemyParty,2,Debuff,E_Weaken;E_Poison,1;2,1;1,4,Direction,Range_02,"독성 기운으로 적을 침식시켜 약화를 {ValueRate1}, 중독을 {ValueRate2} 부여합니다."
 S_Core_37,쇼크 웨이브,Core,Common,Cost,EnemyParty,1,Attack,E_Strike;E_Knockback,6;1,1;1,4,Direction,Range_06,충격파를 일으켜 적에게 {ValueRate1}의 피해를 주고 {ValueRate2}칸 넉백시킵니다.
 S_Core_38,쇼크 웨이브+,Core,Common,Cost,EnemyParty,2,Attack,E_Strike;E_Knockback,8;2,1;1,4,Direction,Range_06,충격파를 일으켜 적에게 {ValueRate1}의 피해를 주고 {ValueRate2}칸 넉백시킵니다.
 S_Core_39,바인드 체인,Core,Common,Cost,EnemyParty,1,Attack,E_Strike;E_Grab,6;1,1;1,4,Direction,Range_22,사슬로 적을 붙잡아 {ValueRate1}의 피해를 주고 {ValueRate2}칸 그랩합니다.
@@ -208,16 +208,16 @@ S_Core_43,연격,Core,Epic,Cost,EnemyParty,1,Attack,E_Strike,4,2,3,Direction,Ran
 S_Core_44,연격+,Core,Epic,Cost,EnemyParty,2,Attack,E_Strike,4,3,3,Direction,Range_06,연속으로 공격해 적에게 {ValueRate1}의 피해를 {CountRate1}번 줍니다.
 S_Core_45,화살 세례,Core,Unique,Cost,EnemyParty,1,Attack,E_Strike,3,3,4,Selection,Range_17,화살을 쏟아부어 적에게 {ValueRate1}의 피해를 {CountRate1}번 줍니다.
 S_Core_46,화살 세례+,Core,Unique,Cost,EnemyParty,2,Attack,E_Strike,3,4,4,Selection,Range_17,화살을 쏟아부어 적에게 {ValueRate1}의 피해를 {CountRate1}번 줍니다.
-S_Core_47,전진일격,Core,Common,Cost,EnemyParty,1,Attack,E_Strike;E_Move,9;1,1;1,4,Direction,Range_22,앞으로 {ValueRate2}칸 전진하며 적에게 {ValueRate1}의 피해를 줍니다.
-S_Core_48,전진일격+,Core,Common,Cost,EnemyParty,2,Attack,E_Strike;E_Move,12;1,1;1,4,Direction,Range_22,앞으로 {ValueRate2}칸 전진하며 적에게 {ValueRate1}의 피해를 줍니다.
+S_Core_47,전진일격,Core,Common,Cost,EnemyParty,1,Attack,E_Move;E_Strike,1;9,1;1,4,Direction,Range_22,앞으로 {ValueRate1}칸 전진하며 적에게 {ValueRate2}의 피해를 줍니다.
+S_Core_48,전진일격+,Core,Common,Cost,EnemyParty,2,Attack,E_Move;E_Strike,1;12,1;1,4,Direction,Range_22,앞으로 {ValueRate1}칸 전진하며 적에게 {ValueRate2}의 피해를 줍니다.
 S_Core_49,크림슨 아머,Core,Rare,Cost,PlayerParty,1,Buff,E_Ward;E_Armor,2;8,1;1,6,Selection,Range_b_17,"붉은 갑옷을 둘러 아군에게 가호를 {ValueRate1}, 방어도를 {ValueRate2} 부여합니다."
 S_Core_50,크림슨 아머+,Core,Rare,Cost,PlayerParty,2,Buff,E_Ward;E_Armor,3;10,1;1,6,Selection,Range_b_17,"붉은 갑옷을 둘러 아군에게 가호를 {ValueRate1}, 방어도를 {ValueRate2} 부여합니다."
-S_Core_51,시간 왜곡,Core,Epic,Cost,PlayerParty,1,Buff,E_Swift,1,1,8,Direction,Range_All,시간의 흐름을 왜곡해 자신과 아군에게 신속을 {ValueRate1} 부여합니다.
-S_Core_52,시간 왜곡+,Core,Epic,Cost,PlayerParty,2,Buff,E_Swift,1,1,7,Direction,Range_All,시간의 흐름을 왜곡해 자신과 아군에게 신속을 {ValueRate1} 부여합니다.
-S_Core_53,도미네이션,Core,Epic,Cost,EnemyParty,1,Debuff,E_Vulnerable;E_Weaken,2;2,1;1,8,Selection,Range_17,"전장을 지배해 적에게 취약을 {ValueRate1}, 약화를 {ValueRate2} 부여합니다.",,
-S_Core_54,도미네이션+,Core,Epic,Cost,EnemyParty,2,Debuff,E_Vulnerable;E_Weaken,3;3,1;1,8,Selection,Range_17,"전장을 지배해 적에게 취약을 {ValueRate1}, 약화를 {ValueRate2} 부여합니다.",,
-S_Core_55,블러드 베놈,Core,Rare,Cost,EnemyParty,1,Debuff,E_Poison;E_Bleed,2;2,1;1,6,Selection,Range_11,"독성의 피를 퍼뜨려 적에게 중독을 {ValueRate1}, 출혈을 {ValueRate2} 부여합니다.",,
-S_Core_56,블러드 베놈+,Core,Rare,Cost,EnemyParty,2,Debuff,E_Poison;E_Bleed,2;2,1;1,5,Selection,Range_12,"독성의 피를 퍼뜨려 적에게 중독을 {ValueRate1}, 출혈을 {ValueRate2} 부여합니다."
+S_Core_51,시간 왜곡,Core,Epic,Cost,PlayerParty,1,Buff,E_Swift,1,1,8,Direction,Range_All,시간의 흐름을 왜곡해 다음 턴 시작 시 자신과 아군에게 신속을 {ValueRate1} 부여합니다.
+S_Core_52,시간 왜곡+,Core,Epic,Cost,PlayerParty,2,Buff,E_Swift,1,1,7,Direction,Range_All,시간의 흐름을 왜곡해 다음 턴 시작 시 자신과 아군에게 신속을 {ValueRate1} 부여합니다.
+S_Core_53,도미네이션,Core,Epic,Cost,EnemyParty,1,Debuff,E_Vulnerable;E_Weaken,2;2,1;1,8,Direction,Range_All,"전장을 지배하여 적에게 취약을 {ValueRate1}, 약화를 {ValueRate2} 부여합니다.",,
+S_Core_54,도미네이션+,Core,Epic,Cost,EnemyParty,2,Debuff,E_Vulnerable;E_Weaken,3;3,1;1,8,Direction,Range_All,"전장을 지배하여 적에게 취약을 {ValueRate1}, 약화를 {ValueRate2} 부여합니다.",,
+S_Core_55,블러드 베놈,Core,Rare,Cost,EnemyParty,1,Debuff,E_Poison;E_Bleed,2;2,1;1,6,Selection,Range_17,"독성의 피를 퍼뜨려 적에게 중독을 {ValueRate1}, 출혈을 {ValueRate2} 부여합니다.",,
+S_Core_56,블러드 베놈+,Core,Rare,Cost,EnemyParty,2,Debuff,E_Poison;E_Bleed,2;2,1;1,6,Selection,Range_05,"독성의 피를 퍼뜨려 적에게 중독을 {ValueRate1}, 출혈을 {ValueRate2} 부여합니다."
 S_Core_57,하트 피어스,Core,Unique,Cost,EnemyParty,1,Attack,E_Pierce;E_Vulnerable,13;1,1;1,6,Direction,Range_21,급소를 꿰뚫어 적에게 {ValueRate1}의 관통 피해를 주고 취약을 {ValueRate2} 부여합니다.
 S_Core_58,하트 피어스+,Core,Unique,Cost,EnemyParty,2,Attack,E_Pierce;E_Vulnerable,15;2,1;1,6,Direction,Range_21,급소를 꿰뚫어 적에게 {ValueRate1}의 관통 피해를 주고 취약을 {ValueRate2} 부여합니다.
 S_Core_59,피니셔,Core,Unique,Cost,EnemyParty,1,Attack,E_Strike,18,1,5,Direction,Range_09,강력한 마무리 일격으로 적에게 {ValueRate1}의 피해를 줍니다.
@@ -240,8 +240,8 @@ S_Core_75,끌어당기기,Core,Common,Cost,EnemyParty,1,Attack,E_Strike;E_Grab,5
 S_Core_76,끌어당기기+,Core,Common,Cost,EnemyParty,2,Attack,E_Strike;E_Grab,6;1,1,3,Direction,Range_22,적을 붙잡아 {ValueRate1}의 피해를 주고 {ValueRate2}칸 그랩합니다.
 S_Core_77,블러드피어스,Core,Common,Hp,EnemyParty,1,Attack,E_Strike;E_Bleed,4;1,1,3,Direction,Range_06,적을 찔러 {ValueRate1}의 피해를 주고 출혈을 {ValueRate2} 부여합니다.
 S_Core_78,블러드피어스+,Core,Common,Hp,EnemyParty,2,Attack,E_Strike;E_Bleed,4;1,1,2,Direction,Range_07,적을 찔러 {ValueRate1}의 피해를 주고 출혈을 {ValueRate2} 부여합니다.
-S_Core_79,스피드스터,Core,Common,Cost,PlayerParty,1,Buff,E_Swift,1,1,4,Direction,Range_Self,상대보다 먼저 움직일 틈을 잡아 신속을 {ValueRate1} 얻습니다.
-S_Core_80,스피드스터+,Core,Common,Cost,PlayerParty,2,Buff,E_Swift,1,1,3,Direction,Range_Self,상대보다 먼저 움직일 틈을 잡아 신속을 {ValueRate1} 얻습니다.
+S_Core_79,스피드스터,Core,Common,Cost,PlayerParty,1,Buff,E_Swift,1,1,4,Direction,Range_Self,상대보다 먼저 움직일 틈을 잡아 다음 턴 시작 시 신속을 {ValueRate1} 얻습니다.
+S_Core_80,스피드스터+,Core,Common,Cost,PlayerParty,2,Buff,E_Swift,1,1,3,Direction,Range_Self,상대보다 먼저 움직일 틈을 잡아 다음 턴 시작 시 신속을 {ValueRate1} 얻습니다.
 
 # MonsterSkill
 스킬ID,이름,대상,효과ID,수치계수,횟수계수,그리드이동,범위ID,타임라인표기,효과설명,수치값변수,아이콘,타입
@@ -615,10 +615,10 @@ QUEST_005,스테이지 클리어,Stage_01을 클리어하라,ClearStage,Stage_01
 # SkillRange
 범위ID,이름,범위1,범위2,범위3,범위4,범위5,범위6,범위7,범위8,범위9,범위10,범위11,범위12,범위13,범위14,범위15,범위16,범위17,범위18,범위19,범위20,범위21,범위22,범위23,범위24,범위25,범위26,범위27,범위28,범위29,범위30
 RangeId,Name,Range1,Range2,Range3,Range4,Range5,Range6,Range7,Range8,Range9,Range10,Range11,Range12,Range13,Range14,Range15,Range16,Range17,Range18,Range19,Range20,Range21,Range22,Range23,Range24,Range25,Range26,Range27,Range28,Range29,Range30
-Range_01,Range_Cross4,0;0,1;0,-1;0,0;1,0;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-Range_02,Range_Square8,0;0,1;0,-1;0,0;1,0;-1,-1;1,1;1,1;-1,-1;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-Range_19,Range_Rhombus12,0;0,0;2,-1;1,0;1,1;1,-2;0,-1;0,1;0,2;0,-1;-1,0;-1,1;-1,0;-2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-Range_20,Range_Bigcross8,0;0,0;2,0;1,-2;0,-1;0,1;0,2;0,0;-1,0;-2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_01,Range_Cross4,0,1;0,-1;0,0;1,0;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_02,Range_Square8,0,1;0,-1;0,0;1,0;-1,-1;1,1;1,1;-1,-1;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_19,Range_Rhombus12,0,0;2,-1;1,0;1,1;1,-2;0,-1;0,1;0,2;0,-1;-1,0;-1,1;-1,0;-2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_20,Range_Bigcross8,0,0;2,0;1,-2;0,-1;0,1;0,2;0,0;-1,0;-2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 Range_09,Range_Front1,0,1;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 Range_10,Range_Front2,0,1;0,2;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 Range_03,Range_Front3,0,1;0,2;0,3;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -637,7 +637,7 @@ Range_17,Range_Five,0;0,0;1,1;0,0;-1,-1;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 Range_05,Range_Square9,0;0,1;0,-1;0,0;1,0;-1,-1;1,1;1,1;-1,-1;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 Range_22,Range_One_Front3,0,1;0,2;0,2;1,2;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 Range_23,Range_Front3,0,1;1,1;0,1;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-Range_24,Range_Explosion,0;0,-2;2,-1;2,0;2,1;2,2;2,-2;1,-1;1,0;1,1;1,2;1,-2;0,-1;0,1;0,2;0,-2;-1,-1;-1,0;-1,1;-1,2;-1,-2;-2,-1;-2,0;-2,1;-2,2;-2,0,0,0,0,0
+Range_24,Range_Explosion,0,-2;2,-1;2,0;2,1;2,2;2,-2;1,-1;1,0;1,1;1,2;1,-2;0,-1;0,1;0,2;0,-2;-1,-1;-1,0;-1,1;-1,2;-1,-2;-2,-1;-2,0;-2,1;-2,2;-2,0,0,0,0,0
 Range_All,All,0;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 Range_Party,Party,0;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 Range_Self,Self,0;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0

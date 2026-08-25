@@ -19,7 +19,15 @@ public class BattleDamageService
         if (command == null || command.SkillData == null)
             return 1;
 
-        int value = ParseFirstInt(command.SkillData.ValueRate);
+        return GetPlayerDamage(command, ParseFirstInt(command.SkillData.ValueRate));
+    }
+
+    public int GetPlayerDamage(PlayerReservedCommand command, int baseDamage)
+    {
+        if (command == null || command.SkillData == null)
+            return Mathf.Max(1, baseDamage);
+
+        int value = baseDamage;
 
         BattleCharacter attacker = unitFinder.FindBattleCharacter(command.CharacterId);
 

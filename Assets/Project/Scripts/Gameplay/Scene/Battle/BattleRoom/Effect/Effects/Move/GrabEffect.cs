@@ -86,7 +86,10 @@ public class GrabEffect : BattleEffectBase
         int targetIndex = gridManager.CoordToIndex(targetCoord);
 
         if (BattleOccupancyService.IsOccupiedByAnyUnit(targetIndex, target.CharacterId))
+        {
+            HandlePlayerUnitCollision(target, targetIndex, gridManager);
             return false;
+        }
 
         // 잔해처럼 이동 불가로 등록된 그리드는 강제이동으로도 들어갈 수 없습니다.
         // 그랩 대상이 해당 칸에 부딪히면 이동하지 않고 충돌 고정 피해를 받습니다.
@@ -125,7 +128,10 @@ public class GrabEffect : BattleEffectBase
             int targetIndex = gridManager.CoordToIndex(targetCoord);
 
             if (BattleOccupancyService.IsOccupiedByAnyUnit(targetIndex, null, target))
+            {
+                HandleMonsterUnitCollision(target, targetIndex, gridManager);
                 return false;
+            }
 
             if (IsGridEffectBlocked(targetIndex))
             {
@@ -141,6 +147,99 @@ public class GrabEffect : BattleEffectBase
     }
 
 
+
+    private static void HandlePlayerUnitCollision(
+        BattleCharacter movingPlayer,
+        int blockingGridIndex,
+        GridManager gridManager)
+    {
+        if (movingPlayer == null || movingPlayer.RuntimeData == null || movingPlayer.RuntimeData.IsDead)
+            return;
+
+        const int baseCrashDamage = 2;
+
+        if (BattleOccupancyService.TryGetCharacterAtGrid(
+                blockingGridIndex,
+                out BattleCharacter blockingPlayer,
+                movingPlayer.CharacterId))
+        {
+            int damageToMovingPlayer = baseCrashDamage +
+                BattleEquipmentEffectService.GetCollisionTargetDamageDelta(blockingPlayer.RuntimeData);
+            int damageToBlockingPlayer = baseCrashDamage +
+                BattleEquipmentEffectService.GetCollisionTargetDamageDelta(movingPlayer.RuntimeData);
+
+            ApplyCrashToPlayer(movingPlayer, gridManager, damageToMovingPlayer);
+            ApplyCrashToPlayer(blockingPlayer, gridManager, damageToBlockingPlayer);
+
+            BattleEquipmentEffectService.ApplyPlayerCollisionEffects(
+                movingPlayer,
+                blockingPlayer,
+                null);
+            BattleEquipmentEffectService.ApplyPlayerCollisionEffects(
+                blockingPlayer,
+                movingPlayer,
+                null);
+            return;
+        }
+
+        if (BattleOccupancyService.TryGetMonsterAtGrid(
+                blockingGridIndex,
+                out MonsterUnit blockingMonster))
+        {
+            int damageToBlockingMonster = baseCrashDamage +
+                BattleEquipmentEffectService.GetCollisionTargetDamageDelta(movingPlayer.RuntimeData);
+
+            ApplyCrashToPlayer(movingPlayer, gridManager, baseCrashDamage);
+            bool blockingMonsterKilled =
+                ApplyCrashToMonster(blockingMonster, gridManager, damageToBlockingMonster);
+
+            BattleEquipmentEffectService.ApplyPlayerCollisionEffects(
+                movingPlayer,
+                null,
+                blockingMonster,
+                blockingMonsterKilled);
+        }
+    }
+
+    private static void HandleMonsterUnitCollision(
+        MonsterUnit movingMonster,
+        int blockingGridIndex,
+        GridManager gridManager)
+    {
+        if (movingMonster == null || movingMonster.RuntimeData == null || movingMonster.RuntimeData.IsDead)
+            return;
+
+        const int baseCrashDamage = 2;
+
+        if (BattleOccupancyService.TryGetCharacterAtGrid(
+                blockingGridIndex,
+                out BattleCharacter blockingPlayer))
+        {
+            int damageToMovingMonster = baseCrashDamage +
+                BattleEquipmentEffectService.GetCollisionTargetDamageDelta(blockingPlayer.RuntimeData);
+
+            bool movingMonsterKilled =
+                ApplyCrashToMonster(movingMonster, gridManager, damageToMovingMonster);
+            ApplyCrashToPlayer(blockingPlayer, gridManager, baseCrashDamage);
+
+            BattleEquipmentEffectService.ApplyPlayerCollisionEffects(
+                blockingPlayer,
+                null,
+                movingMonster,
+                movingMonsterKilled);
+            return;
+        }
+
+        if (BattleOccupancyService.TryGetMonsterAtGrid(
+                blockingGridIndex,
+                out MonsterUnit blockingMonster,
+                movingMonster))
+        {
+            ApplyCrashToMonster(movingMonster, gridManager, baseCrashDamage);
+            ApplyCrashToMonster(blockingMonster, gridManager, baseCrashDamage);
+        }
+    }
+
     private static bool IsGridEffectBlocked(int gridIndex)
     {
         BattleGridEffectController controller =
@@ -149,7 +248,10 @@ public class GrabEffect : BattleEffectBase
         return controller != null && controller.IsBlocked(gridIndex);
     }
 
-    private static void ApplyCrashToPlayer(BattleCharacter target, GridManager gridManager)
+    private static void ApplyCrashToPlayer(
+        BattleCharacter target,
+        GridManager gridManager,
+        int damage = 2)
     {
         if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return;
@@ -159,24 +261,31 @@ public class GrabEffect : BattleEffectBase
             PlayerTarget = target,
             GridManager = gridManager,
             EffectId = "E_Crash",
-            Value = 2,
+            Value = Mathf.Max(0, damage),
             Count = 1
         });
     }
 
-    private static void ApplyCrashToMonster(MonsterUnit target, GridManager gridManager)
+    private static bool ApplyCrashToMonster(
+        MonsterUnit target,
+        GridManager gridManager,
+        int damage = 2)
     {
         if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
-            return;
+            return false;
+
+        bool wasAlive = !target.RuntimeData.IsDead;
 
         new CrashEffect().Execute(new BattleEffectContext
         {
             MonsterTarget = target,
             GridManager = gridManager,
             EffectId = "E_Crash",
-            Value = 2,
+            Value = Mathf.Max(0, damage),
             Count = 1
         });
+
+        return wasAlive && target.RuntimeData != null && target.RuntimeData.IsDead;
     }
 
     private static IEnumerator MoveTransformSmooth(

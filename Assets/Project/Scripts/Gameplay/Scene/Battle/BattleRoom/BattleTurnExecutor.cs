@@ -66,6 +66,7 @@ public class BattleTurnExecutor : MonoBehaviour
 
     private readonly BattleUniqueResourceService uniqueResourceService = new();
     private readonly BattlePassiveSkillService passiveSkillService = new();
+    private readonly Dictionary<string, int> pendingNextTurnSwiftByCharacterId = new();
 
     private void Start()
     {
@@ -102,6 +103,58 @@ public class BattleTurnExecutor : MonoBehaviour
         BattleEffectUtility.OnPlayerDamagedEnemy -= uniqueResourceService.OnPlayerDamagedEnemy;
     }
 
+    public void QueueNextTurnSwift(BattleCharacter target, int value, int count)
+    {
+        if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
+            return;
+
+        string characterId = target.RuntimeData.CharacterId;
+
+        if (string.IsNullOrWhiteSpace(characterId))
+            return;
+
+        int stack = BattleEffectUtility.GetRepeatedValue(value, count);
+
+        if (stack <= 0)
+            return;
+
+        pendingNextTurnSwiftByCharacterId.TryGetValue(characterId, out int queuedStack);
+        pendingNextTurnSwiftByCharacterId[characterId] = queuedStack + stack;
+    }
+
+    private void ApplyQueuedNextTurnSwift()
+    {
+        if (pendingNextTurnSwiftByCharacterId.Count <= 0)
+            return;
+
+        BattleCharacter[] characters = FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            BattleCharacter character = characters[i];
+
+            if (character == null || character.RuntimeData == null || character.RuntimeData.IsDead)
+                continue;
+
+            string characterId = character.RuntimeData.CharacterId;
+
+            if (string.IsNullOrWhiteSpace(characterId))
+                continue;
+
+            if (!pendingNextTurnSwiftByCharacterId.TryGetValue(characterId, out int stack))
+                continue;
+
+            if (stack <= 0)
+                continue;
+
+            BattleEffectUtility.AddStatusToPlayer(character, "E_Swift", stack, 1);
+        }
+
+        pendingNextTurnSwiftByCharacterId.Clear();
+    }
+
     public void SetBattleInputReady(bool ready)
     {
         isMonsterPlanReady = ready;
@@ -121,6 +174,7 @@ public class BattleTurnExecutor : MonoBehaviour
     public void ResetBattleTurnState()
     {
         playerTurnNumber = 1;
+        pendingNextTurnSwiftByCharacterId.Clear();
         RefreshTurnNumberText();
     }
 
@@ -136,6 +190,7 @@ public class BattleTurnExecutor : MonoBehaviour
         isMonsterPlanReady = false;
         isPlayerInputReady = false;
         networkExecutionLocked = false;
+        pendingNextTurnSwiftByCharacterId.Clear();
 
         EnsureSkillListPanel();
         if (skillListPanel != null)
@@ -479,6 +534,7 @@ public class BattleTurnExecutor : MonoBehaviour
             }
 
             playerTurnNumber++;
+            ApplyQueuedNextTurnSwift();
             RefreshTurnNumberText();
 
             if (timelineController != null)
@@ -680,6 +736,7 @@ public class BattleTurnExecutor : MonoBehaviour
         yield return null;
 
         playerTurnNumber++;
+        ApplyQueuedNextTurnSwift();
         RefreshTurnNumberText();
 
         if (timelineController != null)

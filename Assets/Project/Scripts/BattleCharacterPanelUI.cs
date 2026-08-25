@@ -2341,12 +2341,37 @@ public class BattleCharacterPanelUI : MonoBehaviour
             return;
         }
 
+        Dictionary<string, StatusEffectRuntimeData> mergedStatusEffects =
+            new Dictionary<string, StatusEffectRuntimeData>();
+
         for (int i = 0; i < boundRuntime.StatusEffects.Count; i++)
         {
             StatusEffectRuntimeData statusEffect = boundRuntime.StatusEffects[i];
             if (statusEffect == null || !statusEffect.IsValid())
                 continue;
 
+            if (mergedStatusEffects.TryGetValue(statusEffect.EffectId, out StatusEffectRuntimeData existing))
+            {
+                existing.Stack += statusEffect.Stack;
+                existing.TurnCount = Mathf.Max(existing.TurnCount, statusEffect.TurnCount);
+                continue;
+            }
+
+            mergedStatusEffects.Add(
+                statusEffect.EffectId,
+                new StatusEffectRuntimeData
+                {
+                    EffectId = statusEffect.EffectId,
+                    Stack = statusEffect.Stack,
+                    TurnCount = statusEffect.TurnCount,
+                    IsPassive = statusEffect.IsPassive,
+                    SourceSkillId = statusEffect.SourceSkillId
+                }
+            );
+        }
+
+        foreach (StatusEffectRuntimeData statusEffect in mergedStatusEffects.Values)
+        {
             StatusEffectIcon icon = Instantiate(
                 statusEffectIconPrefab,
                 statusEffectListRoot
