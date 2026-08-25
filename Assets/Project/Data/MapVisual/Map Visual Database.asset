@@ -45,7 +45,7 @@ MonoBehaviour:
     - Prefab: {fileID: 1000000000000000001, guid: 9bc2c6d76e0e8a54bbb8905db8c70549, type: 3}
       VisualObjectId: event4
       AnchorName: 
-      LocalPosition: {x: 5, y: 1.88, z: 0}
+      LocalPosition: {x: 5, y: 1.8, z: 0}
       LocalEulerAngles: {x: 0, y: 0, z: 0}
       LocalScale: {x: -0.5, y: 0.5, z: 1}
       Active: 1
@@ -63,16 +63,16 @@ MonoBehaviour:
     - Prefab: {fileID: 1000000000000000001, guid: 0b612cf68cb08b44bb8f54bafd3e7dbc, type: 3}
       VisualObjectId: event6
       AnchorName: 
-      LocalPosition: {x: 5, y: 1.5, z: 0}
+      LocalPosition: {x: 4, y: 1.35, z: 0}
       LocalEulerAngles: {x: 0, y: 0, z: 0}
-      LocalScale: {x: 0.5, y: 0.5, z: 1}
+      LocalScale: {x: 0.45, y: 0.45, z: 1}
       Active: 1
   - MapId: Map_23
     Spawns:
     - Prefab: {fileID: 1000000000000000001, guid: dd4885ea04c40a64c812f64ffa0e7587, type: 3}
       VisualObjectId: event7
       AnchorName: 
-      LocalPosition: {x: 5, y: 1.5, z: 0}
+      LocalPosition: {x: 5, y: 1.61, z: 0}
       LocalEulerAngles: {x: 0, y: 0, z: 0}
       LocalScale: {x: 0.7, y: 0.7, z: 0}
       Active: 1
@@ -81,9 +81,9 @@ MonoBehaviour:
     - Prefab: {fileID: 1000000000000000001, guid: 54f1f6cc87734fe1961e7aefc6848ddf, type: 3}
       VisualObjectId: event8
       AnchorName: 
-      LocalPosition: {x: 5.5, y: 1.8, z: 0}
+      LocalPosition: {x: 5, y: 1.8, z: 0}
       LocalEulerAngles: {x: 0, y: 0, z: 0}
-      LocalScale: {x: 0.6, y: 0.6, z: 1}
+      LocalScale: {x: 0.5, y: 0.5, z: 1}
       Active: 1
   - MapId: Map_25
     Spawns:
