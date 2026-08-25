@@ -547,7 +547,7 @@ public static class BattleEquipmentEffectService
 
         List<CharacterRuntimeData> party = GetCurrentPartyRuntimeData();
         CharacterRuntimeData best = null;
-        float bestRatio = float.MaxValue;
+        int bestCurrentHp = int.MaxValue;
 
         for (int i = 0; i < party.Count; i++)
         {
@@ -555,11 +555,11 @@ public static class BattleEquipmentEffectService
             if (candidate == null || candidate.IsDead || candidate == owner || candidate.MaxHP <= 0)
                 continue;
 
-            float ratio = candidate.CurrentHP / (float)candidate.MaxHP;
-            if (best == null || ratio < bestRatio)
+            int currentHp = Mathf.Max(0, candidate.CurrentHP);
+            if (best == null || currentHp < bestCurrentHp)
             {
                 best = candidate;
-                bestRatio = ratio;
+                bestCurrentHp = currentHp;
             }
         }
 

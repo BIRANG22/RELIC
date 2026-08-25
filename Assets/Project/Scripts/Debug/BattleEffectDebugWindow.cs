@@ -36,7 +36,8 @@ public sealed class BattleEffectDebugWindow : MonoBehaviour
         "전용",
         "스킬 1",
         "스킬 2",
-        "고유"
+        "고유",
+        "본능"
     };
 
     private static readonly int[] StatDeltas = { -10, -1, 1, 10 };

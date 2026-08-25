@@ -124,7 +124,7 @@ S_Passive_06,결심,Passive,Exclusive,Ulti,Self,0,0,E_Armor,3,1,0,Passive,Range_
 생명력이 가장 낮은 아군에게
 방어도를 {ValueRate1} 부여합니다."
 S_Passive_07,자애심,Passive,Exclusive,Ulti,Self,0,0,E_Heal,2,1,0,Passive,Range_Self,"카르마가 최대라면 턴 시작 시
-생명력이 가장 낮은 아군의
+생명력이 최대 생명력 대비 생명력이 낮은 아군의
 생명력을 {ValueRate1} 회복합니다."
 S_Passive_08,심판,Passive,Exclusive,Ulti,Self,0,0,E_Smite,1,1,0,Passive,Range_Self,"카르마가 최대라면 턴 시작 시
 강타를 {ValueRate1} 얻습니다."
@@ -141,7 +141,7 @@ S_Unique_06,빛의 의지,Unique,Exclusive,Ulti,PlayerParty,0,Buff,E_Boost,2,1,3
 S_Unique_07,구원의 기도,Unique,Exclusive,Ulti,PlayerParty,0,Buff,E_Heal,4,1,3,Direction,Range_b_19,기도를 올려 자신과 아군의 생명력을 {ValueRate1} 회복합니다.
 S_Unique_08,신성한 일격,Unique,Exclusive,Ulti,EnemyParty,0,Attack,E_Strike;E_Weaken,10;1,1;1,3,Direction,Range_07,신성한 힘을 담아 적에게 {ValueRate1}의 피해를 주고 약화를 {ValueRate2} 부여합니다.
 S_Unique_09,데스사이드,Unique,Exclusive,Ulti,EnemyParty,0,Attack,E_Pierce;E_Vulnerable,12;1,1;1,3,Direction,Range_12,사이드로 깊게 베어 적에게 {ValueRate1}의 관통 피해를 주고 취약을 {ValueRate2} 부여합니다.
-S_Unique_10,스칼렛노바,Unique,Exclusive,Ulti,EnemyParty,0,Attack,E_Strike,16,1,3,Direction,Range_19,피를 폭발시켜 적에게 {ValueRate1}의 피해를 줍니다.
+S_Unique_10,스칼렛노바,Unique,Exclusive,Ulti,EnemyParty,0,Attack,E_Strike,16,1,3,Selection,Range_05,피를 폭발시켜 적에게 {ValueRate1}의 피해를 줍니다.
 S_Ability_01,휘두르기,Ability,Exclusive,Cost,EnemyParty,1,Attack,E_Strike,6,1,3,Direction,Range_14,할버드를 휘둘러 적에게 {ValueRate1}의 피해를 줍니다.
 S_Ability_02,휘두르기+,Ability,Exclusive,Cost,EnemyParty,2,Attack,E_Strike,8,1,3,Direction,Range_14,할버드를 휘둘러 적에게 {ValueRate1}의 피해를 줍니다.
 S_Ability_03,내려찍기,Ability,Exclusive,Cost,EnemyParty,1,Attack,E_Strike;E_Knockback,7;1,1,3,Direction,Range_04,할버드를 내려찍어 적에게 {ValueRate1}의 피해를 주고 {ValueRate2}칸 넉백시킵니다.
@@ -625,10 +625,10 @@ Range_03,Range_Front3,0,1;0,2;0,3;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 Range_21,Range_Front4,0,1;0,2;0,3;0,4;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 Range_18,Range_Front6,0,1;0,2;0,3;0,4;0,5;0,6;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 Range_04,Range_Tuck5,0,1;0,0;1,1;1,0;-1,1;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-Range_14,Range_Tuck6,0,1;0,0;1,1;1,0;-1,1;-1,2;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-Range_15,Range_Tuck8,0,1;1,2;1,3;1,1;0,2;0,1;-1,2;-1,3;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-Range_06,Range_T-shaped4,0,1;0,2;0,1;1,1;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-Range_11,Range_T-shaped7,0,1;1,2;1,1;0,2;0,3;0,1;-1,2;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_14,Range_Tuck6,0,1;0,0;1,1;1,0;-1,1;-1,2;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,,,,,
+Range_15,Range_Tuck8,0,0;1,1;1,2;1,1;0,2;0,0;-1,1;-1,2;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,,,,,
+Range_06,Range_T-shaped4,0,1;0,2;0,1;1,1;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,,,,
+Range_11,Range_T-shaped7,0,1;1,2;1,1;0,2;0,3;0,1;-1,2;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,,,,
 Range_07,Range_Oblong6,0,1;0,2;0,1;1,2;1,1;-1,2;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 Range_12,Range_Frontsquare9,0,1;1,2;1,3;1,1;0,2;0,3;0,1;-1,2;-1,3;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 Range_13,Range_Frontcross5,0,1;0,2;0,3;0,2;1,2;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
