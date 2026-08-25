@@ -1527,7 +1527,11 @@ public class BattleActionRunner
         if (attacker.RuntimeData == null || attacker.RuntimeData.IsDead)
             yield break;
 
-        RecalculatePlayerSkillRangeAtExecution(attacker, command);
+        // E_Move가 첫 피해 효과보다 먼저인 Direction 스킬은 예약 단계에서 이미
+        // 이동 예정 위치 기준 범위를 계산했습니다. 실행 시작 시 이동 전 위치로
+        // 다시 덮어쓰지 않고, 실제 이동 결과가 나온 뒤에만 범위를 재판정합니다.
+        if (!HasDirectionalMoveBeforeFirstDamage(command))
+            RecalculatePlayerSkillRangeAtExecution(attacker, command);
 
         ShowExecutionRange(BuildPlayerExecutionRange(command));
 
@@ -1633,7 +1637,9 @@ public class BattleActionRunner
                 yield break;
             }
 
-            if (hitTargets.Count <= 0 && gridEffectTargets.Count <= 0)
+            if (hitTargets.Count <= 0 &&
+                gridEffectTargets.Count <= 0 &&
+                !HasDirectionalMoveBeforeFirstDamage(command))
             {
                 if (command.SkillData.SkillType == SkillType.Attack)
                     BattleEquipmentEffectService.TryApplyAttackMissCharge(command.UserRuntime);
@@ -1783,6 +1789,26 @@ public class BattleActionRunner
                 command.UserRuntime,
                 command,
                 entry.EffectId);
+
+            if (TryGetExplicitPlayerDirectionalMoveDistance(
+                    command,
+                    effectId,
+                    i,
+                    out int directionalMoveDistance))
+            {
+                yield return ExecutePlayerDirectionalMoveEffect(
+                    caster,
+                    command,
+                    directionalMoveDistance);
+
+                RefreshPlayerMonsterTargetsAfterDirectionalMove(
+                    caster,
+                    command,
+                    monsterTargets,
+                    gridEffectTargets);
+                continue;
+            }
+
             int value = GetPlayerEffectValue(command, entry);
             int count = GetPlayerEffectCount(command, entry);
 
@@ -2041,6 +2067,202 @@ public class BattleActionRunner
             if (caster.RuntimeData.IsDead)
                 yield break;
         }
+    }
+
+    private bool HasDirectionalMoveBeforeFirstDamage(PlayerReservedCommand command)
+    {
+        if (command == null ||
+            command.SkillData == null ||
+            command.SkillData.EffectEntries == null)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < command.SkillData.EffectEntries.Count; i++)
+        {
+            SkillEffectEntry entry = command.SkillData.EffectEntries[i];
+
+            if (entry == null || string.IsNullOrWhiteSpace(entry.EffectId))
+                continue;
+
+            string effectId = BattleEquipmentEffectService.GetEffectivePlayerDamageEffectId(
+                command.UserRuntime,
+                command,
+                entry.EffectId);
+
+            if (IsDamageHitEffect(effectId))
+                return false;
+
+            if (TryGetExplicitPlayerDirectionalMoveDistance(
+                    command,
+                    effectId,
+                    i,
+                    out _))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void RefreshPlayerMonsterTargetsAfterDirectionalMove(
+        BattleCharacter caster,
+        PlayerReservedCommand command,
+        List<MonsterUnit> monsterTargets,
+        List<int> gridEffectTargets)
+    {
+        if (caster == null || command == null)
+            return;
+
+        RecalculatePlayerSkillRangeAtExecution(caster, command);
+
+        // 이동 성공 시에는 예약 프리뷰와 같은 도착 위치 기준 범위가 유지되고,
+        // 이동 실패/충돌 시에는 실제 남아 있는 위치 기준 범위로 즉시 갱신합니다.
+        ShowExecutionRange(BuildPlayerExecutionRange(command));
+
+        if (monsterTargets != null)
+        {
+            monsterTargets.Clear();
+
+            MonsterUnit[] monsters = Object.FindObjectsByType<MonsterUnit>(
+                FindObjectsInactive.Exclude,
+                FindObjectsSortMode.None);
+
+            for (int i = 0; i < monsters.Length; i++)
+            {
+                MonsterUnit monster = monsters[i];
+
+                if (monster == null || monster.RuntimeData == null)
+                    continue;
+
+                if (!IsMonsterInRange(monster, command))
+                    continue;
+
+                monsterTargets.Add(monster);
+            }
+        }
+
+        if (gridEffectTargets != null)
+        {
+            gridEffectTargets.Clear();
+            gridEffectTargets.AddRange(BuildDamageableGridEffectTargets(command));
+        }
+    }
+
+    private static bool TryGetExplicitPlayerDirectionalMoveDistance(
+        PlayerReservedCommand command,
+        string effectId,
+        int effectIndex,
+        out int signedDistance)
+    {
+        signedDistance = 0;
+
+        if (command == null ||
+            command.SkillData == null ||
+            command.SkillData.RangeType != RangeType.Direction ||
+            !string.Equals(effectId, "E_Move", StringComparison.Ordinal) ||
+            effectIndex < 0 ||
+            string.IsNullOrWhiteSpace(command.SkillData.ValueRate))
+        {
+            return false;
+        }
+
+        string[] values = command.SkillData.ValueRate.Split(';');
+
+        if (effectIndex >= values.Length ||
+            string.IsNullOrWhiteSpace(values[effectIndex]))
+        {
+            return false;
+        }
+
+        return int.TryParse(values[effectIndex].Trim(), out signedDistance) &&
+               signedDistance != 0;
+    }
+
+    private IEnumerator ExecutePlayerDirectionalMoveEffect(
+        BattleCharacter caster,
+        PlayerReservedCommand command,
+        int signedDistance)
+    {
+        if (caster == null || command == null || caster.RuntimeData == null)
+            yield break;
+
+        if (caster.RuntimeData.IsDead || caster.CurrentGridIndex < 0 || gridManager == null)
+            yield break;
+
+        if (signedDistance == 0)
+            yield break;
+
+        Vector2Int attackDirection = command.Direction == BattleDirection.Right
+            ? Vector2Int.right
+            : Vector2Int.left;
+        Vector2Int moveOffset = attackDirection * signedDistance;
+
+        List<int> enteredGridIndices = new();
+        int startGridIndex = caster.CurrentGridIndex;
+
+        if (!TryGetPlayerMoveTargetGridIndex(
+                startGridIndex,
+                moveOffset,
+                command.CharacterId,
+                out int targetGridIndex,
+                enteredGridIndices))
+        {
+            yield break;
+        }
+
+        if (targetGridIndex == startGridIndex)
+            yield break;
+
+        Vector2Int startCoord = gridManager.IndexToCoord(startGridIndex);
+        Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
+        Vector2Int actualMoveOffset = targetCoord - startCoord;
+        bool wasBlockedDuringMove = actualMoveOffset != moveOffset;
+
+        BattleUnitFacing facing = caster.GetComponent<BattleUnitFacing>();
+        bool originalFacingRight = command.Direction == BattleDirection.Right;
+
+        if (facing != null)
+        {
+            facing.FaceByMoveOffset(moveOffset);
+            caster.RuntimeData.Direction = facing.GetBattleDirection();
+        }
+
+        BattleUnitAnimator animator = caster.GetComponent<BattleUnitAnimator>();
+
+        if (animator != null)
+            animator.PlayMove();
+
+        Vector3 targetPosition = gridManager.GetWorldPositionByIndex(targetGridIndex);
+
+        yield return MoveTransformSmooth(
+            caster.transform,
+            caster.transform.position,
+            targetPosition,
+            MoveAnimationDuration);
+
+        caster.SetGridIndex(targetGridIndex);
+        caster.RuntimeData.SetLastMoveOffset(actualMoveOffset);
+        BattleEquipmentEffectService.MarkMovedBeforeNextAttack(caster.RuntimeData);
+        UpdatePartyGridIndex(command.CharacterId, targetGridIndex);
+        ApplyGridEffectsToPlayer(enteredGridIndices, caster);
+        statusEffectService.ApplyBleedDamageToPlayerOnMove(caster);
+
+        if (wasBlockedDuringMove && caster.RuntimeData != null && !caster.RuntimeData.IsDead)
+            ApplyCrashToPlayer(caster);
+
+        if (facing != null)
+        {
+            facing.FaceRight(originalFacingRight);
+            caster.RuntimeData.Direction = facing.GetBattleDirection();
+        }
+        else
+        {
+            caster.RuntimeData.Direction = command.Direction;
+        }
+
+        hudService.RefreshHUDs();
     }
 
     private void ExecutePlayerNonDamageEffectToMonsters(
@@ -2420,14 +2642,14 @@ public class BattleActionRunner
                 command.UserRuntime,
                 command,
                 entry,
-                damageService.GetPlayerDamage(command));
+                damageService.GetPlayerDamage(command, entry.ValueAmount));
 
         if (entry.EffectId == "E_Pierce")
             return BattleEquipmentEffectService.ModifyPlayerEffectValue(
                 command.UserRuntime,
                 command,
                 entry,
-                damageService.GetPlayerDamage(command));
+                damageService.GetPlayerDamage(command, entry.ValueAmount));
 
         if (entry.EffectId == "E_Knockback")
             return BattleEquipmentEffectService.ModifyPlayerKnockbackValue(

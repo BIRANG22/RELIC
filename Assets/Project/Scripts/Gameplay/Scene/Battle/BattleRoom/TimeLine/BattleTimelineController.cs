@@ -3850,8 +3850,8 @@ public class BattleTimelineController : MonoBehaviour
                 if (command.UserRuntime.CharacterId != runtimeData.CharacterId)
                     continue;
 
-                if (command.ReservedMoveGridIndex >= 0)
-                    gridIndex = command.EffectiveMoveGridIndex;
+                if (TryGetCommandPreviewMoveGridIndex(command, out int previewMoveGridIndex))
+                    gridIndex = previewMoveGridIndex;
             }
         }
 
@@ -4493,8 +4493,8 @@ public class BattleTimelineController : MonoBehaviour
                 if (slotIndex == targetSlotIndex && i >= targetPlayerCommandIndex)
                     break;
 
-                if (command.ReservedMoveGridIndex >= 0)
-                    gridIndex = command.EffectiveMoveGridIndex;
+                if (TryGetCommandPreviewMoveGridIndex(command, out int previewMoveGridIndex))
+                    gridIndex = previewMoveGridIndex;
             }
         }
 
@@ -4574,10 +4574,41 @@ public class BattleTimelineController : MonoBehaviour
         if (command == null || command.UserRuntime == null)
             return false;
 
-        if (command.ReservedMoveGridIndex < 0 || command.PreviewMoveGridIndex < 0)
+        if (command.PreviewMoveGridIndex < 0)
+            return false;
+
+        bool hasReservedMove = command.ReservedMoveGridIndex >= 0;
+        bool hasSkillMovePreview =
+            command.HasSimulatedResult &&
+            command.SimulatedMoveGridIndex >= 0 &&
+            command.SimulatedMoveOffset != Vector2Int.zero;
+
+        if (!hasReservedMove && !hasSkillMovePreview)
             return false;
 
         return command.UserRuntime.CharacterId == characterId;
+    }
+
+    private static bool TryGetCommandPreviewMoveGridIndex(
+        PlayerReservedCommand command,
+        out int gridIndex)
+    {
+        gridIndex = -1;
+
+        if (command == null)
+            return false;
+
+        if (command.HasSimulatedResult && command.SimulatedMoveGridIndex >= 0)
+        {
+            gridIndex = command.SimulatedMoveGridIndex;
+            return true;
+        }
+
+        if (command.ReservedMoveGridIndex < 0)
+            return false;
+
+        gridIndex = command.EffectiveMoveGridIndex;
+        return gridIndex >= 0;
     }
 
     private Sprite GetCharacterSprite(string characterId)

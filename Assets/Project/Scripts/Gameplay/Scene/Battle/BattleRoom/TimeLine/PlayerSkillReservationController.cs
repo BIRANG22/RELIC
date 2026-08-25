@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
@@ -113,7 +114,7 @@ public class PlayerSkillReservationController : MonoBehaviour
     private const string NocturnPortalPreviewGridEffectId = "GR_nocturn_portal_preview";
     private const string NocturnPortalVfxLayerName = "VFX";
     private const float NocturnPortalPreviewLifeTime = 9999f;
-    private const string GeneralSelectionRangeId = "Range_24";
+    private const string GeneralSelectionRangeId = "Range_b_24";
     private const string MoveHoverPingSortingLayerName = "Unit";
     private const float MoveHoverPingYSortMultiplier = 100f;
     private const int MoveHoverPingDefaultSortingOffset = 10;
@@ -296,8 +297,13 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         if (skillData.RangeType == RangeType.Direction)
         {
-            rangeIndices = BattleRangeCalculator.GetDirectionRangeIndices(
+            int rangeOriginGridIndex = GetDirectionalAttackPreviewOriginGridIndex(
                 casterGridIndex,
+                casterDirection,
+                skillData);
+
+            rangeIndices = BattleRangeCalculator.GetDirectionRangeIndices(
+                rangeOriginGridIndex,
                 rangeId,
                 casterDirection,
                 DataManager.Instance.RangeDatabase,
@@ -1138,8 +1144,13 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (!CanConfirmReservation())
             return;
 
-        List<int> rangeIndices = BattleRangeCalculator.GetDirectionRangeIndices(
+        int rangeOriginGridIndex = GetDirectionalAttackPreviewOriginGridIndex(
             currentCasterGridIndex,
+            direction,
+            currentSkillData);
+
+        List<int> rangeIndices = BattleRangeCalculator.GetDirectionRangeIndices(
+            rangeOriginGridIndex,
             BattleEquipmentEffectService.GetEffectiveRangeId(currentUserRuntime, currentSkillData),
             direction,
             DataManager.Instance.RangeDatabase,
@@ -1152,6 +1163,116 @@ public class PlayerSkillReservationController : MonoBehaviour
         ConfirmCommand(command);
         KeepSkillListOpenForThisClick();
         ClearPreview();
+    }
+
+    private int GetDirectionalAttackPreviewOriginGridIndex(
+        int casterGridIndex,
+        BattleDirection direction,
+        SkillMasterData skillData)
+    {
+        if (gridManager == null || casterGridIndex < 0 || skillData == null)
+            return casterGridIndex;
+
+        if (!TryGetDirectionalMoveBeforeFirstDamage(skillData, out int signedDistance))
+            return casterGridIndex;
+
+        Vector2Int casterCoord = gridManager.IndexToCoord(casterGridIndex);
+        Vector2Int forward = direction == BattleDirection.Right
+            ? Vector2Int.right
+            : Vector2Int.left;
+        Vector2Int previewCoord = casterCoord + forward * signedDistance;
+
+        // 예약/호버 단계에서는 전진이 성공한다고 가정한 위치에서 공격 범위를 보여줍니다.
+        // 실제 실행 시에는 BattleActionRunner가 이동 성공/실패 후 실제 위치에서 범위를 다시 계산합니다.
+        if (!gridManager.IsValidCoord(previewCoord))
+            return casterGridIndex;
+
+        return gridManager.CoordToIndex(previewCoord);
+    }
+
+    private static bool TryGetDirectionalMoveBeforeFirstDamage(
+        SkillMasterData skillData,
+        out int signedDistance)
+    {
+        signedDistance = 0;
+
+        if (skillData == null || skillData.RangeType != RangeType.Direction)
+            return false;
+
+        if (skillData.EffectEntries != null && skillData.EffectEntries.Count > 0)
+        {
+            for (int i = 0; i < skillData.EffectEntries.Count; i++)
+            {
+                SkillEffectEntry entry = skillData.EffectEntries[i];
+
+                if (entry == null || string.IsNullOrWhiteSpace(entry.EffectId))
+                    continue;
+
+                string effectId = entry.EffectId.Trim();
+
+                if (IsDamageEffectForPreview(effectId))
+                    return false;
+
+                if (string.Equals(effectId, "E_Move", StringComparison.Ordinal) &&
+                    TryGetExplicitEffectValue(skillData, i, out signedDistance) &&
+                    signedDistance != 0)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(skillData.EffectIds))
+            return false;
+
+        string[] effectIds = skillData.EffectIds.Split(';');
+
+        for (int i = 0; i < effectIds.Length; i++)
+        {
+            string effectId = effectIds[i].Trim();
+
+            if (IsDamageEffectForPreview(effectId))
+                return false;
+
+            if (string.Equals(effectId, "E_Move", StringComparison.Ordinal) &&
+                TryGetExplicitEffectValue(skillData, i, out signedDistance) &&
+                signedDistance != 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool TryGetExplicitEffectValue(
+        SkillMasterData skillData,
+        int effectIndex,
+        out int value)
+    {
+        value = 0;
+
+        if (skillData == null ||
+            effectIndex < 0 ||
+            string.IsNullOrWhiteSpace(skillData.ValueRate))
+        {
+            return false;
+        }
+
+        string[] values = skillData.ValueRate.Split(';');
+
+        if (effectIndex >= values.Length || string.IsNullOrWhiteSpace(values[effectIndex]))
+            return false;
+
+        return int.TryParse(values[effectIndex].Trim(), out value);
+    }
+
+    private static bool IsDamageEffectForPreview(string effectId)
+    {
+        return string.Equals(effectId, "E_Strike", StringComparison.Ordinal) ||
+               string.Equals(effectId, "E_Pierce", StringComparison.Ordinal);
     }
 
     private void ConfirmMoveReservation(int selectedGridIndex)
@@ -1544,7 +1665,7 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         BattleActionSimulationService simulationService = new(gridManager);
         bool includeCurrentSlotMonsterCommands =
-            !BattleActionOrderUtility.HasSwift(currentSkillData);
+            !BattleActionOrderUtility.HasSwift(currentUserRuntime);
 
         HashSet<int> projectedGridIndices =
             simulationService.GetProjectedMonsterOccupiedGridIndices(

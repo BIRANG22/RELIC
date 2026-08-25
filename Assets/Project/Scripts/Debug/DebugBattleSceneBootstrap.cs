@@ -143,7 +143,7 @@ public static class DebugBattleSkillCastUtility
     public const int DefaultTimelineSlotIndex = 0;
     public const int DefaultDebugTargetGridIndex = 23;
 
-    private const string GeneralSelectionRangeId = "Range_24";
+    private const string GeneralSelectionRangeId = "Range_b_24";
 
     public static bool TryCastSkillNow(
         CharacterRuntimeData runtime,

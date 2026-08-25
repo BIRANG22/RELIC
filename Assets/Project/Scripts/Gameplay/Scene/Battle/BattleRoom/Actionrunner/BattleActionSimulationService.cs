@@ -537,10 +537,30 @@ public class BattleActionSimulationService
             command.UserRuntime,
             command.SkillData);
 
+        int simulatedCasterGrid = casterGrid;
+        bool hasDirectionalMove = TryGetExplicitDirectionalMove(
+            command.SkillData,
+            out int moveEffectIndex,
+            out int signedMoveDistance);
+        int firstDamageEffectIndex = GetFirstDamageEffectIndex(command.SkillData);
+        bool moveBeforeDamage =
+            hasDirectionalMove &&
+            firstDamageEffectIndex >= 0 &&
+            moveEffectIndex < firstDamageEffectIndex;
+
+        if (moveBeforeDamage)
+        {
+            simulatedCasterGrid = SimulatePlayerDirectionalSkillMove(
+                command,
+                simulatedCasterGrid,
+                direction,
+                signedMoveDistance);
+        }
+
         if (command.SkillData.RangeType == RangeType.Direction)
         {
             range = BattleRangeCalculator.GetDirectionRangeIndices(
-                casterGrid,
+                simulatedCasterGrid,
                 rangeId,
                 direction,
                 DataManager.Instance.RangeDatabase,
@@ -548,13 +568,12 @@ public class BattleActionSimulationService
             );
 
             command.SetDirectionResult(direction, range, range);
-            return;
         }
         else if (command.SkillData.RangeType == RangeType.Selection)
         {
             int selectionCenter = command.SelectedGridIndex >= 0
                 ? command.SelectedGridIndex
-                : casterGrid;
+                : simulatedCasterGrid;
 
             range = BattleRangeCalculator.GetSelectionRangeIndices(
                 selectionCenter,
@@ -562,9 +581,119 @@ public class BattleActionSimulationService
                 DataManager.Instance.RangeDatabase,
                 gridManager
             );
+
+            command.SetSimulatedRangeResult(range, range);
+        }
+        else
+        {
+            command.SetSimulatedRangeResult(range, range);
         }
 
-        command.SetSimulatedRangeResult(range, range);
+        if (hasDirectionalMove && !moveBeforeDamage)
+        {
+            SimulatePlayerDirectionalSkillMove(
+                command,
+                simulatedCasterGrid,
+                direction,
+                signedMoveDistance);
+        }
+    }
+
+    private int SimulatePlayerDirectionalSkillMove(
+        PlayerReservedCommand command,
+        int currentGrid,
+        BattleDirection direction,
+        int signedDistance)
+    {
+        if (command == null ||
+            command.UserRuntime == null ||
+            currentGrid < 0 ||
+            signedDistance == 0 ||
+            gridManager == null)
+        {
+            return currentGrid;
+        }
+
+        Vector2Int forward = direction == BattleDirection.Right
+            ? Vector2Int.right
+            : Vector2Int.left;
+        Vector2Int requestedMoveOffset = forward * signedDistance;
+
+        bool reachedTarget = TryGetPlayerMoveTargetGridIndex(
+            currentGrid,
+            requestedMoveOffset,
+            "P:" + command.CharacterId,
+            out int targetGrid);
+
+        Vector2Int startCoord = gridManager.IndexToCoord(currentGrid);
+        Vector2Int targetCoord = gridManager.IndexToCoord(targetGrid);
+        Vector2Int actualMoveOffset = targetCoord - startCoord;
+
+        playerPositions[command.CharacterId] = targetGrid;
+        command.SetSimulatedMoveResult(
+            !reachedTarget || actualMoveOffset != requestedMoveOffset,
+            targetGrid,
+            actualMoveOffset);
+
+        return targetGrid;
+    }
+
+    private static bool TryGetExplicitDirectionalMove(
+        SkillMasterData skillData,
+        out int effectIndex,
+        out int signedDistance)
+    {
+        effectIndex = -1;
+        signedDistance = 0;
+
+        if (skillData == null ||
+            skillData.RangeType != RangeType.Direction ||
+            string.IsNullOrWhiteSpace(skillData.EffectIds) ||
+            string.IsNullOrWhiteSpace(skillData.ValueRate))
+        {
+            return false;
+        }
+
+        string[] effectIds = skillData.EffectIds.Split(';');
+        string[] values = skillData.ValueRate.Split(';');
+
+        for (int i = 0; i < effectIds.Length; i++)
+        {
+            if (!string.Equals(effectIds[i].Trim(), "E_Move", System.StringComparison.Ordinal))
+                continue;
+
+            if (i >= values.Length || string.IsNullOrWhiteSpace(values[i]))
+                return false;
+
+            if (!int.TryParse(values[i].Trim(), out signedDistance) || signedDistance == 0)
+                return false;
+
+            effectIndex = i;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static int GetFirstDamageEffectIndex(SkillMasterData skillData)
+    {
+        if (skillData == null || string.IsNullOrWhiteSpace(skillData.EffectIds))
+            return -1;
+
+        string[] effectIds = skillData.EffectIds.Split(';');
+
+        for (int i = 0; i < effectIds.Length; i++)
+        {
+            string effectId = effectIds[i].Trim();
+
+            if (string.Equals(effectId, "E_Strike", System.StringComparison.Ordinal) ||
+                string.Equals(effectId, "E_Pierce", System.StringComparison.Ordinal))
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     private BattleDirection GetPlayerDirection(PlayerReservedCommand command)
