@@ -28,8 +28,6 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     [Header("Passive Skill")]
     [SerializeField] private Image passiveIconImage;
-    [SerializeField] private TMP_Text passiveNameText;
-    [SerializeField] private TMP_Text passiveEffectText;
 
     [Header("HP")]
     [SerializeField] private Image hpIconImage;
@@ -1183,26 +1181,6 @@ public class BattleCharacterPanelUI : MonoBehaviour
             passiveIconImage.preserveAspect = true;
         }
 
-        if (passiveNameText != null)
-        {
-            passiveNameText.text = hasPassive &&
-                                   !string.IsNullOrWhiteSpace(passiveSkillData.Name)
-                ? GameDataLocalization.SkillName(passiveSkillData)
-                : string.Empty;
-        }
-
-        if (passiveEffectText != null)
-        {
-            string effectDescription = string.Empty;
-
-            if (hasPassive)
-            {
-                if (!string.IsNullOrWhiteSpace(passiveSkillData.Details))
-                    effectDescription = GameDataLocalization.SkillDetails(passiveSkillData);
-            }
-
-            passiveEffectText.text = effectDescription;
-        }
     }
 
     private void ClearPassiveSkill()
@@ -1214,8 +1192,6 @@ public class BattleCharacterPanelUI : MonoBehaviour
             passiveIconImage.gameObject.SetActive(false);
         }
 
-        SetText(passiveNameText, string.Empty);
-        SetText(passiveEffectText, string.Empty);
     }
 
     private void RefreshSkillList()

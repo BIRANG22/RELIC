@@ -92,6 +92,45 @@ namespace Relic.Gameplay.Data
             return sideImage != null;
         }
 
+        public bool TryGetHUDPortraitImage(string characterId, out Sprite portrait)
+        {
+            portrait = null;
+
+            if (map == null)
+                Initialize();
+
+            if (!map.TryGetValue(characterId, out var entry))
+                return false;
+
+            portrait = entry.HUDPortraitImage;
+
+            if (portrait == null)
+                portrait = entry.SideImage;
+
+            return portrait != null;
+        }
+
+        public bool TryGetHUDSelectedPortraitImage(string characterId, out Sprite portrait)
+        {
+            portrait = null;
+
+            if (map == null)
+                Initialize();
+
+            if (!map.TryGetValue(characterId, out var entry))
+                return false;
+
+            portrait = entry.HUDSelectedPortraitImage;
+
+            if (portrait == null)
+                portrait = entry.HUDPortraitImage;
+
+            if (portrait == null)
+                portrait = entry.SideImage;
+
+            return portrait != null;
+        }
+
         [Obsolete("Use TryGetSideImage instead.")]
         public bool TryGetCharBackImage(string characterId, out Sprite charBackImage)
         {
@@ -136,6 +175,11 @@ namespace Relic.Gameplay.Data
         public Sprite TimelineIcon;
         [FormerlySerializedAs("CharBackImage")]
         public Sprite SideImage;
+
+        [Header("Battle HUD Portraits")]
+        public Sprite HUDPortraitImage;
+        public Sprite HUDSelectedPortraitImage;
+
         public Sprite Mark;
         public Sprite Mark2;
     }
