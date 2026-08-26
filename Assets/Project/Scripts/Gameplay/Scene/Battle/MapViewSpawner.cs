@@ -102,11 +102,6 @@ public class MapViewSpawner : MonoBehaviour
                 IsCurrentlyAvailable(runtime, data),
                 IsVisitedOrCleared(runtime, data));
 
-            Sprite nodeIcon = null;
-            iconDatabase?.TryGetIcon(data.Type, out nodeIcon);
-            MapNodeHoverRelay hoverRelay = node.GetComponentInChildren<MapNodeHoverRelay>(true);
-            hoverRelay?.Configure(data, nodeIcon, onNodeHovered, onNodeHoverExited);
-
             spawnedNodes[data.NodeIndex] = node;
         }
 
@@ -290,8 +285,9 @@ public class MapViewSpawner : MonoBehaviour
                 continue;
 
             GeneratedMapNodeData data = GetNodeData(lastNodes, pair.Key);
+            string displayType = MapNodeView.GetDisplayType(data);
             bool isMatch = data != null &&
-                           string.Equals(data.Type, nodeType, StringComparison.OrdinalIgnoreCase);
+                           string.Equals(displayType, nodeType, StringComparison.OrdinalIgnoreCase);
 
             nodeView.SetCategoryHighlighted(isMatch);
         }
@@ -304,6 +300,20 @@ public class MapViewSpawner : MonoBehaviour
             if (nodeView != null)
                 nodeView.SetCategoryHighlighted(false);
         }
+    }
+
+    /// <summary>
+    /// NextNodeSelectionRoot에서 선택한 노드의 지도 X 표시 애니메이션을 재생합니다.
+    /// 반환값이 false이면 해당 노드 뷰를 찾지 못한 경우입니다.
+    /// </summary>
+    public bool PlayNodeCheckAnimation(int nodeIndex, Action onCompleted)
+    {
+        if (!spawnedNodes.TryGetValue(nodeIndex, out MapNodeView nodeView) || nodeView == null)
+            return false;
+
+        ClearCategoryHighlight();
+        nodeView.PlayCheckAnimation(onCompleted);
+        return true;
     }
 
     public void Refresh()

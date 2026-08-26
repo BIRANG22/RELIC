@@ -18,6 +18,7 @@ public class BattleMapPanel : MonoBehaviour
     [SerializeField] private EventMapRandomExclusionSettings eventMapRandomExclusionSettings = new();
     private MapRuntimeStore runtimeStore;
     private MapRuntimeData runtime;
+    private bool isNextNodeSelectionProcessing;
 
     private void Awake()
     {
@@ -28,6 +29,7 @@ public class BattleMapPanel : MonoBehaviour
 
     public void Open(MapRuntimeData mapRuntime)
     {
+        isNextNodeSelectionProcessing = false;
         gameObject.SetActive(true);
         Prepare(mapRuntime);
         SpawnMapView();
@@ -193,12 +195,27 @@ public class BattleMapPanel : MonoBehaviour
 
     private void OnNextNodeSelected(int nodeIndex)
     {
+        if (isNextNodeSelectionProcessing)
+            return;
+
         if (battleSceneController == null)
         {
             Debug.LogWarning("[BattleMapPanel] BattleSceneController가 연결되지 않았습니다.");
             return;
         }
 
+        isNextNodeSelectionProcessing = true;
+
+        // 선택지 클릭 직후 방 전환을 시작하지 않고, 지도상의 실제 노드에
+        // X 표시 애니메이션을 끝까지 재생한 다음 기존 선택 흐름을 실행합니다.
+        if (mapViewSpawner != null &&
+            mapViewSpawner.PlayNodeCheckAnimation(nodeIndex,
+                () => battleSceneController.OnMapNodeSelectedByIndex(nodeIndex)))
+        {
+            return;
+        }
+
+        // 지도 노드 뷰를 찾을 수 없는 예외 상황에서는 기존 동작으로 안전하게 진행합니다.
         battleSceneController.OnMapNodeSelectedByIndex(nodeIndex);
     }
 

@@ -13,6 +13,10 @@ public class SaveSystem : Singleton<SaveSystem>
     private const int EquippedRuneSlotCount = 12;
     private const int EquippedRelicSlotCount = 7;
 
+    private GameSaveData battleRoomEntryCheckpoint;
+    private int battleRoomEntryCheckpointNodeIndex = -1;
+    private string battleRoomEntryCheckpointMapId = string.Empty;
+
     public string SaveFilePath => Path.Combine(Application.persistentDataPath, SaveFileName);
 
     public void Initialize()
@@ -61,11 +65,69 @@ public class SaveSystem : Singleton<SaveSystem>
             return false;
         }
 
+        if (TryCreateBattleRoomEntryCheckpointSave(out GameSaveData checkpointSave))
+            return WriteSaveData(checkpointSave);
+
         CommitRuntimeStateContributorsForSave();
         RecordDiscoveryService.BackfillFromCurrentState(DataManager.Instance);
 
         GameSaveData saveData = CreateSaveData();
         return WriteSaveData(saveData);
+    }
+
+    public void CaptureBattleRoomEntryCheckpoint()
+    {
+        if (DataManager.Instance == null)
+            return;
+
+        MapRuntimeData map = DataManager.Instance.MapRuntimeStore?.Get();
+        if (!MapRuntimeProgressUtility.HasUnclearedCurrentNode(map))
+        {
+            ClearBattleRoomEntryCheckpoint();
+            return;
+        }
+
+        RecordDiscoveryService.BackfillFromCurrentState(DataManager.Instance);
+
+        battleRoomEntryCheckpoint = CreateSaveData();
+        battleRoomEntryCheckpointNodeIndex = map.CurrentNodeIndex;
+        battleRoomEntryCheckpointMapId = map.CurrentMapId ?? string.Empty;
+    }
+
+    public void ClearBattleRoomEntryCheckpoint()
+    {
+        battleRoomEntryCheckpoint = null;
+        battleRoomEntryCheckpointNodeIndex = -1;
+        battleRoomEntryCheckpointMapId = string.Empty;
+    }
+
+    private bool TryCreateBattleRoomEntryCheckpointSave(out GameSaveData saveData)
+    {
+        saveData = null;
+
+        if (battleRoomEntryCheckpoint == null || DataManager.Instance == null)
+            return false;
+
+        if (!string.Equals(SceneManager.GetActiveScene().name, SceneName.Battle, StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        MapRuntimeData currentMap = DataManager.Instance.MapRuntimeStore?.Get();
+        if (!MapRuntimeProgressUtility.HasUnclearedCurrentNode(currentMap))
+            return false;
+
+        if (currentMap.CurrentNodeIndex != battleRoomEntryCheckpointNodeIndex)
+            return false;
+
+        if (!string.Equals(currentMap.CurrentMapId ?? string.Empty, battleRoomEntryCheckpointMapId, StringComparison.Ordinal))
+            return false;
+
+        saveData = CloneSerializable(battleRoomEntryCheckpoint);
+        if (saveData == null)
+            return false;
+
+        saveData.SavedAtUtc = DateTime.UtcNow.ToString("O");
+        saveData.ActiveSceneName = SceneName.Battle;
+        return true;
     }
 
     public bool TryLoadProgress()
@@ -209,6 +271,8 @@ public class SaveSystem : Singleton<SaveSystem>
 
     private void ApplySaveData(GameSaveData saveData)
     {
+        ClearBattleRoomEntryCheckpoint();
+
         if (saveData == null)
             return;
 

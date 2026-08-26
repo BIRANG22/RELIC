@@ -366,6 +366,7 @@ public class BattleSceneController : MonoBehaviour
             mapRuntime.VisitedMapIds.Add(nodeKey);
 
         mapRuntimeStore.Set(mapRuntime);
+        CaptureRoomEntrySaveCheckpoint();
 
         Debug.Log(
             $"[BattleSceneController] Restore uncleared map node: " +
@@ -399,6 +400,7 @@ public class BattleSceneController : MonoBehaviour
             mapRuntime.VisitedMapIds.Add(nodeKey);
 
         mapRuntimeStore.Set(mapRuntime);
+        CaptureRoomEntrySaveCheckpoint();
         HideMapPanelImmediate();
         HandleSelectedMap(entryNode);
         PlayPendingRoomIntroText();
@@ -429,6 +431,7 @@ public class BattleSceneController : MonoBehaviour
             mapRuntime.VisitedMapIds.Add(nodeKey);
 
         mapRuntimeStore.Set(mapRuntime);
+        CaptureRoomEntrySaveCheckpoint();
 
         Debug.Log(
             $"[BattleSceneController] Map Selected: " +
@@ -692,6 +695,7 @@ public class BattleSceneController : MonoBehaviour
             if (currentNode != null)
             {
                 forceNextBattleRoomLoad = IsBattleNodeType(currentNode.Type);
+                CaptureRoomEntrySaveCheckpoint();
                 HideMapPanelImmediate();
                 HandleSelectedMap(currentNode);
                 PlayPendingRoomIntroText();
@@ -703,6 +707,11 @@ public class BattleSceneController : MonoBehaviour
         CloseAllRooms();
         OpenMapPanelImmediate();
         UpdateLastActiveRoomState();
+    }
+
+    private void CaptureRoomEntrySaveCheckpoint()
+    {
+        SaveSystem.Instance?.CaptureBattleRoomEntryCheckpoint();
     }
 
     private void HandleSelectedMap(GeneratedMapNodeData nodeData)
