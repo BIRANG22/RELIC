@@ -97,13 +97,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: "\uC81C\uBAA9 \uC5C6\uC74C-Photoroom_0"
+      name: dice_result_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 366
-        width: 400
-        height: 366
+        y: 512
+        width: 512
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -112,20 +112,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e5a1ce6fab6d301489f3c04e09c09369
-      internalID: 263500372
+      spriteID: 54eccd91b455ae64290ab7cfda2aa060
+      internalID: 2142083261
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: "\uC81C\uBAA9 \uC5C6\uC74C-Photoroom_1"
+      name: dice_result_1
       rect:
         serializedVersion: 2
-        x: 400
-        y: 366
-        width: 400
-        height: 366
+        x: 512
+        y: 512
+        width: 512
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -134,20 +134,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: fbf0969f8d977114bb5aa9ee671c7ef1
-      internalID: -1481843022
+      spriteID: 899ff8ff6b1f5fa46af56f90a2aa056a
+      internalID: -1191511046
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: "\uC81C\uBAA9 \uC5C6\uC74C-Photoroom_2"
+      name: dice_result_2
       rect:
         serializedVersion: 2
-        x: 800
-        y: 366
-        width: 400
-        height: 366
+        x: 1024
+        y: 512
+        width: 512
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -156,20 +156,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: a9d878ec6a4bd184aa43b218f87bf67a
-      internalID: 14309753
+      spriteID: af9f792110145024d9c9fd75dd342d7d
+      internalID: -1076244897
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: "\uC81C\uBAA9 \uC5C6\uC74C-Photoroom_3"
+      name: dice_result_3
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 400
-        height: 366
+        width: 512
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -178,20 +178,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 4e48d87ddd0654f438c7f0503e3cb2ac
-      internalID: 323871709
+      spriteID: b05c04a331a3cf9449640cd970d6270d
+      internalID: -772531041
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: "\uC81C\uBAA9 \uC5C6\uC74C-Photoroom_4"
+      name: dice_result_4
       rect:
         serializedVersion: 2
-        x: 400
+        x: 512
         y: 0
-        width: 400
-        height: 366
+        width: 512
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -200,20 +200,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: cefa7f30801d14347bb3ab311e35886a
-      internalID: -1010237226
+      spriteID: 11fa8692ebc0e5d43a569f8b42fb49ca
+      internalID: -2068240016
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: "\uC81C\uBAA9 \uC5C6\uC74C-Photoroom_5"
+      name: dice_result_5
       rect:
         serializedVersion: 2
-        x: 800
+        x: 1024
         y: 0
-        width: 400
-        height: 366
+        width: 512
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -222,8 +222,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 3d4d3a65f4091b146be4d738977ee72b
-      internalID: 1467817903
+      spriteID: 3e06e35b865f59a4db7dd55373572d38
+      internalID: 1484751409
       vertices: []
       indices: 
       edges: []
@@ -242,12 +242,12 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      "\uC81C\uBAA9 \uC5C6\uC74C-Photoroom_0": 263500372
-      "\uC81C\uBAA9 \uC5C6\uC74C-Photoroom_1": -1481843022
-      "\uC81C\uBAA9 \uC5C6\uC74C-Photoroom_2": 14309753
-      "\uC81C\uBAA9 \uC5C6\uC74C-Photoroom_3": 323871709
-      "\uC81C\uBAA9 \uC5C6\uC74C-Photoroom_4": -1010237226
-      "\uC81C\uBAA9 \uC5C6\uC74C-Photoroom_5": 1467817903
+      dice_result_0: 2142083261
+      dice_result_1: -1191511046
+      dice_result_2: -1076244897
+      dice_result_3: -772531041
+      dice_result_4: -2068240016
+      dice_result_5: 1484751409
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
