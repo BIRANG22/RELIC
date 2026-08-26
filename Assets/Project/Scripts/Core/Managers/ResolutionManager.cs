@@ -367,6 +367,9 @@ public class ResolutionManager : MonoBehaviour
         if (canvas.GetComponent<ResolutionLetterboxOverlay>() != null)
             return false;
 
+        if (canvas.GetComponentInParent<ResolutionCanvasFitOptOut>() != null)
+            return false;
+
         return true;
     }
 
