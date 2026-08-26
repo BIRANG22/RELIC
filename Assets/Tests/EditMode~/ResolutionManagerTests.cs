@@ -223,6 +223,25 @@ public class ResolutionManagerTests
     }
 
     [Test]
+    public void ShouldFitCanvas_ExcludesCanvasWithResolutionFitOptOut()
+    {
+        GameObject canvasObject = new("IntroCanvas", typeof(RectTransform), typeof(Canvas));
+
+        try
+        {
+            Canvas canvas = canvasObject.GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvasObject.AddComponent<ResolutionCanvasFitOptOut>();
+
+            Assert.That(ResolutionManager.ShouldFitCanvasForResolution(canvas), Is.False);
+        }
+        finally
+        {
+            Object.DestroyImmediate(canvasObject);
+        }
+    }
+
+    [Test]
     public void PlayerSettings_EnableResizableWindowForLetterboxedResize()
     {
         string projectSettings = File.ReadAllText("ProjectSettings/ProjectSettings.asset");
