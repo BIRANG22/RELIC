@@ -115,7 +115,7 @@ MonoBehaviour:
     VfxLocalPosition: {x: 0, y: 0, z: -0.1}
     VfxLocalEulerAngles: {x: 0, y: 0, z: 0}
     VfxLocalScale: {x: 1, y: 1, z: 1}
-    VfxLifetime: 2
+    VfxLifetime: 1
     TintTarget: {fileID: 0}
     ApplyTint: 1
     TintColor: {r: 0.33773577, g: 0.590343, b: 1, a: 1}
@@ -128,7 +128,7 @@ MonoBehaviour:
       ActiveState: 1
     DisableTargetsOnPlay:
     - {fileID: 8265413038676786219}
-    DisableDelayOnPlay: 1
+    DisableDelayOnPlay: 0.5
     ActiveTarget: {fileID: 0}
     ApplyActiveState: 0
     ActiveState: 1
