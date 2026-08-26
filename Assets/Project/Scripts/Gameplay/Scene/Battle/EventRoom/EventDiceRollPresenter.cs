@@ -17,6 +17,11 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
     [SerializeField, Min(0f)] private float rollDuration = 0.8f;
     [SerializeField] private bool hideOnAwake = true;
 
+    [Header("Sound")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip rollSound;
+    [SerializeField, Range(0f, 1f)] private float rollSoundVolume = 1f;
+
     private Coroutine rollRoutine;
 
     private void Awake()
@@ -104,6 +109,7 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
         {
             animator.ResetTrigger(rollTriggerName);
             animator.SetTrigger(rollTriggerName);
+            PlayRollSound();
             return;
         }
 
@@ -111,7 +117,16 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
         {
             animator.Play(rollStateName, 0, 0f);
             animator.Update(0f);
+            PlayRollSound();
         }
+    }
+
+    private void PlayRollSound()
+    {
+        if (audioSource == null || rollSound == null)
+            return;
+
+        audioSource.PlayOneShot(rollSound, Mathf.Clamp01(rollSoundVolume));
     }
 
     private void StopRollAnimation()
@@ -149,6 +164,9 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
     {
         if (animator == null)
             animator = GetComponent<Animator>();
+
+        if (audioSource == null)
+            audioSource = GetComponent<AudioSource>();
 
         if (diceImages == null || diceImages.Length == 0)
             diceImages = GetComponentsInChildren<Image>(true);
