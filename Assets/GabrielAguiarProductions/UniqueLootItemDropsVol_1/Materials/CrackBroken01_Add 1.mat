@@ -25,6 +25,8 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - _ALPHAMODULATE_ON
+  - _ALPHATEST_ON
   - _BUILTIN_SURFACE_TYPE_TRANSPARENT
   - _SURFACE_TYPE_TRANSPARENT
   m_InvalidKeywords: []
@@ -35,8 +37,8 @@ Material:
   stringTagMap:
     RenderType: Transparent
   disabledShaderPasses:
-  - DepthOnly
   - MOTIONVECTORS
+  - DepthOnly
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
@@ -50,11 +52,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: b785a687fc5254142b208fb11ae499eb, type: 3}
+        m_Texture: {fileID: 2800000, guid: 89a7c28f1315d684ca69a3b6bdce07b9, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Mask:
-        m_Texture: {fileID: 2800000, guid: b785a687fc5254142b208fb11ae499eb, type: 3}
+        m_Texture: {fileID: 2800000, guid: 89a7c28f1315d684ca69a3b6bdce07b9, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _RefractionTex:
@@ -75,7 +77,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _AlphaClip: 0
+    - _AlphaClip: 1
     - _AlphaToMask: 0
     - _BUILTIN_AlphaClip: 0
     - _BUILTIN_Blend: 0
@@ -88,13 +90,13 @@ Material:
     - _BUILTIN_ZTest: 4
     - _BUILTIN_ZWrite: 0
     - _BUILTIN_ZWriteControl: 0
-    - _Blend: 2
+    - _Blend: 3
     - _CastShadows: 1
     - _Clip: 0.01
     - _Cull: 0
     - _DissolveAmount: 0
     - _DistortionAmount: 0
-    - _DstBlend: 1
+    - _DstBlend: 0
     - _DstBlendAlpha: 1
     - _QueueControl: 0
     - _QueueOffset: 0
@@ -102,14 +104,14 @@ Material:
     - _RefractionAmount: 0
     - _RefractionStrength: -1.79
     - _SoftParticles: 20
-    - _SrcBlend: 5
-    - _SrcBlendAlpha: 1
+    - _SrcBlend: 2
+    - _SrcBlendAlpha: 0
     - _Surface: 1
     - _ZTest: 4
     - _ZWrite: 0
     - _ZWriteControl: 0
     m_Colors:
-    - _Color: {r: 1.4980392, g: 1.4980392, b: 1.4980392, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _DissolveTexSpeed: {r: 0, g: 0, b: 0, a: 0}
     - _DissolveTexTiling: {r: 1, g: 1, b: 0, a: 0}
     - _DistortionTexSpeed: {r: 0, g: 0, b: 0, a: 0}
@@ -118,7 +120,7 @@ Material:
     - _MainTexTiling: {r: 1, g: 1, b: 0, a: 0}
     - _RefractionTexOffset: {r: 0, g: 0, b: 0, a: 0}
     - _RefractionTextTiling: {r: 1, g: 1, b: 0, a: 0}
-    - _RefractionTintColor: {r: 1, g: 1, b: 1, a: 0}
+    - _RefractionTintColor: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &5536390230366542366
