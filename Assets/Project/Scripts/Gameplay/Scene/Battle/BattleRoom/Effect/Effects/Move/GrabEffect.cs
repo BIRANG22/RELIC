@@ -102,6 +102,7 @@ public class GrabEffect : BattleEffectBase
         // 그랩 대상이 해당 칸에 부딪히면 이동하지 않고 충돌 고정 피해를 받습니다.
         if (IsGridEffectBlocked(targetIndex))
         {
+            TryDamageBlockedGridEffect(targetIndex);
             ApplyCrashToPlayer(target, gridManager);
             return false;
         }
@@ -152,6 +153,7 @@ public class GrabEffect : BattleEffectBase
 
             if (IsGridEffectBlocked(targetIndex))
             {
+                TryDamageBlockedGridEffect(targetIndex);
                 ApplyCrashToMonster(target, gridManager);
                 return false;
             }
@@ -281,6 +283,17 @@ public class GrabEffect : BattleEffectBase
             Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
 
         return controller != null && controller.IsBlocked(gridIndex);
+    }
+
+    private static void TryDamageBlockedGridEffect(int gridIndex)
+    {
+        BattleGridEffectController controller =
+            Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+
+        if (controller == null || !controller.IsBlocked(gridIndex))
+            return;
+
+        controller.TryDamageEffect(gridIndex, 2, out _);
     }
 
     private static void ApplyCrashToPlayer(

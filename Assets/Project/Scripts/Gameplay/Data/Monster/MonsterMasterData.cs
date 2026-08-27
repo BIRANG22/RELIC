@@ -21,7 +21,6 @@ namespace Relic.Gameplay.Data
         public int MaxRemnant;
         public string UniqueItemId;
         public float UniqueItemChance;
-        public float RelicChance;
         public string AttackRangeId;
 
         public string PossSkillId01;

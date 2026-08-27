@@ -24,7 +24,6 @@ namespace Relic.Gameplay.Data
         public int MaxRemnant;
         public string UniqueItemId;
         public float UniqueItemChance;
-        public float RelicChance;
         public string AttackRangeId;
         public string SpecialAction1;
         public string SpecialAction2;
@@ -65,7 +64,6 @@ namespace Relic.Gameplay.Data
             MaxRemnant = masterData.MaxRemnant;
             UniqueItemId = masterData.UniqueItemId;
             UniqueItemChance = masterData.UniqueItemChance;
-            RelicChance = masterData.RelicChance;
             AttackRangeId = masterData.AttackRangeId;
             SpecialAction1 = masterData.SpecialAction1;
             SpecialAction2 = masterData.SpecialAction2;

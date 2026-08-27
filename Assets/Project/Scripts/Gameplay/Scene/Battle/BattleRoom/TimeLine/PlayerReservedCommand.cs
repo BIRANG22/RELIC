@@ -176,13 +176,13 @@ public class PlayerReservedCommand
     public int EffectiveMoveGridIndex =>
         HasSimulatedResult ? SimulatedMoveGridIndex : ReservedMoveGridIndex;
 
-    public Vector2Int ExecutionMoveOffset =>
-        SkipMoveVisual ? MoveOffset : EffectiveMoveOffset;
+    // 예약형 전투에서는 실행 시점에 예약한 이동 자체를 시도해야 한다.
+    // 시뮬레이션 결과는 후속 예약 표시를 위한 참고값일 뿐, 실제 이동량을 바꾸지 않는다.
+    public Vector2Int ExecutionMoveOffset => MoveOffset;
 
+    // 고스트는 현재 점유 상태로 성공/실패를 예측하지 않고 사용자가 예약한 목적지를 표시한다.
     public int PreviewMoveGridIndex =>
-        SkipMoveVisual && ReservedMoveGridIndex >= 0
-            ? ReservedMoveGridIndex
-            : EffectiveMoveGridIndex;
+        ReservedMoveGridIndex >= 0 ? ReservedMoveGridIndex : EffectiveMoveGridIndex;
 
     public bool IsVisualSkipConsumedAtGrid(int gridIndex)
     {
