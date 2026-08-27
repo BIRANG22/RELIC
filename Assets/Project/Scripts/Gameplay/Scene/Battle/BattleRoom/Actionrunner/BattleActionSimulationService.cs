@@ -279,9 +279,36 @@ public class BattleActionSimulationService
         string selfKey,
         int targetGridIndex)
     {
-        // 예약 단계에서는 유닛 점유를 미래의 확정 장애물로 취급하지 않는다.
-        // 플레이어/몬스터는 앞선 이동, 넉백, 그랩 등으로 실행 전에 위치가 달라질 수 있다.
         HashSet<int> blockedGridIndices = new();
+
+        // 예약 경로를 찾을 때는 현재 유닛 점유를 장애물로 사용한다.
+        // 다만 이것은 경로 탐색 기준일 뿐, 실행 시점의 충돌 결과를 미리 확정하지 않는다.
+        foreach (var pair in playerPositions)
+        {
+            if ("P:" + pair.Key == selfKey)
+                continue;
+
+            blockedGridIndices.Add(pair.Value);
+        }
+
+        foreach (var pair in monsterPositions)
+        {
+            if (pair.Value == null)
+                continue;
+
+            for (int i = 0; i < pair.Value.Count; i++)
+            {
+                int gridIndex = pair.Value[i];
+
+                // 사용자가 몬스터가 있는 칸 자체를 목적지로 예약한 경우에는
+                // 목적지를 막지 않고, 중간 경로의 현재 몬스터 점유만 우회한다.
+                if (gridIndex == targetGridIndex)
+                    continue;
+
+                blockedGridIndices.Add(gridIndex);
+            }
+        }
+
         AddBlockedGridEffectIndices(blockedGridIndices);
         return blockedGridIndices;
     }
