@@ -14,21 +14,16 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
     [SerializeField] private GridManager gridManager;
 
     [Header("Nocturn Portal Preview")]
-    [Tooltip("���� BattleReservationSystem ������Ʈ�� ���� ��Ʈ�ѷ��� ����մϴ�. ��� ������ �ڵ����� ã���ϴ�.")]
+    [Tooltip("같은 BattleReservationSystem 오브젝트의 예약 컨트롤러를 사용합니다. 비어 있으면 자동으로 찾습니다.")]
     [SerializeField] private PlayerSkillReservationController playerSkillReservationController;
 
     [Header("Intro Text")]
     [SerializeField] private BattleMapIntroText battleMapIntroText;
-    [SerializeField] private string battleStartMessage = "���� ����";
-    [SerializeField] private string actionReserveMessage = "�ൿ ����";
+    [SerializeField] private string battleStartMessage = "전투 시작";
+    [SerializeField] private string actionReserveMessage = "행동 예약";
     [SerializeField] private float firstMonsterCommandDelay = 0.15f;
     [SerializeField] private float monsterCommandInterval = 0.18f;
     [SerializeField] private float actionReserveMessageDelay = 0.1f;
-
-    [Header("SFX")]
-    [SerializeField] private bool playActionReserveSfx = true;
-    [SerializeField, SoundId(SoundCategory.Sfx)] private string actionReserveSfxId = AudioIds.Sfx.BattleActionReserveText;
-    [SerializeField, Range(0f, 1f)] private float actionReserveSfxVolume = 1f;
 
     private Coroutine planRoutine;
     private Coroutine battleStartTextRoutine;
@@ -114,7 +109,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
     {
         if (timelineController == null)
         {
-            Debug.LogWarning("[BattleMonsterTurnPlanner] BattleTimelineController�� �����ϴ�.");
+            Debug.LogWarning("[BattleMonsterTurnPlanner] BattleTimelineController가 없습니다.");
             planRoutine = null;
             yield break;
         }
@@ -163,7 +158,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
     {
         if (timelineController == null)
         {
-            Debug.LogWarning("[BattleMonsterTurnPlanner] BattleTimelineController�� �����ϴ�.");
+            Debug.LogWarning("[BattleMonsterTurnPlanner] BattleTimelineController가 없습니다.");
             return;
         }
 
@@ -283,14 +278,13 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
                 if (skillData == null)
                 {
-                    Debug.LogWarning($"[BattleMonsterTurnPlanner] SkillData ����: {action.SkillId}");
+                    Debug.LogWarning($"[BattleMonsterTurnPlanner] SkillData 없음: {action.SkillId}");
                     continue;
                 }
 
                 MonsterReservedCommand command = new MonsterReservedCommand(runtime, skillData);
                 command.SetMoveOffset(action.MoveOffset);
                 command.SetRangeOriginGridIndex(action.RangeOriginGridIndex);
-                command.SetRangeOriginCasterGridIndex(action.RangeOriginCasterGridIndex);
                 command.SetPortalMove(action.IsPortalMove);
 
                 if (action.HasForcedDirection)
@@ -302,9 +296,9 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                         action.ExplicitRangeGridIndices,
                         action.ExplicitRangeGridIndices);
                 }
-                // ��Ż ������ RangeOriginGridIndex���� ���� �����̵� �������� ����Ǿ� �ֽ��ϴ�.
-                // �Ϲ� ���� ���� ������� �� ���� ����� ��Ż �������� ������ ĭ���� �ٲ� �� �����Ƿ�
-                // ��Ż �̵��� ���� ���� ��꿡�� �����մϴ�.
+                // 포탈 명령의 RangeOriginGridIndex에는 실제 순간이동 목적지가 저장되어 있습니다.
+                // 일반 공격 범위 계산으로 이 값을 덮어쓰면 포탈 목적지가 엉뚱한 칸으로 바뀔 수 있으므로
+                // 포탈 이동은 공격 범위 계산에서 제외합니다.
                 else if (!action.IsPortalMove && !IsMoveSkill(skillData))
                 {
                     SetMonsterRange(monsterUnit, skillData, command);
@@ -530,19 +524,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
     private void ShowActionReserveIntroText()
     {
-        PlaySfx(playActionReserveSfx, actionReserveSfxId, actionReserveSfxVolume);
         ShowIntroText(actionReserveMessage);
-    }
-
-    private void PlaySfx(bool play, string sfxId, float volume)
-    {
-        if (!play)
-            return;
-
-        if (AudioManager.Instance == null)
-            return;
-
-        AudioManager.Instance.PlaySfx(sfxId, volume);
     }
 
     private void ShowIntroText(string text)
@@ -604,13 +586,13 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
     {
         if (monsterUnit == null || skillData == null || command == null)
         {
-            Debug.LogWarning("[MonsterRange] null ����");
+            Debug.LogWarning("[MonsterRange] null 참조");
             return;
         }
 
         if (gridManager == null)
         {
-            Debug.LogWarning("[MonsterRange] gridManager ����");
+            Debug.LogWarning("[MonsterRange] gridManager 없음");
             return;
         }
 
@@ -618,13 +600,13 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
         if (casterGridIndex < 0)
         {
-            Debug.LogWarning($"[MonsterRange] MainGridIndex ���� / Monster:{monsterUnit.RuntimeData?.Name}");
+            Debug.LogWarning($"[MonsterRange] MainGridIndex 없음 / Monster:{monsterUnit.RuntimeData?.Name}");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(skillData.RangeId) || skillData.RangeId == "0")
         {
-            Debug.LogWarning($"[MonsterRange] RangeId ���� / Skill:{skillData.SkillId}");
+            Debug.LogWarning($"[MonsterRange] RangeId 없음 / Skill:{skillData.SkillId}");
             return;
         }
 

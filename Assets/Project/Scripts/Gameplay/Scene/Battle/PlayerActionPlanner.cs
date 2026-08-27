@@ -8,7 +8,6 @@ namespace Relic.Gameplay.Battle
     public class PlayerActionPlanner : MonoBehaviour
     {
         private const string MoveSkillLevelOneId = "S_Move_1";
-        private const string MoveSkillLevelTwoId = "S_Move_2";
 
         [Header("Timeline")]
         [SerializeField] private BattleTimelineManager timelineManager;
@@ -434,8 +433,7 @@ namespace Relic.Gameplay.Battle
             if (skillData.TimelineNotation == TimelineActionType.Move)
                 return true;
 
-            return skillData.SkillId == MoveSkillLevelOneId ||
-                   skillData.SkillId == MoveSkillLevelTwoId;
+            return skillData.SkillId == MoveSkillLevelOneId;
         }
 
         private void ClearPendingTargetSelection()

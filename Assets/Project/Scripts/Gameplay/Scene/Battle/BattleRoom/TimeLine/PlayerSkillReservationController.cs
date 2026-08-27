@@ -21,7 +21,7 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     [Header("Reservation SFX")]
     [Tooltip("스킬 또는 이동 행동이 타임라인에 정상 등록되었을 때 재생할 효과음입니다.")]
-    [SerializeField, SoundId(SoundCategory.Sfx)] private string reservationConfirmSfx = AudioIds.Sfx.SkillReserve;
+    [SerializeField] private string reservationConfirmSfxId = "SkillReserve";
     [Tooltip("행동 등록 효과음의 볼륨 배율입니다.")]
     [Range(0f, 1f)]
     [SerializeField] private float reservationConfirmSfxVolume = 1f;
@@ -110,7 +110,6 @@ public class PlayerSkillReservationController : MonoBehaviour
     private int currentMoveReservationCapacity = 1;
 
     private const string MoveSkillLevelOneId = "S_Move_1";
-    private const string MoveSkillLevelTwoId = "S_Move_2";
     private const string NocturnPortalPreviewGridEffectId = "GR_nocturn_portal_preview";
     private const string NocturnPortalVfxLayerName = "VFX";
     private const float NocturnPortalPreviewLifeTime = 9999f;
@@ -1478,9 +1477,6 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         if (skillData != null)
         {
-            if (skillData.SkillId == MoveSkillLevelTwoId)
-                return 2;
-
             if (skillData.SkillId == MoveSkillLevelOneId)
                 return 1;
         }
@@ -1510,9 +1506,6 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         if (currentSkillData != null)
         {
-            if (currentSkillData.SkillId == MoveSkillLevelTwoId)
-                return 2;
-
             if (currentSkillData.SkillId == MoveSkillLevelOneId)
                 return 1;
         }
@@ -2737,7 +2730,7 @@ public class PlayerSkillReservationController : MonoBehaviour
             return;
 
         AudioManager.Instance.PlaySfx(
-            reservationConfirmSfx,
+            reservationConfirmSfxId,
             reservationConfirmSfxVolume
         );
     }
@@ -2840,8 +2833,7 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (skillData.TimelineNotation == TimelineActionType.Move)
             return true;
 
-        return skillData.SkillId == MoveSkillLevelOneId ||
-               skillData.SkillId == MoveSkillLevelTwoId;
+        return skillData.SkillId == MoveSkillLevelOneId;
     }
 
     private int FindCurrentCharacterGridIndex(CharacterRuntimeData userRuntime)

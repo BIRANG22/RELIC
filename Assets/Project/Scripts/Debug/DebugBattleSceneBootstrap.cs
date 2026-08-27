@@ -464,8 +464,7 @@ public static class DebugBattleSkillCastUtility
 
         return skillData.Category == Category.Move ||
                skillData.TimelineNotation == TimelineActionType.Move ||
-               skillData.SkillId == "S_Move_1" ||
-               skillData.SkillId == "S_Move_2";
+               skillData.SkillId == "S_Move_1";
     }
 
     private static bool IsValidGridIndex(GridManager gridManager, int gridIndex)

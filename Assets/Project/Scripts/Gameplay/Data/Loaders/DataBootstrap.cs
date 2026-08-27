@@ -86,6 +86,13 @@ namespace Relic.Gameplay.Data
             var characters = CharacterCsvLoader.Load(workbook);
             var monsters = MonsterCsvLoader.Load(workbook);
             var skills = SkillCsvLoader.LoadSkills(workbook);
+
+            // 이동 스킬은 S_Move_1만 사용한다.
+            // 오래된 GameDataRuntime에 S_Move_2가 남아 있어도 런타임 데이터에는 포함하지 않는다.
+            skills.RemoveAll(skill =>
+                skill != null &&
+                string.Equals(skill.SkillId, "S_Move_2", System.StringComparison.Ordinal));
+
             var effects = EffectCsvLoader.Load(workbook);
             var relics = RelicCsvLoader.Load(workbook);
             var compounds = CompoundCsvLoader.Load(workbook);

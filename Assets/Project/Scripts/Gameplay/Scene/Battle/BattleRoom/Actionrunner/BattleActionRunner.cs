@@ -34,6 +34,8 @@ public class BattleActionRunner
     private const float DefaultActionRoutineTimeout = 8f;
     private const string MuckMonsterId = "Mon_01";
     private const string MuckProjectileSkillId = "S_Monster_02";
+    private const string BlobAttackSkillId = "S_Monster_04";
+    private const string BlobMoveSkillId = "S_Monster_03";
     private const string BlobMonsterId = "Mon_02";
     private const string ResidueGridEffectId = "GR_Residue";
     private static readonly Color ExecutionRangeColor = Color.red;
@@ -1774,8 +1776,7 @@ public class BattleActionRunner
 
         return skillData.Category == Category.Move ||
                skillData.TimelineNotation == TimelineActionType.Move ||
-               skillData.SkillId == "S_Move_1" ||
-               skillData.SkillId == "S_Move_2";
+               skillData.SkillId == "S_Move_1";
     }
 
     private IEnumerator ExecutePlayerSkillEffectsToMonsters(
@@ -3411,8 +3412,8 @@ public class BattleActionRunner
         }
 
         // 확정된 방향을 기준으로 공격 범위를 계산합니다.
-        // 머크는 예약된 공격 오프셋을 유지하되, 실제 현재 위치를 기준으로 공격 원점을 다시 맞춥니다.
-        AlignMuckProjectileRangeOriginToActualPosition(monster, command);
+        // 머크는 예약된 공격 오프셋을 유지하고, 블롭은 실제 현재 위치 자체를 공격 원점으로 사용합니다.
+        AlignRelativeRangeOriginToActualPosition(monster, command);
 
         RecalculateMonsterSkillRangeAtExecution(monster, command);
 
@@ -3536,18 +3537,29 @@ public class BattleActionRunner
         }
     }
 
-    private void AlignMuckProjectileRangeOriginToActualPosition(
+    private void AlignRelativeRangeOriginToActualPosition(
         MonsterUnit monster,
         MonsterReservedCommand command)
     {
         if (monster == null || command == null || gridManager == null)
             return;
 
-        if (!string.Equals(command.MonsterId, MuckMonsterId, System.StringComparison.Ordinal) ||
-            !string.Equals(command.SkillId, MuckProjectileSkillId, System.StringComparison.Ordinal))
+        bool isBlobAttack =
+            string.Equals(command.MonsterId, BlobMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, BlobAttackSkillId, System.StringComparison.Ordinal);
+
+        // 블롭 공격은 항상 실행 순간의 실제 위치에서 시작합니다.
+        // 충돌로 이동에 실패했다면 예약 당시 이동 성공 예상 위치를 절대 사용하지 않습니다.
+        if (isBlobAttack)
         {
+            if (monster.MainGridIndex >= 0)
+                command.SetRangeOriginGridIndex(monster.MainGridIndex);
+
             return;
         }
+
+        if (!UsesRelativeRangeOriginAtExecution(command))
+            return;
 
         if (monster.MainGridIndex < 0 ||
             command.RangeOriginGridIndex < 0 ||
@@ -3568,6 +3580,18 @@ public class BattleActionRunner
         command.SetRangeOriginGridIndex(gridManager.CoordToIndex(executionOriginCoord));
     }
 
+    private static bool UsesRelativeRangeOriginAtExecution(MonsterReservedCommand command)
+    {
+        if (command == null)
+            return false;
+
+        bool isMuckAttack =
+            string.Equals(command.MonsterId, MuckMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, MuckProjectileSkillId, System.StringComparison.Ordinal);
+
+        return isMuckAttack;
+    }
+
     private void RecalculateMonsterSkillRangeAtExecution(
     MonsterUnit monster,
     MonsterReservedCommand command)
@@ -3575,7 +3599,13 @@ public class BattleActionRunner
         if (monster == null || command == null || command.SkillData == null)
             return;
 
-        if (command.HasExplicitRangeResult)
+        bool isBlobAttack =
+            string.Equals(command.MonsterId, BlobMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, BlobAttackSkillId, System.StringComparison.Ordinal);
+
+        // 블롭은 예약 시 계산된 범위를 재사용하지 않습니다.
+        // 실제 이동 성공/실패 결과가 정해진 뒤 현재 위치 기준으로 좌우 공격 범위를 다시 계산합니다.
+        if (command.HasExplicitRangeResult && !isBlobAttack)
             return;
 
         BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
@@ -4098,6 +4128,16 @@ public class BattleActionRunner
     {
         if (command == null)
             return Vector2Int.zero;
+
+        // 블롭은 캐릭터가 있는 칸으로 충돌 이동을 예약할 수 있습니다.
+        // 타임라인 시뮬레이션에서는 점유된 칸이라 이동량이 0으로 계산될 수 있지만,
+        // 실제 실행에서는 원래 요청한 이동 방향으로 충돌을 시도해야 합니다.
+        if (string.Equals(command.MonsterId, BlobMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, BlobMoveSkillId, System.StringComparison.Ordinal) &&
+            command.MoveOffset != Vector2Int.zero)
+        {
+            return command.MoveOffset;
+        }
 
         return command.EffectiveMoveOffset;
     }
