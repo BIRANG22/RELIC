@@ -6,9 +6,7 @@ using UnityEngine;
 public static class BattleEquipmentEffectService
 {
     private const int LastTimelineSlotIndex = 4;
-    private const int MoveSkillLevelTwoThreshold = 50;
     private const string MoveSkillLevelOneId = "S_Move_1";
-    private const string MoveSkillLevelTwoId = "S_Move_2";
     private const string Relic06Turn2ArmorAppliedId = "Relic_06_Turn2Armor";
     private const string MaxHpEffectId = "E_Max_HP";
     private const string MaxCostEffectId = "E_Max_Cost";
@@ -206,9 +204,7 @@ public static class BattleEquipmentEffectService
         if (runtime == null)
             return;
 
-        runtime.MoveSkillId = runtime.CurrentMoveLevel >= MoveSkillLevelTwoThreshold
-            ? MoveSkillLevelTwoId
-            : MoveSkillLevelOneId;
+        runtime.MoveSkillId = MoveSkillLevelOneId;
     }
 
     public static int GetEffectiveMaxHP(
