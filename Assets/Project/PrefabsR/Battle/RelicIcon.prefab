@@ -99,4 +99,4 @@ MonoBehaviour:
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
-  clickSfxType: 7
+  clickSfxId: ui.normal.click

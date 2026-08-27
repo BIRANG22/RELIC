@@ -16,7 +16,7 @@ public class InventoryPanelCloseButton : MonoBehaviour
 
     [Header("Sound")]
     [SerializeField] private bool playClickSound = true;
-    [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfx = AudioIds.Sfx.NormalButtonClick;
 
     private Coroutine closeCoroutine;
     private int lastClickSoundFrame = -1;
@@ -38,7 +38,7 @@ public class InventoryPanelCloseButton : MonoBehaviour
 
         if (inventoryPanelRect == null)
         {
-            Debug.LogWarning("[InventoryPanelCloseButton] InventoryPanelÀÇ RectTransformÀ» Ã£Áö ¸øÇß½À´Ï´Ù.");
+            Debug.LogWarning("[InventoryPanelCloseButton] InventoryPanelï¿½ï¿½ RectTransformï¿½ï¿½ Ã£ï¿½ï¿½ ï¿½ï¿½ï¿½ß½ï¿½ï¿½Ï´ï¿½.");
             return;
         }
 

@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -58,14 +58,14 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
     [Header("Sound")]
     [SerializeField] private bool playHoverSound = true;
-    [SerializeField] private SfxType hoverSfx = SfxType.NormalButtonHover;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string hoverSfx = AudioIds.Sfx.NormalButtonHover;
     [SerializeField] private bool playClickSound = true;
-    [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfx = AudioIds.Sfx.NormalButtonClick;
 
     [Header("Panel Open Close Sound")]
     [SerializeField] private bool playPanelOpenCloseSound = false;
-    [SerializeField] private SfxType panelOpenSfx = SfxType.BagOpen;
-    [SerializeField] private SfxType panelCloseSfx = SfxType.BagClose;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string panelOpenSfx = AudioIds.Sfx.BagOpen;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string panelCloseSfx = AudioIds.Sfx.BagClose;
     [SerializeField, Range(0f, 1f)] private float panelOpenCloseSfxVolume = 1f;
 
     private const string DefaultMenuPanelObjectName = "MenuPanel";
@@ -821,7 +821,7 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         if (AudioManager.Instance == null)
             return;
 
-        SfxType targetSfx = willOpen ? panelOpenSfx : panelCloseSfx;
+        string targetSfx = willOpen ? panelOpenSfx : panelCloseSfx;
         AudioManager.Instance.PlaySfx(targetSfx, panelOpenCloseSfxVolume);
     }
 

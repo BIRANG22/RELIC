@@ -6,7 +6,7 @@ using UnityEngine;
 public class ChestOpenButtonTests
 {
     [Test]
-    public void DefaultChestSfxTypes_UseConfirmForClickAndBoxOpenForOpen()
+    public void DefaultChestSfxIds_UseConfirmForClickAndBoxOpenForOpen()
     {
         GameObject chestObject = new("Chest");
 
@@ -14,8 +14,8 @@ public class ChestOpenButtonTests
         {
             ChestOpenButton chest = chestObject.AddComponent<ChestOpenButton>();
 
-            Assert.That(GetPrivateField<SfxType>(chest, "clickSfxType"), Is.EqualTo(SfxType.Confirm));
-            Assert.That(GetPrivateField<SfxType>(chest, "openSfxType"), Is.EqualTo(SfxType.BoxOpen));
+            Assert.That(GetPrivateField<string>(chest, "clickSfxId"), Is.EqualTo(AudioIds.Sfx.Confirm));
+            Assert.That(GetPrivateField<string>(chest, "openSfxId"), Is.EqualTo(AudioIds.Sfx.BoxOpen));
         }
         finally
         {

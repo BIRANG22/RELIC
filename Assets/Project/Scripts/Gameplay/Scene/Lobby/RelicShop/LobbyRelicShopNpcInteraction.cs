@@ -8,26 +8,26 @@ public sealed class LobbyRelicShopNpcInteraction : MonoBehaviour
     [SerializeField] private LobbyRelicShopPresenter presenter;
 
     [Header("Back Button")]
-    [Tooltip("À¯¹° »óÁ¡ ÆÐ³ÎÀ» ´Ý´Â BackButtonÀÔ´Ï´Ù.")]
+    [Tooltip("ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ð³ï¿½ï¿½ï¿½ ï¿½Ý´ï¿½ BackButtonï¿½Ô´Ï´ï¿½.")]
     [SerializeField] private Button backButton;
 
     [Header("Availability Indicator")]
-    [Tooltip("À¯¹° »óÁ¡À» ÀÌ¿ëÇÒ ¼ö ÀÖÀ» ¶§ Ç×»ó Ç¥½ÃÇÒ relic_stone (1)ÀÇ SpriteRendererÀÔ´Ï´Ù.")]
+    [Tooltip("ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¿ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½×»ï¿½ Ç¥ï¿½ï¿½ï¿½ï¿½ relic_stone (1)ï¿½ï¿½ SpriteRendererï¿½Ô´Ï´ï¿½.")]
     [SerializeField] private SpriteRenderer availabilityIndicatorRenderer;
-    [Tooltip("ÀÌ¿ë °¡´É »óÅÂ¿¡¼­ ¼û½¬±â È¿°úÀÇ ½ÃÀÛ »ö»óÀÔ´Ï´Ù.")]
+    [Tooltip("ï¿½Ì¿ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È¿ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ô´Ï´ï¿½.")]
     [SerializeField] private Color availabilityAvailableColor = new Color32(0, 177, 255, 255);
-    [Tooltip("ÀÌ¿ë °¡´É »óÅÂ¿¡¼­ ¼û½¬±â È¿°úÀÇ ¹àÀº »ö»óÀÔ´Ï´Ù.")]
+    [Tooltip("ï¿½Ì¿ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È¿ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ô´Ï´ï¿½.")]
     [SerializeField] private Color availabilityPulseColor = Color.white;
-    [Tooltip("»ö»óÀÌ ¿Õº¹ÇÏ´Â ¼ÓµµÀÔ´Ï´Ù. °ªÀÌ Å¬¼ö·Ï ºü¸£°Ô ¼û½±´Ï´Ù.")]
+    [Tooltip("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Õºï¿½ï¿½Ï´ï¿½ ï¿½Óµï¿½ï¿½Ô´Ï´ï¿½. ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.")]
     [SerializeField, Min(0.01f)] private float availabilityPulseSpeed = 1f;
 
     [Header("Purchase Cooldown")]
     [SerializeField] private SettingWarningUI warningUI;
-    [SerializeField] private string purchaseCooldownWarningMessage = "´Ù½Ã ÀÌ¿ëÇÏ·Á¸é ´ë±â ½Ã°£ÀÌ ÇÊ¿äÇÕ´Ï´Ù.";
+    [SerializeField] private string purchaseCooldownWarningMessage = "ï¿½Ù½ï¿½ ï¿½Ì¿ï¿½ï¿½Ï·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ã°ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½ï¿½Õ´Ï´ï¿½.";
 
     [Header("Sound")]
     [SerializeField] private bool playClickSound = true;
-    [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfx = AudioIds.Sfx.NormalButtonClick;
     [SerializeField, Range(0f, 1f)] private float clickSfxVolume = 1f;
 
     private void Awake()
@@ -44,8 +44,8 @@ public sealed class LobbyRelicShopNpcInteraction : MonoBehaviour
 
     private void LateUpdate()
     {
-        // ±âÁ¸ È£¹ö ½ºÅ©¸³Æ®°¡ °°Àº ¿ÀºêÁ§Æ®¸¦ ÄÑ°í ²ô´õ¶óµµ
-        // À¯¹° »óÁ¡ÀÇ ½ÇÁ¦ ÀÌ¿ë °¡´É »óÅÂ°¡ ÃÖÁ¾ Ç¥½Ã »óÅÂ¸¦ °áÁ¤ÇÏµµ·Ï LateUpdate¿¡¼­ °»½ÅÇÕ´Ï´Ù.
+        // ï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½ ï¿½ï¿½Å©ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½Ñ°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¿ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â°ï¿½ ï¿½ï¿½ï¿½ï¿½ Ç¥ï¿½ï¿½ ï¿½ï¿½ï¿½Â¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ïµï¿½ï¿½ï¿½ LateUpdateï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         RefreshAvailabilityIndicator(false);
     }
 

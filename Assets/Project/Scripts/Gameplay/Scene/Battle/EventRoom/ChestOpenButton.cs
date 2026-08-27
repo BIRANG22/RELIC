@@ -62,10 +62,10 @@ public class ChestOpenButton : MonoBehaviour
 
     [Header("Chest SFX")]
     [SerializeField] private bool playClickSfx = true;
-    [SerializeField] private SfxType clickSfxType = SfxType.Confirm;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfxId = AudioIds.Sfx.Confirm;
     [Min(0f)][SerializeField] private float clickSfxVolumeMultiplier = 1f;
     [SerializeField] private bool playOpenSfx = true;
-    [SerializeField] private SfxType openSfxType = SfxType.BoxOpen;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string openSfxId = AudioIds.Sfx.BoxOpen;
     [Min(0f)][SerializeField] private float openSfxVolumeMultiplier = 1f;
 
     [Header("VFX 런타임 스폰")]
@@ -413,20 +413,20 @@ public class ChestOpenButton : MonoBehaviour
 
     private void PlayChestClickSfx()
     {
-        PlayChestSfx(playClickSfx, clickSfxType, clickSfxVolumeMultiplier);
+        PlayChestSfx(playClickSfx, clickSfxId, clickSfxVolumeMultiplier);
     }
 
     private void PlayChestOpenSfx()
     {
-        PlayChestSfx(playOpenSfx, openSfxType, openSfxVolumeMultiplier);
+        PlayChestSfx(playOpenSfx, openSfxId, openSfxVolumeMultiplier);
     }
 
-    private static void PlayChestSfx(bool play, SfxType sfxType, float volumeMultiplier)
+    private static void PlayChestSfx(bool play, string sfxId, float volumeMultiplier)
     {
         if (!play || AudioManager.Instance == null)
             return;
 
-        AudioManager.Instance.PlaySfx(sfxType, volumeMultiplier);
+        AudioManager.Instance.PlaySfx(sfxId, volumeMultiplier);
     }
 
     private IEnumerator ClunkRoutine()

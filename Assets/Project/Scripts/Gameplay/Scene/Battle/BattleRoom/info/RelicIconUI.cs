@@ -23,7 +23,7 @@ public class RelicIconUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHan
 
     [Header("Sound")]
     [SerializeField] private bool playClickSfx = true;
-    [SerializeField] private SfxType clickSfxType = SfxType.NormalButtonClick;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfxId = AudioIds.Sfx.NormalButtonClick;
 
     private string relicId;
     private RelicEquipPanelUI owner;
@@ -151,7 +151,7 @@ public class RelicIconUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHan
 
         if (owner == null)
         {
-            Debug.LogWarning($"[RelicIconUI] owner ¾øÀ½ / Relic:{relicId}");
+            Debug.LogWarning($"[RelicIconUI] owner ï¿½ï¿½ï¿½ï¿½ / Relic:{relicId}");
             return;
         }
 
@@ -201,7 +201,7 @@ public class RelicIconUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHan
         }
         else if (useHoverBreathEffect && isPointerOver && !string.IsNullOrWhiteSpace(relicId))
         {
-            // 1.0°ú 1.1 »çÀÌ¸¦ ¹Ýº¹ÇÕ´Ï´Ù.
+            // 1.0ï¿½ï¿½ 1.1 ï¿½ï¿½ï¿½Ì¸ï¿½ ï¿½Ýºï¿½ï¿½Õ´Ï´ï¿½.
             float breathT = (Mathf.Sin(Time.unscaledTime * breathSpeed) + 1f) * 0.5f;
             scaleMultiplier = Mathf.Lerp(1f, hoverMaxScale, breathT);
         }
@@ -280,6 +280,6 @@ public class RelicIconUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHan
         if (!playClickSfx || AudioManager.Instance == null)
             return;
 
-        AudioManager.Instance.PlaySfx(clickSfxType);
+        AudioManager.Instance.PlaySfx(clickSfxId);
     }
 }

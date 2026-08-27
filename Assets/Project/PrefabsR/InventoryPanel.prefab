@@ -347,7 +347,7 @@ MonoBehaviour:
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
-  clickSfxType: 7
+  clickSfxId: ui.normal.click
 --- !u!1 &251800526442983468
 GameObject:
   m_ObjectHideFlags: 0
@@ -470,7 +470,7 @@ MonoBehaviour:
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
-  clickSfxType: 7
+  clickSfxId: ui.normal.click
 --- !u!1 &252673222634383360
 GameObject:
   m_ObjectHideFlags: 0
@@ -744,7 +744,7 @@ MonoBehaviour:
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
-  clickSfxType: 7
+  clickSfxId: ui.normal.click
 --- !u!1 &318504671387094409
 GameObject:
   m_ObjectHideFlags: 0
@@ -1922,7 +1922,7 @@ MonoBehaviour:
   closedY: 1080
   closeDuration: 0.2
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
 --- !u!114 &5192909540935068525
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2736,7 +2736,7 @@ MonoBehaviour:
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
-  clickSfxType: 7
+  clickSfxId: ui.normal.click
 --- !u!1 &1273847539171727509
 GameObject:
   m_ObjectHideFlags: 0
@@ -3009,7 +3009,7 @@ MonoBehaviour:
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
-  clickSfxType: 7
+  clickSfxId: ui.normal.click
 --- !u!1 &1367879606615750952
 GameObject:
   m_ObjectHideFlags: 0
@@ -3358,7 +3358,7 @@ MonoBehaviour:
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
-  clickSfxType: 7
+  clickSfxId: ui.normal.click
 --- !u!1 &1659633324282785469
 GameObject:
   m_ObjectHideFlags: 0
@@ -3616,7 +3616,7 @@ MonoBehaviour:
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
-  clickSfxType: 7
+  clickSfxId: ui.normal.click
 --- !u!1 &1821649207669352333
 GameObject:
   m_ObjectHideFlags: 0
@@ -4080,7 +4080,7 @@ MonoBehaviour:
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
-  clickSfxType: 7
+  clickSfxId: ui.normal.click
 --- !u!1 &2112989764862688193
 GameObject:
   m_ObjectHideFlags: 0
@@ -4278,7 +4278,7 @@ MonoBehaviour:
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
-  clickSfxType: 7
+  clickSfxId: ui.normal.click
 --- !u!1 &2203885571189024105
 GameObject:
   m_ObjectHideFlags: 0
@@ -4626,7 +4626,7 @@ MonoBehaviour:
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
-  clickSfxType: 7
+  clickSfxId: ui.normal.click
 --- !u!1 &2261826428138198920
 GameObject:
   m_ObjectHideFlags: 0
@@ -5600,7 +5600,7 @@ MonoBehaviour:
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
-  clickSfxType: 7
+  clickSfxId: ui.normal.click
 --- !u!1 &2684504073041057018
 GameObject:
   m_ObjectHideFlags: 0
@@ -5723,7 +5723,7 @@ MonoBehaviour:
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
-  clickSfxType: 7
+  clickSfxId: ui.normal.click
 --- !u!1 &2694154491702549758
 GameObject:
   m_ObjectHideFlags: 0
@@ -6498,7 +6498,7 @@ MonoBehaviour:
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
-  clickSfxType: 7
+  clickSfxId: ui.normal.click
 --- !u!1 &3192314145748849414
 GameObject:
   m_ObjectHideFlags: 0
@@ -7099,7 +7099,7 @@ MonoBehaviour:
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
-  clickSfxType: 7
+  clickSfxId: ui.normal.click
 --- !u!1 &3584074109786263433
 GameObject:
   m_ObjectHideFlags: 0
@@ -7297,7 +7297,7 @@ MonoBehaviour:
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
-  clickSfxType: 7
+  clickSfxId: ui.normal.click
 --- !u!1 &3656116367597048474
 GameObject:
   m_ObjectHideFlags: 0
@@ -8480,7 +8480,7 @@ MonoBehaviour:
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
-  clickSfxType: 7
+  clickSfxId: ui.normal.click
 --- !u!1 &4504137372023093568
 GameObject:
   m_ObjectHideFlags: 0
@@ -9172,7 +9172,7 @@ MonoBehaviour:
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
-  clickSfxType: 7
+  clickSfxId: ui.normal.click
 --- !u!1 &4852115434632562771
 GameObject:
   m_ObjectHideFlags: 0
@@ -9899,7 +9899,7 @@ MonoBehaviour:
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
-  clickSfxType: 7
+  clickSfxId: ui.normal.click
 --- !u!1 &5221796228989379273
 GameObject:
   m_ObjectHideFlags: 0
@@ -10097,7 +10097,7 @@ MonoBehaviour:
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
-  clickSfxType: 7
+  clickSfxId: ui.normal.click
 --- !u!1 &5279332054014581600
 GameObject:
   m_ObjectHideFlags: 0
@@ -10447,7 +10447,7 @@ MonoBehaviour:
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
-  clickSfxType: 7
+  clickSfxId: ui.normal.click
 --- !u!1 &5587849854919308477
 GameObject:
   m_ObjectHideFlags: 0
@@ -10570,7 +10570,7 @@ MonoBehaviour:
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
-  clickSfxType: 7
+  clickSfxId: ui.normal.click
 --- !u!1 &5593020364550526472
 GameObject:
   m_ObjectHideFlags: 0
@@ -10919,7 +10919,7 @@ MonoBehaviour:
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
-  clickSfxType: 7
+  clickSfxId: ui.normal.click
 --- !u!1 &5740809091793100436
 GameObject:
   m_ObjectHideFlags: 0
@@ -11555,7 +11555,7 @@ MonoBehaviour:
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
-  clickSfxType: 7
+  clickSfxId: ui.normal.click
 --- !u!1 &6160489218976421945
 GameObject:
   m_ObjectHideFlags: 0
@@ -11980,7 +11980,7 @@ MonoBehaviour:
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
-  clickSfxType: 7
+  clickSfxId: ui.normal.click
 --- !u!1 &6610646028088365638
 GameObject:
   m_ObjectHideFlags: 0
@@ -12898,7 +12898,7 @@ MonoBehaviour:
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
-  clickSfxType: 7
+  clickSfxId: ui.normal.click
 --- !u!1 &7261889774235990752
 GameObject:
   m_ObjectHideFlags: 0
@@ -13096,7 +13096,7 @@ MonoBehaviour:
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
-  clickSfxType: 7
+  clickSfxId: ui.normal.click
 --- !u!1 &7334019594528142966
 GameObject:
   m_ObjectHideFlags: 0
@@ -13547,7 +13547,7 @@ MonoBehaviour:
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
-  clickSfxType: 7
+  clickSfxId: ui.normal.click
 --- !u!1 &7562222382757740341
 GameObject:
   m_ObjectHideFlags: 0
@@ -13670,7 +13670,7 @@ MonoBehaviour:
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
-  clickSfxType: 7
+  clickSfxId: ui.normal.click
 --- !u!1 &7761922669032239856
 GameObject:
   m_ObjectHideFlags: 0
@@ -13943,7 +13943,7 @@ MonoBehaviour:
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
-  clickSfxType: 7
+  clickSfxId: ui.normal.click
 --- !u!1 &7985760315837374361
 GameObject:
   m_ObjectHideFlags: 0
@@ -15088,7 +15088,7 @@ MonoBehaviour:
   boostSortingOnHoverOrSelected: 1
   sortingOrderBoost: 2000
   playClickSfx: 1
-  clickSfxType: 7
+  clickSfxId: ui.normal.click
 --- !u!1 &9047268487604929940
 GameObject:
   m_ObjectHideFlags: 0

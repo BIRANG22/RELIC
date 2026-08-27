@@ -9,9 +9,9 @@ public class BattlePlayButton : MonoBehaviour
     [SerializeField] private LobbyQuestGate questGate;
 
     [Header("Stage Carousel")]
-    [Tooltip("½ºÅ×ÀÌÁö ¹öÆ°À» Ä³·¯¼¿ ¹æ½ÄÀ¸·Î »ç¿ëÇÒ ¶§ ¿¬°áÇÕ´Ï´Ù. ºñ¿ö µÎ¸é ¾À¿¡¼­ ÀÚµ¿À¸·Î Ã£½À´Ï´Ù.")]
+    [Tooltip("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ°ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½. ï¿½ï¿½ï¿½ ï¿½Î¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½ Ã£ï¿½ï¿½ï¿½Ï´ï¿½.")]
     [SerializeField] private LobbyStageButtonCarousel stageButtonCarousel;
-    [Tooltip("Áß¾Ó¿¡ ÀÖ´Â ½ºÅ×ÀÌÁö°¡ Àá°Ü ÀÖÀ» ¶§ PlayButtonÀ» ´©¸£¸é ÀÔÀåÀ» ¸·°í °æ°í¸¦ Ç¥½ÃÇÕ´Ï´Ù.")]
+    [Tooltip("ï¿½ß¾Ó¿ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ PlayButtonï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ Ç¥ï¿½ï¿½ï¿½Õ´Ï´ï¿½.")]
     [SerializeField] private bool blockLockedCarouselStage = true;
 
     [Header("Option")]
@@ -21,18 +21,18 @@ public class BattlePlayButton : MonoBehaviour
 
     [Header("Warning UI")]
     [SerializeField] private SettingWarningUI warningUI;
-    [SerializeField] private string lockedStageEnterMessage = "¾ÆÁ÷ ÀÔÀåÇÒ ¼ö ¾ø´Â ±¸¿ªÀÔ´Ï´Ù.";
-    [SerializeField] private string mapNotSelectedMessage = "½ºÅ×ÀÌÁö¸¦ ¼±ÅÃÇØ¾ß ÇÕ´Ï´Ù.";
-    [SerializeField] private string partyEmptyMessage = "Ä³¸¯ÅÍ¸¦ Æí¼ºÇØ¾ß ÇÕ´Ï´Ù.";
-    [SerializeField] private string partyNotFullMessage = "Ä³¸¯ÅÍ 3¸íÀ» ¸ðµÎ Æí¼ºÇØ¾ß ÇÕ´Ï´Ù. ÇöÀç {0}/{1}";
-    [SerializeField] private string dataManagerMissingMessage = "µ¥ÀÌÅÍ ¸Å´ÏÀú°¡ ¾ø½À´Ï´Ù.";
-    [SerializeField] private string gameManagerMissingMessage = "°ÔÀÓ ¸Å´ÏÀú°¡ ¾ø½À´Ï´Ù.";
+    [SerializeField] private string lockedStageEnterMessage = "ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ô´Ï´ï¿½.";
+    [SerializeField] private string mapNotSelectedMessage = "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¾ï¿½ ï¿½Õ´Ï´ï¿½.";
+    [SerializeField] private string partyEmptyMessage = "Ä³ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¾ï¿½ ï¿½Õ´Ï´ï¿½.";
+    [SerializeField] private string partyNotFullMessage = "Ä³ï¿½ï¿½ï¿½ï¿½ 3ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¾ï¿½ ï¿½Õ´Ï´ï¿½. ï¿½ï¿½ï¿½ï¿½ {0}/{1}";
+    [SerializeField] private string dataManagerMissingMessage = "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Å´ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.";
+    [SerializeField] private string gameManagerMissingMessage = "ï¿½ï¿½ï¿½ï¿½ ï¿½Å´ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.";
     [SerializeField] private string networkClientStartBlockedMessage = "Only the host can start in multiplayer lobby.";
     [SerializeField] private string networkBattleStartSyncFailedMessage = "Failed to synchronize battle start.";
 
     [Header("Sound")]
     [SerializeField] private bool playClickSound = true;
-    [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfx = AudioIds.Sfx.NormalButtonClick;
 
     private bool isProcessing;
 
@@ -83,8 +83,8 @@ public class BattlePlayButton : MonoBehaviour
                 return;
             }
 
-            // ÀÔÀå ½ÃÁ¡¿¡ ÇöÀç Áß¾Ó¿¡ º¸ÀÌ´Â ±¸¿ªÀ» ½ÇÁ¦ ¼±ÅÃ°ªÀ¸·Î È®Á¤ÇÕ´Ï´Ù.
-            // Ä³·¯¼¿À» ÀÌµ¿ÇÒ ¶§ ±¸¿ª ¹öÆ°À» ´Ù½Ã ´©¸£Áö ¾Ê¾Æµµ µË´Ï´Ù.
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß¾Ó¿ï¿½ ï¿½ï¿½ï¿½Ì´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ã°ï¿½ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
+            // Ä³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ìµï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ°ï¿½ï¿½ ï¿½Ù½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾Æµï¿½ ï¿½Ë´Ï´ï¿½.
             CommitCenteredCarouselStage();
 
             if (IsLockedCarouselStageCentered())
@@ -103,7 +103,7 @@ public class BattlePlayButton : MonoBehaviour
             if (checkMapSelected && !IsMapSelected())
             {
                 ShowWarning(mapNotSelectedMessage);
-                Debug.LogWarning("[BattlePlayButton] ¼±ÅÃµÈ Ã©ÅÍ/½ºÅ×ÀÌÁö°¡ ¾ø½À´Ï´Ù.");
+                Debug.LogWarning("[BattlePlayButton] ï¿½ï¿½ï¿½Ãµï¿½ Ã©ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.");
                 return;
             }
 
@@ -191,14 +191,14 @@ public class BattlePlayButton : MonoBehaviour
             if (currentCount < requiredCount)
             {
                 ShowWarning(FormatPartyNotFullMessage(currentCount, requiredCount));
-                Debug.LogWarning($"[BattlePlayButton] ÆÄÆ¼ ÀÎ¿øÀÌ ºÎÁ·ÇÕ´Ï´Ù. Current:{currentCount} / Required:{requiredCount}");
+                Debug.LogWarning($"[BattlePlayButton] ï¿½ï¿½Æ¼ ï¿½Î¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½. Current:{currentCount} / Required:{requiredCount}");
                 return false;
             }
         }
         else if (currentCount <= 0)
         {
             ShowWarning(partyEmptyMessage);
-            Debug.LogWarning("[BattlePlayButton] ÆÄÆ¼¿¡ Ä³¸¯ÅÍ°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("[BattlePlayButton] ï¿½ï¿½Æ¼ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½Í°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.");
             return false;
         }
 
@@ -225,7 +225,7 @@ public class BattlePlayButton : MonoBehaviour
     private string FormatPartyNotFullMessage(int currentCount, int requiredCount)
     {
         if (string.IsNullOrWhiteSpace(partyNotFullMessage))
-            return $"Ä³¸¯ÅÍ {requiredCount}¸íÀ» ¸ðµÎ Æí¼ºÇØ¾ß ÇÕ´Ï´Ù. ÇöÀç {currentCount}/{requiredCount}";
+            return $"Ä³ï¿½ï¿½ï¿½ï¿½ {requiredCount}ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¾ï¿½ ï¿½Õ´Ï´ï¿½. ï¿½ï¿½ï¿½ï¿½ {currentCount}/{requiredCount}";
 
         if (partyNotFullMessage.Contains("{0}") || partyNotFullMessage.Contains("{1}"))
             return string.Format(partyNotFullMessage, currentCount, requiredCount);

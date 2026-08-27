@@ -1,4 +1,4 @@
-﻿using Relic.Gameplay.Data;
+using Relic.Gameplay.Data;
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -559,28 +559,28 @@ public class Setting : MonoBehaviour
         if (targetTab == SettingTab.Preview)
         {
             // 숨겨져 있던 스킬 또는 룬 영역이 다시 등장한다.
-            PlayTabTransitionSound(SfxType.CharacterSettingAreaAppear);
+            PlayTabTransitionSound(AudioIds.Sfx.CharacterSettingAreaAppear);
             return;
         }
 
         if (previousTab == SettingTab.Preview)
         {
             // 프리뷰에서 스킬 또는 룬 탭으로 이동하면 한 영역이 나간다.
-            PlayTabTransitionSound(SfxType.CharacterSettingAreaExit);
+            PlayTabTransitionSound(AudioIds.Sfx.CharacterSettingAreaExit);
             return;
         }
 
         // 스킬과 룬 사이를 전환하면 기존 영역은 나가고 새 영역은 등장한다.
-        PlayTabTransitionSound(SfxType.CharacterSettingAreaExit);
-        PlayTabTransitionSound(SfxType.CharacterSettingAreaAppear);
+        PlayTabTransitionSound(AudioIds.Sfx.CharacterSettingAreaExit);
+        PlayTabTransitionSound(AudioIds.Sfx.CharacterSettingAreaAppear);
     }
 
-    private void PlayTabTransitionSound(SfxType sfxType)
+    private void PlayTabTransitionSound(string sfxId)
     {
         if (AudioManager.Instance == null)
             return;
 
-        AudioManager.Instance.PlaySfx(sfxType, tabTransitionSfxVolume);
+        AudioManager.Instance.PlaySfx(sfxId, tabTransitionSfxVolume);
     }
 
     public void ShowPreviewSetting()

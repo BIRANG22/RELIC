@@ -53,7 +53,7 @@ public class BattleTurnExecutor : MonoBehaviour
 
     [Header("SFX")]
     [SerializeField] private bool playBattleProgressSfx = true;
-    [SerializeField] private SfxType battleProgressSfxType = SfxType.BattleProgressText;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string battleProgressSfxId = AudioIds.Sfx.BattleProgressText;
     [SerializeField, Range(0f, 1f)] private float battleProgressSfxVolume = 1f;
 
     private bool isMonsterPlanReady;
@@ -1089,7 +1089,7 @@ public class BattleTurnExecutor : MonoBehaviour
 
     private IEnumerator ShowBattleProgressIntroTextRoutineSafe()
     {
-        PlaySfx(playBattleProgressSfx, battleProgressSfxType, battleProgressSfxVolume);
+        PlaySfx(playBattleProgressSfx, battleProgressSfxId, battleProgressSfxVolume);
 
         IEnumerator routine = BattleMapIntroText.ShowMessageAndWait(battleProgressMessage);
 
@@ -1286,7 +1286,7 @@ public class BattleTurnExecutor : MonoBehaviour
         return hasPlayerCommand || hasMonsterCommand;
     }
 
-    private void PlaySfx(bool play, SfxType sfxType, float volume)
+    private void PlaySfx(bool play, string sfxId, float volume)
     {
         if (!play)
             return;
@@ -1294,7 +1294,7 @@ public class BattleTurnExecutor : MonoBehaviour
         if (AudioManager.Instance == null)
             return;
 
-        AudioManager.Instance.PlaySfx(sfxType, volume);
+        AudioManager.Instance.PlaySfx(sfxId, volume);
     }
 
     private void ShowBattleWarning(string message)

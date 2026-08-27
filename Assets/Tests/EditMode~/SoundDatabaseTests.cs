@@ -7,7 +7,7 @@ using UnityEngine;
 public class SoundDatabaseTests
 {
     [Test]
-    public void AudioManager_Initialize_UsesSoundDatabaseForEnumAndIdLookups()
+    public void AudioManager_Initialize_UsesSoundDatabaseForIdLookups()
     {
         GameObject audioObject = new("SoundDatabaseAudioManagerTest");
         AudioClip sfxClip = null;
@@ -30,7 +30,6 @@ public class SoundDatabaseTests
                     new()
                     {
                         id = "ui.confirm",
-                        aliases = new List<string> { SfxType.Confirm.ToString() },
                         clip = sfxClip,
                         volume = 0.4f
                     },
@@ -40,7 +39,7 @@ public class SoundDatabaseTests
 
             manager.Initialize();
 
-            Assert.That(manager.GetSfxVolume(SfxType.Confirm), Is.EqualTo(0.4f).Within(0.001f));
+            Assert.That(manager.GetSfxVolume(AudioIds.Sfx.Confirm), Is.EqualTo(0.4f).Within(0.001f));
             manager.PlaySfx("vfx.custom", 0.5f);
         }
         finally
@@ -52,7 +51,7 @@ public class SoundDatabaseTests
     }
 
     [Test]
-    public void AudioManager_PlayBgm_UsesSoundDatabaseAliasesForLayeredBgm()
+    public void AudioManager_PlayBgm_UsesIdPrefixForLayeredBgm()
     {
         GameObject audioObject = new("SoundDatabaseBgmLayerTest");
         AudioClip mainClip = null;
@@ -74,14 +73,12 @@ public class SoundDatabaseTests
                     new()
                     {
                         id = "bgm.battle.main",
-                        aliases = new List<string> { "Battle.main" },
                         clip = mainClip,
                         volume = 0.8f
                     },
                     new()
                     {
                         id = "bgm.battle.ambience",
-                        aliases = new List<string> { "Battle.ambience" },
                         clip = layerClip,
                         volume = 0.2f
                     }
@@ -90,7 +87,7 @@ public class SoundDatabaseTests
             SetPrivateField(manager, "soundDatabase", database);
 
             manager.Initialize();
-            manager.PlayBgm(BgmType.Battle);
+            manager.PlayBgm(AudioIds.Bgm.Battle);
 
             AudioClip[] assignedClips = audioObject.GetComponentsInChildren<AudioSource>(true)
                 .Select(source => source.clip)

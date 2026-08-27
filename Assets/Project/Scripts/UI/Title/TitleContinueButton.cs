@@ -8,7 +8,7 @@ public class TitleContinueButton : MonoBehaviour
 
     [Header("Sound")]
     [SerializeField] private bool playClickSound;
-    [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfx = AudioIds.Sfx.NormalButtonClick;
 
     private Button button;
     private bool isContinuing;

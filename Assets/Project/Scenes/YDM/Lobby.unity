@@ -379,10 +379,10 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   hoverSfxVolumeMultiplier: 1
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   clickSfxVolumeMultiplier: 1
 --- !u!114 &4650070
 MonoBehaviour:
@@ -648,12 +648,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &5858110
 MonoBehaviour:
@@ -3297,12 +3297,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 8
+  clickSfx: ui.move.hover
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!1 &89042663
 GameObject:
@@ -5251,12 +5251,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 8
+  clickSfx: ui.move.hover
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!1 &135613689
 GameObject:
@@ -6989,12 +6989,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 8
+  clickSfx: ui.move.hover
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!1 &179526471
 GameObject:
@@ -10730,12 +10730,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 8
+  clickSfx: ui.move.hover
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &230121447
 MonoBehaviour:
@@ -11066,12 +11066,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &234256141
 MonoBehaviour:
@@ -11089,7 +11089,7 @@ MonoBehaviour:
   characterId: 
   isLocked: 1
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   firstPartyDefaultDeployCellNumber: 7
   maxDeployGridCount: 15
   showSelectedPartyMarker: 1
@@ -11386,12 +11386,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 8
+  clickSfx: ui.move.hover
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &244203842
 MonoBehaviour:
@@ -11562,12 +11562,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 8
+  clickSfx: ui.move.hover
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &245369176
 MonoBehaviour:
@@ -17619,7 +17619,7 @@ MonoBehaviour:
   selectedColor: {r: 0.90943396, g: 0.90943396, b: 0.90943396, a: 1}
   unselectedColor: {r: 0.3056603, g: 0.3056603, b: 0.3056603, a: 1}
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   clickVolume: 1
 --- !u!222 &397856611
 CanvasRenderer:
@@ -18180,12 +18180,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &411751190
 MonoBehaviour:
@@ -18203,7 +18203,7 @@ MonoBehaviour:
   characterId: 
   isLocked: 1
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   firstPartyDefaultDeployCellNumber: 7
   maxDeployGridCount: 15
   showSelectedPartyMarker: 1
@@ -18614,7 +18614,7 @@ MonoBehaviour:
   purchaseCooldownWarningMessage: "\uB2E4\uC2DC \uC0AC\uC6A9\uD558\uB824\uBA74 \uD68C\uBCF5\uD560
     \uC2DC\uAC04\uC774 \uD544\uC694\uD569\uB2C8\uB2E4."
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   clickSfxVolume: 1
 --- !u!114 &416785461
 MonoBehaviour:
@@ -19848,7 +19848,7 @@ MonoBehaviour:
   characterId: Char_01
   isLocked: 0
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   firstPartyDefaultDeployCellNumber: 7
   maxDeployGridCount: 15
   showSelectedPartyMarker: 1
@@ -19980,12 +19980,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &443209987
 MonoBehaviour:
@@ -22225,12 +22225,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 8
+  clickSfx: ui.move.hover
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!1 &505598761
 GameObject:
@@ -23215,12 +23215,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!1 &535585049
 GameObject:
@@ -31865,12 +31865,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 8
+  clickSfx: ui.move.hover
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!1 &649074356
 GameObject:
@@ -32105,12 +32105,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &655768715
 MonoBehaviour:
@@ -32127,7 +32127,7 @@ MonoBehaviour:
   panelType: 0
   panels: []
   playClickSound: 0
-  clickSfx: 7
+  clickSfx: ui.normal.click
 --- !u!114 &655768716
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33278,12 +33278,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 8
+  clickSfx: ui.move.hover
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &686317587
 MonoBehaviour:
@@ -33644,12 +33644,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 8
+  clickSfx: ui.move.hover
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!1 &689376037
 GameObject:
@@ -35182,12 +35182,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 8
+  clickSfx: ui.move.hover
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!1 &730767491
 GameObject:
@@ -35532,12 +35532,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!1 &738839978
 GameObject:
@@ -39258,12 +39258,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &835046380
 MonoBehaviour:
@@ -39281,7 +39281,7 @@ MonoBehaviour:
   characterId: 
   isLocked: 1
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   firstPartyDefaultDeployCellNumber: 7
   maxDeployGridCount: 15
   showSelectedPartyMarker: 1
@@ -39945,12 +39945,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 8
+  clickSfx: ui.move.hover
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!1 &848790875
 GameObject:
@@ -40478,12 +40478,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!1 &856816972
 GameObject:
@@ -40654,12 +40654,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 8
+  clickSfx: ui.move.hover
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!1 &857470026
 GameObject:
@@ -41018,7 +41018,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   playSelectionMoveSfx: 1
-  selectionMoveSfxType: 7
+  selectionMoveSfxId: ui.normal.click
   selectionMoveSfxVolume: 1
   playNavigationButtonPressFeedback: 1
   navigationButtonPressDuration: 0.08
@@ -42373,12 +42373,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 8
+  clickSfx: ui.move.hover
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &912381342
 MonoBehaviour:
@@ -49484,12 +49484,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &989167604
 MonoBehaviour:
@@ -50317,7 +50317,7 @@ MonoBehaviour:
   networkClientStartBlockedMessage: Only the host can start in multiplayer lobby.
   networkBattleStartSyncFailedMessage: Failed to synchronize battle start.
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
 --- !u!114 &999125867
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -51557,12 +51557,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!1 &1022096265
 GameObject:
@@ -51961,12 +51961,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 8
+  clickSfx: ui.move.hover
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!1 &1033411926
 GameObject:
@@ -52304,12 +52304,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 8
+  clickSfx: ui.move.hover
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!1 &1041149764
 GameObject:
@@ -54577,12 +54577,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 8
+  clickSfx: ui.move.hover
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!1 &1108934240
 GameObject:
@@ -54850,12 +54850,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 8
+  clickSfx: ui.move.hover
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!1 &1116184463
 GameObject:
@@ -57062,12 +57062,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 8
+  clickSfx: ui.move.hover
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &1173540025
 MonoBehaviour:
@@ -58727,10 +58727,10 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   playHoverSound: 1
-  hoverSfx: 8
+  hoverSfx: ui.move.hover
   hoverSfxVolumeMultiplier: 1
   playClickSound: 1
-  clickSfx: 9
+  clickSfx: ui.move.click
   clickSfxVolumeMultiplier: 1
 --- !u!1 &1233950897
 GameObject:
@@ -60538,12 +60538,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 8
+  clickSfx: ui.move.hover
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!1 &1263103059
 GameObject:
@@ -61563,12 +61563,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 1
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &1283672521
 MonoBehaviour:
@@ -61584,7 +61584,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   equipPanel: {fileID: 1175251470}
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   clickSfxVolume: 1
 --- !u!114 &1283672522
 MonoBehaviour:
@@ -62866,12 +62866,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 8
+  clickSfx: ui.move.hover
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!1 &1317708113
 GameObject:
@@ -64420,12 +64420,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 8
+  clickSfx: ui.move.hover
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &1353391301
 MonoBehaviour:
@@ -64771,12 +64771,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &1358011976
 MonoBehaviour:
@@ -70967,7 +70967,7 @@ MonoBehaviour:
   characterId: Char_02
   isLocked: 0
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   firstPartyDefaultDeployCellNumber: 7
   maxDeployGridCount: 15
   showSelectedPartyMarker: 1
@@ -71099,12 +71099,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &1395517693
 MonoBehaviour:
@@ -71869,12 +71869,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 8
+  clickSfx: ui.move.hover
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!1 &1425874758
 GameObject:
@@ -72711,12 +72711,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 8
+  clickSfx: ui.move.hover
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!1 &1445541570
 GameObject:
@@ -73207,12 +73207,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &1455579125
 MonoBehaviour:
@@ -73890,12 +73890,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 8
+  clickSfx: ui.move.hover
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &1471758092
 MonoBehaviour:
@@ -74555,12 +74555,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 8
+  clickSfx: ui.move.hover
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!1 &1490526814
 GameObject:
@@ -75423,7 +75423,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   playTransitionSound: 1
-  transitionSfx: 11
+  transitionSfx: scene.lobby.transition
   transitionSfxVolumeMultiplier: 1
 --- !u!1 &1513501820
 GameObject:
@@ -75505,12 +75505,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 8
+  clickSfx: ui.move.hover
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &1513501823
 MonoBehaviour:
@@ -77546,7 +77546,7 @@ MonoBehaviour:
   blockWhenLobbyMenuOpen: 1
   blockWhenSkillUpgradePanelOpen: 1
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   clickSfxVolume: 1
 --- !u!114 &1577149342
 MonoBehaviour:
@@ -79034,10 +79034,10 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
   playHoverSound: 1
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   hoverSfxVolumeMultiplier: 1
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   clickSfxVolumeMultiplier: 1
 --- !u!114 &1638481424
 MonoBehaviour:
@@ -79649,12 +79649,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!1 &1661044661
 GameObject:
@@ -81303,12 +81303,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 8
+  clickSfx: ui.move.hover
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!1 &1695555621
 GameObject:
@@ -82939,10 +82939,10 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   playHoverSound: 1
-  hoverSfx: 8
+  hoverSfx: ui.move.hover
   hoverSfxVolumeMultiplier: 1
   playClickSound: 1
-  clickSfx: 9
+  clickSfx: ui.move.click
   clickSfxVolumeMultiplier: 1
 --- !u!1 &1736636316
 GameObject:
@@ -84257,12 +84257,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &1781788187
 MonoBehaviour:
@@ -91986,12 +91986,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 8
+  clickSfx: ui.move.hover
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!1 &1859779450
 GameObject:
@@ -92073,12 +92073,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 8
+  clickSfx: ui.move.hover
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &1859779453
 MonoBehaviour:
@@ -93682,7 +93682,7 @@ MonoBehaviour:
   panelType: 0
   panels: []
   playClickSound: 0
-  clickSfx: 7
+  clickSfx: ui.normal.click
 --- !u!114 &1904583162
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -93721,12 +93721,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &1904583163
 MonoBehaviour:
@@ -97803,12 +97803,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &2012554171
 MonoBehaviour:
@@ -97825,7 +97825,7 @@ MonoBehaviour:
   panelType: 1
   panels: []
   playClickSound: 0
-  clickSfx: 7
+  clickSfx: ui.normal.click
 --- !u!114 &2012554172
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -98768,7 +98768,7 @@ MonoBehaviour:
   characterId: Char_03
   isLocked: 0
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   firstPartyDefaultDeployCellNumber: 7
   maxDeployGridCount: 15
   showSelectedPartyMarker: 1
@@ -98900,12 +98900,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &2030413779
 MonoBehaviour:
@@ -102849,12 +102849,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 8
+  clickSfx: ui.move.hover
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!1 &2200000400
 GameObject:
@@ -103556,12 +103556,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 1
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   playPanelOpenCloseSound: 1
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &2300000053
 MonoBehaviour:

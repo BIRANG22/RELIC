@@ -2,8 +2,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// ·Îºñ Setting/Equip ¹öÆ°¿¡¼­ Equip_panelÀ» ¿­°í ´Ý´Â ¹öÆ° Àü¿ë ¿¬°á ½ºÅ©¸³Æ®ÀÔ´Ï´Ù.
-/// ¿ùµå ¿ÀºêÁ§Æ® »óÈ£ÀÛ¿ëÀ» »ç¿ëÇÏÁö ¾Ê½À´Ï´Ù.
+/// ï¿½Îºï¿½ Setting/Equip ï¿½ï¿½Æ°ï¿½ï¿½ï¿½ï¿½ Equip_panelï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ý´ï¿½ ï¿½ï¿½Æ° ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å©ï¿½ï¿½Æ®ï¿½Ô´Ï´ï¿½.
+/// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½È£ï¿½Û¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê½ï¿½ï¿½Ï´ï¿½.
 /// </summary>
 [RequireComponent(typeof(Button))]
 [DisallowMultipleComponent]
@@ -14,7 +14,7 @@ public sealed class LobbyEquipOpenButton : MonoBehaviour
 
     [Header("Sound")]
     [SerializeField] private bool playClickSound = true;
-    [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfx = AudioIds.Sfx.NormalButtonClick;
     [SerializeField, Range(0f, 1f)] private float clickSfxVolume = 1f;
 
     private Button button;
@@ -48,7 +48,7 @@ public sealed class LobbyEquipOpenButton : MonoBehaviour
         LobbyEquipPanelUI resolved = ResolveEquipPanel();
         if (resolved == null)
         {
-            Debug.LogWarning("[LobbyEquipOpenButton] LobbyEquipPanelUI¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.", this);
+            Debug.LogWarning("[LobbyEquipOpenButton] LobbyEquipPanelUIï¿½ï¿½ Ã£ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.", this);
             return;
         }
 

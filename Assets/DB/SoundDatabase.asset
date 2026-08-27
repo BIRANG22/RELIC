@@ -14,8 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bgmList:
   - id: bgm.title
-    aliases:
-    - Title
+    aliases: []
     clip: {fileID: 8300000, guid: f1584eda286725a45aeb97a48f676d41, type: 3}
     volume: 1
     pitch: 1
@@ -23,8 +22,7 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   - id: bgm.lobby
-    aliases:
-    - Lobby
+    aliases: []
     clip: {fileID: 8300000, guid: f1584eda286725a45aeb97a48f676d41, type: 3}
     volume: 1
     pitch: 1
@@ -32,8 +30,7 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   - id: bgm.battle.main
-    aliases:
-    - Battle.main
+    aliases: []
     clip: {fileID: 8300000, guid: c55ddf15d3da7a54cb7785f4e402bce1, type: 3}
     volume: 1
     pitch: 1
@@ -41,8 +38,7 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   - id: bgm.battle.ambience
-    aliases:
-    - Battle.ambience
+    aliases: []
     clip: {fileID: 8300000, guid: af759ef50eba406448029d0726d6ea46, type: 3}
     volume: 1
     pitch: 1
@@ -51,8 +47,7 @@ MonoBehaviour:
     randomPitchMax: 1
   sfxList:
   - id: ui.normal.hover
-    aliases:
-    - NormalButtonHover
+    aliases: []
     clip: {fileID: 8300000, guid: 0ce8dd481d865cb47afde2e711e20bd3, type: 3}
     volume: 0.15
     pitch: 1
@@ -60,8 +55,7 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   - id: ui.normal.click
-    aliases:
-    - NormalButtonClick
+    aliases: []
     clip: {fileID: 8300000, guid: 402b751614041df4ab89e77be2808de2, type: 3}
     volume: 0.5
     pitch: 1
@@ -69,8 +63,7 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   - id: scene.transition
-    aliases:
-    - SceneTransition
+    aliases: []
     clip: {fileID: 8300000, guid: c4c9cd50df30f8343a36a0f5e1a1f92f, type: 3}
     volume: 1
     pitch: 1
@@ -78,8 +71,7 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   - id: scene.lobby.transition
-    aliases:
-    - LobbyPanelTransition
+    aliases: []
     clip: {fileID: 8300000, guid: 748ab9133e00d04458c3a6b54f77b212, type: 3}
     volume: 1
     pitch: 1
@@ -87,8 +79,7 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   - id: ui.title.hover
-    aliases:
-    - TitleButtonHover
+    aliases: []
     clip: {fileID: 8300000, guid: 010ca4953b15dd546994bcc230c3ff2d, type: 3}
     volume: 1
     pitch: 1
@@ -96,8 +87,7 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   - id: ui.title.click
-    aliases:
-    - TitleButtonClick
+    aliases: []
     clip: {fileID: 8300000, guid: 402b751614041df4ab89e77be2808de2, type: 3}
     volume: 0.5
     pitch: 1
@@ -105,8 +95,7 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   - id: ui.logo.click
-    aliases:
-    - LogoButtonClick
+    aliases: []
     clip: {fileID: 8300000, guid: 3e264338eeeb0aa438690640c2886401, type: 3}
     volume: 1
     pitch: 1
@@ -114,8 +103,7 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   - id: ui.move.hover
-    aliases:
-    - MoveButtonHover
+    aliases: []
     clip: {fileID: 8300000, guid: f5e2136ca54e1ce4389264cd9f040c0c, type: 3}
     volume: 0.5
     pitch: 1
@@ -123,8 +111,7 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   - id: ui.move.click
-    aliases:
-    - MoveButtonClick
+    aliases: []
     clip: {fileID: 8300000, guid: b208e34a1afa9e146b104922e77b65dc, type: 3}
     volume: 0.3
     pitch: 1
@@ -132,8 +119,7 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   - id: ui.confirm
-    aliases:
-    - Confirm
+    aliases: []
     clip: {fileID: 8300000, guid: cd79944ddc33df841a78f5f3915afa10, type: 3}
     volume: 0.3
     pitch: 1
@@ -141,8 +127,7 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   - id: ui.box.open
-    aliases:
-    - BoxOpen
+    aliases: []
     clip: {fileID: 8300000, guid: 3b21ea75963842c428923e1ed0ad2910, type: 3}
     volume: 0.3
     pitch: 1
@@ -150,8 +135,7 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   - id: ui.character.setting.appear
-    aliases:
-    - CharacterSettingAreaAppear
+    aliases: []
     clip: {fileID: 8300000, guid: 55426547c0ee0324787f7a5db6bcdfcd, type: 3}
     volume: 0.3
     pitch: 1
@@ -159,8 +143,7 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   - id: ui.character.setting.exit
-    aliases:
-    - CharacterSettingAreaExit
+    aliases: []
     clip: {fileID: 8300000, guid: a4bd1740484f2064fa0b21baa659acbc, type: 3}
     volume: 0.3
     pitch: 1
@@ -168,8 +151,7 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   - id: ui.bag.open
-    aliases:
-    - BagOpen
+    aliases: []
     clip: {fileID: 8300000, guid: 06acbeced7196f645a9b15035a1459e4, type: 3}
     volume: 0.3
     pitch: 1
@@ -177,8 +159,7 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   - id: ui.bag.close
-    aliases:
-    - BagClose
+    aliases: []
     clip: {fileID: 8300000, guid: 20f1d29a124a32b41bbc0c013badd20c, type: 3}
     volume: 0.3
     pitch: 1
@@ -186,8 +167,7 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   - id: ui.inventory.open
-    aliases:
-    - InventoryOpen
+    aliases: []
     clip: {fileID: 8300000, guid: 55426547c0ee0324787f7a5db6bcdfcd, type: 3}
     volume: 0.3
     pitch: 1
@@ -195,8 +175,7 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   - id: ui.inventory.close
-    aliases:
-    - InventoryClose
+    aliases: []
     clip: {fileID: 8300000, guid: a4bd1740484f2064fa0b21baa659acbc, type: 3}
     volume: 0.3
     pitch: 1
@@ -204,8 +183,7 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   - id: battle.skill.reserve
-    aliases:
-    - SkillReserve
+    aliases: []
     clip: {fileID: 8300000, guid: a4bd1740484f2064fa0b21baa659acbc, type: 3}
     volume: 0.3
     pitch: 1
@@ -213,8 +191,7 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   - id: battle.action.reserve.text
-    aliases:
-    - BattleActionReserveText
+    aliases: []
     clip: {fileID: 8300000, guid: 97920063d95b7e94c8098f16e03d9bf8, type: 3}
     volume: 0.8
     pitch: 1
@@ -222,8 +199,7 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   - id: battle.progress.text
-    aliases:
-    - BattleProgressText
+    aliases: []
     clip: {fileID: 8300000, guid: 9b3175ceaf0d78541b44e5e8545f1540, type: 3}
     volume: 0.8
     pitch: 1
@@ -231,8 +207,7 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   - id: battle.reward.remnant.acquire
-    aliases:
-    - BattleRewardRemnantAcquire
+    aliases: []
     clip: {fileID: 8300000, guid: 10d1753e32fe58a42954ac2cbed901df, type: 3}
     volume: 0.3
     pitch: 1
@@ -240,8 +215,7 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   - id: battle.reward.relic.skill.acquire
-    aliases:
-    - BattleRewardRelicSkillAcquire
+    aliases: []
     clip: {fileID: 8300000, guid: 21ebc6cd23edc0e4aa1f23084fa0547d, type: 3}
     volume: 0.3
     pitch: 1
@@ -249,8 +223,7 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   - id: battle.relic.choice.acquire
-    aliases:
-    - RelicChoiceAcquire
+    aliases: []
     clip: {fileID: 8300000, guid: 10d1753e32fe58a42954ac2cbed901df, type: 3}
     volume: 0.3
     pitch: 1
@@ -258,8 +231,7 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   - id: battle.timeline.slot.rotate
-    aliases:
-    - BattleTimelineSlotRotate
+    aliases: []
     clip: {fileID: 8300000, guid: bf7b5b48727a01e46bd0d073a6d64494, type: 3}
     volume: 0.3
     pitch: 1
@@ -267,8 +239,7 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   - id: battle.end.button.hover
-    aliases:
-    - BattleEndButtonHover
+    aliases: []
     clip: {fileID: 8300000, guid: bf7b5b48727a01e46bd0d073a6d64494, type: 3}
     volume: 0.3
     pitch: 1
@@ -276,8 +247,7 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   - id: battle.timeline.slot.slide
-    aliases:
-    - BattleTimelineSlotSlide
+    aliases: []
     clip: {fileID: 8300000, guid: bf7b5b48727a01e46bd0d073a6d64494, type: 3}
     volume: 0.3
     pitch: 1
@@ -285,8 +255,7 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   - id: battle.map.node.check.animation
-    aliases:
-    - BattleMapNodeCheckAnimation
+    aliases: []
     clip: {fileID: 8300000, guid: 23ffa4d4eed73744eac96aa612ee44d5, type: 3}
     volume: 0.3
     pitch: 1
@@ -294,8 +263,7 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   - id: battle.skill.list.open
-    aliases:
-    - SkillListPanelOpen
+    aliases: []
     clip: {fileID: 8300000, guid: 55426547c0ee0324787f7a5db6bcdfcd, type: 3}
     volume: 0.4
     pitch: 1
@@ -303,11 +271,34 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   - id: battle.skill.list.close
-    aliases:
-    - SkillListPanelClose
+    aliases: []
     clip: {fileID: 8300000, guid: a4bd1740484f2064fa0b21baa659acbc, type: 3}
     volume: 0.4
     pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: battle.event.dice.roll
+    aliases: []
+    clip: {fileID: 8300000, guid: a1f1ef3bd9f209941becc57fb43d467b, type: 3}
+    volume: 0.4
+    pitch: 0.8
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: battle.boss.reveal.impact.low
+    aliases: []
+    clip: {fileID: 8300000, guid: 4b4969b0c245adb45a833cd0c1efb8e1, type: 3}
+    volume: 0.5
+    pitch: 0.5
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: battle.boss.reveal.impact.high
+    aliases: []
+    clip: {fileID: 8300000, guid: 4b4969b0c245adb45a833cd0c1efb8e1, type: 3}
+    volume: 0.5
+    pitch: 0.7
     useRandomPitch: 0
     randomPitchMin: 1
     randomPitchMax: 1

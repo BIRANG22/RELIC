@@ -9,6 +9,33 @@ using UnityEngine.UI;
 public sealed class EventDiceRollPresentationTests
 {
     [Test]
+    public void EventDiceRollPresenter_UsesSoundIdInsteadOfDirectAudioClip()
+    {
+        GameObject root = new("DicePresenter");
+
+        try
+        {
+            EventDiceRollPresenter presenter = root.AddComponent<EventDiceRollPresenter>();
+
+            Assert.That(GetPrivateField<string>(presenter, "rollSfxId"), Is.EqualTo(AudioIds.Sfx.BattleEventDiceRoll));
+            Assert.That(GetPrivateFieldInfo(typeof(EventDiceRollPresenter), "rollSound"), Is.Null);
+            Assert.That(GetPrivateFieldInfo(typeof(EventDiceRollPresenter), "audioSource"), Is.Null);
+            AssertSoundIdField(typeof(EventDiceRollPresenter), "rollSfxId", SoundCategory.Sfx);
+        }
+        finally
+        {
+            Object.DestroyImmediate(root);
+        }
+    }
+
+    [Test]
+    public void TimedObjectRevealSequence_RevealTarget_UsesSoundIdInsteadOfDirectAudioClip()
+    {
+        Assert.That(GetPublicFieldInfo(typeof(TimedObjectRevealSequence.RevealTarget), "revealSound"), Is.Null);
+        AssertSoundIdField(typeof(TimedObjectRevealSequence.RevealTarget), "revealSoundId", SoundCategory.Sfx);
+    }
+
+    [Test]
     public void ExecuteDiceChoice_StoresThreeDiceFacesAndTotal()
     {
         EventData choice = new()
@@ -150,5 +177,43 @@ public sealed class EventDiceRollPresentationTests
             BindingFlags.Instance | BindingFlags.NonPublic);
         Assert.That(method, Is.Not.Null);
         method.Invoke(target, null);
+    }
+
+    private static T GetPrivateField<T>(object target, string fieldName)
+    {
+        FieldInfo field = GetPrivateFieldInfo(target.GetType(), fieldName);
+        Assert.That(field, Is.Not.Null);
+        return (T)field.GetValue(target);
+    }
+
+    private static FieldInfo GetPrivateFieldInfo(System.Type type, string fieldName)
+    {
+        return type.GetField(
+            fieldName,
+            BindingFlags.Instance | BindingFlags.NonPublic);
+    }
+
+    private static FieldInfo GetPublicFieldInfo(System.Type type, string fieldName)
+    {
+        return type.GetField(
+            fieldName,
+            BindingFlags.Instance | BindingFlags.Public);
+    }
+
+    private static void AssertSoundIdField(
+        System.Type type,
+        string fieldName,
+        SoundCategory category)
+    {
+        FieldInfo field =
+            GetPrivateFieldInfo(type, fieldName) ??
+            GetPublicFieldInfo(type, fieldName);
+
+        Assert.That(field, Is.Not.Null);
+        Assert.That(field.FieldType, Is.EqualTo(typeof(string)));
+
+        SoundIdAttribute attribute = field.GetCustomAttribute<SoundIdAttribute>();
+        Assert.That(attribute, Is.Not.Null);
+        Assert.That(attribute.Category, Is.EqualTo(category));
     }
 }

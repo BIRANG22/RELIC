@@ -25,7 +25,7 @@ public class MapNodeView : MonoBehaviour
 
     [Header("Check Animation SFX")]
     [SerializeField] private bool playCheckAnimationSfx = true;
-    [SerializeField] private SfxType checkAnimationSfxType = SfxType.BattleMapNodeCheckAnimation;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string checkAnimationSfxId = AudioIds.Sfx.BattleMapNodeCheckAnimation;
     [SerializeField, Range(0f, 1f)] private float checkAnimationSfxVolume = 1f;
 
     [Header("Persistent Check")]
@@ -132,8 +132,8 @@ public class MapNodeView : MonoBehaviour
     }
 
     /// <summary>
-    /// 0¹ø ³ëµå´Â ½ÇÁ¦ ¹æ Å¸ÀÔ°ú °ü°è¾øÀÌ Áöµµ¿¡¼­´Â ½ÃÀÛ ÁöÁ¡À¸·Î Ç¥½ÃÇÕ´Ï´Ù.
-    /// ½ÇÁ¦ Type µ¥ÀÌÅÍ´Â º¯°æÇÏÁö ¾ÊÀ¸¹Ç·Î ±âÁ¸ °íÁ¤ ÀÌº¥Æ® µ¿ÀÛÀº ±×´ë·Î À¯ÁöµË´Ï´Ù.
+    /// 0ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ Å¸ï¿½Ô°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ç¥ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
+    /// ï¿½ï¿½ï¿½ï¿½ Type ï¿½ï¿½ï¿½ï¿½ï¿½Í´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ìºï¿½Æ® ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½×´ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ë´Ï´ï¿½.
     /// </summary>
     public static string GetDisplayType(GeneratedMapNodeData data)
     {
@@ -225,8 +225,8 @@ public class MapNodeView : MonoBehaviour
     }
 
     /// <summary>
-    /// ¿ÜºÎ ¼±ÅÃ UI¿¡¼­µµ Áöµµ ³ëµåÀÇ X Ç¥½Ã ¾Ö´Ï¸ÞÀÌ¼ÇÀ» Àç»ç¿ëÇÕ´Ï´Ù.
-    /// ¾Ö´Ï¸ÞÀÌ¼ÇÀÌ ³¡³­ µÚ onCompleted¸¦ È£ÃâÇÕ´Ï´Ù.
+    /// ï¿½Üºï¿½ ï¿½ï¿½ï¿½ï¿½ UIï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ X Ç¥ï¿½ï¿½ ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
+    /// ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ onCompletedï¿½ï¿½ È£ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
     /// </summary>
     public void PlayCheckAnimation(Action onCompleted)
     {
@@ -306,7 +306,7 @@ public class MapNodeView : MonoBehaviour
         if (AudioManager.Instance == null)
             return;
 
-        AudioManager.Instance.PlaySfx(checkAnimationSfxType, checkAnimationSfxVolume);
+        AudioManager.Instance.PlaySfx(checkAnimationSfxId, checkAnimationSfxVolume);
     }
 
     private void CaptureBaseScale()

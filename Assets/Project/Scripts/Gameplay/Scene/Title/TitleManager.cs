@@ -19,7 +19,7 @@ public class TitleManager : MonoBehaviour
 
     [Header("Warning")]
     [SerializeField] private TitleWarningUI warningUI;
-    [SerializeField] private string unavailableMessage = "¾ÆÁ÷ ÁØºñµÇÁö ¾Ê¾Ò½À´Ï´Ù.";
+    [SerializeField] private string unavailableMessage = "ï¿½ï¿½ï¿½ï¿½ ï¿½Øºï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾Ò½ï¿½ï¿½Ï´ï¿½.";
     [SerializeField] private Button[] unavailableButtons;
 
     [Header("Run Buttons")]
@@ -45,7 +45,7 @@ public class TitleManager : MonoBehaviour
     [SerializeField] private Button exitButton;
     [SerializeField] private bool autoFindExitButton = true;
     [SerializeField] private bool playExitClickSound = true;
-    [SerializeField] private SfxType exitClickSfx = SfxType.NormalButtonClick;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string exitClickSfx = AudioIds.Sfx.NormalButtonClick;
 
     private bool isOnLogoActive = true;
 
@@ -94,7 +94,7 @@ public class TitleManager : MonoBehaviour
             yield break;
         }
 
-        AudioManager.Instance.PlayBgm(BgmType.Title);
+        AudioManager.Instance.PlayBgm(AudioIds.Bgm.Title);
     }
 
     private void OnDestroy()

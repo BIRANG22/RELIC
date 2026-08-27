@@ -23,7 +23,7 @@ public class CharBtn : MonoBehaviour,
 
     [Header("Option")]
     [SerializeField] private bool playClickSound = true;
-    [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfx = AudioIds.Sfx.NormalButtonClick;
 
     [Header("Legacy Direct Register")]
     [SerializeField] private int firstPartyDefaultDeployCellNumber = 7;

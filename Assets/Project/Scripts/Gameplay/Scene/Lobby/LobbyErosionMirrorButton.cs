@@ -29,7 +29,7 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
 
     [Header("Sound")]
     [SerializeField] private bool playClickSound = true;
-    [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfx = AudioIds.Sfx.NormalButtonClick;
     [SerializeField, Range(0f, 1f)] private float clickSfxVolume = 1f;
 
     private void Awake()
@@ -44,8 +44,8 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
 
     private void LateUpdate()
     {
-        // ESC µî ´Ù¸¥ ½ºÅ©¸³Æ®°¡ ÆÐ³Î¸¸ ºñÈ°¼ºÈ­ÇßÀ» ¶§µµ
-        // ¿ùµå ¿ÀºêÁ§Æ® ÀÔ·Â Â÷´ÜÀÌ ³²Áö ¾Êµµ·Ï ÀÚµ¿À¸·Î ÇØÁ¦ÇÕ´Ï´Ù.
+        // ESC ï¿½ï¿½ ï¿½Ù¸ï¿½ ï¿½ï¿½Å©ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½Ð³Î¸ï¿½ ï¿½ï¿½È°ï¿½ï¿½È­ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½Ô·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Êµï¿½ï¿½ï¿½ ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         if (!LobbyPositionModalInputBlocker.IsBlockedBy(this))
             return;
 
@@ -104,8 +104,8 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
     }
 
     /// <summary>
-    /// ÀÌ ¹öÆ°ÀÌ ÁöÁ¤µÈ Ä§½Äµµ ¼±ÅÃ ÆÐ³ÎÀ» °ü¸®ÇÏ´ÂÁö È®ÀÎÇÕ´Ï´Ù.
-    /// ESC ÀÔ·Â¿¡¼­ µ¿ÀÏÇÑ ÆÐ³ÎÀ» °ü¸®ÇÏ´Â Á¤È®ÇÑ ÀÎ½ºÅÏ½º¸¦ Ã£´Â µ¥ »ç¿ëÇÕ´Ï´Ù.
+    /// ï¿½ï¿½ ï¿½ï¿½Æ°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ä§ï¿½Äµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ð³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ï¿½ï¿½ È®ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
+    /// ESC ï¿½Ô·Â¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ð³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½È®ï¿½ï¿½ ï¿½Î½ï¿½ï¿½Ï½ï¿½ï¿½ï¿½ Ã£ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
     /// </summary>
     public bool ControlsPanel(GameObject panel)
     {

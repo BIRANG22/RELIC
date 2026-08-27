@@ -6,7 +6,7 @@ public class PartySlotButton : MonoBehaviour
 
     [Header("Sound")]
     [SerializeField] private bool playClickSound = false;
-    [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfx = AudioIds.Sfx.NormalButtonClick;
 
     public void Execute()
     {

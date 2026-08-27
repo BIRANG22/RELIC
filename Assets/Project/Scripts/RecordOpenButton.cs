@@ -2,15 +2,15 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 /// <summary>
-/// Å¸ÀÌÆ², ·Îºñ, ÀÏ½ÃÁ¤Áö ¸Þ´º µî ¾î´À È­¸é¿¡¼­µç °øÅë µµ°¨À» ¿±´Ï´Ù.
+/// Å¸ï¿½ï¿½Æ², ï¿½Îºï¿½, ï¿½Ï½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Þ´ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ È­ï¿½é¿¡ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ï´ï¿½.
 /// </summary>
 public class RecordOpenButton : MonoBehaviour, IPointerEnterHandler
 {
     [Header("Sound")]
     [SerializeField] private bool playHoverSound = true;
-    [SerializeField] private SfxType hoverSfx = SfxType.NormalButtonHover;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string hoverSfx = AudioIds.Sfx.NormalButtonHover;
     [SerializeField] private bool playClickSound = true;
-    [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfx = AudioIds.Sfx.NormalButtonClick;
 
     public void OnPointerEnter(PointerEventData eventData)
     {
@@ -26,7 +26,7 @@ public class RecordOpenButton : MonoBehaviour, IPointerEnterHandler
         UIManager uiManager = GetUIManager();
         if (uiManager == null)
         {
-            Debug.LogWarning("[RecordOpenButton] UIManager¸¦ Ã£Áö ¸øÇØ µµ°¨À» ¿­ ¼ö ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("[RecordOpenButton] UIManagerï¿½ï¿½ Ã£ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.");
             return;
         }
 

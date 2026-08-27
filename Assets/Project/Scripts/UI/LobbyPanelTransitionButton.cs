@@ -17,10 +17,10 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
     [SerializeField] private GameObject panelToOpen;
 
     [Header("Lobby Background Change")]
-    [Tooltip("Panel To Open¿¡ ¸Â´Â ·Îºñ ¹è°æÀ¸·Î ÀÚµ¿ ÀüÈ¯ÇÕ´Ï´Ù.")]
+    [Tooltip("Panel To Openï¿½ï¿½ ï¿½Â´ï¿½ ï¿½Îºï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Úµï¿½ ï¿½ï¿½È¯ï¿½Õ´Ï´ï¿½.")]
     [SerializeField] private bool changeLobbyBackground = true;
 
-    [Tooltip("ºñ¾î ÀÖÀ¸¸é ¿ÀºêÁ§Æ® ÀÌ¸§À¸·Î ÀÚµ¿ Å½»öÇÕ´Ï´Ù.")]
+    [Tooltip("ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½Ì¸ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Úµï¿½ Å½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.")]
     [SerializeField] private GameObject positionBackground;
     [SerializeField] private GameObject characterSettingBackground;
     [SerializeField] private GameObject erosionSelectBackground;
@@ -32,13 +32,13 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
     [SerializeField] private GameObject[] extraPanelsToCloseOnExecute;
 
     [Header("World Object Click")]
-    [Tooltip("Ã¼Å©ÇÏ¸é ÀÌ ½ºÅ©¸³Æ®°¡ ºÙÀº ¿ùµå ¿ÀºêÁ§Æ®¸¦ ¸¶¿ì½º ÁÂÅ¬¸¯ÇßÀ» ¶§ Execute¸¦ ½ÇÇàÇÕ´Ï´Ù.")]
+    [Tooltip("Ã¼Å©ï¿½Ï¸ï¿½ ï¿½ï¿½ ï¿½ï¿½Å©ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ì½º ï¿½ï¿½Å¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ Executeï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.")]
     [SerializeField] private bool executeOnWorldClick = true;
 
-    [Tooltip("UI À§¿¡¼­ Å¬¸¯ÇßÀ» ¶§ ¿ùµå ¿ÀºêÁ§Æ® Å¬¸¯À» ¸·½À´Ï´Ù.")]
+    [Tooltip("UI ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® Å¬ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.")]
     [SerializeField] private bool blockWorldClickOverUI = true;
 
-    [Tooltip("Collider2D°¡ ¾øÀ» ¶§ SpriteRenderer ±âÁØÀ¸·Î PolygonCollider2D¸¦ ÀÚµ¿ Ãß°¡ÇÕ´Ï´Ù.")]
+    [Tooltip("Collider2Dï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ SpriteRenderer ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ PolygonCollider2Dï¿½ï¿½ ï¿½Úµï¿½ ï¿½ß°ï¿½ï¿½Õ´Ï´ï¿½.")]
     [SerializeField] private bool addColliderAutomatically = true;
 
     [Header("World Object Change")]
@@ -59,19 +59,19 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 
     [Header("Button Sound")]
     [SerializeField] private bool playHoverSound = true;
-    [SerializeField] private SfxType hoverSfx = SfxType.NormalButtonHover;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string hoverSfx = AudioIds.Sfx.NormalButtonHover;
     [SerializeField] private float hoverSfxVolumeMultiplier = 1f;
 
     [SerializeField] private bool playClickSound = true;
-    [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfx = AudioIds.Sfx.NormalButtonClick;
     [SerializeField] private float clickSfxVolumeMultiplier = 1f;
 
     private LobbyBackgroundStateController backgroundStateController;
     private bool isProcessing;
 
     /// <summary>
-    /// ÀÌ ¹öÆ°¿¡ ÁöÁ¤µÈ Panel To OpenÀÌ ÇöÀç ¿­·Á ÀÖ´ÂÁö ¹ÝÈ¯ÇÕ´Ï´Ù.
-    /// SpriteHoverScale¿¡¼­ ¼±ÅÃ Ç¥½Ã¸¦ À¯ÁöÇÒ ¶§ »ç¿ëÇÕ´Ï´Ù.
+    /// ï¿½ï¿½ ï¿½ï¿½Æ°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Panel To Openï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ï¿½Õ´Ï´ï¿½.
+    /// SpriteHoverScaleï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ç¥ï¿½Ã¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
     /// </summary>
     public bool IsTargetPanelOpen =>
         panelToOpen != null && panelToOpen.activeInHierarchy;
@@ -187,8 +187,8 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
     }
 
     /// <summary>
-    /// MenuPanelÀÌ ¿­·Á ÀÖÀ¸¸é ¸Þ´º ¹Ù±ùÀÇ ·Îºñ ¿ùµå ¿ÀºêÁ§Æ® ÀÔ·ÂÀ» Â÷´ÜÇÕ´Ï´Ù.
-    /// MenuPanel ÀÚ½Å°ú ±× ÀÚ½Ä ¹öÆ°Àº °è¼Ó »ç¿ëÇÒ ¼ö ÀÖ½À´Ï´Ù.
+    /// MenuPanelï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Þ´ï¿½ ï¿½Ù±ï¿½ï¿½ï¿½ ï¿½Îºï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½Ô·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
+    /// MenuPanel ï¿½Ú½Å°ï¿½ ï¿½ï¿½ ï¿½Ú½ï¿½ ï¿½ï¿½Æ°ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö½ï¿½ï¿½Ï´ï¿½.
     /// </summary>
     private bool ShouldBlockInteractionByOpenMenuPanel()
     {
@@ -303,9 +303,9 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
     }
 
     /// <summary>
-    /// CharacterSettingPanelÀ» ¿­ ¶§´Â ·ÎºñÀÇ SettingButtonÀ» À¯ÁöÇÕ´Ï´Ù.
-    /// ±âÁ¸ ÀÎ½ºÆåÅÍÀÇ Panels To Close¿¡ SettingButtonÀÌ µé¾î ÀÖ¾îµµ
-    /// Ä³¸¯ÅÍ ¼³Á¤ È­¸éÀ¸·Î ÀüÈ¯ÇÒ ¶§¸¸ ÀÚµ¿À¸·Î Á¦¿ÜÇÕ´Ï´Ù.
+    /// CharacterSettingPanelï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Îºï¿½ï¿½ï¿½ SettingButtonï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
+    /// ï¿½ï¿½ï¿½ï¿½ ï¿½Î½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Panels To Closeï¿½ï¿½ SettingButtonï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ö¾îµµ
+    /// Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È­ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
     /// </summary>
     private GameObject[] GetEffectivePanelsToClose()
     {
@@ -346,8 +346,8 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 
 
     /// <summary>
-    /// CharacterSettingPanelÀ» ¿­ ¶§´Â World Objects To Close¿¡ SettingButtonÀÌ
-    /// µî·ÏµÇ¾î ÀÖ¾îµµ ºñÈ°¼ºÈ­ÇÏÁö ¾Ê½À´Ï´Ù.
+    /// CharacterSettingPanelï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ World Objects To Closeï¿½ï¿½ SettingButtonï¿½ï¿½
+    /// ï¿½ï¿½ÏµÇ¾ï¿½ ï¿½Ö¾îµµ ï¿½ï¿½È°ï¿½ï¿½È­ï¿½ï¿½ï¿½ï¿½ ï¿½Ê½ï¿½ï¿½Ï´ï¿½.
     /// </summary>
     private GameObject[] GetEffectiveWorldObjectsToClose()
     {
@@ -388,8 +388,8 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 
 
     /// <summary>
-    /// Ä³¸¯ÅÍ ¼³Á¤ È­¸é¿¡¼­´Â SettingButtonÀ» Ç×»ó È°¼º »óÅÂ·Î À¯ÁöÇÕ´Ï´Ù.
-    /// ÀÎ½ºÆåÅÍÀÇ ´Ý±â ¸ñ·Ï¿¡ Àß¸ø Æ÷ÇÔµÇ¾î ÀÖ¾îµµ ¸¶Áö¸· ´Ü°è¿¡¼­ º¹±¸ÇÕ´Ï´Ù.
+    /// Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È­ï¿½é¿¡ï¿½ï¿½ï¿½ï¿½ SettingButtonï¿½ï¿½ ï¿½×»ï¿½ È°ï¿½ï¿½ ï¿½ï¿½ï¿½Â·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
+    /// ï¿½Î½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ý±ï¿½ ï¿½ï¿½Ï¿ï¿½ ï¿½ß¸ï¿½ ï¿½ï¿½ï¿½ÔµÇ¾ï¿½ ï¿½Ö¾îµµ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ü°è¿¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
     /// </summary>
     private void KeepSettingButtonActive()
     {
@@ -598,9 +598,9 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
         if (GetComponent<SpriteRenderer>() == null)
         {
             Debug.LogWarning(
-                "[LobbyPanelTransitionButton] ¿ùµå Å¬¸¯À» »ç¿ëÇÏÁö¸¸ " +
-                "Collider¿Í SpriteRenderer°¡ ¾ø½À´Ï´Ù. " +
-                "Anchor ¿ÀºêÁ§Æ®¿¡ Collider2D¸¦ Á÷Á¢ Ãß°¡ÇÏ¼¼¿ä.",
+                "[LobbyPanelTransitionButton] ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ " +
+                "Colliderï¿½ï¿½ SpriteRendererï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½. " +
+                "Anchor ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ Collider2Dï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½ï¿½Ï¼ï¿½ï¿½ï¿½.",
                 this);
 
             return;

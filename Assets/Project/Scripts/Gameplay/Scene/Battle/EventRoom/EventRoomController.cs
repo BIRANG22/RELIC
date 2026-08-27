@@ -64,7 +64,7 @@ public class EventRoomController : MonoBehaviour
 
     [Header("SFX")]
     [SerializeField] private bool playAcquireSfx = true;
-    [SerializeField] private SfxType acquireSfxType = SfxType.RelicChoiceAcquire;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string acquireSfxId = AudioIds.Sfx.RelicChoiceAcquire;
 
     [Header("Background Sorting")]
     [SerializeField] private Transform backgroundRoot;
@@ -2865,7 +2865,7 @@ public class EventRoomController : MonoBehaviour
         if (!playAcquireSfx || AudioManager.Instance == null)
             return;
 
-        AudioManager.Instance.PlaySfx(acquireSfxType);
+        AudioManager.Instance.PlaySfx(acquireSfxId);
     }
 
     private IEnumerator ScaleRelicRoutine(float from, float to, float duration)

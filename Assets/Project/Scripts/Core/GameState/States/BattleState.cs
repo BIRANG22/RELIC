@@ -20,12 +20,12 @@ public class BattleState : BaseGameState
         if (string.IsNullOrWhiteSpace(mapRuntime.SelectedChapterId) ||
             string.IsNullOrWhiteSpace(mapRuntime.CurrentStage))
         {
-            Debug.LogError("[BattleState] Chapter ¶Ç´Â Stage°¡ ¼±ÅÃµÇÁö ¾Ê¾Ò½À´Ï´Ù.");
+            Debug.LogError("[BattleState] Chapter ï¿½Ç´ï¿½ Stageï¿½ï¿½ ï¿½ï¿½ï¿½Ãµï¿½ï¿½ï¿½ ï¿½Ê¾Ò½ï¿½ï¿½Ï´ï¿½.");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(mapRuntime.CurrentMapId))
-            mapRuntime.CurrentMapId = "";//³ÖÀº id ºÎÅÍ ½ÃÀÛ
+            mapRuntime.CurrentMapId = "";//ï¿½ï¿½ï¿½ï¿½ id ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
         mapRuntime.CurrentSceneName = SceneName.Battle;
 
@@ -33,7 +33,7 @@ public class BattleState : BaseGameState
 
         await sceneFlow.LoadSceneAsync(mapRuntime.CurrentSceneName);
 
-        AudioManager.Instance.PlayBgmDelayed(BgmType.Battle);
+        AudioManager.Instance.PlayBgmDelayed(AudioIds.Bgm.Battle);
     }
 
     public override Task Exit()
