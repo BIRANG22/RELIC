@@ -290,6 +290,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                 MonsterReservedCommand command = new MonsterReservedCommand(runtime, skillData);
                 command.SetMoveOffset(action.MoveOffset);
                 command.SetRangeOriginGridIndex(action.RangeOriginGridIndex);
+                command.SetRangeOriginCasterGridIndex(action.RangeOriginCasterGridIndex);
                 command.SetPortalMove(action.IsPortalMove);
 
                 if (action.HasForcedDirection)

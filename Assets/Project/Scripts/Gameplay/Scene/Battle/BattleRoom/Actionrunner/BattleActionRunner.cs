@@ -32,6 +32,7 @@ public class BattleActionRunner
     private const float HitCameraDelay = 0.08f;
     private const float MonsterHUDVisibleDelay = 0.45f;
     private const float DefaultActionRoutineTimeout = 8f;
+    private const string MuckMonsterId = "Mon_01";
     private const string MuckProjectileSkillId = "S_Monster_02";
     private const string BlobMonsterId = "Mon_02";
     private const string ResidueGridEffectId = "GR_Residue";
@@ -3410,6 +3411,9 @@ public class BattleActionRunner
         }
 
         // 확정된 방향을 기준으로 공격 범위를 계산합니다.
+        // 머크는 예약된 공격 오프셋을 유지하되, 실제 현재 위치를 기준으로 공격 원점을 다시 맞춥니다.
+        AlignMuckProjectileRangeOriginToActualPosition(monster, command);
+
         RecalculateMonsterSkillRangeAtExecution(monster, command);
 
         BattleCharacter firstPlayerTarget = FindFirstPlayerTarget(command);
@@ -3530,6 +3534,38 @@ public class BattleActionRunner
 
             yield return new WaitForSeconds(HitCameraDelay);
         }
+    }
+
+    private void AlignMuckProjectileRangeOriginToActualPosition(
+        MonsterUnit monster,
+        MonsterReservedCommand command)
+    {
+        if (monster == null || command == null || gridManager == null)
+            return;
+
+        if (!string.Equals(command.MonsterId, MuckMonsterId, System.StringComparison.Ordinal) ||
+            !string.Equals(command.SkillId, MuckProjectileSkillId, System.StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        if (monster.MainGridIndex < 0 ||
+            command.RangeOriginGridIndex < 0 ||
+            command.RangeOriginCasterGridIndex < 0)
+        {
+            return;
+        }
+
+        Vector2Int plannedCasterCoord = gridManager.IndexToCoord(command.RangeOriginCasterGridIndex);
+        Vector2Int reservedOriginCoord = gridManager.IndexToCoord(command.RangeOriginGridIndex);
+        Vector2Int actualCasterCoord = gridManager.IndexToCoord(monster.MainGridIndex);
+        Vector2Int relativeOriginOffset = reservedOriginCoord - plannedCasterCoord;
+        Vector2Int executionOriginCoord = actualCasterCoord + relativeOriginOffset;
+
+        if (!gridManager.IsValidCoord(executionOriginCoord))
+            return;
+
+        command.SetRangeOriginGridIndex(gridManager.CoordToIndex(executionOriginCoord));
     }
 
     private void RecalculateMonsterSkillRangeAtExecution(

@@ -41,8 +41,8 @@ public class RuneSettingPanel : MonoBehaviour
     [SerializeField] private TMP_Text runeInfoRarityText;
     [Tooltip("같은 InfoArea를 사용하는 SkillSettingPanel입니다. 비어 있으면 자동으로 찾습니다.")]
     [SerializeField] private SkillSettingPanel sharedSkillSettingPanel;
-    [SerializeField] private string emptyRuneInfoTitle = "룬 정보";
-    [SerializeField, TextArea] private string emptyRuneInfoEffect = "룬을 선택하면 정보가 표시됩니다.";
+    [SerializeField] private string emptyRuneInfoTitle = "파편 정보";
+    [SerializeField, TextArea] private string emptyRuneInfoEffect = "파편을 선택하면 정보가 표시된다.";
 
     [Header("Info Rarity Colors")]
     [SerializeField] private Color commonRarityColor = Color.white;
@@ -331,7 +331,7 @@ public class RuneSettingPanel : MonoBehaviour
         {
             ClearRuneSlotsAndLockAll();
             ClearRuneIconButtons();
-            ShowWarning(GameLocalization.Get("common.data_unavailable", "데이터를 사용할 수 없습니다."));
+            ShowWarning("데이터를 사용할 수 없다.");
             return;
         }
 
@@ -339,7 +339,7 @@ public class RuneSettingPanel : MonoBehaviour
         {
             ClearRuneSlotsAndLockAll();
             ClearRuneIconButtons();
-            ShowWarning(GameLocalization.Get("lobby.no_character_selected", "선택된 캐릭터가 없습니다."));
+            ShowWarning("선택된 캐릭터가 없다.");
             return;
         }
 
@@ -347,7 +347,7 @@ public class RuneSettingPanel : MonoBehaviour
         {
             ClearRuneSlotsAndLockAll();
             ClearRuneIconButtons();
-            ShowWarning(GameLocalization.Format("lobby.character_data_not_found_id", "캐릭터 데이터를 찾을 수 없습니다: {0}", characterId));
+            ShowWarning(string.Format("캐릭터 데이터를 찾을 수 없다: {0}", characterId));
             return;
         }
 
@@ -357,7 +357,7 @@ public class RuneSettingPanel : MonoBehaviour
         {
             ClearRuneSlotsAndLockAll();
             ClearRuneIconButtons();
-            ShowWarning(GameLocalization.Format("lobby.character_data_not_found_id", "캐릭터 데이터를 찾을 수 없습니다: {0}", characterId));
+            ShowWarning(string.Format("캐릭터 데이터를 찾을 수 없다: {0}", characterId));
             return;
         }
 
@@ -718,13 +718,13 @@ public class RuneSettingPanel : MonoBehaviour
     {
         if (currentRuntimeData == null || currentMasterData == null)
         {
-            ShowWarning(GameLocalization.Get("lobby.select_character_first", "캐릭터를 먼저 선택해야 합니다."));
+            ShowWarning("캐릭터를 먼저 선택해야 한다.");
             return;
         }
 
         if (runeData == null)
         {
-            ShowWarning(GameLocalization.Get("lobby.no_fragment_selected", "선택된 파편이 없습니다."));
+            ShowWarning("선택된 파편이 없다.");
             return;
         }
 
@@ -736,7 +736,7 @@ public class RuneSettingPanel : MonoBehaviour
 
         if (!IsRuneValidForCurrentCharacter(runeData))
         {
-            ShowWarning(GameLocalization.Get("lobby.fragment_not_available", "현재 캐릭터가 사용할 수 없는 파편입니다."));
+            ShowWarning("현재 캐릭터가 사용할 수 없는 파편이다.");
             return;
         }
 
@@ -758,7 +758,7 @@ public class RuneSettingPanel : MonoBehaviour
 
         if (emptySlot == null)
         {
-            ShowWarning(GameLocalization.Get("lobby.no_empty_fragment_slot", "비어있는 파편 슬롯이 없습니다."));
+            ShowWarning("비어있는 파편 슬롯이 없다.");
             return;
         }
 
@@ -798,9 +798,9 @@ public class RuneSettingPanel : MonoBehaviour
         if (locked)
         {
             if (runeData.TargetCharacterId == "All")
-                ShowWarning(GameLocalization.Get("lobby.shared_fragment_level_required", "플레이어 또는 계정 레벨 조건이 필요한 공용 파편입니다."));
+                ShowWarning("플레이어 또는 계정 레벨 조건이 필요한 공용 파편이다.");
             else
-                ShowWarning(GameLocalization.Format("lobby.character_fragment_unlock_level", "캐릭터 LV.{0}에 해금되는 전용 파편입니다.", requiredLevel));
+                ShowWarning(string.Format("캐릭터 LV.{0}에 해금되는 전용 파편이다.", requiredLevel));
 
             return;
         }
@@ -1051,7 +1051,7 @@ public class RuneSettingPanel : MonoBehaviour
     {
         if (runeData == null)
         {
-            ShowWarning(GameLocalization.Get("lobby.no_fragment_to_unequip", "해체할 파편이 없습니다."));
+            ShowWarning("해체할 파편이 없다.");
             return;
         }
 
@@ -1080,7 +1080,7 @@ public class RuneSettingPanel : MonoBehaviour
 
         if (!removed)
         {
-            ShowWarning(GameLocalization.Get("lobby.fragment_not_equipped", "장착 중인 파편이 아닙니다."));
+            ShowWarning("장착 중인 파편이 아니다.");
             return;
         }
 
@@ -1098,7 +1098,7 @@ public class RuneSettingPanel : MonoBehaviour
 
         if (slotButton == null)
         {
-            ShowWarning(GameLocalization.Get("lobby.fragment_slot_not_connected", "파편 슬롯이 연결되지 않았습니다."));
+            ShowWarning("파편 슬롯이 연결되지 않았다.");
             return;
         }
 
@@ -1110,7 +1110,7 @@ public class RuneSettingPanel : MonoBehaviour
 
         if (slotButton.EquippedRune == null)
         {
-            ShowWarning(GameLocalization.Get("lobby.no_fragment_to_unequip", "해체할 파편이 없습니다."));
+            ShowWarning("해체할 파편이 없다.");
             return;
         }
 
@@ -1289,11 +1289,11 @@ public class RuneSettingPanel : MonoBehaviour
 
         if (runeData != null && runeData.TargetCharacterId == "All")
         {
-            ShowWarning(GameLocalization.Get("lobby.shared_fragment_locked", "아직 잠겨있는 공용 파편입니다."));
+            ShowWarning("아직 잠겨있는 공용 파편이다.");
             return;
         }
 
-        ShowWarning(GameLocalization.Format("lobby.character_fragment_unlock_level", "캐릭터 LV.{0}에 해금되는 전용 파편입니다.", requiredLevel));
+        ShowWarning(string.Format("캐릭터 LV.{0}에 해금되는 전용 파편이다.", requiredLevel));
     }
 
     private void RefreshRuneIconEquippedStates()
@@ -1434,6 +1434,24 @@ public class RuneSettingPanel : MonoBehaviour
         SetRuneSelectPanelVisible(true);
     }
 
+    public bool ShowFirstOwnedRuneInfo()
+    {
+        RuneData[] candidates = GetCurrentRuneCandidates();
+
+        for (int i = 0; i < candidates.Length; i++)
+        {
+            RuneData runeData = candidates[i];
+
+            if (runeData == null || IsRuneLockedForCurrentState(runeData))
+                continue;
+
+            ShowRuneInfo(runeData);
+            return true;
+        }
+
+        return false;
+    }
+
     public void ShowRuneSlotInfo(int slotIndex, RuneData runeData, bool isLocked)
     {
         LobbyInfoHoverState.NotifyRuneInfoShown();
@@ -1452,13 +1470,10 @@ public class RuneSettingPanel : MonoBehaviour
 
             if (runeInfoEffectText != null)
                 runeInfoEffectText.text = requiredLevel > 0
-                    ? GameLocalization.Format(
-                        "lobby.fragment_slot_unlock_level",
-                        "캐릭터 {0}레벨에 해금되는 파편 슬롯입니다.",
+                    ? string.Format(
+                        "캐릭터 {0}레벨에 해금되는 파편 슬롯이다.",
                         requiredLevel)
-                    : GameLocalization.Get(
-                        "lobby.fragment_slot_locked",
-                        "아직 잠겨있는 파편 슬롯입니다.");
+                    : "아직 잠겨있는 파편 슬롯이다.";
 
             return;
         }
@@ -1476,7 +1491,7 @@ public class RuneSettingPanel : MonoBehaviour
             return;
         }
 
-        ShowWarning(GameLocalization.Get("lobby.fragment_slot_locked", "아직 잠겨있는 파편 슬롯입니다."));
+        ShowWarning("아직 잠겨있는 파편 슬롯이다.");
     }
 
     private int GetRuneSlotRequiredLevel(int slotIndex)
@@ -1499,7 +1514,7 @@ public class RuneSettingPanel : MonoBehaviour
         if (runeInfoTitleText != null)
             runeInfoTitleText.text = string.IsNullOrWhiteSpace(runeData.Name)
                 ? runeData.RuneId
-                : GameDataLocalization.RuneName(runeData);
+                : runeData.Name;
 
         if (runeInfoRarityText != null)
         {
@@ -1860,7 +1875,7 @@ public class RuneSettingPanel : MonoBehaviour
             return string.Empty;
 
         if (entry.EffectData != null && !string.IsNullOrWhiteSpace(entry.EffectData.Name))
-            return GameDataLocalization.EffectName(entry.EffectData);
+            return entry.EffectData.Name;
 
         return entry.EffectId;
     }

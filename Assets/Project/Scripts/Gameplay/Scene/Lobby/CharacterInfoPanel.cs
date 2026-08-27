@@ -41,13 +41,9 @@ public class CharacterInfoPanel : MonoBehaviour
 
     [Header("Stat Tooltip Text")]
     [SerializeField] private string hpTooltipTitle = "생명력";
-    [SerializeField, TextArea(2, 4)] private string hpTooltipDescription = "캐릭터의 생명력입니다.\n생명력이 0이 되면 전투불능 상태가 됩니다.";
     [SerializeField] private string costTooltipTitle = "마나";
-    [SerializeField, TextArea(2, 4)] private string costTooltipDescription = "기억을 사용할 때 소모하는 자원입니다.\n현재 마나가 부족하면 기억을 사용할 수 없습니다.";
     [SerializeField] private string recoveryTooltipTitle = "마나재생량";
-    [SerializeField, TextArea(2, 4)] private string recoveryTooltipDescription = "턴이 시작될 때 회복되는 마나 수치입니다.";
     [SerializeField] private string karmaTooltipTitle = "카르마";
-    [SerializeField, TextArea(2, 4)] private string karmaTooltipDescription = "발현기억에 사용하는 자원입니다.\n최대 보유량은 {0}입니다.";
 
     [Header("Story Tooltip Timing")]
     [SerializeField, Min(0f)] private float storyTooltipRestoreDelay = 0.15f;
@@ -243,14 +239,13 @@ public class CharacterInfoPanel : MonoBehaviour
         switch (statType)
         {
             case CharacterStatTooltipTarget.StatType.HP:
-                return NormalizeEditableText(hpTooltipDescription);
+                return "생명력이 0이 되면 전투불능 상태가 된다.";
             case CharacterStatTooltipTarget.StatType.Cost:
-                return NormalizeEditableText(costTooltipDescription);
+                return "보유 마나가 부족하면 행동을 등록할 수 없다.";
             case CharacterStatTooltipTarget.StatType.CostRecovery:
-                return NormalizeEditableText(recoveryTooltipDescription);
+                return "턴이 시작될 때 자동으로 회복되는 마나 수치이다.";
             case CharacterStatTooltipTarget.StatType.Karma:
-                int maxKarma = currentMasterData != null ? Mathf.Max(0, currentMasterData.MaxResource) : 0;
-                return string.Format(NormalizeEditableText(karmaTooltipDescription), maxKarma);
+                return "각자의 전투 방식에 따라 축적되며, 기억을 발현하는 힘이 된다.";
             default:
                 return string.Empty;
         }

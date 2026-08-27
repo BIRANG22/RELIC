@@ -95,7 +95,7 @@ namespace Relic.Gameplay.Data
         private const string RuneUnlockText = "파편 해금";
         private const string SkillMemoryUnlockText = "기억 해금";
 
-        private static readonly int[] DefaultRuneSlotUnlockLevels = { 1, 1, 3, 5, 7, 10 };
+        private static readonly int[] DefaultRuneSlotUnlockLevels = { 1, 1, 2, 4, 6, 8 };
         private static readonly int[] DefaultPassiveSkillUnlockLevels = { 1, 5 };
         private static readonly int[] DefaultUniqueSkillUnlockLevels = { 1, 10 };
         private static readonly int[] DefaultCharacterSkillUnlockLevels = { 1, 1 };

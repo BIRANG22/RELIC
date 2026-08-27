@@ -56,7 +56,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
     [SerializeField] private GameObject skillInfoValueLabel;
 
     [SerializeField] private string emptySkillInfoTitle = "스킬명";
-    [SerializeField, TextArea] private string emptySkillInfoEffect = "스킬을 선택하면 정보가 표시됩니다.";
+    [SerializeField, TextArea] private string emptySkillInfoEffect = "스킬을 선택하면 정보가 표시된다.";
     [SerializeField] private bool autoBindSkillInfoArea = true;
 
     [Header("Warning UI")]
@@ -542,21 +542,21 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (DataManager.Instance == null)
         {
             ClearSkillSlots();
-            ShowWarning(GameLocalization.Get("common.data_unavailable", "데이터를 사용할 수 없습니다."));
+            ShowWarning("데이터를 사용할 수 없다.");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(characterId))
         {
             ClearSkillSlots();
-            ShowWarning(GameLocalization.Get("lobby.no_character_selected", "선택된 캐릭터가 없습니다."));
+            ShowWarning("선택된 캐릭터가 없다.");
             return;
         }
 
         if (!DataManager.Instance.CharacterDatabase.TryGet(characterId, out currentMasterData))
         {
             ClearSkillSlots();
-            ShowWarning(GameLocalization.Format("lobby.character_data_not_found_id", "캐릭터 데이터를 찾을 수 없습니다: {0}", characterId));
+            ShowWarning(string.Format("캐릭터 데이터를 찾을 수 없다: {0}", characterId));
             return;
         }
 
@@ -565,7 +565,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (currentRuntimeData == null)
         {
             ClearSkillSlots();
-            ShowWarning(GameLocalization.Format("lobby.character_data_not_found_id", "캐릭터 데이터를 찾을 수 없습니다: {0}", characterId));
+            ShowWarning(string.Format("캐릭터 데이터를 찾을 수 없다: {0}", characterId));
             return;
         }
 
@@ -682,13 +682,13 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
     {
         if (slotButton == null)
         {
-            ShowWarning(GameLocalization.Get("lobby.skill_slot_not_connected", "스킬 슬롯이 연결되지 않았습니다."));
+            ShowWarning("스킬 슬롯이 연결되지 않았다.");
             return;
         }
 
         if (currentRuntimeData == null || currentMasterData == null)
         {
-            ShowWarning(GameLocalization.Get("lobby.select_character_first", "캐릭터를 먼저 선택해야 합니다."));
+            ShowWarning("캐릭터를 먼저 선택해야 한다.");
             return;
         }
 
@@ -727,7 +727,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             skillSlotButtons.Length == 0 ||
             skillSlotButtons[0] == null)
         {
-            ShowWarning(GameLocalization.Get("lobby.skill_slot_not_connected", "스킬 슬롯이 연결되지 않았습니다."));
+            ShowWarning("스킬 슬롯이 연결되지 않았다.");
             return;
         }
 
@@ -1077,7 +1077,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         SetSkillInfoLabelsVisible(true);
         SetSkillInfoValueObjectsVisible(true);
 
-        SetPlainTmpText(skillInfoTitleText, GameDataLocalization.SkillName(skill));
+        SetPlainTmpText(skillInfoTitleText, skill.Name);
         SetPlainTmpText(skillInfoRarityText, SkillRarityUtility.GetMemoryTypeDisplayName(skill));
         ApplySkillInfoRarityColor(skill.Rarity);
         SetRichTmpText(skillInfoEffectText, BuildSkillDetailsText(skill));
@@ -1303,22 +1303,22 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         switch (GetCurrentCharacterNumber())
         {
             case 1:
-                return GameLocalization.Get("resource.rage", "분노");
+                return "분노";
 
             case 2:
-                return GameLocalization.Get("resource.momentum", "기세");
+                return "기세";
 
             case 3:
-                return GameLocalization.Get("resource.aether", "에테르");
+                return "에테르";
 
             case 4:
-                return GameLocalization.Get("resource.faith", "신앙");
+                return "신앙";
 
             case 5:
-                return GameLocalization.Get("resource.blood", "혈기");
+                return "혈기";
 
             default:
-                return GameLocalization.Get("resource.unique", "카르마");
+                return "카르마";
         }
     }
 
@@ -1345,22 +1345,22 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         switch (GetCurrentCharacterNumber())
         {
             case 1:
-                return GameLocalization.Get("skill.passive_rage_3", "분노 3 유지 시 지속");
+                return "분노 3 유지 시 지속";
 
             case 2:
-                return GameLocalization.Get("skill.passive_momentum_5", "기세 5 유지 시 지속");
+                return "기세 5 유지 시 지속";
 
             case 3:
-                return GameLocalization.Get("skill.passive_aether_3", "에테르 3 유지 시 지속");
+                return "에테르 3 유지 시 지속";
 
             case 4:
-                return GameLocalization.Get("skill.passive_faith_3", "신앙 3 유지 시 지속");
+                return "신앙 3 유지 시 지속";
 
             case 5:
-                return GameLocalization.Get("skill.passive_blood_5", "혈기 5 유지 시 지속");
+                return "혈기 5 유지 시 지속";
 
             default:
-                return GameLocalization.Get("skill.passive_unique_max", "카르마 최대치 유지 시 지속");
+                return "카르마 최대치 유지 시 지속";
         }
     }
 
@@ -1390,7 +1390,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
                 continue;
 
             string effectName = entry.EffectData != null && !string.IsNullOrWhiteSpace(entry.EffectData.Name)
-                ? GameDataLocalization.EffectName(entry.EffectData)
+                ? entry.EffectData.Name
                 : entry.EffectId;
 
             string normalized = (effectName ?? string.Empty).Replace(" ", string.Empty).ToLowerInvariant();
@@ -1416,15 +1416,15 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             : string.Empty;
 
         if (string.Equals(source, "타격", System.StringComparison.OrdinalIgnoreCase))
-            return GameLocalization.Get("common.damage", "피해");
+            return "피해";
 
         if (string.Equals(source, "관통", System.StringComparison.OrdinalIgnoreCase))
-            return GameLocalization.Get("effect.piercing_damage", "관통피해");
+            return "관통피해";
 
         if (string.Equals(source, "E_Move", System.StringComparison.OrdinalIgnoreCase) ||
             string.Equals(id, "E_Move", System.StringComparison.OrdinalIgnoreCase))
         {
-            return GameLocalization.Get("common.move", "이동");
+            return "이동";
         }
 
         return source;
@@ -1465,7 +1465,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             return "";
 
         // 도감과 동일하게 토큰 치환 전 원본 Details를 사용합니다.
-        // GameDataLocalization.SkillDetails()는 먼저 {ValueRate}/{CountRate}를 숫자로 바꾸므로
+        // 스킬 상세 문구는 먼저 {ValueRate}/{CountRate}를 숫자로 바꾸므로
         // 이후에는 어떤 숫자가 치환값인지 알 수 없어 색상 태그를 적용할 수 없습니다.
         string details = skill.Details;
 
@@ -1645,13 +1645,13 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
     {
         if (currentSelectedSlot == null)
         {
-            ShowWarning(GameLocalization.Get("lobby.select_skill_slot_first", "스킬을 장착할 슬롯을 먼저 선택하세요."));
+            ShowWarning("스킬을 장착할 슬롯을 먼저 선택해야 한다.");
             return;
         }
 
         if (skill == null)
         {
-            ShowWarning(GameLocalization.Get("lobby.no_skill_selected", "선택된 스킬이 없습니다."));
+            ShowWarning("선택된 스킬이 없다.");
             return;
         }
 
@@ -1660,13 +1660,13 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
         if (characterLevel < requiredLevel)
         {
-            ShowWarning(GameLocalization.Format("lobby.skill_locked_level", "아직 잠겨있는 스킬입니다. 필요 레벨: LV. {0}", requiredLevel));
+            ShowWarning(string.Format("아직 잠겨있는 스킬이다. 필요 레벨: LV. {0}", requiredLevel));
             return;
         }
 
         if (!IsSkillValidForCurrentCharacterSlot(skill, currentSelectedSlot.SlotIndex))
         {
-            ShowWarning(GameLocalization.Get("lobby.skill_not_available_for_slot", "이 슬롯에 장착할 수 없는 스킬입니다."));
+            ShowWarning("이 슬롯에 장착할 수 없는 스킬이다.");
             return;
         }
 

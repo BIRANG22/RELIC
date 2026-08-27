@@ -17,6 +17,7 @@ public class MonsterReservedCommand
     public bool HasReservedDamage => ReservedDamage > 0;
     public int ActionIndex { get; private set; }
     public int RangeOriginGridIndex { get; private set; } = -1;
+    public int RangeOriginCasterGridIndex { get; private set; } = -1;
     public bool HasForcedDirection { get; private set; }
     public BattleDirection ForcedDirection { get; private set; } = BattleDirection.Right;
     public bool IsPortalMove { get; private set; }
@@ -70,6 +71,11 @@ public class MonsterReservedCommand
     public void SetRangeOriginGridIndex(int gridIndex)
     {
         RangeOriginGridIndex = Mathf.Max(-1, gridIndex);
+    }
+
+    public void SetRangeOriginCasterGridIndex(int gridIndex)
+    {
+        RangeOriginCasterGridIndex = Mathf.Max(-1, gridIndex);
     }
 
     public void SetForcedDirection(BattleDirection direction)

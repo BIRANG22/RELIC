@@ -8,6 +8,7 @@ namespace Relic.Gameplay.Monster
     {
         private const string MoveSkillId = "S_Monster_01";
         private const string AttackSkillId = "S_Monster_02";
+        private const string ResidueGridEffectId = "GR_Residue";
 
         private static readonly Vector2Int[] MoveDirections =
         {
@@ -44,9 +45,33 @@ namespace Relic.Gameplay.Monster
                 ? DataManager.Instance?.MonsterSkillDatabase.Get(AttackSkillId)
                 : null;
 
-            // 머크는 행동 범위 안에 캐릭터가 있어도 항상 가장 가까운 캐릭터 쪽으로
-            // 십자 또는 대각선 방향 1칸 이동을 먼저 시도합니다.
-            Vector2Int moveOffset = GetBestOneTileMoveTowardNearestPlayer(monsterUnit, gridManager);
+            BattleGridEffectController gridEffectController =
+                Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+
+            int currentAttackOrigin = -1;
+
+            if (usesRangedAttackOrigin)
+            {
+                currentAttackOrigin = FindRangedAttackOrigin(
+                    monsterUnit,
+                    monsterUnit.MainGridIndex,
+                    attackSkill,
+                    attackRangeId,
+                    gridManager);
+            }
+
+            // 현재 위치에서 이미 공격이 가능하면 굳이 이동하지 않습니다.
+            // 공격할 수 없을 때만 가장 가까운 캐릭터 쪽으로 1칸 이동을 시도합니다.
+            Vector2Int moveOffset = currentAttackOrigin >= 0
+                ? Vector2Int.zero
+                : GetBestOneTileMoveTowardNearestPlayer(
+                    monsterUnit,
+                    gridManager,
+                    attackSkill,
+                    attackRangeId,
+                    usesRangedAttackOrigin,
+                    gridEffectController);
+
             bool canMove = moveOffset != Vector2Int.zero &&
                            CanMonsterMove(monsterUnit, gridManager, moveOffset);
 
@@ -71,14 +96,17 @@ namespace Relic.Gameplay.Monster
 
             if (usesRangedAttackOrigin)
             {
-                rangeOriginGridIndex = FindRangedAttackOrigin(
-                    monsterUnit,
-                    projectedMainGridIndex,
-                    attackSkill,
-                    attackRangeId,
-                    gridManager);
+                rangeOriginGridIndex = currentAttackOrigin >= 0 && !canMove
+                    ? currentAttackOrigin
+                    : FindRangedAttackOrigin(
+                        monsterUnit,
+                        projectedMainGridIndex,
+                        attackSkill,
+                        attackRangeId,
+                        gridManager);
 
-                // 이동을 마친 위치에서 행동 범위 안에 캐릭터가 없으면 공격하지 않습니다.
+                // 계획 단계에서 이동 후에도 공격 범위가 닿지 않는다면 이동만 예약합니다.
+                // 이미 타임라인에 등록된 공격은 실행 단계에서 이동 실패 여부와 관계없이 실행됩니다.
                 if (rangeOriginGridIndex < 0)
                     return plan;
             }
@@ -89,7 +117,8 @@ namespace Relic.Gameplay.Monster
                 MonsterAISlotPreference.SameSlot,
                 group,
                 1,
-                rangeOriginGridIndex
+                rangeOriginGridIndex,
+                rangeOriginCasterGridIndex: projectedMainGridIndex
             ));
 
             return plan;
@@ -97,7 +126,11 @@ namespace Relic.Gameplay.Monster
 
         private Vector2Int GetBestOneTileMoveTowardNearestPlayer(
             MonsterUnit monsterUnit,
-            GridManager gridManager)
+            GridManager gridManager,
+            MonsterSkillData attackSkill,
+            string attackRangeId,
+            bool usesRangedAttackOrigin,
+            BattleGridEffectController gridEffectController)
         {
             int targetGridIndex = FindNearestCharacterTargetGridIndex(monsterUnit, gridManager);
 
@@ -111,6 +144,7 @@ namespace Relic.Gameplay.Monster
             Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
 
             Vector2Int bestOffset = Vector2Int.zero;
+            int bestPriorityRank = int.MaxValue;
             int bestChebyshevDistance = int.MaxValue;
             int bestManhattanDistance = int.MaxValue;
 
@@ -121,27 +155,75 @@ namespace Relic.Gameplay.Monster
                 if (!CanMonsterMove(monsterUnit, gridManager, offset))
                     continue;
 
+                int projectedMainGridIndex =
+                    GetProjectedMainGridIndex(monsterUnit, gridManager, offset);
+
+                bool candidateCanAttack = !usesRangedAttackOrigin ||
+                                          FindRangedAttackOrigin(
+                                              monsterUnit,
+                                              projectedMainGridIndex,
+                                              attackSkill,
+                                              attackRangeId,
+                                              gridManager) >= 0;
+
+                bool isRiskyDestination = IsRiskyGridEffectDestination(
+                    projectedMainGridIndex,
+                    gridEffectController);
+
+                // 공격 가능한 빈칸 > 공격 가능한 위험지형 > 빈칸 > 위험지형 순으로 선택합니다.
+                // 위험지형을 밟아야만 공격할 수 있다면 공격을 위해 진입할 수 있습니다.
+                int attackRank = candidateCanAttack ? 0 : 2;
+                int priorityRank = attackRank + (isRiskyDestination ? 1 : 0);
+
                 Vector2Int projectedCoord = currentCoord + offset;
                 int deltaX = Mathf.Abs(targetCoord.x - projectedCoord.x);
                 int deltaY = Mathf.Abs(targetCoord.y - projectedCoord.y);
                 int chebyshevDistance = Mathf.Max(deltaX, deltaY);
                 int manhattanDistance = deltaX + deltaY;
 
-                if (chebyshevDistance > bestChebyshevDistance)
+                if (priorityRank > bestPriorityRank)
                     continue;
 
-                if (chebyshevDistance == bestChebyshevDistance &&
+                if (priorityRank == bestPriorityRank &&
+                    chebyshevDistance > bestChebyshevDistance)
+                {
+                    continue;
+                }
+
+                if (priorityRank == bestPriorityRank &&
+                    chebyshevDistance == bestChebyshevDistance &&
                     manhattanDistance >= bestManhattanDistance)
                 {
                     continue;
                 }
 
+                bestPriorityRank = priorityRank;
                 bestChebyshevDistance = chebyshevDistance;
                 bestManhattanDistance = manhattanDistance;
                 bestOffset = offset;
             }
 
             return bestOffset;
+        }
+
+        private static bool IsRiskyGridEffectDestination(
+            int gridIndex,
+            BattleGridEffectController gridEffectController)
+        {
+            if (gridIndex < 0 || gridEffectController == null)
+                return false;
+
+            if (!gridEffectController.State.TryGetEffectId(gridIndex, out string gridEffectId) ||
+                string.IsNullOrWhiteSpace(gridEffectId))
+            {
+                return false;
+            }
+
+            // 머크가 만드는 점액은 몬스터에게 적용되지 않으므로 위험지형으로 취급하지 않습니다.
+            return !string.Equals(
+                gridEffectId,
+                ResidueGridEffectId,
+                System.StringComparison.OrdinalIgnoreCase);
         }
     }
 }

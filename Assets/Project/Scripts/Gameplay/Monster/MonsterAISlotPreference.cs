@@ -21,6 +21,7 @@ namespace Relic.Gameplay.Monster
         public int SameSlotGroup;
         public int Priority;
         public int RangeOriginGridIndex;
+        public int RangeOriginCasterGridIndex;
         public bool HasForcedDirection;
         public BattleDirection ForcedDirection;
         public bool IsPortalMove;
@@ -38,7 +39,8 @@ namespace Relic.Gameplay.Monster
             BattleDirection forcedDirection = BattleDirection.Right,
             bool isPortalMove = false,
             int slotOffset = 0,
-            List<int> explicitRangeGridIndices = null)
+            List<int> explicitRangeGridIndices = null,
+            int rangeOriginCasterGridIndex = -1)
         {
             SkillId = skillId;
             MoveOffset = moveOffset;
@@ -46,6 +48,7 @@ namespace Relic.Gameplay.Monster
             SameSlotGroup = sameSlotGroup;
             Priority = priority;
             RangeOriginGridIndex = Mathf.Max(-1, rangeOriginGridIndex);
+            RangeOriginCasterGridIndex = Mathf.Max(-1, rangeOriginCasterGridIndex);
             HasForcedDirection = hasForcedDirection;
             ForcedDirection = forcedDirection;
             IsPortalMove = isPortalMove;
