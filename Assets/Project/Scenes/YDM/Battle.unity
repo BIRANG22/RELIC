@@ -1129,7 +1129,7 @@ MonoBehaviour:
   waitIntroText: 0
   introTextTimeout: 1.5
   playBattleProgressSfx: 1
-  battleProgressSfxType: 13
+  battleProgressSfxId: battle.progress.text
   battleProgressSfxVolume: 1
 --- !u!114 &27159003
 MonoBehaviour:
@@ -5328,12 +5328,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 0
-  clickSfx: 7
+  clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &160912503
 MonoBehaviour:
@@ -14409,12 +14409,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 1
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &398328319
 MonoBehaviour:
@@ -18109,12 +18109,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 1
-  hoverSfx: 8
+  hoverSfx: ui.move.hover
   playClickSound: 1
-  clickSfx: 9
+  clickSfx: ui.move.click
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &511562515
 MonoBehaviour:
@@ -22638,12 +22638,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 1
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &642912116
 MonoBehaviour:
@@ -29951,12 +29951,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 1
-  hoverSfx: 8
+  hoverSfx: ui.move.hover
   playClickSound: 1
-  clickSfx: 9
+  clickSfx: ui.move.click
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!43 &856670526
 Mesh:
@@ -34566,12 +34566,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 1
-  hoverSfx: 8
+  hoverSfx: ui.move.hover
   playClickSound: 1
-  clickSfx: 9
+  clickSfx: ui.move.click
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!1 &977374467
 GameObject:
@@ -38029,12 +38029,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 1
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   playPanelOpenCloseSound: 1
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &1051714639
 MonoBehaviour:
@@ -40209,7 +40209,7 @@ MonoBehaviour:
   selectedSlotSmallGearEffectObjectName: wheel2
   selectedSlotSmallGearRotateStepZ: -90
   playSelectedSlotEffectSfx: 1
-  selectedSlotEffectSfxType: 14
+  selectedSlotEffectSfxId: battle.timeline.slot.rotate
   selectedSlotEffectSfxVolume: 1
   showWarningWhenSlotSelectionLocked: 0
   slotSelectionLockedMessage: "\uD134 \uC9C4\uD589 \uC911\uC5D0\uB294 \uC2AC\uB86F\uC744
@@ -40246,10 +40246,10 @@ MonoBehaviour:
   keepHoverUntilMouseLeavesEndGearBounds: 1
   endButtonHoverBoundsPadding: 8
   playEndButtonHoverSfx: 1
-  endButtonHoverSfxType: 15
+  endButtonHoverSfxId: battle.end.button.hover
   endButtonHoverSfxVolume: 1
   playTimelineSlotSlideSfx: 1
-  timelineSlotSlideSfxType: 16
+  timelineSlotSlideSfxId: battle.timeline.slot.slide
   timelineSlotSlideSfxVolume: 1
   totalUsedCostText: {fileID: 0}
   autoFindTotalUsedCostText: 1
@@ -40277,7 +40277,7 @@ MonoBehaviour:
   monsterCommandInterval: 0.18
   actionReserveMessageDelay: 0.1
   playActionReserveSfx: 1
-  actionReserveSfxType: 12
+  actionReserveSfxId: battle.action.reserve.text
   actionReserveSfxVolume: 1
 --- !u!114 &1104021722
 MonoBehaviour:
@@ -42049,7 +42049,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   playTransitionSound: 1
-  transitionSfx: 10
+  transitionSfx: scene.transition
   transitionSfxVolumeMultiplier: 1
 --- !u!1 &1145288801
 GameObject:
@@ -45214,7 +45214,7 @@ MonoBehaviour:
   relicEndScale: 0.25
   relicCurveHeight: 180
   playAcquireSfx: 1
-  acquireSfxType: 18
+  acquireSfxId: battle.relic.choice.acquire
   backgroundRoot: {fileID: 0}
   backgroundSortingOrder: -100
 --- !u!1 &1273482509
@@ -63449,24 +63449,20 @@ MonoBehaviour:
   revealTargets:
   - targetObject: {fileID: 1961814766}
     revealTime: 1
-    revealSound: {fileID: 8300000, guid: 4b4969b0c245adb45a833cd0c1efb8e1, type: 3}
-    soundVolume: 0.3
-    soundPitch: 0.5
+    revealSoundId: battle.boss.reveal.impact.low
+    soundVolumeMultiplier: 0.6
     useCameraShake: 1
     shakeDuration: 0.2
     shakeStrength: 0.15
     shakeFrequency: 1
   - targetObject: {fileID: 558325529}
     revealTime: 2
-    revealSound: {fileID: 8300000, guid: 4b4969b0c245adb45a833cd0c1efb8e1, type: 3}
-    soundVolume: 0.3
-    soundPitch: 0.7
+    revealSoundId: battle.boss.reveal.impact.high
+    soundVolumeMultiplier: 0.6
     useCameraShake: 1
     shakeDuration: 0.2
     shakeStrength: 0.15
     shakeFrequency: 1
-  audioSource: {fileID: 0}
-  createAudioSourceAutomatically: 1
   cameraShakeController: {fileID: 1610817909}
   objectsToActivateAfterFinish:
   - {fileID: 124704202}
@@ -64562,12 +64558,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 1
-  hoverSfx: 8
+  hoverSfx: ui.move.hover
   playClickSound: 1
-  clickSfx: 9
+  clickSfx: ui.move.click
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!1 &1808433590
 GameObject:
@@ -65611,12 +65607,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 1
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   playPanelOpenCloseSound: 1
-  panelOpenSfx: 28
-  panelCloseSfx: 29
+  panelOpenSfx: ui.inventory.open
+  panelCloseSfx: ui.inventory.close
   panelOpenCloseSfxVolume: 1
 --- !u!1 &1832433053
 GameObject:
@@ -65658,7 +65654,7 @@ MonoBehaviour:
   skillListPanel: {fileID: 0}
   keepSkillListOpenAfterReservationClick: 1
   keepSkillListOpenIgnoreFrames: 1
-  reservationConfirmSfx: 30
+  reservationConfirmSfx: battle.skill.reserve
   reservationConfirmSfxVolume: 1
   moveHighlightMaterial: {fileID: 2100000, guid: be00f36901d19574f8d89667ff23476b, type: 2}
   moveHoverPingBaseSprite: {fileID: 21300000, guid: 046791c66c258704abf555d3b889335e, type: 3}
@@ -68718,7 +68714,7 @@ MonoBehaviour:
   startRoomController: {fileID: 1137359715}
   relicChoiceCanvas: {fileID: 0}
   playAcquireSfx: 1
-  acquireSfxType: 18
+  acquireSfxId: battle.relic.choice.acquire
 --- !u!114 &1928598302
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -68855,12 +68851,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.8
   panelFadeDuration: 0.1
   playHoverSound: 0
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 0
-  clickSfx: 7
+  clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!70 &1931574665
 CapsuleCollider2D:
@@ -69880,12 +69876,12 @@ MonoBehaviour:
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
   playHoverSound: 1
-  hoverSfx: 6
+  hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: 7
+  clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
-  panelOpenSfx: 26
-  panelCloseSfx: 27
+  panelOpenSfx: ui.bag.open
+  panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
 --- !u!114 &1958470754
 MonoBehaviour:

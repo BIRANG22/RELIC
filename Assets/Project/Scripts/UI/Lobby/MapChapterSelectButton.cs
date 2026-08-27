@@ -130,7 +130,7 @@ public class MapChapterSelectButton : MonoBehaviour
         }
 
         if (playSound && AudioManager.Instance != null)
-            AudioManager.Instance.PlaySfx(SfxType.NormalButtonClick);
+            AudioManager.Instance.PlaySfx(AudioIds.Sfx.NormalButtonClick);
 
         ApplySelectedStageLabel();
         SaveSelectedMapRuntimeData();

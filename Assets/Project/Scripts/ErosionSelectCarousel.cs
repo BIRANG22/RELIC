@@ -5,35 +5,35 @@ using UnityEngine.Localization.Components;
 using UnityEngine.UI;
 
 /// <summary>
-/// ¼¼ °³ÀÇ ½Ã·Ã ¼±ÅÃ, Àá±Ý »óÅÂ, ÀÌ¸§ ¹× ¼³¸í Ç¥½Ã¸¦ °ü¸®ÇÕ´Ï´Ù.
+/// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½, ï¿½Ì¸ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ç¥ï¿½Ã¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
 /// </summary>
 public class ErosionSelectCarousel : MonoBehaviour
 {
     [System.Serializable]
     private sealed class TrialItem
     {
-        [Tooltip("½Ã·Ã Ç×¸ñÀÇ ·çÆ® ¿ÀºêÁ§Æ®ÀÔ´Ï´Ù.")]
+        [Tooltip("ï¿½Ã·ï¿½ ï¿½×¸ï¿½ï¿½ï¿½ ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½Ô´Ï´ï¿½.")]
         public Transform target;
 
-        [Tooltip("½Ã·Ã ¼±ÅÃ ¹öÆ°ÀÔ´Ï´Ù. ºñ¿ö µÎ¸é Target¿¡¼­ ÀÚµ¿ Å½»öÇÕ´Ï´Ù.")]
+        [Tooltip("ï¿½Ã·ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ°ï¿½Ô´Ï´ï¿½. ï¿½ï¿½ï¿½ ï¿½Î¸ï¿½ Targetï¿½ï¿½ï¿½ï¿½ ï¿½Úµï¿½ Å½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.")]
         public Button button;
 
-        [Tooltip("¼±ÅÃµÇ¾úÀ» ¶§ Ç¥½ÃÇÒ ¿ÀºêÁ§Æ®ÀÔ´Ï´Ù.")]
+        [Tooltip("ï¿½ï¿½ï¿½ÃµÇ¾ï¿½ï¿½ï¿½ ï¿½ï¿½ Ç¥ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½Ô´Ï´ï¿½.")]
         public GameObject selectedVisual;
 
-        [Tooltip("Àá±ä »óÅÂ¿¡¼­ Ç¥½ÃÇÒ LOCK ¿ÀºêÁ§Æ®ÀÔ´Ï´Ù.")]
+        [Tooltip("ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â¿ï¿½ï¿½ï¿½ Ç¥ï¿½ï¿½ï¿½ï¿½ LOCK ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½Ô´Ï´ï¿½.")]
         public GameObject lockVisual;
 
-        [Tooltip("ÀÚ½Ä Name ¿ÀºêÁ§Æ®ÀÇ TMP ÅØ½ºÆ®ÀÔ´Ï´Ù.")]
+        [Tooltip("ï¿½Ú½ï¿½ Name ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ TMP ï¿½Ø½ï¿½Æ®ï¿½Ô´Ï´ï¿½.")]
         public TMP_Text nameText;
 
-        [Tooltip("ÀÚ½Ä Effect ¿ÀºêÁ§Æ®ÀÇ TMP ÅØ½ºÆ®ÀÔ´Ï´Ù.")]
+        [Tooltip("ï¿½Ú½ï¿½ Effect ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ TMP ï¿½Ø½ï¿½Æ®ï¿½Ô´Ï´ï¿½.")]
         public TMP_Text effectText;
 
-        [Tooltip("Effect ÅØ½ºÆ®ÀÇ Localize String EventÀÔ´Ï´Ù. ºñ¿ö µÎ¸é Effect¿¡¼­ ÀÚµ¿ Å½»öÇÕ´Ï´Ù.")]
+        [Tooltip("Effect ï¿½Ø½ï¿½Æ®ï¿½ï¿½ Localize String Eventï¿½Ô´Ï´ï¿½. ï¿½ï¿½ï¿½ ï¿½Î¸ï¿½ Effectï¿½ï¿½ï¿½ï¿½ ï¿½Úµï¿½ Å½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.")]
         public LocalizeStringEvent effectLocalizer;
 
-        [Tooltip("¼±ÅÃ »óÅÂ¿¡ µû¶ó »öÀ» º¯°æÇÒ ±×·¡ÇÈÀÔ´Ï´Ù.")]
+        [Tooltip("ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â¿ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½×·ï¿½ï¿½ï¿½ï¿½Ô´Ï´ï¿½.")]
         public Graphic tintGraphic;
 
         [HideInInspector] public string unlockedName;
@@ -43,7 +43,7 @@ public class ErosionSelectCarousel : MonoBehaviour
     }
 
     [Header("Trial Items")]
-    [Tooltip("½Ã·Ã 1, ½Ã·Ã 2, ½Ã·Ã 3 ¼ø¼­·Î ¿¬°áÇÕ´Ï´Ù.")]
+    [Tooltip("ï¿½Ã·ï¿½ 1, ï¿½Ã·ï¿½ 2, ï¿½Ã·ï¿½ 3 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.")]
     [SerializeField]
     private TrialItem[] trialItems = new TrialItem[TrialSelectionState.TrialCount];
 
@@ -60,7 +60,7 @@ public class ErosionSelectCarousel : MonoBehaviour
 
     [Header("Sound")]
     [SerializeField] private bool playClickSound = true;
-    [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfx = AudioIds.Sfx.NormalButtonClick;
     [Range(0f, 1f)]
     [SerializeField] private float clickVolume = 1f;
 

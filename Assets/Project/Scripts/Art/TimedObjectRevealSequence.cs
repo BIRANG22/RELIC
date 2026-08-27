@@ -17,15 +17,12 @@ public class TimedObjectRevealSequence : MonoBehaviour, IBattleRoomIntroSequence
 
         [Header("등장 효과음")]
         [Tooltip("오브젝트가 등장할 때 재생할 효과음")]
-        public AudioClip revealSound;
+        [SoundId(SoundCategory.Sfx)]
+        public string revealSoundId;
 
-        [Range(0f, 1f)]
-        [Tooltip("효과음 볼륨")]
-        public float soundVolume = 1f;
-
-        [Range(0.1f, 3f)]
-        [Tooltip("효과음 재생 속도와 음높이")]
-        public float soundPitch = 1f;
+        [Min(0f)]
+        [Tooltip("SoundDatabase entry volume multiplier.")]
+        public float soundVolumeMultiplier = 1f;
 
         [Header("등장 시 카메라 흔들림")]
         [Tooltip("이 오브젝트가 나타날 때 카메라를 흔듭니다.")]
@@ -49,14 +46,6 @@ public class TimedObjectRevealSequence : MonoBehaviour, IBattleRoomIntroSequence
     [SerializeField]
     private List<RevealTarget> revealTargets = new();
 
-    [Header("효과음 설정")]
-    [Tooltip("등장 효과음을 재생할 Audio Source")]
-    [SerializeField]
-    private AudioSource audioSource;
-
-    [Tooltip("Audio Source가 없으면 현재 오브젝트에 자동으로 생성")]
-    [SerializeField]
-    private bool createAudioSourceAutomatically = true;
 
     [Header("카메라 흔들림")]
     [Tooltip("메인 카메라의 CameraShakeController")]
@@ -111,8 +100,6 @@ public class TimedObjectRevealSequence : MonoBehaviour, IBattleRoomIntroSequence
 
     private void Awake()
     {
-        PrepareAudioSource();
-
         if (hideRevealTargetsOnAwake)
         {
             SetRevealTargetsActive(false);
@@ -129,23 +116,6 @@ public class TimedObjectRevealSequence : MonoBehaviour, IBattleRoomIntroSequence
         if (playOnEnable)
         {
             Play();
-        }
-    }
-
-    private void PrepareAudioSource()
-    {
-        if (audioSource != null)
-            return;
-
-        audioSource = GetComponent<AudioSource>();
-
-        if (audioSource == null &&
-            createAudioSourceAutomatically)
-        {
-            audioSource = gameObject.AddComponent<AudioSource>();
-            audioSource.playOnAwake = false;
-            audioSource.loop = false;
-            audioSource.spatialBlend = 0f;
         }
     }
 
@@ -245,31 +215,23 @@ public class TimedObjectRevealSequence : MonoBehaviour, IBattleRoomIntroSequence
 
     private void PlayRevealSound(RevealTarget revealTarget)
     {
-        if (revealTarget.revealSound == null)
+        if (string.IsNullOrWhiteSpace(revealTarget.revealSoundId))
             return;
 
-        if (audioSource == null)
-        {
-            PrepareAudioSource();
-        }
-
-        if (audioSource == null)
+        if (AudioManager.Instance == null)
         {
             Debug.LogWarning(
                 "[TimedObjectRevealSequence] " +
-                "효과음을 재생할 Audio Source가 없습니다.",
+                "AudioManager is not available.",
                 this
             );
 
             return;
         }
 
-        audioSource.pitch =
-            Mathf.Clamp(revealTarget.soundPitch, 0.1f, 3f);
-
-        audioSource.PlayOneShot(
-            revealTarget.revealSound,
-            Mathf.Clamp01(revealTarget.soundVolume)
+        AudioManager.Instance.PlaySfx(
+            revealTarget.revealSoundId,
+            revealTarget.soundVolumeMultiplier
         );
     }
 

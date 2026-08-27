@@ -65,7 +65,7 @@ public class PressAnyKeyIntro : MonoBehaviour
     [SerializeField] private bool playAnyKeySound = true;
 
     [Tooltip("Any Key 입력 시 재생할 효과음입니다.")]
-    [SerializeField] private SfxType anyKeySfx = SfxType.NormalButtonClick;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string anyKeySfx = AudioIds.Sfx.NormalButtonClick;
 
 
     [Header("테두리 연출")]

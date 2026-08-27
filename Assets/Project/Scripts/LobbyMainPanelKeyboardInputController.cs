@@ -103,7 +103,7 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
     [Header("Skill Rune Toggle Keyboard SFX")]
     [Tooltip("CharacterSettingPanel에서 Tab 키로 SkillArea/RuneArea를 전환할 때 마우스 호버와 같은 효과음을 재생합니다.")]
     [SerializeField] private bool playSkillRuneKeyboardHoverSfx = true;
-    [SerializeField] private SfxType skillRuneKeyboardHoverSfx = SfxType.NormalButtonHover;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string skillRuneKeyboardHoverSfx = AudioIds.Sfx.NormalButtonHover;
     [SerializeField, Range(0f, 2f)] private float skillRuneKeyboardHoverSfxVolume = 1f;
 
     [Header("Lobby Main Keys")]

@@ -7,7 +7,7 @@ public class StartModeButton : MonoBehaviour
 
     [Header("Sound")]
     [SerializeField] private bool playClickSound = true;
-    [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfx = AudioIds.Sfx.NormalButtonClick;
 
     public async void OnClickStartMode()
     {
@@ -28,7 +28,7 @@ public class StartModeButton : MonoBehaviour
             }
 
             Debug.LogWarning(
-                "[StartModeButton] IntroSequenceController°¡ ¾ø¾î ÀÎÆ®·Î¸¦ °Ç³Ê¶Ù°í ·Îºñ·Î ÀÌµ¿ÇÕ´Ï´Ù.",
+                "[StartModeButton] IntroSequenceControllerï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ®ï¿½Î¸ï¿½ ï¿½Ç³Ê¶Ù°ï¿½ ï¿½Îºï¿½ï¿½ ï¿½Ìµï¿½ï¿½Õ´Ï´ï¿½.",
                 this);
         }
 

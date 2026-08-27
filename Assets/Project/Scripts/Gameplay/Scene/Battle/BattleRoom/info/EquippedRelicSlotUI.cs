@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Relic.Gameplay.Data;
@@ -35,7 +35,7 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
 
     [Header("Sound")]
     [SerializeField] private bool playClickSfx = true;
-    [SerializeField] private SfxType clickSfxType = SfxType.NormalButtonClick;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfxId = AudioIds.Sfx.NormalButtonClick;
 
     private RelicEquipPanelUI owner;
     private string currentRelicId;
@@ -439,6 +439,6 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
         if (!playClickSfx || AudioManager.Instance == null)
             return;
 
-        AudioManager.Instance.PlaySfx(clickSfxType);
+        AudioManager.Instance.PlaySfx(clickSfxId);
     }
 }

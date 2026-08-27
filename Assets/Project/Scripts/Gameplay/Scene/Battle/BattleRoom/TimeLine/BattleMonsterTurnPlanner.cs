@@ -14,20 +14,20 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
     [SerializeField] private GridManager gridManager;
 
     [Header("Nocturn Portal Preview")]
-    [Tooltip("°°Àº BattleReservationSystem ¿ÀºêÁ§Æ®ÀÇ ¿¹¾à ÄÁÆ®·Ñ·¯¸¦ »ç¿ëÇÕ´Ï´Ù. ºñ¾î ÀÖÀ¸¸é ÀÚµ¿À¸·Î Ã£½À´Ï´Ù.")]
+    [Tooltip("ï¿½ï¿½ï¿½ï¿½ BattleReservationSystem ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ®ï¿½Ñ·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½. ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½ Ã£ï¿½ï¿½ï¿½Ï´ï¿½.")]
     [SerializeField] private PlayerSkillReservationController playerSkillReservationController;
 
     [Header("Intro Text")]
     [SerializeField] private BattleMapIntroText battleMapIntroText;
-    [SerializeField] private string battleStartMessage = "ÀüÅõ ½ÃÀÛ";
-    [SerializeField] private string actionReserveMessage = "Çàµ¿ ¿¹¾à";
+    [SerializeField] private string battleStartMessage = "ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½";
+    [SerializeField] private string actionReserveMessage = "ï¿½àµ¿ ï¿½ï¿½ï¿½ï¿½";
     [SerializeField] private float firstMonsterCommandDelay = 0.15f;
     [SerializeField] private float monsterCommandInterval = 0.18f;
     [SerializeField] private float actionReserveMessageDelay = 0.1f;
 
     [Header("SFX")]
     [SerializeField] private bool playActionReserveSfx = true;
-    [SerializeField] private SfxType actionReserveSfxType = SfxType.BattleActionReserveText;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string actionReserveSfxId = AudioIds.Sfx.BattleActionReserveText;
     [SerializeField, Range(0f, 1f)] private float actionReserveSfxVolume = 1f;
 
     private Coroutine planRoutine;
@@ -114,7 +114,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
     {
         if (timelineController == null)
         {
-            Debug.LogWarning("[BattleMonsterTurnPlanner] BattleTimelineController°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("[BattleMonsterTurnPlanner] BattleTimelineControllerï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.");
             planRoutine = null;
             yield break;
         }
@@ -163,7 +163,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
     {
         if (timelineController == null)
         {
-            Debug.LogWarning("[BattleMonsterTurnPlanner] BattleTimelineController°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("[BattleMonsterTurnPlanner] BattleTimelineControllerï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.");
             return;
         }
 
@@ -283,7 +283,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
                 if (skillData == null)
                 {
-                    Debug.LogWarning($"[BattleMonsterTurnPlanner] SkillData ¾øÀ½: {action.SkillId}");
+                    Debug.LogWarning($"[BattleMonsterTurnPlanner] SkillData ï¿½ï¿½ï¿½ï¿½: {action.SkillId}");
                     continue;
                 }
 
@@ -301,9 +301,9 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                         action.ExplicitRangeGridIndices,
                         action.ExplicitRangeGridIndices);
                 }
-                // Æ÷Å» ¸í·ÉÀÇ RangeOriginGridIndex¿¡´Â ½ÇÁ¦ ¼ø°£ÀÌµ¿ ¸ñÀûÁö°¡ ÀúÀåµÇ¾î ÀÖ½À´Ï´Ù.
-                // ÀÏ¹Ý °ø°Ý ¹üÀ§ °è»êÀ¸·Î ÀÌ °ªÀ» µ¤¾î¾²¸é Æ÷Å» ¸ñÀûÁö°¡ ¾û¶×ÇÑ Ä­À¸·Î ¹Ù²ð ¼ö ÀÖÀ¸¹Ç·Î
-                // Æ÷Å» ÀÌµ¿Àº °ø°Ý ¹üÀ§ °è»ê¿¡¼­ Á¦¿ÜÇÕ´Ï´Ù.
+                // ï¿½ï¿½Å» ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ RangeOriginGridIndexï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ìµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ ï¿½Ö½ï¿½ï¿½Ï´ï¿½.
+                // ï¿½Ï¹ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½î¾²ï¿½ï¿½ ï¿½ï¿½Å» ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ä­ï¿½ï¿½ï¿½ï¿½ ï¿½Ù²ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½
+                // ï¿½ï¿½Å» ï¿½Ìµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ê¿¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
                 else if (!action.IsPortalMove && !IsMoveSkill(skillData))
                 {
                     SetMonsterRange(monsterUnit, skillData, command);
@@ -529,11 +529,11 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
     private void ShowActionReserveIntroText()
     {
-        PlaySfx(playActionReserveSfx, actionReserveSfxType, actionReserveSfxVolume);
+        PlaySfx(playActionReserveSfx, actionReserveSfxId, actionReserveSfxVolume);
         ShowIntroText(actionReserveMessage);
     }
 
-    private void PlaySfx(bool play, SfxType sfxType, float volume)
+    private void PlaySfx(bool play, string sfxId, float volume)
     {
         if (!play)
             return;
@@ -541,7 +541,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         if (AudioManager.Instance == null)
             return;
 
-        AudioManager.Instance.PlaySfx(sfxType, volume);
+        AudioManager.Instance.PlaySfx(sfxId, volume);
     }
 
     private void ShowIntroText(string text)
@@ -603,13 +603,13 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
     {
         if (monsterUnit == null || skillData == null || command == null)
         {
-            Debug.LogWarning("[MonsterRange] null ÂüÁ¶");
+            Debug.LogWarning("[MonsterRange] null ï¿½ï¿½ï¿½ï¿½");
             return;
         }
 
         if (gridManager == null)
         {
-            Debug.LogWarning("[MonsterRange] gridManager ¾øÀ½");
+            Debug.LogWarning("[MonsterRange] gridManager ï¿½ï¿½ï¿½ï¿½");
             return;
         }
 
@@ -617,13 +617,13 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
         if (casterGridIndex < 0)
         {
-            Debug.LogWarning($"[MonsterRange] MainGridIndex ¾øÀ½ / Monster:{monsterUnit.RuntimeData?.Name}");
+            Debug.LogWarning($"[MonsterRange] MainGridIndex ï¿½ï¿½ï¿½ï¿½ / Monster:{monsterUnit.RuntimeData?.Name}");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(skillData.RangeId) || skillData.RangeId == "0")
         {
-            Debug.LogWarning($"[MonsterRange] RangeId ¾øÀ½ / Skill:{skillData.SkillId}");
+            Debug.LogWarning($"[MonsterRange] RangeId ï¿½ï¿½ï¿½ï¿½ / Skill:{skillData.SkillId}");
             return;
         }
 

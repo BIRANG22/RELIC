@@ -43,7 +43,7 @@ public class BattleDiagonalSceneTransition : MonoBehaviour
 
     [Header("Sound")]
     [SerializeField] private bool playTransitionSound = true;
-    [SerializeField] private SfxType transitionSfx = SfxType.SceneTransition;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string transitionSfx = AudioIds.Sfx.SceneTransition;
     [SerializeField] private float transitionSfxVolumeMultiplier = 1f;
 
     private bool isInitialized;

@@ -42,7 +42,7 @@ public class CanvasMaterialSceneTransition : Singleton<CanvasMaterialSceneTransi
 
     [Header("Sound")]
     [SerializeField] private bool playTransitionSound = true;
-    [SerializeField] private SfxType transitionSfx = SfxType.SceneTransition;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string transitionSfx = AudioIds.Sfx.SceneTransition;
     [SerializeField] private float transitionSfxVolumeMultiplier = 1f;
 
     [Header("Timing")]

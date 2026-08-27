@@ -70,10 +70,10 @@ public class SkillListPanel : MonoBehaviour
 
     [Header("Sound")]
     [SerializeField] private bool playOpenSound = true;
-    [SerializeField] private SfxType openSfx = SfxType.SkillListPanelOpen;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string openSfx = AudioIds.Sfx.SkillListPanelOpen;
     [SerializeField, Range(0f, 1f)] private float openSfxVolume = 1f;
     [SerializeField] private bool playCloseSound = true;
-    [SerializeField] private SfxType closeSfx = SfxType.SkillListPanelClose;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string closeSfx = AudioIds.Sfx.SkillListPanelClose;
     [SerializeField, Range(0f, 1f)] private float closeSfxVolume = 1f;
 
     private readonly List<RectTransform> runtimeKeepOpenClickRoots = new();

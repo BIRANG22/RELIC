@@ -8,7 +8,7 @@ using UnityEngine.TestTools;
 public class AudioManagerTests
 {
     [Test]
-    public void PlayBgm_WithMultipleClipsForSameType_AssignsEachClipToSeparateSource()
+    public void PlayBgm_WithMultipleClipsForSameId_AssignsEachClipToSeparateSource()
     {
         GameObject audioObject = new("AudioManagerTest");
         AudioClip mainClip = null;
@@ -31,13 +31,11 @@ public class AudioManagerTests
                     new()
                     {
                         id = "bgm.battle.main",
-                        aliases = new List<string> { "Battle.main" },
                         clip = mainClip
                     },
                     new()
                     {
                         id = "bgm.battle.ambience",
-                        aliases = new List<string> { "Battle.ambience" },
                         clip = layerClip
                     }
                 });
@@ -45,7 +43,7 @@ public class AudioManagerTests
 
             LogAssert.ignoreFailingMessages = true;
             manager.Initialize();
-            manager.PlayBgm(BgmType.Battle);
+            manager.PlayBgm(AudioIds.Bgm.Battle);
 
             AudioClip[] assignedClips = audioObject
                 .GetComponentsInChildren<AudioSource>(true)
@@ -88,14 +86,12 @@ public class AudioManagerTests
                     new()
                     {
                         id = "bgm.battle.main",
-                        aliases = new List<string> { "Battle.main" },
                         clip = mainClip,
                         volume = 0.8f
                     },
                     new()
                     {
                         id = "bgm.battle.ambience",
-                        aliases = new List<string> { "Battle.ambience" },
                         clip = layerClip,
                         volume = 0.25f
                     }
@@ -104,7 +100,7 @@ public class AudioManagerTests
 
             LogAssert.ignoreFailingMessages = true;
             manager.Initialize();
-            manager.PlayBgm(BgmType.Battle);
+            manager.PlayBgm(AudioIds.Bgm.Battle);
 
             AudioSource layerSource = audioObject
                 .GetComponentsInChildren<AudioSource>(true)
@@ -127,6 +123,19 @@ public class AudioManagerTests
     {
         Assert.That(typeof(SoundData).GetField("type"), Is.Null);
         Assert.That(typeof(SoundData).GetField("useType"), Is.Null);
+    }
+
+    [Test]
+    public void AudioManager_DoesNotExposeEnumBasedPlaybackMethods()
+    {
+        bool hasEnumParameter = typeof(AudioManager)
+            .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            .SelectMany(method => method.GetParameters())
+            .Any(parameter =>
+                parameter.ParameterType.Name == "BgmType" ||
+                parameter.ParameterType.Name == "SfxType");
+
+        Assert.That(hasEnumParameter, Is.False);
     }
 
     private static void SetPrivateField(object target, string fieldName, object value)

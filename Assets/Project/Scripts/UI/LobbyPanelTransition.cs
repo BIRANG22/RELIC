@@ -7,7 +7,7 @@ public class LobbyPanelTransition : MonoBehaviour
     public enum TransitionDirection
     {
         Horizontal,
-        Vertical // ±âÁ¸ È£Ãâ È£È¯¿ë. ½ÇÁ¦ ¿¬ÃâÀº HorizontalTransition¸¸ »ç¿ëÇÕ´Ï´Ù.
+        Vertical // ï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½ È£È¯ï¿½ï¿½. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ HorizontalTransitionï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
     }
 
     [System.Serializable]
@@ -126,7 +126,7 @@ public class LobbyPanelTransition : MonoBehaviour
 
     [Header("Transition Sound")]
     [SerializeField] private bool playTransitionSound = true;
-    [SerializeField] private SfxType transitionSfx = SfxType.LobbyPanelTransition;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string transitionSfx = AudioIds.Sfx.LobbyPanelTransition;
     [SerializeField] private float transitionSfxVolumeMultiplier = 1f;
 
     private Coroutine transitionCoroutine;
@@ -224,8 +224,8 @@ public class LobbyPanelTransition : MonoBehaviour
     {
         isPlaying = true;
 
-        // CharacterSettingPanelÀ» Æ÷ÇÔÇÑ ¸ðµç ·Îºñ ÆÐ³Î ÀüÈ¯Àº
-        // HorizontalTransition ÇÏ³ª¸¸ »ç¿ëÇÕ´Ï´Ù.
+        // CharacterSettingPanelï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Îºï¿½ ï¿½Ð³ï¿½ ï¿½ï¿½È¯ï¿½ï¿½
+        // HorizontalTransition ï¿½Ï³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         TransitionImageSet activeSet = horizontalTransition;
 
         HideInactiveSet(activeSet);
@@ -319,7 +319,7 @@ public class LobbyPanelTransition : MonoBehaviour
 
     private void HideInactiveSet(TransitionImageSet activeSet)
     {
-        // HorizontalTransition¸¸ »ç¿ëÇÏ¹Ç·Î ºñÈ°¼º ÀüÈ¯ ¼¼Æ®°¡ ¾ø½À´Ï´Ù.
+        // HorizontalTransitionï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï¹Ç·ï¿½ ï¿½ï¿½È°ï¿½ï¿½ ï¿½ï¿½È¯ ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.
     }
 
     private void HideAllRoots()

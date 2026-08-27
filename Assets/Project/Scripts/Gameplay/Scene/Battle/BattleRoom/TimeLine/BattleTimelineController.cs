@@ -54,7 +54,7 @@ public class BattleTimelineController : MonoBehaviour
 
     [Header("Selected Slot Effect SFX")]
     [SerializeField] private bool playSelectedSlotEffectSfx = true;
-    [SerializeField] private SfxType selectedSlotEffectSfxType = SfxType.BattleTimelineSlotRotate;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string selectedSlotEffectSfxId = AudioIds.Sfx.BattleTimelineSlotRotate;
     [SerializeField, Range(0f, 1f)] private float selectedSlotEffectSfxVolume = 1f;
 
     [Header("Slot Selection Lock")]
@@ -126,12 +126,12 @@ public class BattleTimelineController : MonoBehaviour
 
     [Header("End Button Hover SFX")]
     [SerializeField] private bool playEndButtonHoverSfx = true;
-    [SerializeField] private SfxType endButtonHoverSfxType = SfxType.BattleEndButtonHover;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string endButtonHoverSfxId = AudioIds.Sfx.BattleEndButtonHover;
     [SerializeField, Range(0f, 1f)] private float endButtonHoverSfxVolume = 1f;
 
     [Header("Timeline Slot Slide SFX")]
     [SerializeField] private bool playTimelineSlotSlideSfx = true;
-    [SerializeField] private SfxType timelineSlotSlideSfxType = SfxType.BattleTimelineSlotSlide;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string timelineSlotSlideSfxId = AudioIds.Sfx.BattleTimelineSlotSlide;
     [SerializeField, Range(0f, 1f)] private float timelineSlotSlideSfxVolume = 1f;
 
     [Header("Total Used Cost Text")]
@@ -1622,7 +1622,7 @@ public class BattleTimelineController : MonoBehaviour
         if (AudioManager.Instance == null)
             return;
 
-        AudioManager.Instance.PlaySfx(endButtonHoverSfxType, endButtonHoverSfxVolume);
+        AudioManager.Instance.PlaySfx(endButtonHoverSfxId, endButtonHoverSfxVolume);
     }
 
     private void PlayTimelineSlotSlideSfx()
@@ -1633,7 +1633,7 @@ public class BattleTimelineController : MonoBehaviour
         if (AudioManager.Instance == null)
             return;
 
-        AudioManager.Instance.PlaySfx(timelineSlotSlideSfxType, timelineSlotSlideSfxVolume);
+        AudioManager.Instance.PlaySfx(timelineSlotSlideSfxId, timelineSlotSlideSfxVolume);
     }
 
     private void PlayTimelineSlideGearRotation(int completedStepCount, float durationOverride = -1f)
@@ -2462,7 +2462,7 @@ public class BattleTimelineController : MonoBehaviour
         if (AudioManager.Instance == null)
             return;
 
-        AudioManager.Instance.PlaySfx(selectedSlotEffectSfxType, selectedSlotEffectSfxVolume);
+        AudioManager.Instance.PlaySfx(selectedSlotEffectSfxId, selectedSlotEffectSfxVolume);
     }
 
     private int GetSelectedSlotEffectRotateDirection(int previousSlotIndex, int currentSlotIndex)

@@ -221,13 +221,13 @@ public class BattleRewardPanelUI : MonoBehaviour
         switch (reward.Type)
         {
             case BattleRewardType.Remnant:
-                AudioManager.Instance.PlaySfx(SfxType.BattleRewardRemnantAcquire);
+                AudioManager.Instance.PlaySfx(AudioIds.Sfx.BattleRewardRemnantAcquire);
                 break;
 
             case BattleRewardType.Item:
             case BattleRewardType.Relic:
             case BattleRewardType.Skill:
-                AudioManager.Instance.PlaySfx(SfxType.BattleRewardRelicSkillAcquire);
+                AudioManager.Instance.PlaySfx(AudioIds.Sfx.BattleRewardRelicSkillAcquire);
                 break;
         }
     }

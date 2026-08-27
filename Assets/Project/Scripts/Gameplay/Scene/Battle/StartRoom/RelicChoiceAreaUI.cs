@@ -28,7 +28,7 @@ public class RelicChoiceAreaUI : MonoBehaviour
 
     [Header("SFX")]
     [SerializeField] private bool playAcquireSfx = true;
-    [SerializeField] private SfxType acquireSfxType = SfxType.RelicChoiceAcquire;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string acquireSfxId = AudioIds.Sfx.RelicChoiceAcquire;
 
     private bool isOpen;
     private bool isSelectionCompleted;
@@ -589,7 +589,7 @@ public class RelicChoiceAreaUI : MonoBehaviour
         if (AudioManager.Instance == null)
             return;
 
-        AudioManager.Instance.PlaySfx(acquireSfxType);
+        AudioManager.Instance.PlaySfx(acquireSfxId);
     }
 
     private HashSet<string> GetUnavailableRelicIds()

@@ -3,62 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Audio;
 
-public enum BgmType
-{
-    Title,
-    Lobby,
-    Battle
-}
-
-public enum SfxType
-{
-    Click,
-    Cancel,
-    Confirm,
-
-    Attack,
-    Hit,
-    Skill,
-
-    NormalButtonHover,
-    NormalButtonClick,
-    MoveButtonHover,
-    MoveButtonClick,
-
-    SceneTransition,
-    LobbyPanelTransition,
-
-    BattleActionReserveText,
-    BattleProgressText,
-    BattleTimelineSlotRotate,
-    BattleEndButtonHover,
-    BattleTimelineSlotSlide,
-    BattleMapNodeCheckAnimation,
-
-    RelicChoiceAcquire,
-    BattleRewardRemnantAcquire,
-    BattleRewardRelicSkillAcquire,
-
-    SkillListPanelOpen = 21,
-    SkillListPanelClose = 22,
-
-    BoxOpen = 23,
-
-    CharacterSettingAreaAppear = 24,
-    CharacterSettingAreaExit = 25,
-
-    BagOpen = 26,
-    BagClose = 27,
-    InventoryOpen = 28,
-    InventoryClose = 29,
-
-    SkillReserve = 30,
-
-    TitleButtonHover = 31,
-    TitleButtonClick = 32,
-    LogoButtonClick = 33
-}
-
 public class AudioManager : Singleton<AudioManager>
 {
     [Header("Audio Sources")]
@@ -165,11 +109,6 @@ public class AudioManager : Singleton<AudioManager>
             Debug.LogWarning($"[AudioManager] Duplicate SFX ID: {id}");
     }
 
-    public void PlayBgm(BgmType type, bool loop = true)
-    {
-        PlayBgm(GetBgmId(type), loop);
-    }
-
     public void PlayBgm(string id, bool loop = true)
     {
         if (string.IsNullOrWhiteSpace(id))
@@ -238,11 +177,6 @@ public class AudioManager : Singleton<AudioManager>
         return layers;
     }
 
-    private static string GetBgmId(BgmType type)
-    {
-        return type.ToString();
-    }
-
     private static bool HasBgmLayerId(SoundData data, string layerPrefix)
     {
         if (data == null || data.clip == null || string.IsNullOrWhiteSpace(layerPrefix))
@@ -269,26 +203,26 @@ public class AudioManager : Singleton<AudioManager>
         return false;
     }
 
-    public void PlayBgmDelayed(BgmType type, bool loop = true)
+    public void PlayBgmDelayed(string id, bool loop = true)
     {
         if (!isActiveAndEnabled)
         {
-            PlayBgm(type, loop);
+            PlayBgm(id, loop);
             return;
         }
 
         if (pendingBgmRoutine != null)
             StopCoroutine(pendingBgmRoutine);
 
-        pendingBgmRoutine = StartCoroutine(PlayBgmDelayedRoutine(type, loop));
+        pendingBgmRoutine = StartCoroutine(PlayBgmDelayedRoutine(id, loop));
     }
 
-    private IEnumerator PlayBgmDelayedRoutine(BgmType type, bool loop)
+    private IEnumerator PlayBgmDelayedRoutine(string id, bool loop)
     {
         yield return null;
 
         pendingBgmRoutine = null;
-        PlayBgm(type, loop);
+        PlayBgm(id, loop);
     }
 
     public void StopBgm()
@@ -301,16 +235,6 @@ public class AudioManager : Singleton<AudioManager>
         activeBgmLayers = null;
 
         StopUnusedBgmLayerSources(0);
-    }
-
-    public void PlaySfx(SfxType type)
-    {
-        PlaySfx(type, 1f);
-    }
-
-    public void PlaySfx(SfxType type, float volumeMultiplier)
-    {
-        PlaySfx(GetSfxId(type), volumeMultiplier);
     }
 
     public void PlaySfx(string id)
@@ -338,11 +262,6 @@ public class AudioManager : Singleton<AudioManager>
         }
 
         Debug.LogWarning($"[AudioManager] SFX ID not found: {trimmedId}");
-    }
-
-    private static string GetSfxId(SfxType type)
-    {
-        return type.ToString();
     }
 
     public void PlaySfxClip(AudioClip clip)
@@ -451,12 +370,17 @@ public class AudioManager : Singleton<AudioManager>
         ApplyVolumes();
     }
 
-    public void SetSfxVolume(SfxType type, float volume)
+    public void SetSfxVolume(string id, float volume)
     {
-        string id = GetSfxId(type);
-        if (!sfxIdDict.TryGetValue(id, out SoundData data) || data == null)
+        if (string.IsNullOrWhiteSpace(id))
+            return;
+
+        string trimmedId = id.Trim();
+        if (sfxIdDict == null ||
+            !sfxIdDict.TryGetValue(trimmedId, out SoundData data) ||
+            data == null)
         {
-            Debug.LogWarning($"[AudioManager] SFX not found: {type}");
+            Debug.LogWarning($"[AudioManager] SFX not found: {trimmedId}");
             return;
         }
 
@@ -478,10 +402,15 @@ public class AudioManager : Singleton<AudioManager>
         return Settings.Instance.SFXVolume;
     }
 
-    public float GetSfxVolume(SfxType type)
+    public float GetSfxVolume(string id)
     {
-        string id = GetSfxId(type);
-        if (!sfxIdDict.TryGetValue(id, out SoundData data) || data == null)
+        if (string.IsNullOrWhiteSpace(id))
+            return 1f;
+
+        string trimmedId = id.Trim();
+        if (sfxIdDict == null ||
+            !sfxIdDict.TryGetValue(trimmedId, out SoundData data) ||
+            data == null)
             return 1f;
 
         return Mathf.Clamp01(data.volume);

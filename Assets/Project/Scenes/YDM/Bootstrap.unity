@@ -2827,7 +2827,7 @@ MonoBehaviour:
   rightOpenedLocalPosition: {x: 3000, y: 0, z: 0}
   rightClosedLocalPosition: {x: 100, y: 0, z: 0}
   playTransitionSound: 1
-  transitionSfx: 10
+  transitionSfx: scene.transition
   transitionSfxVolumeMultiplier: 1
   closeDuration: 0.5
   openDuration: 0.5

@@ -5,17 +5,17 @@ using UnityEngine.UI;
 public class TitleAbandonBattleButton : MonoBehaviour
 {
     [Header("Confirm")]
-    [SerializeField] private string confirmMessage = "Á¤¸» Æ÷±âÇÏ½Ã°Ú½À´Ï±î?";
-    [SerializeField] private string confirmYesText = "¿¹";
-    [SerializeField] private string confirmNoText = "¾Æ´Ï¿À";
+    [SerializeField] private string confirmMessage = "ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï½Ã°Ú½ï¿½ï¿½Ï±ï¿½?";
+    [SerializeField] private string confirmYesText = "ï¿½ï¿½";
+    [SerializeField] private string confirmNoText = "ï¿½Æ´Ï¿ï¿½";
 
     [Header("Warning")]
-    [SerializeField] private string missingRunMessage = "Æ÷±âÇÒ Å½»ç Á¤º¸°¡ ¾øÀ½";
-    [SerializeField] private string completeMessage = "ÁøÇà ÁßÀÎ Å½»ç¸¦ Æ÷±âÇß½À´Ï´Ù.";
+    [SerializeField] private string missingRunMessage = "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½";
+    [SerializeField] private string completeMessage = "ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Å½ï¿½ç¸¦ ï¿½ï¿½ï¿½ï¿½ï¿½ß½ï¿½ï¿½Ï´ï¿½.";
 
     [Header("Sound")]
     [SerializeField] private bool playClickSound = true;
-    [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfx = AudioIds.Sfx.NormalButtonClick;
 
     private Button button;
     private bool isProcessing;

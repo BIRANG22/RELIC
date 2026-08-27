@@ -69,7 +69,7 @@ public class LobbyStageButtonCarousel : MonoBehaviour, IBeginDragHandler, IDragH
 
     [Header("Selection Move SFX")]
     [SerializeField] private bool playSelectionMoveSfx = true;
-    [SerializeField] private SfxType selectionMoveSfxType = SfxType.NormalButtonClick;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string selectionMoveSfxId = AudioIds.Sfx.NormalButtonClick;
     [Range(0f, 1f)]
     [SerializeField] private float selectionMoveSfxVolume = 1f;
 
@@ -253,7 +253,7 @@ public class LobbyStageButtonCarousel : MonoBehaviour, IBeginDragHandler, IDragH
         if (!playSelectionMoveSfx || AudioManager.Instance == null)
             return;
 
-        AudioManager.Instance.PlaySfx(selectionMoveSfxType, selectionMoveSfxVolume);
+        AudioManager.Instance.PlaySfx(selectionMoveSfxId, selectionMoveSfxVolume);
     }
 
     private void PlayNavigationButtonPressFeedback(int direction)
