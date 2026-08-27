@@ -2,8 +2,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// �κ� Setting/Equip ��ư���� Equip_panel�� ���� �ݴ� ��ư ���� ���� ��ũ��Ʈ�Դϴ�.
-/// ���� ������Ʈ ��ȣ�ۿ��� ������� �ʽ��ϴ�.
+/// Opens and closes Equip_panel from the lobby Setting/Equip button.
+/// Does not depend on world object interactions.
 /// </summary>
 [RequireComponent(typeof(Button))]
 [DisallowMultipleComponent]
@@ -48,7 +48,7 @@ public sealed class LobbyEquipOpenButton : MonoBehaviour
         LobbyEquipPanelUI resolved = ResolveEquipPanel();
         if (resolved == null)
         {
-            Debug.LogWarning("[LobbyEquipOpenButton] LobbyEquipPanelUI�� ã�� �� �����ϴ�.", this);
+            Debug.LogWarning("[LobbyEquipOpenButton] LobbyEquipPanelUI is missing.", this);
             return;
         }
 

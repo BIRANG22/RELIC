@@ -44,8 +44,7 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
 
     private void LateUpdate()
     {
-        // ESC �� �ٸ� ��ũ��Ʈ�� �гθ� ��Ȱ��ȭ���� ����
-        // ���� ������Ʈ �Է� ������ ���� �ʵ��� �ڵ����� �����մϴ�.
+        // If ESC or another script disables the panel, release this input blocker automatically.
         if (!LobbyPositionModalInputBlocker.IsBlockedBy(this))
             return;
 
@@ -104,8 +103,8 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
     }
 
     /// <summary>
-    /// �� ��ư�� ������ ħ�ĵ� ���� �г��� �����ϴ��� Ȯ���մϴ�.
-    /// ESC �Է¿��� ������ �г��� �����ϴ� ��Ȯ�� �ν��Ͻ��� ã�� �� ����մϴ�.
+    /// Returns whether this button controls the given erosion select panel.
+    /// Used by ESC handling to find the exact panel owner.
     /// </summary>
     public bool ControlsPanel(GameObject panel)
     {

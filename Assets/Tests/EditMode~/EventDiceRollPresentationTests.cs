@@ -94,6 +94,55 @@ public sealed class EventDiceRollPresentationTests
     }
 
     [UnityTest]
+    public IEnumerator EventRoomController_BeginDiceRollKeepsPresenterVisibleUntilRollCompletes()
+    {
+        GameObject controllerObject = new("EventRoomController");
+        GameObject dataEventRoot = new("DataEventRoot", typeof(RectTransform));
+        dataEventRoot.transform.SetParent(controllerObject.transform, false);
+        GameObject presenterObject = new("DicePresenter", typeof(RectTransform));
+        presenterObject.transform.SetParent(dataEventRoot.transform, false);
+        EventDiceRollPresenter presenter = presenterObject.AddComponent<EventDiceRollPresenter>();
+        Image image = CreateDiceImage(presenterObject.transform, "Die1");
+        Sprite[] sprites =
+        {
+            CreateSprite("One"),
+            CreateSprite("Two"),
+            CreateSprite("Three"),
+            CreateSprite("Four"),
+            CreateSprite("Five"),
+            CreateSprite("Six")
+        };
+
+        try
+        {
+            presenter.ConfigureForTest(new[] { image }, sprites, 0.02f);
+            EventRoomController controller = controllerObject.AddComponent<EventRoomController>();
+            SetPrivateField(controller, "dataEventRoot", dataEventRoot);
+            SetPrivateField(controller, "diceRollPresenter", presenter);
+
+            EventData choice = new()
+            {
+                ChoiceType = "Dice",
+                ResultType = "None"
+            };
+
+            bool started = (bool)InvokePrivateMethod(controller, "TryBeginDiceRollChoice", choice);
+            Assert.That(started, Is.True);
+            Assert.That(presenterObject.activeSelf, Is.True);
+
+            yield return null;
+
+            Assert.That(presenterObject.activeSelf, Is.True);
+        }
+        finally
+        {
+            Object.DestroyImmediate(controllerObject);
+            for (int i = 0; i < sprites.Length; i++)
+                Object.DestroyImmediate(sprites[i].texture);
+        }
+    }
+
+    [UnityTest]
     public IEnumerator EventDiceRollPresenter_StopsOnResultSpritesAfterRollDuration()
     {
         GameObject root = new("DicePresenter");
@@ -139,6 +188,149 @@ public sealed class EventDiceRollPresentationTests
         }
     }
 
+    [UnityTest]
+    public IEnumerator EventDiceRollPresenter_HideImmediateStopsActiveRollAndDeactivatesPresenter()
+    {
+        GameObject root = new("DicePresenter");
+        EventDiceRollPresenter presenter = root.AddComponent<EventDiceRollPresenter>();
+
+        Image firstImage = CreateDiceImage(root.transform, "Die1");
+        Sprite[] sprites =
+        {
+            CreateSprite("One"),
+            CreateSprite("Two"),
+            CreateSprite("Three"),
+            CreateSprite("Four"),
+            CreateSprite("Five"),
+            CreateSprite("Six")
+        };
+
+        bool completed = false;
+
+        try
+        {
+            presenter.ConfigureForTest(
+                new[] { firstImage },
+                sprites,
+                1f);
+
+            presenter.Play(new[] { 6 }, () => completed = true);
+
+            yield return null;
+
+            Assert.That(root.activeSelf, Is.True);
+
+            presenter.HideImmediate();
+
+            Assert.That(root.activeSelf, Is.False);
+
+            yield return new WaitForSecondsRealtime(0.05f);
+
+            Assert.That(completed, Is.False);
+        }
+        finally
+        {
+            Object.DestroyImmediate(root);
+            for (int i = 0; i < sprites.Length; i++)
+                Object.DestroyImmediate(sprites[i].texture);
+        }
+    }
+
+    [UnityTest]
+    public IEnumerator EventDiceRollPresenter_PlayFromHostCanRunWhenPresenterStartsInactive()
+    {
+        GameObject hostObject = new("CoroutineHost");
+        GameObject root = new("DicePresenter");
+        EventDiceRollPresenter presenter = root.AddComponent<EventDiceRollPresenter>();
+
+        Image firstImage = CreateDiceImage(root.transform, "Die1");
+        Sprite[] sprites =
+        {
+            CreateSprite("One"),
+            CreateSprite("Two"),
+            CreateSprite("Three"),
+            CreateSprite("Four"),
+            CreateSprite("Five"),
+            CreateSprite("Six")
+        };
+
+        bool completed = false;
+
+        try
+        {
+            MonoBehaviour host = hostObject.AddComponent<TestCoroutineHost>();
+            presenter.ConfigureForTest(
+                new[] { firstImage },
+                sprites,
+                0.02f);
+            root.SetActive(false);
+
+            yield return host.StartCoroutine(presenter.PlayFromHost(new[] { 4 }, () => completed = true));
+
+            Assert.That(root.activeSelf, Is.True);
+            Assert.That(completed, Is.True);
+            Assert.That(firstImage.sprite, Is.SameAs(sprites[3]));
+        }
+        finally
+        {
+            Object.DestroyImmediate(hostObject);
+            Object.DestroyImmediate(root);
+            for (int i = 0; i < sprites.Length; i++)
+                Object.DestroyImmediate(sprites[i].texture);
+        }
+    }
+
+    [UnityTest]
+    public IEnumerator EventDiceRollPresenter_PlayFromHostShowsDiceBeforeAnimatorCanAdvance()
+    {
+        GameObject hostObject = new("CoroutineHost");
+        GameObject root = new("DicePresenter");
+        EventDiceRollPresenter presenter = root.AddComponent<EventDiceRollPresenter>();
+        Animator animator = root.AddComponent<Animator>();
+
+        Image firstImage = CreateDiceImage(root.transform, "Die1");
+        Sprite[] sprites =
+        {
+            CreateSprite("One"),
+            CreateSprite("Two"),
+            CreateSprite("Three"),
+            CreateSprite("Four"),
+            CreateSprite("Five"),
+            CreateSprite("Six")
+        };
+
+        try
+        {
+            MonoBehaviour host = hostObject.AddComponent<TestCoroutineHost>();
+            presenter.ConfigureForTest(
+                new[] { firstImage },
+                sprites,
+                0.02f);
+            SetPrivateField(presenter, "animator", animator);
+            root.SetActive(false);
+
+            IEnumerator routine = presenter.PlayFromHost(new[] { 5 }, null);
+            Assert.That(routine.MoveNext(), Is.True);
+
+            Assert.That(root.activeSelf, Is.True);
+            Assert.That(firstImage.enabled, Is.True);
+            Assert.That(firstImage.sprite, Is.SameAs(sprites[4]));
+
+            yield return host.StartCoroutine(routine);
+        }
+        finally
+        {
+            Object.DestroyImmediate(hostObject);
+            Object.DestroyImmediate(root);
+            for (int i = 0; i < sprites.Length; i++)
+                Object.DestroyImmediate(sprites[i].texture);
+        }
+    }
+
+    private sealed class TestCoroutineHost : MonoBehaviour
+    {
+    }
+
     private static Image CreateDiceImage(Transform parent, string name)
     {
         GameObject imageObject = new(name, typeof(RectTransform), typeof(Image));
@@ -170,13 +362,13 @@ public sealed class EventDiceRollPresentationTests
         field.SetValue(target, value);
     }
 
-    private static void InvokePrivateMethod(object target, string methodName)
+    private static object InvokePrivateMethod(object target, string methodName, params object[] args)
     {
         MethodInfo method = target.GetType().GetMethod(
             methodName,
             BindingFlags.Instance | BindingFlags.NonPublic);
         Assert.That(method, Is.Not.Null);
-        method.Invoke(target, null);
+        return method.Invoke(target, args);
     }
 
     private static T GetPrivateField<T>(object target, string fieldName)

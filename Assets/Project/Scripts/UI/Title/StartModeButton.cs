@@ -28,7 +28,7 @@ public class StartModeButton : MonoBehaviour
             }
 
             Debug.LogWarning(
-                "[StartModeButton] IntroSequenceController�� ���� ��Ʈ�θ� �ǳʶٰ� �κ�� �̵��մϴ�.",
+                "[StartModeButton] IntroSequenceController is missing. Skipping intro and moving to lobby.",
                 this);
         }
 

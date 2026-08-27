@@ -360,7 +360,7 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         float elapsed = Time.unscaledTime - equipAvailableHighlightStartTime;
         float t = (Mathf.Sin(elapsed * speed * Mathf.PI * 2f - Mathf.PI * 0.5f) + 1f) * 0.5f;
 
-        // ��ų ������ ���� ���� ������� �����մϴ�.
+        // Skill slots alternate between available highlight colors.
         return Color.Lerp(equipAvailableBreathColor, equipAvailableColor, t);
     }
 

@@ -921,10 +921,25 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
             if (titleModeAnimator != null)
                 titleModeAnimator.Open();
 
+            RefreshMenuPanelTextIfNeeded(panelToOpen);
+
             ApplyOpenedPanelFrontSorting(panelToOpen);
             currentOpenedPanelOwner = this;
             FadePanelImageTo(openedPanelAlpha);
         }
+    }
+
+    private static void RefreshMenuPanelTextIfNeeded(GameObject openedPanel)
+    {
+        if (openedPanel == null || openedPanel.name != DefaultMenuPanelObjectName)
+            return;
+
+        MenuPanelTextRefresher refresher = openedPanel.GetComponent<MenuPanelTextRefresher>();
+        if (refresher == null)
+            refresher = openedPanel.AddComponent<MenuPanelTextRefresher>();
+
+        refresher.RefreshNow();
+        refresher.RefreshNextFrame();
     }
 
     private void ApplyOpenedPanelFrontSorting(GameObject openedPanel)

@@ -17,10 +17,10 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
     [SerializeField] private GameObject panelToOpen;
 
     [Header("Lobby Background Change")]
-    [Tooltip("Panel To Open�� �´� �κ� ������� �ڵ� ��ȯ�մϴ�.")]
+    [Tooltip("Panel To Open에 맞는 로비 배경을 자동으로 전환합니다.")]
     [SerializeField] private bool changeLobbyBackground = true;
 
-    [Tooltip("��� ������ ������Ʈ �̸����� �ڵ� Ž���մϴ�.")]
+    [Tooltip("비어 있으면 오브젝트 이름으로 자동 탐색합니다.")]
     [SerializeField] private GameObject positionBackground;
     [SerializeField] private GameObject characterSettingBackground;
     [SerializeField] private GameObject erosionSelectBackground;
@@ -32,13 +32,13 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
     [SerializeField] private GameObject[] extraPanelsToCloseOnExecute;
 
     [Header("World Object Click")]
-    [Tooltip("üũ�ϸ� �� ��ũ��Ʈ�� ���� ���� ������Ʈ�� ���콺 ��Ŭ������ �� Execute�� �����մϴ�.")]
+    [Tooltip("체크하면 이 스크립트가 붙은 월드 오브젝트를 클릭했을 때 Execute를 실행합니다.")]
     [SerializeField] private bool executeOnWorldClick = true;
 
-    [Tooltip("UI ������ Ŭ������ �� ���� ������Ʈ Ŭ���� �����ϴ�.")]
+    [Tooltip("UI 위에서 클릭한 경우 월드 오브젝트 클릭을 차단합니다.")]
     [SerializeField] private bool blockWorldClickOverUI = true;
 
-    [Tooltip("Collider2D�� ���� �� SpriteRenderer �������� PolygonCollider2D�� �ڵ� �߰��մϴ�.")]
+    [Tooltip("Collider2D가 없으면 SpriteRenderer 기준으로 PolygonCollider2D를 자동 추가합니다.")]
     [SerializeField] private bool addColliderAutomatically = true;
 
     [Header("World Object Change")]
@@ -70,8 +70,8 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
     private bool isProcessing;
 
     /// <summary>
-    /// �� ��ư�� ������ Panel To Open�� ���� ���� �ִ��� ��ȯ�մϴ�.
-    /// SpriteHoverScale���� ���� ǥ�ø� ������ �� ����մϴ�.
+    /// 이 버튼이 열 대상 Panel To Open이 현재 열려 있는지 반환합니다.
+    /// SpriteHoverScale에서 현재 선택 표시를 유지할 때 사용합니다.
     /// </summary>
     public bool IsTargetPanelOpen =>
         panelToOpen != null && panelToOpen.activeInHierarchy;
@@ -187,8 +187,8 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
     }
 
     /// <summary>
-    /// MenuPanel�� ���� ������ �޴� �ٱ��� �κ� ���� ������Ʈ �Է��� �����մϴ�.
-    /// MenuPanel �ڽŰ� �� �ڽ� ��ư�� ��� ����� �� �ֽ��ϴ�.
+    /// MenuPanel이 열려 있으면 바깥쪽 로비 월드 오브젝트 입력을 차단합니다.
+    /// MenuPanel 자신과 그 자식 버튼은 계속 사용할 수 있습니다.
     /// </summary>
     private bool ShouldBlockInteractionByOpenMenuPanel()
     {
@@ -303,9 +303,9 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
     }
 
     /// <summary>
-    /// CharacterSettingPanel�� �� ���� �κ��� SettingButton�� �����մϴ�.
-    /// ���� �ν������� Panels To Close�� SettingButton�� ��� �־
-    /// ĳ���� ���� ȭ������ ��ȯ�� ���� �ڵ����� �����մϴ�.
+    /// CharacterSettingPanel을 열 때 로비의 SettingButton은 유지합니다.
+    /// 인스펙터의 Panels To Close에 SettingButton이 포함되어 있어도
+    /// 캐릭터 설정 화면으로 전환할 때 자동으로 제외합니다.
     /// </summary>
     private GameObject[] GetEffectivePanelsToClose()
     {
@@ -346,8 +346,7 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 
 
     /// <summary>
-    /// CharacterSettingPanel�� �� ���� World Objects To Close�� SettingButton��
-    /// ��ϵǾ� �־ ��Ȱ��ȭ���� �ʽ��ϴ�.
+    /// CharacterSettingPanel을 열 때 World Objects To Close에 등록된 SettingButton은 끄지 않습니다.
     /// </summary>
     private GameObject[] GetEffectiveWorldObjectsToClose()
     {
@@ -388,8 +387,8 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 
 
     /// <summary>
-    /// ĳ���� ���� ȭ�鿡���� SettingButton�� �׻� Ȱ�� ���·� �����մϴ�.
-    /// �ν������� �ݱ� ��Ͽ� �߸� ���ԵǾ� �־ ������ �ܰ迡�� �����մϴ�.
+    /// 캐릭터 설정 화면에서는 SettingButton을 항상 활성 상태로 유지합니다.
+    /// 인스펙터 닫기 목록에 잘못 들어가 있어도 마지막 단계에서 복구합니다.
     /// </summary>
     private void KeepSettingButtonActive()
     {
@@ -598,9 +597,8 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
         if (GetComponent<SpriteRenderer>() == null)
         {
             Debug.LogWarning(
-                "[LobbyPanelTransitionButton] ���� Ŭ���� ��������� " +
-                "Collider�� SpriteRenderer�� �����ϴ�. " +
-                "Anchor ������Ʈ�� Collider2D�� ���� �߰��ϼ���.",
+                "[LobbyPanelTransitionButton] World click requires a Collider or SpriteRenderer. " +
+                "Add a Collider2D to the anchor object manually.",
                 this);
 
             return;

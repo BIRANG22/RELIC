@@ -38,7 +38,7 @@ public class InventoryPanelCloseButton : MonoBehaviour
 
         if (inventoryPanelRect == null)
         {
-            Debug.LogWarning("[InventoryPanelCloseButton] InventoryPanel�� RectTransform�� ã�� ���߽��ϴ�.");
+            Debug.LogWarning("[InventoryPanelCloseButton] InventoryPanel RectTransform is missing.");
             return;
         }
 

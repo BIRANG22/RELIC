@@ -35,14 +35,37 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
 
     public void Play(IReadOnlyList<int> diceFaces, Action completed)
     {
-        EnsureReferences();
-        NormalizeDiceImageLayout();
+        PrepareForPlay();
 
         if (rollRoutine != null)
             StopCoroutine(rollRoutine);
 
-        gameObject.SetActive(true);
         rollRoutine = StartCoroutine(PlayRoutine(diceFaces, completed));
+    }
+
+    public IEnumerator PlayFromHost(IReadOnlyList<int> diceFaces, Action completed)
+    {
+        PrepareForPlay();
+
+        if (rollRoutine != null)
+        {
+            StopCoroutine(rollRoutine);
+            rollRoutine = null;
+        }
+
+        yield return PlayRoutine(diceFaces, completed);
+    }
+
+    public void HideImmediate()
+    {
+        if (rollRoutine != null)
+        {
+            StopCoroutine(rollRoutine);
+            rollRoutine = null;
+        }
+
+        StopRollAnimation();
+        gameObject.SetActive(false);
     }
 
     public void ConfigureForTest(Image[] images, Sprite[] sprites, float duration)
@@ -55,6 +78,8 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
 
     private IEnumerator PlayRoutine(IReadOnlyList<int> diceFaces, Action completed)
     {
+        ApplyDiceFaces(diceFaces);
+        yield return null;
         PlayRollAnimation();
 
         float safeDuration = Mathf.Max(0f, rollDuration);
@@ -101,7 +126,14 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
         if (animator == null)
             return;
 
+        EnsureAnimatorHierarchyActive();
         animator.enabled = true;
+
+        if (!animator.isActiveAndEnabled || animator.runtimeAnimatorController == null)
+        {
+            PlayRollSound();
+            return;
+        }
 
         if (!string.IsNullOrWhiteSpace(rollTriggerName) &&
             HasAnimatorParameter(animator, rollTriggerName, AnimatorControllerParameterType.Trigger))
@@ -114,6 +146,12 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
 
         if (!string.IsNullOrWhiteSpace(rollStateName))
         {
+            if (!HasAnimatorState(animator, rollStateName))
+            {
+                PlayRollSound();
+                return;
+            }
+
             animator.Play(rollStateName, 0, 0f);
             animator.Update(0f);
             PlayRollSound();
@@ -134,6 +172,21 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
             return;
 
         animator.enabled = false;
+    }
+
+    private void EnsureAnimatorHierarchyActive()
+    {
+        if (animator == null)
+            return;
+
+        Transform current = animator.transform;
+        while (current != null && current != transform.parent)
+        {
+            if (!current.gameObject.activeSelf)
+                current.gameObject.SetActive(true);
+
+            current = current.parent;
+        }
     }
 
     private static bool HasAnimatorParameter(
@@ -159,6 +212,19 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
         return false;
     }
 
+    private static bool HasAnimatorState(Animator targetAnimator, string stateName)
+    {
+        if (targetAnimator == null || string.IsNullOrWhiteSpace(stateName))
+            return false;
+
+        int shortStateHash = Animator.StringToHash(stateName);
+        if (targetAnimator.HasState(0, shortStateHash))
+            return true;
+
+        int fullStateHash = Animator.StringToHash("Base Layer." + stateName);
+        return targetAnimator.HasState(0, fullStateHash);
+    }
+
     private void EnsureReferences()
     {
         if (animator == null)
@@ -166,6 +232,27 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
 
         if (diceImages == null || diceImages.Length == 0)
             diceImages = GetComponentsInChildren<Image>(true);
+    }
+
+    private void PrepareForPlay()
+    {
+        EnsureParentHierarchyActive();
+        gameObject.SetActive(true);
+        EnsureReferences();
+        NormalizeDiceImageLayout();
+        ForceLayoutRefresh();
+    }
+
+    private void EnsureParentHierarchyActive()
+    {
+        Transform current = transform.parent;
+        while (current != null)
+        {
+            if (!current.gameObject.activeSelf)
+                current.gameObject.SetActive(true);
+
+            current = current.parent;
+        }
     }
 
     private void NormalizeDiceImageLayout()
@@ -183,5 +270,12 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
             image.preserveAspect = false;
             image.fillCenter = true;
         }
+    }
+
+    private void ForceLayoutRefresh()
+    {
+        RectTransform rectTransform = transform as RectTransform;
+        if (rectTransform != null)
+            LayoutRebuilder.ForceRebuildLayoutImmediate(rectTransform);
     }
 }

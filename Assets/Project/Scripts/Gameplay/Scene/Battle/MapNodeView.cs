@@ -132,8 +132,8 @@ public class MapNodeView : MonoBehaviour
     }
 
     /// <summary>
-    /// 0�� ���� ���� �� Ÿ�԰� ������� ���������� ���� �������� ǥ���մϴ�.
-    /// ���� Type �����ʹ� �������� �����Ƿ� ���� ���� �̺�Ʈ ������ �״�� �����˴ϴ�.
+    /// NodeIndex가 0인 시작 노드는 Type과 관계없이 Start 아이콘으로 표시합니다.
+    /// 실제 Type 데이터는 유지되므로 시작 노드 이벤트 처리는 그대로 동작합니다.
     /// </summary>
     public static string GetDisplayType(GeneratedMapNodeData data)
     {
@@ -225,8 +225,8 @@ public class MapNodeView : MonoBehaviour
     }
 
     /// <summary>
-    /// �ܺ� ���� UI������ ���� ����� X ǥ�� �ִϸ��̼��� �����մϴ�.
-    /// �ִϸ��̼��� ���� �� onCompleted�� ȣ���մϴ�.
+    /// 외부 선택 UI에서 클릭할 때 노드 X 표시 애니메이션을 재생합니다.
+    /// 애니메이션이 끝나면 onCompleted를 호출합니다.
     /// </summary>
     public void PlayCheckAnimation(Action onCompleted)
     {

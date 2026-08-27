@@ -5,35 +5,35 @@ using UnityEngine.Localization.Components;
 using UnityEngine.UI;
 
 /// <summary>
-/// �� ���� �÷� ����, ��� ����, �̸� �� ���� ǥ�ø� �����մϴ�.
+/// 각 시련 카드의 선택, 잠금, 이름, 효과 표시를 관리합니다.
 /// </summary>
 public class ErosionSelectCarousel : MonoBehaviour
 {
     [System.Serializable]
     private sealed class TrialItem
     {
-        [Tooltip("�÷� �׸��� ��Ʈ ������Ʈ�Դϴ�.")]
+        [Tooltip("시련 카드의 루트 트랜스폼입니다.")]
         public Transform target;
 
-        [Tooltip("�÷� ���� ��ư�Դϴ�. ��� �θ� Target���� �ڵ� Ž���մϴ�.")]
+        [Tooltip("시련 선택 버튼입니다. 비어 있으면 Target 아래에서 자동 탐색합니다.")]
         public Button button;
 
-        [Tooltip("���õǾ��� �� ǥ���� ������Ʈ�Դϴ�.")]
+        [Tooltip("선택되었을 때 표시할 오브젝트입니다.")]
         public GameObject selectedVisual;
 
-        [Tooltip("��� ���¿��� ǥ���� LOCK ������Ʈ�Դϴ�.")]
+        [Tooltip("잠금 상태에서 표시할 LOCK 오브젝트입니다.")]
         public GameObject lockVisual;
 
-        [Tooltip("�ڽ� Name ������Ʈ�� TMP �ؽ�Ʈ�Դϴ�.")]
+        [Tooltip("자식 Name 오브젝트의 TMP 텍스트입니다.")]
         public TMP_Text nameText;
 
-        [Tooltip("�ڽ� Effect ������Ʈ�� TMP �ؽ�Ʈ�Դϴ�.")]
+        [Tooltip("자식 Effect 오브젝트의 TMP 텍스트입니다.")]
         public TMP_Text effectText;
 
-        [Tooltip("Effect �ؽ�Ʈ�� Localize String Event�Դϴ�. ��� �θ� Effect���� �ڵ� Ž���մϴ�.")]
+        [Tooltip("Effect 텍스트의 Localize String Event입니다. 비어 있으면 Effect에서 자동 탐색합니다.")]
         public LocalizeStringEvent effectLocalizer;
 
-        [Tooltip("���� ���¿� ���� ���� ������ �׷����Դϴ�.")]
+        [Tooltip("선택 상태에 따라 색상을 바꿀 그래픽입니다.")]
         public Graphic tintGraphic;
 
         [HideInInspector] public string unlockedName;
@@ -43,7 +43,7 @@ public class ErosionSelectCarousel : MonoBehaviour
     }
 
     [Header("Trial Items")]
-    [Tooltip("�÷� 1, �÷� 2, �÷� 3 ������ �����մϴ�.")]
+    [Tooltip("시련 1, 시련 2, 시련 3 항목을 설정합니다.")]
     [SerializeField]
     private TrialItem[] trialItems = new TrialItem[TrialSelectionState.TrialCount];
 

@@ -151,7 +151,7 @@ public class RelicIconUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHan
 
         if (owner == null)
         {
-            Debug.LogWarning($"[RelicIconUI] owner ���� / Relic:{relicId}");
+            Debug.LogWarning($"[RelicIconUI] owner is missing / Relic:{relicId}");
             return;
         }
 
@@ -201,7 +201,7 @@ public class RelicIconUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHan
         }
         else if (useHoverBreathEffect && isPointerOver && !string.IsNullOrWhiteSpace(relicId))
         {
-            // 1.0�� 1.1 ���̸� �ݺ��մϴ�.
+            // Repeat between 1.0 and the configured hover max scale.
             float breathT = (Mathf.Sin(Time.unscaledTime * breathSpeed) + 1f) * 0.5f;
             scaleMultiplier = Mathf.Lerp(1f, hoverMaxScale, breathT);
         }
