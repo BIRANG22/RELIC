@@ -40,6 +40,9 @@ public class KnockbackEffect : BattleEffectBase
                     ApplyCrashEffect(context, playerTarget);
                     break;
                 }
+
+                if (playerTarget.RuntimeData.IsDead)
+                    break;
             }
             else if (monsterTarget != null)
             {
@@ -51,6 +54,9 @@ public class KnockbackEffect : BattleEffectBase
                     ApplyCrashEffect(context, monsterTarget);
                     break;
                 }
+
+                if (monsterTarget.RuntimeData.IsDead)
+                    break;
             }
         }
 
@@ -145,6 +151,10 @@ public class KnockbackEffect : BattleEffectBase
         // 판정용 그리드 위치는 즉시 갱신합니다.
         // 화면 이동은 전체 넉백 판정이 끝난 뒤 최종 칸까지 한 번만 재생합니다.
         target.SetGridIndex(targetIndex);
+
+        if (gridEffectController != null)
+            gridEffectController.ApplyToPlayer(targetIndex, target);
+
         return true;
     }
 
@@ -196,6 +206,23 @@ public class KnockbackEffect : BattleEffectBase
         // 점유 그리드는 즉시 갱신합니다.
         // 화면 이동은 전체 넉백 판정이 끝난 뒤 최종 칸까지 한 번만 재생합니다.
         target.SetOccupiedCells(movedCells);
+
+        if (gridEffectController != null)
+        {
+            for (int i = 0; i < movedCells.Count; i++)
+            {
+                int enteredGridIndex = movedCells[i];
+
+                if (currentCells.Contains(enteredGridIndex))
+                    continue;
+
+                gridEffectController.ApplyToMonster(enteredGridIndex, target);
+
+                if (target.RuntimeData.IsDead)
+                    break;
+            }
+        }
+
         return true;
     }
 

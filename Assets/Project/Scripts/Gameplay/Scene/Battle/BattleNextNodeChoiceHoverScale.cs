@@ -11,6 +11,7 @@ public sealed class BattleNextNodeChoiceHoverScale : MonoBehaviour, IPointerEnte
     private Vector3 normalScale = Vector3.one;
     private Vector3 hoverScaleMultiplier = Vector3.one;
     private bool pointerInside;
+    private bool isSelected;
     private Image arrowImage;
 
     public void Configure(Vector3 baseScale, Vector3 hoverMultiplier)
@@ -30,6 +31,12 @@ public sealed class BattleNextNodeChoiceHoverScale : MonoBehaviour, IPointerEnte
     public void SetHoverScaleMultiplier(Vector3 hoverMultiplier)
     {
         hoverScaleMultiplier = hoverMultiplier;
+        ApplyCurrentState();
+    }
+
+    public void SetSelected(bool selected)
+    {
+        isSelected = selected;
         ApplyCurrentState();
     }
 
@@ -55,19 +62,22 @@ public sealed class BattleNextNodeChoiceHoverScale : MonoBehaviour, IPointerEnte
     {
         pointerInside = false;
         ResolveArrowImage();
-        ApplyArrowColor();
+        ApplyCurrentState();
     }
 
     private void OnDisable()
     {
         pointerInside = false;
+        isSelected = false;
         transform.localScale = normalScale;
         ApplyArrowColor();
     }
 
     private void ApplyCurrentState()
     {
-        transform.localScale = pointerInside
+        bool highlighted = pointerInside || isSelected;
+
+        transform.localScale = highlighted
             ? Vector3.Scale(normalScale, hoverScaleMultiplier)
             : normalScale;
 
@@ -90,6 +100,6 @@ public sealed class BattleNextNodeChoiceHoverScale : MonoBehaviour, IPointerEnte
             ResolveArrowImage();
 
         if (arrowImage != null)
-            arrowImage.color = pointerInside ? HoverArrowColor : NormalArrowColor;
+            arrowImage.color = (pointerInside || isSelected) ? HoverArrowColor : NormalArrowColor;
     }
 }

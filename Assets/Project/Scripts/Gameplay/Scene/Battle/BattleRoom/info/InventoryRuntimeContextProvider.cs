@@ -226,7 +226,7 @@ public sealed class InventoryRuntimeContextProvider : MonoBehaviour, IRuntimeSav
             lobby.CharacterLoadouts.Add(new LobbyCharacterLoadoutData
             {
                 CharacterId = character.CharacterId.Trim(),
-                EquippedRelicIds = Copy(character.EquippedRelicIds, 5),
+                EquippedRelicIds = Copy(character.EquippedRelicIds, ActiveRelicRuntimeUtility.EquippedRelicSlotCount),
                 EquippedSkillIds = Copy(character.EquippedSkillIds, 4)
             });
         }

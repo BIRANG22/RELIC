@@ -24,6 +24,7 @@ public class BattleNextNodeChoiceButton : MonoBehaviour
     private AnimatorOverrideController overrideController;
     private AnimationClip originalClip;
     private AnimationClip pendingClip;
+    private BattleNextNodeChoiceHoverScale hoverScale;
 
     private void Awake()
     {
@@ -35,6 +36,8 @@ public class BattleNextNodeChoiceButton : MonoBehaviour
 
         if (animator == null && iconImage != null)
             animator = iconImage.GetComponent<Animator>();
+
+        hoverScale = GetComponent<BattleNextNodeChoiceHoverScale>();
 
         if (button != null)
         {
@@ -106,6 +109,10 @@ public class BattleNextNodeChoiceButton : MonoBehaviour
         nodeIndex = node != null ? node.NodeIndex : -1;
         onSelected = selectionCallback;
 
+        if (hoverScale == null)
+            hoverScale = GetComponent<BattleNextNodeChoiceHoverScale>();
+
+        hoverScale?.SetSelected(false);
         gameObject.SetActive(node != null);
 
         if (node == null)
@@ -162,6 +169,10 @@ public class BattleNextNodeChoiceButton : MonoBehaviour
         onSelected = null;
         pendingClip = null;
 
+        if (hoverScale == null)
+            hoverScale = GetComponent<BattleNextNodeChoiceHoverScale>();
+
+        hoverScale?.SetSelected(false);
         gameObject.SetActive(false);
     }
 
@@ -170,6 +181,10 @@ public class BattleNextNodeChoiceButton : MonoBehaviour
         if (nodeIndex < 0 || UIPanelButton.IsMenuPanelOpen)
             return;
 
+        if (hoverScale == null)
+            hoverScale = GetComponent<BattleNextNodeChoiceHoverScale>();
+
+        hoverScale?.SetSelected(true);
         onSelected?.Invoke(nodeIndex);
     }
 }

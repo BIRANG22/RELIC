@@ -111,7 +111,7 @@ namespace Relic.Gameplay.Data
                     string.Empty,
                     string.Empty
                 },
-                EquippedRuneIds = new string[12],
+                EquippedRuneIds = new string[6],
                 EquippedRelicIds = CharacterStartingRelicUtility.CreateStartingRelicSlots(master)
             };
 

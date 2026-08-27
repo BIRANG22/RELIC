@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class BattleTimelinePreviewEntry
 {
+    private static MonsterSkillIconDatabase cachedMonsterSkillIconDatabase;
     public int SlotIndex;
     public int OrderIndex;
 
@@ -51,7 +52,7 @@ public class BattleTimelinePreviewEntry
         get
         {
             if (IsMonster && MonsterSkillData != null)
-                return GetTimelineActionIcon(MonsterSkillData.TimelineNotation);
+                return GetMonsterSkillIcon(MonsterSkillData);
 
             if (IsPlayer && PlayerSkillData != null)
                 return GetSkillIcon(PlayerSkillData.SkillId);
@@ -126,10 +127,10 @@ public class BattleTimelinePreviewEntry
         get
         {
             if (IsPlayer)
-                return GetDisplayValueText(PlayerSkillData != null ? PlayerSkillData.EffectEntries : null, GetPlayerPayAmount());
+                return GetPlayerDamageDisplayValueText(PlayerSkillData);
 
             if (IsMonster)
-                return GetMonsterDisplayValueText(MonsterCommand);
+                return GetMonsterDamageDisplayValueText(MonsterCommand);
 
             return "";
         }
@@ -188,6 +189,72 @@ public class BattleTimelinePreviewEntry
             MonsterSkillData = command.SkillData,
             MonsterCommand = command
         };
+    }
+
+    private static string GetPlayerDamageDisplayValueText(SkillMasterData skillData)
+    {
+        if (skillData == null)
+            return string.Empty;
+
+        List<SkillEffectEntry> entries = skillData.EffectEntries;
+
+        if ((entries == null || entries.Count == 0) && DataManager.Instance != null)
+            entries = SkillEffectParser.Parse(skillData, DataManager.Instance.EffectDatabase);
+
+        if (entries == null)
+            return string.Empty;
+
+        for (int i = 0; i < entries.Count; i++)
+        {
+            SkillEffectEntry entry = entries[i];
+            if (entry == null || !IsDamageEffect(entry.EffectId))
+                continue;
+
+            int damage = SkillValueCalculator.GetValue(entry);
+            if (damage <= 0)
+                damage = Mathf.Max(0, entry.ValueAmount);
+
+            if (damage <= 0)
+                return string.Empty;
+
+            int hitCount = Mathf.Max(1, entry.CountAmount);
+            return hitCount > 1 ? $"{damage}x{hitCount}" : damage.ToString();
+        }
+
+        return string.Empty;
+    }
+
+    private static string GetMonsterDamageDisplayValueText(MonsterReservedCommand command)
+    {
+        if (command == null || command.SkillData == null)
+            return string.Empty;
+
+        string damageText = BattleDamageService.GetMonsterDamageTotalText(command);
+        if (string.IsNullOrWhiteSpace(damageText))
+            return string.Empty;
+
+        int hitCount = GetDamageHitCount(command.SkillData.EffectEntries);
+        return hitCount > 1 ? $"{damageText}x{hitCount}" : damageText;
+    }
+
+    private static int GetDamageHitCount(List<SkillEffectEntry> entries)
+    {
+        if (entries == null)
+            return 1;
+
+        for (int i = 0; i < entries.Count; i++)
+        {
+            SkillEffectEntry entry = entries[i];
+            if (entry != null && IsDamageEffect(entry.EffectId))
+                return Mathf.Max(1, entry.CountAmount);
+        }
+
+        return 1;
+    }
+
+    private static bool IsDamageEffect(string effectId)
+    {
+        return effectId == "E_Strike" || effectId == "E_Pierce";
     }
 
     private static string GetDisplayValueText(List<SkillEffectEntry> effectEntries, int payAmount)
@@ -328,6 +395,28 @@ public class BattleTimelinePreviewEntry
             return icon;
 
         return null;
+    }
+
+    private static Sprite GetMonsterSkillIcon(MonsterSkillData skillData)
+    {
+        if (skillData == null)
+            return null;
+
+        if (cachedMonsterSkillIconDatabase == null)
+        {
+            MonsterSkillIconDatabase[] databases = Resources.FindObjectsOfTypeAll<MonsterSkillIconDatabase>();
+            if (databases != null && databases.Length > 0)
+                cachedMonsterSkillIconDatabase = databases[0];
+        }
+
+        if (cachedMonsterSkillIconDatabase != null &&
+            !string.IsNullOrWhiteSpace(skillData.SkillIcon) &&
+            cachedMonsterSkillIconDatabase.TryGetIcon(skillData.SkillIcon, out Sprite skillIcon))
+        {
+            return skillIcon;
+        }
+
+        return GetTimelineActionIcon(skillData.TimelineNotation);
     }
 
     private static Sprite GetTimelineActionIcon(TimelineActionType actionType)

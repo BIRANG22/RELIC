@@ -609,7 +609,7 @@ public class Setting : MonoBehaviour
         SetSharedInfoArea(false);
         ApplyEmptyInfoText(
             string.Empty,
-            GameLocalization.Get("lobby.rune_skill_info_hint", "룬/스킬의 정보가 표시됩니다."));
+            GameLocalization.Get("lobby.rune_skill_info_hint", "파편/스킬의 정보가 표시됩니다."));
         RefreshTabButtons();
     }
 
@@ -675,8 +675,8 @@ public class Setting : MonoBehaviour
 
         SetSharedInfoArea(false);
         ApplyEmptyInfoText(
-            GameLocalization.Get("lobby.rune_info", "룬정보"),
-            GameLocalization.Get("lobby.rune_info_hint", "룬의 정보가 표시됩니다."));
+            GameLocalization.Get("lobby.rune_info", "파편정보"),
+            GameLocalization.Get("lobby.rune_info_hint", "파편의 정보가 표시됩니다."));
         RefreshTabButtons();
     }
 

@@ -124,7 +124,7 @@ public static class LobbySharedStateCharacterRuntimeUtility
             UniqueSkillId = master.UniqueSkill1,
             AbilitySkillId = master.CharacterSkill1,
             EquippedSkillIds = CreateDefaultSkillSlots(master),
-            EquippedRuneIds = new string[12],
+            EquippedRuneIds = new string[6],
             EquippedRelicIds = CharacterStartingRelicUtility.CreateStartingRelicSlots(master)
         };
     }
@@ -164,7 +164,7 @@ public static class LobbySharedStateCharacterRuntimeUtility
                 EquippedRelicSlotCount);
         }
 
-        runtime.EquippedRuneIds ??= new string[12];
+        runtime.EquippedRuneIds ??= new string[6];
         runtime.ActiveRelicUses ??= new List<ActiveRelicUseRuntimeData>();
         CharacterStartingRelicUtility.InitializeActiveRelicUses(runtime, relicDatabase);
     }

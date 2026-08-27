@@ -208,6 +208,35 @@ public class BattleRoomLoader : MonoBehaviour
         return -1;
     }
 
+    public bool SelectFirstAlivePlayerCharacterIfNeeded()
+    {
+        EnsureTimelineController();
+
+        CharacterRuntimeData currentSelection = timelineController != null
+            ? timelineController.SelectedCharacter
+            : null;
+
+        if (currentSelection != null && !currentSelection.IsDead)
+            return false;
+
+        RemoveNullPlayerHudSlots();
+        RemoveNullPlayerHudNumberOrder();
+
+        for (int i = 0; i < playerHudNumberOrder.Count; i++)
+        {
+            PlayerHUDSlot hud = playerHudNumberOrder[i];
+            CharacterRuntimeData runtimeData = hud != null ? hud.BoundRuntime : null;
+
+            if (runtimeData == null || runtimeData.IsDead)
+                continue;
+
+            SelectPlayerHUD(runtimeData);
+            return true;
+        }
+
+        return false;
+    }
+
     private void SelectPlayerCharacterByNumberIndex(int characterIndex)
     {
         RemoveNullPlayerHudSlots();
@@ -601,6 +630,7 @@ public class BattleRoomLoader : MonoBehaviour
         }
 
         RegisterSkillListKeepOpenRoots();
+        PrepareCameraForBattleEntry();
 
         ResetPartyCurrentGridToSpawn();
         ClearPartyBattleRoomTemporaryStatusEffects();
@@ -639,6 +669,17 @@ public class BattleRoomLoader : MonoBehaviour
         isLoading = false;
 
         StartCoroutine(PlanInitialMonsterTurnsAndEnableInputRoutine());
+    }
+
+    private static void PrepareCameraForBattleEntry()
+    {
+        BattleCameraController cameraController = BattleCameraController.Instance;
+        if (cameraController == null)
+        {
+            cameraController = Object.FindFirstObjectByType<BattleCameraController>(FindObjectsInactive.Include);
+        }
+
+        cameraController?.ForceReturnPanelDownImmediate();
     }
 
     public void ResetLoadedStateForNextBattle(bool clearSpawnedObjects = true)

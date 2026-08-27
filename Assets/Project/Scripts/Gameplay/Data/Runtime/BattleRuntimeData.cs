@@ -49,7 +49,7 @@ namespace Relic.Gameplay.Data
         public string AbilitySkillId;
 
         public string[] EquippedSkillIds = new string[4];
-        public string[] EquippedRuneIds = new string[12];
+        public string[] EquippedRuneIds = new string[6];
 
         public int MaxHP;
         public int MaxCost;
@@ -69,7 +69,7 @@ namespace Relic.Gameplay.Data
     public static class BattleRunAbandonService
     {
         private const int EquippedSkillSlotCount = 4;
-        private const int EquippedRuneSlotCount = 12;
+        private const int EquippedRuneSlotCount = 6;
         private const int EquippedRelicSlotCount = 7;
 
         public static void CaptureLobbyLoadoutSnapshot(global::DataManager dataManager)

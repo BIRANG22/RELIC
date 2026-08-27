@@ -450,8 +450,7 @@ public class BattleTurnExecutor : MonoBehaviour
                 int batchCommandCount = GetBatchCommandCount(batch);
 
                 bool keepCameraAfterBatch =
-                    runner.BatchHasCrossSideHitAction(batch) &&
-                    NextExecutableBatchHasCrossSideHitAction(batches, i + 1, runner);
+                    ShouldKeepCameraAcrossBatchBoundary(batch, batches, i + 1, runner);
 
                 yield return runner.RunBatch(batch, keepCameraAfterBatch);
 
@@ -563,6 +562,16 @@ public class BattleTurnExecutor : MonoBehaviour
                 yield return ReturnCameraDefaultRoutine();
                 yield break;
             }
+
+            // 이전 턴의 캐릭터 선택 상태를 먼저 비웁니다.
+            // 여기서는 카메라를 움직이지 않고 선택 상태만 해제하여,
+            // Y 1.5 복귀가 끝난 뒤 실제 캐릭터 선택 이벤트가 새로 발생하도록 합니다.
+            if (timelineController != null)
+                timelineController.SelectCharacter(null);
+
+            // 다음 예약 턴으로 UI가 올라오기 직전까지만 Panel Down 카메라를 사용합니다.
+            // PlayerTurnReturned가 발생하기 전이므로 BattleCharacterPanel/BattleSlot은 아직 내려가 있습니다.
+            yield return ReturnCameraPanelDownRoutine();
         }
         finally
         {
@@ -577,11 +586,16 @@ public class BattleTurnExecutor : MonoBehaviour
             RefreshBattlePresentationState();
             RefreshBattleExecutionUiVisibility();
 
-            if (CanAcceptPlayerInput && timelineController != null)
+            if (CanAcceptPlayerInput)
             {
-                timelineController.SelectDefaultSlotWhenInputReady();
-                timelineController.SetSelectedCharacterScaleFeedbackActive(true);
-                timelineController.RefocusCurrentSelectedCharacterWhenInputReady();
+                if (roomLoader != null)
+                    roomLoader.SelectFirstAlivePlayerCharacterIfNeeded();
+
+                if (timelineController != null)
+                {
+                    timelineController.SelectDefaultSlotWhenInputReady();
+                    timelineController.SetSelectedCharacterScaleFeedbackActive(true);
+                }
             }
 
             EnsureSkillListPanel();
@@ -646,8 +660,7 @@ public class BattleTurnExecutor : MonoBehaviour
                 int batchCommandCount = GetBatchCommandCount(batch);
 
                 bool keepCameraAfterBatch =
-                    runner.BatchHasCrossSideHitAction(batch) &&
-                    NextExecutableBatchHasCrossSideHitAction(batches, i + 1, runner);
+                    ShouldKeepCameraAcrossBatchBoundary(batch, batches, i + 1, runner);
 
                 yield return runner.RunBatch(batch, keepCameraAfterBatch);
 
@@ -690,6 +703,14 @@ public class BattleTurnExecutor : MonoBehaviour
             yield return runner.ReturnCameraDefaultIfNeeded();
 
             yield return RestoreNetworkReservationStateAfterExecutionRoutine();
+
+            // 네트워크 실행에서도 이전 선택을 비운 뒤 Y 1.5 복귀를 완료하고,
+            // finally에서 실제 살아있는 캐릭터를 새로 선택합니다.
+            if (timelineController != null)
+                timelineController.SelectCharacter(null);
+
+            // 네트워크 실행도 예약 UI가 다시 올라오기 직전에만 Y 1.5로 복귀합니다.
+            yield return ReturnCameraPanelDownRoutine();
         }
         finally
         {
@@ -707,12 +728,17 @@ public class BattleTurnExecutor : MonoBehaviour
             RefreshBattlePresentationState();
             RefreshBattleExecutionUiVisibility();
 
-            if (CanAcceptPlayerInput && timelineController != null)
+            if (CanAcceptPlayerInput)
             {
-                timelineController.SelectDefaultSlotWhenInputReady(false);
-                timelineController.SetSelectedCharacterScaleFeedbackActive(true);
-                timelineController.RefocusCurrentSelectedCharacterWhenInputReady();
-                timelineController.StopTimelineMotionEffects();
+                if (roomLoader != null)
+                    roomLoader.SelectFirstAlivePlayerCharacterIfNeeded();
+
+                if (timelineController != null)
+                {
+                    timelineController.SelectDefaultSlotWhenInputReady(false);
+                    timelineController.SetSelectedCharacterScaleFeedbackActive(true);
+                    timelineController.StopTimelineMotionEffects();
+                }
             }
 
             EnsureSkillListPanel();
@@ -784,6 +810,18 @@ public class BattleTurnExecutor : MonoBehaviour
             yield break;
 
         yield return cameraController.ReturnDefault();
+    }
+
+    private IEnumerator ReturnCameraPanelDownRoutine()
+    {
+        BattleCameraController cameraController = BattleCameraController.Instance;
+
+        if (cameraController == null)
+            yield break;
+
+        // 모든 행동/턴 전환 처리가 끝났고 패널은 아직 내려가 있는 구간에서만
+        // 카메라를 Panel Down 기준 Y(기본 1.5)로 옮깁니다.
+        yield return cameraController.ReturnPanelDown();
     }
 
     private bool IsTypingInputFieldSelected()
@@ -1169,6 +1207,51 @@ public class BattleTurnExecutor : MonoBehaviour
             count += batch.MonsterCommands.Count;
 
         return count;
+    }
+
+    private bool ShouldKeepCameraAcrossBatchBoundary(
+        BattleActionBatch currentBatch,
+        List<BattleActionBatch> batches,
+        int nextStartIndex,
+        BattleActionRunner runner)
+    {
+        if (currentBatch == null || batches == null || runner == null)
+            return false;
+
+        if (!runner.BatchHasCrossSideHitAction(currentBatch))
+            return false;
+
+        int nextExecutableBatchIndex = GetNextExecutableBatchIndex(batches, nextStartIndex);
+        if (nextExecutableBatchIndex < 0)
+            return false;
+
+        BattleActionBatch nextBatch = batches[nextExecutableBatchIndex];
+        if (nextBatch == null || !runner.BatchHasCrossSideHitAction(nextBatch))
+            return false;
+
+        string currentMonsterRuntimeId = GetSingleMonsterRuntimeId(currentBatch);
+        string nextMonsterRuntimeId = GetSingleMonsterRuntimeId(nextBatch);
+
+        // 서로 다른 몬스터의 행동 사이에는 이전 몬스터의 전투 줌을 유지하지 않는다.
+        // A 몬스터 연출이 끝나면 기본 전투 카메라(Y=1.5)로 복귀한 뒤
+        // B 몬스터의 카메라 연출이 새로 시작되어야 한다.
+        if (!string.IsNullOrEmpty(currentMonsterRuntimeId) &&
+            !string.IsNullOrEmpty(nextMonsterRuntimeId) &&
+            !string.Equals(currentMonsterRuntimeId, nextMonsterRuntimeId, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private string GetSingleMonsterRuntimeId(BattleActionBatch batch)
+    {
+        if (batch == null || batch.MonsterCommands == null || batch.MonsterCommands.Count != 1)
+            return string.Empty;
+
+        MonsterReservedCommand command = batch.MonsterCommands[0];
+        return command != null ? command.RuntimeId : string.Empty;
     }
 
     private bool NextExecutableBatchHasCrossSideHitAction(
