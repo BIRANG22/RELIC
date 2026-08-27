@@ -304,10 +304,28 @@ public class BattleSceneController : MonoBehaviour
         turnExecutor?.RestoreBattleExecutionUiAfterRoomEnd();
 
         ActivateMapRoomForMap();
+        ResetCameraForMap();
 
         isOpeningMapFromController = true;
         battleMapPanel.Open(mapRuntime);
         isOpeningMapFromController = false;
+    }
+
+    private static void ResetCameraForMap()
+    {
+        BattleCameraController cameraController = BattleCameraController.Instance;
+        if (cameraController != null)
+        {
+            cameraController.ForceReturnMapImmediate();
+            return;
+        }
+
+        Camera mainCamera = Camera.main;
+        if (mainCamera == null)
+            return;
+
+        mainCamera.transform.position = new Vector3(0f, 0f, -20f);
+        mainCamera.transform.rotation = Quaternion.identity;
     }
 
     private void HideMapPanelImmediate()

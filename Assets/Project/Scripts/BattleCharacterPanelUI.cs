@@ -13,6 +13,9 @@ using UnityEngine.UI;
 /// </summary>
 public class BattleCharacterPanelUI : MonoBehaviour
 {
+    // 도감의 레어도 구분처럼 BattleCharacterPanel에서도 기본적으로 서로 다른 색이 보이도록 하는 fallback입니다.
+    // Inspector에서 색을 별도로 지정했다면 그 값을 우선 사용합니다.
+
     [Header("Selection Content")]
     [Tooltip("캐릭터가 선택되었을 때 활성화되는 Character 루트입니다.")]
     [SerializeField] private GameObject characterRoot;
@@ -106,6 +109,15 @@ public class BattleCharacterPanelUI : MonoBehaviour
     [SerializeField] private Image skillInfoRangeImage;
     [SerializeField] private TMP_Text skillInfoNameText;
 
+    [Header("Skill Info Rarity")]
+    [SerializeField] private Image skillInfoRarityImage;
+    [SerializeField] private TMP_Text skillInfoRarityText;
+    [SerializeField] private Color commonRarityColor = Color.white;
+    [SerializeField] private Color rareRarityColor = Color.white;
+    [SerializeField] private Color epicRarityColor = Color.white;
+    [SerializeField] private Color uniqueRarityColor = Color.white;
+    [SerializeField] private Color exclusiveRarityColor = new Color(1f, 0.82f, 0.2f, 1f);
+
     [Header("Skill Info Cost")]
     [SerializeField] private Image skillInfoCostIconImage;
     [SerializeField] private TMP_Text skillInfoCostNameText;
@@ -152,9 +164,6 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     [Tooltip("전투방 입장 및 예약 단계에서 사용하는 BattleSlot 크기입니다.")]
     [SerializeField, Min(0f)] private float battleSlotNormalScale = 1f;
-
-    [Tooltip("전투 진행 단계에서 사용하는 BattleSlot 크기입니다.")]
-    [SerializeField, Min(0f)] private float battleSlotExecutionScale = 1.3f;
 
     [Tooltip("패널 위치가 이동하는 데 걸리는 시간입니다.")]
     [SerializeField, Min(0f)] private float panelMoveDuration = 0.25f;
@@ -227,12 +236,17 @@ public class BattleCharacterPanelUI : MonoBehaviour
     private int lastRuneLoadoutHash = int.MinValue;
     private int lastPassiveRelicLoadoutHash = int.MinValue;
 
+    private bool hasSkillInfoRarityDefaultColors;
+    private Color skillInfoRarityDefaultTextColor = Color.white;
+    private Color skillInfoRarityDefaultImageColor = Color.white;
+
     public CharacterRuntimeData BoundRuntime => boundRuntime;
 
     private void Awake()
     {
         panelRectTransform = GetComponent<RectTransform>();
         ResolveSelectionContentReferences();
+        CaptureSkillInfoRarityDefaultColors();
         RegisterSkillButtonListeners();
         RegisterMoveAndItemButtonListeners();
         EnsureSkillButtonHoverEffects();
@@ -440,6 +454,30 @@ public class BattleCharacterPanelUI : MonoBehaviour
                 monsterRoot = monsterTransform.gameObject;
         }
 
+        if (characterRoot != null)
+        {
+            if (skillInfoRarityImage == null || skillInfoRarityText == null)
+            {
+                Transform skillRarityTransform = FindChildRecursive(characterRoot.transform, "Skill_Rarity");
+                if (skillRarityTransform != null)
+                {
+                    if (skillInfoRarityImage == null)
+                    {
+                        Transform imageTransform = FindDirectChild(skillRarityTransform, "Image");
+                        if (imageTransform != null)
+                            skillInfoRarityImage = imageTransform.GetComponent<Image>();
+                    }
+
+                    if (skillInfoRarityText == null)
+                    {
+                        Transform textTransform = FindDirectChild(skillRarityTransform, "Text");
+                        if (textTransform != null)
+                            skillInfoRarityText = textTransform.GetComponent<TMP_Text>();
+                    }
+                }
+            }
+        }
+
         if (monsterInfoPanelUI == null && monsterRoot != null)
         {
             Transform monsterInfoTransform = FindChildRecursive(monsterRoot.transform, "MonsterInfo");
@@ -561,9 +599,12 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
         StopPanelMoveCoroutine();
 
+        // 이 메서드가 호출되는 시점에는 BattleTurnExecutor가 이미
+        // 카메라를 Panel Down Y(1.5)까지 복귀시킨 뒤 살아있는 캐릭터를
+        // 실제로 선택한 상태입니다. 선택 이벤트가 시작한 기존 캐릭터 카메라 연출은
+        // 건드리지 않고 패널/BattleSlot만 예약 위치로 올립니다.
         if (!isActiveAndEnabled || panelMoveDuration <= 0f)
         {
-            SetPanelAndBattleSlotDefaultImmediate();
             SetPanelPositionYImmediate(reservationPositionY);
             return;
         }
@@ -573,14 +614,9 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private IEnumerator MoveBattleSlotToDefaultThenReservationRoutine()
     {
-        // 전투가 끝난 직후에는 BattleSlot만 먼저 기본 상태로 돌아옵니다.
-        yield return AnimatePanelAndBattleSlotRoutine(
-            executionPositionY,
-            battleSlotDefaultPositionY,
-            battleSlotNormalScale
-        );
-
-        // BattleCharacterPanel이 올라올 때 BattleSlot도 예약 위치로 함께 이동합니다.
+        // Y 1.5 복귀 완료 후 발생한 캐릭터 선택 카메라 연출과 동시에
+        // 패널/BattleSlot을 예약 위치로 올립니다. 카메라를 다시 1.5로 되돌리거나
+        // 별도의 강제 리포커스를 호출하지 않습니다.
         yield return AnimatePanelAndBattleSlotRoutine(
             reservationPositionY,
             battleSlotReservationPositionY,
@@ -657,7 +693,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (cameraController == null)
             return;
 
-        cameraController.StartReturnDefault();
+        cameraController.StartReturnPanelDown();
     }
 
     private void ApplyCurrentBattlePhasePositionImmediate()
@@ -790,6 +826,9 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private void SetPanelPositionYImmediate(float targetY)
     {
+        if (Mathf.Approximately(targetY, executionPositionY))
+            ReturnCameraToDefaultForPanelDown();
+
         if (panelRectTransform == null)
             panelRectTransform = GetComponent<RectTransform>();
 
@@ -812,6 +851,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
     private void SetPanelAndBattleSlotDefaultImmediate()
     {
         StopPanelMoveCoroutine();
+        ReturnCameraToDefaultForPanelDown();
 
         if (panelRectTransform == null)
             panelRectTransform = GetComponent<RectTransform>();
@@ -841,9 +881,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private float ResolveBattleSlotTargetScale(float panelTargetY)
     {
-        return Mathf.Approximately(panelTargetY, reservationPositionY)
-            ? battleSlotNormalScale
-            : battleSlotExecutionScale;
+        return battleSlotNormalScale;
     }
 
     private void StopPanelMoveCoroutine()
@@ -858,7 +896,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
     private void LateUpdate()
     {
         // 다른 UI 갱신이나 레이아웃 처리로 BattleSlot의 위치만 되돌아가는 경우를 막습니다.
-        // 전투 진행 중에는 이동 애니메이션이 끝난 뒤 Y 250 / Scale 1.3 상태를 계속 고정합니다.
+        // 전투 진행 중에는 이동 애니메이션이 끝난 뒤 Y 위치만 고정하고 BattleSlot 크기는 기본 크기를 유지합니다.
         if (isBattleExecutionInProgress && panelMoveCoroutine == null)
             EnforceBattleSlotExecutionState();
 
@@ -877,7 +915,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         Vector2 position = battleSlotRectTransform.anchoredPosition;
         position.y = battleSlotExecutionPositionY;
         battleSlotRectTransform.anchoredPosition = position;
-        battleSlotRectTransform.localScale = Vector3.one * battleSlotExecutionScale;
+        battleSlotRectTransform.localScale = Vector3.one * battleSlotNormalScale;
     }
 
     public void Bind(CharacterRuntimeData runtimeData)
@@ -1911,6 +1949,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
                 : skillData.SkillId;
         }
 
+        RefreshSkillInfoRarity(skillData);
         RefreshSkillInfoCost(skillData);
 
         if (skillInfoTypeText != null)
@@ -1924,6 +1963,62 @@ public class BattleCharacterPanelUI : MonoBehaviour
         }
 
         RefreshSkillInfoEffects(skillData);
+    }
+
+    private void RefreshSkillInfoRarity(SkillMasterData skillData)
+    {
+        CaptureSkillInfoRarityDefaultColors();
+
+        if (skillInfoRarityText != null)
+            skillInfoRarityText.text = GetSkillRarityDisplayName(skillData);
+
+        if (skillData == null)
+        {
+            RestoreSkillInfoRarityDefaultColors();
+            return;
+        }
+
+        if (skillData != null && (skillData.Category == Category.Move || skillData.Rarity == SkillRarity.Move))
+        {
+            RestoreSkillInfoRarityDefaultColors();
+            return;
+        }
+
+        Color rarityColor = GetSkillInfoRarityColor(skillData.Rarity);
+
+        if (skillInfoRarityText != null)
+            skillInfoRarityText.color = rarityColor;
+
+        if (skillInfoRarityImage != null)
+            skillInfoRarityImage.color = rarityColor;
+    }
+
+    private void CaptureSkillInfoRarityDefaultColors()
+    {
+        if (hasSkillInfoRarityDefaultColors)
+            return;
+
+        if (skillInfoRarityText == null && skillInfoRarityImage == null)
+            return;
+
+        if (skillInfoRarityText != null)
+            skillInfoRarityDefaultTextColor = skillInfoRarityText.color;
+
+        if (skillInfoRarityImage != null)
+            skillInfoRarityDefaultImageColor = skillInfoRarityImage.color;
+
+        hasSkillInfoRarityDefaultColors = true;
+    }
+
+    private void RestoreSkillInfoRarityDefaultColors()
+    {
+        CaptureSkillInfoRarityDefaultColors();
+
+        if (skillInfoRarityText != null)
+            skillInfoRarityText.color = skillInfoRarityDefaultTextColor;
+
+        if (skillInfoRarityImage != null)
+            skillInfoRarityImage.color = skillInfoRarityDefaultImageColor;
     }
 
     private void RefreshSkillInfoCost(SkillMasterData skillData)
@@ -2035,13 +2130,67 @@ public class BattleCharacterPanelUI : MonoBehaviour
         switch (rangeType)
         {
             case RangeType.Selection:
-                return GameLocalization.Get("skill.range_selection", "그리드 선택");
+                return "원거리";
 
             case RangeType.Direction:
-                return GameLocalization.Get("skill.range_caster_position", "시전자 위치");
+                return "근거리";
 
             default:
                 return string.Empty;
+        }
+    }
+
+    private string GetSkillRarityDisplayName(SkillMasterData skillData)
+    {
+        if (skillData == null)
+            return string.Empty;
+
+        switch (skillData.Category)
+        {
+            case Category.Unique:
+                return "발현기억";
+
+            case Category.Ability:
+                return "구현기억";
+
+            case Category.Passive:
+                return "본능기억";
+
+            case Category.Move:
+                return "이동";
+
+            default:
+                return skillData.Rarity switch
+                {
+                    SkillRarity.Common => "일반기억",
+                    SkillRarity.Rare => "레어기억",
+                    SkillRarity.Epic => "에픽기억",
+                    SkillRarity.Unique => "유니크기억",
+                    SkillRarity.Exclusive => "전용기억",
+                    SkillRarity.Move => "이동",
+                    _ => string.Empty
+                };
+        }
+    }
+
+    private Color GetSkillInfoRarityColor(SkillRarity rarity)
+    {
+        string canonicalRarity = SkillRarityUtility.GetCanonicalName(rarity);
+        if (RecordPanelUI.TryGetCachedRarityDisplayColor(canonicalRarity, out Color recordColor))
+            return recordColor;
+
+        switch (rarity)
+        {
+            case SkillRarity.Exclusive:
+                return exclusiveRarityColor;
+            case SkillRarity.Rare:
+                return rareRarityColor;
+            case SkillRarity.Epic:
+                return epicRarityColor;
+            case SkillRarity.Unique:
+                return uniqueRarityColor;
+            default:
+                return commonRarityColor;
         }
     }
 
@@ -2495,6 +2644,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         StopNumberChangeCoroutine();
         hasDisplayedStats = false;
         ResetRuntimeDisplayState();
+        RefreshSkillInfoRarity(null);
 
         GameObject[] slots = GetResourceSlots();
         foreach (GameObject slot in slots)

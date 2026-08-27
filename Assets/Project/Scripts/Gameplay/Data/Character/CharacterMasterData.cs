@@ -91,8 +91,8 @@ namespace Relic.Gameplay.Data
 
     public static class CharacterLevelUnlockService
     {
-        private const string RuneSlotUnlockText = "룬 슬롯 해금";
-        private const string RuneUnlockText = "룬 해금";
+        private const string RuneSlotUnlockText = "파편 슬롯 해금";
+        private const string RuneUnlockText = "파편 해금";
         private const string SkillMemoryUnlockText = "기억 해금";
 
         private static readonly int[] DefaultRuneSlotUnlockLevels = { 1, 1, 3, 5, 7, 10 };

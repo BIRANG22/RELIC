@@ -1318,7 +1318,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
                 return GameLocalization.Get("resource.blood", "혈기");
 
             default:
-                return GameLocalization.Get("resource.unique", "고유자원");
+                return GameLocalization.Get("resource.unique", "카르마");
         }
     }
 
@@ -1360,7 +1360,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
                 return GameLocalization.Get("skill.passive_blood_5", "혈기 5 유지 시 지속");
 
             default:
-                return GameLocalization.Get("skill.passive_unique_max", "고유자원 최대치 유지 시 지속");
+                return GameLocalization.Get("skill.passive_unique_max", "카르마 최대치 유지 시 지속");
         }
     }
 

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -51,7 +51,7 @@ namespace Relic.Gameplay.Data
         public string AbilitySkillId;
 
         public string[] EquippedSkillIds = new string[4];
-        public string[] EquippedRuneIds = new string[12];
+        public string[] EquippedRuneIds = new string[6];
         public string[] EquippedRelicIds = new string[7];
         public List<ActiveRelicUseRuntimeData> ActiveRelicUses = new();
         public List<string> AppliedBattleEquipmentEffectIds = new();
@@ -60,7 +60,7 @@ namespace Relic.Gameplay.Data
         public int PendingNextTurnBoostStack;
         public int PendingNextTurnBoostTurn;
 
-        // Ä«¸£¸¶ ÃÖ´ë µµ´Ş ·éÀº µµ´ŞÇÑ ÅÏÀÌ ¾Æ´Ï¶ó ´ÙÀ½ ÅÏ ½ÃÀÛ ½Ã Àû¿ëÇÕ´Ï´Ù.
+        // ì¹´ë¥´ë§ˆ ìµœëŒ€ ë„ë‹¬ ë£¬ì€ ë„ë‹¬í•œ í„´ì´ ì•„ë‹ˆë¼ ë‹¤ìŒ í„´ ì‹œì‘ ì‹œ ì ìš©í•©ë‹ˆë‹¤.
         public int PendingUniqueResourceMaxBoost;
         public int PendingUniqueResourceMaxSmite;
         public int PendingUniqueResourceMaxCostRecovery;

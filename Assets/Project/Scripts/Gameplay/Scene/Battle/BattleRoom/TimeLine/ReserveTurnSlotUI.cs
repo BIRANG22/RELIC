@@ -35,6 +35,24 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
         }
     }
 
+    public void SetAutoBindButtonsInChildren(bool enabled)
+    {
+        autoBindButtonsInChildren = enabled;
+
+        if (enabled)
+        {
+            BindButtons();
+            return;
+        }
+
+        Button[] buttons = GetComponentsInChildren<Button>(true);
+        for (int i = 0; i < buttons.Length; i++)
+        {
+            if (buttons[i] != null)
+                buttons[i].onClick.RemoveListener(OnClickSlot);
+        }
+    }
+
     public void Init(BattleTimelineController owner, int slotIndex)
     {
         this.owner = owner;

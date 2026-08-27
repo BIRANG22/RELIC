@@ -232,7 +232,7 @@ public class BattleUniqueResourceService
             ResourceType.Aether => "에테르",
             ResourceType.Faith => "신앙",
             ResourceType.Blood => "혈기",
-            _ => "고유자원"
+            _ => "카르마"
         };
     }
 

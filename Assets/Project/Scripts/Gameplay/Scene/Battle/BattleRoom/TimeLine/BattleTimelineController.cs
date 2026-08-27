@@ -84,10 +84,8 @@ public class BattleTimelineController : MonoBehaviour
     [SerializeField] private RectTransform timelineBarSlideTarget2;
     [Tooltip("대기 중인 TimelineBar를 현재 TimelineBar 오른쪽에 배치할 X 거리입니다.")]
     [SerializeField] private float standbyTimelineBarOffsetX = 1420f;
-    [Tooltip("5개 슬롯이 모두 진행된 뒤 현재 TimelineBar가 도착해야 하는 X 위치입니다. 기본 위치 X=0을 기준으로 이동합니다.")]
-    [SerializeField] private float completedTurnTimelineBarPositionX = -1420f;
-    [Tooltip("턴 종료 버튼을 누른 직후 1번 슬롯 시작 전에 TimelineBar가 먼저 왼쪽으로 이동하는 거리입니다. 1번 슬롯에서만 한 번 적용합니다.")]
-    [SerializeField] private float firstSlotEndTurnTimelineLineSlideAmountX = -60f;
+    [Tooltip("5개 슬롯이 모두 진행된 뒤 현재 TimelineBar가 도착하는 절대 X 위치입니다.")]
+    [SerializeField] private float completedTurnTimelineBarPositionX = -1870f;
     [SerializeField] private float timelineSlotSlideDuration = 0.18f;
     [Tooltip("TurnMark와 Use_skill의 프레임 가림 애니메이션이 보이도록 가림 연출과 함께 이동할 때 사용하는 최소 시간입니다.")]
     [SerializeField] private float grindTimelineSlideDuration = 0.32f;
@@ -96,12 +94,19 @@ public class BattleTimelineController : MonoBehaviour
     [Header("Timeline Sprite Grind Animation")]
     [SerializeField] private BattleTimelineSpriteAnimationController timelineSpriteAnimationController;
     [SerializeField] private bool autoFindTimelineSpriteAnimationController = true;
-    [Tooltip("각 슬롯 시작 시 TurnMark가 가려지면서 TimelineBar 전체가 왼쪽으로 이동하는 거리입니다.")]
-    [SerializeField] private float slotStartTimelineLineSlideAmountX = -50f;
-    [Tooltip("해당 슬롯의 첫 번째 Use_skill이 가려질 때 전체 Timeline 라인이 왼쪽으로 이동하는 거리입니다.")]
-    [SerializeField] private float firstUseSkillTimelineLineSlideAmountX = -45f;
-    [Tooltip("해당 슬롯의 두 번째 이후 Use_skill이 가려질 때 전체 Timeline 라인이 왼쪽으로 이동하는 거리입니다.")]
-    [SerializeField] private float additionalUseSkillTimelineLineSlideAmountX = -40f;
+
+    [Header("Timeline Grind Positions")]
+    [Tooltip("슬롯별 TurnMark / Order01~05 갈림 위치는 현재 타임라인 디자인의 절대 X 좌표를 사용합니다.")]
+    [SerializeField] private float timelineBarStartPositionX = -240f;
+
+    private static readonly float[][] OrderGrindPositions =
+    {
+        new[] { -380f, -430f, -480f, -530f, -580f },
+        new[] { -710f, -760f, -810f, -860f, -910f },
+        new[] { -1030f, -1080f, -1130f, -1180f, -1230f },
+        new[] { -1350f, -1400f, -1450f, -1500f, -1500f },
+        new[] { -1670f, -1720f, -1770f, -1820f, -1870f }
+    };
 
     [Header("Timeline Grind VFX")]
     [SerializeField] private GameObject timelineGrindVfxPrefab;
@@ -118,15 +123,6 @@ public class BattleTimelineController : MonoBehaviour
     [SerializeField] private bool useUnscaledTimeForEndButtonHoverRotation = true;
     [SerializeField] private bool keepHoverUntilMouseLeavesEndGearBounds = true;
     [SerializeField] private float endButtonHoverBoundsPadding = 8f;
-
-    [Header("End Button Hover Linked Gears")]
-    [SerializeField] private bool autoBindEndButtonHoverLinkedGears = true;
-    [SerializeField] private RectTransform endButtonHoverSmallGearRotationTarget;
-    [SerializeField] private string endButtonHoverSmallGearRotationTargetName = "EndButtonSmallGear";
-    [SerializeField] private float endButtonHoverSmallGearRotationOffsetZ = 60f;
-    [SerializeField] private RectTransform endButtonHoverLargeGearRotationTarget;
-    [SerializeField] private string endButtonHoverLargeGearRotationTargetName = "EndButtonLargeGear";
-    [SerializeField] private float endButtonHoverLargeGearRotationOffsetZ = -30f;
 
     [Header("End Button Hover SFX")]
     [SerializeField] private bool playEndButtonHoverSfx = true;
@@ -156,8 +152,6 @@ public class BattleTimelineController : MonoBehaviour
     private int playerLockedSlotIndex = -1;
     private bool isEndButtonHovering;
     private float endButtonRotationBeforeHoverZ;
-    private float endButtonSmallGearRotationBeforeHoverZ;
-    private float endButtonLargeGearRotationBeforeHoverZ;
     private Vector2 timelineBar1OriginalAnchoredPosition;
     private Vector2 timelineBar2OriginalAnchoredPosition;
     private bool timelineBarOriginalPositionCaptured;
@@ -188,8 +182,13 @@ public class BattleTimelineController : MonoBehaviour
         if (Mathf.Approximately(standbyTimelineBarOffsetX, 1335f) || standbyTimelineBarOffsetX <= 0f)
             standbyTimelineBarOffsetX = 1420f;
 
-        if (Mathf.Approximately(completedTurnTimelineBarPositionX, -1440f) || completedTurnTimelineBarPositionX >= 0f)
-            completedTurnTimelineBarPositionX = -1420f;
+        // 현재 TimelineBar의 마지막 위치는 5슬롯 Order05의 절대 X = -1870입니다.
+        // 이전 버전에서 저장된 완료 위치 값은 새 구조에 맞게 자동 보정합니다.
+        if (!Mathf.Approximately(completedTurnTimelineBarPositionX, -1870f))
+            completedTurnTimelineBarPositionX = -1870f;
+
+        if (!Mathf.Approximately(timelineBarStartPositionX, -240f))
+            timelineBarStartPositionX = -240f;
 
         if (timelineGrindVfxLifeTime < 0f)
             timelineGrindVfxLifeTime = 0f;
@@ -209,7 +208,6 @@ public class BattleTimelineController : MonoBehaviour
         PrepareTimelineBarsForActiveTurn(false);
         AutoFindTimelineSpriteAnimationControllerIfNeeded();
         AutoBindEndButtonHoverRotationTargetIfNeeded();
-        AutoBindEndButtonHoverLinkedGearTargetsIfNeeded();
         AutoFindTotalUsedCostTextIfNeeded();
         BindEndButtonHoverRotationEventsIfNeeded();
 
@@ -220,6 +218,7 @@ public class BattleTimelineController : MonoBehaviour
         RefreshTotalUsedCostText();
 
         InitTimelineBars();
+        AutoBindReserveSlotsFromTimelineBarIfNeeded();
 
         if (reserveSlots != null)
         {
@@ -622,15 +621,23 @@ public class BattleTimelineController : MonoBehaviour
 
     private void TryFocusCameraOnSelectedCharacter(CharacterRuntimeData runtimeData)
     {
-        TryFocusCameraOnSelectedCharacter(runtimeData, false);
+        TryFocusCameraOnSelectedCharacter(runtimeData, false, false);
     }
 
     public void RefocusCurrentSelectedCharacterWhenInputReady()
     {
-        TryFocusCameraOnSelectedCharacter(selectedCharacter, true);
+        TryFocusCameraOnSelectedCharacter(selectedCharacter, true, false);
     }
 
-    private void TryFocusCameraOnSelectedCharacter(CharacterRuntimeData runtimeData, bool forceRefocus)
+    public void RefocusCurrentSelectedCharacterForPanelRaise()
+    {
+        TryFocusCameraOnSelectedCharacter(selectedCharacter, true, true);
+    }
+
+    private void TryFocusCameraOnSelectedCharacter(
+        CharacterRuntimeData runtimeData,
+        bool forceRefocus,
+        bool ignoreInputReady)
     {
         if (!focusCameraOnCharacterSelect)
             return;
@@ -644,7 +651,7 @@ public class BattleTimelineController : MonoBehaviour
         if (!forceRefocus && !refocusSameCharacter && lastCameraFocusedCharacterId == runtimeData.CharacterId)
             return;
 
-        if (focusCameraOnlyWhenInputReady)
+        if (focusCameraOnlyWhenInputReady && !ignoreInputReady)
         {
             if (turnExecutor == null)
                 turnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
@@ -1137,30 +1144,36 @@ public class BattleTimelineController : MonoBehaviour
         AutoFindTimelineSpriteAnimationControllerIfNeeded();
         ConfigureTimelineSpriteAnimationRootForActiveBar();
 
-        // 턴 종료 직후 1번 슬롯이 진행될 때만 라인을 먼저 지정 거리만큼 이동합니다.
-        // 2번 슬롯부터는 선행 이동 없이 슬롯 시작 이동만 진행합니다.
-        if (slotIndex == 0 && !Mathf.Approximately(firstSlotEndTurnTimelineLineSlideAmountX, 0f))
-        {
-            PlayTimelineSlideGearRotation(1);
-            yield return MoveAllTimelineSlotSlideTargetsByOffsetRoutine(firstSlotEndTurnTimelineLineSlideAmountX);
-        }
-
-        // 슬롯 시작 시 TurnMark 애니메이션을 먼저 보여주고, 그다음 TimelineBar 전체를 이동합니다.
-        // 스킬이 없는 슬롯은 Use_skill 1~5칸까지 한 번에 이동해서 다음 슬롯 직전까지 보냅니다.
         float animationDuration = GetTurnMarkGrindDuration();
+
+        // 행동이 없는 슬롯은 TurnMark / 빈 Order를 전부 건너뛰고 해당 슬롯의 Order05까지 한 번에 이동합니다.
+        // 행동이 있는 슬롯은 먼저 해당 슬롯의 TurnMark 위치까지 이동한 뒤 TurnMark 갈림 연출을 보여줍니다.
+        float targetX = isEmptySlot
+            ? GetOrderGrindPositionX(slotIndex, 4)
+            : GetTurnMarkGrindPositionX(slotIndex);
+
+        BattleTimelineBarUI activeBar = GetActiveTimelineBarUI();
+        if (activeBar != null)
+            activeBar.HideOwnerIconsForSlot(slotIndex);
+
+        Coroutine turnMarkAnimation = null;
 
         if (timelineSpriteAnimationController != null)
         {
             SpawnTimelineGrindVfx();
-            yield return timelineSpriteAnimationController.PlayTurnMarkRoutine(slotIndex);
+            turnMarkAnimation = StartCoroutine(
+                timelineSpriteAnimationController.PlayTurnMarkRoutine(slotIndex)
+            );
         }
 
-        float lineSlideAmountX = isEmptySlot
-            ? GetFullUseSkillTimelineLineSlideAmountX()
-            : slotStartTimelineLineSlideAmountX;
+        yield return MoveTimelineSlotToGrindPositionRoutine(
+            slotIndex,
+            targetX,
+            animationDuration
+        );
 
-        PlayTimelineSlideGearRotation(1, animationDuration);
-        yield return MoveAllTimelineSlotSlideTargetsByOffsetRoutine(lineSlideAmountX, animationDuration);
+        if (turnMarkAnimation != null)
+            yield return turnMarkAnimation;
     }
 
     public IEnumerator MoveTimelineBarsToCompletedTurnPositionRoutine()
@@ -1169,29 +1182,21 @@ public class BattleTimelineController : MonoBehaviour
             yield break;
 
         RectTransform activeTarget = GetActiveTimelineBarSlideTarget();
-        RectTransform standbyTarget = GetStandbyTimelineBarSlideTarget();
 
         if (activeTarget == null)
             yield break;
 
-        Vector2 basePosition = GetTimelineBarBasePosition();
-        float completedX = basePosition.x + completedTurnTimelineBarPositionX;
-        float standbyX = basePosition.x;
+        float completedX = completedTurnTimelineBarPositionX;
         float offsetX = completedX - activeTarget.anchoredPosition.x;
 
-        // 이미 완료 위치에 도착했거나 지나친 경우에는 추가 이동을 재생하지 않습니다.
-        // active는 -1420, standby는 0으로 위치만 보정합니다.
-        bool alreadyAtOrPastCompletedPosition = completedTurnTimelineBarPositionX < 0f
-            ? activeTarget.anchoredPosition.x <= completedX + 0.01f
-            : activeTarget.anchoredPosition.x >= completedX - 0.01f;
+        // 완료 위치까지도 활성 TimelineBar만 이동합니다.
+        // Standby TimelineBar는 다음 턴 전환 시점까지 화면 밖의 대기 위치를 유지합니다.
+        bool alreadyAtOrPastCompletedPosition = activeTarget.anchoredPosition.x <= completedX + 0.01f;
 
         if (!alreadyAtOrPastCompletedPosition && !Mathf.Approximately(offsetX, 0f))
             yield return MoveAllTimelineSlotSlideTargetsByOffsetRoutine(offsetX, timelineSlotSlideDuration, true);
 
         activeTarget.anchoredPosition = new Vector2(completedX, activeTarget.anchoredPosition.y);
-
-        if (standbyTarget != null && standbyTarget != activeTarget)
-            standbyTarget.anchoredPosition = new Vector2(standbyX, standbyTarget.anchoredPosition.y);
 
         completedTimelineBarPositionApplied = true;
     }
@@ -1212,13 +1217,6 @@ public class BattleTimelineController : MonoBehaviour
         return GetPlayerCommandCount(slotIndex) + GetMonsterCommandCount(slotIndex) <= 0;
     }
 
-    private float GetFullUseSkillTimelineLineSlideAmountX()
-    {
-        return slotStartTimelineLineSlideAmountX +
-               firstUseSkillTimelineLineSlideAmountX +
-               additionalUseSkillTimelineLineSlideAmountX * 4f;
-    }
-
     public IEnumerator PlayTimelineActionAnimationsRoutine(int slotIndex, int startOrderIndex, int count, bool fillRemainingUseSkillLine = false)
     {
         AutoFindTimelineSpriteAnimationControllerIfNeeded();
@@ -1234,8 +1232,15 @@ public class BattleTimelineController : MonoBehaviour
             if (orderIndex < 0 || orderIndex >= 5)
                 yield break;
 
-            // Use_skill 애니메이션을 먼저 보여주고, 그다음 TimelineBar 전체를 이동합니다.
             float animationDuration = GetUseSkillGrindDuration();
+            float targetX = GetOrderGrindPositionX(slotIndex, orderIndex);
+
+            // 각 Order가 지정된 X 위치에 도달한 뒤 Use_skill 갈림 연출을 재생합니다.
+            yield return MoveTimelineSlotToGrindPositionRoutine(
+                slotIndex,
+                targetX,
+                animationDuration
+            );
 
             if (timelineSpriteAnimationController != null)
             {
@@ -1243,18 +1248,60 @@ public class BattleTimelineController : MonoBehaviour
                 yield return timelineSpriteAnimationController.PlayUseSkillRoutine(slotIndex, orderIndex);
             }
 
-            float lineSlideAmountX = orderIndex == 0
-                ? firstUseSkillTimelineLineSlideAmountX
-                : additionalUseSkillTimelineLineSlideAmountX;
-
-            if (fillRemainingUseSkillLine && i == safeCount - 1)
-                lineSlideAmountX += GetRemainingUseSkillTimelineLineSlideAmountX(orderIndex);
-
-            PlayTimelineSlideGearRotation(1, animationDuration);
-            yield return MoveAllTimelineSlotSlideTargetsByOffsetRoutine(lineSlideAmountX, animationDuration);
+            // 마지막 실제 행동 뒤에 빈 Order가 남아 있으면 중간 정지 지점을 건너뛰고
+            // 슬롯 완료 위치인 Order05(-580)까지 한 번에 이동합니다.
+            if (fillRemainingUseSkillLine && i == safeCount - 1 && orderIndex < 4)
+            {
+                yield return MoveTimelineSlotToGrindPositionRoutine(
+                    slotIndex,
+                    GetOrderGrindPositionX(slotIndex, 4),
+                    animationDuration
+                );
+            }
         }
     }
 
+    private static float GetTurnMarkGrindPositionX(int slotIndex)
+    {
+        switch (Mathf.Clamp(slotIndex, 0, 4))
+        {
+            case 0: return -330f;
+            case 1: return -650f;
+            case 2: return -980f;
+            case 3: return -1300f;
+            case 4: return -1620f;
+            default: return -1620f;
+        }
+    }
+
+    private static float GetOrderGrindPositionX(int slotIndex, int orderIndex)
+    {
+        int safeSlotIndex = Mathf.Clamp(slotIndex, 0, OrderGrindPositions.Length - 1);
+        int safeOrderIndex = Mathf.Clamp(orderIndex, 0, 4);
+        return OrderGrindPositions[safeSlotIndex][safeOrderIndex];
+    }
+
+    private IEnumerator MoveTimelineSlotToGrindPositionRoutine(
+        int slotIndex,
+        float targetBarX,
+        float duration)
+    {
+        RectTransform activeTarget = GetActiveTimelineBarSlideTarget();
+
+        if (activeTarget == null)
+            yield break;
+
+        // 갈림 위치는 TimelineBar 자체의 절대 anchoredPosition X를 사용합니다.
+        // 슬롯별 좌표를 간격 계산으로 추정하지 않고 지정된 위치표를 그대로 적용합니다.
+        float offsetX = targetBarX - activeTarget.anchoredPosition.x;
+
+        // 갈림 연출 중 TimelineBar가 오른쪽으로 되돌아가는 상황은 허용하지 않습니다.
+        if (offsetX >= -0.01f)
+            yield break;
+
+        PlayTimelineSlideGearRotation(1, duration);
+        yield return MoveAllTimelineSlotSlideTargetsByOffsetRoutine(offsetX, duration);
+    }
 
     private float GetTurnMarkGrindDuration()
     {
@@ -1294,13 +1341,6 @@ public class BattleTimelineController : MonoBehaviour
 
         return vfx;
     }
-
-    private float GetRemainingUseSkillTimelineLineSlideAmountX(int lastPlayedOrderIndex)
-    {
-        int remainingUseSkillCount = Mathf.Clamp(4 - lastPlayedOrderIndex, 0, 4);
-        return additionalUseSkillTimelineLineSlideAmountX * remainingUseSkillCount;
-    }
-
 
     public IEnumerator ResetTimelineSlotsToOriginalPositionRoutine()
     {
@@ -1361,49 +1401,6 @@ public class BattleTimelineController : MonoBehaviour
             endButtonHoverRotationTarget = FindRectTransformByName(foundTimelineBar.transform, endButtonHoverRotationTargetName);
     }
 
-    private void AutoBindEndButtonHoverLinkedGearTargetsIfNeeded()
-    {
-        if (!autoBindEndButtonHoverLinkedGears)
-            return;
-
-        endButtonHoverSmallGearRotationTarget = AutoBindEndButtonHoverLinkedGearTargetIfNeeded(
-            endButtonHoverSmallGearRotationTarget,
-            endButtonHoverSmallGearRotationTargetName
-        );
-
-        endButtonHoverLargeGearRotationTarget = AutoBindEndButtonHoverLinkedGearTargetIfNeeded(
-            endButtonHoverLargeGearRotationTarget,
-            endButtonHoverLargeGearRotationTargetName
-        );
-    }
-
-    private RectTransform AutoBindEndButtonHoverLinkedGearTargetIfNeeded(RectTransform currentTarget, string targetName)
-    {
-        if (currentTarget != null)
-            return currentTarget;
-
-        if (string.IsNullOrEmpty(targetName))
-            return null;
-
-        RectTransform found = FindRectTransformByName(transform, targetName);
-
-        if (found != null)
-            return found;
-
-        Transform searchRoot = GetTimelineSearchRoot();
-        found = FindRectTransformByName(searchRoot, targetName);
-
-        if (found != null)
-            return found;
-
-        BattleTimelineBarUI foundTimelineBar = FindFirstObjectByType<BattleTimelineBarUI>(FindObjectsInactive.Include);
-
-        if (foundTimelineBar == null)
-            return null;
-
-        return FindRectTransformByName(foundTimelineBar.transform, targetName);
-    }
-
     private RectTransform FindRectTransformByName(Transform root, string targetName)
     {
         if (root == null || string.IsNullOrEmpty(targetName))
@@ -1423,7 +1420,6 @@ public class BattleTimelineController : MonoBehaviour
             return;
 
         AutoBindEndButtonHoverRotationTargetIfNeeded();
-        AutoBindEndButtonHoverLinkedGearTargetsIfNeeded();
 
         if (endButtonHoverRotationTarget == null)
             return;
@@ -1469,11 +1465,7 @@ public class BattleTimelineController : MonoBehaviour
             endButtonHoverRotationRoutine = null;
         }
 
-        PlayEndButtonHoverRotationTo(
-            endButtonRotationBeforeHoverZ,
-            endButtonSmallGearRotationBeforeHoverZ,
-            endButtonLargeGearRotationBeforeHoverZ
-        );
+        PlayEndButtonHoverRotationTo(endButtonRotationBeforeHoverZ);
     }
 
     private void OnEndButtonHoverEnter()
@@ -1482,7 +1474,6 @@ public class BattleTimelineController : MonoBehaviour
             return;
 
         AutoBindEndButtonHoverRotationTargetIfNeeded();
-        AutoBindEndButtonHoverLinkedGearTargetsIfNeeded();
 
         if (endButtonHoverRotationTarget == null)
             return;
@@ -1492,15 +1483,11 @@ public class BattleTimelineController : MonoBehaviour
 
         isEndButtonHovering = true;
         endButtonRotationBeforeHoverZ = GetTransformRotationZ(endButtonHoverRotationTarget);
-        endButtonSmallGearRotationBeforeHoverZ = GetTransformRotationZ(endButtonHoverSmallGearRotationTarget);
-        endButtonLargeGearRotationBeforeHoverZ = GetTransformRotationZ(endButtonHoverLargeGearRotationTarget);
 
         float targetRotationZ = endButtonRotationBeforeHoverZ + endButtonHoverRotationOffsetZ;
-        float smallGearTargetRotationZ = endButtonSmallGearRotationBeforeHoverZ + endButtonHoverSmallGearRotationOffsetZ;
-        float largeGearTargetRotationZ = endButtonLargeGearRotationBeforeHoverZ + endButtonHoverLargeGearRotationOffsetZ;
 
         PlayEndButtonHoverSfx();
-        PlayEndButtonHoverRotationTo(targetRotationZ, smallGearTargetRotationZ, largeGearTargetRotationZ);
+        PlayEndButtonHoverRotationTo(targetRotationZ);
     }
 
     private void OnEndButtonHoverExit()
@@ -1509,7 +1496,6 @@ public class BattleTimelineController : MonoBehaviour
             return;
 
         AutoBindEndButtonHoverRotationTargetIfNeeded();
-        AutoBindEndButtonHoverLinkedGearTargetsIfNeeded();
 
         if (endButtonHoverRotationTarget == null)
             return;
@@ -1543,20 +1529,14 @@ public class BattleTimelineController : MonoBehaviour
             return;
 
         isEndButtonHovering = false;
-        PlayEndButtonHoverRotationTo(
-            endButtonRotationBeforeHoverZ,
-            endButtonSmallGearRotationBeforeHoverZ,
-            endButtonLargeGearRotationBeforeHoverZ
-        );
+        PlayEndButtonHoverRotationTo(endButtonRotationBeforeHoverZ);
     }
 
     private bool IsPointerInsideEndButtonHoverBounds()
     {
         Vector2 screenPosition = Input.mousePosition;
 
-        return IsScreenPositionInsideRectTransformBounds(endButtonHoverRotationTarget, screenPosition) ||
-               IsScreenPositionInsideRectTransformBounds(endButtonHoverSmallGearRotationTarget, screenPosition) ||
-               IsScreenPositionInsideRectTransformBounds(endButtonHoverLargeGearRotationTarget, screenPosition);
+        return IsScreenPositionInsideRectTransformBounds(endButtonHoverRotationTarget, screenPosition);
     }
 
     private bool IsScreenPositionInsideRectTransformBounds(RectTransform rectTransform, Vector2 screenPosition)
@@ -1601,7 +1581,7 @@ public class BattleTimelineController : MonoBehaviour
         return canvas.worldCamera;
     }
 
-    private void PlayEndButtonHoverRotationTo(float targetRotationZ, float smallGearTargetRotationZ, float largeGearTargetRotationZ)
+    private void PlayEndButtonHoverRotationTo(float targetRotationZ)
     {
         if (endButtonHoverRotationTarget == null)
             return;
@@ -1610,17 +1590,15 @@ public class BattleTimelineController : MonoBehaviour
             StopCoroutine(endButtonHoverRotationRoutine);
 
         endButtonHoverRotationRoutine = StartCoroutine(
-            RotateEndButtonHoverToRoutine(targetRotationZ, smallGearTargetRotationZ, largeGearTargetRotationZ)
+            RotateEndButtonHoverToRoutine(targetRotationZ)
         );
     }
 
-    private IEnumerator RotateEndButtonHoverToRoutine(float targetRotationZ, float smallGearTargetRotationZ, float largeGearTargetRotationZ)
+    private IEnumerator RotateEndButtonHoverToRoutine(float targetRotationZ)
     {
         float duration = Mathf.Max(0.01f, endButtonHoverRotationDuration);
         float elapsed = 0f;
         float startRotationZ = GetTransformRotationZ(endButtonHoverRotationTarget);
-        float smallGearStartRotationZ = GetTransformRotationZ(endButtonHoverSmallGearRotationTarget);
-        float largeGearStartRotationZ = GetTransformRotationZ(endButtonHoverLargeGearRotationTarget);
 
         while (elapsed < duration)
         {
@@ -1629,15 +1607,10 @@ public class BattleTimelineController : MonoBehaviour
             float easedT = 1f - Mathf.Pow(1f - t, 3f);
 
             SetTransformRotationZ(endButtonHoverRotationTarget, Mathf.LerpAngle(startRotationZ, targetRotationZ, easedT));
-            SetTransformRotationZ(endButtonHoverSmallGearRotationTarget, Mathf.LerpAngle(smallGearStartRotationZ, smallGearTargetRotationZ, easedT));
-            SetTransformRotationZ(endButtonHoverLargeGearRotationTarget, Mathf.LerpAngle(largeGearStartRotationZ, largeGearTargetRotationZ, easedT));
-
             yield return null;
         }
 
         SetTransformRotationZ(endButtonHoverRotationTarget, targetRotationZ);
-        SetTransformRotationZ(endButtonHoverSmallGearRotationTarget, smallGearTargetRotationZ);
-        SetTransformRotationZ(endButtonHoverLargeGearRotationTarget, largeGearTargetRotationZ);
         endButtonHoverRotationRoutine = null;
     }
 
@@ -1671,15 +1644,12 @@ public class BattleTimelineController : MonoBehaviour
         AutoFindSelectedSlotEffectIfNeeded();
         AutoFindSelectedSlotGearEffectsIfNeeded();
         AutoBindEndButtonHoverRotationTargetIfNeeded();
-        AutoBindEndButtonHoverLinkedGearTargetsIfNeeded();
 
         bool hasTarget =
             selectedSlotEffect != null ||
             selectedSlotLargeGearEffect != null ||
             selectedSlotSmallGearEffect != null ||
-            endButtonHoverRotationTarget != null ||
-            endButtonHoverSmallGearRotationTarget != null ||
-            endButtonHoverLargeGearRotationTarget != null;
+            endButtonHoverRotationTarget != null;
 
         if (!hasTarget)
             return;
@@ -1698,15 +1668,9 @@ public class BattleTimelineController : MonoBehaviour
         float smallGearTargetZ = GetTransformRotationZ(selectedSlotSmallGearEffect) + selectedSlotSmallGearRotateStepZ * completedStepCount;
 
         float endButtonTargetZ = GetTransformRotationZ(endButtonHoverRotationTarget) + endButtonHoverRotationOffsetZ * completedStepCount;
-        float endButtonSmallGearTargetZ = GetTransformRotationZ(endButtonHoverSmallGearRotationTarget) + endButtonHoverSmallGearRotationOffsetZ * completedStepCount;
-        float endButtonLargeGearTargetZ = GetTransformRotationZ(endButtonHoverLargeGearRotationTarget) + endButtonHoverLargeGearRotationOffsetZ * completedStepCount;
 
         if (isEndButtonHovering)
-        {
             endButtonRotationBeforeHoverZ += endButtonHoverRotationOffsetZ * completedStepCount;
-            endButtonSmallGearRotationBeforeHoverZ += endButtonHoverSmallGearRotationOffsetZ * completedStepCount;
-            endButtonLargeGearRotationBeforeHoverZ += endButtonHoverLargeGearRotationOffsetZ * completedStepCount;
-        }
 
         if (selectedSlotEffectRoutine != null)
         {
@@ -1728,8 +1692,6 @@ public class BattleTimelineController : MonoBehaviour
             largeGearTargetZ,
             smallGearTargetZ,
             endButtonTargetZ,
-            endButtonSmallGearTargetZ,
-            endButtonLargeGearTargetZ,
             durationOverride
         ));
     }
@@ -1739,8 +1701,6 @@ public class BattleTimelineController : MonoBehaviour
         float largeGearTargetZ,
         float smallGearTargetZ,
         float endButtonTargetZ,
-        float endButtonSmallGearTargetZ,
-        float endButtonLargeGearTargetZ,
         float durationOverride)
     {
         float duration = durationOverride > 0f
@@ -1752,8 +1712,6 @@ public class BattleTimelineController : MonoBehaviour
         float largeGearStartZ = GetTransformRotationZ(selectedSlotLargeGearEffect);
         float smallGearStartZ = GetTransformRotationZ(selectedSlotSmallGearEffect);
         float endButtonStartZ = GetTransformRotationZ(endButtonHoverRotationTarget);
-        float endButtonSmallGearStartZ = GetTransformRotationZ(endButtonHoverSmallGearRotationTarget);
-        float endButtonLargeGearStartZ = GetTransformRotationZ(endButtonHoverLargeGearRotationTarget);
 
         while (elapsed < duration)
         {
@@ -1765,8 +1723,6 @@ public class BattleTimelineController : MonoBehaviour
             SetTransformRotationZ(selectedSlotLargeGearEffect, Mathf.LerpAngle(largeGearStartZ, largeGearTargetZ, easedT));
             SetTransformRotationZ(selectedSlotSmallGearEffect, Mathf.LerpAngle(smallGearStartZ, smallGearTargetZ, easedT));
             SetTransformRotationZ(endButtonHoverRotationTarget, Mathf.LerpAngle(endButtonStartZ, endButtonTargetZ, easedT));
-            SetTransformRotationZ(endButtonHoverSmallGearRotationTarget, Mathf.LerpAngle(endButtonSmallGearStartZ, endButtonSmallGearTargetZ, easedT));
-            SetTransformRotationZ(endButtonHoverLargeGearRotationTarget, Mathf.LerpAngle(endButtonLargeGearStartZ, endButtonLargeGearTargetZ, easedT));
 
             yield return null;
         }
@@ -1775,8 +1731,6 @@ public class BattleTimelineController : MonoBehaviour
         SetTransformRotationZ(selectedSlotLargeGearEffect, largeGearTargetZ);
         SetTransformRotationZ(selectedSlotSmallGearEffect, smallGearTargetZ);
         SetTransformRotationZ(endButtonHoverRotationTarget, endButtonTargetZ);
-        SetTransformRotationZ(endButtonHoverSmallGearRotationTarget, endButtonSmallGearTargetZ);
-        SetTransformRotationZ(endButtonHoverLargeGearRotationTarget, endButtonLargeGearTargetZ);
         timelineSlideGearRotationRoutine = null;
     }
 
@@ -2020,6 +1974,40 @@ public class BattleTimelineController : MonoBehaviour
         return barUI;
     }
 
+
+    private void AutoBindReserveSlotsFromTimelineBarIfNeeded()
+    {
+        bool needsRebind = reserveSlots == null || reserveSlots.Length != 5;
+
+        if (!needsRebind)
+        {
+            for (int i = 0; i < reserveSlots.Length; i++)
+            {
+                if (reserveSlots[i] == null)
+                {
+                    needsRebind = true;
+                    break;
+                }
+            }
+        }
+
+        if (!needsRebind)
+            return;
+
+        AutoFindTimelineBarsIfNeeded();
+
+        BattleTimelineBarUI sourceBar = timelineBarUI1 != null ? timelineBarUI1 : timelineBarUI2;
+        if (sourceBar == null)
+            return;
+
+        ReserveTurnSlotUI[] resolvedSlots = sourceBar.GetOrCreateReserveSlots(this);
+        if (resolvedSlots == null || resolvedSlots.Length == 0)
+            return;
+
+        reserveSlots = resolvedSlots;
+        InitializeMonsterCommandSlots();
+    }
+
     private void InitTimelineBars()
     {
         AutoFindTimelineBarsIfNeeded();
@@ -2077,11 +2065,11 @@ public class BattleTimelineController : MonoBehaviour
     {
         AutoFindTimelineBarsIfNeeded();
 
-        if (timelineBarSlideTarget1 != null && timelineBarSlideTarget2 != null)
-            return new[] { timelineBarSlideTarget1, timelineBarSlideTarget2 };
-
-        RectTransform singleTarget = GetActiveTimelineBarSlideTarget();
-        return singleTarget != null ? new[] { singleTarget } : System.Array.Empty<RectTransform>();
+        // 진행 연출 중에는 현재 활성 TimelineBar만 이동합니다.
+        // 대기 Bar까지 같이 움직이면 턴 종료 직전에 화면을 가로질러
+        // 휙 지나가는 것처럼 보일 수 있습니다.
+        RectTransform activeTarget = GetActiveTimelineBarSlideTarget();
+        return activeTarget != null ? new[] { activeTarget } : System.Array.Empty<RectTransform>();
     }
 
     private void SetActiveTimelineSlotVisual(int slotIndex)
@@ -2135,10 +2123,12 @@ public class BattleTimelineController : MonoBehaviour
 
     private Vector2 GetTimelineBarBasePosition()
     {
-        if (timelineBarSlideTarget1 != null)
-            return timelineBar1OriginalAnchoredPosition;
+        Vector2 basePosition = timelineBarSlideTarget1 != null
+            ? timelineBar1OriginalAnchoredPosition
+            : timelineBar2OriginalAnchoredPosition;
 
-        return timelineBar2OriginalAnchoredPosition;
+        basePosition.x = timelineBarStartPositionX;
+        return basePosition;
     }
 
 
@@ -2174,6 +2164,11 @@ public class BattleTimelineController : MonoBehaviour
         if (standbyTarget != null && standbyTarget != activeTarget)
             standbyTarget.anchoredPosition = basePosition + new Vector2(resolvedStandbyTimelineBarOffsetX, 0f);
 
+        // 체인은 턴마다 초기화하지 않고, 새 전투방 최초 진입에서만 시작 위치로 맞춥니다.
+        ResetChainLoopForBar(timelineBarUI1);
+        if (timelineBarUI2 != null && timelineBarUI2 != timelineBarUI1)
+            ResetChainLoopForBar(timelineBarUI2);
+
         ConfigureTimelineSpriteAnimationRootForActiveBar();
 
         if (timelineSpriteAnimationController != null)
@@ -2206,33 +2201,87 @@ public class BattleTimelineController : MonoBehaviour
         AutoFindTimelineBarsIfNeeded();
         CaptureTimelineSlotOriginalPositionsIfNeeded();
 
-        if (swapActiveBar && timelineBarSlideTarget1 != null && timelineBarSlideTarget2 != null)
-            activeTimelineBarIndex = activeTimelineBarIndex == 0 ? 1 : 0;
-
-        completedTimelineBarPositionApplied = false;
-
+        BattleTimelineBarUI activeBar = GetActiveTimelineBarUI();
         RectTransform activeTarget = GetActiveTimelineBarSlideTarget();
         RectTransform standbyTarget = GetStandbyTimelineBarSlideTarget();
 
-        Vector2 activeBasePosition = GetTimelineBarBasePosition();
+        Vector3[] chainWorldPositions = null;
+        ChainLoopScroller activeChain = GetChainLoopScroller(activeBar);
+        if (activeChain != null)
+            chainWorldPositions = activeChain.CaptureWorldPositions();
 
+        if (swapActiveBar && activeBar != null)
+        {
+            // 현재 슬롯 세트는 갈림 연출의 마지막 프레임/숨김 상태가 남아 있을 수 있습니다.
+            // 이 세트가 곧 다음 Next 슬롯으로 재활용되므로 승격/교체 전에 원래 비주얼로 복구합니다.
+            ConfigureTimelineSpriteAnimationRootForActiveBar();
+            if (timelineSpriteAnimationController != null)
+                timelineSpriteAnimationController.ResetTimelineSpritesForNextTurn();
+
+            ReserveTurnSlotUI[] promotedSlots = activeBar.PromoteTrailingTimelineGroupsToCurrent(this);
+            if (promotedSlots != null && promotedSlots.Length > 0)
+                reserveSlots = promotedSlots;
+        }
+
+        completedTimelineBarPositionApplied = false;
+
+        Vector2 activeBasePosition = GetTimelineBarBasePosition();
         if (activeTarget != null)
             activeTarget.anchoredPosition = activeBasePosition;
 
         if (standbyTarget != null && standbyTarget != activeTarget)
             standbyTarget.anchoredPosition = activeBasePosition + new Vector2(resolvedStandbyTimelineBarOffsetX, 0f);
 
+        if (chainWorldPositions != null && activeChain != null)
+            activeChain.RestoreWorldPositions(chainWorldPositions);
+
         ConfigureTimelineSpriteAnimationRootForActiveBar();
+
+        // Current/Next 슬롯의 이름과 역할이 교체되면 animationRoot 자체는 같은 TimelineBar이므로
+        // SetAnimationRoot만 호출해서는 SpriteAnimationController의 기존 Image 참조가 갱신되지 않습니다.
+        // 반드시 새 TimelineSlot01~05를 다시 탐색한 뒤 Current 쪽만 원본 프레임으로 복구해야 합니다.
+        // 그렇지 않으면 이전 Current(현재 Next)의 TurnMark/Use_skill이 계속 애니메이션 대상으로 남아
+        // Next TurnMark에 갈림 프레임이 남고 비어 있는 Order 루트까지 다시 활성화됩니다.
+        if (swapActiveBar && timelineSpriteAnimationController != null)
+        {
+            timelineSpriteAnimationController.RefreshTargets();
+            timelineSpriteAnimationController.ResetTimelineSpritesForNextTurn();
+        }
+
         SetActiveTimelineSlotVisual(activeSlotIndex);
 
-        BattleTimelineBarUI activeBar = GetActiveTimelineBarUI();
-        BattleTimelineBarUI standbyBar = GetStandbyTimelineBarUI();
-
         if (activeBar != null)
+        {
             activeBar.SetEmptyUseSkillSlotsVisible(true);
+            activeBar.SetTurnMarkChildrenVisible(true);
+        }
 
+        BattleTimelineBarUI standbyBar = GetStandbyTimelineBarUI();
         if (standbyBar != null && standbyBar != activeBar)
+        {
+            standbyBar.SetActiveTimelineSlot(-1);
+            standbyBar.SetTurnMarkChildrenVisible(false);
             standbyBar.SetEmptyUseSkillSlotsVisible(false);
+        }
+    }
+
+    private static ChainLoopScroller GetChainLoopScroller(BattleTimelineBarUI barUI)
+    {
+        if (barUI == null)
+            return null;
+
+        ChainLoopScroller scroller = barUI.GetComponent<ChainLoopScroller>();
+        if (scroller != null)
+            return scroller;
+
+        return barUI.GetComponentInChildren<ChainLoopScroller>(true);
+    }
+
+    private static void ResetChainLoopForBar(BattleTimelineBarUI barUI)
+    {
+        ChainLoopScroller scroller = GetChainLoopScroller(barUI);
+        if (scroller != null)
+            scroller.ResetPositions();
     }
 
     private void ConfigureTimelineSpriteAnimationRootForActiveBar()
@@ -2259,7 +2308,7 @@ public class BattleTimelineController : MonoBehaviour
             yield break;
 
         // 두 개의 TimelineBar가 0 / 1420 위치를 번갈아 쓰는 구조에서
-        // 진행 중인 Bar가 완료 위치(-1420)에 도착할 때 추가 보정 이동이 들어가면 안 됩니다.
+        // 진행 중인 Bar가 완료 위치에 도착할 때 추가 보정 이동이 들어가면 안 됩니다.
         // 따라서 모든 라인 이동 요청은 완료 위치를 넘지 않도록 항상 한 번 제한합니다.
         float appliedOffsetX = ClampTimelineBarOffsetToCompletedPosition(offsetX);
 
@@ -2285,15 +2334,11 @@ public class BattleTimelineController : MonoBehaviour
         if (activeTarget == null || Mathf.Approximately(offsetX, 0f))
             return offsetX;
 
-        Vector2 basePosition = GetTimelineBarBasePosition();
-        float completedX = basePosition.x + completedTurnTimelineBarPositionX;
+        float completedX = completedTurnTimelineBarPositionX;
         float currentX = activeTarget.anchoredPosition.x;
         float targetX = currentX + offsetX;
 
-        if (completedTurnTimelineBarPositionX < 0f && targetX < completedX)
-            return completedX - currentX;
-
-        if (completedTurnTimelineBarPositionX > 0f && targetX > completedX)
+        if (targetX < completedX)
             return completedX - currentX;
 
         return offsetX;

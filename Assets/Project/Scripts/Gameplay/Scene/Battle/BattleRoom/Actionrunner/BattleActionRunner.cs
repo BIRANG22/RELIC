@@ -580,7 +580,30 @@ public class BattleActionRunner
             yield break;
 
         for (int i = 0; i < routines.Count; i++)
+        {
+            if (i > 0 &&
+                ShouldReturnCameraBetweenSequentialActions(routines[i - 1], routines[i]) &&
+                BattleCameraController.Instance != null)
+            {
+                yield return BattleCameraController.Instance.ReturnDefault();
+            }
+
             yield return RunSingleWithTimeout(routines[i]);
+        }
+    }
+
+    private static bool ShouldReturnCameraBetweenSequentialActions(
+        ActionRoutine previous,
+        ActionRoutine current)
+    {
+        return IsMonsterActionRoutine(previous) && IsMonsterActionRoutine(current);
+    }
+
+    private static bool IsMonsterActionRoutine(ActionRoutine actionRoutine)
+    {
+        return actionRoutine != null &&
+               !string.IsNullOrEmpty(actionRoutine.Label) &&
+               actionRoutine.Label.StartsWith("Monster:", StringComparison.Ordinal);
     }
 
     private IEnumerator RunSingleWithTimeout(ActionRoutine actionRoutine)

@@ -323,7 +323,7 @@ public class CharBtn : MonoBehaviour,
                 ""
             },
 
-            EquippedRuneIds = new string[12],
+            EquippedRuneIds = new string[6],
             EquippedRelicIds = CharacterStartingRelicUtility.CreateStartingRelicSlots(master)
         };
 

@@ -38,6 +38,9 @@ public class BattleCameraController : MonoBehaviour
     [SerializeField, Min(0f)] private float impactRecoverySpeedDuration = 0.18f;
     [SerializeField] private bool useUnscaledTimeForImpact = true;
 
+    [Header("Map Camera")]
+    [SerializeField] private Vector3 mapPosition = new Vector3(0f, 0f, -20f);
+
     [Header("Character Selection Focus")]
     [SerializeField] private bool enableCharacterSelectionFocus = true;
     [SerializeField] private float characterSelectionFocusDuration = 0.55f;
@@ -75,6 +78,10 @@ public class BattleCameraController : MonoBehaviour
     [Header("Camera Position Clamp")]
     [SerializeField] private Vector2 minCameraPosition = new Vector2(-0.5f, -1f);
     [SerializeField] private Vector2 maxCameraPosition = new Vector2(0.5f, 1f);
+
+    [Header("Panel Down Position")]
+    [Tooltip("BattleCharacterPanel과 BattleSlot이 내려가 있을 때 사용할 Main Camera Y 위치입니다.")]
+    [SerializeField] private float panelDownPositionY = 1.5f;
 
     [Header("Mouse Parallax")]
     [SerializeField] private bool enableMouseParallax = true;
@@ -385,11 +392,108 @@ public class BattleCameraController : MonoBehaviour
 
         hasActiveMonsterInfoFocus = false;
         MoveCameraWithOptionalImmediate(
-            defaultPosition,
+            GetNeutralBattlePosition(),
             defaultSize,
             monsterInfoReturnDuration,
             false,
             true);
+    }
+
+    private Vector3 GetNeutralBattlePosition()
+    {
+        Vector3 neutralPosition = defaultPosition;
+        neutralPosition.y = panelDownPositionY;
+        return neutralPosition;
+    }
+
+    public void ForceReturnMapImmediate()
+    {
+        if (targetCamera == null)
+            targetCamera = Camera.main;
+
+        if (targetCamera == null)
+            return;
+
+        ClearMouseParallaxImmediate();
+        EndZoomFollowTarget();
+
+        if (routine != null)
+        {
+            StopCoroutine(routine);
+            routine = null;
+        }
+
+        ClearImpactOffset();
+
+        targetCamera.transform.position = mapPosition;
+        targetCamera.transform.rotation = Quaternion.identity;
+        targetCamera.orthographicSize = defaultSize;
+        hasActiveCombatZoom = false;
+        ResetDamageImpactRotationSequence();
+        hasActiveMonsterInfoFocus = false;
+    }
+
+    public void StartReturnPanelDown()
+    {
+        if (targetCamera == null)
+            return;
+
+        RemoveMouseParallax();
+        if (!isActiveAndEnabled)
+        {
+            ForceReturnPanelDownImmediate();
+            return;
+        }
+
+        StartCoroutine(ReturnPanelDown());
+    }
+
+    public IEnumerator ReturnPanelDown()
+    {
+        if (targetCamera == null)
+            yield break;
+
+        RemoveMouseParallax();
+        EndZoomFollowTarget();
+
+        if (routine != null)
+            StopCoroutine(routine);
+
+        ClearImpactOffset();
+
+        ApplyCameraRotationZ(0f);
+        ResetDamageImpactRotationSequence();
+
+        routine = StartCoroutine(MoveCamera(GetNeutralBattlePosition(), defaultSize, returnDuration, false, true));
+        yield return routine;
+
+        ApplyCameraRotationZ(0f);
+        hasActiveCombatZoom = false;
+        hasActiveMonsterInfoFocus = false;
+    }
+
+    public void ForceReturnPanelDownImmediate()
+    {
+        if (targetCamera == null)
+            return;
+
+        ClearMouseParallaxImmediate();
+        EndZoomFollowTarget();
+
+        if (routine != null)
+        {
+            StopCoroutine(routine);
+            routine = null;
+        }
+
+        ClearImpactOffset();
+
+        targetCamera.transform.position = GetNeutralBattlePosition();
+        targetCamera.transform.rotation = Quaternion.identity;
+        targetCamera.orthographicSize = defaultSize;
+        hasActiveCombatZoom = false;
+        ResetDamageImpactRotationSequence();
+        hasActiveMonsterInfoFocus = false;
     }
 
     public void StartReturnDefault()
@@ -441,7 +545,7 @@ public class BattleCameraController : MonoBehaviour
 
         ClearImpactOffset();
 
-        targetCamera.transform.position = defaultPosition;
+        targetCamera.transform.position = GetNeutralBattlePosition();
         targetCamera.transform.rotation = Quaternion.identity;
         targetCamera.orthographicSize = defaultSize;
         hasActiveCombatZoom = false;
@@ -465,7 +569,7 @@ public class BattleCameraController : MonoBehaviour
         ApplyCameraRotationZ(0f);
         ResetDamageImpactRotationSequence();
 
-        routine = StartCoroutine(MoveCamera(defaultPosition, defaultSize, returnDuration, false, true));
+        routine = StartCoroutine(MoveCamera(GetNeutralBattlePosition(), defaultSize, returnDuration, false, true));
         yield return routine;
 
         ApplyCameraRotationZ(0f);

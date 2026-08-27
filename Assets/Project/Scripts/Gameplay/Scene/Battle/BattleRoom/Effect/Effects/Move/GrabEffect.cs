@@ -1,5 +1,6 @@
 using Relic.Gameplay.Monster;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class GrabEffect : BattleEffectBase
@@ -33,10 +34,16 @@ public class GrabEffect : BattleEffectBase
 
                 if (!TryMovePlayer(playerTarget, offset, context.GridManager))
                     break;
+
+                if (playerTarget.RuntimeData.IsDead)
+                    break;
             }
             else if (monsterTarget != null)
             {
                 if (!TryMoveMonster(monsterTarget, offset, context.GridManager))
+                    break;
+
+                if (monsterTarget.RuntimeData.IsDead)
                     break;
             }
         }
@@ -102,6 +109,13 @@ public class GrabEffect : BattleEffectBase
         // 논리 그리드 위치를 즉시 갱신합니다.
         // 화면 이동은 전체 그랩 판정이 끝난 뒤 최종 칸까지 한 번만 재생합니다.
         target.SetGridIndex(targetIndex);
+
+        BattleGridEffectController gridEffectController =
+            Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+
+        if (gridEffectController != null)
+            gridEffectController.ApplyToPlayer(targetIndex, target);
+
         return true;
     }
 
@@ -116,9 +130,12 @@ public class GrabEffect : BattleEffectBase
         if (target.MainGridIndex < 0)
             return false;
 
-        for (int i = 0; i < target.OccupiedGridIndices.Count; i++)
+        List<int> currentCells = new(target.OccupiedGridIndices);
+        List<int> enteredGridIndices = new();
+
+        for (int i = 0; i < currentCells.Count; i++)
         {
-            int currentIndex = target.OccupiedGridIndices[i];
+            int currentIndex = currentCells[i];
             Vector2Int currentCoord = gridManager.IndexToCoord(currentIndex);
             Vector2Int targetCoord = currentCoord + offset;
 
@@ -138,11 +155,29 @@ public class GrabEffect : BattleEffectBase
                 ApplyCrashToMonster(target, gridManager);
                 return false;
             }
+
+            if (!currentCells.Contains(targetIndex))
+                enteredGridIndices.Add(targetIndex);
         }
 
         // 점유 그리드를 즉시 갱신합니다.
         // 화면 이동은 전체 그랩 판정이 끝난 뒤 최종 칸까지 한 번만 재생합니다.
         target.MoveOccupiedCells(offset, gridManager);
+
+        BattleGridEffectController gridEffectController =
+            Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+
+        if (gridEffectController != null)
+        {
+            for (int i = 0; i < enteredGridIndices.Count; i++)
+            {
+                gridEffectController.ApplyToMonster(enteredGridIndices[i], target);
+
+                if (target.RuntimeData.IsDead)
+                    break;
+            }
+        }
+
         return true;
     }
 

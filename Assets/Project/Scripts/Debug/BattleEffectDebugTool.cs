@@ -36,7 +36,7 @@ public sealed class BattleDebugMonsterEntry
 public static class BattleEffectDebugTool
 {
     public const int SkillDisplaySlotCount = 5;
-    public const int RuneSlotCount = 12;
+    public const int RuneSlotCount = 6;
     public const int PassiveRelicSlotCount = 6;
     public const int BattleGridCellCount = 35;
 

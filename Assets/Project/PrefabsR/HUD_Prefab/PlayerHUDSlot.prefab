@@ -1064,7 +1064,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -2141,6 +2141,7 @@ MonoBehaviour:
   autoFindEdgeImage: 1
   normalEdgeColor: {r: 0.46666667, g: 0.46666667, b: 0.46666667, a: 1}
   selectedEdgeColor: {r: 0.93333334, g: 0.93333334, b: 0.93333334, a: 1}
+  hoverScale: 1.1
   enableHudClickSelect: 1
   ensureClickableRaycastGraphic: 1
 --- !u!1 &3709954844238766921
@@ -3825,7 +3826,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:

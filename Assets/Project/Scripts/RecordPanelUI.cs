@@ -14,6 +14,12 @@ using UnityEngine.UI;
 /// </summary>
 public class RecordPanelUI : MonoBehaviour
 {
+    private static bool hasCachedRarityPalette;
+    private static Color cachedCommonRarityColor;
+    private static Color cachedRareRarityColor;
+    private static Color cachedEpicRarityColor;
+    private static Color cachedUniqueRarityColor;
+    private static Color cachedExclusiveRarityColor;
     private enum MainTab
     {
         Unique,
@@ -148,6 +154,7 @@ public class RecordPanelUI : MonoBehaviour
 
     private void Awake()
     {
+        CacheRarityPalette();
         EnsureReferences();
         ApplyGridConstraints();
         CacheMainTabButtonColors();
@@ -1265,6 +1272,51 @@ public class RecordPanelUI : MonoBehaviour
             nameText.color = nameOriginalColor;
         if (rarityText != null)
             rarityText.color = rarityOriginalColor;
+    }
+
+    private void CacheRarityPalette()
+    {
+        cachedCommonRarityColor = commonRarityColor;
+        cachedRareRarityColor = rareRarityColor;
+        cachedEpicRarityColor = epicRarityColor;
+        cachedUniqueRarityColor = uniqueRarityColor;
+        cachedExclusiveRarityColor = exclusiveRarityColor;
+        hasCachedRarityPalette = true;
+    }
+
+    public static bool TryGetCachedRarityDisplayColor(string rarity, out Color color)
+    {
+        color = Color.white;
+
+        if (!hasCachedRarityPalette)
+            return false;
+
+        if (string.Equals(rarity, "Exclusive", StringComparison.OrdinalIgnoreCase))
+        {
+            color = cachedExclusiveRarityColor;
+            return true;
+        }
+
+        if (string.Equals(rarity, "Rare", StringComparison.OrdinalIgnoreCase))
+        {
+            color = cachedRareRarityColor;
+            return true;
+        }
+
+        if (string.Equals(rarity, "Epic", StringComparison.OrdinalIgnoreCase))
+        {
+            color = cachedEpicRarityColor;
+            return true;
+        }
+
+        if (string.Equals(rarity, "Unique", StringComparison.OrdinalIgnoreCase))
+        {
+            color = cachedUniqueRarityColor;
+            return true;
+        }
+
+        color = cachedCommonRarityColor;
+        return true;
     }
 
     /// <summary>

@@ -663,13 +663,13 @@ namespace Relic.Gameplay.Data
             if (ContainsAny(choice.ResultTarget, "코스트 회복량"))
             {
                 int count = ModifyPartyCostRecovery(context, amount);
-                return $"파티 코스트 회복량 {amount:+#;-#;0} 적용 ({count}명)";
+                return $"파티 마나 회복량 {amount:+#;-#;0} 적용 ({count}명)";
             }
 
             if (ContainsAny(choice.ResultTarget, "최대 코스트"))
             {
                 int count = ModifyPartyMaxCost(context, amount);
-                return $"파티 최대 코스트 {amount:+#;-#;0} 적용 ({count}명)";
+                return $"파티 최대 마나 {amount:+#;-#;0} 적용 ({count}명)";
             }
 
             return BuildResultSummary(choice);

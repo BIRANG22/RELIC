@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Linq;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
@@ -178,7 +178,7 @@ public static class DebugBattlePartySetup
             return false;
         }
 
-        // µ¿ÀÏ Ä³¸¯ÅÍ¸¦ ¿©·¯ ÆÄÆ¼ ½½·Ô¿¡ ³ÖÀ¸¸é CharacterRuntimeStore Å°°¡ Ãæµ¹ÇÏ¹Ç·Î ¸·½À´Ï´Ù.
+        // ë™ì¼ ìºë¦­í„°ë¥¼ ì—¬ëŸ¬ íŒŒí‹° ìŠ¬ë¡¯ì— ë„£ìœ¼ë©´ CharacterRuntimeStore í‚¤ê°€ ì¶©ëŒí•˜ë¯€ë¡œ ë§‰ìŠµë‹ˆë‹¤.
         for (int i = 0; i < dataManager.PartyRuntimeStore.MaxPartyCountValue; i++)
         {
             if (i == slotIndex)
@@ -196,8 +196,8 @@ public static class DebugBattlePartySetup
         if (!string.IsNullOrWhiteSpace(previousCharacterId) &&
             !string.Equals(previousCharacterId, normalizedCharacterId, StringComparison.Ordinal))
         {
-            // ·±Å¸ÀÓ ½ºÅä¾î´Â Clear ¾øÀÌ ±³Ã¼ÇØ¾ß ´Ù¸¥ µğ¹ö±× ÆÄÆ¼¿øÀÌ À¯ÁöµË´Ï´Ù.
-            // ÀÌÀü ·±Å¸ÀÓÀÌ ³²¾Æ ÀÖ¾îµµ PartyRuntimeStore¿¡¼­ ÂüÁ¶µÇÁö ¾ÊÀ¸¹Ç·Î ÀüÅõ »ı¼º¿¡´Â ¿µÇâÀ» ÁÖÁö ¾Ê½À´Ï´Ù.
+            // ëŸ°íƒ€ì„ ìŠ¤í† ì–´ëŠ” Clear ì—†ì´ êµì²´í•´ì•¼ ë‹¤ë¥¸ ë””ë²„ê·¸ íŒŒí‹°ì›ì´ ìœ ì§€ë©ë‹ˆë‹¤.
+            // ì´ì „ ëŸ°íƒ€ì„ì´ ë‚¨ì•„ ìˆì–´ë„ PartyRuntimeStoreì—ì„œ ì°¸ì¡°ë˜ì§€ ì•Šìœ¼ë¯€ë¡œ ì „íˆ¬ ìƒì„±ì—ëŠ” ì˜í–¥ì„ ì£¼ì§€ ì•ŠìŠµë‹ˆë‹¤.
         }
 
         int safeGridIndex = Mathf.Clamp(gridIndex, 0, 34);
@@ -341,7 +341,7 @@ public static class DebugBattlePartySetup
                 master.CommonSkill1,
                 string.Empty
             },
-            EquippedRuneIds = new string[12],
+            EquippedRuneIds = new string[6],
             EquippedRelicIds = CharacterStartingRelicUtility.CreateStartingRelicSlots(master)
         };
 

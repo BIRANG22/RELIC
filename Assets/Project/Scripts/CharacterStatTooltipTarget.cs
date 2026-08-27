@@ -268,11 +268,11 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
             case StatType.Cost:
                 return GetLocalizedTooltipText(
                     "lobby.stat.cost.description",
-                    "스킬을 사용할 때 소모하는 자원입니다.\n현재 코스트가 부족하면 스킬을 사용할 수 없습니다.");
+                    "스킬을 사용할 때 소모하는 자원입니다.\n현재 마나가 부족하면 스킬을 사용할 수 없습니다.");
             case StatType.CostRecovery:
                 return GetLocalizedTooltipText(
                     "lobby.stat.recovery.description",
-                    "턴이 시작될 때 회복되는 코스트 수치입니다.\n회복량이 높을수록 한 턴에 사용할 수 있는 스킬 선택지가 늘어납니다.");
+                    "턴이 시작될 때 회복되는 마나 수치입니다.\n회복량이 높을수록 한 턴에 사용할 수 있는 스킬 선택지가 늘어납니다.");
             case StatType.Karma:
                 int maxKarma = characterInfoPanel != null && characterInfoPanel.CurrentMasterData != null
                     ? Mathf.Max(0, characterInfoPanel.CurrentMasterData.MaxResource)
@@ -350,7 +350,7 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
 
         string runeLine = GetLocalizedTooltipFormat(
             "lobby.stat.rune_bonus",
-            "룬 보정 {0}",
+            "파편 보정 {0}",
             runeText);
 
         return baseLine + "\n" + runeLine;
