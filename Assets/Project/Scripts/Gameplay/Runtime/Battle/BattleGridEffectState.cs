@@ -55,6 +55,21 @@ namespace Relic.Gameplay.Battle
             return true;
         }
 
+        public bool RefreshDuration(int gridIndex, int duration)
+        {
+            if (!effectIdsByGridIndex.ContainsKey(gridIndex))
+                return false;
+
+            int safeDuration = System.Math.Max(0, duration);
+
+            if (safeDuration > 0)
+                remainingDurationByGridIndex[gridIndex] = safeDuration;
+            else
+                remainingDurationByGridIndex.Remove(gridIndex);
+
+            return true;
+        }
+
         public bool Remove(int gridIndex)
         {
             remainingDurationByGridIndex.Remove(gridIndex);

@@ -20,7 +20,6 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
 
     [Header("Text Override")]
     [SerializeField] private string customName;
-    [SerializeField, TextArea] private string customDescription;
 
     [Header("Value Color")]
     [SerializeField] private string runeIncreaseColor = "#4E66DF";
@@ -173,7 +172,7 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
         int effectiveValue = GetEffectiveValue(runtimeData, masterData, resolvedStatType);
         int runeBonus = effectiveValue - baseValue;
         string valueLine = resolvedStatType == StatType.Karma
-            ? string.Empty
+            ? "최대보유량 " + effectiveValue
             : FormatValueLine(baseValue, runeBonus);
 
         characterInfoPanel.ShowStatTooltipInStory(
@@ -235,13 +234,13 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
         switch (resolvedStatType)
         {
             case StatType.HP:
-                return GetLocalizedTooltipText("common.hp", "생명력");
+                return "생명력";
             case StatType.Cost:
-                return GetLocalizedTooltipText("common.cost", "마나");
+                return "마나";
             case StatType.CostRecovery:
-                return GetLocalizedTooltipText("common.recovery", "마나재생량");
+                return "마나재생량";
             case StatType.Karma:
-                return GetLocalizedTooltipText("common.karma", "카르마");
+                return "카르마";
             default:
                 return "정보";
         }
@@ -249,9 +248,6 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
 
     private string GetStatDescription(StatType resolvedStatType)
     {
-        if (!string.IsNullOrWhiteSpace(customDescription))
-            return customDescription;
-
         if (characterInfoPanel != null)
         {
             string panelDescription = characterInfoPanel.GetStatTooltipDescription(resolvedStatType);
@@ -262,25 +258,16 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
         switch (resolvedStatType)
         {
             case StatType.HP:
-                return GetLocalizedTooltipText(
-                    "lobby.stat.hp.description",
-                    "캐릭터의 체력입니다.\n체력이 0이 되면 전투불능 상태가 됩니다.");
+                return "캐릭터의 생명력이다.\n생명력이 0이 되면 전투불능 상태가 된다.";
             case StatType.Cost:
-                return GetLocalizedTooltipText(
-                    "lobby.stat.cost.description",
-                    "스킬을 사용할 때 소모하는 자원입니다.\n현재 마나가 부족하면 스킬을 사용할 수 없습니다.");
+                return "기억을 사용할 때 소모하는 자원이다.\n현재 마나가 부족하면 기억을 사용할 수 없다.";
             case StatType.CostRecovery:
-                return GetLocalizedTooltipText(
-                    "lobby.stat.recovery.description",
-                    "턴이 시작될 때 회복되는 마나 수치입니다.\n회복량이 높을수록 한 턴에 사용할 수 있는 스킬 선택지가 늘어납니다.");
+                return "턴이 시작될 때 회복되는 마나 수치이다.\n회복량이 높을수록 한 턴에 사용할 수 있는 기억 선택지가 늘어난다.";
             case StatType.Karma:
                 int maxKarma = characterInfoPanel != null && characterInfoPanel.CurrentMasterData != null
                     ? Mathf.Max(0, characterInfoPanel.CurrentMasterData.MaxResource)
                     : 0;
-                return GetLocalizedTooltipFormat(
-                    "lobby.stat.karma.description",
-                    "발현기억에 사용하는 자원입니다.\n최대 보유량은 {0}입니다.",
-                    maxKarma);
+                return string.Format("발현기억에 사용하는 자원이다.\n최대 보유량은 {0}이다.", maxKarma);
             default:
                 return "";
         }
@@ -333,10 +320,7 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
 
     private string FormatValueLine(int baseValue, int runeBonus)
     {
-        string baseLine = GetLocalizedTooltipFormat(
-            "lobby.stat.base_value",
-            "기본 수치 {0}",
-            baseValue);
+        string baseLine = string.Format("기본 수치 {0}", baseValue);
 
         if (runeBonus == 0)
             return baseLine;
@@ -348,23 +332,11 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
         if (!string.IsNullOrWhiteSpace(runeColor))
             runeText = "<color=" + runeColor + ">" + runeText + "</color>";
 
-        string runeLine = GetLocalizedTooltipFormat(
-            "lobby.stat.rune_bonus",
-            "파편 보정 {0}",
-            runeText);
+        string runeLine = "파편 보정 " + runeText;
 
         return baseLine + "\n" + runeLine;
     }
 
-    private string GetLocalizedTooltipText(string key, string fallback)
-    {
-        return NormalizeTooltipText(GameLocalization.Get(key, fallback));
-    }
-
-    private string GetLocalizedTooltipFormat(string key, string fallback, params object[] arguments)
-    {
-        return NormalizeTooltipText(GameLocalization.Format(key, fallback, arguments));
-    }
 
     private string NormalizeTooltipText(string text)
     {

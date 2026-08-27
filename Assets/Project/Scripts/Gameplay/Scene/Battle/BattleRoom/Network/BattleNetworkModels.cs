@@ -156,6 +156,7 @@ public sealed class BattleNetworkMonsterCommandSnapshot
     public int reservedDamage = -1;
     public int actionIndex;
     public int rangeOriginGridIndex = -1;
+    public int rangeOriginCasterGridIndex = -1;
     public bool hasForcedDirection;
     public int forcedDirection;
     public bool isPortalMove;

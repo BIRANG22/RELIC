@@ -1671,6 +1671,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         command.SetMoveOffset(new Vector2Int(snapshot.moveOffsetX, snapshot.moveOffsetY));
         command.SetActionIndex(snapshot.actionIndex);
         command.SetRangeOriginGridIndex(snapshot.rangeOriginGridIndex);
+        command.SetRangeOriginCasterGridIndex(snapshot.rangeOriginCasterGridIndex);
         command.SetPortalMove(snapshot.isPortalMove);
 
         if (snapshot.reservedDamage > 0)
@@ -1930,6 +1931,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             reservedDamage = command.ReservedDamage,
             actionIndex = command.ActionIndex,
             rangeOriginGridIndex = command.RangeOriginGridIndex,
+            rangeOriginCasterGridIndex = command.RangeOriginCasterGridIndex,
             hasForcedDirection = command.HasForcedDirection,
             forcedDirection = (int)command.ForcedDirection,
             isPortalMove = command.IsPortalMove,

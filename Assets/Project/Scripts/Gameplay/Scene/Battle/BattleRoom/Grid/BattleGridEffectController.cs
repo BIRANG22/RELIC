@@ -8,6 +8,7 @@ public class BattleGridEffectController : MonoBehaviour
 {
     private const string SpiderEggGridEffectId = "GR_spider_egg";
     private const string ExplosiveDollGridEffectId = "GR_explosive_doll";
+    private const string ResidueGridEffectId = "GR_Residue";
     private const string CharacterTargetType = "Character";
     private const string CinderMonsterId = "Mon_06";
 
@@ -99,6 +100,19 @@ public class BattleGridEffectController : MonoBehaviour
             data == null)
         {
             return false;
+        }
+
+        if (state.TryGetEffectId(gridIndex, out string existingGridEffectId))
+        {
+            bool isSameResidue =
+                string.Equals(existingGridEffectId, ResidueGridEffectId, System.StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(gridEffectId, ResidueGridEffectId, System.StringComparison.OrdinalIgnoreCase);
+
+            if (!isSameResidue)
+                return false;
+
+            // 같은 칸에 점액이 다시 생성되면 중첩하지 않고 지속시간만 최대치로 갱신합니다.
+            return state.RefreshDuration(gridIndex, data.Duration);
         }
 
         if (!state.Place(gridIndex, gridEffectId, data.Duration, GetInitialHitPoints(data)))

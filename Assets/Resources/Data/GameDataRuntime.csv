@@ -3,31 +3,33 @@
 CharacterId,Name,MaxHP,MaxCost,CostRecovery,MaxResource,ResourceType,ResourceTrigger,IsDefaultProvided,UnlockCondition,PassiveSkill1,PassiveSkill2,UniqueSkill1,UniqueSkill2,CharacterSkill1,CharacterSkill2,CommonSkill1,CommonSkill2,Rune1,Rune2,Rune3,Rune4,Rune5,Regeneration,introduction
 Char_01,힐트,105,10,4,5,Karma,OnAnyAllyDamaged,1,1,S_Passive_01,S_Passive_02,S_Unique_01,S_Unique_02,S_Ability_01,S_Ability_03,S_Public_01,S_Public_03,Rune_51,Rune_52,Rune_53,Rune_54,Rune_55,"피해를 받았을 때
 생명력이 감소하지 않았다면
-카르마를 1 회복합니다.","“강한 놈들이 득실거린다며?
+카르마를 1 회복한다.","“강한 놈들이 득실거린다며?
 그럼 내가 가야지.”
 
-벨가드 용병단 소속의 탐사자.
-호전적이고 거침없는 성격으로, 위험한 전투일수록 먼저 뛰어들며 이번 탐사에서도 자신의 강함을 증명하려 합니다.",,,,,
+벨가드 용병단의 용병.
+호전적이고 거침없는 성격으로, 위험한 전투일수록 앞장서며 이번 탐사에서도 자신의 강함을 증명하려 한다.",,,,,
 Char_02,카야,98,11,4,5,Karma,OnThreeActionsInSameSlot,1,1,S_Passive_03,S_Passive_04,S_Unique_03,S_Unique_04,S_Ability_05,S_Ability_07,S_Public_05,S_Public_07,Rune_56,Rune_57,Rune_58,Rune_59,Rune_60,"한 슬롯에서 3회 이상 행동을
-등록하면 카르마를 1 회복합니다. ","“임무라면 완수한다. 그뿐이야.”
+등록하면 카르마를 1 회복한다.","“임무라면 완수한다. 그뿐이야.”
 
-하쿠렌 가문 소속의 탐사자.
-침착하고 냉철하며 어떤 상황에서도 흐트러지지 않고, 미지의 적과 전투를 거치며 자신의 검술을 더욱 완성해갑니다.",,,,,
+하쿠렌 가문의 검사.
+침착하고 냉철하며 어떤 상황에서도 흐트러지지 않는다. 미지의 적들과 맞서며 자신의 검술을 더욱 완성해 나간다.",,,,,
 Char_03,헤이즈,84,14,4,5,Karma,OnSpendEightCostInTurn,1,1,S_Passive_05,S_Passive_06,S_Unique_05,S_Unique_06,S_Ability_09,S_Ability_11,S_Public_09,S_Public_11,Rune_61,Rune_62,Rune_63,Rune_64,Rune_65,"한 턴에 마나를 8 이상 소모하면
-카르마를 1 회복합니다.","“정말 제가 가야 하는 건가요?”
+카르마를 1 회복한다.","“정말 제가 가야 하는 건가요?”
 
-아스텔 학회 소속의 탐사자.
-겁이 많고 소심하지만 맡은 연구에서 물러서지는 않으며, 소환수 니아와 함께 자신의 나약함을 극복하려 합니다.",,,,,
+아스텔 학회의 학자.
+겁이 많고 소심하지만 맡은 연구에서는 물러서지 않는다. 소환수 니아와 함께 탐사에 나서며 자신의 나약함을 극복하려 한다.",,,,,
 Char_04,이네스,100,10,4,5,Karma,OnAllyBuffApplied,1,1,S_Passive_07,S_Passive_08,S_Unique_07,S_Unique_08,S_Ability_13,S_Ability_15,S_Public_13,S_Public_15,Rune_66,Rune_67,Rune_68,Rune_69,Rune_70,"아군에게 이로운 효과를 부여하면
-카르마를 1 회복합니다.","“걱정하지 마세요.
+카르마를 1 회복한다.","“걱정하지 마세요.
 모두 무사히 돌아갈 수 있도록 할게요.”
 
-세라피아 교단에서 파견된 집행자입니다. 밝고 상냥하게 동료들을 보살피지만, 그들을 위협하는 존재 앞에서는 망설임 없이 냉혹한 모습을 드러냅니다.",,,,,
+세라피아 교단의 집행자.
+밝고 상냥한 성격으로 동료들을 살뜰히 보살핀다. 하지만 그들을 위협하는 존재 앞에서는 망설임 없이 냉혹한 모습을 드러낸다.",,,,,
 Char_05,레이나,90,12,4,5,Karma,OnDamageEnemy,2,2,S_Passive_09,S_Passive_10,S_Unique_09,S_Unique_10,S_Ability_17,S_Ability_19,S_Public_17,S_Public_19,Rune_71,Rune_72,Rune_73,Rune_74,Rune_75,"공격타입의 기억으로
 적에게 피해를 주면
-카르마를1 회복합니다.","“그냥 내가 가고 싶어서 가는 거야.”
+카르마를1 회복한다.","“그냥 내가 가고 싶어서 가는 거야.”
 
-어느 집단에도 속하지 않은 채 홀로 떠도는 뱀파이어입니다. 말수는 적고 자유분방하며 타인의 규칙에 얽매이지 않고, 자신의 관심이 향한 탐사대를 따라 스스로 위험 속으로 발을 들입니다.",,,,,
+자유롭게 떠도는 방랑자.
+말수가 적고 자유분방하며 타인의 규칙에 얽매이지 않는다. 자신의 관심이 향한 탐사대를 따라 스스로 위험 속으로 발을 들인다.",,,,,
 ,,,,,,,,,
 ,,,,,,,,,
 ,,,,,,,,,
@@ -44,18 +46,18 @@ Char_05,레이나,90,12,4,5,Karma,OnDamageEnemy,2,2,S_Passive_09,S_Passive_10,S_
 # Monster
 몬스터ID,이름,등급,HP,방어도,최소 렘넌트,최대 렘넌트,고유아이템,고유 아이템 확률,유물확률,공격범위,보유스킬1 ID,보유스킬2 ID,보유스킬3 ID,보유스킬4 ID,보유스킬5 ID,보유스킬6 ID,보유스킬7 ID,보유스킬8 ID,보유스킬9 ID,보유스킬10 ID,특수행동1
 MonsterId,Name,Grade,HP,Armor,MinRemnant,MaxRemnant,UniqueItemId ,UniqueItemChance,RelicChance,AttackRange,PossSkillId01,PossSkillId02,PossSkillId03,PossSkillId04,PossSkillId05,PossSkillId06,PossSkillId07,PossSkillId08,PossSkillId09,PossSkillId10,SpecialAction1
-Mon_01,머크,Common,32,0,8,16,Item_001,0.4,0.02,Range_19,S_Monster_01,S_Monster_02,0,0,0,0,0,0,0,0,분열 수치가 0이 되면 블롭 2마리로 분열합니다.
-Mon_02,블롭,Common,15,0,5,10,Item_002,0.4,0.02,Range_20,S_Monster_03,S_Monster_04,0,0,0,0,0,0,0,0,이동할 때 지나온 위치에 잔여물을 생성합니다.
-Mon_03,랜서,Common,18,0,12,18,Item_003,0.4,0.02,Range_19,S_Monster_05,S_Monster_06,S_Monster_07,0,0,0,0,0,0,0,매 턴 모든 몬스터에게 원한을 부여합니다.
-Mon_04,블라이트,Common,20,0,12,18,Item_004,0.4,0.02,Range_19,S_Monster_08,S_Monster_09,S_Monster_10,0,0,0,0,0,0,0,매 턴 모든 캐릭터에게 침식을 부여합니다.
-Mon_05,베스파,Common,35,0,18,25,Item_005,0.4,0.02,Range_20,S_Monster_11,S_Monster_12,0,0,0,0,0,0,0,0,캐릭터와 같은 라인으로 이동하여 돌진합니다.
-Mon_06,신더,Common,16,20,15,22,Item_006,0.4,0.02,Range_24,S_Monster_13,S_Monster_14,0,0,0,0,0,0,0,0,폭발 수치가 0이 되면 폭발하여 피해를 줍니다.
-Mon_07,드라우그,Common,38,0,10,20,Item_007,0.4,0.02,Range_02,S_Monster_26,S_Monster_27,S_Monster_28,0,0,0,0,0,0,0,공격스킬에 피격받으면 반격합니다.
-Mon_08,바로우,Common,30,0,10,20,Item_008,0.4,0.02,Range_20,S_Monster_29,S_Monster_30,S_Monster_31,0,0,0,0,0,0,0,캐릭터가 같은 라인에 없다면 곡사를 사용합니다.
-Mon_09,루크,Elite,85,0,30,45,Item_009,0.25,0.1,Range_02,S_Monster_32,S_Monster_33,S_Monster_34,S_Monster_35,S_Monster_36,0,0,0,0,0,매 턴 방어도를 회복합니다.
-Mon_10,녹턴,Elite,94,0,36,48,Item_010,0.25,0.1,Range_24,S_Monster_15,S_Monster_16,S_Monster_17,S_Monster_18,S_Monster_19,0,0,0,0,0,후방에 피해를 줄 때 강한 피해를 줍니다.
-Mon_11,모르트,Elite,77,0,35,42,Item_011,0.25,0.1,Range_19,S_Monster_37,S_Monster_38,S_Monster_39,S_Monster_40,S_Monster_41,0,0,0,0,0,병사가 죽었다면 1턴 후 되살립니다.
-Mon_12,아라벨라,Boss,142,0,45,55,Item_012,0.7,0,Range_19,S_Monster_20,S_Monster_21,S_Monster_22,S_Monster_23,S_Monster_24,S_Monster_25,0,0,0,0,매 턴 무작위 슬롯 하나를 사용할 수 없게 합니다.
+Mon_01,머크,Common,32,0,8,16,Item_001,0.4,0.02,Range_19,S_Monster_01,S_Monster_02,0,0,0,0,0,0,0,0,분열 수치가 0이 되면 블롭 2마리로 분열한다.
+Mon_02,블롭,Common,15,0,5,10,Item_002,0.4,0.02,Range_20,S_Monster_03,S_Monster_04,0,0,0,0,0,0,0,0,이동할 때 지나온 위치에 점액을 생성한다.
+Mon_03,랜서,Common,18,0,12,18,Item_003,0.4,0.02,Range_19,S_Monster_05,S_Monster_06,S_Monster_07,0,0,0,0,0,0,0,매 턴 모든 몬스터에게 원한을 부여한다.
+Mon_04,블라이트,Common,20,0,12,18,Item_004,0.4,0.02,Range_19,S_Monster_08,S_Monster_09,S_Monster_10,0,0,0,0,0,0,0,매 턴 모든 캐릭터에게 침식을 부여한다.
+Mon_05,베스파,Common,35,0,18,25,Item_005,0.4,0.02,Range_20,S_Monster_11,S_Monster_12,0,0,0,0,0,0,0,0,캐릭터와 같은 라인으로 이동하여 돌진한다.
+Mon_06,신더,Common,16,20,15,22,Item_006,0.4,0.02,Range_24,S_Monster_13,S_Monster_14,0,0,0,0,0,0,0,0,폭발 수치가 0이 되면 폭발하여 피해를 준다.
+Mon_07,드라우그,Common,38,0,10,20,Item_007,0.4,0.02,Range_02,S_Monster_26,S_Monster_27,S_Monster_28,0,0,0,0,0,0,0,공격스킬에 피격받으면 반격한다.
+Mon_08,바로우,Common,30,0,10,20,Item_008,0.4,0.02,Range_20,S_Monster_29,S_Monster_30,S_Monster_31,0,0,0,0,0,0,0,캐릭터가 같은 라인에 없다면 공격 타입을 변경한다.
+Mon_09,루크,Elite,85,0,30,45,Item_009,0.25,0.1,Range_02,S_Monster_32,S_Monster_33,S_Monster_34,S_Monster_35,S_Monster_36,0,0,0,0,0,매 턴 방어도를 회복한다.
+Mon_10,녹턴,Elite,94,0,36,48,Item_010,0.25,0.1,Range_24,S_Monster_15,S_Monster_16,S_Monster_17,S_Monster_18,S_Monster_19,0,0,0,0,0,후방에 피해를 줄 때 강한 피해를 준다.
+Mon_11,모르트,Elite,77,0,35,42,Item_011,0.25,0.1,Range_19,S_Monster_37,S_Monster_38,S_Monster_39,S_Monster_40,S_Monster_41,0,0,0,0,0,병사가 죽었다면 1턴 후 되살힌다.
+Mon_12,아라벨라,Boss,142,0,45,55,Item_012,0.7,0,Range_19,S_Monster_20,S_Monster_21,S_Monster_22,S_Monster_23,S_Monster_24,S_Monster_25,0,0,0,0,매 턴 무작위 슬롯 하나를 막는다.
 ,,,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,
@@ -222,8 +224,8 @@ S_Core_80,스피드스터+,Core,Common,Cost,PlayerParty,2,Buff,E_Swift,1,1,3,Dir
 # MonsterSkill
 스킬ID,이름,대상,효과ID,수치계수,횟수계수,그리드이동,범위ID,타임라인표기,효과설명,수치값변수,아이콘,타입
 SkillId,Name,Target,EffectIds,ValueRate,CountRate,GridMove,RangeId,TimelineNotation,EffectDesc,ValueRandomRange,SkillIcon,SkillType
-S_Monster_01,접근,Self,E_Move,0,1,0,Range_02,Move,가까운 캐릭터를 향해 1칸 이동합니다.,0,icon_mon_skill_001,이동
-S_Monster_02,점액투척,PlayerParty,E_Strike,6,1,0,Range_16,Attack,대상에게 수치의 피해를 줍니다.,1,icon_mon_skill_002,일반피해
+S_Monster_01,이동,Self,E_Move,0,1,0,Range_02,Move,가까운 캐릭터를 향해 1칸 이동한다.,0,icon_mon_skill_001,이동
+S_Monster_02,점액투척,PlayerParty,E_Strike,6,1,0,Range_16,Attack,범위 내에서 가까운 대상에게 수치의 피해를 주고 점액을 남긴다.,0,icon_mon_skill_002,원거리
 S_Monster_03,접근,Self,E_Move,0,1,0,Range_01,Move,가까운 캐릭터를 향해 1칸 이동합니다.,0,icon_mon_skill_001,이동
 S_Monster_04,덮치기,PlayerParty,E_Strike,4,1,0,Range_10,Attack,대상에게 수치의 피해를 줍니다.,1,icon_mon_skill_003,일반피해
 S_Monster_05,도망,Self,E_Move,0,1,0,Range_20,Move,캐릭터에게서 멀어지도록 최대 2칸 이동합니다.,0,icon_mon_skill_001,이동
@@ -267,15 +269,15 @@ S_Monster_41,사령술,Self,E_Spawn_Soldier,1,1,0,Range_Self,Buff,죽은 병사 
 # GridEffect
 그리드효과ID,이름,통과유무,소모성,효과ID,수치계수,횟수계수,지속턴,생성 방식,체력,타입,툴팁
 GridEffectID,Name,Passed,expendable,EffectIds,ValueRate,CountRate,Duration,SpawnType,HP,TargetType,ToolTip
-GR_debris,잔해,0,0,-1,0,1,0,BattleStart,16,Object,이동을 방해하는 장애물입니다.
-GR_thorn,가시,1,0,E_Strike,3,1,0,BattleStart,0,None,진입 또는 통과한 대상에게 3의 피해를 줍니다.
-GR_Poisson,독,1,1,E_Poison,2,1,0,BattleStart,0,None,진입한 대상에게 중독 2를 부여합니다.
-GR_Residue,점액,1,0,E_Strike,2,1,2,Monster,0,None,"진입 또는 통과하거나, 턴 시작 시 위치해 있다면 2의 피해를 줍니다."
-GR_dummy,루어,0,0,-1,0,1,0,Summon,12,Character,캐릭터로 인식되는 장애물입니다.
-GR_explosive_doll,브룸,0,0,-1,8,1,0,Summon,10,Object,이번 턴이 끝날 때 주변 적에게 8의 피해를 줍니다.
-GR_spider_egg,거미알,0,0,-1,0,5,2,Summon,8,Object,파괴되지 않는다면 2턴 후 신더가 부화합니다.
-GR_spider_web,거미줄,1,0,E_Spider_Web,2,1,2,Monster,0,None,진입한 대상은 이번 턴 동안 코스트 사용량이 2배가 됩니다.
-GR_nocturn_portal_preview,그림자,1,0,-1,0,1,1,Monster,0,None,그림자가 머문 곳으로 녹턴이 이동합니다.
+GR_debris,잔해,0,0,-1,0,1,0,BattleStart,25,Object,이동을 방해하는 장애물이다.
+GR_thorn,가시,1,0,E_Strike,3,1,0,BattleStart,0,None,3의 피해를 준다.
+GR_Poisson,독,1,1,E_Poison,2,1,0,BattleStart,0,None,중독 2를 부여한다.
+GR_Residue,점액,1,1,E_Strike,2,1,2,Monster,0,None,2의 피해를 준다.
+GR_dummy,루어,0,0,-1,0,1,0,Summon,10,Character,캐릭터로 인식되는 장애물이다.
+GR_explosive_doll,브룸,0,0,-1,8,1,0,Summon,15,Object,이번 턴이 끝날 때 주변 적에게 8의 피해를 준다.
+GR_spider_egg,거미알,0,0,-1,0,5,2,Summon,8,Object,파괴되지 않는다면 2턴 후 신더가 부화한다.
+GR_spider_web,거미줄,1,0,E_Spider_Web,2,1,2,Monster,0,None,진입한 대상은 이번 턴 동안 마나 사용량이 2배가 된다.
+GR_nocturn_portal_preview,그림자,1,0,-1,0,1,1,Monster,0,None,그림자가 머문 곳으로 이동할 예정이다.
 ,,,,,,,,,
 ,,,,,,,,,
 ,,,,,,,,,
@@ -487,7 +489,7 @@ Map_22,Special6,Special,0,Event_06,Stage1,1
 Map_23,Special7,Special,0,Event_07,Stage1,1
 Map_24,Special8,Special,0,Event_08,Stage1,1
 Map_25,Special9,Special,0,Event_09,Stage1,1
-
+Map_26,Bacttle_Test,Common,Battlemap_17,0,Stage1,1
 
 ,,,
 
@@ -523,17 +525,18 @@ Battlemap_09,Mon_08,29,-1,-1,-1,,,,,,,,,,
 Battlemap_09,Mon_08,31,-1,-1,-1,,,,,,,,,,
 Battlemap_10,Mon_04,33,-1,-1,-1,"드라우그, 바로우, 블라이트",20,35,30,25,10,25,35,25,15
 Battlemap_10,Mon_07,21,-1,-1,-1,,,,,,,,,,
-Battlemap_10,Mon_08,27,-1,-1,-1,,,,,,,,,,
-Battlemap_11,Mon_09,27,-1,-1,-1,"정예 루크, 랜서",60,20,25,30,25,25,35,25,15
-Battlemap_11,Mon_03,31,-1,-1,-1,,,,,,,,,,
-Battlemap_12,Mon_09,27,-1,-1,-1,"정예 루크, 블라이트",60,20,25,30,25,25,35,25,15
-Battlemap_12,Mon_04,33,-1,-1,-1,,,,,,,,,,
-Battlemap_13,Mon_10,22,-1,-1,-1,정예 녹턴,60,20,25,30,25,25,35,25,15
-Battlemap_14,Mon_07,21,-1,-1,-1,"정예 모르트, 드라우그",60,20,25,30,25,25,35,25,15
-Battlemap_14,Mon_11,28,-1,-1,-1,,,,,,,,,,
-Battlemap_15,Mon_08,26,-1,-1,-1,"정예 모르트, 바로우",60,20,25,30,25,25,35,25,15
-Battlemap_15,Mon_11,32,-1,-1,-1,,,,,,,,,,
-Battlemap_16,Mon_12,27,-1,-1,-1,보스 아라벨라,100,5,15,50,30,25,35,25,15
+Battlemap_10,Mon_08,27,-1,-1,-1,,,,,,,,,,,,,Mon_01,머크
+Battlemap_11,Mon_09,27,-1,-1,-1,"정예 루크, 랜서",60,20,25,30,25,25,35,25,15,,,Mon_02,블롭
+Battlemap_11,Mon_03,31,-1,-1,-1,,,,,,,,,,,,,Mon_03,랜서
+Battlemap_12,Mon_09,27,-1,-1,-1,"정예 루크, 블라이트",60,20,25,30,25,25,35,25,15,,,Mon_04,블라이트
+Battlemap_12,Mon_04,33,-1,-1,-1,,,,,,,,,,,,,Mon_05,베스파
+Battlemap_13,Mon_10,22,-1,-1,-1,정예 녹턴,60,20,25,30,25,25,35,25,15,,,Mon_06,신더,,,
+Battlemap_14,Mon_07,21,-1,-1,-1,"정예 모르트, 드라우그",60,20,25,30,25,25,35,25,15,,,Mon_07,드라우그,,,
+Battlemap_14,Mon_11,28,-1,-1,-1,,,,,,,,,,,,,Mon_08,바로우
+Battlemap_15,Mon_08,26,-1,-1,-1,"정예 모르트, 바로우",60,20,25,30,25,25,35,25,15,,,Mon_09,루크,,
+Battlemap_15,Mon_11,32,-1,-1,-1,,,,,,,,,,,,,Mon_10,녹턴,,
+Battlemap_16,Mon_12,27,-1,-1,-1,보스 아라벨라,100,5,15,50,30,25,35,25,15,,,Mon_11,모르트
+Battlemap_17,Mon_02,22,-1,-1,-1,테스트,100,5,15,50,30,25,35,25,15,,,Mon_12,아라벨라
 
 # Event
 이벤트ID,이벤트 이름,제목,선택지 순서,선택지이름,선택지 내용,선택지 타입,선택 조건,비용 타입,비용 대상,비용 값,성공 조건,결과타입,결과대상,결과값,성공확률,실패결과,다음이벤트ID,다음 이벤트까지 유지,성공 시각적 객체 ID,성공 시각적 작업 ID,실패 시각적 객체 ID,실패 시 시각적 동작 ID
