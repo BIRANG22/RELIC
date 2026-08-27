@@ -20,12 +20,12 @@ public class BattleState : BaseGameState
         if (string.IsNullOrWhiteSpace(mapRuntime.SelectedChapterId) ||
             string.IsNullOrWhiteSpace(mapRuntime.CurrentStage))
         {
-            Debug.LogError("[BattleState] Chapter �Ǵ� Stage�� ���õ��� �ʾҽ��ϴ�.");
+            Debug.LogError("[BattleState] Chapter or Stage is not selected.");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(mapRuntime.CurrentMapId))
-            mapRuntime.CurrentMapId = "";//���� id ���� ����
+            mapRuntime.CurrentMapId = ""; // Keep empty until a map node is selected.
 
         mapRuntime.CurrentSceneName = SceneName.Battle;
 

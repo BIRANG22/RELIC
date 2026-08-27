@@ -7,7 +7,7 @@ public class LobbyPanelTransition : MonoBehaviour
     public enum TransitionDirection
     {
         Horizontal,
-        Vertical // ���� ȣ�� ȣȯ��. ���� ������ HorizontalTransition�� ����մϴ�.
+        Vertical // Legacy compatibility. Current flow uses HorizontalTransition.
     }
 
     [System.Serializable]
@@ -224,8 +224,7 @@ public class LobbyPanelTransition : MonoBehaviour
     {
         isPlaying = true;
 
-        // CharacterSettingPanel�� ������ ��� �κ� �г� ��ȯ��
-        // HorizontalTransition �ϳ��� ����մϴ�.
+        // CharacterSettingPanel and other lobby panel changes use one HorizontalTransition.
         TransitionImageSet activeSet = horizontalTransition;
 
         HideInactiveSet(activeSet);
@@ -319,7 +318,7 @@ public class LobbyPanelTransition : MonoBehaviour
 
     private void HideInactiveSet(TransitionImageSet activeSet)
     {
-        // HorizontalTransition�� ����ϹǷ� ��Ȱ�� ��ȯ ��Ʈ�� �����ϴ�.
+        // Only HorizontalTransition is used, so there is no inactive set to hide.
     }
 
     private void HideAllRoots()

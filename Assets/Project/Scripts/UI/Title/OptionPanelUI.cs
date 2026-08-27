@@ -83,6 +83,31 @@ public class OptionPanelUI : MonoBehaviour
         ResetIntroToggle();
     }
 
+    public void ShowSound()
+    {
+        ShowSingleContent(soundContent);
+    }
+
+    public void ShowLanguage()
+    {
+        ShowSingleContent(languageContent);
+    }
+
+    public void ShowResolution()
+    {
+        ShowSingleContent(resolutionContent);
+
+        if (resolutionDropdown != null)
+            StartCoroutine(ShowResolutionDropdownNextFrame());
+    }
+
+    public void ShowControl()
+    {
+        ShowSingleContent(controlContent);
+        SyncTutorialToggleFromSettings();
+        ResetIntroToggle();
+    }
+
     /// <summary>
     /// 설정창의 인트로 다시보기 버튼에서 호출합니다.
     /// 현재 진행 상태를 변경하지 않고 인트로만 다시 재생합니다.
@@ -299,6 +324,30 @@ public class OptionPanelUI : MonoBehaviour
             return;
 
         ResolutionManager.ApplyResolution(index, true);
+    }
+
+    private IEnumerator ShowResolutionDropdownNextFrame()
+    {
+        yield return null;
+
+        if (resolutionDropdown == null || !resolutionDropdown.gameObject.activeInHierarchy)
+            yield break;
+
+        resolutionDropdown.Show();
+    }
+
+    private void ShowSingleContent(GameObject activeContent)
+    {
+        AutoFindReferences();
+        SetupLanguageDropdown();
+        SetupResolutionDropdown();
+        SetupTutorialToggle();
+        SetupIntroToggle();
+
+        SetContentActive(soundContent, soundContent == activeContent);
+        SetContentActive(languageContent, languageContent == activeContent);
+        SetContentActive(resolutionContent, resolutionContent == activeContent);
+        SetContentActive(controlContent, controlContent == activeContent);
     }
 
     private GameObject FindChildGameObject(string childName)

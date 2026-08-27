@@ -60,6 +60,36 @@ public class BattleCameraControllerMonsterInfoFocusTests
     }
 
     [Test]
+    public void ForceReturnMapImmediate_RestoresCameraToMapPositionAfterFocus()
+    {
+        CameraFixture fixture = CreateFixture();
+        GameObject target = new("MonsterInfoFocus_Target");
+        target.transform.position = new Vector3(3f, 4f, 0f);
+
+        try
+        {
+            SetPrivateField(fixture.Controller, "monsterInfoFocusDuration", 0f);
+            SetPrivateField(fixture.Controller, "monsterInfoFocusZOffset", 2f);
+            SetPrivateField(fixture.Controller, "mapPosition", new Vector3(0f, 0f, -20f));
+
+            fixture.Controller.FocusMonsterInfo(target.transform);
+            fixture.Camera.transform.rotation = Quaternion.Euler(0f, 0f, 7f);
+
+            fixture.Controller.ForceReturnMapImmediate();
+
+            Assert.That(fixture.Camera.transform.position, Is.EqualTo(new Vector3(0f, 0f, -20f)));
+            Assert.That(fixture.Camera.transform.rotation, Is.EqualTo(Quaternion.identity));
+            Assert.That(fixture.Camera.orthographicSize, Is.EqualTo(5f));
+            Assert.That(fixture.Controller.IsMonsterInfoFocusActive, Is.False);
+        }
+        finally
+        {
+            Object.DestroyImmediate(target);
+            fixture.Destroy();
+        }
+    }
+
+    [Test]
     public void FocusMonsterInfoWithPanelSide_LeftPanelMovesCameraLeftSoMonsterAppearsRight()
     {
         CameraFixture fixture = CreateFixture();

@@ -702,6 +702,7 @@ public class UIManager : Singleton<UIManager>
                 cachedRecordButton.onClick.RemoveListener(ShowRecord);
 
             cachedMenuPanel = menuPanel;
+            EnsureMenuPanelTextRefresher(cachedMenuPanel);
             cachedGiveUpButton = FindMenuButton(menuPanel, "Giveup");
             cachedRecordButton = FindMenuButton(menuPanel, "Record");
             cachedQuitButton = FindMenuButton(menuPanel, "Quit");
@@ -726,7 +727,32 @@ public class UIManager : Singleton<UIManager>
             cachedQuitText = FindMenuText(cachedQuitButton, "quit_Text");
 
         if (cachedQuitText != null)
+        {
             cachedQuitText.text = isLobbyScene ? lobbyQuitButtonText : battleQuitButtonText;
+            RefreshTmpText(cachedQuitText);
+        }
+    }
+
+    private static void EnsureMenuPanelTextRefresher(GameObject menuPanel)
+    {
+        if (menuPanel == null)
+            return;
+
+        if (menuPanel.GetComponent<MenuPanelTextRefresher>() == null)
+            menuPanel.AddComponent<MenuPanelTextRefresher>();
+    }
+
+    private static void RefreshTmpText(TMP_Text text)
+    {
+        if (text == null)
+            return;
+
+        if (text.font != null && text.font.material != null)
+            text.fontSharedMaterial = text.font.material;
+
+        text.UpdateMeshPadding();
+        text.SetAllDirty();
+        text.ForceMeshUpdate(true, true);
     }
 
     private void UpdateMenuCameraPause(GameObject menuPanel)

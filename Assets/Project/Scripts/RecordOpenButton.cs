@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 /// <summary>
-/// Ÿ��Ʋ, �κ�, �Ͻ����� �޴� �� ��� ȭ�鿡���� ���� ������ ���ϴ�.
+/// Opens the record screen from title, lobby, pause menu, and other shared screens.
 /// </summary>
 public class RecordOpenButton : MonoBehaviour, IPointerEnterHandler
 {
@@ -26,7 +26,7 @@ public class RecordOpenButton : MonoBehaviour, IPointerEnterHandler
         UIManager uiManager = GetUIManager();
         if (uiManager == null)
         {
-            Debug.LogWarning("[RecordOpenButton] UIManager�� ã�� ���� ������ �� �� �����ϴ�.");
+            Debug.LogWarning("[RecordOpenButton] UIManager is missing. Cannot open record.");
             return;
         }
 

@@ -4448,7 +4448,7 @@ public class BattleTimelineController : MonoBehaviour
     private bool LooksLikeBrokenKorean(string message)
     {
         return message.Contains("??") ||
-               message.Contains("�") ||
+               message.Contains("\uFFFD") ||
                message.Contains("?");
     }
 
