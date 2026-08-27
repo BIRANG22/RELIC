@@ -34,13 +34,18 @@ namespace Relic.Gameplay.Monster
             if (monsterUnit == null || monsterUnit.RuntimeData == null || gridManager == null)
                 return plan;
 
-            int targetGridIndex = FindNearestCharacterTargetGridIndex(monsterUnit, gridManager);
+            MonsterSkillData attackSkill =
+                DataManager.Instance?.MonsterSkillDatabase?.Get(AttackSkillId);
+
+            // 블롭은 단순히 가장 가까운 캐릭터보다 이번 행동에서 실제로 좌우 공격을
+            // 성공시킬 수 있는 캐릭터를 우선 타겟으로 고정합니다.
+            int targetGridIndex = FindBestBlobTargetGridIndex(
+                monsterUnit,
+                attackSkill,
+                gridManager);
 
             if (targetGridIndex < 0)
                 return plan;
-
-            MonsterSkillData attackSkill =
-                DataManager.Instance?.MonsterSkillDatabase?.Get(AttackSkillId);
 
             BattleGridEffectController gridEffectController =
                 Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
@@ -88,7 +93,7 @@ namespace Relic.Gameplay.Monster
                 gridManager,
                 canMove ? moveOffset : Vector2Int.zero);
 
-            // 이동 목표는 턴 시작에 선택한 가장 가까운 캐릭터로 고정합니다.
+            // 이동 목표는 예약 시점에 선택한 우선 타겟으로 고정합니다.
             // 다른 캐릭터가 공격 범위에 들어오더라도 이동/공격 방향을 바꾸지 않습니다.
             int attackTargetGridIndex = CanAttackTargetFromGrid(
                 monsterUnit,
@@ -123,6 +128,116 @@ namespace Relic.Gameplay.Monster
             ));
 
             return plan;
+        }
+
+        private int FindBestBlobTargetGridIndex(
+            MonsterUnit monsterUnit,
+            MonsterSkillData attackSkill,
+            GridManager gridManager)
+        {
+            if (monsterUnit == null || gridManager == null || monsterUnit.MainGridIndex < 0)
+                return -1;
+
+            List<int> targets = FindCharacterTargetGridIndices();
+
+            if (targets == null || targets.Count == 0)
+                return -1;
+
+            Vector2Int currentCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
+            int bestAttackableTarget = -1;
+            int bestAttackableDistance = int.MaxValue;
+            int nearestTarget = -1;
+            int nearestDistance = int.MaxValue;
+
+            for (int i = 0; i < targets.Count; i++)
+            {
+                int candidateGridIndex = targets[i];
+                Vector2Int candidateCoord = gridManager.IndexToCoord(candidateGridIndex);
+                int distance =
+                    Mathf.Abs(candidateCoord.x - currentCoord.x) +
+                    Mathf.Abs(candidateCoord.y - currentCoord.y);
+
+                if (distance < nearestDistance ||
+                    (distance == nearestDistance && candidateGridIndex < nearestTarget))
+                {
+                    nearestDistance = distance;
+                    nearestTarget = candidateGridIndex;
+                }
+
+                if (!CanAttackTargetThisTurn(
+                        monsterUnit,
+                        candidateGridIndex,
+                        attackSkill,
+                        gridManager))
+                {
+                    continue;
+                }
+
+                if (distance < bestAttackableDistance ||
+                    (distance == bestAttackableDistance && candidateGridIndex < bestAttackableTarget))
+                {
+                    bestAttackableDistance = distance;
+                    bestAttackableTarget = candidateGridIndex;
+                }
+            }
+
+            return bestAttackableTarget >= 0
+                ? bestAttackableTarget
+                : nearestTarget;
+        }
+
+        private bool CanAttackTargetThisTurn(
+            MonsterUnit monsterUnit,
+            int targetGridIndex,
+            MonsterSkillData attackSkill,
+            GridManager gridManager)
+        {
+            if (monsterUnit == null ||
+                attackSkill == null ||
+                gridManager == null ||
+                monsterUnit.MainGridIndex < 0 ||
+                targetGridIndex < 0)
+            {
+                return false;
+            }
+
+            // 이미 좌우 공격 범위에 들어온 타겟도 이번 행동에서 공격 가능한 대상으로 봅니다.
+            // 이 경우 실제 이동 단계에서는 후퇴하지 않고 접근/충돌 규칙을 따릅니다.
+            if (CanAttackTargetFromGrid(
+                    monsterUnit,
+                    monsterUnit.MainGridIndex,
+                    targetGridIndex,
+                    attackSkill,
+                    gridManager))
+            {
+                return true;
+            }
+
+            // 한 칸 정상 이동 후 바로 좌우 공격이 가능한지를 예약 시점에만 판단합니다.
+            for (int i = 0; i < MoveDirections.Length; i++)
+            {
+                Vector2Int moveOffset = MoveDirections[i];
+
+                if (!CanMonsterMove(monsterUnit, gridManager, moveOffset))
+                    continue;
+
+                int projectedGridIndex = GetProjectedMainGridIndex(
+                    monsterUnit,
+                    gridManager,
+                    moveOffset);
+
+                if (CanAttackTargetFromGrid(
+                        monsterUnit,
+                        projectedGridIndex,
+                        targetGridIndex,
+                        attackSkill,
+                        gridManager))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private Vector2Int GetBestCardinalMove(
@@ -588,7 +703,7 @@ namespace Relic.Gameplay.Monster
             if (moveOffset.x < 0)
                 return BattleDirection.Left;
 
-            // 세로 이동이거나 이동하지 못한 경우, 가장 가까운 캐릭터가 좌우 어느 쪽에 있는지로 정면을 잡습니다.
+            // 세로 이동이거나 이동하지 못한 경우, 예약 시점에 고정한 타겟이 좌우 어느 쪽에 있는지로 정면을 잡습니다.
             if (gridManager != null && originGridIndex >= 0 && targetGridIndex >= 0)
             {
                 Vector2Int originCoord = gridManager.IndexToCoord(originGridIndex);
