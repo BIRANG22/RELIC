@@ -50,7 +50,7 @@ Mon_01,머크,Common,32,0,8,16,Item_001,0.4,0.02,Range_19,S_Monster_01,S_Monster
 Mon_02,블롭,Common,15,0,5,10,Item_002,0.4,0.02,Range_01,S_Monster_03,S_Monster_04,0,0,0,0,0,0,0,0,이동할 때 지나온 위치에 점액을 생성한다.
 Mon_03,랜서,Common,18,0,12,18,Item_003,0.4,0.02,Range_19,S_Monster_05,S_Monster_06,S_Monster_07,0,0,0,0,0,0,0,매 턴 모든 몬스터에게 원한을 부여한다.
 Mon_04,블라이트,Common,20,0,12,18,Item_004,0.4,0.02,Range_19,S_Monster_08,S_Monster_09,S_Monster_10,0,0,0,0,0,0,0,매 턴 모든 캐릭터에게 침식을 부여한다.
-Mon_05,베스파,Common,35,0,18,25,Item_005,0.4,0.02,Range_20,S_Monster_11,S_Monster_12,0,0,0,0,0,0,0,0,캐릭터와 같은 라인으로 이동하여 돌진한다.
+Mon_05,베스파,Common,35,0,18,25,Item_005,0.4,0.02,Range_20,S_Monster_11,S_Monster_12,0,0,0,0,0,0,0,0,캐릭터와 같은 라인으로 이동 후 돌진하여 밀쳐낸다.
 Mon_06,신더,Common,16,20,15,22,Item_006,0.4,0.02,Range_24,S_Monster_13,S_Monster_14,0,0,0,0,0,0,0,0,폭발 수치가 0이 되면 폭발하여 피해를 준다.
 Mon_07,드라우그,Common,38,0,10,20,Item_007,0.4,0.02,Range_02,S_Monster_26,S_Monster_27,S_Monster_28,0,0,0,0,0,0,0,공격스킬에 피격받으면 반격한다.
 Mon_08,바로우,Common,30,0,10,20,Item_008,0.4,0.02,Range_20,S_Monster_29,S_Monster_30,S_Monster_31,0,0,0,0,0,0,0,캐릭터가 같은 라인에 없다면 공격 타입을 변경한다.
@@ -99,7 +99,7 @@ S_Passive_08,심판,Passive,Exclusive,Ulti,Self,0,0,E_Smite,1,1,0,Passive,Range_
 S_Passive_09,블러드러스트,Passive,Exclusive,Ulti,Self,0,0,E_Lifesteal,1,1,0,Passive,Range_Self,턴 시작 시 카르마가 최대라면 흡혈을 {ValueRate1} 얻는다.
 S_Passive_10,나이트메어,Passive,Exclusive,Ulti,Self,0,0,E_Boost,1,1,0,Passive,Range_Self,턴 시작 시 카르마가 최대라면 증폭을 {ValueRate1} 얻는다.
 S_Unique_01,용의 가호,Unique,Exclusive,Ulti,PlayerParty,0,Buff,E_Armor,8,1,3,Direction,Range_All,용의 힘으로 아군에게 방어도를 {ValueRate1} 부여한다.
-S_Unique_02,대지가르기,Unique,Exclusive,Ulti,EnemyParty,0,Attack,E_Strike;E_Knockback,14;1,1;1,3,Direction,Range_15,대지를 갈라 {ValueRate1}의 피해를 주고 {ValueRate2}칸 넉백시킨다.
+S_Unique_02,대지가르기,Unique,Exclusive,Ulti,EnemyParty,0,Attack,E_Strike;E_Knockback,14;1,1;1,3,Direction,Range_15,대지를 갈라 {ValueRate1}의 피해를 주고 {ValueRate2}칸 밀쳐낸다.
 S_Unique_03,질풍검 연무,Unique,Exclusive,Ulti,EnemyParty,0,Attack,E_Strike,3,4,3,Direction,Range_07,연속으로 휘둘러 {ValueRate1}의 피해를 {CountRate1}번 준다.
 S_Unique_04,질풍검 일섬,Unique,Exclusive,Ulti,EnemyParty,0,Attack,E_Pierce;E_Move,15,1,3,Direction,Range_21,검기를 발산하여 {ValueRate1}의 관통 피해를 준다.
 S_Unique_05,날카로운 빛,Unique,Exclusive,Ulti,EnemyParty,0,Attack,E_Strike;E_Vulnerable,4;1,1;1,3,Selection,Range_05,빛을 발산하여 {ValueRate1}의 피해를 주고 취약을 {ValueRate2} 부여한다.
@@ -110,8 +110,8 @@ S_Unique_09,데스사이드,Unique,Exclusive,Ulti,EnemyParty,0,Attack,E_Pierce;E
 S_Unique_10,스칼렛노바,Unique,Exclusive,Ulti,EnemyParty,0,Attack,E_Strike,16,1,3,Selection,Range_05,피를 폭발시켜 {ValueRate1}의 피해를 준다.
 S_Ability_01,휘두르기,Ability,Exclusive,Cost,EnemyParty,1,Attack,E_Strike,6,1,3,Direction,Range_14,할버드를 휘둘러 {ValueRate1}의 피해를 준다.
 S_Ability_02,휘두르기+,Ability,Exclusive,Cost,EnemyParty,2,Attack,E_Strike,8,1,3,Direction,Range_14,할버드를 휘둘러 {ValueRate1}의 피해를 준다.
-S_Ability_03,내려찍기,Ability,Exclusive,Cost,EnemyParty,1,Attack,E_Strike;E_Knockback,7;1,1,3,Direction,Range_04,할버드를 내려찍어 {ValueRate1}의 피해를 주고 {ValueRate2}칸 넉백시킨다.
-S_Ability_04,내려찍기+,Ability,Exclusive,Cost,EnemyParty,2,Attack,E_Strike;E_Knockback,9;1,1,3,Direction,Range_04,할버드를 내려찍어 {ValueRate1}의 피해를 주고 {ValueRate2}칸 넉백시킨다.
+S_Ability_03,내려찍기,Ability,Exclusive,Cost,EnemyParty,1,Attack,E_Strike;E_Knockback,7;1,1,3,Direction,Range_04,할버드를 내려찍어 {ValueRate1}의 피해를 주고 {ValueRate2}칸 밀쳐낸다.
+S_Ability_04,내려찍기+,Ability,Exclusive,Cost,EnemyParty,2,Attack,E_Strike;E_Knockback,9;1,1,3,Direction,Range_04,할버드를 내려찍어 {ValueRate1}의 피해를 주고 {ValueRate2}칸 밀쳐낸다.
 S_Ability_05,질풍검 3식,Ability,Exclusive,Cost,EnemyParty,1,Attack,E_Strike,3,2,3,Direction,Range_06,카타나를 휘둘러 {ValueRate1}의 피해를 {CountRate1}번 준다.
 S_Ability_06,질풍검 3식+,Ability,Exclusive,Cost,EnemyParty,2,Attack,E_Strike,4,2,3,Direction,Range_06,카타나를 휘둘러 {ValueRate1}의 피해를 {CountRate1}번 준다.
 S_Ability_07,질풍검 1식,Ability,Exclusive,Cost,EnemyParty,1,Attack,E_Pierce,7,1,3,Direction,Range_23,발도하여 {ValueRate1}의 관통 피해를 준다.
@@ -124,8 +124,8 @@ S_Ability_13,정권지르기,Ability,Exclusive,Cost,EnemyParty,1,Attack,E_Strike
 S_Ability_14,정권지르기+,Ability,Exclusive,Cost,EnemyParty,2,Attack,E_Strike,10,1,4,Direction,Range_03,주먹을 내질러 {ValueRate1}의 피해를 준다.
 S_Ability_15,공방일체,Ability,Exclusive,Cost,PlayerParty,1,Buff,E_Boost;E_Armor,1;3,1;1,5,Selection,Range_b_17,"태세를 갖추며 증폭을 {ValueRate1}, 방어도를 {ValueRate2} 부여한다."
 S_Ability_16,공방일체+,Ability,Exclusive,Cost,PlayerParty,2,Buff,E_Boost;E_Armor,1;3,1;1,5,Selection,Range_b_05,"태세를 갖추며 증폭을 {ValueRate1}, 방어도를 {ValueRate2} 부여한다."
-S_Ability_17,크림슨체인,Ability,Exclusive,Cost,EnemyParty,1,Attack,E_Strike;E_Grab,6;1,1;1,4,Direction,Range_21,사이드로 {ValueRate1}의 피해를 주고 {ValueRate2}칸 그랩한다.
-S_Ability_18,크림슨체인+,Ability,Exclusive,Cost,EnemyParty,2,Attack,E_Strike;E_Grab,8;1,1;1,4,Direction,Range_21,사이드로 {ValueRate1}의 피해를 주고 {ValueRate2}칸 그랩한다.
+S_Ability_17,크림슨체인,Ability,Exclusive,Cost,EnemyParty,1,Attack,E_Strike;E_Grab,6;1,1;1,4,Direction,Range_21,사이드로 {ValueRate1}의 피해를 주고 {ValueRate2}칸 당겨온다.
+S_Ability_18,크림슨체인+,Ability,Exclusive,Cost,EnemyParty,2,Attack,E_Strike;E_Grab,8;1,1;1,4,Direction,Range_21,사이드로 {ValueRate1}의 피해를 주고 {ValueRate2}칸 당겨온다.
 S_Ability_19,크레센트스윙,Ability,Exclusive,Cost,EnemyParty,1,Attack,E_Strike,6,1,3,Direction,Range_15,넓게 휘둘러 {ValueRate1}의 피해를 준다.
 S_Ability_20,크레센트스윙+,Ability,Exclusive,Cost,EnemyParty,2,Attack,E_Strike,7,1,3,Direction,Range_15,넓게 휘둘러 {ValueRate1}의 피해를 준다.
 S_Core_01,생명의 대가,Core,Common,Hp,Self,1,Buff,E_Focus,1,1,4,Direction,Range_Self,생명력을 대가로 카르마를 {ValueRate1} 회복한다.
@@ -152,42 +152,42 @@ S_Core_21,상처벌리기,Core,Epic,Cost,EnemyParty,1,Debuff,E_Bleed,3,1,6,Direc
 S_Core_22,상처벌리기+,Core,Epic,Cost,EnemyParty,2,Debuff,E_Bleed,3,1,6,Direction,Range_12,상처를 벌려 출혈을 {ValueRate1} 부여한다.
 S_Core_23,참격,Core,Common,Cost,EnemyParty,1,Attack,E_Strike,7,1,3,Direction,Range_03,검에 기를 둘러 {ValueRate1}의 피해를 준다.
 S_Core_24,참격+,Core,Common,Cost,EnemyParty,2,Attack,E_Strike,8,1,3,Direction,Range_21,검에 기를 둘러 {ValueRate1}의 피해를 준다.
-S_Core_25,꿰뚫는 빛,Core,Common,Cost,EnemyParty,1,Attack,E_Pierce,7,1,3,Direction,Range_03,빛을 쏘아 적에게 {ValueRate1}의 관통 피해를 줍니다.
-S_Core_26,꿰뚫는 빛+,Core,Common,Cost,EnemyParty,2,Attack,E_Pierce,8,1,3,Direction,Range_21,빛을 쏘아 적에게 {ValueRate1}의 관통 피해를 줍니다.
-S_Core_27,이동 사격,Core,Rare,Cost,EnemyParty,1,Attack,E_Strike;E_Move,4;-1,1;1,3,Direction,Range_23,견제 공격으로 적에게 {ValueRate1}의 피해를 주고 뒤로 {ValueRate2}칸 이동합니다.
-S_Core_28,이동 사격+,Core,Rare,Cost,EnemyParty,2,Attack,E_Strike;E_Move,6;-1,1;1,3,Direction,Range_23,견제 공격으로 적에게 {ValueRate1}의 피해를 주고 뒤로 {ValueRate2}칸 이동합니다.
-S_Core_29,바이탈 가드,Core,Unique,Cost,PlayerParty,1,Buff,E_Heal;E_Armor,2;4,1;1,5,Selection,Range_b_16,아군의 생명력을 {ValueRate1} 회복하고 방어도를 {ValueRate2} 부여합니다.
-S_Core_30,바이탈 가드+,Core,Unique,Cost,PlayerParty,2,Buff,E_Heal;E_Armor,2;4,1;1,5,Selection,Range_b_17,아군의 생명력을 {ValueRate1} 회복하고 방어도를 {ValueRate2} 부여합니다.
-S_Core_31,전술 정비,Core,Epic,Cost,Self,1,Buff,E_Charge;E_Focus,2;1,1;1,4,Direction,Range_Self,"전술을 재정비하여 충전을 {ValueRate1}, 카르마를 {ValueRate2} 회복합니다."
-S_Core_32,전술 정비+,Core,Epic,Cost,Self,2,Buff,E_Charge;E_Focus,3;1,1;1,4,Direction,Range_Self,"전술을 재정비하여 충전을 {ValueRate1}, 카르마를 {ValueRate2} 회복합니다."
-S_Core_33,블러드 마크,Core,Rare,Hp,EnemyParty,1,Debuff,E_Bleed;E_Vulnerable,2;1,1;1,4,Direction,Range_13,"피의 표식을 새겨 적에게 출혈을 {ValueRate1}, 취약을 {ValueRate2} 부여합니다."
-S_Core_34,블러드 마크+,Core,Rare,Hp,EnemyParty,2,Debuff,E_Bleed;E_Vulnerable,2;1,1;1,3,Direction,Range_13,"피의 표식을 새겨 적에게 출혈을 {ValueRate1}, 취약을 {ValueRate2} 부여합니다."
-S_Core_35,독성 침식,Core,Rare,Cost,EnemyParty,1,Debuff,E_Weaken;E_Poison,1;2,1;1,5,Direction,Range_02,"독성 기운으로 적을 침식시켜 약화를 {ValueRate1}, 중독을 {ValueRate2} 부여합니다."
-S_Core_36,독성 침식+,Core,Rare,Cost,EnemyParty,2,Debuff,E_Weaken;E_Poison,1;2,1;1,4,Direction,Range_02,"독성 기운으로 적을 침식시켜 약화를 {ValueRate1}, 중독을 {ValueRate2} 부여합니다."
-S_Core_37,쇼크 웨이브,Core,Common,Cost,EnemyParty,1,Attack,E_Strike;E_Knockback,6;1,1;1,4,Direction,Range_06,충격파를 일으켜 적에게 {ValueRate1}의 피해를 주고 {ValueRate2}칸 넉백시킵니다.
-S_Core_38,쇼크 웨이브+,Core,Common,Cost,EnemyParty,2,Attack,E_Strike;E_Knockback,8;2,1;1,4,Direction,Range_06,충격파를 일으켜 적에게 {ValueRate1}의 피해를 주고 {ValueRate2}칸 넉백시킵니다.
-S_Core_39,바인드 체인,Core,Common,Cost,EnemyParty,1,Attack,E_Strike;E_Grab,6;1,1;1,4,Direction,Range_22,사슬로 적을 붙잡아 {ValueRate1}의 피해를 주고 {ValueRate2}칸 그랩합니다.
-S_Core_40,바인드 체인+,Core,Common,Cost,EnemyParty,2,Attack,E_Strike;E_Grab,6;1,1;1,3,Direction,Range_22,사슬로 적을 붙잡아 {ValueRate1}의 피해를 주고 {ValueRate2}칸 그랩합니다.
-S_Core_41,크러시 블로우,Core,Epic,Cost,EnemyParty,1,Attack,E_Strike,12,1,4,Direction,Range_23,묵직한 타격으로 적에게 {ValueRate1}의 피해를 줍니다.
-S_Core_42,크러시 블로우+,Core,Epic,Cost,EnemyParty,2,Attack,E_Strike,16,1,4,Direction,Range_23,묵직한 타격으로 적에게 {ValueRate1}의 피해를 줍니다.
-S_Core_43,연격,Core,Epic,Cost,EnemyParty,1,Attack,E_Strike,4,2,3,Direction,Range_06,연속으로 공격해 적에게 {ValueRate1}의 피해를 {CountRate1}번 줍니다.
-S_Core_44,연격+,Core,Epic,Cost,EnemyParty,2,Attack,E_Strike,4,3,3,Direction,Range_06,연속으로 공격해 적에게 {ValueRate1}의 피해를 {CountRate1}번 줍니다.
-S_Core_45,화살 세례,Core,Unique,Cost,EnemyParty,1,Attack,E_Strike,3,3,4,Selection,Range_17,화살을 쏟아부어 적에게 {ValueRate1}의 피해를 {CountRate1}번 줍니다.
-S_Core_46,화살 세례+,Core,Unique,Cost,EnemyParty,2,Attack,E_Strike,3,4,4,Selection,Range_17,화살을 쏟아부어 적에게 {ValueRate1}의 피해를 {CountRate1}번 줍니다.
-S_Core_47,전진일격,Core,Common,Cost,EnemyParty,1,Attack,E_Move;E_Strike,1;9,1;1,4,Direction,Range_22,앞으로 {ValueRate1}칸 전진하며 적에게 {ValueRate2}의 피해를 줍니다.
-S_Core_48,전진일격+,Core,Common,Cost,EnemyParty,2,Attack,E_Move;E_Strike,1;12,1;1,4,Direction,Range_22,앞으로 {ValueRate1}칸 전진하며 적에게 {ValueRate2}의 피해를 줍니다.
-S_Core_49,크림슨 아머,Core,Rare,Cost,PlayerParty,1,Buff,E_Ward;E_Armor,2;8,1;1,6,Selection,Range_b_17,"붉은 갑옷을 둘러 아군에게 가호를 {ValueRate1}, 방어도를 {ValueRate2} 부여합니다."
-S_Core_50,크림슨 아머+,Core,Rare,Cost,PlayerParty,2,Buff,E_Ward;E_Armor,3;10,1;1,6,Selection,Range_b_17,"붉은 갑옷을 둘러 아군에게 가호를 {ValueRate1}, 방어도를 {ValueRate2} 부여합니다."
-S_Core_51,시간 왜곡,Core,Epic,Cost,PlayerParty,1,Buff,E_Swift,1,1,8,Direction,Range_All,시간의 흐름을 왜곡해 다음 턴 시작 시 자신과 아군에게 신속을 {ValueRate1} 부여합니다.
-S_Core_52,시간 왜곡+,Core,Epic,Cost,PlayerParty,2,Buff,E_Swift,1,1,7,Direction,Range_All,시간의 흐름을 왜곡해 다음 턴 시작 시 자신과 아군에게 신속을 {ValueRate1} 부여합니다.
-S_Core_53,도미네이션,Core,Epic,Cost,EnemyParty,1,Debuff,E_Vulnerable;E_Weaken,2;2,1;1,8,Direction,Range_All,"전장을 지배하여 적에게 취약을 {ValueRate1}, 약화를 {ValueRate2} 부여합니다.",,
-S_Core_54,도미네이션+,Core,Epic,Cost,EnemyParty,2,Debuff,E_Vulnerable;E_Weaken,3;3,1;1,8,Direction,Range_All,"전장을 지배하여 적에게 취약을 {ValueRate1}, 약화를 {ValueRate2} 부여합니다.",,
-S_Core_55,블러드 베놈,Core,Rare,Cost,EnemyParty,1,Debuff,E_Poison;E_Bleed,2;2,1;1,6,Selection,Range_17,"독성의 피를 퍼뜨려 적에게 중독을 {ValueRate1}, 출혈을 {ValueRate2} 부여합니다.",,
-S_Core_56,블러드 베놈+,Core,Rare,Cost,EnemyParty,2,Debuff,E_Poison;E_Bleed,2;2,1;1,6,Selection,Range_05,"독성의 피를 퍼뜨려 적에게 중독을 {ValueRate1}, 출혈을 {ValueRate2} 부여합니다."
-S_Core_57,하트 피어스,Core,Unique,Cost,EnemyParty,1,Attack,E_Pierce;E_Vulnerable,13;1,1;1,6,Direction,Range_21,급소를 꿰뚫어 적에게 {ValueRate1}의 관통 피해를 주고 취약을 {ValueRate2} 부여합니다.
-S_Core_58,하트 피어스+,Core,Unique,Cost,EnemyParty,2,Attack,E_Pierce;E_Vulnerable,15;2,1;1,6,Direction,Range_21,급소를 꿰뚫어 적에게 {ValueRate1}의 관통 피해를 주고 취약을 {ValueRate2} 부여합니다.
-S_Core_59,피니셔,Core,Unique,Cost,EnemyParty,1,Attack,E_Strike,18,1,5,Direction,Range_09,강력한 마무리 일격으로 적에게 {ValueRate1}의 피해를 줍니다.
-S_Core_60,피니셔+,Core,Unique,Cost,EnemyParty,2,Attack,E_Strike,22,1,5,Direction,Range_09,강력한 마무리 일격으로 적에게 {ValueRate1}의 피해를 줍니다.
+S_Core_25,꿰뚫는 빛,Core,Common,Cost,EnemyParty,1,Attack,E_Pierce,7,1,3,Direction,Range_03,빛을 쏘아 {ValueRate1}의 관통 피해를 준다.
+S_Core_26,꿰뚫는 빛+,Core,Common,Cost,EnemyParty,2,Attack,E_Pierce,8,1,3,Direction,Range_21,빛을 쏘아 {ValueRate1}의 관통 피해를 준다.
+S_Core_27,이동 사격,Core,Rare,Cost,EnemyParty,1,Attack,E_Strike;E_Move,4;-1,1;1,3,Direction,Range_23,날렵하게 {ValueRate1}의 피해를 주고 뒤로 {ValueRate2}칸 이동한다.
+S_Core_28,이동 사격+,Core,Rare,Cost,EnemyParty,2,Attack,E_Strike;E_Move,6;-1,1;1,3,Direction,Range_23,날렵하게 {ValueRate1}의 피해를 주고 뒤로 {ValueRate2}칸 이동한다.
+S_Core_29,바이탈 가드,Core,Unique,Cost,PlayerParty,1,Buff,E_Heal;E_Armor,2;4,1;1,5,Selection,Range_b_16,아군의 생명력을 {ValueRate1} 회복하고 방어도를 {ValueRate2} 부여한다.
+S_Core_30,바이탈 가드+,Core,Unique,Cost,PlayerParty,2,Buff,E_Heal;E_Armor,2;4,1;1,5,Selection,Range_b_17,아군의 생명력을 {ValueRate1} 회복하고 방어도를 {ValueRate2} 부여한다.
+S_Core_31,전술 정비,Core,Epic,Cost,Self,1,Buff,E_Charge;E_Focus,2;1,1;1,4,Direction,Range_Self,"재정비하여 충전을 {ValueRate1} 얻고, 카르마를 {ValueRate2} 회복한다."
+S_Core_32,전술 정비+,Core,Epic,Cost,Self,2,Buff,E_Charge;E_Focus,3;1,1;1,4,Direction,Range_Self,"재정비하여 충전을 {ValueRate1} 얻고, 카르마를 {ValueRate2} 회복한다."
+S_Core_33,블러드 마크,Core,Rare,Hp,EnemyParty,1,Debuff,E_Bleed;E_Vulnerable,2;1,1;1,4,Direction,Range_13,"피의 표식을 새겨  출혈을 {ValueRate1}, 취약을 {ValueRate2} 부여한다."
+S_Core_34,블러드 마크+,Core,Rare,Hp,EnemyParty,2,Debuff,E_Bleed;E_Vulnerable,2;1,1;1,3,Direction,Range_13,"피의 표식을 새겨  출혈을 {ValueRate1}, 취약을 {ValueRate2} 부여한다."
+S_Core_35,독성 침식,Core,Rare,Cost,EnemyParty,1,Debuff,E_Weaken;E_Poison,1;2,1;1,5,Direction,Range_02,"독성 기운으로 침식시켜 약화를 {ValueRate1}, 중독을 {ValueRate2} 부여한다."
+S_Core_36,독성 침식+,Core,Rare,Cost,EnemyParty,2,Debuff,E_Weaken;E_Poison,1;2,1;1,4,Direction,Range_02,"독성 기운으로 침식시켜 약화를 {ValueRate1}, 중독을 {ValueRate2} 부여한다."
+S_Core_37,쇼크 웨이브,Core,Common,Cost,EnemyParty,1,Attack,E_Strike;E_Knockback,6;1,1;1,4,Direction,Range_06,충격파를 일으켜 {ValueRate1}의 피해를 주고 {ValueRate2}칸 밀쳐낸다.
+S_Core_38,쇼크 웨이브+,Core,Common,Cost,EnemyParty,2,Attack,E_Strike;E_Knockback,8;2,1;1,4,Direction,Range_06,충격파를 일으켜 {ValueRate1}의 피해를 주고 {ValueRate2}칸 밀쳐낸다.
+S_Core_39,바인드 체인,Core,Common,Cost,EnemyParty,1,Attack,E_Strike;E_Grab,6;1,1;1,4,Direction,Range_22,붙잡아 {ValueRate1}의 피해를 주고 {ValueRate2}칸 당겨온다.
+S_Core_40,바인드 체인+,Core,Common,Cost,EnemyParty,2,Attack,E_Strike;E_Grab,6;1,1;1,3,Direction,Range_22,붙잡아 {ValueRate1}의 피해를 주고 {ValueRate2}칸 당겨온다.
+S_Core_41,크러시 블로우,Core,Epic,Cost,EnemyParty,1,Attack,E_Strike,12,1,4,Direction,Range_23,묵직한 타격으로 {ValueRate1}의 피해를 준다.
+S_Core_42,크러시 블로우+,Core,Epic,Cost,EnemyParty,2,Attack,E_Strike,16,1,4,Direction,Range_23,묵직한 타격으로 {ValueRate1}의 피해를 준다.
+S_Core_43,연격,Core,Epic,Cost,EnemyParty,1,Attack,E_Strike,4,2,3,Direction,Range_06,연속으로 공격해 {ValueRate1}의 피해를 {CountRate1}번 준다.
+S_Core_44,연격+,Core,Epic,Cost,EnemyParty,2,Attack,E_Strike,4,3,3,Direction,Range_06,연속으로 공격해 {ValueRate1}의 피해를 {CountRate1}번 준다.
+S_Core_45,화살 세례,Core,Unique,Cost,EnemyParty,1,Attack,E_Strike,3,3,4,Selection,Range_17,화살을 쏟아부어 {ValueRate1}의 피해를 {CountRate1}번 준다.
+S_Core_46,화살 세례+,Core,Unique,Cost,EnemyParty,2,Attack,E_Strike,3,4,4,Selection,Range_17,화살을 쏟아부어 {ValueRate1}의 피해를 {CountRate1}번 준다.
+S_Core_47,전진일격,Core,Common,Cost,EnemyParty,1,Attack,E_Move;E_Strike,1;9,1;1,4,Direction,Range_22,앞으로 {ValueRate1}칸 전진하며 적에게 {ValueRate2}의 피해를 준다.
+S_Core_48,전진일격+,Core,Common,Cost,EnemyParty,2,Attack,E_Move;E_Strike,1;12,1;1,4,Direction,Range_22,앞으로 {ValueRate1}칸 전진하며 적에게 {ValueRate2}의 피해를 준다.
+S_Core_49,크림슨 아머,Core,Rare,Cost,PlayerParty,1,Buff,E_Ward;E_Armor,2;8,1;1,6,Selection,Range_b_17,"아군에게 가호를 {ValueRate1}, 방어도를 {ValueRate2} 부여합니다."
+S_Core_50,크림슨 아머+,Core,Rare,Cost,PlayerParty,2,Buff,E_Ward;E_Armor,3;10,1;1,6,Selection,Range_b_17,"아군에게 가호를 {ValueRate1}, 방어도를 {ValueRate2} 부여합니다."
+S_Core_51,시간 왜곡,Core,Epic,Cost,PlayerParty,1,Buff,E_Swift,1,1,8,Direction,Range_All,시간의 흐름을 왜곡시켜 아군에게 다음 턴 시작 시 신속을 {ValueRate1} 부여한다.
+S_Core_52,시간 왜곡+,Core,Epic,Cost,PlayerParty,2,Buff,E_Swift,1,1,7,Direction,Range_All,시간의 흐름을 왜곡시켜 아군에게 다음 턴 시작 시 신속을 {ValueRate1} 부여한다.
+S_Core_53,도미네이션,Core,Epic,Cost,EnemyParty,1,Debuff,E_Vulnerable;E_Weaken,2;2,1;1,8,Direction,Range_All,"전장을 지배하여 취약을 {ValueRate1}, 약화를 {ValueRate2} 부여한다.",,
+S_Core_54,도미네이션+,Core,Epic,Cost,EnemyParty,2,Debuff,E_Vulnerable;E_Weaken,3;3,1;1,8,Direction,Range_All,"전장을 지배하여 취약을 {ValueRate1}, 약화를 {ValueRate2} 부여한다.",,
+S_Core_55,블러드 베놈,Core,Rare,Cost,EnemyParty,1,Debuff,E_Poison;E_Bleed,2;2,1;1,6,Selection,Range_17,"독성의 피를 퍼뜨려 중독을 {ValueRate1}, 출혈을 {ValueRate2} 부여한다.",,
+S_Core_56,블러드 베놈+,Core,Rare,Cost,EnemyParty,2,Debuff,E_Poison;E_Bleed,2;2,1;1,6,Selection,Range_05,"독성의 피를 퍼뜨려 중독을 {ValueRate1}, 출혈을 {ValueRate2} 부여한다."
+S_Core_57,하트 피어스,Core,Unique,Cost,EnemyParty,1,Attack,E_Pierce;E_Vulnerable,13;1,1;1,6,Direction,Range_21,급소를 꿰뚫어 {ValueRate1}의 관통 피해를 주고 취약을 {ValueRate2} 부여한다.
+S_Core_58,하트 피어스+,Core,Unique,Cost,EnemyParty,2,Attack,E_Pierce;E_Vulnerable,15;2,1;1,6,Direction,Range_21,급소를 꿰뚫어 {ValueRate1}의 관통 피해를 주고 취약을 {ValueRate2} 부여한다.
+S_Core_59,피니셔,Core,Unique,Cost,EnemyParty,1,Attack,E_Strike,18,1,5,Direction,Range_09,마무리 일격으로 {ValueRate1}의 피해를 준다.
+S_Core_60,피니셔+,Core,Unique,Cost,EnemyParty,2,Attack,E_Strike,22,1,5,Direction,Range_09,마무리 일격으로 {ValueRate1}의 피해를 준다.
 S_Core_61,위압,Core,Common,Cost,EnemyParty,1,Debuff,E_Weaken,1,1,4,Direction,Range_07,상대의 기세를 억눌러 약화를 {ValueRate1} 부여합니다.
 S_Core_62,위압+,Core,Common,Cost,EnemyParty,2,Debuff,E_Weaken,1,1,3,Direction,Range_07,상대의 기세를 억눌러 약화를 {ValueRate1} 부여합니다.
 S_Core_63,공격태세,Core,Rare,Cost,PlayerParty,1,Buff,E_Boost,1,1,4,Direction,Range_b_02,공격 태세를 갖춰 자신과 아군에게 증폭을 {ValueRate1} 부여합니다.
@@ -212,7 +212,7 @@ S_Core_80,스피드스터+,Core,Common,Cost,PlayerParty,2,Buff,E_Swift,1,1,3,Dir
 # MonsterSkill
 스킬ID,이름,대상,효과ID,수치계수,횟수계수,그리드이동,범위ID,타임라인표기,효과설명,수치값변수,아이콘,타입
 SkillId,Name,Target,EffectIds,ValueRate,CountRate,GridMove,RangeId,TimelineNotation,EffectDesc,ValueRandomRange,SkillIcon,SkillType
-S_Monster_01,이동,Self,E_Move,0,1,0,Range_02,Move,가까운 캐릭터 주변으로 향해 1칸 이동한다.,0,icon_mon_skill_001,이동
+S_Monster_01,이동,Self,E_Move,0,1,0,Range_02,Move,가까운 캐릭터 주변으로 1칸 이동한다.,0,icon_mon_skill_001,이동
 S_Monster_02,점액투척,PlayerParty,E_Strike,7,1,0,Range_16,Attack,범위 내에서 가까운 대상에게 수치의 피해를 주고 점액을 남긴다.,0,icon_mon_skill_002,원거리
 S_Monster_03,이동,Self,E_Move,0,1,0,Range_01,Move,가까운 캐릭터를 향해 1칸 이동한다.,0,icon_mon_skill_001,이동
 S_Monster_04,덮치기,PlayerParty,E_Strike,5,1,0,Range_10,Attack,대상에게 수치의 피해를 준다.,0,icon_mon_skill_003,근거리
