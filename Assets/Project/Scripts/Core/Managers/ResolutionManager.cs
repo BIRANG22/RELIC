@@ -23,7 +23,7 @@ public class ResolutionManager : MonoBehaviour
     };
 
     private static ResolutionManager instance;
-    private static Color letterboxColor = new Color32(0x00, 0x02, 0x22, 0xFF);//���͹ڽ� ��
+    private static Color letterboxColor = new Color32(0x00, 0x02, 0x22, 0xFF); // Letterbox color
     private ResolutionLetterboxOverlay letterboxOverlay;
     private Coroutine resolutionRefreshCoroutine;
     private readonly List<ResolutionCanvasViewportFitter> canvasViewportFitters = new();
@@ -125,8 +125,8 @@ public class ResolutionManager : MonoBehaviour
         if (resolutionRefreshCoroutine != null)
             StopCoroutine(resolutionRefreshCoroutine);
 
-        // Screen.SetResolution�� ���� â ũ�⸦ ���� �����Ӻ��� �ݿ��մϴ�.
-        // â�� Canvas ũ�Ⱑ ������ ���ŵ� ������ �� ������ ���� ȭ�� ��ġ�� �ٽ� ����ϴ�.
+        // Screen.SetResolution may update the native window size a few frames later.
+        // Recalculate layout after Canvas size settles so screen placement stays correct.
         resolutionRefreshCoroutine = StartCoroutine(RefreshResolutionLayoutRoutine());
     }
 

@@ -125,7 +125,7 @@ public class EventRoomController : MonoBehaviour
             relicAcquireRoutine = null;
         }
 
-        StopDiceRollRoutine();
+        HideDiceRollPresenterImmediate();
         StopEventRewardPanelDelay();
         CacheRelicFlyRootOriginalState();
         HideRelicHoverInfo();
@@ -166,7 +166,7 @@ public class EventRoomController : MonoBehaviour
             relicAcquireRoutine = null;
         }
 
-        StopDiceRollRoutine();
+        HideDiceRollPresenterImmediate();
         StopEventRewardPanelDelay();
         HideRelicHoverInfo();
         HideRelicFlyObjects();
@@ -222,6 +222,8 @@ public class EventRoomController : MonoBehaviour
                 isEventResolved = true;
             }
 
+            HideDiceRollPresenterImmediate();
+
             if (pendingEventRewards.Count > 0 && TryOpenPendingEventRewardPanel(false))
                 return;
 
@@ -238,6 +240,7 @@ public class EventRoomController : MonoBehaviour
 
         CompleteCurrentNode();
 
+        HideDiceRollPresenterImmediate();
         ReturnToMap();
     }
 
@@ -366,6 +369,7 @@ public class EventRoomController : MonoBehaviour
             return;
 
         EnsureDataEventReferences();
+        HideDiceRollPresenterImmediate();
 
         currentEventDefinition = definition;
         pendingEventId = definition.EventId;
@@ -521,7 +525,7 @@ public class EventRoomController : MonoBehaviour
         if (diceRollPresenter == null || !diceRollPresenter.IsReady)
             return false;
 
-        StopDiceRollRoutine();
+        HideDiceRollPresenterOnly();
         SetChoiceSlotsInteractable(false);
         SetNextButtonVisible(false);
 
@@ -533,7 +537,7 @@ public class EventRoomController : MonoBehaviour
     private IEnumerator PlayDiceRollThenExecute(EventData choice, int[] diceFaces)
     {
         bool completed = false;
-        diceRollPresenter.Play(diceFaces, () => completed = true);
+        yield return diceRollPresenter.PlayFromHost(diceFaces, () => completed = true);
 
         while (!completed)
             yield return null;
@@ -549,6 +553,17 @@ public class EventRoomController : MonoBehaviour
 
         StopCoroutine(diceRollRoutine);
         diceRollRoutine = null;
+    }
+
+    private void HideDiceRollPresenterImmediate()
+    {
+        StopDiceRollRoutine();
+        HideDiceRollPresenterOnly();
+    }
+
+    private void HideDiceRollPresenterOnly()
+    {
+        diceRollPresenter?.HideImmediate();
     }
 
     private void BeginEquippedRelicCostSelection(EventData choice)
@@ -2259,6 +2274,7 @@ public class EventRoomController : MonoBehaviour
         isEventRewardPanelOpen = false;
         pendingEventRewards.Clear();
         PersistEventRuntime();
+        HideDiceRollPresenterImmediate();
         CompleteCurrentNode();
         ReturnToMap();
     }

@@ -896,6 +896,7 @@ public class BattleSceneController : MonoBehaviour
         }
 
         bool isBattleRoom = roomObject == battleRoom;
+        ResetCameraForNonBattleRoom(roomObject, isBattleRoom);
         SetSharedPartyPresentationVisible(!isBattleRoom);
 
         if (isBattleRoom)
@@ -905,6 +906,14 @@ public class BattleSceneController : MonoBehaviour
 
         if (isBattleRoom)
             RequestBattleRoomLoadOnce();
+    }
+
+    private static void ResetCameraForNonBattleRoom(GameObject roomObject, bool isBattleRoom)
+    {
+        if (roomObject == null || isBattleRoom)
+            return;
+
+        ResetCameraForMap();
     }
 
     private void CleanupCompletedBattleRoom()

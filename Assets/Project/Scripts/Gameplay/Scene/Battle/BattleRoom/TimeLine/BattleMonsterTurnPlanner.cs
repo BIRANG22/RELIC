@@ -14,13 +14,13 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
     [SerializeField] private GridManager gridManager;
 
     [Header("Nocturn Portal Preview")]
-    [Tooltip("���� BattleReservationSystem ������Ʈ�� ���� ��Ʈ�ѷ��� ����մϴ�. ��� ������ �ڵ����� ã���ϴ�.")]
+    [Tooltip("비어 있으면 BattleReservationSystem 오브젝트의 예약 컨트롤러를 사용합니다.")]
     [SerializeField] private PlayerSkillReservationController playerSkillReservationController;
 
     [Header("Intro Text")]
     [SerializeField] private BattleMapIntroText battleMapIntroText;
-    [SerializeField] private string battleStartMessage = "���� ����";
-    [SerializeField] private string actionReserveMessage = "�ൿ ����";
+    [SerializeField] private string battleStartMessage = "전투 시작";
+    [SerializeField] private string actionReserveMessage = "행동 예약";
     [SerializeField] private float firstMonsterCommandDelay = 0.15f;
     [SerializeField] private float monsterCommandInterval = 0.18f;
     [SerializeField] private float actionReserveMessageDelay = 0.1f;
@@ -114,7 +114,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
     {
         if (timelineController == null)
         {
-            Debug.LogWarning("[BattleMonsterTurnPlanner] BattleTimelineController�� �����ϴ�.");
+            Debug.LogWarning("[BattleMonsterTurnPlanner] BattleTimelineController is missing.");
             planRoutine = null;
             yield break;
         }
@@ -163,7 +163,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
     {
         if (timelineController == null)
         {
-            Debug.LogWarning("[BattleMonsterTurnPlanner] BattleTimelineController�� �����ϴ�.");
+            Debug.LogWarning("[BattleMonsterTurnPlanner] BattleTimelineController is missing.");
             return;
         }
 
@@ -283,7 +283,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
                 if (skillData == null)
                 {
-                    Debug.LogWarning($"[BattleMonsterTurnPlanner] SkillData ����: {action.SkillId}");
+                    Debug.LogWarning($"[BattleMonsterTurnPlanner] SkillData missing: {action.SkillId}");
                     continue;
                 }
 
@@ -302,9 +302,9 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                         action.ExplicitRangeGridIndices,
                         action.ExplicitRangeGridIndices);
                 }
-                // ��Ż ������ RangeOriginGridIndex���� ���� �����̵� �������� ����Ǿ� �ֽ��ϴ�.
-                // �Ϲ� ���� ���� ������� �� ���� ����� ��Ż �������� ������ ĭ���� �ٲ� �� �����Ƿ�
-                // ��Ż �̵��� ���� ���� ��꿡�� �����մϴ�.
+                // Portal previews already calculate direction from RangeOriginGridIndex.
+                // Normal ranged attacks can change target cells when direction is recomputed,
+                // so only non-portal, non-move skills calculate monster range here.
                 else if (!action.IsPortalMove && !IsMoveSkill(skillData))
                 {
                     SetMonsterRange(monsterUnit, skillData, command);
@@ -604,13 +604,13 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
     {
         if (monsterUnit == null || skillData == null || command == null)
         {
-            Debug.LogWarning("[MonsterRange] null ����");
+            Debug.LogWarning("[MonsterRange] null input");
             return;
         }
 
         if (gridManager == null)
         {
-            Debug.LogWarning("[MonsterRange] gridManager ����");
+            Debug.LogWarning("[MonsterRange] gridManager missing");
             return;
         }
 
@@ -618,13 +618,13 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
         if (casterGridIndex < 0)
         {
-            Debug.LogWarning($"[MonsterRange] MainGridIndex ���� / Monster:{monsterUnit.RuntimeData?.Name}");
+            Debug.LogWarning($"[MonsterRange] MainGridIndex missing / Monster:{monsterUnit.RuntimeData?.Name}");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(skillData.RangeId) || skillData.RangeId == "0")
         {
-            Debug.LogWarning($"[MonsterRange] RangeId ���� / Skill:{skillData.SkillId}");
+            Debug.LogWarning($"[MonsterRange] RangeId missing / Skill:{skillData.SkillId}");
             return;
         }
 

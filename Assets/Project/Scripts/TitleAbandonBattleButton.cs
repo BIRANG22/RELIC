@@ -5,13 +5,13 @@ using UnityEngine.UI;
 public class TitleAbandonBattleButton : MonoBehaviour
 {
     [Header("Confirm")]
-    [SerializeField] private string confirmMessage = "���� �����Ͻðڽ��ϱ�?";
-    [SerializeField] private string confirmYesText = "��";
-    [SerializeField] private string confirmNoText = "�ƴϿ�";
+    [SerializeField] private string confirmMessage = "정말 포기하시겠습니까?";
+    [SerializeField] private string confirmYesText = "예";
+    [SerializeField] private string confirmNoText = "아니오";
 
     [Header("Warning")]
-    [SerializeField] private string missingRunMessage = "������ Ž�� ������ ����";
-    [SerializeField] private string completeMessage = "���� ���� Ž�縦 �����߽��ϴ�.";
+    [SerializeField] private string missingRunMessage = "포기할 탐사 정보가 없음";
+    [SerializeField] private string completeMessage = "진행 중인 탐사를 포기했습니다.";
 
     [Header("Sound")]
     [SerializeField] private bool playClickSound = true;

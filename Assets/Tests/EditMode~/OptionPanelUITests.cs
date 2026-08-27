@@ -12,6 +12,9 @@ using UnityEngine.UI;
 public class OptionPanelUITests
 {
     private const string OptionPrefabPath = "Assets/Project/PrefabsR/Option.prefab";
+    private const string OptionFontGuid = "561f3002d19400a47bae19552e5b0ed5";
+    private const long OptionFontFileId = 11400000;
+    private const long OptionFontMaterialFileId = -7555710420834941891;
 
     private readonly List<GameObject> createdObjects = new();
     private bool hadTutorialPreference;
@@ -136,10 +139,104 @@ public class OptionPanelUITests
         Assert.That(TutorialSettings.ShouldShowTutorial, Is.True);
     }
 
+    [UnityTest]
+    public IEnumerator ShowSound_ActivatesOnlySoundContent()
+    {
+        OptionPanelUI panel = CreateOptionPanel(
+            out GameObject soundContent,
+            out GameObject languageContent,
+            out GameObject resolutionContent,
+            out _,
+            out GameObject controlContent,
+            out _);
+
+        panel.ShowSound();
+        yield return null;
+
+        Assert.That(soundContent.activeSelf, Is.True);
+        Assert.That(languageContent.activeSelf, Is.False);
+        Assert.That(resolutionContent.activeSelf, Is.False);
+        Assert.That(controlContent.activeSelf, Is.False);
+    }
+
+    [UnityTest]
+    public IEnumerator ShowLanguage_ActivatesOnlyLanguageContent()
+    {
+        OptionPanelUI panel = CreateOptionPanel(
+            out GameObject soundContent,
+            out GameObject languageContent,
+            out GameObject resolutionContent,
+            out _,
+            out GameObject controlContent,
+            out _);
+
+        panel.ShowLanguage();
+        yield return null;
+
+        Assert.That(soundContent.activeSelf, Is.False);
+        Assert.That(languageContent.activeSelf, Is.True);
+        Assert.That(resolutionContent.activeSelf, Is.False);
+        Assert.That(controlContent.activeSelf, Is.False);
+    }
+
     [Test]
     public void TutorialSettings_DefaultsToShowingTutorialUntilFirstShown()
     {
         Assert.That(TutorialSettings.ShouldShowTutorial, Is.True);
+    }
+
+    [Test]
+    public void OptionTMPFontEnforcer_ApplyFontsReplacesFontAndMaterial()
+    {
+        TMP_FontAsset optionFont = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Fonts/TMP/DungGeunMo SDF.asset");
+        TMP_FontAsset fallbackFont = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(
+            "Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF.asset");
+        Assert.That(optionFont, Is.Not.Null);
+        Assert.That(fallbackFont, Is.Not.Null);
+        Assert.That(optionFont.material, Is.Not.Null);
+
+        GameObject root = Track(new GameObject("FontEnforcerRoot"));
+        TextMeshProUGUI text = CreateText("사운드", root.transform);
+        text.font = fallbackFont;
+        text.fontSharedMaterial = fallbackFont.material;
+
+        OptionTMPFontEnforcer enforcer = root.AddComponent<OptionTMPFontEnforcer>();
+        SetPrivateField(enforcer, "defaultFontAsset", optionFont);
+        SetPrivateField(enforcer, "dropdownFontAsset", optionFont);
+
+        enforcer.ApplyFonts();
+
+        Assert.That(text.font, Is.SameAs(optionFont));
+        Assert.That(text.fontSharedMaterial, Is.SameAs(optionFont.material));
+    }
+
+    [Test]
+    public void OptionPrefab_KoreanTextsUseKoreanFontAndMaterial()
+    {
+        GameObject root = PrefabUtility.LoadPrefabContents(OptionPrefabPath);
+
+        try
+        {
+            TextMeshProUGUI[] texts = root.GetComponentsInChildren<TextMeshProUGUI>(true);
+            Assert.That(texts, Is.Not.Empty);
+
+            foreach (TextMeshProUGUI text in texts)
+            {
+                if (text == null || !ContainsKorean(text.text))
+                    continue;
+
+                Assert.That(AssetDatabase.TryGetGUIDAndLocalFileIdentifier(text.font, out string fontGuid, out long fontFileId), Is.True);
+                Assert.That(fontGuid, Is.EqualTo(OptionFontGuid), text.name);
+                Assert.That(fontFileId, Is.EqualTo(OptionFontFileId), text.name);
+                Assert.That(AssetDatabase.TryGetGUIDAndLocalFileIdentifier(text.fontSharedMaterial, out string materialGuid, out long materialFileId), Is.True);
+                Assert.That(materialGuid, Is.EqualTo(OptionFontGuid), text.name);
+                Assert.That(materialFileId, Is.EqualTo(OptionFontMaterialFileId), text.name);
+            }
+        }
+        finally
+        {
+            PrefabUtility.UnloadPrefabContents(root);
+        }
     }
 
     [Test]
@@ -386,5 +483,20 @@ public class OptionPanelUITests
         FieldInfo field = target.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
         Assert.That(field, Is.Not.Null);
         field.SetValue(target, value);
+    }
+
+    private static bool ContainsKorean(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return false;
+
+        for (int i = 0; i < value.Length; i++)
+        {
+            char c = value[i];
+            if (c >= '\uac00' && c <= '\ud7a3')
+                return true;
+        }
+
+        return false;
     }
 }

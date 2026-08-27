@@ -4,15 +4,15 @@ using UnityEngine;
 
 public sealed class OptionTMPFontEnforcer : MonoBehaviour
 {
-    [Header("±âº» ¿É¼Ç ÆùÆ®")]
-    [Tooltip("Sound, Language, Master, BGM, SFX °°Àº ÀÏ¹İ ¿É¼Ç ÅØ½ºÆ®¿¡ Àû¿ëÇÒ TMP ÆùÆ®ÀÔ´Ï´Ù.")]
+    [Header("ê¸°ë³¸ ì˜µì…˜ í°íŠ¸")]
+    [Tooltip("Sound, Language, Master, BGM, SFX ë“± ì¼ë°˜ ì˜µì…˜ í…ìŠ¤íŠ¸ì— ì ìš©í•  TMP í°íŠ¸ì…ë‹ˆë‹¤.")]
     [SerializeField] private TMP_FontAsset defaultFontAsset;
 
-    [Header("¾ğ¾î µå·Ó´Ù¿î ÆùÆ®")]
-    [Tooltip("Language DropdownÀÇ Label, Item Label, ·±Å¸ÀÓ Dropdown List¿¡ Àû¿ëÇÒ TMP ÆùÆ®ÀÔ´Ï´Ù.")]
+    [Header("ë“œë¡­ë‹¤ìš´ í°íŠ¸")]
+    [Tooltip("Language Dropdownì˜ Label, Item Label, ëŸ°íƒ€ì„ Dropdown Listì— ì ìš©í•  TMP í°íŠ¸ì…ë‹ˆë‹¤.")]
     [SerializeField] private TMP_FontAsset dropdownFontAsset;
 
-    [Header("Àû¿ë Å¸ÀÌ¹Ö")]
+    [Header("ì ìš© íƒ€ì´ë°")]
     [SerializeField] private bool applyOnAwake = true;
     [SerializeField] private bool applyOnEnable = true;
     [SerializeField] private bool applyAfterOneFrame = true;
@@ -138,10 +138,10 @@ public sealed class OptionTMPFontEnforcer : MonoBehaviour
         if (text == null || fontAsset == null)
             return;
 
-        if (text.font == fontAsset)
-            return;
-
         text.font = fontAsset;
+        if (fontAsset.material != null)
+            text.fontSharedMaterial = fontAsset.material;
+
         text.SetAllDirty();
     }
 }

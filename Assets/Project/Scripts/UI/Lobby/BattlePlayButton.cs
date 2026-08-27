@@ -9,9 +9,9 @@ public class BattlePlayButton : MonoBehaviour
     [SerializeField] private LobbyQuestGate questGate;
 
     [Header("Stage Carousel")]
-    [Tooltip("�������� ��ư�� ĳ���� ������� ����� �� �����մϴ�. ��� �θ� ������ �ڵ����� ã���ϴ�.")]
+    [Tooltip("스테이지 선택 캐러셀입니다. 비어 있으면 부모에서 자동으로 찾습니다.")]
     [SerializeField] private LobbyStageButtonCarousel stageButtonCarousel;
-    [Tooltip("�߾ӿ� �ִ� ���������� ��� ���� �� PlayButton�� ������ ������ ���� ����� ǥ���մϴ�.")]
+    [Tooltip("중앙에 있는 잠금 스테이지에서 PlayButton을 누르면 진행을 차단하고 경고를 표시합니다.")]
     [SerializeField] private bool blockLockedCarouselStage = true;
 
     [Header("Option")]
@@ -21,12 +21,12 @@ public class BattlePlayButton : MonoBehaviour
 
     [Header("Warning UI")]
     [SerializeField] private SettingWarningUI warningUI;
-    [SerializeField] private string lockedStageEnterMessage = "���� ������ �� ���� �����Դϴ�.";
-    [SerializeField] private string mapNotSelectedMessage = "���������� �����ؾ� �մϴ�.";
-    [SerializeField] private string partyEmptyMessage = "ĳ���͸� �����ؾ� �մϴ�.";
-    [SerializeField] private string partyNotFullMessage = "ĳ���� 3���� ��� �����ؾ� �մϴ�. ���� {0}/{1}";
-    [SerializeField] private string dataManagerMissingMessage = "������ �Ŵ����� �����ϴ�.";
-    [SerializeField] private string gameManagerMissingMessage = "���� �Ŵ����� �����ϴ�.";
+    [SerializeField] private string lockedStageEnterMessage = "아직 입장할 수 없는 구역입니다.";
+    [SerializeField] private string mapNotSelectedMessage = "스테이지를 선택해야 합니다.";
+    [SerializeField] private string partyEmptyMessage = "캐릭터를 편성해야 합니다.";
+    [SerializeField] private string partyNotFullMessage = "캐릭터 3명을 모두 편성해야 합니다. 현재 {0}/{1}";
+    [SerializeField] private string dataManagerMissingMessage = "데이터 매니저가 없습니다.";
+    [SerializeField] private string gameManagerMissingMessage = "게임 매니저가 없습니다.";
     [SerializeField] private string networkClientStartBlockedMessage = "Only the host can start in multiplayer lobby.";
     [SerializeField] private string networkBattleStartSyncFailedMessage = "Failed to synchronize battle start.";
 
@@ -83,8 +83,7 @@ public class BattlePlayButton : MonoBehaviour
                 return;
             }
 
-            // ���� ������ ���� �߾ӿ� ���̴� ������ ���� ���ð����� Ȯ���մϴ�.
-            // ĳ������ �̵��� �� ���� ��ư�� �ٽ� ������ �ʾƵ� �˴ϴ�.
+            // Commit the centered carousel stage so players do not need another click after moving it.
             CommitCenteredCarouselStage();
 
             if (IsLockedCarouselStageCentered())
@@ -103,7 +102,7 @@ public class BattlePlayButton : MonoBehaviour
             if (checkMapSelected && !IsMapSelected())
             {
                 ShowWarning(mapNotSelectedMessage);
-                Debug.LogWarning("[BattlePlayButton] ���õ� é��/���������� �����ϴ�.");
+                Debug.LogWarning("[BattlePlayButton] 선택된 챕터/스테이지가 없습니다.");
                 return;
             }
 
@@ -191,14 +190,14 @@ public class BattlePlayButton : MonoBehaviour
             if (currentCount < requiredCount)
             {
                 ShowWarning(FormatPartyNotFullMessage(currentCount, requiredCount));
-                Debug.LogWarning($"[BattlePlayButton] ��Ƽ �ο��� �����մϴ�. Current:{currentCount} / Required:{requiredCount}");
+                Debug.LogWarning($"[BattlePlayButton] 파티 인원이 부족합니다. Current:{currentCount} / Required:{requiredCount}");
                 return false;
             }
         }
         else if (currentCount <= 0)
         {
             ShowWarning(partyEmptyMessage);
-            Debug.LogWarning("[BattlePlayButton] ��Ƽ�� ĳ���Ͱ� �����ϴ�.");
+            Debug.LogWarning("[BattlePlayButton] 파티에 캐릭터가 없습니다.");
             return false;
         }
 
@@ -225,7 +224,7 @@ public class BattlePlayButton : MonoBehaviour
     private string FormatPartyNotFullMessage(int currentCount, int requiredCount)
     {
         if (string.IsNullOrWhiteSpace(partyNotFullMessage))
-            return $"ĳ���� {requiredCount}���� ��� �����ؾ� �մϴ�. ���� {currentCount}/{requiredCount}";
+            return $"캐릭터 {requiredCount}명을 모두 편성해야 합니다. 현재 {currentCount}/{requiredCount}";
 
         if (partyNotFullMessage.Contains("{0}") || partyNotFullMessage.Contains("{1}"))
             return string.Format(partyNotFullMessage, currentCount, requiredCount);

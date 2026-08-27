@@ -8,22 +8,22 @@ public sealed class LobbyRelicShopNpcInteraction : MonoBehaviour
     [SerializeField] private LobbyRelicShopPresenter presenter;
 
     [Header("Back Button")]
-    [Tooltip("���� ���� �г��� �ݴ� BackButton�Դϴ�.")]
+    [Tooltip("유물 상점 패널을 닫는 BackButton입니다.")]
     [SerializeField] private Button backButton;
 
     [Header("Availability Indicator")]
-    [Tooltip("���� ������ �̿��� �� ���� �� �׻� ǥ���� relic_stone (1)�� SpriteRenderer�Դϴ�.")]
+    [Tooltip("유물 상점을 이용할 수 없을 때도 항상 표시할 relic_stone (1)의 SpriteRenderer입니다.")]
     [SerializeField] private SpriteRenderer availabilityIndicatorRenderer;
-    [Tooltip("�̿� ���� ���¿��� ������ ȿ���� ���� �����Դϴ�.")]
+    [Tooltip("이용 가능 상태에서 표시할 색상입니다.")]
     [SerializeField] private Color availabilityAvailableColor = new Color32(0, 177, 255, 255);
-    [Tooltip("�̿� ���� ���¿��� ������ ȿ���� ���� �����Դϴ�.")]
+    [Tooltip("이용 제한 상태에서 깜박일 색상입니다.")]
     [SerializeField] private Color availabilityPulseColor = Color.white;
-    [Tooltip("������ �պ��ϴ� �ӵ��Դϴ�. ���� Ŭ���� ������ �����ϴ�.")]
+    [Tooltip("깜박임 보간 속도입니다. 값이 클수록 빠르게 변합니다.")]
     [SerializeField, Min(0.01f)] private float availabilityPulseSpeed = 1f;
 
     [Header("Purchase Cooldown")]
     [SerializeField] private SettingWarningUI warningUI;
-    [SerializeField] private string purchaseCooldownWarningMessage = "�ٽ� �̿��Ϸ��� ��� �ð��� �ʿ��մϴ�.";
+    [SerializeField] private string purchaseCooldownWarningMessage = "다시 사용하려면 회복할 시간이 필요합니다.";
 
     [Header("Sound")]
     [SerializeField] private bool playClickSound = true;
@@ -44,8 +44,8 @@ public sealed class LobbyRelicShopNpcInteraction : MonoBehaviour
 
     private void LateUpdate()
     {
-        // ���� ȣ�� ��ũ��Ʈ�� ���� ������Ʈ�� �Ѱ� ������
-        // ���� ������ ���� �̿� ���� ���°� ���� ǥ�� ���¸� �����ϵ��� LateUpdate���� �����մϴ�.
+        // Purchase scripts can update runtime state after interaction.
+        // Keep the shop availability and visual state synchronized each frame.
         RefreshAvailabilityIndicator(false);
     }
 
