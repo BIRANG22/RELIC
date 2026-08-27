@@ -146,7 +146,10 @@ public class KnockbackEffect : BattleEffectBase
             Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
 
         if (gridEffectController != null && gridEffectController.IsBlocked(targetIndex))
+        {
+            TryDamageBlockedGridEffect(gridEffectController, targetIndex);
             return false;
+        }
 
         // 판정용 그리드 위치는 즉시 갱신합니다.
         // 화면 이동은 전체 넉백 판정이 끝난 뒤 최종 칸까지 한 번만 재생합니다.
@@ -184,7 +187,10 @@ public class KnockbackEffect : BattleEffectBase
             int targetIndex = gridManager.CoordToIndex(targetCoord);
 
             if (gridEffectController != null && gridEffectController.IsBlocked(targetIndex))
+            {
+                TryDamageBlockedGridEffect(gridEffectController, targetIndex);
                 return false;
+            }
 
             movedCells.Add(targetIndex);
         }
@@ -224,6 +230,16 @@ public class KnockbackEffect : BattleEffectBase
         }
 
         return true;
+    }
+
+    private static void TryDamageBlockedGridEffect(
+        BattleGridEffectController controller,
+        int gridIndex)
+    {
+        if (controller == null || !controller.IsBlocked(gridIndex))
+            return;
+
+        controller.TryDamageEffect(gridIndex, 2, out _);
     }
 
     private static void ApplyCrashEffect(

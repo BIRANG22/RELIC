@@ -37,6 +37,11 @@ public class BattleActionRunner
     private const string BlobAttackSkillId = "S_Monster_04";
     private const string BlobMoveSkillId = "S_Monster_03";
     private const string BlobMonsterId = "Mon_02";
+    private const string RancorMonsterId = "Mon_03";
+    private const string RancorMoveSkillId = "S_Monster_05";
+    private const string BlightMonsterId = "Mon_04";
+    private const string BlightMoveSkillId = "S_Monster_08";
+    private const string BlightDebuffSkillId = "S_Monster_10";
     private const string ResidueGridEffectId = "GR_Residue";
     private static readonly Color ExecutionRangeColor = Color.red;
     public const float MoveAnimationDuration = 0.15f;
@@ -502,6 +507,9 @@ public class BattleActionRunner
                     continue;
 
                 if (command.SkillData.TimelineNotation == TimelineActionType.Move)
+                    continue;
+
+                if (ShouldSkipMonsterSkillCamera(command))
                     continue;
 
                 if (HasPlayerTarget(command))
@@ -1012,6 +1020,7 @@ public class BattleActionRunner
                 moveOffset = command.ExecutionMoveOffset;
 
             List<int> enteredGridIndices = new();
+            List<int> blockingUnitGridIndices = new();
 
             if (moveOffset == Vector2Int.zero)
             {
@@ -1037,13 +1046,15 @@ public class BattleActionRunner
                     command.VisualMoveSteps,
                     command.CharacterId,
                     out targetGridIndex,
-                    enteredGridIndices)
+                    enteredGridIndices,
+                    blockingUnitGridIndices)
                 : TryGetPlayerMoveTargetGridIndex(
                     currentGridIndex,
                     moveOffset,
                     command.CharacterId,
                     out targetGridIndex,
-                    enteredGridIndices);
+                    enteredGridIndices,
+                    blockingUnitGridIndices);
 
             if (!foundMoveTarget)
             {
@@ -1059,12 +1070,10 @@ public class BattleActionRunner
             Vector2Int startCoord = gridManager.IndexToCoord(currentGridIndex);
             Vector2Int resolvedCoord = gridManager.IndexToCoord(targetGridIndex);
             Vector2Int actualMoveOffset = resolvedCoord - startCoord;
-            bool wasBlockedDuringMove = actualMoveOffset != moveOffset;
 
             if (targetGridIndex == currentGridIndex)
             {
-                if (wasBlockedDuringMove)
-                    ApplyCrashToPlayer(character);
+                ApplyPlayerMoveCollisionOnce(blockingUnitGridIndices, command.CharacterId);
 
                 hudService.RefreshHUDs();
                 yield return new WaitForSeconds(ActionDelay);
@@ -1092,8 +1101,7 @@ public class BattleActionRunner
             ApplyGridEffectsToPlayer(enteredGridIndices, character);
             statusEffectService.ApplyBleedDamageToPlayerOnMove(character);
 
-            if (wasBlockedDuringMove && character.RuntimeData != null && !character.RuntimeData.IsDead)
-                ApplyCrashToPlayer(character);
+            ApplyPlayerMoveCollisionOnce(blockingUnitGridIndices, command.CharacterId);
 
             hudService.RefreshHUDs();
 
@@ -1128,13 +1136,15 @@ public class BattleActionRunner
             }
 
             List<int> enteredGridIndices = new();
+            List<int> blockingUnitGridIndices = new();
 
             if (!TryGetPlayerMoveTargetGridIndex(
                 currentGridIndex,
                 stepGroup,
                 command.CharacterId,
                 out int targetGridIndex,
-                enteredGridIndices))
+                enteredGridIndices,
+                blockingUnitGridIndices))
             {
                 break;
             }
@@ -1146,9 +1156,7 @@ public class BattleActionRunner
 
             if (targetGridIndex == currentGridIndex)
             {
-                if (wasBlockedDuringStep)
-                    ApplyCrashToPlayer(character);
-
+                ApplyPlayerMoveCollisionOnce(blockingUnitGridIndices, command.CharacterId);
                 break;
             }
 
@@ -1174,8 +1182,7 @@ public class BattleActionRunner
             currentGridIndex = targetGridIndex;
             executedDistance += GetMoveDistance(actualOffset);
 
-            if (wasBlockedDuringStep && character.RuntimeData != null && !character.RuntimeData.IsDead)
-                ApplyCrashToPlayer(character);
+            ApplyPlayerMoveCollisionOnce(blockingUnitGridIndices, command.CharacterId);
 
             if (character.RuntimeData == null || character.RuntimeData.IsDead || wasBlockedDuringStep)
                 break;
@@ -1317,34 +1324,17 @@ public class BattleActionRunner
         targetGridIndex = currentGridIndex;
         visualMoveOffset = Vector2Int.zero;
 
-        if (command == null ||
-            !command.HasVisualMoveResult ||
-            command.VisualMoveSteps == null ||
-            command.VisualMoveSteps.Count <= 0)
-        {
-            return false;
-        }
-
-        if (!TryGetPlayerMoveTargetGridIndex(
-            currentGridIndex,
-            command.VisualMoveSteps,
-            command.CharacterId,
-            out targetGridIndex))
-        {
-            return false;
-        }
-
-        if (gridManager == null)
+        if (command == null || gridManager == null || command.ReservedMoveGridIndex < 0)
             return false;
 
         Vector2Int currentCoord = gridManager.IndexToCoord(currentGridIndex);
-        Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
+        Vector2Int targetCoord = gridManager.IndexToCoord(command.ReservedMoveGridIndex);
 
         if (!gridManager.IsValidCoord(currentCoord) || !gridManager.IsValidCoord(targetCoord))
-        {
             return false;
-        }
 
+        // 예약 단계에서 계산된 충돌 예상 위치가 아니라 원래 예약한 목적지를 기준으로 한다.
+        targetGridIndex = command.ReservedMoveGridIndex;
         visualMoveOffset = targetCoord - currentCoord;
         return true;
     }
@@ -1354,7 +1344,8 @@ public class BattleActionRunner
         Vector2Int moveOffset,
         string characterId,
         out int targetGridIndex,
-        List<int> enteredGridIndices = null)
+        List<int> enteredGridIndices = null,
+        List<int> blockingUnitGridIndices = null)
     {
         targetGridIndex = currentGridIndex;
 
@@ -1371,11 +1362,11 @@ public class BattleActionRunner
 
         bool reachedTarget = true;
 
-        if (!TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.x, true, characterId, enteredGridIndices))
+        if (!TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.x, true, characterId, enteredGridIndices, blockingUnitGridIndices))
             reachedTarget = false;
 
         if (reachedTarget &&
-            !TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.y, false, characterId, enteredGridIndices))
+            !TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.y, false, characterId, enteredGridIndices, blockingUnitGridIndices))
         {
             reachedTarget = false;
         }
@@ -1389,7 +1380,8 @@ public class BattleActionRunner
         IReadOnlyList<Vector2Int> moveSteps,
         string characterId,
         out int targetGridIndex,
-        List<int> enteredGridIndices = null)
+        List<int> enteredGridIndices = null,
+        List<int> blockingUnitGridIndices = null)
     {
         targetGridIndex = currentGridIndex;
 
@@ -1405,10 +1397,10 @@ public class BattleActionRunner
         {
             Vector2Int moveOffset = moveSteps[i];
 
-            if (!TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.x, true, characterId, enteredGridIndices))
+            if (!TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.x, true, characterId, enteredGridIndices, blockingUnitGridIndices))
                 break;
 
-            if (!TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.y, false, characterId, enteredGridIndices))
+            if (!TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.y, false, characterId, enteredGridIndices, blockingUnitGridIndices))
                 break;
         }
 
@@ -1421,7 +1413,8 @@ public class BattleActionRunner
         int amount,
         bool horizontal,
         string characterId,
-        List<int> enteredGridIndices = null)
+        List<int> enteredGridIndices = null,
+        List<int> blockingUnitGridIndices = null)
     {
         int remaining = amount;
 
@@ -1439,7 +1432,9 @@ public class BattleActionRunner
 
             if (BattleOccupancyService.IsOccupiedByAnyUnit(gridIndex, characterId))
             {
-                ApplyCrashToBlockingUnitAtGrid(gridIndex, characterId, null);
+                // 경로 계산에서는 피해를 발생시키지 않는다.
+                // 실제 실행 흐름에서 이 충돌 지점을 한 번만 처리한다.
+                AddUnique(blockingUnitGridIndices, gridIndex);
                 return false;
             }
 
@@ -1452,6 +1447,20 @@ public class BattleActionRunner
         }
 
         return true;
+    }
+
+    private void ApplyPlayerMoveCollisionOnce(
+        IReadOnlyList<int> blockingUnitGridIndices,
+        string movingCharacterId)
+    {
+        if (blockingUnitGridIndices == null || blockingUnitGridIndices.Count <= 0)
+            return;
+
+        int blockingGridIndex = blockingUnitGridIndices[0];
+        if (blockingGridIndex < 0)
+            return;
+
+        ApplyCrashToBlockingUnitAtGrid(blockingGridIndex, movingCharacterId, null);
     }
 
     private void ApplyPlayerMoveFacing(
@@ -2225,6 +2234,7 @@ public class BattleActionRunner
         Vector2Int moveOffset = attackDirection * signedDistance;
 
         List<int> enteredGridIndices = new();
+        List<int> blockingUnitGridIndices = new();
         int startGridIndex = caster.CurrentGridIndex;
 
         if (!TryGetPlayerMoveTargetGridIndex(
@@ -2232,18 +2242,21 @@ public class BattleActionRunner
                 moveOffset,
                 command.CharacterId,
                 out int targetGridIndex,
-                enteredGridIndices))
+                enteredGridIndices,
+                blockingUnitGridIndices))
         {
             yield break;
         }
 
         if (targetGridIndex == startGridIndex)
+        {
+            ApplyPlayerMoveCollisionOnce(blockingUnitGridIndices, command.CharacterId);
             yield break;
+        }
 
         Vector2Int startCoord = gridManager.IndexToCoord(startGridIndex);
         Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
         Vector2Int actualMoveOffset = targetCoord - startCoord;
-        bool wasBlockedDuringMove = actualMoveOffset != moveOffset;
 
         BattleUnitFacing facing = caster.GetComponent<BattleUnitFacing>();
         bool originalFacingRight = command.Direction == BattleDirection.Right;
@@ -2274,8 +2287,7 @@ public class BattleActionRunner
         ApplyGridEffectsToPlayer(enteredGridIndices, caster);
         statusEffectService.ApplyBleedDamageToPlayerOnMove(caster);
 
-        if (wasBlockedDuringMove && caster.RuntimeData != null && !caster.RuntimeData.IsDead)
-            ApplyCrashToPlayer(caster);
+        ApplyPlayerMoveCollisionOnce(blockingUnitGridIndices, command.CharacterId);
 
         if (facing != null)
         {
@@ -2991,6 +3003,8 @@ public class BattleActionRunner
         public bool WasBlocked;
         public bool BlockedByUnit;
         public int BlockingUnitGridIndex = -1;
+        public bool BlockedByGridEffect;
+        public int BlockingGridEffectGridIndex = -1;
         public List<int> EnteredGridIndices = new();
     }
 
@@ -3013,6 +3027,23 @@ public class BattleActionRunner
                 moveResolution.BlockingUnitGridIndex,
                 null,
                 monster);
+            return;
+        }
+
+        if (moveResolution.BlockedByGridEffect &&
+            moveResolution.BlockingGridEffectGridIndex >= 0)
+        {
+            ApplyCrashToMonster(monster);
+
+            BattleGridEffectController controller = ResolveGridEffectController();
+            if (controller != null)
+            {
+                controller.TryDamageEffect(
+                    moveResolution.BlockingGridEffectGridIndex,
+                    2,
+                    out _);
+            }
+
             return;
         }
 
@@ -3160,7 +3191,15 @@ public class BattleActionRunner
                 }
 
                 if (IsGridEffectBlocked(targetIndex))
+                {
+                    if (applyCrashToBlockingUnit && moveResolution != null)
+                    {
+                        moveResolution.BlockedByGridEffect = true;
+                        moveResolution.BlockingGridEffectGridIndex = targetIndex;
+                    }
+
                     return false;
+                }
 
                 nextCoords.Add(nextCoord);
                 AddUnique(enteredGridIndices, targetIndex);
@@ -3438,8 +3477,12 @@ public class BattleActionRunner
 
         try
         {
-            if (firstPlayerTarget != null && BattleCameraController.Instance != null)
+            if (!ShouldSkipMonsterSkillCamera(command) &&
+                firstPlayerTarget != null &&
+                BattleCameraController.Instance != null)
+            {
                 yield return BattleCameraController.Instance.ZoomToAttacker(monster.transform);
+            }
 
 
             bool hasDamageHitEffect = monsterSkillEffectService.HasDamageHitEffect(command);
@@ -3773,7 +3816,17 @@ public class BattleActionRunner
 
     private bool HasMonsterSkillCameraTarget(MonsterReservedCommand command)
     {
-        return FindFirstAlivePlayerTarget(command) != null;
+        return !ShouldSkipMonsterSkillCamera(command) &&
+               FindFirstAlivePlayerTarget(command) != null;
+    }
+
+    private static bool ShouldSkipMonsterSkillCamera(MonsterReservedCommand command)
+    {
+        if (command == null)
+            return false;
+
+        return string.Equals(command.MonsterId, BlightMonsterId, System.StringComparison.Ordinal) &&
+               string.Equals(command.SkillId, BlightDebuffSkillId, System.StringComparison.Ordinal);
     }
 
     private IEnumerator PlayDamageHitFeedback(
@@ -4134,6 +4187,26 @@ public class BattleActionRunner
         // 실제 실행에서는 원래 요청한 이동 방향으로 충돌을 시도해야 합니다.
         if (string.Equals(command.MonsterId, BlobMonsterId, System.StringComparison.Ordinal) &&
             string.Equals(command.SkillId, BlobMoveSkillId, System.StringComparison.Ordinal) &&
+            command.MoveOffset != Vector2Int.zero)
+        {
+            return command.MoveOffset;
+        }
+
+        // 랜서는 예약한 도망 경로를 실행 시점에도 그대로 시도합니다.
+        // 플레이어가 그 경로를 먼저 막았다면 실제 이동 처리에서 충돌이 발생해야 하므로,
+        // 타임라인 시뮬레이션에서 줄어든 이동량이 아니라 원래 예약된 이동 벡터를 사용합니다.
+        if (string.Equals(command.MonsterId, RancorMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, RancorMoveSkillId, System.StringComparison.Ordinal) &&
+            command.MoveOffset != Vector2Int.zero)
+        {
+            return command.MoveOffset;
+        }
+
+        // 블라이트도 랜서와 같은 도망 이동 규칙을 사용합니다.
+        // 예약 후 점유 상태가 바뀌더라도 실행 시 다른 방향을 다시 고르지 않고,
+        // 원래 예약한 2칸 이동 벡터를 그대로 시도해 실제 충돌 여부를 결정합니다.
+        if (string.Equals(command.MonsterId, BlightMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, BlightMoveSkillId, System.StringComparison.Ordinal) &&
             command.MoveOffset != Vector2Int.zero)
         {
             return command.MoveOffset;
