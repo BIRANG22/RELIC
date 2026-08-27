@@ -42,7 +42,6 @@ public enum SfxType
     SkillListPanelOpen = 21,
     SkillListPanelClose = 22,
 
-    // 기존 프로젝트에 저장된 enum 번호를 유지한다.
     BoxOpen = 23,
 
     CharacterSettingAreaAppear = 24,
@@ -60,72 +59,20 @@ public enum SfxType
     LogoButtonClick = 33
 }
 
-[System.Serializable]
-public class BgmData
-{
-    public BgmType type;
-    public AudioClip clip;
-
-    [Range(0f, 1f)]
-    public float volume = 1f;
-}
-
-[System.Serializable]
-public class SfxData
-{
-    public SfxType type;
-    public AudioClip clip;
-
-    [Range(0f, 1f)]
-    public float volume = 1f;
-}
-
-[System.Serializable]
-public class SfxIdData
-{
-    public string id;
-    public AudioClip clip;
-
-    [Range(0f, 1f)]
-    public float volume = 1f;
-}
-
 public class AudioManager : Singleton<AudioManager>
 {
     [Header("Audio Sources")]
     [SerializeField] private AudioSource bgmSource;
     [SerializeField] private AudioSource sfxSource;
 
-    [Header("BGM List")]
-    [SerializeField] private List<BgmData> bgmList = new();
+    [Header("Sound Database")]
+    [SerializeField] private SoundDatabase soundDatabase;
 
-    [Header("Common SFX")]
-    [SerializeField] private List<SfxData> commonSfxList = new();
-
-    [Header("Player SFX")]
-    [SerializeField] private List<SfxData> playerSfxList = new();
-
-    [Header("Monster SFX")]
-    [SerializeField] private List<SfxData> monsterSfxList = new();
-
-    [Header("UI SFX")]
-    [SerializeField] private List<SfxData> uiSfxList = new();
-
-    [Header("Battle SFX")]
-    [SerializeField] private List<SfxData> battleSfxList = new();
-
-    [Header("Reward SFX")]
-    [SerializeField] private List<SfxData> rewardSfxList = new();
-
-    [Header("VFX SFX ID List")]
-    [SerializeField] private List<SfxIdData> vfxSfxIdList = new();
-
-    private Dictionary<BgmType, List<BgmData>> bgmDict;
-    private Dictionary<SfxType, SfxData> sfxDict;
-    private Dictionary<string, SfxIdData> sfxIdDict;
+    private Dictionary<string, SoundData> bgmIdDict;
+    private Dictionary<string, SoundData> sfxIdDict;
     private readonly List<AudioSource> bgmLayerSources = new();
     private readonly List<RoutedSfxSource> routedSfxSources = new();
-    private IReadOnlyList<BgmData> activeBgmLayers;
+    private IReadOnlyList<SoundData> activeBgmLayers;
     private Coroutine pendingBgmRoutine;
 
     protected override void Awake()
@@ -146,109 +93,180 @@ public class AudioManager : Singleton<AudioManager>
 
     private void InitializeDictionary()
     {
-        bgmDict = new Dictionary<BgmType, List<BgmData>>();
-        sfxDict = new Dictionary<SfxType, SfxData>();
-        sfxIdDict = new Dictionary<string, SfxIdData>(System.StringComparer.Ordinal);
+        bgmIdDict = new Dictionary<string, SoundData>(System.StringComparer.Ordinal);
+        sfxIdDict = new Dictionary<string, SoundData>(System.StringComparer.Ordinal);
 
-        foreach (BgmData data in bgmList)
-        {
-            if (data == null || data.clip == null)
-                continue;
-
-            data.volume = Mathf.Clamp01(data.volume);
-
-            if (!bgmDict.TryGetValue(data.type, out List<BgmData> layers))
-            {
-                layers = new List<BgmData>();
-                bgmDict.Add(data.type, layers);
-            }
-
-            layers.Add(data);
-        }
-
-        RegisterSfxList(commonSfxList);
-        RegisterSfxList(playerSfxList);
-        RegisterSfxList(monsterSfxList);
-        RegisterSfxList(uiSfxList);
-        RegisterSfxList(battleSfxList);
-        RegisterSfxList(rewardSfxList);
-        RegisterSfxIdList(vfxSfxIdList);
+        RegisterSoundDatabase();
     }
 
-    private void RegisterSfxList(List<SfxData> list)
+    private void RegisterSoundDatabase()
     {
-        if (list == null)
+        if (soundDatabase == null)
             return;
 
-        foreach (SfxData data in list)
-        {
-            if (data == null || data.clip == null)
-                continue;
+        soundDatabase.Initialize();
 
-            data.volume = Mathf.Clamp01(data.volume);
+        foreach (SoundData data in soundDatabase.BgmEntries)
+            RegisterBgmId(data);
 
-            if (!sfxDict.ContainsKey(data.type))
-                sfxDict.Add(data.type, data);
-            else
-                Debug.LogWarning($"[AudioManager] Duplicate SFX Type: {data.type}");
-        }
+        foreach (SoundData data in soundDatabase.SfxEntries)
+            RegisterSfxId(data);
     }
 
-    private void RegisterSfxIdList(List<SfxIdData> list)
+    private void RegisterBgmId(SoundData data)
     {
-        if (list == null)
+        if (data == null || data.clip == null)
             return;
 
-        foreach (SfxIdData data in list)
-        {
-            if (data == null || string.IsNullOrWhiteSpace(data.id) || data.clip == null)
-                continue;
+        RegisterBgmId(data.id, data);
 
-            string id = data.id.Trim();
-            data.volume = Mathf.Clamp01(data.volume);
+        if (data.aliases == null)
+            return;
 
-            if (!sfxIdDict.ContainsKey(id))
-                sfxIdDict.Add(id, data);
-            else
-                Debug.LogWarning($"[AudioManager] Duplicate SFX ID: {id}");
-        }
+        foreach (string alias in data.aliases)
+            RegisterBgmId(alias, data);
+    }
+
+    private void RegisterBgmId(string id, SoundData data)
+    {
+        if (data == null || data.clip == null || string.IsNullOrWhiteSpace(id))
+            return;
+
+        id = id.Trim();
+        if (!bgmIdDict.ContainsKey(id))
+            bgmIdDict.Add(id, data);
+        else
+            Debug.LogWarning($"[AudioManager] Duplicate BGM ID: {id}");
+    }
+
+    private void RegisterSfxId(SoundData data)
+    {
+        if (data == null || data.clip == null)
+            return;
+
+        RegisterSfxId(data.id, data);
+
+        if (data.aliases == null)
+            return;
+
+        foreach (string alias in data.aliases)
+            RegisterSfxId(alias, data);
+    }
+
+    private void RegisterSfxId(string id, SoundData data)
+    {
+        if (data == null || data.clip == null || string.IsNullOrWhiteSpace(id))
+            return;
+
+        id = id.Trim();
+        if (!sfxIdDict.ContainsKey(id))
+            sfxIdDict.Add(id, data);
+        else
+            Debug.LogWarning($"[AudioManager] Duplicate SFX ID: {id}");
     }
 
     public void PlayBgm(BgmType type, bool loop = true)
     {
+        PlayBgm(GetBgmId(type), loop);
+    }
+
+    public void PlayBgm(string id, bool loop = true)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+            return;
+
         if (bgmSource == null)
         {
             Debug.LogWarning("[AudioManager] BGM Source is not assigned.");
             return;
         }
 
-        if (!bgmDict.TryGetValue(type, out List<BgmData> layers) || layers == null || layers.Count == 0)
+        string trimmedId = id.Trim();
+        List<SoundData> layers = GetBgmLayers(trimmedId);
+        if (layers.Count > 0)
         {
-            Debug.LogWarning($"[AudioManager] BGM not found: {type}");
-            return;
-        }
+            if (IsBgmAlreadyPlaying(layers, loop))
+            {
+                activeBgmLayers = layers;
+                ApplyVolumes();
+                return;
+            }
 
-        if (IsBgmAlreadyPlaying(layers, loop))
-        {
             activeBgmLayers = layers;
+
+            PlayBgmClip(bgmSource, layers[0], loop);
+            EnsureBgmLayerSourceCount(layers.Count - 1);
+
+            for (int i = 1; i < layers.Count; i++)
+            {
+                AudioSource layerSource = bgmLayerSources[i - 1];
+                PlayBgmClip(layerSource, layers[i], loop);
+            }
+
+            StopUnusedBgmLayerSources(layers.Count - 1);
             ApplyVolumes();
             return;
         }
 
-        activeBgmLayers = layers;
+        Debug.LogWarning($"[AudioManager] BGM ID not found: {trimmedId}");
+    }
 
-        PlayBgmClip(bgmSource, layers[0].clip, loop);
-        EnsureBgmLayerSourceCount(layers.Count - 1);
+    private List<SoundData> GetBgmLayers(string id)
+    {
+        List<SoundData> layers = new();
 
-        for (int i = 1; i < layers.Count; i++)
+        if (bgmIdDict == null || string.IsNullOrWhiteSpace(id))
+            return layers;
+
+        if (bgmIdDict.TryGetValue(id, out SoundData exact) && exact != null && exact.clip != null)
+            layers.Add(exact);
+
+        string layerPrefix = id + ".";
+        if (soundDatabase == null)
+            return layers;
+
+        foreach (SoundData data in soundDatabase.BgmEntries)
         {
-            AudioSource layerSource = bgmLayerSources[i - 1];
-            PlayBgmClip(layerSource, layers[i].clip, loop);
+            if (!HasBgmLayerId(data, layerPrefix))
+            {
+                continue;
+            }
+
+            layers.Add(data);
         }
 
-        StopUnusedBgmLayerSources(layers.Count - 1);
+        return layers;
+    }
 
-        ApplyVolumes();
+    private static string GetBgmId(BgmType type)
+    {
+        return type.ToString();
+    }
+
+    private static bool HasBgmLayerId(SoundData data, string layerPrefix)
+    {
+        if (data == null || data.clip == null || string.IsNullOrWhiteSpace(layerPrefix))
+            return false;
+
+        if (!string.IsNullOrWhiteSpace(data.id) &&
+            data.id.StartsWith(layerPrefix, System.StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        if (data.aliases == null)
+            return false;
+
+        foreach (string alias in data.aliases)
+        {
+            if (!string.IsNullOrWhiteSpace(alias) &&
+                alias.StartsWith(layerPrefix, System.StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void PlayBgmDelayed(BgmType type, bool loop = true)
@@ -292,20 +310,7 @@ public class AudioManager : Singleton<AudioManager>
 
     public void PlaySfx(SfxType type, float volumeMultiplier)
     {
-        if (sfxSource == null)
-        {
-            Debug.LogWarning("[AudioManager] SFX Source is not assigned.");
-            return;
-        }
-
-        if (!sfxDict.TryGetValue(type, out SfxData data) || data == null || data.clip == null)
-        {
-            Debug.LogWarning($"[AudioManager] SFX not found: {type}");
-            return;
-        }
-
-        float volume = Mathf.Clamp01(data.volume) * Mathf.Clamp01(volumeMultiplier);
-        sfxSource.PlayOneShot(data.clip, volume);
+        PlaySfx(GetSfxId(type), volumeMultiplier);
     }
 
     public void PlaySfx(string id)
@@ -321,21 +326,23 @@ public class AudioManager : Singleton<AudioManager>
         string trimmedId = id.Trim();
 
         if (sfxIdDict != null &&
-            sfxIdDict.TryGetValue(trimmedId, out SfxIdData data) &&
+            sfxIdDict.TryGetValue(trimmedId, out SoundData data) &&
             data != null &&
             data.clip != null)
         {
-            PlaySfxClip(data.clip, Mathf.Clamp01(data.volume) * Mathf.Clamp01(volumeMultiplier));
-            return;
-        }
-
-        if (System.Enum.TryParse(trimmedId, out SfxType type))
-        {
-            PlaySfx(type, volumeMultiplier);
+            PlaySfxClip(
+                data.clip,
+                Mathf.Clamp01(data.volume) * Mathf.Clamp01(volumeMultiplier),
+                data.GetPlaybackPitch());
             return;
         }
 
         Debug.LogWarning($"[AudioManager] SFX ID not found: {trimmedId}");
+    }
+
+    private static string GetSfxId(SfxType type)
+    {
+        return type.ToString();
     }
 
     public void PlaySfxClip(AudioClip clip)
@@ -344,6 +351,11 @@ public class AudioManager : Singleton<AudioManager>
     }
 
     public void PlaySfxClip(AudioClip clip, float volumeMultiplier)
+    {
+        PlaySfxClip(clip, volumeMultiplier, 1f);
+    }
+
+    private void PlaySfxClip(AudioClip clip, float volumeMultiplier, float pitch)
     {
         if (clip == null)
             return;
@@ -354,7 +366,17 @@ public class AudioManager : Singleton<AudioManager>
             return;
         }
 
-        sfxSource.PlayOneShot(clip, Mathf.Clamp01(volumeMultiplier));
+        float previousPitch = sfxSource.pitch;
+        sfxSource.pitch = Mathf.Clamp01(pitch);
+
+        try
+        {
+            sfxSource.PlayOneShot(clip, Mathf.Clamp01(volumeMultiplier));
+        }
+        finally
+        {
+            sfxSource.pitch = previousPitch;
+        }
     }
 
     public AudioSource PlaySfxClip(AudioSource source)
@@ -431,7 +453,8 @@ public class AudioManager : Singleton<AudioManager>
 
     public void SetSfxVolume(SfxType type, float volume)
     {
-        if (!sfxDict.TryGetValue(type, out SfxData data) || data == null)
+        string id = GetSfxId(type);
+        if (!sfxIdDict.TryGetValue(id, out SoundData data) || data == null)
         {
             Debug.LogWarning($"[AudioManager] SFX not found: {type}");
             return;
@@ -457,7 +480,8 @@ public class AudioManager : Singleton<AudioManager>
 
     public float GetSfxVolume(SfxType type)
     {
-        if (!sfxDict.TryGetValue(type, out SfxData data) || data == null)
+        string id = GetSfxId(type);
+        if (!sfxIdDict.TryGetValue(id, out SoundData data) || data == null)
             return 1f;
 
         return Mathf.Clamp01(data.volume);
@@ -480,7 +504,7 @@ public class AudioManager : Singleton<AudioManager>
         ApplyRoutedSfxVolumes();
     }
 
-    private bool IsBgmAlreadyPlaying(IReadOnlyList<BgmData> layers, bool loop)
+    private bool IsBgmAlreadyPlaying(IReadOnlyList<SoundData> layers, bool loop)
     {
         if (layers == null || layers.Count == 0)
             return false;
@@ -510,18 +534,19 @@ public class AudioManager : Singleton<AudioManager>
             source.isPlaying;
     }
 
-    private static void PlayBgmClip(AudioSource source, AudioClip clip, bool loop)
+    private static void PlayBgmClip(AudioSource source, SoundData data, bool loop)
     {
-        if (source == null || clip == null)
+        if (source == null || data == null || data.clip == null)
             return;
 
-        if (source.clip != clip)
+        if (source.clip != data.clip)
         {
             source.Stop();
-            source.clip = clip;
+            source.clip = data.clip;
         }
 
         source.loop = loop;
+        source.pitch = data.GetPlaybackPitch();
         source.Play();
     }
 
@@ -579,7 +604,7 @@ public class AudioManager : Singleton<AudioManager>
         if (activeBgmLayers == null || layerIndex < 0 || layerIndex >= activeBgmLayers.Count)
             return 1f;
 
-        BgmData data = activeBgmLayers[layerIndex];
+        SoundData data = activeBgmLayers[layerIndex];
         return data != null ? Mathf.Clamp01(data.volume) : 1f;
     }
 

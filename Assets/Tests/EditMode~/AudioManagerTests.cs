@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -19,18 +18,30 @@ public class AudioManagerTests
         {
             AudioSource mainSource = audioObject.AddComponent<AudioSource>();
             AudioManager manager = audioObject.AddComponent<AudioManager>();
+            SoundDatabase database = ScriptableObject.CreateInstance<SoundDatabase>();
             mainClip = AudioClip.Create("BattleMain", 32, 1, 44100, false);
             layerClip = AudioClip.Create("BattleLayer", 32, 1, 44100, false);
 
             SetPrivateField(manager, "bgmSource", mainSource);
             SetPrivateField(
-                manager,
+                database,
                 "bgmList",
-                new List<BgmData>
+                new List<SoundData>
                 {
-                    new() { type = BgmType.Battle, clip = mainClip },
-                    new() { type = BgmType.Battle, clip = layerClip }
+                    new()
+                    {
+                        id = "bgm.battle.main",
+                        aliases = new List<string> { "Battle.main" },
+                        clip = mainClip
+                    },
+                    new()
+                    {
+                        id = "bgm.battle.ambience",
+                        aliases = new List<string> { "Battle.ambience" },
+                        clip = layerClip
+                    }
                 });
+            SetPrivateField(manager, "soundDatabase", database);
 
             LogAssert.ignoreFailingMessages = true;
             manager.Initialize();
@@ -64,18 +75,32 @@ public class AudioManagerTests
         {
             AudioSource mainSource = audioObject.AddComponent<AudioSource>();
             AudioManager manager = audioObject.AddComponent<AudioManager>();
+            SoundDatabase database = ScriptableObject.CreateInstance<SoundDatabase>();
             mainClip = AudioClip.Create("BattleMain", 32, 1, 44100, false);
             layerClip = AudioClip.Create("BattleLayer", 32, 1, 44100, false);
 
             SetPrivateField(manager, "bgmSource", mainSource);
             SetPrivateField(
-                manager,
+                database,
                 "bgmList",
-                new List<BgmData>
+                new List<SoundData>
                 {
-                    new() { type = BgmType.Battle, clip = mainClip, volume = 0.8f },
-                    new() { type = BgmType.Battle, clip = layerClip, volume = 0.25f }
+                    new()
+                    {
+                        id = "bgm.battle.main",
+                        aliases = new List<string> { "Battle.main" },
+                        clip = mainClip,
+                        volume = 0.8f
+                    },
+                    new()
+                    {
+                        id = "bgm.battle.ambience",
+                        aliases = new List<string> { "Battle.ambience" },
+                        clip = layerClip,
+                        volume = 0.25f
+                    }
                 });
+            SetPrivateField(manager, "soundDatabase", database);
 
             LogAssert.ignoreFailingMessages = true;
             manager.Initialize();
@@ -98,9 +123,10 @@ public class AudioManagerTests
     }
 
     [Test]
-    public void SfxType_ContainsBoxOpenForChestOpenSound()
+    public void SoundDatabaseData_DoesNotExposeEnumTypeFields()
     {
-        Assert.That(Enum.GetNames(typeof(SfxType)), Does.Contain("BoxOpen"));
+        Assert.That(typeof(SoundData).GetField("type"), Is.Null);
+        Assert.That(typeof(SoundData).GetField("useType"), Is.Null);
     }
 
     private static void SetPrivateField(object target, string fieldName, object value)
