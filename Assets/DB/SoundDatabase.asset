@@ -1,0 +1,313 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2ad814949be4d14aae338321b9207d5, type: 3}
+  m_Name: SoundDatabase
+  m_EditorClassIdentifier: 
+  bgmList:
+  - id: bgm.title
+    aliases:
+    - Title
+    clip: {fileID: 8300000, guid: f1584eda286725a45aeb97a48f676d41, type: 3}
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: bgm.lobby
+    aliases:
+    - Lobby
+    clip: {fileID: 8300000, guid: f1584eda286725a45aeb97a48f676d41, type: 3}
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: bgm.battle.main
+    aliases:
+    - Battle.main
+    clip: {fileID: 8300000, guid: c55ddf15d3da7a54cb7785f4e402bce1, type: 3}
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: bgm.battle.ambience
+    aliases:
+    - Battle.ambience
+    clip: {fileID: 8300000, guid: af759ef50eba406448029d0726d6ea46, type: 3}
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  sfxList:
+  - id: ui.normal.hover
+    aliases:
+    - NormalButtonHover
+    clip: {fileID: 8300000, guid: 0ce8dd481d865cb47afde2e711e20bd3, type: 3}
+    volume: 0.15
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.normal.click
+    aliases:
+    - NormalButtonClick
+    clip: {fileID: 8300000, guid: 402b751614041df4ab89e77be2808de2, type: 3}
+    volume: 0.5
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: scene.transition
+    aliases:
+    - SceneTransition
+    clip: {fileID: 8300000, guid: c4c9cd50df30f8343a36a0f5e1a1f92f, type: 3}
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: scene.lobby.transition
+    aliases:
+    - LobbyPanelTransition
+    clip: {fileID: 8300000, guid: 748ab9133e00d04458c3a6b54f77b212, type: 3}
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.title.hover
+    aliases:
+    - TitleButtonHover
+    clip: {fileID: 8300000, guid: 010ca4953b15dd546994bcc230c3ff2d, type: 3}
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.title.click
+    aliases:
+    - TitleButtonClick
+    clip: {fileID: 8300000, guid: 402b751614041df4ab89e77be2808de2, type: 3}
+    volume: 0.5
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.logo.click
+    aliases:
+    - LogoButtonClick
+    clip: {fileID: 8300000, guid: 3e264338eeeb0aa438690640c2886401, type: 3}
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.move.hover
+    aliases:
+    - MoveButtonHover
+    clip: {fileID: 8300000, guid: f5e2136ca54e1ce4389264cd9f040c0c, type: 3}
+    volume: 0.5
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.move.click
+    aliases:
+    - MoveButtonClick
+    clip: {fileID: 8300000, guid: b208e34a1afa9e146b104922e77b65dc, type: 3}
+    volume: 0.3
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.confirm
+    aliases:
+    - Confirm
+    clip: {fileID: 8300000, guid: cd79944ddc33df841a78f5f3915afa10, type: 3}
+    volume: 0.3
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.box.open
+    aliases:
+    - BoxOpen
+    clip: {fileID: 8300000, guid: 3b21ea75963842c428923e1ed0ad2910, type: 3}
+    volume: 0.3
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.character.setting.appear
+    aliases:
+    - CharacterSettingAreaAppear
+    clip: {fileID: 8300000, guid: 55426547c0ee0324787f7a5db6bcdfcd, type: 3}
+    volume: 0.3
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.character.setting.exit
+    aliases:
+    - CharacterSettingAreaExit
+    clip: {fileID: 8300000, guid: a4bd1740484f2064fa0b21baa659acbc, type: 3}
+    volume: 0.3
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.bag.open
+    aliases:
+    - BagOpen
+    clip: {fileID: 8300000, guid: 06acbeced7196f645a9b15035a1459e4, type: 3}
+    volume: 0.3
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.bag.close
+    aliases:
+    - BagClose
+    clip: {fileID: 8300000, guid: 20f1d29a124a32b41bbc0c013badd20c, type: 3}
+    volume: 0.3
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.inventory.open
+    aliases:
+    - InventoryOpen
+    clip: {fileID: 8300000, guid: 55426547c0ee0324787f7a5db6bcdfcd, type: 3}
+    volume: 0.3
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.inventory.close
+    aliases:
+    - InventoryClose
+    clip: {fileID: 8300000, guid: a4bd1740484f2064fa0b21baa659acbc, type: 3}
+    volume: 0.3
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: battle.skill.reserve
+    aliases:
+    - SkillReserve
+    clip: {fileID: 8300000, guid: a4bd1740484f2064fa0b21baa659acbc, type: 3}
+    volume: 0.3
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: battle.action.reserve.text
+    aliases:
+    - BattleActionReserveText
+    clip: {fileID: 8300000, guid: 97920063d95b7e94c8098f16e03d9bf8, type: 3}
+    volume: 0.8
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: battle.progress.text
+    aliases:
+    - BattleProgressText
+    clip: {fileID: 8300000, guid: 9b3175ceaf0d78541b44e5e8545f1540, type: 3}
+    volume: 0.8
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: battle.reward.remnant.acquire
+    aliases:
+    - BattleRewardRemnantAcquire
+    clip: {fileID: 8300000, guid: 10d1753e32fe58a42954ac2cbed901df, type: 3}
+    volume: 0.3
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: battle.reward.relic.skill.acquire
+    aliases:
+    - BattleRewardRelicSkillAcquire
+    clip: {fileID: 8300000, guid: 21ebc6cd23edc0e4aa1f23084fa0547d, type: 3}
+    volume: 0.3
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: battle.relic.choice.acquire
+    aliases:
+    - RelicChoiceAcquire
+    clip: {fileID: 8300000, guid: 10d1753e32fe58a42954ac2cbed901df, type: 3}
+    volume: 0.3
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: battle.timeline.slot.rotate
+    aliases:
+    - BattleTimelineSlotRotate
+    clip: {fileID: 8300000, guid: bf7b5b48727a01e46bd0d073a6d64494, type: 3}
+    volume: 0.3
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: battle.end.button.hover
+    aliases:
+    - BattleEndButtonHover
+    clip: {fileID: 8300000, guid: bf7b5b48727a01e46bd0d073a6d64494, type: 3}
+    volume: 0.3
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: battle.timeline.slot.slide
+    aliases:
+    - BattleTimelineSlotSlide
+    clip: {fileID: 8300000, guid: bf7b5b48727a01e46bd0d073a6d64494, type: 3}
+    volume: 0.3
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: battle.map.node.check.animation
+    aliases:
+    - BattleMapNodeCheckAnimation
+    clip: {fileID: 8300000, guid: 23ffa4d4eed73744eac96aa612ee44d5, type: 3}
+    volume: 0.3
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: battle.skill.list.open
+    aliases:
+    - SkillListPanelOpen
+    clip: {fileID: 8300000, guid: 55426547c0ee0324787f7a5db6bcdfcd, type: 3}
+    volume: 0.4
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: battle.skill.list.close
+    aliases:
+    - SkillListPanelClose
+    clip: {fileID: 8300000, guid: a4bd1740484f2064fa0b21baa659acbc, type: 3}
+    volume: 0.4
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1

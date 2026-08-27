@@ -24,6 +24,7 @@ public class BattleVfxSfxEntry
 {
     [Header("SFX ID")]
     public bool playSfx;
+    [SoundId(SoundCategory.Sfx)]
     public string sfxId;
     [Min(0f)] public float delay;
     [Min(0f)] public float volumeMultiplier = 1f;
