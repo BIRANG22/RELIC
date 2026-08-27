@@ -88,11 +88,16 @@ namespace Relic.Gameplay.Monster
                 gridManager,
                 canMove ? moveOffset : Vector2Int.zero);
 
-            int attackTargetGridIndex = FindNearestAttackableCharacterTarget(
+            // 이동 목표는 턴 시작에 선택한 가장 가까운 캐릭터로 고정합니다.
+            // 다른 캐릭터가 공격 범위에 들어오더라도 이동/공격 방향을 바꾸지 않습니다.
+            int attackTargetGridIndex = CanAttackTargetFromGrid(
                 monsterUnit,
                 projectedGridIndex,
+                targetGridIndex,
                 attackSkill,
-                gridManager);
+                gridManager)
+                ? targetGridIndex
+                : -1;
 
             // 공격 범위 안에 캐릭터가 있으면 그 캐릭터 방향을 공격합니다.
             // 범위 안에 캐릭터가 없어도 공격 예약을 취소하지 않고 이동 후 바라보는 정면을 공격합니다.
@@ -138,66 +143,277 @@ namespace Relic.Gameplay.Monster
             Vector2Int currentCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
             Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
 
-            Vector2Int bestOffset = Vector2Int.zero;
-            int bestPriorityRank = int.MaxValue;
-            int bestDistance = int.MaxValue;
-
-            for (int i = 0; i < MoveDirections.Length; i++)
+            // 타겟이 좌/우에 있으면 후퇴하거나 다른 방향으로 공격각을 만들지 않습니다.
+            // 타겟 쪽으로 계속 접근하며, 바로 앞을 타겟이 막고 있으면 충돌을 시도합니다.
+            if (currentCoord.y == targetCoord.y && currentCoord.x != targetCoord.x)
             {
-                Vector2Int offset = MoveDirections[i];
+                Vector2Int towardTarget = targetCoord.x > currentCoord.x
+                    ? Vector2Int.right
+                    : Vector2Int.left;
+
                 int projectedGridIndex = GetProjectedMainGridIndex(
                     monsterUnit,
                     gridManager,
-                    offset);
+                    towardTarget);
 
-                bool canMoveNormally = CanMonsterMove(monsterUnit, gridManager, offset);
-                bool isCharacterCollisionMove = IsCharacterCollisionMoveCandidate(
+                bool canMoveNormally = CanMonsterMove(monsterUnit, gridManager, towardTarget);
+                bool canCollideWithTarget = IsCharacterCollisionMoveCandidate(
                     monsterUnit,
                     projectedGridIndex,
                     targetGridIndex,
                     gridEffectController);
 
-                if (!canMoveNormally && !isCharacterCollisionMove)
-                    continue;
+                if (canMoveNormally || canCollideWithTarget)
+                    return towardTarget;
 
-                bool candidateCanAttack = FindNearestAttackableCharacterTarget(
+                // 정면이 완전히 막힌 경우에만 우회 이동을 찾습니다.
+                // 이때도 타겟과의 거리가 더 멀어지는 후퇴 이동은 허용하지 않습니다.
+                return FindBestNonRetreatMove(
                     monsterUnit,
-                    projectedGridIndex,
+                    targetGridIndex,
                     attackSkill,
-                    gridManager) >= 0;
+                    gridManager,
+                    gridEffectController,
+                    currentCoord,
+                    targetCoord,
+                    excludeVerticalCollision: false);
+            }
 
-                bool isRiskyDestination = IsRiskyGridEffectDestination(
-                    projectedGridIndex,
+            // 타겟이 위/아래에 있으면 그 타겟에게 직접 충돌해도 좌우 공격은 성공하지 못합니다.
+            // 따라서 좌/우 이동으로 공격 위치를 준비하는 것을 우선하고 세로 충돌은 하지 않습니다.
+            if (currentCoord.x == targetCoord.x && currentCoord.y != targetCoord.y)
+            {
+                Vector2Int horizontalMove = FindBestHorizontalSetupMove(
+                    monsterUnit,
+                    targetGridIndex,
+                    attackSkill,
+                    gridManager,
                     gridEffectController);
 
-                int priorityRank;
+                if (horizontalMove != Vector2Int.zero)
+                    return horizontalMove;
 
-                // 블롭의 이동 목적은 먼저 좌우 공격 위치를 만드는 것입니다.
-                // 캐릭터 칸으로의 충돌 이동은 허용하지만, 정상적인 좌우 공격 위치보다 우선하지 않습니다.
-                if (candidateCanAttack)
-                    priorityRank = isRiskyDestination ? 1 : 0;
-                else if (isCharacterCollisionMove)
-                    priorityRank = isRiskyDestination ? 5 : 3;
-                else
-                    priorityRank = isRiskyDestination ? 4 : 2;
+                return FindBestNonRetreatMove(
+                    monsterUnit,
+                    targetGridIndex,
+                    attackSkill,
+                    gridManager,
+                    gridEffectController,
+                    currentCoord,
+                    targetCoord,
+                    excludeVerticalCollision: true);
+            }
 
-                Vector2Int projectedCoord = currentCoord + offset;
-                int distance =
+            // 대각선에 있는 경우에는 고정 타겟의 좌우 공격 위치를 준비하는 정상 이동만 평가합니다.
+            // 캐릭터 칸으로 직접 들어가는 충돌은 좌우 정렬이 된 경우에만 사용합니다.
+            return FindBestNonRetreatMove(
+                monsterUnit,
+                targetGridIndex,
+                attackSkill,
+                gridManager,
+                gridEffectController,
+                currentCoord,
+                targetCoord,
+                excludeVerticalCollision: true);
+        }
+
+        private Vector2Int FindBestHorizontalSetupMove(
+            MonsterUnit monsterUnit,
+            int targetGridIndex,
+            MonsterSkillData attackSkill,
+            GridManager gridManager,
+            BattleGridEffectController gridEffectController)
+        {
+            Vector2Int bestOffset = Vector2Int.zero;
+            int bestSetupDistance = int.MaxValue;
+            bool bestIsRisky = true;
+            int bestTargetDistance = int.MaxValue;
+            Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
+
+            Vector2Int[] horizontalDirections =
+            {
+                Vector2Int.left,
+                Vector2Int.right
+            };
+
+            for (int i = 0; i < horizontalDirections.Length; i++)
+            {
+                Vector2Int offset = horizontalDirections[i];
+
+                if (!CanMonsterMove(monsterUnit, gridManager, offset))
+                    continue;
+
+                int projectedGridIndex = GetProjectedMainGridIndex(monsterUnit, gridManager, offset);
+                Vector2Int projectedCoord = gridManager.IndexToCoord(projectedGridIndex);
+                bool candidateCanAttack = CanAttackTargetFromGrid(
+                    monsterUnit,
+                    projectedGridIndex,
+                    targetGridIndex,
+                    attackSkill,
+                    gridManager);
+                int setupDistance = candidateCanAttack
+                    ? 0
+                    : GetAttackSetupDistance(
+                        monsterUnit,
+                        projectedGridIndex,
+                        targetGridIndex,
+                        attackSkill,
+                        gridManager);
+                bool isRisky = IsRiskyGridEffectDestination(projectedGridIndex, gridEffectController);
+                int targetDistance =
                     Mathf.Abs(targetCoord.x - projectedCoord.x) +
                     Mathf.Abs(targetCoord.y - projectedCoord.y);
 
-                if (priorityRank > bestPriorityRank)
+                bool isBetter = bestOffset == Vector2Int.zero ||
+                                setupDistance < bestSetupDistance ||
+                                (setupDistance == bestSetupDistance && bestIsRisky && !isRisky) ||
+                                (setupDistance == bestSetupDistance && bestIsRisky == isRisky &&
+                                 targetDistance < bestTargetDistance);
+
+                if (!isBetter)
                     continue;
 
-                if (priorityRank == bestPriorityRank && distance >= bestDistance)
-                    continue;
-
-                bestPriorityRank = priorityRank;
-                bestDistance = distance;
                 bestOffset = offset;
+                bestSetupDistance = setupDistance;
+                bestIsRisky = isRisky;
+                bestTargetDistance = targetDistance;
             }
 
             return bestOffset;
+        }
+
+        private Vector2Int FindBestNonRetreatMove(
+            MonsterUnit monsterUnit,
+            int targetGridIndex,
+            MonsterSkillData attackSkill,
+            GridManager gridManager,
+            BattleGridEffectController gridEffectController,
+            Vector2Int currentCoord,
+            Vector2Int targetCoord,
+            bool excludeVerticalCollision)
+        {
+            int currentTargetDistance =
+                Mathf.Abs(targetCoord.x - currentCoord.x) +
+                Mathf.Abs(targetCoord.y - currentCoord.y);
+
+            Vector2Int bestOffset = Vector2Int.zero;
+            bool bestCanAttack = false;
+            int bestSetupDistance = int.MaxValue;
+            bool bestIsRisky = true;
+            int bestTargetDistance = int.MaxValue;
+
+            for (int i = 0; i < MoveDirections.Length; i++)
+            {
+                Vector2Int offset = MoveDirections[i];
+                int projectedGridIndex = GetProjectedMainGridIndex(monsterUnit, gridManager, offset);
+                bool canMoveNormally = CanMonsterMove(monsterUnit, gridManager, offset);
+                bool isCollision = IsCharacterCollisionMoveCandidate(
+                    monsterUnit,
+                    projectedGridIndex,
+                    targetGridIndex,
+                    gridEffectController);
+
+                if (!canMoveNormally && !isCollision)
+                    continue;
+
+                if (isCollision && excludeVerticalCollision && offset.y != 0)
+                    continue;
+
+                Vector2Int projectedCoord = currentCoord + offset;
+                int targetDistance =
+                    Mathf.Abs(targetCoord.x - projectedCoord.x) +
+                    Mathf.Abs(targetCoord.y - projectedCoord.y);
+
+                // 공격 성공을 위해 움직이더라도 고정 타겟에게서 멀어지는 후퇴는 하지 않습니다.
+                if (targetDistance > currentTargetDistance)
+                    continue;
+
+                // 충돌은 좌우 공격 위치를 만드는 정상 이동보다 우선하지 않습니다.
+                bool candidateCanAttack = !isCollision && CanAttackTargetFromGrid(
+                    monsterUnit,
+                    projectedGridIndex,
+                    targetGridIndex,
+                    attackSkill,
+                    gridManager);
+                int setupDistance = candidateCanAttack
+                    ? 0
+                    : GetAttackSetupDistance(
+                        monsterUnit,
+                        projectedGridIndex,
+                        targetGridIndex,
+                        attackSkill,
+                        gridManager);
+                bool isRisky = IsRiskyGridEffectDestination(projectedGridIndex, gridEffectController);
+
+                bool isBetter = bestOffset == Vector2Int.zero;
+
+                if (!isBetter && candidateCanAttack != bestCanAttack)
+                    isBetter = candidateCanAttack;
+                else if (!isBetter && setupDistance != bestSetupDistance)
+                    isBetter = setupDistance < bestSetupDistance;
+                else if (!isBetter && isRisky != bestIsRisky)
+                    isBetter = !isRisky;
+                else if (!isBetter && targetDistance != bestTargetDistance)
+                    isBetter = targetDistance < bestTargetDistance;
+
+                if (!isBetter)
+                    continue;
+
+                bestOffset = offset;
+                bestCanAttack = candidateCanAttack;
+                bestSetupDistance = setupDistance;
+                bestIsRisky = isRisky;
+                bestTargetDistance = targetDistance;
+            }
+
+            return bestOffset;
+        }
+
+        private int GetAttackSetupDistance(
+            MonsterUnit monsterUnit,
+            int originGridIndex,
+            int targetGridIndex,
+            MonsterSkillData attackSkill,
+            GridManager gridManager)
+        {
+            if (monsterUnit == null ||
+                attackSkill == null ||
+                gridManager == null ||
+                originGridIndex < 0 ||
+                targetGridIndex < 0)
+            {
+                return int.MaxValue;
+            }
+
+            Vector2Int originCoord = gridManager.IndexToCoord(originGridIndex);
+            int bestDistance = int.MaxValue;
+            int cellCount = gridManager.Width * gridManager.Height;
+
+            for (int gridIndex = 0; gridIndex < cellCount; gridIndex++)
+            {
+                if (gridManager.GetCellByIndex(gridIndex) == null)
+                    continue;
+
+                if (!CanAttackTargetFromGrid(
+                        monsterUnit,
+                        gridIndex,
+                        targetGridIndex,
+                        attackSkill,
+                        gridManager))
+                {
+                    continue;
+                }
+
+                Vector2Int attackOriginCoord = gridManager.IndexToCoord(gridIndex);
+                int distance =
+                    Mathf.Abs(attackOriginCoord.x - originCoord.x) +
+                    Mathf.Abs(attackOriginCoord.y - originCoord.y);
+
+                if (distance < bestDistance)
+                    bestDistance = distance;
+            }
+
+            return bestDistance;
         }
 
         private static bool IsCharacterCollisionMoveCandidate(
