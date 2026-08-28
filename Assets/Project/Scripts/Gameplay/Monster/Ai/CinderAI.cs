@@ -46,6 +46,7 @@ namespace Relic.Gameplay.Monster
                 return plan;
 
             List<BattleCharacter> alivePlayers = GetAlivePlayers();
+            HashSet<int> occupiedCharacterGridIndices = GetOccupiedCharacterGridIndices();
 
             if (alivePlayers.Count <= 0)
                 return plan;
@@ -63,7 +64,8 @@ namespace Relic.Gameplay.Monster
                 gridManager,
                 explodeRangeId,
                 rangeDatabase,
-                alivePlayers);
+                alivePlayers,
+                occupiedCharacterGridIndices);
 
             int group = 1;
             int projectedGridIndex = monsterUnit.MainGridIndex;
@@ -121,12 +123,31 @@ namespace Relic.Gameplay.Monster
             return result;
         }
 
+        private HashSet<int> GetOccupiedCharacterGridIndices()
+        {
+            HashSet<int> result = new();
+            BattleCharacter[] players = FindPlayers();
+
+            for (int i = 0; i < players.Length; i++)
+            {
+                BattleCharacter player = players[i];
+
+                if (player == null || player.CurrentGridIndex < 0)
+                    continue;
+
+                result.Add(player.CurrentGridIndex);
+            }
+
+            return result;
+        }
+
         private Vector2Int GetBestExplosionPositionMove(
             MonsterUnit monsterUnit,
             GridManager gridManager,
             string explodeRangeId,
             RangeDatabase rangeDatabase,
-            List<BattleCharacter> alivePlayers)
+            List<BattleCharacter> alivePlayers,
+            HashSet<int> occupiedCharacterGridIndices)
         {
             if (monsterUnit == null ||
                 monsterUnit.MainGridIndex < 0 ||
@@ -158,6 +179,15 @@ namespace Relic.Gameplay.Monster
                     continue;
 
                 int projectedGridIndex = gridManager.CoordToIndex(projectedCoord);
+
+                // 공격 타겟 여부와 별개로, 예약 시점에 캐릭터가 서 있는 칸은 이동 후보에서 제외합니다.
+                // 전투불능 캐릭터도 그리드에 남아 점유 장애물이므로 포함합니다.
+                if (occupiedCharacterGridIndices != null &&
+                    occupiedCharacterGridIndices.Contains(projectedGridIndex))
+                {
+                    continue;
+                }
+
                 int targetCount = GetExplosionTargetCount(
                     projectedGridIndex,
                     explodeRangeId,
