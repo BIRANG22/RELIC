@@ -408,26 +408,7 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
 
     private static string FormatMonsterEffectDescription(string description, MonsterSkillData skillData)
     {
-        if (string.IsNullOrWhiteSpace(description) || skillData == null)
-            return description ?? string.Empty;
-
-        string[] values = string.IsNullOrWhiteSpace(skillData.ValueRate)
-            ? Array.Empty<string>()
-            : skillData.ValueRate.Split(';');
-
-        string baseValue = values.Length > 0 ? values[0].Trim() : string.Empty;
-        if (string.IsNullOrWhiteSpace(baseValue))
-            return description;
-
-        int randomRange = Mathf.Max(0, skillData.ValueRandomRange);
-        string valueText = randomRange > 0
-            ? $"{baseValue}(¡¾{randomRange})"
-            : baseValue;
-
-        const string valueToken = "¼öÄ¡";
-        return description
-            .Replace($"\"{valueToken}\"", valueText)
-            .Replace(valueToken, valueText);
+        return MonsterSkillDescriptionFormatter.Format(description, skillData);
     }
 
     private void RefreshMonsterSkillEffects(MonsterSkillData skillData)

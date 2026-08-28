@@ -1,13 +1,15 @@
 using Relic.Gameplay.Battle;
 using Relic.Gameplay.Data;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Relic.Gameplay.Monster
 {
     /// <summary>
     /// 신더 AI
-    /// - 폭발 준비 상태가 아니라면 행동 범위 안에 캐릭터가 있어도 계속 가까운 캐릭터를 향해 1칸 이동합니다.
-    /// - E_Explode 수치가 0이 되면 다음 턴 타임라인에 자폭 공격을 등록합니다.
+    /// - 매 턴 충돌하지 않는 8방향 1칸 이동 후보 중 대폭발로 가장 많은 살아 있는 캐릭터를 맞출 수 있는 위치를 선택합니다.
+    /// - 같은 수의 캐릭터를 맞출 수 있다면 살아 있는 캐릭터들과의 총거리가 더 가까운 위치를 우선합니다.
+    /// - E_Explode 수치가 0이 된 턴에도 먼저 이동한 뒤 실제 위치에서 대폭발을 사용합니다.
     /// </summary>
     public class CinderAI : MonsterAIBase
     {
@@ -43,107 +45,201 @@ namespace Relic.Gameplay.Monster
             if (monsterUnit == null || monsterUnit.RuntimeData == null || gridManager == null)
                 return plan;
 
-            // 폭발 수치가 0이 된 다음 턴에는 이동하지 않고 자폭 공격을 등록합니다.
+            List<BattleCharacter> alivePlayers = GetAlivePlayers();
+
+            if (alivePlayers.Count <= 0)
+                return plan;
+
+            MonsterSkillData explodeSkill =
+                DataManager.Instance?.MonsterSkillDatabase?.Get(ExplodeSkillId);
+            RangeDatabase rangeDatabase = DataManager.Instance?.RangeDatabase;
+            string explodeRangeId = explodeSkill?.RangeId;
+
+            if (string.IsNullOrWhiteSpace(explodeRangeId) || rangeDatabase == null)
+                return plan;
+
+            Vector2Int moveOffset = GetBestExplosionPositionMove(
+                monsterUnit,
+                gridManager,
+                explodeRangeId,
+                rangeDatabase,
+                alivePlayers);
+
+            int group = 1;
+            int projectedGridIndex = monsterUnit.MainGridIndex;
+
+            if (moveOffset != Vector2Int.zero)
+            {
+                plan.Add(new MonsterAIAction(
+                    MoveSkillId,
+                    moveOffset,
+                    MonsterAISlotPreference.Front,
+                    group,
+                    0
+                ));
+
+                Vector2Int projectedCoord =
+                    gridManager.IndexToCoord(monsterUnit.MainGridIndex) + moveOffset;
+
+                if (gridManager.IsValidCoord(projectedCoord))
+                    projectedGridIndex = gridManager.CoordToIndex(projectedCoord);
+            }
+
             if (monsterUnit.RuntimeData.IsExplodeReady)
             {
                 plan.Add(new MonsterAIAction(
                     ExplodeSkillId,
                     Vector2Int.zero,
-                    MonsterAISlotPreference.Front,
-                    1,
-                    0,
-                    monsterUnit.MainGridIndex
+                    moveOffset != Vector2Int.zero
+                        ? MonsterAISlotPreference.SameSlot
+                        : MonsterAISlotPreference.Front,
+                    group,
+                    moveOffset != Vector2Int.zero ? 1 : 0,
+                    projectedGridIndex,
+                    rangeOriginCasterGridIndex: projectedGridIndex
                 ));
-
-                return plan;
             }
-
-            // 행동 범위 안에 캐릭터가 있더라도 계속 가장 가까운 캐릭터 쪽으로 이동합니다.
-            Vector2Int moveOffset = GetBestOneTileMoveTowardNearestPlayer(monsterUnit, gridManager);
-            bool canMove = moveOffset != Vector2Int.zero &&
-                           CanMonsterMove(monsterUnit, gridManager, moveOffset);
-
-            if (!canMove)
-                return plan;
-
-            plan.Add(new MonsterAIAction(
-                MoveSkillId,
-                moveOffset,
-                MonsterAISlotPreference.Front,
-                1,
-                0
-            ));
 
             return plan;
         }
 
-        private Vector2Int GetBestOneTileMoveTowardNearestPlayer(
-            MonsterUnit monsterUnit,
-            GridManager gridManager)
+        private List<BattleCharacter> GetAlivePlayers()
         {
-            int targetGridIndex = FindNearestCharacterTargetGridIndex(monsterUnit, gridManager);
+            List<BattleCharacter> result = new();
+            BattleCharacter[] players = FindPlayers();
 
-            if (targetGridIndex < 0 ||
-                monsterUnit.MainGridIndex < 0)
+            for (int i = 0; i < players.Length; i++)
+            {
+                BattleCharacter player = players[i];
+
+                if (!IsAlivePlayer(player) || player.CurrentGridIndex < 0)
+                    continue;
+
+                result.Add(player);
+            }
+
+            return result;
+        }
+
+        private Vector2Int GetBestExplosionPositionMove(
+            MonsterUnit monsterUnit,
+            GridManager gridManager,
+            string explodeRangeId,
+            RangeDatabase rangeDatabase,
+            List<BattleCharacter> alivePlayers)
+        {
+            if (monsterUnit == null ||
+                monsterUnit.MainGridIndex < 0 ||
+                gridManager == null ||
+                alivePlayers == null ||
+                alivePlayers.Count <= 0)
             {
                 return Vector2Int.zero;
             }
 
-            Vector2Int currentCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
-            Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
-
-            int currentDeltaX = Mathf.Abs(targetCoord.x - currentCoord.x);
-            int currentDeltaY = Mathf.Abs(targetCoord.y - currentCoord.y);
-            int currentChebyshevDistance = Mathf.Max(currentDeltaX, currentDeltaY);
-            int currentManhattanDistance = currentDeltaX + currentDeltaY;
-
+            int currentGridIndex = monsterUnit.MainGridIndex;
+            int bestTargetCount = int.MinValue;
+            int bestDistanceScore = int.MaxValue;
             Vector2Int bestOffset = Vector2Int.zero;
-            int bestChebyshevDistance = currentChebyshevDistance;
-            int bestManhattanDistance = currentManhattanDistance;
 
             for (int i = 0; i < MoveDirections.Length; i++)
             {
                 Vector2Int offset = MoveDirections[i];
 
+                // 예약 시점에 이미 점유된 유닛이나 잔해와 충돌하는 이동은 선택하지 않습니다.
                 if (!CanMonsterMove(monsterUnit, gridManager, offset))
                     continue;
 
-                Vector2Int projectedCoord = currentCoord + offset;
+                Vector2Int projectedCoord =
+                    gridManager.IndexToCoord(currentGridIndex) + offset;
 
-                // 신더는 폭발 범위가 줄어들지 않도록 맵의 가장자리 칸으로 이동하지 않습니다.
+                // 기존 신더 규칙대로 폭발 범위가 크게 잘리는 맵 가장자리 칸은 선택하지 않습니다.
                 if (IsOuterGrid(projectedCoord, gridManager))
                     continue;
 
-                int deltaX = Mathf.Abs(targetCoord.x - projectedCoord.x);
-                int deltaY = Mathf.Abs(targetCoord.y - projectedCoord.y);
-                int chebyshevDistance = Mathf.Max(deltaX, deltaY);
-                int manhattanDistance = deltaX + deltaY;
+                int projectedGridIndex = gridManager.CoordToIndex(projectedCoord);
+                int targetCount = GetExplosionTargetCount(
+                    projectedGridIndex,
+                    explodeRangeId,
+                    rangeDatabase,
+                    gridManager,
+                    alivePlayers);
+                int distanceScore = GetExplosionDistanceScore(
+                    projectedGridIndex,
+                    gridManager,
+                    alivePlayers);
 
-                // 현재 위치보다 가까워지지 않는 이동은 선택하지 않습니다.
-                // 가까운 방향이 막혔다고 해서 옆이나 뒤로 물러나는 것을 방지합니다.
-                if (chebyshevDistance > currentChebyshevDistance ||
-                    (chebyshevDistance == currentChebyshevDistance &&
-                     manhattanDistance >= currentManhattanDistance))
-                {
-                    continue;
-                }
-
-                if (chebyshevDistance > bestChebyshevDistance)
+                if (targetCount < bestTargetCount)
                     continue;
 
-                if (chebyshevDistance == bestChebyshevDistance &&
-                    manhattanDistance >= bestManhattanDistance)
-                {
+                if (targetCount == bestTargetCount && distanceScore >= bestDistanceScore)
                     continue;
-                }
 
-                bestChebyshevDistance = chebyshevDistance;
-                bestManhattanDistance = manhattanDistance;
+                bestTargetCount = targetCount;
+                bestDistanceScore = distanceScore;
                 bestOffset = offset;
             }
 
             return bestOffset;
         }
+
+        private static int GetExplosionTargetCount(
+            int originGridIndex,
+            string explodeRangeId,
+            RangeDatabase rangeDatabase,
+            GridManager gridManager,
+            List<BattleCharacter> alivePlayers)
+        {
+            List<int> rangeIndices = BattleRangeCalculator.GetSelectionRangeIndices(
+                originGridIndex,
+                explodeRangeId,
+                rangeDatabase,
+                gridManager);
+
+            if (rangeIndices == null || rangeIndices.Count <= 0)
+                return 0;
+
+            HashSet<int> rangeSet = new(rangeIndices);
+            int count = 0;
+
+            for (int i = 0; i < alivePlayers.Count; i++)
+            {
+                BattleCharacter player = alivePlayers[i];
+
+                if (player == null || player.CurrentGridIndex < 0)
+                    continue;
+
+                if (rangeSet.Contains(player.CurrentGridIndex))
+                    count++;
+            }
+
+            return count;
+        }
+
+        private static int GetExplosionDistanceScore(
+            int originGridIndex,
+            GridManager gridManager,
+            List<BattleCharacter> alivePlayers)
+        {
+            Vector2Int originCoord = gridManager.IndexToCoord(originGridIndex);
+            int totalDistance = 0;
+
+            for (int i = 0; i < alivePlayers.Count; i++)
+            {
+                BattleCharacter player = alivePlayers[i];
+
+                if (player == null || player.CurrentGridIndex < 0)
+                    continue;
+
+                Vector2Int playerCoord = gridManager.IndexToCoord(player.CurrentGridIndex);
+                totalDistance +=
+                    Mathf.Abs(playerCoord.x - originCoord.x) +
+                    Mathf.Abs(playerCoord.y - originCoord.y);
+            }
+
+            return totalDistance;
+        }
+
         private bool IsOuterGrid(Vector2Int coord, GridManager gridManager)
         {
             if (gridManager == null)
@@ -154,6 +250,5 @@ namespace Relic.Gameplay.Monster
                    coord.x >= gridManager.Width - 1 ||
                    coord.y >= gridManager.Height - 1;
         }
-
     }
 }
