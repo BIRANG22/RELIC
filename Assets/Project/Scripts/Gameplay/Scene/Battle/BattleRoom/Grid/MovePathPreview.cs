@@ -3,14 +3,6 @@ using UnityEngine;
 
 public class MovePathPreview : MonoBehaviour
 {
-    private enum PathVisualDirection
-    {
-        Right,
-        Left,
-        Up,
-        Down
-    }
-
     private readonly struct MovePathTileRotation
     {
         public MovePathTileRotation(float y, float z)
@@ -21,6 +13,23 @@ public class MovePathPreview : MonoBehaviour
 
         public float Y { get; }
         public float Z { get; }
+    }
+
+    private readonly struct MovePathTileConnection
+    {
+        public MovePathTileConnection(
+            MovePathTileDirection incoming,
+            MovePathTileDirection outgoing,
+            MovePathTileRotation rotation)
+        {
+            Incoming = incoming;
+            Outgoing = outgoing;
+            Rotation = rotation;
+        }
+
+        public MovePathTileDirection Incoming { get; }
+        public MovePathTileDirection Outgoing { get; }
+        public MovePathTileRotation Rotation { get; }
     }
 
     [SerializeField] private GridManager gridManager;
@@ -83,16 +92,25 @@ public class MovePathPreview : MonoBehaviour
                 continue;
 
             int gridIndex = gridManager.CoordToIndex(currentCoord);
+            GridCell gridCell = gridManager.GetCellByIndex(gridIndex);
             Vector3 worldPosition = gridManager.GetWorldPositionByIndex(gridIndex);
             MovePathTileKind kind = GetTileKind(i, moveSteps);
-            MovePathTileRotation rotation = GetTileRotation(kind, currentCoord, i, moveSteps);
+            MovePathTileConnection connection = GetTileConnection(kind, currentCoord, i, moveSteps);
+            float scale = Mathf.Max(0f, tileScale);
 
             MovePathTileView tile = Instantiate(tilePrefab, spawnRoot);
             tile.name = $"Move Path Tile {gridIndex}";
             tile.gameObject.SetActive(true);
-            tile.Apply(kind, rotation.Y, rotation.Z);
             tile.transform.position = worldPosition + tileOffset;
-            tile.transform.localScale = Vector3.one * Mathf.Max(0f, tileScale);
+            tile.transform.localScale = Vector3.one * scale;
+            tile.Apply(
+                kind,
+                connection.Incoming,
+                connection.Outgoing,
+                connection.Rotation.Y,
+                connection.Rotation.Z,
+                gridCell,
+                scale);
             tile.ApplySorting(
                 sortingLayerName,
                 BattleWorldVfxSortUtility.CalculateSortingOrder(
@@ -201,41 +219,57 @@ public class MovePathPreview : MonoBehaviour
             : MovePathTileKind.Corner;
     }
 
-    private MovePathTileRotation GetTileRotation(
+    private MovePathTileConnection GetTileConnection(
         MovePathTileKind kind,
         Vector2Int currentCoord,
         int stepIndex,
         IReadOnlyList<Vector2Int> moveSteps)
     {
         Vector2Int currentStep = moveSteps[stepIndex];
-
-        if (kind != MovePathTileKind.Corner &&
-            kind != MovePathTileKind.CornerEnd)
-        {
-            return new MovePathTileRotation(0f, DirectionToRotation(currentStep));
-        }
-
         Vector2Int nextStep = moveSteps[stepIndex + 1];
         Vector2Int previousCoord = currentCoord - currentStep;
         Vector2Int nextCoord = currentCoord + nextStep;
 
-        if (TryGetVisualDirection(previousCoord, currentCoord, out PathVisualDirection incoming) &&
-            TryGetVisualDirection(currentCoord, nextCoord, out PathVisualDirection outgoing))
+        if (!TryGetVisualDirection(previousCoord, currentCoord, out MovePathTileDirection incoming) &&
+            !TryGetLogicalDirection(currentStep, out incoming))
         {
-            return kind == MovePathTileKind.CornerEnd
-                ? CornerEndToRotation(incoming, outgoing)
-                : new MovePathTileRotation(0f, CornerToRotation(incoming, outgoing));
+            incoming = MovePathTileDirection.Right;
         }
 
-        if (TryGetLogicalDirection(currentStep, out incoming) &&
-            TryGetLogicalDirection(nextStep, out outgoing))
+        MovePathTileDirection outgoing;
+
+        if (kind == MovePathTileKind.Corner || kind == MovePathTileKind.CornerEnd)
         {
-            return kind == MovePathTileKind.CornerEnd
-                ? CornerEndToRotation(incoming, outgoing)
-                : new MovePathTileRotation(0f, CornerToRotation(incoming, outgoing));
+            if (!TryGetVisualDirection(currentCoord, nextCoord, out outgoing) &&
+                !TryGetLogicalDirection(nextStep, out outgoing))
+            {
+                outgoing = incoming;
+            }
+        }
+        else
+        {
+            outgoing = incoming;
         }
 
-        return new MovePathTileRotation(0f, 0f);
+        return new MovePathTileConnection(
+            incoming,
+            outgoing,
+            GetRotation(kind, incoming, outgoing, currentStep));
+    }
+
+    private static MovePathTileRotation GetRotation(
+        MovePathTileKind kind,
+        MovePathTileDirection incoming,
+        MovePathTileDirection outgoing,
+        Vector2Int currentStep)
+    {
+        if (kind == MovePathTileKind.CornerEnd)
+            return CornerEndToRotation(incoming, outgoing);
+
+        if (kind == MovePathTileKind.Corner)
+            return new MovePathTileRotation(0f, CornerToRotation(incoming, outgoing));
+
+        return new MovePathTileRotation(0f, DirectionToRotation(currentStep));
     }
 
     private static float DirectionToRotation(Vector2Int direction)
@@ -255,9 +289,9 @@ public class MovePathPreview : MonoBehaviour
     private bool TryGetVisualDirection(
         Vector2Int fromCoord,
         Vector2Int toCoord,
-        out PathVisualDirection direction)
+        out MovePathTileDirection direction)
     {
-        direction = PathVisualDirection.Right;
+        direction = MovePathTileDirection.Right;
 
         if (gridManager == null ||
             !gridManager.IsValidCoord(fromCoord) ||
@@ -279,104 +313,104 @@ public class MovePathPreview : MonoBehaviour
         if (Mathf.Abs(delta.x) >= Mathf.Abs(delta.y))
         {
             direction = delta.x >= 0f
-                ? PathVisualDirection.Right
-                : PathVisualDirection.Left;
+                ? MovePathTileDirection.Right
+                : MovePathTileDirection.Left;
             return true;
         }
 
         direction = delta.y >= 0f
-            ? PathVisualDirection.Up
-            : PathVisualDirection.Down;
+            ? MovePathTileDirection.Up
+            : MovePathTileDirection.Down;
         return true;
     }
 
     private static bool TryGetLogicalDirection(
         Vector2Int step,
-        out PathVisualDirection direction)
+        out MovePathTileDirection direction)
     {
         if (step == Vector2Int.right)
         {
-            direction = PathVisualDirection.Right;
+            direction = MovePathTileDirection.Right;
             return true;
         }
 
         if (step == Vector2Int.left)
         {
-            direction = PathVisualDirection.Left;
+            direction = MovePathTileDirection.Left;
             return true;
         }
 
         if (step == Vector2Int.up)
         {
-            direction = PathVisualDirection.Up;
+            direction = MovePathTileDirection.Up;
             return true;
         }
 
         if (step == Vector2Int.down)
         {
-            direction = PathVisualDirection.Down;
+            direction = MovePathTileDirection.Down;
             return true;
         }
 
-        direction = PathVisualDirection.Right;
+        direction = MovePathTileDirection.Right;
         return false;
     }
 
-    private static float CornerToRotation(PathVisualDirection incoming, PathVisualDirection outgoing)
+    private static float CornerToRotation(MovePathTileDirection incoming, MovePathTileDirection outgoing)
     {
-        if (incoming == PathVisualDirection.Right && outgoing == PathVisualDirection.Down)
+        if (incoming == MovePathTileDirection.Right && outgoing == MovePathTileDirection.Down)
             return 0f;
 
-        if (incoming == PathVisualDirection.Up && outgoing == PathVisualDirection.Left)
+        if (incoming == MovePathTileDirection.Up && outgoing == MovePathTileDirection.Left)
             return 0f;
 
-        if (incoming == PathVisualDirection.Up && outgoing == PathVisualDirection.Right)
+        if (incoming == MovePathTileDirection.Up && outgoing == MovePathTileDirection.Right)
             return 90f;
 
-        if (incoming == PathVisualDirection.Left && outgoing == PathVisualDirection.Down)
+        if (incoming == MovePathTileDirection.Left && outgoing == MovePathTileDirection.Down)
             return 90f;
 
-        if (incoming == PathVisualDirection.Down && outgoing == PathVisualDirection.Right)
+        if (incoming == MovePathTileDirection.Down && outgoing == MovePathTileDirection.Right)
             return 180f;
 
-        if (incoming == PathVisualDirection.Left && outgoing == PathVisualDirection.Up)
+        if (incoming == MovePathTileDirection.Left && outgoing == MovePathTileDirection.Up)
             return 180f;
 
-        if (incoming == PathVisualDirection.Right && outgoing == PathVisualDirection.Up)
+        if (incoming == MovePathTileDirection.Right && outgoing == MovePathTileDirection.Up)
             return 270f;
 
-        if (incoming == PathVisualDirection.Down && outgoing == PathVisualDirection.Left)
+        if (incoming == MovePathTileDirection.Down && outgoing == MovePathTileDirection.Left)
             return 270f;
 
         return 0f;
     }
 
     private static MovePathTileRotation CornerEndToRotation(
-        PathVisualDirection incoming,
-        PathVisualDirection outgoing)
+        MovePathTileDirection incoming,
+        MovePathTileDirection outgoing)
     {
-        if (incoming == PathVisualDirection.Right && outgoing == PathVisualDirection.Down)
+        if (incoming == MovePathTileDirection.Right && outgoing == MovePathTileDirection.Down)
             return new MovePathTileRotation(0f, 0f);
 
-        if (incoming == PathVisualDirection.Up && outgoing == PathVisualDirection.Right)
+        if (incoming == MovePathTileDirection.Up && outgoing == MovePathTileDirection.Right)
             return new MovePathTileRotation(0f, 90f);
 
-        if (incoming == PathVisualDirection.Left && outgoing == PathVisualDirection.Up)
+        if (incoming == MovePathTileDirection.Left && outgoing == MovePathTileDirection.Up)
             return new MovePathTileRotation(0f, 180f);
 
-        if (incoming == PathVisualDirection.Down && outgoing == PathVisualDirection.Left)
+        if (incoming == MovePathTileDirection.Down && outgoing == MovePathTileDirection.Left)
             return new MovePathTileRotation(0f, 270f);
 
-        if (incoming == PathVisualDirection.Left && outgoing == PathVisualDirection.Down)
+        if (incoming == MovePathTileDirection.Left && outgoing == MovePathTileDirection.Down)
             return new MovePathTileRotation(180f, 0f);
 
-        if (incoming == PathVisualDirection.Up && outgoing == PathVisualDirection.Left)
+        if (incoming == MovePathTileDirection.Up && outgoing == MovePathTileDirection.Left)
             return new MovePathTileRotation(180f, 90f);
 
-        if (incoming == PathVisualDirection.Right && outgoing == PathVisualDirection.Up)
+        if (incoming == MovePathTileDirection.Right && outgoing == MovePathTileDirection.Up)
             return new MovePathTileRotation(180f, 180f);
 
-        if (incoming == PathVisualDirection.Down && outgoing == PathVisualDirection.Right)
+        if (incoming == MovePathTileDirection.Down && outgoing == MovePathTileDirection.Right)
             return new MovePathTileRotation(180f, 270f);
 
         return new MovePathTileRotation(0f, 0f);

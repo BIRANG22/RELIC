@@ -22,7 +22,6 @@ public class MovePathPreviewTests
             InvokePrivateMethod(gridManager, "InitializeCells");
 
             MovePathTileView prefab = prefabObject.AddComponent<MovePathTileView>();
-            prefabObject.AddComponent<SpriteRenderer>();
 
             MovePathPreview preview = previewObject.AddComponent<MovePathPreview>();
             preview.ConfigureForTest(gridManager, prefab, rootObject.transform);
@@ -46,6 +45,9 @@ public class MovePathPreviewTests
             Assert.That(second.Kind, Is.EqualTo(MovePathTileKind.CornerEnd));
             Assert.That(first.gameObject.activeSelf, Is.True);
             Assert.That(second.gameObject.activeSelf, Is.True);
+            Assert.That(first.GetComponent<MeshFilter>().sharedMesh, Is.Not.Null);
+            Assert.That(first.GetComponent<MeshRenderer>(), Is.Not.Null);
+            Assert.That(first.GetComponent<SpriteRenderer>(), Is.Null);
             Assert.That(first.transform.position, Is.EqualTo(gridManager.GetWorldPositionByIndex(1)));
             Assert.That(second.transform.position, Is.EqualTo(gridManager.GetWorldPositionByIndex(2)));
         }
@@ -76,7 +78,6 @@ public class MovePathPreviewTests
             InvokePrivateMethod(gridManager, "InitializeCells");
 
             MovePathTileView prefab = prefabObject.AddComponent<MovePathTileView>();
-            prefabObject.AddComponent<SpriteRenderer>();
 
             MovePathPreview preview = previewObject.AddComponent<MovePathPreview>();
             preview.ConfigureForTest(gridManager, prefab, rootObject.transform);
@@ -98,6 +99,91 @@ public class MovePathPreviewTests
     }
 
     [Test]
+    public void Apply_WarpsMeshToGridCellShapeWithoutDepthSubmeshes()
+    {
+        GameObject tileObject = new("MovePathTile");
+        GameObject cellObject = new("WarpedCell");
+
+        try
+        {
+            GridCell cell = CreateWarpedGridCell(cellObject);
+            MovePathTileView tile = tileObject.AddComponent<MovePathTileView>();
+            tileObject.transform.position = cellObject.transform.position + new Vector3(0f, 0.03f, 0f);
+
+            tile.Apply(
+                MovePathTileKind.End,
+                MovePathTileDirection.Right,
+                MovePathTileDirection.Right,
+                0f,
+                0f,
+                cell,
+                1f);
+
+            MeshFilter meshFilter = tileObject.GetComponent<MeshFilter>();
+            MeshRenderer meshRenderer = tileObject.GetComponent<MeshRenderer>();
+
+            Assert.That(tileObject.GetComponent<SpriteRenderer>(), Is.Null);
+            Assert.That(meshFilter, Is.Not.Null);
+            Assert.That(meshRenderer, Is.Not.Null);
+
+            Mesh mesh = meshFilter.sharedMesh;
+
+            Assert.That(mesh, Is.Not.Null);
+            Assert.That(mesh.subMeshCount, Is.EqualTo(1));
+            Assert.That(mesh.vertexCount, Is.GreaterThan(6));
+            Assert.That(meshRenderer.sharedMaterials.Length, Is.EqualTo(1));
+            Assert.That(mesh.bounds.size.x, Is.GreaterThan(0.5f));
+            Assert.That(mesh.bounds.size.y, Is.GreaterThan(0.5f));
+            Assert.That(mesh.bounds.size.z, Is.EqualTo(0f).Within(0.001f));
+            AssertContainsWorldVertex(
+                tile,
+                GetExpectedWarpedPoint(cellObject.transform.position, 1.04f, 0.5f) + new Vector3(0f, 0.03f, 0f));
+            AssertRotation(tile, 0f, 0f);
+        }
+        finally
+        {
+            Object.DestroyImmediate(cellObject);
+            Object.DestroyImmediate(tileObject);
+        }
+    }
+
+    [Test]
+    public void Apply_WarpsCornerMeshThroughEntryAndExitEdges()
+    {
+        GameObject tileObject = new("MovePathTile");
+        GameObject cellObject = new("WarpedCell");
+
+        try
+        {
+            GridCell cell = CreateWarpedGridCell(cellObject);
+            MovePathTileView tile = tileObject.AddComponent<MovePathTileView>();
+            tileObject.transform.position = cellObject.transform.position + new Vector3(0f, 0.03f, 0f);
+
+            tile.Apply(
+                MovePathTileKind.Corner,
+                MovePathTileDirection.Right,
+                MovePathTileDirection.Down,
+                0f,
+                0f,
+                cell,
+                1f);
+
+            AssertContainsWorldVertex(
+                tile,
+                GetExpectedWarpedPoint(cellObject.transform.position, -0.04f, 0.415f) + new Vector3(0f, 0.03f, 0f));
+            AssertContainsWorldVertex(
+                tile,
+                GetExpectedWarpedPoint(cellObject.transform.position, 0.415f, -0.04f) + new Vector3(0f, 0.03f, 0f));
+            AssertRotation(tile, 0f, 0f);
+        }
+        finally
+        {
+            Object.DestroyImmediate(cellObject);
+            Object.DestroyImmediate(tileObject);
+        }
+    }
+
+    [Test]
     public void ShowPath_AppliesRequestedCornerRotationTable()
     {
         GameObject previewObject = new("MovePathPreview");
@@ -115,7 +201,6 @@ public class MovePathPreviewTests
             InvokePrivateMethod(gridManager, "InitializeCells");
 
             MovePathTileView prefab = prefabObject.AddComponent<MovePathTileView>();
-            prefabObject.AddComponent<SpriteRenderer>();
 
             MovePathPreview preview = previewObject.AddComponent<MovePathPreview>();
             preview.ConfigureForTest(gridManager, prefab, rootObject.transform);
@@ -156,7 +241,6 @@ public class MovePathPreviewTests
             InvokePrivateMethod(gridManager, "InitializeCells");
 
             MovePathTileView prefab = prefabObject.AddComponent<MovePathTileView>();
-            prefabObject.AddComponent<SpriteRenderer>();
 
             MovePathPreview preview = previewObject.AddComponent<MovePathPreview>();
             preview.ConfigureForTest(gridManager, prefab, rootObject.transform);
@@ -201,7 +285,6 @@ public class MovePathPreviewTests
             InvokePrivateMethod(gridManager, "InitializeCells");
 
             MovePathTileView prefab = prefabObject.AddComponent<MovePathTileView>();
-            prefabObject.AddComponent<SpriteRenderer>();
 
             MovePathPreview preview = previewObject.AddComponent<MovePathPreview>();
             preview.ConfigureForTest(gridManager, prefab, rootObject.transform);
@@ -242,7 +325,6 @@ public class MovePathPreviewTests
             InvokePrivateMethod(gridManager, "InitializeCells");
 
             MovePathTileView prefab = prefabObject.AddComponent<MovePathTileView>();
-            prefabObject.AddComponent<SpriteRenderer>();
 
             MovePathPreview preview = previewObject.AddComponent<MovePathPreview>();
             preview.ConfigureForTest(gridManager, prefab, rootObject.transform);
@@ -293,6 +375,68 @@ public class MovePathPreviewTests
         }
 
         return cells;
+    }
+
+    private static GridCell CreateWarpedGridCell(GameObject cellObject)
+    {
+        cellObject.transform.position = new Vector3(10f, 20f, 0f);
+
+        Mesh mesh = new()
+        {
+            vertices = new[]
+            {
+                new Vector3(-0.6f, -0.35f, 0f),
+                new Vector3(0.7f, -0.25f, 0f),
+                new Vector3(-0.45f, 0.4f, 0f),
+                new Vector3(0.55f, 0.3f, 0f)
+            },
+            triangles = new[]
+            {
+                0, 2, 1,
+                2, 3, 1
+            },
+            uv = new[]
+            {
+                new Vector2(0f, 0f),
+                new Vector2(1f, 0f),
+                new Vector2(0f, 1f),
+                new Vector2(1f, 1f)
+            }
+        };
+        mesh.RecalculateBounds();
+
+        cellObject.AddComponent<MeshRenderer>();
+        cellObject.AddComponent<BoxCollider>();
+        cellObject.AddComponent<MeshFilter>().sharedMesh = mesh;
+
+        return cellObject.AddComponent<GridCell>();
+    }
+
+    private static Vector3 GetExpectedWarpedPoint(Vector3 cellPosition, float u, float v)
+    {
+        Vector3 bottomLeft = cellPosition + new Vector3(-0.6f, -0.35f, 0f);
+        Vector3 bottomRight = cellPosition + new Vector3(0.7f, -0.25f, 0f);
+        Vector3 topLeft = cellPosition + new Vector3(-0.45f, 0.4f, 0f);
+        Vector3 topRight = cellPosition + new Vector3(0.55f, 0.3f, 0f);
+        Vector3 bottom = Vector3.LerpUnclamped(bottomLeft, bottomRight, u);
+        Vector3 top = Vector3.LerpUnclamped(topLeft, topRight, u);
+
+        return Vector3.LerpUnclamped(bottom, top, v);
+    }
+
+    private static void AssertContainsWorldVertex(MovePathTileView tile, Vector3 expectedWorldPosition)
+    {
+        Mesh mesh = tile.GetComponent<MeshFilter>().sharedMesh;
+        Vector3[] vertices = mesh.vertices;
+        float closestDistance = float.PositiveInfinity;
+
+        for (int i = 0; i < vertices.Length; i++)
+        {
+            Vector3 worldPosition = tile.transform.TransformPoint(vertices[i]);
+            closestDistance = Mathf.Min(closestDistance, Vector3.Distance(worldPosition, expectedWorldPosition));
+        }
+
+        Assert.That(closestDistance, Is.LessThan(0.001f));
     }
 
     private static void SetPrivateField<TValue>(object target, string fieldName, TValue value)
