@@ -386,26 +386,7 @@ public class MonsterInfoPanelUI : MonoBehaviour
 
     private static string FormatMonsterEffectDescription(string description, MonsterSkillData skillData)
     {
-        if (string.IsNullOrWhiteSpace(description) || skillData == null)
-            return description?.Trim() ?? string.Empty;
-
-        string[] values = string.IsNullOrWhiteSpace(skillData.ValueRate)
-            ? Array.Empty<string>()
-            : skillData.ValueRate.Split(';');
-
-        string baseValue = values.Length > 0 ? values[0].Trim() : string.Empty;
-        if (string.IsNullOrWhiteSpace(baseValue))
-            return description.Trim();
-
-        int randomRange = Mathf.Max(0, skillData.ValueRandomRange);
-        string valueText = randomRange > 0
-            ? $"{baseValue}(¡¾{randomRange})"
-            : baseValue;
-
-        const string valueToken = "¼öÄ¡";
-        return description.Trim()
-            .Replace($"\"{valueToken}\"", valueText)
-            .Replace(valueToken, valueText);
+        return MonsterSkillDescriptionFormatter.Format(description, skillData);
     }
 
     private static Sprite GetTimelineActionIcon(MonsterSkillData skillData)
