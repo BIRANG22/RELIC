@@ -55,6 +55,10 @@ public class BattleActionRunner
     private const string BarrowMoveSkillId = "S_Monster_29";
     private const string BarrowDirectShotSkillId = "S_Monster_30";
     private const string BarrowArcShotSkillId = "S_Monster_31";
+    private const string RookMonsterId = "Mon_09";
+    private const string RookMoveSkillId = "S_Monster_32";
+    private const string RookBashSkillId = "S_Monster_34";
+    private const string RookEarthquakeSkillId = "S_Monster_35";
     private const string ResidueGridEffectId = "GR_Residue";
     private static readonly Color ExecutionRangeColor = Color.red;
     public const float MoveAnimationDuration = 0.15f;
@@ -3556,6 +3560,16 @@ public class BattleActionRunner
             firstPlayerTarget = FindFirstPlayerTarget(command);
         }
 
+        bool isRookEarthquake =
+            string.Equals(command.MonsterId, RookMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, RookEarthquakeSkillId, System.StringComparison.Ordinal);
+
+        if (isRookEarthquake && BattleCameraController.Instance != null)
+        {
+            BattleCameraController.Instance.SetHoldDefaultReturn(false);
+            yield return BattleCameraController.Instance.ReturnDefault();
+        }
+
         ShowExecutionRange(BuildMonsterSkillExecutionRange(command, monster.MainGridIndex));
 
         try
@@ -3686,9 +3700,13 @@ public class BattleActionRunner
             string.Equals(command.MonsterId, DraugrMonsterId, System.StringComparison.Ordinal) &&
             string.Equals(command.SkillId, DraugrAttackSkillId, System.StringComparison.Ordinal);
 
+        bool isRookBash =
+            string.Equals(command.MonsterId, RookMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, RookBashSkillId, System.StringComparison.Ordinal);
+
         // 블롭, 베스파, 신더 대폭발과 드라우그 가로베기는 항상 실행 순간의 실제 위치에서 시작합니다.
         // 이동이 실패하거나 일부만 성공했다면 예약 당시 이동 성공 예상 위치를 사용하지 않습니다.
-        if (isBlobAttack || isVespaAttack || isCinderExplosion || isDraugrAttack)
+        if (isBlobAttack || isVespaAttack || isCinderExplosion || isDraugrAttack || isRookBash)
         {
             if (monster.MainGridIndex >= 0)
                 command.SetRangeOriginGridIndex(monster.MainGridIndex);
@@ -3757,10 +3775,14 @@ public class BattleActionRunner
             string.Equals(command.MonsterId, BarrowMonsterId, System.StringComparison.Ordinal) &&
             string.Equals(command.SkillId, BarrowDirectShotSkillId, System.StringComparison.Ordinal);
 
+        bool isRookBash =
+            string.Equals(command.MonsterId, RookMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, RookBashSkillId, System.StringComparison.Ordinal);
+
         // 블롭, 베스파, 신더 대폭발, 드라우그 가로베기와 바로우 직사는 예약 시 계산된 범위를 재사용하지 않습니다.
         // 이동 성공/실패 결과가 정해진 뒤 실제 위치를 원점으로 범위를 다시 계산합니다.
         // 드라우그는 이때 예약 방향이 아니라 실행 직전의 실제 Facing을 사용합니다.
-        if (command.HasExplicitRangeResult && !isBlobAttack && !isVespaAttack && !isCinderExplosion && !isDraugrAttack && !isBarrowDirectShot)
+        if (command.HasExplicitRangeResult && !isBlobAttack && !isVespaAttack && !isCinderExplosion && !isDraugrAttack && !isBarrowDirectShot && !isRookBash)
             return;
 
         BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
@@ -3962,7 +3984,11 @@ public class BattleActionRunner
             (string.Equals(command.SkillId, BarrowDirectShotSkillId, System.StringComparison.Ordinal) ||
              string.Equals(command.SkillId, BarrowArcShotSkillId, System.StringComparison.Ordinal));
 
-        return isBlightGlobalDebuff || isBarrowRangedAttack;
+        bool isRookEarthquake =
+            string.Equals(command.MonsterId, RookMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, RookEarthquakeSkillId, System.StringComparison.Ordinal);
+
+        return isBlightGlobalDebuff || isBarrowRangedAttack || isRookEarthquake;
     }
 
     private IEnumerator PlayDamageHitFeedback(
@@ -4363,6 +4389,16 @@ public class BattleActionRunner
         // 원래 예약한 이동을 시도해 ResolveMonsterMove에서 실제 충돌을 처리합니다.
         if (string.Equals(command.MonsterId, BarrowMonsterId, System.StringComparison.Ordinal) &&
             string.Equals(command.SkillId, BarrowMoveSkillId, System.StringComparison.Ordinal) &&
+            command.MoveOffset != Vector2Int.zero)
+        {
+            return command.MoveOffset;
+        }
+
+        // 루크도 예약한 일반 이동을 실행 순간까지 그대로 시도합니다.
+        // 예약 이후 플레이어가 목적지로 먼저 이동했다면 시뮬레이션 축소값을 쓰지 않고,
+        // 원래 예약한 이동 방향으로 진입을 시도해 ResolveMonsterMove에서 실제 충돌을 처리합니다.
+        if (string.Equals(command.MonsterId, RookMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, RookMoveSkillId, System.StringComparison.Ordinal) &&
             command.MoveOffset != Vector2Int.zero)
         {
             return command.MoveOffset;

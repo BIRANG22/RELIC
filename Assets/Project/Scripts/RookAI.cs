@@ -7,11 +7,12 @@ namespace Relic.Gameplay.Monster
 {
     /// <summary>
     /// 루크 AI
-    /// - 매 턴 철옹성을 행동으로 예약해 방어도를 획득합니다.
-    /// - 같은 가로 라인에 캐릭터가 있으면 방패돌진을 우선합니다.
-    /// - 가까운 캐릭터가 있으면 방패강타를 사용합니다.
-    /// - 3턴마다 대지진을 사용합니다.
-    /// - 공격 조건이 맞지 않으면 가장 가까운 캐릭터를 향해 8방향 중 1칸 진군합니다.
+    /// - 철옹성은 가능한 한 1번 또는 2번 슬롯에 예약합니다.
+    /// - 매 턴 방패돌진 또는 방패강타 중 하나를 반드시 예약합니다.
+    /// - 같은 가로 라인에 캐릭터가 있으면 방패돌진을 사용합니다.
+    /// - 같은 가로 라인에 캐릭터가 없으면 이동 후 방패강타를 노립니다.
+    /// - 짝수 턴(2, 4, 6, 8...)마다 대지진을 추가로 예약합니다.
+    /// - 공격 가능한 이동 후보가 여러 개면 위험한 그리드 효과를 밟지 않는 후보를 우선합니다.
     /// </summary>
     public class RookAI : MonsterAIBase
     {
@@ -51,28 +52,20 @@ namespace Relic.Gameplay.Monster
 
             MonsterRuntimeData runtime = monsterUnit.RuntimeData;
 
-            // 루크는 방어도를 자동으로 얻지 않습니다.
-            // 철옹성 스킬을 실제 행동으로 사용할 때만 E_Armor 효과로 방어도를 획득합니다.
+            // 철옹성은 다른 행동과 같은 슬롯에 있어도 되고 단독이어도 됩니다.
+            // 단, 가능한 한 1번/2번 슬롯 중 앞쪽에 배치합니다.
             plan.Add(new MonsterAIAction(
                 FortressSkillId,
                 Vector2Int.zero,
-                MonsterAISlotPreference.Back,
+                MonsterAISlotPreference.FirstTwo,
                 -1,
                 0));
 
-            int nextTurn = runtime.TurnCount + 1;
+            int battleTurn = context != null && context.CurrentTurn > 0
+                ? context.CurrentTurn
+                : runtime.TurnCount + 1;
 
-            if (nextTurn % 3 == 0)
-            {
-                plan.Add(new MonsterAIAction(
-                    EarthquakeSkillId,
-                    Vector2Int.zero,
-                    MonsterAISlotPreference.Front,
-                    -1,
-                    1));
-                return plan;
-            }
-
+            // 매 턴 방패돌진 또는 방패강타 중 하나는 반드시 예약합니다.
             if (TryBuildDash(monsterUnit.MainGridIndex, gridManager, out BattleDirection dashDirection))
             {
                 plan.Add(new MonsterAIAction(
@@ -84,52 +77,23 @@ namespace Relic.Gameplay.Monster
                     monsterUnit.MainGridIndex,
                     true,
                     dashDirection));
-                return plan;
             }
-
-            if (TryBuildBash(monsterUnit.MainGridIndex, gridManager, out BattleDirection bashDirection))
+            else if (TryFindMoveForBash(
+                         monsterUnit,
+                         gridManager,
+                         out Vector2Int moveOffset,
+                         out int projectedGridIndex,
+                         out BattleDirection bashDirection))
             {
+                const int sameSlotGroup = 90;
+
                 plan.Add(new MonsterAIAction(
-                    BashSkillId,
-                    Vector2Int.zero,
+                    MoveSkillId,
+                    moveOffset,
                     MonsterAISlotPreference.Front,
-                    -1,
-                    1,
-                    monsterUnit.MainGridIndex,
-                    true,
-                    bashDirection));
-                return plan;
-            }
-
-            Vector2Int moveOffset = GetBestMoveTowardNearestPlayer(monsterUnit, gridManager, MoveOffsets);
-
-            if (moveOffset == Vector2Int.zero)
-                return plan;
-
-            const int sameSlotGroup = 90;
-            plan.Add(new MonsterAIAction(
-                MoveSkillId,
-                moveOffset,
-                MonsterAISlotPreference.Front,
-                sameSlotGroup,
-                1));
-
-            int projectedGridIndex = GetProjectedMainGridIndex(monsterUnit, gridManager, moveOffset);
-
-            if (TryBuildDash(projectedGridIndex, gridManager, out dashDirection))
-            {
-                plan.Add(new MonsterAIAction(
-                    DashSkillId,
-                    Vector2Int.zero,
-                    MonsterAISlotPreference.SameSlot,
                     sameSlotGroup,
-                    2,
-                    projectedGridIndex,
-                    true,
-                    dashDirection));
-            }
-            else if (TryBuildBash(projectedGridIndex, gridManager, out bashDirection))
-            {
+                    1));
+
                 plan.Add(new MonsterAIAction(
                     BashSkillId,
                     Vector2Int.zero,
@@ -139,9 +103,222 @@ namespace Relic.Gameplay.Monster
                     projectedGridIndex,
                     true,
                     bashDirection));
+            }
+            else
+            {
+                AddFallbackMoveAndBash(plan, monsterUnit, gridManager);
+            }
+
+            // 대지진은 기본 공격 행동을 대체하지 않고 짝수 턴마다 추가합니다.
+            if (battleTurn % 2 == 0)
+            {
+                plan.Add(new MonsterAIAction(
+                    EarthquakeSkillId,
+                    Vector2Int.zero,
+                    MonsterAISlotPreference.NextSlot,
+                    -1,
+                    3));
             }
 
             return plan;
+        }
+
+        private void AddFallbackMoveAndBash(
+            MonsterAIPlan plan,
+            MonsterUnit monsterUnit,
+            GridManager gridManager)
+        {
+            if (plan == null || monsterUnit == null || gridManager == null)
+                return;
+
+            Vector2Int moveOffset = GetBestFallbackMoveTowardNearestPlayer(monsterUnit, gridManager);
+            int projectedGridIndex = monsterUnit.MainGridIndex;
+
+            if (moveOffset != Vector2Int.zero)
+            {
+                projectedGridIndex = GetProjectedMainGridIndex(monsterUnit, gridManager, moveOffset);
+
+                plan.Add(new MonsterAIAction(
+                    MoveSkillId,
+                    moveOffset,
+                    MonsterAISlotPreference.Front,
+                    91,
+                    1));
+            }
+
+            BattleDirection bashDirection;
+
+            if (!TryBuildBash(projectedGridIndex, gridManager, out bashDirection))
+                bashDirection = GetDirectionToNearestPlayer(projectedGridIndex, gridManager);
+
+            plan.Add(new MonsterAIAction(
+                BashSkillId,
+                Vector2Int.zero,
+                moveOffset != Vector2Int.zero
+                    ? MonsterAISlotPreference.SameSlot
+                    : MonsterAISlotPreference.Front,
+                moveOffset != Vector2Int.zero ? 91 : -1,
+                2,
+                projectedGridIndex,
+                true,
+                bashDirection));
+        }
+
+        private bool TryFindMoveForBash(
+            MonsterUnit monsterUnit,
+            GridManager gridManager,
+            out Vector2Int moveOffset,
+            out int projectedGridIndex,
+            out BattleDirection bashDirection)
+        {
+            moveOffset = Vector2Int.zero;
+            projectedGridIndex = -1;
+            bashDirection = BattleDirection.Right;
+
+            if (monsterUnit == null || gridManager == null)
+                return false;
+
+            BattleGridEffectController gridEffectController =
+                Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+
+            Vector2Int currentCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
+            List<int> targets = FindCharacterTargetGridIndices();
+            int bestRiskRank = int.MaxValue;
+            int bestDistance = int.MaxValue;
+
+            for (int i = 0; i < MoveOffsets.Count; i++)
+            {
+                Vector2Int candidateOffset = MoveOffsets[i];
+
+                if (!CanMonsterMove(monsterUnit, gridManager, candidateOffset))
+                    continue;
+
+                int candidateGridIndex = GetProjectedMainGridIndex(
+                    monsterUnit,
+                    gridManager,
+                    candidateOffset);
+
+                BattleDirection candidateDirection = BattleDirection.Right;
+                bool candidateCanBash = candidateGridIndex >= 0 &&
+                                        TryBuildBash(
+                                            candidateGridIndex,
+                                            gridManager,
+                                            out candidateDirection);
+
+                if (!candidateCanBash)
+                    continue;
+
+                bool isRisky = IsRiskyGridEffectDestination(candidateGridIndex, gridEffectController);
+                int riskRank = isRisky ? 1 : 0;
+                Vector2Int candidateCoord = currentCoord + candidateOffset;
+                int nearestDistance = GetNearestTargetDistance(candidateCoord, targets, gridManager);
+
+                if (riskRank > bestRiskRank)
+                    continue;
+
+                if (riskRank == bestRiskRank && nearestDistance >= bestDistance)
+                    continue;
+
+                bestRiskRank = riskRank;
+                bestDistance = nearestDistance;
+                moveOffset = candidateOffset;
+                projectedGridIndex = candidateGridIndex;
+                bashDirection = candidateDirection;
+            }
+
+            return projectedGridIndex >= 0;
+        }
+
+        private Vector2Int GetBestFallbackMoveTowardNearestPlayer(
+            MonsterUnit monsterUnit,
+            GridManager gridManager)
+        {
+            if (monsterUnit == null || gridManager == null)
+                return Vector2Int.zero;
+
+            int targetGridIndex = FindNearestCharacterTargetGridIndex(monsterUnit, gridManager);
+
+            if (targetGridIndex < 0)
+                return Vector2Int.zero;
+
+            BattleGridEffectController gridEffectController =
+                Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+
+            Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
+            Vector2Int currentCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
+            Vector2Int bestOffset = Vector2Int.zero;
+            int bestRiskRank = int.MaxValue;
+            int bestDistance = int.MaxValue;
+
+            for (int i = 0; i < MoveOffsets.Count; i++)
+            {
+                Vector2Int candidateOffset = MoveOffsets[i];
+
+                if (!CanMonsterMove(monsterUnit, gridManager, candidateOffset))
+                    continue;
+
+                int candidateGridIndex = GetProjectedMainGridIndex(monsterUnit, gridManager, candidateOffset);
+                bool isRisky = IsRiskyGridEffectDestination(candidateGridIndex, gridEffectController);
+                int riskRank = isRisky ? 1 : 0;
+                Vector2Int candidateCoord = currentCoord + candidateOffset;
+                int distance =
+                    Mathf.Abs(targetCoord.x - candidateCoord.x) +
+                    Mathf.Abs(targetCoord.y - candidateCoord.y);
+
+                if (riskRank > bestRiskRank)
+                    continue;
+
+                if (riskRank == bestRiskRank && distance >= bestDistance)
+                    continue;
+
+                bestRiskRank = riskRank;
+                bestDistance = distance;
+                bestOffset = candidateOffset;
+            }
+
+            return bestOffset;
+        }
+
+        private static int GetNearestTargetDistance(
+            Vector2Int originCoord,
+            List<int> targets,
+            GridManager gridManager)
+        {
+            if (targets == null || gridManager == null)
+                return int.MaxValue;
+
+            int nearestDistance = int.MaxValue;
+
+            for (int i = 0; i < targets.Count; i++)
+            {
+                int targetGridIndex = targets[i];
+
+                if (targetGridIndex < 0)
+                    continue;
+
+                Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
+                int distance =
+                    Mathf.Abs(targetCoord.x - originCoord.x) +
+                    Mathf.Abs(targetCoord.y - originCoord.y);
+
+                if (distance < nearestDistance)
+                    nearestDistance = distance;
+            }
+
+            return nearestDistance;
+        }
+
+        private static bool IsRiskyGridEffectDestination(
+            int gridIndex,
+            BattleGridEffectController gridEffectController)
+        {
+            if (gridIndex < 0 || gridEffectController == null)
+                return false;
+
+            if (!gridEffectController.State.TryGetEffectId(gridIndex, out string gridEffectId))
+                return false;
+
+            return !string.IsNullOrWhiteSpace(gridEffectId);
         }
 
         private bool TryBuildDash(

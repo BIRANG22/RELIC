@@ -28,6 +28,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
     private Coroutine planRoutine;
     private Coroutine battleStartTextRoutine;
     private bool battleStartIntroShown;
+    private int plannedBattleTurn;
 
     public void PlanMonsterTurns(List<MonsterUnit> monsterUnits)
     {
@@ -71,6 +72,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
     public void ResetBattleStartIntroState()
     {
         battleStartIntroShown = false;
+        plannedBattleTurn = 0;
     }
 
     private void OnDisable()
@@ -240,7 +242,12 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         if (monsterUnits == null)
             return plans;
 
-        BattleContext context = new BattleContext();
+        plannedBattleTurn++;
+
+        BattleContext context = new BattleContext
+        {
+            CurrentTurn = plannedBattleTurn
+        };
 
         for (int i = 0; i < monsterUnits.Count; i++)
         {
@@ -304,7 +311,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                     SetMonsterRange(monsterUnit, skillData, command);
                 }
 
-                int slotIndex = ResolveMonsterActionSlot(baseSlotIndex, action, plans);
+                int slotIndex = ResolveMonsterActionSlot(baseSlotIndex, action, plans, runtime);
 
                 if (slotIndex < 0 || slotIndex >= timelineController.SlotCount)
                     continue;
@@ -319,7 +326,8 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
     private int ResolveMonsterActionSlot(
         int baseSlotIndex,
         MonsterAIAction action,
-        List<MonsterReservedCommandPlan> pendingPlans)
+        List<MonsterReservedCommandPlan> pendingPlans,
+        MonsterRuntimeData runtime)
     {
         if (action == null)
             return baseSlotIndex;
@@ -333,6 +341,9 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
         switch (action.SlotPreference)
         {
+            case MonsterAISlotPreference.FirstTwo:
+                return FindFirstTwoSlot(runtime, pendingPlans);
+
             case MonsterAISlotPreference.NextSlot:
                 return offsetBaseSlot + 1;
 
@@ -352,6 +363,61 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             default:
                 return offsetBaseSlot;
         }
+    }
+
+    private int FindFirstTwoSlot(
+        MonsterRuntimeData runtime,
+        List<MonsterReservedCommandPlan> pendingPlans)
+    {
+        if (timelineController == null || runtime == null)
+            return -1;
+
+        int limit = Mathf.Min(2, timelineController.SlotCount);
+
+        // 철옹성처럼 FirstTwo를 사용하는 행동은 가능하면 1/2번 슬롯을
+        // 다른 행동과 공유하지 않고 단독으로 사용합니다.
+        for (int i = 0; i < limit; i++)
+        {
+            if (IsSlotCompletelyEmpty(i, pendingPlans))
+                return i;
+        }
+
+        // 앞 두 슬롯이 이미 사용 중이라면, 같은 몬스터 행동과의 공유는 허용합니다.
+        for (int i = 0; i < limit; i++)
+        {
+            if (IsSlotAvailableForMonster(runtime, i, pendingPlans))
+                return i;
+        }
+
+        return -1;
+    }
+
+    private bool IsSlotCompletelyEmpty(
+        int slotIndex,
+        List<MonsterReservedCommandPlan> pendingPlans)
+    {
+        if (timelineController == null ||
+            slotIndex < 0 ||
+            slotIndex >= timelineController.SlotCount)
+        {
+            return false;
+        }
+
+        var commands = timelineController.GetMonsterCommands(slotIndex);
+
+        if (commands != null && commands.Count > 0)
+            return false;
+
+        if (pendingPlans != null)
+        {
+            for (int i = 0; i < pendingPlans.Count; i++)
+            {
+                if (pendingPlans[i].SlotIndex == slotIndex)
+                    return false;
+            }
+        }
+
+        return true;
     }
 
     private int FindBackSlot(List<MonsterReservedCommandPlan> pendingPlans)
@@ -464,7 +530,8 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             if (action == null)
                 continue;
 
-            if (action.SlotPreference == MonsterAISlotPreference.Back ||
+            if (action.SlotPreference == MonsterAISlotPreference.FirstTwo ||
+                action.SlotPreference == MonsterAISlotPreference.Back ||
                 action.SlotPreference == MonsterAISlotPreference.Last ||
                 action.SlotPreference == MonsterAISlotPreference.Center)
             {
