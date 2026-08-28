@@ -87182,6 +87182,7 @@ GameObject:
   - component: {fileID: 1832433056}
   - component: {fileID: 1832433055}
   - component: {fileID: 1832433058}
+  - component: {fileID: 1832433059}
   m_Layer: 0
   m_Name: BattleReservationSystem
   m_TagString: Untagged
@@ -87205,6 +87206,7 @@ MonoBehaviour:
   gridEffectController: {fileID: 0}
   rangePreview: {fileID: 1832433056}
   moveGhostPreview: {fileID: 1832433055}
+  movePathPreview: {fileID: 1832433059}
   timelineController: {fileID: 1104021720}
   skillListPanel: {fileID: 0}
   keepSkillListOpenAfterReservationClick: 1
@@ -87285,8 +87287,28 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7638bdf0a09350d4ca1599655e7894fb, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+--- !u!114 &1832433059
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1832433053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 880fab50cb38445eac60b31bddfe4c5d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gridManager: {fileID: 124704205}
+  spawnRoot: {fileID: 0}
+  tilePrefab: {fileID: 11400000, guid: 5a7e75c446f547798f8290a4ddb717af, type: 3}
+  tileOffset: {x: 0, y: 0.03, z: 0}
+  tileScale: 0.7
+  sortingLayerName: Unit
+  sortingOrderOffset: 6
+  ySortMultiplier: 100
 --- !u!1 &1832612255
 GameObject:
   m_ObjectHideFlags: 0
