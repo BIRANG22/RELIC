@@ -51,6 +51,10 @@ public class BattleActionRunner
     private const string DraugrMonsterId = "Mon_07";
     private const string DraugrMoveSkillId = "S_Monster_26";
     private const string DraugrAttackSkillId = "S_Monster_27";
+    private const string BarrowMonsterId = "Mon_08";
+    private const string BarrowMoveSkillId = "S_Monster_29";
+    private const string BarrowDirectShotSkillId = "S_Monster_30";
+    private const string BarrowArcShotSkillId = "S_Monster_31";
     private const string ResidueGridEffectId = "GR_Residue";
     private static readonly Color ExecutionRangeColor = Color.red;
     public const float MoveAnimationDuration = 0.15f;
@@ -3065,6 +3069,7 @@ public class BattleActionRunner
         public int BlockingUnitGridIndex = -1;
         public bool BlockedByGridEffect;
         public int BlockingGridEffectGridIndex = -1;
+        public bool BlockedByBoundary;
         public List<int> EnteredGridIndices = new();
     }
 
@@ -3106,6 +3111,11 @@ public class BattleActionRunner
 
             return;
         }
+
+        // 맵 경계는 충돌 대상이 아닙니다.
+        // 이동 가능한 마지막 칸에서 멈추기만 하고 충돌 피해는 발생하지 않습니다.
+        if (moveResolution.BlockedByBoundary)
+            return;
 
         ApplyCrashToMonster(monster);
     }
@@ -3235,7 +3245,12 @@ public class BattleActionRunner
                     : new Vector2Int(0, step));
 
                 if (!gridManager.IsValidCoord(nextCoord))
+                {
+                    if (applyCrashToBlockingUnit && moveResolution != null)
+                        moveResolution.BlockedByBoundary = true;
+
                     return false;
+                }
 
                 int targetIndex = gridManager.CoordToIndex(nextCoord);
 
@@ -3738,10 +3753,14 @@ public class BattleActionRunner
             string.Equals(command.MonsterId, DraugrMonsterId, System.StringComparison.Ordinal) &&
             string.Equals(command.SkillId, DraugrAttackSkillId, System.StringComparison.Ordinal);
 
-        // 블롭, 베스파, 신더 대폭발과 드라우그 가로베기는 예약 시 계산된 범위를 재사용하지 않습니다.
+        bool isBarrowDirectShot =
+            string.Equals(command.MonsterId, BarrowMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, BarrowDirectShotSkillId, System.StringComparison.Ordinal);
+
+        // 블롭, 베스파, 신더 대폭발, 드라우그 가로베기와 바로우 직사는 예약 시 계산된 범위를 재사용하지 않습니다.
         // 이동 성공/실패 결과가 정해진 뒤 실제 위치를 원점으로 범위를 다시 계산합니다.
         // 드라우그는 이때 예약 방향이 아니라 실행 직전의 실제 Facing을 사용합니다.
-        if (command.HasExplicitRangeResult && !isBlobAttack && !isVespaAttack && !isCinderExplosion && !isDraugrAttack)
+        if (command.HasExplicitRangeResult && !isBlobAttack && !isVespaAttack && !isCinderExplosion && !isDraugrAttack && !isBarrowDirectShot)
             return;
 
         BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
@@ -3751,10 +3770,10 @@ public class BattleActionRunner
         // 드라우그의 가로베기는 예약 방향이 아니라 실행 직전의 실제 Facing을 사용합니다.
         // 이동 + 공격이면 이동이 만든 Facing으로, 공격만 예약된 경우에는
         // 그 사이 피격 등으로 변경된 현재 Facing으로 공격합니다.
-        if (isDraugrAttack && facing != null)
+        if ((isDraugrAttack || isBarrowDirectShot) && facing != null)
         {
-            // 이동 후 공격은 DraugrAI가 이동 완료 위치에서 계산한 공격 방향을 예약합니다.
-            // 제자리 공격은 방향을 예약하지 않으므로 피격 등으로 바뀐 현재 Facing을 그대로 사용합니다.
+            // 드라우그/바로우의 이동 후 공격은 AI가 이동 완료 위치에서 계산한 공격 방향을 예약합니다.
+            // 제자리 공격은 방향을 고정하지 않으므로 피격 등으로 바뀐 현재 Facing을 그대로 사용합니다.
             facingRight = command.HasForcedDirection
                 ? command.ForcedDirection == BattleDirection.Right
                 : facing.IsFacingRight;
@@ -3934,8 +3953,16 @@ public class BattleActionRunner
         if (command == null)
             return false;
 
-        return string.Equals(command.MonsterId, BlightMonsterId, System.StringComparison.Ordinal) &&
-               string.Equals(command.SkillId, BlightDebuffSkillId, System.StringComparison.Ordinal);
+        bool isBlightGlobalDebuff =
+            string.Equals(command.MonsterId, BlightMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, BlightDebuffSkillId, System.StringComparison.Ordinal);
+
+        bool isBarrowRangedAttack =
+            string.Equals(command.MonsterId, BarrowMonsterId, System.StringComparison.Ordinal) &&
+            (string.Equals(command.SkillId, BarrowDirectShotSkillId, System.StringComparison.Ordinal) ||
+             string.Equals(command.SkillId, BarrowArcShotSkillId, System.StringComparison.Ordinal));
+
+        return isBlightGlobalDebuff || isBarrowRangedAttack;
     }
 
     private IEnumerator PlayDamageHitFeedback(
@@ -4326,6 +4353,16 @@ public class BattleActionRunner
         // 타임라인 시뮬레이션으로 축소된 EffectiveMoveOffset 대신 원래 MoveOffset을 사용합니다.
         if (string.Equals(command.MonsterId, DraugrMonsterId, System.StringComparison.Ordinal) &&
             string.Equals(command.SkillId, DraugrMoveSkillId, System.StringComparison.Ordinal) &&
+            command.MoveOffset != Vector2Int.zero)
+        {
+            return command.MoveOffset;
+        }
+
+        // 바로우도 예약한 2칸 도망 방향을 실행 순간까지 유지합니다.
+        // 예약 후 플레이어가 경로나 목적지를 먼저 점유했다면 다른 방향으로 재탐색하지 않고,
+        // 원래 예약한 이동을 시도해 ResolveMonsterMove에서 실제 충돌을 처리합니다.
+        if (string.Equals(command.MonsterId, BarrowMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, BarrowMoveSkillId, System.StringComparison.Ordinal) &&
             command.MoveOffset != Vector2Int.zero)
         {
             return command.MoveOffset;
