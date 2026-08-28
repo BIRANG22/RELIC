@@ -44,13 +44,20 @@ namespace Relic.Gameplay.Monster
             if (monsterUnit == null || monsterUnit.RuntimeData == null || gridManager == null)
                 return plan;
 
-            // 현재 위치에서 바로 공격할 수 있다면 이동하지 않고 가로베기를 사용합니다.
+            // 현재 위치에서 공격 가능하더라도 캐릭터와 같은 가로 라인이 아니라면
+            // 반격 적중 가능성을 높이기 위해 계속 이동합니다.
             if (TryBuildAttack(
                     monsterUnit.MainGridIndex,
                     gridManager,
                     out BattleDirection currentDirection,
-                    out List<int> currentRange))
+                    out List<int> currentRange) &&
+                HasAttackableTargetOnSameHorizontalLine(monsterUnit.MainGridIndex, gridManager))
             {
+                // 공격만 예약하는 경우에는 예약 시점의 공격 대상 방향으로 Facing을 맞춰 둡니다.
+                // 실행 전 피격 등으로 Facing이 바뀌면 BattleActionRunner가 현재 Facing을 사용하므로
+                // 최종 공격 방향도 자연스럽게 변경됩니다.
+                SetFacingForReservedAttack(monsterUnit, currentDirection);
+
                 plan.Add(new MonsterAIAction(
                     AttackSkillId,
                     Vector2Int.zero,
@@ -58,7 +65,7 @@ namespace Relic.Gameplay.Monster
                     1,
                     0,
                     monsterUnit.MainGridIndex,
-                    true,
+                    false,
                     currentDirection,
                     false,
                     0,
@@ -112,15 +119,19 @@ namespace Relic.Gameplay.Monster
             MonsterUnit monsterUnit,
             GridManager gridManager)
         {
-            int targetGridIndex = FindNearestCharacterTargetGridIndex(monsterUnit, gridManager);
+            if (monsterUnit.MainGridIndex < 0)
+                return Vector2Int.zero;
 
-            if (targetGridIndex < 0 || monsterUnit.MainGridIndex < 0)
+            List<int> targetGridIndices = FindCharacterTargetGridIndices();
+
+            if (targetGridIndices == null || targetGridIndices.Count == 0)
                 return Vector2Int.zero;
 
             Vector2Int currentCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
-            Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
-
             Vector2Int bestOffset = Vector2Int.zero;
+            int bestSameLineCount = -1;
+            int bestAttackableCount = -1;
+            int bestVerticalDistance = int.MaxValue;
             int bestChebyshevDistance = int.MaxValue;
             int bestManhattanDistance = int.MaxValue;
 
@@ -132,26 +143,122 @@ namespace Relic.Gameplay.Monster
                     continue;
 
                 Vector2Int movedCoord = currentCoord + offset;
-                int dx = Mathf.Abs(targetCoord.x - movedCoord.x);
-                int dy = Mathf.Abs(targetCoord.y - movedCoord.y);
-                int chebyshevDistance = Mathf.Max(dx, dy);
-                int manhattanDistance = dx + dy;
+                int movedGridIndex = gridManager.CoordToIndex(movedCoord);
+                int sameLineCount = CountTargetsOnSameHorizontalLine(movedCoord, targetGridIndices, gridManager);
+                int attackableCount = CountAttackableTargets(movedGridIndex, targetGridIndices, gridManager);
 
-                if (chebyshevDistance > bestChebyshevDistance)
-                    continue;
+                int verticalDistance = int.MaxValue;
+                int chebyshevDistance = int.MaxValue;
+                int manhattanDistance = int.MaxValue;
 
-                if (chebyshevDistance == bestChebyshevDistance &&
-                    manhattanDistance >= bestManhattanDistance)
+                for (int targetIndex = 0; targetIndex < targetGridIndices.Count; targetIndex++)
                 {
-                    continue;
+                    Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndices[targetIndex]);
+                    int dx = Mathf.Abs(targetCoord.x - movedCoord.x);
+                    int dy = Mathf.Abs(targetCoord.y - movedCoord.y);
+                    int candidateChebyshev = Mathf.Max(dx, dy);
+                    int candidateManhattan = dx + dy;
+
+                    if (dy < verticalDistance ||
+                        (dy == verticalDistance && candidateChebyshev < chebyshevDistance) ||
+                        (dy == verticalDistance && candidateChebyshev == chebyshevDistance && candidateManhattan < manhattanDistance))
+                    {
+                        verticalDistance = dy;
+                        chebyshevDistance = candidateChebyshev;
+                        manhattanDistance = candidateManhattan;
+                    }
                 }
 
+                bool better =
+                    sameLineCount > bestSameLineCount ||
+                    (sameLineCount == bestSameLineCount && verticalDistance < bestVerticalDistance) ||
+                    (sameLineCount == bestSameLineCount && verticalDistance == bestVerticalDistance && attackableCount > bestAttackableCount) ||
+                    (sameLineCount == bestSameLineCount && verticalDistance == bestVerticalDistance && attackableCount == bestAttackableCount && chebyshevDistance < bestChebyshevDistance) ||
+                    (sameLineCount == bestSameLineCount && verticalDistance == bestVerticalDistance && attackableCount == bestAttackableCount && chebyshevDistance == bestChebyshevDistance && manhattanDistance < bestManhattanDistance);
+
+                if (!better)
+                    continue;
+
+                bestSameLineCount = sameLineCount;
+                bestAttackableCount = attackableCount;
+                bestVerticalDistance = verticalDistance;
                 bestChebyshevDistance = chebyshevDistance;
                 bestManhattanDistance = manhattanDistance;
                 bestOffset = offset;
             }
 
             return bestOffset;
+        }
+
+        private bool HasAttackableTargetOnSameHorizontalLine(
+            int originGridIndex,
+            GridManager gridManager)
+        {
+            if (originGridIndex < 0 || gridManager == null)
+                return false;
+
+            Vector2Int originCoord = gridManager.IndexToCoord(originGridIndex);
+            List<int> targets = FindCharacterTargetGridIndices();
+            HashSet<int> attackRange = new(BuildSweepRange(originGridIndex, gridManager, 1));
+            attackRange.UnionWith(BuildSweepRange(originGridIndex, gridManager, -1));
+
+            for (int i = 0; i < targets.Count; i++)
+            {
+                int targetGridIndex = targets[i];
+
+                if (!attackRange.Contains(targetGridIndex))
+                    continue;
+
+                Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
+
+                if (targetCoord.y == originCoord.y)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static int CountTargetsOnSameHorizontalLine(
+            Vector2Int originCoord,
+            List<int> targetGridIndices,
+            GridManager gridManager)
+        {
+            int count = 0;
+
+            for (int i = 0; i < targetGridIndices.Count; i++)
+            {
+                Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndices[i]);
+
+                if (targetCoord.y == originCoord.y)
+                    count++;
+            }
+
+            return count;
+        }
+
+        private static int CountAttackableTargets(
+            int originGridIndex,
+            List<int> targetGridIndices,
+            GridManager gridManager)
+        {
+            HashSet<int> targets = new(targetGridIndices);
+            List<int> rightRange = BuildSweepRange(originGridIndex, gridManager, 1);
+            List<int> leftRange = BuildSweepRange(originGridIndex, gridManager, -1);
+            int count = 0;
+
+            for (int i = 0; i < rightRange.Count; i++)
+            {
+                if (targets.Contains(rightRange[i]))
+                    count++;
+            }
+
+            for (int i = 0; i < leftRange.Count; i++)
+            {
+                if (targets.Contains(leftRange[i]))
+                    count++;
+            }
+
+            return count;
         }
 
         private bool TryBuildAttack(
@@ -200,6 +307,24 @@ namespace Relic.Gameplay.Monster
             direction = BattleDirection.Left;
             rangeGridIndices = leftRange;
             return true;
+        }
+
+
+        private static void SetFacingForReservedAttack(
+            MonsterUnit monsterUnit,
+            BattleDirection direction)
+        {
+            if (monsterUnit == null)
+                return;
+
+            BattleUnitFacing facing = monsterUnit.GetComponent<BattleUnitFacing>();
+            bool faceRight = direction == BattleDirection.Right;
+
+            if (facing != null)
+                facing.FaceRight(faceRight);
+
+            if (monsterUnit.RuntimeData != null)
+                monsterUnit.RuntimeData.Direction = direction;
         }
 
         private static List<int> BuildSweepRange(

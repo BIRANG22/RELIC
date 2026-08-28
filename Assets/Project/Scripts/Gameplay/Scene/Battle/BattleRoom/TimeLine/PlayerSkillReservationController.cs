@@ -12,6 +12,7 @@ public class PlayerSkillReservationController : MonoBehaviour
     [SerializeField] private BattleGridEffectController gridEffectController;
     [SerializeField] private RangePreview rangePreview;
     [SerializeField] private MoveGhostPreview moveGhostPreview;
+    [SerializeField] private MovePathPreview movePathPreview;
     [SerializeField] private BattleTimelineController timelineController;
 
     [Header("Skill List Panel")]
@@ -133,6 +134,7 @@ public class PlayerSkillReservationController : MonoBehaviour
     {
         ClearNocturnPortalDestinationIndicators();
         HideMoveHoverPing();
+        HideMovePathPreview();
         SetGridTargetMonsterVisualActive(false);
 
         if (gridManager != null)
@@ -650,9 +652,15 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (IsMoveSkillSelectionActive())
         {
             if (currentMoveSelectableIndices.Contains(cell.Index))
+            {
                 ShowMoveHoverPing(cell.Index);
+                ShowMovePathPreview(cell.Index);
+            }
             else
+            {
                 HideMoveHoverPing();
+                HideMovePathPreview();
+            }
 
             return;
         }
@@ -671,7 +679,10 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (IsMoveSkillSelectionActive())
         {
             if (cell == null || cell.Index == moveHoverPingGridIndex)
+            {
                 HideMoveHoverPing();
+                HideMovePathPreview();
+            }
 
             return;
         }
@@ -856,6 +867,48 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         if (moveHoverCostTextInstance != null)
             moveHoverCostTextInstance.gameObject.SetActive(false);
+    }
+
+    private void ShowMovePathPreview(int gridIndex)
+    {
+        EnsureMovePathPreview();
+
+        if (movePathPreview == null || gridManager == null)
+            return;
+
+        if (gridIndex == currentCasterGridIndex)
+        {
+            movePathPreview.Clear();
+            return;
+        }
+
+        if (!currentMovePathCandidatesByTargetIndex.TryGetValue(gridIndex, out List<List<Vector2Int>> pathCandidates))
+            pathCandidates = BuildPreferredMovePathCandidates(gridIndex);
+
+        List<Vector2Int> movePath = GetFirstReservableMovePath(pathCandidates);
+
+        if (movePath == null || movePath.Count <= 0)
+        {
+            movePathPreview.Clear();
+            return;
+        }
+
+        movePathPreview.ShowPath(currentCasterGridIndex, movePath);
+    }
+
+    private void HideMovePathPreview()
+    {
+        if (movePathPreview != null)
+            movePathPreview.Clear();
+    }
+
+    private void EnsureMovePathPreview()
+    {
+        if (movePathPreview == null)
+            movePathPreview = GetComponent<MovePathPreview>();
+
+        if (movePathPreview != null)
+            movePathPreview.BindGridManager(gridManager);
     }
 
 
@@ -1068,6 +1121,7 @@ public class PlayerSkillReservationController : MonoBehaviour
             return;
         }
 
+        HideMovePathPreview();
         ConfirmMoveReservation(cell.Index);
     }
 
@@ -2910,6 +2964,7 @@ public class PlayerSkillReservationController : MonoBehaviour
     public void ClearPreview()
     {
         HideMoveHoverPing();
+        HideMovePathPreview();
         SetGridTargetMonsterVisualActive(false);
 
         currentUserRuntime = null;
