@@ -9,6 +9,40 @@ namespace Relic.Gameplay.Monster
     {
         private const string MoveSkillId = "S_Monster_11";
         private const string AttackSkillId = "S_Monster_12";
+        private const int MaxMoveActionCount = 2;
+
+        private static readonly Vector2Int[] MoveOffsets =
+        {
+            new Vector2Int(0, 1),
+            new Vector2Int(0, -1),
+            new Vector2Int(-1, 0),
+            new Vector2Int(1, 0),
+            new Vector2Int(0, 2),
+            new Vector2Int(0, -2),
+            new Vector2Int(-2, 0),
+            new Vector2Int(2, 0)
+        };
+
+        private static readonly Vector2Int[] CardinalDirections =
+        {
+            Vector2Int.up,
+            Vector2Int.down,
+            Vector2Int.left,
+            Vector2Int.right
+        };
+
+        private sealed class ReachableState
+        {
+            public Vector2Int Coord;
+            public List<Vector2Int> Steps;
+        }
+
+        private sealed class AttackCandidate
+        {
+            public ReachableState State;
+            public int TargetGridIndex;
+            public int AttackDistance;
+        }
 
         public override string SelectSkill(MonsterRuntimeData monster, BattleContext context)
         {
@@ -28,355 +62,634 @@ namespace Relic.Gameplay.Monster
             if (monsterUnit.MainGridIndex < 0)
                 return plan;
 
-            Vector2Int monsterCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
-            int targetGridIndex = FindBestTargetAndMoveSteps(
-                monsterUnit,
-                gridManager,
-                monsterCoord,
-                out List<Vector2Int> moveSteps);
+            Vector2Int startCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
 
-            if (targetGridIndex < 0)
+            // 예약 1회마다 반복해서 씬을 탐색하지 않도록 필요한 정보를 한 번만 수집합니다.
+            BattleGridEffectController gridEffectController =
+                Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+            BattleCharacter[] characters = FindPlayers();
+            MonsterUnit[] monsters = Object.FindObjectsByType<MonsterUnit>(
+                FindObjectsInactive.Exclude,
+                FindObjectsSortMode.None);
+
+            HashSet<int> occupiedIndices = BuildOccupancySnapshot(
+                monsterUnit,
+                characters,
+                monsters);
+            HashSet<int> blockedGridEffectIndices = BuildBlockedGridEffectSnapshot(
+                gridManager,
+                gridEffectController);
+            List<int> targetGridIndices = BuildAliveTargetSnapshot(
+                characters,
+                gridEffectController);
+
+            if (targetGridIndices.Count <= 0)
                 return plan;
 
-            Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
-            Vector2Int totalMoveOffset = Vector2Int.zero;
-            int group = 1;
+            List<Vector2Int> shapeOffsets = BuildMonsterShapeOffsets(monsterUnit, gridManager, startCoord);
+            List<ReachableState> reachableStates = BuildReachableStates(
+                gridManager,
+                startCoord,
+                shapeOffsets,
+                occupiedIndices,
+                blockedGridEffectIndices);
 
-            for (int i = 0; i < moveSteps.Count; i++)
+            AttackCandidate attackCandidate = FindBestImmediateAttackCandidate(
+                gridManager,
+                reachableStates,
+                targetGridIndices,
+                occupiedIndices,
+                blockedGridEffectIndices);
+
+            if (attackCandidate != null)
             {
-                Vector2Int moveOffset = moveSteps[i];
-                totalMoveOffset += moveOffset;
+                AddMoveActions(plan, attackCandidate.State.Steps);
+
+                Vector2Int targetCoord = gridManager.IndexToCoord(attackCandidate.TargetGridIndex);
+                BattleDirection attackDirection = GetHorizontalAttackDirection(
+                    attackCandidate.State.Coord,
+                    targetCoord,
+                    monsterUnit.RuntimeData.Direction);
+                int projectedGridIndex = gridManager.CoordToIndex(attackCandidate.State.Coord);
 
                 plan.Add(new MonsterAIAction(
-                    MoveSkillId,
-                    moveOffset,
-                    i == 0
-                        ? MonsterAISlotPreference.Front
-                        : MonsterAISlotPreference.NextSlot,
-                    group,
-                    i));
+                    AttackSkillId,
+                    Vector2Int.zero,
+                    attackCandidate.State.Steps.Count > 0
+                        ? MonsterAISlotPreference.NextSlot
+                        : MonsterAISlotPreference.Front,
+                    1,
+                    attackCandidate.State.Steps.Count,
+                    projectedGridIndex,
+                    true,
+                    attackDirection));
+
+                return plan;
             }
 
-            Vector2Int projectedCoord = monsterCoord + totalMoveOffset;
-            int dashTargetGridIndex = FindBestHorizontalDashTarget(
+            // 이번 턴 공격이 불가능하면 모든 살아 있는 타겟의 좌/우 진입 공간을 목표로 삼습니다.
+            // 전투불능 캐릭터는 타겟에서는 빠지지만 occupiedIndices에는 남아 장애물로 유지됩니다.
+            List<Vector2Int> futureAttackOrigins = BuildFutureAttackOrigins(
                 gridManager,
-                projectedCoord);
+                targetGridIndices,
+                occupiedIndices,
+                blockedGridEffectIndices);
 
-            // 이동 후 가로 돌진 경로에 장애물이나 다른 유닛이 있다면 공격을 예약하지 않습니다.
-            // 장애물 뒤의 대상을 계속 공격 대상으로 잡는 현상을 방지합니다.
-            if (dashTargetGridIndex < 0)
-                return plan;
+            ReachableState fallbackState = FindBestFallbackState(
+                gridManager,
+                reachableStates,
+                futureAttackOrigins,
+                targetGridIndices,
+                occupiedIndices,
+                blockedGridEffectIndices);
 
-            Vector2Int dashTargetCoord = gridManager.IndexToCoord(dashTargetGridIndex);
-            BattleDirection attackDirection = GetHorizontalAttackDirection(
-                projectedCoord,
-                dashTargetCoord,
-                monsterUnit.RuntimeData.Direction);
-
-            int projectedGridIndex = gridManager.IsValidCoord(projectedCoord)
-                ? gridManager.CoordToIndex(projectedCoord)
-                : monsterUnit.MainGridIndex;
-
-            plan.Add(new MonsterAIAction(
-                AttackSkillId,
-                Vector2Int.zero,
-                moveSteps.Count > 0
-                    ? MonsterAISlotPreference.NextSlot
-                    : MonsterAISlotPreference.Front,
-                group,
-                moveSteps.Count,
-                projectedGridIndex,
-                true,
-                attackDirection));
+            if (fallbackState != null)
+                AddMoveActions(plan, fallbackState.Steps);
 
             return plan;
         }
 
-        /// <summary>
-        /// 베스파는 가로 돌진만 사용하므로, 다른 가로 라인에 있는 캐릭터를 노릴 때는
-        /// 먼저 가로로 자리를 벌린 뒤 세로로 이동하여 같은 가로 라인을 맞춥니다.
-        /// </summary>
-        private int FindBestTargetAndMoveSteps(
-            MonsterUnit monsterUnit,
-            GridManager gridManager,
-            Vector2Int monsterCoord,
-            out List<Vector2Int> bestMoveSteps)
+        private static HashSet<int> BuildOccupancySnapshot(
+            MonsterUnit self,
+            BattleCharacter[] characters,
+            MonsterUnit[] monsters)
         {
-            bestMoveSteps = new List<Vector2Int>();
-            List<int> targets = FindCharacterTargetGridIndices();
+            HashSet<int> occupied = new();
 
-            int bestTargetGridIndex = -1;
-            int bestMoveCount = int.MaxValue;
-            int bestAttackDistance = int.MaxValue;
-
-            // 정확히 같은 가로 라인을 만들 수 있는 대상을 먼저 찾습니다.
-            for (int i = 0; i < targets.Count; i++)
+            if (characters != null)
             {
-                int targetGridIndex = targets[i];
-
-                if (targetGridIndex < 0)
-                    continue;
-
-                Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
-                List<Vector2Int> candidateSteps = BuildExactAlignmentSteps(
-                    monsterUnit,
-                    gridManager,
-                    monsterCoord,
-                    targetCoord);
-
-                if (candidateSteps == null)
-                    continue;
-
-                Vector2Int projectedCoord = monsterCoord;
-                for (int stepIndex = 0; stepIndex < candidateSteps.Count; stepIndex++)
-                    projectedCoord += candidateSteps[stepIndex];
-
-                if (!IsHorizontalDashPathClear(gridManager, projectedCoord, targetCoord))
-                    continue;
-
-                int attackDistance = Mathf.Abs(targetCoord.x - projectedCoord.x);
-
-                if (candidateSteps.Count < bestMoveCount ||
-                    (candidateSteps.Count == bestMoveCount && attackDistance < bestAttackDistance))
+                for (int i = 0; i < characters.Length; i++)
                 {
-                    bestTargetGridIndex = targetGridIndex;
-                    bestMoveSteps = candidateSteps;
-                    bestMoveCount = candidateSteps.Count;
-                    bestAttackDistance = attackDistance;
+                    BattleCharacter character = characters[i];
+
+                    if (character == null || character.CurrentGridIndex < 0)
+                        continue;
+
+                    // 전투불능 캐릭터도 그리드에서 사라지지 않으므로 계속 장애물로 취급합니다.
+                    occupied.Add(character.CurrentGridIndex);
                 }
             }
 
-            if (bestTargetGridIndex >= 0)
-                return bestTargetGridIndex;
-
-            // 두 번의 이동으로 라인을 맞출 수 없다면 가장 가까운 캐릭터 계열 대상을 향해 접근합니다.
-            int fallbackTargetGridIndex = FindNearestCharacterTargetGridIndex(monsterUnit, gridManager);
-
-            if (fallbackTargetGridIndex < 0)
-                return -1;
-
-            Vector2Int fallbackCoord = gridManager.IndexToCoord(fallbackTargetGridIndex);
-            bestMoveSteps = BuildFallbackSteps(
-                monsterUnit,
-                gridManager,
-                monsterCoord,
-                fallbackCoord);
-
-            return fallbackTargetGridIndex;
-        }
-
-        private List<Vector2Int> BuildExactAlignmentSteps(
-            MonsterUnit monsterUnit,
-            GridManager gridManager,
-            Vector2Int monsterCoord,
-            Vector2Int targetCoord)
-        {
-            // 이미 같은 가로 라인이라면 기존 규칙대로 50% 확률로만 가로 이동합니다.
-            if (monsterCoord.y == targetCoord.y)
+            if (monsters != null)
             {
-                List<Vector2Int> sameLineSteps = new();
-
-                if (BattleRandom.Value() >= 0.5f)
-                    return sameLineSteps;
-
-                Vector2Int horizontalMove = FindBestHorizontalMove(
-                    monsterUnit,
-                    gridManager,
-                    monsterCoord,
-                    targetCoord,
-                    requireDifferentTargetX: false);
-
-                if (horizontalMove != Vector2Int.zero)
-                    sameLineSteps.Add(horizontalMove);
-
-                return sameLineSteps;
-            }
-
-            int verticalDifference = targetCoord.y - monsterCoord.y;
-
-            // 한 번의 세로 이동으로 같은 가로 라인을 맞출 수 있어야 합니다.
-            if (Mathf.Abs(verticalDifference) > 2)
-                return null;
-
-            Vector2Int verticalStep = new(0, verticalDifference);
-
-            // 현재 X 위치에서도 대상과 서로 다른 열을 유지할 수 있다면
-            // 불필요한 가로 이동 없이 세로 이동만으로 같은 가로 라인을 맞춥니다.
-            if (monsterCoord.x != targetCoord.x &&
-                CanMonsterMove(monsterUnit, gridManager, verticalStep))
-            {
-                return new List<Vector2Int>
+                for (int i = 0; i < monsters.Length; i++)
                 {
-                    verticalStep
-                };
+                    MonsterUnit monster = monsters[i];
+
+                    if (monster == null || monster == self)
+                        continue;
+
+                    if (monster.RuntimeData != null && monster.RuntimeData.IsDead)
+                        continue;
+
+                    for (int gridIndex = 0; gridIndex < monster.OccupiedGridIndices.Count; gridIndex++)
+                    {
+                        int occupiedGridIndex = monster.OccupiedGridIndices[gridIndex];
+
+                        if (occupiedGridIndex >= 0)
+                            occupied.Add(occupiedGridIndex);
+                    }
+
+                    if (monster.OccupiedGridIndices.Count == 0 && monster.MainGridIndex >= 0)
+                        occupied.Add(monster.MainGridIndex);
+                }
             }
 
-            // 대상과 같은 열에 있어 세로 이동만 하면 돌진 방향이 만들어지지 않는 경우에만
-            // 먼저 가로로 자리를 옮긴 뒤 세로 이동합니다.
-            Vector2Int horizontalStep = FindBestHorizontalMove(
-                monsterUnit,
-                gridManager,
-                monsterCoord,
-                targetCoord,
-                requireDifferentTargetX: true,
-                verticalDifference);
-
-            if (horizontalStep == Vector2Int.zero)
-                return null;
-
-            Vector2Int totalOffset = horizontalStep + verticalStep;
-
-            // 두 행동을 가로 → 세로 순서로 실행했을 때 전체 경로가 유효한지 확인합니다.
-            if (!CanMonsterMove(monsterUnit, gridManager, totalOffset))
-                return null;
-
-            return new List<Vector2Int>
-            {
-                horizontalStep,
-                verticalStep
-            };
+            return occupied;
         }
 
-        private List<Vector2Int> BuildFallbackSteps(
-            MonsterUnit monsterUnit,
+        private static HashSet<int> BuildBlockedGridEffectSnapshot(
             GridManager gridManager,
-            Vector2Int monsterCoord,
-            Vector2Int targetCoord)
+            BattleGridEffectController gridEffectController)
         {
-            List<Vector2Int> result = new();
-            int verticalDifference = targetCoord.y - monsterCoord.y;
-            int verticalAmount = Mathf.Clamp(verticalDifference, -2, 2);
+            HashSet<int> blocked = new();
 
-            // 대상과 다른 열에 있다면 가로 이동 없이 세로로만 접근합니다.
-            // 같은 가로 라인이 되었을 때 바로 좌우 돌진 방향을 만들 수 있기 때문입니다.
-            if (monsterCoord.x != targetCoord.x)
+            if (gridManager == null || gridEffectController == null)
+                return blocked;
+
+            for (int x = 0; x < gridManager.Width; x++)
             {
-                if (verticalAmount == 0)
-                    return result;
+                for (int y = 0; y < gridManager.Height; y++)
+                {
+                    Vector2Int coord = new(x, y);
+                    int gridIndex = gridManager.CoordToIndex(coord);
 
-                Vector2Int verticalOnlyStep = new(0, verticalAmount);
-
-                if (CanMonsterMove(monsterUnit, gridManager, verticalOnlyStep))
-                    result.Add(verticalOnlyStep);
-
-                return result;
+                    if (gridEffectController.IsBlocked(gridIndex))
+                        blocked.Add(gridIndex);
+                }
             }
 
-            // 대상과 같은 열에 있을 때만 가로로 자리를 벌려 돌진 방향을 만듭니다.
-            Vector2Int horizontalStep = FindBestHorizontalMove(
-                monsterUnit,
-                gridManager,
-                monsterCoord,
-                targetCoord,
-                requireDifferentTargetX: true);
+            return blocked;
+        }
 
-            if (horizontalStep != Vector2Int.zero)
-                result.Add(horizontalStep);
+        private List<int> BuildAliveTargetSnapshot(
+            BattleCharacter[] characters,
+            BattleGridEffectController gridEffectController)
+        {
+            List<int> targets = new();
 
-            if (verticalAmount == 0)
-                return result;
+            if (characters != null)
+            {
+                for (int i = 0; i < characters.Length; i++)
+                {
+                    BattleCharacter character = characters[i];
 
-            Vector2Int verticalStep = new(0, verticalAmount);
-            Vector2Int totalOffset = horizontalStep + verticalStep;
+                    if (!IsAlivePlayer(character) || character.CurrentGridIndex < 0)
+                        continue;
 
-            if (CanMonsterMove(monsterUnit, gridManager, totalOffset))
-                result.Add(verticalStep);
+                    if (!targets.Contains(character.CurrentGridIndex))
+                        targets.Add(character.CurrentGridIndex);
+                }
+            }
+
+            if (gridEffectController != null)
+            {
+                IReadOnlyList<int> gridEffectTargets =
+                    gridEffectController.GetCharacterTargetGridIndices();
+
+                for (int i = 0; i < gridEffectTargets.Count; i++)
+                {
+                    int gridIndex = gridEffectTargets[i];
+
+                    if (gridIndex >= 0 && !targets.Contains(gridIndex))
+                        targets.Add(gridIndex);
+                }
+            }
+
+            return targets;
+        }
+
+        private static List<Vector2Int> BuildMonsterShapeOffsets(
+            MonsterUnit monsterUnit,
+            GridManager gridManager,
+            Vector2Int mainCoord)
+        {
+            List<Vector2Int> offsets = new();
+
+            for (int i = 0; i < monsterUnit.OccupiedGridIndices.Count; i++)
+            {
+                int gridIndex = monsterUnit.OccupiedGridIndices[i];
+
+                if (gridIndex < 0)
+                    continue;
+
+                offsets.Add(gridManager.IndexToCoord(gridIndex) - mainCoord);
+            }
+
+            if (offsets.Count == 0)
+                offsets.Add(Vector2Int.zero);
+
+            return offsets;
+        }
+
+        private static List<ReachableState> BuildReachableStates(
+            GridManager gridManager,
+            Vector2Int startCoord,
+            List<Vector2Int> shapeOffsets,
+            HashSet<int> occupiedIndices,
+            HashSet<int> blockedGridEffectIndices)
+        {
+            List<ReachableState> result = new();
+            Dictionary<Vector2Int, ReachableState> bestByCoord = new();
+
+            ReachableState startState = new()
+            {
+                Coord = startCoord,
+                Steps = new List<Vector2Int>()
+            };
+
+            result.Add(startState);
+            bestByCoord[startCoord] = startState;
+
+            List<ReachableState> frontier = new() { startState };
+
+            for (int depth = 0; depth < MaxMoveActionCount; depth++)
+            {
+                List<ReachableState> nextFrontier = new();
+
+                for (int stateIndex = 0; stateIndex < frontier.Count; stateIndex++)
+                {
+                    ReachableState state = frontier[stateIndex];
+
+                    for (int moveIndex = 0; moveIndex < MoveOffsets.Length; moveIndex++)
+                    {
+                        Vector2Int moveOffset = MoveOffsets[moveIndex];
+
+                        if (!CanMoveFromState(
+                                gridManager,
+                                state.Coord,
+                                shapeOffsets,
+                                moveOffset,
+                                occupiedIndices,
+                                blockedGridEffectIndices))
+                        {
+                            continue;
+                        }
+
+                        Vector2Int destination = state.Coord + moveOffset;
+                        int newActionCount = state.Steps.Count + 1;
+
+                        if (bestByCoord.TryGetValue(destination, out ReachableState existing) &&
+                            existing.Steps.Count <= newActionCount)
+                        {
+                            continue;
+                        }
+
+                        List<Vector2Int> steps = new(state.Steps)
+                        {
+                            moveOffset
+                        };
+
+                        ReachableState nextState = new()
+                        {
+                            Coord = destination,
+                            Steps = steps
+                        };
+
+                        bestByCoord[destination] = nextState;
+                        result.Add(nextState);
+                        nextFrontier.Add(nextState);
+                    }
+                }
+
+                frontier = nextFrontier;
+
+                if (frontier.Count == 0)
+                    break;
+            }
 
             return result;
         }
 
-        private Vector2Int FindBestHorizontalMove(
-            MonsterUnit monsterUnit,
+        private static bool CanMoveFromState(
             GridManager gridManager,
-            Vector2Int monsterCoord,
-            Vector2Int targetCoord,
-            bool requireDifferentTargetX,
-            int followingVerticalAmount = 0)
+            Vector2Int originCoord,
+            List<Vector2Int> shapeOffsets,
+            Vector2Int moveOffset,
+            HashSet<int> occupiedIndices,
+            HashSet<int> blockedGridEffectIndices)
         {
-            Vector2Int bestMove = Vector2Int.zero;
-            int bestDistance = int.MaxValue;
+            if (!IsOneOrTwoTileCardinalMove(moveOffset))
+                return false;
 
-            int[] directions = { -1, 1 };
-            int[] distances = { 1, 2 };
+            int tileCount = Mathf.Max(Mathf.Abs(moveOffset.x), Mathf.Abs(moveOffset.y));
+            Vector2Int unitStep = new(
+                moveOffset.x == 0 ? 0 : (moveOffset.x > 0 ? 1 : -1),
+                moveOffset.y == 0 ? 0 : (moveOffset.y > 0 ? 1 : -1));
 
-            for (int directionIndex = 0; directionIndex < directions.Length; directionIndex++)
+            for (int tileStep = 1; tileStep <= tileCount; tileStep++)
             {
-                for (int distanceIndex = 0; distanceIndex < distances.Length; distanceIndex++)
+                Vector2Int translatedMainCoord = originCoord + unitStep * tileStep;
+
+                for (int shapeIndex = 0; shapeIndex < shapeOffsets.Count; shapeIndex++)
                 {
-                    Vector2Int horizontalMove = new(
-                        directions[directionIndex] * distances[distanceIndex],
-                        0);
+                    Vector2Int translatedCoord = translatedMainCoord + shapeOffsets[shapeIndex];
 
-                    Vector2Int projectedCoord = monsterCoord + horizontalMove;
+                    if (!gridManager.IsValidCoord(translatedCoord))
+                        return false;
 
-                    if (requireDifferentTargetX && projectedCoord.x == targetCoord.x)
+                    int gridIndex = gridManager.CoordToIndex(translatedCoord);
+
+                    if (occupiedIndices.Contains(gridIndex) || blockedGridEffectIndices.Contains(gridIndex))
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static AttackCandidate FindBestImmediateAttackCandidate(
+            GridManager gridManager,
+            List<ReachableState> reachableStates,
+            List<int> targetGridIndices,
+            HashSet<int> occupiedIndices,
+            HashSet<int> blockedGridEffectIndices)
+        {
+            AttackCandidate best = null;
+
+            for (int stateIndex = 0; stateIndex < reachableStates.Count; stateIndex++)
+            {
+                ReachableState state = reachableStates[stateIndex];
+
+                for (int targetIndex = 0; targetIndex < targetGridIndices.Count; targetIndex++)
+                {
+                    int targetGridIndex = targetGridIndices[targetIndex];
+
+                    if (targetGridIndex < 0)
                         continue;
 
-                    Vector2Int totalOffset = horizontalMove + new Vector2Int(0, followingVerticalAmount);
+                    Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
 
-                    if (!CanMonsterMove(monsterUnit, gridManager, totalOffset))
-                        continue;
-
-                    int horizontalDistance = Mathf.Abs(targetCoord.x - projectedCoord.x);
-
-                    if (horizontalDistance < bestDistance)
+                    if (!IsHorizontalDashPathClear(
+                            gridManager,
+                            state.Coord,
+                            targetCoord,
+                            targetGridIndex,
+                            occupiedIndices,
+                            blockedGridEffectIndices))
                     {
-                        bestDistance = horizontalDistance;
-                        bestMove = horizontalMove;
+                        continue;
+                    }
+
+                    int attackDistance = Mathf.Abs(targetCoord.x - state.Coord.x);
+
+                    if (best == null ||
+                        state.Steps.Count < best.State.Steps.Count ||
+                        (state.Steps.Count == best.State.Steps.Count && attackDistance < best.AttackDistance))
+                    {
+                        best = new AttackCandidate
+                        {
+                            State = state,
+                            TargetGridIndex = targetGridIndex,
+                            AttackDistance = attackDistance
+                        };
                     }
                 }
             }
 
-            return bestMove;
+            return best;
         }
 
-
-        private int FindBestHorizontalDashTarget(
+        private static List<Vector2Int> BuildFutureAttackOrigins(
             GridManager gridManager,
-            Vector2Int originCoord)
+            List<int> targetGridIndices,
+            HashSet<int> occupiedIndices,
+            HashSet<int> blockedGridEffectIndices)
         {
-            List<int> targets = FindCharacterTargetGridIndices();
-            int bestTargetGridIndex = -1;
-            int bestDistance = int.MaxValue;
+            List<Vector2Int> origins = new();
+            HashSet<Vector2Int> unique = new();
 
-            for (int i = 0; i < targets.Count; i++)
+            for (int targetIndex = 0; targetIndex < targetGridIndices.Count; targetIndex++)
             {
-                int targetGridIndex = targets[i];
+                int targetGridIndex = targetGridIndices[targetIndex];
 
                 if (targetGridIndex < 0)
                     continue;
 
                 Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
 
-                if (!IsHorizontalDashPathClear(gridManager, originCoord, targetCoord))
-                    continue;
-
-                int distance = Mathf.Abs(targetCoord.x - originCoord.x);
-
-                if (distance < bestDistance)
+                for (int x = 0; x < gridManager.Width; x++)
                 {
-                    bestDistance = distance;
-                    bestTargetGridIndex = targetGridIndex;
+                    if (x == targetCoord.x)
+                        continue;
+
+                    Vector2Int originCoord = new(x, targetCoord.y);
+                    int originGridIndex = gridManager.CoordToIndex(originCoord);
+
+                    if (occupiedIndices.Contains(originGridIndex) ||
+                        blockedGridEffectIndices.Contains(originGridIndex))
+                    {
+                        continue;
+                    }
+
+                    if (!IsHorizontalDashPathClear(
+                            gridManager,
+                            originCoord,
+                            targetCoord,
+                            targetGridIndex,
+                            occupiedIndices,
+                            blockedGridEffectIndices))
+                    {
+                        continue;
+                    }
+
+                    if (unique.Add(originCoord))
+                        origins.Add(originCoord);
                 }
             }
 
-            return bestTargetGridIndex;
+            return origins;
         }
 
-        private bool IsHorizontalDashPathClear(
+        private static ReachableState FindBestFallbackState(
+            GridManager gridManager,
+            List<ReachableState> reachableStates,
+            List<Vector2Int> futureAttackOrigins,
+            List<int> targetGridIndices,
+            HashSet<int> occupiedIndices,
+            HashSet<int> blockedGridEffectIndices)
+        {
+            ReachableState best = null;
+            int bestPathDistance = int.MaxValue;
+            int bestTargetDistance = int.MaxValue;
+            int bestOpenSpace = int.MinValue;
+
+            for (int stateIndex = 0; stateIndex < reachableStates.Count; stateIndex++)
+            {
+                ReachableState state = reachableStates[stateIndex];
+
+                if (state.Steps.Count <= 0)
+                    continue;
+
+                int pathDistance = GetShortestPathDistanceToAnyOrigin(
+                    gridManager,
+                    state.Coord,
+                    futureAttackOrigins,
+                    occupiedIndices,
+                    blockedGridEffectIndices);
+                int targetDistance = GetNearestTargetManhattanDistance(
+                    gridManager,
+                    state.Coord,
+                    targetGridIndices);
+                int openSpace = GetOpenSpaceScore(
+                    gridManager,
+                    state.Coord,
+                    occupiedIndices,
+                    blockedGridEffectIndices);
+
+                bool hasFutureOriginPath = pathDistance != int.MaxValue;
+                bool bestHasFutureOriginPath = bestPathDistance != int.MaxValue;
+
+                bool isBetter =
+                    best == null ||
+                    (hasFutureOriginPath && !bestHasFutureOriginPath) ||
+                    (hasFutureOriginPath == bestHasFutureOriginPath && pathDistance < bestPathDistance) ||
+                    (hasFutureOriginPath == bestHasFutureOriginPath &&
+                     pathDistance == bestPathDistance &&
+                     targetDistance < bestTargetDistance) ||
+                    (hasFutureOriginPath == bestHasFutureOriginPath &&
+                     pathDistance == bestPathDistance &&
+                     targetDistance == bestTargetDistance &&
+                     openSpace > bestOpenSpace) ||
+                    (hasFutureOriginPath == bestHasFutureOriginPath &&
+                     pathDistance == bestPathDistance &&
+                     targetDistance == bestTargetDistance &&
+                     openSpace == bestOpenSpace &&
+                     state.Steps.Count < best.Steps.Count);
+
+                if (!isBetter)
+                    continue;
+
+                best = state;
+                bestPathDistance = pathDistance;
+                bestTargetDistance = targetDistance;
+                bestOpenSpace = openSpace;
+            }
+
+            return best;
+        }
+
+        private static int GetShortestPathDistanceToAnyOrigin(
+            GridManager gridManager,
+            Vector2Int startCoord,
+            List<Vector2Int> origins,
+            HashSet<int> occupiedIndices,
+            HashSet<int> blockedGridEffectIndices)
+        {
+            if (origins == null || origins.Count <= 0)
+                return int.MaxValue;
+
+            HashSet<Vector2Int> goals = new(origins);
+
+            if (goals.Contains(startCoord))
+                return 0;
+
+            Queue<Vector2Int> queue = new();
+            Queue<int> distances = new();
+            HashSet<Vector2Int> visited = new();
+
+            queue.Enqueue(startCoord);
+            distances.Enqueue(0);
+            visited.Add(startCoord);
+
+            while (queue.Count > 0)
+            {
+                Vector2Int current = queue.Dequeue();
+                int distance = distances.Dequeue();
+
+                for (int directionIndex = 0; directionIndex < CardinalDirections.Length; directionIndex++)
+                {
+                    Vector2Int next = current + CardinalDirections[directionIndex];
+
+                    if (!gridManager.IsValidCoord(next) || !visited.Add(next))
+                        continue;
+
+                    int nextGridIndex = gridManager.CoordToIndex(next);
+
+                    if (occupiedIndices.Contains(nextGridIndex) || blockedGridEffectIndices.Contains(nextGridIndex))
+                        continue;
+
+                    if (goals.Contains(next))
+                        return distance + 1;
+
+                    queue.Enqueue(next);
+                    distances.Enqueue(distance + 1);
+                }
+            }
+
+            return int.MaxValue;
+        }
+
+        private static int GetNearestTargetManhattanDistance(
             GridManager gridManager,
             Vector2Int originCoord,
-            Vector2Int targetCoord)
+            List<int> targetGridIndices)
+        {
+            int best = int.MaxValue;
+
+            for (int i = 0; i < targetGridIndices.Count; i++)
+            {
+                int targetGridIndex = targetGridIndices[i];
+
+                if (targetGridIndex < 0)
+                    continue;
+
+                Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
+                int distance =
+                    Mathf.Abs(targetCoord.x - originCoord.x) +
+                    Mathf.Abs(targetCoord.y - originCoord.y);
+
+                if (distance < best)
+                    best = distance;
+            }
+
+            return best;
+        }
+
+        private static int GetOpenSpaceScore(
+            GridManager gridManager,
+            Vector2Int originCoord,
+            HashSet<int> occupiedIndices,
+            HashSet<int> blockedGridEffectIndices)
+        {
+            int score = 0;
+
+            for (int directionIndex = 0; directionIndex < CardinalDirections.Length; directionIndex++)
+            {
+                Vector2Int coord = originCoord;
+
+                for (int step = 0; step < 2; step++)
+                {
+                    coord += CardinalDirections[directionIndex];
+
+                    if (!gridManager.IsValidCoord(coord))
+                        break;
+
+                    int gridIndex = gridManager.CoordToIndex(coord);
+
+                    if (occupiedIndices.Contains(gridIndex) || blockedGridEffectIndices.Contains(gridIndex))
+                        break;
+
+                    score++;
+                }
+            }
+
+            return score;
+        }
+
+        private static bool IsHorizontalDashPathClear(
+            GridManager gridManager,
+            Vector2Int originCoord,
+            Vector2Int targetCoord,
+            int targetGridIndex,
+            HashSet<int> occupiedIndices,
+            HashSet<int> blockedGridEffectIndices)
         {
             if (gridManager == null || originCoord.y != targetCoord.y || originCoord.x == targetCoord.x)
                 return false;
 
             int direction = targetCoord.x > originCoord.x ? 1 : -1;
-            BattleGridEffectController gridEffectController =
-                Object.FindFirstObjectByType<BattleGridEffectController>(
-                    FindObjectsInactive.Include);
 
-            // 대상 칸 직전까지만 검사합니다. 대상 캐릭터가 있는 칸은 돌진 충돌 지점입니다.
             for (int x = originCoord.x + direction; x != targetCoord.x; x += direction)
             {
                 Vector2Int checkCoord = new(x, originCoord.y);
@@ -386,14 +699,37 @@ namespace Relic.Gameplay.Monster
 
                 int checkIndex = gridManager.CoordToIndex(checkCoord);
 
-                if (BattleOccupancyService.IsOccupiedByAnyUnit(checkIndex))
-                    return false;
-
-                if (gridEffectController != null && gridEffectController.IsBlocked(checkIndex))
+                if (occupiedIndices.Contains(checkIndex) || blockedGridEffectIndices.Contains(checkIndex))
                     return false;
             }
 
-            return true;
+            // 대상 칸은 살아 있는 캐릭터가 점유하고 있어도 정상 공격 대상입니다.
+            return gridManager.IsValidCoord(targetCoord) && targetGridIndex >= 0;
+        }
+
+        private static bool IsOneOrTwoTileCardinalMove(Vector2Int moveOffset)
+        {
+            int distance = Mathf.Max(Mathf.Abs(moveOffset.x), Mathf.Abs(moveOffset.y));
+            bool isCardinal = moveOffset.x == 0 || moveOffset.y == 0;
+            return isCardinal && distance >= 1 && distance <= 2;
+        }
+
+        private static void AddMoveActions(MonsterAIPlan plan, List<Vector2Int> moveSteps)
+        {
+            if (plan == null || moveSteps == null)
+                return;
+
+            for (int i = 0; i < moveSteps.Count; i++)
+            {
+                plan.Add(new MonsterAIAction(
+                    MoveSkillId,
+                    moveSteps[i],
+                    i == 0
+                        ? MonsterAISlotPreference.Front
+                        : MonsterAISlotPreference.NextSlot,
+                    1,
+                    i));
+            }
         }
 
         private static BattleDirection GetHorizontalAttackDirection(
