@@ -78,19 +78,17 @@ public class BattleDamageService
             return false;
 
         int baseDamage = ParseFirstIntValue(skillData.ValueRate);
-        int randomRange = Mathf.Max(0, skillData.ValueRandomRange);
-
-        minDamage = Mathf.Max(1, baseDamage - randomRange);
-        maxDamage = Mathf.Max(minDamage, baseDamage + randomRange);
+        minDamage = Mathf.Max(1, baseDamage);
+        maxDamage = minDamage;
         return true;
     }
 
     public static int RollMonsterDamage(MonsterSkillData skillData)
     {
-        if (!TryGetMonsterDamageRange(skillData, out int minDamage, out int maxDamage))
+        if (skillData == null)
             return 1;
 
-        return BattleRandom.Range(minDamage, maxDamage + 1);
+        return Mathf.Max(1, ParseFirstIntValue(skillData.ValueRate));
     }
 
     public static string GetMonsterDamageText(MonsterReservedCommand command)

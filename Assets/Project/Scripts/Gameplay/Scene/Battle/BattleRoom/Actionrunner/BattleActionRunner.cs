@@ -45,6 +45,8 @@ public class BattleActionRunner
     private const string VespaMonsterId = "Mon_05";
     private const string VespaMoveSkillId = "S_Monster_11";
     private const string VespaAttackSkillId = "S_Monster_12";
+    private const string CinderMonsterId = "Mon_06";
+    private const string CinderExplodeSkillId = "S_Monster_14";
     private const string ResidueGridEffectId = "GR_Residue";
     private static readonly Color ExecutionRangeColor = Color.red;
     public const float MoveAnimationDuration = 0.15f;
@@ -3643,9 +3645,13 @@ public class BattleActionRunner
             string.Equals(command.MonsterId, VespaMonsterId, System.StringComparison.Ordinal) &&
             string.Equals(command.SkillId, VespaAttackSkillId, System.StringComparison.Ordinal);
 
-        // 블롭과 베스파 공격은 항상 실행 순간의 실제 위치에서 시작합니다.
+        bool isCinderExplosion =
+            string.Equals(command.MonsterId, CinderMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, CinderExplodeSkillId, System.StringComparison.Ordinal);
+
+        // 블롭, 베스파 공격과 신더 대폭발은 항상 실행 순간의 실제 위치에서 시작합니다.
         // 이동이 실패하거나 일부만 성공했다면 예약 당시 이동 성공 예상 위치를 사용하지 않습니다.
-        if (isBlobAttack || isVespaAttack)
+        if (isBlobAttack || isVespaAttack || isCinderExplosion)
         {
             if (monster.MainGridIndex >= 0)
                 command.SetRangeOriginGridIndex(monster.MainGridIndex);
@@ -3702,10 +3708,14 @@ public class BattleActionRunner
             string.Equals(command.MonsterId, VespaMonsterId, System.StringComparison.Ordinal) &&
             string.Equals(command.SkillId, VespaAttackSkillId, System.StringComparison.Ordinal);
 
-        // 블롭과 베스파는 예약 시 계산된 범위를 재사용하지 않습니다.
+        bool isCinderExplosion =
+            string.Equals(command.MonsterId, CinderMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, CinderExplodeSkillId, System.StringComparison.Ordinal);
+
+        // 블롭, 베스파, 신더 대폭발은 예약 시 계산된 범위를 재사용하지 않습니다.
         // 이동 성공/실패 결과가 정해진 뒤 실제 위치를 원점으로 범위를 다시 계산하되,
         // 예약된 공격 방향은 command.ForcedDirection으로 그대로 유지합니다.
-        if (command.HasExplicitRangeResult && !isBlobAttack && !isVespaAttack)
+        if (command.HasExplicitRangeResult && !isBlobAttack && !isVespaAttack && !isCinderExplosion)
             return;
 
         BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();

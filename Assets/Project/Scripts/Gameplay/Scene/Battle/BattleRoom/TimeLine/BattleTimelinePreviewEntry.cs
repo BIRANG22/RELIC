@@ -475,38 +475,13 @@ public class BattleTimelinePreviewEntry
         MonsterReservedCommand command,
         MonsterSkillData skillData)
     {
-        if (string.IsNullOrWhiteSpace(description))
-            return "";
-
         MonsterSkillData sourceSkillData = command != null && command.SkillData != null
             ? command.SkillData
             : skillData;
 
-        string valueText = GetMonsterEffectValueText(sourceSkillData);
-        if (string.IsNullOrWhiteSpace(valueText))
-            return description;
-
-        const string valueToken = "\uC218\uCE58";
-
-        return description
-            .Replace($"\"{valueToken}\"", valueText)
-            .Replace(valueToken, valueText);
+        return MonsterSkillDescriptionFormatter.Format(description, sourceSkillData);
     }
 
-    private static string GetMonsterEffectValueText(MonsterSkillData skillData)
-    {
-        if (skillData == null || string.IsNullOrWhiteSpace(skillData.ValueRate))
-            return string.Empty;
 
-        string[] values = skillData.ValueRate.Split(';');
-        string baseValue = values.Length > 0 ? values[0].Trim() : string.Empty;
-        if (string.IsNullOrWhiteSpace(baseValue))
-            return string.Empty;
-
-        int randomRange = Mathf.Max(0, skillData.ValueRandomRange);
-        return randomRange > 0
-            ? $"{baseValue}(±{randomRange})"
-            : baseValue;
-    }
 
 }

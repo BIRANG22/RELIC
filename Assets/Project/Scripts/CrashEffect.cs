@@ -2,7 +2,7 @@ using UnityEngine;
 
 /// <summary>
 /// 강제 이동이 유닛, 장애물 또는 이동 불가 위치에 막혔을 때 적용되는 고정 피해 효과입니다.
-/// 방어도와 피해 증감 효과의 영향을 받지 않습니다.
+/// 피해 수치는 고정이지만 방어도가 있으면 방어도를 먼저 감소시킵니다.
 /// </summary>
 public class CrashEffect : BattleEffectBase
 {
@@ -26,11 +26,11 @@ public class CrashEffect : BattleEffectBase
             if (BattleEquipmentEffectService.IsCrashDamageImmune(context.PlayerTarget.RuntimeData))
                 return;
 
-            BattleEffectUtility.StatusDamagePlayer(context.PlayerTarget, damage);
+            BattleEffectUtility.DamagePlayer(context.PlayerTarget, damage);
             return;
         }
 
         if (context.MonsterTarget != null)
-            BattleEffectUtility.StatusDamageMonster(context.MonsterTarget, damage);
+            BattleEffectUtility.DamageMonster(context.MonsterTarget, damage);
     }
 }
