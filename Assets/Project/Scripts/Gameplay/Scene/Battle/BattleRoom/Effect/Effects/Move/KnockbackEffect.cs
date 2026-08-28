@@ -35,9 +35,17 @@ public class KnockbackEffect : BattleEffectBase
                 if (WouldMovePlayerOutsideGrid(playerTarget, offset, context.GridManager))
                     break;
 
-                if (!TryMovePlayer(playerTarget, offset, context.GridManager))
+                if (!TryMovePlayer(
+                        playerTarget,
+                        offset,
+                        context.GridManager,
+                        out int blockingUnitGridIndex))
                 {
-                    ApplyCrashEffect(context, playerTarget);
+                    if (blockingUnitGridIndex >= 0)
+                        HandlePlayerUnitCollision(playerTarget, blockingUnitGridIndex, context.GridManager);
+                    else
+                        ApplyCrashEffect(context, playerTarget);
+
                     break;
                 }
 
@@ -49,9 +57,17 @@ public class KnockbackEffect : BattleEffectBase
                 if (WouldMoveMonsterOutsideGrid(monsterTarget, offset, context.GridManager))
                     break;
 
-                if (!TryMoveMonster(monsterTarget, offset, context.GridManager))
+                if (!TryMoveMonster(
+                        monsterTarget,
+                        offset,
+                        context.GridManager,
+                        out int blockingUnitGridIndex))
                 {
-                    ApplyCrashEffect(context, monsterTarget);
+                    if (blockingUnitGridIndex >= 0)
+                        HandleMonsterUnitCollision(monsterTarget, blockingUnitGridIndex, context.GridManager);
+                    else
+                        ApplyCrashEffect(context, monsterTarget);
+
                     break;
                 }
 
@@ -122,8 +138,11 @@ public class KnockbackEffect : BattleEffectBase
     private static bool TryMovePlayer(
         BattleCharacter target,
         Vector2Int offset,
-        GridManager gridManager)
+        GridManager gridManager,
+        out int blockingUnitGridIndex)
     {
+        blockingUnitGridIndex = -1;
+
         if (target == null || target.RuntimeData == null)
             return false;
 
@@ -140,7 +159,10 @@ public class KnockbackEffect : BattleEffectBase
         int targetIndex = gridManager.CoordToIndex(targetCoord);
 
         if (BattleOccupancyService.IsOccupiedByAnyUnit(targetIndex, target.CharacterId))
+        {
+            blockingUnitGridIndex = targetIndex;
             return false;
+        }
 
         BattleGridEffectController gridEffectController =
             Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
@@ -164,8 +186,11 @@ public class KnockbackEffect : BattleEffectBase
     private static bool TryMoveMonster(
         MonsterUnit target,
         Vector2Int offset,
-        GridManager gridManager)
+        GridManager gridManager,
+        out int blockingUnitGridIndex)
     {
+        blockingUnitGridIndex = -1;
+
         if (target == null || target.RuntimeData == null)
             return false;
 
@@ -203,7 +228,10 @@ public class KnockbackEffect : BattleEffectBase
                 continue;
 
             if (BattleOccupancyService.IsOccupiedByAnyUnit(targetIndex, null, target))
+            {
+                blockingUnitGridIndex = targetIndex;
                 return false;
+            }
         }
 
         if (movedCells.Count <= 0)
@@ -230,6 +258,139 @@ public class KnockbackEffect : BattleEffectBase
         }
 
         return true;
+    }
+
+
+    private static void HandlePlayerUnitCollision(
+        BattleCharacter movingPlayer,
+        int blockingGridIndex,
+        GridManager gridManager)
+    {
+        if (movingPlayer == null || movingPlayer.RuntimeData == null || movingPlayer.RuntimeData.IsDead)
+            return;
+
+        const int baseCrashDamage = 2;
+
+        if (BattleOccupancyService.TryGetCharacterAtGrid(
+                blockingGridIndex,
+                out BattleCharacter blockingCharacter,
+                movingPlayer.CharacterId))
+        {
+            int damageToMovingPlayer = baseCrashDamage +
+                BattleEquipmentEffectService.GetCollisionTargetDamageDelta(blockingCharacter.RuntimeData);
+            int damageToBlockingPlayer = baseCrashDamage +
+                BattleEquipmentEffectService.GetCollisionTargetDamageDelta(movingPlayer.RuntimeData);
+
+            ApplyCrashToPlayer(movingPlayer, gridManager, damageToMovingPlayer);
+            ApplyCrashToPlayer(blockingCharacter, gridManager, damageToBlockingPlayer);
+
+            BattleEquipmentEffectService.ApplyPlayerCollisionEffects(
+                movingPlayer,
+                blockingCharacter,
+                null);
+            BattleEquipmentEffectService.ApplyPlayerCollisionEffects(
+                blockingCharacter,
+                movingPlayer,
+                null);
+            return;
+        }
+
+        if (BattleOccupancyService.TryGetMonsterAtGrid(
+                blockingGridIndex,
+                out MonsterUnit blockingMonster))
+        {
+            int damageToBlockingMonster = baseCrashDamage +
+                BattleEquipmentEffectService.GetCollisionTargetDamageDelta(movingPlayer.RuntimeData);
+
+            ApplyCrashToPlayer(movingPlayer, gridManager, baseCrashDamage);
+            bool blockingMonsterKilled =
+                ApplyCrashToMonster(blockingMonster, gridManager, damageToBlockingMonster);
+
+            BattleEquipmentEffectService.ApplyPlayerCollisionEffects(
+                movingPlayer,
+                null,
+                blockingMonster,
+                blockingMonsterKilled);
+        }
+    }
+
+    private static void HandleMonsterUnitCollision(
+        MonsterUnit movingMonster,
+        int blockingGridIndex,
+        GridManager gridManager)
+    {
+        if (movingMonster == null || movingMonster.RuntimeData == null || movingMonster.RuntimeData.IsDead)
+            return;
+
+        const int baseCrashDamage = 2;
+
+        if (BattleOccupancyService.TryGetCharacterAtGrid(
+                blockingGridIndex,
+                out BattleCharacter blockingCharacter))
+        {
+            int damageToMovingMonster = baseCrashDamage +
+                BattleEquipmentEffectService.GetCollisionTargetDamageDelta(blockingCharacter.RuntimeData);
+
+            bool movingMonsterKilled =
+                ApplyCrashToMonster(movingMonster, gridManager, damageToMovingMonster);
+            ApplyCrashToPlayer(blockingCharacter, gridManager, baseCrashDamage);
+
+            BattleEquipmentEffectService.ApplyPlayerCollisionEffects(
+                blockingCharacter,
+                null,
+                movingMonster,
+                movingMonsterKilled);
+            return;
+        }
+
+        if (BattleOccupancyService.TryGetMonsterAtGrid(
+                blockingGridIndex,
+                out MonsterUnit blockingMonster,
+                movingMonster))
+        {
+            ApplyCrashToMonster(movingMonster, gridManager, baseCrashDamage);
+            ApplyCrashToMonster(blockingMonster, gridManager, baseCrashDamage);
+        }
+    }
+
+    private static void ApplyCrashToPlayer(
+        BattleCharacter target,
+        GridManager gridManager,
+        int damage = 2)
+    {
+        if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
+            return;
+
+        new CrashEffect().Execute(new BattleEffectContext
+        {
+            PlayerTarget = target,
+            GridManager = gridManager,
+            EffectId = "E_Crash",
+            Value = Mathf.Max(0, damage),
+            Count = 1
+        });
+    }
+
+    private static bool ApplyCrashToMonster(
+        MonsterUnit target,
+        GridManager gridManager,
+        int damage = 2)
+    {
+        if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
+            return false;
+
+        bool wasAlive = !target.RuntimeData.IsDead;
+
+        new CrashEffect().Execute(new BattleEffectContext
+        {
+            MonsterTarget = target,
+            GridManager = gridManager,
+            EffectId = "E_Crash",
+            Value = Mathf.Max(0, damage),
+            Count = 1
+        });
+
+        return wasAlive && target.RuntimeData != null && target.RuntimeData.IsDead;
     }
 
     private static void TryDamageBlockedGridEffect(

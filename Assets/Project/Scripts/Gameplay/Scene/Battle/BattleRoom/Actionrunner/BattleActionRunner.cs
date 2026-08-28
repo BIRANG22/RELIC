@@ -42,6 +42,9 @@ public class BattleActionRunner
     private const string BlightMonsterId = "Mon_04";
     private const string BlightMoveSkillId = "S_Monster_08";
     private const string BlightDebuffSkillId = "S_Monster_10";
+    private const string VespaMonsterId = "Mon_05";
+    private const string VespaMoveSkillId = "S_Monster_11";
+    private const string VespaAttackSkillId = "S_Monster_12";
     private const string ResidueGridEffectId = "GR_Residue";
     private static readonly Color ExecutionRangeColor = Color.red;
     public const float MoveAnimationDuration = 0.15f;
@@ -806,6 +809,34 @@ public class BattleActionRunner
         return range;
     }
 
+    private List<int> BuildPlayerMoveExecutionRange(
+        PlayerReservedCommand command,
+        int currentGridIndex)
+    {
+        List<int> range = new();
+
+        if (command == null || gridManager == null || currentGridIndex < 0)
+            return range;
+
+        Vector2Int currentCoord = gridManager.IndexToCoord(currentGridIndex);
+
+        if (!gridManager.IsValidCoord(currentCoord))
+            return range;
+
+        Vector2Int reservedOffset = command.ExecutionMoveOffset;
+
+        if (command.VisualMoveSteps != null && command.VisualMoveSteps.Count > 0)
+            reservedOffset = GetTotalMoveOffset(command.VisualMoveSteps);
+
+        Vector2Int targetCoord = currentCoord + reservedOffset;
+
+        if (!gridManager.IsValidCoord(targetCoord))
+            return range;
+
+        AddUnique(range, gridManager.CoordToIndex(targetCoord));
+        return range;
+    }
+
     private List<int> BuildPlayerExecutionRange(PlayerReservedCommand command, int excludeGridIndex)
     {
         List<int> range = BuildPlayerExecutionRange(command);
@@ -1003,7 +1034,7 @@ public class BattleActionRunner
             yield break;
         }
 
-        ShowExecutionRange(BuildPlayerExecutionRange(command));
+        ShowExecutionRange(BuildPlayerMoveExecutionRange(command, currentGridIndex));
 
         try
         {
@@ -1328,14 +1359,23 @@ public class BattleActionRunner
             return false;
 
         Vector2Int currentCoord = gridManager.IndexToCoord(currentGridIndex);
-        Vector2Int targetCoord = gridManager.IndexToCoord(command.ReservedMoveGridIndex);
 
-        if (!gridManager.IsValidCoord(currentCoord) || !gridManager.IsValidCoord(targetCoord))
+        if (!gridManager.IsValidCoord(currentCoord))
             return false;
 
-        // 예약 단계에서 계산된 충돌 예상 위치가 아니라 원래 예약한 목적지를 기준으로 한다.
-        targetGridIndex = command.ReservedMoveGridIndex;
-        visualMoveOffset = targetCoord - currentCoord;
+        // 예약 당시의 절대 목적지가 아니라 실행 순간의 실제 위치를 원점으로 사용한다.
+        // 넉백/그랩으로 위치가 달라져도 예약된 이동 방향과 이동량은 그대로 유지한다.
+        visualMoveOffset = command.ExecutionMoveOffset;
+
+        if (command.VisualMoveSteps != null && command.VisualMoveSteps.Count > 0)
+            visualMoveOffset = GetTotalMoveOffset(command.VisualMoveSteps);
+
+        Vector2Int targetCoord = currentCoord + visualMoveOffset;
+
+        if (!gridManager.IsValidCoord(targetCoord))
+            return false;
+
+        targetGridIndex = gridManager.CoordToIndex(targetCoord);
         return true;
     }
 
@@ -3423,6 +3463,14 @@ public class BattleActionRunner
         if (command.SkillData.SkillId == "S_Monster_12" ||
             command.SkillData.SkillId == "S_Monster_33")
         {
+            // 베스파 돌진은 실행 순간의 실제 위치를 범위 원점으로 사용합니다.
+            // 선행 이동이 충돌로 실패하거나 일부만 성공해도 예약 당시 예상 위치를 표시하지 않습니다.
+            if (command.SkillData.SkillId == VespaAttackSkillId)
+            {
+                AlignRelativeRangeOriginToActualPosition(monster, command);
+                RecalculateMonsterSkillRangeAtExecution(monster, command);
+            }
+
             ShowExecutionRange(BuildMonsterSkillExecutionRange(command, monster.MainGridIndex));
 
             try
@@ -3591,9 +3639,13 @@ public class BattleActionRunner
             string.Equals(command.MonsterId, BlobMonsterId, System.StringComparison.Ordinal) &&
             string.Equals(command.SkillId, BlobAttackSkillId, System.StringComparison.Ordinal);
 
-        // 블롭 공격은 항상 실행 순간의 실제 위치에서 시작합니다.
-        // 충돌로 이동에 실패했다면 예약 당시 이동 성공 예상 위치를 절대 사용하지 않습니다.
-        if (isBlobAttack)
+        bool isVespaAttack =
+            string.Equals(command.MonsterId, VespaMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, VespaAttackSkillId, System.StringComparison.Ordinal);
+
+        // 블롭과 베스파 공격은 항상 실행 순간의 실제 위치에서 시작합니다.
+        // 이동이 실패하거나 일부만 성공했다면 예약 당시 이동 성공 예상 위치를 사용하지 않습니다.
+        if (isBlobAttack || isVespaAttack)
         {
             if (monster.MainGridIndex >= 0)
                 command.SetRangeOriginGridIndex(monster.MainGridIndex);
@@ -3646,9 +3698,14 @@ public class BattleActionRunner
             string.Equals(command.MonsterId, BlobMonsterId, System.StringComparison.Ordinal) &&
             string.Equals(command.SkillId, BlobAttackSkillId, System.StringComparison.Ordinal);
 
-        // 블롭은 예약 시 계산된 범위를 재사용하지 않습니다.
-        // 실제 이동 성공/실패 결과가 정해진 뒤 현재 위치 기준으로 좌우 공격 범위를 다시 계산합니다.
-        if (command.HasExplicitRangeResult && !isBlobAttack)
+        bool isVespaAttack =
+            string.Equals(command.MonsterId, VespaMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, VespaAttackSkillId, System.StringComparison.Ordinal);
+
+        // 블롭과 베스파는 예약 시 계산된 범위를 재사용하지 않습니다.
+        // 이동 성공/실패 결과가 정해진 뒤 실제 위치를 원점으로 범위를 다시 계산하되,
+        // 예약된 공격 방향은 command.ForcedDirection으로 그대로 유지합니다.
+        if (command.HasExplicitRangeResult && !isBlobAttack && !isVespaAttack)
             return;
 
         BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
@@ -4212,6 +4269,15 @@ public class BattleActionRunner
             return command.MoveOffset;
         }
 
+        // 베스파의 비행은 1칸/2칸 어느 쪽이든 예약 시 정한 이동 벡터를 실행 순간까지 유지합니다.
+        // 이동 스킬 ID 자체로 판정해 런타임 MonsterId 상태와 무관하게 시뮬레이션 축소값을 사용하지 않습니다.
+        // 실행 순간 실제 점유 상태는 ResolveMonsterMove에서 확인하므로, 새로 길을 막은 유닛과 정상적으로 충돌합니다.
+        if (string.Equals(command.SkillId, VespaMoveSkillId, System.StringComparison.Ordinal) &&
+            command.MoveOffset != Vector2Int.zero)
+        {
+            return command.MoveOffset;
+        }
+
         return command.EffectiveMoveOffset;
     }
 
@@ -4280,6 +4346,7 @@ public class BattleActionRunner
 
         Vector2Int finalOffset = Vector2Int.zero;
         BattleCharacter hitPlayer = null;
+        MonsterUnit hitBlockingMonster = null;
         int hitCharacterGridEffectIndex = -1;
         bool wasBlockedByCollision = false;
 
@@ -4297,6 +4364,7 @@ public class BattleActionRunner
                     monster,
                     testOffset,
                     out BattleCharacter blockingPlayer,
+                    out MonsterUnit blockingMonster,
                     out int blockingCharacterGridEffectIndex))
             {
                 // 장애물이나 다른 유닛에 막힌 경우에만 충돌로 처리합니다.
@@ -4307,6 +4375,12 @@ public class BattleActionRunner
             if (blockingPlayer != null)
             {
                 hitPlayer = blockingPlayer;
+                break;
+            }
+
+            if (blockingMonster != null)
+            {
+                hitBlockingMonster = blockingMonster;
                 break;
             }
 
@@ -4370,6 +4444,16 @@ public class BattleActionRunner
             if (BattleCameraController.Instance != null)
                 yield return BattleCameraController.Instance.ReturnDefaultIfNotHeld();
         }
+        else if (hitBlockingMonster != null)
+        {
+            if (monster.RuntimeData != null && !monster.RuntimeData.IsDead)
+                ApplyCrashToMonster(monster);
+
+            if (hitBlockingMonster.RuntimeData != null && !hitBlockingMonster.RuntimeData.IsDead)
+                ApplyCrashToMonster(hitBlockingMonster);
+
+            yield return new WaitForSeconds(ActionDelay);
+        }
         else if (hitCharacterGridEffectIndex >= 0)
         {
             ApplyMonsterDashDamageToGridEffect(command, hitCharacterGridEffectIndex);
@@ -4408,9 +4492,11 @@ public class BattleActionRunner
     MonsterUnit monster,
     Vector2Int moveOffset,
     out BattleCharacter blockingPlayer,
+    out MonsterUnit blockingMonster,
     out int blockingCharacterGridEffectIndex)
     {
         blockingPlayer = null;
+        blockingMonster = null;
         blockingCharacterGridEffectIndex = -1;
 
         if (monster == null || gridManager == null)
@@ -4442,6 +4528,15 @@ public class BattleActionRunner
                 gridEffectController.IsCharacterTargetEffect(targetIndex))
             {
                 blockingCharacterGridEffectIndex = targetIndex;
+                return true;
+            }
+
+            if (BattleOccupancyService.TryGetMonsterAtGrid(
+                    targetIndex,
+                    out MonsterUnit occupiedMonster,
+                    monster))
+            {
+                blockingMonster = occupiedMonster;
                 return true;
             }
 
