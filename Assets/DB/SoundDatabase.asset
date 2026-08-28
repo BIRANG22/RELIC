@@ -302,3 +302,91 @@ MonoBehaviour:
     useRandomPitch: 0
     randomPitchMin: 1
     randomPitchMax: 1
+  - id: ui.record.page.turn
+    aliases: []
+    clip: {fileID: 8300000, guid: 0b96881af7b01874dba0b0d5951f4f0b, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.book.open
+    aliases: []
+    clip: {fileID: 8300000, guid: a2f8d2f2beb873d47aa8d7f7883b66f5, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.table
+    aliases: []
+    clip: {fileID: 8300000, guid: d4a5fc08e8b932d44b21dea73acd6ebc, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.title.in
+    aliases: []
+    clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.record.click
+    aliases: []
+    clip: {fileID: 8300000, guid: efe3ec89809cb44d4afb171fb9b7fbff, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.statue.hover
+    aliases: []
+    clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.relicstone.hover
+    aliases: []
+    clip: {fileID: 8300000, guid: 1cf10d68406ef4714a240476f6c1c2b3, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.research.hover
+    aliases: []
+    clip: {fileID: 8300000, guid: 5322309d867c04f87943dc59dad8d06a, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.equipment.click
+    aliases: []
+    clip: {fileID: 8300000, guid: d722278585c9d48468c3f7065ffa7b25, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.chest.close
+    aliases: []
+    clip: {fileID: 8300000, guid: 3f7cd4d9f03084daf9d66177f9ddcdec, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.chest.click
+    aliases: []
+    clip: {fileID: 8300000, guid: 1386d1025d1db42f48f69d85ce36def3, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1

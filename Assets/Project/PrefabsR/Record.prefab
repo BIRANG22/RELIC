@@ -653,7 +653,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: ui.normal.click
+  clickSfx: ui.record.click
   playPanelOpenCloseSound: 0
   panelOpenSfx: ui.bag.open
   panelCloseSfx: ui.bag.close
@@ -3206,7 +3206,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: ui.normal.click
+  clickSfx: ui.record.click
   playPanelOpenCloseSound: 0
   panelOpenSfx: ui.bag.open
   panelCloseSfx: ui.bag.close
@@ -5966,7 +5966,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: ui.normal.click
+  clickSfx: ui.record.click
   playPanelOpenCloseSound: 0
   panelOpenSfx: ui.bag.open
   panelCloseSfx: ui.bag.close
@@ -6549,7 +6549,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: ui.normal.click
+  clickSfx: ui.record.click
   playPanelOpenCloseSound: 0
   panelOpenSfx: ui.bag.open
   panelCloseSfx: ui.bag.close
@@ -7588,7 +7588,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: ui.normal.click
+  clickSfx: ui.record.click
   playPanelOpenCloseSound: 0
   panelOpenSfx: ui.bag.open
   panelCloseSfx: ui.bag.close
@@ -8865,7 +8865,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: ui.normal.click
+  clickSfx: ui.record.click
   playPanelOpenCloseSound: 0
   panelOpenSfx: ui.bag.open
   panelCloseSfx: ui.bag.close
