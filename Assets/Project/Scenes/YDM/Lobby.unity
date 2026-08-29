@@ -411,6 +411,9 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   hoverColor: {r: 1, g: 1, b: 1, a: 1}
   clickedColor: {r: 1, g: 1, b: 1, a: 1}
+  playClickSound: 0
+  clickSoundId: ui.normal.click
+  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -5885,6 +5888,9 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   hoverColor: {r: 1, g: 1, b: 1, a: 1}
   clickedColor: {r: 1, g: 1, b: 1, a: 1}
+  playClickSound: 1
+  clickSoundId: ui.normal.click
+  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -8566,7 +8572,7 @@ Light:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 204341922}
-  m_Enabled: 0
+  m_Enabled: 1
   serializedVersion: 11
   m_Type: 1
   m_Color: {r: 0.8392157, g: 0.9026536, b: 1, a: 1}
@@ -9979,6 +9985,9 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   hoverColor: {r: 1, g: 1, b: 1, a: 1}
   clickedColor: {r: 1, g: 1, b: 1, a: 1}
+  playClickSound: 1
+  clickSoundId: ui.normal.click
+  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -12602,6 +12611,9 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   hoverColor: {r: 1, g: 1, b: 1, a: 1}
   clickedColor: {r: 1, g: 1, b: 1, a: 1}
+  playClickSound: 0
+  clickSoundId: ui.normal.click
+  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 1
@@ -12675,6 +12687,9 @@ MonoBehaviour:
   normalColor: {r: 0.9254902, g: 0.9254902, b: 0.9254902, a: 1}
   hoverColor: {r: 1, g: 1, b: 1, a: 1}
   clickedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
+  playClickSound: 1
+  clickSoundId: ui.back.click
+  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -13548,6 +13563,9 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   hoverColor: {r: 1, g: 1, b: 1, a: 1}
   clickedColor: {r: 1, g: 1, b: 1, a: 1}
+  playClickSound: 1
+  clickSoundId: ui.normal.click
+  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -18007,6 +18025,7 @@ RectTransform:
   m_Children:
   - {fileID: 1022096266}
   - {fileID: 946416552}
+  - {fileID: 1469066004}
   - {fileID: 1922462348}
   - {fileID: 833269583}
   m_Father: {fileID: 2200000501}
@@ -19072,7 +19091,7 @@ MonoBehaviour:
   purchaseCooldownWarningMessage: "\uB2E4\uC2DC \uC0AC\uC6A9\uD558\uB824\uBA74 \uD68C\uBCF5\uD560
     \uC2DC\uAC04\uC774 \uD544\uC694\uD569\uB2C8\uB2E4."
   playClickSound: 1
-  clickSfx: ui.normal.click
+  clickSfx: ui.relicstone.click
   clickSfxVolume: 1
 --- !u!114 &416785461
 MonoBehaviour:
@@ -21180,6 +21199,9 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   hoverColor: {r: 1, g: 1, b: 1, a: 1}
   clickedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
+  playClickSound: 1
+  clickSoundId: ui.back.click
+  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -36880,6 +36902,7 @@ Transform:
   - {fileID: 826488987}
   - {fileID: 994032178}
   - {fileID: 695555849}
+  - {fileID: 1693285901}
   m_Father: {fileID: 1438059791}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &772624762
@@ -38776,6 +38799,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1207591536}
   - {fileID: 901756956}
   - {fileID: 790710517}
   - {fileID: 1829044205}
@@ -39926,6 +39950,9 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   hoverColor: {r: 1, g: 1, b: 1, a: 1}
   clickedColor: {r: 1, g: 1, b: 1, a: 1}
+  playClickSound: 1
+  clickSoundId: ui.normal.click
+  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -50121,6 +50148,9 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   hoverColor: {r: 1, g: 1, b: 1, a: 1}
   clickedColor: {r: 1, g: 1, b: 1, a: 1}
+  playClickSound: 0
+  clickSoundId: ui.normal.click
+  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -50788,6 +50818,9 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   hoverColor: {r: 1, g: 1, b: 1, a: 1}
   clickedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
+  playClickSound: 1
+  clickSoundId: ui.normal.click
+  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -58928,12 +58961,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1207591535}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.99, y: 5.03, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 2.9, y: 5.27, z: 0}
+  m_LocalScale: {x: 0.14, y: 0.14, z: 0.14}
+  m_ConstrainProportionsScale: 1
   m_Children: []
-  m_Father: {fileID: 1693285901}
+  m_Father: {fileID: 826488987}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &1207591537
 SpriteRenderer:
@@ -58979,7 +59012,7 @@ SpriteRenderer:
   m_SortingLayerID: -341724045
   m_SortingLayer: -3
   m_SortingOrder: 0
-  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
+  m_Sprite: {fileID: 21300000, guid: d2de257742501764c9b9ed8382d82a26, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -59634,6 +59667,9 @@ MonoBehaviour:
   normalColor: {r: 0.9254902, g: 0.9254902, b: 0.9254902, a: 1}
   hoverColor: {r: 1, g: 1, b: 1, a: 1}
   clickedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
+  playClickSound: 1
+  clickSoundId: ui.back.click
+  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -59743,10 +59779,10 @@ MonoBehaviour:
   afterPanelChange:
     m_PersistentCalls:
       m_Calls: []
-  playHoverSound: 1
+  playHoverSound: 0
   hoverSfx: ui.move.hover
   hoverSfxVolumeMultiplier: 1
-  playClickSound: 1
+  playClickSound: 0
   clickSfx: ui.move.click
   clickSfxVolumeMultiplier: 1
 --- !u!1 &1233950897
@@ -62239,6 +62275,9 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   hoverColor: {r: 1, g: 1, b: 1, a: 1}
   clickedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
+  playClickSound: 1
+  clickSoundId: ui.back.click
+  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -62459,6 +62498,9 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   hoverColor: {r: 1, g: 1, b: 1, a: 1}
   clickedColor: {r: 1, g: 1, b: 1, a: 1}
+  playClickSound: 1
+  clickSoundId: ui.normal.click
+  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -62535,6 +62577,9 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   hoverColor: {r: 1, g: 1, b: 1, a: 1}
   clickedColor: {r: 1, g: 1, b: 1, a: 1}
+  playClickSound: 0
+  clickSoundId: ui.normal.click
+  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -73516,7 +73561,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1693285901}
   - {fileID: 771082558}
   - {fileID: 1219189877}
   m_Father: {fileID: 0}
@@ -74928,18 +74972,18 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1469066003}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 128117267}
   - {fileID: 1017327627}
-  m_Father: {fileID: 1922462348}
+  m_Father: {fileID: 397856609}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 415}
   m_SizeDelta: {x: 792.4, y: 18}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1469066005
@@ -82443,16 +82487,15 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1693285900}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.99, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 204341923}
   - {fileID: 333056728}
   - {fileID: 1362218126}
-  - {fileID: 1207591536}
-  m_Father: {fileID: 1438059791}
+  m_Father: {fileID: 771082558}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1693695435
 GameObject:
@@ -84362,6 +84405,9 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   hoverColor: {r: 1, g: 1, b: 1, a: 1}
   clickedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
+  playClickSound: 1
+  clickSoundId: ui.normal.click
+  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -96211,8 +96257,7 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1469066004}
+  m_Children: []
   m_Father: {fileID: 397856609}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -104071,6 +104116,9 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   hoverColor: {r: 1, g: 1, b: 1, a: 1}
   clickedColor: {r: 1, g: 1, b: 1, a: 1}
+  playClickSound: 1
+  clickSoundId: ui.normal.click
+  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
