@@ -691,7 +691,6 @@ public class BattleTimelineLockedSlotOverlay : MonoBehaviour
     [SerializeField] private Image overlayImage;
     [SerializeField] private Sprite overlaySprite;
     [SerializeField, Range(0f, 1f)] private float overlayAlpha = 0.55f;
-    [SerializeField] private bool preserveAspect = true;
 
     public bool IsLocked { get; private set; }
 
@@ -715,7 +714,7 @@ public class BattleTimelineLockedSlotOverlay : MonoBehaviour
 
         bool visible = IsLocked && overlaySprite != null;
         overlayImage.sprite = overlaySprite;
-        overlayImage.preserveAspect = preserveAspect;
+        overlayImage.preserveAspect = false;
         overlayImage.raycastTarget = false;
         overlayImage.color = new Color(1f, 1f, 1f, overlayAlpha);
         overlayImage.enabled = visible;
@@ -736,7 +735,11 @@ public class BattleTimelineLockedSlotOverlay : MonoBehaviour
         }
 
         if (overlayImage != null)
+        {
+            ApplyOverlayRectTransformSettings(overlayImage.rectTransform);
+            overlayImage.raycastTarget = false;
             return;
+        }
 
         RectTransform parentRect = transform as RectTransform;
 
@@ -752,13 +755,23 @@ public class BattleTimelineLockedSlotOverlay : MonoBehaviour
         overlayObject.transform.SetParent(transform, false);
 
         RectTransform overlayRect = overlayObject.GetComponent<RectTransform>();
-        overlayRect.anchorMin = Vector2.zero;
-        overlayRect.anchorMax = Vector2.one;
-        overlayRect.offsetMin = Vector2.zero;
-        overlayRect.offsetMax = Vector2.zero;
-        overlayRect.pivot = new Vector2(0.5f, 0.5f);
+        ApplyOverlayRectTransformSettings(overlayRect);
 
         overlayImage = overlayObject.GetComponent<Image>();
+        overlayImage.raycastTarget = false;
+    }
+
+    private static void ApplyOverlayRectTransformSettings(RectTransform overlayRect)
+    {
+        if (overlayRect == null)
+            return;
+
+        Vector2 middleCenter = new Vector2(0.5f, 0.5f);
+        overlayRect.anchorMin = middleCenter;
+        overlayRect.anchorMax = middleCenter;
+        overlayRect.pivot = middleCenter;
+        overlayRect.anchoredPosition = new Vector2(160f, 0f);
+        overlayRect.sizeDelta = new Vector2(300f, 80f);
     }
 
     private void ResolveOverlaySpriteIfNeeded()
