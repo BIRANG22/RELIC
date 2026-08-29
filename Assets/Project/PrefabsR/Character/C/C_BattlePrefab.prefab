@@ -786,11 +786,11 @@ MonoBehaviour:
         prefab: {fileID: 5464498477634507533, guid: 7d62d8b59c052e74f841fe794b1df8a6, type: 3}
         flipType: 0
         sfx:
-          playSfx: 0
-          sfxId: 
+          playSfx: 1
+          sfxId: skill.vfx.cha.03.attack.01
           delay: 0
           volumeMultiplier: 1
-          routeEmbeddedAudioSourcesThroughAudioManager: 1
+          routeEmbeddedAudioSourcesThroughAudioManager: 0
           removeEmbeddedAudioSources: 1
         renderMode: 0
         proxyBlendMode: 0
@@ -837,11 +837,11 @@ MonoBehaviour:
         prefab: {fileID: 8450343264324062456, guid: 8940258aeab2fc4478a1717538600122, type: 3}
         flipType: 0
         sfx:
-          playSfx: 0
-          sfxId: 
+          playSfx: 1
+          sfxId: skill.vfx.cha.03.attack.02
           delay: 0
           volumeMultiplier: 1
-          routeEmbeddedAudioSourcesThroughAudioManager: 1
+          routeEmbeddedAudioSourcesThroughAudioManager: 0
           removeEmbeddedAudioSources: 1
         renderMode: 0
         proxyBlendMode: 0
@@ -888,11 +888,11 @@ MonoBehaviour:
         prefab: {fileID: 2841605795099109794, guid: 69ccb2bf4a2fae641bfda27160ed0dd5, type: 3}
         flipType: 0
         sfx:
-          playSfx: 0
-          sfxId: 
+          playSfx: 1
+          sfxId: skill.vfx.cha.03.attack.03
           delay: 0
           volumeMultiplier: 1
-          routeEmbeddedAudioSourcesThroughAudioManager: 1
+          routeEmbeddedAudioSourcesThroughAudioManager: 0
           removeEmbeddedAudioSources: 1
         renderMode: 0
         proxyBlendMode: 0
@@ -939,11 +939,11 @@ MonoBehaviour:
         prefab: {fileID: 5464498477634507533, guid: 7d62d8b59c052e74f841fe794b1df8a6, type: 3}
         flipType: 0
         sfx:
-          playSfx: 0
-          sfxId: 
+          playSfx: 1
+          sfxId: skill.vfx.cha.03.attack.01
           delay: 0
           volumeMultiplier: 1
-          routeEmbeddedAudioSourcesThroughAudioManager: 1
+          routeEmbeddedAudioSourcesThroughAudioManager: 0
           removeEmbeddedAudioSources: 1
         renderMode: 0
         proxyBlendMode: 0

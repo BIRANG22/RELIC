@@ -406,3 +406,148 @@ MonoBehaviour:
     useRandomPitch: 0
     randomPitchMin: 1
     randomPitchMax: 1
+  skillSfxList:
+  - id: skill.vfx.cha.01.attack.01
+    aliases: []
+    clip: {fileID: 8300000, guid: 3989b987d2b839448a485c420a838652, type: 3}
+    volume: 0.5
+    pitch: 1.54
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: skill.vfx.cha.01.attack.02
+    aliases: []
+    clip: {fileID: 8300000, guid: 6e0bdec41ec14d5418e3fe352d1d6e48, type: 3}
+    volume: 1
+    pitch: 0.71
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: skill.vfx.cha.01.attack.03
+    aliases: []
+    clip: {fileID: 8300000, guid: 1aa4c21b174363345ac76e3276e18fa0, type: 3}
+    volume: 1
+    pitch: 0.85
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: skill.vfx.cha.02.attack.01
+    aliases: []
+    clip: {fileID: 8300000, guid: 1aa4c21b174363345ac76e3276e18fa0, type: 3}
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: skill.vfx.cha.02.attack.02
+    aliases: []
+    clip: {fileID: 8300000, guid: 1aa4c21b174363345ac76e3276e18fa0, type: 3}
+    volume: 1
+    pitch: 1.22
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: skill.vfx.cha.02.attack.03
+    aliases: []
+    clip: {fileID: 8300000, guid: 1aa4c21b174363345ac76e3276e18fa0, type: 3}
+    volume: 1
+    pitch: 0.93
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: skill.vfx.cha.03.attack.01
+    aliases: []
+    clip: {fileID: 8300000, guid: d703d6f29db7d554cb6952e8c2eeedd7, type: 3}
+    volume: 0.5
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: skill.vfx.cha.03.attack.02
+    aliases: []
+    clip: {fileID: 8300000, guid: 4b2d4196af9881b46b18b39f7f78f15f, type: 3}
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: skill.vfx.cha.03.attack.03
+    aliases: []
+    clip: {fileID: 8300000, guid: d703d6f29db7d554cb6952e8c2eeedd7, type: 3}
+    volume: 0.5
+    pitch: 1.64
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: skill.vfx.mon.e.02.attack.01
+    aliases: []
+    clip: {fileID: 8300000, guid: 7ff0e9eab416c4e4c990351eb82d0f0c, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: skill.vfx.mon.e.03.attack.03
+    aliases: []
+    clip: {fileID: 8300000, guid: abf1338bff5f1724f8f8ce816679247c, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: skill.vfx.mon.n.01.attack.01.impact
+    aliases: []
+    clip: {fileID: 8300000, guid: abf1338bff5f1724f8f8ce816679247c, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: skill.vfx.mon.n.01.attack.02.1.loop
+    aliases: []
+    clip: {fileID: 8300000, guid: cb4ddce72925cd841b704a7f2c0edfc2, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: skill.vfx.mon.n.01.attack.02.1.hit
+    aliases: []
+    clip: {fileID: 8300000, guid: 8128e2ee266d24e44a191ae9c3c17422, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: skill.vfx.mon.n.01.attack.02
+    aliases: []
+    clip: {fileID: 8300000, guid: 30ccbbaca0339224581074b222665304, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: skill.vfx.mon.n.04.attack.02
+    aliases: []
+    clip: {fileID: 8300000, guid: 25ba360a5b2de884395a74051337f843, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: skill.vfx.mon.n.05.attack.01
+    aliases: []
+    clip: {fileID: 8300000, guid: db8231501116cb04290b3ed54ff277cf, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
