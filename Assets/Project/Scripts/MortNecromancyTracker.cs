@@ -106,11 +106,18 @@ public static class MortNecromancyTracker
         if (result == null || result.RuntimeData == null)
             return false;
 
+        // 사령술로 부활한 병사는 최대 체력의 30% 체력으로 돌아옵니다.
+        // HUD/룸 등록 전에 체력을 먼저 적용해 처음부터 부활 체력으로 표시되게 합니다.
+        result.RuntimeData.CurrentHP = Mathf.Max(
+            1,
+            Mathf.CeilToInt(result.RuntimeData.MaxHP * 0.3f));
+
         BattleRoomLoader roomLoader = Object.FindFirstObjectByType<BattleRoomLoader>(FindObjectsInactive.Include);
 
         if (roomLoader != null)
             roomLoader.RegisterRuntimeMonster(result);
 
+        // 부활 개체는 재처치해도 보상을 지급하지 않도록 런타임 ID를 기록합니다.
         revivedSoldierRuntimeIds.Add(result.RuntimeData.RuntimeId);
         records.RemoveAt(recordIndex);
 

@@ -61,6 +61,9 @@ public class BattleActionRunner
     private const string RookEarthquakeSkillId = "S_Monster_35";
     private const string NocturnMonsterId = "Mon_10";
     private const string NocturnMoveSkillId = "S_Monster_15";
+    private const string MortMonsterId = "Mon_11";
+    private const string MortMoveSkillId = "S_Monster_37";
+    private const string MortWraithRushSkillId = "S_Monster_38";
     private const string NocturnThrustSkillId = "S_Monster_17";
     private const string NocturnSlashSkillId = "S_Monster_18";
     private const string NocturnPullSkillId = "S_Monster_19";
@@ -3716,11 +3719,15 @@ public class BattleActionRunner
             string.Equals(command.MonsterId, RookMonsterId, System.StringComparison.Ordinal) &&
             string.Equals(command.SkillId, RookBashSkillId, System.StringComparison.Ordinal);
 
+        bool isMortWraithRush =
+            string.Equals(command.MonsterId, MortMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, MortWraithRushSkillId, System.StringComparison.Ordinal);
+
         bool isNocturnDirectionalAttack = IsNocturnDirectionalAttack(command);
 
-        // 녹턴을 포함한 방향 공격은 실행 순간의 실제 위치에서 시작합니다.
+        // 녹턴 방향 공격과 모르트의 망령쇄도는 실행 순간의 실제 위치에서 시작합니다.
         // 선행 이동이 실패하거나 일부만 성공했다면 예약 당시 성공 예상 위치를 공격 원점으로 사용하지 않습니다.
-        if (isBlobAttack || isVespaAttack || isCinderExplosion || isDraugrAttack || isRookBash || isNocturnDirectionalAttack)
+        if (isBlobAttack || isVespaAttack || isCinderExplosion || isDraugrAttack || isRookBash || isMortWraithRush || isNocturnDirectionalAttack)
         {
             if (monster.MainGridIndex >= 0)
                 command.SetRangeOriginGridIndex(monster.MainGridIndex);
@@ -3793,9 +3800,13 @@ public class BattleActionRunner
             string.Equals(command.MonsterId, RookMonsterId, System.StringComparison.Ordinal) &&
             string.Equals(command.SkillId, RookBashSkillId, System.StringComparison.Ordinal);
 
+        bool isMortWraithRush =
+            string.Equals(command.MonsterId, MortMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, MortWraithRushSkillId, System.StringComparison.Ordinal);
+
         bool isNocturnDirectionalAttack = IsNocturnDirectionalAttack(command);
 
-        // 블롭, 베스파, 신더 대폭발, 드라우그 가로베기와 바로우 직사, 녹턴 방향 공격은 예약 시 계산된 범위를 재사용하지 않습니다.
+        // 블롭, 베스파, 신더 대폭발, 드라우그 가로베기, 바로우 직사, 녹턴 방향 공격과 모르트 망령쇄도는 예약 시 계산된 범위를 재사용하지 않습니다.
         // 이동 성공/실패 결과가 정해진 뒤 실제 위치를 원점으로 범위를 다시 계산합니다.
         // 드라우그는 이때 예약 방향이 아니라 실행 직전의 실제 Facing을 사용합니다.
         if (command.HasExplicitRangeResult &&
@@ -3805,6 +3816,7 @@ public class BattleActionRunner
             !isDraugrAttack &&
             !isBarrowDirectShot &&
             !isRookBash &&
+            !isMortWraithRush &&
             !isNocturnDirectionalAttack)
         {
             return;
@@ -4448,6 +4460,16 @@ public class BattleActionRunner
         // 원래 방향으로 진입을 시도해 실제 실행 시 충돌하도록 합니다.
         if (string.Equals(command.MonsterId, NocturnMonsterId, System.StringComparison.Ordinal) &&
             string.Equals(command.SkillId, NocturnMoveSkillId, System.StringComparison.Ordinal) &&
+            command.MoveOffset != Vector2Int.zero)
+        {
+            return command.MoveOffset;
+        }
+
+        // 모르트의 도망 이동도 예약 시 정한 1칸 이동 방향을 실행 순간까지 유지합니다.
+        // 예약 후 플레이어가 목적지를 먼저 점유하면 이동을 취소하지 않고 원래 방향으로 진입을 시도해
+        // ResolveMonsterMove의 기존 충돌 규칙으로 처리합니다.
+        if (string.Equals(command.MonsterId, MortMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, MortMoveSkillId, System.StringComparison.Ordinal) &&
             command.MoveOffset != Vector2Int.zero)
         {
             return command.MoveOffset;

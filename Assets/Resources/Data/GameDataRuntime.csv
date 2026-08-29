@@ -56,7 +56,7 @@ Mon_07,드라우그,Common,42,0,10,20,Item_007,0.3,Range_02,S_Monster_26,S_Monst
 Mon_08,바로우,Common,40,0,10,20,Item_008,0.3,Range_20,S_Monster_29,S_Monster_30,S_Monster_31,0,0,0,0,0,0,0,같은 라인에 상대가 없거나 다른 라인으로 이동할 때 곡사를 사용한다.
 Mon_09,루크,Elite,82,0,30,45,Item_009,0.2,Range_02,S_Monster_32,S_Monster_33,S_Monster_34,S_Monster_35,S_Monster_36,0,0,0,0,0,"매 턴 방어도를 획득하며, 2턴마다 대지진을 사용한다."
 Mon_10,녹턴,Elite,94,0,36,48,Item_010,0.2,Range_24,S_Monster_15,S_Monster_16,S_Monster_17,S_Monster_18,S_Monster_19,0,0,0,0,0,후방에 피해를 줄 때 강한 피해를 준다.
-Mon_11,모르트,Elite,77,0,35,42,Item_011,0.2,Range_19,S_Monster_37,S_Monster_38,S_Monster_39,S_Monster_40,S_Monster_41,0,0,0,0,0,병사가 죽었다면 1턴 후 되살힌다.
+Mon_11,모르트,Elite,77,0,35,42,Item_011,0.2,Range_19,S_Monster_37,S_Monster_38,S_Monster_39,S_Monster_40,S_Monster_41,0,0,0,0,0,병사가 죽었다면 1턴 후 되살린다.
 Mon_12,아라벨라,Boss,142,0,45,55,Item_012,0.5,Range_19,S_Monster_20,S_Monster_21,S_Monster_22,S_Monster_23,S_Monster_24,S_Monster_25,0,0,0,0,매 턴 무작위 슬롯 하나를 막는다.
 ,,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,
@@ -249,10 +249,10 @@ S_Monster_34,방패강타,PlayerParty,E_Strike;E_Knockback,16;1,1,0,Range_14,Att
 S_Monster_35,대지진,PlayerParty,E_Strike,4,1,0,Range_All,Attack,모든 범위에 {ValueRate1}의 피해를 준다.,,일반피해
 S_Monster_36,철옹성,Self,E_Armor,10,1,0,Range_Self,Buff,자신에게 {ValueRate1}만큼 방어도를 부여한다.,,버프
 S_Monster_37,이동,Self,E_Move,0,1,0,Range_02,Move,범위 내에 캐릭터가 들어오면 1칸 도망간다.,,이동
-S_Monster_38,망령쇄도,PlayerParty,E_Pierce,12,1,0,Range_18,Attack,범위에 {ValueRate1}의 관통 피해를 준다.,,관통피해
-S_Monster_39,혼령폭발,PlayerParty,E_Strike,14,1,0,Range_17,Attack,범위에 {ValueRate1}의 피해를 준다.,,일반피해
-S_Monster_40,피의저주,PlayerParty,E_Bleed,1,1,0,Range_16,Debuff,대상에게 출혈을 {ValueRate1} 부여한다.,,디버프
-S_Monster_41,사령술,Self,E_Spawn_Soldier,1,1,0,Range_Self,Buff,죽은 병사 1명을 다시 소환한다.,,버프
+S_Monster_38,망령쇄도,PlayerParty,E_Pierce,12,1,0,Range_18,Attack,대상에게 {ValueRate1}의 관통 피해를 준다.,,관통피해
+S_Monster_39,혼령폭발,PlayerParty,E_Strike,14,1,0,Range_17,Attack,가까운 대상에게 {ValueRate1}의 피해를 준다.,,일반피해
+S_Monster_40,피의저주,PlayerParty,E_Bleed,1,1,0,Range_16,Debuff,범위 내 대상에게 출혈을 {ValueRate1} 부여한다.,,디버프
+S_Monster_41,사령술,Self,E_Spawn_Soldier,1,1,0,Range_Self,Buff,죽은 병사 하나를 30% 체력으로 되살린다.,,버프
 
 # GridEffect
 그리드효과ID,이름,통과유무,소모성,효과ID,수치계수,횟수계수,지속턴,생성 방식,체력,타입,툴팁
@@ -524,7 +524,7 @@ Battlemap_14,Mon_11,28,-1,-1,-1,,,,,,,,,,,,,Mon_08,바로우
 Battlemap_15,Mon_08,26,-1,-1,-1,"정예 모르트, 바로우",60,20,25,30,25,25,35,25,15,,,Mon_09,루크,,
 Battlemap_15,Mon_11,32,-1,-1,-1,,,,,,,,,,,,,Mon_10,녹턴,,
 Battlemap_16,Mon_12,27,-1,-1,-1,보스 아라벨라,100,5,15,50,30,25,35,25,15,,,Mon_11,모르트
-Battlemap_17,Mon_10,27,-1,-1,-1,테스트,20,5,15,50,30,25,35,25,15,,,Mon_12,아라벨라
+Battlemap_17,Mon_11,27,-1,-1,-1,테스트,20,5,15,50,30,25,35,25,15,,,Mon_12,아라벨라
 
 # Event
 이벤트ID,이벤트 이름,제목,선택지 순서,선택지이름,선택지 내용,선택지 타입,선택 조건,비용 타입,비용 대상,비용 값,성공 조건,결과타입,결과대상,결과값,성공확률,실패결과,다음이벤트ID,다음 이벤트까지 유지,성공 시각적 객체 ID,성공 시각적 작업 ID,실패 시각적 객체 ID,실패 시 시각적 동작 ID
