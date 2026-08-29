@@ -1876,7 +1876,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blurRadius: 2
-  darken: 0.7
+  darken: 0.9
   saturation: 0.2
   contrast: 1
   blurredUiRoots:
