@@ -85,6 +85,7 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
         UIBlurBackground blurBackground = UIBlurBackground.EnsureForPanel(erosionSelectPanel);
         LobbyQuestManager.Instance?.ConfigureQuestPanelBlur(blurBackground);
         erosionSelectPanel.SetActive(true);
+        RefreshPanelText(erosionSelectPanel);
 
         if (bringPanelToFront)
             erosionSelectPanel.transform.SetAsLastSibling();
@@ -202,6 +203,25 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
         GraphicRaycaster raycaster = panel.GetComponent<GraphicRaycaster>();
         if (raycaster == null)
             panel.AddComponent<GraphicRaycaster>();
+    }
+
+    private static void RefreshPanelText(GameObject panel)
+    {
+        MenuPanelTextRefresher refresher = EnsurePanelTextRefresher(panel);
+        if (refresher == null)
+            return;
+
+        refresher.RefreshNow();
+        refresher.RefreshNextFrame();
+    }
+
+    private static MenuPanelTextRefresher EnsurePanelTextRefresher(GameObject panel)
+    {
+        if (panel == null)
+            return null;
+
+        MenuPanelTextRefresher refresher = panel.GetComponent<MenuPanelTextRefresher>();
+        return refresher != null ? refresher : panel.AddComponent<MenuPanelTextRefresher>();
     }
 
     private void PlayClickSfx()

@@ -5,10 +5,13 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.IO;
 
 public sealed class LobbyCultureTankPanelTests
 {
     private const string LobbyScenePath = "Assets/Project/Scenes/YDM/Lobby.unity";
+    private const string PresenterSourcePath =
+        "Assets/Project/Scripts/Gameplay/Scene/Lobby/LobbyCultureTankPanelPresenter.cs";
 
     [Test]
     public void LobbyScene_BindsThreeRowsCombineButtonAndCompletionControls()
@@ -29,6 +32,16 @@ public sealed class LobbyCultureTankPanelTests
             Assert.That(serialized.FindProperty("inventoryItemRoot").objectReferenceValue.name, Is.EqualTo("SlotRoot"));
         }
         finally { EditorSceneManager.ClosePreviewScene(scene); }
+    }
+
+    [Test]
+    public void Open_RefreshesTmpTextAfterActivatingPanel()
+    {
+        string source = File.ReadAllText(PresenterSourcePath);
+
+        Assert.That(source, Does.Contain("EnsurePanelTextRefresher(panelRoot)"));
+        Assert.That(source, Does.Contain("refresher.RefreshNow()"));
+        Assert.That(source, Does.Contain("refresher.RefreshNextFrame()"));
     }
 
     [Test]

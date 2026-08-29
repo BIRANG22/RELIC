@@ -104,6 +104,15 @@ public class TrialUnlockLocalizationTests
     }
 
     [Test]
+    public void OnEnable_RefreshesPanelTextLayout()
+    {
+        string source = File.ReadAllText("Assets/Project/Scripts/ErosionSelectCarousel.cs");
+
+        Assert.That(source, Does.Contain("RefreshPanelText()"));
+        Assert.That(source, Does.Contain("EnsurePanelTextRefresher(gameObject)"));
+    }
+
+    [Test]
     public void TrialUnlockProgress_ReturnsStableLocalizationKeys()
     {
         foreach (TrialUnlockLocalizationCase unlockCase in UnlockCases)

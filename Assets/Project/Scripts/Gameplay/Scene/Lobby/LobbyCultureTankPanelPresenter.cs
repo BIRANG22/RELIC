@@ -30,7 +30,7 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
 
     public bool IsOpen => panelRoot != null && panelRoot.activeSelf;
     private void Awake() { BindSceneObjects(); BindButtons(); EnsureStorageSlots(); }
-    private void OnEnable() { BindSceneObjects(); BindButtons(); EnsureStorageSlots(); RefreshAll(); }
+    private void OnEnable() { BindSceneObjects(); BindButtons(); EnsureStorageSlots(); RefreshAll(); RefreshPanelText(); }
     private void Update() { if (IsOpen) RefreshAll(); }
 
     public void Open()
@@ -41,7 +41,7 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         LobbyPositionModalInputBlocker.Block(this);
         UIBlurBackground blurBackground = UIBlurBackground.EnsureForPanel(panelRoot);
         LobbyQuestManager.Instance?.ConfigureQuestPanelBlur(blurBackground);
-        panelRoot.SetActive(true); panelRoot.transform.SetAsLastSibling(); RefreshAll();
+        panelRoot.SetActive(true); panelRoot.transform.SetAsLastSibling(); RefreshAll(); RefreshPanelText();
     }
 
     public void Close()
@@ -209,6 +209,25 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
 
         if (storageContentRoot is RectTransform contentRect)
             LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
+    }
+
+    private void RefreshPanelText()
+    {
+        MenuPanelTextRefresher refresher = EnsurePanelTextRefresher(panelRoot);
+        if (refresher == null)
+            return;
+
+        refresher.RefreshNow();
+        refresher.RefreshNextFrame();
+    }
+
+    private static MenuPanelTextRefresher EnsurePanelTextRefresher(GameObject panel)
+    {
+        if (panel == null)
+            return null;
+
+        MenuPanelTextRefresher refresher = panel.GetComponent<MenuPanelTextRefresher>();
+        return refresher != null ? refresher : panel.AddComponent<MenuPanelTextRefresher>();
     }
 
     private void BindSceneObjects()

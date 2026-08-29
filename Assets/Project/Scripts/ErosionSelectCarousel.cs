@@ -101,6 +101,7 @@ public class ErosionSelectCarousel : MonoBehaviour
         TrialUnlockProgress.ProgressChanged += RefreshVisuals;
 
         RefreshVisuals();
+        RefreshPanelText();
     }
 
     private void OnDisable()
@@ -389,6 +390,25 @@ public class ErosionSelectCarousel : MonoBehaviour
         }
 
         item.effectText.text = fallback ?? string.Empty;
+    }
+
+    private void RefreshPanelText()
+    {
+        MenuPanelTextRefresher refresher = EnsurePanelTextRefresher(gameObject);
+        if (refresher == null)
+            return;
+
+        refresher.RefreshNow();
+        refresher.RefreshNextFrame();
+    }
+
+    private static MenuPanelTextRefresher EnsurePanelTextRefresher(GameObject panel)
+    {
+        if (panel == null)
+            return null;
+
+        MenuPanelTextRefresher refresher = panel.GetComponent<MenuPanelTextRefresher>();
+        return refresher != null ? refresher : panel.AddComponent<MenuPanelTextRefresher>();
     }
 
     private void PlayClickSound()
