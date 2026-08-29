@@ -24,8 +24,6 @@ public class BattleRoomLoader : MonoBehaviour
 
     [Header("Player HUD Position Anchors")]
     [SerializeField] private Transform[] playerHudPositionAnchors = new Transform[3];
-    [SerializeField] private bool forcePlayerHudRootOnTop = true;
-    [SerializeField] private int playerHudRootSortingOrder = 100;
     [SerializeField] private int selectedHudSortingOrder = 200;
 
     [Header("Monster World HUD")]
@@ -73,6 +71,8 @@ public class BattleRoomLoader : MonoBehaviour
     private CharacterRuntimeData selectedPlayerRuntime;
     private Coroutine openSelectedSkillListWhenReadyRoutine;
     private Coroutine loadRoutine;
+    private Coroutine initialMonsterPlanRoutine;
+    private bool initialMonsterPlanStarted;
     private bool isLoaded;
     private bool isLoading;
     private string loadedMapId;
@@ -668,7 +668,7 @@ public class BattleRoomLoader : MonoBehaviour
         isLoaded = true;
         isLoading = false;
 
-        StartCoroutine(PlanInitialMonsterTurnsAndEnableInputRoutine());
+        StartInitialMonsterPlanOnce();
     }
 
     private static void PrepareCameraForBattleEntry()
@@ -684,6 +684,13 @@ public class BattleRoomLoader : MonoBehaviour
 
     public void ResetLoadedStateForNextBattle(bool clearSpawnedObjects = true)
     {
+        if (initialMonsterPlanRoutine != null)
+        {
+            StopCoroutine(initialMonsterPlanRoutine);
+            initialMonsterPlanRoutine = null;
+        }
+
+        initialMonsterPlanStarted = false;
         isLoaded = false;
         isLoading = false;
         loadedMapId = null;
@@ -945,7 +952,6 @@ public class BattleRoomLoader : MonoBehaviour
         // 예약 단계가 시작되는 시점에 처리합니다.
         SelectPlayerHUD(null);
 
-        EnsurePlayerHudLayerOrder();
     }
 
     private void CreatePlayerHUD(CharacterRuntimeData runtimeData, int displayIndex)
@@ -1222,26 +1228,6 @@ public class BattleRoomLoader : MonoBehaviour
         }
 
 
-        EnsurePlayerHudLayerOrder();
-    }
-
-    private void EnsurePlayerHudLayerOrder()
-    {
-        if (playerHudRoot == null || !forcePlayerHudRootOnTop)
-            return;
-
-        playerHudRoot.SetAsLastSibling();
-
-        Canvas rootCanvas = playerHudRoot.GetComponent<Canvas>();
-
-        if (rootCanvas == null)
-            rootCanvas = playerHudRoot.gameObject.AddComponent<Canvas>();
-
-        rootCanvas.overrideSorting = true;
-        rootCanvas.sortingOrder = playerHudRootSortingOrder;
-
-        if (playerHudRoot.GetComponent<GraphicRaycaster>() == null)
-            playerHudRoot.gameObject.AddComponent<GraphicRaycaster>();
     }
 
     private void ApplyPlayerHudCanvasSorting(PlayerHUDSlot hud, bool selected)
@@ -1258,7 +1244,7 @@ public class BattleRoomLoader : MonoBehaviour
                 canvas = hud.gameObject.AddComponent<Canvas>();
 
             canvas.overrideSorting = true;
-            canvas.sortingOrder = Mathf.Max(selectedHudSortingOrder, playerHudRootSortingOrder + 10);
+            canvas.sortingOrder = selectedHudSortingOrder;
 
             if (raycaster == null)
                 hud.gameObject.AddComponent<GraphicRaycaster>();
@@ -1369,6 +1355,15 @@ public class BattleRoomLoader : MonoBehaviour
         }
     }
 
+    private void StartInitialMonsterPlanOnce()
+    {
+        if (initialMonsterPlanStarted || initialMonsterPlanRoutine != null)
+            return;
+
+        initialMonsterPlanStarted = true;
+        initialMonsterPlanRoutine = StartCoroutine(PlanInitialMonsterTurnsAndEnableInputRoutine());
+    }
+
     private IEnumerator PlanInitialMonsterTurnsAndEnableInputRoutine()
     {
         EnsureTurnExecutor();
@@ -1404,6 +1399,8 @@ public class BattleRoomLoader : MonoBehaviour
 
         if (firstBattleTutorialController != null)
             firstBattleTutorialController.TryStartTutorialIfNeeded();
+
+        initialMonsterPlanRoutine = null;
     }
 
     public void PlanNextMonsterTurns()

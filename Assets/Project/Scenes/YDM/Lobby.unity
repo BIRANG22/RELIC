@@ -39657,6 +39657,9 @@ MonoBehaviour:
   contrast: 1
   blurredUiRoots:
   - {fileID: 1827125532}
+  includeLobbyQuestMessenger: 0
+  lobbyQuestMessengerObjectName: LobbyQuestMessenger
+  lobbyQuestMessengerBootstrapRootName: Bootstrap
 --- !u!114 &837172618
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -43808,6 +43811,9 @@ MonoBehaviour:
   contrast: 1
   blurredUiRoots:
   - {fileID: 1827125532}
+  includeLobbyQuestMessenger: 0
+  lobbyQuestMessengerObjectName: LobbyQuestMessenger
+  lobbyQuestMessengerBootstrapRootName: Bootstrap
 --- !u!1 &947203492
 GameObject:
   m_ObjectHideFlags: 0
@@ -99157,6 +99163,9 @@ MonoBehaviour:
   contrast: 1
   blurredUiRoots:
   - {fileID: 1827125532}
+  includeLobbyQuestMessenger: 0
+  lobbyQuestMessengerObjectName: LobbyQuestMessenger
+  lobbyQuestMessengerBootstrapRootName: Bootstrap
 --- !u!114 &1985912797
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -106524,6 +106533,26 @@ PrefabInstance:
     - target: {fileID: 1793322162426956111, guid: 4fc99a2620954d75a1562594d56bdc13, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: -290
+      objectReference: {fileID: 0}
+    - target: {fileID: 2654730537144423413, guid: 4fc99a2620954d75a1562594d56bdc13, type: 3}
+      propertyPath: blurredUiRoots.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2654730537144423413, guid: 4fc99a2620954d75a1562594d56bdc13, type: 3}
+      propertyPath: includeLobbyQuestMessenger
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2654730537144423413, guid: 4fc99a2620954d75a1562594d56bdc13, type: 3}
+      propertyPath: 'blurredUiRoots.Array.data[0]'
+      value: 
+      objectReference: {fileID: 1827125532}
+    - target: {fileID: 2654730537144423413, guid: 4fc99a2620954d75a1562594d56bdc13, type: 3}
+      propertyPath: 'blurredUiRoots.Array.data[1]'
+      value: 
+      objectReference: {fileID: 1827125532}
+    - target: {fileID: 2654730537144423413, guid: 4fc99a2620954d75a1562594d56bdc13, type: 3}
+      propertyPath: lobbyQuestMessengerObjectName
+      value: LobbyQuestManager
       objectReference: {fileID: 0}
     - target: {fileID: 8469757017816519769, guid: 4fc99a2620954d75a1562594d56bdc13, type: 3}
       propertyPath: m_SizeDelta.y

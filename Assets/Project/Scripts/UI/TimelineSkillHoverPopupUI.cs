@@ -31,7 +31,6 @@ public class TimelineSkillHoverPopupUI : MonoBehaviour
     private RectTransform currentHoveredIconRect;
     private Object currentOwner;
     private bool initialized;
-
     public static TimelineSkillHoverPopupUI Instance
     {
         get
