@@ -341,6 +341,9 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
         switch (action.SlotPreference)
         {
+            case MonsterAISlotPreference.Earliest:
+                return FindEarliestSlot(runtime, pendingPlans);
+
             case MonsterAISlotPreference.FirstTwo:
                 return FindFirstTwoSlot(runtime, pendingPlans);
 
@@ -363,6 +366,31 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             default:
                 return offsetBaseSlot;
         }
+    }
+
+    private int FindEarliestSlot(
+        MonsterRuntimeData runtime,
+        List<MonsterReservedCommandPlan> pendingPlans)
+    {
+        if (timelineController == null || runtime == null)
+            return -1;
+
+        // 1~5번 슬롯을 앞에서부터 확인합니다.
+        // 가능하면 다른 행동과 겹치지 않는 가장 빠른 빈 슬롯을 우선 사용합니다.
+        for (int i = 0; i < timelineController.SlotCount; i++)
+        {
+            if (IsSlotCompletelyEmpty(i, pendingPlans))
+                return i;
+        }
+
+        // 빈 슬롯이 없다면 같은 몬스터 행동과 공유 가능한 가장 빠른 슬롯을 사용합니다.
+        for (int i = 0; i < timelineController.SlotCount; i++)
+        {
+            if (IsSlotAvailableForMonster(runtime, i, pendingPlans))
+                return i;
+        }
+
+        return -1;
     }
 
     private int FindFirstTwoSlot(
@@ -530,7 +558,8 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             if (action == null)
                 continue;
 
-            if (action.SlotPreference == MonsterAISlotPreference.FirstTwo ||
+            if (action.SlotPreference == MonsterAISlotPreference.Earliest ||
+                action.SlotPreference == MonsterAISlotPreference.FirstTwo ||
                 action.SlotPreference == MonsterAISlotPreference.Back ||
                 action.SlotPreference == MonsterAISlotPreference.Last ||
                 action.SlotPreference == MonsterAISlotPreference.Center)

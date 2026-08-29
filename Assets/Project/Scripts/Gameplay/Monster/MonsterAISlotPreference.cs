@@ -6,6 +6,7 @@ namespace Relic.Gameplay.Monster
     public enum MonsterAISlotPreference
     {
         Front,
+        Earliest,
         FirstTwo,
         Back,
         Center,

@@ -10,11 +10,16 @@ public class GridEffectHoverTarget : MonoBehaviour
     private Camera mainCamera;
     private bool isHovered;
     private bool warnedMissingCollider;
+    private BattleGridEffectController gridEffectController;
+    private int gridIndex = -1;
+    private int lastDisplayedDuration = int.MinValue;
 
     public static GridEffectHoverTarget Attach(
         GameObject target,
         string effectId,
-        Vector2? fallbackSize = null)
+        Vector2? fallbackSize = null,
+        BattleGridEffectController controller = null,
+        int targetGridIndex = -1)
     {
         if (target == null)
             return null;
@@ -31,7 +36,7 @@ public class GridEffectHoverTarget : MonoBehaviour
             return null;
         }
 
-        hover.Initialize(effectId, fallbackSize);
+        hover.Initialize(effectId, fallbackSize, controller, targetGridIndex);
         return hover;
     }
 
@@ -41,9 +46,16 @@ public class GridEffectHoverTarget : MonoBehaviour
         EnsureHoverCollider(null, true);
     }
 
-    private void Initialize(string effectId, Vector2? fallbackSize)
+    private void Initialize(
+        string effectId,
+        Vector2? fallbackSize,
+        BattleGridEffectController controller,
+        int targetGridIndex)
     {
         gridEffectId = effectId?.Trim() ?? string.Empty;
+        gridEffectController = controller;
+        gridIndex = targetGridIndex;
+        lastDisplayedDuration = int.MinValue;
         EnsureHoverCollider(fallbackSize, true);
     }
 
@@ -86,7 +98,10 @@ public class GridEffectHoverTarget : MonoBehaviour
         SetHovered(hovered);
 
         if (isHovered && tooltipUI != null)
+        {
+            RefreshTooltipIfDurationChanged();
             tooltipUI.SetPosition(Input.mousePosition);
+        }
     }
 
     private void OnDisable()
@@ -113,7 +128,56 @@ public class GridEffectHoverTarget : MonoBehaviour
         }
 
         tooltipUI = GridEffectTooltipUI.GetOrCreate();
-        tooltipUI?.Show(this, gridEffectId, Input.mousePosition);
+        ShowTooltip();
+    }
+
+    private void ShowTooltip()
+    {
+        if (tooltipUI == null || string.IsNullOrWhiteSpace(gridEffectId))
+            return;
+
+        Relic.Gameplay.Data.GridEffectDatabase database = DataManager.Instance?.GridEffectDatabase;
+        if (database == null ||
+            !database.TryGet(gridEffectId.Trim(), out Relic.Gameplay.Data.GridEffectData data) ||
+            data == null)
+        {
+            tooltipUI.Hide(this);
+            return;
+        }
+
+        int? remainingDuration = null;
+        if (TryGetRemainingDuration(out int currentDuration))
+        {
+            remainingDuration = currentDuration;
+            lastDisplayedDuration = currentDuration;
+        }
+        else
+        {
+            lastDisplayedDuration = int.MinValue;
+        }
+
+        tooltipUI.Show(this, data, Input.mousePosition, remainingDuration);
+    }
+
+    private void RefreshTooltipIfDurationChanged()
+    {
+        if (!TryGetRemainingDuration(out int currentDuration))
+            return;
+
+        if (currentDuration == lastDisplayedDuration)
+            return;
+
+        ShowTooltip();
+    }
+
+    private bool TryGetRemainingDuration(out int remainingDuration)
+    {
+        remainingDuration = 0;
+
+        return gridEffectController != null &&
+               gridIndex >= 0 &&
+               gridEffectController.State != null &&
+               gridEffectController.State.TryGetRemainingDuration(gridIndex, out remainingDuration);
     }
 
     private void HideTooltip()

@@ -104,10 +104,15 @@ public class GridEffectTooltipUI : MonoBehaviour
             return;
         }
 
-        Show(owner, data, screenPosition);
+        Show(owner, data, screenPosition, null);
     }
 
     public void Show(Object owner, GridEffectData data, Vector2 screenPosition)
+    {
+        Show(owner, data, screenPosition, null);
+    }
+
+    public void Show(Object owner, GridEffectData data, Vector2 screenPosition, int? remainingDuration)
     {
         if (owner == null || data == null)
             return;
@@ -126,13 +131,29 @@ public class GridEffectTooltipUI : MonoBehaviour
         currentOwner = owner;
         lastScreenPosition = screenPosition;
 
-        // Inspector에 연결한 TMP 텍스트에 GameData 값을 그대로 표시합니다.
         nameText.text = data.Name ?? string.Empty;
-        toolTipText.text = data.ToolTip ?? string.Empty;
+        toolTipText.text = FormatToolTip(data, remainingDuration);
 
         BringToFront();
         SetVisible(true);
         SetPosition(screenPosition);
+    }
+
+    private static string FormatToolTip(GridEffectData data, int? remainingDuration)
+    {
+        if (data == null || string.IsNullOrEmpty(data.ToolTip))
+            return string.Empty;
+
+        string result = data.ToolTip;
+        string valueRate = data.ValueRate.ToString();
+        int duration = remainingDuration ?? data.Duration;
+
+        // GridEffect GameData 툴팁의 플레이스홀더를 실제 수치로 치환합니다.
+        // <br> 같은 TMP Rich Text 태그는 건드리지 않습니다.
+        result = result.Replace("{ValueRate}", valueRate);
+        result = result.Replace("{ValueRate1}", valueRate);
+        result = result.Replace("{Duration}", Mathf.Max(0, duration).ToString());
+        return result;
     }
 
     public void Hide(Object owner)

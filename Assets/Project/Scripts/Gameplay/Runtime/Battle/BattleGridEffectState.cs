@@ -87,6 +87,15 @@ namespace Relic.Gameplay.Battle
             return hitPointsByGridIndex.TryGetValue(gridIndex, out hitPoints);
         }
 
+        /// <summary>
+        /// 지속시간이 있는 그리드 효과의 현재 남은 턴을 반환합니다.
+        /// 지속시간이 0인 영구 효과는 false를 반환합니다.
+        /// </summary>
+        public bool TryGetRemainingDuration(int gridIndex, out int remainingDuration)
+        {
+            return remainingDurationByGridIndex.TryGetValue(gridIndex, out remainingDuration);
+        }
+
         public bool DamageHitPoints(int gridIndex, int damage, out bool destroyed)
         {
             destroyed = false;

@@ -483,6 +483,10 @@ public class BattleGridEffectController : MonoBehaviour
         if (result == null || result.RuntimeData == null || result.MonsterTransform == null)
             return;
 
+        // Cinder hatched from an egg starts without innate armor and never grants a kill reward.
+        result.RuntimeData.ClearAllShield();
+        result.RuntimeData.SuppressDeathReward = true;
+
         BattleRoomLoader roomLoader =
             FindFirstObjectByType<BattleRoomLoader>(FindObjectsInactive.Include);
 
@@ -581,7 +585,12 @@ public class BattleGridEffectController : MonoBehaviour
 
         // 그리드 효과의 실제 오브젝트 또는 VFX 위에 마우스를 올리면
         // GameData의 Name / ToolTip을 표시할 수 있도록 공통 호버 대상을 자동으로 붙입니다.
-        GridEffectHoverTarget.Attach(view, placement.GridEffectId);
+        GridEffectHoverTarget.Attach(
+            view,
+            placement.GridEffectId,
+            null,
+            this,
+            placement.GridIndex);
 
         PlayWorldVfxProxies(view, view.transform.position);
 
