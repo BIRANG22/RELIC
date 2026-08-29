@@ -23,24 +23,40 @@ public class GridEffectHoverTarget : MonoBehaviour
         if (hover == null)
             hover = target.AddComponent<GridEffectHoverTarget>();
 
-        hover.Bind(effectId);
+        if (hover == null)
+        {
+            Debug.LogWarning(
+                $"[GridEffectHoverTarget] '{target.name}'에 GridEffectHoverTarget을 추가하지 못했습니다.",
+                target);
+            return null;
+        }
+
+        hover.Initialize(effectId, fallbackSize);
         return hover;
     }
 
     public void Bind(string effectId)
     {
         gridEffectId = effectId?.Trim() ?? string.Empty;
-        FindManualCollider();
+        EnsureHoverCollider(null, true);
+    }
+
+    private void Initialize(string effectId, Vector2? fallbackSize)
+    {
+        gridEffectId = effectId?.Trim() ?? string.Empty;
+        EnsureHoverCollider(fallbackSize, true);
     }
 
     private void Awake()
     {
-        FindManualCollider();
+        // AddComponent 직후 Awake가 먼저 호출될 수 있으므로 여기서는 경고하거나
+        // fallback 콜라이더를 만들지 않습니다. Attach.Initialize에서 초기화합니다.
+        FindExistingCollider();
     }
 
     private void OnEnable()
     {
-        FindManualCollider();
+        FindExistingCollider();
         isHovered = false;
     }
 
@@ -53,7 +69,7 @@ public class GridEffectHoverTarget : MonoBehaviour
         }
 
         if (hoverCollider == null)
-            FindManualCollider();
+            FindExistingCollider();
 
         if (mainCamera == null)
             mainCamera = Camera.main;
@@ -127,27 +143,45 @@ public class GridEffectHoverTarget : MonoBehaviour
     }
 
     /// <summary>
-    /// 프리팹에 사용자가 직접 설정한 BoxCollider2D를 찾습니다.
-    /// 콜라이더를 자동 생성하거나 Size / Offset 값을 변경하지 않습니다.
+    /// 루트 또는 자식 프리팹에 사용자가 직접 설정한 BoxCollider2D를 찾습니다.
     /// </summary>
-    private void FindManualCollider()
+    private bool FindExistingCollider()
     {
+        if (hoverCollider != null)
+            return true;
+
         hoverCollider = GetComponent<BoxCollider2D>();
+
+        if (hoverCollider == null)
+            hoverCollider = GetComponentInChildren<BoxCollider2D>(true);
 
         if (hoverCollider != null)
         {
             warnedMissingCollider = false;
-            return;
+            return true;
         }
 
-        if (!warnedMissingCollider)
-        {
-            Debug.LogWarning(
-                $"[GridEffectHoverTarget] '{name}'에 BoxCollider2D가 없습니다. " +
-                "그리드 효과 호버 범위로 사용할 BoxCollider2D를 프리팹에 직접 추가하고 Size / Offset을 설정해주세요.",
-                this);
-
-            warnedMissingCollider = true;
-        }
+        return false;
     }
+
+    /// <summary>
+    /// 호버 판정은 프리팹 또는 BattleWorldVfxRenderer가 Proxy에 복사한
+    /// BoxCollider2D만 사용합니다. GridEffectHoverTarget 자체에서는 임시 콜라이더를 만들지 않습니다.
+    /// </summary>
+    private void EnsureHoverCollider(Vector2? fallbackSize, bool warnWhenUnavailable)
+    {
+        if (FindExistingCollider())
+            return;
+
+        if (!warnWhenUnavailable || warnedMissingCollider)
+            return;
+
+        Debug.LogWarning(
+            $"[GridEffectHoverTarget] '{name}'과 자식 오브젝트에 BoxCollider2D가 없습니다. " +
+            "IndividualWorldRenderTexture VFX라면 원본 VFX 프리팹의 BoxCollider2D가 Proxy로 복사되는지 확인해주세요.",
+            this);
+
+        warnedMissingCollider = true;
+    }
+
 }

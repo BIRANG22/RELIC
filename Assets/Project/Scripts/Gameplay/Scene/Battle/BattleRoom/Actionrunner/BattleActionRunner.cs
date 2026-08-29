@@ -59,6 +59,11 @@ public class BattleActionRunner
     private const string RookMoveSkillId = "S_Monster_32";
     private const string RookBashSkillId = "S_Monster_34";
     private const string RookEarthquakeSkillId = "S_Monster_35";
+    private const string NocturnMonsterId = "Mon_10";
+    private const string NocturnMoveSkillId = "S_Monster_15";
+    private const string NocturnThrustSkillId = "S_Monster_17";
+    private const string NocturnSlashSkillId = "S_Monster_18";
+    private const string NocturnPullSkillId = "S_Monster_19";
     private const string ResidueGridEffectId = "GR_Residue";
     private static readonly Color ExecutionRangeColor = Color.red;
     public const float MoveAnimationDuration = 0.15f;
@@ -3006,8 +3011,15 @@ public class BattleActionRunner
             destinationGridIndex = gridManager.CoordToIndex(destinationCoord);
         }
 
+        // 그림자걸음은 실제 이동 성공 여부와 무관하게 예약된 목적지 방향을 바라봅니다.
+        // 목적지가 실행 직전에 막혀 순간이동에 실패하더라도, 이후 공격은 이 방향을 기준으로 실행됩니다.
+        BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
+
+        if (facing != null && moveOffset != Vector2Int.zero)
+            facing.FaceByMoveOffset(moveOffset);
+
         // 실행 직전까지 목적지 칸이 비어 있어야 합니다.
-        // 캐릭터나 다른 몬스터가 해당 칸을 차지했다면 사슬 이동을 취소합니다.
+        // 캐릭터나 다른 몬스터가 해당 칸을 차지했다면 그림자걸음의 위치 이동만 취소합니다.
         if (BattleOccupancyService.IsOccupiedByAnyUnit(destinationGridIndex, null, monster))
         {
             MarkNocturnPortalFailed(command);
@@ -3030,11 +3042,6 @@ public class BattleActionRunner
 
         // 이동 연출이 시작되는 순간 목적지 잔여물을 제거합니다.
         HideNocturnPortalDestinationIndicator(command);
-
-        BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
-
-        if (facing != null)
-            facing.FaceByMoveOffset(moveOffset);
 
         Vector3 destinationPosition = gridManager.GetWorldPositionByIndex(destinationGridIndex);
 
@@ -3526,8 +3533,10 @@ public class BattleActionRunner
 
         BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
 
-        // AI가 공격 방향을 지정한 경우 예약된 방향을 실행 시점에도 그대로 사용합니다.
-        // 범위는 오른쪽이지만 애니메이션만 왼쪽을 향하는 현상을 방지합니다.
+        bool isNocturnDirectionalAttack = IsNocturnDirectionalAttack(command);
+
+        // 녹턴의 연계 공격은 예약된 방향을 유지하지만, 공격만 예약된 행동은 현재 Facing을 사용합니다.
+        // 그림자걸음이 실패한 경우에는 위에서 ForcedDirection을 해제했으므로 실제 현재 방향으로 공격합니다.
         if (command.HasForcedDirection)
         {
             if (facing != null)
@@ -3549,7 +3558,10 @@ public class BattleActionRunner
 
         // 강제 방향이 없는 일반 AI 행동만 실제 명중 대상 쪽으로 회전합니다.
         // 사슬 후속 공격처럼 방향이 예약된 행동은 앞에서 지정한 방향을 유지합니다.
-        if (!command.HasForcedDirection && firstPlayerTarget != null && facing != null)
+        if (!command.HasForcedDirection &&
+            !isNocturnDirectionalAttack &&
+            firstPlayerTarget != null &&
+            facing != null)
         {
             facing.FaceByWorldTarget(firstPlayerTarget.transform.position);
 
@@ -3704,9 +3716,11 @@ public class BattleActionRunner
             string.Equals(command.MonsterId, RookMonsterId, System.StringComparison.Ordinal) &&
             string.Equals(command.SkillId, RookBashSkillId, System.StringComparison.Ordinal);
 
-        // 블롭, 베스파, 신더 대폭발과 드라우그 가로베기는 항상 실행 순간의 실제 위치에서 시작합니다.
-        // 이동이 실패하거나 일부만 성공했다면 예약 당시 이동 성공 예상 위치를 사용하지 않습니다.
-        if (isBlobAttack || isVespaAttack || isCinderExplosion || isDraugrAttack || isRookBash)
+        bool isNocturnDirectionalAttack = IsNocturnDirectionalAttack(command);
+
+        // 녹턴을 포함한 방향 공격은 실행 순간의 실제 위치에서 시작합니다.
+        // 선행 이동이 실패하거나 일부만 성공했다면 예약 당시 성공 예상 위치를 공격 원점으로 사용하지 않습니다.
+        if (isBlobAttack || isVespaAttack || isCinderExplosion || isDraugrAttack || isRookBash || isNocturnDirectionalAttack)
         {
             if (monster.MainGridIndex >= 0)
                 command.SetRangeOriginGridIndex(monster.MainGridIndex);
@@ -3779,11 +3793,22 @@ public class BattleActionRunner
             string.Equals(command.MonsterId, RookMonsterId, System.StringComparison.Ordinal) &&
             string.Equals(command.SkillId, RookBashSkillId, System.StringComparison.Ordinal);
 
-        // 블롭, 베스파, 신더 대폭발, 드라우그 가로베기와 바로우 직사는 예약 시 계산된 범위를 재사용하지 않습니다.
+        bool isNocturnDirectionalAttack = IsNocturnDirectionalAttack(command);
+
+        // 블롭, 베스파, 신더 대폭발, 드라우그 가로베기와 바로우 직사, 녹턴 방향 공격은 예약 시 계산된 범위를 재사용하지 않습니다.
         // 이동 성공/실패 결과가 정해진 뒤 실제 위치를 원점으로 범위를 다시 계산합니다.
         // 드라우그는 이때 예약 방향이 아니라 실행 직전의 실제 Facing을 사용합니다.
-        if (command.HasExplicitRangeResult && !isBlobAttack && !isVespaAttack && !isCinderExplosion && !isDraugrAttack && !isBarrowDirectShot && !isRookBash)
+        if (command.HasExplicitRangeResult &&
+            !isBlobAttack &&
+            !isVespaAttack &&
+            !isCinderExplosion &&
+            !isDraugrAttack &&
+            !isBarrowDirectShot &&
+            !isRookBash &&
+            !isNocturnDirectionalAttack)
+        {
             return;
+        }
 
         BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
 
@@ -3792,10 +3817,11 @@ public class BattleActionRunner
         // 드라우그의 가로베기는 예약 방향이 아니라 실행 직전의 실제 Facing을 사용합니다.
         // 이동 + 공격이면 이동이 만든 Facing으로, 공격만 예약된 경우에는
         // 그 사이 피격 등으로 변경된 현재 Facing으로 공격합니다.
-        if ((isDraugrAttack || isBarrowDirectShot) && facing != null)
+        if ((isDraugrAttack || isBarrowDirectShot || isNocturnDirectionalAttack) && facing != null)
         {
-            // 드라우그/바로우의 이동 후 공격은 AI가 이동 완료 위치에서 계산한 공격 방향을 예약합니다.
-            // 제자리 공격은 방향을 고정하지 않으므로 피격 등으로 바뀐 현재 Facing을 그대로 사용합니다.
+            // 이동 연계처럼 방향이 예약된 공격은 예약 방향을 유지합니다.
+            // 녹턴의 제자리 공격 또는 실패한 그림자걸음의 후속 공격은 ForcedDirection이 없으므로
+            // 피격 등으로 바뀐 실행 직전의 실제 Facing을 그대로 사용합니다.
             facingRight = command.HasForcedDirection
                 ? command.ForcedDirection == BattleDirection.Right
                 : facing.IsFacingRight;
@@ -3825,6 +3851,19 @@ public class BattleActionRunner
             );
 
         command.SetRangeResult(rangeGridIndices, targetGridIndices);
+    }
+
+    private static bool IsNocturnDirectionalAttack(MonsterReservedCommand command)
+    {
+        if (command == null ||
+            !string.Equals(command.MonsterId, NocturnMonsterId, System.StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        return string.Equals(command.SkillId, NocturnThrustSkillId, System.StringComparison.Ordinal) ||
+               string.Equals(command.SkillId, NocturnSlashSkillId, System.StringComparison.Ordinal) ||
+               string.Equals(command.SkillId, NocturnPullSkillId, System.StringComparison.Ordinal);
     }
 
     private bool IsNearestPlayerToRight(int originGridIndex)
@@ -4399,6 +4438,16 @@ public class BattleActionRunner
         // 원래 예약한 이동 방향으로 진입을 시도해 ResolveMonsterMove에서 실제 충돌을 처리합니다.
         if (string.Equals(command.MonsterId, RookMonsterId, System.StringComparison.Ordinal) &&
             string.Equals(command.SkillId, RookMoveSkillId, System.StringComparison.Ordinal) &&
+            command.MoveOffset != Vector2Int.zero)
+        {
+            return command.MoveOffset;
+        }
+
+        // 녹턴의 일반 이동도 예약 시 정한 이동 벡터를 실행 순간까지 유지합니다.
+        // 예약 후 플레이어가 이동 칸을 먼저 점유했다면 이동 자체를 지우지 않고,
+        // 원래 방향으로 진입을 시도해 실제 실행 시 충돌하도록 합니다.
+        if (string.Equals(command.MonsterId, NocturnMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, NocturnMoveSkillId, System.StringComparison.Ordinal) &&
             command.MoveOffset != Vector2Int.zero)
         {
             return command.MoveOffset;

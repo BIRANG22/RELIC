@@ -40,24 +40,27 @@ namespace Relic.Gameplay.Monster
 
             List<BattleCharacter> playersInActionRange =
                 FindPlayersInActionRange(monsterUnit, gridManager);
+            List<BattleCharacter> playersInPortalRange =
+                FindPlayersInSkillRange(PortalSkillId, monsterUnit.MainGridIndex, gridManager);
 
-            bool canUsePull = TryFindHittableTarget(
-                PullSkillId,
+            bool canUsePull = TryFindSafePullTarget(
+                monsterUnit,
                 monsterUnit.MainGridIndex,
                 gridManager,
                 out BattleCharacter pullTarget,
                 out BattleDirection pullDirection);
 
-            // 당기기와 포탈은 녹턴의 핵심 연계 행동입니다.
-            // 둘 다 가능하면 동일한 확률로 하나를 선택하고, 하나만 가능하면 해당 행동을 우선합니다.
+            // 당기기와 후방 재배치는 녹턴의 핵심 연계 행동입니다.
+            // 후방이 1칸이면 일반 이동, 그보다 멀면 그림자걸음을 사용합니다.
             bool hasRearPortalTarget = TryFindPortalTarget(
                 monsterUnit,
-                playersInActionRange,
+                playersInPortalRange,
                 gridManager,
                 out _,
                 out Vector2Int preferredRearPortalOffset,
                 out int preferredRearPortalGridIndex,
-                out BattleDirection preferredRearAttackDirection);
+                out BattleDirection preferredRearAttackDirection,
+                out bool preferredRearUseRegularMove);
 
             bool usePullFirst = canUsePull &&
                                 (!hasRearPortalTarget || BattleRandom.Range(0, 2) == 0);
@@ -68,7 +71,7 @@ namespace Relic.Gameplay.Monster
 
                 int laterSlotOffset = BattleRandom.Range(1, 3);
 
-                // 당기기로 대상이 이동한 뒤 새 위치를 기준으로 후방 포탈을 다시 계산합니다.
+                // 당기기 후의 예상 위치와 예상 방향을 기준으로 후방 재배치를 계산합니다.
                 if (TryFindPortalTargetAfterPull(
                         monsterUnit,
                         pullTarget,
@@ -76,34 +79,38 @@ namespace Relic.Gameplay.Monster
                         gridManager,
                         out Vector2Int pulledPortalOffset,
                         out int pulledPortalGridIndex,
-                        out BattleDirection pulledPortalAttackDirection))
+                        out BattleDirection pulledPortalAttackDirection,
+                        out bool pulledUseRegularMove))
                 {
-                    AddPortalCombo(
+                    AddRearRepositionCombo(
                         plan,
                         pulledPortalOffset,
                         pulledPortalGridIndex,
                         pulledPortalAttackDirection,
+                        pulledUseRegularMove,
                         laterSlotOffset,
                         2,
                         true);
                     return plan;
                 }
 
-                // 당긴 대상과 연계할 수 없어도 다른 대상의 후방이 열려 있으면 포탈 공격을 예약합니다.
+                // 당긴 대상과 연계할 수 없어도 다른 대상의 후방이 열려 있으면 재배치 후 공격을 예약합니다.
                 if (TryFindPortalTarget(
                         monsterUnit,
-                        playersInActionRange,
+                        playersInPortalRange,
                         gridManager,
                         out _,
                         out Vector2Int laterPortalOffset,
                         out int laterPortalGridIndex,
-                        out BattleDirection laterPortalAttackDirection))
+                        out BattleDirection laterPortalAttackDirection,
+                        out bool laterUseRegularMove))
                 {
-                    AddPortalCombo(
+                    AddRearRepositionCombo(
                         plan,
                         laterPortalOffset,
                         laterPortalGridIndex,
                         laterPortalAttackDirection,
+                        laterUseRegularMove,
                         laterSlotOffset,
                         2);
                 }
@@ -123,11 +130,12 @@ namespace Relic.Gameplay.Monster
 
             if (hasRearPortalTarget)
             {
-                AddPortalCombo(
+                AddRearRepositionCombo(
                     plan,
                     preferredRearPortalOffset,
                     preferredRearPortalGridIndex,
                     preferredRearAttackDirection,
+                    preferredRearUseRegularMove,
                     0,
                     0);
 
@@ -142,7 +150,7 @@ namespace Relic.Gameplay.Monster
                 return plan;
             }
 
-            // 당기기와 포탈을 사용할 수 없을 때만 일반 이동을 전술적 재배치로 사용합니다.
+            // 그림자 소용돌이와 그림자걸음을 모두 사용할 수 없을 때는 가장 가까운 캐릭터에게 접근합니다.
             if (BattleRandom.Range(0, 2) == 0 &&
                 TryAddRegularMoveCombo(plan, monsterUnit, gridManager))
             {
@@ -173,8 +181,8 @@ namespace Relic.Gameplay.Monster
                         gridManager);
 
                     // 이동 후에는 새 위치에서 그랩 가능 여부를 먼저 다시 판단합니다.
-                    if (TryFindHittableTarget(
-                            PullSkillId,
+                    if (TryFindSafePullTarget(
+                            monsterUnit,
                             destinationGridIndex,
                             gridManager,
                             out _,
@@ -244,7 +252,7 @@ namespace Relic.Gameplay.Monster
                     40,
                     0,
                     monsterUnit.MainGridIndex,
-                    true,
+                    false,
                     firstAttackDirection));
 
                 if (TryPickAttackFromOrigin(
@@ -260,7 +268,7 @@ namespace Relic.Gameplay.Monster
                         41,
                         1,
                         monsterUnit.MainGridIndex,
-                        true,
+                        false,
                         secondAttackDirection,
                         false,
                         BattleRandom.Range(1, 3)));
@@ -269,25 +277,27 @@ namespace Relic.Gameplay.Monster
                 return plan;
             }
 
-            // 그랩은 불가능하지만 대상의 후방이 비어 있다면 포탈 이동 후 공격합니다.
+            // 그랩은 불가능하지만 대상의 후방이 비어 있다면 거리별로 일반 이동 또는 그림자걸음 후 공격합니다.
             if (TryFindPortalTarget(
                     monsterUnit,
-                    playersInActionRange,
+                    playersInPortalRange,
                     gridManager,
                     out _,
                     out Vector2Int portalOffset,
                     out int portalGridIndex,
-                    out BattleDirection portalAttackDirection))
+                    out BattleDirection portalAttackDirection,
+                    out bool portalUseRegularMove))
             {
-                AddPortalCombo(
+                AddRearRepositionCombo(
                     plan,
                     portalOffset,
                     portalGridIndex,
                     portalAttackDirection,
+                    portalUseRegularMove,
                     0,
                     0);
 
-                // 포탈 공격 뒤에는 다른 슬롯에서도 한 번 더 공격해 엘리트의 압박을 유지합니다.
+                // 재배치 공격 뒤에는 다른 슬롯에서도 한 번 더 공격해 엘리트의 압박을 유지합니다.
                 AddAdditionalAttack(
                     plan,
                     portalGridIndex,
@@ -357,7 +367,7 @@ namespace Relic.Gameplay.Monster
             if (plan == null || monsterUnit == null || gridManager == null)
                 return false;
 
-            Vector2Int moveOffset = GetTacticalOneTileMove(
+            Vector2Int moveOffset = GetOneTileMoveTowardNearestPlayer(
                 monsterUnit,
                 gridManager);
 
@@ -487,6 +497,8 @@ namespace Relic.Gameplay.Monster
                 out string attackSkillId,
                 out BattleDirection attackDirection);
 
+            // 다른 슬롯에 단독으로 예약되는 공격은 방향을 고정하지 않습니다.
+            // 실행 전 피격 등으로 녹턴의 Facing이 바뀌면 실제 현재 방향으로 공격합니다.
             plan.Add(new MonsterAIAction(
                 foundTarget ? attackSkillId : PickFollowUpAttack(),
                 Vector2Int.zero,
@@ -494,7 +506,7 @@ namespace Relic.Gameplay.Monster
                 group,
                 priority,
                 originGridIndex,
-                true,
+                false,
                 foundTarget ? attackDirection : fallbackDirection,
                 false,
                 slotOffset));
@@ -537,6 +549,78 @@ namespace Relic.Gameplay.Monster
             return nearestCoord.x < originCoord.x
                 ? BattleDirection.Left
                 : BattleDirection.Right;
+        }
+
+        private void AddRearRepositionCombo(
+            MonsterAIPlan plan,
+            Vector2Int moveOffset,
+            int destinationGridIndex,
+            BattleDirection attackDirection,
+            bool useRegularMove,
+            int slotOffset,
+            int priorityBase,
+            bool keepPredictedAttackDirection = false)
+        {
+            if (!useRegularMove)
+            {
+                AddPortalCombo(
+                    plan,
+                    moveOffset,
+                    destinationGridIndex,
+                    attackDirection,
+                    slotOffset,
+                    priorityBase,
+                    keepPredictedAttackDirection);
+                return;
+            }
+
+            if (plan == null)
+                return;
+
+            const int moveGroup = 11;
+
+            plan.Add(new MonsterAIAction(
+                MoveSkillId,
+                moveOffset,
+                MonsterAISlotPreference.Front,
+                moveGroup,
+                priorityBase,
+                -1,
+                false,
+                BattleDirection.Right,
+                false,
+                slotOffset));
+
+            string followUpSkill = PickFollowUpAttack();
+            BattleDirection finalAttackDirection = attackDirection;
+
+            if (!keepPredictedAttackDirection &&
+                TryPickAttackFromOrigin(
+                    destinationGridIndex,
+                    Object.FindFirstObjectByType<GridManager>(),
+                    out string selectedAttack,
+                    out BattleDirection selectedDirection))
+            {
+                followUpSkill = selectedAttack;
+                finalAttackDirection = selectedDirection;
+            }
+
+            plan.Add(new MonsterAIAction(
+                followUpSkill,
+                Vector2Int.zero,
+                MonsterAISlotPreference.SameSlot,
+                moveGroup,
+                priorityBase + 1,
+                destinationGridIndex,
+                true,
+                finalAttackDirection,
+                false,
+                slotOffset));
+        }
+
+        private static bool IsOneTileOrthogonalMove(Vector2Int moveOffset)
+        {
+            return Mathf.Abs(moveOffset.x) + Mathf.Abs(moveOffset.y) == 1;
         }
 
         private void AddPortalCombo(
@@ -841,6 +925,183 @@ namespace Relic.Gameplay.Monster
             return false;
         }
 
+        private bool TryFindSafePullTarget(
+            MonsterUnit monsterUnit,
+            int originGridIndex,
+            GridManager gridManager,
+            out BattleCharacter selectedTarget,
+            out BattleDirection selectedDirection)
+        {
+            selectedTarget = null;
+            selectedDirection = BattleDirection.Right;
+
+            if (monsterUnit == null || originGridIndex < 0 || gridManager == null)
+                return false;
+
+            MonsterSkillData skillData =
+                DataManager.Instance?.MonsterSkillDatabase?.Get(PullSkillId);
+            RangeDatabase rangeDatabase = DataManager.Instance?.RangeDatabase;
+
+            if (skillData == null || rangeDatabase == null ||
+                string.IsNullOrWhiteSpace(skillData.RangeId) || skillData.RangeId == "0")
+            {
+                return false;
+            }
+
+            BattleCharacter[] players = FindPlayers();
+            BattleDirection[] directions =
+            {
+                BattleDirection.Left,
+                BattleDirection.Right
+            };
+
+            for (int directionIndex = 0; directionIndex < directions.Length; directionIndex++)
+            {
+                BattleDirection direction = directions[directionIndex];
+                List<int> rangeIndices = BattleRangeCalculator.GetDirectionRangeIndices(
+                    originGridIndex,
+                    skillData.RangeId,
+                    direction,
+                    rangeDatabase,
+                    gridManager);
+
+                if (rangeIndices == null || rangeIndices.Count <= 0)
+                    continue;
+
+                HashSet<int> rangeSet = new(rangeIndices);
+                BattleCharacter firstTarget = null;
+                bool wouldCollideWithNocturn = false;
+
+                for (int playerIndex = 0; playerIndex < players.Length; playerIndex++)
+                {
+                    BattleCharacter player = players[playerIndex];
+
+                    if (!IsAlivePlayer(player) || player.CurrentGridIndex < 0 ||
+                        !rangeSet.Contains(player.CurrentGridIndex))
+                    {
+                        continue;
+                    }
+
+                    firstTarget ??= player;
+
+                    if (WouldPullTargetIntoNocturn(
+                            monsterUnit,
+                            originGridIndex,
+                            player.CurrentGridIndex,
+                            direction,
+                            gridManager))
+                    {
+                        wouldCollideWithNocturn = true;
+                        break;
+                    }
+                }
+
+                if (firstTarget != null && !wouldCollideWithNocturn)
+                {
+                    selectedTarget = firstTarget;
+                    selectedDirection = direction;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool WouldPullTargetIntoNocturn(
+            MonsterUnit monsterUnit,
+            int predictedMonsterMainGridIndex,
+            int targetGridIndex,
+            BattleDirection pullDirection,
+            GridManager gridManager)
+        {
+            if (monsterUnit == null || predictedMonsterMainGridIndex < 0 ||
+                targetGridIndex < 0 || gridManager == null)
+            {
+                return false;
+            }
+
+            Vector2Int pullOffset = pullDirection == BattleDirection.Left
+                ? Vector2Int.right
+                : Vector2Int.left;
+            Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
+            Vector2Int pulledCoord = targetCoord + pullOffset;
+
+            if (!gridManager.IsValidCoord(pulledCoord))
+                return false;
+
+            int pulledGridIndex = gridManager.CoordToIndex(pulledCoord);
+            Vector2Int currentMainCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
+            Vector2Int predictedMainCoord = gridManager.IndexToCoord(predictedMonsterMainGridIndex);
+            Vector2Int predictedOffset = predictedMainCoord - currentMainCoord;
+
+            if (monsterUnit.OccupiedGridIndices == null || monsterUnit.OccupiedGridIndices.Count <= 0)
+                return pulledGridIndex == predictedMonsterMainGridIndex;
+
+            for (int i = 0; i < monsterUnit.OccupiedGridIndices.Count; i++)
+            {
+                int occupiedGridIndex = monsterUnit.OccupiedGridIndices[i];
+
+                if (occupiedGridIndex < 0)
+                    continue;
+
+                Vector2Int occupiedCoord = gridManager.IndexToCoord(occupiedGridIndex) + predictedOffset;
+
+                if (gridManager.IsValidCoord(occupiedCoord) &&
+                    gridManager.CoordToIndex(occupiedCoord) == pulledGridIndex)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private List<BattleCharacter> FindPlayersInSkillRange(
+            string skillId,
+            int originGridIndex,
+            GridManager gridManager)
+        {
+            List<BattleCharacter> result = new();
+
+            if (string.IsNullOrWhiteSpace(skillId) || originGridIndex < 0 || gridManager == null)
+                return result;
+
+            MonsterSkillData skillData =
+                DataManager.Instance?.MonsterSkillDatabase?.Get(skillId);
+            RangeDatabase rangeDatabase = DataManager.Instance?.RangeDatabase;
+
+            if (skillData == null || rangeDatabase == null ||
+                string.IsNullOrWhiteSpace(skillData.RangeId) || skillData.RangeId == "0")
+            {
+                return result;
+            }
+
+            List<int> rangeIndices = BattleRangeCalculator.GetSelectionRangeIndices(
+                originGridIndex,
+                skillData.RangeId,
+                rangeDatabase,
+                gridManager);
+
+            if (rangeIndices == null || rangeIndices.Count <= 0)
+                return result;
+
+            HashSet<int> rangeSet = new(rangeIndices);
+            BattleCharacter[] players = FindPlayers();
+
+            for (int i = 0; i < players.Length; i++)
+            {
+                BattleCharacter player = players[i];
+
+                if (!IsAlivePlayer(player) || player.CurrentGridIndex < 0)
+                    continue;
+
+                if (rangeSet.Contains(player.CurrentGridIndex))
+                    result.Add(player);
+            }
+
+            return result;
+        }
+
         private string PickFollowUpAttack()
         {
             return BattleRandom.Range(0, 2) == 0
@@ -895,29 +1156,116 @@ namespace Relic.Gameplay.Monster
         {
             BattleCharacter nearest = FindNearestPlayer(monsterUnit, gridManager);
 
-            if (nearest == null)
+            if (nearest == null || monsterUnit.MainGridIndex < 0 || nearest.CurrentGridIndex < 0)
                 return Vector2Int.zero;
 
-            Vector2Int preferred = GetMoveTowardTarget(
-                monsterUnit.MainGridIndex,
-                nearest.CurrentGridIndex,
-                gridManager,
-                1);
-
-            if (CanMonsterMove(monsterUnit, gridManager, preferred))
-                return preferred;
-
-            Vector2Int currentCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
+            Vector2Int startCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
             Vector2Int targetCoord = gridManager.IndexToCoord(nearest.CurrentGridIndex);
-            Vector2Int difference = targetCoord - currentCoord;
 
-            Vector2Int alternate = preferred.x != 0
-                ? new Vector2Int(0, difference.y > 0 ? 1 : -1)
-                : new Vector2Int(difference.x > 0 ? 1 : -1, 0);
+            Vector2Int[] directions =
+            {
+                Vector2Int.left,
+                Vector2Int.right,
+                Vector2Int.up,
+                Vector2Int.down
+            };
 
-            return CanMonsterMove(monsterUnit, gridManager, alternate)
-                ? alternate
-                : Vector2Int.zero;
+            // 바로 가까워지는 칸이 막혀 있어도 멈추지 않도록,
+            // 현재 점유 상태를 기준으로 장애물을 피해 갈 수 있는 경로를 탐색합니다.
+            Queue<Vector2Int> open = new();
+            Dictionary<Vector2Int, Vector2Int> firstSteps = new();
+            Dictionary<Vector2Int, int> pathLengths = new();
+
+            open.Enqueue(Vector2Int.zero);
+            firstSteps[Vector2Int.zero] = Vector2Int.zero;
+            pathLengths[Vector2Int.zero] = 0;
+
+            Vector2Int bestOffset = Vector2Int.zero;
+            int bestDistance = int.MaxValue;
+            int bestPathLength = int.MaxValue;
+            List<Vector2Int> bestFirstSteps = new();
+
+            while (open.Count > 0)
+            {
+                Vector2Int offset = open.Dequeue();
+                int pathLength = pathLengths[offset];
+
+                if (offset != Vector2Int.zero)
+                {
+                    Vector2Int coord = startCoord + offset;
+                    int distance = Mathf.Abs(targetCoord.x - coord.x) +
+                                   Mathf.Abs(targetCoord.y - coord.y);
+
+                    if (distance < bestDistance ||
+                        (distance == bestDistance && pathLength < bestPathLength))
+                    {
+                        bestDistance = distance;
+                        bestPathLength = pathLength;
+                        bestOffset = offset;
+                        bestFirstSteps.Clear();
+                        bestFirstSteps.Add(firstSteps[offset]);
+                    }
+                    else if (distance == bestDistance && pathLength == bestPathLength)
+                    {
+                        Vector2Int firstStep = firstSteps[offset];
+                        if (!bestFirstSteps.Contains(firstStep))
+                            bestFirstSteps.Add(firstStep);
+                    }
+                }
+
+                for (int i = 0; i < directions.Length; i++)
+                {
+                    Vector2Int nextOffset = offset + directions[i];
+
+                    if (pathLengths.ContainsKey(nextOffset))
+                        continue;
+
+                    if (!CanOccupyTranslatedPosition(monsterUnit, gridManager, nextOffset))
+                        continue;
+
+                    pathLengths[nextOffset] = pathLength + 1;
+                    firstSteps[nextOffset] = offset == Vector2Int.zero
+                        ? directions[i]
+                        : firstSteps[offset];
+                    open.Enqueue(nextOffset);
+                }
+            }
+
+            if (bestOffset == Vector2Int.zero || bestFirstSteps.Count <= 0)
+                return Vector2Int.zero;
+
+            return bestFirstSteps[BattleRandom.Range(0, bestFirstSteps.Count)];
+        }
+
+        private bool CanOccupyTranslatedPosition(
+            MonsterUnit monsterUnit,
+            GridManager gridManager,
+            Vector2Int totalOffset)
+        {
+            if (monsterUnit == null || gridManager == null)
+                return false;
+
+            BattleGridEffectController gridEffectController =
+                Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+
+            for (int i = 0; i < monsterUnit.OccupiedGridIndices.Count; i++)
+            {
+                Vector2Int originalCoord = gridManager.IndexToCoord(monsterUnit.OccupiedGridIndices[i]);
+                Vector2Int translatedCoord = originalCoord + totalOffset;
+
+                if (!gridManager.IsValidCoord(translatedCoord))
+                    return false;
+
+                int translatedIndex = gridManager.CoordToIndex(translatedCoord);
+
+                if (BattleOccupancyService.IsOccupiedByAnyUnit(translatedIndex, null, monsterUnit))
+                    return false;
+
+                if (gridEffectController != null && gridEffectController.IsBlocked(translatedIndex))
+                    return false;
+            }
+
+            return true;
         }
 
         private bool TryFindPortalTargetAfterPull(
@@ -927,11 +1275,13 @@ namespace Relic.Gameplay.Monster
             GridManager gridManager,
             out Vector2Int moveOffset,
             out int destinationGridIndex,
-            out BattleDirection attackDirection)
+            out BattleDirection attackDirection,
+            out bool useRegularMove)
         {
             moveOffset = Vector2Int.zero;
             destinationGridIndex = -1;
             attackDirection = BattleDirection.Right;
+            useRegularMove = false;
 
             if (monsterUnit == null || pullTarget == null ||
                 pullTarget.CurrentGridIndex < 0 || gridManager == null)
@@ -942,57 +1292,164 @@ namespace Relic.Gameplay.Monster
             Vector2Int pullMoveOffset = pullDirection == BattleDirection.Left
                 ? Vector2Int.right
                 : Vector2Int.left;
-
-            Vector2Int currentTargetCoord =
+            Vector2Int currentPulledTargetCoord =
                 gridManager.IndexToCoord(pullTarget.CurrentGridIndex);
-            Vector2Int pulledTargetCoord = currentTargetCoord + pullMoveOffset;
+            Vector2Int predictedPulledTargetCoord = currentPulledTargetCoord + pullMoveOffset;
 
-            if (!gridManager.IsValidCoord(pulledTargetCoord))
+            if (!gridManager.IsValidCoord(predictedPulledTargetCoord))
                 return false;
 
-            int pulledTargetGridIndex = gridManager.CoordToIndex(pulledTargetCoord);
+            int predictedPulledTargetGridIndex = gridManager.CoordToIndex(predictedPulledTargetCoord);
 
             if (BattleOccupancyService.IsOccupiedByAnyUnit(
-                    pulledTargetGridIndex,
-                    pullTarget.CharacterId))
+                    predictedPulledTargetGridIndex,
+                    pullTarget.CharacterId,
+                    monsterUnit))
             {
                 return false;
             }
 
-            if (!TryGetBehindGridAtCoord(
-                    pullTarget,
-                    pulledTargetCoord,
-                    gridManager,
-                    out Vector2Int behindCoord,
-                    out attackDirection))
+            MonsterSkillData portalSkillData =
+                DataManager.Instance?.MonsterSkillDatabase?.Get(PortalSkillId);
+            RangeDatabase rangeDatabase = DataManager.Instance?.RangeDatabase;
+
+            if (portalSkillData == null || rangeDatabase == null ||
+                string.IsNullOrWhiteSpace(portalSkillData.RangeId) || portalSkillData.RangeId == "0")
             {
                 return false;
             }
 
-            destinationGridIndex = gridManager.CoordToIndex(behindCoord);
+            List<int> portalRange = BattleRangeCalculator.GetSelectionRangeIndices(
+                monsterUnit.MainGridIndex,
+                portalSkillData.RangeId,
+                rangeDatabase,
+                gridManager);
 
-            if (destinationGridIndex == pulledTargetGridIndex)
+            if (portalRange == null || portalRange.Count <= 0)
                 return false;
 
-            bool targetWillVacateDestination =
-                destinationGridIndex == pullTarget.CurrentGridIndex;
+            HashSet<int> portalRangeSet = new(portalRange);
+            BattleCharacter[] players = FindPlayers();
+            Vector2Int monsterCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
+            int farthestDistance = int.MinValue;
+            List<Vector2Int> farthestBehindCoords = new();
+            List<int> farthestBehindGridIndices = new();
+            List<BattleDirection> farthestAttackDirections = new();
 
-            if (!targetWillVacateDestination &&
-                !IsPortalDestinationAvailable(monsterUnit, destinationGridIndex))
+            for (int i = 0; i < players.Length; i++)
             {
-                return false;
+                BattleCharacter candidate = players[i];
+
+                if (!IsAlivePlayer(candidate) || candidate.CurrentGridIndex < 0)
+                    continue;
+
+                Vector2Int candidateCoord = candidate == pullTarget
+                    ? predictedPulledTargetCoord
+                    : gridManager.IndexToCoord(candidate.CurrentGridIndex);
+                int candidateGridIndex = gridManager.CoordToIndex(candidateCoord);
+
+                if (!portalRangeSet.Contains(candidateGridIndex))
+                    continue;
+
+                bool hasBehindGrid;
+                Vector2Int behindCoord;
+                BattleDirection candidateAttackDirection;
+
+                if (candidate == pullTarget)
+                {
+                    // 그림자 소용돌이는 E_Strike가 먼저 적중한 뒤 E_Grab이 실행됩니다.
+                    // 따라서 당겨진 대상은 현재 방향이 아니라, 피격 후 녹턴을 바라보는 방향으로 바뀐 상태입니다.
+                    bool predictedFacesRight = pullDirection == BattleDirection.Left;
+                    hasBehindGrid = TryGetBehindGridAtCoordByFacing(
+                        candidateCoord,
+                        predictedFacesRight,
+                        gridManager,
+                        out behindCoord,
+                        out candidateAttackDirection);
+                }
+                else
+                {
+                    hasBehindGrid = TryGetBehindGridAtCoord(
+                        candidate,
+                        candidateCoord,
+                        gridManager,
+                        out behindCoord,
+                        out candidateAttackDirection);
+                }
+
+                if (!hasBehindGrid)
+                    continue;
+
+                int behindGridIndex = gridManager.CoordToIndex(behindCoord);
+
+                if (!IsPortalDestinationAvailableAfterPull(
+                        monsterUnit,
+                        pullTarget,
+                        predictedPulledTargetGridIndex,
+                        behindGridIndex))
+                {
+                    continue;
+                }
+
+                int distance = Mathf.Abs(candidateCoord.x - monsterCoord.x) +
+                               Mathf.Abs(candidateCoord.y - monsterCoord.y);
+
+                if (distance > farthestDistance)
+                {
+                    farthestDistance = distance;
+                    farthestBehindCoords.Clear();
+                    farthestBehindGridIndices.Clear();
+                    farthestAttackDirections.Clear();
+                }
+
+                if (distance == farthestDistance)
+                {
+                    farthestBehindCoords.Add(behindCoord);
+                    farthestBehindGridIndices.Add(behindGridIndex);
+                    farthestAttackDirections.Add(candidateAttackDirection);
+                }
             }
 
-            if (targetWillVacateDestination &&
+            if (farthestBehindCoords.Count <= 0)
+                return false;
+
+            int selectedIndex = BattleRandom.Range(0, farthestBehindCoords.Count);
+            Vector2Int selectedBehindCoord = farthestBehindCoords[selectedIndex];
+            moveOffset = selectedBehindCoord - monsterCoord;
+            destinationGridIndex = farthestBehindGridIndices[selectedIndex];
+            attackDirection = farthestAttackDirections[selectedIndex];
+
+            // 당기기 이후 예상 배치에서 후방이 바로 1칸이라면 포탈을 낭비하지 않고 일반 이동을 사용합니다.
+            useRegularMove = IsOneTileOrthogonalMove(moveOffset) &&
+                             (destinationGridIndex == pullTarget.CurrentGridIndex ||
+                              CanMonsterMove(monsterUnit, gridManager, moveOffset));
+            return true;
+        }
+
+        private bool IsPortalDestinationAvailableAfterPull(
+            MonsterUnit monsterUnit,
+            BattleCharacter pullTarget,
+            int predictedPulledTargetGridIndex,
+            int destinationGridIndex)
+        {
+            if (monsterUnit == null || pullTarget == null || destinationGridIndex < 0)
+                return false;
+
+            if (destinationGridIndex == monsterUnit.MainGridIndex ||
+                destinationGridIndex == predictedPulledTargetGridIndex ||
                 IsGridEffectBlocked(destinationGridIndex))
             {
                 return false;
             }
 
-            Vector2Int monsterCoord =
-                gridManager.IndexToCoord(monsterUnit.MainGridIndex);
-            moveOffset = behindCoord - monsterCoord;
-            return true;
+            // 당겨질 대상의 현재 칸은 그림자 소용돌이가 먼저 실행되면 비게 되므로 예약할 수 있습니다.
+            if (destinationGridIndex == pullTarget.CurrentGridIndex)
+                return true;
+
+            return !BattleOccupancyService.IsOccupiedByAnyUnit(
+                destinationGridIndex,
+                null,
+                monsterUnit);
         }
 
         private bool TryFindPortalTarget(
@@ -1002,12 +1459,14 @@ namespace Relic.Gameplay.Monster
             out BattleCharacter selectedTarget,
             out Vector2Int moveOffset,
             out int destinationGridIndex,
-            out BattleDirection attackDirection)
+            out BattleDirection attackDirection,
+            out bool useRegularMove)
         {
             selectedTarget = null;
             moveOffset = Vector2Int.zero;
             destinationGridIndex = -1;
             attackDirection = BattleDirection.Right;
+            useRegularMove = false;
 
             if (monsterUnit == null || candidates == null || gridManager == null)
                 return false;
@@ -1045,13 +1504,38 @@ namespace Relic.Gameplay.Monster
             if (validTargets.Count <= 0)
                 return false;
 
-            // 같은 라인이나 가장 가까운 대상만 반복하지 않고,
-            // 후방이 열린 모든 캐릭터를 동일한 후보로 취급합니다.
-            int selectedIndex = BattleRandom.Range(0, validTargets.Count);
+            // 그림자걸음은 범위 안에서 녹턴으로부터 가장 먼 대상의 후방을 우선합니다.
+            // 같은 최장 거리에 여러 대상이 있으면 그 대상들 사이에서만 무작위 선택합니다.
+            int farthestDistance = int.MinValue;
+            List<int> farthestIndices = new();
+
+            for (int i = 0; i < validTargets.Count; i++)
+            {
+                Vector2Int targetCoord = gridManager.IndexToCoord(validTargets[i].CurrentGridIndex);
+                int distance = Mathf.Abs(targetCoord.x - monsterCoord.x) +
+                               Mathf.Abs(targetCoord.y - monsterCoord.y);
+
+                if (distance > farthestDistance)
+                {
+                    farthestDistance = distance;
+                    farthestIndices.Clear();
+                    farthestIndices.Add(i);
+                }
+                else if (distance == farthestDistance)
+                {
+                    farthestIndices.Add(i);
+                }
+            }
+
+            int selectedIndex = farthestIndices[BattleRandom.Range(0, farthestIndices.Count)];
             selectedTarget = validTargets[selectedIndex];
             moveOffset = validBehindCoords[selectedIndex] - monsterCoord;
             destinationGridIndex = validBehindGridIndices[selectedIndex];
             attackDirection = validAttackDirections[selectedIndex];
+
+            // 가장 먼 대상의 후방이 일반 이동 1회로 도달 가능한 칸이면 그림자걸음 대신 일반 이동을 사용합니다.
+            useRegularMove = IsOneTileOrthogonalMove(moveOffset) &&
+                             CanMonsterMove(monsterUnit, gridManager, moveOffset);
             return true;
         }
 
@@ -1096,14 +1580,28 @@ namespace Relic.Gameplay.Monster
                 : target.RuntimeData == null ||
                   target.RuntimeData.Direction == BattleDirection.Right;
 
-            // 대상이 오른쪽을 보면 왼쪽 칸이 뒤이며, 녹턴은 오른쪽을 바라보고 공격합니다.
+            return TryGetBehindGridAtCoordByFacing(
+                targetCoord,
+                targetFacesRight,
+                gridManager,
+                out behindCoord,
+                out attackDirection);
+        }
+
+        private bool TryGetBehindGridAtCoordByFacing(
+            Vector2Int targetCoord,
+            bool targetFacesRight,
+            GridManager gridManager,
+            out Vector2Int behindCoord,
+            out BattleDirection attackDirection)
+        {
             behindCoord = targetCoord +
                 (targetFacesRight ? Vector2Int.left : Vector2Int.right);
             attackDirection = targetFacesRight
                 ? BattleDirection.Right
                 : BattleDirection.Left;
 
-            return gridManager.IsValidCoord(behindCoord);
+            return gridManager != null && gridManager.IsValidCoord(behindCoord);
         }
 
 

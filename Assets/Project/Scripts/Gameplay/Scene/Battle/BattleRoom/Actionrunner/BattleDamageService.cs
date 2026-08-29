@@ -6,7 +6,6 @@ using UnityEngine;
 
 public class BattleDamageService
 {
-    private const string NocturnGrabSkillId = "S_Monster_19";
     private readonly BattleUnitFinder unitFinder;
 
     public BattleDamageService(BattleUnitFinder unitFinder)
@@ -150,9 +149,6 @@ public class BattleDamageService
         if (skillData == null)
             return false;
 
-        if (string.Equals(skillData.SkillId, NocturnGrabSkillId, System.StringComparison.Ordinal))
-            return false;
-
         if (HasMonsterDamageHitEffect(skillData))
             return true;
 
@@ -162,9 +158,6 @@ public class BattleDamageService
     public static bool HasMonsterDamageHitEffect(MonsterSkillData skillData)
     {
         if (skillData == null || string.IsNullOrWhiteSpace(skillData.EffectIds))
-            return false;
-
-        if (string.Equals(skillData.SkillId, NocturnGrabSkillId, System.StringComparison.Ordinal))
             return false;
 
         string[] effectIds = skillData.EffectIds.Split(';');

@@ -551,8 +551,10 @@ namespace Relic.Gameplay.Data
                 {
                     int nextNodeIndex = definition.NextNodeIndices[j];
 
+                    // 비활성화된 슬롯을 가리키는 이전 연결 정보는 템플릿 전체를 무효화하지 않는다.
+                    // 실제 생성 시 CopyValidConnections에서 현재 활성 노드만 남긴다.
                     if (!definedNodeIndices.Contains(nextNodeIndex))
-                        return false;
+                        continue;
 
                     if (!seenNextIndices.Add(nextNodeIndex))
                         return false;
@@ -633,7 +635,10 @@ namespace Relic.Gameplay.Data
             {
                 string overrideId = definition.MapIdOverride.Trim();
 
-                if (TryFindMapById(mapPool, overrideId, chapter, stage, type, out MapData overrideMap))
+                // MapIdOverride는 DB의 고정 맵을 직접 지정하는 값이므로
+                // 템플릿에 직렬화되어 남아 있는 Type 값과 일치할 필요가 없다.
+                // 실제 방 타입은 DB MapData.Type을 그대로 사용한다.
+                if (TryFindMapById(mapPool, overrideId, stage, out MapData overrideMap))
                 {
                     mapId = overrideMap.MapId;
                     resolvedType = overrideMap.Type;
@@ -687,9 +692,7 @@ namespace Relic.Gameplay.Data
         private static bool TryFindMapById(
             List<MapData> mapPool,
             string mapId,
-            string chapter,
             string stage,
-            string type,
             out MapData result)
         {
             result = null;
@@ -708,9 +711,6 @@ namespace Relic.Gameplay.Data
                     continue;
 
                 if (!Same(candidate.Stage, stage))
-                    continue;
-
-                if (!Same(candidate.Type, type))
                     continue;
 
                 result = candidate;
