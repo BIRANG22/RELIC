@@ -8,7 +8,7 @@ public static class BattleVfxAudioUtility
         BattleVfxSfxEntry settings,
         MonoBehaviour coroutineHost)
     {
-        PlayConfiguredSfx(settings, coroutineHost);
+        PlayConfiguredSfx(vfx, settings, coroutineHost);
 
         if (vfx == null)
             return;
@@ -22,32 +22,103 @@ public static class BattleVfxAudioUtility
             RemoveEmbeddedAudioSources(sources);
     }
 
-    private static void PlayConfiguredSfx(BattleVfxSfxEntry settings, MonoBehaviour coroutineHost)
+    private static void PlayConfiguredSfx(
+        GameObject vfx,
+        BattleVfxSfxEntry settings,
+        MonoBehaviour coroutineHost)
     {
-        if (settings == null || !settings.playSfx)
+        if (settings == null)
             return;
 
-        if (settings.delay > 0f && coroutineHost != null && coroutineHost.isActiveAndEnabled)
+        if (settings.playSfx)
         {
-            coroutineHost.StartCoroutine(PlayConfiguredSfxDelayed(settings));
+            PlayConfiguredSfxCue(
+                vfx,
+                settings.sfxId,
+                settings.delay,
+                settings.volumeMultiplier,
+                coroutineHost);
+        }
+
+        if (settings.additionalSfx == null)
+            return;
+
+        for (int i = 0; i < settings.additionalSfx.Count; i++)
+        {
+            BattleVfxAdditionalSfxEntry cue = settings.additionalSfx[i];
+
+            if (cue == null)
+                continue;
+
+            PlayConfiguredSfxCue(
+                vfx,
+                cue.sfxId,
+                cue.delay,
+                cue.volumeMultiplier,
+                coroutineHost);
+        }
+    }
+
+    private static void PlayConfiguredSfxCue(
+        GameObject vfx,
+        string sfxId,
+        float delay,
+        float volumeMultiplier,
+        MonoBehaviour coroutineHost)
+    {
+        if (string.IsNullOrWhiteSpace(sfxId))
+            return;
+
+        if (delay > 0f && coroutineHost != null && coroutineHost.isActiveAndEnabled)
+        {
+            coroutineHost.StartCoroutine(PlayConfiguredSfxDelayed(
+                vfx,
+                sfxId,
+                delay,
+                volumeMultiplier));
             return;
         }
 
-        PlayConfiguredSfxNow(settings);
+        PlayConfiguredSfxNow(vfx, sfxId, volumeMultiplier);
     }
 
-    private static IEnumerator PlayConfiguredSfxDelayed(BattleVfxSfxEntry settings)
+    private static IEnumerator PlayConfiguredSfxDelayed(
+        GameObject vfx,
+        string sfxId,
+        float delay,
+        float volumeMultiplier)
     {
-        yield return new WaitForSeconds(Mathf.Max(0f, settings.delay));
-        PlayConfiguredSfxNow(settings);
+        yield return new WaitForSeconds(Mathf.Max(0f, delay));
+        PlayConfiguredSfxNow(vfx, sfxId, volumeMultiplier);
     }
 
-    private static void PlayConfiguredSfxNow(BattleVfxSfxEntry settings)
+    private static void PlayConfiguredSfxNow(
+        GameObject vfx,
+        string sfxId,
+        float volumeMultiplier)
     {
         if (AudioManager.Instance == null)
             return;
 
-        AudioManager.Instance.PlaySfx(settings.sfxId, settings.volumeMultiplier);
+        if (!AudioManager.Instance.TryGetSfxData(sfxId, out SoundData data))
+            return;
+
+        if (data.loop)
+        {
+            Transform vfxTransform = vfx != null ? vfx.transform : null;
+            AudioSource routedSource = AudioManager.Instance.PlaySfxSource(
+                sfxId,
+                vfxTransform != null ? vfxTransform.position : Vector3.zero,
+                vfxTransform != null ? vfxTransform.rotation : Quaternion.identity,
+                volumeMultiplier);
+
+            if (routedSource != null)
+                TrackLoopedRoutedAudioSource(vfx, routedSource);
+
+            return;
+        }
+
+        AudioManager.Instance.PlaySfx(sfxId, volumeMultiplier);
     }
 
     private static bool ShouldRouteEmbeddedAudioSources(BattleVfxSfxEntry settings)
@@ -55,7 +126,29 @@ public static class BattleVfxAudioUtility
         if (settings == null)
             return true;
 
-        return settings.routeEmbeddedAudioSourcesThroughAudioManager && !settings.playSfx;
+        return settings.routeEmbeddedAudioSourcesThroughAudioManager && !HasConfiguredSfx(settings);
+    }
+
+    private static bool HasConfiguredSfx(BattleVfxSfxEntry settings)
+    {
+        if (settings == null)
+            return false;
+
+        if (settings.playSfx && !string.IsNullOrWhiteSpace(settings.sfxId))
+            return true;
+
+        if (settings.additionalSfx == null)
+            return false;
+
+        for (int i = 0; i < settings.additionalSfx.Count; i++)
+        {
+            BattleVfxAdditionalSfxEntry cue = settings.additionalSfx[i];
+
+            if (cue != null && !string.IsNullOrWhiteSpace(cue.sfxId))
+                return true;
+        }
+
+        return false;
     }
 
     private static bool ShouldRemoveEmbeddedAudioSources(BattleVfxSfxEntry settings)

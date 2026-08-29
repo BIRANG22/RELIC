@@ -11,11 +11,13 @@ public class SoundIdDrawerTests
         SoundDatabase database = ScriptableObject.CreateInstance<SoundDatabase>();
         AudioClip bgmClip = null;
         AudioClip sfxClip = null;
+        AudioClip skillSfxClip = null;
 
         try
         {
             bgmClip = AudioClip.Create("Bgm", 32, 1, 44100, false);
             sfxClip = AudioClip.Create("Sfx", 32, 1, 44100, false);
+            skillSfxClip = AudioClip.Create("SkillSfx", 32, 1, 44100, false);
 
             SetPrivateField(
                 database,
@@ -31,6 +33,13 @@ public class SoundIdDrawerTests
                 {
                     new() { id = "ui.normal.click", aliases = new List<string> { "NormalButtonClick" }, clip = sfxClip }
                 });
+            SetPrivateField(
+                database,
+                "skillSfxList",
+                new List<SoundData>
+                {
+                    new() { id = "skill.slash", aliases = new List<string> { "SkillSlash" }, clip = skillSfxClip }
+                });
 
             IReadOnlyList<string> bgmIds = SoundIdDrawer.GetSoundIdsForTest(
                 database,
@@ -38,14 +47,19 @@ public class SoundIdDrawerTests
             IReadOnlyList<string> sfxIds = SoundIdDrawer.GetSoundIdsForTest(
                 database,
                 SoundCategory.Sfx);
+            IReadOnlyList<string> skillSfxIds = SoundIdDrawer.GetSoundIdsForTest(
+                database,
+                SoundCategory.SkillSfx);
 
             Assert.That(bgmIds, Is.EquivalentTo(new[] { "bgm.lobby" }));
             Assert.That(sfxIds, Is.EquivalentTo(new[] { "ui.normal.click" }));
+            Assert.That(skillSfxIds, Is.EquivalentTo(new[] { "skill.slash" }));
         }
         finally
         {
             DestroyObject(bgmClip);
             DestroyObject(sfxClip);
+            DestroyObject(skillSfxClip);
             DestroyObject(database);
         }
     }

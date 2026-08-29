@@ -875,11 +875,11 @@ MonoBehaviour:
         prefab: {fileID: 7311764206653381872, guid: e60bee9487d55684db191b1b1c1eb04d, type: 3}
         flipType: 0
         sfx:
-          playSfx: 0
-          sfxId: 
+          playSfx: 1
+          sfxId: skill.vfx.cha.01.attack.01
           delay: 0
           volumeMultiplier: 1
-          routeEmbeddedAudioSourcesThroughAudioManager: 1
+          routeEmbeddedAudioSourcesThroughAudioManager: 0
           removeEmbeddedAudioSources: 1
         renderMode: 0
         proxyBlendMode: 0
@@ -926,11 +926,11 @@ MonoBehaviour:
         prefab: {fileID: 9032009973510874767, guid: cd098c4abf4c0094b9c18e2d5c90dfe0, type: 3}
         flipType: 0
         sfx:
-          playSfx: 0
-          sfxId: 
+          playSfx: 1
+          sfxId: skill.vfx.cha.01.attack.03
           delay: 0
           volumeMultiplier: 1
-          routeEmbeddedAudioSourcesThroughAudioManager: 1
+          routeEmbeddedAudioSourcesThroughAudioManager: 0
           removeEmbeddedAudioSources: 1
         renderMode: 0
         proxyBlendMode: 0
@@ -977,11 +977,11 @@ MonoBehaviour:
         prefab: {fileID: 9206864599997765105, guid: 84666d4664e176142abb5f53fecd97cc, type: 3}
         flipType: 0
         sfx:
-          playSfx: 0
-          sfxId: 
+          playSfx: 1
+          sfxId: skill.vfx.cha.01.attack.02
           delay: 0
           volumeMultiplier: 1
-          routeEmbeddedAudioSourcesThroughAudioManager: 1
+          routeEmbeddedAudioSourcesThroughAudioManager: 0
           removeEmbeddedAudioSources: 1
         renderMode: 0
         proxyBlendMode: 0

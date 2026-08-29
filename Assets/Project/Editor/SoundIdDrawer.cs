@@ -47,9 +47,12 @@ public sealed class SoundIdDrawer : PropertyDrawer
         if (database == null)
             return Array.Empty<string>();
 
-        IReadOnlyList<SoundData> entries = category == SoundCategory.Bgm
-            ? database.BgmEntries
-            : database.SfxEntries;
+        IReadOnlyList<SoundData> entries = category switch
+        {
+            SoundCategory.Bgm => database.BgmEntries,
+            SoundCategory.SkillSfx => database.SkillSfxEntries,
+            _ => database.SfxEntries
+        };
 
         if (entries == null)
             return Array.Empty<string>();

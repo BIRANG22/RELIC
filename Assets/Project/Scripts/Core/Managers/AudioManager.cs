@@ -55,6 +55,9 @@ public class AudioManager : Singleton<AudioManager>
 
         foreach (SoundData data in soundDatabase.SfxEntries)
             RegisterSfxId(data);
+
+        foreach (SoundData data in soundDatabase.SkillSfxEntries)
+            RegisterSfxId(data);
     }
 
     private void RegisterBgmId(SoundData data)
@@ -244,24 +247,35 @@ public class AudioManager : Singleton<AudioManager>
 
     public void PlaySfx(string id, float volumeMultiplier)
     {
-        if (string.IsNullOrWhiteSpace(id))
+        if (!TryGetSfxData(id, out SoundData data))
             return;
+
+        PlaySfxClip(
+            data.clip,
+            Mathf.Clamp01(data.volume) * Mathf.Clamp01(volumeMultiplier),
+            data.GetPlaybackPitch());
+    }
+
+    public bool TryGetSfxData(string id, out SoundData data)
+    {
+        data = null;
+
+        if (string.IsNullOrWhiteSpace(id))
+            return false;
 
         string trimmedId = id.Trim();
 
         if (sfxIdDict != null &&
-            sfxIdDict.TryGetValue(trimmedId, out SoundData data) &&
+            sfxIdDict.TryGetValue(trimmedId, out data) &&
             data != null &&
             data.clip != null)
         {
-            PlaySfxClip(
-                data.clip,
-                Mathf.Clamp01(data.volume) * Mathf.Clamp01(volumeMultiplier),
-                data.GetPlaybackPitch());
-            return;
+            return true;
         }
 
         Debug.LogWarning($"[AudioManager] SFX ID not found: {trimmedId}");
+        data = null;
+        return false;
     }
 
     public void PlaySfxClip(AudioClip clip)
@@ -286,7 +300,7 @@ public class AudioManager : Singleton<AudioManager>
         }
 
         float previousPitch = sfxSource.pitch;
-        sfxSource.pitch = Mathf.Clamp01(pitch);
+        sfxSource.pitch = SoundData.ClampPlaybackPitch(pitch);
 
         try
         {
@@ -334,6 +348,21 @@ public class AudioManager : Singleton<AudioManager>
             StartCoroutine(DestroyRoutedSfxWhenFinished(routedSource));
 
         return routedSource;
+    }
+
+    public AudioSource PlaySfxSource(
+        string id,
+        Vector3 worldPosition,
+        Quaternion worldRotation,
+        float volumeMultiplier)
+    {
+        if (!TryGetSfxData(id, out SoundData data))
+            return null;
+
+        AudioSourcePlaybackSettings settings =
+            AudioSourcePlaybackSettings.From(data, worldPosition, worldRotation, sfxSource);
+
+        return PlaySfxClip(settings, volumeMultiplier);
     }
 
     public void StopRoutedSfxSource(AudioSource routedSource)
@@ -718,6 +747,58 @@ public sealed class AudioSourcePlaybackSettings
             spatialBlendCurve = CopyCurve(source.GetCustomCurve(AudioSourceCurveType.SpatialBlend)),
             reverbZoneMixCurve = CopyCurve(source.GetCustomCurve(AudioSourceCurveType.ReverbZoneMix)),
             spreadCurve = CopyCurve(source.GetCustomCurve(AudioSourceCurveType.Spread))
+        };
+    }
+
+    public static AudioSourcePlaybackSettings From(
+        SoundData data,
+        Vector3 worldPosition,
+        Quaternion worldRotation,
+        AudioSource template)
+    {
+        if (data == null || data.clip == null)
+            return null;
+
+        return new AudioSourcePlaybackSettings
+        {
+            Clip = data.clip,
+            OutputAudioMixerGroup = template != null ? template.outputAudioMixerGroup : null,
+            WorldPosition = worldPosition,
+            WorldRotation = worldRotation,
+            BypassEffects = template != null && template.bypassEffects,
+            BypassListenerEffects = template != null && template.bypassListenerEffects,
+            BypassReverbZones = template != null && template.bypassReverbZones,
+            Loop = data.loop,
+            Priority = template != null ? template.priority : 128,
+            Volume = Mathf.Clamp01(data.volume),
+            Pitch = data.GetPlaybackPitch(),
+            PanStereo = template != null ? template.panStereo : 0f,
+            SpatialBlend = template != null ? template.spatialBlend : 0f,
+            ReverbZoneMix = template != null ? template.reverbZoneMix : 1f,
+            DopplerLevel = template != null ? template.dopplerLevel : 1f,
+            Spread = template != null ? template.spread : 0f,
+            RolloffMode = template != null ? template.rolloffMode : AudioRolloffMode.Logarithmic,
+            MinDistance = template != null ? template.minDistance : 1f,
+            MaxDistance = template != null ? template.maxDistance : 500f,
+            IgnoreListenerPause = template != null && template.ignoreListenerPause,
+            IgnoreListenerVolume = template != null && template.ignoreListenerVolume,
+            Spatialize = template != null && template.spatialize,
+            SpatializePostEffects = template != null && template.spatializePostEffects,
+            VelocityUpdateMode = template != null
+                ? template.velocityUpdateMode
+                : AudioVelocityUpdateMode.Auto,
+            customRolloffCurve = template != null
+                ? CopyCurve(template.GetCustomCurve(AudioSourceCurveType.CustomRolloff))
+                : null,
+            spatialBlendCurve = template != null
+                ? CopyCurve(template.GetCustomCurve(AudioSourceCurveType.SpatialBlend))
+                : null,
+            reverbZoneMixCurve = template != null
+                ? CopyCurve(template.GetCustomCurve(AudioSourceCurveType.ReverbZoneMix))
+                : null,
+            spreadCurve = template != null
+                ? CopyCurve(template.GetCustomCurve(AudioSourceCurveType.Spread))
+                : null
         };
     }
 
