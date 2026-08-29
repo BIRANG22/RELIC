@@ -5,63 +5,65 @@ using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering.Universal;
+using UnityEngine.UI;
 
 /// <summary>
-/// Bootstrap ¾À¿¡ ¹èÄ¡µÇ¾î Å¸ÀÌÆ² -> ·Îºñ »çÀÌÀÇ °ÔÀÓ ÀÎÆ®·Î¸¦ Àç»ýÇÕ´Ï´Ù.
-/// ÃÖÃÊ °ÔÀÓ ½ÃÀÛ ½Ã¿¡´Â ÇÑ ¹ø¸¸ Àç»ýÇÏ¸ç, ¼³Á¤Ã¢¿¡¼­´Â ¾ðÁ¦µç ´Ù½Ã º¼ ¼ö ÀÖ½À´Ï´Ù.
+/// Bootstrap ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½Ç¾ï¿½ Å¸ï¿½ï¿½Æ² -> ï¿½Îºï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ®ï¿½Î¸ï¿½ ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
+/// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ã¿ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½, ï¿½ï¿½ï¿½ï¿½Ã¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ù½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö½ï¿½ï¿½Ï´ï¿½.
 /// </summary>
 public class IntroSequenceController : MonoBehaviour
 {
     [Serializable]
     public class IntroLineAction
     {
-        [Tooltip("ÀÌ ¿¬ÃâÀ» ½ÇÇàÇÒ ¹®Àå ¹øÈ£ÀÔ´Ï´Ù. 0ºÎÅÍ ½ÃÀÛÇÕ´Ï´Ù.")]
+        [Tooltip("ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È£ï¿½Ô´Ï´ï¿½. 0ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.")]
         [Min(0)]
         public int lineIndex;
 
-        [Tooltip("ÇØ´ç ¹®ÀåÀÌ Ç¥½ÃµÉ ¶§ µ¿½Ã¿¡ ½ÇÇàÇÒ ¿ÀºêÁ§Æ® ¿¬Ãâ ¸ñ·ÏÀÔ´Ï´Ù.")]
+        [Tooltip("ï¿½Ø´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ç¥ï¿½Ãµï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½Ã¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ô´Ï´ï¿½.")]
         public IntroObjectAction[] objectActions;
     }
 
     [Serializable]
     public class IntroObjectAction
     {
-        [Tooltip("¿¬Ãâ ´ë»ó ¿ÀºêÁ§Æ®ÀÔ´Ï´Ù.")]
+        [Tooltip("ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½Ô´Ï´ï¿½.")]
         public GameObject target;
 
-        [Header("È°¼ºÈ­ / ºñÈ°¼ºÈ­")]
-        [Tooltip("Ã¼Å©ÇÏ¸é ¹®ÀåÀÌ È£ÃâµÉ ¶§ ´ë»ó ¿ÀºêÁ§Æ®ÀÇ È°¼º »óÅÂ¸¦ º¯°æÇÕ´Ï´Ù.")]
+        [Header("È°ï¿½ï¿½È­ / ï¿½ï¿½È°ï¿½ï¿½È­")]
+        [Tooltip("Ã¼Å©ï¿½Ï¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ È°ï¿½ï¿½ ï¿½ï¿½ï¿½Â¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.")]
         public bool changeActiveState;
 
-        [Tooltip("Change Active State°¡ ÄÑÁ® ÀÖÀ» ¶§ Àû¿ëÇÒ È°¼º »óÅÂÀÔ´Ï´Ù.")]
+        [Tooltip("Change Active Stateï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ô´Ï´ï¿½.")]
         public bool activeState = true;
 
         [Min(0f)]
-        [Tooltip("¹®ÀåÀÌ È£ÃâµÈ µÚ È°¼ºÈ­/ºñÈ°¼ºÈ­ Ã³¸®¸¦ ½ÃÀÛÇÏ±â Àü ´ë±â ½Ã°£ÀÔ´Ï´Ù. ÆäÀÌµå¸¦ »ç¿ëÇÏ´Â °æ¿ì ÀÌ ½Ã°£ÀÌ Áö³­ µÚ ÆäÀÌµå°¡ ½ÃÀÛµË´Ï´Ù.")]
+        [Tooltip("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½ï¿½ ï¿½ï¿½ È°ï¿½ï¿½È­/ï¿½ï¿½È°ï¿½ï¿½È­ Ã³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ã°ï¿½ï¿½Ô´Ï´ï¿½. ï¿½ï¿½ï¿½Ìµå¸¦ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ã°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½Ìµå°¡ ï¿½ï¿½ï¿½ÛµË´Ï´ï¿½.")]
         public float activeStateDelay;
 
-        [Header("È°¼ºÈ­ / ºñÈ°¼ºÈ­ ÆäÀÌµå")]
-        [Tooltip("Ã¼Å©ÇÏ¸é È°¼ºÈ­ ½Ã 0¡æ1, ºñÈ°¼ºÈ­ ½Ã 1¡æ0À¸·Î ¾ËÆÄ°ªÀ» º¯È­½ÃÅµ´Ï´Ù. UI ¿ÀºêÁ§Æ®¿¡ CanvasGroupÀÌ ¾øÀ¸¸é ÀÚµ¿À¸·Î Ãß°¡ÇÕ´Ï´Ù.")]
+        [Header("È°ï¿½ï¿½È­ / ï¿½ï¿½È°ï¿½ï¿½È­ ï¿½ï¿½ï¿½Ìµï¿½")]
+        [Tooltip("Ã¼Å©ï¿½Ï¸ï¿½ È°ï¿½ï¿½È­ ï¿½ï¿½ 0ï¿½ï¿½1, ï¿½ï¿½È°ï¿½ï¿½È­ ï¿½ï¿½ 1ï¿½ï¿½0ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ä°ï¿½ï¿½ï¿½ ï¿½ï¿½È­ï¿½ï¿½Åµï¿½Ï´ï¿½. UI ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ CanvasGroupï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½ï¿½Õ´Ï´ï¿½.")]
         public bool fadeActiveState;
 
         [Min(0f)]
-        [Tooltip("È°¼ºÈ­/ºñÈ°¼ºÈ­ ÆäÀÌµå ½Ã°£ÀÔ´Ï´Ù. 0ÀÌ¸é Áï½Ã ¾ËÆÄ°ªÀ» Àû¿ëÇÕ´Ï´Ù.")]
+        [Tooltip("È°ï¿½ï¿½È­/ï¿½ï¿½È°ï¿½ï¿½È­ ï¿½ï¿½ï¿½Ìµï¿½ ï¿½Ã°ï¿½ï¿½Ô´Ï´ï¿½. 0ï¿½Ì¸ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ä°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.")]
         public float fadeDuration = 0.5f;
 
-        [Tooltip("0~1 ÆäÀÌµå ÁøÇàµµ¿¡ Àû¿ëÇÒ Ä¿ºêÀÔ´Ï´Ù.")]
+        [Tooltip("0~1 ï¿½ï¿½ï¿½Ìµï¿½ ï¿½ï¿½ï¿½àµµï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ä¿ï¿½ï¿½ï¿½Ô´Ï´ï¿½.")]
         public AnimationCurve fadeCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
-        [Header("Transform ¾Ö´Ï¸ÞÀÌ¼Ç")]
-        [Tooltip("Ã¼Å©ÇÏ¸é PositionÀ» ¸ñÇ¥°ª±îÁö º¯°æÇÕ´Ï´Ù.")]
+        [Header("Transform ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½")]
+        [Tooltip("Ã¼Å©ï¿½Ï¸ï¿½ Positionï¿½ï¿½ ï¿½ï¿½Ç¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.")]
         public bool animatePosition;
 
-        [Tooltip("Ã¼Å©ÇÏ¸é RotationÀ» ¸ñÇ¥°ª±îÁö º¯°æÇÕ´Ï´Ù.")]
+        [Tooltip("Ã¼Å©ï¿½Ï¸ï¿½ Rotationï¿½ï¿½ ï¿½ï¿½Ç¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.")]
         public bool animateRotation;
 
-        [Tooltip("Ã¼Å©ÇÏ¸é ScaleÀ» ¸ñÇ¥°ª±îÁö º¯°æÇÕ´Ï´Ù.")]
+        [Tooltip("Ã¼Å©ï¿½Ï¸ï¿½ Scaleï¿½ï¿½ ï¿½ï¿½Ç¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.")]
         public bool animateScale;
 
-        [Tooltip("Ã¼Å©ÇÏ¸é Local Position/RotationÀ» »ç¿ëÇÏ°í, ²ô¸é World Position/RotationÀ» »ç¿ëÇÕ´Ï´Ù. ScaleÀº Ç×»ó Local ScaleÀÔ´Ï´Ù.")]
+        [Tooltip("Ã¼Å©ï¿½Ï¸ï¿½ Local Position/Rotationï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï°ï¿½, ï¿½ï¿½ï¿½ï¿½ World Position/Rotationï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½. Scaleï¿½ï¿½ ï¿½×»ï¿½ Local Scaleï¿½Ô´Ï´ï¿½.")]
         public bool useLocalTransform = true;
 
         public Vector3 targetPosition;
@@ -69,14 +71,14 @@ public class IntroSequenceController : MonoBehaviour
         public Vector3 targetScale = Vector3.one;
 
         [Min(0f)]
-        [Tooltip("¾Ö´Ï¸ÞÀÌ¼Ç ½ÃÀÛ Àü ´ë±â ½Ã°£ÀÔ´Ï´Ù. Time ScaleÀÇ ¿µÇâÀ» ¹ÞÁö ¾Ê½À´Ï´Ù.")]
+        [Tooltip("ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ã°ï¿½ï¿½Ô´Ï´ï¿½. Time Scaleï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê½ï¿½ï¿½Ï´ï¿½.")]
         public float delay;
 
         [Min(0f)]
-        [Tooltip("¸ñÇ¥ Transform±îÁö ÀÌµ¿ÇÏ´Â ½Ã°£ÀÔ´Ï´Ù. 0ÀÌ¸é Áï½Ã Àû¿ëµË´Ï´Ù.")]
+        [Tooltip("ï¿½ï¿½Ç¥ Transformï¿½ï¿½ï¿½ï¿½ ï¿½Ìµï¿½ï¿½Ï´ï¿½ ï¿½Ã°ï¿½ï¿½Ô´Ï´ï¿½. 0ï¿½Ì¸ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ë´Ï´ï¿½.")]
         public float duration = 0.5f;
 
-        [Tooltip("0~1 ÁøÇàµµ¿¡ Àû¿ëÇÒ ¾Ö´Ï¸ÞÀÌ¼Ç Ä¿ºêÀÔ´Ï´Ù.")]
+        [Tooltip("0~1 ï¿½ï¿½ï¿½àµµï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½ Ä¿ï¿½ï¿½ï¿½Ô´Ï´ï¿½.")]
         public AnimationCurve animationCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
     }
 
@@ -97,45 +99,55 @@ public class IntroSequenceController : MonoBehaviour
 
     public static IntroSequenceController Instance { get; private set; }
 
-    [Header("ÀÎÆ®·Î UI")]
-    [Tooltip("¹è°æ°ú ÅØ½ºÆ®¸¦ Æ÷ÇÔÇÑ ÀÎÆ®·Î ÀüÃ¼ ·çÆ®ÀÔ´Ï´Ù. Æò¼Ò¿¡´Â ÀÚµ¿À¸·Î ºñÈ°¼ºÈ­µË´Ï´Ù.")]
+    [Header("ï¿½ï¿½Æ®ï¿½ï¿½ UI")]
+    [Tooltip("ï¿½ï¿½ï¿½ï¿½ ï¿½Ø½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½Ã¼ ï¿½ï¿½Æ®ï¿½Ô´Ï´ï¿½. ï¿½ï¿½Ò¿ï¿½ï¿½ï¿½ ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È°ï¿½ï¿½È­ï¿½Ë´Ï´ï¿½.")]
     [SerializeField] private GameObject introRoot;
 
-    [Tooltip("Å¸ÀÚ È¿°ú°¡ Àû¿ëµÉ ÅØ½ºÆ®ÀÔ´Ï´Ù.")]
+    [Tooltip("Å¸ï¿½ï¿½ È¿ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ø½ï¿½Æ®ï¿½Ô´Ï´ï¿½.")]
     [SerializeField] private TMP_Text introText;
 
     [Header("Canvas Sorting")]
-    [Tooltip("ÀÎÆ®·Î UIÀÇ Á¤·Ä ¼ø¼­ÀÔ´Ï´Ù. ÀÏ¹Ý UI/¿É¼Ç/ÀÏ½ÃÁ¤Áöº¸´Ù ¾Õ¿¡, ¾À ÀüÈ¯º¸´Ù µÚ¿¡ Ç¥½ÃµË´Ï´Ù. ¾ÈÀüÇÑ Canvas Á¤·Ä ¹üÀ§ ¾È¿¡¼­ 31000~31500À¸·Î Á¦ÇÑµË´Ï´Ù.")]
+    [Tooltip("ï¿½ï¿½Æ®ï¿½ï¿½ UIï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ô´Ï´ï¿½. ï¿½Ï¹ï¿½ UI/ï¿½É¼ï¿½/ï¿½Ï½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Õ¿ï¿½, ï¿½ï¿½ ï¿½ï¿½È¯ï¿½ï¿½ï¿½ï¿½ ï¿½Ú¿ï¿½ Ç¥ï¿½ÃµË´Ï´ï¿½. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Canvas ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½È¿ï¿½ï¿½ï¿½ 31000~31500ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ÑµË´Ï´ï¿½.")]
     [SerializeField] private int introSortingOrder = 31000;
 
-    [Header("ÀÎÆ®·Î ¹®Àå")]
-    [Tooltip("¼ø¼­´ë·Î Ç¥½ÃÇÒ ¹®ÀåÀÔ´Ï´Ù. ÇÑ Ç×¸ñÀÌ ÇÑ È­¸é¿¡ Ç¥½ÃµË´Ï´Ù.")]
+    [Header("Intro Camera Rendering")]
+    [SerializeField] private bool useScreenSpaceCamera = true;
+    [SerializeField] private Camera introRenderCamera;
+    [SerializeField] private bool createDedicatedIntroCamera;
+    [Min(0.01f)]
+    [SerializeField] private float introPlaneDistance = 25f;
+    [SerializeField] private bool enableIntroCameraPostProcessing = true;
+    [SerializeField] private bool autoHideOverlayCanvases = true;
+    [SerializeField] private GameObject[] hideWhileIntroVisible;
+
+    [Header("ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½")]
+    [Tooltip("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ç¥ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ô´Ï´ï¿½. ï¿½ï¿½ ï¿½×¸ï¿½ï¿½ï¿½ ï¿½ï¿½ È­ï¿½é¿¡ Ç¥ï¿½ÃµË´Ï´ï¿½.")]
     [TextArea(2, 6)]
     [SerializeField]
     private string[] introLines =
     {
-        "¿øÀÎ ¸ð¸¦ Àç¾Ó ÀÌÈÄ, Àí°¡·ç´Â ¼¼°è¸¦ µÚµ¤±â ½ÃÀÛÇß´Ù.",
-        "±×¸®°í Àí°¡·ç¿¡ Ä§½ÄµÈ ±¸¿ª ¾È¿¡¼­ º¯ÀÌÃ¼µéÀÌ ³ªÅ¸³µ´Ù."
+        "ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½è¸¦ ï¿½Úµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ß´ï¿½.",
+        "ï¿½×¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ç¿¡ Ä§ï¿½Äµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½È¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ã¼ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å¸ï¿½ï¿½ï¿½ï¿½."
     };
 
-    [Header("¹®Àåº° ¿¬Ãâ")]
-    [Tooltip("¹®ÀåÀÌ Ç¥½ÃµÇ´Â ¼ø°£ ½ÇÇàÇÒ ¿ÀºêÁ§Æ® ¿¬ÃâÀÔ´Ï´Ù. Line Index´Â Intro LinesÀÇ 0ºÎÅÍ ½ÃÀÛÇÏ´Â ÀÎµ¦½º¿Í ¸ÂÃä´Ï´Ù.")]
+    [Header("ï¿½ï¿½ï¿½åº° ï¿½ï¿½ï¿½ï¿½")]
+    [Tooltip("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ç¥ï¿½ÃµÇ´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ï¿½Ô´Ï´ï¿½. Line Indexï¿½ï¿½ Intro Linesï¿½ï¿½ 0ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Îµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.")]
     [SerializeField] private IntroLineAction[] lineActions;
 
-    [Header("Å¸ÀÚ È¿°ú")]
-    [Tooltip("1ÃÊ¿¡ Ç¥½ÃµÇ´Â ±ÛÀÚ ¼öÀÔ´Ï´Ù.")]
+    [Header("Å¸ï¿½ï¿½ È¿ï¿½ï¿½")]
+    [Tooltip("1ï¿½Ê¿ï¿½ Ç¥ï¿½ÃµÇ´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ô´Ï´ï¿½.")]
     [Min(1f)]
     [SerializeField] private float charactersPerSecond = 30f;
 
-    [Tooltip("ÀÎÆ®·Î°¡ ¿ÏÀüÈ÷ ¿­¸° Á÷ÈÄ ÀÔ·ÂÀ» ¹«½ÃÇÒ ½Ã°£ÀÔ´Ï´Ù.")]
+    [Tooltip("ï¿½ï¿½Æ®ï¿½Î°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ô·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ã°ï¿½ï¿½Ô´Ï´ï¿½.")]
     [Min(0f)]
     [SerializeField] private float initialInputLockDuration = 0.15f;
 
-    [Header("ÀÔ·Â")]
-    [Tooltip("¸¶¿ì½º ¿ÞÂÊ Å¬¸¯À¸·Î ¹®Àå ¿Ï¼º/´ÙÀ½ ¹®ÀåÀ» ÁøÇàÇÕ´Ï´Ù.")]
+    [Header("ï¿½Ô·ï¿½")]
+    [Tooltip("ï¿½ï¿½ï¿½ì½º ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ï¼ï¿½/ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.")]
     [SerializeField] private bool allowMouseClick = true;
 
-    [Tooltip("Space ¶Ç´Â Enter Å°·Î ¹®Àå ¿Ï¼º/´ÙÀ½ ¹®ÀåÀ» ÁøÇàÇÕ´Ï´Ù.")]
+    [Tooltip("Space ï¿½Ç´ï¿½ Enter Å°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ï¼ï¿½/ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.")]
     [SerializeField] private bool allowKeyboardInput = true;
 
     private Coroutine typewriterCoroutine;
@@ -149,6 +161,12 @@ public class IntroSequenceController : MonoBehaviour
     private readonly Dictionary<Transform, Coroutine> objectAnimationCoroutines = new Dictionary<Transform, Coroutine>();
     private readonly Dictionary<GameObject, Coroutine> objectFadeCoroutines = new Dictionary<GameObject, Coroutine>();
     private readonly List<IntroObjectInitialState> objectInitialStates = new List<IntroObjectInitialState>();
+    private readonly Dictionary<Canvas, bool> hiddenCanvasEnabledStates = new Dictionary<Canvas, bool>();
+    private readonly Dictionary<GraphicRaycaster, bool> hiddenGraphicRaycasterEnabledStates = new Dictionary<GraphicRaycaster, bool>();
+    private bool isIntroVisible;
+    private Camera runtimeIntroCamera;
+    private Image introInputBlocker;
+    private bool hasIntroParallaxPause;
 
     public bool IsPlaying => isPlaying;
     public event Action IntroFinished;
@@ -163,7 +181,7 @@ public class IntroSequenceController : MonoBehaviour
 
         Instance = this;
 
-        // Bootstrap ¾À¿¡¼­ ¸¸µé¾îÁø ÀÎÆ®·Î ¿ÀºêÁ§Æ®¸¸ ¾À ÀüÈ¯ ÈÄ¿¡µµ À¯ÁöÇÕ´Ï´Ù.
+        // Bootstrap ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½È¯ ï¿½Ä¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         if (transform.parent != null)
             transform.SetParent(null, false);
 
@@ -177,6 +195,8 @@ public class IntroSequenceController : MonoBehaviour
     private void OnDestroy()
     {
         StopAllObjectAnimations();
+        HideOverlayCanvasesForIntro(false);
+        EndIntroParallaxPause();
 
         if (Instance == this)
             Instance = null;
@@ -184,6 +204,9 @@ public class IntroSequenceController : MonoBehaviour
 
     private void Update()
     {
+        if (isIntroVisible)
+            HideOverlayCanvasesForIntro(true);
+
         if (!isPlaying || isTransitioning || Time.unscaledTime < inputUnlockTime)
             return;
 
@@ -191,9 +214,15 @@ public class IntroSequenceController : MonoBehaviour
             Advance();
     }
 
+    private void LateUpdate()
+    {
+        if (isIntroVisible)
+            HideOverlayCanvasesForIntro(true);
+    }
+
     /// <summary>
-    /// Å¸ÀÌÆ²ÀÇ °ÔÀÓ ½ÃÀÛ ¹öÆ°¿¡¼­ È£ÃâÇÕ´Ï´Ù.
-    /// Å¸ÀÌÆ² -> ÀüÈ¯ -> ÀÎÆ®·Î -> ÀüÈ¯ -> ·Îºñ ¼ø¼­·Î ÁøÇàÇÕ´Ï´Ù.
+    /// Å¸ï¿½ï¿½Æ²ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ°ï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
+    /// Å¸ï¿½ï¿½Æ² -> ï¿½ï¿½È¯ -> ï¿½ï¿½Æ®ï¿½ï¿½ -> ï¿½ï¿½È¯ -> ï¿½Îºï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
     /// </summary>
     public void PlayFirstTimeIntro()
     {
@@ -201,8 +230,8 @@ public class IntroSequenceController : MonoBehaviour
     }
 
     /// <summary>
-    /// ¼³Á¤Ã¢ÀÇ ÀÎÆ®·Î ´Ù½Ãº¸±â¿¡¼­ È£ÃâÇÕ´Ï´Ù.
-    /// ÇöÀç È­¸é -> ÀüÈ¯ -> ÀÎÆ®·Î -> ÀüÈ¯ -> ÇöÀç È­¸é ¼ø¼­·Î ÁøÇàÇÕ´Ï´Ù.
+    /// ï¿½ï¿½ï¿½ï¿½Ã¢ï¿½ï¿½ ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½Ù½Ãºï¿½ï¿½â¿¡ï¿½ï¿½ È£ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
+    /// ï¿½ï¿½ï¿½ï¿½ È­ï¿½ï¿½ -> ï¿½ï¿½È¯ -> ï¿½ï¿½Æ®ï¿½ï¿½ -> ï¿½ï¿½È¯ -> ï¿½ï¿½ï¿½ï¿½ È­ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
     /// </summary>
     public void ReplayIntro()
     {
@@ -210,7 +239,7 @@ public class IntroSequenceController : MonoBehaviour
     }
 
     /// <summary>
-    /// UI ButtonÀÇ OnClick¿¡ Á÷Á¢ ¿¬°áÇÒ ¼ö ÀÖ´Â ´ÙÀ½ ÁøÇà ÇÔ¼öÀÔ´Ï´Ù.
+    /// UI Buttonï¿½ï¿½ OnClickï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½ï¿½Ô´Ï´ï¿½.
     /// </summary>
     public void Advance()
     {
@@ -240,7 +269,7 @@ public class IntroSequenceController : MonoBehaviour
 
         if (introRoot == null || introText == null)
         {
-            Debug.LogError("[IntroSequenceController] Intro Root ¶Ç´Â Intro Text°¡ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù.", this);
+            Debug.LogError("[IntroSequenceController] Intro Root ï¿½Ç´ï¿½ Intro Textï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾Ò½ï¿½ï¿½Ï´ï¿½.", this);
 
             if (goToLobbyAfterFinish)
                 await MoveToLobbyAsync();
@@ -252,7 +281,7 @@ public class IntroSequenceController : MonoBehaviour
 
         if (GetValidLineCount() <= 0)
         {
-            Debug.LogWarning("[IntroSequenceController] Ç¥½ÃÇÒ ÀÎÆ®·Î ¹®ÀåÀÌ ¾ø½À´Ï´Ù.", this);
+            Debug.LogWarning("[IntroSequenceController] Ç¥ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.", this);
 
             if (goToLobbyAfterFinish)
             {
@@ -686,6 +715,7 @@ public class IntroSequenceController : MonoBehaviour
 
             isPlaying = false;
             isTransitioning = false;
+            HideOverlayCanvasesForIntro(false);
             IntroFinished?.Invoke();
 
             await MoveToLobbyAsync();
@@ -697,6 +727,7 @@ public class IntroSequenceController : MonoBehaviour
 
         isPlaying = false;
         isTransitioning = false;
+        HideOverlayCanvasesForIntro(false);
         IntroFinished?.Invoke();
     }
 
@@ -704,7 +735,7 @@ public class IntroSequenceController : MonoBehaviour
     {
         if (GameManager.Instance == null || GameManager.Instance.StateMachine == null)
         {
-            Debug.LogError("[IntroSequenceController] GameManager ¶Ç´Â StateMachineÀÌ ÁØºñµÇÁö ¾Ê¾Ò½À´Ï´Ù.", this);
+            Debug.LogError("[IntroSequenceController] GameManager ï¿½Ç´ï¿½ StateMachineï¿½ï¿½ ï¿½Øºï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾Ò½ï¿½ï¿½Ï´ï¿½.", this);
 
             CanvasMaterialSceneTransition transition = GetSceneTransition();
             if (transition != null && transition.IsPlaying)
@@ -726,20 +757,232 @@ public class IntroSequenceController : MonoBehaviour
 
     private void SetIntroVisible(bool visible)
     {
+        isIntroVisible = visible;
+
         if (visible)
+        {
+            BeginIntroParallaxPause();
             EnsureIntroCanvasSorting();
+            SetIntroInputBlockerVisible(true);
+            HideOverlayCanvasesForIntro(true);
+        }
 
         if (introRoot != null)
             introRoot.SetActive(visible);
 
-        if (!visible && introText != null)
+        if (!visible)
         {
-            introText.text = string.Empty;
-            introText.maxVisibleCharacters = int.MaxValue;
+            HideOverlayCanvasesForIntro(false);
+            SetIntroInputBlockerVisible(false);
+            EndIntroParallaxPause();
+
+            if (introText != null)
+            {
+                introText.text = string.Empty;
+                introText.maxVisibleCharacters = int.MaxValue;
+            }
         }
     }
 
+    private void HideOverlayCanvasesForIntro(bool hidden)
+    {
+        if (!hidden)
+        {
+            RestoreCanvasesHiddenForIntro(hiddenCanvasEnabledStates, hiddenGraphicRaycasterEnabledStates);
+            return;
+        }
 
+        if (autoHideOverlayCanvases)
+            CaptureActiveOverlayCanvasesForIntro();
+
+        SetCanvasesHiddenForIntro(hideWhileIntroVisible, hiddenCanvasEnabledStates, hiddenGraphicRaycasterEnabledStates, true);
+    }
+
+    private void CaptureActiveOverlayCanvasesForIntro()
+    {
+        Canvas introCanvas = introRoot != null ? introRoot.GetComponent<Canvas>() : null;
+        Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+
+        for (int i = 0; i < canvases.Length; i++)
+        {
+            Canvas canvas = canvases[i];
+            if (!ShouldHideCanvasForIntro(canvas, introCanvas))
+                continue;
+
+            HideCanvasForIntro(canvas, hiddenCanvasEnabledStates, hiddenGraphicRaycasterEnabledStates);
+        }
+    }
+
+    private static bool ShouldHideCanvasForIntro(Canvas canvas, Canvas introCanvas)
+    {
+        if (canvas == null || !canvas.isRootCanvas || canvas == introCanvas || IsSceneTransitionCanvas(canvas))
+            return false;
+
+        return canvas.renderMode == RenderMode.ScreenSpaceOverlay;
+    }
+
+    private static bool IsSceneTransitionCanvas(Canvas canvas)
+    {
+        if (canvas == null)
+            return false;
+
+        return canvas.GetComponentInParent<CanvasMaterialSceneTransition>(true) != null ||
+               canvas.GetComponentInChildren<CanvasMaterialSceneTransition>(true) != null;
+    }
+
+    private static void SetCanvasesHiddenForIntro(
+        GameObject[] targets,
+        Dictionary<Canvas, bool> enabledStates,
+        Dictionary<GraphicRaycaster, bool> raycasterEnabledStates,
+        bool hidden)
+    {
+        if (enabledStates == null)
+            return;
+
+        if (!hidden)
+        {
+            RestoreCanvasesHiddenForIntro(enabledStates, raycasterEnabledStates);
+            return;
+        }
+
+        if (targets == null)
+            return;
+
+        for (int i = 0; i < targets.Length; i++)
+        {
+            GameObject target = targets[i];
+            if (target == null)
+                continue;
+
+            Canvas canvas = target.GetComponent<Canvas>();
+            if (canvas != null)
+                HideCanvasForIntro(canvas, enabledStates, raycasterEnabledStates);
+        }
+    }
+
+    private static void HideCanvasForIntro(
+        Canvas canvas,
+        Dictionary<Canvas, bool> enabledStates,
+        Dictionary<GraphicRaycaster, bool> raycasterEnabledStates)
+    {
+        if (canvas == null || enabledStates == null)
+            return;
+
+        if (!enabledStates.ContainsKey(canvas))
+            enabledStates.Add(canvas, canvas.enabled);
+
+        GraphicRaycaster raycaster = canvas.GetComponent<GraphicRaycaster>();
+        if (raycaster != null && raycasterEnabledStates != null)
+        {
+            if (!raycasterEnabledStates.ContainsKey(raycaster))
+                raycasterEnabledStates.Add(raycaster, raycaster.enabled);
+
+            raycaster.enabled = false;
+        }
+
+        canvas.enabled = false;
+    }
+
+    private static void RestoreCanvasesHiddenForIntro(
+        Dictionary<Canvas, bool> enabledStates,
+        Dictionary<GraphicRaycaster, bool> raycasterEnabledStates)
+    {
+        if (enabledStates != null)
+        {
+            foreach (KeyValuePair<Canvas, bool> state in enabledStates)
+            {
+                if (state.Key != null)
+                    state.Key.enabled = state.Value;
+            }
+
+            enabledStates.Clear();
+        }
+
+        if (raycasterEnabledStates == null)
+            return;
+
+        foreach (KeyValuePair<GraphicRaycaster, bool> state in raycasterEnabledStates)
+        {
+            if (state.Key != null)
+                state.Key.enabled = state.Value;
+        }
+
+        raycasterEnabledStates.Clear();
+    }
+
+    public static void SetCanvasesHiddenForIntroForTest(
+        GameObject[] targets,
+        Dictionary<Canvas, bool> enabledStates,
+        bool hidden)
+    {
+        SetCanvasesHiddenForIntro(targets, enabledStates, new Dictionary<GraphicRaycaster, bool>(), hidden);
+    }
+
+    public static void SetCanvasesHiddenForIntroForTest(
+        GameObject[] targets,
+        Dictionary<Canvas, bool> enabledStates,
+        Dictionary<GraphicRaycaster, bool> raycasterEnabledStates,
+        bool hidden)
+    {
+        SetCanvasesHiddenForIntro(targets, enabledStates, raycasterEnabledStates, hidden);
+    }
+    private void BeginIntroParallaxPause()
+    {
+        if (hasIntroParallaxPause)
+            return;
+
+        CameraMouseParallaxController.BeginIntroPause();
+        hasIntroParallaxPause = true;
+    }
+
+    private void EndIntroParallaxPause()
+    {
+        if (!hasIntroParallaxPause)
+            return;
+
+        hasIntroParallaxPause = false;
+        CameraMouseParallaxController.EndIntroPause();
+    }
+    private void SetIntroInputBlockerVisible(bool visible)
+    {
+        if (introRoot == null)
+            return;
+
+        if (introInputBlocker == null)
+            introInputBlocker = CreateIntroInputBlocker(introRoot.transform);
+
+        if (introInputBlocker == null)
+            return;
+
+        introInputBlocker.gameObject.SetActive(visible);
+        introInputBlocker.raycastTarget = visible;
+
+        if (visible)
+            introInputBlocker.transform.SetAsFirstSibling();
+    }
+
+    private static Image CreateIntroInputBlocker(Transform parent)
+    {
+        if (parent == null)
+            return null;
+
+        GameObject blockerObject = new GameObject("IntroInputBlocker");
+        blockerObject.layer = parent.gameObject.layer;
+        blockerObject.transform.SetParent(parent, false);
+
+        RectTransform rectTransform = blockerObject.AddComponent<RectTransform>();
+        rectTransform.anchorMin = Vector2.zero;
+        rectTransform.anchorMax = Vector2.one;
+        rectTransform.offsetMin = Vector2.zero;
+        rectTransform.offsetMax = Vector2.zero;
+        rectTransform.localScale = Vector3.one;
+
+        Image blocker = blockerObject.AddComponent<Image>();
+        blocker.color = new Color(0f, 0f, 0f, 0f);
+        blocker.raycastTarget = false;
+        blockerObject.SetActive(false);
+        return blocker;
+    }
     private void EnsureIntroCanvasSorting()
     {
         if (introRoot == null)
@@ -749,8 +992,95 @@ public class IntroSequenceController : MonoBehaviour
         if (introCanvas == null)
             introCanvas = introRoot.AddComponent<Canvas>();
 
+        ConfigureIntroCanvas(
+            introCanvas,
+            ResolveIntroRenderCamera(),
+            useScreenSpaceCamera,
+            enableIntroCameraPostProcessing,
+            introPlaneDistance,
+            Mathf.Clamp(introSortingOrder, IntroSortingOrderFloor, IntroSortingOrderCeiling));
+    }
+
+    private Camera ResolveIntroRenderCamera()
+    {
+        if (createDedicatedIntroCamera)
+        {
+            if (runtimeIntroCamera != null)
+                return runtimeIntroCamera;
+
+            GameObject cameraObject = new GameObject("Intro UI Camera");
+            DontDestroyOnLoad(cameraObject);
+
+            runtimeIntroCamera = cameraObject.AddComponent<Camera>();
+            runtimeIntroCamera.clearFlags = CameraClearFlags.Depth;
+            runtimeIntroCamera.orthographic = true;
+            runtimeIntroCamera.orthographicSize = 5f;
+            runtimeIntroCamera.nearClipPlane = 0.01f;
+            runtimeIntroCamera.farClipPlane = 100f;
+            runtimeIntroCamera.depth = 100f;
+            int uiLayer = LayerMask.NameToLayer("UI");
+            runtimeIntroCamera.cullingMask = uiLayer >= 0 ? 1 << uiLayer : 0;
+
+            UniversalAdditionalCameraData cameraData = cameraObject.AddComponent<UniversalAdditionalCameraData>();
+            cameraData.renderPostProcessing = enableIntroCameraPostProcessing;
+            return runtimeIntroCamera;
+        }
+
+        if (introRenderCamera != null)
+            return introRenderCamera;
+
+        introRenderCamera = Camera.main;
+        return introRenderCamera;
+    }
+
+    private static void ConfigureIntroCanvas(
+        Canvas introCanvas,
+        Camera renderCamera,
+        bool useScreenSpaceCamera,
+        bool enablePostProcessing,
+        float planeDistance,
+        int sortingOrder)
+    {
+        if (introCanvas == null)
+            return;
+
         introCanvas.overrideSorting = true;
-        introCanvas.sortingOrder = Mathf.Clamp(introSortingOrder, IntroSortingOrderFloor, IntroSortingOrderCeiling);
+        introCanvas.sortingOrder = sortingOrder;
+
+        if (!useScreenSpaceCamera)
+        {
+            introCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            introCanvas.worldCamera = null;
+            return;
+        }
+
+        introCanvas.renderMode = RenderMode.ScreenSpaceCamera;
+        introCanvas.worldCamera = renderCamera;
+        introCanvas.planeDistance = Mathf.Max(0.01f, planeDistance);
+
+        if (renderCamera == null || !enablePostProcessing)
+            return;
+
+        UniversalAdditionalCameraData cameraData = renderCamera.GetComponent<UniversalAdditionalCameraData>();
+        if (cameraData != null)
+            cameraData.renderPostProcessing = true;
+    }
+
+    public static void ConfigureIntroCanvasForTest(
+        Canvas introCanvas,
+        Camera renderCamera,
+        bool useScreenSpaceCamera,
+        bool enablePostProcessing,
+        float planeDistance,
+        int sortingOrder)
+    {
+        ConfigureIntroCanvas(
+            introCanvas,
+            renderCamera,
+            useScreenSpaceCamera,
+            enablePostProcessing,
+            planeDistance,
+            sortingOrder);
     }
 
     private bool WasAdvanceInputPressed()
