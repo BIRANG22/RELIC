@@ -381,7 +381,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: ui.normal.hover
   hoverSfxVolumeMultiplier: 1
-  playClickSound: 1
+  playClickSound: 0
   clickSfx: ui.normal.click
   clickSfxVolumeMultiplier: 1
 --- !u!114 &4650070
@@ -32442,7 +32442,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: ui.normal.click
+  clickSfx: ui.rune.panel.select
   playPanelOpenCloseSound: 0
   panelOpenSfx: ui.bag.open
   panelCloseSfx: ui.bag.close
@@ -59667,7 +59667,7 @@ MonoBehaviour:
   normalColor: {r: 0.9254902, g: 0.9254902, b: 0.9254902, a: 1}
   hoverColor: {r: 1, g: 1, b: 1, a: 1}
   clickedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
-  playClickSound: 1
+  playClickSound: 0
   clickSoundId: ui.back.click
   clickSoundVolume: 1
   toggleClickState: 1
@@ -76779,8 +76779,10 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   playTransitionSound: 1
-  transitionSfx: scene.lobby.transition
-  transitionSfxVolumeMultiplier: 1
+  closeSfx: scene.lobby.transition.close
+  closeSfxVolumeMultiplier: 1
+  openSfx: scene.lobby.transition.open
+  openSfxVolumeMultiplier: 1
 --- !u!1 &1513501820
 GameObject:
   m_ObjectHideFlags: 0
@@ -95488,7 +95490,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: ui.normal.click
+  clickSfx: ui.rune.panel.select
   playPanelOpenCloseSound: 0
   panelOpenSfx: ui.bag.open
   panelCloseSfx: ui.bag.close
@@ -99889,7 +99891,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSfx: ui.normal.hover
   playClickSound: 1
-  clickSfx: ui.normal.click
+  clickSfx: ui.rune.panel.select
   playPanelOpenCloseSound: 0
   panelOpenSfx: ui.bag.open
   panelCloseSfx: ui.bag.close

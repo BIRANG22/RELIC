@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using UnityEngine;
 
@@ -126,8 +126,14 @@ public class LobbyPanelTransition : MonoBehaviour
 
     [Header("Transition Sound")]
     [SerializeField] private bool playTransitionSound = true;
-    [SerializeField, SoundId(SoundCategory.Sfx)] private string transitionSfx = AudioIds.Sfx.LobbyPanelTransition;
-    [SerializeField] private float transitionSfxVolumeMultiplier = 1f;
+
+    [Header("Close SFX")]
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string closeSfx = AudioIds.Sfx.LobbyPanelTransition;
+    [SerializeField] private float closeSfxVolumeMultiplier = 1f;
+
+    [Header("Open SFX")]
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string openSfx = AudioIds.Sfx.LobbyPanelTransition;
+    [SerializeField] private float openSfxVolumeMultiplier = 1f;
 
     private Coroutine transitionCoroutine;
     private bool isPlaying;
@@ -235,7 +241,7 @@ public class LobbyPanelTransition : MonoBehaviour
         if (startDelay > 0f)
             yield return new WaitForSecondsRealtime(startDelay);
 
-        PlayTransitionSound();
+        PlayCloseSound();
 
         yield return AnimatePosition(activeSet, true, closeDuration, closeCurve);
         activeSet.SetClosedImmediate();
@@ -252,6 +258,7 @@ public class LobbyPanelTransition : MonoBehaviour
         activeSet.SetRootRotationZ(0f);
         activeSet.SetClosedImmediate();
 
+        PlayOpenSound();
         yield return AnimatePosition(activeSet, false, openDuration, openCurve);
         activeSet.SetOpenedImmediate();
         activeSet.Hide();
@@ -302,13 +309,22 @@ public class LobbyPanelTransition : MonoBehaviour
             set.secondImage.localPosition = secondEnd;
     }
 
-    private void PlayTransitionSound()
+    private void PlayCloseSound()
     {
-        if (!playTransitionSound)
+        if (!playTransitionSound || string.IsNullOrWhiteSpace(closeSfx))
             return;
 
         if (AudioManager.Instance != null)
-            AudioManager.Instance.PlaySfx(transitionSfx, transitionSfxVolumeMultiplier);
+            AudioManager.Instance.PlaySfx(closeSfx, closeSfxVolumeMultiplier);
+    }
+
+    private void PlayOpenSound()
+    {
+        if (!playTransitionSound || string.IsNullOrWhiteSpace(openSfx))
+            return;
+
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlaySfx(openSfx, openSfxVolumeMultiplier);
     }
 
     private TransitionImageSet GetSet(TransitionDirection direction)

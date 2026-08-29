@@ -64,15 +64,23 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: scene.transition
     aliases: []
-    clip: {fileID: 8300000, guid: c4c9cd50df30f8343a36a0f5e1a1f92f, type: 3}
+    clip: {fileID: 8300000, guid: 23ddc3ea5b3ee4ed59eb5b03f1aca24f, type: 3}
     volume: 1
     pitch: 1
     useRandomPitch: 0
     randomPitchMin: 1
     randomPitchMax: 1
-  - id: scene.lobby.transition
+  - id: scene.lobby.transition.open
     aliases: []
-    clip: {fileID: 8300000, guid: 748ab9133e00d04458c3a6b54f77b212, type: 3}
+    clip: {fileID: 8300000, guid: 9f24e65fb42424c2d8f2f2cdb008e663, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: scene.lobby.transition.close
+    aliases: []
+    clip: {fileID: 8300000, guid: 2c4c60b57283f4619b81aaf673cc9c08, type: 3}
     volume: 1
     pitch: 1
     useRandomPitch: 0
@@ -401,6 +409,22 @@ MonoBehaviour:
   - id: ui.record.open
     aliases: []
     clip: {fileID: 8300000, guid: 5dd444ef4e8264876aaf05afb792355d, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.rune.panel.select
+    aliases: []
+    clip: {fileID: 8300000, guid: bd84aa9155e7749b1bf224f9fd542e08, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.skill.panel.select
+    aliases: []
+    clip: {fileID: 8300000, guid: fa0e08b9dad8b4dd7ae6e61edc6de17c, type: 3}
     volume: 0.5
     pitch: 0.7
     useRandomPitch: 0
