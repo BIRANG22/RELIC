@@ -20,6 +20,16 @@ public class LobbyErosionMirrorButtonTests
     }
 
     [Test]
+    public void OpenErosionSelectPanel_RefreshesTmpTextAfterActivatingPanel()
+    {
+        string source = File.ReadAllText(SourcePath);
+
+        Assert.That(source, Does.Contain("EnsurePanelTextRefresher(erosionSelectPanel)"));
+        Assert.That(source, Does.Contain("refresher.RefreshNow()"));
+        Assert.That(source, Does.Contain("refresher.RefreshNextFrame()"));
+    }
+
+    [Test]
     public void OpenErosionSelectPanel_ShowsModalOverlayUnderPositionPanel()
     {
         GameObject canvasRoot = new("CanvasRoot", typeof(RectTransform));

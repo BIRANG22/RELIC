@@ -44,8 +44,6 @@ public sealed class LobbyRelicShopNpcInteraction : MonoBehaviour
 
     private void LateUpdate()
     {
-        // Purchase scripts can update runtime state after interaction.
-        // Keep the shop availability and visual state synchronized each frame.
         RefreshAvailabilityIndicator(false);
     }
 
@@ -96,7 +94,7 @@ public sealed class LobbyRelicShopNpcInteraction : MonoBehaviour
         if (presenter == null)
             return;
 
-        PlayClickSfx();
+        //PlayClickSfx();
         presenter.Close();
     }
 
