@@ -5,7 +5,6 @@ using UnityEngine;
 
 public class MonsterSkillEffectService
 {
-    private const string NocturnGrabSkillId = "S_Monster_19";
     private enum EffectExecutionMode
     {
         All,
@@ -41,9 +40,6 @@ public class MonsterSkillEffectService
         if (command == null || command.SkillData == null)
             return false;
 
-        if (string.Equals(command.SkillData.SkillId, NocturnGrabSkillId, System.StringComparison.Ordinal))
-            return false;
-
         if (string.IsNullOrWhiteSpace(command.SkillData.EffectIds))
             return false;
 
@@ -61,9 +57,6 @@ public class MonsterSkillEffectService
     public int GetDamageHitCount(MonsterReservedCommand command)
     {
         if (command == null || command.SkillData == null)
-            return 1;
-
-        if (string.Equals(command.SkillData.SkillId, NocturnGrabSkillId, System.StringComparison.Ordinal))
             return 1;
 
         if (string.IsNullOrWhiteSpace(command.SkillData.EffectIds))
@@ -305,14 +298,6 @@ public class MonsterSkillEffectService
 
             int count = ParseIndexedValue(command.SkillData.CountRate, i);
             bool isDamageHitEffect = IsDamageHitEffect(effectId);
-
-            // 녹턴의 끌어당기기 스킬은 ValueRate 1을 이동 칸 수로만 사용합니다.
-            // 데이터에 공격 효과가 포함되어 있어도 피해는 실행하지 않습니다.
-            if (string.Equals(command.SkillData.SkillId, NocturnGrabSkillId, System.StringComparison.Ordinal) &&
-                isDamageHitEffect)
-            {
-                continue;
-            }
 
             int value = ResolveEffectValue(command, effectId, i);
 

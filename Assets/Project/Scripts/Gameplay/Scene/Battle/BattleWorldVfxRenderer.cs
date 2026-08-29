@@ -193,6 +193,7 @@ public sealed class BattleWorldVfxRenderer : MonoBehaviour
             }
 
             proxy = CreateProxy(entry, material, visibleLayer, initialWorldPosition);
+            TryCopyHoverColliderToProxy(vfx, renderGroup.transform, proxy, entry);
             MeshRenderer proxyRenderer = proxy.GetComponent<MeshRenderer>();
 
             handle = proxy.AddComponent<BattleWorldVfxHandle>();
@@ -409,6 +410,97 @@ public sealed class BattleWorldVfxRenderer : MonoBehaviour
             entry.proxySortingOrderOffset);
 
         return proxy;
+    }
+
+    /// <summary>
+    /// IndividualWorldRenderTexture VFX는 실제 프리팹과 월드에 표시되는 Proxy가 서로 다른 오브젝트입니다.
+    /// 원본 VFX 프리팹의 BoxCollider2D 영역을 Proxy 아래의 별도 HoverCollider 자식에 복사합니다.
+    /// 호버 콜라이더 복사 실패는 시각 VFX 생성 실패로 전파하지 않습니다.
+    /// </summary>
+    private static void TryCopyHoverColliderToProxy(
+        GameObject vfx,
+        Transform renderGroup,
+        GameObject proxy,
+        BattleVfxEntry entry)
+    {
+        if (vfx == null || renderGroup == null || proxy == null || entry == null)
+            return;
+
+        try
+        {
+            BoxCollider2D source = vfx.GetComponentInChildren<BoxCollider2D>(true);
+            if (source == null)
+                return;
+
+            Vector2 half = source.size * 0.5f;
+            Vector2 sourceOffset = source.offset;
+
+            Vector3[] corners =
+            {
+                source.transform.TransformPoint(sourceOffset + new Vector2(-half.x, -half.y)),
+                source.transform.TransformPoint(sourceOffset + new Vector2(-half.x,  half.y)),
+                source.transform.TransformPoint(sourceOffset + new Vector2( half.x, -half.y)),
+                source.transform.TransformPoint(sourceOffset + new Vector2( half.x,  half.y))
+            };
+
+            Vector2 min = new(float.PositiveInfinity, float.PositiveInfinity);
+            Vector2 max = new(float.NegativeInfinity, float.NegativeInfinity);
+
+            for (int i = 0; i < corners.Length; i++)
+            {
+                Vector3 local = renderGroup.InverseTransformPoint(corners[i]);
+                min.x = Mathf.Min(min.x, local.x);
+                min.y = Mathf.Min(min.y, local.y);
+                max.x = Mathf.Max(max.x, local.x);
+                max.y = Mathf.Max(max.y, local.y);
+            }
+
+            Vector2 renderLocalCenter = (min + max) * 0.5f;
+            Vector2 renderLocalSize = max - min;
+
+            float renderHeight = Mathf.Max(0.01f, entry.renderCameraOrthographicSize * 2f);
+            float renderToWorld = Mathf.Max(0.01f, entry.proxyWorldHeight) / renderHeight;
+
+            Vector2 desiredWorldOffset = renderLocalCenter * renderToWorld;
+            Vector2 desiredWorldSize = new(
+                Mathf.Max(0.0001f, renderLocalSize.x * renderToWorld),
+                Mathf.Max(0.0001f, renderLocalSize.y * renderToWorld));
+
+            Vector3 proxyScale3 = proxy.transform.lossyScale;
+            float proxyScaleX = Mathf.Max(0.0001f, Mathf.Abs(proxyScale3.x));
+            float proxyScaleY = Mathf.Max(0.0001f, Mathf.Abs(proxyScale3.y));
+
+            GameObject hoverObject = new("HoverCollider");
+            hoverObject.layer = proxy.layer;
+            hoverObject.transform.SetParent(proxy.transform, false);
+            hoverObject.transform.localPosition = new Vector3(
+                desiredWorldOffset.x / proxyScaleX,
+                desiredWorldOffset.y / proxyScaleY,
+                0f);
+            hoverObject.transform.localRotation = Quaternion.identity;
+            hoverObject.transform.localScale = new Vector3(
+                1f / proxyScaleX,
+                1f / proxyScaleY,
+                1f);
+
+            BoxCollider2D target = hoverObject.AddComponent<BoxCollider2D>();
+            if (target == null)
+            {
+                DestroyUnityObject(hoverObject);
+                return;
+            }
+
+            target.offset = Vector2.zero;
+            target.size = desiredWorldSize;
+            target.isTrigger = true;
+        }
+        catch (Exception exception)
+        {
+            string prefabName = entry.prefab != null ? entry.prefab.name : "Unknown VFX";
+            Debug.LogWarning(
+                $"[BattleWorldVfxRenderer] VFX 호버 콜라이더 복사에 실패했습니다. " +
+                $"시각 VFX는 계속 표시합니다. Prefab:{prefabName}\n{exception.Message}");
+        }
     }
 
     private static int ResolveVisibleLayer(Transform followTarget, int renderLayer)

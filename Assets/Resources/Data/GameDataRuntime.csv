@@ -54,7 +54,7 @@ Mon_05,베스파,Common,38,0,18,25,Item_005,0.3,Range_20,S_Monster_11,S_Monster_
 Mon_06,신더,Common,18,20,15,22,Item_006,0.3,Range_24,S_Monster_13,S_Monster_14,0,0,0,0,0,0,0,0,턴이 끝나도 방어도를 보유한다.
 Mon_07,드라우그,Common,42,0,10,20,Item_007,0.3,Range_02,S_Monster_26,S_Monster_27,S_Monster_28,0,0,0,0,0,0,0,공격에 피해를 받으면 반격한다.
 Mon_08,바로우,Common,40,0,10,20,Item_008,0.3,Range_20,S_Monster_29,S_Monster_30,S_Monster_31,0,0,0,0,0,0,0,같은 라인에 상대가 없거나 다른 라인으로 이동할 때 곡사를 사용한다.
-Mon_09,루크,Elite,85,0,30,45,Item_009,0.2,Range_02,S_Monster_32,S_Monster_33,S_Monster_34,S_Monster_35,S_Monster_36,0,0,0,0,0,"매 턴 방어도를 획득하며, 2턴마다 대지진을 사용한다."
+Mon_09,루크,Elite,82,0,30,45,Item_009,0.2,Range_02,S_Monster_32,S_Monster_33,S_Monster_34,S_Monster_35,S_Monster_36,0,0,0,0,0,"매 턴 방어도를 획득하며, 2턴마다 대지진을 사용한다."
 Mon_10,녹턴,Elite,94,0,36,48,Item_010,0.2,Range_24,S_Monster_15,S_Monster_16,S_Monster_17,S_Monster_18,S_Monster_19,0,0,0,0,0,후방에 피해를 줄 때 강한 피해를 준다.
 Mon_11,모르트,Elite,77,0,35,42,Item_011,0.2,Range_19,S_Monster_37,S_Monster_38,S_Monster_39,S_Monster_40,S_Monster_41,0,0,0,0,0,병사가 죽었다면 1턴 후 되살힌다.
 Mon_12,아라벨라,Boss,142,0,45,55,Item_012,0.5,Range_19,S_Monster_20,S_Monster_21,S_Monster_22,S_Monster_23,S_Monster_24,S_Monster_25,0,0,0,0,매 턴 무작위 슬롯 하나를 막는다.
@@ -227,7 +227,7 @@ S_Monster_12,들이받기,PlayerParty,E_Strike;E_Knockback,12;1,1,6,Range_18,Att
 S_Monster_13,이동,Self,E_Move,0,1,0,Range_02,Move,가까운 캐릭터 주변으로 1칸 이동한다.,icon_mon_skill_001,이동
 S_Monster_14,대폭발,PlayerParty,E_Strike,24,1,0,Range_24,Attack,범위 내에 {ValueRate1}의 피해를 주고 사망한다.,icon_mon_skill_011,일반피해
 S_Monster_15,이동,Self,E_Move,0,1,0,Range_01,Move,가까운 캐릭터 주변으로 1칸 이동한다.,icon_mon_skill_001,이동
-S_Monster_16,그림자걸음,Self,E_Move,0,1,0,Range_24,Move,캐릭터의 후방으로 순간이동한다.,icon_mon_skill_012,이동
+S_Monster_16,그림자걸음,Self,E_Move,0,1,0,Range_24,Move,범위 내에서 가장 먼 대상의 후방으로 순간이동한다.,icon_mon_skill_012,이동
 S_Monster_17,심연 찌르기,PlayerParty,E_Pierce,10,1,0,Range_03,Attack,대상에게 {ValueRate1}의 관통피해를 준다.,icon_mon_skill_013,관통피해
 S_Monster_18,어둠 가르기,PlayerParty,E_Strike,12,1,0,Range_14,Attack,대상에게 {ValueRate1}의 피해를 준다.,icon_mon_skill_014,일반피해
 S_Monster_19,그림자 소용돌이,PlayerParty,E_Strike;E_Grab,2;1,1,0,Range_12,Attack,대상에게 {ValueRate1}의 피해를 주고 {ValueRate2}칸 당겨온다.,icon_mon_skill_015,일반피해
@@ -524,7 +524,7 @@ Battlemap_14,Mon_11,28,-1,-1,-1,,,,,,,,,,,,,Mon_08,바로우
 Battlemap_15,Mon_08,26,-1,-1,-1,"정예 모르트, 바로우",60,20,25,30,25,25,35,25,15,,,Mon_09,루크,,
 Battlemap_15,Mon_11,32,-1,-1,-1,,,,,,,,,,,,,Mon_10,녹턴,,
 Battlemap_16,Mon_12,27,-1,-1,-1,보스 아라벨라,100,5,15,50,30,25,35,25,15,,,Mon_11,모르트
-Battlemap_17,Mon_09,27,-1,-1,-1,테스트,20,5,15,50,30,25,35,25,15,,,Mon_12,아라벨라
+Battlemap_17,Mon_10,27,-1,-1,-1,테스트,20,5,15,50,30,25,35,25,15,,,Mon_12,아라벨라
 
 # Event
 이벤트ID,이벤트 이름,제목,선택지 순서,선택지이름,선택지 내용,선택지 타입,선택 조건,비용 타입,비용 대상,비용 값,성공 조건,결과타입,결과대상,결과값,성공확률,실패결과,다음이벤트ID,다음 이벤트까지 유지,성공 시각적 객체 ID,성공 시각적 작업 ID,실패 시각적 객체 ID,실패 시 시각적 동작 ID

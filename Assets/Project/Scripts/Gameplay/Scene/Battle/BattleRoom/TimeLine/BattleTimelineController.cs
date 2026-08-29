@@ -9,6 +9,7 @@ using UnityEngine.UI;
 
 public class BattleTimelineController : MonoBehaviour
 {
+    private const int MaxMonsterCommandsPerSlot = 2;
     public static event System.Action<CharacterRuntimeData> CharacterSelectionChanged;
 
     [Header("Timeline")]
@@ -4141,6 +4142,9 @@ public class BattleTimelineController : MonoBehaviour
 
         if (commands == null || commands.Count <= 0)
             return true;
+
+        if (commands.Count >= MaxMonsterCommandsPerSlot)
+            return false;
 
         for (int i = 0; i < commands.Count; i++)
         {
