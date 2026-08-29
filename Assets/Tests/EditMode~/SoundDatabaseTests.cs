@@ -109,11 +109,15 @@ public class SoundDatabaseTests
     {
         SoundData data = new() { pitch = 1.25f };
 
-        Assert.That(data.GetPlaybackPitch(), Is.EqualTo(1f).Within(0.001f));
+        Assert.That(data.GetPlaybackPitch(), Is.EqualTo(1.25f).Within(0.001f));
+
+        data.pitch = 9f;
+
+        Assert.That(data.GetPlaybackPitch(), Is.EqualTo(SoundData.MaxPitch).Within(0.001f));
 
         data.pitch = -0.25f;
 
-        Assert.That(data.GetPlaybackPitch(), Is.EqualTo(0f).Within(0.001f));
+        Assert.That(data.GetPlaybackPitch(), Is.EqualTo(SoundData.MinPitch).Within(0.001f));
     }
 
     [Test]
@@ -122,7 +126,7 @@ public class SoundDatabaseTests
         SoundData data = new()
         {
             useRandomPitch = true,
-            randomPitchMin = 0.9f,
+            randomPitchMin = 1.6f,
             randomPitchMax = 0.4f
         };
 
@@ -130,7 +134,7 @@ public class SoundDatabaseTests
         {
             float pitch = data.GetPlaybackPitch();
 
-            Assert.That(pitch, Is.InRange(0.4f, 0.9f));
+            Assert.That(pitch, Is.InRange(0.4f, 1.6f));
         }
     }
 

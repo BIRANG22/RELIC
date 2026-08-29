@@ -541,6 +541,60 @@ namespace Relic.Gameplay.Monster
             return false;
         }
 
+        public void ShowAttackRangePreviewFromTimeline()
+        {
+            ShowAttackRangePreview();
+        }
+
+        public void HideAttackRangePreviewFromTimeline()
+        {
+            if (infoSelectedMonster == this)
+            {
+                ShowAttackRangePreview();
+                return;
+            }
+
+            HideAttackRangePreview();
+
+            if (infoSelectedMonster != null && infoSelectedMonster != this)
+                infoSelectedMonster.ShowAttackRangePreview();
+        }
+
+        public void SelectForInfoFromTimeline()
+        {
+            if (UIPanelButton.IsMenuPanelOpen)
+                return;
+
+            if (reservationVisualActive)
+                return;
+
+            if (RuntimeData == null || RuntimeData.IsDead)
+                return;
+
+            MonsterUnit previousInfoSelectedMonster = infoSelectedMonster;
+
+            SelectThisMonster();
+
+            if (previousInfoSelectedMonster != null &&
+                previousInfoSelectedMonster != this)
+            {
+                previousInfoSelectedMonster.SetSelected(false);
+                previousInfoSelectedMonster.HideAttackRangePreview();
+                previousInfoSelectedMonster.HideStatusHoverTooltip();
+            }
+
+            infoSelectedMonster = this;
+            BattleTimelineController.ClearCurrentCharacterSelection();
+
+            BattleCameraController cameraController = BattleCameraController.Instance;
+            if (cameraController != null)
+                cameraController.FocusOnCharacterSelection(transform, MainGridIndex);
+
+            SetSelected(true);
+            ShowAttackRangePreview();
+            MonsterInfoSelectionChanged?.Invoke(this);
+        }
+
         public static void ClearMonsterInfoSelection()
         {
             if (infoSelectedMonster == null)

@@ -5,7 +5,8 @@ using UnityEngine;
 public enum SoundCategory
 {
     Bgm,
-    Sfx
+    Sfx,
+    SkillSfx
 }
 
 [AttributeUsage(AttributeTargets.Field)]
@@ -35,12 +36,14 @@ public class SoundDatabase : ScriptableObject
 {
     [SerializeField] private List<SoundData> bgmList = new();
     [SerializeField] private List<SoundData> sfxList = new();
+    [SerializeField] private List<SoundData> skillSfxList = new();
 
     private Dictionary<string, SoundData> bgmById;
     private Dictionary<string, SoundData> sfxById;
 
     public IReadOnlyList<SoundData> BgmEntries => bgmList;
     public IReadOnlyList<SoundData> SfxEntries => sfxList;
+    public IReadOnlyList<SoundData> SkillSfxEntries => skillSfxList;
 
     public void Initialize()
     {
@@ -49,6 +52,7 @@ public class SoundDatabase : ScriptableObject
 
         RegisterBgmList();
         RegisterSfxList();
+        RegisterSkillSfxList();
     }
 
     public bool TryGetBgm(string id, out SoundData bgm)
@@ -103,6 +107,22 @@ public class SoundDatabase : ScriptableObject
         }
     }
 
+    private void RegisterSkillSfxList()
+    {
+        if (skillSfxList == null)
+            return;
+
+        foreach (SoundData data in skillSfxList)
+        {
+            if (data == null || data.clip == null)
+                continue;
+
+            data.volume = Mathf.Clamp01(data.volume);
+
+            RegisterIds(sfxById, data, "Skill SFX");
+        }
+    }
+
     private static void RegisterIds(
         Dictionary<string, SoundData> map,
         SoundData data,
@@ -142,6 +162,9 @@ public class SoundDatabase : ScriptableObject
 [Serializable]
 public class SoundData
 {
+    public const float MinPitch = 0f;
+    public const float MaxPitch = 3f;
+
     public string id;
     public List<string> aliases = new();
     public AudioClip clip;
@@ -149,24 +172,26 @@ public class SoundData
     [Range(0f, 1f)]
     public float volume = 1f;
 
-    [Range(0f, 1f)]
+    [Range(MinPitch, MaxPitch)]
     public float pitch = 1f;
+
+    public bool loop;
 
     public bool useRandomPitch;
 
-    [Range(0f, 1f)]
+    [Range(MinPitch, MaxPitch)]
     public float randomPitchMin = 1f;
 
-    [Range(0f, 1f)]
+    [Range(MinPitch, MaxPitch)]
     public float randomPitchMax = 1f;
 
     public float GetPlaybackPitch()
     {
         if (!useRandomPitch)
-            return Mathf.Clamp01(pitch);
+            return ClampPlaybackPitch(pitch);
 
-        float min = Mathf.Clamp01(randomPitchMin);
-        float max = Mathf.Clamp01(randomPitchMax);
+        float min = ClampPlaybackPitch(randomPitchMin);
+        float max = ClampPlaybackPitch(randomPitchMax);
 
         if (min > max)
             (min, max) = (max, min);
@@ -174,5 +199,10 @@ public class SoundData
         return Mathf.Approximately(min, max)
             ? min
             : UnityEngine.Random.Range(min, max);
+    }
+
+    public static float ClampPlaybackPitch(float value)
+    {
+        return Mathf.Clamp(value, MinPitch, MaxPitch);
     }
 }

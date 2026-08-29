@@ -11,6 +11,8 @@ namespace Relic.Gameplay.Data
 
         private Dictionary<string, BattleVfxEntry> map;
 
+        public IReadOnlyList<SkillVfxEntry> Entries => entries;
+
         public void Initialize()
         {
             map = new Dictionary<string, BattleVfxEntry>();

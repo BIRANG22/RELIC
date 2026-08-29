@@ -1195,11 +1195,11 @@ MonoBehaviour:
       prefab: {fileID: 5208702714398133800, guid: 3fcdc7b143b3df849b48de95de31fcb2, type: 3}
       flipType: 0
       sfx:
-        playSfx: 0
-        sfxId: 
+        playSfx: 1
+        sfxId: skill.vfx.mon.n.04.attack.02
         delay: 0
         volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
+        routeEmbeddedAudioSourcesThroughAudioManager: 0
         removeEmbeddedAudioSources: 1
       renderMode: 0
       proxyBlendMode: 0

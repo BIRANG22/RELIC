@@ -24,6 +24,7 @@ public sealed class CameraMouseParallaxController : MonoBehaviour
     private Quaternion previousBaseRotation = Quaternion.identity;
     private bool hasPreviousBaseTransform;
     private int blurCapturePauseDepth;
+    private static int introPauseDepth;
     private static int uiPanelPauseDepth;
     private static bool lobbyContentPanelPause;
 
@@ -31,13 +32,33 @@ public sealed class CameraMouseParallaxController : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStaticPauseState()
     {
+        introPauseDepth = 0;
         uiPanelPauseDepth = 0;
         lobbyContentPanelPause = false;
     }
 
+    public static void BeginIntroPause()
+    {
+        introPauseDepth++;
+        ClearAllMouseParallaxImmediate();
+    }
+
+    public static void EndIntroPause()
+    {
+        if (introPauseDepth <= 0)
+        {
+            introPauseDepth = 0;
+            return;
+        }
+
+        introPauseDepth--;
+
+        if (introPauseDepth == 0)
+            ClearAllMouseParallaxImmediate();
+    }
     /// <summary>
-    /// ºí·¯ ÆÐ³ÎÀÌ³ª ¸Þ´º ÆÐ³ÎÀÌ ¿­¸° µ¿¾È ·Îºñ Ä«¸Þ¶ó ¸¶¿ì½º ÆÐ·²·¢½º¸¦ Á¤ÁöÇÕ´Ï´Ù.
-    /// ¿©·¯ ÆÐ³ÎÀÌ °ãÃÄ ¿­·Áµµ ¸¶Áö¸· ÆÐ³ÎÀÌ ´ÝÈú ¶§±îÁö Á¤Áö »óÅÂ¸¦ À¯ÁöÇÕ´Ï´Ù.
+    /// ï¿½ï¿½ï¿½ï¿½ ï¿½Ð³ï¿½ï¿½Ì³ï¿½ ï¿½Þ´ï¿½ ï¿½Ð³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Îºï¿½ Ä«ï¿½Þ¶ï¿½ ï¿½ï¿½ï¿½ì½º ï¿½Ð·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
+    /// ï¿½ï¿½ï¿½ï¿½ ï¿½Ð³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ð³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
     /// </summary>
     public static void BeginUiPanelPause()
     {
@@ -45,7 +66,7 @@ public sealed class CameraMouseParallaxController : MonoBehaviour
     }
 
     /// <summary>
-    /// ÆÐ³Î Á¤Áö ¿äÃ»À» ÇÏ³ª ÇØÁ¦ÇÕ´Ï´Ù. ¸ðµç ÆÐ³ÎÀÌ ´ÝÇûÀ» ¶§¸¸ ÆÐ·²·¢½º°¡ ´Ù½Ã µ¿ÀÛÇÕ´Ï´Ù.
+    /// ï¿½Ð³ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã»ï¿½ï¿½ ï¿½Ï³ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½. ï¿½ï¿½ï¿½ ï¿½Ð³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ð·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ù½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
     /// </summary>
     public static void EndUiPanelPause()
     {
@@ -58,11 +79,11 @@ public sealed class CameraMouseParallaxController : MonoBehaviour
         uiPanelPauseDepth--;
     }
 
-    public static bool IsUiPanelPauseActive => uiPanelPauseDepth > 0 || lobbyContentPanelPause;
+    public static bool IsUiPanelPauseActive => introPauseDepth > 0 || uiPanelPauseDepth > 0 || lobbyContentPanelPause;
 
     /// <summary>
-    /// ·ÎºñÀÇ ¸ÞÀÎ PositionPanel ÀÌ¿ÜÀÇ ÄÜÅÙÃ÷ ÆÐ³ÎÀÌ ¿­·Á ÀÖ´Â µ¿¾È Ä«¸Þ¶ó ÆÐ·²·¢½º¸¦ Á¤ÁöÇÕ´Ï´Ù.
-    /// ÆÐ³Î ÀüÈ¯ ½Ã ÇöÀç ¿­¸° ¸ÞÀÎ ÆÐ³ÎÀ» ±âÁØÀ¸·Î true/false¸¦ Á÷Á¢ °»½ÅÇÕ´Ï´Ù.
+    /// ï¿½Îºï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ PositionPanel ï¿½Ì¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ð³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½ Ä«ï¿½Þ¶ï¿½ ï¿½Ð·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
+    /// ï¿½Ð³ï¿½ ï¿½ï¿½È¯ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ð³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ true/falseï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
     /// </summary>
     public static void SetLobbyContentPanelPause(bool shouldPause)
     {
@@ -91,9 +112,9 @@ public sealed class CameraMouseParallaxController : MonoBehaviour
 
     private void Update()
     {
-        // ÆÐ³Î/ºí·¯ Ä¸Ã³·Î Á¤ÁöµÈ µ¿¾È¿¡´Â ÇöÀç È­¸é¿¡ Àû¿ëµÈ ÆÐ·²·¢½º ¿ÀÇÁ¼ÂÀ» À¯ÁöÇÕ´Ï´Ù.
-        // Á¤Áö ¿äÃ»ÀÌ ¾ø´Â Æò»ó½Ã¿¡¸¸ ´Ù¸¥ Ä«¸Þ¶ó ÀÌµ¿ ·ÎÁ÷ÀÌ ±âÁØ TransformÀ» ´Ù·ê ¼ö ÀÖµµ·Ï
-        // ÀÌÀü ÇÁ·¹ÀÓÀÇ ÆÐ·²·¢½º ¿ÀÇÁ¼ÂÀ» Á¦°ÅÇÕ´Ï´Ù.
+        // ï¿½Ð³ï¿½/ï¿½ï¿½ï¿½ï¿½ Ä¸Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½È¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È­ï¿½é¿¡ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ð·ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã»ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ã¿ï¿½ï¿½ï¿½ ï¿½Ù¸ï¿½ Ä«ï¿½Þ¶ï¿½ ï¿½Ìµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Transformï¿½ï¿½ ï¿½Ù·ï¿½ ï¿½ï¿½ ï¿½Öµï¿½ï¿½ï¿½
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ð·ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         if (IsParallaxPaused())
             return;
 
@@ -106,9 +127,9 @@ public sealed class CameraMouseParallaxController : MonoBehaviour
     }
 
     /// <summary>
-    /// ºí·¯ ¹è°æ Ä¸Ã³ Á÷Àü¿¡ È£ÃâÇÕ´Ï´Ù.
-    /// ÇöÀç È­¸é¿¡ Àû¿ëµÇ¾î ÀÖ´Â ¸¶¿ì½º ÆÐ·²·¢½º À§Ä¡/È¸ÀüÀ» ±×´ë·Î À¯ÁöÇÑ Ã¤
-    /// Ä¸Ã³°¡ ³¡³¯ ¶§±îÁö Ãß°¡ Ä«¸Þ¶ó ¹«ºù¸¸ Á¤ÁöÇÕ´Ï´Ù.
+    /// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Ä¸Ã³ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
+    /// ï¿½ï¿½ï¿½ï¿½ È­ï¿½é¿¡ ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ì½º ï¿½Ð·ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡/È¸ï¿½ï¿½ï¿½ï¿½ ï¿½×´ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ã¤
+    /// Ä¸Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½ Ä«ï¿½Þ¶ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
     /// </summary>
     public void BeginBlurCapturePause()
     {
@@ -117,8 +138,8 @@ public sealed class CameraMouseParallaxController : MonoBehaviour
     }
 
     /// <summary>
-    /// ºí·¯ ¹è°æ Ä¸Ã³°¡ ³¡³­ µÚ È£ÃâÇÕ´Ï´Ù.
-    /// ÁßÃ¸µÈ Ä¸Ã³ ¿äÃ»ÀÌ ¸ðµÎ ³¡³µÀ» ¶§ ¸¶¿ì½º ÆÐ·²·¢½º¸¦ ´Ù½Ã Çã¿ëÇÕ´Ï´Ù.
+    /// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Ä¸Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ È£ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
+    /// ï¿½ï¿½Ã¸ï¿½ï¿½ Ä¸Ã³ ï¿½ï¿½Ã»ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ì½º ï¿½Ð·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ù½ï¿½ ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
     /// </summary>
     public void EndBlurCapturePause()
     {
@@ -129,7 +150,7 @@ public sealed class CameraMouseParallaxController : MonoBehaviour
     }
 
     /// <summary>
-    /// ÀÌ ÄÁÆ®·Ñ·¯°¡ ÁöÁ¤ÇÑ Ä«¸Þ¶ó¸¦ Á¦¾îÇÏ´ÂÁö È®ÀÎÇÕ´Ï´Ù.
+    /// ï¿½ï¿½ ï¿½ï¿½Æ®ï¿½Ñ·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ä«ï¿½Þ¶ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ï¿½ï¿½ È®ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
     /// </summary>
     public bool UsesCamera(Camera camera)
     {
@@ -141,9 +162,21 @@ public sealed class CameraMouseParallaxController : MonoBehaviour
     }
 
 
+    private static void ClearAllMouseParallaxImmediate()
+    {
+        CameraMouseParallaxController[] controllers =
+            Resources.FindObjectsOfTypeAll<CameraMouseParallaxController>();
+
+        for (int i = 0; i < controllers.Length; i++)
+        {
+            CameraMouseParallaxController controller = controllers[i];
+            if (controller != null)
+                controller.ClearMouseParallaxImmediate();
+        }
+    }
     private bool IsParallaxPaused()
     {
-        return blurCapturePauseDepth > 0 || uiPanelPauseDepth > 0 || lobbyContentPanelPause;
+        return blurCapturePauseDepth > 0 || introPauseDepth > 0 || uiPanelPauseDepth > 0 || lobbyContentPanelPause;
     }
 
     private void ApplyMouseParallax()
