@@ -29,7 +29,7 @@ MonoBehaviour:
     Slot2:
       Enabled: 1
       Type: Common
-      MapIdOverride: Map_26
+      MapIdOverride: 
       UseCustomPosition: 0
       CustomPosition: {x: 0, y: 0}
       NextNodeIndices: 0500000007000000

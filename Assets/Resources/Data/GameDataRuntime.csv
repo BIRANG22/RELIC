@@ -1,7 +1,7 @@
 # Character
 캐릭터ID,이름,최대 HP,최대 Cost,Cost 회복량,자원최대치,자원타입,자원조건,기본지급여부,해금조건,패시브스킬1,패시브스킬2,고유스킬1,고유스킬2,캐릭터스킬1,캐릭터스킬2,공유스킬1,공유스킬2,룬1,룬2,룬3,룬4,룬5,카르마 회복,캐릭터소개
 CharacterId,Name,MaxHP,MaxCost,CostRecovery,MaxResource,ResourceType,ResourceTrigger,IsDefaultProvided,UnlockCondition,PassiveSkill1,PassiveSkill2,UniqueSkill1,UniqueSkill2,CharacterSkill1,CharacterSkill2,CommonSkill1,CommonSkill2,Rune1,Rune2,Rune3,Rune4,Rune5,Regeneration,introduction
-Char_01,힐트,105,10,4,5,Karma,OnAnyAllyDamaged,1,1,S_Passive_01,S_Passive_02,S_Unique_01,S_Unique_02,S_Ability_01,S_Ability_03,S_Public_01,S_Public_03,Rune_51,Rune_52,Rune_53,Rune_54,Rune_55,"피해를 받았을 때
+Char_01,힐트,104,10,4,5,Karma,OnAnyAllyDamaged,1,1,S_Passive_01,S_Passive_02,S_Unique_01,S_Unique_02,S_Ability_01,S_Ability_03,S_Public_01,S_Public_03,Rune_51,Rune_52,Rune_53,Rune_54,Rune_55,"피해를 받았을 때
 생명력이 감소하지 않았다면
 카르마를 1 회복한다.","“강한 놈들이 득실거린다며?
 그럼 내가 가야지.”
@@ -13,7 +13,7 @@ Char_02,카야,98,11,4,5,Karma,OnThreeActionsInSameSlot,1,1,S_Passive_03,S_Passi
 
 하쿠렌 가문의 검사.
 침착하고 냉철하며 어떤 상황에서도 흐트러지지 않는다. 미지의 적들과 맞서며 자신의 검술을 더욱 완성해 나간다.",,,,,
-Char_03,헤이즈,84,14,4,5,Karma,OnSpendEightCostInTurn,1,1,S_Passive_05,S_Passive_06,S_Unique_05,S_Unique_06,S_Ability_09,S_Ability_11,S_Public_09,S_Public_11,Rune_61,Rune_62,Rune_63,Rune_64,Rune_65,"한 턴에 마나를 8 이상 소모하면
+Char_03,헤이즈,92,14,4,5,Karma,OnSpendEightCostInTurn,1,1,S_Passive_05,S_Passive_06,S_Unique_05,S_Unique_06,S_Ability_09,S_Ability_11,S_Public_09,S_Public_11,Rune_61,Rune_62,Rune_63,Rune_64,Rune_65,"한 턴에 마나를 8 이상 소모하면
 카르마를 1 회복한다.","“정말 제가 가야 하는 건가요?”
 
 아스텔 학회의 학자.
@@ -264,7 +264,7 @@ GR_Residue,점액,1,1,E_Strike,2,1,2,Monster,0,None,대상에게 {ValueRate}의 
 GR_dummy,루어,0,0,-1,0,1,0,Summon,10,Character,캐릭터로 인식되는 생명체이다.
 GR_explosive_doll,브룸,0,0,-1,8,1,0,Summon,15,Object,이번 턴이 끝날 때 주변 적에게 {ValueRate}의 피해를 준다.
 GR_spider_egg,고치,0,0,-1,0,5,2,Summon,8,Object,{Duration}턴 후 신더가 부화한다.
-GR_spider_web,거미줄,1,0,E_Spider_Web,1,1,2,Monster,0,None,뒤얽힘을  {ValueRate} 부여한다.
+GR_spider_web,거미줄,1,0,E_Spider_Web,1,1,2,Monster,0,None,뒤얽힘을 {ValueRate} 부여한다.
 GR_nocturn_portal_preview,그림자,1,0,-1,0,1,1,Monster,0,None,그림자가 머문 곳으로 이동할 예정이다.
 ,,,,,,,,,
 ,,,,,,,,,
@@ -477,7 +477,7 @@ Map_22,Special6,Special,0,Event_06,Stage1,1
 Map_23,Special7,Special,0,Event_07,Stage1,1
 Map_24,Special8,Special,0,Event_08,Stage1,1
 Map_25,Special9,Special,0,Event_09,Stage1,1
-Map_26,Bacttle_Test,Common,Battlemap_17,0,Stage1,1
+
 
 ,,,
 
@@ -513,18 +513,17 @@ Battlemap_09,Mon_08,29,-1,-1,-1,,,,,,,,,,
 Battlemap_09,Mon_08,31,-1,-1,-1,,,,,,,,,,
 Battlemap_10,Mon_04,33,-1,-1,-1,"드라우그, 바로우, 블라이트",20,35,30,25,10,25,35,25,15
 Battlemap_10,Mon_07,21,-1,-1,-1,,,,,,,,,,
-Battlemap_10,Mon_08,27,-1,-1,-1,,,,,,,,,,,,,Mon_01,머크
-Battlemap_11,Mon_09,27,-1,-1,-1,"정예 루크, 랜서",60,20,25,30,25,25,35,25,15,,,Mon_02,블롭
-Battlemap_11,Mon_03,31,-1,-1,-1,,,,,,,,,,,,,Mon_03,랜서
-Battlemap_12,Mon_09,27,-1,-1,-1,"정예 루크, 블라이트",60,20,25,30,25,25,35,25,15,,,Mon_04,블라이트
-Battlemap_12,Mon_04,33,-1,-1,-1,,,,,,,,,,,,,Mon_05,베스파
-Battlemap_13,Mon_10,22,-1,-1,-1,정예 녹턴,60,20,25,30,25,25,35,25,15,,,Mon_06,신더,,,
-Battlemap_14,Mon_07,21,-1,-1,-1,"정예 모르트, 드라우그",60,20,25,30,25,25,35,25,15,,,Mon_07,드라우그,,,
-Battlemap_14,Mon_11,28,-1,-1,-1,,,,,,,,,,,,,Mon_08,바로우
-Battlemap_15,Mon_08,26,-1,-1,-1,"정예 모르트, 바로우",60,20,25,30,25,25,35,25,15,,,Mon_09,루크,,
-Battlemap_15,Mon_11,32,-1,-1,-1,,,,,,,,,,,,,Mon_10,녹턴,,
-Battlemap_16,Mon_12,27,-1,-1,-1,보스 아라벨라,100,5,15,50,30,25,35,25,15,,,Mon_11,모르트
-Battlemap_17,Mon_12,27,-1,-1,-1,테스트,20,5,15,50,30,25,35,25,15,,,Mon_12,아라벨라
+Battlemap_10,Mon_08,27,-1,-1,-1,,,,,,,,,,
+Battlemap_11,Mon_09,27,-1,-1,-1,"정예 루크, 랜서",60,20,25,30,25,25,35,25,15
+Battlemap_11,Mon_03,31,-1,-1,-1,,,,,,,,,,
+Battlemap_12,Mon_09,27,-1,-1,-1,"정예 루크, 블라이트",60,20,25,30,25,25,35,25,15
+Battlemap_12,Mon_04,33,-1,-1,-1,,,,,,,,,,
+Battlemap_13,Mon_10,22,-1,-1,-1,정예 녹턴,60,20,25,30,25,25,35,25,15
+Battlemap_14,Mon_07,21,-1,-1,-1,"정예 모르트, 드라우그",60,20,25,30,25,25,35,25,15,,,,,
+Battlemap_14,Mon_11,28,-1,-1,-1,,,,,,,,,,,,,,,
+Battlemap_15,Mon_08,26,-1,-1,-1,"정예 모르트, 바로우",60,20,25,30,25,25,35,25,15
+Battlemap_15,Mon_11,32,-1,-1,-1,,,,,,,,,,,,,,
+Battlemap_16,Mon_12,27,-1,-1,-1,보스 아라벨라,100,5,15,50,30,25,35,25,15,,,,
 
 # Event
 이벤트ID,이벤트 이름,제목,선택지 순서,선택지이름,선택지 내용,선택지 타입,선택 조건,비용 타입,비용 대상,비용 값,성공 조건,결과타입,결과대상,결과값,성공확률,실패결과,다음이벤트ID,다음 이벤트까지 유지,성공 시각적 객체 ID,성공 시각적 작업 ID,실패 시각적 객체 ID,실패 시 시각적 동작 ID
