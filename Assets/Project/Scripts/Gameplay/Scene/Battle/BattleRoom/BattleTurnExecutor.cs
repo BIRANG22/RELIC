@@ -34,9 +34,17 @@ public class BattleTurnExecutor : MonoBehaviour
     [Header("End Turn")]
     [SerializeField] private Button endTurnButton;
 
+    [Header("End Turn Visual Feedback")]
+    [SerializeField] private Image endTurnLineImage;
+    [SerializeField] private GameObject endTurnBackground2;
+    [SerializeField] private Color endTurnLineHoverColor = new Color32(0x4E, 0x66, 0xDF, 0xFF);
+    [SerializeField, Min(0f)] private float endTurnClickFeedbackDuration = 0.15f;
+
     [Header("Turn Text")]
     [SerializeField] private TMP_Text turnNumberText;
     [SerializeField] private bool autoFindTurnNumberText = true;
+    [SerializeField] private string turnNumberTextRootObjectName = "TurnText";
+    [SerializeField] private string turnNumberTextValueObjectName = "Value";
     [SerializeField] private string turnNumberTextObjectName = "TURN_TEXT2";
 
     [Header("Keyboard Input")]
@@ -62,7 +70,10 @@ public class BattleTurnExecutor : MonoBehaviour
     private bool networkExecutionLocked;
     private bool battleExecutionUiSuppressed;
     private Coroutine executeTurnCoroutine;
+    private Coroutine endTurnClickFeedbackCoroutine;
     private int playerTurnNumber = 1;
+    private Color endTurnLineDefaultColor = Color.white;
+    private bool endTurnVisualFeedbackInitialized;
 
     private readonly BattleUniqueResourceService uniqueResourceService = new();
     private readonly BattlePassiveSkillService passiveSkillService = new();
@@ -71,6 +82,7 @@ public class BattleTurnExecutor : MonoBehaviour
     private void Start()
     {
         AutoFindTurnNumberTextIfNeeded();
+        InitializeEndTurnVisualFeedback();
         RefreshTurnNumberText();
         RefreshEndTurnButton();
         RefreshBattlePresentationState();
@@ -101,6 +113,15 @@ public class BattleTurnExecutor : MonoBehaviour
         BattleEffectUtility.OnPlayerHit -= uniqueResourceService.OnAnyPlayerDamaged;
         BattleEffectUtility.OnPlayerBuffApplied -= uniqueResourceService.OnPlayerBuffApplied;
         BattleEffectUtility.OnPlayerDamagedEnemy -= uniqueResourceService.OnPlayerDamagedEnemy;
+
+        if (endTurnClickFeedbackCoroutine != null)
+        {
+            StopCoroutine(endTurnClickFeedbackCoroutine);
+            endTurnClickFeedbackCoroutine = null;
+        }
+
+        RestoreEndTurnLineColor();
+        SetEndTurnBackground2Visible(false);
     }
 
     public void QueueNextTurnSwift(BattleCharacter target, int value, int count)
@@ -843,6 +864,110 @@ public class BattleTurnExecutor : MonoBehaviour
         return false;
     }
 
+    private void InitializeEndTurnVisualFeedback()
+    {
+        if (endTurnVisualFeedbackInitialized || endTurnButton == null)
+            return;
+
+        if (endTurnLineImage == null)
+        {
+            Transform lineTransform = FindChildRecursive(endTurnButton.transform, "Line");
+            if (lineTransform != null)
+                endTurnLineImage = lineTransform.GetComponent<Image>();
+        }
+
+        if (endTurnBackground2 == null)
+        {
+            Transform background2Transform = FindChildRecursive(endTurnButton.transform, "Background2");
+            if (background2Transform != null)
+                endTurnBackground2 = background2Transform.gameObject;
+        }
+
+        if (endTurnLineImage != null)
+            endTurnLineDefaultColor = endTurnLineImage.color;
+
+        SetEndTurnBackground2Visible(false);
+
+        EventTrigger trigger = endTurnButton.GetComponent<EventTrigger>();
+        if (trigger == null)
+            trigger = endTurnButton.gameObject.AddComponent<EventTrigger>();
+
+        if (trigger.triggers == null)
+            trigger.triggers = new List<EventTrigger.Entry>();
+
+        EventTrigger.Entry enterEntry = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
+        enterEntry.callback.AddListener(_ => SetEndTurnLineHovered(true));
+        trigger.triggers.Add(enterEntry);
+
+        EventTrigger.Entry exitEntry = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
+        exitEntry.callback.AddListener(_ => SetEndTurnLineHovered(false));
+        trigger.triggers.Add(exitEntry);
+
+        endTurnButton.onClick.AddListener(PlayEndTurnClickFeedback);
+        endTurnVisualFeedbackInitialized = true;
+    }
+
+    private void SetEndTurnLineHovered(bool hovered)
+    {
+        if (endTurnLineImage == null)
+            return;
+
+        endTurnLineImage.color = hovered ? endTurnLineHoverColor : endTurnLineDefaultColor;
+    }
+
+    private void RestoreEndTurnLineColor()
+    {
+        if (endTurnLineImage != null)
+            endTurnLineImage.color = endTurnLineDefaultColor;
+    }
+
+    private void PlayEndTurnClickFeedback()
+    {
+        InitializeEndTurnVisualFeedback();
+
+        if (endTurnClickFeedbackCoroutine != null)
+            StopCoroutine(endTurnClickFeedbackCoroutine);
+
+        SetEndTurnBackground2Visible(true);
+        endTurnClickFeedbackCoroutine = StartCoroutine(EndTurnClickFeedbackRoutine());
+    }
+
+    private IEnumerator EndTurnClickFeedbackRoutine()
+    {
+        float duration = Mathf.Max(0f, endTurnClickFeedbackDuration);
+
+        if (duration > 0f)
+            yield return new WaitForSecondsRealtime(duration);
+
+        SetEndTurnBackground2Visible(false);
+        endTurnClickFeedbackCoroutine = null;
+    }
+
+    private void SetEndTurnBackground2Visible(bool visible)
+    {
+        if (endTurnBackground2 != null && endTurnBackground2.activeSelf != visible)
+            endTurnBackground2.SetActive(visible);
+    }
+
+    private static Transform FindChildRecursive(Transform root, string objectName)
+    {
+        if (root == null || string.IsNullOrWhiteSpace(objectName))
+            return null;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform child = root.GetChild(i);
+            if (child.name == objectName)
+                return child;
+
+            Transform found = FindChildRecursive(child, objectName);
+            if (found != null)
+                return found;
+        }
+
+        return null;
+    }
+
     private void AutoFindTurnNumberTextIfNeeded()
     {
         if (!autoFindTurnNumberText)
@@ -851,15 +976,35 @@ public class BattleTurnExecutor : MonoBehaviour
         if (turnNumberText != null)
             return;
 
+        if (!string.IsNullOrWhiteSpace(turnNumberTextRootObjectName) &&
+            !string.IsNullOrWhiteSpace(turnNumberTextValueObjectName))
+        {
+            Transform[] transforms = FindObjectsByType<Transform>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None);
+
+            for (int i = 0; i < transforms.Length; i++)
+            {
+                Transform root = transforms[i];
+                if (root == null || root.name != turnNumberTextRootObjectName)
+                    continue;
+
+                Transform valueTransform = root.Find(turnNumberTextValueObjectName);
+                if (valueTransform == null)
+                    continue;
+
+                turnNumberText = valueTransform.GetComponent<TMP_Text>();
+                if (turnNumberText != null)
+                    return;
+            }
+        }
+
         if (string.IsNullOrWhiteSpace(turnNumberTextObjectName))
             return;
 
         GameObject found = GameObject.Find(turnNumberTextObjectName);
-
-        if (found == null)
-            return;
-
-        turnNumberText = found.GetComponent<TMP_Text>();
+        if (found != null)
+            turnNumberText = found.GetComponent<TMP_Text>();
     }
 
     private void RefreshTurnNumberText()
@@ -870,7 +1015,7 @@ public class BattleTurnExecutor : MonoBehaviour
             return;
 
         int displayTurnNumber = Mathf.Max(1, playerTurnNumber);
-        turnNumberText.text = displayTurnNumber.ToString();
+        turnNumberText.text = displayTurnNumber.ToString("D2");
     }
 
     private void RefreshEndTurnButton()

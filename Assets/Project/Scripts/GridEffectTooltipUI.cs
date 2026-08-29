@@ -1,3 +1,4 @@
+using System.Collections;
 using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
@@ -22,10 +23,15 @@ public class GridEffectTooltipUI : MonoBehaviour
     [SerializeField] private Vector2 screenPadding = new(16f, 16f);
     [SerializeField] private bool followMouse = true;
 
+    [Header("Fade")]
+    [SerializeField, Min(0f)] private float fadeDuration = 0.1f;
+
     private Canvas rootCanvas;
     private Camera canvasCamera;
     private Object currentOwner;
     private Vector2 lastScreenPosition;
+    private Coroutine fadeCoroutine;
+    private bool targetVisible;
 
     /// <summary>
     /// 씬에 사용자가 직접 배치한 GridEffectTooltipUI를 반환합니다.
@@ -64,7 +70,16 @@ public class GridEffectTooltipUI : MonoBehaviour
 
         instance = this;
         InitializeReferences();
-        SetVisible(false);
+        SetVisibleImmediate(false);
+    }
+
+    private void OnDisable()
+    {
+        if (fadeCoroutine != null)
+        {
+            StopCoroutine(fadeCoroutine);
+            fadeCoroutine = null;
+        }
     }
 
     private void OnDestroy()
@@ -127,6 +142,9 @@ public class GridEffectTooltipUI : MonoBehaviour
                 this);
             return;
         }
+
+        if (!gameObject.activeSelf)
+            gameObject.SetActive(true);
 
         currentOwner = owner;
         lastScreenPosition = screenPosition;
@@ -250,9 +268,83 @@ public class GridEffectTooltipUI : MonoBehaviour
 
     private void SetVisible(bool visible)
     {
+        InitializeReferences();
+
+        if (canvasGroup == null)
+            return;
+
+        if (targetVisible == visible && fadeCoroutine != null)
+            return;
+
+        targetVisible = visible;
+
+        if (fadeCoroutine != null)
+        {
+            StopCoroutine(fadeCoroutine);
+            fadeCoroutine = null;
+        }
+
+        if (visible && !gameObject.activeSelf)
+            gameObject.SetActive(true);
+
+        // 비활성화된 GameObject에서는 코루틴을 시작할 수 없습니다.
+        // 그리드 효과 제거 과정에서 HoverTarget.OnDisable()이 Hide()를 다시 호출할 수 있으므로,
+        // 이미 Hierarchy에서 비활성화된 상태라면 즉시 상태만 정리합니다.
+        if (!gameObject.activeInHierarchy)
+        {
+            SetVisibleImmediate(visible);
+            return;
+        }
+
+        if (fadeDuration <= 0f)
+        {
+            SetVisibleImmediate(visible);
+            return;
+        }
+
+        fadeCoroutine = StartCoroutine(FadeVisibilityRoutine(visible));
+    }
+
+    private IEnumerator FadeVisibilityRoutine(bool visible)
+    {
+        float startAlpha = canvasGroup != null ? canvasGroup.alpha : 0f;
+        float targetAlpha = visible ? 1f : 0f;
+        float elapsed = 0f;
+        float duration = Mathf.Max(0.0001f, fadeDuration);
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+
+            if (canvasGroup != null)
+                canvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, t);
+
+            yield return null;
+        }
+
+        if (canvasGroup != null)
+            canvasGroup.alpha = targetAlpha;
+
+        fadeCoroutine = null;
+
+        if (!visible && gameObject.activeSelf)
+            gameObject.SetActive(false);
+    }
+
+    private void SetVisibleImmediate(bool visible)
+    {
+        targetVisible = visible;
+        InitializeReferences();
+
         if (canvasGroup == null)
             return;
 
         canvasGroup.alpha = visible ? 1f : 0f;
+        canvasGroup.interactable = false;
+        canvasGroup.blocksRaycasts = false;
+
+        if (!visible && Application.isPlaying && gameObject.activeSelf)
+            gameObject.SetActive(false);
     }
 }

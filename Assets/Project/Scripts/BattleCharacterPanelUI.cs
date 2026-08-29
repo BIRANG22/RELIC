@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 /// <summary>
 /// 전투에서 현재 선택된 캐릭터의 기본 정보를 하단 통합 UI에 표시합니다.
@@ -31,6 +32,20 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     [Header("Passive Skill")]
     [SerializeField] private Image passiveIconImage;
+
+    [Header("Passive Hover Info")]
+    [Tooltip("패시브 아이콘에 마우스를 올렸을 때 표시되는 PassiveBack 오브젝트입니다.")]
+    [SerializeField] private GameObject passiveBack;
+
+    [Tooltip("PassiveBack 안의 설명 텍스트입니다. 첫째 줄은 Regeneration, 둘째 줄은 패시브 Details를 표시합니다.")]
+    [SerializeField] private TMP_Text passiveText;
+
+    [Header("Passive Hover Fade")]
+    [Tooltip("PassiveBack이 나타나고 사라지는 데 걸리는 시간입니다.")]
+    [SerializeField, Min(0f)] private float passiveHoverFadeDuration = 0.1f;
+
+    private CanvasGroup passiveBackCanvasGroup;
+    private Coroutine passiveHoverFadeCoroutine;
 
     [Header("HP")]
     [SerializeField] private Image hpIconImage;
@@ -246,6 +261,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
     {
         panelRectTransform = GetComponent<RectTransform>();
         ResolveSelectionContentReferences();
+        EnsurePassiveIconHoverTarget();
+        HidePassiveHoverInfo();
         CaptureSkillInfoRarityDefaultColors();
         RegisterSkillButtonListeners();
         RegisterMoveAndItemButtonListeners();
@@ -456,6 +473,20 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
         if (characterRoot != null)
         {
+            if (passiveBack == null)
+            {
+                Transform passiveBackTransform = FindChildRecursive(characterRoot.transform, "PassiveBack");
+                if (passiveBackTransform != null)
+                    passiveBack = passiveBackTransform.gameObject;
+            }
+
+            if (passiveText == null && passiveBack != null)
+            {
+                Transform passiveTextTransform = FindChildRecursive(passiveBack.transform, "Passive_Text");
+                if (passiveTextTransform != null)
+                    passiveText = passiveTextTransform.GetComponent<TMP_Text>();
+            }
+
             if (skillInfoRarityImage == null || skillInfoRarityText == null)
             {
                 Transform skillRarityTransform = FindChildRecursive(characterRoot.transform, "Skill_Rarity");
@@ -934,7 +965,9 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     public void Bind(CharacterRuntimeData runtimeData)
     {
+        HidePassiveHoverInfo();
         ResolveSelectionContentReferences();
+        EnsurePassiveIconHoverTarget();
         ShowCharacterContent();
 
         StopNumberChangeCoroutine();
@@ -1214,6 +1247,150 @@ public class BattleCharacterPanelUI : MonoBehaviour
             : boundRuntime.CharacterId;
     }
 
+
+    private void EnsurePassiveIconHoverTarget()
+    {
+        if (passiveIconImage == null)
+            return;
+
+        passiveIconImage.raycastTarget = true;
+
+        BattlePassiveIconHoverTarget hoverTarget =
+            passiveIconImage.GetComponent<BattlePassiveIconHoverTarget>();
+
+        if (hoverTarget == null)
+            hoverTarget = passiveIconImage.gameObject.AddComponent<BattlePassiveIconHoverTarget>();
+
+        hoverTarget.Configure(ShowPassiveHoverInfo, HidePassiveHoverInfo);
+    }
+
+    private void ShowPassiveHoverInfo()
+    {
+        ResolveSelectionContentReferences();
+
+        if (passiveBack == null || passiveText == null || boundRuntime == null || boundMaster == null)
+        {
+            HidePassiveHoverInfo();
+            return;
+        }
+
+        string passiveSkillId = boundRuntime.PassiveSkillId;
+        SkillMasterData passiveSkillData = ResolveSkillData(passiveSkillId);
+
+        if (passiveSkillData == null)
+        {
+            HidePassiveHoverInfo();
+            return;
+        }
+
+        string regeneration = (boundMaster.Regeneration ?? string.Empty)
+            .Replace("\r\n", " ")
+            .Replace('\r', ' ')
+            .Replace('\n', ' ')
+            .Trim();
+        string details = SkillDescriptionFormatter.Format(passiveSkillData)
+            .Replace("\r\n", " ")
+            .Replace('\r', ' ')
+            .Replace('\n', ' ')
+            .Trim();
+
+        passiveText.text = regeneration + "\n" + details;
+        ShowPassiveHoverInfoWithFade();
+    }
+
+    private void HidePassiveHoverInfo()
+    {
+        if (passiveBack == null)
+            return;
+
+        EnsurePassiveBackCanvasGroup();
+
+        if (passiveHoverFadeCoroutine != null)
+            StopCoroutine(passiveHoverFadeCoroutine);
+
+        if (!passiveBack.activeSelf)
+        {
+            if (passiveBackCanvasGroup != null)
+                passiveBackCanvasGroup.alpha = 0f;
+            return;
+        }
+
+        passiveHoverFadeCoroutine = StartCoroutine(FadePassiveBackRoutine(0f, true));
+    }
+
+    private void ShowPassiveHoverInfoWithFade()
+    {
+        if (passiveBack == null)
+            return;
+
+        EnsurePassiveBackCanvasGroup();
+
+        if (passiveHoverFadeCoroutine != null)
+            StopCoroutine(passiveHoverFadeCoroutine);
+
+        if (!passiveBack.activeSelf)
+        {
+            passiveBack.SetActive(true);
+            if (passiveBackCanvasGroup != null)
+                passiveBackCanvasGroup.alpha = 0f;
+        }
+
+        passiveHoverFadeCoroutine = StartCoroutine(FadePassiveBackRoutine(1f, false));
+    }
+
+    private void EnsurePassiveBackCanvasGroup()
+    {
+        if (passiveBack == null)
+            return;
+
+        if (passiveBackCanvasGroup == null)
+            passiveBackCanvasGroup = passiveBack.GetComponent<CanvasGroup>();
+
+        if (passiveBackCanvasGroup == null)
+            passiveBackCanvasGroup = passiveBack.AddComponent<CanvasGroup>();
+
+        passiveBackCanvasGroup.interactable = false;
+        passiveBackCanvasGroup.blocksRaycasts = false;
+    }
+
+    private IEnumerator FadePassiveBackRoutine(float targetAlpha, bool deactivateWhenFinished)
+    {
+        EnsurePassiveBackCanvasGroup();
+
+        if (passiveBackCanvasGroup == null)
+        {
+            if (deactivateWhenFinished && passiveBack != null)
+                passiveBack.SetActive(false);
+            passiveHoverFadeCoroutine = null;
+            yield break;
+        }
+
+        float startAlpha = passiveBackCanvasGroup.alpha;
+        float duration = Mathf.Max(0f, passiveHoverFadeDuration);
+
+        if (duration <= 0f)
+        {
+            passiveBackCanvasGroup.alpha = targetAlpha;
+        }
+        else
+        {
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                passiveBackCanvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, t);
+                yield return null;
+            }
+
+            passiveBackCanvasGroup.alpha = targetAlpha;
+        }
+
+        if (deactivateWhenFinished && passiveBack != null)
+            passiveBack.SetActive(false);
+
+        passiveHoverFadeCoroutine = null;
+    }
 
     private void RefreshPassiveSkill()
     {
@@ -2646,6 +2823,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         }
 
         SetText(characterNameText, string.Empty);
+        HidePassiveHoverInfo();
         ClearPassiveSkill();
         SetText(hpValueText, string.Empty);
         SetText(costValueText, string.Empty);
@@ -2693,5 +2871,32 @@ public class BattleCharacterPanelUI : MonoBehaviour
     {
         if (target != null)
             target.text = value;
+    }
+}
+
+public sealed class BattlePassiveIconHoverTarget : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+{
+    private Action onPointerEnter;
+    private Action onPointerExit;
+
+    public void Configure(Action pointerEnter, Action pointerExit)
+    {
+        onPointerEnter = pointerEnter;
+        onPointerExit = pointerExit;
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        onPointerEnter?.Invoke();
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        onPointerExit?.Invoke();
+    }
+
+    private void OnDisable()
+    {
+        onPointerExit?.Invoke();
     }
 }

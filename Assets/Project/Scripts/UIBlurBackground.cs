@@ -33,6 +33,13 @@ public sealed class UIBlurBackground : MonoBehaviour
     [Tooltip("이 블러 배경에 함께 흐리게 담을 UI 루트입니다. 비워두면 모든 UI가 캡처에서 제외됩니다.")]
     [SerializeField] private GameObject[] blurredUiRoots = new GameObject[0];
 
+    [Header("Lobby Menu Blur")]
+    [Tooltip("메뉴패널에서 사용하는 인스턴스에서만 켜세요. Bootstrap의 LobbyQuestMessenger를 블러 대상에 추가합니다.")]
+    [SerializeField] private bool includeLobbyQuestMessenger = false;
+
+    [SerializeField] private string lobbyQuestMessengerObjectName = "LobbyQuestMessenger";
+    [SerializeField] private string lobbyQuestMessengerBootstrapRootName = "Bootstrap";
+
     private static readonly int BlurRadiusId = Shader.PropertyToID("_BlurRadius");
     private static readonly int DarkenId = Shader.PropertyToID("_Darken");
     private static readonly int SaturationId = Shader.PropertyToID("_Saturation");
@@ -495,7 +502,60 @@ public sealed class UIBlurBackground : MonoBehaviour
         effectiveBlurredUiRoots.Clear();
         AppendValidBlurredUiRoots(blurredUiRoots, effectiveBlurredUiRoots);
         AppendValidBlurredUiRoots(runtimeBlurredUiRoots, effectiveBlurredUiRoots);
+        AppendLobbyQuestMessengerIfEnabled(effectiveBlurredUiRoots);
         return effectiveBlurredUiRoots;
+    }
+
+    private void AppendLobbyQuestMessengerIfEnabled(List<GameObject> target)
+    {
+        if (!includeLobbyQuestMessenger || target == null)
+            return;
+
+        if (string.IsNullOrWhiteSpace(lobbyQuestMessengerObjectName))
+            return;
+
+        Transform[] transforms = Object.FindObjectsByType<Transform>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        GameObject fallback = null;
+
+        for (int i = 0; i < transforms.Length; i++)
+        {
+            Transform candidate = transforms[i];
+            if (candidate == null || candidate.gameObject.name != lobbyQuestMessengerObjectName)
+                continue;
+
+            fallback ??= candidate.gameObject;
+
+            if (!IsUnderNamedAncestor(candidate, lobbyQuestMessengerBootstrapRootName))
+                continue;
+
+            if (!target.Contains(candidate.gameObject))
+                target.Add(candidate.gameObject);
+
+            return;
+        }
+
+        if (fallback != null && !target.Contains(fallback))
+            target.Add(fallback);
+    }
+
+    private static bool IsUnderNamedAncestor(Transform target, string ancestorName)
+    {
+        if (target == null || string.IsNullOrWhiteSpace(ancestorName))
+            return true;
+
+        Transform current = target.parent;
+        while (current != null)
+        {
+            if (current.gameObject.name == ancestorName)
+                return true;
+
+            current = current.parent;
+        }
+
+        return false;
     }
 
     private static void AppendValidBlurredUiRoots(IEnumerable<GameObject> roots, List<GameObject> target)
