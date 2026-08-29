@@ -1,4 +1,5 @@
 using Relic.Gameplay.Monster;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -61,6 +62,19 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     private GameObject registeredEnemyOwnerIconImageObject;
     private GameObject registeredEnemyOwnerIconRootObject;
 
+    private string playerOwnerIconCharacterId = "";
+    private BattleCharacter hoveredPlayerOwnerIconCharacter;
+    private GameObject registeredPlayerOwnerIconImageObject;
+    private GameObject registeredPlayerOwnerIconRootObject;
+
+    [Header("Owner Icon Hover Scale")]
+    [SerializeField] private float ownerIconHoverScaleMultiplier = 1.1f;
+    [SerializeField] private float ownerIconHoverScaleDuration = 0.12f;
+
+    private Transform ownerIconScaleTransform;
+    private Vector3 ownerIconBaseScale = Vector3.one;
+    private Coroutine ownerIconScaleRoutine;
+
     public int SlotIndex => slotIndex;
 
     private void Awake()
@@ -103,6 +117,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             SetOwnerIconImage(playerIconRootImage, playerIconImage, null, false, playerReservedColor);
             SetOwnerIconImage(enemyIconRootImage, enemyIconImage, null, false, enemyReservedColor);
             ClearEnemyOwnerIconHudHoverTarget();
+            ClearPlayerOwnerIconHudHoverTarget();
             return;
         }
 
@@ -184,21 +199,8 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         ApplyOwnerOrderIcon(firstIconRootImage, firstIconImage, firstEntry);
         ApplyOwnerOrderIcon(laterIconRootImage, laterIconImage, laterEntry);
 
-        string monsterRuntimeId = string.Empty;
-        Image monsterOwnerImage = null;
-
-        if (firstEntry != null && firstEntry.IsMonster)
-        {
-            monsterRuntimeId = firstEntry.MonsterRuntimeId;
-            monsterOwnerImage = firstIconImage;
-        }
-        else if (laterEntry != null && laterEntry.IsMonster)
-        {
-            monsterRuntimeId = laterEntry.MonsterRuntimeId;
-            monsterOwnerImage = laterIconImage;
-        }
-
-        SetupEnemyOwnerIconHudHoverTarget(monsterOwnerImage, monsterRuntimeId);
+        SetupOwnerIconInteractionTarget(firstIconImage, firstEntry);
+        SetupOwnerIconInteractionTarget(laterIconImage, laterEntry);
     }
 
     public void Clear()
@@ -210,6 +212,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         SetOwnerIconImage(playerIconRootImage, playerIconImage, null, false, playerReservedColor);
         SetOwnerIconImage(enemyIconRootImage, enemyIconImage, null, false, enemyReservedColor);
         ClearEnemyOwnerIconHudHoverTarget();
+        ClearPlayerOwnerIconHudHoverTarget();
 
         if (useSkillIconImages != null)
         {
@@ -246,16 +249,37 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         ClearSkillHoverTarget(image);
     }
 
-    private void SetupEnemyOwnerIconHudHoverTarget(Image ownerIconImage, string monsterRuntimeId)
+    private void SetupOwnerIconInteractionTarget(Image ownerIconImage, BattleTimelinePreviewEntry entry)
     {
-        ClearEnemyOwnerIconHudHoverTarget(false);
-
-        if (ownerIconImage == null || string.IsNullOrWhiteSpace(monsterRuntimeId))
+        if (entry == null)
             return;
 
+        if (entry.IsMonster)
+            SetupEnemyOwnerIconHudHoverTarget(ownerIconImage, entry.MonsterRuntimeId);
+        else if (entry.IsPlayer)
+            SetupPlayerOwnerIconHudHoverTarget(ownerIconImage, entry.OwnerId);
+    }
+
+    private void SetupEnemyOwnerIconHudHoverTarget(Image ownerIconImage, string monsterRuntimeId)
+    {
+        if (ownerIconImage == null || string.IsNullOrWhiteSpace(monsterRuntimeId))
+        {
+            ClearEnemyOwnerIconHudHoverTarget(false);
+            return;
+        }
+
+        if (registeredEnemyOwnerIconImageObject == ownerIconImage.gameObject &&
+            enemyOwnerIconMonsterRuntimeId == monsterRuntimeId)
+        {
+            ownerIconImage.raycastTarget = true;
+            return;
+        }
+
+        ClearEnemyOwnerIconHudHoverTarget(false);
         enemyOwnerIconMonsterRuntimeId = monsterRuntimeId;
 
         GameObject imageObject = ownerIconImage.gameObject;
+        CacheOwnerIconBaseScale(ownerIconImage.transform);
         GameObject rootObject = ownerIconImage.transform.parent != null
             ? ownerIconImage.transform.parent.gameObject
             : imageObject;
@@ -268,7 +292,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
     private void ClearEnemyOwnerIconHudHoverTarget(bool clearRegisteredObjects = true)
     {
-        HideHoveredEnemyOwnerIconHUD();
+        HideEnemyOwnerIconHover();
         enemyOwnerIconMonsterRuntimeId = "";
 
         if (registeredEnemyOwnerIconImageObject != null)
@@ -326,7 +350,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             eventID = EventTriggerType.PointerEnter
         };
 
-        enterEntry.callback.AddListener(_ => ShowEnemyOwnerIconHUD());
+        enterEntry.callback.AddListener(_ => ShowEnemyOwnerIconHover());
         trigger.triggers.Add(enterEntry);
 
         EventTrigger.Entry exitEntry = new EventTrigger.Entry
@@ -334,8 +358,16 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             eventID = EventTriggerType.PointerExit
         };
 
-        exitEntry.callback.AddListener(_ => HideHoveredEnemyOwnerIconHUD());
+        exitEntry.callback.AddListener(_ => HideEnemyOwnerIconHover());
         trigger.triggers.Add(exitEntry);
+
+        EventTrigger.Entry clickEntry = new EventTrigger.Entry
+        {
+            eventID = EventTriggerType.PointerClick
+        };
+
+        clickEntry.callback.AddListener(_ => SelectEnemyOwnerIcon());
+        trigger.triggers.Add(clickEntry);
     }
 
     private void RemoveEnemyOwnerIconHoverEvents(EventTrigger trigger)
@@ -351,11 +383,48 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
                 continue;
 
             if (entry.eventID == EventTriggerType.PointerEnter ||
-                entry.eventID == EventTriggerType.PointerExit)
+                entry.eventID == EventTriggerType.PointerExit ||
+                entry.eventID == EventTriggerType.PointerClick)
             {
                 trigger.triggers.RemoveAt(i);
             }
         }
+    }
+
+    private void SelectEnemyOwnerIcon()
+    {
+        MonsterUnit monster = FindEnemyOwnerIconMonster();
+
+        if (monster != null)
+            monster.SelectForInfoFromTimeline();
+    }
+
+    private void ShowEnemyOwnerIconHover()
+    {
+        AnimateOwnerIconScale(true);
+        ShowEnemyOwnerIconHUD();
+
+        if (hoveredEnemyOwnerIconMonster != null)
+        {
+            hoveredEnemyOwnerIconMonster.SetTimelineHoverHighlight(true);
+            hoveredEnemyOwnerIconMonster.ShowAttackRangePreviewFromTimeline();
+        }
+    }
+
+    private void HideEnemyOwnerIconHover()
+    {
+        AnimateOwnerIconScale(false);
+
+        if (hoveredEnemyOwnerIconMonster == null)
+            hoveredEnemyOwnerIconMonster = FindEnemyOwnerIconMonster();
+
+        if (hoveredEnemyOwnerIconMonster != null)
+        {
+            hoveredEnemyOwnerIconMonster.SetTimelineHoverHighlight(false);
+            hoveredEnemyOwnerIconMonster.HideAttackRangePreviewFromTimeline();
+        }
+
+        HideHoveredEnemyOwnerIconHUD();
     }
 
     private void ShowEnemyOwnerIconHUD()
@@ -399,9 +468,280 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         return null;
     }
 
+    private void SetupPlayerOwnerIconHudHoverTarget(Image ownerIconImage, string characterId)
+    {
+        if (ownerIconImage == null || string.IsNullOrWhiteSpace(characterId))
+        {
+            ClearPlayerOwnerIconHudHoverTarget(false);
+            return;
+        }
+
+        // 동일한 타임라인 아이콘이 같은 캐릭터를 계속 표시하는 동안에는
+        // Hover 상태를 초기화하지 않습니다. 타임라인 갱신은 매 프레임 발생할 수 있으므로,
+        // 여기서 Clear를 반복하면 CharacterHUDSlot이 Hover 직후 다시 숨겨집니다.
+        if (registeredPlayerOwnerIconImageObject == ownerIconImage.gameObject &&
+            playerOwnerIconCharacterId == characterId)
+        {
+            ownerIconImage.raycastTarget = true;
+            return;
+        }
+
+        ClearPlayerOwnerIconHudHoverTarget(false);
+        playerOwnerIconCharacterId = characterId;
+
+        GameObject imageObject = ownerIconImage.gameObject;
+        CacheOwnerIconBaseScale(ownerIconImage.transform);
+        GameObject rootObject = ownerIconImage.transform.parent != null
+            ? ownerIconImage.transform.parent.gameObject
+            : imageObject;
+
+        RegisterPlayerOwnerIconEvents(imageObject, true);
+
+        if (rootObject != imageObject)
+            RegisterPlayerOwnerIconEvents(rootObject, false);
+    }
+
+    private void ClearPlayerOwnerIconHudHoverTarget(bool clearRegisteredObjects = true)
+    {
+        HidePlayerOwnerIconHover();
+        playerOwnerIconCharacterId = "";
+
+        if (registeredPlayerOwnerIconImageObject != null)
+        {
+            Image image = registeredPlayerOwnerIconImageObject.GetComponent<Image>();
+            if (image != null)
+                image.raycastTarget = false;
+        }
+
+        if (registeredPlayerOwnerIconRootObject != null)
+        {
+            Image image = registeredPlayerOwnerIconRootObject.GetComponent<Image>();
+            if (image != null)
+                image.raycastTarget = false;
+        }
+
+        if (clearRegisteredObjects)
+        {
+            registeredPlayerOwnerIconImageObject = null;
+            registeredPlayerOwnerIconRootObject = null;
+        }
+    }
+
+    private void RegisterPlayerOwnerIconEvents(GameObject targetObject, bool isImageObject)
+    {
+        if (targetObject == null)
+            return;
+
+        if (isImageObject)
+            registeredPlayerOwnerIconImageObject = targetObject;
+        else
+            registeredPlayerOwnerIconRootObject = targetObject;
+
+        Image image = targetObject.GetComponent<Image>();
+        if (image == null)
+        {
+            image = targetObject.AddComponent<Image>();
+            image.color = new Color(1f, 1f, 1f, 0f);
+        }
+
+        image.raycastTarget = true;
+
+        EventTrigger trigger = targetObject.GetComponent<EventTrigger>();
+        if (trigger == null)
+            trigger = targetObject.AddComponent<EventTrigger>();
+
+        RemovePlayerOwnerIconEvents(trigger);
+
+        EventTrigger.Entry enterEntry = new EventTrigger.Entry
+        {
+            eventID = EventTriggerType.PointerEnter
+        };
+        enterEntry.callback.AddListener(_ => ShowPlayerOwnerIconHover());
+        trigger.triggers.Add(enterEntry);
+
+        EventTrigger.Entry exitEntry = new EventTrigger.Entry
+        {
+            eventID = EventTriggerType.PointerExit
+        };
+        exitEntry.callback.AddListener(_ => HidePlayerOwnerIconHover());
+        trigger.triggers.Add(exitEntry);
+
+        EventTrigger.Entry clickEntry = new EventTrigger.Entry
+        {
+            eventID = EventTriggerType.PointerClick
+        };
+        clickEntry.callback.AddListener(_ => SelectPlayerOwnerIcon());
+        trigger.triggers.Add(clickEntry);
+    }
+
+    private void RemovePlayerOwnerIconEvents(EventTrigger trigger)
+    {
+        if (trigger == null || trigger.triggers == null)
+            return;
+
+        for (int i = trigger.triggers.Count - 1; i >= 0; i--)
+        {
+            EventTrigger.Entry entry = trigger.triggers[i];
+            if (entry == null)
+                continue;
+
+            if (entry.eventID == EventTriggerType.PointerEnter ||
+                entry.eventID == EventTriggerType.PointerExit ||
+                entry.eventID == EventTriggerType.PointerClick)
+            {
+                trigger.triggers.RemoveAt(i);
+            }
+        }
+    }
+
+    private void ShowPlayerOwnerIconHover()
+    {
+        AnimateOwnerIconScale(true);
+        ShowPlayerOwnerIconHUD();
+    }
+
+    private void HidePlayerOwnerIconHover()
+    {
+        AnimateOwnerIconScale(false);
+        HideHoveredPlayerOwnerIconHUD();
+    }
+
+    private void ShowPlayerOwnerIconHUD()
+    {
+        hoveredPlayerOwnerIconCharacter = FindPlayerOwnerIconCharacter();
+
+        if (hoveredPlayerOwnerIconCharacter == null)
+            return;
+
+        hoveredPlayerOwnerIconCharacter.SetTimelineHoverHighlight(true);
+
+        BattleCharacterHUDController hudController = Object.FindFirstObjectByType<BattleCharacterHUDController>(FindObjectsInactive.Include);
+        if (hudController != null)
+            hudController.ShowTimelineIconCharacterHUD(hoveredPlayerOwnerIconCharacter);
+    }
+
+    private void HideHoveredPlayerOwnerIconHUD()
+    {
+        if (hoveredPlayerOwnerIconCharacter == null)
+            hoveredPlayerOwnerIconCharacter = FindPlayerOwnerIconCharacter();
+
+        if (hoveredPlayerOwnerIconCharacter != null)
+            hoveredPlayerOwnerIconCharacter.SetTimelineHoverHighlight(false);
+
+        BattleCharacterHUDController hudController = Object.FindFirstObjectByType<BattleCharacterHUDController>(FindObjectsInactive.Include);
+        if (hudController != null)
+            hudController.HideTimelineIconCharacterHUD(hoveredPlayerOwnerIconCharacter);
+
+        hoveredPlayerOwnerIconCharacter = null;
+    }
+
+    private void CacheOwnerIconBaseScale(Transform iconTransform)
+    {
+        if (iconTransform == null)
+            return;
+
+        if (ownerIconScaleTransform == iconTransform)
+            return;
+
+        ResetOwnerIconScaleImmediate();
+        ownerIconScaleTransform = iconTransform;
+        ownerIconBaseScale = iconTransform.localScale;
+    }
+
+    private void AnimateOwnerIconScale(bool hovered)
+    {
+        if (ownerIconScaleTransform == null)
+            return;
+
+        if (ownerIconScaleRoutine != null)
+            StopCoroutine(ownerIconScaleRoutine);
+
+        Vector3 targetScale = hovered
+            ? Vector3.Scale(ownerIconBaseScale, Vector3.one * ownerIconHoverScaleMultiplier)
+            : ownerIconBaseScale;
+
+        ownerIconScaleRoutine = StartCoroutine(AnimateOwnerIconScale(ownerIconScaleTransform, targetScale));
+    }
+
+    private IEnumerator AnimateOwnerIconScale(Transform target, Vector3 targetScale)
+    {
+        if (target == null)
+            yield break;
+
+        Vector3 startScale = target.localScale;
+        float duration = Mathf.Max(0f, ownerIconHoverScaleDuration);
+
+        if (duration <= 0f)
+        {
+            target.localScale = targetScale;
+            ownerIconScaleRoutine = null;
+            yield break;
+        }
+
+        float elapsed = 0f;
+        while (elapsed < duration && target != null)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            t = t * t * (3f - 2f * t);
+            target.localScale = Vector3.LerpUnclamped(startScale, targetScale, t);
+            yield return null;
+        }
+
+        if (target != null)
+            target.localScale = targetScale;
+
+        ownerIconScaleRoutine = null;
+    }
+
+    private void ResetOwnerIconScaleImmediate()
+    {
+        if (ownerIconScaleRoutine != null)
+        {
+            StopCoroutine(ownerIconScaleRoutine);
+            ownerIconScaleRoutine = null;
+        }
+
+        if (ownerIconScaleTransform != null)
+            ownerIconScaleTransform.localScale = ownerIconBaseScale;
+    }
+
+    private void SelectPlayerOwnerIcon()
+    {
+        BattleCharacter character = FindPlayerOwnerIconCharacter();
+        if (character == null || character.RuntimeData == null || character.RuntimeData.IsDead)
+            return;
+
+        BattleRoomLoader roomLoader = Object.FindFirstObjectByType<BattleRoomLoader>(FindObjectsInactive.Include);
+        if (roomLoader != null)
+            roomLoader.OnPlayerCharacterClicked(character.RuntimeData);
+    }
+
+    private BattleCharacter FindPlayerOwnerIconCharacter()
+    {
+        if (string.IsNullOrWhiteSpace(playerOwnerIconCharacterId))
+            return null;
+
+        BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            if (characters[i] == null || characters[i].RuntimeData == null)
+                continue;
+
+            if (characters[i].RuntimeData.CharacterId == playerOwnerIconCharacterId)
+                return characters[i];
+        }
+
+        return null;
+    }
+
     private void OnDisable()
     {
         HideHoveredEnemyOwnerIconHUD();
+        HideHoveredPlayerOwnerIconHUD();
     }
 
     private void SetupEnemySkillHoverTarget(Image skillImage, BattleTimelinePreviewEntry entry)
@@ -557,8 +897,54 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
         TimelineReservationHoverPreview.HideCurrent();
 
+        if (entry.IsMonster)
+        {
+            SelectMonsterOrderSkill(entry);
+            return;
+        }
+
         if (owner != null)
             owner.OnEntryClicked(entry);
+    }
+
+    private void SelectMonsterOrderSkill(BattleTimelinePreviewEntry entry)
+    {
+        if (entry == null || !entry.IsMonster || entry.MonsterSkillData == null)
+            return;
+
+        MonsterUnit monster = FindMonsterByRuntimeId(entry.MonsterRuntimeId);
+        if (monster == null)
+            return;
+
+        monster.SelectForInfoFromTimeline();
+
+        BattleCharacterPanelUI panel = Object.FindFirstObjectByType<BattleCharacterPanelUI>(
+            FindObjectsInactive.Include);
+
+        if (panel != null)
+            panel.SelectMonsterSkillFromTimeline(monster, entry.MonsterSkillData.SkillId);
+    }
+
+    private MonsterUnit FindMonsterByRuntimeId(string runtimeId)
+    {
+        if (string.IsNullOrWhiteSpace(runtimeId))
+            return null;
+
+        MonsterUnit[] monsters = Object.FindObjectsByType<MonsterUnit>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < monsters.Length; i++)
+        {
+            MonsterUnit monster = monsters[i];
+            if (monster == null || monster.RuntimeData == null)
+                continue;
+
+            if (monster.RuntimeData.RuntimeId == runtimeId)
+                return monster;
+        }
+
+        return null;
     }
 
     private void AutoFindReferences()

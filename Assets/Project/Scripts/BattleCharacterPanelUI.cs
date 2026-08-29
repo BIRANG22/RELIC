@@ -502,6 +502,20 @@ public class BattleCharacterPanelUI : MonoBehaviour
             monsterRoot.SetActive(false);
     }
 
+    public void SelectMonsterSkillFromTimeline(MonsterUnit monster, string skillId)
+    {
+        if (monster == null || monster.RuntimeData == null || monster.RuntimeData.IsDead)
+            return;
+
+        ResolveSelectionContentReferences();
+        ShowMonsterContent(monster);
+
+        if (monsterInfoPanelUI != null)
+            monsterInfoPanelUI.SelectSkillById(skillId);
+
+        ScheduleSelectionPanelPositionRefresh();
+    }
+
     private void ShowMonsterContent(MonsterUnit monster)
     {
         if (characterRoot != null)
@@ -1614,7 +1628,9 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private void OnMoveButtonClicked()
     {
-        SelectSkillDirectly(boundRuntime != null ? boundRuntime.MoveSkillId : string.Empty);
+        SelectSkillDirectly(
+            boundRuntime != null ? boundRuntime.MoveSkillId : string.Empty,
+            moveButton);
     }
 
     private void OnItemButtonClicked()
@@ -1622,17 +1638,17 @@ public class BattleCharacterPanelUI : MonoBehaviour
         UseActiveRelicDirectly();
     }
 
-    private void OnSkill01Clicked() => UseSkillSlot(0);
-    private void OnSkill02Clicked() => UseSkillSlot(1);
-    private void OnSkill03Clicked() => UseSkillSlot(2);
-    private void OnSkill04Clicked() => UseSkillSlot(3);
+    private void OnSkill01Clicked() => UseSkillSlot(0, skill01Button);
+    private void OnSkill02Clicked() => UseSkillSlot(1, skill02Button);
+    private void OnSkill03Clicked() => UseSkillSlot(2, skill03Button);
+    private void OnSkill04Clicked() => UseSkillSlot(3, skill04Button);
 
-    private void UseSkillSlot(int displaySlotIndex)
+    private void UseSkillSlot(int displaySlotIndex, Button sourceButton)
     {
-        SelectSkillDirectly(GetSkillIdForDisplaySlot(displaySlotIndex));
+        SelectSkillDirectly(GetSkillIdForDisplaySlot(displaySlotIndex), sourceButton);
     }
 
-    private void SelectSkillDirectly(string skillId)
+    private void SelectSkillDirectly(string skillId, Button sourceButton = null)
     {
         if (boundRuntime == null)
         {
@@ -1660,6 +1676,10 @@ public class BattleCharacterPanelUI : MonoBehaviour
             ShowBattleWarning("타임라인 컨트롤러를 찾을 수 없습니다.");
             return;
         }
+
+        BattleCharacterSkillHoverUI clickedHover =
+            sourceButton != null ? sourceButton.GetComponent<BattleCharacterSkillHoverUI>() : null;
+        clickedHover?.ShowClickSelectionFeedback();
 
         battleTimelineController.SelectCharacter(boundRuntime);
         battleTimelineController.SelectSkill(skillData);

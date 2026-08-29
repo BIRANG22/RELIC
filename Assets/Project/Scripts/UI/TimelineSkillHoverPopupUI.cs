@@ -153,7 +153,7 @@ public class TimelineSkillHoverPopupUI : MonoBehaviour
         currentOwner = owner;
         currentHoveredIconRect = hoveredIconRect;
 
-        item.Set(skillName, effectDescription, rangeIcon);
+        item.Set(skillName);
         SetVisible(true);
 
         if (moveToHoveredIcon)

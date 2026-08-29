@@ -30,10 +30,10 @@ MonoBehaviour:
     TimelineIcon: {fileID: 21300000, guid: 1810509648f68b4448d43360154a1e89, type: 3}
   - MonsterId: Mon_06
     Icon: {fileID: 21300000, guid: 20be063cb82f8074091256282663a0de, type: 3}
-    TimelineIcon: {fileID: 21300000, guid: 1de298cbd4a0b5f4eab50bf9d0ae5eb9, type: 3}
+    TimelineIcon: {fileID: 21300000, guid: 726a69e8ecb77fb41806842d3717cf6d, type: 3}
   - MonsterId: Mon_07
     Icon: {fileID: 21300000, guid: 6069652c91170c746b6540913bf9ad72, type: 3}
-    TimelineIcon: {fileID: 21300000, guid: 726a69e8ecb77fb41806842d3717cf6d, type: 3}
+    TimelineIcon: {fileID: 21300000, guid: 7ff67c61ec0372945ac2b8054a55f785, type: 3}
   - MonsterId: Mon_08
     Icon: {fileID: 21300000, guid: 792a64d6d326c5f46844b2c4ab050a23, type: 3}
     TimelineIcon: {fileID: 21300000, guid: 9c5d6c9c7815fce47b0204c871753385, type: 3}

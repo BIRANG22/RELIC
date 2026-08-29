@@ -5,13 +5,12 @@ using UnityEngine;
 
 /// <summary>
 /// 배틀씬의 캐릭터 월드 HUD를 관리합니다.
-/// PlayerHUD_Root 아래에 CharacterHUDSlot을 캐릭터별로 생성하고,
+/// BattleCharacterPanel 바로 아래에 CharacterHUDSlot을 캐릭터별로 생성하고,
 /// 캐릭터를 호버하거나 클릭 선택한 동안만 해당 HUD를 표시합니다.
 /// </summary>
 public class BattleCharacterHUDController : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private Transform playerHudRoot;
     [SerializeField] private CharacterHUDSlot characterHudPrefab;
     [SerializeField] private BattleTimelineController timelineController;
 
@@ -30,12 +29,10 @@ public class BattleCharacterHUDController : MonoBehaviour
 
     private readonly List<CharacterHudBinding> bindings = new();
     private float nextCharacterScanTime;
+    private string timelineIconHoveredCharacterId = "";
 
     private void Awake()
     {
-        if (playerHudRoot == null)
-            playerHudRoot = transform;
-
         EnsureTimelineController();
     }
 
@@ -59,7 +56,59 @@ public class BattleCharacterHUDController : MonoBehaviour
 
     private void OnDisable()
     {
+        timelineIconHoveredCharacterId = "";
         HideAll();
+    }
+
+    public void SetTimelineIconHoverCharacter(string characterId, bool hovered)
+    {
+        if (hovered)
+        {
+            timelineIconHoveredCharacterId = characterId ?? "";
+        }
+        else if (string.IsNullOrWhiteSpace(characterId) || timelineIconHoveredCharacterId == characterId)
+        {
+            timelineIconHoveredCharacterId = "";
+        }
+
+        RefreshVisibility();
+    }
+
+    public void ShowTimelineIconCharacterHUD(BattleCharacter character)
+    {
+        if (character == null || character.RuntimeData == null || character.RuntimeData.IsDead)
+            return;
+
+        timelineIconHoveredCharacterId = character.RuntimeData.CharacterId ?? "";
+
+        CharacterHudBinding binding = FindBinding(character);
+        if (binding == null)
+        {
+            CreateBinding(character);
+            binding = FindBinding(character);
+        }
+
+        if (binding == null || binding.Hud == null)
+            return;
+
+        if (binding.Collider == null)
+            binding.Collider = character.GetComponentInChildren<Collider2D>();
+
+        binding.Hud.Bind(character.RuntimeData);
+        binding.Hud.SetFollowTarget(character.transform, binding.Collider);
+        binding.Hud.Show();
+    }
+
+    public void HideTimelineIconCharacterHUD(BattleCharacter character)
+    {
+        string characterId = character != null && character.RuntimeData != null
+            ? character.RuntimeData.CharacterId
+            : timelineIconHoveredCharacterId;
+
+        if (string.IsNullOrWhiteSpace(characterId) || timelineIconHoveredCharacterId == characterId)
+            timelineIconHoveredCharacterId = "";
+
+        RefreshVisibility();
     }
 
     public void RefreshNow()
@@ -70,7 +119,7 @@ public class BattleCharacterHUDController : MonoBehaviour
 
     private void RefreshCharacterBindings()
     {
-        if (characterHudPrefab == null || playerHudRoot == null)
+        if (characterHudPrefab == null || ResolveHudRoot() == null)
             return;
 
         BattleCharacter[] characters = FindObjectsByType<BattleCharacter>(
@@ -99,7 +148,11 @@ public class BattleCharacterHUDController : MonoBehaviour
         if (character == null || character.RuntimeData == null)
             return;
 
-        CharacterHUDSlot hud = Instantiate(characterHudPrefab, playerHudRoot);
+        Transform hudRoot = ResolveHudRoot();
+        if (hudRoot == null)
+            return;
+
+        CharacterHUDSlot hud = Instantiate(characterHudPrefab, hudRoot);
         hud.name = characterHudPrefab.name + "(Clone)";
 
         RectTransform rect = hud.GetComponent<RectTransform>();
@@ -118,6 +171,20 @@ public class BattleCharacterHUDController : MonoBehaviour
             Hud = hud,
             Collider = characterCollider
         });
+    }
+
+
+    private Transform ResolveHudRoot()
+    {
+        BattleCharacterPanelUI parentPanel = GetComponentInParent<BattleCharacterPanelUI>(true);
+        if (parentPanel != null)
+            return parentPanel.transform;
+
+        BattleCharacterPanelUI scenePanel = Object.FindFirstObjectByType<BattleCharacterPanelUI>(FindObjectsInactive.Include);
+        if (scenePanel != null)
+            return scenePanel.transform;
+
+        return null;
     }
 
     private void RemoveMissingBindings(BattleCharacter[] currentCharacters)
@@ -188,9 +255,12 @@ public class BattleCharacterHUDController : MonoBehaviour
                 binding.Collider = binding.Character.GetComponentInChildren<Collider2D>();
 
             bool hovered = IsHovered(binding.Collider, mouseWorldPosition);
+            bool timelineIconHovered =
+                !string.IsNullOrWhiteSpace(timelineIconHoveredCharacterId) &&
+                runtime.CharacterId == timelineIconHoveredCharacterId;
             bool selected = !monsterInfoSelected && IsSameCharacter(runtime, selectedRuntime);
 
-            if (hovered || selected)
+            if (hovered || timelineIconHovered || selected)
             {
                 binding.Hud.Bind(runtime);
                 binding.Hud.SetFollowTarget(binding.Character.transform, binding.Collider);
