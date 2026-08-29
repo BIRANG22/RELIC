@@ -5,8 +5,8 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
-/// BattleCharacterPanel의 스킬 버튼에 마우스 호버 효과를 적용합니다.
-/// 기존 Skill_Background는 그대로 유지하고, 호버 중에만 Skill_Background2를 활성화합니다.
+/// BattleCharacterPanel의 스킬 버튼 호버/선택 시각 효과를 적용합니다.
+/// 호버 시에는 Skill_Background 색상만 변경하고, Skill_Background2는 그리드 선택 중인 스킬에만 표시합니다.
 /// </summary>
 public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
@@ -27,6 +27,9 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
     [SerializeField, Range(0, 255)] private byte maximumAlpha = 255;
     [SerializeField, Min(0f)] private float alphaBreathSpeed = 3f;
 
+    [Header("Direction Click Feedback")]
+    [SerializeField, Min(0f)] private float directionClickFeedbackDuration = 0.15f;
+
     [Header("Auto Find")]
     [SerializeField] private bool autoFindReferences = true;
     [SerializeField] private string hoverBackgroundObjectName = "Skill_Background2";
@@ -34,6 +37,9 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
     private Vector3 normalScale = Vector3.one;
     private bool scaleCaptured;
     private bool isPointerOver;
+    private bool isSelected;
+    private float directionClickFeedbackUntil = -1f;
+    private PlayerSkillReservationController reservationController;
     private Color normalBackgroundOriginalColor = Color.white;
     private bool normalBackgroundColorCaptured;
     private BattleTimelineController battleTimelineController;
@@ -57,14 +63,17 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
 
     private void Update()
     {
+        RefreshSelectedState();
+        ApplyHighlightVisual();
         ApplyScale(false);
 
-        if (isPointerOver)
+        if (isSelected)
             ApplyBreathingAlpha();
     }
 
     private void OnDisable()
     {
+        directionClickFeedbackUntil = -1f;
         ClearSkillRangePreview();
         ResetVisual(true);
     }
@@ -115,6 +124,20 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
     }
 
 
+
+    public void ShowClickSelectionFeedback()
+    {
+        if (skillData != null && skillData.RangeType == RangeType.Direction)
+        {
+            directionClickFeedbackUntil = Time.unscaledTime + directionClickFeedbackDuration;
+            ApplyHighlightVisual();
+            return;
+        }
+
+        isSelected = true;
+        ApplyHighlightVisual();
+    }
+
     public void SetSkillInfoHandler(Action<SkillMasterData> onSkillHovered)
     {
         skillInfoHandler = onSkillHovered;
@@ -129,22 +152,19 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
         EnsureNormalBackgroundVisible();
         ApplyNormalBackgroundHoverColor();
 
-        if (hoverBackgroundImage != null)
-        {
-            hoverBackgroundImage.gameObject.SetActive(true);
-            SetHoverAlpha(maximumAlpha);
-        }
-
+        ApplyHighlightVisual();
         ApplyScale(false);
-        CancelDifferentGridSelection();
         ShowSkillRangePreview();
         skillInfoHandler?.Invoke(skillData);
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
+        isPointerOver = false;
         ClearSkillRangePreview();
-        ResetVisual(false);
+        RestoreNormalBackgroundColor();
+        ApplyHighlightVisual();
+        ApplyScale(false);
     }
 
     private void ResetVisual(bool instant)
@@ -215,15 +235,38 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
     }
 
 
-    private void CancelDifferentGridSelection()
+    private void RefreshSelectedState()
     {
-        if (skillData == null)
+        EnsureReservationController();
+        isSelected = reservationController != null &&
+                     reservationController.IsGridSelectionActiveFor(previewRuntime, skillData);
+    }
+
+    private void ApplyHighlightVisual()
+    {
+        if (hoverBackgroundImage == null)
             return;
 
-        EnsureBattleTimelineController();
-        battleTimelineController?.CancelGridSelectionWhenHoveringDifferentSkill(
-            previewRuntime,
-            skillData
+        bool showHighlight = isSelected || IsDirectionClickFeedbackActive();
+        hoverBackgroundImage.gameObject.SetActive(showHighlight);
+
+        if (showHighlight)
+            SetHoverAlpha(maximumAlpha);
+    }
+
+    private bool IsDirectionClickFeedbackActive()
+    {
+        return directionClickFeedbackUntil >= 0f &&
+               Time.unscaledTime < directionClickFeedbackUntil;
+    }
+
+    private void EnsureReservationController()
+    {
+        if (reservationController != null)
+            return;
+
+        reservationController = FindFirstObjectByType<PlayerSkillReservationController>(
+            FindObjectsInactive.Include
         );
     }
 

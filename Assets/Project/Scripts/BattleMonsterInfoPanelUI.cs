@@ -363,6 +363,30 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
             ClearMonsterSkillInfo();
     }
 
+    public bool SelectSkillById(string skillId)
+    {
+        if (string.IsNullOrWhiteSpace(skillId))
+            return false;
+
+        EnsureArraySizes();
+        ResolveReferences();
+        RefreshMonsterSkillList();
+
+        for (int i = 0; i < displayedSkills.Length; i++)
+        {
+            MonsterSkillData skillData = displayedSkills[i];
+            if (skillData == null || !string.Equals(skillData.SkillId, skillId, StringComparison.Ordinal))
+                continue;
+
+            selectedSkillIndex = i;
+            RefreshSkillSelectionVisuals();
+            ShowMonsterSkillInfo(skillData);
+            return true;
+        }
+
+        return false;
+    }
+
     private void HandleSkillButtonClicked(int slotIndex)
     {
         if (slotIndex < 0 || slotIndex >= displayedSkills.Length)

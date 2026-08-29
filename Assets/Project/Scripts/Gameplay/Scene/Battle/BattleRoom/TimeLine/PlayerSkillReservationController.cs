@@ -218,12 +218,12 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (rangePreview == null)
             return;
 
-        rangePreview.ClearRangeOnly();
+        // 호버 프리뷰는 현재 선택 중인 프리뷰를 잠시 완전히 덮어쓴다.
+        // Selection/Direction이 서로 다른 Highlight 머테리얼을 사용하므로
+        // 기존 방향 셀까지 모두 지운 뒤 호버한 스킬의 머테리얼로 다시 표시해야 한다.
+        rangePreview.ClearAll();
 
         if (userRuntime == null || skillData == null)
-            return;
-
-        if (IsMoveSkillSelectionActive())
             return;
 
         if (gridManager == null || DataManager.Instance == null || DataManager.Instance.RangeDatabase == null)
@@ -2959,6 +2959,20 @@ public class PlayerSkillReservationController : MonoBehaviour
     private void ShowBattleWarning(string message)
     {
         BattleWarningUI.ShowMessage(message);
+    }
+
+    public bool IsGridSelectionActiveFor(
+        CharacterRuntimeData runtimeData,
+        SkillMasterData skillData)
+    {
+        if (runtimeData == null || skillData == null || currentUserRuntime == null || currentSkillData == null)
+            return false;
+
+        if (currentSkillData.RangeType != RangeType.Selection)
+            return false;
+
+        return runtimeData.CharacterId == currentUserRuntime.CharacterId &&
+               skillData.SkillId == currentSkillData.SkillId;
     }
 
     public void ClearPreview()

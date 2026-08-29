@@ -48,12 +48,25 @@ public static class GameLocalization
                 TableName,
                 key,
                 arguments ?? Array.Empty<object>());
-            return string.IsNullOrEmpty(localized) ? fallback ?? string.Empty : localized;
+
+            if (string.IsNullOrEmpty(localized) || IsMissingTranslationResult(localized))
+                return fallback ?? string.Empty;
+
+            return localized;
         }
         catch (Exception)
         {
             return fallback ?? string.Empty;
         }
+    }
+
+    private static bool IsMissingTranslationResult(string localized)
+    {
+        if (string.IsNullOrWhiteSpace(localized))
+            return true;
+
+        string trimmed = localized.TrimStart();
+        return trimmed.StartsWith("No translation found for", StringComparison.OrdinalIgnoreCase);
     }
 
     private static string NormalizeKeySegment(string value)

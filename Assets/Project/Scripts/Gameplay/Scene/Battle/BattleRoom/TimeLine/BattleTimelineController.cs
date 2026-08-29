@@ -2655,10 +2655,7 @@ public class BattleTimelineController : MonoBehaviour
         }
 
         if (selectedCharacter == null && selectedSkill == null)
-        {
-            ShowBattleWarning("캐릭터와 스킬을 먼저 선택해 주세요.");
             return;
-        }
 
         if (selectedCharacter == null)
         {
@@ -3824,13 +3821,13 @@ public class BattleTimelineController : MonoBehaviour
             return GameLocalization.Get("battle.no_skill_to_reserve", "예약할 스킬 정보가 없습니다.");
 
         if (!runtime.CanReserveHP(command.HPCost))
-            return BuildShortageMessage("HP", command.HPCost, runtime.CurrentHP - runtime.ReservedHPCost);
+            return BuildShortageMessage("생명력", command.HPCost, runtime.CurrentHP - runtime.ReservedHPCost);
 
         if (!runtime.CanReserveCost(command.Cost))
-            return BuildShortageMessage("Cost", command.Cost, runtime.CurrentCost - runtime.ReservedCost);
+            return BuildShortageMessage("마나", command.Cost, runtime.CurrentCost - runtime.ReservedCost);
 
         if (!runtime.CanReserveResource(command.ResourceCost))
-            return BuildShortageMessage(GameLocalization.Get("resource.unique", "고유자원"), command.ResourceCost, runtime.CurrentResource - runtime.ReservedResourceCost);
+            return BuildShortageMessage("카르마", command.ResourceCost, runtime.CurrentResource - runtime.ReservedResourceCost);
 
         if (!runtime.CanReserveShield(command.ShieldCost))
             return BuildShortageMessage(GameLocalization.Get("common.armor", "방어도"), command.ShieldCost, runtime.CurrentShield - runtime.ReservedShieldCost);
@@ -3841,7 +3838,8 @@ public class BattleTimelineController : MonoBehaviour
     private string BuildShortageMessage(string label, int required, int available)
     {
         int safeAvailable = Mathf.Max(0, available);
-        return GameLocalization.Format("battle.resource_shortage", "{0}가 부족합니다. 필요:{1} / 보유:{2}", label, required, safeAvailable);
+        string particle = label == "생명력" ? "이" : "가";
+        return $"{label}{particle} 부족합니다. 필요:{required} / 보유:{safeAvailable}";
     }
 
     private string GetCostLabel(ReferenceResource resource)
@@ -4441,10 +4439,10 @@ public class BattleTimelineController : MonoBehaviour
             return message;
 
         if (message.Contains("HP"))
-            return GameLocalization.Get("battle.hp_shortage", "HP가 부족합니다.");
+            return GameLocalization.Get("battle.hp_shortage", "생명력이 부족합니다.");
 
         if (message.Contains("Cost"))
-            return GameLocalization.Get("battle.cost_shortage", "Cost가 부족합니다.");
+            return GameLocalization.Get("battle.cost_shortage", "마나가 부족합니다.");
 
         return GameLocalization.Get("battle.cannot_reserve_now", "현재 상태에서는 예약할 수 없습니다.");
     }
