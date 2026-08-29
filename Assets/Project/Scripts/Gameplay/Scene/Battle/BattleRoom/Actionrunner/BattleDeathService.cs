@@ -115,8 +115,12 @@ public class BattleDeathService
         if (animator != null)
             animator.PlayDead();
 
-        if (collectReward && !MortNecromancyTracker.IsRevivedSoldier(monster.RuntimeData.RuntimeId))
+        if (collectReward &&
+            !monster.RuntimeData.SuppressDeathReward &&
+            !MortNecromancyTracker.IsRevivedSoldier(monster.RuntimeData.RuntimeId))
+        {
             CollectMonsterReward(monster);
+        }
 
         if (roomLoader != null)
             roomLoader.UnregisterRuntimeMonster(monster);

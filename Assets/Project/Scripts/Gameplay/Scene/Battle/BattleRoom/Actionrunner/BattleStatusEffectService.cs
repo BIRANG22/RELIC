@@ -6,6 +6,7 @@ using UnityEngine;
 public class BattleStatusEffectService
 {
     private const string SplitEffectId = "E_Split";
+    private const string SpiderWebEffectId = "E_Spider_Web";
     private const string ExplodeEffectId = "E_Explode";
 
     private readonly BattleDamageService damageService;
@@ -363,6 +364,16 @@ public class BattleStatusEffectService
     {
         if (statuses == null || status == null)
             return;
+
+        if (status.EffectId == SpiderWebEffectId)
+        {
+            status.TurnCount = Mathf.Max(0, status.TurnCount - 1);
+
+            if (status.TurnCount <= 0)
+                statuses.RemoveAt(index);
+
+            return;
+        }
 
         EffectMasterData effectData = null;
 

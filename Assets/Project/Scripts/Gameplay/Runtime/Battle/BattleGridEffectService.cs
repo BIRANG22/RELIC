@@ -41,6 +41,9 @@ namespace Relic.Gameplay.Battle
 
     public sealed class BattleGridEffectService
     {
+        private const string SpiderWebGridEffectId = "GR_spider_web";
+        private const string SpiderWebEffectId = "E_Spider_Web";
+        private const int SpiderWebPendingTurnCount = 2;
         private const int DefaultMinSpawnCount = 2;
         private const int DefaultMaxSpawnCount = 3;
 
@@ -146,9 +149,10 @@ namespace Relic.Gameplay.Battle
                 return BattleGridEffectApplyResult.None;
 
             // 잔여물은 머크와 블롭이 생성하는 몬스터 전용 지형입니다.
-            // 몬스터는 잔여물 위를 지나거나 해당 위치에서 행동해도 피해를 받지 않습니다.
+            // 거미줄은 플레이어 전용 방해 지형이므로 몬스터가 지나가도 발동하거나 사라지지 않습니다.
             if (TryGetGridEffectData(state, gridIndex, out GridEffectData gridEffectData) &&
-                string.Equals(gridEffectData.GridEffectID, "GR_Residue", StringComparison.OrdinalIgnoreCase))
+                (string.Equals(gridEffectData.GridEffectID, "GR_Residue", StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(gridEffectData.GridEffectID, SpiderWebGridEffectId, StringComparison.OrdinalIgnoreCase)))
             {
                 return BattleGridEffectApplyResult.None;
             }
@@ -175,7 +179,9 @@ namespace Relic.Gameplay.Battle
 
             IReadOnlyList<string> appliedEffectIds = applyEffects(data);
             bool applied = appliedEffectIds != null && appliedEffectIds.Count > 0;
-            bool consumed = applied && data.Consumable == 1;
+            bool consumed = applied &&
+                (data.Consumable == 1 ||
+                 string.Equals(data.GridEffectID, SpiderWebGridEffectId, StringComparison.OrdinalIgnoreCase));
 
             if (consumed)
                 state.Remove(gridIndex);
@@ -375,9 +381,40 @@ namespace Relic.Gameplay.Battle
             if (IsDamageEffect(effectId) || IsArmorEffect(effectId) || IsHealEffect(effectId))
                 return false;
 
+            string normalizedEffectId = effectId.Trim();
+
+            if (string.Equals(normalizedEffectId, SpiderWebEffectId, StringComparison.OrdinalIgnoreCase))
+            {
+                if (statusEffects == null)
+                    return false;
+
+                int multiplier = Mathf.Max(1, value);
+
+                for (int i = 0; i < statusEffects.Count; i++)
+                {
+                    StatusEffectRuntimeData existing = statusEffects[i];
+
+                    if (existing == null ||
+                        !string.Equals(existing.EffectId, SpiderWebEffectId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    existing.Stack = Mathf.Max(existing.Stack, multiplier);
+                    existing.TurnCount = SpiderWebPendingTurnCount;
+                    return true;
+                }
+
+                statusEffects.Add(new StatusEffectRuntimeData(
+                    SpiderWebEffectId,
+                    multiplier,
+                    SpiderWebPendingTurnCount));
+                return true;
+            }
+
             return BattleEffectUtility.AddOrStackStatus(
                 statusEffects,
-                effectId.Trim(),
+                normalizedEffectId,
                 Mathf.Max(1, value),
                 1
             );

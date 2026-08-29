@@ -117,23 +117,32 @@ namespace Relic.Gameplay.Data
         public static string ItemDescription(ItemData data) =>
             data == null ? string.Empty : data.Desc;
 
-        private static bool UseRawEffectDataInDebugBattle()
+        private static bool UseRawEffectData()
         {
             var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
-            return scene.IsValid() && string.Equals(scene.name, "DebugBattle", System.StringComparison.OrdinalIgnoreCase);
+            if (scene.IsValid() && string.Equals(scene.name, "DebugBattle", System.StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            var selectedLocale = UnityEngine.Localization.Settings.LocalizationSettings.SelectedLocale;
+            string languageCode = selectedLocale != null
+                ? selectedLocale.Identifier.Code
+                : string.Empty;
+
+            return !string.IsNullOrWhiteSpace(languageCode) &&
+                   languageCode.StartsWith("ko", System.StringComparison.OrdinalIgnoreCase);
         }
 
         public static string EffectName(EffectMasterData data) =>
             data == null
                 ? string.Empty
-                : UseRawEffectDataInDebugBattle()
+                : UseRawEffectData()
                     ? data.Name
                     : GameLocalization.GetData("Effect", data.EffectId, "name", data.Name);
 
         public static string EffectTooltip(EffectMasterData data) =>
             data == null
                 ? string.Empty
-                : UseRawEffectDataInDebugBattle()
+                : UseRawEffectData()
                     ? data.ToolTip
                     : GameLocalization.GetData("Effect", data.EffectId, "tooltip", data.ToolTip);
     }

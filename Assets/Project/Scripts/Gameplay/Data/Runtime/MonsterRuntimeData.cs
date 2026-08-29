@@ -36,6 +36,7 @@ namespace Relic.Gameplay.Data
 
         public bool IsDeathHandled;
         public bool IsExplodeReady;
+        public bool SuppressDeathReward;
 
         public BattleDirection Direction = BattleDirection.Left;
 

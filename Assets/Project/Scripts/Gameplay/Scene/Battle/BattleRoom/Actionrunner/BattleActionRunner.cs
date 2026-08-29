@@ -64,6 +64,8 @@ public class BattleActionRunner
     private const string MortMonsterId = "Mon_11";
     private const string MortMoveSkillId = "S_Monster_37";
     private const string MortWraithRushSkillId = "S_Monster_38";
+    private const string ArabellaMonsterId = "Mon_12";
+    private const string ArabellaMoveSkillId = "S_Monster_20";
     private const string NocturnThrustSkillId = "S_Monster_17";
     private const string NocturnSlashSkillId = "S_Monster_18";
     private const string NocturnPullSkillId = "S_Monster_19";
@@ -4470,6 +4472,15 @@ public class BattleActionRunner
         // ResolveMonsterMove의 기존 충돌 규칙으로 처리합니다.
         if (string.Equals(command.MonsterId, MortMonsterId, System.StringComparison.Ordinal) &&
             string.Equals(command.SkillId, MortMoveSkillId, System.StringComparison.Ordinal) &&
+            command.MoveOffset != Vector2Int.zero)
+        {
+            return command.MoveOffset;
+        }
+
+        // Arabella keeps the escape vector selected at reservation time.
+        // If a player occupies that path before execution, ResolveMonsterMove handles the collision.
+        if (string.Equals(command.MonsterId, ArabellaMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, ArabellaMoveSkillId, System.StringComparison.Ordinal) &&
             command.MoveOffset != Vector2Int.zero)
         {
             return command.MoveOffset;

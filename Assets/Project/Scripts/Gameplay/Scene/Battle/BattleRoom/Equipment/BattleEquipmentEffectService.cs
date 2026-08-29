@@ -134,6 +134,8 @@ public static class BattleEquipmentEffectService
     private const string MovePointUpEffectId = "E_Move_Point_Up";
     private const string MoveFirstAttackReadyStateId = "State_MoveFirstAttackPowerReady";
     private const string SpiderWebMoveCostPenaltyEffectId = "E_Spider_Web";
+    private const int SpiderWebActiveTurnCount = 1;
+    private const int SpiderWebMoveCostMultiplier = 2;
 
     private readonly struct EquipmentEffectEntry
     {
@@ -655,8 +657,25 @@ public static class BattleEquipmentEffectService
 
     public static int GetSpiderWebMoveCostMultiplier(CharacterRuntimeData runtime)
     {
-        int stack = GetStatusStack(runtime, SpiderWebMoveCostPenaltyEffectId);
-        return stack > 1 ? stack : 1;
+        if (runtime == null || runtime.StatusEffects == null)
+            return 1;
+
+        for (int i = 0; i < runtime.StatusEffects.Count; i++)
+        {
+            StatusEffectRuntimeData status = runtime.StatusEffects[i];
+
+            if (status == null ||
+                status.EffectId != SpiderWebMoveCostPenaltyEffectId ||
+                status.TurnCount != SpiderWebActiveTurnCount ||
+                status.Stack <= 0)
+            {
+                continue;
+            }
+
+            return SpiderWebMoveCostMultiplier;
+        }
+
+        return 1;
     }
 
     public static bool TryApplyAndConsumeSpiderWebMoveCostPenalty(PlayerReservedCommand command)
@@ -673,7 +692,6 @@ public static class BattleEquipmentEffectService
             return false;
 
         command.SetMoveReservationCostMultiplier(multiplier);
-        TryConsumeSpiderWebMoveCostPenalty(command.UserRuntime);
         return true;
     }
 
