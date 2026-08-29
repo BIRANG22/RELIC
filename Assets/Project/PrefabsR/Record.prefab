@@ -1649,7 +1649,6 @@ GameObject:
   - component: {fileID: 3368145496786534567}
   - component: {fileID: 5628617180771402108}
   - component: {fileID: 6671533250031097769}
-  - component: {fileID: 8903107016943043016}
   m_Layer: 5
   m_Name: Cancel
   m_TagString: Untagged
@@ -1665,7 +1664,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 935761091161296676}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -1676,7 +1675,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 584, y: 369}
+  m_AnchoredPosition: {x: 584, y: 372}
   m_SizeDelta: {x: 60, y: 60}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3368145496786534567
@@ -1743,7 +1742,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 8903107016943043016}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: UIPanelButton, Assembly-CSharp
         m_MethodName: Execute
         m_Mode: 1
@@ -1782,6 +1781,9 @@ MonoBehaviour:
   normalColor: {r: 0, g: 0, b: 0, a: 1}
   hoverColor: {r: 0, g: 0, b: 0, a: 1}
   clickedColor: {r: 0, g: 0, b: 0, a: 1}
+  playClickSound: 1
+  clickSoundId: ui.back.click
+  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -1789,51 +1791,6 @@ MonoBehaviour:
   hoverHitArea: {fileID: 0}
   hoverExitPadding: 4
   hoverExitDelay: 0.05
---- !u!114 &8903107016943043016
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 935761091161296676}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d33ad60f7e27c4342ac9a3ee06f1ef95, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  allowSpriteRendererClick: 1
-  ignoreSpriteClickWhenMoved: 1
-  panelToOpen: {fileID: 0}
-  panelsToClose: []
-  panelToMove: {fileID: 0}
-  moveOffset: {x: 300, y: 0}
-  moveDuration: 0.2
-  toggleMove: 1
-  flipButtonOnMove: 0
-  flipTarget: {fileID: 0}
-  toggleIfAlreadyOpen: 1
-  bringOpenedPanelToFront: 1
-  forceOpenedPanelCanvasSorting: 1
-  openedPanelSortingOrder: 1000
-  addGraphicRaycasterToOpenedPanel: 1
-  closeOpenedPanelWhenOtherButtonHovered: 0
-  resetMoveWhenClosedByOtherButton: 1
-  moveTogetherTargets: []
-  effect: 0
-  fadeImage: {fileID: 0}
-  fadeDuration: 0.2
-  fadePanelImageOnChange: 0
-  panelFadeImage: {fileID: 0}
-  openedPanelAlpha: 0.9019608
-  panelFadeDuration: 0.2
-  playHoverSound: 1
-  hoverSfx: ui.normal.hover
-  playClickSound: 1
-  clickSfx: ui.normal.click
-  playPanelOpenCloseSound: 0
-  panelOpenSfx: ui.bag.open
-  panelCloseSfx: ui.bag.close
-  panelOpenCloseSfxVolume: 1
 --- !u!1 &1100680233765584588
 GameObject:
   m_ObjectHideFlags: 0

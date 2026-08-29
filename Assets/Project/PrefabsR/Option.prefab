@@ -1182,7 +1182,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &14613263702461141
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1581,6 +1581,9 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   hoverColor: {r: 0.050980397, g: 0.34901962, b: 0.79215693, a: 1}
   clickedColor: {r: 0.050980393, g: 0.34901962, b: 0.7921569, a: 1}
+  playClickSound: 1
+  clickSoundId: ui.normal.click
+  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -3276,6 +3279,9 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   hoverColor: {r: 0.050980397, g: 0.34901962, b: 0.79215693, a: 1}
   clickedColor: {r: 0.050980393, g: 0.34901962, b: 0.7921569, a: 1}
+  playClickSound: 1
+  clickSoundId: ui.normal.click
+  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -4839,6 +4845,9 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   hoverColor: {r: 0.050980397, g: 0.34901962, b: 0.79215693, a: 1}
   clickedColor: {r: 0.050980393, g: 0.34901962, b: 0.7921569, a: 1}
+  playClickSound: 1
+  clickSoundId: ui.normal.click
+  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -5589,6 +5598,9 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   hoverColor: {r: 0.050980397, g: 0.34901962, b: 0.79215693, a: 1}
   clickedColor: {r: 0.050980393, g: 0.34901962, b: 0.7921569, a: 1}
+  playClickSound: 1
+  clickSoundId: ui.normal.click
+  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -5650,7 +5662,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &4052077861548151750
 RectTransform:
   m_ObjectHideFlags: 0
@@ -7501,6 +7513,9 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   hoverColor: {r: 0.050980397, g: 0.34901962, b: 0.79215693, a: 1}
   clickedColor: {r: 0.050980393, g: 0.34901962, b: 0.7921569, a: 1}
+  playClickSound: 1
+  clickSoundId: ui.normal.click
+  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -8305,7 +8320,7 @@ RectTransform:
   m_GameObject: {fileID: 7109587474499477330}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.7, y: 0.7, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7743560033641755932}
@@ -8317,8 +8332,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 394, y: -306}
-  m_SizeDelta: {x: 100, y: 100}
+  m_AnchoredPosition: {x: 479, y: 243}
+  m_SizeDelta: {x: 70, y: 70}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1073301777204764102
 CanvasRenderer:
@@ -8398,7 +8413,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playHoverSound: 0
   hoverSfx: ui.normal.hover
-  playClickSound: 1
+  playClickSound: 0
   clickSfx: ui.normal.click
 --- !u!114 &8288828846408548060
 MonoBehaviour:
@@ -8407,15 +8422,15 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7109587474499477330}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fa9b19d30445e9c4f952d5b21bbf6629, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   startImageObject: {fileID: 0}
   buttonContent: {fileID: 2661222099118351075}
-  hoverButtonMoveOffset: {x: 3, y: 3, z: 0}
-  hoverButtonScale: {x: 0.8, y: 0.8, z: 1}
+  hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
+  hoverButtonScale: {x: 1.1, y: 1.1, z: 1.1}
   hoverDuration: 0.2
   protectedBackgroundImage: {fileID: 8330105183166038293}
   protectedButtonImage: {fileID: 1043512900391831847}
@@ -8427,6 +8442,9 @@ MonoBehaviour:
   normalColor: {r: 0, g: 0, b: 0, a: 1}
   hoverColor: {r: 0, g: 0, b: 0, a: 1}
   clickedColor: {r: 0, g: 0, b: 0, a: 1}
+  playClickSound: 1
+  clickSoundId: ui.back.click
+  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -8904,15 +8922,15 @@ RectTransform:
   m_GameObject: {fileID: 7912920961394050777}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.0999999, y: 1.0999999, z: 0.77}
-  m_ConstrainProportionsScale: 1
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2661222099118351075}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 180, y: 60}
+  m_SizeDelta: {x: 60, y: 60}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2423594930682038300
 CanvasRenderer:
@@ -8935,14 +8953,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 81ec382434b6fd245b4b53eb959d0d12, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 7e50daf64874a514f9970216c20ad00d, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -10431,5 +10449,5 @@ MonoBehaviour:
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
-  m_CallState: 2
+        m_CallState: 2
   m_AlphaFadeSpeed: 0.15

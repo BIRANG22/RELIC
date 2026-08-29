@@ -48,7 +48,7 @@ MonoBehaviour:
   sfxList:
   - id: ui.normal.hover
     aliases: []
-    clip: {fileID: 8300000, guid: 0ce8dd481d865cb47afde2e711e20bd3, type: 3}
+    clip: {fileID: 8300000, guid: 74ade2b8b222d4ecd9dbd0c5a2ec312a, type: 3}
     volume: 0.15
     pitch: 1
     useRandomPitch: 0
@@ -56,7 +56,7 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: ui.normal.click
     aliases: []
-    clip: {fileID: 8300000, guid: 402b751614041df4ab89e77be2808de2, type: 3}
+    clip: {fileID: 8300000, guid: 57f1816a568354089a07eef6b2935351, type: 3}
     volume: 0.5
     pitch: 1
     useRandomPitch: 0
@@ -88,7 +88,7 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: ui.title.click
     aliases: []
-    clip: {fileID: 8300000, guid: 402b751614041df4ab89e77be2808de2, type: 3}
+    clip: {fileID: 8300000, guid: 7f7f2003f18fd4f6a9b31445986ac291, type: 3}
     volume: 0.5
     pitch: 1
     useRandomPitch: 0
@@ -192,7 +192,7 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: battle.action.reserve.text
     aliases: []
-    clip: {fileID: 8300000, guid: 97920063d95b7e94c8098f16e03d9bf8, type: 3}
+    clip: {fileID: 8300000, guid: 622685aba6ffb47928d0e20ae84be81b, type: 3}
     volume: 0.8
     pitch: 1
     useRandomPitch: 0
@@ -200,7 +200,7 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: battle.progress.text
     aliases: []
-    clip: {fileID: 8300000, guid: 9b3175ceaf0d78541b44e5e8545f1540, type: 3}
+    clip: {fileID: 8300000, guid: 9ebd67a496e154865b4cb3db7e72cc55, type: 3}
     volume: 0.8
     pitch: 1
     useRandomPitch: 0
@@ -208,7 +208,7 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: battle.reward.remnant.acquire
     aliases: []
-    clip: {fileID: 8300000, guid: 10d1753e32fe58a42954ac2cbed901df, type: 3}
+    clip: {fileID: 8300000, guid: 21ebc6cd23edc0e4aa1f23084fa0547d, type: 3}
     volume: 0.3
     pitch: 1
     useRandomPitch: 0
@@ -216,7 +216,7 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: battle.reward.relic.skill.acquire
     aliases: []
-    clip: {fileID: 8300000, guid: 21ebc6cd23edc0e4aa1f23084fa0547d, type: 3}
+    clip: {fileID: 8300000, guid: d91e392b462644884a2e4b0bb372973c, type: 3}
     volume: 0.3
     pitch: 1
     useRandomPitch: 0
@@ -224,7 +224,7 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: battle.relic.choice.acquire
     aliases: []
-    clip: {fileID: 8300000, guid: 10d1753e32fe58a42954ac2cbed901df, type: 3}
+    clip: {fileID: 8300000, guid: 42a1d30a2806e4087acd3298b3acfce4, type: 3}
     volume: 0.3
     pitch: 1
     useRandomPitch: 0
@@ -280,7 +280,7 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: battle.event.dice.roll
     aliases: []
-    clip: {fileID: 8300000, guid: a1f1ef3bd9f209941becc57fb43d467b, type: 3}
+    clip: {fileID: 8300000, guid: f2cea4ad5318749b09c3a483e56dde97, type: 3}
     volume: 0.4
     pitch: 0.8
     useRandomPitch: 0
@@ -288,23 +288,23 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: battle.boss.reveal.impact.low
     aliases: []
-    clip: {fileID: 8300000, guid: 4b4969b0c245adb45a833cd0c1efb8e1, type: 3}
+    clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
     volume: 0.5
-    pitch: 0.5
+    pitch: 1
     useRandomPitch: 0
     randomPitchMin: 1
     randomPitchMax: 1
   - id: battle.boss.reveal.impact.high
     aliases: []
-    clip: {fileID: 8300000, guid: 4b4969b0c245adb45a833cd0c1efb8e1, type: 3}
+    clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
     volume: 0.5
-    pitch: 0.7
+    pitch: 1
     useRandomPitch: 0
     randomPitchMin: 1
     randomPitchMax: 1
   - id: ui.record.page.turn
     aliases: []
-    clip: {fileID: 8300000, guid: 0b96881af7b01874dba0b0d5951f4f0b, type: 3}
+    clip: {fileID: 8300000, guid: 487af83246b5e462f97f3c1cf691dc70, type: 3}
     volume: 0.5
     pitch: 0.7
     useRandomPitch: 0
@@ -358,9 +358,9 @@ MonoBehaviour:
     useRandomPitch: 0
     randomPitchMin: 1
     randomPitchMax: 1
-  - id: ui.research.hover
+  - id: ui.relicstone.click
     aliases: []
-    clip: {fileID: 8300000, guid: 5322309d867c04f87943dc59dad8d06a, type: 3}
+    clip: {fileID: 8300000, guid: 9ebd67a496e154865b4cb3db7e72cc55, type: 3}
     volume: 0.5
     pitch: 0.7
     useRandomPitch: 0
@@ -385,6 +385,22 @@ MonoBehaviour:
   - id: ui.chest.click
     aliases: []
     clip: {fileID: 8300000, guid: 1386d1025d1db42f48f69d85ce36def3, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.back.click
+    aliases: []
+    clip: {fileID: 8300000, guid: cf05ddb3e0f3a40299f6d29a004761b5, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.record.open
+    aliases: []
+    clip: {fileID: 8300000, guid: 5dd444ef4e8264876aaf05afb792355d, type: 3}
     volume: 0.5
     pitch: 0.7
     useRandomPitch: 0

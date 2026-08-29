@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -9,9 +9,9 @@ public class ButtonAnimationCoroutine :
     IPointerExitHandler,
     IPointerClickHandler
 {
-    [Header("½ÃÀÛ È­¸é Â÷´Ü")]
+    [Header("ï¿½ï¿½ï¿½ï¿½ È­ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½")]
 
-    [Tooltip("ÀÌ ¿ÀºêÁ§Æ®°¡ È°¼ºÈ­µÇ¾î ÀÖ´Â µ¿¾È ¹öÆ° ¿¬ÃâÀÌ ÀÛµ¿ÇÏÁö ¾Ê½À´Ï´Ù.")]
+    [Tooltip("ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ È°ï¿½ï¿½È­ï¿½Ç¾ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ° ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ûµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê½ï¿½ï¿½Ï´ï¿½.")]
     [SerializeField] private GameObject startImageObject;
 
 
@@ -68,6 +68,18 @@ public class ButtonAnimationCoroutine :
     private Color clickedColor = Color.white;
 
 
+    [Header("Button Sound")]
+
+    [SerializeField]
+    private bool playClickSound = true;
+
+    [SerializeField, SoundId(SoundCategory.Sfx)]
+    private string clickSoundId = AudioIds.Sfx.NormalButtonClick;
+
+    [SerializeField, Range(0f, 1f)]
+    private float clickSoundVolume = 1f;
+
+
     [Header("Click State")]
 
     [SerializeField]
@@ -85,15 +97,15 @@ public class ButtonAnimationCoroutine :
 
     [Header("Hover Hit Area")]
 
-    [Tooltip("¹öÆ° ³»¿ëÀÌ ¿òÁ÷¿©µµ °íÁ¤µÇ¾î ÀÖ´Â Æ÷ÀÎÅÍ ÆÇÁ¤ ¿µ¿ªÀÔ´Ï´Ù. ºñ¾î ÀÖÀ¸¸é Protected Background Image ¶Ç´Â ÇöÀç ¿ÀºêÁ§Æ®¸¦ »ç¿ëÇÕ´Ï´Ù.")]
+    [Tooltip("ï¿½ï¿½Æ° ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ô´Ï´ï¿½. ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Protected Background Image ï¿½Ç´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.")]
     [SerializeField]
     private RectTransform hoverHitArea;
 
-    [Tooltip("¹öÆ° ¸ð¼­¸®¿¡¼­ È£¹ö°¡ ¹Ýº¹µÇÁö ¾Êµµ·Ï °íÁ¤ ÆÇÁ¤ ¿µ¿ª¿¡ Ãß°¡ÇÏ´Â ¿©À¯ ÇÈ¼¿ÀÔ´Ï´Ù.")]
+    [Tooltip("ï¿½ï¿½Æ° ï¿½ð¼­¸ï¿½ï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½ï¿½ï¿½ ï¿½Ýºï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Êµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½È¼ï¿½ï¿½Ô´Ï´ï¿½.")]
     [SerializeField]
     private float hoverExitPadding = 4f;
 
-    [Tooltip("¹öÆ° ÀÌµ¿ Áß ¹ß»ýÇÏ´Â ¼ø°£ÀûÀÎ Æ÷ÀÎÅÍ ÀÌÅ»À» ¹«½ÃÇÏ´Â ½Ã°£ÀÔ´Ï´Ù.")]
+    [Tooltip("ï¿½ï¿½Æ° ï¿½Ìµï¿½ ï¿½ï¿½ ï¿½ß»ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å»ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Ã°ï¿½ï¿½Ô´Ï´ï¿½.")]
     [SerializeField]
     private float hoverExitDelay = 0.05f;
 
@@ -145,7 +157,7 @@ public class ButtonAnimationCoroutine :
     {
         bool isBlocked = IsBlockedByStartImage();
 
-        // StartImage°¡ »õ·Î ÄÑÁ³´Ù¸é ÁøÇà ÁßÀÎ ¿¬Ãâ°ú »óÅÂ¸¦ Áï½Ã ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        // StartImageï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ù¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â¸ï¿½ ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­ï¿½Õ´Ï´ï¿½.
         if (isBlocked && !wasBlocked)
         {
             ForceClearState(false);
@@ -153,8 +165,8 @@ public class ButtonAnimationCoroutine :
 
         wasBlocked = isBlocked;
 
-        // ¹öÆ° ³»¿ëÀÌ ¿òÁ÷ÀÌ´õ¶óµµ, Æ÷ÀÎÅÍ°¡ µé¾î¿ÔÀ» ¶§ ÀúÀåÇÑ °íÁ¤ ¿µ¿ªÀ»
-        // ¿ÏÀüÈ÷ ¹þ¾î³ª±â Àü±îÁö´Â È£¹ö »óÅÂ¸¦ À¯ÁöÇÕ´Ï´Ù.
+        // ï¿½ï¿½Æ° ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ì´ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½Í°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½î³ªï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½ ï¿½ï¿½ï¿½Â¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         if (!isBlocked &&
             isPointerInside &&
             hasCachedHoverScreenRect)
@@ -183,7 +195,7 @@ public class ButtonAnimationCoroutine :
 
 
     /// <summary>
-    /// StartImage°¡ ÇöÀç È°¼ºÈ­µÇ¾î ÀÖ´ÂÁö È®ÀÎÇÕ´Ï´Ù.
+    /// StartImageï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È°ï¿½ï¿½È­ï¿½Ç¾ï¿½ ï¿½Ö´ï¿½ï¿½ï¿½ È®ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
     /// </summary>
     private bool IsBlockedByStartImage()
     {
@@ -194,7 +206,7 @@ public class ButtonAnimationCoroutine :
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        // StartImage°¡ ÄÑÁ® ÀÖÀ¸¸é È£¹ö ÀÔ·ÂÀ» ¹«½ÃÇÕ´Ï´Ù.
+        // StartImageï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½ ï¿½Ô·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         if (IsBlockedByStartImage())
         {
             return;
@@ -221,8 +233,8 @@ public class ButtonAnimationCoroutine :
             return;
         }
 
-        // ¿òÁ÷ÀÎ ¹öÆ° ±×·¡ÇÈÀÌ Æ÷ÀÎÅÍ¿¡¼­ ºüÁ³´Ù´Â ÀÌº¥Æ®´Â ¹«½ÃÇÏ°í,
-        // Æ÷ÀÎÅÍ°¡ Ã³À½ ÁøÀÔÇßÀ» ¶§ ÀúÀåÇÑ °íÁ¤ ¿µ¿ªÀ» ¹þ¾î³­ °æ¿ì¿¡¸¸ ÇØÁ¦ÇÕ´Ï´Ù.
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ° ï¿½×·ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ù´ï¿½ ï¿½Ìºï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½,
+        // ï¿½ï¿½ï¿½ï¿½ï¿½Í°ï¿½ Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½î³­ ï¿½ï¿½ì¿¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         Vector2 pointerPosition = eventData != null
             ? eventData.position
             : (Vector2)Input.mousePosition;
@@ -234,9 +246,9 @@ public class ButtonAnimationCoroutine :
             return;
         }
 
-        // ¹öÆ° ±×·¡ÇÈÀÌ ÀÌµ¿ÇÏ¸é¼­ ¹ß»ýÇÑ ¼ø°£ÀûÀÎ Exit ÀÌº¥Æ®¸¸À¸·Î´Â
-        // È£¹ö¸¦ Áï½Ã ÇØÁ¦ÇÏÁö ¾Ê½À´Ï´Ù. Update¿¡¼­ °íÁ¤ ¿µ¿ª ¹Û¿¡
-        // hoverExitDelay ÀÌ»ó ¸Ó¹® °æ¿ì¿¡¸¸ ½ÇÁ¦ ÀÌÅ»·Î Ã³¸®ÇÕ´Ï´Ù.
+        // ï¿½ï¿½Æ° ï¿½×·ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ìµï¿½ï¿½Ï¸é¼­ ï¿½ß»ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Exit ï¿½Ìºï¿½Æ®ï¿½ï¿½ï¿½ï¿½ï¿½Î´ï¿½
+        // È£ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê½ï¿½ï¿½Ï´ï¿½. Updateï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Û¿ï¿½
+        // hoverExitDelay ï¿½Ì»ï¿½ ï¿½Ó¹ï¿½ ï¿½ï¿½ì¿¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å»ï¿½ï¿½ Ã³ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         pointerOutsideTime = 0f;
     }
 
@@ -346,11 +358,13 @@ public class ButtonAnimationCoroutine :
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        // StartImage°¡ ÄÑÁ® ÀÖÀ¸¸é Å¬¸¯ ¿¬ÃâÀ» ½ÇÇàÇÏÁö ¾Ê½À´Ï´Ù.
+        // StartImageï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê½ï¿½ï¿½Ï´ï¿½.
         if (IsBlockedByStartImage())
         {
             return;
         }
+
+        PlayClickSound();
 
         if (toggleClickState)
         {
@@ -377,6 +391,34 @@ public class ButtonAnimationCoroutine :
         }
 
         StartVisualAnimationIfNeeded();
+    }
+
+
+    private void PlayClickSound()
+    {
+        if (!playClickSound)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(clickSoundId))
+        {
+            return;
+        }
+
+        if (AudioManager.Instance == null)
+        {
+            Debug.LogWarning(
+                $"[{nameof(ButtonAnimationCoroutine)}] AudioManager.Instanceë¥¼ ì°¾ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. Object: {name}",
+                this
+            );
+            return;
+        }
+
+        AudioManager.Instance.PlaySfx(
+            clickSoundId,
+            Mathf.Clamp01(clickSoundVolume)
+        );
     }
 
 
@@ -498,7 +540,7 @@ public class ButtonAnimationCoroutine :
 
     private void StartVisualAnimationIfNeeded()
     {
-        // StartImage°¡ ÄÑÁ® ÀÖÀ¸¸é ¸ðµç ¹öÆ° ¿¬ÃâÀ» Â÷´ÜÇÕ´Ï´Ù.
+        // StartImageï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½Æ° ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         if (IsBlockedByStartImage())
         {
             StopVisualAnimation();
@@ -515,8 +557,8 @@ public class ButtonAnimationCoroutine :
             return;
         }
 
-        // »óÅÂ°¡ ºü¸£°Ô ¹Ù²î¾îµµ ±âÁ¸ ÄÚ·çÆ¾À» Áß´ÜÇÏ°í ´Ù½Ã ¸¸µéÁö ¾Ê½À´Ï´Ù.
-        // ½ÇÇà ÁßÀÎ ÄÚ·çÆ¾ÀÌ ¸Å ÇÁ·¹ÀÓ ÃÖ½Å ¸ñÇ¥°ªÀ» µû¶ó°©´Ï´Ù.
+        // ï¿½ï¿½ï¿½Â°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ù²ï¿½îµµ ï¿½ï¿½ï¿½ï¿½ ï¿½Ú·ï¿½Æ¾ï¿½ï¿½ ï¿½ß´ï¿½ï¿½Ï°ï¿½ ï¿½Ù½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê½ï¿½ï¿½Ï´ï¿½.
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ú·ï¿½Æ¾ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ö½ï¿½ ï¿½ï¿½Ç¥ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ó°©´Ï´ï¿½.
         if (visualCoroutine == null)
         {
             visualCoroutine =
@@ -542,7 +584,7 @@ public class ButtonAnimationCoroutine :
     {
         while (true)
         {
-            // ¿¬Ãâ Áß StartImage°¡ ´Ù½Ã ÄÑÁö¸é Áï½Ã ¿ø·¡ »óÅÂ·Î º¹±¸ÇÕ´Ï´Ù.
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ StartImageï¿½ï¿½ ï¿½Ù½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
             if (IsBlockedByStartImage())
             {
                 isPointerInside = false;
@@ -569,7 +611,7 @@ public class ButtonAnimationCoroutine :
 
             if (buttonContent != null)
             {
-                // ¿ÀÇÁ¼ÂÀÌ ¼³Á¤µÈ °æ¿ì¿¡¸¸ À§Ä¡¸¦ º¯°æÇÕ´Ï´Ù.
+                // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ì¿¡ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
                 if (UsesButtonPositionAnimation())
                 {
                     buttonContent.anchoredPosition =
@@ -757,7 +799,7 @@ public class ButtonAnimationCoroutine :
 
 
     /// <summary>
-    /// ¹öÆ° ÀÌµ¿ ¿ÀÇÁ¼ÂÀÌ ¼³Á¤µÈ °æ¿ì¿¡¸¸ À§Ä¡¸¦ Á¦¾îÇÕ´Ï´Ù.
+    /// ï¿½ï¿½Æ° ï¿½Ìµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ì¿¡ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
     /// </summary>
     private bool UsesButtonPositionAnimation()
     {
@@ -767,7 +809,7 @@ public class ButtonAnimationCoroutine :
 
 
     /// <summary>
-    /// º¯°æ ¹è°æ ÀÌµ¿ ¿ÀÇÁ¼ÂÀÌ ¼³Á¤µÈ °æ¿ì¿¡¸¸ À§Ä¡¸¦ Á¦¾îÇÕ´Ï´Ù.
+    /// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ìµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ì¿¡ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
     /// </summary>
     private bool UsesChangingBackgroundPositionAnimation()
     {
