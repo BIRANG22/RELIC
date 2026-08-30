@@ -14,6 +14,8 @@ public sealed class SoundUsageBrowserWindow : EditorWindow
     private Vector2 detailScroll;
     private string selectedId;
     private string filter = "";
+    private const string VfxKeyPrefix = "vfx:";
+    private const string MissingVfxKeyPrefix = "missing-vfx:";
 
     [MenuItem("Relic/Audio/Open Sound Usage Browser")]
     public static void Open()
@@ -91,7 +93,52 @@ public sealed class SoundUsageBrowserWindow : EditorWindow
                     selectedId = missingId;
             }
 
+            EditorGUILayout.Space(8);
+            DrawVfxSoundListGroup("Player", "Player VFX Sounds");
+            DrawVfxSoundListGroup("Monster", "Monster VFX Sounds");
+            DrawMissingVfxSoundList();
+
             EditorGUILayout.EndScrollView();
+        }
+    }
+
+    private void DrawVfxSoundListGroup(string group, string title)
+    {
+        IEnumerable<SoundUsageVfxSoundEntry> entries = report.VfxSoundEntries
+            .Where(entry => entry.Group == group)
+            .Where(entry => MatchesFilter(entry.VfxPath) || MatchesFilter(entry.ClipNames))
+            .OrderBy(entry => entry.VfxPath, StringComparer.Ordinal);
+
+        EditorGUILayout.LabelField(title, EditorStyles.boldLabel);
+
+        foreach (SoundUsageVfxSoundEntry entry in entries)
+        {
+            string key = GetVfxKey(entry);
+            string label = $"{entry.VfxName}  ({entry.CueCount})";
+            GUIStyle style = selectedId == key ? EditorStyles.helpBox : EditorStyles.miniButton;
+
+            if (GUILayout.Button(label, style))
+                selectedId = key;
+        }
+    }
+
+    private void DrawMissingVfxSoundList()
+    {
+        if (report.MissingVfxSoundPrefabPaths.Count == 0)
+            return;
+
+        EditorGUILayout.LabelField("Missing VFX Sounds", EditorStyles.boldLabel);
+
+        foreach (string path in report.MissingVfxSoundPrefabPaths.OrderBy(path => path, StringComparer.Ordinal))
+        {
+            if (!MatchesFilter(path))
+                continue;
+
+            string key = MissingVfxKeyPrefix + path;
+            GUIStyle style = selectedId == key ? EditorStyles.helpBox : EditorStyles.miniButton;
+
+            if (GUILayout.Button($"Missing  {path}", style))
+                selectedId = key;
         }
     }
 
@@ -108,12 +155,92 @@ public sealed class SoundUsageBrowserWindow : EditorWindow
                 return;
             }
 
+            if (selectedId.StartsWith(VfxKeyPrefix, StringComparison.Ordinal))
+            {
+                DrawVfxSoundDetails(selectedId);
+                EditorGUILayout.EndScrollView();
+                return;
+            }
+
+            if (selectedId.StartsWith(MissingVfxKeyPrefix, StringComparison.Ordinal))
+            {
+                DrawMissingVfxSoundDetails(selectedId.Substring(MissingVfxKeyPrefix.Length));
+                EditorGUILayout.EndScrollView();
+                return;
+            }
+
             EditorGUILayout.LabelField(selectedId, EditorStyles.boldLabel);
             DrawDatabaseEntryEditor(selectedId);
             DrawReferences(selectedId);
             DrawEmbeddedAudioSources();
 
             EditorGUILayout.EndScrollView();
+        }
+    }
+
+    private void DrawVfxSoundDetails(string key)
+    {
+        SoundUsageVfxSoundEntry entry = report.VfxSoundEntries
+            .FirstOrDefault(item => GetVfxKey(item) == key);
+
+        if (entry == null)
+        {
+            EditorGUILayout.HelpBox("VFX 사운드 매핑을 찾지 못했습니다.", MessageType.Warning);
+            return;
+        }
+
+        EditorGUILayout.LabelField($"{entry.Group} VFX Sound", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField("VFX", entry.VfxPath);
+        EditorGUILayout.LabelField("Clips", entry.ClipNames);
+
+        UnityEngine.Object asset = UnityAssetDatabase.LoadAssetAtPath<UnityEngine.Object>(entry.VfxPath);
+        if (asset != null && GUILayout.Button("Ping VFX", GUILayout.Width(90)))
+            EditorGUIUtility.PingObject(asset);
+
+        DrawVfxSoundEntryEditor(entry);
+        DrawEmbeddedAudioSources();
+    }
+
+    private void DrawMissingVfxSoundDetails(string path)
+    {
+        EditorGUILayout.LabelField("Missing VFX Sound", EditorStyles.boldLabel);
+        EditorGUILayout.HelpBox("SkillVfxDatabase에서 사용하는 VFX지만 SoundDatabase에 재생 가능한 VFX 사운드 큐가 없습니다.", MessageType.Warning);
+        EditorGUILayout.LabelField("VFX", path);
+
+        UnityEngine.Object asset = UnityAssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
+        if (asset != null && GUILayout.Button("Ping VFX", GUILayout.Width(90)))
+            EditorGUIUtility.PingObject(asset);
+
+        DrawEmbeddedAudioSources();
+    }
+
+    private void DrawVfxSoundEntryEditor(SoundUsageVfxSoundEntry entry)
+    {
+        if (serializedDatabase == null)
+        {
+            EditorGUILayout.HelpBox("SerializedObject를 만들 수 없습니다.", MessageType.Warning);
+            return;
+        }
+
+        SerializedProperty entryProperty = FindVfxEntryProperty(entry);
+        if (entryProperty == null)
+        {
+            EditorGUILayout.HelpBox("SoundDatabase 안에서 VFX 매핑 위치를 찾지 못했습니다.", MessageType.Warning);
+            return;
+        }
+
+        EditorGUILayout.Space(8);
+        EditorGUILayout.LabelField("Database VFX Entry", EditorStyles.boldLabel);
+
+        serializedDatabase.Update();
+        DrawChild(entryProperty, "vfxPrefab");
+        DrawChild(entryProperty, "cues");
+
+        if (serializedDatabase.ApplyModifiedProperties())
+        {
+            EditorUtility.SetDirty(database);
+            UnityAssetDatabase.SaveAssets();
+            Refresh();
         }
     }
 
@@ -238,6 +365,11 @@ public sealed class SoundUsageBrowserWindow : EditorWindow
         {
             selectedId = report.DatabaseEntries[0].Id;
         }
+        else if (string.IsNullOrWhiteSpace(selectedId) &&
+            report.VfxSoundEntries.Count > 0)
+        {
+            selectedId = GetVfxKey(report.VfxSoundEntries[0]);
+        }
 
         Repaint();
     }
@@ -255,7 +387,6 @@ public sealed class SoundUsageBrowserWindow : EditorWindow
         string listName = entry.Category switch
         {
             SoundCategory.Bgm => "bgmList",
-            SoundCategory.SkillSfx => "skillSfxList",
             _ => "sfxList"
         };
 
@@ -272,6 +403,36 @@ public sealed class SoundUsageBrowserWindow : EditorWindow
         }
 
         return null;
+    }
+
+    private SerializedProperty FindVfxEntryProperty(SoundUsageVfxSoundEntry entry)
+    {
+        string listName = entry.Group == "Player"
+            ? "playerSkillVfxSfxList"
+            : "monsterSkillVfxSfxList";
+
+        SerializedProperty list = serializedDatabase.FindProperty(listName);
+        if (list == null || !list.isArray)
+            return null;
+
+        for (int i = 0; i < list.arraySize; i++)
+        {
+            SerializedProperty element = list.GetArrayElementAtIndex(i);
+            SerializedProperty prefab = element.FindPropertyRelative("vfxPrefab");
+            string path = prefab != null && prefab.objectReferenceValue != null
+                ? UnityAssetDatabase.GetAssetPath(prefab.objectReferenceValue)
+                : "";
+
+            if (path == entry.VfxPath)
+                return element;
+        }
+
+        return null;
+    }
+
+    private static string GetVfxKey(SoundUsageVfxSoundEntry entry)
+    {
+        return VfxKeyPrefix + entry.Group + ":" + entry.VfxPath;
     }
 
     private static void DrawChild(SerializedProperty parent, string childName)

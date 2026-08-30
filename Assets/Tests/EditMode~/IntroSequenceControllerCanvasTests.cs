@@ -122,4 +122,39 @@ public class IntroSequenceControllerCanvasTests
             Object.DestroyImmediate(disabledObject);
         }
     }
+
+    [Test]
+    public void SetGameObjectsHiddenForIntro_RestoresOriginalActiveStates()
+    {
+        GameObject activeObject = new("ActiveBackground");
+        GameObject inactiveObject = new("InactiveBackground");
+
+        try
+        {
+            inactiveObject.SetActive(false);
+            Dictionary<GameObject, bool> activeStates = new();
+            GameObject[] targets = { activeObject, inactiveObject };
+
+            IntroSequenceController.SetGameObjectsHiddenForIntroForTest(
+                targets,
+                activeStates,
+                hidden: true);
+
+            Assert.IsFalse(activeObject.activeSelf);
+            Assert.IsFalse(inactiveObject.activeSelf);
+
+            IntroSequenceController.SetGameObjectsHiddenForIntroForTest(
+                targets,
+                activeStates,
+                hidden: false);
+
+            Assert.IsTrue(activeObject.activeSelf);
+            Assert.IsFalse(inactiveObject.activeSelf);
+        }
+        finally
+        {
+            Object.DestroyImmediate(activeObject);
+            Object.DestroyImmediate(inactiveObject);
+        }
+    }
 }

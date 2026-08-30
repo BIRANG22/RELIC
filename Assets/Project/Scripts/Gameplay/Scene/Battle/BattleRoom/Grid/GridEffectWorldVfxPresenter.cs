@@ -141,7 +141,6 @@ public class GridEffectWorldVfxPresenter : MonoBehaviour
         {
             prefab = source.prefab,
             flipType = source.flipType,
-            sfx = BattleVfxSfxEntry.CopyFrom(source.sfx),
             renderMode = BattleVfxRenderMode.IndividualWorldRenderTexture,
             proxyBlendMode = source.proxyBlendMode,
             renderTextureWidth = source.renderTextureWidth,
@@ -210,7 +209,7 @@ public class GridEffectWorldVfxPresenter : MonoBehaviour
 
         EnsureVfxPauseController(vfx);
         ApplyVfxFlip(vfx, entry.flipType);
-        BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(vfx, entry.sfx, this);
+        BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(vfx, entry.prefab, this);
     }
 
     private static void EnsureVfxPauseController(GameObject vfx)

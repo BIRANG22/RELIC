@@ -15,6 +15,10 @@ public class DBAudioSource : MonoBehaviour
     private float volume = 1f;
 
     [Header("Playback")]
+    [Tooltip("사운드를 재생하기 전 대기 시간입니다. 0이면 즉시 재생합니다.")]
+    [SerializeField, Min(0f)]
+    private float playDelay = 0f;
+
     [Tooltip("오브젝트가 활성화될 때 자동으로 재생합니다.")]
     [SerializeField]
     private bool playOnEnable = true;
@@ -24,6 +28,7 @@ public class DBAudioSource : MonoBehaviour
     private bool playNextFrameOnEnable = true;
 
     private Coroutine playOnEnableCoroutine;
+    private Coroutine delayedPlayCoroutine;
 
     private void OnEnable()
     {
@@ -41,11 +46,17 @@ public class DBAudioSource : MonoBehaviour
 
     private void OnDisable()
     {
-        if (playOnEnableCoroutine == null)
-            return;
+        if (playOnEnableCoroutine != null)
+        {
+            StopCoroutine(playOnEnableCoroutine);
+            playOnEnableCoroutine = null;
+        }
 
-        StopCoroutine(playOnEnableCoroutine);
-        playOnEnableCoroutine = null;
+        if (delayedPlayCoroutine != null)
+        {
+            StopCoroutine(delayedPlayCoroutine);
+            delayedPlayCoroutine = null;
+        }
     }
 
     private IEnumerator PlayNextFrameRoutine()
@@ -70,6 +81,27 @@ public class DBAudioSource : MonoBehaviour
     /// 인스펙터 볼륨에 추가 배율을 곱해 SFX를 재생합니다.
     /// </summary>
     public void Play(float volumeMultiplier)
+    {
+        if (playDelay <= 0f)
+        {
+            PlayImmediate(volumeMultiplier);
+            return;
+        }
+
+        if (delayedPlayCoroutine != null)
+            StopCoroutine(delayedPlayCoroutine);
+
+        delayedPlayCoroutine = StartCoroutine(PlayDelayedRoutine(volumeMultiplier));
+    }
+
+    private IEnumerator PlayDelayedRoutine(float volumeMultiplier)
+    {
+        yield return new WaitForSecondsRealtime(playDelay);
+        delayedPlayCoroutine = null;
+        PlayImmediate(volumeMultiplier);
+    }
+
+    private void PlayImmediate(float volumeMultiplier)
     {
         if (string.IsNullOrWhiteSpace(soundId))
             return;

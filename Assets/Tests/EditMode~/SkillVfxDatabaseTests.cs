@@ -109,7 +109,7 @@ public class SkillVfxDatabaseTests
     }
 
     [Test]
-    public void PlaySkillAction_DoesNotRepeatSkillVfxAfterFirstHit()
+    public void PlaySkillAction_RepeatsSkillVfxForEachHit()
     {
         GameObject owner = new("SkillVfxMultiHitOwner");
         GameObject prefab = new("MultiHitSkillVfx");
@@ -144,7 +144,7 @@ public class SkillVfxDatabaseTests
                     spawnedCount++;
             }
 
-            Assert.That(spawnedCount, Is.EqualTo(1));
+            Assert.That(spawnedCount, Is.EqualTo(2));
         }
         finally
         {

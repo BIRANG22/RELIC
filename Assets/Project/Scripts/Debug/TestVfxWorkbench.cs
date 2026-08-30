@@ -259,18 +259,6 @@ public sealed class TestVfxWorkbench : MonoBehaviour
         settings.RenderMode = (BattleVfxRenderMode)DrawEnumToolbar("Render Mode", settings.RenderMode);
         settings.FlipType = (VfxFlipType)DrawEnumToolbar("Flip Type", settings.FlipType);
 
-        GUILayout.Label("SFX");
-        settings.PlaySfx = GUILayout.Toggle(settings.PlaySfx, "Play SFX ID");
-        settings.SfxId = LabeledTextField("SFX Id", settings.SfxId);
-        settings.SfxDelay = LabeledFloatField("SFX Delay", settings.SfxDelay);
-        settings.SfxVolumeMultiplier = LabeledFloatField("SFX Volume", settings.SfxVolumeMultiplier);
-        settings.RouteEmbeddedAudioSourcesThroughAudioManager =
-            GUILayout.Toggle(
-                settings.RouteEmbeddedAudioSourcesThroughAudioManager,
-                "Route embedded AudioSources");
-        settings.RemoveEmbeddedAudioSources =
-            GUILayout.Toggle(settings.RemoveEmbeddedAudioSources, "Remove embedded AudioSources");
-
         settings.ObjectLayerName = DrawChoice("Object Layer", settings.ObjectLayerName, GetObjectLayerNames());
         settings.SortingLayerName = DrawChoice("Sorting Layer", settings.SortingLayerName, GetSortingLayerNames());
         settings.SortingOrderOffset = LabeledIntField("Order Offset", settings.SortingOrderOffset);
@@ -531,7 +519,7 @@ public sealed class TestVfxWorkbench : MonoBehaviour
         TestVfxWorkbenchUtility.ApplyTransformOverrides(vfx, settings);
         TestVfxWorkbenchUtility.ApplyFlip(vfx, entry.flipType);
         TestVfxWorkbenchUtility.RestartParticles(vfx);
-        BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(vfx, entry.sfx, this);
+        BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(vfx, entry.prefab, this);
     }
 
     private IEnumerator DestroyAfter(GameObject targetObject, float delay)

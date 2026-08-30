@@ -55,9 +55,6 @@ public class AudioManager : Singleton<AudioManager>
 
         foreach (SoundData data in soundDatabase.SfxEntries)
             RegisterSfxId(data);
-
-        foreach (SoundData data in soundDatabase.SkillSfxEntries)
-            RegisterSfxId(data);
     }
 
     private void RegisterBgmId(SoundData data)
@@ -250,10 +247,13 @@ public class AudioManager : Singleton<AudioManager>
         if (!TryGetSfxData(id, out SoundData data))
             return;
 
-        PlaySfxClip(
-            data.clip,
-            Mathf.Clamp01(data.volume) * Mathf.Clamp01(volumeMultiplier),
-            data.GetPlaybackPitch());
+        Vector3 worldPosition = sfxSource != null ? sfxSource.transform.position : transform.position;
+        Quaternion worldRotation = sfxSource != null ? sfxSource.transform.rotation : transform.rotation;
+
+        AudioSourcePlaybackSettings settings =
+            AudioSourcePlaybackSettings.From(data, worldPosition, worldRotation, sfxSource);
+
+        PlaySfxClip(settings, volumeMultiplier);
     }
 
     public bool TryGetSfxData(string id, out SoundData data)
@@ -278,6 +278,37 @@ public class AudioManager : Singleton<AudioManager>
         return false;
     }
 
+    public bool TryGetSkillVfxSfx(GameObject vfxPrefab, out VfxSoundData data)
+    {
+        data = null;
+
+        return soundDatabase != null &&
+            soundDatabase.TryGetSkillVfxSfx(vfxPrefab, out data);
+    }
+
+    public AudioSource PlayVfxSfxCue(
+        VfxSoundCue cue,
+        Vector3 worldPosition,
+        Quaternion worldRotation,
+        float volumeMultiplier = 1f)
+    {
+        if (cue == null || cue.clip == null)
+            return null;
+
+        if (cue.loop)
+        {
+            AudioSourcePlaybackSettings settings =
+                AudioSourcePlaybackSettings.From(cue, worldPosition, worldRotation, sfxSource);
+
+            return PlaySfxClip(settings, volumeMultiplier);
+        }
+
+        AudioSourcePlaybackSettings oneShotSettings =
+            AudioSourcePlaybackSettings.From(cue, worldPosition, worldRotation, sfxSource);
+
+        return PlaySfxClip(oneShotSettings, volumeMultiplier);
+    }
+
     public void PlaySfxClip(AudioClip clip)
     {
         PlaySfxClip(clip, 1f);
@@ -299,17 +330,12 @@ public class AudioManager : Singleton<AudioManager>
             return;
         }
 
-        float previousPitch = sfxSource.pitch;
-        sfxSource.pitch = SoundData.ClampPlaybackPitch(pitch);
+        AudioSourcePlaybackSettings settings = AudioSourcePlaybackSettings.From(sfxSource);
+        if (settings == null)
+            return;
 
-        try
-        {
-            sfxSource.PlayOneShot(clip, Mathf.Clamp01(volumeMultiplier));
-        }
-        finally
-        {
-            sfxSource.pitch = previousPitch;
-        }
+        settings.SetClipAndPitch(clip, SoundData.ClampPlaybackPitch(pitch));
+        PlaySfxClip(settings, volumeMultiplier);
     }
 
     public AudioSource PlaySfxClip(AudioSource source)
@@ -800,6 +826,65 @@ public sealed class AudioSourcePlaybackSettings
                 ? CopyCurve(template.GetCustomCurve(AudioSourceCurveType.Spread))
                 : null
         };
+    }
+
+    public static AudioSourcePlaybackSettings From(
+        VfxSoundCue cue,
+        Vector3 worldPosition,
+        Quaternion worldRotation,
+        AudioSource template)
+    {
+        if (cue == null || cue.clip == null)
+            return null;
+
+        return new AudioSourcePlaybackSettings
+        {
+            Clip = cue.clip,
+            OutputAudioMixerGroup = template != null ? template.outputAudioMixerGroup : null,
+            WorldPosition = worldPosition,
+            WorldRotation = worldRotation,
+            BypassEffects = template != null && template.bypassEffects,
+            BypassListenerEffects = template != null && template.bypassListenerEffects,
+            BypassReverbZones = template != null && template.bypassReverbZones,
+            Loop = cue.loop,
+            Priority = template != null ? template.priority : 128,
+            Volume = Mathf.Clamp01(cue.volume),
+            Pitch = cue.GetPlaybackPitch(),
+            PanStereo = template != null ? template.panStereo : 0f,
+            SpatialBlend = template != null ? template.spatialBlend : 0f,
+            ReverbZoneMix = template != null ? template.reverbZoneMix : 1f,
+            DopplerLevel = template != null ? template.dopplerLevel : 1f,
+            Spread = template != null ? template.spread : 0f,
+            RolloffMode = template != null ? template.rolloffMode : AudioRolloffMode.Logarithmic,
+            MinDistance = template != null ? template.minDistance : 1f,
+            MaxDistance = template != null ? template.maxDistance : 500f,
+            IgnoreListenerPause = template != null && template.ignoreListenerPause,
+            IgnoreListenerVolume = template != null && template.ignoreListenerVolume,
+            Spatialize = template != null && template.spatialize,
+            SpatializePostEffects = template != null && template.spatializePostEffects,
+            VelocityUpdateMode = template != null
+                ? template.velocityUpdateMode
+                : AudioVelocityUpdateMode.Auto,
+            customRolloffCurve = template != null
+                ? CopyCurve(template.GetCustomCurve(AudioSourceCurveType.CustomRolloff))
+                : null,
+            spatialBlendCurve = template != null
+                ? CopyCurve(template.GetCustomCurve(AudioSourceCurveType.SpatialBlend))
+                : null,
+            reverbZoneMixCurve = template != null
+                ? CopyCurve(template.GetCustomCurve(AudioSourceCurveType.ReverbZoneMix))
+                : null,
+            spreadCurve = template != null
+                ? CopyCurve(template.GetCustomCurve(AudioSourceCurveType.Spread))
+                : null
+        };
+    }
+
+    public void SetClipAndPitch(AudioClip clip, float pitch)
+    {
+        Clip = clip;
+        Loop = false;
+        Pitch = SoundData.ClampPlaybackPitch(pitch);
     }
 
     public void ApplyTo(AudioSource target, float volumeMultiplier)

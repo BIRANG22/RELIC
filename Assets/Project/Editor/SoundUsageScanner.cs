@@ -40,6 +40,8 @@ public sealed class SoundUsageReport
     public List<EmbeddedAudioSourceUsage> EmbeddedAudioSources { get; } = new();
     public List<string> MissingDatabaseEntryIds { get; } = new();
     public List<string> UnusedDatabaseEntryIds { get; } = new();
+    public List<SoundUsageVfxSoundEntry> VfxSoundEntries { get; } = new();
+    public List<string> MissingVfxSoundPrefabPaths { get; } = new();
 
     public IReadOnlyList<SoundUsageReference> GetReferences(string soundId)
     {
@@ -51,6 +53,29 @@ public sealed class SoundUsageReport
             .Where(reference => reference.SoundId == normalized)
             .ToArray();
     }
+}
+
+public sealed class SoundUsageVfxSoundEntry
+{
+    public SoundUsageVfxSoundEntry(
+        string group,
+        string vfxPath,
+        string vfxName,
+        int cueCount,
+        string clipNames)
+    {
+        Group = group ?? "";
+        VfxPath = vfxPath ?? "";
+        VfxName = vfxName ?? "";
+        CueCount = cueCount;
+        ClipNames = clipNames ?? "";
+    }
+
+    public string Group { get; }
+    public string VfxPath { get; }
+    public string VfxName { get; }
+    public int CueCount { get; }
+    public string ClipNames { get; }
 }
 
 public sealed class SoundUsageDatabaseEntry
@@ -172,7 +197,8 @@ public static class SoundUsageScanner
 
         AddDatabaseEntries(report, database);
         AddSourceCodeReferences(report, options);
-        AddSkillVfxReferences(report, options);
+        AddVfxSoundEntries(report, database);
+        AddSkillVfxMappingDiagnostics(report, database, options);
         AddPrefabReferences(report, options);
         ClassifyReferences(report);
 
@@ -204,13 +230,17 @@ public static class SoundUsageScanner
         builder.AppendLine($"- References: {report.References.Count}");
         builder.AppendLine($"- Missing database entries: {report.MissingDatabaseEntryIds.Count}");
         builder.AppendLine($"- Unused database entries: {report.UnusedDatabaseEntryIds.Count}");
+        builder.AppendLine($"- VFX sound mappings: {report.VfxSoundEntries.Count}");
+        builder.AppendLine($"- Skill VFX without playable DB sound: {report.MissingVfxSoundPrefabPaths.Count}");
         builder.AppendLine($"- Embedded AudioSources: {report.EmbeddedAudioSources.Count}");
         builder.AppendLine();
 
         AppendDatabaseEntries(builder, report);
+        AppendVfxSoundMappings(builder, report);
         AppendUsageBySoundId(builder, report);
         AppendIdList(builder, "Missing Database Entries", report.MissingDatabaseEntryIds);
         AppendIdList(builder, "Unused Database Entries", report.UnusedDatabaseEntryIds);
+        AppendIdList(builder, "Skill VFX Without Playable DB Sound", report.MissingVfxSoundPrefabPaths);
         AppendEmbeddedAudioSources(builder, report);
 
         return builder.ToString();
@@ -223,7 +253,6 @@ public static class SoundUsageScanner
 
         AddDatabaseEntries(report, SoundCategory.Bgm, database.BgmEntries);
         AddDatabaseEntries(report, SoundCategory.Sfx, database.SfxEntries);
-        AddDatabaseEntries(report, SoundCategory.SkillSfx, database.SkillSfxEntries);
     }
 
     private static void AddDatabaseEntries(
@@ -250,8 +279,52 @@ public static class SoundUsageScanner
         }
     }
 
-    private static void AddSkillVfxReferences(
+    private static void AddVfxSoundEntries(
         SoundUsageReport report,
+        SoundDatabase database)
+    {
+        if (database == null)
+            return;
+
+        AddVfxSoundEntries(report, "Player", database.PlayerSkillVfxSfxEntries);
+        AddVfxSoundEntries(report, "Monster", database.MonsterSkillVfxSfxEntries);
+    }
+
+    private static void AddVfxSoundEntries(
+        SoundUsageReport report,
+        string group,
+        IReadOnlyList<VfxSoundData> entries)
+    {
+        if (entries == null)
+            return;
+
+        foreach (VfxSoundData entry in entries)
+        {
+            if (entry == null || entry.vfxPrefab == null)
+                continue;
+
+            IReadOnlyList<VfxSoundCue> cues = entry.Cues;
+            List<string> clipNames = new();
+
+            for (int i = 0; i < cues.Count; i++)
+            {
+                AudioClip clip = cues[i]?.clip;
+                if (clip != null)
+                    clipNames.Add(clip.name);
+            }
+
+            report.VfxSoundEntries.Add(new SoundUsageVfxSoundEntry(
+                group,
+                GetAssetPathOrName(entry.vfxPrefab),
+                entry.vfxPrefab.name,
+                clipNames.Count,
+                string.Join(", ", clipNames)));
+        }
+    }
+
+    private static void AddSkillVfxMappingDiagnostics(
+        SoundUsageReport report,
+        SoundDatabase soundDatabase,
         SoundUsageScanOptions options)
     {
         IEnumerable<SkillVfxEntry> entries = options.SkillVfxEntries;
@@ -267,13 +340,19 @@ public static class SoundUsageScanner
             if (entry == null || entry.Vfx == null)
                 continue;
 
-            string skillId = string.IsNullOrWhiteSpace(entry.SkillId) ? "" : entry.SkillId.Trim();
-            AddBattleVfxSfxReferences(
-                report,
-                entry.Vfx.sfx,
-                $"SkillVfxDatabase:{skillId}:vfx.sfx",
-                GetAssetPathOrName(entry.Vfx.prefab),
-                "sfx");
+            GameObject prefab = entry.Vfx.prefab;
+            if (prefab == null)
+                continue;
+
+            if (soundDatabase != null &&
+                soundDatabase.TryGetSkillVfxSfx(prefab, out VfxSoundData data) &&
+                data != null &&
+                data.HasPlayableCue)
+            {
+                continue;
+            }
+
+            AddMissingVfxSoundPrefab(report, prefab);
         }
     }
 
@@ -537,8 +616,6 @@ public static class SoundUsageScanner
 
         return type.GetCustomAttribute<SerializableAttribute>() != null ||
             type == typeof(BattleVfxEntry) ||
-            type == typeof(BattleVfxSfxEntry) ||
-            type == typeof(BattleVfxAdditionalSfxEntry) ||
             type == typeof(BattleProjectileVfxEntry);
     }
 
@@ -562,38 +639,6 @@ public static class SoundUsageScanner
                 source.volume,
                 source.pitch,
                 source.loop));
-        }
-    }
-
-    private static void AddBattleVfxSfxReferences(
-        SoundUsageReport report,
-        BattleVfxSfxEntry sfx,
-        string context,
-        string assetPath,
-        string memberRoot)
-    {
-        if (sfx == null)
-            return;
-
-        if (sfx.playSfx)
-            AddReference(report, sfx.sfxId, SoundCategory.SkillSfx, context, assetPath, $"{memberRoot}.sfxId");
-
-        if (sfx.additionalSfx == null)
-            return;
-
-        for (int i = 0; i < sfx.additionalSfx.Count; i++)
-        {
-            BattleVfxAdditionalSfxEntry additional = sfx.additionalSfx[i];
-            if (additional == null)
-                continue;
-
-            AddReference(
-                report,
-                additional.sfxId,
-                SoundCategory.SkillSfx,
-                context,
-                assetPath,
-                $"additionalSfx[{i}].sfxId");
         }
     }
 
@@ -639,6 +684,20 @@ public static class SoundUsageScanner
                 .OrderBy(id => id, StringComparer.Ordinal));
     }
 
+    private static void AddMissingVfxSoundPrefab(
+        SoundUsageReport report,
+        GameObject prefab)
+    {
+        string path = GetAssetPathOrName(prefab);
+        if (string.IsNullOrWhiteSpace(path) ||
+            report.MissingVfxSoundPrefabPaths.Contains(path, StringComparer.Ordinal))
+        {
+            return;
+        }
+
+        report.MissingVfxSoundPrefabPaths.Add(path);
+    }
+
     private static void AppendDatabaseEntries(StringBuilder builder, SoundUsageReport report)
     {
         builder.AppendLine("## Database Entries");
@@ -653,6 +712,27 @@ public static class SoundUsageScanner
             builder.AppendLine(
                 $"| {entry.Category} | {Escape(entry.Id)} | {Escape(entry.ClipName)} | {entry.Volume:0.###} | {entry.Pitch:0.###} | {entry.Loop} | {report.GetReferences(entry.Id).Count} |");
         }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendVfxSoundMappings(StringBuilder builder, SoundUsageReport report)
+    {
+        builder.AppendLine("## VFX Sound Mappings");
+        builder.AppendLine();
+        builder.AppendLine("| Group | VFX | Clips | Cue Count |");
+        builder.AppendLine("|---|---|---|---:|");
+
+        foreach (SoundUsageVfxSoundEntry entry in report.VfxSoundEntries
+            .OrderBy(entry => entry.Group, StringComparer.Ordinal)
+            .ThenBy(entry => entry.VfxPath, StringComparer.Ordinal))
+        {
+            builder.AppendLine(
+                $"| {Escape(entry.Group)} | {Escape(entry.VfxPath)} | {Escape(entry.ClipNames)} | {entry.CueCount} |");
+        }
+
+        if (report.VfxSoundEntries.Count == 0)
+            builder.AppendLine("|  |  |  | 0 |");
 
         builder.AppendLine();
     }

@@ -150,8 +150,7 @@ public class MapVisualActor : MonoBehaviour
             proxySortingLayerName = ResolveWorldVfxSortingLayerName(),
             proxySortingOrderOffset = ResolveWorldVfxSortingOrderOffset(),
             proxySortingWorldYOffset = worldVfxProxySortingWorldYOffset,
-            proxyYMultiplier = Mathf.Max(0.01f, worldVfxProxyYMultiplier),
-            sfx = new BattleVfxSfxEntry()
+            proxyYMultiplier = Mathf.Max(0.01f, worldVfxProxyYMultiplier)
         };
     }
 
@@ -191,7 +190,7 @@ public class MapVisualActor : MonoBehaviour
         SetLayerRecursively(vfx, renderLayer);
         EnsureVfxPauseController(vfx);
         RestartParticles(vfx);
-        BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(vfx, new BattleVfxSfxEntry(), this);
+        BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(vfx, action.VfxPrefab, this);
     }
 
     private static int ResolveVisibleLayer(Transform source, int renderLayer)

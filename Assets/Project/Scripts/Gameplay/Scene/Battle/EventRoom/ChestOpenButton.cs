@@ -861,7 +861,7 @@ public class ChestOpenButton : MonoBehaviour
         RestartParticles(playTarget);
         BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(
             playTarget,
-            CreateChestVfxAudioSettings(),
+            vfxObject,
             this);
 
         if (!IsSceneObject(vfxObject) && vfxAutoDestroyDelay > 0f)
@@ -910,18 +910,7 @@ public class ChestOpenButton : MonoBehaviour
             proxySortingLayerName = GetVfxSortingLayerName(),
             proxySortingOrderOffset = sortingOrderOffset,
             proxySortingWorldYOffset = GetVfxSortingWorldY(localPosition) - GetVfxWorldPosition(localPosition).y,
-            proxyYMultiplier = Mathf.Max(0.01f, vfxProxyYMultiplier),
-            sfx = CreateChestVfxAudioSettings()
-        };
-    }
-
-    private static BattleVfxSfxEntry CreateChestVfxAudioSettings()
-    {
-        return new BattleVfxSfxEntry
-        {
-            playSfx = false,
-            routeEmbeddedAudioSourcesThroughAudioManager = false,
-            removeEmbeddedAudioSources = true
+            proxyYMultiplier = Mathf.Max(0.01f, vfxProxyYMultiplier)
         };
     }
 
@@ -937,7 +926,7 @@ public class ChestOpenButton : MonoBehaviour
             SetLayerRecursively(vfxObject, layer);
 
         RestartParticles(vfxObject);
-        BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(vfxObject, entry.sfx, this);
+        BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(vfxObject, entry.prefab, this);
     }
 
     private GameObject PrepareDirectVfxInstance(GameObject vfxObject, Vector3 localPosition, int sortingOrderOffset)
