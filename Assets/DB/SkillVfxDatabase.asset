@@ -24,6 +24,7 @@ MonoBehaviour:
         volumeMultiplier: 1
         routeEmbeddedAudioSourcesThroughAudioManager: 1
         removeEmbeddedAudioSources: 1
+        additionalSfx: []
       renderMode: 2
       proxyBlendMode: 0
       spawnAnchor: 1
@@ -48,6 +49,7 @@ MonoBehaviour:
         volumeMultiplier: 1
         routeEmbeddedAudioSourcesThroughAudioManager: 1
         removeEmbeddedAudioSources: 1
+        additionalSfx: []
       renderMode: 2
       proxyBlendMode: 0
       spawnAnchor: 0
@@ -72,6 +74,7 @@ MonoBehaviour:
         volumeMultiplier: 1
         routeEmbeddedAudioSourcesThroughAudioManager: 1
         removeEmbeddedAudioSources: 1
+        additionalSfx: []
       renderMode: 2
       proxyBlendMode: 0
       spawnAnchor: 0
