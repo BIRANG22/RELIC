@@ -185,11 +185,10 @@ GameObject:
   m_Component:
   - component: {fileID: 6867562735545302686}
   - component: {fileID: 4096438161594942511}
+  - component: {fileID: 5808486640025453813}
   - component: {fileID: 8540256044839326239}
   - component: {fileID: 1183252297605195372}
-  - component: {fileID: 5808486640025453813}
   - component: {fileID: 2576930730465953337}
-  - component: {fileID: 4862184162733974521}
   m_Layer: 0
   m_Name: A_BattlePrefab
   m_TagString: Untagged
@@ -262,37 +261,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 4, y: 12}
   m_EdgeRadius: 0
---- !u!114 &8540256044839326239
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2864985933646917633}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 846a9e67db6820742bed9200ba1f9afb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  spriteRoot: {fileID: 8384928610574305113}
-  linkedFacingRoots:
-  - {fileID: 5517039797964053076}
-  - {fileID: 4681865591434600378}
-  startFacingRight: 1
-  minHorizontalDelta: 0.01
---- !u!114 &1183252297605195372
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2864985933646917633}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 63eca4e001bc2844c9504e343be1fec3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  timelineHoverHighlightObject: {fileID: 579637725321350266}
 --- !u!114 &5808486640025453813
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -337,6 +305,37 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &8540256044839326239
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2864985933646917633}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 846a9e67db6820742bed9200ba1f9afb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spriteRoot: {fileID: 8384928610574305113}
+  linkedFacingRoots:
+  - {fileID: 5517039797964053076}
+  - {fileID: 4681865591434600378}
+  startFacingRight: 1
+  minHorizontalDelta: 0.01
+--- !u!114 &1183252297605195372
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2864985933646917633}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63eca4e001bc2844c9504e343be1fec3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  timelineHoverHighlightObject: {fileID: 579637725321350266}
 --- !u!114 &2576930730465953337
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -697,7 +696,6 @@ MonoBehaviour:
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
       projectileVfx:
-        skillId: 
         missilePrefab: {fileID: 0}
         impactPrefab: {fileID: 0}
         missileFlipType: 2
@@ -727,7 +725,6 @@ MonoBehaviour:
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
       projectileVfx:
-        skillId: 
         missilePrefab: {fileID: 0}
         impactPrefab: {fileID: 0}
         missileFlipType: 2
@@ -757,7 +754,6 @@ MonoBehaviour:
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
       projectileVfx:
-        skillId: 
         missilePrefab: {fileID: 0}
         impactPrefab: {fileID: 0}
         missileFlipType: 2
@@ -787,7 +783,6 @@ MonoBehaviour:
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
       projectileVfx:
-        skillId: 
         missilePrefab: {fileID: 0}
         impactPrefab: {fileID: 0}
         missileFlipType: 2
@@ -817,7 +812,6 @@ MonoBehaviour:
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
       projectileVfx:
-        skillId: 
         missilePrefab: {fileID: 0}
         impactPrefab: {fileID: 0}
         missileFlipType: 2
@@ -850,7 +844,6 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
-      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
@@ -879,7 +872,6 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
-      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
@@ -908,7 +900,6 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
-      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
@@ -937,7 +928,6 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
-      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
@@ -966,7 +956,6 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
-      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
@@ -995,7 +984,6 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
-      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
@@ -1024,7 +1012,6 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
-      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
@@ -1053,7 +1040,6 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
-      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
@@ -1082,7 +1068,6 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
-      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
@@ -1111,7 +1096,6 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
-      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
@@ -1136,27 +1120,6 @@ MonoBehaviour:
   forceAnimatorUpdate: 1
   autoFindAnimatorInChildren: 1
   vfxLayerName: VFX
---- !u!114 &4862184162733974521
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2864985933646917633}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 46a3b90ac864fa341b003dc84fd7d7f6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  targetAnimator: {fileID: 0}
-  moveKey: 49
-  hitKey: 50
-  guardKey: 51
-  attack1Key: 52
-  attack2Key: 53
-  attack3Key: 54
-  targetFacing: {fileID: 0}
-  flipKey: 122
 --- !u!1 &3195001094512284873
 GameObject:
   m_ObjectHideFlags: 0

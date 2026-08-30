@@ -295,9 +295,9 @@ GameObject:
   m_Component:
   - component: {fileID: 5493682834872087560}
   - component: {fileID: 3066034050728540952}
+  - component: {fileID: 8512017036771443104}
   - component: {fileID: 6425750052009029881}
   - component: {fileID: 6835397825275032355}
-  - component: {fileID: 8512017036771443104}
   - component: {fileID: 5261978493215823975}
   m_Layer: 0
   m_Name: B_BattlePrefab
@@ -371,37 +371,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 4, y: 12}
   m_EdgeRadius: 0
---- !u!114 &6425750052009029881
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4760919951882294998}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 846a9e67db6820742bed9200ba1f9afb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  spriteRoot: {fileID: 2597823581922044622}
-  linkedFacingRoots:
-  - {fileID: 3115634474097365189}
-  - {fileID: 2816419918782462533}
-  startFacingRight: 1
-  minHorizontalDelta: 0.01
---- !u!114 &6835397825275032355
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4760919951882294998}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 63eca4e001bc2844c9504e343be1fec3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  timelineHoverHighlightObject: {fileID: 6719267343508331098}
 --- !u!114 &8512017036771443104
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -446,6 +415,37 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &6425750052009029881
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4760919951882294998}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 846a9e67db6820742bed9200ba1f9afb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spriteRoot: {fileID: 2597823581922044622}
+  linkedFacingRoots:
+  - {fileID: 3115634474097365189}
+  - {fileID: 2816419918782462533}
+  startFacingRight: 1
+  minHorizontalDelta: 0.01
+--- !u!114 &6835397825275032355
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4760919951882294998}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63eca4e001bc2844c9504e343be1fec3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  timelineHoverHighlightObject: {fileID: 6719267343508331098}
 --- !u!114 &5261978493215823975
 MonoBehaviour:
   m_ObjectHideFlags: 0

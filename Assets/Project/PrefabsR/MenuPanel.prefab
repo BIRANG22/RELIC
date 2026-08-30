@@ -1881,6 +1881,9 @@ MonoBehaviour:
   contrast: 1
   blurredUiRoots:
   - {fileID: 0}
+  includeLobbyQuestMessenger: 0
+  lobbyQuestMessengerObjectName: LobbyQuestMessenger
+  lobbyQuestMessengerBootstrapRootName: Bootstrap
 --- !u!1 &1703578786
 GameObject:
   m_ObjectHideFlags: 0
@@ -3377,8 +3380,8 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 209327262}
-  - {fileID: 2079656778}
   - {fileID: 1793322162426956111}
+  - {fileID: 2079656778}
   - {fileID: 309968162}
   - {fileID: 779332224}
   m_Father: {fileID: 808157329}
