@@ -48,6 +48,7 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     {
         if (panelRoot != null) panelRoot.SetActive(false);
         selectedSlotIndex = -1;
+        ResetStorageSlotVisualStates();
         LobbyPositionModalInputBlocker.Unblock(this);
     }
 
@@ -192,23 +193,165 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
                 BagItemStack stack = stacks[i];
                 itemId = stack.ItemId;
                 itemCount = stack.Count;
-                slot.SetupAllowZeroQuantity(stack.ItemId, stack.Count, null, null, null);
+
+                bool needsSetup = !string.Equals(slot.ItemId, stack.ItemId, StringComparison.Ordinal) ||
+                                  slot.Quantity != stack.Count;
+                if (needsSetup)
+                {
+                    slot.SetupAllowZeroQuantity(
+                        stack.ItemId,
+                        stack.Count,
+                        OnStorageSlotFocus,
+                        OnStorageSlotExit,
+                        null);
+                }
             }
-            else
+            else if (slot.HasItem)
             {
-                slot.Clear(null, null, null);
+                slot.Clear(OnStorageSlotFocus, OnStorageSlotExit, null);
             }
 
             Button button = slot.GetComponent<Button>();
             CultureTankInventorySlotClickRelay relay =
                 slot.GetComponent<CultureTankInventorySlotClickRelay>() ??
                 slot.gameObject.AddComponent<CultureTankInventorySlotClickRelay>();
-            relay.Configure(button, itemId, canSelect && slot.HasItem && itemCount > 0, SelectInventoryItem);
+
+            BattleBagItemSlotUI capturedSlot = slot;
+            bool selected = slot.HasItem &&
+                            !string.IsNullOrWhiteSpace(itemId) &&
+                            IsStorageItemSelectedInTank(lobby, itemId);
+
+            relay.Configure(
+                button,
+                itemId,
+                selected || (canSelect && slot.HasItem && itemCount > 0),
+                selectedItemId => OnStorageItemClicked(capturedSlot, selectedItemId));
+
+            slot.SetSelected(selected);
+
+            // Refresh 도중 PointerExit 이벤트가 끊겨도 이전 Hover 상태가 남지 않도록
+            // 현재 실제 마우스 위치를 기준으로 매번 true/false를 모두 동기화합니다.
+            slot.SetHovered(slot.HasItem && IsPointerOverSlot(slot));
+
             slot.RefreshQuantityVisual();
         }
 
         if (storageContentRoot is RectTransform contentRect)
             LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
+    }
+
+    private void OnStorageSlotFocus(BattleBagItemSlotUI slot)
+    {
+        if (slot == null || !slot.HasItem)
+            return;
+
+        slot.SetHovered(true);
+    }
+
+    private void OnStorageSlotExit(BattleBagItemSlotUI slot)
+    {
+        if (slot == null)
+            return;
+
+        slot.SetHovered(false);
+    }
+
+    private void OnStorageItemClicked(BattleBagItemSlotUI slot, string itemId)
+    {
+        if (slot == null || !slot.HasItem || string.IsNullOrWhiteSpace(itemId))
+            return;
+
+        LobbyRuntimeData lobby = GetLobby();
+        if (lobby == null || !CanMutate())
+            return;
+
+        string normalizedItemId = itemId.Trim();
+
+        // 이미 CultureTankRow에 등록된 재료를 다시 클릭하면 해당 Row에서 제거합니다.
+        // 제거 후 RefreshAll()에서 Storage 슬롯 선택 효과도 함께 해제됩니다.
+        if (TryRemoveStorageItemFromTank(lobby, normalizedItemId))
+        {
+            selectedSlotIndex = -1;
+            SaveAndPublish();
+            RefreshAll();
+            return;
+        }
+
+        if (!HasEmptyTankSlot(lobby))
+            return;
+
+        SelectInventoryItem(normalizedItemId);
+    }
+
+    private static bool TryRemoveStorageItemFromTank(LobbyRuntimeData lobby, string itemId)
+    {
+        if (lobby?.CultureTankResearches == null || string.IsNullOrWhiteSpace(itemId))
+            return false;
+
+        string normalizedItemId = itemId.Trim();
+        for (int i = 0; i < lobby.CultureTankResearches.Count; i++)
+        {
+            CultureTankResearchRuntimeData research = lobby.CultureTankResearches[i];
+            if (research == null || string.IsNullOrWhiteSpace(research.ItemId))
+                continue;
+
+            if (!string.Equals(research.ItemId.Trim(), normalizedItemId, StringComparison.Ordinal))
+                continue;
+
+            if (string.IsNullOrWhiteSpace(research.TankId))
+                return false;
+
+            return CultureTankResearchService.TryRemoveIngredient(lobby, research.TankId, out _);
+        }
+
+        return false;
+    }
+
+    private void ResetStorageSlotVisualStates()
+    {
+        for (int i = 0; i < storageSlots.Count; i++)
+        {
+            BattleBagItemSlotUI slot = storageSlots[i];
+            if (slot == null)
+                continue;
+
+            slot.SetSelected(false);
+            slot.SetHovered(false);
+        }
+    }
+
+
+    private static bool IsStorageItemSelectedInTank(LobbyRuntimeData lobby, string itemId)
+    {
+        if (lobby?.CultureTankResearches == null || string.IsNullOrWhiteSpace(itemId))
+            return false;
+
+        string normalizedItemId = itemId.Trim();
+        for (int i = 0; i < lobby.CultureTankResearches.Count; i++)
+        {
+            CultureTankResearchRuntimeData research = lobby.CultureTankResearches[i];
+            if (research == null || string.IsNullOrWhiteSpace(research.ItemId))
+                continue;
+
+            if (string.Equals(research.ItemId.Trim(), normalizedItemId, StringComparison.Ordinal))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsPointerOverSlot(BattleBagItemSlotUI slot)
+    {
+        RectTransform rect = slot != null ? slot.RectTransform : null;
+        if (rect == null || !rect.gameObject.activeInHierarchy)
+            return false;
+
+        Canvas canvas = rect.GetComponentInParent<Canvas>();
+        Camera eventCamera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? canvas.worldCamera
+            : null;
+
+        return RectTransformUtility.RectangleContainsScreenPoint(rect, Input.mousePosition, eventCamera);
     }
 
     private void RefreshPanelText()

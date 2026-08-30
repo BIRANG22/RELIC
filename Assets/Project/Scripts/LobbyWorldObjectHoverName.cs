@@ -18,6 +18,16 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
     [Tooltip("콜라이더 하단에서 이름 UI까지의 화면 픽셀 간격입니다. 음수값이면 콜라이더 아래쪽으로 내려갑니다.")]
     [SerializeField] private float screenYOffset = -18f;
 
+    [Header("Name Background Size")]
+    [Tooltip("WorldObjectNamePanel/Image의 가로 크기를 이름 길이에 맞춰 자동 조절합니다.")]
+    [SerializeField] private RectTransform backgroundRect;
+
+    [Tooltip("텍스트 좌우에 추가할 여백입니다. 실제 좌우 여백은 이 값씩 적용됩니다.")]
+    [SerializeField] private float backgroundSidePadding = 20f;
+
+    [Tooltip("이름이 짧아도 유지할 배경의 최소 가로 크기입니다.")]
+    [SerializeField] private float backgroundMinWidth = 100f;
+
     [Header("Blocking Panels")]
     [Tooltip("등록된 패널 중 하나라도 활성화되어 있으면 월드 오브젝트 이름을 숨깁니다.")]
     [SerializeField] private GameObject[] blockingPanels;
@@ -98,6 +108,7 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
         currentOwner = this;
         isHovered = true;
         objectNameText.text = GetDisplayName();
+        RefreshBackgroundWidth();
         UpdateNamePosition();
         SetNameVisible(true);
     }
@@ -127,6 +138,21 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
         }
 
         UpdateNamePosition();
+    }
+
+    private void RefreshBackgroundWidth()
+    {
+        AutoBindIfNeeded();
+
+        if (backgroundRect == null || objectNameText == null)
+            return;
+
+        objectNameText.ForceMeshUpdate();
+        float preferredWidth = objectNameText.GetPreferredValues(objectNameText.text).x;
+        float targetWidth = Mathf.Max(backgroundMinWidth, preferredWidth + backgroundSidePadding * 2f);
+
+        // 기존 Middle Center 앵커/피벗과 높이는 유지하고 가로 크기만 변경합니다.
+        backgroundRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, targetWidth);
     }
 
     private void UpdateNamePosition()
@@ -273,6 +299,14 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
 
         if (objectNameText == null && objectNameRect != null)
             objectNameText = objectNameRect.GetComponent<TMP_Text>() ?? objectNameRect.GetComponentInChildren<TMP_Text>(true);
+
+        if (backgroundRect == null && worldObjectNamePanel != null)
+        {
+            GameObject background = FindChildByName(worldObjectNamePanel.transform, "Image");
+
+            if (background != null)
+                backgroundRect = background.GetComponent<RectTransform>();
+        }
 
         if (worldObjectNamePanelRect != null)
         {

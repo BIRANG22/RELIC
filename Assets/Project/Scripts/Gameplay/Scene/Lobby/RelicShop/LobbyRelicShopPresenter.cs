@@ -57,6 +57,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
     private bool missingPanelWarningLogged;
     private bool isPurchaseAnimating;
     private Coroutine purchaseAnimationCoroutine;
+    private string selectedRelicId;
 
     private void Awake()
     {
@@ -78,6 +79,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         if (panelRoot == null)
             return;
 
+        selectedRelicId = string.Empty;
         LobbyPositionModalInputBlocker.Block(this);
         RestoreShopPanelVisualState();
         UIBlurBackground blurBackground = UIBlurBackground.EnsureForPanel(panelRoot);
@@ -95,7 +97,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         if (panelRoot != null)
             panelRoot.SetActive(false);
 
-        HideRelicDescription();
+        ClearSelectedRelicDescription();
 
         // ESC와 닫기 버튼 모두 같은 Close()를 사용하므로
         // 상점이 닫힐 때 월드 오브젝트 입력 차단도 반드시 해제한다.
@@ -111,6 +113,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         }
 
         isPurchaseAnimating = false;
+        selectedRelicId = string.Empty;
         RestoreOfferVisibility();
         SetCloseButtonInteractable(true);
 
@@ -242,6 +245,9 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             return;
 
         string confirmedRelicId = relicId.Trim();
+        selectedRelicId = confirmedRelicId;
+        ShowRelicDescription(selectedRelicId);
+
         UIManager.Instance.ShowConfirmDialog(
             purchaseConfirmMessage,
             () =>
@@ -249,7 +255,11 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
                 UIManager.Instance?.HideConfirmDialog();
                 ConfirmPurchase(confirmedRelicId);
             },
-            () => UIManager.Instance?.HideConfirmDialog());
+            () =>
+            {
+                UIManager.Instance?.HideConfirmDialog();
+                ClearSelectedRelicDescription();
+            });
     }
 
     private void ConfirmPurchase(string relicId)
@@ -275,6 +285,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
         if (!result.Succeeded)
         {
+            ClearSelectedRelicDescription();
             RefreshOffers();
             return;
         }
@@ -299,7 +310,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         LobbyRelicOfferButtonUI selectedButton)
     {
         isPurchaseAnimating = true;
-        HideRelicDescription();
+        ClearSelectedRelicDescription();
         SetCloseButtonInteractable(false);
 
         // 선택된 유물의 현재 화면 위치를 먼저 저장한 뒤 상점을 바로 닫습니다.
@@ -344,6 +355,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
     private void FinalizePurchasePresentation(LobbyRuntimeData runtime)
     {
         isPurchaseAnimating = false;
+        selectedRelicId = string.Empty;
         purchaseAnimationCoroutine = null;
         RestoreOfferVisibility();
         RestoreShopPanelVisualState();
@@ -533,7 +545,24 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         if (isPurchaseAnimating)
             return;
 
-        if (!hovered || string.IsNullOrWhiteSpace(relicId))
+        if (hovered && !string.IsNullOrWhiteSpace(relicId))
+        {
+            ShowRelicDescription(relicId);
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(selectedRelicId))
+        {
+            ShowRelicDescription(selectedRelicId);
+            return;
+        }
+
+        HideRelicDescription();
+    }
+
+    private void ShowRelicDescription(string relicId)
+    {
+        if (string.IsNullOrWhiteSpace(relicId))
         {
             HideRelicDescription();
             return;
@@ -562,6 +591,12 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             relicDescriptionBodyText.text = GameDataLocalization.RelicEffectDescription(relic);
 
         relicDescriptionRoot.SetActive(true);
+    }
+
+    private void ClearSelectedRelicDescription()
+    {
+        selectedRelicId = string.Empty;
+        HideRelicDescription();
     }
 
     private void HideRelicDescription()
