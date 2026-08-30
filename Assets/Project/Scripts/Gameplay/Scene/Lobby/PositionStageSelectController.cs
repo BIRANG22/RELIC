@@ -5,6 +5,10 @@ using UnityEngine.UI;
 [DisallowMultipleComponent]
 public sealed class PositionStageSelectController : MonoBehaviour
 {
+    [Header("Legacy Stage Selection")]
+    [Tooltip("기존 StageSelectPanel을 다시 사용할 때만 켭니다. 현재는 PlayButton 직행 구조이므로 기본값은 false입니다.")]
+    [SerializeField] private bool stageSelectionEnabled = false;
+
     [Header("Overlay")]
     [SerializeField] private RectTransform positionPanel;
     [SerializeField] private GameObject stageSelectPanel;
@@ -24,7 +28,7 @@ public sealed class PositionStageSelectController : MonoBehaviour
 
     private void OnMouseUpAsButton()
     {
-        if (LobbyPositionModalInputBlocker.IsBlocked)
+        if (!stageSelectionEnabled || LobbyPositionModalInputBlocker.IsBlocked)
             return;
 
         OpenStageSelect();
@@ -32,7 +36,7 @@ public sealed class PositionStageSelectController : MonoBehaviour
 
     public void OpenStageSelect()
     {
-        if (LobbyPositionModalInputBlocker.IsBlocked)
+        if (!stageSelectionEnabled || LobbyPositionModalInputBlocker.IsBlocked)
             return;
 
         EnsureWorldSpriteCollider();
