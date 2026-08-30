@@ -71,30 +71,30 @@ MonoBehaviour:
   - id: scene.transition
     aliases: []
     clip: {fileID: 8300000, guid: 97817a60a94f74d928219194d6292af4, type: 3}
-    volume: 1
+    volume: 0.5
     pitch: 0.87
     loop: 0
-    useRandomPitch: 0
-    randomPitchMin: 1
+    useRandomPitch: 1
+    randomPitchMin: 0.8
     randomPitchMax: 1
   - id: scene.lobby.transition.open
     aliases: []
-    clip: {fileID: 8300000, guid: 9f24e65fb42424c2d8f2f2cdb008e663, type: 3}
+    clip: {fileID: 8300000, guid: bfd8f90086dcf4beabb793f48fde3712, type: 3}
     volume: 0.5
     pitch: 0.7
     loop: 0
-    useRandomPitch: 0
-    randomPitchMin: 1
-    randomPitchMax: 1
+    useRandomPitch: 1
+    randomPitchMin: 0.7
+    randomPitchMax: 0.9
   - id: scene.lobby.transition.close
     aliases: []
-    clip: {fileID: 8300000, guid: 2c4c60b57283f4619b81aaf673cc9c08, type: 3}
-    volume: 1
+    clip: {fileID: 8300000, guid: 2741745f661af4b49b22b08e7b51be30, type: 3}
+    volume: 0.5
     pitch: 1
     loop: 0
-    useRandomPitch: 0
-    randomPitchMin: 1
-    randomPitchMax: 1
+    useRandomPitch: 1
+    randomPitchMin: 0.7
+    randomPitchMax: 0.9
   - id: ui.title.hover
     aliases: []
     clip: {fileID: 8300000, guid: 010ca4953b15dd546994bcc230c3ff2d, type: 3}
