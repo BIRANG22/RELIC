@@ -247,10 +247,13 @@ public class AudioManager : Singleton<AudioManager>
         if (!TryGetSfxData(id, out SoundData data))
             return;
 
-        PlaySfxClip(
-            data.clip,
-            Mathf.Clamp01(data.volume) * Mathf.Clamp01(volumeMultiplier),
-            data.GetPlaybackPitch());
+        Vector3 worldPosition = sfxSource != null ? sfxSource.transform.position : transform.position;
+        Quaternion worldRotation = sfxSource != null ? sfxSource.transform.rotation : transform.rotation;
+
+        AudioSourcePlaybackSettings settings =
+            AudioSourcePlaybackSettings.From(data, worldPosition, worldRotation, sfxSource);
+
+        PlaySfxClip(settings, volumeMultiplier);
     }
 
     public bool TryGetSfxData(string id, out SoundData data)
@@ -300,11 +303,10 @@ public class AudioManager : Singleton<AudioManager>
             return PlaySfxClip(settings, volumeMultiplier);
         }
 
-        PlaySfxClip(
-            cue.clip,
-            Mathf.Clamp01(cue.volume) * Mathf.Clamp01(volumeMultiplier),
-            cue.GetPlaybackPitch());
-        return null;
+        AudioSourcePlaybackSettings oneShotSettings =
+            AudioSourcePlaybackSettings.From(cue, worldPosition, worldRotation, sfxSource);
+
+        return PlaySfxClip(oneShotSettings, volumeMultiplier);
     }
 
     public void PlaySfxClip(AudioClip clip)
@@ -328,17 +330,12 @@ public class AudioManager : Singleton<AudioManager>
             return;
         }
 
-        float previousPitch = sfxSource.pitch;
-        sfxSource.pitch = SoundData.ClampPlaybackPitch(pitch);
+        AudioSourcePlaybackSettings settings = AudioSourcePlaybackSettings.From(sfxSource);
+        if (settings == null)
+            return;
 
-        try
-        {
-            sfxSource.PlayOneShot(clip, Mathf.Clamp01(volumeMultiplier));
-        }
-        finally
-        {
-            sfxSource.pitch = previousPitch;
-        }
+        settings.SetClipAndPitch(clip, SoundData.ClampPlaybackPitch(pitch));
+        PlaySfxClip(settings, volumeMultiplier);
     }
 
     public AudioSource PlaySfxClip(AudioSource source)
@@ -881,6 +878,13 @@ public sealed class AudioSourcePlaybackSettings
                 ? CopyCurve(template.GetCustomCurve(AudioSourceCurveType.Spread))
                 : null
         };
+    }
+
+    public void SetClipAndPitch(AudioClip clip, float pitch)
+    {
+        Clip = clip;
+        Loop = false;
+        Pitch = SoundData.ClampPlaybackPitch(pitch);
     }
 
     public void ApplyTo(AudioSource target, float volumeMultiplier)
