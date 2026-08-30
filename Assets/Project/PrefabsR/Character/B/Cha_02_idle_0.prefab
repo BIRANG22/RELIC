@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 2023388584134208389}
   - component: {fileID: 7383300783847280100}
   - component: {fileID: 1457040747029725390}
+  - component: {fileID: 912735425361022620}
   m_Layer: 0
   m_Name: Cha_02_idle_0
   m_TagString: Untagged
@@ -920,6 +921,52 @@ MonoBehaviour:
   maxIdleRepeat: 8
   useOnMouseDown: 1
   clickDelay: 1
+--- !u!61 &912735425361022620
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2126674051974950670}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 2.74}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.15}
+    oldSize: {x: 19.2, y: 10.8}
+    newSize: {x: 19.199999, y: 10.799999}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 3.3, y: 6.2}
+  m_EdgeRadius: 0
 --- !u!1 &4647005542158780239
 GameObject:
   m_ObjectHideFlags: 0
