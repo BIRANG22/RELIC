@@ -50,7 +50,6 @@ public sealed class SoundIdDrawer : PropertyDrawer
         IReadOnlyList<SoundData> entries = category switch
         {
             SoundCategory.Bgm => database.BgmEntries,
-            SoundCategory.SkillSfx => database.SkillSfxEntries,
             _ => database.SfxEntries
         };
 

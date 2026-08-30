@@ -16,12 +16,6 @@ public class TestVfxWorkbenchTests
                 FlipType = VfxFlipType.ParticleRendererFlipY,
                 RenderMode = BattleVfxRenderMode.DirectWorldRenderer,
                 ProxyBlendMode = BattleVfxProxyBlendMode.Alpha,
-                PlaySfx = true,
-                SfxId = "Hit_01",
-                SfxDelay = -0.5f,
-                SfxVolumeMultiplier = -1f,
-                RouteEmbeddedAudioSourcesThroughAudioManager = false,
-                RemoveEmbeddedAudioSources = false,
                 RenderTextureWidth = 0,
                 RenderTextureHeight = -8,
                 RenderCameraOrthographicSize = 0f,
@@ -40,12 +34,6 @@ public class TestVfxWorkbenchTests
             Assert.That(entry.flipType, Is.EqualTo(VfxFlipType.ParticleRendererFlipY));
             Assert.That(entry.renderMode, Is.EqualTo(BattleVfxRenderMode.DirectWorldRenderer));
             Assert.That(entry.proxyBlendMode, Is.EqualTo(BattleVfxProxyBlendMode.Alpha));
-            Assert.That(entry.sfx.playSfx, Is.True);
-            Assert.That(entry.sfx.sfxId, Is.EqualTo("Hit_01"));
-            Assert.That(entry.sfx.delay, Is.EqualTo(0f));
-            Assert.That(entry.sfx.volumeMultiplier, Is.EqualTo(0f));
-            Assert.That(entry.sfx.routeEmbeddedAudioSourcesThroughAudioManager, Is.False);
-            Assert.That(entry.sfx.removeEmbeddedAudioSources, Is.False);
             Assert.That(entry.renderTextureWidth, Is.EqualTo(1));
             Assert.That(entry.renderTextureHeight, Is.EqualTo(1));
             Assert.That(entry.renderCameraOrthographicSize, Is.EqualTo(0.01f));

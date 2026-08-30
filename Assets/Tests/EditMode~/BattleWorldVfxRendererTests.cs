@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
@@ -27,10 +26,6 @@ public class BattleWorldVfxRendererTests
         Assert.That(entry.renderTextureHeight, Is.GreaterThan(0));
         Assert.That(entry.proxySortingLayerName, Is.EqualTo("Unit"));
         Assert.That(entry.proxySortingWorldYOffset, Is.EqualTo(0f));
-        Assert.That(entry.sfx, Is.Not.Null);
-        Assert.That(entry.sfx.playSfx, Is.False);
-        Assert.That(entry.sfx.routeEmbeddedAudioSourcesThroughAudioManager, Is.False);
-        Assert.That(entry.sfx.removeEmbeddedAudioSources, Is.True);
     }
 
     [Test]
@@ -88,8 +83,9 @@ public class BattleWorldVfxRendererTests
     }
 
     [Test]
-    public void BattleVfxAudioUtility_DoesNotRouteEmbeddedAudioSourcesWhenConfiguredSfxIsUsed()
+    public void BattleVfxAudioUtility_RemovesEmbeddedAudioSourcesFromSpawnedVfx()
     {
+        GameObject prefab = new("VfxPrefab");
         GameObject vfx = new("VfxWithEmbeddedAudio");
         AudioClip clip = null;
 
@@ -102,13 +98,7 @@ public class BattleWorldVfxRendererTests
 
             BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(
                 vfx,
-                new BattleVfxSfxEntry
-                {
-                    playSfx = true,
-                    sfxId = "skill.test",
-                    routeEmbeddedAudioSourcesThroughAudioManager = true,
-                    removeEmbeddedAudioSources = true
-                },
+                prefab,
                 coroutineHost: null);
 
             Assert.That(vfx.GetComponentsInChildren<AudioSource>(true), Is.Empty);
@@ -118,6 +108,7 @@ public class BattleWorldVfxRendererTests
         {
             DestroyObject(clip);
             DestroyObject(vfx);
+            DestroyObject(prefab);
         }
     }
 
@@ -197,45 +188,6 @@ public class BattleWorldVfxRendererTests
             DestroyObject(targetObject);
             DestroyObject(sourceObject);
         }
-    }
-
-    [Test]
-    public void BattleVfxSfxEntry_CopyFromKeepsExplicitSfxSettings()
-    {
-        BattleVfxSfxEntry source = new()
-        {
-            playSfx = true,
-            sfxId = "vfx.skill",
-            delay = 0.25f,
-            volumeMultiplier = 0.5f,
-            routeEmbeddedAudioSourcesThroughAudioManager = false,
-            removeEmbeddedAudioSources = true,
-            additionalSfx = new List<BattleVfxAdditionalSfxEntry>
-            {
-                new()
-                {
-                    sfxId = "vfx.extra",
-                    delay = 0.1f,
-                    volumeMultiplier = 0.7f
-                }
-            }
-        };
-
-        BattleVfxSfxEntry copy = BattleVfxSfxEntry.CopyFrom(source);
-
-        Assert.That(copy, Is.Not.SameAs(source));
-        Assert.That(copy.playSfx, Is.True);
-        Assert.That(copy.sfxId, Is.EqualTo("vfx.skill"));
-        Assert.That(copy.delay, Is.EqualTo(0.25f));
-        Assert.That(copy.volumeMultiplier, Is.EqualTo(0.5f));
-        Assert.That(copy.routeEmbeddedAudioSourcesThroughAudioManager, Is.False);
-        Assert.That(copy.removeEmbeddedAudioSources, Is.True);
-        Assert.That(copy.additionalSfx, Has.Count.EqualTo(1));
-        Assert.That(copy.additionalSfx, Is.Not.SameAs(source.additionalSfx));
-        Assert.That(copy.additionalSfx[0], Is.Not.SameAs(source.additionalSfx[0]));
-        Assert.That(copy.additionalSfx[0].sfxId, Is.EqualTo("vfx.extra"));
-        Assert.That(copy.additionalSfx[0].delay, Is.EqualTo(0.1f));
-        Assert.That(copy.additionalSfx[0].volumeMultiplier, Is.EqualTo(0.7f));
     }
 
     [Test]

@@ -12,8 +12,6 @@ GameObject:
   - component: {fileID: 206303165521795432}
   - component: {fileID: 2023388584134208389}
   - component: {fileID: 7383300783847280100}
-  - component: {fileID: 3370738323211870342}
-  - component: {fileID: 3252876500763097038}
   m_Layer: 0
   m_Name: Cha_02_idle_0
   m_TagString: Untagged
@@ -137,18 +135,7 @@ MonoBehaviour:
   moveVfx:
     prefab: {fileID: 0}
     flipType: 0
-    sfx:
-      playSfx: 0
-      sfxId: 
-      delay: 0
-      volumeMultiplier: 1
-      routeEmbeddedAudioSourcesThroughAudioManager: 1
-      removeEmbeddedAudioSources: 1
-      additionalSfx: []
     renderMode: 0
-    proxyBlendMode: 0
-    spawnAnchor: 0
-    scaleDirectWorldRendererToProxyHeight: 0
     renderTextureWidth: 512
     renderTextureHeight: 512
     renderCameraOrthographicSize: 5
@@ -161,18 +148,7 @@ MonoBehaviour:
   guardVfx:
     prefab: {fileID: 0}
     flipType: 0
-    sfx:
-      playSfx: 0
-      sfxId: 
-      delay: 0
-      volumeMultiplier: 1
-      routeEmbeddedAudioSourcesThroughAudioManager: 1
-      removeEmbeddedAudioSources: 1
-      additionalSfx: []
     renderMode: 0
-    proxyBlendMode: 0
-    spawnAnchor: 0
-    scaleDirectWorldRendererToProxyHeight: 0
     renderTextureWidth: 512
     renderTextureHeight: 512
     renderCameraOrthographicSize: 5
@@ -185,18 +161,7 @@ MonoBehaviour:
   hitVfx:
     prefab: {fileID: 0}
     flipType: 0
-    sfx:
-      playSfx: 0
-      sfxId: 
-      delay: 0
-      volumeMultiplier: 1
-      routeEmbeddedAudioSourcesThroughAudioManager: 1
-      removeEmbeddedAudioSources: 1
-      additionalSfx: []
     renderMode: 0
-    proxyBlendMode: 0
-    spawnAnchor: 0
-    scaleDirectWorldRendererToProxyHeight: 0
     renderTextureWidth: 512
     renderTextureHeight: 512
     renderCameraOrthographicSize: 5
@@ -209,18 +174,7 @@ MonoBehaviour:
   healVfx:
     prefab: {fileID: 9091916896245564796, guid: 3302b6aa62dc8fb4d8d9a88c6f8e8ac0, type: 3}
     flipType: 0
-    sfx:
-      playSfx: 0
-      sfxId: 
-      delay: 0
-      volumeMultiplier: 1
-      routeEmbeddedAudioSourcesThroughAudioManager: 1
-      removeEmbeddedAudioSources: 1
-      additionalSfx: []
     renderMode: 0
-    proxyBlendMode: 0
-    spawnAnchor: 0
-    scaleDirectWorldRendererToProxyHeight: 0
     renderTextureWidth: 512
     renderTextureHeight: 512
     renderCameraOrthographicSize: 5
@@ -234,18 +188,7 @@ MonoBehaviour:
     aimingVfx:
       prefab: {fileID: 0}
       flipType: 0
-      sfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       renderMode: 0
-      proxyBlendMode: 0
-      spawnAnchor: 0
-      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -258,18 +201,7 @@ MonoBehaviour:
     armorVfx:
       prefab: {fileID: 0}
       flipType: 0
-      sfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       renderMode: 0
-      proxyBlendMode: 0
-      spawnAnchor: 0
-      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -282,18 +214,7 @@ MonoBehaviour:
     blockVfx:
       prefab: {fileID: 0}
       flipType: 0
-      sfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       renderMode: 0
-      proxyBlendMode: 0
-      spawnAnchor: 0
-      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -306,18 +227,7 @@ MonoBehaviour:
     focusVfx:
       prefab: {fileID: 0}
       flipType: 0
-      sfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       renderMode: 0
-      proxyBlendMode: 0
-      spawnAnchor: 0
-      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -330,18 +240,7 @@ MonoBehaviour:
     powerVfx:
       prefab: {fileID: 0}
       flipType: 0
-      sfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       renderMode: 0
-      proxyBlendMode: 0
-      spawnAnchor: 0
-      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -354,18 +253,7 @@ MonoBehaviour:
     rechargeVfx:
       prefab: {fileID: 0}
       flipType: 0
-      sfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       renderMode: 0
-      proxyBlendMode: 0
-      spawnAnchor: 0
-      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -378,18 +266,7 @@ MonoBehaviour:
     recoverVfx:
       prefab: {fileID: 0}
       flipType: 0
-      sfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       renderMode: 0
-      proxyBlendMode: 0
-      spawnAnchor: 0
-      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -402,18 +279,7 @@ MonoBehaviour:
     swiftVfx:
       prefab: {fileID: 0}
       flipType: 0
-      sfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       renderMode: 0
-      proxyBlendMode: 0
-      spawnAnchor: 0
-      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -426,18 +292,7 @@ MonoBehaviour:
     thornsVfx:
       prefab: {fileID: 0}
       flipType: 0
-      sfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       renderMode: 0
-      proxyBlendMode: 0
-      spawnAnchor: 0
-      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -450,18 +305,7 @@ MonoBehaviour:
     addictedVfx:
       prefab: {fileID: 0}
       flipType: 0
-      sfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       renderMode: 0
-      proxyBlendMode: 0
-      spawnAnchor: 0
-      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -474,18 +318,7 @@ MonoBehaviour:
     bleedingVfx:
       prefab: {fileID: 0}
       flipType: 0
-      sfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       renderMode: 0
-      proxyBlendMode: 0
-      spawnAnchor: 0
-      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -498,18 +331,7 @@ MonoBehaviour:
     burnVfx:
       prefab: {fileID: 0}
       flipType: 0
-      sfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       renderMode: 0
-      proxyBlendMode: 0
-      spawnAnchor: 0
-      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -522,18 +344,7 @@ MonoBehaviour:
     corrosionVfx:
       prefab: {fileID: 0}
       flipType: 0
-      sfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       renderMode: 0
-      proxyBlendMode: 0
-      spawnAnchor: 0
-      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -546,18 +357,7 @@ MonoBehaviour:
     grudgeVfx:
       prefab: {fileID: 0}
       flipType: 0
-      sfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       renderMode: 0
-      proxyBlendMode: 0
-      spawnAnchor: 0
-      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -570,18 +370,7 @@ MonoBehaviour:
     vulnerableVfx:
       prefab: {fileID: 0}
       flipType: 0
-      sfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       renderMode: 0
-      proxyBlendMode: 0
-      spawnAnchor: 0
-      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -594,18 +383,7 @@ MonoBehaviour:
     weakenVfx:
       prefab: {fileID: 0}
       flipType: 0
-      sfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       renderMode: 0
-      proxyBlendMode: 0
-      spawnAnchor: 0
-      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -621,18 +399,7 @@ MonoBehaviour:
       vfx:
         prefab: {fileID: 0}
         flipType: 0
-        sfx:
-          playSfx: 0
-          sfxId: 
-          delay: 0
-          volumeMultiplier: 1
-          routeEmbeddedAudioSourcesThroughAudioManager: 1
-          removeEmbeddedAudioSources: 1
-          additionalSfx: []
         renderMode: 0
-        proxyBlendMode: 0
-        spawnAnchor: 0
-        scaleDirectWorldRendererToProxyHeight: 0
         renderTextureWidth: 512
         renderTextureHeight: 512
         renderCameraOrthographicSize: 5
@@ -643,26 +410,11 @@ MonoBehaviour:
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
       projectileVfx:
+        skillId: 
         missilePrefab: {fileID: 0}
         impactPrefab: {fileID: 0}
         missileFlipType: 2
         impactFlipType: 2
-        missileSfx:
-          playSfx: 0
-          sfxId: 
-          delay: 0
-          volumeMultiplier: 1
-          routeEmbeddedAudioSourcesThroughAudioManager: 1
-          removeEmbeddedAudioSources: 1
-          additionalSfx: []
-        impactSfx:
-          playSfx: 0
-          sfxId: 
-          delay: 0
-          volumeMultiplier: 1
-          routeEmbeddedAudioSourcesThroughAudioManager: 1
-          removeEmbeddedAudioSources: 1
-          additionalSfx: []
         launchDelay: 0
         travelDuration: 0.25
         arrivalDistance: 0.05
@@ -674,18 +426,7 @@ MonoBehaviour:
       vfx:
         prefab: {fileID: 0}
         flipType: 0
-        sfx:
-          playSfx: 0
-          sfxId: 
-          delay: 0
-          volumeMultiplier: 1
-          routeEmbeddedAudioSourcesThroughAudioManager: 1
-          removeEmbeddedAudioSources: 1
-          additionalSfx: []
         renderMode: 0
-        proxyBlendMode: 0
-        spawnAnchor: 0
-        scaleDirectWorldRendererToProxyHeight: 0
         renderTextureWidth: 512
         renderTextureHeight: 512
         renderCameraOrthographicSize: 5
@@ -696,26 +437,11 @@ MonoBehaviour:
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
       projectileVfx:
+        skillId: 
         missilePrefab: {fileID: 0}
         impactPrefab: {fileID: 0}
         missileFlipType: 2
         impactFlipType: 2
-        missileSfx:
-          playSfx: 0
-          sfxId: 
-          delay: 0
-          volumeMultiplier: 1
-          routeEmbeddedAudioSourcesThroughAudioManager: 1
-          removeEmbeddedAudioSources: 1
-          additionalSfx: []
-        impactSfx:
-          playSfx: 0
-          sfxId: 
-          delay: 0
-          volumeMultiplier: 1
-          routeEmbeddedAudioSourcesThroughAudioManager: 1
-          removeEmbeddedAudioSources: 1
-          additionalSfx: []
         launchDelay: 0
         travelDuration: 0.25
         arrivalDistance: 0.05
@@ -727,18 +453,7 @@ MonoBehaviour:
       vfx:
         prefab: {fileID: 0}
         flipType: 0
-        sfx:
-          playSfx: 0
-          sfxId: 
-          delay: 0
-          volumeMultiplier: 1
-          routeEmbeddedAudioSourcesThroughAudioManager: 1
-          removeEmbeddedAudioSources: 1
-          additionalSfx: []
         renderMode: 0
-        proxyBlendMode: 0
-        spawnAnchor: 0
-        scaleDirectWorldRendererToProxyHeight: 0
         renderTextureWidth: 512
         renderTextureHeight: 512
         renderCameraOrthographicSize: 5
@@ -749,26 +464,11 @@ MonoBehaviour:
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
       projectileVfx:
+        skillId: 
         missilePrefab: {fileID: 0}
         impactPrefab: {fileID: 0}
         missileFlipType: 2
         impactFlipType: 2
-        missileSfx:
-          playSfx: 0
-          sfxId: 
-          delay: 0
-          volumeMultiplier: 1
-          routeEmbeddedAudioSourcesThroughAudioManager: 1
-          removeEmbeddedAudioSources: 1
-          additionalSfx: []
-        impactSfx:
-          playSfx: 0
-          sfxId: 
-          delay: 0
-          volumeMultiplier: 1
-          routeEmbeddedAudioSourcesThroughAudioManager: 1
-          removeEmbeddedAudioSources: 1
-          additionalSfx: []
         launchDelay: 0
         travelDuration: 0.25
         arrivalDistance: 0.05
@@ -780,18 +480,7 @@ MonoBehaviour:
       vfx:
         prefab: {fileID: 0}
         flipType: 0
-        sfx:
-          playSfx: 0
-          sfxId: 
-          delay: 0
-          volumeMultiplier: 1
-          routeEmbeddedAudioSourcesThroughAudioManager: 1
-          removeEmbeddedAudioSources: 1
-          additionalSfx: []
         renderMode: 0
-        proxyBlendMode: 0
-        spawnAnchor: 0
-        scaleDirectWorldRendererToProxyHeight: 0
         renderTextureWidth: 512
         renderTextureHeight: 512
         renderCameraOrthographicSize: 5
@@ -802,26 +491,11 @@ MonoBehaviour:
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
       projectileVfx:
+        skillId: 
         missilePrefab: {fileID: 0}
         impactPrefab: {fileID: 0}
         missileFlipType: 2
         impactFlipType: 2
-        missileSfx:
-          playSfx: 0
-          sfxId: 
-          delay: 0
-          volumeMultiplier: 1
-          routeEmbeddedAudioSourcesThroughAudioManager: 1
-          removeEmbeddedAudioSources: 1
-          additionalSfx: []
-        impactSfx:
-          playSfx: 0
-          sfxId: 
-          delay: 0
-          volumeMultiplier: 1
-          routeEmbeddedAudioSourcesThroughAudioManager: 1
-          removeEmbeddedAudioSources: 1
-          additionalSfx: []
         launchDelay: 0
         travelDuration: 0.25
         arrivalDistance: 0.05
@@ -833,18 +507,7 @@ MonoBehaviour:
       vfx:
         prefab: {fileID: 0}
         flipType: 0
-        sfx:
-          playSfx: 0
-          sfxId: 
-          delay: 0
-          volumeMultiplier: 1
-          routeEmbeddedAudioSourcesThroughAudioManager: 1
-          removeEmbeddedAudioSources: 1
-          additionalSfx: []
         renderMode: 0
-        proxyBlendMode: 0
-        spawnAnchor: 0
-        scaleDirectWorldRendererToProxyHeight: 0
         renderTextureWidth: 512
         renderTextureHeight: 512
         renderCameraOrthographicSize: 5
@@ -855,52 +518,23 @@ MonoBehaviour:
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
       projectileVfx:
+        skillId: 
         missilePrefab: {fileID: 0}
         impactPrefab: {fileID: 0}
         missileFlipType: 2
         impactFlipType: 2
-        missileSfx:
-          playSfx: 0
-          sfxId: 
-          delay: 0
-          volumeMultiplier: 1
-          routeEmbeddedAudioSourcesThroughAudioManager: 1
-          removeEmbeddedAudioSources: 1
-          additionalSfx: []
-        impactSfx:
-          playSfx: 0
-          sfxId: 
-          delay: 0
-          volumeMultiplier: 1
-          routeEmbeddedAudioSourcesThroughAudioManager: 1
-          removeEmbeddedAudioSources: 1
-          additionalSfx: []
         launchDelay: 0
         travelDuration: 0.25
         arrivalDistance: 0.05
         impactLifeTime: 2
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
-  skillAttackOverrideDatabase: {fileID: 0}
-  skillVfxDatabase: {fileID: 0}
-  gridManager: {fileID: 0}
   monsterActionPresentations:
   - stateName: 
     vfx:
       prefab: {fileID: 0}
       flipType: 0
-      sfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       renderMode: 0
-      proxyBlendMode: 0
-      spawnAnchor: 0
-      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -911,26 +545,11 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
+      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
-      missileSfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
-      impactSfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       launchDelay: 0
       travelDuration: 0.25
       arrivalDistance: 0.05
@@ -941,18 +560,7 @@ MonoBehaviour:
     vfx:
       prefab: {fileID: 0}
       flipType: 0
-      sfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       renderMode: 0
-      proxyBlendMode: 0
-      spawnAnchor: 0
-      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -963,26 +571,11 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
+      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
-      missileSfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
-      impactSfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       launchDelay: 0
       travelDuration: 0.25
       arrivalDistance: 0.05
@@ -993,18 +586,7 @@ MonoBehaviour:
     vfx:
       prefab: {fileID: 0}
       flipType: 0
-      sfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       renderMode: 0
-      proxyBlendMode: 0
-      spawnAnchor: 0
-      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -1015,26 +597,11 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
+      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
-      missileSfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
-      impactSfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       launchDelay: 0
       travelDuration: 0.25
       arrivalDistance: 0.05
@@ -1045,18 +612,7 @@ MonoBehaviour:
     vfx:
       prefab: {fileID: 0}
       flipType: 0
-      sfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       renderMode: 0
-      proxyBlendMode: 0
-      spawnAnchor: 0
-      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -1067,26 +623,11 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
+      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
-      missileSfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
-      impactSfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       launchDelay: 0
       travelDuration: 0.25
       arrivalDistance: 0.05
@@ -1097,18 +638,7 @@ MonoBehaviour:
     vfx:
       prefab: {fileID: 0}
       flipType: 0
-      sfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       renderMode: 0
-      proxyBlendMode: 0
-      spawnAnchor: 0
-      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -1119,26 +649,11 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
+      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
-      missileSfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
-      impactSfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       launchDelay: 0
       travelDuration: 0.25
       arrivalDistance: 0.05
@@ -1149,18 +664,7 @@ MonoBehaviour:
     vfx:
       prefab: {fileID: 0}
       flipType: 0
-      sfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       renderMode: 0
-      proxyBlendMode: 0
-      spawnAnchor: 0
-      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -1171,26 +675,11 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
+      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
-      missileSfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
-      impactSfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       launchDelay: 0
       travelDuration: 0.25
       arrivalDistance: 0.05
@@ -1201,18 +690,7 @@ MonoBehaviour:
     vfx:
       prefab: {fileID: 0}
       flipType: 0
-      sfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       renderMode: 0
-      proxyBlendMode: 0
-      spawnAnchor: 0
-      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -1223,26 +701,11 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
+      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
-      missileSfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
-      impactSfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       launchDelay: 0
       travelDuration: 0.25
       arrivalDistance: 0.05
@@ -1253,18 +716,7 @@ MonoBehaviour:
     vfx:
       prefab: {fileID: 0}
       flipType: 0
-      sfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       renderMode: 0
-      proxyBlendMode: 0
-      spawnAnchor: 0
-      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -1275,26 +727,11 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
+      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
-      missileSfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
-      impactSfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       launchDelay: 0
       travelDuration: 0.25
       arrivalDistance: 0.05
@@ -1305,18 +742,7 @@ MonoBehaviour:
     vfx:
       prefab: {fileID: 0}
       flipType: 0
-      sfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       renderMode: 0
-      proxyBlendMode: 0
-      spawnAnchor: 0
-      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -1327,26 +753,11 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
+      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
-      missileSfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
-      impactSfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       launchDelay: 0
       travelDuration: 0.25
       arrivalDistance: 0.05
@@ -1357,18 +768,7 @@ MonoBehaviour:
     vfx:
       prefab: {fileID: 0}
       flipType: 0
-      sfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       renderMode: 0
-      proxyBlendMode: 0
-      spawnAnchor: 0
-      scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
@@ -1379,26 +779,11 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     projectileVfx:
+      skillId: 
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
-      missileSfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
-      impactSfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
-        additionalSfx: []
       launchDelay: 0
       travelDuration: 0.25
       arrivalDistance: 0.05
@@ -1419,74 +804,6 @@ MonoBehaviour:
   forceAnimatorUpdate: 1
   autoFindAnimatorInChildren: 1
   vfxLayerName: VFX
---- !u!114 &3370738323211870342
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2126674051974950670}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1ede37743b45af843b54f2a6f5b73e6d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  animator: {fileID: 2023388584134208389}
-  reactionTriggerName: ClickReaction
-  reactionStateName: reaction
-  idleStateName: Event_Idle
-  waitStateName: wait
-  waitTriggerName: Wait
-  minIdleRepeat: 9
-  maxIdleRepeat: 9
-  useOnMouseDown: 1
-  clickDelay: 1
---- !u!61 &3252876500763097038
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2126674051974950670}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0.08, y: 2.71}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.15}
-    oldSize: {x: 19.2, y: 10.8}
-    newSize: {x: 19.199999, y: 10.799999}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 2.35, y: 6.2}
-  m_EdgeRadius: 0
 --- !u!1 &4647005542158780239
 GameObject:
   m_ObjectHideFlags: 0
@@ -1513,7 +830,7 @@ Transform:
   m_GameObject: {fileID: 4647005542158780239}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.1, z: 0}
+  m_LocalPosition: {x: -0.1, y: -0.37, z: 0}
   m_LocalScale: {x: 3, y: 2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

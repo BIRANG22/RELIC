@@ -62,13 +62,7 @@ public class GridEffectWorldVfxPresenterTests
             renderMode = BattleVfxRenderMode.DirectWorldRenderer,
             proxySortingLayerName = "PrefabLayer",
             proxySortingOrderOffset = 3,
-            proxyYMultiplier = 5f,
-            sfx = new BattleVfxSfxEntry
-            {
-                playSfx = true,
-                sfxId = "grid.poison",
-                volumeMultiplier = 0.25f
-            }
+            proxyYMultiplier = 5f
         };
         GridEffectWorldVfxSpawnContext context = new(
             Vector3.zero,
@@ -88,9 +82,6 @@ public class GridEffectWorldVfxPresenterTests
         Assert.That(runtimeEntry.proxySortingLayerName, Is.EqualTo("ControllerLayer"));
         Assert.That(runtimeEntry.proxySortingOrderOffset, Is.EqualTo(10));
         Assert.That(runtimeEntry.proxyYMultiplier, Is.EqualTo(123f));
-        Assert.That(runtimeEntry.sfx.playSfx, Is.True);
-        Assert.That(runtimeEntry.sfx.sfxId, Is.EqualTo("grid.poison"));
-        Assert.That(runtimeEntry.sfx.volumeMultiplier, Is.EqualTo(0.25f));
     }
 
     private GridEffectWorldVfxPresenter CreatePresenter()
