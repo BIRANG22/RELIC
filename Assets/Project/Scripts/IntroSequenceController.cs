@@ -1,4 +1,4 @@
-using System;
+﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -9,61 +9,61 @@ using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 
 /// <summary>
-/// Bootstrap ���� ��ġ�Ǿ� Ÿ��Ʋ -> �κ� ������ ���� ��Ʈ�θ� ����մϴ�.
-/// ���� ���� ���� �ÿ��� �� ���� ����ϸ�, ����â������ ������ �ٽ� �� �� �ֽ��ϴ�.
+/// Bootstrap 씬에 배치되어 타이틀 -> 로비 사이의 게임 인트로를 재생합니다.
+/// 최초 게임 시작 시에는 한 번만 재생하며, 설정창에서는 언제든 다시 볼 수 있습니다.
 /// </summary>
 public class IntroSequenceController : MonoBehaviour
 {
     [Serializable]
     public class IntroLineAction
     {
-        [Tooltip("�� ������ ������ ���� ��ȣ�Դϴ�. 0���� �����մϴ�.")]
+        [Tooltip("이 연출을 실행할 문장 번호입니다. 0부터 시작합니다.")]
         [Min(0)]
         public int lineIndex;
 
-        [Tooltip("�ش� ������ ǥ�õ� �� ���ÿ� ������ ������Ʈ ���� ����Դϴ�.")]
+        [Tooltip("해당 문장이 표시될 때 동시에 실행할 오브젝트 연출 목록입니다.")]
         public IntroObjectAction[] objectActions;
     }
 
     [Serializable]
     public class IntroObjectAction
     {
-        [Tooltip("���� ��� ������Ʈ�Դϴ�.")]
+        [Tooltip("연출 대상 오브젝트입니다.")]
         public GameObject target;
 
-        [Header("Ȱ��ȭ / ��Ȱ��ȭ")]
-        [Tooltip("üũ�ϸ� ������ ȣ��� �� ��� ������Ʈ�� Ȱ�� ���¸� �����մϴ�.")]
+        [Header("활성화 / 비활성화")]
+        [Tooltip("체크하면 문장이 호출될 때 대상 오브젝트의 활성 상태를 변경합니다.")]
         public bool changeActiveState;
 
-        [Tooltip("Change Active State�� ���� ���� �� ������ Ȱ�� �����Դϴ�.")]
+        [Tooltip("Change Active State가 켜져 있을 때 적용할 활성 상태입니다.")]
         public bool activeState = true;
 
         [Min(0f)]
-        [Tooltip("������ ȣ��� �� Ȱ��ȭ/��Ȱ��ȭ ó���� �����ϱ� �� ��� �ð��Դϴ�. ���̵带 ����ϴ� ��� �� �ð��� ���� �� ���̵尡 ���۵˴ϴ�.")]
+        [Tooltip("문장이 호출된 뒤 활성화/비활성화 처리를 시작하기 전 대기 시간입니다. 페이드를 사용하는 경우 이 시간이 지난 뒤 페이드가 시작됩니다.")]
         public float activeStateDelay;
 
-        [Header("Ȱ��ȭ / ��Ȱ��ȭ ���̵�")]
-        [Tooltip("üũ�ϸ� Ȱ��ȭ �� 0��1, ��Ȱ��ȭ �� 1��0���� ���İ��� ��ȭ��ŵ�ϴ�. UI ������Ʈ�� CanvasGroup�� ������ �ڵ����� �߰��մϴ�.")]
+        [Header("활성화 / 비활성화 페이드")]
+        [Tooltip("체크하면 활성화 시 0→1, 비활성화 시 1→0으로 알파값을 변화시킵니다. UI는 CanvasGroup, SpriteRenderer는 색상 알파를 사용합니다.")]
         public bool fadeActiveState;
 
         [Min(0f)]
-        [Tooltip("Ȱ��ȭ/��Ȱ��ȭ ���̵� �ð��Դϴ�. 0�̸� ��� ���İ��� �����մϴ�.")]
+        [Tooltip("활성화/비활성화 페이드 시간입니다. 0이면 즉시 알파값을 적용합니다.")]
         public float fadeDuration = 0.5f;
 
-        [Tooltip("0~1 ���̵� ���൵�� ������ Ŀ���Դϴ�.")]
+        [Tooltip("0~1 페이드 진행도에 적용할 커브입니다.")]
         public AnimationCurve fadeCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
-        [Header("Transform �ִϸ��̼�")]
-        [Tooltip("üũ�ϸ� Position�� ��ǥ������ �����մϴ�.")]
+        [Header("Transform 애니메이션")]
+        [Tooltip("체크하면 Position을 목표값까지 변경합니다.")]
         public bool animatePosition;
 
-        [Tooltip("üũ�ϸ� Rotation�� ��ǥ������ �����մϴ�.")]
+        [Tooltip("체크하면 Rotation을 목표값까지 변경합니다.")]
         public bool animateRotation;
 
-        [Tooltip("üũ�ϸ� Scale�� ��ǥ������ �����մϴ�.")]
+        [Tooltip("체크하면 Scale을 목표값까지 변경합니다.")]
         public bool animateScale;
 
-        [Tooltip("üũ�ϸ� Local Position/Rotation�� ����ϰ�, ���� World Position/Rotation�� ����մϴ�. Scale�� �׻� Local Scale�Դϴ�.")]
+        [Tooltip("체크하면 Local Position/Rotation을 사용하고, 끄면 World Position/Rotation을 사용합니다. Scale은 항상 Local Scale입니다.")]
         public bool useLocalTransform = true;
 
         public Vector3 targetPosition;
@@ -71,14 +71,14 @@ public class IntroSequenceController : MonoBehaviour
         public Vector3 targetScale = Vector3.one;
 
         [Min(0f)]
-        [Tooltip("�ִϸ��̼� ���� �� ��� �ð��Դϴ�. Time Scale�� ������ ���� �ʽ��ϴ�.")]
+        [Tooltip("애니메이션 시작 전 대기 시간입니다. Time Scale의 영향을 받지 않습니다.")]
         public float delay;
 
         [Min(0f)]
-        [Tooltip("��ǥ Transform���� �̵��ϴ� �ð��Դϴ�. 0�̸� ��� ����˴ϴ�.")]
+        [Tooltip("목표 Transform까지 이동하는 시간입니다. 0이면 즉시 적용됩니다.")]
         public float duration = 0.5f;
 
-        [Tooltip("0~1 ���൵�� ������ �ִϸ��̼� Ŀ���Դϴ�.")]
+        [Tooltip("0~1 진행도에 적용할 애니메이션 커브입니다.")]
         public AnimationCurve animationCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
     }
 
@@ -99,15 +99,15 @@ public class IntroSequenceController : MonoBehaviour
 
     public static IntroSequenceController Instance { get; private set; }
 
-    [Header("��Ʈ�� UI")]
-    [Tooltip("���� �ؽ�Ʈ�� ������ ��Ʈ�� ��ü ��Ʈ�Դϴ�. ��ҿ��� �ڵ����� ��Ȱ��ȭ�˴ϴ�.")]
+    [Header("인트로 UI")]
+    [Tooltip("배경과 텍스트를 포함한 인트로 전체 루트입니다. 평소에는 자동으로 비활성화됩니다.")]
     [SerializeField] private GameObject introRoot;
 
-    [Tooltip("Ÿ�� ȿ���� ����� �ؽ�Ʈ�Դϴ�.")]
+    [Tooltip("타자 효과가 적용될 텍스트입니다.")]
     [SerializeField] private TMP_Text introText;
 
     [Header("Canvas Sorting")]
-    [Tooltip("��Ʈ�� UI�� ���� �����Դϴ�. �Ϲ� UI/�ɼ�/�Ͻ��������� �տ�, �� ��ȯ���� �ڿ� ǥ�õ˴ϴ�. ������ Canvas ���� ���� �ȿ��� 31000~31500���� ���ѵ˴ϴ�.")]
+    [Tooltip("인트로 UI의 정렬 순서입니다. 일반 UI/옵션/일시정지보다 앞에, 씬 전환보다 뒤에 표시됩니다. 안전한 Canvas 정렬 범위 안에서 31000~31500으로 제한됩니다.")]
     [SerializeField] private int introSortingOrder = 31000;
 
     [Header("Intro Camera Rendering")]
@@ -123,35 +123,44 @@ public class IntroSequenceController : MonoBehaviour
     [SerializeField] private string[] autoHideGameObjectNames = { "Background" };
     [SerializeField] private GameObject[] hideGameObjectsWhileIntroVisible;
 
-    [Header("��Ʈ�� ����")]
-    [Tooltip("������� ǥ���� �����Դϴ�. �� �׸��� �� ȭ�鿡 ǥ�õ˴ϴ�.")]
+    [Header("인트로 문장")]
+    [Tooltip("순서대로 표시할 문장입니다. 한 항목이 한 화면에 표시됩니다.")]
     [TextArea(2, 6)]
     [SerializeField]
     private string[] introLines =
     {
-        "���� �� ��� ����, ������� ���踦 �ڵ��� �����ߴ�.",
-        "�׸��� �����翡 ħ�ĵ� ���� �ȿ��� ����ü���� ��Ÿ����."
+        "원인 모를 재앙 이후, 잿가루는 세계를 뒤덮기 시작했다.",
+        "그리고 잿가루에 침식된 구역 안에서 변이체들이 나타났다."
     };
 
-    [Header("���庰 ����")]
-    [Tooltip("������ ǥ�õǴ� ���� ������ ������Ʈ �����Դϴ�. Line Index�� Intro Lines�� 0���� �����ϴ� �ε����� ����ϴ�.")]
+    [Header("문장별 연출")]
+    [Tooltip("문장이 표시되는 순간 실행할 오브젝트 연출입니다. Line Index는 Intro Lines의 0부터 시작하는 인덱스와 맞춥니다.")]
     [SerializeField] private IntroLineAction[] lineActions;
 
-    [Header("Ÿ�� ȿ��")]
-    [Tooltip("1�ʿ� ǥ�õǴ� ���� ���Դϴ�.")]
+    [Header("타자 효과")]
+    [Tooltip("1초에 표시되는 글자 수입니다.")]
     [Min(1f)]
     [SerializeField] private float charactersPerSecond = 30f;
 
-    [Tooltip("��Ʈ�ΰ� ������ ���� ���� �Է��� ������ �ð��Դϴ�.")]
+    [Tooltip("인트로가 완전히 열린 직후 입력을 무시할 시간입니다.")]
     [Min(0f)]
     [SerializeField] private float initialInputLockDuration = 0.15f;
 
-    [Header("�Է�")]
-    [Tooltip("���콺 ���� Ŭ������ ���� �ϼ�/���� ������ �����մϴ�.")]
+    [Header("입력")]
+    [Tooltip("마우스 왼쪽 클릭으로 문장 완성/다음 문장을 진행합니다.")]
     [SerializeField] private bool allowMouseClick = true;
 
-    [Tooltip("Space �Ǵ� Enter Ű�� ���� �ϼ�/���� ������ �����մϴ�.")]
+    [Tooltip("Space 또는 Enter 키로 문장 완성/다음 문장을 진행합니다.")]
     [SerializeField] private bool allowKeyboardInput = true;
+
+    [Header("문장 넘김 사운드")]
+    [Tooltip("다음 문장으로 넘어갈 때 재생할 SFX입니다. AudioManager의 사운드 DB에서 선택합니다.")]
+    [SerializeField, SoundId(SoundCategory.Sfx)]
+    private string lineAdvanceSoundId = AudioIds.Sfx.NormalButtonClick;
+
+    [Tooltip("문장 넘김 사운드의 볼륨입니다.")]
+    [SerializeField, Range(0f, 1f)]
+    private float lineAdvanceSoundVolume = 1f;
 
     private Coroutine typewriterCoroutine;
     private int currentLineIndex;
@@ -164,6 +173,7 @@ public class IntroSequenceController : MonoBehaviour
     private readonly Dictionary<Transform, Coroutine> objectAnimationCoroutines = new Dictionary<Transform, Coroutine>();
     private readonly Dictionary<GameObject, Coroutine> objectFadeCoroutines = new Dictionary<GameObject, Coroutine>();
     private readonly List<IntroObjectInitialState> objectInitialStates = new List<IntroObjectInitialState>();
+    private readonly Dictionary<SpriteRenderer, float> spriteRendererBaseAlphas = new Dictionary<SpriteRenderer, float>();
     private readonly Dictionary<Canvas, bool> hiddenCanvasEnabledStates = new Dictionary<Canvas, bool>();
     private readonly Dictionary<GraphicRaycaster, bool> hiddenGraphicRaycasterEnabledStates = new Dictionary<GraphicRaycaster, bool>();
     private readonly Dictionary<GameObject, bool> hiddenGameObjectActiveStates = new Dictionary<GameObject, bool>();
@@ -185,7 +195,7 @@ public class IntroSequenceController : MonoBehaviour
 
         Instance = this;
 
-        // Bootstrap ������ ������� ��Ʈ�� ������Ʈ�� �� ��ȯ �Ŀ��� �����մϴ�.
+        // Bootstrap 씬에서 만들어진 인트로 오브젝트만 씬 전환 후에도 유지합니다.
         if (transform.parent != null)
             transform.SetParent(null, false);
 
@@ -226,8 +236,8 @@ public class IntroSequenceController : MonoBehaviour
     }
 
     /// <summary>
-    /// Ÿ��Ʋ�� ���� ���� ��ư���� ȣ���մϴ�.
-    /// Ÿ��Ʋ -> ��ȯ -> ��Ʈ�� -> ��ȯ -> �κ� ������ �����մϴ�.
+    /// 타이틀의 게임 시작 버튼에서 호출합니다.
+    /// 타이틀 -> 전환 -> 인트로 -> 전환 -> 로비 순서로 진행합니다.
     /// </summary>
     public void PlayFirstTimeIntro()
     {
@@ -235,8 +245,8 @@ public class IntroSequenceController : MonoBehaviour
     }
 
     /// <summary>
-    /// ����â�� ��Ʈ�� �ٽú��⿡�� ȣ���մϴ�.
-    /// ���� ȭ�� -> ��ȯ -> ��Ʈ�� -> ��ȯ -> ���� ȭ�� ������ �����մϴ�.
+    /// 설정창의 인트로 다시보기에서 호출합니다.
+    /// 현재 화면 -> 전환 -> 인트로 -> 전환 -> 현재 화면 순서로 진행합니다.
     /// </summary>
     public void ReplayIntro()
     {
@@ -244,7 +254,7 @@ public class IntroSequenceController : MonoBehaviour
     }
 
     /// <summary>
-    /// UI Button�� OnClick�� ���� ������ �� �ִ� ���� ���� �Լ��Դϴ�.
+    /// UI Button의 OnClick에 직접 연결할 수 있는 다음 진행 함수입니다.
     /// </summary>
     public void Advance()
     {
@@ -260,11 +270,30 @@ public class IntroSequenceController : MonoBehaviour
         int nextIndex = currentLineIndex + 1;
         if (nextIndex < GetValidLineCount())
         {
+            PlayLineAdvanceSound();
             ShowLine(nextIndex);
             return;
         }
 
         FinishIntroWithTransition();
+    }
+
+    /// <summary>
+    /// 다음 문장으로 넘어갈 때 AudioManager에 등록된 SFX를 재생합니다.
+    /// DBAudioSource와 동일하게 사운드 ID와 볼륨을 사용합니다.
+    /// </summary>
+    private void PlayLineAdvanceSound()
+    {
+        if (string.IsNullOrWhiteSpace(lineAdvanceSoundId))
+            return;
+
+        if (AudioManager.Instance == null)
+        {
+            Debug.LogWarning($"[{nameof(IntroSequenceController)}] AudioManager.Instance를 찾지 못했습니다. 문장 넘김 사운드를 재생할 수 없습니다.", this);
+            return;
+        }
+
+        AudioManager.Instance.PlaySfx(lineAdvanceSoundId, Mathf.Clamp01(lineAdvanceSoundVolume));
     }
 
     private async void BeginIntroWithTransition(bool goToLobbyAfterFinish)
@@ -274,7 +303,7 @@ public class IntroSequenceController : MonoBehaviour
 
         if (introRoot == null || introText == null)
         {
-            Debug.LogError("[IntroSequenceController] Intro Root �Ǵ� Intro Text�� ������� �ʾҽ��ϴ�.", this);
+            Debug.LogError("[IntroSequenceController] Intro Root 또는 Intro Text가 연결되지 않았습니다.", this);
 
             if (goToLobbyAfterFinish)
                 await MoveToLobbyAsync();
@@ -286,7 +315,7 @@ public class IntroSequenceController : MonoBehaviour
 
         if (GetValidLineCount() <= 0)
         {
-            Debug.LogWarning("[IntroSequenceController] ǥ���� ��Ʈ�� ������ �����ϴ�.", this);
+            Debug.LogWarning("[IntroSequenceController] 표시할 인트로 문장이 없습니다.", this);
 
             if (goToLobbyAfterFinish)
             {
@@ -413,33 +442,45 @@ public class IntroSequenceController : MonoBehaviour
             yield break;
         }
 
-        CanvasGroup canvasGroup = target.GetComponent<CanvasGroup>();
-        if (canvasGroup == null)
-            canvasGroup = target.AddComponent<CanvasGroup>();
+        CanvasGroup canvasGroup = ResolveFadeCanvasGroup(target);
+        SpriteRenderer[] spriteRenderers = target.GetComponentsInChildren<SpriteRenderer>(true);
 
         if (action.activeState)
         {
             target.SetActive(true);
-            canvasGroup.alpha = 0f;
+
+            if (canvasGroup != null)
+                canvasGroup.alpha = 0f;
+
+            SetSpriteRendererFadeAlpha(spriteRenderers, 0f);
         }
         else
         {
             if (!target.activeSelf)
             {
-                canvasGroup.alpha = 0f;
+                if (canvasGroup != null)
+                    canvasGroup.alpha = 0f;
+
+                SetSpriteRendererFadeAlpha(spriteRenderers, 0f);
                 objectFadeCoroutines.Remove(target);
                 yield break;
             }
 
-            canvasGroup.alpha = Mathf.Clamp01(canvasGroup.alpha);
+            if (canvasGroup != null)
+                canvasGroup.alpha = Mathf.Clamp01(canvasGroup.alpha);
         }
 
-        float startAlpha = canvasGroup.alpha;
-        float targetAlpha = action.activeState ? 1f : 0f;
+        float startCanvasAlpha = canvasGroup != null ? canvasGroup.alpha : 0f;
+        float targetCanvasAlpha = action.activeState ? 1f : 0f;
+        float startSpriteFactor = action.activeState ? 0f : 1f;
+        float targetSpriteFactor = action.activeState ? 1f : 0f;
 
         if (action.fadeDuration <= 0f)
         {
-            canvasGroup.alpha = targetAlpha;
+            if (canvasGroup != null)
+                canvasGroup.alpha = targetCanvasAlpha;
+
+            SetSpriteRendererFadeAlpha(spriteRenderers, targetSpriteFactor);
 
             if (!action.activeState)
                 target.SetActive(false);
@@ -449,23 +490,74 @@ public class IntroSequenceController : MonoBehaviour
         }
 
         float elapsed = 0f;
-        while (elapsed < action.fadeDuration && target != null && canvasGroup != null)
+        while (elapsed < action.fadeDuration && target != null)
         {
             elapsed += Time.unscaledDeltaTime;
             float normalizedTime = Mathf.Clamp01(elapsed / action.fadeDuration);
             float curveTime = action.fadeCurve != null ? action.fadeCurve.Evaluate(normalizedTime) : normalizedTime;
-            canvasGroup.alpha = Mathf.LerpUnclamped(startAlpha, targetAlpha, curveTime);
+
+            if (canvasGroup != null)
+                canvasGroup.alpha = Mathf.LerpUnclamped(startCanvasAlpha, targetCanvasAlpha, curveTime);
+
+            float spriteFactor = Mathf.LerpUnclamped(startSpriteFactor, targetSpriteFactor, curveTime);
+            SetSpriteRendererFadeAlpha(spriteRenderers, spriteFactor);
             yield return null;
         }
 
-        if (target != null && canvasGroup != null)
-            canvasGroup.alpha = targetAlpha;
-
-        if (target != null && !action.activeState)
-            target.SetActive(false);
-
         if (target != null)
+        {
+            if (canvasGroup != null)
+                canvasGroup.alpha = targetCanvasAlpha;
+
+            SetSpriteRendererFadeAlpha(spriteRenderers, targetSpriteFactor);
+
+            if (!action.activeState)
+                target.SetActive(false);
+
             objectFadeCoroutines.Remove(target);
+        }
+    }
+
+    private static CanvasGroup ResolveFadeCanvasGroup(GameObject target)
+    {
+        if (target == null)
+            return null;
+
+        CanvasGroup canvasGroup = target.GetComponent<CanvasGroup>();
+        if (canvasGroup != null)
+            return canvasGroup;
+
+        // UI Graphic이 있는 경우에만 CanvasGroup을 자동 추가합니다.
+        // SpriteRenderer 전용 오브젝트에는 불필요한 CanvasGroup을 추가하지 않습니다.
+        if (target.GetComponent<Graphic>() != null || target.GetComponentInChildren<Graphic>(true) != null)
+            return target.AddComponent<CanvasGroup>();
+
+        return null;
+    }
+
+    private void SetSpriteRendererFadeAlpha(SpriteRenderer[] renderers, float factor)
+    {
+        if (renderers == null)
+            return;
+
+        factor = Mathf.Clamp01(factor);
+
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            SpriteRenderer renderer = renderers[i];
+            if (renderer == null)
+                continue;
+
+            if (!spriteRendererBaseAlphas.TryGetValue(renderer, out float baseAlpha))
+            {
+                baseAlpha = renderer.color.a;
+                spriteRendererBaseAlphas[renderer] = baseAlpha;
+            }
+
+            Color color = renderer.color;
+            color.a = baseAlpha * factor;
+            renderer.color = color;
+        }
     }
 
     private IEnumerator AnimateObjectAction(IntroObjectAction action, Transform targetTransform)
@@ -561,6 +653,13 @@ public class IntroSequenceController : MonoBehaviour
 
                 Transform targetTransform = action.target.transform;
                 CanvasGroup canvasGroup = action.target.GetComponent<CanvasGroup>();
+                SpriteRenderer[] spriteRenderers = action.target.GetComponentsInChildren<SpriteRenderer>(true);
+                for (int k = 0; k < spriteRenderers.Length; k++)
+                {
+                    SpriteRenderer renderer = spriteRenderers[k];
+                    if (renderer != null && !spriteRendererBaseAlphas.ContainsKey(renderer))
+                        spriteRendererBaseAlphas.Add(renderer, renderer.color.a);
+                }
 
                 objectInitialStates.Add(new IntroObjectInitialState
                 {
@@ -593,6 +692,9 @@ public class IntroSequenceController : MonoBehaviour
             CanvasGroup canvasGroup = state.target.GetComponent<CanvasGroup>();
             if (canvasGroup != null)
                 canvasGroup.alpha = state.canvasGroupAlpha;
+
+            SpriteRenderer[] spriteRenderers = state.target.GetComponentsInChildren<SpriteRenderer>(true);
+            SetSpriteRendererFadeAlpha(spriteRenderers, 1f);
 
             state.target.SetActive(state.activeSelf);
         }
@@ -740,7 +842,7 @@ public class IntroSequenceController : MonoBehaviour
     {
         if (GameManager.Instance == null || GameManager.Instance.StateMachine == null)
         {
-            Debug.LogError("[IntroSequenceController] GameManager �Ǵ� StateMachine�� �غ���� �ʾҽ��ϴ�.", this);
+            Debug.LogError("[IntroSequenceController] GameManager 또는 StateMachine이 준비되지 않았습니다.", this);
 
             CanvasMaterialSceneTransition transition = GetSceneTransition();
             if (transition != null && transition.IsPlaying)
