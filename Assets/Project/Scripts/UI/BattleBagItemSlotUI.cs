@@ -8,7 +8,7 @@ using UnityEngine.UI;
 public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, ISelectHandler, IPointerClickHandler
 {
     private static readonly Color NormalIconColor = Color.white;
-    private static readonly Color HighlightBorderColor = new Color32(0x4E, 0x67, 0xDF, 0xFF);
+    private static readonly Color HighlightBorderColor = new Color32(0x3C, 0x44, 0x76, 0xFF);
 
     [Header("UI")]
     [SerializeField] private Image borderImage;

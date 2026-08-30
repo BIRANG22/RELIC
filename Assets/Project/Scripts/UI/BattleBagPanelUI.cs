@@ -722,6 +722,7 @@ public class BattleBagPanelUI : MonoBehaviour
     {
         storageCategory = StorageCategory.Item;
         Refresh();
+        ResetStorageScrollToTop();
     }
 
     private void ShowStoredCompounds()
@@ -731,6 +732,26 @@ public class BattleBagPanelUI : MonoBehaviour
 
         storageCategory = StorageCategory.Compound;
         Refresh();
+        ResetStorageScrollToTop();
+    }
+
+    private void ResetStorageScrollToTop()
+    {
+        if (storageScrollRect == null)
+            return;
+
+        // 탭 전환으로 Content가 다시 생성된 직후 레이아웃을 먼저 확정한 다음
+        // 스크롤을 항상 최상단에서 시작하도록 맞춥니다.
+        Canvas.ForceUpdateCanvases();
+
+        if (storageScrollRect.content != null)
+            LayoutRebuilder.ForceRebuildLayoutImmediate(storageScrollRect.content);
+
+        storageScrollRect.StopMovement();
+        storageScrollRect.verticalNormalizedPosition = 1f;
+
+        if (storageVerticalScrollbar != null)
+            storageVerticalScrollbar.value = 1f;
     }
 
     private void BindDiscardButton()

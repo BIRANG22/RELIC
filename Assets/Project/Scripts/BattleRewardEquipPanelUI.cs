@@ -686,7 +686,10 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
             SkillMasterData skill = ResolveSkill(currentReward.RewardId);
 
             if (itemRarityText != null)
+            {
                 itemRarityText.text = skill != null ? SkillRarityUtility.GetDisplayName(skill) : string.Empty;
+                ApplyItemRarityColor(skill != null ? SkillRarityUtility.GetCanonicalName(skill.Rarity) : string.Empty);
+            }
 
             if (itemEffectText != null)
                 itemEffectText.text = GetSkillDescription(skill, currentReward.Description);
@@ -696,13 +699,49 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
             RelicData relic = ResolveRelic(currentReward.RewardId);
 
             if (itemRarityText != null)
-                itemRarityText.text = relic?.Rarity ?? string.Empty;
+            {
+                string relicRarity = relic?.Rarity ?? string.Empty;
+                itemRarityText.text = GetRelicRarityDisplayName(relicRarity);
+                ApplyItemRarityColor(relicRarity);
+            }
 
             if (itemEffectText != null)
                 itemEffectText.text = !string.IsNullOrWhiteSpace(relic?.EffectDesc)
                     ? GameDataLocalization.RelicEffectDescription(relic)
                     : currentReward.Description ?? string.Empty;
         }
+    }
+
+
+    private static string GetRelicRarityDisplayName(string rarity)
+    {
+        if (!RelicRarityUtility.TryParseChestRarity(rarity, out RelicRarity parsedRarity))
+            return string.Empty;
+
+        return parsedRarity switch
+        {
+            RelicRarity.Common => "일반 유물",
+            RelicRarity.Rare => "레어 유물",
+            RelicRarity.Epic => "에픽 유물",
+            RelicRarity.Unique => "유니크 유물",
+            _ => string.Empty
+        };
+    }
+
+    private void ApplyItemRarityColor(string rarity)
+    {
+        if (itemRarityText == null || string.IsNullOrWhiteSpace(rarity))
+            return;
+
+        if (RecordPanelUI.TryGetCachedRarityDisplayColor(rarity, out Color rarityColor))
+        {
+            itemRarityText.color = rarityColor;
+            return;
+        }
+
+        RecordPanelUI recordPanel = UnityEngine.Object.FindFirstObjectByType<RecordPanelUI>(FindObjectsInactive.Include);
+        if (recordPanel != null)
+            itemRarityText.color = recordPanel.GetRarityDisplayColor(rarity);
     }
 
     private void RefreshCharacterViews()

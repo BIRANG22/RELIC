@@ -1053,11 +1053,11 @@ MonoBehaviour:
   rarityText: {fileID: 7013436545625243876}
   emptyNameText: 
   emptyDescriptionText: 
-  commonRarityColor: {r: 0.13127448, g: 0.4716981, b: 0.2570832, a: 1}
-  rareRarityColor: {r: 0.13830544, g: 0.36458287, b: 0.7924528, a: 1}
-  epicRarityColor: {r: 0.43892005, g: 0.1782218, b: 0.8396226, a: 1}
-  uniqueRarityColor: {r: 0.7924528, g: 0.15325737, b: 0.54574585, a: 1}
-  exclusiveRarityColor: {r: 0.8113208, g: 0.71703094, b: 0.4018334, a: 1}
+  commonRarityColor: {r: 0.78431374, g: 0.8156863, b: 0.8509804, a: 1}
+  rareRarityColor: {r: 0.36078432, g: 0.70980394, b: 0.85882354, a: 1}
+  epicRarityColor: {r: 0.7647059, g: 0.30588236, b: 1, a: 1}
+  uniqueRarityColor: {r: 1, g: 0.34509805, b: 0.2784314, a: 1}
+  exclusiveRarityColor: {r: 0.8679245, g: 0.8486751, b: 0.40530434, a: 1}
   valueHighlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   fragmentInfoPanel: {fileID: 159937094902106906}
   fragmentUnlockText: {fileID: 1444540805196264133}
