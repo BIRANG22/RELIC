@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 5784326964366573673}
   - component: {fileID: 8912060164555323733}
   - component: {fileID: 3808230140245187322}
+  - component: {fileID: 2645598418546003523}
   m_Layer: 5
   m_Name: RewardSlotUI
   m_TagString: Untagged
@@ -108,6 +109,36 @@ MonoBehaviour:
   iconImage: {fileID: 5503536596427868976}
   nameText: {fileID: 5594444014932533915}
   button: {fileID: 0}
+--- !u!114 &2645598418546003523
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1325951689514655299}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa9b19d30445e9c4f952d5b21bbf6629, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  startImageObject: {fileID: 0}
+  buttonContent: {fileID: 3561203684843248107}
+  hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
+  hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
+  hoverDuration: 0.2
+  playHoverSound: 1
+  hoverSoundId: ui.move.hover
+  hoverSoundVolume: 1
+  playClickSound: 0
+  clickSoundId: ui.normal.click
+  clickSoundVolume: 1
+  toggleClickState: 1
+  keepClickedStateWhenPointerExit: 1
+  usePersistentClickedState: 0
+  clearClickedStateWhenAnotherButtonHovered: 1
+  hoverHitArea: {fileID: 5215844706975465575}
+  hoverExitPadding: 0
+  hoverExitDelay: 0.05
 --- !u!1 &6636996361582026704
 GameObject:
   m_ObjectHideFlags: 0

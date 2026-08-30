@@ -1,77 +1,47 @@
 ﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
+/// <summary>
+/// 버튼에 마우스를 올리거나 클릭했을 때 위치/크기 애니메이션을 적용하고,
+/// 호버/클릭 SFX를 AudioManager의 DB ID로 재생합니다.
+/// </summary>
 public class ButtonAnimationCoroutine :
     MonoBehaviour,
     IPointerEnterHandler,
     IPointerExitHandler,
     IPointerClickHandler
 {
-    [Header("���� ȭ�� ����")]
-
-    [Tooltip("�� ������Ʈ�� Ȱ��ȭ�Ǿ� �ִ� ���� ��ư ������ �۵����� �ʽ��ϴ�.")]
+    [Header("시작 화면 차단")]
+    [Tooltip("이 오브젝트가 활성화되어 있는 동안 버튼 입력이 동작하지 않습니다.")]
     [SerializeField] private GameObject startImageObject;
 
-
     [Header("Hover - Button Content")]
-
+    [Tooltip("호버/클릭 상태에서 이동하거나 확대할 버튼 영역입니다.")]
     [SerializeField] private RectTransform buttonContent;
 
-    [SerializeField]
-    private Vector3 hoverButtonMoveOffset = Vector3.zero;
+    [Tooltip("호버/클릭 상태에서 원래 위치로부터 이동할 값입니다.")]
+    [SerializeField] private Vector3 hoverButtonMoveOffset = Vector3.zero;
 
-    [SerializeField]
-    private Vector3 hoverButtonScale = Vector3.one;
+    [Tooltip("호버/클릭 상태에서 적용할 크기입니다.")]
+    [SerializeField] private Vector3 hoverButtonScale = Vector3.one;
 
-    [SerializeField]
-    private float hoverDuration = 0.2f;
+    [Tooltip("버튼 위치/크기가 목표 값으로 변경되는 속도입니다.")]
+    [SerializeField] private float hoverDuration = 0.2f;
 
+    [Header("Hover Sound")]
+    [Tooltip("마우스가 버튼 영역에 들어왔을 때 호버 사운드를 재생합니다.")]
+    [SerializeField] private bool playHoverSound = false;
 
-    [Header("Protected Images")]
+    [SerializeField, SoundId(SoundCategory.Sfx)]
+    private string hoverSoundId = AudioIds.Sfx.NormalButtonClick;
 
-    [SerializeField]
-    private Graphic protectedBackgroundImage;
+    [SerializeField, Range(0f, 1f)]
+    private float hoverSoundVolume = 1f;
 
-    [SerializeField]
-    private Graphic protectedButtonImage;
-
-
-    [Header("Changing Background")]
-
-    [SerializeField]
-    private RectTransform changingBackgroundImage;
-
-    [SerializeField]
-    private Graphic changingBackgroundGraphic;
-
-    [SerializeField]
-    private Vector3 hoverChangingBackgroundMoveOffset = Vector3.zero;
-
-    [SerializeField]
-    private float hoverChangingBackgroundRotationZOffset = 0f;
-
-    [SerializeField]
-    private float changingBackgroundDuration = 0.2f;
-
-
-    [Header("Changing Background Color")]
-
-    [SerializeField]
-    private Color normalColor = Color.white;
-
-    [SerializeField]
-    private Color hoverColor = Color.white;
-
-    [SerializeField]
-    private Color clickedColor = Color.white;
-
-
-    [Header("Button Sound")]
-
-    [SerializeField]
-    private bool playClickSound = true;
+    [Header("Click Sound")]
+    [Tooltip("버튼을 클릭했을 때 클릭 사운드를 재생합니다.")]
+    [SerializeField] private bool playClickSound = true;
 
     [SerializeField, SoundId(SoundCategory.Sfx)]
     private string clickSoundId = AudioIds.Sfx.NormalButtonClick;
@@ -79,49 +49,37 @@ public class ButtonAnimationCoroutine :
     [SerializeField, Range(0f, 1f)]
     private float clickSoundVolume = 1f;
 
-
     [Header("Click State")]
+    [Tooltip("같은 버튼을 다시 클릭하면 선택 상태를 해제합니다.")]
+    [SerializeField] private bool toggleClickState = true;
 
-    [SerializeField]
-    private bool toggleClickState = true;
+    [Tooltip("포인터가 버튼 밖으로 나가도 클릭 상태를 유지할지 결정합니다.")]
+    [SerializeField] private bool keepClickedStateWhenPointerExit = true;
 
-    [SerializeField]
-    private bool keepClickedStateWhenPointerExit = true;
+    [Tooltip("클릭된 상태를 지속적으로 유지할지 결정합니다.")]
+    [SerializeField] private bool usePersistentClickedState = false;
 
-    [SerializeField]
-    private bool usePersistentClickedState = false;
-
-    [SerializeField]
-    private bool clearClickedStateWhenAnotherButtonHovered = true;
-
+    [Tooltip("다른 버튼에 호버했을 때 기존 클릭 상태를 해제합니다.")]
+    [SerializeField] private bool clearClickedStateWhenAnotherButtonHovered = true;
 
     [Header("Hover Hit Area")]
+    [Tooltip("호버 판정에 사용할 영역입니다. 비워두면 이 스크립트가 붙은 RectTransform을 사용합니다.")]
+    [SerializeField] private RectTransform hoverHitArea;
 
-    [Tooltip("��ư ������ �������� �����Ǿ� �ִ� ������ ���� �����Դϴ�. ��� ������ Protected Background Image �Ǵ� ���� ������Ʈ�� ����մϴ�.")]
-    [SerializeField]
-    private RectTransform hoverHitArea;
+    [Tooltip("호버 영역 바깥으로 판정하기 전에 추가로 허용할 픽셀 범위입니다.")]
+    [SerializeField] private float hoverExitPadding = 4f;
 
-    [Tooltip("��ư �𼭸����� ȣ���� �ݺ����� �ʵ��� ���� ���� ������ �߰��ϴ� ���� �ȼ��Դϴ�.")]
-    [SerializeField]
-    private float hoverExitPadding = 4f;
-
-    [Tooltip("��ư �̵� �� �߻��ϴ� �������� ������ ��Ż�� �����ϴ� �ð��Դϴ�.")]
-    [SerializeField]
-    private float hoverExitDelay = 0.05f;
-
+    [Tooltip("포인터가 호버 영역 밖으로 나간 뒤 실제로 호버를 해제하기까지의 지연 시간입니다.")]
+    [SerializeField] private float hoverExitDelay = 0.05f;
 
     private static ButtonAnimationCoroutine currentClickedButton;
 
     private Vector3 originButtonPosition;
     private Vector3 originButtonScale;
 
-    private Vector3 originChangingBackgroundPosition;
-    private Quaternion originChangingBackgroundRotation;
-
     private bool isPointerInside;
     private bool isClicked;
     private bool hasCachedOriginValues;
-
     private bool wasBlocked;
 
     private Coroutine visualCoroutine;
@@ -130,17 +88,14 @@ public class ButtonAnimationCoroutine :
     private bool hasCachedHoverScreenRect;
     private float pointerOutsideTime;
 
-
     private void Awake()
     {
         ResolveHoverHitArea();
         CacheOriginValuesIfNeeded();
 
         wasBlocked = IsBlockedByStartImage();
-
         ForceClearState(false);
     }
-
 
     private void OnEnable()
     {
@@ -148,16 +103,14 @@ public class ButtonAnimationCoroutine :
         CacheOriginValuesIfNeeded();
 
         wasBlocked = IsBlockedByStartImage();
-
         ForceClearState(false);
     }
-
 
     private void Update()
     {
         bool isBlocked = IsBlockedByStartImage();
 
-        // StartImage�� ���� �����ٸ� ���� ���� ����� ���¸� ��� �ʱ�ȭ�մϴ�.
+        // StartImage가 새로 활성화되면 현재 버튼 상태를 즉시 초기화합니다.
         if (isBlocked && !wasBlocked)
         {
             ForceClearState(false);
@@ -165,11 +118,9 @@ public class ButtonAnimationCoroutine :
 
         wasBlocked = isBlocked;
 
-        // ��ư ������ �����̴���, �����Ͱ� ������ �� ������ ���� ������
-        // ������ ����� �������� ȣ�� ���¸� �����մϴ�.
-        if (!isBlocked &&
-            isPointerInside &&
-            hasCachedHoverScreenRect)
+        // PointerExit 이벤트만 사용하면 움직이는 UI에서 호버가 잘못 풀릴 수 있으므로
+        // 실제 마우스 위치가 저장된 호버 영역 밖에 있는지도 함께 확인합니다.
+        if (!isBlocked && isPointerInside && hasCachedHoverScreenRect)
         {
             if (cachedHoverScreenRect.Contains(Input.mousePosition))
             {
@@ -187,15 +138,13 @@ public class ButtonAnimationCoroutine :
         }
     }
 
-
     private void OnDisable()
     {
         ForceClearState(false);
     }
 
-
     /// <summary>
-    /// StartImage�� ���� Ȱ��ȭ�Ǿ� �ִ��� Ȯ���մϴ�.
+    /// StartImage가 현재 활성화되어 버튼 입력을 막고 있는지 확인합니다.
     /// </summary>
     private bool IsBlockedByStartImage()
     {
@@ -203,10 +152,8 @@ public class ButtonAnimationCoroutine :
                startImageObject.activeInHierarchy;
     }
 
-
     public void OnPointerEnter(PointerEventData eventData)
     {
-        // StartImage�� ���� ������ ȣ�� �Է��� �����մϴ�.
         if (IsBlockedByStartImage())
         {
             return;
@@ -220,11 +167,18 @@ public class ButtonAnimationCoroutine :
             ClearOtherClickedButton();
         }
 
+        // 이미 호버 상태일 때 자식 UI의 이벤트 때문에 PointerEnter가 다시 들어오는 경우
+        // 사운드가 중복 재생되지 않도록 실제 진입 순간에만 재생합니다.
+        bool wasPointerInside = isPointerInside;
         isPointerInside = true;
+
+        if (!wasPointerInside)
+        {
+            PlayHoverSound();
+        }
 
         StartVisualAnimationIfNeeded();
     }
-
 
     public void OnPointerExit(PointerEventData eventData)
     {
@@ -233,12 +187,11 @@ public class ButtonAnimationCoroutine :
             return;
         }
 
-        // ������ ��ư �׷����� �����Ϳ��� �����ٴ� �̺�Ʈ�� �����ϰ�,
-        // �����Ͱ� ó�� �������� �� ������ ���� ������ ��� ��쿡�� �����մϴ�.
         Vector2 pointerPosition = eventData != null
             ? eventData.position
             : (Vector2)Input.mousePosition;
 
+        // 포인터가 실제 호버 판정 영역 안에 있으면 Exit 이벤트가 발생해도 유지합니다.
         if (hasCachedHoverScreenRect &&
             cachedHoverScreenRect.Contains(pointerPosition))
         {
@@ -246,12 +199,9 @@ public class ButtonAnimationCoroutine :
             return;
         }
 
-        // ��ư �׷����� �̵��ϸ鼭 �߻��� �������� Exit �̺�Ʈ�����δ�
-        // ȣ���� ��� �������� �ʽ��ϴ�. Update���� ���� ���� �ۿ�
-        // hoverExitDelay �̻� �ӹ� ��쿡�� ���� ��Ż�� ó���մϴ�.
+        // Update에서 hoverExitDelay만큼 실제 영역 밖에 머물렀는지 확인한 뒤 해제합니다.
         pointerOutsideTime = 0f;
     }
-
 
     private void CacheHoverScreenRect(PointerEventData eventData)
     {
@@ -306,7 +256,6 @@ public class ButtonAnimationCoroutine :
         hasCachedHoverScreenRect = true;
     }
 
-
     private void ApplyPointerExitState()
     {
         isPointerInside = false;
@@ -331,7 +280,6 @@ public class ButtonAnimationCoroutine :
         StartVisualAnimationIfNeeded();
     }
 
-
     private void ResolveHoverHitArea()
     {
         if (hoverHitArea != null)
@@ -339,15 +287,8 @@ public class ButtonAnimationCoroutine :
             return;
         }
 
-        if (protectedBackgroundImage != null)
-        {
-            hoverHitArea = protectedBackgroundImage.rectTransform;
-            return;
-        }
-
         hoverHitArea = transform as RectTransform;
     }
-
 
     private RectTransform GetHoverHitArea()
     {
@@ -355,10 +296,8 @@ public class ButtonAnimationCoroutine :
         return hoverHitArea;
     }
 
-
     public void OnPointerClick(PointerEventData eventData)
     {
-        // StartImage�� ���� ������ Ŭ�� ������ �������� �ʽ��ϴ�.
         if (IsBlockedByStartImage())
         {
             return;
@@ -393,15 +332,41 @@ public class ButtonAnimationCoroutine :
         StartVisualAnimationIfNeeded();
     }
 
+    /// <summary>
+    /// 인스펙터에서 지정한 호버 SFX를 재생합니다.
+    /// </summary>
+    private void PlayHoverSound()
+    {
+        PlaySound(
+            playHoverSound,
+            hoverSoundId,
+            hoverSoundVolume
+        );
+    }
 
+    /// <summary>
+    /// 인스펙터에서 지정한 클릭 SFX를 재생합니다.
+    /// </summary>
     private void PlayClickSound()
     {
-        if (!playClickSound)
+        PlaySound(
+            playClickSound,
+            clickSoundId,
+            clickSoundVolume
+        );
+    }
+
+    /// <summary>
+    /// AudioManager에 등록된 SFX ID를 지정한 볼륨으로 재생합니다.
+    /// </summary>
+    private void PlaySound(bool enabled, string soundId, float volume)
+    {
+        if (!enabled)
         {
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(clickSoundId))
+        if (string.IsNullOrWhiteSpace(soundId))
         {
             return;
         }
@@ -416,11 +381,10 @@ public class ButtonAnimationCoroutine :
         }
 
         AudioManager.Instance.PlaySfx(
-            clickSoundId,
-            Mathf.Clamp01(clickSoundVolume)
+            soundId,
+            Mathf.Clamp01(volume)
         );
     }
-
 
     public void ForceSetClickedState(bool clicked, bool animate)
     {
@@ -478,7 +442,6 @@ public class ButtonAnimationCoroutine :
         }
     }
 
-
     private void ClearOtherClickedButton()
     {
         if (IsBlockedByStartImage())
@@ -495,7 +458,6 @@ public class ButtonAnimationCoroutine :
         currentClickedButton.ForceClearState(true);
     }
 
-
     private void CacheOriginValuesIfNeeded()
     {
         if (hasCachedOriginValues)
@@ -504,48 +466,26 @@ public class ButtonAnimationCoroutine :
         }
 
         CacheOriginValues();
-
         hasCachedOriginValues = true;
     }
 
-
     private void CacheOriginValues()
     {
-        if (buttonContent != null)
+        if (buttonContent == null)
         {
-            originButtonPosition =
-                buttonContent.anchoredPosition;
-
-            originButtonScale =
-                buttonContent.localScale;
+            return;
         }
 
-        if (changingBackgroundImage != null)
-        {
-            originChangingBackgroundPosition =
-                changingBackgroundImage.anchoredPosition;
-
-            originChangingBackgroundRotation =
-                changingBackgroundImage.localRotation;
-        }
-
-        if (changingBackgroundGraphic == null &&
-            changingBackgroundImage != null)
-        {
-            changingBackgroundGraphic =
-                changingBackgroundImage.GetComponent<Graphic>();
-        }
+        originButtonPosition = buttonContent.anchoredPosition;
+        originButtonScale = buttonContent.localScale;
     }
-
 
     private void StartVisualAnimationIfNeeded()
     {
-        // StartImage�� ���� ������ ��� ��ư ������ �����մϴ�.
         if (IsBlockedByStartImage())
         {
             StopVisualAnimation();
             ApplyVisualStateImmediately();
-
             return;
         }
 
@@ -553,19 +493,15 @@ public class ButtonAnimationCoroutine :
             !gameObject.activeInHierarchy)
         {
             ApplyVisualStateImmediately();
-
             return;
         }
 
-        // ���°� ������ �ٲ� ���� �ڷ�ƾ�� �ߴ��ϰ� �ٽ� ������ �ʽ��ϴ�.
-        // ���� ���� �ڷ�ƾ�� �� ������ �ֽ� ��ǥ���� ���󰩴ϴ�.
+        // 진행 중인 코루틴이 있다면 중단하지 않고 최신 목표 상태를 계속 따라갑니다.
         if (visualCoroutine == null)
         {
-            visualCoroutine =
-                StartCoroutine(AnimateVisualState());
+            visualCoroutine = StartCoroutine(AnimateVisualState());
         }
     }
-
 
     private void StopVisualAnimation()
     {
@@ -575,16 +511,13 @@ public class ButtonAnimationCoroutine :
         }
 
         StopCoroutine(visualCoroutine);
-
         visualCoroutine = null;
     }
-
 
     private IEnumerator AnimateVisualState()
     {
         while (true)
         {
-            // ���� �� StartImage�� �ٽ� ������ ��� ���� ���·� �����մϴ�.
             if (IsBlockedByStartImage())
             {
                 isPointerInside = false;
@@ -596,22 +529,14 @@ public class ButtonAnimationCoroutine :
                 }
 
                 visualCoroutine = null;
-
                 ApplyVisualStateImmediately();
-
                 yield break;
             }
 
-            float buttonT =
-                GetFrameT(hoverDuration);
-
-            float backgroundT =
-                GetFrameT(changingBackgroundDuration);
-
+            float buttonT = GetFrameT(hoverDuration);
 
             if (buttonContent != null)
             {
-                // �������� ������ ��쿡�� ��ġ�� �����մϴ�.
                 if (UsesButtonPositionAnimation())
                 {
                     buttonContent.anchoredPosition =
@@ -630,52 +555,16 @@ public class ButtonAnimationCoroutine :
                     );
             }
 
-
-            if (changingBackgroundImage != null)
-            {
-                if (UsesChangingBackgroundPositionAnimation())
-                {
-                    changingBackgroundImage.anchoredPosition =
-                        Vector3.Lerp(
-                            changingBackgroundImage.anchoredPosition,
-                            GetTargetChangingBackgroundPosition(),
-                            backgroundT
-                        );
-                }
-
-                changingBackgroundImage.localRotation =
-                    Quaternion.Slerp(
-                        changingBackgroundImage.localRotation,
-                        GetTargetChangingBackgroundRotation(),
-                        backgroundT
-                    );
-            }
-
-
-            if (changingBackgroundGraphic != null)
-            {
-                changingBackgroundGraphic.color =
-                    Color.Lerp(
-                        changingBackgroundGraphic.color,
-                        GetTargetChangingBackgroundColor(),
-                        backgroundT
-                    );
-            }
-
-
             if (HasReachedCurrentTarget())
             {
                 ApplyVisualStateImmediately();
-
                 visualCoroutine = null;
-
                 yield break;
             }
 
             yield return null;
         }
     }
-
 
     private static float GetFrameT(float duration)
     {
@@ -692,14 +581,10 @@ public class ButtonAnimationCoroutine :
                );
     }
 
-
     private bool HasReachedCurrentTarget()
     {
         const float positionThreshold = 0.01f;
         const float scaleThreshold = 0.0001f;
-        const float rotationThreshold = 0.05f;
-        const float colorThreshold = 0.0001f;
-
 
         if (buttonContent != null)
         {
@@ -719,104 +604,34 @@ public class ButtonAnimationCoroutine :
             }
         }
 
-
-        if (changingBackgroundImage != null)
-        {
-            if (UsesChangingBackgroundPositionAnimation() &&
-                (changingBackgroundImage.anchoredPosition -
-                 (Vector2)GetTargetChangingBackgroundPosition()).sqrMagnitude >
-                positionThreshold * positionThreshold)
-            {
-                return false;
-            }
-
-            if (Quaternion.Angle(
-                    changingBackgroundImage.localRotation,
-                    GetTargetChangingBackgroundRotation()
-                ) > rotationThreshold)
-            {
-                return false;
-            }
-        }
-
-
-        if (changingBackgroundGraphic != null)
-        {
-            Color difference =
-                changingBackgroundGraphic.color -
-                GetTargetChangingBackgroundColor();
-
-            float colorDifference =
-                difference.r * difference.r +
-                difference.g * difference.g +
-                difference.b * difference.b +
-                difference.a * difference.a;
-
-            if (colorDifference > colorThreshold)
-            {
-                return false;
-            }
-        }
-
         return true;
     }
 
-
     private void ApplyVisualStateImmediately()
     {
-        if (buttonContent != null)
+        if (buttonContent == null)
         {
-            if (UsesButtonPositionAnimation())
-            {
-                buttonContent.anchoredPosition =
-                    GetTargetButtonPosition();
-            }
-
-            buttonContent.localScale =
-                GetTargetButtonScale();
+            return;
         }
 
-
-        if (changingBackgroundImage != null)
+        if (UsesButtonPositionAnimation())
         {
-            if (UsesChangingBackgroundPositionAnimation())
-            {
-                changingBackgroundImage.anchoredPosition =
-                    GetTargetChangingBackgroundPosition();
-            }
-
-            changingBackgroundImage.localRotation =
-                GetTargetChangingBackgroundRotation();
+            buttonContent.anchoredPosition =
+                GetTargetButtonPosition();
         }
 
-
-        if (changingBackgroundGraphic != null)
-        {
-            changingBackgroundGraphic.color =
-                GetTargetChangingBackgroundColor();
-        }
+        buttonContent.localScale =
+            GetTargetButtonScale();
     }
 
-
     /// <summary>
-    /// ��ư �̵� �������� ������ ��쿡�� ��ġ�� �����մϴ�.
+    /// 버튼 이동 오프셋이 설정된 경우에만 위치 애니메이션을 사용합니다.
     /// </summary>
     private bool UsesButtonPositionAnimation()
     {
         return hoverButtonMoveOffset.sqrMagnitude >
                0.000001f;
     }
-
-
-    /// <summary>
-    /// ���� ��� �̵� �������� ������ ��쿡�� ��ġ�� �����մϴ�.
-    /// </summary>
-    private bool UsesChangingBackgroundPositionAnimation()
-    {
-        return hoverChangingBackgroundMoveOffset.sqrMagnitude >
-               0.000001f;
-    }
-
 
     private Vector3 GetTargetButtonPosition()
     {
@@ -829,7 +644,6 @@ public class ButtonAnimationCoroutine :
         return originButtonPosition;
     }
 
-
     private Vector3 GetTargetButtonScale()
     {
         if (isPointerInside || isClicked)
@@ -838,49 +652,5 @@ public class ButtonAnimationCoroutine :
         }
 
         return originButtonScale;
-    }
-
-
-    private Vector3 GetTargetChangingBackgroundPosition()
-    {
-        if (isPointerInside || isClicked)
-        {
-            return originChangingBackgroundPosition +
-                   hoverChangingBackgroundMoveOffset;
-        }
-
-        return originChangingBackgroundPosition;
-    }
-
-
-    private Quaternion GetTargetChangingBackgroundRotation()
-    {
-        if (isPointerInside)
-        {
-            return originChangingBackgroundRotation *
-                   Quaternion.Euler(
-                       0f,
-                       0f,
-                       hoverChangingBackgroundRotationZOffset
-                   );
-        }
-
-        return originChangingBackgroundRotation;
-    }
-
-
-    private Color GetTargetChangingBackgroundColor()
-    {
-        if (isClicked)
-        {
-            return clickedColor;
-        }
-
-        if (isPointerInside)
-        {
-            return hoverColor;
-        }
-
-        return normalColor;
     }
 }

@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 400000}
   - component: {fileID: 500000}
   - component: {fileID: 600000}
+  - component: {fileID: 8433786057484953713}
   m_Layer: 5
   m_Name: NextNodeChoicePrefab
   m_TagString: Untagged
@@ -143,6 +144,36 @@ MonoBehaviour:
   battleClip: {fileID: 7400000, guid: 41cfe047161da93419e36f557bbba1f5, type: 2}
   eliteBattleClip: {fileID: 7400000, guid: 79adf154d50c42a4fb7cdeed9e6d5dda, type: 2}
   bossBattleClip: {fileID: 7400000, guid: 6d0cc2605d1299c4393aed0309cccf89, type: 2}
+--- !u!114 &8433786057484953713
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa9b19d30445e9c4f952d5b21bbf6629, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  startImageObject: {fileID: 0}
+  buttonContent: {fileID: 0}
+  hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
+  hoverButtonScale: {x: 1, y: 1, z: 1}
+  hoverDuration: 0.2
+  playHoverSound: 1
+  hoverSoundId: ui.flag.hover
+  hoverSoundVolume: 1
+  playClickSound: 1
+  clickSoundId: ui.flag.click
+  clickSoundVolume: 1
+  toggleClickState: 1
+  keepClickedStateWhenPointerExit: 1
+  usePersistentClickedState: 0
+  clearClickedStateWhenAnotherButtonHovered: 1
+  hoverHitArea: {fileID: 0}
+  hoverExitPadding: 4
+  hoverExitDelay: 0.05
 --- !u!1 &700000
 GameObject:
   m_ObjectHideFlags: 0

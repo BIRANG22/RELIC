@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -183,6 +183,10 @@ public class SoundDatabase : ScriptableObject
 [Serializable]
 public class VfxSoundData
 {
+    [InspectorName("Name")]
+    [Tooltip("플레이어/몬스터 스킬 SFX 항목을 구분하기 위해 직접 지정하는 이름입니다.")]
+    public string displayName;
+
     public GameObject vfxPrefab;
     public List<VfxSoundCue> cues = new();
 
