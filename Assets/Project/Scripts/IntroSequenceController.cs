@@ -119,6 +119,9 @@ public class IntroSequenceController : MonoBehaviour
     [SerializeField] private bool enableIntroCameraPostProcessing = true;
     [SerializeField] private bool autoHideOverlayCanvases = true;
     [SerializeField] private GameObject[] hideWhileIntroVisible;
+    [SerializeField] private bool autoHideGameObjectsByName = true;
+    [SerializeField] private string[] autoHideGameObjectNames = { "Background" };
+    [SerializeField] private GameObject[] hideGameObjectsWhileIntroVisible;
 
     [Header("��Ʈ�� ����")]
     [Tooltip("������� ǥ���� �����Դϴ�. �� �׸��� �� ȭ�鿡 ǥ�õ˴ϴ�.")]
@@ -163,6 +166,7 @@ public class IntroSequenceController : MonoBehaviour
     private readonly List<IntroObjectInitialState> objectInitialStates = new List<IntroObjectInitialState>();
     private readonly Dictionary<Canvas, bool> hiddenCanvasEnabledStates = new Dictionary<Canvas, bool>();
     private readonly Dictionary<GraphicRaycaster, bool> hiddenGraphicRaycasterEnabledStates = new Dictionary<GraphicRaycaster, bool>();
+    private readonly Dictionary<GameObject, bool> hiddenGameObjectActiveStates = new Dictionary<GameObject, bool>();
     private bool isIntroVisible;
     private Camera runtimeIntroCamera;
     private Image introInputBlocker;
@@ -196,6 +200,7 @@ public class IntroSequenceController : MonoBehaviour
     {
         StopAllObjectAnimations();
         HideOverlayCanvasesForIntro(false);
+        HideGameObjectsForIntro(false);
         EndIntroParallaxPause();
 
         if (Instance == this)
@@ -764,6 +769,7 @@ public class IntroSequenceController : MonoBehaviour
             BeginIntroParallaxPause();
             EnsureIntroCanvasSorting();
             SetIntroInputBlockerVisible(true);
+            HideGameObjectsForIntro(true);
             HideOverlayCanvasesForIntro(true);
         }
 
@@ -773,6 +779,7 @@ public class IntroSequenceController : MonoBehaviour
         if (!visible)
         {
             HideOverlayCanvasesForIntro(false);
+            HideGameObjectsForIntro(false);
             SetIntroInputBlockerVisible(false);
             EndIntroParallaxPause();
 
@@ -782,6 +789,60 @@ public class IntroSequenceController : MonoBehaviour
                 introText.maxVisibleCharacters = int.MaxValue;
             }
         }
+    }
+
+    private void HideGameObjectsForIntro(bool hidden)
+    {
+        if (!hidden)
+        {
+            RestoreGameObjectsHiddenForIntro(hiddenGameObjectActiveStates);
+            return;
+        }
+
+        if (autoHideGameObjectsByName)
+            CaptureNamedGameObjectsForIntro();
+
+        SetGameObjectsHiddenForIntro(hideGameObjectsWhileIntroVisible, hiddenGameObjectActiveStates, true);
+    }
+
+    private void CaptureNamedGameObjectsForIntro()
+    {
+        if (autoHideGameObjectNames == null || autoHideGameObjectNames.Length == 0)
+            return;
+
+        Transform[] transforms = FindObjectsByType<Transform>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        for (int i = 0; i < transforms.Length; i++)
+        {
+            Transform target = transforms[i];
+            if (target == null || target.gameObject == null)
+                continue;
+
+            if (!ShouldHideGameObjectForIntro(target.gameObject))
+                continue;
+
+            HideGameObjectForIntro(target.gameObject, hiddenGameObjectActiveStates);
+        }
+    }
+
+    private bool ShouldHideGameObjectForIntro(GameObject target)
+    {
+        if (target == null || target == introRoot || target.GetComponentInParent<CanvasMaterialSceneTransition>(true) != null)
+            return false;
+
+        if (target.transform.parent != null)
+            return false;
+
+        for (int i = 0; i < autoHideGameObjectNames.Length; i++)
+        {
+            string targetName = autoHideGameObjectNames[i];
+            if (string.IsNullOrWhiteSpace(targetName))
+                continue;
+
+            if (target.name == targetName)
+                return true;
+        }
+
+        return false;
     }
 
     private void HideOverlayCanvasesForIntro(bool hidden)
@@ -926,6 +987,63 @@ public class IntroSequenceController : MonoBehaviour
     {
         SetCanvasesHiddenForIntro(targets, enabledStates, raycasterEnabledStates, hidden);
     }
+
+    private static void SetGameObjectsHiddenForIntro(
+        GameObject[] targets,
+        Dictionary<GameObject, bool> activeStates,
+        bool hidden)
+    {
+        if (activeStates == null)
+            return;
+
+        if (!hidden)
+        {
+            RestoreGameObjectsHiddenForIntro(activeStates);
+            return;
+        }
+
+        if (targets == null)
+            return;
+
+        for (int i = 0; i < targets.Length; i++)
+            HideGameObjectForIntro(targets[i], activeStates);
+    }
+
+    private static void HideGameObjectForIntro(
+        GameObject target,
+        Dictionary<GameObject, bool> activeStates)
+    {
+        if (target == null || activeStates == null)
+            return;
+
+        if (!activeStates.ContainsKey(target))
+            activeStates.Add(target, target.activeSelf);
+
+        target.SetActive(false);
+    }
+
+    private static void RestoreGameObjectsHiddenForIntro(Dictionary<GameObject, bool> activeStates)
+    {
+        if (activeStates == null)
+            return;
+
+        foreach (KeyValuePair<GameObject, bool> state in activeStates)
+        {
+            if (state.Key != null)
+                state.Key.SetActive(state.Value);
+        }
+
+        activeStates.Clear();
+    }
+
+    public static void SetGameObjectsHiddenForIntroForTest(
+        GameObject[] targets,
+        Dictionary<GameObject, bool> activeStates,
+        bool hidden)
+    {
+        SetGameObjectsHiddenForIntro(targets, activeStates, hidden);
+    }
+
     private void BeginIntroParallaxPause()
     {
         if (hasIntroParallaxPause)
