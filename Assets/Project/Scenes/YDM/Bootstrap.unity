@@ -1049,7 +1049,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 558, y: -88}
+  m_AnchoredPosition: {x: -567, y: -88}
   m_SizeDelta: {x: 1920, y: 1080}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &161499573
@@ -1164,7 +1164,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!64 &257699977
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -3129,7 +3129,7 @@ GameObject:
   - component: {fileID: 675948239}
   - component: {fileID: 675948242}
   - component: {fileID: 675948241}
-  - component: {fileID: 675948240}
+  - component: {fileID: 675948243}
   m_Layer: 0
   m_Name: hand_r
   m_TagString: Untagged
@@ -3156,23 +3156,6 @@ RectTransform:
   m_AnchoredPosition: {x: 836, y: -1017}
   m_SizeDelta: {x: 1920, y: 1080}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &675948240
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 675948238}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  soundId: intro.scene2
-  volume: 1
-  playDelay: 1
-  playOnEnable: 1
-  playNextFrameOnEnable: 1
 --- !u!212 &675948241
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -3236,6 +3219,24 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 675948238}
   m_CullTransparentMesh: 1
+--- !u!114 &675948243
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 675948238}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d518d1a201eb84c4d97a50ffb44e5b97, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: intro.scene2
+  volume: 1
+  playOnEnable: 1
+  effectSoundDelay: 0.9
+  startNextFrame: 0
+  restartIfAlreadyScheduled: 1
 --- !u!1 &685693742
 GameObject:
   m_ObjectHideFlags: 0
@@ -4329,14 +4330,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 1228408244}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Script: {fileID: 11500000, guid: d518d1a201eb84c4d97a50ffb44e5b97, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   soundId: intro.scene3
   volume: 1
-  playDelay: 0
   playOnEnable: 1
-  playNextFrameOnEnable: 1
+  effectSoundDelay: 0
+  startNextFrame: 0
+  restartIfAlreadyScheduled: 1
 --- !u!1 &1234118444
 GameObject:
   m_ObjectHideFlags: 0
