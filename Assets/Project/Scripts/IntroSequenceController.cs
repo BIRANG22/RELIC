@@ -153,6 +153,10 @@ public class IntroSequenceController : MonoBehaviour
     [Tooltip("Space 또는 Enter 키로 문장 완성/다음 문장을 진행합니다.")]
     [SerializeField] private bool allowKeyboardInput = true;
 
+    [Tooltip("입력 후 다음 진행 입력을 받을 때까지의 공통 딜레이입니다. 0이면 연속 입력을 제한하지 않습니다.")]
+    [Min(0f)]
+    [SerializeField] private float advanceInputDelay = 0.2f;
+
     [Header("문장 넘김 사운드")]
     [Tooltip("다음 문장으로 넘어갈 때 재생할 SFX입니다. AudioManager의 사운드 DB에서 선택합니다.")]
     [SerializeField, SoundId(SoundCategory.Sfx)]
@@ -170,6 +174,7 @@ public class IntroSequenceController : MonoBehaviour
     private bool isTransitioning;
     private bool moveToLobbyWhenFinished;
     private float inputUnlockTime;
+    private float nextAdvanceInputTime;
     private readonly Dictionary<Transform, Coroutine> objectAnimationCoroutines = new Dictionary<Transform, Coroutine>();
     private readonly Dictionary<GameObject, Coroutine> objectFadeCoroutines = new Dictionary<GameObject, Coroutine>();
     private readonly List<IntroObjectInitialState> objectInitialStates = new List<IntroObjectInitialState>();
@@ -258,8 +263,10 @@ public class IntroSequenceController : MonoBehaviour
     /// </summary>
     public void Advance()
     {
-        if (!isPlaying || isTransitioning || Time.unscaledTime < inputUnlockTime)
+        if (!isPlaying || isTransitioning || Time.unscaledTime < inputUnlockTime || Time.unscaledTime < nextAdvanceInputTime)
             return;
+
+        nextAdvanceInputTime = Time.unscaledTime + Mathf.Max(0f, advanceInputDelay);
 
         if (isTyping)
         {
@@ -338,6 +345,7 @@ public class IntroSequenceController : MonoBehaviour
         isTransitioning = true;
         currentLineIndex = 0;
         inputUnlockTime = float.PositiveInfinity;
+        nextAdvanceInputTime = 0f;
 
         CanvasMaterialSceneTransition transition = GetSceneTransition();
 

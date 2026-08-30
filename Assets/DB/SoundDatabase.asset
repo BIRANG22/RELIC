@@ -464,6 +464,33 @@ MonoBehaviour:
     useRandomPitch: 0
     randomPitchMin: 1
     randomPitchMax: 1
+  - id: intro.transition
+    aliases: []
+    clip: {fileID: 8300000, guid: 03735ec227f1f4fc79c9074a1ce65f73, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: intro.scene2
+    aliases: []
+    clip: {fileID: 8300000, guid: ee7c4142f38e94396883afb6dbb060fe, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: intro.scene3
+    aliases: []
+    clip: {fileID: 8300000, guid: 9fab18c3c572441f6958705916a3196b, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
   playerSkillVfxSfxList:
   - vfxPrefab: {fileID: 7311764206653381872, guid: e60bee9487d55684db191b1b1c1eb04d, type: 3}
     cues:
