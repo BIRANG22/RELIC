@@ -279,8 +279,7 @@ public class BattleUnitAnimator : MonoBehaviour
             return;
         }
 
-        if (hitIndex <= 0)
-            PlaySkillVfx(skillData, command);
+        PlaySkillVfx(skillData, command);
 
         if (TryPlaySkillAttackOverride(skillData))
             return;

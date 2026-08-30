@@ -711,7 +711,7 @@ MonoBehaviour:
     attack1:
       stateName: AttackAction1
       vfx:
-        prefab: {fileID: 7311764206653381872, guid: e60bee9487d55684db191b1b1c1eb04d, type: 3}
+        prefab: {fileID: 0}
         flipType: 0
         renderMode: 0
         proxyBlendMode: 0
@@ -741,7 +741,7 @@ MonoBehaviour:
     attack2:
       stateName: AttackAction2
       vfx:
-        prefab: {fileID: 9032009973510874767, guid: cd098c4abf4c0094b9c18e2d5c90dfe0, type: 3}
+        prefab: {fileID: 0}
         flipType: 0
         renderMode: 0
         proxyBlendMode: 0
@@ -771,7 +771,7 @@ MonoBehaviour:
     attack3:
       stateName: AttackAction3
       vfx:
-        prefab: {fileID: 9206864599997765105, guid: 84666d4664e176142abb5f53fecd97cc, type: 3}
+        prefab: {fileID: 0}
         flipType: 0
         renderMode: 0
         proxyBlendMode: 0
