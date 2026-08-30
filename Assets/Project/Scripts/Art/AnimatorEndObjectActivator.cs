@@ -56,6 +56,7 @@ public class AnimatorEndObjectActivator : MonoBehaviour
             targetAnimator.speed = 1f;
 
         HideObjects();
+        EnsureIndependentPanelButtonsAvailable();
         StopRunningCoroutines();
         waitCoroutine = StartCoroutine(WaitForAnimationEnd());
     }
@@ -95,7 +96,7 @@ public class AnimatorEndObjectActivator : MonoBehaviour
         if (targetAnimator == null)
             targetAnimator = GetComponent<Animator>();
 
-        if (targetAnimator == null || targetAnimator.runtimeAnimatorController == null)
+        if (!IsAnimatorReady())
         {
             ShowObjects();
             waitCoroutine = null;
@@ -112,19 +113,32 @@ public class AnimatorEndObjectActivator : MonoBehaviour
             yield return null;
         }
 
-        while (isActiveAndEnabled && targetAnimator.IsInTransition(0))
+        while (isActiveAndEnabled && IsAnimatorReady() && targetAnimator.IsInTransition(0))
             yield return null;
 
         if (!isActiveAndEnabled || isClosing)
             yield break;
+
+        if (!IsAnimatorReady())
+        {
+            ShowObjects();
+            waitCoroutine = null;
+            yield break;
+        }
 
         AnimatorStateInfo stateInfo = targetAnimator.GetCurrentAnimatorStateInfo(0);
         int playingStateHash = stateInfo.fullPathHash;
 
         while (isActiveAndEnabled && !isClosing)
         {
+            if (!IsAnimatorReady())
+                break;
+
             if (!targetAnimator.IsInTransition(0))
             {
+                if (!IsAnimatorReady())
+                    break;
+
                 stateInfo = targetAnimator.GetCurrentAnimatorStateInfo(0);
 
                 if (stateInfo.fullPathHash != playingStateHash)
@@ -150,9 +164,8 @@ public class AnimatorEndObjectActivator : MonoBehaviour
     }
 
     /// <summary>
-    /// BackButton의 OnClick에 연결합니다.
-    /// 현재 book 애니메이션을 끝 프레임에서 처음 프레임까지 역재생한 뒤
-    /// ErosionSelectPanel을 비활성화합니다.
+    /// 기존 UnityEvent 연결 호환용입니다.
+    /// BackButton은 더 이상 book 역재생과 연동하지 않고 패널을 즉시 닫습니다.
     /// </summary>
     public void ClosePanelWithReverse()
     {
@@ -160,25 +173,8 @@ public class AnimatorEndObjectActivator : MonoBehaviour
             return;
 
         isClosing = true;
-
-        if (waitCoroutine != null)
-        {
-            StopCoroutine(waitCoroutine);
-            waitCoroutine = null;
-        }
-
-        if (fadeCoroutine != null)
-        {
-            StopCoroutine(fadeCoroutine);
-            fadeCoroutine = null;
-        }
-
-        HideObjects();
-
-        if (closeCoroutine != null)
-            StopCoroutine(closeCoroutine);
-
-        closeCoroutine = StartCoroutine(ReverseAndClose());
+        StopRunningCoroutines();
+        ClosePanelImmediately();
     }
 
     private IEnumerator ReverseAndClose()
@@ -186,7 +182,7 @@ public class AnimatorEndObjectActivator : MonoBehaviour
         if (targetAnimator == null)
             targetAnimator = GetComponent<Animator>();
 
-        if (targetAnimator == null || targetAnimator.runtimeAnimatorController == null)
+        if (!IsAnimatorReady())
         {
             ClosePanelImmediately();
             yield break;
@@ -198,8 +194,14 @@ public class AnimatorEndObjectActivator : MonoBehaviour
 
         yield return null;
 
-        while (targetAnimator.IsInTransition(0))
+        while (IsAnimatorReady() && targetAnimator.IsInTransition(0))
             yield return null;
+
+        if (!IsAnimatorReady())
+        {
+            ClosePanelImmediately();
+            yield break;
+        }
 
         AnimatorStateInfo stateInfo = targetAnimator.GetCurrentAnimatorStateInfo(0);
         int stateHash = stateInfo.fullPathHash;
@@ -232,6 +234,14 @@ public class AnimatorEndObjectActivator : MonoBehaviour
         ClosePanelImmediately();
     }
 
+
+    private bool IsAnimatorReady()
+    {
+        return targetAnimator != null
+            && targetAnimator.isActiveAndEnabled
+            && targetAnimator.runtimeAnimatorController != null;
+    }
+
     private void ClosePanelImmediately()
     {
         if (targetAnimator != null)
@@ -252,7 +262,7 @@ public class AnimatorEndObjectActivator : MonoBehaviour
 
         foreach (GameObject target in objectsToShow)
         {
-            if (target == null)
+            if (target == null || IsIndependentPanelButton(target))
                 continue;
 
             CanvasGroup canvasGroup = GetOrAddCanvasGroup(target);
@@ -272,7 +282,7 @@ public class AnimatorEndObjectActivator : MonoBehaviour
         {
             foreach (GameObject target in objectsToShow)
             {
-                if (target == null)
+                if (target == null || IsIndependentPanelButton(target))
                     continue;
 
                 target.SetActive(true);
@@ -295,7 +305,7 @@ public class AnimatorEndObjectActivator : MonoBehaviour
 
         foreach (GameObject target in objectsToShow)
         {
-            if (target == null)
+            if (target == null || IsIndependentPanelButton(target))
                 continue;
 
             target.SetActive(true);
@@ -337,6 +347,59 @@ public class AnimatorEndObjectActivator : MonoBehaviour
         }
 
         fadeCoroutine = null;
+    }
+
+    private void EnsureIndependentPanelButtonsAvailable()
+    {
+        Transform root = erosionSelectPanel != null
+            ? erosionSelectPanel.transform
+            : transform.parent != null ? transform.parent : transform;
+
+        SetIndependentButtonAvailable(FindChildRecursive(root, "PlayButton"));
+        SetIndependentButtonAvailable(FindChildRecursive(root, "BackButton"));
+    }
+
+    private static void SetIndependentButtonAvailable(Transform buttonTransform)
+    {
+        if (buttonTransform == null)
+            return;
+
+        GameObject buttonObject = buttonTransform.gameObject;
+        buttonObject.SetActive(true);
+
+        CanvasGroup canvasGroup = buttonObject.GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+            return;
+
+        canvasGroup.alpha = 1f;
+        canvasGroup.interactable = true;
+        canvasGroup.blocksRaycasts = true;
+    }
+
+    private static Transform FindChildRecursive(Transform root, string targetName)
+    {
+        if (root == null || string.IsNullOrEmpty(targetName))
+            return null;
+
+        if (root.name == targetName)
+            return root;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform found = FindChildRecursive(root.GetChild(i), targetName);
+            if (found != null)
+                return found;
+        }
+
+        return null;
+    }
+
+    private static bool IsIndependentPanelButton(GameObject target)
+    {
+        if (target == null)
+            return false;
+
+        return target.name == "PlayButton" || target.name == "BackButton";
     }
 
     private CanvasGroup GetOrAddCanvasGroup(GameObject target)

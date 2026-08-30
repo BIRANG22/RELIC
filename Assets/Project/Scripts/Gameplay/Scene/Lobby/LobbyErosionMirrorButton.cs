@@ -5,7 +5,7 @@ using UnityEngine.UI;
 public sealed class LobbyErosionMirrorButton : MonoBehaviour
 {
     private const string DefaultPanelObjectName = "ErosionSelectPanel";
-    private const string DefaultCloseButtonObjectName = "CloseButton";
+    private const string DefaultCloseButtonObjectName = "BackButton";
 
     [Header("Panel")]
     [SerializeField] private GameObject erosionSelectPanel;
@@ -178,6 +178,10 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
             return null;
 
         Transform buttonTransform = FindChildRecursive(panel.transform, closeButtonObjectName);
+        if (buttonTransform == null && closeButtonObjectName != "BackButton")
+            buttonTransform = FindChildRecursive(panel.transform, "BackButton");
+        if (buttonTransform == null && closeButtonObjectName != "CloseButton")
+            buttonTransform = FindChildRecursive(panel.transform, "CloseButton");
         if (buttonTransform == null)
             return null;
 

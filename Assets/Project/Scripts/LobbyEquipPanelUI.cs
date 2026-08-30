@@ -163,6 +163,9 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     /// </summary>
     public void Toggle()
     {
+        if (slideAnimationCoroutine != null)
+            return;
+
         lastToggleFrame = Time.frameCount;
 
         if (isOpen && !isClosing)
