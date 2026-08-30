@@ -653,12 +653,28 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         if (ownerIconScaleTransform == null)
             return;
 
-        if (ownerIconScaleRoutine != null)
-            StopCoroutine(ownerIconScaleRoutine);
-
         Vector3 targetScale = hovered
             ? Vector3.Scale(ownerIconBaseScale, Vector3.one * ownerIconHoverScaleMultiplier)
             : ownerIconBaseScale;
+
+        // 전투방 정리 과정에서는 TimelineSlot이 먼저 비활성화될 수 있습니다.
+        // 비활성화된 MonoBehaviour에서는 코루틴을 시작할 수 없으므로
+        // 이 경우 애니메이션 없이 즉시 목표 스케일로 복원합니다.
+        if (!isActiveAndEnabled || !gameObject.activeInHierarchy)
+        {
+            ownerIconScaleRoutine = null;
+
+            if (ownerIconScaleTransform != null)
+                ownerIconScaleTransform.localScale = targetScale;
+
+            return;
+        }
+
+        if (ownerIconScaleRoutine != null)
+        {
+            StopCoroutine(ownerIconScaleRoutine);
+            ownerIconScaleRoutine = null;
+        }
 
         ownerIconScaleRoutine = StartCoroutine(AnimateOwnerIconScale(ownerIconScaleTransform, targetScale));
     }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
@@ -18,6 +19,8 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     private const int VisibleRelicSlotCount = 6;
     private const int VisibleSkillSlotCount = 3;
     private const int CompoundMinimumSlotCount = 15;
+    private const string EquipButtonDefaultText = "장착";
+    private const string EquipButtonCancelText = "취소";
 
     // 로비 Equip_panel의 Skill 1~3은 교체 가능한 기억만 표시합니다.
     // Skill1 = 구현 기억(AbilitySkillId / EquippedSkillIds[1])
@@ -64,21 +67,11 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     [Tooltip("연성제가 없어도 표시할 최소 빈 슬롯 수입니다.")]
     [SerializeField, Min(1)] private int compoundMinimumSlotCount = CompoundMinimumSlotCount;
 
-    [Header("Compound Equip Candidate Pulse")]
-    [Tooltip("연성제 선택 시 Char1~3 Active/Back의 숨쉬기 최소 알파값입니다.")]
-    [SerializeField, Range(0f, 1f)] private float activeCandidatePulseMinAlpha = 0.25f;
-    [Tooltip("연성제 선택 시 Char1~3 Active/Back의 숨쉬기 최대 알파값입니다.")]
-    [SerializeField, Range(0f, 1f)] private float activeCandidatePulseMaxAlpha = 1f;
-    [Tooltip("연성제 장착 후보 Active/Back 숨쉬기 속도입니다.")]
-    [SerializeField, Min(0.01f)] private float activeCandidatePulseSpeed = 0.6f;
-
-    [Header("Relic Equip Candidate Pulse")]
-    [Tooltip("장착 가능한 첫 빈 유물 슬롯의 숨쉬기 최소 알파값입니다. RGB는 항상 FFFFFF로 유지됩니다.")]
-    [SerializeField, Range(0f, 1f)] private float candidatePulseMinAlpha = 0.25f;
-    [Tooltip("장착 가능한 첫 빈 유물 슬롯의 숨쉬기 최대 알파값입니다. RGB는 항상 FFFFFF로 유지됩니다.")]
-    [SerializeField, Range(0f, 1f)] private float candidatePulseMaxAlpha = 1f;
-    [Tooltip("유물 장착 후보 슬롯의 숨쉬기 속도입니다.")]
-    [SerializeField, Min(0.01f)] private float candidatePulseSpeed = 2f;
+    [Header("Character Equip Target")]
+    [Tooltip("장착 모드에서 캐릭터 선택 이미지에 마우스를 올렸을 때 사용할 색상입니다.")]
+    [SerializeField] private Color characterSelectHoverColor = Color.white;
+    [Tooltip("장착 모드에서 캐릭터 Back에 마우스를 올렸을 때 사용할 색상입니다.")]
+    [SerializeField] private Color characterBackHoverColor = new Color32(0x3C, 0x44, 0x76, 0xFF);
 
     private readonly CharacterView[] characterViews = new CharacterView[CharacterCount];
     private OwnedRelicView ownedRelicView;
@@ -89,6 +82,8 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     private CompoundSelectionView compoundSelectionView;
     private BattleBagItemSlotUI selectedCompoundSlot;
     private string selectedCompoundId;
+    private bool isCompoundEquipSelectionActive;
+    private GameObject characterTextObject;
 
     private Coroutine slideAnimationCoroutine;
     private RectTransform toggleButtonRect;
@@ -103,6 +98,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         ResolvePanelRoot();
         ResolveSlideTargets();
         ResolveCharacterViewsIfNeeded();
+        ResolveCharacterTextIfNeeded();
         ResolveOwnedRelicViewIfNeeded();
         ResolveCompoundInventoryIfNeeded();
         ResolveCompoundSelectionViewIfNeeded();
@@ -123,9 +119,6 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
     private void Update()
     {
-        UpdateRelicCandidatePulse();
-        UpdateActiveCompoundCandidatePulse();
-
         if (!IsOpen || Time.frameCount == lastToggleFrame)
             return;
 
@@ -206,6 +199,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
         ResolveSlideTargets();
         ResolveCharacterViewsIfNeeded();
+        ResolveCharacterTextIfNeeded();
         ResolveOwnedRelicViewIfNeeded();
         ResolveCompoundInventoryIfNeeded();
         ResolveCompoundSelectionViewIfNeeded();
@@ -294,6 +288,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
         UpdateRelicEquipCandidateVisuals();
         UpdateActiveCompoundCandidateVisuals();
+        UpdateCharacterEquipTargetVisuals();
     }
 
     public static void RefreshAllCharacterData()
@@ -398,6 +393,9 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         if (ownedRelicView.EffectText != null)
             ownedRelicView.EffectText.text = FormatRelicEffectDescription(relic);
 
+        if (ownedRelicView.EquipButton != null)
+            ownedRelicView.EquipButton.interactable = true;
+
         if (isOwnedRelicSelected &&
             !string.Equals(selectedOwnedRelicId, relicId, StringComparison.Ordinal))
         {
@@ -423,10 +421,16 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
             return;
         }
 
+        // 유물 장착 모드로 전환할 때 연성제 장착 모드만 해제합니다.
+        // 선택된 연성제의 이름/아이콘 정보는 그대로 유지합니다.
+        SetCompoundEquipSelectionActive(false);
+
         isOwnedRelicSelected = true;
         selectedOwnedRelicId = relicId;
         SetOwnedRelicLineActive(true);
         UpdateRelicEquipCandidateVisuals();
+        UpdateCharacterEquipTargetVisuals();
+        UpdateEquipButtonTexts();
     }
 
     private void ResetOwnedRelicSelection()
@@ -435,6 +439,25 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         selectedOwnedRelicId = null;
         SetOwnedRelicLineActive(false);
         UpdateRelicEquipCandidateVisuals();
+        UpdateCharacterEquipTargetVisuals();
+        UpdateEquipButtonTexts();
+    }
+
+    private void UpdateEquipButtonTexts()
+    {
+        if (compoundSelectionView?.EquipButtonText != null)
+        {
+            compoundSelectionView.EquipButtonText.text = isCompoundEquipSelectionActive
+                ? EquipButtonCancelText
+                : EquipButtonDefaultText;
+        }
+
+        if (ownedRelicView?.EquipButtonText != null)
+        {
+            ownedRelicView.EquipButtonText.text = isOwnedRelicSelected
+                ? EquipButtonCancelText
+                : EquipButtonDefaultText;
+        }
     }
 
     private void SetOwnedRelicLineActive(bool active)
@@ -458,10 +481,6 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
             if (!string.IsNullOrWhiteSpace(characterId))
                 dataManager?.CharacterRuntimeStore?.TryGet(characterId, out runtime);
 
-            int firstEmptyRuntimeSlot = isOwnedRelicSelected
-                ? FirstEmptyRelicRuntimeSlotIndex(runtime)
-                : -1;
-
             for (int slot = 0; slot < VisibleRelicSlotCount; slot++)
             {
                 RelicSlotView slotView = view.RelicSlots[slot];
@@ -477,62 +496,13 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
                 bool hasEquippedRelic = !string.IsNullOrWhiteSpace(equippedRelicId);
                 ApplyImage(slotView.IconImage, ResolveRelicIcon(equippedRelicId));
 
-                // 장착 전에는 Icon을 미리 보여주지 않습니다.
-                // 실제 유물이 장착된 슬롯만 Icon을 활성화합니다.
-                if (slotView.IconImage != null && !hasEquippedRelic)
-                    slotView.IconImage.gameObject.SetActive(false);
-                else if (slotView.IconImage != null)
-                    slotView.IconImage.gameObject.SetActive(true);
+                if (slotView.IconImage != null)
+                    slotView.IconImage.gameObject.SetActive(hasEquippedRelic);
 
-                bool candidate =
-                    isOwnedRelicSelected &&
-                    !hasEquippedRelic &&
-                    runtimeSlotIndex == firstEmptyRuntimeSlot;
-
-                slotView.IsCandidate = candidate;
-
+                // 장착 대상은 이제 개별 유물 슬롯이 아니라 캐릭터 Back 전체입니다.
+                slotView.IsCandidate = false;
                 if (slotView.Button != null)
-                    slotView.Button.interactable = candidate;
-
-                if (slotView.SlotBackgroundImage != null)
-                {
-                    if (candidate)
-                    {
-                        slotView.SlotBackgroundImage.enabled = true;
-                    }
-                    else
-                    {
-                        slotView.SlotBackgroundImage.color = slotView.OriginalBackgroundColor;
-                        slotView.SlotBackgroundImage.enabled = slotView.OriginalBackgroundEnabled;
-                    }
-                }
-            }
-        }
-    }
-
-    private void UpdateRelicCandidatePulse()
-    {
-        if (!isOwnedRelicSelected)
-            return;
-
-        float pulse = (Mathf.Sin(Time.unscaledTime * candidatePulseSpeed * Mathf.PI * 2f) + 1f) * 0.5f;
-        float pulseAlpha = Mathf.Lerp(candidatePulseMinAlpha, candidatePulseMaxAlpha, pulse);
-        Color pulseColor = new Color(1f, 1f, 1f, pulseAlpha);
-
-        for (int i = 0; i < CharacterCount; i++)
-        {
-            CharacterView view = characterViews[i];
-            if (view == null)
-                continue;
-
-            for (int slot = 0; slot < VisibleRelicSlotCount; slot++)
-            {
-                RelicSlotView slotView = view.RelicSlots[slot];
-                if (slotView?.SlotBackgroundImage == null || !slotView.IsCandidate)
-                    continue;
-
-                slotView.SlotBackgroundImage.enabled = true;
-                slotView.SlotBackgroundImage.color = pulseColor;
+                    slotView.Button.interactable = false;
             }
         }
     }
@@ -593,6 +563,27 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         RelicEquipPanelUI.RefreshAll();
     }
 
+    private void TryEquipSelectedOwnedRelicToCharacter(int partySlotIndex)
+    {
+        if (!isOwnedRelicSelected || string.IsNullOrWhiteSpace(selectedOwnedRelicId))
+            return;
+
+        DataManager dataManager = DataManager.Instance;
+        string characterId = dataManager?.PartyRuntimeStore?.GetCharacterId(partySlotIndex);
+        if (string.IsNullOrWhiteSpace(characterId) ||
+            dataManager?.CharacterRuntimeStore == null ||
+            !dataManager.CharacterRuntimeStore.TryGet(characterId, out CharacterRuntimeData runtime))
+        {
+            return;
+        }
+
+        int runtimeSlotIndex = FirstEmptyRelicRuntimeSlotIndex(runtime);
+        if (runtimeSlotIndex <= 0)
+            return;
+
+        TryEquipSelectedOwnedRelic(partySlotIndex, runtimeSlotIndex - 1);
+    }
+
     private static string GetLatestOwnedRelicId(LobbyRuntimeData lobby)
     {
         if (lobby?.OwnedRelicIds == null)
@@ -629,6 +620,11 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
         if (ownedRelicView.EffectText != null)
             ownedRelicView.EffectText.text = string.Empty;
+
+        if (ownedRelicView.EquipButton != null)
+            ownedRelicView.EquipButton.interactable = false;
+
+        UpdateCharacterEquipTargetVisuals();
     }
 
 
@@ -706,8 +702,14 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
                 : null;
 
             RelicSlotView slotView = view.RelicSlots[i];
-            if (slotView != null)
-                ApplyImage(slotView.IconImage, ResolveRelicIcon(relicId));
+            if (slotView == null)
+                continue;
+
+            bool hasEquippedRelic = !string.IsNullOrWhiteSpace(relicId);
+            ApplyImage(slotView.IconImage, ResolveRelicIcon(relicId));
+
+            if (slotView.NumberText != null)
+                slotView.NumberText.gameObject.SetActive(!hasEquippedRelic);
         }
     }
 
@@ -775,15 +777,11 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
         ApplyImage(view.Mark1Image, null);
         ApplyImage(view.Mark2Image, null);
+        view.IsCharacterEquipTarget = false;
+        RestoreCharacterSelectColor(view);
         ApplyImage(view.ActiveCompoundIcon, null);
-        view.IsActiveCompoundCandidate = false;
         if (view.ActiveCompoundButton != null)
             view.ActiveCompoundButton.interactable = false;
-        if (view.ActiveCompoundBackImage != null)
-        {
-            view.ActiveCompoundBackImage.color = view.ActiveCompoundBackOriginalColor;
-            view.ActiveCompoundBackImage.enabled = view.ActiveCompoundBackOriginalEnabled;
-        }
 
         for (int i = 0; i < view.RelicSlots.Length; i++)
         {
@@ -792,6 +790,8 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
                 continue;
 
             ApplyImage(slotView.IconImage, null);
+            if (slotView.NumberText != null)
+                slotView.NumberText.gameObject.SetActive(true);
             if (slotView.Button != null)
                 slotView.Button.interactable = false;
         }
@@ -948,6 +948,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         }
 
         ValidateSelectedCompound();
+        SelectFirstCompoundIfNeeded();
     }
 
     private void ResolveCompoundSelectionViewIfNeeded()
@@ -967,15 +968,32 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         Transform itemImageRoot = compoundRoot.Find("Itemimage") ?? FindChildRecursive(compoundRoot, "Itemimage");
         Transform line2 = itemImageRoot != null ? FindChildRecursive(itemImageRoot, "Line2") : null;
 
+        Transform equipButtonRoot = compoundRoot.Find("Button") ?? FindChildRecursive(compoundRoot, "Button");
+
         compoundSelectionView = new CompoundSelectionView
         {
             ItemImageRoot = itemImageRoot,
             IconImage = itemImageRoot != null ? FindImageByNames(itemImageRoot, "Icon") : null,
-            LineObject = line2 != null ? line2.gameObject : null
+            LineObject = line2 != null ? line2.gameObject : null,
+            NameText = FindTextByNames(compoundRoot, "Name"),
+            EquipButton = equipButtonRoot != null ? equipButtonRoot.GetComponent<Button>() : null,
+            EquipButtonText = equipButtonRoot != null
+                ? FindTextByNames(equipButtonRoot, "Compound_Select", "Text", "Label")
+                : null
         };
+
+        if (compoundSelectionView.EquipButton != null)
+        {
+            compoundSelectionView.EquipButton.onClick.RemoveListener(ToggleCompoundEquipSelection);
+            compoundSelectionView.EquipButton.onClick.AddListener(ToggleCompoundEquipSelection);
+            compoundSelectionView.EquipButton.interactable = !string.IsNullOrWhiteSpace(selectedCompoundId);
+        }
 
         SetCompoundItemLineActive(false);
         ApplyImage(compoundSelectionView.IconImage, null);
+        if (compoundSelectionView.NameText != null)
+            compoundSelectionView.NameText.text = string.Empty;
+        UpdateEquipButtonTexts();
     }
 
     private void SelectCompoundSlot(BattleBagItemSlotUI slot)
@@ -991,7 +1009,6 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         }
 
         ResolveCompoundSelectionViewIfNeeded();
-        ResetOwnedRelicSelection();
 
         selectedCompoundSlot = slot;
         selectedCompoundId = slot.ItemId.Trim();
@@ -1004,8 +1021,45 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         }
 
         ApplyImage(compoundSelectionView?.IconImage, ResolveRelicIcon(selectedCompoundId));
-        SetCompoundItemLineActive(true);
+
+        if (compoundSelectionView?.NameText != null &&
+            dataManager.CompoundDatabase.TryGet(selectedCompoundId, out CompoundData selectedCompound))
+        {
+            compoundSelectionView.NameText.text = selectedCompound != null && !string.IsNullOrWhiteSpace(selectedCompound.Name)
+                ? selectedCompound.Name
+                : string.Empty;
+        }
+
+        // 단순 연성제 선택은 장착 모드가 아닙니다.
+        // Line2는 Compound/Button으로 장착 모드를 시작했을 때만 표시합니다.
+        SetCompoundItemLineActive(isCompoundEquipSelectionActive);
+
+        if (compoundSelectionView?.EquipButton != null)
+            compoundSelectionView.EquipButton.interactable = true;
+
         UpdateActiveCompoundCandidateVisuals();
+    }
+
+    private void ToggleCompoundEquipSelection()
+    {
+        if (string.IsNullOrWhiteSpace(selectedCompoundId))
+        {
+            SetCompoundEquipSelectionActive(false);
+            return;
+        }
+
+        // 연성제 장착 모드와 유물 장착 모드는 동시에 활성화되지 않습니다.
+        ResetOwnedRelicSelection();
+        SetCompoundEquipSelectionActive(!isCompoundEquipSelectionActive);
+    }
+
+    private void SetCompoundEquipSelectionActive(bool active)
+    {
+        isCompoundEquipSelectionActive = active && !string.IsNullOrWhiteSpace(selectedCompoundId);
+        SetCompoundItemLineActive(isCompoundEquipSelectionActive);
+        UpdateActiveCompoundCandidateVisuals();
+        UpdateCharacterEquipTargetVisuals();
+        UpdateEquipButtonTexts();
     }
 
     private void ValidateSelectedCompound()
@@ -1018,8 +1072,29 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
             ResetCompoundSelection();
     }
 
+    private void SelectFirstCompoundIfNeeded()
+    {
+        if (!string.IsNullOrWhiteSpace(selectedCompoundId))
+            return;
+
+        for (int i = 0; i < compoundSlots.Count; i++)
+        {
+            BattleBagItemSlotUI slot = compoundSlots[i];
+            if (slot == null || !slot.gameObject.activeSelf || !slot.HasItem || string.IsNullOrWhiteSpace(slot.ItemId))
+                continue;
+
+            SelectCompoundSlot(slot);
+            return;
+        }
+
+        ResolveCompoundSelectionViewIfNeeded();
+        if (compoundSelectionView?.NameText != null)
+            compoundSelectionView.NameText.text = string.Empty;
+    }
+
     private void ResetCompoundSelection()
     {
+        isCompoundEquipSelectionActive = false;
         selectedCompoundId = null;
         selectedCompoundSlot = null;
 
@@ -1031,8 +1106,14 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
         ResolveCompoundSelectionViewIfNeeded();
         ApplyImage(compoundSelectionView?.IconImage, null);
+        if (compoundSelectionView?.NameText != null)
+            compoundSelectionView.NameText.text = string.Empty;
         SetCompoundItemLineActive(false);
+        if (compoundSelectionView?.EquipButton != null)
+            compoundSelectionView.EquipButton.interactable = false;
         UpdateActiveCompoundCandidateVisuals();
+        UpdateCharacterEquipTargetVisuals();
+        UpdateEquipButtonTexts();
     }
 
     private void SetCompoundItemLineActive(bool active)
@@ -1043,61 +1124,113 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
     private void UpdateActiveCompoundCandidateVisuals()
     {
-        bool hasSelection = !string.IsNullOrWhiteSpace(selectedCompoundId);
-        DataManager dataManager = DataManager.Instance;
+        // 장착 대상은 이제 Active 슬롯이 아니라 캐릭터 Back 전체입니다.
+        for (int i = 0; i < CharacterCount; i++)
+        {
+            CharacterView view = characterViews[i];
+            if (view == null)
+                continue;
+            if (view.ActiveCompoundButton != null)
+                view.ActiveCompoundButton.interactable = false;
+        }
+    }
 
+    private bool IsCharacterEquipSelectionActive()
+    {
+        return (isCompoundEquipSelectionActive && !string.IsNullOrWhiteSpace(selectedCompoundId)) ||
+               (isOwnedRelicSelected && !string.IsNullOrWhiteSpace(selectedOwnedRelicId));
+    }
+
+    private void UpdateCharacterEquipTargetVisuals()
+    {
+        ResolveCharacterTextIfNeeded();
+        bool equipMode = IsCharacterEquipSelectionActive();
+
+        if (characterTextObject != null)
+            characterTextObject.SetActive(equipMode);
+
+        DataManager dataManager = DataManager.Instance;
         for (int i = 0; i < CharacterCount; i++)
         {
             CharacterView view = characterViews[i];
             if (view == null)
                 continue;
 
-            string characterId = dataManager?.PartyRuntimeStore?.GetCharacterId(i);
-            bool candidate = hasSelection && !string.IsNullOrWhiteSpace(characterId);
-            view.IsActiveCompoundCandidate = candidate;
-
-            if (view.ActiveCompoundButton != null)
-                view.ActiveCompoundButton.interactable = candidate;
-
-            if (view.ActiveCompoundBackImage != null)
+            if (view.CharacterSelectImage != null)
             {
-                if (candidate)
-                {
-                    view.ActiveCompoundBackImage.enabled = true;
-                }
-                else
-                {
-                    view.ActiveCompoundBackImage.color = view.ActiveCompoundBackOriginalColor;
-                    view.ActiveCompoundBackImage.enabled = view.ActiveCompoundBackOriginalEnabled;
-                }
+                RestoreCharacterSelectColor(view);
+                view.CharacterSelectImage.gameObject.SetActive(equipMode);
             }
+
+            string characterId = dataManager?.PartyRuntimeStore?.GetCharacterId(i);
+            bool canSelect = equipMode && !string.IsNullOrWhiteSpace(characterId);
+            view.IsCharacterEquipTarget = canSelect;
+
+            if (!canSelect)
+                RestoreCharacterSelectColor(view);
         }
     }
 
-    private void UpdateActiveCompoundCandidatePulse()
+    private void OnCharacterBackPointerEnter(int partySlotIndex)
     {
-        if (string.IsNullOrWhiteSpace(selectedCompoundId))
+        if (partySlotIndex < 0 || partySlotIndex >= CharacterCount)
             return;
 
-        float pulse = (Mathf.Sin(Time.unscaledTime * activeCandidatePulseSpeed * Mathf.PI * 2f) + 1f) * 0.5f;
-        float alpha = Mathf.Lerp(activeCandidatePulseMinAlpha, activeCandidatePulseMaxAlpha, pulse);
+        CharacterView view = characterViews[partySlotIndex];
+        if (view == null || !view.IsCharacterEquipTarget)
+            return;
 
-        for (int i = 0; i < CharacterCount; i++)
+        if (view.BackImage != null)
+            view.BackImage.color = characterBackHoverColor;
+
+        if (view.CharacterSelectImage != null)
+            view.CharacterSelectImage.color = characterSelectHoverColor;
+    }
+
+    private void OnCharacterBackPointerExit(int partySlotIndex)
+    {
+        if (partySlotIndex < 0 || partySlotIndex >= CharacterCount)
+            return;
+
+        RestoreCharacterSelectColor(characterViews[partySlotIndex]);
+    }
+
+    private void OnCharacterBackClicked(int partySlotIndex)
+    {
+        if (partySlotIndex < 0 || partySlotIndex >= CharacterCount)
+            return;
+
+        CharacterView view = characterViews[partySlotIndex];
+        if (view == null || !view.IsCharacterEquipTarget)
+            return;
+
+        RestoreCharacterSelectColor(view);
+
+        if (isCompoundEquipSelectionActive)
         {
-            CharacterView view = characterViews[i];
-            if (view?.ActiveCompoundBackImage == null || !view.IsActiveCompoundCandidate)
-                continue;
-
-            Color baseColor = view.ActiveCompoundBackOriginalColor;
-            baseColor.a = alpha;
-            view.ActiveCompoundBackImage.enabled = true;
-            view.ActiveCompoundBackImage.color = baseColor;
+            TryEquipSelectedCompoundToCharacter(partySlotIndex);
+            return;
         }
+
+        if (isOwnedRelicSelected)
+            TryEquipSelectedOwnedRelicToCharacter(partySlotIndex);
+    }
+
+    private static void RestoreCharacterSelectColor(CharacterView view)
+    {
+        if (view == null)
+            return;
+
+        if (view.BackImage != null)
+            view.BackImage.color = view.BackOriginalColor;
+
+        if (view.CharacterSelectImage != null)
+            view.CharacterSelectImage.color = view.CharacterSelectOriginalColor;
     }
 
     private void TryEquipSelectedCompoundToCharacter(int partySlotIndex)
     {
-        if (string.IsNullOrWhiteSpace(selectedCompoundId))
+        if (!isCompoundEquipSelectionActive || string.IsNullOrWhiteSpace(selectedCompoundId))
             return;
 
         DataManager dataManager = DataManager.Instance;
@@ -1216,26 +1349,57 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         Transform lineRoot = itemImageRoot != null
             ? FindChildRecursive(itemImageRoot, "Line2")
             : null;
+        Transform equipButtonRoot = relicRoot.Find("Button") ?? FindChildRecursive(relicRoot, "Button");
+
         ownedRelicView = new OwnedRelicView
         {
             Root = relicRoot,
             ItemButton = itemImageRoot != null ? itemImageRoot.GetComponent<Button>() : null,
+            EquipButton = equipButtonRoot != null ? equipButtonRoot.GetComponent<Button>() : null,
             LineObject = lineRoot != null ? lineRoot.gameObject : null,
             IconImage = itemImageRoot != null
                 ? FindImageByNames(itemImageRoot, "Icon") ?? itemImageRoot.GetComponent<Image>()
                 : FindImageByNames(relicRoot, "Icon"),
             NameText = FindTextByNames(relicRoot, "Name"),
             RarityText = FindTextByNames(relicRoot, "Rarity"),
-            EffectText = FindTextByNames(relicRoot, "Effect")
+            EffectText = FindTextByNames(relicRoot, "Effect"),
+            EquipButtonText = equipButtonRoot != null
+                ? FindTextByNames(equipButtonRoot, "Relic_Select", "Text", "Label")
+                : null
         };
 
+        // 아이콘 클릭은 장착 선택을 시작하지 않습니다.
         if (ownedRelicView.ItemButton != null)
-        {
             ownedRelicView.ItemButton.onClick.RemoveListener(ToggleOwnedRelicSelection);
-            ownedRelicView.ItemButton.onClick.AddListener(ToggleOwnedRelicSelection);
+
+        if (ownedRelicView.EquipButton != null)
+        {
+            ownedRelicView.EquipButton.onClick.RemoveListener(ToggleOwnedRelicSelection);
+            ownedRelicView.EquipButton.onClick.AddListener(ToggleOwnedRelicSelection);
+            ownedRelicView.EquipButton.interactable = false;
         }
 
         SetOwnedRelicLineActive(false);
+        UpdateEquipButtonTexts();
+    }
+
+    private void ResolveCharacterTextIfNeeded()
+    {
+        if (characterTextObject != null)
+            return;
+
+        ResolveSlideTargets();
+        Transform searchRoot = charterRect != null ? charterRect : ResolvePanelRoot()?.transform;
+        Transform characterText = FindChildRecursive(searchRoot, "Character_Text");
+        if (characterText == null && ResolvePanelRoot() != null && searchRoot != ResolvePanelRoot().transform)
+            characterText = FindChildRecursive(ResolvePanelRoot().transform, "Character_Text");
+
+        if (characterText != null)
+        {
+            characterTextObject = characterText.gameObject;
+            if (!IsCharacterEquipSelectionActive())
+                characterTextObject.SetActive(false);
+        }
     }
 
     private void ResolveCharacterViewsIfNeeded()
@@ -1263,32 +1427,56 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         if (root == null)
             return null;
 
+        Transform backRoot = root.Find("Back") ?? FindChildRecursive(root, "Back");
+        Image backImage = backRoot != null ? backRoot.GetComponent<Image>() : null;
+        Transform selectRoot = FindChildRecursive(searchRoot, $"Character{index + 1}_Select");
+        Image characterSelectImage = selectRoot != null ? selectRoot.GetComponent<Image>() : null;
+
         CharacterView view = new CharacterView
         {
             Root = root,
             NameText = FindTextByNames(root, "Name"),
             Mark1Image = FindImageByNames(root, "mark1", "Mark1"),
-            Mark2Image = FindImageByNames(root, "mark2", "Mark2")
+            Mark2Image = FindImageByNames(root, "mark2", "Mark2"),
+            BackImage = backImage,
+            BackOriginalColor = backImage != null ? backImage.color : Color.white,
+            CharacterSelectImage = characterSelectImage,
+            CharacterSelectOriginalColor = characterSelectImage != null ? characterSelectImage.color : Color.white
         };
+
+        if (characterSelectImage != null)
+            characterSelectImage.gameObject.SetActive(false);
+
+        if (backRoot != null)
+        {
+            if (backImage != null)
+                backImage.raycastTarget = true;
+
+            EventTrigger trigger = backRoot.GetComponent<EventTrigger>();
+            if (trigger == null)
+                trigger = backRoot.gameObject.AddComponent<EventTrigger>();
+            if (trigger.triggers == null)
+                trigger.triggers = new List<EventTrigger.Entry>();
+
+            int partySlotIndex = index;
+            AddEventTrigger(trigger, EventTriggerType.PointerEnter,
+                _ => FindEquipPanelOwner(backRoot)?.OnCharacterBackPointerEnter(partySlotIndex));
+            AddEventTrigger(trigger, EventTriggerType.PointerExit,
+                _ => FindEquipPanelOwner(backRoot)?.OnCharacterBackPointerExit(partySlotIndex));
+            AddEventTrigger(trigger, EventTriggerType.PointerClick,
+                _ => FindEquipPanelOwner(backRoot)?.OnCharacterBackClicked(partySlotIndex));
+        }
 
         Transform activeRoot = root.Find("Active") ?? FindChildRecursive(root, "Active");
         if (activeRoot != null)
         {
             view.ActiveCompoundIcon = FindImageByNames(activeRoot, "Icon");
-            view.ActiveCompoundBackImage = FindImageByNames(activeRoot, "Back") ?? activeRoot.GetComponent<Image>();
-            view.ActiveCompoundBackOriginalColor = view.ActiveCompoundBackImage != null
-                ? view.ActiveCompoundBackImage.color
-                : Color.white;
-            view.ActiveCompoundBackOriginalEnabled = view.ActiveCompoundBackImage != null &&
-                                                     view.ActiveCompoundBackImage.enabled;
 
             Button activeButton = activeRoot.GetComponent<Button>();
             if (activeButton == null)
                 activeButton = activeRoot.gameObject.AddComponent<Button>();
 
             activeButton.transition = Selectable.Transition.None;
-            if (view.ActiveCompoundBackImage != null)
-                activeButton.targetGraphic = view.ActiveCompoundBackImage;
             activeButton.interactable = false;
 
             int partySlotIndex = index;
@@ -1314,14 +1502,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
             if (slotButton == null)
                 slotButton = slotRoot.gameObject.AddComponent<Button>();
 
-            // 후보 숨쉬기 색상은 실제로 화면에 보이는 슬롯 배경 Image에 적용합니다.
-            // Button.targetGraphic이 따로 지정되어 있거나 슬롯 루트가 아닌 자식 Image를
-            // 사용하는 구조도 대응하되, 실제 유물 Icon은 후보 색상 대상으로 사용하지 않습니다.
-            Image slotBackgroundImage = ResolveRelicSlotBackgroundImage(slotRoot, iconImage, slotButton);
-
             slotButton.transition = Selectable.Transition.None;
-            if (slotBackgroundImage != null)
-                slotButton.targetGraphic = slotBackgroundImage;
             slotButton.interactable = false;
 
             int partySlotIndex = index;
@@ -1334,9 +1515,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
             view.RelicSlots[i] = new RelicSlotView
             {
                 Root = slotRoot,
-                SlotBackgroundImage = slotBackgroundImage,
-                OriginalBackgroundColor = slotBackgroundImage != null ? slotBackgroundImage.color : Color.white,
-                OriginalBackgroundEnabled = slotBackgroundImage != null && slotBackgroundImage.enabled,
+                NumberText = FindTextByNames(slotRoot, "Number"),
                 IconImage = iconImage,
                 Button = slotButton
             };
@@ -1358,43 +1537,6 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         }
 
         return view;
-    }
-
-    private static Image ResolveRelicSlotBackgroundImage(
-        Transform slotRoot,
-        Image iconImage,
-        Button slotButton)
-    {
-        if (slotRoot == null)
-            return null;
-
-        // 이미 Button이 실제 표시 Graphic을 가리키고 있다면 그 Image를 우선 사용합니다.
-        Image buttonTargetImage = slotButton != null
-            ? slotButton.targetGraphic as Image
-            : null;
-        if (buttonTargetImage != null && buttonTargetImage != iconImage)
-            return buttonTargetImage;
-
-        // 일반적인 구조: Relic01~06 루트에 Image가 있습니다.
-        Image rootImage = slotRoot.GetComponent<Image>();
-        if (rootImage != null && rootImage != iconImage)
-            return rootImage;
-
-        // 프리팹 구조가 달라 루트가 아닌 자식에 배경 Image가 있는 경우를 보정합니다.
-        Image[] childImages = slotRoot.GetComponentsInChildren<Image>(true);
-        for (int i = 0; i < childImages.Length; i++)
-        {
-            Image image = childImages[i];
-            if (image == null || image == iconImage)
-                continue;
-
-            if (string.Equals(image.gameObject.name, "Icon", StringComparison.OrdinalIgnoreCase))
-                continue;
-
-            return image;
-        }
-
-        return null;
     }
 
     private static string FormatRelicEffectDescription(RelicData relic)
@@ -1457,6 +1599,22 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         }
 
         return displayValue;
+    }
+
+    private static void AddEventTrigger(
+        EventTrigger trigger,
+        EventTriggerType eventType,
+        UnityEngine.Events.UnityAction<BaseEventData> callback)
+    {
+        if (trigger == null)
+            return;
+
+        if (trigger.triggers == null)
+            trigger.triggers = new List<EventTrigger.Entry>();
+
+        EventTrigger.Entry entry = new EventTrigger.Entry { eventID = eventType };
+        entry.callback.AddListener(callback);
+        trigger.triggers.Add(entry);
     }
 
     private static LobbyEquipPanelUI FindEquipPanelOwner(Transform child)
@@ -1538,6 +1696,9 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         public Transform ItemImageRoot;
         public Image IconImage;
         public GameObject LineObject;
+        public TMP_Text NameText;
+        public Button EquipButton;
+        public TMP_Text EquipButtonText;
     }
 
     [Serializable]
@@ -1545,20 +1706,20 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     {
         public Transform Root;
         public Button ItemButton;
+        public Button EquipButton;
         public GameObject LineObject;
         public Image IconImage;
         public TMP_Text NameText;
         public TMP_Text RarityText;
         public TMP_Text EffectText;
+        public TMP_Text EquipButtonText;
     }
 
     [Serializable]
     private sealed class RelicSlotView
     {
         public Transform Root;
-        public Image SlotBackgroundImage;
-        public Color OriginalBackgroundColor;
-        public bool OriginalBackgroundEnabled;
+        public TMP_Text NumberText;
         public Image IconImage;
         public Button Button;
         public bool IsCandidate;
@@ -1571,12 +1732,13 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         public TMP_Text NameText;
         public Image Mark1Image;
         public Image Mark2Image;
+        public Image BackImage;
+        public Color BackOriginalColor = Color.white;
+        public Image CharacterSelectImage;
+        public Color CharacterSelectOriginalColor = Color.white;
+        public bool IsCharacterEquipTarget;
         public Image ActiveCompoundIcon;
-        public Image ActiveCompoundBackImage;
-        public Color ActiveCompoundBackOriginalColor = Color.white;
-        public bool ActiveCompoundBackOriginalEnabled;
         public Button ActiveCompoundButton;
-        public bool IsActiveCompoundCandidate;
         public RelicSlotView[] RelicSlots = new RelicSlotView[VisibleRelicSlotCount];
         public Image[] SkillIcons = new Image[VisibleSkillSlotCount];
     }

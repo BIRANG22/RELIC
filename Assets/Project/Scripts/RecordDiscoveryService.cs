@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Relic.Gameplay.Data
 {
@@ -114,7 +115,9 @@ namespace Relic.Gameplay.Data
                 if (master == null || !master.IsDefaultProvided)
                     continue;
 
-                RegisterBaseSkills(dataManager, master);
+                // 런타임 데이터가 아직 없어도 기본 지급 캐릭터는 1레벨 해금 기억을 도감에 공개합니다.
+                RegisterUnlockedMemorySkills(dataManager, master, 1);
+                RegisterSkill(dataManager, master.CommonSkill1);
             }
         }
 
@@ -166,20 +169,42 @@ namespace Relic.Gameplay.Data
                     continue;
                 }
 
-                // 해금된 캐릭터가 처음부터 가지고 있는 기본 기억은 도감에 공개합니다.
-                RegisterBaseSkills(dataManager, master);
+                // 캐릭터의 현재 레벨에서 실제로 해금된 기억을 도감 획득 이력에 반영합니다.
+                RegisterUnlockedMemorySkills(dataManager, master, Mathf.Max(1, character.Level));
+                RegisterSkill(dataManager, master.CommonSkill1);
             }
         }
 
-        private static void RegisterBaseSkills(DataManager dataManager, CharacterMasterData master)
+        private static void RegisterUnlockedMemorySkills(
+            DataManager dataManager,
+            CharacterMasterData master,
+            int characterLevel)
         {
             if (master == null)
                 return;
 
-            RegisterSkill(dataManager, master.PassiveSkill1);
-            RegisterSkill(dataManager, master.UniqueSkill1);
-            RegisterSkill(dataManager, master.CharacterSkill1);
-            RegisterSkill(dataManager, master.CommonSkill1);
+            int level = Mathf.Max(1, characterLevel);
+            string[][] memorySkillIds =
+            {
+                new[] { master.PassiveSkill1, master.PassiveSkill2 },
+                new[] { master.UniqueSkill1, master.UniqueSkill2 },
+                new[] { master.CharacterSkill1, master.CharacterSkill2 }
+            };
+
+            for (int slotIndex = 0; slotIndex < memorySkillIds.Length; slotIndex++)
+            {
+                string[] candidates = memorySkillIds[slotIndex];
+                for (int candidateIndex = 0; candidateIndex < candidates.Length; candidateIndex++)
+                {
+                    int unlockLevel = CharacterLevelUnlockService.GetSkillMemoryUnlockLevel(
+                        master,
+                        slotIndex,
+                        candidateIndex);
+
+                    if (level >= Mathf.Max(1, unlockLevel))
+                        RegisterSkill(dataManager, candidates[candidateIndex]);
+                }
+            }
         }
 
         private static void BackfillBattleRuntime(DataManager dataManager)
