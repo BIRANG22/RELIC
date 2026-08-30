@@ -5,8 +5,7 @@ using UnityEngine;
 public enum SoundCategory
 {
     Bgm,
-    Sfx,
-    SkillSfx
+    Sfx
 }
 
 [AttributeUsage(AttributeTargets.Field)]
@@ -36,23 +35,28 @@ public class SoundDatabase : ScriptableObject
 {
     [SerializeField] private List<SoundData> bgmList = new();
     [SerializeField] private List<SoundData> sfxList = new();
-    [SerializeField] private List<SoundData> skillSfxList = new();
+    [SerializeField] private List<VfxSoundData> playerSkillVfxSfxList = new();
+    [SerializeField] private List<VfxSoundData> monsterSkillVfxSfxList = new();
 
     private Dictionary<string, SoundData> bgmById;
     private Dictionary<string, SoundData> sfxById;
+    private Dictionary<GameObject, VfxSoundData> skillVfxSfxByPrefab;
 
     public IReadOnlyList<SoundData> BgmEntries => bgmList;
     public IReadOnlyList<SoundData> SfxEntries => sfxList;
-    public IReadOnlyList<SoundData> SkillSfxEntries => skillSfxList;
+    public IReadOnlyList<VfxSoundData> PlayerSkillVfxSfxEntries => playerSkillVfxSfxList;
+    public IReadOnlyList<VfxSoundData> MonsterSkillVfxSfxEntries => monsterSkillVfxSfxList;
 
     public void Initialize()
     {
         bgmById = new Dictionary<string, SoundData>(StringComparer.Ordinal);
         sfxById = new Dictionary<string, SoundData>(StringComparer.Ordinal);
+        skillVfxSfxByPrefab = new Dictionary<GameObject, VfxSoundData>();
 
         RegisterBgmList();
         RegisterSfxList();
-        RegisterSkillSfxList();
+        RegisterVfxSoundList(playerSkillVfxSfxList, "Player Skill VFX SFX");
+        RegisterVfxSoundList(monsterSkillVfxSfxList, "Monster Skill VFX SFX");
     }
 
     public bool TryGetBgm(string id, out SoundData bgm)
@@ -73,6 +77,18 @@ public class SoundDatabase : ScriptableObject
         id = NormalizeId(id);
         sfx = null;
         return !string.IsNullOrEmpty(id) && sfxById.TryGetValue(id, out sfx) && sfx != null;
+    }
+
+    public bool TryGetSkillVfxSfx(GameObject vfxPrefab, out VfxSoundData data)
+    {
+        if (skillVfxSfxByPrefab == null)
+            Initialize();
+
+        data = null;
+
+        return vfxPrefab != null &&
+            skillVfxSfxByPrefab.TryGetValue(vfxPrefab, out data) &&
+            data != null;
     }
 
     private void RegisterBgmList()
@@ -107,19 +123,24 @@ public class SoundDatabase : ScriptableObject
         }
     }
 
-    private void RegisterSkillSfxList()
+    private void RegisterVfxSoundList(
+        IReadOnlyList<VfxSoundData> entries,
+        string label)
     {
-        if (skillSfxList == null)
+        if (entries == null)
             return;
 
-        foreach (SoundData data in skillSfxList)
+        foreach (VfxSoundData data in entries)
         {
-            if (data == null || data.clip == null)
+            if (data == null || data.vfxPrefab == null)
                 continue;
 
-            data.volume = Mathf.Clamp01(data.volume);
+            data.Normalize();
 
-            RegisterIds(sfxById, data, "Skill SFX");
+            if (!skillVfxSfxByPrefab.ContainsKey(data.vfxPrefab))
+                skillVfxSfxByPrefab.Add(data.vfxPrefab, data);
+            else
+                Debug.LogWarning($"[SoundDatabase] Duplicate {label} Prefab: {data.vfxPrefab.name}");
         }
     }
 
@@ -156,6 +177,90 @@ public class SoundDatabase : ScriptableObject
     private static string NormalizeId(string id)
     {
         return string.IsNullOrWhiteSpace(id) ? string.Empty : id.Trim();
+    }
+}
+
+[Serializable]
+public class VfxSoundData
+{
+    public GameObject vfxPrefab;
+    public List<VfxSoundCue> cues = new();
+
+    public IReadOnlyList<VfxSoundCue> Cues => cues ??= new List<VfxSoundCue>();
+
+    public bool HasPlayableCue
+    {
+        get
+        {
+            if (cues == null)
+                return false;
+
+            for (int i = 0; i < cues.Count; i++)
+            {
+                if (cues[i] != null && cues[i].clip != null)
+                    return true;
+            }
+
+            return false;
+        }
+    }
+
+    public void Normalize()
+    {
+        cues ??= new List<VfxSoundCue>();
+
+        for (int i = 0; i < cues.Count; i++)
+            cues[i]?.Normalize();
+    }
+}
+
+[Serializable]
+public class VfxSoundCue
+{
+    public AudioClip clip;
+
+    [Min(0f)]
+    public float delay;
+
+    [Range(0f, 1f)]
+    public float volume = 1f;
+
+    [Range(SoundData.MinPitch, SoundData.MaxPitch)]
+    public float pitch = 1f;
+
+    public bool loop;
+
+    public bool useRandomPitch;
+
+    [Range(SoundData.MinPitch, SoundData.MaxPitch)]
+    public float randomPitchMin = 1f;
+
+    [Range(SoundData.MinPitch, SoundData.MaxPitch)]
+    public float randomPitchMax = 1f;
+
+    public float GetPlaybackPitch()
+    {
+        if (!useRandomPitch)
+            return SoundData.ClampPlaybackPitch(pitch);
+
+        float min = SoundData.ClampPlaybackPitch(randomPitchMin);
+        float max = SoundData.ClampPlaybackPitch(randomPitchMax);
+
+        if (min > max)
+            (min, max) = (max, min);
+
+        return Mathf.Approximately(min, max)
+            ? min
+            : UnityEngine.Random.Range(min, max);
+    }
+
+    public void Normalize()
+    {
+        delay = Mathf.Max(0f, delay);
+        volume = Mathf.Clamp01(volume);
+        pitch = SoundData.ClampPlaybackPitch(pitch);
+        randomPitchMin = SoundData.ClampPlaybackPitch(randomPitchMin);
+        randomPitchMax = SoundData.ClampPlaybackPitch(randomPitchMax);
     }
 }
 

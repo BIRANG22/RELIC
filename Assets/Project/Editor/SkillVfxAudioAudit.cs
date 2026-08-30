@@ -11,6 +11,7 @@ using UnityAssetDatabase = UnityEditor.AssetDatabase;
 
 public static class SkillVfxAudioAudit
 {
+    private const string DefaultSoundDatabasePath = "Assets/DB/SoundDatabase.asset";
     private const string DefaultSkillVfxDatabasePath = "Assets/DB/SkillVfxDatabase.asset";
     private const string CharacterPrefabSearchRoot = "Assets/Project/PrefabsR/Character";
     private const string MonsterPrefabSearchRoot = "Assets/Project/PrefabsR/Monster";
@@ -28,10 +29,11 @@ public static class SkillVfxAudioAudit
             return;
         }
 
+        SoundDatabase soundDatabase = LoadDefaultSoundDatabase();
         List<SkillVfxAudioAuditResult> results = new();
-        results.AddRange(ScanEntries(database.Entries));
-        results.AddRange(ScanCharacterPresentationPrefabs());
-        results.AddRange(ScanMonsterPresentationPrefabs());
+        results.AddRange(ScanEntries(database.Entries, soundDatabase));
+        results.AddRange(ScanCharacterPresentationPrefabs(soundDatabase));
+        results.AddRange(ScanMonsterPresentationPrefabs(soundDatabase));
         WriteMarkdownReport(results, DefaultReportPath);
         UnityAssetDatabase.Refresh();
         Debug.Log($"[SkillVfxAudioAudit] Report written: {DefaultReportPath}");
@@ -39,6 +41,13 @@ public static class SkillVfxAudioAudit
 
     public static IReadOnlyList<SkillVfxAudioAuditResult> ScanEntries(
         IEnumerable<SkillVfxEntry> entries)
+    {
+        return ScanEntries(entries, LoadDefaultSoundDatabase());
+    }
+
+    public static IReadOnlyList<SkillVfxAudioAuditResult> ScanEntries(
+        IEnumerable<SkillVfxEntry> entries,
+        SoundDatabase soundDatabase)
     {
         if (entries == null)
             return Array.Empty<SkillVfxAudioAuditResult>();
@@ -50,13 +59,19 @@ public static class SkillVfxAudioAudit
             if (entry == null)
                 continue;
 
-            results.Add(ScanEntry(entry.SkillId, entry.Vfx));
+            results.Add(ScanEntry(entry.SkillId, entry.Vfx, soundDatabase));
         }
 
         return results;
     }
 
     public static IReadOnlyList<SkillVfxAudioAuditResult> ScanCharacterPresentationPrefabs()
+    {
+        return ScanCharacterPresentationPrefabs(LoadDefaultSoundDatabase());
+    }
+
+    public static IReadOnlyList<SkillVfxAudioAuditResult> ScanCharacterPresentationPrefabs(
+        SoundDatabase soundDatabase)
     {
         List<SkillVfxAudioAuditResult> results = new();
         string[] guids = UnityAssetDatabase.FindAssets("t:Prefab", new[] { CharacterPrefabSearchRoot });
@@ -70,13 +85,19 @@ public static class SkillVfxAudioAudit
                 continue;
 
             foreach (BattleUnitAnimator animator in prefab.GetComponentsInChildren<BattleUnitAnimator>(true))
-                AddAnimatorPresentationResults(results, path, animator);
+                AddAnimatorPresentationResults(results, path, animator, soundDatabase);
         }
 
         return results;
     }
 
     public static IReadOnlyList<SkillVfxAudioAuditResult> ScanMonsterPresentationPrefabs()
+    {
+        return ScanMonsterPresentationPrefabs(LoadDefaultSoundDatabase());
+    }
+
+    public static IReadOnlyList<SkillVfxAudioAuditResult> ScanMonsterPresentationPrefabs(
+        SoundDatabase soundDatabase)
     {
         List<SkillVfxAudioAuditResult> results = new();
         string[] guids = UnityAssetDatabase.FindAssets("t:Prefab", new[] { MonsterPrefabSearchRoot });
@@ -90,7 +111,7 @@ public static class SkillVfxAudioAudit
                 continue;
 
             foreach (BattleUnitAnimator animator in prefab.GetComponentsInChildren<BattleUnitAnimator>(true))
-                AddMonsterPresentationResults(results, path, animator);
+                AddMonsterPresentationResults(results, path, animator, soundDatabase);
         }
 
         return results;
@@ -98,32 +119,41 @@ public static class SkillVfxAudioAudit
 
     public static SkillVfxAudioAuditResult ScanEntry(string skillId, BattleVfxEntry vfx)
     {
-        GameObject prefab = vfx != null ? vfx.prefab : null;
-        BattleVfxSfxEntry sfx = vfx != null ? vfx.sfx : null;
+        return ScanEntry(skillId, vfx, LoadDefaultSoundDatabase());
+    }
 
-        return ScanEntry(skillId, prefab, sfx);
+    public static SkillVfxAudioAuditResult ScanEntry(
+        string skillId,
+        BattleVfxEntry vfx,
+        SoundDatabase soundDatabase)
+    {
+        GameObject prefab = vfx != null ? vfx.prefab : null;
+        return ScanEntry(skillId, prefab, soundDatabase);
     }
 
     public static SkillVfxAudioAuditResult ScanEntry(
         string skillId,
         GameObject prefab,
-        BattleVfxSfxEntry sfx)
+        SoundDatabase soundDatabase)
     {
         AudioSource[] audioSources = prefab != null
             ? prefab.GetComponentsInChildren<AudioSource>(true)
             : Array.Empty<AudioSource>();
 
+        VfxSoundData soundData = ResolveVfxSoundData(soundDatabase, prefab);
+
         return new SkillVfxAudioAuditResult(
             skillId,
             prefab,
-            sfx,
+            soundData,
             audioSources);
     }
 
     private static void AddAnimatorPresentationResults(
         List<SkillVfxAudioAuditResult> results,
         string prefabPath,
-        BattleUnitAnimator animator)
+        BattleUnitAnimator animator,
+        SoundDatabase soundDatabase)
     {
         BattleUnitPlayerSkillPresentations presentations =
             GetPrivateField<BattleUnitPlayerSkillPresentations>(animator, "playerSkillPresentations");
@@ -131,29 +161,31 @@ public static class SkillVfxAudioAudit
         if (presentations == null)
             return;
 
-        AddPresentationResult(results, prefabPath, "power", presentations.power);
-        AddPresentationResult(results, prefabPath, "attack1", presentations.attack1);
-        AddPresentationResult(results, prefabPath, "attack2", presentations.attack2);
-        AddPresentationResult(results, prefabPath, "attack3", presentations.attack3);
-        AddPresentationResult(results, prefabPath, "skill", presentations.skill);
+        AddPresentationResult(results, prefabPath, "power", presentations.power, soundDatabase);
+        AddPresentationResult(results, prefabPath, "attack1", presentations.attack1, soundDatabase);
+        AddPresentationResult(results, prefabPath, "attack2", presentations.attack2, soundDatabase);
+        AddPresentationResult(results, prefabPath, "attack3", presentations.attack3, soundDatabase);
+        AddPresentationResult(results, prefabPath, "skill", presentations.skill, soundDatabase);
     }
 
     private static void AddPresentationResult(
         List<SkillVfxAudioAuditResult> results,
         string prefabPath,
         string slotName,
-        BattleUnitActionPresentation presentation)
+        BattleUnitActionPresentation presentation,
+        SoundDatabase soundDatabase)
     {
         if (presentation == null || presentation.vfx == null || presentation.vfx.prefab == null)
             return;
 
-        results.Add(ScanEntry($"{prefabPath}:{slotName}", presentation.vfx));
+        results.Add(ScanEntry($"{prefabPath}:{slotName}", presentation.vfx, soundDatabase));
     }
 
     private static void AddMonsterPresentationResults(
         List<SkillVfxAudioAuditResult> results,
         string prefabPath,
-        BattleUnitAnimator animator)
+        BattleUnitAnimator animator,
+        SoundDatabase soundDatabase)
     {
         BattleUnitActionPresentation[] presentations =
             GetPrivateField<BattleUnitActionPresentation[]>(animator, "monsterActionPresentations");
@@ -174,17 +206,17 @@ public static class SkillVfxAudioAudit
             string prefix = $"{prefabPath}:monsterAction{i + 1}:{state}";
 
             if (presentation.vfx != null && presentation.vfx.prefab != null)
-                results.Add(ScanEntry($"{prefix}:vfx", presentation.vfx));
+                results.Add(ScanEntry($"{prefix}:vfx", presentation.vfx, soundDatabase));
 
             BattleProjectileVfxEntry projectile = presentation.projectileVfx;
             if (projectile == null)
                 continue;
 
             if (projectile.missilePrefab != null)
-                results.Add(ScanEntry($"{prefix}:missile", projectile.missilePrefab, projectile.missileSfx));
+                results.Add(ScanEntry($"{prefix}:missile", projectile.missilePrefab, soundDatabase));
 
             if (projectile.impactPrefab != null)
-                results.Add(ScanEntry($"{prefix}:impact", projectile.impactPrefab, projectile.impactSfx));
+                results.Add(ScanEntry($"{prefix}:impact", projectile.impactPrefab, soundDatabase));
         }
     }
 
@@ -221,7 +253,7 @@ public static class SkillVfxAudioAudit
         StringBuilder builder = new();
         builder.AppendLine("# Skill VFX Audio Audit");
         builder.AppendLine();
-        builder.AppendLine("| SkillId | VFX Prefab | DB SFX | Embedded AudioSources | Status |");
+        builder.AppendLine("| SkillId | VFX Prefab | DB VFX Clips | Embedded AudioSources | Status |");
         builder.AppendLine("|---|---|---|---:|---|");
 
         foreach (SkillVfxAudioAuditResult result in results.OrderBy(r => r.SkillId, StringComparer.Ordinal))
@@ -231,7 +263,7 @@ public static class SkillVfxAudioAudit
             builder.Append(" | ");
             builder.Append(Escape(result.PrefabPath));
             builder.Append(" | ");
-            builder.Append(Escape(result.DatabaseSfxId));
+            builder.Append(Escape(result.DatabaseClipName));
             builder.Append(" | ");
             builder.Append(result.EmbeddedAudioSourceCount);
             builder.Append(" | ");
@@ -240,6 +272,23 @@ public static class SkillVfxAudioAudit
         }
 
         return builder.ToString();
+    }
+
+    private static VfxSoundData ResolveVfxSoundData(
+        SoundDatabase soundDatabase,
+        GameObject prefab)
+    {
+        if (soundDatabase == null || prefab == null)
+            return null;
+
+        return soundDatabase.TryGetSkillVfxSfx(prefab, out VfxSoundData data)
+            ? data
+            : null;
+    }
+
+    private static SoundDatabase LoadDefaultSoundDatabase()
+    {
+        return UnityAssetDatabase.LoadAssetAtPath<SoundDatabase>(DefaultSoundDatabasePath);
     }
 
     private static string Escape(string value)
@@ -255,23 +304,25 @@ public sealed class SkillVfxAudioAuditResult
     public SkillVfxAudioAuditResult(
         string skillId,
         GameObject prefab,
-        BattleVfxSfxEntry sfx,
+        VfxSoundData soundData,
         IReadOnlyList<AudioSource> embeddedAudioSources)
     {
         SkillId = string.IsNullOrWhiteSpace(skillId) ? "" : skillId.Trim();
         Prefab = prefab;
         PrefabPath = prefab != null ? UnityAssetDatabase.GetAssetPath(prefab) : "";
-        DatabaseSfxIds = GetDatabaseSfxIds(sfx);
-        DatabaseSfxId = string.Join(", ", DatabaseSfxIds);
+        DatabaseClipNames = GetDatabaseClipNames(soundData);
+        DatabaseClipName = string.Join(", ", DatabaseClipNames);
+        HasDatabaseMapping = soundData != null;
         EmbeddedAudioSourceCount = embeddedAudioSources != null ? embeddedAudioSources.Count : 0;
     }
 
     public string SkillId { get; }
     public GameObject Prefab { get; }
     public string PrefabPath { get; }
-    public string DatabaseSfxId { get; }
-    public IReadOnlyList<string> DatabaseSfxIds { get; }
-    public bool HasDatabaseSfxId => DatabaseSfxIds.Count > 0;
+    public string DatabaseClipName { get; }
+    public IReadOnlyList<string> DatabaseClipNames { get; }
+    public bool HasDatabaseMapping { get; }
+    public bool HasDatabaseVfxSound => DatabaseClipNames.Count > 0;
     public int EmbeddedAudioSourceCount { get; }
     public bool RequiresMigration => EmbeddedAudioSourceCount > 0;
     public string Status
@@ -279,36 +330,29 @@ public sealed class SkillVfxAudioAuditResult
         get
         {
             if (EmbeddedAudioSourceCount > 0)
-                return "Needs migration";
+                return "Needs embedded AudioSource cleanup";
 
-            return HasDatabaseSfxId ? "OK" : "No DB SFX";
+            if (HasDatabaseVfxSound)
+                return "OK";
+
+            return HasDatabaseMapping ? "No playable DB VFX SFX" : "No DB VFX SFX";
         }
     }
 
-    private static IReadOnlyList<string> GetDatabaseSfxIds(BattleVfxSfxEntry sfx)
+    private static IReadOnlyList<string> GetDatabaseClipNames(VfxSoundData soundData)
     {
-        List<string> ids = new();
+        List<string> names = new();
 
-        if (sfx == null)
-            return ids;
+        if (soundData == null || soundData.Cues == null)
+            return names;
 
-        if (sfx.playSfx)
-            AddSfxId(ids, sfx.sfxId);
+        for (int i = 0; i < soundData.Cues.Count; i++)
+        {
+            AudioClip clip = soundData.Cues[i]?.clip;
+            if (clip != null)
+                names.Add(clip.name);
+        }
 
-        if (sfx.additionalSfx == null)
-            return ids;
-
-        foreach (BattleVfxAdditionalSfxEntry cue in sfx.additionalSfx)
-            AddSfxId(ids, cue?.sfxId);
-
-        return ids;
-    }
-
-    private static void AddSfxId(List<string> ids, string id)
-    {
-        if (string.IsNullOrWhiteSpace(id))
-            return;
-
-        ids.Add(id.Trim());
+        return names;
     }
 }

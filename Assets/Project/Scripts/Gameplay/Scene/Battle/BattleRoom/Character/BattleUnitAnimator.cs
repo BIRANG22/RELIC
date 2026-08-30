@@ -880,8 +880,7 @@ public class BattleUnitAnimator : MonoBehaviour
 
         BattleVfxEntry missileEntry = CreateRuntimeVfxEntry(
             entry.missilePrefab,
-            entry.missileFlipType,
-            entry.missileSfx);
+            entry.missileFlipType);
 
         if (TrySpawnDetachedWorldVfx(
                 missileEntry,
@@ -1021,8 +1020,7 @@ public class BattleUnitAnimator : MonoBehaviour
 
         BattleVfxEntry impactEntry = CreateRuntimeVfxEntry(
             entry.impactPrefab,
-            entry.impactFlipType,
-            entry.impactSfx);
+            entry.impactFlipType);
 
         if (TrySpawnDetachedWorldVfx(
                 impactEntry,
@@ -1185,19 +1183,10 @@ public class BattleUnitAnimator : MonoBehaviour
 
     private BattleVfxEntry CreateRuntimeVfxEntry(GameObject prefab, VfxFlipType flipType)
     {
-        return CreateRuntimeVfxEntry(prefab, flipType, null);
-    }
-
-    private BattleVfxEntry CreateRuntimeVfxEntry(
-        GameObject prefab,
-        VfxFlipType flipType,
-        BattleVfxSfxEntry sfx)
-    {
         return new BattleVfxEntry
         {
             prefab = prefab,
-            flipType = flipType,
-            sfx = BattleVfxSfxEntry.CopyFrom(sfx)
+            flipType = flipType
         };
     }
 
@@ -1223,7 +1212,7 @@ public class BattleUnitAnimator : MonoBehaviour
 
         EnsureVfxPauseController(vfx);
         ApplyVfxFlip(vfx, entry.flipType);
-        BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(vfx, entry.sfx, this);
+        BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(vfx, entry.prefab, this);
     }
 
     private static void EnsureVfxPauseController(GameObject vfx)

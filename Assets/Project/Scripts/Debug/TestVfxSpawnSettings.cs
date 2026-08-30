@@ -14,14 +14,6 @@ public class TestVfxSpawnSettings
     public BattleVfxRenderMode RenderMode = BattleVfxRenderMode.IndividualWorldRenderTexture;
     public BattleVfxProxyBlendMode ProxyBlendMode = BattleVfxProxyBlendMode.Additive;
 
-    [Header("SFX")]
-    public bool PlaySfx;
-    public string SfxId;
-    public float SfxDelay;
-    public float SfxVolumeMultiplier = 1f;
-    public bool RouteEmbeddedAudioSourcesThroughAudioManager = true;
-    public bool RemoveEmbeddedAudioSources = true;
-
     [Header("Layer")]
     public string ObjectLayerName = "VFX";
     public string SortingLayerName = "Unit";
@@ -50,16 +42,6 @@ public class TestVfxSpawnSettings
             renderMode = RenderMode,
             proxyBlendMode = ProxyBlendMode,
             scaleDirectWorldRendererToProxyHeight = ScaleDirectWorldRendererToProxyHeight,
-            sfx = new BattleVfxSfxEntry
-            {
-                playSfx = PlaySfx,
-                sfxId = SfxId,
-                delay = Mathf.Max(0f, SfxDelay),
-                volumeMultiplier = Mathf.Max(0f, SfxVolumeMultiplier),
-                routeEmbeddedAudioSourcesThroughAudioManager =
-                    RouteEmbeddedAudioSourcesThroughAudioManager,
-                removeEmbeddedAudioSources = RemoveEmbeddedAudioSources
-            },
             renderTextureWidth = Mathf.Max(1, RenderTextureWidth),
             renderTextureHeight = Mathf.Max(1, RenderTextureHeight),
             renderCameraOrthographicSize = Mathf.Max(0.01f, RenderCameraOrthographicSize),

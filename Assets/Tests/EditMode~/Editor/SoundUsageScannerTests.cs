@@ -11,8 +11,8 @@ public class SoundUsageScannerTests
         [SoundId(SoundCategory.Sfx)]
         public string clickSfx;
 
-        [SoundId(SoundCategory.SkillSfx)]
-        public string skillSfx;
+        [SoundId(SoundCategory.Sfx)]
+        public string missingSfx;
     }
 
     [Test]
@@ -42,7 +42,7 @@ public class SoundUsageScannerTests
             prefab = new GameObject("AudioUser");
             SoundReferenceComponent component = prefab.AddComponent<SoundReferenceComponent>();
             component.clickSfx = "ui.click";
-            component.skillSfx = "skill.missing";
+            component.missingSfx = "ui.missing";
 
             AudioSource audioSource = prefab.AddComponent<AudioSource>();
             audioSource.clip = embeddedClip;
@@ -62,7 +62,7 @@ public class SoundUsageScannerTests
             Assert.That(
                 report.GetReferences("ui.click").Select(reference => reference.MemberPath),
                 Contains.Item("SoundReferenceComponent.clickSfx"));
-            Assert.That(report.MissingDatabaseEntryIds, Contains.Item("skill.missing"));
+            Assert.That(report.MissingDatabaseEntryIds, Contains.Item("ui.missing"));
             Assert.That(report.UnusedDatabaseEntryIds, Contains.Item("ui.unused"));
 
             EmbeddedAudioSourceUsage embedded = report.EmbeddedAudioSources.Single();
@@ -83,44 +83,50 @@ public class SoundUsageScannerTests
     }
 
     [Test]
-    public void Scan_ReportsSkillVfxMainAndAdditionalSfxReferences()
+    public void Scan_ReportsVfxSoundDatabaseEntriesAndMissingSkillVfxMappings()
     {
         SoundDatabase database = ScriptableObject.CreateInstance<SoundDatabase>();
         AudioClip mainClip = null;
-        AudioClip additionalClip = null;
-        GameObject vfx = null;
+        GameObject mappedVfx = null;
+        GameObject missingVfx = null;
 
         try
         {
             mainClip = AudioClip.Create("Main", 32, 1, 44100, false);
-            additionalClip = AudioClip.Create("Additional", 32, 1, 44100, false);
+            mappedVfx = new GameObject("MappedSkillVfx");
+            missingVfx = new GameObject("MissingSkillVfx");
+
             SetPrivateField(
                 database,
-                "skillSfxList",
-                new List<SoundData>
+                "playerSkillVfxSfxList",
+                new List<VfxSoundData>
                 {
-                    new() { id = "skill.main", clip = mainClip },
-                    new() { id = "skill.extra", clip = additionalClip }
+                    new()
+                    {
+                        vfxPrefab = mappedVfx,
+                        cues = new List<VfxSoundCue>
+                        {
+                            new() { clip = mainClip, volume = 0.75f }
+                        }
+                    }
                 });
 
-            vfx = new GameObject("SkillVfx");
             List<SkillVfxEntry> skillEntries = new()
             {
                 new()
                 {
-                    SkillId = "S_Test",
+                    SkillId = "S_Mapped",
                     Vfx = new BattleVfxEntry
                     {
-                        prefab = vfx,
-                        sfx = new BattleVfxSfxEntry
-                        {
-                            playSfx = true,
-                            sfxId = "skill.main",
-                            additionalSfx = new List<BattleVfxAdditionalSfxEntry>
-                            {
-                                new() { sfxId = "skill.extra", delay = 0.25f }
-                            }
-                        }
+                        prefab = mappedVfx
+                    }
+                },
+                new()
+                {
+                    SkillId = "S_Missing",
+                    Vfx = new BattleVfxEntry
+                    {
+                        prefab = missingVfx
                     }
                 }
             };
@@ -132,18 +138,18 @@ public class SoundUsageScannerTests
                     SkillVfxEntries = skillEntries
                 });
 
-            Assert.That(
-                report.GetReferences("skill.main").Select(reference => reference.Context),
-                Contains.Item("SkillVfxDatabase:S_Test:vfx.sfx"));
-            Assert.That(
-                report.GetReferences("skill.extra").Select(reference => reference.MemberPath),
-                Contains.Item("additionalSfx[0].sfxId"));
+            SoundUsageVfxSoundEntry entry = report.VfxSoundEntries.Single();
+            Assert.That(entry.Group, Is.EqualTo("Player"));
+            Assert.That(entry.VfxName, Is.EqualTo("MappedSkillVfx"));
+            Assert.That(entry.CueCount, Is.EqualTo(1));
+            Assert.That(entry.ClipNames, Is.EqualTo("Main"));
+            Assert.That(report.MissingVfxSoundPrefabPaths, Contains.Item("MissingSkillVfx"));
         }
         finally
         {
-            DestroyObject(vfx);
+            DestroyObject(mappedVfx);
+            DestroyObject(missingVfx);
             DestroyObject(mainClip);
-            DestroyObject(additionalClip);
             DestroyObject(database);
         }
     }
@@ -166,8 +172,15 @@ public class SoundUsageScannerTests
             "Prefab",
             "Button.prefab",
             "ButtonSound.clickSfx"));
-        report.MissingDatabaseEntryIds.Add("skill.missing");
+        report.MissingDatabaseEntryIds.Add("ui.missing");
         report.UnusedDatabaseEntryIds.Add("ui.unused");
+        report.VfxSoundEntries.Add(new SoundUsageVfxSoundEntry(
+            "Player",
+            "Assets/Vfx.prefab",
+            "Vfx",
+            1,
+            "SkillClip"));
+        report.MissingVfxSoundPrefabPaths.Add("Assets/MissingVfx.prefab");
         report.EmbeddedAudioSources.Add(new EmbeddedAudioSourceUsage(
             "Vfx.prefab",
             "Vfx",
@@ -184,7 +197,9 @@ public class SoundUsageScannerTests
         Assert.That(markdown, Does.Contain("# Sound Usage Audit"));
         Assert.That(markdown, Does.Contain("## Usage By Sound ID"));
         Assert.That(markdown, Does.Contain("ui.click"));
-        Assert.That(markdown, Does.Contain("skill.missing"));
+        Assert.That(markdown, Does.Contain("ui.missing"));
+        Assert.That(markdown, Does.Contain("## VFX Sound Mappings"));
+        Assert.That(markdown, Does.Contain("Assets/MissingVfx.prefab"));
         Assert.That(markdown, Does.Contain("## Embedded AudioSources"));
     }
 

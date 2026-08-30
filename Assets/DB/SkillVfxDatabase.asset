@@ -17,13 +17,6 @@ MonoBehaviour:
     Vfx:
       prefab: {fileID: 3688985328973339552, guid: 29f13300e2979c949905f4b38ac44c24, type: 3}
       flipType: 2
-      sfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
       renderMode: 2
       proxyBlendMode: 0
       spawnAnchor: 1
@@ -41,13 +34,6 @@ MonoBehaviour:
     Vfx:
       prefab: {fileID: 8934398230962162692, guid: d6ecd58b7ed664f459ec6d2d06b7ffeb, type: 3}
       flipType: 2
-      sfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
       renderMode: 2
       proxyBlendMode: 0
       spawnAnchor: 0
@@ -65,13 +51,6 @@ MonoBehaviour:
     Vfx:
       prefab: {fileID: 3227610880858663653, guid: a168d5406d649fb42a013779f4db911b, type: 3}
       flipType: 2
-      sfx:
-        playSfx: 0
-        sfxId: 
-        delay: 0
-        volumeMultiplier: 1
-        routeEmbeddedAudioSourcesThroughAudioManager: 1
-        removeEmbeddedAudioSources: 1
       renderMode: 2
       proxyBlendMode: 0
       spawnAnchor: 0
