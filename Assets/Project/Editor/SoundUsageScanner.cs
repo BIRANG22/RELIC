@@ -253,6 +253,7 @@ public static class SoundUsageScanner
 
         AddDatabaseEntries(report, SoundCategory.Bgm, database.BgmEntries);
         AddDatabaseEntries(report, SoundCategory.Sfx, database.SfxEntries);
+        AddDatabaseEntries(report, SoundCategory.EventSfx, database.EventSfxEntries);
     }
 
     private static void AddDatabaseEntries(
@@ -365,7 +366,7 @@ public static class SoundUsageScanner
 
         Dictionary<string, (string Id, SoundCategory Category)> constants = LoadAudioIdConstants();
         Regex directSfxCall = new(@"AudioManager\.Instance\.PlaySfx\s*\(\s*""([^""]+)""", RegexOptions.Compiled);
-        Regex audioIdUse = new(@"AudioIds\.(Bgm|Sfx)\.([A-Za-z_][A-Za-z0-9_]*)", RegexOptions.Compiled);
+        Regex audioIdUse = new(@"AudioIds\.(Bgm|Sfx|EventSfx)\.([A-Za-z_][A-Za-z0-9_]*)", RegexOptions.Compiled);
 
         foreach (string root in options.SourceSearchRoots)
         {
@@ -419,7 +420,7 @@ public static class SoundUsageScanner
             return constants;
 
         string currentGroup = "";
-        Regex group = new(@"public\s+static\s+class\s+(Bgm|Sfx)", RegexOptions.Compiled);
+        Regex group = new(@"public\s+static\s+class\s+(Bgm|Sfx|EventSfx)", RegexOptions.Compiled);
         Regex constant = new(@"public\s+const\s+string\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*""([^""]+)""", RegexOptions.Compiled);
 
         foreach (string line in File.ReadAllLines(path))
@@ -435,9 +436,12 @@ public static class SoundUsageScanner
             if (!constantMatch.Success || string.IsNullOrWhiteSpace(currentGroup))
                 continue;
 
-            SoundCategory category = currentGroup == "Bgm"
-                ? SoundCategory.Bgm
-                : SoundCategory.Sfx;
+            SoundCategory category = currentGroup switch
+            {
+                "Bgm" => SoundCategory.Bgm,
+                "EventSfx" => SoundCategory.EventSfx,
+                _ => SoundCategory.Sfx
+            };
             constants[$"{currentGroup}.{constantMatch.Groups[1].Value}"] =
                 (constantMatch.Groups[2].Value, category);
         }

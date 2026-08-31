@@ -20,6 +20,7 @@ public class SoundUsageScannerTests
     {
         SoundDatabase database = ScriptableObject.CreateInstance<SoundDatabase>();
         AudioClip clickClip = null;
+        AudioClip eventClip = null;
         AudioClip unusedClip = null;
         AudioClip embeddedClip = null;
         GameObject prefab = null;
@@ -27,6 +28,7 @@ public class SoundUsageScannerTests
         try
         {
             clickClip = AudioClip.Create("Click", 32, 1, 44100, false);
+            eventClip = AudioClip.Create("Event", 32, 1, 44100, false);
             unusedClip = AudioClip.Create("Unused", 32, 1, 44100, false);
             embeddedClip = AudioClip.Create("Embedded", 32, 1, 44100, false);
 
@@ -37,6 +39,13 @@ public class SoundUsageScannerTests
                 {
                     new() { id = "ui.click", clip = clickClip, volume = 0.5f },
                     new() { id = "ui.unused", clip = unusedClip, volume = 1f }
+                });
+            SetPrivateField(
+                database,
+                "eventSfxList",
+                new List<SoundData>
+                {
+                    new() { id = "event.used", clip = eventClip, volume = 0.7f }
                 });
 
             prefab = new GameObject("AudioUser");
@@ -58,6 +67,10 @@ public class SoundUsageScannerTests
                 });
 
             Assert.That(report.DatabaseEntries.Select(entry => entry.Id), Contains.Item("ui.click"));
+            Assert.That(report.DatabaseEntries.Select(entry => entry.Id), Contains.Item("event.used"));
+            Assert.That(
+                report.DatabaseEntries.Single(entry => entry.Id == "event.used").Category,
+                Is.EqualTo(SoundCategory.EventSfx));
             Assert.That(report.DatabaseEntries.Select(entry => entry.Id), Contains.Item("ui.unused"));
             Assert.That(
                 report.GetReferences("ui.click").Select(reference => reference.MemberPath),
@@ -76,6 +89,7 @@ public class SoundUsageScannerTests
         {
             DestroyObject(prefab);
             DestroyObject(clickClip);
+            DestroyObject(eventClip);
             DestroyObject(unusedClip);
             DestroyObject(embeddedClip);
             DestroyObject(database);

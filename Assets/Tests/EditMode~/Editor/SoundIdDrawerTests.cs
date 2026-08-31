@@ -51,6 +51,51 @@ public class SoundIdDrawerTests
     }
 
     [Test]
+    public void GetSoundIds_ReturnsOnlyEventSfxIdsForEventSfxCategory()
+    {
+        SoundDatabase database = ScriptableObject.CreateInstance<SoundDatabase>();
+        AudioClip sfxClip = null;
+        AudioClip eventClip = null;
+
+        try
+        {
+            sfxClip = AudioClip.Create("Sfx", 32, 1, 44100, false);
+            eventClip = AudioClip.Create("EventSfx", 32, 1, 44100, false);
+
+            SetPrivateField(
+                database,
+                "sfxList",
+                new List<SoundData>
+                {
+                    new() { id = "ui.normal.click", clip = sfxClip }
+                });
+            SetPrivateField(
+                database,
+                "eventSfxList",
+                new List<SoundData>
+                {
+                    new() { id = "event.test", clip = eventClip }
+                });
+
+            IReadOnlyList<string> sfxIds = SoundIdDrawer.GetSoundIdsForTest(
+                database,
+                SoundCategory.Sfx);
+            IReadOnlyList<string> eventSfxIds = SoundIdDrawer.GetSoundIdsForTest(
+                database,
+                SoundCategory.EventSfx);
+
+            Assert.That(sfxIds, Is.EquivalentTo(new[] { "ui.normal.click" }));
+            Assert.That(eventSfxIds, Is.EquivalentTo(new[] { "event.test" }));
+        }
+        finally
+        {
+            DestroyObject(sfxClip);
+            DestroyObject(eventClip);
+            DestroyObject(database);
+        }
+    }
+
+    [Test]
     public void SoundIdAttribute_UsesDefaultSoundDatabasePath()
     {
         SoundIdAttribute attribute = new(SoundCategory.Sfx);

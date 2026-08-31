@@ -554,6 +554,7 @@ MonoBehaviour:
     useRandomPitch: 0
     randomPitchMin: 1
     randomPitchMax: 1
+  eventSfxList: []
   playerSkillVfxSfxList:
   - displayName: move
     vfxPrefab: {fileID: 4145361429921181282, guid: 64eec7862f4d94a4198ea5d201af5b88, type: 3}

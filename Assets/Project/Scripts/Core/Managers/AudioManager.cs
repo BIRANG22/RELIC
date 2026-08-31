@@ -55,6 +55,9 @@ public class AudioManager : Singleton<AudioManager>
 
         foreach (SoundData data in soundDatabase.SfxEntries)
             RegisterSfxId(data);
+
+        foreach (SoundData data in soundDatabase.EventSfxEntries)
+            RegisterSfxId(data);
     }
 
     private void RegisterBgmId(SoundData data)
