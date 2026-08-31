@@ -10,11 +10,37 @@ public class BattleUniqueResourceService
 
     private readonly Dictionary<int, Dictionary<string, int>> executedActionCountsBySlot = new();
     private readonly Dictionary<string, int> executedCostByCharacter = new();
+    private readonly Dictionary<CharacterRuntimeData, int> pendingResourceGainByCharacter = new();
+    private bool isTurnExecutionActive;
 
     public void BeginTurnExecution()
     {
         executedActionCountsBySlot.Clear();
         executedCostByCharacter.Clear();
+        pendingResourceGainByCharacter.Clear();
+        isTurnExecutionActive = true;
+    }
+
+    public void FlushPendingUniqueResourceGains()
+    {
+        if (pendingResourceGainByCharacter.Count == 0)
+        {
+            isTurnExecutionActive = false;
+            return;
+        }
+
+        KeyValuePair<CharacterRuntimeData, int>[] pendingEntries =
+            new KeyValuePair<CharacterRuntimeData, int>[pendingResourceGainByCharacter.Count];
+
+        int index = 0;
+        foreach (KeyValuePair<CharacterRuntimeData, int> entry in pendingResourceGainByCharacter)
+            pendingEntries[index++] = entry;
+
+        pendingResourceGainByCharacter.Clear();
+        isTurnExecutionActive = false;
+
+        for (int i = 0; i < pendingEntries.Length; i++)
+            ApplyUniqueResourceGainNow(pendingEntries[i].Key, pendingEntries[i].Value);
     }
 
     public void OnPlayerCommandExecuted(PlayerReservedCommand command, int slotIndex)
@@ -163,7 +189,26 @@ public class BattleUniqueResourceService
 
     private void AddUniqueResource(CharacterRuntimeData runtime, int amount)
     {
-        if (runtime == null)
+        if (runtime == null || amount <= 0)
+            return;
+
+        if (!isTurnExecutionActive)
+        {
+            ApplyUniqueResourceGainNow(runtime, amount);
+            return;
+        }
+
+        pendingResourceGainByCharacter.TryGetValue(runtime, out int pendingAmount);
+        pendingResourceGainByCharacter[runtime] = pendingAmount + amount;
+
+        Debug.Log(
+            $"[UniqueResource] Pending / Character:{runtime.CharacterId} / " +
+            $"Added:{amount} / Pending:{pendingResourceGainByCharacter[runtime]}");
+    }
+
+    private void ApplyUniqueResourceGainNow(CharacterRuntimeData runtime, int amount)
+    {
+        if (runtime == null || amount <= 0)
             return;
 
         CharacterMasterData masterData = GetMasterData(runtime.CharacterId);
