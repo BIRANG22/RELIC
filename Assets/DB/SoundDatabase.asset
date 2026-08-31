@@ -351,7 +351,7 @@ MonoBehaviour:
     aliases: []
     clip: {fileID: 8300000, guid: 4f3e7bb757e76489aa06b31f83c573c9, type: 3}
     volume: 0.5
-    pitch: 0.7
+    pitch: 0.9
     loop: 0
     useRandomPitch: 0
     randomPitchMin: 1
@@ -437,6 +437,15 @@ MonoBehaviour:
     useRandomPitch: 0
     randomPitchMin: 1
     randomPitchMax: 1
+  - id: ui.equipment.close
+    aliases: []
+    clip: {fileID: 8300000, guid: 498b8022009a34a0497c059689432d01, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
   - id: ui.chest.close
     aliases: []
     clip: {fileID: 8300000, guid: 3f7cd4d9f03084daf9d66177f9ddcdec, type: 3}
@@ -502,9 +511,9 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: event..09.Skylight
     aliases: []
-    clip: {fileID: 8300000, guid: 442ff070553185041b5bbac09fcc4a7a, type: 3}
+    clip: {fileID: 8300000, guid: f0cecff6fa8e53b44940647c0e37efe7, type: 3}
     volume: 0.3
-    pitch: 0.6
+    pitch: 0.8
     loop: 0
     useRandomPitch: 0
     randomPitchMin: 1

@@ -20,7 +20,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: M _circle_edge_intro
+  m_Name: M _circle_edge_st1_s2
   m_Shader: {fileID: -6465566751694194690, guid: f3d58b08381d9734ea39247c638da3f1, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -75,7 +75,7 @@ Material:
     m_Floats:
     - _AlphaClip: 1
     - _AlphaToMask: 1
-    - _Alpha_Clip_Threshold: -0.05
+    - _Alpha_Clip_Threshold: -0.07
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _CastShadows: 1
@@ -93,19 +93,19 @@ Material:
     - _ZTest: 4
     - _ZWrite: 1
     - _ZWriteControl: 0
-    - _boder: 0.13
-    - _boder_1: 0.66
-    - _boder_2: 1.15
+    - _boder: 0.59
+    - _boder_1: 0.34
+    - _boder_2: 0.45
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
-    - _center: {r: 0.8, g: 0.68, b: 0, a: 0}
+    - _center: {r: 0.5, g: 0.5, b: 0, a: 0}
     - _color: {r: 0.142, g: 0, b: 0, a: 0}
     - _edgecolor: {r: 0.3882353, g: 0.039215688, b: 0.039215688, a: 0}
     - _edgecolor_1: {r: 0.29411766, g: 0, b: 0, a: 0}
     - _edgecolor_2: {r: 0.18431373, g: 0, b: 0, a: 0}
     - _noiseflow: {r: -0.01, g: -0.01, b: 0, a: 0}
     - _noiseoffset: {r: 0, g: 0, b: 0, a: 0}
-    - _noisetiling: {r: 0.3, g: 0.5, b: 0, a: 0}
+    - _noisetiling: {r: 0.3, g: 0.3, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
