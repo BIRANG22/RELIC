@@ -51,6 +51,47 @@ public class SoundDatabaseTests
     }
 
     [Test]
+    public void AudioManager_Initialize_UsesEventSfxDatabaseForIdLookups()
+    {
+        GameObject audioObject = new("EventSoundDatabaseAudioManagerTest");
+        AudioClip eventClip = null;
+
+        try
+        {
+            AudioSource source = audioObject.AddComponent<AudioSource>();
+            AudioManager manager = audioObject.AddComponent<AudioManager>();
+            SoundDatabase database = ScriptableObject.CreateInstance<SoundDatabase>();
+            eventClip = AudioClip.Create("EventSfx", 32, 1, 44100, false);
+
+            SetPrivateField(manager, "sfxSource", source);
+            SetPrivateField(
+                database,
+                "eventSfxList",
+                new List<SoundData>
+                {
+                    new()
+                    {
+                        id = "event.test",
+                        clip = eventClip,
+                        volume = 0.65f
+                    }
+                });
+            SetPrivateField(manager, "soundDatabase", database);
+
+            manager.Initialize();
+
+            Assert.That(manager.TryGetSfxData("event.test", out SoundData data), Is.True);
+            Assert.That(data.clip, Is.EqualTo(eventClip));
+            Assert.That(data.volume, Is.EqualTo(0.65f).Within(0.001f));
+        }
+        finally
+        {
+            DestroyObject(eventClip);
+            DestroyObject(audioObject);
+        }
+    }
+
+    [Test]
     public void AudioManager_PlayBgm_UsesIdPrefixForLayeredBgm()
     {
         GameObject audioObject = new("SoundDatabaseBgmLayerTest");

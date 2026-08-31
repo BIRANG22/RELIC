@@ -5,7 +5,8 @@ using UnityEngine;
 public enum SoundCategory
 {
     Bgm,
-    Sfx
+    Sfx,
+    EventSfx
 }
 
 [AttributeUsage(AttributeTargets.Field)]
@@ -35,6 +36,7 @@ public class SoundDatabase : ScriptableObject
 {
     [SerializeField] private List<SoundData> bgmList = new();
     [SerializeField] private List<SoundData> sfxList = new();
+    [SerializeField] private List<SoundData> eventSfxList = new();
     [SerializeField] private List<VfxSoundData> playerSkillVfxSfxList = new();
     [SerializeField] private List<VfxSoundData> monsterSkillVfxSfxList = new();
 
@@ -44,6 +46,7 @@ public class SoundDatabase : ScriptableObject
 
     public IReadOnlyList<SoundData> BgmEntries => bgmList;
     public IReadOnlyList<SoundData> SfxEntries => sfxList;
+    public IReadOnlyList<SoundData> EventSfxEntries => eventSfxList;
     public IReadOnlyList<VfxSoundData> PlayerSkillVfxSfxEntries => playerSkillVfxSfxList;
     public IReadOnlyList<VfxSoundData> MonsterSkillVfxSfxEntries => monsterSkillVfxSfxList;
 
@@ -54,7 +57,8 @@ public class SoundDatabase : ScriptableObject
         skillVfxSfxByPrefab = new Dictionary<GameObject, VfxSoundData>();
 
         RegisterBgmList();
-        RegisterSfxList();
+        RegisterSfxList(sfxList, "SFX");
+        RegisterSfxList(eventSfxList, "Event SFX");
         RegisterVfxSoundList(playerSkillVfxSfxList, "Player Skill VFX SFX");
         RegisterVfxSoundList(monsterSkillVfxSfxList, "Monster Skill VFX SFX");
     }
@@ -107,19 +111,21 @@ public class SoundDatabase : ScriptableObject
         }
     }
 
-    private void RegisterSfxList()
+    private void RegisterSfxList(
+        IReadOnlyList<SoundData> entries,
+        string label)
     {
-        if (sfxList == null)
+        if (entries == null)
             return;
 
-        foreach (SoundData data in sfxList)
+        foreach (SoundData data in entries)
         {
             if (data == null || data.clip == null)
                 continue;
 
             data.volume = Mathf.Clamp01(data.volume);
 
-            RegisterIds(sfxById, data, "SFX");
+            RegisterIds(sfxById, data, label);
         }
     }
 
