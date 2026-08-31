@@ -401,16 +401,9 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 0}
-  protectedButtonImage: {fileID: 0}
-  changingBackgroundImage: {fileID: 0}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: 0, y: 0, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 1, g: 1, b: 1, a: 1}
-  clickedColor: {r: 1, g: 1, b: 1, a: 1}
+  playHoverSound: 0
+  hoverSoundId: ui.normal.click
+  hoverSoundVolume: 1
   playClickSound: 0
   clickSoundId: ui.normal.click
   clickSoundVolume: 1
@@ -2654,6 +2647,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 45786195}
+  - component: {fileID: 45786196}
   m_Layer: 0
   m_Name: Level03_1
   m_TagString: Untagged
@@ -2684,6 +2678,28 @@ RectTransform:
   m_AnchoredPosition: {x: 90, y: -75}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &45786196
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 45786194}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: ui.normal.click
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.move.hover
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.move.click
+  clickVolume: 1
 --- !u!1 &53413743
 GameObject:
   m_ObjectHideFlags: 0
@@ -4226,7 +4242,12 @@ MonoBehaviour:
   volume: 1
   playDelay: 0
   playOnEnable: 1
-  playNextFrameOnEnable: 1
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 0
+  clickSoundId: ui.normal.click
+  clickVolume: 1
 --- !u!1 &95093924
 GameObject:
   m_ObjectHideFlags: 0
@@ -4641,6 +4662,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 98910527}
+  - component: {fileID: 98910528}
   m_Layer: 0
   m_Name: Level03_4
   m_TagString: Untagged
@@ -4671,6 +4693,28 @@ RectTransform:
   m_AnchoredPosition: {x: 540, y: -75}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &98910528
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 98910526}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: ui.normal.click
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.move.hover
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.move.click
+  clickVolume: 1
 --- !u!1 &99486762
 GameObject:
   m_ObjectHideFlags: 0
@@ -6017,6 +6061,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 119746523}
+  - component: {fileID: 119746524}
   m_Layer: 0
   m_Name: Level03_5
   m_TagString: Untagged
@@ -6046,6 +6091,28 @@ RectTransform:
   m_AnchoredPosition: {x: 690, y: -75}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &119746524
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 119746522}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: ui.normal.click
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.move.hover
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.move.click
+  clickVolume: 1
 --- !u!1 &124156113
 GameObject:
   m_ObjectHideFlags: 0
@@ -7256,16 +7323,9 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.05, y: 1.05, z: 1}
   hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 0}
-  protectedButtonImage: {fileID: 0}
-  changingBackgroundImage: {fileID: 0}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: 0, y: 0, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 1, g: 1, b: 1, a: 1}
-  clickedColor: {r: 1, g: 1, b: 1, a: 1}
+  playHoverSound: 0
+  hoverSoundId: ui.normal.click
+  hoverSoundVolume: 1
   playClickSound: 1
   clickSoundId: ui.normal.click
   clickSoundVolume: 1
@@ -8367,6 +8427,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 170339012}
+  - component: {fileID: 170339013}
   m_Layer: 0
   m_Name: Level03_7
   m_TagString: Untagged
@@ -8397,6 +8458,28 @@ RectTransform:
   m_AnchoredPosition: {x: 990, y: -75}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &170339013
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 170339011}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: ui.normal.click
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.move.hover
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.move.click
+  clickVolume: 1
 --- !u!1 &172097449
 GameObject:
   m_ObjectHideFlags: 0
@@ -11770,16 +11853,9 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 0}
-  protectedButtonImage: {fileID: 0}
-  changingBackgroundImage: {fileID: 0}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: 0, y: 0, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 1, g: 1, b: 1, a: 1}
-  clickedColor: {r: 1, g: 1, b: 1, a: 1}
+  playHoverSound: 0
+  hoverSoundId: ui.normal.click
+  hoverSoundVolume: 1
   playClickSound: 1
   clickSoundId: ui.normal.click
   clickSoundVolume: 1
@@ -11851,6 +11927,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 228847646}
+  - component: {fileID: 228847647}
   m_Layer: 0
   m_Name: Level01_5
   m_TagString: Untagged
@@ -11881,6 +11958,28 @@ RectTransform:
   m_AnchoredPosition: {x: 690, y: -75}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &228847647
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 228847645}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: ui.normal.click
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.move.hover
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.move.click
+  clickVolume: 1
 --- !u!1 &230010000
 GameObject:
   m_ObjectHideFlags: 0
@@ -11893,6 +11992,7 @@ GameObject:
   - component: {fileID: 230010002}
   - component: {fileID: 230010003}
   - component: {fileID: 230010004}
+  - component: {fileID: 230010005}
   m_Layer: 5
   m_Name: RelicShopPanel
   m_TagString: Untagged
@@ -11977,6 +12077,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fadeDuration: 0.2
   excludedObjects: []
+--- !u!114 &230010005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 230010000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: ui.relicstone.click
+  volume: 1
+  playDelay: 0
+  playOnEnable: 1
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 0
+  clickSoundId: ui.normal.click
+  clickVolume: 1
 --- !u!1 &230010010
 GameObject:
   m_ObjectHideFlags: 0
@@ -11990,6 +12112,7 @@ GameObject:
   - component: {fileID: 230010013}
   - component: {fileID: 230010014}
   - component: {fileID: 230010020}
+  - component: {fileID: 230010025}
   m_Layer: 5
   m_Name: RelicOffer_1
   m_TagString: Untagged
@@ -12243,6 +12366,28 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &230010025
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 230010010}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: ui.normal.click
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 1
+  hoverSoundId: ui.relic.hover
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.relic.click
+  clickVolume: 1
 --- !u!114 &230010030
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12585,16 +12730,9 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 0}
-  protectedButtonImage: {fileID: 0}
-  changingBackgroundImage: {fileID: 0}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: 0, y: 0, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 1, g: 1, b: 1, a: 1}
-  clickedColor: {r: 1, g: 1, b: 1, a: 1}
+  playHoverSound: 0
+  hoverSoundId: ui.move.hover
+  hoverSoundVolume: 1
   playClickSound: 1
   clickSoundId: ui.normal.click
   clickSoundVolume: 1
@@ -12670,6 +12808,7 @@ GameObject:
   - component: {fileID: 230010023}
   - component: {fileID: 230010024}
   - component: {fileID: 230010030}
+  - component: {fileID: 230010201}
   m_Layer: 5
   m_Name: RelicOffer_2
   m_TagString: Untagged
@@ -12677,6 +12816,28 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &230010201
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 230010200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: ui.normal.click
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 1
+  hoverSoundId: ui.relic.hover
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.relic.click
+  clickVolume: 1
 --- !u!1 &230010300
 GameObject:
   m_ObjectHideFlags: 0
@@ -12690,6 +12851,7 @@ GameObject:
   - component: {fileID: 230010033}
   - component: {fileID: 230010034}
   - component: {fileID: 230010040}
+  - component: {fileID: 230010301}
   m_Layer: 5
   m_Name: RelicOffer_3
   m_TagString: Untagged
@@ -12697,6 +12859,28 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &230010301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 230010300}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: ui.normal.click
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 1
+  hoverSoundId: ui.relic.hover
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.relic.click
+  clickVolume: 1
 --- !u!1 &230020010
 GameObject:
   m_ObjectHideFlags: 0
@@ -15377,16 +15561,9 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 0}
-  protectedButtonImage: {fileID: 0}
-  changingBackgroundImage: {fileID: 546363576}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: 0, y: 0, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 1, g: 1, b: 1, a: 1}
-  clickedColor: {r: 1, g: 1, b: 1, a: 1}
+  playHoverSound: 0
+  hoverSoundId: ui.normal.click
+  hoverSoundVolume: 1
   playClickSound: 0
   clickSoundId: ui.normal.click
   clickSoundVolume: 1
@@ -15453,16 +15630,9 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: -5, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 0}
-  protectedButtonImage: {fileID: 0}
-  changingBackgroundImage: {fileID: 0}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: -10, y: -10, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 0.9254902, g: 0.9254902, b: 0.9254902, a: 1}
-  hoverColor: {r: 1, g: 1, b: 1, a: 1}
-  clickedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
+  playHoverSound: 0
+  hoverSoundId: ui.normal.click
+  hoverSoundVolume: 1
   playClickSound: 1
   clickSoundId: ui.back.click
   clickSoundVolume: 1
@@ -16380,16 +16550,9 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.05, y: 1.05, z: 1}
   hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 0}
-  protectedButtonImage: {fileID: 0}
-  changingBackgroundImage: {fileID: 0}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: 0, y: 0, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 1, g: 1, b: 1, a: 1}
-  clickedColor: {r: 1, g: 1, b: 1, a: 1}
+  playHoverSound: 0
+  hoverSoundId: ui.normal.click
+  hoverSoundVolume: 1
   playClickSound: 1
   clickSoundId: ui.normal.click
   clickSoundVolume: 1
@@ -22090,6 +22253,7 @@ GameObject:
   - component: {fileID: 397856615}
   - component: {fileID: 397856610}
   - component: {fileID: 397856614}
+  - component: {fileID: 397856616}
   m_Layer: 0
   m_Name: ErosionSelectPanel
   m_TagString: Untagged
@@ -22252,6 +22416,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fadeDuration: 0.2
   excludedObjects: []
+--- !u!114 &397856616
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 397856608}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: ui.move.click
+  volume: 1
+  playDelay: 0
+  playOnEnable: 1
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 0
+  clickSoundId: ui.normal.click
+  clickVolume: 1
 --- !u!1 &398587190
 GameObject:
   m_ObjectHideFlags: 0
@@ -23343,7 +23529,7 @@ MonoBehaviour:
   warningUI: {fileID: 1763934034}
   purchaseCooldownWarningMessage: "\uB2E4\uC2DC \uC0AC\uC6A9\uD558\uB824\uBA74 \uD68C\uBCF5\uD560
     \uC2DC\uAC04\uC774 \uD544\uC694\uD569\uB2C8\uB2E4."
-  playClickSound: 1
+  playClickSound: 0
   clickSfx: ui.relicstone.click
   clickSfxVolume: 1
 --- !u!114 &416785461
@@ -23898,6 +24084,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 426253534}
+  - component: {fileID: 426253535}
   m_Layer: 0
   m_Name: Level01_3
   m_TagString: Untagged
@@ -23928,6 +24115,28 @@ RectTransform:
   m_AnchoredPosition: {x: 390, y: -75}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &426253535
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 426253533}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: ui.normal.click
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.move.hover
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.move.click
+  clickVolume: 1
 --- !u!1 &427861707
 GameObject:
   m_ObjectHideFlags: 0
@@ -26072,16 +26281,9 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: -5, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 0}
-  protectedButtonImage: {fileID: 0}
-  changingBackgroundImage: {fileID: 0}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: -10, y: -10, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 1, g: 1, b: 1, a: 1}
-  clickedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
+  playHoverSound: 0
+  hoverSoundId: ui.normal.click
+  hoverSoundVolume: 1
   playClickSound: 1
   clickSoundId: ui.back.click
   clickSoundVolume: 1
@@ -37418,6 +37620,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 606187154}
+  - component: {fileID: 606187155}
   m_Layer: 0
   m_Name: Level03_3
   m_TagString: Untagged
@@ -37448,6 +37651,28 @@ RectTransform:
   m_AnchoredPosition: {x: 390, y: -75}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &606187155
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 606187153}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: ui.normal.click
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.move.hover
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.move.click
+  clickVolume: 1
 --- !u!1 &611153041
 GameObject:
   m_ObjectHideFlags: 0
@@ -44444,6 +44669,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 741846830}
+  - component: {fileID: 741846831}
   m_Layer: 0
   m_Name: Level01_1
   m_TagString: Untagged
@@ -44474,6 +44700,28 @@ RectTransform:
   m_AnchoredPosition: {x: 90, y: -75}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &741846831
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 741846829}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: ui.normal.click
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.move.hover
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.move.click
+  clickVolume: 1
 --- !u!1 &742228758
 GameObject:
   m_ObjectHideFlags: 0
@@ -44589,7 +44837,12 @@ MonoBehaviour:
   volume: 1
   playDelay: 0
   playOnEnable: 1
-  playNextFrameOnEnable: 1
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 0
+  clickSoundId: ui.normal.click
+  clickVolume: 1
 --- !u!1 &744195645
 GameObject:
   m_ObjectHideFlags: 0
@@ -45602,6 +45855,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 763818393}
+  - component: {fileID: 763818394}
   m_Layer: 0
   m_Name: Level02_8
   m_TagString: Untagged
@@ -45632,6 +45886,28 @@ RectTransform:
   m_AnchoredPosition: {x: 1140, y: -75}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &763818394
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 763818392}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: ui.normal.click
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.move.hover
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.move.click
+  clickVolume: 1
 --- !u!1 &765114983
 GameObject:
   m_ObjectHideFlags: 0
@@ -45641,6 +45917,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 765114984}
+  - component: {fileID: 765114985}
   m_Layer: 0
   m_Name: Level02_4
   m_TagString: Untagged
@@ -45670,6 +45947,28 @@ RectTransform:
   m_AnchoredPosition: {x: 540, y: -75}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &765114985
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 765114983}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: ui.normal.click
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.move.hover
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.move.click
+  clickVolume: 1
 --- !u!1 &768107606
 GameObject:
   m_ObjectHideFlags: 0
@@ -46940,16 +47239,9 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 0}
-  protectedButtonImage: {fileID: 0}
-  changingBackgroundImage: {fileID: 0}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: 0, y: 0, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 1, g: 1, b: 1, a: 1}
-  clickedColor: {r: 1, g: 1, b: 1, a: 1}
+  playHoverSound: 0
+  hoverSoundId: ui.normal.click
+  hoverSoundVolume: 1
   playClickSound: 1
   clickSoundId: ui.normal.click
   clickSoundVolume: 1
@@ -48118,6 +48410,7 @@ GameObject:
   - component: {fileID: 821549310}
   - component: {fileID: 821549308}
   - component: {fileID: 821549309}
+  - component: {fileID: 821549311}
   m_Layer: 5
   m_Name: CultureTankPanel
   m_TagString: Untagged
@@ -48266,6 +48559,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fadeDuration: 0.2
   excludedObjects: []
+--- !u!114 &821549311
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 821549304}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: ui.move.click
+  volume: 1
+  playDelay: 0
+  playOnEnable: 1
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 0
+  clickSoundId: ui.normal.click
+  clickVolume: 1
 --- !u!1 &821584890
 GameObject:
   m_ObjectHideFlags: 0
@@ -49554,16 +49869,9 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 0}
-  protectedButtonImage: {fileID: 0}
-  changingBackgroundImage: {fileID: 0}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: 0, y: 0, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 1, g: 1, b: 1, a: 1}
-  clickedColor: {r: 1, g: 1, b: 1, a: 1}
+  playHoverSound: 0
+  hoverSoundId: ui.normal.click
+  hoverSoundVolume: 1
   playClickSound: 1
   clickSoundId: ui.normal.click
   clickSoundVolume: 1
@@ -51170,6 +51478,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 862610705}
+  - component: {fileID: 862610706}
   m_Layer: 0
   m_Name: Level01_7
   m_TagString: Untagged
@@ -51200,6 +51509,28 @@ RectTransform:
   m_AnchoredPosition: {x: 990, y: -75}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &862610706
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 862610704}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: ui.normal.click
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.move.hover
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.move.click
+  clickVolume: 1
 --- !u!1 &865315668
 GameObject:
   m_ObjectHideFlags: 0
@@ -59720,6 +60051,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 966854170}
+  - component: {fileID: 966854171}
   m_Layer: 0
   m_Name: Level01_2
   m_TagString: Untagged
@@ -59750,6 +60082,28 @@ RectTransform:
   m_AnchoredPosition: {x: 240, y: -75}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &966854171
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 966854169}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: ui.normal.click
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.move.hover
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.move.click
+  clickVolume: 1
 --- !u!1 &966941657
 GameObject:
   m_ObjectHideFlags: 0
@@ -61012,16 +61366,9 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 1267997973}
-  protectedButtonImage: {fileID: 989167605}
-  changingBackgroundImage: {fileID: 1267997972}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: 0, y: 0, z: 45}
-  hoverChangingBackgroundRotationZOffset: 60
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 1, g: 1, b: 1, a: 1}
-  clickedColor: {r: 1, g: 1, b: 1, a: 1}
+  playHoverSound: 0
+  hoverSoundId: ui.normal.click
+  hoverSoundVolume: 1
   playClickSound: 0
   clickSoundId: ui.normal.click
   clickSoundVolume: 1
@@ -61894,16 +62241,9 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 0}
-  protectedButtonImage: {fileID: 0}
-  changingBackgroundImage: {fileID: 0}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: 10, y: -10, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 1, g: 1, b: 1, a: 1}
-  clickedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
+  playHoverSound: 0
+  hoverSoundId: ui.move.hover
+  hoverSoundVolume: 1
   playClickSound: 1
   clickSoundId: ui.normal.click
   clickSoundVolume: 1
@@ -61943,7 +62283,7 @@ MonoBehaviour:
   gameManagerMissingMessage: "\uAC8C\uC784 \uB9E4\uB2C8\uC800\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4."
   networkClientStartBlockedMessage: Only the host can start in multiplayer lobby.
   networkBattleStartSyncFailedMessage: Failed to synchronize battle start.
-  playClickSound: 1
+  playClickSound: 0
   clickSfx: ui.normal.click
 --- !u!114 &999125867
 MonoBehaviour:
@@ -62429,6 +62769,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1007111859}
+  - component: {fileID: 1007111860}
   m_Layer: 0
   m_Name: Level03_8
   m_TagString: Untagged
@@ -62459,6 +62800,28 @@ RectTransform:
   m_AnchoredPosition: {x: 1140, y: -75}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1007111860
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1007111858}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: ui.normal.click
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.move.hover
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.move.click
+  clickVolume: 1
 --- !u!1 &1009227750
 GameObject:
   m_ObjectHideFlags: 0
@@ -64833,6 +65196,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1047055628}
+  - component: {fileID: 1047055629}
   m_Layer: 0
   m_Name: Level03_6
   m_TagString: Untagged
@@ -64863,6 +65227,28 @@ RectTransform:
   m_AnchoredPosition: {x: 840, y: -75}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1047055629
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1047055627}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: ui.normal.click
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.move.hover
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.move.click
+  clickVolume: 1
 --- !u!1 &1047903828
 GameObject:
   m_ObjectHideFlags: 0
@@ -72957,16 +73343,9 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: -5, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 0}
-  protectedButtonImage: {fileID: 0}
-  changingBackgroundImage: {fileID: 0}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: -10, y: -10, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 0.9254902, g: 0.9254902, b: 0.9254902, a: 1}
-  hoverColor: {r: 1, g: 1, b: 1, a: 1}
-  clickedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
+  playHoverSound: 0
+  hoverSoundId: ui.normal.click
+  hoverSoundVolume: 1
   playClickSound: 0
   clickSoundId: ui.back.click
   clickSoundVolume: 1
@@ -75840,16 +76219,9 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: -5, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 0}
-  protectedButtonImage: {fileID: 0}
-  changingBackgroundImage: {fileID: 0}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: -10, y: -10, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 1, g: 1, b: 1, a: 1}
-  clickedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
+  playHoverSound: 0
+  hoverSoundId: ui.normal.click
+  hoverSoundVolume: 1
   playClickSound: 1
   clickSoundId: ui.back.click
   clickSoundVolume: 1
@@ -76063,16 +76435,9 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.05, y: 1.05, z: 1}
   hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 0}
-  protectedButtonImage: {fileID: 0}
-  changingBackgroundImage: {fileID: 0}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: 0, y: 0, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 1, g: 1, b: 1, a: 1}
-  clickedColor: {r: 1, g: 1, b: 1, a: 1}
+  playHoverSound: 0
+  hoverSoundId: ui.normal.click
+  hoverSoundVolume: 1
   playClickSound: 1
   clickSoundId: ui.normal.click
   clickSoundVolume: 1
@@ -76142,16 +76507,9 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 0}
-  protectedButtonImage: {fileID: 0}
-  changingBackgroundImage: {fileID: 0}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: 0, y: 0, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 1, g: 1, b: 1, a: 1}
-  clickedColor: {r: 1, g: 1, b: 1, a: 1}
+  playHoverSound: 0
+  hoverSoundId: ui.normal.click
+  hoverSoundVolume: 1
   playClickSound: 0
   clickSoundId: ui.normal.click
   clickSoundVolume: 1
@@ -77015,6 +77373,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1298292602}
+  - component: {fileID: 1298292603}
   m_Layer: 0
   m_Name: Level01_4
   m_TagString: Untagged
@@ -77045,6 +77404,28 @@ RectTransform:
   m_AnchoredPosition: {x: 540, y: -75}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1298292603
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1298292601}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: ui.normal.click
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.move.hover
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.move.click
+  clickVolume: 1
 --- !u!1 &1301975533
 GameObject:
   m_ObjectHideFlags: 0
@@ -79151,7 +79532,12 @@ MonoBehaviour:
   volume: 1
   playDelay: 0
   playOnEnable: 1
-  playNextFrameOnEnable: 1
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 0
+  clickSoundId: ui.normal.click
+  clickVolume: 1
 --- !u!1 &1352680093
 GameObject:
   m_ObjectHideFlags: 0
@@ -85829,6 +86215,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1384806557}
+  - component: {fileID: 1384806558}
   m_Layer: 0
   m_Name: Level02_2
   m_TagString: Untagged
@@ -85859,6 +86246,28 @@ RectTransform:
   m_AnchoredPosition: {x: 240, y: -75}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1384806558
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1384806556}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: ui.normal.click
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.move.hover
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.move.click
+  clickVolume: 1
 --- !u!198 &1387261254 stripped
 ParticleSystem:
   m_CorrespondingSourceObject: {fileID: 8714247966229819870, guid: 86ec63abc0c0e0348a1fe1e257ead1f4, type: 3}
@@ -87946,6 +88355,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1437548945}
+  - component: {fileID: 1437548946}
   m_Layer: 0
   m_Name: Level02_6
   m_TagString: Untagged
@@ -87976,6 +88386,28 @@ RectTransform:
   m_AnchoredPosition: {x: 840, y: -75}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1437548946
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1437548944}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: ui.normal.click
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.move.hover
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.move.click
+  clickVolume: 1
 --- !u!1 &1438008122
 GameObject:
   m_ObjectHideFlags: 0
@@ -89605,7 +90037,12 @@ MonoBehaviour:
   volume: 1
   playDelay: 0
   playOnEnable: 1
-  playNextFrameOnEnable: 1
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 0
+  clickSoundId: ui.normal.click
+  clickVolume: 1
 --- !u!1 &1467312185
 GameObject:
   m_ObjectHideFlags: 0
@@ -90675,6 +91112,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1484159610}
+  - component: {fileID: 1484159611}
   m_Layer: 0
   m_Name: Level03_2
   m_TagString: Untagged
@@ -90704,6 +91142,28 @@ RectTransform:
   m_AnchoredPosition: {x: 240, y: -75}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1484159611
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1484159609}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: ui.normal.click
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.move.hover
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.move.click
+  clickVolume: 1
 --- !u!1 &1484719525
 GameObject:
   m_ObjectHideFlags: 0
@@ -92278,16 +92738,9 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 0}
-  protectedButtonImage: {fileID: 0}
-  changingBackgroundImage: {fileID: 0}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: 0, y: 0, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 1, g: 1, b: 1, a: 1}
-  clickedColor: {r: 1, g: 1, b: 1, a: 1}
+  playHoverSound: 0
+  hoverSoundId: ui.normal.click
+  hoverSoundVolume: 1
   playClickSound: 1
   clickSoundId: ui.normal.click
   clickSoundVolume: 1
@@ -92359,6 +92812,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1514725219}
+  - component: {fileID: 1514725220}
   m_Layer: 0
   m_Name: Level01_6
   m_TagString: Untagged
@@ -92388,6 +92842,28 @@ RectTransform:
   m_AnchoredPosition: {x: 840, y: -75}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1514725220
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1514725218}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: ui.normal.click
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.move.hover
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.move.click
+  clickVolume: 1
 --- !u!1 &1525820814
 GameObject:
   m_ObjectHideFlags: 0
@@ -98406,6 +98882,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1647239157}
+  - component: {fileID: 1647239158}
   m_Layer: 0
   m_Name: Level01_8
   m_TagString: Untagged
@@ -98436,6 +98913,28 @@ RectTransform:
   m_AnchoredPosition: {x: 1140, y: -75}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1647239158
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1647239156}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: ui.normal.click
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.move.hover
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.move.click
+  clickVolume: 1
 --- !u!1 &1649234067
 GameObject:
   m_ObjectHideFlags: 0
@@ -99301,16 +99800,9 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 0}
-  protectedButtonImage: {fileID: 0}
-  changingBackgroundImage: {fileID: 0}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: 0, y: 0, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 1, g: 1, b: 1, a: 1}
-  clickedColor: {r: 1, g: 1, b: 1, a: 1}
+  playHoverSound: 0
+  hoverSoundId: ui.normal.click
+  hoverSoundVolume: 1
   playClickSound: 1
   clickSoundId: ui.normal.click
   clickSoundVolume: 1
@@ -99931,6 +100423,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1676075963}
+  - component: {fileID: 1676075964}
   m_Layer: 0
   m_Name: Level02_7
   m_TagString: Untagged
@@ -99961,6 +100454,28 @@ RectTransform:
   m_AnchoredPosition: {x: 990, y: -75}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1676075964
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1676075962}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: ui.normal.click
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.move.hover
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.move.click
+  clickVolume: 1
 --- !u!1 &1677023939
 GameObject:
   m_ObjectHideFlags: 0
@@ -102824,16 +103339,9 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.02, y: 1.02, z: 1}
   hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 13551066}
-  protectedButtonImage: {fileID: 1070159585}
-  changingBackgroundImage: {fileID: 13551065}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: 10, y: -10, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 1, g: 1, b: 1, a: 1}
-  clickedColor: {r: 0.30588236, g: 0.4, b: 0.8745098, a: 1}
+  playHoverSound: 0
+  hoverSoundId: ui.normal.click
+  hoverSoundVolume: 1
   playClickSound: 1
   clickSoundId: ui.normal.click
   clickSoundVolume: 1
@@ -103822,6 +104330,7 @@ GameObject:
   - component: {fileID: 1763934031}
   - component: {fileID: 1763934033}
   - component: {fileID: 1763934034}
+  - component: {fileID: 1763934035}
   m_Layer: 0
   m_Name: SettingWarningUI
   m_TagString: Untagged
@@ -103928,6 +104437,28 @@ MonoBehaviour:
     \uB8EC \uC2AC\uB86F\uC785\uB2C8\uB2E4."
   sharedRuneLockedMessage: "\uC544\uC9C1 \uC7A0\uACA8\uC788\uB294 \uACF5\uC6A9\uB8EC\uC785\uB2C8\uB2E4."
   insufficientBlueDustiumMessage: "\uBE14\uB8E8 \uB354\uC2A4\uD2F0\uC6C0\uC774 \uBD80\uC871\uD569\uB2C8\uB2E4."
+--- !u!114 &1763934035
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1763934030}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: ui.warning.text
+  volume: 1
+  playDelay: 0
+  playOnEnable: 1
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 0
+  clickSoundId: ui.normal.click
+  clickVolume: 1
 --- !u!1 &1764265447
 GameObject:
   m_ObjectHideFlags: 0
@@ -110856,7 +111387,12 @@ MonoBehaviour:
   volume: 1
   playDelay: 0
   playOnEnable: 1
-  playNextFrameOnEnable: 1
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 0
+  clickSoundId: ui.normal.click
+  clickVolume: 1
 --- !u!1 &1800649426
 GameObject:
   m_ObjectHideFlags: 0
@@ -110866,6 +111402,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1800649427}
+  - component: {fileID: 1800649428}
   m_Layer: 0
   m_Name: Level02_3
   m_TagString: Untagged
@@ -110896,6 +111433,28 @@ RectTransform:
   m_AnchoredPosition: {x: 390, y: -75}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1800649428
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1800649426}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: ui.normal.click
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.move.hover
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.move.click
+  clickVolume: 1
 --- !u!1 &1802049858
 GameObject:
   m_ObjectHideFlags: 0
@@ -114178,6 +114737,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1861531851}
+  - component: {fileID: 1861531852}
   m_Layer: 0
   m_Name: Level02_1
   m_TagString: Untagged
@@ -114208,6 +114768,28 @@ RectTransform:
   m_AnchoredPosition: {x: 90, y: -75}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1861531852
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1861531850}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: ui.normal.click
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.move.hover
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.move.click
+  clickVolume: 1
 --- !u!1 &1863085296
 GameObject:
   m_ObjectHideFlags: 0
@@ -125947,6 +126529,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2106372881}
+  - component: {fileID: 2106372882}
   m_Layer: 0
   m_Name: Level02_5
   m_TagString: Untagged
@@ -125977,6 +126560,28 @@ RectTransform:
   m_AnchoredPosition: {x: 690, y: -75}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2106372882
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2106372880}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: ui.normal.click
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.move.hover
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.move.click
+  clickVolume: 1
 --- !u!1 &2106573015
 GameObject:
   m_ObjectHideFlags: 0
@@ -126128,16 +126733,9 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.05, y: 1.05, z: 1}
   hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 0}
-  protectedButtonImage: {fileID: 0}
-  changingBackgroundImage: {fileID: 0}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: 0, y: 0, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 1, g: 1, b: 1, a: 1}
-  clickedColor: {r: 1, g: 1, b: 1, a: 1}
+  playHoverSound: 0
+  hoverSoundId: ui.normal.click
+  hoverSoundVolume: 1
   playClickSound: 1
   clickSoundId: ui.normal.click
   clickSoundVolume: 1

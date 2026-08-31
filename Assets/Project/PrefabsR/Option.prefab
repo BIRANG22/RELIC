@@ -1571,16 +1571,9 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1.1}
   hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 6268123605135338491}
-  protectedButtonImage: {fileID: 3485185761706486832}
-  changingBackgroundImage: {fileID: 712238267669167098}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: 0, y: 0, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 0.050980397, g: 0.34901962, b: 0.79215693, a: 1}
-  clickedColor: {r: 0.050980393, g: 0.34901962, b: 0.7921569, a: 1}
+  playHoverSound: 0
+  hoverSoundId: ui.normal.click
+  hoverSoundVolume: 1
   playClickSound: 1
   clickSoundId: ui.normal.click
   clickSoundVolume: 1
@@ -3269,16 +3262,9 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1.1}
   hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 1551033360185544484}
-  protectedButtonImage: {fileID: 7350766504823021166}
-  changingBackgroundImage: {fileID: 1184652743951522050}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: 0, y: 0, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 0.050980397, g: 0.34901962, b: 0.79215693, a: 1}
-  clickedColor: {r: 0.050980393, g: 0.34901962, b: 0.7921569, a: 1}
+  playHoverSound: 0
+  hoverSoundId: ui.normal.click
+  hoverSoundVolume: 1
   playClickSound: 1
   clickSoundId: ui.normal.click
   clickSoundVolume: 1
@@ -4835,16 +4821,9 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1.1}
   hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 3030418663059911486}
-  protectedButtonImage: {fileID: 7121355754302023606}
-  changingBackgroundImage: {fileID: 4945067402648253717}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: 0, y: 0, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 0.050980397, g: 0.34901962, b: 0.79215693, a: 1}
-  clickedColor: {r: 0.050980393, g: 0.34901962, b: 0.7921569, a: 1}
+  playHoverSound: 0
+  hoverSoundId: ui.normal.click
+  hoverSoundVolume: 1
   playClickSound: 1
   clickSoundId: ui.normal.click
   clickSoundVolume: 1
@@ -5588,16 +5567,9 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1.1}
   hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 8335573894555136109}
-  protectedButtonImage: {fileID: 4386257322244035907}
-  changingBackgroundImage: {fileID: 3571429874815735286}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: 0, y: 0, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 0.050980397, g: 0.34901962, b: 0.79215693, a: 1}
-  clickedColor: {r: 0.050980393, g: 0.34901962, b: 0.7921569, a: 1}
+  playHoverSound: 0
+  hoverSoundId: ui.normal.click
+  hoverSoundVolume: 1
   playClickSound: 1
   clickSoundId: ui.normal.click
   clickSoundVolume: 1
@@ -7503,16 +7475,9 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1.1}
   hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 4400187380638007183}
-  protectedButtonImage: {fileID: 5965414154970084696}
-  changingBackgroundImage: {fileID: 6041283309683147554}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: 0, y: 0, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 0.050980397, g: 0.34901962, b: 0.79215693, a: 1}
-  clickedColor: {r: 0.050980393, g: 0.34901962, b: 0.7921569, a: 1}
+  playHoverSound: 0
+  hoverSoundId: ui.normal.click
+  hoverSoundVolume: 1
   playClickSound: 1
   clickSoundId: ui.normal.click
   clickSoundVolume: 1
@@ -8432,16 +8397,9 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1.1}
   hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 8330105183166038293}
-  protectedButtonImage: {fileID: 1043512900391831847}
-  changingBackgroundImage: {fileID: 0}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: -5, y: -5, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 0, g: 0, b: 0, a: 1}
-  hoverColor: {r: 0, g: 0, b: 0, a: 1}
-  clickedColor: {r: 0, g: 0, b: 0, a: 1}
+  playHoverSound: 0
+  hoverSoundId: ui.normal.click
+  hoverSoundVolume: 0
   playClickSound: 1
   clickSoundId: ui.back.click
   clickSoundVolume: 1
