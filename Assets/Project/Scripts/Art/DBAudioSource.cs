@@ -11,7 +11,7 @@ public class DBAudioSource : MonoBehaviour, IPointerEnterHandler, IPointerClickH
 {
     [Header("Sound")]
     [SerializeField, SoundId(SoundCategory.Sfx)]
-    private string soundId = AudioIds.EventSfx.Event09Click;
+    private string soundId = "event..09.Skylight";
 
     [SerializeField, Range(0f, 1f)]
     private float volume = 1f;

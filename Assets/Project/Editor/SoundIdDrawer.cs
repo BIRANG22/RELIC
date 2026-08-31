@@ -47,11 +47,10 @@ public sealed class SoundIdDrawer : PropertyDrawer
         if (database == null)
             return Array.Empty<string>();
 
-        IReadOnlyList<SoundData> entries = category switch
+        IEnumerable<SoundData> entries = category switch
         {
             SoundCategory.Bgm => database.BgmEntries,
-            SoundCategory.EventSfx => database.EventSfxEntries,
-            _ => database.SfxEntries
+            _ => CombineSfxEntries(database)
         };
 
         if (entries == null)
@@ -63,6 +62,21 @@ public sealed class SoundIdDrawer : PropertyDrawer
             .Distinct(StringComparer.Ordinal)
             .OrderBy(id => id, StringComparer.Ordinal)
             .ToArray();
+    }
+
+    private static IEnumerable<SoundData> CombineSfxEntries(SoundDatabase database)
+    {
+        if (database.SfxEntries != null)
+        {
+            foreach (SoundData entry in database.SfxEntries)
+                yield return entry;
+        }
+
+        if (database.EventSfxEntries != null)
+        {
+            foreach (SoundData entry in database.EventSfxEntries)
+                yield return entry;
+        }
     }
 
     private static void DrawSoundIdPopup(

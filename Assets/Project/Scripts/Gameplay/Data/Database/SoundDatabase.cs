@@ -5,8 +5,7 @@ using UnityEngine;
 public enum SoundCategory
 {
     Bgm,
-    Sfx,
-    EventSfx
+    Sfx
 }
 
 [AttributeUsage(AttributeTargets.Field)]
