@@ -28,6 +28,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     [Header("Reserved Colors")]
     [SerializeField] private Color playerReservedColor = new Color32(0x0A, 0x46, 0x9E, 0xFF);
     [SerializeField] private Color enemyReservedColor = new Color32(0xDF, 0x4D, 0x56, 0xFF);
+    [SerializeField] private Color deadReservationColor = new Color32(0x77, 0x77, 0x77, 0xFF);
 
     [Header("Empty Use Skill Slots")]
     [SerializeField] private Color emptyUseSkillColor = new Color32(0xFF, 0xFF, 0xFF, 0x05);
@@ -43,6 +44,11 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     [SerializeField] private float selectedTurnMarkColorSpeed = 4f;
 
     private readonly List<BattleTimelinePreviewEntry> currentEntries = new();
+    private readonly List<bool> currentEntryOwnerDeadStates = new();
+    private BattleTimelinePreviewEntry firstOwnerEntry;
+    private BattleTimelinePreviewEntry laterOwnerEntry;
+    private bool firstOwnerDeadState;
+    private bool laterOwnerDeadState;
 
     private BattleTimelineBarUI owner;
     private int slotIndex;
@@ -88,6 +94,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     private void Update()
     {
         UpdateTurnMarkSelectedAnimation();
+        UpdateDeadReservationVisuals();
     }
 
     public void Init(BattleTimelineBarUI owner, int slotIndex)
@@ -152,6 +159,8 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
                 break;
 
             currentEntries.Add(entry);
+            bool ownerDead = IsEntryOwnerDead(entry);
+            currentEntryOwnerDeadStates.Add(ownerDead);
 
             if (entry.IsMonster && firstMonsterEntry == null)
             {
@@ -171,6 +180,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
                 Image useSkillImage = useSkillIconImages[visibleIndex];
 
                 SetSkillImage(useSkillImage, entry.SkillIcon, true, reservedColor);
+                ApplySkillReservationColor(useSkillImage, entry, ownerDead);
                 SetSkillValueText(useSkillValueTexts, visibleIndex, entry.SkillValueText);
 
                 if (entry.IsMonster)
@@ -196,6 +206,11 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             firstEntry = firstPlayerEntry ?? firstMonsterEntry;
         }
 
+        firstOwnerEntry = firstEntry;
+        laterOwnerEntry = laterEntry;
+        firstOwnerDeadState = IsEntryOwnerDead(firstEntry);
+        laterOwnerDeadState = IsEntryOwnerDead(laterEntry);
+
         ApplyOwnerOrderIcon(firstIconRootImage, firstIconImage, firstEntry);
         ApplyOwnerOrderIcon(laterIconRootImage, laterIconImage, laterEntry);
 
@@ -206,6 +221,11 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     public void Clear()
     {
         currentEntries.Clear();
+        currentEntryOwnerDeadStates.Clear();
+        firstOwnerEntry = null;
+        laterOwnerEntry = null;
+        firstOwnerDeadState = false;
+        laterOwnerDeadState = false;
 
         SetOwnerIconImage(firstIconRootImage, firstIconImage, null, false, Color.white);
         SetOwnerIconImage(laterIconRootImage, laterIconImage, null, false, Color.white);
@@ -1425,6 +1445,96 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
         Color color = entry.IsMonster ? enemyReservedColor : playerReservedColor;
         SetOwnerIconImage(rootImage, contentImage, entry.OwnerIcon, true, color);
+        ApplyOwnerReservationColor(rootImage, contentImage, entry, IsEntryOwnerDead(entry));
+    }
+
+    private void UpdateDeadReservationVisuals()
+    {
+        int count = Mathf.Min(currentEntries.Count, useSkillIconImages != null ? useSkillIconImages.Length : 0);
+
+        for (int i = 0; i < count; i++)
+        {
+            BattleTimelinePreviewEntry entry = currentEntries[i];
+            bool ownerDead = IsEntryOwnerDead(entry);
+
+            if (i < currentEntryOwnerDeadStates.Count && currentEntryOwnerDeadStates[i] == ownerDead)
+                continue;
+
+            while (currentEntryOwnerDeadStates.Count <= i)
+                currentEntryOwnerDeadStates.Add(false);
+
+            currentEntryOwnerDeadStates[i] = ownerDead;
+            ApplySkillReservationColor(useSkillIconImages[i], entry, ownerDead);
+        }
+
+        bool firstDead = IsEntryOwnerDead(firstOwnerEntry);
+        if (firstDead != firstOwnerDeadState)
+        {
+            firstOwnerDeadState = firstDead;
+            ApplyOwnerReservationColor(firstIconRootImage, firstIconImage, firstOwnerEntry, firstDead);
+        }
+
+        bool laterDead = IsEntryOwnerDead(laterOwnerEntry);
+        if (laterDead != laterOwnerDeadState)
+        {
+            laterOwnerDeadState = laterDead;
+            ApplyOwnerReservationColor(laterIconRootImage, laterIconImage, laterOwnerEntry, laterDead);
+        }
+    }
+
+    private bool IsEntryOwnerDead(BattleTimelinePreviewEntry entry)
+    {
+        if (entry == null)
+            return false;
+
+        if (entry.IsPlayer)
+            return entry.CharacterRuntime != null && entry.CharacterRuntime.IsDead;
+
+        if (entry.IsMonster)
+            return entry.MonsterRuntime != null && entry.MonsterRuntime.IsDead;
+
+        return false;
+    }
+
+    private void ApplySkillReservationColor(
+        Image skillImage,
+        BattleTimelinePreviewEntry entry,
+        bool ownerDead)
+    {
+        if (skillImage == null || entry == null)
+            return;
+
+        Color rootColor = ownerDead
+            ? deadReservationColor
+            : (entry.IsMonster ? enemyReservedColor : playerReservedColor);
+        Color contentColor = ownerDead ? deadReservationColor : Color.white;
+
+        GameObject root = GetSkillHoverObject(skillImage);
+        if (root != null)
+            SetRootImageColor(root, rootColor);
+
+        skillImage.color = contentColor;
+    }
+
+    private void ApplyOwnerReservationColor(
+        Image rootImage,
+        Image contentImage,
+        BattleTimelinePreviewEntry entry,
+        bool ownerDead)
+    {
+        if (entry == null)
+            return;
+
+        Color rootColor = ownerDead
+            ? deadReservationColor
+            : (entry.IsMonster ? enemyReservedColor : playerReservedColor);
+        Color contentColor = ownerDead ? deadReservationColor : Color.white;
+
+        if (rootImage != null)
+            rootImage.color = rootColor;
+
+        if (contentImage != null)
+            contentImage.color = contentColor;
     }
 
     private void SetImage(Image image, Sprite sprite, bool visible)

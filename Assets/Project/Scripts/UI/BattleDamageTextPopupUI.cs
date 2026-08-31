@@ -1,4 +1,6 @@
 using System.Collections;
+using System.Collections.Generic;
+using Relic.Gameplay.Monster;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,7 +13,8 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         CostRecovery,
         ArmorGain,
         PoisonDamage,
-        UniqueResource
+        UniqueResource,
+        HealthRecovery
     }
     private const string AutoInstanceName = "BattleDamageTextPopupUI_Auto";
 
@@ -24,9 +27,16 @@ public class BattleDamageTextPopupUI : MonoBehaviour
     [Header("Popup Position")]
     [SerializeField] private Vector3 worldOffset = new Vector3(0f, 1.15f, 0f);
     [SerializeField] private Vector2 randomScreenOffset = new Vector2(26f, 12f);
+    [SerializeField] private Vector2 randomDisappearCanvasOffset = new Vector2(12f, 8f);
     [SerializeField] private float holdDuration = 0.3f;
     [SerializeField] private float duration = 0.55f;
     [SerializeField] private float upwardCanvasMove = 18f;
+
+    [Header("Popup Timing")]
+    [Tooltip("HUD가 먼저 보인 뒤 팝업이 시작되기까지의 지연 시간입니다.")]
+    [SerializeField, Min(0f)] private float popupStartDelay = 0.12f;
+    [Tooltip("카르마/마나/체력 회복 팝업을 순차 표시할 때 다음 팝업이 시작되는 간격입니다.")]
+    [SerializeField, Min(0f)] private float recoveryPopupInterval = 0.3f;
 
     [Header("Popup Movement")]
     [SerializeField] private Vector2 horizontalCanvasMoveRange = new Vector2(-34f, 34f);
@@ -38,28 +48,51 @@ public class BattleDamageTextPopupUI : MonoBehaviour
     [SerializeField] private Vector2 digitSize = new Vector2(52f, 72f);
     [SerializeField] private float digitVisualScaleMultiplier = 1.5f;
     [SerializeField] private float digitSpacing = -4f;
-    [SerializeField] private Color digitColor = new Color(1f, 0.06f, 0.04f, 1f);
+    [SerializeField] private Color digitColor = new Color32(187, 187, 187, 255);
     [SerializeField] private bool preserveDigitAspect = true;
     [SerializeField] private bool useNativeDigitSize = false;
     [SerializeField] private float startScale = 1f;
     [SerializeField] private float endScale = 0.68f;
+
+    [Header("Recovery Icons")]
+    [Tooltip("체력 회복 숫자 앞에 표시할 아이콘입니다.")]
+    [SerializeField] private Sprite healthRecoveryIcon;
+    [Tooltip("마나 회복 숫자 앞에 표시할 아이콘입니다.")]
+    [SerializeField] private Sprite costRecoveryIcon;
+    [Tooltip("카르마 회복 숫자 앞에 표시할 아이콘입니다.")]
+    [SerializeField] private Sprite uniqueResourceIcon;
+    [SerializeField] private Vector2 recoveryIconSize = new Vector2(52f, 52f);
+    [SerializeField] private float recoveryPrefixSpacing = 2f;
 
     [Header("Text Fallback")]
     [Tooltip("Use temporary text popup when one or more digit sprites are missing.")]
     [SerializeField] private bool useTextFallbackWhenDigitMissing = true;
     [SerializeField] private float startFontSize = 72f;
     [SerializeField] private float endFontSize = 38f;
-    [SerializeField] private Color damageColor = new Color(1f, 0.06f, 0.04f, 1f);
-    [SerializeField] private Color costRecoveryColor = new Color(0.15f, 0.65f, 1f, 1f);
-    [SerializeField] private Color armorGainColor = Color.white;
-    [SerializeField] private Color poisonDamageColor = new Color(0.2f, 1f, 0.25f, 1f);
-    [SerializeField] private Color uniqueResourceColor = Color.white;
+    [SerializeField] private Color damageColor = new Color32(187, 187, 187, 255);
+    [SerializeField] private Color costRecoveryColor = new Color32(50, 111, 197, 255);
+    [SerializeField] private Color armorGainColor = new Color32(255, 255, 255, 255);
+    [SerializeField] private Color poisonDamageColor = new Color32(25, 197, 36, 255);
+    [SerializeField] private Color uniqueResourceColor = new Color32(255, 255, 255, 255);
+    [SerializeField] private Color healthRecoveryColor = new Color32(208, 53, 53, 255);
     [SerializeField] private float straightUpCanvasMove = 30f;
     [SerializeField] private float armorUpCanvasMove = 16f;
     [SerializeField] private float poisonDownCanvasMove = 28f;
     [SerializeField] private bool useBoldText = true;
 
+    private sealed class RecoveryPopupRequest
+    {
+        public Transform Target;
+        public int Value;
+        public PopupType PopupType;
+        public int Sequence;
+    }
+
     private static BattleDamageTextPopupUI instance;
+    private readonly List<RecoveryPopupRequest> recoveryPopupQueue = new();
+    private Coroutine recoveryPopupRoutine;
+    private bool recoverySequenceHeld;
+    private int recoverySequenceCounter;
 
     private void Awake()
     {
@@ -86,7 +119,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         if (popup == null)
             return;
 
-        popup.ShowInternal(target, damage, PopupType.Damage);
+        popup.ShowAfterDelay(target, damage, PopupType.Damage);
     }
 
     public static void ShowCostRecovery(Transform target, int value)
@@ -125,14 +158,16 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         ShowTyped(target, value, PopupType.PoisonDamage);
     }
 
+    public static void ShowHealthRecovery(Transform target, int value)
+    {
+        ShowTyped(target, value, PopupType.HealthRecovery);
+    }
+
     public static void ShowUniqueResource(Transform target, string resourceName, int value)
     {
-        if (target == null || string.IsNullOrWhiteSpace(resourceName) || value <= 0)
-            return;
-
-        BattleDamageTextPopupUI popup = GetOrCreateInstance();
-        if (popup != null)
-            popup.ShowCustomTextInternal(target, $"{resourceName} +{value}", PopupType.UniqueResource);
+        // resourceName은 기존 호출부 호환을 위해 유지합니다.
+        // 전투 팝업에는 명칭을 쓰지 않고 아이콘 + "+숫자"만 표시합니다.
+        ShowTyped(target, value, PopupType.UniqueResource);
     }
 
     private static void ShowTyped(Transform target, int value, PopupType popupType)
@@ -141,10 +176,150 @@ public class BattleDamageTextPopupUI : MonoBehaviour
             return;
 
         BattleDamageTextPopupUI popup = GetOrCreateInstance();
-        if (popup != null)
-            popup.ShowInternal(target, value, popupType);
+        if (popup == null)
+            return;
+
+        if (IsRecoveryPopup(popupType))
+            popup.QueueRecoveryPopup(target, value, popupType);
+        else
+            popup.ShowAfterDelay(target, value, popupType);
     }
 
+    public static void BeginRecoveryPopupSequence()
+    {
+        BattleDamageTextPopupUI popup = GetOrCreateInstance();
+        if (popup == null)
+            return;
+
+        popup.recoverySequenceHeld = true;
+    }
+
+    public static void EndRecoveryPopupSequence()
+    {
+        if (instance == null)
+            return;
+
+        instance.recoverySequenceHeld = false;
+        instance.SortRecoveryQueueByType();
+        instance.StartRecoveryQueueIfNeeded();
+    }
+
+    private static bool IsRecoveryPopup(PopupType popupType)
+    {
+        return popupType == PopupType.UniqueResource ||
+               popupType == PopupType.CostRecovery ||
+               popupType == PopupType.HealthRecovery;
+    }
+
+    private void ShowAfterDelay(Transform target, int value, PopupType popupType)
+    {
+        ShowTargetHudImmediately(target);
+        StartCoroutine(ShowAfterDelayRoutine(target, value, popupType));
+    }
+
+    private IEnumerator ShowAfterDelayRoutine(Transform target, int value, PopupType popupType)
+    {
+        if (popupStartDelay > 0f)
+            yield return new WaitForSecondsRealtime(popupStartDelay);
+
+        if (target != null)
+            ShowInternal(target, value, popupType);
+    }
+
+    public static void PrepareTargetHud(Transform target)
+    {
+        ShowTargetHudImmediately(target);
+    }
+
+    private static void ShowTargetHudImmediately(Transform target)
+    {
+        if (target == null)
+            return;
+
+        BattleCharacter player = target.GetComponentInParent<BattleCharacter>();
+        if (player != null)
+        {
+            BattleCharacterHUDController controller = BattleCharacterHUDController.Instance;
+            if (controller != null)
+                controller.ShowCharacterHudForEffect(player);
+
+            return;
+        }
+
+        MonsterUnit monster = target.GetComponentInParent<MonsterUnit>();
+        if (monster != null)
+            monster.ShowTemporaryHUDForEffect();
+    }
+
+    private void QueueRecoveryPopup(Transform target, int value, PopupType popupType)
+    {
+        recoveryPopupQueue.Add(new RecoveryPopupRequest
+        {
+            Target = target,
+            Value = value,
+            PopupType = popupType,
+            Sequence = recoverySequenceCounter++
+        });
+
+        if (!recoverySequenceHeld)
+            StartRecoveryQueueIfNeeded();
+    }
+
+    private void StartRecoveryQueueIfNeeded()
+    {
+        if (recoverySequenceHeld || recoveryPopupRoutine != null || recoveryPopupQueue.Count == 0)
+            return;
+
+        recoveryPopupRoutine = StartCoroutine(PlayRecoveryPopupQueueRoutine());
+    }
+
+    private IEnumerator PlayRecoveryPopupQueueRoutine()
+    {
+        while (!recoverySequenceHeld && recoveryPopupQueue.Count > 0)
+        {
+            RecoveryPopupRequest request = recoveryPopupQueue[0];
+            recoveryPopupQueue.RemoveAt(0);
+
+            if (request != null && request.Target != null && request.Value > 0)
+            {
+                ShowTargetHudImmediately(request.Target);
+
+                if (popupStartDelay > 0f)
+                    yield return new WaitForSecondsRealtime(popupStartDelay);
+
+                if (request.Target != null)
+                    ShowInternal(request.Target, request.Value, request.PopupType);
+            }
+
+            if (recoveryPopupQueue.Count > 0 && recoveryPopupInterval > 0f)
+                yield return new WaitForSecondsRealtime(recoveryPopupInterval);
+        }
+
+        recoveryPopupRoutine = null;
+
+        if (!recoverySequenceHeld && recoveryPopupQueue.Count > 0)
+            StartRecoveryQueueIfNeeded();
+    }
+
+    private void SortRecoveryQueueByType()
+    {
+        recoveryPopupQueue.Sort((a, b) =>
+        {
+            int priorityCompare = GetRecoveryPopupPriority(a.PopupType).CompareTo(GetRecoveryPopupPriority(b.PopupType));
+            return priorityCompare != 0 ? priorityCompare : a.Sequence.CompareTo(b.Sequence);
+        });
+    }
+
+    private static int GetRecoveryPopupPriority(PopupType popupType)
+    {
+        return popupType switch
+        {
+            PopupType.UniqueResource => 0,
+            PopupType.CostRecovery => 1,
+            PopupType.HealthRecovery => 2,
+            _ => 3
+        };
+    }
 
     private void ShowCustomTextInternal(Transform target, string message, PopupType popupType)
     {
@@ -294,7 +469,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         rect.anchorMin = new Vector2(0.5f, 0.5f);
         rect.anchorMax = new Vector2(0.5f, 0.5f);
         rect.pivot = new Vector2(0.5f, 0.5f);
-        rect.sizeDelta = GetDigitPopupSize(value.Length);
+        rect.sizeDelta = GetDigitPopupSize(value.Length, popupType);
         rect.anchoredPosition = anchoredPosition;
         rect.localScale = Vector3.one * startScale;
 
@@ -307,10 +482,22 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         layoutGroup.childForceExpandWidth = false;
         layoutGroup.childForceExpandHeight = false;
 
+        Color popupColor = GetPopupColor(popupType);
+        int siblingIndex = 0;
+
+        if (ShouldShowRecoveryPrefix(popupType))
+        {
+            if (CreateRecoveryIcon(rect, popupType, siblingIndex, popupColor))
+                siblingIndex++;
+
+            CreatePlusText(rect, siblingIndex, popupColor);
+            siblingIndex++;
+        }
+
         for (int i = 0; i < value.Length; i++)
         {
             int digit = value[i] - '0';
-            CreateDigitImage(rect, digit, i, GetPopupColor(popupType));
+            CreateDigitImage(rect, digit, siblingIndex + i, popupColor);
         }
 
         CanvasGroup canvasGroup = rootObject.AddComponent<CanvasGroup>();
@@ -327,15 +514,104 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         return digitSize * scale;
     }
 
-    private Vector2 GetDigitPopupSize(int digitCount)
+    private Vector2 GetDigitPopupSize(int digitCount, PopupType popupType)
     {
         digitCount = Mathf.Max(1, digitCount);
 
         Vector2 effectiveDigitSize = GetEffectiveDigitSize();
         float width = effectiveDigitSize.x * digitCount + digitSpacing * Mathf.Max(0, digitCount - 1);
-        width = Mathf.Max(effectiveDigitSize.x, width);
+        float height = effectiveDigitSize.y;
 
-        return new Vector2(width, effectiveDigitSize.y);
+        if (ShouldShowRecoveryPrefix(popupType))
+        {
+            Sprite icon = GetRecoveryIcon(popupType);
+            if (icon != null)
+            {
+                width += recoveryIconSize.x + recoveryPrefixSpacing;
+                height = Mathf.Max(height, recoveryIconSize.y);
+            }
+
+            width += effectiveDigitSize.x * 0.55f + recoveryPrefixSpacing;
+        }
+
+        width = Mathf.Max(effectiveDigitSize.x, width);
+        return new Vector2(width, height);
+    }
+
+    private bool ShouldShowRecoveryPrefix(PopupType popupType)
+    {
+        return popupType == PopupType.CostRecovery ||
+               popupType == PopupType.UniqueResource ||
+               popupType == PopupType.HealthRecovery;
+    }
+
+    private Sprite GetRecoveryIcon(PopupType popupType)
+    {
+        return popupType switch
+        {
+            PopupType.CostRecovery => costRecoveryIcon,
+            PopupType.UniqueResource => uniqueResourceIcon,
+            PopupType.HealthRecovery => healthRecoveryIcon,
+            _ => null
+        };
+    }
+
+    private bool CreateRecoveryIcon(RectTransform parent, PopupType popupType, int order, Color popupColor)
+    {
+        Sprite iconSprite = GetRecoveryIcon(popupType);
+        if (iconSprite == null)
+            return false;
+
+        GameObject imageObject = new GameObject("RecoveryIcon");
+        imageObject.transform.SetParent(parent, false);
+
+        Image image = imageObject.AddComponent<Image>();
+        image.raycastTarget = false;
+        image.sprite = iconSprite;
+        image.color = popupColor;
+        image.preserveAspect = true;
+
+        RectTransform imageRect = image.GetComponent<RectTransform>();
+        imageRect.sizeDelta = recoveryIconSize;
+        imageRect.SetSiblingIndex(order);
+
+        LayoutElement layoutElement = imageObject.AddComponent<LayoutElement>();
+        layoutElement.preferredWidth = recoveryIconSize.x;
+        layoutElement.preferredHeight = recoveryIconSize.y;
+        layoutElement.minWidth = recoveryIconSize.x;
+        layoutElement.minHeight = recoveryIconSize.y;
+
+        return true;
+    }
+
+    private void CreatePlusText(RectTransform parent, int order, Color popupColor)
+    {
+        Vector2 effectiveDigitSize = GetEffectiveDigitSize();
+        float plusWidth = effectiveDigitSize.x * 0.55f;
+
+        GameObject plusObject = new GameObject("RecoveryPlus");
+        plusObject.transform.SetParent(parent, false);
+
+        TextMeshProUGUI plusText = plusObject.AddComponent<TextMeshProUGUI>();
+        plusText.raycastTarget = false;
+        plusText.alignment = TextAlignmentOptions.Center;
+        plusText.textWrappingMode = TextWrappingModes.NoWrap;
+        plusText.color = popupColor;
+        plusText.fontSize = GetEffectiveStartFontSize();
+        plusText.text = "+";
+
+        if (useBoldText)
+            plusText.fontStyle = FontStyles.Bold;
+
+        RectTransform plusRect = plusText.GetComponent<RectTransform>();
+        plusRect.sizeDelta = new Vector2(plusWidth, effectiveDigitSize.y);
+        plusRect.SetSiblingIndex(order);
+
+        LayoutElement layoutElement = plusObject.AddComponent<LayoutElement>();
+        layoutElement.preferredWidth = plusWidth + recoveryPrefixSpacing;
+        layoutElement.preferredHeight = effectiveDigitSize.y;
+        layoutElement.minWidth = plusWidth + recoveryPrefixSpacing;
+        layoutElement.minHeight = effectiveDigitSize.y;
     }
 
     private void CreateDigitImage(RectTransform parent, int digit, int order, Color popupColor)
@@ -414,7 +690,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         text.alignment = TextAlignmentOptions.Center;
         text.color = GetPopupColor(popupType);
         text.fontSize = GetEffectiveStartFontSize();
-        text.text = damage.ToString();
+        text.text = ShouldShowRecoveryPrefix(popupType) ? $"+{damage}" : damage.ToString();
 
         if (useBoldText)
             text.fontStyle = FontStyles.Bold;
@@ -465,7 +741,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
     {
         return new Vector2(
             Random.Range(-randomScreenOffset.x, randomScreenOffset.x),
-            Random.Range(0f, randomScreenOffset.y));
+            Random.Range(-randomScreenOffset.y, randomScreenOffset.y));
     }
 
     private bool TryGetCanvasPosition(Transform target, Vector2 screenOffset, out Vector2 anchoredPosition)
@@ -542,20 +818,31 @@ public class BattleDamageTextPopupUI : MonoBehaviour
             PopupType.ArmorGain => armorGainColor,
             PopupType.PoisonDamage => poisonDamageColor,
             PopupType.UniqueResource => uniqueResourceColor,
-            _ => digitColor
+            PopupType.HealthRecovery => healthRecoveryColor,
+            _ => damageColor
         };
     }
 
     private Vector2 GetEndOffset(PopupType popupType)
     {
-        return popupType switch
+        Vector2 baseOffset = popupType switch
         {
             PopupType.CostRecovery => Vector2.up * straightUpCanvasMove,
             PopupType.ArmorGain => Vector2.up * armorUpCanvasMove,
             PopupType.PoisonDamage => Vector2.down * poisonDownCanvasMove,
             PopupType.UniqueResource => Vector2.up * armorUpCanvasMove,
+            PopupType.HealthRecovery => Vector2.up * armorUpCanvasMove,
             _ => GetDisappearEndOffset()
         };
+
+        return baseOffset + GetRandomDisappearOffset();
+    }
+
+    private Vector2 GetRandomDisappearOffset()
+    {
+        return new Vector2(
+            Random.Range(-randomDisappearCanvasOffset.x, randomDisappearCanvasOffset.x),
+            Random.Range(-randomDisappearCanvasOffset.y, randomDisappearCanvasOffset.y));
     }
 
     private Vector2 GetAnimatedOffset(Vector2 endOffset, float t, PopupType popupType)

@@ -220,6 +220,9 @@ public static class BattleEffectUtility
 
         damage = Mathf.Max(0, damage);
 
+        if (damage > 0)
+            BattleDamageTextPopupUI.PrepareTargetHud(target.transform);
+
         if (damage > 0 && TryBlockDamageWithBarrier(target))
             return;
 
@@ -275,6 +278,9 @@ public static class BattleEffectUtility
 
         damage = Mathf.Max(0, damage);
 
+        if (damage > 0)
+            BattleDamageTextPopupUI.PrepareTargetHud(target.transform);
+
         if (damage > 0 && TryBlockDamageWithBarrier(target))
             return 0;
 
@@ -314,6 +320,9 @@ public static class BattleEffectUtility
             return;
 
         damage = Mathf.Max(0, damage);
+
+        if (damage > 0)
+            BattleDamageTextPopupUI.PrepareTargetHud(target.transform);
 
         if (damage > 0 && TryBlockDamageWithBarrier(target))
             return;
@@ -356,6 +365,9 @@ public static class BattleEffectUtility
             return 0;
 
         damage = Mathf.Max(0, damage);
+
+        if (damage > 0)
+            BattleDamageTextPopupUI.PrepareTargetHud(target.transform);
 
         if (damage > 0 && TryBlockDamageWithBarrier(target))
             return 0;
@@ -463,6 +475,9 @@ public static class BattleEffectUtility
 
         damage = Mathf.Max(0, damage);
 
+        if (damage > 0)
+            BattleDamageTextPopupUI.PrepareTargetHud(target.transform);
+
         int hpBefore = target.RuntimeData.CurrentHP;
 
         target.RuntimeData.CurrentHP =
@@ -515,6 +530,9 @@ public static class BattleEffectUtility
 
         damage = Mathf.Max(0, damage);
 
+        if (damage > 0)
+            BattleDamageTextPopupUI.PrepareTargetHud(target.transform);
+
         int hpBefore = target.RuntimeData.CurrentHP;
 
         target.RuntimeData.TakeDamage(damage);
@@ -565,8 +583,13 @@ public static class BattleEffectUtility
         if (maxHP <= 0)
         {
             target.RuntimeData.CurrentHP += value;
-            if (target.RuntimeData.CurrentHP > hpBefore)
+            int healedValue = Mathf.Max(0, target.RuntimeData.CurrentHP - hpBefore);
+
+            if (healedValue > 0)
+            {
                 PlayHealVfx(ResolveUnitAnimator(target));
+                BattleDamageTextPopupUI.ShowHealthRecovery(target.transform, healedValue);
+            }
 
             OnPlayerHudRefreshRequested?.Invoke(target);
 
@@ -576,8 +599,12 @@ public static class BattleEffectUtility
         target.RuntimeData.CurrentHP =
             Mathf.Min(maxHP, target.RuntimeData.CurrentHP + value);
 
-        if (target.RuntimeData.CurrentHP > hpBefore)
+        int healedAmount = Mathf.Max(0, target.RuntimeData.CurrentHP - hpBefore);
+        if (healedAmount > 0)
+        {
             PlayHealVfx(ResolveUnitAnimator(target));
+            BattleDamageTextPopupUI.ShowHealthRecovery(target.transform, healedAmount);
+        }
 
         OnPlayerHudRefreshRequested?.Invoke(target);
     }
@@ -592,8 +619,12 @@ public static class BattleEffectUtility
 
         target.RuntimeData.Heal(value);
 
-        if (target.RuntimeData.CurrentHP > hpBefore)
+        int healedValue = Mathf.Max(0, target.RuntimeData.CurrentHP - hpBefore);
+        if (healedValue > 0)
+        {
             PlayHealVfx(ResolveUnitAnimator(target));
+            BattleDamageTextPopupUI.ShowHealthRecovery(target.transform, healedValue);
+        }
 
         target.ShowTemporaryHUDForEffect();
     }

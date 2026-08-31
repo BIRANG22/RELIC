@@ -10,6 +10,7 @@ using UnityEngine;
 /// </summary>
 public class BattleCharacterHUDController : MonoBehaviour
 {
+    public static BattleCharacterHUDController Instance { get; private set; }
     [Header("References")]
     [SerializeField] private CharacterHUDSlot characterHudPrefab;
     [SerializeField] private BattleTimelineController timelineController;
@@ -17,10 +18,7 @@ public class BattleCharacterHUDController : MonoBehaviour
 
     [Header("View")]
     [SerializeField] private float hudScale = 0.4f;
-    [SerializeField, Min(0f)] private float hitHudVisibleDuration = 1f;
-
-    [Header("Refresh")]
-    [SerializeField, Min(0.05f)] private float characterScanInterval = 0.25f;
+    [SerializeField, Min(0f)] private float hitHudVisibleDuration = 1.5f;
 
     private sealed class CharacterHudBinding
     {
@@ -28,53 +26,55 @@ public class BattleCharacterHUDController : MonoBehaviour
         public CharacterHUDSlot Hud;
         public Collider2D Collider;
         public bool IsVisible;
-        public bool HasRuntimeSnapshot;
-        public int LastHP;
-        public int LastShield;
-        public int LastStatusHash;
     }
 
     private readonly List<CharacterHudBinding> bindings = new();
     private readonly Dictionary<string, float> hitHudVisibleUntilByCharacterId = new();
-    private float nextCharacterScanTime;
     private string timelineIconHoveredCharacterId = "";
 
     private void Awake()
     {
+        Instance = this;
         EnsureTimelineController();
         EnsureTurnExecutor();
     }
 
     private void OnEnable()
     {
+        Instance = this;
         BattleTurnExecutor.BattleExecutionStarted -= HandleBattleExecutionStarted;
         BattleTurnExecutor.BattleExecutionStarted += HandleBattleExecutionStarted;
         BattleEffectUtility.OnPlayerHudRefreshRequested -= HandlePlayerHudRefreshRequested;
         BattleEffectUtility.OnPlayerHudRefreshRequested += HandlePlayerHudRefreshRequested;
         hitHudVisibleUntilByCharacterId.Clear();
-        nextCharacterScanTime = 0f;
         RefreshCharacterBindings();
         RefreshVisibility();
     }
 
     private void Update()
     {
-        if (Time.unscaledTime >= nextCharacterScanTime)
-        {
-            nextCharacterScanTime = Time.unscaledTime + Mathf.Max(0.05f, characterScanInterval);
-            RefreshCharacterBindings();
-        }
-
+        // 캐릭터 목록과 런타임 수치는 매 프레임 재탐색/폴링하지 않습니다.
+        // 선택/호버/임시 표시 시간만 갱신하고, 실제 수치 변화는
+        // BattleEffectUtility.OnPlayerHudRefreshRequested 이벤트에서 처리합니다.
         RefreshVisibility();
     }
 
     private void OnDisable()
     {
+        if (Instance == this)
+            Instance = null;
+
         BattleTurnExecutor.BattleExecutionStarted -= HandleBattleExecutionStarted;
         BattleEffectUtility.OnPlayerHudRefreshRequested -= HandlePlayerHudRefreshRequested;
         hitHudVisibleUntilByCharacterId.Clear();
         timelineIconHoveredCharacterId = "";
         HideAll();
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
     }
 
     private void HandlePlayerHudRefreshRequested(BattleCharacter character)
@@ -89,6 +89,11 @@ public class BattleCharacterHUDController : MonoBehaviour
         HideAll();
     }
 
+    public void ShowCharacterHudForEffect(BattleCharacter character)
+    {
+        ShowCharacterHudTemporarily(character);
+    }
+
     private void ShowCharacterHudTemporarily(BattleCharacter character)
     {
         CharacterRuntimeData runtime = character != null ? character.RuntimeData : null;
@@ -96,7 +101,7 @@ public class BattleCharacterHUDController : MonoBehaviour
             return;
 
         hitHudVisibleUntilByCharacterId[runtime.CharacterId] =
-            Time.unscaledTime + Mathf.Max(0f, hitHudVisibleDuration);
+            Time.unscaledTime + Mathf.Max(1.5f, hitHudVisibleDuration);
 
         CharacterHudBinding binding = FindBinding(character);
         if (binding == null)
@@ -228,11 +233,7 @@ public class BattleCharacterHUDController : MonoBehaviour
             Character = character,
             Hud = hud,
             Collider = characterCollider,
-            IsVisible = false,
-            HasRuntimeSnapshot = true,
-            LastHP = character.RuntimeData.CurrentHP,
-            LastShield = character.RuntimeData.CurrentShield,
-            LastStatusHash = CalculateStatusHash(character.RuntimeData)
+            IsVisible = false
         });
     }
 
@@ -320,8 +321,6 @@ public class BattleCharacterHUDController : MonoBehaviour
             if (binding.Collider == null)
                 binding.Collider = binding.Character.GetComponentInChildren<Collider2D>();
 
-            DetectRuntimeChangeAndRequestTemporaryHud(binding, runtime);
-
             bool hovered = IsHovered(binding.Collider, mouseWorldPosition);
             bool timelineIconHovered =
                 !string.IsNullOrWhiteSpace(timelineIconHoveredCharacterId) &&
@@ -404,72 +403,6 @@ public class BattleCharacterHUDController : MonoBehaviour
             return;
 
         turnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
-    }
-
-    private void DetectRuntimeChangeAndRequestTemporaryHud(
-        CharacterHudBinding binding,
-        CharacterRuntimeData runtime)
-    {
-        if (binding == null || runtime == null)
-            return;
-
-        int currentStatusHash = CalculateStatusHash(runtime);
-
-        if (!binding.HasRuntimeSnapshot)
-        {
-            binding.HasRuntimeSnapshot = true;
-            binding.LastHP = runtime.CurrentHP;
-            binding.LastShield = runtime.CurrentShield;
-            binding.LastStatusHash = currentStatusHash;
-            return;
-        }
-
-        bool changed =
-            binding.LastHP != runtime.CurrentHP ||
-            binding.LastShield != runtime.CurrentShield ||
-            binding.LastStatusHash != currentStatusHash;
-
-        binding.LastHP = runtime.CurrentHP;
-        binding.LastShield = runtime.CurrentShield;
-        binding.LastStatusHash = currentStatusHash;
-
-        if (!changed || string.IsNullOrWhiteSpace(runtime.CharacterId))
-            return;
-
-        hitHudVisibleUntilByCharacterId[runtime.CharacterId] =
-            Time.unscaledTime + Mathf.Max(0f, hitHudVisibleDuration);
-
-        if (binding.Hud != null)
-            binding.Hud.Refresh();
-    }
-
-    private static int CalculateStatusHash(CharacterRuntimeData runtime)
-    {
-        if (runtime == null || runtime.StatusEffects == null)
-            return 0;
-
-        unchecked
-        {
-            int hash = 17;
-            hash = hash * 31 + runtime.StatusEffects.Count;
-
-            for (int i = 0; i < runtime.StatusEffects.Count; i++)
-            {
-                StatusEffectRuntimeData status = runtime.StatusEffects[i];
-                if (status == null)
-                {
-                    hash = hash * 31;
-                    continue;
-                }
-
-                hash = hash * 31 + (status.EffectId != null ? status.EffectId.GetHashCode() : 0);
-                hash = hash * 31 + status.Stack;
-                hash = hash * 31 + status.TurnCount;
-                hash = hash * 31 + (status.IsPassive ? 1 : 0);
-            }
-
-            return hash;
-        }
     }
 
     private bool IsHitHudVisible(string characterId)

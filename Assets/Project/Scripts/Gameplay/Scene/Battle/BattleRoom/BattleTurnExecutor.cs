@@ -501,6 +501,8 @@ public class BattleTurnExecutor : MonoBehaviour
                 if (BattleResultChecker.Instance != null &&
                     BattleResultChecker.Instance.CheckBattleEnd())
                 {
+                    uniqueResourceService.FlushPendingUniqueResourceGains();
+                    RefreshBattleHUDs();
                     yield return ReturnCameraDefaultRoutine();
                     ClearTimeline();
                     yield break;
@@ -535,6 +537,9 @@ public class BattleTurnExecutor : MonoBehaviour
 
             yield return runner.ReturnCameraDefaultIfNeeded();
 
+            // 턴 종료 회복 팝업은 모두 모은 뒤 카르마 -> 마나 -> 체력 순으로 차례대로 표시합니다.
+            BattleDamageTextPopupUI.BeginRecoveryPopupSequence();
+
             yield return runner.ApplyTurnEndEffectsRoutine();
 
             ResolveTurnEndGridEffects();
@@ -552,12 +557,18 @@ public class BattleTurnExecutor : MonoBehaviour
             ApplyPlayerEndTurnTriggeredEquipmentEffects();
             RefreshBattleHUDs();
 
+            // 전투 실행 중 획득한 카르마는 행동마다 즉시 반영하지 않고
+            // 모든 행동과 턴 종료 효과가 끝난 뒤 캐릭터별 합계로 한 번만 반영합니다.
+            uniqueResourceService.FlushPendingUniqueResourceGains();
+            RefreshBattleHUDs();
+
             ClearTimeline();
             yield return null;
 
             if (BattleResultChecker.Instance != null &&
                 BattleResultChecker.Instance.CheckBattleEnd())
             {
+                BattleDamageTextPopupUI.EndRecoveryPopupSequence();
                 yield return ReturnCameraDefaultRoutine();
                 yield break;
             }
@@ -573,6 +584,9 @@ public class BattleTurnExecutor : MonoBehaviour
             {
                 roomLoader.RecoverPlayerCostsToMax();
 
+                // 카르마/마나/체력 회복값이 모두 확정된 뒤 순차 팝업 재생을 시작합니다.
+                BattleDamageTextPopupUI.EndRecoveryPopupSequence();
+
                 passiveSkillService.ClearAllPlayerPassiveEffects();
 
                 yield return roomLoader.PlanNextMonsterTurnsRoutine();
@@ -580,6 +594,10 @@ public class BattleTurnExecutor : MonoBehaviour
                 passiveSkillService.RefreshAllPlayerPassives();
 
                 roomLoader.RefreshBattleHUDs();
+            }
+            else
+            {
+                BattleDamageTextPopupUI.EndRecoveryPopupSequence();
             }
 
             // 몬스터 계획과 턴 전환 정리가 모두 끝난 뒤, 실제 다음 플레이어 턴이 시작되는 시점에
@@ -605,6 +623,8 @@ public class BattleTurnExecutor : MonoBehaviour
         }
         finally
         {
+            // 중간 종료/예외가 발생해도 회복 팝업 대기 상태가 남지 않도록 해제합니다.
+            BattleDamageTextPopupUI.EndRecoveryPopupSequence();
             executeTurnCoroutine = null;
 
             if (timelineController != null)

@@ -183,7 +183,7 @@ public class BattleActionRunner
         {
             MonsterReservedCommand command = batch.MonsterCommands[i];
 
-            if (command == null)
+            if (command == null || IsDeadMonsterCommand(command))
                 continue;
 
             actionRoutines.Add(CreateActionRoutine($"Monster:{command.RuntimeId}:{command.SkillId}", ExecuteMonsterCommand(command)));
@@ -234,6 +234,11 @@ public class BattleActionRunner
         int timelineSlotIndex,
         IEnumerator actionRoutine)
     {
+        // 같은 배치 안에서 앞선 행동으로 예약자가 사망할 수 있으므로,
+        // 실제 실행 직전에도 다시 확인하고 즉시 건너뜁니다.
+        if (command == null || command.UserRuntime == null || command.UserRuntime.IsDead)
+            yield break;
+
         bool consumeSmiteAfterAttack = ShouldConsumeSmite(command);
 
         if (actionRoutine != null)
@@ -388,7 +393,8 @@ public class BattleActionRunner
 
     private bool PlayerCommandHasInteraction(PlayerReservedCommand command)
     {
-        if (command == null || command.SkillData == null)
+        if (command == null || command.SkillData == null ||
+            command.UserRuntime == null || command.UserRuntime.IsDead)
             return false;
 
         if (command.ReservedMoveGridIndex >= 0)
@@ -405,7 +411,7 @@ public class BattleActionRunner
 
     private bool MonsterCommandHasInteraction(MonsterReservedCommand command)
     {
-        if (command == null || command.SkillData == null)
+        if (command == null || command.SkillData == null || IsDeadMonsterCommand(command))
             return false;
 
         if (command.SkillData.TimelineNotation == TimelineActionType.Move)
@@ -507,7 +513,8 @@ public class BattleActionRunner
             {
                 PlayerReservedCommand command = batch.PlayerCommands[i];
 
-                if (command == null || command.SkillData == null)
+                if (command == null || command.SkillData == null ||
+                    command.UserRuntime == null || command.UserRuntime.IsDead)
                     continue;
 
                 if (command.ReservedMoveGridIndex >= 0)
@@ -530,7 +537,7 @@ public class BattleActionRunner
             {
                 MonsterReservedCommand command = batch.MonsterCommands[i];
 
-                if (command == null || command.SkillData == null)
+                if (command == null || command.SkillData == null || IsDeadMonsterCommand(command))
                     continue;
 
                 if (command.SkillData.TimelineNotation == TimelineActionType.Move)
@@ -595,7 +602,7 @@ public class BattleActionRunner
 
             MonsterUnit monster = unitFinder.FindMonsterUnit(command.RuntimeId);
 
-            if (monster == null || monster.RuntimeData == null)
+            if (monster == null || monster.RuntimeData == null || monster.RuntimeData.IsDead)
                 continue;
 
             monster.RuntimeData.IncreaseTurnCount();
@@ -2791,9 +2798,18 @@ public class BattleActionRunner
             entry,
             entry.CountAmount);
     }
+
+    private bool IsDeadMonsterCommand(MonsterReservedCommand command)
+    {
+        if (command == null || string.IsNullOrWhiteSpace(command.RuntimeId))
+            return true;
+
+        MonsterUnit monster = unitFinder.FindMonsterUnit(command.RuntimeId);
+        return monster == null || monster.RuntimeData == null || monster.RuntimeData.IsDead;
+    }
     private IEnumerator ExecuteMonsterCommand(MonsterReservedCommand command)
     {
-        if (command == null || command.SkillData == null)
+        if (command == null || command.SkillData == null || IsDeadMonsterCommand(command))
             yield break;
 
         // 사슬 이동은 투사 데이터의 타입이나 표기와 관계없이 이동 처리로 보냅니다.
