@@ -44,4 +44,5 @@ public static class AudioIds
         public const string BattleBossRevealImpactLow = "battle.boss.reveal.impact.low";
         public const string BattleBossRevealImpactHigh = "battle.boss.reveal.impact.high";
     }
+
 }

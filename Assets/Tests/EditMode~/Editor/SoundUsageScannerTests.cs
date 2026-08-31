@@ -70,7 +70,7 @@ public class SoundUsageScannerTests
             Assert.That(report.DatabaseEntries.Select(entry => entry.Id), Contains.Item("event.used"));
             Assert.That(
                 report.DatabaseEntries.Single(entry => entry.Id == "event.used").Category,
-                Is.EqualTo(SoundCategory.EventSfx));
+                Is.EqualTo(SoundCategory.Sfx));
             Assert.That(report.DatabaseEntries.Select(entry => entry.Id), Contains.Item("ui.unused"));
             Assert.That(
                 report.GetReferences("ui.click").Select(reference => reference.MemberPath),

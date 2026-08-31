@@ -51,7 +51,7 @@ public class SoundIdDrawerTests
     }
 
     [Test]
-    public void GetSoundIds_ReturnsOnlyEventSfxIdsForEventSfxCategory()
+    public void GetSoundIds_ReturnsSfxAndEventSfxIdsForSfxCategory()
     {
         SoundDatabase database = ScriptableObject.CreateInstance<SoundDatabase>();
         AudioClip sfxClip = null;
@@ -80,12 +80,8 @@ public class SoundIdDrawerTests
             IReadOnlyList<string> sfxIds = SoundIdDrawer.GetSoundIdsForTest(
                 database,
                 SoundCategory.Sfx);
-            IReadOnlyList<string> eventSfxIds = SoundIdDrawer.GetSoundIdsForTest(
-                database,
-                SoundCategory.EventSfx);
 
-            Assert.That(sfxIds, Is.EquivalentTo(new[] { "ui.normal.click" }));
-            Assert.That(eventSfxIds, Is.EquivalentTo(new[] { "event.test" }));
+            Assert.That(sfxIds, Is.EquivalentTo(new[] { "ui.normal.click", "event.test" }));
         }
         finally
         {
