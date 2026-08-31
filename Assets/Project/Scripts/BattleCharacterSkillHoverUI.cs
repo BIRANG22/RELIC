@@ -110,6 +110,7 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
     public void SetSkillRangePreview(SkillMasterData previewSkillData)
     {
         skillData = previewSkillData;
+        CaptureCurrentNormalBackgroundColor();
 
         if (skillData == null && isPointerOver)
         {
@@ -247,7 +248,8 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
         if (hoverBackgroundImage == null)
             return;
 
-        bool showHighlight = isSelected || IsDirectionClickFeedbackActive();
+        bool showHighlight = skillData != null &&
+                             (isSelected || IsDirectionClickFeedbackActive());
         hoverBackgroundImage.gameObject.SetActive(showHighlight);
 
         if (showHighlight)
@@ -334,6 +336,15 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
     private void CaptureNormalBackgroundColor()
     {
         if (normalBackgroundColorCaptured || normalBackgroundImage == null)
+            return;
+
+        normalBackgroundOriginalColor = normalBackgroundImage.color;
+        normalBackgroundColorCaptured = true;
+    }
+
+    private void CaptureCurrentNormalBackgroundColor()
+    {
+        if (normalBackgroundImage == null)
             return;
 
         normalBackgroundOriginalColor = normalBackgroundImage.color;

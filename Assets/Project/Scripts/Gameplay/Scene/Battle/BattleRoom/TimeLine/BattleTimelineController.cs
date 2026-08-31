@@ -92,6 +92,22 @@ public class BattleTimelineController : MonoBehaviour
     [SerializeField] private float grindTimelineSlideDuration = 0.32f;
     [SerializeField] private bool useUnscaledTimeForTimelineSlotSlide = false;
 
+    [Header("Timeline Bar Gear Rotation")]
+    [SerializeField] private Transform leftLargeGear;
+    [SerializeField] private float leftLargeGearRotateStepZ = 10f;
+    [SerializeField] private Transform leftMediumGear;
+    [SerializeField] private float leftMediumGearRotateStepZ = 15f;
+    [SerializeField] private Transform leftSmallGear;
+    [SerializeField] private float leftSmallGearRotateStepZ = -20f;
+    [SerializeField] private Transform rightLargeGear1;
+    [SerializeField] private float rightLargeGear1RotateStepZ = 10f;
+    [SerializeField] private Transform rightLargeGear2;
+    [SerializeField] private float rightLargeGear2RotateStepZ = -10f;
+    [SerializeField] private Transform rightMediumGear;
+    [SerializeField] private float rightMediumGearRotateStepZ = 15f;
+    [SerializeField] private Transform rightSmallGear;
+    [SerializeField] private float rightSmallGearRotateStepZ = -20f;
+
     [Header("Timeline Sprite Grind Animation")]
     [SerializeField] private BattleTimelineSpriteAnimationController timelineSpriteAnimationController;
     [SerializeField] private bool autoFindTimelineSpriteAnimationController = true;
@@ -875,6 +891,15 @@ public class BattleTimelineController : MonoBehaviour
     {
         activeSlotIndex = -1;
         selectedSkill = null;
+
+        if (playerSkillReservationController == null)
+        {
+            playerSkillReservationController = FindFirstObjectByType<PlayerSkillReservationController>(
+                FindObjectsInactive.Include);
+        }
+
+        if (playerSkillReservationController != null)
+            playerSkillReservationController.ClearPreview();
 
         SetActiveTimelineSlotVisual(activeSlotIndex);
 
@@ -2382,6 +2407,9 @@ public class BattleTimelineController : MonoBehaviour
             ? Mathf.Max(0.01f, durationOverride)
             : Mathf.Max(0.01f, timelineSlotSlideDuration);
         float elapsed = 0f;
+        Transform[] gearTargets = GetTimelineBarGearTargets();
+        float[] gearRotateSteps = GetTimelineBarGearRotateSteps();
+        float[] gearStartRotations = CaptureTimelineBarGearRotationState(gearTargets);
 
         while (elapsed < duration)
         {
@@ -2397,6 +2425,12 @@ public class BattleTimelineController : MonoBehaviour
                 targets[i].anchoredPosition = Vector2.Lerp(startPositions[i], targetPositions[i], easedT);
             }
 
+            ApplyTimelineBarGearRotation(
+                gearTargets,
+                gearStartRotations,
+                gearRotateSteps,
+                easedT);
+
             yield return null;
         }
 
@@ -2408,7 +2442,95 @@ public class BattleTimelineController : MonoBehaviour
             targets[i].anchoredPosition = targetPositions[i];
         }
 
+        CompleteTimelineBarGearRotation(
+            gearTargets,
+            gearStartRotations,
+            gearRotateSteps);
+
         timelineSlotSlideRoutine = null;
+    }
+
+    private Transform[] GetTimelineBarGearTargets()
+    {
+        return new[]
+        {
+            leftLargeGear,
+            leftMediumGear,
+            leftSmallGear,
+            rightLargeGear1,
+            rightLargeGear2,
+            rightMediumGear,
+            rightSmallGear
+        };
+    }
+
+    private float[] GetTimelineBarGearRotateSteps()
+    {
+        return new[]
+        {
+            leftLargeGearRotateStepZ,
+            leftMediumGearRotateStepZ,
+            leftSmallGearRotateStepZ,
+            rightLargeGear1RotateStepZ,
+            rightLargeGear2RotateStepZ,
+            rightMediumGearRotateStepZ,
+            rightSmallGearRotateStepZ
+        };
+    }
+
+    private float[] CaptureTimelineBarGearRotationState(Transform[] gearTargets)
+    {
+        if (gearTargets == null)
+            return System.Array.Empty<float>();
+
+        float[] startRotations = new float[gearTargets.Length];
+
+        for (int i = 0; i < gearTargets.Length; i++)
+            startRotations[i] = GetTransformRotationZ(gearTargets[i]);
+
+        return startRotations;
+    }
+
+    private void ApplyTimelineBarGearRotation(
+        Transform[] gearTargets,
+        float[] startRotations,
+        float[] rotateSteps,
+        float progress)
+    {
+        if (gearTargets == null || startRotations == null || rotateSteps == null)
+            return;
+
+        int count = Mathf.Min(gearTargets.Length, startRotations.Length, rotateSteps.Length);
+
+        for (int i = 0; i < count; i++)
+        {
+            if (gearTargets[i] == null)
+                continue;
+
+            float targetRotation = startRotations[i] + rotateSteps[i];
+            SetTransformRotationZ(
+                gearTargets[i],
+                Mathf.LerpAngle(startRotations[i], targetRotation, progress));
+        }
+    }
+
+    private void CompleteTimelineBarGearRotation(
+        Transform[] gearTargets,
+        float[] startRotations,
+        float[] rotateSteps)
+    {
+        if (gearTargets == null || startRotations == null || rotateSteps == null)
+            return;
+
+        int count = Mathf.Min(gearTargets.Length, startRotations.Length, rotateSteps.Length);
+
+        for (int i = 0; i < count; i++)
+        {
+            if (gearTargets[i] == null)
+                continue;
+
+            SetTransformRotationZ(gearTargets[i], startRotations[i] + rotateSteps[i]);
+        }
     }
 
     private Transform GetTimelineSearchRoot()

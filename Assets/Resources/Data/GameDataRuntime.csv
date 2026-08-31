@@ -86,8 +86,7 @@ Mon_12,아라벨라,Boss,142,0,45,55,Item_012,0.5,Range_19,S_Monster_20,S_Monste
 # SkillMaster
 스킬 ID,이름,분류,레어도,참조자원,대상,레벨,타입,효과 ID,수치계수,횟수계수,자원소모량,범위타입,범위ID,효과
 SkillId,Name,Category,Rarity,ReferenceResource,Target,Level,SkillType,EffectIds,ValueRate,CountRate,ResourceCostValue,RangeType,RangeId,Details
-S_Move_1,이동,Move,Move,Cost,Self,1,0,E_Move,0,1,1,Selection,Range_All,선택한 그리드로 이동합니다. 이동한 칸 수만큼 코스트를 소모합니다.
-S_Move_2,이동+,Move,Move,Cost,Self,2,0,E_Move,0,1,1,Selection,Range_All,선택한 그리드로 이동합니다. 1코스트로 최대 2칸까지 이동할 수 있습니다.
+S_Move_1,이동,Move,Move,Cost,Self,1,0,E_Move,0,1,1,Selection,Range_All,선택한 그리드로 이동한다. 이동한 칸만큼 마나를 소모한다.
 S_Passive_01,결속,Passive,Exclusive,Ulti,Self,0,0,E_Armor,5,1,0,Passive,Range_Self,턴 시작 시 카르마가 최대라면 방어도를 {ValueRate1} 얻는다.
 S_Passive_02,호전성,Passive,Exclusive,Ulti,Self,0,0,E_Boost,1,1,0,Passive,Range_Self,턴 시작 시 카르마가 최대라면 증폭을 {ValueRate1} 얻는다.
 S_Passive_03,평정심,Passive,Exclusive,Ulti,Self,0,0,E_Charge,1,1,0,Passive,Range_Self,턴 시작 시 카르마가 최대라면 충전을 {ValueRate1} 얻는다.

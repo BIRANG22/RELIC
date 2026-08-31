@@ -13,9 +13,11 @@ public class BattleCharacterHUDController : MonoBehaviour
     [Header("References")]
     [SerializeField] private CharacterHUDSlot characterHudPrefab;
     [SerializeField] private BattleTimelineController timelineController;
+    [SerializeField] private BattleTurnExecutor turnExecutor;
 
     [Header("View")]
     [SerializeField] private float hudScale = 0.4f;
+    [SerializeField, Min(0f)] private float hitHudVisibleDuration = 1f;
 
     [Header("Refresh")]
     [SerializeField, Min(0.05f)] private float characterScanInterval = 0.25f;
@@ -25,19 +27,31 @@ public class BattleCharacterHUDController : MonoBehaviour
         public BattleCharacter Character;
         public CharacterHUDSlot Hud;
         public Collider2D Collider;
+        public bool IsVisible;
+        public bool HasRuntimeSnapshot;
+        public int LastHP;
+        public int LastShield;
+        public int LastStatusHash;
     }
 
     private readonly List<CharacterHudBinding> bindings = new();
+    private readonly Dictionary<string, float> hitHudVisibleUntilByCharacterId = new();
     private float nextCharacterScanTime;
     private string timelineIconHoveredCharacterId = "";
 
     private void Awake()
     {
         EnsureTimelineController();
+        EnsureTurnExecutor();
     }
 
     private void OnEnable()
     {
+        BattleTurnExecutor.BattleExecutionStarted -= HandleBattleExecutionStarted;
+        BattleTurnExecutor.BattleExecutionStarted += HandleBattleExecutionStarted;
+        BattleEffectUtility.OnPlayerHudRefreshRequested -= HandlePlayerHudRefreshRequested;
+        BattleEffectUtility.OnPlayerHudRefreshRequested += HandlePlayerHudRefreshRequested;
+        hitHudVisibleUntilByCharacterId.Clear();
         nextCharacterScanTime = 0f;
         RefreshCharacterBindings();
         RefreshVisibility();
@@ -56,8 +70,51 @@ public class BattleCharacterHUDController : MonoBehaviour
 
     private void OnDisable()
     {
+        BattleTurnExecutor.BattleExecutionStarted -= HandleBattleExecutionStarted;
+        BattleEffectUtility.OnPlayerHudRefreshRequested -= HandlePlayerHudRefreshRequested;
+        hitHudVisibleUntilByCharacterId.Clear();
         timelineIconHoveredCharacterId = "";
         HideAll();
+    }
+
+    private void HandlePlayerHudRefreshRequested(BattleCharacter character)
+    {
+        ShowCharacterHudTemporarily(character);
+    }
+
+    private void HandleBattleExecutionStarted()
+    {
+        hitHudVisibleUntilByCharacterId.Clear();
+        timelineIconHoveredCharacterId = "";
+        HideAll();
+    }
+
+    private void ShowCharacterHudTemporarily(BattleCharacter character)
+    {
+        CharacterRuntimeData runtime = character != null ? character.RuntimeData : null;
+        if (runtime == null || runtime.IsDead || string.IsNullOrWhiteSpace(runtime.CharacterId))
+            return;
+
+        hitHudVisibleUntilByCharacterId[runtime.CharacterId] =
+            Time.unscaledTime + Mathf.Max(0f, hitHudVisibleDuration);
+
+        CharacterHudBinding binding = FindBinding(character);
+        if (binding == null)
+        {
+            CreateBinding(character);
+            binding = FindBinding(character);
+        }
+
+        if (binding != null && binding.Hud != null)
+        {
+            if (binding.Collider == null)
+                binding.Collider = character.GetComponentInChildren<Collider2D>();
+
+            binding.Hud.Bind(runtime);
+            binding.Hud.SetFollowTarget(character.transform, binding.Collider);
+            binding.Hud.Show();
+            binding.IsVisible = true;
+        }
     }
 
     public void SetTimelineIconHoverCharacter(string characterId, bool hovered)
@@ -97,6 +154,7 @@ public class BattleCharacterHUDController : MonoBehaviour
         binding.Hud.Bind(character.RuntimeData);
         binding.Hud.SetFollowTarget(character.transform, binding.Collider);
         binding.Hud.Show();
+        binding.IsVisible = true;
     }
 
     public void HideTimelineIconCharacterHUD(BattleCharacter character)
@@ -169,7 +227,12 @@ public class BattleCharacterHUDController : MonoBehaviour
         {
             Character = character,
             Hud = hud,
-            Collider = characterCollider
+            Collider = characterCollider,
+            IsVisible = false,
+            HasRuntimeSnapshot = true,
+            LastHP = character.RuntimeData.CurrentHP,
+            LastShield = character.RuntimeData.CurrentShield,
+            LastStatusHash = CalculateStatusHash(character.RuntimeData)
         });
     }
 
@@ -232,10 +295,12 @@ public class BattleCharacterHUDController : MonoBehaviour
     private void RefreshVisibility()
     {
         EnsureTimelineController();
+        EnsureTurnExecutor();
 
         Vector3 mouseWorldPosition = GetMouseWorldPosition();
         CharacterRuntimeData selectedRuntime = GetSelectedCharacterRuntime();
         bool monsterInfoSelected = MonsterUnit.CurrentInfoSelectedMonster != null;
+        bool canShowSelectedHud = turnExecutor == null || turnExecutor.CanAcceptPlayerInput;
 
         for (int i = 0; i < bindings.Count; i++)
         {
@@ -248,27 +313,40 @@ public class BattleCharacterHUDController : MonoBehaviour
             if (runtime == null || runtime.IsDead)
             {
                 binding.Hud.Hide();
+                binding.IsVisible = false;
                 continue;
             }
 
             if (binding.Collider == null)
                 binding.Collider = binding.Character.GetComponentInChildren<Collider2D>();
 
+            DetectRuntimeChangeAndRequestTemporaryHud(binding, runtime);
+
             bool hovered = IsHovered(binding.Collider, mouseWorldPosition);
             bool timelineIconHovered =
                 !string.IsNullOrWhiteSpace(timelineIconHoveredCharacterId) &&
                 runtime.CharacterId == timelineIconHoveredCharacterId;
-            bool selected = !monsterInfoSelected && IsSameCharacter(runtime, selectedRuntime);
+            bool selected = canShowSelectedHud &&
+                            !monsterInfoSelected &&
+                            IsSameCharacter(runtime, selectedRuntime);
+            bool hitTemporary = IsHitHudVisible(runtime.CharacterId);
 
-            if (hovered || timelineIconHovered || selected)
+            bool shouldShow = hovered || timelineIconHovered || selected || hitTemporary;
+
+            if (shouldShow)
             {
-                binding.Hud.Bind(runtime);
-                binding.Hud.SetFollowTarget(binding.Character.transform, binding.Collider);
-                binding.Hud.Show();
+                if (!binding.IsVisible)
+                {
+                    binding.Hud.Bind(runtime);
+                    binding.Hud.SetFollowTarget(binding.Character.transform, binding.Collider);
+                    binding.Hud.Show();
+                    binding.IsVisible = true;
+                }
             }
-            else
+            else if (binding.IsVisible)
             {
                 binding.Hud.Hide();
+                binding.IsVisible = false;
             }
         }
     }
@@ -320,12 +398,104 @@ public class BattleCharacterHUDController : MonoBehaviour
         timelineController = FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Include);
     }
 
+    private void EnsureTurnExecutor()
+    {
+        if (turnExecutor != null)
+            return;
+
+        turnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
+    }
+
+    private void DetectRuntimeChangeAndRequestTemporaryHud(
+        CharacterHudBinding binding,
+        CharacterRuntimeData runtime)
+    {
+        if (binding == null || runtime == null)
+            return;
+
+        int currentStatusHash = CalculateStatusHash(runtime);
+
+        if (!binding.HasRuntimeSnapshot)
+        {
+            binding.HasRuntimeSnapshot = true;
+            binding.LastHP = runtime.CurrentHP;
+            binding.LastShield = runtime.CurrentShield;
+            binding.LastStatusHash = currentStatusHash;
+            return;
+        }
+
+        bool changed =
+            binding.LastHP != runtime.CurrentHP ||
+            binding.LastShield != runtime.CurrentShield ||
+            binding.LastStatusHash != currentStatusHash;
+
+        binding.LastHP = runtime.CurrentHP;
+        binding.LastShield = runtime.CurrentShield;
+        binding.LastStatusHash = currentStatusHash;
+
+        if (!changed || string.IsNullOrWhiteSpace(runtime.CharacterId))
+            return;
+
+        hitHudVisibleUntilByCharacterId[runtime.CharacterId] =
+            Time.unscaledTime + Mathf.Max(0f, hitHudVisibleDuration);
+
+        if (binding.Hud != null)
+            binding.Hud.Refresh();
+    }
+
+    private static int CalculateStatusHash(CharacterRuntimeData runtime)
+    {
+        if (runtime == null || runtime.StatusEffects == null)
+            return 0;
+
+        unchecked
+        {
+            int hash = 17;
+            hash = hash * 31 + runtime.StatusEffects.Count;
+
+            for (int i = 0; i < runtime.StatusEffects.Count; i++)
+            {
+                StatusEffectRuntimeData status = runtime.StatusEffects[i];
+                if (status == null)
+                {
+                    hash = hash * 31;
+                    continue;
+                }
+
+                hash = hash * 31 + (status.EffectId != null ? status.EffectId.GetHashCode() : 0);
+                hash = hash * 31 + status.Stack;
+                hash = hash * 31 + status.TurnCount;
+                hash = hash * 31 + (status.IsPassive ? 1 : 0);
+            }
+
+            return hash;
+        }
+    }
+
+    private bool IsHitHudVisible(string characterId)
+    {
+        if (string.IsNullOrWhiteSpace(characterId) ||
+            !hitHudVisibleUntilByCharacterId.TryGetValue(characterId, out float visibleUntil))
+        {
+            return false;
+        }
+
+        if (Time.unscaledTime <= visibleUntil)
+            return true;
+
+        hitHudVisibleUntilByCharacterId.Remove(characterId);
+        return false;
+    }
+
     private void HideAll()
     {
         for (int i = 0; i < bindings.Count; i++)
         {
             if (bindings[i] != null && bindings[i].Hud != null)
+            {
                 bindings[i].Hud.Hide();
+                bindings[i].IsVisible = false;
+            }
         }
     }
 }

@@ -74,6 +74,7 @@ public class BattleTurnExecutor : MonoBehaviour
     private int playerTurnNumber = 1;
     private Color endTurnLineDefaultColor = Color.white;
     private bool endTurnVisualFeedbackInitialized;
+    private CharacterRuntimeData selectedCharacterBeforeExecution;
 
     private readonly BattleUniqueResourceService uniqueResourceService = new();
     private readonly BattlePassiveSkillService passiveSkillService = new();
@@ -330,6 +331,11 @@ public class BattleTurnExecutor : MonoBehaviour
         if (batches == null || batches.Count <= 0 || executeTurnCoroutine != null)
             return;
 
+        CaptureSelectedCharacterBeforeExecution();
+
+        MonsterUnit.ClearMonsterInfoSelection();
+        MonsterUnit.HideAllTemporaryHUDs();
+
         EnsureSkillListPanel();
         if (skillListPanel != null)
             skillListPanel.CloseForBattleExecution();
@@ -380,6 +386,9 @@ public class BattleTurnExecutor : MonoBehaviour
             return;
         }
 
+        CaptureSelectedCharacterBeforeExecution();
+
+        MonsterUnit.ClearMonsterInfoSelection();
         MonsterUnit.HideAllTemporaryHUDs();
 
         EnsureSkillListPanel();
@@ -609,8 +618,7 @@ public class BattleTurnExecutor : MonoBehaviour
 
             if (CanAcceptPlayerInput)
             {
-                if (roomLoader != null)
-                    roomLoader.SelectFirstAlivePlayerCharacterIfNeeded();
+                RestoreSelectedCharacterForReservationTurn();
 
                 if (timelineController != null)
                 {
@@ -751,8 +759,7 @@ public class BattleTurnExecutor : MonoBehaviour
 
             if (CanAcceptPlayerInput)
             {
-                if (roomLoader != null)
-                    roomLoader.SelectFirstAlivePlayerCharacterIfNeeded();
+                RestoreSelectedCharacterForReservationTurn();
 
                 if (timelineController != null)
                 {
@@ -771,6 +778,30 @@ public class BattleTurnExecutor : MonoBehaviour
 
             PlayerTurnReturned?.Invoke();
         }
+    }
+
+    private void CaptureSelectedCharacterBeforeExecution()
+    {
+        selectedCharacterBeforeExecution = timelineController != null
+            ? timelineController.SelectedCharacter
+            : null;
+    }
+
+    private void RestoreSelectedCharacterForReservationTurn()
+    {
+        if (selectedCharacterBeforeExecution != null && !selectedCharacterBeforeExecution.IsDead)
+        {
+            if (roomLoader != null)
+                roomLoader.OnPlayerCharacterClicked(selectedCharacterBeforeExecution);
+            else if (timelineController != null)
+                timelineController.SelectCharacter(selectedCharacterBeforeExecution);
+        }
+        else if (roomLoader != null)
+        {
+            roomLoader.SelectFirstAlivePlayerCharacterIfNeeded();
+        }
+
+        selectedCharacterBeforeExecution = null;
     }
 
     private IEnumerator RestoreNetworkReservationStateAfterExecutionRoutine()
@@ -1065,13 +1096,13 @@ public class BattleTurnExecutor : MonoBehaviour
     {
         EnsureBattleExecutionUiRoots();
 
-        SetRootActive(playerHudRoot, visible);
+        SetRootActive(playerHudRoot, true);
         SetRootActive(menuRoot, visible);
 
         if (!autoFindBattleExecutionUiRoots)
             return;
 
-        SetNamedBattleExecutionUiRootsVisible(playerHudRootObjectName, visible, playerHudRoot);
+        SetNamedBattleExecutionUiRootsVisible(playerHudRootObjectName, true, playerHudRoot);
         SetNamedBattleExecutionUiRootsVisible(menuRootObjectName, visible, menuRoot);
     }
 

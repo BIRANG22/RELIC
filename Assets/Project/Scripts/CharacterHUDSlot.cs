@@ -47,6 +47,8 @@ public class CharacterHUDSlot : MonoBehaviour
         if (canvasGroup == null)
             canvasGroup = gameObject.AddComponent<CanvasGroup>();
 
+        canvasGroup.ignoreParentGroups = true;
+
         ApplyStatusEffectParentLayout();
     }
 
@@ -54,9 +56,6 @@ public class CharacterHUDSlot : MonoBehaviour
     {
         if (useFollowPosition)
             UpdateFollowPosition();
-
-        if (boundRuntime != null)
-            Refresh();
     }
 
     public void SetUseFollowPosition(bool value)
