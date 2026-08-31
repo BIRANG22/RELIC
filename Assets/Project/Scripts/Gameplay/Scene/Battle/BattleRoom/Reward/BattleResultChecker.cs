@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class BattleResultChecker : MonoBehaviour
 {
@@ -15,17 +16,30 @@ public class BattleResultChecker : MonoBehaviour
     [SerializeField] private BattleRewardResolver rewardResolver;
     [SerializeField] private BattleRewardPanelUI rewardPanel;
     [SerializeField] private ExplorationResultPanelUI explorationResultPanel;
+    [SerializeField] private GameObject nextButtonRoot;
 
     private bool battleEnded;
+    private Button nextButton;
+    private System.Action pendingRewardFlowCompletedCallback;
 
     private void Awake()
     {
         Instance = this;
+        BindNextButton();
+        SetNextButtonVisible(false);
+    }
+
+    private void OnDisable()
+    {
+        if (nextButton != null)
+            nextButton.onClick.RemoveListener(OnBattleRewardContinueClicked);
     }
 
     public void ResetBattle()
     {
         battleEnded = false;
+        pendingRewardFlowCompletedCallback = null;
+        SetNextButtonVisible(false);
 
         if (BattleRewardCollector.Instance != null)
             BattleRewardCollector.Instance.Clear();
@@ -156,16 +170,48 @@ public class BattleResultChecker : MonoBehaviour
 
         Debug.Log($"[BattleResultChecker] ResolvedRewardCount:{rewards.Count}");
 
-        rewardPanel.Open(rewards, () => CompleteBattleRewardFlow(onRewardFlowCompleted));
+        rewardPanel.Open(rewards, () => OnBattleRewardPanelCompleted(onRewardFlowCompleted));
         return true;
+    }
+
+    private void OnBattleRewardPanelCompleted(System.Action completedCallback)
+    {
+        pendingRewardFlowCompletedCallback = completedCallback;
+
+        if (BattleRewardCollector.Instance != null)
+            BattleRewardCollector.Instance.Clear();
+
+        BindNextButton();
+
+        if (nextButtonRoot == null || nextButton == null)
+        {
+            Debug.LogWarning("[BattleResultChecker] NextButton is missing; completing reward flow immediately.");
+            CompletePendingBattleRewardFlow();
+            return;
+        }
+
+        SetNextButtonVisible(true);
+    }
+
+    private void OnBattleRewardContinueClicked()
+    {
+        if (SteamBattleStateSynchronizer.TryBlockSharedBattleStateEdit())
+            return;
+
+        CompletePendingBattleRewardFlow();
+    }
+
+    private void CompletePendingBattleRewardFlow()
+    {
+        System.Action completedCallback = pendingRewardFlowCompletedCallback;
+        pendingRewardFlowCompletedCallback = null;
+        SetNextButtonVisible(false);
+        CompleteBattleRewardFlow(completedCallback);
     }
 
     private static void CompleteBattleRewardFlow(System.Action completedCallback)
     {
         MarkCurrentBattleNodeCleared();
-
-        if (BattleRewardCollector.Instance != null)
-            BattleRewardCollector.Instance.Clear();
 
         BattleRoomCleaner cleaner =
             Object.FindFirstObjectByType<BattleRoomCleaner>(FindObjectsInactive.Include);
@@ -184,6 +230,62 @@ public class BattleResultChecker : MonoBehaviour
             sceneController.ReturnToMap();
         else
             Debug.LogWarning("[BattleResultChecker] BattleSceneController is missing.");
+    }
+
+    private void BindNextButton()
+    {
+        EnsureNextButtonRoot();
+
+        if (nextButton == null)
+            return;
+
+        nextButton.onClick.RemoveListener(OnBattleRewardContinueClicked);
+        nextButton.onClick.AddListener(OnBattleRewardContinueClicked);
+    }
+
+    private void EnsureNextButtonRoot()
+    {
+        if (nextButtonRoot == null)
+        {
+            Transform nextButtonTransform = FindChildRecursive(transform, "NextButton");
+
+            if (nextButtonTransform != null)
+                nextButtonRoot = nextButtonTransform.gameObject;
+        }
+
+        if (nextButtonRoot == null)
+            return;
+
+        if (nextButton == null || nextButton.gameObject != nextButtonRoot)
+            nextButton = nextButtonRoot.GetComponent<Button>();
+    }
+
+    private void SetNextButtonVisible(bool visible)
+    {
+        EnsureNextButtonRoot();
+
+        if (nextButtonRoot != null)
+            nextButtonRoot.SetActive(visible);
+    }
+
+    private static Transform FindChildRecursive(Transform root, string childName)
+    {
+        if (root == null || string.IsNullOrWhiteSpace(childName))
+            return null;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform child = root.GetChild(i);
+
+            if (child != null && child.name == childName)
+                return child;
+
+            Transform nested = FindChildRecursive(child, childName);
+            if (nested != null)
+                return nested;
+        }
+
+        return null;
     }
 
     private static void MarkCurrentBattleNodeCleared()
