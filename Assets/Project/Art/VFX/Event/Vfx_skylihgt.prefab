@@ -9907,7 +9907,12 @@ MonoBehaviour:
   volume: 1
   playDelay: 0.2
   playOnEnable: 1
-  playNextFrameOnEnable: 1
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 0
+  clickSoundId: ui.normal.click
+  clickVolume: 1
 --- !u!1 &893294892956957075
 GameObject:
   m_ObjectHideFlags: 0
