@@ -318,8 +318,19 @@ public class BattleUnitAnimator : MonoBehaviour
             return;
         }
 
-        // 공격 행동은 GameData의 Attack 순번을 Player Skill Presentations의
-        // Attack 1~3에 연결합니다. 몬스터별 스킬 ID 고정 매핑은 사용하지 않습니다.
+        if (IsValidMonsterActionIndex(command.ActionIndex))
+        {
+            BattleUnitActionPresentation monsterPresentation =
+                GetMonsterActionPresentation(command.ActionIndex);
+
+            if (HasPresentation(monsterPresentation))
+            {
+                PlayPresentation(monsterPresentation, command);
+                return;
+            }
+        }
+
+        // 몬스터 전용 슬롯이 비어 있는 공격 행동은 기존 공용 Attack 1~3 연출로 보정합니다.
         if (command.SkillData.TimelineNotation == TimelineActionType.Attack &&
             command.ActionIndex >= 1 && command.ActionIndex <= 3)
         {
@@ -329,18 +340,12 @@ public class BattleUnitAnimator : MonoBehaviour
 
             if (HasPresentation(attackPresentation))
             {
-                PlayPresentation(attackPresentation);
+                PlayPresentation(attackPresentation, command);
                 return;
             }
         }
 
-        if (!IsValidMonsterActionIndex(command.ActionIndex))
-        {
-            PlayMonsterSkillAction(command.SkillData);
-            return;
-        }
-
-        PlayPresentation(GetMonsterActionPresentation(command.ActionIndex));
+        PlayMonsterSkillAction(command.SkillData);
     }
 
 
@@ -363,7 +368,8 @@ public class BattleUnitAnimator : MonoBehaviour
 
     public bool HasMonsterProjectileVfx(MonsterReservedCommand command)
     {
-        return TryGetMonsterProjectilePresentation(command, out BattleUnitActionPresentation _);
+        return TryGetMonsterProjectilePresentation(command, out BattleUnitActionPresentation presentation) &&
+               !ShouldSpawnProjectileImpactOnMonsterTargetGrids(presentation);
     }
 
     public IEnumerator PlayMonsterProjectileVfx(
@@ -538,10 +544,30 @@ public class BattleUnitAnimator : MonoBehaviour
 
     private void PlayPresentation(BattleUnitActionPresentation presentation)
     {
+        PlayPresentation(presentation, null);
+    }
+
+    private void PlayPresentation(
+        BattleUnitActionPresentation presentation,
+        MonsterReservedCommand command)
+    {
         if (presentation == null)
             return;
 
         PlayState(presentation.stateName);
+
+        if (presentation.spawnVfxOnEachTargetGrid &&
+            TrySpawnVfxOnMonsterTargetGrids(presentation.vfx, command))
+        {
+            return;
+        }
+
+        if (presentation.spawnVfxOnEachTargetGrid &&
+            TrySpawnProjectileImpactOnMonsterTargetGrids(presentation.projectileVfx, command))
+        {
+            return;
+        }
+
         SpawnVfx(presentation.vfx);
     }
 
@@ -737,6 +763,17 @@ public class BattleUnitAnimator : MonoBehaviour
         return entry != null && (entry.missilePrefab != null || entry.impactPrefab != null);
     }
 
+    private bool ShouldSpawnProjectileImpactOnMonsterTargetGrids(
+        BattleUnitActionPresentation presentation)
+    {
+        return presentation != null &&
+               presentation.spawnVfxOnEachTargetGrid &&
+               presentation.vfx?.prefab == null &&
+               presentation.projectileVfx != null &&
+               presentation.projectileVfx.missilePrefab == null &&
+               presentation.projectileVfx.impactPrefab != null;
+    }
+
     private bool HasPresentation(BattleUnitActionPresentation presentation)
     {
         return presentation != null &&
@@ -746,6 +783,135 @@ public class BattleUnitAnimator : MonoBehaviour
     private void SpawnVfx(BattleVfxEntry entry)
     {
         SpawnVfx(entry, null);
+    }
+
+    private bool TrySpawnVfxOnMonsterTargetGrids(
+        BattleVfxEntry entry,
+        MonsterReservedCommand command)
+    {
+        if (entry == null || entry.prefab == null || command == null)
+            return false;
+
+        IReadOnlyList<int> targetGridIndices = GetMonsterPresentationVfxGridIndices(command);
+
+        if (targetGridIndices == null || targetGridIndices.Count <= 0)
+            return false;
+
+        GridManager manager = ResolveGridManager();
+
+        if (manager == null)
+            return false;
+
+        BattleVfxEntry targetGridEntry = CreateTargetGridVfxEntry(entry);
+        bool spawnedAny = false;
+        HashSet<int> spawnedGridIndices = new();
+
+        for (int i = 0; i < targetGridIndices.Count; i++)
+        {
+            int gridIndex = targetGridIndices[i];
+
+            if (gridIndex < 0 || !spawnedGridIndices.Add(gridIndex))
+                continue;
+
+            if (!TryResolveMonsterPresentationVfxAnchor(manager, gridIndex, out Vector3 anchorPosition))
+                continue;
+
+            SpawnDetachedVfx(
+                targetGridEntry,
+                anchorPosition,
+                vfxLifeTime,
+                applyFacingFlip: false);
+            spawnedAny = true;
+        }
+
+        return spawnedAny;
+    }
+
+    private bool TrySpawnProjectileImpactOnMonsterTargetGrids(
+        BattleProjectileVfxEntry entry,
+        MonsterReservedCommand command)
+    {
+        if (entry == null || entry.missilePrefab != null || entry.impactPrefab == null || command == null)
+            return false;
+
+        IReadOnlyList<int> targetGridIndices = GetMonsterPresentationVfxGridIndices(command);
+
+        if (targetGridIndices == null || targetGridIndices.Count <= 0)
+            return false;
+
+        GridManager manager = ResolveGridManager();
+
+        if (manager == null)
+            return false;
+
+        if (vfxLayer < 0)
+            vfxLayer = LayerMask.NameToLayer(vfxLayerName);
+
+        BattleVfxEntry targetGridImpactEntry = CreateTargetGridImpactVfxEntry(entry);
+        bool spawnedAny = false;
+        HashSet<int> spawnedGridIndices = new();
+
+        for (int i = 0; i < targetGridIndices.Count; i++)
+        {
+            int gridIndex = targetGridIndices[i];
+
+            if (gridIndex < 0 || !spawnedGridIndices.Add(gridIndex))
+                continue;
+
+            if (!TryResolveMonsterPresentationVfxAnchor(manager, gridIndex, out Vector3 anchorPosition))
+                continue;
+
+            Vector3 impactPosition = ResolveTargetGridImpactPosition(
+                anchorPosition,
+                entry.impactOffset);
+
+            SpawnDetachedVfx(
+                targetGridImpactEntry,
+                impactPosition,
+                Mathf.Max(0.01f, entry.impactLifeTime),
+                applyFacingFlip: false);
+            spawnedAny = true;
+        }
+
+        return spawnedAny;
+    }
+
+    private static bool TryResolveMonsterPresentationVfxAnchor(
+        GridManager manager,
+        int gridIndex,
+        out Vector3 anchorPosition)
+    {
+        anchorPosition = Vector3.zero;
+
+        if (manager == null || gridIndex < 0)
+            return false;
+
+        GridCell cell = manager.GetCellByIndex(gridIndex);
+
+        if (cell == null)
+            return false;
+
+        anchorPosition = cell.transform.position;
+        return true;
+    }
+
+    private static Vector3 ResolveTargetGridImpactPosition(
+        Vector3 targetWorldPosition,
+        Vector3 impactOffset)
+    {
+        return targetWorldPosition + impactOffset;
+    }
+
+    private static IReadOnlyList<int> GetMonsterPresentationVfxGridIndices(
+        MonsterReservedCommand command)
+    {
+        if (command == null)
+            return null;
+
+        if (command.TargetGridIndices != null && command.TargetGridIndices.Count > 0)
+            return command.TargetGridIndices;
+
+        return command.RangeGridIndices;
     }
 
     private void SpawnVfx(BattleVfxEntry entry, PlayerReservedCommand command)
@@ -812,26 +978,41 @@ public class BattleUnitAnimator : MonoBehaviour
         Vector3 anchorWorldPosition,
         float lifeTime)
     {
+        SpawnDetachedVfx(
+            entry,
+            anchorWorldPosition,
+            lifeTime,
+            applyFacingFlip: true);
+    }
+
+    private void SpawnDetachedVfx(
+        BattleVfxEntry entry,
+        Vector3 anchorWorldPosition,
+        float lifeTime,
+        bool applyFacingFlip)
+    {
         if (TrySpawnDetachedWorldVfx(
                 entry,
                 anchorWorldPosition,
                 lifeTime,
                 useUnitSortingTarget: false,
+                applyFacingFlip: applyFacingFlip,
                 out _))
         {
             return;
         }
 
-        if (TrySpawnDetachedDirectWorldVfx(entry, anchorWorldPosition, lifeTime))
+        if (TrySpawnDetachedDirectWorldVfx(entry, anchorWorldPosition, lifeTime, applyFacingFlip))
             return;
 
-        SpawnDetachedPrefabVfx(entry, anchorWorldPosition, lifeTime);
+        SpawnDetachedPrefabVfx(entry, anchorWorldPosition, lifeTime, applyFacingFlip);
     }
 
     private bool TrySpawnDetachedDirectWorldVfx(
         BattleVfxEntry entry,
         Vector3 anchorWorldPosition,
-        float lifeTime)
+        float lifeTime,
+        bool applyFacingFlip)
     {
         if (entry.renderMode != BattleVfxRenderMode.DirectWorldRenderer)
             return false;
@@ -839,7 +1020,7 @@ public class BattleUnitAnimator : MonoBehaviour
         GameObject anchor = CreateDetachedVfxAnchor(entry, anchorWorldPosition);
         GameObject vfx = Instantiate(entry.prefab, anchor.transform, false);
 
-        ConfigureDirectWorldVfxInstance(vfx, entry, anchor.transform.position.y);
+        ConfigureDirectWorldVfxInstance(vfx, entry, anchor.transform.position.y, applyFacingFlip);
         Destroy(anchor, Mathf.Max(0.01f, lifeTime));
         return true;
     }
@@ -847,12 +1028,13 @@ public class BattleUnitAnimator : MonoBehaviour
     private void SpawnDetachedPrefabVfx(
         BattleVfxEntry entry,
         Vector3 anchorWorldPosition,
-        float lifeTime)
+        float lifeTime,
+        bool applyFacingFlip)
     {
         GameObject anchor = CreateDetachedVfxAnchor(entry, anchorWorldPosition);
         GameObject vfx = Instantiate(entry.prefab, anchor.transform, false);
 
-        ConfigureDirectWorldVfxInstance(vfx, entry, anchor.transform.position.y);
+        ConfigureDirectWorldVfxInstance(vfx, entry, anchor.transform.position.y, applyFacingFlip);
         Destroy(anchor, Mathf.Max(0.01f, lifeTime));
     }
 
@@ -1099,7 +1281,20 @@ public class BattleUnitAnimator : MonoBehaviour
         BattleVfxEntry entry,
         float sortingReferenceY)
     {
-        ConfigureVfxInstance(vfx, entry);
+        ConfigureDirectWorldVfxInstance(
+            vfx,
+            entry,
+            sortingReferenceY,
+            applyFacingFlip: true);
+    }
+
+    private void ConfigureDirectWorldVfxInstance(
+        GameObject vfx,
+        BattleVfxEntry entry,
+        float sortingReferenceY,
+        bool applyFacingFlip)
+    {
+        ConfigureVfxInstance(vfx, entry, applyFacingFlip);
         ScaleDirectWorldVfxToProxyHeight(vfx, entry);
         ApplyDirectWorldVfxSorting(vfx, entry, sortingReferenceY);
     }
@@ -1170,6 +1365,7 @@ public class BattleUnitAnimator : MonoBehaviour
             position,
             lifeTime,
             useUnitSortingTarget: true,
+            applyFacingFlip: true,
             out handle);
     }
 
@@ -1178,6 +1374,7 @@ public class BattleUnitAnimator : MonoBehaviour
         Vector3 position,
         float lifeTime,
         bool useUnitSortingTarget,
+        bool applyFacingFlip,
         out BattleWorldVfxHandle handle)
     {
         Transform spawn = GetVfxSpawnTransform();
@@ -1189,7 +1386,7 @@ public class BattleUnitAnimator : MonoBehaviour
             vfxLayer,
             visibleLayer,
             Mathf.Max(0.01f, lifeTime),
-            vfx => ConfigureVfxInstance(vfx, entry),
+            vfx => ConfigureVfxInstance(vfx, entry, applyFacingFlip),
             out handle);
 
         if (spawned && useUnitSortingTarget)
@@ -1204,6 +1401,43 @@ public class BattleUnitAnimator : MonoBehaviour
         {
             prefab = prefab,
             flipType = flipType
+        };
+    }
+
+    private static BattleVfxEntry CreateTargetGridVfxEntry(BattleVfxEntry source)
+    {
+        if (source == null)
+            return null;
+
+        return new BattleVfxEntry
+        {
+            prefab = source.prefab,
+            flipType = VfxFlipType.None,
+            renderMode = source.renderMode,
+            proxyBlendMode = source.proxyBlendMode,
+            scaleDirectWorldRendererToProxyHeight = source.scaleDirectWorldRendererToProxyHeight,
+            renderTextureWidth = source.renderTextureWidth,
+            renderTextureHeight = source.renderTextureHeight,
+            renderCameraOrthographicSize = source.renderCameraOrthographicSize,
+            proxyWorldHeight = source.proxyWorldHeight,
+            proxyWorldOffset = source.proxyWorldOffset,
+            proxySortingLayerName = source.proxySortingLayerName,
+            proxySortingOrderOffset = source.proxySortingOrderOffset,
+            proxySortingWorldYOffset = source.proxySortingWorldYOffset,
+            proxyYMultiplier = source.proxyYMultiplier
+        };
+    }
+
+    private static BattleVfxEntry CreateTargetGridImpactVfxEntry(BattleProjectileVfxEntry source)
+    {
+        if (source == null)
+            return null;
+
+        return new BattleVfxEntry
+        {
+            prefab = source.impactPrefab,
+            flipType = VfxFlipType.None,
+            renderMode = BattleVfxRenderMode.DirectWorldRenderer
         };
     }
 
@@ -1224,11 +1458,17 @@ public class BattleUnitAnimator : MonoBehaviour
 
     private void ConfigureVfxInstance(GameObject vfx, BattleVfxEntry entry)
     {
+        ConfigureVfxInstance(vfx, entry, applyFacingFlip: true);
+    }
+
+    private void ConfigureVfxInstance(GameObject vfx, BattleVfxEntry entry, bool applyFacingFlip)
+    {
         if (vfxLayer >= 0)
             SetLayerRecursively(vfx, vfxLayer);
 
         EnsureVfxPauseController(vfx);
-        ApplyVfxFlip(vfx, entry.flipType);
+        if (applyFacingFlip)
+            ApplyVfxFlip(vfx, entry.flipType);
         BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(vfx, entry.prefab, this);
     }
 

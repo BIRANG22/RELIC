@@ -524,6 +524,7 @@ MonoBehaviour:
         proxySortingOrderOffset: 0
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
+      spawnVfxOnEachTargetGrid: 0
       projectileVfx:
         missilePrefab: {fileID: 0}
         impactPrefab: {fileID: 0}
@@ -552,6 +553,7 @@ MonoBehaviour:
         proxySortingOrderOffset: 0
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
+      spawnVfxOnEachTargetGrid: 0
       projectileVfx:
         missilePrefab: {fileID: 0}
         impactPrefab: {fileID: 0}
@@ -580,6 +582,7 @@ MonoBehaviour:
         proxySortingOrderOffset: 0
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
+      spawnVfxOnEachTargetGrid: 0
       projectileVfx:
         missilePrefab: {fileID: 0}
         impactPrefab: {fileID: 0}
@@ -608,6 +611,7 @@ MonoBehaviour:
         proxySortingOrderOffset: 0
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
+      spawnVfxOnEachTargetGrid: 0
       projectileVfx:
         missilePrefab: {fileID: 0}
         impactPrefab: {fileID: 0}
@@ -636,6 +640,7 @@ MonoBehaviour:
         proxySortingOrderOffset: 0
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
+      spawnVfxOnEachTargetGrid: 0
       projectileVfx:
         missilePrefab: {fileID: 0}
         impactPrefab: {fileID: 0}
@@ -667,6 +672,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
+    spawnVfxOnEachTargetGrid: 0
     projectileVfx:
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
@@ -694,6 +700,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
+    spawnVfxOnEachTargetGrid: 1
     projectileVfx:
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 7525588489078206328, guid: 69474b264de00714485785d33ec45076, type: 3}
@@ -721,6 +728,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
+    spawnVfxOnEachTargetGrid: 0
     projectileVfx:
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 7042334462189142359, guid: 7053264502be7a342bbf60ff7ae337f6, type: 3}
@@ -748,6 +756,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
+    spawnVfxOnEachTargetGrid: 0
     projectileVfx:
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 7042334462189142359, guid: 675f32f386a432f409f44b450ac64ed4, type: 3}
@@ -775,6 +784,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
+    spawnVfxOnEachTargetGrid: 0
     projectileVfx:
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
@@ -802,6 +812,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
+    spawnVfxOnEachTargetGrid: 0
     projectileVfx:
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
@@ -829,6 +840,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
+    spawnVfxOnEachTargetGrid: 0
     projectileVfx:
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
@@ -856,6 +868,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
+    spawnVfxOnEachTargetGrid: 0
     projectileVfx:
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
@@ -883,6 +896,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
+    spawnVfxOnEachTargetGrid: 0
     projectileVfx:
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
@@ -910,6 +924,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
+    spawnVfxOnEachTargetGrid: 0
     projectileVfx:
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
