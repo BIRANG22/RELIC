@@ -1655,8 +1655,7 @@ public class BattleActionRunner
 
             if (ShouldPlayerSkillTargetPlayerParty(command))
             {
-                if (attackerAnimator != null)
-                    attackerAnimator.PlaySkillAction(command);
+                yield return PlayPlayerSkillPresentation(attackerAnimator, command);
 
 
                 if (attacker.RuntimeData == null || attacker.RuntimeData.IsDead)
@@ -1693,8 +1692,7 @@ public class BattleActionRunner
 
             if (ShouldPlayerSkillTargetSelf(command))
             {
-                if (attackerAnimator != null)
-                    attackerAnimator.PlaySkillAction(command);
+                yield return PlayPlayerSkillPresentation(attackerAnimator, command);
 
 
                 if (attacker.RuntimeData == null || attacker.RuntimeData.IsDead)
@@ -1750,8 +1748,7 @@ public class BattleActionRunner
                 if (command.SkillData.SkillType == SkillType.Attack)
                     BattleEquipmentEffectService.TryApplyAttackMissCharge(command.UserRuntime);
 
-                if (attackerAnimator != null)
-                    attackerAnimator.PlaySkillAction(command);
+                yield return PlayPlayerSkillPresentation(attackerAnimator, command);
 
                 hudService.RefreshHUDs();
                 yield return new WaitForSeconds(ActionDelay);
@@ -1873,8 +1870,7 @@ public class BattleActionRunner
         {
             Debug.LogWarning($"[PlayerSkillEffect] EffectEntries 없음 / Skill:{command.SkillData.SkillId}");
 
-            if (attackerAnimator != null)
-                attackerAnimator.PlaySkillAction(command);
+            yield return PlayPlayerSkillPresentation(attackerAnimator, command);
 
             yield return new WaitForSeconds(ActionDelay);
             yield break;
@@ -1939,8 +1935,7 @@ public class BattleActionRunner
 
             if (!playedDamageSequence && !playedActionForNonDamage)
             {
-                if (attackerAnimator != null)
-                    attackerAnimator.PlaySkillAction(command);
+                yield return PlayPlayerSkillPresentation(attackerAnimator, command);
 
                 playedActionForNonDamage = true;
                 yield return new WaitForSeconds(ActionDelay);
@@ -1973,8 +1968,7 @@ public class BattleActionRunner
 
         if (!playedDamageSequence && !playedActionForNonDamage)
         {
-            if (attackerAnimator != null)
-                attackerAnimator.PlaySkillAction(command);
+            yield return PlayPlayerSkillPresentation(attackerAnimator, command);
 
             yield return new WaitForSeconds(ActionDelay);
         }
@@ -2012,8 +2006,7 @@ public class BattleActionRunner
                 yield break;
             }
 
-            if (attackerAnimator != null)
-                attackerAnimator.PlaySkillAction(command, hitIndex);
+            yield return PlayPlayerSkillPresentation(attackerAnimator, command, hitIndex);
 
             float hitActionDelay = isMultiHit
                 ? ActionDelay / MultiHitAnimationSpeed
@@ -2106,6 +2099,22 @@ public class BattleActionRunner
         if (isMultiHit && attackerAnimator != null)
             attackerAnimator.RestorePlaybackSpeed();
 
+    }
+
+    private static IEnumerator PlayPlayerSkillPresentation(
+        BattleUnitAnimator animator,
+        PlayerReservedCommand command,
+        int hitIndex = -1)
+    {
+        if (animator == null || command == null)
+            yield break;
+
+        if (hitIndex >= 0)
+            animator.PlaySkillAction(command, hitIndex);
+        else
+            animator.PlaySkillAction(command);
+
+        yield return animator.PlaySkillTargetVfx(command);
     }
 
     private IEnumerator ExecuteDraugrCounters(

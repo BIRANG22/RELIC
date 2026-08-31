@@ -36,6 +36,18 @@ public class PlayerSkillVfxDatabaseMigrationTests
         Assert.That(entry, Does.Contain($"guid: {prefabGuid}"));
     }
 
+    [TestCase("S_Ability_11")]
+    [TestCase("S_Ability_12")]
+    public void SkillVfxDatabase_SelectedGridVfxUsesProjectileImpact(string skillId)
+    {
+        string yaml = File.ReadAllText(SkillVfxDatabasePath);
+        string entry = GetSkillEntry(yaml, skillId);
+
+        Assert.That(entry, Does.Contain("ProjectileVfx:"));
+        Assert.That(entry, Does.Contain("impactPrefab: {fileID: 3688985328973339552, guid: 29f13300e2979c949905f4b38ac44c24, type: 3}"));
+        Assert.That(entry, Does.Not.Contain("TileVfx:"));
+    }
+
     [TestCase("Assets/Project/PrefabsR/Character/A/A_BattlePrefab.prefab")]
     [TestCase("Assets/Project/PrefabsR/Character/B/B_BattlePrefab.prefab")]
     [TestCase("Assets/Project/PrefabsR/Character/C/C_BattlePrefab.prefab")]

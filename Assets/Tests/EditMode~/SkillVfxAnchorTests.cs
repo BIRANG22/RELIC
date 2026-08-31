@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using NUnit.Framework;
@@ -6,15 +7,6 @@ using UnityEngine;
 
 public class SkillVfxAnchorTests
 {
-    [Test]
-    public void BattleVfxEntry_DefaultsToCasterSpawnAnchor()
-    {
-        BattleVfxEntry entry = new();
-
-        Assert.That(entry.spawnAnchor, Is.EqualTo(BattleVfxSpawnAnchor.Caster));
-        Assert.That(entry.scaleDirectWorldRendererToProxyHeight, Is.False);
-    }
-
     [Test]
     public void PlaySkillAction_DirectWorldRendererAppliesProxyOffsetAndOptionalHeight()
     {
@@ -65,7 +57,7 @@ public class SkillVfxAnchorTests
     }
 
     [Test]
-    public void PlaySkillAction_SelectionGridAnchorSpawnsAtSelectedGridPosition()
+    public void PlaySkillTargetVfx_ImpactOnlySpawnsImmediatelyAtSelectedGridPosition()
     {
         GameObject owner = new("SkillVfxSelectedGridOwner");
         GameObject spawnPoint = new("VfxSpawnPoint");
@@ -92,13 +84,11 @@ public class SkillVfxAnchorTests
                 new()
                 {
                     SkillId = "S_Ability_11",
-                    Vfx = new BattleVfxEntry
+                    ProjectileVfx = new BattleProjectileVfxEntry
                     {
-                        prefab = prefab,
-                        flipType = VfxFlipType.None,
-                        renderMode = BattleVfxRenderMode.DirectWorldRenderer,
-                        spawnAnchor = BattleVfxSpawnAnchor.SelectedGrid,
-                        proxyWorldOffset = new Vector3(0.5f, -0.25f, 0f)
+                        impactPrefab = prefab,
+                        impactFlipType = VfxFlipType.None,
+                        impactOffset = new Vector3(0.5f, -0.25f, 0f)
                     }
                 }
             });
@@ -110,7 +100,7 @@ public class SkillVfxAnchorTests
                 selectedGridIndex: 17,
                 rangeGridIndices: new List<int> { 17 });
 
-            animator.PlaySkillAction(command);
+            RunEnumeratorToEnd(animator.PlaySkillTargetVfx(command));
 
             GameObject spawned = GameObject.Find("SelectedGridSkillVfx(Clone)");
             Assert.That(spawned, Is.Not.Null);
@@ -128,7 +118,7 @@ public class SkillVfxAnchorTests
     }
 
     [Test]
-    public void PlaySkillAction_SelectedGridAnchorFallsBackToCasterWhenSelectionIsMissing()
+    public void PlaySkillTargetVfx_WithMissingSelectionDoesNotSpawnImpactVfx()
     {
         GameObject owner = new("SkillVfxFallbackOwner");
         GameObject prefab = new("FallbackSkillVfx");
@@ -144,11 +134,10 @@ public class SkillVfxAnchorTests
                 new()
                 {
                     SkillId = "S_Ability_11",
-                    Vfx = new BattleVfxEntry
+                    ProjectileVfx = new BattleProjectileVfxEntry
                     {
-                        prefab = prefab,
-                        flipType = VfxFlipType.None,
-                        spawnAnchor = BattleVfxSpawnAnchor.SelectedGrid
+                        impactPrefab = prefab,
+                        impactFlipType = VfxFlipType.None
                     }
                 }
             });
@@ -156,14 +145,79 @@ public class SkillVfxAnchorTests
             SkillMasterData skillData = CreateSkill();
             PlayerReservedCommand command = new(new CharacterRuntimeData { CharacterId = "Char_01" }, skillData);
 
-            animator.PlaySkillAction(command);
+            RunEnumeratorToEnd(animator.PlaySkillTargetVfx(command));
 
-            Assert.That(owner.transform.Find("FallbackSkillVfx(Clone)"), Is.Not.Null);
+            Assert.That(GameObject.Find("FallbackSkillVfx(Clone)"), Is.Null);
         }
         finally
         {
             DestroyObject(database);
             DestroyObject(prefab);
+            DestroyObject(owner);
+        }
+    }
+
+    [Test]
+    public void PlaySkillTargetVfx_WithMissileSpawnsImpactOnlyAfterProjectileCompletes()
+    {
+        GameObject owner = new("SkillProjectileOwner");
+        GameObject missilePrefab = new("SkillProjectileVfx");
+        GameObject impactPrefab = new("SkillProjectileImpactVfx");
+        GameObject gridRoot = new("GridRoot");
+        SkillVfxDatabase database = ScriptableObject.CreateInstance<SkillVfxDatabase>();
+
+        try
+        {
+            CreateGridCells(gridRoot.transform);
+            GridManager gridManager = gridRoot.AddComponent<GridManager>();
+            InvokePrivateMethod(gridManager, "InitializeCells");
+
+            BattleUnitAnimator animator = owner.AddComponent<BattleUnitAnimator>();
+            SetPrivateField(animator, "gridManager", gridManager);
+            SetPrivateField(animator, "skillVfxDatabase", database);
+            SetEntries(database, new List<SkillVfxEntry>
+            {
+                new()
+                {
+                    SkillId = "S_Ability_11",
+                    ProjectileVfx = new BattleProjectileVfxEntry
+                    {
+                        missilePrefab = missilePrefab,
+                        impactPrefab = impactPrefab,
+                        travelDuration = 0f
+                    }
+                }
+            });
+
+            PlayerReservedCommand command = new(
+                new CharacterRuntimeData { CharacterId = "Char_01" },
+                CreateSkill());
+            command.SetSelectionAreaResult(
+                BattleDirection.Right,
+                selectedGridIndex: 17,
+                rangeGridIndices: new List<int> { 17 });
+
+            IEnumerator routine = animator.PlaySkillTargetVfx(command);
+
+            Assert.That(routine.MoveNext(), Is.True);
+            Assert.That(routine.Current, Is.InstanceOf<IEnumerator>());
+            Assert.That(GameObject.Find("SkillProjectileImpactVfx(Clone)"), Is.Null);
+
+            RunEnumeratorToEnd((IEnumerator)routine.Current);
+            Assert.That(routine.MoveNext(), Is.False);
+
+            GameObject spawnedImpact = GameObject.Find("SkillProjectileImpactVfx(Clone)");
+            Assert.That(spawnedImpact, Is.Not.Null);
+            Assert.That(spawnedImpact.transform.position, Is.EqualTo(new Vector3(3f, 2f, 0f)));
+        }
+        finally
+        {
+            DestroyObject(GameObject.Find("SkillProjectileVfx(Clone)"));
+            DestroyObject(GameObject.Find("SkillProjectileImpactVfx(Clone)"));
+            DestroyObject(database);
+            DestroyObject(impactPrefab);
+            DestroyObject(missilePrefab);
+            DestroyObject(gridRoot);
             DestroyObject(owner);
         }
     }
@@ -246,6 +300,20 @@ public class SkillVfxAnchorTests
 
         Assert.That(method, Is.Not.Null, methodName);
         method.Invoke(target, null);
+    }
+
+    private static void RunEnumeratorToEnd(IEnumerator routine, int maxSteps = 100)
+    {
+        int steps = 0;
+
+        while (routine.MoveNext())
+        {
+            steps++;
+            Assert.That(steps, Is.LessThanOrEqualTo(maxSteps), "Coroutine did not finish.");
+
+            if (routine.Current is IEnumerator nested)
+                RunEnumeratorToEnd(nested, maxSteps);
+        }
     }
 
     private static void DestroyObject(Object target)
