@@ -500,15 +500,6 @@ MonoBehaviour:
     useRandomPitch: 0
     randomPitchMin: 1
     randomPitchMax: 1
-  - id: event..09.Skylight
-    aliases: []
-    clip: {fileID: 8300000, guid: f0cecff6fa8e53b44940647c0e37efe7, type: 3}
-    volume: 0.3
-    pitch: 0.8
-    loop: 0
-    useRandomPitch: 0
-    randomPitchMin: 1
-    randomPitchMax: 1
   - id: ui.flag.hover
     aliases: []
     clip: {fileID: 8300000, guid: 78be9394759c044ddaea5fc710863e8c, type: 3}
@@ -554,7 +545,16 @@ MonoBehaviour:
     useRandomPitch: 0
     randomPitchMin: 1
     randomPitchMax: 1
-  eventSfxList: []
+  eventSfxList:
+  - id: event..09.Skylight
+    aliases: []
+    clip: {fileID: 8300000, guid: f0cecff6fa8e53b44940647c0e37efe7, type: 3}
+    volume: 0
+    pitch: 0
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
   playerSkillVfxSfxList:
   - displayName: move
     vfxPrefab: {fileID: 4145361429921181282, guid: 64eec7862f4d94a4198ea5d201af5b88, type: 3}

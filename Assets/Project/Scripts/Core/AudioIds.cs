@@ -45,9 +45,4 @@ public static class AudioIds
         public const string BattleBossRevealImpactHigh = "battle.boss.reveal.impact.high";
     }
 
-    public static class EventSfx
-    {
-        public const string Event09Click = "event..09.Skylight";
-    }
-
 }
