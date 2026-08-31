@@ -1771,16 +1771,9 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1.1}
   hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 0}
-  protectedButtonImage: {fileID: 0}
-  changingBackgroundImage: {fileID: 0}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: -5, y: -5, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 0, g: 0, b: 0, a: 1}
-  hoverColor: {r: 0, g: 0, b: 0, a: 1}
-  clickedColor: {r: 0, g: 0, b: 0, a: 1}
+  playHoverSound: 0
+  hoverSoundId: ui.normal.click
+  hoverSoundVolume: 0
   playClickSound: 1
   clickSoundId: ui.back.click
   clickSoundVolume: 1
@@ -12307,7 +12300,12 @@ MonoBehaviour:
   volume: 1
   playDelay: 0
   playOnEnable: 1
-  playNextFrameOnEnable: 1
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 0
+  clickSoundId: ui.normal.click
+  clickVolume: 1
 --- !u!1 &8639274816238106690
 GameObject:
   m_ObjectHideFlags: 0

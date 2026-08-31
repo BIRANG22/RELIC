@@ -115,7 +115,7 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: ui.logo.click
     aliases: []
-    clip: {fileID: 8300000, guid: 3e264338eeeb0aa438690640c2886401, type: 3}
+    clip: {fileID: 8300000, guid: 39b652a79e3a14f53bd96ae2fc42bb7e, type: 3}
     volume: 1
     pitch: 1
     loop: 0
@@ -128,18 +128,18 @@ MonoBehaviour:
     volume: 0.5
     pitch: 1
     loop: 0
-    useRandomPitch: 0
-    randomPitchMin: 1
-    randomPitchMax: 1
+    useRandomPitch: 1
+    randomPitchMin: 0.8
+    randomPitchMax: 1.2
   - id: ui.move.click
     aliases: []
     clip: {fileID: 8300000, guid: 6f5ea4a51440e4b7595865cdf64f8556, type: 3}
     volume: 0.3
     pitch: 1
     loop: 0
-    useRandomPitch: 0
-    randomPitchMin: 1
-    randomPitchMax: 1
+    useRandomPitch: 1
+    randomPitchMin: 0.8
+    randomPitchMax: 1.2
   - id: ui.confirm
     aliases: []
     clip: {fileID: 8300000, guid: cd79944ddc33df841a78f5f3915afa10, type: 3}
@@ -523,6 +523,33 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: 602ba08c3a1834cefa18cc796ff63c89, type: 3}
     volume: 0.3
     pitch: 0.6
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.relic.hover
+    aliases: []
+    clip: {fileID: 8300000, guid: d73a42d2f4c3449eab261e629916465f, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.relic.click
+    aliases: []
+    clip: {fileID: 8300000, guid: 605184b7b2a25437d9c83759b038dde3, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.warning.text
+    aliases: []
+    clip: {fileID: 8300000, guid: 5b4a9bf472cff4c878ff5ce7e0281556, type: 3}
+    volume: 0.5
+    pitch: 1
     loop: 0
     useRandomPitch: 0
     randomPitchMin: 1
