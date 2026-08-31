@@ -9903,7 +9903,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  soundId: event..09.Skylight
+  soundId: event.09.Skylight
   volume: 1
   playDelay: 0.2
   playOnEnable: 1

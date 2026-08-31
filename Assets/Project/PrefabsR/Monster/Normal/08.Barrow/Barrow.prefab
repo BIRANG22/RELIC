@@ -974,7 +974,7 @@ MonoBehaviour:
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
-      travelDuration: 0.25
+      travelDuration: 0.35
       arrivalDistance: 0.05
       impactLifeTime: 2
       launchOffset: {x: 0, y: 1, z: 0}
