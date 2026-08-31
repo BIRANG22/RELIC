@@ -14,6 +14,9 @@ using UnityEngine.EventSystems;
 /// </summary>
 public class BattleCharacterPanelUI : MonoBehaviour
 {
+    private static readonly Color32 ManaResourceColor = new Color32(0x33, 0x6F, 0xC5, 0xFF);
+    private static readonly Color32 HpResourceColor = new Color32(0xD0, 0x36, 0x36, 0xFF);
+
     // 도감의 레어도 구분처럼 BattleCharacterPanel에서도 기본적으로 서로 다른 색이 보이도록 하는 fallback입니다.
     // Inspector에서 색을 별도로 지정했다면 그 값을 우선 사용합니다.
 
@@ -118,6 +121,11 @@ public class BattleCharacterPanelUI : MonoBehaviour
     [SerializeField] private Color emptySkillNameColor = new Color32(0x77, 0x77, 0x77, 0xFF);
     [SerializeField] private Color unavailableSkillColor = new Color32(0x55, 0x55, 0x55, 0xFF);
     [SerializeField] private string emptySkillName = "스킬 없음";
+
+    private readonly Dictionary<Image, Color> skillSlotOriginalImageColors =
+        new Dictionary<Image, Color>();
+    private readonly Dictionary<TMP_Text, Color> skillSlotOriginalTextColors =
+        new Dictionary<TMP_Text, Color>();
 
     [Header("Skill Info")]
     [SerializeField] private Image skillInfoIconImage;
@@ -2013,6 +2021,14 @@ public class BattleCharacterPanelUI : MonoBehaviour
         bool hasSkill = skillData != null;
         bool isResourceUnavailable = hasSkill && !CanUseSkillWithPreviewResource(skillData);
 
+        RefreshSkillSlotChildren(
+            button,
+            hasSkill,
+            isResourceUnavailable,
+            skillData,
+            iconImage,
+            skillIcon);
+
         if (button != null)
         {
             BattleCharacterSkillHoverUI hover =
@@ -2038,10 +2054,9 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (iconImage != null)
         {
             iconImage.sprite = skillIcon;
-            iconImage.enabled = skillIcon != null;
-            iconImage.gameObject.SetActive(skillIcon != null);
+            iconImage.enabled = hasSkill && skillIcon != null;
+            iconImage.gameObject.SetActive(hasSkill && skillIcon != null);
             iconImage.preserveAspect = true;
-            iconImage.color = isResourceUnavailable ? unavailableSkillColor : Color.white;
         }
 
         if (nameText != null)
@@ -2055,6 +2070,204 @@ public class BattleCharacterPanelUI : MonoBehaviour
                     ? unavailableSkillColor
                     : skillNameColor;
         }
+    }
+
+    private void RefreshSkillSlotChildren(
+        Button button,
+        bool hasSkill,
+        bool isResourceUnavailable,
+        SkillMasterData skillData,
+        Image assignedIconImage,
+        Sprite skillIcon)
+    {
+        if (button == null)
+            return;
+
+        Image backgroundImage = FindChildImage(button.transform, "Skill_Background");
+        Image hoverBackgroundImage = FindChildImage(button.transform, "Skill_Background2");
+        TMP_Text noneText = FindChildComponent<TMP_Text>(button.transform, "Skill_None");
+        Image iconImage = assignedIconImage != null
+            ? assignedIconImage
+            : FindChildImage(button.transform, "Skill_Icon");
+        Image costImage = FindChildImage(button.transform, "Skill_Cost");
+        TMP_Text valueText = FindChildComponent<TMP_Text>(button.transform, "Skill_Value");
+
+        CaptureSkillSlotOriginalColor(backgroundImage);
+        CaptureSkillSlotOriginalColor(costImage);
+        CaptureSkillSlotOriginalColor(noneText);
+        CaptureSkillSlotOriginalColor(valueText);
+
+        if (hoverBackgroundImage != null && !hasSkill)
+            hoverBackgroundImage.gameObject.SetActive(false);
+
+        if (noneText != null)
+        {
+            noneText.gameObject.SetActive(!hasSkill);
+            if (!hasSkill)
+                SetTextRgbPreserveAlpha(noneText, 0x77, 0x77, 0x77);
+            else
+                RestoreSkillSlotOriginalRgb(noneText);
+        }
+
+        if (backgroundImage != null)
+        {
+            backgroundImage.gameObject.SetActive(true);
+            backgroundImage.enabled = true;
+
+            if (!hasSkill)
+                SetImageRgbPreserveAlpha(backgroundImage, 0x77, 0x77, 0x77);
+            else
+                RestoreSkillSlotOriginalRgb(backgroundImage);
+        }
+
+        if (iconImage != null)
+        {
+            iconImage.sprite = hasSkill ? skillIcon : null;
+            iconImage.enabled = hasSkill && skillIcon != null;
+            iconImage.gameObject.SetActive(hasSkill && skillIcon != null);
+        }
+
+        if (costImage != null)
+        {
+            Sprite resourceIcon = hasSkill ? GetResourceIcon(skillData.ReferenceResource) : null;
+            costImage.sprite = resourceIcon;
+            costImage.enabled = hasSkill && resourceIcon != null;
+            costImage.gameObject.SetActive(hasSkill && resourceIcon != null);
+            costImage.preserveAspect = true;
+        }
+
+        if (valueText != null)
+        {
+            valueText.text = hasSkill
+                ? Mathf.Max(0, skillData.ResourceCostValue).ToString()
+                : string.Empty;
+            valueText.gameObject.SetActive(hasSkill);
+        }
+
+        ApplySkillResourceVisualColor(costImage, valueText, skillData, isResourceUnavailable);
+    }
+
+    private static T FindChildComponent<T>(Transform root, string childName)
+        where T : Component
+    {
+        if (root == null || string.IsNullOrWhiteSpace(childName))
+            return null;
+
+        Transform[] children = root.GetComponentsInChildren<Transform>(true);
+        for (int i = 0; i < children.Length; i++)
+        {
+            Transform child = children[i];
+            if (child != null && child.name == childName)
+                return child.GetComponent<T>();
+        }
+
+        return null;
+    }
+
+    private void CaptureSkillSlotOriginalColor(Image image)
+    {
+        if (image != null && !skillSlotOriginalImageColors.ContainsKey(image))
+            skillSlotOriginalImageColors.Add(image, image.color);
+    }
+
+    private void CaptureSkillSlotOriginalColor(TMP_Text text)
+    {
+        if (text != null && !skillSlotOriginalTextColors.ContainsKey(text))
+            skillSlotOriginalTextColors.Add(text, text.color);
+    }
+
+    private void RestoreSkillSlotOriginalRgb(Image image)
+    {
+        if (image == null || !skillSlotOriginalImageColors.TryGetValue(image, out Color original))
+            return;
+
+        Color current = image.color;
+        image.color = new Color(original.r, original.g, original.b, current.a);
+    }
+
+    private void RestoreSkillSlotOriginalRgb(TMP_Text text)
+    {
+        if (text == null || !skillSlotOriginalTextColors.TryGetValue(text, out Color original))
+            return;
+
+        Color current = text.color;
+        text.color = new Color(original.r, original.g, original.b, current.a);
+    }
+
+    private void ApplySkillResourceVisualColor(
+        Image costImage,
+        TMP_Text valueText,
+        SkillMasterData skillData,
+        bool isResourceUnavailable)
+    {
+        CaptureSkillSlotOriginalColor(costImage);
+        CaptureSkillSlotOriginalColor(valueText);
+
+        if (isResourceUnavailable)
+        {
+            SetImageRgbPreserveAlpha(costImage, 0x55, 0x55, 0x55);
+            SetTextRgbPreserveAlpha(valueText, 0x55, 0x55, 0x55);
+            return;
+        }
+
+        if (skillData == null)
+        {
+            RestoreSkillSlotOriginalRgb(costImage);
+            RestoreSkillSlotOriginalRgb(valueText);
+            return;
+        }
+
+        switch (skillData.ReferenceResource)
+        {
+            case ReferenceResource.Cost:
+                SetImageRgbPreserveAlpha(
+                    costImage,
+                    ManaResourceColor.r,
+                    ManaResourceColor.g,
+                    ManaResourceColor.b);
+                SetTextRgbPreserveAlpha(
+                    valueText,
+                    ManaResourceColor.r,
+                    ManaResourceColor.g,
+                    ManaResourceColor.b);
+                break;
+
+            case ReferenceResource.HP:
+                SetImageRgbPreserveAlpha(
+                    costImage,
+                    HpResourceColor.r,
+                    HpResourceColor.g,
+                    HpResourceColor.b);
+                SetTextRgbPreserveAlpha(
+                    valueText,
+                    HpResourceColor.r,
+                    HpResourceColor.g,
+                    HpResourceColor.b);
+                break;
+
+            default:
+                RestoreSkillSlotOriginalRgb(costImage);
+                RestoreSkillSlotOriginalRgb(valueText);
+                break;
+        }
+    }
+
+    private static void SetImageRgbPreserveAlpha(Image image, byte r, byte g, byte b)
+    {
+        if (image == null)
+            return;
+
+        Color32 current = image.color;
+        image.color = new Color32(r, g, b, current.a);
+    }
+
+    private static void SetTextRgbPreserveAlpha(TMP_Text text, byte r, byte g, byte b)
+    {
+        if (text == null)
+            return;
+
+        Color32 current = text.color;
+        text.color = new Color32(r, g, b, current.a);
     }
 
     private bool CanUseSkillWithPreviewResource(SkillMasterData skillData)
@@ -2233,6 +2446,13 @@ public class BattleCharacterPanelUI : MonoBehaviour
             skillInfoCostIconImage,
             GetResourceIcon(skillData.ReferenceResource)
         );
+
+        bool isResourceUnavailable = !CanUseSkillWithPreviewResource(skillData);
+        ApplySkillResourceVisualColor(
+            skillInfoCostIconImage,
+            skillInfoCostValueText,
+            skillData,
+            isResourceUnavailable);
     }
 
     private void RefreshSkillInfoEffects(SkillMasterData skillData)

@@ -10,6 +10,7 @@ public static class BattleEffectUtility
     public static System.Action<BattleCharacter> OnPlayerDamaged;
     public static System.Action<BattleCharacter> OnPlayerHit;
     public static System.Action<BattleCharacter> OnPlayerBuffApplied;
+    public static System.Action<BattleCharacter> OnPlayerHudRefreshRequested;
     public static System.Action<BattleCharacter> OnPlayerDamagedEnemy;
 
     public static BattleCharacter GetPlayerTargetOrCaster(BattleEffectContext context)
@@ -143,10 +144,14 @@ public static class BattleEffectUtility
         if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return false;
 
+        if (string.IsNullOrWhiteSpace(effectId) || GetRepeatedValue(stack, count) <= 0)
+            return false;
+
         if (AddOrStackStatus(target.RuntimeData.StatusEffects, effectId, stack, count))
         {
             PlayStatusVfx(ResolveUnitAnimator(target), effectId);
             BattleHitImpactFeedback.PlayStatusHitFeedback(target.transform);
+            OnPlayerHudRefreshRequested?.Invoke(target);
             return true;
         }
 
@@ -170,7 +175,7 @@ public static class BattleEffectUtility
             BattleHitImpactFeedback.PlayStatusHitFeedback(target.transform);
         }
 
-        target.ShowAndRefreshHUD();
+        target.ShowTemporaryHUDForEffect();
         return applied;
     }
 
@@ -259,6 +264,8 @@ public static class BattleEffectUtility
             else
                 animator.PlayHit();
         }
+
+        OnPlayerHudRefreshRequested?.Invoke(target);
     }
 
     public static int DamageMonster(MonsterUnit target, int damage)
@@ -297,7 +304,7 @@ public static class BattleEffectUtility
                 animator.PlayHit();
         }
 
-        target.ShowAndRefreshHUD();
+        target.ShowTemporaryHUDForEffect();
         return shownDamage;
     }
 
@@ -328,6 +335,8 @@ public static class BattleEffectUtility
         HandlePlayerDeathIfNeeded(target);
         BattleDamageTextPopupUI.Show(target.transform, shownDamage);
 
+        OnPlayerDamaged?.Invoke(target);
+
         BattleUnitAnimator animator = target.GetComponent<BattleUnitAnimator>();
 
         if (animator != null)
@@ -337,6 +346,8 @@ public static class BattleEffectUtility
             else
                 animator.PlayHit();
         }
+
+        OnPlayerHudRefreshRequested?.Invoke(target);
     }
 
     public static int PierceDamageMonster(MonsterUnit target, int damage)
@@ -366,7 +377,7 @@ public static class BattleEffectUtility
                 animator.PlayHit();
         }
 
-        target.ShowAndRefreshHUD();
+        target.ShowTemporaryHUDForEffect();
         return shownDamage;
     }
 
@@ -382,6 +393,8 @@ public static class BattleEffectUtility
 
         if (animator != null)
             animator.PlayGuard();
+
+        OnPlayerHudRefreshRequested?.Invoke(target);
 
         return true;
     }
@@ -399,7 +412,7 @@ public static class BattleEffectUtility
         if (animator != null)
             animator.PlayGuard();
 
-        target.ShowAndRefreshHUD();
+        target.ShowTemporaryHUDForEffect();
         return true;
     }
 
@@ -481,6 +494,8 @@ public static class BattleEffectUtility
             else
                 animator.PlayHit();
         }
+
+        OnPlayerHudRefreshRequested?.Invoke(target);
     }
 
     public static void PoisonDamageMonster(MonsterUnit target, int damage)
@@ -520,7 +535,7 @@ public static class BattleEffectUtility
                 animator.PlayHit();
         }
 
-        target.ShowAndRefreshHUD();
+        target.ShowTemporaryHUDForEffect();
     }
 
     public static void HealPlayer(BattleCharacter target, int value)
@@ -553,6 +568,8 @@ public static class BattleEffectUtility
             if (target.RuntimeData.CurrentHP > hpBefore)
                 PlayHealVfx(ResolveUnitAnimator(target));
 
+            OnPlayerHudRefreshRequested?.Invoke(target);
+
             return;
         }
 
@@ -561,6 +578,8 @@ public static class BattleEffectUtility
 
         if (target.RuntimeData.CurrentHP > hpBefore)
             PlayHealVfx(ResolveUnitAnimator(target));
+
+        OnPlayerHudRefreshRequested?.Invoke(target);
     }
 
     public static void HealMonster(MonsterUnit target, int value)
@@ -576,7 +595,7 @@ public static class BattleEffectUtility
         if (target.RuntimeData.CurrentHP > hpBefore)
             PlayHealVfx(ResolveUnitAnimator(target));
 
-        target.ShowAndRefreshHUD();
+        target.ShowTemporaryHUDForEffect();
     }
 
     public static void AddShieldToPlayer(BattleCharacter target, int value)
@@ -595,6 +614,7 @@ public static class BattleEffectUtility
         BattleDamageTextPopupUI.ShowArmorGain(target.transform, shieldValue);
         PlayStatusVfx(ResolveUnitAnimator(target), "E_Armor");
         BattleHitImpactFeedback.PlayStatusHitFeedback(target.transform);
+        OnPlayerHudRefreshRequested?.Invoke(target);
     }
 
     public static void AddShieldToMonster(MonsterUnit target, int value)
@@ -611,7 +631,7 @@ public static class BattleEffectUtility
         BattleDamageTextPopupUI.ShowArmorGain(target.transform, shieldValue);
         PlayStatusVfx(ResolveUnitAnimator(target), "E_Armor");
         BattleHitImpactFeedback.PlayStatusHitFeedback(target.transform);
-        target.ShowAndRefreshHUD();
+        target.ShowTemporaryHUDForEffect();
     }
 }
 

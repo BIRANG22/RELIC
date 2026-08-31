@@ -30,6 +30,9 @@ namespace Relic.Gameplay.Monster
         [SerializeField] private bool showStatusTooltipOnHover = true;
         [SerializeField] private UnitStatusEffectTooltipUI statusTooltipUI;
 
+        [Header("Effect HUD")]
+        [SerializeField, Min(0f)] private float effectHudVisibleDuration = 1f;
+
         private bool isStatusTooltipHovering;
 
         public MonsterRuntimeData RuntimeData { get; private set; }
@@ -890,6 +893,11 @@ namespace Relic.Gameplay.Monster
 
             if (duration > 0f)
                 temporaryHUDRoutine = StartCoroutine(HideTemporaryHUDAfterDelay(duration));
+        }
+
+        public void ShowTemporaryHUDForEffect()
+        {
+            ShowTemporaryHUD(effectHudVisibleDuration);
         }
 
         public void HideTemporaryHUD()
