@@ -237,6 +237,66 @@ public class EventRoomRewardPanelFlowTests
     }
 
     [Test]
+    public void OnEventRewardPanelCompleted_ShowsNextButtonInsteadOfReturningImmediately()
+    {
+        GameObject eventRoomObject = new("EventRoom");
+        GameObject nextButtonRoot = new("NextButtonRoot");
+
+        try
+        {
+            EventRoomController controller =
+                eventRoomObject.AddComponent<EventRoomController>();
+
+            nextButtonRoot.SetActive(false);
+            SetPrivateField(controller, "nextButtonRoot", nextButtonRoot);
+            SetPrivateField(controller, "isEventRewardPanelOpen", true);
+
+            MethodInfo completedMethod = typeof(EventRoomController).GetMethod(
+                "OnEventRewardPanelCompleted",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.That(completedMethod, Is.Not.Null);
+
+            completedMethod.Invoke(controller, null);
+
+            Assert.That(
+                GetPrivateField<bool>(controller, "isEventRewardPanelOpen"),
+                Is.False);
+            Assert.That(nextButtonRoot.activeSelf, Is.True);
+        }
+        finally
+        {
+            Object.DestroyImmediate(eventRoomObject);
+            Object.DestroyImmediate(nextButtonRoot);
+        }
+    }
+
+    [Test]
+    public void OnNextButtonClicked_WhenReturningToMap_HidesSharedNextButton()
+    {
+        GameObject eventRoomObject = new("EventRoom");
+        GameObject nextButtonRoot = new("NextButtonRoot");
+
+        try
+        {
+            EventRoomController controller =
+                eventRoomObject.AddComponent<EventRoomController>();
+
+            nextButtonRoot.SetActive(true);
+            SetPrivateField(controller, "nextButtonRoot", nextButtonRoot);
+            SetPrivateField(controller, "isChestOpened", true);
+
+            controller.OnNextButtonClicked();
+
+            Assert.That(nextButtonRoot.activeSelf, Is.False);
+        }
+        finally
+        {
+            Object.DestroyImmediate(eventRoomObject);
+            Object.DestroyImmediate(nextButtonRoot);
+        }
+    }
+
+    [Test]
     public void EventRoomController_UsesSharedBattleRewardPanelReference()
     {
         FieldInfo field = typeof(EventRoomController).GetField(
