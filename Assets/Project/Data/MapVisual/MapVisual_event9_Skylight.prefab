@@ -427,6 +427,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6559474741134819496, guid: b0272422f4833704f814090f76f8826a, type: 3}
+      propertyPath: hoverSoundId
+      value: 
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
