@@ -19,7 +19,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -36,7 +35,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -53,7 +51,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -70,7 +67,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -87,7 +83,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -104,7 +99,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -121,7 +115,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -138,7 +131,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -155,7 +147,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -172,7 +163,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -184,46 +174,35 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
   - SkillId: S_Ability_11
-    Vfx:
-      prefab: {fileID: 3688985328973339552, guid: 29f13300e2979c949905f4b38ac44c24, type: 3}
-      flipType: 2
-      renderMode: 2
-      proxyBlendMode: 0
-      spawnAnchor: 1
-      scaleDirectWorldRendererToProxyHeight: 1
-      renderTextureWidth: 512
-      renderTextureHeight: 512
-      renderCameraOrthographicSize: 5
-      proxyWorldHeight: 3
-      proxyWorldOffset: {x: 0, y: 0, z: 0}
-      proxySortingLayerName: Unit
-      proxySortingOrderOffset: 0
-      proxySortingWorldYOffset: 0
-      proxyYMultiplier: 100
+    ProjectileVfx:
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 3688985328973339552, guid: 29f13300e2979c949905f4b38ac44c24, type: 3}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
   - SkillId: S_Ability_12
-    Vfx:
-      prefab: {fileID: 3688985328973339552, guid: 29f13300e2979c949905f4b38ac44c24, type: 3}
-      flipType: 2
-      renderMode: 2
-      proxyBlendMode: 0
-      spawnAnchor: 1
-      scaleDirectWorldRendererToProxyHeight: 1
-      renderTextureWidth: 512
-      renderTextureHeight: 512
-      renderCameraOrthographicSize: 5
-      proxyWorldHeight: 3
-      proxyWorldOffset: {x: 0, y: 0, z: 0}
-      proxySortingLayerName: Unit
-      proxySortingOrderOffset: 0
-      proxySortingWorldYOffset: 0
-      proxyYMultiplier: 100
+    ProjectileVfx:
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 3688985328973339552, guid: 29f13300e2979c949905f4b38ac44c24, type: 3}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
   - SkillId: S_Ability_13
     Vfx:
       prefab: {fileID: 8450343264324062456, guid: 8940258aeab2fc4478a1717538600122, type: 3}
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -240,7 +219,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -257,7 +235,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -274,7 +251,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -291,7 +267,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -308,7 +283,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -325,7 +299,6 @@ MonoBehaviour:
       flipType: 2
       renderMode: 2
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 1
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -342,7 +315,6 @@ MonoBehaviour:
       flipType: 2
       renderMode: 2
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 1
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -359,7 +331,6 @@ MonoBehaviour:
       flipType: 2
       renderMode: 2
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 1
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -376,7 +347,6 @@ MonoBehaviour:
       flipType: 2
       renderMode: 2
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 1
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -393,7 +363,6 @@ MonoBehaviour:
       flipType: 2
       renderMode: 2
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 1
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -410,7 +379,6 @@ MonoBehaviour:
       flipType: 2
       renderMode: 2
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 1
       renderTextureWidth: 512
       renderTextureHeight: 512

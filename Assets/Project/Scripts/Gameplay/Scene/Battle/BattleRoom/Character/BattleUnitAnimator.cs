@@ -381,6 +381,23 @@ public class BattleUnitAnimator : MonoBehaviour
         yield return PlayProjectileVfx(projectile, targetWorldPosition);
     }
 
+    public IEnumerator PlaySkillTargetVfx(PlayerReservedCommand command)
+    {
+        if (command == null || command.SkillData == null)
+            yield break;
+
+        if (!TryResolveSkillVfxEntry(command.SkillData, out SkillVfxEntry entry))
+            yield break;
+
+        if (!TryResolveSelectedGridWorldPosition(command, out Vector3 targetWorldPosition))
+            yield break;
+
+        if (!HasProjectileVfx(entry.ProjectileVfx))
+            yield break;
+
+        yield return PlayProjectileVfx(entry.ProjectileVfx, targetWorldPosition);
+    }
+
     public void PlayMonsterSkillAction(MonsterSkillData skillData)
     {
         if (skillData == null)
@@ -488,6 +505,17 @@ public class BattleUnitAnimator : MonoBehaviour
 
         SkillVfxDatabase database = ResolveSkillVfxDatabase();
         return database != null && database.TryGetVfx(skillData.SkillId, out vfx);
+    }
+
+    private bool TryResolveSkillVfxEntry(SkillMasterData skillData, out SkillVfxEntry entry)
+    {
+        entry = null;
+
+        if (skillData == null || string.IsNullOrWhiteSpace(skillData.SkillId))
+            return false;
+
+        SkillVfxDatabase database = ResolveSkillVfxDatabase();
+        return database != null && database.TryGetEntry(skillData.SkillId, out entry);
     }
 
     private SkillVfxDatabase ResolveSkillVfxDatabase()
@@ -728,12 +756,6 @@ public class BattleUnitAnimator : MonoBehaviour
         if (vfxLayer < 0)
             vfxLayer = LayerMask.NameToLayer(vfxLayerName);
 
-        if (TryResolveDetachedVfxAnchor(entry, command, out Vector3 anchorWorldPosition))
-        {
-            SpawnDetachedVfx(entry, anchorWorldPosition, vfxLifeTime);
-            return;
-        }
-
         Transform spawn = GetVfxSpawnTransform();
 
         if (TrySpawnWorldVfx(entry, spawn, vfxLifeTime))
@@ -750,15 +772,11 @@ public class BattleUnitAnimator : MonoBehaviour
         Destroy(vfx, vfxLifeTime);
     }
 
-    private bool TryResolveDetachedVfxAnchor(
-        BattleVfxEntry entry,
+    private bool TryResolveSelectedGridWorldPosition(
         PlayerReservedCommand command,
-        out Vector3 anchorWorldPosition)
+        out Vector3 targetWorldPosition)
     {
-        anchorWorldPosition = Vector3.zero;
-
-        if (entry == null || entry.spawnAnchor != BattleVfxSpawnAnchor.SelectedGrid)
-            return false;
+        targetWorldPosition = Vector3.zero;
 
         if (command == null || command.SelectedGridIndex < 0)
             return false;
@@ -776,7 +794,7 @@ public class BattleUnitAnimator : MonoBehaviour
         if (cell == null)
             return false;
 
-        anchorWorldPosition = cell.transform.position;
+        targetWorldPosition = cell.transform.position;
         return true;
     }
 

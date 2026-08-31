@@ -9,13 +9,13 @@ namespace Relic.Gameplay.Data
     {
         [SerializeField] private List<SkillVfxEntry> entries = new();
 
-        private Dictionary<string, BattleVfxEntry> map;
+        private Dictionary<string, SkillVfxEntry> map;
 
         public IReadOnlyList<SkillVfxEntry> Entries => entries;
 
         public void Initialize()
         {
-            map = new Dictionary<string, BattleVfxEntry>();
+            map = new Dictionary<string, SkillVfxEntry>();
 
             foreach (SkillVfxEntry entry in entries)
             {
@@ -26,20 +26,28 @@ namespace Relic.Gameplay.Data
                 if (string.IsNullOrWhiteSpace(skillId))
                     continue;
 
-                if (entry.Vfx == null || entry.Vfx.prefab == null)
-                {
-                    Debug.LogWarning($"[SkillVfxDatabase] VFX prefab missing: {skillId}");
-                    continue;
-                }
-
                 if (map.ContainsKey(skillId))
                 {
                     Debug.LogWarning($"[SkillVfxDatabase] Duplicate SkillId: {skillId}");
                     continue;
                 }
 
-                map.Add(skillId, entry.Vfx);
+                map.Add(skillId, entry);
             }
+        }
+
+        public bool TryGetEntry(string skillId, out SkillVfxEntry entry)
+        {
+            entry = null;
+            skillId = NormalizeId(skillId);
+
+            if (string.IsNullOrWhiteSpace(skillId))
+                return false;
+
+            if (map == null)
+                Initialize();
+
+            return map.TryGetValue(skillId, out entry) && entry != null;
         }
 
         public bool TryGetVfx(string skillId, out BattleVfxEntry vfx)
@@ -50,10 +58,11 @@ namespace Relic.Gameplay.Data
             if (string.IsNullOrWhiteSpace(skillId))
                 return false;
 
-            if (map == null)
-                Initialize();
+            if (!TryGetEntry(skillId, out SkillVfxEntry entry))
+                return false;
 
-            return map.TryGetValue(skillId, out vfx) && vfx != null && vfx.prefab != null;
+            vfx = entry.Vfx;
+            return vfx != null && vfx.prefab != null;
         }
 
         private static string NormalizeId(string id)
@@ -67,5 +76,6 @@ namespace Relic.Gameplay.Data
     {
         public string SkillId;
         public BattleVfxEntry Vfx = new();
+        public BattleProjectileVfxEntry ProjectileVfx = new();
     }
 }

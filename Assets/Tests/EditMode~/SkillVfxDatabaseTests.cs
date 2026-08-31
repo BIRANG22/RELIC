@@ -37,6 +37,35 @@ public class SkillVfxDatabaseTests
     }
 
     [Test]
+    public void TryGetEntry_ReturnsImpactOnlyProjectileWithoutCasterVfx()
+    {
+        SkillVfxDatabase database = ScriptableObject.CreateInstance<SkillVfxDatabase>();
+        GameObject impactPrefab = new("ConfiguredSkillImpactVfx");
+
+        try
+        {
+            SetEntries(database, new List<SkillVfxEntry>
+            {
+                new()
+                {
+                    SkillId = "S_Projectile",
+                    ProjectileVfx = new BattleProjectileVfxEntry { impactPrefab = impactPrefab }
+                }
+            });
+
+            bool found = database.TryGetEntry(" S_Projectile ", out SkillVfxEntry entry);
+
+            Assert.That(found, Is.True);
+            Assert.That(entry.ProjectileVfx.impactPrefab, Is.SameAs(impactPrefab));
+        }
+        finally
+        {
+            Object.DestroyImmediate(impactPrefab);
+            Object.DestroyImmediate(database);
+        }
+    }
+
+    [Test]
     public void PlaySkillAction_SpawnsConfiguredSkillVfxForAbility11()
     {
         GameObject owner = new("SkillVfxOwner");
