@@ -179,6 +179,7 @@ public class EventRoomController : MonoBehaviour
         ClearEquippedRelicCostSelection();
         ClearSkillAwakenSelection();
         eventChoiceSessionState.AwakenedSkillTargets.Clear();
+        SetNextButtonVisible(false);
     }
 
     public void NotifyChestOpened()
@@ -228,6 +229,7 @@ public class EventRoomController : MonoBehaviour
                 return;
 
             CompleteCurrentNode();
+            SetNextButtonVisible(false);
             ReturnToMap();
             return;
         }
@@ -241,6 +243,7 @@ public class EventRoomController : MonoBehaviour
         CompleteCurrentNode();
 
         HideDiceRollPresenterImmediate();
+        SetNextButtonVisible(false);
         ReturnToMap();
     }
 
@@ -2275,8 +2278,7 @@ public class EventRoomController : MonoBehaviour
         pendingEventRewards.Clear();
         PersistEventRuntime();
         HideDiceRollPresenterImmediate();
-        CompleteCurrentNode();
-        ReturnToMap();
+        SetNextButtonVisible(true);
     }
 
     private void EnsureRewardPanelReference()

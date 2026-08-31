@@ -38600,6 +38600,7 @@ MonoBehaviour:
   rewardResolver: {fileID: 133206930}
   rewardPanel: {fileID: 297680668}
   explorationResultPanel: {fileID: 0}
+  nextButtonRoot: {fileID: 1885927099}
 --- !u!1 &834641891
 GameObject:
   m_ObjectHideFlags: 0
