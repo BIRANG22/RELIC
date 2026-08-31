@@ -126,7 +126,7 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
-  playHoverSound: 1
+  playHoverSound: 0
   hoverSoundId: ui.move.hover
   hoverSoundVolume: 1
   playClickSound: 0
