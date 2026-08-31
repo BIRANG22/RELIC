@@ -238,15 +238,14 @@ namespace Relic.Gameplay.Data
             MonsterSkillData selectedSkillData =
                 DataManager.Instance.MonsterSkillDatabase.Get(normalizedSkillId);
 
-            // 이동은 Move 상태를 사용하고, 공격이 아닌 행동은 기존 프레젠테이션 번호를 유지합니다.
-            if (selectedSkillData == null ||
-                selectedSkillData.TimelineNotation != TimelineActionType.Attack)
-            {
-                return IsActualMoveSkill(selectedSkillData) ? 0 : originalActionIndex;
-            }
+            if (selectedSkillData == null)
+                return originalActionIndex;
 
-            // 공격 스킬만 보유 순서대로 세어 AttackAction1, 2, 3에 연결합니다.
-            int attackActionIndex = 0;
+            // 실제 이동은 Move 상태를 사용하고, 나머지 행동은 하나의 연속 프레젠테이션 슬롯에 연결합니다.
+            if (IsActualMoveSkill(selectedSkillData))
+                return 0;
+
+            int presentationActionIndex = 0;
 
             for (int i = 0; i < PossibleSkillIdsByActionIndex.Length; i++)
             {
@@ -258,14 +257,11 @@ namespace Relic.Gameplay.Data
                 MonsterSkillData possibleSkillData =
                     DataManager.Instance.MonsterSkillDatabase.Get(possibleSkillId);
 
-                if (possibleSkillData != null &&
-                    possibleSkillData.TimelineNotation == TimelineActionType.Attack)
-                {
-                    attackActionIndex++;
-                }
+                if (possibleSkillData != null && !IsActualMoveSkill(possibleSkillData))
+                    presentationActionIndex++;
 
                 if (string.Equals(possibleSkillId, normalizedSkillId, StringComparison.Ordinal))
-                    return attackActionIndex;
+                    return presentationActionIndex;
             }
 
             return originalActionIndex;
