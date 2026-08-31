@@ -331,13 +331,13 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: battle.boss.reveal.impact.low
     aliases: []
-    clip: {fileID: 8300000, guid: 92c0b248a622b41af90c3c89a7c895f6, type: 3}
+    clip: {fileID: 8300000, guid: 31c5d114f830245468a89f1097770791, type: 3}
     volume: 0.5
-    pitch: 1
+    pitch: 0.8
     loop: 0
-    useRandomPitch: 0
-    randomPitchMin: 1
-    randomPitchMax: 1
+    useRandomPitch: 1
+    randomPitchMin: 0.8
+    randomPitchMax: 1.2
   - id: battle.boss.reveal.impact.high
     aliases: []
     clip: {fileID: 8300000, guid: 15c7fd37178a045dc8be8708c0c8e9b1, type: 3}
