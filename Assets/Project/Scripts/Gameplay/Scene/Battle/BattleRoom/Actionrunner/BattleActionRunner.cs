@@ -66,6 +66,16 @@ public class BattleActionRunner
     private const string MortWraithRushSkillId = "S_Monster_38";
     private const string ArabellaMonsterId = "Mon_12";
     private const string ArabellaMoveSkillId = "S_Monster_20";
+    private static readonly HashSet<string> RangedMonsterAttackSkillIds = new(StringComparer.Ordinal)
+    {
+        "S_Monster_02",
+        "S_Monster_22",
+        "S_Monster_30",
+        "S_Monster_31",
+        "S_Monster_35",
+        "S_Monster_38",
+        "S_Monster_39"
+    };
     private const string NocturnThrustSkillId = "S_Monster_17";
     private const string NocturnSlashSkillId = "S_Monster_18";
     private const string NocturnPullSkillId = "S_Monster_19";
@@ -521,7 +531,8 @@ public class BattleActionRunner
                     continue;
 
                 if (ShouldPlayerSkillTargetSelf(command) ||
-                    ShouldPlayerSkillTargetPlayerParty(command))
+                    ShouldPlayerSkillTargetPlayerParty(command) ||
+                    ShouldSkipPlayerSkillCamera(command))
                 {
                     continue;
                 }
@@ -1655,12 +1666,20 @@ public class BattleActionRunner
 
             if (ShouldPlayerSkillTargetPlayerParty(command))
             {
-                yield return PlayPlayerSkillPresentation(attackerAnimator, command);
+                if (ShouldSkipPlayerSkillCamera(command) && BattleCameraController.Instance != null)
+                    yield return BattleCameraController.Instance.ZoomForRangedSkill();
+
+                if (attackerAnimator != null)
+                    attackerAnimator.PlaySkillAction(command);
 
 
                 if (attacker.RuntimeData == null || attacker.RuntimeData.IsDead)
                 {
                     hudService.RefreshHUDs();
+
+                    if (BattleCameraController.Instance != null)
+                        yield return BattleCameraController.Instance.ReturnDefaultIfNotHeld();
+
                     yield break;
                 }
 
@@ -1687,17 +1706,29 @@ public class BattleActionRunner
 
                 hudService.RefreshHUDs();
                 yield return new WaitForSeconds(ActionDelay);
+
+                if (BattleCameraController.Instance != null)
+                    yield return BattleCameraController.Instance.ReturnDefaultIfNotHeld();
+
                 yield break;
             }
 
             if (ShouldPlayerSkillTargetSelf(command))
             {
-                yield return PlayPlayerSkillPresentation(attackerAnimator, command);
+                if (ShouldSkipPlayerSkillCamera(command) && BattleCameraController.Instance != null)
+                    yield return BattleCameraController.Instance.ZoomForRangedSkill();
+
+                if (attackerAnimator != null)
+                    attackerAnimator.PlaySkillAction(command);
 
 
                 if (attacker.RuntimeData == null || attacker.RuntimeData.IsDead)
                 {
                     hudService.RefreshHUDs();
+
+                    if (BattleCameraController.Instance != null)
+                        yield return BattleCameraController.Instance.ReturnDefaultIfNotHeld();
+
                     yield break;
                 }
 
@@ -1705,6 +1736,10 @@ public class BattleActionRunner
 
                 hudService.RefreshHUDs();
                 yield return new WaitForSeconds(ActionDelay);
+
+                if (BattleCameraController.Instance != null)
+                    yield return BattleCameraController.Instance.ReturnDefaultIfNotHeld();
+
                 yield break;
             }
 
@@ -1731,13 +1766,23 @@ public class BattleActionRunner
 
             List<int> gridEffectTargets = BuildDamageableGridEffectTargets(command);
 
-            if (hitTargets.Count > 0 && BattleCameraController.Instance != null)
+            if (ShouldSkipPlayerSkillCamera(command) && BattleCameraController.Instance != null)
+            {
+                yield return BattleCameraController.Instance.ZoomForRangedSkill();
+            }
+            else if (hitTargets.Count > 0 && BattleCameraController.Instance != null)
+            {
                 yield return BattleCameraController.Instance.ZoomToAttacker(attacker.transform);
+            }
 
 
             if (attacker.RuntimeData == null || attacker.RuntimeData.IsDead)
             {
                 hudService.RefreshHUDs();
+
+                if (BattleCameraController.Instance != null)
+                    yield return BattleCameraController.Instance.ReturnDefaultIfNotHeld();
+
                 yield break;
             }
 
@@ -1748,10 +1793,15 @@ public class BattleActionRunner
                 if (command.SkillData.SkillType == SkillType.Attack)
                     BattleEquipmentEffectService.TryApplyAttackMissCharge(command.UserRuntime);
 
-                yield return PlayPlayerSkillPresentation(attackerAnimator, command);
+                if (attackerAnimator != null)
+                    attackerAnimator.PlaySkillAction(command);
 
                 hudService.RefreshHUDs();
                 yield return new WaitForSeconds(ActionDelay);
+
+                if (BattleCameraController.Instance != null)
+                    yield return BattleCameraController.Instance.ReturnDefaultIfNotHeld();
+
                 yield break;
             }
 
@@ -1870,7 +1920,8 @@ public class BattleActionRunner
         {
             Debug.LogWarning($"[PlayerSkillEffect] EffectEntries 없음 / Skill:{command.SkillData.SkillId}");
 
-            yield return PlayPlayerSkillPresentation(attackerAnimator, command);
+            if (attackerAnimator != null)
+                attackerAnimator.PlaySkillAction(command);
 
             yield return new WaitForSeconds(ActionDelay);
             yield break;
@@ -1935,7 +1986,8 @@ public class BattleActionRunner
 
             if (!playedDamageSequence && !playedActionForNonDamage)
             {
-                yield return PlayPlayerSkillPresentation(attackerAnimator, command);
+                if (attackerAnimator != null)
+                    attackerAnimator.PlaySkillAction(command);
 
                 playedActionForNonDamage = true;
                 yield return new WaitForSeconds(ActionDelay);
@@ -1968,7 +2020,8 @@ public class BattleActionRunner
 
         if (!playedDamageSequence && !playedActionForNonDamage)
         {
-            yield return PlayPlayerSkillPresentation(attackerAnimator, command);
+            if (attackerAnimator != null)
+                attackerAnimator.PlaySkillAction(command);
 
             yield return new WaitForSeconds(ActionDelay);
         }
@@ -2006,7 +2059,8 @@ public class BattleActionRunner
                 yield break;
             }
 
-            yield return PlayPlayerSkillPresentation(attackerAnimator, command, hitIndex);
+            if (attackerAnimator != null)
+                attackerAnimator.PlaySkillAction(command, hitIndex);
 
             float hitActionDelay = isMultiHit
                 ? ActionDelay / MultiHitAnimationSpeed
@@ -2087,10 +2141,17 @@ public class BattleActionRunner
                 yield break;
             }
 
-            yield return PlayDamageHitFeedback(
-                caster != null ? caster.transform : null,
-                feedbackTargets,
-                command.Direction);
+            if (ShouldSkipPlayerSkillCamera(command))
+            {
+                yield return PlayRangedDamageCameraFeedback();
+            }
+            else
+            {
+                yield return PlayDamageHitFeedback(
+                    caster != null ? caster.transform : null,
+                    feedbackTargets,
+                    command.Direction);
+            }
 
             if (hitIndex >= hitCount - 1)
                 yield return new WaitForSeconds(HitCameraDelay);
@@ -2099,22 +2160,6 @@ public class BattleActionRunner
         if (isMultiHit && attackerAnimator != null)
             attackerAnimator.RestorePlaybackSpeed();
 
-    }
-
-    private static IEnumerator PlayPlayerSkillPresentation(
-        BattleUnitAnimator animator,
-        PlayerReservedCommand command,
-        int hitIndex = -1)
-    {
-        if (animator == null || command == null)
-            yield break;
-
-        if (hitIndex >= 0)
-            animator.PlaySkillAction(command, hitIndex);
-        else
-            animator.PlaySkillAction(command);
-
-        yield return animator.PlaySkillTargetVfx(command);
     }
 
     private IEnumerator ExecuteDraugrCounters(
@@ -3616,9 +3661,11 @@ public class BattleActionRunner
 
         try
         {
-            if (!ShouldSkipMonsterSkillCamera(command) &&
-                firstPlayerTarget != null &&
-                BattleCameraController.Instance != null)
+            if (ShouldSkipMonsterSkillCamera(command) && BattleCameraController.Instance != null)
+            {
+                yield return BattleCameraController.Instance.ZoomForRangedSkill();
+            }
+            else if (firstPlayerTarget != null && BattleCameraController.Instance != null)
             {
                 yield return BattleCameraController.Instance.ZoomToAttacker(monster.transform);
             }
@@ -3702,17 +3749,24 @@ public class BattleActionRunner
                 yield break;
             }
 
-            bool hadCameraTarget = HasMonsterSkillCameraTarget(command);
+            bool isRangedPresentation = ShouldSkipMonsterSkillCamera(command);
             List<Transform> feedbackTargets = BuildMonsterSkillFeedbackTargets(monster, command);
 
             monsterSkillEffectService.ApplyMonsterSkillDamageHit(monster, command, hitIndex);
 
-            if (hadCameraTarget)
+            if (feedbackTargets.Count > 0)
             {
-                yield return PlayDamageHitFeedback(
-                    monster != null ? monster.transform : null,
-                    feedbackTargets,
-                    GetMonsterImpactFallbackDirection(monster));
+                if (isRangedPresentation)
+                {
+                    yield return PlayRangedDamageCameraFeedback();
+                }
+                else
+                {
+                    yield return PlayDamageHitFeedback(
+                        monster != null ? monster.transform : null,
+                        feedbackTargets,
+                        GetMonsterImpactFallbackDirection(monster));
+                }
             }
 
             yield return new WaitForSeconds(HitCameraDelay);
@@ -4042,31 +4096,34 @@ public class BattleActionRunner
         return false;
     }
 
-    private bool HasMonsterSkillCameraTarget(MonsterReservedCommand command)
+    private static bool ShouldSkipPlayerSkillCamera(PlayerReservedCommand command)
     {
-        return !ShouldSkipMonsterSkillCamera(command) &&
-               FindFirstAlivePlayerTarget(command) != null;
+        return command != null &&
+               command.SkillData != null &&
+               command.SkillData.RangeType == RangeType.Selection;
     }
 
     private static bool ShouldSkipMonsterSkillCamera(MonsterReservedCommand command)
     {
-        if (command == null)
+        if (command == null || command.SkillData == null)
             return false;
 
-        bool isBlightGlobalDebuff =
-            string.Equals(command.MonsterId, BlightMonsterId, System.StringComparison.Ordinal) &&
-            string.Equals(command.SkillId, BlightDebuffSkillId, System.StringComparison.Ordinal);
+        TimelineActionType notation = command.SkillData.TimelineNotation;
 
-        bool isBarrowRangedAttack =
-            string.Equals(command.MonsterId, BarrowMonsterId, System.StringComparison.Ordinal) &&
-            (string.Equals(command.SkillId, BarrowDirectShotSkillId, System.StringComparison.Ordinal) ||
-             string.Equals(command.SkillId, BarrowArcShotSkillId, System.StringComparison.Ordinal));
+        if (notation == TimelineActionType.Buff ||
+            notation == TimelineActionType.Debuff)
+        {
+            return true;
+        }
 
-        bool isRookEarthquake =
-            string.Equals(command.MonsterId, RookMonsterId, System.StringComparison.Ordinal) &&
-            string.Equals(command.SkillId, RookEarthquakeSkillId, System.StringComparison.Ordinal);
+        return notation == TimelineActionType.Attack &&
+               RangedMonsterAttackSkillIds.Contains(command.SkillData.SkillId);
+    }
 
-        return isBlightGlobalDebuff || isBarrowRangedAttack || isRookEarthquake;
+    private static IEnumerator PlayRangedDamageCameraFeedback()
+    {
+        if (BattleCameraController.Instance != null)
+            yield return BattleCameraController.Instance.PlayRangedDamageImpact();
     }
 
     private IEnumerator PlayDamageHitFeedback(
