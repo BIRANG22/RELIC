@@ -38,6 +38,20 @@ public class BattleCameraController : MonoBehaviour
     [SerializeField, Min(0f)] private float impactRecoverySpeedDuration = 0.18f;
     [SerializeField] private bool useUnscaledTimeForImpact = true;
 
+    [Header("Ranged Skill Zoom")]
+    [Tooltip("원거리 스킬 실행 시작 시 카메라가 이동할 Z 위치입니다. X/Y는 이동하지 않습니다.")]
+    [SerializeField] private float rangedExecutionZoomZPosition = -18f;
+    [Tooltip("원거리 스킬 실행 시작 시 Z 줌에 걸리는 시간입니다.")]
+    [SerializeField] private float rangedExecutionZoomDuration = 0.25f;
+
+    [Header("Ranged Damage Impact")]
+    [Tooltip("원거리 공격 명중 시 적용할 약한 Z 줌 거리입니다. 근거리 impactZoomZOffset과 별도로 사용합니다.")]
+    [SerializeField] private float rangedImpactZoomZOffset = 0.5f;
+    [Tooltip("원거리 공격 명중 시 약한 줌이 들어가는 시간입니다.")]
+    [SerializeField] private float rangedImpactZoomInDuration = 0.06f;
+    [Tooltip("원거리 공격 명중 후 원래 카메라 Z 위치로 돌아오는 시간입니다.")]
+    [SerializeField] private float rangedImpactZoomOutDuration = 0.12f;
+
     [Header("Map Camera")]
     [SerializeField] private Vector3 mapPosition = new Vector3(0f, 0f, -20f);
 
@@ -189,6 +203,41 @@ public class BattleCameraController : MonoBehaviour
     {
         // 기존 호출부 호환용이다. 실제 기준은 피격자가 아니라 최초 타격자다.
         yield return ZoomToAttacker(hitTarget);
+    }
+
+    /// <summary>
+    /// 원거리 스킬 실행용 카메라 줌입니다.
+    /// 공격자 위치를 따라가지 않고 현재 X/Y를 유지한 채 Z만 약하게 확대합니다.
+    /// </summary>
+    public IEnumerator ZoomForRangedSkill()
+    {
+        if (targetCamera == null)
+            yield break;
+
+        if (hasActiveCombatZoom)
+            yield break;
+
+        hasActiveCombatZoom = true;
+        ResetDamageImpactRotationSequence();
+        RemoveMouseParallax();
+        hasActiveMonsterInfoFocus = false;
+        EndZoomFollowTarget();
+
+        if (routine != null)
+            StopCoroutine(routine);
+
+        ClearImpactOffset();
+
+        Vector3 targetPos = targetCamera.transform.position;
+        targetPos.z = rangedExecutionZoomZPosition;
+
+        routine = StartCoroutine(MoveCamera(
+            targetPos,
+            targetCamera.orthographicSize,
+            rangedExecutionZoomDuration,
+            false,
+            false));
+        yield return routine;
     }
 
     public void SetHoldDefaultReturn(bool hold)
@@ -601,6 +650,50 @@ public class BattleCameraController : MonoBehaviour
 
         if (useOrthographicSizeZoom)
             targetCamera.orthographicSize = baseSize;
+
+        Vector3 restoredPosition = targetCamera.transform.position;
+        restoredPosition.z = baseZ;
+        targetCamera.transform.position = restoredPosition;
+        ClearImpactOffset();
+    }
+
+    /// <summary>
+    /// 원거리 공격용 피격 카메라 연출입니다.
+    /// 공격자 위치로 이동하거나 추적하지 않고, 현재 카메라 위치에서 약한 Z 줌과 흔들림/히트스톱만 재생합니다.
+    /// </summary>
+    public IEnumerator PlayRangedDamageImpact()
+    {
+        if (targetCamera == null || !enableDamageImpact)
+            yield break;
+
+        RemoveMouseParallax();
+
+        if (routine != null)
+            yield return routine;
+
+        ClearImpactOffset();
+
+        float baseSize = targetCamera.orthographicSize;
+        float baseZ = targetCamera.transform.position.z;
+        float targetZ = usePositionZZoom
+            ? baseZ + Mathf.Max(0f, rangedImpactZoomZOffset)
+            : baseZ;
+
+        yield return LerpImpactZoom(
+            baseSize,
+            baseSize,
+            baseZ,
+            targetZ,
+            rangedImpactZoomInDuration);
+
+        yield return ShakeAndHitStop();
+
+        yield return LerpImpactZoom(
+            targetCamera.orthographicSize,
+            baseSize,
+            targetCamera.transform.position.z,
+            baseZ,
+            rangedImpactZoomOutDuration);
 
         Vector3 restoredPosition = targetCamera.transform.position;
         restoredPosition.z = baseZ;
@@ -1171,6 +1264,9 @@ public class BattleCameraController : MonoBehaviour
         impactShakeFrequency = Mathf.Max(1f, impactShakeFrequency);
         impactHitStopDuration = Mathf.Max(0f, impactHitStopDuration);
         impactHitStopTimeScale = Mathf.Clamp01(impactHitStopTimeScale);
+        rangedImpactZoomZOffset = Mathf.Max(0f, rangedImpactZoomZOffset);
+        rangedImpactZoomInDuration = Mathf.Max(0f, rangedImpactZoomInDuration);
+        rangedImpactZoomOutDuration = Mathf.Max(0f, rangedImpactZoomOutDuration);
         impactRecoverySpeedMultiplier = Mathf.Max(1f, impactRecoverySpeedMultiplier);
         impactRecoverySpeedDuration = Mathf.Max(0f, impactRecoverySpeedDuration);
         monsterInfoFocusDuration = Mathf.Max(0f, monsterInfoFocusDuration);
