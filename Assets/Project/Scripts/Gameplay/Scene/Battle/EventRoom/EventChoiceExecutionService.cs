@@ -19,6 +19,9 @@ namespace Relic.Gameplay.Data
     public delegate bool EventChoiceSkillAwakenRollback(
         IReadOnlyList<EventChoiceSkillAwakenTarget> targets,
         out string resultMessage);
+    public delegate bool EventChoiceSkillAwakenFailureRemove(
+        EventChoiceSkillAwakenTarget target,
+        out string resultMessage);
     public enum EventChoiceSkillRewardFilter
     {
         Attack,
@@ -124,6 +127,7 @@ namespace Relic.Gameplay.Data
         public EventChoiceSkillAwakenTarget SelectedSkillAwakenTarget;
         public EventChoiceSkillAwakenGrant UpgradeSelectedSkill;
         public EventChoiceSkillAwakenRollback RollbackAwakenedSkills;
+        public EventChoiceSkillAwakenFailureRemove RemoveFailedSelectedSkill;
         public EventChoiceFilteredSkillRewardGrant OfferFilteredSkillRewards;
         public Func<bool> HasUpgradeableEquippedSkill;
         public Func<bool> OpenShop;
@@ -329,13 +333,15 @@ namespace Relic.Gameplay.Data
                 if (!string.IsNullOrWhiteSpace(failure))
                     messages.Add(failure);
 
-                string awakenRollback = ApplyAwakenFailureRollback(choice, context);
-                if (!string.IsNullOrWhiteSpace(awakenRollback))
-                    messages.Add(awakenRollback);
+                string awakenFailureRemoval = ApplyAwakenFailureRemoval(choice, context);
+                if (!string.IsNullOrWhiteSpace(awakenFailureRemoval))
+                    messages.Add(awakenFailureRemoval);
 
-                string nextEventId = RequiresSkillAwakenSelection(choice)
-                    ? string.Empty
-                    : choice.NextEventId;
+                string nextEventId = !string.IsNullOrWhiteSpace(choice.FailNextEventId)
+                    ? choice.FailNextEventId
+                    : RequiresSkillAwakenSelection(choice)
+                        ? string.Empty
+                        : choice.NextEventId;
 
                 return new EventChoiceExecutionResult(
                     true,
@@ -538,6 +544,27 @@ namespace Relic.Gameplay.Data
                 : $"기억 강화: {upgradeSkillId}";
         }
 
+
+        private static string ApplyAwakenFailureRemoval(
+            EventData choice,
+            EventChoiceExecutionContext context)
+        {
+            if (!RequiresSkillAwakenSelection(choice) || !context.SelectedSkillAwakenTarget.IsValid)
+                return string.Empty;
+
+            if (context.RemoveFailedSelectedSkill == null)
+                return "실패한 선택 기억 제거 처리가 준비되지 않았습니다.";
+
+            bool removed = context.RemoveFailedSelectedSkill(
+                context.SelectedSkillAwakenTarget,
+                out string resultMessage);
+
+            if (!removed && string.IsNullOrWhiteSpace(resultMessage))
+                return "실패한 선택 기억을 제거하지 못했습니다.";
+
+            return resultMessage;
+        }
+
         private static string ApplyAwakenFailureRollback(
             EventData choice,
             EventChoiceExecutionContext context)
@@ -670,13 +697,19 @@ namespace Relic.Gameplay.Data
             if (!TryParseEffectAmount(choice.ResultValue, out int amount))
                 return BuildResultSummary(choice);
 
-            if (ContainsAny(choice.ResultTarget, "코스트 회복량"))
+            if (ContainsAny(choice.ResultTarget, "최대 체력", "최대 생명력"))
+            {
+                int count = ModifyPartyMaxHp(context, amount);
+                return $"파티 전원 최대 체력 {amount:+#;-#;0} 적용 ({count}명)";
+            }
+
+            if (ContainsAny(choice.ResultTarget, "코스트 회복량", "마나 회복량"))
             {
                 int count = ModifyPartyCostRecovery(context, amount);
                 return $"파티 마나 회복량 {amount:+#;-#;0} 적용 ({count}명)";
             }
 
-            if (ContainsAny(choice.ResultTarget, "최대 코스트"))
+            if (ContainsAny(choice.ResultTarget, "최대 코스트", "최대 마나"))
             {
                 int count = ModifyPartyMaxCost(context, amount);
                 return $"파티 최대 마나 {amount:+#;-#;0} 적용 ({count}명)";
@@ -820,7 +853,7 @@ namespace Relic.Gameplay.Data
 
                 character.RunMaxCostBonus += amount;
                 character.MaxCost = Mathf.Max(0, character.MaxCost + amount);
-                character.CurrentCost = Mathf.Clamp(character.CurrentCost, 0, character.MaxCost);
+                character.CurrentCost = Mathf.Clamp(character.CurrentCost + Mathf.Max(0, amount), 0, character.MaxCost);
                 count++;
             }
 

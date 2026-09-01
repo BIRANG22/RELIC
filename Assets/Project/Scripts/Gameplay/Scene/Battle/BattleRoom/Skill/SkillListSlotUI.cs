@@ -12,6 +12,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     [Header("Summary UI")]
     [SerializeField] private Image skillIconImage;
+
     [SerializeField] private TMP_Text skillNameText;
     [SerializeField] private Image skillRangeImage;
     [SerializeField] private TMP_Text skillCostTypeText;
@@ -388,10 +389,11 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         Color skillIconColor = isResourceInsufficient
             ? insufficientResourceColor
             : hasSkill
-                ? SkillRarityUtility.GetSkillIconColor(skillData.SkillId, usableImageColor)
+                ? usableImageColor
                 : emptyImageColor;
 
         ApplyImageColor(skillIconImage, skillIconColor);
+        SkillUpgradeMarkStyle.ApplyShared(skillIconImage, hasSkill ? skillData : null);
         ApplyImageColor(skillRangeImage, imageColor);
         ApplyImageColor(skillCostImage, imageColor);
     }

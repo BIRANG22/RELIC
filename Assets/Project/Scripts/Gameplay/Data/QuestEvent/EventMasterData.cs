@@ -28,6 +28,7 @@ namespace Relic.Gameplay.Data
         public string SuccessRate;
         public string FailResult;
         public string NextEventId;
+        public string FailNextEventId;
         public bool PersistAcrossNextEvent;
         public string SuccessVisualObjectId;
         public string SuccessVisualActionId;

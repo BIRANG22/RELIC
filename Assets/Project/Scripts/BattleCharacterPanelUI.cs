@@ -2057,6 +2057,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
             iconImage.enabled = hasSkill && skillIcon != null;
             iconImage.gameObject.SetActive(hasSkill && skillIcon != null);
             iconImage.preserveAspect = true;
+            SkillUpgradeMarkStyle.ApplyShared(iconImage, hasSkill ? skillData : null);
         }
 
         if (nameText != null)
@@ -2125,6 +2126,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
             iconImage.sprite = hasSkill ? skillIcon : null;
             iconImage.enabled = hasSkill && skillIcon != null;
             iconImage.gameObject.SetActive(hasSkill && skillIcon != null);
+            SkillUpgradeMarkStyle.ApplyShared(iconImage, hasSkill ? skillData : null);
         }
 
         if (costImage != null)
@@ -2350,6 +2352,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
             return;
 
         SetSkillInfoImage(skillInfoIconImage, ResolveSkillIcon(skillData.SkillId, skillData));
+        SkillUpgradeMarkStyle.ApplyShared(skillInfoIconImage, skillData);
         SetSkillInfoImage(skillInfoRangeImage, ResolveSkillRangeIcon(skillData.RangeId));
 
         if (skillInfoNameText != null)

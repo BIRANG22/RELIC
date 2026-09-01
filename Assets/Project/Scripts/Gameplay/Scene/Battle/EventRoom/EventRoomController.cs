@@ -46,6 +46,7 @@ public class EventRoomController : MonoBehaviour
 
     [Header("Event Skill Awaken Selection")]
     [SerializeField] private EventSkillAwakenSelectionPanelUI skillAwakenSelectionPanel;
+    [SerializeField, Min(0.01f)] private float skillAwakenScrollFadeDuration = 0.25f;
 
     [Header("Event Dice Roll")]
     [SerializeField] private EventDiceRollPresenter diceRollPresenter;
@@ -103,6 +104,13 @@ public class EventRoomController : MonoBehaviour
     private bool isSelectingSkillAwaken;
     private Coroutine diceRollRoutine;
     private Coroutine eventChoiceScrollMoveRoutine;
+    private Coroutine skillAwakenTransitionRoutine;
+    private Coroutine skillAwakenResultRoutine;
+    private bool hasPendingSkillAwakenResult;
+    private EventData pendingSkillAwakenResultChoice;
+    private EventChoiceExecutionResult pendingSkillAwakenExecutionResult;
+    private EventChoiceSkillAwakenTarget pendingSkillAwakenResultTarget;
+    private CanvasGroup eventChoiceScrollCanvasGroup;
     private Coroutine terminalChoiceFadeRoutine;
     private bool waitForEventEntranceReveal;
 
@@ -184,6 +192,7 @@ public class EventRoomController : MonoBehaviour
         HideDiceRollPresenterImmediate();
         StopEventRewardPanelDelay();
         StopEventChoiceScrollViewAnimation();
+        StopSkillAwakenResultRoutine();
         StopTerminalChoiceFade();
         HideRelicHoverInfo();
         HideRelicFlyObjects();
@@ -413,7 +422,24 @@ public class EventRoomController : MonoBehaviour
         if (eventResultText != null)
             eventResultText.text = resultMessage ?? string.Empty;
 
+        if (IsEvent08TitleOnlyTerminal(definition.EventId))
+        {
+            // Event_08_C / Event_08_D는 결과 Title만 보여주는 종료 상태입니다.
+            // 처음 Event_08에서 유지되던 Persist 선택지도 여기서는 제거합니다.
+            persistentEventChoices.Clear();
+            BindChoiceSlots(null);
+            isEventResolved = true;
+            SetNextButtonVisible(true);
+            return;
+        }
+
         BindChoiceSlots(GetCurrentVisibleChoices());
+    }
+
+    private static bool IsEvent08TitleOnlyTerminal(string eventId)
+    {
+        string normalized = EventIdUtility.Normalize(eventId);
+        return normalized == "Event_08_C" || normalized == "Event_08_D";
     }
 
     private void BindChoiceSlots(IReadOnlyList<EventData> choices)
@@ -499,9 +525,33 @@ public class EventRoomController : MonoBehaviour
         }
 
         ClearEquippedRelicCostSelection();
+
+        bool playSkillAwakenResult =
+            selectedSkillAwakenTarget.IsValid &&
+            EventChoiceExecutionService.RequiresSkillAwakenSelection(choice);
+
+        if (playSkillAwakenResult)
+        {
+            hasPendingSkillAwakenResult = true;
+            pendingSkillAwakenResultChoice = choice;
+            pendingSkillAwakenExecutionResult = result;
+            pendingSkillAwakenResultTarget = selectedSkillAwakenTarget;
+            ClearSkillAwakenSelection();
+
+            if (skillAwakenSelectionPanel == null || !skillAwakenSelectionPanel.IsOpen)
+                StartPendingSkillAwakenResult();
+            return;
+        }
+
         ClearSkillAwakenSelection();
+        ContinueAfterExecutedChoice(choice, result);
+    }
+
+    private void ContinueAfterExecutedChoice(EventData choice, EventChoiceExecutionResult result)
+    {
         PersistEventRuntime();
         PlayVisualAction(result);
+        TryShowEvent07StatGainPopup(choice);
 
         bool shouldCompleteAfterFailedChoice =
             EventRoomRewardFlowUtility.ShouldCompleteAfterFailedChoice(choice, result);
@@ -540,6 +590,62 @@ public class EventRoomController : MonoBehaviour
         }
 
         SetNextButtonVisible(true);
+    }
+
+    [Header("Event_07 Popup")]
+    [SerializeField, Min(1f)] private float eventStatPopupFontSize = 48f;
+
+    private void TryShowEvent07StatGainPopup(EventData choice)
+    {
+        if (choice == null || EventIdUtility.Normalize(choice.EventId) != "Event_07")
+            return;
+
+        if (!TryParseSignedValue(choice.ResultValue, out int amount) || amount <= 0)
+            return;
+
+        Transform centerPoint = FindEventAllyPoint1();
+        if (centerPoint == null)
+        {
+            Debug.LogWarning("[EventRoomController] Event_07 팝업 위치 EventAllyPoint1을 찾지 못했습니다.", this);
+            return;
+        }
+
+        Canvas eventCanvas = GetComponentInParent<Canvas>(true);
+        if (eventCanvas == null || !eventCanvas.gameObject.activeInHierarchy)
+            eventCanvas = GetComponentInChildren<Canvas>(true);
+
+        if (Contains(choice.ResultTarget, "최대 체력") || Contains(choice.ResultTarget, "최대 생명력"))
+        {
+            BattleDamageTextPopupUI.ShowEventMaxHealthGain(centerPoint, amount, eventCanvas, eventStatPopupFontSize);
+            return;
+        }
+
+        if (Contains(choice.ResultTarget, "최대 코스트") || Contains(choice.ResultTarget, "최대 마나"))
+            BattleDamageTextPopupUI.ShowEventMaxManaGain(centerPoint, amount, eventCanvas, eventStatPopupFontSize);
+    }
+
+    private Transform FindEventAllyPoint1()
+    {
+        Transform point = FindChildRecursive(transform, "EventAllyPoint1");
+        if (point != null && point.gameObject.activeInHierarchy)
+            return point;
+
+        Transform[] transforms = FindObjectsByType<Transform>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < transforms.Length; i++)
+        {
+            Transform candidate = transforms[i];
+            if (candidate != null &&
+                candidate.gameObject.activeInHierarchy &&
+                candidate.name == "EventAllyPoint1")
+            {
+                return candidate;
+            }
+        }
+
+        return null;
     }
 
     private bool TryBeginDiceRollChoice(EventData choice)
@@ -739,19 +845,199 @@ public class EventRoomController : MonoBehaviour
         if (eventResultText != null)
             eventResultText.text = "강화할 장착 기억을 선택하세요.";
 
+        if (skillAwakenTransitionRoutine != null)
+            StopCoroutine(skillAwakenTransitionRoutine);
+
+        skillAwakenTransitionRoutine = StartCoroutine(OpenSkillAwakenPanelWithTransition());
+    }
+
+
+    private IEnumerator OpenSkillAwakenPanelWithTransition()
+    {
+        yield return FadeOutEventChoiceScrollForSkillAwaken();
+
+        if (!isSelectingSkillAwaken || pendingSkillAwakenChoice == null || skillAwakenSelectionPanel == null)
+        {
+            skillAwakenTransitionRoutine = null;
+            yield break;
+        }
+
+        // 기억 강화 선택 패널이 열리는 동안에는 기존 이벤트 제목을 숨깁니다.
+        SetEventTitleVisible(false);
+
         bool openedSelectionPanel = skillAwakenSelectionPanel.Open(
             skillAwakenOptions,
             OnSkillAwakenSelected,
-            CancelSkillAwakenSelection);
+            CancelSkillAwakenSelection,
+            OnSkillAwakenPanelClosed);
+
         if (!openedSelectionPanel)
         {
+            SetEventTitleVisible(true);
             if (eventResultText != null)
                 eventResultText.text = "기억 강화 선택 패널이 씬에 올바르게 배치되지 않았습니다.";
 
             ClearSkillAwakenSelection();
             BindChoiceSlots(GetCurrentVisibleChoices());
             SetNextButtonVisible(EventRoomRewardFlowUtility.CanSkipUnresolvedEvent(currentEventDefinition));
+            RestoreEventChoiceScrollAfterSkillAwaken();
         }
+
+        skillAwakenTransitionRoutine = null;
+    }
+
+    private IEnumerator FadeOutEventChoiceScrollForSkillAwaken()
+    {
+        EnsureEventChoiceScrollViewReference();
+        EnsureEventChoiceScrollCanvasGroup();
+
+        if (eventChoiceScrollView == null || eventChoiceScrollCanvasGroup == null)
+            yield break;
+
+        if (!eventChoiceScrollView.gameObject.activeSelf)
+            eventChoiceScrollView.gameObject.SetActive(true);
+
+        eventChoiceScrollCanvasGroup.interactable = false;
+        eventChoiceScrollCanvasGroup.blocksRaycasts = false;
+        yield return FadeCanvasGroup(eventChoiceScrollCanvasGroup, eventChoiceScrollCanvasGroup.alpha, 0f, skillAwakenScrollFadeDuration);
+        eventChoiceScrollView.gameObject.SetActive(false);
+    }
+
+    private void OnSkillAwakenPanelClosed()
+    {
+        if (hasPendingSkillAwakenResult)
+        {
+            // 성공/실패 결과 연출이 끝나고 다음 이벤트가 로드될 때까지 제목을 숨긴 상태로 유지합니다.
+            StartPendingSkillAwakenResult();
+            return;
+        }
+
+        // 선택 취소 등 결과 연출 없이 패널만 닫힌 경우에는 현재 이벤트 제목을 다시 표시합니다.
+        SetEventTitleVisible(true);
+        RestoreEventChoiceScrollAfterSkillAwaken();
+    }
+
+    private void SetEventTitleVisible(bool visible)
+    {
+        if (eventTitleText != null)
+            eventTitleText.gameObject.SetActive(visible);
+    }
+
+    private void StartPendingSkillAwakenResult()
+    {
+        if (!hasPendingSkillAwakenResult || !isActiveAndEnabled)
+            return;
+
+        if (skillAwakenResultRoutine != null)
+        {
+            StopCoroutine(skillAwakenResultRoutine);
+            skillAwakenResultRoutine = null;
+        }
+
+        skillAwakenResultRoutine = StartCoroutine(PlayPendingSkillAwakenResultRoutine());
+    }
+
+    private IEnumerator PlayPendingSkillAwakenResultRoutine()
+    {
+        EventData choice = pendingSkillAwakenResultChoice;
+        EventChoiceExecutionResult result = pendingSkillAwakenExecutionResult;
+        EventChoiceSkillAwakenTarget target = pendingSkillAwakenResultTarget;
+
+        if (skillAwakenSelectionPanel != null)
+            yield return skillAwakenSelectionPanel.PlayResultSkill(target, result.Succeeded);
+
+        hasPendingSkillAwakenResult = false;
+        pendingSkillAwakenResultChoice = null;
+        pendingSkillAwakenExecutionResult = default;
+        pendingSkillAwakenResultTarget = default;
+        skillAwakenResultRoutine = null;
+
+        ContinueAfterExecutedChoice(choice, result);
+
+        if (!isEventResolved && isDataEventActive)
+            RestoreEventChoiceScrollAfterSkillAwaken();
+    }
+
+    private void StopSkillAwakenResultRoutine()
+    {
+        if (skillAwakenResultRoutine != null)
+        {
+            StopCoroutine(skillAwakenResultRoutine);
+            skillAwakenResultRoutine = null;
+        }
+
+        hasPendingSkillAwakenResult = false;
+        pendingSkillAwakenResultChoice = null;
+        pendingSkillAwakenExecutionResult = default;
+        pendingSkillAwakenResultTarget = default;
+    }
+
+    private void RestoreEventChoiceScrollAfterSkillAwaken()
+    {
+        if (!isActiveAndEnabled || !isDataEventActive || isEventResolved)
+            return;
+
+        if (skillAwakenTransitionRoutine != null)
+            StopCoroutine(skillAwakenTransitionRoutine);
+
+        skillAwakenTransitionRoutine = StartCoroutine(FadeInEventChoiceScrollAfterSkillAwaken());
+    }
+
+    private IEnumerator FadeInEventChoiceScrollAfterSkillAwaken()
+    {
+        EnsureEventChoiceScrollViewReference();
+        EnsureEventChoiceScrollCanvasGroup();
+
+        if (eventChoiceScrollView == null || eventChoiceScrollCanvasGroup == null)
+        {
+            skillAwakenTransitionRoutine = null;
+            yield break;
+        }
+
+        eventChoiceScrollView.gameObject.SetActive(true);
+        eventChoiceScrollCanvasGroup.alpha = 0f;
+        eventChoiceScrollCanvasGroup.interactable = false;
+        eventChoiceScrollCanvasGroup.blocksRaycasts = false;
+
+        yield return FadeCanvasGroup(eventChoiceScrollCanvasGroup, 0f, 1f, skillAwakenScrollFadeDuration);
+
+        eventChoiceScrollCanvasGroup.interactable = true;
+        eventChoiceScrollCanvasGroup.blocksRaycasts = true;
+        skillAwakenTransitionRoutine = null;
+    }
+
+    private void EnsureEventChoiceScrollCanvasGroup()
+    {
+        EnsureEventChoiceScrollViewReference();
+        if (eventChoiceScrollView == null)
+            return;
+
+        if (eventChoiceScrollCanvasGroup == null || eventChoiceScrollCanvasGroup.gameObject != eventChoiceScrollView.gameObject)
+        {
+            eventChoiceScrollCanvasGroup = eventChoiceScrollView.GetComponent<CanvasGroup>();
+            if (eventChoiceScrollCanvasGroup == null)
+                eventChoiceScrollCanvasGroup = eventChoiceScrollView.gameObject.AddComponent<CanvasGroup>();
+        }
+    }
+
+    private static IEnumerator FadeCanvasGroup(CanvasGroup group, float from, float to, float duration)
+    {
+        if (group == null)
+            yield break;
+
+        float safeDuration = Mathf.Max(0.01f, duration);
+        float elapsed = 0f;
+        group.alpha = from;
+
+        while (elapsed < safeDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / safeDuration);
+            group.alpha = Mathf.Lerp(from, to, Mathf.SmoothStep(0f, 1f, t));
+            yield return null;
+        }
+
+        group.alpha = to;
     }
 
     private void CancelSkillAwakenSelection()
@@ -936,6 +1222,115 @@ public class EventRoomController : MonoBehaviour
 
         resultMessage = $"기억 강화: {GetSkillDisplayName(upgradeSkillId)}";
         return true;
+    }
+
+
+    private bool TryRemoveFailedSelectedSkill(
+        EventChoiceSkillAwakenTarget target,
+        out string resultMessage)
+    {
+        resultMessage = string.Empty;
+
+        if (!target.IsValid)
+        {
+            resultMessage = "소멸시킬 기억을 찾지 못했습니다.";
+            return false;
+        }
+
+        CharacterRuntimeStore characterStore = DataManager.Instance?.CharacterRuntimeStore;
+        if (characterStore == null ||
+            !characterStore.TryGet(target.CharacterId, out CharacterRuntimeData character) ||
+            character == null)
+        {
+            resultMessage = "선택한 캐릭터를 찾을 수 없습니다.";
+            return false;
+        }
+
+        SkillInventoryEquipService.EnsureEquippedSkillArray(character);
+        if (!TryRemoveCurrentSkill(character, target))
+        {
+            resultMessage = "실패한 선택 기억을 제거하지 못했습니다.";
+            return false;
+        }
+
+        characterStore.AddOrUpdate(character);
+        EquippedSkillPanelUI.RefreshAll();
+        SkillInventoryPanelUI.RefreshAll();
+        resultMessage = $"선택한 기억이 소멸했습니다: {GetSkillDisplayName(target.SkillId)}";
+        return true;
+    }
+
+    private static bool TryRemoveCurrentSkill(
+        CharacterRuntimeData character,
+        EventChoiceSkillAwakenTarget target)
+    {
+        if (character == null || !target.IsValid)
+            return false;
+
+        switch (target.SlotKind)
+        {
+            case EventChoiceSkillSlotKind.Passive:
+                if (!IsSameId(character.PassiveSkillId, target.SkillId))
+                    return false;
+
+                character.PassiveSkillId = string.Empty;
+                return true;
+
+            case EventChoiceSkillSlotKind.Unique:
+                return ClearCurrentSpecialSkill(
+                    character,
+                    target.SkillId,
+                    ref character.UniqueSkillId,
+                    0);
+
+            case EventChoiceSkillSlotKind.Ability:
+                return ClearCurrentSpecialSkill(
+                    character,
+                    target.SkillId,
+                    ref character.AbilitySkillId,
+                    1);
+
+            case EventChoiceSkillSlotKind.Equipped:
+                if (character.EquippedSkillIds == null ||
+                    target.SlotIndex < 0 ||
+                    target.SlotIndex >= character.EquippedSkillIds.Length ||
+                    !IsSameId(character.EquippedSkillIds[target.SlotIndex], target.SkillId))
+                {
+                    return false;
+                }
+
+                character.EquippedSkillIds[target.SlotIndex] = string.Empty;
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
+    private static bool ClearCurrentSpecialSkill(
+        CharacterRuntimeData character,
+        string skillId,
+        ref string specialSkillId,
+        int mirroredSlotIndex)
+    {
+        bool removed = false;
+
+        if (IsSameId(specialSkillId, skillId))
+        {
+            specialSkillId = string.Empty;
+            removed = true;
+        }
+
+        if (character.EquippedSkillIds != null &&
+            mirroredSlotIndex >= 0 &&
+            mirroredSlotIndex < character.EquippedSkillIds.Length &&
+            IsSameId(character.EquippedSkillIds[mirroredSlotIndex], skillId))
+        {
+            character.EquippedSkillIds[mirroredSlotIndex] = string.Empty;
+            removed = true;
+        }
+
+        return removed;
     }
 
     private bool TryRollbackAwakenedSkills(
@@ -1388,13 +1783,19 @@ public class EventRoomController : MonoBehaviour
         {
             if (TryParseSignedValue(choice.ResultValue, out int amount))
             {
-                if (Contains(choice.ResultTarget, "코스트 회복"))
+                if (Contains(choice.ResultTarget, "최대 체력") || Contains(choice.ResultTarget, "최대 생명력"))
+                {
+                    int count = ModifyPartyMaxHp(amount);
+                    return $"파티 전원 최대 체력 {amount:+#;-#;0} 적용 ({count}명)";
+                }
+
+                if (Contains(choice.ResultTarget, "코스트 회복") || Contains(choice.ResultTarget, "마나 회복"))
                 {
                     int count = ModifyPartyCostRecovery(amount);
                     return $"파티 마나 회복량 {amount:+#;-#;0} 적용 ({count}명)";
                 }
 
-                if (Contains(choice.ResultTarget, "최대 코스트"))
+                if (Contains(choice.ResultTarget, "최대 코스트") || Contains(choice.ResultTarget, "최대 마나"))
                 {
                     int count = ModifyPartyMaxCost(amount);
                     return $"파티 최대 마나 {amount:+#;-#;0} 적용 ({count}명)";
@@ -1543,7 +1944,7 @@ public class EventRoomController : MonoBehaviour
 
             character.RunMaxCostBonus += amount;
             character.MaxCost = Mathf.Max(0, character.MaxCost + amount);
-            character.CurrentCost = Mathf.Clamp(character.CurrentCost, 0, character.MaxCost);
+            character.CurrentCost = Mathf.Clamp(character.CurrentCost + Mathf.Max(0, amount), 0, character.MaxCost);
             count++;
         }
 
@@ -1660,6 +2061,7 @@ public class EventRoomController : MonoBehaviour
             SelectedSkillAwakenTarget = selectedSkillAwakenTarget,
             UpgradeSelectedSkill = TryUpgradeSelectedSkill,
             RollbackAwakenedSkills = TryRollbackAwakenedSkills,
+            RemoveFailedSelectedSkill = TryRemoveFailedSelectedSkill,
             OfferFilteredSkillRewards = TryQueueFilteredSkillRewards,
             HasUpgradeableEquippedSkill = HasAnyUpgradeableEquippedSkill,
             OpenShop = TryOpenShopPanel,

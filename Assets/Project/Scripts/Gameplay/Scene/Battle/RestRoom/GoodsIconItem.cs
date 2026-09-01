@@ -10,6 +10,7 @@ public class GoodsIconItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     [Header("UI")]
     [SerializeField] private Button button;
     [SerializeField] private Image iconImage;
+
     [SerializeField] private TMP_Text price;
     [SerializeField] private Text legacyPrice;
 
@@ -139,8 +140,9 @@ public class GoodsIconItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
             ? sourceGoods.Skill.SkillId
             : null;
 
-        iconImage.color = SkillRarityUtility.GetSkillIconColor(skillId, normalIconColor);
+        iconImage.color = normalIconColor;
         iconImage.enabled = icon != null || iconImage.gameObject == gameObject;
+        SkillUpgradeMarkStyle.ApplyShared(iconImage, skillId);
     }
 
     private void SetPriceText(string text)

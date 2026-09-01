@@ -19,6 +19,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
 
     [Header("Item")]
     [SerializeField] private Image itemIconImage;
+
     [SerializeField] private TMP_Text itemNameText;
     [SerializeField] private TMP_Text itemRarityText;
     [SerializeField] private TMP_Text itemEffectText;
@@ -807,7 +808,8 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
             if (!string.IsNullOrWhiteSpace(skillId) && DataManager.Instance?.SkillIconDatabase != null)
                 DataManager.Instance.SkillIconDatabase.TryGetIcon(skillId, out icon);
 
-            ApplyImage(slot.IconImage, icon, SkillRarityUtility.GetSkillIconColor(skillId));
+            ApplyImage(slot.IconImage, icon, Color.white);
+            SkillUpgradeMarkStyle.ApplyShared(slot.IconImage, skillId);
 
             if (slot.Button != null)
                 slot.Button.interactable = currentReward != null;
