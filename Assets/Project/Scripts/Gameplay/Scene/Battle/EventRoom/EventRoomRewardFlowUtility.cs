@@ -3,7 +3,6 @@ using UnityEngine;
 
 public static class EventRoomRewardFlowUtility
 {
-    private const string OptionalSecondChestEventId = "Event_02_A";
     private const string MiningEventId = "Event_05";
 
     public static bool CanSkipUnresolvedEvent(EventDefinition definition)
@@ -11,7 +10,8 @@ public static class EventRoomRewardFlowUtility
         if (definition == null)
             return false;
 
-        return EventIdUtility.Normalize(definition.EventId) == OptionalSecondChestEventId;
+        // 선택지가 남아 있는 중간 이벤트(Event_02_A 등)는 NextButton으로 건너뛰지 않습니다.
+        return false;
     }
 
     public static bool ShouldOpenPendingRewards(
