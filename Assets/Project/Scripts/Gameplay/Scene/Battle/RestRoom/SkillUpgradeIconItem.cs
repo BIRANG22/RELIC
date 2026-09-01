@@ -10,6 +10,7 @@ public class SkillUpgradeIconItem : MonoBehaviour, IPointerEnterHandler, IPointe
     [SerializeField] private Button button;
     [SerializeField] private Image iconImage;
 
+
     private SkillUpgradeRequest request;
     private Action<SkillUpgradeRequest, Sprite> onClicked;
     private Action<SkillUpgradeRequest> onHovered;
@@ -42,6 +43,11 @@ public class SkillUpgradeIconItem : MonoBehaviour, IPointerEnterHandler, IPointe
 
         CacheDefaultIconColor();
         iconImage.color = defaultIconColor;
+    }
+
+    public void ShowUpgradeMark(string upgradedSkillId)
+    {
+        SkillUpgradeMarkStyle.ApplyShared(iconImage, upgradedSkillId);
     }
 
     private void OnDisable()
@@ -136,6 +142,7 @@ public class SkillUpgradeIconItem : MonoBehaviour, IPointerEnterHandler, IPointe
 
         iconImage.sprite = icon;
         iconImage.enabled = iconImage.sprite != null;
-        iconImage.color = SkillRarityUtility.GetSkillIconColor(skillId, defaultIconColor);
+        iconImage.color = defaultIconColor;
+        SkillUpgradeMarkStyle.ApplyShared(iconImage, skillId);
     }
 }

@@ -42,7 +42,7 @@ public class SkillUpgradePanel : MonoBehaviour
     [SerializeField] private float gearRotateTickDuration = 0.12f;
     [SerializeField] private float gearRotateTickInterval = 1f;
     [SerializeField] private float closeDelayAfterUpgradeComplete = 0.5f;
-    [SerializeField] private Color upgradedSkillIconColor = new Color32(0x7E, 0x93, 0xEC, 0xFF);
+
 
     [Header("Layout")]
     [SerializeField] private Vector2 fallbackIconSize = new(80f, 80f);
@@ -532,7 +532,8 @@ public class SkillUpgradePanel : MonoBehaviour
 
             if (item != null && item.Matches(request))
             {
-                item.SetIconColor(upgradedSkillIconColor);
+                item.ResetIconColor();
+                item.ShowUpgradeMark(request.UpgradeSkillId);
                 return;
             }
         }
@@ -546,7 +547,8 @@ public class SkillUpgradePanel : MonoBehaviour
             return;
 
         CacheSelectedSkillIconDefault(targetImage);
-        targetImage.color = upgradedSkillIconColor;
+        targetImage.color = selectedIconDefaultColor;
+        SkillUpgradeMarkStyle.ApplyShared(targetImage, selectedUpgradeRequest.UpgradeSkillId);
     }
 
     private Transform ResolveGearTransform()

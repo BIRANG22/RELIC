@@ -1,4 +1,4 @@
-using Relic.Gameplay.Data;
+Ôªøusing Relic.Gameplay.Data;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -7,6 +7,7 @@ public class SkillInventoryIconUI : MonoBehaviour, IPointerClickHandler, IPointe
 {
     [Header("UI")]
     [SerializeField] private Image iconImage;
+
 
     [Header("Scale Effect")]
     [SerializeField] private RectTransform scaleTarget;
@@ -129,7 +130,8 @@ public class SkillInventoryIconUI : MonoBehaviour, IPointerClickHandler, IPointe
 
         iconImage.sprite = icon;
         iconImage.enabled = icon != null;
-        iconImage.color = SkillRarityUtility.GetSkillIconColor(skillId);
+        iconImage.color = Color.white;
+        SkillUpgradeMarkStyle.ApplyShared(iconImage, skillId);
     }
 
     private void ApplyScale(bool instant)
@@ -147,7 +149,7 @@ public class SkillInventoryIconUI : MonoBehaviour, IPointerClickHandler, IPointe
         }
         else if (isPointerOver && !string.IsNullOrWhiteSpace(skillId))
         {
-            // 1.0∞˙ 1.1 ªÁ¿Ã∏¶ π›∫π«’¥œ¥Ÿ.
+            // 1.0Í≥º 1.1 ÏÇ¨Ïù¥Î•º Î∞òÎ≥µÌï©ÎãàÎã§.
             float breathT = (Mathf.Sin(Time.unscaledTime * hoverBreathSpeed) + 1f) * 0.5f;
             scaleMultiplier = Mathf.Lerp(1f, hoverMaxScale, breathT);
         }

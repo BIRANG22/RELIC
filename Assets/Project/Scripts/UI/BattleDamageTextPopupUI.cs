@@ -163,6 +163,32 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         ShowTyped(target, value, PopupType.HealthRecovery);
     }
 
+    public static void ShowEventMaxHealthGain(Transform target, int value, Canvas preferredCanvas, float fontSize)
+    {
+        if (target == null || value <= 0)
+            return;
+
+        BattleDamageTextPopupUI popup = GetOrCreateInstance();
+        if (popup == null)
+            return;
+
+        popup.UsePreferredCanvas(preferredCanvas);
+        popup.ShowCustomTextInternal(target, "\uCD5C\uB300 \uC0DD\uBA85\uB825 +" + value, PopupType.HealthRecovery, fontSize);
+    }
+
+    public static void ShowEventMaxManaGain(Transform target, int value, Canvas preferredCanvas, float fontSize)
+    {
+        if (target == null || value <= 0)
+            return;
+
+        BattleDamageTextPopupUI popup = GetOrCreateInstance();
+        if (popup == null)
+            return;
+
+        popup.UsePreferredCanvas(preferredCanvas);
+        popup.ShowCustomTextInternal(target, "\uCD5C\uB300 \uB9C8\uB098 +" + value, PopupType.CostRecovery, fontSize);
+    }
+
     public static void ShowUniqueResource(Transform target, string resourceName, int value)
     {
         // resourceName은 기존 호출부 호환을 위해 유지합니다.
@@ -321,7 +347,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         };
     }
 
-    private void ShowCustomTextInternal(Transform target, string message, PopupType popupType)
+    private void ShowCustomTextInternal(Transform target, string message, PopupType popupType, float fontSize = -1f)
     {
         EnsureReferences();
 
@@ -333,15 +359,15 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         if (!TryGetCanvasPosition(target, screenOffset, out Vector2 anchoredPosition))
             return;
 
-        ShowCustomTextPopup(target, screenOffset, anchoredPosition, message, popupType);
+        ShowCustomTextPopup(target, screenOffset, anchoredPosition, message, popupType, fontSize);
     }
 
     private static BattleDamageTextPopupUI GetOrCreateInstance()
     {
-        if (instance != null)
+        if (instance != null && instance.gameObject.activeInHierarchy)
             return instance;
 
-        instance = FindFirstObjectByType<BattleDamageTextPopupUI>(FindObjectsInactive.Include);
+        instance = FindFirstObjectByType<BattleDamageTextPopupUI>(FindObjectsInactive.Exclude);
 
         if (instance != null)
         {
@@ -355,12 +381,27 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         return instance;
     }
 
+    private void UsePreferredCanvas(Canvas preferredCanvas)
+    {
+        if (preferredCanvas == null || !preferredCanvas.gameObject.activeInHierarchy)
+        {
+            EnsureReferences();
+            return;
+        }
+
+        targetCanvas = preferredCanvas;
+        canvasRect = targetCanvas.GetComponent<RectTransform>();
+        uiCamera = targetCanvas.renderMode == RenderMode.ScreenSpaceOverlay
+            ? null
+            : targetCanvas.worldCamera;
+    }
+
     private void EnsureReferences()
     {
         if (worldCamera == null)
             worldCamera = Camera.main;
 
-        if (targetCanvas == null)
+        if (targetCanvas == null || !targetCanvas.gameObject.activeInHierarchy)
             targetCanvas = FindBattleCanvas();
 
         if (targetCanvas == null)
@@ -377,7 +418,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
 
     private Canvas FindBattleCanvas()
     {
-        Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
 
         for (int i = 0; i < canvases.Length; i++)
         {
@@ -704,7 +745,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
     }
 
 
-    private void ShowCustomTextPopup(Transform target, Vector2 screenOffset, Vector2 anchoredPosition, string message, PopupType popupType)
+    private void ShowCustomTextPopup(Transform target, Vector2 screenOffset, Vector2 anchoredPosition, string message, PopupType popupType, float fontSize = -1f)
     {
         GameObject textObject = new GameObject("BattlePopupText_" + message);
         textObject.transform.SetParent(canvasRect, false);
@@ -723,7 +764,12 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         text.textWrappingMode = TextWrappingModes.NoWrap;
         text.overflowMode = TextOverflowModes.Overflow;
         text.color = GetPopupColor(popupType);
-        text.fontSize = GetEffectiveStartFontSize();
+        float popupStartFontSize = fontSize > 0f ? fontSize : GetEffectiveStartFontSize();
+        float defaultStartFontSize = Mathf.Max(1f, GetEffectiveStartFontSize());
+        float popupEndFontSize = fontSize > 0f
+            ? fontSize * (GetEffectiveEndFontSize() / defaultStartFontSize)
+            : GetEffectiveEndFontSize();
+        text.fontSize = popupStartFontSize;
         text.text = message;
 
         if (useBoldText)
@@ -734,7 +780,52 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         canvasGroup.interactable = false;
         canvasGroup.blocksRaycasts = false;
 
-        StartCoroutine(AnimateTextFallbackAndDestroy(rect, text, canvasGroup, target, screenOffset, popupType));
+        StartCoroutine(AnimateCustomTextAndDestroy(rect, text, canvasGroup, target, screenOffset, popupType, popupStartFontSize, popupEndFontSize));
+    }
+
+    private IEnumerator AnimateCustomTextAndDestroy(
+        RectTransform rect,
+        TMP_Text text,
+        CanvasGroup canvasGroup,
+        Transform target,
+        Vector2 screenOffset,
+        PopupType popupType,
+        float popupStartFontSize,
+        float popupEndFontSize)
+    {
+        if (rect == null || text == null || canvasGroup == null)
+            yield break;
+
+        float holdElapsed = 0f;
+        Vector2 targetCanvasPosition = rect.anchoredPosition;
+        Vector2 endOffset = GetEndOffset(popupType);
+
+        text.fontSize = popupStartFontSize;
+        canvasGroup.alpha = 1f;
+
+        while (holdElapsed < holdDuration)
+        {
+            holdElapsed += Time.unscaledDeltaTime;
+            targetCanvasPosition = RefreshTargetCanvasPosition(target, screenOffset, targetCanvasPosition);
+            rect.anchoredPosition = targetCanvasPosition;
+            yield return null;
+        }
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = duration > 0f ? Mathf.Clamp01(elapsed / duration) : 1f;
+            float eased = 1f - Mathf.Pow(1f - t, 3f);
+
+            targetCanvasPosition = RefreshTargetCanvasPosition(target, screenOffset, targetCanvasPosition);
+            text.fontSize = Mathf.Lerp(popupStartFontSize, popupEndFontSize, eased);
+            rect.anchoredPosition = targetCanvasPosition + GetAnimatedOffset(endOffset, eased, popupType);
+            canvasGroup.alpha = Mathf.Lerp(1f, 0f, t);
+            yield return null;
+        }
+
+        Destroy(rect.gameObject);
     }
 
     private Vector2 GetRandomScreenOffset()

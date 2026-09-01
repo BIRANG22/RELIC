@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
@@ -8,9 +8,9 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
-/// ·Îºñ Àåºñ °ü¸®¿ë Equip_panel ÄÁÆ®·Ñ·¯ÀÔ´Ï´Ù.
-/// ÆĞ³Î ÀÚÃ¼´Â Ç×»ó È°¼º »óÅÂ·Î À¯ÁöÇÏ°í Equip/CharterÀÇ À§Ä¡·Î ¿­¸²/´İÈûÀ» Ç¥ÇöÇÕ´Ï´Ù.
-/// ¶ÇÇÑ Charter/Char1~3¿¡ ÇöÀç ÆÄÆ¼ Ä³¸¯ÅÍÀÇ ÀÌ¸§, ¸¶Å©, ¿¬¼ºÁ¦, À¯¹°, ±³Ã¼ °¡´ÉÇÑ ±â¾ïÀ» Ç¥½ÃÇÕ´Ï´Ù.
+/// ë¡œë¹„ ì¥ë¹„ ê´€ë¦¬ìš© Equip_panel ì»¨íŠ¸ë¡¤ëŸ¬ì…ë‹ˆë‹¤.
+/// íŒ¨ë„ ìì²´ëŠ” í•­ìƒ í™œì„± ìƒíƒœë¡œ ìœ ì§€í•˜ê³  Equip/Charterì˜ ìœ„ì¹˜ë¡œ ì—´ë¦¼/ë‹«í˜ì„ í‘œí˜„í•©ë‹ˆë‹¤.
+/// ë˜í•œ Charter/Char1~3ì— í˜„ì¬ íŒŒí‹° ìºë¦­í„°ì˜ ì´ë¦„, ë§ˆí¬, ì—°ì„±ì œ, ìœ ë¬¼, êµì²´ ê°€ëŠ¥í•œ ê¸°ì–µì„ í‘œì‹œí•©ë‹ˆë‹¤.
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class LobbyEquipPanelUI : MonoBehaviour
@@ -19,18 +19,19 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     private const int VisibleRelicSlotCount = 6;
     private const int VisibleSkillSlotCount = 3;
     private const int CompoundMinimumSlotCount = 15;
-    private const string EquipButtonDefaultText = "ÀåÂø";
-    private const string EquipButtonCancelText = "Ãë¼Ò";
+    private const string EquipButtonDefaultText = "ì¥ì°©";
+    private const string EquipButtonCancelText = "ì·¨ì†Œ";
 
-    // ·Îºñ Equip_panelÀÇ Skill 1~3Àº ±³Ã¼ °¡´ÉÇÑ ±â¾ï¸¸ Ç¥½ÃÇÕ´Ï´Ù.
-    // Skill1 = ±¸Çö ±â¾ï(AbilitySkillId / EquippedSkillIds[1])
-    // Skill2 = ÀÚÀ¯ ÀåÂø ±â¾ï 1(EquippedSkillIds[2])
-    // Skill3 = ÀÚÀ¯ ÀåÂø ±â¾ï 2(EquippedSkillIds[3])
-    // º»´É ±â¾ï(PassiveSkillId)°ú ¹ßÇö ±â¾ï(UniqueSkillId)Àº Ç¥½ÃÇÏÁö ¾Ê½À´Ï´Ù.
+    // ë¡œë¹„ Equip_panelì˜ Skill 1~3ì€ êµì²´ ê°€ëŠ¥í•œ ê¸°ì–µë§Œ í‘œì‹œí•©ë‹ˆë‹¤.
+    // Skill1 = êµ¬í˜„ ê¸°ì–µ(AbilitySkillId / EquippedSkillIds[1])
+    // Skill2 = ììœ  ì¥ì°© ê¸°ì–µ 1(EquippedSkillIds[2])
+    // Skill3 = ììœ  ì¥ì°© ê¸°ì–µ 2(EquippedSkillIds[3])
+    // ë³¸ëŠ¥ ê¸°ì–µ(PassiveSkillId)ê³¼ ë°œí˜„ ê¸°ì–µ(UniqueSkillId)ì€ í‘œì‹œí•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
     private static readonly int[] RuntimeSkillSlotIndices = { 1, 2, 3 };
 
     [Header("Panel")]
     [SerializeField] private GameObject panelRoot;
+
 
     [Header("Slide Targets")]
     [SerializeField] private RectTransform equipRect;
@@ -56,21 +57,21 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     [SerializeField] private bool bringToFront = true;
 
     [Header("Character Data")]
-    [Tooltip("Charter/Char1~3 ±¸Á¶¸¦ ÀÌ¸§À¸·Î ÀÚµ¿ ¿¬°áÇÕ´Ï´Ù.")]
+    [Tooltip("Charter/Char1~3 êµ¬ì¡°ë¥¼ ì´ë¦„ìœ¼ë¡œ ìë™ ì—°ê²°í•©ë‹ˆë‹¤.")]
     [SerializeField] private bool autoBindCharacterHierarchy = true;
 
     [Header("Compound Inventory")]
-    [Tooltip("Equip/Compound/Scroll View/Viewport/Content¸¦ ºñ¿öµÎ¸é ÀÌ¸§À¸·Î ÀÚµ¿ ¿¬°áÇÕ´Ï´Ù.")]
+    [Tooltip("Equip/Compound/Scroll View/Viewport/Contentë¥¼ ë¹„ì›Œë‘ë©´ ì´ë¦„ìœ¼ë¡œ ìë™ ì—°ê²°í•©ë‹ˆë‹¤.")]
     [SerializeField] private Transform compoundContentRoot;
-    [Tooltip("Content¿¡ »ı¼ºÇÒ StorageSlotUI ÇÁ¸®ÆÕÀÔ´Ï´Ù. BattleBagItemSlotUI°¡ ºÙ¾î ÀÖ¾î¾ß ÇÕ´Ï´Ù.")]
+    [Tooltip("Contentì— ìƒì„±í•  StorageSlotUI í”„ë¦¬íŒ¹ì…ë‹ˆë‹¤. BattleBagItemSlotUIê°€ ë¶™ì–´ ìˆì–´ì•¼ í•©ë‹ˆë‹¤.")]
     [SerializeField] private BattleBagItemSlotUI compoundSlotPrefab;
-    [Tooltip("¿¬¼ºÁ¦°¡ ¾ø¾îµµ Ç¥½ÃÇÒ ÃÖ¼Ò ºó ½½·Ô ¼öÀÔ´Ï´Ù.")]
+    [Tooltip("ì—°ì„±ì œê°€ ì—†ì–´ë„ í‘œì‹œí•  ìµœì†Œ ë¹ˆ ìŠ¬ë¡¯ ìˆ˜ì…ë‹ˆë‹¤.")]
     [SerializeField, Min(1)] private int compoundMinimumSlotCount = CompoundMinimumSlotCount;
 
     [Header("Character Equip Target")]
-    [Tooltip("ÀåÂø ¸ğµå¿¡¼­ Ä³¸¯ÅÍ ¼±ÅÃ ÀÌ¹ÌÁö¿¡ ¸¶¿ì½º¸¦ ¿Ã·ÈÀ» ¶§ »ç¿ëÇÒ »ö»óÀÔ´Ï´Ù.")]
+    [Tooltip("ì¥ì°© ëª¨ë“œì—ì„œ ìºë¦­í„° ì„ íƒ ì´ë¯¸ì§€ì— ë§ˆìš°ìŠ¤ë¥¼ ì˜¬ë ¸ì„ ë•Œ ì‚¬ìš©í•  ìƒ‰ìƒì…ë‹ˆë‹¤.")]
     [SerializeField] private Color characterSelectHoverColor = Color.white;
-    [Tooltip("ÀåÂø ¸ğµå¿¡¼­ Ä³¸¯ÅÍ Back¿¡ ¸¶¿ì½º¸¦ ¿Ã·ÈÀ» ¶§ »ç¿ëÇÒ »ö»óÀÔ´Ï´Ù.")]
+    [Tooltip("ì¥ì°© ëª¨ë“œì—ì„œ ìºë¦­í„° Backì— ë§ˆìš°ìŠ¤ë¥¼ ì˜¬ë ¸ì„ ë•Œ ì‚¬ìš©í•  ìƒ‰ìƒì…ë‹ˆë‹¤.")]
     [SerializeField] private Color characterBackHoverColor = new Color32(0x3C, 0x44, 0x76, 0xFF);
 
     private readonly CharacterView[] characterViews = new CharacterView[CharacterCount];
@@ -109,8 +110,8 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
     private void OnEnable()
     {
-        // Equip_panelÀº Ç×»ó È°¼ºÈ­µÈ »óÅÂ¸¦ À¯ÁöÇÕ´Ï´Ù.
-        // ´Ù½Ã È°¼ºÈ­µÈ °æ¿ì¿¡µµ ´İÈù À§Ä¡¿¡¼­ ½ÃÀÛÇÕ´Ï´Ù.
+        // Equip_panelì€ í•­ìƒ í™œì„±í™”ëœ ìƒíƒœë¥¼ ìœ ì§€í•©ë‹ˆë‹¤.
+        // ë‹¤ì‹œ í™œì„±í™”ëœ ê²½ìš°ì—ë„ ë‹«íŒ ìœ„ì¹˜ì—ì„œ ì‹œì‘í•©ë‹ˆë‹¤.
         if (!isOpen && !isClosing)
             ResetSlidePositions();
 
@@ -149,8 +150,8 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Equip ¹öÆ° ÀÚ½ÅÀÇ RectTransformÀ» µî·ÏÇÕ´Ï´Ù.
-    /// ¹öÆ° Å¬¸¯À» ÆĞ³Î ¹Ù±ù Å¬¸¯À¸·Î ¿ÀÀÎÇÏÁö ¾Êµµ·Ï »ç¿ëÇÕ´Ï´Ù.
+    /// Equip ë²„íŠ¼ ìì‹ ì˜ RectTransformì„ ë“±ë¡í•©ë‹ˆë‹¤.
+    /// ë²„íŠ¼ í´ë¦­ì„ íŒ¨ë„ ë°”ê¹¥ í´ë¦­ìœ¼ë¡œ ì˜¤ì¸í•˜ì§€ ì•Šë„ë¡ ì‚¬ìš©í•©ë‹ˆë‹¤.
     /// </summary>
     public void SetToggleButton(RectTransform buttonRect)
     {
@@ -158,8 +159,8 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Equip ¹öÆ°¿¡¼­ È£ÃâÇÕ´Ï´Ù.
-    /// ´İÇô ÀÖÀ¸¸é ¿­°í, ¿­·Á ÀÖÀ¸¸é ½ÃÀÛ À§Ä¡·Î ½½¶óÀÌµå ¾Æ¿ôÇÕ´Ï´Ù.
+    /// Equip ë²„íŠ¼ì—ì„œ í˜¸ì¶œí•©ë‹ˆë‹¤.
+    /// ë‹«í˜€ ìˆìœ¼ë©´ ì—´ê³ , ì—´ë ¤ ìˆìœ¼ë©´ ì‹œì‘ ìœ„ì¹˜ë¡œ ìŠ¬ë¼ì´ë“œ ì•„ì›ƒí•©ë‹ˆë‹¤.
     /// </summary>
     public void Toggle()
     {
@@ -179,7 +180,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         GameObject root = ResolvePanelRoot();
         if (root == null)
         {
-            Debug.LogWarning("[LobbyEquipPanelUI] Equip_panelÀ» Ã£À» ¼ö ¾ø½À´Ï´Ù.", this);
+            Debug.LogWarning("[LobbyEquipPanelUI] Equip_panelì„ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.", this);
             return;
         }
 
@@ -209,7 +210,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         RefreshCharacterData();
         StopSlideAnimation();
 
-        // ´İÈ÷´Â µµÁß ´Ù½Ã ¿­¸é ÇöÀç À§Ä¡¿¡¼­ ÀÚ¿¬½º·´°Ô ÀÌ¾î¼­ ¿±´Ï´Ù.
+        // ë‹«íˆëŠ” ë„ì¤‘ ë‹¤ì‹œ ì—´ë©´ í˜„ì¬ ìœ„ì¹˜ì—ì„œ ìì—°ìŠ¤ëŸ½ê²Œ ì´ì–´ì„œ ì—½ë‹ˆë‹¤.
         isClosing = false;
         isOpen = true;
         LobbyPositionModalInputBlocker.Block(this);
@@ -231,8 +232,8 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     }
 
     /// <summary>
-    /// ÇöÀç PartyRuntimeStore / CharacterRuntimeStore ±âÁØÀ¸·Î Char1~3 Ç¥½Ã¸¦ ´Ù½Ã °»½ÅÇÕ´Ï´Ù.
-    /// ÆÄÆ¼ º¯°æ, ±â¾ï ÀåÂø, ¿¬¼ºÁ¦/À¯¹° ÀåÂø ÈÄ ÇÊ¿äÇÏ¸é ¿ÜºÎ¿¡¼­µµ È£ÃâÇÒ ¼ö ÀÖ½À´Ï´Ù.
+    /// í˜„ì¬ PartyRuntimeStore / CharacterRuntimeStore ê¸°ì¤€ìœ¼ë¡œ Char1~3 í‘œì‹œë¥¼ ë‹¤ì‹œ ê°±ì‹ í•©ë‹ˆë‹¤.
+    /// íŒŒí‹° ë³€ê²½, ê¸°ì–µ ì¥ì°©, ì—°ì„±ì œ/ìœ ë¬¼ ì¥ì°© í›„ í•„ìš”í•˜ë©´ ì™¸ë¶€ì—ì„œë„ í˜¸ì¶œí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
     /// </summary>
     public void RefreshCharacterData()
     {
@@ -362,8 +363,8 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         isClosing = false;
         LobbyPositionModalInputBlocker.Unblock(this);
 
-        // Equip_panel ÀÚÃ¼´Â ºñÈ°¼ºÈ­ÇÏÁö ¾Ê½À´Ï´Ù.
-        // ´İÈû »óÅÂ´Â Equip=-1350, Charter=1350 À§Ä¡·Î¸¸ Ç¥ÇöÇÕ´Ï´Ù.
+        // Equip_panel ìì²´ëŠ” ë¹„í™œì„±í™”í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+        // ë‹«í˜ ìƒíƒœëŠ” Equip=-1350, Charter=1350 ìœ„ì¹˜ë¡œë§Œ í‘œí˜„í•©ë‹ˆë‹¤.
     }
 
     private void RefreshOwnedRelicData()
@@ -424,8 +425,8 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
             return;
         }
 
-        // À¯¹° ÀåÂø ¸ğµå·Î ÀüÈ¯ÇÒ ¶§ ¿¬¼ºÁ¦ ÀåÂø ¸ğµå¸¸ ÇØÁ¦ÇÕ´Ï´Ù.
-        // ¼±ÅÃµÈ ¿¬¼ºÁ¦ÀÇ ÀÌ¸§/¾ÆÀÌÄÜ Á¤º¸´Â ±×´ë·Î À¯ÁöÇÕ´Ï´Ù.
+        // ìœ ë¬¼ ì¥ì°© ëª¨ë“œë¡œ ì „í™˜í•  ë•Œ ì—°ì„±ì œ ì¥ì°© ëª¨ë“œë§Œ í•´ì œí•©ë‹ˆë‹¤.
+        // ì„ íƒëœ ì—°ì„±ì œì˜ ì´ë¦„/ì•„ì´ì½˜ ì •ë³´ëŠ” ê·¸ëŒ€ë¡œ ìœ ì§€í•©ë‹ˆë‹¤.
         SetCompoundEquipSelectionActive(false);
 
         isOwnedRelicSelected = true;
@@ -502,7 +503,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
                 if (slotView.IconImage != null)
                     slotView.IconImage.gameObject.SetActive(hasEquippedRelic);
 
-                // ÀåÂø ´ë»óÀº ÀÌÁ¦ °³º° À¯¹° ½½·ÔÀÌ ¾Æ´Ï¶ó Ä³¸¯ÅÍ Back ÀüÃ¼ÀÔ´Ï´Ù.
+                // ì¥ì°© ëŒ€ìƒì€ ì´ì œ ê°œë³„ ìœ ë¬¼ ìŠ¬ë¡¯ì´ ì•„ë‹ˆë¼ ìºë¦­í„° Back ì „ì²´ì…ë‹ˆë‹¤.
                 slotView.IsCandidate = false;
                 if (slotView.Button != null)
                     slotView.Button.interactable = false;
@@ -635,10 +636,10 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     {
         string normalized = string.IsNullOrWhiteSpace(rarity) ? string.Empty : rarity.Trim();
 
-        if (string.Equals(normalized, "Common", StringComparison.OrdinalIgnoreCase)) return "ÀÏ¹İ À¯¹°";
-        if (string.Equals(normalized, "Rare", StringComparison.OrdinalIgnoreCase)) return "·¹¾î À¯¹°";
-        if (string.Equals(normalized, "Epic", StringComparison.OrdinalIgnoreCase)) return "¿¡ÇÈ À¯¹°";
-        if (string.Equals(normalized, "Unique", StringComparison.OrdinalIgnoreCase)) return "À¯´ÏÅ© À¯¹°";
+        if (string.Equals(normalized, "Common", StringComparison.OrdinalIgnoreCase)) return "ì¼ë°˜ ìœ ë¬¼";
+        if (string.Equals(normalized, "Rare", StringComparison.OrdinalIgnoreCase)) return "ë ˆì–´ ìœ ë¬¼";
+        if (string.Equals(normalized, "Epic", StringComparison.OrdinalIgnoreCase)) return "ì—í”½ ìœ ë¬¼";
+        if (string.Equals(normalized, "Unique", StringComparison.OrdinalIgnoreCase)) return "ìœ ë‹ˆí¬ ìœ ë¬¼";
 
         return normalized;
     }
@@ -699,7 +700,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
         for (int i = 0; i < VisibleRelicSlotCount; i++)
         {
-            int runtimeRelicIndex = i + 1; // 0¹øÀº Active ¿¬¼ºÁ¦ ½½·ÔÀÔ´Ï´Ù.
+            int runtimeRelicIndex = i + 1; // 0ë²ˆì€ Active ì—°ì„±ì œ ìŠ¬ë¡¯ì…ë‹ˆë‹¤.
             string relicId = runtime?.EquippedRelicIds != null && runtimeRelicIndex < runtime.EquippedRelicIds.Length
                 ? runtime.EquippedRelicIds[runtimeRelicIndex]
                 : null;
@@ -727,7 +728,8 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
             if (!string.IsNullOrWhiteSpace(skillId) && DataManager.Instance?.SkillIconDatabase != null)
                 DataManager.Instance.SkillIconDatabase.TryGetIcon(skillId, out icon);
 
-            ApplyImage(view.SkillIcons[i], icon, SkillRarityUtility.GetSkillIconColor(skillId));
+            ApplyImage(view.SkillIcons[i], icon, Color.white);
+            SkillUpgradeMarkStyle.ApplyShared(view.SkillIcons[i], skillId);
         }
     }
 
@@ -800,7 +802,10 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         }
 
         for (int i = 0; i < view.SkillIcons.Length; i++)
+        {
             ApplyImage(view.SkillIcons[i], null);
+            SkillUpgradeMarkStyle.ApplyShared(view.SkillIcons[i], (string)null);
+        }
     }
 
     private static void ApplyImage(Image image, Sprite sprite)
@@ -1033,8 +1038,8 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
                 : string.Empty;
         }
 
-        // ´Ü¼ø ¿¬¼ºÁ¦ ¼±ÅÃÀº ÀåÂø ¸ğµå°¡ ¾Æ´Õ´Ï´Ù.
-        // Line2´Â Compound/ButtonÀ¸·Î ÀåÂø ¸ğµå¸¦ ½ÃÀÛÇßÀ» ¶§¸¸ Ç¥½ÃÇÕ´Ï´Ù.
+        // ë‹¨ìˆœ ì—°ì„±ì œ ì„ íƒì€ ì¥ì°© ëª¨ë“œê°€ ì•„ë‹™ë‹ˆë‹¤.
+        // Line2ëŠ” Compound/Buttonìœ¼ë¡œ ì¥ì°© ëª¨ë“œë¥¼ ì‹œì‘í–ˆì„ ë•Œë§Œ í‘œì‹œí•©ë‹ˆë‹¤.
         SetCompoundItemLineActive(isCompoundEquipSelectionActive);
 
         if (compoundSelectionView?.EquipButton != null)
@@ -1051,7 +1056,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
             return;
         }
 
-        // ¿¬¼ºÁ¦ ÀåÂø ¸ğµå¿Í À¯¹° ÀåÂø ¸ğµå´Â µ¿½Ã¿¡ È°¼ºÈ­µÇÁö ¾Ê½À´Ï´Ù.
+        // ì—°ì„±ì œ ì¥ì°© ëª¨ë“œì™€ ìœ ë¬¼ ì¥ì°© ëª¨ë“œëŠ” ë™ì‹œì— í™œì„±í™”ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
         ResetOwnedRelicSelection();
         SetCompoundEquipSelectionActive(!isCompoundEquipSelectionActive);
     }
@@ -1127,7 +1132,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
     private void UpdateActiveCompoundCandidateVisuals()
     {
-        // ÀåÂø ´ë»óÀº ÀÌÁ¦ Active ½½·ÔÀÌ ¾Æ´Ï¶ó Ä³¸¯ÅÍ Back ÀüÃ¼ÀÔ´Ï´Ù.
+        // ì¥ì°© ëŒ€ìƒì€ ì´ì œ Active ìŠ¬ë¡¯ì´ ì•„ë‹ˆë¼ ìºë¦­í„° Back ì „ì²´ì…ë‹ˆë‹¤.
         for (int i = 0; i < CharacterCount; i++)
         {
             CharacterView view = characterViews[i];
@@ -1266,7 +1271,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         int activeSlotIndex = ActiveRelicRuntimeUtility.ActiveRelicSlotIndex;
         string previousCompoundId = runtime.EquippedRelicIds[activeSlotIndex];
 
-        // º¸°ü ÁßÀÎ µ¿ÀÏ ¿¬¼ºÁ¦°¡ ¿©·¯ °³¿©µµ ¼±ÅÃÇÑ 1°³¸¸ Á¦°ÅÇÕ´Ï´Ù.
+        // ë³´ê´€ ì¤‘ì¸ ë™ì¼ ì—°ì„±ì œê°€ ì—¬ëŸ¬ ê°œì—¬ë„ ì„ íƒí•œ 1ê°œë§Œ ì œê±°í•©ë‹ˆë‹¤.
         lobby.StoredCompoundIds.RemoveAt(storedIndex);
 
         if (!string.IsNullOrWhiteSpace(previousCompoundId))
@@ -1371,7 +1376,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
                 : null
         };
 
-        // ¾ÆÀÌÄÜ Å¬¸¯Àº ÀåÂø ¼±ÅÃÀ» ½ÃÀÛÇÏÁö ¾Ê½À´Ï´Ù.
+        // ì•„ì´ì½˜ í´ë¦­ì€ ì¥ì°© ì„ íƒì„ ì‹œì‘í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
         if (ownedRelicView.ItemButton != null)
             ownedRelicView.ItemButton.onClick.RemoveListener(ToggleOwnedRelicSelection);
 

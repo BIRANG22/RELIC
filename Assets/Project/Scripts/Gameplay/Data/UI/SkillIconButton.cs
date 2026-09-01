@@ -16,6 +16,7 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
     [Tooltip("기억 버튼의 Line 이미지입니다. 비어 있으면 자식 이름 'Line'으로 자동으로 찾습니다.")]
     [SerializeField] private Image lineImage;
 
+
     private static readonly Color32 LockedLineColor = new Color32(0x77, 0x77, 0x77, 0xFF);
     private static readonly Color32 UnlockedLineColor = new Color32(0xFF, 0xFF, 0xFF, 0xFF);
 
@@ -109,9 +110,10 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
             iconImage.enabled = icon != null;
             iconImage.sprite = icon;
 
-            Color32 iconColor = SkillRarityUtility.GetSkillIconColor(currentSkillData.SkillId);
+            Color32 iconColor = Color.white;
             iconColor.a = isLocked ? (byte)100 : (byte)255;
             iconImage.color = iconColor;
+            SkillUpgradeMarkStyle.ApplyShared(iconImage, currentSkillData.SkillId);
         }
 
         if (lockObject != null)

@@ -8,6 +8,7 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
     [Header("Icon")]
     [SerializeField] private Image iconImage;
 
+
     [Header("Interaction")]
     [SerializeField] private Button button;
     [SerializeField] private bool hideEmptySlotIcon = true;
@@ -141,10 +142,9 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         {
             iconImage.sprite = icon;
             iconImage.enabled = icon != null || !hideEmptySlotIcon;
-            iconImage.color = skillData != null
-                ? SkillRarityUtility.GetSkillIconColor(skillData.SkillId)
-                : Color.white;
+            iconImage.color = Color.white;
             iconImage.raycastTarget = true;
+            SkillUpgradeMarkStyle.ApplyShared(iconImage, skillData != null ? skillData.SkillId : null);
         }
 
         if (button != null)

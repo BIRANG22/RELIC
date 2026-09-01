@@ -17,6 +17,7 @@ namespace Relic.Gameplay.Data
 
                 data.EventId = EventIdUtility.Normalize(data.EventId);
                 data.NextEventId = EventIdUtility.Normalize(data.NextEventId);
+                data.FailNextEventId = EventIdUtility.Normalize(data.FailNextEventId);
             }
 
             return events;
