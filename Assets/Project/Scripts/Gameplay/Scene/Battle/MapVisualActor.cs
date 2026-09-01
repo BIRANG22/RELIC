@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -298,9 +298,13 @@ public sealed class MapVisualActionEntry
     public float VfxLifetime;
 
     [Header("Sprite")]
-    public SpriteRenderer TintTarget;
+    [Tooltip("같은 Tint Color를 적용할 스프라이트 목록입니다.")]
+    public List<SpriteRenderer> TintTargets = new();
     public bool ApplyTint;
     public Color TintColor = Color.white;
+
+    // 기존 씬/프리팹에 저장되어 있던 단일 TintTarget 데이터를 유지하기 위한 레거시 필드입니다.
+    [HideInInspector] public SpriteRenderer TintTarget;
 
     [Header("Transform")]
     public Transform ScaleTarget;
@@ -337,7 +341,7 @@ public sealed class MapVisualActionEntry
         SpawnVfx(owner);
         ApplySpriteTint();
         ApplyTransformScale();
-        ApplyActivation();
+        ApplyActivation(owner);
         DisableTargets(owner);
     }
 
@@ -392,10 +396,24 @@ public sealed class MapVisualActionEntry
 
     private void ApplySpriteTint()
     {
-        if (!ApplyTint || TintTarget == null)
+        if (!ApplyTint)
             return;
 
-        TintTarget.color = TintColor;
+        // 기존 단일 TintTarget 설정이 저장되어 있는 경우 그대로 유지합니다.
+        if (TintTarget != null)
+            TintTarget.color = TintColor;
+
+        if (TintTargets == null)
+            return;
+
+        for (int i = 0; i < TintTargets.Count; i++)
+        {
+            SpriteRenderer target = TintTargets[i];
+            if (target == null || target == TintTarget)
+                continue;
+
+            target.color = TintColor;
+        }
     }
 
     private void ApplyTransformScale()
@@ -406,7 +424,7 @@ public sealed class MapVisualActionEntry
         ScaleTarget.localScale = LocalScale;
     }
 
-    private void ApplyActivation()
+    private void ApplyActivation(MapVisualActor owner)
     {
         // 기존 단일 Activation 설정이 저장되어 있는 경우 그대로 유지합니다.
         if (ApplyActiveState && ActiveTarget != null)
@@ -422,6 +440,17 @@ public sealed class MapVisualActionEntry
                 continue;
 
             activation.ActiveTarget.SetActive(activation.ActiveState);
+
+            // 켜는 Activation에 한해서, 설정된 시간 뒤 자동으로 다시 끌 수 있습니다.
+            if (activation.ActiveState && activation.DisableAfterDelay)
+            {
+                float delay = Mathf.Max(0f, activation.DisableDelay);
+
+                if (owner != null)
+                    owner.DisableTarget(activation.ActiveTarget, delay);
+                else if (delay <= 0f)
+                    activation.ActiveTarget.SetActive(false);
+            }
         }
     }
 
@@ -452,4 +481,10 @@ public sealed class MapVisualActivationEntry
     public GameObject ActiveTarget;
     public bool ApplyActiveState = true;
     public bool ActiveState = true;
+
+    [Tooltip("ActiveState가 true일 때, 활성화 후 일정 시간이 지나면 자동으로 비활성화할지 설정합니다.")]
+    public bool DisableAfterDelay;
+
+    [Tooltip("활성화 후 자동으로 비활성화되기까지 기다릴 시간(초)입니다.")]
+    [Min(0f)] public float DisableDelay = 1f;
 }

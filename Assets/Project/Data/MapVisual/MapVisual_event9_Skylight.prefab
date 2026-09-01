@@ -128,6 +128,8 @@ MonoBehaviour:
     - ActiveTarget: {fileID: 5690435245543660839}
       ApplyActiveState: 1
       ActiveState: 1
+      DisableAfterDelay: 0
+      DisableDelay: 1
     DisableTargetsOnPlay:
     - {fileID: 8085349403031632500}
     DisableDelayOnPlay: 0.5
@@ -153,6 +155,8 @@ MonoBehaviour:
     - ActiveTarget: {fileID: 6742504869225112066}
       ApplyActiveState: 1
       ActiveState: 1
+      DisableAfterDelay: 0
+      DisableDelay: 1
     DisableTargetsOnPlay:
     - {fileID: 8085349403031632500}
     DisableDelayOnPlay: 0.5
@@ -178,6 +182,8 @@ MonoBehaviour:
     - ActiveTarget: {fileID: 5288189496688161236}
       ApplyActiveState: 1
       ActiveState: 1
+      DisableAfterDelay: 0
+      DisableDelay: 1
     DisableTargetsOnPlay:
     - {fileID: 8085349403031632500}
     DisableDelayOnPlay: 0.5
