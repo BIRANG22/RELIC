@@ -529,9 +529,9 @@ Battlemap_16,Mon_12,27,-1,-1,-1,보스 아라벨라,100,5,15,50,30,25,35,25,15,,
 EventId,EventName,Title,ChoiceOrder,ChoiceName,ChoiceDesc,ChoiceType,SelectCondition,CostType,CostTarget,CostValue,SuccessCondition,ResultType,ResultTarget,ResultValue,SuccessRate,FailResult,NextEventId,PersistAcrossNextEvent,SuccessVisualObjectId,SuccessVisualActionId,FailureVisualObjectId,FailureVisualActionId
 Event_01,세라피아의 지원,“이곳은 오래 머물 곳이 아닙니다. 떠나시기 전에 저희의 도움이 필요하다면 말씀해 주세요.”,1,지원을 요청한다.,무작위 유물 1개 획득,Immediate,,,,,,GainRandom,유물,1개,,,,,event1,event_choice_01_success,event1,event_choice_01_failure
 Event_01,세라피아의 지원,“이곳은 오래 머물 곳이 아닙니다. 떠나시기 전에 저희의 도움이 필요하다면 말씀해 주세요.”,2,정화를 요청한다.,"주사위 판정
-주사위 합이 높을수록 체력 회복량 증가",Dice,,,,,,RollTable,파티 전원 현재 체력,RT001,,,,,event1,event_choice_02_success,event1,event_choice_02_failure
+합이 높을수록 체력 회복량 증가",Dice,,,,,,RollTable,파티 전원 현재 체력,RT001,,,,,event1,event_choice_02_success,event1,event_choice_02_failure
 Event_01,세라피아의 지원,“이곳은 오래 머물 곳이 아닙니다. 떠나시기 전에 저희의 도움이 필요하다면 말씀해 주세요.”,3,기도를 요청한다.,"주사위 판정
-주사위 합이 높을수록 최대 체력 증가량 증가",Dice,,,,,,RollTable,파티 전원 최대 체력,RT002,,,,,event1,event_choice_03_success,event1,event_choice_03_failure
+합이 높을수록 최대 체력 증가량 증가",Dice,,,,,,RollTable,파티 전원 최대 체력,RT002,,,,,event1,event_choice_03_success,event1,event_choice_03_failure
 Event_02,금단의 의식,낡은 상자와 정체를 알 수 없는 의식 도구들이 어지럽게 놓여 있다. 아직 의식의 흔적이 선명하게 남아 있다.,1,상자를 연다.,레드 더스티움 35 획득,Immediate,,,,,,Gain,레드 더스티움,35,,,Event_02_A,,event2,event_choice_01_success,event2,event_choice_01_failure
 Event_02_A,금단의 의식,상자 열기 후 추가 선택,1,한 번 더 연다.,"주사위 판정 9
 성공 : 무작위 유물 1개 획득
@@ -568,9 +568,9 @@ Event_08_B,공명의 비석,2차 공명 성공 후,1,공명을 이어간다.,"�
 성공: 선택한 기억 1개 각성
 실패: 선택한 기억 소멸",Chance,다른 미각성 기억 1개 이상,,,,,Awaken,선택 기억,각성,30%,선택한 기억 소멸,,,event8,event_choice_03_success,event8,event_choice_03_failure
 Event_08,공명의 비석,“비석에 새겨진 문자가 기억에 반응해 희미하게 빛난다. 잠든 기억의 힘을 깨울 수 있을 것 같다.”,2,자리를 떠난다.,이벤트 종료,Exit,,,,,,EndEvent,,,,,,true,event8,event_choice_04_success,event8,event_choice_04_failure
-Event_09,균열의 메아리,허공에 갈라진 균열이 모습을 드러냈다. 틈 사이로 새어 나온 빛 속에서 희미한 기억의 흔적이 느껴진다.,1,흩어진 기억을 거둔다.,무작위 기억 3개 획득,Immediate,,,,,,GainRandom,기억,3개,,,,,event9,event_choice_01_success,event9,event_choice_01_failure
-Event_09,균열의 메아리,허공에 갈라진 균열이 모습을 드러냈다. 틈 사이로 새어 나온 빛 속에서 희미한 기억의 흔적이 느껴진다.,2,전투의 기억을 붙잡는다.,공격 기억 2개 획득,Immediate,,,,,,GainRandom,공격 기억,2개,,,,,event9,event_choice_02_success,event9,event_choice_02_failure
-Event_09,균열의 메아리,허공에 갈라진 균열이 모습을 드러냈다. 틈 사이로 새어 나온 빛 속에서 희미한 기억의 흔적이 느껴진다.,3,강렬한 기억을 택한다.,에픽 기억 1개 획득,Immediate,,,,,,GainRandom,에픽 기억,1개,,,,,event9,event_choice_03_success,event9,event_choice_03_failure
+Event_09,균열의 메아리,허공에 갈라진 균열이 모습을 드러냈다. 틈 사이로 새어 나온 빛 속에서 희미한 기억의 흔적이 느껴진다.,1,흩어진 기억을 거둔다.,무작위 일반~레어 기억 3개 획득,Immediate,,,,,,SelectReward,일반~레어 기억,3개 제시,,,,,event9,event_choice_01_success,event9,event_choice_01_failure
+Event_09,균열의 메아리,허공에 갈라진 균열이 모습을 드러냈다. 틈 사이로 새어 나온 빛 속에서 희미한 기억의 흔적이 느껴진다.,2,전투의 기억을 붙잡는다.,공격 기억 2개 획득,Immediate,,,,,,SelectReward,공격 기억,2개 제시,,,,,event9,event_choice_02_success,event9,event_choice_02_failure
+Event_09,균열의 메아리,허공에 갈라진 균열이 모습을 드러냈다. 틈 사이로 새어 나온 빛 속에서 희미한 기억의 흔적이 느껴진다.,3,강렬한 기억을 택한다.,에픽 기억 1개 획득,Immediate,,,,,,SelectReward,에픽 기억,1개 제시,,,,,event9,event_choice_03_success,event9,event_choice_03_failure
 
 ,,,,,,
 
