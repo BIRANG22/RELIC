@@ -609,6 +609,33 @@ MonoBehaviour:
     useRandomPitch: 0
     randomPitchMin: 0
     randomPitchMax: 0
+  - id: event.05
+    aliases: []
+    clip: {fileID: 8300000, guid: 92f13001fa1d3493ebc00cf66b61c53e, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: event.05_2
+    aliases: []
+    clip: {fileID: 8300000, guid: 5331f1c7609bb4150bcd81484f4f3397, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: event.05.fail
+    aliases: []
+    clip: {fileID: 8300000, guid: 06f264db30c9b49ad8faa968413c9775, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
   playerSkillVfxSfxList:
   - displayName: move
     vfxPrefab: {fileID: 4145361429921181282, guid: 64eec7862f4d94a4198ea5d201af5b88, type: 3}
