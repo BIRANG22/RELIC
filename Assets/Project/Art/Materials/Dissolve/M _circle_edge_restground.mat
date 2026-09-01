@@ -75,7 +75,7 @@ Material:
     m_Floats:
     - _AlphaClip: 1
     - _AlphaToMask: 1
-    - _Alpha_Clip_Threshold: -0.01
+    - _Alpha_Clip_Threshold: -0.58
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _CastShadows: 1
@@ -94,18 +94,18 @@ Material:
     - _ZWrite: 1
     - _ZWriteControl: 0
     - _boder: 0.83
-    - _boder_1: 0.24
-    - _boder_2: 0.96
+    - _boder_1: 0.47
+    - _boder_2: 0.85
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
     - _center: {r: 0.5, g: 0.5, b: 0, a: 0}
-    - _color: {r: 0, g: 0, b: 0, a: 0}
-    - _edgecolor: {r: 0.06666667, g: 0.14901961, b: 0.27450982, a: 0}
-    - _edgecolor_1: {r: 0.047058824, g: 0.10980392, b: 0.20392157, a: 0}
-    - _edgecolor_2: {r: 0.03137255, g: 0.06666667, b: 0.13333334, a: 0}
-    - _noiseflow: {r: -0.01, g: -0.01, b: 0, a: 0}
-    - _noiseoffset: {r: 0, g: 0, b: 0, a: 0}
+    - _color: {r: 0.09019608, g: 0.105882354, b: 0.14117648, a: 0}
+    - _edgecolor: {r: 0.09019608, g: 0.105882354, b: 0.14117648, a: 0}
+    - _edgecolor_1: {r: 0.5176471, g: 0.23529412, b: 0.1764706, a: 0}
+    - _edgecolor_2: {r: 0.32941177, g: 0.15294118, b: 0.1333333, a: 0}
+    - _noiseflow: {r: -0.01, g: 0, b: 0, a: 0}
+    - _noiseoffset: {r: 0.35, g: 0, b: 0, a: 0}
     - _noisetiling: {r: 0.3, g: 0.5, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
