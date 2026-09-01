@@ -551,7 +551,7 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: 602ba08c3a1834cefa18cc796ff63c89, type: 3}
     volume: 1
     pitch: 0.7
-    loop: 0
+    loop: 1
     useRandomPitch: 0
     randomPitchMin: 0
     randomPitchMax: 0
@@ -561,6 +561,42 @@ MonoBehaviour:
     volume: 1
     pitch: 0.7
     loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: event.08
+    aliases: []
+    clip: {fileID: 8300000, guid: 5322309d867c04f87943dc59dad8d06a, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: event.08.fail
+    aliases: []
+    clip: {fileID: 8300000, guid: 1cf10d68406ef4714a240476f6c1c2b3, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: event.07
+    aliases: []
+    clip: {fileID: 8300000, guid: 642e46ed993fc42eaaa6fa78582572ea, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: event.07.Ambience
+    aliases: []
+    clip: {fileID: 8300000, guid: 690959147432d4186a426744a96c9965, type: 3}
+    volume: 0.1
+    pitch: 1
+    loop: 1
     useRandomPitch: 0
     randomPitchMin: 0
     randomPitchMax: 0
