@@ -21,6 +21,8 @@ public class BattleActionRunner
     private readonly bool useSafeSequentialExecution;
     private readonly float actionRoutineTimeout;
     private readonly Action<PlayerReservedCommand, int> onPlayerCommandExecuted;
+    private readonly BattleConsecutiveActionPlan consecutiveActionPlan;
+    private BattleConsecutiveActionInfo activeActionInfo = BattleConsecutiveActionInfo.Single;
     private BattleGridEffectController gridEffectController;
     private readonly HashSet<string> nocturnPortalFailedRuntimeIds = new();
 
@@ -87,6 +89,7 @@ public class BattleActionRunner
     {
         public string Label;
         public IEnumerator Routine;
+        public BattleConsecutiveActionInfo PresentationInfo;
     }
 
     public BattleActionRunner(
@@ -103,12 +106,14 @@ public class BattleActionRunner
       BattleRoomLoader roomLoader,
       bool useSafeSequentialExecution,
       float actionRoutineTimeout,
-      Action<PlayerReservedCommand, int> onPlayerCommandExecuted = null)
+      Action<PlayerReservedCommand, int> onPlayerCommandExecuted = null,
+      BattleConsecutiveActionPlan consecutiveActionPlan = null)
     {
         this.gridManager = gridManager;
         this.useSafeSequentialExecution = useSafeSequentialExecution;
         this.actionRoutineTimeout = Mathf.Max(0.1f, actionRoutineTimeout);
         this.onPlayerCommandExecuted = onPlayerCommandExecuted;
+        this.consecutiveActionPlan = consecutiveActionPlan;
 
         unitFinder = new BattleUnitFinder();
         hudService = new BattleHUDService();
@@ -141,19 +146,44 @@ public class BattleActionRunner
         List<ActionRoutine> actionRoutines = BuildActionRoutines(batch);
 
         if (actionRoutines.Count <= 0)
+        {
+            BattleConsecutiveActionInfo skippedLastInfo =
+                GetLastPresentationInfo(batch);
+
+            if (skippedLastInfo.IsGrouped && skippedLastInfo.IsGroupEnd)
+                BattleConsecutiveActionPresentationContext.EndGroup();
+
+            if (!keepCameraAfterBatch && BattleCameraController.Instance != null)
+            {
+                BattleCameraController.Instance.SetHoldDefaultReturn(false);
+                yield return BattleCameraController.Instance.ReturnDefaultIfNotHeld();
+            }
+
             yield break;
+        }
 
         bool batchHasInteraction = BatchHasInteractionAction(batch);
         bool batchHasCrossSideHit = BatchHasCrossSideHitAction(batch);
-        bool holdCameraDuringBatch = batchHasCrossSideHit &&
-            (ShouldHoldCameraUntilBatchEnd(batch) || keepCameraAfterBatch);
+        BattleConsecutiveActionInfo firstInfo = consecutiveActionPlan != null
+            ? consecutiveActionPlan.GetFirstInfo(batch)
+            : BattleConsecutiveActionInfo.Single;
+        bool continuesGroupFromPreviousBatch =
+            firstInfo.IsGrouped && !firstInfo.IsGroupStart;
+        bool holdCameraDuringBatch =
+            keepCameraAfterBatch ||
+            continuesGroupFromPreviousBatch ||
+            (batchHasCrossSideHit && ShouldHoldCameraUntilBatchEnd(batch));
 
         if (BattleCameraController.Instance != null)
         {
             BattleCameraController.Instance.SetHoldDefaultReturn(holdCameraDuringBatch);
 
-            if (!batchHasCrossSideHit && BattleCameraController.Instance.IsCombatZoomActive)
+            if (!batchHasCrossSideHit &&
+                !continuesGroupFromPreviousBatch &&
+                BattleCameraController.Instance.IsCombatZoomActive)
+            {
                 yield return BattleCameraController.Instance.ReturnDefault();
+            }
         }
 
         if (useSafeSequentialExecution)
@@ -169,7 +199,10 @@ public class BattleActionRunner
 
         IncreaseMonsterTurnCountsOnceInSlot(batch);
 
-        yield return RunPostActionPresentationRoutine(batchHasInteraction);
+        BattleConsecutiveActionInfo lastInfo = GetLastPresentationInfo(batch);
+
+        if (!lastInfo.IsGrouped || lastInfo.IsGroupEnd)
+            yield return RunPostActionPresentationRoutine(batchHasInteraction, lastInfo.SpeedMultiplier);
     }
 
     private List<ActionRoutine> BuildActionRoutines(BattleActionBatch batch)
@@ -196,7 +229,10 @@ public class BattleActionRunner
             if (command == null || IsDeadMonsterCommand(command))
                 continue;
 
-            actionRoutines.Add(CreateActionRoutine($"Monster:{command.RuntimeId}:{command.SkillId}", ExecuteMonsterCommand(command)));
+            actionRoutines.Add(CreateActionRoutine(
+                $"Monster:{command.RuntimeId}:{command.SkillId}",
+                ExecuteMonsterCommand(command),
+                GetPresentationInfo(command)));
         }
 
         for (int i = 0; i < batch.PlayerCommands.Count; i++)
@@ -230,13 +266,15 @@ public class BattleActionRunner
 
             actionRoutines.Add(CreateActionRoutine(
                 $"PlayerMove:{command.CharacterId}",
-                ExecutePlayerCommandAndNotify(command, timelineSlotIndex, ExecutePlayerMove(command))));
+                ExecutePlayerCommandAndNotify(command, timelineSlotIndex, ExecutePlayerMove(command)),
+                BattleConsecutiveActionInfo.Single));
             return;
         }
 
         actionRoutines.Add(CreateActionRoutine(
             $"PlayerSkill:{command.CharacterId}:{command.SkillId}",
-            ExecutePlayerCommandAndNotify(command, timelineSlotIndex, ExecutePlayerSkill(command))));
+            ExecutePlayerCommandAndNotify(command, timelineSlotIndex, ExecutePlayerSkill(command)),
+            GetPresentationInfo(command)));
     }
 
     private IEnumerator ExecutePlayerCommandAndNotify(
@@ -314,15 +352,19 @@ public class BattleActionRunner
         }
     }
 
-    private IEnumerator RunPostActionPresentationRoutine(bool hasInteraction = true)
+    private IEnumerator RunPostActionPresentationRoutine(
+        bool hasInteraction = true,
+        float speedMultiplier = 1f)
     {
+        float safeSpeed = Mathf.Max(1f, speedMultiplier);
+
         if (hasInteraction)
         {
-            yield return new WaitForSeconds(MonsterHUDVisibleDelay);
+            yield return new WaitForSeconds(MonsterHUDVisibleDelay / safeSpeed);
 
             hudService.HideUnselectedMonsterHUDs();
 
-            yield return new WaitForSeconds(BatchEndDelay);
+            yield return new WaitForSeconds(BatchEndDelay / safeSpeed);
 
             hudService.PlayAllAliveIdle();
             yield break;
@@ -330,7 +372,7 @@ public class BattleActionRunner
 
         hudService.HideUnselectedMonsterHUDs();
 
-        yield return new WaitForSeconds(NoInteractionPostDelay);
+        yield return new WaitForSeconds(NoInteractionPostDelay / safeSpeed);
 
         hudService.PlayAllAliveIdle();
     }
@@ -358,6 +400,8 @@ public class BattleActionRunner
 
     public IEnumerator ReturnCameraDefaultIfNeeded()
     {
+        BattleConsecutiveActionPresentationContext.EndGroup();
+
         if (BattleCameraController.Instance == null)
             yield break;
 
@@ -621,13 +665,80 @@ public class BattleActionRunner
         }
     }
 
-    private ActionRoutine CreateActionRoutine(string label, IEnumerator routine)
+    private ActionRoutine CreateActionRoutine(
+        string label,
+        IEnumerator routine,
+        BattleConsecutiveActionInfo presentationInfo = default)
     {
         return new ActionRoutine
         {
             Label = label,
-            Routine = routine
+            Routine = routine,
+            PresentationInfo = presentationInfo.GroupSize > 0
+                ? presentationInfo
+                : BattleConsecutiveActionInfo.Single
         };
+    }
+
+    private BattleConsecutiveActionInfo GetPresentationInfo(
+        PlayerReservedCommand command)
+    {
+        if (!useSafeSequentialExecution || consecutiveActionPlan == null)
+            return BattleConsecutiveActionInfo.Single;
+
+        return consecutiveActionPlan.GetInfo(command);
+    }
+
+    private BattleConsecutiveActionInfo GetPresentationInfo(
+        MonsterReservedCommand command)
+    {
+        if (!useSafeSequentialExecution || consecutiveActionPlan == null)
+            return BattleConsecutiveActionInfo.Single;
+
+        return consecutiveActionPlan.GetInfo(command);
+    }
+
+    private BattleConsecutiveActionInfo GetLastPresentationInfo(
+        BattleActionBatch batch)
+    {
+        if (!useSafeSequentialExecution || consecutiveActionPlan == null)
+            return BattleConsecutiveActionInfo.Single;
+
+        return consecutiveActionPlan.GetLastInfo(batch);
+    }
+
+    private bool ShouldEnterCameraForActiveAction()
+    {
+        return activeActionInfo.ShouldEnterCamera;
+    }
+
+    private bool ShouldPlayExternalImpactForHit(int hitIndex, int hitCount)
+    {
+        if (!activeActionInfo.IsGrouped)
+            return true;
+
+        return activeActionInfo.ShouldPlayExternalImpact &&
+               hitIndex >= Mathf.Max(1, hitCount) - 1;
+    }
+
+    private bool ShouldReturnCameraForActiveAction()
+    {
+        return activeActionInfo.ShouldReturnCamera;
+    }
+
+    private float GetActivePresentationSpeed()
+    {
+        return activeActionInfo.IsGrouped
+            ? Mathf.Max(1f, activeActionInfo.SpeedMultiplier)
+            : 1f;
+    }
+
+    private IEnumerator ReturnCameraAfterActiveActionIfNeeded()
+    {
+        if (!ShouldReturnCameraForActiveAction() || BattleCameraController.Instance == null)
+            yield break;
+
+        yield return BattleCameraController.Instance.ReturnDefaultIfNotHeld();
     }
 
     private IEnumerator RunSequential(List<ActionRoutine> routines)
@@ -652,6 +763,15 @@ public class BattleActionRunner
         ActionRoutine previous,
         ActionRoutine current)
     {
+        if (previous != null &&
+            current != null &&
+            previous.PresentationInfo.IsGrouped &&
+            current.PresentationInfo.IsGrouped &&
+            previous.PresentationInfo.GroupId == current.PresentationInfo.GroupId)
+        {
+            return false;
+        }
+
         return IsMonsterActionRoutine(previous) && IsMonsterActionRoutine(current);
     }
 
@@ -674,6 +794,9 @@ public class BattleActionRunner
         }
 
         bool completed = false;
+        activeActionInfo = actionRoutine.PresentationInfo;
+        BattleConsecutiveActionPresentationContext.BeginAction(activeActionInfo);
+
         Coroutine runningCoroutine = CoroutineHost.Instance.StartCoroutine(
             RunAndCountDown(
                 actionRoutine,
@@ -697,11 +820,20 @@ public class BattleActionRunner
                 if (runningCoroutine != null && CoroutineHost.Instance != null)
                     CoroutineHost.Instance.StopCoroutine(runningCoroutine);
 
+                BattleConsecutiveActionPresentationContext.CompleteAction(
+                    activeActionInfo,
+                    completedNormally: false);
+                activeActionInfo = BattleConsecutiveActionInfo.Single;
                 yield break;
             }
 
             yield return null;
         }
+
+        BattleConsecutiveActionPresentationContext.CompleteAction(
+            activeActionInfo,
+            completedNormally: true);
+        activeActionInfo = BattleConsecutiveActionInfo.Single;
     }
 
     private IEnumerator RunParallel(List<ActionRoutine> routines)
@@ -1101,7 +1233,7 @@ public class BattleActionRunner
                 ApplyBlockedPlayerMoveCostRefund(command);
                 ApplyPlayerMoveFacing(character, command.Direction, moveOffset);
                 hudService.RefreshHUDs();
-                yield return new WaitForSeconds(ActionDelay);
+                yield return new WaitForSeconds(ActionDelay / GetActivePresentationSpeed());
                 yield break;
             }
 
@@ -1149,7 +1281,7 @@ public class BattleActionRunner
                 ApplyPlayerMoveCollisionOnce(blockingUnitGridIndices, command.CharacterId);
 
                 hudService.RefreshHUDs();
-                yield return new WaitForSeconds(ActionDelay);
+                yield return new WaitForSeconds(ActionDelay / GetActivePresentationSpeed());
                 yield break;
             }
 
@@ -1178,7 +1310,7 @@ public class BattleActionRunner
 
             hudService.RefreshHUDs();
 
-            yield return new WaitForSeconds(ActionDelay);
+            yield return new WaitForSeconds(ActionDelay / GetActivePresentationSpeed());
         }
         finally
         {
@@ -1268,7 +1400,7 @@ public class BattleActionRunner
             statusEffectService.ApplyBleedDamageToPlayerOnMove(character);
 
         hudService.RefreshHUDs();
-        yield return new WaitForSeconds(ActionDelay);
+        yield return new WaitForSeconds(ActionDelay / GetActivePresentationSpeed());
     }
 
     private static List<List<Vector2Int>> BuildPlayerMoveExecutionStepGroups(
@@ -1666,7 +1798,9 @@ public class BattleActionRunner
 
             if (ShouldPlayerSkillTargetPlayerParty(command))
             {
-                if (ShouldSkipPlayerSkillCamera(command) && BattleCameraController.Instance != null)
+                if (ShouldEnterCameraForActiveAction() &&
+                    ShouldSkipPlayerSkillCamera(command) &&
+                    BattleCameraController.Instance != null)
                     yield return BattleCameraController.Instance.ZoomForRangedSkill();
 
                 if (attackerAnimator != null)
@@ -1677,8 +1811,7 @@ public class BattleActionRunner
                 {
                     hudService.RefreshHUDs();
 
-                    if (BattleCameraController.Instance != null)
-                        yield return BattleCameraController.Instance.ReturnDefaultIfNotHeld();
+                    yield return ReturnCameraAfterActiveActionIfNeeded();
 
                     yield break;
                 }
@@ -1705,17 +1838,18 @@ public class BattleActionRunner
                 }
 
                 hudService.RefreshHUDs();
-                yield return new WaitForSeconds(ActionDelay);
+                yield return new WaitForSeconds(ActionDelay / GetActivePresentationSpeed());
 
-                if (BattleCameraController.Instance != null)
-                    yield return BattleCameraController.Instance.ReturnDefaultIfNotHeld();
+                yield return ReturnCameraAfterActiveActionIfNeeded();
 
                 yield break;
             }
 
             if (ShouldPlayerSkillTargetSelf(command))
             {
-                if (ShouldSkipPlayerSkillCamera(command) && BattleCameraController.Instance != null)
+                if (ShouldEnterCameraForActiveAction() &&
+                    ShouldSkipPlayerSkillCamera(command) &&
+                    BattleCameraController.Instance != null)
                     yield return BattleCameraController.Instance.ZoomForRangedSkill();
 
                 if (attackerAnimator != null)
@@ -1726,8 +1860,7 @@ public class BattleActionRunner
                 {
                     hudService.RefreshHUDs();
 
-                    if (BattleCameraController.Instance != null)
-                        yield return BattleCameraController.Instance.ReturnDefaultIfNotHeld();
+                    yield return ReturnCameraAfterActiveActionIfNeeded();
 
                     yield break;
                 }
@@ -1735,10 +1868,9 @@ public class BattleActionRunner
                 ExecutePlayerSkillEffectsToPlayer(attacker, attacker, command);
 
                 hudService.RefreshHUDs();
-                yield return new WaitForSeconds(ActionDelay);
+                yield return new WaitForSeconds(ActionDelay / GetActivePresentationSpeed());
 
-                if (BattleCameraController.Instance != null)
-                    yield return BattleCameraController.Instance.ReturnDefaultIfNotHeld();
+                yield return ReturnCameraAfterActiveActionIfNeeded();
 
                 yield break;
             }
@@ -1766,11 +1898,15 @@ public class BattleActionRunner
 
             List<int> gridEffectTargets = BuildDamageableGridEffectTargets(command);
 
-            if (ShouldSkipPlayerSkillCamera(command) && BattleCameraController.Instance != null)
+            if (ShouldEnterCameraForActiveAction() &&
+                ShouldSkipPlayerSkillCamera(command) &&
+                BattleCameraController.Instance != null)
             {
                 yield return BattleCameraController.Instance.ZoomForRangedSkill();
             }
-            else if (hitTargets.Count > 0 && BattleCameraController.Instance != null)
+            else if (ShouldEnterCameraForActiveAction() &&
+                     hitTargets.Count > 0 &&
+                     BattleCameraController.Instance != null)
             {
                 yield return BattleCameraController.Instance.ZoomToAttacker(attacker.transform);
             }
@@ -1780,8 +1916,7 @@ public class BattleActionRunner
             {
                 hudService.RefreshHUDs();
 
-                if (BattleCameraController.Instance != null)
-                    yield return BattleCameraController.Instance.ReturnDefaultIfNotHeld();
+                yield return ReturnCameraAfterActiveActionIfNeeded();
 
                 yield break;
             }
@@ -1797,10 +1932,9 @@ public class BattleActionRunner
                     attackerAnimator.PlaySkillAction(command);
 
                 hudService.RefreshHUDs();
-                yield return new WaitForSeconds(ActionDelay);
+                yield return new WaitForSeconds(ActionDelay / GetActivePresentationSpeed());
 
-                if (BattleCameraController.Instance != null)
-                    yield return BattleCameraController.Instance.ReturnDefaultIfNotHeld();
+                yield return ReturnCameraAfterActiveActionIfNeeded();
 
                 yield break;
             }
@@ -1814,8 +1948,7 @@ public class BattleActionRunner
 
             hudService.RefreshHUDs();
 
-            if (BattleCameraController.Instance != null)
-                yield return BattleCameraController.Instance.ReturnDefaultIfNotHeld();
+            yield return ReturnCameraAfterActiveActionIfNeeded();
         }
         finally
         {
@@ -1923,7 +2056,7 @@ public class BattleActionRunner
             if (attackerAnimator != null)
                 attackerAnimator.PlaySkillAction(command);
 
-            yield return new WaitForSeconds(ActionDelay);
+            yield return new WaitForSeconds(ActionDelay / GetActivePresentationSpeed());
             yield break;
         }
 
@@ -1990,7 +2123,7 @@ public class BattleActionRunner
                     attackerAnimator.PlaySkillAction(command);
 
                 playedActionForNonDamage = true;
-                yield return new WaitForSeconds(ActionDelay);
+                yield return new WaitForSeconds(ActionDelay / GetActivePresentationSpeed());
             }
 
             ExecutePlayerNonDamageEffectToMonsters(
@@ -2013,7 +2146,8 @@ public class BattleActionRunner
             // 넉백/그랩은 논리 그리드 위치를 먼저 갱신한 뒤 별도 코루틴으로 시각 이동을 진행합니다.
             // 드라우그 반격 애니메이션은 해당 이동 연출까지 끝난 뒤 시작해야 화면 위치가 튀지 않습니다.
             if (hasForcedMoveVisual)
-                yield return new WaitForSeconds(ForcedMoveVisualCompletionDelay);
+                yield return new WaitForSeconds(
+                    ForcedMoveVisualCompletionDelay / GetActivePresentationSpeed());
 
             yield return ExecuteDraugrCounters(caster, draugrCounterCandidates);
         }
@@ -2023,7 +2157,7 @@ public class BattleActionRunner
             if (attackerAnimator != null)
                 attackerAnimator.PlaySkillAction(command);
 
-            yield return new WaitForSeconds(ActionDelay);
+            yield return new WaitForSeconds(ActionDelay / GetActivePresentationSpeed());
         }
     }
 
@@ -2065,7 +2199,8 @@ public class BattleActionRunner
             float hitActionDelay = isMultiHit
                 ? ActionDelay / MultiHitAnimationSpeed
                 : ActionDelay;
-            yield return new WaitForSeconds(hitActionDelay);
+            yield return new WaitForSeconds(
+                hitActionDelay / GetActivePresentationSpeed());
 
             List<Transform> feedbackTargets = new();
             bool appliedAnyHit = false;
@@ -2141,20 +2276,28 @@ public class BattleActionRunner
                 yield break;
             }
 
-            if (ShouldSkipPlayerSkillCamera(command))
+            bool playExternalImpact = ShouldPlayExternalImpactForHit(hitIndex, hitCount);
+
+            if (playExternalImpact)
             {
-                yield return PlayRangedDamageCameraFeedback();
-            }
-            else
-            {
-                yield return PlayDamageHitFeedback(
-                    caster != null ? caster.transform : null,
-                    feedbackTargets,
-                    command.Direction);
+                if (ShouldSkipPlayerSkillCamera(command))
+                {
+                    yield return PlayRangedDamageCameraFeedback();
+                }
+                else
+                {
+                    yield return PlayDamageHitFeedback(
+                        caster != null ? caster.transform : null,
+                        feedbackTargets,
+                        command.Direction);
+                }
             }
 
             if (hitIndex >= hitCount - 1)
-                yield return new WaitForSeconds(HitCameraDelay);
+            {
+                float endDelay = playExternalImpact ? HitCameraDelay : ActionDelay;
+                yield return new WaitForSeconds(endDelay / GetActivePresentationSpeed());
+            }
         }
 
         if (isMultiHit && attackerAnimator != null)
@@ -2930,7 +3073,7 @@ public class BattleActionRunner
             if (TryHandleImmediateMonsterUnitCollision(monster, moveOffset))
             {
                 hudService.RefreshHUDs();
-                yield return new WaitForSeconds(ActionDelay);
+                yield return new WaitForSeconds(ActionDelay / GetActivePresentationSpeed());
                 yield break;
             }
 
@@ -2941,7 +3084,7 @@ public class BattleActionRunner
                 ApplyMonsterMoveCrashAfterMovement(monster, moveResolution);
 
                 hudService.RefreshHUDs();
-                yield return new WaitForSeconds(ActionDelay);
+                yield return new WaitForSeconds(ActionDelay / GetActivePresentationSpeed());
                 yield break;
             }
 
@@ -2984,7 +3127,7 @@ public class BattleActionRunner
 
             hudService.RefreshHUDs();
 
-            yield return new WaitForSeconds(ActionDelay);
+            yield return new WaitForSeconds(ActionDelay / GetActivePresentationSpeed());
         }
         finally
         {
@@ -3144,7 +3287,7 @@ public class BattleActionRunner
         ApplyGridEffectsToMonster(new List<int> { destinationGridIndex }, monster);
         statusEffectService.ApplyBleedDamageToMonsterOnMove(monster);
         hudService.RefreshHUDs();
-        yield return new WaitForSeconds(ActionDelay);
+        yield return new WaitForSeconds(ActionDelay / GetActivePresentationSpeed());
     }
 
     private sealed class MonsterMoveResolution
@@ -3661,11 +3804,15 @@ public class BattleActionRunner
 
         try
         {
-            if (ShouldSkipMonsterSkillCamera(command) && BattleCameraController.Instance != null)
+            if (ShouldEnterCameraForActiveAction() &&
+                ShouldSkipMonsterSkillCamera(command) &&
+                BattleCameraController.Instance != null)
             {
                 yield return BattleCameraController.Instance.ZoomForRangedSkill();
             }
-            else if (firstPlayerTarget != null && BattleCameraController.Instance != null)
+            else if (ShouldEnterCameraForActiveAction() &&
+                     firstPlayerTarget != null &&
+                     BattleCameraController.Instance != null)
             {
                 yield return BattleCameraController.Instance.ZoomToAttacker(monster.transform);
             }
@@ -3688,9 +3835,9 @@ public class BattleActionRunner
                 monsterSkillEffectService.ApplyMonsterSkill(monster, command);
 
                 if (firstPlayerTarget != null)
-                    yield return new WaitForSeconds(HitCameraDelay);
+                    yield return new WaitForSeconds(HitCameraDelay / GetActivePresentationSpeed());
                 else
-                    yield return new WaitForSeconds(ActionDelay);
+                    yield return new WaitForSeconds(ActionDelay / GetActivePresentationSpeed());
             }
 
             // 머크의 투사체는 명중 여부와 관계없이 예약된 목표 그리드에 잔여물을 생성합니다.
@@ -3709,8 +3856,7 @@ public class BattleActionRunner
                 deathService.HandleMonsterDeadWithoutReward(monster);
             }
 
-            if (BattleCameraController.Instance != null)
-                yield return BattleCameraController.Instance.ReturnDefaultIfNotHeld();
+            yield return ReturnCameraAfterActiveActionIfNeeded();
         }
         finally
         {
@@ -3741,11 +3887,11 @@ public class BattleActionRunner
             if (canPlayProjectileVfx)
                 yield return PlayMonsterProjectileVfxIfNeeded(monster, command, monsterAnimator);
             else
-                yield return new WaitForSeconds(ActionDelay);
+                yield return new WaitForSeconds(ActionDelay / GetActivePresentationSpeed());
 
             if (!hasAliveTarget)
             {
-                yield return new WaitForSeconds(ActionDelay);
+                yield return new WaitForSeconds(ActionDelay / GetActivePresentationSpeed());
                 yield break;
             }
 
@@ -3754,7 +3900,9 @@ public class BattleActionRunner
 
             monsterSkillEffectService.ApplyMonsterSkillDamageHit(monster, command, hitIndex);
 
-            if (feedbackTargets.Count > 0)
+            bool playExternalImpact = ShouldPlayExternalImpactForHit(hitIndex, hitCount);
+
+            if (feedbackTargets.Count > 0 && playExternalImpact)
             {
                 if (isRangedPresentation)
                 {
@@ -3769,7 +3917,8 @@ public class BattleActionRunner
                 }
             }
 
-            yield return new WaitForSeconds(HitCameraDelay);
+            float hitDelay = playExternalImpact ? HitCameraDelay : ActionDelay;
+            yield return new WaitForSeconds(hitDelay / GetActivePresentationSpeed());
         }
     }
 
@@ -4694,7 +4843,9 @@ public class BattleActionRunner
 
         BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
 
-        if (hitPlayer != null && BattleCameraController.Instance != null)
+        if (ShouldEnterCameraForActiveAction() &&
+            hitPlayer != null &&
+            BattleCameraController.Instance != null)
             yield return BattleCameraController.Instance.ZoomToAttacker(monster.transform);
 
         if (animator != null)
@@ -4730,18 +4881,24 @@ public class BattleActionRunner
         {
             ApplyMonsterDashDamage(command, monster, hitPlayer);
 
-            IEnumerator feedbackRoutine = PlayDamageHitFeedback(
-                monster != null ? monster.transform : null,
-                new List<Transform> { hitPlayer.transform },
-                GetMonsterImpactFallbackDirection(monster),
-                false);
+            IEnumerator feedbackRoutine = activeActionInfo.ShouldPlayExternalImpact
+                ? PlayDamageHitFeedback(
+                    monster != null ? monster.transform : null,
+                    new List<Transform> { hitPlayer.transform },
+                    GetMonsterImpactFallbackDirection(monster),
+                    false)
+                : null;
             ApplyMonsterDashKnockback(command, monster, hitPlayer);
-            yield return feedbackRoutine;
 
-            yield return new WaitForSeconds(HitCameraDelay);
+            if (feedbackRoutine != null)
+                yield return feedbackRoutine;
 
-            if (BattleCameraController.Instance != null)
-                yield return BattleCameraController.Instance.ReturnDefaultIfNotHeld();
+            float dashHitDelay = activeActionInfo.ShouldPlayExternalImpact
+                ? HitCameraDelay
+                : ActionDelay;
+            yield return new WaitForSeconds(dashHitDelay / GetActivePresentationSpeed());
+
+            yield return ReturnCameraAfterActiveActionIfNeeded();
         }
         else if (hitBlockingMonster != null)
         {
@@ -4751,19 +4908,19 @@ public class BattleActionRunner
             if (hitBlockingMonster.RuntimeData != null && !hitBlockingMonster.RuntimeData.IsDead)
                 ApplyCrashToMonster(hitBlockingMonster);
 
-            yield return new WaitForSeconds(ActionDelay);
+            yield return new WaitForSeconds(ActionDelay / GetActivePresentationSpeed());
         }
         else if (hitCharacterGridEffectIndex >= 0)
         {
             ApplyMonsterDashDamageToGridEffect(command, hitCharacterGridEffectIndex);
-            yield return new WaitForSeconds(HitCameraDelay);
+            yield return new WaitForSeconds(HitCameraDelay / GetActivePresentationSpeed());
         }
         else
         {
             if (wasBlockedByCollision && monster.RuntimeData != null && !monster.RuntimeData.IsDead)
                 ApplyCrashToMonster(monster);
 
-            yield return new WaitForSeconds(ActionDelay);
+            yield return new WaitForSeconds(ActionDelay / GetActivePresentationSpeed());
         }
 
         hudService.RefreshHUDs();

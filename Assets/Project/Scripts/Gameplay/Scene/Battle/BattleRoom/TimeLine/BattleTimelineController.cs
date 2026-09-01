@@ -1741,7 +1741,10 @@ public class BattleTimelineController : MonoBehaviour
 
         while (elapsed < duration)
         {
-            elapsed += useUnscaledTimeForTimelineSlotSlide ? Time.unscaledDeltaTime : Time.deltaTime;
+            float deltaTime = useUnscaledTimeForTimelineSlotSlide
+                ? Time.unscaledDeltaTime
+                : Time.deltaTime;
+            elapsed += BattleConsecutiveActionPresentationContext.ScaleDeltaTime(deltaTime);
             float t = Mathf.Clamp01(elapsed / duration);
             float easedT = 1f - Mathf.Pow(1f - t, 3f);
 
@@ -2413,7 +2416,10 @@ public class BattleTimelineController : MonoBehaviour
 
         while (elapsed < duration)
         {
-            elapsed += useUnscaledTimeForTimelineSlotSlide ? Time.unscaledDeltaTime : Time.deltaTime;
+            float deltaTime = useUnscaledTimeForTimelineSlotSlide
+                ? Time.unscaledDeltaTime
+                : Time.deltaTime;
+            elapsed += BattleConsecutiveActionPresentationContext.ScaleDeltaTime(deltaTime);
             float t = Mathf.Clamp01(elapsed / duration);
             float easedT = 1f - Mathf.Pow(1f - t, 3f);
 
