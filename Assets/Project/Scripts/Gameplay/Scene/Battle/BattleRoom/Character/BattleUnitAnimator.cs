@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using UnityEngine;
+using UnityEngine.VFX;
 
 public enum VfxFlipType
 {
@@ -869,7 +870,8 @@ public class BattleUnitAnimator : MonoBehaviour
                 targetGridImpactEntry,
                 impactPosition,
                 Mathf.Max(0.01f, entry.impactLifeTime),
-                applyFacingFlip: false);
+                applyFacingFlip: false,
+                stabilizeVisualEffects: true);
             spawnedAny = true;
         }
 
@@ -989,7 +991,8 @@ public class BattleUnitAnimator : MonoBehaviour
         BattleVfxEntry entry,
         Vector3 anchorWorldPosition,
         float lifeTime,
-        bool applyFacingFlip)
+        bool applyFacingFlip,
+        bool stabilizeVisualEffects = false)
     {
         if (TrySpawnDetachedWorldVfx(
                 entry,
@@ -997,22 +1000,26 @@ public class BattleUnitAnimator : MonoBehaviour
                 lifeTime,
                 useUnitSortingTarget: false,
                 applyFacingFlip: applyFacingFlip,
+                stabilizeVisualEffects: stabilizeVisualEffects,
                 out _))
         {
             return;
         }
 
-        if (TrySpawnDetachedDirectWorldVfx(entry, anchorWorldPosition, lifeTime, applyFacingFlip))
+        if (TrySpawnDetachedDirectWorldVfx(entry, anchorWorldPosition, lifeTime, applyFacingFlip, stabilizeVisualEffects))
+        {
             return;
+        }
 
-        SpawnDetachedPrefabVfx(entry, anchorWorldPosition, lifeTime, applyFacingFlip);
+        SpawnDetachedPrefabVfx(entry, anchorWorldPosition, lifeTime, applyFacingFlip, stabilizeVisualEffects);
     }
 
     private bool TrySpawnDetachedDirectWorldVfx(
         BattleVfxEntry entry,
         Vector3 anchorWorldPosition,
         float lifeTime,
-        bool applyFacingFlip)
+        bool applyFacingFlip,
+        bool stabilizeVisualEffects)
     {
         if (entry.renderMode != BattleVfxRenderMode.DirectWorldRenderer)
             return false;
@@ -1021,6 +1028,10 @@ public class BattleUnitAnimator : MonoBehaviour
         GameObject vfx = Instantiate(entry.prefab, anchor.transform, false);
 
         ConfigureDirectWorldVfxInstance(vfx, entry, anchor.transform.position.y, applyFacingFlip);
+
+        if (stabilizeVisualEffects)
+            StabilizeVisualEffectPlayback(vfx);
+
         Destroy(anchor, Mathf.Max(0.01f, lifeTime));
         return true;
     }
@@ -1029,12 +1040,24 @@ public class BattleUnitAnimator : MonoBehaviour
         BattleVfxEntry entry,
         Vector3 anchorWorldPosition,
         float lifeTime,
-        bool applyFacingFlip)
+        bool applyFacingFlip,
+        bool stabilizeVisualEffects)
     {
         GameObject anchor = CreateDetachedVfxAnchor(entry, anchorWorldPosition);
         GameObject vfx = Instantiate(entry.prefab, anchor.transform, false);
 
         ConfigureDirectWorldVfxInstance(vfx, entry, anchor.transform.position.y, applyFacingFlip);
+
+        if (stabilizeVisualEffects)
+            StabilizeVisualEffectPlayback(vfx);
+
+        if (entry.renderMode == BattleVfxRenderMode.IndividualWorldRenderTexture)
+        {
+            Transform spawn = GetVfxSpawnTransform();
+            int visibleLayer = spawn != null ? spawn.gameObject.layer : 0;
+            SetLayerRecursively(vfx, visibleLayer);
+        }
+
         Destroy(anchor, Mathf.Max(0.01f, lifeTime));
     }
 
@@ -1366,6 +1389,7 @@ public class BattleUnitAnimator : MonoBehaviour
             lifeTime,
             useUnitSortingTarget: true,
             applyFacingFlip: true,
+            stabilizeVisualEffects: false,
             out handle);
     }
 
@@ -1375,6 +1399,7 @@ public class BattleUnitAnimator : MonoBehaviour
         float lifeTime,
         bool useUnitSortingTarget,
         bool applyFacingFlip,
+        bool stabilizeVisualEffects,
         out BattleWorldVfxHandle handle)
     {
         Transform spawn = GetVfxSpawnTransform();
@@ -1386,7 +1411,13 @@ public class BattleUnitAnimator : MonoBehaviour
             vfxLayer,
             visibleLayer,
             Mathf.Max(0.01f, lifeTime),
-            vfx => ConfigureVfxInstance(vfx, entry, applyFacingFlip),
+            vfx =>
+            {
+                ConfigureVfxInstance(vfx, entry, applyFacingFlip);
+
+                if (stabilizeVisualEffects)
+                    StabilizeVisualEffectPlayback(vfx);
+            },
             out handle);
 
         if (spawned && useUnitSortingTarget)
@@ -1437,7 +1468,7 @@ public class BattleUnitAnimator : MonoBehaviour
         {
             prefab = source.impactPrefab,
             flipType = VfxFlipType.None,
-            renderMode = BattleVfxRenderMode.DirectWorldRenderer
+            renderMode = BattleVfxRenderMode.IndividualWorldRenderTexture
         };
     }
 
@@ -1470,6 +1501,21 @@ public class BattleUnitAnimator : MonoBehaviour
         if (applyFacingFlip)
             ApplyVfxFlip(vfx, entry.flipType);
         BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(vfx, entry.prefab, this);
+    }
+
+    private static void StabilizeVisualEffectPlayback(GameObject vfx)
+    {
+        if (vfx == null)
+            return;
+
+        VisualEffect[] visualEffects = vfx.GetComponentsInChildren<VisualEffect>(true);
+
+        for (int i = 0; i < visualEffects.Length; i++)
+        {
+            VisualEffect visualEffect = visualEffects[i];
+            visualEffect.resetSeedOnPlay = false;
+            visualEffect.Reinit();
+        }
     }
 
     private static void EnsureVfxPauseController(GameObject vfx)

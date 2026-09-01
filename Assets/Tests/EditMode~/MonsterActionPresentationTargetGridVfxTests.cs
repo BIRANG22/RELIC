@@ -31,7 +31,7 @@ public sealed class MonsterActionPresentationTargetGridVfxTests
             StringComparison.Ordinal);
         Assert.That(methodEnd, Is.GreaterThan(methodStart));
 
-        string methodBody = source[methodStart..methodEnd];
+        string methodBody = source.Substring(methodStart, methodEnd - methodStart);
         int monsterPresentationIndex = methodBody.IndexOf(
             "GetMonsterActionPresentation(command.ActionIndex)",
             StringComparison.Ordinal);
@@ -61,7 +61,7 @@ public sealed class MonsterActionPresentationTargetGridVfxTests
             StringComparison.Ordinal);
         Assert.That(methodEnd, Is.GreaterThan(methodStart));
 
-        string methodBody = source[methodStart..methodEnd];
+        string methodBody = source.Substring(methodStart, methodEnd - methodStart);
 
         StringAssert.Contains(
             "TrySpawnProjectileImpactOnMonsterTargetGrids(presentation.projectileVfx, command)",
@@ -100,6 +100,9 @@ public sealed class MonsterActionPresentationTargetGridVfxTests
             "applyFacingFlip: false",
             methodBody);
         StringAssert.Contains(
+            "stabilizeVisualEffects: true",
+            methodBody);
+        StringAssert.Contains(
             "ResolveTargetGridImpactPosition(",
             source);
         StringAssert.DoesNotContain(
@@ -124,7 +127,7 @@ public sealed class MonsterActionPresentationTargetGridVfxTests
             StringComparison.Ordinal);
         Assert.That(methodEnd, Is.GreaterThan(methodStart));
 
-        string targetGridVfxSection = source[methodStart..methodEnd];
+        string targetGridVfxSection = source.Substring(methodStart, methodEnd - methodStart);
 
         StringAssert.Contains(
             "TryResolveMonsterPresentationVfxAnchor(manager, gridIndex, out Vector3 anchorPosition)",
@@ -157,7 +160,7 @@ public sealed class MonsterActionPresentationTargetGridVfxTests
             StringComparison.Ordinal);
         Assert.That(methodEnd, Is.GreaterThan(methodStart));
 
-        string targetGridVfxSection = source[methodStart..methodEnd];
+        string targetGridVfxSection = source.Substring(methodStart, methodEnd - methodStart);
 
         StringAssert.Contains(
             "BattleVfxEntry targetGridEntry = CreateTargetGridVfxEntry(entry);",
@@ -169,12 +172,15 @@ public sealed class MonsterActionPresentationTargetGridVfxTests
             "applyFacingFlip: false",
             targetGridVfxSection);
         StringAssert.DoesNotContain(
+            "stabilizeVisualEffects: true",
+            targetGridVfxSection);
+        StringAssert.DoesNotContain(
             "entry.impactFlipType",
             targetGridVfxSection);
     }
 
     [Test]
-    public void BattleUnitAnimator_TargetGridImpactEntryUsesDirectWorldRenderer()
+    public void BattleUnitAnimator_TargetGridImpactEntryUsesIndividualWorldRenderTexture()
     {
         const string animatorPath =
             "Assets/Project/Scripts/Gameplay/Scene/Battle/BattleRoom/Character/BattleUnitAnimator.cs";
@@ -190,7 +196,7 @@ public sealed class MonsterActionPresentationTargetGridVfxTests
             StringComparison.Ordinal);
         Assert.That(methodEnd, Is.GreaterThan(methodStart));
 
-        string methodBody = source[methodStart..methodEnd];
+        string methodBody = source.Substring(methodStart, methodEnd - methodStart);
 
         StringAssert.Contains(
             "prefab = source.impactPrefab",
@@ -199,10 +205,114 @@ public sealed class MonsterActionPresentationTargetGridVfxTests
             "flipType = VfxFlipType.None",
             methodBody);
         StringAssert.Contains(
-            "renderMode = BattleVfxRenderMode.DirectWorldRenderer",
+            "renderMode = BattleVfxRenderMode.IndividualWorldRenderTexture",
             methodBody);
         StringAssert.DoesNotContain(
             "source.impactFlipType",
+            methodBody);
+    }
+
+    [Test]
+    public void BattleUnitAnimator_StabilizesAllChildVisualEffectsWithoutOverwritingAuthoredSeed()
+    {
+        const string animatorPath =
+            "Assets/Project/Scripts/Gameplay/Scene/Battle/BattleRoom/Character/BattleUnitAnimator.cs";
+        string source = File.ReadAllText(animatorPath);
+        int methodStart = source.IndexOf(
+            "private static void StabilizeVisualEffectPlayback(GameObject vfx)",
+            StringComparison.Ordinal);
+        Assert.That(methodStart, Is.GreaterThanOrEqualTo(0));
+
+        int methodEnd = source.IndexOf(
+            "private static void EnsureVfxPauseController(",
+            methodStart,
+            StringComparison.Ordinal);
+        Assert.That(methodEnd, Is.GreaterThan(methodStart));
+
+        string methodBody = source.Substring(methodStart, methodEnd - methodStart);
+
+        StringAssert.Contains(
+            "GetComponentsInChildren<VisualEffect>(true)",
+            methodBody);
+        StringAssert.Contains(
+            "visualEffect.resetSeedOnPlay = false;",
+            methodBody);
+        StringAssert.Contains(
+            "visualEffect.Reinit();",
+            methodBody);
+        StringAssert.DoesNotContain(
+            "visualEffect.startSeed =",
+            methodBody);
+    }
+
+    [Test]
+    public void BattleUnitAnimator_StablePlaybackFlagFlowsThroughDetachedSpawnFallbacks()
+    {
+        const string animatorPath =
+            "Assets/Project/Scripts/Gameplay/Scene/Battle/BattleRoom/Character/BattleUnitAnimator.cs";
+        string source = File.ReadAllText(animatorPath);
+        int firstOverloadStart = source.IndexOf(
+            "private void SpawnDetachedVfx(",
+            StringComparison.Ordinal);
+        Assert.That(firstOverloadStart, Is.GreaterThanOrEqualTo(0));
+        int methodStart = source.IndexOf(
+            "private void SpawnDetachedVfx(",
+            firstOverloadStart + 1,
+            StringComparison.Ordinal);
+        Assert.That(methodStart, Is.GreaterThanOrEqualTo(0));
+
+        int methodEnd = source.IndexOf(
+            "private static GameObject CreateDetachedVfxAnchor(",
+            methodStart,
+            StringComparison.Ordinal);
+        Assert.That(methodEnd, Is.GreaterThan(methodStart));
+
+        string methodBody = source.Substring(methodStart, methodEnd - methodStart);
+
+        StringAssert.Contains(
+            "bool stabilizeVisualEffects = false",
+            methodBody);
+        StringAssert.Contains(
+            "stabilizeVisualEffects: stabilizeVisualEffects",
+            methodBody);
+        StringAssert.Contains(
+            "TrySpawnDetachedDirectWorldVfx(entry, anchorWorldPosition, lifeTime, applyFacingFlip, stabilizeVisualEffects)",
+            methodBody);
+        StringAssert.Contains(
+            "SpawnDetachedPrefabVfx(entry, anchorWorldPosition, lifeTime, applyFacingFlip, stabilizeVisualEffects);",
+            methodBody);
+    }
+
+    [Test]
+    public void BattleUnitAnimator_IndividualProxyFallbackUsesMainCameraVisibleLayer()
+    {
+        const string animatorPath =
+            "Assets/Project/Scripts/Gameplay/Scene/Battle/BattleRoom/Character/BattleUnitAnimator.cs";
+        string source = File.ReadAllText(animatorPath);
+        int methodStart = source.IndexOf(
+            "private void SpawnDetachedPrefabVfx(",
+            StringComparison.Ordinal);
+        Assert.That(methodStart, Is.GreaterThanOrEqualTo(0));
+
+        int methodEnd = source.IndexOf(
+            "private static GameObject CreateDetachedVfxAnchor(",
+            methodStart,
+            StringComparison.Ordinal);
+        Assert.That(methodEnd, Is.GreaterThan(methodStart));
+
+        string methodBody = source.Substring(methodStart, methodEnd - methodStart);
+
+        StringAssert.Contains(
+            "if (stabilizeVisualEffects)",
+            methodBody);
+        StringAssert.Contains(
+            "StabilizeVisualEffectPlayback(vfx);",
+            methodBody);
+        StringAssert.Contains(
+            "if (entry.renderMode == BattleVfxRenderMode.IndividualWorldRenderTexture)",
+            methodBody);
+        StringAssert.Contains(
+            "SetLayerRecursively(vfx, visibleLayer);",
             methodBody);
     }
 
@@ -223,7 +333,7 @@ public sealed class MonsterActionPresentationTargetGridVfxTests
             StringComparison.Ordinal);
         Assert.That(methodEnd, Is.GreaterThan(methodStart));
 
-        string methodBody = source[methodStart..methodEnd];
+        string methodBody = source.Substring(methodStart, methodEnd - methodStart);
 
         StringAssert.Contains(
             "if (applyFacingFlip)",
