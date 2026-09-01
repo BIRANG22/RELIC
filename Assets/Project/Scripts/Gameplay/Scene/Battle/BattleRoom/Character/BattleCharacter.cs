@@ -7,11 +7,14 @@ public class BattleCharacter : MonoBehaviour
 {
     private static readonly Color CharacterSelectedHighlightColor = new Color32(0x0C, 0x58, 0xC5, 0xFF);
     private static readonly Color CharacterHoverHighlightColor = new Color32(0xEE, 0xEE, 0xEE, 0xFF);
+    public const string SelectionReadyAnimationStateName = "battle_ready";
+    public const string SelectionIdleAnimationStateName = "Idle";
     private const string TimelineHoverHighlightIdleBackName = "Idle_Back";
     private const string TimelineHoverHighlightShadowName = "Shadow";
 
     [Header("Timeline Hover Highlight")]
     [SerializeField] private GameObject timelineHoverHighlightObject;
+    [SerializeField] private bool playBattleReadyAnimationOnSelect = true;
 
     private SpriteRenderer[] timelineHoverHighlightRenderers;
     private float[] timelineHoverHighlightOriginalAlphas;
@@ -21,6 +24,7 @@ public class BattleCharacter : MonoBehaviour
     private SpriteRenderer[] timelineHoverHighlightShadowRenderers;
     private Animator timelineHoverHighlightSourceAnimator;
     private Animator timelineHoverHighlightIdleBackAnimator;
+    private Animator selectionReadyAnimator;
     private bool timelineHoverHighlightVisible;
     private bool selectionHighlightVisible;
 
@@ -61,6 +65,12 @@ public class BattleCharacter : MonoBehaviour
     public void SetSelectionScaleFeedback(bool selected)
     {
         selectionHighlightVisible = selected;
+
+        if (selected)
+            PlaySelectionReadyAnimation();
+        else
+            PlaySelectionIdleAnimation();
+
         ApplyTimelineHoverHighlightAlpha();
     }
 
@@ -484,6 +494,74 @@ public class BattleCharacter : MonoBehaviour
             timelineHoverHighlightSourceAnimator = animator;
             return;
         }
+    }
+
+    private void PlaySelectionReadyAnimation()
+    {
+        if (!playBattleReadyAnimationOnSelect)
+            return;
+
+        CacheSelectionReadyAnimator();
+
+        if (selectionReadyAnimator == null ||
+            selectionReadyAnimator.runtimeAnimatorController == null)
+        {
+            return;
+        }
+
+        int stateHash = Animator.StringToHash(SelectionReadyAnimationStateName);
+
+        if (!selectionReadyAnimator.HasState(0, stateHash))
+            return;
+
+        if (!selectionReadyAnimator.enabled)
+            selectionReadyAnimator.enabled = true;
+
+        selectionReadyAnimator.speed = 1f;
+        selectionReadyAnimator.Play(stateHash, 0, 0f);
+        selectionReadyAnimator.Update(0f);
+    }
+
+    private void PlaySelectionIdleAnimation()
+    {
+        if (selectionReadyAnimator == null ||
+            selectionReadyAnimator.runtimeAnimatorController == null)
+        {
+            return;
+        }
+
+        int stateHash = Animator.StringToHash(SelectionIdleAnimationStateName);
+
+        if (!selectionReadyAnimator.HasState(0, stateHash))
+            return;
+
+        if (!selectionReadyAnimator.enabled)
+            selectionReadyAnimator.enabled = true;
+
+        selectionReadyAnimator.speed = 1f;
+        selectionReadyAnimator.Play(stateHash, 0, 0f);
+        selectionReadyAnimator.Update(0f);
+    }
+
+    private void CacheSelectionReadyAnimator()
+    {
+        if (selectionReadyAnimator != null)
+            return;
+
+        selectionReadyAnimator = FindSelectionReadyAnimator(transform);
+    }
+
+    public static Animator FindSelectionReadyAnimator(Transform characterRoot)
+    {
+        if (characterRoot == null)
+            return null;
+
+        Transform spriteRoot = characterRoot.Find("SpriteRoot");
+
+        if (spriteRoot != null)
+            return spriteRoot.GetComponentInChildren<Animator>(true);
+
+        return null;
     }
 
     private void CacheTimelineHoverHighlightIdleBackAnimator()
