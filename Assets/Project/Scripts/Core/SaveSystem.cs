@@ -34,6 +34,8 @@ public class SaveSystem : Singleton<SaveSystem>
     /// </summary>
     public bool DeleteSaveFile()
     {
+        ClearBattleRoomEntryCheckpoint();
+
         try
         {
             if (File.Exists(SaveFilePath))
