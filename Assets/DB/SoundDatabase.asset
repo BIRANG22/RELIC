@@ -546,11 +546,20 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   eventSfxList:
+  - id: event.09.Ambience
+    aliases: []
+    clip: {fileID: 8300000, guid: 602ba08c3a1834cefa18cc796ff63c89, type: 3}
+    volume: 1
+    pitch: 0.7
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
   - id: event.09.Skylight
     aliases: []
     clip: {fileID: 8300000, guid: f0cecff6fa8e53b44940647c0e37efe7, type: 3}
     volume: 1
-    pitch: 1
+    pitch: 0.7
     loop: 0
     useRandomPitch: 0
     randomPitchMin: 0
