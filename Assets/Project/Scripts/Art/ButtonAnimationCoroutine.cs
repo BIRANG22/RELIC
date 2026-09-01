@@ -81,6 +81,7 @@ public class ButtonAnimationCoroutine :
     private bool isClicked;
     private bool hasCachedOriginValues;
     private bool wasBlocked;
+    private bool interactionEnabled = true;
 
     private Coroutine visualCoroutine;
 
@@ -93,7 +94,7 @@ public class ButtonAnimationCoroutine :
         ResolveHoverHitArea();
         CacheOriginValuesIfNeeded();
 
-        wasBlocked = IsBlockedByStartImage();
+        wasBlocked = IsInteractionBlocked();
         ForceClearState(false);
     }
 
@@ -102,13 +103,15 @@ public class ButtonAnimationCoroutine :
         ResolveHoverHitArea();
         CacheOriginValuesIfNeeded();
 
-        wasBlocked = IsBlockedByStartImage();
+        wasBlocked = IsInteractionBlocked();
         ForceClearState(false);
     }
 
     private void Update()
     {
-        bool isBlocked = IsBlockedByStartImage();
+        CacheOriginValuesIfNeeded();
+
+        bool isBlocked = IsInteractionBlocked();
 
         // StartImage가 새로 활성화되면 현재 버튼 상태를 즉시 초기화합니다.
         if (isBlocked && !wasBlocked)
@@ -144,17 +147,36 @@ public class ButtonAnimationCoroutine :
     }
 
     /// <summary>
-    /// StartImage가 현재 활성화되어 버튼 입력을 막고 있는지 확인합니다.
+    /// 외부 비활성 상태 또는 StartImage 때문에 버튼 입력이 막혀 있는지 확인합니다.
     /// </summary>
-    private bool IsBlockedByStartImage()
+    private bool IsInteractionBlocked()
     {
-        return startImageObject != null &&
-               startImageObject.activeInHierarchy;
+        return !interactionEnabled ||
+               (startImageObject != null && startImageObject.activeInHierarchy);
+    }
+
+    /// <summary>
+    /// 외부 UI에서 Hover/Click 연출과 SFX를 포함한 입력 반응을 켜거나 끕니다.
+    /// 비활성화할 때 현재 Hover/Click 상태도 즉시 원래 상태로 되돌립니다.
+    /// </summary>
+    public void SetInteractionEnabled(bool enabled)
+    {
+        interactionEnabled = enabled;
+
+        if (!interactionEnabled)
+        {
+            ForceClearState(false);
+            wasBlocked = true;
+            return;
+        }
+
+        wasBlocked = IsInteractionBlocked();
+        ForceClearState(false);
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (IsBlockedByStartImage())
+        if (IsInteractionBlocked())
         {
             return;
         }
@@ -182,7 +204,7 @@ public class ButtonAnimationCoroutine :
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (IsBlockedByStartImage())
+        if (IsInteractionBlocked())
         {
             return;
         }
@@ -298,7 +320,7 @@ public class ButtonAnimationCoroutine :
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        if (IsBlockedByStartImage())
+        if (IsInteractionBlocked())
         {
             return;
         }
@@ -408,7 +430,7 @@ public class ButtonAnimationCoroutine :
             currentClickedButton = null;
         }
 
-        if (animate && !IsBlockedByStartImage())
+        if (animate && !IsInteractionBlocked())
         {
             StartVisualAnimationIfNeeded();
         }
@@ -431,7 +453,7 @@ public class ButtonAnimationCoroutine :
             currentClickedButton = null;
         }
 
-        if (animate && !IsBlockedByStartImage())
+        if (animate && !IsInteractionBlocked())
         {
             StartVisualAnimationIfNeeded();
         }
@@ -444,7 +466,7 @@ public class ButtonAnimationCoroutine :
 
     private void ClearOtherClickedButton()
     {
-        if (IsBlockedByStartImage())
+        if (IsInteractionBlocked())
         {
             return;
         }
@@ -460,7 +482,15 @@ public class ButtonAnimationCoroutine :
 
     private void CacheOriginValuesIfNeeded()
     {
-        if (hasCachedOriginValues)
+        if (hasCachedOriginValues || buttonContent == null)
+        {
+            return;
+        }
+
+        // 선택지 등장 연출 중에는 ButtonContent의 Scale이 0일 수 있습니다.
+        // 이 값을 원래 Scale로 저장하면 이후 Hover 상태를 초기화할 때
+        // 선택지가 다시 Scale 0으로 돌아가 보이지 않게 됩니다.
+        if (buttonContent.localScale.sqrMagnitude <= 0.000001f)
         {
             return;
         }
@@ -482,7 +512,7 @@ public class ButtonAnimationCoroutine :
 
     private void StartVisualAnimationIfNeeded()
     {
-        if (IsBlockedByStartImage())
+        if (IsInteractionBlocked())
         {
             StopVisualAnimation();
             ApplyVisualStateImmediately();
@@ -518,7 +548,7 @@ public class ButtonAnimationCoroutine :
     {
         while (true)
         {
-            if (IsBlockedByStartImage())
+            if (IsInteractionBlocked())
             {
                 isPointerInside = false;
                 isClicked = false;
@@ -611,6 +641,14 @@ public class ButtonAnimationCoroutine :
     {
         if (buttonContent == null)
         {
+            return;
+        }
+
+        CacheOriginValuesIfNeeded();
+        if (!hasCachedOriginValues)
+        {
+            // 등장 애니메이션이 실제 Scale을 만든 뒤 Update에서 원본값을 캐시합니다.
+            // 그 전에는 현재 RectTransform 값을 건드리지 않습니다.
             return;
         }
 

@@ -163,6 +163,46 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         ShowTyped(target, value, PopupType.HealthRecovery);
     }
 
+
+    public static void ShowEventHealthRecovery(Transform target, int value, Canvas preferredCanvas, float fontSize)
+    {
+        if (target == null || value <= 0)
+            return;
+
+        BattleDamageTextPopupUI popup = GetOrCreateInstance();
+        if (popup == null)
+            return;
+
+        popup.UsePreferredCanvas(preferredCanvas);
+        popup.ShowCustomTextInternal(target, "생명력 +" + value, PopupType.HealthRecovery, fontSize);
+    }
+
+    public static void ShowEventHealthLoss(Transform target, int value, Canvas preferredCanvas, float fontSize)
+    {
+        if (target == null || value <= 0)
+            return;
+
+        BattleDamageTextPopupUI popup = GetOrCreateInstance();
+        if (popup == null)
+            return;
+
+        popup.UsePreferredCanvas(preferredCanvas);
+        popup.ShowCustomTextInternal(target, "생명력 -" + value, PopupType.Damage, fontSize);
+    }
+
+    public static void ShowEventManaRegenGain(Transform target, int value, Canvas preferredCanvas, float fontSize)
+    {
+        if (target == null || value <= 0)
+            return;
+
+        BattleDamageTextPopupUI popup = GetOrCreateInstance();
+        if (popup == null)
+            return;
+
+        popup.UsePreferredCanvas(preferredCanvas);
+        popup.ShowCustomTextInternal(target, "마나 재생량 +" + value, PopupType.CostRecovery, fontSize);
+    }
+
     public static void ShowEventMaxHealthGain(Transform target, int value, Canvas preferredCanvas, float fontSize)
     {
         if (target == null || value <= 0)

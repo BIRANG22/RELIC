@@ -14,6 +14,7 @@ namespace Relic.Gameplay.Data
         public int ChoiceOrder;
         public string ChoiceName;
         public string ChoiceDesc;
+        public string UnavailableChoiceDesc;
         public string ChoiceType;
         public string SelectCondition;
 

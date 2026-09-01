@@ -38,6 +38,22 @@ public class EventRoomController : MonoBehaviour
     [SerializeField] private BattleRewardPanelUI rewardPanel;
     [SerializeField, Min(0f)] private float eventRewardPanelOpenDelay = 0.6f;
 
+    [Header("Event Dustium Acquire")]
+    [Tooltip("이벤트에서 레드 더스티움을 획득할 때 표시할 Dustium UI입니다.")]
+    [SerializeField] private RectTransform dustiumAcquireRoot;
+    [SerializeField] private TMP_Text dustiumAcquireValueText;
+    [Tooltip("Dustium이 날아가 도착할 GoldHud 위치입니다.")]
+    [SerializeField] private RectTransform goldHudTarget;
+    [SerializeField] private Vector2 dustiumAppearOffset = new Vector2(90f, 190f);
+    [SerializeField] private float dustiumAppearCurveHeight = 110f;
+    [SerializeField, Min(0.01f)] private float dustiumAppearDuration = 0.25f;
+    [Tooltip("이벤트 오브젝트 성공 연출을 먼저 보여준 뒤 Dustium 획득 연출을 시작하기까지 기다리는 시간입니다.")]
+    [SerializeField, Min(0f)] private float dustiumVisualActionWaitDuration = 0.6f;
+    [SerializeField, Min(0f)] private float dustiumValueHoldDuration = 0.45f;
+    [SerializeField, Min(0.01f)] private float dustiumFlyDuration = 0.55f;
+    [SerializeField] private float dustiumFlyCurveHeight = 180f;
+    [SerializeField, Min(0f)] private float dustiumFlyEndScale = 0.2f;
+
     [Header("Shop")]
     [SerializeField] private RestRoomShopPanel shopPanel;
 
@@ -50,7 +66,11 @@ public class EventRoomController : MonoBehaviour
 
     [Header("Event Dice Roll")]
     [SerializeField] private EventDiceRollPresenter diceRollPresenter;
-    [SerializeField] private EventDiceRollPresenter diceRollPresenterPrefab;
+    [SerializeField, Min(0.01f)] private float diceUiFadeDuration = 0.25f;
+
+    [Header("Event_01 Result")]
+    [Tooltip("주사위 스탯 팝업이 끝난 뒤 Event_01_A/B/C 결과 Title로 넘어가기까지 기다리는 시간입니다.")]
+    [SerializeField, Min(0f)] private float event01StatResultDelay = 0.9f;
 
     [Header("Hover Info Panel")]
     [SerializeField] private GameObject relicHoverInfoPanel;
@@ -93,6 +113,11 @@ public class EventRoomController : MonoBehaviour
     private bool isEventResolved;
     private bool isEventRewardPanelOpen;
     private Coroutine eventRewardPanelDelayRoutine;
+    private Coroutine dustiumAcquireRoutine;
+    private int pendingDustiumAcquireAmount;
+    private bool hasDustiumAcquireOriginalState;
+    private Vector3 dustiumAcquireOriginalWorldPosition;
+    private Vector3 dustiumAcquireOriginalLocalScale;
     private readonly List<BattleRewardData> pendingEventRewards = new();
     private readonly EventChoiceSessionState eventChoiceSessionState = new();
     private readonly List<EventData> persistentEventChoices = new();
@@ -103,6 +128,17 @@ public class EventRoomController : MonoBehaviour
     private EventData pendingSkillAwakenChoice;
     private bool isSelectingSkillAwaken;
     private Coroutine diceRollRoutine;
+    private Coroutine diceTransitionRoutine;
+    private Coroutine event01ResultContinuationRoutine;
+    private Coroutine event02ResultContinuationRoutine;
+    private Coroutine event01RewardTransitionRoutine;
+    private Coroutine event02ChestTransitionRoutine;
+    private string pendingEvent01ResultEventId;
+    private string pendingEvent01ResultMessage;
+    private string pendingEvent02ResultEventId;
+    private string pendingEvent02ResultMessage;
+    private EventData activeRewardChoice;
+    private CanvasGroup eventTitleCanvasGroup;
     private Coroutine eventChoiceScrollMoveRoutine;
     private Coroutine skillAwakenTransitionRoutine;
     private Coroutine skillAwakenResultRoutine;
@@ -120,6 +156,9 @@ public class EventRoomController : MonoBehaviour
         ApplyBackgroundSorting();
         BindNextButton();
         CacheRelicFlyRootOriginalState();
+        EnsureDustiumAcquireReferences();
+        CacheDustiumAcquireOriginalState();
+        ResetDustiumAcquireVisual();
         HideRelicHoverInfo();
         HideRelicFlyObjects();
     }
@@ -147,6 +186,11 @@ public class EventRoomController : MonoBehaviour
 
         HideDiceRollPresenterImmediate();
         StopEventRewardPanelDelay();
+        StopDustiumAcquireAnimation(true);
+        pendingDustiumAcquireAmount = 0;
+        StopEvent01RewardTransition();
+        StopEvent02ChestTransition();
+        ClearPendingEvent01ResultContinuation();
         CacheRelicFlyRootOriginalState();
         HideRelicHoverInfo();
         HideRelicFlyObjects();
@@ -191,6 +235,11 @@ public class EventRoomController : MonoBehaviour
 
         HideDiceRollPresenterImmediate();
         StopEventRewardPanelDelay();
+        StopDustiumAcquireAnimation(true);
+        pendingDustiumAcquireAmount = 0;
+        StopEvent01RewardTransition();
+        StopEvent02ChestTransition();
+        ClearPendingEvent01ResultContinuation();
         StopEventChoiceScrollViewAnimation();
         StopSkillAwakenResultRoutine();
         StopTerminalChoiceFade();
@@ -361,6 +410,24 @@ public class EventRoomController : MonoBehaviour
 
     private bool TryStartDataEventMode()
     {
+        // 같은 데이터 이벤트를 다시 조우해도 이전 연출 상태가 남지 않도록 먼저 초기화합니다.
+        StopEvent01RewardTransition();
+        if (diceTransitionRoutine != null)
+        {
+            StopCoroutine(diceTransitionRoutine);
+            diceTransitionRoutine = null;
+        }
+        HideDiceRollPresenterImmediate();
+        StopEventRewardPanelDelay();
+        ClearPendingEvent01ResultContinuation();
+        ClearPendingEvent02ResultContinuation();
+        isEventRewardPanelOpen = false;
+        pendingEventRewards.Clear();
+
+        waitForEventEntranceReveal = true;
+        ResetEventChoiceScrollViewPosition();
+        ResetEventChoiceScrollViewVisualState();
+        ResetTerminalChoiceVisuals();
         ClearChoiceSlots();
         persistentEventChoices.Clear();
         currentEventDefinition = null;
@@ -417,29 +484,67 @@ public class EventRoomController : MonoBehaviour
                 : definition.EventName;
 
         if (eventTitleText != null)
-            eventTitleText.text = definition.Title ?? string.Empty;
+            eventTitleText.text = ResolveEventTitle(definition);
 
         if (eventResultText != null)
             eventResultText.text = resultMessage ?? string.Empty;
 
-        if (IsEvent08TitleOnlyTerminal(definition.EventId))
+        if (IsEvent01TitleOnlyTerminal(definition.EventId) || IsEvent02TitleOnlyTerminal(definition.EventId) || IsEvent08TitleOnlyTerminal(definition.EventId))
         {
-            // Event_08_C / Event_08_D는 결과 Title만 보여주는 종료 상태입니다.
-            // 처음 Event_08에서 유지되던 Persist 선택지도 여기서는 제거합니다.
-            persistentEventChoices.Clear();
+            // 결과 Title만 보여주는 종료 상태입니다.
+            if (IsEvent08TitleOnlyTerminal(definition.EventId))
+                persistentEventChoices.Clear();
+
             BindChoiceSlots(null);
             isEventResolved = true;
             SetNextButtonVisible(true);
+            SetEventTitleVisible(true);
             return;
         }
 
         BindChoiceSlots(GetCurrentVisibleChoices());
     }
 
+    private static bool IsEvent01TitleOnlyTerminal(string eventId)
+    {
+        string normalized = EventIdUtility.Normalize(eventId);
+        return normalized == "Event_01_A" || normalized == "Event_01_B" || normalized == "Event_01_C";
+    }
+
+
+    private static bool IsEvent02TitleOnlyTerminal(string eventId)
+    {
+        string normalized = EventIdUtility.Normalize(eventId);
+        return normalized == "Event_02_B" || normalized == "Event_02_C" ||
+               normalized == "Event_02_D" || normalized == "Event_02_E";
+    }
+
     private static bool IsEvent08TitleOnlyTerminal(string eventId)
     {
         string normalized = EventIdUtility.Normalize(eventId);
         return normalized == "Event_08_C" || normalized == "Event_08_D";
+    }
+
+    private static string ResolveEventTitle(EventDefinition definition)
+    {
+        if (definition == null)
+            return string.Empty;
+
+        if (!string.IsNullOrWhiteSpace(definition.Title))
+            return definition.Title;
+
+        return EventIdUtility.Normalize(definition.EventId) switch
+        {
+            "Event_01_A" => "“조금이나마 도움이 되기를 바랍니다. 부디 조심해서 사용해 주세요.”",
+            "Event_01_B" => "“상처가 조금은 나아졌군요. 이 힘이 당신들의 여정에 보탬이 되기를 바랍니다.”",
+            "Event_01_C" => "“당신들의 생명에 축복이 머물기를. 앞으로의 길이 조금은 덜 고되기를 바랍니다.”",
+            "Event_02_A" => "한 번 더 손을 뻗을 수 있을 것 같다.",
+            "Event_02_B" => "의식 도구에 남아 있던 힘이 몸 안으로 스며든다.",
+            "Event_02_C" => "흔적을 헤집자 안쪽에서 강한 힘을 머금은 유물이 모습을 드러냈다.",
+            "Event_02_D" => "의식 도구에 손을 대는 순간 불길한 기운이 역류한다.",
+            "Event_02_E" => "흔적을 훼손한 순간 억눌려 있던 힘이 폭발한다.",
+            _ => string.Empty
+        };
     }
 
     private void BindChoiceSlots(IReadOnlyList<EventData> choices)
@@ -498,7 +603,148 @@ public class EventRoomController : MonoBehaviour
         if (IsDiceChoice(choice) && TryBeginDiceRollChoice(choice))
             return;
 
+        if (ShouldFadeEvent01RewardChoiceUi(choice))
+        {
+            BeginEvent01RewardChoiceWithTransition(choice);
+            return;
+        }
+
+        if (ShouldTransitionEvent02ChestChoice(choice))
+        {
+            BeginEvent02ChestChoiceTransition(choice);
+            return;
+        }
+
         ExecuteEventChoice(choice);
+    }
+
+    private static bool ShouldFadeEvent01RewardChoiceUi(EventData choice)
+    {
+        if (choice == null)
+            return false;
+
+        return EventIdUtility.Normalize(choice.EventId) == "Event_01" &&
+               choice.ChoiceOrder == 1 &&
+               SameToken(choice.ResultType, "GainRandom") &&
+               SameToken(choice.ResultTarget, "유물") &&
+               EventIdUtility.Normalize(choice.NextEventId) == "Event_01_A";
+    }
+
+    private void BeginEvent01RewardChoiceWithTransition(EventData choice)
+    {
+        if (choice == null || !isActiveAndEnabled)
+            return;
+
+        StopEvent01RewardTransition();
+        SetChoiceSlotsInteractable(false);
+        SetNextButtonVisible(false);
+        event01RewardTransitionRoutine = StartCoroutine(FadeOutEventChoiceUiForEvent01Reward(choice));
+    }
+
+    private IEnumerator FadeOutEventChoiceUiForEvent01Reward(EventData choice)
+    {
+        yield return FadeOutEventChoiceUiForDice();
+
+        event01RewardTransitionRoutine = null;
+        if (choice != null && isActiveAndEnabled)
+            ExecuteEventChoice(choice);
+    }
+
+    private void StopEvent01RewardTransition()
+    {
+        if (event01RewardTransitionRoutine == null)
+            return;
+
+        StopCoroutine(event01RewardTransitionRoutine);
+        event01RewardTransitionRoutine = null;
+    }
+
+    private static bool ShouldTransitionEvent02ChestChoice(EventData choice)
+    {
+        if (choice == null)
+            return false;
+
+        return EventIdUtility.Normalize(choice.EventId) == "Event_02" &&
+               choice.ChoiceOrder == 1 &&
+               SameToken(choice.ResultType, "Gain") &&
+               SameToken(choice.ResultTarget, "레드 더스티움") &&
+               EventIdUtility.Normalize(choice.NextEventId) == "Event_02_A";
+    }
+
+    private void BeginEvent02ChestChoiceTransition(EventData choice)
+    {
+        if (choice == null || !isActiveAndEnabled)
+            return;
+
+        StopEvent02ChestTransition();
+        SetChoiceSlotsInteractable(false);
+        SetNextButtonVisible(false);
+        event02ChestTransitionRoutine = StartCoroutine(TransitionEvent02ChestChoice(choice));
+    }
+
+    private IEnumerator TransitionEvent02ChestChoice(EventData choice)
+    {
+        EnsureEventChoiceScrollViewReference();
+        EnsureEventChoiceScrollCanvasGroup();
+
+        if (eventChoiceScrollView != null && !eventChoiceScrollView.gameObject.activeSelf)
+            eventChoiceScrollView.gameObject.SetActive(true);
+
+        CanvasGroup scrollGroup = eventChoiceScrollCanvasGroup;
+        if (scrollGroup != null)
+        {
+            scrollGroup.interactable = false;
+            scrollGroup.blocksRaycasts = false;
+            yield return FadeCanvasGroup(scrollGroup, scrollGroup.alpha, 0f, diceUiFadeDuration);
+            scrollGroup.alpha = 0f;
+        }
+
+        if (eventChoiceScrollView != null)
+            eventChoiceScrollView.gameObject.SetActive(false);
+
+        // 선택 결과에 레드 더스티움 연출이 포함되면 Event_02_A 로드는
+        // Dustium -> GoldHud 연출이 끝난 뒤 ContinueAfterExecutedChoiceCore에서 이루어집니다.
+        ExecuteEventChoice(choice);
+
+        if (dustiumAcquireRoutine != null)
+            yield return dustiumAcquireRoutine;
+
+        if (!isActiveAndEnabled || !isDataEventActive ||
+            currentEventDefinition == null ||
+            EventIdUtility.Normalize(currentEventDefinition.EventId) != "Event_02_A")
+        {
+            event02ChestTransitionRoutine = null;
+            yield break;
+        }
+
+        // Event_02_A는 종료 상태가 아니므로 NextButton을 띄우지 않습니다.
+        SetNextButtonVisible(false);
+
+        EnsureEventChoiceScrollViewReference();
+        EnsureEventChoiceScrollCanvasGroup();
+        if (eventChoiceScrollView != null)
+            eventChoiceScrollView.gameObject.SetActive(true);
+
+        scrollGroup = eventChoiceScrollCanvasGroup;
+        if (scrollGroup != null)
+        {
+            scrollGroup.alpha = 0f;
+            yield return FadeCanvasGroup(scrollGroup, 0f, 1f, diceUiFadeDuration);
+            scrollGroup.alpha = 1f;
+            scrollGroup.interactable = true;
+            scrollGroup.blocksRaycasts = true;
+        }
+
+        event02ChestTransitionRoutine = null;
+    }
+
+    private void StopEvent02ChestTransition()
+    {
+        if (event02ChestTransitionRoutine == null)
+            return;
+
+        StopCoroutine(event02ChestTransitionRoutine);
+        event02ChestTransitionRoutine = null;
     }
 
     private void ExecuteEventChoice(
@@ -509,9 +755,18 @@ public class EventRoomController : MonoBehaviour
     {
         SetChoiceSlotsInteractable(false);
 
-        EventChoiceExecutionResult result = EventChoiceExecutionService.Execute(
-            choice,
-            CreateExecutionContext(selectedEquippedRelicCost, selectedSkillAwakenTarget, forcedDiceFaces));
+        EventChoiceExecutionResult result;
+        activeRewardChoice = choice;
+        try
+        {
+            result = EventChoiceExecutionService.Execute(
+                choice,
+                CreateExecutionContext(selectedEquippedRelicCost, selectedSkillAwakenTarget, forcedDiceFaces));
+        }
+        finally
+        {
+            activeRewardChoice = null;
+        }
 
         if (!result.Accepted)
         {
@@ -521,6 +776,8 @@ public class EventRoomController : MonoBehaviour
             ClearEquippedRelicCostSelection();
             ClearSkillAwakenSelection();
             BindChoiceSlots(GetCurrentVisibleChoices());
+            if (forcedDiceFaces != null || ShouldFadeEvent01RewardChoiceUi(choice))
+                RestoreEventChoiceUiAfterDice();
             return;
         }
 
@@ -544,14 +801,43 @@ public class EventRoomController : MonoBehaviour
         }
 
         ClearSkillAwakenSelection();
-        ContinueAfterExecutedChoice(choice, result);
+        ContinueAfterExecutedChoice(choice, result, forcedDiceFaces);
     }
 
-    private void ContinueAfterExecutedChoice(EventData choice, EventChoiceExecutionResult result)
+    private void ContinueAfterExecutedChoice(
+        EventData choice,
+        EventChoiceExecutionResult result,
+        int[] resolvedDiceFaces = null)
     {
+        // 이벤트 결과 오브젝트 연출을 항상 보상 UI보다 먼저 시작합니다.
         PersistEventRuntime();
         PlayVisualAction(result);
-        TryShowEvent07StatGainPopup(choice);
+
+        if (pendingDustiumAcquireAmount > 0)
+        {
+            if (dustiumAcquireRoutine != null)
+                StopCoroutine(dustiumAcquireRoutine);
+
+            dustiumAcquireRoutine = StartCoroutine(
+                PlayPendingDustiumAcquireThenContinue(choice, result, resolvedDiceFaces));
+            return;
+        }
+
+        ContinueAfterExecutedChoiceCore(choice, result, resolvedDiceFaces);
+    }
+
+    private void ContinueAfterExecutedChoiceCore(
+        EventData choice,
+        EventChoiceExecutionResult result,
+        int[] resolvedDiceFaces = null)
+    {
+        TryShowEventStatResultPopup(choice, result, resolvedDiceFaces);
+
+        if (TryQueueEvent01ResultContinuation(choice, result, resolvedDiceFaces))
+            return;
+
+        if (TryQueueEvent02ResultContinuation(choice, result, resolvedDiceFaces))
+            return;
 
         bool shouldCompleteAfterFailedChoice =
             EventRoomRewardFlowUtility.ShouldCompleteAfterFailedChoice(choice, result);
@@ -566,6 +852,10 @@ public class EventRoomController : MonoBehaviour
         {
             hasContinuingEvent = true;
             LoadEventDefinition(nextDefinition, result.ResultMessage);
+
+            if (resolvedDiceFaces != null)
+                RestoreEventChoiceUiAfterDice();
+
             return;
         }
 
@@ -592,8 +882,218 @@ public class EventRoomController : MonoBehaviour
         SetNextButtonVisible(true);
     }
 
-    [Header("Event_07 Popup")]
+    private bool TryQueueEvent01ResultContinuation(
+        EventData choice,
+        EventChoiceExecutionResult result,
+        IReadOnlyList<int> resolvedDiceFaces)
+    {
+        string nextEventId = EventIdUtility.Normalize(result.NextEventId);
+        if (!IsEvent01TitleOnlyTerminal(nextEventId))
+            return false;
+
+        pendingEvent01ResultEventId = nextEventId;
+        pendingEvent01ResultMessage = result.ResultMessage ?? string.Empty;
+        SetNextButtonVisible(false);
+        SetChoiceSlotsInteractable(false);
+
+        // 1번 선택지는 유물 RewardPanel이 닫힌 뒤 결과 Title을 보여줍니다.
+        if (pendingEventRewards.Count > 0 && TryOpenPendingEventRewardPanel(true))
+            return true;
+
+        // 2/3번 선택지는 BattleDamageTextPopupUI 연출이 끝난 뒤 B/C Title로 넘어갑니다.
+        float delay = resolvedDiceFaces != null ? Mathf.Max(0f, event01StatResultDelay) : 0f;
+        QueueEvent01ResultContinuation(delay);
+        return true;
+    }
+
+    private void QueueEvent01ResultContinuation(float delay)
+    {
+        if (event01ResultContinuationRoutine != null)
+            StopCoroutine(event01ResultContinuationRoutine);
+
+        event01ResultContinuationRoutine = StartCoroutine(CompletePendingEvent01ResultContinuationAfterDelay(delay));
+    }
+
+    private IEnumerator CompletePendingEvent01ResultContinuationAfterDelay(float delay)
+    {
+        if (delay > 0f)
+            yield return new WaitForSecondsRealtime(delay);
+
+        event01ResultContinuationRoutine = null;
+        CompletePendingEvent01ResultContinuation();
+    }
+
+    private bool CompletePendingEvent01ResultContinuation()
+    {
+        string nextEventId = pendingEvent01ResultEventId;
+        string resultMessage = pendingEvent01ResultMessage;
+        pendingEvent01ResultEventId = string.Empty;
+        pendingEvent01ResultMessage = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(nextEventId) ||
+            DataManager.Instance == null ||
+            DataManager.Instance.EventDatabase == null ||
+            !DataManager.Instance.EventDatabase.TryGetEvent(nextEventId, out EventDefinition nextDefinition) ||
+            nextDefinition == null)
+        {
+            return false;
+        }
+
+        LoadEventDefinition(nextDefinition, resultMessage);
+        return true;
+    }
+
+    private void ClearPendingEvent01ResultContinuation()
+    {
+        if (event01ResultContinuationRoutine != null)
+        {
+            StopCoroutine(event01ResultContinuationRoutine);
+            event01ResultContinuationRoutine = null;
+        }
+
+        pendingEvent01ResultEventId = string.Empty;
+        pendingEvent01ResultMessage = string.Empty;
+    }
+
+    private bool TryQueueEvent02ResultContinuation(
+        EventData choice,
+        EventChoiceExecutionResult result,
+        IReadOnlyList<int> resolvedDiceFaces)
+    {
+        string nextEventId = EventIdUtility.Normalize(result.NextEventId);
+        if (!IsEvent02TitleOnlyTerminal(nextEventId))
+            return false;
+
+        pendingEvent02ResultEventId = nextEventId;
+        pendingEvent02ResultMessage = result.ResultMessage ?? string.Empty;
+        SetNextButtonVisible(false);
+        SetChoiceSlotsInteractable(false);
+
+        // 유물 보상은 RewardPanel이 완전히 닫힌 뒤 결과 Title로 넘어갑니다.
+        if (pendingEventRewards.Count > 0 && TryOpenPendingEventRewardPanel(true))
+            return true;
+
+        // 스탯 성공/실패는 BattleDamageTextPopupUI 연출 뒤 B/D 또는 C/E Title을 표시합니다.
+        float delay = resolvedDiceFaces != null ? Mathf.Max(0f, event01StatResultDelay) : 0f;
+        QueueEvent02ResultContinuation(delay);
+        return true;
+    }
+
+    private void QueueEvent02ResultContinuation(float delay)
+    {
+        if (event02ResultContinuationRoutine != null)
+            StopCoroutine(event02ResultContinuationRoutine);
+
+        event02ResultContinuationRoutine = StartCoroutine(CompletePendingEvent02ResultContinuationAfterDelay(delay));
+    }
+
+    private IEnumerator CompletePendingEvent02ResultContinuationAfterDelay(float delay)
+    {
+        if (delay > 0f)
+            yield return new WaitForSecondsRealtime(delay);
+
+        event02ResultContinuationRoutine = null;
+        CompletePendingEvent02ResultContinuation();
+    }
+
+    private bool CompletePendingEvent02ResultContinuation()
+    {
+        string nextEventId = pendingEvent02ResultEventId;
+        string resultMessage = pendingEvent02ResultMessage;
+        pendingEvent02ResultEventId = string.Empty;
+        pendingEvent02ResultMessage = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(nextEventId) ||
+            DataManager.Instance == null ||
+            DataManager.Instance.EventDatabase == null ||
+            !DataManager.Instance.EventDatabase.TryGetEvent(nextEventId, out EventDefinition nextDefinition) ||
+            nextDefinition == null)
+        {
+            return false;
+        }
+
+        LoadEventDefinition(nextDefinition, resultMessage);
+        return true;
+    }
+
+    private void ClearPendingEvent02ResultContinuation()
+    {
+        if (event02ResultContinuationRoutine != null)
+        {
+            StopCoroutine(event02ResultContinuationRoutine);
+            event02ResultContinuationRoutine = null;
+        }
+
+        pendingEvent02ResultEventId = string.Empty;
+        pendingEvent02ResultMessage = string.Empty;
+    }
+
+    [Header("Event Stat Popup")]
     [SerializeField, Min(1f)] private float eventStatPopupFontSize = 48f;
+
+    private void TryShowEventStatResultPopup(
+        EventData choice,
+        EventChoiceExecutionResult result,
+        IReadOnlyList<int> resolvedDiceFaces)
+    {
+        TryShowEvent07StatGainPopup(choice);
+
+        if (choice == null || resolvedDiceFaces == null || !IsDiceChoice(choice))
+            return;
+
+        Transform centerPoint = FindEventAllyPoint1();
+        if (centerPoint == null)
+            return;
+
+        Canvas eventCanvas = GetComponentInParent<Canvas>(true);
+        if (eventCanvas == null || !eventCanvas.gameObject.activeInHierarchy)
+            eventCanvas = GetComponentInChildren<Canvas>(true);
+
+        int diceRoll = SumDiceFaces(resolvedDiceFaces);
+
+        if (result.Succeeded)
+        {
+            if (SameToken(choice.ResultType, "RollTable"))
+            {
+                string tableId = choice.ResultValue?.Trim();
+                if (SameToken(tableId, "RT001"))
+                {
+                    int amount = diceRoll <= 8 ? 3 : diceRoll <= 15 ? 5 : 10;
+                    BattleDamageTextPopupUI.ShowEventHealthRecovery(centerPoint, amount, eventCanvas, eventStatPopupFontSize);
+                    return;
+                }
+
+                if (SameToken(tableId, "RT002"))
+                {
+                    int amount = diceRoll <= 8 ? 2 : diceRoll <= 15 ? 4 : 8;
+                    BattleDamageTextPopupUI.ShowEventMaxHealthGain(centerPoint, amount, eventCanvas, eventStatPopupFontSize);
+                    return;
+                }
+            }
+
+            if (SameToken(choice.ResultType, "Modify") &&
+                (Contains(choice.ResultTarget, "코스트 회복량") || Contains(choice.ResultTarget, "마나 재생량")) &&
+                TryParseSignedValue(choice.ResultValue, out int manaRegenAmount) && manaRegenAmount > 0)
+            {
+                BattleDamageTextPopupUI.ShowEventManaRegenGain(centerPoint, manaRegenAmount, eventCanvas, eventStatPopupFontSize);
+            }
+
+            return;
+        }
+
+        Match healthLossMatch = Regex.Match(
+            choice.FailResult ?? string.Empty,
+            @"현재\s*체력\s*([+-]?\d+)",
+            RegexOptions.CultureInvariant);
+
+        if (healthLossMatch.Success &&
+            int.TryParse(healthLossMatch.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int healthLoss))
+        {
+            healthLoss = Mathf.Abs(healthLoss);
+            if (healthLoss > 0)
+                BattleDamageTextPopupUI.ShowEventHealthLoss(centerPoint, healthLoss, eventCanvas, eventStatPopupFontSize);
+        }
+    }
 
     private void TryShowEvent07StatGainPopup(EventData choice)
     {
@@ -651,28 +1151,203 @@ public class EventRoomController : MonoBehaviour
     private bool TryBeginDiceRollChoice(EventData choice)
     {
         EnsureDiceRollPresenter();
-        if (diceRollPresenter == null || !diceRollPresenter.IsReady)
+        if (diceRollPresenter == null || !isActiveAndEnabled)
             return false;
 
-        HideDiceRollPresenterOnly();
+        if (diceTransitionRoutine != null)
+            StopCoroutine(diceTransitionRoutine);
+
         SetChoiceSlotsInteractable(false);
         SetNextButtonVisible(false);
-
-        int[] diceFaces = RollThreeSixSidedDiceFaces();
-        diceRollRoutine = StartCoroutine(PlayDiceRollThenExecute(choice, diceFaces));
+        diceTransitionRoutine = StartCoroutine(OpenDiceRollPresenterWithTransition(choice));
         return true;
     }
 
-    private IEnumerator PlayDiceRollThenExecute(EventData choice, int[] diceFaces)
+    private IEnumerator OpenDiceRollPresenterWithTransition(EventData choice)
     {
-        bool completed = false;
-        yield return diceRollPresenter.PlayFromHost(diceFaces, () => completed = true);
+        yield return FadeOutEventChoiceUiForDice();
 
-        while (!completed)
+        if (choice == null || diceRollPresenter == null)
+        {
+            diceTransitionRoutine = null;
+            RestoreEventChoiceUiAfterDice();
+            yield break;
+        }
+
+        diceRollPresenter.PrepareForInteractiveUse();
+        if (!diceRollPresenter.IsReady)
+        {
+            Debug.LogWarning("[EventRoomController] EventDiceRollPresenter의 주사위 이미지 또는 RollButton 참조가 준비되지 않았습니다.", this);
+            diceRollPresenter.HideImmediate();
+            diceTransitionRoutine = null;
+            RestoreEventChoiceUiAfterDice();
+            yield break;
+        }
+
+        int[] diceFaces = RollThreeSixSidedDiceFaces();
+        int diceRoll = SumDiceFaces(diceFaces);
+        string detailText = BuildDiceDetailText(choice, diceRoll);
+        diceRollPresenter.ShowInteractive(
+            diceFaces,
+            detailText,
+            () =>
+            {
+                diceTransitionRoutine = null;
+                ExecuteEventChoice(choice, forcedDiceFaces: diceFaces);
+            });
+
+        diceTransitionRoutine = null;
+    }
+
+    private IEnumerator FadeOutEventChoiceUiForDice()
+    {
+        EnsureEventChoiceScrollViewReference();
+        EnsureEventChoiceScrollCanvasGroup();
+        EnsureEventTitleCanvasGroup();
+
+        CanvasGroup scrollGroup = eventChoiceScrollCanvasGroup;
+        CanvasGroup titleGroup = eventTitleCanvasGroup;
+
+        if (eventChoiceScrollView != null && !eventChoiceScrollView.gameObject.activeSelf)
+            eventChoiceScrollView.gameObject.SetActive(true);
+        if (eventTitleText != null && !eventTitleText.gameObject.activeSelf)
+            eventTitleText.gameObject.SetActive(true);
+
+        if (scrollGroup != null)
+        {
+            scrollGroup.interactable = false;
+            scrollGroup.blocksRaycasts = false;
+        }
+        if (titleGroup != null)
+        {
+            titleGroup.interactable = false;
+            titleGroup.blocksRaycasts = false;
+        }
+
+        float duration = Mathf.Max(0.01f, diceUiFadeDuration);
+        float elapsed = 0f;
+        float scrollStart = scrollGroup != null ? scrollGroup.alpha : 1f;
+        float titleStart = titleGroup != null ? titleGroup.alpha : 1f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
+            if (scrollGroup != null) scrollGroup.alpha = Mathf.Lerp(scrollStart, 0f, t);
+            if (titleGroup != null) titleGroup.alpha = Mathf.Lerp(titleStart, 0f, t);
             yield return null;
+        }
 
-        diceRollRoutine = null;
-        ExecuteEventChoice(choice, forcedDiceFaces: diceFaces);
+        if (scrollGroup != null) scrollGroup.alpha = 0f;
+        if (titleGroup != null) titleGroup.alpha = 0f;
+        if (eventChoiceScrollView != null) eventChoiceScrollView.gameObject.SetActive(false);
+        if (eventTitleText != null) eventTitleText.gameObject.SetActive(false);
+    }
+
+    private void RestoreEventChoiceUiAfterDice()
+    {
+        if (!isActiveAndEnabled || !isDataEventActive || isEventResolved)
+            return;
+
+        if (diceTransitionRoutine != null)
+            StopCoroutine(diceTransitionRoutine);
+
+        diceTransitionRoutine = StartCoroutine(FadeInEventChoiceUiAfterDice());
+    }
+
+    private IEnumerator FadeInEventChoiceUiAfterDice()
+    {
+        EnsureEventChoiceScrollViewReference();
+        EnsureEventChoiceScrollCanvasGroup();
+        EnsureEventTitleCanvasGroup();
+
+        if (eventChoiceScrollView != null)
+            eventChoiceScrollView.gameObject.SetActive(true);
+        if (eventTitleText != null)
+            eventTitleText.gameObject.SetActive(true);
+
+        CanvasGroup scrollGroup = eventChoiceScrollCanvasGroup;
+        CanvasGroup titleGroup = eventTitleCanvasGroup;
+        if (scrollGroup != null) scrollGroup.alpha = 0f;
+        if (titleGroup != null) titleGroup.alpha = 0f;
+
+        float duration = Mathf.Max(0.01f, diceUiFadeDuration);
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
+            if (scrollGroup != null) scrollGroup.alpha = t;
+            if (titleGroup != null) titleGroup.alpha = t;
+            yield return null;
+        }
+
+        if (scrollGroup != null)
+        {
+            scrollGroup.alpha = 1f;
+            scrollGroup.interactable = true;
+            scrollGroup.blocksRaycasts = true;
+        }
+        if (titleGroup != null)
+        {
+            titleGroup.alpha = 1f;
+            titleGroup.interactable = true;
+            titleGroup.blocksRaycasts = true;
+        }
+
+        BindChoiceSlots(GetCurrentVisibleChoices());
+        diceTransitionRoutine = null;
+    }
+
+    private void EnsureEventTitleCanvasGroup()
+    {
+        if (eventTitleText == null)
+            return;
+
+        if (eventTitleCanvasGroup == null || eventTitleCanvasGroup.gameObject != eventTitleText.gameObject)
+        {
+            eventTitleCanvasGroup = eventTitleText.GetComponent<CanvasGroup>();
+            if (eventTitleCanvasGroup == null)
+                eventTitleCanvasGroup = eventTitleText.gameObject.AddComponent<CanvasGroup>();
+        }
+    }
+
+    private string BuildDiceDetailText(EventData choice, int diceRoll)
+    {
+        if (choice == null)
+            return string.Empty;
+
+        if (!string.IsNullOrWhiteSpace(choice.SuccessCondition))
+            return IsDiceSuccess(diceRoll, choice.SuccessCondition) ? "성공" : "실패";
+
+        if (!SameToken(choice.ResultType, "RollTable"))
+            return BuildResultSummary(choice);
+
+        string tableId = choice.ResultValue?.Trim();
+        if (SameToken(tableId, "RT001"))
+        {
+            int amount = diceRoll <= 8 ? 3 : diceRoll <= 15 ? 5 : 10;
+            return $"생명력 회복량 +{amount}";
+        }
+
+        if (SameToken(tableId, "RT002"))
+        {
+            int amount = diceRoll <= 8 ? 2 : diceRoll <= 15 ? 4 : 8;
+            return $"최대 생명력 증가량 +{amount}";
+        }
+
+        return BuildResultSummary(choice);
+    }
+
+    private static int SumDiceFaces(IReadOnlyList<int> diceFaces)
+    {
+        if (diceFaces == null)
+            return 0;
+
+        int total = 0;
+        for (int i = 0; i < diceFaces.Count; i++)
+            total += Mathf.Clamp(diceFaces[i], 1, 6);
+        return total;
     }
 
     private void StopDiceRollRoutine()
@@ -919,8 +1594,29 @@ public class EventRoomController : MonoBehaviour
 
     private void SetEventTitleVisible(bool visible)
     {
-        if (eventTitleText != null)
-            eventTitleText.gameObject.SetActive(visible);
+        if (!visible)
+        {
+            if (eventTitleText != null)
+                eventTitleText.gameObject.SetActive(false);
+            return;
+        }
+
+        ShowEventTitleImmediate();
+    }
+
+    private void ShowEventTitleImmediate()
+    {
+        if (eventTitleText == null)
+            return;
+
+        eventTitleText.gameObject.SetActive(true);
+        EnsureEventTitleCanvasGroup();
+        if (eventTitleCanvasGroup != null)
+        {
+            eventTitleCanvasGroup.alpha = 1f;
+            eventTitleCanvasGroup.interactable = true;
+            eventTitleCanvasGroup.blocksRaycasts = true;
+        }
     }
 
     private void StartPendingSkillAwakenResult()
@@ -1584,9 +2280,39 @@ public class EventRoomController : MonoBehaviour
 
     private IReadOnlyList<EventData> GetCurrentVisibleChoices()
     {
-        return currentEventDefinition == null
-            ? null
-            : EventChoiceSequenceUtility.MergeChoices(currentEventDefinition.Choices, persistentEventChoices);
+        if (currentEventDefinition == null)
+            return null;
+
+        IReadOnlyList<EventData> merged = EventChoiceSequenceUtility.MergeChoices(
+            currentEventDefinition.Choices,
+            persistentEventChoices);
+
+        if (EventIdUtility.Normalize(currentEventDefinition.EventId) != "Event_02_A" ||
+            DataManager.Instance == null ||
+            DataManager.Instance.EventDatabase == null ||
+            !DataManager.Instance.EventDatabase.TryGetEvent("Event_02_F", out EventDefinition exitDefinition) ||
+            exitDefinition?.Choices == null)
+        {
+            return merged;
+        }
+
+        // Event_02_A에서는 '한 번 더 연다.'와 Event_02_F의 '자리를 떠난다.'를 함께 표시합니다.
+        List<EventData> visible = merged != null ? new List<EventData>(merged) : new List<EventData>();
+        for (int i = 0; i < exitDefinition.Choices.Count; i++)
+        {
+            EventData exitChoice = exitDefinition.Choices[i];
+            if (exitChoice == null)
+                continue;
+
+            bool alreadyAdded = visible.Exists(x => x != null &&
+                x.ChoiceOrder == exitChoice.ChoiceOrder &&
+                string.Equals(x.ChoiceName?.Trim(), exitChoice.ChoiceName?.Trim(), System.StringComparison.Ordinal));
+            if (!alreadyAdded)
+                visible.Add(exitChoice);
+        }
+
+        visible.Sort((a, b) => (a?.ChoiceOrder ?? int.MaxValue).CompareTo(b?.ChoiceOrder ?? int.MaxValue));
+        return visible;
     }
 
     private string GetCharacterDisplayName(string characterId)
@@ -2108,31 +2834,170 @@ public class EventRoomController : MonoBehaviour
             return false;
         }
 
-        QueueEventReward(EventRoomRewardFlowUtility.CreateRemnantReward(safeAmount));
+        // 레드 더스티움은 RewardPanel에 넣지 않고 Dustium -> GoldHud 전용 연출로 처리합니다.
+        pendingDustiumAcquireAmount += safeAmount;
         resultMessage = $"레드 더스티움 {safeAmount} 획득";
         return true;
     }
 
     private void RevokeQueuedRemnantReward(int amount)
     {
-        int remaining = Mathf.Max(0, amount);
-
-        if (remaining <= 0)
+        int safeAmount = Mathf.Max(0, amount);
+        if (safeAmount <= 0)
             return;
 
-        for (int i = pendingEventRewards.Count - 1; i >= 0 && remaining > 0; i--)
+        pendingDustiumAcquireAmount = Mathf.Max(0, pendingDustiumAcquireAmount - safeAmount);
+    }
+
+    private IEnumerator PlayPendingDustiumAcquireThenContinue(
+        EventData choice,
+        EventChoiceExecutionResult result,
+        int[] resolvedDiceFaces)
+    {
+        int amount = Mathf.Max(0, pendingDustiumAcquireAmount);
+        pendingDustiumAcquireAmount = 0;
+
+        // 상자 열기 같은 SuccessVisualAction이 먼저 보이도록 기다린 뒤 Dustium 연출을 시작합니다.
+        if (result.HasVisualAction && dustiumVisualActionWaitDuration > 0f)
+            yield return new WaitForSecondsRealtime(dustiumVisualActionWaitDuration);
+
+        if (amount > 0)
+            yield return PlayDustiumAcquireAnimation(amount);
+
+        ApplyDustiumAmount(amount);
+        dustiumAcquireRoutine = null;
+
+        if (isActiveAndEnabled)
+            ContinueAfterExecutedChoiceCore(choice, result, resolvedDiceFaces);
+    }
+
+    private IEnumerator PlayDustiumAcquireAnimation(int amount)
+    {
+        EnsureDustiumAcquireReferences();
+        CacheDustiumAcquireOriginalState();
+
+        if (dustiumAcquireRoot == null || goldHudTarget == null)
+            yield break;
+
+        ResetDustiumAcquireTransform();
+
+        Vector3 appearEndPosition = dustiumAcquireOriginalWorldPosition;
+        Vector3 appearStartPosition = appearEndPosition + new Vector3(dustiumAppearOffset.x, dustiumAppearOffset.y, 0f);
+        dustiumAcquireRoot.position = appearStartPosition;
+        dustiumAcquireRoot.localScale = dustiumAcquireOriginalLocalScale;
+        dustiumAcquireRoot.gameObject.SetActive(true);
+
+        if (dustiumAcquireValueText != null)
         {
-            BattleRewardData reward = pendingEventRewards[i];
-            if (reward == null || reward.Type != BattleRewardType.Remnant)
-                continue;
-
-            int consumed = Mathf.Min(reward.Amount, remaining);
-            reward.Amount -= consumed;
-            remaining -= consumed;
-
-            if (reward.Amount <= 0)
-                pendingEventRewards.RemoveAt(i);
+            dustiumAcquireValueText.gameObject.SetActive(true);
+            dustiumAcquireValueText.text = $"+{Mathf.Max(0, amount)}";
         }
+
+        float appearDuration = Mathf.Max(0.01f, dustiumAppearDuration);
+        float appearElapsed = 0f;
+        while (appearElapsed < appearDuration)
+        {
+            appearElapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(appearElapsed / appearDuration);
+            float eased = Mathf.SmoothStep(0f, 1f, t);
+            Vector3 position = Vector3.Lerp(appearStartPosition, dustiumAcquireOriginalWorldPosition, eased);
+            position += Vector3.up * (4f * dustiumAppearCurveHeight * t * (1f - t));
+            dustiumAcquireRoot.position = position;
+            yield return null;
+        }
+
+        dustiumAcquireRoot.position = appearEndPosition;
+
+        if (dustiumValueHoldDuration > 0f)
+            yield return new WaitForSecondsRealtime(dustiumValueHoldDuration);
+
+        if (dustiumAcquireValueText != null)
+            dustiumAcquireValueText.gameObject.SetActive(false);
+
+        Vector3 startPosition = dustiumAcquireRoot.position;
+        Vector3 endPosition = goldHudTarget.position;
+        Vector3 startScale = dustiumAcquireRoot.localScale;
+        Vector3 endScale = startScale * Mathf.Max(0f, dustiumFlyEndScale);
+        float duration = Mathf.Max(0.01f, dustiumFlyDuration);
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float eased = Mathf.SmoothStep(0f, 1f, t);
+
+            Vector3 position = Vector3.Lerp(startPosition, endPosition, eased);
+            position += Vector3.up * (4f * dustiumFlyCurveHeight * t * (1f - t));
+            dustiumAcquireRoot.position = position;
+            dustiumAcquireRoot.localScale = Vector3.Lerp(startScale, endScale, eased);
+
+            yield return null;
+        }
+
+        dustiumAcquireRoot.position = endPosition;
+        dustiumAcquireRoot.localScale = endScale;
+        dustiumAcquireRoot.gameObject.SetActive(false);
+        ResetDustiumAcquireTransform();
+    }
+
+    private void ApplyDustiumAmount(int amount)
+    {
+        if (amount <= 0 || DataManager.Instance == null || DataManager.Instance.BattleRuntimeStore == null)
+            return;
+
+        BattleRuntimeData battleRuntime = DataManager.Instance.BattleRuntimeStore.GetOrCreate();
+        if (battleRuntime == null)
+            return;
+
+        battleRuntime.Remnant = Mathf.Max(0, battleRuntime.Remnant + amount);
+        DataManager.Instance.BattleRuntimeStore.Set(battleRuntime);
+
+        // BattleGoldHudUI가 현재 표시값에서 새 보유량까지 자체 숫자 애니메이션을 진행합니다.
+        BattleGoldHudUI.RefreshAll();
+    }
+
+    private void StopDustiumAcquireAnimation(bool resetVisual)
+    {
+        if (dustiumAcquireRoutine != null)
+        {
+            StopCoroutine(dustiumAcquireRoutine);
+            dustiumAcquireRoutine = null;
+        }
+
+        if (resetVisual)
+            ResetDustiumAcquireVisual();
+    }
+
+    private void ResetDustiumAcquireVisual()
+    {
+        EnsureDustiumAcquireReferences();
+        ResetDustiumAcquireTransform();
+
+        if (dustiumAcquireValueText != null)
+            dustiumAcquireValueText.gameObject.SetActive(false);
+
+        if (dustiumAcquireRoot != null)
+            dustiumAcquireRoot.gameObject.SetActive(false);
+    }
+
+    private void ResetDustiumAcquireTransform()
+    {
+        if (dustiumAcquireRoot == null || !hasDustiumAcquireOriginalState)
+            return;
+
+        dustiumAcquireRoot.position = dustiumAcquireOriginalWorldPosition;
+        dustiumAcquireRoot.localScale = dustiumAcquireOriginalLocalScale;
+    }
+
+    private void CacheDustiumAcquireOriginalState()
+    {
+        if (hasDustiumAcquireOriginalState || dustiumAcquireRoot == null)
+            return;
+
+        dustiumAcquireOriginalWorldPosition = dustiumAcquireRoot.position;
+        dustiumAcquireOriginalLocalScale = dustiumAcquireRoot.localScale;
+        hasDustiumAcquireOriginalState = true;
     }
 
     private bool TryRevokeEquippedRelicCost(
@@ -2197,13 +3062,35 @@ public class EventRoomController : MonoBehaviour
         }
     }
 
+
+    private static bool ContainsAnyToken(string value, params string[] tokens)
+    {
+        if (string.IsNullOrWhiteSpace(value) || tokens == null)
+            return false;
+
+        for (int i = 0; i < tokens.Length; i++)
+        {
+            string token = tokens[i];
+            if (!string.IsNullOrWhiteSpace(token) &&
+                value.IndexOf(token, System.StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private bool TryQueueRandomRelicReward(out string resultMessage)
     {
         resultMessage = string.Empty;
 
-        if (!TryPickRandomAvailableRelic(out ChestRelicReward reward))
+        bool requireEpic = activeRewardChoice != null &&
+            ContainsAnyToken(activeRewardChoice.ResultTarget, "에픽", "Epic");
+
+        if (!TryPickRandomAvailableRelic(out ChestRelicReward reward, requireEpic ? RelicRarity.Epic : (RelicRarity?)null))
         {
-            resultMessage = "획득 가능한 유물이 없습니다.";
+            resultMessage = requireEpic ? "획득 가능한 에픽 유물이 없습니다." : "획득 가능한 유물이 없습니다.";
             return false;
         }
 
@@ -2373,7 +3260,9 @@ public class EventRoomController : MonoBehaviour
         return true;
     }
 
-    private bool TryPickRandomAvailableRelic(out ChestRelicReward reward)
+    private bool TryPickRandomAvailableRelic(
+        out ChestRelicReward reward,
+        RelicRarity? requiredRarity = null)
     {
         reward = default;
 
@@ -2385,14 +3274,28 @@ public class EventRoomController : MonoBehaviour
             allRelics,
             CollectUnavailableRelicIds());
 
+        if (requiredRarity.HasValue)
+        {
+            for (int i = candidates.Count - 1; i >= 0; i--)
+            {
+                RelicData candidate = candidates[i];
+                if (candidate == null ||
+                    !RelicRarityUtility.TryParseChestRarity(candidate.Rarity, out RelicRarity rarity) ||
+                    rarity != requiredRarity.Value)
+                {
+                    candidates.RemoveAt(i);
+                }
+            }
+        }
+
         if (candidates.Count == 0)
             return false;
 
         RelicData selected = candidates[BattleRandom.Range(0, candidates.Count)];
-        if (selected == null || !RelicRarityUtility.TryParseChestRarity(selected.Rarity, out RelicRarity rarity))
+        if (selected == null || !RelicRarityUtility.TryParseChestRarity(selected.Rarity, out RelicRarity selectedRarity))
             return false;
 
-        reward = new ChestRelicReward(selected, rarity);
+        reward = new ChestRelicReward(selected, selectedRarity);
         return reward.IsValid;
     }
 
@@ -2747,6 +3650,13 @@ public class EventRoomController : MonoBehaviour
         pendingEventRewards.Clear();
         PersistEventRuntime();
         HideDiceRollPresenterImmediate();
+
+        if (CompletePendingEvent01ResultContinuation())
+            return;
+
+        if (CompletePendingEvent02ResultContinuation())
+            return;
+
         SetNextButtonVisible(true);
     }
 
@@ -3058,6 +3968,7 @@ public class EventRoomController : MonoBehaviour
         EnsureEquippedRelicSelectionPanel();
         EnsureSkillAwakenSelectionPanel();
         EnsureDiceRollPresenter();
+        EnsureDustiumAcquireReferences();
     }
 
     private void EnsureEquippedRelicSelectionPanel()
@@ -3088,12 +3999,36 @@ public class EventRoomController : MonoBehaviour
         Transform searchRoot = dataEventRoot != null ? dataEventRoot.transform : transform;
         diceRollPresenter = searchRoot.GetComponentInChildren<EventDiceRollPresenter>(true);
 
-        if (diceRollPresenter != null || diceRollPresenterPrefab == null)
-            return;
+        if (diceRollPresenter != null)
+            diceRollPresenter.transform.SetAsLastSibling();
+    }
 
-        diceRollPresenter = Instantiate(diceRollPresenterPrefab, searchRoot);
-        diceRollPresenter.name = diceRollPresenterPrefab.name;
-        diceRollPresenter.transform.SetAsLastSibling();
+    private void EnsureDustiumAcquireReferences()
+    {
+        Transform searchRoot = dataEventRoot != null ? dataEventRoot.transform : transform;
+
+        if (dustiumAcquireRoot == null)
+        {
+            Transform dustium = FindChildRecursive(searchRoot, "Dustium");
+            if (dustium != null)
+                dustiumAcquireRoot = dustium as RectTransform;
+        }
+
+        if (dustiumAcquireRoot != null && dustiumAcquireValueText == null)
+        {
+            Transform value = FindChildRecursive(dustiumAcquireRoot, "Value");
+            if (value != null)
+                dustiumAcquireValueText = value.GetComponent<TMP_Text>();
+        }
+
+        if (goldHudTarget == null)
+        {
+            Transform target = FindChildRecursive(null, "GoldHud");
+            if (target == null)
+                target = FindChildRecursive(null, "GoldHub");
+            if (target != null)
+                goldHudTarget = target as RectTransform;
+        }
     }
 
     private void BeginTerminalChoiceExitVisuals()
@@ -3299,6 +4234,8 @@ public class EventRoomController : MonoBehaviour
 
         EnsureRewardPanelReference();
         EnsureNextButtonRoot();
+        EnsureDustiumAcquireReferences();
+        CacheDustiumAcquireOriginalState();
     }
 
     private void EnsureEventChoiceScrollViewReference()
@@ -3322,6 +4259,32 @@ public class EventRoomController : MonoBehaviour
         Vector2 position = eventChoiceScrollView.anchoredPosition;
         position.y = eventChoiceScrollStartY;
         eventChoiceScrollView.anchoredPosition = position;
+    }
+
+    private void ResetEventChoiceScrollViewVisualState()
+    {
+        EnsureEventChoiceScrollViewReference();
+        EnsureEventChoiceScrollCanvasGroup();
+
+        if (eventChoiceScrollView == null)
+            return;
+
+        eventChoiceScrollView.gameObject.SetActive(true);
+
+        if (eventChoiceScrollCanvasGroup == null)
+            return;
+
+        eventChoiceScrollCanvasGroup.alpha = 1f;
+        eventChoiceScrollCanvasGroup.interactable = true;
+        eventChoiceScrollCanvasGroup.blocksRaycasts = true;
+
+        EnsureEventTitleCanvasGroup();
+        if (eventTitleCanvasGroup != null)
+        {
+            eventTitleCanvasGroup.alpha = 1f;
+            eventTitleCanvasGroup.interactable = true;
+            eventTitleCanvasGroup.blocksRaycasts = true;
+        }
     }
 
     public void PlayEventChoiceEntranceAnimation()

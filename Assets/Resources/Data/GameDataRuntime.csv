@@ -525,60 +525,70 @@ Battlemap_15,Mon_11,32,-1,-1,-1,,,,,,,,,,,,,,
 Battlemap_16,Mon_12,27,-1,-1,-1,보스 아라벨라,100,5,15,50,30,25,35,25,15,,,,
 
 # Event
-이벤트ID,이벤트 이름,제목,선택지 순서,선택지이름,선택지 내용,선택지 타입,선택 조건,비용 타입,비용 대상,비용 값,성공 조건,결과타입,결과대상,결과값,성공확률,실패결과,다음이벤트ID,실패 다음이벤트ID,다음 이벤트까지 유지,성공 시각적 객체 ID,성공 시각적 작업 ID,실패 시각적 객체 ID,실패 시 시각적 동작 ID
-EventId,EventName,Title,ChoiceOrder,ChoiceName,ChoiceDesc,ChoiceType,SelectCondition,CostType,CostTarget,CostValue,SuccessCondition,ResultType,ResultTarget,ResultValue,SuccessRate,FailResult,NextEventId,FailNextEventId,PersistAcrossNextEvent,SuccessVisualObjectId,SuccessVisualActionId,FailureVisualObjectId,FailureVisualActionId
-Event_01,세라피아의 지원,“이곳은 오래 머물 곳이 아닙니다. 떠나시기 전에 저희의 도움이 필요하다면 말씀해 주세요.”,1,지원을 요청한다.,무작위 유물 1개 획득,Immediate,,,,,,GainRandom,유물,1개,,,,,,event1,event_choice_01_success,event1,event_choice_01_failure
-Event_01,세라피아의 지원,“이곳은 오래 머물 곳이 아닙니다. 떠나시기 전에 저희의 도움이 필요하다면 말씀해 주세요.”,2,정화를 요청한다.,"주사위 판정
-합이 높을수록 체력 회복량 증가",Dice,,,,,,RollTable,파티 전원 현재 체력,RT001,,,,,,event1,event_choice_02_success,event1,event_choice_02_failure
-Event_01,세라피아의 지원,“이곳은 오래 머물 곳이 아닙니다. 떠나시기 전에 저희의 도움이 필요하다면 말씀해 주세요.”,3,기도를 요청한다.,"주사위 판정
-합이 높을수록 최대 체력 증가량 증가",Dice,,,,,,RollTable,파티 전원 최대 체력,RT002,,,,,,event1,event_choice_03_success,event1,event_choice_03_failure
-Event_02,금단의 의식,낡은 상자와 정체를 알 수 없는 의식 도구들이 어지럽게 놓여 있다. 아직 의식의 흔적이 선명하게 남아 있다.,1,상자를 연다.,레드 더스티움 35 획득,Immediate,,,,,,Gain,레드 더스티움,35,,,Event_02_A,,,event2,event_choice_01_success,event2,event_choice_01_failure
-Event_02_A,금단의 의식,상자 열기 후 추가 선택,1,한 번 더 연다.,"주사위 판정 9
+이벤트ID,이벤트 이름,제목,선택지 순서,선택지이름,선택지 내용,선택불가 내용,선택지 타입,선택 조건,비용 타입,비용 대상,비용 값,성공 조건,결과타입,결과대상,결과값,성공확률,실패결과,다음이벤트ID,실패 다음이벤트ID,다음 이벤트까지 유지,성공 시각적 객체 ID,성공 시각적 작업 ID,실패 시각적 객체 ID,실패 시 시각적 동작 ID
+EventId,EventName,Title,ChoiceOrder,ChoiceName,ChoiceDesc,UnavailableChoiceDesc,ChoiceType,SelectCondition,CostType,CostTarget,CostValue,SuccessCondition,ResultType,ResultTarget,ResultValue,SuccessRate,FailResult,NextEventId,FailNextEventId,PersistAcrossNextEvent,SuccessVisualObjectId,SuccessVisualActionId,FailureVisualObjectId,FailureVisualActionId
+Event_01,세라피아의 지원,“이곳은 오래 머물 곳이 아닙니다. 떠나시기 전에 저희의 도움이 필요하다면 말씀해 주세요.”,1,지원을 요청한다.,무작위 유물 1개 획득,,Immediate,,,,,,GainRandom,유물,1개,,,Event_01_A,,,event1,event_choice_01_success,event1,event_choice_01_failure
+Event_01,세라피아의 지원,,2,정화를 요청한다.,"주사위 판정
+보상 : 생명력 회복
+높을수록 생명력 회복량 상승",,Dice,,,,,,RollTable,파티 전원 현재 체력,RT001,,,Event_01_B,,,event1,event_choice_02_success,event1,event_choice_02_failure
+Event_01,세라피아의 지원,,3,기도를 요청한다.,"주사위 판정
+보상 : 최대 생명력 증가
+높을수록 최대 생명력 증가량 상승",,Dice,,,,,,RollTable,파티 전원 최대 체력,RT002,,,Event_01_C,,,event1,event_choice_03_success,event1,event_choice_03_failure
+Event_01_A,세라피아의 지원,“조금이나마 도움이 되기를 바랍니다. 부디 조심해서 사용해 주세요.”,,,,,,,,,,,,,,,,,,,event1,event_choice_01_success,event1,event_choice_01_failure
+Event_01_B,세라피아의 지원,“상처가 조금은 나아졌군요. 이 힘이 당신들의 여정에 보탬이 되기를 바랍니다.”,,,,,,,,,,,,,,,,,,,event1,event_choice_02_success,event1,event_choice_02_failure
+Event_01_C,세라피아의 지원,“당신들의 생명에 축복이 머물기를.”,,,,,,,,,,,,,,,,,,,event1,event_choice_03_success,event1,event_choice_03_failure
+Event_02,금단의 의식,낡은 상자와 정체를 알 수 없는 의식 도구들이 어지럽게 놓여 있다.,1,상자를 연다.,레드 더스티움 35 획득,,Immediate,,,,,,Gain,레드 더스티움,35,,,Event_02_A,,,event2,event_choice_01_success,event2,event_choice_01_failure
+Event_02_A,금단의 의식,한 번 더 손을 뻗을 수 있을 것 같다.,1,상자 안을 뒤적인다.,"주사위 판정 9
 성공 : 무작위 유물 1개 획득
-실패 : 파티 전원 현재 체력 3 감소",Dice,Event_02 상자 열기 선택 후,,,,9~18,GainMultiple,레드 더스티움 + 무작위 유물,기존 더스티움 유지 + 유물 1개,,3~8: 파티 전원 현재 체력 3 감소,,,,event2,event_choice_02_success,event2,event_choice_02_failure
-Event_02,금단의 의식,낡은 상자와 정체를 알 수 없는 의식 도구들이 어지럽게 놓여 있다. 아직 의식의 흔적이 선명하게 남아 있다.,2,의식 도구를 조사한다,"주사위 판정 11
-마나 재생량 1 증가
-실패 : 파티 전원 현재 체력 3 감소",Dice,,,,,11~18,Modify,파티 코스트 회복량,1,,3~10: 파티 전원 현재 체력 3 감소,,,,event2,event_choice_03_success,event2,event_choice_03_failure
-Event_02,금단의 의식,낡은 상자와 정체를 알 수 없는 의식 도구들이 어지럽게 놓여 있다. 아직 의식의 흔적이 선명하게 남아 있다.,3,흔적을 훼손한다,"주사위 판정 13
-에픽 유물 1개 획득
-실패 : 파티 전원 현재 체력 5 감소",Dice,,,,,13~18,GainRandom,유물,1개,,3~12: 파티 전원 현재 체력 5 감소,,,,event2,event_choice_04_success,event2,event_choice_04_failure
-Event_03,시체더미,"시체들 사이로 아직 쓸 만한 물건이 보이지만, 더미 안쪽에서 희미한 움직임이 느껴진다.",1,불태운다.,육면체 주사위 3개를 굴려 레드 더스티움을 획득한다.,Dice,,,,,,RollTable,레드 더스티움,RT003,,,,,,event3,event_choice_01_success,event3,event_choice_01_failure
-Event_03,시체더미,"시체들 사이로 아직 쓸 만한 물건이 보이지만, 더미 안쪽에서 희미한 움직임이 느껴진다.",2,조사한다.,무작위 기억 1개 획득,Immediate,,,,,,GainRandom,기억,1개,,,,,,event3,event_choice_02_success,event3,event_choice_02_failure
+실패 : 파티 전원 현재 체력 3 감소",,Dice,Event_02 상자 열기 선택 후,,,,9~18,GainMultiple,무작위 유물,기존 더스티움 유지 + 유물 1개,,3~8: 파티 전원 현재 체력 3 감소,,,,event2,event_choice_02_success,event2,event_choice_02_failure
+Event_02,금단의 의식,,2,의식 도구에 손을 댄다.,"주사위 판정 11
+성공 : 마나 재생량 1 증가
+실패 : 파티 전원 현재 체력 3 감소",,Dice,,,,,11~18,Modify,파티 전원 마나 재생량,1,,3~10: 파티 전원 현재 체력 3 감소,Event_02_B,Event_02_D,,event2,event_choice_03_success,event2,event_choice_03_failure
+Event_02,금단의 의식,,3,의식의 흔적을 헤집는다.,"주사위 판정 13
+성공 : 에픽 유물 1개 획득
+실패 : 파티 전원 현재 체력 5 감소",,Dice,,,,,13~18,GainRandom,에픽 유물,1개,,3~12: 파티 전원 현재 체력 5 감소,Event_02_C,Event_02_E,,event2,event_choice_04_success,event2,event_choice_04_failure
+Event_02_B,금단의 의식,의식 도구에 남아 있던 힘이 몸 안으로 스며든다.,,,,,,,,,,,,,,,,,,,,event_choice_03_success,,event_choice_03_failure
+Event_02_C,금단의 의식,흔적을 헤집자 안쪽에서 강한 힘을 머금은 유물이 모습을 드러냈다.,,,,,,,,,,,,,,,,,,,,event_choice_04_success,,event_choice_04_failure
+Event_02_D,금단의 의식,의식 도구에 손을 대는 순간 불길한 기운이 역류한다.,,,,,,,,,,,,,,,,,,,,event_choice_03_success,,event_choice_03_failure
+Event_02_E,금단의 의식,흔적을 훼손한 순간 억눌려 있던 힘이 폭발한다.,,,,,,,,,,,,,,,,,,,,event_choice_04_success,,event_choice_04_failure
+Event_02_F,금단의 의식,,4,자리를 떠난다.,이벤트 종료,,Exit,,,,,,EndEvent,,,,,,,1,event2,event_choice_05_success,,event_choice_05_failure
+Event_03,시체더미,"시체들 사이로 아직 쓸 만한 물건이 보이지만, 더미 안쪽에서 희미한 움직임이 느껴진다.",1,불태운다.,육면체 주사위 3개를 굴려 레드 더스티움을 획득한다.,,Dice,,,,,,RollTable,레드 더스티움,RT003,,,,,,event3,event_choice_01_success,event3,event_choice_01_failure
+Event_03,시체더미,"시체들 사이로 아직 쓸 만한 물건이 보이지만, 더미 안쪽에서 희미한 움직임이 느껴진다.",2,조사한다.,무작위 기억 1개 획득,,Immediate,,,,,,GainRandom,기억,1개,,,,,,event3,event_choice_02_success,event3,event_choice_02_failure
 Event_04,의문의 이방인,“쓸 만한 물건을 찾는 모양이군. 대가는…… 어떤 방식으로 치르겠나?”,1,대가를 지불한다.,"레드 더스티움 100 소모
-무작위 유물 1개 획득",CostExchange,,레드 더스티움,파티,100,,GainRandom,유물,1개,,,,,,event4,event_choice_01_success,event4,event_choice_01_failure
+무작위 유물 1개 획득",레드 더스티움이 부족합니다.,CostExchange,,레드 더스티움,파티,100,,GainRandom,유물,1개,,,,,,event4,event_choice_01_success,event4,event_choice_01_failure
 Event_04,의문의 이방인,“쓸 만한 물건을 찾는 모양이군. 대가는…… 어떤 방식으로 치르겠나?”,2,운명을 시험한다.,"주사위 판정 11
-성공 시 무작위 유물 1개 획득",Dice,,,,,11~18,GainRandom,유물,1개,,3~10: 파티 전원 현재 체력 -5,,,,event4,event_choice_02_success,event4,event_choice_02_failure
+성공 시 무작위 유물 1개 획득",,Dice,,,,,11~18,GainRandom,유물,1개,,3~10: 파티 전원 현재 체력 -5,,,,event4,event_choice_02_success,event4,event_choice_02_failure
 Event_04,의문의 이방인,“쓸 만한 물건을 찾는 모양이군. 대가는…… 어떤 방식으로 치르겠나?”,3,교환을 청한다.,"보유 유물 1개 소모
-무작위 유물 1개 획득",CostExchange,유물 1개 이상 보유,유물,선택 유물,1개,,GainRandom,유물,1개,,,,,,event4,event_choice_03_success,event4,event_choice_03_failure
+무작위 유물 1개 획득",교환할 유물이 없습니다.,CostExchange,유물 1개 이상 보유,유물,선택 유물,1개,,GainRandom,유물,1개,,,,,,event4,event_choice_03_success,event4,event_choice_03_failure
 Event_05,더스티움 광맥,"불안정해 보이지만, 조심스럽게 채굴한다면 상당한 양을 확보할 수 있을 것 같다.",1,조심스럽게 채굴한다.,"주사위 판정 8
-레드 더스티움 10 누적",Dice,,,,,8~18,Accumulate,레드 더스티움,10,,3~7: 누적 레드 더스티움 전부 소실,Event_05,,,event5,event_choice_01_success,event5,event_choice_01_failure
+레드 더스티움 15 누적",,Dice,,,,,8~18,Accumulate,레드 더스티움,15,,3~7: 누적 레드 더스티움 전부 소실,Event_05,,,event5,event_choice_01_success,event5,event_choice_01_failure
 Event_05,더스티움 광맥,"불안정해 보이지만, 조심스럽게 채굴한다면 상당한 양을 확보할 수 있을 것 같다.",2,과감하게 채굴한다.,"주사위 판정 13
-레드 더스티움 45 누적",Dice,,,,,13~18,Accumulate,레드 더스티움,45,,3~12: 누적 레드 더스티움 전부 소실,Event_05,,,event5,event_choice_02_success,event5,event_choice_02_failure
-Event_05,더스티움 광맥,"불안정해 보이지만, 조심스럽게 채굴한다면 상당한 양을 확보할 수 있을 것 같다.",3,그만둔다.,누적한 레드 더스티움 획득,Conditional,채굴 1회 이상 성공,,,,,CommitAccumulated,레드 더스티움,누적량,,,,,,event5,event_choice_03_success,event5,event_choice_03_failure
-Event_06,그림자 상인,“이런 곳에서 손님을 만날 줄이야. 마침 괜찮은 물건이 좀 있지. 구경해 보겠나?”,1,물건을 살펴본다.,상점 이용,OpenUI,,,,,,OpenPanel,상점,활성화,,,,,,event6,event_choice_01_success,event6,event_choice_01_failure
-Event_07,안식의 샘,고요한 물소리와 함께 분수에서 희미한 빛이 흘러나온다. 분수에 남은 힘은 한 번만 사용할 수 있을 것 같다.,1,생명의 힘을 받아들인다.,파티 전원의 최대 생명력 12 증가,Immediate,,,,,,Modify,파티 전원 최대 생명력,+12,,,,,,event7,event_choice_01_success,event7,event_choice_01_failure
-Event_07,안식의 샘,,2,마나의 힘을 받아들인다.,파티 전원의 최대 마나 2 증가,Immediate,,,,,,Modify,파티 전원 최대 마나,+2,,,,,,event7,event_choice_02_success,event7,event_choice_02_failure
+레드 더스티움 45 누적",,Dice,,,,,13~18,Accumulate,레드 더스티움,45,,3~12: 누적 레드 더스티움 전부 소실,Event_05,,,event5,event_choice_02_success,event5,event_choice_02_failure
+Event_05,더스티움 광맥,"불안정해 보이지만, 조심스럽게 채굴한다면 상당한 양을 확보할 수 있을 것 같다.",3,그만둔다.,누적한 레드 더스티움 획득,,Conditional,채굴 1회 이상 성공,,,,,CommitAccumulated,레드 더스티움,누적량,,,,,,event5,event_choice_03_success,event5,event_choice_03_failure
+Event_06,그림자 상인,“이런 곳에서 손님을 만날 줄이야. 마침 괜찮은 물건이 좀 있지. 구경해 보겠나?”,1,물건을 살펴본다.,상점 이용,,OpenUI,,,,,,OpenPanel,상점,활성화,,,,,,event6,event_choice_01_success,event6,event_choice_01_failure
+Event_07,안식의 샘,고요한 물소리와 함께 분수에서 희미한 빛이 흘러나온다. 분수에 남은 힘은 한 번만 사용할 수 있을 것 같다.,1,생명의 힘을 받아들인다.,파티 전원의 최대 생명력 12 증가,,Immediate,,,,,,Modify,파티 전원 최대 생명력,+12,,,,,,event7,event_choice_01_success,event7,event_choice_01_failure
+Event_07,안식의 샘,,2,마나의 힘을 받아들인다.,파티 전원의 최대 마나 2 증가,,Immediate,,,,,,Modify,파티 전원 최대 마나,+2,,,,,,event7,event_choice_02_success,event7,event_choice_02_failure
 Event_08,공명의 비석,“비석에 새겨진 문자가 기억에 반응해 희미하게 빛난다. 잠든 기억의 힘을 깨울 수 있을 것 같다.”,1,공명을 시작한다.,"성공 확률 90%
 성공: 기억 1개 각성
-실패: 기억 소멸",Chance,미각성 기억 1개 이상,,,,,Awaken,선택 기억,각성,90%,선택한 기억 소멸,Event_08_A,Event_08_D,,event8,event_choice_01_success,event8,event_choice_01_failure
+실패: 기억 소멸",공명할 수 있는 기억이 없습니다.,Chance,미각성 기억 1개 이상,,,,,Awaken,선택 기억,각성,90%,선택한 기억 소멸,Event_08_A,Event_08_D,,event8,event_choice_01_success,event8,event_choice_01_failure
 Event_08_A,공명의 비석,“아직 남아 있는 힘을 한층 더 끌어낼 수 있을 것 같다.”,1,공명을 이어간다.,"성공 확률 50%
 성공: 기억 1개 각성
-실패: 기억 소멸",Chance,다른 미각성 기억 1개 이상,,,,,Awaken,선택 기억,각성,50%,선택한 기억 소멸,Event_08_B,Event_08_D,,event8,event_choice_02_success,event8,event_choice_02_failure
+실패: 기억 소멸",공명할 수 있는 기억이 없습니다.,Chance,다른 미각성 기억 1개 이상,,,,,Awaken,선택 기억,각성,50%,선택한 기억 소멸,Event_08_B,Event_08_D,,event8,event_choice_02_success,event8,event_choice_02_failure
 Event_08_B,공명의 비석,"""남은 힘을 마지막으로 깨울 수 있을 것 같다.”",1,공명을 이어간다.,"성공 확률 30%
 성공: 기억 1개 각성
-실패: 기억 소멸",Chance,다른 미각성 기억 1개 이상,,,,,Awaken,선택 기억,각성,30%,선택한 기억 소멸,Event_08_C,Event_08_D,,event8,event_choice_03_success,event8,event_choice_03_failure
-Event_08,공명의 비석,,2,자리를 떠난다.,이벤트 종료,Exit,,,,,,EndEvent,,,,,,,1,event8,event_choice_04_success,event8,event_choice_04_failure
-Event_08_C,공명의 비석,"""더 이상 끌어낼 힘은 남아 있지 않은 듯하다.”",,,,,,,,,,,,,,,,,,event8,event_choice_04_success,event8,event_choice_04_failure
-Event_08_D,공명의 비석,"""기억의 흔적은 흩어지고, 더 이상 공명을 이어갈 수 없을 것 같다.”",,,,,,,,,,,,,,,,,,event8,event_choice_04_success,event8,event_choice_04_failure
-Event_09,균열의 메아리,허공에 갈라진 균열이 모습을 드러냈다. 틈 사이로 새어 나온 빛 속에서 희미한 기억의 흔적이 느껴진다.,1,흩어진 기억을 거둔다.,무작위 일반~레어 기억 3개 획득,Immediate,,,,,,SelectReward,일반~레어 기억,3개 제시,,,,,,event9,event_choice_01_success,event9,event_choice_01_failure
-Event_09,균열의 메아리,,2,전투의 기억을 붙잡는다.,공격 기억 2개 획득,Immediate,,,,,,SelectReward,공격 기억,2개 제시,,,,,,event9,event_choice_02_success,event9,event_choice_02_failure
-Event_09,균열의 메아리,,3,강렬한 기억을 택한다.,에픽 기억 1개 획득,Immediate,,,,,,SelectReward,에픽 기억,1개 제시,,,,,,event9,event_choice_03_success,event9,event_choice_03_failure
+실패: 기억 소멸",공명할 수 있는 기억이 없습니다.,Chance,다른 미각성 기억 1개 이상,,,,,Awaken,선택 기억,각성,30%,선택한 기억 소멸,Event_08_C,Event_08_D,,event8,event_choice_03_success,event8,event_choice_03_failure
+Event_08,공명의 비석,,2,자리를 떠난다.,이벤트 종료,,Exit,,,,,,EndEvent,,,,,,,1,event8,event_choice_04_success,event8,event_choice_04_failure
+Event_08_C,공명의 비석,"""더 이상 끌어낼 힘은 남아 있지 않은 듯하다.”",,,,,,,,,,,,,,,,,,,event8,event_choice_02_success,event8,event_choice_02_failure
+Event_08_D,공명의 비석,"""기억의 흔적은 흩어지고, 더 이상 공명을 이어갈 수 없을 것 같다.”",,,,,,,,,,,,,,,,,,,event8,event_choice_03_success,event8,event_choice_03_failure
+Event_09,균열의 메아리,허공에 갈라진 균열이 모습을 드러냈다. 틈 사이로 새어 나온 빛 속에서 희미한 기억의 흔적이 느껴진다.,1,흩어진 기억을 거둔다.,무작위 일반~레어 기억 3개 획득,,Immediate,,,,,,SelectReward,일반~레어 기억,3개 제시,,,,,,event9,event_choice_01_success,event9,event_choice_01_failure
+Event_09,균열의 메아리,,2,전투의 기억을 붙잡는다.,공격 기억 2개 획득,,Immediate,,,,,,SelectReward,공격 기억,2개 제시,,,,,,event9,event_choice_02_success,event9,event_choice_02_failure
+Event_09,균열의 메아리,,3,강렬한 기억을 택한다.,에픽 기억 1개 획득,,Immediate,,,,,,SelectReward,에픽 기억,1개 제시,,,,,,event9,event_choice_03_success,event9,event_choice_03_failure
 
-,,,,,,
+,,,,,,,
 
 
 
-,,,,,,,,
+,,,,,,,,,
 
 
 

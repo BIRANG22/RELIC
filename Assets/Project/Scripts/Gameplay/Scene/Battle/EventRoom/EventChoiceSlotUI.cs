@@ -8,6 +8,7 @@ public class EventChoiceSlotUI : MonoBehaviour
 {
     [SerializeField] private GameObject root;
     [SerializeField] private Button button;
+    [SerializeField] private ButtonAnimationCoroutine buttonAnimation;
     [SerializeField] private Image backgroundImage;
     [SerializeField] private GameObject disabledRoot;
     [SerializeField] private TMP_Text choiceNameText;
@@ -48,11 +49,19 @@ public class EventChoiceSlotUI : MonoBehaviour
             choiceNameText.text = order + (choice.ChoiceName ?? string.Empty);
         }
 
-        if (choiceDescText != null)
-            choiceDescText.text = choice.ChoiceDesc ?? string.Empty;
+        string displayedChoiceDesc = selectable
+            ? choice.ChoiceDesc
+            : (!string.IsNullOrWhiteSpace(choice.UnavailableChoiceDesc)
+                ? choice.UnavailableChoiceDesc
+                : unavailableReason);
 
+        if (choiceDescText != null)
+            choiceDescText.text = displayedChoiceDesc ?? string.Empty;
+
+        // 선택 불가 안내는 ChoiceDescText에 표시합니다.
+        // 기존 UnavailableReasonText가 씬에 남아 있어도 문구가 중복되지 않게 비웁니다.
         if (unavailableReasonText != null)
-            unavailableReasonText.text = selectable ? string.Empty : unavailableReason ?? string.Empty;
+            unavailableReasonText.text = string.Empty;
 
         if (disabledRoot != null)
             disabledRoot.SetActive(!selectable);
@@ -67,14 +76,22 @@ public class EventChoiceSlotUI : MonoBehaviour
                 button.onClick.AddListener(onClick);
             button.interactable = selectable;
         }
+
+        if (buttonAnimation != null)
+            buttonAnimation.SetInteractionEnabled(selectable);
     }
 
     public void SetInteractable(bool interactable)
     {
         EnsureReferences();
 
+        bool effectiveInteractable = interactable && boundSelectable;
+
         if (button != null)
-            button.interactable = interactable && boundSelectable;
+            button.interactable = effectiveInteractable;
+
+        if (buttonAnimation != null)
+            buttonAnimation.SetInteractionEnabled(effectiveInteractable);
     }
 
     public void Clear()
@@ -87,6 +104,9 @@ public class EventChoiceSlotUI : MonoBehaviour
             button.onClick.RemoveAllListeners();
             button.interactable = false;
         }
+
+        if (buttonAnimation != null)
+            buttonAnimation.SetInteractionEnabled(false);
 
         if (choiceNameText != null)
             choiceNameText.text = string.Empty;
@@ -111,6 +131,12 @@ public class EventChoiceSlotUI : MonoBehaviour
 
         if (button == null)
             button = GetComponent<Button>();
+
+        if (buttonAnimation == null)
+            buttonAnimation = GetComponent<ButtonAnimationCoroutine>();
+
+        if (buttonAnimation == null)
+            buttonAnimation = GetComponentInChildren<ButtonAnimationCoroutine>(true);
 
         if (backgroundImage == null)
             backgroundImage = GetComponent<Image>();
