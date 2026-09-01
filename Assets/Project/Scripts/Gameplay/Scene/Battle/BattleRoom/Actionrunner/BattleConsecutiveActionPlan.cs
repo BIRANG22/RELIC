@@ -393,6 +393,15 @@ public static class BattleConsecutiveActionPresentationContext
         return Mathf.Max(0f, duration) / Mathf.Max(1f, SpeedMultiplier);
     }
 
+    public static float ScaleActionBeatDuration(float duration, float minimumGroupedDuration)
+    {
+        float scaledDuration = ScaleDuration(duration);
+
+        return CurrentInfo.IsGrouped
+            ? Mathf.Max(scaledDuration, Mathf.Max(0f, minimumGroupedDuration))
+            : scaledDuration;
+    }
+
     public static float ScaleDeltaTime(float deltaTime)
     {
         return Mathf.Max(0f, deltaTime) * Mathf.Max(1f, SpeedMultiplier);
