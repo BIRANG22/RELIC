@@ -602,7 +602,7 @@ MonoBehaviour:
     randomPitchMax: 0
   - id: event.07.buff
     aliases: []
-    clip: {fileID: 8300000, guid: 29b56f80cda21401f89a9ee4b159ff92, type: 3}
+    clip: {fileID: 8300000, guid: 8459a860bc1684a01964dcbcafab4b49, type: 3}
     volume: 0.1
     pitch: 1
     loop: 0
@@ -630,6 +630,60 @@ MonoBehaviour:
   - id: event.05.fail
     aliases: []
     clip: {fileID: 8300000, guid: 06f264db30c9b49ad8faa968413c9775, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: event.01
+    aliases: []
+    clip: {fileID: 8300000, guid: e1ea57dfcd48e4141ba7bc8560cfd649, type: 3}
+    volume: 0.2
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: event.02_1
+    aliases: []
+    clip: {fileID: 8300000, guid: 0ac25ba4b34704c478bb665e2901b5fb, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: event.02_2
+    aliases: []
+    clip: {fileID: 8300000, guid: 3b21ea75963842c428923e1ed0ad2910, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: event.02_2.fail
+    aliases: []
+    clip: {fileID: 8300000, guid: 2c2f5645a58094ea587d546cd0a8b357, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: event.02_4
+    aliases: []
+    clip: {fileID: 8300000, guid: be040a2eb57914e5d96391780248a3fd, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: event.02_3
+    aliases: []
+    clip: {fileID: 8300000, guid: 1cf10d68406ef4714a240476f6c1c2b3, type: 3}
     volume: 0.5
     pitch: 1
     loop: 0
