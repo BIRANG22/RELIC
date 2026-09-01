@@ -119,6 +119,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         if (popup == null)
             return;
 
+        popup.UseBattleCanvas();
         popup.ShowAfterDelay(target, damage, PopupType.Damage);
     }
 
@@ -244,6 +245,8 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         BattleDamageTextPopupUI popup = GetOrCreateInstance();
         if (popup == null)
             return;
+
+        popup.UseBattleCanvas();
 
         if (IsRecoveryPopup(popupType))
             popup.QueueRecoveryPopup(target, value, popupType);
@@ -436,6 +439,22 @@ public class BattleDamageTextPopupUI : MonoBehaviour
             : targetCanvas.worldCamera;
     }
 
+    private void UseBattleCanvas()
+    {
+        Canvas battleCanvas = FindBattleCanvas();
+        if (battleCanvas == null)
+        {
+            EnsureReferences();
+            return;
+        }
+
+        targetCanvas = battleCanvas;
+        canvasRect = targetCanvas.GetComponent<RectTransform>();
+        uiCamera = targetCanvas.renderMode == RenderMode.ScreenSpaceOverlay
+            ? null
+            : targetCanvas.worldCamera;
+    }
+
     private void EnsureReferences()
     {
         if (worldCamera == null)
@@ -447,7 +466,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         if (targetCanvas == null)
             targetCanvas = CreateFallbackCanvas();
 
-        if (targetCanvas != null && canvasRect == null)
+        if (targetCanvas != null && canvasRect != targetCanvas.GetComponent<RectTransform>())
             canvasRect = targetCanvas.GetComponent<RectTransform>();
 
         if (targetCanvas != null && targetCanvas.renderMode == RenderMode.ScreenSpaceOverlay)
