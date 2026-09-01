@@ -78,26 +78,46 @@ public class MapVisualActor : MonoBehaviour
         return vfxRoot != null ? vfxRoot : transform;
     }
 
-    internal void DisableTarget(GameObject target, float delay)
+    internal void SetTargetActive(GameObject target, bool activeState, float delay)
     {
         if (target == null)
             return;
 
         if (delay <= 0f)
         {
-            target.SetActive(false);
+            target.SetActive(activeState);
             return;
         }
 
-        StartCoroutine(DisableTargetAfterDelay(target, delay));
+        StartCoroutine(SetTargetActiveAfterDelay(target, activeState, delay));
     }
 
-    private IEnumerator DisableTargetAfterDelay(GameObject target, float delay)
+    internal void DisableTarget(GameObject target, float delay)
+    {
+        SetTargetActive(target, false, delay);
+    }
+
+    internal void PlayActivation(MapVisualActivationEntry activation)
+    {
+        if (activation == null || !activation.ApplyActiveState || activation.ActiveTarget == null)
+            return;
+
+        float delay = Mathf.Max(0f, activation.ActivationDelay);
+        SetTargetActive(activation.ActiveTarget, activation.ActiveState, delay);
+
+        if (activation.ActiveState && activation.DisableAfterDelay)
+        {
+            float disableDelay = delay + Mathf.Max(0f, activation.DisableDelay);
+            DisableTarget(activation.ActiveTarget, disableDelay);
+        }
+    }
+
+    private IEnumerator SetTargetActiveAfterDelay(GameObject target, bool activeState, float delay)
     {
         yield return new WaitForSeconds(delay);
 
         if (target != null)
-            target.SetActive(false);
+            target.SetActive(activeState);
     }
 
     internal bool TrySpawnWorldVfx(MapVisualActionEntry action, Transform actionRoot)
@@ -285,6 +305,8 @@ public sealed class MapVisualActionEntry
     public string ActionId;
 
     [Header("Animator")]
+    [Tooltip("이 Action ID가 실행될 때 사용할 Animator입니다. 비워두면 MapVisualActor의 기본 Animator를 사용합니다.")]
+    public Animator Animator;
     public string AnimatorTrigger;
     [Tooltip("Trigger가 없는 Controller에서 선택 시 직접 재생할 상태 이름입니다.")]
     public string AnimatorStateName;
@@ -353,7 +375,9 @@ public sealed class MapVisualActionEntry
             return;
         }
 
-        Animator resolvedAnimator = owner != null ? owner.ResolveAnimator() : null;
+        Animator resolvedAnimator = Animator != null
+            ? Animator
+            : owner != null ? owner.ResolveAnimator() : null;
         if (resolvedAnimator == null)
             return;
 
@@ -439,16 +463,20 @@ public sealed class MapVisualActionEntry
             if (activation == null || !activation.ApplyActiveState || activation.ActiveTarget == null)
                 continue;
 
-            activation.ActiveTarget.SetActive(activation.ActiveState);
+            float activationDelay = Mathf.Max(0f, activation.ActivationDelay);
 
-            // 켜는 Activation에 한해서, 설정된 시간 뒤 자동으로 다시 끌 수 있습니다.
+            if (owner != null)
+                owner.SetTargetActive(activation.ActiveTarget, activation.ActiveState, activationDelay);
+            else if (activationDelay <= 0f)
+                activation.ActiveTarget.SetActive(activation.ActiveState);
+
             if (activation.ActiveState && activation.DisableAfterDelay)
             {
-                float delay = Mathf.Max(0f, activation.DisableDelay);
+                float disableDelay = activationDelay + Mathf.Max(0f, activation.DisableDelay);
 
                 if (owner != null)
-                    owner.DisableTarget(activation.ActiveTarget, delay);
-                else if (delay <= 0f)
+                    owner.DisableTarget(activation.ActiveTarget, disableDelay);
+                else if (disableDelay <= 0f)
                     activation.ActiveTarget.SetActive(false);
             }
         }
@@ -478,10 +506,15 @@ public sealed class MapVisualActionEntry
 [Serializable]
 public sealed class MapVisualActivationEntry
 {
+    [Header("Activation Target")]
     public GameObject ActiveTarget;
     public bool ApplyActiveState = true;
     public bool ActiveState = true;
 
+    [Tooltip("이 Activation의 활성화/비활성화 상태와 Animator 재생을 적용하기까지 기다릴 시간(초)입니다. 0이면 즉시 적용됩니다.")]
+    [Min(0f)] public float ActivationDelay;
+
+    [Header("Auto Disable")]
     [Tooltip("ActiveState가 true일 때, 활성화 후 일정 시간이 지나면 자동으로 비활성화할지 설정합니다.")]
     public bool DisableAfterDelay;
 
