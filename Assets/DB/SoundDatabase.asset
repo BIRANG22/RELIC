@@ -551,7 +551,7 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: 602ba08c3a1834cefa18cc796ff63c89, type: 3}
     volume: 1
     pitch: 0.7
-    loop: 1
+    loop: 0
     useRandomPitch: 0
     randomPitchMin: 0
     randomPitchMax: 0
