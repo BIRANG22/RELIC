@@ -131,12 +131,17 @@ public class EventRoomController : MonoBehaviour
     private Coroutine diceTransitionRoutine;
     private Coroutine event01ResultContinuationRoutine;
     private Coroutine event02ResultContinuationRoutine;
+    private Coroutine event04ResultContinuationRoutine;
     private Coroutine event01RewardTransitionRoutine;
     private Coroutine event02ChestTransitionRoutine;
+    private Coroutine event04ChoiceTransitionRoutine;
+    private Coroutine event04ResultTitleFadeRoutine;
     private string pendingEvent01ResultEventId;
     private string pendingEvent01ResultMessage;
     private string pendingEvent02ResultEventId;
     private string pendingEvent02ResultMessage;
+    private string pendingEvent04ResultEventId;
+    private string pendingEvent04ResultMessage;
     private EventData activeRewardChoice;
     private CanvasGroup eventTitleCanvasGroup;
     private Coroutine eventChoiceScrollMoveRoutine;
@@ -190,7 +195,11 @@ public class EventRoomController : MonoBehaviour
         pendingDustiumAcquireAmount = 0;
         StopEvent01RewardTransition();
         StopEvent02ChestTransition();
+        StopEvent04ChoiceTransition();
+        StopEvent04ResultTitleFade();
         ClearPendingEvent01ResultContinuation();
+        ClearPendingEvent02ResultContinuation();
+        ClearPendingEvent04ResultContinuation();
         CacheRelicFlyRootOriginalState();
         HideRelicHoverInfo();
         HideRelicFlyObjects();
@@ -239,7 +248,11 @@ public class EventRoomController : MonoBehaviour
         pendingDustiumAcquireAmount = 0;
         StopEvent01RewardTransition();
         StopEvent02ChestTransition();
+        StopEvent04ChoiceTransition();
+        StopEvent04ResultTitleFade();
         ClearPendingEvent01ResultContinuation();
+        ClearPendingEvent02ResultContinuation();
+        ClearPendingEvent04ResultContinuation();
         StopEventChoiceScrollViewAnimation();
         StopSkillAwakenResultRoutine();
         StopTerminalChoiceFade();
@@ -302,6 +315,9 @@ public class EventRoomController : MonoBehaviour
 
             if (pendingEventRewards.Count > 0 && TryOpenPendingEventRewardPanel(false))
                 return;
+
+            // 종료 전환 이미지보다 이벤트 타이틀이 앞에 보이지 않도록 먼저 숨깁니다.
+            SetEventTitleVisible(false);
 
             CompleteCurrentNode();
             SetNextButtonVisible(false);
@@ -412,6 +428,9 @@ public class EventRoomController : MonoBehaviour
     {
         // 같은 데이터 이벤트를 다시 조우해도 이전 연출 상태가 남지 않도록 먼저 초기화합니다.
         StopEvent01RewardTransition();
+        StopEvent02ChestTransition();
+        StopEvent04ChoiceTransition();
+        StopEvent04ResultTitleFade();
         if (diceTransitionRoutine != null)
         {
             StopCoroutine(diceTransitionRoutine);
@@ -421,6 +440,7 @@ public class EventRoomController : MonoBehaviour
         StopEventRewardPanelDelay();
         ClearPendingEvent01ResultContinuation();
         ClearPendingEvent02ResultContinuation();
+        ClearPendingEvent04ResultContinuation();
         isEventRewardPanelOpen = false;
         pendingEventRewards.Clear();
 
@@ -489,7 +509,8 @@ public class EventRoomController : MonoBehaviour
         if (eventResultText != null)
             eventResultText.text = resultMessage ?? string.Empty;
 
-        if (IsEvent01TitleOnlyTerminal(definition.EventId) || IsEvent02TitleOnlyTerminal(definition.EventId) || IsEvent08TitleOnlyTerminal(definition.EventId))
+        if (IsEvent01TitleOnlyTerminal(definition.EventId) || IsEvent02TitleOnlyTerminal(definition.EventId) ||
+            IsEvent04TitleOnlyTerminal(definition.EventId) || IsEvent08TitleOnlyTerminal(definition.EventId))
         {
             // 결과 Title만 보여주는 종료 상태입니다.
             if (IsEvent08TitleOnlyTerminal(definition.EventId))
@@ -516,7 +537,16 @@ public class EventRoomController : MonoBehaviour
     {
         string normalized = EventIdUtility.Normalize(eventId);
         return normalized == "Event_02_B" || normalized == "Event_02_C" ||
-               normalized == "Event_02_D" || normalized == "Event_02_E";
+               normalized == "Event_02_D" || normalized == "Event_02_E" ||
+               normalized == "Event_02_G" || normalized == "Event_02_H" ||
+               normalized == "Event_02_I";
+    }
+
+    private static bool IsEvent04TitleOnlyTerminal(string eventId)
+    {
+        string normalized = EventIdUtility.Normalize(eventId);
+        return normalized == "Event_04_A" || normalized == "Event_04_B" ||
+               normalized == "Event_04_C" || normalized == "Event_04_D";
     }
 
     private static bool IsEvent08TitleOnlyTerminal(string eventId)
@@ -543,6 +573,13 @@ public class EventRoomController : MonoBehaviour
             "Event_02_C" => "흔적을 헤집자 안쪽에서 강한 힘을 머금은 유물이 모습을 드러냈다.",
             "Event_02_D" => "의식 도구에 손을 대는 순간 불길한 기운이 역류한다.",
             "Event_02_E" => "흔적을 훼손한 순간 억눌려 있던 힘이 폭발한다.",
+            "Event_02_G" => "더 이상 손대지 않기로 하고, 조용히 자리를 떠난다.",
+            "Event_02_H" => "뜻밖의 수확을 얻었다. 더 이상 손댈 것은 없어 보인다.",
+            "Event_02_I" => "예상치 못한 폭발에 휘말렸다.",
+            "Event_04_A" => "“좋아. 대가는 충분하군. 약속한 물건은 여기 있다.”",
+            "Event_04_B" => "“제법 운이 좋았군. 이 물건은 네 몫이다.”",
+            "Event_04_C" => "“나쁘지 않은 거래였어.”",
+            "Event_04_D" => "“값을 치를 차례다. 모자란 몫은 생명으로 받아가겠다.”",
             _ => string.Empty
         };
     }
@@ -590,7 +627,7 @@ public class EventRoomController : MonoBehaviour
 
         if (EventChoiceExecutionService.RequiresEquippedRelicCostSelection(choice))
         {
-            BeginEquippedRelicCostSelection(choice);
+            BeginEquippedRelicCostSelectionWithTransition(choice);
             return;
         }
 
@@ -612,6 +649,12 @@ public class EventRoomController : MonoBehaviour
         if (ShouldTransitionEvent02ChestChoice(choice))
         {
             BeginEvent02ChestChoiceTransition(choice);
+            return;
+        }
+
+        if (ShouldFadeEvent04ChoiceUi(choice))
+        {
+            BeginEvent04ChoiceWithTransition(choice);
             return;
         }
 
@@ -659,6 +702,43 @@ public class EventRoomController : MonoBehaviour
         event01RewardTransitionRoutine = null;
     }
 
+    private static bool ShouldFadeEvent04ChoiceUi(EventData choice)
+    {
+        if (choice == null)
+            return false;
+
+        return EventIdUtility.Normalize(choice.EventId) == "Event_04" && !IsDiceChoice(choice);
+    }
+
+    private void BeginEvent04ChoiceWithTransition(EventData choice)
+    {
+        if (choice == null || !isActiveAndEnabled)
+            return;
+
+        StopEvent04ChoiceTransition();
+        SetChoiceSlotsInteractable(false);
+        SetNextButtonVisible(false);
+        event04ChoiceTransitionRoutine = StartCoroutine(FadeOutEvent04ChoiceUiThenExecute(choice));
+    }
+
+    private IEnumerator FadeOutEvent04ChoiceUiThenExecute(EventData choice)
+    {
+        yield return FadeOutEventChoiceUiForDice();
+
+        event04ChoiceTransitionRoutine = null;
+        if (choice != null && isActiveAndEnabled)
+            ExecuteEventChoice(choice);
+    }
+
+    private void StopEvent04ChoiceTransition()
+    {
+        if (event04ChoiceTransitionRoutine == null)
+            return;
+
+        StopCoroutine(event04ChoiceTransitionRoutine);
+        event04ChoiceTransitionRoutine = null;
+    }
+
     private static bool ShouldTransitionEvent02ChestChoice(EventData choice)
     {
         if (choice == null)
@@ -686,21 +766,43 @@ public class EventRoomController : MonoBehaviour
     {
         EnsureEventChoiceScrollViewReference();
         EnsureEventChoiceScrollCanvasGroup();
+        EnsureEventTitleCanvasGroup();
 
         if (eventChoiceScrollView != null && !eventChoiceScrollView.gameObject.activeSelf)
             eventChoiceScrollView.gameObject.SetActive(true);
+        if (eventTitleText != null && !eventTitleText.gameObject.activeSelf)
+            eventTitleText.gameObject.SetActive(true);
 
         CanvasGroup scrollGroup = eventChoiceScrollCanvasGroup;
+        CanvasGroup titleGroup = eventTitleCanvasGroup;
         if (scrollGroup != null)
         {
             scrollGroup.interactable = false;
             scrollGroup.blocksRaycasts = false;
-            yield return FadeCanvasGroup(scrollGroup, scrollGroup.alpha, 0f, diceUiFadeDuration);
-            scrollGroup.alpha = 0f;
+        }
+        if (titleGroup != null)
+        {
+            titleGroup.interactable = false;
+            titleGroup.blocksRaycasts = false;
         }
 
-        if (eventChoiceScrollView != null)
-            eventChoiceScrollView.gameObject.SetActive(false);
+        float duration = Mathf.Max(0.01f, diceUiFadeDuration);
+        float elapsed = 0f;
+        float scrollStart = scrollGroup != null ? scrollGroup.alpha : 1f;
+        float titleStart = titleGroup != null ? titleGroup.alpha : 1f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
+            if (scrollGroup != null) scrollGroup.alpha = Mathf.Lerp(scrollStart, 0f, t);
+            if (titleGroup != null) titleGroup.alpha = Mathf.Lerp(titleStart, 0f, t);
+            yield return null;
+        }
+
+        if (scrollGroup != null) scrollGroup.alpha = 0f;
+        if (titleGroup != null) titleGroup.alpha = 0f;
+        if (eventChoiceScrollView != null) eventChoiceScrollView.gameObject.SetActive(false);
+        if (eventTitleText != null) eventTitleText.gameObject.SetActive(false);
 
         // 선택 결과에 레드 더스티움 연출이 포함되면 Event_02_A 로드는
         // Dustium -> GoldHud 연출이 끝난 뒤 ContinueAfterExecutedChoiceCore에서 이루어집니다.
@@ -722,17 +824,38 @@ public class EventRoomController : MonoBehaviour
 
         EnsureEventChoiceScrollViewReference();
         EnsureEventChoiceScrollCanvasGroup();
+        EnsureEventTitleCanvasGroup();
         if (eventChoiceScrollView != null)
             eventChoiceScrollView.gameObject.SetActive(true);
+        if (eventTitleText != null)
+            eventTitleText.gameObject.SetActive(true);
 
         scrollGroup = eventChoiceScrollCanvasGroup;
+        titleGroup = eventTitleCanvasGroup;
+        if (scrollGroup != null) scrollGroup.alpha = 0f;
+        if (titleGroup != null) titleGroup.alpha = 0f;
+
+        elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
+            if (scrollGroup != null) scrollGroup.alpha = t;
+            if (titleGroup != null) titleGroup.alpha = t;
+            yield return null;
+        }
+
         if (scrollGroup != null)
         {
-            scrollGroup.alpha = 0f;
-            yield return FadeCanvasGroup(scrollGroup, 0f, 1f, diceUiFadeDuration);
             scrollGroup.alpha = 1f;
             scrollGroup.interactable = true;
             scrollGroup.blocksRaycasts = true;
+        }
+        if (titleGroup != null)
+        {
+            titleGroup.alpha = 1f;
+            titleGroup.interactable = true;
+            titleGroup.blocksRaycasts = true;
         }
 
         event02ChestTransitionRoutine = null;
@@ -837,6 +960,9 @@ public class EventRoomController : MonoBehaviour
             return;
 
         if (TryQueueEvent02ResultContinuation(choice, result, resolvedDiceFaces))
+            return;
+
+        if (TryQueueEvent04ResultContinuation(choice, result, resolvedDiceFaces))
             return;
 
         bool shouldCompleteAfterFailedChoice =
@@ -1026,6 +1152,132 @@ public class EventRoomController : MonoBehaviour
 
         pendingEvent02ResultEventId = string.Empty;
         pendingEvent02ResultMessage = string.Empty;
+    }
+
+    private bool TryQueueEvent04ResultContinuation(
+        EventData choice,
+        EventChoiceExecutionResult result,
+        IReadOnlyList<int> resolvedDiceFaces)
+    {
+        string nextEventId = EventIdUtility.Normalize(result.NextEventId);
+        if (!IsEvent04TitleOnlyTerminal(nextEventId))
+            return false;
+
+        pendingEvent04ResultEventId = nextEventId;
+        pendingEvent04ResultMessage = result.ResultMessage ?? string.Empty;
+        SetNextButtonVisible(false);
+        SetChoiceSlotsInteractable(false);
+
+        // 유물 획득/교환은 RewardPanel이 닫힌 뒤 A/B/C 결과 Title을 표시합니다.
+        if (pendingEventRewards.Count > 0 && TryOpenPendingEventRewardPanel(true))
+            return true;
+
+        // 주사위 실패는 생명력 감소 팝업이 끝난 뒤 D 결과 Title을 표시합니다.
+        float delay = resolvedDiceFaces != null ? Mathf.Max(0f, event01StatResultDelay) : 0f;
+        QueueEvent04ResultContinuation(delay);
+        return true;
+    }
+
+    private void QueueEvent04ResultContinuation(float delay)
+    {
+        if (event04ResultContinuationRoutine != null)
+            StopCoroutine(event04ResultContinuationRoutine);
+
+        event04ResultContinuationRoutine = StartCoroutine(CompletePendingEvent04ResultContinuationAfterDelay(delay));
+    }
+
+    private IEnumerator CompletePendingEvent04ResultContinuationAfterDelay(float delay)
+    {
+        if (delay > 0f)
+            yield return new WaitForSecondsRealtime(delay);
+
+        event04ResultContinuationRoutine = null;
+        CompletePendingEvent04ResultContinuation();
+    }
+
+    private bool CompletePendingEvent04ResultContinuation()
+    {
+        string nextEventId = pendingEvent04ResultEventId;
+        string resultMessage = pendingEvent04ResultMessage;
+        pendingEvent04ResultEventId = string.Empty;
+        pendingEvent04ResultMessage = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(nextEventId) ||
+            DataManager.Instance == null ||
+            DataManager.Instance.EventDatabase == null ||
+            !DataManager.Instance.EventDatabase.TryGetEvent(nextEventId, out EventDefinition nextDefinition) ||
+            nextDefinition == null)
+        {
+            return false;
+        }
+
+        LoadEventDefinition(nextDefinition, resultMessage);
+        StartEvent04ResultTitleFade();
+        return true;
+    }
+
+    private void StartEvent04ResultTitleFade()
+    {
+        StopEvent04ResultTitleFade();
+        if (isActiveAndEnabled)
+            event04ResultTitleFadeRoutine = StartCoroutine(FadeInEvent04ResultTitle());
+    }
+
+    private IEnumerator FadeInEvent04ResultTitle()
+    {
+        EnsureEventTitleCanvasGroup();
+        if (eventTitleText == null)
+        {
+            event04ResultTitleFadeRoutine = null;
+            yield break;
+        }
+
+        eventTitleText.gameObject.SetActive(true);
+        CanvasGroup titleGroup = eventTitleCanvasGroup;
+        if (titleGroup == null)
+        {
+            event04ResultTitleFadeRoutine = null;
+            yield break;
+        }
+
+        titleGroup.alpha = 0f;
+        titleGroup.interactable = false;
+        titleGroup.blocksRaycasts = false;
+
+        float duration = Mathf.Max(0.01f, diceUiFadeDuration);
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            titleGroup.alpha = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
+            yield return null;
+        }
+
+        titleGroup.alpha = 1f;
+        titleGroup.interactable = true;
+        titleGroup.blocksRaycasts = true;
+        event04ResultTitleFadeRoutine = null;
+    }
+
+    private void StopEvent04ResultTitleFade()
+    {
+        if (event04ResultTitleFadeRoutine == null)
+            return;
+
+        StopCoroutine(event04ResultTitleFadeRoutine);
+        event04ResultTitleFadeRoutine = null;
+    }
+
+    private void ClearPendingEvent04ResultContinuation()
+    {
+        if (event04ResultContinuationRoutine != null)
+        {
+            StopCoroutine(event04ResultContinuationRoutine);
+            event04ResultContinuationRoutine = null;
+        }
+
+        pendingEvent04ResultEventId = string.Empty;
+        pendingEvent04ResultMessage = string.Empty;
     }
 
     [Header("Event Stat Popup")]
@@ -1370,6 +1622,41 @@ public class EventRoomController : MonoBehaviour
         diceRollPresenter?.HideImmediate();
     }
 
+    private void BeginEquippedRelicCostSelectionWithTransition(EventData choice)
+    {
+        if (choice == null || !isActiveAndEnabled)
+            return;
+
+        StopEvent04ChoiceTransition();
+        SetChoiceSlotsInteractable(false);
+        SetNextButtonVisible(false);
+        event04ChoiceTransitionRoutine = StartCoroutine(FadeOutEventChoiceUiThenOpenEquippedRelicSelection(choice));
+    }
+
+    private IEnumerator FadeOutEventChoiceUiThenOpenEquippedRelicSelection(EventData choice)
+    {
+        yield return FadeOutEventChoiceUiForDice();
+
+        event04ChoiceTransitionRoutine = null;
+        if (choice != null && isActiveAndEnabled)
+            BeginEquippedRelicCostSelection(choice);
+    }
+
+    private void RestoreEventChoiceUiAfterRelicSelection()
+    {
+        if (!isActiveAndEnabled || !isDataEventActive || isEventResolved)
+            return;
+
+        StopEvent04ChoiceTransition();
+        event04ChoiceTransitionRoutine = StartCoroutine(FadeInEventChoiceUiAfterRelicSelection());
+    }
+
+    private IEnumerator FadeInEventChoiceUiAfterRelicSelection()
+    {
+        yield return FadeInEventChoiceUiAfterDice();
+        event04ChoiceTransitionRoutine = null;
+    }
+
     private void BeginEquippedRelicCostSelection(EventData choice)
     {
         RefreshEquippedRelicCostOptions();
@@ -1381,6 +1668,7 @@ public class EventRoomController : MonoBehaviour
 
             ClearEquippedRelicCostSelection();
             BindChoiceSlots(GetCurrentVisibleChoices());
+            RestoreEventChoiceUiAfterRelicSelection();
             return;
         }
 
@@ -1392,6 +1680,7 @@ public class EventRoomController : MonoBehaviour
 
             ClearEquippedRelicCostSelection();
             BindChoiceSlots(GetCurrentVisibleChoices());
+            RestoreEventChoiceUiAfterRelicSelection();
             return;
         }
 
@@ -1416,6 +1705,7 @@ public class EventRoomController : MonoBehaviour
             ClearEquippedRelicCostSelection();
             BindChoiceSlots(GetCurrentVisibleChoices());
             SetNextButtonVisible(EventRoomRewardFlowUtility.CanSkipUnresolvedEvent(currentEventDefinition));
+            RestoreEventChoiceUiAfterRelicSelection();
         }
     }
 
@@ -1427,6 +1717,8 @@ public class EventRoomController : MonoBehaviour
 
         if (eventResultText != null)
             eventResultText.text = string.Empty;
+
+        RestoreEventChoiceUiAfterRelicSelection();
     }
 
     private bool OnEquippedRelicCostSelected(EventChoiceEquippedRelicCost cost)
@@ -3655,6 +3947,9 @@ public class EventRoomController : MonoBehaviour
             return;
 
         if (CompletePendingEvent02ResultContinuation())
+            return;
+
+        if (CompletePendingEvent04ResultContinuation())
             return;
 
         SetNextButtonVisible(true);

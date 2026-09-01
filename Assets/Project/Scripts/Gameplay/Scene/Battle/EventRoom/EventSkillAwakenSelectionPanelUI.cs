@@ -767,7 +767,7 @@ public sealed class EventSkillAwakenSelectionPanelUI : MonoBehaviour
         VisibleOptionCount = 0;
 
         if (titleText != null)
-            titleText.text = "강화할 기억 선택";
+            titleText.text = "각성할 기억을 선택하세요.";
 
         if (emptyText != null)
             emptyText.gameObject.SetActive(entries.Count == 0);

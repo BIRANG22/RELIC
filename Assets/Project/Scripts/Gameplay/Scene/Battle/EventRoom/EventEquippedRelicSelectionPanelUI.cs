@@ -157,7 +157,7 @@ public sealed class EventEquippedRelicSelectionPanelUI : MonoBehaviour
         VisibleOptionCount = 0;
 
         if (titleText != null)
-            titleText.text = "삭제할 장착 유물 선택";
+            titleText.text = "교환할 유물을 선택하세요.";
 
         if (emptyText != null)
             emptyText.gameObject.SetActive(options.Count == 0);
@@ -188,9 +188,9 @@ public sealed class EventEquippedRelicSelectionPanelUI : MonoBehaviour
         optionObject.SetActive(true);
         PositionOptionObject(optionObject, optionIndex);
 
-        TMP_Text relicNameText = FindText(optionObject.transform, "RelicNameText");
-        TMP_Text characterNameText = FindText(optionObject.transform, "CharacterNameText");
-        TMP_Text slotNameText = FindText(optionObject.transform, "SlotNameText");
+        TMP_Text relicNameText = FindText(optionObject.transform, "SkillNameText");
+        TMP_Text rarityText = FindText(optionObject.transform, "RarityText");
+        TMP_Text effectText = FindText(optionObject.transform, "Text");
         Image iconImage = FindImage(optionObject.transform, "Icon");
 
         if (relicNameText != null)
@@ -198,11 +198,32 @@ public sealed class EventEquippedRelicSelectionPanelUI : MonoBehaviour
                 ? entry.Cost.RelicId
                 : entry.RelicName;
 
-        if (characterNameText != null)
-            characterNameText.text = entry.CharacterName;
+        if (TryGetRelicData(entry.Cost.RelicId, out RelicData relicData))
+        {
+            if (relicNameText != null)
+            {
+                string localizedName = GameDataLocalization.RelicName(relicData);
+                if (!string.IsNullOrWhiteSpace(localizedName))
+                    relicNameText.text = localizedName;
+            }
 
-        if (slotNameText != null)
-            slotNameText.text = entry.SlotName;
+            if (rarityText != null)
+            {
+                rarityText.text = GetRelicRarityDisplayName(relicData.Rarity);
+                ApplyRelicRarityColor(rarityText, relicData.Rarity);
+            }
+
+            if (effectText != null)
+                effectText.text = GameDataLocalization.RelicEffectDescription(relicData);
+        }
+        else
+        {
+            if (rarityText != null)
+                rarityText.text = string.Empty;
+
+            if (effectText != null)
+                effectText.text = string.Empty;
+        }
 
         if (iconImage != null)
         {
@@ -320,6 +341,48 @@ public sealed class EventEquippedRelicSelectionPanelUI : MonoBehaviour
         }
 
         return null;
+    }
+
+
+    private static bool TryGetRelicData(string relicId, out RelicData relicData)
+    {
+        relicData = null;
+        string normalizedId = string.IsNullOrWhiteSpace(relicId) ? string.Empty : relicId.Trim();
+        return normalizedId.Length > 0 &&
+               DataManager.Instance?.RelicDatabase != null &&
+               DataManager.Instance.RelicDatabase.TryGet(normalizedId, out relicData) &&
+               relicData != null;
+    }
+
+    private static string GetRelicRarityDisplayName(string rarity)
+    {
+        if (!RelicRarityUtility.TryParseChestRarity(rarity, out RelicRarity parsedRarity))
+            return string.Empty;
+
+        return parsedRarity switch
+        {
+            RelicRarity.Common => "일반 유물",
+            RelicRarity.Rare => "레어 유물",
+            RelicRarity.Epic => "에픽 유물",
+            RelicRarity.Unique => "유니크 유물",
+            _ => string.Empty
+        };
+    }
+
+    private static void ApplyRelicRarityColor(TMP_Text rarityText, string rarity)
+    {
+        if (rarityText == null || string.IsNullOrWhiteSpace(rarity))
+            return;
+
+        if (RecordPanelUI.TryGetCachedRarityDisplayColor(rarity, out Color rarityColor))
+        {
+            rarityText.color = rarityColor;
+            return;
+        }
+
+        RecordPanelUI recordPanel = UnityEngine.Object.FindFirstObjectByType<RecordPanelUI>(FindObjectsInactive.Include);
+        if (recordPanel != null)
+            rarityText.color = recordPanel.GetRarityDisplayColor(rarity);
     }
 
     private static string GetFallbackSlotName(int slotIndex)
