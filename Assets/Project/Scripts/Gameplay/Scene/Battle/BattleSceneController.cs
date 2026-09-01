@@ -394,6 +394,7 @@ public class BattleSceneController : MonoBehaviour
         HideMapPanelImmediate();
         HandleSelectedMap(currentNode);
         PlayPendingRoomIntroText();
+        PlayEventRoomEntranceAnimationIfNeeded();
         return true;
     }
 
@@ -422,6 +423,7 @@ public class BattleSceneController : MonoBehaviour
         HideMapPanelImmediate();
         HandleSelectedMap(entryNode);
         PlayPendingRoomIntroText();
+        PlayEventRoomEntranceAnimationIfNeeded();
         return true;
     }
 
@@ -461,6 +463,8 @@ public class BattleSceneController : MonoBehaviour
             CleanupCompletedBattleRoom();
             HandleSelectedMap(nodeData);
         });
+
+        PlayEventRoomEntranceAnimationIfNeeded();
     }
 
     public void OnMapNodeSelectedByIndex(int nodeIndex)
@@ -717,6 +721,7 @@ public class BattleSceneController : MonoBehaviour
                 HideMapPanelImmediate();
                 HandleSelectedMap(currentNode);
                 PlayPendingRoomIntroText();
+                PlayEventRoomEntranceAnimationIfNeeded();
                 UpdateLastActiveRoomState();
                 return;
             }
@@ -877,6 +882,16 @@ public class BattleSceneController : MonoBehaviour
             battleMapIntroText.Play(pendingRoomIntroMessage);
 
         pendingRoomIntroMessage = null;
+    }
+
+    private void PlayEventRoomEntranceAnimationIfNeeded()
+    {
+        if (eventRoom == null || !eventRoom.activeInHierarchy)
+            return;
+
+        EventRoomController eventController =
+            eventRoom.GetComponentInChildren<EventRoomController>(true);
+        eventController?.PlayEventChoiceEntranceAnimation();
     }
 
     private void OpenRoom(GameObject roomObject, string roomName)

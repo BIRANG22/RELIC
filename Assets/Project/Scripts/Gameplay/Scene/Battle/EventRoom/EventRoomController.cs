@@ -25,6 +25,15 @@ public class EventRoomController : MonoBehaviour
     [SerializeField] private TMP_Text eventResultText;
     [SerializeField] private EventChoiceSlotUI[] choiceSlots;
 
+    [Header("Event Choice Entrance")]
+    [SerializeField] private RectTransform eventChoiceScrollView;
+    [SerializeField] private float eventChoiceScrollStartY = -400f;
+    [SerializeField] private float eventChoiceScrollEndY = -100f;
+    [SerializeField, Min(0.01f)] private float eventChoiceScrollMoveDuration = 0.4f;
+
+    [Header("Terminal Choice Exit")]
+    [SerializeField, Min(0.01f)] private float terminalChoiceFadeDuration = 0.25f;
+
     [Header("Event Rewards")]
     [SerializeField] private BattleRewardPanelUI rewardPanel;
     [SerializeField, Min(0f)] private float eventRewardPanelOpenDelay = 0.6f;
@@ -93,6 +102,9 @@ public class EventRoomController : MonoBehaviour
     private EventData pendingSkillAwakenChoice;
     private bool isSelectingSkillAwaken;
     private Coroutine diceRollRoutine;
+    private Coroutine eventChoiceScrollMoveRoutine;
+    private Coroutine terminalChoiceFadeRoutine;
+    private bool waitForEventEntranceReveal;
 
     private void Awake()
     {
@@ -144,6 +156,9 @@ public class EventRoomController : MonoBehaviour
         ClearSkillAwakenSelection();
         eventChoiceSessionState.AwakenedSkillTargets.Clear();
         SetNextButtonVisible(false);
+        waitForEventEntranceReveal = true;
+        ResetEventChoiceScrollViewPosition();
+        ResetTerminalChoiceVisuals();
 
         if (TryStartDataEventMode())
             return;
@@ -168,6 +183,8 @@ public class EventRoomController : MonoBehaviour
 
         HideDiceRollPresenterImmediate();
         StopEventRewardPanelDelay();
+        StopEventChoiceScrollViewAnimation();
+        StopTerminalChoiceFade();
         HideRelicHoverInfo();
         HideRelicFlyObjects();
         ClearChoiceSlots();
@@ -383,6 +400,7 @@ public class EventRoomController : MonoBehaviour
 
         SetDataEventRootVisible(true);
         SetNextButtonVisible(EventRoomRewardFlowUtility.CanSkipUnresolvedEvent(definition));
+        ResetTerminalChoiceVisuals();
 
         if (eventNameText != null)
             eventNameText.text = string.IsNullOrWhiteSpace(definition.EventName)
@@ -507,6 +525,8 @@ public class EventRoomController : MonoBehaviour
                 $"[EventRoomController] Next event '{result.NextEventId}' not found. Treating this choice as terminal.",
                 this);
         }
+
+        BeginTerminalChoiceExitVisuals();
 
         if (eventResultText != null)
             eventResultText.text = result.ResultMessage;
@@ -1640,7 +1660,7 @@ public class EventRoomController : MonoBehaviour
             SelectedSkillAwakenTarget = selectedSkillAwakenTarget,
             UpgradeSelectedSkill = TryUpgradeSelectedSkill,
             RollbackAwakenedSkills = TryRollbackAwakenedSkills,
-            OfferTypedSkillRewards = TryQueueTypedSkillRewards,
+            OfferFilteredSkillRewards = TryQueueFilteredSkillRewards,
             HasUpgradeableEquippedSkill = HasAnyUpgradeableEquippedSkill,
             OpenShop = TryOpenShopPanel,
             RefreshRemnantHud = BattleGoldHudUI.RefreshAll,
@@ -1818,8 +1838,8 @@ public class EventRoomController : MonoBehaviour
         return true;
     }
 
-    private bool TryQueueTypedSkillRewards(
-        SkillType skillType,
+    private bool TryQueueFilteredSkillRewards(
+        EventChoiceSkillRewardFilter filter,
         int count,
         out string resultMessage)
     {
@@ -1832,10 +1852,10 @@ public class EventRoomController : MonoBehaviour
             return false;
         }
 
-        List<SkillMasterData> candidates = CollectAvailableSkillRewardCandidates(skillType);
+        List<SkillMasterData> candidates = CollectAvailableSkillRewardCandidates(filter);
         if (candidates.Count < rewardCount)
         {
-            resultMessage = $"획득 가능한 {GetSkillTypeRewardDisplayName(skillType)} 관련 기억이 부족합니다.";
+            resultMessage = $"획득 가능한 {GetSkillRewardFilterDisplayName(filter)} 기억이 부족합니다.";
             return false;
         }
 
@@ -1854,8 +1874,21 @@ public class EventRoomController : MonoBehaviour
                 GetSkillSprite(skillId, skill)));
         }
 
-        resultMessage = $"{GetSkillTypeRewardDisplayName(skillType)} 관련 기억 {rewardCount}개 제시";
+        resultMessage = $"{GetSkillRewardFilterDisplayName(filter)} 기억 {rewardCount}개 제시";
         return true;
+    }
+
+    private static string GetSkillRewardFilterDisplayName(EventChoiceSkillRewardFilter filter)
+    {
+        return filter switch
+        {
+            EventChoiceSkillRewardFilter.Attack => "공격",
+            EventChoiceSkillRewardFilter.Buff => "버프",
+            EventChoiceSkillRewardFilter.Debuff => "디버프",
+            EventChoiceSkillRewardFilter.CommonToRare => "일반~레어",
+            EventChoiceSkillRewardFilter.Epic => "에픽",
+            _ => ""
+        };
     }
 
     private bool TryGrantRandomRelic(out string resultMessage)
@@ -1971,6 +2004,40 @@ public class EventRoomController : MonoBehaviour
 
         selectedSkill = candidates[BattleRandom.Range(0, candidates.Count)];
         return selectedSkill != null;
+    }
+
+    private List<SkillMasterData> CollectAvailableSkillRewardCandidates(
+        EventChoiceSkillRewardFilter filter)
+    {
+        List<SkillMasterData> candidates = CollectAvailableSkillRewardCandidates();
+
+        for (int i = candidates.Count - 1; i >= 0; i--)
+        {
+            SkillMasterData skill = candidates[i];
+            if (skill == null || !MatchesSkillRewardFilter(skill, filter))
+                candidates.RemoveAt(i);
+        }
+
+        return candidates;
+    }
+
+    private static bool MatchesSkillRewardFilter(
+        SkillMasterData skill,
+        EventChoiceSkillRewardFilter filter)
+    {
+        if (skill == null)
+            return false;
+
+        return filter switch
+        {
+            EventChoiceSkillRewardFilter.Attack => skill.SkillType == SkillType.Attack,
+            EventChoiceSkillRewardFilter.Buff => skill.SkillType == SkillType.Buff,
+            EventChoiceSkillRewardFilter.Debuff => skill.SkillType == SkillType.Debuff,
+            EventChoiceSkillRewardFilter.CommonToRare =>
+                skill.Rarity == SkillRarity.Common || skill.Rarity == SkillRarity.Rare,
+            EventChoiceSkillRewardFilter.Epic => skill.Rarity == SkillRarity.Epic,
+            _ => false
+        };
     }
 
     private List<SkillMasterData> CollectAvailableSkillRewardCandidates(
@@ -2627,6 +2694,108 @@ public class EventRoomController : MonoBehaviour
         diceRollPresenter.transform.SetAsLastSibling();
     }
 
+    private void BeginTerminalChoiceExitVisuals()
+    {
+        StopTerminalChoiceFade();
+        SetChoiceSlotsInteractable(false);
+
+        if (eventTitleText != null)
+            eventTitleText.gameObject.SetActive(false);
+
+        terminalChoiceFadeRoutine = StartCoroutine(FadeOutTerminalChoiceSlots());
+    }
+
+    private IEnumerator FadeOutTerminalChoiceSlots()
+    {
+        EnsureChoiceSlots();
+
+        List<CanvasGroup> groups = new();
+        if (choiceSlots != null)
+        {
+            for (int i = 0; i < choiceSlots.Length; i++)
+            {
+                EventChoiceSlotUI slot = choiceSlots[i];
+                if (slot == null || !slot.gameObject.activeInHierarchy)
+                    continue;
+
+                CanvasGroup group = slot.GetComponent<CanvasGroup>();
+                if (group == null)
+                    group = slot.gameObject.AddComponent<CanvasGroup>();
+
+                group.interactable = false;
+                group.blocksRaycasts = false;
+                groups.Add(group);
+            }
+        }
+
+        if (groups.Count == 0)
+        {
+            terminalChoiceFadeRoutine = null;
+            yield break;
+        }
+
+        float duration = Mathf.Max(0.01f, terminalChoiceFadeDuration);
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float alpha = 1f - t;
+
+            for (int i = 0; i < groups.Count; i++)
+            {
+                if (groups[i] != null)
+                    groups[i].alpha = alpha;
+            }
+
+            yield return null;
+        }
+
+        for (int i = 0; i < groups.Count; i++)
+        {
+            if (groups[i] != null)
+                groups[i].alpha = 0f;
+        }
+
+        terminalChoiceFadeRoutine = null;
+    }
+
+    private void ResetTerminalChoiceVisuals()
+    {
+        StopTerminalChoiceFade();
+        EnsureChoiceSlots();
+
+        if (eventTitleText != null)
+            eventTitleText.gameObject.SetActive(!waitForEventEntranceReveal);
+
+        if (choiceSlots == null)
+            return;
+
+        for (int i = 0; i < choiceSlots.Length; i++)
+        {
+            EventChoiceSlotUI slot = choiceSlots[i];
+            if (slot == null)
+                continue;
+
+            CanvasGroup group = slot.GetComponent<CanvasGroup>();
+            if (group == null)
+                continue;
+
+            group.alpha = 1f;
+            group.interactable = true;
+            group.blocksRaycasts = true;
+        }
+    }
+
+    private void StopTerminalChoiceFade()
+    {
+        if (terminalChoiceFadeRoutine == null)
+            return;
+
+        StopCoroutine(terminalChoiceFadeRoutine);
+        terminalChoiceFadeRoutine = null;
+    }
+
     private void EnsureChoiceSlots()
     {
         if (choiceSlots != null && choiceSlots.Length > 0)
@@ -2683,6 +2852,8 @@ public class EventRoomController : MonoBehaviour
         if (chestOpenButton == null)
             chestOpenButton = GetComponentInChildren<ChestOpenButton>(true);
 
+        EnsureEventChoiceScrollViewReference();
+
         if (relicHoverInfoPanel == null)
         {
             Transform hoverPanel = FindChildRecursive(transform, "RelicHoverInfoPanel");
@@ -2726,6 +2897,92 @@ public class EventRoomController : MonoBehaviour
 
         EnsureRewardPanelReference();
         EnsureNextButtonRoot();
+    }
+
+    private void EnsureEventChoiceScrollViewReference()
+    {
+        if (eventChoiceScrollView != null)
+            return;
+
+        Transform scrollViewTransform = FindChildRecursive(transform, "Scroll View");
+        if (scrollViewTransform != null)
+            eventChoiceScrollView = scrollViewTransform as RectTransform;
+    }
+
+    private void ResetEventChoiceScrollViewPosition()
+    {
+        EnsureEventChoiceScrollViewReference();
+        StopEventChoiceScrollViewAnimation();
+
+        if (eventChoiceScrollView == null)
+            return;
+
+        Vector2 position = eventChoiceScrollView.anchoredPosition;
+        position.y = eventChoiceScrollStartY;
+        eventChoiceScrollView.anchoredPosition = position;
+    }
+
+    public void PlayEventChoiceEntranceAnimation()
+    {
+        if (!isActiveAndEnabled || !isDataEventActive)
+            return;
+
+        waitForEventEntranceReveal = false;
+
+        if (eventTitleText != null)
+            eventTitleText.gameObject.SetActive(true);
+
+        StartEventChoiceScrollViewAnimation();
+    }
+
+    private void StartEventChoiceScrollViewAnimation()
+    {
+        EnsureEventChoiceScrollViewReference();
+        StopEventChoiceScrollViewAnimation();
+
+        if (eventChoiceScrollView == null || !isActiveAndEnabled)
+            return;
+
+        eventChoiceScrollMoveRoutine = StartCoroutine(MoveEventChoiceScrollViewRoutine());
+    }
+
+    private void StopEventChoiceScrollViewAnimation()
+    {
+        if (eventChoiceScrollMoveRoutine == null)
+            return;
+
+        StopCoroutine(eventChoiceScrollMoveRoutine);
+        eventChoiceScrollMoveRoutine = null;
+    }
+
+    private IEnumerator MoveEventChoiceScrollViewRoutine()
+    {
+        Vector2 position = eventChoiceScrollView.anchoredPosition;
+        position.y = eventChoiceScrollStartY;
+        eventChoiceScrollView.anchoredPosition = position;
+
+        Canvas.ForceUpdateCanvases();
+        yield return null;
+
+        float duration = Mathf.Max(0.01f, eventChoiceScrollMoveDuration);
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float easedT = Mathf.SmoothStep(0f, 1f, t);
+
+            position = eventChoiceScrollView.anchoredPosition;
+            position.y = Mathf.Lerp(eventChoiceScrollStartY, eventChoiceScrollEndY, easedT);
+            eventChoiceScrollView.anchoredPosition = position;
+            yield return null;
+        }
+
+        position = eventChoiceScrollView.anchoredPosition;
+        position.y = eventChoiceScrollEndY;
+        eventChoiceScrollView.anchoredPosition = position;
+        eventChoiceScrollMoveRoutine = null;
     }
 
     private void EnsureNextButtonRoot()
