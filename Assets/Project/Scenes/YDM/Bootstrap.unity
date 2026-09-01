@@ -5586,9 +5586,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e7d7c9637315994c93bfff66c6b940a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  markSprite: {fileID: 21300000, guid: 6670935e81a55d94ba226f2943a29208, type: 3}
-  markSize: {x: 20, y: 20}
-  anchoredPosition: {x: 15, y: 15}
+  markSprite: {fileID: 21300000, guid: 1bf573aea608de349ac346022e95bd6a, type: 3}
+  markSizeRatio: 0.35
   markColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1 &1619860610
 GameObject:
