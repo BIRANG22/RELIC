@@ -242,6 +242,44 @@ public class BattleConsecutiveActionPlanTests
         }
     }
 
+    [Test]
+    public void PresentationContext_KeepsGroupedActionBeatAtMinimumDuration()
+    {
+        BattleConsecutiveActionInfo info = new(
+            groupId: 4,
+            groupIndex: 0,
+            groupSize: 3,
+            speedMultiplier: 2f);
+
+        try
+        {
+            BattleConsecutiveActionPresentationContext.BeginAction(info);
+
+            Assert.That(
+                BattleConsecutiveActionPresentationContext.ScaleActionBeatDuration(
+                    0.03f,
+                    0.12f),
+                Is.EqualTo(0.12f).Within(0.0001f));
+        }
+        finally
+        {
+            BattleConsecutiveActionPresentationContext.EndGroup();
+        }
+    }
+
+    [Test]
+    public void PresentationContext_LeavesSingleActionBeatUnclamped()
+    {
+        BattleConsecutiveActionPresentationContext.BeginAction(
+            BattleConsecutiveActionInfo.Single);
+
+        Assert.That(
+            BattleConsecutiveActionPresentationContext.ScaleActionBeatDuration(
+                0.03f,
+                0.12f),
+            Is.EqualTo(0.03f).Within(0.0001f));
+    }
+
     private static BattleActionBatch CreateBatch(
         int timelineSlotIndex,
         PlayerReservedCommand command)
