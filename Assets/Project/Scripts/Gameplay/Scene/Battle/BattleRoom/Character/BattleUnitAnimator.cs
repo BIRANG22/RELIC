@@ -143,13 +143,17 @@ public class BattleUnitAnimator : MonoBehaviour
     public void SetPlaybackSpeed(float speed)
     {
         if (EnsureAnimator())
-            animator.speed = Mathf.Max(0.01f, speed);
+        {
+            BattleConsecutiveActionPresentationContext.ApplyAnimatorSpeed(
+                animator,
+                Mathf.Max(0.01f, speed));
+        }
     }
 
     public void RestorePlaybackSpeed()
     {
         if (EnsureAnimator())
-            animator.speed = 1f;
+            BattleConsecutiveActionPresentationContext.ApplyAnimatorSpeed(animator);
     }
 
     public void PlayGuard()
@@ -937,7 +941,9 @@ public class BattleUnitAnimator : MonoBehaviour
         ConfigureVfxInstance(vfx, entry);
         ApplyDirectWorldVfxSorting(vfx, entry, GetUnitVfxSortingReferenceY());
 
-        Destroy(vfx, vfxLifeTime);
+        Destroy(
+            vfx,
+            BattleConsecutiveActionPresentationContext.ScaleDuration(vfxLifeTime));
     }
 
     private bool TryResolveSelectedGridWorldPosition(
@@ -1032,7 +1038,11 @@ public class BattleUnitAnimator : MonoBehaviour
         if (stabilizeVisualEffects)
             StabilizeVisualEffectPlayback(vfx);
 
-        Destroy(anchor, Mathf.Max(0.01f, lifeTime));
+        Destroy(
+            anchor,
+            Mathf.Max(
+                0.01f,
+                BattleConsecutiveActionPresentationContext.ScaleDuration(lifeTime)));
         return true;
     }
 
@@ -1058,7 +1068,11 @@ public class BattleUnitAnimator : MonoBehaviour
             SetLayerRecursively(vfx, visibleLayer);
         }
 
-        Destroy(anchor, Mathf.Max(0.01f, lifeTime));
+        Destroy(
+            anchor,
+            Mathf.Max(
+                0.01f,
+                BattleConsecutiveActionPresentationContext.ScaleDuration(lifeTime)));
     }
 
     private static GameObject CreateDetachedVfxAnchor(
@@ -1230,9 +1244,12 @@ public class BattleUnitAnimator : MonoBehaviour
     {
         float deltaTime = Time.deltaTime;
 
-        return BattleVfxPlaybackPauseController.IsGlobalPauseActive
+        float pauseAdjustedDeltaTime = BattleVfxPlaybackPauseController.IsGlobalPauseActive
             ? deltaTime * BattleVfxPlaybackPauseController.ActiveSpeedMultiplier
             : deltaTime;
+
+        return BattleConsecutiveActionPresentationContext.ScaleDeltaTime(
+            pauseAdjustedDeltaTime);
     }
 
     private void SpawnImpactVfx(BattleProjectileVfxEntry entry, Vector3 impactPosition)
@@ -1262,7 +1279,12 @@ public class BattleUnitAnimator : MonoBehaviour
         impact.transform.SetParent(null, true);
         impact.transform.position = impactPosition;
 
-        Destroy(impact, Mathf.Max(0.01f, entry.impactLifeTime));
+        Destroy(
+            impact,
+            Mathf.Max(
+                0.01f,
+                BattleConsecutiveActionPresentationContext.ScaleDuration(
+                    entry.impactLifeTime)));
     }
 
     private bool TrySpawnWorldVfx(
@@ -1274,7 +1296,9 @@ public class BattleUnitAnimator : MonoBehaviour
             entry,
             spawn,
             vfxLayer,
-            Mathf.Max(0.01f, lifeTime),
+            Mathf.Max(
+                0.01f,
+                BattleConsecutiveActionPresentationContext.ScaleDuration(lifeTime)),
             vfx => ConfigureVfxInstance(vfx, entry),
             out BattleWorldVfxHandle handle);
 
@@ -1295,7 +1319,11 @@ public class BattleUnitAnimator : MonoBehaviour
         GameObject vfx = Instantiate(entry.prefab, spawn, false);
         vfx.transform.localPosition += entry.proxyWorldOffset;
         ConfigureDirectWorldVfxInstance(vfx, entry, GetUnitVfxSortingReferenceY());
-        Destroy(vfx, Mathf.Max(0.01f, lifeTime));
+        Destroy(
+            vfx,
+            Mathf.Max(
+                0.01f,
+                BattleConsecutiveActionPresentationContext.ScaleDuration(lifeTime)));
         return true;
     }
 
@@ -1410,7 +1438,9 @@ public class BattleUnitAnimator : MonoBehaviour
             position,
             vfxLayer,
             visibleLayer,
-            Mathf.Max(0.01f, lifeTime),
+            Mathf.Max(
+                0.01f,
+                BattleConsecutiveActionPresentationContext.ScaleDuration(lifeTime)),
             vfx =>
             {
                 ConfigureVfxInstance(vfx, entry, applyFacingFlip);
@@ -1498,6 +1528,7 @@ public class BattleUnitAnimator : MonoBehaviour
             SetLayerRecursively(vfx, vfxLayer);
 
         EnsureVfxPauseController(vfx);
+        BattleConsecutiveActionPresentationContext.ApplyVfxSpeed(vfx);
         if (applyFacingFlip)
             ApplyVfxFlip(vfx, entry.flipType);
         BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(vfx, entry.prefab, this);
@@ -1750,6 +1781,8 @@ public class BattleUnitAnimator : MonoBehaviour
 
     private void PlayAnimatorState(string stateName)
     {
+        BattleConsecutiveActionPresentationContext.ApplyAnimatorSpeed(animator);
+
         if (crossFadeDuration > 0f)
             animator.CrossFadeInFixedTime(stateName, crossFadeDuration, animatorLayer, 0f);
         else

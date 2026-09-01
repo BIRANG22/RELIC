@@ -54,6 +54,9 @@ public class BattleTurnExecutor : MonoBehaviour
     [SerializeField] private bool useSafeSequentialExecution = true;
     [SerializeField] private float actionRoutineTimeout = 8f;
 
+    [Header("Consecutive Action Presentation")]
+    [SerializeField, Min(1f)] private float consecutiveActionSpeedMultiplier = 1.5f;
+
     [Header("Intro Text")]
     [SerializeField] private string battleProgressMessage = "전투 진행";
     [SerializeField] private bool waitIntroText = false;
@@ -429,14 +432,6 @@ public class BattleTurnExecutor : MonoBehaviour
             yield return ReturnCameraDefaultRoutine();
 
             BattleActionBatchBuilder builder = new(gridManager);
-            BattleActionRunner runner = new(
-                gridManager,
-                monsterSpawner,
-                roomLoader,
-                useSafeSequentialExecution,
-                actionRoutineTimeout,
-                uniqueResourceService.OnPlayerCommandExecuted
-            );
             BattleActionSimulationService simulator = new(gridManager);
 
             uniqueResourceService.BeginTurnExecution();
@@ -444,6 +439,19 @@ public class BattleTurnExecutor : MonoBehaviour
             simulator.Simulate(timelineController);
 
             List<BattleActionBatch> batches = builder.Build(timelineController);
+            BattleConsecutiveActionPlan consecutiveActionPlan =
+                BattleConsecutiveActionPlan.Build(
+                    batches,
+                    consecutiveActionSpeedMultiplier);
+            BattleActionRunner runner = new(
+                gridManager,
+                monsterSpawner,
+                roomLoader,
+                useSafeSequentialExecution,
+                actionRoutineTimeout,
+                uniqueResourceService.OnPlayerCommandExecuted,
+                consecutiveActionPlan
+            );
             SteamBattleStateSynchronizer.TryBroadcastBattleExecution(batches);
 
             yield return ShowBattleProgressIntroTextRoutineSafe();
@@ -480,7 +488,12 @@ public class BattleTurnExecutor : MonoBehaviour
                 int batchCommandCount = GetBatchCommandCount(batch);
 
                 bool keepCameraAfterBatch =
-                    ShouldKeepCameraAcrossBatchBoundary(batch, batches, i + 1, runner);
+                    ShouldKeepCameraAcrossBatchBoundary(
+                        batch,
+                        batches,
+                        i + 1,
+                        runner,
+                        consecutiveActionPlan);
 
                 yield return runner.RunBatch(batch, keepCameraAfterBatch);
 
@@ -664,13 +677,18 @@ public class BattleTurnExecutor : MonoBehaviour
 
             yield return ReturnCameraDefaultRoutine();
 
+            BattleConsecutiveActionPlan consecutiveActionPlan =
+                BattleConsecutiveActionPlan.Build(
+                    batches,
+                    consecutiveActionSpeedMultiplier);
             BattleActionRunner runner = new(
                 gridManager,
                 monsterSpawner,
                 roomLoader,
                 useSafeSequentialExecution,
                 actionRoutineTimeout,
-                uniqueResourceService != null ? uniqueResourceService.OnPlayerCommandExecuted : null
+                uniqueResourceService != null ? uniqueResourceService.OnPlayerCommandExecuted : null,
+                consecutiveActionPlan
             );
 
             yield return ShowBattleProgressIntroTextRoutineSafe();
@@ -709,7 +727,12 @@ public class BattleTurnExecutor : MonoBehaviour
                 int batchCommandCount = GetBatchCommandCount(batch);
 
                 bool keepCameraAfterBatch =
-                    ShouldKeepCameraAcrossBatchBoundary(batch, batches, i + 1, runner);
+                    ShouldKeepCameraAcrossBatchBoundary(
+                        batch,
+                        batches,
+                        i + 1,
+                        runner,
+                        consecutiveActionPlan);
 
                 yield return runner.RunBatch(batch, keepCameraAfterBatch);
 
@@ -1409,12 +1432,10 @@ public class BattleTurnExecutor : MonoBehaviour
         BattleActionBatch currentBatch,
         List<BattleActionBatch> batches,
         int nextStartIndex,
-        BattleActionRunner runner)
+        BattleActionRunner runner,
+        BattleConsecutiveActionPlan consecutiveActionPlan)
     {
         if (currentBatch == null || batches == null || runner == null)
-            return false;
-
-        if (!runner.BatchHasCrossSideHitAction(currentBatch))
             return false;
 
         int nextExecutableBatchIndex = GetNextExecutableBatchIndex(batches, nextStartIndex);
@@ -1422,6 +1443,16 @@ public class BattleTurnExecutor : MonoBehaviour
             return false;
 
         BattleActionBatch nextBatch = batches[nextExecutableBatchIndex];
+
+        if (consecutiveActionPlan != null &&
+            consecutiveActionPlan.ContinuesAcrossBoundary(currentBatch, nextBatch))
+        {
+            return true;
+        }
+
+        if (!runner.BatchHasCrossSideHitAction(currentBatch))
+            return false;
+
         if (nextBatch == null || !runner.BatchHasCrossSideHitAction(nextBatch))
             return false;
 

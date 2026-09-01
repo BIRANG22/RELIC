@@ -898,7 +898,9 @@ public class BattleCameraController : MonoBehaviour
 
             if (hitStopRunning)
             {
-                hitStopElapsed += Time.unscaledDeltaTime;
+                hitStopElapsed +=
+                    BattleConsecutiveActionPresentationContext.ScaleDeltaTime(
+                        Time.unscaledDeltaTime);
 
                 if (hitStopElapsed >= hitStopDuration)
                 {
@@ -1154,12 +1156,12 @@ public class BattleCameraController : MonoBehaviour
         if (useUnscaledTimeForImpact && isImpactRecoverySpeedActive)
             deltaTime *= Mathf.Max(1f, impactRecoverySpeedMultiplier);
 
-        return deltaTime;
+        return BattleConsecutiveActionPresentationContext.ScaleDeltaTime(deltaTime);
     }
 
     private float GetCameraDeltaTime()
     {
-        return Time.deltaTime;
+        return BattleConsecutiveActionPresentationContext.ScaleDeltaTime(Time.deltaTime);
     }
 
     private void RestoreTimeScaleIfNeeded()
@@ -1196,7 +1198,8 @@ public class BattleCameraController : MonoBehaviour
 
         while (elapsed < impactRecoverySpeedDuration && !isImpactHitStopActive)
         {
-            elapsed += Time.unscaledDeltaTime;
+            elapsed += BattleConsecutiveActionPresentationContext.ScaleDeltaTime(
+                Time.unscaledDeltaTime);
             yield return null;
         }
 
