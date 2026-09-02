@@ -925,13 +925,15 @@ GameObject:
   - component: {fileID: 138048573}
   - component: {fileID: 138048572}
   - component: {fileID: 138048571}
+  - component: {fileID: 138048575}
+  - component: {fileID: 138048574}
   m_Layer: 0
   m_Name: door (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!95 &138048571
 Animator:
   serializedVersion: 7
@@ -1017,7 +1019,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 138048570}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -1742}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 100, y: 100, z: 100}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -1028,6 +1030,50 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &138048574
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 138048570}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: scene.door.open2
+  volume: 1
+  playDelay: 0
+  playOnEnable: 1
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 0
+  clickSoundId: ui.normal.click
+  clickVolume: 1
+--- !u!114 &138048575
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 138048570}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: scene.door.open
+  volume: 1
+  playDelay: 0.2
+  playOnEnable: 1
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 0
+  clickSoundId: ui.normal.click
+  clickVolume: 1
 --- !u!1 &142019122
 GameObject:
   m_ObjectHideFlags: 0
@@ -1278,7 +1324,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!64 &257699977
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -1407,6 +1453,7 @@ RectTransform:
   - {fileID: 1924168496}
   - {fileID: 348885542}
   - {fileID: 965837464}
+  - {fileID: 1730512896}
   - {fileID: 487279860}
   - {fileID: 282394510}
   m_Father: {fileID: 309387456}
@@ -1696,7 +1743,7 @@ MonoBehaviour:
     \uD0D0\uC0AC\uAC70\uC810\uC774 \uB9C8\uB828\uB418\uACE0"
   - "\uB2E4\uC591\uD55C \uC774\uB4E4\uC774 \uD558\uB098 \uB458 \uADF8\uACF3\uC73C\uB85C
     \uBAA8\uC5EC\uB4E4\uC5C8\uB2E4."
-  - 
+  - ' '
   lineActions:
   - lineIndex: 0
     objectActions:
@@ -1733,6 +1780,34 @@ MonoBehaviour:
       playAnimatorOnActivate: 0
       animator: {fileID: 0}
       animatorStateName: 
+      changeColor: 0
+      targetColor: {r: 1, g: 1, b: 1, a: 1}
+      colorDelay: 0
+      colorDuration: 0.5
+      colorCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       animatePosition: 0
       animateRotation: 0
       animateScale: 0
@@ -1766,6 +1841,8 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
+      forceFinishSequence: 0
+      forceFinishDelay: 0
     - target: {fileID: 161499570}
       changeActiveState: 0
       activeState: 0
@@ -1799,6 +1876,34 @@ MonoBehaviour:
       playAnimatorOnActivate: 0
       animator: {fileID: 0}
       animatorStateName: 
+      changeColor: 0
+      targetColor: {r: 1, g: 1, b: 1, a: 1}
+      colorDelay: 0
+      colorDuration: 0.5
+      colorCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       animatePosition: 1
       animateRotation: 0
       animateScale: 0
@@ -1832,6 +1937,8 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
+      forceFinishSequence: 0
+      forceFinishDelay: 0
   - lineIndex: 1
     objectActions:
     - target: {fileID: 1482995638}
@@ -1867,6 +1974,34 @@ MonoBehaviour:
       playAnimatorOnActivate: 0
       animator: {fileID: 0}
       animatorStateName: 
+      changeColor: 0
+      targetColor: {r: 1, g: 1, b: 1, a: 1}
+      colorDelay: 0
+      colorDuration: 0.5
+      colorCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       animatePosition: 1
       animateRotation: 0
       animateScale: 0
@@ -1900,6 +2035,8 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
+      forceFinishSequence: 0
+      forceFinishDelay: 0
     - target: {fileID: 1156590558}
       changeActiveState: 1
       activeState: 1
@@ -1933,6 +2070,34 @@ MonoBehaviour:
       playAnimatorOnActivate: 0
       animator: {fileID: 0}
       animatorStateName: 
+      changeColor: 0
+      targetColor: {r: 1, g: 1, b: 1, a: 1}
+      colorDelay: 0
+      colorDuration: 0.5
+      colorCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       animatePosition: 1
       animateRotation: 0
       animateScale: 0
@@ -1966,6 +2131,8 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
+      forceFinishSequence: 0
+      forceFinishDelay: 0
   - lineIndex: 2
     objectActions:
     - target: {fileID: 1573856368}
@@ -2001,6 +2168,34 @@ MonoBehaviour:
       playAnimatorOnActivate: 0
       animator: {fileID: 0}
       animatorStateName: 
+      changeColor: 0
+      targetColor: {r: 1, g: 1, b: 1, a: 1}
+      colorDelay: 0
+      colorDuration: 0.5
+      colorCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       animatePosition: 1
       animateRotation: 0
       animateScale: 0
@@ -2034,6 +2229,8 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
+      forceFinishSequence: 0
+      forceFinishDelay: 0
   - lineIndex: 3
     objectActions:
     - target: {fileID: 1573856368}
@@ -2069,6 +2266,34 @@ MonoBehaviour:
       playAnimatorOnActivate: 0
       animator: {fileID: 0}
       animatorStateName: 
+      changeColor: 0
+      targetColor: {r: 1, g: 1, b: 1, a: 1}
+      colorDelay: 0
+      colorDuration: 0.5
+      colorCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       animatePosition: 0
       animateRotation: 0
       animateScale: 1
@@ -2102,10 +2327,12 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
+      forceFinishSequence: 0
+      forceFinishDelay: 0
     - target: {fileID: 1562616967}
       changeActiveState: 1
       activeState: 0
-      activeStateDelay: 1
+      activeStateDelay: 0
       fadeActiveState: 1
       fadeDuration: 0
       fadeCurve:
@@ -2135,6 +2362,34 @@ MonoBehaviour:
       playAnimatorOnActivate: 0
       animator: {fileID: 0}
       animatorStateName: 
+      changeColor: 0
+      targetColor: {r: 1, g: 1, b: 1, a: 1}
+      colorDelay: 0
+      colorDuration: 0.5
+      colorCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       animatePosition: 0
       animateRotation: 0
       animateScale: 0
@@ -2150,6 +2405,8 @@ MonoBehaviour:
         m_PreInfinity: 0
         m_PostInfinity: 0
         m_RotationOrder: 4
+      forceFinishSequence: 0
+      forceFinishDelay: 0
     - target: {fileID: 1924168495}
       changeActiveState: 1
       activeState: 1
@@ -2183,6 +2440,34 @@ MonoBehaviour:
       playAnimatorOnActivate: 0
       animator: {fileID: 0}
       animatorStateName: 
+      changeColor: 0
+      targetColor: {r: 1, g: 1, b: 1, a: 1}
+      colorDelay: 0
+      colorDuration: 0.5
+      colorCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       animatePosition: 0
       animateRotation: 0
       animateScale: 0
@@ -2216,6 +2501,8 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
+      forceFinishSequence: 0
+      forceFinishDelay: 0
     - target: {fileID: 348885541}
       changeActiveState: 1
       activeState: 1
@@ -2249,6 +2536,34 @@ MonoBehaviour:
       playAnimatorOnActivate: 0
       animator: {fileID: 0}
       animatorStateName: 
+      changeColor: 0
+      targetColor: {r: 1, g: 1, b: 1, a: 1}
+      colorDelay: 0
+      colorDuration: 0.5
+      colorCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       animatePosition: 0
       animateRotation: 0
       animateScale: 1
@@ -2282,6 +2597,8 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
+      forceFinishSequence: 0
+      forceFinishDelay: 0
   - lineIndex: 4
     objectActions:
     - target: {fileID: 1677010891}
@@ -2299,6 +2616,34 @@ MonoBehaviour:
       playAnimatorOnActivate: 0
       animator: {fileID: 0}
       animatorStateName: 
+      changeColor: 0
+      targetColor: {r: 1, g: 1, b: 1, a: 1}
+      colorDelay: 0
+      colorDuration: 0.5
+      colorCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       animatePosition: 0
       animateRotation: 0
       animateScale: 0
@@ -2332,6 +2677,8 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
+      forceFinishSequence: 0
+      forceFinishDelay: 0
     - target: {fileID: 675948238}
       changeActiveState: 1
       activeState: 1
@@ -2347,6 +2694,34 @@ MonoBehaviour:
       playAnimatorOnActivate: 0
       animator: {fileID: 0}
       animatorStateName: 
+      changeColor: 0
+      targetColor: {r: 1, g: 1, b: 1, a: 1}
+      colorDelay: 0
+      colorDuration: 0.5
+      colorCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       animatePosition: 1
       animateRotation: 1
       animateScale: 0
@@ -2380,14 +2755,16 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
+      forceFinishSequence: 0
+      forceFinishDelay: 0
   - lineIndex: 5
     objectActions:
     - target: {fileID: 1924168495}
       changeActiveState: 1
       activeState: 0
-      activeStateDelay: 0
+      activeStateDelay: 1
       fadeActiveState: 1
-      fadeDuration: 0
+      fadeDuration: 0.5
       fadeCurve:
         serializedVersion: 2
         m_Curve:
@@ -2415,27 +2792,75 @@ MonoBehaviour:
       playAnimatorOnActivate: 0
       animator: {fileID: 0}
       animatorStateName: 
+      changeColor: 0
+      targetColor: {r: 1, g: 1, b: 1, a: 1}
+      colorDelay: 0
+      colorDuration: 0.5
+      colorCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       animatePosition: 0
       animateRotation: 0
       animateScale: 0
-      useLocalTransform: 1
-      targetPosition: {x: 0, y: 0, z: 0}
+      useLocalTransform: 0
+      targetPosition: {x: -540, y: 778, z: -2884}
       targetEulerAngles: {x: 0, y: 0, z: 0}
       targetScale: {x: 0, y: 0, z: 0}
       delay: 0
-      duration: 0
+      duration: 1
       animationCurve:
         serializedVersion: 2
-        m_Curve: []
-        m_PreInfinity: 0
-        m_PostInfinity: 0
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 2
+          outSlope: 2
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
         m_RotationOrder: 4
+      forceFinishSequence: 0
+      forceFinishDelay: 0
     - target: {fileID: 965837463}
       changeActiveState: 1
       activeState: 1
       activeStateDelay: 0
       fadeActiveState: 1
-      fadeDuration: 0.2
+      fadeDuration: 0.5
       fadeCurve:
         serializedVersion: 2
         m_Curve:
@@ -2463,21 +2888,69 @@ MonoBehaviour:
       playAnimatorOnActivate: 0
       animator: {fileID: 0}
       animatorStateName: 
+      changeColor: 0
+      targetColor: {r: 1, g: 1, b: 1, a: 1}
+      colorDelay: 0
+      colorDuration: 0.5
+      colorCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       animatePosition: 0
       animateRotation: 0
       animateScale: 0
-      useLocalTransform: 1
+      useLocalTransform: 0
       targetPosition: {x: 0, y: 0, z: 0}
       targetEulerAngles: {x: 0, y: 0, z: 0}
       targetScale: {x: 0, y: 0, z: 0}
       delay: 0
-      duration: 0
+      duration: 1
       animationCurve:
         serializedVersion: 2
-        m_Curve: []
-        m_PreInfinity: 0
-        m_PostInfinity: 0
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
         m_RotationOrder: 4
+      forceFinishSequence: 0
+      forceFinishDelay: 0
     - target: {fileID: 348885541}
       changeActiveState: 1
       activeState: 0
@@ -2511,6 +2984,34 @@ MonoBehaviour:
       playAnimatorOnActivate: 0
       animator: {fileID: 0}
       animatorStateName: 
+      changeColor: 0
+      targetColor: {r: 1, g: 1, b: 1, a: 1}
+      colorDelay: 0
+      colorDuration: 0.5
+      colorCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       animatePosition: 0
       animateRotation: 0
       animateScale: 0
@@ -2526,6 +3027,8 @@ MonoBehaviour:
         m_PreInfinity: 0
         m_PostInfinity: 0
         m_RotationOrder: 4
+      forceFinishSequence: 0
+      forceFinishDelay: 0
   - lineIndex: 6
     objectActions:
     - target: {fileID: 1619860610}
@@ -2561,6 +3064,34 @@ MonoBehaviour:
       playAnimatorOnActivate: 0
       animator: {fileID: 0}
       animatorStateName: 
+      changeColor: 0
+      targetColor: {r: 1, g: 1, b: 1, a: 1}
+      colorDelay: 0
+      colorDuration: 0.5
+      colorCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       animatePosition: 1
       animateRotation: 1
       animateScale: 0
@@ -2594,6 +3125,8 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
+      forceFinishSequence: 0
+      forceFinishDelay: 0
     - target: {fileID: 1228408244}
       changeActiveState: 1
       activeState: 1
@@ -2627,6 +3160,34 @@ MonoBehaviour:
       playAnimatorOnActivate: 0
       animator: {fileID: 0}
       animatorStateName: 
+      changeColor: 0
+      targetColor: {r: 1, g: 1, b: 1, a: 1}
+      colorDelay: 0
+      colorDuration: 0.5
+      colorCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       animatePosition: 0
       animateRotation: 0
       animateScale: 0
@@ -2660,6 +3221,8 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
+      forceFinishSequence: 0
+      forceFinishDelay: 0
     - target: {fileID: 284133341}
       changeActiveState: 1
       activeState: 0
@@ -2693,10 +3256,38 @@ MonoBehaviour:
       playAnimatorOnActivate: 0
       animator: {fileID: 0}
       animatorStateName: 
+      changeColor: 0
+      targetColor: {r: 1, g: 1, b: 1, a: 1}
+      colorDelay: 0
+      colorDuration: 0.5
+      colorCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       animatePosition: 0
       animateRotation: 0
       animateScale: 0
-      useLocalTransform: 0
+      useLocalTransform: 1
       targetPosition: {x: 60, y: -738, z: 0}
       targetEulerAngles: {x: 0, y: 0, z: 0}
       targetScale: {x: 0, y: 0, z: 0}
@@ -2726,6 +3317,8 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
+      forceFinishSequence: 0
+      forceFinishDelay: 0
   - lineIndex: 7
     objectActions:
     - target: {fileID: 965837463}
@@ -2761,6 +3354,34 @@ MonoBehaviour:
       playAnimatorOnActivate: 0
       animator: {fileID: 0}
       animatorStateName: 
+      changeColor: 0
+      targetColor: {r: 1, g: 1, b: 1, a: 1}
+      colorDelay: 0
+      colorDuration: 0.5
+      colorCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       animatePosition: 0
       animateRotation: 0
       animateScale: 0
@@ -2794,11 +3415,109 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
+      forceFinishSequence: 0
+      forceFinishDelay: 0
     - target: {fileID: 487279859}
       changeActiveState: 1
       activeState: 1
-      activeStateDelay: 0
+      activeStateDelay: 0.6
       fadeActiveState: 1
+      fadeDuration: 0
+      fadeCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 1
+          outSlope: 1
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 1
+          outSlope: 1
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      playAnimatorOnActivate: 0
+      animator: {fileID: 0}
+      animatorStateName: 
+      changeColor: 0
+      targetColor: {r: 1, g: 1, b: 1, a: 1}
+      colorDelay: 0
+      colorDuration: 0.5
+      colorCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      animatePosition: 0
+      animateRotation: 0
+      animateScale: 0
+      useLocalTransform: 0
+      targetPosition: {x: 60, y: -109, z: 0}
+      targetEulerAngles: {x: 0, y: 0, z: 0}
+      targetScale: {x: 0, y: 0, z: 0}
+      delay: 0
+      duration: 1
+      animationCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 2
+          outSlope: 2
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      forceFinishSequence: 0
+      forceFinishDelay: 0
+    - target: {fileID: 1730512895}
+      changeActiveState: 1
+      activeState: 1
+      activeStateDelay: 0
+      fadeActiveState: 0
       fadeDuration: 0.5
       fadeCurve:
         serializedVersion: 2
@@ -2827,6 +3546,34 @@ MonoBehaviour:
       playAnimatorOnActivate: 0
       animator: {fileID: 0}
       animatorStateName: 
+      changeColor: 0
+      targetColor: {r: 1, g: 1, b: 1, a: 1}
+      colorDelay: 0
+      colorDuration: 0.5
+      colorCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       animatePosition: 0
       animateRotation: 0
       animateScale: 0
@@ -2860,6 +3607,8 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
+      forceFinishSequence: 0
+      forceFinishDelay: 0
   - lineIndex: 8
     objectActions:
     - target: {fileID: 1987983519}
@@ -2895,6 +3644,34 @@ MonoBehaviour:
       playAnimatorOnActivate: 0
       animator: {fileID: 0}
       animatorStateName: 
+      changeColor: 0
+      targetColor: {r: 1, g: 1, b: 1, a: 1}
+      colorDelay: 0
+      colorDuration: 0.5
+      colorCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       animatePosition: 0
       animateRotation: 0
       animateScale: 0
@@ -2928,6 +3705,8 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
+      forceFinishSequence: 0
+      forceFinishDelay: 0
     - target: {fileID: 759038630}
       changeActiveState: 1
       activeState: 1
@@ -2961,6 +3740,34 @@ MonoBehaviour:
       playAnimatorOnActivate: 0
       animator: {fileID: 0}
       animatorStateName: 
+      changeColor: 0
+      targetColor: {r: 1, g: 1, b: 1, a: 1}
+      colorDelay: 0
+      colorDuration: 0.5
+      colorCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       animatePosition: 0
       animateRotation: 0
       animateScale: 0
@@ -2994,6 +3801,8 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
+      forceFinishSequence: 0
+      forceFinishDelay: 0
     - target: {fileID: 962334852}
       changeActiveState: 1
       activeState: 1
@@ -3027,6 +3836,34 @@ MonoBehaviour:
       playAnimatorOnActivate: 0
       animator: {fileID: 0}
       animatorStateName: 
+      changeColor: 0
+      targetColor: {r: 1, g: 1, b: 1, a: 1}
+      colorDelay: 0
+      colorDuration: 0.5
+      colorCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       animatePosition: 0
       animateRotation: 0
       animateScale: 0
@@ -3060,6 +3897,8 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
+      forceFinishSequence: 0
+      forceFinishDelay: 0
   - lineIndex: 9
     objectActions:
     - target: {fileID: 762891479}
@@ -3092,9 +3931,37 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
-      playAnimatorOnActivate: 1
-      animator: {fileID: 138048571}
-      animatorStateName: door_open
+      playAnimatorOnActivate: 0
+      animator: {fileID: 0}
+      animatorStateName: 
+      changeColor: 0
+      targetColor: {r: 1, g: 1, b: 1, a: 1}
+      colorDelay: 0
+      colorDuration: 0.5
+      colorCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       animatePosition: 0
       animateRotation: 0
       animateScale: 0
@@ -3128,6 +3995,8 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
+      forceFinishSequence: 0
+      forceFinishDelay: 0
     - target: {fileID: 138048570}
       changeActiveState: 1
       activeState: 1
@@ -3158,9 +4027,37 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
-      playAnimatorOnActivate: 1
-      animator: {fileID: 138048571}
-      animatorStateName: door_open
+      playAnimatorOnActivate: 0
+      animator: {fileID: 0}
+      animatorStateName: 
+      changeColor: 0
+      targetColor: {r: 1, g: 1, b: 1, a: 1}
+      colorDelay: 0
+      colorDuration: 0.5
+      colorCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       animatePosition: 1
       animateRotation: 0
       animateScale: 0
@@ -3168,8 +4065,8 @@ MonoBehaviour:
       targetPosition: {x: 0, y: 0, z: -1742}
       targetEulerAngles: {x: 0, y: 0, z: 0}
       targetScale: {x: 0, y: 0, z: 0}
-      delay: 1
-      duration: 2
+      delay: 0
+      duration: 1
       animationCurve:
         serializedVersion: 2
         m_Curve:
@@ -3194,6 +4091,8 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
+      forceFinishSequence: 0
+      forceFinishDelay: 0
     - target: {fileID: 1987983519}
       changeActiveState: 1
       activeState: 1
@@ -3227,6 +4126,34 @@ MonoBehaviour:
       playAnimatorOnActivate: 0
       animator: {fileID: 0}
       animatorStateName: 
+      changeColor: 0
+      targetColor: {r: 1, g: 1, b: 1, a: 1}
+      colorDelay: 0
+      colorDuration: 0.5
+      colorCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       animatePosition: 1
       animateRotation: 0
       animateScale: 0
@@ -3260,6 +4187,8 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
+      forceFinishSequence: 0
+      forceFinishDelay: 0
     - target: {fileID: 759038630}
       changeActiveState: 1
       activeState: 1
@@ -3293,6 +4222,34 @@ MonoBehaviour:
       playAnimatorOnActivate: 0
       animator: {fileID: 0}
       animatorStateName: 
+      changeColor: 0
+      targetColor: {r: 1, g: 1, b: 1, a: 1}
+      colorDelay: 0
+      colorDuration: 0.5
+      colorCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       animatePosition: 1
       animateRotation: 0
       animateScale: 0
@@ -3326,6 +4283,8 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
+      forceFinishSequence: 0
+      forceFinishDelay: 0
     - target: {fileID: 962334852}
       changeActiveState: 1
       activeState: 1
@@ -3359,6 +4318,34 @@ MonoBehaviour:
       playAnimatorOnActivate: 0
       animator: {fileID: 0}
       animatorStateName: 
+      changeColor: 0
+      targetColor: {r: 1, g: 1, b: 1, a: 1}
+      colorDelay: 0
+      colorDuration: 0.5
+      colorCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       animatePosition: 1
       animateRotation: 0
       animateScale: 0
@@ -3392,6 +4379,8 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
+      forceFinishSequence: 1
+      forceFinishDelay: 1
   charactersPerSecond: 50
   initialInputLockDuration: 0.15
   allowMouseClick: 1
@@ -3701,7 +4690,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &487279860
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4346,7 +5335,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &759038631
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4355,7 +5344,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 759038630}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -1336}
+  m_LocalPosition: {x: 0, y: 0, z: 186}
   m_LocalScale: {x: 176.46982, y: 176.46982, z: 176.46982}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -4363,7 +5352,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -566, y: -426}
+  m_AnchoredPosition: {x: -591, y: -426}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!212 &759038633
@@ -4437,7 +5426,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &762891480
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5061,7 +6050,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &962334853
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5070,7 +6059,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 962334852}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -821}
+  m_LocalPosition: {x: 0, y: 0, z: 2}
   m_LocalScale: {x: 176.46982, y: 176.46982, z: 176.46982}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -5078,7 +6067,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 2, y: -684}
+  m_AnchoredPosition: {x: 2, y: -316}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!212 &962334855
@@ -5556,7 +6545,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1228408244}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 120, y: 120, z: 120}
   m_ConstrainProportionsScale: 1
@@ -6626,7 +7615,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1558849449
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6833,6 +7822,36 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  returnToStart: 0
+  returnDelay: 0
+  returnDuration: 0.6
+  returnCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 1
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 1
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  changeDirectionOnReturn: 0
+  directionProperty: _direction
+  returnDirectionValue: 1
 --- !u!114 &1573856375
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7316,6 +8335,176 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sceneFlowManager: {fileID: 822363496}
+--- !u!1 &1730512895
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1730512896}
+  - component: {fileID: 1730512900}
+  - component: {fileID: 1730512899}
+  - component: {fileID: 1730512898}
+  - component: {fileID: 1730512897}
+  m_Layer: 0
+  m_Name: transition (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &1730512896
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1730512895}
+  m_LocalRotation: {x: 0, y: 0, z: -1, w: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 263836671}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -180}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 1920, y: 1080}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1730512897
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1730512895}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: daaa7e96707f8ff429ec1b5bad1f85d1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  progressProperty: _progress
+  startProgress: 0.5
+  targetProgress: -2
+  duration: 0.5
+  useUnscaledTime: 1
+  animationCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 1
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 1
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  returnToStart: 1
+  returnDelay: 0.2
+  returnDuration: 0.5
+  returnCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 1
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 1
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  changeDirectionOnReturn: 1
+  directionProperty: _direction
+  returnDirectionValue: 0
+--- !u!114 &1730512898
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1730512895}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 2100000, guid: d1e829af8a593f24fb920c66198765c2, type: 2}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!114 &1730512899
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1730512895}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: scene.transition
+  volume: 1
+  playDelay: 0.5
+  playOnEnable: 1
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 0
+  clickSoundId: ui.normal.click
+  clickVolume: 1
+--- !u!222 &1730512900
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1730512895}
+  m_CullTransparentMesh: 1
 --- !u!1 &1733025430
 GameObject:
   m_ObjectHideFlags: 0
@@ -8146,7 +9335,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1987983520
 RectTransform:
   m_ObjectHideFlags: 0
@@ -8155,7 +9344,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1987983519}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -1304}
+  m_LocalPosition: {x: 0, y: 0, z: -56}
   m_LocalScale: {x: 176.46982, y: 176.46982, z: 176.46982}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -8163,7 +9352,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 589, y: -545}
+  m_AnchoredPosition: {x: 532, y: -545}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!212 &1987983522
