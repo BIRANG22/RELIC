@@ -110,30 +110,6 @@ public class StageBackgroundControllerTests
         }
     }
 
-    [Test]
-    public void ShowForMap_WhenMapIdBypassesSpawnRoot_CreatesBackgroundUnderController()
-    {
-        Fixture fixture = CreateFixture();
-        GameObject restBackground = new("RestBackground");
-
-        try
-        {
-            fixture.Ranges.Add(
-                new StageBackgroundController.BackgroundRange(1, 1, "Map_26", restBackground));
-            SetPrivateField(fixture.Controller, "bypassSpawnRootMapIds", new List<string> { "Map_26" });
-
-            fixture.Controller.ShowForMap("Map_26", 0);
-
-            Assert.That(fixture.SpawnRoot.childCount, Is.Zero);
-            Assert.That(fixture.Root.transform.Find("RestBackground"), Is.Not.Null);
-        }
-        finally
-        {
-            Object.DestroyImmediate(restBackground);
-            fixture.Destroy();
-        }
-    }
-
     private static Fixture CreateFixture()
     {
         GameObject root = new("StageBackgroundController_TestRoot");

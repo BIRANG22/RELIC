@@ -68,10 +68,6 @@ public class StageBackgroundController : MonoBehaviour
     [SerializeField]
     private List<BackgroundRange> backgroundRanges = new();
 
-    [Tooltip("이 Map ID에서는 SpawnRoot 대신 Stage Background Controller 아래에 배경을 생성합니다.")]
-    [SerializeField]
-    private List<string> bypassSpawnRootMapIds = new();
-
     [Header("St1 Boss 연출 설정")]
     [Tooltip("보스 구간에서 생성되는 St1_boss 프리팹")]
     [SerializeField] private GameObject st1BossPrefab;
@@ -133,9 +129,9 @@ public class StageBackgroundController : MonoBehaviour
 
         ClearCurrentBackground();
 
-        Transform parent = ShouldBypassSpawnRoot(mapId) || spawnRoot == null
-            ? transform
-            : spawnRoot;
+        Transform parent = spawnRoot != null
+            ? spawnRoot
+            : transform;
 
         currentInstance = Instantiate(
             range.Prefab,
@@ -185,25 +181,6 @@ public class StageBackgroundController : MonoBehaviour
         }
 
         return null;
-    }
-
-    private bool ShouldBypassSpawnRoot(string mapId)
-    {
-        if (string.IsNullOrWhiteSpace(mapId) || bypassSpawnRootMapIds == null)
-            return false;
-
-        for (int i = 0; i < bypassSpawnRootMapIds.Count; i++)
-        {
-            string bypassMapId = bypassSpawnRootMapIds[i];
-
-            if (!string.IsNullOrWhiteSpace(bypassMapId) &&
-                string.Equals(bypassMapId.Trim(), mapId.Trim(), StringComparison.Ordinal))
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /// <summary>

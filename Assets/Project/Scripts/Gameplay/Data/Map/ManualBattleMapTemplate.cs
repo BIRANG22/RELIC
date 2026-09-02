@@ -649,21 +649,6 @@ namespace Relic.Gameplay.Data
                 return false;
             }
 
-            if (IsBuiltInRoomType(type))
-            {
-                if (TryPickCandidate(mapPool, chapter, stage, type, randomExclusionSettings, out MapData builtInMap))
-                {
-                    mapId = builtInMap.MapId;
-                    resolvedType = builtInMap.Type;
-                    eventId = EventIdUtility.Normalize(builtInMap.EventId);
-                    return true;
-                }
-
-                resolvedType = NormalizeBuiltInRoomType(type);
-                mapId = resolvedType;
-                return true;
-            }
-
             if (TryPickCandidate(mapPool, chapter, stage, type, randomExclusionSettings, out MapData mapData))
             {
                 mapId = mapData.MapId;
@@ -673,20 +658,6 @@ namespace Relic.Gameplay.Data
             }
 
             return false;
-        }
-
-        private static bool IsBuiltInRoomType(string type)
-        {
-            return string.Equals(type, "Start", StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(type, "Rest", StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static string NormalizeBuiltInRoomType(string type)
-        {
-            if (string.Equals(type, "Rest", StringComparison.OrdinalIgnoreCase))
-                return "Rest";
-
-            return "Start";
         }
 
         private static bool TryFindMapById(

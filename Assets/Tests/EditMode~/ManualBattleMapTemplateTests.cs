@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Reflection;
 using NUnit.Framework;
 using Relic.Gameplay.Data;
 using UnityEngine;
@@ -180,32 +181,41 @@ public class ManualBattleMapTemplateTests
     }
 
     [Test]
-    public void TryBuildNodes_BlankRestMapIdUsesBuiltInRestRoomWhenNoMapDataExists()
+    public void TryBuildNodes_BlankRestMapIdFailsWhenCsvHasNoRestMap()
     {
         ManualBattleMapTemplate template = ScriptableObject.CreateInstance<ManualBattleMapTemplate>();
-        template.Nodes.Add(new ManualBattleMapNodeDefinition
-        {
-            NodeIndex = 0,
-            LayerIndex = 0,
-            RowIndex = 0,
-            Type = "Start",
-            NextNodeIndices = new List<int> { 1 }
-        });
-        template.Nodes.Add(new ManualBattleMapNodeDefinition
-        {
-            NodeIndex = 1,
-            LayerIndex = 1,
-            RowIndex = 0,
-            Type = "Rest"
-        });
+        ConfigureStartAndRestNodes(template);
 
         bool built = template.TryBuildNodes(CreateMapPool(), "chapter_01", "stage_01", out List<GeneratedMapNodeData> nodes);
 
         Object.DestroyImmediate(template);
 
+        Assert.That(built, Is.False);
+        Assert.That(nodes, Is.Empty);
+    }
+
+    [Test]
+    public void TryBuildNodes_BlankRestMapIdUsesRestMapFromCsvPool()
+    {
+        ManualBattleMapTemplate template = ScriptableObject.CreateInstance<ManualBattleMapTemplate>();
+        ConfigureStartAndRestNodes(template);
+
+        List<MapData> mapPool = CreateMapPool();
+        mapPool.Add(new MapData
+        {
+            MapId = "Map_26",
+            Type = "Rest",
+            Stage = "stage_01",
+            SpawnWeight = 1
+        });
+
+        bool built = template.TryBuildNodes(mapPool, "chapter_01", "stage_01", out List<GeneratedMapNodeData> nodes);
+
+        Object.DestroyImmediate(template);
+
         Assert.That(built, Is.True);
         Assert.That(nodes[1].Type, Is.EqualTo("Rest"));
-        Assert.That(nodes[1].MapId, Is.EqualTo("Rest"));
+        Assert.That(nodes[1].MapId, Is.EqualTo("Map_26"));
     }
 
     [Test]
@@ -319,7 +329,6 @@ public class ManualBattleMapTemplateTests
             {
                 MapId = "start_map",
                 Type = "Start",
-                Chapter = "chapter_01",
                 Stage = "stage_01",
                 SpawnWeight = 1
             },
@@ -327,7 +336,6 @@ public class ManualBattleMapTemplateTests
             {
                 MapId = "battle_a",
                 Type = "Common",
-                Chapter = "chapter_01",
                 Stage = "stage_01",
                 SpawnWeight = 1
             },
@@ -336,7 +344,6 @@ public class ManualBattleMapTemplateTests
                 MapId = "event_a",
                 Type = "Special",
                 EventId = "EVT004",
-                Chapter = "chapter_01",
                 Stage = "stage_01",
                 SpawnWeight = 1
             },
@@ -344,7 +351,6 @@ public class ManualBattleMapTemplateTests
             {
                 MapId = "boss_a",
                 Type = "Boss",
-                Chapter = "chapter_01",
                 Stage = "stage_01",
                 SpawnWeight = 1
             },
@@ -352,11 +358,34 @@ public class ManualBattleMapTemplateTests
             {
                 MapId = "wrong_stage_battle",
                 Type = "Common",
-                Chapter = "chapter_01",
                 Stage = "stage_02",
                 SpawnWeight = 1
             }
         };
+    }
+
+    private static void ConfigureStartAndRestNodes(ManualBattleMapTemplate template)
+    {
+        SetPrivateField(
+            template,
+            "layer0Start",
+            new ManualBattleMapFixedNodeDefinition
+            {
+                Type = "Start",
+                NextNodeIndices = new List<int> { 1 }
+            });
+
+        ManualBattleMapLayerSlots layer1 = new();
+        layer1.Slot1.Enabled = true;
+        layer1.Slot1.Type = "Rest";
+        SetPrivateField(template, "layer1", layer1);
+    }
+
+    private static void SetPrivateField(object target, string fieldName, object value)
+    {
+        FieldInfo field = target.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.That(field, Is.Not.Null, fieldName);
+        field.SetValue(target, value);
     }
 
     private static EventMapRandomExclusionSettings CreateDisabledEventSettings(string eventId)
@@ -381,7 +410,6 @@ public class ManualBattleMapTemplateTests
             {
                 MapId = "start_map",
                 Type = "Start",
-                Chapter = "chapter_01",
                 Stage = "stage_01",
                 SpawnWeight = 1
             },
@@ -390,7 +418,6 @@ public class ManualBattleMapTemplateTests
                 MapId = "event_disabled",
                 Type = "Special",
                 EventId = "Event_04",
-                Chapter = "chapter_01",
                 Stage = "stage_01",
                 SpawnWeight = 100
             },
@@ -399,7 +426,6 @@ public class ManualBattleMapTemplateTests
                 MapId = "event_enabled",
                 Type = "Special",
                 EventId = "EVT005",
-                Chapter = "chapter_01",
                 Stage = "stage_01",
                 SpawnWeight = 1
             }

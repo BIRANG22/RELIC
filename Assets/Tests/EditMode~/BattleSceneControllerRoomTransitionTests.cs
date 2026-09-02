@@ -14,4 +14,21 @@ public sealed class BattleSceneControllerRoomTransitionTests
         Assert.That(source, Does.Contain("private static void ResetCameraForNonBattleRoom(GameObject roomObject, bool isBattleRoom)"));
         Assert.That(source, Does.Contain("cameraController.ForceReturnMapImmediate();"));
     }
+
+    [Test]
+    public void StartNode_OpensEventRoom()
+    {
+        string source = File.ReadAllText(SourcePath);
+
+        Assert.That(source, Does.Contain("case \"Start\":"));
+        Assert.That(source, Does.Contain("case \"Start\":\r\n                OpenSpecialEvent(nodeData);"));
+    }
+
+    [Test]
+    public void RestRoom_RefreshesSharedPresentationAfterOpeningRoom()
+    {
+        string source = File.ReadAllText(SourcePath);
+
+        Assert.That(source, Does.Contain("OpenRoom(restRoom, \"RestRoom\");\r\n        sharedRoomPresentationController?.RefreshForMap(nodeData.MapId);"));
+    }
 }

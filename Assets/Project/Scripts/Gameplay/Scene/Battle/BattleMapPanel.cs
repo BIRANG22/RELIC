@@ -5,6 +5,8 @@ using UnityEngine.UI;
 
 public class BattleMapPanel : MonoBehaviour
 {
+    private const string MapDataResolutionVersion = "MapDataV2";
+
     [Header("View")]
     [SerializeField] private MapViewSpawner mapViewSpawner;
     [SerializeField] private ScrollRect mapScrollRect;
@@ -111,15 +113,15 @@ public class BattleMapPanel : MonoBehaviour
         bool hasRandomExclusion = !string.IsNullOrWhiteSpace(randomExclusionKey);
 
         if (!hasManualTemplate && !hasRandomExclusion)
-            return string.Empty;
+            return $"BattleMapGeneration:{MapDataResolutionVersion}";
 
         if (!hasRandomExclusion)
-            return manualTemplateKey.Trim();
+            return $"BattleMapGeneration:{MapDataResolutionVersion}:{manualTemplateKey.Trim()}";
 
         if (!hasManualTemplate)
-            return randomExclusionKey.Trim();
+            return $"BattleMapGeneration:{MapDataResolutionVersion}:{randomExclusionKey.Trim()}";
 
-        return $"BattleMapGeneration:{manualTemplateKey.Trim()}|{randomExclusionKey.Trim()}";
+        return $"BattleMapGeneration:{MapDataResolutionVersion}:{manualTemplateKey.Trim()}|{randomExclusionKey.Trim()}";
     }
 
     private void SpawnMapView()
