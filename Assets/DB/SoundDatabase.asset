@@ -482,6 +482,24 @@ MonoBehaviour:
     useRandomPitch: 0
     randomPitchMin: 1
     randomPitchMax: 1
+  - id: intro.transition2
+    aliases: []
+    clip: {fileID: 8300000, guid: e479676bcd06347d8b91890b86fa5028, type: 3}
+    volume: 0.5
+    pitch: 0.8
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0.5
+    randomPitchMax: 1
+  - id: intro.transition3
+    aliases: []
+    clip: {fileID: 8300000, guid: 9f24e65fb42424c2d8f2f2cdb008e663, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
   - id: intro.scene2
     aliases: []
     clip: {fileID: 8300000, guid: ee7c4142f38e94396883afb6dbb060fe, type: 3}
@@ -559,6 +577,69 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: 370748b228e4c4554a01ed16028303af, type: 3}
     volume: 0.5
     pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: scene.foot.step.01
+    aliases: []
+    clip: {fileID: 8300000, guid: 293dca7ff4b604695b7fc731a9a57eba, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: scene.foot.step.02
+    aliases: []
+    clip: {fileID: 8300000, guid: 177e25c8f366d4a27a65fb6f02de76f1, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: scene.foot.step.03
+    aliases: []
+    clip: {fileID: 8300000, guid: 93870d42c592f4f2d8bfb03da30197a0, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: scene.foot.step.04
+    aliases: []
+    clip: {fileID: 8300000, guid: de0de99c0334d4e918254cd1a8e85bdd, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: intro.build1
+    aliases: []
+    clip: {fileID: 8300000, guid: 6be68c585f8bf489496019e2e4a2825c, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0.5
+    randomPitchMax: 1
+  - id: intro.build2
+    aliases: []
+    clip: {fileID: 8300000, guid: 1358fd5e89cd046e5b0d9710d44f829d, type: 3}
+    volume: 0.5
+    pitch: 0.8
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: intro.build3
+    aliases: []
+    clip: {fileID: 8300000, guid: 205b5e72f9b784b6daf228d7a7ebee76, type: 3}
+    volume: 0.5
+    pitch: 0.8
     loop: 0
     useRandomPitch: 0
     randomPitchMin: 1
