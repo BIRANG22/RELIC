@@ -1,4 +1,5 @@
 using Relic.Gameplay.Data;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -24,6 +25,8 @@ public class MapRoomController : MonoBehaviour
     [SerializeField] private Transform[] allySpawnPoints = new Transform[3];
     [SerializeField] private float allySpawnScale = 1f;
     [SerializeField] private bool autoFindAllySpawnPoints = true;
+    [Tooltip("이 Map ID에서는 AllyRoot와 맵 선택용 아군을 사용하지 않습니다.")]
+    [SerializeField] private List<string> skipAllyRootMapIds = new();
 
     [Header("Refresh")]
     [Tooltip("지도 패널이 비활성 -> 활성으로 바뀔 때 자동으로 다시 갱신합니다.")]
@@ -58,18 +61,23 @@ public class MapRoomController : MonoBehaviour
 
     public void RefreshNow()
     {
-        ResolveReferences();
-        RefreshBackground();
-        SpawnPartyAllies();
+        RefreshForMap(ResolveCurrentMapId());
     }
 
-    private void RefreshBackground()
+    public void RefreshForMap(string mapId)
+    {
+        ResolveReferences();
+        RefreshBackground(mapId);
+        SpawnPartyAllies(mapId);
+    }
+
+    private void RefreshBackground(string mapId)
     {
         if (stageBackgroundController == null)
             return;
 
         int layerIndex = ResolveCurrentLayerIndex();
-        stageBackgroundController.ShowForLayer(layerIndex);
+        stageBackgroundController.ShowForMap(mapId, layerIndex);
     }
 
     private int ResolveCurrentLayerIndex()
@@ -88,10 +96,26 @@ public class MapRoomController : MonoBehaviour
         return Mathf.Max(0, currentNode.LayerIndex);
     }
 
-    private void SpawnPartyAllies()
+    private string ResolveCurrentMapId()
+    {
+        if (DataManager.Instance == null || DataManager.Instance.MapRuntimeStore == null)
+            return string.Empty;
+
+        MapRuntimeData runtime = DataManager.Instance.MapRuntimeStore.Get();
+        GeneratedMapNodeData currentNode = MapRuntimeProgressUtility.FindCurrentNode(runtime);
+        return currentNode != null ? currentNode.MapId : string.Empty;
+    }
+
+    private void SpawnPartyAllies(string mapId)
     {
         ResolveAllySpawnPoints();
         ClearAllSpawnPoints();
+
+        bool useAllyRoot = !ShouldSkipAllyRoot(mapId);
+        SetAllyRootActive(useAllyRoot);
+
+        if (!useAllyRoot)
+            return;
 
         if (DataManager.Instance == null)
             return;
@@ -130,6 +154,31 @@ public class MapRoomController : MonoBehaviour
             if (ally.GetComponent<BattleMapSelectionCharacterMarker>() == null)
                 ally.AddComponent<BattleMapSelectionCharacterMarker>();
         }
+    }
+
+    private bool ShouldSkipAllyRoot(string mapId)
+    {
+        if (string.IsNullOrWhiteSpace(mapId) || skipAllyRootMapIds == null)
+            return false;
+
+        for (int i = 0; i < skipAllyRootMapIds.Count; i++)
+        {
+            string skipMapId = skipAllyRootMapIds[i];
+
+            if (!string.IsNullOrWhiteSpace(skipMapId) &&
+                string.Equals(skipMapId.Trim(), mapId.Trim(), System.StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void SetAllyRootActive(bool active)
+    {
+        if (allyRoot != null && allyRoot.gameObject.activeSelf != active)
+            allyRoot.gameObject.SetActive(active);
     }
 
     private void ClearAllSpawnPoints()

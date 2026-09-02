@@ -4343,6 +4343,9 @@ MonoBehaviour:
   portraitImage: {fileID: 0}
   characterNameText: {fileID: 0}
   passiveIconImage: {fileID: 0}
+  passiveBack: {fileID: 0}
+  passiveText: {fileID: 0}
+  passiveHoverFadeDuration: 0.1
   hpIconImage: {fileID: 1121064145}
   hpValueText: {fileID: 936193032}
   costIconImage: {fileID: 0}
@@ -4886,6 +4889,9 @@ MonoBehaviour:
   portraitImage: {fileID: 0}
   characterNameText: {fileID: 0}
   passiveIconImage: {fileID: 0}
+  passiveBack: {fileID: 0}
+  passiveText: {fileID: 0}
+  passiveHoverFadeDuration: 0.1
   hpIconImage: {fileID: 1171785542}
   hpValueText: {fileID: 1087101271}
   costIconImage: {fileID: 0}

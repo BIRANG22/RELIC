@@ -754,6 +754,10 @@ public class BattleSceneController : MonoBehaviour
                 OpenRestEvent(nodeData);
                 break;
 
+            case "Start":
+                OpenSpecialEvent(nodeData);
+                break;
+
             case "Special":
                 OpenSpecialEvent(nodeData);
                 break;
@@ -791,6 +795,7 @@ public class BattleSceneController : MonoBehaviour
         pendingRoomIntroMessage = restRoomIntroMessage;
         ShowRoomBackground(restRoom, nodeData);
         OpenRoom(restRoom, "RestRoom");
+        sharedRoomPresentationController?.RefreshForMap(nodeData.MapId);
         ApplyRoomVisual(restRoom, nodeData);
     }
 

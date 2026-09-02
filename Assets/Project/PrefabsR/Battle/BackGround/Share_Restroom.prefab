@@ -309,7 +309,7 @@ GameObject:
   - component: {fileID: 3251396058578719342}
   - component: {fileID: 6383944365361433147}
   - component: {fileID: 8415562557208320667}
-  m_Layer: 9
+  m_Layer: 0
   m_Name: Vfx_bonfire
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -543,7 +543,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_ComponentVersion: 2
   m_LightType: 1
-  m_BlendStyleIndex: 0
+  m_BlendStyleIndex: 1
   m_FalloffIntensity: 0.5
   m_Color: {r: 0.24528301, g: 0.010220123, b: 0, a: 1}
   m_Intensity: 1
