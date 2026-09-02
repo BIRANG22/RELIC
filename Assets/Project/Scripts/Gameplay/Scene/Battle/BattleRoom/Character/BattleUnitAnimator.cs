@@ -231,6 +231,11 @@ public class BattleUnitAnimator : MonoBehaviour
 
         PlaySkillVfx(skillData, command);
 
+        // DB에 Presentation이 지정되어 있으면 SkillType보다 우선합니다.
+        if (TryPlaySkillPresentationOverride(skillData))
+            return;
+
+        // DB Override가 없을 때만 기존 SkillType 기본 연출을 사용합니다.
         switch (skillData.SkillType)
         {
             case SkillType.Buff:
@@ -244,9 +249,6 @@ public class BattleUnitAnimator : MonoBehaviour
                 break;
 
             case SkillType.Attack:
-                if (TryPlaySkillAttackOverride(skillData))
-                    break;
-
                 PlayRandomAttackAction();
                 break;
 
@@ -286,7 +288,7 @@ public class BattleUnitAnimator : MonoBehaviour
 
         PlaySkillVfx(skillData, command);
 
-        if (TryPlaySkillAttackOverride(skillData))
+        if (TryPlaySkillPresentationOverride(skillData))
             return;
 
         List<int> assignedAttackIndices = GetAssignedAttackIndices();
@@ -452,25 +454,30 @@ public class BattleUnitAnimator : MonoBehaviour
         PlayCurrentAttackAction();
     }
 
-    private bool TryPlaySkillAttackOverride(SkillMasterData skillData)
+    private bool TryPlaySkillPresentationOverride(SkillMasterData skillData)
     {
-        if (!TryResolveSkillAttackOverride(skillData, out int attackIndex))
+        if (!TryResolveSkillPresentationOverride(skillData, out SkillAttackSlot slot))
             return false;
 
         EnsurePlayerSkillPresentations();
 
-        BattleUnitActionPresentation presentation = playerSkillPresentations.GetAttack(attackIndex);
+        BattleUnitActionPresentation presentation = playerSkillPresentations.GetPresentation(slot);
         if (!HasPresentation(presentation))
             return false;
 
-        currentAttackIndex = attackIndex;
+        // currentAttackIndex는 Attack1~3에만 의미가 있습니다.
+        if (slot >= SkillAttackSlot.Attack1 && slot <= SkillAttackSlot.Attack3)
+            currentAttackIndex = (int)slot;
+
         PlayPresentation(presentation);
         return true;
     }
 
-    private bool TryResolveSkillAttackOverride(SkillMasterData skillData, out int attackIndex)
+    private bool TryResolveSkillPresentationOverride(
+        SkillMasterData skillData,
+        out SkillAttackSlot slot)
     {
-        attackIndex = 0;
+        slot = SkillAttackSlot.None;
 
         if (skillData == null || string.IsNullOrWhiteSpace(skillData.SkillId))
             return false;
@@ -481,7 +488,7 @@ public class BattleUnitAnimator : MonoBehaviour
 
         SkillAttackOverrideDatabase database = ResolveSkillAttackOverrideDatabase();
         return database != null &&
-               database.TryGetAttackIndex(characterId, skillData.SkillId, out attackIndex);
+               database.TryGetPresentationSlot(characterId, skillData.SkillId, out slot);
     }
 
     private SkillAttackOverrideDatabase ResolveSkillAttackOverrideDatabase()

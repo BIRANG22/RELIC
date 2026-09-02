@@ -1,4 +1,5 @@
 using System;
+using Relic.Gameplay.Data;
 using UnityEngine;
 
 [Serializable]
@@ -34,6 +35,22 @@ public class BattleUnitPlayerSkillPresentations
             2 => attack2,
             3 => attack3,
             _ => attack1
+        };
+    }
+
+    public BattleUnitActionPresentation GetPresentation(
+        SkillAttackSlot slot)
+    {
+        EnsureSlots();
+
+        return slot switch
+        {
+            SkillAttackSlot.Power => power,
+            SkillAttackSlot.Attack1 => attack1,
+            SkillAttackSlot.Attack2 => attack2,
+            SkillAttackSlot.Attack3 => attack3,
+            SkillAttackSlot.Skill => skill,
+            _ => null
         };
     }
 }

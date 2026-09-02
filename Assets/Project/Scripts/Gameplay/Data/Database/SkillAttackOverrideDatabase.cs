@@ -7,9 +7,14 @@ namespace Relic.Gameplay.Data
     public enum SkillAttackSlot
     {
         None = 0,
+
+        // 기존 직렬화 값 유지를 위해 숫자 변경 금지
         Attack1 = 1,
         Attack2 = 2,
-        Attack3 = 3
+        Attack3 = 3,
+
+        Power = 4,
+        Skill = 5
     }
 
     [CreateAssetMenu(menuName = "Relic/Data/Skill Attack Override Database")]
@@ -39,6 +44,7 @@ namespace Relic.Gameplay.Data
                 }
 
                 string key = MakeKey(characterId, skillId);
+
                 if (map.ContainsKey(key))
                 {
                     Debug.LogWarning(
@@ -50,42 +56,78 @@ namespace Relic.Gameplay.Data
             }
         }
 
+        public bool TryGetPresentationSlot(
+            string characterId,
+            string skillId,
+            out SkillAttackSlot slot)
+        {
+            slot = SkillAttackSlot.None;
+
+            characterId = NormalizeId(characterId);
+            skillId = NormalizeId(skillId);
+
+            if (string.IsNullOrWhiteSpace(characterId) ||
+                string.IsNullOrWhiteSpace(skillId))
+            {
+                return false;
+            }
+
+            if (map == null)
+                Initialize();
+
+            return map.TryGetValue(
+                MakeKey(characterId, skillId),
+                out slot);
+        }
+
+        // 기존 코드 호환용
         public bool TryGetAttackSlot(
             string characterId,
             string skillId,
             out SkillAttackSlot attackSlot)
         {
-            attackSlot = SkillAttackSlot.None;
-
-            characterId = NormalizeId(characterId);
-            skillId = NormalizeId(skillId);
-
-            if (string.IsNullOrWhiteSpace(characterId) || string.IsNullOrWhiteSpace(skillId))
-                return false;
-
-            if (map == null)
-                Initialize();
-
-            return map.TryGetValue(MakeKey(characterId, skillId), out attackSlot);
+            return TryGetPresentationSlot(
+                characterId,
+                skillId,
+                out attackSlot);
         }
 
-        public bool TryGetAttackIndex(string characterId, string skillId, out int attackIndex)
+        // 기존 코드 호환용
+        public bool TryGetAttackIndex(
+            string characterId,
+            string skillId,
+            out int attackIndex)
         {
             attackIndex = 0;
 
-            if (!TryGetAttackSlot(characterId, skillId, out SkillAttackSlot attackSlot))
+            if (!TryGetPresentationSlot(
+                    characterId,
+                    skillId,
+                    out SkillAttackSlot slot))
+            {
                 return false;
+            }
 
-            attackIndex = (int)attackSlot;
-            return attackIndex >= 1 && attackIndex <= 3;
+            if (slot < SkillAttackSlot.Attack1 ||
+                slot > SkillAttackSlot.Attack3)
+            {
+                return false;
+            }
+
+            attackIndex = (int)slot;
+            return true;
         }
 
         private static string NormalizeId(string id)
         {
-            return string.IsNullOrWhiteSpace(id) ? string.Empty : id.Trim();
+            return string.IsNullOrWhiteSpace(id)
+                ? string.Empty
+                : id.Trim();
         }
 
-        private static string MakeKey(string characterId, string skillId)
+        private static string MakeKey(
+            string characterId,
+            string skillId)
         {
             return $"{characterId}\n{skillId}";
         }
