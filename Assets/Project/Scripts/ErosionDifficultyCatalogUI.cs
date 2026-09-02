@@ -306,13 +306,13 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
             : $"{erosionName.Trim()} {roman}";
     }
 
-    private static string ToRomanTier(int tier)
+    internal static string ToRomanTier(int tier)
     {
         return tier switch
         {
-            1 => "I",
-            2 => "II",
-            3 => "III",
+            1 => "¥°",
+            2 => "¥±",
+            3 => "¥²",
             _ => string.Empty
         };
     }
@@ -669,7 +669,7 @@ public sealed class ErosionDifficultyLevelItemUI : MonoBehaviour,
         }
 
         if (valueText != null)
-            valueText.text = isSelectable ? ScoreValue.ToString() : string.Empty;
+            valueText.text = isSelectable ? ErosionDifficultyCatalogUI.ToRomanTier(difficultyData.Tier) : string.Empty;
 
         if (!isSelectable)
         {
