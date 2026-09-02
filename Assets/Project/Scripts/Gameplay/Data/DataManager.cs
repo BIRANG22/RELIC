@@ -20,6 +20,7 @@ public class DataManager : Singleton<DataManager>
     [SerializeField] private SkillAttackOverrideDatabase skillAttackOverrideDatabase;
     [SerializeField] private SkillVfxDatabase skillVfxDatabase;
     [SerializeField] private MapVisualDatabase mapVisualDatabase;
+    [SerializeField] private ErosionIconDatabase erosionIconDatabase;
 
     private DataBootstrap dataBootstrap = new();
 
@@ -54,6 +55,8 @@ public class DataManager : Singleton<DataManager>
     public SkillAttackOverrideDatabase SkillAttackOverrideDatabase => skillAttackOverrideDatabase;
     public SkillVfxDatabase SkillVfxDatabase => skillVfxDatabase;
     public MapVisualDatabase MapVisualDatabase => mapVisualDatabase;
+    public ErosionDatabase ErosionDatabase => dataBootstrap.ErosionDatabase;
+    public ErosionIconDatabase ErosionIconDatabase => erosionIconDatabase;
     public CharacterRuntimeStore CharacterRuntimeStore { get; private set; } = new();
     public PartyRuntimeStore PartyRuntimeStore { get; private set; } = new();
     public SkillRuntimeStore SkillRuntimeStore { get; private set; } = new();
@@ -98,6 +101,9 @@ public class DataManager : Singleton<DataManager>
 
         if (mapVisualDatabase != null)
             mapVisualDatabase.Initialize();
+
+        if (erosionIconDatabase != null)
+            erosionIconDatabase.Initialize();
 
         SkillEquipService = new SkillEquipService(CharacterRuntimeStore);
     }

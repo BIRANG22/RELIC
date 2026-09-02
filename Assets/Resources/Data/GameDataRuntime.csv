@@ -847,3 +847,31 @@ Item_037,Unique,퀘스트1,
 Item_038,Unique,퀘스트2,
 Item_039,Unique,퀘스트3,
 
+# Erosion
+난이도 ID,난이도이름,UI 슬롯,단계,점수,선택 그룹,선택 방식,효과 항목,효과 타입,효과 수치,선택 가능,설명
+DifficultyId,ErosionName,SlotName,Tier,Score,GroupId,SelectionMode,EffectName,EffectType,EffectValue,Selectable,Description
+Erosion_01_01,강인한 변이체,Level01_1,1,1,Group_01,Exclusive,몬스터 최대 생명력 10% 증가,MonsterMaxHPPercent,10,1,변이체의 최대 생명력이 10% 증가한다.
+Erosion_01_02,흉포한 변이체,Level01_2,1,1,Group_02,Exclusive,몬스터 피해량 25% 증가,MonsterDamagePercent,25,1,변이체가 주는 피해가 25% 증가한다.
+Erosion_01_03,쇠약한 육체,Level01_3,1,1,Group_03,Exclusive,모든 캐릭터 최대 생명력 5% 감소,PartyMaxHPPercent,-5,1,모든 캐릭터의 최대 생명력이 5% 감소한다.
+Erosion_01_04,불길한 징후,Level01_4,1,1,Group_04,Exclusive,5턴마다 무작위 디버프 1개 부여,PeriodicRandomDebuffTurns,5,1,5턴마다 파티에 무작위 디버프 1개를 부여한다.
+Erosion_01_05,메마른 보급,Level01_5,1,1,Group_05,Exclusive,상점 가격 15% 증가,ShopPricePercent,15,1,상점 가격이 15% 증가한다.
+Erosion_01_06,뒤틀린 운명,Level01_6,1,0,Group_06,Exclusive,,,,0,난이도 없음
+Erosion_01_07,휴식방 제거,Level01_7,1,1,Erosion_01_07,Independent,휴식방 제거,RemoveRestRoom,1,1,보스방 입장 전에 배치되는 휴식방을 제거한다.
+Erosion_01_08,시야 제한,Level01_8,1,1,Erosion_01_08,Independent,지도 시야 제한,MapVisionLimit,1,1,지도에서 다음 방의 종류를 확인할 수 없게 된다.
+Erosion_02_01,강인한 변이체,Level02_1,2,2,Group_01,Exclusive,몬스터 최대 생명력 20% 증가,MonsterMaxHPPercent,20,1,변이체의 최대 생명력이 20% 증가한다.
+Erosion_02_02,흉포한 변이체,Level02_2,2,2,Group_02,Exclusive,몬스터 피해량 50% 증가,MonsterDamagePercent,50,1,변이체가 주는 피해가 50% 증가한다.
+Erosion_02_03,쇠약한 육체,Level02_3,2,2,Group_03,Exclusive,모든 캐릭터 최대 생명력 10% 감소,PartyMaxHPPercent,-10,1,모든 캐릭터의 최대 생명력이 10% 감소한다.
+Erosion_02_04,불길한 징후,Level02_4,2,0,Group_04,Exclusive,,,,0,난이도 없음
+Erosion_02_05,메마른 보급,Level02_5,2,2,Group_05,Exclusive,상점 가격 30% 증가,ShopPricePercent,30,1,상점 가격이 30% 증가한다.
+Erosion_02_06,뒤틀린 운명,Level02_6,2,2,Group_06,Exclusive,주사위 판정 난이도 1 증가,DiceDifficultyAdd,1,1,주사위 판정 난이도가 1 증가한다.
+Erosion_02_07,레어도 감소,Level02_7,2,2,Erosion_02_07,Independent,희귀도 확률 감소,RarityChanceReduction,1,1,높은 레어도의 등장 확률을 감소시킨다.
+Erosion_02_08,연성제 제한,Level02_8,2,2,Erosion_02_08,Independent,연성제 사용 제한,CompoundUseLimit,1,1,연성제를 사용할 수 없다.
+Erosion_03_01,강인한 변이체,Level03_1,3,3,Group_01,Exclusive,몬스터 최대 생명력 30% 증가,MonsterMaxHPPercent,30,1,변이체의 최대 생명력이 30% 증가한다.
+Erosion_03_02,흉포한 변이체,Level03_2,3,0,Group_02,Exclusive,,,,0,난이도 없음
+Erosion_03_03,쇠약한 육체,Level03_3,3,3,Group_03,Exclusive,모든 캐릭터 최대 생명력 20% 감소,PartyMaxHPPercent,-15,1,모든 캐릭터의 최대 생명력이 20% 감소한다.
+Erosion_03_04,불길한 징후,Level03_4,3,3,Group_04,Exclusive,3턴마다 무작위 디버프 1개 부여,PeriodicRandomDebuffTurns,3,1,3턴마다 파티에 무작위 디버프 1개를 부여한다.
+Erosion_03_05,메마른 보급,Level03_5,3,0,Group_05,Exclusive,,,,0,난이도 없음
+Erosion_03_06,뒤틀린 운명,Level03_6,3,3,Group_06,Exclusive,주사위 판정 난이도 2 증가,DiceDifficultyAdd,2,1,주사위 판정 난이도가 2 증가한다.
+Erosion_03_07,유물 슬롯 잠금,Level03_7,3,3,Erosion_03_07,Independent,마지막 유물칸 잠금,LockLastRelicSlot,1,1,캐릭터의 마지막 유물 슬롯을 잠근다.
+Erosion_03_08,무거운 발걸음,Level03_8,3,3,Erosion_03_08,Independent,이동 최종 마나 소모 +1,MoveFinalManaCostAdd,1,1,이동에 필요한 최종 마나 소모가 1 증가한다.
+

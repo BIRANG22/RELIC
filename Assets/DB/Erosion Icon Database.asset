@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1546a9a21bfd72d4a9cdcaff08f131be, type: 3}
+  m_Name: Erosion Icon Database
+  m_EditorClassIdentifier: 
+  unavailableIcon: {fileID: 21300000, guid: adc9e615648417147b56f37b39067431, type: 3}
+  entries:
+  - GroupId: Group_01
+    Icon: {fileID: 21300000, guid: f3142bc38b84c61479740004ff46e0ef, type: 3}
+  - GroupId: Group_02
+    Icon: {fileID: 21300000, guid: e7a9d917df8d0844191a24661477428c, type: 3}
+  - GroupId: Group_03
+    Icon: {fileID: 21300000, guid: bf887e9e93e8f164ca1d316133bf6a51, type: 3}
+  - GroupId: Group_04
+    Icon: {fileID: 21300000, guid: aea54517b39948c40a50cf47f9ab5b17, type: 3}
+  - GroupId: Group_05
+    Icon: {fileID: 21300000, guid: 4cdb2d80509c91f4fbf1e30644c143e8, type: 3}
+  - GroupId: Group_06
+    Icon: {fileID: 21300000, guid: cc7f5889cac42ca48b7b1c46e3e92dee, type: 3}
+  - GroupId: Erosion_01_07
+    Icon: {fileID: 21300000, guid: b7b1d777107254645911a938e81eac31, type: 3}
+  - GroupId: Erosion_01_08
+    Icon: {fileID: 21300000, guid: a9a23e5a3dd05c249a26ddedae329cb5, type: 3}
+  - GroupId: Erosion_02_07
+    Icon: {fileID: 21300000, guid: 0cf11a47df5c80b4894ea50e57e4f633, type: 3}
+  - GroupId: Erosion_02_08
+    Icon: {fileID: 21300000, guid: 8c75b3f75fb035144b3f4b9f562f1f55, type: 3}
+  - GroupId: Erosion_03_07
+    Icon: {fileID: 21300000, guid: 5fa6821d3109d8947818bd1fd39ea066, type: 3}
+  - GroupId: Erosion_03_08
+    Icon: {fileID: 21300000, guid: d3419d1cfe7a5fc439099582e0b0b249, type: 3}
