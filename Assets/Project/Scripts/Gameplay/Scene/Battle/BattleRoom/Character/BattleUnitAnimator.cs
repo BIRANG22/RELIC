@@ -82,6 +82,7 @@ public class BattleUnitAnimator : MonoBehaviour
     private int vfxLayer = -1;
 
     private int currentAttackIndex;
+    private SkillAttackSlot previousSkillAttackOverrideSlot = SkillAttackSlot.None;
     private Transform vfxSortingReference;
 
     public float DeadAnimationDuration => Mathf.Max(0f, deadAnimationDuration);
@@ -288,8 +289,29 @@ public class BattleUnitAnimator : MonoBehaviour
 
         PlaySkillVfx(skillData, command);
 
-        if (TryPlaySkillPresentationOverride(skillData))
-            return;
+        // 첫 타격은 기존 AttackSlot을 사용합니다.
+        // 2타부터는 RepeatAttackSlots에서 바로 직전 타격 슬롯을 제외해 랜덤 선택합니다.
+        if (hitIndex <= 0)
+        {
+            previousSkillAttackOverrideSlot = SkillAttackSlot.None;
+
+            if (TryPlaySkillPresentationOverride(skillData, out SkillAttackSlot firstSlot))
+            {
+                previousSkillAttackOverrideSlot = firstSlot;
+                return;
+            }
+        }
+        else
+        {
+            if (TryPlayRepeatSkillPresentationOverride(
+                    skillData,
+                    previousSkillAttackOverrideSlot,
+                    out SkillAttackSlot repeatSlot))
+            {
+                previousSkillAttackOverrideSlot = repeatSlot;
+                return;
+            }
+        }
 
         List<int> assignedAttackIndices = GetAssignedAttackIndices();
 
@@ -456,7 +478,60 @@ public class BattleUnitAnimator : MonoBehaviour
 
     private bool TryPlaySkillPresentationOverride(SkillMasterData skillData)
     {
+        return TryPlaySkillPresentationOverride(skillData, out _);
+    }
+
+    private bool TryPlaySkillPresentationOverride(
+        SkillMasterData skillData,
+        out SkillAttackSlot playedSlot)
+    {
+        playedSlot = SkillAttackSlot.None;
+
         if (!TryResolveSkillPresentationOverride(skillData, out SkillAttackSlot slot))
+            return false;
+
+        if (!TryPlayPresentationSlot(slot))
+            return false;
+
+        playedSlot = slot;
+        return true;
+    }
+
+    private bool TryPlayRepeatSkillPresentationOverride(
+        SkillMasterData skillData,
+        SkillAttackSlot previousSlot,
+        out SkillAttackSlot playedSlot)
+    {
+        playedSlot = SkillAttackSlot.None;
+
+        if (skillData == null || string.IsNullOrWhiteSpace(skillData.SkillId))
+            return false;
+
+        string characterId = GetOwnerCharacterId();
+        if (string.IsNullOrWhiteSpace(characterId))
+            return false;
+
+        SkillAttackOverrideDatabase database = ResolveSkillAttackOverrideDatabase();
+        if (database == null ||
+            !database.TryGetRepeatPresentationSlot(
+                characterId,
+                skillData.SkillId,
+                previousSlot,
+                out SkillAttackSlot slot))
+        {
+            return false;
+        }
+
+        if (!TryPlayPresentationSlot(slot))
+            return false;
+
+        playedSlot = slot;
+        return true;
+    }
+
+    private bool TryPlayPresentationSlot(SkillAttackSlot slot)
+    {
+        if (slot == SkillAttackSlot.None)
             return false;
 
         EnsurePlayerSkillPresentations();
