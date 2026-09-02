@@ -28,6 +28,9 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
     [SerializeField] private TMP_Text rollButtonText;
     [SerializeField, Min(0.01f)] private float buttonFadeDuration = 0.2f;
 
+    [Header("Presenter Fade")]
+    [SerializeField, Min(0.01f)] private float presenterFadeDuration = 0.2f;
+
     [Header("Animation")]
     [SerializeField] private Animator animator;
     [SerializeField] private string rollTriggerName = "Roll";
@@ -40,7 +43,9 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
     [SerializeField, Min(0f)] private float rollSfxVolumeMultiplier = 1f;
 
     private Coroutine rollRoutine;
+    private Coroutine presenterFadeRoutine;
     private CanvasGroup rollButtonCanvasGroup;
+    private CanvasGroup presenterCanvasGroup;
     private InteractiveState interactiveState = InteractiveState.Hidden;
     private int[] pendingDiceFaces = Array.Empty<int>();
     private string pendingDetailText = string.Empty;
@@ -58,6 +63,12 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (presenterFadeRoutine != null)
+        {
+            StopCoroutine(presenterFadeRoutine);
+            presenterFadeRoutine = null;
+        }
+
         UnbindRollButton();
     }
 
@@ -68,7 +79,13 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
 
     public void PrepareForInteractiveUse()
     {
-        PrepareForPlay();
+        EnsureParentHierarchyActive();
+        gameObject.SetActive(true);
+        EnsureReferences();
+        EnsurePresenterCanvasGroup();
+        NormalizeDiceImageLayout();
+        ForceLayoutRefresh();
+        SetPresenterAlphaImmediate(0f);
         BindRollButton();
         EnsureRollButtonCanvasGroup();
     }
@@ -124,6 +141,12 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
 
     public void HideImmediate()
     {
+        if (presenterFadeRoutine != null)
+        {
+            StopCoroutine(presenterFadeRoutine);
+            presenterFadeRoutine = null;
+        }
+
         if (rollRoutine != null)
         {
             StopCoroutine(rollRoutine);
@@ -135,6 +158,7 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
         pendingDetailText = string.Empty;
         pendingConfirmAction = null;
         interactiveState = InteractiveState.Hidden;
+        SetPresenterAlphaImmediate(0f);
         gameObject.SetActive(false);
     }
 
@@ -209,6 +233,7 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
         interactiveState = InteractiveState.Hidden;
         rollRoutine = null;
 
+        SetPresenterAlphaImmediate(0f);
         gameObject.SetActive(false);
         confirmed?.Invoke();
     }
@@ -550,8 +575,68 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
         EnsureParentHierarchyActive();
         gameObject.SetActive(true);
         EnsureReferences();
+        EnsurePresenterCanvasGroup();
         NormalizeDiceImageLayout();
         ForceLayoutRefresh();
+        BeginPresenterFadeIn();
+    }
+
+    private void EnsurePresenterCanvasGroup()
+    {
+        if (presenterCanvasGroup == null)
+            presenterCanvasGroup = GetComponent<CanvasGroup>();
+
+        if (presenterCanvasGroup == null)
+            presenterCanvasGroup = gameObject.AddComponent<CanvasGroup>();
+    }
+
+    private void BeginPresenterFadeIn()
+    {
+        EnsurePresenterCanvasGroup();
+        if (presenterCanvasGroup == null)
+            return;
+
+        if (presenterFadeRoutine != null)
+        {
+            StopCoroutine(presenterFadeRoutine);
+            presenterFadeRoutine = null;
+        }
+
+        SetPresenterAlphaImmediate(0f);
+        presenterFadeRoutine = StartCoroutine(FadePresenterInRoutine());
+    }
+
+    private IEnumerator FadePresenterInRoutine()
+    {
+        EnsurePresenterCanvasGroup();
+        if (presenterCanvasGroup == null)
+        {
+            presenterFadeRoutine = null;
+            yield break;
+        }
+
+        float duration = Mathf.Max(0.01f, presenterFadeDuration);
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            presenterCanvasGroup.alpha = Mathf.SmoothStep(0f, 1f, t);
+            yield return null;
+        }
+
+        presenterCanvasGroup.alpha = 1f;
+        presenterFadeRoutine = null;
+    }
+
+    private void SetPresenterAlphaImmediate(float alpha)
+    {
+        EnsurePresenterCanvasGroup();
+        if (presenterCanvasGroup == null)
+            return;
+
+        presenterCanvasGroup.alpha = Mathf.Clamp01(alpha);
     }
 
     private void EnsureParentHierarchyActive()

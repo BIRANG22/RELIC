@@ -5,6 +5,8 @@ using UnityEngine.UI;
 
 public class BattleDiagonalSceneTransition : MonoBehaviour
 {
+    private const int TransitionSortingOrderFloor = 32000;
+    private const int TransitionSortingOrderCeiling = 32760;
     public enum TransitionDirection
     {
         MapToRoom,
@@ -16,8 +18,7 @@ public class BattleDiagonalSceneTransition : MonoBehaviour
     [SerializeField] private CanvasGroup canvasGroup;
 
     [Header("Canvas Sorting")]
-    [SerializeField] private bool ensureRootCanvas = false;
-    [SerializeField] private int canvasSortingOrder = 6000;
+    [SerializeField] private int canvasSortingOrder = 32000;
 
     [Header("Image / Material")]
     [Tooltip("비워두면 자식 Image들 중 Progress/Direction 프로퍼티를 가진 Material의 Image를 자동으로 찾습니다.")]
@@ -357,18 +358,20 @@ public class BattleDiagonalSceneTransition : MonoBehaviour
 
     private void EnsureCanvasIfNeeded()
     {
-        if (!ensureRootCanvas)
-            return;
-
+        // 배틀 전환 이미지는 BattleRoom의 별도 Canvas보다 항상 위에 표시되어야 합니다.
+        // 프리팹 설정과 무관하게 런타임에서 최상위 Canvas를 보장합니다.
         Canvas canvas = transitionRoot.GetComponent<Canvas>();
         if (canvas == null)
         {
             canvas = transitionRoot.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         }
 
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         canvas.overrideSorting = true;
-        canvas.sortingOrder = canvasSortingOrder;
+        canvas.sortingOrder = Mathf.Clamp(
+            canvasSortingOrder,
+            TransitionSortingOrderFloor,
+            TransitionSortingOrderCeiling);
 
         if (transitionRoot.GetComponent<GraphicRaycaster>() == null)
             transitionRoot.AddComponent<GraphicRaycaster>();
