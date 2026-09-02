@@ -230,31 +230,36 @@ public class BattleUnitAnimator : MonoBehaviour
             return;
         }
 
-        PlaySkillVfx(skillData, command);
-
         // DB에 Presentation이 지정되어 있으면 SkillType보다 우선합니다.
-        if (TryPlaySkillPresentationOverride(skillData))
+        if (TryPlaySkillPresentationOverride(
+                skillData,
+                () => PlaySkillVfx(skillData, command)))
+        {
             return;
+        }
 
         // DB Override가 없을 때만 기존 SkillType 기본 연출을 사용합니다.
+        EnsurePlayerSkillPresentations();
+
         switch (skillData.SkillType)
         {
             case SkillType.Buff:
-                EnsurePlayerSkillPresentations();
-                PlayPresentation(playerSkillPresentations.power);
+                PlayPresentation(
+                    playerSkillPresentations.power,
+                    null,
+                    () => PlaySkillVfx(skillData, command));
                 break;
 
             case SkillType.Debuff:
-                EnsurePlayerSkillPresentations();
-                PlayPresentation(playerSkillPresentations.skill);
+                PlayPresentation(
+                    playerSkillPresentations.skill,
+                    null,
+                    () => PlaySkillVfx(skillData, command));
                 break;
 
             case SkillType.Attack:
-                PlayRandomAttackAction();
-                break;
-
             default:
-                PlayRandomAttackAction();
+                PlayRandomAttackAction(() => PlaySkillVfx(skillData, command));
                 break;
         }
     }
@@ -287,7 +292,8 @@ public class BattleUnitAnimator : MonoBehaviour
             return;
         }
 
-        PlaySkillVfx(skillData, command, hitIndex);
+        System.Action playActionVfx =
+            () => PlaySkillVfx(skillData, command, hitIndex);
 
         // 첫 타격은 기존 AttackSlot을 사용합니다.
         // 2타부터는 RepeatAttackSlots에서 바로 직전 타격 슬롯을 제외해 랜덤 선택합니다.
@@ -295,7 +301,11 @@ public class BattleUnitAnimator : MonoBehaviour
         {
             previousSkillAttackOverrideSlot = SkillAttackSlot.None;
 
-            if (TryPlaySkillPresentationOverride(skillData, out SkillAttackSlot firstSlot))
+            if (TryPlaySkillPresentationOverride(
+                    skillData,
+                    out SkillAttackSlot firstSlot,
+                    playActionVfx,
+                    playPrepare: true))
             {
                 previousSkillAttackOverrideSlot = firstSlot;
                 return;
@@ -306,7 +316,9 @@ public class BattleUnitAnimator : MonoBehaviour
             if (TryPlayRepeatSkillPresentationOverride(
                     skillData,
                     previousSkillAttackOverrideSlot,
-                    out SkillAttackSlot repeatSlot))
+                    out SkillAttackSlot repeatSlot,
+                    playActionVfx,
+                    playPrepare: false))
             {
                 previousSkillAttackOverrideSlot = repeatSlot;
                 return;
@@ -317,12 +329,16 @@ public class BattleUnitAnimator : MonoBehaviour
 
         if (assignedAttackIndices.Count <= 0)
         {
-            PlayRandomAttackAction();
+            // 애니메이션 슬롯이 하나도 없더라도 기존 스킬 VFX/사운드는 유지합니다.
+            playActionVfx();
             return;
         }
 
         int sequenceIndex = Mathf.Abs(hitIndex) % assignedAttackIndices.Count;
-        PlayAttackAction(assignedAttackIndices[sequenceIndex]);
+        PlayAttackAction(
+            assignedAttackIndices[sequenceIndex],
+            playActionVfx,
+            playPrepare: hitIndex <= 0);
     }
 
     public void PlayMonsterSkillReady(MonsterReservedCommand command)
@@ -461,36 +477,70 @@ public class BattleUnitAnimator : MonoBehaviour
 
     public void PlayCurrentAttackAction()
     {
+        PlayCurrentAttackAction(null);
+    }
+
+    private void PlayCurrentAttackAction(
+        System.Action onActionStart,
+        bool playPrepare = true)
+    {
         EnsurePlayerSkillPresentations();
 
         if (currentAttackIndex < 1 || currentAttackIndex > 3)
             currentAttackIndex = GetRandomAssignedAttackIndex();
 
         currentAttackIndex = GetAssignedAttackIndexOrFallback(currentAttackIndex);
-        PlayPresentation(playerSkillPresentations.GetAttack(currentAttackIndex));
+        PlayPresentation(
+            playerSkillPresentations.GetAttack(currentAttackIndex),
+            null,
+            onActionStart,
+            playPrepare);
     }
 
     public void PlayRandomAttackAction()
     {
+        PlayRandomAttackAction(null);
+    }
+
+    private void PlayRandomAttackAction(
+        System.Action onActionStart,
+        bool playPrepare = true)
+    {
         currentAttackIndex = GetRandomAssignedAttackIndex();
-        PlayCurrentAttackAction();
+        PlayCurrentAttackAction(onActionStart, playPrepare);
     }
 
     private bool TryPlaySkillPresentationOverride(SkillMasterData skillData)
     {
-        return TryPlaySkillPresentationOverride(skillData, out _);
+        return TryPlaySkillPresentationOverride(skillData, out _, null);
+    }
+
+    private bool TryPlaySkillPresentationOverride(
+        SkillMasterData skillData,
+        System.Action onActionStart)
+    {
+        return TryPlaySkillPresentationOverride(skillData, out _, onActionStart);
     }
 
     private bool TryPlaySkillPresentationOverride(
         SkillMasterData skillData,
         out SkillAttackSlot playedSlot)
     {
+        return TryPlaySkillPresentationOverride(skillData, out playedSlot, null);
+    }
+
+    private bool TryPlaySkillPresentationOverride(
+        SkillMasterData skillData,
+        out SkillAttackSlot playedSlot,
+        System.Action onActionStart,
+        bool playPrepare = true)
+    {
         playedSlot = SkillAttackSlot.None;
 
         if (!TryResolveSkillPresentationOverride(skillData, out SkillAttackSlot slot))
             return false;
 
-        if (!TryPlayPresentationSlot(slot))
+        if (!TryPlayPresentationSlot(slot, onActionStart, playPrepare))
             return false;
 
         playedSlot = slot;
@@ -501,6 +551,20 @@ public class BattleUnitAnimator : MonoBehaviour
         SkillMasterData skillData,
         SkillAttackSlot previousSlot,
         out SkillAttackSlot playedSlot)
+    {
+        return TryPlayRepeatSkillPresentationOverride(
+            skillData,
+            previousSlot,
+            out playedSlot,
+            null);
+    }
+
+    private bool TryPlayRepeatSkillPresentationOverride(
+        SkillMasterData skillData,
+        SkillAttackSlot previousSlot,
+        out SkillAttackSlot playedSlot,
+        System.Action onActionStart,
+        bool playPrepare = true)
     {
         playedSlot = SkillAttackSlot.None;
 
@@ -522,7 +586,7 @@ public class BattleUnitAnimator : MonoBehaviour
             return false;
         }
 
-        if (!TryPlayPresentationSlot(slot))
+        if (!TryPlayPresentationSlot(slot, onActionStart, playPrepare))
             return false;
 
         playedSlot = slot;
@@ -530,6 +594,14 @@ public class BattleUnitAnimator : MonoBehaviour
     }
 
     private bool TryPlayPresentationSlot(SkillAttackSlot slot)
+    {
+        return TryPlayPresentationSlot(slot, null);
+    }
+
+    private bool TryPlayPresentationSlot(
+        SkillAttackSlot slot,
+        System.Action onActionStart,
+        bool playPrepare = true)
     {
         if (slot == SkillAttackSlot.None)
             return false;
@@ -544,7 +616,7 @@ public class BattleUnitAnimator : MonoBehaviour
         if (slot >= SkillAttackSlot.Attack1 && slot <= SkillAttackSlot.Attack3)
             currentAttackIndex = (int)slot;
 
-        PlayPresentation(presentation);
+        PlayPresentation(presentation, null, onActionStart, playPrepare);
         return true;
     }
 
@@ -645,10 +717,82 @@ public class BattleUnitAnimator : MonoBehaviour
 
     private void PlayPresentation(BattleUnitActionPresentation presentation)
     {
-        PlayPresentation(presentation, null);
+        PlayPresentation(presentation, null, null);
     }
 
     private void PlayPresentation(
+        BattleUnitActionPresentation presentation,
+        MonsterReservedCommand command)
+    {
+        PlayPresentation(presentation, command, null);
+    }
+
+    private void PlayPresentation(
+        BattleUnitActionPresentation presentation,
+        MonsterReservedCommand command,
+        System.Action onActionStart,
+        bool playPrepare = true)
+    {
+        if (presentation == null)
+        {
+            onActionStart?.Invoke();
+            return;
+        }
+
+        // 같은 행동의 2타 이후처럼 Prepare를 생략해야 하는 경우에는 즉시 Action을 재생합니다.
+        // Prepare가 비어 있거나 Animator에 존재하지 않는 경우에도 기존처럼 즉시 Action으로 넘어갑니다.
+        if (!playPrepare ||
+            !CanPlayOptionalState(presentation.prepareStateName) ||
+            presentation.prepareDuration <= 0f)
+        {
+            onActionStart?.Invoke();
+            PlayPresentationAction(presentation, command);
+            return;
+        }
+
+        StartCoroutine(PlayPresentationSequence(
+            presentation,
+            command,
+            onActionStart));
+    }
+
+    private IEnumerator PlayPresentationSequence(
+        BattleUnitActionPresentation presentation,
+        MonsterReservedCommand command,
+        System.Action onActionStart)
+    {
+        if (presentation == null)
+        {
+            onActionStart?.Invoke();
+            yield break;
+        }
+
+        // Prepare 단계에서는 애니메이션만 재생합니다.
+        // VFX와 그 VFX에 연결된 사운드는 Action 시작 시점까지 재생하지 않습니다.
+        PlayOptionalState(presentation.prepareStateName);
+
+        float waitDuration = GetPrepareWaitDuration(presentation.prepareDuration);
+        if (waitDuration > 0f)
+            yield return new WaitForSeconds(waitDuration);
+
+        onActionStart?.Invoke();
+        PlayPresentationAction(presentation, command);
+    }
+
+    private float GetPrepareWaitDuration(float prepareDuration)
+    {
+        float duration = Mathf.Max(0f, prepareDuration);
+        if (duration <= 0f)
+            return 0f;
+
+        if (!EnsureAnimator())
+            return duration;
+
+        float playbackSpeed = Mathf.Max(0.01f, Mathf.Abs(animator.speed));
+        return duration / playbackSpeed;
+    }
+
+    private void PlayPresentationAction(
         BattleUnitActionPresentation presentation,
         MonsterReservedCommand command)
     {
@@ -1990,7 +2134,15 @@ public class BattleUnitAnimator : MonoBehaviour
 
     public void PlayAttackAction(int attackIndex)
     {
+        PlayAttackAction(attackIndex, null);
+    }
+
+    private void PlayAttackAction(
+        int attackIndex,
+        System.Action onActionStart,
+        bool playPrepare = true)
+    {
         currentAttackIndex = Mathf.Clamp(attackIndex, 1, 3);
-        PlayCurrentAttackAction();
+        PlayCurrentAttackAction(onActionStart, playPrepare);
     }
 }
