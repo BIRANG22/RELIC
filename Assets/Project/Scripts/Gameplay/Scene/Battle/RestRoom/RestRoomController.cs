@@ -261,7 +261,7 @@ public class RestRoomController : MonoBehaviour
             if (string.IsNullOrWhiteSpace(characterId))
                 continue;
 
-            if (!prefabDatabase.TryGetBattleEventWorldPrefab(characterId, out GameObject restRoomPrefab))
+            if (!prefabDatabase.TryGetRestPrefab(characterId, out GameObject restRoomPrefab))
             {
                 Debug.LogWarning($"[RestRoomController] Rest room world prefab not found: {characterId}");
                 continue;

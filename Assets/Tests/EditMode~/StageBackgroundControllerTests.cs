@@ -4,6 +4,7 @@ using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
+using Object = UnityEngine.Object;
 
 public class StageBackgroundControllerTests
 {
@@ -20,7 +21,7 @@ public class StageBackgroundControllerTests
 
         MethodInfo method = type.GetMethod("ShowRoomBackground", flags);
         Assert.That(method, Is.Not.Null);
-        Assert.That(method.GetParameters().Length, Is.EqualTo(2));
+        Assert.That(method.GetParameters().Length, Is.EqualTo(3));
     }
 
     [TestCase(0, "St1_00")]
@@ -86,6 +87,53 @@ public class StageBackgroundControllerTests
         }
     }
 
+    [Test]
+    public void ShowForMap_WhenMapIdRangeExists_UsesItBeforeLayerRange()
+    {
+        Fixture fixture = CreateFixture();
+        GameObject restBackground = new("RestBackground");
+
+        try
+        {
+            fixture.Ranges.Add(
+                new StageBackgroundController.BackgroundRange(1, 1, "Map_26", restBackground));
+
+            fixture.Controller.ShowForMap("Map_26", 0);
+
+            Assert.That(fixture.SpawnRoot.childCount, Is.EqualTo(1));
+            Assert.That(fixture.SpawnRoot.GetChild(0).name, Is.EqualTo("RestBackground"));
+        }
+        finally
+        {
+            Object.DestroyImmediate(restBackground);
+            fixture.Destroy();
+        }
+    }
+
+    [Test]
+    public void ShowForMap_WhenMapIdBypassesSpawnRoot_CreatesBackgroundUnderController()
+    {
+        Fixture fixture = CreateFixture();
+        GameObject restBackground = new("RestBackground");
+
+        try
+        {
+            fixture.Ranges.Add(
+                new StageBackgroundController.BackgroundRange(1, 1, "Map_26", restBackground));
+            SetPrivateField(fixture.Controller, "bypassSpawnRootMapIds", new List<string> { "Map_26" });
+
+            fixture.Controller.ShowForMap("Map_26", 0);
+
+            Assert.That(fixture.SpawnRoot.childCount, Is.Zero);
+            Assert.That(fixture.Root.transform.Find("RestBackground"), Is.Not.Null);
+        }
+        finally
+        {
+            Object.DestroyImmediate(restBackground);
+            fixture.Destroy();
+        }
+    }
+
     private static Fixture CreateFixture()
     {
         GameObject root = new("StageBackgroundController_TestRoot");
@@ -107,7 +155,7 @@ public class StageBackgroundControllerTests
         };
         SetPrivateField(controller, "backgroundRanges", ranges);
 
-        return new Fixture(root, spawnRootObject.transform, controller, st100, st101, st102);
+        return new Fixture(root, spawnRootObject.transform, controller, ranges, st100, st101, st102);
     }
 
     private static void SetPrivateField(object target, string fieldName, object value)
@@ -123,18 +171,23 @@ public class StageBackgroundControllerTests
         private readonly GameObject[] prefabs;
 
         public Transform SpawnRoot { get; }
+        public GameObject Root { get; }
         public StageBackgroundController Controller { get; }
+        public List<StageBackgroundController.BackgroundRange> Ranges { get; }
 
         public Fixture(
             GameObject root,
             Transform spawnRoot,
             StageBackgroundController controller,
+            List<StageBackgroundController.BackgroundRange> ranges,
             params GameObject[] prefabs)
         {
             this.root = root;
             this.prefabs = prefabs;
+            Root = root;
             SpawnRoot = spawnRoot;
             Controller = controller;
+            Ranges = ranges;
         }
 
         public void Destroy()

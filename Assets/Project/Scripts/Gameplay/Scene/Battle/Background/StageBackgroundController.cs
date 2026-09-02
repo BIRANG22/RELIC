@@ -13,19 +13,33 @@ public class StageBackgroundController : MonoBehaviour
         [Min(1)]
         [SerializeField] private int maxRow = 1;
 
+        [Tooltip("이 Map ID에서는 레이어 범위보다 이 배경을 우선 사용합니다.")]
+        [SerializeField] private string mapId;
+
         [SerializeField] private GameObject prefab;
 
         public int MinRow => minRow;
         public int MaxRow => maxRow;
+        public string MapId => mapId;
         public GameObject Prefab => prefab;
 
         public BackgroundRange(
             int minRow,
             int maxRow,
             GameObject prefab)
+            : this(minRow, maxRow, string.Empty, prefab)
+        {
+        }
+
+        public BackgroundRange(
+            int minRow,
+            int maxRow,
+            string mapId,
+            GameObject prefab)
         {
             this.minRow = minRow;
             this.maxRow = maxRow;
+            this.mapId = mapId;
             this.prefab = prefab;
         }
 
@@ -35,6 +49,15 @@ public class StageBackgroundController : MonoBehaviour
                    && row >= minRow
                    && row <= maxRow;
         }
+
+        public bool MatchesMapId(string targetMapId)
+        {
+            return !string.IsNullOrWhiteSpace(mapId) &&
+                   !string.IsNullOrWhiteSpace(targetMapId) &&
+                   string.Equals(mapId.Trim(), targetMapId.Trim(), StringComparison.Ordinal);
+        }
+
+        public bool HasMapIdOverride => !string.IsNullOrWhiteSpace(mapId);
     }
 
     [Header("배경 생성 설정")]
@@ -44,6 +67,10 @@ public class StageBackgroundController : MonoBehaviour
     [Tooltip("행 범위별로 생성할 배경 프리팹")]
     [SerializeField]
     private List<BackgroundRange> backgroundRanges = new();
+
+    [Tooltip("이 Map ID에서는 SpawnRoot 대신 Stage Background Controller 아래에 배경을 생성합니다.")]
+    [SerializeField]
+    private List<string> bypassSpawnRootMapIds = new();
 
     [Header("St1 Boss 연출 설정")]
     [Tooltip("보스 구간에서 생성되는 St1_boss 프리팹")]
@@ -70,8 +97,16 @@ public class StageBackgroundController : MonoBehaviour
     /// </summary>
     public void ShowForLayer(int layerIndex, bool playBossReveal = false)
     {
+        ShowForMap(null, layerIndex, playBossReveal);
+    }
+
+    /// <summary>
+    /// Map ID에 연결된 배경이 있으면 우선 표시하고, 없으면 레이어 범위 배경을 표시합니다.
+    /// </summary>
+    public void ShowForMap(string mapId, int layerIndex, bool playBossReveal = false)
+    {
         int row = layerIndex + 1;
-        BackgroundRange range = FindRange(row);
+        BackgroundRange range = FindRange(mapId, row);
 
         if (range == null || range.Prefab == null)
         {
@@ -98,9 +133,9 @@ public class StageBackgroundController : MonoBehaviour
 
         ClearCurrentBackground();
 
-        Transform parent = spawnRoot != null
-            ? spawnRoot
-            : transform;
+        Transform parent = ShouldBypassSpawnRoot(mapId) || spawnRoot == null
+            ? transform
+            : spawnRoot;
 
         currentInstance = Instantiate(
             range.Prefab,
@@ -121,22 +156,54 @@ public class StageBackgroundController : MonoBehaviour
     /// <summary>
     /// 현재 행에 해당하는 배경 범위를 찾습니다.
     /// </summary>
-    private BackgroundRange FindRange(int row)
+    private BackgroundRange FindRange(string mapId, int row)
     {
         if (backgroundRanges == null)
             return null;
+
+        if (!string.IsNullOrWhiteSpace(mapId))
+        {
+            for (int i = 0; i < backgroundRanges.Count; i++)
+            {
+                BackgroundRange range = backgroundRanges[i];
+
+                if (range != null && range.MatchesMapId(mapId))
+                    return range;
+            }
+        }
 
         for (int i = 0; i < backgroundRanges.Count; i++)
         {
             BackgroundRange range = backgroundRanges[i];
 
-            if (range != null && range.Contains(row))
+            if (range != null &&
+                !range.HasMapIdOverride &&
+                range.Contains(row))
             {
                 return range;
             }
         }
 
         return null;
+    }
+
+    private bool ShouldBypassSpawnRoot(string mapId)
+    {
+        if (string.IsNullOrWhiteSpace(mapId) || bypassSpawnRootMapIds == null)
+            return false;
+
+        for (int i = 0; i < bypassSpawnRootMapIds.Count; i++)
+        {
+            string bypassMapId = bypassSpawnRootMapIds[i];
+
+            if (!string.IsNullOrWhiteSpace(bypassMapId) &&
+                string.Equals(bypassMapId.Trim(), mapId.Trim(), StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>
