@@ -1,13 +1,15 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
-/// 새 침식도 카탈로그 UI의 선택/호버/점수 표시를 관리합니다.
-/// Catalog01~03 아래의 LevelXX_X 오브젝트를 이름 규칙으로 자동 연결합니다.
+/// Erosion 시트와 ErosionIconDatabase를 기준으로 침식 난이도 UI를 구성합니다.
+/// 씬의 LevelXX_X 오브젝트 이름은 Erosion.SlotName과 연결됩니다.
 /// </summary>
 public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
 {
@@ -37,19 +39,8 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
     [SerializeField] private float scoreStepInterval = 0.06f;
     [SerializeField] private bool useUnscaledTime = true;
 
-    [Header("Blocked Levels")]
-    [SerializeField]
-    private string[] blockedLevelNames =
-    {
-        "Level01_6",
-        "Level02_4",
-        "Level03_2",
-        "Level03_5"
-    };
-
-    private readonly List<ErosionDifficultyLevelItemUI> levelItems = new List<ErosionDifficultyLevelItemUI>();
-    private readonly HashSet<string> blockedNames = new HashSet<string>();
-    private readonly Dictionary<string, GameObject> erosionSlotInstances = new Dictionary<string, GameObject>();
+    private readonly List<ErosionDifficultyLevelItemUI> levelItems = new();
+    private readonly Dictionary<string, GameObject> erosionSlotInstances = new(StringComparer.OrdinalIgnoreCase);
 
     private int targetScore;
     private int displayedScore;
@@ -72,29 +63,13 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
     [ContextMenu("Auto Bind Erosion Difficulty UI")]
     public void AutoBind()
     {
-        RebuildBlockedNameSet();
-
         if (catalogGroup == null)
             catalogGroup = FindTransformRecursive(transform, "CatalogGroup");
 
         if (erosionValueText == null)
             erosionValueText = FindTextAnywhereInRoot("Erosion_Value");
 
-        if (erosionSlotContent == null || erosionSlotScrollRect == null)
-        {
-            Transform erosionSelect = FindTransformRecursive(transform.root, "Erosion_Select");
-            if (erosionSelect != null)
-            {
-                Transform scrollView = FindTransformRecursive(erosionSelect, "Scroll View");
-                Transform viewport = scrollView != null ? FindTransformRecursive(scrollView, "Viewport") : null;
-
-                if (erosionSlotContent == null)
-                    erosionSlotContent = viewport != null ? FindTransformRecursive(viewport, "Content") : null;
-
-                if (erosionSlotScrollRect == null && scrollView != null)
-                    erosionSlotScrollRect = scrollView.GetComponent<ScrollRect>();
-            }
-        }
+        AutoBindSelectedSlotScroll();
 
         levelItems.Clear();
         ClearAllErosionSlotInstances();
@@ -105,9 +80,15 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
             return;
         }
 
-        BindCatalog("Catalog01", 1);
-        BindCatalog("Catalog02", 2);
-        BindCatalog("Catalog03", 3);
+        if (DataManager.Instance == null || DataManager.Instance.ErosionDatabase == null)
+        {
+            Debug.LogWarning("[ErosionDifficultyCatalogUI] ErosionDatabase가 준비되지 않았습니다.", this);
+            return;
+        }
+
+        BindCatalog("Catalog01");
+        BindCatalog("Catalog02");
+        BindCatalog("Catalog03");
 
         UpdateAllGroupDimStates();
         RecalculateTargetScore(false);
@@ -117,12 +98,10 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
 
     public void OnLevelClicked(ErosionDifficultyLevelItemUI item)
     {
-        if (item == null || !item.IsSelectable)
+        if (item == null || !item.IsSelectable || item.DifficultyData == null)
             return;
 
-        // _1~_6은 같은 번호끼리 하나의 단계 그룹입니다.
-        // 같은 그룹에서는 1/2/3단계 중 하나만 선택할 수 있습니다.
-        if (item.GroupIndex >= 1 && item.GroupIndex <= 6)
+        if (item.IsExclusive)
         {
             if (item.IsSelected)
             {
@@ -130,7 +109,7 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
             }
             else
             {
-                List<ErosionDifficultyLevelItemUI> peers = FindGroupPeers(item.GroupIndex);
+                List<ErosionDifficultyLevelItemUI> peers = FindGroupPeers(item.GroupId);
                 for (int i = 0; i < peers.Count; i++)
                 {
                     ErosionDifficultyLevelItemUI peer = peers[i];
@@ -141,11 +120,10 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
                 item.SetSelected(true);
             }
 
-            UpdateGroupDimStates(item.GroupIndex);
+            UpdateGroupDimStates(item.GroupId);
         }
         else
         {
-            // _7, _8은 특별 난이도로 단계와 관계없이 독립 선택합니다.
             item.SetSelected(!item.IsSelected);
         }
 
@@ -153,13 +131,73 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
         RefreshErosionSlotInstances();
     }
 
+    private void BindCatalog(string catalogName)
+    {
+        Transform catalog = FindDirectChild(catalogGroup, catalogName) ??
+                            FindTransformRecursive(catalogGroup, catalogName);
+        if (catalog == null)
+        {
+            Debug.LogWarning($"[ErosionDifficultyCatalogUI] {catalogName}을 찾지 못했습니다.", this);
+            return;
+        }
+
+        for (int i = 0; i < catalog.childCount; i++)
+        {
+            Transform child = catalog.GetChild(i);
+            if (child == null || !child.name.StartsWith("Level", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            DataManager.Instance.ErosionDatabase.TryGetBySlotName(child.name, out ErosionData data);
+
+            ErosionDifficultyLevelItemUI item = child.GetComponent<ErosionDifficultyLevelItemUI>();
+            if (item == null)
+                item = child.gameObject.AddComponent<ErosionDifficultyLevelItemUI>();
+
+            Sprite icon = ResolveLevelIcon(data, item.CurrentIconSprite);
+            item.Initialize(
+                this,
+                data,
+                icon,
+                selectedBaskColor,
+                groupDimmedColor,
+                hoverIconScale,
+                hoverScaleDuration);
+            levelItems.Add(item);
+
+            if (data == null)
+                Debug.LogWarning($"[ErosionDifficultyCatalogUI] Erosion 시트에 SlotName '{child.name}' 데이터가 없습니다.", child);
+        }
+    }
+
+    private Sprite ResolveLevelIcon(ErosionData data, Sprite fallback)
+    {
+        ErosionIconDatabase iconDatabase = DataManager.Instance != null
+            ? DataManager.Instance.ErosionIconDatabase
+            : null;
+
+        if (data == null)
+            return iconDatabase != null && iconDatabase.UnavailableIcon != null
+                ? iconDatabase.UnavailableIcon
+                : fallback;
+
+        if (!data.Selectable)
+            return iconDatabase != null && iconDatabase.UnavailableIcon != null
+                ? iconDatabase.UnavailableIcon
+                : fallback;
+
+        if (iconDatabase != null && iconDatabase.TryGetIcon(data.GroupId, out Sprite icon))
+            return icon;
+
+        return fallback;
+    }
 
     private void RefreshErosionSlotInstances()
     {
         if (erosionSlotPrefab == null || erosionSlotContent == null)
             return;
 
-        Dictionary<string, ErosionDifficultyLevelItemUI> desiredSlots = new Dictionary<string, ErosionDifficultyLevelItemUI>();
+        Dictionary<string, ErosionDifficultyLevelItemUI> desiredSlots =
+            new(StringComparer.OrdinalIgnoreCase);
 
         for (int i = 0; i < levelItems.Count; i++)
         {
@@ -172,7 +210,7 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
                 desiredSlots[slotKey] = item;
         }
 
-        List<string> staleKeys = new List<string>();
+        List<string> staleKeys = new();
         foreach (KeyValuePair<string, GameObject> pair in erosionSlotInstances)
         {
             if (!desiredSlots.ContainsKey(pair.Key))
@@ -200,14 +238,13 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
 
             if (erosionSlotInstances.TryGetValue(slotKey, out GameObject existingSlot) && existingSlot != null)
             {
-                // _1~_6에서 난이도 단계만 바뀐 경우 기존 프리팹을 그대로 재사용합니다.
-                existingSlot.name = $"ErosionSlot_{item.name}";
+                existingSlot.name = $"ErosionSlot_{item.DifficultyId}";
                 BindErosionSlot(existingSlot.transform, item);
                 continue;
             }
 
             GameObject slotInstance = Instantiate(erosionSlotPrefab, erosionSlotContent);
-            slotInstance.name = $"ErosionSlot_{item.name}";
+            slotInstance.name = $"ErosionSlot_{item.DifficultyId}";
             BindErosionSlot(slotInstance.transform, item);
             erosionSlotInstances[slotKey] = slotInstance;
             createdNewSlot = true;
@@ -222,44 +259,17 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
         if (item == null)
             return null;
 
-        // _1~_6은 같은 효과의 단계이므로 그룹당 ErosionSlot 하나를 재사용합니다.
-        if (item.GroupIndex >= 1 && item.GroupIndex <= 6)
-            return $"Group_{item.GroupIndex}";
+        if (item.IsExclusive && !string.IsNullOrWhiteSpace(item.GroupId))
+            return item.GroupId;
 
-        // _7, _8은 단계별 독립 선택이므로 각 Level마다 별도 슬롯을 사용합니다.
-        return item.name;
-    }
-
-    private void ScrollErosionSlotsToBottom()
-    {
-        if (erosionSlotScrollRect == null)
-            return;
-
-        StartCoroutine(ScrollErosionSlotsToBottomNextFrame());
-    }
-
-    private IEnumerator ScrollErosionSlotsToBottomNextFrame()
-    {
-        // 새 슬롯이 레이아웃에 반영된 뒤 맨 아래로 이동해야 방금 선택한 효과가 보입니다.
-        yield return null;
-
-        Canvas.ForceUpdateCanvases();
-
-        if (erosionSlotContent is RectTransform contentRect)
-            LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
-
-        Canvas.ForceUpdateCanvases();
-
-        if (erosionSlotScrollRect != null)
-        {
-            erosionSlotScrollRect.StopMovement();
-            erosionSlotScrollRect.verticalNormalizedPosition = 0f;
-        }
+        return !string.IsNullOrWhiteSpace(item.DifficultyId)
+            ? item.DifficultyId
+            : item.name;
     }
 
     private static void BindErosionSlot(Transform slotRoot, ErosionDifficultyLevelItemUI item)
     {
-        if (slotRoot == null || item == null)
+        if (slotRoot == null || item == null || item.DifficultyData == null)
             return;
 
         Transform iconTransform = FindTransformRecursive(slotRoot, "Icon");
@@ -270,47 +280,84 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
             slotIcon.enabled = item.IconSprite != null;
         }
 
-        Transform valueTransform = FindTransformRecursive(slotRoot, "Value_Text");
-        TMP_Text valueText = valueTransform != null ? valueTransform.GetComponent<TMP_Text>() : null;
-        if (valueText != null)
-            valueText.text = item.ScoreValue.ToString();
+        SetText(slotRoot, "Value_Text", item.ScoreValue.ToString());
+        SetText(slotRoot, "Catalog_Text", BuildCatalogDisplayName(item.DifficultyData));
+        SetText(slotRoot, "Effect_Text", item.DifficultyData.Description ?? string.Empty);
     }
 
-    private void ClearAllErosionSlotInstances()
+    private static string BuildCatalogDisplayName(ErosionData data)
     {
-        foreach (KeyValuePair<string, GameObject> pair in erosionSlotInstances)
+        if (data == null)
+            return string.Empty;
+
+        string erosionName = string.IsNullOrWhiteSpace(data.ErosionName)
+            ? data.EffectName
+            : data.ErosionName;
+
+        if (string.IsNullOrWhiteSpace(erosionName))
+            return string.Empty;
+
+        if (!data.IsExclusive)
+            return erosionName.Trim();
+
+        string roman = ToRomanTier(data.Tier);
+        return string.IsNullOrEmpty(roman)
+            ? erosionName.Trim()
+            : $"{erosionName.Trim()} {roman}";
+    }
+
+    private static string ToRomanTier(int tier)
+    {
+        return tier switch
         {
-            if (pair.Value != null)
-                Destroy(pair.Value);
-        }
-
-        erosionSlotInstances.Clear();
+            1 => "I",
+            2 => "II",
+            3 => "III",
+            _ => string.Empty
+        };
     }
 
-    private List<ErosionDifficultyLevelItemUI> FindGroupPeers(int groupIndex)
+    private static void SetText(Transform root, string objectName, string value)
     {
-        List<ErosionDifficultyLevelItemUI> peers = new List<ErosionDifficultyLevelItemUI>();
+        Transform target = FindTransformRecursive(root, objectName);
+        TMP_Text text = target != null ? target.GetComponent<TMP_Text>() : null;
+        if (text != null)
+            text.text = value ?? string.Empty;
+    }
+
+    private List<ErosionDifficultyLevelItemUI> FindGroupPeers(string groupId)
+    {
+        List<ErosionDifficultyLevelItemUI> peers = new();
+        if (string.IsNullOrWhiteSpace(groupId))
+            return peers;
 
         for (int i = 0; i < levelItems.Count; i++)
         {
             ErosionDifficultyLevelItemUI item = levelItems[i];
-            if (item != null && item.GroupIndex == groupIndex)
+            if (item != null &&
+                item.IsExclusive &&
+                string.Equals(item.GroupId, groupId, StringComparison.OrdinalIgnoreCase))
+            {
                 peers.Add(item);
+            }
         }
 
         return peers;
     }
 
-    private void UpdateGroupDimStates(int groupIndex)
+    private void UpdateGroupDimStates(string groupId)
     {
-        if (groupIndex < 1 || groupIndex > 6)
+        if (string.IsNullOrWhiteSpace(groupId))
             return;
 
         ErosionDifficultyLevelItemUI selectedItem = null;
         for (int i = 0; i < levelItems.Count; i++)
         {
             ErosionDifficultyLevelItemUI item = levelItems[i];
-            if (item != null && item.GroupIndex == groupIndex && item.IsSelected)
+            if (item != null &&
+                item.IsExclusive &&
+                string.Equals(item.GroupId, groupId, StringComparison.OrdinalIgnoreCase) &&
+                item.IsSelected)
             {
                 selectedItem = item;
                 break;
@@ -320,8 +367,12 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
         for (int i = 0; i < levelItems.Count; i++)
         {
             ErosionDifficultyLevelItemUI item = levelItems[i];
-            if (item == null || item.GroupIndex != groupIndex)
+            if (item == null ||
+                !item.IsExclusive ||
+                !string.Equals(item.GroupId, groupId, StringComparison.OrdinalIgnoreCase))
+            {
                 continue;
+            }
 
             item.SetGroupDimmed(selectedItem != null && item != selectedItem);
         }
@@ -329,60 +380,16 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
 
     private void UpdateAllGroupDimStates()
     {
-        for (int groupIndex = 1; groupIndex <= 6; groupIndex++)
-            UpdateGroupDimStates(groupIndex);
-    }
+        HashSet<string> handledGroups = new(StringComparer.OrdinalIgnoreCase);
 
-    private void BindCatalog(string catalogName, int scoreValue)
-    {
-        Transform catalog = FindDirectChild(catalogGroup, catalogName) ?? FindTransformRecursive(catalogGroup, catalogName);
-        if (catalog == null)
+        for (int i = 0; i < levelItems.Count; i++)
         {
-            Debug.LogWarning($"[ErosionDifficultyCatalogUI] {catalogName}을 찾지 못했습니다.", this);
-            return;
-        }
-
-        for (int i = 0; i < catalog.childCount; i++)
-        {
-            Transform child = catalog.GetChild(i);
-            if (child == null || !child.name.StartsWith("Level"))
+            ErosionDifficultyLevelItemUI item = levelItems[i];
+            if (item == null || !item.IsExclusive || string.IsNullOrWhiteSpace(item.GroupId))
                 continue;
 
-            bool isSelectable = !blockedNames.Contains(child.name);
-            ErosionDifficultyLevelItemUI item = child.GetComponent<ErosionDifficultyLevelItemUI>();
-            if (item == null)
-                item = child.gameObject.AddComponent<ErosionDifficultyLevelItemUI>();
-
-            int groupIndex = ParseGroupIndex(child.name);
-            item.Initialize(this, scoreValue, groupIndex, isSelectable, selectedBaskColor, groupDimmedColor, hoverIconScale, hoverScaleDuration);
-            levelItems.Add(item);
-        }
-    }
-
-    private static int ParseGroupIndex(string levelName)
-    {
-        if (string.IsNullOrWhiteSpace(levelName))
-            return -1;
-
-        int underscoreIndex = levelName.LastIndexOf('_');
-        if (underscoreIndex < 0 || underscoreIndex >= levelName.Length - 1)
-            return -1;
-
-        return int.TryParse(levelName.Substring(underscoreIndex + 1), out int result) ? result : -1;
-    }
-
-    private void RebuildBlockedNameSet()
-    {
-        blockedNames.Clear();
-
-        if (blockedLevelNames == null)
-            return;
-
-        for (int i = 0; i < blockedLevelNames.Length; i++)
-        {
-            string levelName = blockedLevelNames[i];
-            if (!string.IsNullOrWhiteSpace(levelName))
-                blockedNames.Add(levelName.Trim());
+            if (handledGroups.Add(item.GroupId))
+                UpdateGroupDimStates(item.GroupId);
         }
     }
 
@@ -456,6 +463,56 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
         }
     }
 
+    private void AutoBindSelectedSlotScroll()
+    {
+        if (erosionSlotContent != null && erosionSlotScrollRect != null)
+            return;
+
+        Transform erosionSelect = FindTransformRecursive(transform.root, "Erosion_Select");
+        if (erosionSelect == null)
+            return;
+
+        Transform scrollView = FindTransformRecursive(erosionSelect, "Scroll View");
+        Transform viewport = scrollView != null ? FindTransformRecursive(scrollView, "Viewport") : null;
+
+        if (erosionSlotContent == null)
+            erosionSlotContent = viewport != null ? FindTransformRecursive(viewport, "Content") : null;
+
+        if (erosionSlotScrollRect == null && scrollView != null)
+            erosionSlotScrollRect = scrollView.GetComponent<ScrollRect>();
+    }
+
+    private void ScrollErosionSlotsToBottom()
+    {
+        if (erosionSlotScrollRect != null)
+            StartCoroutine(ScrollErosionSlotsToBottomNextFrame());
+    }
+
+    private IEnumerator ScrollErosionSlotsToBottomNextFrame()
+    {
+        yield return null;
+
+        Canvas.ForceUpdateCanvases();
+
+        if (erosionSlotContent is RectTransform contentRect)
+            LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
+
+        Canvas.ForceUpdateCanvases();
+        erosionSlotScrollRect.StopMovement();
+        erosionSlotScrollRect.verticalNormalizedPosition = 0f;
+    }
+
+    private void ClearAllErosionSlotInstances()
+    {
+        foreach (KeyValuePair<string, GameObject> pair in erosionSlotInstances)
+        {
+            if (pair.Value != null)
+                Destroy(pair.Value);
+        }
+
+        erosionSlotInstances.Clear();
+    }
+
     private TMP_Text FindTextAnywhereInRoot(string objectName)
     {
         Transform root = transform.root;
@@ -506,8 +563,7 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
 }
 
 /// <summary>
-/// Level01_1 같은 개별 침식도 슬롯의 포인터 입력과 시각 상태를 담당합니다.
-/// 런타임에 ErosionDifficultyCatalogUI가 자동으로 부착/초기화합니다.
+/// Level01_1 같은 개별 난이도 슬롯의 입력과 시각 상태를 담당합니다.
 /// </summary>
 public sealed class ErosionDifficultyLevelItemUI : MonoBehaviour,
     IPointerEnterHandler,
@@ -521,6 +577,7 @@ public sealed class ErosionDifficultyLevelItemUI : MonoBehaviour,
     private Graphic lineGraphic;
     private Graphic iconGraphic;
     private Graphic valueGraphic;
+    private TMP_Text valueText;
     private Transform iconTransform;
 
     private Color originalBaskColor = Color.white;
@@ -536,32 +593,34 @@ public sealed class ErosionDifficultyLevelItemUI : MonoBehaviour,
     private bool isSelected;
     private bool isSelectable;
     private bool isGroupDimmed;
-    private int scoreValue;
-    private int groupIndex;
     private float hoverIconScale = 1.1f;
     private float hoverScaleDuration = 0.12f;
     private Coroutine hoverScaleRoutine;
+    private ErosionData difficultyData;
 
     public bool IsSelected => isSelected;
     public bool IsSelectable => isSelectable;
-    public int ScoreValue => scoreValue;
-    public int GroupIndex => groupIndex;
+    public bool IsExclusive => difficultyData != null && difficultyData.IsExclusive;
+    public int ScoreValue => difficultyData != null ? difficultyData.Score : 0;
+    public string DifficultyId => difficultyData?.DifficultyId;
+    public string GroupId => difficultyData?.GroupId;
+    public string SelectionMode => difficultyData?.SelectionMode;
+    public ErosionData DifficultyData => difficultyData;
     public Sprite IconSprite => iconGraphic is Image image ? image.sprite : null;
+    public Sprite CurrentIconSprite => iconGraphic is Image image ? image.sprite : GetComponentInChildren<Image>(true)?.sprite;
 
     public void Initialize(
         ErosionDifficultyCatalogUI owner,
-        int scoreValue,
-        int groupIndex,
-        bool isSelectable,
+        ErosionData data,
+        Sprite iconSprite,
         Color selectedBaskColor,
         Color groupDimmedColor,
         float hoverIconScale,
         float hoverScaleDuration)
     {
         this.owner = owner;
-        this.scoreValue = scoreValue;
-        this.groupIndex = groupIndex;
-        this.isSelectable = isSelectable;
+        difficultyData = data;
+        isSelectable = data != null && data.Selectable;
         this.selectedBaskColor = selectedBaskColor;
         this.groupDimmedColor = groupDimmedColor;
         this.hoverIconScale = Mathf.Max(1f, hoverIconScale);
@@ -576,6 +635,7 @@ public sealed class ErosionDifficultyLevelItemUI : MonoBehaviour,
         lineGraphic = line != null ? line.GetComponent<Graphic>() : null;
         iconGraphic = icon != null ? icon.GetComponent<Graphic>() : null;
         valueGraphic = value != null ? value.GetComponent<Graphic>() : null;
+        valueText = value != null ? value.GetComponent<TMP_Text>() : null;
         iconTransform = icon;
 
         if (!initialized)
@@ -602,10 +662,20 @@ public sealed class ErosionDifficultyLevelItemUI : MonoBehaviour,
             initialized = true;
         }
 
+        if (iconGraphic is Image iconImage && iconSprite != null)
+        {
+            iconImage.sprite = iconSprite;
+            iconImage.enabled = true;
+        }
+
+        if (valueText != null)
+            valueText.text = isSelectable ? ScoreValue.ToString() : string.Empty;
+
         if (!isSelectable)
         {
             isSelected = false;
             isHovered = false;
+            isGroupDimmed = false;
         }
 
         RefreshVisuals();
@@ -623,7 +693,7 @@ public sealed class ErosionDifficultyLevelItemUI : MonoBehaviour,
 
     public void SetGroupDimmed(bool dimmed)
     {
-        isGroupDimmed = dimmed;
+        isGroupDimmed = isSelectable && dimmed;
         RefreshVisuals();
     }
 
@@ -655,8 +725,7 @@ public sealed class ErosionDifficultyLevelItemUI : MonoBehaviour,
 
     public void RefreshVisuals()
     {
-        // Bask는 그룹 단계 비활성 표시에 포함하지 않습니다.
-        // 선택된 슬롯만 선택색을 사용하고, 미선택 슬롯은 원래 Bask 색을 유지합니다.
+        // Bask는 선택 여부만 표현하고 그룹 비활성 색상에는 포함하지 않습니다.
         if (baskGraphic != null)
         {
             if (isSelectable && isSelected)
@@ -675,16 +744,13 @@ public sealed class ErosionDifficultyLevelItemUI : MonoBehaviour,
 
         if (isGroupDimmed)
         {
-            // 그룹 비선택 표시는 RGB만 바꿉니다.
-            // Line/Icon/Value의 현재 Alpha는 절대 건드리지 않습니다.
+            // RGB만 변경하고 기존 Alpha는 유지합니다.
             ApplyRgbPreserveCurrentAlpha(lineGraphic, groupDimmedColor);
             ApplyRgbPreserveCurrentAlpha(iconGraphic, groupDimmedColor);
             ApplyRgbPreserveCurrentAlpha(valueGraphic, groupDimmedColor);
             return;
         }
 
-        // 선택 슬롯 또는 그룹 선택 해제 상태에서도 RGB만 원래 값으로 돌립니다.
-        // 현재 Alpha는 그대로 유지하므로 선택/취소로 투명도가 바뀌지 않습니다.
         ApplyRgbPreserveCurrentAlpha(lineGraphic, originalLineColor);
         ApplyRgbPreserveCurrentAlpha(iconGraphic, originalIconColor);
         ApplyRgbPreserveCurrentAlpha(valueGraphic, originalValueColor);
