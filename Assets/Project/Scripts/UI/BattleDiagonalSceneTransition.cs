@@ -19,18 +19,24 @@ public class BattleDiagonalSceneTransition : MonoBehaviour
     [SerializeField] private bool ensureRootCanvas = false;
     [SerializeField] private int canvasSortingOrder = 6000;
 
-    [Header("Image")]
-    [SerializeField] private RectTransform transitionImage;
+    [Header("Image / Material")]
+    [Tooltip("비워두면 자식 Image들 중 Progress/Direction 프로퍼티를 가진 Material의 Image를 자동으로 찾습니다.")]
+    [SerializeField] private Image transitionImage;
 
-    [Header("Map To Room Position")]
-    [SerializeField] private Vector3 mapToRoomStartPosition = new Vector3(1600f, 900f, 0f);
-    [SerializeField] private Vector3 mapToRoomCoverPosition = Vector3.zero;
-    [SerializeField] private Vector3 mapToRoomEndPosition = new Vector3(-1600f, -900f, 0f);
+    [Header("Material Properties")]
+    [Tooltip("Shader에서 Display Name/Reference Name을 기준으로 progress 프로퍼티를 자동 탐색합니다.")]
+    [SerializeField] private string progressDisplayName = "progress";
+    [Tooltip("Shader에서 Display Name/Reference Name을 기준으로 direction 프로퍼티를 자동 탐색합니다.")]
+    [SerializeField] private string directionDisplayName = "direction";
 
-    [Header("Room To Map Position")]
-    [SerializeField] private Vector3 roomToMapStartPosition = new Vector3(-1600f, -900f, 0f);
-    [SerializeField] private Vector3 roomToMapCoverPosition = Vector3.zero;
-    [SerializeField] private Vector3 roomToMapEndPosition = new Vector3(1600f, 900f, 0f);
+    [Header("Progress")]
+    [SerializeField] private float startProgress = 0.5f;
+    [SerializeField] private float coveredProgress = -2f;
+    [SerializeField] private float endProgress = 0.5f;
+
+    [Header("Direction")]
+    [SerializeField] private float coverDirection = 1f;
+    [SerializeField] private float uncoverDirection = 0f;
 
     [Header("Timing")]
     [SerializeField] private float coverDuration = 0.35f;
@@ -48,6 +54,10 @@ public class BattleDiagonalSceneTransition : MonoBehaviour
 
     private bool isInitialized;
     private bool isPlaying;
+
+    private Material transitionMaterial;
+    private string resolvedProgressProperty;
+    private string resolvedDirectionProperty;
 
     public bool IsPlaying => isPlaying;
 
@@ -67,7 +77,6 @@ public class BattleDiagonalSceneTransition : MonoBehaviour
         await PlayAsync(TransitionDirection.RoomToMap, onCovered);
     }
 
-
     public async Task PlayRoomToMapAlreadyCoveredAsync(Action onCovered)
     {
         await PlayAlreadyCoveredAsync(TransitionDirection.RoomToMap, onCovered);
@@ -82,22 +91,26 @@ public class BattleDiagonalSceneTransition : MonoBehaviour
 
         isPlaying = true;
 
-        Vector3 startPosition;
-        Vector3 coverPosition;
-        Vector3 endPosition;
-        GetPositions(direction, out startPosition, out coverPosition, out endPosition);
-
         Show();
-        SetImagePosition(coverPosition);
         PlayTransitionSound();
 
+        SetDirection(coverDirection);
+        SetProgress(coveredProgress);
+
         onCovered?.Invoke();
+
+        SetDirection(uncoverDirection);
 
         if (coveredHoldDuration > 0f)
             await WaitUnscaledAsync(coveredHoldDuration);
 
-        await AnimatePositionAsync(coverPosition, endPosition, uncoverDuration, uncoverCurve);
-        SetImagePosition(endPosition);
+        await AnimateProgressAsync(
+            coveredProgress,
+            endProgress,
+            uncoverDuration,
+            uncoverCurve);
+
+        SetProgress(endProgress);
 
         HideImmediate();
         isPlaying = false;
@@ -112,25 +125,34 @@ public class BattleDiagonalSceneTransition : MonoBehaviour
 
         isPlaying = true;
 
-        Vector3 startPosition;
-        Vector3 coverPosition;
-        Vector3 endPosition;
-        GetPositions(direction, out startPosition, out coverPosition, out endPosition);
-
         Show();
-        SetImagePosition(startPosition);
         PlayTransitionSound();
 
-        await AnimatePositionAsync(startPosition, coverPosition, coverDuration, coverCurve);
-        SetImagePosition(coverPosition);
+        SetDirection(coverDirection);
+        SetProgress(startProgress);
+
+        await AnimateProgressAsync(
+            startProgress,
+            coveredProgress,
+            coverDuration,
+            coverCurve);
+
+        SetProgress(coveredProgress);
 
         onCovered?.Invoke();
+
+        SetDirection(uncoverDirection);
 
         if (coveredHoldDuration > 0f)
             await WaitUnscaledAsync(coveredHoldDuration);
 
-        await AnimatePositionAsync(coverPosition, endPosition, uncoverDuration, uncoverCurve);
-        SetImagePosition(endPosition);
+        await AnimateProgressAsync(
+            coveredProgress,
+            endProgress,
+            uncoverDuration,
+            uncoverCurve);
+
+        SetProgress(endProgress);
 
         HideImmediate();
         isPlaying = false;
@@ -154,13 +176,15 @@ public class BattleDiagonalSceneTransition : MonoBehaviour
     public void SetMapToRoomStartImmediate()
     {
         InitializeIfNeeded();
-        SetImagePosition(mapToRoomStartPosition);
+        SetDirection(coverDirection);
+        SetProgress(startProgress);
     }
 
     public void SetRoomToMapStartImmediate()
     {
         InitializeIfNeeded();
-        SetImagePosition(roomToMapStartPosition);
+        SetDirection(coverDirection);
+        SetProgress(startProgress);
     }
 
     private void InitializeIfNeeded()
@@ -178,14 +202,157 @@ public class BattleDiagonalSceneTransition : MonoBehaviour
             canvasGroup = transitionRoot.AddComponent<CanvasGroup>();
 
         if (transitionImage == null)
+            transitionImage = FindTransitionImage();
+
+        if (transitionImage == null)
         {
-            Image image = transitionRoot.GetComponentInChildren<Image>(true);
-            if (image != null)
-                transitionImage = image.rectTransform;
+            Debug.LogWarning(
+                $"[BattleDiagonalSceneTransition] 자식 Image들에서 '{progressDisplayName}' / '{directionDisplayName}' 프로퍼티를 가진 Material을 찾지 못했습니다.",
+                this);
         }
 
+        ResolveTransitionMaterial();
         EnsureCanvasIfNeeded();
+
         isInitialized = true;
+    }
+
+    private Image FindTransitionImage()
+    {
+        if (transitionRoot == null)
+            return null;
+
+        Image[] images = transitionRoot.GetComponentsInChildren<Image>(true);
+
+        for (int i = 0; i < images.Length; i++)
+        {
+            Image image = images[i];
+
+            if (image == null || image.material == null)
+                continue;
+
+            if (TryResolveMaterialProperties(
+                    image.material,
+                    out _,
+                    out _))
+            {
+                return image;
+            }
+        }
+
+        return null;
+    }
+
+    private void ResolveTransitionMaterial()
+    {
+        transitionMaterial = null;
+        resolvedProgressProperty = null;
+        resolvedDirectionProperty = null;
+
+        if (transitionImage == null)
+            return;
+
+        transitionMaterial = transitionImage.material;
+
+        if (transitionMaterial == null)
+        {
+            Debug.LogWarning(
+                "[BattleDiagonalSceneTransition] Transition Image에 Material이 없습니다.",
+                this);
+            return;
+        }
+
+        if (!TryResolveMaterialProperties(
+                transitionMaterial,
+                out resolvedProgressProperty,
+                out resolvedDirectionProperty))
+        {
+            Debug.LogWarning(
+                $"[BattleDiagonalSceneTransition] Shader '{transitionMaterial.shader?.name}'에서 " +
+                $"'{progressDisplayName}' / '{directionDisplayName}' 프로퍼티를 찾지 못했습니다.",
+                this);
+            return;
+        }
+
+        Debug.Log(
+            $"[BattleDiagonalSceneTransition] Material property resolved - " +
+            $"Progress: '{resolvedProgressProperty}', Direction: '{resolvedDirectionProperty}'",
+            this);
+    }
+
+    private bool TryResolveMaterialProperties(
+        Material material,
+        out string progressProperty,
+        out string directionProperty)
+    {
+        progressProperty = ResolveShaderPropertyName(material, progressDisplayName);
+        directionProperty = ResolveShaderPropertyName(material, directionDisplayName);
+
+        return !string.IsNullOrWhiteSpace(progressProperty) &&
+               !string.IsNullOrWhiteSpace(directionProperty);
+    }
+
+    private static string ResolveShaderPropertyName(Material material, string requestedName)
+    {
+        if (material == null || material.shader == null || string.IsNullOrWhiteSpace(requestedName))
+            return null;
+
+        Shader shader = material.shader;
+        string normalizedRequested = NormalizePropertyName(requestedName);
+        int propertyCount = shader.GetPropertyCount();
+
+        // 1. 실제 Reference Name이 정확히 일치하는 경우를 우선합니다.
+        for (int i = 0; i < propertyCount; i++)
+        {
+            string propertyName = shader.GetPropertyName(i);
+
+            if (string.Equals(
+                    propertyName,
+                    requestedName,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return propertyName;
+            }
+        }
+
+        // 2. 앞의 '_' 등을 무시한 Reference Name 비교.
+        for (int i = 0; i < propertyCount; i++)
+        {
+            string propertyName = shader.GetPropertyName(i);
+
+            if (string.Equals(
+                    NormalizePropertyName(propertyName),
+                    normalizedRequested,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return propertyName;
+            }
+        }
+
+        // 3. Shader Graph Inspector에 보이는 Display Name(Description)으로 비교.
+        for (int i = 0; i < propertyCount; i++)
+        {
+            string description = shader.GetPropertyDescription(i);
+
+            if (!string.IsNullOrWhiteSpace(description) &&
+                string.Equals(
+                    NormalizePropertyName(description),
+                    normalizedRequested,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return shader.GetPropertyName(i);
+            }
+        }
+
+        return null;
+    }
+
+    private static string NormalizePropertyName(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return string.Empty;
+
+        return value.Trim().TrimStart('_').Replace(" ", string.Empty);
     }
 
     private void EnsureCanvasIfNeeded()
@@ -225,28 +392,13 @@ public class BattleDiagonalSceneTransition : MonoBehaviour
         Canvas.ForceUpdateCanvases();
     }
 
-    private void GetPositions(
-        TransitionDirection direction,
-        out Vector3 startPosition,
-        out Vector3 coverPosition,
-        out Vector3 endPosition)
+    private async Task AnimateProgressAsync(
+        float from,
+        float to,
+        float duration,
+        AnimationCurve curve)
     {
-        if (direction == TransitionDirection.RoomToMap)
-        {
-            startPosition = roomToMapStartPosition;
-            coverPosition = roomToMapCoverPosition;
-            endPosition = roomToMapEndPosition;
-            return;
-        }
-
-        startPosition = mapToRoomStartPosition;
-        coverPosition = mapToRoomCoverPosition;
-        endPosition = mapToRoomEndPosition;
-    }
-
-    private async Task AnimatePositionAsync(Vector3 startPosition, Vector3 endPosition, float duration, AnimationCurve curve)
-    {
-        if (transitionImage == null)
+        if (transitionMaterial == null)
             return;
 
         float safeDuration = Mathf.Max(0.01f, duration);
@@ -255,14 +407,19 @@ public class BattleDiagonalSceneTransition : MonoBehaviour
         while (elapsedTime < safeDuration)
         {
             elapsedTime += Time.unscaledDeltaTime;
-            float normalizedTime = Mathf.Clamp01(elapsedTime / safeDuration);
-            float curveValue = curve != null ? curve.Evaluate(normalizedTime) : normalizedTime;
 
-            transitionImage.localPosition = Vector3.LerpUnclamped(startPosition, endPosition, curveValue);
+            float normalizedTime = Mathf.Clamp01(elapsedTime / safeDuration);
+            float curveValue = curve != null
+                ? curve.Evaluate(normalizedTime)
+                : normalizedTime;
+
+            float progress = Mathf.LerpUnclamped(from, to, curveValue);
+            SetProgress(progress);
+
             await Task.Yield();
         }
 
-        transitionImage.localPosition = endPosition;
+        SetProgress(to);
     }
 
     private async Task WaitUnscaledAsync(float duration)
@@ -276,10 +433,20 @@ public class BattleDiagonalSceneTransition : MonoBehaviour
         }
     }
 
-    private void SetImagePosition(Vector3 position)
+    private void SetProgress(float value)
     {
-        if (transitionImage != null)
-            transitionImage.localPosition = position;
+        if (transitionMaterial == null || string.IsNullOrWhiteSpace(resolvedProgressProperty))
+            return;
+
+        transitionMaterial.SetFloat(resolvedProgressProperty, value);
+    }
+
+    private void SetDirection(float value)
+    {
+        if (transitionMaterial == null || string.IsNullOrWhiteSpace(resolvedDirectionProperty))
+            return;
+
+        transitionMaterial.SetFloat(resolvedDirectionProperty, value);
     }
 
     private void PlayTransitionSound()
@@ -290,6 +457,8 @@ public class BattleDiagonalSceneTransition : MonoBehaviour
         if (AudioManager.Instance == null)
             return;
 
-        AudioManager.Instance.PlaySfx(transitionSfx, transitionSfxVolumeMultiplier);
+        AudioManager.Instance.PlaySfx(
+            transitionSfx,
+            transitionSfxVolumeMultiplier);
     }
 }
