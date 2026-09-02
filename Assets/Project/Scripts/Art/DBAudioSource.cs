@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -6,6 +7,9 @@ using UnityEngine.EventSystems;
 /// AudioSource처럼 오브젝트에 붙여 사용하되,
 /// AudioClip을 직접 참조하지 않고 AudioManager에 등록된 SFX ID를 재생합니다.
 /// 필요하면 오브젝트 활성화 / 호버 / 클릭 시 DB SFX를 각각 재생할 수 있습니다.
+///
+/// SoundDatabase에서 Loop가 활성화된 SFX는 이 컴포넌트가 재생한 AudioSource를 추적하며,
+/// 오브젝트가 비활성화되거나 제거될 때 함께 정지합니다.
 /// </summary>
 public class DBAudioSource : MonoBehaviour, IPointerEnterHandler, IPointerClickHandler
 {
@@ -48,6 +52,7 @@ public class DBAudioSource : MonoBehaviour, IPointerEnterHandler, IPointerClickH
     private float clickVolume = 1f;
 
     private Coroutine delayedPlayCoroutine;
+    private readonly List<AudioSource> activeLoopSources = new();
 
     private void OnEnable()
     {
@@ -57,11 +62,13 @@ public class DBAudioSource : MonoBehaviour, IPointerEnterHandler, IPointerClickH
 
     private void OnDisable()
     {
-        if (delayedPlayCoroutine != null)
-        {
-            StopCoroutine(delayedPlayCoroutine);
-            delayedPlayCoroutine = null;
-        }
+        CancelDelayedPlay();
+        StopLoopSounds();
+    }
+
+    private void OnDestroy()
+    {
+        StopLoopSounds();
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -97,6 +104,42 @@ public class DBAudioSource : MonoBehaviour, IPointerEnterHandler, IPointerClickH
         PlaySound(soundId, Mathf.Clamp01(volume) * Mathf.Clamp01(volumeMultiplier));
     }
 
+    /// <summary>
+    /// 이 DBAudioSource가 현재 재생 중인 모든 Loop SFX를 정지합니다.
+    /// UnityEvent에서도 직접 호출할 수 있습니다.
+    /// </summary>
+    public void StopLoopSounds()
+    {
+        if (activeLoopSources.Count <= 0)
+            return;
+
+        AudioManager audioManager = AudioManager.Instance;
+
+        for (int i = activeLoopSources.Count - 1; i >= 0; i--)
+        {
+            AudioSource source = activeLoopSources[i];
+
+            if (source == null)
+                continue;
+
+            if (audioManager != null)
+            {
+                audioManager.StopRoutedSfxSource(source);
+            }
+            else
+            {
+                source.Stop();
+
+                if (Application.isPlaying)
+                    Destroy(source.gameObject);
+                else
+                    DestroyImmediate(source.gameObject);
+            }
+        }
+
+        activeLoopSources.Clear();
+    }
+
     private void PlaySound(string targetSoundId, float targetVolume)
     {
         if (string.IsNullOrWhiteSpace(targetSoundId))
@@ -108,9 +151,7 @@ public class DBAudioSource : MonoBehaviour, IPointerEnterHandler, IPointerClickH
             return;
         }
 
-        if (delayedPlayCoroutine != null)
-            StopCoroutine(delayedPlayCoroutine);
-
+        CancelDelayedPlay();
         delayedPlayCoroutine = StartCoroutine(PlayDelayedRoutine(targetSoundId, targetVolume));
     }
 
@@ -123,13 +164,46 @@ public class DBAudioSource : MonoBehaviour, IPointerEnterHandler, IPointerClickH
 
     private void PlayImmediate(string targetSoundId, float targetVolume)
     {
-        if (AudioManager.Instance == null)
+        AudioManager audioManager = AudioManager.Instance;
+
+        if (audioManager == null)
         {
             Debug.LogWarning($"[{nameof(DBAudioSource)}] AudioManager.Instance를 찾지 못했습니다. Object: {name}", this);
             return;
         }
 
-        AudioManager.Instance.PlaySfx(targetSoundId, Mathf.Clamp01(targetVolume));
+        float clampedVolume = Mathf.Clamp01(targetVolume);
+
+        if (!audioManager.TryGetSfxData(targetSoundId, out SoundData soundData))
+            return;
+
+        // 일반 SFX는 기존 재생 방식을 그대로 유지합니다.
+        if (!soundData.loop)
+        {
+            audioManager.PlaySfx(targetSoundId, clampedVolume);
+            return;
+        }
+
+        // 같은 DBAudioSource에서 Loop를 다시 시작하면 기존 Loop가 겹쳐 쌓이지 않도록 정리합니다.
+        StopLoopSounds();
+
+        AudioSource loopSource = audioManager.PlaySfxSource(
+            targetSoundId,
+            transform.position,
+            transform.rotation,
+            clampedVolume);
+
+        if (loopSource != null)
+            activeLoopSources.Add(loopSource);
+    }
+
+    private void CancelDelayedPlay()
+    {
+        if (delayedPlayCoroutine == null)
+            return;
+
+        StopCoroutine(delayedPlayCoroutine);
+        delayedPlayCoroutine = null;
     }
 
     /// <summary>

@@ -6,9 +6,14 @@ public static class BattleVfxAudioUtility
     public static void PlayAndStripEmbeddedAudioSources(
         GameObject vfx,
         GameObject sourcePrefab,
-        MonoBehaviour coroutineHost)
+        MonoBehaviour coroutineHost,
+        bool allowPlayOncePerActionCues = true)
     {
-        PlayDatabaseVfxSfx(vfx, sourcePrefab, coroutineHost);
+        PlayDatabaseVfxSfx(
+            vfx,
+            sourcePrefab,
+            coroutineHost,
+            allowPlayOncePerActionCues);
 
         if (vfx == null)
             return;
@@ -20,7 +25,8 @@ public static class BattleVfxAudioUtility
     private static void PlayDatabaseVfxSfx(
         GameObject vfx,
         GameObject sourcePrefab,
-        MonoBehaviour coroutineHost)
+        MonoBehaviour coroutineHost,
+        bool allowPlayOncePerActionCues)
     {
         if (AudioManager.Instance == null || sourcePrefab == null)
             return;
@@ -37,6 +43,9 @@ public static class BattleVfxAudioUtility
             VfxSoundCue cue = data.Cues[i];
 
             if (cue == null)
+                continue;
+
+            if (cue.playOncePerAction && !allowPlayOncePerActionCues)
                 continue;
 
             PlayDatabaseVfxSfxCue(vfx, cue, coroutineHost);
