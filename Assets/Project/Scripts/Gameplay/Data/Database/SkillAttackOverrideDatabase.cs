@@ -7,9 +7,20 @@ namespace Relic.Gameplay.Data
     public enum SkillAttackSlot
     {
         None = 0,
+
+        // 기존 Unity 직렬화 값 보존을 위해 Attack1~3 값은 변경하지 않습니다.
         Attack1 = 1,
         Attack2 = 2,
-        Attack3 = 3
+        Attack3 = 3,
+
+        Power = 4,
+        Skill = 5,
+
+        Extra1 = 6,
+        Extra2 = 7,
+        Extra3 = 8,
+        Extra4 = 9,
+        Extra5 = 10
     }
 
     [CreateAssetMenu(menuName = "Relic/Data/Skill Attack Override Database")]
@@ -50,12 +61,12 @@ namespace Relic.Gameplay.Data
             }
         }
 
-        public bool TryGetAttackSlot(
+        public bool TryGetPresentationSlot(
             string characterId,
             string skillId,
-            out SkillAttackSlot attackSlot)
+            out SkillAttackSlot slot)
         {
-            attackSlot = SkillAttackSlot.None;
+            slot = SkillAttackSlot.None;
 
             characterId = NormalizeId(characterId);
             skillId = NormalizeId(skillId);
@@ -66,18 +77,31 @@ namespace Relic.Gameplay.Data
             if (map == null)
                 Initialize();
 
-            return map.TryGetValue(MakeKey(characterId, skillId), out attackSlot);
+            return map.TryGetValue(MakeKey(characterId, skillId), out slot);
         }
 
+        // 기존 호출부 호환용.
+        public bool TryGetAttackSlot(
+            string characterId,
+            string skillId,
+            out SkillAttackSlot attackSlot)
+        {
+            return TryGetPresentationSlot(characterId, skillId, out attackSlot);
+        }
+
+        // 기존 호출부 호환용. Power/Skill 슬롯은 공격 인덱스가 아니므로 false를 반환합니다.
         public bool TryGetAttackIndex(string characterId, string skillId, out int attackIndex)
         {
             attackIndex = 0;
 
-            if (!TryGetAttackSlot(characterId, skillId, out SkillAttackSlot attackSlot))
+            if (!TryGetPresentationSlot(characterId, skillId, out SkillAttackSlot slot))
                 return false;
 
-            attackIndex = (int)attackSlot;
-            return attackIndex >= 1 && attackIndex <= 3;
+            if (slot < SkillAttackSlot.Attack1 || slot > SkillAttackSlot.Attack3)
+                return false;
+
+            attackIndex = (int)slot;
+            return true;
         }
 
         private static string NormalizeId(string id)
