@@ -332,6 +332,18 @@ public class IntroSequenceController : MonoBehaviour
     }
 
     /// <summary>
+    /// 인트로 홀드 스킵 버튼에서 호출합니다.
+    /// 현재 재생 중인 인트로를 기존 종료/씬 전환 흐름을 그대로 사용하여 종료합니다.
+    /// </summary>
+    public void SkipIntro()
+    {
+        if (!isPlaying || isTransitioning)
+            return;
+
+        FinishIntroWithTransition();
+    }
+
+    /// <summary>
     /// 다음 문장으로 넘어갈 때 AudioManager에 등록된 SFX를 재생합니다.
     /// DBAudioSource와 동일하게 사운드 ID와 볼륨을 사용합니다.
     /// </summary>
@@ -1690,6 +1702,10 @@ public class IntroSequenceController : MonoBehaviour
             Mouse.current != null &&
             Mouse.current.leftButton.wasPressedThisFrame)
         {
+            Vector2 pointerPosition = Mouse.current.position.ReadValue();
+            if (IntroHoldSkipButton.IsPointerOverSkipButton(pointerPosition))
+                return false;
+
             return true;
         }
 
