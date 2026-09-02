@@ -140,7 +140,18 @@ public class MapNodeView : MonoBehaviour
         if (data == null)
             return string.Empty;
 
-        return data.NodeIndex == 0 ? "Start" : data.Type;
+        if (data.NodeIndex == 0)
+            return "Start";
+
+        if (string.Equals(
+            EventIdUtility.Normalize(data.EventId),
+            "Event_06",
+            StringComparison.OrdinalIgnoreCase))
+        {
+            return "Shop";
+        }
+
+        return data.Type;
     }
 
     public void SetClickable(bool canClick)

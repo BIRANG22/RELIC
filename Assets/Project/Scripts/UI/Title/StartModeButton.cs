@@ -16,6 +16,10 @@ public class StartModeButton : MonoBehaviour
 
         ResetPreviousRunRuntimeState();
 
+        // 파티 편성이 완전히 비어 있는 최초 게임 시작에서만 기본 파티를 구성합니다.
+        // 이미 플레이해서 저장된 파티가 있다면 InitialDefaultPartySetup 내부에서 그대로 유지합니다.
+        InitialDefaultPartySetup.TryInitialize(DataManager.Instance);
+
         GameManager.Instance.Context.SelectedGameMode = gameMode;
 
         if (IntroSettings.ShouldPlayIntro)

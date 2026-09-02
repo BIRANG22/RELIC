@@ -228,7 +228,9 @@ public sealed class EventSkillAwakenSelectionPanelUI : MonoBehaviour
 
     public void Close()
     {
-        if (panelRoot == null || !panelRoot.activeSelf)
+        // 이 컴포넌트 또는 부모 오브젝트가 비활성 상태라면 코루틴을 시작할 수 없습니다.
+        // 이벤트 전환 중 정리 호출은 즉시 닫기로 처리합니다.
+        if (!isActiveAndEnabled || !gameObject.activeInHierarchy || panelRoot == null || !panelRoot.activeInHierarchy)
         {
             CloseImmediate(false);
             return;
@@ -295,7 +297,9 @@ public sealed class EventSkillAwakenSelectionPanelUI : MonoBehaviour
     {
         if (panelFadeRoutine != null)
         {
-            StopCoroutine(panelFadeRoutine);
+            if (isActiveAndEnabled && gameObject.activeInHierarchy)
+                StopCoroutine(panelFadeRoutine);
+
             panelFadeRoutine = null;
         }
 

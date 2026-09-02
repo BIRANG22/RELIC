@@ -16,6 +16,7 @@ public class MapCategoryHighlightController : MonoBehaviour
     [SerializeField] private Button battleButton;
     [SerializeField] private Button restButton;
     [SerializeField] private Button eventButton;
+    [SerializeField] private Button shopButton;
     [SerializeField] private Button startButton;
 
     private readonly List<RegisteredHoverEvent> registeredHoverEvents = new();
@@ -66,6 +67,9 @@ public class MapCategoryHighlightController : MonoBehaviour
         if (eventButton == null)
             eventButton = FindChildButton("EventImg");
 
+        if (shopButton == null)
+            shopButton = FindChildButton("ShopImg");
+
         if (startButton == null)
             startButton = FindChildButton("StartImg");
     }
@@ -92,6 +96,7 @@ public class MapCategoryHighlightController : MonoBehaviour
         RegisterHoverEvent(battleButton, "Common");
         RegisterHoverEvent(restButton, "Rest");
         RegisterHoverEvent(eventButton, "Special");
+        RegisterHoverEvent(shopButton, "Shop");
         RegisterHoverEvent(startButton, "Start");
     }
 

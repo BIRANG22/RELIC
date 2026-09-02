@@ -55,6 +55,19 @@ public class MapVisualController : MonoBehaviour
                actor.TryPlayAction(actionId);
     }
 
+    public bool TryReverseAction(string visualObjectId, string actionId)
+    {
+        visualObjectId = NormalizeId(visualObjectId);
+        actionId = NormalizeId(actionId);
+
+        if (string.IsNullOrEmpty(visualObjectId) || string.IsNullOrEmpty(actionId))
+            return false;
+
+        return actorsById.TryGetValue(visualObjectId, out MapVisualActor actor) &&
+               actor != null &&
+               actor.TryReverseAction(actionId);
+    }
+
     private void OnDisable()
     {
         ClearVisuals();

@@ -584,7 +584,8 @@ Event_05,더스티움 광맥,,3,그만둔다.,누적한 레드 더스티움 획�
 Event_05_C,더스티움 광맥,지금까지 채굴한 더스티움을 챙겨 자리를 떠났다.,,,,,,,,,,,,,,,,,,,event5,event_choice_03_success,event5,event_choice_03_failure
 Event_05_D,더스티움 광맥,채굴해 두었던 더스티움마저 잔해 속에 묻혀 버렸다.,,,,,,,,,,,,,,,,,,,event5,event_choice_03_success,event5,event_choice_03_failure
 Event_05_E,더스티움 광맥,붕괴되기 전 모든 더스티움을 확보하는 데 성공했다.,,,,,,,,,,,,,,,,,,,event5,event_choice_03_success,event5,event_choice_03_failure
-Event_06,그림자 상인,“이런 곳에서 손님을 만날 줄이야. 마침 괜찮은 물건이 좀 있지. 구경해 보겠나?”,1,물건을 살펴본다.,상점 이용,,OpenUI,,,,,,OpenPanel,상점,활성화,,,,,,event6,event_choice_01_success,event6,event_choice_01_failure
+Event_06,그림자 상인,“이런 곳에서 손님을 만날 줄이야. 마침 괜찮은 물건이 좀 있지. 구경해 보겠나?”,1,물건을 살펴본다.,상점 이용,,OpenUI,,,,,,OpenPanel,상점,활성화,,,Event_06_A,,,event6,event_choice_01_success,event6,event_choice_01_failure
+Event_06_A,그림자 상인,“이 정도면 됐겠지. 오래 붙잡아 둘 생각은 없어.”,,,,,,,,,,,,,,,,,,,event6,event_choice_01_success,event6,event_choice_01_failure
 Event_07,안식의 샘,고요한 물소리와 함께 분수에서 희미한 빛이 흘러나온다. 분수에 남은 힘은 한 번만 사용할 수 있을 것 같다.,1,생명의 힘을 받아들인다.,파티 전원의 최대 생명력 12 증가,,Immediate,,,,,,Modify,파티 전원 최대 생명력,+12,,,,,,event7,event_choice_01_success,event7,event_choice_01_failure
 Event_07,안식의 샘,,2,마나의 힘을 받아들인다.,파티 전원의 최대 마나 2 증가,,Immediate,,,,,,Modify,파티 전원 최대 마나,+2,,,,,,event7,event_choice_02_success,event7,event_choice_02_failure
 Event_08,공명의 비석,“비석에 새겨진 문자가 기억에 반응해 희미하게 빛난다. 잠든 기억의 힘을 깨울 수 있을 것 같다.”,1,공명을 시작한다.,"성공 확률 90%

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
@@ -56,6 +57,17 @@ public class EventRoomController : MonoBehaviour
 
     [Header("Shop")]
     [SerializeField] private RestRoomShopPanel shopPanel;
+    [Tooltip("Event_06의 오브젝트 연출을 먼저 보여준 뒤 상점 패널을 열기까지 기다리는 시간입니다.")]
+    [SerializeField, Min(0f)] private float event06ShopOpenDelay = 0.6f;
+    [Tooltip("Event_06 상점이 열리고 닫힐 때 EventRoom의 TITLE/선택지 UI가 페이드되는 시간입니다.")]
+    [SerializeField, Min(0.01f)] private float event06EventUiFadeDuration = 0.25f;
+    private bool waitingForEvent06ShopClose;
+    private bool pendingEvent06ShopOpen;
+    private Coroutine event06ShopOpenRoutine;
+    private Coroutine event06ResultUiRoutine;
+    private string event06CloseVisualObjectId;
+    private string event06CloseVisualActionId;
+    private string event06NextEventId;
 
     [Header("Event Relic Selection")]
     [SerializeField] private EventEquippedRelicSelectionPanelUI equippedRelicSelectionPanel;
@@ -232,6 +244,7 @@ public class EventRoomController : MonoBehaviour
     private void OnDisable()
     {
         UnbindChestEvents();
+        UnbindEvent06ShopClose();
 
         if (nextButton != null)
             nextButton.onClick.RemoveListener(OnNextButtonClicked);
@@ -300,6 +313,18 @@ public class EventRoomController : MonoBehaviour
             if (isSelectingSkillAwaken)
             {
                 CancelSkillAwakenSelection();
+                return;
+            }
+
+            // Event_06_A는 상점 종료 후 표시되는 최종 결과 단계입니다.
+            // 상점 전용 코루틴 상태와 관계없이 Next를 누르면 즉시 현재 노드를 완료하고 지도로 복귀합니다.
+            if (IsEvent06TitleOnlyTerminal(currentEventDefinition?.EventId))
+            {
+                HideDiceRollPresenterImmediate();
+                SetEventTitleVisible(false);
+                CompleteCurrentNode();
+                SetNextButtonVisible(false);
+                ReturnToMap();
                 return;
             }
 
@@ -518,7 +543,7 @@ public class EventRoomController : MonoBehaviour
 
         if (IsEvent01TitleOnlyTerminal(definition.EventId) || IsEvent02TitleOnlyTerminal(definition.EventId) ||
             IsEvent04TitleOnlyTerminal(definition.EventId) || IsEvent05TitleOnlyTerminal(definition.EventId) ||
-            IsEvent08TitleOnlyTerminal(definition.EventId))
+            IsEvent06TitleOnlyTerminal(definition.EventId) || IsEvent08TitleOnlyTerminal(definition.EventId))
         {
             // 결과 Title만 보여주는 종료 상태입니다.
             if (IsEvent08TitleOnlyTerminal(definition.EventId))
@@ -555,6 +580,11 @@ public class EventRoomController : MonoBehaviour
         string normalized = EventIdUtility.Normalize(eventId);
         return normalized == "Event_04_A" || normalized == "Event_04_B" ||
                normalized == "Event_04_C" || normalized == "Event_04_D";
+    }
+
+    private static bool IsEvent06TitleOnlyTerminal(string eventId)
+    {
+        return EventIdUtility.Normalize(eventId) == "Event_06_A";
     }
 
     private static bool IsEvent08TitleOnlyTerminal(string eventId)
@@ -981,7 +1011,32 @@ public class EventRoomController : MonoBehaviour
     {
         // 이벤트 결과 오브젝트 연출을 항상 보상 UI보다 먼저 시작합니다.
         PersistEventRuntime();
-        PlayVisualAction(result);
+
+        bool playedEvent06OpenVisual = false;
+        if (EventIdUtility.Normalize(choice?.EventId) == "Event_06" && result.Accepted)
+        {
+            // OpenPanel은 EventChoiceExecutionService에서 먼저 처리되므로,
+            // 상점 종료에 필요한 다음 이벤트/되돌림 연출 정보는 실행 결과가 확정된 여기서 저장합니다.
+            event06NextEventId = EventIdUtility.Normalize(result.NextEventId);
+            // 상점이 닫힐 때는 별도의 failure 액션을 쓰지 않고,
+            // 방금 재생한 success 애니메이션 자체를 역재생합니다.
+            event06CloseVisualObjectId = NormalizeVisualId(choice.SuccessVisualObjectId);
+            event06CloseVisualActionId = NormalizeVisualId(choice.SuccessVisualActionId);
+
+            string visualObjectId = NormalizeVisualId(choice.SuccessVisualObjectId);
+            string visualActionId = NormalizeVisualId(choice.SuccessVisualActionId);
+            if (!string.IsNullOrEmpty(visualObjectId) && !string.IsNullOrEmpty(visualActionId))
+            {
+                PlayVisualActionById(visualObjectId, visualActionId);
+                playedEvent06OpenVisual = true;
+            }
+        }
+
+        if (!playedEvent06OpenVisual)
+            PlayVisualAction(result);
+
+        if (pendingEvent06ShopOpen)
+            StartEvent06ShopOpenAfterVisualAction(playedEvent06OpenVisual || result.HasVisualAction);
 
         if (pendingDustiumAcquireAmount > 0)
         {
@@ -1002,6 +1057,15 @@ public class EventRoomController : MonoBehaviour
         int[] resolvedDiceFaces = null)
     {
         TryShowEventStatResultPopup(choice, result, resolvedDiceFaces);
+
+        // Event_06 상점은 패널이 닫힐 때까지 이벤트 진행을 보류합니다.
+        // Close 알림을 받으면 Event_06_A 결과 Title로 전환합니다.
+        if (waitingForEvent06ShopClose)
+        {
+            SetNextButtonVisible(false);
+            SetChoiceSlotsInteractable(false);
+            return;
+        }
 
         if (TryQueueEvent01ResultContinuation(choice, result, resolvedDiceFaces))
             return;
@@ -2845,14 +2909,24 @@ public class EventRoomController : MonoBehaviour
         if (!result.HasVisualAction)
             return;
 
+        PlayVisualActionById(result.VisualObjectId, result.VisualActionId);
+    }
+
+    private void PlayVisualActionById(string visualObjectId, string visualActionId)
+    {
+        visualObjectId = NormalizeVisualId(visualObjectId);
+        visualActionId = NormalizeVisualId(visualActionId);
+        if (string.IsNullOrEmpty(visualObjectId) || string.IsNullOrEmpty(visualActionId))
+            return;
+
         BattleSceneController sceneController =
             Object.FindFirstObjectByType<BattleSceneController>(FindObjectsInactive.Include);
         if (sceneController != null)
         {
-            if (!sceneController.TryPlaySharedMapVisualAction(result.VisualObjectId, result.VisualActionId))
+            if (!sceneController.TryPlaySharedMapVisualAction(visualObjectId, visualActionId))
             {
                 Debug.LogWarning(
-                    $"[EventRoomController] Visual action not found: {result.VisualObjectId}/{result.VisualActionId}",
+                    $"[EventRoomController] Visual action not found: {visualObjectId}/{visualActionId}",
                     this);
             }
 
@@ -2868,15 +2942,50 @@ public class EventRoomController : MonoBehaviour
         if (visualController == null)
         {
             Debug.LogWarning(
-                $"[EventRoomController] MapVisualController not found for visual action: {result.VisualObjectId}/{result.VisualActionId}",
+                $"[EventRoomController] MapVisualController not found for visual action: {visualObjectId}/{visualActionId}",
                 this);
             return;
         }
 
-        if (!visualController.TryPlayAction(result.VisualObjectId, result.VisualActionId))
+        if (!visualController.TryPlayAction(visualObjectId, visualActionId))
         {
             Debug.LogWarning(
-                $"[EventRoomController] Visual action not found: {result.VisualObjectId}/{result.VisualActionId}",
+                $"[EventRoomController] Visual action not found: {visualObjectId}/{visualActionId}",
+                this);
+        }
+    }
+
+    private void ReverseVisualActionById(string visualObjectId, string visualActionId)
+    {
+        visualObjectId = NormalizeVisualId(visualObjectId);
+        visualActionId = NormalizeVisualId(visualActionId);
+        if (string.IsNullOrEmpty(visualObjectId) || string.IsNullOrEmpty(visualActionId))
+            return;
+
+        BattleSceneController sceneController =
+            Object.FindFirstObjectByType<BattleSceneController>(FindObjectsInactive.Include);
+        if (sceneController != null)
+        {
+            if (!sceneController.TryReverseSharedMapVisualAction(visualObjectId, visualActionId))
+            {
+                Debug.LogWarning(
+                    $"[EventRoomController] Visual action could not be reversed: {visualObjectId}/{visualActionId}",
+                    this);
+            }
+
+            return;
+        }
+
+        MapVisualController visualController = GetComponent<MapVisualController>();
+        if (visualController == null)
+            visualController = GetComponentInParent<MapVisualController>();
+        if (visualController == null)
+            visualController = GetComponentInChildren<MapVisualController>(true);
+
+        if (visualController == null || !visualController.TryReverseAction(visualObjectId, visualActionId))
+        {
+            Debug.LogWarning(
+                $"[EventRoomController] Visual action could not be reversed: {visualObjectId}/{visualActionId}",
                 this);
         }
     }
@@ -2999,7 +3108,10 @@ public class EventRoomController : MonoBehaviour
         if (SameToken(resultType, "OpenPanel"))
         {
             if (Contains(choice.ResultTarget, "상점") && TryOpenShopPanel())
+            {
+                CacheEvent06CloseVisualAction(choice);
                 return "상점 패널을 열었습니다.";
+            }
 
             return BuildResultSummary(choice);
         }
@@ -3181,8 +3293,210 @@ public class EventRoomController : MonoBehaviour
         if (targetShopPanel == null)
             return false;
 
+        if (EventIdUtility.Normalize(currentEventDefinition?.EventId) == "Event_06")
+        {
+            UnbindEvent06ShopClose();
+            shopPanel = targetShopPanel;
+            shopPanel.Closed += OnEvent06ShopClosed;
+            waitingForEvent06ShopClose = true;
+            pendingEvent06ShopOpen = true;
+            SetNextButtonVisible(false);
+            SetChoiceSlotsInteractable(false);
+            return true;
+        }
+
         targetShopPanel.Open();
         return true;
+    }
+
+    private void StartEvent06ShopOpenAfterVisualAction(bool hasVisualAction)
+    {
+        if (!pendingEvent06ShopOpen || shopPanel == null)
+            return;
+
+        if (event06ShopOpenRoutine != null)
+            StopCoroutine(event06ShopOpenRoutine);
+
+        event06ShopOpenRoutine = StartCoroutine(
+            OpenEvent06ShopAfterVisualAction(hasVisualAction ? event06ShopOpenDelay : 0f));
+    }
+
+    private IEnumerator OpenEvent06ShopAfterVisualAction(float delay)
+    {
+        pendingEvent06ShopOpen = false;
+
+        if (delay > 0f)
+            yield return new WaitForSecondsRealtime(delay);
+
+        if (waitingForEvent06ShopClose && shopPanel != null)
+        {
+            // 상점 패널의 페이드 인과 동시에 기존 EventRoom TITLE/선택지 UI를 부드럽게 숨깁니다.
+            shopPanel.Open();
+            yield return FadeOutEvent06EventUi();
+        }
+
+        event06ShopOpenRoutine = null;
+    }
+
+    private IEnumerator FadeOutEvent06EventUi()
+    {
+        EnsureEventChoiceScrollViewReference();
+        EnsureEventChoiceScrollCanvasGroup();
+        EnsureEventTitleCanvasGroup();
+
+        CanvasGroup scrollGroup = eventChoiceScrollCanvasGroup;
+        CanvasGroup titleGroup = eventTitleCanvasGroup;
+
+        if (scrollGroup != null)
+        {
+            scrollGroup.interactable = false;
+            scrollGroup.blocksRaycasts = false;
+        }
+
+        if (titleGroup != null)
+        {
+            titleGroup.interactable = false;
+            titleGroup.blocksRaycasts = false;
+        }
+
+        float duration = Mathf.Max(0.01f, event06EventUiFadeDuration);
+        float elapsed = 0f;
+        float scrollStart = scrollGroup != null ? scrollGroup.alpha : 1f;
+        float titleStart = titleGroup != null ? titleGroup.alpha : 1f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
+            if (scrollGroup != null) scrollGroup.alpha = Mathf.Lerp(scrollStart, 0f, t);
+            if (titleGroup != null) titleGroup.alpha = Mathf.Lerp(titleStart, 0f, t);
+            yield return null;
+        }
+
+        if (scrollGroup != null) scrollGroup.alpha = 0f;
+        if (titleGroup != null) titleGroup.alpha = 0f;
+        if (eventChoiceScrollView != null) eventChoiceScrollView.gameObject.SetActive(false);
+        if (eventTitleText != null) eventTitleText.gameObject.SetActive(false);
+    }
+
+    private void CacheEvent06CloseVisualAction(EventData choice)
+    {
+        if (choice == null || EventIdUtility.Normalize(choice.EventId) != "Event_06")
+            return;
+
+        event06CloseVisualObjectId = NormalizeVisualId(choice.SuccessVisualObjectId);
+        event06CloseVisualActionId = NormalizeVisualId(choice.SuccessVisualActionId);
+        event06NextEventId = EventIdUtility.Normalize(choice.NextEventId);
+    }
+
+    private static string NormalizeVisualId(string id)
+    {
+        return string.IsNullOrWhiteSpace(id) ? string.Empty : id.Trim();
+    }
+
+    private void OnEvent06ShopClosed()
+    {
+        if (!waitingForEvent06ShopClose)
+            return;
+
+        string nextEventId = event06NextEventId;
+        string closeVisualObjectId = event06CloseVisualObjectId;
+        string closeVisualActionId = event06CloseVisualActionId;
+        UnbindEvent06ShopClose();
+
+        if (event06ResultUiRoutine != null)
+            StopCoroutine(event06ResultUiRoutine);
+
+        event06ResultUiRoutine = StartCoroutine(ShowEvent06ResultAfterShopClose(
+            nextEventId, closeVisualObjectId, closeVisualActionId));
+    }
+
+    private IEnumerator ShowEvent06ResultAfterShopClose(
+        string nextEventId,
+        string closeVisualObjectId,
+        string closeVisualActionId)
+    {
+        if (string.IsNullOrWhiteSpace(nextEventId) ||
+            DataManager.Instance == null ||
+            DataManager.Instance.EventDatabase == null ||
+            !DataManager.Instance.EventDatabase.TryGetEvent(nextEventId, out EventDefinition resultDefinition) ||
+            resultDefinition == null)
+        {
+            Debug.LogWarning(
+                $"[EventRoomController] Event_06 shop result event '{nextEventId}' was not found.",
+                this);
+            event06ResultUiRoutine = null;
+            yield break;
+        }
+
+        // GameData의 NextEventId를 그대로 따라 결과 TITLE/NextButton 상태로 전환합니다.
+        LoadEventDefinition(resultDefinition, string.Empty);
+
+        EnsureEventChoiceScrollViewReference();
+        EnsureEventTitleCanvasGroup();
+
+        if (eventChoiceScrollView != null)
+            eventChoiceScrollView.gameObject.SetActive(false);
+
+        if (eventTitleText != null)
+            eventTitleText.gameObject.SetActive(true);
+
+        CanvasGroup titleGroup = eventTitleCanvasGroup;
+        if (titleGroup != null)
+        {
+            titleGroup.alpha = 0f;
+            titleGroup.interactable = false;
+            titleGroup.blocksRaycasts = false;
+        }
+
+        // 결과 TITLE/NextButton이 나타나는 시점에 상점을 열 때 사용했던
+        // 동일한 NPC 애니메이션을 끝에서 처음으로 역재생합니다.
+        ReverseVisualActionById(closeVisualObjectId, closeVisualActionId);
+        SetNextButtonVisible(true);
+
+        float duration = Mathf.Max(0.01f, event06EventUiFadeDuration);
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
+            if (titleGroup != null) titleGroup.alpha = t;
+            yield return null;
+        }
+
+        if (titleGroup != null)
+        {
+            titleGroup.alpha = 1f;
+            titleGroup.interactable = true;
+            titleGroup.blocksRaycasts = true;
+        }
+
+        event06ResultUiRoutine = null;
+    }
+
+    private void UnbindEvent06ShopClose()
+    {
+        waitingForEvent06ShopClose = false;
+        pendingEvent06ShopOpen = false;
+
+        if (event06ShopOpenRoutine != null)
+        {
+            StopCoroutine(event06ShopOpenRoutine);
+            event06ShopOpenRoutine = null;
+        }
+
+        if (event06ResultUiRoutine != null)
+        {
+            StopCoroutine(event06ResultUiRoutine);
+            event06ResultUiRoutine = null;
+        }
+
+        if (shopPanel != null)
+            shopPanel.Closed -= OnEvent06ShopClosed;
+
+        event06CloseVisualObjectId = string.Empty;
+        event06CloseVisualActionId = string.Empty;
+        event06NextEventId = string.Empty;
     }
 
     private RestRoomShopPanel ResolveShopPanel()

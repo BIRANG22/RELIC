@@ -219,6 +219,7 @@ namespace Relic.Gameplay.Data
         private const int FixedMiddleLayerRowCount = 4;
         private const int StartNodeIndex = 0;
         private const int BossNodeIndex = 49;
+        private const string FixedShopMapId = "Map_22";
 
         [Header("Layer 0")]
         [SerializeField] private ManualBattleMapFixedNodeDefinition layer0Start = new() { Type = "Special" };
@@ -718,6 +719,11 @@ namespace Relic.Gameplay.Data
                 {
                     continue;
                 }
+
+                // Layer 7 고정 상점용 Map_22는 MapIdOverride로만 사용하고
+                // 일반 이벤트방의 랜덤 후보에는 포함하지 않는다.
+                if (Same(candidate.MapId, FixedShopMapId))
+                    continue;
 
                 if (!IsRandomCandidateAllowed(candidate, randomExclusionSettings))
                     continue;

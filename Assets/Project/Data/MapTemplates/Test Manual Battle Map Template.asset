@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   layer0Start:
     Type: Special
-    MapIdOverride: Map_21
+    MapIdOverride: Map_25
     UseCustomPosition: 0
     CustomPosition: {x: 0, y: 0}
     NextNodeIndices: 0200000004000000
@@ -202,15 +202,15 @@ MonoBehaviour:
       NextNodeIndices: 
     Slot2:
       Enabled: 1
-      Type: Common
-      MapIdOverride: 
+      Type: Special
+      MapIdOverride: Map_22
       UseCustomPosition: 0
       CustomPosition: {x: 0, y: 0}
       NextNodeIndices: 1d0000001f000000
     Slot3:
       Enabled: 1
-      Type: Common
-      MapIdOverride: 
+      Type: Special
+      MapIdOverride: Map_22
       UseCustomPosition: 0
       CustomPosition: {x: 0, y: 0}
       NextNodeIndices: 1f00000020000000

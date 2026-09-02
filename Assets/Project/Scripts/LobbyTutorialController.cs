@@ -200,6 +200,10 @@ public sealed class LobbyTutorialController : MonoBehaviour
     private void Update()
     {
         UpdateNextButtonIndicatorMotion();
+
+        // 튜토리얼 대화가 진행 중일 때는 Space 키도 마우스 클릭과 동일하게 처리합니다.
+        if (dialogueMode != DialogueMode.None && Input.GetKeyDown(KeyCode.Space))
+            AdvanceDialogue();
     }
 
     private void OnDisable()
