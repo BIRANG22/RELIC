@@ -65,6 +65,95 @@ public class MapVisualActor : MonoBehaviour
         return matched;
     }
 
+    public bool TryReverseAction(string actionId)
+    {
+        actionId = NormalizeId(actionId);
+
+        if (string.IsNullOrEmpty(actionId) || actions == null)
+            return false;
+
+        bool matched = false;
+
+        for (int i = 0; i < actions.Count; i++)
+        {
+            MapVisualActionEntry action = actions[i];
+            if (action == null || !action.Matches(actionId))
+                continue;
+
+            if (action.TryReverseAnimator(this))
+                matched = true;
+        }
+
+        return matched;
+    }
+
+    internal void StartAnimatorReverse(
+        Animator targetAnimator,
+        int layerIndex,
+        int playedStateHash,
+        float playedStateLength,
+        int originalStateHash,
+        float originalNormalizedTime)
+    {
+        if (targetAnimator == null || playedStateHash == 0)
+            return;
+
+        StartCoroutine(ReverseAnimatorRoutine(
+            targetAnimator,
+            layerIndex,
+            playedStateHash,
+            playedStateLength,
+            originalStateHash,
+            originalNormalizedTime));
+    }
+
+    private IEnumerator ReverseAnimatorRoutine(
+        Animator targetAnimator,
+        int layerIndex,
+        int playedStateHash,
+        float playedStateLength,
+        int originalStateHash,
+        float originalNormalizedTime)
+    {
+        if (targetAnimator == null)
+            yield break;
+
+        targetAnimator.updateMode = AnimatorUpdateMode.UnscaledTime;
+        targetAnimator.speed = 0f;
+
+        float duration = Mathf.Max(0.01f, playedStateLength);
+        float elapsed = 0f;
+
+        while (elapsed < duration && targetAnimator != null)
+        {
+            float reverseNormalizedTime = 1f - Mathf.Clamp01(elapsed / duration);
+            targetAnimator.Play(playedStateHash, layerIndex, reverseNormalizedTime);
+            targetAnimator.Update(0f);
+
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        if (targetAnimator == null)
+            yield break;
+
+        targetAnimator.Play(playedStateHash, layerIndex, 0f);
+        targetAnimator.Update(0f);
+        targetAnimator.speed = 1f;
+
+        if (originalStateHash != 0)
+        {
+            float normalized = Mathf.Repeat(originalNormalizedTime, 1f);
+            targetAnimator.Play(originalStateHash, layerIndex, normalized);
+        }
+        else
+        {
+            targetAnimator.Play(playedStateHash, layerIndex, 0f);
+        }
+
+        targetAnimator.Update(0f);
+    }
+
     internal Animator ResolveAnimator()
     {
         if (animator == null)
@@ -349,6 +438,13 @@ public sealed class MapVisualActionEntry
     [HideInInspector] public bool ApplyActiveState;
     [HideInInspector] public bool ActiveState = true;
 
+    [NonSerialized] private Animator runtimeAnimator;
+    [NonSerialized] private int runtimeAnimatorLayerIndex;
+    [NonSerialized] private int runtimeOriginalStateHash;
+    [NonSerialized] private float runtimeOriginalNormalizedTime;
+    [NonSerialized] private int runtimePlayedStateHash;
+    [NonSerialized] private float runtimePlayedStateLength;
+
     public bool Matches(string actionId)
     {
         return string.Equals(
@@ -384,14 +480,61 @@ public sealed class MapVisualActionEntry
         if (!resolvedAnimator.enabled)
             resolvedAnimator.enabled = true;
 
+        resolvedAnimator.updateMode = AnimatorUpdateMode.UnscaledTime;
+        resolvedAnimator.speed = 1f;
+
+        const int layerIndex = 0;
+        AnimatorStateInfo originalState = resolvedAnimator.GetCurrentAnimatorStateInfo(layerIndex);
+        runtimeAnimator = resolvedAnimator;
+        runtimeAnimatorLayerIndex = layerIndex;
+        runtimeOriginalStateHash = originalState.fullPathHash;
+        runtimeOriginalNormalizedTime = originalState.normalizedTime;
+        runtimePlayedStateHash = 0;
+        runtimePlayedStateLength = 0f;
+
         if (!string.IsNullOrWhiteSpace(AnimatorTrigger))
         {
             resolvedAnimator.SetTrigger(AnimatorTrigger.Trim());
+            resolvedAnimator.Update(0f);
+
+            AnimatorStateInfo playedState = resolvedAnimator.IsInTransition(layerIndex)
+                ? resolvedAnimator.GetNextAnimatorStateInfo(layerIndex)
+                : resolvedAnimator.GetCurrentAnimatorStateInfo(layerIndex);
+            runtimePlayedStateHash = playedState.fullPathHash;
+            runtimePlayedStateLength = playedState.length;
             return;
         }
 
         if (!string.IsNullOrWhiteSpace(AnimatorStateName))
-            resolvedAnimator.Play(AnimatorStateName.Trim(), 0, 0f);
+        {
+            resolvedAnimator.Play(AnimatorStateName.Trim(), layerIndex, 0f);
+            resolvedAnimator.Update(0f);
+
+            AnimatorStateInfo playedState = resolvedAnimator.GetCurrentAnimatorStateInfo(layerIndex);
+            runtimePlayedStateHash = playedState.fullPathHash;
+            runtimePlayedStateLength = playedState.length;
+        }
+    }
+
+    internal bool TryReverseAnimator(MapVisualActor owner)
+    {
+        Animator resolvedAnimator = runtimeAnimator != null
+            ? runtimeAnimator
+            : Animator != null
+                ? Animator
+                : owner != null ? owner.ResolveAnimator() : null;
+
+        if (resolvedAnimator == null || runtimePlayedStateHash == 0 || owner == null)
+            return false;
+
+        owner.StartAnimatorReverse(
+            resolvedAnimator,
+            runtimeAnimatorLayerIndex,
+            runtimePlayedStateHash,
+            runtimePlayedStateLength,
+            runtimeOriginalStateHash,
+            runtimeOriginalNormalizedTime);
+        return true;
     }
 
     private void SpawnVfx(MapVisualActor owner)

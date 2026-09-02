@@ -863,6 +863,13 @@ public class BattleSceneController : MonoBehaviour
                sharedMapVisualController.TryPlayAction(visualObjectId, actionId);
     }
 
+    public bool TryReverseSharedMapVisualAction(string visualObjectId, string actionId)
+    {
+        AutoFindSharedRoomPresentationIfNeeded();
+        return sharedMapVisualController != null &&
+               sharedMapVisualController.TryReverseAction(visualObjectId, actionId);
+    }
+
     private void PlayMapIntroTextOnStart()
     {
         if (!playMapIntroOnStart)

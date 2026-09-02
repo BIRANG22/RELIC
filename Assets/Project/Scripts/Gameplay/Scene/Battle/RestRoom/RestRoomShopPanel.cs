@@ -1,40 +1,41 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class RestRoomShopPanel : MonoBehaviour
 {
-    private const string DefaultGoodsPrefabAssetPath = "Assets/Project/PrefabsR/RestRoom/Goods.prefab";
+    public event Action Closed;
+
+    [Header("Purchase Confirmation")]
+    [SerializeField] private string purchaseConfirmMessage = "구매하시겠습니까?";
 
     [Header("UI")]
     [SerializeField] private GameObject panelRoot;
     [SerializeField] private Transform contentRoot;
-    [SerializeField] private GoodsIconItem goodsPrefab;
+    [SerializeField] private GoodsIconItem[] goodsSlots = new GoodsIconItem[RestRoomShopService.DefaultTotalGoodsCount];
+
+    [Header("Skill Resource Icons")]
+    [SerializeField] private Sprite costResourceIcon;
+    [SerializeField] private Sprite hpResourceIcon;
+    [SerializeField] private Sprite uniqueResourceIcon;
+    [SerializeField] private Sprite moveResourceIcon;
 
     [Header("Open Close")]
-    [SerializeField] private RectTransform slideRoot;
-    [SerializeField] private Vector2 openAnchoredPosition = Vector2.zero;
-    [SerializeField] private Vector2 closedAnchoredPosition = new(0f, 1100f);
+    [SerializeField] private CanvasGroup panelCanvasGroup;
+    [SerializeField, Min(0.01f)] private float openCloseFadeDuration = 0.25f;
     [SerializeField] private bool deactivateOnClose;
 
-    [Header("Stock")]
-    [SerializeField] private int totalGoodsCount = RestRoomShopService.DefaultTotalGoodsCount;
-    [SerializeField] private int skillGoodsCount = RestRoomShopService.DefaultSkillGoodsCount;
-    [SerializeField] private float commonSkillWeight = RestRoomShopService.DefaultCommonWeight;
-    [SerializeField] private float rareSkillWeight = RestRoomShopService.DefaultRareWeight;
-    [SerializeField] private float epicSkillWeight = RestRoomShopService.DefaultEpicWeight;
+    [Header("Stock Rarity Weight")]
+    [SerializeField] private float commonRarityWeight = RestRoomShopService.DefaultCommonWeight;
+    [SerializeField] private float rareRarityWeight = RestRoomShopService.DefaultRareWeight;
+    [SerializeField] private float epicRarityWeight = RestRoomShopService.DefaultEpicWeight;
+    [SerializeField] private float uniqueRarityWeight = RestRoomShopService.DefaultUniqueWeight;
 
-    [Header("Layout")]
-    [SerializeField] private int columnCount = RestRoomShopService.DefaultColumnCount;
-    [SerializeField] private Vector2 firstCellAnchoredPosition = new(-330f, 100f);
-    [SerializeField] private Vector2 cellSpacing = new(220f, 300f);
-    [SerializeField] private Vector2 fallbackItemSize = new(130f, 150f);
-
-    private readonly List<GoodsIconItem> spawnedItems = new();
     private readonly ISkillRewardRandom random = new UnitySkillRewardRandom();
+    private Coroutine panelFadeRoutine;
 
     private void Awake()
     {
@@ -43,47 +44,43 @@ public class RestRoomShopPanel : MonoBehaviour
 
     private void OnEnable()
     {
-        Refresh();
+        EnsureBindings();
+        StopPanelFade();
+        SetPanelCanvasState(0f, false);
+        ClearGoodsSlots();
     }
 
     private void OnDisable()
     {
-        ClearSpawnedItems();
+        StopPanelFade();
+        ClearGoodsSlots();
     }
 
     public void Open()
     {
         EnsureBindings();
-        ApplyPanelPosition(openAnchoredPosition);
         SetPanelRootActive(true);
-
         Refresh();
+
+        StopPanelFade();
+        SetPanelCanvasState(0f, false);
+        panelFadeRoutine = StartCoroutine(FadePanel(1f, true, false));
     }
 
     public void Close()
     {
-        ClearSpawnedItems();
-        ApplyPanelPosition(closedAnchoredPosition);
-
-        if (deactivateOnClose)
-            SetPanelRootActive(false);
+        EnsureBindings();
+        StopPanelFade();
+        SetPanelCanvasInteraction(false);
+        panelFadeRoutine = StartCoroutine(FadePanel(0f, false, true));
     }
 
     public void Refresh()
     {
         EnsureBindings();
-        ClearSpawnedItems();
+        ClearGoodsSlots();
+        ResolveGoodsSlots();
 
-        if (goodsPrefab == null)
-        {
-            Debug.LogWarning("[RestRoomShopPanel] GoodsIconItem prefab/template not found.");
-            return;
-        }
-
-        if (contentRoot == null)
-            contentRoot = transform;
-
-        goodsPrefab.gameObject.SetActive(false);
 
         if (DataManager.Instance == null ||
             DataManager.Instance.SkillDatabase == null ||
@@ -95,32 +92,27 @@ public class RestRoomShopPanel : MonoBehaviour
         List<RestRoomShopGoods> stock = RestRoomShopService.CreateStock(
             DataManager.Instance.SkillDatabase.GetAll(),
             DataManager.Instance.RelicDatabase.GetAll(),
+            GetUnavailableSkillIds(),
             GetUnavailableRelicIds(),
             random,
-            totalGoodsCount,
-            skillGoodsCount,
-            commonSkillWeight,
-            rareSkillWeight,
-            epicSkillWeight);
+            commonRarityWeight,
+            rareRarityWeight,
+            epicRarityWeight,
+            uniqueRarityWeight);
 
-        for (int i = 0; i < stock.Count; i++)
-            SpawnGoods(stock[i], i);
+        int bindCount = Mathf.Min(stock.Count, goodsSlots.Length);
+        for (int i = 0; i < bindCount; i++)
+            BindGoodsSlot(goodsSlots[i], stock[i]);
     }
 
-    private void SpawnGoods(RestRoomShopGoods goods, int index)
+    private void BindGoodsSlot(GoodsIconItem item, RestRoomShopGoods goods)
     {
-        if (goods == null || goodsPrefab == null || contentRoot == null)
+        if (item == null || goods == null)
             return;
 
         goods.Icon = ResolveIcon(goods);
-
-        GoodsIconItem item = Instantiate(goodsPrefab, contentRoot);
-        item.gameObject.SetActive(true);
-
-        PrepareSpawnedItemLayout(item, index);
+        item.ConfigureResourceIcons(costResourceIcon, hpResourceIcon, uniqueResourceIcon, moveResourceIcon);
         item.Initialize(goods, OnGoodsClicked);
-
-        spawnedItems.Add(item);
     }
 
     private void OnGoodsClicked(GoodsIconItem item, RestRoomShopGoods goods)
@@ -135,7 +127,48 @@ public class RestRoomShopPanel : MonoBehaviour
             return;
 
         BattleRuntimeData runtime = DataManager.Instance.BattleRuntimeStore.GetOrCreate();
+        if (runtime.Remnant < goods.Price)
+        {
+            ShowWarning("\uC7AC\uD654\uAC00 \uBD80\uC871\uD569\uB2C8\uB2E4.");
+            return;
+        }
 
+        if (!CanPurchase(runtime, goods))
+            return;
+
+        if (UIManager.Instance == null)
+        {
+            Debug.LogWarning("[RestRoomShopPanel] CHECK 프리팹을 표시할 UIManager를 찾을 수 없습니다.", this);
+            return;
+        }
+
+        if (UIManager.Instance.IsConfirmDialogOpen)
+            return;
+
+        UIManager.Instance.ShowConfirmDialog(
+            purchaseConfirmMessage,
+            () =>
+            {
+                UIManager.Instance?.HideConfirmDialog();
+                ConfirmGoodsPurchase(item, goods);
+            },
+            () => UIManager.Instance?.HideConfirmDialog());
+    }
+
+    private void ConfirmGoodsPurchase(GoodsIconItem item, RestRoomShopGoods goods)
+    {
+        if (item == null || goods == null)
+            return;
+
+        if (SteamBattleStateSynchronizer.TryBlockSharedBattleStateEdit())
+            return;
+
+        if (DataManager.Instance == null || DataManager.Instance.BattleRuntimeStore == null)
+            return;
+
+        BattleRuntimeData runtime = DataManager.Instance.BattleRuntimeStore.GetOrCreate();
+
+        // 확인창이 열린 사이에 재화/보유 상태가 바뀔 수 있으므로 구매 직전에 다시 검사합니다.
         if (runtime.Remnant < goods.Price)
         {
             ShowWarning("\uC7AC\uD654\uAC00 \uBD80\uC871\uD569\uB2C8\uB2E4.");
@@ -152,7 +185,6 @@ public class RestRoomShopPanel : MonoBehaviour
         }
 
         runtime.Remnant -= goods.Price;
-
         DataManager.Instance.BattleRuntimeStore.Set(runtime);
         BattleGoldHudUI.RefreshAll();
         item.MarkPurchased();
@@ -188,80 +220,6 @@ public class RestRoomShopPanel : MonoBehaviour
         return true;
     }
 
-    private void PrepareSpawnedItemLayout(GoodsIconItem item, int index)
-    {
-        if (item == null)
-            return;
-
-        Vector2 itemSize = ResolveItemSize();
-        RectTransform rectTransform = item.GetComponent<RectTransform>();
-
-        if (rectTransform != null)
-        {
-            rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
-            rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
-            rectTransform.pivot = new Vector2(0.5f, 0.5f);
-            rectTransform.sizeDelta = itemSize;
-            rectTransform.anchoredPosition = CalculateAnchoredPosition(index);
-            rectTransform.localRotation = Quaternion.identity;
-            rectTransform.localScale = Vector3.one;
-        }
-
-        LayoutElement layoutElement = item.GetComponent<LayoutElement>();
-
-        if (layoutElement == null)
-            layoutElement = item.gameObject.AddComponent<LayoutElement>();
-
-        layoutElement.ignoreLayout = true;
-        layoutElement.minWidth = itemSize.x;
-        layoutElement.minHeight = itemSize.y;
-        layoutElement.preferredWidth = itemSize.x;
-        layoutElement.preferredHeight = itemSize.y;
-
-        item.ApplyDefaultLayout(itemSize);
-    }
-
-    private Vector2 CalculateAnchoredPosition(int index)
-    {
-        int columns = Mathf.Max(1, columnCount);
-        int row = index / columns;
-        int column = index % columns;
-
-        return new Vector2(
-            firstCellAnchoredPosition.x + (cellSpacing.x * column),
-            firstCellAnchoredPosition.y - (cellSpacing.y * row));
-    }
-
-    private Vector2 ResolveItemSize()
-    {
-        Vector2 size = fallbackItemSize;
-
-        if (goodsPrefab == null)
-            return ClampItemSize(size);
-
-        RectTransform prefabRect = goodsPrefab.GetComponent<RectTransform>();
-
-        if (prefabRect == null)
-            return ClampItemSize(size);
-
-        Vector2 rectSize = prefabRect.rect.size;
-
-        if (rectSize.x >= 20f && rectSize.y >= 20f)
-            return ClampItemSize(rectSize);
-
-        if (prefabRect.sizeDelta.x >= 20f && prefabRect.sizeDelta.y >= 20f)
-            return ClampItemSize(prefabRect.sizeDelta);
-
-        return ClampItemSize(size);
-    }
-
-    private Vector2 ClampItemSize(Vector2 size)
-    {
-        return new Vector2(
-            Mathf.Max(1f, size.x),
-            Mathf.Max(1f, size.y));
-    }
-
     private Sprite ResolveIcon(RestRoomShopGoods goods)
     {
         if (goods == null || DataManager.Instance == null)
@@ -287,6 +245,56 @@ public class RestRoomShopPanel : MonoBehaviour
         }
 
         return null;
+    }
+
+    private HashSet<string> GetUnavailableSkillIds()
+    {
+        HashSet<string> ids = new(StringComparer.OrdinalIgnoreCase);
+
+        if (DataManager.Instance == null)
+            return ids;
+
+        BattleRuntimeData runtime = DataManager.Instance.BattleRuntimeStore?.GetOrCreate();
+
+        if (runtime?.SkillInventoryIds != null)
+        {
+            for (int i = 0; i < runtime.SkillInventoryIds.Count; i++)
+                AddSkillAndPairedVariant(ids, runtime.SkillInventoryIds[i]);
+        }
+
+        IReadOnlyDictionary<string, CharacterRuntimeData> characters =
+            DataManager.Instance.CharacterRuntimeStore?.GetAll();
+
+        if (characters == null)
+            return ids;
+
+        foreach (KeyValuePair<string, CharacterRuntimeData> pair in characters)
+        {
+            CharacterRuntimeData character = pair.Value;
+
+            if (character?.EquippedSkillIds == null)
+                continue;
+
+            for (int i = 0; i < character.EquippedSkillIds.Length; i++)
+                AddSkillAndPairedVariant(ids, character.EquippedSkillIds[i]);
+        }
+
+        return ids;
+    }
+
+    private void AddSkillAndPairedVariant(HashSet<string> ids, string skillId)
+    {
+        if (ids == null || string.IsNullOrWhiteSpace(skillId))
+            return;
+
+        string normalizedId = skillId.Trim();
+        ids.Add(normalizedId);
+
+        if (SkillRarityUtility.TryGetPairedVariantId(normalizedId, out string pairedSkillId) &&
+            !string.IsNullOrWhiteSpace(pairedSkillId))
+        {
+            ids.Add(pairedSkillId.Trim());
+        }
     }
 
     private HashSet<string> GetUnavailableRelicIds()
@@ -432,49 +440,81 @@ public class RestRoomShopPanel : MonoBehaviour
         BattleWarningUI.ShowMessage(message);
     }
 
-    private void ClearSpawnedItems()
+    private void ClearGoodsSlots()
     {
-        for (int i = 0; i < spawnedItems.Count; i++)
-        {
-            if (spawnedItems[i] != null)
-                Destroy(spawnedItems[i].gameObject);
-        }
+        ResolveGoodsSlots();
 
-        spawnedItems.Clear();
+        for (int i = 0; i < goodsSlots.Length; i++)
+        {
+            GoodsIconItem slot = goodsSlots[i];
+            if (slot == null)
+                continue;
+
+            slot.Clear();
+            slot.gameObject.SetActive(false);
+        }
     }
 
     private void EnsureBindings()
     {
-        bool inferContentRootFromTemplate = contentRoot == null;
-
         if (panelRoot == null)
             panelRoot = gameObject;
 
-        if (slideRoot == null)
-            slideRoot = ResolvePanelRectTransform();
-
-        if (goodsPrefab == null)
-            goodsPrefab = LoadDefaultGoodsPrefabAsset();
-
-        if (goodsPrefab == null)
-            goodsPrefab = GetComponentInChildren<GoodsIconItem>(true);
-
-        if (goodsPrefab == null)
-            goodsPrefab = FindSceneGoodsTemplate();
-
-        if (inferContentRootFromTemplate &&
-            goodsPrefab != null &&
-            goodsPrefab.transform.parent != null &&
-            goodsPrefab.transform.IsChildOf(transform))
-        {
-            contentRoot = goodsPrefab.transform.parent;
-        }
+        if (panelCanvasGroup == null)
+            panelCanvasGroup = ResolvePanelCanvasGroup();
 
         if (contentRoot == null)
-            contentRoot = transform;
+        {
+            Transform foundContent = FindChildRecursive(transform, "Content");
+            contentRoot = foundContent != null ? foundContent : transform;
+        }
 
-        if (goodsPrefab == null)
-            goodsPrefab = CreateFallbackGoodsTemplate();
+        ResolveGoodsSlots();
+    }
+
+    private void ResolveGoodsSlots()
+    {
+        if (goodsSlots == null || goodsSlots.Length != RestRoomShopService.DefaultTotalGoodsCount)
+            goodsSlots = new GoodsIconItem[RestRoomShopService.DefaultTotalGoodsCount];
+
+        if (contentRoot == null)
+            return;
+
+        for (int i = 0; i < goodsSlots.Length; i++)
+        {
+            if (goodsSlots[i] != null)
+                continue;
+
+            string objectName = $"Goods{i + 1:00}";
+            Transform child = FindChildRecursive(contentRoot, objectName);
+            if (child == null)
+                continue;
+
+            GoodsIconItem item = child.GetComponent<GoodsIconItem>();
+            if (item == null)
+                item = child.gameObject.AddComponent<GoodsIconItem>();
+
+            goodsSlots[i] = item;
+        }
+    }
+
+    private Transform FindChildRecursive(Transform root, string childName)
+    {
+        if (root == null || string.IsNullOrWhiteSpace(childName))
+            return null;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform child = root.GetChild(i);
+            if (string.Equals(child.name, childName, StringComparison.OrdinalIgnoreCase))
+                return child;
+
+            Transform nested = FindChildRecursive(child, childName);
+            if (nested != null)
+                return nested;
+        }
+
+        return null;
     }
 
     private void SetPanelRootActive(bool active)
@@ -488,118 +528,88 @@ public class RestRoomShopPanel : MonoBehaviour
         gameObject.SetActive(active);
     }
 
-    private void ApplyPanelPosition(Vector2 anchoredPosition)
+    private IEnumerator FadePanel(float targetAlpha, bool interactableAtEnd, bool notifyClosed)
     {
-        if (slideRoot == null)
-            slideRoot = ResolvePanelRectTransform();
+        EnsureBindings();
 
-        if (slideRoot != null)
-            slideRoot.anchoredPosition = anchoredPosition;
-    }
-
-    private RectTransform ResolvePanelRectTransform()
-    {
-        if (panelRoot != null && panelRoot.TryGetComponent(out RectTransform panelRectTransform))
-            return panelRectTransform;
-
-        return GetComponent<RectTransform>();
-    }
-
-    private GoodsIconItem LoadDefaultGoodsPrefabAsset()
-    {
-#if UNITY_EDITOR
-        GameObject prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(DefaultGoodsPrefabAssetPath);
-
-        if (prefab == null)
-            return null;
-
-        GoodsIconItem item = prefab.GetComponent<GoodsIconItem>();
-
-        if (item != null)
-            return item;
-
-        return prefab.GetComponentInChildren<GoodsIconItem>(true);
-#else
-        return null;
-#endif
-    }
-
-    private GoodsIconItem FindSceneGoodsTemplate()
-    {
-        GoodsIconItem[] templates = Resources.FindObjectsOfTypeAll<GoodsIconItem>();
-
-        for (int i = 0; i < templates.Length; i++)
+        if (panelCanvasGroup == null)
         {
-            GoodsIconItem template = templates[i];
+            if (notifyClosed)
+            {
+                ClearGoodsSlots();
+                if (deactivateOnClose)
+                    SetPanelRootActive(false);
+                Closed?.Invoke();
+            }
 
-            if (template == null || !IsSceneObject(template.gameObject))
-                continue;
-
-            return template;
+            panelFadeRoutine = null;
+            yield break;
         }
 
-        return null;
+        float startAlpha = panelCanvasGroup.alpha;
+        float duration = Mathf.Max(0.01f, openCloseFadeDuration);
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            t = t * t * (3f - 2f * t);
+            panelCanvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, t);
+            yield return null;
+        }
+
+        SetPanelCanvasState(targetAlpha, interactableAtEnd);
+
+        if (notifyClosed)
+        {
+            ClearGoodsSlots();
+            if (deactivateOnClose)
+                SetPanelRootActive(false);
+            Closed?.Invoke();
+        }
+
+        panelFadeRoutine = null;
     }
 
-    private bool IsSceneObject(GameObject target)
+    private void StopPanelFade()
     {
-        return target != null &&
-               target.scene.IsValid() &&
-               target.scene.isLoaded;
+        if (panelFadeRoutine == null)
+            return;
+
+        StopCoroutine(panelFadeRoutine);
+        panelFadeRoutine = null;
     }
 
-    private GoodsIconItem CreateFallbackGoodsTemplate()
+    private void SetPanelCanvasState(float alpha, bool interactable)
     {
-        if (contentRoot == null)
-            contentRoot = transform;
+        if (panelCanvasGroup == null)
+            panelCanvasGroup = ResolvePanelCanvasGroup();
 
-        GameObject itemObject = new(
-            "GoodsIconItem_Template",
-            typeof(RectTransform),
-            typeof(CanvasRenderer),
-            typeof(Image),
-            typeof(Button),
-            typeof(GoodsIconItem));
+        if (panelCanvasGroup == null)
+            return;
 
-        itemObject.transform.SetParent(contentRoot, false);
+        panelCanvasGroup.alpha = Mathf.Clamp01(alpha);
+        panelCanvasGroup.interactable = interactable;
+        panelCanvasGroup.blocksRaycasts = interactable;
+    }
 
-        RectTransform itemRect = itemObject.GetComponent<RectTransform>();
-        itemRect.sizeDelta = fallbackItemSize;
+    private void SetPanelCanvasInteraction(bool interactable)
+    {
+        if (panelCanvasGroup == null)
+            panelCanvasGroup = ResolvePanelCanvasGroup();
 
-        Image background = itemObject.GetComponent<Image>();
-        background.color = new Color(1f, 1f, 1f, 0.08f);
+        if (panelCanvasGroup == null)
+            return;
 
-        Button button = itemObject.GetComponent<Button>();
-        button.targetGraphic = background;
+        panelCanvasGroup.interactable = interactable;
+        panelCanvasGroup.blocksRaycasts = interactable;
+    }
 
-        GameObject iconObject = new(
-            "IconImage",
-            typeof(RectTransform),
-            typeof(CanvasRenderer),
-            typeof(Image));
-
-        iconObject.transform.SetParent(itemObject.transform, false);
-
-        Image iconImage = iconObject.GetComponent<Image>();
-        iconImage.preserveAspect = true;
-
-        GameObject priceObject = new(
-            "price",
-            typeof(RectTransform),
-            typeof(CanvasRenderer),
-            typeof(TextMeshProUGUI));
-
-        priceObject.transform.SetParent(itemObject.transform, false);
-
-        TextMeshProUGUI priceText = priceObject.GetComponent<TextMeshProUGUI>();
-        priceText.alignment = TextAlignmentOptions.Center;
-        priceText.fontSize = 28f;
-        priceText.color = Color.white;
-        priceText.raycastTarget = false;
-
-        GoodsIconItem item = itemObject.GetComponent<GoodsIconItem>();
-        item.ApplyDefaultLayout(fallbackItemSize);
-        itemObject.SetActive(false);
-        return item;
+    private CanvasGroup ResolvePanelCanvasGroup()
+    {
+        GameObject target = panelRoot != null ? panelRoot : gameObject;
+        CanvasGroup group = target.GetComponent<CanvasGroup>();
+        return group != null ? group : target.AddComponent<CanvasGroup>();
     }
 }

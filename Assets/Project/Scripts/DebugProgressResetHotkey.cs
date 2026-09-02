@@ -123,6 +123,10 @@ public sealed class DebugProgressResetHotkey : MonoBehaviour
     private static void GrantTestBundle()
     {
         DataManager dataManager = DataManager.Instance;
+
+        if (dataManager != null)
+            InitialDefaultPartySetup.TryInitialize(dataManager);
+
         LobbyRuntimeData lobby = dataManager?.LobbyRuntimeStore?.GetOrCreate();
 
         if (dataManager == null || lobby == null)
