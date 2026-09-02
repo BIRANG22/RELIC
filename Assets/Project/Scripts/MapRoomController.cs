@@ -61,14 +61,29 @@ public class MapRoomController : MonoBehaviour
 
     public void RefreshNow()
     {
-        RefreshForMap(ResolveCurrentMapId());
+        string mapId = ResolveCurrentMapId();
+
+        if (IsMapOpen())
+            RefreshForMapSelection(mapId);
+        else
+            RefreshForMap(mapId);
     }
 
     public void RefreshForMap(string mapId)
     {
+        Refresh(mapId, false);
+    }
+
+    public void RefreshForMapSelection(string mapId)
+    {
+        Refresh(mapId, true);
+    }
+
+    private void Refresh(string mapId, bool isMapSelection)
+    {
         ResolveReferences();
         RefreshBackground(mapId);
-        SpawnPartyAllies(mapId);
+        SpawnPartyAllies(mapId, isMapSelection);
     }
 
     private void RefreshBackground(string mapId)
@@ -106,12 +121,12 @@ public class MapRoomController : MonoBehaviour
         return currentNode != null ? currentNode.MapId : string.Empty;
     }
 
-    private void SpawnPartyAllies(string mapId)
+    private void SpawnPartyAllies(string mapId, bool isMapSelection)
     {
         ResolveAllySpawnPoints();
         ClearAllSpawnPoints();
 
-        bool useAllyRoot = !ShouldSkipAllyRoot(mapId);
+        bool useAllyRoot = isMapSelection || !ShouldSkipAllyRoot(mapId);
         SetAllyRootActive(useAllyRoot);
 
         if (!useAllyRoot)
