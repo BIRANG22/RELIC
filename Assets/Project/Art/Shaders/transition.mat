@@ -69,7 +69,7 @@ Material:
     - _direction: 1
     - _noise_strength: 3.81
     - _noise_strength2: 3.05
-    - _progress: -1.22
+    - _progress: 0.5
     m_Colors:
     - _ClipRect: {r: 0, g: 0, b: 0, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}

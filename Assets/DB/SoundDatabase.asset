@@ -545,6 +545,24 @@ MonoBehaviour:
     useRandomPitch: 0
     randomPitchMin: 1
     randomPitchMax: 1
+  - id: scene.door.open
+    aliases: []
+    clip: {fileID: 8300000, guid: 1bfddafd281ff48f6a8e440fc6f0628d, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: scene.door.open2
+    aliases: []
+    clip: {fileID: 8300000, guid: 370748b228e4c4554a01ed16028303af, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
   eventSfxList:
   - id: event.09.Ambience
     aliases: []
