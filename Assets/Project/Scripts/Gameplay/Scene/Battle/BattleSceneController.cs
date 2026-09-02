@@ -245,7 +245,7 @@ public class BattleSceneController : MonoBehaviour
         AutoFindSharedRoomPresentationIfNeeded();
         if (sharedBackgroundController != null)
         {
-            sharedBackgroundController.ShowForLayer(nodeData.LayerIndex, playBossReveal);
+            sharedBackgroundController.ShowForMap(nodeData.MapId, nodeData.LayerIndex, playBossReveal);
             return;
         }
 
@@ -260,7 +260,7 @@ public class BattleSceneController : MonoBehaviour
             return;
         }
 
-        controller.ShowForLayer(nodeData.LayerIndex, playBossReveal);
+        controller.ShowForMap(nodeData.MapId, nodeData.LayerIndex, playBossReveal);
     }
 
     private void ApplyRoomVisual(GameObject room, GeneratedMapNodeData nodeData)

@@ -80,6 +80,20 @@ namespace Relic.Gameplay.Data
             return prefab != null;
         }
 
+        public bool TryGetRestPrefab(string characterId, out GameObject prefab)
+        {
+            prefab = null;
+
+            if (map == null)
+                Initialize();
+
+            if (!map.TryGetValue(characterId, out var entry))
+                return false;
+
+            prefab = entry.RestPrefab;
+            return prefab != null;
+        }
+
         public bool TryGetBattleEventWorldPrefab(string characterId, out GameObject prefab)
         {
             prefab = null;
@@ -120,6 +134,9 @@ namespace Relic.Gameplay.Data
 
         [Header("Preview World")]
         public GameObject PreviewWorldPrefab;
+
+        [Header("Rest")]
+        public GameObject RestPrefab;
 
         [Header("Battle Event World")]
         public GameObject BattleEventWorldPrefab;

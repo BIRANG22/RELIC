@@ -475,8 +475,8 @@ Map_21,Special5,Special,0,Event_05,Stage1,1
 Map_22,Special6,Special,0,Event_06,Stage1,1
 Map_23,Special7,Special,0,Event_07,Stage1,1
 Map_24,Special8,Special,0,Event_08,Stage1,1
-Map_25,Special9,Special,0,Event_09,Stage1,1
-
+Map_25,Special9,Start,0,Event_09,Stage1,1
+Map_26,Rest,Rest,0,0,Stage1,1
 
 ,,,
 
