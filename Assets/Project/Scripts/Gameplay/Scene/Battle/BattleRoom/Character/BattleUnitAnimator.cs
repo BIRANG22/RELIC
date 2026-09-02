@@ -287,7 +287,7 @@ public class BattleUnitAnimator : MonoBehaviour
             return;
         }
 
-        PlaySkillVfx(skillData, command);
+        PlaySkillVfx(skillData, command, hitIndex);
 
         // 첫 타격은 기존 AttackSlot을 사용합니다.
         // 2타부터는 RepeatAttackSlots에서 바로 직전 타격 슬롯을 제외해 랜덤 선택합니다.
@@ -587,6 +587,20 @@ public class BattleUnitAnimator : MonoBehaviour
             return;
 
         SpawnVfx(vfx, command);
+    }
+
+    private void PlaySkillVfx(
+        SkillMasterData skillData,
+        PlayerReservedCommand command,
+        int hitIndex)
+    {
+        if (!TryResolveSkillVfx(skillData, out BattleVfxEntry vfx))
+            return;
+
+        SpawnVfx(
+            vfx,
+            command,
+            allowPlayOncePerActionCues: hitIndex <= 0);
     }
 
     private bool TryResolveSkillVfx(SkillMasterData skillData, out BattleVfxEntry vfx)
@@ -1004,6 +1018,14 @@ public class BattleUnitAnimator : MonoBehaviour
 
     private void SpawnVfx(BattleVfxEntry entry, PlayerReservedCommand command)
     {
+        SpawnVfx(entry, command, allowPlayOncePerActionCues: true);
+    }
+
+    private void SpawnVfx(
+        BattleVfxEntry entry,
+        PlayerReservedCommand command,
+        bool allowPlayOncePerActionCues)
+    {
         if (entry == null || entry.prefab == null)
             return;
 
@@ -1012,15 +1034,31 @@ public class BattleUnitAnimator : MonoBehaviour
 
         Transform spawn = GetVfxSpawnTransform();
 
-        if (TrySpawnWorldVfx(entry, spawn, vfxLifeTime))
+        if (TrySpawnWorldVfx(
+                entry,
+                spawn,
+                vfxLifeTime,
+                allowPlayOncePerActionCues))
+        {
             return;
+        }
 
-        if (TrySpawnDirectWorldVfx(entry, spawn, vfxLifeTime))
+        if (TrySpawnDirectWorldVfx(
+                entry,
+                spawn,
+                vfxLifeTime,
+                allowPlayOncePerActionCues))
+        {
             return;
+        }
 
         GameObject vfx = Instantiate(entry.prefab, spawn, false);
 
-        ConfigureVfxInstance(vfx, entry);
+        ConfigureVfxInstance(
+            vfx,
+            entry,
+            applyFacingFlip: true,
+            allowPlayOncePerActionCues: allowPlayOncePerActionCues);
         ApplyDirectWorldVfxSorting(vfx, entry, GetUnitVfxSortingReferenceY());
 
         Destroy(
@@ -1372,7 +1410,8 @@ public class BattleUnitAnimator : MonoBehaviour
     private bool TrySpawnWorldVfx(
         BattleVfxEntry entry,
         Transform spawn,
-        float lifeTime)
+        float lifeTime,
+        bool allowPlayOncePerActionCues = true)
     {
         bool spawned = BattleWorldVfxRenderer.TrySpawn(
             entry,
@@ -1381,7 +1420,11 @@ public class BattleUnitAnimator : MonoBehaviour
             Mathf.Max(
                 0.01f,
                 BattleConsecutiveActionPresentationContext.ScaleDuration(lifeTime)),
-            vfx => ConfigureVfxInstance(vfx, entry),
+            vfx => ConfigureVfxInstance(
+                vfx,
+                entry,
+                applyFacingFlip: true,
+                allowPlayOncePerActionCues: allowPlayOncePerActionCues),
             out BattleWorldVfxHandle handle);
 
         if (spawned)
@@ -1393,14 +1436,20 @@ public class BattleUnitAnimator : MonoBehaviour
     private bool TrySpawnDirectWorldVfx(
         BattleVfxEntry entry,
         Transform spawn,
-        float lifeTime)
+        float lifeTime,
+        bool allowPlayOncePerActionCues = true)
     {
         if (entry.renderMode != BattleVfxRenderMode.DirectWorldRenderer)
             return false;
 
         GameObject vfx = Instantiate(entry.prefab, spawn, false);
         vfx.transform.localPosition += entry.proxyWorldOffset;
-        ConfigureDirectWorldVfxInstance(vfx, entry, GetUnitVfxSortingReferenceY());
+        ConfigureDirectWorldVfxInstance(
+            vfx,
+            entry,
+            GetUnitVfxSortingReferenceY(),
+            applyFacingFlip: true,
+            allowPlayOncePerActionCues: allowPlayOncePerActionCues);
         Destroy(
             vfx,
             Mathf.Max(
@@ -1425,9 +1474,14 @@ public class BattleUnitAnimator : MonoBehaviour
         GameObject vfx,
         BattleVfxEntry entry,
         float sortingReferenceY,
-        bool applyFacingFlip)
+        bool applyFacingFlip,
+        bool allowPlayOncePerActionCues = true)
     {
-        ConfigureVfxInstance(vfx, entry, applyFacingFlip);
+        ConfigureVfxInstance(
+            vfx,
+            entry,
+            applyFacingFlip,
+            allowPlayOncePerActionCues);
         ScaleDirectWorldVfxToProxyHeight(vfx, entry);
         ApplyDirectWorldVfxSorting(vfx, entry, sortingReferenceY);
     }
@@ -1601,10 +1655,18 @@ public class BattleUnitAnimator : MonoBehaviour
 
     private void ConfigureVfxInstance(GameObject vfx, BattleVfxEntry entry)
     {
-        ConfigureVfxInstance(vfx, entry, applyFacingFlip: true);
+        ConfigureVfxInstance(
+            vfx,
+            entry,
+            applyFacingFlip: true,
+            allowPlayOncePerActionCues: true);
     }
 
-    private void ConfigureVfxInstance(GameObject vfx, BattleVfxEntry entry, bool applyFacingFlip)
+    private void ConfigureVfxInstance(
+        GameObject vfx,
+        BattleVfxEntry entry,
+        bool applyFacingFlip,
+        bool allowPlayOncePerActionCues = true)
     {
         if (vfxLayer >= 0)
             SetLayerRecursively(vfx, vfxLayer);
@@ -1613,7 +1675,11 @@ public class BattleUnitAnimator : MonoBehaviour
         BattleConsecutiveActionPresentationContext.ApplyVfxSpeed(vfx);
         if (applyFacingFlip)
             ApplyVfxFlip(vfx, entry.flipType);
-        BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(vfx, entry.prefab, this);
+        BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(
+            vfx,
+            entry.prefab,
+            this,
+            allowPlayOncePerActionCues);
     }
 
     private static void StabilizeVisualEffectPlayback(GameObject vfx)

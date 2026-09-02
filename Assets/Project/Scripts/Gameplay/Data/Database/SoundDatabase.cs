@@ -239,6 +239,9 @@ public class VfxSoundCue
 
     public bool loop;
 
+    [Tooltip("같은 행동의 다단 공격에서 이 Cue를 첫 번째 타격에만 재생합니다.")]
+    public bool playOncePerAction;
+
     public bool useRandomPitch;
 
     [Range(SoundData.MinPitch, SoundData.MaxPitch)]
