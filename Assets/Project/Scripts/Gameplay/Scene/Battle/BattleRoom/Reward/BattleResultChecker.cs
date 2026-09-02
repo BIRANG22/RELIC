@@ -213,12 +213,12 @@ public class BattleResultChecker : MonoBehaviour
     {
         MarkCurrentBattleNodeCleared();
 
-        BattleRoomCleaner cleaner =
-            Object.FindFirstObjectByType<BattleRoomCleaner>(FindObjectsInactive.Include);
-        cleaner?.PrepareForMapSelection();
-
         if (completedCallback != null)
         {
+            BattleRoomCleaner cleaner =
+                Object.FindFirstObjectByType<BattleRoomCleaner>(FindObjectsInactive.Include);
+            cleaner?.PrepareForMapSelection();
+
             completedCallback.Invoke();
             return;
         }
@@ -227,9 +227,19 @@ public class BattleResultChecker : MonoBehaviour
             Object.FindFirstObjectByType<BattleSceneController>(FindObjectsInactive.Include);
 
         if (sceneController != null)
+        {
+            // 일반 전투의 지도 복귀에서는 캐릭터/몬스터를 여기서 먼저 정리하지 않습니다.
+            // BattleSceneController가 전환 화면으로 BattleRoom을 완전히 덮은 순간
+            // PrepareRoomForMapSelection()을 호출해 전투 유닛을 정리합니다.
             sceneController.ReturnToMap();
-        else
-            Debug.LogWarning("[BattleResultChecker] BattleSceneController is missing.");
+            return;
+        }
+
+        // SceneController가 없는 예외 상황에서는 기존처럼 즉시 정리합니다.
+        BattleRoomCleaner fallbackCleaner =
+            Object.FindFirstObjectByType<BattleRoomCleaner>(FindObjectsInactive.Include);
+        fallbackCleaner?.PrepareForMapSelection();
+        Debug.LogWarning("[BattleResultChecker] BattleSceneController is missing.");
     }
 
     private void BindNextButton()

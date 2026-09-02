@@ -313,6 +313,13 @@ public class EventRoomController : MonoBehaviour
 
             HideDiceRollPresenterImmediate();
 
+            if (IsEvent05CommitTerminal(currentEventDefinition?.EventId))
+            {
+                if (dustiumAcquireRoutine == null)
+                    dustiumAcquireRoutine = StartCoroutine(CommitEvent05AccumulatedDustiumAndExit());
+                return;
+            }
+
             if (pendingEventRewards.Count > 0 && TryOpenPendingEventRewardPanel(false))
                 return;
 
@@ -510,7 +517,8 @@ public class EventRoomController : MonoBehaviour
             eventResultText.text = resultMessage ?? string.Empty;
 
         if (IsEvent01TitleOnlyTerminal(definition.EventId) || IsEvent02TitleOnlyTerminal(definition.EventId) ||
-            IsEvent04TitleOnlyTerminal(definition.EventId) || IsEvent08TitleOnlyTerminal(definition.EventId))
+            IsEvent04TitleOnlyTerminal(definition.EventId) || IsEvent05TitleOnlyTerminal(definition.EventId) ||
+            IsEvent08TitleOnlyTerminal(definition.EventId))
         {
             // 결과 Title만 보여주는 종료 상태입니다.
             if (IsEvent08TitleOnlyTerminal(definition.EventId))
@@ -553,6 +561,18 @@ public class EventRoomController : MonoBehaviour
     {
         string normalized = EventIdUtility.Normalize(eventId);
         return normalized == "Event_08_C" || normalized == "Event_08_D";
+    }
+
+    private static bool IsEvent05TitleOnlyTerminal(string eventId)
+    {
+        string normalized = EventIdUtility.Normalize(eventId);
+        return normalized == "Event_05_C" || normalized == "Event_05_D" || normalized == "Event_05_E";
+    }
+
+    private static bool IsEvent05CommitTerminal(string eventId)
+    {
+        string normalized = EventIdUtility.Normalize(eventId);
+        return normalized == "Event_05_C" || normalized == "Event_05_E";
     }
 
     private static string ResolveEventTitle(EventDefinition definition)
@@ -878,6 +898,8 @@ public class EventRoomController : MonoBehaviour
     {
         SetChoiceSlotsInteractable(false);
 
+        int accumulatedRemnantBeforeChoice = eventChoiceSessionState.AccumulatedRemnant;
+
         EventChoiceExecutionResult result;
         activeRewardChoice = choice;
         try
@@ -924,6 +946,31 @@ public class EventRoomController : MonoBehaviour
         }
 
         ClearSkillAwakenSelection();
+
+        if (IsEvent05MiningChoice(choice) && result.Accepted)
+        {
+            if (dustiumAcquireRoutine != null)
+                StopCoroutine(dustiumAcquireRoutine);
+
+            dustiumAcquireRoutine = StartCoroutine(
+                PlayEvent05AccumulatedDustiumThenContinue(
+                    choice,
+                    result,
+                    accumulatedRemnantBeforeChoice,
+                    forcedDiceFaces));
+            return;
+        }
+
+        if (IsEvent05DeferredExitChoice(choice) && result.Accepted)
+        {
+            if (dustiumAcquireRoutine != null)
+                StopCoroutine(dustiumAcquireRoutine);
+
+            dustiumAcquireRoutine = StartCoroutine(
+                PlayEvent05ExitVisualThenContinue(choice, result, forcedDiceFaces));
+            return;
+        }
+
         ContinueAfterExecutedChoice(choice, result, forcedDiceFaces);
     }
 
@@ -2575,11 +2622,16 @@ public class EventRoomController : MonoBehaviour
         if (currentEventDefinition == null)
             return null;
 
+        string currentEventId = EventIdUtility.Normalize(currentEventDefinition.EventId);
+
+        if (currentEventId == "Event_05" || currentEventId == "Event_05_A" || currentEventId == "Event_05_B")
+            return BuildEvent05VisibleChoices(currentEventId);
+
         IReadOnlyList<EventData> merged = EventChoiceSequenceUtility.MergeChoices(
             currentEventDefinition.Choices,
             persistentEventChoices);
 
-        if (EventIdUtility.Normalize(currentEventDefinition.EventId) != "Event_02_A" ||
+        if (currentEventId != "Event_02_A" ||
             DataManager.Instance == null ||
             DataManager.Instance.EventDatabase == null ||
             !DataManager.Instance.EventDatabase.TryGetEvent("Event_02_F", out EventDefinition exitDefinition) ||
@@ -2605,6 +2657,103 @@ public class EventRoomController : MonoBehaviour
 
         visible.Sort((a, b) => (a?.ChoiceOrder ?? int.MaxValue).CompareTo(b?.ChoiceOrder ?? int.MaxValue));
         return visible;
+    }
+
+    private IReadOnlyList<EventData> BuildEvent05VisibleChoices(string currentEventId)
+    {
+        if (DataManager.Instance?.EventDatabase == null ||
+            !DataManager.Instance.EventDatabase.TryGetEvent("Event_05", out EventDefinition baseDefinition) ||
+            baseDefinition?.Choices == null)
+        {
+            return currentEventDefinition.Choices;
+        }
+
+        List<EventData> visible = new();
+
+        if (currentEventDefinition.Choices != null)
+        {
+            for (int i = 0; i < currentEventDefinition.Choices.Count; i++)
+            {
+                EventData stageChoice = currentEventDefinition.Choices[i];
+                if (stageChoice == null || stageChoice.ChoiceOrder < 1 || stageChoice.ChoiceOrder > 2)
+                    continue;
+
+                // 각 단계(Event_05 / A / B)의 채굴 판정과 보상은 GameData에 작성된 값을 그대로 사용합니다.
+                visible.Add(stageChoice);
+            }
+        }
+
+        // 최초 진입에서는 그만두기를 표시하지 않습니다.
+        // 2/3번째 시도에서는 Event_05의 3번 선택지를 재사용하되 실제 지급은 C의 Next에서 처리합니다.
+        if (currentEventId == "Event_05_A" || currentEventId == "Event_05_B")
+        {
+            EventData exitChoice = FindChoiceByOrder(baseDefinition.Choices, 3);
+            if (exitChoice != null)
+                visible.Add(CreateEvent05DeferredExitChoice(exitChoice, currentEventId));
+        }
+
+        visible.Sort((a, b) => (a?.ChoiceOrder ?? int.MaxValue).CompareTo(b?.ChoiceOrder ?? int.MaxValue));
+        return visible;
+    }
+
+    private static EventData FindChoiceByOrder(IReadOnlyList<EventData> choices, int choiceOrder)
+    {
+        if (choices == null)
+            return null;
+
+        for (int i = 0; i < choices.Count; i++)
+        {
+            EventData choice = choices[i];
+            if (choice != null && choice.ChoiceOrder == choiceOrder)
+                return choice;
+        }
+
+        return null;
+    }
+
+    private static EventData CreateEvent05DeferredExitChoice(EventData source, string eventId)
+    {
+        EventData choice = CloneEventChoice(source);
+        choice.EventId = eventId;
+        choice.ResultType = string.Empty;
+        choice.ResultTarget = string.Empty;
+        choice.ResultValue = string.Empty;
+        return choice;
+    }
+
+    private static EventData CloneEventChoice(EventData source)
+    {
+        if (source == null)
+            return null;
+
+        return new EventData
+        {
+            EventId = source.EventId,
+            EventName = source.EventName,
+            Title = source.Title,
+            ChoiceOrder = source.ChoiceOrder,
+            ChoiceName = source.ChoiceName,
+            ChoiceDesc = source.ChoiceDesc,
+            UnavailableChoiceDesc = source.UnavailableChoiceDesc,
+            ChoiceType = source.ChoiceType,
+            SelectCondition = source.SelectCondition,
+            CostType = source.CostType,
+            CostTarget = source.CostTarget,
+            CostValue = source.CostValue,
+            SuccessCondition = source.SuccessCondition,
+            ResultType = source.ResultType,
+            ResultTarget = source.ResultTarget,
+            ResultValue = source.ResultValue,
+            SuccessRate = source.SuccessRate,
+            FailResult = source.FailResult,
+            NextEventId = source.NextEventId,
+            FailNextEventId = source.FailNextEventId,
+            PersistAcrossNextEvent = source.PersistAcrossNextEvent,
+            SuccessVisualObjectId = source.SuccessVisualObjectId,
+            SuccessVisualActionId = source.SuccessVisualActionId,
+            FailureVisualObjectId = source.FailureVisualObjectId,
+            FailureVisualActionId = source.FailureVisualActionId
+        };
     }
 
     private string GetCharacterDisplayName(string characterId)
@@ -3161,6 +3310,213 @@ public class EventRoomController : MonoBehaviour
 
         if (isActiveAndEnabled)
             ContinueAfterExecutedChoiceCore(choice, result, resolvedDiceFaces);
+    }
+
+    private static bool IsEvent05MiningChoice(EventData choice)
+    {
+        if (choice == null || choice.ChoiceOrder < 1 || choice.ChoiceOrder > 2)
+            return false;
+
+        string eventId = EventIdUtility.Normalize(choice.EventId);
+        return eventId == "Event_05" || eventId == "Event_05_A" || eventId == "Event_05_B";
+    }
+
+    private static bool IsEvent05DeferredExitChoice(EventData choice)
+    {
+        if (choice == null || choice.ChoiceOrder != 3)
+            return false;
+
+        string eventId = EventIdUtility.Normalize(choice.EventId);
+        return eventId == "Event_05_A" || eventId == "Event_05_B";
+    }
+
+    private IEnumerator PlayEvent05AccumulatedDustiumThenContinue(
+        EventData choice,
+        EventChoiceExecutionResult result,
+        int accumulatedBeforeChoice,
+        int[] resolvedDiceFaces)
+    {
+        // Event_05는 광맥/선택지 연출을 먼저 보여준 뒤 누적 더스티움 UI를 갱신합니다.
+        // 일반 ContinueAfterExecutedChoice를 사용하면 PlayVisualAction이 더스티움 표시 뒤에 실행되므로
+        // 이 이벤트만 여기서 연출 순서를 명시적으로 제어합니다.
+        PersistEventRuntime();
+        PlayVisualAction(result);
+
+        if (result.HasVisualAction && dustiumVisualActionWaitDuration > 0f)
+            yield return new WaitForSecondsRealtime(dustiumVisualActionWaitDuration);
+
+        EnsureDustiumAcquireReferences();
+        CacheDustiumAcquireOriginalState();
+
+        if (result.Succeeded && eventChoiceSessionState.AccumulatedRemnant > accumulatedBeforeChoice)
+        {
+            int total = Mathf.Max(0, eventChoiceSessionState.AccumulatedRemnant);
+            yield return ShowOrUpdateEvent05AccumulatedDustium(total);
+        }
+        else if (!result.Succeeded && accumulatedBeforeChoice > 0)
+        {
+            // 첫 채굴부터 실패한 경우에는 아직 생성된 누적 더스티움이 없으므로
+            // 0 VALUE 오브젝트를 새로 만들지 않습니다. 이전 성공분이 있을 때만 0 -> 소실 연출을 재생합니다.
+            yield return LoseEvent05AccumulatedDustium();
+        }
+
+        dustiumAcquireRoutine = null;
+        if (isActiveAndEnabled)
+            ContinueAfterExecutedChoiceCore(choice, result, resolvedDiceFaces);
+    }
+
+    private IEnumerator PlayEvent05ExitVisualThenContinue(
+        EventData choice,
+        EventChoiceExecutionResult result,
+        int[] resolvedDiceFaces)
+    {
+        // '그만둔다'는 선택 즉시 종료하지 않고 선택 연출 후 Event_05_C 결과 Title을 반드시 표시합니다.
+        PersistEventRuntime();
+        PlayVisualAction(result);
+
+        if (result.HasVisualAction && dustiumVisualActionWaitDuration > 0f)
+            yield return new WaitForSecondsRealtime(dustiumVisualActionWaitDuration);
+
+        dustiumAcquireRoutine = null;
+        if (isActiveAndEnabled)
+            ContinueAfterExecutedChoiceCore(choice, result, resolvedDiceFaces);
+    }
+
+    private IEnumerator ShowOrUpdateEvent05AccumulatedDustium(int total)
+    {
+        if (dustiumAcquireRoot == null)
+            yield break;
+
+        bool wasVisible = dustiumAcquireRoot.gameObject.activeSelf;
+        ResetDustiumAcquireTransform();
+        dustiumAcquireRoot.localScale = dustiumAcquireOriginalLocalScale;
+        dustiumAcquireRoot.gameObject.SetActive(true);
+
+        if (dustiumAcquireValueText != null)
+        {
+            dustiumAcquireValueText.gameObject.SetActive(true);
+            dustiumAcquireValueText.text = Mathf.Max(0, total).ToString(CultureInfo.InvariantCulture);
+        }
+
+        if (!wasVisible)
+        {
+            Vector3 endPosition = dustiumAcquireOriginalWorldPosition;
+            Vector3 startPosition = endPosition + new Vector3(dustiumAppearOffset.x, dustiumAppearOffset.y, 0f);
+            dustiumAcquireRoot.position = startPosition;
+
+            float duration = Mathf.Max(0.01f, dustiumAppearDuration);
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                float eased = Mathf.SmoothStep(0f, 1f, t);
+                Vector3 position = Vector3.Lerp(startPosition, endPosition, eased);
+                position += Vector3.up * (4f * dustiumAppearCurveHeight * t * (1f - t));
+                dustiumAcquireRoot.position = position;
+                yield return null;
+            }
+
+            dustiumAcquireRoot.position = endPosition;
+        }
+        else
+        {
+            Vector3 baseScale = dustiumAcquireOriginalLocalScale;
+            Vector3 peakScale = baseScale * 1.12f;
+            float duration = Mathf.Max(0.08f, dustiumAppearDuration * 0.6f);
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                float pulse = Mathf.Sin(t * Mathf.PI);
+                dustiumAcquireRoot.localScale = Vector3.Lerp(baseScale, peakScale, pulse);
+                yield return null;
+            }
+            dustiumAcquireRoot.localScale = baseScale;
+        }
+    }
+
+    private IEnumerator LoseEvent05AccumulatedDustium()
+    {
+        if (dustiumAcquireRoot == null)
+            yield break;
+
+        ResetDustiumAcquireTransform();
+        dustiumAcquireRoot.localScale = dustiumAcquireOriginalLocalScale;
+        dustiumAcquireRoot.gameObject.SetActive(true);
+
+        if (dustiumAcquireValueText != null)
+        {
+            dustiumAcquireValueText.gameObject.SetActive(true);
+            dustiumAcquireValueText.text = "0";
+        }
+
+        if (dustiumValueHoldDuration > 0f)
+            yield return new WaitForSecondsRealtime(dustiumValueHoldDuration);
+
+        ResetDustiumAcquireVisual();
+    }
+
+    private IEnumerator CommitEvent05AccumulatedDustiumAndExit()
+    {
+        int amount = Mathf.Max(0, eventChoiceSessionState.AccumulatedRemnant);
+        SetNextButtonVisible(false);
+
+        if (amount > 0)
+        {
+            EnsureDustiumAcquireReferences();
+            CacheDustiumAcquireOriginalState();
+
+            if (dustiumAcquireRoot != null && goldHudTarget != null)
+            {
+                ResetDustiumAcquireTransform();
+                dustiumAcquireRoot.localScale = dustiumAcquireOriginalLocalScale;
+                dustiumAcquireRoot.gameObject.SetActive(true);
+
+                if (dustiumAcquireValueText != null)
+                {
+                    dustiumAcquireValueText.gameObject.SetActive(true);
+                    dustiumAcquireValueText.text = amount.ToString(CultureInfo.InvariantCulture);
+                }
+
+                if (dustiumValueHoldDuration > 0f)
+                    yield return new WaitForSecondsRealtime(dustiumValueHoldDuration);
+
+                Vector3 startPosition = dustiumAcquireRoot.position;
+                Vector3 endPosition = goldHudTarget.position;
+                Vector3 startScale = dustiumAcquireRoot.localScale;
+                Vector3 endScale = startScale * Mathf.Max(0f, dustiumFlyEndScale);
+                float duration = Mathf.Max(0.01f, dustiumFlyDuration);
+                float elapsed = 0f;
+
+                while (elapsed < duration)
+                {
+                    elapsed += Time.unscaledDeltaTime;
+                    float t = Mathf.Clamp01(elapsed / duration);
+                    float eased = Mathf.SmoothStep(0f, 1f, t);
+                    Vector3 position = Vector3.Lerp(startPosition, endPosition, eased);
+                    position += Vector3.up * (4f * dustiumFlyCurveHeight * t * (1f - t));
+                    dustiumAcquireRoot.position = position;
+                    dustiumAcquireRoot.localScale = Vector3.Lerp(startScale, endScale, eased);
+                    yield return null;
+                }
+            }
+
+            eventChoiceSessionState.AccumulatedRemnant = 0;
+            ApplyDustiumAmount(amount);
+            PersistEventRuntime();
+        }
+
+        ResetDustiumAcquireVisual();
+        dustiumAcquireRoutine = null;
+
+        if (!isActiveAndEnabled)
+            yield break;
+
+        SetEventTitleVisible(false);
+        CompleteCurrentNode();
+        ReturnToMap();
     }
 
     private IEnumerator PlayDustiumAcquireAnimation(int amount)

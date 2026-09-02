@@ -3,8 +3,6 @@ using UnityEngine;
 
 public static class EventRoomRewardFlowUtility
 {
-    private const string MiningEventId = "Event_05";
-
     public static bool CanSkipUnresolvedEvent(EventDefinition definition)
     {
         if (definition == null)
@@ -44,11 +42,8 @@ public static class EventRoomRewardFlowUtility
         EventData choice,
         EventChoiceExecutionResult result)
     {
-        if (choice == null || !result.Accepted || result.Succeeded)
-            return false;
-
-        return EventIdUtility.Normalize(choice.EventId) == MiningEventId &&
-               (choice.ChoiceOrder == 1 || choice.ChoiceOrder == 2);
+        // 실패 후 FailNextEventId가 있으면 해당 결과 이벤트(Event_05_D 등)를 정상적으로 표시합니다.
+        return false;
     }
 
     public static BattleRewardData CreateRemnantReward(int amount)

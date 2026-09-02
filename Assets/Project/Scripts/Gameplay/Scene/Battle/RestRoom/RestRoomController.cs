@@ -78,6 +78,7 @@ public class RestRoomController : MonoBehaviour
 
     private void OnDisable()
     {
+        SetNextButtonVisible(false);
         ClearPlayerHUDs();
     }
 
