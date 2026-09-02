@@ -50,6 +50,47 @@ public class BattleActionRunnerOrderTests
     }
 
     [Test]
+    public void PlayerSelectionSkillExecution_PlaysSelectedGridProjectileVfx()
+    {
+        string path = Path.Combine(
+            Application.dataPath,
+            "Project/Scripts/Gameplay/Scene/Battle/BattleRoom/Actionrunner/BattleActionRunner.cs");
+        string source = File.ReadAllText(path);
+
+        int nonDamageMethodIndex = source.IndexOf(
+            "private IEnumerator ExecutePlayerSkillEffectsToMonsters",
+            StringComparison.Ordinal);
+        int nonDamageActionIndex = source.IndexOf(
+            "attackerAnimator.PlaySkillAction(command);",
+            nonDamageMethodIndex,
+            StringComparison.Ordinal);
+        int nonDamageTargetVfxIndex = source.IndexOf(
+            "yield return PlayPlayerSkillTargetVfxIfNeeded(attackerAnimator, command);",
+            nonDamageActionIndex,
+            StringComparison.Ordinal);
+
+        int damageMethodIndex = source.IndexOf(
+            "private IEnumerator ExecutePlayerDamageHitSequence",
+            StringComparison.Ordinal);
+        int damageActionIndex = source.IndexOf(
+            "attackerAnimator.PlaySkillAction(command, hitIndex);",
+            damageMethodIndex,
+            StringComparison.Ordinal);
+        int damageTargetVfxIndex = source.IndexOf(
+            "yield return PlayPlayerSkillTargetVfxIfNeeded(attackerAnimator, command);",
+            damageActionIndex,
+            StringComparison.Ordinal);
+
+        Assert.That(nonDamageMethodIndex, Is.GreaterThanOrEqualTo(0));
+        Assert.That(nonDamageActionIndex, Is.GreaterThan(nonDamageMethodIndex));
+        Assert.That(nonDamageTargetVfxIndex, Is.GreaterThan(nonDamageActionIndex));
+
+        Assert.That(damageMethodIndex, Is.GreaterThanOrEqualTo(0));
+        Assert.That(damageActionIndex, Is.GreaterThan(damageMethodIndex));
+        Assert.That(damageTargetVfxIndex, Is.GreaterThan(damageActionIndex));
+    }
+
+    [Test]
     public void BuildActionRoutines_OrdersMonsterCommandsBeforePlayerCommandsInSameBatch()
     {
         BattleActionBatch batch = new();

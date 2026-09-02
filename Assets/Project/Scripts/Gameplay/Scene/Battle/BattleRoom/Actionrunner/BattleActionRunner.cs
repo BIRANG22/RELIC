@@ -1937,7 +1937,10 @@ public class BattleActionRunner
                     BattleEquipmentEffectService.TryApplyAttackMissCharge(command.UserRuntime);
 
                 if (attackerAnimator != null)
+                {
                     attackerAnimator.PlaySkillAction(command);
+                    yield return PlayPlayerSkillTargetVfxIfNeeded(attackerAnimator, command);
+                }
 
                 hudService.RefreshHUDs();
                 yield return new WaitForSeconds(GetActiveActionBeatDelay());
@@ -2062,7 +2065,10 @@ public class BattleActionRunner
             Debug.LogWarning($"[PlayerSkillEffect] EffectEntries 없음 / Skill:{command.SkillData.SkillId}");
 
             if (attackerAnimator != null)
+            {
                 attackerAnimator.PlaySkillAction(command);
+                yield return PlayPlayerSkillTargetVfxIfNeeded(attackerAnimator, command);
+            }
 
             yield return new WaitForSeconds(GetActiveActionBeatDelay());
             yield break;
@@ -2128,7 +2134,10 @@ public class BattleActionRunner
             if (!playedDamageSequence && !playedActionForNonDamage)
             {
                 if (attackerAnimator != null)
+                {
                     attackerAnimator.PlaySkillAction(command);
+                    yield return PlayPlayerSkillTargetVfxIfNeeded(attackerAnimator, command);
+                }
 
                 playedActionForNonDamage = true;
                 yield return new WaitForSeconds(GetActiveActionBeatDelay());
@@ -2163,10 +2172,35 @@ public class BattleActionRunner
         if (!playedDamageSequence && !playedActionForNonDamage)
         {
             if (attackerAnimator != null)
+            {
                 attackerAnimator.PlaySkillAction(command);
+                yield return PlayPlayerSkillTargetVfxIfNeeded(attackerAnimator, command);
+            }
 
             yield return new WaitForSeconds(GetActiveActionBeatDelay());
         }
+    }
+
+    private static IEnumerator PlayPlayerSkillTargetVfxIfNeeded(
+        BattleUnitAnimator attackerAnimator,
+        PlayerReservedCommand command)
+    {
+        if (!ShouldPlayPlayerSkillTargetVfx(attackerAnimator, command))
+            yield break;
+
+        yield return attackerAnimator.PlaySkillTargetVfx(command);
+    }
+
+    private static bool ShouldPlayPlayerSkillTargetVfx(
+        BattleUnitAnimator attackerAnimator,
+        PlayerReservedCommand command)
+    {
+        return attackerAnimator != null &&
+               command != null &&
+               command.SkillData != null &&
+               command.SkillData.RangeType == RangeType.Selection &&
+               command.SelectedGridIndex >= 0 &&
+               command.ReservedMoveGridIndex < 0;
     }
 
     private IEnumerator ExecutePlayerDamageHitSequence(
@@ -2202,7 +2236,10 @@ public class BattleActionRunner
             }
 
             if (attackerAnimator != null)
+            {
                 attackerAnimator.PlaySkillAction(command, hitIndex);
+                yield return PlayPlayerSkillTargetVfxIfNeeded(attackerAnimator, command);
+            }
 
             float hitActionDelay = isMultiHit
                 ? ActionDelay / MultiHitAnimationSpeed
