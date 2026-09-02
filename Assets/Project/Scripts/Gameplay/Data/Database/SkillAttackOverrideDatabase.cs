@@ -123,3 +123,79 @@ namespace Relic.Gameplay.Data
         public SkillAttackSlot AttackSlot = SkillAttackSlot.None;
     }
 }
+
+#if UNITY_EDITOR
+namespace Relic.Gameplay.Data
+{
+    [UnityEditor.CustomPropertyDrawer(typeof(SkillAttackOverrideEntry))]
+    public class SkillAttackOverrideEntryDrawer : UnityEditor.PropertyDrawer
+    {
+        private const float Spacing = 2f;
+
+        public override void OnGUI(Rect position, UnityEditor.SerializedProperty property, GUIContent label)
+        {
+            UnityEditor.SerializedProperty skillIdProperty = property.FindPropertyRelative("SkillId");
+            string skillId = skillIdProperty != null ? skillIdProperty.stringValue?.Trim() : string.Empty;
+            string displayName = string.IsNullOrEmpty(skillId) ? label.text : skillId;
+
+            UnityEditor.EditorGUI.BeginProperty(position, label, property);
+
+            Rect foldoutRect = new Rect(
+                position.x,
+                position.y,
+                position.width,
+                UnityEditor.EditorGUIUtility.singleLineHeight);
+
+            property.isExpanded = UnityEditor.EditorGUI.Foldout(
+                foldoutRect,
+                property.isExpanded,
+                new GUIContent(displayName),
+                true);
+
+            if (property.isExpanded)
+            {
+                int previousIndent = UnityEditor.EditorGUI.indentLevel;
+                UnityEditor.EditorGUI.indentLevel = previousIndent + 1;
+
+                float lineHeight = UnityEditor.EditorGUIUtility.singleLineHeight;
+                float y = foldoutRect.yMax + Spacing;
+
+                DrawProperty(property, "CharacterId", position.x, ref y, position.width, lineHeight);
+                DrawProperty(property, "SkillId", position.x, ref y, position.width, lineHeight);
+                DrawProperty(property, "AttackSlot", position.x, ref y, position.width, lineHeight);
+
+                UnityEditor.EditorGUI.indentLevel = previousIndent;
+            }
+
+            UnityEditor.EditorGUI.EndProperty();
+        }
+
+        public override float GetPropertyHeight(UnityEditor.SerializedProperty property, GUIContent label)
+        {
+            float lineHeight = UnityEditor.EditorGUIUtility.singleLineHeight;
+
+            if (!property.isExpanded)
+                return lineHeight;
+
+            return (lineHeight * 4f) + (Spacing * 3f);
+        }
+
+        private static void DrawProperty(
+            UnityEditor.SerializedProperty parent,
+            string propertyName,
+            float x,
+            ref float y,
+            float width,
+            float lineHeight)
+        {
+            UnityEditor.SerializedProperty child = parent.FindPropertyRelative(propertyName);
+            if (child == null)
+                return;
+
+            Rect rect = new Rect(x, y, width, lineHeight);
+            UnityEditor.EditorGUI.PropertyField(rect, child);
+            y += lineHeight + Spacing;
+        }
+    }
+}
+#endif

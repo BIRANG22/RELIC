@@ -14,8 +14,56 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entries:
   - CharacterId: Char_01
+    SkillId: S_Unique_01
+    AttackSlot: 4
+  - CharacterId: Char_01
+    SkillId: S_Unique_02
+    AttackSlot: 1
+  - CharacterId: Char_02
+    SkillId: S_Unique_03
+    AttackSlot: 3
+  - CharacterId: Char_02
+    SkillId: S_Unique_04
+    AttackSlot: 3
+  - CharacterId: Char_03
+    SkillId: S_Unique_05
+    AttackSlot: 4
+  - CharacterId: Char_03
+    SkillId: S_Unique_06
+    AttackSlot: 4
+  - CharacterId: Char_01
+    SkillId: S_Ability_01
+    AttackSlot: 2
+  - CharacterId: Char_01
+    SkillId: S_Ability_02
+    AttackSlot: 2
+  - CharacterId: Char_01
     SkillId: S_Ability_03
     AttackSlot: 1
   - CharacterId: Char_01
-    SkillId: S_Public_17
+    SkillId: S_Ability_04
+    AttackSlot: 1
+  - CharacterId: Char_02
+    SkillId: S_Ability_05
+    AttackSlot: 1
+  - CharacterId: Char_02
+    SkillId: S_Ability_06
+    AttackSlot: 1
+  - CharacterId: Char_02
+    SkillId: S_Ability_07
     AttackSlot: 3
+  - CharacterId: Char_02
+    SkillId: S_Ability_08
+    AttackSlot: 3
+  - CharacterId: Char_03
+    SkillId: S_Ability_09
+    AttackSlot: 1
+  - CharacterId: Char_03
+    SkillId: S_Ability_10
+    AttackSlot: 1
+  - CharacterId: Char_03
+    SkillId: S_Ability_11
+    AttackSlot: 2
+  - CharacterId: Char_03
+    SkillId: S_Ability_12
+    AttackSlot: 2

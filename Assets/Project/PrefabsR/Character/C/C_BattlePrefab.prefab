@@ -248,6 +248,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   timelineHoverHighlightObject: {fileID: 8425422688081310049}
+  playBattleReadyAnimationOnSelect: 1
 --- !u!114 &1756975810107948053
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -272,7 +273,6 @@ MonoBehaviour:
     flipType: 0
     renderMode: 0
     proxyBlendMode: 0
-    spawnAnchor: 0
     scaleDirectWorldRendererToProxyHeight: 0
     renderTextureWidth: 512
     renderTextureHeight: 512
@@ -288,7 +288,6 @@ MonoBehaviour:
     flipType: 0
     renderMode: 0
     proxyBlendMode: 0
-    spawnAnchor: 0
     scaleDirectWorldRendererToProxyHeight: 0
     renderTextureWidth: 512
     renderTextureHeight: 512
@@ -304,7 +303,6 @@ MonoBehaviour:
     flipType: 0
     renderMode: 0
     proxyBlendMode: 0
-    spawnAnchor: 0
     scaleDirectWorldRendererToProxyHeight: 0
     renderTextureWidth: 512
     renderTextureHeight: 512
@@ -320,7 +318,6 @@ MonoBehaviour:
     flipType: 0
     renderMode: 0
     proxyBlendMode: 0
-    spawnAnchor: 0
     scaleDirectWorldRendererToProxyHeight: 0
     renderTextureWidth: 512
     renderTextureHeight: 512
@@ -337,7 +334,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -353,7 +349,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -369,7 +364,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -385,7 +379,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -401,7 +394,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -417,7 +409,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -433,7 +424,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -449,7 +439,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -465,7 +454,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -481,7 +469,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -497,7 +484,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -513,7 +499,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -529,7 +514,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -545,7 +529,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -561,7 +544,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -577,7 +559,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -596,7 +577,6 @@ MonoBehaviour:
         flipType: 0
         renderMode: 0
         proxyBlendMode: 0
-        spawnAnchor: 0
         scaleDirectWorldRendererToProxyHeight: 0
         renderTextureWidth: 512
         renderTextureHeight: 512
@@ -607,6 +587,7 @@ MonoBehaviour:
         proxySortingOrderOffset: 0
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
+      spawnVfxOnEachTargetGrid: 0
       projectileVfx:
         missilePrefab: {fileID: 0}
         impactPrefab: {fileID: 0}
@@ -625,7 +606,6 @@ MonoBehaviour:
         flipType: 0
         renderMode: 0
         proxyBlendMode: 0
-        spawnAnchor: 0
         scaleDirectWorldRendererToProxyHeight: 0
         renderTextureWidth: 512
         renderTextureHeight: 512
@@ -636,6 +616,7 @@ MonoBehaviour:
         proxySortingOrderOffset: 0
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
+      spawnVfxOnEachTargetGrid: 0
       projectileVfx:
         missilePrefab: {fileID: 0}
         impactPrefab: {fileID: 0}
@@ -648,13 +629,12 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     attack2:
-      stateName: AttackAction3
+      stateName: AttackAction2
       vfx:
         prefab: {fileID: 0}
         flipType: 0
         renderMode: 0
         proxyBlendMode: 0
-        spawnAnchor: 0
         scaleDirectWorldRendererToProxyHeight: 0
         renderTextureWidth: 512
         renderTextureHeight: 512
@@ -665,6 +645,7 @@ MonoBehaviour:
         proxySortingOrderOffset: 0
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
+      spawnVfxOnEachTargetGrid: 0
       projectileVfx:
         missilePrefab: {fileID: 0}
         impactPrefab: {fileID: 0}
@@ -677,13 +658,12 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     attack3:
-      stateName: AttackAction2
+      stateName: AttackAction3
       vfx:
         prefab: {fileID: 0}
         flipType: 0
         renderMode: 0
         proxyBlendMode: 0
-        spawnAnchor: 0
         scaleDirectWorldRendererToProxyHeight: 0
         renderTextureWidth: 512
         renderTextureHeight: 512
@@ -694,6 +674,7 @@ MonoBehaviour:
         proxySortingOrderOffset: 0
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
+      spawnVfxOnEachTargetGrid: 0
       projectileVfx:
         missilePrefab: {fileID: 0}
         impactPrefab: {fileID: 0}
@@ -712,7 +693,6 @@ MonoBehaviour:
         flipType: 0
         renderMode: 0
         proxyBlendMode: 0
-        spawnAnchor: 0
         scaleDirectWorldRendererToProxyHeight: 0
         renderTextureWidth: 512
         renderTextureHeight: 512
@@ -723,6 +703,152 @@ MonoBehaviour:
         proxySortingOrderOffset: 0
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
+      spawnVfxOnEachTargetGrid: 0
+      projectileVfx:
+        missilePrefab: {fileID: 0}
+        impactPrefab: {fileID: 0}
+        missileFlipType: 2
+        impactFlipType: 2
+        launchDelay: 0
+        travelDuration: 0.25
+        arrivalDistance: 0.05
+        impactLifeTime: 2
+        launchOffset: {x: 0, y: 0, z: 0}
+        impactOffset: {x: 0, y: 0, z: 0}
+    extra1:
+      stateName: 
+      vfx:
+        prefab: {fileID: 0}
+        flipType: 0
+        renderMode: 0
+        proxyBlendMode: 0
+        scaleDirectWorldRendererToProxyHeight: 0
+        renderTextureWidth: 512
+        renderTextureHeight: 512
+        renderCameraOrthographicSize: 5
+        proxyWorldHeight: 10
+        proxyWorldOffset: {x: 0, y: 0, z: 0}
+        proxySortingLayerName: Unit
+        proxySortingOrderOffset: 0
+        proxySortingWorldYOffset: 0
+        proxyYMultiplier: 100
+      spawnVfxOnEachTargetGrid: 0
+      projectileVfx:
+        missilePrefab: {fileID: 0}
+        impactPrefab: {fileID: 0}
+        missileFlipType: 2
+        impactFlipType: 2
+        launchDelay: 0
+        travelDuration: 0.25
+        arrivalDistance: 0.05
+        impactLifeTime: 2
+        launchOffset: {x: 0, y: 0, z: 0}
+        impactOffset: {x: 0, y: 0, z: 0}
+    extra2:
+      stateName: 
+      vfx:
+        prefab: {fileID: 0}
+        flipType: 0
+        renderMode: 0
+        proxyBlendMode: 0
+        scaleDirectWorldRendererToProxyHeight: 0
+        renderTextureWidth: 512
+        renderTextureHeight: 512
+        renderCameraOrthographicSize: 5
+        proxyWorldHeight: 10
+        proxyWorldOffset: {x: 0, y: 0, z: 0}
+        proxySortingLayerName: Unit
+        proxySortingOrderOffset: 0
+        proxySortingWorldYOffset: 0
+        proxyYMultiplier: 100
+      spawnVfxOnEachTargetGrid: 0
+      projectileVfx:
+        missilePrefab: {fileID: 0}
+        impactPrefab: {fileID: 0}
+        missileFlipType: 2
+        impactFlipType: 2
+        launchDelay: 0
+        travelDuration: 0.25
+        arrivalDistance: 0.05
+        impactLifeTime: 2
+        launchOffset: {x: 0, y: 0, z: 0}
+        impactOffset: {x: 0, y: 0, z: 0}
+    extra3:
+      stateName: 
+      vfx:
+        prefab: {fileID: 0}
+        flipType: 0
+        renderMode: 0
+        proxyBlendMode: 0
+        scaleDirectWorldRendererToProxyHeight: 0
+        renderTextureWidth: 512
+        renderTextureHeight: 512
+        renderCameraOrthographicSize: 5
+        proxyWorldHeight: 10
+        proxyWorldOffset: {x: 0, y: 0, z: 0}
+        proxySortingLayerName: Unit
+        proxySortingOrderOffset: 0
+        proxySortingWorldYOffset: 0
+        proxyYMultiplier: 100
+      spawnVfxOnEachTargetGrid: 0
+      projectileVfx:
+        missilePrefab: {fileID: 0}
+        impactPrefab: {fileID: 0}
+        missileFlipType: 2
+        impactFlipType: 2
+        launchDelay: 0
+        travelDuration: 0.25
+        arrivalDistance: 0.05
+        impactLifeTime: 2
+        launchOffset: {x: 0, y: 0, z: 0}
+        impactOffset: {x: 0, y: 0, z: 0}
+    extra4:
+      stateName: 
+      vfx:
+        prefab: {fileID: 0}
+        flipType: 0
+        renderMode: 0
+        proxyBlendMode: 0
+        scaleDirectWorldRendererToProxyHeight: 0
+        renderTextureWidth: 512
+        renderTextureHeight: 512
+        renderCameraOrthographicSize: 5
+        proxyWorldHeight: 10
+        proxyWorldOffset: {x: 0, y: 0, z: 0}
+        proxySortingLayerName: Unit
+        proxySortingOrderOffset: 0
+        proxySortingWorldYOffset: 0
+        proxyYMultiplier: 100
+      spawnVfxOnEachTargetGrid: 0
+      projectileVfx:
+        missilePrefab: {fileID: 0}
+        impactPrefab: {fileID: 0}
+        missileFlipType: 2
+        impactFlipType: 2
+        launchDelay: 0
+        travelDuration: 0.25
+        arrivalDistance: 0.05
+        impactLifeTime: 2
+        launchOffset: {x: 0, y: 0, z: 0}
+        impactOffset: {x: 0, y: 0, z: 0}
+    extra5:
+      stateName: 
+      vfx:
+        prefab: {fileID: 0}
+        flipType: 0
+        renderMode: 0
+        proxyBlendMode: 0
+        scaleDirectWorldRendererToProxyHeight: 0
+        renderTextureWidth: 512
+        renderTextureHeight: 512
+        renderCameraOrthographicSize: 5
+        proxyWorldHeight: 10
+        proxyWorldOffset: {x: 0, y: 0, z: 0}
+        proxySortingLayerName: Unit
+        proxySortingOrderOffset: 0
+        proxySortingWorldYOffset: 0
+        proxyYMultiplier: 100
+      spawnVfxOnEachTargetGrid: 0
       projectileVfx:
         missilePrefab: {fileID: 0}
         impactPrefab: {fileID: 0}
@@ -744,7 +870,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -755,6 +880,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
+    spawnVfxOnEachTargetGrid: 0
     projectileVfx:
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
@@ -772,7 +898,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -783,6 +908,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
+    spawnVfxOnEachTargetGrid: 0
     projectileVfx:
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
@@ -800,7 +926,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -811,6 +936,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
+    spawnVfxOnEachTargetGrid: 0
     projectileVfx:
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
@@ -828,7 +954,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -839,6 +964,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
+    spawnVfxOnEachTargetGrid: 0
     projectileVfx:
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
@@ -856,7 +982,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -867,6 +992,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
+    spawnVfxOnEachTargetGrid: 0
     projectileVfx:
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
@@ -884,7 +1010,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -895,6 +1020,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
+    spawnVfxOnEachTargetGrid: 0
     projectileVfx:
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
@@ -912,7 +1038,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -923,6 +1048,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
+    spawnVfxOnEachTargetGrid: 0
     projectileVfx:
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
@@ -940,7 +1066,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -951,6 +1076,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
+    spawnVfxOnEachTargetGrid: 0
     projectileVfx:
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
@@ -968,7 +1094,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -979,6 +1104,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
+    spawnVfxOnEachTargetGrid: 0
     projectileVfx:
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
@@ -996,7 +1122,6 @@ MonoBehaviour:
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
-      spawnAnchor: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -1007,6 +1132,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
+    spawnVfxOnEachTargetGrid: 0
     projectileVfx:
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}

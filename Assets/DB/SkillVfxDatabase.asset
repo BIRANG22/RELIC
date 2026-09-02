@@ -15,7 +15,7 @@ MonoBehaviour:
   entries:
   - SkillId: S_Ability_01
     Vfx:
-      prefab: {fileID: 7311764206653381872, guid: e60bee9487d55684db191b1b1c1eb04d, type: 3}
+      prefab: {fileID: 9032009973510874767, guid: cd098c4abf4c0094b9c18e2d5c90dfe0, type: 3}
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
@@ -29,8 +29,46 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
+    ProjectileVfx:
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
   - SkillId: S_Ability_02
     Vfx:
+      prefab: {fileID: 9032009973510874767, guid: cd098c4abf4c0094b9c18e2d5c90dfe0, type: 3}
+      flipType: 0
+      renderMode: 0
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
+    ProjectileVfx:
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
+  - SkillId: S_Ability_03
+    Vfx:
       prefab: {fileID: 7311764206653381872, guid: e60bee9487d55684db191b1b1c1eb04d, type: 3}
       flipType: 0
       renderMode: 0
@@ -45,25 +83,20 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Ability_03
-    Vfx:
-      prefab: {fileID: 9032009973510874767, guid: cd098c4abf4c0094b9c18e2d5c90dfe0, type: 3}
-      flipType: 0
-      renderMode: 0
-      proxyBlendMode: 0
-      scaleDirectWorldRendererToProxyHeight: 0
-      renderTextureWidth: 512
-      renderTextureHeight: 512
-      renderCameraOrthographicSize: 5
-      proxyWorldHeight: 10
-      proxyWorldOffset: {x: 0, y: 0, z: 0}
-      proxySortingLayerName: Unit
-      proxySortingOrderOffset: 0
-      proxySortingWorldYOffset: 0
-      proxyYMultiplier: 100
+    ProjectileVfx:
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
   - SkillId: S_Ability_04
     Vfx:
-      prefab: {fileID: 9032009973510874767, guid: cd098c4abf4c0094b9c18e2d5c90dfe0, type: 3}
+      prefab: {fileID: 7311764206653381872, guid: e60bee9487d55684db191b1b1c1eb04d, type: 3}
       flipType: 0
       renderMode: 0
       proxyBlendMode: 0
@@ -77,6 +110,17 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
+    ProjectileVfx:
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
   - SkillId: S_Ability_05
     Vfx:
       prefab: {fileID: 6814607968632299061, guid: d9e677191abd37b4ea44b0c2a095d363, type: 3}
@@ -93,6 +137,17 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
+    ProjectileVfx:
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
   - SkillId: S_Ability_06
     Vfx:
       prefab: {fileID: 6814607968632299061, guid: d9e677191abd37b4ea44b0c2a095d363, type: 3}
@@ -109,6 +164,17 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
+    ProjectileVfx:
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
   - SkillId: S_Ability_07
     Vfx:
       prefab: {fileID: 1211211539450989031, guid: ad2188fbf0e2d7745911825db1f2644e, type: 3}
@@ -125,6 +191,17 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
+    ProjectileVfx:
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
   - SkillId: S_Ability_08
     Vfx:
       prefab: {fileID: 1211211539450989031, guid: ad2188fbf0e2d7745911825db1f2644e, type: 3}
@@ -141,6 +218,17 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
+    ProjectileVfx:
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
   - SkillId: S_Ability_09
     Vfx:
       prefab: {fileID: 5464498477634507533, guid: 7d62d8b59c052e74f841fe794b1df8a6, type: 3}
@@ -157,6 +245,17 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
+    ProjectileVfx:
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 5464498477634507533, guid: efde17f5b63599d408797dde95378f89, type: 3}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
   - SkillId: S_Ability_10
     Vfx:
       prefab: {fileID: 5464498477634507533, guid: 7d62d8b59c052e74f841fe794b1df8a6, type: 3}
@@ -173,7 +272,33 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
+    ProjectileVfx:
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 5464498477634507533, guid: efde17f5b63599d408797dde95378f89, type: 3}
+      missileFlipType: 2
+      impactFlipType: 2
+      launchDelay: 0
+      travelDuration: 0.25
+      arrivalDistance: 0.05
+      impactLifeTime: 2
+      launchOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 0, z: 0}
   - SkillId: S_Ability_11
+    Vfx:
+      prefab: {fileID: 2841605795099109794, guid: 69ccb2bf4a2fae641bfda27160ed0dd5, type: 3}
+      flipType: 0
+      renderMode: 0
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 3688985328973339552, guid: 29f13300e2979c949905f4b38ac44c24, type: 3}
@@ -186,6 +311,21 @@ MonoBehaviour:
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
   - SkillId: S_Ability_12
+    Vfx:
+      prefab: {fileID: 2841605795099109794, guid: 69ccb2bf4a2fae641bfda27160ed0dd5, type: 3}
+      flipType: 0
+      renderMode: 0
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 3688985328973339552, guid: 29f13300e2979c949905f4b38ac44c24, type: 3}
@@ -197,195 +337,3 @@ MonoBehaviour:
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
-  - SkillId: S_Ability_13
-    Vfx:
-      prefab: {fileID: 8450343264324062456, guid: 8940258aeab2fc4478a1717538600122, type: 3}
-      flipType: 0
-      renderMode: 0
-      proxyBlendMode: 0
-      scaleDirectWorldRendererToProxyHeight: 0
-      renderTextureWidth: 512
-      renderTextureHeight: 512
-      renderCameraOrthographicSize: 5
-      proxyWorldHeight: 10
-      proxyWorldOffset: {x: 0, y: 0, z: 0}
-      proxySortingLayerName: Unit
-      proxySortingOrderOffset: 0
-      proxySortingWorldYOffset: 0
-      proxyYMultiplier: 100
-  - SkillId: S_Ability_14
-    Vfx:
-      prefab: {fileID: 8450343264324062456, guid: 8940258aeab2fc4478a1717538600122, type: 3}
-      flipType: 0
-      renderMode: 0
-      proxyBlendMode: 0
-      scaleDirectWorldRendererToProxyHeight: 0
-      renderTextureWidth: 512
-      renderTextureHeight: 512
-      renderCameraOrthographicSize: 5
-      proxyWorldHeight: 10
-      proxyWorldOffset: {x: 0, y: 0, z: 0}
-      proxySortingLayerName: Unit
-      proxySortingOrderOffset: 0
-      proxySortingWorldYOffset: 0
-      proxyYMultiplier: 100
-  - SkillId: S_Ability_17
-    Vfx:
-      prefab: {fileID: 2841605795099109794, guid: 69ccb2bf4a2fae641bfda27160ed0dd5, type: 3}
-      flipType: 0
-      renderMode: 0
-      proxyBlendMode: 0
-      scaleDirectWorldRendererToProxyHeight: 0
-      renderTextureWidth: 512
-      renderTextureHeight: 512
-      renderCameraOrthographicSize: 5
-      proxyWorldHeight: 10
-      proxyWorldOffset: {x: 0, y: 0, z: 0}
-      proxySortingLayerName: Unit
-      proxySortingOrderOffset: 0
-      proxySortingWorldYOffset: 0
-      proxyYMultiplier: 100
-  - SkillId: S_Ability_18
-    Vfx:
-      prefab: {fileID: 2841605795099109794, guid: 69ccb2bf4a2fae641bfda27160ed0dd5, type: 3}
-      flipType: 0
-      renderMode: 0
-      proxyBlendMode: 0
-      scaleDirectWorldRendererToProxyHeight: 0
-      renderTextureWidth: 512
-      renderTextureHeight: 512
-      renderCameraOrthographicSize: 5
-      proxyWorldHeight: 10
-      proxyWorldOffset: {x: 0, y: 0, z: 0}
-      proxySortingLayerName: Unit
-      proxySortingOrderOffset: 0
-      proxySortingWorldYOffset: 0
-      proxyYMultiplier: 100
-  - SkillId: S_Core_63
-    Vfx:
-      prefab: {fileID: 9206864599997765105, guid: 84666d4664e176142abb5f53fecd97cc, type: 3}
-      flipType: 0
-      renderMode: 0
-      proxyBlendMode: 0
-      scaleDirectWorldRendererToProxyHeight: 0
-      renderTextureWidth: 512
-      renderTextureHeight: 512
-      renderCameraOrthographicSize: 5
-      proxyWorldHeight: 10
-      proxyWorldOffset: {x: 0, y: 0, z: 0}
-      proxySortingLayerName: Unit
-      proxySortingOrderOffset: 0
-      proxySortingWorldYOffset: 0
-      proxyYMultiplier: 100
-  - SkillId: S_Core_67
-    Vfx:
-      prefab: {fileID: 5844735555258601561, guid: e73296d74c8fe6f41ae13018828efcf0, type: 3}
-      flipType: 0
-      renderMode: 0
-      proxyBlendMode: 0
-      scaleDirectWorldRendererToProxyHeight: 0
-      renderTextureWidth: 512
-      renderTextureHeight: 512
-      renderCameraOrthographicSize: 5
-      proxyWorldHeight: 10
-      proxyWorldOffset: {x: 0, y: 0, z: 0}
-      proxySortingLayerName: Unit
-      proxySortingOrderOffset: 0
-      proxySortingWorldYOffset: 0
-      proxyYMultiplier: 100
-  - SkillId: S_Public_17
-    Vfx:
-      prefab: {fileID: 8934398230962162692, guid: d6ecd58b7ed664f459ec6d2d06b7ffeb, type: 3}
-      flipType: 2
-      renderMode: 2
-      proxyBlendMode: 0
-      scaleDirectWorldRendererToProxyHeight: 1
-      renderTextureWidth: 512
-      renderTextureHeight: 512
-      renderCameraOrthographicSize: 5
-      proxyWorldHeight: 3
-      proxyWorldOffset: {x: 15, y: -3, z: 0}
-      proxySortingLayerName: Unit
-      proxySortingOrderOffset: 0
-      proxySortingWorldYOffset: 0
-      proxyYMultiplier: 100
-  - SkillId: S_Core_77
-    Vfx:
-      prefab: {fileID: 8934398230962162692, guid: d6ecd58b7ed664f459ec6d2d06b7ffeb, type: 3}
-      flipType: 2
-      renderMode: 2
-      proxyBlendMode: 0
-      scaleDirectWorldRendererToProxyHeight: 1
-      renderTextureWidth: 512
-      renderTextureHeight: 512
-      renderCameraOrthographicSize: 5
-      proxyWorldHeight: 3
-      proxyWorldOffset: {x: 15, y: -3, z: 0}
-      proxySortingLayerName: Unit
-      proxySortingOrderOffset: 0
-      proxySortingWorldYOffset: 0
-      proxyYMultiplier: 100
-  - SkillId: S_Core_78
-    Vfx:
-      prefab: {fileID: 8934398230962162692, guid: d6ecd58b7ed664f459ec6d2d06b7ffeb, type: 3}
-      flipType: 2
-      renderMode: 2
-      proxyBlendMode: 0
-      scaleDirectWorldRendererToProxyHeight: 1
-      renderTextureWidth: 512
-      renderTextureHeight: 512
-      renderCameraOrthographicSize: 5
-      proxyWorldHeight: 3
-      proxyWorldOffset: {x: 15, y: -3, z: 0}
-      proxySortingLayerName: Unit
-      proxySortingOrderOffset: 0
-      proxySortingWorldYOffset: 0
-      proxyYMultiplier: 100
-  - SkillId: S_Public_19
-    Vfx:
-      prefab: {fileID: 3227610880858663653, guid: a168d5406d649fb42a013779f4db911b, type: 3}
-      flipType: 2
-      renderMode: 2
-      proxyBlendMode: 0
-      scaleDirectWorldRendererToProxyHeight: 1
-      renderTextureWidth: 512
-      renderTextureHeight: 512
-      renderCameraOrthographicSize: 5
-      proxyWorldHeight: 3
-      proxyWorldOffset: {x: -2, y: 0, z: 0}
-      proxySortingLayerName: Unit
-      proxySortingOrderOffset: 0
-      proxySortingWorldYOffset: 0
-      proxyYMultiplier: 100
-  - SkillId: S_Core_79
-    Vfx:
-      prefab: {fileID: 3227610880858663653, guid: a168d5406d649fb42a013779f4db911b, type: 3}
-      flipType: 2
-      renderMode: 2
-      proxyBlendMode: 0
-      scaleDirectWorldRendererToProxyHeight: 1
-      renderTextureWidth: 512
-      renderTextureHeight: 512
-      renderCameraOrthographicSize: 5
-      proxyWorldHeight: 3
-      proxyWorldOffset: {x: -2, y: 0, z: 0}
-      proxySortingLayerName: Unit
-      proxySortingOrderOffset: 0
-      proxySortingWorldYOffset: 0
-      proxyYMultiplier: 100
-  - SkillId: S_Core_80
-    Vfx:
-      prefab: {fileID: 3227610880858663653, guid: a168d5406d649fb42a013779f4db911b, type: 3}
-      flipType: 2
-      renderMode: 2
-      proxyBlendMode: 0
-      scaleDirectWorldRendererToProxyHeight: 1
-      renderTextureWidth: 512
-      renderTextureHeight: 512
-      renderCameraOrthographicSize: 5
-      proxyWorldHeight: 3
-      proxyWorldOffset: {x: -2, y: 0, z: 0}
-      proxySortingLayerName: Unit
-      proxySortingOrderOffset: 0
-      proxySortingWorldYOffset: 0
-      proxyYMultiplier: 100
