@@ -309,6 +309,8 @@ public class BattleSceneController : MonoBehaviour
         isOpeningMapFromController = true;
         battleMapPanel.Open(mapRuntime);
         isOpeningMapFromController = false;
+        sharedRoomPresentationController?.RefreshForMapSelection(
+            MapRuntimeProgressUtility.FindCurrentNode(mapRuntime)?.MapId);
     }
 
     private static void ResetCameraForMap()
@@ -850,7 +852,8 @@ public class BattleSceneController : MonoBehaviour
             eventRoom.SetActive(false);
 
         AutoFindSharedRoomPresentationIfNeeded();
-        sharedRoomPresentationController?.RefreshNow();
+        sharedRoomPresentationController?.RefreshForMapSelection(
+            MapRuntimeProgressUtility.FindCurrentNode(mapRuntime)?.MapId);
     }
 
     public bool TryPlaySharedMapVisualAction(string visualObjectId, string actionId)
