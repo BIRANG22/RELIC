@@ -53,6 +53,34 @@ public class IntroSequenceController : MonoBehaviour
         [Tooltip("0~1 페이드 진행도에 적용할 커브입니다.")]
         public AnimationCurve fadeCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
+        [Header("활성화 시 Animator 재생")]
+        [Tooltip("체크하면 대상이 활성화되는 순간 지정한 Animator State를 처음부터 재생합니다.")]
+        public bool playAnimatorOnActivate;
+
+        [Tooltip("재생할 Animator입니다. 비워두면 Target 또는 자식에서 자동으로 찾습니다.")]
+        public Animator animator;
+
+        [Tooltip("재생할 Animator State 이름입니다.")]
+        public string animatorStateName;
+
+        [Header("색상 변경")]
+        [Tooltip("체크하면 Target과 자식의 UI Graphic / SpriteRenderer 색상을 변경합니다.")]
+        public bool changeColor;
+
+        [Tooltip("변경할 목표 색상입니다.")]
+        public Color targetColor = Color.white;
+
+        [Min(0f)]
+        [Tooltip("색상 변경을 시작하기 전 대기 시간입니다. Time Scale의 영향을 받지 않습니다.")]
+        public float colorDelay;
+
+        [Min(0f)]
+        [Tooltip("목표 색상까지 변경하는 시간입니다. 0이면 즉시 변경됩니다.")]
+        public float colorDuration = 0.5f;
+
+        [Tooltip("0~1 색상 진행도에 적용할 커브입니다.")]
+        public AnimationCurve colorCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
         [Header("Transform 애니메이션")]
         [Tooltip("체크하면 Position을 목표값까지 변경합니다.")]
         public bool animatePosition;
@@ -80,6 +108,14 @@ public class IntroSequenceController : MonoBehaviour
 
         [Tooltip("0~1 진행도에 적용할 애니메이션 커브입니다.")]
         public AnimationCurve animationCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
+        [Header("연출 강제 종료")]
+        [Tooltip("체크하면 이 액션이 실행된 뒤 지정한 딜레이 후 인트로 연출을 강제로 종료합니다.")]
+        public bool forceFinishSequence;
+
+        [Min(0f)]
+        [Tooltip("강제 종료까지 기다릴 시간입니다. Time Scale의 영향을 받지 않습니다.")]
+        public float forceFinishDelay;
     }
 
     private class IntroObjectInitialState
@@ -92,6 +128,10 @@ public class IntroSequenceController : MonoBehaviour
         public Vector3 worldPosition;
         public Quaternion worldRotation;
         public float canvasGroupAlpha;
+        public Graphic[] graphics;
+        public Color[] graphicColors;
+        public SpriteRenderer[] spriteRenderers;
+        public Color[] spriteRendererColors;
     }
 
     private const int IntroSortingOrderFloor = 31000;
@@ -167,6 +207,7 @@ public class IntroSequenceController : MonoBehaviour
     private float lineAdvanceSoundVolume = 1f;
 
     private Coroutine typewriterCoroutine;
+    private Coroutine forceFinishCoroutine;
     private int currentLineIndex;
     private int currentLineCharacterCount;
     private bool isTyping;
@@ -177,6 +218,10 @@ public class IntroSequenceController : MonoBehaviour
     private float nextAdvanceInputTime;
     private readonly Dictionary<Transform, Coroutine> objectAnimationCoroutines = new Dictionary<Transform, Coroutine>();
     private readonly Dictionary<GameObject, Coroutine> objectFadeCoroutines = new Dictionary<GameObject, Coroutine>();
+    private readonly Dictionary<Transform, int> objectAnimationVersions = new Dictionary<Transform, int>();
+    private readonly Dictionary<GameObject, int> objectFadeVersions = new Dictionary<GameObject, int>();
+    private readonly Dictionary<GameObject, Coroutine> objectColorCoroutines = new Dictionary<GameObject, Coroutine>();
+    private readonly Dictionary<GameObject, int> objectColorVersions = new Dictionary<GameObject, int>();
     private readonly List<IntroObjectInitialState> objectInitialStates = new List<IntroObjectInitialState>();
     private readonly Dictionary<SpriteRenderer, float> spriteRendererBaseAlphas = new Dictionary<SpriteRenderer, float>();
     private readonly Dictionary<Canvas, bool> hiddenCanvasEnabledStates = new Dictionary<Canvas, bool>();
@@ -214,6 +259,7 @@ public class IntroSequenceController : MonoBehaviour
     private void OnDestroy()
     {
         StopAllObjectAnimations();
+        CancelForceFinishSequence();
         HideOverlayCanvasesForIntro(false);
         HideGameObjectsForIntro(false);
         EndIntroParallaxPause();
@@ -338,6 +384,7 @@ public class IntroSequenceController : MonoBehaviour
         }
 
         StopAllObjectAnimations();
+        CancelForceFinishSequence();
         ResetActionObjectsToInitialState();
 
         moveToLobbyWhenFinished = goToLobbyAfterFinish;
@@ -400,11 +447,20 @@ public class IntroSequenceController : MonoBehaviour
 
     private void ExecuteObjectAction(IntroObjectAction action)
     {
-        if (action == null || action.target == null)
+        if (action == null)
+            return;
+
+        if (action.forceFinishSequence)
+            StartForceFinishSequence(action.forceFinishDelay);
+
+        if (action.target == null)
             return;
 
         if (action.changeActiveState)
             StartActiveStateChange(action);
+
+        if (action.changeColor)
+            StartColorChange(action);
 
         if (!action.animatePosition && !action.animateRotation && !action.animateScale)
             return;
@@ -412,8 +468,49 @@ public class IntroSequenceController : MonoBehaviour
         Transform targetTransform = action.target.transform;
         StopObjectAnimation(targetTransform);
 
-        Coroutine coroutine = StartCoroutine(AnimateObjectAction(action, targetTransform));
-        objectAnimationCoroutines[targetTransform] = coroutine;
+        int version = BeginObjectAnimation(targetTransform);
+        Coroutine coroutine = StartCoroutine(AnimateObjectAction(action, targetTransform, version));
+        if (IsCurrentObjectAnimation(targetTransform, version))
+            objectAnimationCoroutines[targetTransform] = coroutine;
+    }
+
+    private void StartForceFinishSequence(float delay)
+    {
+        CancelForceFinishSequence();
+        forceFinishCoroutine = StartCoroutine(ForceFinishSequenceAfterDelay(Mathf.Max(0f, delay)));
+    }
+
+    private IEnumerator ForceFinishSequenceAfterDelay(float delay)
+    {
+        float elapsed = 0f;
+        while (elapsed < delay)
+        {
+            if (!isPlaying)
+            {
+                forceFinishCoroutine = null;
+                yield break;
+            }
+
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        while (isPlaying && isTransitioning)
+            yield return null;
+
+        forceFinishCoroutine = null;
+
+        if (isPlaying)
+            FinishIntroWithTransition();
+    }
+
+    private void CancelForceFinishSequence()
+    {
+        if (forceFinishCoroutine == null)
+            return;
+
+        StopCoroutine(forceFinishCoroutine);
+        forceFinishCoroutine = null;
     }
 
     private void StartActiveStateChange(IntroObjectAction action)
@@ -421,11 +518,13 @@ public class IntroSequenceController : MonoBehaviour
         GameObject target = action.target;
         StopObjectFade(target);
 
-        Coroutine coroutine = StartCoroutine(AnimateActiveStateChange(action, target));
-        objectFadeCoroutines[target] = coroutine;
+        int version = BeginObjectFade(target);
+        Coroutine coroutine = StartCoroutine(AnimateActiveStateChange(action, target, version));
+        if (IsCurrentObjectFade(target, version))
+            objectFadeCoroutines[target] = coroutine;
     }
 
-    private IEnumerator AnimateActiveStateChange(IntroObjectAction action, GameObject target)
+    private IEnumerator AnimateActiveStateChange(IntroObjectAction action, GameObject target, int version)
     {
         if (target == null)
             yield break;
@@ -446,7 +545,10 @@ public class IntroSequenceController : MonoBehaviour
         if (!action.fadeActiveState)
         {
             target.SetActive(action.activeState);
-            objectFadeCoroutines.Remove(target);
+            if (action.activeState)
+                PlayAnimatorOnActivate(action, target);
+
+            CompleteObjectFade(target, version);
             yield break;
         }
 
@@ -456,6 +558,7 @@ public class IntroSequenceController : MonoBehaviour
         if (action.activeState)
         {
             target.SetActive(true);
+            PlayAnimatorOnActivate(action, target);
 
             if (canvasGroup != null)
                 canvasGroup.alpha = 0f;
@@ -470,7 +573,7 @@ public class IntroSequenceController : MonoBehaviour
                     canvasGroup.alpha = 0f;
 
                 SetSpriteRendererFadeAlpha(spriteRenderers, 0f);
-                objectFadeCoroutines.Remove(target);
+                CompleteObjectFade(target, version);
                 yield break;
             }
 
@@ -493,7 +596,7 @@ public class IntroSequenceController : MonoBehaviour
             if (!action.activeState)
                 target.SetActive(false);
 
-            objectFadeCoroutines.Remove(target);
+            CompleteObjectFade(target, version);
             yield break;
         }
 
@@ -522,7 +625,113 @@ public class IntroSequenceController : MonoBehaviour
             if (!action.activeState)
                 target.SetActive(false);
 
-            objectFadeCoroutines.Remove(target);
+            CompleteObjectFade(target, version);
+        }
+    }
+
+    private void PlayAnimatorOnActivate(IntroObjectAction action, GameObject target)
+    {
+        if (action == null || target == null || !action.playAnimatorOnActivate || string.IsNullOrWhiteSpace(action.animatorStateName))
+            return;
+
+        Animator animator = action.animator;
+        if (animator == null)
+            animator = target.GetComponent<Animator>();
+        if (animator == null)
+            animator = target.GetComponentInChildren<Animator>(true);
+        if (animator == null)
+            return;
+
+        animator.Play(action.animatorStateName, 0, 0f);
+        animator.Update(0f);
+    }
+
+    private void StartColorChange(IntroObjectAction action)
+    {
+        GameObject target = action.target;
+        if (target == null)
+            return;
+
+        StopObjectColor(target);
+        int version = BeginObjectColor(target);
+        Coroutine coroutine = StartCoroutine(AnimateColorChange(action, target, version));
+        if (IsCurrentObjectColor(target, version))
+            objectColorCoroutines[target] = coroutine;
+    }
+
+    private IEnumerator AnimateColorChange(IntroObjectAction action, GameObject target, int version)
+    {
+        if (target == null)
+            yield break;
+
+        if (action.colorDelay > 0f)
+        {
+            float delayElapsed = 0f;
+            while (delayElapsed < action.colorDelay && target != null)
+            {
+                delayElapsed += Time.unscaledDeltaTime;
+                yield return null;
+            }
+        }
+
+        if (target == null)
+            yield break;
+
+        Graphic[] graphics = target.GetComponentsInChildren<Graphic>(true);
+        SpriteRenderer[] spriteRenderers = target.GetComponentsInChildren<SpriteRenderer>(true);
+        Color[] startGraphicColors = new Color[graphics.Length];
+        Color[] startSpriteColors = new Color[spriteRenderers.Length];
+
+        for (int i = 0; i < graphics.Length; i++)
+            if (graphics[i] != null)
+                startGraphicColors[i] = graphics[i].color;
+
+        for (int i = 0; i < spriteRenderers.Length; i++)
+            if (spriteRenderers[i] != null)
+                startSpriteColors[i] = spriteRenderers[i].color;
+
+        if (action.colorDuration <= 0f)
+        {
+            ApplyTargetColor(graphics, spriteRenderers, startGraphicColors, startSpriteColors, action.targetColor, 1f);
+            CompleteObjectColor(target, version);
+            yield break;
+        }
+
+        float elapsed = 0f;
+        while (elapsed < action.colorDuration && target != null)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float normalizedTime = Mathf.Clamp01(elapsed / action.colorDuration);
+            float curveTime = action.colorCurve != null ? action.colorCurve.Evaluate(normalizedTime) : normalizedTime;
+            ApplyTargetColor(graphics, spriteRenderers, startGraphicColors, startSpriteColors, action.targetColor, curveTime);
+            yield return null;
+        }
+
+        if (target != null)
+        {
+            ApplyTargetColor(graphics, spriteRenderers, startGraphicColors, startSpriteColors, action.targetColor, 1f);
+            CompleteObjectColor(target, version);
+        }
+    }
+
+    private void ApplyTargetColor(Graphic[] graphics, SpriteRenderer[] spriteRenderers, Color[] startGraphicColors, Color[] startSpriteColors, Color targetColor, float t)
+    {
+        for (int i = 0; i < graphics.Length; i++)
+        {
+            Graphic graphic = graphics[i];
+            if (graphic != null)
+                graphic.color = Color.LerpUnclamped(startGraphicColors[i], targetColor, t);
+        }
+
+        for (int i = 0; i < spriteRenderers.Length; i++)
+        {
+            SpriteRenderer renderer = spriteRenderers[i];
+            if (renderer == null)
+                continue;
+
+            Color color = Color.LerpUnclamped(startSpriteColors[i], targetColor, t);
+            renderer.color = color;
+            spriteRendererBaseAlphas[renderer] = color.a;
         }
     }
 
@@ -568,7 +777,7 @@ public class IntroSequenceController : MonoBehaviour
         }
     }
 
-    private IEnumerator AnimateObjectAction(IntroObjectAction action, Transform targetTransform)
+    private IEnumerator AnimateObjectAction(IntroObjectAction action, Transform targetTransform, int version)
     {
         if (action.delay > 0f)
         {
@@ -591,7 +800,7 @@ public class IntroSequenceController : MonoBehaviour
         if (action.duration <= 0f)
         {
             ApplyTransformValues(action, targetTransform, action.targetPosition, targetRotation, action.targetScale);
-            objectAnimationCoroutines.Remove(targetTransform);
+            CompleteObjectAnimation(targetTransform, version);
             yield break;
         }
 
@@ -613,7 +822,7 @@ public class IntroSequenceController : MonoBehaviour
         if (targetTransform != null)
         {
             ApplyTransformValues(action, targetTransform, action.targetPosition, targetRotation, action.targetScale);
-            objectAnimationCoroutines.Remove(targetTransform);
+            CompleteObjectAnimation(targetTransform, version);
         }
     }
 
@@ -661,7 +870,21 @@ public class IntroSequenceController : MonoBehaviour
 
                 Transform targetTransform = action.target.transform;
                 CanvasGroup canvasGroup = action.target.GetComponent<CanvasGroup>();
+                Graphic[] graphics = action.target.GetComponentsInChildren<Graphic>(true);
                 SpriteRenderer[] spriteRenderers = action.target.GetComponentsInChildren<SpriteRenderer>(true);
+                Color[] graphicColors = new Color[graphics.Length];
+                Color[] spriteRendererColors = new Color[spriteRenderers.Length];
+
+                for (int k = 0; k < graphics.Length; k++)
+                    if (graphics[k] != null)
+                        graphicColors[k] = graphics[k].color;
+
+                for (int k = 0; k < spriteRenderers.Length; k++)
+                {
+                    if (spriteRenderers[k] != null)
+                        spriteRendererColors[k] = spriteRenderers[k].color;
+                }
+
                 for (int k = 0; k < spriteRenderers.Length; k++)
                 {
                     SpriteRenderer renderer = spriteRenderers[k];
@@ -678,7 +901,11 @@ public class IntroSequenceController : MonoBehaviour
                     localScale = targetTransform.localScale,
                     worldPosition = targetTransform.position,
                     worldRotation = targetTransform.rotation,
-                    canvasGroupAlpha = canvasGroup != null ? canvasGroup.alpha : 1f
+                    canvasGroupAlpha = canvasGroup != null ? canvasGroup.alpha : 1f,
+                    graphics = graphics,
+                    graphicColors = graphicColors,
+                    spriteRenderers = spriteRenderers,
+                    spriteRendererColors = spriteRendererColors
                 });
             }
         }
@@ -701,33 +928,143 @@ public class IntroSequenceController : MonoBehaviour
             if (canvasGroup != null)
                 canvasGroup.alpha = state.canvasGroupAlpha;
 
-            SpriteRenderer[] spriteRenderers = state.target.GetComponentsInChildren<SpriteRenderer>(true);
-            SetSpriteRendererFadeAlpha(spriteRenderers, 1f);
+            if (state.graphics != null && state.graphicColors != null)
+            {
+                int count = Mathf.Min(state.graphics.Length, state.graphicColors.Length);
+                for (int j = 0; j < count; j++)
+                    if (state.graphics[j] != null)
+                        state.graphics[j].color = state.graphicColors[j];
+            }
+
+            if (state.spriteRenderers != null && state.spriteRendererColors != null)
+            {
+                int count = Mathf.Min(state.spriteRenderers.Length, state.spriteRendererColors.Length);
+                for (int j = 0; j < count; j++)
+                {
+                    SpriteRenderer renderer = state.spriteRenderers[j];
+                    if (renderer == null)
+                        continue;
+
+                    renderer.color = state.spriteRendererColors[j];
+                    spriteRendererBaseAlphas[renderer] = state.spriteRendererColors[j].a;
+                }
+            }
 
             state.target.SetActive(state.activeSelf);
         }
     }
 
-    private void StopObjectAnimation(Transform targetTransform)
+    private int BeginObjectAnimation(Transform targetTransform)
     {
-        if (targetTransform == null || !objectAnimationCoroutines.TryGetValue(targetTransform, out Coroutine coroutine))
+        objectAnimationVersions.TryGetValue(targetTransform, out int version);
+        version++;
+        objectAnimationVersions[targetTransform] = version;
+        return version;
+    }
+
+    private bool IsCurrentObjectAnimation(Transform targetTransform, int version)
+    {
+        return targetTransform != null &&
+               objectAnimationVersions.TryGetValue(targetTransform, out int currentVersion) &&
+               currentVersion == version;
+    }
+
+    private void CompleteObjectAnimation(Transform targetTransform, int version)
+    {
+        if (!IsCurrentObjectAnimation(targetTransform, version))
             return;
 
-        if (coroutine != null)
+        objectAnimationCoroutines.Remove(targetTransform);
+        objectAnimationVersions[targetTransform] = version + 1;
+    }
+
+    private int BeginObjectFade(GameObject target)
+    {
+        objectFadeVersions.TryGetValue(target, out int version);
+        version++;
+        objectFadeVersions[target] = version;
+        return version;
+    }
+
+    private bool IsCurrentObjectFade(GameObject target, int version)
+    {
+        return target != null &&
+               objectFadeVersions.TryGetValue(target, out int currentVersion) &&
+               currentVersion == version;
+    }
+
+    private void CompleteObjectFade(GameObject target, int version)
+    {
+        if (!IsCurrentObjectFade(target, version))
+            return;
+
+        objectFadeCoroutines.Remove(target);
+        objectFadeVersions[target] = version + 1;
+    }
+
+    private int BeginObjectColor(GameObject target)
+    {
+        objectColorVersions.TryGetValue(target, out int version);
+        version++;
+        objectColorVersions[target] = version;
+        return version;
+    }
+
+    private bool IsCurrentObjectColor(GameObject target, int version)
+    {
+        return target != null &&
+               objectColorVersions.TryGetValue(target, out int currentVersion) &&
+               currentVersion == version;
+    }
+
+    private void CompleteObjectColor(GameObject target, int version)
+    {
+        if (!IsCurrentObjectColor(target, version))
+            return;
+
+        objectColorCoroutines.Remove(target);
+        objectColorVersions[target] = version + 1;
+    }
+
+    private void StopObjectColor(GameObject target)
+    {
+        if (target == null)
+            return;
+
+        if (objectColorCoroutines.TryGetValue(target, out Coroutine coroutine) && coroutine != null)
+            StopCoroutine(coroutine);
+
+        objectColorCoroutines.Remove(target);
+        objectColorVersions.TryGetValue(target, out int version);
+        objectColorVersions[target] = version + 1;
+    }
+
+    private void StopObjectAnimation(Transform targetTransform)
+    {
+        if (targetTransform == null)
+            return;
+
+        if (objectAnimationCoroutines.TryGetValue(targetTransform, out Coroutine coroutine) && coroutine != null)
             StopCoroutine(coroutine);
 
         objectAnimationCoroutines.Remove(targetTransform);
+
+        objectAnimationVersions.TryGetValue(targetTransform, out int version);
+        objectAnimationVersions[targetTransform] = version + 1;
     }
 
     private void StopObjectFade(GameObject target)
     {
-        if (target == null || !objectFadeCoroutines.TryGetValue(target, out Coroutine coroutine))
+        if (target == null)
             return;
 
-        if (coroutine != null)
+        if (objectFadeCoroutines.TryGetValue(target, out Coroutine coroutine) && coroutine != null)
             StopCoroutine(coroutine);
 
         objectFadeCoroutines.Remove(target);
+
+        objectFadeVersions.TryGetValue(target, out int version);
+        objectFadeVersions[target] = version + 1;
     }
 
     private void StopAllObjectAnimations()
@@ -738,6 +1075,15 @@ public class IntroSequenceController : MonoBehaviour
                 StopCoroutine(coroutine);
         }
 
+        foreach (Transform targetTransform in new List<Transform>(objectAnimationCoroutines.Keys))
+        {
+            if (targetTransform == null)
+                continue;
+
+            objectAnimationVersions.TryGetValue(targetTransform, out int version);
+            objectAnimationVersions[targetTransform] = version + 1;
+        }
+
         objectAnimationCoroutines.Clear();
 
         foreach (Coroutine coroutine in objectFadeCoroutines.Values)
@@ -746,7 +1092,33 @@ public class IntroSequenceController : MonoBehaviour
                 StopCoroutine(coroutine);
         }
 
+        foreach (GameObject target in new List<GameObject>(objectFadeCoroutines.Keys))
+        {
+            if (target == null)
+                continue;
+
+            objectFadeVersions.TryGetValue(target, out int version);
+            objectFadeVersions[target] = version + 1;
+        }
+
         objectFadeCoroutines.Clear();
+
+        foreach (Coroutine coroutine in objectColorCoroutines.Values)
+        {
+            if (coroutine != null)
+                StopCoroutine(coroutine);
+        }
+
+        foreach (GameObject target in new List<GameObject>(objectColorCoroutines.Keys))
+        {
+            if (target == null)
+                continue;
+
+            objectColorVersions.TryGetValue(target, out int version);
+            objectColorVersions[target] = version + 1;
+        }
+
+        objectColorCoroutines.Clear();
     }
 
     private IEnumerator TypeLine()
@@ -801,6 +1173,7 @@ public class IntroSequenceController : MonoBehaviour
         if (!isPlaying || isTransitioning)
             return;
 
+        CancelForceFinishSequence();
         isTransitioning = true;
 
         if (typewriterCoroutine != null)
