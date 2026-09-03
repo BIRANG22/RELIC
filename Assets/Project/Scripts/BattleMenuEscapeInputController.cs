@@ -31,6 +31,11 @@ public class BattleMenuEscapeInputController : MonoBehaviour
     [SerializeField] private string menuRootBlockerObjectName = "Image";
     [SerializeField] private Graphic menuRootBlockerGraphic;
 
+    [Header("Menu Root Sorting")]
+    [SerializeField] private int menuRootSortingOrder = 9999;
+
+    private Transform menuRootTransform;
+    private Canvas menuRootCanvas;
 
     [Header("Pause")]
     [SerializeField] private bool pauseGameWhenMenuPanelOpen = true;
@@ -53,6 +58,7 @@ public class BattleMenuEscapeInputController : MonoBehaviour
         FindMenuButtonIfNeeded();
         FindMenuPanelIfNeeded();
         FindMenuRootBlockerIfNeeded();
+        BringMenuRootToFront();
     }
 
     private void OnEnable()
@@ -60,6 +66,7 @@ public class BattleMenuEscapeInputController : MonoBehaviour
         FindMenuButtonIfNeeded();
         FindMenuPanelIfNeeded();
         FindMenuRootBlockerIfNeeded();
+        BringMenuRootToFront();
         RefreshPauseState();
     }
 
@@ -103,6 +110,7 @@ public class BattleMenuEscapeInputController : MonoBehaviour
             ClickMenuButton();
         }
 
+        BringMenuRootToFront();
         RefreshPauseState();
     }
 
@@ -336,14 +344,80 @@ public class BattleMenuEscapeInputController : MonoBehaviour
         }
     }
 
+
+    private void BringMenuRootToFront()
+    {
+        FindMenuRootIfNeeded();
+
+        if (menuRootTransform == null)
+            return;
+
+        menuRootTransform.SetAsLastSibling();
+
+        if (menuRootCanvas == null)
+            menuRootCanvas = menuRootTransform.GetComponent<Canvas>();
+
+        if (menuRootCanvas == null)
+            menuRootCanvas = menuRootTransform.gameObject.AddComponent<Canvas>();
+
+        menuRootCanvas.overrideSorting = true;
+        menuRootCanvas.sortingOrder = menuRootSortingOrder;
+
+        if (menuRootTransform.GetComponent<GraphicRaycaster>() == null)
+            menuRootTransform.gameObject.AddComponent<GraphicRaycaster>();
+    }
+
+    private void FindMenuRootIfNeeded()
+    {
+        if (menuRootTransform != null)
+            return;
+
+        FindMenuPanelIfNeeded();
+
+        if (menuPanel != null)
+        {
+            Transform current = menuPanel.transform;
+
+            while (current != null)
+            {
+                if (current.name == menuRootObjectName)
+                {
+                    menuRootTransform = current;
+                    menuRootCanvas = current.GetComponent<Canvas>();
+                    return;
+                }
+
+                current = current.parent;
+            }
+        }
+
+        GameObject[] objects = FindObjectsByType<GameObject>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < objects.Length; i++)
+        {
+            GameObject candidate = objects[i];
+
+            if (candidate == null || candidate.name != menuRootObjectName)
+                continue;
+
+            menuRootTransform = candidate.transform;
+            menuRootCanvas = candidate.GetComponent<Canvas>();
+            return;
+        }
+    }
+
     private void FindMenuRootBlockerIfNeeded()
     {
         if (menuRootBlockerGraphic != null)
             return;
 
+        FindMenuRootIfNeeded();
         FindMenuPanelIfNeeded();
 
-        Transform menuRoot = null;
+        Transform menuRoot = menuRootTransform;
 
         if (menuPanel != null)
         {
@@ -375,6 +449,8 @@ public class BattleMenuEscapeInputController : MonoBehaviour
                 if (candidate != null && candidate.name == menuRootObjectName)
                 {
                     menuRoot = candidate.transform;
+                    menuRootTransform = menuRoot;
+                    menuRootCanvas = menuRoot.GetComponent<Canvas>();
                     break;
                 }
             }
