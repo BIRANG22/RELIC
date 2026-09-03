@@ -1,9 +1,11 @@
 using System;
+using System.Collections;
 using Object = UnityEngine.Object;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using TMPro;
 using Relic.Gameplay.Data;
 
 public class BattleSceneController : MonoBehaviour
@@ -27,6 +29,14 @@ public class BattleSceneController : MonoBehaviour
     [SerializeField] private string restRoomIntroMessage = "휴식 구역";
     [SerializeField] private bool playMapIntroOnStart = true;
     [SerializeField] private bool playBattleRoomIntroFromSceneController = false;
+
+    [Header("Stage Entry Position Panel")]
+    [SerializeField] private GameObject positionPanel;
+    [SerializeField] private CanvasGroup positionPanelCanvasGroup;
+    [SerializeField] private TMP_Text positionStageText;
+    [SerializeField] private TMP_Text positionNameText;
+    [SerializeField] private float positionPanelHoldDuration = 1.2f;
+    [SerializeField] private float positionPanelFadeDuration = 0.35f;
 
     [Header("Auto Return To Map")]
     [SerializeField] private bool autoDetectReturnToMap = true;
@@ -78,6 +88,7 @@ public class BattleSceneController : MonoBehaviour
 
     private void Awake()
     {
+        HideSharedNextButtonOnSceneStart();
         AutoFindRoomRootIfNeeded();
         AutoFindSharedRoomPresentationIfNeeded();
         AutoFindBattleMapIntroTextIfNeeded();
@@ -88,6 +99,14 @@ public class BattleSceneController : MonoBehaviour
 
         if (mapSelectionPresenter == null)
             mapSelectionPresenter = gameObject.AddComponent<BattleRoomMapSelectionPresenter>();
+    }
+
+    private void HideSharedNextButtonOnSceneStart()
+    {
+        Transform nextButtonTransform = FindSceneTransformByName("NextButton");
+
+        if (nextButtonTransform != null)
+            nextButtonTransform.gameObject.SetActive(false);
     }
 
     private void Start()
@@ -423,10 +442,173 @@ public class BattleSceneController : MonoBehaviour
         mapRuntimeStore.Set(mapRuntime);
         CaptureRoomEntrySaveCheckpoint();
         HideMapPanelImmediate();
+
+        PrepareStageEntryPositionPanel();
+        StartCoroutine(PlayStageEntryThenOpenNodeRoutine(entryNode));
+        return true;
+    }
+
+    private void PrepareStageEntryPositionPanel()
+    {
+        AutoFindStageEntryPositionPanelIfNeeded();
+
+        if (positionPanel == null)
+            return;
+
+        ResolveStageEntryTexts(
+            mapRuntime != null ? mapRuntime.CurrentStage : defaultStage,
+            out string stageLabel,
+            out string stageName);
+
+        if (positionStageText != null)
+            positionStageText.text = stageLabel;
+
+        if (positionNameText != null)
+            positionNameText.text = stageName;
+
+        positionPanel.SetActive(true);
+
+        if (positionPanelCanvasGroup == null)
+            positionPanelCanvasGroup = positionPanel.GetComponent<CanvasGroup>();
+
+        if (positionPanelCanvasGroup == null)
+            positionPanelCanvasGroup = positionPanel.AddComponent<CanvasGroup>();
+
+        positionPanelCanvasGroup.alpha = 1f;
+        positionPanelCanvasGroup.interactable = false;
+        positionPanelCanvasGroup.blocksRaycasts = false;
+    }
+
+    private IEnumerator PlayStageEntryThenOpenNodeRoutine(GeneratedMapNodeData entryNode)
+    {
+        CanvasMaterialSceneTransition sceneTransition = CanvasMaterialSceneTransition.Instance;
+        SceneFlowManager sceneFlow = SceneFlowManager.Instance;
+
+        // 씬 전환이 화면을 가리고 있는 동안 Position_Panel은 이미 활성화되어 있다.
+        // 로비 -> Battle 비동기 로드가 완전히 끝난 뒤부터 표시 시간을 계산한다.
+        if (sceneFlow != null && sceneFlow.IsLoading)
+        {
+            while (sceneFlow.IsLoading)
+                yield return null;
+        }
+        else if (sceneTransition != null)
+        {
+            // 씬 활성화 직후 PlayOpenAsync가 시작되는 프레임도 놓치지 않는다.
+            yield return null;
+
+            while (sceneTransition.IsPlaying)
+                yield return null;
+        }
+        else
+        {
+            yield return null;
+        }
+
+        if (positionPanel != null && positionPanel.activeSelf)
+        {
+            float holdDuration = Mathf.Max(0f, positionPanelHoldDuration);
+            float holdElapsed = 0f;
+
+            while (holdElapsed < holdDuration)
+            {
+                holdElapsed += Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            float fadeDuration = Mathf.Max(0f, positionPanelFadeDuration);
+
+            if (positionPanelCanvasGroup != null && fadeDuration > 0f)
+            {
+                float fadeElapsed = 0f;
+
+                while (fadeElapsed < fadeDuration)
+                {
+                    fadeElapsed += Time.unscaledDeltaTime;
+                    float t = Mathf.Clamp01(fadeElapsed / fadeDuration);
+                    positionPanelCanvasGroup.alpha = 1f - t;
+                    yield return null;
+                }
+            }
+
+            if (positionPanelCanvasGroup != null)
+                positionPanelCanvasGroup.alpha = 0f;
+
+            positionPanel.SetActive(false);
+        }
+
         HandleSelectedMap(entryNode);
         PlayPendingRoomIntroText();
         PlayEventRoomEntranceAnimationIfNeeded();
-        return true;
+    }
+
+    private void AutoFindStageEntryPositionPanelIfNeeded()
+    {
+        if (positionPanel == null)
+        {
+            Transform found = FindSceneTransformByName("Position_Panel");
+            if (found != null)
+                positionPanel = found.gameObject;
+        }
+
+        if (positionPanel == null)
+            return;
+
+        if (positionPanelCanvasGroup == null)
+            positionPanelCanvasGroup = positionPanel.GetComponent<CanvasGroup>();
+
+        if (positionStageText == null)
+        {
+            Transform stageTransform = FindChildRecursive(positionPanel.transform, "Stage_Text");
+            if (stageTransform != null)
+                positionStageText = stageTransform.GetComponent<TMP_Text>();
+        }
+
+        if (positionNameText == null)
+        {
+            Transform nameTransform = FindChildRecursive(positionPanel.transform, "Name_Text");
+            if (nameTransform != null)
+                positionNameText = nameTransform.GetComponent<TMP_Text>();
+        }
+    }
+
+    private static Transform FindSceneTransformByName(string targetName)
+    {
+        if (string.IsNullOrWhiteSpace(targetName))
+            return null;
+
+        UnityEngine.SceneManagement.Scene scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+        GameObject[] roots = scene.GetRootGameObjects();
+
+        for (int i = 0; i < roots.Length; i++)
+        {
+            Transform found = FindChildRecursive(roots[i].transform, targetName);
+            if (found != null)
+                return found;
+        }
+
+        return null;
+    }
+
+    private static void ResolveStageEntryTexts(string stageId, out string stageLabel, out string stageName)
+    {
+        switch (stageId?.Trim())
+        {
+            case "Stage2":
+                stageLabel = "2구역";
+                stageName = "모르덴 지하수로";
+                break;
+
+            case "Stage3":
+                stageLabel = "3구역";
+                stageName = "아우렐 묘지";
+                break;
+
+            case "Stage1":
+            default:
+                stageLabel = "1구역";
+                stageName = "로데른 폐허";
+                break;
+        }
     }
 
     public async void OnMapNodeSelected(GeneratedMapNodeData nodeData)
