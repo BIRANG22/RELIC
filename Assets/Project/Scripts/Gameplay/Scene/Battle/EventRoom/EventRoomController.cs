@@ -30,6 +30,9 @@ public class EventRoomController : MonoBehaviour
     [SerializeField] private RectTransform eventChoiceScrollView;
     [SerializeField] private float eventChoiceScrollStartY = -400f;
     [SerializeField] private float eventChoiceScrollEndY = -100f;
+    [SerializeField] private RectTransform eventChoiceGradation;
+    [SerializeField] private float eventChoiceGradationStartY = -600f;
+    [SerializeField] private float eventChoiceGradationEndY = -250f;
     [SerializeField, Min(0.01f)] private float eventChoiceScrollMoveDuration = 0.4f;
 
     [Header("Terminal Choice Exit")]
@@ -164,6 +167,7 @@ public class EventRoomController : MonoBehaviour
     private EventChoiceExecutionResult pendingSkillAwakenExecutionResult;
     private EventChoiceSkillAwakenTarget pendingSkillAwakenResultTarget;
     private CanvasGroup eventChoiceScrollCanvasGroup;
+    private CanvasGroup eventChoiceGradationCanvasGroup;
     private Coroutine terminalChoiceFadeRoutine;
     private bool waitForEventEntranceReveal;
 
@@ -813,19 +817,28 @@ public class EventRoomController : MonoBehaviour
     {
         EnsureEventChoiceScrollViewReference();
         EnsureEventChoiceScrollCanvasGroup();
+        EnsureEventChoiceGradationCanvasGroup();
         EnsureEventTitleCanvasGroup();
 
         if (eventChoiceScrollView != null && !eventChoiceScrollView.gameObject.activeSelf)
             eventChoiceScrollView.gameObject.SetActive(true);
+        if (eventChoiceGradation != null && !eventChoiceGradation.gameObject.activeSelf)
+            eventChoiceGradation.gameObject.SetActive(true);
         if (eventTitleText != null && !eventTitleText.gameObject.activeSelf)
             eventTitleText.gameObject.SetActive(true);
 
         CanvasGroup scrollGroup = eventChoiceScrollCanvasGroup;
+        CanvasGroup gradationGroup = eventChoiceGradationCanvasGroup;
         CanvasGroup titleGroup = eventTitleCanvasGroup;
         if (scrollGroup != null)
         {
             scrollGroup.interactable = false;
             scrollGroup.blocksRaycasts = false;
+        }
+        if (gradationGroup != null)
+        {
+            gradationGroup.interactable = false;
+            gradationGroup.blocksRaycasts = false;
         }
         if (titleGroup != null)
         {
@@ -836,19 +849,23 @@ public class EventRoomController : MonoBehaviour
         float duration = Mathf.Max(0.01f, diceUiFadeDuration);
         float elapsed = 0f;
         float scrollStart = scrollGroup != null ? scrollGroup.alpha : 1f;
+        float gradationStart = gradationGroup != null ? gradationGroup.alpha : 1f;
         float titleStart = titleGroup != null ? titleGroup.alpha : 1f;
         while (elapsed < duration)
         {
             elapsed += Time.unscaledDeltaTime;
             float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
             if (scrollGroup != null) scrollGroup.alpha = Mathf.Lerp(scrollStart, 0f, t);
+            if (gradationGroup != null) gradationGroup.alpha = Mathf.Lerp(gradationStart, 0f, t);
             if (titleGroup != null) titleGroup.alpha = Mathf.Lerp(titleStart, 0f, t);
             yield return null;
         }
 
         if (scrollGroup != null) scrollGroup.alpha = 0f;
+        if (gradationGroup != null) gradationGroup.alpha = 0f;
         if (titleGroup != null) titleGroup.alpha = 0f;
         if (eventChoiceScrollView != null) eventChoiceScrollView.gameObject.SetActive(false);
+        if (eventChoiceGradation != null) eventChoiceGradation.gameObject.SetActive(false);
         if (eventTitleText != null) eventTitleText.gameObject.SetActive(false);
 
         // 선택 결과에 레드 더스티움 연출이 포함되면 Event_02_A 로드는
@@ -871,15 +888,20 @@ public class EventRoomController : MonoBehaviour
 
         EnsureEventChoiceScrollViewReference();
         EnsureEventChoiceScrollCanvasGroup();
+        EnsureEventChoiceGradationCanvasGroup();
         EnsureEventTitleCanvasGroup();
         if (eventChoiceScrollView != null)
             eventChoiceScrollView.gameObject.SetActive(true);
+        if (eventChoiceGradation != null)
+            eventChoiceGradation.gameObject.SetActive(true);
         if (eventTitleText != null)
             eventTitleText.gameObject.SetActive(true);
 
         scrollGroup = eventChoiceScrollCanvasGroup;
+        gradationGroup = eventChoiceGradationCanvasGroup;
         titleGroup = eventTitleCanvasGroup;
         if (scrollGroup != null) scrollGroup.alpha = 0f;
+        if (gradationGroup != null) gradationGroup.alpha = 0f;
         if (titleGroup != null) titleGroup.alpha = 0f;
 
         elapsed = 0f;
@@ -888,6 +910,7 @@ public class EventRoomController : MonoBehaviour
             elapsed += Time.unscaledDeltaTime;
             float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
             if (scrollGroup != null) scrollGroup.alpha = t;
+            if (gradationGroup != null) gradationGroup.alpha = t;
             if (titleGroup != null) titleGroup.alpha = t;
             yield return null;
         }
@@ -897,6 +920,12 @@ public class EventRoomController : MonoBehaviour
             scrollGroup.alpha = 1f;
             scrollGroup.interactable = true;
             scrollGroup.blocksRaycasts = true;
+        }
+        if (gradationGroup != null)
+        {
+            gradationGroup.alpha = 1f;
+            gradationGroup.interactable = false;
+            gradationGroup.blocksRaycasts = false;
         }
         if (titleGroup != null)
         {
@@ -1563,13 +1592,17 @@ public class EventRoomController : MonoBehaviour
     {
         EnsureEventChoiceScrollViewReference();
         EnsureEventChoiceScrollCanvasGroup();
+        EnsureEventChoiceGradationCanvasGroup();
         EnsureEventTitleCanvasGroup();
 
         CanvasGroup scrollGroup = eventChoiceScrollCanvasGroup;
+        CanvasGroup gradationGroup = eventChoiceGradationCanvasGroup;
         CanvasGroup titleGroup = eventTitleCanvasGroup;
 
         if (eventChoiceScrollView != null && !eventChoiceScrollView.gameObject.activeSelf)
             eventChoiceScrollView.gameObject.SetActive(true);
+        if (eventChoiceGradation != null && !eventChoiceGradation.gameObject.activeSelf)
+            eventChoiceGradation.gameObject.SetActive(true);
         if (eventTitleText != null && !eventTitleText.gameObject.activeSelf)
             eventTitleText.gameObject.SetActive(true);
 
@@ -1577,6 +1610,11 @@ public class EventRoomController : MonoBehaviour
         {
             scrollGroup.interactable = false;
             scrollGroup.blocksRaycasts = false;
+        }
+        if (gradationGroup != null)
+        {
+            gradationGroup.interactable = false;
+            gradationGroup.blocksRaycasts = false;
         }
         if (titleGroup != null)
         {
@@ -1587,6 +1625,7 @@ public class EventRoomController : MonoBehaviour
         float duration = Mathf.Max(0.01f, diceUiFadeDuration);
         float elapsed = 0f;
         float scrollStart = scrollGroup != null ? scrollGroup.alpha : 1f;
+        float gradationStart = gradationGroup != null ? gradationGroup.alpha : 1f;
         float titleStart = titleGroup != null ? titleGroup.alpha : 1f;
 
         while (elapsed < duration)
@@ -1594,13 +1633,16 @@ public class EventRoomController : MonoBehaviour
             elapsed += Time.unscaledDeltaTime;
             float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
             if (scrollGroup != null) scrollGroup.alpha = Mathf.Lerp(scrollStart, 0f, t);
+            if (gradationGroup != null) gradationGroup.alpha = Mathf.Lerp(gradationStart, 0f, t);
             if (titleGroup != null) titleGroup.alpha = Mathf.Lerp(titleStart, 0f, t);
             yield return null;
         }
 
         if (scrollGroup != null) scrollGroup.alpha = 0f;
+        if (gradationGroup != null) gradationGroup.alpha = 0f;
         if (titleGroup != null) titleGroup.alpha = 0f;
         if (eventChoiceScrollView != null) eventChoiceScrollView.gameObject.SetActive(false);
+        if (eventChoiceGradation != null) eventChoiceGradation.gameObject.SetActive(false);
         if (eventTitleText != null) eventTitleText.gameObject.SetActive(false);
     }
 
@@ -1619,16 +1661,21 @@ public class EventRoomController : MonoBehaviour
     {
         EnsureEventChoiceScrollViewReference();
         EnsureEventChoiceScrollCanvasGroup();
+        EnsureEventChoiceGradationCanvasGroup();
         EnsureEventTitleCanvasGroup();
 
         if (eventChoiceScrollView != null)
             eventChoiceScrollView.gameObject.SetActive(true);
+        if (eventChoiceGradation != null)
+            eventChoiceGradation.gameObject.SetActive(true);
         if (eventTitleText != null)
             eventTitleText.gameObject.SetActive(true);
 
         CanvasGroup scrollGroup = eventChoiceScrollCanvasGroup;
+        CanvasGroup gradationGroup = eventChoiceGradationCanvasGroup;
         CanvasGroup titleGroup = eventTitleCanvasGroup;
         if (scrollGroup != null) scrollGroup.alpha = 0f;
+        if (gradationGroup != null) gradationGroup.alpha = 0f;
         if (titleGroup != null) titleGroup.alpha = 0f;
 
         float duration = Mathf.Max(0.01f, diceUiFadeDuration);
@@ -1638,6 +1685,7 @@ public class EventRoomController : MonoBehaviour
             elapsed += Time.unscaledDeltaTime;
             float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
             if (scrollGroup != null) scrollGroup.alpha = t;
+            if (gradationGroup != null) gradationGroup.alpha = t;
             if (titleGroup != null) titleGroup.alpha = t;
             yield return null;
         }
@@ -1647,6 +1695,12 @@ public class EventRoomController : MonoBehaviour
             scrollGroup.alpha = 1f;
             scrollGroup.interactable = true;
             scrollGroup.blocksRaycasts = true;
+        }
+        if (gradationGroup != null)
+        {
+            gradationGroup.alpha = 1f;
+            gradationGroup.interactable = false;
+            gradationGroup.blocksRaycasts = false;
         }
         if (titleGroup != null)
         {
@@ -1969,17 +2023,29 @@ public class EventRoomController : MonoBehaviour
     {
         EnsureEventChoiceScrollViewReference();
         EnsureEventChoiceScrollCanvasGroup();
+        EnsureEventChoiceGradationCanvasGroup();
 
         if (eventChoiceScrollView == null || eventChoiceScrollCanvasGroup == null)
             yield break;
 
         if (!eventChoiceScrollView.gameObject.activeSelf)
             eventChoiceScrollView.gameObject.SetActive(true);
+        if (eventChoiceGradation != null && !eventChoiceGradation.gameObject.activeSelf)
+            eventChoiceGradation.gameObject.SetActive(true);
 
         eventChoiceScrollCanvasGroup.interactable = false;
         eventChoiceScrollCanvasGroup.blocksRaycasts = false;
-        yield return FadeCanvasGroup(eventChoiceScrollCanvasGroup, eventChoiceScrollCanvasGroup.alpha, 0f, skillAwakenScrollFadeDuration);
+
+        float scrollStart = eventChoiceScrollCanvasGroup.alpha;
+        float gradationStart = eventChoiceGradationCanvasGroup != null ? eventChoiceGradationCanvasGroup.alpha : 0f;
+        yield return FadeEventChoiceScrollAndGradation(
+            scrollStart, 0f,
+            gradationStart, 0f,
+            skillAwakenScrollFadeDuration);
+
         eventChoiceScrollView.gameObject.SetActive(false);
+        if (eventChoiceGradation != null)
+            eventChoiceGradation.gameObject.SetActive(false);
     }
 
     private void OnSkillAwakenPanelClosed()
@@ -2087,6 +2153,7 @@ public class EventRoomController : MonoBehaviour
     {
         EnsureEventChoiceScrollViewReference();
         EnsureEventChoiceScrollCanvasGroup();
+        EnsureEventChoiceGradationCanvasGroup();
 
         if (eventChoiceScrollView == null || eventChoiceScrollCanvasGroup == null)
         {
@@ -2095,11 +2162,19 @@ public class EventRoomController : MonoBehaviour
         }
 
         eventChoiceScrollView.gameObject.SetActive(true);
+        if (eventChoiceGradation != null)
+            eventChoiceGradation.gameObject.SetActive(true);
+
         eventChoiceScrollCanvasGroup.alpha = 0f;
         eventChoiceScrollCanvasGroup.interactable = false;
         eventChoiceScrollCanvasGroup.blocksRaycasts = false;
+        if (eventChoiceGradationCanvasGroup != null)
+            eventChoiceGradationCanvasGroup.alpha = 0f;
 
-        yield return FadeCanvasGroup(eventChoiceScrollCanvasGroup, 0f, 1f, skillAwakenScrollFadeDuration);
+        yield return FadeEventChoiceScrollAndGradation(
+            0f, 1f,
+            0f, 1f,
+            skillAwakenScrollFadeDuration);
 
         eventChoiceScrollCanvasGroup.interactable = true;
         eventChoiceScrollCanvasGroup.blocksRaycasts = true;
@@ -2118,6 +2193,55 @@ public class EventRoomController : MonoBehaviour
             if (eventChoiceScrollCanvasGroup == null)
                 eventChoiceScrollCanvasGroup = eventChoiceScrollView.gameObject.AddComponent<CanvasGroup>();
         }
+    }
+
+    private void EnsureEventChoiceGradationCanvasGroup()
+    {
+        EnsureEventChoiceGradationReference();
+        if (eventChoiceGradation == null)
+            return;
+
+        if (eventChoiceGradationCanvasGroup == null || eventChoiceGradationCanvasGroup.gameObject != eventChoiceGradation.gameObject)
+        {
+            eventChoiceGradationCanvasGroup = eventChoiceGradation.GetComponent<CanvasGroup>();
+            if (eventChoiceGradationCanvasGroup == null)
+                eventChoiceGradationCanvasGroup = eventChoiceGradation.gameObject.AddComponent<CanvasGroup>();
+        }
+
+        eventChoiceGradationCanvasGroup.interactable = false;
+        eventChoiceGradationCanvasGroup.blocksRaycasts = false;
+    }
+
+    private IEnumerator FadeEventChoiceScrollAndGradation(
+        float scrollFrom, float scrollTo,
+        float gradationFrom, float gradationTo,
+        float duration)
+    {
+        float safeDuration = Mathf.Max(0.01f, duration);
+        float elapsed = 0f;
+
+        if (eventChoiceScrollCanvasGroup != null)
+            eventChoiceScrollCanvasGroup.alpha = scrollFrom;
+        if (eventChoiceGradationCanvasGroup != null)
+            eventChoiceGradationCanvasGroup.alpha = gradationFrom;
+
+        while (elapsed < safeDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / safeDuration));
+
+            if (eventChoiceScrollCanvasGroup != null)
+                eventChoiceScrollCanvasGroup.alpha = Mathf.Lerp(scrollFrom, scrollTo, t);
+            if (eventChoiceGradationCanvasGroup != null)
+                eventChoiceGradationCanvasGroup.alpha = Mathf.Lerp(gradationFrom, gradationTo, t);
+
+            yield return null;
+        }
+
+        if (eventChoiceScrollCanvasGroup != null)
+            eventChoiceScrollCanvasGroup.alpha = scrollTo;
+        if (eventChoiceGradationCanvasGroup != null)
+            eventChoiceGradationCanvasGroup.alpha = gradationTo;
     }
 
     private static IEnumerator FadeCanvasGroup(CanvasGroup group, float from, float to, float duration)
@@ -3343,9 +3467,11 @@ public class EventRoomController : MonoBehaviour
     {
         EnsureEventChoiceScrollViewReference();
         EnsureEventChoiceScrollCanvasGroup();
+        EnsureEventChoiceGradationCanvasGroup();
         EnsureEventTitleCanvasGroup();
 
         CanvasGroup scrollGroup = eventChoiceScrollCanvasGroup;
+        CanvasGroup gradationGroup = eventChoiceGradationCanvasGroup;
         CanvasGroup titleGroup = eventTitleCanvasGroup;
 
         if (scrollGroup != null)
@@ -3363,6 +3489,7 @@ public class EventRoomController : MonoBehaviour
         float duration = Mathf.Max(0.01f, event06EventUiFadeDuration);
         float elapsed = 0f;
         float scrollStart = scrollGroup != null ? scrollGroup.alpha : 1f;
+        float gradationStart = gradationGroup != null ? gradationGroup.alpha : 1f;
         float titleStart = titleGroup != null ? titleGroup.alpha : 1f;
 
         while (elapsed < duration)
@@ -3370,13 +3497,16 @@ public class EventRoomController : MonoBehaviour
             elapsed += Time.unscaledDeltaTime;
             float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
             if (scrollGroup != null) scrollGroup.alpha = Mathf.Lerp(scrollStart, 0f, t);
+            if (gradationGroup != null) gradationGroup.alpha = Mathf.Lerp(gradationStart, 0f, t);
             if (titleGroup != null) titleGroup.alpha = Mathf.Lerp(titleStart, 0f, t);
             yield return null;
         }
 
         if (scrollGroup != null) scrollGroup.alpha = 0f;
+        if (gradationGroup != null) gradationGroup.alpha = 0f;
         if (titleGroup != null) titleGroup.alpha = 0f;
         if (eventChoiceScrollView != null) eventChoiceScrollView.gameObject.SetActive(false);
+        if (eventChoiceGradation != null) eventChoiceGradation.gameObject.SetActive(false);
         if (eventTitleText != null) eventTitleText.gameObject.SetActive(false);
     }
 
@@ -3434,10 +3564,13 @@ public class EventRoomController : MonoBehaviour
         LoadEventDefinition(resultDefinition, string.Empty);
 
         EnsureEventChoiceScrollViewReference();
+        EnsureEventChoiceGradationReference();
         EnsureEventTitleCanvasGroup();
 
         if (eventChoiceScrollView != null)
             eventChoiceScrollView.gameObject.SetActive(false);
+        if (eventChoiceGradation != null)
+            eventChoiceGradation.gameObject.SetActive(false);
 
         if (eventTitleText != null)
             eventTitleText.gameObject.SetActive(true);
@@ -5214,28 +5347,49 @@ public class EventRoomController : MonoBehaviour
             eventChoiceScrollView = scrollViewTransform as RectTransform;
     }
 
+    private void EnsureEventChoiceGradationReference()
+    {
+        if (eventChoiceGradation != null)
+            return;
+
+        Transform gradationTransform = FindChildRecursive(transform, "Gradation");
+        if (gradationTransform != null)
+            eventChoiceGradation = gradationTransform as RectTransform;
+    }
+
     private void ResetEventChoiceScrollViewPosition()
     {
         EnsureEventChoiceScrollViewReference();
+        EnsureEventChoiceGradationReference();
         StopEventChoiceScrollViewAnimation();
 
-        if (eventChoiceScrollView == null)
-            return;
+        if (eventChoiceScrollView != null)
+        {
+            Vector2 position = eventChoiceScrollView.anchoredPosition;
+            position.y = eventChoiceScrollStartY;
+            eventChoiceScrollView.anchoredPosition = position;
+        }
 
-        Vector2 position = eventChoiceScrollView.anchoredPosition;
-        position.y = eventChoiceScrollStartY;
-        eventChoiceScrollView.anchoredPosition = position;
+        if (eventChoiceGradation != null)
+        {
+            Vector2 gradationPosition = eventChoiceGradation.anchoredPosition;
+            gradationPosition.y = eventChoiceGradationStartY;
+            eventChoiceGradation.anchoredPosition = gradationPosition;
+        }
     }
 
     private void ResetEventChoiceScrollViewVisualState()
     {
         EnsureEventChoiceScrollViewReference();
         EnsureEventChoiceScrollCanvasGroup();
+        EnsureEventChoiceGradationCanvasGroup();
 
         if (eventChoiceScrollView == null)
             return;
 
         eventChoiceScrollView.gameObject.SetActive(true);
+        if (eventChoiceGradation != null)
+            eventChoiceGradation.gameObject.SetActive(true);
 
         if (eventChoiceScrollCanvasGroup == null)
             return;
@@ -5243,6 +5397,13 @@ public class EventRoomController : MonoBehaviour
         eventChoiceScrollCanvasGroup.alpha = 1f;
         eventChoiceScrollCanvasGroup.interactable = true;
         eventChoiceScrollCanvasGroup.blocksRaycasts = true;
+
+        if (eventChoiceGradationCanvasGroup != null)
+        {
+            eventChoiceGradationCanvasGroup.alpha = 1f;
+            eventChoiceGradationCanvasGroup.interactable = false;
+            eventChoiceGradationCanvasGroup.blocksRaycasts = false;
+        }
 
         EnsureEventTitleCanvasGroup();
         if (eventTitleCanvasGroup != null)
@@ -5269,6 +5430,7 @@ public class EventRoomController : MonoBehaviour
     private void StartEventChoiceScrollViewAnimation()
     {
         EnsureEventChoiceScrollViewReference();
+        EnsureEventChoiceGradationReference();
         StopEventChoiceScrollViewAnimation();
 
         if (eventChoiceScrollView == null || !isActiveAndEnabled)
@@ -5288,9 +5450,37 @@ public class EventRoomController : MonoBehaviour
 
     private IEnumerator MoveEventChoiceScrollViewRoutine()
     {
+        EnsureEventChoiceScrollCanvasGroup();
+        EnsureEventChoiceGradationCanvasGroup();
+
+        eventChoiceScrollView.gameObject.SetActive(true);
+        if (eventChoiceGradation != null)
+            eventChoiceGradation.gameObject.SetActive(true);
+
+        if (eventChoiceScrollCanvasGroup != null)
+        {
+            eventChoiceScrollCanvasGroup.alpha = 0f;
+            eventChoiceScrollCanvasGroup.interactable = false;
+            eventChoiceScrollCanvasGroup.blocksRaycasts = false;
+        }
+
+        if (eventChoiceGradationCanvasGroup != null)
+        {
+            eventChoiceGradationCanvasGroup.alpha = 0f;
+            eventChoiceGradationCanvasGroup.interactable = false;
+            eventChoiceGradationCanvasGroup.blocksRaycasts = false;
+        }
+
         Vector2 position = eventChoiceScrollView.anchoredPosition;
         position.y = eventChoiceScrollStartY;
         eventChoiceScrollView.anchoredPosition = position;
+
+        if (eventChoiceGradation != null)
+        {
+            Vector2 gradationPosition = eventChoiceGradation.anchoredPosition;
+            gradationPosition.y = eventChoiceGradationStartY;
+            eventChoiceGradation.anchoredPosition = gradationPosition;
+        }
 
         Canvas.ForceUpdateCanvases();
         yield return null;
@@ -5307,12 +5497,43 @@ public class EventRoomController : MonoBehaviour
             position = eventChoiceScrollView.anchoredPosition;
             position.y = Mathf.Lerp(eventChoiceScrollStartY, eventChoiceScrollEndY, easedT);
             eventChoiceScrollView.anchoredPosition = position;
+
+            if (eventChoiceGradation != null)
+            {
+                Vector2 gradationPosition = eventChoiceGradation.anchoredPosition;
+                gradationPosition.y = Mathf.Lerp(eventChoiceGradationStartY, eventChoiceGradationEndY, easedT);
+                eventChoiceGradation.anchoredPosition = gradationPosition;
+            }
+
+            if (eventChoiceScrollCanvasGroup != null)
+                eventChoiceScrollCanvasGroup.alpha = easedT;
+            if (eventChoiceGradationCanvasGroup != null)
+                eventChoiceGradationCanvasGroup.alpha = easedT;
+
             yield return null;
         }
 
         position = eventChoiceScrollView.anchoredPosition;
         position.y = eventChoiceScrollEndY;
         eventChoiceScrollView.anchoredPosition = position;
+
+        if (eventChoiceGradation != null)
+        {
+            Vector2 gradationPosition = eventChoiceGradation.anchoredPosition;
+            gradationPosition.y = eventChoiceGradationEndY;
+            eventChoiceGradation.anchoredPosition = gradationPosition;
+        }
+
+        if (eventChoiceScrollCanvasGroup != null)
+        {
+            eventChoiceScrollCanvasGroup.alpha = 1f;
+            eventChoiceScrollCanvasGroup.interactable = true;
+            eventChoiceScrollCanvasGroup.blocksRaycasts = true;
+        }
+
+        if (eventChoiceGradationCanvasGroup != null)
+            eventChoiceGradationCanvasGroup.alpha = 1f;
+
         eventChoiceScrollMoveRoutine = null;
     }
 
@@ -5377,6 +5598,25 @@ public class EventRoomController : MonoBehaviour
 
         if (nextButtonRoot != null)
             nextButtonRoot.SetActive(visible);
+
+        // NextButton이 표시되는 시점에는 선택지 배경 그라데이션이 남지 않도록 정리합니다.
+        if (visible)
+            HideEventChoiceGradationImmediate();
+    }
+
+    private void HideEventChoiceGradationImmediate()
+    {
+        EnsureEventChoiceGradationCanvasGroup();
+
+        if (eventChoiceGradationCanvasGroup != null)
+        {
+            eventChoiceGradationCanvasGroup.alpha = 0f;
+            eventChoiceGradationCanvasGroup.interactable = false;
+            eventChoiceGradationCanvasGroup.blocksRaycasts = false;
+        }
+
+        if (eventChoiceGradation != null)
+            eventChoiceGradation.gameObject.SetActive(false);
     }
 
     private void SetChestRootVisible(bool visible)

@@ -1123,6 +1123,21 @@ public sealed class EventSkillAwakenOptionHoverUI : MonoBehaviour, IPointerEnter
     private Canvas afterCanvas;
     private CanvasGroup afterCanvasGroup;
     private int sortingOrder;
+    private RectTransform afterRect;
+    private Vector2 originalAnchorMin;
+    private Vector2 originalAnchorMax;
+    private Vector2 originalPivot;
+    private Vector2 originalAnchoredPosition;
+    private Vector2 originalSizeDelta;
+    private Vector3 originalLocalPosition;
+    private Quaternion originalLocalRotation;
+    private Vector3 originalLocalScale;
+    private bool originalTransformCached;
+    private Coroutine showAfterRoutine;
+    private bool pointerInside;
+
+    private const float HoverExpandedScale = 1.1f;
+    private const float HoverScaleTolerance = 0.001f;
 
     public void Configure(GameObject targetAfterRoot, Transform targetOverlayParent, int targetSortingOrder)
     {
@@ -1135,6 +1150,7 @@ public sealed class EventSkillAwakenOptionHoverUI : MonoBehaviour, IPointerEnter
 
         originalParent = afterRoot.transform.parent;
         originalSiblingIndex = afterRoot.transform.GetSiblingIndex();
+        CacheOriginalTransform();
 
         afterCanvas = afterRoot.GetComponent<Canvas>();
         if (afterCanvas == null)
@@ -1157,6 +1173,59 @@ public sealed class EventSkillAwakenOptionHoverUI : MonoBehaviour, IPointerEnter
         if (afterRoot == null)
             return;
 
+        pointerInside = true;
+
+        if (showAfterRoutine != null)
+            StopCoroutine(showAfterRoutine);
+
+        showAfterRoutine = StartCoroutine(ShowAfterWhenOptionScaleReady());
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        pointerInside = false;
+
+        if (showAfterRoutine != null)
+        {
+            StopCoroutine(showAfterRoutine);
+            showAfterRoutine = null;
+        }
+
+        HideAfter();
+    }
+
+    private void OnDisable()
+    {
+        pointerInside = false;
+
+        if (showAfterRoutine != null)
+        {
+            StopCoroutine(showAfterRoutine);
+            showAfterRoutine = null;
+        }
+
+        HideAfter();
+    }
+
+    private System.Collections.IEnumerator ShowAfterWhenOptionScaleReady()
+    {
+        while (pointerInside)
+        {
+            Vector3 optionScale = transform.localScale;
+            bool expanded = optionScale.x >= HoverExpandedScale - HoverScaleTolerance
+                && optionScale.y >= HoverExpandedScale - HoverScaleTolerance;
+
+            if (expanded)
+                break;
+
+            yield return null;
+        }
+
+        showAfterRoutine = null;
+
+        if (!pointerInside || afterRoot == null)
+            yield break;
+
         if (afterCanvas != null)
         {
             afterCanvas.overrideSorting = true;
@@ -1172,14 +1241,48 @@ public sealed class EventSkillAwakenOptionHoverUI : MonoBehaviour, IPointerEnter
         afterRoot.SetActive(true);
     }
 
-    public void OnPointerExit(PointerEventData eventData)
+    private void CacheOriginalTransform()
     {
-        HideAfter();
+        if (afterRoot == null)
+            return;
+
+        Transform target = afterRoot.transform;
+        originalLocalPosition = target.localPosition;
+        originalLocalRotation = target.localRotation;
+        originalLocalScale = target.localScale;
+
+        afterRect = target as RectTransform;
+        if (afterRect != null)
+        {
+            originalAnchorMin = afterRect.anchorMin;
+            originalAnchorMax = afterRect.anchorMax;
+            originalPivot = afterRect.pivot;
+            originalAnchoredPosition = afterRect.anchoredPosition;
+            originalSizeDelta = afterRect.sizeDelta;
+        }
+
+        originalTransformCached = true;
     }
 
-    private void OnDisable()
+    private void RestoreOriginalTransform()
     {
-        HideAfter();
+        if (!originalTransformCached || afterRoot == null)
+            return;
+
+        Transform target = afterRoot.transform;
+        target.localPosition = originalLocalPosition;
+        target.localRotation = originalLocalRotation;
+        target.localScale = originalLocalScale;
+
+        RectTransform rect = target as RectTransform;
+        if (rect != null && afterRect != null)
+        {
+            rect.anchorMin = originalAnchorMin;
+            rect.anchorMax = originalAnchorMax;
+            rect.pivot = originalPivot;
+            rect.anchoredPosition = originalAnchoredPosition;
+            rect.sizeDelta = originalSizeDelta;
+        }
     }
 
     private void HideAfter()
@@ -1189,9 +1292,13 @@ public sealed class EventSkillAwakenOptionHoverUI : MonoBehaviour, IPointerEnter
 
         afterRoot.SetActive(false);
 
-        if (originalParent != null && afterRoot.transform.parent != originalParent)
+        if (originalParent != null)
         {
-            afterRoot.transform.SetParent(originalParent, true);
+            if (afterRoot.transform.parent != originalParent)
+                afterRoot.transform.SetParent(originalParent, false);
+
+            RestoreOriginalTransform();
+
             int maxIndex = Mathf.Max(0, originalParent.childCount - 1);
             afterRoot.transform.SetSiblingIndex(Mathf.Clamp(originalSiblingIndex, 0, maxIndex));
         }
