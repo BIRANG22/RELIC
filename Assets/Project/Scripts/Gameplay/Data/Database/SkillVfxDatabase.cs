@@ -77,5 +77,8 @@ namespace Relic.Gameplay.Data
         public string SkillId;
         public BattleVfxEntry Vfx = new();
         public BattleProjectileVfxEntry ProjectileVfx = new();
+
+        [Tooltip("스킬 효과를 실제로 받는 유닛 위치에 생성할 VFX. 비워두면 생성하지 않습니다.")]
+        public BattleVfxEntry TargetUnitVfx = new();
     }
 }
